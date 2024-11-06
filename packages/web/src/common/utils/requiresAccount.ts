@@ -10,7 +10,7 @@ import {
 
 const { SIGN_UP_PAGE } = route
 
-const { getAccountUser } = accountSelectors
+const { getHasAccount } = accountSelectors
 
 /**
  * Checks if the user is signed in with an account.
@@ -25,8 +25,8 @@ export function requiresAccount<TArgs extends any[], TReturn>(
   return function* (...args: TArgs) {
     const isNativeMobile = yield* getContext('isNativeMobile')
     yield* waitForAccount()
-    const account = yield* select(getAccountUser)
-    if (!account) {
+    const hasAccount = yield* select(getHasAccount)
+    if (!hasAccount) {
       if (!isNativeMobile) {
         if (route) {
           yield* put(updateRouteOnExit(route))

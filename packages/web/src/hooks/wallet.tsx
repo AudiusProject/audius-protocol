@@ -3,7 +3,7 @@ import { accountSelectors, profilePageSelectors } from '@audius/common/store'
 import { useSelector } from 'react-redux'
 
 const { getProfileUser } = profilePageSelectors
-const getAccountUser = accountSelectors.getAccountUser
+const { getUserId } = accountSelectors
 
 /**
  * Gets the tier for the current profile page, falling back
@@ -13,8 +13,8 @@ const getAccountUser = accountSelectors.getAccountUser
  */
 export const useProfileTier = () => {
   const profile = useSelector(getProfileUser)
-  const accountUser = useSelector(getAccountUser)
-  const userId = profile?.user_id ?? accountUser?.user_id ?? 0
+  const accountUserId = useSelector(getUserId)
+  const userId = profile?.user_id ?? accountUserId ?? 0
   const { tier } = useSelectTierInfo(userId)
   return tier === 'none' ? 'gold' : tier
 }

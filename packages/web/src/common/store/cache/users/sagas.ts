@@ -28,7 +28,7 @@ import { waitForRead } from 'utils/sagaHelpers'
 import { pruneBlobValues } from './utils'
 const { mergeCustomizer } = cacheReducer
 const { getUser, getUsers, getUserTimestamps } = cacheUsersSelectors
-const { getAccountUser, getUserId } = accountSelectors
+const { getUserId } = accountSelectors
 
 /**
  * @param {Nullable<Array<number>>} userIds array of user ids to fetch
@@ -169,13 +169,12 @@ function* watchSyncLocalStorageUser() {
     >
   ) {
     yield* waitForAccount()
-    const currentUser = yield* select(getAccountUser)
-    if (!currentUser) return
-    const currentId = currentUser.user_id
+    const currentUserId = yield* select(getUserId)
+    if (!currentUserId) return
     if (
       action.kind === Kind.USERS &&
       action.entries[0] &&
-      action.entries[0].id === currentId
+      action.entries[0].id === currentUserId
     ) {
       const addedUser = action.entries[0].metadata
       // Get existing locally stored user

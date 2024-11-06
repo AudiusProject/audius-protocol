@@ -13,7 +13,7 @@ import { makeStyles } from 'app/styles'
 import type { ProfileTabScreenParamList } from '../app-screen/ProfileTabScreen'
 
 import { SettingsRow } from './SettingsRow'
-const getAccountUser = accountSelectors.getAccountUser
+const { getUserHandle, getUserName, getUserId } = accountSelectors
 
 const useStyles = makeStyles(({ typography, spacing, palette }) => ({
   root: { paddingVertical: spacing(4) },
@@ -30,7 +30,9 @@ const useStyles = makeStyles(({ typography, spacing, palette }) => ({
 
 export const AccountSettingsRow = () => {
   const styles = useStyles()
-  const accountUser = useSelector(getAccountUser)
+  const accountUserId = useSelector(getUserId)
+  const accountHandle = useSelector(getUserHandle)
+  const accountName = useSelector(getUserName)
   const navigation = useNavigation<ProfileTabScreenParamList>()
   const { spacing } = useTheme()
 
@@ -38,21 +40,19 @@ export const AccountSettingsRow = () => {
     navigation.push('AccountSettingsScreen')
   }, [navigation])
 
-  if (!accountUser) return null
-
-  const { name, handle } = accountUser
+  if (!accountUserId) return null
 
   return (
     <SettingsRow style={styles.root} onPress={handlePress}>
       <View style={styles.content}>
         <ProfilePicture
-          userId={accountUser.user_id}
+          userId={accountUserId}
           style={css({ width: spacing.unit13, height: spacing.unit13 })}
           strokeWidth='thin'
         />
         <View style={styles.info}>
-          <Text style={styles.name}>{name}</Text>
-          <Text style={styles.handle}>@{handle}</Text>
+          <Text style={styles.name}>{accountName}</Text>
+          <Text style={styles.handle}>@{accountHandle}</Text>
         </View>
       </View>
     </SettingsRow>

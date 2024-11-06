@@ -38,7 +38,7 @@ import { makeStyles } from 'app/styles'
 import { ChatBlastCTA } from './ChatBlastCTA'
 import { ChatUserListItem } from './ChatUserListItem'
 
-const { getAccountUser } = accountSelectors
+const { getUserId } = accountSelectors
 const { searchUsers } = searchUsersModalActions
 const { getUserList } = searchUsersModalSelectors
 const { getUsers } = cacheUsersSelectors
@@ -159,7 +159,7 @@ const useDefaultUserList = (
   defaultUserList: CreateChatModalState['defaultUserList']
 ) => {
   const dispatch = useDispatch()
-  const currentUser = useSelector(getAccountUser)
+  const currentUserId = useSelector(getUserId)
   const followersUserList = useSelector(getFollowersUserList)
   const chatsUserList = useSelector(getChatsUserList)
 
@@ -167,11 +167,11 @@ const useDefaultUserList = (
     defaultUserList === 'chats' ? chatsUserList : followersUserList
 
   const loadMore = useCallback(() => {
-    if (currentUser) {
-      dispatch(followersUserListActions.setFollowers(currentUser?.user_id))
+    if (currentUserId) {
+      dispatch(followersUserListActions.setFollowers(currentUserId))
       dispatch(userListActions.loadMore(FOLLOWERS_USER_LIST_TAG))
     }
-  }, [dispatch, currentUser])
+  }, [dispatch, currentUserId])
 
   useEffect(() => {
     loadMore()

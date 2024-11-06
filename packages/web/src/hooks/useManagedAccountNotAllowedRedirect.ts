@@ -11,6 +11,8 @@ import { ToastContext } from 'components/toast/ToastContext'
 
 import { useNavigateToPage } from './useNavigateToPage'
 
+const { getUserHandle, getUserId } = accountSelectors
+
 const { FEED_PAGE } = route
 const messages = {
   unauthorized: 'Unauthorized',
@@ -69,22 +71,25 @@ export const useIsUnauthorizedForHandleRedirect = (
   handle: string,
   route: string = FEED_PAGE
 ) => {
-  const { handle: actingHandle, user_id: userId } =
-    useSelector(accountSelectors.getAccountUser) || {}
+  const accountHandle = useSelector(getUserHandle)
+  const accountUserId = useSelector(getUserId)
   const navigate = useNavigateToPage()
   const { toast } = useContext(ToastContext)
 
   const { data: managedAccounts = [], status: accountsStatus } =
-    useGetManagedAccounts({ userId: userId! }, { disabled: !userId })
+    useGetManagedAccounts(
+      { userId: accountUserId! },
+      { disabled: !accountUserId }
+    )
 
   const isLoading =
-    !actingHandle ||
-    !userId ||
+    !accountHandle ||
+    !accountUserId ||
     accountsStatus === Status.LOADING ||
     accountsStatus === Status.IDLE
-  const isOwner = actingHandle === handle
+  const isOwner = accountHandle === handle
   const isManaged =
-    !!actingHandle &&
+    !!accountHandle &&
     managedAccounts.find(({ user }) => user.handle.toLowerCase() === handle)
 
   useEffect(() => {

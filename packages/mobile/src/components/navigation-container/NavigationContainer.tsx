@@ -23,7 +23,7 @@ import { useThemeVariant } from 'app/utils/theme'
 
 import { navigationThemes } from './navigationThemes'
 
-const { getAccountUser } = accountSelectors
+const { getUserHandle } = accountSelectors
 
 type NavigationContainerProps = {
   children: ReactNode
@@ -93,7 +93,7 @@ const convertQueryParamsToObject = (url: string) => {
 const NavigationContainer = (props: NavigationContainerProps) => {
   const { children } = props
   const theme = useThemeVariant()
-  const account = useSelector(getAccountUser)
+  const accountHandle = useSelector(getUserHandle)
 
   const routeNameRef = useRef<string>()
 
@@ -321,9 +321,9 @@ const NavigationContainer = (props: NavigationContainerProps) => {
         const queryParams =
           queryParamsStart > -1 ? `&${path.slice(queryParamsStart + 1)}` : ''
         path = `/settings${subpathParam}${queryParams}`
-      } else if (path.match(`^/${account?.handle}(/|$)`)) {
+      } else if (path.match(`^/${accountHandle}(/|$)`)) {
         // If the path is the current user and set path as `/profile`
-        path = path.replace(`/${account?.handle}`, '/profile')
+        path = path.replace(`/${accountHandle}`, '/profile')
       } else {
         // If the path has two parts
         if (path.match(/^\/[^/]+\/[^/]+$/)) {

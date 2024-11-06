@@ -14,7 +14,7 @@ import ProfileCompletionPanel from 'components/profile-progress/components/Profi
 import ProfileCompletionTooltip from './components/ProfileCompletionTooltip'
 import { useProfileCompletionDismissal, useSlideDown } from './hooks'
 const { getOrderedCompletionStages, getIsAccountLoaded } = challengesSelectors
-const getAccountUser = accountSelectors.getAccountUser
+const { getHasAccount } = accountSelectors
 const { show: showMusicConfetti } = musicConfettiActions
 
 const ORIGINAL_HEIGHT_PIXELS = 118
@@ -92,7 +92,7 @@ const ConnectedProfileCompletionPanel = ({
 const mapStateToProps = (state) => ({
   completionStages: getOrderedCompletionStages(state),
   isAccountLoaded: getIsAccountLoaded(state),
-  isLoggedIn: !!getAccountUser(state)
+  isLoggedIn: getHasAccount(state)
 })
 
 export default connect(mapStateToProps)(ConnectedProfileCompletionPanel)

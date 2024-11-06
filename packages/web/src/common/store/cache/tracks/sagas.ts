@@ -56,7 +56,7 @@ const { getCurrentUploads } = stemsUploadSelectors
 const { getUser } = cacheUsersSelectors
 const { getTrack } = cacheTracksSelectors
 const setDominantColors = averageColorActions.setDominantColors
-const { getAccountUser, getUserId } = accountSelectors
+const { getAccountUser, getUserId, getUserHandle } = accountSelectors
 
 function* fetchRepostInfo(entries: Entry<Collection>[]) {
   const userIds: ID[] = []
@@ -135,8 +135,8 @@ type TrackWithRemix = Pick<Track, 'track_id' | 'title'> & {
 
 export function* trackNewRemixEvent(track: TrackWithRemix) {
   yield* waitForAccount()
-  const account = yield* select(getAccountUser)
-  if (!track.remix_of || !account) return
+  const accountHandle = yield* select(getUserHandle)
+  if (!track.remix_of || !accountHandle) return
   const remixParentTrack = track.remix_of.tracks[0]
   const parentTrack = yield* select(getTrack, {
     id: remixParentTrack.parent_track_id
@@ -147,7 +147,7 @@ export function* trackNewRemixEvent(track: TrackWithRemix) {
   yield* put(
     make(Name.REMIX_NEW_REMIX, {
       id: track.track_id,
-      handle: account.handle,
+      handle: accountHandle,
       title: track.title,
       parent_track_id: remixParentTrack.parent_track_id,
       parent_track_title: parentTrack ? parentTrack.title : '',

@@ -81,7 +81,7 @@ const {
   getProfileTracksLineup,
   getProfileUserId
 } = profilePageSelectors
-const { getAccountUser, getAccountHasTracks } = accountSelectors
+const { getUserId, getAccountHasTracks } = accountSelectors
 const { createChat, blockUser, unblockUser } = chatActions
 const { getBlockees, getBlockers, getCanCreateChat } = chatSelectors
 
@@ -190,7 +190,7 @@ class ProfilePage extends PureComponent<ProfilePageProps, ProfilePageState> {
       profile,
       artistTracks,
       goToRoute,
-      account,
+      accountUserId,
       accountHasTracks
     } = this.props
     const { editMode, activeTab } = this.state
@@ -203,7 +203,7 @@ class ProfilePage extends PureComponent<ProfilePageProps, ProfilePageState> {
       goToRoute(NOT_FOUND_PAGE)
     }
 
-    const isOwnProfile = account?.user_id === profile.profile?.user_id
+    const isOwnProfile = accountUserId === profile.profile?.user_id
     const hasTracks =
       (profile.profile && profile.profile.track_count > 0) ||
       (isOwnProfile && accountHasTracks)
@@ -257,7 +257,7 @@ class ProfilePage extends PureComponent<ProfilePageProps, ProfilePageState> {
     } = this.props
     if (!profile) return
     this.props.onFollow(profile.user_id)
-    if (this.props.account) {
+    if (this.props.accountUserId) {
       this.props.updateCurrentUserFollows(true)
     }
     if (this.props.relatedArtists && this.props.relatedArtists.length > 0) {
@@ -273,7 +273,7 @@ class ProfilePage extends PureComponent<ProfilePageProps, ProfilePageState> {
     const userId = profile.user_id
     this.props.onUnfollow(userId)
 
-    if (this.props.account) {
+    if (this.props.accountUserId) {
       this.props.updateCurrentUserFollows(false)
     }
   }
@@ -722,9 +722,9 @@ class ProfilePage extends PureComponent<ProfilePageProps, ProfilePageState> {
   getIsOwner = (overrideProps?: ProfilePageProps) => {
     const {
       profile: { profile },
-      account
+      accountUserId
     } = overrideProps || this.props
-    return profile && account ? profile.user_id === account.user_id : false
+    return profile && accountUserId ? profile.user_id === accountUserId : false
   }
 
   onMessage = () => {
@@ -778,7 +778,7 @@ class ProfilePage extends PureComponent<ProfilePageProps, ProfilePageState> {
       userFeed,
       playUserFeedTrack,
       pauseUserFeedTrack,
-      account,
+      accountUserId,
       goToRoute,
       createPlaylist,
       currentQueueItem,
@@ -803,7 +803,6 @@ class ProfilePage extends PureComponent<ProfilePageProps, ProfilePageState> {
       updatedDonation
     } = this.state
 
-    const accountUserId = account ? account.user_id : null
     const isArtist = this.getIsArtist()
     const isOwner = this.getIsOwner()
     const mode = this.getMode(isOwner)
@@ -1033,13 +1032,13 @@ function makeMapStateToProps() {
     const handleLower = params?.handle?.toLowerCase() as string
 
     const profile = getProfile(state, handleLower)
-    const account = getAccountUser(state)
+    const accountUserId = getUserId(state)
     const accountHasTracks =
-      account?.user_id === profile.profile?.user_id
+      accountUserId === profile.profile?.user_id
         ? getAccountHasTracks(state)
         : null
     return {
-      account: getAccountUser(state),
+      accountUserId,
       profile: getProfile(state, handleLower),
       artistTracks: getProfileTracksLineup(state, handleLower),
       userFeed: getProfileFeedLineup(state, handleLower),

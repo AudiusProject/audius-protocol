@@ -13,7 +13,7 @@ import { backgroundOverlay } from 'utils/styleUtils'
 import { AccountSwitcher } from './AccountSwitcher/AccountSwitcher'
 
 const { SIGN_IN_PAGE, profilePage } = route
-const { getAccountUser } = accountSelectors
+const { getUserHandle, getUserId } = accountSelectors
 
 const messages = {
   haveAccount: 'Have an Account?',
@@ -22,14 +22,15 @@ const messages = {
 }
 
 export const AccountDetails = () => {
-  const account = useSelector((state) => getAccountUser(state))
+  const accountHandle = useSelector(getUserHandle)
+  const accountUserId = useSelector(getUserId)
   const { color } = useTheme()
   const { isEnabled: isManagerModeEnabled = false } = useFlag(
     FeatureFlags.MANAGER_MODE
   )
   const isManagedAccount = useIsManagedAccount() && isManagerModeEnabled
 
-  const profileLink = profilePage(account?.handle ?? '')
+  const profileLink = profilePage(accountHandle ?? '')
 
   return (
     <Flex direction='column' pb='unit5' w='100%'>
@@ -57,7 +58,7 @@ export const AccountDetails = () => {
           : undefined)}
       >
         <Flex alignItems='center' w='100%' justifyContent='flex-start' gap='s'>
-          <AvatarLegacy userId={account?.user_id} />
+          <AvatarLegacy userId={accountUserId ?? undefined} />
           <Flex
             direction='column'
             gap='xs'
@@ -69,7 +70,7 @@ export const AccountDetails = () => {
               overflow: 'hidden'
             }}
           >
-            {account ? (
+            {accountUserId ? (
               <>
                 <Flex
                   alignItems='center'
@@ -80,7 +81,7 @@ export const AccountDetails = () => {
                   <UserLink
                     textVariant='title'
                     size='s'
-                    userId={account.user_id}
+                    userId={accountUserId}
                     badgeSize='xs'
                     css={{
                       flex: 1,
@@ -104,7 +105,7 @@ export const AccountDetails = () => {
                       '&:hover': { color: color.secondary.s500 }
                     }
                   }
-                >{`@${account.handle}`}</TextLink>
+                >{`@${accountHandle}`}</TextLink>
               </>
             ) : (
               <>
