@@ -276,6 +276,20 @@ export type TrackMetadata = {
 
   offline?: OfflineTrackMetadata
   local?: boolean
+
+  // API returned URLS
+  stream?: {
+    url?: string
+    mirrors: string[]
+  }
+  download?: {
+    url?: string
+    mirrors: string[]
+  }
+  preview?: {
+    url?: string
+    mirrors: string[]
+  }
 } & Timestamped
 
 export type DownloadReason = {
