@@ -63,7 +63,4 @@ def get_usdc_purchase_tracks(args, strategy):
 
         add_users_to_tracks(session, tracks, current_user_id)
 
-        return [
-            extend_track(track, current_user_id=current_user_id)
-            for track in sorted_tracks
-        ]
+        return list(map(extend_track, sorted_tracks))

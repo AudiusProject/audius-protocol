@@ -1,24 +1,17 @@
 import asyncio
-import json
 import logging
 import re
 from datetime import datetime
-from typing import Dict, List, TypedDict, Union, cast
-from urllib.parse import quote, urlencode, urljoin
+from typing import Dict, Union, cast
 
 import requests
 from flask_restx import inputs, reqparse
 
 from src import api_helpers
 from src.api.v1.models.common import full_response
-from src.gated_content.signature import (
-    GatedContentSignature,
-    get_gated_content_signature,
-)
 from src.models.rewards.challenge import ChallengeType
 from src.queries.get_challenges import ChallengeResponse
 from src.queries.get_extended_purchase_gate import get_legacy_purchase_gate
-from src.queries.get_managed_users import is_active_manager
 from src.queries.get_notifications import (
     NotificationType,
     default_valid_notification_types,
@@ -33,7 +26,6 @@ from src.queries.query_helpers import (
     SortMethod,
 )
 from src.queries.reactions import ReactionResponse
-from src.utils.auth_middleware import recover_auth_user_id_from_signature_headers
 from src.utils.get_all_nodes import get_all_healthy_content_nodes_cached
 from src.utils.helpers import decode_string_id, encode_int_id
 from src.utils.redis_connection import get_redis
@@ -47,9 +39,6 @@ logger = logging.getLogger(__name__)
 PROFILE_PICTURE_SIZES = ["150x150", "480x480", "1000x1000"]
 PROFILE_COVER_PHOTO_SIZES = ["640x", "2000x"]
 COVER_ART_SIZES = ["150x150", "480x480", "1000x1000"]
-# How many nodes a file is replicated to
-# See: https://github.com/AudiusProject/audius-protocol/blob/3d223085b07b53073c475992f54315ae826dc91d/pkg/mediorum/mediorum.go#L125
-REPLICATION_FACTOR = 4
 
 
 def camel_to_snake(name):
@@ -314,7 +303,7 @@ def add_track_artwork(track):
     return track
 
 
-def extend_track(track, session=None, current_user_id: int | None = None):
+def extend_track(track, session=None):
     track_id = encode_int_id(track["track_id"])
     owner_id = encode_int_id(track["owner_id"])
     if "user" in track:
@@ -361,143 +350,7 @@ def extend_track(track, session=None, current_user_id: int | None = None):
         track["download_conditions"] = get_legacy_purchase_gate(
             track["download_conditions"], session
         )
-
-    track["preview"] = get_preview_url_with_mirrors(track, current_user_id)
-    track["stream"] = {"url": None, "mirrors": []}
-    track["download"] = {"url": None, "mirrors": []}
-    if track.get("access", False):
-        authed_user_id = recover_auth_user_id_from_signature_headers()
-        # Check that the signer has been authorized for the user
-        is_authorized_as_user = (
-            authed_user_id is not None
-            and current_user_id is not None
-            and (
-                authed_user_id == current_user_id
-                or is_active_manager(current_user_id, authed_user_id)
-            )
-        )
-        track["stream"] = get_stream_url_with_mirrors(
-            track, current_user_id, is_authorized_as_user
-        )
-        track["download"] = get_download_url_with_mirrors(
-            track, current_user_id, is_authorized_as_user
-        )
-
     return track
-
-
-class UrlWithMirrors(TypedDict):
-    url: str | None
-    mirrors: List[str]
-
-
-def get_stream_url_with_mirrors(
-    track: dict, user_id: int | None, is_authorized_as_user: bool
-) -> UrlWithMirrors:
-    # If the cid exists and the user has access
-    if track.get("track_cid", False) and track.get("access", {}).get("stream", False):
-        # If the signature is authorized for the user that has access or if there's no access gate
-        if is_authorized_as_user or not track.get("is_stream_gated", False):
-            stream_signature = get_gated_content_signature(
-                {
-                    "track_id": track["track_id"],
-                    "cid": track["track_cid"],
-                    "type": "track",
-                    "user_id": user_id,
-                    "is_gated": track.get("is_stream_gated", False),
-                }
-            )
-            if stream_signature:
-                return get_content_url_with_mirrors(
-                    stream_signature,
-                    track["track_cid"],
-                    track.get("placement_hosts", None),
-                )
-    return {"url": None, "mirrors": []}
-
-
-def get_preview_url_with_mirrors(track: dict, user_id: int | None) -> UrlWithMirrors:
-    if track.get("preview_cid"):
-        preview_signature = get_gated_content_signature(
-            {
-                "track_id": track["track_id"],
-                "cid": track["preview_cid"],
-                "type": "track",
-                "user_id": user_id,
-                "is_gated": False,
-            }
-        )
-        if preview_signature:
-            return get_content_url_with_mirrors(
-                preview_signature,
-                track["preview_cid"],
-                track.get("placement_hosts", None),
-            )
-    return {"url": None, "mirrors": []}
-
-
-def get_download_url_with_mirrors(
-    track: dict, user_id: int | None, is_authorized_as_user: bool
-) -> UrlWithMirrors:
-    # If the cid exists and the user has access
-    if track.get("orig_file_cid", False) and track.get("access", {}).get(
-        "download", False
-    ):
-        # If the signature is authorized for the user that has access or if there's no access gate
-        if is_authorized_as_user or not track.get("is_download_gated", False):
-            download_signature = get_gated_content_signature(
-                {
-                    "track_id": track["track_id"],
-                    "cid": track["orig_file_cid"],
-                    "type": "track",
-                    "user_id": user_id,
-                    "is_gated": track.get("is_download_gated", False),
-                }
-            )
-            if download_signature:
-                return get_content_url_with_mirrors(
-                    download_signature,
-                    track["orig_file_cid"],
-                    track.get("placement_hosts", None),
-                )
-    return {"url": None, "mirrors": []}
-
-
-def get_content_url_with_mirrors(
-    signature: GatedContentSignature, cid: str, placement_hosts=None
-) -> UrlWithMirrors:
-    params = {"signature": json.dumps(signature)}
-
-    base_path = f"tracks/cidstream/{cid}"
-    query_string = urlencode(params, quote_via=quote)
-    path = f"{base_path}?{query_string}"
-
-    content_nodes = []
-    # if track has placement_hosts, use that instead
-    if placement_hosts:
-        content_nodes = placement_hosts.split(",")
-    else:
-        healthy_nodes = get_all_healthy_content_nodes_cached(redis)
-        if healthy_nodes:
-            rendezvous = RendezvousHash(
-                *[re.sub("/$", "", node["endpoint"].lower()) for node in healthy_nodes]
-            )
-
-            content_nodes = rendezvous.get_n(REPLICATION_FACTOR, cid)
-
-    if len(content_nodes) == 0:
-        logger.warning(
-            f"helpers.py | get_content_url_with_mirrors | No Content Nodes found for CID {cid}"
-        )
-        return {"url": None, "mirrors": []}
-
-    # Add additional query parameters
-    joined_url = urljoin(content_nodes[0], path)
-
-    return {
-        "url": joined_url,
-        "mirrors": content_nodes[1:],
-    }
 
 
 def get_encoded_track_id(track):

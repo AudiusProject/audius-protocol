@@ -257,10 +257,7 @@ def _get_underground_trending_with_session(
         user = users[track["owner_id"]]
         if user:
             track["user"] = user
-    sorted_tracks = [
-        extend_track(track, session, current_user_id=current_user_id)
-        for track in sorted_tracks
-    ]
+    sorted_tracks = [extend_track(track, session) for track in sorted_tracks]
 
     return sorted_tracks
 

@@ -182,7 +182,7 @@ from src.utils.redis_cache import cache
 from src.utils.redis_metrics import record_metrics
 from src.utils.structured_logger import StructuredLogger, log_duration
 
-from .access_helpers import check_authorized
+from .authorization_helpers import check_authorized
 
 logger = StructuredLogger(__name__)
 
@@ -472,9 +472,7 @@ class TrackList(Resource):
             filter_tracks=filter_tracks,
         )
         tracks = get_tracks(args)
-        tracks = [
-            extend_track(track, current_user_id=current_user_id) for track in tracks
-        ]
+        tracks = list(map(extend_track, tracks))
         return success_response(tracks)
 
 
@@ -535,9 +533,7 @@ class FullTrackList(Resource):
             filter_tracks=filter_tracks,
         )
         tracks = get_tracks(args)
-        tracks = [
-            extend_track(track, current_user_id=current_user_id) for track in tracks
-        ]
+        tracks = list(map(extend_track, tracks))
         return success_response(tracks)
 
 
@@ -574,9 +570,7 @@ class HandleFullTrackList(Resource):
             "filter_tracks": filter_tracks,
         }
         tracks = get_tracks(args)
-        tracks = [
-            extend_track(track, current_user_id=current_user_id) for track in tracks
-        ]
+        tracks = list(map(extend_track, tracks))
         return success_response(tracks)
 
     @full_ns.doc(
@@ -645,9 +639,7 @@ class HandleFullAITrackList(Resource):
             "ai_attributed_only": True,
         }
         tracks = get_tracks(args)
-        tracks = [
-            extend_track(track, current_user_id=current_user_id) for track in tracks
-        ]
+        tracks = list(map(extend_track, tracks))
         return success_response(tracks)
 
     @full_ns.doc(

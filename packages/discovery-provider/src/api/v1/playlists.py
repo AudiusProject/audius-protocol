@@ -130,10 +130,7 @@ def get_tracks_for_playlist(playlist_id, current_user_id=None, exclude_gated=Fal
         }
         playlist_tracks_map = get_playlist_tracks(session, args)
         playlist_tracks = playlist_tracks_map[playlist_id]
-        tracks = [
-            extend_track(track, current_user_id=current_user_id)
-            for track in playlist_tracks
-        ]
+        tracks = list(map(extend_track, playlist_tracks))
         return tracks
 
 

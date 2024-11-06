@@ -15,7 +15,7 @@ MESSAGE_HEADER = "Encoded-Data-Message"
 SIGNATURE_HEADER = "Encoded-Data-Signature"
 
 
-def recover_auth_user_id_from_signature_headers() -> int | None:
+def recover_authority_from_signature_headers() -> tuple[int | None, str | None]:
     message = request.headers.get(MESSAGE_HEADER)
     signature = request.headers.get(SIGNATURE_HEADER)
     if message and signature:
@@ -40,8 +40,10 @@ def recover_auth_user_id_from_signature_headers() -> int | None:
                 .first()
             )
             if user:
-                return user.user_id
-    return None
+                return user.user_id, wallet_lower
+            else:
+                return None, wallet_lower
+    return None, None
 
 
 def auth_middleware(
@@ -100,7 +102,7 @@ def auth_middleware(
         # `func` rather than `wrapper`.
         @functools.wraps(func)
         def wrapper(*args, **kwargs):
-            authed_user_id = recover_auth_user_id_from_signature_headers()
+            authed_user_id, _ = recover_authority_from_signature_headers()
             if authed_user_id:
                 logger.debug(f"auth_middleware.py | authed_user_id: {authed_user_id}")
 

@@ -36,10 +36,7 @@ def get_recommended_tracks(args, strategy):
     )
 
     random.shuffle(filtered_tracks)
-    return [
-        extend_track(track, current_user_id=current_user_id)
-        for track in filtered_tracks
-    ]
+    return list(map(extend_track, filtered_tracks))
 
 
 def get_full_recommended_tracks(request, args, strategy):
