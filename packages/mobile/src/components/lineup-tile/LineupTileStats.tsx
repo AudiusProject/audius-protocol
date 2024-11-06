@@ -7,7 +7,7 @@ import {
   favoritesUserListActions,
   PurchaseableContentType
 } from '@audius/common/store'
-import type { RepostType } from '@audius/common/store'
+import type { RepostType, LineupBaseActions } from '@audius/common/store'
 import { formatCount } from '@audius/common/utils'
 import type { Nullable } from '@audius/common/utils'
 import { View, TouchableOpacity } from 'react-native'
@@ -22,6 +22,7 @@ import { make, track } from 'app/services/analytics'
 import { makeStyles, flexRowCentered } from 'app/styles'
 
 import { CollectionAccessTypeLabel } from '../collection/CollectionAccessTypeLabel'
+import { useCommentDrawer } from '../comments/CommentDrawerContext'
 import { TrackAccessTypeLabel } from '../track/TrackAccessTypeLabel'
 
 import { LineupTileAccessStatus } from './LineupTileAccessStatus'
@@ -88,6 +89,10 @@ type Props = {
   streamConditions: Nullable<AccessConditions>
   isOwner: boolean
   source?: LineupTileSource
+  type: 'track' | 'album' | 'playlist'
+  uid?: string
+  /** Object containing lineup actions such as play, togglePlay, setPage */
+  actions?: LineupBaseActions
 }
 
 export const LineupTileStats = ({
@@ -109,7 +114,9 @@ export const LineupTileStats = ({
   hasStreamAccess,
   streamConditions,
   isOwner,
-  source
+  source,
+  uid,
+  actions
 }: Props) => {
   const styles = useStyles()
   const trackTileStyles = useTrackTileStyles()
@@ -129,8 +136,16 @@ export const LineupTileStats = ({
     navigation.push('Reposts', { id, repostType })
   }, [dispatch, id, navigation, repostType])
 
+  const { open } = useCommentDrawer()
+
   const handlePressComments = useCallback(() => {
-    navigation.push('Track', { id, showComments: true })
+    open({
+      entityId: id,
+      navigation,
+      autoFocusInput: false,
+      uid,
+      actions
+    })
     track(
       make({
         eventName: Name.COMMENTS_CLICK_COMMENT_STAT,
@@ -138,7 +153,7 @@ export const LineupTileStats = ({
         source: 'lineup'
       })
     )
-  }, [id, navigation])
+  }, [actions, id, navigation, open, uid])
 
   const downloadStatusIndicator = isCollection ? (
     <CollectionDownloadStatusIndicator size='s' collectionId={id} />

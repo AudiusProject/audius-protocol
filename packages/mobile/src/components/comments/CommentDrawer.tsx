@@ -10,6 +10,7 @@ import {
 } from '@audius/common/context'
 import type { ID, UserMetadata } from '@audius/common/models'
 import { Status } from '@audius/common/models'
+import type { LineupBaseActions } from '@audius/common/store'
 import { accountSelectors } from '@audius/common/store'
 import type {
   BottomSheetFlatListMethods,
@@ -201,6 +202,9 @@ export type CommentDrawerData = {
   entityId: number
   navigation: NativeStackNavigationProp<ParamListBase>
   autoFocusInput?: boolean
+  uid?: string
+  /** Object containing lineup actions such as play, togglePlay, setPage */
+  actions?: LineupBaseActions
 }
 
 type CommentDrawerProps = {
@@ -214,7 +218,9 @@ export const CommentDrawer = (props: CommentDrawerProps) => {
     navigation,
     bottomSheetModalRef,
     handleClose,
-    autoFocusInput
+    autoFocusInput,
+    uid,
+    actions
   } = props
   const { color } = useTheme()
   const insets = useSafeAreaInsets()
@@ -251,6 +257,8 @@ export const CommentDrawer = (props: CommentDrawerProps) => {
             entityId={entityId}
             replyingAndEditingState={replyingAndEditingState}
             setReplyingAndEditingState={setReplyingAndEditingState}
+            uid={uid}
+            lineupActions={actions}
           >
             <CommentDrawerForm
               commentListRef={commentListRef}
@@ -309,6 +317,8 @@ export const CommentDrawer = (props: CommentDrawerProps) => {
           setReplyingAndEditingState={setReplyingAndEditingState}
           navigation={navigation}
           closeDrawer={handleCloseDrawer}
+          uid={uid}
+          lineupActions={actions}
         >
           <CommentDrawerHeader minimal={autoCompleteActive} />
           <Divider orientation='horizontal' />
