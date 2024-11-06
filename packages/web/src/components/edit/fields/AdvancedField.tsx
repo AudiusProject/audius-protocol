@@ -596,6 +596,7 @@ const AdvancedModalFields = ({ isUpload }: { isUpload?: boolean }) => {
               w='100%'
               borderRadius='m'
               backgroundColor='surface1'
+              border='default'
             >
               <Text variant='title' size='m'>
                 {messages.coverAttribution.attribution.header}
