@@ -26,12 +26,19 @@ export const useTrackCoverArt = ({
   const artwork = useSelector(
     (state) => getTrack(state, { id: trackId })?.artwork
   )
-
-  return useImageSize2({
+  const image = useImageSize2({
     artwork,
     targetSize: size,
     defaultImage: defaultImage ?? imageEmpty
   })
+
+  // Return edited artwork from this session, if it exists
+  // TODO(PAY-3588) Update field once we've switched to another property name
+  // for local changes to artwork
+  // @ts-ignore
+  if (artwork?.url) return artwork.url
+
+  return image
 }
 
 export const useTrackCoverArtDominantColors = ({
