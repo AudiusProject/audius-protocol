@@ -51,7 +51,7 @@ import { PlayButtonStatus } from 'components/play-bar/types'
 import { GatedConditionsPill } from 'components/track/GatedConditionsPill'
 import { TrackDogEar } from 'components/track/TrackDogEar'
 import UserBadges from 'components/user-badges/UserBadges'
-import { useAuthenticatedClickCallback } from 'hooks/useAuthenticatedCallback'
+import { useRequiresAccountOnClick } from 'hooks/useRequiresAccount'
 import { useTrackCoverArt } from 'hooks/useTrackCoverArt'
 import { audioPlayer } from 'services/audio-player'
 import { AppState } from 'store/types'
@@ -403,7 +403,7 @@ const NowPlaying = g(
       gatedTrackStatusMap[typeof track_id === 'number' ? track_id : -1]
     const { onOpen: openPremiumContentPurchaseModal } =
       usePremiumContentPurchaseModal()
-    const onClickPill = useAuthenticatedClickCallback(() => {
+    const onClickPill = useRequiresAccountOnClick(() => {
       openPremiumContentPurchaseModal(
         {
           contentId: typeof track_id === 'number' ? track_id : -1,

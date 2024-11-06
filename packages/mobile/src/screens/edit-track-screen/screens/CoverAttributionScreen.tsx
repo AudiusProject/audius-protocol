@@ -37,7 +37,12 @@ export const CoverAttributionScreen = () => {
             mb='s'
           >
             <Text variant='title'>{messages.cover}</Text>
-            <Switch value={isCover} onValueChange={setIsCover} />
+            <Switch
+              value={isCover}
+              onValueChange={(value) => {
+                setIsCover(value)
+              }}
+            />
           </Flex>
           <Text variant='body'>{messages.description}</Text>
         </Box>
