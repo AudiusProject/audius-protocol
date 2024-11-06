@@ -38,9 +38,12 @@ import {
   IconMessage
 } from '@audius/harmony-native'
 import { useAirplay } from 'app/components/audio/Airplay'
+import { useNavigation } from 'app/hooks/useNavigation'
 import { useToast } from 'app/hooks/useToast'
 import { makeStyles } from 'app/styles'
 import { useThemeColors } from 'app/utils/theme'
+
+import { useCommentDrawer } from '../comments/CommentDrawerContext'
 
 import { FavoriteButton } from './FavoriteButton'
 import { RepostButton } from './RepostButton'
@@ -111,7 +114,9 @@ export const ActionsBar = ({ track }: ActionsBarProps) => {
   const { neutral, neutralLight6, primary } = useThemeColors()
   const dispatch = useDispatch()
   const isReachable = useSelector(getIsReachable)
+  const navigation = useNavigation()
 
+  const { open } = useCommentDrawer()
   const isOwner = track?.owner_id === accountUser?.user_id
   const isUnlisted = track?.is_unlisted
   const { onOpen: openPremiumContentPurchaseModal } =
@@ -170,17 +175,11 @@ export const ActionsBar = ({ track }: ActionsBarProps) => {
     }
   }, [dispatch, isOwner, toast, track])
 
-  const handleShare = useCallback(() => {
+  const handleComments = useCallback(() => {
     if (track) {
-      dispatch(
-        requestOpenShareModal({
-          type: 'track',
-          trackId: track.track_id,
-          source: ShareSource.NOW_PLAYING
-        })
-      )
+      open({ entityId: track.track_id, navigation })
     }
-  }, [dispatch, track])
+  }, [navigation, open, track])
 
   const playbackPositionInfo = useSelector((state) =>
     getTrackPosition(state, {
@@ -304,7 +303,7 @@ export const ActionsBar = ({ track }: ActionsBarProps) => {
     return (
       <IconButton
         icon={IconMessage}
-        onPress={handleShare}
+        onPress={handleComments}
         size='l'
         aria-label={messages.shareLabel}
         style={styles.button}

@@ -1,4 +1,3 @@
-import type { Track } from '@audius/common/models'
 import {
   mobileOverflowMenuUISelectors,
   OverflowAction,
