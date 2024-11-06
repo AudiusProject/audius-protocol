@@ -121,7 +121,7 @@ def test_get_health(web3_mock, redis_mock, db_mock, mock_requests):
     assert health_results["db"]["number"] == 1
     assert health_results["db"]["blockhash"] == "0x01"
     assert health_results["block_difference"] == 1
-    assert health_results["solana_indexers"]["plays"]["tx_info"]["slot_diff"] == 3
+    assert health_results["plays"]["tx_info"]["slot_diff"] == 3
 
     assert "maximum_healthy_block_difference" in health_results
     assert "version" in health_results
@@ -595,7 +595,7 @@ def test_get_elasticsearch_health(
         assert hrs["db"]["number"] == 1
         assert hrs["db"]["blockhash"] == "0x01"
         assert hrs["block_difference"] == 1
-        assert hrs["solana_indexers"]["plays"]["tx_info"]["slot_diff"] == 3
+        assert hrs["plays"]["tx_info"]["slot_diff"] == 3
         assert "maximum_healthy_block_difference" in hrs
         assert "version" in hrs
         assert "service" in hrs
