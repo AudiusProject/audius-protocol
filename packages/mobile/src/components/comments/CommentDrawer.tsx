@@ -10,7 +10,7 @@ import {
 } from '@audius/common/context'
 import type { ID, UserMetadata } from '@audius/common/models'
 import { Status } from '@audius/common/models'
-import type { LineupBaseActions } from '@audius/common/store'
+import type { LineupBaseActions, playerActions } from '@audius/common/store'
 import { accountSelectors } from '@audius/common/store'
 import type {
   BottomSheetFlatListMethods,
@@ -204,7 +204,7 @@ export type CommentDrawerData = {
   autoFocusInput?: boolean
   uid?: string
   /** Object containing lineup actions such as play, togglePlay, setPage */
-  actions?: LineupBaseActions
+  actions?: LineupBaseActions | typeof playerActions
 }
 
 type CommentDrawerProps = {

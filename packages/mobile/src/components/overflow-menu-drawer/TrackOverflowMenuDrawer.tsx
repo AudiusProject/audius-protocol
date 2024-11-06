@@ -28,7 +28,8 @@ import {
   usePublishConfirmationModal,
   trackPageActions,
   artistPickModalActions,
-  playerActions
+  playerActions,
+  playerSelectors
 } from '@audius/common/store'
 import type { CommonState, OverflowActionCallbacks } from '@audius/common/store'
 import { useDispatch, useSelector } from 'react-redux'
@@ -41,6 +42,7 @@ import { setVisibility } from 'app/store/drawers/slice'
 
 import { useCommentDrawer } from '../comments/CommentDrawerContext'
 
+const { makeGetCurrent } = playerSelectors
 const { getUserId } = accountSelectors
 const { requestOpen: requestOpenShareModal } = shareModalUIActions
 const { getMobileOverflowModal } = mobileOverflowMenuUISelectors
@@ -74,6 +76,7 @@ const TrackOverflowMenuDrawer = ({ render }: Props) => {
   const id = modalId as ID
   const { onOpen: openPremiumContentPurchaseModal } =
     usePremiumContentPurchaseModal()
+  const currentQueueItem = useSelector(makeGetCurrent())
 
   const { open } = useCommentDrawer()
 
@@ -120,9 +123,14 @@ const TrackOverflowMenuDrawer = ({ render }: Props) => {
 
   const handleOpenCommentsDrawer = useCallback(() => {
     if (track?.track_id) {
-      open({ entityId: track.track_id, navigation })
+      open({
+        entityId: track.track_id,
+        navigation,
+        actions: playerActions,
+        uid: currentQueueItem.uid as string
+      })
     }
-  }, [navigation, open, track?.track_id])
+  }, [currentQueueItem.uid, navigation, open, track.track_id])
 
   if (!track || !user) {
     return null
