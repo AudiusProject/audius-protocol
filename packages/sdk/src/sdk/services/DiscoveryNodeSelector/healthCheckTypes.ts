@@ -74,6 +74,27 @@ export type HealthCheckResponseData = DeepPartial<{
   received_bytes_per_sec: number
   redis_total_memory: number
   service: string
+  plays: {
+    is_unhealthy: boolean
+    oldest_unarchived_play_created_at: string
+    time_diff_general: number
+    tx_info: {
+      slot_diff: number
+      time_diff: number
+      tx_info: {
+        chain_tx: {
+          signature: string
+          slot: number
+          timestamp: number
+        }
+        db_tx: {
+          signature: string
+          slot: number
+          timestamp: number
+        }
+      }
+    }
+  }
   solana_indexers: {
     aggregate_tips: {
       is_healthy: boolean
@@ -86,27 +107,6 @@ export type HealthCheckResponseData = DeepPartial<{
       last_completed_at: number
       last_tx: string
       since_last_completed_at: number
-    }
-    plays: {
-      is_unhealthy: boolean
-      oldest_unarchived_play_created_at: string
-      time_diff_general: number
-      tx_info: {
-        slot_diff: number
-        time_diff: number
-        tx_info: {
-          chain_tx: {
-            signature: string
-            slot: number
-            timestamp: number
-          }
-          db_tx: {
-            signature: string
-            slot: number
-            timestamp: number
-          }
-        }
-      }
     }
     reward_manager: {
       is_healthy: boolean

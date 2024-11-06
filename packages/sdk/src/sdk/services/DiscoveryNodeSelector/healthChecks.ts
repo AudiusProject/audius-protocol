@@ -66,9 +66,9 @@ const isSolanaIndexerHealthy = ({
   data.solana_indexers?.reward_manager?.is_healthy &&
   data.solana_indexers?.spl_token?.is_healthy &&
   data.solana_indexers?.user_bank?.is_healthy &&
-  (!data.solana_indexers?.plays?.tx_info?.slot_diff ||
+  (!data?.plays?.tx_info?.slot_diff ||
     maxSlotDiffPlays === null ||
-    data.solana_indexers?.plays?.tx_info?.slot_diff <= maxSlotDiffPlays)
+    data?.plays?.tx_info?.slot_diff <= maxSlotDiffPlays)
 
 const isApiSolanaIndexerHealthy = ({
   data,
