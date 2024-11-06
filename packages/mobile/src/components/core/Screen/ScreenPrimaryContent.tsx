@@ -1,5 +1,6 @@
 import { useEffect, type ReactNode } from 'react'
 
+import { Platform } from 'react-native'
 import Animated, { FadeIn } from 'react-native-reanimated'
 
 import { useScreenContext } from './ScreenContextProvider'
@@ -26,7 +27,9 @@ export const ScreenPrimaryContent = (props: ScreenPrimaryContentProps) => {
   }, [isScreenReady, setIsPrimaryContentReady])
 
   return isScreenReady ? (
-    <Animated.View entering={FadeIn}>{children}</Animated.View>
+    <Animated.View entering={Platform.OS === 'ios' ? FadeIn : undefined}>
+      {children}
+    </Animated.View>
   ) : (
     <>{skeleton ?? null}</>
   )
