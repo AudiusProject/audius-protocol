@@ -1,6 +1,5 @@
 import { Kind, type Track } from '@audius/common/models'
 import { FeatureFlags, QueryParams } from '@audius/common/services'
-import { getPlaybackRetryCount } from '@audius/common/src/store/player/selectors'
 import {
   accountSelectors,
   cacheTracksSelectors,
@@ -59,8 +58,14 @@ const {
   error: errorAction
 } = playerActions
 
-const { getTrackId, getUid, getCounter, getPlaying, getPlaybackRate } =
-  playerSelectors
+const {
+  getTrackId,
+  getUid,
+  getCounter,
+  getPlaying,
+  getPlaybackRate,
+  getPlaybackRetryCount
+} = playerSelectors
 const { getPlayerBehavior } = queueSelectors
 
 const { recordListen } = tracksSocialActions
