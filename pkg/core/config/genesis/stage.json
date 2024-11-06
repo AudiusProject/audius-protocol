@@ -8,8 +8,9 @@
       "max_gas": "10000000"
     },
     "evidence": {
-      "max_age_num_blocks": "0",
-      "max_age_duration": "0"
+      "max_age_num_blocks": "100000",
+      "max_age_duration": "172800000000000",
+      "max_bytes": "1572864"
     },
     "validator": {
       "pub_key_types": [
