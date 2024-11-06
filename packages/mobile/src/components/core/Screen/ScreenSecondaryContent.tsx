@@ -21,6 +21,8 @@ export const ScreenSecondaryContent = (props: ScreenSecondaryContentProps) => {
   const { children, skeleton } = props
   const { isPrimaryContentReady } = useScreenContext()
 
+  // Note: not animating on Android because shadows are rendered natively behind the
+  // animated view and thus don't follow the animation.
   return isPrimaryContentReady ? (
     <Animated.View
       entering={Platform.OS === 'ios' ? FadeIn : undefined}
