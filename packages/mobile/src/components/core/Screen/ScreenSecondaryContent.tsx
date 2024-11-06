@@ -1,5 +1,7 @@
 import type { ReactNode } from 'react'
 
+import Animated, { FadeIn } from 'react-native-reanimated'
+
 import { useScreenContext } from './ScreenContextProvider'
 
 type ScreenSecondaryContentProps = {
@@ -18,5 +20,11 @@ export const ScreenSecondaryContent = (props: ScreenSecondaryContentProps) => {
   const { children, skeleton } = props
   const { isPrimaryContentReady } = useScreenContext()
 
-  return <>{isPrimaryContentReady ? children : skeleton ?? null}</>
+  return isPrimaryContentReady ? (
+    <Animated.View entering={FadeIn} style={{ flex: 1 }}>
+      {children}
+    </Animated.View>
+  ) : (
+    <>{skeleton ?? null}</>
+  )
 }
