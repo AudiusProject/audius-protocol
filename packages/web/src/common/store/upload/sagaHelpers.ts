@@ -10,7 +10,7 @@ import {
 import { FeatureFlags } from '@audius/common/services'
 import {
   accountSelectors,
-  getUSDCUserBank,
+  getOrCreateUSDCUserBank,
   getContext,
   TrackForUpload
 } from '@audius/common/store'
@@ -101,7 +101,7 @@ export function* recordGatedTracks(tracks: (TrackForUpload | TrackMetadata)[]) {
 export function* getUSDCMetadata(stream_conditions: USDCPurchaseConditions) {
   const ownerAccount = yield* select(getAccountUser)
   const wallet = ownerAccount?.erc_wallet ?? ownerAccount?.wallet
-  const ownerUserbank = yield* call(getUSDCUserBank, wallet)
+  const ownerUserbank = yield* call(getOrCreateUSDCUserBank, wallet)
   const priceCents = stream_conditions.usdc_purchase.price
   const priceWei = new BN(priceCents).mul(BN_USDC_CENT_WEI).toNumber()
   const conditionsWithMetadata: USDCPurchaseConditions = {

@@ -50,7 +50,7 @@ import { Dispatch } from 'redux'
 import { make, TrackEvent } from 'common/store/analytics/actions'
 import {
   openSignOn,
-  showRequiresAccountModal
+  showRequiresAccountToast
 } from 'common/store/pages/signon/actions'
 import { ProfileMode } from 'components/stat-banner/StatBanner'
 import { StatProps } from 'components/stats/Stats'
@@ -1231,7 +1231,7 @@ function mapDispatchToProps(dispatch: Dispatch, props: RouteComponentProps) {
     },
     redirectUnauthenticatedAction: () => {
       dispatch(openSignOn())
-      dispatch(showRequiresAccountModal())
+      dispatch(showRequiresAccountToast())
     },
     onShowInboxUnavailableModal: (userId: ID) => {
       dispatch(inboxUnavailableModalActions.open({ userId }))

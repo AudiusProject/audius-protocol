@@ -12,8 +12,6 @@ export const DELETE_TRACK_FAILED = 'CACHE/TRACKS/DELETE_TRACK_FAILED'
 export const SET_PERMALINK = 'CACHE/TRACKS/SET_PERMALINK'
 
 export const FETCH_COVER_ART = 'CACHE/TRACKS/FETCH_COVER_ART'
-export const FETCH_STREAM_URLS = 'CACHE/TRACKS/FETCH_STREAM_URLS'
-export const SET_STREAM_URLS = 'CACHE/TRACKS/SET_STREAM_URLS'
 export const INCREMENT_TRACK_COMMENT_COUNT =
   'CACHE/TRACKS/INCREMENT_TRACK_COMMENT_COUNT'
 export const SET_TRACK_COMMENT_COUNT = 'CACHE/TRACKS/SET_TRACK_COMMENT_COUNT'
@@ -50,16 +48,6 @@ export function setPermalink(permalink: string, trackId: ID) {
 
 export function fetchCoverArt(trackId: ID, size: WidthSizes | SquareSizes) {
   return { type: FETCH_COVER_ART, trackId, size }
-}
-
-export function fetchStreamUrls(trackIds: ID[]) {
-  return { type: FETCH_STREAM_URLS, trackIds }
-}
-
-export function setStreamUrls(streamUrls: {
-  [trackId: ID]: string | undefined // The value should only be undefined if the stream URL had an error
-}) {
-  return { type: SET_STREAM_URLS, streamUrls }
 }
 
 export const incrementTrackCommentCount = (

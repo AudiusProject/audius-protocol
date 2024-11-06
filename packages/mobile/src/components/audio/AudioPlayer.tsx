@@ -21,8 +21,7 @@ import {
   playbackPositionSelectors,
   gatedContentSelectors,
   calculatePlayerBehavior,
-  PlayerBehavior,
-  cacheTracksActions
+  PlayerBehavior
 } from '@audius/common/store'
 import type { Queueable, CommonState } from '@audius/common/store'
 import {
@@ -34,6 +33,7 @@ import {
   getTrackPreviewDuration
 } from '@audius/common/utils'
 import type { Nullable } from '@audius/common/utils'
+import { getMirrorStreamUrl } from '@audius/web/src/common/store/player/sagas'
 import { isEqual } from 'lodash'
 import TrackPlayer, {
   AppKilledPlaybackBehavior,
@@ -73,8 +73,7 @@ import { useSavePodcastProgress } from './useSavePodcastProgress'
 
 const { getUserId } = accountSelectors
 const { getUsers } = cacheUsersSelectors
-const { getTracks, getTrackStreamUrls } = cacheTracksSelectors
-const { setStreamUrls } = cacheTracksActions
+const { getTracks } = cacheTracksSelectors
 const {
   getPlaying,
   getSeek,
@@ -171,9 +170,6 @@ export const AudioPlayer = () => {
     FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED,
     FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED_FALLBACK
   )
-  const { isEnabled: isStreamPrefetchEnabled } = useFeatureFlag(
-    FeatureFlags.PREFETCH_STREAM_URLS
-  )
   const track = useSelector(getCurrentTrack)
   const playing = useSelector(getPlaying)
   const seek = useSelector(getSeek)
@@ -189,6 +185,7 @@ export const AudioPlayer = () => {
   const trackPositions = useSelector((state: CommonState) =>
     getUserTrackPositions(state, { userId: currentUserId })
   )
+  const [retries, setRetries] = useState(0)
 
   const isReachable = useSelector(getIsReachable)
   const isNotReachable = isReachable === false
@@ -266,10 +263,6 @@ export const AudioPlayer = () => {
     [dispatch]
   )
 
-  const trackStreamUrls = useSelector(getTrackStreamUrls)
-  const isUsingPrefetchUrl =
-    trackStreamUrls[track?.track_id ?? -1] !== undefined &&
-    isStreamPrefetchEnabled
   const reset = useCallback(
     () => dispatch(playerActions.reset({ shouldAutoplay: false })),
     [dispatch]
@@ -324,13 +317,11 @@ export const AudioPlayer = () => {
   ])
 
   const makeTrackData = useCallback(
-    async (
-      { track, playerBehavior }: QueueableTrack,
-      noPrefetch?: boolean // option to opt out of prefetched stream urls (see error handling method)
-    ) => {
+    async ({ track, playerBehavior }: QueueableTrack, retries?: number) => {
       if (!track) {
         return unlistedTrackFallbackTrackData
       }
+      setRetries(retries ?? 0)
 
       const trackOwner = queueTrackOwnersMap[track.owner_id]
       const trackId = track.track_id
@@ -342,17 +333,16 @@ export const AudioPlayer = () => {
       // Get Track url
       let url: string
 
-      // If we pre-fetched a stream url, prefer to use that
-      const prefetchedStreamUrl = trackStreamUrls[trackId]
+      const contentNodeStreamUrl = getMirrorStreamUrl(
+        track,
+        shouldPreview,
+        retries ?? 0
+      )
       if (offlineTrackAvailable && isCollectionMarkedForDownload) {
         const audioFilePath = getLocalAudioPath(trackId)
         url = `file://${audioFilePath}`
-      } else if (
-        prefetchedStreamUrl &&
-        isStreamPrefetchEnabled &&
-        !noPrefetch
-      ) {
-        url = prefetchedStreamUrl
+      } else if (contentNodeStreamUrl) {
+        url = contentNodeStreamUrl
       } else {
         let queryParams = trackQueryParams.current[trackId]
 
@@ -408,12 +398,11 @@ export const AudioPlayer = () => {
       currentUserId,
       isCollectionMarkedForDownload,
       isNotReachable,
-      isStreamPrefetchEnabled,
       nftAccessSignatureMap,
       offlineAvailabilityByTrackId,
       queueTrackOwnersMap,
       storageNodeSelector,
-      trackStreamUrls
+      setRetries
     ]
   )
 
@@ -441,20 +430,14 @@ export const AudioPlayer = () => {
 
     if (event.type === Event.PlaybackError) {
       console.error(`TrackPlayer Playback Error:`, event)
-      // Special recoverable case where the player was using a prefetched url but it failed
-      if (isUsingPrefetchUrl && track) {
-        // Unset the broken stream url, we don't want to accidentally use it again
-        dispatch(setStreamUrls({ [track.track_id]: undefined }))
-        // Get an updated track without a prefetched url
-        const updatedTrack = await makeTrackData(
-          {
-            track,
-            playerBehavior
-          },
-          true
-        )
-        TrackPlayer.load(updatedTrack)
-      }
+      const updatedTrack = await makeTrackData(
+        {
+          track,
+          playerBehavior
+        },
+        retries + 1
+      )
+      TrackPlayer.load(updatedTrack)
     }
 
     if (event.type === Event.RemotePlay || event.type === Event.RemotePause) {

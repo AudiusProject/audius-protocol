@@ -59,6 +59,10 @@ const tabBar = (props: MaterialTopTabBarProps) => <TopTabBar {...props} />
 
 type CollapsibleTabNavigatorProps = {
   /**
+   * Function that renders the collapsible header
+   */
+  renderHeader: () => ReactNode
+  /**
    * Animated value to capture scrolling. If unset, an
    * animated value is created.
    */
@@ -71,6 +75,7 @@ type CollapsibleTabNavigatorProps = {
 }
 
 export const CollapsibleTabNavigator = ({
+  renderHeader,
   animatedValue,
   initialScreenName,
   children,
@@ -78,8 +83,8 @@ export const CollapsibleTabNavigator = ({
   headerHeight
 }: CollapsibleTabNavigatorProps) => {
   const collapsibleOptions = useMemo(
-    () => ({ disableSnap: true, animatedValue, headerHeight }),
-    [animatedValue, headerHeight]
+    () => ({ renderHeader, disableSnap: true, animatedValue, headerHeight }),
+    [animatedValue, headerHeight, renderHeader]
   )
 
   return (

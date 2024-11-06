@@ -213,6 +213,7 @@ models/TrendingTimesIds.ts
 models/TrendingUndergroundNotification.ts
 models/TrendingUndergroundNotificationAction.ts
 models/TrendingUndergroundNotificationActionData.ts
+models/UrlWithMirrors.ts
 models/UsdcGate.ts
 models/UsdcPurchaseBuyerNotification.ts
 models/UsdcPurchaseBuyerNotificationAction.ts

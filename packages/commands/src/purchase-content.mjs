@@ -17,7 +17,7 @@ program
   )
   .action(async (id, price, { from, extraAmount }) => {
     const audiusLibs = await initializeAudiusLibs(from)
-    const userIdNumber = audiusLibs.userStateManager.getCurrentUserId()
+    const userIdNumber = audiusLibs.getCurrentUser().userId
     const userId = Utils.encodeHashId(userIdNumber)
     const trackId = Utils.encodeHashId(id)
 

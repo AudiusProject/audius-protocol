@@ -203,6 +203,7 @@ export * from './TrendingTimesIds';
 export * from './TrendingUndergroundNotification';
 export * from './TrendingUndergroundNotificationAction';
 export * from './TrendingUndergroundNotificationActionData';
+export * from './UrlWithMirrors';
 export * from './UsdcGate';
 export * from './UsdcPurchaseBuyerNotification';
 export * from './UsdcPurchaseBuyerNotificationAction';

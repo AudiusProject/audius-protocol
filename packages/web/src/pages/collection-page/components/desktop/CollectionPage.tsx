@@ -31,7 +31,7 @@ import { Divider } from 'components/divider'
 import Page from 'components/page/Page'
 import { SuggestedTracks } from 'components/suggested-tracks'
 import { TracksTable, TracksTableColumn } from 'components/tracks-table'
-import { useAuthenticatedCallback } from 'hooks/useAuthenticatedCallback'
+import { useRequiresAccountCallback } from 'hooks/useRequiresAccount'
 import { smartCollectionIcons } from 'pages/collection-page/smartCollectionIcons'
 import { computeCollectionMetadataProps } from 'pages/collection-page/store/utils'
 
@@ -228,7 +228,7 @@ const CollectionPage = ({
   // Note: This would normally belong in the CollectionPageProvider,
   // but it benefits us more to reuse existing hooks and that component cannot use hooks
   const { onOpen: openPremiumContentModal } = usePremiumContentPurchaseModal()
-  const openPurchaseModal = useAuthenticatedCallback(
+  const openPurchaseModal = useRequiresAccountCallback(
     ({ track_id }: Track) => {
       openPremiumContentModal(
         { contentId: track_id, contentType: PurchaseableContentType.TRACK },

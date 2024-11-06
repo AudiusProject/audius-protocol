@@ -182,7 +182,7 @@ from src.utils.redis_cache import cache
 from src.utils.redis_metrics import record_metrics
 from src.utils.structured_logger import StructuredLogger, log_duration
 
-from .access_helpers import check_authorized
+from .authorization_helpers import check_authorized
 
 logger = StructuredLogger(__name__)
 

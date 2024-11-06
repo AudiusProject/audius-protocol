@@ -38,7 +38,6 @@ from src.queries import (
 )
 from src.solana.solana_client_manager import SolanaClientManager
 from src.tasks import celery_app
-from src.tasks.index_reactions import INDEX_REACTIONS_LOCK
 from src.tasks.repair_audio_analyses import REPAIR_AUDIO_ANALYSES_LOCK
 from src.tasks.update_delist_statuses import UPDATE_DELIST_STATUSES_LOCK
 from src.utils import helpers, web3_provider
@@ -325,7 +324,6 @@ def configure_celery(celery, test_config=None):
             "src.tasks.prune_plays",
             "src.tasks.index_spl_token",
             "src.tasks.index_aggregate_tips",
-            "src.tasks.index_reactions",
             "src.tasks.update_delist_statuses",
             "src.tasks.repair_audio_analyses",
             "src.tasks.cache_current_nodes",
@@ -412,10 +410,6 @@ def configure_celery(celery, test_config=None):
                 "task": "index_aggregate_tips",
                 "schedule": timedelta(seconds=5),
             },
-            "index_reactions": {
-                "task": "index_reactions",
-                "schedule": timedelta(seconds=5),
-            },
             "index_profile_challenge_backfill": {
                 "task": "index_profile_challenge_backfill",
                 "schedule": timedelta(minutes=1),
@@ -497,7 +491,6 @@ def configure_celery(celery, test_config=None):
     redis_inst.delete("spl_token_lock")
     redis_inst.delete("profile_challenge_backfill_lock")
     redis_inst.delete("index_trending_lock")
-    redis_inst.delete(INDEX_REACTIONS_LOCK)
     redis_inst.delete(UPDATE_DELIST_STATUSES_LOCK)
     redis_inst.delete(REPAIR_AUDIO_ANALYSES_LOCK)
     redis_inst.delete("update_aggregates_lock")

@@ -11,7 +11,7 @@ export function* ensureLoggedIn(source?: CreateAccountOpen['source']) {
   const userId = yield* select(getUserId)
   if (!userId) {
     yield* put(signOnActions.openSignOn(false))
-    yield* put(signOnActions.showRequiresAccountModal())
+    yield* put(signOnActions.showRequiresAccountToast())
     yield* put(make(Name.CREATE_ACCOUNT_OPEN, { source }))
     yield* cancel()
     return userId as number

@@ -48,7 +48,11 @@ import {
   recoveryStatusChanged
 } from './slice'
 import { BuyUSDCError, BuyUSDCErrorCode } from './types'
-import { getBuyUSDCRemoteConfig, getUSDCUserBank } from './utils'
+import {
+  getBuyUSDCRemoteConfig,
+  getOrCreateUSDCUserBank,
+  pollForTokenAccountInfo
+} from './utils'
 
 type PurchaseStepParams = {
   desiredAmount: number
@@ -236,7 +240,7 @@ function* doBuyUSDC({
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
   const config = yield* call(getBuyUSDCRemoteConfig)
 
-  const userBank = yield* getUSDCUserBank()
+  const userBank = yield* getOrCreateUSDCUserBank()
   const rootAccount = yield* call(getRootSolanaAccount, audiusBackendInstance)
 
   try {
@@ -434,15 +438,11 @@ function* recoverPurchaseIfNecessary() {
       return
     }
 
-    const userBank = yield* getUSDCUserBank()
-    const userBankAccountInfo = yield* call(
-      getTokenAccountInfo,
-      audiusBackendInstance,
-      {
-        tokenAccount: userBank,
-        mint: 'usdc'
-      }
-    )
+    const userBank = yield* getOrCreateUSDCUserBank()
+    const userBankAccountInfo = yield* call(pollForTokenAccountInfo, {
+      tokenAccount: userBank,
+      mint: 'usdc'
+    })
 
     const userBankInitialBalance = userBankAccountInfo?.amount ?? BigInt(0)
 

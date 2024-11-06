@@ -3,7 +3,6 @@ from datetime import date, datetime, timedelta
 from typing import Dict, List, Tuple, TypedDict
 
 from flask import Blueprint, request
-from redis import Redis
 from sqlalchemy import desc
 from sqlalchemy.orm.session import Session
 
@@ -11,30 +10,18 @@ from src import api_helpers
 from src.models.indexing.block import Block
 from src.models.notifications.milestone import Milestone, MilestoneName
 from src.models.playlists.playlist import Playlist
-from src.models.rewards.challenge_disbursement import ChallengeDisbursement
 from src.models.social.follow import Follow
-from src.models.social.reaction import Reaction
 from src.models.social.repost import Repost, RepostType
 from src.models.social.save import Save, SaveType
 from src.models.tracks.remix import Remix
 from src.models.tracks.track import Track
 from src.models.users.aggregate_user import AggregateUser
-from src.models.users.supporter_rank_up import SupporterRankUp
-from src.models.users.user import User
 from src.models.users.user_balance_change import UserBalanceChange
-from src.models.users.user_tip import UserTip
 from src.queries import response_name_constants as const
 from src.queries.get_prev_track_entries import get_prev_track_entries
 from src.utils import helpers, web3_provider
 from src.utils.config import shared_config
 from src.utils.db_session import get_db_read_replica
-from src.utils.redis_connection import get_redis
-from src.utils.redis_constants import (
-    latest_sol_aggregate_tips_slot_key,
-    latest_sol_plays_slot_key,
-    latest_sol_rewards_manager_slot_key,
-)
-from src.utils.spl_audio import to_wei_string
 from src.utils.structured_logger import StructuredLogger, log_duration
 
 logger = StructuredLogger(__name__)
@@ -1003,52 +990,12 @@ def notifications():
     )
 
 
-def get_max_slot(redis: Redis):
-    listen_milestone_slot = redis.get(latest_sol_plays_slot_key)
-    if listen_milestone_slot:
-        listen_milestone_slot = int(listen_milestone_slot)
-
-    rewards_manager_slot = redis.get(latest_sol_rewards_manager_slot_key)
-    if rewards_manager_slot:
-        rewards_manager_slot = int(rewards_manager_slot)
-
-    supporter_rank_up_slot = redis.get(latest_sol_aggregate_tips_slot_key)
-    if supporter_rank_up_slot:
-        supporter_rank_up_slot = int(supporter_rank_up_slot)
-
-    all_slots = list(
-        filter(
-            lambda x: x is not None,
-            [listen_milestone_slot, rewards_manager_slot, supporter_rank_up_slot],
-        )
-    )
-
-    if len(all_slots) == 0:
-        return 0
-    return min(all_slots)
-
-
 @bp.route("/solana_notifications", methods=("GET",))
 def solana_notifications():
     """
-    Fetches the notifications events that occurred between the given slot numbers
-
-    URL Params:
-        min_slot_number: (int) The start slot number for querying for notifications
-        max_slot_number?: (int) The end slot number for querying for notifications
-
-    Response - Json object w/ the following fields
-        notifications: Array of notifications of shape:
-            type: 'ChallengeReward' | 'MilestoneListen' | 'SupporterRankUp' | 'Reaction'
-            slot: (int) slot number of notification
-            initiator: (int) the user id that caused this notification
-            metadata?: (any) additional information about the notification
-                challenge_id?: (int) completed challenge id for challenge reward notifications
-
-        info: Dictionary of metadata w/ min_slot_number & max_slot_number fields
+    deprecated: Notifications now use triggers and the notifications plugin. Identity used to call this but its notifications path isn't used anymore.
     """
-    db = get_db_read_replica()
-    redis = get_redis()
+
     min_slot_number = request.args.get("min_slot_number", type=int)
     max_slot_number = request.args.get("max_slot_number", type=int)
 
@@ -1059,176 +1006,14 @@ def solana_notifications():
     if not max_slot_number or (max_slot_number - min_slot_number) > max_slot_diff:
         max_slot_number = min_slot_number + max_slot_diff
 
-    max_valid_slot = get_max_slot(redis)
-    max_slot_number = min(max_slot_number, max_valid_slot)
-
-    notifications_unsorted = []
     notification_metadata = {
         "min_slot_number": min_slot_number,
         "max_slot_number": max_slot_number,
     }
 
-    with db.scoped_session() as session:
-        #
-        # Query relevant challenge disbursement information for challenge reward notifications
-        #
-        challenge_disbursement_results = (
-            session.query(ChallengeDisbursement)
-            .filter(
-                ChallengeDisbursement.slot > min_slot_number,
-                ChallengeDisbursement.slot <= max_slot_number,
-            )
-            .all()
-        )
-
-        challenge_reward_notifications = []
-        for result in challenge_disbursement_results:
-            challenge_reward_notifications.append(
-                {
-                    const.solana_notification_type: const.solana_notification_type_challenge_reward,
-                    const.solana_notification_slot: result.slot,
-                    const.solana_notification_initiator: result.user_id,
-                    const.solana_notification_metadata: {
-                        const.solana_notification_challenge_id: result.challenge_id,
-                    },
-                }
-            )
-
-        track_listen_milestone: List[Tuple(Milestone, int)] = (
-            session.query(Milestone, Track.owner_id)
-            .filter(
-                Milestone.name == MilestoneName.LISTEN_COUNT,
-                Milestone.slot > min_slot_number,
-                Milestone.slot <= max_slot_number,
-            )
-            .join(Track, Track.track_id == Milestone.id and Track.is_current == True)
-            .all()
-        )
-
-        track_listen_milestones = []
-        for result in track_listen_milestone:
-            track_milestone, track_owner_id = result
-            track_listen_milestones.append(
-                {
-                    const.solana_notification_type: const.solana_notification_type_listen_milestone,
-                    const.solana_notification_slot: track_milestone.slot,
-                    const.solana_notification_initiator: track_owner_id,  # owner_id
-                    const.solana_notification_metadata: {
-                        const.solana_notification_threshold: track_milestone.threshold,
-                        const.notification_entity_id: track_milestone.id,  # track_id
-                        const.notification_entity_type: "track",
-                    },
-                }
-            )
-
-        supporter_rank_ups_result = (
-            session.query(SupporterRankUp)
-            .filter(
-                SupporterRankUp.slot > min_slot_number,
-                SupporterRankUp.slot <= max_slot_number,
-            )
-            .all()
-        )
-        supporter_rank_ups = []
-        for supporter_rank_up in supporter_rank_ups_result:
-            supporter_rank_ups.append(
-                {
-                    const.solana_notification_type: const.solana_notification_type_supporter_rank_up,
-                    const.solana_notification_slot: supporter_rank_up.slot,
-                    const.solana_notification_initiator: supporter_rank_up.receiver_user_id,
-                    const.solana_notification_metadata: {
-                        const.notification_entity_id: supporter_rank_up.sender_user_id,
-                        const.notification_entity_type: "user",
-                        const.solana_notification_tip_rank: supporter_rank_up.rank,
-                    },
-                }
-            )
-
-        user_tips_result: List[UserTip] = (
-            session.query(UserTip)
-            .filter(
-                UserTip.slot > min_slot_number,
-                UserTip.slot <= max_slot_number,
-            )
-            .all()
-        )
-        tips = []
-        for user_tip in user_tips_result:
-            tips.append(
-                {
-                    const.solana_notification_type: const.solana_notification_type_tip,
-                    const.solana_notification_slot: user_tip.slot,
-                    const.solana_notification_initiator: user_tip.receiver_user_id,
-                    const.solana_notification_metadata: {
-                        const.notification_entity_id: user_tip.sender_user_id,
-                        const.notification_entity_type: "user",
-                        const.solana_notification_tip_amount: to_wei_string(
-                            user_tip.amount
-                        ),
-                        const.solana_notification_tip_signature: user_tip.signature,
-                    },
-                }
-            )
-
-        reaction_results: List[Tuple[Reaction, int]] = (
-            session.query(Reaction, User.user_id)
-            .join(User, User.wallet == Reaction.sender_wallet)
-            .filter(
-                Reaction.slot > min_slot_number,
-                Reaction.slot <= max_slot_number,
-                User.is_current == True,
-            )
-            .all()
-        )
-
-        # Get tips associated with a given reaction
-        tip_signatures = [
-            e.reacted_to for (e, _) in reaction_results if e.reaction_type == "tip"
-        ]
-        reaction_tips: List[UserTip] = (
-            session.query(UserTip).filter(UserTip.signature.in_(tip_signatures))
-        ).all()
-        tips_map = {e.signature: e for e in reaction_tips}
-
-        reactions = []
-        for reaction, user_id in reaction_results:
-            tip = tips_map[reaction.reacted_to]
-            if not tip:
-                continue
-            reactions.append(
-                {
-                    const.solana_notification_type: const.solana_notification_type_reaction,
-                    const.solana_notification_slot: reaction.slot,
-                    const.notification_initiator: user_id,
-                    const.solana_notification_metadata: {
-                        const.solana_notification_reaction_type: reaction.reaction_type,
-                        const.solana_notification_reaction_reaction_value: reaction.reaction_value,
-                        const.solana_notification_reaction_reacted_to_entity: {
-                            const.solana_notification_tip_signature: tip.signature,
-                            const.solana_notification_tip_amount: to_wei_string(
-                                tip.amount
-                            ),
-                            const.solana_notification_tip_sender_id: tip.sender_user_id,
-                        },
-                    },
-                }
-            )
-        notifications_unsorted.extend(challenge_reward_notifications)
-        notifications_unsorted.extend(track_listen_milestones)
-        notifications_unsorted.extend(supporter_rank_ups)
-        notifications_unsorted.extend(tips)
-        notifications_unsorted.extend(reactions)
-
-    # Final sort
-    sorted_notifications = sorted(
-        notifications_unsorted,
-        key=lambda i: i[const.solana_notification_slot],
-        reverse=False,
-    )
-
     return api_helpers.success_response(
         {
-            "notifications": sorted_notifications,
+            "notifications": [],
             "info": notification_metadata,
         }
     )
