@@ -5,7 +5,7 @@ import {
 } from '../api/generated/default'
 import { ServicesContainer } from '../types'
 
-const SIGNATURE_EXPIRY_MS = 60 * 1000
+const SIGNATURE_EXPIRY_MS = 86400 * 1000
 const MESSAGE_HEADER = 'Encoded-Data-Message'
 const SIGNATURE_HEADER = 'Encoded-Data-Signature'
 

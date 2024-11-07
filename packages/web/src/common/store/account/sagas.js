@@ -202,9 +202,14 @@ export function* fetchAccountAsync({ isSignUp = false }) {
     return
   }
 
-  const accountData = yield call(userApiFetchSaga.getUserAccount, {
-    wallet
-  })
+  let accountData
+  try {
+    accountData = yield call(userApiFetchSaga.getUserAccount, {
+      wallet
+    })
+  } catch (e) {
+    console.error('Failed to fetch account data')
+  }
 
   if (!accountData || !accountData.user) {
     yield put(

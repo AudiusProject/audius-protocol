@@ -15,7 +15,7 @@ import {
   getFeatureEnabled,
   remoteConfigInstance
 } from 'app/services/remote-config'
-import { audiusSdk } from 'app/services/sdk/audius-sdk'
+import { audiusSdk, initSdk } from 'app/services/sdk/audius-sdk'
 import { authService } from 'app/services/sdk/auth'
 import { trackDownload } from 'app/services/track-download'
 import { walletClient } from 'app/services/wallet-client'
@@ -64,6 +64,7 @@ export const storeContext: CommonStoreContext = {
   instagramRedirectUrl: env.INSTAGRAM_REDIRECT_URL,
   share: (url: string, message?: string) => share({ url, message }),
   audiusSdk,
+  initSdk,
   authService,
   imageUtils: {
     generatePlaylistArtwork

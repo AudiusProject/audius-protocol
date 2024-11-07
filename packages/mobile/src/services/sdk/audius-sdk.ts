@@ -5,7 +5,7 @@ import { Configuration, SolanaRelay, sdk } from '@audius/sdk'
 
 import { env } from 'app/env'
 
-import { auth } from './auth'
+import { authService } from './auth'
 import { discoveryNodeSelectorService } from './discoveryNodeSelector'
 
 let inProgress = false
@@ -13,7 +13,7 @@ const SDK_LOADED_EVENT_NAME = 'AUDIUS_SDK_LOADED'
 const sdkEventEmitter = new EventEmitter()
 let sdkInstance: AudiusSdk
 
-const initSdk = async () => {
+export const initSdk = async () => {
   inProgress = true
 
   // For now, the only solana relay we want to use is on DN 1, so hardcode
@@ -46,7 +46,7 @@ const initSdk = async () => {
     services: {
       discoveryNodeSelector,
       solanaRelay,
-      auth
+      auth: authService.sdkAuthAdapter
     }
   })
   sdkInstance = audiusSdk
