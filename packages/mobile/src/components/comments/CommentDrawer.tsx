@@ -1,7 +1,7 @@
 import type { RefObject } from 'react'
 import React, { useCallback, useRef, useState } from 'react'
 
-import type { SearchCategory } from '@audius/common/api'
+import { SearchCategory, useGetFollowers } from '@audius/common/api'
 import { useGetSearchResults } from '@audius/common/api'
 import type { ReplyingAndEditingState } from '@audius/common/context'
 import {
@@ -89,19 +89,19 @@ const CommentDrawerAutocompleteContent = ({
     offset: 0
   }
 
-  const { data, status } = useGetSearchResults(params, { debounce: 500 })
-
-  // No search state
-  if (query === '') {
-    return (
-      <Flex p='l'>
-        <Text>Search Users</Text>
-      </Flex>
-    )
-  }
+  const { data: searchData, status: searchStatus } = useGetSearchResults(
+    params,
+    { debounce: 500 }
+  )
+  const { data: followersData, status: followersStatus } = useGetFollowers({
+    userId: currentUserId,
+    limit: 6
+  })
+  const userList = query !== '' ? searchData?.users : followersData
+  const userListStatus = query !== '' ? searchStatus : followersStatus
 
   // Loading state
-  if (status === Status.LOADING || status === Status.IDLE) {
+  if (userListStatus === Status.LOADING || userListStatus === Status.IDLE) {
     return (
       <Flex p='l' alignItems='center'>
         <LoadingSpinner style={{ height: 24 }} />
@@ -110,7 +110,7 @@ const CommentDrawerAutocompleteContent = ({
   }
 
   // Empty state
-  if (!data || !data.users || !data.users.length) {
+  if (!userList || !userList.length) {
     return (
       <Flex p='l'>
         <Text>No User Results</Text>
@@ -120,7 +120,7 @@ const CommentDrawerAutocompleteContent = ({
 
   return (
     <BottomSheetFlatList
-      data={data.users}
+      data={userList}
       keyExtractor={({ user_id }) => user_id.toString()}
       ListHeaderComponent={<Box h='l' />}
       enableFooterMarginAdjustment
@@ -245,8 +245,10 @@ export const CommentDrawer = (props: CommentDrawerProps) => {
     },
     []
   )
+  console.log({ autoCompleteActive })
 
   const onAutoCompleteChange = useCallback((active: boolean, text: string) => {
+    console.log({ text, active })
     setAcText(text)
     setAutoCompleteActive(active)
   }, [])
