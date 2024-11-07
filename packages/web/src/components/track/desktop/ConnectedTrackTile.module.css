@@ -52,13 +52,6 @@
   color: var(--harmony-primary);
 }
 
-.socialInfo {
-  display: inline-flex;
-  flex: 1 1 100%;
-  min-width: 0;
-  justify-content: flex-start;
-}
-
 .iconKebabHorizontal path {
   fill: var(--harmony-n-400);
 }

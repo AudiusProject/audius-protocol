@@ -29,7 +29,6 @@ const useTrendingUndergroundLineup = (containerRef: HTMLElement) => {
     getLineupSelector: getLineup,
     variant: LineupVariant.MAIN,
     scrollParent: containerRef,
-    rankIconCount: 5,
     isTrending: true,
     isOrdered: true
   })

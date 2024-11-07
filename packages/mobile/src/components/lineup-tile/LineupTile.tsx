@@ -51,7 +51,6 @@ export const LineupTile = ({
   commentCount,
   renderImage,
   repostType,
-  showRankIcon,
   title,
   item,
   user,
@@ -135,7 +134,6 @@ export const LineupTile = ({
           repostCount={repost_count}
           saveCount={save_count}
           commentCount={commentCount}
-          showRankIcon={showRankIcon}
           hasStreamAccess={hasStreamAccess}
           streamConditions={streamConditions}
           isOwner={isOwner}

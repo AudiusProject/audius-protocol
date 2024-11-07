@@ -159,7 +159,6 @@ const LineupTileView = memo(function LineupTileView({
           {...item}
           index={index}
           isTrending={isTrending}
-          showRankIcon={index < rankIconCount}
           togglePlay={togglePlay}
           onPress={onPress}
           uid={item.uid}

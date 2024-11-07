@@ -70,20 +70,6 @@
   top: 10px;
 }
 
-.statItem {
-  transform: scale(1);
-  transition: transform 0.07s ease-in-out;
-}
-
-.statItem:active {
-  transform: scale(0.93);
-  color: var(--harmony-primary);
-}
-
-.statItem:active svg path {
-  fill: var(--harmony-primary);
-}
-
 .readonly .statItem:active {
   color: unset;
   transform: scale(1);
@@ -165,26 +151,6 @@
 
 .trackItemMore {
   color: var(--harmony-n-400);
-}
-
-.readonly .favoriteButtonWrapper:hover {
-  transform: scale3d(1, 1, 1);
-}
-
-.favoriteButton {
-  height: 14px;
-  width: 14px;
-  margin-left: 4px;
-}
-
-.readonly .repostButtonWrapper:hover {
-  transform: scale3d(1, 1, 1);
-}
-
-.repostButton {
-  height: 16px;
-  width: 16px;
-  margin-left: 4px;
 }
 
 .hide {

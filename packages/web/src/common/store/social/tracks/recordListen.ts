@@ -24,7 +24,7 @@ function* recordListen(action: { trackId: number }) {
   const track = yield* select(getTrack, { id: trackId })
   if (!userId || !track) return
 
-  if (userId === track.owner_id && (track.listenCount ?? 0) > 10) {
+  if (userId === track.owner_id && (track.play_count ?? 0) > 10) {
     return
   }
 

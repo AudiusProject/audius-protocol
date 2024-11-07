@@ -206,9 +206,6 @@ export interface LineupProviderProps {
   /** Whether we are in the feed lineup */
   showFeedTipTile?: boolean
 
-  /** How many icons to show for top ranked entries in the lineup. Defaults to 0, showing none */
-  rankIconCount?: number
-
   /** Function triggered on click of tile */
   onClickTile?: (trackId: ID) => void
 }
@@ -489,7 +486,6 @@ class LineupProvider extends PureComponent<CombinedProps, LineupProviderState> {
       numPlaylistSkeletonRows,
       isTrending = false,
       showFeedTipTile = false,
-      rankIconCount = 0,
       onClickTile
     } = this.props
     const isMobile = this.context.isMobile
@@ -541,7 +537,6 @@ class LineupProvider extends PureComponent<CombinedProps, LineupProviderState> {
             isLoading: !this.canLoad(index),
             hasLoaded: this.hasLoaded,
             isTrending,
-            showRankIcon: index < rankIconCount,
             showFeedTipTile,
             onClick: onClickTile,
             source: ModalSource.LineUpTrackTile
@@ -568,7 +563,6 @@ class LineupProvider extends PureComponent<CombinedProps, LineupProviderState> {
             hasLoaded: this.hasLoaded,
             numLoadingSkeletonRows: numPlaylistSkeletonRows,
             isTrending,
-            showRankIcon: index < rankIconCount,
             showFeedTipTile,
             source: ModalSource.LineUpCollectionTile
           }

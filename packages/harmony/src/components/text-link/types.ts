@@ -37,6 +37,11 @@ export type TextLinkProps = Omit<TextProps, 'variant' | 'onClick' | 'color'> &
     showUnderline?: boolean
 
     /**
+     * When true, hide the underline when the link is active.
+     */
+    noUnderlineOnHover?: boolean
+
+    /**
      * When `true`, render link in active style (e.g. hover color)
      */
     isActive?: boolean

@@ -115,7 +115,6 @@ const ConnectedPlaylistTile = ({
   clickOverflow,
   currentUserId,
   darkMode,
-  showRankIcon,
   isTrending,
   variant,
   containerClassName,
@@ -310,7 +309,7 @@ const ConnectedPlaylistTile = ({
       isPlaying={isActive && isPlaying}
       isLoading={isActive && isBuffering}
       activeTrackUid={playingUid || null}
-      goToRoute={goToRoute}
+      isOwner={isOwner}
       goToCollectionPage={goToCollectionPage}
       toggleSave={toggleSave}
       toggleRepost={toggleRepost}
@@ -318,11 +317,9 @@ const ConnectedPlaylistTile = ({
       onClickOverflow={onClickOverflow}
       makeGoToRepostsPage={makeGoToRepostsPage}
       makeGoToFavoritesPage={makeGoToFavoritesPage}
-      isOwner={isOwner}
       darkMode={darkMode}
       isMatrix={isMatrix()}
       isTrending={isTrending}
-      showRankIcon={showRankIcon}
       variant={variant}
       isUnlisted={collection.is_private}
       isStreamGated={collection.is_stream_gated}

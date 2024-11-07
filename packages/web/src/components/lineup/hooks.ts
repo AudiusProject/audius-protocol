@@ -25,7 +25,6 @@ type useLineupPropsProps = {
   variant?: LineupVariant
   numPlaylistSkeletonRows?: number
   scrollParent?: HTMLElement
-  rankIconCount?: number
   isTrending?: boolean
   isOrdered?: boolean
 }
@@ -41,7 +40,6 @@ export const useLineupProps = ({
   variant,
   numPlaylistSkeletonRows,
   scrollParent,
-  rankIconCount,
   isTrending,
   isOrdered
 }: useLineupPropsProps) => {
@@ -85,7 +83,6 @@ export const useLineupProps = ({
     numPlaylistSkeletonRows,
     scrollParent,
     isMobile,
-    rankIconCount,
     isTrending,
     ordered: isOrdered
   }

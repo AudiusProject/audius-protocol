@@ -231,7 +231,6 @@ export type TrackMetadata = {
   download_conditions: Nullable<AccessConditions>
   access: AccessPermissions
   field_visibility?: FieldVisibility
-  listenCount?: number
   permalink: string
   track_cid: Nullable<CID>
   orig_file_cid: Nullable<CID>

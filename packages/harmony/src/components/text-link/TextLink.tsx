@@ -20,6 +20,7 @@ export const TextLink = forwardRef((props: TextLinkProps, ref: Ref<'a'>) => {
     onClick,
     textVariant,
     showUnderline,
+    noUnderlineOnHover,
     applyHoverStylesToInnerSvg,
     disabled,
     ...other
@@ -46,14 +47,10 @@ export const TextLink = forwardRef((props: TextLinkProps, ref: Ref<'a'>) => {
   }
 
   const hoverStyles = {
-    textDecoration: 'underline',
+    textDecoration: noUnderlineOnHover ? 'none' : 'underline',
     color: variantHoverColors[variant],
     ...(applyHoverStylesToInnerSvg
-      ? {
-          path: {
-            fill: variantHoverColors[variant]
-          }
-        }
+      ? { path: { fill: variantHoverColors[variant] } }
       : {})
   }
 
@@ -70,6 +67,9 @@ export const TextLink = forwardRef((props: TextLinkProps, ref: Ref<'a'>) => {
         transition: `color ${motion.hover}`,
         cursor: 'pointer',
         pointerEvents: disabled ? 'none' : undefined,
+        ...(applyHoverStylesToInnerSvg && {
+          path: { transition: `fill ${motion.hover}` }
+        }),
         ':hover': hoverStyles,
         ...(isActive && { ...hoverStyles, textDecoration: 'none' }),
         ...(showUnderline && hoverStyles)
