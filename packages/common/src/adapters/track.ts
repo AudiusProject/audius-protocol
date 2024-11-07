@@ -49,7 +49,6 @@ export const userTrackMetadataFromSDK = (
       'id',
       'user_id',
       'followee_favorites',
-      'artwork',
       'favorite_count',
       'is_streamable'
     ]),
@@ -200,6 +199,7 @@ export const stemTrackMetadataFromSDK = (
       parent_track_id: parentId,
       category: input.category as StemCategory
     },
+    artwork: {},
     remix_of: null,
     duration: 0,
     updated_at: '',

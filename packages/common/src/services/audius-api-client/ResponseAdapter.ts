@@ -196,14 +196,12 @@ export const makeUserlessTrack = (
     id: undefined,
     user_id: undefined,
     followee_favorites: undefined,
-    artwork: undefined,
     favorite_count: undefined
   }
 
   delete marshalled.id
   delete marshalled.user_id
   delete marshalled.followee_favorites
-  delete marshalled.artwork
   delete marshalled.favorite_count
 
   return marshalled
@@ -276,7 +274,6 @@ export const makeTrack = (
     id: undefined,
     user_id: undefined,
     followee_favorites: undefined,
-    artwork: undefined,
     favorite_count: undefined,
     is_streamable: undefined
   }
@@ -284,7 +281,6 @@ export const makeTrack = (
   delete marshalled.id
   delete marshalled.user_id
   delete marshalled.followee_favorites
-  delete marshalled.artwork
   delete marshalled.favorite_count
   delete marshalled.is_streamable
   return marshalled
@@ -388,7 +384,6 @@ export const makePlaylist = (
     id: undefined,
     user_id: undefined,
     followee_favorites: undefined,
-    artwork: undefined,
     favorite_count: undefined,
     added_timestamps: undefined
   }
@@ -396,7 +391,6 @@ export const makePlaylist = (
   delete marshalled.id
   delete marshalled.user_id
   delete marshalled.followee_favorites
-  delete marshalled.artwork
   delete marshalled.favorite_count
   delete marshalled.added_timestamps
 
@@ -444,6 +438,7 @@ export const makeStemTrack = (stem: APIStem): StemTrackMetadata | undefined => {
       parent_track_id: parentId,
       category: stem.category
     },
+    artwork: {},
     remix_of: null,
     duration: 0,
     updated_at: '',

@@ -181,13 +181,22 @@ const TrackEditForm = (
   const [, , { setValue: setArtworkValue }] = useField(
     getTrackFieldName(0, 'artwork')
   )
+
+  const getArtworkUrl = (artwork: typeof updatedArtwork) => {
+    if (!artwork) return undefined
+    if ('url' in artwork) return artwork.url
+    // For the case where it's a record of sizes, we can return undefined
+    // or potentially return one of the size URLs if needed
+    return undefined
+  }
+
   useEffect(() => {
     setArtworkValue(updatedArtwork)
     // Url is the only thing that we care about changing inside artwork or else
     // we will listen to all changes from the user, rather than just a new image from
     // the backend.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [updatedArtwork?.url, setArtworkValue])
+  }, [getArtworkUrl(updatedArtwork), setArtworkValue])
 
   return (
     <Form id={formId}>

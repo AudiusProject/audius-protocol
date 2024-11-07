@@ -13,7 +13,7 @@ import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import Skeleton from 'components/skeleton/Skeleton'
 import { Tile } from 'components/tile'
 import { UserNameAndBadges } from 'components/user-name-and-badges/UserNameAndBadges'
-import { useTrackCoverArt2 } from 'hooks/useTrackCoverArt'
+import { useTrackCoverArt } from 'hooks/useTrackCoverArt'
 import { useSelector } from 'utils/reducer'
 
 import styles from './SuggestedTracks.module.css'
@@ -39,7 +39,10 @@ const SuggestedTrackRow = (props: SuggestedTrackProps) => {
   const { track, onAddTrack } = props
   const { track_id, title, owner_id } = track
   const user = useSelector((state) => getUser(state, { id: owner_id }))
-  const image = useTrackCoverArt2(track_id, SquareSizes.SIZE_150_BY_150)
+  const image = useTrackCoverArt({
+    trackId: track_id,
+    size: SquareSizes.SIZE_150_BY_150
+  })
 
   const handleAddTrack = useCallback(() => {
     onAddTrack(track_id)

@@ -9,7 +9,6 @@ import {
 import {
   Name,
   PlaybackSource,
-  SquareSizes,
   Kind,
   Status,
   ID,
@@ -17,7 +16,6 @@ import {
 } from '@audius/common/models'
 import {
   accountSelectors,
-  cacheTracksActions,
   QueueSource,
   ChatMessageTileProps
 } from '@audius/common/store'
@@ -28,7 +26,6 @@ import { make } from 'common/store/analytics/actions'
 import MobileTrackTile from 'components/track/mobile/ConnectedTrackTile'
 
 const { getUserId } = accountSelectors
-const { fetchCoverArt } = cacheTracksActions
 
 export const ChatMessageTrack = ({
   link,
@@ -53,12 +50,6 @@ export const ChatMessageTrack = ({
     !!track?.is_stream_gated && !!track?.preview_cid && !hasStreamAccess
 
   const trackId = track?.track_id
-
-  useEffect(() => {
-    if (trackId) {
-      dispatch(fetchCoverArt(trackId, SquareSizes.SIZE_150_BY_150))
-    }
-  }, [trackId, dispatch])
 
   const uid = useMemo(() => {
     return trackId ? makeUid(Kind.TRACKS, trackId) : null

@@ -62,7 +62,9 @@ const initialUploadState: ProgressState = {
 const getInitialProgress = (upload: TrackForUpload | StemUploadWithFile) => {
   const res = cloneDeep(initialUploadState)
   res.art.total =
-    'artwork' in upload.metadata ? upload.metadata.artwork?.file?.size ?? 0 : 0
+    upload.metadata.artwork && 'file' in upload.metadata.artwork
+      ? upload.metadata.artwork?.file?.size ?? 0
+      : 0
   res.audio.total = upload.file?.size ?? 0
   res.stems =
     'stems' in upload.metadata

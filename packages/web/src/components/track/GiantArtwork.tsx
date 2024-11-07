@@ -22,13 +22,11 @@ const messages = {
 }
 
 const GiantArtwork = (props: GiantArtworkProps) => {
-  const { trackId, coverArtSizes, coSign, callback } = props
-  const image = useTrackCoverArt(
+  const { trackId, coSign, callback } = props
+  const image = useTrackCoverArt({
     trackId,
-    coverArtSizes,
-    SquareSizes.SIZE_1000_BY_1000,
-    ''
-  )
+    size: SquareSizes.SIZE_1000_BY_1000
+  })
   useEffect(() => {
     if (image) callback()
   }, [image, callback])

@@ -156,7 +156,6 @@ const TrackHeader = ({
   title,
   trackId,
   userId,
-  coverArtSizes,
   description,
   isOwner,
   isFollowing,
@@ -213,11 +212,10 @@ const TrackHeader = ({
   const shouldShowScheduledRelease =
     track?.release_date && dayjs(track.release_date).isAfter(dayjs())
 
-  const image = useTrackCoverArt(
+  const image = useTrackCoverArt({
     trackId,
-    coverArtSizes,
-    SquareSizes.SIZE_480_BY_480
-  )
+    size: SquareSizes.SIZE_480_BY_480
+  })
 
   const onSaveHeroTrack = () => {
     if (!isOwner) onSave()

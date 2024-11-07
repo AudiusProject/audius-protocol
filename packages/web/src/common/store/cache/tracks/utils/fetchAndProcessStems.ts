@@ -48,14 +48,16 @@ export function* fetchAndProcessStems(trackId: ID) {
     orig_filename: s.orig_filename ?? ''
   }))
 
-  yield* put(
-    cacheActions.update(Kind.TRACKS, [
-      {
-        id: trackId,
-        metadata: {
-          _stems: stemsUpdate
+  if (stemsUpdate.length) {
+    yield* put(
+      cacheActions.update(Kind.TRACKS, [
+        {
+          id: trackId,
+          metadata: {
+            _stems: stemsUpdate
+          }
         }
-      }
-    ])
-  )
+      ])
+    )
+  }
 }

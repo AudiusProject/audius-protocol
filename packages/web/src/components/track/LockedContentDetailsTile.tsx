@@ -58,11 +58,10 @@ export const LockedContentDetailsTile = ({
   const title = isAlbum ? metadata.playlist_name : metadata.title
   const isDownloadGated = !isAlbum && metadata.is_download_gated
 
-  const trackArt = useTrackCoverArt(
-    contentId,
-    metadata._cover_art_sizes ?? null,
-    SquareSizes.SIZE_150_BY_150
-  )
+  const trackArt = useTrackCoverArt({
+    trackId: contentId,
+    size: SquareSizes.SIZE_150_BY_150
+  })
   const albumArt = useCollectionCoverArt(
     contentId,
     metadata._cover_art_sizes ?? null,
