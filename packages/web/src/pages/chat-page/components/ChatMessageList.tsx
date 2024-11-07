@@ -187,6 +187,7 @@ export const ChatMessageList = forwardRef<HTMLDivElement, ChatMessageListProps>(
       if (
         chatId &&
         (chat?.messagesStatus === Status.IDLE ||
+          chat?.messagesStatus === 'PENDING' ||
           chat?.messagesStatus === undefined)
       ) {
         // Initial fetch
