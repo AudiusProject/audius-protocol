@@ -55,7 +55,7 @@ import { emptyStringGuard } from 'pages/track-page/utils'
 import { make, track } from 'services/analytics'
 import { AppState } from 'store/types'
 
-import { LockedStatusPill } from '../locked-status-pill'
+import { LockedStatusBadge } from '../locked-status-badge'
 
 import styles from './GiantTrackTile.module.css'
 const { profilePage } = route
@@ -339,7 +339,7 @@ const LockedGatedContentSection = ({
     <Flex className={className} justifyContent='space-between'>
       <Flex gap='s' direction='column'>
         <Flex alignItems='center' gap='s'>
-          <LockedStatusPill
+          <LockedStatusBadge
             locked
             variant={isUSDCPurchaseGated ? 'premium' : 'gated'}
           />
@@ -551,7 +551,7 @@ const UnlockedGatedContentSection = ({
         {isOwner ? (
           <IconComponent className={styles.gatedContentIcon} />
         ) : (
-          <LockedStatusPill
+          <LockedStatusBadge
             locked={false}
             variant={
               isContentUSDCPurchaseGated(streamConditions) ? 'premium' : 'gated'

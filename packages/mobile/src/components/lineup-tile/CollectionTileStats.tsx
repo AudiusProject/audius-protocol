@@ -1,28 +1,25 @@
 import { useGetPlaylistById } from '@audius/common/api'
 import { useIsCollectionUnlockable } from '@audius/common/hooks'
-import { ID } from '@audius/common/models'
-import { Flex, Skeleton } from '@audius/harmony'
+import type { ID } from '@audius/common/models'
 
-import { EntityRank } from 'components/lineup/EntityRank'
-import { TrackTileSize } from 'components/track/types'
-import { useIsMobile } from 'hooks/useIsMobile'
+import { Flex } from '@audius/harmony-native'
 
-import { CollectionAccessTypeLabel } from './CollectionAccessTypeLabel'
-import { CollectionLockedStatusBadge } from './CollectionLockedStatusBadge'
+import { CollectionAccessTypeLabel } from '../collection/CollectionAccessTypeLabel'
+import { CollectionLockedStatusBadge } from '../collection/CollectionLockedStatusBadge'
+import { CollectionDownloadStatusIndicator } from '../offline-downloads'
+
 import { RepostsMetric, SavesMetric } from './CollectionTileMetrics'
+import { LineupTileRankIcon } from './LineupTileRankIcon'
 
 type CollectionTileStatsProps = {
   collectionId: ID
   isTrending?: boolean
   rankIndex?: number
-  size: TrackTileSize
-  isLoading?: boolean
 }
 
 export const CollectionTileStats = (props: CollectionTileStatsProps) => {
-  const { collectionId, isTrending, rankIndex, size, isLoading } = props
+  const { collectionId, isTrending, rankIndex } = props
 
-  const isMobile = useIsMobile()
   const isUnlockable = useIsCollectionUnlockable(collectionId)
 
   const { data: collection } = useGetPlaylistById(
@@ -30,27 +27,24 @@ export const CollectionTileStats = (props: CollectionTileStatsProps) => {
     { disabled: !!collectionId }
   )
 
-  if (isLoading || !collection) {
-    return <Skeleton w='30%' h={isMobile ? 16 : 20} />
-  }
-
+  if (!collection) return null
   const { is_private } = collection
 
   return (
-    <Flex
-      justifyContent='space-between'
-      alignItems='center'
-      pv={isMobile ? 's' : 'xs'}
-    >
-      <Flex gap='l'>
+    <Flex row justifyContent='space-between' alignItems='center' p='s'>
+      <Flex direction='row' gap='m'>
         {isTrending && rankIndex !== undefined ? (
-          <EntityRank index={rankIndex} />
+          <LineupTileRankIcon index={rankIndex} />
         ) : null}
         <CollectionAccessTypeLabel collectionId={collectionId} />
         {is_private ? null : (
           <>
-            <RepostsMetric collectionId={collectionId} size={size} />
+            <RepostsMetric collectionId={collectionId} />
             <SavesMetric collectionId={collectionId} />
+            <CollectionDownloadStatusIndicator
+              size='s'
+              collectionId={collectionId}
+            />
           </>
         )}
       </Flex>
