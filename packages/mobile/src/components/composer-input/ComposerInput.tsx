@@ -299,20 +299,18 @@ export const ComposerInput = forwardRef(function ComposerInput(
   )
 
   const handleSubmit = useCallback(() => {
-    if (internalRef.current) {
-      internalRef.current.blur()
-      setTimeout(() => {
-        setValue('')
-        const mentions =
-          getUserMentions(latestValueRef.current)?.map((match) => {
-            return {
-              handle: match.text.replace('@', ''),
-              userId: userIdMap[match.text]
-            }
-          }) ?? []
-        onSubmit?.(restoreLinks(latestValueRef.current), mentions)
-      }, 10)
-    }
+    internalRef.current?.blur()
+    setTimeout(() => {
+      const mentions =
+        getUserMentions(latestValueRef.current)?.map((match) => {
+          return {
+            handle: match.text.replace('@', ''),
+            userId: userIdMap[match.text]
+          }
+        }) ?? []
+      onSubmit?.(restoreLinks(latestValueRef.current), mentions)
+      setValue('')
+    }, 10)
   }, [getUserMentions, onSubmit, restoreLinks, userIdMap])
 
   const handleKeyDown = useCallback(
