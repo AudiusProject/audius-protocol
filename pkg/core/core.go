@@ -303,13 +303,13 @@ func setupNode(logger *common.Logger) (*config.Config, *cconfig.Config, error) {
 	// empty blocks wait one second to propose since plays should be a steady stream
 	// of txs
 	cometConfig.Mempool.Recheck = false
-	cometConfig.Consensus.TimeoutCommit = 100 * time.Millisecond
-	cometConfig.Consensus.TimeoutPropose = 100 * time.Millisecond
-	cometConfig.Consensus.TimeoutProposeDelta = 50 * time.Millisecond
-	cometConfig.Consensus.TimeoutPrevote = 100 * time.Millisecond
-	cometConfig.Consensus.TimeoutPrevoteDelta = 50 * time.Millisecond
-	cometConfig.Consensus.TimeoutPrecommit = 100 * time.Millisecond
-	cometConfig.Consensus.TimeoutPrecommitDelta = 50 * time.Millisecond
+	cometConfig.Consensus.TimeoutCommit = 200 * time.Millisecond
+	cometConfig.Consensus.TimeoutPropose = 200 * time.Millisecond
+	cometConfig.Consensus.TimeoutProposeDelta = 75 * time.Millisecond
+	cometConfig.Consensus.TimeoutPrevote = 150 * time.Millisecond
+	cometConfig.Consensus.TimeoutPrevoteDelta = 75 * time.Millisecond
+	cometConfig.Consensus.TimeoutPrecommit = 150 * time.Millisecond
+	cometConfig.Consensus.TimeoutPrecommitDelta = 75 * time.Millisecond
 	cometConfig.Consensus.CreateEmptyBlocks = true
 	cometConfig.Consensus.CreateEmptyBlocksInterval = 1 * time.Second
 
@@ -317,7 +317,7 @@ func setupNode(logger *common.Logger) (*config.Config, *cconfig.Config, error) {
 	// pex reactor is off since nodes use persistent peer list at the moment
 	// turn back on for dynamic peer discovery if we don't implement it in
 	// another ethereum based way
-	cometConfig.P2P.PexReactor = false
+	cometConfig.P2P.PexReactor = envConfig.Environment == "dev" || envConfig.Environment == "local"
 	cometConfig.P2P.AddrBookStrict = envConfig.AddrBookStrict
 	if envConfig.PersistentPeers != "" {
 		cometConfig.P2P.PersistentPeers = envConfig.PersistentPeers

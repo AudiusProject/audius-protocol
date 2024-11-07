@@ -51,6 +51,10 @@ export const getAccountHasTracks = createSelector(
       ? null // still loading
       : hasTracks || (user ? user.track_count > 0 : false)
 )
+export const getAccountFolloweeCount = createSelector(
+  [internalGetAccountUser],
+  (user) => user?.followee_count ?? null
+)
 export const getAccountCollectibles = createSelector(
   [internalGetAccountUser],
   (user) => [
@@ -68,6 +72,11 @@ export const getPlaylistLibrary = (state: CommonState) => {
 export const getAccountERCWallet = createSelector(
   [internalGetAccountUser],
   (user) => user?.erc_wallet ?? null
+)
+
+export const getAccountSplWallet = createSelector(
+  [internalGetAccountUser],
+  (user) => user?.spl_usdc_payout_wallet ?? null
 )
 
 /**

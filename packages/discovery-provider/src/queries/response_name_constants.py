@@ -14,6 +14,10 @@ followee_reposts = "followee_reposts"
 followee_saves = "followee_saves"
 # json - determines stream and download access for current user
 access = "access"
+# json - objects containing the stream/download/preview url and mirrors
+stream = "stream"
+download = "download"
+preview = "preview"
 
 # remix track specific
 remix_of = "remix_of"  # dictionary - contains an array of parent track ids

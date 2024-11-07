@@ -25,7 +25,7 @@ import { LockedStatusBadge } from '../core'
 import { PlayButton } from './PlayButton'
 import { TrackingBar } from './TrackingBar'
 import { NOW_PLAYING_HEIGHT, PLAY_BAR_HEIGHT } from './constants'
-const { getAccountUser } = accountSelectors
+const { getUserId } = accountSelectors
 const { saveTrack, unsaveTrack } = tracksSocialActions
 const { getPreviewing } = playerSelectors
 
@@ -143,7 +143,7 @@ export const PlayBar = (props: PlayBarProps) => {
   const { duration, track, user, onPress, translationAnim, mediaKey } = props
   const styles = useStyles()
   const dispatch = useDispatch()
-  const currentUser = useSelector(getAccountUser)
+  const accountUserId = useSelector(getUserId)
   const staticWhite = useColor('staticWhite')
 
   const { hasStreamAccess } = useGatedContentAccess(track)
@@ -167,9 +167,7 @@ export const PlayBar = (props: PlayBarProps) => {
   const renderFavoriteButton = () => {
     return (
       <FavoriteButton
-        isDisabled={
-          currentUser?.user_id === track?.owner_id || track?.is_unlisted
-        }
+        isDisabled={accountUserId === track?.owner_id || track?.is_unlisted}
         onPress={onPressFavoriteButton}
         isActive={track?.has_current_user_saved ?? false}
         wrapperStyle={styles.icon}

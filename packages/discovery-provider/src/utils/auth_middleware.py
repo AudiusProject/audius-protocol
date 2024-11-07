@@ -15,6 +15,37 @@ MESSAGE_HEADER = "Encoded-Data-Message"
 SIGNATURE_HEADER = "Encoded-Data-Signature"
 
 
+def recover_authority_from_signature_headers() -> tuple[int | None, str | None]:
+    message = request.headers.get(MESSAGE_HEADER)
+    signature = request.headers.get(SIGNATURE_HEADER)
+    if message and signature:
+        web3 = web3_provider.get_web3()
+        encoded_to_recover = encode_defunct(text=message)
+        wallet = web3.eth.account.recover_message(
+            encoded_to_recover, signature=signature
+        )
+        wallet_lower = wallet.lower()
+        db = db_session.get_db_read_replica()
+        with db.scoped_session() as session:
+            user = (
+                session.query(User.user_id)
+                .filter(
+                    # Convert checksum wallet to lowercase
+                    User.wallet == wallet_lower,
+                    User.is_current == True,
+                )
+                # In the case that multiple wallets match (not enforced on the data layer),
+                # pick the user that was created first.
+                .order_by(User.created_at.asc())
+                .first()
+            )
+            if user:
+                return user.user_id, wallet_lower
+            else:
+                return None, wallet_lower
+    return None, None
+
+
 def auth_middleware(
     parser: reqparse.RequestParser = None,
     # If True, user must be authenticated to access this route, will abort with 401 if no user is found in headers.
@@ -71,37 +102,9 @@ def auth_middleware(
         # `func` rather than `wrapper`.
         @functools.wraps(func)
         def wrapper(*args, **kwargs):
-            message = request.headers.get(MESSAGE_HEADER)
-            signature = request.headers.get(SIGNATURE_HEADER)
-            wallet_lower = None
-
-            authed_user_id = None
-            if message and signature:
-                web3 = web3_provider.get_web3()
-                encoded_to_recover = encode_defunct(text=message)
-                wallet = web3.eth.account.recover_message(
-                    encoded_to_recover, signature=signature
-                )
-                wallet_lower = wallet.lower()
-                db = db_session.get_db_read_replica()
-                with db.scoped_session() as session:
-                    user = (
-                        session.query(User.user_id)
-                        .filter(
-                            # Convert checksum wallet to lowercase
-                            User.wallet == wallet_lower,
-                            User.is_current == True,
-                        )
-                        # In the case that multiple wallets match (not enforced on the data layer),
-                        # pick the user that was created first.
-                        .order_by(User.created_at.asc())
-                        .first()
-                    )
-                    if user:
-                        authed_user_id = user.user_id
-                        logger.debug(
-                            f"auth_middleware.py | authed_user_id: {authed_user_id}"
-                        )
+            authed_user_id, _ = recover_authority_from_signature_headers()
+            if authed_user_id:
+                logger.debug(f"auth_middleware.py | authed_user_id: {authed_user_id}")
 
             if require_auth and authed_user_id is None:
                 abort(401, "You must be logged in to make this request.")

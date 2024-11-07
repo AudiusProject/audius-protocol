@@ -58,7 +58,9 @@ export const LineupTile = ({
   isPlayingUid,
   variant,
   styles,
-  TileProps
+  TileProps,
+  uid,
+  actions
 }: LineupTileProps) => {
   const {
     has_current_user_reposted,
@@ -126,6 +128,7 @@ export const LineupTile = ({
           hidePlays={hidePlays}
           hideComments={hideComments}
           id={id}
+          uid={uid}
           index={index}
           isCollection={isCollection}
           isTrending={isTrending}
@@ -140,6 +143,8 @@ export const LineupTile = ({
           streamConditions={streamConditions}
           isOwner={isOwner}
           source={source}
+          type={contentType}
+          actions={actions}
         />
       </View>
       {children}

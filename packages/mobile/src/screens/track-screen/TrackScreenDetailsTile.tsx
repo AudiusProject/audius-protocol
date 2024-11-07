@@ -355,7 +355,7 @@ export const TrackScreenDetailsTile = ({
   }, [dispatch, trackId, navigation])
 
   const handlePressComments = useCallback(() => {
-    openCommentDrawer({ entityId: trackId, navigation })
+    openCommentDrawer({ entityId: trackId, navigation, actions: tracksActions })
     trackEvent(
       make({
         eventName: Name.COMMENTS_CLICK_COMMENT_STAT,

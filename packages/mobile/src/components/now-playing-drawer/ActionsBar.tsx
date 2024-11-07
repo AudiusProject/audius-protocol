@@ -45,7 +45,7 @@ import { useThemeColors } from 'app/utils/theme'
 import { FavoriteButton } from './FavoriteButton'
 import { RepostButton } from './RepostButton'
 
-const { getAccountUser } = accountSelectors
+const { getUserId } = accountSelectors
 const { requestOpen: requestOpenShareModal } = shareModalUIActions
 const { open: openOverflowMenu } = mobileOverflowMenuUIActions
 const { repostTrack, saveTrack, undoRepostTrack, unsaveTrack } =
@@ -107,12 +107,12 @@ export const ActionsBar = ({ track }: ActionsBarProps) => {
   const { toast } = useToast()
   const castMethod = useSelector(getCastMethod)
   const isCasting = useSelector(getIsCasting)
-  const accountUser = useSelector(getAccountUser)
+  const accountUserId = useSelector(getUserId)
   const { neutral, neutralLight6, primary } = useThemeColors()
   const dispatch = useDispatch()
   const isReachable = useSelector(getIsReachable)
 
-  const isOwner = track?.owner_id === accountUser?.user_id
+  const isOwner = track?.owner_id === accountUserId
   const isUnlisted = track?.is_unlisted
   const { onOpen: openPremiumContentPurchaseModal } =
     usePremiumContentPurchaseModal()
@@ -185,7 +185,7 @@ export const ActionsBar = ({ track }: ActionsBarProps) => {
   const playbackPositionInfo = useSelector((state) =>
     getTrackPosition(state, {
       trackId: track?.track_id,
-      userId: accountUser?.user_id
+      userId: accountUserId
     })
   )
   const onPressOverflow = useCallback(() => {
@@ -281,7 +281,7 @@ export const ActionsBar = ({ track }: ActionsBarProps) => {
         style={styles.button}
         wrapperStyle={styles.animatedIcon}
         isDisabled={!isReachable}
-        isOwner={track?.owner_id === accountUser?.user_id}
+        isOwner={track?.owner_id === accountUserId}
       />
     )
   }
@@ -293,7 +293,7 @@ export const ActionsBar = ({ track }: ActionsBarProps) => {
         onPress={handleFavorite}
         style={styles.button}
         wrapperStyle={styles.animatedIcon}
-        isOwner={track?.owner_id === accountUser?.user_id}
+        isOwner={track?.owner_id === accountUserId}
       />
     )
   }

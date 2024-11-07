@@ -215,12 +215,12 @@ class CollectionPage extends Component<
     const newInitialOrder = tracks.entries.map((track) => track.uid)
 
     const noInitialOrder = !initialOrder && tracks.entries.length > 0
-    const entryIds = new Set(newInitialOrder)
+    const prevEntryIds = new Set(initialOrder)
     const newUids =
       Array.isArray(initialOrder) &&
       initialOrder.length > 0 &&
       newInitialOrder.length > 0 &&
-      !initialOrder.every((id) => entryIds.has(id))
+      !newInitialOrder.every((id) => prevEntryIds.has(id))
 
     if (noInitialOrder || newUids) {
       this.setState({

@@ -1,7 +1,7 @@
 import concurrent.futures
 import re
 import time
-from datetime import datetime
+from datetime import datetime, timezone
 from decimal import Decimal
 from typing import List, Optional, Tuple, TypedDict, cast
 
@@ -51,10 +51,6 @@ from src.solana.solana_parser import (
     parse_instruction_data,
 )
 from src.tasks.celery_app import celery
-from src.utils.cache_solana_program import (
-    cache_latest_sol_db_tx,
-    fetch_and_cache_latest_program_tx_redis,
-)
 from src.utils.config import shared_config
 from src.utils.helpers import (
     BalanceChange,
@@ -67,11 +63,7 @@ from src.utils.helpers import (
 )
 from src.utils.prometheus_metric import save_duration_metric
 from src.utils.redis_cache import get_solana_transaction_key
-from src.utils.redis_constants import (
-    latest_sol_user_bank_db_tx_key,
-    latest_sol_user_bank_program_tx_key,
-    latest_sol_user_bank_slot_key,
-)
+from src.utils.redis_constants import redis_keys
 from src.utils.structured_logger import StructuredLogger
 
 logger = StructuredLogger(__name__)
@@ -155,12 +147,6 @@ def get_highest_user_bank_tx_slot(session: Session):
     if tx_query:
         slot = tx_query[0]
     return slot
-
-
-# Cache the latest value committed to DB in redis
-# Used for quick retrieval in health check
-def cache_latest_sol_user_bank_db_tx(redis: Redis, tx):
-    cache_latest_sol_db_tx(redis, latest_sol_user_bank_db_tx_key, tx)
 
 
 # Query a tx signature and confirm its existence
@@ -632,12 +618,6 @@ def process_user_bank_txs() -> None:
     intersection_found = False
     is_initial_fetch = True
 
-    # Get the latests slot available globally before fetching txs to keep track of indexing progress
-    try:
-        latest_global_slot = solana_client_manager.get_slot()
-    except:
-        logger.error("index_user_bank.py | Failed to get block height")
-
     # Query for solana transactions until an intersection is found
     with db.scoped_session() as session:
         latest_processed_slot = get_highest_user_bank_tx_slot(session)
@@ -716,7 +696,6 @@ def process_user_bank_txs() -> None:
         transaction_signatures.reverse()
 
         last_tx_sig: Optional[str] = None
-        last_tx = None
         if transaction_signatures and transaction_signatures[-1]:
             last_tx_sig = transaction_signatures[-1][0]
 
@@ -750,8 +729,6 @@ def process_user_bank_txs() -> None:
             tx_infos.sort(key=lambda info: info[0].value.slot if info[0].value else 0)
 
             for tx_info, tx_sig in tx_infos:
-                if tx_info and last_tx_sig and last_tx_sig == tx_sig:
-                    last_tx = tx_info.value
                 num_txs_processed += 1
 
                 tx_value = tx_info.value
@@ -790,19 +767,8 @@ def process_user_bank_txs() -> None:
                 f"index_user_bank.py | processed batch {len(tx_sig_batch)} txs in {batch_duration}s"
             )
 
-    if last_tx and last_tx_sig:
-        cache_latest_sol_user_bank_db_tx(
-            redis,
-            {
-                "signature": last_tx_sig,
-                "slot": last_tx.slot,
-                "timestamp": last_tx.block_time,
-            },
-        )
-    if last_tx:
-        redis.set(latest_sol_user_bank_slot_key, last_tx.slot)
-    elif latest_global_slot is not None:
-        redis.set(latest_sol_user_bank_slot_key, latest_global_slot)
+    if last_tx_sig:
+        redis.set(redis_keys.solana.user_bank.last_tx, last_tx_sig)
 
 
 # ####### CELERY TASKS ####### #
@@ -819,19 +785,16 @@ def index_user_bank(self):
     update_lock = redis.lock("user_bank_lock", timeout=10 * 60)
 
     try:
-        # Cache latest tx outside of lock
-        fetch_and_cache_latest_program_tx_redis(
-            index_user_bank.solana_client_manager,
-            redis,
-            USER_BANK_ADDRESS,
-            latest_sol_user_bank_program_tx_key,
-        )
         # Attempt to acquire lock - do not block if unable to acquire
         have_lock = update_lock.acquire(blocking=False)
         if have_lock:
             challenge_bus: ChallengeEventBus = index_user_bank.challenge_event_bus
             with challenge_bus.use_scoped_dispatch_queue():
                 process_user_bank_txs()
+            redis.set(
+                redis_keys.solana.user_bank.last_completed_at,
+                datetime.now(timezone.utc).timestamp(),
+            )
         else:
             logger.debug("index_user_bank.py | Failed to acquire lock")
 

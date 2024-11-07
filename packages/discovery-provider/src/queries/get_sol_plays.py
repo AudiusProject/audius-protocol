@@ -10,11 +10,7 @@ from src.models.social.play import Play
 from src.queries.sol_play_helpers import get_sum_aggregate_plays, get_track_play_counts
 from src.tasks.index_solana_plays import cache_latest_sol_play_db_tx
 from src.utils import helpers
-from src.utils.cache_solana_program import (
-    CachedProgramTxInfo,
-    get_cache_latest_sol_program_tx,
-    get_latest_sol_db_tx,
-)
+from src.utils.cache_solana_program import CachedProgramTxInfo, get_cached_sol_tx
 from src.utils.db_session import get_db_read_replica
 from src.utils.redis_constants import (
     latest_sol_play_db_tx_key,
@@ -107,9 +103,7 @@ def get_total_aggregate_plays():
 # Retrieve the latest stored value in database for sol plays
 # Cached during processing of plays
 def get_latest_cached_sol_play_db(redis) -> CachedProgramTxInfo:
-    latest_sol_play_db = get_cache_latest_sol_program_tx(
-        redis, latest_sol_play_db_tx_key
-    )
+    latest_sol_play_db = get_cached_sol_tx(redis, latest_sol_play_db_tx_key)
     plays_from_db = None
     if not latest_sol_play_db:
         # If nothing found in cache, pull from db
@@ -131,7 +125,7 @@ def get_latest_cached_sol_play_db(redis) -> CachedProgramTxInfo:
 
 def get_latest_cached_sol_play_program_tx(redis) -> CachedProgramTxInfo:
     # Latest play tx from chain
-    latest_sol_play_program_tx = get_latest_sol_db_tx(
+    latest_sol_play_program_tx = get_cached_sol_tx(
         redis, latest_sol_play_program_tx_key
     )
     return latest_sol_play_program_tx
@@ -144,7 +138,7 @@ def get_sol_play_health_info(redis: Redis, current_time_utc: datetime):
     latest_sol_play_db = get_latest_cached_sol_play_db(redis)
 
     # Latest play tx from chain
-    latest_sol_play_program_tx = get_latest_sol_db_tx(
+    latest_sol_play_program_tx = get_cached_sol_tx(
         redis, latest_sol_play_program_tx_key
     )
     time_diff = -1.0
@@ -171,12 +165,10 @@ def get_sol_play_health_info(redis: Redis, current_time_utc: datetime):
 def get_latest_sol_play_check_info(redis: Redis, limit: int):
     response = {}
     # Latest play information from chain
-    latest_sol_play_program_tx = get_latest_sol_db_tx(
+    latest_sol_play_program_tx = get_cached_sol_tx(
         redis, latest_sol_play_program_tx_key
     )
-    latest_sol_play_db_tx = get_cache_latest_sol_program_tx(
-        redis, latest_sol_play_db_tx_key
-    )
+    latest_sol_play_db_tx = get_cached_sol_tx(redis, latest_sol_play_db_tx_key)
     response["latest_chain_tx"] = latest_sol_play_program_tx
     response["latest_db_tx"] = latest_sol_play_db_tx
     response["latest_db_sol_plays"] = get_latest_sol_plays(limit)

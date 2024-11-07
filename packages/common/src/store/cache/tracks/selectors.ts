@@ -78,12 +78,6 @@ export const getStatuses = (state: CommonState, props: { ids: ID[] }) => {
   return statuses
 }
 
-export const getTrackStreamUrl = (state: CommonState, trackId: ID) =>
-  state.tracks?.streamUrls?.[trackId]
-
-export const getTrackStreamUrls = (state: CommonState) =>
-  state.tracks?.streamUrls
-
 export const getStems = (state: CommonState, trackId?: ID) => {
   if (!trackId) return []
 

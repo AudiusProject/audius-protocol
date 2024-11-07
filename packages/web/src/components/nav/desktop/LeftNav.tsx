@@ -41,7 +41,7 @@ const { EXPLORE_PAGE, FEED_PAGE, HISTORY_PAGE, LIBRARY_PAGE, TRENDING_PAGE } =
   route
 const { saveTrack } = tracksSocialActions
 const { saveCollection } = collectionsSocialActions
-const { getAccountStatus, getAccountUser } = accountSelectors
+const { getAccountStatus, getUserId, getUserHandle } = accountSelectors
 
 export const LEFT_NAV_WIDTH = 240
 
@@ -61,7 +61,8 @@ type NavColumnProps = OwnProps &
 
 const LeftNav = (props: NavColumnProps) => {
   const {
-    account,
+    accountUserId,
+    accountHandle,
     showActionRequiresAccount,
     isElectron,
     draggingKind,
@@ -95,13 +96,13 @@ const LeftNav = (props: NavColumnProps) => {
 
   const onClickNavLinkWithAccount = useCallback(
     (e?: MouseEvent) => {
-      if (!account) {
+      if (!accountUserId) {
         e?.preventDefault()
         goToSignUp('restricted page')
         showActionRequiresAccount()
       }
     },
-    [account, goToSignUp, showActionRequiresAccount]
+    [accountUserId, goToSignUp, showActionRequiresAccount]
   )
 
   const updateScrollTopPosition = useCallback((difference: number) => {
@@ -172,7 +173,7 @@ const LeftNav = (props: NavColumnProps) => {
               flex='1 1 auto'
               css={{ overflow: 'hidden' }}
             >
-              {account?.handle === 'fbtest' ? (
+              {accountHandle === 'fbtest' ? (
                 <Box>
                   <LeftNavLink to={'/fb/share'}>
                     Share Profile to Facebook
@@ -186,7 +187,7 @@ const LeftNav = (props: NavColumnProps) => {
                 <GroupHeader>{messages.discover}</GroupHeader>
                 <LeftNavLink
                   to={FEED_PAGE}
-                  disabled={!account}
+                  disabled={!accountUserId}
                   onClick={onClickNavLinkWithAccount}
                 >
                   Feed
@@ -199,7 +200,7 @@ const LeftNav = (props: NavColumnProps) => {
               <Box>
                 <GroupHeader>{messages.library}</GroupHeader>
                 <LeftNavDroppable
-                  disabled={!account}
+                  disabled={!accountUserId}
                   acceptedKinds={['track', 'album']}
                   acceptOwner={false}
                   onDrop={draggingKind === 'album' ? saveCollection : saveTrack}
@@ -214,7 +215,7 @@ const LeftNav = (props: NavColumnProps) => {
                 <LeftNavLink
                   to={HISTORY_PAGE}
                   onClick={onClickNavLinkWithAccount}
-                  disabled={!account}
+                  disabled={!accountUserId}
                 >
                   History
                 </LeftNavLink>
@@ -237,7 +238,8 @@ const LeftNav = (props: NavColumnProps) => {
 
 const mapStateToProps = (state: AppState) => {
   return {
-    account: getAccountUser(state),
+    accountUserId: getUserId(state),
+    accountHandle: getUserHandle(state),
     accountStatus: getAccountStatus(state),
     draggingKind: selectDraggingKind(state)
   }
@@ -249,7 +251,7 @@ const mapDispatchToProps = (dispatch: Dispatch) => ({
   saveCollection: (collectionId: number) =>
     dispatch(saveCollection(collectionId, FavoriteSource.NAVIGATOR)),
   showActionRequiresAccount: () =>
-    dispatch(signOnActions.showRequiresAccountModal()),
+    dispatch(signOnActions.showRequiresAccountToast()),
   goToSignUp: () => dispatch(signOnActions.openSignOn(/** signIn */ false))
 })
 

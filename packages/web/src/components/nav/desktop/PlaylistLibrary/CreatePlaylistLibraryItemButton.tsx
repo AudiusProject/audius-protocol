@@ -19,7 +19,7 @@ import { useDispatch } from 'react-redux'
 
 import { useSelector } from 'common/hooks/useSelector'
 import { Tooltip } from 'components/tooltip'
-import { useAuthenticatedCallback } from 'hooks/useAuthenticatedCallback'
+import { useRequiresAccountCallback } from 'hooks/useRequiresAccount'
 
 const { createPlaylist } = cacheCollectionsActions
 const { addFolderToLibrary, constructPlaylistFolder } = playlistLibraryHelpers
@@ -69,7 +69,7 @@ export const CreatePlaylistLibraryItemButton = (props: Props) => {
   }, [dispatch, library])
 
   // Gate triggering popup behind authentication
-  const handleClickPill = useAuthenticatedCallback(
+  const handleClickPill = useRequiresAccountCallback(
     (triggerPopup: () => void) => {
       triggerPopup()
     },

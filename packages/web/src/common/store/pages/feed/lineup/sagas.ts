@@ -29,7 +29,7 @@ import { waitForRead } from 'utils/sagaHelpers'
 
 import { getFollowIds } from '../../signon/selectors'
 const { getFeedFilter } = feedPageSelectors
-const getAccountUser = accountSelectors.getAccountUser
+const { getUserId } = accountSelectors
 
 type FeedItem = LineupTrack | Collection
 
@@ -47,8 +47,8 @@ function* getTracks({
   limit: number
 }): Generator<any, FeedItem[] | null, any> {
   yield* waitForRead()
-  const currentUser = yield* select(getAccountUser)
-  if (!currentUser) return []
+  const currentUserId = yield* select(getUserId)
+  if (!currentUserId) return []
   const filterEnum: FeedFilter = yield* select(getFeedFilter)
   const sdk = yield* getSDK()
   const filter = filterMap[filterEnum]
@@ -58,7 +58,7 @@ function* getTracks({
   // hint to the API.
   const followeeUserIds = yield* select(getFollowIds)
 
-  const userId = Id.parse(currentUser.user_id)
+  const userId = Id.parse(currentUserId)
   const { data = [] } = yield* call(
     [sdk.full.users, sdk.full.users.getUserFeed],
     {

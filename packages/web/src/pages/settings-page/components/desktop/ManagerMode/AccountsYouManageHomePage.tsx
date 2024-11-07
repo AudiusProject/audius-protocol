@@ -11,7 +11,7 @@ import { useSelector } from 'utils/reducer'
 import { ManagedUserListItem } from './AccountListItem/ManagedUserListItem'
 import { AccountsYouManagePageProps, AccountsYouManagePages } from './types'
 import { usePendingInviteValidator } from './usePendingInviteValidator'
-const { getAccountUser } = accountSelectors
+const { getUserId } = accountSelectors
 
 const messages = {
   takeControl:
@@ -24,8 +24,7 @@ const messages = {
 export const AccountsYouManageHomePage = ({
   setPageState
 }: AccountsYouManagePageProps) => {
-  const currentUser = useSelector(getAccountUser)
-  const userId = currentUser?.user_id
+  const userId = useSelector(getUserId)
   const { data: managedAccounts, status } = useGetManagedAccounts(
     { userId: userId! },
     // Always update managed accounts list when mounting this page
@@ -36,7 +35,10 @@ export const AccountsYouManageHomePage = ({
     status !== Status.SUCCESS &&
     (!managedAccounts || managedAccounts.length === 0)
 
-  usePendingInviteValidator({ managedAccounts, userId })
+  usePendingInviteValidator({
+    managedAccounts,
+    userId: userId ?? undefined
+  })
 
   const handleStopManaging = useCallback(
     ({ userId }: { userId: number; managerUserId: number }) => {

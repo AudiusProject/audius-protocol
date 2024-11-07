@@ -18,11 +18,9 @@ import {
   INCREMENT_TRACK_COMMENT_COUNT,
   SET_TRACK_COMMENT_COUNT,
   SET_PERMALINK,
-  SET_STREAM_URLS,
   SET_PINNED_COMMENT_ID,
   incrementTrackCommentCount,
   setPermalink,
-  setStreamUrls,
   setPinnedCommentId,
   setTrackCommentCount
 } from './actions'
@@ -30,8 +28,7 @@ import { TracksCacheState } from './types'
 
 const initialState: TracksCacheState = {
   ...(initialCacheState as unknown as Cache<Track>),
-  permalinks: {},
-  streamUrls: {}
+  permalinks: {}
 }
 
 const addEntries = (state: TracksCacheState, entries: Entry[]) => {
@@ -89,18 +86,6 @@ const actionsMap = {
     return {
       ...state,
       permalinks: { ...state.permalinks, [permalink.toLowerCase()]: trackId }
-    }
-  },
-  [SET_STREAM_URLS](
-    state: TracksCacheState,
-    action: ReturnType<typeof setStreamUrls>
-  ): TracksCacheState {
-    const { streamUrls } = action
-
-    if (!streamUrls) return state
-    return {
-      ...state,
-      streamUrls: { ...state.streamUrls, ...streamUrls }
     }
   },
   [INCREMENT_TRACK_COMMENT_COUNT](

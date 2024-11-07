@@ -350,7 +350,6 @@ def extend_track(track, session=None):
         track["download_conditions"] = get_legacy_purchase_gate(
             track["download_conditions"], session
         )
-
     return track
 
 

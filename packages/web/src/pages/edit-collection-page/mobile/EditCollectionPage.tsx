@@ -44,7 +44,7 @@ import RemovePlaylistTrackDrawer from './RemoveCollectionTrackDrawer'
 
 const { editPlaylist, orderPlaylist, removeTrackFromPlaylist } =
   cacheCollectionsActions
-const getAccountUser = accountSelectors.getAccountUser
+const { getHasAccount } = accountSelectors
 
 const getMessages = (collectionType: 'album' | 'playlist') => ({
   editPlaylist: `Edit ${capitalize(collectionType)}`,
@@ -67,8 +67,8 @@ type EditCollectionPageProps = ReturnType<typeof mapStateToProps> &
   ReturnType<typeof mapDispatchToProps>
 
 const g = withNullGuard((props: EditCollectionPageProps) => {
-  const { account } = props
-  if (account) return { ...props, account }
+  const { hasAccount } = props
+  if (hasAccount) return { ...props }
 })
 
 const EditCollectionPage = g(
@@ -459,7 +459,7 @@ const EditCollectionPage = g(
 
 function mapStateToProps(state: AppState) {
   return {
-    account: getAccountUser(state)
+    hasAccount: getHasAccount(state)
   }
 }
 

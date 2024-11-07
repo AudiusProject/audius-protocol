@@ -11,7 +11,6 @@ import {
   Id,
   OptionalId
 } from '@audius/common/models'
-import { FeatureFlags } from '@audius/common/services'
 import {
   Entry,
   getContext,
@@ -45,13 +44,12 @@ import { addPremiumMetadata } from 'common/store/upload/sagaHelpers'
 import { waitForWrite } from 'utils/sagaHelpers'
 
 import { recordEditTrackAnalytics } from './sagaHelpers'
-import { fetchTrackStreamUrls } from './utils/fetchTrackStreamUrls'
 
 const { startStemUploads } = stemsUploadActions
 const { getCurrentUploads } = stemsUploadSelectors
 const { getUser } = cacheUsersSelectors
 const { getTrack } = cacheTracksSelectors
-const { getAccountUser, getUserId } = accountSelectors
+const { getAccountUser, getUserId, getUserHandle } = accountSelectors
 
 function* fetchRepostInfo(entries: Entry<Collection>[]) {
   const userIds: ID[] = []
@@ -80,46 +78,6 @@ function* watchAdd() {
       if (!isNativeMobile) {
         yield* fork(fetchRepostInfo, action.entries as Entry<Collection>[])
       }
-
-      // Prefetch stream urls
-      const getFeatureEnabled = yield* getContext('getFeatureEnabled')
-      const isPrefetchEnabled = yield* call(
-        getFeatureEnabled,
-        FeatureFlags.PREFETCH_STREAM_URLS
-      )
-      if (isPrefetchEnabled) {
-        yield* fork(fetchTrackStreamUrls, {
-          trackIds: action.entries.map((e) => e.id)
-        })
-      }
-    }
-  )
-}
-
-function* watchCacheUpdate() {
-  yield* takeEvery(
-    cacheActions.UPDATE,
-    function* (action: ReturnType<typeof cacheActions.update>) {
-      const getFeatureEnabled = yield* getContext('getFeatureEnabled')
-      const isStreamPrefetchEnabled = yield* call(
-        getFeatureEnabled,
-        FeatureFlags.PREFETCH_STREAM_URLS
-      )
-      if (!isStreamPrefetchEnabled) return
-
-      if (action.kind === Kind.TRACKS) {
-        // Check for tracks with any changed access. If so we need to update the prefetched stream url
-        const tracksWithChangedAccess = action.entries
-          .filter((track) => track?.metadata?.access?.stream !== undefined)
-          .map((track) => track.id)
-        // Re-trigger prefetching stream urls for any changed tracks
-        if (tracksWithChangedAccess.length > 0) {
-          yield* fork(fetchTrackStreamUrls, {
-            trackIds: tracksWithChangedAccess,
-            isUpdate: true
-          })
-        }
-      }
     }
   )
 }
@@ -130,8 +88,8 @@ type TrackWithRemix = Pick<Track, 'track_id' | 'title'> & {
 
 export function* trackNewRemixEvent(track: TrackWithRemix) {
   yield* waitForAccount()
-  const account = yield* select(getAccountUser)
-  if (!track.remix_of || !account) return
+  const accountHandle = yield* select(getUserHandle)
+  if (!track.remix_of || !accountHandle) return
   const remixParentTrack = track.remix_of.tracks[0]
   const parentTrack = yield* select(getTrack, {
     id: remixParentTrack.parent_track_id
@@ -142,7 +100,7 @@ export function* trackNewRemixEvent(track: TrackWithRemix) {
   yield* put(
     make(Name.REMIX_NEW_REMIX, {
       id: track.track_id,
-      handle: account.handle,
+      handle: accountHandle,
       title: track.title,
       parent_track_id: remixParentTrack.parent_track_id,
       parent_track_title: parentTrack ? parentTrack.title : '',
@@ -457,7 +415,7 @@ function* watchDeleteTrack() {
 }
 
 const sagas = () => {
-  return [watchAdd, watchEditTrack, watchDeleteTrack, watchCacheUpdate]
+  return [watchAdd, watchEditTrack, watchDeleteTrack]
 }
 
 export default sagas

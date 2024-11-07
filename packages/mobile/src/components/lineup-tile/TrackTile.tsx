@@ -277,6 +277,7 @@ export const TrackTileComponent = ({
       hidePlays={hidePlays}
       hideComments={hideComments}
       id={track_id}
+      uid={lineupTileProps.uid}
       renderImage={renderImage}
       isUnlisted={is_unlisted}
       onPress={handlePress}

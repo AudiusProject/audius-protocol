@@ -127,7 +127,6 @@ func (ss *MediorumServer) startTranscoder() {
 }
 
 func (ss *MediorumServer) findMissedJobs(work chan *Upload, myHost string, retranscode bool) {
-	ctx := context.Background()
 	newStatus := JobStatusNew
 	busyStatus := JobStatusBusy
 	errorStatus := JobStatusError
@@ -150,10 +149,7 @@ func (ss *MediorumServer) findMissedJobs(work chan *Upload, myHost string, retra
 			continue
 		}
 
-		// if we have orig file... try to reprocess
-		if ok, _ := ss.bucket.Exists(ctx, upload.OrigFileCID); ok {
-			work <- upload
-		}
+		work <- upload
 	}
 }
 
@@ -436,6 +432,14 @@ func (ss *MediorumServer) transcode(upload *Upload) error {
 	}
 
 	logger := ss.logger.With("template", upload.Template, "cid", fileHash)
+
+	if !ss.haveInMyBucket(fileHash) {
+		_, err := ss.findAndPullBlob(context.Background(), fileHash)
+		if err != nil {
+			logger.Warn("failed to find blob", "err", err)
+			return err
+		}
+	}
 
 	onError := func(err error, uploadStatus string, info ...string) error {
 		// limit repetitive lines

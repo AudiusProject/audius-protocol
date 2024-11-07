@@ -1,10 +1,6 @@
 import { ComponentType, useEffect } from 'react'
 
-import {
-  accountSelectors,
-  explorePageSelectors,
-  explorePageActions
-} from '@audius/common/store'
+import { explorePageSelectors, explorePageActions } from '@audius/common/store'
 import { push as pushRoute } from 'connected-react-router'
 import { connect } from 'react-redux'
 import { withRouter, RouteComponentProps } from 'react-router-dom'
@@ -17,7 +13,6 @@ import { ExplorePageProps as DesktopExplorePageProps } from './components/deskto
 import { ExplorePageProps as MobileExplorePageProps } from './components/mobile/ExplorePage'
 const { makeGetExplore } = explorePageSelectors
 const { fetchExplore } = explorePageActions
-const getAccountUser = accountSelectors.getAccountUser
 
 const messages = {
   title: 'Explore',
@@ -37,7 +32,6 @@ type ExplorePageProps = OwnProps &
   RouteComponentProps
 
 const ExplorePage = ({
-  account,
   explore,
   fetchExplore,
   goToRoute,
@@ -52,7 +46,6 @@ const ExplorePage = ({
     pageTitle: messages.pageTitle,
     description: messages.description,
     // Props from AppState
-    account,
     playlists: explore.playlists,
     profiles: explore.profiles,
     status: explore.status,
@@ -72,7 +65,6 @@ function makeMapStateToProps() {
   const getExplore = makeGetExplore()
   const mapStateToProps = (state: AppState) => {
     return {
-      account: getAccountUser(state),
       explore: getExplore(state)
     }
   }

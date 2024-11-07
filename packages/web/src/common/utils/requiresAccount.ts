@@ -5,12 +5,12 @@ import { call, put, select } from 'typed-redux-saga'
 
 import {
   updateRouteOnExit,
-  showRequiresAccountModal
+  showRequiresAccountToast
 } from 'common/store/pages/signon/actions'
 
 const { SIGN_UP_PAGE } = route
 
-const { getAccountUser } = accountSelectors
+const { getHasAccount } = accountSelectors
 
 /**
  * Checks if the user is signed in with an account.
@@ -25,14 +25,14 @@ export function requiresAccount<TArgs extends any[], TReturn>(
   return function* (...args: TArgs) {
     const isNativeMobile = yield* getContext('isNativeMobile')
     yield* waitForAccount()
-    const account = yield* select(getAccountUser)
-    if (!account) {
+    const hasAccount = yield* select(getHasAccount)
+    if (!hasAccount) {
       if (!isNativeMobile) {
         if (route) {
           yield* put(updateRouteOnExit(route))
         }
         yield* put(pushRoute(SIGN_UP_PAGE))
-        yield* put(showRequiresAccountModal())
+        yield* put(showRequiresAccountToast())
       }
     } else {
       return yield* call(fn, ...args)

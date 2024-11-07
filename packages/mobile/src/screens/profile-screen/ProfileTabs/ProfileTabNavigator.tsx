@@ -1,3 +1,5 @@
+import type { ReactNode } from 'react'
+
 import type { Animated } from 'react-native'
 
 import {
@@ -28,6 +30,10 @@ const INITIAL_PROFILE_HEADER_HEIGHT = 1081
 
 type ProfileTabNavigatorProps = {
   /**
+   * Function that renders the collapsible header
+   */
+  renderHeader: () => ReactNode
+  /**
    * Animated value to capture scrolling. If unset, an
    * animated value is created.
    */
@@ -38,6 +44,7 @@ type ProfileTabNavigatorProps = {
 }
 
 export const ProfileTabNavigator = ({
+  renderHeader,
   animatedValue,
   refreshing,
   onRefresh
@@ -103,6 +110,7 @@ export const ProfileTabNavigator = ({
   if (isArtist) {
     return (
       <CollapsibleTabNavigator
+        renderHeader={renderHeader}
         animatedValue={animatedValue}
         headerHeight={INITIAL_PROFILE_HEADER_HEIGHT}
       >
@@ -117,6 +125,7 @@ export const ProfileTabNavigator = ({
 
   return (
     <CollapsibleTabNavigator
+      renderHeader={renderHeader}
       animatedValue={animatedValue}
       headerHeight={INITIAL_PROFILE_HEADER_HEIGHT}
     >
