@@ -141,7 +141,7 @@ export const ArtistRecommendations = forwardRef<
 
   const [idsToFollow, setIdsToFollow] = useState<ID[] | null>(null)
   const artistsToFollow = useSelector<CommonState, User[]>((state) =>
-    Object.values(getUsers(state, { ids: idsToFollow }))
+    Object.values(getUsers(state, { ids: idsToFollow ?? [] }))
   )
 
   // Start fetching the related artists
@@ -236,7 +236,7 @@ export const ArtistRecommendations = forwardRef<
                 closeParent={onClose}
               />
             ))
-            .reduce((prev, curr) => [prev, ', ', curr])}
+            .reduce((prev, curr) => [prev, ', ', curr], '')}
           {artistsToFollow.length > 3
             ? `, and ${artistsToFollow.length - 3} others.`
             : ''}
