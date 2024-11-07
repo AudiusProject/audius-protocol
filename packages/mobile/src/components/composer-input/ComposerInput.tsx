@@ -301,6 +301,7 @@ export const ComposerInput = forwardRef(function ComposerInput(
   const handleSubmit = useCallback(() => {
     internalRef.current?.blur()
     setTimeout(() => {
+      setValue('')
       const mentions =
         getUserMentions(latestValueRef.current)?.map((match) => {
           return {
@@ -309,7 +310,6 @@ export const ComposerInput = forwardRef(function ComposerInput(
           }
         }) ?? []
       onSubmit?.(restoreLinks(latestValueRef.current), mentions)
-      setValue('')
     }, 10)
   }, [getUserMentions, onSubmit, restoreLinks, userIdMap])
 
