@@ -73,7 +73,7 @@ func (ss *MediorumServer) requireUserSignature(next echo.HandlerFunc) echo.Handl
 			})
 		} else {
 			// check it is for this upload id
-			if sig.Data.UploadID != id {
+			if id != "" && sig.Data.UploadID != id {
 				return c.JSON(401, map[string]string{
 					"error":  "signature contains incorrect ID",
 					"detail": fmt.Sprintf("url: %s, signature %s", id, sig.Data.UploadID),
