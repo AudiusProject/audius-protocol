@@ -70,7 +70,8 @@ export class UsersApi extends GeneratedUsersApi {
             await this.storage.uploadFile({
               file: profilePictureFile,
               onProgress,
-              template: 'img_square'
+              template: 'img_square',
+              auth: this.auth
             }),
           (e) => {
             this.logger.info('Retrying uploadProfilePicture', e)
@@ -82,7 +83,8 @@ export class UsersApi extends GeneratedUsersApi {
             await this.storage.uploadFile({
               file: coverArtFile,
               onProgress,
-              template: 'img_backdrop'
+              template: 'img_backdrop',
+              auth: this.auth
             }),
           (e) => {
             this.logger.info('Retrying uploadProfileCoverArt', e)
