@@ -799,7 +799,7 @@ const BodyContainer = memo(
           transform: `translate3d(${movingToLeft ? '-' : ''}${
             containerWidth + interElementSpacing
           }px, 0px, 0px)`,
-          opacity: 1
+          opacity: 0
         }
       },
       enter: (_: any) => {
