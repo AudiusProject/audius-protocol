@@ -59,10 +59,10 @@ export const useChangeEmailFormConfiguration = (onComplete: () => void) => {
     page === ChangeEmailPage.ConfirmPassword
       ? confirmPasswordFormikSchema
       : page === ChangeEmailPage.NewEmail
-      ? EmailSchema
-      : page === ChangeEmailPage.VerifyEmail
-      ? verifyEmailFormikSchema
-      : undefined
+        ? EmailSchema
+        : page === ChangeEmailPage.VerifyEmail
+          ? verifyEmailFormikSchema
+          : undefined
 
   const checkPassword = useCallback(
     async (
@@ -85,6 +85,7 @@ export const useChangeEmailFormConfiguration = (onComplete: () => void) => {
         }
       } catch (e) {
         helpers.setFieldError('password', messages.invalidCredentials)
+        console.error(e)
       }
     },
     [setPage, audiusBackend]
@@ -116,6 +117,7 @@ export const useChangeEmailFormConfiguration = (onComplete: () => void) => {
         } else {
           helpers.setFieldError('otp', messages.invalidCredentials)
           helpers.setFieldError('email', messages.somethingWrong)
+          console.error(e)
         }
       }
     },
