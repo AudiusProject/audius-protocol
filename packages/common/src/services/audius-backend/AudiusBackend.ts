@@ -1260,19 +1260,6 @@ export const audiusBackend = ({
     }
   }
 
-  async function deleteTrack(trackId: ID) {
-    try {
-      const { txReceipt } = await audiusLibs.Track.deleteTrack(trackId, true)
-      return {
-        blockHash: txReceipt.blockHash,
-        blockNumber: txReceipt.blockNumber
-      }
-    } catch (err) {
-      console.error(getErrorMessage(err))
-      throw err
-    }
-  }
-
   // Favorite a playlist
   async function saveCollection(
     playlistId: ID,
@@ -2266,7 +2253,6 @@ export const audiusBackend = ({
     dangerouslySetPlaylistOrder,
     deletePlaylist,
     deletePlaylistTrack,
-    deleteTrack,
     deregisterDeviceToken,
     didSelectDiscoveryProviderListeners,
     disableBrowserNotifications,

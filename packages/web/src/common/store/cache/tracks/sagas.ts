@@ -346,31 +346,21 @@ function* deleteTrackAsync(
 
 function* confirmDeleteTrack(trackId: ID) {
   yield* waitForWrite()
-  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
   const sdk = yield* getSDK()
   yield* put(
     confirmerActions.requestConfirmation(
       makeKindId(Kind.TRACKS, trackId),
       function* () {
-        const { blockHash, blockNumber } = yield* call(
-          audiusBackendInstance.deleteTrack,
-          trackId
-        )
+        const userId = yield* select(getUserId)
+        if (!userId) return
 
-        const confirmed = yield* call(
-          confirmTransaction,
-          blockHash,
-          blockNumber
-        )
-        if (!confirmed) {
-          throw new Error(
-            `Could not confirm delete track for track id ${trackId}`
-          )
-        }
+        yield* call([sdk.tracks, sdk.tracks.deleteTrack], {
+          userId: Id.parse(userId),
+          trackId: Id.parse(trackId)
+        })
 
         const track = yield* select(getTrack, { id: trackId })
         yield* waitForAccount()
-        const userId = yield* select(getUserId)
 
         if (!track) return
         const { data } = yield* call(

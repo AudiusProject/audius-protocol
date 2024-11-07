@@ -3,6 +3,7 @@ import {
   CollectionMetadata,
   FieldVisibility,
   ID,
+  Id,
   Kind,
   Name,
   StemUploadWithFile,
@@ -25,7 +26,8 @@ import {
   getContext,
   reformatCollection,
   savedPageActions,
-  uploadActions
+  uploadActions,
+  getSDK
 } from '@audius/common/store'
 import {
   actionChannelDispatcher,
@@ -773,6 +775,7 @@ export function* uploadCollection(
   uploadType: UploadType
 ) {
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
+  const sdk = yield* getSDK()
 
   yield waitForAccount()
   const userId = (yield* select(getUserId))!
@@ -948,7 +951,12 @@ export function* uploadCollection(
         )
         try {
           yield* all(
-            trackIds.map((id) => audiusBackendInstance.deleteTrack(id))
+            trackIds.map((id) =>
+              sdk.tracks.deleteTrack({
+                userId: Id.parse(userId),
+                trackId: Id.parse(id)
+              })
+            )
           )
           console.debug('Deleted tracks.')
         } catch (err) {
