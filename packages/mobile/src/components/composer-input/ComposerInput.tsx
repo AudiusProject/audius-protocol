@@ -130,6 +130,7 @@ export const ComposerInput = forwardRef(function ComposerInput(
   const { primary, neutralLight7 } = useThemeColors()
   const hasLength = value.length > 0
   const internalRef = useRef<RnTextInput>(null)
+  const latestValueRef = useRef(value)
   const messageIdRef = useRef(messageId)
   const lastKeyPressMsRef = useRef<number | null>(null)
   const { data: track } = useGetTrackById({ id: entityId ?? -1 })
@@ -243,7 +244,6 @@ export const ComposerInput = forwardRef(function ComposerInput(
   const handleAutocomplete = useCallback(
     (user: UserMetadata) => {
       if (!user) return
-
       const autocompleteRange = getAutocompleteRange() ?? [0, 1]
       const mentionText = `@${user.handle}`
 
@@ -281,6 +281,7 @@ export const ComposerInput = forwardRef(function ComposerInput(
 
   const handleChange = useCallback(
     async (value: string) => {
+      latestValueRef.current = value
       setValue(value)
       const editedValue = await resolveLinks(value)
       if (value !== editedValue) {
@@ -298,16 +299,21 @@ export const ComposerInput = forwardRef(function ComposerInput(
   )
 
   const handleSubmit = useCallback(() => {
-    const mentions =
-      getUserMentions(value)?.map((match) => {
-        return {
-          handle: match.text.replace('@', ''),
-          userId: userIdMap[match.text]
-        }
-      }) ?? []
-
-    onSubmit?.(restoreLinks(value), mentions)
-  }, [getUserMentions, onSubmit, restoreLinks, userIdMap, value])
+    if (internalRef.current) {
+      internalRef.current.blur()
+      setTimeout(() => {
+        const mentions =
+          getUserMentions(latestValueRef.current)?.map((match) => {
+            return {
+              handle: match.text.replace('@', ''),
+              userId: userIdMap[match.text]
+            }
+          }) ?? []
+        onSubmit?.(restoreLinks(latestValueRef.current), mentions)
+        setValue('')
+      }, 10)
+    }
+  }, [getUserMentions, onSubmit, restoreLinks, userIdMap])
 
   const handleKeyDown = useCallback(
     (e: NativeSyntheticEvent<TextInputKeyPressEventData>) => {
