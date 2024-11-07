@@ -1,3 +1,4 @@
+import { useGetTrackById } from '@audius/common/api'
 import { ID } from '@audius/common/models'
 import { Flex, Skeleton } from '@audius/harmony'
 
@@ -31,9 +32,16 @@ export const TrackTileStats = (props: TrackTileStatsProps) => {
   const isUnlockable = useIsTrackUnlockable(trackId)
   const isMobile = useIsMobile()
 
-  if (isLoading) {
+  const { data: track } = useGetTrackById(
+    { id: trackId },
+    { disabled: !!trackId }
+  )
+
+  if (isLoading || !track) {
     return <Skeleton w='30%' h={isMobile ? 16 : 20} />
   }
+
+  const { is_unlisted } = track
 
   return (
     <Flex
@@ -44,13 +52,17 @@ export const TrackTileStats = (props: TrackTileStatsProps) => {
       <Flex gap='l'>
         {isTrending ? <EntityRank index={rankIndex!} /> : null}
         <TrackAccessTypeLabel trackId={trackId} />
-        <RepostsMetric trackId={trackId} size={size} />
-        <SavesMetric trackId={trackId} />
-        <CommentMetric trackId={trackId} />
+        {is_unlisted ? null : (
+          <>
+            <RepostsMetric trackId={trackId} size={size} />
+            <SavesMetric trackId={trackId} />
+            <CommentMetric trackId={trackId} />
+          </>
+        )}
       </Flex>
       {isUnlockable ? (
         <TrackLockedStatusPill trackId={trackId} />
-      ) : (
+      ) : is_unlisted ? null : (
         <PlayMetric trackId={trackId} />
       )}
     </Flex>

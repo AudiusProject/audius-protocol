@@ -1,3 +1,4 @@
+import { useGetPlaylistById } from '@audius/common/api'
 import { ID } from '@audius/common/models'
 import { Flex, Skeleton } from '@audius/harmony'
 
@@ -26,9 +27,16 @@ export const CollectionTileStats = (props: CollectionTileStatsProps) => {
   const isMobile = useIsMobile()
   const isUnlockable = useIsCollectionUnlockable(collectionId)
 
-  if (isLoading) {
+  const { data: collection } = useGetPlaylistById(
+    { playlistId: collectionId },
+    { disabled: !!collectionId }
+  )
+
+  if (isLoading || !collection) {
     return <Skeleton w='30%' h={isMobile ? 16 : 20} />
   }
+
+  const { is_private } = collection
 
   return (
     <Flex
@@ -41,8 +49,12 @@ export const CollectionTileStats = (props: CollectionTileStatsProps) => {
           <EntityRank index={rankIndex} />
         ) : null}
         <CollectionAccessTypeLabel collectionId={collectionId} />
-        <RepostsMetric collectionId={collectionId} size={size} />
-        <SavesMetric collectionId={collectionId} />
+        {is_private ? null : (
+          <>
+            <RepostsMetric collectionId={collectionId} size={size} />
+            <SavesMetric collectionId={collectionId} />
+          </>
+        )}
       </Flex>
       {isUnlockable ? (
         <CollectionLockedStatusPill collectionId={collectionId} />
