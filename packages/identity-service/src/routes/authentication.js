@@ -83,13 +83,11 @@ module.exports = function (app) {
               return errorResponseBadRequest('Invalid credentials')
             }
 
-            // check if new artifacts already exist and are deleted
+            // check if new artifacts already exist and are active
             const newArtifacts = await models.Authentication.findOne({
-              where: { lookupKey: body.lookupKey },
-              paranoid: false
+              where: { lookupKey: body.lookupKey }
             })
 
-            // if artifacts exist or they were previously deleted
             if (newArtifacts) {
               // artifacts passed already exist
               req.logger.error('Credentials already exist')
