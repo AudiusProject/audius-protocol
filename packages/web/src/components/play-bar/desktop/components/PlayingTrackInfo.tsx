@@ -19,7 +19,7 @@ import { animated, useSpring } from 'react-spring'
 
 import { Draggable } from 'components/dragndrop'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
-import { LockedStatusBadge } from 'components/locked-status-pill'
+import { LockedStatusBadge } from 'components/locked-status-badge'
 import UserBadges from 'components/user-badges/UserBadges'
 import { useProfilePicture } from 'hooks/useUserProfilePicture'
 import { fullTrackPage } from 'utils/route'
