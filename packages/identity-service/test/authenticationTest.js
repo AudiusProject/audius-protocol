@@ -614,7 +614,7 @@ describe('test authentication routes', function () {
     let fpRecord = await models.Fingerprints.findOne({ where: { visitorId } })
     assert.strictEqual(fpRecord, null)
 
-    otp = await redis.get('otp:dheeraj@audius.co')
+    const otp = await redis.get('otp:dheeraj@audius.co')
 
     await request(app)
       .get('/authentication')
