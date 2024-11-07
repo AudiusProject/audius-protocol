@@ -264,7 +264,6 @@ export const ComposerInput = forwardRef(function ComposerInput(
       })
       onAddMention?.(user.user_id)
 
-      console.log('HANDLE AUTO')
       setIsAutocompleteActive(false)
     },
     [getAutocompleteRange, userMentions, onAddMention]
@@ -330,20 +329,16 @@ export const ComposerInput = forwardRef(function ComposerInput(
       const cursorPosition = selectionRef.current?.start
       if (isAutocompleteActive && !!cursorPosition) {
         if (key === SPACE_KEY) {
-          console.log('SPACE')
           setIsAutocompleteActive(false)
         }
 
         if (key === ENTER_KEY) {
-          console.log('ENTER')
           setIsAutocompleteActive(false)
         }
 
-        console.log({ key })
         if (key === BACKSPACE_KEY) {
           const deletedChar = value[cursorPosition - 1]
           if (deletedChar === AT_KEY) {
-            console.log('BACK')
             setIsAutocompleteActive(false)
           }
         }
@@ -355,7 +350,6 @@ export const ComposerInput = forwardRef(function ComposerInput(
           (autocompleteRange[0] >= cursorPosition ||
             autocompleteRange[1] < cursorPosition)
         ) {
-          console.log('AUTOCOMPLETE RANGE')
           setIsAutocompleteActive(false)
         }
 
