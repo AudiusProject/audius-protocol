@@ -111,11 +111,21 @@ export const formatShareText = (title: string, creator: string) => {
 }
 
 /**
- * Reduces multiple sequential newlines (> 3) into max `\n\n` and
+ * Reduces multiple sequential newlines (> newlineCount) into max `\n\n` and
  * trims both leading and trailing newlines
  */
-export const squashNewLines = (str: string | null) => {
-  return str ? str.replace(/\n\s*\n\s*\n/g, '\n\n').trim() : str
+export const squashNewLines = (str: string | null, newlineMax: number = 2) => {
+  return str
+    ? str
+        .replace(
+          new RegExp(
+            `\\n\\s*(\\n\\s*){${Math.max(newlineMax - 2, 1)}}\\n`,
+            'g'
+          ),
+          '\n'.repeat(newlineMax)
+        )
+        .trim()
+    : str
 }
 
 /** Trims a string to alphanumeric values only */
