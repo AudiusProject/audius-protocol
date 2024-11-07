@@ -403,7 +403,7 @@ const slice = createSlice({
         chat.last_message = ''
       }
       const existingChat = getChat(state, chat.chat_id)
-      // If the chat already exists, use its existing messagesStatus, otherwise default to IDLE
+      // If the chat already exists, use its existing messagesStatus, otherwise default to PENDING
       const messagesStatus = existingChat?.messagesStatus ?? 'PENDING'
       chatsAdapter.upsertOne(state.chats, {
         ...chat,
