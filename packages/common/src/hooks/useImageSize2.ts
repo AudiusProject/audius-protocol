@@ -6,6 +6,15 @@ import { Maybe } from '~/utils/typeUtils'
 // Global image cache
 const IMAGE_CACHE = new Set<string>()
 
+const preloadImage = (url: string) => {
+  return new Promise<void>((resolve, reject) => {
+    const img = new Image()
+    img.src = url
+    img.onload = () => resolve()
+    img.onerror = () => reject(new Error('Failed to load image'))
+  })
+}
+
 /**
  * Fetches an image from the given artwork object managing sizes and using fallback mirrors if necessary.
  *  - If a larger image has already been fetched and is in the case, use it instead
@@ -21,20 +30,11 @@ export const useImageSize2 = ({
   targetSize,
   defaultImage
 }: {
-  artwork: Maybe<Track['artwork']>
+  artwork?: Track['artwork']
   targetSize: SquareSizes
   defaultImage: string
 }) => {
-  const [imageUrl, setImageUrl] = useState<string | null>(null)
-
-  const preloadImage = (url: string) => {
-    return new Promise((resolve, reject) => {
-      const img = new Image()
-      img.src = url
-      img.onload = () => resolve(url)
-      img.onerror = () => reject(url)
-    })
-  }
+  const [imageUrl, setImageUrl] = useState<Maybe<string>>(undefined)
 
   const fetchWithFallback = useCallback(
     async (url: string) => {
@@ -48,10 +48,9 @@ export const useImageSize2 = ({
         } catch {
           const nextMirror = mirrors.shift()
           if (!nextMirror) throw new Error('No mirror found')
-          const currentHost = new URL(currentUrl).hostname
-          const nextHost = new URL(nextMirror).hostname
-          const newUrl = currentUrl.replace(currentHost, nextHost)
-          currentUrl = newUrl
+          const nextUrl = new URL(currentUrl)
+          nextUrl.hostname = new URL(nextMirror).hostname
+          currentUrl = nextUrl.toString()
         }
       }
 
@@ -100,7 +99,7 @@ export const useImageSize2 = ({
       console.debug(
         `useImageSize: cache miss, found larger ${targetUrl} ${largerSize}`
       )
-      setImageUrl(artwork[largerSize] ?? null)
+      setImageUrl(artwork[largerSize])
       return
     }
 
@@ -108,7 +107,7 @@ export const useImageSize2 = ({
       console.debug(
         `useImageSize: cache miss, found smaller ${targetUrl} ${smallerSize}`
       )
-      setImageUrl(artwork[smallerSize] ?? null)
+      setImageUrl(artwork[smallerSize])
       const finalUrl = await fetchWithFallback(targetUrl)
       IMAGE_CACHE.add(finalUrl)
       setImageUrl(finalUrl)
@@ -130,5 +129,5 @@ export const useImageSize2 = ({
     resolveImageUrl()
   }, [resolveImageUrl])
 
-  return imageUrl ?? undefined
+  return imageUrl
 }

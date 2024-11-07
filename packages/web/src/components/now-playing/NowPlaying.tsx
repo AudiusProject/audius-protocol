@@ -235,8 +235,7 @@ const NowPlaying = g(
 
     const { name, handle } = user
     const image = useTrackCoverArt({
-      // TODO(PAY-3570): What is going on with this type being a string?
-      trackId: typeof track_id === 'number' ? track_id : parseInt(track_id),
+      trackId: typeof track_id === 'number' ? track_id : undefined,
       size: SquareSizes.SIZE_480_BY_480
     })
 

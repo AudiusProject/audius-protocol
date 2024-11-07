@@ -19,7 +19,7 @@ export const useTrackCoverArt = ({
   size,
   defaultImage
 }: {
-  trackId: Maybe<ID>
+  trackId?: ID
   size: SquareSizes
   defaultImage?: string
 }) => {
