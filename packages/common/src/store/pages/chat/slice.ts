@@ -28,7 +28,7 @@ import { ChatWebsocketError } from './types'
 export type Chat = UserChat | ChatBlast
 
 export type UserChatWithMessagesStatus = Chat & {
-  messagesStatus?: Status
+  messagesStatus?: Status | 'PENDING'
   messagesSummary?: TypedCommsResponse<ChatMessage>['summary']
 }
 
@@ -404,7 +404,7 @@ const slice = createSlice({
       }
       const existingChat = getChat(state, chat.chat_id)
       // If the chat already exists, use its existing messagesStatus, otherwise default to IDLE
-      const messagesStatus = existingChat?.messagesStatus ?? Status.IDLE
+      const messagesStatus = existingChat?.messagesStatus ?? 'PENDING'
       chatsAdapter.upsertOne(state.chats, {
         ...chat,
         messagesStatus
