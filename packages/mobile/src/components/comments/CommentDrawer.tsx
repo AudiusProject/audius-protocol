@@ -1,8 +1,8 @@
 import type { RefObject } from 'react'
 import React, { useCallback, useRef, useState } from 'react'
 
-import { SearchCategory, useGetFollowers } from '@audius/common/api'
-import { useGetSearchResults } from '@audius/common/api'
+import type { SearchCategory } from '@audius/common/api'
+import { useGetSearchResults, useGetFollowers } from '@audius/common/api'
 import type { ReplyingAndEditingState } from '@audius/common/context'
 import {
   CommentSectionProvider,
