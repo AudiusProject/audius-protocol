@@ -355,7 +355,12 @@ export const TrackScreenDetailsTile = ({
   }, [dispatch, trackId, navigation])
 
   const handlePressComments = useCallback(() => {
-    openCommentDrawer({ entityId: trackId, navigation, actions: tracksActions })
+    openCommentDrawer({
+      entityId: trackId,
+      navigation,
+      actions: tracksActions,
+      uid
+    })
     trackEvent(
       make({
         eventName: Name.COMMENTS_CLICK_COMMENT_STAT,
@@ -363,7 +368,7 @@ export const TrackScreenDetailsTile = ({
         source: 'track_page'
       })
     )
-  }, [openCommentDrawer, trackId, navigation])
+  }, [openCommentDrawer, trackId, navigation, uid])
 
   const handlePressSave = () => {
     if (!isOwner) {

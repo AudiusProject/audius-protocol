@@ -10,7 +10,7 @@ import {
 } from '@audius/common/context'
 import type { ID, UserMetadata } from '@audius/common/models'
 import { Status } from '@audius/common/models'
-import type { LineupBaseActions } from '@audius/common/store'
+import type { LineupBaseActions, playerActions } from '@audius/common/store'
 import { accountSelectors } from '@audius/common/store'
 import type {
   BottomSheetFlatListMethods,
@@ -203,8 +203,13 @@ export type CommentDrawerData = {
   navigation: NativeStackNavigationProp<ParamListBase>
   autoFocusInput?: boolean
   uid?: string
-  /** Object containing lineup actions such as play, togglePlay, setPage */
-  actions?: LineupBaseActions
+  /** Object containing lineup/player actions such as play, togglePlay, setPage
+   *  Typically these are lineup actions -
+   *  but playerActions are used when the comments were opened from NowPlaying.
+   *  In that scenario the comments are always for the currently playing track,
+   *  so it doesnt need to worry about changing lineups
+   */
+  actions?: LineupBaseActions | typeof playerActions
 }
 
 type CommentDrawerProps = {
