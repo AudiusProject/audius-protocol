@@ -303,13 +303,13 @@ func setupNode(logger *common.Logger) (*config.Config, *cconfig.Config, error) {
 	// empty blocks wait one second to propose since plays should be a steady stream
 	// of txs
 	cometConfig.Mempool.Recheck = false
-	cometConfig.Consensus.TimeoutCommit = 100 * time.Millisecond
-	cometConfig.Consensus.TimeoutPropose = 100 * time.Millisecond
-	cometConfig.Consensus.TimeoutProposeDelta = 50 * time.Millisecond
-	cometConfig.Consensus.TimeoutPrevote = 100 * time.Millisecond
-	cometConfig.Consensus.TimeoutPrevoteDelta = 50 * time.Millisecond
-	cometConfig.Consensus.TimeoutPrecommit = 100 * time.Millisecond
-	cometConfig.Consensus.TimeoutPrecommitDelta = 50 * time.Millisecond
+	cometConfig.Consensus.TimeoutCommit = 200 * time.Millisecond
+	cometConfig.Consensus.TimeoutPropose = 200 * time.Millisecond
+	cometConfig.Consensus.TimeoutProposeDelta = 75 * time.Millisecond
+	cometConfig.Consensus.TimeoutPrevote = 150 * time.Millisecond
+	cometConfig.Consensus.TimeoutPrevoteDelta = 75 * time.Millisecond
+	cometConfig.Consensus.TimeoutPrecommit = 150 * time.Millisecond
+	cometConfig.Consensus.TimeoutPrecommitDelta = 75 * time.Millisecond
 	cometConfig.Consensus.CreateEmptyBlocks = true
 	cometConfig.Consensus.CreateEmptyBlocksInterval = 1 * time.Second
 

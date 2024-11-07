@@ -10,6 +10,20 @@ import { confirmEmailSchema, emailSchema } from '~/schemas'
 
 import { isOtpMissingError } from './useChangePasswordFormConfiguration'
 
+// Note: Not an SDK RequestError as it comes from Hedgehog
+const INVALID_CREDENTIALS_ERROR = 'Invalid credentials'
+const isInvalidCredentialsError = (e: unknown) => {
+  return (
+    e instanceof Error &&
+    'response' in e &&
+    e.response instanceof Object &&
+    'data' in e.response &&
+    e.response.data instanceof Object &&
+    'error' in e.response.data &&
+    e.response.data.error === INVALID_CREDENTIALS_ERROR
+  )
+}
+
 const messages = {
   invalidCredentials: 'Invalid credentials.',
   somethingWrong: 'Something went wrong.',
@@ -54,6 +68,7 @@ export const useChangeEmailFormConfiguration = (onComplete: () => void) => {
     () => toFormikValidationSchema(emailSchema(audiusQueryContext)),
     [audiusQueryContext]
   )
+  const reportToSentry = audiusQueryContext.reportToSentry
 
   const validationSchema =
     page === ChangeEmailPage.ConfirmPassword
@@ -110,16 +125,21 @@ export const useChangeEmailFormConfiguration = (onComplete: () => void) => {
         })
         onComplete()
       } catch (e) {
+        console.warn(e)
         if (isOtpMissingError(e)) {
           helpers.setFieldTouched('otp', false)
           setPage(ChangeEmailPage.VerifyEmail)
-        } else {
+        } else if (isInvalidCredentialsError(e)) {
           helpers.setFieldError('otp', messages.invalidCredentials)
           helpers.setFieldError('email', messages.somethingWrong)
+        } else {
+          helpers.setFieldError('otp', messages.somethingWrong)
+          helpers.setFieldError('email', messages.somethingWrong)
+          reportToSentry({ error: e as Error, name: 'ChangeEmail' })
         }
       }
     },
-    [setPage, onComplete, audiusBackend]
+    [setPage, onComplete, audiusBackend, reportToSentry]
   )
 
   const onSubmit = useCallback(

@@ -14,11 +14,10 @@ type TrackContentProps = {
 export const TrackContent = (props: TrackContentProps) => {
   const { track } = props
 
-  const image = useTrackCoverArt(
-    track.track_id,
-    track._cover_art_sizes,
-    SquareSizes.SIZE_150_BY_150
-  )
+  const image = useTrackCoverArt({
+    trackId: track.track_id,
+    size: SquareSizes.SIZE_150_BY_150
+  })
 
   return (
     <div className={styles.trackContent}>

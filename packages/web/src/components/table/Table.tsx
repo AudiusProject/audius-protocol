@@ -4,6 +4,7 @@ import {
   useCallback,
   useEffect,
   useMemo,
+  useRef,
   useState
 } from 'react'
 
@@ -197,6 +198,9 @@ export const Table = ({
     !showMoreLimit || pageSize < showMoreLimit
   )
 
+  const prevSortValue = useRef<string | null>(null)
+  const sortValue = sortBy[0] ? `${sortBy[0].id}${sortBy[0].desc}` : null
+
   // NOTE: react-table allows for multple sorters, but we are only checking the first here
   // - This can be updated if we need multiple sorters in the future
   const handleSortChange = useCallback(() => {
@@ -233,8 +237,13 @@ export const Table = ({
     }
   }, [columns, defaultSorter, isVirtualized, onSort, sortBy, useLocalSort])
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  useEffect(() => handleSortChange(), [sortBy])
+  useEffect(() => {
+    if (sortValue !== prevSortValue.current) {
+      prevSortValue.current = sortValue
+      handleSortChange()
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sortValue])
 
   const renderTableHeader = useCallback((column: any, endHeader?: boolean) => {
     return (

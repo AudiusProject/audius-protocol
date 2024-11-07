@@ -907,7 +907,7 @@ export const audiusBackend = ({
     transcodePreview?: boolean
   ) {
     const cleanedMetadata = schemas.newTrackMetadata(metadata, true)
-    if ('artwork' in metadata && metadata.artwork) {
+    if (metadata.artwork && 'file' in metadata.artwork) {
       const resp = await audiusLibs.creatorNode.uploadTrackCoverArtV2(
         metadata.artwork.file,
         () => {}

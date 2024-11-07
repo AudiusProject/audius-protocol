@@ -131,12 +131,10 @@ const Artwork = memo(
 )
 
 export const TrackArtwork = memo((props: TileArtworkProps) => {
-  const image = useTrackCoverArt(
-    props.id,
-    props.coverArtSizes,
-    SquareSizes.SIZE_150_BY_150,
-    ''
-  )
+  const image = useTrackCoverArt({
+    trackId: props.id,
+    size: SquareSizes.SIZE_150_BY_150
+  })
 
   return <Artwork {...props} image={image} isTrack />
 })

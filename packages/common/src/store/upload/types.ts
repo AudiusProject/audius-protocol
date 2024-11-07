@@ -43,12 +43,14 @@ export interface TrackForEdit {
  * Unlike normal Track metadata, TrackMetadataForUpload includes additional
  * files: artwork and a stems field with StemsForUpload.
  */
-export interface TrackMetadataForUpload extends TrackMetadata {
-  artwork?: Nullable<{
-    file?: Blob | NativeFile
-    url: string
-    source?: string
-  }>
+export interface TrackMetadataForUpload extends Omit<TrackMetadata, 'artwork'> {
+  artwork?:
+    | Nullable<{
+        file?: Blob | NativeFile
+        url: string
+        source?: string
+      }>
+    | TrackMetadata['artwork']
   stems?: (StemUploadWithFile | StemUpload)[]
 }
 /**
