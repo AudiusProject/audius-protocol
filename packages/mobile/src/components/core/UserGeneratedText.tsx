@@ -306,11 +306,13 @@ export const UserGeneratedText = (props: UserGeneratedTextProps) => {
   }, [])
 
   const renderText = useCallback(
-    (text: string) => (
-      <Text suppressHighlighting {...other}>
-        {text}
-      </Text>
-    ),
+    (text: string) => {
+      return (
+        <Text suppressHighlighting {...other}>
+          {text}
+        </Text>
+      )
+    },
     // eslint-disable-next-line react-hooks/exhaustive-deps
     []
   )
@@ -330,7 +332,7 @@ export const UserGeneratedText = (props: UserGeneratedTextProps) => {
             email
             url={false}
             style={[{ marginBottom: 3 }, style]}
-            text={squashNewLines(children) as string}
+            text={squashNewLines(children, 10) as string}
             matchers={[
               // Handle matcher e.g. @handle
               ...(mentions
