@@ -257,9 +257,7 @@ export const ChatScreen = () => {
   const chatMessages = useSelector((state) =>
     getChatMessages(state, chatId ?? '')
   )
-  const isLoading =
-    (chat?.messagesStatus ?? Status.LOADING) === Status.LOADING &&
-    chatMessages?.length === 0
+  const isLoading = (chat?.messagesStatus ?? 'PENDING') === 'PENDING'
   // Only show the end reached indicator if there are no previous messages, more than 10 messages,
   // and the flatlist is scrollable.
   const shouldShowEndReachedIndicator =
