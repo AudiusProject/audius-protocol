@@ -6,7 +6,7 @@ import {
 } from '@audius/common/context'
 import { commentsMessages as messages } from '@audius/common/messages'
 import type { ID } from '@audius/common/models'
-import { getLineup } from '@audius/common/store/pages/track/selectors'
+import { trackPageSelectors } from '@audius/common/store'
 import { TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native'
 import { useSelector } from 'react-redux'
 import { useEffectOnce } from 'react-use'
@@ -28,6 +28,8 @@ import Skeleton from '../skeleton'
 import { CommentBlock } from './CommentBlock'
 import { useCommentDrawer } from './CommentDrawerContext'
 import { CommentForm } from './CommentForm'
+
+const { getLineup } = trackPageSelectors
 
 type CommentPreviewHeaderProps = {
   openCommentDrawer: () => void
