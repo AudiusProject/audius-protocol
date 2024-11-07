@@ -629,7 +629,7 @@ describe('test authentication routes', function () {
 
     // validateFingerprint is called asynchronously and not awaited.
     // This should be plenty of time since the dependency is mocked in test/lib/app.js
-    await new Promise((r) => setTimeout(r, 100))
+    await new Promise((resolve) => setTimeout(resolve, 100))
 
     await request(app)
       .get('/authentication')
