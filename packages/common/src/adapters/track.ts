@@ -1,6 +1,8 @@
 import { full } from '@audius/sdk'
+import type { CrossPlatformFile, Genre, Mood, TrackMetadata } from '@audius/sdk'
+import camelcaseKeys from 'camelcase-keys'
 import dayjs from 'dayjs'
-import { omit } from 'lodash'
+import { omit, pick } from 'lodash'
 import snakecaseKeys from 'snakecase-keys'
 
 import {
@@ -10,8 +12,9 @@ import {
   TrackSegment
 } from '~/models'
 import { StemTrackMetadata, UserTrackMetadata } from '~/models/Track'
+import type { NativeFile, TrackMetadataForUpload } from '~/store/upload/types'
 import { License } from '~/utils'
-import { decodeHashId } from '~/utils/hashIds'
+import { decodeHashId, encodeHashId } from '~/utils/hashIds'
 
 import { accessConditionsFromSDK } from './access'
 import { resourceContributorFromSDK } from './attribution'
@@ -218,4 +221,100 @@ export const stemTrackMetadataFromSDK = (
     is_playlist_upload: false,
     is_owned_by_user: false
   }
+}
+
+export const trackMetadataForUploadToSdk = (
+  input: TrackMetadataForUpload
+): TrackMetadata => ({
+  ...camelcaseKeys(
+    pick(input, [
+      'title',
+      'description',
+      'license',
+      'isrc',
+      'iswc',
+      'genre',
+      'mood',
+      'tags',
+      'is_unlisted',
+      'field_visibility',
+      'is_premium',
+      'premium_conditions',
+      'is_stream_gated',
+      'stream_conditions',
+      'is_download_gated',
+      'download_conditions',
+      'orig_file_cid',
+      'orig_filename',
+      'is_downloadable',
+      'is_original_available',
+      'bpm',
+      'is_custom_bpm',
+      'musical_key',
+      'is_custom_musical_key',
+      'comments_disabled',
+      'ddex_release_ids',
+      'parental_warning_type'
+    ])
+  ),
+  title: input.title!,
+  description: input.description!,
+  mood: input.mood as Mood,
+  tags: input.tags ?? undefined,
+  genre: (input.genre as Genre) || undefined,
+  releaseDate: input.release_date ? new Date(input.release_date) : undefined,
+  previewStartSeconds: input.preview_start_seconds ?? undefined,
+  previewCid: input.preview_cid ?? '',
+  ddexApp: input.ddex_app ?? '',
+  remixOf: input.remix_of
+    ? {
+        tracks: input.remix_of.tracks.map((track) => ({
+          parentTrackId: encodeHashId(track.parent_track_id)
+        }))
+      }
+    : undefined,
+  stemOf: input.stem_of
+    ? {
+        category: input.stem_of.category,
+        parentTrackId: encodeHashId(input.stem_of.parent_track_id)
+      }
+    : undefined,
+  copyrightLine: input.copyright_line
+    ? camelcaseKeys(input.copyright_line)
+    : undefined,
+  producerCopyrightLine: input.producer_copyright_line
+    ? camelcaseKeys(input.producer_copyright_line)
+    : undefined,
+  rightsController: input.rights_controller
+    ? camelcaseKeys(input.rights_controller)
+    : undefined,
+  resourceContributors: input.resource_contributors
+    ? input.resource_contributors.map((contributor) =>
+        camelcaseKeys(contributor)
+      )
+    : undefined,
+  indirectResourceContributors: input.indirect_resource_contributors
+    ? input.indirect_resource_contributors.map((contributor) =>
+        camelcaseKeys(contributor)
+      )
+    : undefined
+})
+
+export const artworkFileToSDK = (
+  artwork: Blob | NativeFile
+): CrossPlatformFile => {
+  // If we're in Node (NativeFile)
+  if ('uri' in artwork) {
+    // TODO: Need to implement Node conversion if needed
+    throw new Error('Node environment not supported')
+  }
+
+  // If we're in browser (Blob)
+  // If it's already a File, return as-is
+  if (artwork instanceof File) {
+    return artwork
+  }
+
+  // If it's a Blob, convert to File with a name
+  return new File([artwork], 'artwork', { type: artwork.type })
 }

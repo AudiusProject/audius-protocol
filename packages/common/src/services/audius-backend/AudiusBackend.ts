@@ -900,27 +900,6 @@ export const audiusBackend = ({
     return await audiusLibs.creatorNode.uploadTrackCoverArtV2(file, () => {})
   }
 
-  async function updateTrack(
-    userId: ID,
-    _trackId: ID,
-    metadata: TrackMetadata | TrackMetadataForUpload,
-    transcodePreview?: boolean
-  ) {
-    const cleanedMetadata = schemas.newTrackMetadata(metadata, true)
-    if (metadata.artwork && 'file' in metadata.artwork) {
-      const resp = await audiusLibs.creatorNode.uploadTrackCoverArtV2(
-        metadata.artwork.file,
-        () => {}
-      )
-      cleanedMetadata.cover_art_sizes = resp.id
-    }
-    return await audiusLibs.Track.updateTrackV2(
-      userId,
-      cleanedMetadata,
-      transcodePreview
-    )
-  }
-
   // TODO(C-2719)
   async function getCreators(ids: ID[]) {
     try {
@@ -2328,7 +2307,6 @@ export const audiusBackend = ({
     updatePlaylist,
     updatePlaylistLastViewedAt,
     updatePushNotificationSettings,
-    updateTrack,
     updateUserEvent,
     updateUserLocationTimezone,
     subscribeToUser,
