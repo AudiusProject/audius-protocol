@@ -245,10 +245,8 @@ export const CommentDrawer = (props: CommentDrawerProps) => {
     },
     []
   )
-  console.log({ autoCompleteActive })
 
   const onAutoCompleteChange = useCallback((active: boolean, text: string) => {
-    console.log({ text, active })
     setAcText(text)
     setAutoCompleteActive(active)
   }, [])
