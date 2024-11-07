@@ -22,7 +22,7 @@ const messages = {
   profile: 'profile'
 }
 
-type AvatarProps = Omit<HarmonyAvatarProps, 'src'> & {
+export type AvatarProps = Omit<HarmonyAvatarProps, 'src'> & {
   'aria-hidden'?: true
   userId: Maybe<ID>
   onClick?: () => void

@@ -1,13 +1,11 @@
-import { memo, MouseEvent } from 'react'
+import { memo } from 'react'
 
 import { useGatedContentAccess } from '@audius/common/hooks'
 import {
   ShareSource,
   RepostSource,
   FavoriteSource,
-  FavoriteType,
-  ID,
-  Name
+  ID
 } from '@audius/common/models'
 import { FeatureFlags, trpc } from '@audius/common/services'
 import {
@@ -20,14 +18,10 @@ import {
   themeSelectors,
   OverflowAction,
   OverflowSource,
-  repostsUserListActions,
-  favoritesUserListActions,
-  RepostType,
   playerSelectors
 } from '@audius/common/store'
-import { Genre, route } from '@audius/common/utils'
+import { Genre } from '@audius/common/utils'
 import { Box, IconButton, IconKebabHorizontal } from '@audius/harmony'
-import { push as pushRoute } from 'connected-react-router'
 import { connect } from 'react-redux'
 import { Dispatch } from 'redux'
 
@@ -35,17 +29,13 @@ import Menu from 'components/menu/Menu'
 import { OwnProps as TrackMenuProps } from 'components/menu/TrackMenu'
 import { TrackTileProps } from 'components/track/types'
 import { useFlag } from 'hooks/useRemoteConfig'
-import { make, track as trackEvent } from 'services/analytics'
 import { AppState } from 'store/types'
 import { isMatrix, shouldShowDark } from 'utils/theme/theme'
 
 import { getTrackWithFallback, getUserWithFallback } from '../helpers'
 
 import TrackTile from './TrackTile'
-const { REPOSTING_USERS_ROUTE, FAVORITING_USERS_ROUTE } = route
 const { getUid, getPlaying, getBuffering } = playerSelectors
-const { setFavorite } = favoritesUserListActions
-const { setRepost } = repostsUserListActions
 const { getTheme } = themeSelectors
 const { requestOpen: requestOpenShareModal } = shareModalUIActions
 const { open } = mobileOverflowMenuUIActions
@@ -74,7 +64,6 @@ type OwnProps = Omit<
   | 'hasCurrentUserSaved'
   | 'artistIsVerified'
   | 'isPlaying'
-  | 'goToRoute'
 >
 
 type ConnectedTrackTileProps = OwnProps &
@@ -89,7 +78,6 @@ const ConnectedTrackTile = ({
   user,
   ordered,
   trackTileStyles,
-  goToRoute,
   togglePlay,
   isBuffering,
   isPlaying,
@@ -102,12 +90,9 @@ const ConnectedTrackTile = ({
   repostTrack,
   unrepostTrack,
   shareTrack,
-  setRepostTrackId,
-  setFavoriteTrackId,
   clickOverflow,
   darkMode,
   isTrending,
-  showRankIcon,
   isActive,
   variant,
   containerClassName,
@@ -135,7 +120,6 @@ const ConnectedTrackTile = ({
     has_current_user_saved,
     _cover_art_sizes,
     activity_timestamp,
-    play_count,
     _co_sign,
     is_scheduled_release: isScheduledRelease,
     release_date: releaseDate,
@@ -178,32 +162,6 @@ const ConnectedTrackTile = ({
 
   const onShare = (id: ID) => {
     shareTrack(id)
-  }
-
-  const makeGoToRepostsPage = (trackId: ID) => (e: MouseEvent<HTMLElement>) => {
-    e.stopPropagation()
-    setRepostTrackId(trackId)
-    goToRoute(REPOSTING_USERS_ROUTE)
-  }
-
-  const makeGoToFavoritesPage =
-    (trackId: ID) => (e: MouseEvent<HTMLElement>) => {
-      e.stopPropagation()
-      setFavoriteTrackId(trackId)
-      goToRoute(FAVORITING_USERS_ROUTE)
-    }
-
-  const makeGoToCommentsPage = (_: ID) => (e: MouseEvent<HTMLElement>) => {
-    e.stopPropagation()
-    goToRoute(track?.permalink + '?showComments=true')
-
-    trackEvent(
-      make({
-        eventName: Name.COMMENTS_CLICK_COMMENT_STAT,
-        trackId: track_id,
-        source: 'lineup'
-      })
-    )
   }
 
   // We wanted to use mobile track tile on desktop, which means shimming in the desktop overflow
@@ -315,7 +273,6 @@ const ConnectedTrackTile = ({
       activityTimestamp={activity_timestamp}
       trackTileStyles={trackTileStyles}
       size={size}
-      listenCount={play_count}
       fieldVisibility={field_visibility}
       coSign={_co_sign}
       // Artist
@@ -335,10 +292,6 @@ const ConnectedTrackTile = ({
       onClickOverflow={onClickOverflow}
       renderOverflow={renderOverflowMenu}
       toggleRepost={toggleRepost}
-      makeGoToRepostsPage={makeGoToRepostsPage}
-      makeGoToFavoritesPage={makeGoToFavoritesPage}
-      makeGoToCommentsPage={makeGoToCommentsPage}
-      goToRoute={goToRoute}
       isOwner={isOwner}
       darkMode={darkMode}
       isMatrix={isMatrix()}
@@ -347,7 +300,6 @@ const ConnectedTrackTile = ({
       isStreamGated={isStreamGated}
       streamConditions={streamConditions}
       hasStreamAccess={hasStreamAccess}
-      showRankIcon={showRankIcon}
       variant={variant}
       isScheduledRelease={isScheduledRelease}
       releaseDate={releaseDate}
@@ -390,12 +342,7 @@ function mapDispatchToProps(dispatch: Dispatch) {
     clickOverflow: (trackId: ID, overflowActions: OverflowAction[]) =>
       dispatch(
         open({ source: OverflowSource.TRACKS, id: trackId, overflowActions })
-      ),
-    setRepostTrackId: (trackId: ID) =>
-      dispatch(setRepost(trackId, RepostType.TRACK)),
-    setFavoriteTrackId: (trackId: ID) =>
-      dispatch(setFavorite(trackId, FavoriteType.TRACK)),
-    goToRoute: (route: string) => dispatch(pushRoute(route))
+      )
   }
 }
 

@@ -43,8 +43,6 @@ const messages = {
   endOfLineupDescription: "Looks like you've reached the end of this list..."
 }
 
-const RANK_ICON_COUNT = 5
-
 const tabHeaders = [
   { icon: <IconDay />, text: messages.thisWeek, label: TimeRange.WEEK },
   { icon: <IconMonth />, text: messages.thisMonth, label: TimeRange.MONTH },
@@ -109,7 +107,6 @@ const TrendingPageMobileContent = ({
           actions={trendingWeekActions}
           variant={LineupVariant.MAIN}
           isTrending
-          rankIconCount={trendingGenre === null ? RANK_ICON_COUNT : undefined}
           endOfLineup={
             <EndOfLineup
               key='endOfLineup'

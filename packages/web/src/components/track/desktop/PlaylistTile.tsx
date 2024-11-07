@@ -45,7 +45,6 @@ const PlaylistTile = ({
   title,
   userName,
   duration,
-  stats,
   bottomBar,
   showIconButtons = true,
   containerClassName,
@@ -60,7 +59,6 @@ const PlaylistTile = ({
   trackList,
   trackCount,
   isTrending,
-  showRankIcon,
   href,
   hasStreamAccess,
   streamConditions,
@@ -128,7 +126,6 @@ const PlaylistTile = ({
           title={title}
           userName={userName}
           duration={duration}
-          stats={stats}
           bottomBar={bottomBar}
           showIconButtons={showIconButtons}
           containerClassName={tileClassName}
@@ -136,13 +133,12 @@ const PlaylistTile = ({
           onClickFavorite={onClickFavorite}
           onClickShare={onClickShare}
           onTogglePlay={onTogglePlay}
-          showRankIcon={showRankIcon}
           isTrending={isTrending}
           permalink={href}
-          isStreamGated={!!streamConditions}
           streamConditions={streamConditions}
           hasStreamAccess={hasStreamAccess}
           source={source}
+          collectionId={playlistId}
         />
       </TileTrackContainer>
       <Box backgroundColor='surface1' borderTop='strong' borderBottom='strong'>

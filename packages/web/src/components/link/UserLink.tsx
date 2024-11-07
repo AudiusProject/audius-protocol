@@ -20,6 +20,7 @@ type UserLinkProps = Omit<TextLinkProps, 'to'> & {
   popover?: boolean
   popoverMount?: MountPlacement
   noText?: boolean // Should be used if you're intending for the children to be the link element (i.e. Avatar)
+  noBadges?: boolean
 }
 
 export const UserLink = (props: UserLinkProps) => {
@@ -30,6 +31,7 @@ export const UserLink = (props: UserLinkProps) => {
     popoverMount,
     children,
     noText,
+    noBadges,
     ...other
   } = props
   const { iconSizes, spacing } = useTheme()
@@ -54,11 +56,13 @@ export const UserLink = (props: UserLinkProps) => {
       {...other}
     >
       <Text ellipses>{userName}</Text>
-      <UserBadges
-        badgeSize={iconSizes[badgeSize]}
-        userId={userId}
-        css={{ marginTop: spacing['2xs'] }}
-      />
+      {noBadges ? null : (
+        <UserBadges
+          badgeSize={iconSizes[badgeSize]}
+          userId={userId}
+          css={{ marginTop: spacing['2xs'] }}
+        />
+      )}
       {children}
     </TextLink>
   )
