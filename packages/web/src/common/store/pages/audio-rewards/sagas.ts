@@ -339,28 +339,6 @@ function* claimSingleChallengeRewardAsync(
     env
   )
 
-  // Create user bank at the beginning before parallelizing
-  const user = yield* select(accountSelectors.getAccountUser)
-  if (user) {
-    const { wallet: ethWallet } = user
-    if (ethWallet) {
-      // Try to create the user bank _now_ so that subsequent calls inside
-      // claimReward won't accidentally try to stomp on each other.
-      // This waits until finalized, so should be safe to assume the next call
-      // will see the user bank exists.
-      yield* call(
-        [
-          sdk.services.claimableTokensClient,
-          sdk.services.claimableTokensClient.getOrCreateUserBank
-        ],
-        {
-          ethWallet,
-          mint: 'USDC'
-        }
-      )
-    }
-  }
-
   yield* call(waitForOptimisticChallengeToComplete, {
     challengeId,
     completionPollFrequency,
@@ -454,31 +432,6 @@ function* claimAllChallengeRewardsAsync(
     track,
     make({ eventName: Name.REWARDS_CLAIM_ALL_REQUEST, count: claims.length })
   )
-
-  // Create user bank at the beginning before parallelizing
-  const audiusSdk = yield* getContext('audiusSdk')
-  const sdk = yield* call(audiusSdk)
-  const user = yield* select(accountSelectors.getAccountUser)
-  if (user) {
-    const { wallet: ethWallet } = user
-    if (ethWallet) {
-      // Try to create the user bank _now_ so that subsequent calls inside
-      // claimReward won't accidentally try to stomp on each other.
-      // This waits until finalized, so should be safe to assume the next call
-      // will see the user bank exists.
-      yield* call(
-        [
-          sdk.services.claimableTokensClient,
-          sdk.services.claimableTokensClient.getOrCreateUserBank
-        ],
-        {
-          ethWallet,
-          mint: 'USDC'
-        }
-      )
-    }
-  }
-
   yield* all(
     claims.map((claim) =>
       call(function* () {
