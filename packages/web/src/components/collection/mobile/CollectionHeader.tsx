@@ -34,7 +34,7 @@ import { UserLink } from 'components/link'
 import Skeleton from 'components/skeleton/Skeleton'
 import { GatedContentSection } from 'components/track/GatedContentSection'
 import { UserGeneratedText } from 'components/user-generated-text'
-import { useCollectionCoverArt } from 'hooks/useCollectionCoverArt'
+import { useCollectionCoverArt3 } from 'hooks/useCollectionCoverArt'
 import { useFlag } from 'hooks/useRemoteConfig'
 import ActionButtonRow from 'pages/track-page/components/mobile/ActionButtonRow'
 import { isShareToastDisabled } from 'utils/clipboardUtil'
@@ -180,11 +180,10 @@ const CollectionHeader = ({
     onClickMobileOverflow?.(collectionId, overflowActions)
   }
 
-  const image = useCollectionCoverArt(
+  const image = useCollectionCoverArt3({
     collectionId,
-    coverArtSizes,
-    SquareSizes.SIZE_1000_BY_1000
-  )
+    size: SquareSizes.SIZE_1000_BY_1000
+  })
 
   const handleClickEdit = useCallback(() => {
     navigate({ pathname: `${permalink}/edit`, search: `?focus=artwork` })

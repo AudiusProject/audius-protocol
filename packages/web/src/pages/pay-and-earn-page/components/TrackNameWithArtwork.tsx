@@ -11,7 +11,7 @@ import {
 import { Text } from '@audius/harmony'
 
 import DynamicImage from 'components/dynamic-image/DynamicImage'
-import { useCollectionCoverArt2 } from 'hooks/useCollectionCoverArt'
+import { useCollectionCoverArt3 } from 'hooks/useCollectionCoverArt'
 import { useTrackCoverArt } from 'hooks/useTrackCoverArt'
 
 import styles from './TrackNameWithArtwork.module.css'
@@ -37,7 +37,10 @@ export const TrackNameWithArtwork = ({
     trackId: id,
     size: SquareSizes.SIZE_150_BY_150
   })
-  const albumArtwork = useCollectionCoverArt2(id, SquareSizes.SIZE_150_BY_150)
+  const albumArtwork = useCollectionCoverArt3({
+    collectionId: id,
+    size: SquareSizes.SIZE_150_BY_150
+  })
   const title = isTrack ? track?.title : album?.playlist_name
   const image = isTrack ? trackArtwork : albumArtwork
   const loading = ![trackStatus, albumStatus].includes(Status.SUCCESS)

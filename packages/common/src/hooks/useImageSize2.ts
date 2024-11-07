@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 
-import { SquareSizes, Track } from '~/models'
+import { Collection, SquareSizes, Track } from '~/models'
 import { Maybe } from '~/utils/typeUtils'
 
 // Global image cache
@@ -30,7 +30,7 @@ export const useImageSize2 = ({
   targetSize,
   defaultImage
 }: {
-  artwork?: Track['artwork']
+  artwork?: Track['artwork'] | Collection['artwork']
   targetSize: SquareSizes
   defaultImage: string
 }) => {

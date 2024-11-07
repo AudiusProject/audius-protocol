@@ -1,12 +1,12 @@
 import { memo } from 'react'
 
-import { SquareSizes, ID, CoverArtSizes, Remix } from '@audius/common/models'
+import { SquareSizes, ID, Remix } from '@audius/common/models'
 import cn from 'classnames'
 
 import CoSign from 'components/co-sign/CoSign'
 import { Size } from 'components/co-sign/types'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
-import { useCollectionCoverArt } from 'hooks/useCollectionCoverArt'
+import { useCollectionCoverArt3 } from 'hooks/useCollectionCoverArt'
 import { useTrackCoverArt } from 'hooks/useTrackCoverArt'
 
 import { ArtworkIcon } from '../Artwork'
@@ -16,7 +16,6 @@ import styles from './TrackTileArt.module.css'
 type TrackTileArtProps = {
   isTrack: boolean
   id: ID
-  coverArtSizes: CoverArtSizes
   className?: string
   showSkeleton?: boolean
   coSign?: Remix | null
@@ -82,7 +81,6 @@ const TrackTileArt = ({
 const CollectionTileArt = ({
   id,
   className,
-  coverArtSizes,
   showSkeleton,
   coSign,
   label,
@@ -91,11 +89,10 @@ const CollectionTileArt = ({
   artworkIconClassName,
   callback
 }: TrackTileArtProps) => {
-  const image = useCollectionCoverArt(
-    id,
-    coverArtSizes,
-    SquareSizes.SIZE_150_BY_150
-  )
+  const image = useCollectionCoverArt3({
+    collectionId: id,
+    size: SquareSizes.SIZE_150_BY_150
+  })
 
   const imageProps = {
     image: showSkeleton ? '' : image,

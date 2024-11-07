@@ -68,7 +68,6 @@ type OwnProps = Omit<
   | 'saveCount'
   | 'trackCount'
   | 'ownerId'
-  | 'coverArtSizes'
   | 'isActive'
   | 'isPlaying'
   | 'contentTitle'
@@ -285,7 +284,6 @@ const ConnectedPlaylistTile = ({
       artistName={user.name}
       artistIsVerified={user.is_verified}
       ownerId={collection.playlist_owner_id}
-      coverArtSizes={collection._cover_art_sizes}
       duration={tracks.reduce(
         (duration: number, track: Track) => duration + track.duration,
         0

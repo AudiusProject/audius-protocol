@@ -2,7 +2,6 @@ import {
   PlayableType,
   SquareSizes,
   ID,
-  CoverArtSizes,
   Playable,
   User
 } from '@audius/common/models'
@@ -14,7 +13,7 @@ import DynamicImage from 'components/dynamic-image/DynamicImage'
 import Lineup, { LineupProps } from 'components/lineup/Lineup'
 import MobilePageContainer from 'components/mobile-page-container/MobilePageContainer'
 import UserBadges from 'components/user-badges/UserBadges'
-import { useCollectionCoverArt } from 'hooks/useCollectionCoverArt'
+import { useCollectionCoverArt3 } from 'hooks/useCollectionCoverArt'
 import { useTrackCoverArt } from 'hooks/useTrackCoverArt'
 import { withNullGuard } from 'utils/withNullGuard'
 
@@ -29,13 +28,7 @@ const messages = {
   moreBy: (name: string) => `More by ${name}`
 }
 
-const TrackArt = ({
-  trackId,
-  coverArtSizes
-}: {
-  trackId: ID
-  coverArtSizes: CoverArtSizes
-}) => {
+const TrackArt = ({ trackId }: { trackId: ID }) => {
   const image = useTrackCoverArt({
     trackId,
     size: SquareSizes.SIZE_480_BY_480
@@ -43,18 +36,11 @@ const TrackArt = ({
   return <DynamicImage wrapperClassName={styles.image} image={image} />
 }
 
-const CollectionArt = ({
-  collectionId,
-  coverArtSizes
-}: {
-  collectionId: ID
-  coverArtSizes: CoverArtSizes
-}) => {
-  const image = useCollectionCoverArt(
+const CollectionArt = ({ collectionId }: { collectionId: ID }) => {
+  const image = useCollectionCoverArt3({
     collectionId,
-    coverArtSizes,
-    SquareSizes.SIZE_480_BY_480
-  )
+    size: SquareSizes.SIZE_480_BY_480
+  })
   return <DynamicImage wrapperClassName={styles.image} image={image} />
 }
 
@@ -108,15 +94,9 @@ const DeletedPage = g(
           <div className={styles.type}>{headingText}</div>
           {playable.type === PlayableType.PLAYLIST ||
           playable.type === PlayableType.ALBUM ? (
-            <CollectionArt
-              collectionId={playable.metadata.playlist_id}
-              coverArtSizes={playable.metadata._cover_art_sizes}
-            />
+            <CollectionArt collectionId={playable.metadata.playlist_id} />
           ) : (
-            <TrackArt
-              trackId={playable.metadata.track_id}
-              coverArtSizes={playable.metadata._cover_art_sizes}
-            />
+            <TrackArt trackId={playable.metadata.track_id} />
           )}
           <div className={styles.title}>
             <h1>

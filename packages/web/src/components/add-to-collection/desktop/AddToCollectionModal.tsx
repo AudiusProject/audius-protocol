@@ -22,7 +22,7 @@ import { useModalState } from 'common/hooks/useModalState'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import SearchBar from 'components/search-bar/SearchBar'
 import { Tooltip } from 'components/tooltip'
-import { useCollectionCoverArt } from 'hooks/useCollectionCoverArt'
+import { useCollectionCoverArt3 } from 'hooks/useCollectionCoverArt'
 
 import styles from './AddToCollectionModal.module.css'
 const { getCollectionType, getTrackId, getTrackTitle } =
@@ -189,11 +189,10 @@ const CollectionItem = ({
   collection,
   collectionType
 }: CollectionItemProps) => {
-  const image = useCollectionCoverArt(
-    collection.playlist_id,
-    collection._cover_art_sizes,
-    SquareSizes.SIZE_150_BY_150
-  )
+  const image = useCollectionCoverArt3({
+    collectionId: collection.playlist_id,
+    size: SquareSizes.SIZE_150_BY_150
+  })
 
   const messages = getMessages(collectionType)
   return (

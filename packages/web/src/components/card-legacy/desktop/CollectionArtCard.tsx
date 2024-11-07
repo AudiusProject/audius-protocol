@@ -22,7 +22,7 @@ import PerspectiveCard from 'components/perspective-card/PerspectiveCard'
 import RepostFavoritesStats, {
   Size
 } from 'components/repost-favorites-stats/RepostFavoritesStats'
-import { useCollectionCoverArt } from 'hooks/useCollectionCoverArt'
+import { useCollectionCoverArt3 } from 'hooks/useCollectionCoverArt'
 import {
   setUsers,
   setVisibility
@@ -132,12 +132,11 @@ const CollectionArtCard = g(
       setModalVisibility()
     }, [setFavoriteUsers, setModalVisibility, playlist_id])
 
-    const image = useCollectionCoverArt(
-      playlist_id,
-      _cover_art_sizes,
-      SquareSizes.SIZE_480_BY_480,
-      placeholderArt
-    )
+    const image = useCollectionCoverArt3({
+      collectionId: playlist_id,
+      size: SquareSizes.SIZE_480_BY_480,
+      defaultImage: placeholderArt
+    })
 
     useEffect(() => {
       if (image && setDidLoad) setDidLoad(index)

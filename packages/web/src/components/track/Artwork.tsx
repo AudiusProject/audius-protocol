@@ -12,14 +12,13 @@ import CoSign from 'components/co-sign/CoSign'
 import { Size } from 'components/co-sign/types'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
-import { useCollectionCoverArt } from 'hooks/useCollectionCoverArt'
+import { useCollectionCoverArt3 } from 'hooks/useCollectionCoverArt'
 import { useTrackCoverArt } from 'hooks/useTrackCoverArt'
 
 import styles from './Artwork.module.css'
 
 type TileArtworkProps = {
   id: ID
-  coverArtSizes: CoverArtSizes
   size: any
   isBuffering: boolean
   isPlaying: boolean
@@ -140,11 +139,10 @@ export const TrackArtwork = memo((props: TileArtworkProps) => {
 })
 
 export const CollectionArtwork = memo((props: TileArtworkProps) => {
-  const image = useCollectionCoverArt(
-    props.id,
-    props.coverArtSizes,
-    SquareSizes.SIZE_150_BY_150
-  )
+  const image = useCollectionCoverArt3({
+    collectionId: props.id,
+    size: SquareSizes.SIZE_150_BY_150
+  })
 
   return <Artwork {...props} image={image} />
 })

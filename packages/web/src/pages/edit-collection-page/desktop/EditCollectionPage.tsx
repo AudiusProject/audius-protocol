@@ -20,7 +20,7 @@ import { EditCollectionForm } from 'components/edit-collection/EditCollectionFor
 import Header from 'components/header/desktop/Header'
 import LoadingSpinnerFullPage from 'components/loading-spinner-full-page/LoadingSpinnerFullPage'
 import Page from 'components/page/Page'
-import { useCollectionCoverArt2 } from 'hooks/useCollectionCoverArt'
+import { useCollectionCoverArt3 } from 'hooks/useCollectionCoverArt'
 import { useIsUnauthorizedForHandleRedirect } from 'hooks/useManagedAccountNotAllowedRedirect'
 import { useRequiresAccount } from 'hooks/useRequiresAccount'
 import { track } from 'services/analytics'
@@ -67,10 +67,10 @@ export const EditCollectionPage = () => {
 
   const { playlist_id, tracks, description } = collection ?? {}
 
-  const artworkUrl = useCollectionCoverArt2(
-    playlist_id,
-    SquareSizes.SIZE_1000_BY_1000
-  )
+  const artworkUrl = useCollectionCoverArt3({
+    collectionId: playlist_id,
+    size: SquareSizes.SIZE_1000_BY_1000
+  })
 
   const initialValues = {
     ...collection,

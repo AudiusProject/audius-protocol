@@ -4,7 +4,7 @@ import { Flex, Text } from '@audius/harmony'
 
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import UserBadges from 'components/user-badges/UserBadges'
-import { useCollectionCoverArt2 } from 'hooks/useCollectionCoverArt'
+import { useCollectionCoverArt3 } from 'hooks/useCollectionCoverArt'
 import { useTrackCoverArt } from 'hooks/useTrackCoverArt'
 
 type ComposePreviewInfoProps = {
@@ -72,10 +72,10 @@ type ComposerCollectionInfoProps = {
 
 export const ComposerCollectionInfo = (props: ComposerCollectionInfoProps) => {
   const { collectionId } = props
-  const image = useCollectionCoverArt2(
+  const image = useCollectionCoverArt3({
     collectionId,
-    SquareSizes.SIZE_150_BY_150
-  )
+    size: SquareSizes.SIZE_150_BY_150
+  })
 
   const { data: collection } = useGetPlaylistById(
     { playlistId: collectionId },

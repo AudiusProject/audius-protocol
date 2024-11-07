@@ -56,10 +56,10 @@ export const userCollectionMetadataFromSDK = (
       'id',
       'user_id',
       'followee_favorites',
-      'artwork',
       'favorite_count',
       'added_timestamps'
     ]),
+    artwork: input.artwork ?? {},
 
     variant: Variant.USER_GENERATED,
 

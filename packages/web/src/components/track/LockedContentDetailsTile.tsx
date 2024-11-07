@@ -22,7 +22,7 @@ import cn from 'classnames'
 import { CollectionDogEar } from 'components/collection'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import { UserLink } from 'components/link'
-import { useCollectionCoverArt } from 'hooks/useCollectionCoverArt'
+import { useCollectionCoverArt3 } from 'hooks/useCollectionCoverArt'
 import { useTrackCoverArt } from 'hooks/useTrackCoverArt'
 
 import styles from './LockedContentDetailsTile.module.css'
@@ -62,11 +62,10 @@ export const LockedContentDetailsTile = ({
     trackId: contentId,
     size: SquareSizes.SIZE_150_BY_150
   })
-  const albumArt = useCollectionCoverArt(
-    contentId,
-    metadata._cover_art_sizes ?? null,
-    SquareSizes.SIZE_150_BY_150
-  )
+  const albumArt = useCollectionCoverArt3({
+    collectionId: contentId,
+    size: SquareSizes.SIZE_150_BY_150
+  })
   const image = isAlbum ? albumArt : trackArt
 
   const label = `${title} by ${owner.name}`

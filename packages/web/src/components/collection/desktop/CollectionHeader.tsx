@@ -99,7 +99,6 @@ export const CollectionHeader = (props: CollectionHeaderProps) => {
     ownerId,
     type,
     title,
-    coverArtSizes,
     description,
     isOwner,
     isPlayable,
@@ -178,7 +177,6 @@ export const CollectionHeader = (props: CollectionHeaderProps) => {
     <Flex gap='xl' p='l' backgroundColor='white'>
       <Artwork
         collectionId={collectionId}
-        coverArtSizes={coverArtSizes}
         callback={handleLoadArtwork}
         gradient={gradient}
         icon={icon}

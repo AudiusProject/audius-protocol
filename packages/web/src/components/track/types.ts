@@ -6,7 +6,6 @@ import {
   Favorite,
   ID,
   UID,
-  CoverArtSizes,
   Repost,
   Remix,
   AccessConditions,
@@ -31,7 +30,6 @@ export type TileProps = {
   hasCurrentUserReposted: boolean
   hasCurrentUserSaved: boolean
   duration: number
-  coverArtSizes: CoverArtSizes
   activityTimestamp?: string
   togglePlay: (uid: UID, trackId: ID, source?: PlaybackSource) => void
   trackTileStyles?: {}
