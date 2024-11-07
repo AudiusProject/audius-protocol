@@ -94,6 +94,7 @@ clean:
 install-deps:
 	@go install github.com/onsi/ginkgo/v2/ginkgo@v2.19.0
 	@brew install protobuf
+	@brew install crane
 	@go install github.com/sqlc-dev/sqlc/cmd/sqlc@latest
 	@go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
 	@go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
@@ -169,6 +170,16 @@ bin/core: $(BUILD_SRCS)
 core-build-amd64: bin/core-amd64
 bin/core-amd64: $(BUILD_SRCS)
 	@GOOS=linux GOARCH=amd64 go build -ldflags "$(VERSION_LDFLAG)" -o bin/core-amd64 ./cmd/core/main.go
+
+.PHONY: core-force-release-stage core-force-release-foundation core-force-release-sps
+core-force-release-stage:
+	@bash scripts/release-core.sh $@
+
+core-force-release-foundation:
+	@bash scripts/release-core.sh $@
+
+core-force-release-sps:
+	@bash scripts/release-core.sh $@
 
 .PHONY: core-dev
 core-dev: gen
