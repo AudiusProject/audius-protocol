@@ -130,18 +130,18 @@ const BioSkeleton = () => {
 export const ExpandableSectionSkeleton = () => {
   const styles = useStyles()
   return (
-    <Flex column gap='s'>
+    <Flex column gap='s' backgroundColor='white'>
       <Flex row wrap='wrap'>
         <BioSkeleton />
       </Flex>
-      <View style={styles.tierAndSocials}>
+      <Flex style={styles.tierAndSocials} backgroundColor='white'>
         <Skeleton style={styles.tier} />
         <View style={styles.socialLinks}>
           <Skeleton style={styles.socialLink} />
           <Skeleton style={styles.socialLink} />
           <Skeleton style={styles.socialLink} />
         </View>
-      </View>
+      </Flex>
       {/* TODO: add tip button and supporters skeletons */}
     </Flex>
   )
@@ -152,11 +152,11 @@ export const ProfileHeaderSkeleton = () => {
   const statSkeleton = <Skeleton style={styles.stat} />
 
   return (
-    <Flex column>
+    <Flex backgroundColor='white'>
       <Skeleton height={96} />
       <Skeleton style={styles.profilePicture} />
-      <Flex p='l' gap='s'>
-        <Flex row justifyContent='space-between'>
+      <Flex p='l' gap='s' backgroundColor='white'>
+        <Flex row justifyContent='space-between' backgroundColor='white'>
           <Flex mt='3xl'>
             <Skeleton style={styles.name} />
             <Skeleton style={styles.handle} />
