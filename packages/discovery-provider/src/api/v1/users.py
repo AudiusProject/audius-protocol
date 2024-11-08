@@ -19,6 +19,7 @@ from src.api.v1.helpers import (
     extend_challenge_response,
     extend_favorite,
     extend_feed_item,
+    extend_playlist,
     extend_purchase,
     extend_supporter,
     extend_supporting,
@@ -44,8 +45,10 @@ from src.api.v1.helpers import (
     parse_bool_param,
     success_response,
     track_history_parser,
+    user_albums_route_parser,
     user_collections_library_parser,
     user_favorited_tracks_parser,
+    user_playlists_route_parser,
     user_search_parser,
     user_track_listen_count_route_parser,
     user_tracks_library_parser,
@@ -66,6 +69,7 @@ from src.api.v1.models.extensions.fields import NestedOneOf
 from src.api.v1.models.extensions.models import WildcardModel
 from src.api.v1.models.feed import user_feed_item
 from src.api.v1.models.grants import managed_user, user_manager
+from src.api.v1.models.playlists import full_playlist_model, playlist_model
 from src.api.v1.models.support import (
     supporter_response,
     supporter_response_full,
@@ -121,6 +125,7 @@ from src.queries.get_managed_users import (
     get_user_managers_with_grants,
     is_active_manager,
 )
+from src.queries.get_playlists import GetPlaylistsArgs, get_playlists
 from src.queries.get_purchasers import (
     GetPurchasersArgs,
     get_purchasers,
@@ -882,6 +887,166 @@ class FavoritedTracks(Resource):
         favorites = get_saves("tracks", decoded_id)
         favorites = list(map(extend_favorite, favorites))
         return success_response(favorites)
+
+
+USER_PLAYLISTS_ROUTE = "/<string:id>/playlists"
+
+
+playlists_response_full = make_full_response(
+    "playlists_response_full", full_ns, fields.List(fields.Nested(full_playlist_model))
+)
+
+
+@full_ns.route(USER_PLAYLISTS_ROUTE, doc=False)
+class PlaylistsFull(Resource):
+    def _get(self, id, authed_user_id):
+        decoded_id = decode_with_abort(id, ns)
+        args = user_playlists_route_parser.parse_args()
+
+        current_user_id = get_current_user_id(args)
+
+        offset = format_offset(args)
+        limit = format_limit(args)
+
+        args = GetPlaylistsArgs(
+            user_id=decoded_id,
+            authed_user_id=authed_user_id,
+            current_user_id=current_user_id,
+            filter_deleted=True,
+            limit=limit,
+            offset=offset,
+            kind="Playlist",
+        )
+        playlists = get_playlists(args)
+
+        def format_playlist(playlist):
+            extended_playlist = extend_playlist(playlist)
+            # TODO: https://linear.app/audius/issue/PAY-3398/fix-playlist-contents-serialization
+            extended_playlist["playlist_contents"] = extended_playlist[
+                "added_timestamps"
+            ]
+            return extended_playlist
+
+        playlists = list(map(format_playlist, playlists))
+        return success_response(playlists)
+
+    @full_ns.doc(
+        id="""Get Playlists by User""",
+        description="""Gets the playlists created by a user using their user ID""",
+        params={
+            "id": "A User ID",
+        },
+        responses={200: "Success", 400: "Bad request", 500: "Server error"},
+    )
+    @full_ns.expect(user_playlists_route_parser)
+    @auth_middleware(user_playlists_route_parser)
+    @full_ns.marshal_with(playlists_response_full)
+    def get(self, id, authed_user_id=None):
+        return self._get(id, authed_user_id)
+
+
+playlists_response = make_response(
+    "playlists_response", ns, fields.List(fields.Nested(playlist_model))
+)
+
+
+@ns.route(USER_PLAYLISTS_ROUTE)
+class Playlists(PlaylistsFull):
+    @record_metrics
+    @ns.doc(
+        id="""Get Playlists by User""",
+        description="""Gets the playlists created by a user using their user ID""",
+        params={
+            "id": "A User ID",
+        },
+        responses={200: "Success", 400: "Bad request", 500: "Server error"},
+    )
+    @ns.expect(user_playlists_route_parser)
+    @auth_middleware(parser=user_playlists_route_parser)
+    @ns.marshal_with(playlists_response)
+    @cache(ttl_sec=5)
+    def get(self, id, authed_user_id=None):
+        return super()._get(id, authed_user_id)
+
+
+USER_ALBUMS_ROUTE = "/<string:id>/albums"
+
+
+albums_response_full = make_full_response(
+    "albums_response_full", ns, fields.List(fields.Nested(full_playlist_model))
+)
+
+
+@full_ns.route(USER_ALBUMS_ROUTE, doc=False)
+class AlbumsFull(Resource):
+    def _get(self, id, authed_user_id):
+        decoded_id = decode_with_abort(id, ns)
+        args = user_albums_route_parser.parse_args()
+
+        current_user_id = get_current_user_id(args)
+
+        offset = format_offset(args)
+        limit = format_limit(args)
+
+        args = GetPlaylistsArgs(
+            user_id=decoded_id,
+            authed_user_id=authed_user_id,
+            current_user_id=current_user_id,
+            filter_deleted=True,
+            limit=limit,
+            offset=offset,
+            kind="Album",
+        )
+        albums = get_playlists(args)
+
+        def format_playlist(playlist):
+            extended_playlist = extend_playlist(playlist)
+            # TODO: https://linear.app/audius/issue/PAY-3398/fix-playlist-contents-serialization
+            extended_playlist["playlist_contents"] = extended_playlist[
+                "added_timestamps"
+            ]
+            return extended_playlist
+
+        albums = list(map(format_playlist, albums))
+        return success_response(albums)
+
+    @full_ns.doc(
+        id="""Get Albums by User""",
+        description="""Gets the albums created by a user using their user ID""",
+        params={
+            "id": "A User ID",
+        },
+        responses={200: "Success", 400: "Bad request", 500: "Server error"},
+    )
+    @full_ns.expect(user_albums_route_parser)
+    @auth_middleware(parser=user_albums_route_parser)
+    @full_ns.marshal_with(albums_response_full)
+    def get(self, id, authed_user_id=None):
+        return self._get(id, authed_user_id)
+
+
+albums_response = make_response(
+    "albums_response", ns, fields.List(fields.Nested(playlist_model))
+)
+
+
+@ns.route(USER_ALBUMS_ROUTE)
+class Albums(AlbumsFull):
+    @record_metrics
+    @ns.doc(
+        id="""Get Albums by User""",
+        description="""Gets the albums created by a user using their user ID""",
+        params={
+            "id": "A User ID",
+        },
+        responses={200: "Success", 400: "Bad request", 500: "Server error"},
+    )
+    @ns.expect(user_albums_route_parser)
+    @auth_middleware(parser=user_albums_route_parser)
+    @ns.marshal_with(albums_response)
+    @cache(ttl_sec=5)
+    def get(self, id, authed_user_id=None):
+        return super()._get(id, authed_user_id)
 
 
 USER_TRACKS_LIBRARY_ROUTE = "/<string:id>/library/tracks"

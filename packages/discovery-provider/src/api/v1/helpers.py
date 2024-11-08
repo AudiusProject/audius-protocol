@@ -405,7 +405,10 @@ def extend_playlist(playlist):
     playlist["user_id"] = owner_id
     playlist = add_playlist_artwork(playlist)
     if "user" in playlist:
-        playlist["user"] = extend_user(playlist["user"])
+        if isinstance(playlist["user"], list):
+            playlist["user"] = extend_user(playlist["user"][0])
+        else:
+            playlist["user"] = extend_user(playlist["user"])
     if "followee_saves" in playlist:
         playlist["followee_favorites"] = list(
             map(extend_favorite, playlist["followee_saves"])
@@ -930,6 +933,9 @@ user_tracks_route_parser.add_argument(
     default="all",
     choices=("all", "public", "unlisted"),
 )
+
+user_playlists_route_parser = pagination_with_current_user_parser.copy()
+user_albums_route_parser = pagination_with_current_user_parser.copy()
 
 full_search_parser = pagination_with_current_user_parser.copy()
 full_search_parser.add_argument("query", required=False, description="The search query")
