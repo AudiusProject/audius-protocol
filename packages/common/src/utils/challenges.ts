@@ -79,7 +79,7 @@ export const challengeRewardsConfig: Record<
       `You earned ${challenge?.totalAmount ?? ''} $AUDIO for being invited.`,
     fullDescription: (challenge) =>
       `You earned ${challenge?.totalAmount ?? ''} $AUDIO for being invited.`,
-    progressLabel: '%0/%1 Invites',
+    progressLabel: 'Not Earned',
     panelButtonText: 'More Info'
   },
   [ChallengeName.Referred]: {
@@ -89,7 +89,7 @@ export const challengeRewardsConfig: Record<
       `You earned ${challenge?.totalAmount ?? ''} $AUDIO for being invited.`,
     fullDescription: (challenge) =>
       `You earned ${challenge?.totalAmount ?? ''} $AUDIO for being invited.`,
-    progressLabel: '%0/%1 Invites',
+    progressLabel: 'Not Earned',
     panelButtonText: 'More Info'
   },
   'connect-verified': {
