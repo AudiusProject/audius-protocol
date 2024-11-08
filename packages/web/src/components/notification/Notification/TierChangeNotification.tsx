@@ -68,8 +68,9 @@ export const TierChangeNotification = (props: TierChangeNotificationProps) => {
         </NotificationTitle>
       </NotificationHeader>
       <NotificationBody>
-        {messages.reached} {tier} {messages.having} {humanReadableAmount}{' '}
-        {messages.audio} {messages.accessInfo}
+        {messages.reached} {`${tier[0].toUpperCase()}${tier.slice(1)}`}{' '}
+        {messages.having} {humanReadableAmount} {messages.audio}{' '}
+        {messages.accessInfo}
       </NotificationBody>
       <TwitterShareButton
         type='static'
