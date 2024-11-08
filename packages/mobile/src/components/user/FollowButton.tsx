@@ -28,13 +28,13 @@ export const FollowButton = (props: FollowButtonsProps) => {
   const handlePress = useCallback(
     (event: GestureResponderEvent) => {
       onPress?.(event)
-      setTimeout(() => {
+      requestAnimationFrame(() => {
         if (isFollowing) {
           dispatch(unfollowUser(userId, followSource))
         } else {
           dispatch(followUser(userId, followSource))
         }
-      }, 1)
+      })
     },
     [onPress, dispatch, isFollowing, userId, followSource]
   )
