@@ -30,6 +30,7 @@ import {
 import type { CommonState } from '@audius/common/store'
 import { Genre, removeNullable } from '@audius/common/utils'
 import { useNavigationState } from '@react-navigation/native'
+import { InteractionManager } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 
 import type { ImageProps } from '@audius/harmony-native'
@@ -146,12 +147,14 @@ export const TrackTileComponent = ({
   )
 
   const handlePress = useCallback(() => {
-    togglePlay({
-      uid: lineupTileProps.uid,
-      id: track_id,
-      source: PlaybackSource.TRACK_TILE
-    })
-    onPress?.(track_id)
+    setTimeout(() => {
+      togglePlay({
+        uid: lineupTileProps.uid,
+        id: track_id,
+        source: PlaybackSource.TRACK_TILE
+      })
+      onPress?.(track_id)
+    }, 100)
   }, [togglePlay, lineupTileProps.uid, track_id, onPress])
 
   const handlePressTitle = useCallback(() => {
