@@ -8,7 +8,6 @@ import type { SectionList as RNSectionList, ViewStyle } from 'react-native'
 import { Dimensions, StyleSheet, View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 
-import { Text } from '@audius/harmony-native'
 import { SectionList } from 'app/components/core'
 import {
   CollectionTile,
@@ -540,7 +539,6 @@ export const Lineup = ({
 
   return (
     <View style={styles.root}>
-      <Text>length: {lineupLength}</Text>
       <SectionList
         {...listProps}
         {...pullToRefreshProps}
