@@ -17,6 +17,7 @@ import { NotificationTile } from './components/NotificationTile'
 import { NotificationTitle } from './components/NotificationTitle'
 import { TwitterShareButton } from './components/TwitterShareButton'
 import { IconTier } from './components/icons'
+import { capitalize } from 'lodash'
 const { getNotificationUser } = notificationsSelectors
 
 const messages = {
@@ -68,9 +69,8 @@ export const TierChangeNotification = (props: TierChangeNotificationProps) => {
         </NotificationTitle>
       </NotificationHeader>
       <NotificationBody>
-        {messages.reached} {`${tier[0].toUpperCase()}${tier.slice(1)}`}{' '}
-        {messages.having} {humanReadableAmount} {messages.audio}{' '}
-        {messages.accessInfo}
+        {messages.reached} {capitalize(tier)} {messages.having}{' '}
+        {humanReadableAmount} {messages.audio} {messages.accessInfo}
       </NotificationBody>
       <TwitterShareButton
         type='static'
