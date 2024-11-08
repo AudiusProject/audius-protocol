@@ -841,30 +841,6 @@ export const audiusBackend = ({
     }
   }
 
-  async function repostTrack(
-    trackId: ID,
-    metadata?: { is_repost_of_repost: boolean }
-  ) {
-    try {
-      return await audiusLibs.EntityManager.repostTrack(
-        trackId,
-        JSON.stringify(metadata)
-      )
-    } catch (err) {
-      console.error(getErrorMessage(err))
-      throw err
-    }
-  }
-
-  async function undoRepostTrack(trackId: ID) {
-    try {
-      return await audiusLibs.EntityManager.unrepostTrack(trackId)
-    } catch (err) {
-      console.error(getErrorMessage(err))
-      throw err
-    }
-  }
-
   async function repostCollection(
     playlistId: ID,
     metadata?: { is_repost_of_repost: boolean }
@@ -2247,7 +2223,6 @@ export const audiusBackend = ({
     recordTrackListen,
     registerDeviceToken,
     repostCollection,
-    repostTrack,
     resetPassword,
     saveCollection,
     searchTags,
@@ -2267,7 +2242,6 @@ export const audiusBackend = ({
     instagramHandle,
     tiktokHandle,
     undoRepostCollection,
-    undoRepostTrack,
     unfollowUser,
     unsaveCollection,
     updateBrowserNotifications,
