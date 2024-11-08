@@ -14,9 +14,7 @@ const messages = {
 }
 
 const useStyles = makeStyles(({ spacing, palette }) => ({
-  root: {
-    margin: spacing(3)
-  },
+  root: {},
   content: {
     paddingVertical: spacing(3) + 2,
     paddingHorizontal: spacing(4)
