@@ -183,7 +183,6 @@ core-force-release-sps:
 
 .PHONY: core-dev
 core-dev: gen
-	audius-compose down
 	audius-compose up db core core-content-1 core-content-2 core-content-3 eth-ganache ingress
 
 .PHONY: core-test
