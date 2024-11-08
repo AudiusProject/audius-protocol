@@ -4,6 +4,7 @@ import {
   TierChangeNotification as TierChangeNotificationType,
   BadgeTierInfo
 } from '@audius/common/store'
+import { capitalize } from 'lodash'
 
 import { audioTierMapPng } from 'components/user-badges/UserBadges'
 import { useSelector } from 'utils/reducer'
@@ -17,7 +18,6 @@ import { NotificationTile } from './components/NotificationTile'
 import { NotificationTitle } from './components/NotificationTitle'
 import { TwitterShareButton } from './components/TwitterShareButton'
 import { IconTier } from './components/icons'
-import { capitalize } from 'lodash'
 const { getNotificationUser } = notificationsSelectors
 
 const messages = {
