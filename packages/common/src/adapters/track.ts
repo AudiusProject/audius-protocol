@@ -16,7 +16,7 @@ import type { NativeFile, TrackMetadataForUpload } from '~/store/upload/types'
 import { License } from '~/utils'
 import { decodeHashId, encodeHashId } from '~/utils/hashIds'
 
-import { accessConditionsFromSDK } from './access'
+import { accessConditionsFromSDK, accessConditionsToSDK } from './access'
 import { resourceContributorFromSDK } from './attribution'
 import { favoriteFromSDK } from './favorite'
 import { coverArtSizesCIDsFromSDK } from './imageSize'
@@ -254,18 +254,32 @@ export const trackMetadataForUploadToSdk = (
       'is_custom_musical_key',
       'comments_disabled',
       'ddex_release_ids',
-      'parental_warning_type'
+      'parental_warning_type',
+      'audio_upload_id',
+      'ai_attribution_user_id'
     ])
   ),
-  title: input.title!,
-  description: input.description!,
+  title: input.title,
+  description: input.description ?? undefined,
   mood: input.mood as Mood,
   tags: input.tags ?? undefined,
   genre: (input.genre as Genre) || undefined,
   releaseDate: input.release_date ? new Date(input.release_date) : undefined,
-  previewStartSeconds: input.preview_start_seconds ?? undefined,
+  previewStartSeconds: input.preview_start_seconds ?? 0,
   previewCid: input.preview_cid ?? '',
   ddexApp: input.ddex_app ?? '',
+  aiAttributionUserId: input.ai_attribution_user_id
+    ? encodeHashId(input.ai_attribution_user_id)
+    : undefined,
+  fieldVisibility: input.field_visibility
+    ? camelcaseKeys(input.field_visibility)
+    : undefined,
+  downloadConditions: input.download_conditions
+    ? accessConditionsToSDK(input.download_conditions)
+    : undefined,
+  streamConditions: input.stream_conditions
+    ? accessConditionsToSDK(input.stream_conditions)
+    : undefined,
   remixOf: input.remix_of
     ? {
         tracks: input.remix_of.tracks.map((track) => ({

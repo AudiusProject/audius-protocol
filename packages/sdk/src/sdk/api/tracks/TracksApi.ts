@@ -225,7 +225,7 @@ export class TracksApi extends GeneratedTracksApi {
     }
 
     if (transcodePreview) {
-      if (!updatedMetadata.previewStartSeconds) {
+      if (updatedMetadata.previewStartSeconds === undefined) {
         throw new Error('No track preview start time specified')
       }
       if (!updatedMetadata.audioUploadId) {
