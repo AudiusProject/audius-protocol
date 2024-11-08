@@ -409,6 +409,9 @@ const slice = createSlice({
         ...chat,
         messagesStatus
       })
+      if (!(chat.chat_id in state.messages)) {
+        state.messages[chat.chat_id] = chatMessagesAdapter.getInitialState()
+      }
     },
     markChatAsRead: (state, action: PayloadAction<{ chatId: string }>) => {
       // triggers saga
@@ -506,41 +509,6 @@ const slice = createSlice({
         changes
       })
 
-      // Handle unread counts
-      if (existingChat && !existingChat.is_blast) {
-        const optimisticRead = state.optimisticChatRead[chatId]
-        const existingUnreadCount = optimisticRead
-          ? optimisticRead.unread_message_count
-          : existingChat?.unread_message_count ?? 0
-        if (!isSelfMessage) {
-          // If we're actively reading, this will immediately get marked as read.
-          // Ignore the unread bump to prevent flicker
-          if (state.activeChatId !== chatId) {
-            chatsAdapter.updateOne(state.chats, {
-              id: chatId,
-              changes: { unread_message_count: existingUnreadCount + 1 }
-            })
-          }
-
-          // Web or mobile: update optimistic unread count
-          state.optimisticUnreadMessagesCount =
-            (state.optimisticUnreadMessagesCount ?? state.unreadMessagesCount) +
-            1
-        } else {
-          // Mark chat as read if its our own
-          chatsAdapter.updateOne(state.chats, {
-            id: chatId,
-            changes: {
-              unread_message_count: 0,
-              last_read_at: message.created_at
-            }
-          })
-          state.optimisticUnreadMessagesCount =
-            (state.optimisticUnreadMessagesCount ?? state.unreadMessagesCount) -
-            existingUnreadCount
-        }
-      }
-
       // If no chatId, don't add the message
       // and abort early, relying on the saga
       // to fetch the chat
@@ -572,6 +540,39 @@ const slice = createSlice({
 
       // Recalculate tails
       recalculatePreviousMessageHasTail(state.messages[chatId], 0)
+
+      // Handle unread counts
+      if (!existingChat || existingChat.is_blast) return
+      const optimisticRead = state.optimisticChatRead[chatId]
+      const existingUnreadCount = optimisticRead
+        ? optimisticRead.unread_message_count
+        : existingChat?.unread_message_count ?? 0
+      if (!isSelfMessage) {
+        // If we're actively reading, this will immediately get marked as read.
+        // Ignore the unread bump to prevent flicker
+        if (state.activeChatId !== chatId) {
+          chatsAdapter.updateOne(state.chats, {
+            id: chatId,
+            changes: { unread_message_count: existingUnreadCount + 1 }
+          })
+        }
+
+        // Web or mobile: update optimistic unread count
+        state.optimisticUnreadMessagesCount =
+          (state.optimisticUnreadMessagesCount ?? state.unreadMessagesCount) + 1
+      } else {
+        // Mark chat as read if its our own
+        chatsAdapter.updateOne(state.chats, {
+          id: chatId,
+          changes: {
+            unread_message_count: 0,
+            last_read_at: message.created_at
+          }
+        })
+        state.optimisticUnreadMessagesCount =
+          (state.optimisticUnreadMessagesCount ?? state.unreadMessagesCount) -
+          existingUnreadCount
+      }
     },
     /**
      * Marks the chat as currently being read.
