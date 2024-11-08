@@ -1,3 +1,4 @@
+import { userCollectionMetadataFromSDK } from '@audius/common/adapters'
 import {
   Name,
   DefaultSizes,
@@ -5,7 +6,9 @@ import {
   CollectionMetadata,
   Collection,
   ID,
-  Track
+  Track,
+  Id,
+  OptionalId
 } from '@audius/common/models'
 import { newCollectionMetadata } from '@audius/common/schemas'
 import {
@@ -193,7 +196,9 @@ function* createAndConfirmPlaylist(
   isAlbum: boolean
 ) {
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
-  const { createPlaylist, getPlaylists } = audiusBackendInstance
+  const audiusSdk = yield* getContext('audiusSdk')
+  const sdk = yield* call(audiusSdk)
+  const { createPlaylist } = audiusBackendInstance
 
   const event = make(Name.PLAYLIST_START_CREATE, {
     source,
@@ -223,7 +228,24 @@ function* createAndConfirmPlaylist(
 
     // Merge the confirmed playlist with the optimistic playlist, preferring
     // optimistic data in case other unconfirmed edits have been made.
-    const [confirmedPlaylist] = yield* call(getPlaylists, userId, [playlistId])
+    // const [confirmedPlaylist] = yield* call(getPlaylists, userId, [playlistId])
+    const { data: playlist } = yield* call(
+      [sdk.full.playlists, sdk.full.playlists.getPlaylist],
+      {
+        userId: OptionalId.parse(userId),
+        playlistId: Id.parse(playlistId)
+      }
+    )
+
+    const confirmedPlaylist = playlist?.[0]
+      ? userCollectionMetadataFromSDK(playlist[0])
+      : null
+    if (!confirmedPlaylist) {
+      throw new Error(
+        `Could not find confirmed playlist creation for playlist id ${playlistId}`
+      )
+    }
+
     const optimisticPlaylist = yield* select(getCollection, { id: playlistId })
 
     const reformattedPlaylist = {

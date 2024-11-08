@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react'
 
+import { userCollectionMetadataFromSDK } from '@audius/common/adapters'
 import { useAppContext } from '@audius/common/context'
-import { SquareSizes, UserCollectionMetadata } from '@audius/common/models'
+import { SquareSizes, Id } from '@audius/common/models'
 import { Nullable, Maybe, route } from '@audius/common/utils'
 import { StorageNodeSelectorService } from '@audius/sdk'
 // eslint-disable-next-line no-restricted-imports -- TODO: migrate to @react-spring/web
@@ -19,7 +20,7 @@ import { fetchExploreContent } from 'common/store/pages/explore/sagas'
 import useCardWeight from 'hooks/useCardWeight'
 import useHasViewed from 'hooks/useHasViewed'
 import { handleClickRoute } from 'public-site/components/handleClickRoute'
-import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
+import { audiusSdk } from 'services/audius-sdk'
 import { env } from 'services/env'
 
 import styles from './FeaturedContent.module.css'
@@ -153,11 +154,11 @@ const FeaturedContent = (props: FeaturedContentProps) => {
     useAsyncFn(async () => {
       const featuredContent = await fetchExploreContent(env.EXPLORE_CONTENT_URL)
       const ids = featuredContent.featuredPlaylists
-      const playlists = audiusBackendInstance.getPlaylists(
-        null,
-        ids
-      ) as any as UserCollectionMetadata[]
-      return playlists
+      const sdk = await audiusSdk()
+      const playlists = await sdk.full.playlists.getBulkPlaylists({
+        id: ids.map((id) => Id.parse(id))
+      })
+      return playlists.data?.map((p) => userCollectionMetadataFromSDK(p)) ?? []
     }, [])
 
   useEffect(() => {

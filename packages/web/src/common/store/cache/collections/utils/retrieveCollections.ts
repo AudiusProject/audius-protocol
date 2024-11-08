@@ -38,9 +38,6 @@ const { getCollections } = cacheCollectionsSelectors
 const { setPermalink } = cacheCollectionsActions
 const getUserId = accountSelectors.getUserId
 
-// Attempting to fetch more than this amount at once could result in a 400
-// due to the URL being too long.
-const COLLECTIONS_BATCH_LIMIT = 50
 const TRACKS_BATCH_LIMIT = 200
 
 function* markCollectionDeleted(
@@ -248,24 +245,33 @@ export function* retrieveCollections(
     },
     getEntriesTimestamp: selectEntriesTimestamp,
     retrieveFromSource: function* (ids: ID[]) {
-      const audiusBackendInstance = yield* getContext('audiusBackendInstance')
+      const audiusSdk = yield* getContext('audiusSdk')
+      const sdk = yield* call(audiusSdk)
       let metadatas: CollectionMetadata[]
+      console.log({ ids })
 
       if (ids.length === 1) {
-        metadatas = yield* call(retrieveCollection, { playlistId: ids[0] })
-      } else {
-        // TODO: Remove this branch when we have batched endpoints in new V1 api.
-        // Request ids in chunks if we're asked for too many
-        const chunks = yield* all(
-          chunk(ids, COLLECTIONS_BATCH_LIMIT).map((chunkedCollectionIds) =>
-            call(
-              audiusBackendInstance.getPlaylists,
-              userId,
-              chunkedCollectionIds
-            )
-          )
+        const { data = [] } = yield* call(
+          [sdk.playlists, sdk.full.playlists.getPlaylist],
+          {
+            playlistId: Id.parse(ids[0]),
+            userId: OptionalId.parse(userId)
+          }
         )
-        metadatas = chunks.flat()
+        const [collection] = transformAndCleanList(
+          data,
+          userCollectionMetadataFromSDK
+        )
+        metadatas = [collection]
+      } else {
+        const { data = [] } = yield* call(
+          [sdk.playlists, sdk.full.playlists.getBulkPlaylists],
+          {
+            id: ids.map((id) => Id.parse(id)),
+            userId: OptionalId.parse(userId)
+          }
+        )
+        metadatas = transformAndCleanList(data, userCollectionMetadataFromSDK)
       }
 
       // Process any local deletions on the client

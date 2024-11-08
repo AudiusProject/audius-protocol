@@ -50,7 +50,6 @@ export const Artwork = (props: ArtworkProps) => {
     collectionId,
     size: SquareSizes.SIZE_1000_BY_1000
   })
-  console.log('image', image)
 
   const hasImage = image && image !== imageBlank
 
