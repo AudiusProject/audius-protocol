@@ -30,7 +30,6 @@ import {
 import type { CommonState } from '@audius/common/store'
 import { Genre, removeNullable } from '@audius/common/utils'
 import { useNavigationState } from '@react-navigation/native'
-import { InteractionManager } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 
 import type { ImageProps } from '@audius/harmony-native'
