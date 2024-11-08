@@ -226,9 +226,12 @@ const userApi = createApi({
           userId,
           limit = 10,
           offset = 0
-        }: { userId: ID; offset?: number; limit?: number },
+        }: { userId: ID | null | undefined; offset?: number; limit?: number },
         { audiusSdk }
       ) => {
+        if (!userId) {
+          return []
+        }
         const sdk = await audiusSdk()
         const { data = [] } = await sdk.full.users.getFollowers({
           id: Id.parse(userId),
