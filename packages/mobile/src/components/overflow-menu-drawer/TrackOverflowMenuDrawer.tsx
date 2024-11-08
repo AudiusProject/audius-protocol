@@ -27,7 +27,9 @@ import {
   usePremiumContentPurchaseModal,
   usePublishConfirmationModal,
   trackPageActions,
-  artistPickModalActions
+  artistPickModalActions,
+  playerActions,
+  playerSelectors
 } from '@audius/common/store'
 import type { CommonState, OverflowActionCallbacks } from '@audius/common/store'
 import { useDispatch, useSelector } from 'react-redux'
@@ -38,6 +40,9 @@ import { useToast } from 'app/hooks/useToast'
 import { AppTabNavigationContext } from 'app/screens/app-screen'
 import { setVisibility } from 'app/store/drawers/slice'
 
+import { useCommentDrawer } from '../comments/CommentDrawerContext'
+
+const { makeGetCurrent } = playerSelectors
 const { getUserId } = accountSelectors
 const { requestOpen: requestOpenShareModal } = shareModalUIActions
 const { getMobileOverflowModal } = mobileOverflowMenuUISelectors
@@ -71,6 +76,9 @@ const TrackOverflowMenuDrawer = ({ render }: Props) => {
   const id = modalId as ID
   const { onOpen: openPremiumContentPurchaseModal } =
     usePremiumContentPurchaseModal()
+  const currentQueueItem = useSelector(makeGetCurrent())
+
+  const { open } = useCommentDrawer()
 
   const track = useSelector((state: CommonState) => getTrack(state, { id }))
   const playlist = useSelector((state: CommonState) =>
@@ -112,6 +120,17 @@ const TrackOverflowMenuDrawer = ({ render }: Props) => {
   const handleUnsetAsArtistPick = useCallback(() => {
     dispatch(artistPickModalActions.open({ trackId: null }))
   }, [dispatch])
+
+  const handleOpenCommentsDrawer = useCallback(() => {
+    if (track?.track_id) {
+      open({
+        entityId: track.track_id,
+        navigation,
+        actions: playerActions,
+        uid: currentQueueItem.uid as string
+      })
+    }
+  }, [currentQueueItem.uid, navigation, open, track?.track_id])
 
   if (!track || !user) {
     return null
@@ -185,7 +204,6 @@ const TrackOverflowMenuDrawer = ({ render }: Props) => {
         confirmCallback: () => dispatch(trackPageActions.makeTrackPublic(id))
       })
     },
-
     [OverflowAction.DELETE_TRACK]: () => {
       dispatch(
         setVisibility({
@@ -211,7 +229,8 @@ const TrackOverflowMenuDrawer = ({ render }: Props) => {
     },
     [OverflowAction.PURCHASE_TRACK]: handlePurchasePress,
     [OverflowAction.SET_ARTIST_PICK]: handleSetAsArtistPick,
-    [OverflowAction.UNSET_ARTIST_PICK]: handleUnsetAsArtistPick
+    [OverflowAction.UNSET_ARTIST_PICK]: handleUnsetAsArtistPick,
+    [OverflowAction.VIEW_COMMENTS]: handleOpenCommentsDrawer
   }
 
   return render(callbacks)

@@ -194,6 +194,10 @@ export const ChatMessageList = forwardRef<HTMLDivElement, ChatMessageListProps>(
         dispatch(fetchMoreMessages({ chatId }))
         dispatch(setActiveChat({ chatId }))
       }
+      // Unset active chat when component unmounts
+      return () => {
+        dispatch(setActiveChat({ chatId: null }))
+      }
     }, [dispatch, chatId, chat?.messagesStatus])
 
     // Fix for if the initial load doesn't have enough messages to cause scrolling

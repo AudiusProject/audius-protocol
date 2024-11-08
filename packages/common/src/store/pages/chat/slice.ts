@@ -409,6 +409,9 @@ const slice = createSlice({
         ...chat,
         messagesStatus
       })
+      if (!(chat.chat_id in state.messages)) {
+        state.messages[chat.chat_id] = chatMessagesAdapter.getInitialState()
+      }
     },
     markChatAsRead: (state, action: PayloadAction<{ chatId: string }>) => {
       // triggers saga
@@ -561,7 +564,10 @@ const slice = createSlice({
         // Mark chat as read if its our own
         chatsAdapter.updateOne(state.chats, {
           id: chatId,
-          changes: { unread_message_count: 0, last_read_at: message.created_at }
+          changes: {
+            unread_message_count: 0,
+            last_read_at: message.created_at
+          }
         })
         state.optimisticUnreadMessagesCount =
           (state.optimisticUnreadMessagesCount ?? state.unreadMessagesCount) -

@@ -342,13 +342,14 @@ def _get_trending_playlists_with_session(
 
         # Re-associate tracks with playlists
         # track_id -> populated_track
-        populated_track_map = {track["track_id"]: track for track in populated_tracks}
+        populated_track_map = {
+            track["track_id"]: extend_track(track) for track in populated_tracks
+        }
         for playlist in playlists_map.values():
             for i in range(len(playlist["tracks"])):
                 track_id = playlist["tracks"][i]["track_id"]
                 populated = populated_track_map[track_id]
                 playlist["tracks"][i] = populated
-            playlist["tracks"] = list(map(extend_track, playlist["tracks"]))
 
     # re-sort playlists to original order, because populate_playlist_metadata
     # unsorts.

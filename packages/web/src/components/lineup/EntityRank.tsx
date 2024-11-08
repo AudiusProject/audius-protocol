@@ -1,13 +1,14 @@
 import { Flex, Text, IconCrown, IconTrending } from '@audius/harmony'
 
+const RANK_ICON_COUNT = 5
+
 type EntityRankType = {
-  type: 'crown' | 'trending'
   index: number
 }
 
 export const EntityRank = (props: EntityRankType) => {
-  const { type, index } = props
-  const Icon = type === 'crown' ? IconCrown : IconTrending
+  const { index } = props
+  const Icon = RANK_ICON_COUNT <= 5 ? IconCrown : IconTrending
 
   return (
     <Flex gap='xs' alignItems='center'>

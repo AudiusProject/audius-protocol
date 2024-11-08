@@ -30,8 +30,6 @@ const messages = {
   disabledTabTooltip: 'Nothing available'
 }
 
-const RANK_ICON_COUNT = 5
-
 // Creates a unique cache key for a time range & genre combination
 const getTimeGenreCacheKey = (timeRange: TimeRange, genre: string | null) => {
   const newGenre = genre || 'all'
@@ -201,7 +199,6 @@ const TrendingPageContent = (props: TrendingPageContentProps) => {
       <Lineup
         aria-label='weekly trending tracks'
         ordered
-        rankIconCount={trendingGenre === null ? RANK_ICON_COUNT : undefined}
         {...weekProps}
         setInView={makeSetInView(TimeRange.WEEK)}
         loadMore={makeLoadMore(TimeRange.WEEK)}

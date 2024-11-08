@@ -10,7 +10,7 @@ import { Link, LinkProps } from 'react-router-dom'
 export type LinkKind = 'track' | 'collection' | 'user' | 'mention' | 'other'
 
 export type TextLinkProps = HarmonyTextLinkProps &
-  Omit<LinkProps, 'color' | 'onClick'> & {
+  Partial<Omit<LinkProps, 'color' | 'onClick'>> & {
     stopPropagation?: boolean
     onClick?: (
       e: MouseEvent<HTMLAnchorElement>,
@@ -34,7 +34,7 @@ export const TextLink = forwardRef((props: TextLinkProps, ref: Ref<'a'>) => {
 
   return (
     <HarmonyTextLink ref={ref} asChild onClick={handleClick} {...other}>
-      <Link to={to}>{children}</Link>
+      {to ? <Link to={to}>{children}</Link> : <span>{children}</span>}
     </HarmonyTextLink>
   )
 })

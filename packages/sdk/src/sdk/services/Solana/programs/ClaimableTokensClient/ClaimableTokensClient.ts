@@ -78,6 +78,20 @@ export class ClaimableTokensClient {
   private readonly authorities: Record<TokenName, PublicKey>
   private readonly logger: LoggerService
 
+  /**
+   * Map of user banks to user bank creation promises.
+   * Prevents concurrent attempts to create the same user bank.
+   */
+  private _pendingUserBankCreationPromises: Partial<
+    Record<
+      string,
+      Promise<{
+        userBank: PublicKey
+        didExist: boolean
+      }>
+    >
+  > = {}
+
   constructor(config: ClaimableTokensConfig) {
     const configWithDefaults = mergeConfigWithDefaults(
       config,
@@ -113,38 +127,60 @@ export class ClaimableTokensClient {
     const { mint, token } = parseMintToken(args.mint, this.mints)
     const feePayer = feePayerOverride ?? (await this.client.getFeePayer())
     const userBank = await this.deriveUserBank(args)
-    const userBankAccount = await this.client.connection.getAccountInfo(
-      userBank
-    )
-    if (!userBankAccount) {
-      this.logger.debug(`User bank ${userBank} does not exist. Creating...`)
-      const createUserBankInstruction =
-        ClaimableTokensProgram.createAccountInstruction({
-          ethAddress: ethWallet,
-          payer: feePayer,
-          mint,
-          authority: this.authorities[token],
-          userBank,
-          programId: this.programId
-        })
-      const confirmationStrategyArgs =
-        await this.client.connection.getLatestBlockhash()
-      const message = new TransactionMessage({
-        payerKey: feePayer,
-        recentBlockhash: confirmationStrategyArgs.blockhash,
-        instructions: [createUserBankInstruction]
-      }).compileToLegacyMessage()
-      const transaction = new VersionedTransaction(message)
-      const signature = await this.sendTransaction(transaction)
-      const confirmationStrategy = { ...confirmationStrategyArgs, signature }
-      await this.client.connection.confirmTransaction(
-        confirmationStrategy,
-        'finalized'
-      )
-      return { userBank, didExist: false }
+
+    // If already fetching/creating this user bank, wait for the existing promise.
+    // Then assume the user bank has been created and return with didExist=true.
+    // Don't attempt to catch and retry or concurrency will again be introduced.
+    if (this._pendingUserBankCreationPromises[userBank.toBase58()]) {
+      await this._pendingUserBankCreationPromises[userBank.toBase58()]
+      return { userBank, didExist: true }
     }
-    this.logger.debug(`User bank ${userBank} already exists.`)
-    return { userBank, didExist: true }
+
+    // Create a new lock on the fetch/creation process for this user bank
+    this._pendingUserBankCreationPromises[userBank.toBase58()] = (async () => {
+      const userBankAccount = await this.client.connection.getAccountInfo(
+        userBank
+      )
+      if (!userBankAccount) {
+        this.logger.debug(`User bank ${userBank} does not exist. Creating...`)
+        const createUserBankInstruction =
+          ClaimableTokensProgram.createAccountInstruction({
+            ethAddress: ethWallet,
+            payer: feePayer,
+            mint,
+            authority: this.authorities[token],
+            userBank,
+            programId: this.programId
+          })
+        const confirmationStrategyArgs =
+          await this.client.connection.getLatestBlockhash()
+        const message = new TransactionMessage({
+          payerKey: feePayer,
+          recentBlockhash: confirmationStrategyArgs.blockhash,
+          instructions: [createUserBankInstruction]
+        }).compileToLegacyMessage()
+        const transaction = new VersionedTransaction(message)
+        const signature = await this.sendTransaction(transaction)
+        const confirmationStrategy = { ...confirmationStrategyArgs, signature }
+        await this.client.connection.confirmTransaction(
+          confirmationStrategy,
+          'finalized'
+        )
+        return { userBank, didExist: false }
+      }
+      this.logger.debug(`User bank ${userBank} already exists.`)
+      return { userBank, didExist: true }
+    })()
+    try {
+      // Wait for the promise and return the result.
+      // Note that the lock is not removed on success. Keep it as an in-memory
+      // cache that the user bank exists. Reduces RPC calls to check existence.
+      return await this._pendingUserBankCreationPromises[userBank.toBase58()]!
+    } catch (e) {
+      // Remove lock on error so that the next attempt retries creation.
+      delete this._pendingUserBankCreationPromises[userBank.toBase58()]
+      throw e
+    }
   }
 
   /**

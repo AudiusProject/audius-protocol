@@ -146,12 +146,14 @@ export const TrackTileComponent = ({
   )
 
   const handlePress = useCallback(() => {
-    togglePlay({
-      uid: lineupTileProps.uid,
-      id: track_id,
-      source: PlaybackSource.TRACK_TILE
-    })
-    onPress?.(track_id)
+    setTimeout(() => {
+      togglePlay({
+        uid: lineupTileProps.uid,
+        id: track_id,
+        source: PlaybackSource.TRACK_TILE
+      })
+      onPress?.(track_id)
+    }, 100)
   }, [togglePlay, lineupTileProps.uid, track_id, onPress])
 
   const handlePressTitle = useCallback(() => {

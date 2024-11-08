@@ -37,7 +37,6 @@ const useTrendingPlaylistLineup = (containerRef: HTMLElement) => {
     variant: LineupVariant.PLAYLIST,
     numPlaylistSkeletonRows: 5,
     scrollParent: containerRef,
-    rankIconCount: 5,
     isTrending: true,
     isOrdered: true
   })

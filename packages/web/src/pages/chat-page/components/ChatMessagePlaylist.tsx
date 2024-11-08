@@ -145,7 +145,6 @@ export const ChatMessagePlaylist = ({
       hasLoaded={() => {}}
       isLoading={status === Status.LOADING || status === Status.IDLE}
       isTrending={false}
-      showRankIcon={false}
       numLoadingSkeletonRows={tracksWithUids.length}
       togglePlay={() => {}}
       playingTrackId={playingTrackId}

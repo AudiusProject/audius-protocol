@@ -54,24 +54,16 @@ func chatCreate(tx *sqlx.Tx, userId int32, ts time.Time, params schema.ChatCreat
 			return err
 		}
 
-		// Update unread count for the invited user. Do not update for the sender of the blast.
-		var unreadCount = 0
-		for _, blast := range blasts {
-			if int(blast.FromUserID) != invitedUserId {
-				unreadCount++
-			}
-		}
-
 		// similar to above... if there is a conflict when creating chat_member records
 		// keep the version with the earliest relayed_at (created_at) timestamp.
 		_, err = tx.Exec(`
 		insert into chat_member
-			(chat_id, invited_by_user_id, invite_code, user_id, unread_count, created_at)
+			(chat_id, invited_by_user_id, invite_code, user_id, created_at)
 		values
-			($1, $2, $3, $4, $5, $6)
+			($1, $2, $3, $4, $5)
 		on conflict (chat_id, user_id)
-		do update set invited_by_user_id=$2, invite_code=$3, unread_count=$5, created_at=$6 where chat_member.created_at > $6`,
-			params.ChatID, userId, invite.InviteCode, invitedUserId, unreadCount, ts)
+		do update set invited_by_user_id=$2, invite_code=$3, created_at=$5 where chat_member.created_at > $5`,
+			params.ChatID, userId, invite.InviteCode, invitedUserId, ts)
 		if err != nil {
 			return err
 		}
@@ -154,6 +146,13 @@ func chatUpdateLatestFields(tx *sqlx.Tx, chatId string) error {
 		WHERE msg.chat_id = member.chat_id
 		AND r.user_id != member.user_id
 		AND (cleared_history_at IS NULL OR (r.created_at > cleared_history_at AND msg.created_at > cleared_history_at))
+	),
+	unread_count = (
+		select count(*) 
+		from chat_message msg 
+		where msg.created_at > COALESCE(member.last_active_at, '1970-01-01'::timestamp) 
+		and msg.user_id != member.user_id
+		and msg.chat_id = member.chat_id
 	)
 	WHERE member.chat_id = $1
 	`, chatId)
@@ -180,10 +179,6 @@ func chatSendMessage(tx *sqlx.Tx, userId int32, chatId string, messageId string,
 	if err != nil {
 		return err
 	}
-
-	// update counts for non-sender (this could be a stored proc too)
-	_, err = tx.Exec("update chat_member set unread_count = unread_count + 1 where chat_id = $1 and user_id != $2 and (last_active_at is null or last_active_at < $3)",
-		chatId, userId, messageTimestamp)
 
 	return err
 }

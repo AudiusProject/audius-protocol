@@ -17,7 +17,8 @@ import {
   formatCollectionName,
   formatUserName,
   handleRegex,
-  decodeHashId
+  decodeHashId,
+  squashNewLines
 } from '@audius/common/utils'
 import { Text, TextProps } from '@audius/harmony'
 import { CommentMention, ResolveApi, Track, User, Playlist } from '@audius/sdk'
@@ -299,6 +300,7 @@ export const UserGeneratedTextV2 = forwardRef(function (
   )
 
   const matchers: Matcher[] = [
+    // link matcher
     {
       pattern:
         /https?:\/\/([\w_-]+(?:(?:\.[\w_-]+)+))([\w.,@?^=%&:/~+#-]*[\w@?^=%&/~+#-])/g,
@@ -324,7 +326,7 @@ export const UserGeneratedTextV2 = forwardRef(function (
   // Function to split the text and insert rendered elements for matched tokens
   const parseText = (text: string) => {
     // Start with the entire text as a single unprocessed string
-    let elements: ReactNode[] = [text]
+    let elements: ReactNode[] = [squashNewLines(text, 10)]
     let key = 0
 
     // Process each matcher sequentially

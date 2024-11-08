@@ -8,11 +8,7 @@ import {
   CommonState,
   PurchaseableContentType
 } from '@audius/common/store'
-import {
-  formatCount,
-  Genre,
-  formatLineupTileDuration
-} from '@audius/common/utils'
+import { Genre, formatLineupTileDuration } from '@audius/common/utils'
 import {
   IconVolumeLevel2 as IconVolume,
   IconCheck,
@@ -26,18 +22,14 @@ import cn from 'classnames'
 import { useSelector } from 'react-redux'
 
 import { CollectionDogEar } from 'components/collection'
-import { CollectionAccessTypeLabel } from 'components/collection/CollectionAccessTypeLabel'
+import { CollectionTileStats } from 'components/collection/CollectionTileStats'
 import { TextLink } from 'components/link'
 import Skeleton from 'components/skeleton/Skeleton'
 import { useRequiresAccountOnClick } from 'hooks/useRequiresAccount'
 
-import {
-  LockedStatusPill,
-  LockedStatusPillProps
-} from '../../locked-status-pill'
 import { OwnerActionButtons } from '../OwnerActionButtons'
-import { TrackAccessTypeLabel } from '../TrackAccessTypeLabel'
 import { TrackDogEar } from '../TrackDogEar'
+import { TrackTileStats } from '../TrackTileStats'
 import { ViewerActionButtons } from '../ViewerActionButtons'
 import { messages } from '../trackTileMessages'
 import {
@@ -52,12 +44,10 @@ const { getTrackPosition } = playbackPositionSelectors
 
 const RankAndIndexIndicator = ({
   hasOrdering,
-  showCrownIcon,
   isLoading,
   index
 }: {
   hasOrdering: boolean
-  showCrownIcon: boolean
   isLoading: boolean
   index: number
 }) => {
@@ -65,7 +55,7 @@ const RankAndIndexIndicator = ({
     <>
       {hasOrdering && (
         <div className={styles.order}>
-          {showCrownIcon && (
+          {index <= 5 && (
             <div className={styles.crownContainer}>
               <IconCrown />
             </div>
@@ -77,46 +67,13 @@ const RankAndIndexIndicator = ({
   )
 }
 
-const renderLockedContentOrPlayCount = ({
-  hasStreamAccess,
-  isOwner,
-  isStreamGated,
-  listenCount,
-  variant
-}: Pick<
-  TrackTileProps,
-  | 'hasStreamAccess'
-  | 'fieldVisibility'
-  | 'isOwner'
-  | 'isStreamGated'
-  | 'listenCount'
-> &
-  Pick<LockedStatusPillProps, 'variant'>) => {
-  if (isStreamGated && !isOwner) {
-    return <LockedStatusPill locked={!hasStreamAccess} variant={variant} />
-  }
-
-  return (
-    listenCount !== undefined &&
-    listenCount > 0 && (
-      <div className={styles.plays}>
-        {formatCount(listenCount)}
-        {messages.getPlays(listenCount)}
-      </div>
-    )
-  )
-}
-
 const TrackTile = ({
   size,
   order,
   standalone,
   isOwner,
-  isUnlisted,
-  isStreamGated,
   streamConditions,
   hasStreamAccess,
-  listenCount,
   isActive,
   isDisabled,
   isLoading,
@@ -128,8 +85,6 @@ const TrackTile = ({
   genre,
   userName,
   duration,
-  stats,
-  fieldVisibility,
   bottomBar,
   isDarkMode,
   isMatrixMode,
@@ -141,7 +96,6 @@ const TrackTile = ({
   onClickShare,
   onClickLocked,
   onTogglePlay,
-  showRankIcon,
   permalink,
   isTrack,
   collectionId,
@@ -231,7 +185,6 @@ const TrackTile = ({
       {/* prefix ordering */}
       <RankAndIndexIndicator
         hasOrdering={hasOrdering}
-        showCrownIcon={showRankIcon}
         isLoading={!!isLoading}
         index={order ?? 0}
       />
@@ -280,36 +233,25 @@ const TrackTile = ({
             )}
             {isLoading ? <Skeleton width='50%' height='20px' /> : userName}
           </Flex>
-
-          <Text variant='body' size='xs' className={styles.socialsRow}>
-            {isLoading ? (
-              <Skeleton width='30%' className={styles.skeleton} />
-            ) : (
-              <>
-                {trackId ? <TrackAccessTypeLabel trackId={trackId} /> : null}
-                {collectionId ? (
-                  <CollectionAccessTypeLabel collectionId={collectionId} />
-                ) : null}
-                {isUnlisted ? null : stats}
-              </>
-            )}
-          </Text>
+          {trackId ? (
+            <TrackTileStats
+              trackId={trackId}
+              rankIndex={order}
+              size={size}
+              isLoading={isLoading}
+            />
+          ) : null}
+          {collectionId ? (
+            <CollectionTileStats
+              collectionId={collectionId}
+              isLoading={isLoading}
+              size={size}
+            />
+          ) : null}
           <Text variant='body' size='xs' className={styles.topRight}>
             {!isLoading && duration !== null && duration !== undefined ? (
               <div className={styles.duration}>{getDurationText()}</div>
             ) : null}
-          </Text>
-          <Text variant='body' size='xs' className={styles.bottomRight}>
-            {!isLoading
-              ? renderLockedContentOrPlayCount({
-                  hasStreamAccess,
-                  fieldVisibility,
-                  isOwner,
-                  isStreamGated,
-                  listenCount,
-                  variant: isPurchase ? 'premium' : 'gated'
-                })
-              : null}
           </Text>
         </Flex>
         {isTrack && trackId ? (

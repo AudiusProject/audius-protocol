@@ -2,7 +2,6 @@ import { useCallback, useLayoutEffect } from 'react'
 
 import { useGatedContentAccess } from '@audius/common/hooks'
 import {
-  ShareSource,
   RepostSource,
   FavoriteSource,
   ModalSource
@@ -16,12 +15,13 @@ import {
   reachabilitySelectors,
   tracksSocialActions,
   mobileOverflowMenuUIActions,
-  shareModalUIActions,
   OverflowAction,
   OverflowSource,
   usePremiumContentPurchaseModal,
   playbackPositionSelectors,
-  PurchaseableContentType
+  PurchaseableContentType,
+  playerActions,
+  playerSelectors
 } from '@audius/common/store'
 import { formatPrice, Genre, removeNullable } from '@audius/common/utils'
 import type { Nullable } from '@audius/common/utils'
@@ -34,19 +34,22 @@ import {
   IconCastAirplay,
   IconCastChromecast,
   IconKebabHorizontal,
-  IconShare,
-  Button
+  Button,
+  IconMessage
 } from '@audius/harmony-native'
 import { useAirplay } from 'app/components/audio/Airplay'
+import { useNavigation } from 'app/hooks/useNavigation'
 import { useToast } from 'app/hooks/useToast'
 import { makeStyles } from 'app/styles'
 import { useThemeColors } from 'app/utils/theme'
 
+import { useCommentDrawer } from '../comments/CommentDrawerContext'
+
 import { FavoriteButton } from './FavoriteButton'
 import { RepostButton } from './RepostButton'
 
+const { makeGetCurrent } = playerSelectors
 const { getUserId } = accountSelectors
-const { requestOpen: requestOpenShareModal } = shareModalUIActions
 const { open: openOverflowMenu } = mobileOverflowMenuUIActions
 const { repostTrack, saveTrack, undoRepostTrack, unsaveTrack } =
   tracksSocialActions
@@ -111,11 +114,15 @@ export const ActionsBar = ({ track }: ActionsBarProps) => {
   const { neutral, neutralLight6, primary } = useThemeColors()
   const dispatch = useDispatch()
   const isReachable = useSelector(getIsReachable)
+  const navigation = useNavigation()
 
+  const { open } = useCommentDrawer()
   const isOwner = track?.owner_id === accountUserId
+
   const isUnlisted = track?.is_unlisted
   const { onOpen: openPremiumContentPurchaseModal } =
     usePremiumContentPurchaseModal()
+  const currentQueueItem = useSelector(makeGetCurrent())
 
   const { data: albumInfo } = trpc.tracks.getAlbumBacklink.useQuery(
     { trackId: track?.track_id ?? 0 },
@@ -170,17 +177,16 @@ export const ActionsBar = ({ track }: ActionsBarProps) => {
     }
   }, [dispatch, isOwner, toast, track])
 
-  const handleShare = useCallback(() => {
+  const handleComments = useCallback(() => {
     if (track) {
-      dispatch(
-        requestOpenShareModal({
-          type: 'track',
-          trackId: track.track_id,
-          source: ShareSource.NOW_PLAYING
-        })
-      )
+      open({
+        entityId: track.track_id,
+        navigation,
+        actions: playerActions,
+        uid: currentQueueItem.uid as string
+      })
     }
-  }, [dispatch, track])
+  }, [currentQueueItem.uid, navigation, open, track])
 
   const playbackPositionInfo = useSelector((state) =>
     getTrackPosition(state, {
@@ -193,6 +199,8 @@ export const ActionsBar = ({ track }: ActionsBarProps) => {
       const isLongFormContent =
         track.genre === Genre.PODCASTS || track.genre === Genre.AUDIOBOOKS
       const overflowActions = [
+        OverflowAction.VIEW_COMMENTS,
+        OverflowAction.SHARE,
         isOwner && !track?.ddex_app ? OverflowAction.ADD_TO_ALBUM : null,
         !isUnlisted || isOwner ? OverflowAction.ADD_TO_PLAYLIST : null,
         isLongFormContent
@@ -298,11 +306,11 @@ export const ActionsBar = ({ track }: ActionsBarProps) => {
     )
   }
 
-  const renderShareButton = () => {
+  const renderCommentsButton = () => {
     return (
       <IconButton
-        icon={IconShare}
-        onPress={handleShare}
+        icon={IconMessage}
+        onPress={handleComments}
         size='l'
         aria-label={messages.shareLabel}
         style={styles.button}
@@ -330,7 +338,7 @@ export const ActionsBar = ({ track }: ActionsBarProps) => {
         {renderCastButton()}
         {shouldShowActions ? renderRepostButton() : null}
         {shouldShowActions ? renderFavoriteButton() : null}
-        {shouldShowActions ? renderShareButton() : null}
+        {shouldShowActions ? renderCommentsButton() : null}
         {renderOptionsButton()}
       </View>
     </View>
