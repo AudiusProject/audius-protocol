@@ -75,6 +75,7 @@ RUN g++ -o /bin/analyze-bpm /app/cpp/bpm-analyzer.cpp \
     -lessentia -ltag -lyaml -lfftw3 -lfftw3f -lavcodec -lavformat -lavutil -lavfilter -lsamplerate -lavresample -lpthread -lz -lchromaprint && \
     chmod +x /bin/analyze-bpm
 
+
 FROM golang:1.22-bullseye AS go-builder
 
 WORKDIR /app
@@ -88,6 +89,7 @@ COPY ./cmd/mediorum ./cmd/mediorum
 RUN go build -o /bin/mediorum cmd/mediorum/main.go
 RUN go build -o /bin/mediorum-cmd pkg/mediorum/cmd/main.go
 
+# encoding and analysis requires a lot of dynamic links
 FROM cpp-builder
 
 COPY --from=go-builder /bin/mediorum /bin/mediorum
