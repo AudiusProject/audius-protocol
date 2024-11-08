@@ -3,7 +3,7 @@ import type { ReactNode } from 'react'
 import { times, random } from 'lodash'
 import { View } from 'react-native'
 
-import { Screen, Tile, Text, Divider, ScreenContent } from 'app/components/core'
+import { Tile, Text, Divider } from 'app/components/core'
 import Skeleton, { StaticSkeleton } from 'app/components/skeleton/Skeleton'
 import { makeStyles } from 'app/styles'
 
