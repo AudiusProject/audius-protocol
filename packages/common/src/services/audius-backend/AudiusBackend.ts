@@ -62,7 +62,6 @@ import {
   BrowserNotificationSetting,
   PushNotificationSetting,
   PushNotifications,
-  TrackMetadataForUpload,
   SearchKind
 } from '../../store'
 import {
@@ -1223,22 +1222,6 @@ export const audiusBackend = ({
     }
   }
 
-  // Favoriting a track
-  async function saveTrack(
-    trackId: ID,
-    metadata?: { is_save_of_repost: boolean }
-  ) {
-    try {
-      return await audiusLibs.EntityManager.saveTrack(
-        trackId,
-        JSON.stringify(metadata)
-      )
-    } catch (err) {
-      console.error(getErrorMessage(err))
-      throw err
-    }
-  }
-
   // Favorite a playlist
   async function saveCollection(
     playlistId: ID,
@@ -1249,16 +1232,6 @@ export const audiusBackend = ({
         playlistId,
         JSON.stringify(metadata)
       )
-    } catch (err) {
-      console.error(getErrorMessage(err))
-      throw err
-    }
-  }
-
-  // Unfavoriting a track
-  async function unsaveTrack(trackId: ID) {
-    try {
-      return await audiusLibs.EntityManager.unsaveTrack(trackId)
     } catch (err) {
       console.error(getErrorMessage(err))
       throw err
@@ -2277,7 +2250,6 @@ export const audiusBackend = ({
     repostTrack,
     resetPassword,
     saveCollection,
-    saveTrack,
     searchTags,
     sendRecoveryEmail,
     sendTokens,
@@ -2298,7 +2270,6 @@ export const audiusBackend = ({
     undoRepostTrack,
     unfollowUser,
     unsaveCollection,
-    unsaveTrack,
     updateBrowserNotifications,
     updateCreator,
     updateEmailNotificationSettings,
