@@ -4,6 +4,7 @@ import {
   TierChangeNotification as TierChangeNotificationType,
   BadgeTierInfo
 } from '@audius/common/store'
+import { capitalize } from 'lodash'
 
 import { audioTierMapPng } from 'components/user-badges/UserBadges'
 import { useSelector } from 'utils/reducer'
@@ -68,8 +69,8 @@ export const TierChangeNotification = (props: TierChangeNotificationProps) => {
         </NotificationTitle>
       </NotificationHeader>
       <NotificationBody>
-        {messages.reached} {tier} {messages.having} {humanReadableAmount}{' '}
-        {messages.audio} {messages.accessInfo}
+        {messages.reached} {capitalize(tier)} {messages.having}{' '}
+        {humanReadableAmount} {messages.audio} {messages.accessInfo}
       </NotificationBody>
       <TwitterShareButton
         type='static'
