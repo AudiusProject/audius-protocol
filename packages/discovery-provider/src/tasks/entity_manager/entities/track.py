@@ -260,7 +260,9 @@ def populate_track_record_metadata(track_record: Track, track_metadata, handle, 
                 track_record.download_conditions = convert_legacy_purchase_access_gate(
                     track_record.owner_id, track_metadata["download_conditions"]
                 )
-                track_record.is_downloadable = True
+                track_record.is_downloadable = (
+                    track_metadata["download_conditions"] is not None
+                )
         elif key == "allowed_api_keys":
             if key in track_metadata:
                 if track_metadata[key] is None:
