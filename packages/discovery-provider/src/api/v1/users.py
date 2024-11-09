@@ -918,16 +918,7 @@ class PlaylistsFull(Resource):
             kind="Playlist",
         )
         playlists = get_playlists(args)
-
-        def format_playlist(playlist):
-            extended_playlist = extend_playlist(playlist)
-            # TODO: https://linear.app/audius/issue/PAY-3398/fix-playlist-contents-serialization
-            extended_playlist["playlist_contents"] = extended_playlist[
-                "added_timestamps"
-            ]
-            return extended_playlist
-
-        playlists = list(map(format_playlist, playlists))
+        playlists = list(map(extend_playlist, playlists))
         return success_response(playlists)
 
     @full_ns.doc(
@@ -998,16 +989,7 @@ class AlbumsFull(Resource):
             kind="Album",
         )
         albums = get_playlists(args)
-
-        def format_playlist(playlist):
-            extended_playlist = extend_playlist(playlist)
-            # TODO: https://linear.app/audius/issue/PAY-3398/fix-playlist-contents-serialization
-            extended_playlist["playlist_contents"] = extended_playlist[
-                "added_timestamps"
-            ]
-            return extended_playlist
-
-        albums = list(map(format_playlist, albums))
+        albums = list(map(extend_playlist, albums))
         return success_response(albums)
 
     @full_ns.doc(

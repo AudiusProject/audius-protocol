@@ -433,6 +433,10 @@ def extend_playlist(playlist):
     playlist["stream_conditions"] = get_legacy_purchase_gate(
         playlist.get("stream_conditions", None)
     )
+    # Wee hack to make sure this marshals correctly. The marshaller for
+    # playlist_model expects these two values to be the same type.
+    # TODO: https://linear.app/audius/issue/PAY-3398/fix-playlist-contents-serialization
+    playlist["playlist_contents"] = playlist["added_timestamps"]
     return playlist
 
 
@@ -473,10 +477,6 @@ def extend_activity(item):
         }
     if item.get("playlist_id"):
         extended_playlist = extend_playlist(item)
-        # Wee hack to make sure this marshals correctly. The marshaller for
-        # playlist_model expects these two values to be the same type.
-        # TODO: https://linear.app/audius/issue/PAY-3398/fix-playlist-contents-serialization
-        extended_playlist["playlist_contents"] = extended_playlist["added_timestamps"]
         return {
             "item_type": "playlist",
             "timestamp": item["activity_timestamp"],
@@ -571,8 +571,6 @@ def extend_feed_item(item):
         }
     if item.get("playlist_id"):
         extended_playlist = extend_playlist(item)
-        # TODO: https://linear.app/audius/issue/PAY-3398/fix-playlist-contents-serialization
-        extended_playlist["playlist_contents"] = extended_playlist["added_timestamps"]
         return {
             "type": "playlist",
             "item": extended_playlist,
