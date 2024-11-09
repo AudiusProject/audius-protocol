@@ -12,7 +12,7 @@ const messages = {
   premiumUnlocked: 'Purchased'
 }
 
-export type LockedStatusPillProps = {
+export type LockedStatusBadgeProps = {
   locked: boolean
   variant?: 'premium' | 'gated'
   text?: string
@@ -22,7 +22,7 @@ export type LockedStatusPillProps = {
   id?: string
 }
 
-export const LockedStatusPill = (props: LockedStatusPillProps) => {
+export const LockedStatusBadge = (props: LockedStatusBadgeProps) => {
   const {
     locked,
     variant = 'gated',
