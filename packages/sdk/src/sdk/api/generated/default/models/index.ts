@@ -3,6 +3,7 @@
 export * from './Access';
 export * from './AccessInfoResponse';
 export * from './Activity';
+export * from './AlbumsResponse';
 export * from './AuthorizedApp';
 export * from './AuthorizedApps';
 export * from './BlobInfo';
@@ -43,6 +44,7 @@ export * from './PlaylistArtwork';
 export * from './PlaylistResponse';
 export * from './PlaylistSearchResult';
 export * from './PlaylistTracksResponse';
+export * from './PlaylistsResponse';
 export * from './ProfilePicture';
 export * from './PurchasersResponse';
 export * from './RelatedArtistResponse';
