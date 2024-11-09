@@ -248,7 +248,6 @@ export function* retrieveCollections(
       const audiusSdk = yield* getContext('audiusSdk')
       const sdk = yield* call(audiusSdk)
       let metadatas: CollectionMetadata[]
-      console.log({ ids })
 
       if (ids.length === 1) {
         const { data = [] } = yield* call(

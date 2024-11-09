@@ -1,6 +1,6 @@
 import { memo } from 'react'
 
-import { SquareSizes, ID, CoverArtSizes } from '@audius/common/models'
+import { SquareSizes, ID } from '@audius/common/models'
 import {
   IconLock,
   IconPlaybackPlay as IconPlay,

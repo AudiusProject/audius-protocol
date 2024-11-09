@@ -1,4 +1,8 @@
-import { userMetadataListFromSDK } from '@audius/common/adapters'
+import {
+  transformAndCleanList,
+  userCollectionMetadataFromSDK,
+  userMetadataListFromSDK
+} from '@audius/common/adapters'
 import {
   DefaultSizes,
   Kind,
@@ -19,7 +23,7 @@ import {
 } from '@audius/common/store'
 import { waitForAccount, waitForValue } from '@audius/common/utils'
 import { mergeWith } from 'lodash'
-import { call, put, select, takeEvery } from 'typed-redux-saga'
+import { all, call, put, select, takeEvery } from 'typed-redux-saga'
 
 import { retrieveCollections } from 'common/store/cache/collections/utils'
 import { retrieve } from 'common/store/cache/sagas'
@@ -122,16 +126,22 @@ export function* fetchUserByHandle(
  * @param {number} userId target user id
  */
 export function* fetchUserCollections(userId: number) {
-  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
-  // Get playlists.
-  const playlists = yield* call(
-    audiusBackendInstance.getPlaylists,
-    userId,
-    null
+  const sdk = yield* getSDK()
+  const [{ data: sdkPlaylists = [] }, { data: sdkAlbums = [] }] = yield* all([
+    call([sdk.full.users, sdk.full.users.getPlaylistsByUser], userId),
+    call([sdk.full.users, sdk.full.users.getAlbumsByUser], userId)
+  ])
+  const playlists = transformAndCleanList(
+    sdkPlaylists,
+    userCollectionMetadataFromSDK
   )
-  const playlistIds = playlists.map((p) => p.playlist_id)
+  const albums = transformAndCleanList(sdkAlbums, userCollectionMetadataFromSDK)
 
-  if (!playlistIds.length) {
+  const playlistIds = playlists.map((p) => p.playlist_id)
+  const albumIds = albums.map((a) => a.playlist_id)
+  const ids = [...playlistIds, ...albumIds]
+
+  if (!ids.length) {
     yield* put(
       cacheActions.update(Kind.USERS, [
         {

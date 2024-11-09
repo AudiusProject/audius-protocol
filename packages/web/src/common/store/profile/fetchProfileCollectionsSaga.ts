@@ -1,9 +1,13 @@
+import {
+  userCollectionMetadataFromSDK,
+  transformAndCleanList
+} from '@audius/common/adapters'
 import { Kind } from '@audius/common/models'
 import {
   cacheActions,
   profilePageActions,
   profilePageSelectors,
-  getContext
+  getSDK
 } from '@audius/common/store'
 import { isEqual } from 'lodash'
 import { put, select, takeLatest, call } from 'typed-redux-saga'
@@ -26,6 +30,7 @@ export function* watchFetchProfileCollections() {
 function* fetchProfileCollectionsAsync(
   action: ReturnType<typeof fetchCollections>
 ) {
+  const sdk = yield* getSDK()
   const { handle } = action
   const user = yield* select((state) => getProfileUser(state, { handle }))
 
@@ -35,15 +40,21 @@ function* fetchProfileCollectionsAsync(
   }
 
   const { user_id, _collectionIds } = user
-  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
 
   try {
-    const latestCollections = yield* call(
-      audiusBackendInstance.getPlaylists,
-      user_id,
-      null,
-      false
+    const [{ data: sdkPlaylists = [] }, { data: sdkAlbums = [] }] = yield* all([
+      call([sdk.full.users, sdk.full.users.getPlaylistsByUser], user_id),
+      call([sdk.full.users, sdk.full.users.getAlbumsByUser], user_id)
+    ])
+    const playlists = transformAndCleanList(
+      sdkPlaylists,
+      userCollectionMetadataFromSDK
     )
+    const albums = transformAndCleanList(
+      sdkAlbums,
+      userCollectionMetadataFromSDK
+    )
+    const latestCollections = [...playlists, ...albums]
 
     const latestCollectionIds = latestCollections.map(
       ({ playlist_id }) => playlist_id

@@ -82,7 +82,6 @@ const CollectionArtCard = g(
       playlist_id,
       playlist_name,
       is_album,
-      _cover_art_sizes,
       has_current_user_reposted,
       has_current_user_saved,
       is_stream_gated,
