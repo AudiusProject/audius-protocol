@@ -1,5 +1,6 @@
 import { useCallback, useEffect } from 'react'
 
+import { imageProfilePicEmpty } from '@audius/common/assets'
 import { welcomeModalMessages } from '@audius/common/messages'
 import { Name, SquareSizes } from '@audius/common/models'
 import { accountSelectors } from '@audius/common/store'
@@ -47,7 +48,8 @@ export const WelcomeModal = () => {
   const userName = nameField ?? accountName
   const [isOpen, setIsOpen] = useModalState('Welcome')
 
-  const profileImage = profileImageField?.url ?? presavedProfilePic
+  const profileImage =
+    profileImageField?.url ?? (presavedProfilePic || imageProfilePicEmpty)
 
   const Root = isMobile ? Drawer : Modal
   const onClose = useCallback(() => {
