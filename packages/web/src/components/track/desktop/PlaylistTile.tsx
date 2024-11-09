@@ -143,6 +143,7 @@ const PlaylistTile = ({
           streamConditions={streamConditions}
           hasStreamAccess={hasStreamAccess}
           source={source}
+          collectionId={playlistId}
         />
       </TileTrackContainer>
       <Box backgroundColor='surface1' borderTop='strong' borderBottom='strong'>
