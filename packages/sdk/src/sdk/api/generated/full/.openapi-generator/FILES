@@ -16,6 +16,7 @@ models/AccountCollection.ts
 models/AccountCollectionUser.ts
 models/AccountFull.ts
 models/ActivityFull.ts
+models/AlbumsResponseFull.ts
 models/AnnouncementNotification.ts
 models/AnnouncementNotificationAction.ts
 models/AnnouncementNotificationActionData.ts
@@ -115,6 +116,7 @@ models/PlaylistMilestoneNotificationActionData.ts
 models/PlaylistUpdate.ts
 models/PlaylistUpdates.ts
 models/PlaylistUpdatesResponse.ts
+models/PlaylistsResponseFull.ts
 models/ProfilePicture.ts
 models/ProfilePictureFull.ts
 models/Purchase.ts

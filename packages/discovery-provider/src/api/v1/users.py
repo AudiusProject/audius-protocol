@@ -902,7 +902,7 @@ playlists_response_full = make_full_response(
 )
 
 
-@full_ns.route(USER_PLAYLISTS_ROUTE, doc=False)
+@full_ns.route(USER_PLAYLISTS_ROUTE)
 class PlaylistsFull(Resource):
     def _get(self, id, authed_user_id):
         decoded_id = decode_with_abort(id, ns)
@@ -975,7 +975,7 @@ albums_response_full = make_full_response(
 )
 
 
-@full_ns.route(USER_ALBUMS_ROUTE, doc=False)
+@full_ns.route(USER_ALBUMS_ROUTE)
 class AlbumsFull(Resource):
     def _get(self, id, authed_user_id):
         decoded_id = decode_with_abort(id, ns)
