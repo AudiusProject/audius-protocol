@@ -295,6 +295,8 @@ func setupNode(logger *common.Logger) (*config.Config, *cconfig.Config, error) {
 	cometConfig.Mempool.MaxTxBytes = 307200
 	cometConfig.Mempool.Size = 2000
 
+	isDev := envConfig.Environment == "dev" || envConfig.Environment == "local"
+
 	// consensus
 	// don't recheck mempool transactions, rely on CheckTx and Propose step
 	// set each phase to timeout at 100ms, this might be aggressive but simply put
@@ -303,6 +305,7 @@ func setupNode(logger *common.Logger) (*config.Config, *cconfig.Config, error) {
 	// empty blocks wait one second to propose since plays should be a steady stream
 	// of txs
 	cometConfig.Mempool.Recheck = false
+	cometConfig.Mempool.Broadcast = !isDev // turn on broadcast when not in dev
 	cometConfig.Consensus.TimeoutCommit = 200 * time.Millisecond
 	cometConfig.Consensus.TimeoutPropose = 200 * time.Millisecond
 	cometConfig.Consensus.TimeoutProposeDelta = 75 * time.Millisecond
@@ -317,7 +320,7 @@ func setupNode(logger *common.Logger) (*config.Config, *cconfig.Config, error) {
 	// pex reactor is off since nodes use persistent peer list at the moment
 	// turn back on for dynamic peer discovery if we don't implement it in
 	// another ethereum based way
-	cometConfig.P2P.PexReactor = envConfig.Environment == "dev" || envConfig.Environment == "local"
+	cometConfig.P2P.PexReactor = isDev // turn off pex reactor in prod / stage
 	cometConfig.P2P.AddrBookStrict = envConfig.AddrBookStrict
 	if envConfig.PersistentPeers != "" {
 		cometConfig.P2P.PersistentPeers = envConfig.PersistentPeers
