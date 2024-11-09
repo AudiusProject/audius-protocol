@@ -36,6 +36,34 @@ export const formatCount = (count: number) => {
 }
 
 /**
+ * The format for counting numbers should be 3 characters if possible (2 numbers and 1 Letter) without trailing 0
+ * ie.
+ * 375 => 375
+ * 4,210 => 4.2K
+ * 56,010 => 56K
+ * 443,123 => 443K
+ * 4,001,000 => 4M Followers
+ */
+export const formatCountShort = (count: number) => {
+  if (count >= 1000) {
+    const countStr = count.toString()
+    if (countStr.length % 3 === 0) {
+      return numeral(count).format('0a').toUpperCase()
+    } else if (countStr.length % 3 === 1) {
+      return numeral(count).format('0.0a').toUpperCase()
+    } else if (countStr.length % 3 === 2) {
+      return numeral(count).format('0.0a').toUpperCase()
+    } else {
+      return numeral(count).format('0a').toUpperCase()
+    }
+  } else if (!count) {
+    return '0'
+  } else {
+    return `${count}`
+  }
+}
+
+/**
  * The format any currency should be:
  * - show 0 if 0
  * - don't show decimal places if input is a round number
