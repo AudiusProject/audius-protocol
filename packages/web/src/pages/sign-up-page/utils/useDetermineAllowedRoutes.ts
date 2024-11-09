@@ -5,9 +5,11 @@ import { useSelector } from 'react-redux'
 import { useModalState } from 'common/hooks/useModalState'
 import {
   getAccountAlreadyExisted,
+  getReferrer,
   getSignOn
 } from 'common/store/pages/signon/selectors'
 import { EditingStatus } from 'common/store/pages/signon/types'
+import { useMedia } from 'hooks/useMedia'
 import { env } from 'services/env'
 
 const { FEED_PAGE, SignUpPath } = route
@@ -28,6 +30,8 @@ export const useDetermineAllowedRoute = () => {
   const followeeCount = useSelector(getAccountFolloweeCount)
   const hasAccount = useSelector(getHasAccount)
   const hasAlreadySignedUp = useSelector(getAccountAlreadyExisted)
+  const hasReferrer = useSelector(getReferrer)
+  const { isMobile } = useMedia()
 
   const pastAccountPhase = signUpState.finishedPhase1 || hasAccount
 
@@ -58,6 +62,14 @@ export const useDetermineAllowedRoute = () => {
       // At this point their identity account is either fully created or being created in the background
       // Either way the user can't go back any more
       allowedRoutes = [SignUpPath.selectGenres]
+
+      if (isMobile && hasReferrer) {
+        allowedRoutes.push(SignUpPath.selectArtists)
+        allowedRoutes.push(SignUpPath.appCta)
+        allowedRoutes.push(SignUpPath.completedRedirect)
+        allowedRoutes.push(SignUpPath.completedReferrerRedirect)
+        allowedRoutes.push(SignUpPath.loading)
+      }
 
       // TODO: These checks below here may need to fall under a different route umbrella separate from sign up
       if (signUpState.genres && signUpState.genres.length > 0) {

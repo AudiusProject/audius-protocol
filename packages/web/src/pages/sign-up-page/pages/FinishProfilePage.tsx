@@ -2,7 +2,10 @@ import { useCallback, useRef } from 'react'
 
 import { finishProfilePageMessages } from '@audius/common/messages'
 import { Name } from '@audius/common/models'
-import { finishProfileSchema } from '@audius/common/schemas'
+import {
+  finishProfileSchema,
+  finishReferralProfileSchema
+} from '@audius/common/schemas'
 import { MAX_DISPLAY_NAME_LENGTH } from '@audius/common/services'
 import { route } from '@audius/common/utils'
 import { Flex, Paper, PlainButton, Text, useTheme } from '@audius/harmony'
@@ -25,7 +28,8 @@ import {
   getIsSocialConnected,
   getLinkedSocialOnFirstPage,
   getNameField,
-  getProfileImageField
+  getProfileImageField,
+  getReferrer
 } from 'common/store/pages/signon/selectors'
 import { HarmonyTextField } from 'components/form-fields/HarmonyTextField'
 import { useMedia } from 'hooks/useMedia'
@@ -45,6 +49,7 @@ export type FinishProfileValues = {
 }
 
 const formSchema = toFormikValidationSchema(finishProfileSchema)
+const referralformSchema = toFormikValidationSchema(finishReferralProfileSchema)
 
 const ImageUploadErrorText = () => {
   const { errors } = useFormikContext<FinishProfileValues>()
@@ -89,6 +94,7 @@ export const FinishProfilePage = () => {
   const linkedSocialOnFirstPage = useSelector(getLinkedSocialOnFirstPage)
   const savedCoverPhoto = useSelector(getCoverPhotoField)
   const savedProfileImage = useSelector(getProfileImageField)
+  const hasReferrer = useSelector(getReferrer)
 
   // If the user comes back from a later page we start with whats in the store
   const initialValues = {
@@ -140,7 +146,7 @@ export const FinishProfilePage = () => {
     <Formik
       initialValues={initialValues}
       onSubmit={handleSubmit}
-      validationSchema={formSchema}
+      validationSchema={hasReferrer ? referralformSchema : formSchema}
       validateOnMount
       validateOnChange
     >
@@ -188,7 +194,9 @@ export const FinishProfilePage = () => {
             centered
             sticky
             buttonProps={{ disabled: !isValid }}
-            prefix={isMobile ? <UploadProfilePhotoHelperText /> : null}
+            prefix={
+              isMobile && !hasReferrer ? <UploadProfilePhotoHelperText /> : null
+            }
             postfix={
               isMobile || isSocialConnected ? null : (
                 <PlainButton variant='subdued' onClick={history.goBack}>
