@@ -8,7 +8,7 @@ import {
   PurchaseableContentType
 } from '@audius/common/store'
 import type { RepostType } from '@audius/common/store'
-import { formatCount } from '@audius/common/utils'
+import { formatCountShort } from '@audius/common/utils'
 import type { Nullable } from '@audius/common/utils'
 import { View, TouchableOpacity } from 'react-native'
 import { useDispatch } from 'react-redux'
@@ -36,7 +36,7 @@ const formatPlayCount = (playCount?: number) => {
     return null
   }
   const suffix = playCount === 1 ? 'Play' : 'Plays'
-  return `${formatCount(playCount)} ${suffix}`
+  return `${formatCountShort(playCount)} ${suffix}`
 }
 
 const useStyles = makeStyles(({ spacing }) => ({
@@ -209,7 +209,7 @@ export const LineupTileStats = ({
               >
                 <IconRepost color='subdued' size='s' />
                 <Text style={trackTileStyles.statText}>
-                  {formatCount(repostCount)}
+                  {formatCountShort(repostCount)}
                 </Text>
               </TouchableOpacity>
               <TouchableOpacity
@@ -223,7 +223,7 @@ export const LineupTileStats = ({
               >
                 <IconHeart color='subdued' size='s' />
                 <Text style={trackTileStyles.statText}>
-                  {formatCount(saveCount)}
+                  {formatCountShort(saveCount)}
                 </Text>
               </TouchableOpacity>
               {hideComments ? null : (
@@ -238,7 +238,7 @@ export const LineupTileStats = ({
                 >
                   <IconMessage color='subdued' size='s' />
                   <Text style={trackTileStyles.statText}>
-                    {formatCount(commentCount ?? 0)}
+                    {formatCountShort(commentCount ?? 0)}
                   </Text>
                 </TouchableOpacity>
               )}
