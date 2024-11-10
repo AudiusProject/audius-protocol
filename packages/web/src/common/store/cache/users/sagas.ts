@@ -8,7 +8,8 @@ import {
   Kind,
   OptionalId,
   User,
-  UserMetadata
+  UserMetadata,
+  Id
 } from '@audius/common/models'
 import {
   Metadata,
@@ -127,15 +128,25 @@ export function* fetchUserByHandle(
  */
 export function* fetchUserCollections(userId: number) {
   const sdk = yield* getSDK()
-  const [{ data: sdkPlaylists = [] }, { data: sdkAlbums = [] }] = yield* all([
-    call([sdk.full.users, sdk.full.users.getPlaylistsByUser], userId),
-    call([sdk.full.users, sdk.full.users.getAlbumsByUser], userId)
-  ])
-  const playlists = transformAndCleanList(
-    sdkPlaylists,
-    userCollectionMetadataFromSDK
-  )
-  const albums = transformAndCleanList(sdkAlbums, userCollectionMetadataFromSDK)
+  function* getPlaylists() {
+    const { data } = yield* call(
+      [sdk.full.users, sdk.full.users.getPlaylistsByUser],
+      {
+        id: Id.parse(userId)
+      }
+    )
+    return transformAndCleanList(data, userCollectionMetadataFromSDK)
+  }
+  function* getAlbums() {
+    const { data } = yield* call(
+      [sdk.full.users, sdk.full.users.getAlbumsByUser],
+      {
+        id: Id.parse(userId)
+      }
+    )
+    return transformAndCleanList(data, userCollectionMetadataFromSDK)
+  }
+  const [playlists, albums] = yield* all([call(getPlaylists), call(getAlbums)])
 
   const playlistIds = playlists.map((p) => p.playlist_id)
   const albumIds = albums.map((a) => a.playlist_id)

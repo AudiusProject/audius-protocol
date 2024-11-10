@@ -4,7 +4,6 @@ import { useGetCurrentUserId, useGetPlaylistById } from '@audius/common/api'
 import {
   AccessConditions,
   AccessPermissions,
-  CoverArtSizes,
   ID,
   ModalSource,
   Variant,
@@ -69,7 +68,6 @@ type CollectionHeaderProps = {
   ownerId: Nullable<ID>
   type: CollectionsPageType | 'Playlist' | 'Audio NFT Playlist'
   title: string
-  coverArtSizes: Nullable<CoverArtSizes>
   artistName: string
   description: string
   artistHandle: string

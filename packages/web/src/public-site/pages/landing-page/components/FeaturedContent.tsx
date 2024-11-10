@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 
 import { userCollectionMetadataFromSDK } from '@audius/common/adapters'
 import { useAppContext } from '@audius/common/context'
-import { SquareSizes, Id } from '@audius/common/models'
+import { SquareSizes, Id, UserCollectionMetadata } from '@audius/common/models'
 import { Nullable, Maybe, route } from '@audius/common/utils'
 import { StorageNodeSelectorService } from '@audius/sdk'
 // eslint-disable-next-line no-restricted-imports -- TODO: migrate to @react-spring/web
@@ -158,7 +158,9 @@ const FeaturedContent = (props: FeaturedContentProps) => {
       const playlists = await sdk.full.playlists.getBulkPlaylists({
         id: ids.map((id) => Id.parse(id))
       })
-      return playlists.data?.map((p) => userCollectionMetadataFromSDK(p)) ?? []
+      return (playlists.data
+        ?.map((p) => userCollectionMetadataFromSDK(p))
+        .filter(Boolean) ?? []) as UserCollectionMetadata[]
     }, [])
 
   useEffect(() => {

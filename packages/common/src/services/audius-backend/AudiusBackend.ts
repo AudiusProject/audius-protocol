@@ -1022,31 +1022,6 @@ export const audiusBackend = ({
     return followers
   }
 
-  // TODO(C-2719)
-  async function getPlaylists(
-    userId: Nullable<ID>,
-    playlistIds: Nullable<ID[]>,
-    withUsers = true
-  ): Promise<CollectionMetadata[]> {
-    try {
-      const playlists = await withEagerOption(
-        {
-          normal: (libs) => libs.Playlist.getPlaylists,
-          eager: DiscoveryAPI.getPlaylists
-        },
-        100,
-        0,
-        playlistIds,
-        userId,
-        withUsers
-      )
-      return (playlists || []).map(getCollectionImages)
-    } catch (err) {
-      console.error(getErrorMessage(err))
-      return []
-    }
-  }
-
   async function createPlaylist(
     playlistId: ID,
     metadata: Partial<Collection>,
@@ -2195,7 +2170,6 @@ export const audiusBackend = ({
     getEmailNotificationSettings,
     getFolloweeFollows,
     getImageUrl,
-    getPlaylists,
     getPushNotificationSettings,
     getRandomFeePayer,
     getSafariBrowserPushEnabled,
