@@ -18,9 +18,9 @@ import {
   makeKindId,
   waitForValue,
   getQueryParams,
-  removeNullable
+  removeNullable,
+  getFilename
 } from '@audius/common/utils'
-import { capitalize } from 'lodash'
 import {
   call,
   select,
@@ -642,35 +642,6 @@ export function* watchUnsetArtistPick() {
   })
 }
 
-const getFilename = ({
-  track,
-  user,
-  original
-}: {
-  track: Track
-  user: User
-  original?: boolean
-}) => {
-  let filename
-  const hasCategory = !!track.stem_of?.category
-
-  // Fallback case - should not occur
-  if (!track.orig_filename) {
-    filename = `${track.title} ${
-      hasCategory ? `- ${capitalize(track.stem_of?.category)}` : null
-    } - ${user.name} (Audius)${original ? '.wav' : '.mp3'}`
-  } else if (original) {
-    filename = `${track.orig_filename}`
-  } else {
-    const dotIndex = track.orig_filename.lastIndexOf('.')
-    filename =
-      dotIndex !== -1
-        ? track.orig_filename.substring(0, dotIndex) + '.mp3'
-        : track.orig_filename + '.mp3'
-  }
-  return filename
-}
-
 /**
  * Downloads all tracks in the given quality. Can be used for a single
  * track or multiple tracks (usually for stems). First track is the parent track.
@@ -802,7 +773,8 @@ function* watchDownloadTrack() {
             filename: getFilename({
               track,
               user,
-              original
+              isOriginal: original,
+              isDownload: true
             })
           })
         }

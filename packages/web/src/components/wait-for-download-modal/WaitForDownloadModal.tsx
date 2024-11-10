@@ -6,9 +6,10 @@ import {
   useWaitForDownloadModal,
   cacheTracksSelectors,
   tracksSocialActions,
-  downloadsSelectors
+  downloadsSelectors,
+  cacheUsersSelectors
 } from '@audius/common/store'
-import { getDownloadFilename } from '@audius/common/utils'
+import { getFilename } from '@audius/common/utils'
 import {
   ModalHeader,
   Flex,
@@ -29,6 +30,7 @@ import ModalDrawer from 'pages/audio-rewards-page/components/modals/ModalDrawer'
 import styles from './WaitForDownloadModal.module.css'
 
 const { getTrack } = cacheTracksSelectors
+const { getUser } = cacheUsersSelectors
 const { getDownloadError } = downloadsSelectors
 
 const messages = {
@@ -50,6 +52,10 @@ export const WaitForDownloadModal = () => {
   const track = useSelector(
     (state: CommonState) =>
       getTrack(state, { id: parentTrackId ?? trackIds[0] }),
+    shallowEqual
+  )
+  const user = useSelector(
+    (state: CommonState) => getUser(state, { id: track?.owner_id }),
     shallowEqual
   )
 
@@ -75,9 +81,13 @@ export const WaitForDownloadModal = () => {
   }, [performDownload])
 
   const trackName =
-    !parentTrackId && track?.orig_filename && track?.orig_filename?.length > 0
-      ? getDownloadFilename({
-          filename: track.orig_filename,
+    !parentTrackId &&
+    user &&
+    track?.orig_filename &&
+    track?.orig_filename?.length > 0
+      ? getFilename({
+          track,
+          user,
           isOriginal: quality === DownloadQuality.ORIGINAL
         })
       : track?.title

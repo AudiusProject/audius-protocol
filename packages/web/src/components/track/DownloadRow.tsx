@@ -4,8 +4,12 @@ import {
   StemCategory,
   stemCategoryFriendlyNames
 } from '@audius/common/models'
-import { cacheTracksSelectors, CommonState } from '@audius/common/store'
-import { getDownloadFilename, formatBytes } from '@audius/common/utils'
+import {
+  cacheTracksSelectors,
+  cacheUsersSelectors,
+  CommonState
+} from '@audius/common/store'
+import { getFilename, formatBytes } from '@audius/common/utils'
 import { Flex, IconButton, IconReceive, Text } from '@audius/harmony'
 import { shallowEqual, useSelector } from 'react-redux'
 
@@ -16,6 +20,7 @@ import { useIsMobile } from 'hooks/useIsMobile'
 import styles from './DownloadRow.module.css'
 
 const { getTrack } = cacheTracksSelectors
+const { getUser } = cacheUsersSelectors
 
 const messages = {
   fullTrack: 'Full Track',
@@ -49,6 +54,10 @@ export const DownloadRow = ({
   const isMobile = useIsMobile()
   const track = useSelector(
     (state: CommonState) => getTrack(state, { id: trackId }),
+    shallowEqual
+  )
+  const user = useSelector(
+    (state: CommonState) => getUser(state, { id: track?.owner_id }),
     shallowEqual
   )
   const downloadableContentAccess = useDownloadableContentAccess({
@@ -105,10 +114,14 @@ export const DownloadRow = ({
               whiteSpace: 'nowrap'
             }}
           >
-            {getDownloadFilename({
-              filename: filename ?? track?.orig_filename,
-              isOriginal: true
-            })}
+            {filename ??
+              (track && user
+                ? getFilename({
+                    track,
+                    user,
+                    isOriginal: true
+                  })
+                : null)}
           </Text>
         </Flex>
       </Flex>
