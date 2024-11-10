@@ -115,13 +115,13 @@ export const DownloadRow = ({
             }}
           >
             {filename ??
-              (track &&
-                user ?
-                getFilename({
-                  track,
-                  user,
-                  isOriginal: true
-                }) : null)}
+              (track && user
+                ? getFilename({
+                    track,
+                    user,
+                    isOriginal: true
+                  })
+                : null)}
           </Text>
         </Flex>
       </Flex>
