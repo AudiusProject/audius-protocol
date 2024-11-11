@@ -16,7 +16,7 @@ import NavBanner from 'components/nav-banner/NavBanner'
 import Page from 'components/page/Page'
 import { StatBanner } from 'components/stat-banner/StatBanner'
 import UserBadges from 'components/user-badges/UserBadges'
-import { useCollectionCoverArt3 } from 'hooks/useCollectionCoverArt'
+import { useCollectionCoverArt } from 'hooks/useCollectionCoverArt'
 import { useTrackCoverArt } from 'hooks/useTrackCoverArt'
 import { withNullGuard } from 'utils/withNullGuard'
 
@@ -40,7 +40,7 @@ const TrackArt = ({ trackId }: { trackId: ID }) => {
 }
 
 const CollectionArt = ({ collectionId }: { collectionId: ID }) => {
-  const image = useCollectionCoverArt3({
+  const image = useCollectionCoverArt({
     collectionId,
     size: SquareSizes.SIZE_480_BY_480
   })

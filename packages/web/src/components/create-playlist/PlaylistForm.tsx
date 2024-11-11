@@ -7,7 +7,7 @@ import { toFormikValidationSchema } from 'zod-formik-adapter'
 
 import { PriceAndAudienceField } from 'components/edit/fields/price-and-audience'
 import { ArtworkField, TextAreaField, TextField } from 'components/form-fields'
-import { useCollectionCoverArt3 } from 'hooks/useCollectionCoverArt'
+import { useCollectionCoverArt } from 'hooks/useCollectionCoverArt'
 
 import { EditActions } from './FormActions'
 
@@ -65,7 +65,7 @@ const PlaylistForm = ({
   onDelete
 }: PlaylistFormProps) => {
   const collectionTypeName = isAlbum ? 'Album' : 'Playlist'
-  const coverArtUrl = useCollectionCoverArt3({
+  const coverArtUrl = useCollectionCoverArt({
     collectionId: metadata.playlist_id,
     size: SquareSizes.SIZE_1000_BY_1000
   })

@@ -22,7 +22,7 @@ import cn from 'classnames'
 import { CollectionDogEar } from 'components/collection'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import { UserLink } from 'components/link'
-import { useCollectionCoverArt3 } from 'hooks/useCollectionCoverArt'
+import { useCollectionCoverArt } from 'hooks/useCollectionCoverArt'
 import { useTrackCoverArt } from 'hooks/useTrackCoverArt'
 
 import styles from './LockedContentDetailsTile.module.css'
@@ -62,7 +62,7 @@ export const LockedContentDetailsTile = ({
     trackId: contentId,
     size: SquareSizes.SIZE_150_BY_150
   })
-  const albumArt = useCollectionCoverArt3({
+  const albumArt = useCollectionCoverArt({
     collectionId: contentId,
     size: SquareSizes.SIZE_150_BY_150
   })

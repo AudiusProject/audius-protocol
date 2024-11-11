@@ -13,7 +13,7 @@ import DynamicImage from 'components/dynamic-image/DynamicImage'
 import Lineup, { LineupProps } from 'components/lineup/Lineup'
 import MobilePageContainer from 'components/mobile-page-container/MobilePageContainer'
 import UserBadges from 'components/user-badges/UserBadges'
-import { useCollectionCoverArt3 } from 'hooks/useCollectionCoverArt'
+import { useCollectionCoverArt } from 'hooks/useCollectionCoverArt'
 import { useTrackCoverArt } from 'hooks/useTrackCoverArt'
 import { withNullGuard } from 'utils/withNullGuard'
 
@@ -37,7 +37,7 @@ const TrackArt = ({ trackId }: { trackId: ID }) => {
 }
 
 const CollectionArt = ({ collectionId }: { collectionId: ID }) => {
-  const image = useCollectionCoverArt3({
+  const image = useCollectionCoverArt({
     collectionId,
     size: SquareSizes.SIZE_480_BY_480
   })

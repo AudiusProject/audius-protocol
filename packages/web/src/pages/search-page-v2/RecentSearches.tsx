@@ -31,7 +31,7 @@ import { Link, useRouteMatch } from 'react-router-dom'
 import { Avatar } from 'components/avatar'
 import { UserLink } from 'components/link'
 import { MountPlacement } from 'components/types'
-import { useCollectionCoverArt3 } from 'hooks/useCollectionCoverArt'
+import { useCollectionCoverArt } from 'hooks/useCollectionCoverArt'
 import { useIsMobile } from 'hooks/useIsMobile'
 import { useTrackCoverArt } from 'hooks/useTrackCoverArt'
 
@@ -167,7 +167,7 @@ const RecentSearchCollection = (props: { searchItem: SearchItem }) => {
     playlistId: id
   })
 
-  const image = useCollectionCoverArt3({
+  const image = useCollectionCoverArt({
     collectionId: playlist?.playlist_id,
     size: SquareSizes.SIZE_150_BY_150
   })

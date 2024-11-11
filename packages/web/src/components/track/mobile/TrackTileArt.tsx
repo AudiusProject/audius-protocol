@@ -6,7 +6,7 @@ import cn from 'classnames'
 import CoSign from 'components/co-sign/CoSign'
 import { Size } from 'components/co-sign/types'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
-import { useCollectionCoverArt3 } from 'hooks/useCollectionCoverArt'
+import { useCollectionCoverArt } from 'hooks/useCollectionCoverArt'
 import { useTrackCoverArt } from 'hooks/useTrackCoverArt'
 
 import { ArtworkIcon } from '../Artwork'
@@ -89,7 +89,7 @@ const CollectionTileArt = ({
   artworkIconClassName,
   callback
 }: TrackTileArtProps) => {
-  const image = useCollectionCoverArt3({
+  const image = useCollectionCoverArt({
     collectionId: id,
     size: SquareSizes.SIZE_150_BY_150
   })

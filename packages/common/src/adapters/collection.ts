@@ -59,8 +59,14 @@ export const userCollectionMetadataFromSDK = (
       'favorite_count',
       'added_timestamps'
     ]),
-    artwork: input.artwork ?? {},
-
+    artwork: input.artwork
+      ? {
+          '150x150': input.artwork._150x150,
+          '480x480': input.artwork._480x480,
+          '1000x1000': input.artwork._1000x1000,
+          mirrors: input.artwork.mirrors
+        }
+      : {},
     variant: Variant.USER_GENERATED,
 
     // Conversions

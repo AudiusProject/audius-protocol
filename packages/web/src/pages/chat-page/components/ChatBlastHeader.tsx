@@ -10,7 +10,7 @@ import {
 } from '@audius/harmony'
 import { ChatBlast } from '@audius/sdk'
 
-import { useCollectionCoverArt3 } from 'hooks/useCollectionCoverArt'
+import { useCollectionCoverArt } from 'hooks/useCollectionCoverArt'
 import { useTrackCoverArt } from 'hooks/useTrackCoverArt'
 import { decodeHashId } from 'utils/hashIds'
 
@@ -24,7 +24,7 @@ export const ChatBlastHeader = ({ chat }: { chat: ChatBlast }) => {
       chat
     })
   const decodedId = decodeHashId(audienceContentId) ?? undefined
-  const albumArtwork = useCollectionCoverArt3({
+  const albumArtwork = useCollectionCoverArt({
     collectionId: decodedId,
     size: SquareSizes.SIZE_150_BY_150
   })

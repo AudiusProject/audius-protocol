@@ -3,7 +3,7 @@ import { ComponentProps } from 'react'
 import { ID, SquareSizes } from '@audius/common/models'
 import { Artwork } from '@audius/harmony'
 
-import { useCollectionCoverArt3 } from 'hooks/useCollectionCoverArt'
+import { useCollectionCoverArt } from 'hooks/useCollectionCoverArt'
 
 type CollectionImageProps = {
   collectionId: ID
@@ -13,7 +13,7 @@ type CollectionImageProps = {
 export const CollectionImage = (props: CollectionImageProps) => {
   const { collectionId, size, ...other } = props
 
-  const imageSource = useCollectionCoverArt3({
+  const imageSource = useCollectionCoverArt({
     collectionId,
     size
   })
