@@ -102,7 +102,9 @@ function SwitchField(props: { title: string; value: ChatPermission }) {
         id={title}
         value={field.checked}
         disabled={allowAllField.checked}
-        onValueChange={helpers.setValue}
+        onValueChange={(value) => {
+          helpers.setValue(value)
+        }}
       />
       <Text variant='title' strength='weak'>
         {title}
