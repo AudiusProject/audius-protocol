@@ -124,7 +124,9 @@ full_playlist_model = ns.clone(
     "playlist_full",
     full_playlist_without_tracks_model,
     {
-        "tracks": fields.List(fields.Nested(track_full), required=True),
+        # Fetching playlists by ids will give tracks, but fetching
+        # playlists associated with a user will not
+        "tracks": fields.List(fields.Nested(track_full), required=False),
     },
 )
 
