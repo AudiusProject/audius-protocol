@@ -2454,7 +2454,7 @@ async function getCreateAssociatedTokenAccountTransaction({
     }
   ]
 
-  const { blockhash } = await connection.getRecentBlockhash('confirmed')
+  const { blockhash } = await connection.getLatestBlockhash('confirmed')
   const instr = new TransactionInstruction({
     keys: accounts.map((account) => ({
       pubkey: account.pubkey,
