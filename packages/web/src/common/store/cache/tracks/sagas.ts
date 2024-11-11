@@ -158,7 +158,7 @@ function* editTrackAsync(action: ReturnType<typeof trackActions.editTrack>) {
 
   const track = { ...trackForEdit } as Track & TrackMetadataForUpload
   track.track_id = action.trackId
-  if ('file' in track.artwork && track.artwork?.file) {
+  if (track.artwork && 'file' in track.artwork && track.artwork.file) {
     track._cover_art_sizes = {
       ...track._cover_art_sizes,
       [DefaultSizes.OVERRIDE]: track.artwork.url
