@@ -32,7 +32,7 @@ import { connect } from 'react-redux'
 import { useNavigate } from 'react-router-dom-v5-compat'
 import { Dispatch } from 'redux'
 
-import { useRequiresAccountCallback } from 'hooks/useRequiresAccount'
+import { useAuthenticatedCallback } from 'hooks/useAuthenticatedCallback'
 import { AppState } from 'store/types'
 import { collectibleDetailsPage } from 'utils/route'
 
@@ -106,7 +106,7 @@ const ConnectedMobileOverflowModal = ({
   shareUser
 }: ConnectedMobileOverflowModalProps) => {
   const { onOpen: openPremiumContentModal } = usePremiumContentPurchaseModal()
-  const openPurchaseModal = useRequiresAccountCallback(
+  const openPurchaseModal = useAuthenticatedCallback(
     (...args: Parameters<typeof openPremiumContentModal>) =>
       openPremiumContentModal(...args),
     [openPremiumContentModal]

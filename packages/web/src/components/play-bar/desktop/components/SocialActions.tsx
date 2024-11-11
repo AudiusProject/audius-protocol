@@ -15,7 +15,7 @@ import FavoriteButton from 'components/alt-button/FavoriteButton'
 import RepostButton from 'components/alt-button/RepostButton'
 import Tooltip from 'components/tooltip/Tooltip'
 import { GatedConditionsPill } from 'components/track/GatedConditionsPill'
-import { useRequiresAccountOnClick } from 'hooks/useRequiresAccount'
+import { useAuthenticatedClickCallback } from 'hooks/useAuthenticatedCallback'
 import { shouldShowDark } from 'utils/theme/theme'
 
 import styles from './SocialActions.module.css'
@@ -60,7 +60,7 @@ export const SocialActions = ({
   const gatedTrackStatus = trackId && gatedTrackStatusMap[trackId]
   const { onOpen: openPremiumContentPurchaseModal } =
     usePremiumContentPurchaseModal()
-  const onClickPill = useRequiresAccountOnClick(() => {
+  const onClickPill = useAuthenticatedClickCallback(() => {
     openPremiumContentPurchaseModal(
       { contentId: trackId, contentType: PurchaseableContentType.TRACK },
       { source: ModalSource.PlayBar }

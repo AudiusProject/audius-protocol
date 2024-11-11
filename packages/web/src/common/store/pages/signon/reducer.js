@@ -44,7 +44,7 @@ import {
 } from './actions'
 import { Pages, FollowArtistsCategory } from './types'
 
-const { FEED_PAGE, TRENDING_PAGE } = route
+const { FEED_PAGE } = route
 
 const createTextField = () => ({
   value: '',
@@ -54,7 +54,7 @@ const createTextField = () => ({
 
 const initialState = {
   routeOnCompletion: FEED_PAGE,
-  routeOnExit: TRENDING_PAGE,
+  routeOnExit: null,
   isMobileSignOnVisible: false,
   email: createTextField(),
   name: createTextField(),

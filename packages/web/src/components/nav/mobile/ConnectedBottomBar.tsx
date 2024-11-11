@@ -13,7 +13,7 @@ import { Dispatch } from 'redux'
 
 import {
   openSignOn,
-  showRequiresAccountToast
+  showRequiresAccountModal
 } from 'common/store/pages/signon/actions'
 import BottomBar from 'components/bottom-bar/BottomBar'
 import { AppState } from 'store/types'
@@ -118,7 +118,7 @@ function mapDispatchToProps(dispatch: Dispatch) {
     goToRoute: (route: string) => dispatch(pushRoute(route)),
     openSignOn: () => {
       dispatch(openSignOn(false))
-      dispatch(showRequiresAccountToast())
+      dispatch(showRequiresAccountModal())
     },
     resetExploreTab: () => {
       dispatch(setTab({ tab: ExplorePageTabs.FOR_YOU }))

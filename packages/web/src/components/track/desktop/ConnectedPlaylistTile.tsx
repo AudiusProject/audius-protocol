@@ -46,7 +46,7 @@ import { OwnProps as CollectionkMenuProps } from 'components/menu/CollectionMenu
 import Menu from 'components/menu/Menu'
 import { CollectionArtwork } from 'components/track/Artwork'
 import { TrackTileSize } from 'components/track/types'
-import { useRequiresAccountOnClick } from 'hooks/useRequiresAccount'
+import { useAuthenticatedClickCallback } from 'hooks/useAuthenticatedCallback'
 import {
   setUsers,
   setVisibility
@@ -384,7 +384,7 @@ const ConnectedPlaylistTile = ({
 
   const hasStreamAccess = !!access?.stream
 
-  const onClickGatedUnlockPill = useRequiresAccountOnClick(() => {
+  const onClickGatedUnlockPill = useAuthenticatedClickCallback(() => {
     const isPurchase = isContentUSDCPurchaseGated(streamConditions)
     if (isPurchase && id) {
       openPremiumContentPurchaseModal(

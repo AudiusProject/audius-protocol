@@ -29,7 +29,7 @@ import { CollectionDogEar } from 'components/collection'
 import { CollectionAccessTypeLabel } from 'components/collection/CollectionAccessTypeLabel'
 import { TextLink } from 'components/link'
 import Skeleton from 'components/skeleton/Skeleton'
-import { useRequiresAccountOnClick } from 'hooks/useRequiresAccount'
+import { useAuthenticatedClickCallback } from 'hooks/useAuthenticatedCallback'
 
 import {
   LockedStatusPill,
@@ -161,7 +161,7 @@ const TrackTile = ({
     usePremiumContentPurchaseModal()
   const isPurchase = isContentUSDCPurchaseGated(streamConditions)
 
-  const onClickGatedUnlockPill = useRequiresAccountOnClick(() => {
+  const onClickGatedUnlockPill = useAuthenticatedClickCallback(() => {
     if (isPurchase && trackId) {
       openPremiumContentPurchaseModal(
         { contentId: trackId, contentType: PurchaseableContentType.TRACK },

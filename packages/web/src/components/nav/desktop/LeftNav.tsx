@@ -251,7 +251,7 @@ const mapDispatchToProps = (dispatch: Dispatch) => ({
   saveCollection: (collectionId: number) =>
     dispatch(saveCollection(collectionId, FavoriteSource.NAVIGATOR)),
   showActionRequiresAccount: () =>
-    dispatch(signOnActions.showRequiresAccountToast()),
+    dispatch(signOnActions.showRequiresAccountModal()),
   goToSignUp: () => dispatch(signOnActions.openSignOn(/** signIn */ false))
 })
 

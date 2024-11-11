@@ -5,7 +5,7 @@ import { call, put, select } from 'typed-redux-saga'
 
 import {
   updateRouteOnExit,
-  showRequiresAccountToast
+  showRequiresAccountModal
 } from 'common/store/pages/signon/actions'
 
 const { SIGN_UP_PAGE } = route
@@ -32,7 +32,7 @@ export function requiresAccount<TArgs extends any[], TReturn>(
           yield* put(updateRouteOnExit(route))
         }
         yield* put(pushRoute(SIGN_UP_PAGE))
-        yield* put(showRequiresAccountToast())
+        yield* put(showRequiresAccountModal())
       }
     } else {
       return yield* call(fn, ...args)

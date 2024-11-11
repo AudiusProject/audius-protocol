@@ -25,15 +25,17 @@ import {
   TextLink
 } from '@audius/harmony'
 import { useSelector } from 'react-redux'
+import { useToggle } from 'react-use'
 
 import { ConfirmationModal } from 'components/confirmation-modal'
+import { DownloadMobileAppDrawer } from 'components/download-mobile-app-drawer/DownloadMobileAppDrawer'
 import { ToastContext } from 'components/toast/ToastContext'
+import { useAuthenticatedCallback } from 'hooks/useAuthenticatedCallback'
+import { useIsMobile } from 'hooks/useIsMobile'
 import { useRequiresAccountCallback } from 'hooks/useRequiresAccount'
 import { make, track as trackEvent } from 'services/analytics'
 import { AppState } from 'store/types'
 import { removeNullable } from 'utils/typeUtils'
-
-import { useCommentActionCallback } from './useCommentActionCallback'
 const { getUser } = cacheUsersSelectors
 
 type ConfirmationAction =
@@ -96,15 +98,18 @@ export const CommentActionBar = ({
     (state: AppState) => getUser(state, { id: Number(userId) })?.name
   )
 
+  // Modals
+  const [isMobileAppDrawerOpen, toggleIsMobileAppDrawer] = useToggle(false)
   const [currentConfirmationModalType, setCurrentConfirmationModalType] =
     useState<ConfirmationAction | undefined>(undefined)
+  const isMobile = useIsMobile()
   const { toast } = useContext(ToastContext)
 
   const [handleMuteCommentNotifications] =
     useUpdateCommentNotificationSetting(commentId)
 
   // Handlers
-  const handleReact = useRequiresAccountCallback(
+  const handleReact = useAuthenticatedCallback(
     () => {
       reactToComment(commentId, !isCurrentUserReacted)
     },
@@ -145,6 +150,8 @@ export const CommentActionBar = ({
     toast(messages.toasts.mutedUser)
   }, [comment.userId, currentSort, entityId, muteUser, toast])
 
+  const { requiresAccount } = useRequiresAccountCallback()
+
   const handleFlagComment = useCallback(() => {
     reportComment(commentId, parentCommentId)
     toast(messages.toasts.flaggedAndHidden)
@@ -155,15 +162,37 @@ export const CommentActionBar = ({
     toast(messages.toasts.flaggedAndRemoved)
   }, [commentId, parentCommentId, reportComment, toast])
 
-  const [handleClickReply, mobileAppDrawer] = useCommentActionCallback(() => {
-    onClickReply()
-    trackEvent(
-      make({
-        eventName: Name.COMMENTS_CLICK_REPLY_BUTTON,
-        commentId
-      })
-    )
-  }, [onClickReply, commentId])
+  const handleClickReply = useCallback(() => {
+    if (isMobile) {
+      toggleIsMobileAppDrawer()
+      trackEvent(
+        make({
+          eventName: Name.COMMENTS_OPEN_INSTALL_APP_MODAL,
+          trackId: entityId
+        })
+      )
+    } else {
+      if (currentUserId === undefined) {
+        requiresAccount()
+      } else {
+        onClickReply()
+        trackEvent(
+          make({
+            eventName: Name.COMMENTS_CLICK_REPLY_BUTTON,
+            commentId
+          })
+        )
+      }
+    }
+  }, [
+    isMobile,
+    toggleIsMobileAppDrawer,
+    entityId,
+    currentUserId,
+    onClickReply,
+    commentId,
+    requiresAccount
+  ])
 
   // Confirmation Modal state
   const confirmationModals: {
@@ -299,20 +328,40 @@ export const CommentActionBar = ({
     ]
   )
 
-  const [handleClickOverflowMenu, replyMobileAppDrawer] =
-    useCommentActionCallback(
-      (triggerPopup: () => void) => {
-        triggerPopup()
-
+  const handleClickOverflowMenu = useCallback(
+    (triggerPopup: () => void) => {
+      if (isMobile) {
+        toggleIsMobileAppDrawer()
         trackEvent(
           make({
-            eventName: Name.COMMENTS_OPEN_COMMENT_OVERFLOW_MENU,
-            commentId
+            eventName: Name.COMMENTS_OPEN_INSTALL_APP_MODAL,
+            trackId: entityId
           })
         )
-      },
-      [commentId]
-    )
+      } else {
+        if (currentUserId === undefined) {
+          requiresAccount()
+        } else {
+          triggerPopup()
+
+          trackEvent(
+            make({
+              eventName: Name.COMMENTS_OPEN_COMMENT_OVERFLOW_MENU,
+              commentId
+            })
+          )
+        }
+      }
+    },
+    [
+      commentId,
+      currentUserId,
+      entityId,
+      isMobile,
+      toggleIsMobileAppDrawer,
+      requiresAccount
+    ]
+  )
 
   return (
     <Flex gap='l' alignItems='center'>
@@ -356,8 +405,10 @@ export const CommentActionBar = ({
           />
         )}
       />
-      {mobileAppDrawer}
-      {replyMobileAppDrawer}
+      <DownloadMobileAppDrawer
+        isOpen={isMobileAppDrawerOpen}
+        onClose={toggleIsMobileAppDrawer}
+      />
       <ConfirmationModal
         messages={{
           header: currentConfirmationModal?.messages?.title,

@@ -427,7 +427,7 @@ export function removeFollowArtists(userIds: ID[]) {
   return { type: REMOVE_FOLLOW_ARTISTS, userIds }
 }
 
-export const showRequiresAccountToast = () =>
+export const showRequiresAccountModal = () =>
   toastActions.toast({
     content: 'Oops, it looks like you need an account to do that!'
   })

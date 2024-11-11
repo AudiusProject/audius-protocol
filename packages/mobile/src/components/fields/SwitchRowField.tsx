@@ -24,12 +24,7 @@ export const SwitchRowField = (props: SwitchRowFieldProps) => {
           <Text variant='title' strength='weak' size='l'>
             {label}
           </Text>
-          <Switch
-            value={value}
-            onValueChange={(value) => {
-              setValue(value)
-            }}
-          />
+          <Switch value={value} onValueChange={setValue} />
         </Flex>
         {description ? <Text>{description}</Text> : null}
       </Flex>

@@ -25,7 +25,7 @@ import { connect, useDispatch } from 'react-redux'
 import { Dispatch } from 'redux'
 
 import { useModalState } from 'common/hooks/useModalState'
-import { useRequiresAccountOnClick } from 'hooks/useRequiresAccount'
+import { useAuthenticatedClickCallback } from 'hooks/useAuthenticatedCallback'
 import { AppState } from 'store/types'
 
 import TrackListItem, {
@@ -104,7 +104,7 @@ const ConnectedTrackListItem = (props: ConnectedTrackListItemProps) => {
   }
 
   const isPurchase = isContentUSDCPurchaseGated(streamConditions)
-  const onClickGatedUnlockPill = useRequiresAccountOnClick(() => {
+  const onClickGatedUnlockPill = useAuthenticatedClickCallback(() => {
     if (isPurchase && trackId) {
       openPremiumContentPurchaseModal(
         {

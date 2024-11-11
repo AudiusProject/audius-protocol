@@ -60,12 +60,7 @@ export const TrackPriceField = () => {
             gap='xs'
           >
             <Text weight='bold'>{messages.publishingRights.checkboxLabel}</Text>
-            <Switch
-              value={isOwnedByUser}
-              onValueChange={(value) => {
-                setIsOwnedByUser(value)
-              }}
-            />
+            <Switch value={isOwnedByUser} onValueChange={setIsOwnedByUser} />
           </Flex>
           <Text>{messages.publishingRights.confirmationText}</Text>
           <Box as='ul' mt='s'>

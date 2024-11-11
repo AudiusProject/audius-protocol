@@ -36,11 +36,11 @@ import { shallowEqual, useDispatch, useSelector } from 'react-redux'
 import { useModalState } from 'common/hooks/useModalState'
 import { make, useRecord } from 'common/store/analytics/actions'
 import { Expandable } from 'components/expandable/Expandable'
-import { useIsMobile } from 'hooks/useIsMobile'
 import {
-  useRequiresAccountCallback,
-  useRequiresAccountOnClick
-} from 'hooks/useRequiresAccount'
+  useAuthenticatedCallback,
+  useAuthenticatedClickCallback
+} from 'hooks/useAuthenticatedCallback'
+import { useIsMobile } from 'hooks/useIsMobile'
 import { audiusSdk } from 'services/audius-sdk'
 
 import { DownloadRow } from './DownloadRow'
@@ -101,7 +101,7 @@ export const DownloadSection = ({ trackId }: DownloadSectionProps) => {
 
   const onToggleExpand = useCallback(() => setExpanded((val) => !val), [])
 
-  const handlePurchaseClick = useRequiresAccountOnClick((_event) => {
+  const handlePurchaseClick = useAuthenticatedClickCallback((_event) => {
     if (lockedContentModalVisibility) {
       setLockedContentModalVisibility(false)
     }
@@ -111,7 +111,7 @@ export const DownloadSection = ({ trackId }: DownloadSectionProps) => {
     )
   }, [])
 
-  const handleDownload = useRequiresAccountCallback(
+  const handleDownload = useAuthenticatedCallback(
     ({ trackIds, parentTrackId }: { trackIds: ID[]; parentTrackId?: ID }) => {
       if (isMobile && shouldDisplayDownloadFollowGated) {
         // On mobile, show a toast instead of a tooltip

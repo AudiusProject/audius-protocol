@@ -41,7 +41,7 @@ import { TextLink, UserLink } from 'components/link'
 import { LockedStatusPill } from 'components/locked-status-pill'
 import Skeleton from 'components/skeleton/Skeleton'
 import { PlaylistTileProps } from 'components/track/types'
-import { useRequiresAccountOnClick } from 'hooks/useRequiresAccount'
+import { useAuthenticatedClickCallback } from 'hooks/useAuthenticatedCallback'
 
 import { GatedConditionsPill } from '../GatedConditionsPill'
 
@@ -299,7 +299,7 @@ const PlaylistTile = (props: PlaylistTileProps & ExtraProps) => {
     usePremiumContentPurchaseModal()
   const isPurchase = isContentUSDCPurchaseGated(streamConditions)
 
-  const onClickGatedUnlockPill = useRequiresAccountOnClick(() => {
+  const onClickGatedUnlockPill = useAuthenticatedClickCallback(() => {
     if (isPurchase && id) {
       openPremiumContentPurchaseModal(
         { contentId: id, contentType: PurchaseableContentType.ALBUM },

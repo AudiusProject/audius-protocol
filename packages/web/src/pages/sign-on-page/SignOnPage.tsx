@@ -19,10 +19,7 @@ import djBackground from 'assets/img/2-DJ-4-3.jpg'
 import djPortrait from 'assets/img/DJportrait.jpg'
 import imagePhone from 'assets/img/imagePhone.png'
 import { fetchReferrer } from 'common/store/pages/signon/actions'
-import {
-  getHasCompletedAccount,
-  getRouteOnExit
-} from 'common/store/pages/signon/selectors'
+import { getHasCompletedAccount } from 'common/store/pages/signon/selectors'
 import { useMedia } from 'hooks/useMedia'
 import { SignInPage } from 'pages/sign-in-page'
 import { AudiusValues } from 'pages/sign-on-page/AudiusValues'
@@ -40,6 +37,7 @@ const {
   SIGN_UP_PAGE,
   SIGN_UP_PASSWORD_PAGE,
   SIGN_UP_REVIEW_HANDLE_PAGE,
+  TRENDING_PAGE,
   SIGN_UP_GENRES_PAGE,
   SIGN_UP_ARTISTS_PAGE
 } = route
@@ -56,8 +54,6 @@ type RootProps = {
 const DesktopSignOnRoot = (props: RootProps) => {
   const { children } = props
   const { spacing, motion, color } = useTheme()
-
-  const routeOnExit = useSelector(getRouteOnExit)
 
   const hideCloseButton = useRouteMatch({
     path: [
@@ -96,7 +92,7 @@ const DesktopSignOnRoot = (props: RootProps) => {
     >
       {!hideCloseButton ? (
         <Link
-          to={routeOnExit}
+          to={TRENDING_PAGE}
           css={{
             zIndex: 1,
             position: 'absolute',

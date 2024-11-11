@@ -91,7 +91,7 @@ function SwitchField(props: { title: string; value: ChatPermission }) {
   const { title, value } = props
   const [allowAllField] = useField({ name: 'all', type: 'checkbox' })
 
-  const [field, , { setValue }] = useField({
+  const [field, , helpers] = useField({
     name: value,
     type: 'checkbox'
   })
@@ -102,9 +102,7 @@ function SwitchField(props: { title: string; value: ChatPermission }) {
         id={title}
         value={field.checked}
         disabled={allowAllField.checked}
-        onValueChange={(value) => {
-          setValue(value)
-        }}
+        onValueChange={helpers.setValue}
       />
       <Text variant='title' strength='weak'>
         {title}
