@@ -285,9 +285,12 @@ export const SignOnPage = () => {
 
   useEffectOnce(() => {
     // Check for referrals and set them in the store
-    const referrerHandle = new URLSearchParams(location.search).get('ref')
-    if (referrerHandle) {
-      dispatch(fetchReferrer(referrerHandle))
+    const rf = new URLSearchParams(location.search).get('rf')
+    const ref = new URLSearchParams(location.search).get('ref')
+    if (rf) {
+      dispatch(fetchReferrer(rf))
+    } else if (ref) {
+      dispatch(fetchReferrer(ref))
     }
   })
 
