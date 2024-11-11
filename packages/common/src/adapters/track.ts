@@ -2,7 +2,7 @@ import { full } from '@audius/sdk'
 import type { CrossPlatformFile, Genre, Mood, TrackMetadata } from '@audius/sdk'
 import camelcaseKeys from 'camelcase-keys'
 import dayjs from 'dayjs'
-import { omit, pick } from 'lodash'
+import { omit, pick, mapValues } from 'lodash'
 import snakecaseKeys from 'snakecase-keys'
 
 import {
@@ -13,7 +13,7 @@ import {
 } from '~/models'
 import { StemTrackMetadata, UserTrackMetadata } from '~/models/Track'
 import type { NativeFile, TrackMetadataForUpload } from '~/store/upload/types'
-import { License } from '~/utils'
+import { License, Maybe } from '~/utils'
 import { decodeHashId, encodeHashId } from '~/utils/hashIds'
 
 import { accessConditionsFromSDK, accessConditionsToSDK } from './access'
@@ -265,14 +265,17 @@ export const trackMetadataForUploadToSdk = (
   tags: input.tags ?? undefined,
   genre: (input.genre as Genre) || undefined,
   releaseDate: input.release_date ? new Date(input.release_date) : undefined,
-  previewStartSeconds: input.preview_start_seconds ?? 0,
+  previewStartSeconds: input.preview_start_seconds ?? undefined,
   previewCid: input.preview_cid ?? '',
   ddexApp: input.ddex_app ?? '',
   aiAttributionUserId: input.ai_attribution_user_id
     ? encodeHashId(input.ai_attribution_user_id)
     : undefined,
   fieldVisibility: input.field_visibility
-    ? camelcaseKeys(input.field_visibility)
+    ? mapValues(
+        camelcaseKeys(input.field_visibility),
+        (value: Maybe<boolean>) => (value === null ? undefined : value)
+      )
     : undefined,
   downloadConditions: input.download_conditions
     ? accessConditionsToSDK(input.download_conditions)
