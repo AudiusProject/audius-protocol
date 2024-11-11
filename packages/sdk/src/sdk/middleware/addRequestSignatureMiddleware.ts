@@ -1,3 +1,5 @@
+import { Mutex } from 'async-mutex'
+
 import {
   type Middleware,
   type RequestContext,
@@ -19,65 +21,58 @@ export const addRequestSignatureMiddleware = ({
 }: {
   services: Pick<ServicesContainer, 'auth' | 'logger'>
 }): Middleware => {
+  const mutex = new Mutex()
   let message: string | null = null
   let signatureAddress: string | null = null
   let signature: string | null = null
   let timestamp: number | null = null
 
-  let signaturePromise: Promise<void> | null = null
+  const getSignature = async () => {
+    // Run this exclusively to prevent multiple requests from updating the signature at the same time
+    // and reverting to an older signature
+    return mutex.runExclusive(async () => {
+      const { auth, logger } = services
+      const currentAddress = await auth.getAddress()
+      const currentTimestamp = new Date().getTime()
+      const isExpired =
+        !timestamp || timestamp + SIGNATURE_EXPIRY_MS < currentTimestamp
+
+      const needsUpdate =
+        !message ||
+        !signature ||
+        isExpired ||
+        signatureAddress !== currentAddress
+
+      if (needsUpdate) {
+        try {
+          signatureAddress = currentAddress
+
+          const m = `signature:${currentTimestamp}`
+          const prefix = `\x19Ethereum Signed Message:\n${m.length}`
+          const prefixedMessage = prefix + m
+
+          const [sig, recid] = await auth.sign(
+            Buffer.from(prefixedMessage, 'utf-8')
+          )
+          const r = Buffer.from(sig.slice(0, 32)).toString('hex')
+          const s = Buffer.from(sig.slice(32, 64)).toString('hex')
+          const v = (recid + 27).toString(16)
+
+          // Cache the new signature and message
+          message = m
+          signature = `0x${r}${s}${v}`
+          timestamp = currentTimestamp
+        } catch (e) {
+          logger.warn(`Unable to add request signature: ${e}`)
+        }
+      }
+      return { message, signature }
+    })
+  }
 
   return {
     pre: async (context: RequestContext): Promise<FetchParams> => {
-      const { auth, logger } = services
-
-      // Using a promise so that only one request at a time is allowed to
-      // update the signature.
-      // Any requests that queue behind the one updating will wait for the promise
-      // to resolve and then read the result.
-      if (!signaturePromise) {
-        signaturePromise = (async () => {
-          const currentAddress = await auth.getAddress()
-          const currentTimestamp = new Date().getTime()
-          const isExpired =
-            !timestamp || timestamp + SIGNATURE_EXPIRY_MS < currentTimestamp
-
-          const needsUpdate =
-            !message ||
-            !signature ||
-            isExpired ||
-            signatureAddress !== currentAddress
-
-          if (needsUpdate) {
-            try {
-              signatureAddress = currentAddress
-
-              const m = `signature:${currentTimestamp}`
-              const prefix = `\x19Ethereum Signed Message:\n${m.length}`
-              const prefixedMessage = prefix + m
-
-              const [sig, recid] = await auth.sign(
-                Buffer.from(prefixedMessage, 'utf-8')
-              )
-              const r = Buffer.from(sig.slice(0, 32)).toString('hex')
-              const s = Buffer.from(sig.slice(32, 64)).toString('hex')
-              const v = (recid + 27).toString(16)
-
-              // Cache the new signature and message
-              message = m
-              signature = `0x${r}${s}${v}`
-              timestamp = currentTimestamp
-            } catch (e) {
-              logger.warn(`Unable to add request signature: ${e}`)
-            } finally {
-              // Clear the promise after update is complete
-              signaturePromise = null
-            }
-          }
-        })()
-      }
-
-      // Wait for current check/update signature to complete
-      await signaturePromise
+      const { message, signature } = await getSignature()
 
       // Return the updated request with the signature in the headers
       return !!message && !!signature
