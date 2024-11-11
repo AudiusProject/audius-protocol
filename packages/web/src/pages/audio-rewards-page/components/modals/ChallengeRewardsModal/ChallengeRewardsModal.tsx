@@ -90,7 +90,7 @@ export const useRewardsModalType = (): [
   )
   return [modalType, setModalType]
 }
-const inviteLink = getCopyableLink('/signup?ref=%0')
+const inviteLink = getCopyableLink('/signup?rf=%0')
 
 const messages = {
   audio: '$AUDIO',

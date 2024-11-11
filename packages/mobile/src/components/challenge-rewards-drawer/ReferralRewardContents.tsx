@@ -14,7 +14,7 @@ export const ReferralRewardContents = ({
   isVerified: boolean
 }) => {
   const handle = useSelector(accountSelectors.getUserHandle)
-  const inviteUrl = `audius.co/signup?ref=${handle}`
+  const inviteUrl = `audius.co/signup?rf=${handle}`
 
   return (
     <Flex gap='m'>
