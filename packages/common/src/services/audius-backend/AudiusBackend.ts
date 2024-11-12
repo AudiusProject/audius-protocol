@@ -829,11 +829,12 @@ export const audiusBackend = ({
     }
   }
 
-  async function recordTrackListen(trackId: ID) {
+  async function recordTrackListen(userId: ID, trackId: ID) {
     try {
       const listen = await audiusLibs.Track.logTrackListen(
         trackId,
         unauthenticatedUuid,
+        userId,
         await getFeatureEnabled(FeatureFlags.SOLANA_LISTEN_ENABLED)
       )
       return listen
@@ -1260,9 +1261,13 @@ export const audiusBackend = ({
     }
   }
 
-  async function deleteTrack(trackId: ID) {
+  async function deleteTrack(userId: ID, trackId: ID) {
     try {
-      const { txReceipt } = await audiusLibs.Track.deleteTrack(trackId, true)
+      const { txReceipt } = await audiusLibs.Track.deleteTrack(
+        userId,
+        trackId,
+        true
+      )
       return {
         blockHash: txReceipt.blockHash,
         blockNumber: txReceipt.blockNumber

@@ -941,7 +941,7 @@ export function* uploadCollection(
         )
         try {
           yield* all(
-            trackIds.map((id) => audiusBackendInstance.deleteTrack(id))
+            trackIds.map((id) => audiusBackendInstance.deleteTrack(userId, id))
           )
           console.debug('Deleted tracks.')
         } catch (err) {

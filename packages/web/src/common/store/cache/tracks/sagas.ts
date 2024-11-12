@@ -399,8 +399,15 @@ function* confirmDeleteTrack(trackId: ID) {
     confirmerActions.requestConfirmation(
       makeKindId(Kind.TRACKS, trackId),
       function* () {
+        yield* waitForAccount()
+        const userId = yield* select(getUserId)
+        if (!userId) {
+          throw new Error('No userId set, cannot delete track')
+        }
+
         const { blockHash, blockNumber } = yield* call(
           audiusBackendInstance.deleteTrack,
+          userId,
           trackId
         )
 
@@ -416,8 +423,6 @@ function* confirmDeleteTrack(trackId: ID) {
         }
 
         const track = yield* select(getTrack, { id: trackId })
-        yield* waitForAccount()
-        const userId = yield* select(getUserId)
 
         if (!track) return
         const { data } = yield* call(
