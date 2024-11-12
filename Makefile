@@ -102,7 +102,6 @@ install-deps:
 	@go install github.com/cortesi/modd/cmd/modd@latest
 	@go install github.com/a-h/templ/cmd/templ@latest
 	@go install github.com/ethereum/go-ethereum/cmd/abigen@latest
-	@go install github.com/deepmap/oapi-codegen/cmd/oapi-codegen@latest
 	@go install github.com/go-swagger/go-swagger/cmd/swagger@latest
 
 go.sum: go.mod

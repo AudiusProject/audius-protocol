@@ -6,6 +6,8 @@ import (
 	"context"
 	"time"
 
+	"github.com/AudiusProject/audius-protocol/pkg/core/gen/core_openapi"
+	"github.com/AudiusProject/audius-protocol/pkg/core/gen/core_openapi/protocol"
 	"github.com/AudiusProject/audius-protocol/pkg/core/gen/proto"
 	"github.com/cometbft/cometbft/rpc/client/http"
 	"golang.org/x/sync/errgroup"
@@ -15,9 +17,12 @@ import (
 
 type Sdk struct {
 	logger       Logger
+	useHttps     bool
 	privKey      string
+	OAPIEndpoint string
 	GRPCEndpoint string
 	JRPCEndpoint string
+	protocol.ClientService
 	proto.ProtocolClient
 	http.HTTP
 }
@@ -29,7 +34,7 @@ func defaultSdk() *Sdk {
 }
 
 const (
-	retries = 1
+	retries = 10
 	delay   = 3 * time.Second
 )
 
@@ -40,6 +45,33 @@ func initSdk(sdk *Sdk) error {
 	// TODO: add node selection logic here, based on environement, if endpoint not configured
 
 	g, ctx := errgroup.WithContext(ctx)
+
+	if sdk.OAPIEndpoint != "" {
+		g.Go(func() error {
+			transport := core_openapi.DefaultTransportConfig().WithHost(sdk.OAPIEndpoint)
+			if sdk.useHttps {
+				transport.WithSchemes([]string{"https"})
+			}
+
+			client := core_openapi.NewHTTPClientWithConfig(nil, transport)
+			for tries := retries; tries >= 0; tries-- {
+				_, err := client.Protocol.ProtocolPing(protocol.NewProtocolPingParams())
+				if err == nil {
+					break
+				}
+
+				if tries == 0 {
+					sdk.logger.Error("exhausted openapi retries", "error", err, "endpoint", sdk.OAPIEndpoint)
+					return err
+				}
+
+				time.Sleep(delay)
+			}
+
+			sdk.ClientService = client.Protocol
+			return nil
+		})
+	}
 
 	// initialize grpc client
 	if sdk.GRPCEndpoint != "" {

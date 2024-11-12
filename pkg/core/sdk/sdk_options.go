@@ -22,9 +22,21 @@ func WithLogger(logger Logger) SdkOption {
 	}
 }
 
+func WithUsehttps(useHttps bool) SdkOption {
+	return func(s *Sdk) {
+		s.useHttps = useHttps
+	}
+}
+
 func WithPrivkey(privKey string) SdkOption {
 	return func(s *Sdk) {
 		s.privKey = privKey
+	}
+}
+
+func WithOapiendpoint(OAPIEndpoint string) SdkOption {
+	return func(s *Sdk) {
+		s.OAPIEndpoint = OAPIEndpoint
 	}
 }
 

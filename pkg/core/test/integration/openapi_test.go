@@ -3,9 +3,9 @@ package integration
 import (
 	"time"
 
-	"github.com/AudiusProject/audius-protocol/pkg/core/gen/core_openapi"
 	"github.com/AudiusProject/audius-protocol/pkg/core/gen/core_openapi/protocol"
 	"github.com/AudiusProject/audius-protocol/pkg/core/gen/models"
+	"github.com/AudiusProject/audius-protocol/pkg/core/test/integration/utils"
 	"github.com/go-openapi/strfmt"
 	"github.com/google/uuid"
 	. "github.com/onsi/ginkgo/v2"
@@ -14,11 +14,10 @@ import (
 
 var _ = Describe("OpenAPI", func() {
 	It("can get node info", func() {
-		transport := core_openapi.DefaultTransportConfig().WithHost("audius-protocol-creator-node-2")
-		client := core_openapi.NewHTTPClientWithConfig(nil, transport)
+		sdk := utils.ContentTwo
 
 		params := protocol.NewProtocolGetNodeInfoParams()
-		res, err := client.Protocol.ProtocolGetNodeInfo(params)
+		res, err := sdk.ProtocolGetNodeInfo(params)
 		Expect(err).To(BeNil())
 
 		payload := res.Payload
@@ -26,12 +25,11 @@ var _ = Describe("OpenAPI", func() {
 	})
 
 	It("can get blocks", func() {
-		transport := core_openapi.DefaultTransportConfig().WithHost("audius-protocol-creator-node-1")
-		client := core_openapi.NewHTTPClientWithConfig(nil, transport)
+		sdk := utils.ContentOne
 
 		params := protocol.NewProtocolGetBlockParams()
 		params.Height = "1"
-		res, err := client.Protocol.ProtocolGetBlock(params)
+		res, err := sdk.ProtocolGetBlock(params)
 		Expect(err).To(BeNil())
 
 		payload := res.Payload
@@ -39,8 +37,7 @@ var _ = Describe("OpenAPI", func() {
 	})
 
 	It("can send some plays", func() {
-		transport := core_openapi.DefaultTransportConfig().WithHost("audius-protocol-discovery-provider-1")
-		client := core_openapi.NewHTTPClientWithConfig(nil, transport)
+		sdk := utils.DiscoveryOne
 
 		playOne := &models.ProtocolTrackPlay{
 			UserID:    uuid.NewString(),
@@ -71,7 +68,7 @@ var _ = Describe("OpenAPI", func() {
 		sendParams := protocol.NewProtocolSendTransactionParams()
 		sendParams.SetTransaction(signedTransaction)
 
-		res, err := client.Protocol.ProtocolSendTransaction(sendParams)
+		res, err := sdk.ProtocolSendTransaction(sendParams)
 		Expect(err).To(BeNil())
 
 		payload := res.Payload
@@ -83,7 +80,7 @@ var _ = Describe("OpenAPI", func() {
 		getParams := protocol.NewProtocolGetTransactionParams()
 		getParams.SetTxhash(payload.Txhash)
 
-		getRes, err := client.Protocol.ProtocolGetTransaction(getParams)
+		getRes, err := sdk.ProtocolGetTransaction(getParams)
 		Expect(err).To(BeNil())
 
 		Expect(getRes.Payload.Txhash).To(Equal(payload.Txhash))
