@@ -24,6 +24,7 @@ import (
 	"github.com/AudiusProject/audius-protocol/pkg/mediorum/crudr"
 	"github.com/AudiusProject/audius-protocol/pkg/mediorum/ethcontracts"
 	"github.com/AudiusProject/audius-protocol/pkg/mediorum/persistence"
+	"github.com/AudiusProject/audius-protocol/pkg/serviceproxy"
 	"github.com/erni27/imcache"
 	"github.com/imroc/req/v3"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -69,6 +70,7 @@ type MediorumConfig struct {
 	DiscoveryListensEndpoints []string
 	CoreGRPCEndpoint          string
 	CoreJRPCEndpoint          string
+	IPDataApiKey              string
 
 	// should have a basedir type of thing
 	// by default will put db + blobs there
@@ -114,6 +116,9 @@ type MediorumServer struct {
 	failsPeerReachability bool
 
 	coreHealth *coreHealthResponseData
+
+	serviceProxy       serviceproxy.ServiceProxy
+	serviceProxyRoutes *serviceproxy.ProxyRoutes
 
 	StartedAt time.Time
 	Config    MediorumConfig
@@ -397,6 +402,15 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 
 	// internal: testing
 	internalApi.GET("/proxy_health_check", ss.proxyHealthCheck)
+
+	if err := ss.initServiceProxy(); err != nil {
+		logger.Error("error setting up service proxy", "err", err)
+	} else {
+		// if service proxy starts up right and we're a servicer, register routes
+		if ss.serviceProxyRoutes != nil {
+			internalApi.GET("/ip_data", ss.serviceProxyRoutes.GetIPDataRoute)
+		}
+	}
 
 	return ss, nil
 
