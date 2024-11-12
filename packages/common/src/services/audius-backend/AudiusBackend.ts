@@ -449,7 +449,7 @@ export const audiusBackend = ({
     const profilePictureSizes: ProfilePictureSizes = {}
     const coverPhotoSizes: CoverPhotoSizes = {}
 
-    // Images are fetched on demand async w/ the `useUserProfilePicture`/`useUserCoverPhoto` and
+    // Images are fetched on demand async w/ the `useXProfilePicture`/`useXCoverPhoto` and
     // transitioned in w/ the dynamicImageComponent
     if (!user.profile_picture_sizes && !user.profile_picture) {
       profilePictureSizes[DefaultSizes.OVERRIDE] =

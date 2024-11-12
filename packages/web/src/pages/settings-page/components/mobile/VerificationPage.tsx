@@ -26,7 +26,7 @@ import { TikTokAuthButton } from 'components/tiktok-auth/TikTokAuthButton'
 import { TwitterAuthButton } from 'components/twitter-auth/TwitterAuthButton'
 import UserBadges from 'components/user-badges/UserBadges'
 import { useRemoteVar } from 'hooks/useRemoteConfig'
-import { useUserProfilePicture } from 'hooks/useUserProfilePicture'
+import { useProfilePicture3 } from 'hooks/useUserProfilePicture'
 
 import { SettingsPageProps } from './SettingsPage'
 import settingsPageStyles from './SettingsPage.module.css'
@@ -171,11 +171,10 @@ const SuccessBody = ({
   profilePictureSizes,
   goToRoute
 }: SuccessBodyProps) => {
-  const profilePicture = useUserProfilePicture(
+  const profilePicture = useProfilePicture3({
     userId,
-    profilePictureSizes,
-    SquareSizes.SIZE_150_BY_150
-  )
+    size: SquareSizes.SIZE_150_BY_150
+  })
 
   const onClick = useCallback(() => {
     goToRoute(profilePage(handle))

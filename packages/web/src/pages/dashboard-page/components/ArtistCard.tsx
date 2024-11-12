@@ -6,7 +6,7 @@ import DynamicImage from 'components/dynamic-image/DynamicImage'
 import UserBadges from 'components/user-badges/UserBadges'
 import { useCoverPhoto } from 'hooks/useCoverPhoto'
 import { useNavigateToPage } from 'hooks/useNavigateToPage'
-import { useProfilePicture } from 'hooks/useUserProfilePicture'
+import { useProfilePicture3 } from 'hooks/useUserProfilePicture'
 
 import styles from './ArtistCard.module.css'
 
@@ -19,7 +19,10 @@ type ArtistCardProps = {
 }
 
 export const ArtistCard = ({ userId, handle, name }: ArtistCardProps) => {
-  const profilePicture = useProfilePicture(userId, SquareSizes.SIZE_150_BY_150)
+  const profilePicture = useProfilePicture3({
+    userId,
+    size: SquareSizes.SIZE_150_BY_150
+  })
   const { source: coverPhoto, shouldBlur } = useCoverPhoto(
     userId,
     WidthSizes.SIZE_2000

@@ -7,7 +7,7 @@ import { connect } from 'react-redux'
 import { Dispatch } from 'redux'
 
 import DynamicImage from 'components/dynamic-image/DynamicImage'
-import { useUserProfilePicture } from 'hooks/useUserProfilePicture'
+import { useProfilePicture3 } from 'hooks/useUserProfilePicture'
 import { AppState } from 'store/types'
 
 import styles from './ProfileImage.module.css'
@@ -22,11 +22,10 @@ type ProfileImageProps = OwnProps &
   ReturnType<typeof mapDispatchToProps>
 
 const ProfileImage = memo(({ userId, user }: ProfileImageProps) => {
-  const image = useUserProfilePicture(
+  const image = useProfilePicture3({
     userId,
-    user ? user._profile_picture_sizes : null,
-    SquareSizes.SIZE_150_BY_150
-  )
+    size: SquareSizes.SIZE_150_BY_150
+  })
   return (
     <DynamicImage
       wrapperClassName={cn(styles.wrapper)}

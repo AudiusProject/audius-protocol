@@ -38,7 +38,7 @@ import ProfilePageBadge from 'components/user-badges/ProfilePageBadge'
 import UserBadges from 'components/user-badges/UserBadges'
 import { UserGeneratedText } from 'components/user-generated-text'
 import { useCoverPhoto } from 'hooks/useCoverPhoto'
-import { useUserProfilePicture } from 'hooks/useUserProfilePicture'
+import { useProfilePicture3 } from 'hooks/useUserProfilePicture'
 
 import GrowingCoverPhoto from './GrowingCoverPhoto'
 import styles from './ProfileHeader.module.css'
@@ -211,11 +211,10 @@ const ProfileHeader = ({
       backgroundSize: '300px 300px'
     }
   }
-  const profilePicture = useUserProfilePicture(
+  const profilePicture = useProfilePicture3({
     userId,
-    isDeactivated ? null : profilePictureSizes,
-    SquareSizes.SIZE_150_BY_150
-  )
+    size: SquareSizes.SIZE_150_BY_150
+  })
   const record = useRecord()
 
   const onGoToInstagram = useCallback(() => {

@@ -5,7 +5,6 @@ import {
   FollowSource,
   SquareSizes,
   ID,
-  ProfilePictureSizes,
   User
 } from '@audius/common/models'
 import {
@@ -29,7 +28,7 @@ import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import { MountPlacement } from 'components/types'
 import UserBadges from 'components/user-badges/UserBadges'
 import { useIsMobile } from 'hooks/useIsMobile'
-import { useUserProfilePicture } from 'hooks/useUserProfilePicture'
+import { useProfilePicture3 } from 'hooks/useUserProfilePicture'
 
 import styles from './ArtistRecommendations.module.css'
 
@@ -55,18 +54,16 @@ const messages = {
 }
 const ArtistProfilePictureWrapper = ({
   userId,
-  handle,
-  profilePictureSizes
+  handle
 }: {
   userId: number
   handle: string
-  profilePictureSizes: ProfilePictureSizes | null
 }) => {
-  const profilePicture = useUserProfilePicture(
+  const profilePicture = useProfilePicture3({
     userId,
-    profilePictureSizes,
-    SquareSizes.SIZE_150_BY_150
-  )
+    size: SquareSizes.SIZE_150_BY_150
+  })
+
   const isMobile = useIsMobile()
   if (isMobile) {
     return (

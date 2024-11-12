@@ -3,15 +3,15 @@ import { Flex, Text, useTheme } from '@audius/harmony'
 
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import UserBadges from 'components/user-badges/UserBadges'
-import { useProfilePicture } from 'hooks/useUserProfilePicture'
+import { useProfilePicture3 } from 'hooks/useUserProfilePicture'
 
 import styles from './ArtistInfo.module.css'
 
 export const ArtistInfo = ({ user }: { user: UserMetadata }) => {
-  const profilePicture = useProfilePicture(
-    user.user_id,
-    SquareSizes.SIZE_150_BY_150
-  )
+  const profilePicture = useProfilePicture3({
+    userId: user.user_id,
+    size: SquareSizes.SIZE_150_BY_150
+  })
   const { iconSizes } = useTheme()
   return (
     <Flex gap='m' alignItems='center' justifyContent='flex-start'>

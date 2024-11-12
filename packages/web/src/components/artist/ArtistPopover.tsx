@@ -1,6 +1,5 @@
-import { useCallback, ReactNode, useState } from 'react'
+import { ReactNode, useState } from 'react'
 
-import { SquareSizes, WidthSizes } from '@audius/common/models'
 import {
   accountSelectors,
   cacheUsersSelectors,
@@ -11,8 +10,6 @@ import cn from 'classnames'
 
 import { useSelector } from 'common/hooks/useSelector'
 import { MountPlacement } from 'components/types'
-import { useOnUserCoverPhoto } from 'hooks/useCoverPhoto'
-import { useOnUserProfilePicture } from 'hooks/useUserProfilePicture'
 
 import { ArtistCard } from './ArtistCard'
 import styles from './ArtistPopover.module.css'
@@ -62,24 +59,6 @@ export const ArtistPopover = ({
     getUser(state, { handle: handle.toLowerCase() })
   )
   const userId = useSelector(getUserId)
-
-  const getCoverPhoto = useOnUserCoverPhoto(
-    creator ? creator.user_id : null,
-    creator ? creator._cover_photo_sizes : null,
-    WidthSizes.SIZE_640,
-    undefined
-  )
-  const getProfilePicture = useOnUserProfilePicture(
-    creator ? creator.user_id : null,
-    creator ? creator._profile_picture_sizes : null,
-    SquareSizes.SIZE_150_BY_150,
-    undefined
-  )
-
-  const onMouseEnter = useCallback(() => {
-    getCoverPhoto()
-    getProfilePicture()
-  }, [getCoverPhoto, getProfilePicture])
 
   const content =
     creator && userId !== creator.user_id ? (

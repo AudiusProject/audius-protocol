@@ -1,4 +1,4 @@
-import { MouseEventHandler, useCallback, useEffect, useState } from 'react'
+import { MouseEventHandler, useCallback } from 'react'
 
 import { SquareSizes, User } from '@audius/common/models'
 import cn from 'classnames'
@@ -7,12 +7,10 @@ import { useDispatch } from 'react-redux'
 
 import { ArtistPopover } from 'components/artist/ArtistPopover'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
-import { useUserProfilePicture } from 'hooks/useUserProfilePicture'
+import { useProfilePicture3 } from 'hooks/useUserProfilePicture'
 import { closeNotificationPanel } from 'store/application/ui/notifications/notificationsUISlice'
 
 import styles from './ProfilePicture.module.css'
-
-const imageLoadDelay = 250
 
 type ProfilePictureProps = {
   user: User
@@ -32,26 +30,12 @@ export const ProfilePicture = (props: ProfilePictureProps) => {
     disableClick,
     stopPropagation
   } = props
-  const { user_id, _profile_picture_sizes, handle } = user
-  const [loadImage, setLoadImage] = useState(false)
+  const { user_id, handle } = user
   const dispatch = useDispatch()
-  const profilePicture = useUserProfilePicture(
-    user_id,
-    _profile_picture_sizes,
-    SquareSizes.SIZE_150_BY_150,
-    undefined,
-    loadImage
-  )
-
-  // Loading the images immediately causes lag in the NotificationPanel animation
-  useEffect(() => {
-    if (!loadImage) {
-      const t = setTimeout(() => {
-        setLoadImage(true)
-      }, imageLoadDelay)
-      return () => clearTimeout(t)
-    }
-  }, [loadImage])
+  const profilePicture = useProfilePicture3({
+    userId: user_id,
+    size: SquareSizes.SIZE_150_BY_150
+  })
 
   const handleClick: MouseEventHandler = useCallback(
     (e) => {

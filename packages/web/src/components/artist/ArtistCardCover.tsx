@@ -10,7 +10,7 @@ import DynamicImage from 'components/dynamic-image/DynamicImage'
 import FollowsYouBadge from 'components/user-badges/FollowsYouBadge'
 import UserBadges from 'components/user-badges/UserBadges'
 import { useCoverPhoto } from 'hooks/useCoverPhoto'
-import { useUserProfilePicture } from 'hooks/useUserProfilePicture'
+import { useProfilePicture3 } from 'hooks/useUserProfilePicture'
 
 import styles from './ArtistCardCover.module.css'
 
@@ -26,18 +26,17 @@ type ArtistCoverProps = {
 export const ArtistCardCover = (props: ArtistCoverProps) => {
   const { isArtist, artist, onNavigateAway } = props
 
-  const { user_id, name, handle, _profile_picture_sizes } = artist
+  const { user_id, name, handle } = artist
   const dispatch = useDispatch()
 
   const { source: coverPhoto, shouldBlur } = useCoverPhoto(
     user_id,
     WidthSizes.SIZE_640
   )
-  const profilePicture = useUserProfilePicture(
-    user_id,
-    _profile_picture_sizes,
-    SquareSizes.SIZE_150_BY_150
-  )
+  const profilePicture = useProfilePicture3({
+    userId: user_id,
+    size: SquareSizes.SIZE_150_BY_150
+  })
 
   const darkenedCoverPhoto = `${gradient}, url(${coverPhoto})`
 

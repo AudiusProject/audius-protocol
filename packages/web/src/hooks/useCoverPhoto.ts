@@ -4,8 +4,14 @@ import {
   imageCoverPhotoBlank,
   imageProfilePicEmpty
 } from '@audius/common/assets'
-import { useImageSize } from '@audius/common/hooks'
-import { SquareSizes, WidthSizes, CoverPhotoSizes } from '@audius/common/models'
+import { useImageSize, useImageSize2 } from '@audius/common/hooks'
+import {
+  SquareSizes,
+  WidthSizes,
+  CoverPhotoSizes,
+  Id,
+  ID
+} from '@audius/common/models'
 import { cacheUsersActions, cacheUsersSelectors } from '@audius/common/store'
 import { useDispatch } from 'react-redux'
 
@@ -64,54 +70,74 @@ export const useCoverPhoto = (
   }
 }
 
-// TODO: this is only used once, maybe just do it inline
-/**
- * Like useUserProfilePicture, but onDemand is set to true, which
- * returns a callback that can be used to fetch the image on demand.
- */
-export const useOnUserCoverPhoto = (
-  userId: number | null,
-  coverPhotoSizes: CoverPhotoSizes | null,
-  size: WidthSizes,
-  defaultImage: string = imageCoverPhotoBlank as string
-) => {
-  const dispatch = useDispatch()
-  const profilePictureSizes = useSelector(
-    (state) => getUser(state, { id: userId })?._profile_picture_sizes
-  )
-  const getProfilePhoto = useOnUserProfilePicture(
-    userId,
-    profilePictureSizes ?? null,
-    size === WidthSizes.SIZE_640
-      ? SquareSizes.SIZE_480_BY_480
-      : SquareSizes.SIZE_1000_BY_1000,
-    ''
-  )
+// // TODO: this is only used once, maybe just do it inline
+// /**
+//  * Like useUserProfilePicture, but onDemand is set to true, which
+//  * returns a callback that can be used to fetch the image on demand.
+//  */
+// export const useOnUserCoverPhoto = (
+//   userId: number | null,
+//   coverPhotoSizes: CoverPhotoSizes | null,
+//   size: WidthSizes,
+//   defaultImage: string = imageCoverPhotoBlank as string
+// ) => {
+//   const dispatch = useDispatch()
+//   const profilePictureSizes = useSelector(
+//     (state) => getUser(state, { id: userId })?._profile_picture_sizes
+//   )
+//   const getProfilePhoto = useOnUserProfilePicture(
+//     userId,
+//     profilePictureSizes ?? null,
+//     size === WidthSizes.SIZE_640
+//       ? SquareSizes.SIZE_480_BY_480
+//       : SquareSizes.SIZE_1000_BY_1000,
+//     ''
+//   )
 
-  const getCoverPhoto = useImageSize({
-    dispatch,
-    id: userId,
-    sizes: coverPhotoSizes ?? null,
-    size,
-    action: fetchCoverPhoto,
-    defaultImage: '',
-    load: true,
-    onDemand: true
+//   const getCoverPhoto = useImageSize({
+//     dispatch,
+//     id: userId,
+//     sizes: coverPhotoSizes ?? null,
+//     size,
+//     action: fetchCoverPhoto,
+//     defaultImage: '',
+//     load: true,
+//     onDemand: true
+//   })
+
+//   return useCallback(() => {
+//     const coverPhoto = getCoverPhoto()
+//     const profilePhoto = getProfilePhoto()
+//     const isDefaultCover = coverPhoto === imageCoverPhotoBlank
+//     const isDefaultProfile = profilePhoto === imageProfilePicEmpty
+
+//     return {
+//       source: !isDefaultCover
+//         ? coverPhoto
+//         : !isDefaultProfile
+//         ? profilePhoto
+//         : defaultImage,
+//       shouldBlur: isDefaultCover && !isDefaultProfile
+//     }
+//   }, [defaultImage, getCoverPhoto, getProfilePhoto])
+// }
+
+export const useCoverPhoto3 = ({
+  userId,
+  size,
+  defaultImage
+}: {
+  userId?: ID
+  size: WidthSizes
+  defaultImage?: string
+}) => {
+  const artwork = useSelector(
+    (state) => getUser(state, { id: userId })?.cover_photo
+  )
+  const image = useImageSize2({
+    artwork,
+    targetSize: size,
+    defaultImage: defaultImage ?? imageCoverPhotoBlank
   })
-
-  return useCallback(() => {
-    const coverPhoto = getCoverPhoto()
-    const profilePhoto = getProfilePhoto()
-    const isDefaultCover = coverPhoto === imageCoverPhotoBlank
-    const isDefaultProfile = profilePhoto === imageProfilePicEmpty
-
-    return {
-      source: !isDefaultCover
-        ? coverPhoto
-        : !isDefaultProfile
-        ? profilePhoto
-        : defaultImage,
-      shouldBlur: isDefaultCover && !isDefaultProfile
-    }
-  }, [defaultImage, getCoverPhoto, getProfilePhoto])
+  return image
 }

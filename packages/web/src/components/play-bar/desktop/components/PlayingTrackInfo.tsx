@@ -21,7 +21,7 @@ import { Draggable } from 'components/dragndrop'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import { LockedStatusBadge } from 'components/locked-status-badge'
 import UserBadges from 'components/user-badges/UserBadges'
-import { useProfilePicture } from 'hooks/useUserProfilePicture'
+import { useProfilePicture3 } from 'hooks/useUserProfilePicture'
 import { fullTrackPage } from 'utils/route'
 
 import styles from './PlayingTrackInfo.module.css'
@@ -83,10 +83,10 @@ const PlayingTrackInfo = ({
       !hasStreamAccess)
 
   const spring = useSpring(springProps)
-  const profileImage = useProfilePicture(
-    artistUserId ?? null,
-    SquareSizes.SIZE_150_BY_150
-  )
+  const profileImage = useProfilePicture3({
+    userId: artistUserId ?? null,
+    size: SquareSizes.SIZE_150_BY_150
+  })
 
   const boxShadowStyle =
     hasShadow && dominantColor

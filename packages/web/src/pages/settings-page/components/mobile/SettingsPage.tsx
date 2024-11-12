@@ -30,7 +30,7 @@ import Row from 'components/groupable-list/Row'
 import NavContext, { LeftPreset } from 'components/nav/mobile/NavContext'
 import Page from 'components/page/Page'
 import useScrollToTop from 'hooks/useScrollToTop'
-import { useUserProfilePicture } from 'hooks/useUserProfilePicture'
+import { useProfilePicture3 } from 'hooks/useUserProfilePicture'
 import { isDarkMode } from 'utils/theme/theme'
 
 import AboutSettingsPage from './AboutSettingsPage'
@@ -79,7 +79,6 @@ type OwnProps = {
   name: string
   theme: Theme | null
   toggleTheme: (theme: any) => void
-  profilePictureSizes: ProfilePictureSizes | null
   goToRoute: (route: string) => void
   goBack: () => void
   isVerified: boolean
@@ -122,7 +121,6 @@ const SettingsPage = (props: SettingsPageProps) => {
     userId,
     name,
     handle,
-    profilePictureSizes,
     theme,
     toggleTheme,
     getNotificationSettings,
@@ -147,11 +145,10 @@ const SettingsPage = (props: SettingsPageProps) => {
     setCenter(subPage || messages.pageTitle)
   }, [setLeft, setCenter, setRight, subPage])
 
-  const profilePicture = useUserProfilePicture(
+  const profilePicture = useProfilePicture3({
     userId,
-    profilePictureSizes,
-    SquareSizes.SIZE_150_BY_150
-  )
+    size: SquareSizes.SIZE_150_BY_150
+  })
 
   // Render out subPage if we're on one.
   if (subPage && subPage in SubPages) {

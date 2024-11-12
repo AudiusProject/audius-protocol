@@ -7,7 +7,7 @@ import {
   getProfileImageField
 } from 'common/store/pages/signon/selectors'
 import { useCoverPhoto } from 'hooks/useCoverPhoto'
-import { useProfilePicture } from 'hooks/useUserProfilePicture'
+import { useProfilePicture3 } from 'hooks/useUserProfilePicture'
 import { useSelector } from 'utils/reducer'
 
 const { getUserId } = accountSelectors
@@ -34,11 +34,11 @@ export const CoverPhotoBanner = (props: CoverPhotoBannerProps) => {
   const coverPhotoField = useSelector(getCoverPhotoField)
   const profileImageField = useSelector(getProfileImageField)
 
-  const userId = useSelector(getUserId) ?? {}
-  const accountProfilePic = useProfilePicture(
-    userId as number,
-    SquareSizes.SIZE_150_BY_150
-  )
+  const userId = useSelector(getUserId)
+  const accountProfilePic = useProfilePicture3({
+    userId: userId ?? undefined,
+    size: SquareSizes.SIZE_150_BY_150
+  })
   const accountCoverPhotoObj = useCoverPhoto(
     userId as number,
     WidthSizes.SIZE_640

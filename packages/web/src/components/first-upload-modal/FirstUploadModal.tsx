@@ -11,7 +11,7 @@ import DynamicImage from 'components/dynamic-image/DynamicImage'
 import ConnectedMusicConfetti from 'components/music-confetti/ConnectedMusicConfetti'
 import { TwitterButton } from 'components/social-button'
 import UserBadges from 'components/user-badges/UserBadges'
-import { useUserProfilePicture } from 'hooks/useUserProfilePicture'
+import { useProfilePicture3 } from 'hooks/useUserProfilePicture'
 import { AppState } from 'store/types'
 import { fullProfilePage } from 'utils/route'
 import { openTwitterLink } from 'utils/tweet'
@@ -52,11 +52,10 @@ const g = withNullGuard(
 )
 
 const FirstUploadModal = g(({ account, isOpen, close }) => {
-  const image = useUserProfilePicture(
-    account.user_id,
-    account._profile_picture_sizes,
-    SquareSizes.SIZE_480_BY_480
-  )
+  const image = useProfilePicture3({
+    userId: account.user_id,
+    size: SquareSizes.SIZE_480_BY_480
+  })
 
   const record = useRecord()
   const onShare = useCallback(() => {
