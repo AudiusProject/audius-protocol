@@ -320,10 +320,13 @@ export const trackMetadataForUploadToSdk = (
 export const artworkFileToSDK = (
   artwork: Blob | NativeFile
 ): CrossPlatformFile => {
-  // If we're in Node (NativeFile)
+  // If we're in react-native
   if ('uri' in artwork) {
-    // TODO: Need to implement Node conversion if needed
-    throw new Error('Node environment not supported')
+    return {
+      buffer: Buffer.from(artwork.uri),
+      name: artwork.name ?? 'artwork',
+      type: artwork.type ?? undefined
+    }
   }
 
   // If we're in browser (Blob)
