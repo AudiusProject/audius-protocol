@@ -307,7 +307,7 @@ describe('recordListen', () => {
         [matchers.call.fn(audiusBackendInstance.recordTrackListen), true]
       ])
       .dispatch(actions.recordListen(1))
-      .call(audiusBackendInstance.recordTrackListen, 1)
+      .call(audiusBackendInstance.recordTrackListen, 1, 1)
       .silentRun()
   })
 
