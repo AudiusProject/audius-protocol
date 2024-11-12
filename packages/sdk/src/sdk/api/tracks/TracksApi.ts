@@ -128,7 +128,8 @@ export class TracksApi extends GeneratedTracksApi {
           await this.storage.uploadFile({
             file: coverArtFile,
             onProgress,
-            template: 'img_square'
+            template: 'img_square',
+            auth: this.auth
           }),
         (e) => {
           this.logger.info('Retrying uploadTrackCoverArt', e)
@@ -141,7 +142,8 @@ export class TracksApi extends GeneratedTracksApi {
             onProgress,
             template: 'audio',
             options:
-              this.trackUploadHelper.extractMediorumUploadOptions(metadata)
+              this.trackUploadHelper.extractMediorumUploadOptions(metadata),
+            auth: this.auth
           }),
         (e) => {
           this.logger.info('Retrying uploadTrackAudio', e)
@@ -211,7 +213,8 @@ export class TracksApi extends GeneratedTracksApi {
           await this.storage.uploadFile({
             file: coverArtFile,
             onProgress,
-            template: 'img_square'
+            template: 'img_square',
+            auth: this.auth
           }),
         (e) => {
           this.logger.info('Retrying uploadTrackCoverArt', e)

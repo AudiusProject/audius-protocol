@@ -1,4 +1,5 @@
 import { GetFn, Hedgehog, SetAuthFn, SetUserFn } from '@audius/hedgehog'
+import { personalSign } from '@metamask/eth-sig-util'
 import { keccak_256 } from '@noble/hashes/sha3'
 import * as secp from '@noble/secp256k1'
 import { EIP712TypedData, MessageData, signTypedData } from 'eth-sig-util'
@@ -138,8 +139,13 @@ export class UserAuth implements AuthService {
     })
   }
 
-  hashAndSign: (data: string) => Promise<string> = () => {
-    throw new Error('hashAndSign not initialized')
+  hashAndSign: (data: string) => Promise<string> = async (data) => {
+    const wallet = this.hedgehog.getWallet()
+    if (!wallet) throw new Error('No wallet')
+    return personalSign({
+      privateKey: wallet.getPrivateKey(),
+      data: keccak_256(data)
+    })
   }
 
   signTransaction: (

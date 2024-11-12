@@ -127,13 +127,21 @@ func (ss *MediorumServer) postUpload(c echo.Context) error {
 		return c.String(http.StatusServiceUnavailable, "disk is too full to accept new uploads")
 	}
 
-	// Parse X-User-Wallet header
-	userWalletHeader := c.Request().Header.Get("X-User-Wallet-Addr")
+	// read user wallet from ?signature query string
+	// ... fall back to (legacy) X-User-Wallet header
 	userWallet := sql.NullString{Valid: false}
-	if userWalletHeader != "" {
+	if signerWallet, ok := c.Get("signer-wallet").(string); ok {
 		userWallet = sql.NullString{
-			String: userWalletHeader,
+			String: signerWallet,
 			Valid:  true,
+		}
+	} else {
+		userWalletHeader := c.Request().Header.Get("X-User-Wallet-Addr")
+		if userWalletHeader != "" {
+			userWallet = sql.NullString{
+				String: userWalletHeader,
+				Valid:  true,
+			}
 		}
 	}
 
