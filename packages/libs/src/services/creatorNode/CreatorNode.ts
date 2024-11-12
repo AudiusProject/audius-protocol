@@ -48,6 +48,7 @@ export type PlaylistMetadata = {
   release_date: Nullable<string>
   is_scheduled_release: boolean
   ddex_app?: string | null
+  upc?: string | null
 }
 
 export type ProgressCB = (
