@@ -8,13 +8,7 @@ from sqlalchemy.orm.session import Session
 from sqlalchemy.sql.functions import GenericFunction
 from sqlalchemy.sql.type_api import TypeEngine
 
-from src.api.v1.helpers import (
-    extend_playlist,
-    extend_track,
-    format_limit,
-    format_offset,
-    to_dict,
-)
+from src.api.v1.helpers import extend_track, format_limit, format_offset, to_dict
 from src.models.playlists.aggregate_playlist import AggregatePlaylist
 from src.models.playlists.playlist import Playlist
 from src.models.social.repost import RepostType
@@ -362,9 +356,6 @@ def _get_trending_playlists_with_session(
         user = users[playlist["playlist_owner_id"]]
         if user:
             playlist["user"] = user
-
-    # Extend the playlists
-    playlists = list(map(extend_playlist, playlists))
     return sorted_playlists
 
 
