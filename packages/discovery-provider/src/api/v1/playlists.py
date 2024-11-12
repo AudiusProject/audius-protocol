@@ -637,6 +637,7 @@ class FullTrendingPlaylists(Resource):
             TrendingType.PLAYLISTS, version_list[0]
         )
         playlists = get_full_trending_playlists(request, args, strategy)
+        playlists = list(map(extend_playlist, playlists))
         return success_response(playlists)
 
 
