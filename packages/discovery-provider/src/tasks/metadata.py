@@ -310,6 +310,7 @@ immutable_playlist_fields = immutable_fields | {
     "ddex_app",
 }
 
+# TODO: Gotta change this to allow the cids and duration and stuff to be updated
 immutable_track_fields = immutable_fields | {
     "track_id",
     "owner_id",

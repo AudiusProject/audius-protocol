@@ -113,6 +113,10 @@ function* editTrackAsync(action: ReturnType<typeof trackActions.editTrack>) {
   yield* call(waitForWrite)
   action.formFields.description = squashNewLines(action.formFields.description)
 
+  console.log({
+    action
+  })
+
   const currentTrack = yield* select(getTrack, { id: action.trackId })
   if (!currentTrack) return
   const isPublishing = currentTrack._is_publishing
@@ -131,6 +135,8 @@ function* editTrackAsync(action: ReturnType<typeof trackActions.editTrack>) {
   }
 
   const trackForEdit = yield* addPremiumMetadata(action.formFields)
+
+  console.log({ trackForEdit })
 
   // Format musical key
   trackForEdit.musical_key =
@@ -232,6 +238,7 @@ function* confirmEditTrack(
   currentTrack: Track
 ) {
   yield* waitForWrite()
+  console.log('Confirming Edit Track', formFields)
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
   const sdk = yield* getSDK()
   const transcodePreview =
@@ -276,6 +283,7 @@ function* confirmEditTrack(
         return data ? userTrackMetadataFromSDK(data) : null
       },
       function* (confirmedTrack: TrackMetadataForUpload & Track) {
+        console.log('SUCCESSSSSSSS', { confirmedTrack })
         if (wasUnlisted && isNowListed) {
           confirmedTrack._is_publishing = false
         }
@@ -292,6 +300,7 @@ function* confirmEditTrack(
         yield* call(recordEditTrackAnalytics, currentTrack, confirmedTrack)
       },
       function* () {
+        console.log('ERRROROROROROROROR')
         yield* put(trackActions.editTrackFailed())
         // Throw so the user can't capture a bad upload state (especially for downloads).
         // TODO: Consider better update revesion logic here coupled with a toast or similar.

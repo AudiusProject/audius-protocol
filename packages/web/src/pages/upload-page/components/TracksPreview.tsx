@@ -1,6 +1,6 @@
 import { useCallback } from 'react'
 
-import { TrackForUpload, UploadType } from '@audius/common/store'
+import { TrackForUpload, UploadType, uploadActions } from '@audius/common/store'
 import {
   Button,
   SegmentedControl,
@@ -9,10 +9,13 @@ import {
   Text
 } from '@audius/harmony'
 import cn from 'classnames'
+import { useDispatch } from 'react-redux'
 
 import { TrackPreview } from 'components/upload/TrackPreview'
 
 import styles from './TracksPreview.module.css'
+
+const { updateTrackAudio } = uploadActions
 
 const messages = {
   continue: 'Continue Uploading',
@@ -41,7 +44,19 @@ const uploadDescriptions = {
 }
 
 export const TracksPreview = (props: TracksPreviewProps) => {
+  const dispatch = useDispatch()
   const { onContinue, onRemove, tracks, uploadType, setUploadType } = props
+
+  const handleTrackAudioChange = useCallback(() => {
+    if (tracks[0]) {
+      dispatch(
+        updateTrackAudio({
+          trackId: 1215304808,
+          file: tracks[0].file
+        })
+      )
+    }
+  }, [dispatch, tracks])
 
   const handleOptionSelect = useCallback(
     (option: string) => {
@@ -99,6 +114,14 @@ export const TracksPreview = (props: TracksPreviewProps) => {
           onClick={onContinue}
         >
           {messages.continue}
+        </Button>
+        <Button
+          variant='primary'
+          name='continue'
+          iconRight={IconCaretRight}
+          onClick={handleTrackAudioChange}
+        >
+          Change Audio
         </Button>
       </div>
     </div>

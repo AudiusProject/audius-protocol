@@ -439,6 +439,7 @@ def populate_track_record_metadata(track_record: Track, track_metadata, handle, 
                         track_record.musical_key = key_value
 
         else:
+            # TODO: The update for the cids, duration, orig_filename, etc will probably be taken care of here
             # For most fields, update the track_record when the corresponding field exists
             # in track_metadata
             if key in track_metadata:
