@@ -9,7 +9,6 @@ import (
 	"github.com/AudiusProject/audius-protocol/pkg/core/db"
 	cconfig "github.com/cometbft/cometbft/config"
 	"github.com/cometbft/cometbft/rpc/client/local"
-	"github.com/improbable-eng/grpc-web/go/grpcweb"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/labstack/echo/v4"
 )
@@ -19,17 +18,15 @@ type Server struct {
 	cconfig *cconfig.Config
 	logger  *common.Logger
 	rpc     *local.Local
-	grpcWeb *grpcweb.WrappedGrpcServer
 	db      *db.Queries
 	self    *http.Client
 }
 
-func NewServer(config *config.Config, cconfig *cconfig.Config, logger *common.Logger, rpc *local.Local, pool *pgxpool.Pool, e *echo.Echo, grpcWeb *grpcweb.WrappedGrpcServer) (*Server, error) {
+func NewServer(config *config.Config, cconfig *cconfig.Config, logger *common.Logger, rpc *local.Local, pool *pgxpool.Pool, e *echo.Echo) (*Server, error) {
 	s := &Server{
 		config:  config,
 		cconfig: cconfig,
 		rpc:     rpc,
-		grpcWeb: grpcWeb,
 		logger:  logger.Child("http_server"),
 		db:      db.New(pool),
 		self:    nil,
@@ -50,7 +47,6 @@ func (s *Server) registerRoutes(e *echo.Group) {
 	e.GET("/nodes/content", s.getRegisteredNodes)
 	e.GET("/nodes/content/verbose", s.getRegisteredNodes)
 	e.Any("/comet*", s.proxyCometRequest)
-	e.Any("/grpc/*", s.proxyGRPCRequest)
 	e.GET("/debug/pprof/", echo.WrapHandler(http.HandlerFunc(pprof.Index)))
 	e.GET("/debug/pprof/cmdline", echo.WrapHandler(http.HandlerFunc(pprof.Cmdline)))
 	e.GET("/debug/pprof/profile", echo.WrapHandler(http.HandlerFunc(pprof.Profile)))

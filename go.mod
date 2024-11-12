@@ -18,7 +18,6 @@ require (
 	github.com/georgysavva/scany/v2 v2.0.0
 	github.com/google/go-github/v61 v61.0.0
 	github.com/gowebpki/jcs v1.0.0
-	github.com/improbable-eng/grpc-web v0.15.0
 	github.com/imroc/req/v3 v3.42.0
 	github.com/ipfs/go-cid v0.4.1
 	github.com/jackc/pgx/v5 v5.6.0
@@ -52,9 +51,11 @@ require (
 
 require (
 	github.com/google/uuid v1.6.0
+	github.com/grpc-ecosystem/grpc-gateway/v2 v2.19.0
 	github.com/iancoleman/strcase v0.3.0
 	github.com/rubenv/sql-migrate v1.7.0
 	golang.org/x/crypto v0.26.0
+	google.golang.org/genproto/googleapis/api v0.0.0-20240528184218-531527333157
 )
 
 require (
@@ -107,7 +108,6 @@ require (
 	github.com/blang/semver v3.5.1+incompatible // indirect
 	github.com/btcsuite/btcd/btcec/v2 v2.3.4 // indirect
 	github.com/caseymrm/askm v1.0.0 // indirect
-	github.com/cenkalti/backoff/v4 v4.3.0 // indirect
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
 	github.com/charmbracelet/bubbles v0.16.1 // indirect
 	github.com/charmbracelet/bubbletea v0.24.2 // indirect
@@ -133,7 +133,6 @@ require (
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
 	github.com/deckarep/golang-set/v2 v2.6.0 // indirect
 	github.com/decred/dcrd/dcrec/secp256k1/v4 v4.0.1 // indirect
-	github.com/desertbit/timer v0.0.0-20180107155436-c41aec40b27f // indirect
 	github.com/dgraph-io/badger/v4 v4.2.0 // indirect
 	github.com/dgraph-io/ristretto v0.1.1 // indirect
 	github.com/distribution/reference v0.5.0 // indirect
@@ -282,7 +281,6 @@ require (
 	golang.org/x/xerrors v0.0.0-20231012003039-104605ab7028 // indirect
 	google.golang.org/api v0.180.0 // indirect
 	google.golang.org/genproto v0.0.0-20240401170217-c3f982113cda // indirect
-	google.golang.org/genproto/googleapis/api v0.0.0-20240528184218-531527333157 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20240528184218-531527333157 // indirect
 	gopkg.in/tomb.v1 v1.0.0-20141024135613-dd632973f1e7 // indirect
 	gopkg.in/warnings.v0 v0.1.2 // indirect

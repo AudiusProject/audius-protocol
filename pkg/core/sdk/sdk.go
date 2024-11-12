@@ -29,7 +29,7 @@ func defaultSdk() *Sdk {
 }
 
 const (
-	retries = 10
+	retries = 1
 	delay   = 3 * time.Second
 )
 
