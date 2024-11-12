@@ -69,7 +69,10 @@ from src.api.v1.models.extensions.fields import NestedOneOf
 from src.api.v1.models.extensions.models import WildcardModel
 from src.api.v1.models.feed import user_feed_item
 from src.api.v1.models.grants import managed_user, user_manager
-from src.api.v1.models.playlists import full_playlist_model, playlist_model
+from src.api.v1.models.playlists import (
+    full_playlist_without_tracks_model,
+    playlist_model,
+)
 from src.api.v1.models.support import (
     supporter_response,
     supporter_response_full,
@@ -893,7 +896,9 @@ USER_PLAYLISTS_ROUTE = "/<string:id>/playlists"
 
 
 playlists_response_full = make_full_response(
-    "playlists_response_full", full_ns, fields.List(fields.Nested(full_playlist_model))
+    "playlists_response_full",
+    full_ns,
+    fields.List(fields.Nested(full_playlist_without_tracks_model)),
 )
 
 
@@ -964,7 +969,9 @@ USER_ALBUMS_ROUTE = "/<string:id>/albums"
 
 
 albums_response_full = make_full_response(
-    "albums_response_full", ns, fields.List(fields.Nested(full_playlist_model))
+    "albums_response_full",
+    ns,
+    fields.List(fields.Nested(full_playlist_without_tracks_model)),
 )
 
 
