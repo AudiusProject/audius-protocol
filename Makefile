@@ -102,6 +102,8 @@ install-deps:
 	@go install github.com/cortesi/modd/cmd/modd@latest
 	@go install github.com/a-h/templ/cmd/templ@latest
 	@go install github.com/ethereum/go-ethereum/cmd/abigen@latest
+	@go install github.com/deepmap/oapi-codegen/cmd/oapi-codegen@latest
+	@go install github.com/go-swagger/go-swagger/cmd/swagger@latest
 
 go.sum: go.mod
 go.mod: $(GO_SRCS)
@@ -132,6 +134,7 @@ regen-proto: $(PROTO_ARTIFACTS)
 $(PROTO_ARTIFACTS): $(PROTO_SRCS)
 	@echo Regenerating protobuf code
 	cd pkg/core && buf generate
+	cd pkg/core/gen/proto && swagger generate client -f protocol.swagger.json -t ../ --client-package=core_openapi
 
 .PHONY: regen-sql
 regen-sql: $(SQL_ARTIFACTS)

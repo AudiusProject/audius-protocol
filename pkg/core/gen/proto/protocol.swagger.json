@@ -216,6 +216,137 @@
         ]
       }
     },
+    "/core/grpc/transaction/forward": {
+      "post": {
+        "operationId": "Protocol_ForwardTransaction",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/protocolForwardTransactionResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "signature",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "transaction.signature",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "transaction.requestId",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "transaction.validatorRegistration.endpoint",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "transaction.validatorRegistration.cometAddress",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "transaction.validatorRegistration.ethBlock",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "transaction.validatorRegistration.nodeType",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "transaction.validatorRegistration.spId",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "transaction.slaRollup.timestamp",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "date-time"
+          },
+          {
+            "name": "transaction.slaRollup.blockStart",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "int64"
+          },
+          {
+            "name": "transaction.slaRollup.blockEnd",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "int64"
+          },
+          {
+            "name": "transaction.manageEntity.userId",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "int64"
+          },
+          {
+            "name": "transaction.manageEntity.entityType",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "transaction.manageEntity.entityId",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "int64"
+          },
+          {
+            "name": "transaction.manageEntity.action",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "transaction.manageEntity.metadata",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "transaction.manageEntity.signature",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "Protocol"
+        ]
+      }
+    },
     "/core/grpc/transaction/{txhash}": {
       "get": {
         "operationId": "Protocol_GetTransaction",
@@ -281,6 +412,9 @@
           }
         }
       }
+    },
+    "protocolForwardTransactionResponse": {
+      "type": "object"
     },
     "protocolManageEntityLegacy": {
       "type": "object",

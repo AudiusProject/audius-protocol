@@ -13,7 +13,7 @@ plugins:
     opt:
       - paths=source_relative
       - generate_unbound_methods=true
-  - remote: buf.build/grpc-ecosystem/openapiv2:v2.16.2
+  - remote: buf.build/grpc-ecosystem/openapiv2:v2.23.0
     out: gen/proto
 inputs:
   - directory: proto

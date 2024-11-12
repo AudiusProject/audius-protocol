@@ -19,11 +19,12 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
-	Protocol_SendTransaction_FullMethodName = "/protocol.Protocol/SendTransaction"
-	Protocol_GetTransaction_FullMethodName  = "/protocol.Protocol/GetTransaction"
-	Protocol_GetBlock_FullMethodName        = "/protocol.Protocol/GetBlock"
-	Protocol_GetNodeInfo_FullMethodName     = "/protocol.Protocol/GetNodeInfo"
-	Protocol_Ping_FullMethodName            = "/protocol.Protocol/Ping"
+	Protocol_SendTransaction_FullMethodName    = "/protocol.Protocol/SendTransaction"
+	Protocol_ForwardTransaction_FullMethodName = "/protocol.Protocol/ForwardTransaction"
+	Protocol_GetTransaction_FullMethodName     = "/protocol.Protocol/GetTransaction"
+	Protocol_GetBlock_FullMethodName           = "/protocol.Protocol/GetBlock"
+	Protocol_GetNodeInfo_FullMethodName        = "/protocol.Protocol/GetNodeInfo"
+	Protocol_Ping_FullMethodName               = "/protocol.Protocol/Ping"
 )
 
 // ProtocolClient is the client API for Protocol service.
@@ -31,6 +32,7 @@ const (
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type ProtocolClient interface {
 	SendTransaction(ctx context.Context, in *SendTransactionRequest, opts ...grpc.CallOption) (*TransactionResponse, error)
+	ForwardTransaction(ctx context.Context, in *ForwardTransactionRequest, opts ...grpc.CallOption) (*ForwardTransactionResponse, error)
 	GetTransaction(ctx context.Context, in *GetTransactionRequest, opts ...grpc.CallOption) (*TransactionResponse, error)
 	GetBlock(ctx context.Context, in *GetBlockRequest, opts ...grpc.CallOption) (*BlockResponse, error)
 	GetNodeInfo(ctx context.Context, in *GetNodeInfoRequest, opts ...grpc.CallOption) (*NodeInfoResponse, error)
@@ -48,6 +50,15 @@ func NewProtocolClient(cc grpc.ClientConnInterface) ProtocolClient {
 func (c *protocolClient) SendTransaction(ctx context.Context, in *SendTransactionRequest, opts ...grpc.CallOption) (*TransactionResponse, error) {
 	out := new(TransactionResponse)
 	err := c.cc.Invoke(ctx, Protocol_SendTransaction_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *protocolClient) ForwardTransaction(ctx context.Context, in *ForwardTransactionRequest, opts ...grpc.CallOption) (*ForwardTransactionResponse, error) {
+	out := new(ForwardTransactionResponse)
+	err := c.cc.Invoke(ctx, Protocol_ForwardTransaction_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -95,6 +106,7 @@ func (c *protocolClient) Ping(ctx context.Context, in *PingRequest, opts ...grpc
 // for forward compatibility
 type ProtocolServer interface {
 	SendTransaction(context.Context, *SendTransactionRequest) (*TransactionResponse, error)
+	ForwardTransaction(context.Context, *ForwardTransactionRequest) (*ForwardTransactionResponse, error)
 	GetTransaction(context.Context, *GetTransactionRequest) (*TransactionResponse, error)
 	GetBlock(context.Context, *GetBlockRequest) (*BlockResponse, error)
 	GetNodeInfo(context.Context, *GetNodeInfoRequest) (*NodeInfoResponse, error)
@@ -108,6 +120,9 @@ type UnimplementedProtocolServer struct {
 
 func (UnimplementedProtocolServer) SendTransaction(context.Context, *SendTransactionRequest) (*TransactionResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SendTransaction not implemented")
+}
+func (UnimplementedProtocolServer) ForwardTransaction(context.Context, *ForwardTransactionRequest) (*ForwardTransactionResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ForwardTransaction not implemented")
 }
 func (UnimplementedProtocolServer) GetTransaction(context.Context, *GetTransactionRequest) (*TransactionResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetTransaction not implemented")
@@ -148,6 +163,24 @@ func _Protocol_SendTransaction_Handler(srv interface{}, ctx context.Context, dec
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(ProtocolServer).SendTransaction(ctx, req.(*SendTransactionRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Protocol_ForwardTransaction_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ForwardTransactionRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ProtocolServer).ForwardTransaction(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Protocol_ForwardTransaction_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ProtocolServer).ForwardTransaction(ctx, req.(*ForwardTransactionRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -234,6 +267,10 @@ var Protocol_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "SendTransaction",
 			Handler:    _Protocol_SendTransaction_Handler,
+		},
+		{
+			MethodName: "ForwardTransaction",
+			Handler:    _Protocol_ForwardTransaction_Handler,
 		},
 		{
 			MethodName: "GetTransaction",
