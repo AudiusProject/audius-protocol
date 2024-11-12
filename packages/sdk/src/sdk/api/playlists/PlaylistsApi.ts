@@ -80,7 +80,8 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
           await this.storage.uploadFile({
             file: coverArtFile,
             onProgress,
-            template: 'img_square'
+            template: 'img_square',
+            auth: this.auth
           }),
         (e) => {
           this.logger.info('Retrying uploadPlaylistCoverArt', e)
@@ -461,7 +462,8 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
           await this.storage.uploadFile({
             file: coverArtFile,
             onProgress,
-            template: 'img_square'
+            template: 'img_square',
+            auth: this.auth
           }),
         (e) => {
           this.logger.info('Retrying uploadPlaylistCoverArt', e)
@@ -477,7 +479,8 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
                 template: 'audio',
                 options: this.trackUploadHelper.extractMediorumUploadOptions(
                   trackMetadatas[idx]!
-                )
+                ),
+                auth: this.auth
               }),
             (e) => {
               this.logger.info('Retrying uploadTrackAudio', e)
@@ -591,7 +594,8 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
           await this.storage.uploadFile({
             file: coverArtFile,
             onProgress,
-            template: 'img_square'
+            template: 'img_square',
+            auth: this.auth
           }),
         (e) => {
           this.logger.info('Retrying uploadPlaylistCoverArt', e)

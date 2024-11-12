@@ -148,7 +148,7 @@ export class EntityManager implements EntityManagerService {
       )
     } else {
       throw new Error(
-        `Error making relay request${
+        `Error making relay request ${response.status} ${
           jsonResponse?.error?.message ? `: ${jsonResponse.error.message}` : '.'
         }`
       )
