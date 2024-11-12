@@ -1,5 +1,5 @@
 import logging
-from typing import List, Literal, Optional, TypedDict  # pylint: disable=C0302
+from typing import List, TypedDict  # pylint: disable=C0302
 
 from sqlalchemy import and_, desc, or_
 from sqlalchemy.orm.exc import NoResultFound
@@ -11,9 +11,8 @@ from src.models.social.repost import RepostType
 from src.models.social.save import SaveType
 from src.models.users.user import User
 from src.queries.query_helpers import (
-    add_query_pagination,
-    get_pagination_vars,
     get_users_ids,
+    paginate_query,
     populate_playlist_metadata,
     populate_user_metadata,
 )
@@ -36,9 +35,6 @@ class GetPlaylistsArgs(TypedDict, total=False):
     user_id: int
     with_users: bool
     routes: List[RouteArgs]
-    kind: Optional[Literal["Playlist", "Album"]]
-    limit: int
-    offset: int
 
 
 def _get_unpopulated_playlists(session, args):
@@ -109,14 +105,8 @@ def _get_unpopulated_playlists(session, args):
         else:
             playlist_query = playlist_query.filter(Playlist.is_private == False)
 
-    if "kind" in args:
-        if args.get("kind") == "Playlist":
-            playlist_query = playlist_query.filter(Playlist.is_album == False)
-        if args.get("kind") == "Album":
-            playlist_query = playlist_query.filter(Playlist.is_album == True)
-
     playlist_query = playlist_query.order_by(desc(Playlist.created_at))
-    playlists = add_query_pagination(playlist_query, args["limit"], args["offset"])
+    playlists = paginate_query(playlist_query).all()
     playlists = helpers.query_result_to_list(playlists)
 
     # retrieve playlist ids list
@@ -149,10 +139,6 @@ def get_playlists(args: GetPlaylistsArgs):
     db = get_db_read_replica()
     with db.scoped_session() as session:
         try:
-            (limit, offset) = get_pagination_vars()
-            args["limit"] = limit if "limit" not in args else args["limit"]
-            args["offset"] = offset if "offset" not in args else args["offset"]
-
             (playlists, playlist_ids) = _get_unpopulated_playlists(
                 session=session, args=args
             )

@@ -16,7 +16,6 @@
 
 import * as runtime from '../runtime';
 import type {
-  AlbumsResponse,
   AuthorizedApps,
   ConnectedWalletsResponse,
   DeveloperApps,
@@ -26,7 +25,6 @@ import type {
   GetChallenges,
   GetSupportedUsers,
   GetSupporters,
-  PlaylistsResponse,
   PurchasersResponse,
   RelatedArtistResponse,
   RemixersResponse,
@@ -43,8 +41,6 @@ import type {
   VerifyToken,
 } from '../models';
 import {
-    AlbumsResponseFromJSON,
-    AlbumsResponseToJSON,
     AuthorizedAppsFromJSON,
     AuthorizedAppsToJSON,
     ConnectedWalletsResponseFromJSON,
@@ -63,8 +59,6 @@ import {
     GetSupportedUsersToJSON,
     GetSupportersFromJSON,
     GetSupportersToJSON,
-    PlaylistsResponseFromJSON,
-    PlaylistsResponseToJSON,
     PurchasersResponseFromJSON,
     PurchasersResponseToJSON,
     RelatedArtistResponseFromJSON,
@@ -130,15 +124,6 @@ export interface GetAIAttributedTracksByUserHandleRequest {
     encodedDataSignature?: string;
 }
 
-export interface GetAlbumsByUserRequest {
-    id: string;
-    offset?: number;
-    limit?: number;
-    userId?: string;
-    encodedDataMessage?: string;
-    encodedDataSignature?: string;
-}
-
 export interface GetAuthorizedAppsRequest {
     id: string;
 }
@@ -176,15 +161,6 @@ export interface GetFollowingRequest {
 
 export interface GetMutedUsersRequest {
     id: string;
-    encodedDataMessage?: string;
-    encodedDataSignature?: string;
-}
-
-export interface GetPlaylistsByUserRequest {
-    id: string;
-    offset?: number;
-    limit?: number;
-    userId?: string;
     encodedDataMessage?: string;
     encodedDataSignature?: string;
 }
@@ -508,57 +484,6 @@ export class UsersApi extends runtime.BaseAPI {
 
     /**
      * @hidden
-     * Gets the albums created by a user using their user ID
-     */
-    async getAlbumsByUserRaw(params: GetAlbumsByUserRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<AlbumsResponse>> {
-        if (params.id === null || params.id === undefined) {
-            throw new runtime.RequiredError('id','Required parameter params.id was null or undefined when calling getAlbumsByUser.');
-        }
-
-        const queryParameters: any = {};
-
-        if (params.offset !== undefined) {
-            queryParameters['offset'] = params.offset;
-        }
-
-        if (params.limit !== undefined) {
-            queryParameters['limit'] = params.limit;
-        }
-
-        if (params.userId !== undefined) {
-            queryParameters['user_id'] = params.userId;
-        }
-
-        const headerParameters: runtime.HTTPHeaders = {};
-
-        if (params.encodedDataMessage !== undefined && params.encodedDataMessage !== null) {
-            headerParameters['Encoded-Data-Message'] = String(params.encodedDataMessage);
-        }
-
-        if (params.encodedDataSignature !== undefined && params.encodedDataSignature !== null) {
-            headerParameters['Encoded-Data-Signature'] = String(params.encodedDataSignature);
-        }
-
-        const response = await this.request({
-            path: `/users/{id}/albums`.replace(`{${"id"}}`, encodeURIComponent(String(params.id))),
-            method: 'GET',
-            headers: headerParameters,
-            query: queryParameters,
-        }, initOverrides);
-
-        return new runtime.JSONApiResponse(response, (jsonValue) => AlbumsResponseFromJSON(jsonValue));
-    }
-
-    /**
-     * Gets the albums created by a user using their user ID
-     */
-    async getAlbumsByUser(params: GetAlbumsByUserRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<AlbumsResponse> {
-        const response = await this.getAlbumsByUserRaw(params, initOverrides);
-        return await response.value();
-    }
-
-    /**
-     * @hidden
      * Get the apps that user has authorized to write to their account
      */
     async getAuthorizedAppsRaw(params: GetAuthorizedAppsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<AuthorizedApps>> {
@@ -838,57 +763,6 @@ export class UsersApi extends runtime.BaseAPI {
      */
     async getMutedUsers(params: GetMutedUsersRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<UsersResponse> {
         const response = await this.getMutedUsersRaw(params, initOverrides);
-        return await response.value();
-    }
-
-    /**
-     * @hidden
-     * Gets the playlists created by a user using their user ID
-     */
-    async getPlaylistsByUserRaw(params: GetPlaylistsByUserRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<PlaylistsResponse>> {
-        if (params.id === null || params.id === undefined) {
-            throw new runtime.RequiredError('id','Required parameter params.id was null or undefined when calling getPlaylistsByUser.');
-        }
-
-        const queryParameters: any = {};
-
-        if (params.offset !== undefined) {
-            queryParameters['offset'] = params.offset;
-        }
-
-        if (params.limit !== undefined) {
-            queryParameters['limit'] = params.limit;
-        }
-
-        if (params.userId !== undefined) {
-            queryParameters['user_id'] = params.userId;
-        }
-
-        const headerParameters: runtime.HTTPHeaders = {};
-
-        if (params.encodedDataMessage !== undefined && params.encodedDataMessage !== null) {
-            headerParameters['Encoded-Data-Message'] = String(params.encodedDataMessage);
-        }
-
-        if (params.encodedDataSignature !== undefined && params.encodedDataSignature !== null) {
-            headerParameters['Encoded-Data-Signature'] = String(params.encodedDataSignature);
-        }
-
-        const response = await this.request({
-            path: `/users/{id}/playlists`.replace(`{${"id"}}`, encodeURIComponent(String(params.id))),
-            method: 'GET',
-            headers: headerParameters,
-            query: queryParameters,
-        }, initOverrides);
-
-        return new runtime.JSONApiResponse(response, (jsonValue) => PlaylistsResponseFromJSON(jsonValue));
-    }
-
-    /**
-     * Gets the playlists created by a user using their user ID
-     */
-    async getPlaylistsByUser(params: GetPlaylistsByUserRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<PlaylistsResponse> {
-        const response = await this.getPlaylistsByUserRaw(params, initOverrides);
         return await response.value();
     }
 
