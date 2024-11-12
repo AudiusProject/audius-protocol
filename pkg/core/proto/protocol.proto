@@ -1,17 +1,37 @@
 syntax = "proto3";
 
-import "google/protobuf/timestamp.proto";
-
 package protocol;
+
+import "google/api/annotations.proto";
+import "google/protobuf/timestamp.proto";
 
 option go_package = "./proto;proto";
 
 service Protocol {
-  rpc SendTransaction (SendTransactionRequest) returns (TransactionResponse);
-  rpc GetTransaction (GetTransactionRequest) returns (TransactionResponse);
-  rpc GetBlock(GetBlockRequest) returns (BlockResponse);
-  rpc GetNodeInfo(GetNodeInfoRequest) returns (NodeInfoResponse);
-  rpc Ping (PingRequest) returns (PingResponse);
+  rpc SendTransaction(SendTransactionRequest) returns (TransactionResponse) {
+    option (google.api.http) = {
+      post: "/core/grpc/transaction"
+      body: "transaction"
+    };
+  }
+  rpc ForwardTransaction(ForwardTransactionRequest) returns (ForwardTransactionResponse) {
+    option (google.api.http) = {
+      post: "/core/grpc/transaction/forward"
+      body: "transaction"
+    };
+  }
+  rpc GetTransaction(GetTransactionRequest) returns (TransactionResponse) {
+    option (google.api.http) = {get: "/core/grpc/transaction/{txhash}"};
+  }
+  rpc GetBlock(GetBlockRequest) returns (BlockResponse) {
+    option (google.api.http) = {get: "/core/grpc/block/{height}"};
+  }
+  rpc GetNodeInfo(GetNodeInfoRequest) returns (NodeInfoResponse) {
+    option (google.api.http) = {get: "/core/grpc/node_info"};
+  }
+  rpc Ping(PingRequest) returns (PingResponse) {
+    option (google.api.http) = {get: "/core/grpc/ping"};
+  }
 }
 
 message SignedTransaction {
@@ -29,6 +49,11 @@ message SendTransactionRequest {
   SignedTransaction transaction = 1;
 }
 
+message ForwardTransactionRequest {
+  string signature = 1;
+  SignedTransaction transaction = 2;
+}
+
 message GetTransactionRequest {
   string txhash = 1;
 }
@@ -37,6 +62,8 @@ message TransactionResponse {
   string txhash = 1;
   SignedTransaction transaction = 2;
 }
+
+message ForwardTransactionResponse {}
 
 message GetBlockRequest {
   int64 height = 1;
@@ -79,8 +106,7 @@ message TrackPlay {
   string signature = 4;
 }
 
-message PingRequest {
-}
+message PingRequest {}
 
 message PingResponse {
   string message = 1;

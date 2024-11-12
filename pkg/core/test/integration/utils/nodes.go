@@ -20,10 +20,10 @@ var (
 	contentThreeGrpc = getEnvWithDefault("contentThreeGRPC", "0.0.0.0:6733")
 	contentThreeJrpc = getEnvWithDefault("contentThreeJRPC", "http://0.0.0.0:6732")
 
-	DiscoveryOne = newTestSdk(discoveryOneGrpc, discoveryOneJrpc)
-	ContentOne   = newTestSdk(contentOneGrpc, contentOneJrpc)
-	ContentTwo   = newTestSdk(contentTwoGrpc, contentTwoJrpc)
-	ContentThree = newTestSdk(contentThreeGrpc, contentThreeJrpc)
+	DiscoveryOne = newTestSdk(discoveryOneGrpc, discoveryOneJrpc, "audius-protocol-discovery-provider-1")
+	ContentOne   = newTestSdk(contentOneGrpc, contentOneJrpc, "audius-protocol-creator-node-1")
+	ContentTwo   = newTestSdk(contentTwoGrpc, contentTwoJrpc, "audius-protocol-creator-node-2")
+	ContentThree = newTestSdk(contentThreeGrpc, contentThreeJrpc, "audius-protocol-creator-node-3")
 )
 
 func getEnvWithDefault(key, defaultValue string) string {
@@ -34,8 +34,8 @@ func getEnvWithDefault(key, defaultValue string) string {
 	return value
 }
 
-func newTestSdk(grpc, jrpc string) *sdk.Sdk {
-	node, err := sdk.NewSdk(sdk.WithGrpcendpoint(grpc), sdk.WithJrpcendpoint(jrpc))
+func newTestSdk(grpc, jrpc, oapi string) *sdk.Sdk {
+	node, err := sdk.NewSdk(sdk.WithGrpcendpoint(grpc), sdk.WithJrpcendpoint(jrpc), sdk.WithOapiendpoint(oapi))
 	if err != nil {
 		log.Panicf("node init error %s %s: %v", grpc, jrpc, err)
 	}

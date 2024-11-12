@@ -15,9 +15,11 @@ import (
 	"github.com/AudiusProject/audius-protocol/pkg/core/console"
 	"github.com/AudiusProject/audius-protocol/pkg/core/contracts"
 	"github.com/AudiusProject/audius-protocol/pkg/core/db"
+	"github.com/AudiusProject/audius-protocol/pkg/core/gen/proto"
 	"github.com/AudiusProject/audius-protocol/pkg/core/grpc"
 	"github.com/AudiusProject/audius-protocol/pkg/core/registry_bridge"
 	"github.com/AudiusProject/audius-protocol/pkg/core/server"
+	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 
 	cconfig "github.com/cometbft/cometbft/config"
 	"github.com/cometbft/cometbft/p2p"
@@ -25,7 +27,6 @@ import (
 
 	"github.com/cometbft/cometbft/rpc/client/local"
 	"github.com/ethereum/go-ethereum/ethclient"
-	"github.com/improbable-eng/grpc-web/go/grpcweb"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
@@ -129,11 +130,15 @@ func run(ctx context.Context, logger *common.Logger) error {
 		return fmt.Errorf("grpc init error: %v", err)
 	}
 
-	grpcWeb := grpcweb.WrapServer(grpcServer.GetServer())
+	gwMux := runtime.NewServeMux()
+	err = proto.RegisterProtocolHandlerServer(ctx, gwMux, grpcServer)
+	if err != nil {
+		return fmt.Errorf("grpc http handler issue: %v", err)
+	}
 
 	logger.Info("grpc server created")
 
-	_, err = server.NewServer(config, node.Config(), logger, rpc, pool, e, grpcWeb)
+	_, err = server.NewServer(config, node.Config(), logger, rpc, pool, e)
 	if err != nil {
 		return fmt.Errorf("server init error: %v", err)
 	}
@@ -141,6 +146,9 @@ func run(ctx context.Context, logger *common.Logger) error {
 	// Start the HTTP server
 	eg.Go(func() error {
 		logger.Info("core HTTP server starting")
+
+		// register grpc http route
+		e.Any("/core/grpc/*", echo.WrapHandler(gwMux))
 		return e.Start(config.CoreServerAddr)
 	})
 
