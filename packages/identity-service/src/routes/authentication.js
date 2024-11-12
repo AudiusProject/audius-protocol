@@ -62,7 +62,7 @@ module.exports = function (app) {
               })
             } catch (err) {
               // keep address as null for future user recovery
-              req.logger.error('Error recovering users signed address', err)
+              req.logger.error(err, 'Error recovering users signed address')
             }
           }
 
@@ -256,7 +256,10 @@ module.exports = function (app) {
           req,
           authUser: existingUser
         })
-        if (associatedEmail && email !== associatedEmail) {
+        if (
+          associatedEmail &&
+          email.toLowerCase() !== associatedEmail.toLowerCase()
+        ) {
           req.logger.error(
             {
               reqEmail: email,
@@ -267,7 +270,7 @@ module.exports = function (app) {
           )
           return errorResponseBadRequest('Invalid credentials')
         } else {
-          email = associatedEmail || email
+          email = (associatedEmail || email).toLowerCase()
         }
 
         if (await shouldSendOtp({ req, email, redis })) {
