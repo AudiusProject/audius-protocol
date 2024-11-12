@@ -103,7 +103,6 @@ func (s *GRPCServer) GetTransaction(ctx context.Context, req *proto.GetTransacti
 	return res, nil
 }
 
-
 func (s *GRPCServer) GetBlock(ctx context.Context, req *proto.GetBlockRequest) (*proto.BlockResponse, error) {
 	block, err := s.chain.Block(ctx, &req.Height)
 	if err != nil {

@@ -350,8 +350,11 @@ function* confirmDeleteTrack(trackId: ID) {
     confirmerActions.requestConfirmation(
       makeKindId(Kind.TRACKS, trackId),
       function* () {
+        yield* waitForAccount()
         const userId = yield* select(getUserId)
-        if (!userId) return
+        if (!userId) {
+          throw new Error('No userId set, cannot delete track')
+        }
 
         yield* call([sdk.tracks, sdk.tracks.deleteTrack], {
           userId: Id.parse(userId),
@@ -359,7 +362,6 @@ function* confirmDeleteTrack(trackId: ID) {
         })
 
         const track = yield* select(getTrack, { id: trackId })
-        yield* waitForAccount()
 
         if (!track) return
         const { data } = yield* call(

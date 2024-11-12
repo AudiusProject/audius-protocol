@@ -1,4 +1,5 @@
 import { useGetPlaylistById } from '@audius/common/api'
+import { useIsCollectionUnlockable } from '@audius/common/hooks'
 import { ID } from '@audius/common/models'
 import { Flex, Skeleton } from '@audius/harmony'
 
@@ -7,10 +8,7 @@ import { TrackTileSize } from 'components/track/types'
 import { useIsMobile } from 'hooks/useIsMobile'
 
 import { CollectionAccessTypeLabel } from './CollectionAccessTypeLabel'
-import {
-  CollectionLockedStatusPill,
-  useIsCollectionUnlockable
-} from './CollectionLockedStatusPill'
+import { CollectionLockedStatusBadge } from './CollectionLockedStatusBadge'
 import { RepostsMetric, SavesMetric } from './CollectionTileMetrics'
 
 type CollectionTileStatsProps = {
@@ -57,7 +55,7 @@ export const CollectionTileStats = (props: CollectionTileStatsProps) => {
         )}
       </Flex>
       {isUnlockable ? (
-        <CollectionLockedStatusPill collectionId={collectionId} />
+        <CollectionLockedStatusBadge collectionId={collectionId} />
       ) : null}
     </Flex>
   )

@@ -1,5 +1,5 @@
 import { userApiFetchSaga } from '@audius/common/api'
-import { ErrorLevel, Kind } from '@audius/common/models'
+import { ErrorLevel, Kind, Status } from '@audius/common/models'
 import {
   FeatureFlags,
   recordIP,
@@ -186,7 +186,12 @@ export function* fetchAccountAsync({ isSignUp = false }) {
   const authService = yield getContext('authService')
   const audiusBackendInstance = yield getContext('audiusBackendInstance')
 
-  yield put(accountActions.fetchAccountRequested())
+  const accountStatus = yield select(accountSelectors.getAccountStatus)
+
+  // Don't revert successful local account fetch
+  if (accountStatus !== Status.SUCCESS) {
+    yield put(accountActions.fetchAccountRequested())
+  }
 
   const { accountWalletAddress: wallet, web3WalletAddress } = yield call([
     authService,

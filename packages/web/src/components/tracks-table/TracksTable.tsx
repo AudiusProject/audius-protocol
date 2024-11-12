@@ -599,13 +599,10 @@ export const TracksTable = ({
   const renderTrackActions = useCallback(
     (cellInfo: TrackCell) => {
       const track = cellInfo.row.original
-      const { is_delete: isDelete } = track
       const { isFetchingNFTAccess, hasStreamAccess } = trackAccessMap[
         track.track_id
       ] ?? { isFetchingNFTAccess: false, hasStreamAccess: true }
       const isLocked = !isFetchingNFTAccess && !hasStreamAccess
-
-      if (isDelete) return null
 
       return (
         <Flex

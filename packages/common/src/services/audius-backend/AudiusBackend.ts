@@ -828,11 +828,12 @@ export const audiusBackend = ({
     }
   }
 
-  async function recordTrackListen(trackId: ID) {
+  async function recordTrackListen(userId: ID, trackId: ID) {
     try {
       const listen = await audiusLibs.Track.logTrackListen(
         trackId,
         unauthenticatedUuid,
+        userId,
         await getFeatureEnabled(FeatureFlags.SOLANA_LISTEN_ENABLED)
       )
       return listen
@@ -2363,7 +2364,7 @@ async function getCreateAssociatedTokenAccountTransaction({
     }
   ]
 
-  const { blockhash } = await connection.getRecentBlockhash('confirmed')
+  const { blockhash } = await connection.getLatestBlockhash('confirmed')
   const instr = new TransactionInstruction({
     keys: accounts.map((account) => ({
       pubkey: account.pubkey,

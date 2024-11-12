@@ -1,0 +1,427 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "protocol.proto",
+    "version": "version not set"
+  },
+  "tags": [
+    {
+      "name": "Protocol"
+    }
+  ],
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/core/grpc/block/{height}": {
+      "get": {
+        "operationId": "Protocol_GetBlock",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/protocolBlockResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "height",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "int64"
+          }
+        ],
+        "tags": [
+          "Protocol"
+        ]
+      }
+    },
+    "/core/grpc/node_info": {
+      "get": {
+        "operationId": "Protocol_GetNodeInfo",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/protocolNodeInfoResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "tags": [
+          "Protocol"
+        ]
+      }
+    },
+    "/core/grpc/ping": {
+      "get": {
+        "operationId": "Protocol_Ping",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/protocolPingResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "tags": [
+          "Protocol"
+        ]
+      }
+    },
+    "/core/grpc/transaction": {
+      "post": {
+        "operationId": "Protocol_SendTransaction",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/protocolTransactionResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "transaction",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/protocolSignedTransaction"
+            }
+          }
+        ],
+        "tags": [
+          "Protocol"
+        ]
+      }
+    },
+    "/core/grpc/transaction/forward": {
+      "post": {
+        "operationId": "Protocol_ForwardTransaction",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/protocolForwardTransactionResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "transaction",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/protocolSignedTransaction"
+            }
+          },
+          {
+            "name": "signature",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "Protocol"
+        ]
+      }
+    },
+    "/core/grpc/transaction/{txhash}": {
+      "get": {
+        "operationId": "Protocol_GetTransaction",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/protocolTransactionResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "txhash",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "Protocol"
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "protobufAny": {
+      "type": "object",
+      "properties": {
+        "@type": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": {}
+    },
+    "protocolBlockResponse": {
+      "type": "object",
+      "properties": {
+        "blockhash": {
+          "type": "string"
+        },
+        "chainid": {
+          "type": "string"
+        },
+        "proposer": {
+          "type": "string"
+        },
+        "height": {
+          "type": "string",
+          "format": "int64"
+        },
+        "transactions": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/protocolSignedTransaction"
+          }
+        }
+      }
+    },
+    "protocolForwardTransactionResponse": {
+      "type": "object"
+    },
+    "protocolManageEntityLegacy": {
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "format": "int64"
+        },
+        "entityType": {
+          "type": "string"
+        },
+        "entityId": {
+          "type": "string",
+          "format": "int64"
+        },
+        "action": {
+          "type": "string"
+        },
+        "metadata": {
+          "type": "string"
+        },
+        "signature": {
+          "type": "string"
+        }
+      }
+    },
+    "protocolNodeInfoResponse": {
+      "type": "object",
+      "properties": {
+        "chainid": {
+          "type": "string"
+        },
+        "synced": {
+          "type": "boolean"
+        },
+        "cometAddress": {
+          "type": "string"
+        },
+        "ethAddress": {
+          "type": "string"
+        },
+        "currentHeight": {
+          "type": "string",
+          "format": "int64"
+        }
+      }
+    },
+    "protocolPingResponse": {
+      "type": "object",
+      "properties": {
+        "message": {
+          "type": "string"
+        }
+      }
+    },
+    "protocolSignedTransaction": {
+      "type": "object",
+      "properties": {
+        "signature": {
+          "type": "string"
+        },
+        "requestId": {
+          "type": "string"
+        },
+        "plays": {
+          "$ref": "#/definitions/protocolTrackPlays"
+        },
+        "validatorRegistration": {
+          "$ref": "#/definitions/protocolValidatorRegistration"
+        },
+        "slaRollup": {
+          "$ref": "#/definitions/protocolSlaRollup"
+        },
+        "manageEntity": {
+          "$ref": "#/definitions/protocolManageEntityLegacy"
+        }
+      }
+    },
+    "protocolSlaNodeReport": {
+      "type": "object",
+      "properties": {
+        "address": {
+          "type": "string"
+        },
+        "numBlocksProposed": {
+          "type": "integer",
+          "format": "int32"
+        }
+      }
+    },
+    "protocolSlaRollup": {
+      "type": "object",
+      "properties": {
+        "timestamp": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "blockStart": {
+          "type": "string",
+          "format": "int64"
+        },
+        "blockEnd": {
+          "type": "string",
+          "format": "int64"
+        },
+        "reports": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/protocolSlaNodeReport"
+          }
+        }
+      }
+    },
+    "protocolTrackPlay": {
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string"
+        },
+        "trackId": {
+          "type": "string"
+        },
+        "timestamp": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "signature": {
+          "type": "string"
+        }
+      }
+    },
+    "protocolTrackPlays": {
+      "type": "object",
+      "properties": {
+        "plays": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/protocolTrackPlay"
+          }
+        }
+      }
+    },
+    "protocolTransactionResponse": {
+      "type": "object",
+      "properties": {
+        "txhash": {
+          "type": "string"
+        },
+        "transaction": {
+          "$ref": "#/definitions/protocolSignedTransaction"
+        }
+      }
+    },
+    "protocolValidatorRegistration": {
+      "type": "object",
+      "properties": {
+        "endpoint": {
+          "type": "string"
+        },
+        "cometAddress": {
+          "type": "string"
+        },
+        "ethBlock": {
+          "type": "string"
+        },
+        "nodeType": {
+          "type": "string"
+        },
+        "spId": {
+          "type": "string"
+        }
+      }
+    },
+    "rpcStatus": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "message": {
+          "type": "string"
+        },
+        "details": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/protobufAny"
+          }
+        }
+      }
+    }
+  }
+}

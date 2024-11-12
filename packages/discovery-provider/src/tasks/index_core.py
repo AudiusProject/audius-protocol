@@ -1,4 +1,5 @@
 import logging
+from time import sleep
 from typing import Optional
 
 from sqlalchemy.orm.session import Session
@@ -120,6 +121,7 @@ def index_core(self):
         have_lock = update_lock.acquire(blocking=False)
         if have_lock:
             indexed_block = _index_core(db)
+            sleep(1)
             if indexed_block:
                 logger.debug(f"index_core.py | indexed block {indexed_block.height}")
         else:

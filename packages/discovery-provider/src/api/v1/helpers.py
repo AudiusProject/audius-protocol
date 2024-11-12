@@ -405,7 +405,10 @@ def extend_playlist(playlist):
     playlist["user_id"] = owner_id
     playlist = add_playlist_artwork(playlist)
     if "user" in playlist:
-        playlist["user"] = extend_user(playlist["user"])
+        if isinstance(playlist["user"], list):
+            playlist["user"] = extend_user(playlist["user"][0])
+        else:
+            playlist["user"] = extend_user(playlist["user"])
     if "followee_saves" in playlist:
         playlist["followee_favorites"] = list(
             map(extend_favorite, playlist["followee_saves"])
@@ -430,6 +433,10 @@ def extend_playlist(playlist):
     playlist["stream_conditions"] = get_legacy_purchase_gate(
         playlist.get("stream_conditions", None)
     )
+    # Wee hack to make sure this marshals correctly. The marshaller for
+    # playlist_model expects these two values to be the same type.
+    # TODO: https://linear.app/audius/issue/PAY-3398/fix-playlist-contents-serialization
+    playlist["playlist_contents"] = playlist["added_timestamps"]
     return playlist
 
 
@@ -470,10 +477,6 @@ def extend_activity(item):
         }
     if item.get("playlist_id"):
         extended_playlist = extend_playlist(item)
-        # Wee hack to make sure this marshals correctly. The marshaller for
-        # playlist_model expects these two values to be the same type.
-        # TODO: https://linear.app/audius/issue/PAY-3398/fix-playlist-contents-serialization
-        extended_playlist["playlist_contents"] = extended_playlist["added_timestamps"]
         return {
             "item_type": "playlist",
             "timestamp": item["activity_timestamp"],
@@ -568,8 +571,6 @@ def extend_feed_item(item):
         }
     if item.get("playlist_id"):
         extended_playlist = extend_playlist(item)
-        # TODO: https://linear.app/audius/issue/PAY-3398/fix-playlist-contents-serialization
-        extended_playlist["playlist_contents"] = extended_playlist["added_timestamps"]
         return {
             "type": "playlist",
             "item": extended_playlist,
@@ -930,6 +931,9 @@ user_tracks_route_parser.add_argument(
     default="all",
     choices=("all", "public", "unlisted"),
 )
+
+user_playlists_route_parser = pagination_with_current_user_parser.copy()
+user_albums_route_parser = pagination_with_current_user_parser.copy()
 
 full_search_parser = pagination_with_current_user_parser.copy()
 full_search_parser.add_argument("query", required=False, description="The search query")

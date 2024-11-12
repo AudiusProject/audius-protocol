@@ -68,7 +68,7 @@ export const TrackInfo = (props: TrackInfoProps) => {
         {shouldShowPreviewLock ? (
           <View style={styles.previewBadge}>
             <LockedStatusBadge
-              variant='purchase'
+              variant='premium'
               locked
               coloredWhenLocked
               iconSize='small'
