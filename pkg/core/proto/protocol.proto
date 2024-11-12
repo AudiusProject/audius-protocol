@@ -9,10 +9,16 @@ option go_package = "./proto;proto";
 
 service Protocol {
   rpc SendTransaction(SendTransactionRequest) returns (TransactionResponse) {
-    option (google.api.http) = {post: "/core/grpc/transaction"};
+    option (google.api.http) = {
+      post: "/core/grpc/transaction"
+      body: "transaction"
+    };
   }
   rpc ForwardTransaction(ForwardTransactionRequest) returns (ForwardTransactionResponse) {
-    option (google.api.http) = {post: "/core/grpc/transaction/forward"};
+    option (google.api.http) = {
+      post: "/core/grpc/transaction/forward"
+      body: "transaction"
+    };
   }
   rpc GetTransaction(GetTransactionRequest) returns (TransactionResponse) {
     option (google.api.http) = {get: "/core/grpc/transaction/{txhash}"};
