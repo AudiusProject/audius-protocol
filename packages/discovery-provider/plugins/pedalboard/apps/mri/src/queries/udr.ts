@@ -28,7 +28,7 @@ const UsageDetailReportingHeader: (keyof UsageDetailReporting)[] = [
   'Territory'
 ]
 
-// gathers data from a quarter period prior to the provide\ date.
+// gathers data from a month prior to the provided date.
 // formats it into csv format compatible with the mri spec
 // publishes it to all the provided s3 configs
 export const udr = async (

@@ -14,6 +14,7 @@ type Config = {
   dbUrl: string
   s3ClmConfigs: S3Config[]
   s3UdrConfigs: S3Config[]
+  s3MrvrConfigs: S3Config[]
 }
 
 let config: Config | null = null
@@ -47,6 +48,15 @@ export const readConfig = (): Config => {
       default: 'audius-udr-internal-data'
     }),
     audius_mri_udr_internal_key_prefix: str({ default: 'Audius_UDR_' }),
+    
+    audius_mri_mrvr_internal_region: str({ default: 'us-east-1' }),
+    audius_mri_mrvr_internal_endpoint: str({ default: 'http://localhost:4566' }),
+    audius_mri_mrvr_internal_access_key_id: str({ default: 'test' }),
+    audius_mri_mrvr_internal_secret_access_key: str({ default: 'test' }),
+    audius_mri_mrvr_internal_bucket: str({
+      default: 'audius-mrvr-internal-data'
+    }),
+    audius_mri_mrvr_internal_key_prefix: str({ default: 'Audius_MRVR_' }),
 
     // mri managed buckets for reporting
     // defaults to a separate localstack
@@ -63,7 +73,14 @@ export const readConfig = (): Config => {
     audius_mri_udr_external_access_key_id: str({ default: 'test' }),
     audius_mri_udr_external_secret_access_key: str({ default: 'test' }),
     audius_mri_udr_external_bucket: str({ default: 'audius-udr-data' }),
-    audius_mri_udr_external_key_prefix: str({ default: 'Audius_UDR_' })
+    audius_mri_udr_external_key_prefix: str({ default: 'Audius_UDR_' }),
+
+    audius_mri_mrvr_external_region: str({ default: 'us-east-1' }),
+    audius_mri_mrvr_external_endpoint: str({ default: 'http://localhost:4566' }),
+    audius_mri_mrvr_external_access_key_id: str({ default: 'test' }),
+    audius_mri_mrvr_external_secret_access_key: str({ default: 'test' }),
+    audius_mri_mrvr_external_bucket: str({ default: 'audius-mrvr-data' }),
+    audius_mri_mrvr_external_key_prefix: str({ default: 'Audius_MRVR_' })	
   })
 
   const internalS3ClmConfig: S3Config = {
@@ -82,6 +99,14 @@ export const readConfig = (): Config => {
     bucket: env.audius_mri_udr_internal_bucket,
     keyPrefix: env.audius_mri_udr_internal_key_prefix
   }
+  const internalS3MrvrConfig: S3Config = {
+    region: env.audius_mri_mrvr_internal_region,
+    endpoint: env.audius_mri_mrvr_internal_endpoint,
+    accessKeyId: env.audius_mri_mrvr_internal_access_key_id,
+    secretAccessKey: env.audius_mri_mrvr_internal_secret_access_key,
+    bucket: env.audius_mri_mrvr_internal_bucket,
+    keyPrefix: env.audius_mri_mrvr_internal_key_prefix
+  }
 
   const externalS3ClmConfig: S3Config = {
     region: env.audius_mri_clm_external_region,
@@ -99,12 +124,21 @@ export const readConfig = (): Config => {
     bucket: env.audius_mri_udr_external_bucket,
     keyPrefix: env.audius_mri_udr_external_key_prefix
   }
+  const externalS3MrvrConfig: S3Config = {
+    region: env.audius_mri_mrvr_external_region,
+    endpoint: env.audius_mri_mrvr_external_endpoint,
+    accessKeyId: env.audius_mri_mrvr_external_access_key_id,
+    secretAccessKey: env.audius_mri_mrvr_external_secret_access_key,
+    bucket: env.audius_mri_mrvr_external_bucket,
+    keyPrefix: env.audius_mri_mrvr_external_key_prefix
+  }
 
   config = {
     env: env.audius_discprov_env,
     dbUrl: env.audius_db_url,
     s3ClmConfigs: [internalS3ClmConfig, externalS3ClmConfig],
-    s3UdrConfigs: [internalS3UdrConfig, externalS3UdrConfig]
+    s3UdrConfigs: [internalS3UdrConfig, externalS3UdrConfig],
+    s3MrvrConfigs: [internalS3MrvrConfig, externalS3MrvrConfig]
   }
 
   return readConfig()

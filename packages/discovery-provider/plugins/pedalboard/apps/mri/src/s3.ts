@@ -20,6 +20,7 @@ const isDev = config.env === 'dev'
 export const createS3Instances = async (): Promise<{
   clmS3s: S3Config[]
   udrS3s: S3Config[]
+  mrvrS3s: S3Config[]
 }> => {
   try {
     const clmS3s = await Promise.all(
@@ -92,9 +93,44 @@ export const createS3Instances = async (): Promise<{
         }
       )
     )
-    return { clmS3s, udrS3s }
+    const mrvrS3s = await Promise.all(
+      config.s3MrvrConfigs.map(
+        async ({
+          bucket,
+          keyPrefix,
+          region,
+          endpoint,
+          accessKeyId,
+          secretAccessKey
+        }) => {
+          const s3 = new S3Client({
+            region,
+            endpoint,
+            credentials: {
+              accessKeyId,
+              secretAccessKey
+            },
+            forcePathStyle: true
+          })
+
+          if (isDev) {
+            const data = await s3.send(
+              new CreateBucketCommand({ Bucket: bucket })
+            )
+            logger.info(`Bucket "${bucket}" created successfully`, data)
+          }
+
+          return {
+            s3,
+            bucket,
+            keyPrefix
+          }
+        }
+      )
+    )
+    return { clmS3s, udrS3s, mrvrS3s }
   } catch (e) {
-    if (isDev) return { clmS3s: [], udrS3s: [] }
+    if (isDev) return { clmS3s: [], udrS3s: [], mrvrS3s: [] }
     throw e
   }
 }
