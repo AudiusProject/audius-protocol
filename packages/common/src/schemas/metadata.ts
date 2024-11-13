@@ -5,6 +5,8 @@ import { pick } from 'lodash'
 
 const trackMetadataSchema = {
   track_cid: null,
+  orig_file_cid: null,
+  orig_filename: null,
   owner_id: null,
   title: null,
   duration: null,

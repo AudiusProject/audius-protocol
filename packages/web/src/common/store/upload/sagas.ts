@@ -9,7 +9,7 @@ import {
   isContentFollowGated,
   isContentUSDCPurchaseGated
 } from '@audius/common/models'
-import { CollectionValues } from '@audius/common/schemas'
+import { CollectionValues, newTrackMetadata } from '@audius/common/schemas'
 import {
   TrackMetadataForUpload,
   LibraryCategory,
@@ -25,7 +25,8 @@ import {
   getContext,
   reformatCollection,
   savedPageActions,
-  uploadActions
+  uploadActions,
+  cacheTracksActions
 } from '@audius/common/store'
 import {
   actionChannelDispatcher,
@@ -1151,10 +1152,82 @@ export function* uploadTracksAsync(
   }
 }
 
+export function* updateTrackAudioAsync(
+  action: ReturnType<typeof uploadActions.updateTrackAudio>
+) {
+  yield* call(waitForWrite)
+  const payload = action.payload
+
+  const tracks = yield* call(retrieveTracks, {
+    trackIds: [payload.trackId]
+  })
+
+  if (tracks.length === 0) return
+  const track = tracks[0]
+  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
+  const userId = yield* select(accountSelectors.getUserId)
+
+  if (!track) return
+  if (!userId) {
+    throw new Error('No user id found during upload. Not signed in?')
+  }
+
+  const libs = yield* call(audiusBackendInstance.getAudiusLibsTyped)
+  const metadata = newTrackMetadata(
+    toUploadTrackMetadata({
+      ...track,
+      // @ts-ignore
+      stem_of: track.stem_of ?? null
+    })
+  )
+
+  const handleProgressUpdate = (_progress: Parameters<ProgressCB>[0]) => {
+    // Do progress update things here
+    // if (!('audio' in progress)) return
+    // const { upload, transcode } = progress.audio
+  }
+
+  const updatedMetadata = yield* call(
+    [libs.Track, libs.Track!.uploadTrackV2],
+    userId,
+    payload.file as File,
+    null,
+    metadata,
+    handleProgressUpdate
+  )
+
+  const newMetadata: TrackMetadata = {
+    ...metadata,
+    orig_file_cid: updatedMetadata.orig_file_cid,
+    orig_filename: updatedMetadata.orig_filename,
+    preview_cid: updatedMetadata.preview_cid,
+    preview_start_seconds: updatedMetadata.preview_start_seconds,
+    track_cid: updatedMetadata.track_cid,
+    audio_upload_id: updatedMetadata.audio_upload_id,
+    duration: updatedMetadata.duration,
+    // @ts-ignore: Issue with the type
+    file_type: updatedMetadata.file_type
+    // TODO: Add the bpm and musical_key props
+  }
+
+  yield* put(
+    cacheTracksActions.editTrack(
+      track.track_id,
+      newMetadata as TrackMetadataForUpload
+    )
+  )
+
+  // TODO: Make sure that the preview gets transcoded
+}
+
 function* watchUploadTracks() {
   yield* takeLatest(uploadActions.UPLOAD_TRACKS, uploadTracksAsync)
 }
 
+function* watchUpdateTrackAudio() {
+  yield* takeLatest(uploadActions.UPDATE_TRACK_AUDIO, updateTrackAudioAsync)
+}
+
 export default function sagas() {
-  return [watchUploadTracks]
+  return [watchUploadTracks, watchUpdateTrackAudio]
 }
