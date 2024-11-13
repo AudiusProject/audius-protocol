@@ -17,7 +17,7 @@ import { useLinkClickHandler } from 'react-router-dom-v5-compat'
 
 import { Card, CardProps, CardFooter, CardContent } from 'components/card'
 import { TextLink, UserLink } from 'components/link'
-import { LockedStatusBadge } from 'components/locked-status-badge'
+import { LockedStatusPill } from 'components/locked-status-pill'
 import { useSelector } from 'utils/reducer'
 
 import { CollectionDogEar } from './CollectionDogEar'
@@ -166,7 +166,7 @@ export const CollectionCard = forwardRef(
             </>
           )}
           {isPurchase && !isOwner ? (
-            <LockedStatusBadge variant='premium' locked={!access.stream} />
+            <LockedStatusPill variant='premium' locked={!access.stream} />
           ) : null}
         </CardFooter>
       </Card>

@@ -333,7 +333,7 @@ export const DetailsTileHasAccess = ({
         <LockedStatusBadge
           locked={false}
           variant={
-            isContentUSDCPurchaseGated(streamConditions) ? 'premium' : 'gated'
+            isContentUSDCPurchaseGated(streamConditions) ? 'purchase' : 'gated'
           }
         />
       </View>
