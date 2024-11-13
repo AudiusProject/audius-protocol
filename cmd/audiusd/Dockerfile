@@ -1,4 +1,4 @@
-FROM debian:bullseye AS cpp-builder
+FROM debian:bookworm AS cpp-builder
 
 RUN apt-get update && apt-get install -y \
     build-essential \
@@ -8,7 +8,7 @@ RUN apt-get update && apt-get install -y \
     gcc \
     ffmpeg \
     libmp3lame-dev \
-    python3.9 \
+    python3.11 \
     python3-pip \
     libsndfile1-dev \
     libeigen3-dev \
@@ -19,7 +19,6 @@ RUN apt-get update && apt-get install -y \
     libavformat-dev \
     libavutil-dev \
     libswresample-dev \
-    libavresample-dev \
     libsamplerate0-dev \
     libtag1-dev \
     libchromaprint-dev \
@@ -27,7 +26,8 @@ RUN apt-get update && apt-get install -y \
     libvorbis-dev \
     libogg-dev \
     libflac-dev \
-    pkg-config
+    pkg-config \
+    postgresql-15
 
 ENV LD_LIBRARY_PATH="/usr/local/lib"
 
@@ -72,11 +72,11 @@ RUN g++ -o /bin/analyze-key /app/cpp/keyfinder.cpp \
 RUN g++ -o /bin/analyze-bpm /app/cpp/bpm-analyzer.cpp \
     -I/usr/include/eigen3 -I/usr/local/include/essentia -I/usr/local/include \
     -L/usr/local/lib \
-    -lessentia -ltag -lyaml -lfftw3 -lfftw3f -lavcodec -lavformat -lavutil -lavfilter -lsamplerate -lavresample -lpthread -lz -lchromaprint && \
+    -lessentia -ltag -lyaml -lfftw3 -lfftw3f -lavcodec -lavformat -lavutil -lavfilter -lsamplerate -lswresample -lpthread -lz -lchromaprint && \
     chmod +x /bin/analyze-bpm
 
 
-FROM golang:1.22-bullseye AS go-builder
+FROM golang:1.22-bookworm AS go-builder
 
 WORKDIR /app
 
@@ -92,14 +92,14 @@ FROM cpp-builder
 
 COPY --from=go-builder /app/audiusd /bin/audiusd
 
-RUN mkdir -p /env && \
-    curl -o /env/stage.env https://raw.githubusercontent.com/AudiusProject/audius-docker-compose/refs/heads/stage/creator-node/stage.env && \
-    curl -o /env/prod.env https://raw.githubusercontent.com/AudiusProject/audius-docker-compose/refs/heads/stage/creator-node/prod.env
+RUN mkdir -p /env
+COPY ./cmd/audiusd/env/dev.env ./cmd/audiusd/env/stage.env ./cmd/audiusd/env/prod.env /env/
 
 COPY ./cmd/audiusd/entrypoint.sh /bin/entrypoint.sh
 RUN chmod +x /bin/entrypoint.sh
 
 RUN mkdir -p /data && chown -R postgres:postgres /data
+RUN localedef -i en_US -f UTF-8 en_US.UTF-8
 
 ARG git_sha
 ENV GIT_SHA=$git_sha

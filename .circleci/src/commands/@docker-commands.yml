@@ -11,6 +11,17 @@ docker-logout:
         name: Log out of Docker
         command: docker logout
 
+install-crane:
+  steps:
+    - run:
+        name: Install Crane
+        command: |
+          VERSION=v0.19.1
+          OS=Linux
+          ARCH=x86_64
+          curl -sL "https://github.com/google/go-containerregistry/releases/download/${VERSION}/go-containerregistry_${OS}_${ARCH}.tar.gz" > go-containerregistry.tar.gz
+          tar -zxvf go-containerregistry.tar.gz -C $HOME/bin/ crane
+
 docker-tag-images:
   description: 'Update tags of docker images'
   parameters:
@@ -28,14 +39,7 @@ docker-tag-images:
           'all'
         ]
   steps:
-    - run:
-        name: Get crane
-        command: |
-          VERSION=v0.19.1
-          OS=Linux
-          ARCH=x86_64
-          curl -sL "https://github.com/google/go-containerregistry/releases/download/${VERSION}/go-containerregistry_${OS}_${ARCH}.tar.gz" > go-containerregistry.tar.gz
-          tar -zxvf go-containerregistry.tar.gz -C $HOME/bin/ crane
+    - install-crane
     - docker-login
     - run:
         name: Update docker containers with release tags
