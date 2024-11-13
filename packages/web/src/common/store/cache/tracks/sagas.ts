@@ -291,11 +291,14 @@ function* confirmEditTrack(
         )
         yield* call(recordEditTrackAnalytics, currentTrack, confirmedTrack)
       },
-      function* () {
+      function* ({ error, message, timeout }) {
+        const reportToSentry = yield* getContext('reportToSentry')
+        reportToSentry({
+          error,
+          additionalInfo: { message, timeout, trackId, formFields },
+          name: 'Edit Track Failed'
+        })
         yield* put(trackActions.editTrackFailed())
-        // Throw so the user can't capture a bad upload state (especially for downloads).
-        // TODO: Consider better update revesion logic here coupled with a toast or similar.
-        throw new Error('Edit track failed')
       }
     )
   )
