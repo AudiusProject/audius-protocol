@@ -299,12 +299,14 @@ export class CreatorNode {
       upload_id: uploadId,
       timestamp: Date.now()
     }
+
+    const sigJson = JSON.stringify(sortObjectKeys(signatureData))
     const signature = await hashAndSign(
-      JSON.stringify(sortObjectKeys(signatureData)),
+      sigJson,
       '0x' + myPrivateKey.toString('hex')
     )
     const signatureEnvelope = {
-      data: JSON.stringify(signatureData),
+      data: sigJson,
       signature
     }
 
@@ -333,15 +335,37 @@ export class CreatorNode {
     template: 'audio' | 'img_square' | 'img_backdrop',
     options?: { [key: string]: string }
   ) {
+    const myPrivateKey = this.web3Manager?.getOwnerWalletPrivateKey()
+    if (!myPrivateKey) {
+      throw new Error('Missing user private key')
+    }
+
     const { headers, formData } = this.createFormDataAndUploadHeadersV2(file, {
       template,
       ...options
     })
+
+    // Generate signature
+    const signatureData = {
+      timestamp: Date.now()
+    }
+
+    const sigJson = JSON.stringify(sortObjectKeys(signatureData))
+    const signature = await hashAndSign(
+      sigJson,
+      '0x' + myPrivateKey.toString('hex')
+    )
+    const signatureEnvelope = {
+      data: sigJson,
+      signature
+    }
+
     const response = await this._makeRequestV2({
       method: 'post',
       url: '/uploads',
       data: formData,
       headers,
+      params: { signature: JSON.stringify(signatureEnvelope) },
       onUploadProgress: (progressEvent) => {
         const progress = {
           upload: { loaded: progressEvent.loaded, total: progressEvent.total }
