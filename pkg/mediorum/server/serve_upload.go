@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/AudiusProject/audius-protocol/pkg/mediorum/cidutil"
+	"github.com/AudiusProject/audius-protocol/pkg/mediorum/server/signature"
 
 	"github.com/labstack/echo/v4"
 	"github.com/oklog/ulid/v2"
@@ -130,9 +131,13 @@ func (ss *MediorumServer) postUpload(c echo.Context) error {
 	// read user wallet from ?signature query string
 	// ... fall back to (legacy) X-User-Wallet header
 	userWallet := sql.NullString{Valid: false}
-	if signerWallet, ok := c.Get("signer-wallet").(string); ok {
+
+	// updateUpload uses the requireUserSignature c.Get("signer-wallet")
+	// but requireUserSignature will fail request if missing
+	// so parse direclty here
+	if sig, err := signature.ParseFromQueryString(c.QueryParam("signature")); err == nil {
 		userWallet = sql.NullString{
-			String: signerWallet,
+			String: sig.SignerWallet,
 			Valid:  true,
 		}
 	} else {
