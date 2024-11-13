@@ -13,7 +13,7 @@ build-audiusd:
           sudo apt-get update
           sudo apt-get install -y golang
     - run:
-        name: Build audiusd docker image
+        name: Build audius-d wrapper image
         command: |
           IMAGE_TAG="$(sha1sum pkg/orchestration/Dockerfile | awk '{print $1}')"
           DOCKER_IMAGE="audius/audius-d:$IMAGE_TAG"
@@ -25,7 +25,20 @@ build-audiusd:
           else
             echo "Docker image $DOCKER_IMAGE not found. Building and pushing..."
             docker buildx create --use
-            make build-push-docker AD_TAG="$IMAGE_TAG"
+            make build-push-wrapper WRAPPER_TAG="$IMAGE_TAG"
+          fi
+    - run:
+        name: Build audiusd image
+        command: |
+          DOCKER_IMAGE="audius/audiusd:${CIRCLE_SHA1}"
+          echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
+          
+          if docker buildx imagetools inspect $DOCKER_IMAGE >/dev/null 2>&1; then
+            echo "Docker image $DOCKER_IMAGE already exists. Skipping build."
+          else
+            echo "Docker image $DOCKER_IMAGE not found. Building and pushing..."
+            docker buildx create --use
+            make build-push-audiusd AD_TAG="$CIRCLE_SHA1"
           fi
     - run:
         name: Build audius-ctl for production
@@ -164,24 +177,44 @@ publish-audius-ctl:
         command: |
           make release-audius-ctl
 
-publish-audiusd:
+deploy-audiusd-staging:
   docker:
     - image: cimg/base:2023.01
   resource_class: small
   steps:
     - checkout
+    - docker-login
+    - install-crane
     - run:
-        name: Release audiusd
+        name: Release audiusd to staging
         command: |
-          # get crane
-          VERSION=v0.17.0
-          OS=Linux
-          ARCH=x86_64
-          curl -sL "https://github.com/google/go-containerregistry/releases/download/${VERSION}/go-containerregistry_${OS}_${ARCH}.tar.gz" > go-containerregistry.tar.gz
-          tar -zxvf go-containerregistry.tar.gz -C $HOME/bin/ crane
-
-          # set the 'default' tag to the newly vetted image
-          echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
+          # release audius-d wrapper image
           IMAGE_TAG="$(sha1sum pkg/orchestration/Dockerfile | awk '{print $1}')"
           crane copy "audius/audius-d:$IMAGE_TAG" "audius/audius-d:default"
 
+          # release audiusd image
+          crane copy "audius/audiusd:${CIRCLE_SHA1}" "audius/audiusd:prerelease"
+
+deploy-audiusd-foundation:
+  docker:
+    - image: cimg/base:2023.01
+  resource_class: small
+  steps:
+    - docker-login
+    - install-crane
+    - run:
+        name: Release audiusd to foundation
+        command: |
+          crane copy "audius/audiusd:${CIRCLE_SHA1}" "audius/audiusd:edge"
+
+deploy-audiusd-sps:
+  docker:
+    - image: cimg/base:2023.01
+  resource_class: small
+  steps:
+    - docker-login
+    - install-crane
+    - run:
+        name: Release audiusd to foundation
+        command: |
+          crane copy "audius/audiusd:${CIRCLE_SHA1}" "audius/audiusd:current"

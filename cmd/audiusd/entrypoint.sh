@@ -1,11 +1,7 @@
 #!/bin/bash
 
-ENV_FILE="/env/prod.env"
+ENV_FILE="/env/${NETWORK}.env"
 OVERRIDE_ENV_FILE="/env/override.env"
-
-if [ "$NETWORK" == "stage" ]; then
-    ENV_FILE="/env/stage.env"
-fi
 
 # source environment variables without overwriting existing ones
 source_env_file() {
@@ -32,11 +28,11 @@ source_env_file "$OVERRIDE_ENV_FILE"
 # minimum values for a core node to just run
 POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-postgres}
 POSTGRES_DB=${POSTGRES_DB:-audiusd}
-POSTGRES_DATA_DIR=${POSTGRES_DATA_DIR:-/data/postgres}
-dbUrl=${dbUrl:-postgresql://postgres:postgres@localhost:5432/audiusd?sslmode=disable}
-uptimeDataDir=${uptimeDataDir:-/data/bolt}
-audius_core_root_dir=${audius_core_root_dir:-/data/audiusd}
-creatorNodeEndpoint=${creatorNodeEndpoint:-http://localhost}
+POSTGRES_DATA_DIR=${POSTGRES_DATA_DIR:-/var/lib/postgresql/data}
+export dbUrl=${dbUrl:-postgresql://postgres:postgres@localhost:5432/audius_creator_node?sslmode=disable}
+export uptimeDataDir=${uptimeDataDir:-/data/bolt}
+export audius_core_root_dir=${audius_core_root_dir:-/data/audiusd}
+export creatorNodeEndpoint=${creatorNodeEndpoint:-http://localhost}
 
 if [ ! -d "$POSTGRES_DATA_DIR" ]; then
     echo "Initializing PostgreSQL data directory at $POSTGRES_DATA_DIR..."
@@ -46,6 +42,9 @@ if [ ! -d "$POSTGRES_DATA_DIR" ]; then
     sed -i "s/peer/trust/g" "$POSTGRES_DATA_DIR/pg_hba.conf"
     sed -i "s/md5/trust/g" "$POSTGRES_DATA_DIR/pg_hba.conf"
 fi
+
+chown -R postgres:postgres "$POSTGRES_DATA_DIR"
+chmod -R u+rwx,g-rwx,o-rwx "$POSTGRES_DATA_DIR"
 
 echo "Configuring PostgreSQL to log to stderr for docker capture..."
 sed -i "s|#log_destination = 'stderr'|log_destination = 'stderr'|" "$POSTGRES_DATA_DIR/postgresql.conf"

@@ -19,7 +19,7 @@ jobs:
         branches:
           only:
             - main
-  - publish-audiusd:
+  - deploy-audiusd-staging:
       context: [github, dockerhub]
       requires:
         - publish-audius-ctl
@@ -27,3 +27,19 @@ jobs:
         branches:
           only:
             - main
+  - deploy-audiusd-foundation-trigger:
+      requires:
+        - deploy-audiusd-staging
+      type: approval
+  - deploy-audiusd-foundation:
+      context: [github, dockerhub]
+      requires:
+        - deploy-audiusd-foundation-trigger
+  - deploy-audiusd-sps-trigger:
+      requires:
+        - deploy-audiusd-foundation
+      type: approval
+  - deploy-audiusd-sps:
+      context: [github, dockerhub]
+      requires:
+        - deploy-audiusd-sps-trigger

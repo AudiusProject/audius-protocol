@@ -125,7 +125,7 @@ func startStagingOrProd(isProd bool) {
 		ReplicationFactor:         4, // HashMigration: use R=2 (crc32) + R=2 (sha256)
 		PrivateKey:                privateKeyHex,
 		Dir:                       "/tmp/mediorum",
-		PostgresDSN:               getenvWithDefault("postgresDSN", "postgres://postgres:postgres@db:5432/audius_creator_node"),
+		PostgresDSN:               getenvWithDefault("dbUrl", "postgres://postgres:postgres@db:5432/audius_creator_node"),
 		BlobStoreDSN:              os.Getenv("AUDIUS_STORAGE_DRIVER_URL"),
 		MoveFromBlobStoreDSN:      os.Getenv("AUDIUS_STORAGE_DRIVER_URL_MOVE_FROM"),
 		TrustedNotifierID:         trustedNotifierID,
@@ -211,7 +211,7 @@ func startSandbox() {
 		ReplicationFactor:         5,
 		PrivateKey:                privateKeyHex,
 		Dir:                       "/tmp/mediorum",
-		PostgresDSN:               "postgres://postgres:postgres@db:5432/audius_creator_node",
+		PostgresDSN:               os.Getenv("dbUrl"),
 		BlobStoreDSN:              os.Getenv("AUDIUS_STORAGE_DRIVER_URL"),
 		MoveFromBlobStoreDSN:      os.Getenv("AUDIUS_STORAGE_DRIVER_URL_MOVE_FROM"),
 		TrustedNotifierID:         trustedNotifierID,
