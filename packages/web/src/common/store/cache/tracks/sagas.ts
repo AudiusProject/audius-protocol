@@ -296,7 +296,7 @@ function* confirmEditTrack(
         reportToSentry({
           error,
           additionalInfo: { message, timeout, trackId, formFields },
-          name: 'Edit Track Failed'
+          name: 'Edit Track'
         })
         yield* put(trackActions.editTrackFailed())
       }
