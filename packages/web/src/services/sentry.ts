@@ -32,10 +32,7 @@ export const initializeSentry = () => {
       // Capture console.errors in sentry
       Sentry.captureConsoleIntegration({ levels: ['error'] }),
       // Capture a session recording
-      Sentry.replayIntegration({
-        maskAllText: false,
-        blockAllMedia: false
-      })
+      Sentry.replayIntegration({})
     ],
 
     normalizeDepth: 5,
@@ -60,11 +57,9 @@ export const initializeSentry = () => {
       }
       return breadCrumb
     },
-    // This sets the sample rate to be 10%. You may want this to be 100% while
-    // in development and sample at a lower rate in production
-    replaysSessionSampleRate: 0.1,
-    // If the entire session is not sampled, use the below sample rate to sample
-    // sessions when an error occurs.
+    // This is the sample rate for healthy sessions without errors - set to 0 since we only care about errors
+    replaysSessionSampleRate: 0,
+    // This is a sample rate specific to when errors occur. We want to see 100% of them
     replaysOnErrorSampleRate: 1.0
   })
 }
