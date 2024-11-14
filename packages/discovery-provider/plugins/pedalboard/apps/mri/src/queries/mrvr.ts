@@ -19,15 +19,15 @@ type MrvrAffirmative = {
   ['Downloads - Gross Revenues with Permitted Deductions - USA Only']: number
   ['Downloads - Public Performance Fees']: number
   ['Downloads - Record Label Payments']: number
-  ['Subscription Offerings - Gross Revenues without Permitted Deductions']: number
-  ['Subscription Offerings - Gross Revenues with Permitted Deductions']: number
-  ['Subscription Offerings - Gross Revenues without Permitted Deductions - USA Only']: number
-  ['Subscription Offerings - Gross Revenues with Permitted Deductions - USA Only']: number
-  ['Subscription Offerings - Public Performance Fees']: number
-  ['Subscription Offerings - Record Label Payments']: number
-  ['Subscription Offerings - Average Subscription Price']: number
-  ['Subscription Offerings - Total Subscribers']: number
-  ['Subscription Offerings - Total Subscribers - USA Only']: number
+  ['Subscription - Gross Revenues without Permitted Deductions']: number
+  ['Subscription - Gross Revenues with Permitted Deductions']: number
+  ['Subscription - Gross Revenues without Permitted Deductions - USA Only']: number
+  ['Subscription - Gross Revenues with Permitted Deductions - USA Only']: number
+  ['Subscription - Public Performance Fees']: number
+  ['Subscription - Record Label Payments']: number
+  ['Subscription - Average Subscription Price']: number
+  ['Subscription - Total Subscribers']: number
+  ['Subscription - Total Subscribers - USA Only']: number
   ['Aggregate Transmission Hours - USA Only']: number
 }
 
@@ -51,15 +51,15 @@ const MrvrAffirmativeHeader: (keyof MrvrAffirmative)[] = [
   'Downloads - Gross Revenues with Permitted Deductions - USA Only',
   'Downloads - Public Performance Fees',
   'Downloads - Record Label Payments',
-  'Subscription Offerings - Gross Revenues without Permitted Deductions',
-  'Subscription Offerings - Gross Revenues with Permitted Deductions',
-  'Subscription Offerings - Gross Revenues without Permitted Deductions - USA Only',
-  'Subscription Offerings - Gross Revenues with Permitted Deductions - USA Only',
-  'Subscription Offerings - Public Performance Fees',
-  'Subscription Offerings - Record Label Payments',
-  'Subscription Offerings - Average Subscription Price',
-  'Subscription Offerings - Total Subscribers',
-  'Subscription Offerings - Total Subscribers - USA Only',
+  'Subscription - Gross Revenues without Permitted Deductions',
+  'Subscription - Gross Revenues with Permitted Deductions',
+  'Subscription - Gross Revenues without Permitted Deductions - USA Only',
+  'Subscription - Gross Revenues with Permitted Deductions - USA Only',
+  'Subscription - Public Performance Fees',
+  'Subscription - Record Label Payments',
+  'Subscription - Average Subscription Price',
+  'Subscription - Total Subscribers',
+  'Subscription - Total Subscribers - USA Only',
   'Aggregate Transmission Hours - USA Only',
  
 ]
@@ -102,7 +102,76 @@ export const mrvr = async (
   const affirmative = async () => {
     const mrvrAffirmativeResult = await db.raw(
       `
-      
+      select
+        revenue."Downloads - Gross Revenues without Permitted Deductions",
+        revenue."Downloads - Gross Revenues with Permitted Deductions",
+        revenue."Downloads - Gross Revenues without Permitted Deductions - USA Only",
+        revenue."Downloads - Gross Revenues with Permitted Deductions - USA Only",
+        revenue."Downloads - Public Performance Fees",
+        revenue."Downloads - Record Label Payments",
+        revenue."Subscription - Gross Revenues without Permitted Deductions",
+        revenue."Subscription - Gross Revenues with Permitted Deductions",
+        revenue."Subscription - Gross Revenues without Permitted Deductions - USA Only",
+        revenue."Subscription - Gross Revenues with Permitted Deductions - USA Only",
+        revenue."Subscription - Public Performance Fees",
+        revenue."Subscription - Record Label Payments",
+        revenue."Subscription - Average Subscription Price",
+        revenue."Subscription - Total Subscribers",
+        revenue."Subscription - Total Subscribers - USA Only",
+        ath."Aggregate Transmission Hours - USA Only"
+      from
+        (
+          select
+            sum(("amount" + "extra_amount") / 1000000) as "Downloads - Gross Revenues without Permitted Deductions",
+            sum(("amount" + "extra_amount") / 1000000) as "Downloads - Gross Revenues with Permitted Deductions",
+            sum(
+              case
+                when "country" = 'United States'
+                then ("amount" + "extra_amount") / 1000000
+                else 0
+              end
+            ) as "Downloads - Gross Revenues without Permitted Deductions - USA Only",
+            sum(
+              case
+                when "country" = 'United States'
+                then ("amount" + "extra_amount") / 1000000
+                else 0
+              end
+            ) as "Downloads - Gross Revenues with Permitted Deductions - USA Only",
+            0 as "Downloads - Public Performance Fees",
+            0 as "Downloads - Record Label Payments",
+            0 as "Subscription - Gross Revenues without Permitted Deductions",
+            0 as "Subscription - Gross Revenues with Permitted Deductions",
+            0 as "Subscription - Gross Revenues without Permitted Deductions - USA Only",
+            0 as "Subscription - Gross Revenues with Permitted Deductions - USA Only",
+            0 as "Subscription - Public Performance Fees",
+            0 as "Subscription - Record Label Payments",
+            0 as "Subscription - Average Subscription Price",
+            0 as "Subscription - Total Subscribers",
+            0 as "Subscription - Total Subscribers - USA Only"
+          from "usdc_purchases"
+          where
+            "created_at" >= :start
+            and "created_at" < :end
+        ) as revenue
+        cross join
+        (
+          select
+            sum(cast("count" * "duration" as float) / 3600.0) as "Aggregate Transmission Hours - USA Only"
+          from (
+            select
+              "tracks"."duration" as "duration",
+              "aggregate_monthly_plays"."count" as "count"
+            from
+              "tracks"
+            join
+              "aggregate_monthly_plays" on "tracks"."track_id" = "aggregate_monthly_plays"."play_item_id"
+            where
+              "aggregate_monthly_plays"."country" = 'United States'
+              and "timestamp" >= :start
+              and "timestamp" < :end
+          ) as ath_data
+        ) as ath;
       `,
       { start, end }
     )
