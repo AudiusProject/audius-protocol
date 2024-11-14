@@ -7,6 +7,8 @@ import snakecaseKeys from 'snakecase-keys'
 
 import {
   Copyright,
+  Id,
+  OptionalId,
   RightsController,
   StemCategory,
   TrackSegment
@@ -14,7 +16,7 @@ import {
 import { StemTrackMetadata, UserTrackMetadata } from '~/models/Track'
 import type { NativeFile, TrackMetadataForUpload } from '~/store/upload/types'
 import { License, Maybe } from '~/utils'
-import { decodeHashId, encodeHashId } from '~/utils/hashIds'
+import { decodeHashId } from '~/utils/hashIds'
 
 import { accessConditionsFromSDK, accessConditionsToSDK } from './access'
 import { resourceContributorFromSDK } from './attribution'
@@ -228,22 +230,16 @@ export const trackMetadataForUploadToSdk = (
 ): TrackMetadata => ({
   ...camelcaseKeys(
     pick(input, [
-      'title',
-      'description',
       'license',
       'isrc',
       'iswc',
       'genre',
-      'mood',
-      'tags',
       'is_unlisted',
-      'field_visibility',
       'is_premium',
       'premium_conditions',
       'is_stream_gated',
       'stream_conditions',
       'is_download_gated',
-      'download_conditions',
       'orig_file_cid',
       'orig_filename',
       'is_downloadable',
@@ -255,8 +251,7 @@ export const trackMetadataForUploadToSdk = (
       'comments_disabled',
       'ddex_release_ids',
       'parental_warning_type',
-      'audio_upload_id',
-      'ai_attribution_user_id'
+      'audio_upload_id'
     ])
   ),
   title: input.title,
@@ -268,9 +263,7 @@ export const trackMetadataForUploadToSdk = (
   previewStartSeconds: input.preview_start_seconds ?? undefined,
   previewCid: input.preview_cid ?? '',
   ddexApp: input.ddex_app ?? '',
-  aiAttributionUserId: input.ai_attribution_user_id
-    ? encodeHashId(input.ai_attribution_user_id)
-    : undefined,
+  aiAttributionUserId: OptionalId.parse(input.ai_attribution_user_id),
   fieldVisibility: input.field_visibility
     ? mapValues(
         camelcaseKeys(input.field_visibility),
@@ -286,14 +279,14 @@ export const trackMetadataForUploadToSdk = (
   remixOf: input.remix_of
     ? {
         tracks: input.remix_of.tracks.map((track) => ({
-          parentTrackId: encodeHashId(track.parent_track_id)
+          parentTrackId: Id.parse(track.parent_track_id)
         }))
       }
     : undefined,
   stemOf: input.stem_of
     ? {
         category: input.stem_of.category,
-        parentTrackId: encodeHashId(input.stem_of.parent_track_id)
+        parentTrackId: Id.parse(input.stem_of.parent_track_id)
       }
     : undefined,
   copyrightLine: input.copyright_line

@@ -9,7 +9,6 @@ import {
   getContext,
   gatedContentSelectors,
   confirmerActions,
-  confirmTransaction,
   modalsActions,
   getSDK
 } from '@audius/common/store'
