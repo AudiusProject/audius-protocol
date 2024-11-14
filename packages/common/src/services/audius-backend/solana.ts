@@ -110,7 +110,6 @@ export const getTokenAccountInfo = async (
   audiusBackendInstance: AudiusBackend,
   {
     tokenAccount,
-    mint = DEFAULT_MINT,
     commitment = 'processed'
   }: {
     tokenAccount: PublicKey
@@ -120,11 +119,7 @@ export const getTokenAccountInfo = async (
 ): Promise<Account | null> => {
   return (
     await audiusBackendInstance.getAudiusLibs()
-  ).solanaWeb3Manager!.getTokenAccountInfo(
-    tokenAccount.toString(),
-    mint,
-    commitment
-  )
+  ).solanaWeb3Manager!.getTokenAccountInfo(tokenAccount.toString(), commitment)
 }
 
 export const deriveUserBankPubkey = async (
