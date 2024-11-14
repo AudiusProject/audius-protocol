@@ -304,12 +304,14 @@ const PlaylistTile = (props: PlaylistTileProps & ExtraProps) => {
             </UserLink>
           </Flex>
         </div>
-        <CollectionTileStats
-          collectionId={id}
-          isTrending={isTrending}
-          rankIndex={index}
-          size={TrackTileSize.SMALL}
-        />
+        <Flex ph='s'>
+          <CollectionTileStats
+            collectionId={id}
+            isTrending={isTrending}
+            rankIndex={index}
+            size={TrackTileSize.SMALL}
+          />
+        </Flex>
         <TrackList
           activeTrackUid={props.activeTrackUid}
           goToCollectionPage={props.goToCollectionPage}

@@ -18,9 +18,11 @@ import { RouteContextProvider } from './utils/RouteContext'
 
 const {
   FEED_PAGE,
+  TRENDING_PAGE,
   SIGN_UP_APP_CTA_PAGE,
   SIGN_UP_ARTISTS_PAGE,
   SIGN_UP_COMPLETED_REDIRECT,
+  SIGN_UP_COMPLETED_REFERRER_REDIRECT: SIGN_UP_REFERRER_COMPLETED_REDIRECT,
   SIGN_UP_CREATE_LOGIN_DETAILS,
   SIGN_UP_EMAIL_PAGE,
   SIGN_UP_FINISH_PROFILE_PAGE,
@@ -103,6 +105,9 @@ export const SignUpPage = () => {
         </SignUpRoute>
         <SignUpRoute exact path={SIGN_UP_COMPLETED_REDIRECT}>
           <Redirect to={FEED_PAGE} />
+        </SignUpRoute>
+        <SignUpRoute exact path={SIGN_UP_REFERRER_COMPLETED_REDIRECT}>
+          <Redirect to={TRENDING_PAGE} />
         </SignUpRoute>
         <SignUpRoute path='*' />
       </Switch>
