@@ -45,6 +45,15 @@ var (
 		},
 	}
 
+	devnetHosts = []string{
+		"creator-1.devnet.audius-d:172.100.0.1",
+		"discovery-1.devnet.audius-d:172.100.0.1",
+		"identity.devnet.audius-d:172.100.0.1",
+		"eth-ganache.devnet.audius-d:172.100.0.1",
+		"acdc-ganache.devnet.audius-d:172.100.0.1",
+		"solana-test-validator.devnet.audius-d:172.100.0.1",
+	}
+
 	semverRegex = regexp.MustCompile(`\d+\.\d+\.\d+`)
 )
 
@@ -169,14 +178,7 @@ func runNode(
 
 	if nconf.DeployOn == conf.Devnet {
 		hostConfig.NetworkMode = "deployments_devnet"
-		hostConfig.ExtraHosts = []string{
-			"creator-1.devnet.audius-d:172.100.0.1",
-			"discovery-1.devnet.audius-d:172.100.0.1",
-			"identity.devnet.audius-d:172.100.0.1",
-			"eth-ganache.devnet.audius-d:172.100.0.1",
-			"acdc-ganache.devnet.audius-d:172.100.0.1",
-			"solana-test-validator.devnet.audius-d:172.100.0.1",
-		}
+		hostConfig.ExtraHosts = devnetHosts
 		containerConfig.Env = []string{"HOST_DOCKER_INTERNAL=172.100.0.1"}
 	}
 
@@ -360,6 +362,214 @@ func runNode(
 	logger.Info("Launching the protocol stack (first time may take a while)...")
 	if err := audiusCli(dockerClient, host, "launch", "-y", "--auto-seed", adcDir); err != nil {
 		return logger.Error("Failed to launch node:", err)
+	}
+
+	return nil
+}
+
+func runNodeWrapperless(
+	host string,
+	config conf.NodeConfig,
+	nconf conf.NetworkConfig,
+) error {
+	if config.Type != conf.Content {
+		return logger.Errorf("Unsupported node type %s", config.Type)
+	}
+
+	execHost := host
+	if config.IsLocalhost {
+		execHost = "localhost"
+	}
+	containerName := host
+	if host == "localhost" {
+		containerName = "audiusd"
+	}
+
+	dockerClient, err := getDockerClient(execHost)
+	if err != nil {
+		return logger.Error(err)
+	}
+	defer dockerClient.Close()
+
+	if isContainerRunning(dockerClient, containerName) {
+		logger.Infof("audiusd container already running for %s", host)
+		logger.Infof("Use 'audius-ctl restart %s' for a clean restart", host)
+		return nil
+	} else if isContainerNameInUse(dockerClient, containerName) {
+		logger.Infof("stopped audiusd container '%s' exists on %s, removing and starting with current config", containerName, host)
+		if err := removeContainerByName(dockerClient, containerName); err != nil {
+			return logger.Error(err)
+		}
+	}
+
+	logger.Infof("\nStarting %s\n", host)
+
+	tag := config.Version
+	if tag == "" {
+		tag = "current"
+	}
+
+	containerConfig := &container.Config{
+		Image: fmt.Sprintf("audius/audiusd:%s", tag),
+	}
+	hostConfig := &container.HostConfig{
+		Mounts: []mount.Mount{
+			mount.Mount{
+				Type:   mount.TypeBind,
+				Source: "/var/k8s/mediorum",
+				Target: "/tmp/mediorum",
+			},
+			mount.Mount{
+				Type:   mount.TypeBind,
+				Source: "/var/k8s/creator-node-backend",
+				Target: "/file_storage",
+			},
+			mount.Mount{
+				Type:   mount.TypeBind,
+				Source: "/var/k8s/creator-node-db-15",
+				Target: "/var/lib/postgresql/data",
+			},
+			mount.Mount{
+				Type:   mount.TypeBind,
+				Source: "/var/k8s/bolt",
+				Target: "/bolt",
+			},
+			mount.Mount{
+				Type:   mount.TypeBind,
+				Source: "/var/k8s/bolt",
+				Target: "/audius-core",
+			},
+			mount.Mount{
+				Type:   mount.TypeBind,
+				Source: "/var/k8s/env",
+				Target: "/env",
+			},
+		},
+	}
+
+	var port uint = 80
+	var tlsPort uint = 443
+	if config.HttpPort != 0 {
+		port = config.HttpPort
+	}
+	if config.HttpsPort != 0 {
+		tlsPort = config.HttpsPort
+	}
+	httpPorts := fmt.Sprintf("%d:%d", port, port)
+	httpsPorts := fmt.Sprintf("%d:%d", tlsPort, tlsPort)
+	allPorts := []string{httpPorts, httpsPorts}
+	if config.HostPorts != "" {
+		allPorts = append(allPorts, strings.Split(config.HostPorts, ",")...)
+	}
+
+	if config.CorePortP2P == 0 {
+		config.CorePortP2P = 26656
+	}
+
+	if config.CorePortRPC == 0 {
+		config.CorePortRPC = 26657
+	}
+
+	allPorts = append(allPorts, fmt.Sprintf("%d:26656", config.CorePortP2P), fmt.Sprintf("%d:26657", config.CorePortRPC))
+
+	portSet, portBindings, err := nat.ParsePortSpecs(allPorts)
+	if err != nil {
+		return logger.Error(err)
+	}
+	containerConfig.ExposedPorts = portSet
+	hostConfig.PortBindings = portBindings
+
+	if nconf.DeployOn == conf.Devnet {
+		hostConfig.NetworkMode = "deployments_devnet"
+		hostConfig.ExtraHosts = devnetHosts
+		containerConfig.Env = []string{"HOST_DOCKER_INTERNAL=172.100.0.1"}
+	}
+
+	logger.Info("Generating configuration...")
+
+	privateKey, err := NormalizedPrivateKey(execHost, config.PrivateKey)
+	if err != nil {
+		return logger.Error(err)
+	}
+	config.PrivateKey = privateKey
+
+	override := config.ToOverrideEnv(host, nconf)
+
+	// generate the override.env file locally
+	localOverrideFile, err := os.CreateTemp(".", fmt.Sprintf("%s*.env", host))
+	if err != nil {
+		return logger.Error("Could not create local temp file:", err)
+	}
+	localOverridePath := localOverrideFile.Name()
+	localOverrideFile.Close()
+
+	if err := appendRemoteConfig(execHost, override, config.RemoteConfigFile); err != nil {
+		return logger.Error(err)
+	}
+	if err := godotenv.Write(override, localOverridePath); err != nil {
+		return logger.Error(err)
+	}
+	if err := copyFileToHost(execHost, localOverridePath, "/var/k8s/env/override.env"); err != nil {
+		return logger.Errorf("Could not copy override config to host: %v", err)
+	}
+	if err := os.Remove(localOverridePath); err != nil {
+		return logger.Error(err)
+	}
+
+	logger.Info("Pulling audiusd image...")
+	logger.Debugf("Using image %s", containerConfig.Image)
+	pullResp, err := dockerClient.ImagePull(context.Background(), containerConfig.Image, types.ImagePullOptions{})
+	if err != nil {
+		logger.Warnf("Failed to pull image: %v", err)
+		logger.Warnf("Continuing with local image repository")
+	} else {
+		defer pullResp.Close()
+		if err := readAndLogCommandOutput(bufio.NewReader(pullResp)); err != nil {
+			return logger.Error("Error reading ImagePull output:", err)
+		}
+	}
+
+	// create audiusd container
+	createResponse, err := dockerClient.ContainerCreate(
+		context.Background(),
+		containerConfig,
+		hostConfig,
+		nil,
+		nil,
+		containerName,
+	)
+	if err != nil {
+		return logger.Error("Failed to create container:", err)
+	}
+	if err := dockerClient.ContainerStart(
+		context.Background(),
+		createResponse.ID,
+		container.StartOptions{},
+	); err != nil {
+		return logger.Error("Failed to start container:", err)
+	}
+
+	// Wait for audius-d wrapper to be ready
+	ready := false
+	timeout := time.After(30 * time.Second)
+	for !ready {
+		select {
+		case <-timeout:
+			return logger.Error("Timeout waiting for audiusd container to start")
+		default:
+			inspect, err := dockerClient.ContainerInspect(context.Background(), createResponse.ID)
+			if err != nil {
+				return logger.Error("Could not get status of audiusd container:", err)
+			}
+			time.Sleep(3 * time.Second)
+			ready = inspect.State.Running
+			logger.Debugf("audiusd container status: %s", inspect.State.Status)
+		}
+	}
+
+	logger.Info("Creating auto-update cron job")
+	if err := setAutoUpdateCron(host, config.Version, nconf.DeployOn); err != nil {
+		return logger.Error("Failed to add auto-update cron job:", err)
 	}
 
 	return nil
