@@ -139,10 +139,12 @@ function* editTrackAsync(action: ReturnType<typeof trackActions.editTrack>) {
   // Format bpm
   trackForEdit.bpm = trackForEdit.bpm ? Number(trackForEdit.bpm) : null
   trackForEdit.is_custom_bpm =
-    currentTrack.is_custom_bpm || trackForEdit.bpm !== currentTrack.bpm
+    currentTrack.is_custom_bpm ||
+    (!!trackForEdit.bpm && trackForEdit.bpm !== currentTrack.bpm)
   trackForEdit.is_custom_musical_key =
     currentTrack.is_custom_musical_key ||
-    trackForEdit.musical_key !== currentTrack.musical_key
+    (!!trackForEdit.musical_key &&
+      trackForEdit.musical_key !== currentTrack.musical_key)
 
   yield* call(
     confirmEditTrack,

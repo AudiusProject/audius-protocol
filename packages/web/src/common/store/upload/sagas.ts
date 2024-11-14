@@ -1199,6 +1199,9 @@ export function* updateTrackAudioAsync(
   const newMetadata: TrackMetadata = {
     ...metadata,
     orig_file_cid: updatedMetadata.orig_file_cid,
+    bpm: metadata.is_custom_bpm ? metadata.bpm : null,
+    musical_key: metadata.is_custom_musical_key ? metadata.musical_key : null,
+    audio_analysis_error_count: 0,
     orig_filename: updatedMetadata.orig_filename,
     preview_cid: updatedMetadata.preview_cid,
     preview_start_seconds: updatedMetadata.preview_start_seconds,
