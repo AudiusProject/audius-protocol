@@ -237,9 +237,11 @@ function* confirmEditTrack(
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
   const sdk = yield* getSDK()
   const transcodePreview =
-    formFields.preview_start_seconds !== null &&
-    formFields.preview_start_seconds !== undefined &&
-    currentTrack.preview_start_seconds !== formFields.preview_start_seconds
+    (formFields.preview_start_seconds !== null &&
+      formFields.preview_start_seconds !== undefined &&
+      currentTrack.preview_start_seconds !==
+        formFields.preview_start_seconds) ||
+    currentTrack.track_cid !== formFields.track_cid
 
   yield* put(
     confirmerActions.requestConfirmation(
