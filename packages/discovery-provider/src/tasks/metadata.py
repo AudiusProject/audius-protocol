@@ -1,3 +1,4 @@
+import re
 from enum import Enum
 from typing import Any, List, Optional, TypedDict
 
@@ -37,6 +38,13 @@ class MusicalKey(str, Enum):
 
 def is_valid_musical_key(musical_key: str) -> bool:
     return musical_key in MusicalKey.__members__.values()
+
+
+cid_regex = r"^[a-z0-9]{62}$"
+
+
+def is_valid_cid(cid: str) -> bool:
+    return bool(re.match(cid_regex, cid))
 
 
 class TrackParent(TypedDict):
@@ -313,10 +321,6 @@ immutable_playlist_fields = immutable_fields | {
 immutable_track_fields = immutable_fields | {
     "track_id",
     "owner_id",
-    "track_cid",
-    "orig_file_cid",
-    "orig_filename",
-    "duration",
     "is_available",
     "audio_analysis_error_count",
     "ddex_app",
