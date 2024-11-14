@@ -11,12 +11,13 @@ import { toFormikValidationSchema } from 'zod-formik-adapter'
 
 import { make } from 'common/store/analytics/actions'
 import { setField } from 'common/store/pages/signon/actions'
-import { getGenres } from 'common/store/pages/signon/selectors'
+import { getGenres, getReferrer } from 'common/store/pages/signon/selectors'
 import { SelectablePillField } from 'components/form-fields/SelectablePillField'
 import { useMedia } from 'hooks/useMedia'
 import { useNavigateToPage } from 'hooks/useNavigateToPage'
 
 import { AccountHeader } from '../components/AccountHeader'
+import { SkipButton } from '../components/SkipButton'
 import { Heading, Page, PageFooter, ScrollView } from '../components/layout'
 
 const { SIGN_UP_ARTISTS_PAGE } = route
@@ -29,6 +30,8 @@ export const SelectGenresPage = () => {
 
   const [currentGenres, setCurrentGenres] = useState<Genre[]>([])
   const savedGenres = useSelector(getGenres)
+  const hasReferrer = useSelector(getReferrer)
+  const { isMobile } = useMedia()
 
   const initialValues: SelectGenresValue = {
     genres: (savedGenres as Genre[]) ?? []
@@ -63,8 +66,6 @@ export const SelectGenresPage = () => {
         setCurrentGenres(newGenres)
       }
     }
-
-  const { isMobile } = useMedia()
 
   return (
     <ScrollView gap={isMobile ? '2xl' : '3xl'}>
@@ -114,7 +115,12 @@ export const SelectGenresPage = () => {
                 })}
               </Flex>
             </Flex>
-            <PageFooter centered sticky buttonProps={{ disabled: !isValid }} />
+            <PageFooter
+              centered
+              sticky
+              buttonProps={{ disabled: !isValid }}
+              prefix={isMobile && hasReferrer ? <SkipButton /> : null}
+            />
           </Page>
         )}
       </Formik>

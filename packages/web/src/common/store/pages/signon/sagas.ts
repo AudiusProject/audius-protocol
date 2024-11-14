@@ -1014,6 +1014,7 @@ function* followArtists(
         ...(referrer == null ? [] : [referrer])
       ])
     ]
+
     for (const userId of userIdsToFollow) {
       yield* put(
         socialActions.followUser(userId as number, FollowSource.SIGN_UP)

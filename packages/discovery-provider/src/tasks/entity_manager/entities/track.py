@@ -32,7 +32,11 @@ from src.tasks.entity_manager.utils import (
     parse_release_date,
     validate_signer,
 )
-from src.tasks.metadata import immutable_track_fields, is_valid_musical_key
+from src.tasks.metadata import (
+    immutable_track_fields,
+    is_valid_cid,
+    is_valid_musical_key,
+)
 from src.tasks.task_helpers import generate_slug_and_collision_id
 from src.utils import helpers
 from src.utils.hardcoded_data import genre_allowlist
@@ -437,6 +441,40 @@ def populate_track_record_metadata(track_record: Track, track_metadata, handle, 
                 else:
                     if isinstance(key_value, str) and is_valid_musical_key(key_value):
                         track_record.musical_key = key_value
+
+        elif key == "track_cid":
+            if (
+                "track_cid" in track_metadata
+                and track_metadata["track_cid"] is not None
+                and is_valid_cid(track_metadata["track_cid"])
+            ):
+                track_record.track_cid = track_metadata["track_cid"]
+        elif key == "preview_cid":
+            if (
+                "preview_cid" in track_metadata
+                and track_metadata["preview_cid"] is not None
+                and is_valid_cid(track_metadata["preview_cid"])
+            ):
+                track_record.preview_cid = track_metadata["preview_cid"]
+        elif key == "orig_file_cid":
+            if (
+                "orig_file_cid" in track_metadata
+                and track_metadata["orig_file_cid"] is not None
+                and is_valid_cid(track_metadata["orig_file_cid"])
+            ):
+                track_record.orig_file_cid = track_metadata["orig_file_cid"]
+        elif key == "orig_filename":
+            if "orig_filename" in track_metadata and isinstance(
+                track_metadata["orig_filename"], str
+            ):
+                track_record.orig_filename = track_metadata["orig_filename"]
+        elif key == "duration":
+            if (
+                "duration" in track_metadata
+                and isinstance(track_metadata["duration"], int)
+                and track_metadata["duration"] > 0
+            ):
+                track_record.duration = track_metadata["duration"]
 
         else:
             # For most fields, update the track_record when the corresponding field exists

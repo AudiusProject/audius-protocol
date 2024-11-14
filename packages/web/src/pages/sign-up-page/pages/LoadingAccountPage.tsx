@@ -4,9 +4,14 @@ import { route } from '@audius/common/utils'
 import { Flex } from '@audius/harmony'
 import { useSelector } from 'react-redux'
 
-import { getStatus } from 'common/store/pages/signon/selectors'
+import {
+  getStatus,
+  getReferrer,
+  getAccountReady
+} from 'common/store/pages/signon/selectors'
 import { EditingStatus } from 'common/store/pages/signon/types'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
+import { useMedia } from 'hooks/useMedia'
 import { useNavigateToPage } from 'hooks/useNavigateToPage'
 
 import { Heading, Page } from '../components/layout'
@@ -22,15 +27,23 @@ const messages = {
 // The user just waits here until the account is created and before being shown the welcome modal on the trending page
 export const LoadingAccountPage = () => {
   const navigate = useNavigateToPage()
+  const hasReferrer = useSelector(getReferrer)
+  const accountReady = useSelector(getAccountReady)
+  const { isMobile } = useMedia()
 
   const accountCreationStatus = useSelector(getStatus)
 
+  const isAccountReady =
+    hasReferrer && isMobile
+      ? accountReady
+      : accountCreationStatus === EditingStatus.SUCCESS
+
   useEffect(() => {
-    if (accountCreationStatus === EditingStatus.SUCCESS) {
+    if (isAccountReady) {
       navigate(SIGN_UP_COMPLETED_REDIRECT)
     }
     // TODO: what to do in an error scenario? Any way to recover to a valid step?
-  }, [navigate, accountCreationStatus])
+  }, [navigate, isAccountReady])
 
   return (
     <Page gap='3xl' justifyContent='center' alignItems='center' pb='3xl'>
