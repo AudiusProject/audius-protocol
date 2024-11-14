@@ -40,7 +40,7 @@ import { ImageFieldValue } from '../components/ImageField'
 import { OutOfText } from '../components/OutOfText'
 import { Heading, Page, PageFooter } from '../components/layout'
 
-const { SIGN_UP_GENRES_PAGE } = route
+const { SIGN_UP_GENRES_PAGE, SIGN_UP_LOADING_PAGE } = route
 
 export type FinishProfileValues = {
   profileImage?: ImageFieldValue
@@ -136,10 +136,14 @@ export const FinishProfilePage = () => {
         dispatch(setField('coverPhoto', coverPhoto))
       }
       dispatch(setFinishedPhase1(true))
-      navigate(SIGN_UP_GENRES_PAGE)
       dispatch(signUp())
+      if (hasReferrer) {
+        navigate(SIGN_UP_LOADING_PAGE)
+      } else {
+        navigate(SIGN_UP_GENRES_PAGE)
+      }
     },
-    [navigate, dispatch]
+    [dispatch, hasReferrer, navigate]
   )
 
   return (
