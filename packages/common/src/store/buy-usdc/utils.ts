@@ -19,8 +19,7 @@ const POLL_ACCOUNT_INFO_RETRIES = 30
 
 /**
  * Derives a USDC user bank for a given eth address, creating it if necessary.
- * Defaults to the wallet of the current user. Uses a channel to manage concurrent
- * requests so there is only one creation attempt in flight at a time.
+ * Defaults to the wallet of the current user.
  */
 export function* getOrCreateUSDCUserBank(ethAddress?: string) {
   const audiusSdk = yield* getContext('audiusSdk')
