@@ -443,18 +443,24 @@ def populate_track_record_metadata(track_record: Track, track_metadata, handle, 
                         track_record.musical_key = key_value
 
         elif key == "track_cid":
-            if "track_cid" in track_metadata and is_valid_cid(
-                track_metadata["track_cid"]
+            if (
+                "track_cid" in track_metadata
+                and track_metadata["track_cid"] is not None
+                and is_valid_cid(track_metadata["track_cid"])
             ):
                 track_record.track_cid = track_metadata["track_cid"]
         elif key == "preview_cid":
-            if "preview_cid" in track_metadata and is_valid_cid(
-                track_metadata["preview_cid"]
+            if (
+                "preview_cid" in track_metadata
+                and track_metadata["preview_cid"] is not None
+                and is_valid_cid(track_metadata["preview_cid"])
             ):
                 track_record.preview_cid = track_metadata["preview_cid"]
         elif key == "orig_file_cid":
-            if "orig_file_cid" in track_metadata and is_valid_cid(
-                track_metadata["orig_file_cid"]
+            if (
+                "orig_file_cid" in track_metadata
+                and track_metadata["orig_file_cid"] is not None
+                and is_valid_cid(track_metadata["orig_file_cid"])
             ):
                 track_record.orig_file_cid = track_metadata["orig_file_cid"]
         elif key == "orig_filename":
