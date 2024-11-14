@@ -1,4 +1,8 @@
-import { userTrackMetadataFromSDK } from '@audius/common/adapters'
+import {
+  userTrackMetadataFromSDK,
+  trackMetadataForUploadToSdk,
+  artworkFileToSDK
+} from '@audius/common/adapters'
 import {
   Name,
   DefaultSizes,
@@ -20,7 +24,6 @@ import {
   cacheUsersSelectors,
   cacheActions,
   confirmerActions,
-  confirmTransaction,
   TrackMetadataForUpload,
   stemsUploadActions,
   stemsUploadSelectors,
@@ -234,7 +237,6 @@ function* confirmEditTrack(
   currentTrack: Track
 ) {
   yield* waitForWrite()
-  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
   const sdk = yield* getSDK()
   const transcodePreview =
     (formFields.preview_start_seconds !== null &&
@@ -254,24 +256,21 @@ function* confirmEditTrack(
           throw new Error('No userId set, cannot edit track')
         }
 
-        const { blockHash, blockNumber } = yield* call(
-          audiusBackendInstance.updateTrack,
-          userId,
-          trackId,
-          { ...formFields },
-          transcodePreview
-        )
+        if (!userId) return
+        const coverArtFile =
+          formFields.artwork && 'file' in formFields.artwork
+            ? formFields.artwork.file
+            : undefined
 
-        const confirmed = yield* call(
-          confirmTransaction,
-          blockHash,
-          blockNumber
-        )
-        if (!confirmed) {
-          throw new Error(
-            `Could not confirm edit track for track id ${trackId}`
-          )
-        }
+        yield* call([sdk.tracks, sdk.tracks.updateTrack], {
+          userId: Id.parse(userId),
+          trackId: Id.parse(trackId),
+          coverArtFile: coverArtFile
+            ? artworkFileToSDK(coverArtFile)
+            : undefined,
+          metadata: trackMetadataForUploadToSdk(formFields),
+          transcodePreview
+        })
 
         const { data } = yield* call(
           [sdk.full.tracks, sdk.full.tracks.getTrack],
@@ -353,7 +352,6 @@ function* deleteTrackAsync(
 
 function* confirmDeleteTrack(trackId: ID) {
   yield* waitForWrite()
-  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
   const sdk = yield* getSDK()
   yield* put(
     confirmerActions.requestConfirmation(
@@ -365,22 +363,10 @@ function* confirmDeleteTrack(trackId: ID) {
           throw new Error('No userId set, cannot delete track')
         }
 
-        const { blockHash, blockNumber } = yield* call(
-          audiusBackendInstance.deleteTrack,
-          userId,
-          trackId
-        )
-
-        const confirmed = yield* call(
-          confirmTransaction,
-          blockHash,
-          blockNumber
-        )
-        if (!confirmed) {
-          throw new Error(
-            `Could not confirm delete track for track id ${trackId}`
-          )
-        }
+        yield* call([sdk.tracks, sdk.tracks.deleteTrack], {
+          userId: Id.parse(userId),
+          trackId: Id.parse(trackId)
+        })
 
         const track = yield* select(getTrack, { id: trackId })
 

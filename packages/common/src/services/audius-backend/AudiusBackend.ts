@@ -62,7 +62,6 @@ import {
   BrowserNotificationSetting,
   PushNotificationSetting,
   PushNotifications,
-  TrackMetadataForUpload,
   SearchKind
 } from '../../store'
 import {
@@ -843,30 +842,6 @@ export const audiusBackend = ({
     }
   }
 
-  async function repostTrack(
-    trackId: ID,
-    metadata?: { is_repost_of_repost: boolean }
-  ) {
-    try {
-      return await audiusLibs.EntityManager.repostTrack(
-        trackId,
-        JSON.stringify(metadata)
-      )
-    } catch (err) {
-      console.error(getErrorMessage(err))
-      throw err
-    }
-  }
-
-  async function undoRepostTrack(trackId: ID) {
-    try {
-      return await audiusLibs.EntityManager.unrepostTrack(trackId)
-    } catch (err) {
-      console.error(getErrorMessage(err))
-      throw err
-    }
-  }
-
   async function repostCollection(
     playlistId: ID,
     metadata?: { is_repost_of_repost: boolean }
@@ -899,27 +874,6 @@ export const audiusBackend = ({
 
   async function uploadImage(file: File) {
     return await audiusLibs.creatorNode.uploadTrackCoverArtV2(file, () => {})
-  }
-
-  async function updateTrack(
-    userId: ID,
-    _trackId: ID,
-    metadata: TrackMetadata | TrackMetadataForUpload,
-    transcodePreview?: boolean
-  ) {
-    const cleanedMetadata = schemas.newTrackMetadata(metadata, true)
-    if (metadata.artwork && 'file' in metadata.artwork) {
-      const resp = await audiusLibs.creatorNode.uploadTrackCoverArtV2(
-        metadata.artwork.file,
-        () => {}
-      )
-      cleanedMetadata.cover_art_sizes = resp.id
-    }
-    return await audiusLibs.Track.updateTrackV2(
-      userId,
-      cleanedMetadata,
-      transcodePreview
-    )
   }
 
   // TODO(C-2719)
@@ -1245,39 +1199,6 @@ export const audiusBackend = ({
     }
   }
 
-  // Favoriting a track
-  async function saveTrack(
-    trackId: ID,
-    metadata?: { is_save_of_repost: boolean }
-  ) {
-    try {
-      return await audiusLibs.EntityManager.saveTrack(
-        trackId,
-        JSON.stringify(metadata)
-      )
-    } catch (err) {
-      console.error(getErrorMessage(err))
-      throw err
-    }
-  }
-
-  async function deleteTrack(userId: ID, trackId: ID) {
-    try {
-      const { txReceipt } = await audiusLibs.Track.deleteTrack(
-        userId,
-        trackId,
-        true
-      )
-      return {
-        blockHash: txReceipt.blockHash,
-        blockNumber: txReceipt.blockNumber
-      }
-    } catch (err) {
-      console.error(getErrorMessage(err))
-      throw err
-    }
-  }
-
   // Favorite a playlist
   async function saveCollection(
     playlistId: ID,
@@ -1288,16 +1209,6 @@ export const audiusBackend = ({
         playlistId,
         JSON.stringify(metadata)
       )
-    } catch (err) {
-      console.error(getErrorMessage(err))
-      throw err
-    }
-  }
-
-  // Unfavoriting a track
-  async function unsaveTrack(trackId: ID) {
-    try {
-      return await audiusLibs.EntityManager.unsaveTrack(trackId)
     } catch (err) {
       console.error(getErrorMessage(err))
       throw err
@@ -2271,7 +2182,6 @@ export const audiusBackend = ({
     dangerouslySetPlaylistOrder,
     deletePlaylist,
     deletePlaylistTrack,
-    deleteTrack,
     deregisterDeviceToken,
     didSelectDiscoveryProviderListeners,
     disableBrowserNotifications,
@@ -2314,10 +2224,8 @@ export const audiusBackend = ({
     recordTrackListen,
     registerDeviceToken,
     repostCollection,
-    repostTrack,
     resetPassword,
     saveCollection,
-    saveTrack,
     searchTags,
     sendRecoveryEmail,
     sendTokens,
@@ -2335,10 +2243,8 @@ export const audiusBackend = ({
     instagramHandle,
     tiktokHandle,
     undoRepostCollection,
-    undoRepostTrack,
     unfollowUser,
     unsaveCollection,
-    unsaveTrack,
     updateBrowserNotifications,
     updateCreator,
     updateEmailNotificationSettings,
@@ -2347,7 +2253,6 @@ export const audiusBackend = ({
     updatePlaylist,
     updatePlaylistLastViewedAt,
     updatePushNotificationSettings,
-    updateTrack,
     updateUserEvent,
     updateUserLocationTimezone,
     subscribeToUser,

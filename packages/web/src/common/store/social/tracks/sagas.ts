@@ -1,4 +1,4 @@
-import { Name, Kind, ID, Track, User } from '@audius/common/models'
+import { Name, Kind, ID, Track, User, Id } from '@audius/common/models'
 import { QueryParams } from '@audius/common/services'
 import {
   accountSelectors,
@@ -9,8 +9,8 @@ import {
   getContext,
   gatedContentSelectors,
   confirmerActions,
-  confirmTransaction,
-  modalsActions
+  modalsActions,
+  getSDK
 } from '@audius/common/store'
 import {
   formatShareText,
@@ -163,26 +163,17 @@ export function* confirmRepostTrack(
   user: User,
   metadata?: { is_repost_of_repost: boolean }
 ) {
-  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
+  const sdk = yield* getSDK()
+
   yield* put(
     confirmerActions.requestConfirmation(
       makeKindId(Kind.TRACKS, trackId),
       function* () {
-        const { blockHash, blockNumber } = yield* call(
-          audiusBackendInstance.repostTrack,
-          trackId,
-          metadata
-        )
-        const confirmed = yield* call(
-          confirmTransaction,
-          blockHash,
-          blockNumber
-        )
-        if (!confirmed) {
-          throw new Error(
-            `Could not confirm repost track for track id ${trackId}`
-          )
-        }
+        yield* call([sdk.tracks, sdk.tracks.repostTrack], {
+          trackId: Id.parse(trackId),
+          userId: Id.parse(user.user_id)
+        })
+
         return trackId
       },
       function* () {},
@@ -276,25 +267,16 @@ export function* undoRepostTrackAsync(
 }
 
 export function* confirmUndoRepostTrack(trackId: ID, user: User) {
-  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
+  const sdk = yield* getSDK()
   yield* put(
     confirmerActions.requestConfirmation(
       makeKindId(Kind.TRACKS, trackId),
       function* () {
-        const { blockHash, blockNumber } = yield* call(
-          audiusBackendInstance.undoRepostTrack,
-          trackId
-        )
-        const confirmed = yield* call(
-          confirmTransaction,
-          blockHash,
-          blockNumber
-        )
-        if (!confirmed) {
-          throw new Error(
-            `Could not confirm undo repost track for track id ${trackId}`
-          )
-        }
+        yield* call([sdk.tracks, sdk.tracks.unrepostTrack], {
+          trackId: Id.parse(trackId),
+          userId: Id.parse(user.user_id)
+        })
+
         return trackId
       },
       function* () {},
@@ -431,26 +413,16 @@ export function* confirmSaveTrack(
   user: User,
   metadata?: { is_save_of_repost: boolean }
 ) {
-  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
+  const sdk = yield* getSDK()
   yield* put(
     confirmerActions.requestConfirmation(
       makeKindId(Kind.TRACKS, trackId),
       function* () {
-        const { blockHash, blockNumber } = yield* call(
-          audiusBackendInstance.saveTrack,
-          trackId,
-          metadata
-        )
-        const confirmed = yield* call(
-          confirmTransaction,
-          blockHash,
-          blockNumber
-        )
-        if (!confirmed) {
-          throw new Error(
-            `Could not confirm save track for track id ${trackId}`
-          )
-        }
+        yield* call([sdk.tracks, sdk.tracks.favoriteTrack], {
+          userId: Id.parse(user.user_id),
+          trackId: Id.parse(trackId)
+        })
+
         return trackId
       },
       function* () {},
@@ -550,25 +522,15 @@ export function* unsaveTrackAsync(
 }
 
 export function* confirmUnsaveTrack(trackId: ID, user: User) {
-  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
+  const sdk = yield* getSDK()
   yield* put(
     confirmerActions.requestConfirmation(
       makeKindId(Kind.TRACKS, trackId),
       function* () {
-        const { blockHash, blockNumber } = yield* call(
-          audiusBackendInstance.unsaveTrack,
-          trackId
-        )
-        const confirmed = yield* call(
-          confirmTransaction,
-          blockHash,
-          blockNumber
-        )
-        if (!confirmed) {
-          throw new Error(
-            `Could not confirm unsave track for track id ${trackId}`
-          )
-        }
+        yield* call([sdk.tracks, sdk.tracks.unfavoriteTrack], {
+          userId: Id.parse(user.user_id),
+          trackId: Id.parse(trackId)
+        })
         return trackId
       },
       function* () {},
