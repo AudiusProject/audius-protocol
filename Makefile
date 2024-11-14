@@ -84,7 +84,7 @@ build-push-wrapper:
 
 .PHONY: build-audiusd-local build-push-audiusd
 build-audiusd-local:
-	docker build -t audius/audiusd:$(AD_TAG) -f ./cmd/audiusd/Dockerfile ./
+	DOCKER_DEFAULT_PLATFORM=linux/amd64 docker build -t audius/audiusd:$(AD_TAG) -f ./cmd/audiusd/Dockerfile ./
 
 build-push-audiusd:
 	DOCKER_DEFAULT_PLATFORM=linux/amd64 docker build --push -t audius/audiusd:$(AD_TAG) -f ./cmd/audiusd/Dockerfile ./
