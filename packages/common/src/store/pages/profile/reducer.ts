@@ -346,8 +346,9 @@ const reducer = (
   const { currentUser, entries } = state
 
   const profileHandle =
-    'handle' in action ? action.handle?.toLowerCase() : currentUser
-
+    'handle' in action
+      ? action.handle?.toLowerCase() ?? currentUser
+      : currentUser
   if (!profileHandle) return state
 
   let newEntry = entries[profileHandle] ?? initialProfileState
