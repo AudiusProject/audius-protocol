@@ -434,24 +434,6 @@ function* refreshHedgehogWallet() {
   ])
 }
 
-function* refreshLibsCurrentUser() {
-  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
-  yield* call(waitForAccount)
-  const audiusLibs = yield* call([
-    audiusBackendInstance,
-    audiusBackendInstance.getAudiusLibs
-  ])
-
-  const user = yield* select(getAccountUser)
-  if (!user) return
-  const { wallet, user_id } = user
-
-  yield* call([audiusLibs, audiusLibs.setCurrentUser], {
-    wallet,
-    userId: user_id
-  }
-}
-
 function* signUp() {
   const signOn = yield* select(getSignOn)
   const email = signOn.email.value
@@ -683,7 +665,6 @@ function* signUp() {
       function* () {
         // TODO (PAY-3479): This is temporary until hedgehog is fully moved out of libs
         yield* call(refreshHedgehogWallet)
-        yield* call(refreshLibsCurrentUser)
         yield* put(signOnActions.sendWelcomeEmail(name))
         yield* fetchAccountAsync({ isSignUp: true })
         yield* put(signOnActions.followArtists())
