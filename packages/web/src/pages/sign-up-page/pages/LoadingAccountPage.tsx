@@ -4,7 +4,11 @@ import { route } from '@audius/common/utils'
 import { Flex } from '@audius/harmony'
 import { useSelector } from 'react-redux'
 
-import { getReferrer, getStatus } from 'common/store/pages/signon/selectors'
+import {
+  getStatus,
+  getReferrer,
+  getAccountReady
+} from 'common/store/pages/signon/selectors'
 import { EditingStatus } from 'common/store/pages/signon/types'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import { useMedia } from 'hooks/useMedia'
@@ -12,8 +16,7 @@ import { useNavigateToPage } from 'hooks/useNavigateToPage'
 
 import { Heading, Page } from '../components/layout'
 
-const { SIGN_UP_COMPLETED_REDIRECT, SIGN_UP_COMPLETED_REFERRER_REDIRECT } =
-  route
+const { SIGN_UP_COMPLETED_REDIRECT } = route
 
 const messages = {
   heading: 'Your Account is Almost Ready to Rock 🤘',
@@ -25,20 +28,22 @@ const messages = {
 export const LoadingAccountPage = () => {
   const navigate = useNavigateToPage()
   const hasReferrer = useSelector(getReferrer)
+  const accountReady = useSelector(getAccountReady)
   const { isMobile } = useMedia()
 
   const accountCreationStatus = useSelector(getStatus)
 
+  const isAccountReady =
+    hasReferrer && isMobile
+      ? accountReady
+      : accountCreationStatus === EditingStatus.SUCCESS
+
   useEffect(() => {
-    if (accountCreationStatus === EditingStatus.SUCCESS) {
-      if (hasReferrer && isMobile) {
-        navigate(SIGN_UP_COMPLETED_REFERRER_REDIRECT)
-      } else {
-        navigate(SIGN_UP_COMPLETED_REDIRECT)
-      }
+    if (isAccountReady) {
+      navigate(SIGN_UP_COMPLETED_REDIRECT)
     }
     // TODO: what to do in an error scenario? Any way to recover to a valid step?
-  }, [navigate, accountCreationStatus, hasReferrer, isMobile])
+  }, [navigate, isAccountReady])
 
   return (
     <Page gap='3xl' justifyContent='center' alignItems='center' pb='3xl'>

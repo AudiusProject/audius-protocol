@@ -137,13 +137,13 @@ export const FinishProfilePage = () => {
       }
       dispatch(setFinishedPhase1(true))
       dispatch(signUp())
-      if (hasReferrer) {
+      if (hasReferrer && isMobile) {
         navigate(SIGN_UP_LOADING_PAGE)
       } else {
         navigate(SIGN_UP_GENRES_PAGE)
       }
     },
-    [dispatch, hasReferrer, navigate]
+    [dispatch, hasReferrer, isMobile, navigate]
   )
 
   return (
