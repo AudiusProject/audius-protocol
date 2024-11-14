@@ -1,3 +1,4 @@
+import { imageProfilePicEmpty } from '@audius/common/assets'
 import { Name, SquareSizes } from '@audius/common/models'
 import { accountSelectors } from '@audius/common/store'
 import {
@@ -113,7 +114,8 @@ export const AccountHeader = (props: AccountHeaderProps) => {
   const { isMobile } = useMedia()
   const isSmallSize = isEditing || isMobile || size === 'small'
 
-  const savedProfileImage = profileImageField?.url ?? accountProfilePic
+  const savedProfileImage =
+    profileImageField?.url || accountProfilePic || imageProfilePicEmpty
 
   return (
     <Box w='100%'>
