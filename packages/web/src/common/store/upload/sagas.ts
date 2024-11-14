@@ -1176,7 +1176,7 @@ export function* updateTrackAudioAsync(
   const metadata = newTrackMetadata(
     toUploadTrackMetadata({
       ...track,
-      // @ts-ignore
+      // @ts-ignore - stem_of should accept null instead of undefined
       stem_of: track.stem_of ?? null
     })
   )
@@ -1204,13 +1204,12 @@ export function* updateTrackAudioAsync(
     audio_analysis_error_count: 0,
     orig_filename: updatedMetadata.orig_filename,
     preview_cid: updatedMetadata.preview_cid,
-    preview_start_seconds: updatedMetadata.preview_start_seconds,
+    preview_start_seconds: updatedMetadata.preview_start_seconds ?? 0,
     track_cid: updatedMetadata.track_cid,
     audio_upload_id: updatedMetadata.audio_upload_id,
     duration: updatedMetadata.duration,
     // @ts-ignore: Issue with the type
     file_type: updatedMetadata.file_type
-    // TODO: Add the bpm and musical_key props
   }
 
   yield* put(
@@ -1219,8 +1218,6 @@ export function* updateTrackAudioAsync(
       newMetadata as TrackMetadataForUpload
     )
   )
-
-  // TODO: Make sure that the preview gets transcoded
 }
 
 function* watchUploadTracks() {
