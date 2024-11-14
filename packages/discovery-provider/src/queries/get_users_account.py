@@ -27,9 +27,7 @@ def _get_user_from_wallet(session, wallet: str):
     # Create initial query
     base_query = session.query(User)
     # Don't return the user if they have no wallet or handle (user creation did not finish properly on chain)
-    base_query = base_query.filter(
-        User.is_current == True, User.wallet != None, User.handle != None
-    )
+    base_query = base_query.filter(User.is_current == True, User.wallet != None)
 
     wallet = wallet.lower()
     if len(wallet) == 42:
