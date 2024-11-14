@@ -387,7 +387,8 @@ class LineupProvider extends PureComponent<CombinedProps, LineupProviderState> {
       if (
         this.props.selfLoad &&
         shouldLoadMore(container, parent, threshold) &&
-        this.props.lineup.hasMore
+        this.props.lineup.hasMore &&
+        this.props.lineup.status !== Status.LOADING
       ) {
         this.loadMore()
         return
