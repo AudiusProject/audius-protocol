@@ -78,6 +78,7 @@ export type CommonStoreContext = {
   instagramRedirectUrl?: string
   share: (url: string, message?: string) => Promise<void> | void
   audiusSdk: () => Promise<AudiusSdk>
+  initSdk: () => Promise<AudiusSdk>
   authService: AuthService
   imageUtils: {
     generatePlaylistArtwork: (

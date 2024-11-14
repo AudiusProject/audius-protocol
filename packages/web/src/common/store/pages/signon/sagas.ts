@@ -1071,6 +1071,9 @@ function* followArtists(
 function* configureMetaMask() {
   try {
     window.localStorage.setItem('useMetaMask', JSON.stringify(true))
+    // Re-init SDK so we can use external wallet auth
+    const initSdk = yield* getContext('initSdk')
+    yield* call(initSdk)
     yield* put(backendActions.setupBackend())
   } catch (err: any) {
     const reportToSentry = yield* getContext('reportToSentry')

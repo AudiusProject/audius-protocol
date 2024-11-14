@@ -23,9 +23,7 @@ import { GrantsApi } from './api/grants/GrantsApi'
 import { PlaylistsApi } from './api/playlists/PlaylistsApi'
 import { TracksApi } from './api/tracks/TracksApi'
 import { UsersApi } from './api/users/UsersApi'
-import { developmentConfig } from './config/development'
-import { productionConfig } from './config/production'
-import { stagingConfig } from './config/staging'
+import { getConfig } from './config/getConfig'
 import {
   addAppInfoMiddleware,
   addRequestSignatureMiddleware
@@ -128,12 +126,7 @@ export const sdk = (config: SdkConfig) => {
 }
 
 const initializeServices = (config: SdkConfig) => {
-  const servicesConfig =
-    config.environment === 'development'
-      ? developmentConfig
-      : config.environment === 'staging'
-      ? stagingConfig
-      : productionConfig
+  const servicesConfig = getConfig(config.environment)
 
   const defaultLogger = new Logger({
     logLevel: config.environment !== 'production' ? 'debug' : undefined
