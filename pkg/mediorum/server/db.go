@@ -58,6 +58,14 @@ type Upload struct {
 	// UpldateULID - this is the last ULID that change this thing
 }
 
+type AudioPreview struct {
+	CID                 string `json:"cid" gorm:"primaryKey;column:cid"`
+	SourceCID           string
+	PreviewStartSeconds string
+	CreatedBy           string    `json:"created_by" `
+	CreatedAt           time.Time `json:"created_at" gorm:"autoCreateTime:false"`
+}
+
 type AudioAnalysisResult struct {
 	BPM float64 `json:"bpm"`
 	Key string  `json:"key"`
@@ -135,13 +143,13 @@ func dbMustDial(dbPath string) *gorm.DB {
 func dbMigrate(crud *crudr.Crudr, myHost string) {
 	// Migrate the schema
 	slog.Info("db: gorm automigrate")
-	err := crud.DB.AutoMigrate(&Upload{}, &RepairTracker{}, &UploadCursor{}, &StorageAndDbSize{}, &DailyMetrics{}, &MonthlyMetrics{}, &QmAudioAnalysis{})
+	err := crud.DB.AutoMigrate(&Upload{}, &RepairTracker{}, &UploadCursor{}, &StorageAndDbSize{}, &DailyMetrics{}, &MonthlyMetrics{}, &QmAudioAnalysis{}, &AudioPreview{})
 	if err != nil {
 		panic(err)
 	}
 
 	// register any models to be managed by crudr
-	crud.RegisterModels(&Upload{}, &StorageAndDbSize{}, &QmAudioAnalysis{})
+	crud.RegisterModels(&Upload{}, &StorageAndDbSize{}, &QmAudioAnalysis{}, &AudioPreview{})
 
 	sqlDb, _ := crud.DB.DB()
 
