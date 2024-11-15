@@ -1,0 +1,142 @@
+---
+id: supported-album-deal-types
+title: Album Deal Types
+pagination_label: Album Deal Types
+sidebar_label: Album Deal Types
+description: Supported Album Deal Types in Audius
+---
+
+import useBaseUrl from '@docusaurus/useBaseUrl'
+
+Audius accepts the following DDEX `Deal`s for **album** releases.
+
+> If your use case extends beyond the supported `Deal` types outlined below, please contact
+> [support@audius.co](mailto:support@audius.co) for assistance.
+
+---
+
+### Free To Stream
+
+| key                             | value                        |
+| ------------------------------- | ---------------------------- |
+| `CommercialModelType`           | `FreeOfChargeModel`          |
+| `UseType`                       | `Stream` or `OnDemandStream` |
+| `PriceType`                     | not supported                |
+| `WholesalePricePerUnit`         | N/A                          |
+| `ValidityPeriod` -> `StartDate` | any                          |
+| `TerritoryCode`                 | `Worldwide`                  |
+
+```xml
+<Deal>
+    <DealTerms>
+        <CommercialModelType>FreeOfChargeModel</CommercialModelType>
+        <Usage>
+            <UseType>OnDemandStream</UseType>
+        </Usage>
+        <TerritoryCode>Worldwide</TerritoryCode>
+        <ValidityPeriod>
+            <StartDate>2023-09-02</StartDate>
+        </ValidityPeriod>
+    </DealTerms>
+</Deal>
+```
+
+### Pay Gated Stream
+
+| key                             | value                        |
+| ------------------------------- | ---------------------------- |
+| `CommercialModelType`           | `PayAsYouGoModel`            |
+| `UseType`                       | `Stream` or `OnDemandStream` |
+| `PriceType`                     | not supported                |
+| `WholesalePricePerUnit`         | any nonzero USD amount       |
+| `ValidityPeriod` -> `StartDate` | any                          |
+| `TerritoryCode`                 | `Worldwide`                  |
+
+```xml
+<Deal>
+    <DealTerms>
+        <CommercialModelType>PayAsYouGoModel</CommercialModelType>
+        <Usage>
+            <UseType>OnDemandStream</UseType>
+        </Usage>
+        <TerritoryCode>Worldwide</TerritoryCode>
+        <PriceInformation>
+            <WholesalePricePerUnit CurrencyCode="USD">1.0</WholesalePricePerUnit>
+            ...
+        </PriceInformation>
+        <ValidityPeriod>
+            <StartDate>2023-09-02</StartDate>
+        </ValidityPeriod>
+    </DealTerms>
+</Deal>
+```
+
+### Free To Download
+
+:::info Downloadable content is streamable.
+
+If you can download it, you can stream it.
+
+:::
+
+| key                             | value                                             |
+| ------------------------------- | ------------------------------------------------- |
+| `CommercialModelType`           | `FreeOfChargeModel`                               |
+| `UseType`                       | `Stream` or `OnDemandStream`, `PermanentDownload` |
+| `PriceType`                     | not supported                                     |
+| `WholesalePricePerUnit`         | N/A                                               |
+| `ValidityPeriod` -> `StartDate` | any                                               |
+| `TerritoryCode`                 | `Worldwide`                                       |
+
+```xml
+<Deal>
+    <DealTerms>
+        <CommercialModelType>FreeOfChargeModel</CommercialModelType>
+        <Usage>
+            <UseType>OnDemandStream</UseType>
+            <UseType>PermanentDownload</UseType>
+        </Usage>
+        <TerritoryCode>Worldwide</TerritoryCode>
+        <ValidityPeriod>
+            <StartDate>2023-09-02</StartDate>
+        </ValidityPeriod>
+    </DealTerms>
+</Deal>
+```
+
+### Pay Gated Download
+
+:::info Downloadable content is streamable.
+
+If you can download it, you can stream it.
+
+:::
+
+| key                             | value                                             |
+| ------------------------------- | ------------------------------------------------- |
+| `CommercialModelType`           | `PayAsYouGoModel`                                 |
+| `UseType`                       | `Stream` or `OnDemandStream`, `PermanentDownload` |
+| `PriceType`                     | not supported                                     |
+| `WholesalePricePerUnit`         | any USD amount                                    |
+| `ValidityPeriod` -> `StartDate` | any                                               |
+| `TerritoryCode`                 | `Worldwide`                                       |
+
+```xml
+<Deal>
+    <DealTerms>
+        <CommercialModelType>PayAsYouGoModel</CommercialModelType>
+        <Usage>
+            <UseType>OnDemandStream</UseType>
+            <UseType>PermanentDownload</UseType>
+        </Usage>
+        <TerritoryCode>Worldwide</TerritoryCode>
+        <PriceInformation>
+            <WholesalePricePerUnit CurrencyCode="USD">1.0</WholesalePricePerUnit>
+            ...
+        </PriceInformation>
+        <ValidityPeriod>
+            <StartDate>2023-09-02</StartDate>
+        </ValidityPeriod>
+    </DealTerms>
+</Deal>
+```

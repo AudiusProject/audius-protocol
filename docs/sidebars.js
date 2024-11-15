@@ -87,31 +87,30 @@ module.exports = {
     {
       type: 'category',
       label: 'Introduction',
-      items: ['distributors/introduction/overview'],
+      items: ['distributors/introduction/overview', 'distributors/introduction/onboarding'],
       collapsed: false,
     },
     {
       type: 'category',
       label: 'Specification',
+      items: ['distributors/specification/overview', 'distributors/specification/metadata'],
+      collapsed: false,
+    },
+    {
+      type: 'category',
+      label: 'Deal Types',
       items: [
-        'distributors/specification/overview',
-        'distributors/specification/metadata',
-        {
-          type: 'category',
-          label: 'Deal Types',
-          items: [
-            'distributors/specification/deal-types/recommended',
-            'distributors/specification/deal-types/supported-deal-types',
-          ],
-          collapsed: false,
-        },
+        'distributors/specification/deal-types/supported-deal-types',
+        'distributors/specification/deal-types/supported-track-deal-types',
+        'distributors/specification/deal-types/supported-album-deal-types',
+        'distributors/specification/deal-types/recommended',
       ],
       collapsed: false,
     },
     {
       type: 'category',
       label: 'Self Serve',
-      items: ['distributors/self-serve/overview', 'distributors/self-serve/run-a-ddex-server'],
+      items: ['distributors/self-serve/run-a-ddex-server'],
       collapsed: false,
     },
   ],

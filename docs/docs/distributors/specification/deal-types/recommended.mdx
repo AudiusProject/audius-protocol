@@ -1,6 +1,6 @@
 ---
 id: recommended
-title: Recommended Deal Struture
+title: Recommended Deal Structure
 pagination_label: Recommended Structure
 sidebar_label: Recommended Structure
 description: Recommended Deal Types Structure
@@ -8,27 +8,27 @@ description: Recommended Deal Types Structure
 
 import useBaseUrl from '@docusaurus/useBaseUrl'
 
-# Recommended Deal Structure
-
-The following deal types are recommended for distribution to Audius. For complete
-documentation on supported deal types and corresponding XML, please see
+The following deal types are recommended for distribution to Audius. For complete documentation on
+supported deal types and corresponding XML, please see
 [Supported Deal Types](/distributors/specification/deal-types/supported-deal-types).
 
-If deals are provided without pricing information, the following standard pricing options
-are assumed:
+If deals are provided without pricing information, the following standard pricing options are
+assumed:
 
 | Release type | Retail Price | Wholesale Price |
 | ------------ | ------------ | --------------- |
 | Track        | $1.00        | $0.90           |
 | Album        | $5.00        | $4.50           |
 
-:::warning Note
+:::info
 
 Please note, advertisement and subscription model types are not supported.
 
 :::
 
-## 1. Paid Downloads with Full Length Streams
+---
+
+## Paid Downloads with Full Length Streams
 
 Provide fans with a full-length streaming experience and an option to pay for a download of the
 work.
@@ -63,13 +63,14 @@ work.
 </Deal>
 ```
 
-## 2. Paid Downloads with Previewed Streams
+## Paid Downloads with Previewed Streams
 
-Provide fans with a previewed stream and a paid option to unlock the content. After purchasing, full-length
-streaming and downloads are unlocked.
+Provide fans with a previewed stream and a paid option to unlock the content. After purchasing,
+full-length streaming and downloads are unlocked.
 
 Default preview length is 30s of the track starting from 0s. If you would like to adjust the
-preview, see [Metadata](/distributors/specification/metadata) to provide the specific DDEX choreography.
+preview, see [Metadata](/distributors/specification/metadata) to provide the specific DDEX
+choreography.
 
 ```xml
 <Deal>

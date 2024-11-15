@@ -1,0 +1,291 @@
+---
+id: supported-track-deal-types
+title: Track Deal Types
+pagination_label: Track Deal Types
+sidebar_label: Track Deal Types
+description: Supported Track Deal Types in Audius
+---
+
+import useBaseUrl from '@docusaurus/useBaseUrl'
+
+Audius supports the following `Deal` types for **track** releases.
+
+> If your use case extends beyond the supported `Deal` types outlined below, please contact
+> [support@audius.co](mailto:support@audius.co) for assistance.
+
+---
+
+### Free To Stream
+
+> This deal type makes tracks available for free streaming globally.
+
+| key                     | value                              |
+| ----------------------- | ---------------------------------- |
+| `CommercialModelType`   | `FreeOfChargeModel`                |
+| `UseType`               | `Stream` or `OnDemandStream`       |
+| `TerritoryCode`         | `Worldwide`                        |
+| `PriceType`             | Not applicable                     |
+| `WholesalePricePerUnit` | Not applicable                     |
+| `ValidityPeriod`        | Any start date; optional end date. |
+
+```xml
+<Deal>
+    <DealTerms>
+        <CommercialModelType>FreeOfChargeModel</CommercialModelType>
+        <Usage>
+            <UseType>OnDemandStream</UseType>
+        </Usage>
+        <TerritoryCode>Worldwide</TerritoryCode>
+        <ValidityPeriod>
+            <StartDate>2023-09-02</StartDate>
+        </ValidityPeriod>
+    </DealTerms>
+</Deal>
+```
+
+### Pay Gated Stream
+
+| key                             | value                        |
+| ------------------------------- | ---------------------------- |
+| `CommercialModelType`           | `PayAsYouGoModel`            |
+| `UseType`                       | `Stream` or `OnDemandStream` |
+| `PriceType`                     | not supported                |
+| `WholesalePricePerUnit`         | any nonzero USD amount       |
+| `ValidityPeriod` -> `StartDate` | any                          |
+| `TerritoryCode`                 | `Worldwide`                  |
+
+```xml
+<Deal>
+    <DealTerms>
+        <CommercialModelType>PayAsYouGoModel</CommercialModelType>
+        <Usage>
+            <UseType>OnDemandStream</UseType>
+        </Usage>
+        <TerritoryCode>Worldwide</TerritoryCode>
+        <PriceInformation>
+                <WholesalePricePerUnit CurrencyCode="USD">1.0</WholesalePricePerUnit>
+                ...
+        </PriceInformation>
+        <ValidityPeriod>
+            <StartDate>2023-09-02</StartDate>
+        </ValidityPeriod>
+    </DealTerms>
+</Deal>
+```
+
+### Follow Gated Stream
+
+| key                             | value                         |
+| ------------------------------- | ----------------------------- |
+| `CommercialModelType`           | `UserDefined` (`FollowGated`) |
+| `UseType`                       | `Stream` or `OnDemandStream`  |
+| `PriceType`                     | not supported                 |
+| `WholesalePricePerUnit`         | N/A                           |
+| `ValidityPeriod` -> `StartDate` | any                           |
+| `TerritoryCode`                 | `Worldwide`                   |
+
+```xml
+<Deal>
+    <DealTerms>
+        <CommercialModelType UserDefinedValue="FollowGated">UserDefined</CommercialModelType>
+        <Usage>
+            <UseType>OnDemandStream</UseType>
+        </Usage>
+        <TerritoryCode>Worldwide</TerritoryCode>
+        <ValidityPeriod>
+            <StartDate>2023-09-02</StartDate>
+        </ValidityPeriod>
+    </DealTerms>
+</Deal>
+```
+
+### NFT Gated Stream
+
+| key                             | value                           |
+| ------------------------------- | ------------------------------- |
+| `CommercialModelType`           | `UserDefined` (`NFTGated`)      |
+| `UseType`                       | `Stream` or `OnDemandStream`    |
+| `PriceType`                     | not supported                   |
+| `WholesalePricePerUnit`         | N/A                             |
+| `ValidityPeriod` -> `StartDate` | any                             |
+| `TerritoryCode`                 | `Worldwide`                     |
+| `Conditions`                    | (custom XML specific to Audius) |
+
+#### For Ethereum NFTs:
+
+```xml
+<Conditions>
+  <Chain>eth</Chain>
+  <Address></Address> // The Ethereum address of the NFT contract
+  <Standard></Standard> // The standard followed by the NFT - either "ERC-721" or "ERC-1155"
+  <Name></Name> // The name of the NFT
+  <Slug></Slug> // The slug of the NFT collection. E.g. if your collection is located at https://opensea.io/collection/example-nft, the slug is "example-nft".
+  <ImageUrl></ImageUrl> // Optional: URL to the image representing the NFT
+  <ExternalLink></ExternalLink> // Optional: URL to an external resource providing more details about the NFT
+</Conditions>
+```
+
+#### For Solana NFTs:
+
+```xml
+<Conditions>
+  <Chain>sol</Chain>
+  <Address></Address> // The address of the NFT on the Solana blockchain
+  <Name></Name> // The name of the NFT
+  <ImageUrl></ImageUrl> // Optional: URL to the image representing the NFT
+  <ExternalLink></ExternalLink> // Optional: URL to an external resource providing more details about the NFT
+</Conditions>
+```
+
+```xml
+<Deal>
+    <DealTerms>
+        <CommercialModelType UserDefinedValue="NFTGated">UserDefined</CommercialModelType>
+        <Usage>
+            <UseType>OnDemandStream</UseType>
+        </Usage>
+        <TerritoryCode>Worldwide</TerritoryCode>
+        <ValidityPeriod>
+            <StartDate>2023-09-02</StartDate>
+        </ValidityPeriod>
+        <Conditions>
+          <Chain>eth</Chain>
+          <Address>0xAbCdEfGhIjKlMnOpQrStUvWxYz</Address>
+          <Standard>ERC-721</Standard>
+          <Name>Example NFT</Name>
+          <Slug>example-nft</Slug>
+          <ImageUrl>https://www.example.com/nft-image.png</ImageUrl>
+          <ExternalLink>https://www.example.com/nft-details</ExternalLink>
+        </Conditions>
+    </DealTerms>
+</Deal>
+```
+
+### $AUDIO Tip Gated Stream
+
+| key                             | value                        |
+| ------------------------------- | ---------------------------- |
+| `CommercialModelType`           | `UserDefined` (`TipGated`)   |
+| `UseType`                       | `Stream` or `OnDemandStream` |
+| `PriceType`                     | not supported                |
+| `WholesalePricePerUnit`         | N/A                          |
+| `ValidityPeriod` -> `StartDate` | any                          |
+| `TerritoryCode`                 | `Worldwide`                  |
+
+```xml
+<Deal>
+    <DealTerms>
+        <CommercialModelType UserDefinedValue="TipGated">UserDefined</CommercialModelType>
+        <Usage>
+            <UseType>OnDemandStream</UseType>
+        </Usage>
+        <TerritoryCode>Worldwide</TerritoryCode>
+        <ValidityPeriod>
+            <StartDate>2023-09-02</StartDate>
+        </ValidityPeriod>
+    </DealTerms>
+</Deal>
+```
+
+### Free To Download
+
+:::info Downloadable content is streamable.
+
+If you can download it, you can stream it.
+
+:::
+
+| key                             | value                                             |
+| ------------------------------- | ------------------------------------------------- |
+| `CommercialModelType`           | `FreeOfChargeModel`                               |
+| `UseType`                       | `Stream` or `OnDemandStream`, `PermanentDownload` |
+| `PriceType`                     | not supported                                     |
+| `WholesalePricePerUnit`         | N/A                                               |
+| `ValidityPeriod` -> `StartDate` | any                                               |
+| `TerritoryCode`                 | `Worldwide`                                       |
+
+```xml
+<Deal>
+    <DealTerms>
+        <CommercialModelType>FreeOfChargeModel</CommercialModelType>
+        <Usage>
+            <UseType>OnDemandStream</UseType>
+            <UseType>PermanentDownload</UseType>
+        </Usage>
+        <TerritoryCode>Worldwide</TerritoryCode>
+        <ValidityPeriod>
+            <StartDate>2023-09-02</StartDate>
+        </ValidityPeriod>
+    </DealTerms>
+</Deal>
+```
+
+### Pay Gated Download
+
+:::info Downloadable content is streamable.
+
+If you can download it, you can stream it.
+
+:::
+
+| key                             | value                                             |
+| ------------------------------- | ------------------------------------------------- |
+| `CommercialModelType`           | `PayAsYouGoModel`                                 |
+| `UseType`                       | `Stream` or `OnDemandStream`, `PermanentDownload` |
+| `PriceType`                     | not supported                                     |
+| `WholesalePricePerUnit`         | any USD amount                                    |
+| `ValidityPeriod` -> `StartDate` | any                                               |
+| `TerritoryCode`                 | `Worldwide`                                       |
+
+```xml
+<Deal>
+    <DealTerms>
+        <CommercialModelType>PayAsYouGoModel</CommercialModelType>
+        <Usage>
+            <UseType>OnDemandStream</UseType>
+            <UseType>PermanentDownload</UseType>
+        </Usage>
+        <TerritoryCode>Worldwide</TerritoryCode>
+        <PriceInformation>
+            <WholesalePricePerUnit CurrencyCode="USD">1.0</WholesalePricePerUnit>
+            ...
+        </PriceInformation>
+        <ValidityPeriod>
+            <StartDate>2023-09-02</StartDate>
+        </ValidityPeriod>
+    </DealTerms>
+</Deal>
+```
+
+### Follow Gated Download
+
+:::info Downloadable content is streamable.
+
+If you can download it, you can stream it.
+
+:::
+
+| key                             | value                                             |
+| ------------------------------- | ------------------------------------------------- |
+| `CommercialModelType`           | `UserDefined` (`FollowGated`)                     |
+| `UseType`                       | `Stream` or `OnDemandStream`, `PermanentDownload` |
+| `PriceType`                     | not supported                                     |
+| `WholesalePricePerUnit`         | N/A                                               |
+| `ValidityPeriod` -> `StartDate` | any                                               |
+| `TerritoryCode`                 | `Worldwide`                                       |
+
+```xml
+<Deal>
+    <DealTerms>
+        <CommercialModelType UserDefinedValue="FollowGated">UserDefined</CommercialModelType>
+        <Usage>
+            <UseType>OnDemandStream</UseType>
+            <UseType>PermanentDownload</UseType>
+        </Usage>
+        <TerritoryCode>Worldwide</TerritoryCode>
+        <ValidityPeriod>
+            <StartDate>2023-09-02</StartDate>
+        </ValidityPeriod>
+    </DealTerms>
+</Deal>
+```

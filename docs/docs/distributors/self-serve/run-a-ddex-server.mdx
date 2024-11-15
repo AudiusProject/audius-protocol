@@ -8,34 +8,127 @@ description: Audius Protocol Documentation
 
 import useBaseUrl from '@docusaurus/useBaseUrl'
 
-:::info Coming Soon!
+## Quick Start
 
-Under construction. Please use as your own risk! 🚧
+This guide provides an overview of installing and running a production DDEX server.
 
-Check back soon for updates on how to run and operate own DDEX Ingestion Server.
+> See the full source code and additional documentation for configuring development and production
+> servers on GitHub at [Audius DDEX Processor](https://github.com/AudiusProject/ddex-processor)
 
-:::
+### Provision a Machine
 
-## Instructions
-
-1. Provision a new machine following. We recommend:
+Provision a new machine following. We recommend:
 
 - Ubuntu
 - 8 CPUs
 - 16 to 32GB Memory
 
-2. Visit [audius-docker-compose](https://github.com/AudiusProject/audius-docker-compose) and run the
-   install script to set up your Audius environment on your provisioned machine.
+### Installation
 
-3. Follow the instructions in the
-   [audius-protocol](https://github.com/AudiusProject/audius-protocol/tree/main/packages/ddex)
-   repository to set the appropriate environment variables
+- Clone the [Github Repo](https://github.com/AudiusProject/ddex-processor) with
+  ```bash
+  git clone https://github.com/AudiusProject/ddex-processor.git`
+  ```
+- Install [nodejs](https://deb.nodesource.com/)
+- Install dependencies
 
-4. Start the DDEX Ingestion Server
+  ```bash
+   npm i
+  ```
+
+- Setup a
+  [Cloudflare Tunnel](https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/get-started/create-local-tunnel/)
+
+---
+
+## Configuration
+
+### Configure Cloudflare Tunnel
+
+A [Cloudflare Tunnel](https://www.cloudflare.com/products/tunnel/) allows securely exposing a local
+server to the internet without opening inbound firewall ports by creating an encrypted connection
+between the server (or application) and Cloudflare’s edge network.
+
+The `cloudflared` command can be downloaded and installed from the
+[Cloudflare Downloads page](https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/downloads/)
+if necessary.
+
+1. Create the tunnel named `ddex-example`
+
+```bash
+cloudflared tunnel create ddex-example
+```
+
+2. Associate the `ddex-example` tunnel with a DNS hostname `ddex.example.co` in the Cloudflare
+   account.
+
+```bash
+cloudflared tunnel route dns ddex-example ddex.example.co
+```
+
+3. Create `~/.cloudflared/config.yml` with the following fields:
 
 ```
-audius-cli launch ddex
+url: http://localhost:8989
+tunnel: ddex-example
 ```
 
-Your server will now be available at localhost:80 and is exposed via self-signed SSL on :443 if
-`DDEX_URL` is set.
+:::info troubleshooting route setup
+
+If the route setup fails, run `cloudflared tunnel list`, get the UUID and go to
+[Cloudflare DNS](https://dash.cloudflare.com/), create a CNAME record and point it at
+`_uuid_.cfargotunnel.com`
+
+:::
+
+### Configure Sources
+
+- Create an AWS bucket + AWS key-pair with access to the bucket.
+- Create an Audius app in [account settings](https://audius.co/settings).
+- `cp sources.example.json data/sources.json` and populate values.
+
+### Configure Environment
+
+Create a `.env` file with the following fields:
+
+```bash
+NODE_ENV='production'
+DDEX_URL='https://ddex.example.com'
+ADMIN_HANDLES='user1,user2'
+SKIP_SDK_PUBLISH='true'
+```
+
+---
+
+## Run and Deploy
+
+### Run Server and Worker
+
+To run in foreground:
+
+```bash
+npm run start
+```
+
+To run as managed process:
+
+```bash
+pm2 startup
+# copy paste the line as instructed
+pm2 save
+```
+
+:::note making changes
+
+Any time you change `ecosystem.config.js` you should stop + delete old entries and run `pm2 save` to
+re-save the startup config.
+
+:::
+
+### Deploy
+
+The included `MAKEFILE` is a great place to start.
+
+```bash
+make
+```
