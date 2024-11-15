@@ -1,6 +1,7 @@
 import { useCallback } from 'react'
 
 import {
+  GUEST_CHECKOUT,
   PurchaseableContentMetadata,
   isPurchaseableAlbum,
   usePurchaseContentErrorMessage
@@ -22,6 +23,7 @@ import {
   IconRepost,
   Flex
 } from '@audius/harmony'
+import { useField } from 'formik'
 import { capitalize } from 'lodash'
 import { useDispatch } from 'react-redux'
 
@@ -58,11 +60,17 @@ const ContentPurchaseError = ({
   )
 }
 
-const getButtonText = (isUnlocking: boolean, amountDue: number) =>
+const getButtonText = (
+  isUnlocking: boolean,
+  amountDue: number,
+  isGuest?: boolean
+) =>
   isUnlocking
     ? messages.purchasing
     : amountDue > 0
-    ? `${messages.buy} $${formatPrice(amountDue)}`
+    ? isGuest
+      ? `Guest Purchase For $${formatPrice(amountDue)}`
+      : `${messages.buy} $${formatPrice(amountDue)}`
     : messages.buy
 
 type PurchaseContentFormFooterProps = Pick<
@@ -71,6 +79,7 @@ type PurchaseContentFormFooterProps = Pick<
 > & {
   metadata: PurchaseableContentMetadata
   onViewContentClicked: () => void
+  isGuest?: boolean
 }
 
 export const PurchaseContentFormFooter = ({
@@ -94,6 +103,7 @@ export const PurchaseContentFormFooter = ({
   const dispatch = useDispatch()
   const isPurchased = stage === PurchaseContentStage.FINISH
   const { totalPrice } = purchaseSummaryValues
+  const [{ value: isGuestCheckout }] = useField(GUEST_CHECKOUT)
 
   const handleTwitterShare = useCallback(
     (handle: string) => {
@@ -175,7 +185,7 @@ export const PurchaseContentFormFooter = ({
         isLoading={isUnlocking}
         fullWidth
       >
-        {getButtonText(isUnlocking, totalPrice)}
+        {getButtonText(isUnlocking, totalPrice, isGuestCheckout)}
       </Button>
       {error ? <ContentPurchaseError error={error} /> : null}
     </>

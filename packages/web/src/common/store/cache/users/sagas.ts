@@ -355,7 +355,7 @@ export function* fetchUserSocials({
   handle
 }: ReturnType<typeof userActions.fetchUserSocials>) {
   let user = yield* select(getUser, { handle })
-  if (!user) {
+  if (!user && handle) {
     yield* call(fetchUserByHandle, handle, new Set())
   }
   user = yield* call(waitForValue, getUser, { handle })

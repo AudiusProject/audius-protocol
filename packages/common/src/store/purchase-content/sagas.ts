@@ -17,7 +17,11 @@ import nacl, { BoxKeyPair } from 'tweetnacl'
 import { call, put, race, select, take, takeEvery } from 'typed-redux-saga'
 
 import { userTrackMetadataFromSDK } from '~/adapters'
-import { PurchaseableContentMetadata, isPurchaseableAlbum } from '~/hooks'
+import {
+  PurchaseableContentMetadata,
+  fetchAccountAsync,
+  isPurchaseableAlbum
+} from '~/hooks'
 import { Kind } from '~/models'
 import { FavoriteSource, Name } from '~/models/Analytics'
 import { ErrorLevel } from '~/models/ErrorReporting'
@@ -81,6 +85,7 @@ import { pollGatedContent } from '../gated-content/sagas'
 import { updateGatedContentStatus } from '../gated-content/slice'
 import { getSDK } from '../sdkUtils'
 import { saveCollection } from '../social/collections/actions'
+import { getFeePayer } from '../solana/selectors'
 import { TOKEN_LISTING_MAP } from '../ui'
 
 import {
@@ -360,6 +365,7 @@ function* purchaseTrackWithCoinflow(args: {
   userId: ID
   price: number
   extraAmount?: number
+  guestEmail?: string
   includeNetworkCut?: boolean
 }) {
   const {
@@ -368,7 +374,8 @@ function* purchaseTrackWithCoinflow(args: {
     trackId,
     price,
     extraAmount = 0,
-    includeNetworkCut = false
+    includeNetworkCut = false,
+    guestEmail
   } = args
 
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
@@ -426,7 +433,8 @@ function* purchaseTrackWithCoinflow(args: {
       amount: Number(USDC(total).toString()),
       serializedTransaction,
       purchaseMetadata,
-      contentId: trackId
+      contentId: trackId,
+      guestEmail
     })
   )
 
@@ -460,6 +468,7 @@ function* purchaseAlbumWithCoinflow(args: {
   price: number
   extraAmount?: number
   includeNetworkCut?: boolean
+  guestEmail?: string
 }) {
   const {
     sdk,
@@ -467,7 +476,8 @@ function* purchaseAlbumWithCoinflow(args: {
     albumId,
     price,
     extraAmount = 0,
-    includeNetworkCut = false
+    includeNetworkCut = false,
+    guestEmail
   } = args
 
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
@@ -526,7 +536,8 @@ function* purchaseAlbumWithCoinflow(args: {
       amount: Number(USDC(total).toString()),
       serializedTransaction,
       purchaseMetadata,
-      contentId: albumId
+      contentId: albumId,
+      guestEmail
     })
   )
 
@@ -614,9 +625,12 @@ function* doStartPurchaseContentFlow({
     purchaseVendor,
     purchaseMethodMintAddress,
     contentId,
-    contentType = PurchaseableContentType.TRACK
+    contentType = PurchaseableContentType.TRACK,
+    guestEmail
   }
 }: ReturnType<typeof startPurchaseContentFlow>) {
+  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
+
   const usdcConfig = yield* call(getBuyUSDCRemoteConfig)
   const reportToSentry = yield* getContext('reportToSentry')
   const { track, make } = yield* getContext('analytics')
@@ -661,11 +675,30 @@ function* doStartPurchaseContentFlow({
 
   try {
     // get user & user bank
+    const isGuestCheckoutEnabled = yield* call(
+      getFeatureEnabled,
+      FeatureFlags.GUEST_CHECKOUT
+    )
+
+    if (isGuestCheckoutEnabled) {
+      const feePayerOverride = yield* select(getFeePayer)
+      const currentUser = yield* select(getAccountUser)
+
+      if (!currentUser && guestEmail) {
+        yield* call(
+          audiusBackendInstance.guestSignUp,
+          guestEmail,
+          feePayerOverride
+        )
+
+        yield* call(fetchAccountAsync, { isSignUp: true })
+      }
+    }
+
     const purchaserUserId = yield* select(getUserId)
     if (!purchaserUserId) {
       throw new Error('Failed to fetch purchasing user id')
     }
-
     const userBank = yield* call(getOrCreateUSDCUserBank)
     const tokenAccountInfo = yield* call(pollForTokenAccountInfo, {
       mint: 'usdc',
@@ -745,6 +778,7 @@ function* doStartPurchaseContentFlow({
                 userId: purchaserUserId,
                 price: price / 100.0,
                 extraAmount: extraAmount ? extraAmount / 100.0 : undefined,
+                guestEmail,
                 includeNetworkCut: isNetworkCutEnabled
               })
             } else {
@@ -754,6 +788,7 @@ function* doStartPurchaseContentFlow({
                 userId: purchaserUserId,
                 price: price / 100.0,
                 extraAmount: extraAmount ? extraAmount / 100.0 : undefined,
+                guestEmail,
                 includeNetworkCut: isNetworkCutEnabled
               })
             }

@@ -1393,6 +1393,28 @@ export const audiusBackend = ({
     )
   }
 
+  async function guestSignUp(
+    email: string,
+    feePayerOverride: Nullable<string>
+  ) {
+    await waitForLibsInit()
+    const metadata = schemas.newUserMetadata()
+
+    return await audiusLibs.Account.guestSignUp(
+      email,
+      metadata,
+      getHostUrl(),
+      (eventName: string, properties: Record<string, unknown>) =>
+        recordAnalytics({ eventName, properties }),
+      {
+        Request: Name.CREATE_USER_BANK_REQUEST,
+        Success: Name.CREATE_USER_BANK_SUCCESS,
+        Failure: Name.CREATE_USER_BANK_FAILURE
+      },
+      feePayerOverride,
+      true
+    )
+  }
   async function resetPassword(username: string, password: string) {
     const libs = await getAudiusLibsTyped()
     return libs.Account!.resetPassword({ username, password })
@@ -2316,6 +2338,7 @@ export const audiusBackend = ({
     repostCollection,
     repostTrack,
     resetPassword,
+    guestSignUp,
     saveCollection,
     saveTrack,
     searchTags,

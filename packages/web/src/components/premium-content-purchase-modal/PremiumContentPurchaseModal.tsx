@@ -76,6 +76,8 @@ const pageToPageIndex = (page: PurchaseContentPage) => {
   switch (page) {
     case PurchaseContentPage.PURCHASE:
       return 0
+    case PurchaseContentPage.CONFIRM_GUEST:
+      return 1
     case PurchaseContentPage.TRANSFER:
       return 1
   }
@@ -302,6 +304,7 @@ export const PremiumContentPurchaseModal = () => {
       {isCoinflowEnabledLoaded && isUSDCEnabled ? (
         <Formik
           initialValues={initialValues}
+          enableReinitialize
           validationSchema={toFormikValidationSchema(validationSchema)}
           onSubmit={onSubmit}
         >
