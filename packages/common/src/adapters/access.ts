@@ -48,7 +48,7 @@ export const accessConditionsToSDK = (
 ): TrackMetadata['downloadConditions'] => {
   if (isContentFollowGated(input)) {
     return {
-      followUserId: Id.parse(input.follow_user_id)
+      followUserId: input.follow_user_id
     }
   } else if (isContentCollectibleGated(input)) {
     const collection = input.nft_collection as
@@ -61,7 +61,7 @@ export const accessConditionsToSDK = (
     }
   } else if (isContentTipGated(input)) {
     return {
-      tipUserId: Id.parse(input.tip_user_id)
+      tipUserId: input.tip_user_id
     }
   } else {
     throw new Error(
