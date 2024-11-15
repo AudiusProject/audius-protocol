@@ -322,7 +322,6 @@ immutable_track_fields = immutable_fields | {
     "track_id",
     "owner_id",
     "is_available",
-    "audio_analysis_error_count",
     "ddex_app",
 }
 

@@ -701,7 +701,6 @@ function* doStartPurchaseContentFlow({
     }
     const userBank = yield* call(getOrCreateUSDCUserBank)
     const tokenAccountInfo = yield* call(pollForTokenAccountInfo, {
-      mint: 'usdc',
       tokenAccount: userBank
     })
 
@@ -958,7 +957,6 @@ function* purchaseWithAnything({
     // Get the USDC user bank
     const usdcUserBank = yield* call(getOrCreateUSDCUserBank)
     const usdcUserBankTokenAccount = yield* call(pollForTokenAccountInfo, {
-      mint: 'usdc',
       tokenAccount: usdcUserBank
     })
     if (!usdcUserBankTokenAccount) {

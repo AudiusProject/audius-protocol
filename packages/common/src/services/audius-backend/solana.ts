@@ -110,21 +110,15 @@ export const getTokenAccountInfo = async (
   audiusBackendInstance: AudiusBackend,
   {
     tokenAccount,
-    mint = DEFAULT_MINT,
     commitment = 'processed'
   }: {
     tokenAccount: PublicKey
-    mint?: MintName
     commitment?: Commitment
   }
 ): Promise<Account | null> => {
   return (
     await audiusBackendInstance.getAudiusLibs()
-  ).solanaWeb3Manager!.getTokenAccountInfo(
-    tokenAccount.toString(),
-    mint,
-    commitment
-  )
+  ).solanaWeb3Manager!.getTokenAccountInfo(tokenAccount.toString(), commitment)
 }
 
 export const deriveUserBankPubkey = async (
@@ -207,7 +201,6 @@ export const getUserbankAccountInfo = async (
 
   return getTokenAccountInfo(audiusBackendInstance, {
     tokenAccount,
-    mint,
     commitment
   })
 }
@@ -301,7 +294,6 @@ export const pollForTokenBalanceChange = async (
   const debugTokenName = mint.toUpperCase()
   let retries = 0
   let tokenAccountInfo = await getTokenAccountInfo(audiusBackendInstance, {
-    mint,
     tokenAccount
   })
   while (
@@ -323,7 +315,6 @@ export const pollForTokenBalanceChange = async (
     }
     await delay(retryDelayMs)
     tokenAccountInfo = await getTokenAccountInfo(audiusBackendInstance, {
-      mint,
       tokenAccount
     })
   }
