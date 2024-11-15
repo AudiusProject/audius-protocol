@@ -113,7 +113,6 @@ export const getTokenAccountInfo = async (
     commitment = 'processed'
   }: {
     tokenAccount: PublicKey
-    mint?: MintName
     commitment?: Commitment
   }
 ): Promise<Account | null> => {
