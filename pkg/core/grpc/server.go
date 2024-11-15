@@ -9,6 +9,7 @@ import (
 	"github.com/AudiusProject/audius-protocol/pkg/core/config"
 	"github.com/AudiusProject/audius-protocol/pkg/core/db"
 	"github.com/AudiusProject/audius-protocol/pkg/core/gen/proto"
+	"github.com/AudiusProject/audius-protocol/pkg/core/mempool"
 	"github.com/cometbft/cometbft/abci/types"
 	"github.com/cometbft/cometbft/rpc/client/local"
 	gogo "github.com/cosmos/gogoproto/proto"
@@ -18,20 +19,22 @@ import (
 )
 
 type GRPCServer struct {
-	logger *common.Logger
-	chain  *local.Local
-	server *grpc.Server
-	db     *db.Queries
-	config *config.Config
+	logger  *common.Logger
+	chain   *local.Local
+	server  *grpc.Server
+	db      *db.Queries
+	config  *config.Config
+	mempool *mempool.Mempool
 	proto.UnimplementedProtocolServer
 }
 
-func NewGRPCServer(logger *common.Logger, config *config.Config, chain *local.Local, pool *pgxpool.Pool) (*GRPCServer, error) {
+func NewGRPCServer(logger *common.Logger, config *config.Config, chain *local.Local, pool *pgxpool.Pool, mempool *mempool.Mempool) (*GRPCServer, error) {
 	server := &GRPCServer{
-		logger: logger.Child("grpc"),
-		chain:  chain,
-		config: config,
-		db:     db.New(pool),
+		logger:  logger.Child("grpc"),
+		chain:   chain,
+		config:  config,
+		mempool: mempool,
+		db:      db.New(pool),
 	}
 
 	s := grpc.NewServer()
