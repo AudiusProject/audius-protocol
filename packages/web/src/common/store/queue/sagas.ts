@@ -1,3 +1,5 @@
+import { error } from 'console'
+
 import {
   Kind,
   ID,
@@ -11,6 +13,7 @@ import {
   UserTrackMetadata,
   LineupEntry
 } from '@audius/common/models'
+import { getIsReachable } from '@audius/common/src/store/reachability/selectors'
 import {
   accountSelectors,
   cacheCollectionsSelectors,
@@ -411,6 +414,8 @@ export function* watchQueueAutoplay() {
     queueAutoplay.type,
     function* (action: ReturnType<typeof queueAutoplay>) {
       const { genre, exclusionList, currentUserId } = action.payload
+      const isReachable = yield* select(getIsReachable)
+      if (!isReachable) return
       const tracks: UserTrackMetadata[] = yield* call(
         getRecommendedTracks,
         genre,
