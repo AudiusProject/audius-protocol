@@ -17,11 +17,7 @@ import nacl, { BoxKeyPair } from 'tweetnacl'
 import { call, put, race, select, take, takeEvery } from 'typed-redux-saga'
 
 import { userTrackMetadataFromSDK } from '~/adapters'
-import {
-  PurchaseableContentMetadata,
-  fetchAccountAsync,
-  isPurchaseableAlbum
-} from '~/hooks'
+import { PurchaseableContentMetadata, isPurchaseableAlbum } from '~/hooks'
 import { Kind } from '~/models'
 import { FavoriteSource, Name } from '~/models/Analytics'
 import { ErrorLevel } from '~/models/ErrorReporting'
@@ -80,6 +76,7 @@ import { waitForValue } from '~/utils'
 import { encodeHashId } from '~/utils/hashIds'
 import { BN_USDC_CENT_WEI } from '~/utils/wallet'
 
+import { fetchAccountAsync } from '../account/sagas'
 import { cacheActions } from '../cache'
 import { pollGatedContent } from '../gated-content/sagas'
 import { updateGatedContentStatus } from '../gated-content/slice'

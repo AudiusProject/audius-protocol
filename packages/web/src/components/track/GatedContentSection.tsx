@@ -362,7 +362,11 @@ const LockedGatedContentSection = ({
                 contentType
               })
             )
-            handlePurchase()
+            if (isGuestCheckoutEnabled) {
+              handlePurchaseViaGuestCheckout()
+            } else {
+              handlePurchase()
+            }
           }}
           fullWidth
         >
