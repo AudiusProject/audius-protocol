@@ -1,7 +1,7 @@
 import { PublicKey } from '@solana/web3.js'
 import { call, delay, select } from 'typed-redux-saga'
 
-import { getTokenAccountInfo, MintName } from '~/services/audius-backend/solana'
+import { getTokenAccountInfo } from '~/services/audius-backend/solana'
 import { IntKeys } from '~/services/remote-config'
 import {
   MAX_CONTENT_PRICE_CENTS,
@@ -54,7 +54,6 @@ export function* pollForTokenAccountInfo({
   ...getTokenAccountInfoArgs
 }: {
   tokenAccount: PublicKey
-  mint?: MintName
   retryDelayMs?: number
   maxRetryCount?: number
 }) {
