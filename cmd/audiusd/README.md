@@ -14,7 +14,39 @@ open http://localhost/console/overview
 
 ## Run a Registered Node
 
-To operate a [registered](https://docs.audius.org/node-operator/setup/registration/) node requires the minimal config below.
+To operate a [registered](https://docs.audius.org/node-operator/setup/registration/) node requires minimal configuration.
+
+### Containerless
+
+Install the cli
+
+```bash
+curl -sSL https://install.audius.org | sh
+```
+
+Edit config
+
+```bash
+audius-ctl config edit
+```
+
+Add the following
+
+```yaml
+local:
+  endpoint: myaudiusnode.example.com
+  privateKey: <your-private-key>
+  wallet: <your-wallet>
+  rewardsWallet: <your-wallet>
+```
+
+Start the node
+
+```bash
+audius-ctl up
+```
+
+### Docker
 
 ```bash
 mkdir -p ~/.audius/contexts/
@@ -22,21 +54,21 @@ mkdir -p ~/.audius/contexts/
 cat <<EOF > ~/.audius/contexts/default
 local:
   endpoint: myaudiusnode.example.com
-  privateKey: abcdef123456
-  wallet: 0xfedcba
-  rewardsWallet: 0xfedcba
+  privateKey: <your-private-key>
+  wallet: <your-wallet>
+  rewardsWallet: <your-wallet>
 EOF
 
 docker run -d -ti -v ~/.audius:/audius -p 80:80 -p 443:443 -p 26656:26656 audius/audiusd:current
 ```
 
-### P2P Ports
+## P2P Ports
 
 Port `26656` must be open and accessible for your node to fully participate in the Audius network, enabling it to propose blocks, vote in consensus, and relay transactions to other nodes.
 
 Without port `26656` open, the node can still download blocks and query the blockchain via RPC, but it will not participate in consensus or transaction propagation.
 
-### TLS
+## TLS
 
 To enable TLS, set `autoTLS: true` in your config. This will instruct `audiusd` to automatically obtain a certificate using Let's Encrypt. This process takes roughly 60 seconds and occurs on the first boot only.
 
