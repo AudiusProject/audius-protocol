@@ -13,7 +13,6 @@ import {
   AccessConditions,
   AccessConditionsEthNFTCollection,
   AccessConditionsSolNFTCollection,
-  Id,
   isContentCollectibleGated,
   isContentFollowGated,
   isContentTipGated,
