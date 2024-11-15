@@ -85,7 +85,6 @@ function* purchaseStep({
     getTokenAccountInfo,
     audiusBackendInstance,
     {
-      mint: 'usdc',
       tokenAccount
     }
   )
@@ -429,7 +428,6 @@ function* recoverPurchaseIfNecessary() {
       getTokenAccountInfo,
       audiusBackendInstance,
       {
-        mint: 'usdc',
         tokenAccount: usdcTokenAccount
       }
     )
@@ -440,8 +438,7 @@ function* recoverPurchaseIfNecessary() {
 
     const userBank = yield* getOrCreateUSDCUserBank()
     const userBankAccountInfo = yield* call(pollForTokenAccountInfo, {
-      tokenAccount: userBank,
-      mint: 'usdc'
+      tokenAccount: userBank
     })
 
     const userBankInitialBalance = userBankAccountInfo?.amount ?? BigInt(0)

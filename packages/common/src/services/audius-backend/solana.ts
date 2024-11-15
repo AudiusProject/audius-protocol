@@ -201,7 +201,6 @@ export const getUserbankAccountInfo = async (
 
   return getTokenAccountInfo(audiusBackendInstance, {
     tokenAccount,
-    mint,
     commitment
   })
 }
@@ -295,7 +294,6 @@ export const pollForTokenBalanceChange = async (
   const debugTokenName = mint.toUpperCase()
   let retries = 0
   let tokenAccountInfo = await getTokenAccountInfo(audiusBackendInstance, {
-    mint,
     tokenAccount
   })
   while (
@@ -317,7 +315,6 @@ export const pollForTokenBalanceChange = async (
     }
     await delay(retryDelayMs)
     tokenAccountInfo = await getTokenAccountInfo(audiusBackendInstance, {
-      mint,
       tokenAccount
     })
   }
