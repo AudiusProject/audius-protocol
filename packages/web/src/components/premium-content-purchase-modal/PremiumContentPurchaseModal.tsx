@@ -114,7 +114,9 @@ const RenderForm = ({
   const { history } = useHistoryContext()
 
   // Reset form on track change
-  useEffect(() => resetForm, [contentId, resetForm])
+  useEffect(() => {
+    resetForm()
+  }, [contentId, resetForm])
 
   // Navigate to track on successful purchase behind the modal
   useEffect(() => {
