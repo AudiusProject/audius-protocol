@@ -2,6 +2,7 @@ package grpc
 
 import (
 	"context"
+	"fmt"
 	"net"
 	"strings"
 
@@ -19,22 +20,22 @@ import (
 )
 
 type GRPCServer struct {
-	logger  *common.Logger
-	chain   *local.Local
-	server  *grpc.Server
-	db      *db.Queries
-	config  *config.Config
-	mempool *mempool.Mempool
+	logger   *common.Logger
+	cometRpc *local.Local
+	server   *grpc.Server
+	db       *db.Queries
+	config   *config.Config
+	mempool  *mempool.Mempool
 	proto.UnimplementedProtocolServer
 }
 
-func NewGRPCServer(logger *common.Logger, config *config.Config, chain *local.Local, pool *pgxpool.Pool, mempool *mempool.Mempool) (*GRPCServer, error) {
+func NewGRPCServer(logger *common.Logger, config *config.Config, cometRpc *local.Local, pool *pgxpool.Pool, mempool *mempool.Mempool) (*GRPCServer, error) {
 	server := &GRPCServer{
-		logger:  logger.Child("grpc"),
-		chain:   chain,
-		config:  config,
-		mempool: mempool,
-		db:      db.New(pool),
+		logger:   logger.Child("grpc"),
+		cometRpc: cometRpc,
+		config:   config,
+		mempool:  mempool,
+		db:       db.New(pool),
 	}
 
 	s := grpc.NewServer()
@@ -52,18 +53,32 @@ func (s *GRPCServer) Serve(lis net.Listener) error {
 	return s.server.Serve(lis)
 }
 
-func (s *GRPCServer) SendTransaction(_ context.Context, req *proto.SendTransactionRequest) (*proto.TransactionResponse, error) {
-	// example of message type switching
-	switch body := req.Transaction.GetTransaction().(type) {
-	case *proto.SignedTransaction_Plays:
-		s.logger.Infof("plays event %v", body.Plays.GetPlays())
-	case *proto.SignedTransaction_ManageEntity:
-		s.logger.Infof("manage entity %v", body.ManageEntity)
-	default:
-		s.logger.Warn("unknown event type")
+func (s *GRPCServer) SendTransaction(ctx context.Context, req *proto.SendTransactionRequest) (*proto.TransactionResponse, error) {
+	// TODO: do validation check
+	mempoolKey, err := ToTxHash(req.GetTransaction())
+	if err != nil {
+		return nil, fmt.Errorf("could not get tx hash of signed tx: %v", err)
 	}
 
-	txhash, err := SendTx(s.logger, s.chain, req.GetTransaction())
+	// TODO: use data companion to keep this value up to date via channel
+	status, err := s.cometRpc.Status(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("chain not healthy: %v", err)
+	}
+
+	deadline := status.SyncInfo.LatestBlockHeight + 10
+	mempoolTx := &mempool.MempoolTransaction{
+		Tx:       req.GetTransaction(),
+		Deadline: deadline,
+	}
+
+	// add transaction to mempool with broadcast set to true
+	err = s.mempool.AddTransaction(mempoolKey, mempoolTx, true)
+	if err != nil {
+		return nil, fmt.Errorf("could not add tx to mempool %v", err)
+	}
+
+	txhash, err := ListenForTx(ctx, s.logger, s.cometRpc, mempoolKey)
 	if err != nil {
 		return nil, err
 	}
@@ -74,6 +89,36 @@ func (s *GRPCServer) SendTransaction(_ context.Context, req *proto.SendTransacti
 	}
 
 	return res, nil
+}
+
+func (s *GRPCServer) ForwardTransaction(ctx context.Context, req *proto.ForwardTransactionRequest) (*proto.ForwardTransactionResponse, error) {
+	// TODO: check signature from known node
+
+	// TODO: validate transaction in same way as send transaction
+
+	mempoolKey, err := ToTxHash(req.GetTransaction())
+	if err != nil {
+		return nil, fmt.Errorf("could not get tx hash of signed tx: %v", err)
+	}
+
+	// TODO: intake block deadline from request
+	status, err := s.cometRpc.Status(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("chain not healthy: %v", err)
+	}
+
+	deadline := status.SyncInfo.LatestBlockHeight + 10
+	mempoolTx := &mempool.MempoolTransaction{
+		Tx:       req.GetTransaction(),
+		Deadline: deadline,
+	}
+
+	err = s.mempool.AddTransaction(mempoolKey, mempoolTx, false)
+	if err != nil {
+		return nil, fmt.Errorf("could not add tx to mempool %v", err)
+	}
+
+	return &proto.ForwardTransactionResponse{}, nil
 }
 
 func (s *GRPCServer) GetTransaction(ctx context.Context, req *proto.GetTransactionRequest) (*proto.TransactionResponse, error) {
@@ -107,7 +152,7 @@ func (s *GRPCServer) GetTransaction(ctx context.Context, req *proto.GetTransacti
 }
 
 func (s *GRPCServer) GetBlock(ctx context.Context, req *proto.GetBlockRequest) (*proto.BlockResponse, error) {
-	block, err := s.chain.Block(ctx, &req.Height)
+	block, err := s.cometRpc.Block(ctx, &req.Height)
 	if err != nil {
 		blockInFutureMsg := "must be less than or equal to the current blockchain height"
 		if strings.Contains(err.Error(), blockInFutureMsg) {
@@ -142,7 +187,7 @@ func (s *GRPCServer) GetBlock(ctx context.Context, req *proto.GetBlockRequest) (
 	return res, nil
 }
 func (s *GRPCServer) GetNodeInfo(ctx context.Context, req *proto.GetNodeInfoRequest) (*proto.NodeInfoResponse, error) {
-	status, err := s.chain.Status(ctx)
+	status, err := s.cometRpc.Status(ctx)
 	if err != nil {
 		return nil, err
 	}

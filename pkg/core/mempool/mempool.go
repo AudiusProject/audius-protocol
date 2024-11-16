@@ -55,11 +55,13 @@ func (m *Mempool) AddPeer(peer *sdk.Sdk) {
 	m.broadcastPeers[peer] = struct{}{}
 }
 
-func (m *Mempool) AddTransaction(key string, tx *MempoolTransaction) error {
+func (m *Mempool) AddTransaction(key string, tx *MempoolTransaction, broadcast bool) error {
 	// TODO: check db if tx already exists
 
 	// broadcast to peers before adding to our own mempool
-	go m.BroadcastTransaction(tx)
+	if broadcast {
+		go m.BroadcastTransaction(key, tx)
+	}
 
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
@@ -70,6 +72,8 @@ func (m *Mempool) AddTransaction(key string, tx *MempoolTransaction) error {
 
 	element := m.deque.PushBack(tx)
 	m.txMap[key] = element
+
+	m.logger.Infof("added %s to mempool", key)
 	return nil
 }
 
@@ -104,8 +108,14 @@ func (m *Mempool) RemoveBatch(ids []string) {
 	}
 }
 
-func (m *Mempool) BroadcastTransaction(tx *MempoolTransaction) {
-	for peer, _ := range m.broadcastPeers {
+func (m *Mempool) BroadcastTransaction(key string, tx *MempoolTransaction) {
+	// only broadcast certain types of txs, don't broadcast these ones
+	switch tx.Tx.Transaction.(type) {
+	case *proto.SignedTransaction_SlaRollup:
+		return
+	}
+
+	for peer := range m.broadcastPeers {
 		go func(logger *common.Logger, peer *sdk.Sdk) {
 			params := protocol.NewProtocolForwardTransactionParams()
 			params.SetTransaction(common.SignedTxProtoIntoSignedTxOapi(tx.Tx))
@@ -114,6 +124,7 @@ func (m *Mempool) BroadcastTransaction(tx *MempoolTransaction) {
 				logger.Errorf("could not broadcast tx: %v", err)
 				return
 			}
+			m.logger.Debugf("broadcasted tx %s to peer", key)
 		}(m.logger, peer)
 	}
 }
@@ -147,13 +158,11 @@ func (m *Mempool) AddValidators() error {
 	for _, validator := range validators {
 		g.Go(func() error {
 			validatorAddr := validator.Address.String()
-			m.logger.Debugf("attempted to add %s as peer", validatorAddr)
 
 			if m.config.ProposerAddress == validatorAddr {
 				m.logger.Info("found self, not peering")
+				return nil
 			}
-
-			m.logger.Debugf("not me %s", validatorAddr)
 
 			validatorRecord, err := m.db.GetRegisteredNodeByCometAddress(ctx, validatorAddr)
 			if err != nil {
@@ -161,15 +170,11 @@ func (m *Mempool) AddValidators() error {
 				return err
 			}
 
-			m.logger.Debugf("found them %s", validatorAddr)
-
 			parsedURL, err := url.Parse(validatorRecord.Endpoint)
 			if err != nil {
 				m.logger.Errorf("could not parse url for %s: %v", validatorRecord.Endpoint, err)
 				return err
 			}
-
-			m.logger.Debugf("parsed url %s", validatorAddr)
 
 			// TODO: init all these clients at a higher level including non validators
 			oapiendpoint := parsedURL.Host

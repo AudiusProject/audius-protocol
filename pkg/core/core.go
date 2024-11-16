@@ -98,7 +98,10 @@ func run(ctx context.Context, logger *common.Logger) error {
 		return con.Start()
 	})
 
-	node, err := chain.NewNode(logger, config, cometConfig, pool, c)
+	mempl := mempool.NewMempool(logger, config, db.New(pool), cometConfig.Mempool.Size)
+	mempl.AddValidators()
+
+	node, err := chain.NewNode(logger, config, cometConfig, pool, c, mempl)
 	if err != nil {
 		return fmt.Errorf("node init error: %v", err)
 	}
@@ -115,20 +118,6 @@ func run(ctx context.Context, logger *common.Logger) error {
 
 	logger.Info("local rpc initialized")
 
-	// Start the registry bridge
-	eg.Go(func() error {
-		registryBridge, err := registry_bridge.NewRegistryBridge(logger, config, rpc, c, pool)
-		if err != nil {
-			return fmt.Errorf("registry bridge init error: %v", err)
-		}
-
-		logger.Info("core registry bridge starting")
-		return registryBridge.Start()
-	})
-
-	mempl := mempool.NewMempool(logger, config, db.New(pool), cometConfig.Mempool.Size)
-	mempl.AddValidators()
-
 	grpcServer, err := grpc.NewGRPCServer(logger, config, rpc, pool, mempl)
 	if err != nil {
 		return fmt.Errorf("grpc init error: %v", err)
@@ -141,6 +130,17 @@ func run(ctx context.Context, logger *common.Logger) error {
 	}
 
 	logger.Info("grpc server created")
+
+	// Start the registry bridge
+	eg.Go(func() error {
+		registryBridge, err := registry_bridge.NewRegistryBridge(logger, config, rpc, grpcServer, c, pool)
+		if err != nil {
+			return fmt.Errorf("registry bridge init error: %v", err)
+		}
+
+		logger.Info("core registry bridge starting")
+		return registryBridge.Start()
+	})
 
 	_, err = server.NewServer(config, node.Config(), logger, rpc, pool, e)
 	if err != nil {

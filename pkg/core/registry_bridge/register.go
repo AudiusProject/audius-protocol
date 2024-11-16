@@ -11,7 +11,6 @@ import (
 	"github.com/AudiusProject/audius-protocol/pkg/core/common"
 	"github.com/AudiusProject/audius-protocol/pkg/core/contracts"
 	gen_proto "github.com/AudiusProject/audius-protocol/pkg/core/gen/proto"
-	"github.com/AudiusProject/audius-protocol/pkg/core/grpc"
 	"github.com/AudiusProject/audius-protocol/pkg/logger"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/crypto"
@@ -118,7 +117,7 @@ func (r *Registry) registerSelfOnComet(ethBlock, spID string) error {
 		return fmt.Errorf("could not sign register event: %v", err)
 	}
 
-	event := &gen_proto.SignedTransaction{
+	tx := &gen_proto.SignedTransaction{
 		Signature: sig,
 		RequestId: uuid.NewString(),
 		Transaction: &gen_proto.SignedTransaction_ValidatorRegistration{
@@ -126,7 +125,11 @@ func (r *Registry) registerSelfOnComet(ethBlock, spID string) error {
 		},
 	}
 
-	txhash, err := grpc.SendTx(r.logger, r.rpc, event)
+	req := &gen_proto.SendTransactionRequest{
+		Transaction: tx,
+	}
+
+	txhash, err := r.grpcServer.SendTransaction(context.Background(), req)
 	if err != nil {
 		return fmt.Errorf("send register tx failed: %v", err)
 	}
@@ -229,9 +232,6 @@ func (r *Registry) registerSelfOnEth() error {
 	}
 
 	endpoint := r.config.NodeEndpoint
-	if err != nil {
-		return fmt.Errorf("could not get eth key: %v", err)
-	}
 	delegateOwnerWallet := crypto.PubkeyToAddress(r.config.EthereumKey.PublicKey)
 
 	_, err = spf.Register(opts, serviceType, endpoint, stake, delegateOwnerWallet)

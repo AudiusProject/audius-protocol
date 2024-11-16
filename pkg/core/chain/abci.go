@@ -12,6 +12,8 @@ import (
 	"github.com/AudiusProject/audius-protocol/pkg/core/contracts"
 	"github.com/AudiusProject/audius-protocol/pkg/core/db"
 	gen_proto "github.com/AudiusProject/audius-protocol/pkg/core/gen/proto"
+	"github.com/AudiusProject/audius-protocol/pkg/core/grpc"
+	"github.com/AudiusProject/audius-protocol/pkg/core/mempool"
 	abcitypes "github.com/cometbft/cometbft/abci/types"
 	cometbfttypes "github.com/cometbft/cometbft/types"
 	"github.com/jackc/pgx/v5"
@@ -20,17 +22,20 @@ import (
 )
 
 type CoreApplication struct {
-	logger       *common.Logger
-	queries      *db.Queries
-	contracts    *contracts.AudiusContracts
-	pool         *pgxpool.Pool
+	logger    *common.Logger
+	queries   *db.Queries
+	contracts *contracts.AudiusContracts
+	pool      *pgxpool.Pool
+	config    *config.Config
+	mempl     *mempool.Mempool
+
 	onGoingBlock pgx.Tx
-	config       *config.Config
+	finalizedTxs []grpc.TxHash
 }
 
 var _ abcitypes.Application = (*CoreApplication)(nil)
 
-func NewCoreApplication(logger *common.Logger, pool *pgxpool.Pool, contracts *contracts.AudiusContracts, envConfig *config.Config) *CoreApplication {
+func NewCoreApplication(logger *common.Logger, pool *pgxpool.Pool, contracts *contracts.AudiusContracts, envConfig *config.Config, mempl *mempool.Mempool) *CoreApplication {
 	return &CoreApplication{
 		logger:       logger,
 		queries:      db.New(pool),
@@ -38,6 +43,8 @@ func NewCoreApplication(logger *common.Logger, pool *pgxpool.Pool, contracts *co
 		pool:         pool,
 		onGoingBlock: nil,
 		config:       envConfig,
+		mempl:        mempl,
+		finalizedTxs: []string{},
 	}
 }
 
@@ -77,7 +84,20 @@ func (app *CoreApplication) InitChain(_ context.Context, chain *abcitypes.InitCh
 }
 
 func (app *CoreApplication) PrepareProposal(ctx context.Context, proposal *abcitypes.PrepareProposalRequest) (*abcitypes.PrepareProposalResponse, error) {
-	proposalTxs := proposal.Txs
+	proposalTxs := [][]byte{}
+
+	// use 999 so if we have an sla rollup we get max 1k txs in a block
+	txMemBatch := app.mempl.GetBatch(999)
+	// TODO: parallelize
+	for _, tx := range txMemBatch {
+		// app.validateTx(tx)
+		txBytes, err := proto.Marshal(tx)
+		if err != nil {
+			app.logger.Errorf("tx made it into prepare but couldn't be marshalled: %v", err)
+			continue
+		}
+		proposalTxs = append(proposalTxs, txBytes)
+	}
 
 	if app.shouldProposeNewRollup(ctx, proposal.Time, proposal.Height) {
 		rollupTx, err := app.createRollupTx(ctx, proposal.Time, proposal.Height)
@@ -111,15 +131,21 @@ func (app *CoreApplication) FinalizeBlock(ctx context.Context, req *abcitypes.Fi
 		protoEvent, err := app.isValidSignedTransaction(tx)
 		if err == nil {
 			txhash := app.toTxHash(tx)
+
 			finalizedTx, err := app.finalizeTransaction(ctx, protoEvent, txhash)
 			if err != nil {
 				app.logger.Errorf("error finalizing event: %v", err)
 				txs[i] = &abcitypes.ExecTxResult{Code: 2}
 			}
+
 			txs[i] = &abcitypes.ExecTxResult{Code: abcitypes.CodeTypeOK}
+
 			if err := app.persistTxStat(ctx, finalizedTx, txhash, req.Height, req.Time); err != nil {
 				app.logger.Errorf("failed to persist tx stat: %v", err)
 			}
+
+			// set finalized txs in finalize step to remove from mempool during commit step
+			app.finalizedTxs = append(app.finalizedTxs, txhash)
 		} else {
 			logger.Errorf("Error: invalid transaction index %v", i)
 			txs[i] = &abcitypes.ExecTxResult{Code: 1}
@@ -159,6 +185,10 @@ func (app CoreApplication) Commit(ctx context.Context, commit *abcitypes.CommitR
 		app.logger.Error("failure to commit tx", "error", err)
 		return &abcitypes.CommitResponse{}, err
 	}
+
+	// rm finalized txs from mempool
+	app.mempl.RemoveBatch(app.finalizedTxs)
+	app.finalizedTxs = []grpc.TxHash{}
 	return &abcitypes.CommitResponse{}, nil
 }
 
