@@ -99,7 +99,7 @@ func (app *CoreApplication) PrepareProposal(ctx context.Context, proposal *abcit
 		proposalTxs = append(proposalTxs, txBytes)
 	}
 
-	if app.shouldProposeNewRollup(ctx, proposal.Time, proposal.Height) {
+	if app.shouldProposeNewRollup(ctx, proposal.Height) {
 		rollupTx, err := app.createRollupTx(ctx, proposal.Time, proposal.Height)
 		if err != nil {
 			app.logger.Error("Failed to create rollup transaction", "error", err)
