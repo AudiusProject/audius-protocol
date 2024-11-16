@@ -20,12 +20,12 @@ export const recordIP = async (
       }
     )
 
-    if (response.status >= 400 && response.status < 600) {
-      throw new Error(
-        `Request to record user IP failed: ${response.statusText}`
-      )
-    }
-    return response.json()
+    // if (response.status >= 400 && response.status < 600) {
+    //   throw new Error(
+    //     `Request to record user IP failed: ${response.statusText}`
+    //   )
+    // }
+    // return response.json()
   } catch (err) {
     console.error(getErrorMessage(err))
     return { error: true }
