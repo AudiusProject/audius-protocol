@@ -32,7 +32,7 @@ func (r *Registry) RegisterSelf() error {
 	nodeAddress := crypto.PubkeyToAddress(r.config.EthereumKey.PublicKey)
 	nodeEndpoint := r.config.NodeEndpoint
 
-	isRegistered, err := r.isSelfRegisteredOnEth(ctx)
+	isRegistered, err := r.isSelfRegisteredOnEth()
 	if err != nil {
 		return fmt.Errorf("could not check ethereum registration status: %v", err)
 	}
@@ -177,7 +177,7 @@ func (r *Registry) isSelfAlreadyRegistered(ctx context.Context) bool {
 	return res.EthAddress == r.config.WalletAddress
 }
 
-func (r *Registry) isSelfRegisteredOnEth(ctx context.Context) (bool, error) {
+func (r *Registry) isSelfRegisteredOnEth() (bool, error) {
 	spf, err := r.contracts.GetServiceProviderFactoryContract()
 	if err != nil {
 		return false, fmt.Errorf("could not get service provider factory: %v", err)
