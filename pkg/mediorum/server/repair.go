@@ -19,17 +19,18 @@ import (
 )
 
 type RepairTracker struct {
-	StartedAt      time.Time `gorm:"primaryKey;not null"`
-	UpdatedAt      time.Time `gorm:"not null"`
-	FinishedAt     time.Time
-	CleanupMode    bool           `gorm:"not null"`
-	CursorI        int            `gorm:"not null"`
-	CursorUploadID string         `gorm:"not null"`
-	CursorQmCID    string         `gorm:"not null"`
-	Counters       map[string]int `gorm:"not null;serializer:json"`
-	ContentSize    int64          `gorm:"not null"`
-	Duration       time.Duration  `gorm:"not null"`
-	AbortedReason  string         `gorm:"not null"`
+	StartedAt        time.Time `gorm:"primaryKey;not null"`
+	UpdatedAt        time.Time `gorm:"not null"`
+	FinishedAt       time.Time
+	CleanupMode      bool           `gorm:"not null"`
+	CursorI          int            `gorm:"not null"`
+	CursorUploadID   string         `gorm:"not null"`
+	CursorPreviewCID string         `gorm:"not null"`
+	CursorQmCID      string         `gorm:"not null"`
+	Counters         map[string]int `gorm:"not null;serializer:json"`
+	ContentSize      int64          `gorm:"not null"`
+	Duration         time.Duration  `gorm:"not null"`
+	AbortedReason    string         `gorm:"not null"`
 }
 
 func (ss *MediorumServer) startRepairer() {
@@ -158,6 +159,33 @@ func (ss *MediorumServer) runRepair(tracker *RepairTracker) error {
 			for _, cid := range u.TranscodeResults {
 				ss.repairCid(cid, u.PlacementHosts, tracker)
 			}
+		}
+
+		tracker.Duration += time.Since(startIter)
+		saveTracker()
+	}
+
+	// scroll audio_previews for repair
+	for {
+		// abort if disk is filling up
+		if !ss.diskHasSpace() && !tracker.CleanupMode {
+			tracker.AbortedReason = "DISK_FULL"
+			saveTracker()
+			break
+		}
+
+		startIter := time.Now()
+
+		var previews []AudioPreview
+		if err := ss.crud.DB.Where("cid > ?", tracker.CursorPreviewCID).Order("cid").Limit(1000).Find(&previews).Error; err != nil {
+			return err
+		}
+		if len(previews) == 0 {
+			break
+		}
+		for _, u := range previews {
+			tracker.CursorPreviewCID = u.CID
+			ss.repairCid(u.CID, nil, tracker)
 		}
 
 		tracker.Duration += time.Since(startIter)
