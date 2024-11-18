@@ -230,6 +230,7 @@ export const trackMetadataForUploadToSdk = (
 ): TrackMetadata => ({
   ...camelcaseKeys(
     pick(input, [
+      'track_cid',
       'license',
       'isrc',
       'iswc',
@@ -245,6 +246,7 @@ export const trackMetadataForUploadToSdk = (
       'is_downloadable',
       'is_original_available',
       'bpm',
+      'duration',
       'is_custom_bpm',
       'musical_key',
       'is_custom_musical_key',
