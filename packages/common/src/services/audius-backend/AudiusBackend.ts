@@ -834,7 +834,7 @@ export const audiusBackend = ({
         trackId,
         unauthenticatedUuid,
         userId,
-        await getFeatureEnabled(FeatureFlags.SOLANA_LISTEN_ENABLED)
+        true
       )
       return listen
     } catch (err) {
