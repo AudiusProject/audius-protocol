@@ -60,6 +60,25 @@ type UpdateUploadBody struct {
 	PreviewStartSeconds string `json:"previewStartSeconds"`
 }
 
+// generatePreview endpoint will create a new 30s preview mp3
+// save the cid to the audio_previews table
+// and return to the client.
+func (ss *MediorumServer) generatePreview(c echo.Context) error {
+	ctx := c.Request().Context()
+	fileHash := c.Param("cid")
+	previewStartSeconds := c.Param("previewStartSeconds")
+
+	audioPreview, err := ss.generateAudioPreview(ctx, fileHash, previewStartSeconds)
+	if err != nil {
+		return err
+	}
+
+	return c.JSON(200, audioPreview)
+}
+
+// this endpoint should be replaced by generate_preview
+// when client is fully using generate_preview
+// this can be removed.
 func (ss *MediorumServer) updateUpload(c echo.Context) error {
 	if !ss.diskHasSpace() {
 		return c.String(http.StatusServiceUnavailable, "disk is too full to accept new uploads")
@@ -105,17 +124,9 @@ func (ss *MediorumServer) updateUpload(c echo.Context) error {
 
 	// Do not support deleting previews
 	if selectedPreview.Valid && selectedPreview != upload.SelectedPreview {
-		upload.SelectedPreview = selectedPreview
-		upload.UpdatedAt = time.Now().UTC()
-		if _, alreadyTranscoded := upload.TranscodeResults[selectedPreview.String]; !alreadyTranscoded {
-			// Have not transcoded a preview at this start time yet
-			// Set status to trigger retranscode job
-			upload.Status = JobStatusRetranscode
-		}
-
-		err = ss.transcode(upload)
+		err := ss.generateAudioPreviewForUpload(upload)
 		if err != nil {
-			ss.logger.Warn("update upload failed", "err", err)
+			return err
 		}
 	}
 
