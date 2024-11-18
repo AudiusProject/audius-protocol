@@ -364,6 +364,47 @@ export class Users extends Base {
     }
   }
 
+  async createEntityManagerGuestUser(newMetadata: UserMetadata) {
+    this.REQUIRES(Services.DISCOVERY_PROVIDER)
+
+    try {
+      const userId = await this._generateUserId()
+
+      newMetadata.is_storage_v2 = true
+      newMetadata.wallet = this.web3Manager.getWalletAddress()
+      newMetadata.handle = null
+
+      const manageEntityResponse =
+        await this.contracts.EntityManagerClient!.manageEntity(
+          userId,
+          EntityManagerClient.EntityType.USER,
+          userId,
+          EntityManagerClient.Action.CREATE,
+          JSON.stringify({
+            cid: null,
+            data: null
+          })
+        )
+      await this._waitForDiscoveryToIndexUser(
+        userId,
+        manageEntityResponse.txReceipt.blockNumber
+      )
+
+      return {
+        newMetadata,
+        blockHash: manageEntityResponse.txReceipt.blockHash,
+        blockNumber: manageEntityResponse.txReceipt.blockNumber
+      }
+    } catch (e) {
+      const errorMsg = `createEntityManagerUserV2() error: ${e}`
+      if (e instanceof Error) {
+        e.message = errorMsg
+        throw e
+      }
+      throw new Error(errorMsg)
+    }
+  }
+
   /**
    * Fixes a bug that caused users to not complete signup
    * #flare-206

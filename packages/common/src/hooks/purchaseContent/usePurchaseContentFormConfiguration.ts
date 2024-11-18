@@ -3,10 +3,13 @@ import { useCallback } from 'react'
 import { USDC } from '@audius/fixed-decimal'
 import BN from 'bn.js'
 import { useDispatch, useSelector } from 'react-redux'
+import { useLocalStorage } from 'react-use'
 
+import { useGetCurrentUser } from '~/api'
 import { UserCollectionMetadata } from '~/models'
 import { PurchaseMethod, PurchaseVendor } from '~/models/PurchaseContent'
 import { UserTrackMetadata } from '~/models/Track'
+import { FeatureFlags } from '~/services'
 import {
   PurchaseableContentType,
   PurchaseContentPage,
@@ -15,14 +18,16 @@ import {
   purchaseContentSelectors
 } from '~/store/purchase-content'
 import { isContentCollection, isContentTrack } from '~/utils'
-import { Nullable } from '~/utils/typeUtils'
 
+import { useFeatureFlag } from '../useFeatureFlag'
 import { useUSDCBalance } from '../useUSDCBalance'
 
 import {
   AMOUNT_PRESET,
   CENTS_TO_USDC_MULTIPLIER,
   CUSTOM_AMOUNT,
+  GUEST_CHECKOUT,
+  GUEST_EMAIL,
   PURCHASE_METHOD,
   PURCHASE_METHOD_MINT_ADDRESS,
   PURCHASE_VENDOR
@@ -46,7 +51,7 @@ export const usePurchaseContentFormConfiguration = ({
   presetValues,
   purchaseVendor
 }: {
-  metadata?: Nullable<UserTrackMetadata | UserCollectionMetadata>
+  metadata?: UserTrackMetadata | UserCollectionMetadata
   price: number
   presetValues: PayExtraAmountPresetValues
   purchaseVendor?: PurchaseVendor
@@ -60,6 +65,15 @@ export const usePurchaseContentFormConfiguration = ({
   const isUnlocking = !error && isContentPurchaseInProgress(stage)
   const { data: balanceBN } = useUSDCBalance()
   const balance = USDC(balanceBN ?? new BN(0)).value
+  const [guestEmail, setGuestEmail] = useLocalStorage(GUEST_EMAIL, '')
+  const { data: currentUser } = useGetCurrentUser({})
+  const { isEnabled: guestCheckoutEnabled = false } = useFeatureFlag(
+    FeatureFlags.GUEST_CHECKOUT
+  )
+
+  const isGuestCheckout =
+    guestCheckoutEnabled &&
+    (!currentUser || (currentUser && !currentUser.handle))
 
   const initialValues: PurchaseContentValues = {
     [CUSTOM_AMOUNT]: undefined,
@@ -69,8 +83,16 @@ export const usePurchaseContentFormConfiguration = ({
         ? PurchaseMethod.BALANCE
         : PurchaseMethod.CARD,
     [PURCHASE_VENDOR]: purchaseVendor ?? PurchaseVendor.STRIPE,
+    [GUEST_CHECKOUT]: isGuestCheckout,
+    [GUEST_EMAIL]: guestEmail,
     [PURCHASE_METHOD_MINT_ADDRESS]: USDC_TOKEN_ADDRESS
   }
+
+  const contentId = isAlbum
+    ? metadata?.playlist_id
+    : isTrack
+    ? metadata?.track_id
+    : undefined
 
   const onSubmit = useCallback(
     ({
@@ -78,14 +100,12 @@ export const usePurchaseContentFormConfiguration = ({
       amountPreset,
       purchaseMethod,
       purchaseVendor,
+      guestEmail,
       purchaseMethodMintAddress
     }: PurchaseContentValues) => {
-      const contentId = isAlbum
-        ? metadata.playlist_id
-        : isTrack
-        ? metadata.track_id
-        : undefined
       if (isUnlocking || !contentId) return
+
+      setGuestEmail(guestEmail)
 
       if (
         purchaseMethod === PurchaseMethod.CRYPTO &&
@@ -108,12 +128,21 @@ export const usePurchaseContentFormConfiguration = ({
             contentId,
             contentType: isAlbum
               ? PurchaseableContentType.ALBUM
-              : PurchaseableContentType.TRACK
+              : PurchaseableContentType.TRACK,
+            guestEmail
           })
         )
       }
     },
-    [isAlbum, isUnlocking, metadata, page, presetValues, dispatch, isTrack]
+    [
+      isUnlocking,
+      contentId,
+      setGuestEmail,
+      page,
+      dispatch,
+      presetValues,
+      isAlbum
+    ]
   )
 
   return {
