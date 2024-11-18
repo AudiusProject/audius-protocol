@@ -114,8 +114,7 @@ func (ss *MediorumServer) startRepairer() {
 		}
 		saveTracker()
 
-		// wait 10 minutes before running again
-		time.Sleep(time.Minute * 10)
+		time.Sleep(time.Hour)
 	}
 }
 

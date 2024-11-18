@@ -87,10 +87,6 @@ const (
 	JobStatusBusy    = "busy"
 	JobStatusTimeout = "timeout"
 
-	JobStatusRetranscode      = "retranscode_preview"
-	JobStatusBusyRetranscode  = "busy_retranscode_preview"
-	JobStatusErrorRetranscode = "error_retranscode_preview"
-
 	JobStatusAudioAnalysis     = "audio_analysis"
 	JobStatusBusyAudioAnalysis = "busy_audio_analysis"
 
