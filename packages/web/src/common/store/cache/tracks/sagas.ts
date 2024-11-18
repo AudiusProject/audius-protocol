@@ -15,6 +15,7 @@ import {
   Id,
   OptionalId
 } from '@audius/common/models'
+import { watchRequestConfirmation } from '@audius/common/src/store/confirmer/sagas'
 import {
   Entry,
   getContext,
@@ -413,7 +414,7 @@ function* watchDeleteTrack() {
 }
 
 const sagas = () => {
-  return [watchAdd, watchEditTrack, watchDeleteTrack]
+  return [watchAdd, watchEditTrack, watchDeleteTrack, watchRequestConfirmation]
 }
 
 export default sagas
