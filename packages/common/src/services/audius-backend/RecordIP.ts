@@ -1,6 +1,11 @@
 import { getErrorMessage } from '~/utils'
 
-import { AudiusBackend, AuthHeaders } from './AudiusBackend'
+import { AudiusBackend } from './AudiusBackend'
+
+const AuthHeaders: { [key: string]: string } = Object.freeze({
+  Message: 'Encoded-Data-Message',
+  Signature: 'Encoded-Data-Signature'
+})
 
 export const recordIP = async (
   audiusBackendInstance: AudiusBackend
@@ -20,12 +25,12 @@ export const recordIP = async (
       }
     )
 
-    // if (response.status >= 400 && response.status < 600) {
-    //   throw new Error(
-    //     `Request to record user IP failed: ${response.statusText}`
-    //   )
-    // }
-    // return response.json()
+    if (response.status >= 400 && response.status < 600) {
+      throw new Error(
+        `Request to record user IP failed: ${response.statusText}`
+      )
+    }
+    return response.json()
   } catch (err) {
     console.error(getErrorMessage(err))
     return { error: true }
