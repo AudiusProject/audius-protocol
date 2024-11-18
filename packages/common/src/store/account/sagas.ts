@@ -71,40 +71,40 @@ export function* fetchAccountAsync({ isSignUp = false }): SagaIterator {
   const accountData = yield* call(userApiFetchSaga.getUserAccount, {
     wallet
   })
-  // if (!accountData || !accountData.user) {
-  //   yield* put(
-  //     fetchAccountFailed({
-  //       reason: 'ACCOUNT_NOT_FOUND'
-  //     })
-  //   )
-  // }
-  // const account = accountData.user
-  // if (account.is_deactivated) {
-  //   yield* put(accountActions.resetAccount())
-  //   yield* put(
-  //     fetchAccountFailed({
-  //       reason: 'ACCOUNT_DEACTIVATED'
-  //     })
-  //   )
-  // }
+  if (!accountData || !accountData.user) {
+    yield* put(
+      fetchAccountFailed({
+        reason: 'ACCOUNT_NOT_FOUND'
+      })
+    )
+  }
+  const account = accountData.user
+  if (account.is_deactivated) {
+    yield* put(accountActions.resetAccount())
+    yield* put(
+      fetchAccountFailed({
+        reason: 'ACCOUNT_DEACTIVATED'
+      })
+    )
+  }
   // Set the userId in the remoteConfigInstance
-  // remoteConfigInstance.setUserId(account.user_id)
-  // yield* call(recordIPIfNotRecent, account.handle)
-  // // Cache the account and put the signedIn action. We're done.
-  // yield* call(cacheAccount, account)
-  // yield* put(
-  //   setWalletAddresses({ currentUser: wallet, web3User: web3WalletAddress })
-  // )
-  // // Sync current user info to libs
-  // const libs = yield* call([
-  //   audiusBackendInstance,
-  //   audiusBackendInstance.getAudiusLibs
-  // ])
-  // yield* call([libs, libs.setCurrentUser], {
-  //   wallet,
-  //   userId: account.user_id
-  // })
-  // yield* put(signedIn({ account, isSignUp }))
+  remoteConfigInstance.setUserId(account.user_id)
+  yield* call(recordIPIfNotRecent, account.handle)
+  // Cache the account and put the signedIn action. We're done.
+  yield* call(cacheAccount, account)
+  yield* put(
+    setWalletAddresses({ currentUser: wallet, web3User: web3WalletAddress })
+  )
+  // Sync current user info to libs
+  const libs = yield* call([
+    audiusBackendInstance,
+    audiusBackendInstance.getAudiusLibs
+  ])
+  yield* call([libs, libs.setCurrentUser], {
+    wallet,
+    userId: account.user_id
+  })
+  yield* put(signedIn({ account, isSignUp }))
 }
 
 export function* cacheAccount(account: User) {
