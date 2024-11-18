@@ -56,8 +56,8 @@ func (ss *MediorumServer) startRepairer() {
 				// run the next job
 				tracker.CursorI = lastRun.CursorI + 1
 
-				// 50% of time run cleanup mode
-				if tracker.CursorI > 2 {
+				// every few runs, run cleanup mode
+				if tracker.CursorI > 4 {
 					tracker.CursorI = 1
 				}
 				tracker.CleanupMode = tracker.CursorI == 1
