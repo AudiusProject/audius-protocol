@@ -507,7 +507,6 @@ function* doBuyCryptoViaSol({
 
     // Save pre swap token balance
     const account = yield* call(getTokenAccountInfo, audiusBackendInstance, {
-      mint,
       tokenAccount: userbank
     })
     const preSwapTokenBalance = account?.amount ?? BigInt(0)
@@ -778,8 +777,7 @@ function* recoverBuyCryptoViaSolIfNecessary() {
 
     // Get pre swap token balance
     const account = yield* call(getTokenAccountInfo, audiusBackendInstance, {
-      tokenAccount: userbank,
-      mint
+      tokenAccount: userbank
     })
 
     // Get a quote for swapping the entire balance

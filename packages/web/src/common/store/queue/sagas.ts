@@ -48,8 +48,7 @@ const {
   getShuffle,
   getSource,
   getUid,
-  getUndershot,
-  getCurrentArtist
+  getUndershot
 } = queueSelectors
 
 const {
@@ -179,7 +178,14 @@ export function* watchPlay() {
       const isNearEndOfQueue = index + 3 >= length
 
       if (isNearEndOfQueue) {
-        yield* call(fetchLineupTracks)
+        /* Fetch more lineup tracks if available. Ideally, this would run async after we've started
+        playing the next track. But since we may skip the next track, we need the lineup and/or autoplay
+        logic to be run ahead of time.
+        Important note: Using the track we're being asked to play, as the lineup
+        source may be changing with that track, and we don't want to look up a lineup
+        using the "currentTrack" in the player.
+        */
+        yield* call(fetchLineupTracks, playActionTrack)
       }
 
       yield* call(handleQueueAutoplay, {
@@ -290,15 +296,18 @@ export function* watchPlay() {
 
 // Fetches more lineup tracks if available. This is needed for cases
 // where the user hasn't scrolled through the lineup.
-function* fetchLineupTracks() {
+function* fetchLineupTracks(currentTrack: Track) {
   const source = yield* select(getSource)
   if (!source) return
 
   const lineupEntry = lineupRegistry[source]
   if (!lineupEntry) return
 
-  const currentArtist = yield* select(getCurrentArtist)
-  const lineup = yield* select(lineupEntry.selector, currentArtist?.handle)
+  const currentTrackOwner = yield* select(getUser, {
+    id: currentTrack.owner_id
+  })
+
+  const lineup = yield* select(lineupEntry.selector, currentTrackOwner?.handle)
 
   if (lineup.hasMore) {
     const offset = lineup.entries.length + lineup.deleted + lineup.nullCount

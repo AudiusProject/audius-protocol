@@ -255,10 +255,14 @@ const RenderForm = ({
 
   const { submitForm, resetForm } = useFormikContext()
 
-  useEffect(() => resetForm, [contentId, resetForm])
+  useEffect(() => {
+    resetForm()
+  }, [contentId, resetForm])
 
   // Pre-create user bank if needed so it's ready by purchase time
-  useEffect(() => dispatch(eagerCreateUserBank()), [dispatch])
+  useEffect(() => {
+    dispatch(eagerCreateUserBank())
+  }, [dispatch])
 
   const {
     usdc_purchase: { price }

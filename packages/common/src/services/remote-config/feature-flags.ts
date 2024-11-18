@@ -2,12 +2,10 @@ import { Environment } from '../env'
 
 /* FeatureFlags must be lowercase snake case */
 export enum FeatureFlags {
-  SOLANA_LISTEN_ENABLED = 'solana_listen_enabled',
   SURFACE_AUDIO_ENABLED = 'surface_audio_enabled',
   PREFER_HIGHER_PATCH_FOR_PRIMARY = 'prefer_higher_patch_for_primary',
   PREFER_HIGHER_PATCH_FOR_SECONDARIES = 'prefer_higher_patch_for_secondaries',
   DISABLE_SIGN_UP_CONFIRMATION = 'disable_sign_up_confirmation',
-  TIPPING_ENABLED = 'tipping_enabled',
   EARLY_ACCESS = 'early_access',
   NEW_ARTIST_DASHBOARD_TABLE = 'new_artist_dashboard_table',
   BUY_AUDIO_COINBASE_ENABLED = 'buy_audio_coinbase_enabled',
@@ -77,12 +75,10 @@ export const environmentFlagDefaults: Record<
  * If optimizely errors, these default values are used.
  */
 export const flagDefaults: FlagDefaults = {
-  [FeatureFlags.SOLANA_LISTEN_ENABLED]: false,
   [FeatureFlags.SURFACE_AUDIO_ENABLED]: false,
   [FeatureFlags.PREFER_HIGHER_PATCH_FOR_PRIMARY]: true,
   [FeatureFlags.PREFER_HIGHER_PATCH_FOR_SECONDARIES]: true,
   [FeatureFlags.DISABLE_SIGN_UP_CONFIRMATION]: false,
-  [FeatureFlags.TIPPING_ENABLED]: false,
   [FeatureFlags.EARLY_ACCESS]: false,
   [FeatureFlags.NEW_ARTIST_DASHBOARD_TABLE]: false,
   [FeatureFlags.BUY_AUDIO_COINBASE_ENABLED]: false,
