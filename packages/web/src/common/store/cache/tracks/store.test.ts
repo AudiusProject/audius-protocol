@@ -16,7 +16,6 @@ import * as matchers from 'redux-saga-test-plan/matchers'
 import { StaticProvider, throwError } from 'redux-saga-test-plan/providers'
 import { describe, it, vi } from 'vitest'
 
-import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
 import { remoteConfigInstance } from 'services/remote-config/remote-config-instance'
 import { allSagas, noopReducer } from 'store/testHelper'
 
@@ -25,7 +24,6 @@ import sagas from './sagas'
 const { asCache, initialCacheState } = cacheReducer
 const { getTrack } = cacheTracksSelectors
 
-// Define account initial state based on slice.ts
 const initialAccountState = {
   collections: {},
   orderedPlaylists: [],
@@ -38,19 +36,24 @@ const initialAccountState = {
   walletAddresses: { currentUser: null, web3User: null }
 }
 
-const mockAudiusSdk = { full: { tracks: { getTrack: () => {} } } } as any
+const mockAudiusSdk = {
+  tracks: { updateTrack: () => {} },
+  full: { tracks: { getTrack: () => {} } }
+} as any
 
 const defaultProviders: StaticProvider[] = [
   [getContext('remoteConfigInstance'), remoteConfigInstance],
   [getContext('getFeatureEnabled'), () => false],
   [getContext('audiusSdk'), async () => mockAudiusSdk],
-  [getContext('reportToSentry'), () => {}],
-  [getContext('audiusBackendInstance'), audiusBackendInstance]
+  [getContext('reportToSentry'), () => {}]
 ]
 
 // Add mock at the top level
-vi.mock('@audius/common/adapters', () => ({
-  userTrackMetadataFromSDK: vi.fn((data) => data)
+vi.mock('@audius/common/adapters', async () => ({
+  userTrackMetadataFromSDK: vi.fn((data) => data),
+  trackMetadataForUploadToSdk: (
+    (await vi.importActual('@audius/common/adapters')) as any
+  ).trackMetadataForUploadToSdk
 }))
 
 describe.only('editTrack', () => {
@@ -251,7 +254,7 @@ describe.only('editTrack', () => {
       .provide([
         ...defaultProviders,
         [
-          matchers.call.fn(audiusBackendInstance.updateTrack),
+          matchers.call.fn(mockAudiusSdk.tracks.updateTrack),
           {
             blockHash: mockTxReceipt.blockHash,
             blockNumber: mockTxReceipt.blockNumber
@@ -265,16 +268,6 @@ describe.only('editTrack', () => {
         ]
       ])
       .dispatch(trackActions.editTrack(mockTrackId, mockFormFields))
-      //   .put(
-      //     confirmerActions.requestConfirmation(
-      //       'TRACKS-1',
-      //       expect.any(Function),
-      //       expect.any(Function),
-      //       expect.any(Function),
-      //       expect.any(Function),
-      //       600000
-      //     )
-      //   )
       .put(
         cacheActions.update(Kind.TRACKS, [
           { id: mockTrackId, metadata: mockUpdatedTrack }
@@ -329,7 +322,7 @@ describe.only('editTrack', () => {
       .provide([
         ...defaultProviders,
         [
-          matchers.call.fn(audiusBackendInstance.updateTrack),
+          matchers.call.fn(mockAudiusSdk.tracks.updateTrack),
           {
             blockHash: mockTxReceipt.blockHash,
             blockNumber: mockTxReceipt.blockNumber
@@ -394,7 +387,7 @@ describe.only('editTrack', () => {
       .provide([
         ...defaultProviders,
         [
-          matchers.call.fn(audiusBackendInstance.updateTrack),
+          matchers.call.fn(mockAudiusSdk.tracks.updateTrack),
           {
             blockHash: mockTxReceipt.blockHash,
             blockNumber: mockTxReceipt.blockNumber
@@ -463,7 +456,7 @@ describe.only('editTrack', () => {
       .provide([
         ...defaultProviders,
         [
-          matchers.call.fn(audiusBackendInstance.updateTrack),
+          matchers.call.fn(mockAudiusSdk.tracks.updateTrack),
           {
             blockHash: mockTxReceipt.blockHash,
             blockNumber: mockTxReceipt.blockNumber
@@ -530,7 +523,7 @@ describe.only('editTrack', () => {
       .provide([
         ...defaultProviders,
         [
-          matchers.call.fn(audiusBackendInstance.updateTrack),
+          matchers.call.fn(mockAudiusSdk.tracks.updateTrack),
           {
             blockHash: mockTxReceipt.blockHash,
             blockNumber: mockTxReceipt.blockNumber
@@ -590,7 +583,7 @@ describe.only('editTrack', () => {
       .provide([
         ...defaultProviders,
         [matchers.select.selector(getTrack), mockTrack],
-        [matchers.call.fn(audiusBackendInstance.updateTrack), throwError(error)]
+        [matchers.call.fn(mockAudiusSdk.tracks.updateTrack), throwError(error)]
       ])
       .dispatch(trackActions.editTrack(mockTrackId, invalidFormFields))
       .put(trackActions.editTrackFailed())
