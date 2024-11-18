@@ -1,7 +1,7 @@
 import { SagaIterator } from 'redux-saga'
 import { call, put, select, takeLatest } from 'typed-redux-saga'
 
-import { userApiFetchSaga } from '~/api'
+import { userApiFetchSaga } from '~/api/user'
 import { Id, Kind, Status, User } from '~/models'
 import { recordIP } from '~/services/audius-backend/RecordIP'
 import { accountActions, accountSelectors } from '~/store/account'
@@ -49,35 +49,34 @@ function* handleFetchTrackCount() {
 }
 
 export function* fetchAccountAsync({ isSignUp = false }): SagaIterator {
-  // const remoteConfigInstance = yield* getContext('remoteConfigInstance')
-  // const authService = yield* getContext('authService')
-  // const audiusBackendInstance = yield* getContext('audiusBackendInstance')
-  // const accountStatus = yield* select(accountSelectors.getAccountStatus)
-  // // Don't revert successful local account fetch
-  // if (accountStatus !== Status.SUCCESS) {
-  //   yield* put(accountActions.fetchAccountRequested())
-  // }
-  // const { accountWalletAddress: wallet, web3WalletAddress } = yield* call([
-  //   authService,
-  //   authService.getWalletAddresses
-  // ])
-  // if (!wallet) {
-  //   yield* put(
-  //     fetchAccountFailed({
-  //       reason: 'ACCOUNT_NOT_FOUND'
-  //     })
-  //   )
-  // }
-  // const accountData = yield* call(userApiFetchSaga.getUserAccount, {
-  //   wallet
-  // })
+  const remoteConfigInstance = yield* getContext('remoteConfigInstance')
+  const authService = yield* getContext('authService')
+  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
+  const accountStatus = yield* select(accountSelectors.getAccountStatus)
+  // Don't revert successful local account fetch
+  if (accountStatus !== Status.SUCCESS) {
+    yield* put(accountActions.fetchAccountRequested())
+  }
+  const { accountWalletAddress: wallet, web3WalletAddress } = yield* call([
+    authService,
+    authService.getWalletAddresses
+  ])
+  if (!wallet) {
+    yield* put(
+      fetchAccountFailed({
+        reason: 'ACCOUNT_NOT_FOUND'
+      })
+    )
+  }
+  const accountData = yield* call(userApiFetchSaga.getUserAccount, {
+    wallet
+  })
   // if (!accountData || !accountData.user) {
   //   yield* put(
   //     fetchAccountFailed({
   //       reason: 'ACCOUNT_NOT_FOUND'
   //     })
   //   )
-  //   return
   // }
   // const account = accountData.user
   // if (account.is_deactivated) {
@@ -87,9 +86,8 @@ export function* fetchAccountAsync({ isSignUp = false }): SagaIterator {
   //       reason: 'ACCOUNT_DEACTIVATED'
   //     })
   //   )
-  //   return
   // }
-  // // Set the userId in the remoteConfigInstance
+  // Set the userId in the remoteConfigInstance
   // remoteConfigInstance.setUserId(account.user_id)
   // yield* call(recordIPIfNotRecent, account.handle)
   // // Cache the account and put the signedIn action. We're done.
@@ -144,14 +142,14 @@ function* recordIPIfNotRecent(handle: string): SagaIterator {
   const storedIP = storedIPStr && JSON.parse(storedIPStr)
   if (!storedIP || !storedIP[handle] || storedIP[handle].timestamp < minAge) {
     const result = yield* call(recordIP, audiusBackendInstance)
-    //   if ('userIP' in result) {
-    //     const { userIP } = result
-    //     yield* call(
-    //       [localStorage, 'setItem'],
-    //       IP_STORAGE_KEY,
-    //       JSON.stringify({ ...storedIP, [handle]: { userIP, timestamp: now } })
-    //     )
-    //   }
+    if ('userIP' in result) {
+      const { userIP } = result
+      yield* call(
+        [localStorage, 'setItem'],
+        IP_STORAGE_KEY,
+        JSON.stringify({ ...storedIP, [handle]: { userIP, timestamp: now } })
+      )
+    }
   }
 }
 
