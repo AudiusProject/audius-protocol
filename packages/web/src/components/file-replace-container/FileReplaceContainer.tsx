@@ -8,6 +8,11 @@ import {
   IconReceive
 } from '@audius/harmony'
 
+const messages = {
+  replace: 'Replace',
+  download: 'Download'
+}
+
 type FileReplaceContainerProps = {
   fileName: string
   downloadEnabled?: boolean
@@ -40,7 +45,7 @@ export const FileReplaceContainer = ({
           iconLeft={IconArrowUpToLine}
           onClick={onClickReplace}
         >
-          Replace
+          {messages.replace}
         </Button>
         {downloadEnabled ? (
           <Button
@@ -49,7 +54,7 @@ export const FileReplaceContainer = ({
             iconLeft={IconReceive}
             onClick={onClickDownload}
           >
-            Download
+            {messages.download}
           </Button>
         ) : null}
       </Flex>
