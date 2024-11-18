@@ -11,7 +11,6 @@ import {
   UserTrackMetadata,
   LineupEntry
 } from '@audius/common/models'
-import { getIsReachable } from '@audius/common/src/store/reachability/selectors'
 import {
   accountSelectors,
   cacheCollectionsSelectors,
@@ -22,6 +21,7 @@ import {
   lineupRegistry,
   queueActions,
   queueSelectors,
+  reachabilitySelectors,
   RepeatMode,
   QueueSource,
   getContext,
@@ -61,7 +61,8 @@ const { getId } = cacheSelectors
 const { getUser } = cacheUsersSelectors
 const { getTrack } = cacheTracksSelectors
 const { getCollection } = cacheCollectionsSelectors
-const getUserId = accountSelectors.getUserId
+const { getUserId } = accountSelectors
+const { getIsReachable } = reachabilitySelectors
 
 const QUEUE_SUBSCRIBER_NAME = 'QUEUE'
 
