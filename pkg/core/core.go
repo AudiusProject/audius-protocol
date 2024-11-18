@@ -18,6 +18,7 @@ import (
 	"github.com/AudiusProject/audius-protocol/pkg/core/gen/proto"
 	"github.com/AudiusProject/audius-protocol/pkg/core/grpc"
 	"github.com/AudiusProject/audius-protocol/pkg/core/mempool"
+	"github.com/AudiusProject/audius-protocol/pkg/core/pubsub"
 	"github.com/AudiusProject/audius-protocol/pkg/core/registry_bridge"
 	"github.com/AudiusProject/audius-protocol/pkg/core/server"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
@@ -98,10 +99,12 @@ func run(ctx context.Context, logger *common.Logger) error {
 		return con.Start()
 	})
 
-	mempl := mempool.NewMempool(logger, config, db.New(pool), cometConfig.Mempool.Size)
-	mempl.AddValidators()
+	txPubsub := pubsub.NewPubsub[struct{}]()
 
-	node, err := chain.NewNode(logger, config, cometConfig, pool, c, mempl)
+	mempl := mempool.NewMempool(logger, config, db.New(pool), cometConfig.Mempool.Size)
+	mempl.CreateValidatorClients()
+
+	node, err := chain.NewNode(logger, config, cometConfig, pool, c, mempl, txPubsub)
 	if err != nil {
 		return fmt.Errorf("node init error: %v", err)
 	}
@@ -118,7 +121,7 @@ func run(ctx context.Context, logger *common.Logger) error {
 
 	logger.Info("local rpc initialized")
 
-	grpcServer, err := grpc.NewGRPCServer(logger, config, rpc, pool, mempl)
+	grpcServer, err := grpc.NewGRPCServer(logger, config, rpc, pool, mempl, txPubsub)
 	if err != nil {
 		return fmt.Errorf("grpc init error: %v", err)
 	}
@@ -182,7 +185,7 @@ func run(ctx context.Context, logger *common.Logger) error {
 				continue
 			}
 
-			err := mempl.AddValidators()
+			err := mempl.CreateValidatorClients()
 			if err != nil {
 				continue
 			}

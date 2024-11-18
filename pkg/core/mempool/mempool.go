@@ -154,7 +154,7 @@ func (m *Mempool) MempoolSize() (int, int) {
 // utility method to add validator types to this instance of the mempool
 // reads validators from genesis doc, gets urls from db, then creates
 // sdk instances to all of them for broadcasting capabilities
-func (m *Mempool) AddValidators() error {
+func (m *Mempool) CreateValidatorClients() error {
 	gendoc := m.config.GenesisFile
 	validators := gendoc.Validators
 

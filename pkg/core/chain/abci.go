@@ -11,8 +11,8 @@ import (
 	"github.com/AudiusProject/audius-protocol/pkg/core/contracts"
 	"github.com/AudiusProject/audius-protocol/pkg/core/db"
 	gen_proto "github.com/AudiusProject/audius-protocol/pkg/core/gen/proto"
-	"github.com/AudiusProject/audius-protocol/pkg/core/grpc"
 	"github.com/AudiusProject/audius-protocol/pkg/core/mempool"
+	"github.com/AudiusProject/audius-protocol/pkg/core/pubsub"
 	abcitypes "github.com/cometbft/cometbft/abci/types"
 	cometbfttypes "github.com/cometbft/cometbft/types"
 	"github.com/jackc/pgx/v5"
@@ -27,14 +27,15 @@ type CoreApplication struct {
 	pool      *pgxpool.Pool
 	config    *config.Config
 	mempl     *mempool.Mempool
+	txPubsub  *pubsub.TransactionHashPubsub
 
 	onGoingBlock pgx.Tx
-	finalizedTxs []grpc.TxHash
+	finalizedTxs []string
 }
 
 var _ abcitypes.Application = (*CoreApplication)(nil)
 
-func NewCoreApplication(logger *common.Logger, pool *pgxpool.Pool, contracts *contracts.AudiusContracts, envConfig *config.Config, mempl *mempool.Mempool) *CoreApplication {
+func NewCoreApplication(logger *common.Logger, pool *pgxpool.Pool, contracts *contracts.AudiusContracts, envConfig *config.Config, mempl *mempool.Mempool, txPubsub *pubsub.TransactionHashPubsub) *CoreApplication {
 	return &CoreApplication{
 		logger:       logger,
 		queries:      db.New(pool),
@@ -43,6 +44,7 @@ func NewCoreApplication(logger *common.Logger, pool *pgxpool.Pool, contracts *co
 		onGoingBlock: nil,
 		config:       envConfig,
 		mempl:        mempl,
+		txPubsub:     txPubsub,
 		finalizedTxs: []string{},
 	}
 }
@@ -200,15 +202,15 @@ func (app CoreApplication) Commit(ctx context.Context, commit *abcitypes.CommitR
 		return &abcitypes.CommitResponse{}, err
 	}
 
-	txmapSize, dequeSize := app.mempl.MempoolSize()
-	app.logger.Infof("mempool size before rm: txmap %d, deque %d", txmapSize, dequeSize)
-	// rm finalized txs from mempool
+	// rm txs from mempool
 	app.mempl.RemoveBatch(app.finalizedTxs)
-	app.logger.Infof("removed %v from mempool", app.finalizedTxs)
-	txmapSize, dequeSize = app.mempl.MempoolSize()
-	app.logger.Infof("mempool size after rm: txmap %d, deque %d", txmapSize, dequeSize)
-	app.finalizedTxs = []grpc.TxHash{}
-	app.logger.Infof("mempool finalized txs now empty: %v", app.finalizedTxs)
+	// broadcast txs to subscribers
+	for _, txhash := range app.finalizedTxs {
+		app.txPubsub.Publish(ctx, txhash, struct{}{})
+	}
+	// reset abci finalized txs
+	app.finalizedTxs = []string{}
+
 	return &abcitypes.CommitResponse{}, nil
 }
 

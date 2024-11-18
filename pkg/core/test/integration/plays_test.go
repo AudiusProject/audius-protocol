@@ -4,8 +4,8 @@ import (
 	"context"
 	"time"
 
+	"github.com/AudiusProject/audius-protocol/pkg/core/common"
 	"github.com/AudiusProject/audius-protocol/pkg/core/gen/proto"
-	"github.com/AudiusProject/audius-protocol/pkg/core/grpc"
 	"github.com/AudiusProject/audius-protocol/pkg/core/test/integration/utils"
 	"github.com/google/uuid"
 	. "github.com/onsi/ginkgo/v2"
@@ -49,7 +49,7 @@ var _ = Describe("Plays", func() {
 			},
 		}
 
-		expectedTxHash, err := grpc.ToTxHash(playEvent)
+		expectedTxHash, err := common.ToTxHash(playEvent)
 		Expect(err).To(BeNil())
 
 		req := &proto.SendTransactionRequest{
