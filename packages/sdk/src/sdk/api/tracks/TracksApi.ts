@@ -169,7 +169,15 @@ export class TracksApi extends GeneratedTracksApi {
       action: Action.CREATE,
       metadata: JSON.stringify({
         cid: '',
-        data: snakecaseKeys(updatedMetadata)
+        data: {
+          ...snakecaseKeys(updatedMetadata),
+          download_conditions:
+            updatedMetadata.downloadConditions &&
+            snakecaseKeys(updatedMetadata.downloadConditions),
+          stream_conditions:
+            updatedMetadata.streamConditions &&
+            snakecaseKeys(updatedMetadata.streamConditions)
+        }
       }),
       auth: this.auth,
       ...advancedOptions
@@ -264,7 +272,15 @@ export class TracksApi extends GeneratedTracksApi {
       action: Action.UPDATE,
       metadata: JSON.stringify({
         cid: '',
-        data: snakecaseKeys(updatedMetadata)
+        data: {
+          ...snakecaseKeys(updatedMetadata),
+          download_conditions:
+            updatedMetadata.downloadConditions &&
+            snakecaseKeys(updatedMetadata.downloadConditions),
+          stream_conditions:
+            updatedMetadata.streamConditions &&
+            snakecaseKeys(updatedMetadata.streamConditions)
+        }
       }),
       auth: this.auth,
       ...advancedOptions

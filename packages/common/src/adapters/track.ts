@@ -272,10 +272,10 @@ export const trackMetadataForUploadToSdk = (
     : undefined,
   downloadConditions: input.download_conditions
     ? accessConditionsToSDK(input.download_conditions)
-    : undefined,
+    : null,
   streamConditions: input.stream_conditions
     ? accessConditionsToSDK(input.stream_conditions)
-    : undefined,
+    : null,
   remixOf: input.remix_of
     ? {
         tracks: input.remix_of.tracks.map((track) => ({

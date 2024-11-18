@@ -52,13 +52,13 @@ export const CollectibleGatedConditions = z
 
 export const FollowGatedConditions = z
   .object({
-    followUserId: HashId
+    followUserId: z.number()
   })
   .strict()
 
 export const TipGatedConditions = z
   .object({
-    tipUserId: HashId
+    tipUserId: z.number()
   })
   .strict()
 
