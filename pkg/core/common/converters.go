@@ -33,7 +33,7 @@ func SignedTxProtoIntoSignedTxOapi(tx *proto.SignedTransaction) *models.Protocol
 			Plays: plays,
 		}
 	case *proto.SignedTransaction_ManageEntity:
-		em := &models.ProtocolManageEntityLegacy{
+		oapiTx.ManageEntity = &models.ProtocolManageEntityLegacy{
 			Action:     innerTx.ManageEntity.Action,
 			EntityID:   fmt.Sprint(innerTx.ManageEntity.EntityId),
 			EntityType: innerTx.ManageEntity.EntityType,
@@ -41,8 +41,14 @@ func SignedTxProtoIntoSignedTxOapi(tx *proto.SignedTransaction) *models.Protocol
 			UserID:     fmt.Sprint(innerTx.ManageEntity.UserId),
 			Signature:  innerTx.ManageEntity.Signature,
 		}
-
-		oapiTx.ManageEntity = em
+	case *proto.SignedTransaction_ValidatorRegistration:
+		oapiTx.ValidatorRegistration = &models.ProtocolValidatorRegistration{
+			CometAddress: innerTx.ValidatorRegistration.CometAddress,
+			Endpoint:     innerTx.ValidatorRegistration.Endpoint,
+			EthBlock:     innerTx.ValidatorRegistration.EthBlock,
+			NodeType:     innerTx.ValidatorRegistration.NodeType,
+			SpID:         innerTx.ValidatorRegistration.SpId,
+		}
 	}
 
 	return oapiTx
