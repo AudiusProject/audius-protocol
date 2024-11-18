@@ -1,4 +1,5 @@
 import { createAuthService } from '@audius/common/services'
+import { personalSign } from '@metamask/eth-sig-util'
 import { keccak_256 } from '@noble/hashes/sha3'
 import * as secp from '@noble/secp256k1'
 
@@ -50,7 +51,13 @@ export const auth = {
     await hedgehogInstance.waitUntilReady()
     return hedgehogInstance.wallet?.getAddressString() ?? ''
   },
-  hashAndSign: async (_data: string) => {
-    return 'Not implemented'
+  hashAndSign: async (data: string) => {
+    await hedgehogInstance.waitUntilReady()
+    const wallet = hedgehogInstance.getWallet()
+    if (!wallet) throw new Error('No wallet')
+    return personalSign({
+      privateKey: wallet.getPrivateKey(),
+      data: keccak_256(data)
+    })
   }
 }

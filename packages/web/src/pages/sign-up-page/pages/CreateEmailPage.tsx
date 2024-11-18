@@ -133,7 +133,7 @@ export const CreateEmailPage = () => {
     >
       {({ isSubmitting, setFieldValue, submitForm }) => (
         <Page as={Form} pt={isMobile ? 'xl' : 'unit13'}>
-          <Box alignSelf={isSmallDesktop ? 'flex-start' : 'center'}>
+          <Box alignSelf='center'>
             {isMobile || isSmallDesktop ? (
               <IconAudiusLogoHorizontalColor />
             ) : (
