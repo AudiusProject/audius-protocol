@@ -8,7 +8,6 @@ import (
 
 	"github.com/AudiusProject/audius-protocol/pkg/core/common"
 	abcitypes "github.com/cometbft/cometbft/abci/types"
-	"github.com/cometbft/cometbft/libs/bytes"
 	"github.com/cometbft/cometbft/rpc/client/local"
 	"github.com/cometbft/cometbft/types"
 	"google.golang.org/protobuf/proto"
@@ -89,15 +88,5 @@ func SendRawTx(ctx context.Context, logger *common.Logger, rpc *local.Local, tx 
 }
 
 func ToTxHash(msg proto.Message) (TxHash, error) {
-	b, err := proto.Marshal(msg)
-	if err != nil {
-		return "", err
-	}
-
-	tx := types.Tx(b)
-	hash := tx.Hash()
-	hexBytes := bytes.HexBytes(hash)
-	hashStr := hexBytes.String()
-
-	return hashStr, nil
+	return common.ToTxHash(msg)
 }

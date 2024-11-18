@@ -73,7 +73,7 @@ func (m *Mempool) AddTransaction(key string, tx *MempoolTransaction, broadcast b
 	element := m.deque.PushBack(tx)
 	m.txMap[key] = element
 
-	m.logger.Infof("added %s to mempool", key)
+	m.logger.Infof("added to mempool %s", key)
 	return nil
 }
 
@@ -104,6 +104,7 @@ func (m *Mempool) RemoveBatch(ids []string) {
 		if element, exists := m.txMap[id]; exists {
 			m.deque.Remove(element)
 			delete(m.txMap, id)
+			m.logger.Infof("removed from mempool %s", id)
 		}
 	}
 }
@@ -144,6 +145,10 @@ func (m *Mempool) RemoveExpiredTransactions(blockNum int64) {
 			delete(m.txMap, id)
 		}
 	}
+}
+
+func (m *Mempool) MempoolSize() (int, int) {
+	return len(m.txMap), m.deque.Len()
 }
 
 // utility method to add validator types to this instance of the mempool

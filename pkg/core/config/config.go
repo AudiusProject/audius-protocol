@@ -198,7 +198,7 @@ func ReadConfig(logger *common.Logger) (*Config, error) {
 		if cfg.EthRegistryAddress == "" {
 			cfg.EthRegistryAddress = DevRegistryAddress
 		}
-		cfg.SlaRollupInterval = 60
+		cfg.SlaRollupInterval = 200
 	}
 
 	// Disable ssl for local postgres db connection
