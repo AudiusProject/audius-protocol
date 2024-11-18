@@ -4,19 +4,19 @@ WORKDIR /app
 
 ENV discoveryOneGRPC=core-discovery-1:50051
 ENV discoveryOneJRPC=http://core-discovery-1:26657
-ENV discoveryOneOAPI=core-discovery-1
+ENV discoveryOneOAPI=core-discovery-1:26659
 
 ENV contentOneGRPC=core-content-1:50051
 ENV contentOneJRPC=http://core-content-1:26657
-ENV contentOneOAPI=core-content-1
+ENV contentOneOAPI=core-content-1:26659
 
 ENV contentTwoGRPC=core-content-2:50051
 ENV contentTwoJRPC=http://core-content-2:26657
-ENV contentTwoOAPI=core-content-2
+ENV contentTwoOAPI=core-content-2:26659
 
 ENV contentThreeGRPC=core-content-3:50051
 ENV contentThreeJRPC=http://core-content-3:26657
-ENV contentThreeOAPI=core-content-3
+ENV contentThreeOAPI=core-content-3:26659
 
 COPY . .
 
