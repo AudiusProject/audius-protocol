@@ -266,9 +266,6 @@ export const SettingsPage = (props: SettingsPageProps) => {
     FeatureFlags.PAYOUT_WALLET_ENABLED
   )
   const allowAiAttribution = useSelector(getAllowAiAttribution)
-  const { isEnabled: isAiAttributionEnabled } = useFlag(
-    FeatureFlags.AI_ATTRIBUTION
-  )
   const { isEnabled: isManagerModeEnabled } = useFlag(FeatureFlags.MANAGER_MODE)
   const { isEnabled: isCommentsEnabled } = useFlag(
     FeatureFlags.COMMENTS_ENABLED
@@ -420,26 +417,24 @@ export const SettingsPage = (props: SettingsPageProps) => {
             <AccountsYouManageSettingsCard />
           </>
         ) : null}
-        {isAiAttributionEnabled ? (
-          <SettingsCard
-            icon={<IconRobot />}
-            title={messages.aiGeneratedCardTitle}
-            description={messages.aiGeneratedCardDescription}
+        <SettingsCard
+          icon={<IconRobot />}
+          title={messages.aiGeneratedCardTitle}
+          description={messages.aiGeneratedCardDescription}
+        >
+          {allowAiAttribution ? (
+            <span className={styles.aiAttributionEnabled}>
+              {messages.aiGeneratedEnabled}
+            </span>
+          ) : null}
+          <Button
+            onClick={openAiAttributionSettingsModal}
+            variant='secondary'
+            fullWidth
           >
-            {allowAiAttribution ? (
-              <span className={styles.aiAttributionEnabled}>
-                {messages.aiGeneratedEnabled}
-              </span>
-            ) : null}
-            <Button
-              onClick={openAiAttributionSettingsModal}
-              variant='secondary'
-              fullWidth
-            >
-              {messages.aiGeneratedButtonText}
-            </Button>
-          </SettingsCard>
-        ) : null}
+            {messages.aiGeneratedButtonText}
+          </Button>
+        </SettingsCard>
         {isDownloadDesktopEnabled ? (
           <SettingsCard
             icon={<IconReceive />}

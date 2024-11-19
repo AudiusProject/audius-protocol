@@ -1,10 +1,9 @@
 import { transformAndCleanList } from '@audius/common/adapters'
 import { HashId } from '@audius/common/models'
-import { AudiusBackend, FeatureFlags } from '@audius/common/services'
+import { AudiusBackend } from '@audius/common/services'
 import {
   reactionsUIActions,
   reactionsUISelectors,
-  reactionsMap,
   getReactionFromRawValue,
   getContext,
   ReactionTypes,
@@ -33,7 +32,6 @@ type SubmitReactionConfig = {
   audiusBackend: AudiusBackend
   audiusSdk: AudiusSdk
   userId: string
-  useDiscoveryReactions: Promise<boolean>
 }
 
 type SubmitReactionResponse = { success: boolean; error: any }
@@ -43,26 +41,17 @@ const submitReaction = async ({
   reactionValue,
   audiusBackend,
   audiusSdk,
-  userId,
-  useDiscoveryReactions
+  userId
 }: SubmitReactionConfig): Promise<SubmitReactionResponse> => {
   try {
-    if (await useDiscoveryReactions) {
-      await audiusSdk.users.sendTipReaction({
-        userId,
-        metadata: {
-          reactedTo,
-          reactionValue: reactionValue || '😍'
-        }
-      })
-      return { success: true, error: undefined }
-    } else {
-      const libs = await audiusBackend.getAudiusLibs()
-      return libs.Reactions.submitReaction({
+    await audiusSdk.users.sendTipReaction({
+      userId,
+      metadata: {
         reactedTo,
-        reactionValue: reactionValue ? reactionsMap[reactionValue] : 0
-      })
-    }
+        reactionValue: reactionValue || '😍'
+      }
+    })
+    return { success: true, error: undefined }
   } catch (err) {
     const errorMessage = getErrorMessage(err)
     console.error(errorMessage)
@@ -131,11 +120,6 @@ function* writeReactionValueAsync({
   const audiusSdk = yield* getContext('audiusSdk')
   const sdk = yield* call(audiusSdk)
 
-  const getFeatureEnabled = yield* getContext('getFeatureEnabled')
-  const useDiscoveryReactions = getFeatureEnabled(
-    FeatureFlags.DISCOVERY_TIP_REACTIONS
-  )
-
   yield* waitForWrite()
   const accountId = yield* select(getUserId)
   const userId = encodeHashId(accountId!)
@@ -145,8 +129,7 @@ function* writeReactionValueAsync({
     reactionValue: newReactionValue,
     audiusBackend,
     audiusSdk: sdk,
-    userId,
-    useDiscoveryReactions
+    userId
   })
 }
 

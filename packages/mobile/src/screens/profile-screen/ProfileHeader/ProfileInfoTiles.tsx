@@ -1,7 +1,6 @@
 import type { ComponentType } from 'react'
 import { useCallback } from 'react'
 
-import { FeatureFlags } from '@audius/common/services'
 import {
   accountSelectors,
   relatedArtistsUISelectors
@@ -17,7 +16,6 @@ import {
 } from '@audius/harmony-native'
 import { Text, Tile } from 'app/components/core'
 import { useNavigation } from 'app/hooks/useNavigation'
-import { useFeatureFlag } from 'app/hooks/useRemoteConfig'
 import { makeStyles } from 'app/styles'
 import type { SvgProps } from 'app/types/svg'
 import { useThemePalette } from 'app/utils/theme'
@@ -139,21 +137,18 @@ const useStyles = makeStyles(({ spacing }) => ({
 
 export const ProfileInfoTiles = () => {
   const styles = useStyles()
-  const { user_id, current_user_followee_follow_count, allow_ai_attribution } =
-    useSelectProfile([
-      'supporting_count',
-      'user_id',
-      'current_user_followee_follow_count',
-      'allow_ai_attribution'
-    ])
-
-  const { isEnabled: isAiGeneratedTracksEnabled } = useFeatureFlag(
-    FeatureFlags.AI_ATTRIBUTION
-  )
+  const {
+    user_id,
+    current_user_followee_follow_count,
+    allow_ai_attribution: hasAiAttribution
+  } = useSelectProfile([
+    'supporting_count',
+    'user_id',
+    'current_user_followee_follow_count',
+    'allow_ai_attribution'
+  ])
 
   const accountId = useSelector(getUserId)
-
-  const hasAiAttribution = allow_ai_attribution && isAiGeneratedTracksEnabled
 
   const hasMutuals =
     user_id !== accountId && current_user_followee_follow_count > 0

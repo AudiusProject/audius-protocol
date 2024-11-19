@@ -178,7 +178,7 @@ function* downloadTrackAudio(track: UserTrackMetadata, userId: ID) {
   queryParams.filename = `${title}.mp3`
 
   const trackAudioUri = apiClient.makeUrl(
-    `/tracks/${encodedTrackId}/download`,
+    `/tracks/${encodedTrackId}/stream`,
     queryParams
   )
   const response = yield* call(downloadFile, trackAudioUri, trackFilePath)
