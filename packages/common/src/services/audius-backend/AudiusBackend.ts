@@ -530,28 +530,21 @@ export const audiusBackend = ({
       StringKeys.DISCOVERY_NODE_BLOCK_LIST
     )
 
-    const useSdkDiscoveryNodeSelector = await getFeatureEnabled(
-      FeatureFlags.SDK_DISCOVERY_NODE_SELECTOR
-    )
+    const discoveryNodeSelector =
+      await discoveryNodeSelectorService.getInstance()
 
-    let discoveryNodeSelector: Maybe<DiscoveryNodeSelector>
-
-    if (useSdkDiscoveryNodeSelector) {
-      discoveryNodeSelector = await discoveryNodeSelectorService.getInstance()
-
-      const initialSelectedNode: string | undefined =
-        // TODO: Need a synchronous method to check if a discovery node is already selected?
-        // Alternatively, remove all this AudiusBackend/Libs init/APIClient init stuff in favor of SDK
-        // @ts-ignore config is private
-        discoveryNodeSelector.config.initialSelectedNode
-      if (initialSelectedNode) {
-        discoveryProviderSelectionCallback(initialSelectedNode, [])
-      }
-      discoveryNodeSelector.addEventListener('change', (endpoint) => {
-        console.debug('[AudiusBackend] DiscoveryNodeSelector changed', endpoint)
-        discoveryProviderSelectionCallback(endpoint, [])
-      })
+    const initialSelectedNode: string | undefined =
+      // TODO: Need a synchronous method to check if a discovery node is already selected?
+      // Alternatively, remove all this AudiusBackend/Libs init/APIClient init stuff in favor of SDK
+      // @ts-ignore config is private
+      discoveryNodeSelector.config.initialSelectedNode
+    if (initialSelectedNode) {
+      discoveryProviderSelectionCallback(initialSelectedNode, [])
     }
+    discoveryNodeSelector.addEventListener('change', (endpoint) => {
+      console.debug('[AudiusBackend] DiscoveryNodeSelector changed', endpoint)
+      discoveryProviderSelectionCallback(endpoint, [])
+    })
 
     const baseCreatorNodeConfig = AudiusLibs.configCreatorNode(
       userNodeUrl,
