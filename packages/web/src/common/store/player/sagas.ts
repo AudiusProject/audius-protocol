@@ -1,4 +1,5 @@
 import { Kind, type Track } from '@audius/common/models'
+import { QueryParams } from '@audius/common/services'
 import {
   accountSelectors,
   cacheTracksSelectors,
