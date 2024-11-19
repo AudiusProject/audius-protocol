@@ -1,7 +1,7 @@
 import chalk from 'chalk'
 import { program, Option } from 'commander'
 
-import { initializeAudiusLibs, initializeAudiusSdk } from './utils.mjs'
+import { initializeAudiusSdk } from './utils.mjs'
 
 program
   .command('create-user-bank')
@@ -16,20 +16,7 @@ program
       .default('wAUDIO')
   )
   .action(async (handle, { mint }) => {
-    const audiusLibs = await initializeAudiusLibs(handle)
-
-    // extract privkey and pubkey from hedgehog
-    // only works with accounts created via audius-cmd
-    const wallet = audiusLibs?.hedgehog?.getWallet()
-    const privKey = wallet?.getPrivateKeyString()
-    const pubKey = wallet?.getAddressString()
-
-    // init sdk with priv and pub keys as api keys and secret
-    // this enables writes via sdk
-    const audiusSdk = await initializeAudiusSdk({
-      apiKey: pubKey,
-      apiSecret: privKey
-    })
+    const audiusSdk = await initializeAudiusSdk({ handle })
 
     try {
       const response =
