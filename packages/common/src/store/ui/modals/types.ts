@@ -16,6 +16,7 @@ import { InboxUnavailableModalState } from './inbox-unavailable-modal'
 import { LeavingAudiusModalState } from './leaving-audius-modal'
 import { PremiumContentPurchaseModalState } from './premium-content-purchase-modal'
 import { PublishConfirmationModalState } from './publish-confirmation-modal'
+import { ReplaceTrackConfirmationModalState } from './replace-track-confirmation-modal'
 import { UploadConfirmationModalState } from './upload-confirmation-modal'
 import { USDCManualTransferModalState } from './usdc-manual-transfer-modal'
 import { USDCPurchaseDetailsModalState } from './usdc-purchase-details-modal'
@@ -60,6 +61,7 @@ export type Modals =
   | 'AddToCollection'
   | 'DeletePlaylistConfirmation'
   | 'DeleteTrackConfirmation'
+  | 'ReplaceTrackConfirmation'
   | 'FeatureFlagOverride'
   | 'BuyAudio'
   | 'BuyAudioRecovery'
@@ -124,6 +126,7 @@ export type StatefulModalsState = {
   PublishConfirmation: PublishConfirmationModalState
   HideContentConfirmation: HideContentConfirmationModalState
   DeleteTrackConfirmation: DeleteTrackConfirmationModalState
+  ReplaceTrackConfirmation: ReplaceTrackConfirmationModalState
 }
 
 export type ModalsState = BasicModalsState & StatefulModalsState

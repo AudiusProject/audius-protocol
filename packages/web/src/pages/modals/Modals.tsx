@@ -32,6 +32,7 @@ import { PasswordResetModal } from 'components/password-reset/PasswordResetModal
 import { PayoutWalletModal } from 'components/payout-wallet-modal/PayoutWalletModal'
 import { PremiumContentPurchaseModal } from 'components/premium-content-purchase-modal/PremiumContentPurchaseModal'
 import { PublishConfirmationModal } from 'components/publish-confirmation-modal/PublishConfirmationModal'
+import { ReplaceTrackConfirmationModal } from 'components/replace-track-confirmation-modal/ReplaceTrackConfirmationModal'
 import { TipAudioModal } from 'components/tipping/tip-audio/TipAudioModal'
 import ConnectedMobileOverflowModal from 'components/track-overflow-modal/ConnectedMobileOverflowModal'
 import { TransactionDetailsModal } from 'components/transaction-details-modal'
@@ -88,6 +89,7 @@ const commonModalsMap: { [Modal in ModalTypes]?: ComponentType } = {
   TiersExplainer: TierExplainerModal,
   DeletePlaylistConfirmation: DeletePlaylistConfirmationModal,
   DeleteTrackConfirmation: DeleteTrackConfirmationModal,
+  ReplaceTrackConfirmation: ReplaceTrackConfirmationModal,
   DuplicateAddConfirmation: DuplicateAddConfirmationModal,
   AudioBreakdown: AudioBreakdownModal,
   UploadConfirmation: UploadConfirmationModal,
