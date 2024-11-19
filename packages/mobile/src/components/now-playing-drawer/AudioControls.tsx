@@ -1,6 +1,5 @@
 import { useCallback } from 'react'
 
-import { FeatureFlags } from '@audius/common/services'
 import {
   queueActions,
   queueSelectors,
@@ -18,7 +17,6 @@ import {
   IconButton
 } from '@audius/harmony-native'
 import { usePressScaleAnimation } from 'app/hooks/usePressScaleAnimation'
-import { useFeatureFlag } from 'app/hooks/useRemoteConfig'
 import { makeStyles } from 'app/styles'
 
 import { PlayButton } from './PlayButton'
@@ -82,11 +80,6 @@ export const AudioControls = ({
   isLongFormContent = false
 }: AudioControlsProps) => {
   const dispatch = useDispatch()
-
-  const { isEnabled: isNewPodcastControlsEnabled } = useFeatureFlag(
-    FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED,
-    FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED_FALLBACK
-  )
   const styles = useStyles()
 
   const shuffleEnabled = useSelector(getShuffle)
@@ -132,7 +125,7 @@ export const AudioControls = ({
   }, [dispatch])
 
   const renderRepeatButton = () => {
-    return isLongFormContent && isNewPodcastControlsEnabled ? (
+    return isLongFormContent ? (
       <View style={styles.emptyPlaceholder} />
     ) : (
       <RepeatButton
@@ -177,7 +170,7 @@ export const AudioControls = ({
     )
   }
   const renderRightButton = () => {
-    return isLongFormContent && isNewPodcastControlsEnabled ? (
+    return isLongFormContent ? (
       <View style={styles.playbackIconContainer}>
         <PlaybackRateButton
           onPress={handlePressPlaybackRate}

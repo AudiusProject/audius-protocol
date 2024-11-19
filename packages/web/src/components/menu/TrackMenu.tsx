@@ -8,7 +8,7 @@ import {
   PlayableType,
   ID
 } from '@audius/common/models'
-import { FeatureFlags, trpc } from '@audius/common/services'
+import { trpc } from '@audius/common/services'
 import {
   accountSelectors,
   cacheCollectionsActions,
@@ -28,7 +28,6 @@ import { Dispatch } from 'redux'
 
 import * as embedModalActions from 'components/embed-modal/store/actions'
 import { ToastContext } from 'components/toast/ToastContext'
-import { useFlag } from 'hooks/useRemoteConfig'
 import { AppState } from 'store/types'
 import { albumPage } from 'utils/route'
 
@@ -104,10 +103,6 @@ const TrackMenu = (props: TrackMenuProps) => {
   const { toast } = useContext(ToastContext)
   const dispatch = useDispatch()
   const currentUserId = useSelector(getUserId)
-  const { isEnabled: isNewPodcastControlsEnabled } = useFlag(
-    FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED,
-    FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED_FALLBACK
-  )
 
   const { data: track } = useGetTrackById({ id: props.trackId })
 
@@ -220,10 +215,9 @@ const TrackMenu = (props: TrackMenuProps) => {
     }
 
     const trackPageMenuItem = {
-      text:
-        isLongFormContent && isNewPodcastControlsEnabled
-          ? messages.visitEpisodePage
-          : messages.visitTrackPage,
+      text: isLongFormContent
+        ? messages.visitEpisodePage
+        : messages.visitTrackPage,
       onClick: () => {
         goToRoute(trackPermalink)
       }
@@ -301,7 +295,7 @@ const TrackMenu = (props: TrackMenuProps) => {
     }
     if (trackId && trackTitle && !isDeleted) {
       if (includeTrackPage) menu.items.push(trackPageMenuItem)
-      if (isLongFormContent && isNewPodcastControlsEnabled) {
+      if (isLongFormContent) {
         const playbackPosition = trackPlaybackPositions?.[trackId]
         menu.items.push(
           playbackPosition?.status === 'COMPLETED'
