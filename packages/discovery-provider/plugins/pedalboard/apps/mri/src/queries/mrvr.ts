@@ -33,7 +33,7 @@ type MrvrAffirmative = {
 
 type MrvrCbs = {
   'Offering': 'Downloads / Monetized Content' | 'Subscription'
-  'UserType': 'Free Trial'
+  'UserType': 'Paid'
   ['Subscriber Count']: 0
   ['Gross Revenue']: number
   ['Gross revenue With Deductions']: number
@@ -199,7 +199,82 @@ export const mrvr = async (
   const cbs = async () => {
     const mrvrAffirmativeCbs = await db.raw(
       `
-      
+      select
+        "Offering",
+        "UserType",
+        "Subscriber Count",
+        "Gross Revenue",
+        "Gross revenue With Deductions", 
+        "Territory",
+        case when ("Total Downloads" > 0 or "Total Streams" > 0) then true else false end as "Has_usage_flag",
+        "Total Downloads",
+        "Total Streams",
+        "Currency"
+      from (
+        select
+          'Downloads / Monetized Content' as "Offering",
+          'Paid' as "UserType",
+          count(distinct "buyer_user_id") as "Subscriber Count",
+          sum(("amount" + "extra_amount") / 1000000) as "Gross Revenue",
+          sum(("amount" + "extra_amount") / 1000000) as "Gross revenue With Deductions",
+          country_to_iso_alpha2(coalesce("country", '')) as "Territory",
+          (
+            select count(*)
+            from track_downloads td
+            where td.created_at >= :start
+            and td.created_at < :end
+            and td.country = usdc_purchases.country
+          ) as "Total Downloads",
+          (
+            select sum("count")
+            from aggregate_monthly_plays amp
+            where amp.timestamp >= :start
+            and amp.timestamp < :end
+            and amp.country = usdc_purchases.country
+          ) as "Total Streams",
+          'USD' as "Currency"
+        from "usdc_purchases"
+        where
+          "created_at" >= :start
+          and "created_at" < :end
+          and "country" is not null
+        group by "country"
+
+        union all
+
+        select
+          'Downloads / Monetized Content' as "Offering",
+          'Free Trial (no payment details)' as "UserType",
+          count(*) as "Subscriber Count",
+          0 as "Gross Revenue",
+          0 as "Gross revenue With Deductions",
+          country_to_iso_alpha2(coalesce(plays."country", '')) as "Territory",
+          (
+              select count(*)
+              from track_downloads td
+              where td.created_at >= :start
+              and td.created_at < :end
+              and td.country = plays."country"
+          ) as "Total Downloads",
+          (
+              select sum("count")
+              from aggregate_monthly_plays amp
+              where amp.timestamp >= :start
+              and amp.timestamp < :end
+              and amp.country = plays."country"
+          ) as "Total Streams",
+          'USD' as "Currency"
+        from "users" users
+        left join lateral (
+            select p."country"
+            from "plays" p
+            where p."user_id" = users."user_id"
+            order by p."created_at" desc
+            limit 1
+        ) plays on true
+        where plays."country" is not null
+        group by plays."country"
+      ) subq
       `,
       { start, end }
     )
