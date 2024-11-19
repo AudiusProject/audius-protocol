@@ -1,9 +1,4 @@
-import {
-  Genre,
-  Mood,
-  type DiscoveryNodeSelector,
-  type StorageNodeSelectorService
-} from '@audius/sdk'
+import { Genre, Mood, type StorageNodeSelectorService } from '@audius/sdk'
 import { DiscoveryAPI } from '@audius/sdk-legacy/dist/core'
 import { type AudiusLibs as AudiusLibsType } from '@audius/sdk-legacy/dist/libs'
 import type { HedgehogConfig } from '@audius/sdk-legacy/dist/services/hedgehog'
