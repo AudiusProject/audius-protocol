@@ -15,6 +15,8 @@ import { ScreenSecondaryContent } from 'app/components/core/Screen/ScreenSeconda
 import { TopTabNavigator } from 'app/components/top-tab-bar'
 import { useAppTabScreen } from 'app/hooks/useAppTabScreen'
 
+import { HeaderLeftProfile } from '../app-screen/useAppScreenOptions'
+
 import { TrendingFilterButton } from './TrendingFilterButton'
 import { TrendingLineup } from './TrendingLineup'
 const { getTrendingGenre } = trendingPageSelectors
@@ -62,7 +64,7 @@ export const TrendingScreen = () => {
   useAppTabScreen()
 
   return (
-    <Screen url='Trending'>
+    <Screen url='Trending' topbarLeft={<HeaderLeftProfile />}>
       <ScreenPrimaryContent>
         <ScreenHeader text='Trending' icon={IconTrending}>
           <TrendingFilterButton />

@@ -13,6 +13,8 @@ import { ScreenPrimaryContent } from 'app/components/core/Screen/ScreenPrimaryCo
 import { ScreenSecondaryContent } from 'app/components/core/Screen/ScreenSecondaryContent'
 import { useAppTabScreen } from 'app/hooks/useAppTabScreen'
 
+import { HeaderLeftProfile } from '../app-screen/useAppScreenOptions'
+
 import { NotificationList } from './NotificationList'
 const { markAllAsViewed } = notificationsActions
 const { getNotificationUnviewedCount } = notificationsSelectors
@@ -37,7 +39,7 @@ export const NotificationsScreen = () => {
   useFocusEffect(handleMarkAsViewed)
 
   return (
-    <Screen>
+    <Screen topbarLeft={<HeaderLeftProfile />}>
       <ScreenPrimaryContent>
         <ScreenHeader
           text={messages.header}

@@ -1,4 +1,4 @@
-import { useCallback, useContext } from 'react'
+import { memo, useCallback, useContext } from 'react'
 
 import { FeatureFlags } from '@audius/common/services'
 import { clearSearch } from '@audius/web/src/common/store/search-bar/actions'
@@ -7,8 +7,9 @@ import type {
   NativeStackNavigationOptions,
   NativeStackNavigationProp
 } from '@react-navigation/native-stack'
+import type { HeaderBackButtonProps } from '@react-navigation/native-stack/lib/typescript/src/types'
 import { CardStyleInterpolators } from '@react-navigation/stack'
-import { Text, View } from 'react-native'
+import { InteractionManager, Text, View } from 'react-native'
 import { useDispatch } from 'react-redux'
 
 import {
@@ -68,17 +69,49 @@ type Options = {
   route: RouteProp<ParamListBase>
 }
 
+export const HeaderLeftBack = memo((props: HeaderBackButtonProps) => {
+  const { canGoBack, ...other } = props
+  const styles = useStyles()
+  const navigation = useNavigation()
+
+  if (canGoBack) {
+    return (
+      <View style={styles.headerLeft}>
+        <IconButton
+          icon={IconCaretLeft}
+          color='subdued'
+          size='l'
+          {...other}
+          onPress={() => {
+            InteractionManager.runAfterInteractions(() => {
+              navigation.pop()
+            })
+          }}
+        />
+      </View>
+    )
+  }
+})
+
+export const HeaderLeftProfile = memo(() => {
+  const styles = useStyles()
+  const { drawerHelpers } = useContext(AppDrawerContext)
+  const handleOpenLeftNavDrawer = useCallback(() => {
+    drawerHelpers?.openDrawer()
+  }, [drawerHelpers])
+  return (
+    <View style={[styles.headerLeft, { marginLeft: 0 }]}>
+      <AccountPictureHeader onPress={handleOpenLeftNavDrawer} />
+    </View>
+  )
+})
+
 export const useAppScreenOptions = (
   overrides?: Partial<NativeStackNavigationOptions>
 ) => {
   const styles = useStyles()
   const navigation = useNavigation()
-  const { drawerHelpers } = useContext(AppDrawerContext)
   const dispatch = useDispatch()
-
-  const handleOpenLeftNavDrawer = useCallback(() => {
-    drawerHelpers?.openDrawer()
-  }, [drawerHelpers])
 
   const handlePressSearch = useCallback(() => {
     dispatch(clearSearch())
@@ -90,7 +123,7 @@ export const useAppScreenOptions = (
   const screenOptions: (options: Options) => NativeStackNavigationOptions =
     useCallback(
       (options) => {
-        const { navigation, route } = options
+        const { route } = options
         const { params } = route
         const isFromAppLeftDrawer =
           params && (params as ContextualParams).fromAppDrawer
@@ -104,27 +137,7 @@ export const useAppScreenOptions = (
           headerShadowVisible: false,
           headerTitleAlign: 'center',
           headerBackVisible: false,
-          headerLeft: (props) => {
-            const { canGoBack, ...other } = props
-            if (canGoBack) {
-              return (
-                <View style={styles.headerLeft}>
-                  <IconButton
-                    icon={IconCaretLeft}
-                    color='subdued'
-                    size='l'
-                    {...other}
-                    onPress={() => navigation.pop()}
-                  />
-                </View>
-              )
-            }
-            return (
-              <View style={[styles.headerLeft, { marginLeft: 0 }]}>
-                <AccountPictureHeader onPress={handleOpenLeftNavDrawer} />
-              </View>
-            )
-          },
+          headerLeft: (props) => <HeaderLeftBack {...props} />,
           title: '',
           headerTitle: ({ children }) => {
             if (children === 'none') return null
@@ -165,13 +178,7 @@ export const useAppScreenOptions = (
           ...overrides
         }
       },
-      [
-        handleOpenLeftNavDrawer,
-        handlePressSearch,
-        styles,
-        overrides,
-        isEarlyAccess
-      ]
+      [handlePressSearch, styles, overrides, isEarlyAccess]
     )
 
   return screenOptions

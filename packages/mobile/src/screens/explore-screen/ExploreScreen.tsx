@@ -15,6 +15,8 @@ import { ScreenSecondaryContent } from 'app/components/core/Screen/ScreenSeconda
 import { TopTabNavigator } from 'app/components/top-tab-bar'
 import { useAppTabScreen } from 'app/hooks/useAppTabScreen'
 
+import { HeaderLeftProfile } from '../app-screen/useAppScreenOptions'
+
 import { ArtistsTab } from './tabs/ArtistsTab'
 import { ForYouTab } from './tabs/ForYouTab'
 import { MoodsTab } from './tabs/MoodsTab'
@@ -60,7 +62,7 @@ const ExploreScreen = () => {
   })
 
   return (
-    <Screen>
+    <Screen topbarLeft={<HeaderLeftProfile />}>
       <ScreenPrimaryContent>
         <ScreenHeader
           text={messages.header}

@@ -19,6 +19,8 @@ import { OnlineOnly } from 'app/components/offline-placeholder/OnlineOnly'
 import { useAppTabScreen } from 'app/hooks/useAppTabScreen'
 import { make, track } from 'app/services/analytics'
 
+import { HeaderLeftProfile } from '../app-screen/useAppScreenOptions'
+
 import { EmptyFeedSuggestedFollows } from './EmptyFeedSuggestedFollows'
 import { FeedFilterButton } from './FeedFilterButton'
 const { getDiscoverFeedLineup } = feedPageSelectors
@@ -48,7 +50,7 @@ export const FeedScreen = () => {
   )
 
   return (
-    <Screen url='Feed'>
+    <Screen url='Feed' topbarLeft={<HeaderLeftProfile />}>
       <ScreenHeader text={messages.header} icon={IconFeed}>
         <OnlineOnly>
           <FeedFilterButton />

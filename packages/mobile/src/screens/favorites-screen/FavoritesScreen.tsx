@@ -11,6 +11,8 @@ import { TopTabNavigator } from 'app/components/top-tab-bar'
 import { useAppTabScreen } from 'app/hooks/useAppTabScreen'
 import { makeStyles } from 'app/styles'
 
+import { HeaderLeftProfile } from '../app-screen/useAppScreenOptions'
+
 import { AlbumsTab } from './AlbumsTab'
 import { FavoritesDownloadSection } from './FavoritesDownloadSection'
 import { LibraryCategorySelectionMenu } from './LibraryCategorySelectionMenu'
@@ -52,7 +54,7 @@ export const FavoritesScreen = () => {
   const headerStyles = useHeaderStyles()
 
   return (
-    <Screen>
+    <Screen topbarLeft={<HeaderLeftProfile />}>
       <ScreenPrimaryContent>
         <ScreenHeader
           text={messages.header}
