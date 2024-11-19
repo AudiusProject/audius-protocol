@@ -8,13 +8,7 @@ from sqlalchemy.orm.session import Session
 from sqlalchemy.sql.functions import GenericFunction
 from sqlalchemy.sql.type_api import TypeEngine
 
-from src.api.v1.helpers import (
-    extend_playlist,
-    extend_track,
-    format_limit,
-    format_offset,
-    to_dict,
-)
+from src.api.v1.helpers import extend_track, format_limit, format_offset, to_dict
 from src.models.playlists.aggregate_playlist import AggregatePlaylist
 from src.models.playlists.playlist import Playlist
 from src.models.social.repost import RepostType
@@ -342,13 +336,14 @@ def _get_trending_playlists_with_session(
 
         # Re-associate tracks with playlists
         # track_id -> populated_track
-        populated_track_map = {track["track_id"]: track for track in populated_tracks}
+        populated_track_map = {
+            track["track_id"]: extend_track(track) for track in populated_tracks
+        }
         for playlist in playlists_map.values():
             for i in range(len(playlist["tracks"])):
                 track_id = playlist["tracks"][i]["track_id"]
                 populated = populated_track_map[track_id]
                 playlist["tracks"][i] = populated
-            playlist["tracks"] = list(map(extend_track, playlist["tracks"]))
 
     # re-sort playlists to original order, because populate_playlist_metadata
     # unsorts.
@@ -361,9 +356,6 @@ def _get_trending_playlists_with_session(
         user = users[playlist["playlist_owner_id"]]
         if user:
             playlist["user"] = user
-
-    # Extend the playlists
-    playlists = list(map(extend_playlist, playlists))
     return sorted_playlists
 
 

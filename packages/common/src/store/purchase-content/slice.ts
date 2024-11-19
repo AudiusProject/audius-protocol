@@ -28,6 +28,7 @@ type PurchaseContentState = {
   onSuccess?: OnSuccess
   purchaseMethod: PurchaseMethod
   purchaseVendor?: PurchaseVendor
+  guestEmail?: string
   purchaseMethodMintAddress?: string
 }
 
@@ -59,6 +60,7 @@ const slice = createSlice({
         contentId: ID
         contentType?: PurchaseableContentType
         onSuccess?: OnSuccess
+        guestEmail?: string
       }>
     ) => {
       state.page = PurchaseContentPage.PURCHASE
@@ -72,6 +74,7 @@ const slice = createSlice({
       state.onSuccess = action.payload.onSuccess
       state.purchaseMethod = action.payload.purchaseMethod
       state.purchaseVendor = action.payload.purchaseVendor
+      state.guestEmail = action.payload.guestEmail
       state.purchaseMethodMintAddress = action.payload.purchaseMethodMintAddress
     },
     buyUSDC: (state) => {

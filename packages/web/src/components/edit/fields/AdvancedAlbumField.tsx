@@ -22,7 +22,7 @@ type AdvancedAlbumFieldValues = {
 const advancedSchema = z.object({
   upc: z
     .string()
-    .regex(/^\d{12}$/, messages.upcInputError)
+    .regex(/^\d{12,13}$/, messages.upcInputError)
     .nullable(),
   release_date: z.optional(z.string()).nullable()
 })
@@ -63,7 +63,7 @@ export const AdvancedAlbumField = () => {
               name='upc'
               label={messages.upcInputLabel}
               transformValueOnChange={(value) => value.replace(/\D/g, '')}
-              maxLength={12}
+              maxLength={13}
             />
           </Flex>
           {isHidden ? null : (

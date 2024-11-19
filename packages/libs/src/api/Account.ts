@@ -155,7 +155,10 @@ export class Account extends Base {
           })
           this.web3Manager.setOwnerWallet(ownerWallet)
           if (generateRecoveryLink) {
-            await this.generateRecoveryLink({ handle: metadata.handle, host })
+            await this.generateRecoveryLink({
+              handle: metadata.handle ?? '',
+              host
+            })
           }
         }
       }
@@ -176,6 +179,51 @@ export class Account extends Base {
           profilePictureFile,
           coverPhotoFile
         })
+
+      return { blockHash, blockNumber, userId: newMetadata.user_id }
+    } catch (e: any) {
+      return {
+        error: e.message,
+        phase,
+        errorStatus: e.response ? e.response.status : null
+      }
+    }
+  }
+
+  async guestSignUp(
+    email: string,
+    metadata: UserMetadata,
+    host = (typeof window !== 'undefined' && window.location.origin) || null,
+    generateRecoveryLink = true
+  ) {
+    const phases = {
+      CREATE_USER_RECORD: 'CREATE_USER_RECORD',
+      HEDGEHOG_SIGNUP: 'HEDGEHOG_SIGNUP',
+      SELECT_STORAGE_NODE: 'SELECT_STORAGE_NODE',
+      ADD_USER: 'ADD_USER',
+      UPLOAD_PROFILE_IMAGES: 'UPLOAD_PROFILE_IMAGES'
+    }
+    let phase = ''
+    try {
+      this.REQUIRES(Services.CREATOR_NODE, Services.IDENTITY_SERVICE)
+      this.REQUIRES(Services.HEDGEHOG)
+      phase = phases.HEDGEHOG_SIGNUP
+
+      // guest account secured by OTP
+      const ownerWallet = await this.hedgehog.signUp({
+        username: email,
+        password: 'TemporaryPassword'
+      })
+
+      this.web3Manager.setOwnerWallet(ownerWallet)
+      if (generateRecoveryLink) {
+        await this.generateRecoveryLink({ handle: '', host })
+      }
+
+      // Add user to chain
+      phase = phases.ADD_USER
+      const { newMetadata, blockHash, blockNumber } =
+        await this.User.createEntityManagerGuestUser(metadata)
 
       return { blockHash, blockNumber, userId: newMetadata.user_id }
     } catch (e: any) {

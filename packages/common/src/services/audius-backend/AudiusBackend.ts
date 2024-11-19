@@ -1,9 +1,4 @@
-import {
-  Genre,
-  Mood,
-  type DiscoveryNodeSelector,
-  type StorageNodeSelectorService
-} from '@audius/sdk'
+import { Genre, Mood, type StorageNodeSelectorService } from '@audius/sdk'
 import { DiscoveryAPI } from '@audius/sdk-legacy/dist/core'
 import { type AudiusLibs as AudiusLibsType } from '@audius/sdk-legacy/dist/libs'
 import type { HedgehogConfig } from '@audius/sdk-legacy/dist/services/hedgehog'
@@ -62,7 +57,6 @@ import {
   BrowserNotificationSetting,
   PushNotificationSetting,
   PushNotifications,
-  TrackMetadataForUpload,
   SearchKind
 } from '../../store'
 import {
@@ -531,28 +525,21 @@ export const audiusBackend = ({
       StringKeys.DISCOVERY_NODE_BLOCK_LIST
     )
 
-    const useSdkDiscoveryNodeSelector = await getFeatureEnabled(
-      FeatureFlags.SDK_DISCOVERY_NODE_SELECTOR
-    )
+    const discoveryNodeSelector =
+      await discoveryNodeSelectorService.getInstance()
 
-    let discoveryNodeSelector: Maybe<DiscoveryNodeSelector>
-
-    if (useSdkDiscoveryNodeSelector) {
-      discoveryNodeSelector = await discoveryNodeSelectorService.getInstance()
-
-      const initialSelectedNode: string | undefined =
-        // TODO: Need a synchronous method to check if a discovery node is already selected?
-        // Alternatively, remove all this AudiusBackend/Libs init/APIClient init stuff in favor of SDK
-        // @ts-ignore config is private
-        discoveryNodeSelector.config.initialSelectedNode
-      if (initialSelectedNode) {
-        discoveryProviderSelectionCallback(initialSelectedNode, [])
-      }
-      discoveryNodeSelector.addEventListener('change', (endpoint) => {
-        console.debug('[AudiusBackend] DiscoveryNodeSelector changed', endpoint)
-        discoveryProviderSelectionCallback(endpoint, [])
-      })
+    const initialSelectedNode: string | undefined =
+      // TODO: Need a synchronous method to check if a discovery node is already selected?
+      // Alternatively, remove all this AudiusBackend/Libs init/APIClient init stuff in favor of SDK
+      // @ts-ignore config is private
+      discoveryNodeSelector.config.initialSelectedNode
+    if (initialSelectedNode) {
+      discoveryProviderSelectionCallback(initialSelectedNode, [])
     }
+    discoveryNodeSelector.addEventListener('change', (endpoint) => {
+      console.debug('[AudiusBackend] DiscoveryNodeSelector changed', endpoint)
+      discoveryProviderSelectionCallback(endpoint, [])
+    })
 
     const baseCreatorNodeConfig = AudiusLibs.configCreatorNode(
       userNodeUrl,
@@ -829,40 +816,17 @@ export const audiusBackend = ({
     }
   }
 
-  async function recordTrackListen(trackId: ID) {
+  async function recordTrackListen(userId: ID, trackId: ID) {
     try {
       const listen = await audiusLibs.Track.logTrackListen(
         trackId,
         unauthenticatedUuid,
-        await getFeatureEnabled(FeatureFlags.SOLANA_LISTEN_ENABLED)
+        userId,
+        true
       )
       return listen
     } catch (err) {
       console.error(getErrorMessage(err))
-    }
-  }
-
-  async function repostTrack(
-    trackId: ID,
-    metadata?: { is_repost_of_repost: boolean }
-  ) {
-    try {
-      return await audiusLibs.EntityManager.repostTrack(
-        trackId,
-        JSON.stringify(metadata)
-      )
-    } catch (err) {
-      console.error(getErrorMessage(err))
-      throw err
-    }
-  }
-
-  async function undoRepostTrack(trackId: ID) {
-    try {
-      return await audiusLibs.EntityManager.unrepostTrack(trackId)
-    } catch (err) {
-      console.error(getErrorMessage(err))
-      throw err
     }
   }
 
@@ -898,27 +862,6 @@ export const audiusBackend = ({
 
   async function uploadImage(file: File) {
     return await audiusLibs.creatorNode.uploadTrackCoverArtV2(file, () => {})
-  }
-
-  async function updateTrack(
-    userId: ID,
-    _trackId: ID,
-    metadata: TrackMetadata | TrackMetadataForUpload,
-    transcodePreview?: boolean
-  ) {
-    const cleanedMetadata = schemas.newTrackMetadata(metadata, true)
-    if (metadata.artwork && 'file' in metadata.artwork) {
-      const resp = await audiusLibs.creatorNode.uploadTrackCoverArtV2(
-        metadata.artwork.file,
-        () => {}
-      )
-      cleanedMetadata.cover_art_sizes = resp.id
-    }
-    return await audiusLibs.Track.updateTrackV2(
-      userId,
-      cleanedMetadata,
-      transcodePreview
-    )
   }
 
   // TODO(C-2719)
@@ -1244,35 +1187,6 @@ export const audiusBackend = ({
     }
   }
 
-  // Favoriting a track
-  async function saveTrack(
-    trackId: ID,
-    metadata?: { is_save_of_repost: boolean }
-  ) {
-    try {
-      return await audiusLibs.EntityManager.saveTrack(
-        trackId,
-        JSON.stringify(metadata)
-      )
-    } catch (err) {
-      console.error(getErrorMessage(err))
-      throw err
-    }
-  }
-
-  async function deleteTrack(trackId: ID) {
-    try {
-      const { txReceipt } = await audiusLibs.Track.deleteTrack(trackId, true)
-      return {
-        blockHash: txReceipt.blockHash,
-        blockNumber: txReceipt.blockNumber
-      }
-    } catch (err) {
-      console.error(getErrorMessage(err))
-      throw err
-    }
-  }
-
   // Favorite a playlist
   async function saveCollection(
     playlistId: ID,
@@ -1283,16 +1197,6 @@ export const audiusBackend = ({
         playlistId,
         JSON.stringify(metadata)
       )
-    } catch (err) {
-      console.error(getErrorMessage(err))
-      throw err
-    }
-  }
-
-  // Unfavoriting a track
-  async function unsaveTrack(trackId: ID) {
-    try {
-      return await audiusLibs.EntityManager.unsaveTrack(trackId)
     } catch (err) {
       console.error(getErrorMessage(err))
       throw err
@@ -1388,6 +1292,28 @@ export const audiusBackend = ({
     )
   }
 
+  async function guestSignUp(
+    email: string,
+    feePayerOverride: Nullable<string>
+  ) {
+    await waitForLibsInit()
+    const metadata = schemas.newUserMetadata()
+
+    return await audiusLibs.Account.guestSignUp(
+      email,
+      metadata,
+      getHostUrl(),
+      (eventName: string, properties: Record<string, unknown>) =>
+        recordAnalytics({ eventName, properties }),
+      {
+        Request: Name.CREATE_USER_BANK_REQUEST,
+        Success: Name.CREATE_USER_BANK_SUCCESS,
+        Failure: Name.CREATE_USER_BANK_FAILURE
+      },
+      feePayerOverride,
+      true
+    )
+  }
   async function resetPassword(username: string, password: string) {
     const libs = await getAudiusLibsTyped()
     return libs.Account!.resetPassword({ username, password })
@@ -2266,7 +2192,6 @@ export const audiusBackend = ({
     dangerouslySetPlaylistOrder,
     deletePlaylist,
     deletePlaylistTrack,
-    deleteTrack,
     deregisterDeviceToken,
     didSelectDiscoveryProviderListeners,
     disableBrowserNotifications,
@@ -2309,10 +2234,9 @@ export const audiusBackend = ({
     recordTrackListen,
     registerDeviceToken,
     repostCollection,
-    repostTrack,
     resetPassword,
+    guestSignUp,
     saveCollection,
-    saveTrack,
     searchTags,
     sendRecoveryEmail,
     sendTokens,
@@ -2330,10 +2254,8 @@ export const audiusBackend = ({
     instagramHandle,
     tiktokHandle,
     undoRepostCollection,
-    undoRepostTrack,
     unfollowUser,
     unsaveCollection,
-    unsaveTrack,
     updateBrowserNotifications,
     updateCreator,
     updateEmailNotificationSettings,
@@ -2342,7 +2264,6 @@ export const audiusBackend = ({
     updatePlaylist,
     updatePlaylistLastViewedAt,
     updatePushNotificationSettings,
-    updateTrack,
     updateUserEvent,
     updateUserLocationTimezone,
     subscribeToUser,
@@ -2454,7 +2375,7 @@ async function getCreateAssociatedTokenAccountTransaction({
     }
   ]
 
-  const { blockhash } = await connection.getRecentBlockhash('confirmed')
+  const { blockhash } = await connection.getLatestBlockhash('confirmed')
   const instr = new TransactionInstruction({
     keys: accounts.map((account) => ({
       pubkey: account.pubkey,

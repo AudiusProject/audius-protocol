@@ -40,7 +40,7 @@ import { useHistoryContext } from 'app/HistoryProvider'
 import { useRecord, make } from 'common/store/analytics/actions'
 import CoSign, { Size } from 'components/co-sign/CoSign'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
-import { LockedStatusPill } from 'components/locked-status-pill'
+import { LockedStatusBadge } from 'components/locked-status-badge'
 import PlayButton from 'components/play-bar/PlayButton'
 import NextButtonProvider from 'components/play-bar/next-button/NextButtonProvider'
 import PreviousButtonProvider from 'components/play-bar/previous-button/PreviousButtonProvider'
@@ -464,7 +464,7 @@ const NowPlaying = g(
               {title}
             </div>
             {shouldShowPurchasePreview ? (
-              <LockedStatusPill
+              <LockedStatusBadge
                 locked
                 iconSize='2xs'
                 coloredWhenLocked

@@ -146,7 +146,7 @@ func ReadConfig(logger *common.Logger) (*Config, error) {
 		cfg.NodeType = Content
 		cfg.Environment = os.Getenv("MEDIORUM_ENV")
 		delegatePrivateKey = os.Getenv("delegatePrivateKey")
-		cfg.PSQLConn = getEnvWithDefault("dbUrl", "postgresql://postgres:postgres@db:5432/audius_creator_node")
+		cfg.PSQLConn = getEnvWithDefault("dbUrl", "postgresql://postgres:postgres@localhost:5432/audius_creator_node")
 		cfg.EthRPCUrl = os.Getenv("ethProviderUrl")
 		cfg.NodeEndpoint = os.Getenv("creatorNodeEndpoint")
 	}

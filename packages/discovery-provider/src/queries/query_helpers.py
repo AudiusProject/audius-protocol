@@ -654,7 +654,7 @@ def get_content_url_with_mirrors(
                 *[re.sub("/$", "", node["endpoint"].lower()) for node in healthy_nodes]
             )
 
-            content_nodes = rendezvous.get_n(mirrorCount, cid)
+            content_nodes = rendezvous.get_n(mirrorCount + 1, cid)
 
     if len(content_nodes) == 0:
         logger.warning(

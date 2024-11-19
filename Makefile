@@ -1,7 +1,10 @@
 NETWORK ?= stage
-AD_TAG ?= default
+WRAPPER_TAG ?= default
 # One of patch, minor, or major
 UPGRADE_TYPE ?= patch
+
+GIT_SHA := $(shell git rev-parse HEAD)
+AD_TAG ?= $(GIT_SHA)
 
 ABI_ARTIFACT_DIR := pkg/register/ABIs
 ABI_SRC_DIR := packages/libs/src/eth-contracts/ABIs
@@ -11,13 +14,13 @@ ABI_ARTIFACTS := $(ABI_ARTIFACT_DIR)/ERC20Detailed.json $(ABI_ARTIFACT_DIR)/Regi
 SQL_SRCS := $(shell find pkg/core/db/sql -type f -name '*.sql') pkg/core/db/sqlc.yaml
 SQL_ARTIFACTS := $(wildcard pkg/core/db/*.sql.go)
 
-PROTO_SRCS := pkg/core/protocol.proto
+PROTO_SRCS := pkg/core/proto/protocol.proto
 PROTO_ARTIFACTS := $(wildcard pkg/core/gen/proto/*.pb.go)
 
 TEMPL_SRCS := $(shell find pkg/core/console -type f -name "*.templ")
 TEMPL_ARTIFACTS := $(shell find pkg/core/console -type f -name "*_templ.go")
 
-VERSION_LDFLAG := -X github.com/AudiusProject/audius-protocol/core/config.Version=$(shell git rev-parse HEAD)
+VERSION_LDFLAG := -X github.com/AudiusProject/audius-protocol/core/config.Version=$(GIT_SHA)
 
 JSON_SRCS := $(wildcard pkg/core/config/genesis/*.json) $(ABI_ARTIFACTS)
 JS_SRCS := $(shell find pkg/core -type f -name '*.js')
@@ -70,14 +73,21 @@ ignore-code-gen:
 	@echo "Warning: not regenerating .go files from sql, templ, proto, etc. Using existing artifacts instead."
 	@touch $(SQL_ARTIFACTS) $(TEMPL_ARTIFACTS) $(PROTO_ARTIFACTS) go.mod
 
-.PHONY: build-docker-local build-push-docker
-build-docker-local:
+.PHONY: build-wrapper-local build-push-wrapper
+build-wrapper-local:
 	@echo "Building Docker image for local platform..."
-	docker buildx build --load -t audius/audius-d:$(AD_TAG) pkg/orchestration
+	docker buildx build --load -t audius/audius-d:$(WRAPPER_TAG) pkg/orchestration
 
-build-push-docker:
+build-push-wrapper:
 	@echo "Building and pushing Docker images for all platforms..."
-	docker buildx build --platform linux/amd64,linux/arm64 --push -t audius/audius-d:$(AD_TAG) pkg/orchestration
+	docker buildx build --platform linux/amd64,linux/arm64 --push -t audius/audius-d:$(WRAPPER_TAG) pkg/orchestration
+
+.PHONY: build-audiusd-local build-push-audiusd
+build-audiusd-local:
+	docker build -t audius/audiusd:$(AD_TAG) -f ./cmd/audiusd/Dockerfile ./
+
+build-push-audiusd:
+	DOCKER_DEFAULT_PLATFORM=linux/amd64 docker build --push -t audius/audiusd:$(AD_TAG) -f ./cmd/audiusd/Dockerfile ./
 
 .PHONY: install uninstall
 install:
@@ -92,15 +102,17 @@ clean:
 
 .PHONY: install-deps
 install-deps:
-	@go install github.com/onsi/ginkgo/v2/ginkgo@v2.19.0
 	@brew install protobuf
 	@brew install crane
+	@brew install bufbuild/buf/buf
+	@go install github.com/onsi/ginkgo/v2/ginkgo@v2.19.0
 	@go install github.com/sqlc-dev/sqlc/cmd/sqlc@latest
 	@go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
 	@go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
 	@go install github.com/cortesi/modd/cmd/modd@latest
 	@go install github.com/a-h/templ/cmd/templ@latest
 	@go install github.com/ethereum/go-ethereum/cmd/abigen@latest
+	@go install github.com/go-swagger/go-swagger/cmd/swagger@latest
 
 go.sum: go.mod
 go.mod: $(GO_SRCS)
@@ -130,7 +142,8 @@ $(TEMPL_ARTIFACTS): $(TEMPL_SRCS)
 regen-proto: $(PROTO_ARTIFACTS)
 $(PROTO_ARTIFACTS): $(PROTO_SRCS)
 	@echo Regenerating protobuf code
-	protoc --go_out=pkg/core/gen --go-grpc_out=pkg/core/gen --proto_path=pkg/core pkg/core/protocol.proto
+	cd pkg/core && buf generate
+	cd pkg/core/gen/proto && swagger generate client -f protocol.swagger.json -t ../ --client-package=core_openapi
 
 .PHONY: regen-sql
 regen-sql: $(SQL_ARTIFACTS)
@@ -183,7 +196,6 @@ core-force-release-sps:
 
 .PHONY: core-dev
 core-dev: gen
-	audius-compose down
 	audius-compose up db core core-content-1 core-content-2 core-content-3 eth-ganache ingress
 
 .PHONY: core-test

@@ -3,7 +3,6 @@ import { useRef, useEffect, useCallback, useState } from 'react'
 import { useAppContext } from '@audius/common/context'
 import { Name, SquareSizes } from '@audius/common/models'
 import type { Track } from '@audius/common/models'
-import { FeatureFlags } from '@audius/common/services'
 import {
   accountSelectors,
   cacheTracksSelectors,
@@ -50,7 +49,6 @@ import { useAsync, usePrevious } from 'react-use'
 
 import { DEFAULT_IMAGE_URL } from 'app/components/image/TrackImage'
 import { getImageSourceOptimistic } from 'app/hooks/useContentNodeImage'
-import { useFeatureFlag } from 'app/hooks/useRemoteConfig'
 import { make, track as analyticsTrack } from 'app/services/analytics'
 import { apiClient } from 'app/services/audius-api-client'
 import { audiusBackendInstance } from 'app/services/audius-backend-instance'
@@ -166,10 +164,6 @@ type QueueableTrack = {
 } & Pick<Queueable, 'playerBehavior'>
 
 export const AudioPlayer = () => {
-  const { isEnabled: isNewPodcastControlsEnabled } = useFeatureFlag(
-    FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED,
-    FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED_FALLBACK
-  )
   const track = useSelector(getCurrentTrack)
   const playing = useSelector(getPlaying)
   const seek = useSelector(getSeek)
@@ -507,7 +501,7 @@ export const AudioPlayer = () => {
               dispatch(
                 playerActions.seek({ seconds: trackPosition.playbackPosition })
               )
-            } else if (isNewPodcastControlsEnabled && isLongFormContent) {
+            } else if (isLongFormContent) {
               dispatch(
                 setTrackPosition({
                   userId: currentUserId,
@@ -538,11 +532,7 @@ export const AudioPlayer = () => {
       }
 
       // Handle track end event
-      if (
-        isNewPodcastControlsEnabled &&
-        event?.lastPosition !== undefined &&
-        event?.index !== undefined
-      ) {
+      if (event?.lastPosition !== undefined && event?.index !== undefined) {
         const { track } = queueTracks[event.index] ?? {}
         const isLongFormContent =
           track?.genre === Genre.PODCASTS || track?.genre === Genre.AUDIOBOOKS

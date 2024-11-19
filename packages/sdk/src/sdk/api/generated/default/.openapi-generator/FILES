@@ -13,6 +13,7 @@ index.ts
 models/Access.ts
 models/AccessInfoResponse.ts
 models/Activity.ts
+models/AlbumsResponse.ts
 models/AuthorizedApp.ts
 models/AuthorizedApps.ts
 models/BlobInfo.ts
@@ -53,6 +54,7 @@ models/PlaylistArtwork.ts
 models/PlaylistResponse.ts
 models/PlaylistSearchResult.ts
 models/PlaylistTracksResponse.ts
+models/PlaylistsResponse.ts
 models/ProfilePicture.ts
 models/PurchasersResponse.ts
 models/RelatedArtistResponse.ts

@@ -41,6 +41,10 @@
           "type": "boolean",
           "default": false
         },
+        "upc": {
+          "type": ["string", "null"],
+          "default": null
+        },
         "is_stream_gated": {
           "type": "boolean",
           "default": false

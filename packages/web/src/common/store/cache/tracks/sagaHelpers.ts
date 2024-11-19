@@ -60,7 +60,7 @@ export function* recordEditTrackAnalytics(prevTrack: Track, newTrack: Track) {
     )
   }
 
-  if (prevTrack.bpm !== newTrack.bpm) {
+  if (prevTrack.bpm !== newTrack.bpm && newTrack.bpm) {
     yield* put(
       make(Name.TRACK_EDIT_BPM_CHANGED, {
         id: newTrack.track_id,
@@ -70,7 +70,7 @@ export function* recordEditTrackAnalytics(prevTrack: Track, newTrack: Track) {
     )
   }
 
-  if (prevTrack.musical_key !== newTrack.musical_key) {
+  if (prevTrack.musical_key !== newTrack.musical_key && newTrack.musical_key) {
     yield* put(
       make(Name.TRACK_EDIT_MUSICAL_KEY_CHANGED, {
         id: newTrack.track_id,

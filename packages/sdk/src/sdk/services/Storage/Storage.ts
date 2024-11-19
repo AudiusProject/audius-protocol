@@ -60,15 +60,15 @@ export class Storage implements StorageService {
     auth: AuthService
   }) {
     // Generate signature
+
     const signatureData = {
       upload_id: uploadId,
       timestamp: Date.now()
     }
-    const signature = await auth.hashAndSign(
-      JSON.stringify(sortObjectKeys(signatureData))
-    )
+    const sigJson = JSON.stringify(sortObjectKeys(signatureData))
+    const signature = await auth.hashAndSign(sigJson)
     const signatureEnvelope = {
-      data: JSON.stringify(signatureData),
+      data: sigJson,
       signature
     }
 
@@ -107,12 +107,14 @@ export class Storage implements StorageService {
     file,
     onProgress,
     template,
-    options = {}
+    options = {},
+    auth
   }: {
     file: File
     onProgress?: ProgressCB
     template: FileTemplate
     options?: { [key: string]: string }
+    auth: AuthService
   }) {
     const formData: FormData = new FormData()
     formData.append('template', template)
@@ -125,6 +127,16 @@ export class Storage implements StorageService {
       file.name ?? 'blob'
     )
 
+    const signatureData = {
+      timestamp: Date.now()
+    }
+    const sigJson = JSON.stringify(sortObjectKeys(signatureData))
+    const signature = await auth.hashAndSign(sigJson)
+    const signatureEnvelope = {
+      data: sigJson,
+      signature
+    }
+
     // Using axios for now because it supports upload progress,
     // and Node doesn't support XmlHttpRequest
     let response: AxiosResponse<any> | null = null
@@ -132,6 +144,7 @@ export class Storage implements StorageService {
       method: 'post',
       maxContentLength: Infinity,
       data: formData,
+      params: { signature: JSON.stringify(signatureEnvelope) },
       headers: formData.getBoundary
         ? {
             'Content-Type': `multipart/form-data; boundary=${formData.getBoundary()}`

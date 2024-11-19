@@ -15,9 +15,11 @@ import (
 	"github.com/AudiusProject/audius-protocol/pkg/core/console"
 	"github.com/AudiusProject/audius-protocol/pkg/core/contracts"
 	"github.com/AudiusProject/audius-protocol/pkg/core/db"
+	"github.com/AudiusProject/audius-protocol/pkg/core/gen/proto"
 	"github.com/AudiusProject/audius-protocol/pkg/core/grpc"
 	"github.com/AudiusProject/audius-protocol/pkg/core/registry_bridge"
 	"github.com/AudiusProject/audius-protocol/pkg/core/server"
+	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 
 	cconfig "github.com/cometbft/cometbft/config"
 	"github.com/cometbft/cometbft/p2p"
@@ -25,7 +27,6 @@ import (
 
 	"github.com/cometbft/cometbft/rpc/client/local"
 	"github.com/ethereum/go-ethereum/ethclient"
-	"github.com/improbable-eng/grpc-web/go/grpcweb"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
@@ -129,11 +130,15 @@ func run(ctx context.Context, logger *common.Logger) error {
 		return fmt.Errorf("grpc init error: %v", err)
 	}
 
-	grpcWeb := grpcweb.WrapServer(grpcServer.GetServer())
+	gwMux := runtime.NewServeMux()
+	err = proto.RegisterProtocolHandlerServer(ctx, gwMux, grpcServer)
+	if err != nil {
+		return fmt.Errorf("grpc http handler issue: %v", err)
+	}
 
 	logger.Info("grpc server created")
 
-	_, err = server.NewServer(config, node.Config(), logger, rpc, pool, e, grpcWeb)
+	_, err = server.NewServer(config, node.Config(), logger, rpc, pool, e)
 	if err != nil {
 		return fmt.Errorf("server init error: %v", err)
 	}
@@ -141,6 +146,9 @@ func run(ctx context.Context, logger *common.Logger) error {
 	// Start the HTTP server
 	eg.Go(func() error {
 		logger.Info("core HTTP server starting")
+
+		// register grpc http route
+		e.Any("/core/grpc/*", echo.WrapHandler(gwMux))
 		return e.Start(config.CoreServerAddr)
 	})
 
@@ -295,6 +303,8 @@ func setupNode(logger *common.Logger) (*config.Config, *cconfig.Config, error) {
 	cometConfig.Mempool.MaxTxBytes = 307200
 	cometConfig.Mempool.Size = 2000
 
+	isDev := envConfig.Environment == "dev" || envConfig.Environment == "local"
+
 	// consensus
 	// don't recheck mempool transactions, rely on CheckTx and Propose step
 	// set each phase to timeout at 100ms, this might be aggressive but simply put
@@ -303,6 +313,7 @@ func setupNode(logger *common.Logger) (*config.Config, *cconfig.Config, error) {
 	// empty blocks wait one second to propose since plays should be a steady stream
 	// of txs
 	cometConfig.Mempool.Recheck = false
+	cometConfig.Mempool.Broadcast = !isDev // turn on broadcast when not in dev
 	cometConfig.Consensus.TimeoutCommit = 200 * time.Millisecond
 	cometConfig.Consensus.TimeoutPropose = 200 * time.Millisecond
 	cometConfig.Consensus.TimeoutProposeDelta = 75 * time.Millisecond
@@ -317,7 +328,7 @@ func setupNode(logger *common.Logger) (*config.Config, *cconfig.Config, error) {
 	// pex reactor is off since nodes use persistent peer list at the moment
 	// turn back on for dynamic peer discovery if we don't implement it in
 	// another ethereum based way
-	cometConfig.P2P.PexReactor = envConfig.Environment == "dev" || envConfig.Environment == "local"
+	cometConfig.P2P.PexReactor = isDev // turn off pex reactor in prod / stage
 	cometConfig.P2P.AddrBookStrict = envConfig.AddrBookStrict
 	if envConfig.PersistentPeers != "" {
 		cometConfig.P2P.PersistentPeers = envConfig.PersistentPeers

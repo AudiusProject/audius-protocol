@@ -7,7 +7,6 @@ import {
   PlaybackSource,
   Kind
 } from '@audius/common/models'
-import { FeatureFlags } from '@audius/common/services'
 import {
   accountSelectors,
   cacheTracksSelectors,
@@ -34,7 +33,6 @@ import PreviousButtonProvider from 'components/play-bar/previous-button/Previous
 import RepeatButtonProvider from 'components/play-bar/repeat-button/RepeatButtonProvider'
 import ShuffleButtonProvider from 'components/play-bar/shuffle-button/ShuffleButtonProvider'
 import { audioPlayer } from 'services/audio-player'
-import { getFeatureEnabled } from 'services/remote-config/featureFlagHelpers'
 import { getLineupSelectorForRoute } from 'store/lineup/lineupForRoute'
 import { getLocation } from 'store/routing/selectors'
 import { collectibleDetailsPage } from 'utils/route'
@@ -355,10 +353,6 @@ class PlayBar extends Component {
     const matrix = isMatrix()
     const isLongFormContent =
       track?.genre === Genre.PODCASTS || track?.genre === Genre.AUDIOBOOKS
-    const isNewPodcastControlsEnabled = getFeatureEnabled(
-      FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED,
-      FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED_FALLBACK
-    )
 
     return (
       <div className={styles.playBar}>
@@ -406,7 +400,7 @@ class PlayBar extends Component {
 
             <div className={styles.buttonControls}>
               <div className={styles.shuffleButton}>
-                {isLongFormContent && isNewPodcastControlsEnabled ? null : (
+                {isLongFormContent ? null : (
                   <ShuffleButtonProvider
                     isMatrix={matrix}
                     darkMode={shouldShowDark(theme)}
@@ -429,7 +423,7 @@ class PlayBar extends Component {
                 <NextButtonProvider onClick={this.onNext} />
               </div>
               <div className={styles.repeatButton}>
-                {isLongFormContent && isNewPodcastControlsEnabled ? (
+                {isLongFormContent ? (
                   <PlaybackRateButton />
                 ) : (
                   <RepeatButtonProvider

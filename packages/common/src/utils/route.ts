@@ -92,7 +92,8 @@ export enum SignUpPath {
   selectArtists = 'select-artists',
   loading = 'loading',
   appCta = 'app-cta',
-  completedRedirect = 'completed'
+  completedRedirect = 'completed',
+  completedReferrerRedirect = 'completed-referrer'
 }
 export const SIGN_UP_EMAIL_PAGE = `/signup/${SignUpPath.createEmail}`
 export const SIGN_UP_START_PAGE = SIGN_UP_EMAIL_PAGE // entry point for sign up if needing to redirect to the beginning
@@ -106,6 +107,7 @@ export const SIGN_UP_ARTISTS_PAGE = `/signup/${SignUpPath.selectArtists}`
 export const SIGN_UP_APP_CTA_PAGE = `/signup/${SignUpPath.appCta}`
 export const SIGN_UP_LOADING_PAGE = `/signup/${SignUpPath.loading}`
 export const SIGN_UP_COMPLETED_REDIRECT = `/signup/${SignUpPath.completedRedirect}`
+export const SIGN_UP_COMPLETED_REFERRER_REDIRECT = `/signup/${SignUpPath.completedReferrerRedirect}`
 
 // Param routes.
 export const NOTIFICATION_USERS_PAGE = '/notification/:notificationId/users'

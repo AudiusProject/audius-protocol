@@ -128,7 +128,8 @@ export class TracksApi extends GeneratedTracksApi {
           await this.storage.uploadFile({
             file: coverArtFile,
             onProgress,
-            template: 'img_square'
+            template: 'img_square',
+            auth: this.auth
           }),
         (e) => {
           this.logger.info('Retrying uploadTrackCoverArt', e)
@@ -141,7 +142,8 @@ export class TracksApi extends GeneratedTracksApi {
             onProgress,
             template: 'audio',
             options:
-              this.trackUploadHelper.extractMediorumUploadOptions(metadata)
+              this.trackUploadHelper.extractMediorumUploadOptions(metadata),
+            auth: this.auth
           }),
         (e) => {
           this.logger.info('Retrying uploadTrackAudio', e)
@@ -167,7 +169,15 @@ export class TracksApi extends GeneratedTracksApi {
       action: Action.CREATE,
       metadata: JSON.stringify({
         cid: '',
-        data: snakecaseKeys(updatedMetadata)
+        data: {
+          ...snakecaseKeys(updatedMetadata),
+          download_conditions:
+            updatedMetadata.downloadConditions &&
+            snakecaseKeys(updatedMetadata.downloadConditions),
+          stream_conditions:
+            updatedMetadata.streamConditions &&
+            snakecaseKeys(updatedMetadata.streamConditions)
+        }
       }),
       auth: this.auth,
       ...advancedOptions
@@ -211,7 +221,8 @@ export class TracksApi extends GeneratedTracksApi {
           await this.storage.uploadFile({
             file: coverArtFile,
             onProgress,
-            template: 'img_square'
+            template: 'img_square',
+            auth: this.auth
           }),
         (e) => {
           this.logger.info('Retrying uploadTrackCoverArt', e)
@@ -225,7 +236,7 @@ export class TracksApi extends GeneratedTracksApi {
     }
 
     if (transcodePreview) {
-      if (!updatedMetadata.previewStartSeconds) {
+      if (updatedMetadata.previewStartSeconds === undefined) {
         throw new Error('No track preview start time specified')
       }
       if (!updatedMetadata.audioUploadId) {
@@ -261,7 +272,15 @@ export class TracksApi extends GeneratedTracksApi {
       action: Action.UPDATE,
       metadata: JSON.stringify({
         cid: '',
-        data: snakecaseKeys(updatedMetadata)
+        data: {
+          ...snakecaseKeys(updatedMetadata),
+          download_conditions:
+            updatedMetadata.downloadConditions &&
+            snakecaseKeys(updatedMetadata.downloadConditions),
+          stream_conditions:
+            updatedMetadata.streamConditions &&
+            snakecaseKeys(updatedMetadata.streamConditions)
+        }
       }),
       auth: this.auth,
       ...advancedOptions

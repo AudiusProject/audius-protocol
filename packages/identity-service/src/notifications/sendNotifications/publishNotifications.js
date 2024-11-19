@@ -169,7 +169,7 @@ const shouldFilterOutNotification = (notificationType, optimizelyClient) => {
       notificationTypes.SupportingRankUp
     ].includes(notificationType)
   ) {
-    return !getFeatureFlag(optimizelyClient, FEATURE_FLAGS.TIPPING_ENABLED)
+    return false
   }
   if (notificationType === notificationTypes.SupporterDethroned) {
     return !getFeatureFlag(

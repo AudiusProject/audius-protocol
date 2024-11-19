@@ -30,7 +30,9 @@ export const initializeSentry = () => {
       // Catch failed network requests
       Sentry.httpClientIntegration(),
       // Capture console.errors in sentry
-      Sentry.captureConsoleIntegration({ levels: ['error'] })
+      Sentry.captureConsoleIntegration({ levels: ['error'] }),
+      // Capture a session recording
+      Sentry.replayIntegration({})
     ],
 
     normalizeDepth: 5,
@@ -54,6 +56,10 @@ export const initializeSentry = () => {
         }
       }
       return breadCrumb
-    }
+    },
+    // This is the sample rate for healthy sessions without errors - set to 0 since we only care about errors
+    replaysSessionSampleRate: 0,
+    // This is a sample rate specific to when errors occur. We want to see 100% of them
+    replaysOnErrorSampleRate: 1.0
   })
 }

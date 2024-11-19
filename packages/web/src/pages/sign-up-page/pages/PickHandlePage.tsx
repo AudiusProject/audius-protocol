@@ -20,7 +20,8 @@ import {
 import {
   getHandleField,
   getIsSocialConnected,
-  getLinkedSocialOnFirstPage
+  getLinkedSocialOnFirstPage,
+  getReferrer
 } from 'common/store/pages/signon/selectors'
 import { ToastContext } from 'components/toast/ToastContext'
 import { useMedia } from 'hooks/useMedia'
@@ -117,18 +118,22 @@ export const PickHandlePage = () => {
   const { value: handle } = useSelector(getHandleField)
   const isLinkingSocialOnFirstPage = useSelector(getLinkedSocialOnFirstPage)
   const handleInputRef = useRef<HTMLInputElement>(null)
+  const hasReferrer = useSelector(getReferrer)
 
   const handleSubmit = useCallback(
     (values: PickHandleValues) => {
       const { handle } = values
       dispatch(setValueField('handle', handle))
+      if (hasReferrer) {
+        dispatch(setValueField('name', handle))
+      }
       navigate(
         isLinkingSocialOnFirstPage
           ? SIGN_UP_CREATE_LOGIN_DETAILS
           : SIGN_UP_FINISH_PROFILE_PAGE
       )
     },
-    [dispatch, navigate, isLinkingSocialOnFirstPage]
+    [dispatch, hasReferrer, navigate, isLinkingSocialOnFirstPage]
   )
 
   const handleCompleteSocialMediaLogin = useCallback(

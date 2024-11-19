@@ -1,4 +1,5 @@
 import { useGetTrackById } from '@audius/common/api'
+import { useIsTrackUnlockable } from '@audius/common/hooks'
 import { ID } from '@audius/common/models'
 import { Flex, Skeleton } from '@audius/harmony'
 
@@ -6,10 +7,7 @@ import { EntityRank } from 'components/lineup/EntityRank'
 import { useIsMobile } from 'hooks/useIsMobile'
 
 import { TrackAccessTypeLabel } from './TrackAccessTypeLabel'
-import {
-  TrackLockedStatusPill,
-  useIsTrackUnlockable
-} from './TrackLockedStatusPill'
+import { TrackLockedStatusBadge } from './TrackLockedStatusBadge'
 import {
   CommentMetric,
   PlayMetric,
@@ -38,7 +36,11 @@ export const TrackTileStats = (props: TrackTileStatsProps) => {
   )
 
   if (isLoading || !track) {
-    return <Skeleton w='30%' h={isMobile ? 16 : 20} />
+    return (
+      <Flex h='2xl' alignItems='center'>
+        <Skeleton w='40%' h={isMobile ? 16 : 20} />
+      </Flex>
+    )
   }
 
   const { is_unlisted } = track
@@ -61,7 +63,7 @@ export const TrackTileStats = (props: TrackTileStatsProps) => {
         )}
       </Flex>
       {isUnlockable ? (
-        <TrackLockedStatusPill trackId={trackId} />
+        <TrackLockedStatusBadge trackId={trackId} />
       ) : is_unlisted ? null : (
         <PlayMetric trackId={trackId} />
       )}
