@@ -1,5 +1,4 @@
 import { ID } from '@audius/common/models'
-import { FeatureFlags } from '@audius/common/services'
 import {
   accountSelectors,
   playerSelectors,
@@ -13,8 +12,6 @@ import {
   IconPlay
 } from '@audius/harmony'
 import { useSelector } from 'react-redux'
-
-import { useFlag } from 'hooks/useRemoteConfig'
 
 const { getUserId } = accountSelectors
 const { getTrackId } = playerSelectors
@@ -43,10 +40,6 @@ export const PlayPauseButton = ({
   trackId,
   onPlay
 }: PlayPauseButtonProps) => {
-  const { isEnabled: isNewPodcastControlsEnabled } = useFlag(
-    FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED,
-    FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED_FALLBACK
-  )
   const currentUserId = useSelector(getUserId)
   const trackPlaybackInfo = useSelector((state: CommonState) =>
     getTrackPosition(state, { trackId, userId: currentUserId })
@@ -61,16 +54,13 @@ export const PlayPauseButton = ({
     playText = messages.preview
     PlayIconComponent = IconPlay
   } else {
-    playText =
-      isNewPodcastControlsEnabled && trackPlaybackInfo
-        ? trackPlaybackInfo.status === 'IN_PROGRESS' || isCurrentTrack
-          ? messages.resume
-          : messages.replay
-        : messages.play
+    playText = trackPlaybackInfo
+      ? trackPlaybackInfo.status === 'IN_PROGRESS' || isCurrentTrack
+        ? messages.resume
+        : messages.replay
+      : messages.play
     PlayIconComponent =
-      isNewPodcastControlsEnabled &&
-      trackPlaybackInfo?.status === 'COMPLETED' &&
-      !isCurrentTrack
+      trackPlaybackInfo?.status === 'COMPLETED' && !isCurrentTrack
         ? IconRepeat
         : IconPlay
   }
