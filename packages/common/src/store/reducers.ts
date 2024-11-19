@@ -100,6 +100,8 @@ import collectibleDetailsReducer, {
 } from './ui/collectible-details/slice'
 import deletePlaylistConfirmationReducer from './ui/delete-playlist-confirmation-modal/slice'
 import { DeletePlaylistConfirmationModalState } from './ui/delete-playlist-confirmation-modal/types'
+import deleteTrackConfirmationReducer from './ui/delete-track-confirmation-modal/slice'
+import { DeleteTrackConfirmationModalState } from './ui/delete-track-confirmation-modal/types'
 import duplicateAddConfirmationReducer from './ui/duplicate-add-confirmation-modal/slice'
 import { DuplicateAddConfirmationModalState } from './ui/duplicate-add-confirmation-modal/types'
 import mobileOverflowModalReducer from './ui/mobile-overflow-menu/slice'
@@ -190,6 +192,7 @@ export const reducers = (storage: Storage, history?: History) => ({
     changePassword: changePasswordReducer,
     collectibleDetails: collectibleDetailsReducer,
     deletePlaylistConfirmationModal: deletePlaylistConfirmationReducer,
+    deleteTrackConfirmationModal: deleteTrackConfirmationReducer,
     duplicateAddConfirmationModal: duplicateAddConfirmationReducer,
     mobileOverflowModal: mobileOverflowModalReducer,
     modals: modalsReducer,
@@ -318,6 +321,7 @@ export type CommonState = {
     changePassword: ChangePasswordState
     collectibleDetails: CollectibleDetailsState
     deletePlaylistConfirmationModal: DeletePlaylistConfirmationModalState
+    deleteTrackConfirmationModal: DeleteTrackConfirmationModalState
     duplicateAddConfirmationModal: DuplicateAddConfirmationModalState
     mobileOverflowModal: MobileOverflowModalState
     modals: ModalsState

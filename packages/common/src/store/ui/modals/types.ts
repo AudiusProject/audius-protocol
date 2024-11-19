@@ -58,6 +58,7 @@ export type Modals =
   | 'Overflow'
   | 'AddToCollection'
   | 'DeletePlaylistConfirmation'
+  | 'DeleteTrackConfirmation'
   | 'FeatureFlagOverride'
   | 'BuyAudio'
   | 'BuyAudioRecovery'

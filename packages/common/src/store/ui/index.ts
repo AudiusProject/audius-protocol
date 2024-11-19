@@ -23,6 +23,14 @@ export {
 export { default as deletePlaylistConfirmationModalUISagas } from './delete-playlist-confirmation-modal/sagas'
 export * from './delete-playlist-confirmation-modal/types'
 
+export * as deleteTrackConfirmationModalUISelectors from './delete-track-confirmation-modal/selectors'
+export {
+  default as deleteTrackConfirmationModalUIReducer,
+  actions as deleteTrackConfirmationModalUIActions
+} from './delete-track-confirmation-modal/slice'
+export { default as deleteTrackConfirmationModalUISagas } from './delete-track-confirmation-modal/sagas'
+export * from './delete-track-confirmation-modal/types'
+
 export * as duplicateAddConfirmationModalUISelectors from './duplicate-add-confirmation-modal/selectors'
 export {
   default as duplicateAddConfirmationModalUIReducer,
