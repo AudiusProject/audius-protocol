@@ -344,7 +344,6 @@ export class Users extends Base {
             data: newMetadata
           })
         )
-      console.log(manageEntityResponse, userId)
       await this._waitForDiscoveryToIndexUser(
         userId,
         manageEntityResponse.txReceipt.blockNumber
