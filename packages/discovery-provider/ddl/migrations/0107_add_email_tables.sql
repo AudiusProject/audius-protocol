@@ -42,6 +42,5 @@ COMMENT ON COLUMN email_grantee_keys.encrypted_key IS 'Base64 encoded encryption
 
 -- Add indexes for performance
 CREATE INDEX IF NOT EXISTS idx_encrypted_emails_seller ON encrypted_emails(seller_user_id);
-CREATE INDEX IF NOT EXISTS idx_email_grantee_keys_seller_grantee ON email_grantee_keys(seller_user_id, grantee_user_id);
 
 end;
