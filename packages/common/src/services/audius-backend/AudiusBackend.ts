@@ -605,12 +605,8 @@ export const audiusBackend = ({
         // i.e. there is no way to instruct captcha that the domain is "file://"
         captchaConfig: isElectron ? undefined : { siteKey: recaptchaSiteKey },
         isServer: false,
-        preferHigherPatchForPrimary: await getFeatureEnabled(
-          FeatureFlags.PREFER_HIGHER_PATCH_FOR_PRIMARY
-        ),
-        preferHigherPatchForSecondaries: await getFeatureEnabled(
-          FeatureFlags.PREFER_HIGHER_PATCH_FOR_SECONDARIES
-        ),
+        preferHigherPatchForPrimary: true,
+        preferHigherPatchForSecondaries: false,
         hedgehogConfig,
         userId,
         wallet
