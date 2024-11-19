@@ -37,7 +37,7 @@ var _ = Describe("OpenAPI", func() {
 	})
 
 	It("can send some plays", func() {
-		sdk := utils.DiscoveryOne
+		sdk := utils.ContentTwo
 
 		playOne := &models.ProtocolTrackPlay{
 			UserID:    uuid.NewString(),

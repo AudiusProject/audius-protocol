@@ -63,7 +63,7 @@ func (app *CoreApplication) createRollup(ctx context.Context, timestamp time.Tim
 
 // Checks if the given sla rollup matches our local tallies
 func (app *CoreApplication) isValidRollup(ctx context.Context, timestamp time.Time, height int64, rollup *gen_proto.SlaRollup) (bool, error) {
-	if !app.shouldProposeNewRollup(ctx, timestamp, height) {
+	if !app.shouldProposeNewRollup(ctx, height) {
 		return false, nil
 	}
 	if rollup.BlockStart > rollup.BlockEnd {
@@ -87,7 +87,7 @@ func (app *CoreApplication) isValidRollup(ctx context.Context, timestamp time.Ti
 	return true, nil
 }
 
-func (app *CoreApplication) shouldProposeNewRollup(ctx context.Context, ts time.Time, height int64) bool {
+func (app *CoreApplication) shouldProposeNewRollup(ctx context.Context, height int64) bool {
 	previousHeight := int64(0)
 	latestRollup, err := app.queries.GetLatestSlaRollup(ctx)
 	if err != nil && !errors.Is(err, pgx.ErrNoRows) {

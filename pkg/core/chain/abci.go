@@ -2,7 +2,6 @@ package chain
 
 import (
 	"context"
-	"crypto/sha256"
 	"encoding/hex"
 	"errors"
 	"time"
@@ -12,6 +11,8 @@ import (
 	"github.com/AudiusProject/audius-protocol/pkg/core/contracts"
 	"github.com/AudiusProject/audius-protocol/pkg/core/db"
 	gen_proto "github.com/AudiusProject/audius-protocol/pkg/core/gen/proto"
+	"github.com/AudiusProject/audius-protocol/pkg/core/mempool"
+	"github.com/AudiusProject/audius-protocol/pkg/core/pubsub"
 	abcitypes "github.com/cometbft/cometbft/abci/types"
 	cometbfttypes "github.com/cometbft/cometbft/types"
 	"github.com/jackc/pgx/v5"
@@ -20,17 +21,21 @@ import (
 )
 
 type CoreApplication struct {
-	logger       *common.Logger
-	queries      *db.Queries
-	contracts    *contracts.AudiusContracts
-	pool         *pgxpool.Pool
+	logger    *common.Logger
+	queries   *db.Queries
+	contracts *contracts.AudiusContracts
+	pool      *pgxpool.Pool
+	config    *config.Config
+	mempl     *mempool.Mempool
+	txPubsub  *pubsub.TransactionHashPubsub
+
 	onGoingBlock pgx.Tx
-	config       *config.Config
+	finalizedTxs []string
 }
 
 var _ abcitypes.Application = (*CoreApplication)(nil)
 
-func NewCoreApplication(logger *common.Logger, pool *pgxpool.Pool, contracts *contracts.AudiusContracts, envConfig *config.Config) *CoreApplication {
+func NewCoreApplication(logger *common.Logger, pool *pgxpool.Pool, contracts *contracts.AudiusContracts, envConfig *config.Config, mempl *mempool.Mempool, txPubsub *pubsub.TransactionHashPubsub) *CoreApplication {
 	return &CoreApplication{
 		logger:       logger,
 		queries:      db.New(pool),
@@ -38,6 +43,9 @@ func NewCoreApplication(logger *common.Logger, pool *pgxpool.Pool, contracts *co
 		pool:         pool,
 		onGoingBlock: nil,
 		config:       envConfig,
+		mempl:        mempl,
+		txPubsub:     txPubsub,
+		finalizedTxs: []string{},
 	}
 }
 
@@ -77,9 +85,10 @@ func (app *CoreApplication) InitChain(_ context.Context, chain *abcitypes.InitCh
 }
 
 func (app *CoreApplication) PrepareProposal(ctx context.Context, proposal *abcitypes.PrepareProposalRequest) (*abcitypes.PrepareProposalResponse, error) {
-	proposalTxs := proposal.Txs
+	proposalTxs := [][]byte{}
 
-	if app.shouldProposeNewRollup(ctx, proposal.Time, proposal.Height) {
+	shouldProposeNewRollup := app.shouldProposeNewRollup(ctx, proposal.Height)
+	if shouldProposeNewRollup {
 		rollupTx, err := app.createRollupTx(ctx, proposal.Time, proposal.Height)
 		if err != nil {
 			app.logger.Error("Failed to create rollup transaction", "error", err)
@@ -87,6 +96,27 @@ func (app *CoreApplication) PrepareProposal(ctx context.Context, proposal *abcit
 			proposalTxs = append(proposalTxs, rollupTx)
 		}
 	}
+
+	// keep batch at 1000 even if sla rollup occurs
+	batch := 1000
+	if shouldProposeNewRollup {
+		batch = batch - 1
+	}
+
+	txMemBatch := app.mempl.GetBatch(batch)
+
+	// TODO: parallelize
+	for _, tx := range txMemBatch {
+		// app.validateTx(tx)
+		txBytes, err := proto.Marshal(tx)
+		if err != nil {
+			app.logger.Errorf("tx made it into prepare but couldn't be marshalled: %v", err)
+			continue
+		}
+		proposalTxs = append(proposalTxs, txBytes)
+	}
+
+	app.logger.Infof("proposing %d txs", proposalTxs)
 	return &abcitypes.PrepareProposalResponse{Txs: proposalTxs}, nil
 }
 
@@ -108,18 +138,31 @@ func (app *CoreApplication) FinalizeBlock(ctx context.Context, req *abcitypes.Fi
 	// open in progres pg transaction
 	app.startInProgressTx(ctx)
 	for i, tx := range req.Txs {
-		protoEvent, err := app.isValidSignedTransaction(tx)
+		signedTx, err := app.isValidSignedTransaction(tx)
 		if err == nil {
-			txhash := app.toTxHash(tx)
-			finalizedTx, err := app.finalizeTransaction(ctx, protoEvent, txhash)
+			// set tx to ok and set to not okay later if error occurs
+			txs[i] = &abcitypes.ExecTxResult{Code: abcitypes.CodeTypeOK}
+
+			txhash, err := app.toTxHash(signedTx)
+			if err != nil {
+				app.logger.Errorf("error getting tx hash: %v", err)
+				txs[i] = &abcitypes.ExecTxResult{Code: 2}
+			}
+
+			finalizedTx, err := app.finalizeTransaction(ctx, signedTx, txhash)
 			if err != nil {
 				app.logger.Errorf("error finalizing event: %v", err)
 				txs[i] = &abcitypes.ExecTxResult{Code: 2}
 			}
-			txs[i] = &abcitypes.ExecTxResult{Code: abcitypes.CodeTypeOK}
+
 			if err := app.persistTxStat(ctx, finalizedTx, txhash, req.Height, req.Time); err != nil {
+				// don't halt consensus on this
 				app.logger.Errorf("failed to persist tx stat: %v", err)
 			}
+
+			// set finalized txs in finalize step to remove from mempool during commit step
+			// always append to finalized even in error conditions to be removed from mempool
+			app.finalizedTxs = append(app.finalizedTxs, txhash)
 		} else {
 			logger.Errorf("Error: invalid transaction index %v", i)
 			txs[i] = &abcitypes.ExecTxResult{Code: 1}
@@ -154,11 +197,20 @@ func (app *CoreApplication) FinalizeBlock(ctx context.Context, req *abcitypes.Fi
 }
 
 func (app CoreApplication) Commit(ctx context.Context, commit *abcitypes.CommitRequest) (*abcitypes.CommitResponse, error) {
-	app.logger.Info("in commit phase", "onGoingBlock", app.onGoingBlock)
 	if err := app.commitInProgressTx(ctx); err != nil {
 		app.logger.Error("failure to commit tx", "error", err)
 		return &abcitypes.CommitResponse{}, err
 	}
+
+	// rm txs from mempool
+	app.mempl.RemoveBatch(app.finalizedTxs)
+	// broadcast txs to subscribers
+	for _, txhash := range app.finalizedTxs {
+		app.txPubsub.Publish(ctx, txhash, struct{}{})
+	}
+	// reset abci finalized txs
+	app.finalizedTxs = []string{}
+
 	return &abcitypes.CommitResponse{}, nil
 }
 
@@ -224,7 +276,6 @@ func (app *CoreApplication) validateBlockTxs(ctx context.Context, blockTime time
 	return true, nil
 }
 
-func (app *CoreApplication) toTxHash(tx []byte) string {
-	hash := sha256.Sum256(tx)
-	return hex.EncodeToString(hash[:])
+func (app *CoreApplication) toTxHash(msg proto.Message) (string, error) {
+	return common.ToTxHash(msg)
 }
