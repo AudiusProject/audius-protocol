@@ -14,7 +14,6 @@ const { getHasAccount } = accountSelectors
 const { getTheme } = themeSelectors
 
 const messages = {
-  earlyAccess: 'Early Access',
   homeLink: 'Go to Home'
 }
 

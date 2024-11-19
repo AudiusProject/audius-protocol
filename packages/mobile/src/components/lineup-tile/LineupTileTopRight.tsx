@@ -1,4 +1,3 @@
-import { FeatureFlags } from '@audius/common/services'
 import {
   accountSelectors,
   playbackPositionSelectors
@@ -10,7 +9,6 @@ import { useSelector } from 'react-redux'
 
 import { IconCheck } from '@audius/harmony-native'
 import Text from 'app/components/text'
-import { useFeatureFlag } from 'app/hooks/useRemoteConfig'
 import { flexRowCentered } from 'app/styles'
 import { useThemeColors } from 'app/utils/theme'
 
@@ -66,10 +64,6 @@ export const LineupTileTopRight = ({
   isCollection,
   isLongFormContent
 }: Props) => {
-  const { isEnabled: isNewPodcastControlsEnabled } = useFeatureFlag(
-    FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED,
-    FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED_FALLBACK
-  )
   const { secondary } = useThemeColors()
   const trackTileStyles = useTrackTileStyles()
   const currentUserId = useSelector(getUserId)
@@ -77,11 +71,8 @@ export const LineupTileTopRight = ({
     getTrackPosition(state, { trackId, userId: currentUserId })
   )
 
-  const isInProgress =
-    isNewPodcastControlsEnabled &&
-    playbackPositionInfo?.status === 'IN_PROGRESS'
-  const isCompleted =
-    isNewPodcastControlsEnabled && playbackPositionInfo?.status === 'COMPLETED'
+  const isInProgress = playbackPositionInfo?.status === 'IN_PROGRESS'
+  const isCompleted = playbackPositionInfo?.status === 'COMPLETED'
 
   const durationText = duration
     ? isInProgress

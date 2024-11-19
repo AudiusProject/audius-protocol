@@ -27,7 +27,6 @@ import {
   OfflineDownloadStatus
 } from '../slice'
 
-import { getIsOfflineEnabled } from './getIsOfflineEnabled'
 import { migrateOfflineDataPathSaga } from './migrateOfflineDataPathSaga'
 
 type CachedCollection = { id: ID; uid: UID; metadata: CollectionMetadata }
@@ -36,9 +35,6 @@ type CachedTrack = { id: ID; uid: UID; metadata: TrackMetadata }
 
 // Load offline data into redux on app start
 export function* rehydrateOfflineDataSaga() {
-  const isOfflineModeEnabled = yield* call(getIsOfflineEnabled)
-  if (!isOfflineModeEnabled) return
-
   // Can remove this after all clients are likely updated
   yield* migrateOfflineDataPathSaga()
 
