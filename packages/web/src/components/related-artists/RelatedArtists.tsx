@@ -31,9 +31,6 @@ export const RelatedArtists = () => {
   const dispatch = useDispatch()
   const profile = useSelector(getProfileUser)
   const { data: currentUserId } = useGetCurrentUserId({})
-  const { isEnabled: isRelatedArtistsEnabled } = useFlag(
-    FeatureFlags.RELATED_ARTISTS_ON_PROFILE_ENABLED
-  )
 
   const artistId = profile?.user_id
 
@@ -55,12 +52,7 @@ export const RelatedArtists = () => {
     }
   }, [profile, dispatch])
 
-  if (
-    !isRelatedArtistsEnabled ||
-    !profile ||
-    !relatedArtists ||
-    relatedArtists.length === 0
-  ) {
+  if (!profile || !relatedArtists || relatedArtists.length === 0) {
     return null
   }
 
