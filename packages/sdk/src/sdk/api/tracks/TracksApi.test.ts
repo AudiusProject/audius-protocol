@@ -10,7 +10,7 @@ import {
   SolanaRelayWalletAdapter,
   getDefaultPaymentRouterClientConfig
 } from '../../services'
-import { DefaultAuth } from '../../services/Auth/DefaultAuth'
+import { DefaultWalletClient } from '../../services/AudiusWalletClient/DefaultWalletClient'
 import { DiscoveryNodeSelector } from '../../services/DiscoveryNodeSelector'
 import { EntityManager } from '../../services/EntityManager'
 import { Logger } from '../../services/Logger'
@@ -90,7 +90,7 @@ vitest
 describe('TracksApi', () => {
   let tracks: TracksApi
 
-  const auth = new DefaultAuth()
+  const auth = new DefaultWalletClient()
   const logger = new Logger()
   const discoveryNodeSelector = new DiscoveryNodeSelector()
   const storageNodeSelector = new StorageNodeSelector({

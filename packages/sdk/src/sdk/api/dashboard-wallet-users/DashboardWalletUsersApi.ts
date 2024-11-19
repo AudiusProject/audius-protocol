@@ -1,4 +1,4 @@
-import type { AuthService, EntityManagerService } from '../../services'
+import type { AudiusWalletClient, EntityManagerService } from '../../services'
 import {
   Action,
   AdvancedOptions,
@@ -21,7 +21,7 @@ export class DashboardWalletUsersApi extends GeneratedDashboardWalletUsersApi {
   constructor(
     config: Configuration,
     private readonly entityManager: EntityManagerService,
-    private readonly auth: AuthService
+    private readonly auth: AudiusWalletClient
   ) {
     super(config)
   }

@@ -1,5 +1,5 @@
 import type { UsersApi, Configuration, User } from '../../api/generated/default'
-import type { AuthService, EntityManagerService } from '../../services'
+import type { AudiusWalletClient, EntityManagerService } from '../../services'
 import { Action, EntityType } from '../../services/EntityManager/types'
 import { encodeHashId } from '../../utils/hashId'
 import { parseParams } from '../../utils/parseParams'
@@ -21,7 +21,7 @@ export class GrantsApi {
   constructor(
     _config: Configuration,
     private readonly entityManager: EntityManagerService,
-    private readonly auth: AuthService,
+    private readonly auth: AudiusWalletClient,
     private readonly usersApi: UsersApi
   ) {}
 

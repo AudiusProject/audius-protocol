@@ -1,7 +1,7 @@
 import snakecaseKeys from 'snakecase-keys'
 import { OverrideProperties } from 'type-fest'
 
-import { AuthService, LoggerService } from '../../services'
+import { AudiusWalletClient, LoggerService } from '../../services'
 import {
   Action,
   EntityManagerService,
@@ -43,7 +43,7 @@ export class CommentsApi extends GeneratedCommentsApi {
   constructor(
     configuration: Configuration,
     private readonly entityManager: EntityManagerService,
-    private readonly auth: AuthService,
+    private readonly auth: AudiusWalletClient,
     private readonly logger: LoggerService
   ) {
     super(configuration)

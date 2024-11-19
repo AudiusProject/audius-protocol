@@ -4,7 +4,7 @@ import snakecaseKeys from 'snakecase-keys'
 
 import type {
   EntityManagerService,
-  AuthService,
+  AudiusWalletClient,
   ClaimableTokensClient,
   PaymentRouterClient,
   SolanaRelayService
@@ -65,7 +65,7 @@ export class TracksApi extends GeneratedTracksApi {
     private readonly discoveryNodeSelectorService: DiscoveryNodeSelectorService,
     private readonly storage: StorageService,
     private readonly entityManager: EntityManagerService,
-    private readonly auth: AuthService,
+    private readonly auth: AudiusWalletClient,
     private readonly logger: LoggerService,
     private readonly claimableTokensClient: ClaimableTokensClient,
     private readonly paymentRouterClient: PaymentRouterClient,

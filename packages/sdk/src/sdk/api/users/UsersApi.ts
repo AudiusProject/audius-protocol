@@ -1,6 +1,6 @@
 import snakecaseKeys from 'snakecase-keys'
 
-import type { AuthService, StorageService } from '../../services'
+import type { AudiusWalletClient, StorageService } from '../../services'
 import {
   Action,
   EntityManagerService,
@@ -43,7 +43,7 @@ export class UsersApi extends GeneratedUsersApi {
     configuration: Configuration,
     private readonly storage: StorageService,
     private readonly entityManager: EntityManagerService,
-    private readonly auth: AuthService,
+    private readonly auth: AudiusWalletClient,
     private readonly logger: LoggerService,
     private readonly claimableTokens: ClaimableTokensClient,
     private readonly solanaClient: SolanaClient

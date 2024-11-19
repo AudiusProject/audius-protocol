@@ -2,7 +2,7 @@ import { USDC } from '@audius/fixed-decimal'
 import { TransactionInstruction } from '@solana/web3.js'
 
 import type {
-  AuthService,
+  AudiusWalletClient,
   ClaimableTokensClient,
   PaymentRouterClient,
   SolanaRelayService,
@@ -53,7 +53,7 @@ export class AlbumsApi {
     configuration: Configuration,
     storage: StorageService,
     entityManager: EntityManagerService,
-    private auth: AuthService,
+    private auth: AudiusWalletClient,
     private logger: LoggerService,
     private claimableTokensClient: ClaimableTokensClient,
     private paymentRouterClient: PaymentRouterClient,

@@ -1,6 +1,6 @@
 import type { TransactionReceipt } from 'web3-core'
 
-import type { AuthService } from '../Auth'
+import type { AudiusWalletClient } from '../AudiusWalletClient'
 import type { DiscoveryNodeSelectorService } from '../DiscoveryNodeSelector'
 import type { LoggerService } from '../Logger'
 
@@ -121,7 +121,7 @@ export type ManageEntityOptions = {
   /**
    * An instance of AuthService
    */
-  auth: AuthService
+  auth: AudiusWalletClient
 } & AdvancedOptions
 
 export enum BlockConfirmation {

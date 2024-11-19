@@ -1,10 +1,10 @@
 import { SdkServicesConfig } from '../../../../config/types'
 import { getDefaultEthereumClientConfig } from '../getDefaultConfig'
 
-import type { AudiusTokenConfig } from './types'
+import type { AudiusTokenConfigInternal } from './types'
 
 export const getDefaultAudiusTokenConfig = (config: {
   ethereum: SdkServicesConfig['ethereum']
-}): AudiusTokenConfig => ({
+}): AudiusTokenConfigInternal => ({
   ...getDefaultEthereumClientConfig(config)
 })

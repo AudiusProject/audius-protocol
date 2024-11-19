@@ -49,7 +49,7 @@ const initSdk = async () => {
     services: {
       discoveryNodeSelector,
       solanaRelay,
-      auth: sdkAuthAdapter
+      walletClient: sdkAuthAdapter
     }
   })
   console.debug('[audiusSdk] SDK initted.')

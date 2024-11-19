@@ -8,7 +8,7 @@ import * as aes from 'micro-aes-gcm'
 import type TypedEmitter from 'typed-emitter'
 import { ulid } from 'ulid'
 
-import type { AuthService } from '../../services/Auth'
+import type { AudiusWalletClient } from '../../services/AudiusWalletClient'
 import type { DiscoveryNodeSelectorService } from '../../services/DiscoveryNodeSelector/types'
 import type { LoggerService } from '../../services/Logger'
 import type { EventEmitterTarget } from '../../utils/EventEmitterTarget'
@@ -101,7 +101,7 @@ export class ChatsApi
 
   constructor(
     config: Configuration,
-    private readonly auth: AuthService,
+    private readonly auth: AudiusWalletClient,
     private readonly discoveryNodeSelectorService: DiscoveryNodeSelectorService,
     private readonly logger: LoggerService
   ) {

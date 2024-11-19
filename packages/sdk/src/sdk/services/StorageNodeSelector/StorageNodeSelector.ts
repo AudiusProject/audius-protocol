@@ -2,7 +2,7 @@ import { productionConfig } from '../../config/production'
 import fetch from '../../utils/fetch'
 import { mergeConfigWithDefaults } from '../../utils/mergeConfigs'
 import { RendezvousHash } from '../../utils/rendezvous'
-import type { AuthService } from '../Auth'
+import type { AudiusWalletClient } from '../AudiusWalletClient'
 import type { DiscoveryNodeSelectorService } from '../DiscoveryNodeSelector'
 import type { HealthCheckResponseData } from '../DiscoveryNodeSelector/healthCheckTypes'
 import type { LoggerService } from '../Logger'
@@ -20,7 +20,7 @@ const DISCOVERY_RESPONSE_TIMEOUT = 15000
 
 export class StorageNodeSelector implements StorageNodeSelectorService {
   private readonly config: StorageNodeSelectorConfigInternal
-  private readonly auth: AuthService
+  private readonly auth: AudiusWalletClient
   private readonly logger: LoggerService
   private nodes: StorageNode[]
   private orderedNodes?: string[] // endpoints (lowercase)

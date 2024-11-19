@@ -2,7 +2,7 @@ import type { PublicKey } from '@solana/web3.js'
 import { z } from 'zod'
 
 import type { Prettify } from '../../../../utils/prettify'
-import type { AuthService } from '../../../Auth'
+import type { AudiusWalletClient } from '../../../AudiusWalletClient'
 import type { LoggerService } from '../../../Logger'
 import { TokenName, MintSchema, PublicKeySchema } from '../../types'
 import type { SolanaClient } from '../SolanaClient'
@@ -77,7 +77,7 @@ export const CreateSecpSchema = z
     /** The index of this instruction within the transaction. */
     instructionIndex: z.number().optional(),
     /** The auth service for signing the instruction data. */
-    auth: z.custom<AuthService>()
+    auth: z.custom<AudiusWalletClient>()
   })
   .strict()
 

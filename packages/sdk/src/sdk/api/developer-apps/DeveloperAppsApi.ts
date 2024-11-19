@@ -1,6 +1,6 @@
 import type Web3Type from 'web3'
 
-import type { AuthService, EntityManagerService } from '../../services'
+import type { AudiusWalletClient, EntityManagerService } from '../../services'
 import {
   Action,
   EntityType,
@@ -28,7 +28,7 @@ export class DeveloperAppsApi extends GeneratedDeveloperAppsApi {
   constructor(
     config: Configuration,
     private readonly entityManager: EntityManagerService,
-    private readonly auth: AuthService
+    private readonly auth: AudiusWalletClient
   ) {
     super(config)
 

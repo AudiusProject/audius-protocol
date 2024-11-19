@@ -2,7 +2,7 @@ import { z } from 'zod'
 
 import { AntiAbuseOracleService } from './services/AntiAbuseOracle/types'
 import type { AntiAbuseOracleSelectorService } from './services/AntiAbuseOracleSelector/types'
-import type { AuthService } from './services/Auth'
+import type { AudiusWalletClient } from './services/AudiusWalletClient'
 import type { DiscoveryNodeSelectorService } from './services/DiscoveryNodeSelector'
 import type { EntityManagerService } from './services/EntityManager'
 import {
@@ -52,9 +52,9 @@ export type ServicesContainer = {
   storage: StorageService
 
   /**
-   * Helpers to faciliate requests that require signatures or encryption
+   * For interacting with the user or app's wallet for signatures or secrets.
    */
-  auth: AuthService
+  walletClient: AudiusWalletClient
 
   /**
    * Contract client to interact with the Audius token

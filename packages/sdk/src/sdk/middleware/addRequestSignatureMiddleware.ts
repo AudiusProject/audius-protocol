@@ -19,7 +19,7 @@ const SIGNATURE_HEADER = 'Encoded-Data-Signature'
 export const addRequestSignatureMiddleware = ({
   services
 }: {
-  services: Pick<ServicesContainer, 'auth' | 'logger'>
+  services: Pick<ServicesContainer, 'walletClient' | 'logger'>
 }): Middleware => {
   const mutex = new Mutex()
   let message: string | null = null
@@ -31,7 +31,7 @@ export const addRequestSignatureMiddleware = ({
     // Run this exclusively to prevent multiple requests from updating the signature at the same time
     // and reverting to an older signature
     return mutex.runExclusive(async () => {
-      const { auth, logger } = services
+      const { walletClient: auth, logger } = services
       const currentAddress = await auth.getAddress()
       const currentTimestamp = new Date().getTime()
       const isExpired =

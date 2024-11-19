@@ -26,7 +26,7 @@ export const sdkAuthAdapter = {
       }
     )
   },
-  signTransaction: async (data: any) => {
+  signTypedData: async (data: any) => {
     const { signTypedData } = await import('@metamask/eth-sig-util')
     await hedgehogInstance.waitUntilReady()
 
@@ -53,7 +53,7 @@ export const sdkAuthAdapter = {
     await hedgehogInstance.waitUntilReady()
     return hedgehogInstance.wallet?.getAddressString() ?? ''
   },
-  hashAndSign: async (data: string) => {
+  signMessage: async (_data: string) => {
     await hedgehogInstance.waitUntilReady()
     const wallet = hedgehogInstance.getWallet()
     if (!wallet) throw new Error('No wallet')
@@ -61,5 +61,9 @@ export const sdkAuthAdapter = {
       privateKey: wallet.getPrivateKey(),
       data: keccak_256(data)
     })
+  },
+  sendTransaction: async (t: any) => {
+    console.warn(t)
+    return ''
   }
 }

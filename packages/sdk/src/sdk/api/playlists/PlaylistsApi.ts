@@ -2,7 +2,7 @@ import { pick } from 'lodash'
 import snakecaseKeys from 'snakecase-keys'
 import type { z } from 'zod'
 
-import type { AuthService, StorageService } from '../../services'
+import type { AudiusWalletClient, StorageService } from '../../services'
 import {
   Action,
   EntityManagerService,
@@ -53,7 +53,7 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
     configuration: Configuration,
     private readonly storage: StorageService,
     private readonly entityManager: EntityManagerService,
-    private readonly auth: AuthService,
+    private readonly auth: AudiusWalletClient,
     private readonly logger: LoggerService
   ) {
     super(configuration)

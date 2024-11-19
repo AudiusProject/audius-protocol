@@ -38,8 +38,8 @@ import {
 import { AntiAbuseOracle } from './services/AntiAbuseOracle/AntiAbuseOracle'
 import { getDefaultAntiAbuseOracleSelectorConfig } from './services/AntiAbuseOracleSelector'
 import { AntiAbuseOracleSelector } from './services/AntiAbuseOracleSelector/AntiAbuseOracleSelector'
-import { AppAuth } from './services/Auth/AppAuth'
-import { DefaultAuth } from './services/Auth/DefaultAuth'
+import { DefaultWalletClient } from './services/AudiusWalletClient/DefaultWalletClient'
+import { LocalWalletClient } from './services/AudiusWalletClient/LocalWalletClient'
 import {
   DiscoveryNodeSelector,
   getDefaultDiscoveryNodeSelectorConfig
@@ -146,11 +146,11 @@ const initializeServices = (config: SdkConfig) => {
     )
   }
 
-  const auth =
-    config.services?.auth ??
-    (config.apiKey && config.apiSecret
-      ? new AppAuth(config.apiKey, config.apiSecret)
-      : new DefaultAuth(config.apiKey))
+  const walletClient =
+    config.services?.walletClient ??
+    (config.apiSecret
+      ? new LocalWalletClient(config.apiSecret)
+      : new DefaultWalletClient(config.apiKey))
 
   const discoveryNodeSelector =
     config.services?.discoveryNodeSelector ??
@@ -163,7 +163,7 @@ const initializeServices = (config: SdkConfig) => {
     config.services?.storageNodeSelector ??
     new StorageNodeSelector({
       ...getDefaultStorageNodeSelectorConfig(servicesConfig),
-      auth,
+      auth: walletClient,
       discoveryNodeSelector,
       logger
     })
@@ -200,12 +200,16 @@ const initializeServices = (config: SdkConfig) => {
   /* Solana Programs */
   const solanaRelay = config.services?.solanaRelay
     ? config.services.solanaRelay.withMiddleware(
-        addRequestSignatureMiddleware({ services: { auth, logger } })
+        addRequestSignatureMiddleware({
+          services: { walletClient, logger }
+        })
       )
     : new SolanaRelay(
         new Configuration({
           middleware: [
-            addRequestSignatureMiddleware({ services: { auth, logger } }),
+            addRequestSignatureMiddleware({
+              services: { walletClient, logger }
+            }),
             discoveryNodeSelector.createMiddleware()
           ]
         })
@@ -251,6 +255,7 @@ const initializeServices = (config: SdkConfig) => {
   const audiusTokenClient =
     config.services?.audiusTokenClient ??
     new AudiusTokenClient({
+      walletClient,
       ...getDefaultAudiusTokenConfig(servicesConfig)
     })
 
@@ -281,6 +286,7 @@ const initializeServices = (config: SdkConfig) => {
   const wormholeClient =
     config.services?.wormholeClient ??
     new WormholeClient({
+      walletClient,
       ...getDefaultWormholeConfig(servicesConfig)
     })
 
@@ -320,7 +326,7 @@ const initializeServices = (config: SdkConfig) => {
     antiAbuseOracleSelector,
     entityManager,
     storage,
-    auth,
+    walletClient,
     claimableTokensClient,
     rewardManagerClient,
     paymentRouterClient,
@@ -368,7 +374,7 @@ const initializeApis = ({
     services.discoveryNodeSelector,
     services.storage,
     services.entityManager,
-    services.auth,
+    services.walletClient,
     services.logger,
     services.claimableTokensClient,
     services.paymentRouterClient,
@@ -379,7 +385,7 @@ const initializeApis = ({
     generatedApiClientConfig,
     services.storage,
     services.entityManager,
-    services.auth,
+    services.walletClient,
     services.logger,
     services.claimableTokensClient,
     services.solanaClient
@@ -388,7 +394,7 @@ const initializeApis = ({
     generatedApiClientConfig,
     services.storage,
     services.entityManager,
-    services.auth,
+    services.walletClient,
     services.logger,
     services.claimableTokensClient,
     services.paymentRouterClient,
@@ -399,13 +405,13 @@ const initializeApis = ({
     generatedApiClientConfig,
     services.storage,
     services.entityManager,
-    services.auth,
+    services.walletClient,
     services.logger
   )
   const comments = new CommentsApi(
     generatedApiClientConfig,
     services.entityManager,
-    services.auth,
+    services.walletClient,
     services.logger
   )
   const tips = new TipsApi(generatedApiClientConfig)
@@ -417,27 +423,27 @@ const initializeApis = ({
       basePath: '',
       middleware
     }),
-    services.auth,
+    services.walletClient,
     services.discoveryNodeSelector,
     services.logger
   )
   const grants = new GrantsApi(
     generatedApiClientConfig,
     services.entityManager,
-    services.auth,
+    services.walletClient,
     users
   )
 
   const developerApps = new DeveloperAppsApi(
     generatedApiClientConfig,
     services.entityManager,
-    services.auth
+    services.walletClient
   )
 
   const dashboardWalletUsers = new DashboardWalletUsersApi(
     generatedApiClientConfig,
     services.entityManager,
-    services.auth
+    services.walletClient
   )
 
   const challenges = new ChallengesApi(

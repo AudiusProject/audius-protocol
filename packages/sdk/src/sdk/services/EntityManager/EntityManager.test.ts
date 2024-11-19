@@ -1,4 +1,3 @@
-import type { EIP712TypedData } from 'eth-sig-util'
 import { rest } from 'msw'
 import { setupServer } from 'msw/node'
 import {
@@ -13,7 +12,11 @@ import {
 
 import { developmentConfig } from '../../config/development'
 import Web3 from '../../utils/web3'
-import type { AuthService } from '../Auth/types'
+import type {
+  AudiusWalletClient,
+  TransactionRequest,
+  TypedData
+} from '../AudiusWalletClient/types'
 import { DiscoveryNodeSelector } from '../DiscoveryNodeSelector'
 
 import { EntityManager } from './EntityManager'
@@ -51,16 +54,19 @@ vitest
   .spyOn(DiscoveryNodeSelector.prototype, 'getSelectedEndpoint')
   .mockImplementation(async () => discoveryNode)
 
-class MockAuth implements AuthService {
+class MockAuth implements AudiusWalletClient {
+  sendTransaction: (data: TransactionRequest) => Promise<string> = async () =>
+    ''
+
   getSharedSecret = async () => new Uint8Array()
 
-  signTransaction: (data: EIP712TypedData) => Promise<string> = async () =>
+  signTypedData: (data: TypedData) => Promise<string> = async () =>
     '0xcfe7a6974bd1691c0a298e119318337c54bf58175f8a9a6aeeaf3b0346c6105265c83de64ab81da28266c4b5b4ff68d81d9e266f9163d7ebd5b2a52d46e275941c'
 
   sign: (data: string | Uint8Array) => Promise<[Uint8Array, number]> =
     async () => [new Uint8Array(), 0]
 
-  hashAndSign: (data: string) => Promise<string> = async () => ''
+  signMessage: (data: string) => Promise<string> = async () => ''
 
   getAddress = async () => {
     return userWallet

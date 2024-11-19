@@ -14,7 +14,7 @@ import { describe, it, beforeAll, expect, vitest } from 'vitest'
 
 import { developmentConfig } from '../../config/development'
 import {
-  AppAuth,
+  LocalWalletClient,
   ClaimableTokensClient,
   SolanaRelay,
   SolanaRelayWalletAdapter,
@@ -68,7 +68,7 @@ vitest
 
 let users: UsersApi
 
-const auth = new AppAuth('key', 'secret')
+const auth = new LocalWalletClient('key', 'secret')
 const logger = new Logger()
 const discoveryNodeSelector = new DiscoveryNodeSelector()
 const storageNodeSelector = new StorageNodeSelector({

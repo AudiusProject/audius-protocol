@@ -7,8 +7,8 @@ import type { CrossPlatformFile as File } from '../../types/File'
 import fetch from '../../utils/fetch'
 import { mergeConfigWithDefaults } from '../../utils/mergeConfigs'
 import { wait } from '../../utils/wait'
-import type { AuthService } from '../Auth'
-import { sortObjectKeys } from '../Auth/utils'
+import type { AudiusWalletClient } from '../AudiusWalletClient'
+import { sortObjectKeys } from '../AudiusWalletClient/utils'
 import type { LoggerService } from '../Logger'
 import type { StorageNodeSelectorService } from '../StorageNodeSelector'
 
@@ -57,7 +57,7 @@ export class Storage implements StorageService {
   }: {
     uploadId: string
     data: { [key: string]: string }
-    auth: AuthService
+    auth: AudiusWalletClient
   }) {
     // Generate signature
 
@@ -66,7 +66,7 @@ export class Storage implements StorageService {
       timestamp: Date.now()
     }
     const sigJson = JSON.stringify(sortObjectKeys(signatureData))
-    const signature = await auth.hashAndSign(sigJson)
+    const signature = await auth.signMessage(sigJson)
     const signatureEnvelope = {
       data: sigJson,
       signature
@@ -114,7 +114,7 @@ export class Storage implements StorageService {
     onProgress?: ProgressCB
     template: FileTemplate
     options?: { [key: string]: string }
-    auth: AuthService
+    auth: AudiusWalletClient
   }) {
     const formData: FormData = new FormData()
     formData.append('template', template)
@@ -131,7 +131,7 @@ export class Storage implements StorageService {
       timestamp: Date.now()
     }
     const sigJson = JSON.stringify(sortObjectKeys(signatureData))
-    const signature = await auth.hashAndSign(sigJson)
+    const signature = await auth.signMessage(sigJson)
     const signatureEnvelope = {
       data: sigJson,
       signature

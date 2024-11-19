@@ -97,7 +97,7 @@ export class EntityManager implements EntityManagerService {
     )
 
     const senderAddress = await auth.getAddress()
-    const signature = await auth.signTransaction(signatureData)
+    const signature = await auth.signTypedData(signatureData)
 
     const method = await this.contract.methods.manageEntity(
       userId,
