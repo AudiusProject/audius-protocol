@@ -46,7 +46,8 @@ export enum FeatureFlags {
   NETWORK_CUT_ENABLED = 'network_cut_enabled',
   SOCIAL_SIGNUP = 'social_signup',
   RIGHTS_AND_COVERS = 'rights_and_covers',
-  GUEST_CHECKOUT = 'guest_checkout'
+  GUEST_CHECKOUT = 'guest_checkout',
+  TRACK_AUDIO_REPLACE = 'track_audio_replace'
 }
 
 type FlagDefaults = Record<FeatureFlags, boolean>
@@ -108,5 +109,6 @@ export const flagDefaults: FlagDefaults = {
   [FeatureFlags.ONE_TO_MANY_DMS]: false,
   [FeatureFlags.NETWORK_CUT_ENABLED]: false,
   [FeatureFlags.SOCIAL_SIGNUP]: false,
-  [FeatureFlags.RIGHTS_AND_COVERS]: false
+  [FeatureFlags.RIGHTS_AND_COVERS]: false,
+  [FeatureFlags.TRACK_AUDIO_REPLACE]: false
 }
