@@ -143,17 +143,6 @@ function* onSignedIn({ payload: { account } }) {
   // Add playlists that might not have made it into the user's library.
   // This could happen if the user creates a new playlist and then leaves their session.
   yield fork(addPlaylistsNotInLibrary)
-
-  // Create userbank only if lazy is not enabled
-  const feePayerOverride = yield select(getFeePayer)
-  const getFeatureEnabled = yield getContext('getFeatureEnabled')
-  if (!getFeatureEnabled(FeatureFlags.LAZY_USERBANK_CREATION_ENABLED)) {
-    yield call(createUserBankIfNeeded, audiusBackendInstance, {
-      recordAnalytics: analytics.track,
-      feePayerOverride,
-      ethAddress: account.wallet
-    })
-  }
 }
 
 export function* fetchLocalAccountAsync() {
