@@ -52,7 +52,7 @@ const initSdk = async () => {
       auth: sdkAuthAdapter
     }
   })
-  console.debug('[audiusSdk] SDK initted.')
+  console.debug('[audiusSdk] SDK initialized.')
   window.audiusSdk = audiusSdk
   inProgress = false
   window.dispatchEvent(new CustomEvent(SDK_LOADED_EVENT_NAME))
