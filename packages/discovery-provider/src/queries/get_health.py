@@ -607,8 +607,9 @@ def get_solana_indexer_status(
     )
     last_tx = redis.get(keys.last_tx)
     last_tx = str(last_tx, encoding="utf-8") if last_tx is not None else None
-    is_healthy = max_drift is None or (
-        since_last_completed_at is not None and since_last_completed_at < max_drift
+    # Job completed at least once and less than max_drift ago (if applicable)
+    is_healthy = since_last_completed_at is not None and (
+        max_drift is None or since_last_completed_at < max_drift
     )
 
     return {
