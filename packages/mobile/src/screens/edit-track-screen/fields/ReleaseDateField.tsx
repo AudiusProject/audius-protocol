@@ -14,7 +14,7 @@ export const ReleaseDateField = (props) => {
 
   return (
     <ContextualMenu
-      menuScreenName='ReleaseDate'
+      menuScreenName={messages.label}
       label={messages.label}
       value={value ? dayjs(value).format('M/D/YY') : undefined}
       {...props}
