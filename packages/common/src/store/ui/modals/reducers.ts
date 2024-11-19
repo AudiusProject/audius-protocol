@@ -7,6 +7,7 @@ import { coinflowOnrampModalReducer } from './coinflow-onramp-modal'
 import { coinflowWithdrawModalReducer } from './coinflow-withdraw-modal'
 import { chatBlastModalReducer } from './create-chat-blast-modal'
 import { createChatModalReducer } from './create-chat-modal'
+import { deleteTrackConfirmationModalReducer } from './delete-track-confirmation-modal'
 import { earlyReleaseConfirmationModalReducer } from './early-release-confirmation-modal'
 import { editAccessConfirmationModalReducer } from './edit-access-confirmation-modal'
 import { hideContentConfirmationModalReducer } from './hide-confirmation-modal'
@@ -56,6 +57,7 @@ const combinedReducers = combineReducers({
   UploadConfirmation: uploadConfirmationModalReducer,
   EditAccessConfirmation: editAccessConfirmationModalReducer,
   EarlyReleaseConfirmation: earlyReleaseConfirmationModalReducer,
+  DeleteTrackConfirmation: deleteTrackConfirmationModalReducer,
   PublishConfirmation: publishConfirmationModalReducer,
   HideContentConfirmation: hideContentConfirmationModalReducer
 })

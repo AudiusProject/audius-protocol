@@ -8,6 +8,7 @@ import { ArtistPickModalState } from './artist-pick-modal'
 import { CoinflowOnrampModalState } from './coinflow-onramp-modal'
 import { CoinflowWithdrawModalState } from './coinflow-withdraw-modal'
 import { ChatBlastModalState } from './create-chat-blast-modal'
+import { DeleteTrackConfirmationModalState } from './delete-track-confirmation-modal'
 import { EarlyReleaseConfirmationModalState } from './early-release-confirmation-modal'
 import { EditAccessConfirmationModalState } from './edit-access-confirmation-modal'
 import { HideContentConfirmationModalState } from './hide-confirmation-modal'
@@ -122,6 +123,7 @@ export type StatefulModalsState = {
   EarlyReleaseConfirmation: EarlyReleaseConfirmationModalState
   PublishConfirmation: PublishConfirmationModalState
   HideContentConfirmation: HideContentConfirmationModalState
+  DeleteTrackConfirmation: DeleteTrackConfirmationModalState
 }
 
 export type ModalsState = BasicModalsState & StatefulModalsState

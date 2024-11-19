@@ -12,6 +12,7 @@ import { trpc } from '@audius/common/services'
 import {
   accountSelectors,
   cacheCollectionsActions,
+  cacheTracksActions,
   collectionPageSelectors,
   tracksSocialActions,
   addToCollectionUIActions,
@@ -19,7 +20,7 @@ import {
   playbackPositionSelectors,
   CommonState,
   artistPickModalActions,
-  deleteTrackConfirmationModalUIActions
+  useDeleteTrackConfirmationModal
 } from '@audius/common/store'
 import { Genre, Nullable, route } from '@audius/common/utils'
 import { PopupMenuItem } from '@audius/harmony'
@@ -38,10 +39,10 @@ const { saveTrack, unsaveTrack, repostTrack, undoRepostTrack, shareTrack } =
   tracksSocialActions
 const { getCollectionId } = collectionPageSelectors
 const { addTrackToPlaylist } = cacheCollectionsActions
+const { deleteTrack } = cacheTracksActions
 const { getAccountOwnedPlaylists, getUserId } = accountSelectors
 const { clearTrackPosition, setTrackPosition } = playbackPositionActions
 const { getUserTrackPositions } = playbackPositionSelectors
-const { requestOpen: openDeleteTrack } = deleteTrackConfirmationModalUIActions
 
 const messages = {
   addToAlbum: 'Add To Album',
@@ -108,12 +109,18 @@ const TrackMenu = (props: TrackMenuProps) => {
   const { toast } = useContext(ToastContext)
   const dispatch = useDispatch()
   const currentUserId = useSelector(getUserId)
+  const { onOpen: openDeleteTrackConfirmation } =
+    useDeleteTrackConfirmationModal()
 
   const { data: track } = useGetTrackById({ id: props.trackId })
 
   const onDeleteTrack = (trackId: Nullable<number>) => {
     if (!trackId) return
-    dispatch(openDeleteTrack({ trackId }))
+    openDeleteTrackConfirmation({
+      confirmCallback: () => {
+        dispatch(deleteTrack(trackId))
+      }
+    })
   }
 
   const onEditTrack = (trackId: Nullable<number>) => {
