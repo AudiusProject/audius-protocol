@@ -13,9 +13,7 @@ import {
   IconCaretLeft,
   IconCaretRight,
   Text,
-  PlainButton,
-  Button,
-  IconTrash
+  PlainButton
 } from '@audius/harmony'
 import cn from 'classnames'
 import { Form, Formik, FormikProps, useField } from 'formik'
@@ -51,7 +49,6 @@ const messages = {
   prev: 'Prev',
   next: 'Next Track',
   preview: 'Preview',
-  deleteTrack: 'DELETE TRACK',
   uploadNavigationPrompt: {
     title: 'Discard upload?',
     body: "Are you sure you want to leave this page?\nAny changes you've made will be lost.",
@@ -69,7 +66,6 @@ const messages = {
 type EditTrackFormProps = {
   initialValues: TrackEditFormValues
   onSubmit: (values: TrackEditFormValues) => void
-  onDeleteTrack?: () => void
   hideContainer?: boolean
   disableNavigationPrompt?: boolean
 }
@@ -79,13 +75,8 @@ const EditFormValidationSchema = z.object({
 })
 
 export const EditTrackForm = (props: EditTrackFormProps) => {
-  const {
-    initialValues,
-    onSubmit,
-    onDeleteTrack,
-    hideContainer,
-    disableNavigationPrompt
-  } = props
+  const { initialValues, onSubmit, hideContainer, disableNavigationPrompt } =
+    props
   const initialTrackValues = initialValues.trackMetadatas[0] ?? {}
   const isUpload = initialTrackValues.track_id === undefined
   const initiallyHidden = initialTrackValues.is_unlisted
@@ -139,7 +130,6 @@ export const EditTrackForm = (props: EditTrackFormProps) => {
           <TrackEditForm
             {...props}
             hideContainer={hideContainer}
-            onDeleteTrack={onDeleteTrack}
             disableNavigationPrompt={disableNavigationPrompt}
             updatedArtwork={initialTrackValues.artwork}
           />
@@ -152,7 +142,6 @@ export const EditTrackForm = (props: EditTrackFormProps) => {
 const TrackEditForm = (
   props: FormikProps<TrackEditFormValues> & {
     hideContainer?: boolean
-    onDeleteTrack?: () => void
     disableNavigationPrompt?: boolean
     updatedArtwork?: TrackMetadataForUpload['artwork']
   }
@@ -161,7 +150,6 @@ const TrackEditForm = (
     values,
     dirty,
     isSubmitting,
-    onDeleteTrack,
     disableNavigationPrompt = false,
     hideContainer = false,
     updatedArtwork
@@ -252,17 +240,6 @@ const TrackEditForm = (
               className={styles.previewButton}
               index={trackIdx}
             />
-            {!isUpload ? (
-              <Button
-                variant='destructive'
-                size='small'
-                onClick={onDeleteTrack}
-                iconLeft={IconTrash}
-                css={{ alignSelf: 'flex-start' }}
-              >
-                {messages.deleteTrack}
-              </Button>
-            ) : null}
           </div>
           {isMultiTrack ? <MultiTrackFooter /> : null}
         </div>

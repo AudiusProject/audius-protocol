@@ -33,6 +33,7 @@ export const initialState: BasicModalsState = {
   Overflow: { isOpen: false },
   AddToCollection: { isOpen: false },
   DeletePlaylistConfirmation: { isOpen: false },
+  DeleteTrackConfirmation: { isOpen: false },
   DuplicateAddConfirmation: { isOpen: false },
   FeatureFlagOverride: { isOpen: false },
   BuyAudio: { isOpen: false },

@@ -12,13 +12,15 @@ import { trpc } from '@audius/common/services'
 import {
   accountSelectors,
   cacheCollectionsActions,
+  cacheTracksActions,
   collectionPageSelectors,
   tracksSocialActions,
   addToCollectionUIActions,
   playbackPositionActions,
   playbackPositionSelectors,
   CommonState,
-  artistPickModalActions
+  artistPickModalActions,
+  useDeleteTrackConfirmationModal
 } from '@audius/common/store'
 import { Genre, Nullable, route } from '@audius/common/utils'
 import { PopupMenuItem } from '@audius/harmony'
@@ -37,6 +39,7 @@ const { saveTrack, unsaveTrack, repostTrack, undoRepostTrack, shareTrack } =
   tracksSocialActions
 const { getCollectionId } = collectionPageSelectors
 const { addTrackToPlaylist } = cacheCollectionsActions
+const { deleteTrack } = cacheTracksActions
 const { getAccountOwnedPlaylists, getUserId } = accountSelectors
 const { clearTrackPosition, setTrackPosition } = playbackPositionActions
 const { getUserTrackPositions } = playbackPositionSelectors
@@ -45,6 +48,8 @@ const messages = {
   addToAlbum: 'Add To Album',
   addToPlaylist: 'Add To Playlist',
   copiedToClipboard: 'Copied To Clipboard!',
+  deleteTrack: 'Delete Track',
+  editTrack: 'Edit Track',
   embed: 'Embed',
   favorite: 'Favorite',
   repost: 'Repost',
@@ -72,6 +77,7 @@ export type OwnProps = {
   includeAddToAlbum?: boolean
   includeAddToPlaylist?: boolean
   includeArtistPick?: boolean
+  includeDelete?: boolean
   includeEdit?: boolean
   ddexApp?: string | null
   includeEmbed?: boolean
@@ -103,8 +109,19 @@ const TrackMenu = (props: TrackMenuProps) => {
   const { toast } = useContext(ToastContext)
   const dispatch = useDispatch()
   const currentUserId = useSelector(getUserId)
+  const { onOpen: openDeleteTrackConfirmation } =
+    useDeleteTrackConfirmationModal()
 
   const { data: track } = useGetTrackById({ id: props.trackId })
+
+  const onDeleteTrack = (trackId: Nullable<number>) => {
+    if (!trackId) return
+    openDeleteTrackConfirmation({
+      confirmCallback: () => {
+        dispatch(deleteTrack(trackId))
+      }
+    })
+  }
 
   const onEditTrack = (trackId: Nullable<number>) => {
     if (!trackId) return
@@ -124,6 +141,7 @@ const TrackMenu = (props: TrackMenuProps) => {
       includeAddToAlbum,
       includeAddToPlaylist,
       includeArtistPick,
+      includeDelete,
       includeEdit,
       ddexApp,
       includeEmbed,
@@ -266,8 +284,14 @@ const TrackMenu = (props: TrackMenuProps) => {
         : () => setArtistPick(trackId)
     }
 
+    const deleteTrackMenuItem = {
+      text: messages.deleteTrack,
+      onClick: () => onDeleteTrack(trackId),
+      destructive: true
+    }
+
     const editTrackMenuItem = {
-      text: 'Edit Track',
+      text: messages.editTrack,
       onClick: () => onEditTrack(trackId)
     }
 
@@ -322,6 +346,9 @@ const TrackMenu = (props: TrackMenuProps) => {
     if (includeEmbed && !isDeleted) {
       menu.items.push(embedMenuItem)
     }
+    if (includeDelete && isOwner && !isDeleted && !ddexApp) {
+      menu.items.push(deleteTrackMenuItem)
+    }
 
     return menu
   }
@@ -374,6 +401,7 @@ TrackMenu.defaultProps = {
   includeRepost: false,
   isFavorited: false,
   isReposted: false,
+  includeDelete: true,
   includeEdit: true,
   includeEmbed: true,
   includeFavorite: true,
