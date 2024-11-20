@@ -263,7 +263,7 @@ export const mrvr = async (
               and td.country = plays."country"
           ) as "Total Downloads",
           (
-              select sum("count")
+              select coalesce(sum("count"), 0)
               from aggregate_monthly_plays amp
               where amp.timestamp >= :start
               and amp.timestamp < :end
