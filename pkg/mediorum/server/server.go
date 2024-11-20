@@ -29,6 +29,7 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
+	"github.com/oschwald/maxminddb-golang"
 	"gocloud.dev/blob"
 	"golang.org/x/exp/slog"
 
@@ -119,6 +120,8 @@ type MediorumServer struct {
 	Config    MediorumConfig
 
 	crudSweepMutex sync.Mutex
+
+	geoIPdb *maxminddb.Reader
 }
 
 type PeerHealth struct {
@@ -399,6 +402,8 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 
 	// internal: testing
 	internalApi.GET("/proxy_health_check", ss.proxyHealthCheck)
+
+	ss.loadGeoIPDatabase()
 
 	return ss, nil
 
