@@ -211,7 +211,7 @@ const TrackEditForm = (
       )
       if (processedFiles?.length > 0) {
         if (!isTitleDirty) {
-          setTitle(processedFiles[0]?.metadata.title)
+          setTitle(processedFiles[0]?.metadata.title.split('.').shift())
         }
         setFileValue(processedFiles[0]?.file)
         setOrigFilename(processedFiles[0]?.metadata.orig_filename)
