@@ -11,10 +11,10 @@ const messages = {
 
 export const ReleaseDateField = (props) => {
   const [{ value }] = useField<Nullable<string>>('release_date')
-
+  console.log('asdf props', props)
   return (
     <ContextualMenu
-      menuScreenName={messages.label}
+      menuScreenName='ReleaseDate'
       label={messages.label}
       value={value ? dayjs(value).format('M/D/YY') : undefined}
       {...props}
