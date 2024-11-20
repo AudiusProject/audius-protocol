@@ -47,13 +47,17 @@ func (ss *MediorumServer) loadGeoIPDatabase() error {
 	}
 
 	ss.geoIPdb = db
+	close(ss.geoIPdbReady)
 	return nil
 }
 
 func (ss *MediorumServer) getGeoFromIP(ip string) (*GeoResult, error) {
+	// await geoIPdb initialization
+	<-ss.geoIPdbReady
+
 	db := ss.geoIPdb
 	if db == nil {
-		return nil, errors.New("geoIPdb not initialized")
+		return nil, errors.New("geoIPdb not initialized but channel closed")
 	}
 
 	// Parse the IP address

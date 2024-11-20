@@ -121,7 +121,8 @@ type MediorumServer struct {
 
 	crudSweepMutex sync.Mutex
 
-	geoIPdb *maxminddb.Reader
+	geoIPdb      *maxminddb.Reader
+	geoIPdbReady chan struct{}
 }
 
 type PeerHealth struct {
@@ -294,8 +295,9 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 		uploadOrigCidCache: imcache.New(imcache.WithMaxEntriesLimitOption[string, string](50_000, imcache.EvictionPolicyLRU)),
 		imageCache:         imcache.New(imcache.WithMaxEntriesLimitOption[string, []byte](10_000, imcache.EvictionPolicyLRU)),
 
-		StartedAt: time.Now().UTC(),
-		Config:    config,
+		StartedAt:    time.Now().UTC(),
+		Config:       config,
+		geoIPdbReady: make(chan struct{}),
 	}
 
 	routes := echoServer.Group(apiBasePath)
@@ -403,7 +405,7 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 	// internal: testing
 	internalApi.GET("/proxy_health_check", ss.proxyHealthCheck)
 
-	ss.loadGeoIPDatabase()
+	go ss.loadGeoIPDatabase()
 
 	return ss, nil
 
