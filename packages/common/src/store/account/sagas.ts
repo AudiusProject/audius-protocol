@@ -134,10 +134,6 @@ export function* cacheAccount(account: AccountUserMetadata) {
 
   yield call([localStorage, 'setAudiusAccount'], formattedAccount)
   yield call([localStorage, 'setAudiusAccountUser'], accountUser)
-
-  // // Fetch user's chat blockee and blocker list after fetching their account
-  // yield put(fetchBlockees())
-  // yield put(fetchBlockers())
 }
 
 function* recordIPIfNotRecent(handle: string): SagaIterator {
