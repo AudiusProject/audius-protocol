@@ -48,5 +48,6 @@ COMMENT ON COLUMN email_access_keys.encrypted_key IS 'Base64 encoded encryption 
 -- Add indexes for performance
 CREATE INDEX IF NOT EXISTS idx_encrypted_emails_primary_access_user_id ON encrypted_emails(primary_access_user_id);
 CREATE INDEX IF NOT EXISTS idx_encrypted_emails_email_address_owner_user_id ON encrypted_emails(email_address_owner_user_id);
+CREATE INDEX IF NOT EXISTS idx_email_access_keys_delegated_access_user_id ON email_access_keys(delegated_access_user_id);
 
 commit;
