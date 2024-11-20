@@ -3,15 +3,16 @@ begin;
 -- Store encrypted emails with their metadata
 CREATE TABLE IF NOT EXISTS encrypted_emails (
     id SERIAL PRIMARY KEY, 
-    email_address_owner_user_id INTEGER NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
+    email_owner_user_id INTEGER NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
     primary_user_id INTEGER NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
     encrypted_email TEXT NOT NULL,  -- base64 encoded
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE (email_owner_user_id, primary_user_id)
 );
 
 COMMENT ON TABLE encrypted_emails IS 'Stores encrypted emails and their metadata for secure communication between users';
-COMMENT ON COLUMN encrypted_emails.email_address_owner_user_id IS 'User ID of the person who owns the actual email address';
+COMMENT ON COLUMN encrypted_emails.email_owner_user_id IS 'User ID of the person who owns the actual email address';
 COMMENT ON COLUMN encrypted_emails.primary_user_id IS 'User ID of the person who has full control over the encrypted email';
 COMMENT ON COLUMN encrypted_emails.encrypted_email IS 'Base64 encoded encrypted email content';
 
@@ -47,7 +48,7 @@ COMMENT ON COLUMN email_access_keys.encrypted_key IS 'Base64 encoded encryption 
 
 -- Add indexes for performance
 CREATE INDEX IF NOT EXISTS idx_encrypted_emails_primary_user_id ON encrypted_emails(primary_user_id);
-CREATE INDEX IF NOT EXISTS idx_encrypted_emails_email_address_owner_user_id ON encrypted_emails(email_address_owner_user_id);
+CREATE INDEX IF NOT EXISTS idx_encrypted_emails_email_address_owner_user_id ON encrypted_emails(email_owner_user_id);
 CREATE INDEX IF NOT EXISTS idx_email_access_keys_delegated_user_id ON email_access_keys(delegated_user_id);
 
 commit;
