@@ -41,7 +41,6 @@ type PlaylistLibraryProps = {
 export const PlaylistLibrary = (props: PlaylistLibraryProps) => {
   const { scrollbarRef } = props
   const library = useSelector(getPlaylistLibrary)
-  console.log('asdf library', library)
   const dispatch = useDispatch()
   const draggingKind = useSelector(selectDraggingKind)
   const { color, motion, spacing } = useTheme()

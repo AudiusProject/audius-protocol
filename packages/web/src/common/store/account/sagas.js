@@ -7,8 +7,7 @@ import {
   cacheActions,
   profilePageActions,
   getContext,
-  fetchAccountAsync,
-  cacheAccount
+  fetchAccountAsync
 } from '@audius/common/store'
 import { call, put, fork, select, takeEvery } from 'redux-saga/effects'
 
@@ -26,8 +25,7 @@ const {
   getUserHandle,
   getAccountUser,
   getAccountSavedPlaylistIds,
-  getAccountOwnedPlaylistIds,
-  getAccountToCache
+  getAccountOwnedPlaylistIds
 } = accountSelectors
 
 const {
@@ -41,7 +39,6 @@ const {
   instagramLogin,
   tikTokLogin,
   fetchSavedPlaylists,
-  addAccountPlaylist,
   resetAccount
 } = accountActions
 

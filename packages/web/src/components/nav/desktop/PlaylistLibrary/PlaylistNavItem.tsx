@@ -22,7 +22,6 @@ type PlaylistNavItemProps = {
 
 export const PlaylistNavItem = (props: PlaylistNavItemProps) => {
   const { playlistId, level } = props
-  console.log('asdf playlist nav item', playlistId)
   const dispatch = useDispatch()
 
   const playlistName = useSelector(
