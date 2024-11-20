@@ -1,38 +1,8 @@
 #!/bin/bash
 
-ENV_FILE="/env/${NETWORK}.env"
-OVERRIDE_ENV_FILE="/env/override.env"
-
-# source environment variables without overwriting existing ones
-source_env_file() {
-    local file=$1
-    if [ -f "$file" ]; then
-        echo "Sourcing environment variables from $file"
-        while IFS='=' read -r key value || [ -n "$key" ]; do
-            # skip lines that are comments or empty
-            [[ "$key" =~ ^#.*$ ]] && continue
-            [[ -z "$key" ]] && continue
-            # only set variables that are not already defined (prioritize docker-passed env)
-            if [ -z "${!key}" ]; then
-                export "$key"="$value"
-            fi
-        done < "$file"
-    else
-        echo "Environment file $file not found!"
-    fi
-}
-
-source_env_file "$ENV_FILE"
-source_env_file "$OVERRIDE_ENV_FILE"
-
-# minimum values for a core node to just run
 POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-postgres}
-POSTGRES_DB=${POSTGRES_DB:-audiusd}
-POSTGRES_DATA_DIR=${POSTGRES_DATA_DIR:-/var/lib/postgresql/data}
-export dbUrl=${dbUrl:-postgresql://postgres:postgres@localhost:5432/audius_creator_node?sslmode=disable}
-export uptimeDataDir=${uptimeDataDir:-/data/bolt}
-export audius_core_root_dir=${audius_core_root_dir:-/data/audiusd}
-export creatorNodeEndpoint=${creatorNodeEndpoint:-http://localhost}
+POSTGRES_DB=${POSTGRES_DB:-audius}
+POSTGRES_DATA_DIR=${POSTGRES_DATA_DIR:-/audius/data}
 
 if [ ! -d "$POSTGRES_DATA_DIR" ]; then
     echo "Initializing PostgreSQL data directory at $POSTGRES_DATA_DIR..."

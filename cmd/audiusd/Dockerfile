@@ -92,9 +92,6 @@ FROM cpp-builder
 
 COPY --from=go-builder /app/audiusd /bin/audiusd
 
-RUN mkdir -p /env
-COPY ./cmd/audiusd/env/dev.env ./cmd/audiusd/env/stage.env ./cmd/audiusd/env/prod.env /env/
-
 COPY ./cmd/audiusd/entrypoint.sh /bin/entrypoint.sh
 RUN chmod +x /bin/entrypoint.sh
 

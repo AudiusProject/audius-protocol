@@ -13,6 +13,7 @@ import (
 
 	"log"
 
+	"github.com/AudiusProject/audius-protocol/pkg/conf"
 	"github.com/AudiusProject/audius-protocol/pkg/core"
 	"github.com/AudiusProject/audius-protocol/pkg/core/common"
 	"github.com/AudiusProject/audius-protocol/pkg/uptime"
@@ -26,8 +27,20 @@ import (
 )
 
 func main() {
-	tlsEnabled := getEnvBool("ENABLE_TLS", false)
-	storageEnabled := getEnvBool("ENABLE_STORAGE", false)
+	ctxConfig, err := conf.ReadOrCreateContextConfig()
+	if err != nil {
+		log.Fatalf("Failed to initialize config: %v", err)
+	}
+	override, err := ctxConfig.Local.ToOverrideEnv(ctxConfig.Local.Hostname, ctxConfig.Network)
+	if err != nil {
+		log.Fatalf("Failed to initialize config: %v", err)
+	}
+	// TODO: configs should be kept in structs and handed down to mediorum and
+	// core rather than set as environment variables.
+	// This is just to preserve backwards compatibility.
+	for k, v := range override {
+		os.Setenv(k, v)
+	}
 
 	logger := common.NewLogger(nil)
 
@@ -52,7 +65,7 @@ func main() {
 	}
 
 	go func() {
-		if err := startEchoProxyWithOptionalTLS(hostUrl, tlsEnabled); err != nil {
+		if err := startEchoProxyWithOptionalTLS(hostUrl, ctxConfig.Local.AutoTLS); err != nil {
 			log.Fatalf("Echo server failed: %v", err)
 			cancel()
 		}
@@ -72,7 +85,7 @@ func main() {
 		}
 	}()
 
-	if storageEnabled {
+	if ctxConfig.Local.Storage.StorageUrl != "" {
 		go func() {
 			if err := mediorum.Run(ctx, logger); err != nil {
 				logger.Errorf("fatal mediorum error: %v", err)

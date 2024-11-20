@@ -237,7 +237,10 @@ func runNode(
 		}
 		config.PrivateKey = privateKey
 	}
-	override := config.ToOverrideEnv(host, nconf)
+	override, err := config.ToOverrideEnv(host, nconf)
+	if err != nil {
+		return logger.Error("Failed generating override config:", err)
+	}
 
 	// generate the override.env file locally
 	// WARNING: not thread safe due to constant filename

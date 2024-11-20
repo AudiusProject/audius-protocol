@@ -6,8 +6,9 @@ type ExecutionConfig struct {
 }
 
 type ContextConfig struct {
-	Network NetworkConfig         `yaml:"network"`
-	Nodes   map[string]NodeConfig `yaml:"nodes"`
+	Network NetworkConfig         `yaml:"network,omitempty"`
+	Nodes   map[string]NodeConfig `yaml:"nodes,omitempty"`
+	Local   LocalNodeConfig       `yaml:"local,omitempty"`
 }
 
 func NewContextConfig() *ContextConfig {
@@ -72,8 +73,15 @@ type NodeConfig struct {
 	PluginsConfig map[PluginName]map[string]string `yaml:"plugins,omitempty"`
 }
 
+type LocalNodeConfig struct {
+	NodeConfig
+	Hostname string `yaml:"hostname"`
+	AutoTLS  bool   `yaml:"autoTLS,omitempty"`
+}
+
 type StorageConfig struct {
-	/* Format:
+	/* Valid Formats:
+	file:///my/local/directory
 	s3://<your_bucket_name>      (AWS)
 	gs://<your_bucket_name>      (GCS)
 	azblob://<your_bucket_name>  (AZURE)

@@ -320,6 +320,6 @@ require (
 	github.com/onsi/gomega v1.33.1
 	github.com/spaolacci/murmur3 v1.1.0 // indirect
 	golang.org/x/net v0.28.0 // indirect
-	golang.org/x/sys v0.25.0 // indirect
+	golang.org/x/sys v0.26.0 // indirect
 	lukechampine.com/blake3 v1.1.6 // indirect
 )

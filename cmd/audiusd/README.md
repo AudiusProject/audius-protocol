@@ -16,49 +16,29 @@ open http://localhost/console/overview
 
 To operate a [registered](https://docs.audius.org/node-operator/setup/registration/) node requires minimal configuration.
 
-### Containerless
-
-Install the cli
-
-```bash
-curl -sSL https://install.audius.org | sh
-```
-
-Edit config
-
-```bash
-audius-ctl config edit
-```
-
-Add the following
-
-```yaml
-local:
-  endpoint: myaudiusnode.example.com
-  privateKey: <your-private-key>
-  wallet: <your-wallet>
-  rewardsWallet: <your-wallet>
-```
-
-Start the node
-
-```bash
-audius-ctl up
-```
-
-### Docker
-
 ```bash
 mkdir -p ~/.audius/contexts/
 
 cat <<EOF > ~/.audius/contexts/default
 local:
-  endpoint: myaudiusnode.example.com
+  hostname: myaudiusnode.example.com
   privateKey: <your-private-key>
   wallet: <your-wallet>
   rewardsWallet: <your-wallet>
 EOF
+```
 
+### Run Containerless
+
+[Download](https://github.com/AudiusProject/audius-protocol/releases) and run audiusd
+
+```bash
+./audiusd
+```
+
+### Run via Docker
+
+```bash
 docker run -d -ti -v ~/.audius:/audius -p 80:80 -p 443:443 -p 26656:26656 audius/audiusd:current
 ```
 
@@ -73,5 +53,5 @@ Without port `26656` open, the node can still download blocks and query the bloc
 To enable TLS, set `autoTLS: true` in your config. This will instruct `audiusd` to automatically obtain a certificate using Let's Encrypt. This process takes roughly 60 seconds and occurs on the first boot only.
 
 For this to function correctly, the following conditions must be met:
-- Your service must be publicly accessible via the host specified in the `endpoint` config.
+- Your service must be publicly accessible via the host specified in the `hostname` config.
 - Your service must be reachable on both port `:80` and port `:443`
