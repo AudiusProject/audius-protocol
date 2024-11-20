@@ -2,45 +2,52 @@ begin;
 
 -- Store encrypted emails with their metadata
 CREATE TABLE IF NOT EXISTS encrypted_emails (
-    email_id INTEGER PRIMARY KEY,
-    seller_user_id INTEGER NOT NULL,
-    encrypted_email TEXT NOT NULL  -- base64 encoded
+    id SERIAL PRIMARY KEY, 
+    email_address_owner_user_id INTEGER NOT NULL,
+    primary_access_user_id INTEGER NOT NULL,
+    encrypted_email TEXT NOT NULL,  -- base64 encoded
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
-COMMENT ON TABLE encrypted_emails IS 'Stores encrypted emails and their metadata for secure communication between sellers and buyers';
-COMMENT ON COLUMN encrypted_emails.email_id IS 'Unique identifier for each encrypted email record';
-COMMENT ON COLUMN encrypted_emails.seller_user_id IS 'User ID of the seller who owns the encrypted email';
+COMMENT ON TABLE encrypted_emails IS 'Stores encrypted emails and their metadata for secure communication between users';
+COMMENT ON COLUMN encrypted_emails.email_address_owner_user_id IS 'User ID of the person who owns the actual email address';
+COMMENT ON COLUMN encrypted_emails.primary_access_user_id IS 'User ID of the person who has full control over the encrypted email';
 COMMENT ON COLUMN encrypted_emails.encrypted_email IS 'Base64 encoded encrypted email content';
 
--- Store the encryption keys for sellers and grantees
+-- Store the encryption keys for primary access holders
 CREATE TABLE IF NOT EXISTS email_encryption_keys (
-    key_id INTEGER PRIMARY KEY,
-    seller_user_id INTEGER NOT NULL,
-    owner_key TEXT NOT NULL,  -- base64 encoded
-    UNIQUE(seller_user_id)  -- one owner key per seller
-);
-
-COMMENT ON TABLE email_encryption_keys IS 'Stores encryption keys for sellers to manage their encrypted emails';
-COMMENT ON COLUMN email_encryption_keys.key_id IS 'Unique identifier for each encryption key record';
-COMMENT ON COLUMN email_encryption_keys.seller_user_id IS 'User ID of the seller who owns the encryption key';
-COMMENT ON COLUMN email_encryption_keys.owner_key IS 'Base64 encoded encryption key owned by the seller';
-
--- Store the encrypted keys for grantees
-CREATE TABLE IF NOT EXISTS email_grantee_keys (
-    grantee_key_id INTEGER PRIMARY KEY,
-    seller_user_id INTEGER NOT NULL,
-    grantee_user_id INTEGER NOT NULL,
+    id SERIAL PRIMARY KEY,
+    primary_access_user_id INTEGER NOT NULL,
     encrypted_key TEXT NOT NULL,  -- base64 encoded
-    UNIQUE(seller_user_id, grantee_user_id)  -- one key per seller-grantee pair
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(primary_access_user_id)  -- one key per primary access holder
 );
 
-COMMENT ON TABLE email_grantee_keys IS 'Stores encrypted keys for grantees who have been given access to decrypt emails';
-COMMENT ON COLUMN email_grantee_keys.grantee_key_id IS 'Unique identifier for each grantee key record';
-COMMENT ON COLUMN email_grantee_keys.seller_user_id IS 'User ID of the seller who granted access';
-COMMENT ON COLUMN email_grantee_keys.grantee_user_id IS 'User ID of the grantee who received access';
-COMMENT ON COLUMN email_grantee_keys.encrypted_key IS 'Base64 encoded encryption key encrypted for the grantee';
+COMMENT ON TABLE email_encryption_keys IS 'Stores encryption keys for users with primary access to manage encrypted emails';
+COMMENT ON COLUMN email_encryption_keys.primary_access_user_id IS 'User ID of the person with primary access';
+COMMENT ON COLUMN email_encryption_keys.encrypted_key IS 'Base64 encoded encryption key for the primary access holder';
+
+-- Store the encrypted keys for delegated access
+CREATE TABLE IF NOT EXISTS email_access_keys (
+    id SERIAL PRIMARY KEY,
+    primary_access_user_id INTEGER NOT NULL,
+    delegated_access_user_id INTEGER NOT NULL,
+    encrypted_key TEXT NOT NULL,  -- base64 encoded
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(primary_access_user_id, delegated_access_user_id)  -- one key per primary-delegated pair
+);
+
+COMMENT ON TABLE email_access_keys IS 'Stores encrypted keys for users with delegated access to view emails';
+COMMENT ON COLUMN email_access_keys.primary_access_user_id IS 'User ID of the person who granted access';
+COMMENT ON COLUMN email_access_keys.delegated_access_user_id IS 'User ID of the person who received delegated access';
+COMMENT ON COLUMN email_access_keys.encrypted_key IS 'Base64 encoded encryption key for the delegated access holder';
 
 -- Add indexes for performance
-CREATE INDEX IF NOT EXISTS idx_encrypted_emails_seller ON encrypted_emails(seller_user_id);
+CREATE INDEX IF NOT EXISTS idx_encrypted_emails_primary_access_user_id ON encrypted_emails(primary_access_user_id);
+CREATE INDEX IF NOT EXISTS idx_encrypted_emails_email_address_owner_user_id ON encrypted_emails(email_address_owner_user_id);
+CREATE INDEX IF NOT EXISTS idx_email_access_keys_delegated_access_user_id ON email_access_keys(delegated_access_user_id);
 
-end;
+commit;
