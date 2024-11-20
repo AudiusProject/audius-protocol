@@ -199,6 +199,42 @@ export const mrvr = async (
   const cbs = async () => {
     const mrvrAffirmativeCbs = await db.raw(
       `
+      -- granular purchase data
+      with purchases as (
+        select
+          content_id,
+          country,
+          buyer_user_id,
+          ("amount" + "extra_amount") / 1000000 as usd
+        from usdc_purchases
+        where content_type = 'track'
+          and created_at >= :start
+          and created_at < :end
+          and "country" is not null
+      ),
+
+      -- aggregate downloads by country for purchaseable content
+      downloads as (
+        select country, count(*) as download_count
+        from track_downloads
+        where track_id in (select content_id from purchases)
+          and created_at >= :start
+          and created_at < :end
+          and "country" is not null
+        group by country
+      ),
+
+      -- aggregate streams by country for purchaseable content
+      streams as (
+        select country, sum(count) as stream_count
+        from aggregate_monthly_plays
+        where play_item_id in (select content_id from purchases)
+          and "timestamp" >= :start
+          and "timestamp" < :end
+          and "country" is not null
+        group by country
+      )
+
       select
         "Offering",
         "UserType",
@@ -211,47 +247,36 @@ export const mrvr = async (
         "Total Streams",
         "Currency"
       from (
+        -- paid portion of MRVR
         select
           'Downloads / Monetized Content' as "Offering",
           'Paid' as "UserType",
           count(distinct "buyer_user_id") as "Subscriber Count",
-          trunc(sum(("amount" + "extra_amount") / 1000000), 2) as "Gross Revenue",
-          trunc(sum(("amount" + "extra_amount") / 1000000), 2) as "Gross revenue With Deductions",
+          trunc(sum(usd), 2) as "Gross Revenue",
+          trunc(sum(usd), 2) as "Gross revenue With Deductions",
           country_to_iso_alpha2(coalesce("country", '')) as "Territory",
-          sum(
-              (
-                  select count(*)
-                  from track_downloads td
-                  where td.created_at >= :start
-                  and td.created_at < :end
-                  and td.country = usdc_purchases.country
-                  and td.user_id = usdc_purchases.buyer_user_id
-              )
+          (
+            select coalesce(download_count, 0)
+            from downloads td
+            where td.country = purchases.country
           ) as "Total Downloads",
-          sum(
-              (
-                  select count(*)
-                  from plays p
-                  where p.created_at >= :start
-                  and p.created_at < :end
-                  and p.country = usdc_purchases.country
-                  and p.user_id = usdc_purchases.buyer_user_id
-              )
+          (
+            select coalesce(stream_count, 0)
+            from streams s
+            where s.country = purchases.country
           ) as "Total Streams",
           'USD' as "Currency"
-        from "usdc_purchases"
-        where
-            "created_at" >= :start
-            and "created_at" < :end
-            and "country" is not null
+        from purchases
+        where "country" is not null
         group by "country"
 
         union all
 
+        -- free portion of MRVR
         select
           'Downloads / Monetized Content' as "Offering",
           'Free Trial (no payment details)' as "UserType",
-          count(*) as "Subscriber Count",
+          count(distinct user_id) as "Subscriber Count",
           trunc(0, 2) as "Gross Revenue",
           trunc(0, 2) as "Gross revenue With Deductions",
           country_to_iso_alpha2(coalesce(plays."country", '')) as "Territory",
@@ -262,25 +287,15 @@ export const mrvr = async (
               and td.created_at < :end
               and td.country = plays."country"
           ) as "Total Downloads",
-          (
-              select coalesce(sum("count"), 0)
-              from aggregate_monthly_plays amp
-              where amp.timestamp >= :start
-              and amp.timestamp < :end
-              and amp.country = plays."country"
-          ) as "Total Streams",
+          count(*) as "Total Streams",
           'USD' as "Currency"
-        from "users" users
-        left join lateral (
-            select p."country"
-            from "plays" p
-            where p."user_id" = users."user_id"
-            order by p."created_at" desc
-            limit 1
-        ) plays on true
-        where plays."country" is not null
-        group by plays."country"
-      ) subq
+        from plays
+        where
+          created_at >= :start
+          and created_at < :end
+          and country is not null
+        group by country
+      ) subq;
       `,
       { start, end }
     )
