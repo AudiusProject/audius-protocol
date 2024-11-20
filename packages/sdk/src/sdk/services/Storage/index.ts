@@ -1,3 +1,3 @@
 export { Storage } from './Storage'
-export type { StorageService } from './types'
+export type { StorageService, ProgressHandler } from './types'
 export { getDefaultStorageServiceConfig } from './getDefaultConfig'

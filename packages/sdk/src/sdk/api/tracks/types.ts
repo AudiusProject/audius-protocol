@@ -2,6 +2,7 @@ import type { WalletAdapter } from '@solana/wallet-adapter-base'
 import { z } from 'zod'
 
 import { PublicKeySchema } from '../../services/Solana'
+import { ProgressHandler } from '../../services/Storage/types'
 import {
   DDEXResourceContributor,
   DDEXCopyright,
@@ -73,6 +74,7 @@ export const USDCPurchaseConditions = z
 
 export const createUploadTrackMetadataSchema = () =>
   z.object({
+    trackId: z.optional(HashId),
     aiAttributionUserId: z.optional(HashId),
     description: z.optional(z.string().max(1000)),
     fieldVisibility: z.optional(
@@ -191,7 +193,7 @@ export const createUploadTrackSchema = () =>
       userId: HashId,
       coverArtFile: ImageFile,
       metadata: createUploadTrackMetadataSchema().strict(),
-      onProgress: z.optional(z.function().args(z.number())),
+      onProgress: z.optional(z.function().args(z.object({}))),
       trackFile: AudioFile
     })
     .strict()
@@ -202,8 +204,28 @@ export type UploadTrackRequest = Omit<
 > & {
   // Typing function manually because z.function() does not
   // support argument names
-  onProgress?: (progress: number) => void
+  onProgress?: ProgressHandler
 }
+
+// export const createUploadTrackFilesSchema = () =>
+//   z
+//     .object({
+//       userId: HashId,
+//       coverArtFile: z.optional(ImageFile),
+//       metadata: createUploadTrackMetadataSchema().strict(),
+//       onProgress: z.optional(z.function().args(z.number())),
+//       trackFile: AudioFile
+//     })
+//     .strict()
+
+// export type UploadTrackFilesRequest = Omit<
+//   z.input<ReturnType<typeof createUploadTrackFilesSchema>>,
+//   'onProgress'
+// > & {
+//   // Typing function manually because z.function() does not
+//   // support argument names
+//   onProgress?: ProgressHandler
+// }
 
 export const createUpdateTrackSchema = () =>
   z
@@ -213,7 +235,7 @@ export const createUpdateTrackSchema = () =>
       metadata: createUploadTrackMetadataSchema().strict().partial(),
       transcodePreview: z.optional(z.boolean()),
       coverArtFile: z.optional(ImageFile),
-      onProgress: z.optional(z.function().args(z.number()))
+      onProgress: z.optional(z.function().args(z.object({})))
     })
     .strict()
 
@@ -221,7 +243,7 @@ export type UpdateTrackRequest = Omit<
   z.input<ReturnType<typeof createUpdateTrackSchema>>,
   'onProgress'
 > & {
-  onProgress?: (progress: number) => void
+  onProgress?: ProgressHandler
 }
 
 export const DeleteTrackSchema = z

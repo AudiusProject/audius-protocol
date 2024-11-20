@@ -17,7 +17,23 @@ export type StorageServiceConfig = Partial<StorageServiceConfigInternal> & {
   storageNodeSelector: StorageNodeSelectorService
 }
 
-export type ProgressCB = (loaded: number, total: number) => void
+export type ProgressHandler = (
+  progress:
+    | {
+        art: {
+          upload?: { loaded: number; total: number }
+          transcode?: { decimal: number }
+          resize?: undefined
+        }
+      }
+    | {
+        audio: {
+          upload?: { loaded: number; total: number }
+          transcode?: { decimal: number }
+          resize?: undefined
+        }
+      }
+) => void
 
 export type FileTemplate = 'audio' | 'img_square' | 'img_backdrop'
 
@@ -30,7 +46,7 @@ export type StorageService = {
     auth
   }: {
     file: File
-    onProgress?: ProgressCB
+    onProgress?: ProgressHandler
     template: FileTemplate
     options?: { [key: string]: string }
     auth: AuthService
@@ -72,4 +88,5 @@ export type UploadResponse = {
       duration: string
     }
   }
+  transcode_progress?: number
 }

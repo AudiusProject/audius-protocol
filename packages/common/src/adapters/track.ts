@@ -230,7 +230,6 @@ export const trackMetadataForUploadToSdk = (
 ): TrackMetadata => ({
   ...camelcaseKeys(
     pick(input, [
-      'track_cid',
       'license',
       'isrc',
       'iswc',
@@ -241,19 +240,16 @@ export const trackMetadataForUploadToSdk = (
       'is_stream_gated',
       'stream_conditions',
       'is_download_gated',
-      'orig_file_cid',
       'orig_filename',
       'is_downloadable',
       'is_original_available',
       'bpm',
-      'duration',
       'is_custom_bpm',
       'musical_key',
       'is_custom_musical_key',
       'comments_disabled',
       'ddex_release_ids',
-      'parental_warning_type',
-      'audio_upload_id'
+      'parental_warning_type'
     ])
   ),
   title: input.title,
@@ -266,6 +262,10 @@ export const trackMetadataForUploadToSdk = (
   previewCid: input.preview_cid ?? '',
   ddexApp: input.ddex_app ?? '',
   aiAttributionUserId: OptionalId.parse(input.ai_attribution_user_id),
+  audioUploadId: input.audio_upload_id ?? undefined,
+  duration: input.duration ?? undefined,
+  trackCid: input.track_cid ?? '',
+  origFileCid: input.orig_file_cid ?? '',
   fieldVisibility: input.field_visibility
     ? mapValues(
         camelcaseKeys(input.field_visibility),
@@ -312,24 +312,25 @@ export const trackMetadataForUploadToSdk = (
     : undefined
 })
 
-export const artworkFileToSDK = (
-  artwork: Blob | NativeFile
+export const fileToSdk = (
+  file: Blob | NativeFile,
+  name: string
 ): CrossPlatformFile => {
   // If we're in react-native
-  if ('uri' in artwork) {
+  if ('uri' in file) {
     return {
-      buffer: Buffer.from(artwork.uri),
-      name: artwork.name ?? 'artwork',
-      type: artwork.type ?? undefined
+      buffer: Buffer.from(file.uri),
+      name: file.name ?? name,
+      type: file.type ?? undefined
     }
   }
 
   // If we're in browser (Blob)
   // If it's already a File, return as-is
-  if (artwork instanceof File) {
-    return artwork
+  if (file instanceof File) {
+    return file
   }
 
   // If it's a Blob, convert to File with a name
-  return new File([artwork], 'artwork', { type: artwork.type })
+  return new File([file], name, { type: file.type })
 }
