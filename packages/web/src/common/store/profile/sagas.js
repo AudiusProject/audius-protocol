@@ -571,8 +571,6 @@ function* confirmUpdateProfile(userId, metadata) {
     confirmerActions.requestConfirmation(
       makeKindId(Kind.USERS, userId),
       function* () {
-        console.log('asdf confirmUpdateProfile')
-
         const response = yield call(
           audiusBackendInstance.updateCreator,
           metadata,
