@@ -2420,7 +2420,6 @@ purchases_response = make_full_response(
     "purchases_response", full_ns, fields.List(fields.Nested(purchase))
 )
 
-
 purchases_count_response = make_full_response(
     "purchases_count_response", full_ns, fields.Integer()
 )
@@ -3007,3 +3006,142 @@ class FullMutedUsers(Resource):
         muted_users = get_muted_users(decoded_id)
         muted_users = list(map(extend_user, muted_users))
         return success_response(muted_users)
+
+
+# Email-related routes
+USER_PRIMARY_ACCESS_EMAILS_ROUTE = "/<string:id>/primary-access-emails"
+USER_EMAIL_ENCRYPTION_KEY_ROUTE = "/<string:id>/email-encryption-key"
+USER_DELEGATED_ACCESS_EMAILS_ROUTE = "/<string:id>/delegated-access-emails"
+USER_DELEGATED_ACCESS_KEY_ROUTE = (
+    "/<string:id>/delegated-access-key/<string:primary_user_id>"
+)
+
+
+# Email-related endpoints
+@ns.route(USER_PRIMARY_ACCESS_EMAILS_ROUTE)
+class UserPrimaryAccessEmails(Resource):
+    @record_metrics
+    @ns.doc(
+        id="Get Primary Access Emails",
+        description="Get all encrypted emails where the user has primary access",
+        responses={
+            200: "Success",
+            400: "Bad Request",
+            404: "User not found",
+            500: "Server error",
+        },
+    )
+    @ns.marshal_with(encrypted_emails_response)
+    def get(self, id):
+        """Get all encrypted emails where the user has primary access."""
+        decoded_id = decode_with_abort(id)
+        db = get_db_read_replica()
+
+        emails = (
+            db.query(EncryptedEmail)
+            .filter(EncryptedEmail.primary_access_user_id == decoded_id)
+            .all()
+        )
+
+        return {"data": emails}
+
+
+@ns.route(USER_EMAIL_ENCRYPTION_KEY_ROUTE)
+class UserEmailEncryptionKey(Resource):
+    @record_metrics
+    @ns.doc(
+        id="Get Email Encryption Key",
+        description="Get the encryption key for a primary access user",
+        responses={
+            200: "Success",
+            400: "Bad Request",
+            404: "User not found",
+            500: "Server error",
+        },
+    )
+    @ns.marshal_with(email_encryption_keys_response)
+    def get(self, id):
+        """Get the encryption key for a primary access user."""
+        decoded_id = decode_with_abort(id)
+        db = get_db_read_replica()
+
+        key = (
+            db.query(EmailEncryptionKey)
+            .filter(EmailEncryptionKey.primary_access_user_id == decoded_id)
+            .first()
+        )
+
+        return {"data": [key] if key else []}
+
+
+@ns.route(USER_DELEGATED_ACCESS_EMAILS_ROUTE)
+class UserDelegatedAccessEmails(Resource):
+    @record_metrics
+    @ns.doc(
+        id="Get Delegated Access Emails",
+        description="Get all encrypted emails that the user has delegated access to",
+        responses={
+            200: "Success",
+            400: "Bad Request",
+            404: "User not found",
+            500: "Server error",
+        },
+    )
+    @ns.marshal_with(encrypted_emails_response)
+    def get(self, id):
+        """Get all encrypted emails that the user has delegated access to."""
+        decoded_id = decode_with_abort(id)
+        db = get_db_read_replica()
+
+        # First get all the access keys where this user is the delegated user
+        access_keys = (
+            db.query(EmailAccessKey)
+            .filter(EmailAccessKey.delegated_access_user_id == decoded_id)
+            .all()
+        )
+
+        # Then get all emails where the primary_access_user_id matches any of the access keys
+        primary_access_user_ids = [key.primary_access_user_id for key in access_keys]
+
+        if not primary_access_user_ids:
+            return {"data": []}
+
+        emails = (
+            db.query(EncryptedEmail)
+            .filter(EncryptedEmail.primary_access_user_id.in_(primary_access_user_ids))
+            .all()
+        )
+
+        return {"data": emails}
+
+
+@ns.route(USER_DELEGATED_ACCESS_KEY_ROUTE)
+class UserDelegatedAccessKey(Resource):
+    @record_metrics
+    @ns.doc(
+        id="Get Delegated Access Key",
+        description="Get the encryption key granted to a delegated user by a specific primary user",
+        responses={
+            200: "Success",
+            400: "Bad Request",
+            404: "User not found or no access key available",
+            500: "Server error",
+        },
+    )
+    @ns.marshal_with(email_access_keys_response)
+    def get(self, id, primary_user_id):
+        """Get the encryption key granted to a delegated user by a specific primary user."""
+        decoded_id = decode_with_abort(id)
+        decoded_primary_id = decode_with_abort(primary_user_id)
+        db = get_db_read_replica()
+
+        key = (
+            db.query(EmailAccessKey)
+            .filter(
+                EmailAccessKey.delegated_access_user_id == decoded_id,
+                EmailAccessKey.primary_access_user_id == decoded_primary_id,
+            )
+            .first()
+        )
+
+        return {"data": [key] if key else []}
