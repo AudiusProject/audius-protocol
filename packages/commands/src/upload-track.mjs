@@ -7,7 +7,11 @@ import { Utils } from '@audius/sdk-legacy/dist/libs.js'
 import chalk from 'chalk'
 import { program } from 'commander'
 
-import { initializeAudiusLibs } from './utils.mjs'
+import {
+  initializeAudiusLibs,
+  getCurrentAudiusSdkUser,
+  parseUserId
+} from './utils.mjs'
 import { Genre } from '@audius/sdk'
 
 function generateWhiteNoise(duration, outFile) {
@@ -186,6 +190,8 @@ program
       }
     ) => {
       const audiusLibs = await initializeAudiusLibs(from)
+      const user = await getCurrentAudiusSdkUser()
+      const userId = await parseUserId(user.id)
 
       const rand = randomBytes(2).toString('hex').padStart(4, '0').toUpperCase()
 
@@ -223,8 +229,6 @@ program
           downloadPrice,
           audiusLibs
         })
-
-        const userId = audiusLibs.getCurrentUser().userId
 
         const trackTitle = title || `title ${rand}`
         const response = await audiusLibs.Track.uploadTrackV2AndWriteToChain(

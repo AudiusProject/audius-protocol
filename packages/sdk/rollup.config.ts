@@ -19,6 +19,7 @@ const external = [
   'ethers/lib/index',
   'hashids/cjs',
   'readable-stream',
+  '@noble/hashes/utils',
   'debug'
 ]
 
