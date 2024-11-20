@@ -193,7 +193,7 @@ export const createUploadTrackSchema = () =>
       userId: HashId,
       coverArtFile: ImageFile,
       metadata: createUploadTrackMetadataSchema().strict(),
-      onProgress: z.optional(z.function().args(z.object({}))),
+      onProgress: z.optional(z.function()),
       trackFile: AudioFile
     })
     .strict()
@@ -235,7 +235,7 @@ export const createUpdateTrackSchema = () =>
       metadata: createUploadTrackMetadataSchema().strict().partial(),
       transcodePreview: z.optional(z.boolean()),
       coverArtFile: z.optional(ImageFile),
-      onProgress: z.optional(z.function().args(z.object({})))
+      onProgress: z.optional(z.function())
     })
     .strict()
 
