@@ -3,7 +3,6 @@ import { Environment } from '../env'
 /* FeatureFlags must be lowercase snake case */
 export enum FeatureFlags {
   SURFACE_AUDIO_ENABLED = 'surface_audio_enabled',
-  PREFER_HIGHER_PATCH_FOR_PRIMARY = 'prefer_higher_patch_for_primary',
   PREFER_HIGHER_PATCH_FOR_SECONDARIES = 'prefer_higher_patch_for_secondaries',
   DISABLE_SIGN_UP_CONFIRMATION = 'disable_sign_up_confirmation',
   NEW_ARTIST_DASHBOARD_TABLE = 'new_artist_dashboard_table',
@@ -65,7 +64,6 @@ export const environmentFlagDefaults: Record<
  */
 export const flagDefaults: FlagDefaults = {
   [FeatureFlags.SURFACE_AUDIO_ENABLED]: false,
-  [FeatureFlags.PREFER_HIGHER_PATCH_FOR_PRIMARY]: true,
   [FeatureFlags.PREFER_HIGHER_PATCH_FOR_SECONDARIES]: true,
   [FeatureFlags.DISABLE_SIGN_UP_CONFIRMATION]: false,
   [FeatureFlags.NEW_ARTIST_DASHBOARD_TABLE]: false,
