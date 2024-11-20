@@ -165,7 +165,9 @@ const TrackEditForm = (
   })
   const [forceOpenAccessAndSale, setForceOpenAccessAndSale] = useState(false)
 
-  const [, , { setValue: setFileValue }] = useField(`tracks[${trackIdx}].file`)
+  const [{ value: file }, , { setValue: setFileValue }] = useField(
+    `tracks[${trackIdx}].file`
+  )
   const [, , { setValue: setOrigFilename }] = useField(
     getTrackFieldName(trackIdx, 'orig_filename')
   )
@@ -218,6 +220,19 @@ const TrackEditForm = (
     [isTitleDirty, setFileValue, setOrigFilename, setTitle]
   )
 
+  const onClickDownload = useCallback(() => {
+    if (!file) return
+
+    const url = URL.createObjectURL(file)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = file.name || 'download'
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    URL.revokeObjectURL(url)
+  }, [file])
+
   return (
     <Form id={formId}>
       <NavigationPrompt
@@ -249,6 +264,8 @@ const TrackEditForm = (
                   values.trackMetadatas[trackIdx].orig_filename ?? 'untitled'
                 }
                 onClickReplace={onClickReplace}
+                onClickDownload={onClickDownload}
+                downloadEnabled
               />
             ) : null}
             <TrackMetadataFields />

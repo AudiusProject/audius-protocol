@@ -44,6 +44,7 @@ export const FileReplaceContainer = ({
           // empty style makes this hug the button
           style={{}}
           multiple={false}
+          accept='audio/*'
           onDropAccepted={(files) => {
             if (files[0]) {
               onClickReplace?.(files[0])
