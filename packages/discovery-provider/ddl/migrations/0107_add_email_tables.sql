@@ -3,8 +3,8 @@ begin;
 -- Store encrypted emails with their metadata
 CREATE TABLE IF NOT EXISTS encrypted_emails (
     id SERIAL PRIMARY KEY, 
-    email_owner_user_id INTEGER NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
-    primary_user_id INTEGER NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
+    email_owner_user_id INTEGER NOT NULL,
+    primary_user_id INTEGER NOT NULL,
     encrypted_email TEXT NOT NULL,  -- base64 encoded
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
@@ -19,7 +19,7 @@ COMMENT ON COLUMN encrypted_emails.encrypted_email IS 'Base64 encoded encrypted 
 -- Store the encryption keys for primary access holders
 CREATE TABLE IF NOT EXISTS email_encryption_keys (
     id SERIAL PRIMARY KEY,
-    primary_user_id INTEGER NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
+    primary_user_id INTEGER NOT NULL,
     encrypted_key TEXT NOT NULL,  -- base64 encoded
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
@@ -33,8 +33,8 @@ COMMENT ON COLUMN email_encryption_keys.encrypted_key IS 'Base64 encoded encrypt
 -- Store the encrypted keys for delegated access
 CREATE TABLE IF NOT EXISTS email_access_keys (
     id SERIAL PRIMARY KEY,
-    primary_user_id INTEGER NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
-    delegated_user_id INTEGER NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
+    primary_user_id INTEGER NOT NULL,
+    delegated_user_id INTEGER NOT NULL,
     encrypted_key TEXT NOT NULL,  -- base64 encoded
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
