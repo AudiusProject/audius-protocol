@@ -15,8 +15,7 @@ program
     try {
       const unixTimestamp = Math.round(new Date().getTime() / 1000)
       const message = `signature:${unixTimestamp}`
-      const prefix = `\x19Ethereum Signed Message:\n${message.length}`
-      const prefixedMessage = prefix + message
+      const prefixedMessage = `\x19Ethereum Signed Message:\n${message.length}${message}`
 
       const [sig, recid] = await audiusSdk.services.auth.sign(
         Buffer.from(prefixedMessage, 'utf-8')
