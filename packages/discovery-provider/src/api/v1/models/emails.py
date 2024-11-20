@@ -5,28 +5,35 @@ from .common import ns
 encrypted_email = ns.model(
     "encrypted_email",
     {
-        "email_id": fields.Integer(required=True),
-        "seller_user_id": fields.Integer(required=True),
+        "id": fields.Integer(required=True),
+        "email_address_owner_user_id": fields.Integer(required=True),
+        "primary_access_user_id": fields.Integer(required=True),
         "encrypted_email": fields.String(required=True, description="Base64 encoded encrypted email content"),
+        "created_at": fields.DateTime(required=True),
+        "updated_at": fields.DateTime(required=True),
     },
 )
 
 email_encryption_key = ns.model(
     "email_encryption_key",
     {
-        "key_id": fields.Integer(required=True),
-        "seller_user_id": fields.Integer(required=True),
-        "owner_key": fields.String(required=True, description="Base64 encoded encryption key owned by the seller"),
+        "id": fields.Integer(required=True),
+        "primary_access_user_id": fields.Integer(required=True),
+        "encrypted_key": fields.String(required=True, description="Base64 encoded encryption key"),
+        "created_at": fields.DateTime(required=True),
+        "updated_at": fields.DateTime(required=True),
     },
 )
 
-email_grantee_key = ns.model(
-    "email_grantee_key",
+email_access_key = ns.model(
+    "email_access_key",
     {
-        "grantee_key_id": fields.Integer(required=True),
-        "seller_user_id": fields.Integer(required=True),
-        "grantee_user_id": fields.Integer(required=True),
-        "encrypted_key": fields.String(required=True, description="Base64 encoded encryption key encrypted for the grantee"),
+        "id": fields.Integer(required=True),
+        "primary_access_user_id": fields.Integer(required=True),
+        "delegated_access_user_id": fields.Integer(required=True),
+        "encrypted_key": fields.String(required=True, description="Base64 encoded encryption key"),
+        "created_at": fields.DateTime(required=True),
+        "updated_at": fields.DateTime(required=True),
     },
 )
 
@@ -45,9 +52,9 @@ email_encryption_keys_response = ns.model(
     },
 )
 
-email_grantee_keys_response = ns.model(
-    "email_grantee_keys_response",
+email_access_keys_response = ns.model(
+    "email_access_keys_response",
     {
-        "data": fields.List(fields.Nested(email_grantee_key), required=True),
+        "data": fields.List(fields.Nested(email_access_key), required=True),
     },
 )

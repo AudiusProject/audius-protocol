@@ -1,9 +1,7 @@
 from sqlalchemy import func
 
 from src.exceptions import IndexingValidationError
-from src.models.emails.encrypted_emails import EncryptedEmail
-from src.models.emails.email_encryption_keys import EmailEncryptionKey
-from src.models.emails.email_grantee_keys import EmailGranteeKey
+from src.models.users.email import EncryptedEmail, EmailEncryptionKey, EmailGranteeKey
 from src.tasks.entity_manager.utils import (
     Action,
     EntityType,
