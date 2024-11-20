@@ -22,7 +22,6 @@ import { useParams } from 'react-router'
 import { useSelector } from 'common/hooks/useSelector'
 import { EditTrackForm } from 'components/edit-track/EditTrackForm'
 import { TrackEditFormValues } from 'components/edit-track/types'
-import { UploadPreviewContextProvider } from 'components/edit-track/utils/uploadPreviewContext'
 import Header from 'components/header/desktop/Header'
 import LoadingSpinnerFullPage from 'components/loading-spinner-full-page/LoadingSpinnerFullPage'
 import Page from 'components/page/Page'
@@ -118,11 +117,9 @@ export const EditTrackPage = (props: EditPageProps) => {
       {trackStatus !== Status.SUCCESS || !coverArtUrl ? (
         <LoadingSpinnerFullPage />
       ) : (
-        <UploadPreviewContextProvider>
-          <EditFormScrollContext.Provider value={scrollToTop}>
-            <EditTrackForm initialValues={initialValues} onSubmit={onSubmit} />
-          </EditFormScrollContext.Provider>
-        </UploadPreviewContextProvider>
+        <EditFormScrollContext.Provider value={scrollToTop}>
+          <EditTrackForm initialValues={initialValues} onSubmit={onSubmit} />
+        </EditFormScrollContext.Provider>
       )}
     </Page>
   )

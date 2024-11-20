@@ -32,17 +32,21 @@ import { StemsAndDownloadsField } from 'components/edit/fields/StemsAndDownloads
 import { TrackMetadataFields } from 'components/edit/fields/TrackMetadataFields'
 import { PriceAndAudienceField } from 'components/edit/fields/price-and-audience/PriceAndAudienceField'
 import { VisibilityField } from 'components/edit/fields/visibility/VisibilityField'
+import {
+  UploadPreviewContextProvider,
+  UploadPreviewContext
+} from 'components/edit-track/utils/uploadPreviewContext'
 import { FileReplaceContainer } from 'components/file-replace-container/FileReplaceContainer'
 import layoutStyles from 'components/layout/layout.module.css'
 import { NavigationPrompt } from 'components/navigation-prompt/NavigationPrompt'
 import { EditFormScrollContext } from 'pages/edit-page/EditTrackPage'
 import { processFiles } from 'pages/upload-page/store/utils/processFiles'
+import { removeNullable } from 'utils/typeUtils'
 
 import styles from './EditTrackForm.module.css'
 import { PreviewButton } from './components/PreviewButton'
 import { getTrackFieldName } from './hooks'
 import { TrackEditFormValues } from './types'
-import { UploadPreviewContext } from './utils/uploadPreviewContext'
 
 const formId = 'edit-track-form'
 
@@ -124,22 +128,24 @@ export const EditTrackForm = (props: EditTrackFormProps) => {
   )
 
   return (
-    <Formik<TrackEditFormValues>
-      initialValues={initialValues}
-      onSubmit={handleSubmit}
-      validationSchema={toFormikValidationSchema(EditFormValidationSchema)}
-    >
-      {(props) => (
-        <>
-          <TrackEditForm
-            {...props}
-            hideContainer={hideContainer}
-            disableNavigationPrompt={disableNavigationPrompt}
-            updatedArtwork={initialTrackValues.artwork}
-          />
-        </>
-      )}
-    </Formik>
+    <UploadPreviewContextProvider>
+      <Formik<TrackEditFormValues>
+        initialValues={initialValues}
+        onSubmit={handleSubmit}
+        validationSchema={toFormikValidationSchema(EditFormValidationSchema)}
+      >
+        {(props) => (
+          <>
+            <TrackEditForm
+              {...props}
+              hideContainer={hideContainer}
+              disableNavigationPrompt={disableNavigationPrompt}
+              updatedArtwork={initialTrackValues.artwork}
+            />
+          </>
+        )}
+      </Formik>
+    </UploadPreviewContextProvider>
   )
 }
 
@@ -219,8 +225,9 @@ const TrackEditForm = (
         })
       )
 
-      if (processedFiles?.length > 0) {
-        const newFile = processedFiles[0]!
+      const files = processedFiles.filter(removeNullable)
+      if (files.length > 0) {
+        const newFile = files[0]
 
         if (isUpload && !isTitleDirty) {
           setTitle(newFile.metadata.title.split('.').shift())
@@ -284,7 +291,7 @@ const TrackEditForm = (
             {/* TODO: Remove the isUpload part when the other half of the work is done */}
             {isTrackAudioReplaceEnabled && isUpload ? (
               <FileReplaceContainer
-                fileName={fileName ?? messages.untitled}
+                fileName={fileName || messages.untitled}
                 onTogglePlay={handleTogglePreview}
                 isPlaying={isPreviewPlaying}
                 onClickReplace={onClickReplace}
