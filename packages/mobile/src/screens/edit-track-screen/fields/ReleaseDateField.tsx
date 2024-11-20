@@ -11,7 +11,7 @@ const messages = {
 
 export const ReleaseDateField = (props) => {
   const [{ value }] = useField<Nullable<string>>('release_date')
-  console.log('asdf props', props)
+
   return (
     <ContextualMenu
       menuScreenName='ReleaseDate'
