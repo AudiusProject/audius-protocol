@@ -5,7 +5,6 @@ CREATE TABLE IF NOT EXISTS encrypted_emails (
     id SERIAL PRIMARY KEY, 
     email_address_owner_user_id INTEGER NOT NULL,
     primary_access_user_id INTEGER NOT NULL,
-    delegated_access_user_id INTEGER NOT NULL,
     encrypted_email TEXT NOT NULL,  -- base64 encoded
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
@@ -14,7 +13,6 @@ CREATE TABLE IF NOT EXISTS encrypted_emails (
 COMMENT ON TABLE encrypted_emails IS 'Stores encrypted emails and their metadata for secure communication between users';
 COMMENT ON COLUMN encrypted_emails.email_address_owner_user_id IS 'User ID of the person who owns the actual email address';
 COMMENT ON COLUMN encrypted_emails.primary_access_user_id IS 'User ID of the person who has full control over the encrypted email';
-COMMENT ON COLUMN encrypted_emails.delegated_access_user_id IS 'User ID of the person who has been granted revocable access to view the email';
 COMMENT ON COLUMN encrypted_emails.encrypted_email IS 'Base64 encoded encrypted email content';
 
 -- Store the encryption keys for primary access holders
@@ -48,7 +46,6 @@ COMMENT ON COLUMN email_access_keys.delegated_access_user_id IS 'User ID of the 
 COMMENT ON COLUMN email_access_keys.encrypted_key IS 'Base64 encoded encryption key for the delegated access holder';
 
 -- Add indexes for performance
-CREATE INDEX IF NOT EXISTS idx_encrypted_emails_delegated_access_user_id ON encrypted_emails(delegated_access_user_id);
 CREATE INDEX IF NOT EXISTS idx_encrypted_emails_primary_access_user_id ON encrypted_emails(primary_access_user_id);
 CREATE INDEX IF NOT EXISTS idx_encrypted_emails_email_address_owner_user_id ON encrypted_emails(email_address_owner_user_id);
 
