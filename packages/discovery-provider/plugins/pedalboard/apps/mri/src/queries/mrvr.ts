@@ -122,33 +122,33 @@ export const mrvr = async (
       from
         (
           select
-            sum(("amount" + "extra_amount") / 1000000) as "Downloads - Gross Revenues without Permitted Deductions",
-            sum(("amount" + "extra_amount") / 1000000) as "Downloads - Gross Revenues with Permitted Deductions",
-            sum(
+            trunc(sum(("amount" + "extra_amount") / 1000000), 2) as "Downloads - Gross Revenues without Permitted Deductions",
+            trunc(sum(("amount" + "extra_amount") / 1000000), 2) as "Downloads - Gross Revenues with Permitted Deductions",
+            trunc(sum(
               case
                 when "country" = 'United States'
                 then ("amount" + "extra_amount") / 1000000
                 else 0
               end
-            ) as "Downloads - Gross Revenues without Permitted Deductions - USA Only",
-            sum(
+            ), 2) as "Downloads - Gross Revenues without Permitted Deductions - USA Only",
+            trunc(sum(
               case
                 when "country" = 'United States'
                 then ("amount" + "extra_amount") / 1000000
                 else 0
               end
-            ) as "Downloads - Gross Revenues with Permitted Deductions - USA Only",
-            0 as "Downloads - Public Performance Fees",
-            0 as "Downloads - Record Label Payments",
-            0 as "Subscription - Gross Revenues without Permitted Deductions",
-            0 as "Subscription - Gross Revenues with Permitted Deductions",
-            0 as "Subscription - Gross Revenues without Permitted Deductions - USA Only",
-            0 as "Subscription - Gross Revenues with Permitted Deductions - USA Only",
-            0 as "Subscription - Public Performance Fees",
-            0 as "Subscription - Record Label Payments",
-            0 as "Subscription - Average Subscription Price",
-            0 as "Subscription - Total Subscribers",
-            0 as "Subscription - Total Subscribers - USA Only"
+            ), 2) as "Downloads - Gross Revenues with Permitted Deductions - USA Only",
+            trunc(0, 2) as "Downloads - Public Performance Fees",
+            trunc(0, 2) as "Downloads - Record Label Payments",
+            trunc(0, 2) as "Subscription - Gross Revenues without Permitted Deductions",
+            trunc(0, 2) as "Subscription - Gross Revenues with Permitted Deductions",
+            trunc(0, 2) as "Subscription - Gross Revenues without Permitted Deductions - USA Only",
+            trunc(0, 2) as "Subscription - Gross Revenues with Permitted Deductions - USA Only",
+            trunc(0, 2) as "Subscription - Public Performance Fees",
+            trunc(0, 2) as "Subscription - Record Label Payments",
+            trunc(0, 2) as "Subscription - Average Subscription Price",
+            trunc(0, 2) as "Subscription - Total Subscribers",
+            trunc(0, 2) as "Subscription - Total Subscribers - USA Only"
           from "usdc_purchases"
           where
             "created_at" >= :start
@@ -215,29 +215,35 @@ export const mrvr = async (
           'Downloads / Monetized Content' as "Offering",
           'Paid' as "UserType",
           count(distinct "buyer_user_id") as "Subscriber Count",
-          sum(("amount" + "extra_amount") / 1000000) as "Gross Revenue",
-          sum(("amount" + "extra_amount") / 1000000) as "Gross revenue With Deductions",
+          trunc(sum(("amount" + "extra_amount") / 1000000), 2) as "Gross Revenue",
+          trunc(sum(("amount" + "extra_amount") / 1000000), 2) as "Gross revenue With Deductions",
           country_to_iso_alpha2(coalesce("country", '')) as "Territory",
-          (
-            select count(*)
-            from track_downloads td
-            where td.created_at >= :start
-            and td.created_at < :end
-            and td.country = usdc_purchases.country
+          sum(
+              (
+                  select count(*)
+                  from track_downloads td
+                  where td.created_at >= :start
+                  and td.created_at < :end
+                  and td.country = usdc_purchases.country
+                  and td.user_id = usdc_purchases.buyer_user_id
+              )
           ) as "Total Downloads",
-          (
-            select sum("count")
-            from aggregate_monthly_plays amp
-            where amp.timestamp >= :start
-            and amp.timestamp < :end
-            and amp.country = usdc_purchases.country
+          sum(
+              (
+                  select count(*)
+                  from plays p
+                  where p.created_at >= :start
+                  and p.created_at < :end
+                  and p.country = usdc_purchases.country
+                  and p.user_id = usdc_purchases.buyer_user_id
+              )
           ) as "Total Streams",
           'USD' as "Currency"
         from "usdc_purchases"
         where
-          "created_at" >= :start
-          and "created_at" < :end
-          and "country" is not null
+            "created_at" >= :start
+            and "created_at" < :end
+            and "country" is not null
         group by "country"
 
         union all
@@ -246,8 +252,8 @@ export const mrvr = async (
           'Downloads / Monetized Content' as "Offering",
           'Free Trial (no payment details)' as "UserType",
           count(*) as "Subscriber Count",
-          0 as "Gross Revenue",
-          0 as "Gross revenue With Deductions",
+          trunc(0, 2) as "Gross Revenue",
+          trunc(0, 2) as "Gross revenue With Deductions",
           country_to_iso_alpha2(coalesce(plays."country", '')) as "Territory",
           (
               select count(*)
