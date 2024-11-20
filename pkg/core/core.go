@@ -17,6 +17,8 @@ import (
 	"github.com/AudiusProject/audius-protocol/pkg/core/db"
 	"github.com/AudiusProject/audius-protocol/pkg/core/gen/proto"
 	"github.com/AudiusProject/audius-protocol/pkg/core/grpc"
+	"github.com/AudiusProject/audius-protocol/pkg/core/mempool"
+	"github.com/AudiusProject/audius-protocol/pkg/core/pubsub"
 	"github.com/AudiusProject/audius-protocol/pkg/core/registry_bridge"
 	"github.com/AudiusProject/audius-protocol/pkg/core/server"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
@@ -97,7 +99,12 @@ func run(ctx context.Context, logger *common.Logger) error {
 		return con.Start()
 	})
 
-	node, err := chain.NewNode(logger, config, cometConfig, pool, c)
+	txPubsub := pubsub.NewPubsub[struct{}]()
+
+	mempl := mempool.NewMempool(logger, config, db.New(pool), cometConfig.Mempool.Size)
+	mempl.CreateValidatorClients()
+
+	node, err := chain.NewNode(logger, config, cometConfig, pool, c, mempl, txPubsub)
 	if err != nil {
 		return fmt.Errorf("node init error: %v", err)
 	}
@@ -114,18 +121,7 @@ func run(ctx context.Context, logger *common.Logger) error {
 
 	logger.Info("local rpc initialized")
 
-	// Start the registry bridge
-	eg.Go(func() error {
-		registryBridge, err := registry_bridge.NewRegistryBridge(logger, config, rpc, c, pool)
-		if err != nil {
-			return fmt.Errorf("registry bridge init error: %v", err)
-		}
-
-		logger.Info("core registry bridge starting")
-		return registryBridge.Start()
-	})
-
-	grpcServer, err := grpc.NewGRPCServer(logger, config, rpc, pool)
+	grpcServer, err := grpc.NewGRPCServer(logger, config, rpc, pool, mempl, txPubsub)
 	if err != nil {
 		return fmt.Errorf("grpc init error: %v", err)
 	}
@@ -137,6 +133,17 @@ func run(ctx context.Context, logger *common.Logger) error {
 	}
 
 	logger.Info("grpc server created")
+
+	// Start the registry bridge
+	eg.Go(func() error {
+		registryBridge, err := registry_bridge.NewRegistryBridge(logger, config, rpc, grpcServer, c, pool)
+		if err != nil {
+			return fmt.Errorf("registry bridge init error: %v", err)
+		}
+
+		logger.Info("core registry bridge starting")
+		return registryBridge.Start()
+	})
 
 	_, err = server.NewServer(config, node.Config(), logger, rpc, pool, e)
 	if err != nil {
@@ -161,6 +168,30 @@ func run(ctx context.Context, logger *common.Logger) error {
 	eg.Go(func() error {
 		logger.Info("core gRPC server starting")
 		return grpcServer.Serve(grpcLis)
+	})
+
+	// fire off any routines once node is synced
+	// query if we're synced every 5 seconds
+	eg.Go(func() error {
+		for {
+			time.Sleep(5 * time.Second)
+
+			status, _ := rpc.Status(context.Background())
+			if status == nil {
+				continue
+			}
+
+			if status.SyncInfo.CatchingUp {
+				continue
+			}
+
+			err := mempl.CreateValidatorClients()
+			if err != nil {
+				continue
+			}
+
+			return nil
+		}
 	})
 
 	// Close all services when the context is canceled

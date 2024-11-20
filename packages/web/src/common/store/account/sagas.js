@@ -1,16 +1,11 @@
 import { userApiFetchSaga } from '@audius/common/api'
 import { ErrorLevel, Kind } from '@audius/common/models'
-import {
-  FeatureFlags,
-  createUserBankIfNeeded,
-  getRootSolanaAccount
-} from '@audius/common/services'
+import { getRootSolanaAccount } from '@audius/common/services'
 import {
   accountActions,
   accountSelectors,
   cacheActions,
   profilePageActions,
-  solanaSelectors,
   getContext,
   fetchAccountAsync,
   cacheAccount
@@ -25,7 +20,6 @@ import { waitForWrite, waitForRead } from 'utils/sagaHelpers'
 import { retrieveCollections } from '../cache/collections/utils'
 
 const { fetchProfile } = profilePageActions
-const { getFeePayer } = solanaSelectors
 
 const {
   getUserId,
@@ -76,7 +70,6 @@ const setSentryUser = (sentry, user, traits) => {
 function* onSignedIn({ payload: { account } }) {
   const audiusBackendInstance = yield getContext('audiusBackendInstance')
   const sentry = yield getContext('sentry')
-  const analytics = yield getContext('analytics')
   const authService = yield getContext('authService')
 
   const libs = yield call([

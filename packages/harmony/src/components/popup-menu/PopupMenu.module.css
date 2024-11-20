@@ -19,6 +19,10 @@
   color: var(--harmony-neutral);
 }
 
+.item.destructive {
+  color: var(--harmony-red);
+}
+
 .icon {
   display: flex;
   align-items: center;
@@ -35,6 +39,10 @@
   cursor: pointer;
   color: var(--harmony-static-white);
   background: var(--harmony-secondary);
+}
+
+.item.destructive:hover {
+  background: var(--harmony-red);
 }
 
 .item:hover path {

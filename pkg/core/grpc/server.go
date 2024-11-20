@@ -2,13 +2,18 @@ package grpc
 
 import (
 	"context"
+	"errors"
+	"fmt"
 	"net"
 	"strings"
+	"time"
 
 	"github.com/AudiusProject/audius-protocol/pkg/core/common"
 	"github.com/AudiusProject/audius-protocol/pkg/core/config"
 	"github.com/AudiusProject/audius-protocol/pkg/core/db"
 	"github.com/AudiusProject/audius-protocol/pkg/core/gen/proto"
+	"github.com/AudiusProject/audius-protocol/pkg/core/mempool"
+	"github.com/AudiusProject/audius-protocol/pkg/core/pubsub"
 	"github.com/cometbft/cometbft/abci/types"
 	"github.com/cometbft/cometbft/rpc/client/local"
 	gogo "github.com/cosmos/gogoproto/proto"
@@ -18,20 +23,24 @@ import (
 )
 
 type GRPCServer struct {
-	logger *common.Logger
-	chain  *local.Local
-	server *grpc.Server
-	db     *db.Queries
-	config *config.Config
+	logger   *common.Logger
+	cometRpc *local.Local
+	server   *grpc.Server
+	db       *db.Queries
+	config   *config.Config
+	mempool  *mempool.Mempool
+	txPubsub *pubsub.TransactionHashPubsub
 	proto.UnimplementedProtocolServer
 }
 
-func NewGRPCServer(logger *common.Logger, config *config.Config, chain *local.Local, pool *pgxpool.Pool) (*GRPCServer, error) {
+func NewGRPCServer(logger *common.Logger, config *config.Config, cometRpc *local.Local, pool *pgxpool.Pool, mempool *mempool.Mempool, txPubsub *pubsub.TransactionHashPubsub) (*GRPCServer, error) {
 	server := &GRPCServer{
-		logger: logger.Child("grpc"),
-		chain:  chain,
-		config: config,
-		db:     db.New(pool),
+		logger:   logger.Child("grpc"),
+		cometRpc: cometRpc,
+		config:   config,
+		mempool:  mempool,
+		txPubsub: txPubsub,
+		db:       db.New(pool),
 	}
 
 	s := grpc.NewServer()
@@ -49,28 +58,79 @@ func (s *GRPCServer) Serve(lis net.Listener) error {
 	return s.server.Serve(lis)
 }
 
-func (s *GRPCServer) SendTransaction(_ context.Context, req *proto.SendTransactionRequest) (*proto.TransactionResponse, error) {
-	// example of message type switching
-	switch body := req.Transaction.GetTransaction().(type) {
-	case *proto.SignedTransaction_Plays:
-		s.logger.Infof("plays event %v", body.Plays.GetPlays())
-	case *proto.SignedTransaction_ManageEntity:
-		s.logger.Infof("manage entity %v", body.ManageEntity)
-	default:
-		s.logger.Warn("unknown event type")
-	}
-
-	txhash, err := SendTx(s.logger, s.chain, req.GetTransaction())
+func (s *GRPCServer) SendTransaction(ctx context.Context, req *proto.SendTransactionRequest) (*proto.TransactionResponse, error) {
+	// TODO: do validation check
+	txhash, err := common.ToTxHash(req.GetTransaction())
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("could not get tx hash of signed tx: %v", err)
 	}
 
-	res := &proto.TransactionResponse{
-		Txhash:      txhash,
-		Transaction: req.GetTransaction(),
+	// TODO: use data companion to keep this value up to date via channel
+	status, err := s.cometRpc.Status(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("chain not healthy: %v", err)
 	}
 
-	return res, nil
+	deadline := status.SyncInfo.LatestBlockHeight + 10
+	mempoolTx := &mempool.MempoolTransaction{
+		Tx:       req.GetTransaction(),
+		Deadline: deadline,
+	}
+
+	ps := s.txPubsub
+
+	txHashCh := ps.Subscribe(txhash)
+	defer ps.Unsubscribe(txhash, txHashCh)
+
+	// add transaction to mempool with broadcast set to true
+	err = s.mempool.AddTransaction(txhash, mempoolTx, true)
+	if err != nil {
+		s.logger.Errorf("tx could not be included in mempool %s: %v", txhash, err)
+		return nil, fmt.Errorf("could not add tx to mempool %v", err)
+	}
+
+	select {
+	case <-txHashCh:
+		return &proto.TransactionResponse{
+			Txhash:      txhash,
+			Transaction: req.GetTransaction(),
+		}, nil
+	case <-time.After(30 * time.Second):
+		s.logger.Errorf("tx timeout waiting to be included %s", txhash)
+		return nil, errors.New("tx waiting timeout")
+	}
+}
+
+func (s *GRPCServer) ForwardTransaction(ctx context.Context, req *proto.ForwardTransactionRequest) (*proto.ForwardTransactionResponse, error) {
+	// TODO: check signature from known node
+
+	// TODO: validate transaction in same way as send transaction
+
+	mempoolKey, err := common.ToTxHash(req.GetTransaction())
+	if err != nil {
+		return nil, fmt.Errorf("could not get tx hash of signed tx: %v", err)
+	}
+
+	s.logger.Infof("received forwarded tx: %s", mempoolKey)
+
+	// TODO: intake block deadline from request
+	status, err := s.cometRpc.Status(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("chain not healthy: %v", err)
+	}
+
+	deadline := status.SyncInfo.LatestBlockHeight + 10
+	mempoolTx := &mempool.MempoolTransaction{
+		Tx:       req.GetTransaction(),
+		Deadline: deadline,
+	}
+
+	err = s.mempool.AddTransaction(mempoolKey, mempoolTx, false)
+	if err != nil {
+		return nil, fmt.Errorf("could not add tx to mempool %v", err)
+	}
+
+	return &proto.ForwardTransactionResponse{}, nil
 }
 
 func (s *GRPCServer) GetTransaction(ctx context.Context, req *proto.GetTransactionRequest) (*proto.TransactionResponse, error) {
@@ -104,7 +164,7 @@ func (s *GRPCServer) GetTransaction(ctx context.Context, req *proto.GetTransacti
 }
 
 func (s *GRPCServer) GetBlock(ctx context.Context, req *proto.GetBlockRequest) (*proto.BlockResponse, error) {
-	block, err := s.chain.Block(ctx, &req.Height)
+	block, err := s.cometRpc.Block(ctx, &req.Height)
 	if err != nil {
 		blockInFutureMsg := "must be less than or equal to the current blockchain height"
 		if strings.Contains(err.Error(), blockInFutureMsg) {
@@ -139,7 +199,7 @@ func (s *GRPCServer) GetBlock(ctx context.Context, req *proto.GetBlockRequest) (
 	return res, nil
 }
 func (s *GRPCServer) GetNodeInfo(ctx context.Context, req *proto.GetNodeInfoRequest) (*proto.NodeInfoResponse, error) {
-	status, err := s.chain.Status(ctx)
+	status, err := s.cometRpc.Status(ctx)
 	if err != nil {
 		return nil, err
 	}

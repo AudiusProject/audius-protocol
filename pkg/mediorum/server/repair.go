@@ -25,7 +25,7 @@ type RepairTracker struct {
 	CleanupMode      bool           `gorm:"not null"`
 	CursorI          int            `gorm:"not null"`
 	CursorUploadID   string         `gorm:"not null"`
-	CursorPreviewCID string         `gorm:"not null"`
+	CursorPreviewCID string         ``
 	CursorQmCID      string         `gorm:"not null"`
 	Counters         map[string]int `gorm:"not null;serializer:json"`
 	ContentSize      int64          `gorm:"not null"`
