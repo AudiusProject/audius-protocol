@@ -34,6 +34,7 @@ export const FileReplaceContainer = ({
   return (
     <Flex justifyContent='space-between' alignItems='center' gap='l'>
       <PlainButton
+        size='large'
         iconLeft={isPlaying ? IconPause : IconPlay}
         onClick={onTogglePlay}
       >
