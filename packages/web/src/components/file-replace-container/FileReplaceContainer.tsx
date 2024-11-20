@@ -7,10 +7,11 @@ import {
   IconArrowUpToLine,
   IconReceive
 } from '@audius/harmony'
+import ReactDropzone from 'react-dropzone'
 
 const messages = {
-  replace: 'Replace',
-  download: 'Download'
+  replace: 'Replace File',
+  download: 'Download File'
 }
 
 type FileReplaceContainerProps = {
@@ -18,7 +19,7 @@ type FileReplaceContainerProps = {
   downloadEnabled?: boolean
   isPlaying?: boolean
   onTogglePlay?: () => void
-  onClickReplace?: () => void
+  onClickReplace?: (file: File) => void
   onClickDownload?: () => void
 }
 
@@ -39,14 +40,20 @@ export const FileReplaceContainer = ({
         {fileName}
       </PlainButton>
       <Flex gap='s'>
-        <Button
-          variant='secondary'
-          size='small'
-          iconLeft={IconArrowUpToLine}
-          onClick={onClickReplace}
+        <ReactDropzone
+          // empty style makes this hug the button
+          style={{}}
+          multiple={false}
+          onDropAccepted={(files) => {
+            if (files[0]) {
+              onClickReplace?.(files[0])
+            }
+          }}
         >
-          {messages.replace}
-        </Button>
+          <Button variant='secondary' size='small' iconLeft={IconArrowUpToLine}>
+            {messages.replace}
+          </Button>
+        </ReactDropzone>
         {downloadEnabled ? (
           <Button
             variant='secondary'

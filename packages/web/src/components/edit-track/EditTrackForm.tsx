@@ -32,9 +32,11 @@ import { StemsAndDownloadsField } from 'components/edit/fields/StemsAndDownloads
 import { TrackMetadataFields } from 'components/edit/fields/TrackMetadataFields'
 import { PriceAndAudienceField } from 'components/edit/fields/price-and-audience/PriceAndAudienceField'
 import { VisibilityField } from 'components/edit/fields/visibility/VisibilityField'
+import { FileReplaceContainer } from 'components/file-replace-container/FileReplaceContainer'
 import layoutStyles from 'components/layout/layout.module.css'
 import { NavigationPrompt } from 'components/navigation-prompt/NavigationPrompt'
 import { EditFormScrollContext } from 'pages/edit-page/EditTrackPage'
+import { processFiles } from 'pages/upload-page/store/utils/processFiles'
 
 import styles from './EditTrackForm.module.css'
 import { PreviewButton } from './components/PreviewButton'
@@ -163,8 +165,19 @@ const TrackEditForm = (
   })
   const [forceOpenAccessAndSale, setForceOpenAccessAndSale] = useState(false)
 
+  const [, , { setValue: setFileValue }] = useField(`tracks[${trackIdx}].file`)
+  const [, , { setValue: setOrigFilename }] = useField(
+    getTrackFieldName(trackIdx, 'orig_filename')
+  )
+  const [, { touched: isTitleDirty }, { setValue: setTitle }] = useField(
+    getTrackFieldName(trackIdx, 'title')
+  )
+
   const { isEnabled: isHiddenPaidScheduledEnabled } = useFeatureFlag(
     FeatureFlags.HIDDEN_PAID_SCHEDULED
+  )
+  const { isEnabled: isTrackAudioReplaceEnabled } = useFeatureFlag(
+    FeatureFlags.TRACK_AUDIO_REPLACE
   )
   const [, , { setValue: setArtworkValue }] = useField(
     getTrackFieldName(0, 'artwork')
@@ -185,6 +198,25 @@ const TrackEditForm = (
     // the backend.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [getArtworkUrl(updatedArtwork), setArtworkValue])
+
+  const onClickReplace = useCallback(
+    async (file: File) => {
+      const processedFiles = await Promise.all(
+        processFiles([file], (name, reason) => {
+          console.error('Failed to process file', name, 'due to', reason)
+          // todo: show error state
+        })
+      )
+      if (processedFiles?.length > 0) {
+        if (!isTitleDirty) {
+          setTitle(processedFiles[0]?.metadata.title)
+        }
+        setFileValue(processedFiles[0]?.file)
+        setOrigFilename(processedFiles[0]?.metadata.orig_filename)
+      }
+    },
+    [isTitleDirty, setFileValue, setOrigFilename, setTitle]
+  )
 
   return (
     <Form id={formId}>
@@ -211,6 +243,14 @@ const TrackEditForm = (
               layoutStyles.gap4
             )}
           >
+            {isTrackAudioReplaceEnabled ? (
+              <FileReplaceContainer
+                fileName={
+                  values.trackMetadatas[trackIdx].orig_filename ?? 'untitled'
+                }
+                onClickReplace={onClickReplace}
+              />
+            ) : null}
             <TrackMetadataFields />
             <div className={cn(layoutStyles.col, layoutStyles.gap4)}>
               {isHiddenPaidScheduledEnabled ? (
