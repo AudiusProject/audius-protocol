@@ -42,6 +42,7 @@ import styles from './EditTrackForm.module.css'
 import { PreviewButton } from './components/PreviewButton'
 import { getTrackFieldName } from './hooks'
 import { TrackEditFormValues } from './types'
+import { UploadPreviewContext } from './utils/uploadPreviewContext'
 
 const formId = 'edit-track-form'
 
@@ -62,7 +63,8 @@ const messages = {
     body: "Are you sure you want to leave this page?\nAny changes you've made will be lost.",
     cancel: 'Cancel',
     proceed: 'Discard'
-  }
+  },
+  untitled: 'Untitled'
 }
 
 type EditTrackFormProps = {
@@ -164,16 +166,9 @@ const TrackEditForm = (
     setIndex(0)
   })
   const [forceOpenAccessAndSale, setForceOpenAccessAndSale] = useState(false)
-
-  const [{ value: file }, , { setValue: setFileValue }] = useField(
-    `tracks[${trackIdx}].file`
-  )
-  const [, , { setValue: setOrigFilename }] = useField(
-    getTrackFieldName(trackIdx, 'orig_filename')
-  )
-  const [, { touched: isTitleDirty }, { setValue: setTitle }] = useField(
-    getTrackFieldName(trackIdx, 'title')
-  )
+  const { playingPreviewIndex, togglePreview } =
+    useContext(UploadPreviewContext)
+  const isPreviewPlaying = playingPreviewIndex === trackIdx
 
   const { isEnabled: isHiddenPaidScheduledEnabled } = useFeatureFlag(
     FeatureFlags.HIDDEN_PAID_SCHEDULED
@@ -181,9 +176,22 @@ const TrackEditForm = (
   const { isEnabled: isTrackAudioReplaceEnabled } = useFeatureFlag(
     FeatureFlags.TRACK_AUDIO_REPLACE
   )
-  const [, , { setValue: setArtworkValue }] = useField(
-    getTrackFieldName(0, 'artwork')
+
+  const [{ value: track }, , { setValue: setTrackValue }] = useField(
+    `tracks.${trackIdx}`
   )
+  const [, { touched: isTitleDirty }, { setValue: setTitle }] = useField(
+    getTrackFieldName(trackIdx, 'title')
+  )
+  const [, { touched: isArtworkDirty }, { setValue: setArtworkValue }] =
+    useField(getTrackFieldName(0, 'artwork'))
+  const [, , { setValue: setOrigFilename }] = useField(
+    getTrackFieldName(trackIdx, 'orig_filename')
+  )
+
+  const handleTogglePreview = useCallback(() => {
+    togglePreview(track.preview, trackIdx)
+  }, [togglePreview, trackIdx, track])
 
   const getArtworkUrl = (artwork: typeof updatedArtwork) => {
     if (!artwork) return undefined
@@ -192,6 +200,7 @@ const TrackEditForm = (
     // or potentially return one of the size URLs if needed
     return undefined
   }
+  const fileName = values.trackMetadatas[trackIdx].orig_filename
 
   useEffect(() => {
     setArtworkValue(updatedArtwork)
@@ -209,29 +218,43 @@ const TrackEditForm = (
           // todo: show error state
         })
       )
+
       if (processedFiles?.length > 0) {
-        if (!isTitleDirty) {
-          setTitle(processedFiles[0]?.metadata.title.split('.').shift())
+        const newFile = processedFiles[0]!
+
+        if (isUpload && !isTitleDirty) {
+          setTitle(newFile.metadata.title.split('.').shift())
         }
-        setFileValue(processedFiles[0]?.file)
-        setOrigFilename(processedFiles[0]?.metadata.orig_filename)
+        if (isUpload && !isArtworkDirty && newFile.metadata.artwork.file) {
+          setArtworkValue(newFile.metadata.artwork)
+        }
+        setTrackValue(newFile)
+        setOrigFilename(newFile.metadata.orig_filename)
       }
     },
-    [isTitleDirty, setFileValue, setOrigFilename, setTitle]
+    [
+      isArtworkDirty,
+      isTitleDirty,
+      isUpload,
+      setArtworkValue,
+      setOrigFilename,
+      setTitle,
+      setTrackValue
+    ]
   )
 
   const onClickDownload = useCallback(() => {
-    if (!file) return
+    if (!track.file) return
 
-    const url = URL.createObjectURL(file)
+    const url = URL.createObjectURL(track.file)
     const link = document.createElement('a')
     link.href = url
-    link.download = file.name || 'download'
+    link.download = track.file.name || 'download'
     document.body.appendChild(link)
     link.click()
     document.body.removeChild(link)
     URL.revokeObjectURL(url)
-  }, [file])
+  }, [track.file])
 
   return (
     <Form id={formId}>
@@ -258,14 +281,15 @@ const TrackEditForm = (
               layoutStyles.gap4
             )}
           >
-            {isTrackAudioReplaceEnabled ? (
+            {/* TODO: Remove the isUpload part when the other half of the work is done */}
+            {isTrackAudioReplaceEnabled && isUpload ? (
               <FileReplaceContainer
-                fileName={
-                  values.trackMetadatas[trackIdx].orig_filename ?? 'untitled'
-                }
+                fileName={fileName ?? messages.untitled}
+                onTogglePlay={handleTogglePreview}
+                isPlaying={isPreviewPlaying}
                 onClickReplace={onClickReplace}
                 onClickDownload={onClickDownload}
-                downloadEnabled
+                downloadEnabled={!isUpload}
               />
             ) : null}
             <TrackMetadataFields />
@@ -291,12 +315,14 @@ const TrackEditForm = (
               />
               <RemixSettingsField isUpload={isUpload} />
             </div>
-            <PreviewButton
-              // Since edit form is a single component, render a different preview for each track
-              key={trackIdx}
-              className={styles.previewButton}
-              index={trackIdx}
-            />
+            {!isTrackAudioReplaceEnabled && isUpload ? (
+              <PreviewButton
+                // Since edit form is a single component, render a different preview for each track
+                key={trackIdx}
+                className={styles.previewButton}
+                index={trackIdx}
+              />
+            ) : null}
           </div>
           {isMultiTrack ? <MultiTrackFooter /> : null}
         </div>
