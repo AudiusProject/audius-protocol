@@ -26,7 +26,7 @@ export const keyExtractor = (item: PlaylistLibraryItem) => {
 
 export const PlaylistLibraryNavItem = (props: PlaylistLibraryNavItemProps) => {
   const { item, level } = props
-
+  console.log('asdf item', item)
   switch (item.type) {
     case 'folder':
       return <PlaylistFolderNavItem folder={item} level={level} />

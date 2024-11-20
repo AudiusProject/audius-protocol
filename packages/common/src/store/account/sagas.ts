@@ -78,8 +78,8 @@ export function* fetchAccountAsync({ isSignUp = false }): SagaIterator {
       })
     )
   }
-  const account = accountData.user
-  if (account.is_deactivated) {
+  const user = accountData.user
+  if (user.is_deactivated) {
     yield* put(accountActions.resetAccount())
     yield* put(
       fetchAccountFailed({
@@ -88,10 +88,21 @@ export function* fetchAccountAsync({ isSignUp = false }): SagaIterator {
     )
   }
   // Set the userId in the remoteConfigInstance
-  remoteConfigInstance.setUserId(account.user_id)
-  yield* call(recordIPIfNotRecent, account.handle)
+  remoteConfigInstance.setUserId(user.user_id)
+  yield* call(recordIPIfNotRecent, user.handle)
   // Cache the account and put the signedIn action. We're done.
   yield* call(cacheAccount, accountData)
+  const formattedAccount = {
+    userId: user.user_id,
+    collections: accountData.playlists
+  }
+
+  yield* put(fetchAccountSucceeded(formattedAccount))
+
+  // Fetch user's chat blockee and blocker list after fetching their account
+  yield* put(fetchBlockees())
+  yield* put(fetchBlockers())
+
   yield* put(
     setWalletAddresses({ currentUser: wallet, web3User: web3WalletAddress })
   )
@@ -102,13 +113,13 @@ export function* fetchAccountAsync({ isSignUp = false }): SagaIterator {
   ])
   yield* call([libs, libs.setCurrentUser], {
     wallet,
-    userId: account.user_id
+    userId: user.user_id
   })
-  yield* put(signedIn({ account, isSignUp }))
+  yield* put(signedIn({ account: user, isSignUp }))
 }
 
 export function* cacheAccount(account: AccountUserMetadata) {
-  const { user: accountUser } = account
+  const { user: accountUser, playlists: collections } = account
   const localStorage = yield* getContext('localStorage')
 
   yield put(
@@ -116,21 +127,17 @@ export function* cacheAccount(account: AccountUserMetadata) {
       { id: accountUser.user_id, uid: 'USER_ACCOUNT', metadata: account }
     ])
   )
-  const { playlists: collections, ...user } = accountUser
   const formattedAccount = {
     userId: accountUser.user_id,
-    collections,
-    orderedPlaylists: []
+    collections
   }
 
   yield call([localStorage, 'setAudiusAccount'], formattedAccount)
-  yield call([localStorage, 'setAudiusAccountUser'], user as User)
+  yield call([localStorage, 'setAudiusAccountUser'], accountUser)
 
-  yield put(fetchAccountSucceeded(formattedAccount))
-
-  // Fetch user's chat blockee and blocker list after fetching their account
-  yield put(fetchBlockees())
-  yield put(fetchBlockers())
+  // // Fetch user's chat blockee and blocker list after fetching their account
+  // yield put(fetchBlockees())
+  // yield put(fetchBlockers())
 }
 
 function* recordIPIfNotRecent(handle: string): SagaIterator {
