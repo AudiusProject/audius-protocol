@@ -1,7 +1,7 @@
 import chalk from 'chalk'
 import { program, Option } from 'commander'
 
-import { initializeAudiusSdk } from './utils.mjs'
+import { initializeAudiusSdk, getCurrentAudiusSdkUser } from './utils.mjs'
 
 program
   .command('create-user-bank')
@@ -17,11 +17,13 @@ program
   )
   .action(async (handle, { mint }) => {
     const audiusSdk = await initializeAudiusSdk({ handle })
+    const user = await getCurrentAudiusSdkUser()
+    const ethWallet = user.wallet
 
     try {
       const response =
         await audiusSdk.services.claimableTokensClient.getOrCreateUserBank({
-          ethWallet: wallet.getAddressString(),
+          ethWallet,
           mint
         })
 

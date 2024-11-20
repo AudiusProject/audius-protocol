@@ -162,7 +162,7 @@ export class UserAuth implements AuthService {
     await this.hedgehog.waitUntilReady()
     const wallet = this.hedgehog.getWallet()
     if (!wallet) throw new Error('No wallet')
-    return signTypedData(Buffer.from(wallet.getPrivateKeyString(), 'hex'), {
+    return signTypedData(wallet.getPrivateKey(), {
       data
     })
   }
