@@ -32,6 +32,7 @@ const pluginTypescript = typescript({ tsconfig: './tsconfig.json' })
 const browserInternal = [
   '@metamask/eth-sig-util',
   '@scure/base',
+  '@noble/hashes/utils',
   'eth-sig-util',
   'ethereumjs-tx',
   'ethereumjs-util',
