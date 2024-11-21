@@ -60,7 +60,6 @@ import {
   takeLatest
 } from 'typed-redux-saga'
 
-import { reCacheAccount } from 'common/store/account/sagas'
 import { identify, make } from 'common/store/analytics/actions'
 import * as backendActions from 'common/store/backend/actions'
 import { retrieveCollections } from 'common/store/cache/collections/utils'
@@ -1055,11 +1054,6 @@ function* followArtists(
     // The update user location depends on the user being discoverable in discprov
     // So we wait until both the user is indexed and the follow user actions are finished
     yield* call(audiusBackendInstance.updateUserLocationTimezone)
-
-    // Re-cache the account here (in local storage). This is to make sure that the follows are
-    // persisted across the next refresh of the client. Initially the user is pulled in from
-    // local storage before we get any response back from a discovery node.
-    yield* call(reCacheAccount)
   } catch (err: any) {
     const reportToSentry = yield* getContext('reportToSentry')
     reportToSentry({

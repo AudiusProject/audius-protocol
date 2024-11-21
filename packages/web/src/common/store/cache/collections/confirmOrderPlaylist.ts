@@ -10,7 +10,6 @@ import {
 import { makeKindId } from '@audius/common/utils'
 import { call, put } from 'typed-redux-saga'
 
-import { fixInvalidTracksInPlaylist } from './fixInvalidTracksInPlaylist'
 import { retrieveCollection } from './utils/retrieveCollections'
 export function* confirmOrderPlaylist(
   userId: ID,
@@ -22,40 +21,11 @@ export function* confirmOrderPlaylist(
   yield* put(
     confirmerActions.requestConfirmation(
       makeKindId(Kind.COLLECTIONS, playlistId),
-      function* (confirmedPlaylistId: ID) {
-        // NOTE: In an attempt to fix playlists in a corrupted state, only attempt the order playlist tracks once,
-        // if it fails, check if the playlist is in a corrupted state and if so fix it before re-attempting to order playlist
-        let { blockHash, blockNumber, error } = yield* call(
+      function* () {
+        const { blockHash, blockNumber } = yield* call(
           audiusBackendInstance.orderPlaylist,
           playlist
         )
-        if (error) {
-          const { error, isValid, invalidTrackIds } = yield* call(
-            audiusBackendInstance.validateTracksInPlaylist,
-            confirmedPlaylistId
-          )
-          if (error) throw error
-          if (!isValid) {
-            yield* call(
-              fixInvalidTracksInPlaylist,
-              confirmedPlaylistId,
-              invalidTrackIds
-            )
-            const invalidIds = new Set(invalidTrackIds)
-            trackIds = trackIds.filter((id) => !invalidIds.has(id))
-          }
-          // TODO fix validation which relies on legacy contract
-          const response = yield* call(
-            audiusBackendInstance.orderPlaylist,
-            trackIds
-          )
-          if (response.error) {
-            throw response.error
-          }
-
-          blockHash = response.blockHash
-          blockNumber = response.blockNumber
-        }
 
         const confirmed = yield* call(
           confirmTransaction,
