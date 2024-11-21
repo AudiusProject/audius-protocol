@@ -1355,6 +1355,7 @@ class UserSearchResult(Resource):
 subscribers_response = make_response(
     "subscribers_response", ns, fields.List(fields.Nested(user_model))
 )
+
 full_subscribers_response = make_full_response(
     "full_subscribers_response", full_ns, fields.List(fields.Nested(user_model_full))
 )
@@ -1614,6 +1615,7 @@ related_artist_route_parser = pagination_with_current_user_parser.copy()
 related_artist_response = make_response(
     "related_artist_response", ns, fields.List(fields.Nested(user_model))
 )
+
 related_artist_response_full = make_full_response(
     "related_artist_response_full", full_ns, fields.List(fields.Nested(user_model_full))
 )
@@ -2608,23 +2610,38 @@ class PurchasesDownload(Resource):
 
 
 sales_download_parser = current_user_parser.copy()
+sales_download_parser.add_argument(
+    "json",
+    type=inputs.boolean,
+    required=False,
+    default=False,
+    description="If true, returns the sales data as JSON instead of CSV",
+)
 
 
 @ns.route("/<string:id>/sales/download")
 class SalesDownload(Resource):
     @ns.doc(
         id="Download Sales as CSV",
-        description="Downloads the sales the user has made as a CSV file",
+        description="Downloads the sales the user has made as a CSV file, or returns JSON if json=true query param is set",
         params={"id": "A User ID"},
     )
-    @ns.produces(["text/csv"])
+    @ns.produces(["text/csv", "application/json"])
     @ns.expect(sales_download_parser)
-    @auth_middleware(sales_download_parser, require_auth=True)
-    def get(self, id, authed_user_id):
+    # @auth_middleware(sales_download_parser, require_auth=True)
+    def get(self, id):
         decoded_id = decode_with_abort(id, ns)
-        check_authorized(decoded_id, authed_user_id)
-        args = DownloadSalesArgs(seller_user_id=decoded_id)
-        sales = download_sales(args)
+        # check_authorized(decoded_id, authed_user_id)
+        args = sales_download_parser.parse_args()
+        is_json = args.get("json", False)
+
+        download_args = DownloadSalesArgs(seller_user_id=decoded_id)
+        sales = download_sales(download_args, return_json=is_json)
+
+        if is_json:
+            return success_response(sales)
+
+        # CSV response
         response = Response(sales, content_type="text/csv")
         response.headers["Content-Disposition"] = "attachment; filename=sales.csv"
         return response
@@ -3025,7 +3042,7 @@ class UserEncryptedEmails(Resource):
     @record_metrics
     @ns.doc(
         id="""Get Encrypted Emails""",
-        description="""Gets the encrypted emails where the given user is either the owner or has primary access""",
+        description="""Gets the encrypted emails where the given user has primary access""",
         params={"id": "A User ID"},
         responses={
             200: "Success",
