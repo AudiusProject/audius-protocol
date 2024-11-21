@@ -159,8 +159,6 @@ export class TracksApi extends GeneratedTracksApi {
   /** @hidden
    * Write track upload to chain
    */
-
-  // TODO: update to use params object
   async writeTrackUploadToChain(
     userId: string,
     metadata: ReturnType<
@@ -168,17 +166,20 @@ export class TracksApi extends GeneratedTracksApi {
     >,
     advancedOptions?: AdvancedOptions
   ) {
-    // Parse inputs?
-
     // Write metadata to chain
     this.logger.info('Writing metadata to chain')
 
     const entityId =
       metadata.trackId || (await this.trackUploadHelper.generateId('track'))
 
+    const decodedUserId = decodeHashId(userId) ?? undefined
+
+    if (!decodedUserId) {
+      throw new Error('writeTrackUploadToChain: userId could not be decoded')
+    }
+
     const response = await this.entityManager.manageEntity({
-      // TODO: clean up
-      userId: decodeHashId(userId) ?? undefined,
+      userId: decodedUserId,
       entityType: EntityType.TRACK,
       entityId,
       action: Action.CREATE,

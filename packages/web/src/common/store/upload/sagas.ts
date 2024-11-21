@@ -112,7 +112,7 @@ function* combineMetadata(
   if (!metadata.genre)
     metadata.genre = collectionMetadata.trackDetails?.genre ?? ''
   if (!metadata.mood)
-    metadata.mood = collectionMetadata.trackDetails?.mood ?? ''
+    metadata.mood = collectionMetadata.trackDetails?.mood ?? null
   if (!metadata.release_date) {
     metadata.release_date = collectionMetadata.release_date ?? null
     metadata.is_scheduled_release =
@@ -257,11 +257,9 @@ function* uploadWorker(
         {
           userId: Id.parse(userId),
           trackFile: fileToSdk(track.file, 'audio'),
-          // TODO: separate upload files schema? cover art not required?
-          // Or confirm it does exist thanks to combineMetadata
-          coverArtFile: (coverArtFile
-            ? fileToSdk(coverArtFile, 'cover_art')
-            : undefined) as any,
+          // coverArtFile is always defined by combineMetadata
+          // maybe we should change this to prevent duplicate image uploads
+          coverArtFile: fileToSdk(coverArtFile!, 'cover_art'),
           metadata,
           onProgress: makeOnProgress(trackIndex, stemIndex, progressChannel)
         }
