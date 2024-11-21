@@ -1,10 +1,8 @@
 import { useEffect, useState } from 'react'
 
 import { userCollectionMetadataFromSDK } from '@audius/common/adapters'
-import { useAppContext } from '@audius/common/context'
-import { SquareSizes, Id, UserCollectionMetadata } from '@audius/common/models'
-import { Nullable, Maybe, route } from '@audius/common/utils'
-import { StorageNodeSelectorService } from '@audius/sdk'
+import { Id, UserCollectionMetadata } from '@audius/common/models'
+import { route } from '@audius/common/utils'
 // eslint-disable-next-line no-restricted-imports -- TODO: migrate to @react-spring/web
 import { useSpring, animated } from 'react-spring'
 import { useAsyncFn } from 'react-use'
@@ -134,22 +132,8 @@ type FeaturedContentProps = {
   setRenderPublicSite: (shouldRender: boolean) => void
 }
 
-const getImageUrl = (
-  cid: Nullable<string>,
-  size: SquareSizes,
-  storageNodeSelector: Maybe<StorageNodeSelectorService>,
-  cidMap: Nullable<{ [key: string]: string }> = null
-) => {
-  if (!storageNodeSelector || !cid) return null
-  const node = storageNodeSelector.getNodes(cid)[0]
-  return cidMap && cidMap[size]
-    ? `${node}/content/${cidMap[size]}`
-    : `${node}/content/${cid}/${size}.jpg`
-}
-
 const FeaturedContent = (props: FeaturedContentProps) => {
   const { history } = useHistoryContext()
-  const { storageNodeSelector } = useAppContext()
   const [trendingPlaylistsResponse, fetchTrendingPlaylists] =
     useAsyncFn(async () => {
       const featuredContent = await fetchExploreContent(env.EXPLORE_CONTENT_URL)
@@ -212,12 +196,7 @@ const FeaturedContent = (props: FeaturedContentProps) => {
                     key={p.playlist_id}
                     title={p.playlist_name}
                     artist={p.user.name}
-                    imageUrl={getImageUrl(
-                      p.cover_art_sizes,
-                      SquareSizes.SIZE_150_BY_150,
-                      storageNodeSelector,
-                      p.cover_art_cids
-                    )}
+                    imageUrl={p.artwork['480x480'] ?? null}
                     onClick={handleClickRoute(
                       collectionPage(
                         p.user.handle,
@@ -270,12 +249,7 @@ const FeaturedContent = (props: FeaturedContentProps) => {
                     key={p.playlist_id}
                     title={p.playlist_name}
                     artist={p.user.name}
-                    imageUrl={getImageUrl(
-                      p.cover_art_sizes,
-                      SquareSizes.SIZE_1000_BY_1000,
-                      storageNodeSelector,
-                      p.cover_art_cids
-                    )}
+                    imageUrl={p.artwork['480x480'] ?? null}
                     onClick={handleClickRoute(
                       collectionPage(
                         p.user.handle,
