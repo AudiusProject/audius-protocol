@@ -17,15 +17,15 @@ WORKDIR /usr/src/app
 # https://solana.com/developers/guides/getstarted/setup-local-development#dependencies-for-linux
 RUN apt-get update && \
     apt-get install -y \
-        build-essential \
-        pkg-config \
-        libudev-dev llvm libclang-dev \
-        protobuf-compiler libssl-dev
+    build-essential \
+    pkg-config \
+    libudev-dev llvm libclang-dev \
+    protobuf-compiler libssl-dev
 
 # Installs Solana CLIs either from the install script (for available builds like linux x86_64)
 # or using cargo install to build from source (for unavailable builds like linux aarch64)
 COPY scripts/install-solana.sh /tmp/install-solana.sh
-RUN --mount=type=cache,id=cargo-cache,target=/usr/local/cargo/registry  /tmp/install-solana.sh
+RUN /tmp/install-solana.sh
 ENV PATH="/root/solana-release/bin:${PATH}"
 
 # Ensures the test validator is running

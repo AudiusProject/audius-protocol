@@ -201,6 +201,11 @@ def cli(ctx, protocol_dir):
     is_flag=True,
     help="Use production containers which have all dependencies built in",
 )
+@click.option(
+    "--buildkit",
+    is_flag=True,
+    help="Enable docker buildkit",
+)
 @click.argument("services", nargs=-1)
 @click.pass_obj
 def build(
@@ -208,12 +213,15 @@ def build(
     discovery_provider_replicas,
     elasticsearch_replicas,
     prod,
+    buildkit,
     args,
     services,
 ):
     generate_env(
         protocol_dir, discovery_provider_replicas, elasticsearch_replicas, prod
     )
+
+    docker_buildkit = "1" if buildkit else "0"
 
     proc = subprocess.run(
         [
@@ -243,6 +251,7 @@ def build(
             *args,
             *services,
         ],
+        env={**os.environ, "DOCKER_BUILDKIT": docker_buildkit},
     )
 
     if proc.returncode != 0:

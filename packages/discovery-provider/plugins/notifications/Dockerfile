@@ -6,7 +6,7 @@ WORKDIR /notifications
 RUN apk add --no-cache python3 py3-pip build-base
 
 COPY package*.json ./
-RUN --mount=type=cache,target=/root/.npm npm i --verbose
+RUN npm i
 
 COPY . .
 
