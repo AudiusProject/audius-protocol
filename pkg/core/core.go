@@ -145,7 +145,7 @@ func run(ctx context.Context, logger *common.Logger) error {
 		return registryBridge.Start()
 	})
 
-	_, err = server.NewServer(config, node.Config(), logger, rpc, pool, e)
+	_, err = server.NewServer(config, node.Config(), logger, rpc, pool, e, mempl)
 	if err != nil {
 		return fmt.Errorf("server init error: %v", err)
 	}

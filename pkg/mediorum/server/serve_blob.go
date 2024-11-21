@@ -321,6 +321,7 @@ func (ss *MediorumServer) logTrackListen(c echo.Context) {
 
 	// fire and forget core play record
 	go func() {
+
 		ctx := context.Background()
 		defer func() {
 			if r := recover(); r != nil {
@@ -330,6 +331,7 @@ func (ss *MediorumServer) logTrackListen(c echo.Context) {
 
 		sdk, err := ss.getCoreSdk()
 		if err != nil || sdk == nil {
+			ss.logger.Info("returning early from core sdk err", "error", err, "sdk", sdk)
 			return
 		}
 
@@ -376,6 +378,8 @@ func (ss *MediorumServer) logTrackListen(c echo.Context) {
 				Plays: playsTx,
 			},
 		}
+
+		ss.logger.Info("sending", "tx", signedTx)
 
 		// submit to configured core node
 		res, err := sdk.SendTransaction(ctx, &proto.SendTransactionRequest{

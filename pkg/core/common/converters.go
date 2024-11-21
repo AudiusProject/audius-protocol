@@ -26,6 +26,9 @@ func SignedTxProtoIntoSignedTxOapi(tx *proto.SignedTransaction) *models.Protocol
 				TrackID:   play.TrackId,
 				Signature: play.Signature,
 				Timestamp: strfmt.DateTime(play.Timestamp.AsTime()),
+				City:      play.City,
+				Country:   play.Country,
+				Region:    play.Region,
 			})
 		}
 

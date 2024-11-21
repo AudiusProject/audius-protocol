@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net"
 
+	"github.com/jaswdr/faker"
 	"github.com/oschwald/maxminddb-golang"
 )
 
@@ -90,6 +91,21 @@ func (ss *MediorumServer) getGeoFromIP(ip string) (*GeoResult, error) {
 		RegionCode:  regionCode,
 		Latitude:    record.Location.Latitude,
 		Longitude:   record.Location.Longitude,
+	}
+
+	// use mock location for local
+	if ss.Config.Env == "dev" || ss.Config.Env == "local" {
+		f := faker.New()
+		addr := f.Address()
+		if result.City == "" {
+			result.City = addr.City()
+		}
+		if result.Country == "" {
+			result.Country = addr.Country()
+		}
+		if result.Region == "" {
+			result.Region = addr.State()
+		}
 	}
 
 	return result, nil
