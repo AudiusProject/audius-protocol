@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/AudiusProject/audius-protocol/pkg/mediorum/cidutil"
+	"github.com/AudiusProject/audius-protocol/pkg/mediorum/server/signature"
 
 	"github.com/labstack/echo/v4"
 	"github.com/oklog/ulid/v2"
@@ -59,6 +60,25 @@ type UpdateUploadBody struct {
 	PreviewStartSeconds string `json:"previewStartSeconds"`
 }
 
+// generatePreview endpoint will create a new 30s preview mp3
+// save the cid to the audio_previews table
+// and return to the client.
+func (ss *MediorumServer) generatePreview(c echo.Context) error {
+	ctx := c.Request().Context()
+	fileHash := c.Param("cid")
+	previewStartSeconds := c.Param("previewStartSeconds")
+
+	audioPreview, err := ss.generateAudioPreview(ctx, fileHash, previewStartSeconds)
+	if err != nil {
+		return err
+	}
+
+	return c.JSON(200, audioPreview)
+}
+
+// this endpoint should be replaced by generate_preview
+// when client is fully using generate_preview
+// this can be removed.
 func (ss *MediorumServer) updateUpload(c echo.Context) error {
 	if !ss.diskHasSpace() {
 		return c.String(http.StatusServiceUnavailable, "disk is too full to accept new uploads")
@@ -101,20 +121,12 @@ func (ss *MediorumServer) updateUpload(c echo.Context) error {
 	}
 
 	// Update supported editable fields
-
 	// Do not support deleting previews
 	if selectedPreview.Valid && selectedPreview != upload.SelectedPreview {
 		upload.SelectedPreview = selectedPreview
-		upload.UpdatedAt = time.Now().UTC()
-		if _, alreadyTranscoded := upload.TranscodeResults[selectedPreview.String]; !alreadyTranscoded {
-			// Have not transcoded a preview at this start time yet
-			// Set status to trigger retranscode job
-			upload.Status = JobStatusRetranscode
-		}
-
-		err = ss.transcode(upload)
+		err := ss.generateAudioPreviewForUpload(upload)
 		if err != nil {
-			ss.logger.Warn("update upload failed", "err", err)
+			return err
 		}
 	}
 
@@ -130,9 +142,13 @@ func (ss *MediorumServer) postUpload(c echo.Context) error {
 	// read user wallet from ?signature query string
 	// ... fall back to (legacy) X-User-Wallet header
 	userWallet := sql.NullString{Valid: false}
-	if signerWallet, ok := c.Get("signer-wallet").(string); ok {
+
+	// updateUpload uses the requireUserSignature c.Get("signer-wallet")
+	// but requireUserSignature will fail request if missing
+	// so parse direclty here
+	if sig, err := signature.ParseFromQueryString(c.QueryParam("signature")); err == nil {
 		userWallet = sql.NullString{
-			String: signerWallet,
+			String: sig.SignerWallet,
 			Valid:  true,
 		}
 	} else {

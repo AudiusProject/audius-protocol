@@ -41,7 +41,7 @@ export type UserMetadata = {
   follower_count: number
   supporter_count: number
   supporting_count: number
-  handle: string
+  handle: Nullable<string>
   handle_lc: string
   is_deactivated: boolean
   is_verified: boolean

@@ -1,6 +1,11 @@
 import { getErrorMessage } from '~/utils'
 
-import { AudiusBackend, AuthHeaders } from './AudiusBackend'
+import { AudiusBackend } from './AudiusBackend'
+
+const AuthHeaders: { [key: string]: string } = Object.freeze({
+  Message: 'Encoded-Data-Message',
+  Signature: 'Encoded-Data-Signature'
+})
 
 export const recordIP = async (
   audiusBackendInstance: AudiusBackend

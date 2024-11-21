@@ -7,6 +7,7 @@ import { coinflowOnrampModalReducer } from './coinflow-onramp-modal'
 import { coinflowWithdrawModalReducer } from './coinflow-withdraw-modal'
 import { chatBlastModalReducer } from './create-chat-blast-modal'
 import { createChatModalReducer } from './create-chat-modal'
+import { deleteTrackConfirmationModalReducer } from './delete-track-confirmation-modal'
 import { earlyReleaseConfirmationModalReducer } from './early-release-confirmation-modal'
 import { editAccessConfirmationModalReducer } from './edit-access-confirmation-modal'
 import { hideContentConfirmationModalReducer } from './hide-confirmation-modal'
@@ -15,6 +16,7 @@ import { leavingAudiusModalReducer } from './leaving-audius-modal'
 import parentReducer, { initialState } from './parentSlice'
 import { premiumContentPurchaseModalReducer } from './premium-content-purchase-modal'
 import { publishConfirmationModalReducer } from './publish-confirmation-modal'
+import { replaceTrackConfirmationModalReducer } from './replace-track-confirmation-modal'
 import { BaseModalState, Modals, ModalsState } from './types'
 import { uploadConfirmationModalReducer } from './upload-confirmation-modal'
 import { usdcManualTransferModalReducer } from './usdc-manual-transfer-modal'
@@ -56,6 +58,8 @@ const combinedReducers = combineReducers({
   UploadConfirmation: uploadConfirmationModalReducer,
   EditAccessConfirmation: editAccessConfirmationModalReducer,
   EarlyReleaseConfirmation: earlyReleaseConfirmationModalReducer,
+  DeleteTrackConfirmation: deleteTrackConfirmationModalReducer,
+  ReplaceTrackConfirmation: replaceTrackConfirmationModalReducer,
   PublishConfirmation: publishConfirmationModalReducer,
   HideContentConfirmation: hideContentConfirmationModalReducer
 })

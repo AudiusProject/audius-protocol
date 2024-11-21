@@ -50,7 +50,6 @@ require (
 )
 
 require (
-	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc
 	github.com/go-openapi/errors v0.22.0
 	github.com/go-openapi/runtime v0.28.0
 	github.com/go-openapi/strfmt v0.23.0
@@ -59,6 +58,7 @@ require (
 	github.com/google/uuid v1.6.0
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.19.0
 	github.com/iancoleman/strcase v0.3.0
+	github.com/oschwald/maxminddb-golang v1.13.1
 	github.com/rubenv/sql-migrate v1.7.0
 	golang.org/x/crypto v0.26.0
 	google.golang.org/genproto/googleapis/api v0.0.0-20240528184218-531527333157
@@ -137,6 +137,7 @@ require (
 	github.com/crate-crypto/go-ipa v0.0.0-20240223125850-b1e8a79f509c // indirect
 	github.com/crate-crypto/go-kzg-4844 v1.0.0 // indirect
 	github.com/cyphar/filepath-securejoin v0.2.4 // indirect
+	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
 	github.com/deckarep/golang-set/v2 v2.6.0 // indirect
 	github.com/decred/dcrd/dcrec/secp256k1/v4 v4.0.1 // indirect
 	github.com/dgraph-io/badger/v4 v4.2.0 // indirect

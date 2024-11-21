@@ -3,7 +3,7 @@ import { program, Option } from 'commander'
 import { Connection, Keypair, PublicKey } from '@solana/web3.js'
 import { mintTo, getAccount } from '@solana/spl-token'
 
-import { initializeAudiusLibs, initializeAudiusSdk } from './utils.mjs'
+import { initializeAudiusSdk, getCurrentAudiusSdkUser } from './utils.mjs'
 
 program
   .command('mint-tokens')
@@ -16,24 +16,14 @@ program
   )
   .option('-f, --from <from>', 'The account to mint tokens for (handle)')
   .action(async (amount, { from, mint }) => {
-    const audiusLibs = await initializeAudiusLibs(from)
-
-    // extract privkey and pubkey from hedgehog
-    // only works with accounts created via audius-cmd
-    const wallet = audiusLibs?.hedgehog?.getWallet()
-    const privKey = wallet?.getPrivateKeyString()
-    const pubKey = wallet?.getAddressString()
-
-    // init sdk with priv and pub keys as api keys and secret
-    // this enables writes via sdk
     const audiusSdk = await initializeAudiusSdk({
-      apiKey: pubKey,
-      apiSecret: privKey
+      handle: from
     })
+    const currentUser = await getCurrentAudiusSdkUser()
 
     const { userBank: splWallet } =
       await audiusSdk.services.claimableTokensClient.getOrCreateUserBank({
-        ethWallet: wallet.getAddressString(),
+        ethWallet: currentUser.wallet,
         mint
       })
 

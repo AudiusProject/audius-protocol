@@ -608,7 +608,9 @@ export class AudiusLibs {
         this.creatorNodeConfig.passList,
         this.creatorNodeConfig.blockList,
         this.creatorNodeConfig.monitoringCallbacks,
-        this.creatorNodeConfig.storageNodeSelector
+        this.creatorNodeConfig.storageNodeSelector,
+        this.creatorNodeConfig.wallet,
+        this.creatorNodeConfig.userId
       )
       await this.creatorNode.init()
     }

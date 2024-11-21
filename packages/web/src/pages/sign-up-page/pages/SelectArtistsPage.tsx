@@ -20,7 +20,7 @@ import {
   addFollowArtists,
   completeFollowArtists
 } from 'common/store/pages/signon/actions'
-import { getGenres } from 'common/store/pages/signon/selectors'
+import { getGenres, getReferrer } from 'common/store/pages/signon/selectors'
 import {
   FollowArtistCard,
   FollowArtistTileSkeleton
@@ -33,6 +33,7 @@ import { useSelector } from 'utils/reducer'
 
 import { AccountHeader } from '../components/AccountHeader'
 import { PreviewArtistHint } from '../components/PreviewArtistHint'
+import { SkipButton } from '../components/SkipButton'
 import {
   Heading,
   HiddenLegend,
@@ -71,6 +72,7 @@ export const SelectArtistsPage = () => {
   const navigate = useNavigateToPage()
   const { color } = useTheme()
   const headerContainerRef = useRef<HTMLDivElement | null>(null)
+  const hasReferrer = useSelector(getReferrer)
   const { isMobile } = useMedia()
 
   const handleChangeGenre = useCallback((e: ChangeEvent<HTMLInputElement>) => {
@@ -262,6 +264,7 @@ export const SelectArtistsPage = () => {
                 disabled: !isValid || isSubmitting,
                 isLoading: isSubmitting || isValidating
               }}
+              prefix={isMobile && hasReferrer ? <SkipButton /> : null}
               postfix={
                 <Text variant='body'>
                   {selectArtistsPageMessages.selected}{' '}

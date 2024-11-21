@@ -2,8 +2,11 @@ import {
   sdk as AudiusSdk,
   DiscoveryNodeSelector,
   SolanaRelay,
-  Configuration
+  Configuration,
+  UserAuth
 } from '@audius/sdk'
+
+import { WalletManager, getPlatformCreateKey } from '@audius/hedgehog'
 
 import {
   Utils as AudiusUtils,
@@ -11,14 +14,34 @@ import {
 } from '@audius/sdk-legacy/dist/libs.js'
 import { PublicKey } from '@solana/web3.js'
 
+import { LocalStorage } from 'node-localstorage'
+const localStorage = new LocalStorage('./local-storage')
+
+export const parseUserId = async (arg) => {
+  if (arg.startsWith('@')) {
+    // @handle
+    const audiusSdk = await initializeAudiusSdk()
+    const {
+      data: { id }
+    } = await audiusSdk.users.getUserByHandle({ handle: arg.slice(1) })
+    return AudiusUtils.decodeHashId(id)
+  } else if (arg.startsWith('#')) {
+    // #userId
+    return Number(arg.slice(1))
+  } else {
+    // encoded user id
+    return AudiusUtils.decodeHashId(arg)
+  }
+}
+
 /**
  * @type {import('@audius/sdk').AudiusSdk}
  */
 let audiusSdk
-export const initializeAudiusSdk = async ({
-  apiKey = undefined,
-  apiSecret = undefined
-} = {}) => {
+let currentUserId
+let currentHandle
+export const initializeAudiusSdk = async ({ handle } = {}) => {
+  let isDummyWallet = false
   const solanaRelay = new SolanaRelay(
     new Configuration({
       basePath: '/solana',
@@ -37,22 +60,84 @@ export const initializeAudiusSdk = async ({
     })
   )
 
-  if (!audiusSdk) {
+  if (!audiusSdk || !currentUserId || (handle && currentHandle !== handle)) {
+    // If handle was provided, unset current entropy and replace with the entropy
+    // for the given user before initializing UserAuth
+    if (handle) {
+      localStorage.removeItem('hedgehog-entropy-key')
+      const handleEntropy = localStorage.getItem(`handle-${handle}`)
+      if (!handleEntropy) {
+        throw new Error(`Failed to find entropy for handle ${handle}`)
+      }
+      localStorage.setItem('hedgehog-entropy-key', handleEntropy)
+    } else {
+      isDummyWallet = true
+      // If we aren't logged in, create dummy entropy so sdk/libs work correctly
+      const entropy = localStorage.getItem('hedgehog-entropy-key')
+      if (!entropy) {
+        const password = `audius-dummy-pkey-${Math.floor(
+          Math.random() * 1000000
+        )}`
+        const result = await WalletManager.createWalletObj(
+          password,
+          null,
+          localStorage,
+          getPlatformCreateKey()
+        )
+        console.log(result.walletObj.getPrivateKeyString())
+        const entropy = localStorage.getItem('hedgehog-entropy-key')
+        if (!entropy) {
+          throw new Error('Failed to create entropy')
+        }
+      }
+    }
+
+    const auth = new UserAuth({
+      useLocalStorage: true,
+      localStorage: new Promise((resolve) => resolve(localStorage)),
+      identityService: process.env.IDENTITY_SERVICE_URL
+    })
+
     audiusSdk = AudiusSdk({
       appName: 'audius-cmd',
-      apiKey,
-      apiSecret,
       environment: 'development',
       services: {
+        auth,
         solanaRelay
       }
     })
+
+    currentHandle = handle
+
+    if (!isDummyWallet) {
+      try {
+        const wallet = await audiusSdk.services.auth.getAddress()
+        // Try to get current user. May fail if we're using a dummy entropy
+        const {
+          data: { user }
+        } = await audiusSdk.full.users.getUserAccount({
+          wallet
+        })
+        if (user) {
+          currentUserId = await parseUserId(user.id)
+          if (!currentUserId) {
+            console.warn('Failed to parse currentUserId')
+          }
+        }
+      } catch (e) {
+        console.warn('Failed to get currentUser', e)
+      }
+    }
   }
 
   return audiusSdk
 }
 
 export const initializeAudiusLibs = async (handle) => {
+  const audiusSdk = await initializeAudiusSdk({ handle })
+  const { wallet } = await audiusSdk.services.auth.getAddress()
+  const userId = currentUserId
+
   const audiusLibs = new AudiusLibs({
     ethWeb3Config: AudiusLibs.configEthWeb3(
       process.env.ETH_TOKEN_ADDRESS,
@@ -86,77 +171,32 @@ export const initializeAudiusLibs = async (handle) => {
     discoveryProviderConfig: {
       discoveryNodeSelector: new DiscoveryNodeSelector({
         initialSelectedNode: 'http://audius-protocol-discovery-provider-1'
-      })
+      }),
+      userId,
+      wallet
     },
-    creatorNodeConfig: AudiusLibs.configCreatorNode(
-      'http://audius-protocol-creator-node-1'
-      // process.env.FALLBACK_CREATOR_NODE_URL,
-    ),
+    creatorNodeConfig: {
+      ...AudiusLibs.configCreatorNode(
+        'http://audius-protocol-creator-node-1'
+        // process.env.FALLBACK_CREATOR_NODE_URL,
+      ),
+      wallet,
+      userId
+    },
     identityServiceConfig: AudiusLibs.configIdentityService(
       process.env.IDENTITY_SERVICE_URL
     ),
     isServer: true,
     enableUserReplicaSetManagerContract: true,
     isStorageV2Only: true,
-    useDiscoveryRelay: true
+    useDiscoveryRelay: true,
+    wallet,
+    userId
   })
 
   await audiusLibs.init()
-
-  if (handle) {
-    // Log out of existing user, log in as new user, and re-init
-    await audiusLibs.Account.logout()
-    await audiusLibs.localStorage.removeItem('hedgehog-entropy-key')
-    await audiusLibs.localStorage.setItem(
-      'hedgehog-entropy-key',
-      audiusLibs.localStorage.getItem(`handle-${handle}`)
-    )
-    await audiusLibs.init()
-    // extract privkey and pubkey from hedgehog
-    // only works with accounts created via audius-cmd
-    const wallet = audiusLibs?.hedgehog?.getWallet()
-    const privKey = wallet?.getPrivateKeyString()
-    const pubKey = wallet?.getAddressString()
-
-    // init sdk with priv and pub keys as api keys and secret
-    // this enables writes via sdk
-    const audiusSdk = await initializeAudiusSdk({
-      apiKey: pubKey,
-      apiSecret: privKey
-    })
-    const {
-      data: { user }
-    } = await audiusSdk.full.users.getUserAccount({
-      wallet: pubKey
-    })
-    if (!user) {
-      throw new Error(`Failed to fetch user for ${handle} (${wallet})`)
-    }
-    audiusLibs.setCurrentUser({
-      wallet: pubKey,
-      userId: AudiusUtils.decodeHashId(user.id)
-    })
-    console.log('currentUser:', audiusLibs.getCurrentUser())
-  }
-
+  audiusLibs.web3Manager.setDiscoveryProvider(audiusLibs.discoveryProvider)
   return audiusLibs
-}
-
-export const parseUserId = async (arg) => {
-  if (arg.startsWith('@')) {
-    // @handle
-    const audiusSdk = await initializeAudiusSdk()
-    const {
-      data: { id }
-    } = await audiusSdk.users.getUserByHandle({ handle: arg.slice(1) })
-    return AudiusUtils.decodeHashId(id)
-  } else if (arg.startsWith('#')) {
-    // #userId
-    return Number(arg.slice(1))
-  } else {
-    // encoded user id
-    return AudiusUtils.decodeHashId(arg)
-  }
 }
 
 export const parseSplWallet = async (arg) => {
@@ -181,4 +221,15 @@ export const parseSplWallet = async (arg) => {
     // splWallet
     return new PublicKey(arg)
   }
+}
+
+export const getCurrentAudiusSdkUser = async () => {
+  if (!audiusSdk) {
+    throw new Error('sdk not initialized')
+  }
+  const wallet = await audiusSdk.services.auth.getAddress()
+  const {
+    data: { user }
+  } = await audiusSdk.full.users.getUserAccount({ wallet })
+  return user
 }

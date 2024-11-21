@@ -3,13 +3,14 @@ import {
   CollectionMetadata,
   FieldVisibility,
   ID,
+  Id,
   Kind,
   Name,
   StemUploadWithFile,
   isContentFollowGated,
   isContentUSDCPurchaseGated
 } from '@audius/common/models'
-import { CollectionValues } from '@audius/common/schemas'
+import { CollectionValues, newTrackMetadata } from '@audius/common/schemas'
 import {
   TrackMetadataForUpload,
   LibraryCategory,
@@ -25,7 +26,9 @@ import {
   getContext,
   reformatCollection,
   savedPageActions,
-  uploadActions
+  uploadActions,
+  getSDK,
+  cacheTracksActions
 } from '@audius/common/store'
 import {
   actionChannelDispatcher,
@@ -773,6 +776,7 @@ export function* uploadCollection(
   uploadType: UploadType
 ) {
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
+  const sdk = yield* getSDK()
 
   yield waitForAccount()
   const userId = (yield* select(getUserId))!
@@ -948,7 +952,12 @@ export function* uploadCollection(
         )
         try {
           yield* all(
-            trackIds.map((id) => audiusBackendInstance.deleteTrack(userId, id))
+            trackIds.map((id) =>
+              sdk.tracks.deleteTrack({
+                userId: Id.parse(userId),
+                trackId: Id.parse(id)
+              })
+            )
           )
           console.debug('Deleted tracks.')
         } catch (err) {
@@ -1151,10 +1160,82 @@ export function* uploadTracksAsync(
   }
 }
 
+export function* updateTrackAudioAsync(
+  action: ReturnType<typeof uploadActions.updateTrackAudio>
+) {
+  yield* call(waitForWrite)
+  const payload = action.payload
+
+  const tracks = yield* call(retrieveTracks, {
+    trackIds: [payload.trackId]
+  })
+
+  if (tracks.length === 0) return
+  const track = tracks[0]
+  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
+  const userId = yield* select(accountSelectors.getUserId)
+
+  if (!track) return
+  if (!userId) {
+    throw new Error('No user id found during upload. Not signed in?')
+  }
+
+  const libs = yield* call(audiusBackendInstance.getAudiusLibsTyped)
+  const metadata = newTrackMetadata(
+    toUploadTrackMetadata({
+      ...track,
+      // @ts-ignore - stem_of should accept null instead of undefined
+      stem_of: track.stem_of ?? null
+    })
+  )
+
+  const handleProgressUpdate = (_progress: Parameters<ProgressCB>[0]) => {
+    // Do progress update things here
+    // if (!('audio' in progress)) return
+    // const { upload, transcode } = progress.audio
+  }
+
+  const updatedMetadata = yield* call(
+    [libs.Track, libs.Track!.uploadTrackV2],
+    userId,
+    payload.file as File,
+    null,
+    metadata,
+    handleProgressUpdate
+  )
+
+  const newMetadata: TrackMetadata = {
+    ...metadata,
+    orig_file_cid: updatedMetadata.orig_file_cid,
+    bpm: metadata.is_custom_bpm ? metadata.bpm : null,
+    musical_key: metadata.is_custom_musical_key ? metadata.musical_key : null,
+    audio_analysis_error_count: 0,
+    orig_filename: updatedMetadata.orig_filename,
+    preview_cid: updatedMetadata.preview_cid,
+    preview_start_seconds: updatedMetadata.preview_start_seconds ?? 0,
+    track_cid: updatedMetadata.track_cid,
+    audio_upload_id: updatedMetadata.audio_upload_id,
+    duration: updatedMetadata.duration,
+    // @ts-ignore: Issue with the type
+    file_type: updatedMetadata.file_type
+  }
+
+  yield* put(
+    cacheTracksActions.editTrack(
+      track.track_id,
+      newMetadata as TrackMetadataForUpload
+    )
+  )
+}
+
 function* watchUploadTracks() {
   yield* takeLatest(uploadActions.UPLOAD_TRACKS, uploadTracksAsync)
 }
 
+function* watchUpdateTrackAudio() {
+  yield* takeLatest(uploadActions.UPDATE_TRACK_AUDIO, updateTrackAudioAsync)
+}
+
 export default function sagas() {
-  return [watchUploadTracks]
+  return [watchUploadTracks, watchUpdateTrackAudio]
 }

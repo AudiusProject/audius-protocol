@@ -4,8 +4,8 @@ import (
 	"context"
 	"time"
 
+	"github.com/AudiusProject/audius-protocol/pkg/core/common"
 	gen_proto "github.com/AudiusProject/audius-protocol/pkg/core/gen/proto"
-	"github.com/AudiusProject/audius-protocol/pkg/core/grpc"
 	"github.com/AudiusProject/audius-protocol/pkg/core/test/integration/utils"
 	"github.com/google/uuid"
 	. "github.com/onsi/ginkgo/v2"
@@ -35,7 +35,7 @@ var _ = Describe("EntityManager", func() {
 			},
 		}
 
-		expectedTxHash, err := grpc.ToTxHash(signedManageEntity)
+		expectedTxHash, err := common.ToTxHash(signedManageEntity)
 		Expect(err).To(BeNil())
 
 		req := &gen_proto.SendTransactionRequest{

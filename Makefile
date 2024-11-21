@@ -1,7 +1,10 @@
 NETWORK ?= stage
-AD_TAG ?= default
+WRAPPER_TAG ?= default
 # One of patch, minor, or major
 UPGRADE_TYPE ?= patch
+
+GIT_SHA := $(shell git rev-parse HEAD)
+AD_TAG ?= $(GIT_SHA)
 
 ABI_ARTIFACT_DIR := pkg/register/ABIs
 ABI_SRC_DIR := packages/libs/src/eth-contracts/ABIs
@@ -17,7 +20,7 @@ PROTO_ARTIFACTS := $(wildcard pkg/core/gen/proto/*.pb.go)
 TEMPL_SRCS := $(shell find pkg/core/console -type f -name "*.templ")
 TEMPL_ARTIFACTS := $(shell find pkg/core/console -type f -name "*_templ.go")
 
-VERSION_LDFLAG := -X github.com/AudiusProject/audius-protocol/core/config.Version=$(shell git rev-parse HEAD)
+VERSION_LDFLAG := -X github.com/AudiusProject/audius-protocol/core/config.Version=$(GIT_SHA)
 
 JSON_SRCS := $(wildcard pkg/core/config/genesis/*.json) $(ABI_ARTIFACTS)
 JS_SRCS := $(shell find pkg/core -type f -name '*.js')
@@ -70,14 +73,21 @@ ignore-code-gen:
 	@echo "Warning: not regenerating .go files from sql, templ, proto, etc. Using existing artifacts instead."
 	@touch $(SQL_ARTIFACTS) $(TEMPL_ARTIFACTS) $(PROTO_ARTIFACTS) go.mod
 
-.PHONY: build-docker-local build-push-docker
-build-docker-local:
+.PHONY: build-wrapper-local build-push-wrapper
+build-wrapper-local:
 	@echo "Building Docker image for local platform..."
-	docker buildx build --load -t audius/audius-d:$(AD_TAG) pkg/orchestration
+	docker buildx build --load -t audius/audius-d:$(WRAPPER_TAG) pkg/orchestration
 
-build-push-docker:
+build-push-wrapper:
 	@echo "Building and pushing Docker images for all platforms..."
-	docker buildx build --platform linux/amd64,linux/arm64 --push -t audius/audius-d:$(AD_TAG) pkg/orchestration
+	docker buildx build --platform linux/amd64,linux/arm64 --push -t audius/audius-d:$(WRAPPER_TAG) pkg/orchestration
+
+.PHONY: build-audiusd-local build-push-audiusd
+build-audiusd-local:
+	docker build -t audius/audiusd:$(AD_TAG) -f ./cmd/audiusd/Dockerfile ./
+
+build-push-audiusd:
+	DOCKER_DEFAULT_PLATFORM=linux/amd64 docker build --push -t audius/audiusd:$(AD_TAG) -f ./cmd/audiusd/Dockerfile ./
 
 .PHONY: install uninstall
 install:

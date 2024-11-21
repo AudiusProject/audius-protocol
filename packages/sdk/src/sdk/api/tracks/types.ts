@@ -52,13 +52,13 @@ export const CollectibleGatedConditions = z
 
 export const FollowGatedConditions = z
   .object({
-    followUserId: HashId
+    followUserId: z.number()
   })
   .strict()
 
 export const TipGatedConditions = z
   .object({
-    tipUserId: HashId
+    tipUserId: z.number()
   })
   .strict()
 
@@ -150,9 +150,11 @@ export const createUploadTrackMetadataSchema = () =>
     title: z.string({
       required_error: messages.titleRequiredError
     }),
+    duration: z.optional(z.number()),
     previewStartSeconds: z.optional(z.number()),
     placementHosts: z.optional(z.string()),
     audioUploadId: z.optional(z.string()),
+    trackCid: z.optional(z.string()),
     previewCid: z.optional(z.string()),
     origFileCid: z.optional(z.string()),
     origFilename: z.optional(z.string()),

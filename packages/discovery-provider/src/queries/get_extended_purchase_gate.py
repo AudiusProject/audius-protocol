@@ -171,7 +171,9 @@ def calculate_split_amounts(
 def add_wallet_info_to_splits(
     session: Session, splits: List[Split], timestamp: Optional[datetime]
 ):
-    user_ids = [split["user_id"] for split in splits]
+    user_ids = [
+        split["user_id"] for split in splits if isinstance(split["user_id"], int)
+    ]
 
     max_block_timestamps = (
         session.query(

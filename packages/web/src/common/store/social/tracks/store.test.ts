@@ -19,9 +19,13 @@ import { watchRecordListen } from './recordListen'
 
 const repostingUser = { repost_count: 0 }
 const saveUser = { handle: 'saveUser' }
+
+const mockAudiusSdk = {}
+
 const defaultProviders: StaticProvider[] = [
   [matchers.call.fn(waitForWrite), undefined],
-  [matchers.call.fn(waitForBackendSetup), undefined]
+  [matchers.call.fn(waitForBackendSetup), undefined],
+  [matchers.getContext('audiusSdk'), async () => mockAudiusSdk]
 ]
 
 describe('repost', () => {

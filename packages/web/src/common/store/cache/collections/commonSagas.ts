@@ -64,7 +64,6 @@ import { waitForWrite } from 'utils/sagaHelpers'
 import { watchAddTrackToPlaylist } from './addTrackToPlaylistSaga'
 import { confirmOrderPlaylist } from './confirmOrderPlaylist'
 import { createPlaylistSaga } from './createPlaylistSaga'
-import { fixInvalidTracksInPlaylist } from './fixInvalidTracksInPlaylist'
 import { optimisticUpdateCollection } from './utils/optimisticUpdateCollection'
 import { retrieveCollection } from './utils/retrieveCollections'
 
@@ -331,41 +330,10 @@ function* confirmRemoveTrackFromPlaylist(
     confirmerActions.requestConfirmation(
       makeKindId(Kind.COLLECTIONS, playlistId),
       function* (confirmedPlaylistId: ID) {
-        // NOTE: In an attempt to fix playlists in a corrupted state, only attempt the delete playlist track once,
-        // if it fails, check if the playlist is in a corrupted state and if so fix it before re-attempting to delete track from playlist
-        let { blockHash, blockNumber, error } = yield* call(
+        const { blockHash, blockNumber } = yield* call(
           audiusBackendInstance.deletePlaylistTrack,
           playlist
         )
-        if (error) {
-          const {
-            error: tracksInPlaylistError,
-            isValid,
-            invalidTrackIds
-          } = yield* call(
-            audiusBackendInstance.validateTracksInPlaylist,
-            confirmedPlaylistId
-          )
-          if (tracksInPlaylistError) throw tracksInPlaylistError
-          if (!isValid) {
-            const updatedPlaylist = yield* fixInvalidTracksInPlaylist(
-              confirmedPlaylistId,
-              invalidTrackIds
-            )
-            const isTrackRemoved =
-              countTrackIds(updatedPlaylist?.playlist_contents, trackId) <=
-              count
-            if (isTrackRemoved) return updatedPlaylist
-          }
-          const response = yield* call(
-            audiusBackendInstance.deletePlaylistTrack,
-            playlist
-          )
-          if (response.error) throw response.error
-
-          blockHash = response.blockHash
-          blockNumber = response.blockNumber
-        }
 
         const confirmed = yield* call(
           confirmTransaction,

@@ -6,12 +6,12 @@ import {
 } from '@audius/spl'
 import { SendTransactionOptions } from '@solana/wallet-adapter-base'
 import {
-  TransactionMessage,
   VersionedTransaction,
   Secp256k1Program,
   PublicKey,
   Transaction,
-  SendTransactionError
+  SendTransactionError,
+  ComputeBudgetProgram
 } from '@solana/web3.js'
 
 import { productionConfig } from '../../../../config/production'
@@ -152,18 +152,22 @@ export class ClaimableTokensClient {
             userBank,
             programId: this.programId
           })
-        const confirmationStrategyArgs =
+        const computeBudgetLimitInstruction =
+          ComputeBudgetProgram.setComputeUnitLimit({
+            units: 50000
+          })
+        const { blockhash, lastValidBlockHeight } =
           await this.client.connection.getLatestBlockhash()
-        const message = new TransactionMessage({
-          payerKey: feePayer,
-          recentBlockhash: confirmationStrategyArgs.blockhash,
-          instructions: [createUserBankInstruction]
-        }).compileToLegacyMessage()
-        const transaction = new VersionedTransaction(message)
+        const transaction = await this.client.buildTransaction({
+          instructions: [
+            createUserBankInstruction,
+            computeBudgetLimitInstruction
+          ],
+          recentBlockhash: blockhash
+        })
         const signature = await this.sendTransaction(transaction)
-        const confirmationStrategy = { ...confirmationStrategyArgs, signature }
         await this.client.connection.confirmTransaction(
-          confirmationStrategy,
+          { blockhash, lastValidBlockHeight, signature },
           'finalized'
         )
         return { userBank, didExist: false }

@@ -20,9 +20,6 @@ type FailureReason =
 
 const initialState = {
   collections: {} as { [id: number]: AccountCollection },
-  // Used to track the ordering of playlists in the user's left nav
-  // Array of strings that are either smart collection identifiers or user-generated collection ids
-  orderedPlaylists: [] as string[],
   userId: null as number | null,
   hasTracks: null as boolean | null,
   status: Status.IDLE,
@@ -38,7 +35,6 @@ const initialState = {
 type FetchAccountSucceededPayload = {
   userId: ID
   collections: AccountCollection[]
-  orderedPlaylists: string[]
 }
 
 type FetchAccountFailedPayload = {
@@ -63,9 +59,8 @@ const slice = createSlice({
       state,
       action: PayloadAction<FetchAccountSucceededPayload>
     ) => {
-      const { userId, orderedPlaylists, collections } = action.payload
+      const { userId, collections } = action.payload
       state.userId = userId
-      state.orderedPlaylists = orderedPlaylists
       state.collections = keyBy(collections, 'id')
       state.status = Status.SUCCESS
       state.reason = null
@@ -114,10 +109,6 @@ const slice = createSlice({
     },
     setNeedsAccountRecovery: (state) => {
       state.needsAccountRecovery = true
-    },
-    setPlaylistOrder: (state, action: PayloadAction<{ order: string[] }>) => {
-      const { order } = action.payload
-      state.orderedPlaylists = order
     },
     fetchHasTracks: () => {},
     setHasTracks: (state, action: PayloadAction<boolean>) => {
@@ -170,7 +161,6 @@ export const {
   resetAccount,
   setHasTracks,
   setNeedsAccountRecovery,
-  setPlaylistOrder,
   setReachable,
   showPushNotificationConfirmation,
   setWalletAddresses,

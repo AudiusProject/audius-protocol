@@ -3,7 +3,7 @@
   "productName": "Audius",
   "description": "The Audius web client reference implementation",
   "author": "Audius",
-  "version": "1.5.108",
+  "version": "1.5.109",
   "private": true,
   "scripts": {
     "DEV & BUILD========================================": "",
@@ -71,6 +71,8 @@
     "pack": "electron-builder --dir"
   },
   "dependencies": {
+    "@amplitude/analytics-browser": "2.11.9",
+    "@amplitude/plugin-session-replay-browser": "1.8.2",
     "@audius/common": "*",
     "@audius/fetch-nft": "0.2.7",
     "@audius/fixed-decimal": "*",
@@ -113,7 +115,6 @@
     "@types/react-twitter-auth": "0.0.4",
     "@walletconnect/web3-provider": "1.4.1",
     "ajv": "7.2.4",
-    "amplitude-js": "8.10.0",
     "antd": "4.20.6",
     "array-pack-2d": "0.1.1",
     "array-range": "1.0.1",

@@ -51,7 +51,7 @@ func (ss *MediorumServer) startTranscoder() {
 	}
 
 	// on boot... reset any of my wip jobs
-	for _, statuses := range [][]string{{JobStatusBusy, JobStatusNew}, {JobStatusBusyRetranscode, JobStatusRetranscode}} {
+	for _, statuses := range [][]string{{JobStatusBusy, JobStatusNew}} {
 		busyStatus := statuses[0]
 		resetStatus := statuses[1]
 		tx := ss.crud.DB.Model(Upload{}).
@@ -119,22 +119,14 @@ func (ss *MediorumServer) startTranscoder() {
 	// finally... poll periodically for uploads that slipped thru the cracks
 	for {
 		time.Sleep(time.Minute)
-		// find missed transcode jobs
-		ss.findMissedJobs(ss.transcodeWork, myHost, false)
-		// find missed retranscode jobs
-		ss.findMissedJobs(ss.transcodeWork, myHost, true)
+		ss.findMissedJobs(ss.transcodeWork, myHost)
 	}
 }
 
-func (ss *MediorumServer) findMissedJobs(work chan *Upload, myHost string, retranscode bool) {
+func (ss *MediorumServer) findMissedJobs(work chan *Upload, myHost string) {
 	newStatus := JobStatusNew
 	busyStatus := JobStatusBusy
 	errorStatus := JobStatusError
-	if retranscode {
-		newStatus = JobStatusRetranscode
-		busyStatus = JobStatusBusyRetranscode
-		errorStatus = JobStatusErrorRetranscode
-	}
 
 	uploads := []*Upload{}
 	ss.crud.DB.Where("status in ?", []string{newStatus, busyStatus, errorStatus}).Find(&uploads)
@@ -324,71 +316,11 @@ func (ss *MediorumServer) transcodeFullAudio(upload *Upload, temp *os.File, logg
 
 	// if a start time is set, also transcode an audio preview from the full 320kbps downsample
 	if upload.SelectedPreview.Valid {
-		// update upload to reflect the start of the retranscoding preview step
-		upload.TranscodeProgress = 0
-		upload.TranscodedAt = time.Now().UTC()
-		upload.Status = JobStatusBusyRetranscode
-		// ss.crud.Update(upload)
-
-		return ss.transcodeAudioPreview(upload, dest, logger, onError)
+		err := ss.generateAudioPreviewForUpload(upload)
+		if err != nil {
+			return onError(err, upload.Status, "generateAudioPreview")
+		}
 	}
-
-	return nil
-}
-
-func (ss *MediorumServer) transcodeAudioPreview(upload *Upload, temp *os.File, logger *slog.Logger, onError errorCallback) error {
-	if !upload.SelectedPreview.Valid {
-		logger.Info("no audio preview start time set. skipping preview transcode", "id", upload.ID)
-		return nil
-	}
-
-	srcPath := temp.Name()
-	destPath := strings.TrimSuffix(srcPath, "_320.mp3") + "_320_preview.mp3"
-	defer os.Remove(destPath)
-
-	splitPreview := strings.Split(upload.SelectedPreview.String, "|")
-	previewStart := splitPreview[1]
-
-	cmd := exec.Command("ffmpeg",
-		"-y",
-		"-i", srcPath,
-		"-ss", previewStart, // set preview start time
-		"-t", audioPreviewDuration, // set preview duration
-		"-b:a", "320k", // set bitrate to 320k
-		"-ar", "48000", // set sample rate to 48000 Hz
-		"-f", "mp3", // force output to mp3
-		"-metadata", fmt.Sprintf(`fileName="%s"`, upload.OrigFileName),
-		"-metadata", fmt.Sprintf(`uuid="%s"`, upload.ID), // make each upload unique so artists can re-upload same file with different CID if it gets delisted
-		"-vn", // no video
-		"-progress", "pipe:2",
-		destPath)
-
-	err := ss.transcodeAudio(upload, destPath, cmd, logger, onError)
-	if err != nil {
-		return err
-	}
-
-	dest, err := os.Open(destPath)
-	if err != nil {
-		return onError(err, upload.Status, "os.Open")
-	}
-	defer dest.Close()
-
-	// replicate to peers
-	// attempt to forward to an assigned node
-	resultHash, err := cidutil.ComputeFileCID(dest)
-	if err != nil {
-		return onError(err, upload.Status, "computeFileCID")
-	}
-	resultKey := resultHash
-	mirrors, err := ss.replicateFileParallel(resultHash, destPath, upload.PlacementHosts)
-	if err != nil {
-		return onError(err, upload.Status, "replicating file")
-	}
-
-	upload.TranscodeResults[upload.SelectedPreview.String] = resultKey
-
-	logger.Info("audio preview transcode done", "mirrors", mirrors)
 
 	return nil
 }
@@ -418,18 +350,8 @@ outerLoop:
 func (ss *MediorumServer) transcode(upload *Upload) error {
 	upload.TranscodedBy = ss.Config.Self.Host
 	upload.TranscodedAt = time.Now().UTC()
-	// Differentiate between normal transcode vs retranscode jobs
-	if upload.Status == JobStatusRetranscode || upload.Status == JobStatusBusyRetranscode || upload.Status == JobStatusErrorRetranscode {
-		upload.Status = JobStatusBusyRetranscode
-	} else {
-		upload.Status = JobStatusBusy
-	}
-
+	upload.Status = JobStatusBusy
 	fileHash := upload.OrigFileCID
-	if upload.Status == JobStatusBusyRetranscode {
-		// Re-transcode previews off the 320kbps downsample
-		fileHash = upload.TranscodeResults["320"]
-	}
 
 	logger := ss.logger.With("template", upload.Template, "cid", fileHash)
 
@@ -457,11 +379,7 @@ func (ss *MediorumServer) transcode(upload *Upload) error {
 		errMsg := fmt.Errorf("%s %s", filteredError, strings.Join(info, " "))
 
 		upload.Error = errMsg.Error()
-		if uploadStatus == JobStatusRetranscode || uploadStatus == JobStatusBusyRetranscode {
-			upload.Status = JobStatusErrorRetranscode
-		} else {
-			upload.Status = JobStatusError
-		}
+		upload.Status = JobStatusError
 		upload.ErrorCount = upload.ErrorCount + 1
 		ss.crud.Update(upload)
 		return errMsg
@@ -480,21 +398,12 @@ func (ss *MediorumServer) transcode(upload *Upload) error {
 			logger.Warn("empty template (shouldn't happen), falling back to audio")
 		}
 
-		if upload.Status == JobStatusBusyRetranscode {
-			// Re-transcode audio preview
-			err := ss.transcodeAudioPreview(upload, temp, logger, onError)
-			if err != nil {
-				return err
-			}
-		} else {
-			// Transcode audio and (optional) audio preview
-			err := ss.transcodeFullAudio(upload, temp, logger, onError)
-			if err != nil {
-				return err
-			}
-			// analyze audio for new full audio uploads
-			ss.analyzeAudio(upload, time.Minute)
+		err := ss.transcodeFullAudio(upload, temp, logger, onError)
+		if err != nil {
+			return err
 		}
+		ss.analyzeAudio(upload, time.Minute)
+
 	default:
 		return fmt.Errorf("unsupported format: %s", upload.Template)
 	}

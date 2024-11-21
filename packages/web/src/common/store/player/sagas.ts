@@ -1,5 +1,5 @@
 import { Kind, type Track } from '@audius/common/models'
-import { FeatureFlags, QueryParams } from '@audius/common/services'
+import { QueryParams } from '@audius/common/services'
 import {
   accountSelectors,
   cacheTracksSelectors,
@@ -96,18 +96,12 @@ export const getMirrorStreamUrl = (
 }
 
 export function* watchPlay() {
-  const getFeatureEnabled = yield* getContext('getFeatureEnabled')
   yield* takeLatest(play.type, function* (action: ReturnType<typeof play>) {
     const { uid, trackId, playerBehavior, startTime, onEnd, retries } =
       action.payload ?? {}
 
     const audioPlayer = yield* getContext('audioPlayer')
     const isNativeMobile = yield getContext('isNativeMobile')
-    const isNewPodcastControlsEnabled = yield* call(
-      getFeatureEnabled,
-      FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED,
-      FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED_FALLBACK
-    )
 
     if (trackId) {
       // Load and set end action.
@@ -188,7 +182,7 @@ export function* watchPlay() {
             if (onEnd) {
               emitter(onEnd({}))
             }
-            if (isNewPodcastControlsEnabled && isLongFormContent) {
+            if (isLongFormContent) {
               emitter(
                 setTrackPosition({
                   userId: currentUserId,
@@ -217,32 +211,28 @@ export function* watchPlay() {
         const playbackRate = yield* select(getPlaybackRate)
         audioPlayer.setPlaybackRate(playbackRate)
 
-        if (isNewPodcastControlsEnabled) {
-          // Set playback position for track to in progress if not already tracked
-          const currentUserId = yield* select(getUserId)
-          const trackPlaybackInfo = yield* select(getTrackPosition, {
-            trackId,
-            userId: currentUserId
-          })
-          if (trackPlaybackInfo?.status !== 'IN_PROGRESS') {
-            yield* put(
-              setTrackPosition({
-                userId: currentUserId,
-                trackId,
-                positionInfo: {
-                  status: 'IN_PROGRESS',
-                  playbackPosition: 0
-                }
-              })
-            )
-          } else {
-            audioPlayer.play()
-            yield* put(
-              playSucceeded({ uid, trackId, isPreview: shouldPreview })
-            )
-            yield* put(seek({ seconds: trackPlaybackInfo.playbackPosition }))
-            return
-          }
+        // Set playback position for track to in progress if not already tracked
+        const currentUserId = yield* select(getUserId)
+        const trackPlaybackInfo = yield* select(getTrackPosition, {
+          trackId,
+          userId: currentUserId
+        })
+        if (trackPlaybackInfo?.status !== 'IN_PROGRESS') {
+          yield* put(
+            setTrackPosition({
+              userId: currentUserId,
+              trackId,
+              positionInfo: {
+                status: 'IN_PROGRESS',
+                playbackPosition: 0
+              }
+            })
+          )
+        } else {
+          audioPlayer.play()
+          yield* put(playSucceeded({ uid, trackId, isPreview: shouldPreview }))
+          yield* put(seek({ seconds: trackPlaybackInfo.playbackPosition }))
+          return
         }
       } else if (audioPlayer.getPlaybackRate() !== '1x') {
         // Reset playback rate when playing a regular track
@@ -349,21 +339,15 @@ export function* watchStop() {
 }
 
 export function* watchSeek() {
-  const getFeatureEnabled = yield* getContext('getFeatureEnabled')
   const audioPlayer = yield* getContext('audioPlayer')
 
   yield* takeLatest(seek.type, function* (action: ReturnType<typeof seek>) {
     const { seconds } = action.payload
-    const isNewPodcastControlsEnabled = yield* call(
-      getFeatureEnabled,
-      FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED,
-      FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED_FALLBACK
-    )
     const trackId = yield* select(getTrackId)
 
     audioPlayer.seek(seconds)
 
-    if (isNewPodcastControlsEnabled && trackId) {
+    if (trackId) {
       const track = yield* select(getTrack, { id: trackId })
       const currentUserId = yield* select(getUserId)
       const isLongFormContent =

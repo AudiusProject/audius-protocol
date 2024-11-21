@@ -43,6 +43,16 @@ func TestUploadFile(t *testing.T) {
 	assert.Equal(t, u2.TranscodeProgress, 1.0)
 	assert.Len(t, u2.TranscodedMirrors, s1.Config.ReplicationFactor)
 
+	// test preview
+
+	{
+		var audioPreview AudioPreview
+		resp := s1.reqClient.R().
+			SetSuccessResult(&audioPreview).
+			MustPost(s1.Config.Self.Host + "/generate_preview/" + u2.TranscodeResults["320"] + "/1")
+		assert.Equal(t, resp.StatusCode, 200)
+		assert.Equal(t, "1", audioPreview.PreviewStartSeconds)
+	}
 }
 
 func TestUploadPlacement(t *testing.T) {

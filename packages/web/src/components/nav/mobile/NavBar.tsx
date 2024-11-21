@@ -1,7 +1,6 @@
 import { useState, useContext, useCallback, useEffect } from 'react'
 
 import { Status } from '@audius/common/models'
-import { FeatureFlags } from '@audius/common/services'
 import { formatCount, route } from '@audius/common/utils'
 import {
   IconAudiusLogoHorizontal,
@@ -29,7 +28,6 @@ import NavContext, {
   RightPreset
 } from 'components/nav/mobile/NavContext'
 import SearchBar from 'components/search-bar/SearchBar'
-import { useFlag } from 'hooks/useRemoteConfig'
 import { getIsIOS } from 'utils/browser'
 import { isMatrix } from 'utils/theme/theme'
 
@@ -53,8 +51,7 @@ interface NavBarProps {
 
 const messages = {
   signUp: 'Sign Up',
-  searchPlaceholderV2: 'What do you want to listen to?',
-  earlyAccess: 'Early Access'
+  searchPlaceholderV2: 'What do you want to listen to?'
 }
 
 const NavBar = ({
@@ -202,8 +199,6 @@ const NavBar = ({
 
   const matrix = isMatrix()
 
-  const { isEnabled: isEarlyAccess } = useFlag(FeatureFlags.EARLY_ACCESS)
-
   return (
     <div
       className={cn(styles.container, {
@@ -230,11 +225,6 @@ const NavBar = ({
                   color='subdued'
                   width='auto'
                 />
-                {isEarlyAccess ? (
-                  <div className={styles.earlyAccess}>
-                    {messages.earlyAccess}
-                  </div>
-                ) : null}
               </animated.div>
             ) : null
           )}

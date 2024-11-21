@@ -1,14 +1,16 @@
 import { CollectionValues } from '~/schemas'
 
-import { Collection, Track } from '../../models'
+import { Collection, ID, Track } from '../../models'
 
-import { Progress, TrackForUpload, UploadType } from './types'
+import { NativeFile, Progress, TrackForUpload, UploadType } from './types'
 
 export const UPLOAD_TRACKS = 'UPLOAD/UPLOAD_TRACKS'
 export const UPLOAD_TRACKS_REQUESTED = 'UPLOAD/UPLOAD_TRACKS_REQUESTED'
 export const UPLOAD_TRACKS_SUCCEEDED = 'UPLOAD/UPLOAD_TRACKS_SUCCEEDED'
 export const UPLOAD_TRACKS_FAILED = 'UPLOAD/UPLOAD_TRACKS_FAILED'
 export const UPLOAD_SINGLE_TRACK_FAILED = 'UPLOAD/UPLOAD_SINGLE_TRACK_FAILED'
+
+export const UPDATE_TRACK_AUDIO = 'UPLOAD/UPDATE_TRACK_AUDIO'
 
 export const UPDATE_PERCENT = 'UPLOAD/UPDATE_PERCENT'
 export const INCREMENT_PERCENT = 'UPLOAD/INCREMENT_PERCENT'
@@ -76,6 +78,17 @@ export const updateProgress = (payload: {
   progress: Progress
 }) => {
   return { type: UPDATE_PROGRESS, payload }
+}
+
+// Actions for replacing track audio
+export const updateTrackAudio = (payload: {
+  trackId: ID
+  file: File | NativeFile
+}) => {
+  return {
+    type: UPDATE_TRACK_AUDIO,
+    payload
+  }
 }
 
 // Actions used to reset the react state and then the store state of upload from external container

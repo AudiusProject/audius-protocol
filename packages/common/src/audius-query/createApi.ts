@@ -30,7 +30,7 @@ import { waitForValue } from '~/utils/sagaHelpers'
 import { Nullable, removeNullable } from '~/utils/typeUtils'
 
 import { Track } from '../models/Track'
-import { accountSelectors } from '../store/account'
+import * as accountSelectors from '../store/account/selectors'
 import * as cacheActions from '../store/cache/actions'
 import * as cacheSelectors from '../store/cache/selectors'
 

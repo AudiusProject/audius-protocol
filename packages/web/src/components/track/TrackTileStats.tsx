@@ -36,7 +36,11 @@ export const TrackTileStats = (props: TrackTileStatsProps) => {
   )
 
   if (isLoading || !track) {
-    return <Skeleton w='30%' h={isMobile ? 16 : 20} />
+    return (
+      <Flex h='2xl' alignItems='center'>
+        <Skeleton w='40%' h={isMobile ? 16 : 20} />
+      </Flex>
+    )
   }
 
   const { is_unlisted } = track

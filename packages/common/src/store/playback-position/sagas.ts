@@ -1,7 +1,6 @@
 import { call, delay, put, select, takeEvery } from 'typed-redux-saga'
 
 import { AudioPlayer } from '~/services/audio-player'
-import { FeatureFlags } from '~/services/remote-config'
 import { getUserId } from '~/store/account/selectors'
 import { getTrack } from '~/store/cache/tracks/selectors'
 import { getContext } from '~/store/effects'
@@ -28,16 +27,9 @@ const RECORD_PLAYBACK_POSITION_INTERVAL = 1000
 function* setInitialPlaybackPositionState() {
   const remoteConfigInstance = yield* getContext('remoteConfigInstance')
   yield* call(remoteConfigInstance.waitForRemoteConfig)
-  const getFeatureEnabled = yield* getContext('getFeatureEnabled')
   const getLocalStorageItem = yield* getContext('getLocalStorageItem')
   const setLocalStorageItem = yield* getContext('setLocalStorageItem')
   const removeLocalStorageItem = yield* getContext('removeLocalStorageItem')
-  const isNewPodcastControlsEnabled = yield* call(
-    getFeatureEnabled,
-    FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED,
-    FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED_FALLBACK
-  )
-  if (!isNewPodcastControlsEnabled) return
 
   const localStorageState = yield* call(
     getLocalStorageItem,
@@ -105,17 +97,10 @@ function* savePlaybackPositionWorker() {
   const remoteConfigInstance = yield* getContext('remoteConfigInstance')
   yield* call(remoteConfigInstance.waitForRemoteConfig)
   const isNativeMobile = yield* getContext('isNativeMobile')
-
   const audioPlayer = yield* getContext('audioPlayer')
-  const getFeatureEnabled = yield* getContext('getFeatureEnabled')
-  const isNewPodcastControlsEnabled = yield* call(
-    getFeatureEnabled,
-    FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED,
-    FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED_FALLBACK
-  )
 
   // eslint-disable-next-line no-unmodified-loop-condition
-  while (isNewPodcastControlsEnabled && !isNativeMobile) {
+  while (!isNativeMobile) {
     const trackId = yield* select(getTrackId)
     const userId = yield* select(getUserId)
     const track = yield* select(getTrack, { id: trackId })

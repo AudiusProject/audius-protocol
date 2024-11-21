@@ -6,7 +6,8 @@ import { z } from 'zod'
  */
 const NodeFileSchema = z.object({
   buffer: z.custom<Buffer>((data: unknown) => data),
-  name: z.optional(z.string())
+  name: z.optional(z.string()),
+  type: z.optional(z.string())
 })
 export type NodeFile = z.infer<typeof NodeFileSchema>
 
@@ -55,9 +56,13 @@ const getFileType = async (file: CrossPlatformFile) => {
     fileTypeBrowser = await import('file-type/browser')
   }
 
-  return isNodeFile(file)
-    ? await fileType.fromBuffer(file.buffer)
-    : await fileTypeBrowser.fromBlob(file)
+  if (isNodeFile(file)) {
+    return file.type
+      ? { mime: file.type }
+      : await fileType.fromBuffer(file.buffer)
+  } else {
+    return await fileTypeBrowser.fromBlob(file)
+  }
 }
 
 export const ImageFile = CrossPlatformFileSchema.refine(async (file) => {
