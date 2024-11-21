@@ -13,7 +13,7 @@ steps:
       path: '~/audius-protocol'
   - run: AUDIUS_DEV=false bash ~/audius-protocol/dev-tools/setup.sh
   - docker-login
-  - run: . ~/.profile; DOCKER_BUILDKIT=0 audius-compose push --prod "<< parameters.service >>"
+  - run: . ~/.profile; audius-compose push --prod "<< parameters.service >>"
   - docker-logout
   - docker-prune
   - run:

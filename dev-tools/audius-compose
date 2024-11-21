@@ -215,6 +215,12 @@ def build(
         protocol_dir, discovery_provider_replicas, elasticsearch_replicas, prod
     )
 
+    # Include DOCKER_BUILDKIT=0 in the environment
+    # see bug with buildkit failing to cache docker layers
+    # https://github.com/docker/compose/issues/11804
+    env = os.environ.copy()
+    env["DOCKER_BUILDKIT"] = "0"
+
     proc = subprocess.run(
         [
             "docker",
@@ -243,6 +249,7 @@ def build(
             *args,
             *services,
         ],
+        env=env,
     )
 
     if proc.returncode != 0:
