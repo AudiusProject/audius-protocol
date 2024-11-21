@@ -3,12 +3,16 @@
   "version": "1.0.31",
   "private": true,
   "description": "Collection of command useful for debugging audius-protocol",
-  "main": "src/index.mjs",
+  "main": "dist/index.js",
   "bin": {
-    "audius-cmd": "src/index.mjs"
+    "audius-cmd": "dist/index.js"
   },
   "scripts": {
-    "audius-cmd": "node src/index.mjs",
+    "audius-cmd": "node dist/index.js",
+    "build:dist": "turbo run build",
+    "build": "esbuild src/index.mjs --bundle --platform=node --loader:.wasm=binary --outfile=dist/index.js",
+    "watch:dist": "turbo run watch",
+    "watch": "esbuild src/index.mjs --bundle --platform=node --loader:.wasm=binary --outfile=dist/index.js --watch=forever",
     "test": "bats test"
   },
   "author": "Audius",
@@ -21,7 +25,8 @@
     "@solana/web3.js": "1.93.4",
     "bn.js": "^5.2.1",
     "chalk": "^5.0.1",
-    "commander": "^9.4.0"
+    "commander": "^9.4.0",
+    "esbuild": "^0.24.0"
   },
   "devDependencies": {
     "bats": "^1.8.2",

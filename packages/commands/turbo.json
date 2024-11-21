@@ -1,0 +1,16 @@
+{
+  "extends": ["//"],
+  "pipeline": {
+    "build": {
+      "outputs": ["dist/**"],
+      "dependsOn": ["^build"],
+      "outputMode": "new-only"
+    },
+    "watch": {
+      "cache": false,
+      "dependsOn": ["^build"],
+      "persistent": true,
+      "outputMode": "new-only"
+    }
+  }
+}

@@ -4,6 +4,11 @@ set -e
 cd "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")"/compose  # audius-protocol/dev-tools/compose
 export COMPOSE_PROJECT_NAME='audius-protocol'
 
+# bundle if needed
+if ! docker compose exec audius-cmd sh -c "test -f /app/packages/commands/dist/index.js"; then
+	docker compose exec audius-cmd npm run build:dist
+fi
+
 if [[ "$1" == "test" ]]; then
 	docker compose exec audius-cmd npm test
 	exit
@@ -24,7 +29,7 @@ for arg in "$@"; do
 	fi
 done
 
-docker compose exec audius-cmd node src/index.mjs "${updated_args[@]}" || true
+docker compose exec audius-cmd node dist/index.js "${updated_args[@]}" || true
 
 for tmpfile in "${tmpfiles[@]}"; do
 	docker compose exec audius-cmd rm $tmpfile
