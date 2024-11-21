@@ -122,11 +122,6 @@ export function* cacheAccount(account: AccountUserMetadata) {
   const { user: accountUser, playlists: collections } = account
   const localStorage = yield* getContext('localStorage')
 
-  yield put(
-    cacheActions.add(Kind.USERS, [
-      { id: accountUser.user_id, uid: 'USER_ACCOUNT', metadata: account }
-    ])
-  )
   const formattedAccount = {
     userId: accountUser.user_id,
     collections
