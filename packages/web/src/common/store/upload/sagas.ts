@@ -62,6 +62,7 @@ import { make } from 'common/store/analytics/actions'
 import { prepareStemsForUpload } from 'pages/upload-page/store/utils/stems'
 import * as errorActions from 'store/errors/actions'
 import { reportToSentry } from 'store/errors/reportToSentry'
+import { encodeHashId } from 'utils/hashIds'
 import { waitForWrite } from 'utils/sagaHelpers'
 
 import { getUnclaimedPlaylistId } from '../cache/collections/utils/getUnclaimedPlaylistId'
@@ -159,7 +160,7 @@ function* combineMetadata(
 }
 
 /**
- * Creates a callback that runs on upload progress in libs/sdk and
+ * Creates a callback that runs on upload progress in sdk and
  * reports that progress to the store via actions.
  */
 const makeOnProgress = (
@@ -208,16 +209,18 @@ const makeOnProgress = (
  * Used in cleaning up orphaned stems or tracks of a collection.
  */
 export function* deleteTracks(trackIds: ID[]) {
-  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
-  const libs = yield* call(audiusBackendInstance.getAudiusLibsTyped)
-  const userId = yield* select(accountSelectors.getUserId)
+  const sdk = yield* getSDK()
+  const userId = encodeHashId(yield* select(accountSelectors.getUserId))
   if (!userId) {
     throw new Error('No user id found during delete. Not signed in?')
   }
 
   yield* all(
     trackIds.map((id) =>
-      call([libs.Track, libs.Track!.deleteTrack], userId, id)
+      call([sdk.tracks, sdk.tracks.deleteTrack], {
+        userId,
+        trackId: encodeHashId(id)
+      })
     )
   )
 }
@@ -1010,11 +1013,7 @@ export function* uploadMultipleTracks(
   tracks: TrackForUpload[],
   uploadType: UploadType
 ) {
-  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
-  const audiusLibs = yield* call([
-    audiusBackendInstance,
-    audiusBackendInstance.getAudiusLibsTyped
-  ])
+  const sdk = yield* getSDK()
 
   // Ensure the user is logged in
   yield* call(waitForAccount)
@@ -1023,10 +1022,7 @@ export function* uploadMultipleTracks(
   const tracksWithIds = yield* all(
     tracks.map((track) =>
       call(function* () {
-        const id = yield* call([
-          audiusLibs.Track,
-          audiusLibs.Track!.generateTrackId
-        ])
+        const id = yield* call([sdk.tracks, sdk.tracks.generateTrackId])
         return {
           ...track,
           metadata: {

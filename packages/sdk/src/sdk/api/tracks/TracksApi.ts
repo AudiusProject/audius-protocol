@@ -694,4 +694,13 @@ export class TracksApi extends GeneratedTracksApi {
     }
     return this.solanaClient.sendTransaction(transaction)
   }
+
+  /**
+   * Generates a new track ID
+   *
+   * @hidden
+   */
+  async generateTrackId() {
+    return this.trackUploadHelper.generateId('track')
+  }
 }
