@@ -1,6 +1,7 @@
 package co.audius.app
 
 import android.app.Application
+import com.brentvatne.react.ReactVideoPackage
 import com.facebook.react.PackageList
 import com.facebook.react.ReactApplication
 import com.facebook.react.ReactHost
@@ -19,6 +20,7 @@ class MainApplication : Application(), ReactApplication {
       object : DefaultReactNativeHost(this) {
         override fun getPackages(): List<ReactPackage> =
             PackageList(this).packages.apply {
+                add(ReactVideoPackage())
             }
 
         override fun getJSMainModuleName(): String = "index"
