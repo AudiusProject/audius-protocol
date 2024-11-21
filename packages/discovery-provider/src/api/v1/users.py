@@ -3025,7 +3025,7 @@ class UserEncryptedEmails(Resource):
     @record_metrics
     @ns.doc(
         id="""Get Encrypted Emails""",
-        description="""Gets the encrypted emails where the given user is either the owner or has primary access""",
+        description="""Gets the encrypted emails where the given user has primary access""",
         params={"id": "A User ID"},
         responses={
             200: "Success",
