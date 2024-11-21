@@ -4,10 +4,7 @@ set -e
 cd "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")"/compose  # audius-protocol/dev-tools/compose
 export COMPOSE_PROJECT_NAME='audius-protocol'
 
-# bundle if needed
-if ! docker compose exec audius-cmd sh -c "test -f /app/packages/commands/dist/index.js"; then
-	docker compose exec audius-cmd npm run build:dist
-fi
+turbo run build --filter=@audius/commands
 
 if [[ "$1" == "test" ]]; then
 	docker compose exec audius-cmd npm test

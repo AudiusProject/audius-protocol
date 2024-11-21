@@ -10,9 +10,9 @@
   "scripts": {
     "audius-cmd": "node dist/index.js",
     "build:dist": "turbo run build",
-    "build": "esbuild src/index.mjs --bundle --platform=node --loader:.wasm=binary --outfile=dist/index.js",
+    "build": "esbuild --bundle --platform=node --loader:.wasm=binary --outfile=dist/index.js src/index.mjs",
     "watch:dist": "turbo run watch",
-    "watch": "esbuild src/index.mjs --bundle --platform=node --loader:.wasm=binary --outfile=dist/index.js --watch=forever",
+    "watch": "esbuild --bundle --platform=node --loader:.wasm=binary --outfile=dist/index.js --watch=forever src/index.mjs",
     "test": "bats test"
   },
   "author": "Audius",
