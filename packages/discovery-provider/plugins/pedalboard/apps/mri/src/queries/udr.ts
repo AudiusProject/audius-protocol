@@ -1,7 +1,7 @@
 import { Knex } from 'knex'
 import { logger as plogger } from '../logger'
 import { toCsvString } from '../csv'
-import { S3Config, publishToS3 } from '../s3'
+import { S3Config, publish } from '../s3'
 import { readConfig } from '../config'
 import dayjs from 'dayjs'
 import quarterOfYear from 'dayjs/plugin/quarterOfYear'
@@ -10,7 +10,6 @@ import { formatDateISO, getYearMonthShorthand } from '../date'
 dayjs.extend(quarterOfYear)
 
 const config = readConfig()
-const isDev = config.env === 'dev'
 
 type UsageDetailReporting = {
   client_catalog_id: number
@@ -88,18 +87,17 @@ export const udr = async (
 
   const udrRows: UsageDetailReporting[] = queryResult.rows
   const csv = toCsvString(udrRows, UsageDetailReportingHeader)
-  if (isDev) {
-    logger.info(csv)
-  }
   const now = new Date();
   // Audius_Usage_YYMM_YYYYMMDDhhmmss.csv
   // YYMM = Year and Month of usage, YYYYMMDDhhmmss = time of generation
   const fileName = `Audius_Usage_${getYearMonthShorthand(start)}_${formatDateISO(now)}`
 
-  const uploads = s3s.map((s3config) =>
-    publishToS3(logger, s3config, csv, fileName)
+  const results = await publish(
+    logger,
+    s3s,
+    csv,
+    fileName
   )
-  const results = await Promise.allSettled(uploads)
   results.forEach((objUrl) =>
     logger.info({ objUrl, records: udrRows.length }, 'upload result')
   )

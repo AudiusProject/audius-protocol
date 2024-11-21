@@ -1,16 +1,13 @@
 import { Knex } from 'knex'
 import { logger as plogger } from '../logger'
 import { toCsvString } from '../csv'
-import { S3Config, publishToS3 } from '../s3'
+import { S3Config, publish } from '../s3'
 import { readConfig } from '../config'
 import dayjs from 'dayjs'
 import quarterOfYear from 'dayjs/plugin/quarterOfYear'
 import { formatDateISO, getYearMonth, getYearMonthDay, getYearMonthShorthand } from '../date'
 
 dayjs.extend(quarterOfYear)
-
-const config = readConfig()
-const isDev = config.env === 'dev'
 
 type MrvrAffirmative = {
   ['Downloads - Gross Revenues without Permitted Deductions']: number
@@ -178,26 +175,25 @@ export const mrvr = async (
   
     const mrvrAffirmativeRows: MrvrAffirmative[] = mrvrAffirmativeResult.rows
     const mrvrAffirmativeCsv = toCsvString(mrvrAffirmativeRows, MrvrAffirmativeHeader)
-    if (isDev) {
-      logger.info(mrvrAffirmativeCsv)
-    }
 
     const now = new Date();
     // Audius_MRVR_aff_YYMM_YYYYMMDD.csv
     // YYMM = Year and Month of usage, YYYYMMDD = time of generation
     const fileName = `Audius_MRVR_aff_${getYearMonthShorthand(start)}_${getYearMonthDay(now)}`
   
-    const uploads = s3s.map((s3config) =>
-      publishToS3(logger, s3config, mrvrAffirmativeCsv, fileName)
+    const results = await publish(
+      logger,
+      s3s,
+      mrvrAffirmativeCsv,
+      fileName
     )
-    const results = await Promise.allSettled(uploads)
     results.forEach((objUrl) =>
       logger.info({ objUrl, records: mrvrAffirmativeCsv.length }, 'mrvr affirmative upload result')
     )
   }
   // CBS
   const cbs = async () => {
-    const mrvrAffirmativeCbs = await db.raw(
+    const mrvrCbs = await db.raw(
       `
       -- granular purchase data
       with purchases as (
@@ -300,20 +296,19 @@ export const mrvr = async (
       { start, end }
     )
 
-    const mrvrCbsRows: MrvrAffirmative[] = mrvrAffirmativeCbs.rows
+    const mrvrCbsRows: MrvrAffirmative[] = mrvrCbs.rows
     const mrvrCbsCsv = toCsvString(mrvrCbsRows, MrvrCbsHeader)
-    if (isDev) {
-      logger.info(mrvrCbsCsv)
-    }
     const now = new Date();
     // YYYYMM_Audius_yyyymmddThhmmss_summary.csv
     // YYMM = Year and Month of usage, YYYYMMDD = time of generation
     const fileName = `${getYearMonth(start)}_Audius_${formatDateISO(now)}_summary`
 
-    const uploads = s3s.map((s3config) =>
-      publishToS3(logger, s3config, mrvrCbsCsv, fileName)
+    const results = await publish(
+      logger,
+      s3s,
+      mrvrCbsCsv,
+      fileName
     )
-    const results = await Promise.allSettled(uploads)
     results.forEach((objUrl) =>
       logger.info({ objUrl, records: mrvrCbsCsv.length }, 'mrvr cbs upload result')
     )

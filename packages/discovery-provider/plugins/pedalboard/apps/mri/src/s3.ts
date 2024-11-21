@@ -6,6 +6,8 @@ import {
 import { readConfig } from './config'
 import { logger } from './logger'
 import { Logger } from 'pino'
+import fs from 'fs'
+import path from 'path'
 
 export type S3Config = {
   s3: S3Client
@@ -135,13 +137,27 @@ export const createS3Instances = async (): Promise<{
   }
 }
 
-export const publishToS3 = async (
+export const publishToFile = (csv: string, fileName: string) => {
+  const outputDir = path.join(process.cwd(), 'output')
+
+  // Create output directory if it doesn't exist
+  if (!fs.existsSync(outputDir)) {
+    fs.mkdirSync(outputDir, { recursive: true })
+  }
+
+  const outputPath = path.join(outputDir, `${fileName}.csv`)
+  fs.writeFileSync(outputPath, csv)
+  logger.info({ path: outputPath }, 'wrote file to output directory')
+  return outputPath
+}
+
+const publishToS3 = async (
   logger: Logger,
-  config: S3Config,
+  s3Config: S3Config,
   csv: string,
   fileName: string
 ): Promise<string> => {
-  const { s3, keyPrefix, bucket } = config
+  const { s3, keyPrefix, bucket } = s3Config
 
   const key = `${keyPrefix}${fileName}.csv`
   const contentLength = Buffer.byteLength(csv, 'utf8')
@@ -165,3 +181,22 @@ export const publishToS3 = async (
   const objectUrl = `http://localhost:4566/${bucket}/${key}`
   return objectUrl
 }
+
+export const publish = async(
+  logger: Logger,
+  s3Configs: S3Config[],
+  csv: string,
+  fileName: string
+): Promise<PromiseSettledResult<string>[] | string[]> => {
+  console.log('publishing', typeof config.skipPublish, config.skipPublish)
+  if (config.skipPublish) {
+    const result = await publishToFile(csv, fileName)
+    return [result]
+  }
+  const uploads = s3Configs.map((s3config) =>
+    publishToS3(logger, s3config, csv, fileName)
+  )
+  const results = await Promise.allSettled(uploads)
+  return results
+}
+

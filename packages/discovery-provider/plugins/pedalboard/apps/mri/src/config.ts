@@ -1,4 +1,4 @@
-import { cleanEnv, str, email, json } from 'envalid'
+import { bool, cleanEnv, str } from 'envalid'
 
 type S3Config = {
   region: string
@@ -12,6 +12,7 @@ type S3Config = {
 type Config = {
   env: string
   dbUrl: string
+  skipPublish: boolean
   s3ClmConfigs: S3Config[]
   s3UdrConfigs: S3Config[]
   s3MrvrConfigs: S3Config[]
@@ -23,6 +24,7 @@ export const readConfig = (): Config => {
   if (config !== null) return config
 
   const env = cleanEnv(process.env, {
+    skip_publish: bool({ default: false }),
     audius_discprov_env: str({ default: 'dev' }),
     audius_db_url: str({
       default: 'postgresql://postgres:pass@0.0.0.0:5433/default_db'
@@ -136,6 +138,7 @@ export const readConfig = (): Config => {
   config = {
     env: env.audius_discprov_env,
     dbUrl: env.audius_db_url,
+    skipPublish: env.skip_publish,
     s3ClmConfigs: [internalS3ClmConfig, externalS3ClmConfig],
     s3UdrConfigs: [internalS3UdrConfig, externalS3UdrConfig],
     s3MrvrConfigs: [internalS3MrvrConfig, externalS3MrvrConfig]
