@@ -2623,10 +2623,10 @@ class SalesDownload(Resource):
     )
     @ns.produces(["text/csv", "application/json"])
     @ns.expect(sales_download_parser)
-    # @auth_middleware(sales_download_parser, require_auth=True)
-    def get(self, id):
+    @auth_middleware(sales_download_parser, require_auth=True)
+    def get(self, id, authed_user_id):
         decoded_id = decode_with_abort(id, ns)
-        # check_authorized(decoded_id, authed_user_id)
+        check_authorized(decoded_id, authed_user_id)
         args = sales_download_parser.parse_args()
         is_json = args.get("json", False)
 
