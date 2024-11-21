@@ -5,6 +5,7 @@ from typing import Optional
 from eth_account.messages import encode_defunct
 from flask import Response, request
 from flask_restx import Namespace, Resource, fields, inputs, reqparse
+from sqlalchemy import and_
 
 from src.api.v1.helpers import (
     DescriptiveArgument,
@@ -86,7 +87,10 @@ from src.api.v1.models.users import (
     challenge_response,
     connected_wallets,
     decoded_user_token,
+    email_access_key,
+    email_encryption_key,
     encoded_user_id,
+    encrypted_email,
     purchase,
     remixed_track_aggregate,
     sales_aggregate,
@@ -97,6 +101,7 @@ from src.api.v1.models.users import (
 from src.api.v1.playlists import get_tracks_for_playlist
 from src.challenges.challenge_event_bus import setup_challenge_bus
 from src.exceptions import PermissionError
+from src.models.users.email import EmailAccessKey, EmailEncryptionKey, EncryptedEmail
 from src.queries.download_csv import (
     DownloadPurchasesArgs,
     DownloadSalesArgs,
@@ -2420,7 +2425,6 @@ purchases_response = make_full_response(
     "purchases_response", full_ns, fields.List(fields.Nested(purchase))
 )
 
-
 purchases_count_response = make_full_response(
     "purchases_count_response", full_ns, fields.Integer()
 )
@@ -3007,3 +3011,160 @@ class FullMutedUsers(Resource):
         muted_users = get_muted_users(decoded_id)
         muted_users = list(map(extend_user, muted_users))
         return success_response(muted_users)
+
+
+encrypted_email_response = make_response(
+    "encrypted_email_response", ns, fields.List(fields.Nested(encrypted_email))
+)
+
+USER_ENCRYPTED_EMAILS_ROUTE = "/<string:id>/encrypted_emails"
+
+
+@ns.route(USER_ENCRYPTED_EMAILS_ROUTE)
+class UserEncryptedEmails(Resource):
+    @record_metrics
+    @ns.doc(
+        id="""Get Encrypted Emails""",
+        description="""Gets the encrypted emails where the given user is either the owner or has primary access""",
+        params={"id": "A User ID"},
+        responses={
+            200: "Success",
+            400: "Bad request",
+            401: "Unauthorized",
+            403: "Forbidden",
+            500: "Server error",
+        },
+    )
+    @ns.marshal_with(encrypted_email_response)
+    def get(self, id):
+        decoded_id = decode_with_abort(id, ns)
+
+        db = get_db_read_replica()
+        with db.scoped_session() as session:
+            emails = (
+                session.query(EncryptedEmail)
+                .filter(
+                    EncryptedEmail.primary_user_id == decoded_id,
+                )
+                .all()
+            )
+
+            emails = [
+                {
+                    "id": email.id,
+                    "email_owner_user_id": email.email_owner_user_id,
+                    "primary_user_id": email.primary_user_id,
+                    "encrypted_email": email.encrypted_email,
+                    "created_at": email.created_at,
+                    "updated_at": email.updated_at,
+                }
+                for email in emails
+            ]
+
+            return success_response(emails)
+
+
+email_encryption_key_response = make_response(
+    "email_encryption_key_response", ns, fields.Nested(email_encryption_key)
+)
+
+USER_EMAIL_ENCRYPTION_KEY_ROUTE = "/<string:id>/email_encryption_key"
+
+
+@ns.route(USER_EMAIL_ENCRYPTION_KEY_ROUTE)
+class UserEmailEncryptionKey(Resource):
+    @record_metrics
+    @ns.doc(
+        id="""Get Email Encryption Key""",
+        description="""Gets the encryption key for a user with primary access""",
+        params={"id": "A User ID"},
+        responses={
+            200: "Success",
+            400: "Bad request",
+            401: "Unauthorized",
+            403: "Forbidden",
+            500: "Server error",
+        },
+    )
+    @ns.marshal_with(email_encryption_key_response)
+    def get(self, id):
+        decoded_id = decode_with_abort(id, ns)
+
+        db = get_db_read_replica()
+        with db.scoped_session() as session:
+            encryption_key = (
+                session.query(EmailEncryptionKey)
+                .filter(EmailEncryptionKey.primary_user_id == decoded_id)
+                .first()
+            )
+
+            if not encryption_key:
+                abort_not_found(decoded_id, ns)
+
+            encryption_key_dict = {
+                "id": encryption_key.id,
+                "primary_user_id": encryption_key.primary_user_id,
+                "encrypted_key": encryption_key.encrypted_key,
+                "created_at": encryption_key.created_at,
+                "updated_at": encryption_key.updated_at,
+            }
+
+            return success_response(encryption_key_dict)
+
+
+email_access_key_response = make_response(
+    "email_access_key_response", ns, fields.Nested(email_access_key)
+)
+
+USER_EMAIL_ACCESS_KEY_ROUTE = "/<string:id>/email_access_key/<string:primary_user_id>"
+
+
+@ns.route(USER_EMAIL_ACCESS_KEY_ROUTE)
+class UserEmailAccessKey(Resource):
+    @record_metrics
+    @ns.doc(
+        id="""Get Email Access Key""",
+        description="""Gets the access key for a user with delegated access from a primary user""",
+        params={
+            "id": "The delegated user's ID",
+            "primary_user_id": "The primary user's ID who granted access",
+        },
+        responses={
+            200: "Success",
+            400: "Bad request",
+            401: "Unauthorized",
+            403: "Forbidden",
+            500: "Server error",
+        },
+    )
+    @ns.marshal_with(email_access_key_response)
+    def get(self, id, primary_user_id):
+        decoded_id = decode_with_abort(id, ns)
+        decoded_primary_id = decode_with_abort(primary_user_id, ns)
+
+        db = get_db_read_replica()
+        with db.scoped_session() as session:
+            access_key = (
+                session.query(EmailAccessKey)
+                .filter(
+                    and_(
+                        EmailAccessKey.primary_user_id == decoded_primary_id,
+                        EmailAccessKey.delegated_user_id == decoded_id,
+                    )
+                )
+                .first()
+            )
+
+            if not access_key:
+                abort_not_found(decoded_id, ns)
+
+            access_key_dict = {
+                "id": access_key.id,
+                "primary_user_id": access_key.primary_user_id,
+                "delegated_user_id": access_key.delegated_user_id,
+                "encrypted_key": access_key.encrypted_key,
+                "created_at": access_key.created_at,
+                "updated_at": access_key.updated_at,
+            }
+
+            return success_response(access_key_dict)
