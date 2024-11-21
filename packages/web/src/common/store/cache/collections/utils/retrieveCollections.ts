@@ -251,7 +251,7 @@ export function* retrieveCollections(
 
       if (ids.length === 1) {
         const { data = [] } = yield* call(
-          [sdk.playlists, sdk.full.playlists.getPlaylist],
+          [sdk.full.playlists, sdk.full.playlists.getPlaylist],
           {
             playlistId: Id.parse(ids[0]),
             userId: OptionalId.parse(userId)
@@ -264,7 +264,7 @@ export function* retrieveCollections(
         metadatas = [collection]
       } else {
         const { data = [] } = yield* call(
-          [sdk.playlists, sdk.full.playlists.getBulkPlaylists],
+          [sdk.full.playlists, sdk.full.playlists.getBulkPlaylists],
           {
             id: ids.map((id) => Id.parse(id)),
             userId: OptionalId.parse(userId)

@@ -874,7 +874,7 @@ export function* uploadCollection(
         }
 
         const { data = [] } = yield* call(
-          [sdk.playlists, sdk.full.playlists.getPlaylist],
+          [sdk.full.playlists, sdk.full.playlists.getPlaylist],
           {
             playlistId: Id.parse(playlistId),
             userId: OptionalId.parse(userId)

@@ -54,7 +54,7 @@ export const useImageSize2 = ({
         }
       }
 
-      throw new Error('Failed to fetch image from all mirrors')
+      throw new Error(`Failed to fetch image from all mirrors ${url}`)
     },
     [artwork?.mirrors]
   )
@@ -120,8 +120,8 @@ export const useImageSize2 = ({
       const finalUrl = await fetchWithFallback(targetUrl)
       IMAGE_CACHE.add(finalUrl)
       setImageUrl(finalUrl)
-    } catch {
-      console.error(`Unable to load image ${targetUrl} after retries`)
+    } catch (e) {
+      console.error(`Unable to load image ${targetUrl} after retries: ${e}`)
     }
   }, [artwork, targetSize, fetchWithFallback, defaultImage])
 
