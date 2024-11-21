@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, Text, DateTime, UniqueConstraint
+from sqlalchemy import Column, DateTime, Integer, Text, UniqueConstraint
 from sqlalchemy.sql import func
 
 from src.models.base import Base
@@ -14,8 +14,8 @@ class EncryptedEmail(Base, RepresentableMixin):
     __tablename__ = "encrypted_emails"
 
     id = Column(Integer, primary_key=True)
-    email_address_owner_user_id = Column(Integer, nullable=False)
-    primary_access_user_id = Column(Integer, nullable=False)
+    email_owner_user_id = Column(Integer, nullable=False)
+    primary_user_id = Column(Integer, nullable=False)
     encrypted_email = Column(Text, nullable=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(
@@ -32,7 +32,7 @@ class EmailEncryptionKey(Base, RepresentableMixin):
     __tablename__ = "email_encryption_keys"
 
     id = Column(Integer, primary_key=True)
-    primary_access_user_id = Column(Integer, nullable=False, unique=True)
+    primary_user_id = Column(Integer, nullable=False, unique=True)
     encrypted_key = Column(Text, nullable=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(
@@ -49,14 +49,12 @@ class EmailAccessKey(Base, RepresentableMixin):
     __tablename__ = "email_access_keys"
 
     id = Column(Integer, primary_key=True)
-    primary_access_user_id = Column(Integer, nullable=False)
-    delegated_access_user_id = Column(Integer, nullable=False)
+    primary_user_id = Column(Integer, nullable=False)
+    delegated_user_id = Column(Integer, nullable=False)
     encrypted_key = Column(Text, nullable=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(
         DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
     )
 
-    __table_args__ = (
-        UniqueConstraint("primary_access_user_id", "delegated_access_user_id"),
-    )
+    __table_args__ = (UniqueConstraint("primary_user_id", "delegated_user_id"),)
