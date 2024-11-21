@@ -1,10 +1,11 @@
 import type { LocalStorage } from '@audius/hedgehog'
+import type { Hex, TransactionType } from 'viem'
 
 export type TypedData = {
   domain?: Partial<{
     name: string
     version: string
-    chainId: number
+    chainId: bigint
     verifyingContract: string
   }>
   types: Record<string, Readonly<Array<{ name: string; type: string }>>>
@@ -13,10 +14,11 @@ export type TypedData = {
 }
 
 export type TransactionRequest = {
-  data?: string
+  type?: TransactionType
+  data?: Hex
   gas?: bigint
   nonce?: number
-  to?: string
+  to?: Hex
   value?: bigint
 }
 

@@ -1,5 +1,6 @@
 'use strict'
 
+import { ethereumRouter } from './typed-routes/ethereum/ethRelay'
 import { solanaRouter } from './typed-routes/solana/solanaRelay'
 
 // Import libs before anything else becaues it takes a very long time to load.
@@ -27,6 +28,7 @@ const start = async () => {
   const app = new App(port)
   // TODO: Move this into App once it's typed
   app.express.use('/solana', solanaRouter)
+  app.express.use('/ethereum', ethereumRouter)
   const { server } = await app.init()
 
   // when app terminates, close down any open DB connections gracefully

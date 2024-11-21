@@ -1,23 +1,22 @@
 import {
-  hexToSignature,
   type GetTypedDataMessage,
   type Hash,
+  type Hex,
   type PublicClient,
   type TypedDataDefinition
 } from 'viem'
 
 import { abi } from './abi'
 import { AUDIUS_TOKEN_CONTRACT_ADDRESS, audiusTokenTypes } from './constants'
-import type { AudiusTokenTypedData, PermitParams } from './types'
+import type { AudiusTokenTypedData } from './types'
 
 export class AudiusToken {
-  client: PublicClient
-  address: `0x${string}`
+  public readonly abi = abi
+  public readonly address: Hex
 
-  constructor(
-    client: PublicClient,
-    { address }: { address?: `0x${string}` } = {}
-  ) {
+  private readonly client: PublicClient
+
+  constructor(client: PublicClient, { address }: { address?: Hex } = {}) {
     this.client = client
     this.address = address ?? AUDIUS_TOKEN_CONTRACT_ADDRESS
   }
@@ -42,22 +41,6 @@ export class AudiusToken {
     }
   }
 
-  public async permit({
-    owner,
-    spender,
-    value,
-    deadline,
-    signature
-  }: PermitParams) {
-    const { r, s, v } = hexToSignature(signature)
-    return await this.client.simulateContract({
-      address: this.address,
-      abi,
-      functionName: 'permit',
-      args: [owner, spender, value, deadline, Number(v), r, s]
-    })
-  }
-
   public async name() {
     return await this.client.readContract({
       address: this.address,
@@ -79,7 +62,7 @@ export class AudiusToken {
     return {
       name: await this.name(),
       verifyingContract: this.address,
-      chainId: await this.client.getChainId(),
+      chainId: BigInt(await this.client.getChainId()),
       version: '1'
     }
   }

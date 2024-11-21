@@ -7,9 +7,8 @@ import { addRequestSignatureMiddleware } from './addRequestSignatureMiddleware'
 describe('addRequestSignatureMiddleware', () => {
   it('generates a signature', async () => {
     const services = {
-      auth: new LocalWalletClient(
-        '0xfe00b052EeB6DaA21e0D421d52a18DcB254d0ef7',
-        '4ac8b3eff248bfbf20b324b575c1b333d42c6db3dbe19fd587c3d1e11323a25a'
+      walletClient: new LocalWalletClient(
+        '0x4ac8b3eff248bfbf20b324b575c1b333d42c6db3dbe19fd587c3d1e11323a25a'
       ),
       logger: new Logger()
     }
@@ -32,9 +31,8 @@ describe('addRequestSignatureMiddleware', () => {
 
   it('reuses a signature', async () => {
     const services = {
-      auth: new LocalWalletClient(
-        '0xfe00b052EeB6DaA21e0D421d52a18DcB254d0ef7',
-        '4ac8b3eff248bfbf20b324b575c1b333d42c6db3dbe19fd587c3d1e11323a25a'
+      walletClient: new LocalWalletClient(
+        '0x4ac8b3eff248bfbf20b324b575c1b333d42c6db3dbe19fd587c3d1e11323a25a'
       ),
       logger: new Logger()
     }

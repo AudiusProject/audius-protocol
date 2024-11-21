@@ -3,31 +3,15 @@ import {
   hexToSignature,
   type GetTypedDataMessage,
   type Hash,
-  type TypedData,
   type TypedDataDefinition
 } from 'viem'
 
 import { abi } from './abi'
-import { WORMHOLE_CLIENT_CONTRACT_ADDRESS } from './constants'
-
-const types = {
-  TransferTokens: [
-    { name: 'from', type: 'address' },
-    { name: 'amount', type: 'uint256' },
-    { name: 'recipientChain', type: 'uint16' },
-    { name: 'recipient', type: 'bytes32' },
-    { name: 'arbiterFee', type: 'uint256' },
-    { name: 'nonce', type: 'uint32' },
-    { name: 'deadline', type: 'uint256' }
-  ]
-} as const satisfies TypedData
-
-type WormholeClientTypedData = typeof types
-
-type TransferTokensParams = GetTypedDataMessage<
-  WormholeClientTypedData,
-  'TransferTokens'
->['message'] & { signature: Hash }
+import {
+  WORMHOLE_CLIENT_CONTRACT_ADDRESS,
+  wormholeClientTypes
+} from './constants'
+import type { TransferTokensParams, WormholeClientTypedData } from './types'
 
 export class Wormhole {
   private readonly client: PublicClient
@@ -47,7 +31,7 @@ export class Wormhole {
     return {
       primaryType: 'TransferTokens',
       domain: await this.getDomain(),
-      types,
+      types: wormholeClientTypes,
       message: args
     }
   }
@@ -93,7 +77,7 @@ export class Wormhole {
     return {
       name: 'AudiusWormholeClient',
       verifyingContract: this.address,
-      chainId: await this.client.getChainId(),
+      chainId: BigInt(await this.client.getChainId()),
       version: '1'
     }
   }

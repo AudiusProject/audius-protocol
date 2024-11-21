@@ -37,6 +37,18 @@ export class IdentityService {
     })
   }
 
+  getAuthHeaders(wallet: SetAuthFnParams['wallet']) {
+    const unixTs = Math.round(new Date().getTime() / 1000) // current unix timestamp (sec)
+    const data = `Click sign to authenticate with identity service: ${unixTs}`
+    const signature = sigUtil.personalSign(wallet.getPrivateKey(), {
+      data
+    })
+    return {
+      [AuthHeaders.Message]: data,
+      [AuthHeaders.Signature]: signature
+    }
+  }
+
   async setAuthFn(obj: SetAuthFnParams) {
     // get wallet from hedgehog and set as owner wallet
     const ownerWallet = obj.wallet

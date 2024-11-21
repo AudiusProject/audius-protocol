@@ -2,6 +2,12 @@ export const AUDIUS_TOKEN_CONTRACT_ADDRESS =
   '0x18aAA7115705e8be94bfFEBDE57Af9BFc265B998'
 
 export const audiusTokenTypes = {
+  EIP712Domain: [
+    { name: 'name', type: 'string' },
+    { name: 'version', type: 'string' },
+    { name: 'chainId', type: 'uint256' },
+    { name: 'verifyingContract', type: 'address' }
+  ],
   Permit: [
     { name: 'owner', type: 'address' },
     { name: 'spender', type: 'address' },

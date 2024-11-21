@@ -1,7 +1,9 @@
 import { createAuthService } from '@audius/common/services'
+import type { TransactionRequest } from '@audius/sdk'
 import { personalSign, SignTypedDataVersion } from '@metamask/eth-sig-util'
 import { keccak_256 } from '@noble/hashes/sha3'
 import * as secp from '@noble/secp256k1'
+import { serializeTransaction } from 'viem'
 
 import { localStorage } from '../local-storage'
 
@@ -53,7 +55,7 @@ export const sdkAuthAdapter = {
     await hedgehogInstance.waitUntilReady()
     return hedgehogInstance.wallet?.getAddressString() ?? ''
   },
-  signMessage: async (_data: string) => {
+  signMessage: async (data: string) => {
     await hedgehogInstance.waitUntilReady()
     const wallet = hedgehogInstance.getWallet()
     if (!wallet) throw new Error('No wallet')
@@ -62,8 +64,31 @@ export const sdkAuthAdapter = {
       data: keccak_256(data)
     })
   },
-  sendTransaction: async (t: any) => {
-    console.warn(t)
-    return ''
+  sendTransaction: async (transaction: TransactionRequest) => {
+    await hedgehogInstance.waitUntilReady()
+    const wallet = hedgehogInstance.getWallet()
+    if (!wallet) throw new Error('No wallet')
+    return await identityServiceInstance._makeRequest({
+      baseURL: 'http://audius-protocol-identity-service-1',
+      url: '/ethereum/relay ',
+      method: 'POST',
+      headers: identityServiceInstance.getAuthHeaders(wallet),
+      data: {
+        transaction: serializeTransaction({ type: 'legacy', ...transaction })
+      }
+    })
+    // return await fetch(
+    //   'http://audius-protocol-identity-service-1/ethereum/relay',
+    //   {
+    //     method: 'POST',
+    //     headers: {
+    //       'Content-Type': 'application/json'
+    //       heaeders: identityServiceInstance.
+    //     },
+    //     body: JSON.stringify({
+    //       transaction: serializeTransaction({ type: 'legacy', ...transaction })
+    //     })
+    //   }
+    // )
   }
 }

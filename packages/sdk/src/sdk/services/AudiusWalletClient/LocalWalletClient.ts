@@ -12,6 +12,7 @@ import {
   type WalletClient
 } from 'viem'
 import { privateKeyToAccount } from 'viem/accounts'
+import { mainnet } from 'viem/chains'
 
 import type { AudiusWalletClient, TransactionRequest, TypedData } from './types'
 
@@ -30,7 +31,11 @@ export class LocalWalletClient implements AudiusWalletClient {
     if (privateKey.startsWith('0x')) {
       this.privateKey = privateKey.substring(2)
       const account = privateKeyToAccount(privateKey as Hex)
-      this.walletClient = createWalletClient({ account, transport: http() })
+      this.walletClient = createWalletClient({
+        account,
+        chain: mainnet,
+        transport: http()
+      })
     } else {
       throw new Error('Invalid private key.')
     }

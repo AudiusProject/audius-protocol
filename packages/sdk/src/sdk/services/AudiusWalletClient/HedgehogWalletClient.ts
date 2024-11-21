@@ -20,8 +20,7 @@ import type {
   UserAuthConfig,
   AudiusWalletClient,
   HedgehogWalletClientConfigInternal,
-  TypedData,
-  TransactionRequest
+  TypedData
 } from './types'
 
 /**
@@ -87,7 +86,7 @@ export class HedgehogWalletClient implements AudiusWalletClient {
     this.config.localStorage.then((ls) => (this.hedgehog.localStorage = ls))
   }
 
-  sendTransaction = async (data: TransactionRequest) => {
+  sendTransaction = async () => {
     // TODO: Relay this to eth relay
     throw Error('not implemented')
   }
