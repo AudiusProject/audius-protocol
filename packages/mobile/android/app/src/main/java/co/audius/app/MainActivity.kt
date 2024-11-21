@@ -43,4 +43,9 @@ class MainActivity : ReactActivity() {
     // lazy load Google Cast context
     CastContext.getSharedInstance(this)
   }
+
+  override fun onCreate(savedInstanceState: Bundle?) {
+    RNBootSplash.init(this, R.style.BootTheme) // ⬅️ initialize the splash screen
+    super.onCreate(savedInstanceState) // super.onCreate(null) with react-native-screens
+  }
 }
