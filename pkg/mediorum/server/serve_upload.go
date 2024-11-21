@@ -121,9 +121,9 @@ func (ss *MediorumServer) updateUpload(c echo.Context) error {
 	}
 
 	// Update supported editable fields
-
 	// Do not support deleting previews
 	if selectedPreview.Valid && selectedPreview != upload.SelectedPreview {
+		upload.SelectedPreview = selectedPreview
 		err := ss.generateAudioPreviewForUpload(upload)
 		if err != nil {
 			return err
