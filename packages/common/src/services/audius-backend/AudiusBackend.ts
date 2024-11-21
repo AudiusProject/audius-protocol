@@ -1152,22 +1152,6 @@ export const audiusBackend = ({
     }
   }
 
-  // NOTE: This is called to explicitly set a playlist track ids w/out running validation checks.
-  // This should NOT be used to set the playlist order
-  // It's added for the purpose of manually fixing broken playlists
-  async function dangerouslySetPlaylistOrder(playlistId: ID, trackIds: ID[]) {
-    try {
-      await audiusLibs.contracts.PlaylistFactoryClient.orderPlaylistTracks(
-        playlistId,
-        trackIds
-      )
-      return { error: false }
-    } catch (error) {
-      console.error(getErrorMessage(error))
-      return { error }
-    }
-  }
-
   async function deletePlaylist(playlistId: ID) {
     try {
       const txReceipt = await audiusLibs.EntityManager.deletePlaylist(
@@ -2185,7 +2169,6 @@ export const audiusBackend = ({
     clearNotificationBadges,
     createPlaylist,
     currentDiscoveryProvider,
-    dangerouslySetPlaylistOrder,
     deletePlaylist,
     deletePlaylistTrack,
     deregisterDeviceToken,

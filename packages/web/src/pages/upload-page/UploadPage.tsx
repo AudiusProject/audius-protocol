@@ -8,7 +8,6 @@ import {
 } from '@audius/common/store'
 import { useDispatch, useSelector } from 'react-redux'
 
-import { UploadPreviewContextProvider } from 'components/edit-track/utils/uploadPreviewContext'
 import Header from 'components/header/desktop/Header'
 import Page from 'components/page/Page'
 import { EditFormScrollContext } from 'pages/edit-page/EditTrackPage'
@@ -175,11 +174,9 @@ export const UploadPage = (props: UploadPageProps) => {
         />
       }
     >
-      <UploadPreviewContextProvider>
-        <EditFormScrollContext.Provider value={scrollToTop}>
-          {page}
-        </EditFormScrollContext.Provider>
-      </UploadPreviewContextProvider>
+      <EditFormScrollContext.Provider value={scrollToTop}>
+        {page}
+      </EditFormScrollContext.Provider>
     </Page>
   )
 }
