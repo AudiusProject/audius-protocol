@@ -37,7 +37,9 @@ const ServerProviders = (props: ServerProviderProps) => {
     <ServerReduxProvider initialState={initialState}>
       <StaticRouter>
         <SsrContextProvider value={{ isMobile, isServerSide: true }}>
-          <ThemeProvider theme='day'>{children}</ThemeProvider>
+          <ThemeProvider theme='day' version='v1'>
+            {children}
+          </ThemeProvider>
         </SsrContextProvider>
       </StaticRouter>
     </ServerReduxProvider>

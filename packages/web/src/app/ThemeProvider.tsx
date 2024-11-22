@@ -1,6 +1,8 @@
 import { ReactNode, useEffect } from 'react'
 
+import { useFeatureFlag } from '@audius/common/hooks'
 import { Theme, SystemAppearance } from '@audius/common/models'
+import { FeatureFlags } from '@audius/common/services'
 import { themeActions, themeSelectors } from '@audius/common/store'
 import { ThemeProvider as HarmonyThemeProvider } from '@audius/harmony'
 import { useDispatch } from 'react-redux'
@@ -24,8 +26,6 @@ const selectHarmonyTheme = (state: AppState) => {
       return 'dark'
     case Theme.MATRIX:
       return 'matrix'
-    case Theme.DEBUG:
-      return 'debug'
     case Theme.AUTO:
       switch (systemAppearance) {
         case SystemAppearance.DARK:
@@ -48,6 +48,7 @@ export const ThemeProvider = (props: ThemeProviderProps) => {
   const { children } = props
   const harmonyTheme = useSelector(selectHarmonyTheme)
   const dispatch = useDispatch()
+  const { isEnabled: isThemeV2Enabled } = useFeatureFlag(FeatureFlags.THEME_V2)
 
   useEffect(() => {
     if (typeof window === 'undefined' || !window.matchMedia) {
@@ -74,6 +75,11 @@ export const ThemeProvider = (props: ThemeProviderProps) => {
   }, [dispatch])
 
   return (
-    <HarmonyThemeProvider theme={harmonyTheme}>{children}</HarmonyThemeProvider>
+    <HarmonyThemeProvider
+      theme={harmonyTheme}
+      version={isThemeV2Enabled ? 'v2' : 'v1'}
+    >
+      {children}
+    </HarmonyThemeProvider>
   )
 }

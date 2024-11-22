@@ -1,5 +1,5 @@
-import type { ColorTheme } from '../color'
-import { colorTheme } from '../color'
+import type { ColorThemeV2 } from '../color/colorV2'
+import { colorThemeV2 } from '../color/colorV2'
 import { CornerRadius, cornerRadius } from '../corner-radius'
 import { Motion, motion, Spring, spring } from '../motion'
 import { Shadows, shadows } from '../shadows'
@@ -19,9 +19,9 @@ const commonFoundations = {
   iconSizes
 }
 
-export type HarmonyTheme = {
+export type HarmonyThemeV2 = {
   type: Theme
-  color: ColorTheme[keyof ColorTheme]
+  color: ColorThemeV2[keyof ColorThemeV2]
   shadows: Shadows
   typography: Typography
   cornerRadius: CornerRadius
@@ -31,26 +31,26 @@ export type HarmonyTheme = {
   iconSizes: typeof iconSizes
 }
 
-export const dayTheme: HarmonyTheme = {
+export const dayThemeV2: HarmonyThemeV2 = {
   type: 'day',
-  color: colorTheme.day,
+  color: colorThemeV2.day,
   ...commonFoundations
 }
 
-export const darkTheme: HarmonyTheme = {
+export const darkThemeV2: HarmonyThemeV2 = {
   type: 'dark',
-  color: colorTheme.dark,
+  color: colorThemeV2.dark,
   ...commonFoundations
 }
 
-export const matrixTheme: HarmonyTheme = {
+export const matrixThemeV2: HarmonyThemeV2 = {
   type: 'matrix',
-  color: colorTheme.matrix,
+  color: colorThemeV2.matrix,
   ...commonFoundations
 }
 
-export const themes = {
-  day: dayTheme,
-  dark: darkTheme,
-  matrix: matrixTheme
+export const themesV2 = {
+  day: dayThemeV2,
+  dark: darkThemeV2,
+  matrix: matrixThemeV2
 }
