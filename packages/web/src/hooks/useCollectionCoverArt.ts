@@ -5,6 +5,8 @@ import { CommonState, cacheCollectionsSelectors } from '@audius/common/store'
 import { Maybe } from '@audius/common/utils'
 import { useSelector } from 'react-redux'
 
+import { preload } from 'utils/image'
+
 const { getCollection } = cacheCollectionsSelectors
 
 export const useCollectionCoverArt = ({
@@ -22,7 +24,8 @@ export const useCollectionCoverArt = ({
   const image = useImageSize2({
     artwork,
     targetSize: size,
-    defaultImage: defaultImage ?? imageEmpty
+    defaultImage: defaultImage ?? imageEmpty,
+    preloadImageFn: preload
   })
 
   // Return edited artwork from this session, if it exists

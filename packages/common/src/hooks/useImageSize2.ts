@@ -6,15 +6,6 @@ import { Maybe } from '~/utils/typeUtils'
 // Global image cache
 const IMAGE_CACHE = new Set<string>()
 
-const preloadImage = (url: string) => {
-  return new Promise<void>((resolve, reject) => {
-    const img = new Image()
-    img.src = url
-    img.onload = () => resolve()
-    img.onerror = () => reject(new Error('Failed to load image'))
-  })
-}
-
 /**
  * Fetches an image from the given artwork object managing sizes and using fallback mirrors if necessary.
  *  - If a larger image has already been fetched and is in the case, use it instead
@@ -28,11 +19,13 @@ const preloadImage = (url: string) => {
 export const useImageSize2 = ({
   artwork,
   targetSize,
-  defaultImage
+  defaultImage,
+  preloadImageFn
 }: {
   artwork?: Track['artwork'] | Collection['artwork']
   targetSize: SquareSizes
   defaultImage: string
+  preloadImageFn: (url: string) => Promise<void>
 }) => {
   const [imageUrl, setImageUrl] = useState<Maybe<string>>(undefined)
 
@@ -43,7 +36,7 @@ export const useImageSize2 = ({
 
       while (mirrors.length > 0) {
         try {
-          await preloadImage(currentUrl)
+          await preloadImageFn(currentUrl)
           return currentUrl
         } catch {
           const nextMirror = mirrors.shift()
@@ -56,7 +49,7 @@ export const useImageSize2 = ({
 
       throw new Error(`Failed to fetch image from all mirrors ${url}`)
     },
-    [artwork?.mirrors]
+    [artwork?.mirrors, preloadImageFn]
   )
 
   const resolveImageUrl = useCallback(async () => {
