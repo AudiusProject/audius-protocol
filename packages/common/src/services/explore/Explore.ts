@@ -1,5 +1,5 @@
 import { AudiusSdk } from '@audius/sdk'
-import { BestNewReleasesWindowEnum } from '@audius/sdk/src/sdk/api/generated/full'
+import { GetBestNewReleasesWindowEnum } from '@audius/sdk/src/sdk/api/generated/full'
 
 import {
   transformAndCleanList,
@@ -47,15 +47,18 @@ export class Explore {
   /** TRACKS ENDPOINTS */
   async getBestNewReleases({
     currentUserId,
-    window = BestNewReleasesWindowEnum.Month
+    window = GetBestNewReleasesWindowEnum.Month,
+    limit = 25
   }: {
     currentUserId: ID
-    window?: BestNewReleasesWindowEnum
+    window?: GetBestNewReleasesWindowEnum
+    limit?: number
   }): Promise<UserTrackMetadata[]> {
     try {
       const sdk = await this.audiusSdk()
-      const { data = [] } = await sdk.full.tracks.bestNewReleases({
+      const { data = [] } = await sdk.full.tracks.getBestNewReleases({
         window,
+        limit,
         userId: OptionalId.parse(currentUserId)
       })
       return transformAndCleanList(data, userTrackMetadataFromSDK)

@@ -53,8 +53,8 @@ import {
     TrendingIdsResponseToJSON,
 } from '../models';
 
-export interface BestNewReleasesRequest {
-    window: BestNewReleasesWindowEnum;
+export interface GetBestNewReleasesRequest {
+    window: GetBestNewReleasesWindowEnum;
     userId?: string;
     limit?: number;
     withUsers?: boolean;
@@ -226,9 +226,9 @@ export class TracksApi extends runtime.BaseAPI {
      * @hidden
      * Gets the tracks found on the \"Best New Releases\" smart playlist
      */
-    async bestNewReleasesRaw(params: BestNewReleasesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<FullTracksResponse>> {
+    async getBestNewReleasesRaw(params: GetBestNewReleasesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<FullTracksResponse>> {
         if (params.window === null || params.window === undefined) {
-            throw new runtime.RequiredError('window','Required parameter params.window was null or undefined when calling bestNewReleases.');
+            throw new runtime.RequiredError('window','Required parameter params.window was null or undefined when calling getBestNewReleases.');
         }
 
         const queryParameters: any = {};
@@ -264,8 +264,8 @@ export class TracksApi extends runtime.BaseAPI {
     /**
      * Gets the tracks found on the \"Best New Releases\" smart playlist
      */
-    async bestNewReleases(params: BestNewReleasesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<FullTracksResponse> {
-        const response = await this.bestNewReleasesRaw(params, initOverrides);
+    async getBestNewReleases(params: GetBestNewReleasesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<FullTracksResponse> {
+        const response = await this.getBestNewReleasesRaw(params, initOverrides);
         return await response.value();
     }
 
@@ -1247,12 +1247,12 @@ export class TracksApi extends runtime.BaseAPI {
 /**
  * @export
  */
-export const BestNewReleasesWindowEnum = {
+export const GetBestNewReleasesWindowEnum = {
     Week: 'week',
     Month: 'month',
     Year: 'year'
 } as const;
-export type BestNewReleasesWindowEnum = typeof BestNewReleasesWindowEnum[keyof typeof BestNewReleasesWindowEnum];
+export type GetBestNewReleasesWindowEnum = typeof GetBestNewReleasesWindowEnum[keyof typeof GetBestNewReleasesWindowEnum];
 /**
  * @export
  */
