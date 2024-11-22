@@ -61,6 +61,7 @@ export function* fetchAccountAsync({ isSignUp = false }): SagaIterator {
     authService,
     authService.getWalletAddresses
   ])
+  console.log('asdf wallet', wallet)
   if (!wallet) {
     yield* put(
       fetchAccountFailed({
@@ -78,6 +79,7 @@ export function* fetchAccountAsync({ isSignUp = false }): SagaIterator {
       })
     )
   }
+  console.log('asdf accountData', accountData)
   const account = accountData.user
   if (account.is_deactivated) {
     yield* put(accountActions.resetAccount())

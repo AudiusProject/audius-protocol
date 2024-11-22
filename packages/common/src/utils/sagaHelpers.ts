@@ -22,7 +22,7 @@ import { toast } from '~/store/ui/toast/slice'
 import { Status } from '../models/Status'
 
 const messages = {
-  somethingWrong: 'Something went wrong'
+  somethingWrong: 'Something went wronsg'
 }
 
 /**

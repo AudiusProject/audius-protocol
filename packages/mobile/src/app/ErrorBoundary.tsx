@@ -20,7 +20,7 @@ const ErrorToast = (props: ErrorToastProps) => {
   useEffect(() => {
     if (error) {
       console.error(error)
-      toast({ content: 'Something went wrong', type: 'error' })
+      toast({ content: 'Something went wrosng', type: 'error' })
     }
   }, [toast, error])
   return null
