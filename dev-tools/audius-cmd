@@ -4,8 +4,6 @@ set -e
 cd "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")"/compose  # audius-protocol/dev-tools/compose
 export COMPOSE_PROJECT_NAME='audius-protocol'
 
-turbo run build --filter=@audius/commands
-
 if [[ "$1" == "test" ]]; then
 	docker compose exec audius-cmd npm test
 	exit
@@ -26,6 +24,7 @@ for arg in "$@"; do
 	fi
 done
 
+turbo run build --filter=@audius/commands
 docker compose exec audius-cmd node dist/index.js "${updated_args[@]}" || true
 
 for tmpfile in "${tmpfiles[@]}"; do
