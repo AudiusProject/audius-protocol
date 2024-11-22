@@ -20,7 +20,6 @@ COPY ./truffle-config.js ./contract-config.js .solcover.js ./
 
 RUN chmod +x ./scripts/setup-predeployed-ganache.sh ./scripts/setup-dev.sh
 
-
 ARG CONTENT_NODE_VERSION
 ARG DISCOVERY_NODE_VERSION
 
