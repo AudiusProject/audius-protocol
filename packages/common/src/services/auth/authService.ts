@@ -70,7 +70,6 @@ export const createAuthService = ({
     const walletOverride = await localStorage.getAudiusUserWalletOverride()
     await hedgehogInstance.waitUntilReady()
     const hedgehogAddress = hedgehogInstance.wallet?.getAddressString()
-    console.log('asdf wallet', hedgehogAddress, walletOverride, hedgehogAddress)
     return {
       accountWalletAddress: walletOverride || hedgehogAddress || '',
       web3WalletAddress: hedgehogAddress || ''

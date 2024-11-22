@@ -65,7 +65,7 @@ export type AppState = CommonState & {
 }
 
 const messages = {
-  error: 'Something went wronzg'
+  error: 'Something went wrong'
 }
 
 const initializationTime = Date.now()

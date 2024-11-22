@@ -2,7 +2,7 @@ import { SagaIterator } from 'redux-saga'
 import { call, put, select, takeLatest } from 'typed-redux-saga'
 
 import { userApiFetchSaga } from '~/api/user'
-import { Id, Kind, Status, User } from '~/models'
+import { AccountUserMetadata, Id, Kind, Status, User } from '~/models'
 import { recordIP } from '~/services/audius-backend/RecordIP'
 import { accountActions, accountSelectors } from '~/store/account'
 import { getUserId, getUserHandle } from '~/store/account/selectors'
@@ -61,7 +61,6 @@ export function* fetchAccountAsync({ isSignUp = false }): SagaIterator {
     authService,
     authService.getWalletAddresses
   ])
-  console.log('asdf wallet', wallet)
   if (!wallet) {
     yield* put(
       fetchAccountFailed({
@@ -69,17 +68,21 @@ export function* fetchAccountAsync({ isSignUp = false }): SagaIterator {
       })
     )
   }
-  const accountData = yield* call(userApiFetchSaga.getUserAccount, {
-    wallet
-  })
-  if (!accountData || !accountData.user) {
+  const accountData: AccountUserMetadata | null | undefined = yield* call(
+    userApiFetchSaga.getUserAccount,
+    {
+      wallet
+    }
+  )
+  if (!accountData || !accountData?.user) {
     yield* put(
       fetchAccountFailed({
         reason: 'ACCOUNT_NOT_FOUND'
       })
     )
+    return
   }
-  console.log('asdf accountData', accountData)
+
   const account = accountData.user
   if (account.is_deactivated) {
     yield* put(accountActions.resetAccount())
