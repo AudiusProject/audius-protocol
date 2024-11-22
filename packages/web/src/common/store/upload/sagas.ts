@@ -1192,20 +1192,18 @@ export function* updateTrackAudioAsync(
     stem_of: track.stem_of ?? null
   }
 
-  const handleProgressUpdate = (progress: Parameters<ProgressCB>[0]) => {
-    if (!('audio' in progress)) return
-    const { upload, transcode } = progress.audio
-
-    const uploadVal =
-      transcode === undefined ? (upload?.loaded ?? 0) / (upload?.total ?? 1) : 1
-
+  const handleProgressUpdate = (_progress: Parameters<ProgressCB>[0]) => {
+    // if (!('audio' in progress)) return
+    // const { upload, transcode } = progress.audio
+    //
+    // const uploadVal =
+    //   transcode === undefined ? (upload?.loaded ?? 0) / (upload?.total ?? 1) : 1
+    //
     // put(
     //   replaceTrackProgressModalActions.set({
     //     progress: { upload: uploadVal, transcode: transcode?.decimal ?? 0 }
     //   })
     // )
-
-    console.log({ upload: uploadVal, transcode: transcode?.decimal ?? 0 })
   }
 
   const updatedMetadata = yield* call(
