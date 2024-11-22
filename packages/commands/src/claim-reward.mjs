@@ -1,7 +1,7 @@
 import chalk from 'chalk'
 import { program } from 'commander'
 
-import { initializeAudiusLibs, initializeAudiusSdk } from './utils.mjs'
+import { getCurrentAudiusSdkUser, initializeAudiusSdk } from './utils.mjs'
 import { Utils } from '@audius/sdk-legacy/dist/libs.js'
 
 program
@@ -19,24 +19,9 @@ program
     'The user referred (for referral challenges)'
   )
   .action(async (challengeId, amount, { from, contentId, referredUserId }) => {
-    const audiusLibs = await initializeAudiusLibs(from)
-
-    // extract privkey and pubkey from hedgehog
-    // only works with accounts created via audius-cmd
-    const wallet = audiusLibs?.hedgehog?.getWallet()
-    const privKey = wallet?.getPrivateKeyString()
-    const pubKey = wallet?.getAddressString()
-
-    // Get hashID user id of current user
-    const userIdNumber = audiusLibs.userStateManager.getCurrentUserId()
-    const userId = Utils.encodeHashId(userIdNumber)
-
-    // init sdk with priv and pub keys as api keys and secret
-    // this enables writes via sdk
-    const audiusSdk = await initializeAudiusSdk({
-      apiKey: pubKey,
-      apiSecret: privKey
-    })
+    const audiusSdk = await initializeAudiusSdk({ handle: from })
+    const user = await getCurrentAudiusSdkUser()
+    const userId = user.id
 
     try {
       const specifier = await audiusSdk.challenges.generateSpecifier({
@@ -76,24 +61,9 @@ program
   .option('-c, --contentId [contentId]', 'The track or album purchased')
   .option('-r, --referredUserId [referredUserId]', 'The user referred')
   .action(async (challengeId, { from, contentId, referredUserId }) => {
-    const audiusLibs = await initializeAudiusLibs(from)
-
-    // extract privkey and pubkey from hedgehog
-    // only works with accounts created via audius-cmd
-    const wallet = audiusLibs?.hedgehog?.getWallet()
-    const privKey = wallet?.getPrivateKeyString()
-    const pubKey = wallet?.getAddressString()
-
-    // Get hashID user id of current user
-    const userIdNumber = audiusLibs.userStateManager.getCurrentUserId()
-    const userId = Utils.encodeHashId(userIdNumber)
-
-    // init sdk with priv and pub keys as api keys and secret
-    // this enables writes via sdk
-    const audiusSdk = await initializeAudiusSdk({
-      apiKey: pubKey,
-      apiSecret: privKey
-    })
+    const audiusSdk = await initializeAudiusSdk({ handle: from })
+    const user = await getCurrentAudiusSdkUser()
+    const userId = user.id
 
     const specifier = await audiusSdk.challenges.generateSpecifier({
       challengeId,

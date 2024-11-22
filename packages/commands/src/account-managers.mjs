@@ -1,7 +1,7 @@
 import chalk from 'chalk'
 import { program } from 'commander'
 
-import { initializeAudiusLibs, initializeAudiusSdk } from './utils.mjs'
+import { initializeAudiusSdk } from './utils.mjs'
 
 program
   .command('add-manager')
@@ -9,19 +9,7 @@ program
   .argument('[handle]', 'The handle of the manager')
   .option('-f, --from <from>', 'The account that will be managed')
   .action(async (handle, { from }) => {
-    const audiusLibs = await initializeAudiusLibs(from)
-    // extract privkey and pubkey from hedgehog
-    // only works with accounts created via audius-cmd
-    const wallet = audiusLibs?.hedgehog?.getWallet()
-    const privKey = wallet?.getPrivateKeyString()
-    const pubKey = wallet?.getAddressString()
-
-    // init sdk with priv and pub keys as api keys and secret
-    // this enables writes via sdk
-    const audiusSdk = await initializeAudiusSdk({
-      apiKey: pubKey,
-      apiSecret: privKey
-    })
+    const audiusSdk = await initializeAudiusSdk({ handle: from })
 
     try {
       const {
@@ -50,19 +38,7 @@ program
   .argument('[handle]', 'The handle of the user to be managed')
   .option('-f, --from <from>', 'The manager account handle')
   .action(async (handle, { from }) => {
-    const audiusLibs = await initializeAudiusLibs(from)
-    // extract privkey and pubkey from hedgehog
-    // only works with accounts created via audius-cmd
-    const wallet = audiusLibs?.hedgehog?.getWallet()
-    const privKey = wallet?.getPrivateKeyString()
-    const pubKey = wallet?.getAddressString()
-
-    // init sdk with priv and pub keys as api keys and secret
-    // this enables writes via sdk
-    const audiusSdk = await initializeAudiusSdk({
-      apiKey: pubKey,
-      apiSecret: privKey
-    })
+    const audiusSdk = await initializeAudiusSdk({ handle: from })
 
     try {
       const {
@@ -87,19 +63,7 @@ program
   .argument('[handle]', 'The handle of the user to be managed')
   .option('-f, --from <from>', 'The manager account handle')
   .action(async (handle, { from }) => {
-    const audiusLibs = await initializeAudiusLibs(from)
-    // extract privkey and pubkey from hedgehog
-    // only works with accounts created via audius-cmd
-    const wallet = audiusLibs?.hedgehog?.getWallet()
-    const privKey = wallet?.getPrivateKeyString()
-    const pubKey = wallet?.getAddressString()
-
-    // init sdk with priv and pub keys as api keys and secret
-    // this enables writes via sdk
-    const audiusSdk = await initializeAudiusSdk({
-      apiKey: pubKey,
-      apiSecret: privKey
-    })
+    const audiusSdk = await initializeAudiusSdk({ handle: from })
 
     try {
       const {
@@ -124,19 +88,7 @@ program
   .argument('[handle]', 'The handle of the manager')
   .option('-f, --from <from>', 'The handle of the manager user')
   .action(async (handle, { from }) => {
-    const audiusLibs = await initializeAudiusLibs(from)
-    // extract privkey and pubkey from hedgehog
-    // only works with accounts created via audius-cmd
-    const wallet = audiusLibs?.hedgehog?.getWallet()
-    const privKey = wallet?.getPrivateKeyString()
-    const pubKey = wallet?.getAddressString()
-
-    // init sdk with priv and pub keys as api keys and secret
-    // this enables writes via sdk
-    const audiusSdk = await initializeAudiusSdk({
-      apiKey: pubKey,
-      apiSecret: privKey
-    })
+    const audiusSdk = await initializeAudiusSdk({ handle: from })
 
     try {
       const {

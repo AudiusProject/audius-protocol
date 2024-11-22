@@ -15,6 +15,7 @@ import CoinflowOnrampModal from 'components/coinflow-onramp-modal'
 import CollectibleDetailsModal from 'components/collectibles/components/CollectibleDetailsModal'
 import ConfirmerPreview from 'components/confirmer-preview/ConfirmerPreview'
 import DeletePlaylistConfirmationModal from 'components/delete-playlist-confirmation-modal/DeletePlaylistConfirmationModal'
+import { DeleteTrackConfirmationModal } from 'components/delete-track-confirmation-modal/DeleteTrackConfirmationModal'
 import DiscoveryNodeSelection from 'components/discovery-node-selection/DiscoveryNodeSelection'
 import { DuplicateAddConfirmationModal } from 'components/duplicate-add-confirmation-modal'
 import { EarlyReleaseConfirmationModal } from 'components/early-release-confirmation-modal'
@@ -31,6 +32,7 @@ import { PasswordResetModal } from 'components/password-reset/PasswordResetModal
 import { PayoutWalletModal } from 'components/payout-wallet-modal/PayoutWalletModal'
 import { PremiumContentPurchaseModal } from 'components/premium-content-purchase-modal/PremiumContentPurchaseModal'
 import { PublishConfirmationModal } from 'components/publish-confirmation-modal/PublishConfirmationModal'
+import { ReplaceTrackConfirmationModal } from 'components/replace-track-confirmation-modal/ReplaceTrackConfirmationModal'
 import { TipAudioModal } from 'components/tipping/tip-audio/TipAudioModal'
 import ConnectedMobileOverflowModal from 'components/track-overflow-modal/ConnectedMobileOverflowModal'
 import { TransactionDetailsModal } from 'components/transaction-details-modal'
@@ -86,6 +88,8 @@ const commonModalsMap: { [Modal in ModalTypes]?: ComponentType } = {
   AddToCollection: AddToCollectionModal,
   TiersExplainer: TierExplainerModal,
   DeletePlaylistConfirmation: DeletePlaylistConfirmationModal,
+  DeleteTrackConfirmation: DeleteTrackConfirmationModal,
+  ReplaceTrackConfirmation: ReplaceTrackConfirmationModal,
   DuplicateAddConfirmation: DuplicateAddConfirmationModal,
   AudioBreakdown: AudioBreakdownModal,
   UploadConfirmation: UploadConfirmationModal,

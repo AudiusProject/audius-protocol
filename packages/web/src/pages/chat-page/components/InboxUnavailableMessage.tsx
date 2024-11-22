@@ -1,26 +1,33 @@
 import { useState, useCallback, MouseEventHandler } from 'react'
 
-import { User } from '@audius/common/models'
+import { ID, User } from '@audius/common/models'
 import { ChatPermissionAction } from '@audius/common/store'
 import { CHAT_BLOG_POST_URL } from '@audius/common/utils'
+import { Flex, Text } from '@audius/harmony'
 
-import { UserNameAndBadges } from 'components/user-name-and-badges/UserNameAndBadges'
+import { UserLink, TextLink } from 'components/link'
 
-import styles from './InboxUnavailableMessage.module.css'
 import { UnblockUserConfirmationModal } from './UnblockUserConfirmationModal'
 
 const messages = {
-  tip: (user: User) => (
+  follow: (userId: ID) => (
     <>
-      You must send <UserNameAndBadges user={user} /> a tip before you can send
-      them messages.
+      You must follow <UserLink variant='visible' userId={userId} /> before you
+      can send them messages.
+    </>
+  ),
+  tip: (userId: ID) => (
+    <>
+      You must send <UserLink variant='visible' userId={userId} /> a tip before
+      you can send them them messages.
     </>
   ),
   unblock: 'You cannot send messages to users you have blocked.',
-  default: (user: User) => (
-    <>
-      You can&apos;t send messages to <UserNameAndBadges user={user} />
-    </>
+  default: (userId: ID) => (
+    <Text>
+      You can&apos;t send messages to{' '}
+      <UserLink variant='visible' userId={userId} />
+    </Text>
   ),
   learnMore: 'Learn More.',
   unblockUser: 'Unblock User.'
@@ -37,6 +44,7 @@ export const InboxUnavailableMessage = ({
     isUnblockUserConfirmationModalVisible,
     setIsUnblockUserConfirmationModalVisible
   ] = useState(false)
+  const { user_id: userId } = user
 
   const handleUnblockClicked: MouseEventHandler = useCallback(
     (e) => {
@@ -50,31 +58,49 @@ export const InboxUnavailableMessage = ({
     setIsUnblockUserConfirmationModalVisible(false)
   }, [setIsUnblockUserConfirmationModalVisible])
 
+  let content
   switch (action) {
+    case ChatPermissionAction.FOLLOW:
+      content = messages.follow(userId)
+      break
     case ChatPermissionAction.TIP:
-      return <div className={styles.root}>{messages.tip(user)}</div>
+      content = messages.tip(userId)
+      break
     case ChatPermissionAction.UNBLOCK:
-      return (
-        <div className={styles.root}>
+      content = (
+        <>
           {messages.unblock}{' '}
-          <a href='#' onClick={handleUnblockClicked}>
+          <TextLink onClick={handleUnblockClicked}>
             {messages.unblockUser}
-          </a>
+          </TextLink>
           <UnblockUserConfirmationModal
             user={user}
             isVisible={isUnblockUserConfirmationModalVisible}
             onClose={handleCloseUnblockUserConfirmationModal}
           />
-        </div>
+        </>
       )
+      break
     default:
-      return (
-        <div className={styles.root}>
-          {messages.default(user)}{' '}
-          <a href={CHAT_BLOG_POST_URL} target='_blank' rel='noreferrer'>
+      content = (
+        <Flex gap='xs' alignItems='center'>
+          {messages.default(userId)}
+          <TextLink
+            textVariant='body'
+            variant='visible'
+            href={CHAT_BLOG_POST_URL}
+            isExternal
+          >
             {messages.learnMore}
-          </a>
-        </div>
+          </TextLink>
+        </Flex>
       )
+      break
   }
+
+  return (
+    <Flex p='s' alignItems='center' alignSelf='center'>
+      {content}
+    </Flex>
+  )
 }

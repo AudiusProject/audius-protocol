@@ -1,5 +1,6 @@
-import { useCallback } from 'react'
+import { useCallback, useEffect } from 'react'
 
+import { useFeatureFlag } from '@audius/common/hooks'
 import {
   Name,
   FollowSource,
@@ -13,6 +14,7 @@ import {
   AccessConditions,
   User
 } from '@audius/common/models'
+import { FeatureFlags } from '@audius/common/services'
 import {
   cacheUsersSelectors,
   usersSocialActions as socialActions,
@@ -44,6 +46,7 @@ import {
 import cn from 'classnames'
 import { push as pushRoute } from 'connected-react-router'
 import { useDispatch, useSelector } from 'react-redux'
+import { useSearchParams } from 'react-router-dom-v5-compat'
 
 import { useModalState } from 'common/hooks/useModalState'
 import { ArtistPopover } from 'components/artist/ArtistPopover'
@@ -141,6 +144,12 @@ const LockedGatedContentSection = ({
     : FollowSource.HOW_TO_UNLOCK_TRACK_PAGE
   const isUSDCPurchaseGated = isContentUSDCPurchaseGated(streamConditions)
   const { spacing } = useTheme()
+  const [searchParams] = useSearchParams()
+  const openCheckout = searchParams.get('checkout') === 'true'
+
+  const { isEnabled: isGuestCheckoutEnabled } = useFeatureFlag(
+    FeatureFlags.GUEST_CHECKOUT
+  )
 
   const handlePurchase = useRequiresAccountCallback(() => {
     if (lockedContentModalVisibility) {
@@ -157,6 +166,39 @@ const LockedGatedContentSection = ({
     openPremiumContentPurchaseModal,
     setLockedContentModalVisibility,
     premiumModalSource
+  ])
+
+  const handlePurchaseViaGuestCheckout = useCallback(() => {
+    if (lockedContentModalVisibility) {
+      setLockedContentModalVisibility(false)
+    }
+    openPremiumContentPurchaseModal(
+      { contentId, contentType },
+      { source: premiumModalSource ?? ModalSource.TrackDetails }
+    )
+  }, [
+    contentId,
+    contentType,
+    lockedContentModalVisibility,
+    openPremiumContentPurchaseModal,
+    setLockedContentModalVisibility,
+    premiumModalSource
+  ])
+
+  useEffect(() => {
+    if (openCheckout && isUSDCPurchaseGated) {
+      if (isGuestCheckoutEnabled) {
+        handlePurchaseViaGuestCheckout()
+      } else {
+        handlePurchase()
+      }
+    }
+  }, [
+    openCheckout,
+    handlePurchase,
+    isUSDCPurchaseGated,
+    isGuestCheckoutEnabled,
+    handlePurchaseViaGuestCheckout
   ])
 
   const handleSendTip = useRequiresAccountCallback(() => {
@@ -320,7 +362,11 @@ const LockedGatedContentSection = ({
                 contentType
               })
             )
-            handlePurchase()
+            if (isGuestCheckoutEnabled) {
+              handlePurchaseViaGuestCheckout()
+            } else {
+              handlePurchase()
+            }
           }}
           fullWidth
         >

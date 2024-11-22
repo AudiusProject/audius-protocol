@@ -34,7 +34,8 @@ import {
   getContext,
   confirmerActions,
   confirmTransaction,
-  getSDK
+  getSDK,
+  fetchAccountAsync
 } from '@audius/common/store'
 import {
   Genre,
@@ -59,7 +60,6 @@ import {
   takeLatest
 } from 'typed-redux-saga'
 
-import { fetchAccountAsync, reCacheAccount } from 'common/store/account/sagas'
 import { identify, make } from 'common/store/analytics/actions'
 import * as backendActions from 'common/store/backend/actions'
 import { retrieveCollections } from 'common/store/cache/collections/utils'
@@ -666,7 +666,7 @@ function* signUp() {
         // TODO (PAY-3479): This is temporary until hedgehog is fully moved out of libs
         yield* call(refreshHedgehogWallet)
         yield* put(signOnActions.sendWelcomeEmail(name))
-        yield* fetchAccountAsync({ isSignUp: true })
+        yield* call(fetchAccountAsync, { isSignUp: true })
         yield* put(signOnActions.followArtists())
         yield* put(make(Name.CREATE_ACCOUNT_COMPLETE_CREATING, { handle }))
         yield* put(signOnActions.signUpSucceeded())
@@ -738,7 +738,7 @@ function* repairSignUp() {
           console.info('Successfully repaired user')
           yield* put(make(Name.SIGN_UP_REPAIR_SUCCESS, {}))
           yield* put(signOnActions.sendWelcomeEmail(metadata.name))
-          yield* fetchAccountAsync({ isSignUp: true })
+          yield* call(fetchAccountAsync, { isSignUp: true })
         },
         function* ({ timeout }) {
           const reportToSentry = yield* getContext('reportToSentry')
@@ -1054,11 +1054,6 @@ function* followArtists(
     // The update user location depends on the user being discoverable in discprov
     // So we wait until both the user is indexed and the follow user actions are finished
     yield* call(audiusBackendInstance.updateUserLocationTimezone)
-
-    // Re-cache the account here (in local storage). This is to make sure that the follows are
-    // persisted across the next refresh of the client. Initially the user is pulled in from
-    // local storage before we get any response back from a discovery node.
-    yield* call(reCacheAccount)
   } catch (err: any) {
     const reportToSentry = yield* getContext('reportToSentry')
     reportToSentry({

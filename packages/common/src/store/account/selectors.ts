@@ -18,8 +18,6 @@ const hasTracksInternal = (state: CommonState) => state.account.hasTracks
 export const getHasAccount = (state: CommonState) => !!state.account.userId
 export const getUserId = (state: CommonState) => state.account.userId
 export const getAccountStatus = (state: CommonState) => state.account.status
-export const getUserPlaylistOrder = (state: CommonState) =>
-  state.account.orderedPlaylists
 export const getNeedsAccountRecovery = (state: CommonState) =>
   state.account.needsAccountRecovery
 export const getAccountToCache = (state: CommonState) => ({

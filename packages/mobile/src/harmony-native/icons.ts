@@ -156,6 +156,7 @@ export { default as IconWaveform } from '@audius/harmony/src/assets/icons/Wavefo
 export { default as IconMoneyBracket } from '@audius/harmony/src/assets/icons/MoneyBracket.svg'
 export { default as IconPin } from '@audius/harmony/src/assets/icons/Pin.svg'
 export { default as IconPaperAirplane } from '@audius/harmony/src/assets/icons/PaperAirplane.svg'
+export { default as IconArrowUpToLine } from '@audius/harmony/src/assets/icons/ArrowUpToLine.svg'
 
 // Two Tone / Special Styling
 

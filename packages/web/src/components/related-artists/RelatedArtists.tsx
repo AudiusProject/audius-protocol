@@ -2,7 +2,6 @@ import { useCallback } from 'react'
 
 import { useGetCurrentUserId, useGetRelatedArtists } from '@audius/common/api'
 import { User } from '@audius/common/models'
-import { FeatureFlags } from '@audius/common/services'
 import { profilePageSelectors } from '@audius/common/store'
 import { MAX_PROFILE_RELATED_ARTISTS } from '@audius/common/utils'
 import { IconUserGroup } from '@audius/harmony'
@@ -10,7 +9,6 @@ import { useDispatch, useSelector } from 'react-redux'
 
 import { ProfilePageNavSectionTitle } from 'components/profile-page-nav-section-title/ProfilePageNavSectionTitle'
 import { ProfilePictureListTile } from 'components/profile-picture-list-tile/ProfilePictureListTile'
-import { useFlag } from 'hooks/useRemoteConfig'
 import {
   setUsers,
   setVisibility
@@ -31,9 +29,6 @@ export const RelatedArtists = () => {
   const dispatch = useDispatch()
   const profile = useSelector(getProfileUser)
   const { data: currentUserId } = useGetCurrentUserId({})
-  const { isEnabled: isRelatedArtistsEnabled } = useFlag(
-    FeatureFlags.RELATED_ARTISTS_ON_PROFILE_ENABLED
-  )
 
   const artistId = profile?.user_id
 
@@ -55,12 +50,7 @@ export const RelatedArtists = () => {
     }
   }, [profile, dispatch])
 
-  if (
-    !isRelatedArtistsEnabled ||
-    !profile ||
-    !relatedArtists ||
-    relatedArtists.length === 0
-  ) {
+  if (!profile || !relatedArtists || relatedArtists.length === 0) {
     return null
   }
 

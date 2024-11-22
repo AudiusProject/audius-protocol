@@ -21,6 +21,7 @@ import {
   lineupRegistry,
   queueActions,
   queueSelectors,
+  reachabilitySelectors,
   RepeatMode,
   QueueSource,
   getContext,
@@ -60,7 +61,8 @@ const { getId } = cacheSelectors
 const { getUser } = cacheUsersSelectors
 const { getTrack } = cacheTracksSelectors
 const { getCollection } = cacheCollectionsSelectors
-const getUserId = accountSelectors.getUserId
+const { getUserId } = accountSelectors
+const { getIsReachable } = reachabilitySelectors
 
 const QUEUE_SUBSCRIBER_NAME = 'QUEUE'
 
@@ -420,6 +422,8 @@ export function* watchQueueAutoplay() {
     queueAutoplay.type,
     function* (action: ReturnType<typeof queueAutoplay>) {
       const { genre, exclusionList, currentUserId } = action.payload
+      const isReachable = yield* select(getIsReachable)
+      if (!isReachable) return
       const tracks: UserTrackMetadata[] = yield* call(
         getRecommendedTracks,
         genre,

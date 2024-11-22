@@ -1,4 +1,4 @@
-import { createContext, useState } from 'react'
+import { createContext } from 'react'
 
 import { useGetCurrentUserId, useGetTrackByPermalink } from '@audius/common/api'
 import {
@@ -20,7 +20,6 @@ import { useDispatch } from 'react-redux'
 import { useParams } from 'react-router'
 
 import { useSelector } from 'common/hooks/useSelector'
-import { DeleteConfirmationModal } from 'components/delete-confirmation'
 import { EditTrackForm } from 'components/edit-track/EditTrackForm'
 import { TrackEditFormValues } from 'components/edit-track/types'
 import Header from 'components/header/desktop/Header'
@@ -30,12 +29,11 @@ import { useIsUnauthorizedForHandleRedirect } from 'hooks/useManagedAccountNotAl
 import { useRequiresAccount } from 'hooks/useRequiresAccount'
 import { useTrackCoverArt } from 'hooks/useTrackCoverArt'
 
-const { deleteTrack, editTrack } = cacheTracksActions
+const { editTrack } = cacheTracksActions
 const { getStems } = cacheTracksSelectors
 
 const messages = {
-  title: 'Edit Your Track',
-  deleteTrack: 'DELETE TRACK'
+  title: 'Edit Your Track'
 }
 
 type EditPageProps = {
@@ -57,7 +55,6 @@ export const EditTrackPage = (props: EditPageProps) => {
     permalink,
     currentUserId
   })
-  const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false)
 
   const onSubmit = (formValues: TrackEditFormValues) => {
     const metadata = { ...formValues.trackMetadatas[0] }
@@ -70,12 +67,6 @@ export const EditTrackPage = (props: EditPageProps) => {
     }
     dispatch(editTrack(metadata.track_id, metadata))
     dispatch(pushRoute(metadata.permalink))
-  }
-
-  const onDeleteTrack = () => {
-    if (!track) return
-    dispatch(deleteTrack(track.track_id))
-    dispatch(pushRoute(`/${track.user.handle}`))
   }
 
   const coverArtUrl = useTrackCoverArt({
@@ -127,21 +118,9 @@ export const EditTrackPage = (props: EditPageProps) => {
         <LoadingSpinnerFullPage />
       ) : (
         <EditFormScrollContext.Provider value={scrollToTop}>
-          <EditTrackForm
-            initialValues={initialValues}
-            onSubmit={onSubmit}
-            onDeleteTrack={() => setShowDeleteConfirmation(true)}
-            disableNavigationPrompt={showDeleteConfirmation}
-          />
+          <EditTrackForm initialValues={initialValues} onSubmit={onSubmit} />
         </EditFormScrollContext.Provider>
       )}
-      <DeleteConfirmationModal
-        title={messages.deleteTrack}
-        entity='Track'
-        visible={showDeleteConfirmation}
-        onDelete={onDeleteTrack}
-        onCancel={() => setShowDeleteConfirmation(false)}
-      />
     </Page>
   )
 }

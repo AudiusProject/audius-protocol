@@ -196,10 +196,10 @@ def _update_aggregate_tips(session: Session, redis: Redis):
     max_slot_result = (
         session.query(UserTip.slot, UserTip.signature)
         .order_by(UserTip.slot.desc())
-        .one()
+        .first()
     )
     max_slot, last_tip_signature = (
-        max_slot_result if max_slot_result[0] is not None else (0, None)
+        max_slot_result if max_slot_result is not None else (0, None)
     )
 
     ranks_before = _get_ranks(session, prev_slot, max_slot)
