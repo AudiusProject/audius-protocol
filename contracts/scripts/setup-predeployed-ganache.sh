@@ -25,6 +25,8 @@ npx ganache \
   --chain.networkId "$networkId" \
   &
 
+ganache_pid=$!
+
 npx truffle migrate --network predeploy
 
 kill $ganache_pid
