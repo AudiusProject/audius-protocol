@@ -485,57 +485,6 @@ export const getUserAccount = (wallet: string) => {
   }
 }
 
-/**
- * @deprecated Migrate to using getTopFullPlaylists
- */
-export const getTopPlaylists = (
-  type: 'playlist' | 'album',
-  limit: number,
-  mood: string,
-  filter: string,
-  withUsers = false
-) => {
-  return {
-    endpoint: `/top/${type}`,
-    queryParams: {
-      limit,
-      mood,
-      filter,
-      with_users: withUsers
-    }
-  }
-}
-
-export type GetTopFullPlaylistsParams = {
-  type: 'playlist' | 'album'
-  limit?: number
-  mood?: string
-  filter?: string
-  withUsers?: boolean
-  encodedUserId?: string
-}
-
-export const getTopFullPlaylists = ({
-  type,
-  limit,
-  mood,
-  filter,
-  encodedUserId,
-  withUsers = false
-}: GetTopFullPlaylistsParams) => {
-  return {
-    endpoint: `/v1/full/playlists/top`,
-    queryParams: {
-      type,
-      limit,
-      mood,
-      filter,
-      with_users: withUsers,
-      user_id: encodedUserId
-    }
-  }
-}
-
 export const getLatest = (type: string, limit = 1, offset = 0) => {
   return {
     endpoint: `/latest/${type}`,

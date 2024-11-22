@@ -825,38 +825,6 @@ export class DiscoveryProvider {
     return await this._makeRequest<CurrentUser>(req)
   }
 
-  /**
-   * @deprecated Migrate to using getTrendingPlaylists
-   */
-  async getTopPlaylists(
-    type: 'playlist' | 'album',
-    limit: number,
-    mood: string,
-    filter: string,
-    withUsers = false
-  ) {
-    const req = Requests.getTopPlaylists(type, limit, mood, filter, withUsers)
-    return await this._makeRequest(req)
-  }
-
-  async getTopFullPlaylists({
-    type,
-    limit,
-    mood,
-    filter,
-    encodedUserId,
-    withUsers = false
-  }: Requests.GetTopFullPlaylistsParams) {
-    const req = Requests.getTopFullPlaylists({
-      type,
-      limit,
-      mood,
-      filter,
-      encodedUserId,
-      withUsers
-    })
-    return await this._makeRequest(req)
-  }
   async getLatest(type: string, limit = 1, offset = 0) {
     const req = Requests.getLatest(type, limit, offset)
     return await this._makeRequest(req)
