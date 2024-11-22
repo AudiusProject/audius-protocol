@@ -18,6 +18,7 @@ COPY ./contracts ./contracts
 COPY ./migrations ./migrations 
 COPY ./scripts ./scripts 
 COPY ./signature_schemas ./signature_schemas
+COPY ./test ./test
 COPY ./truffle-config.js ./contract-config.js ./
 
 RUN chmod +x ./scripts/setup-predeployed-ganache.sh
