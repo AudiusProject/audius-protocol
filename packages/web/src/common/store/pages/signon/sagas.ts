@@ -483,7 +483,8 @@ function* signUp() {
         /*
         1. Create user on identity
          - 1a. Check if already has a wallet? If not, do authService signUp()
-         - 1b. generate recovery link
+         - 1b. generate recovery link: Port code from libs Hedgehog instance into
+               identity service in client.
         2. Create User on chain
           - 2a. Generate user id
           - 2b. validate metadata (this happens with zod)

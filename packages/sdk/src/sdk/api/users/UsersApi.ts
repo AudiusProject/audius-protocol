@@ -90,10 +90,6 @@ export class UsersApi extends GeneratedUsersApi {
     }
     const userId = HashId.parse(data)
 
-    // TODO: Generate CID multihash
-    // TODO: Pluck out only the fields we care about for creation? Or push that
-    // up to sagas/components
-
     // TODO: Share with update flow
     const [profilePictureResp, coverArtResp] = await Promise.all([
       profilePictureFile &&
@@ -124,30 +120,34 @@ export class UsersApi extends GeneratedUsersApi {
         )
     ])
 
-    const updatedMetadata = snakecaseKeys({
+    const updatedMetadata = {
       ...metadata,
+      userId,
       ...(profilePictureResp
         ? { profilePictureSizes: profilePictureResp?.id }
         : {}),
       ...(coverArtResp ? { coverPhotoSizes: coverArtResp?.id } : {})
-    })
+    }
 
-    const cid = (await generateMetadataCidV1(updatedMetadata)).toString()
-    console.log(JSON.stringify({ cid, data: updatedMetadata }, null, 2))
+    const entityMetadata = snakecaseKeys(updatedMetadata)
+
+    const cid = (await generateMetadataCidV1(entityMetadata)).toString()
 
     // Write metadata to chain
-    return await this.entityManager.manageEntity({
+    await this.entityManager.manageEntity({
       userId,
       entityType: EntityType.USER,
       entityId: userId,
       action: Action.CREATE,
       metadata: JSON.stringify({
         cid,
-        data: updatedMetadata
+        data: entityMetadata
       }),
       auth: this.auth,
       ...advancedOptions
     })
+    // TODO: Needs a typed response.
+    return updatedMetadata
   }
 
   /** @hidden

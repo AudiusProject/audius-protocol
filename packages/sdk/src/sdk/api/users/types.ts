@@ -11,15 +11,16 @@ export const CreateUserSchema = z.object({
   onProgress: z.optional(z.function().args(z.number())),
   metadata: z
     .object({
-      name: z.string(),
-      handle: z.string(),
       bio: z.optional(z.string()),
-      location: z.optional(z.string()),
-      splUsdcPayoutWallet: z.optional(z.string()),
-      profilePictureSizes: z.optional(z.string()),
       coverPhotoSizes: z.optional(z.string()),
-      website: z.optional(z.string()),
-      donation: z.optional(z.string())
+      donation: z.optional(z.string()),
+      handle: z.string(),
+      location: z.optional(z.string()),
+      name: z.string(),
+      profilePictureSizes: z.optional(z.string()),
+      splUsdcPayoutWallet: z.optional(z.string()),
+      wallet: z.string(),
+      website: z.optional(z.string())
     })
     .strict()
 })
