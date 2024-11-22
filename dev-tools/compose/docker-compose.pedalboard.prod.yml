@@ -81,7 +81,7 @@ services:
       mode: replicated
       replicas: '${DISCOVERY_PROVIDER_REPLICAS}'
     healthcheck:
-      test: ['CMD', 'curl', '-f', 'http://127.0.0.1:6001/solana/health_check']
+      test: ['CMD', 'curl', '-f', 'http://127.0.0.1:6002/solana/health_check']
       interval: 1s
       timeout: 1s
       retries: 60
