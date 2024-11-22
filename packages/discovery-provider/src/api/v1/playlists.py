@@ -422,33 +422,34 @@ class PlaylistSearchResult(Resource):
         return success_response(response["playlists"])
 
 
-top_parser = pagination_with_current_user_parser.copy()
-top_parser.add_argument(
+full_top_parser = pagination_with_current_user_parser.copy()
+full_top_parser.add_argument(
     "type",
     required=True,
     choices=("album", "playlist"),
     description="The collection type",
 )
-top_parser.add_argument(
+full_top_parser.add_argument(
     "mood",
     required=False,
     description="Filter to a mood",
 )
-top_parser.add_argument(
+full_top_parser.add_argument(
     "filter",
     required=False,
     description="Filter for the playlist query",
 )
 
 
-@full_ns.route("/top", doc=False)
-class Top(Resource):
+@full_ns.route("/top")
+class FullTopPlaylists(Resource):
     @record_metrics
-    @ns.doc(id="""Top Playlists""", description="""Gets top playlists.""")
-    @ns.marshal_with(full_playlists_with_score_response)
+    @full_ns.doc(id="""Get Top Playlists""", description="""Gets top playlists.""")
+    @full_ns.expect(full_top_parser)
+    @full_ns.marshal_with(full_playlists_with_score_response)
     @cache(ttl_sec=30 * 60)
     def get(self):
-        args = top_parser.parse_args()
+        args = full_top_parser.parse_args()
         if args.get("limit") is None:
             args["limit"] = 100
         else:

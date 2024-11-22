@@ -1632,6 +1632,7 @@ class BestNewReleases(Resource):
         id="Best New Releases",
         description='Gets the tracks found on the "Best New Releases" smart playlist',
     )
+    @full_ns.expect(best_new_releases_parser)
     @full_ns.marshal_with(full_tracks_response)
     @cache(ttl_sec=10)
     def get(self):

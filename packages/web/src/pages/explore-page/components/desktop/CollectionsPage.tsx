@@ -21,6 +21,7 @@ export type CollectionsPageProps = {
 
 const CollectionsPage = (props: CollectionsPageProps) => {
   const { title, description, collectionIds, status } = props
+  console.log('REED', { collectionIds })
   const header = (
     <Header
       primary={title}

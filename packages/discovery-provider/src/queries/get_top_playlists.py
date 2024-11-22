@@ -40,14 +40,6 @@ class TopPlaylistKind(str, enum.Enum):
 
 
 def get_top_playlists(kind: TopPlaylistKind, args: GetTopPlaylistsArgs):
-    skip_es = args.get("es") == "0"
-    use_es = get_esclient() and not skip_es
-    if use_es:
-        try:
-            return get_top_playlists_es(kind, args)
-        except Exception as e:
-            logger.error(f"elasticsearch get_top_playlists_es failed: {e}")
-
     return get_top_playlists_sql(kind, args)
 
 

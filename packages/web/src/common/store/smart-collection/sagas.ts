@@ -92,15 +92,14 @@ function* fetchBestNewReleases() {
   if (currentUserId == null) {
     return
   }
-  const tracks = yield* call(
-    [explore, 'getTopFolloweeTracksFromWindow'],
+  const tracks = yield* call([explore, 'getBestNewReleases'], {
     currentUserId,
-    'month'
-  )
+    window: 'month'
+  })
 
   const trackIds = tracks
     .filter((track) => !track.user.is_deactivated)
-    .map((track: Track) => ({
+    .map((track: UserTrackMetadata) => ({
       time: track.created_at,
       track: track.track_id
     }))
