@@ -7,12 +7,20 @@ FROM node:18-slim
 
 WORKDIR /usr/src/app
 
+COPY --from=builder package*.json ./
 COPY --from=builder /node_modules ./node_modules
-COPY . .
 
 ARG bootstrapSPIds
 ARG bootstrapSPDelegateWallets
 ARG bootstrapSPOwnerWallets
+
+COPY ./contracts ./contracts
+COPY ./migrations ./migrations 
+COPY ./scripts ./scripts 
+COPY ./signature_schemas ./signature_schemas
+COPY ./truffle-config.js ./contract-config.js ./
+
+RUN chmod +x ./scripts/setup-predeployed-ganache.sh
 
 RUN ./scripts/setup-predeployed-ganache.sh /usr/db 1000000000001
 
