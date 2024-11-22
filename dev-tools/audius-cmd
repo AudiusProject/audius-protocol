@@ -24,7 +24,8 @@ for arg in "$@"; do
 	fi
 done
 
-docker compose exec audius-cmd node src/index.mjs "${updated_args[@]}" || true
+turbo run build --filter=@audius/commands
+docker compose exec audius-cmd node dist/index.js "${updated_args[@]}" || true
 
 for tmpfile in "${tmpfiles[@]}"; do
 	docker compose exec audius-cmd rm $tmpfile

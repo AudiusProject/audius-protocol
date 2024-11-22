@@ -1,4 +1,4 @@
-import { User } from '~/models/User'
+import { User, UserMetadata } from '~/models/User'
 import { PLAYBACK_RATE_LS_KEY } from '~/store/index'
 
 import { Nullable } from '../../utils'
@@ -111,7 +111,7 @@ export class LocalStorage {
   getAudiusAccountUser = async (): Promise<User | null> =>
     this.getJSONValue(AUDIUS_ACCOUNT_USER_KEY)
 
-  setAudiusAccountUser = async (value: User) =>
+  setAudiusAccountUser = async (value: UserMetadata) =>
     this.setJSONValue(AUDIUS_ACCOUNT_USER_KEY, value)
 
   clearAudiusAccountUser = async () => this.removeItem(AUDIUS_ACCOUNT_USER_KEY)

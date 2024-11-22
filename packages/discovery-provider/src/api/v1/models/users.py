@@ -251,3 +251,39 @@ remixed_track_aggregate = ns.model(
         "remix_count": fields.Integer(required=True),
     },
 )
+
+# Email Models
+encrypted_email = ns.model(
+    "encrypted_email",
+    {
+        "id": fields.Integer(required=True),
+        "email_owner_user_id": fields.Integer(required=True),
+        "primary_user_id": fields.Integer(required=True),
+        "encrypted_email": fields.String(required=True),
+        "created_at": fields.DateTime(required=True),
+        "updated_at": fields.DateTime(required=True),
+    },
+)
+
+email_encryption_key = ns.model(
+    "email_encryption_key",
+    {
+        "id": fields.Integer(required=True),
+        "primary_user_id": fields.Integer(required=True),
+        "encrypted_key": fields.String(required=True),
+        "created_at": fields.DateTime(required=True),
+        "updated_at": fields.DateTime(required=True),
+    },
+)
+
+email_access_key = ns.model(
+    "email_access_key",
+    {
+        "id": fields.Integer(required=True),
+        "primary_user_id": fields.Integer(required=True),
+        "delegated_user_id": fields.Integer(required=True),
+        "encrypted_key": fields.String(required=True),
+        "created_at": fields.DateTime(required=True),
+        "updated_at": fields.DateTime(required=True),
+    },
+)
