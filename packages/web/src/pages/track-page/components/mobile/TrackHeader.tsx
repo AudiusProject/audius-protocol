@@ -205,10 +205,7 @@ const TrackHeader = ({
   // Play button is conditionally hidden for USDC-gated tracks when the user does not have access
   const showPlay = isUSDCPurchaseGated ? hasStreamAccess : true
   const showListenCount = isOwner || (!isStreamGated && !isUnlisted)
-  const { data: albumInfo } = trpc.tracks.getAlbumBacklink.useQuery(
-    { trackId },
-    { enabled: !!trackId }
-  )
+  const hasAlbumBacklink = track && track.playlists_containing_track.length > 0
   const shouldShowScheduledRelease =
     track?.release_date && dayjs(track.release_date).isAfter(dayjs())
 
@@ -236,7 +233,7 @@ const TrackHeader = ({
         : OverflowAction.FAVORITE,
       isOwner && !track?.ddex_app ? OverflowAction.ADD_TO_ALBUM : null,
       isOwner || !isUnlisted ? OverflowAction.ADD_TO_PLAYLIST : null,
-      albumInfo ? OverflowAction.VIEW_ALBUM_PAGE : null,
+      hasAlbumBacklink ? OverflowAction.VIEW_ALBUM_PAGE : null,
       isFollowing
         ? OverflowAction.UNFOLLOW_ARTIST
         : OverflowAction.FOLLOW_ARTIST,

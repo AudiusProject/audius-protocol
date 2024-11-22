@@ -18,7 +18,8 @@ import {
   OverflowSource,
   PurchaseableContentType,
   gatedContentSelectors,
-  usePremiumContentPurchaseModal
+  usePremiumContentPurchaseModal,
+  cacheTracksSelectors
 } from '@audius/common/store'
 import { push as pushRoute } from 'connected-react-router'
 import { connect, useDispatch } from 'react-redux'
@@ -34,6 +35,7 @@ import TrackListItem, {
 } from './TrackListItem'
 const { setLockedContentId } = gatedContentActions
 
+const { getTrack } = cacheTracksSelectors
 const { getGatedContentStatusMap } = gatedContentSelectors
 
 const { open } = mobileOverflowMenuUIActions
@@ -61,12 +63,9 @@ const ConnectedTrackListItem = (props: ConnectedTrackListItemProps) => {
     streamConditions,
     trackId,
     isDeleted,
-    user
+    user,
+    hasAlbumBacklink
   } = props
-  const { data: albumInfo } = trpc.tracks.getAlbumBacklink.useQuery(
-    { trackId },
-    { enabled: !!trackId }
-  )
   const dispatch = useDispatch()
   const { onOpen: openPremiumContentPurchaseModal } =
     usePremiumContentPurchaseModal()
@@ -97,7 +96,7 @@ const ConnectedTrackListItem = (props: ConnectedTrackListItemProps) => {
         : null,
       !isUnlisted || isOwner ? OverflowAction.ADD_TO_PLAYLIST : null,
       OverflowAction.VIEW_TRACK_PAGE,
-      albumInfo ? OverflowAction.VIEW_ALBUM_PAGE : null,
+      hasAlbumBacklink ? OverflowAction.VIEW_ALBUM_PAGE : null,
       OverflowAction.VIEW_ARTIST_PAGE
     ].filter(Boolean) as OverflowAction[]
     clickOverflow(trackId, overflowActions)
@@ -137,10 +136,12 @@ const ConnectedTrackListItem = (props: ConnectedTrackListItemProps) => {
 
 function mapStateToProps(state: AppState, ownProps: OwnProps) {
   const id = ownProps.trackId
+  const albumBacklink = getTrack(state, { id })?.playlists_containing_track[0]
   return {
     user: getUserFromTrack(state, { id: ownProps.trackId }),
     currentUserId: getUserId(state),
-    gatedContentStatus: id ? getGatedContentStatusMap(state)[id] : undefined
+    gatedContentStatus: id ? getGatedContentStatusMap(state)[id] : undefined,
+    hasAlbumBacklink: !!albumBacklink
   }
 }
 

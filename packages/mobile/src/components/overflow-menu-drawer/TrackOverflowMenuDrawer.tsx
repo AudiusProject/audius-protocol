@@ -8,7 +8,6 @@ import {
   ModalSource
 } from '@audius/common/models'
 import type { ID } from '@audius/common/models'
-import { trpc } from '@audius/common/services'
 import {
   accountSelectors,
   cacheCollectionsActions,
@@ -88,14 +87,11 @@ const TrackOverflowMenuDrawer = ({ render }: Props) => {
     (t) => t.track === track?.track_id
   )
 
-  const { data: albumInfo } = trpc.tracks.getAlbumBacklink.useQuery(
-    { trackId: id },
-    { enabled: !!id }
-  )
-
   const user = useSelector((state: CommonState) =>
     getUser(state, { id: track?.owner_id })
   )
+
+  const albumBacklinkId = track?.playlists_containing_track[0]
 
   const handlePurchasePress = useCallback(() => {
     if (track?.track_id) {
@@ -185,7 +181,7 @@ const TrackOverflowMenuDrawer = ({ render }: Props) => {
       navigation?.push('Track', { id })
     },
     [OverflowAction.VIEW_ALBUM_PAGE]: () => {
-      albumInfo && navigation?.push('Collection', { id: albumInfo.playlist_id })
+      albumBacklinkId && navigation?.push('Collection', { id: albumBacklinkId })
     },
     [OverflowAction.VIEW_ARTIST_PAGE]: () => {
       closeNowPlayingDrawer()

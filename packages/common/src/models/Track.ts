@@ -257,6 +257,7 @@ export type TrackMetadata = {
   comments_disabled?: boolean
   comment_count: number
   pinned_comment_id?: Nullable<ID>
+  playlists_containing_track: ID[]
 
   // Optional Fields
   is_playlist_upload?: boolean

@@ -7,7 +7,6 @@ import {
   FavoriteSource,
   ID
 } from '@audius/common/models'
-import { trpc } from '@audius/common/services'
 import {
   accountSelectors,
   cacheTracksSelectors,
@@ -124,17 +123,14 @@ const ConnectedTrackTile = ({
     release_date: releaseDate,
     duration,
     preview_cid,
-    ddex_app: ddexApp
+    ddex_app: ddexApp,
+    playlists_containing_track: [albumBacklinkId]
   } = trackWithFallback
 
   const { user_id, handle, name, is_verified } = getUserWithFallback(user)
 
   const isOwner = user_id === currentUserId
 
-  const { data: albumInfo } = trpc.tracks.getAlbumBacklink.useQuery(
-    { trackId: track_id },
-    { enabled: !!track_id }
-  )
   const { isFetchingNFTAccess, hasStreamAccess } =
     useGatedContentAccess(trackWithFallback)
   const loading = isLoading || isFetchingNFTAccess
@@ -233,7 +229,7 @@ const ConnectedTrackTile = ({
       isLongFormContent
         ? OverflowAction.VIEW_EPISODE_PAGE
         : OverflowAction.VIEW_TRACK_PAGE,
-      albumInfo ? OverflowAction.VIEW_ALBUM_PAGE : null,
+      albumBacklinkId ? OverflowAction.VIEW_ALBUM_PAGE : null,
       OverflowAction.VIEW_ARTIST_PAGE
     ].filter(Boolean) as OverflowAction[]
 

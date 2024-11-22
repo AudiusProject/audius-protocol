@@ -40,7 +40,6 @@ import { AudiusQueryProvider } from './AudiusQueryProvider'
 import { Drawers } from './Drawers'
 import ErrorBoundary from './ErrorBoundary'
 import { ThemeProvider } from './ThemeProvider'
-import { AudiusTrpcProvider } from './TrpcProvider'
 
 Sentry.init({
   dsn: env.SENTRY_DSN
@@ -83,40 +82,38 @@ const App = () => {
     <AppContextProvider>
       <SafeAreaProvider initialMetrics={initialWindowMetrics}>
         <Provider store={store}>
-          <AudiusTrpcProvider>
-            <AudiusQueryProvider>
-              <QueryClientProvider client={tanQueryClient}>
-                <PersistGate loading={null} persistor={persistor}>
-                  <ThemeProvider>
-                    <WalletConnectProvider>
-                      <GestureHandlerRootView style={{ flex: 1 }}>
-                        <PortalProvider>
-                          <ErrorBoundary>
-                            <NavigationContainer>
-                              <BottomSheetModalProvider>
-                                <CommentDrawerProvider>
-                                  <Toasts />
-                                  <Airplay />
-                                  <RootScreen />
-                                  <Drawers />
-                                  <Modals />
-                                  <OAuthWebView />
-                                  <NotificationReminder />
-                                  <RateCtaReminder />
-                                  <PortalHost name='ChatReactionsPortal' />
-                                </CommentDrawerProvider>
-                              </BottomSheetModalProvider>
-                              <PortalHost name='DrawerPortal' />
-                            </NavigationContainer>
-                          </ErrorBoundary>
-                        </PortalProvider>
-                      </GestureHandlerRootView>
-                    </WalletConnectProvider>
-                  </ThemeProvider>
-                </PersistGate>
-              </QueryClientProvider>
-            </AudiusQueryProvider>
-          </AudiusTrpcProvider>
+          <AudiusQueryProvider>
+            <QueryClientProvider client={tanQueryClient}>
+              <PersistGate loading={null} persistor={persistor}>
+                <ThemeProvider>
+                  <WalletConnectProvider>
+                    <GestureHandlerRootView style={{ flex: 1 }}>
+                      <PortalProvider>
+                        <ErrorBoundary>
+                          <NavigationContainer>
+                            <BottomSheetModalProvider>
+                              <CommentDrawerProvider>
+                                <Toasts />
+                                <Airplay />
+                                <RootScreen />
+                                <Drawers />
+                                <Modals />
+                                <OAuthWebView />
+                                <NotificationReminder />
+                                <RateCtaReminder />
+                                <PortalHost name='ChatReactionsPortal' />
+                              </CommentDrawerProvider>
+                            </BottomSheetModalProvider>
+                            <PortalHost name='DrawerPortal' />
+                          </NavigationContainer>
+                        </ErrorBoundary>
+                      </PortalProvider>
+                    </GestureHandlerRootView>
+                  </WalletConnectProvider>
+                </ThemeProvider>
+              </PersistGate>
+            </QueryClientProvider>
+          </AudiusQueryProvider>
         </Provider>
       </SafeAreaProvider>
     </AppContextProvider>

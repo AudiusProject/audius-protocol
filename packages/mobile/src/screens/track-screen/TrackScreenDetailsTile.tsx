@@ -211,10 +211,7 @@ export const TrackScreenDetailsTile = ({
     (track as Track)?.is_downloadable ||
     ((track as Track)?._stems?.length ?? 0) > 0
 
-  const { data: albumInfo } = trpc.tracks.getAlbumBacklink.useQuery(
-    { trackId },
-    { enabled: !!trackId }
-  )
+  const albumBacklinkId = (track as Track)?.playlists_containing_track[0]
   const { open: openCommentDrawer } = useCommentDrawer()
 
   const isLongFormContent =
@@ -436,7 +433,7 @@ export const TrackScreenDetailsTile = ({
           ? OverflowAction.MARK_AS_UNPLAYED
           : OverflowAction.MARK_AS_PLAYED
         : null,
-      albumInfo ? OverflowAction.VIEW_ALBUM_PAGE : null,
+      albumBacklinkId ? OverflowAction.VIEW_ALBUM_PAGE : null,
       OverflowAction.VIEW_ARTIST_PAGE,
       isOwner && !ddexApp ? OverflowAction.EDIT_TRACK : null,
       isOwner && isScheduledRelease && isUnlisted

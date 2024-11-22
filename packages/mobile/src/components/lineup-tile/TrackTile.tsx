@@ -9,7 +9,6 @@ import {
   isContentUSDCPurchaseGated
 } from '@audius/common/models'
 import type { Track, User } from '@audius/common/models'
-import { trpc } from '@audius/common/services'
 import {
   accountSelectors,
   cacheTracksSelectors,
@@ -112,7 +111,8 @@ export const TrackTileComponent = ({
     preview_cid,
     ddex_app: ddexApp,
     is_unlisted: isUnlisted,
-    _co_sign: coSign
+    _co_sign: coSign,
+    playlists_containing_track: [albumBacklinkId]
   } = track
 
   const { artist_pick_track_id } = user
@@ -128,11 +128,6 @@ export const TrackTileComponent = ({
       <TrackImage track={track} size={SquareSizes.SIZE_150_BY_150} {...props} />
     ),
     [track]
-  )
-
-  const { data: albumInfo } = trpc.tracks.getAlbumBacklink.useQuery(
-    { trackId: track_id },
-    { enabled: !!track_id }
   )
 
   const handlePress = useCallback(() => {
@@ -167,7 +162,7 @@ export const TrackTileComponent = ({
       isLongFormContent
         ? OverflowAction.VIEW_EPISODE_PAGE
         : OverflowAction.VIEW_TRACK_PAGE,
-      albumInfo ? OverflowAction.VIEW_ALBUM_PAGE : null,
+      albumBacklinkId ? OverflowAction.VIEW_ALBUM_PAGE : null,
       isLongFormContent
         ? playbackPositionInfo?.status === 'COMPLETED'
           ? OverflowAction.MARK_AS_UNPLAYED
@@ -196,7 +191,7 @@ export const TrackTileComponent = ({
     isOwner,
     ddexApp,
     isUnlisted,
-    albumInfo,
+    albumBacklinkId,
     playbackPositionInfo?.status,
     isArtistPick,
     isOnArtistsTracksTab,

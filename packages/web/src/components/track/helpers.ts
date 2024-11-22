@@ -49,7 +49,8 @@ export const getTrackWithFallback = (track: Track | null) => {
       release_date: '',
       ddex_app: null,
       comment_count: 0,
-      comments_disabled: false
+      comments_disabled: false,
+      playlists_containing_track: []
     }
   )
 }

@@ -1,5 +1,5 @@
+import { useGetUserById } from '@audius/common/api'
 import { ID } from '@audius/common/models'
-import { trpc } from '@audius/common/services'
 import { accountSelectors } from '@audius/common/store'
 import { useSelector } from 'react-redux'
 
@@ -23,18 +23,14 @@ const FollowsYouBadge = ({
   className = '',
   variant = 'standard'
 }: FollowsYouBadgeProps) => {
-  const currentUserId = useSelector(accountSelectors.getUserId)
-  const { data } = trpc.me.userRelationship.useQuery(
-    {
-      theirId: userId.toString()
-    },
-    {
-      enabled: !!currentUserId
-    }
-  )
   const wm = useWithMobileStyle(styles.mobile)
+  const currentUserId = useSelector(accountSelectors.getUserId)
+  const { data: user } = useGetUserById(
+    { id: userId },
+    { disabled: !currentUserId }
+  )
 
-  if (!data?.followsMe) return null
+  if (!user?.does_current_user_follow) return null
 
   return (
     <div

@@ -139,11 +139,6 @@ const NowPlaying = g(
     const { uid, track, user, collectible } = currentQueueItem
     const { history } = useHistoryContext()
 
-    const { data: albumInfo } = trpc.tracks.getAlbumBacklink.useQuery(
-      { trackId: track?.track_id ?? 0 },
-      { enabled: !!track?.track_id }
-    )
-
     // Keep a ref for the artwork and dynamically resize the width of the
     // image as the height changes (which is flexed).
     const artworkRef = useRef<HTMLDivElement | null>(null)
@@ -301,6 +296,9 @@ const NowPlaying = g(
       goToRoute(history.location, profilePage(handle))
     }
 
+    const hasAlbumBacklink =
+      track && track.playlists_containing_track.length > 0
+
     const onClickOverflow = useCallback(() => {
       const isOwner = currentUserId === owner_id
 
@@ -320,7 +318,7 @@ const NowPlaying = g(
           ? OverflowAction.ADD_TO_PLAYLIST
           : null,
         track && OverflowAction.VIEW_TRACK_PAGE,
-        albumInfo ? OverflowAction.VIEW_ALBUM_PAGE : null,
+        hasAlbumBacklink ? OverflowAction.VIEW_ALBUM_PAGE : null,
 
         collectible && OverflowAction.VIEW_COLLECTIBLE_PAGE,
         OverflowAction.VIEW_ARTIST_PAGE
@@ -340,7 +338,7 @@ const NowPlaying = g(
       has_current_user_reposted,
       has_current_user_saved,
       track,
-      albumInfo,
+      hasAlbumBacklink,
       onClose,
       clickOverflow,
       track_id

@@ -161,15 +161,6 @@ export const ChatUserListItem = ({
   )
   const { onOpen: openInboxUnavailableDrawer } = useInboxUnavailableModal()
 
-  const { data: relationship } = trpc.me.userRelationship.useQuery(
-    {
-      theirId: userId.toString()
-    },
-    {
-      enabled: !!currentUserId
-    }
-  )
-
   const handlePress = useCallback(() => {
     if (user?.user_id) {
       Keyboard.dismiss()
@@ -265,7 +256,7 @@ export const ChatUserListItem = ({
                   </View>
                 )}
               </View>
-              {relationship?.followsMe && canCreateChat ? (
+              {user?.does_current_user_follow && canCreateChat ? (
                 <Text
                   fontSize='xxs'
                   weight='heavy'
