@@ -28,7 +28,8 @@ import {
   savedPageActions,
   uploadActions,
   getSDK,
-  cacheTracksActions
+  cacheTracksActions,
+  replaceTrackProgressModalActions
 } from '@audius/common/store'
 import {
   actionChannelDispatcher,
@@ -41,6 +42,7 @@ import type {
   TrackMetadata,
   UploadTrackMetadata
 } from '@audius/sdk-legacy/dist/utils'
+import { push } from 'connected-react-router'
 import { mapValues } from 'lodash'
 import { Channel, Task, buffers, channel } from 'redux-saga'
 import {
@@ -51,7 +53,8 @@ import {
   put,
   select,
   takeLatest,
-  take
+  take,
+  delay
 } from 'typed-redux-saga'
 
 import { make } from 'common/store/analytics/actions'
@@ -1181,18 +1184,28 @@ export function* updateTrackAudioAsync(
   }
 
   const libs = yield* call(audiusBackendInstance.getAudiusLibsTyped)
-  const metadata = newTrackMetadata(
-    toUploadTrackMetadata({
-      ...track,
-      // @ts-ignore - stem_of should accept null instead of undefined
-      stem_of: track.stem_of ?? null
-    })
-  )
+  const baseMetadata = newTrackMetadata(toUploadTrackMetadata({ ...track }))
+  // Full Metadata with the updated from the edit form
+  const fullMetadata = {
+    ...baseMetadata,
+    ...(payload.metadata ?? {}),
+    stem_of: track.stem_of ?? null
+  }
 
-  const handleProgressUpdate = (_progress: Parameters<ProgressCB>[0]) => {
-    // Do progress update things here
-    // if (!('audio' in progress)) return
-    // const { upload, transcode } = progress.audio
+  const handleProgressUpdate = (progress: Parameters<ProgressCB>[0]) => {
+    if (!('audio' in progress)) return
+    const { upload, transcode } = progress.audio
+
+    const uploadVal =
+      transcode === undefined ? (upload?.loaded ?? 0) / (upload?.total ?? 1) : 1
+
+    // put(
+    //   replaceTrackProgressModalActions.set({
+    //     progress: { upload: uploadVal, transcode: transcode?.decimal ?? 0 }
+    //   })
+    // )
+
+    console.log({ upload: uploadVal, transcode: transcode?.decimal ?? 0 })
   }
 
   const updatedMetadata = yield* call(
@@ -1200,15 +1213,17 @@ export function* updateTrackAudioAsync(
     userId,
     payload.file as File,
     null,
-    metadata,
+    fullMetadata,
     handleProgressUpdate
   )
 
   const newMetadata: TrackMetadata = {
-    ...metadata,
+    ...fullMetadata,
     orig_file_cid: updatedMetadata.orig_file_cid,
-    bpm: metadata.is_custom_bpm ? metadata.bpm : null,
-    musical_key: metadata.is_custom_musical_key ? metadata.musical_key : null,
+    bpm: fullMetadata.is_custom_bpm ? fullMetadata.bpm : null,
+    musical_key: fullMetadata.is_custom_musical_key
+      ? fullMetadata.musical_key
+      : null,
     audio_analysis_error_count: 0,
     orig_filename: updatedMetadata.orig_filename,
     preview_cid: updatedMetadata.preview_cid,
@@ -1226,6 +1241,12 @@ export function* updateTrackAudioAsync(
       newMetadata as TrackMetadataForUpload
     )
   )
+
+  // Delay to allow the user to see that the track replace upload has finished
+  yield* delay(3000)
+
+  yield* put(replaceTrackProgressModalActions.close())
+  yield* put(push(newMetadata.permalink))
 }
 
 function* watchUploadTracks() {
