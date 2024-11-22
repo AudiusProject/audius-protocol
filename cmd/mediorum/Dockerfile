@@ -38,7 +38,7 @@ RUN git clone https://github.com/mixxxdj/libKeyFinder.git /libKeyFinder && \
     cmake --install build
 
 # essentia release tags are very old - pin to a more recent commit
-ENV ESSENTIA_COMMIT="eaf8ddfd9a603fdda9850731cc39f06e6262afe5"
+ENV ESSENTIA_COMMIT="ed59cc48e37ac33ac15b252fc5ad7af4b9ecd51d"
 ENV PKG_CONFIG_PATH="/usr/local/lib/pkgconfig:/usr/lib/pkgconfig:/usr/lib/aarch64-linux-gnu/pkgconfig:/usr/share/pkgconfig"
 RUN git clone --depth 1 https://github.com/MTG/essentia.git /essentia && \
     cd /essentia && \
