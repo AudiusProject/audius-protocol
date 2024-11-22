@@ -2605,41 +2605,47 @@ class PurchasesDownload(Resource):
 
 
 sales_download_parser = current_user_parser.copy()
-sales_download_parser.add_argument(
-    "json",
-    type=inputs.boolean,
-    required=False,
-    default=False,
-    description="If true, returns the sales data as JSON instead of CSV",
-)
 
 
 @ns.route("/<string:id>/sales/download")
 class SalesDownload(Resource):
     @ns.doc(
         id="Download Sales as CSV",
-        description="Downloads the sales the user has made as a CSV file, or returns JSON if json=true query param is set",
+        description="Downloads the sales the user has made as a CSV file",
         params={"id": "A User ID"},
     )
-    @ns.produces(["text/csv", "application/json"])
+    @ns.produces(["text/csv"])
     @ns.expect(sales_download_parser)
     @auth_middleware(sales_download_parser, require_auth=True)
     def get(self, id, authed_user_id):
         decoded_id = decode_with_abort(id, ns)
         check_authorized(decoded_id, authed_user_id)
-        args = sales_download_parser.parse_args()
-        is_json = args.get("json", False)
 
         download_args = DownloadSalesArgs(seller_user_id=decoded_id)
-        sales = download_sales(download_args, return_json=is_json)
+        sales = download_sales(download_args, return_json=False)
 
-        if is_json:
-            return success_response(sales)
-
-        # CSV response
         response = Response(sales, content_type="text/csv")
         response.headers["Content-Disposition"] = "attachment; filename=sales.csv"
         return response
+
+
+@ns.route("/<string:id>/sales/download/json")
+class SalesDownloadJSON(Resource):
+    @ns.doc(
+        id="Download Sales as JSON",
+        description="Gets the sales data for the user in JSON format",
+        params={"id": "A User ID"},
+    )
+    @ns.produces(["application/json"])
+    @ns.expect(sales_download_parser)
+    @auth_middleware(sales_download_parser, require_auth=True)
+    def get(self, id, authed_user_id):
+        decoded_id = decode_with_abort(id, ns)
+        check_authorized(decoded_id, authed_user_id)
+
+        download_args = DownloadSalesArgs(seller_user_id=decoded_id)
+        sales = download_sales(download_args, return_json=True)
+        return success_response(sales)
 
 
 withdrawals_download_parser = current_user_parser.copy()
