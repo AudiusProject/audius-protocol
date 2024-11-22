@@ -5,7 +5,7 @@ export type TransactionData = MessageData<EIP712TypedData>['data']
 
 export type AuthService = {
   /**
-   * Get a shared secret, used for Chats
+   * Get a shared secret, used for Chats and Email encryption
    */
   getSharedSecret: (publicKey: string | Uint8Array) => Promise<Uint8Array>
   /**
