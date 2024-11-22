@@ -65,8 +65,7 @@ COPY scripts/init-db.sh scripts/init-db.sh
 RUN bash scripts/init-db.sh
 
 COPY requirements.txt requirements.txt
-RUN --mount=type=cache,target=/root/.cache \
-  python3 -m pip install -r requirements.txt --no-cache-dir
+RUN python3 -m pip install -r requirements.txt --no-cache-dir
 
 COPY nginx_conf /usr/local/openresty/conf/
 

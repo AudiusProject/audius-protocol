@@ -15,7 +15,16 @@ if [ -z "networkId" ]; then
 fi
 
 mkdir -p $dbPath
-npx ganache --logging.quiet --wallet.deterministic --wallet.totalAccounts 50 --database.dbPath "$dbPath" --chain.networkId "$networkId" &
+npx ganache \
+  --server.host "0.0.0.0" \
+  --server.port 8546 \
+  --logging.quiet \
+  --wallet.deterministic \
+  --wallet.totalAccounts 50 \
+  --database.dbPath "$dbPath" \
+  --chain.networkId "$networkId" \
+  &
+
 ganache_pid=$!
 
 npx truffle migrate --network predeploy
