@@ -4,22 +4,28 @@ import { User } from '@audius/common/models'
 import { ChatPermissionAction } from '@audius/common/store'
 import { CHAT_BLOG_POST_URL } from '@audius/common/utils'
 
-import { UserNameAndBadges } from 'components/user-name-and-badges/UserNameAndBadges'
+import { UserLink } from 'components/link'
 
 import styles from './InboxUnavailableMessage.module.css'
 import { UnblockUserConfirmationModal } from './UnblockUserConfirmationModal'
 
 const messages = {
+  follow: (user: User) => (
+    <>
+      You must follow <UserLink userId={user.user_id} /> before you can send
+      them messages.
+    </>
+  ),
   tip: (user: User) => (
     <>
-      You must send <UserNameAndBadges user={user} /> a tip before you can send
+      You must send <UserLink userId={user.user_id} /> a tip before you can send
       them messages.
     </>
   ),
   unblock: 'You cannot send messages to users you have blocked.',
   default: (user: User) => (
     <>
-      You can&apos;t send messages to <UserNameAndBadges user={user} />
+      You can&apos;t send messages to <UserLink userId={user.user_id} />
     </>
   ),
   learnMore: 'Learn More.',
@@ -51,6 +57,8 @@ export const InboxUnavailableMessage = ({
   }, [setIsUnblockUserConfirmationModalVisible])
 
   switch (action) {
+    case ChatPermissionAction.FOLLOW:
+      return <div className={styles.root}>{messages.follow(user)}</div>
     case ChatPermissionAction.TIP:
       return <div className={styles.root}>{messages.tip(user)}</div>
     case ChatPermissionAction.UNBLOCK:

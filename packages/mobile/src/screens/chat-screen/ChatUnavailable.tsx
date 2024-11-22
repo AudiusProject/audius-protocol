@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react'
 import { useCallback, useMemo } from 'react'
 
 import { useCanSendMessage } from '@audius/common/hooks'
@@ -6,18 +7,24 @@ import { CHAT_BLOG_POST_URL } from '@audius/common/utils'
 import { View } from 'react-native'
 import { useDispatch } from 'react-redux'
 
-import { Text, useLink } from 'app/components/core'
-import { useNavigation } from 'app/hooks/useNavigation'
+import { Text, TextLink } from '@audius/harmony-native'
+import { UserLink } from 'app/components/user-link'
 import { setVisibility } from 'app/store/drawers/slice'
 import { makeStyles } from 'app/styles'
 
 const messages = {
-  noAction: (userName?: string) => `You can't send messages to ${userName}. `,
-  tip1: 'You must send ',
-  tip2: ' a tip before you can send them messages.',
+  noAction: (user?: ReactNode) => (
+    <Text>You can&apos;t send messages to {user}. </Text>
+  ),
+  follow: (user?: ReactNode) => (
+    <Text>You must follow {user} before you can send them messages.</Text>
+  ),
+  tip: (user?: ReactNode) => (
+    <Text>You must send {user} a tip before you can send them messages.</Text>
+  ),
   blockee: 'You cannot send messages to users you have blocked. ',
   learnMore: 'Learn More.',
-  unblockUser: 'Unblock User.'
+  unblockUser: 'Unblock User'
 }
 
 const useStyles = makeStyles(({ spacing, palette, typography }) => ({
@@ -26,13 +33,6 @@ const useStyles = makeStyles(({ spacing, palette, typography }) => ({
     alignItems: 'center',
     paddingBottom: spacing(19),
     paddingHorizontal: spacing(6)
-  },
-  unavailableText: {
-    textAlign: 'center',
-    lineHeight: typography.fontSize.medium * 1.3
-  },
-  link: {
-    color: palette.secondary
   },
   empty: {
     height: spacing(10.5)
@@ -46,11 +46,8 @@ type ChatUnavailableProps = {
 export const ChatUnavailable = ({ chatId }: ChatUnavailableProps) => {
   const styles = useStyles()
   const dispatch = useDispatch()
-  const navigation = useNavigation()
 
   const { firstOtherUser: otherUser, callToAction } = useCanSendMessage(chatId)
-
-  const { onPress: handleLearnMorePress } = useLink(CHAT_BLOG_POST_URL)
 
   const handleUnblockPress = useCallback(() => {
     if (otherUser) {
@@ -68,56 +65,45 @@ export const ChatUnavailable = ({ chatId }: ChatUnavailableProps) => {
     return {
       [ChatPermissionAction.NONE]: () => (
         <>
-          <Text style={styles.unavailableText}>
-            {messages.noAction(otherUser?.name)}
-            <Text
-              style={[styles.unavailableText, styles.link]}
-              onPress={handleLearnMorePress}
-            >
-              {messages.learnMore}
-            </Text>
-          </Text>
+          {messages.noAction(otherUser?.name)}
+          <TextLink url={CHAT_BLOG_POST_URL}>{messages.learnMore}</TextLink>
         </>
       ),
-      [ChatPermissionAction.TIP]: () => (
-        <>
-          <Text style={styles.unavailableText}>
-            {messages.tip1}
-            <Text
-              onPress={() =>
-                navigation.navigate('Profile', { id: otherUser?.user_id })
-              }
-            >
-              {otherUser?.name}
-            </Text>
-            {messages.tip2}
-          </Text>
-        </>
-      ),
+      [ChatPermissionAction.FOLLOW]: () =>
+        otherUser ? (
+          <>
+            {messages.follow(
+              <UserLink
+                textVariant='body'
+                userId={otherUser?.user_id}
+                textLinkStyle={{ lineHeight: 0 }}
+              />
+            )}
+          </>
+        ) : null,
+      [ChatPermissionAction.TIP]: () =>
+        otherUser ? (
+          <>
+            {messages.tip(
+              <UserLink
+                textVariant='body'
+                userId={otherUser?.user_id}
+                textLinkStyle={{ lineHeight: 0 }}
+              />
+            )}
+          </>
+        ) : null,
       [ChatPermissionAction.UNBLOCK]: () => (
-        <>
-          <Text style={styles.unavailableText}>
-            {messages.blockee}
-            <Text
-              style={[styles.unavailableText, styles.link]}
-              onPress={handleUnblockPress}
-            >
-              {messages.unblockUser}
-            </Text>
-          </Text>
-        </>
+        <Text>
+          {messages.blockee}
+          <TextLink variant='visible' onPress={handleUnblockPress}>
+            {messages.unblockUser}
+          </TextLink>
+        </Text>
       ),
       [ChatPermissionAction.WAIT]: () => <View style={styles.empty} />
     }
-  }, [
-    styles.unavailableText,
-    styles.link,
-    styles.empty,
-    otherUser,
-    handleLearnMorePress,
-    navigation,
-    handleUnblockPress
-  ])
+  }, [otherUser, styles.empty, handleUnblockPress])
 
   if (!callToAction) return null
 
