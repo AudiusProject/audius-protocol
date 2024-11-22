@@ -1,4 +1,5 @@
 import { AudiusSdk } from '@audius/sdk'
+import { BestNewReleasesWindowEnum } from '@audius/sdk/src/sdk/api/generated/full'
 
 import {
   transformAndCleanList,
@@ -19,11 +20,10 @@ import { encodeHashId, removeNullable } from '../../utils'
 import {
   APIActivityV2,
   APIPlaylist,
-  APITrack,
   responseAdapter,
   makeActivity
 } from '../audius-api-client'
-import { AudiusBackend, AuthHeaders } from '../audius-backend'
+import { AudiusBackend } from '../audius-backend'
 
 type CollectionWithScore = APIPlaylist & { score: number }
 
