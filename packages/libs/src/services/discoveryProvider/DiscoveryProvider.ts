@@ -857,6 +857,61 @@ export class DiscoveryProvider {
     })
     return await this._makeRequest(req)
   }
+
+  /**
+   * @deprecated Migrate to using getBestNewReleases
+   */
+  async getTopFolloweeWindowed(
+    type: string,
+    window: string,
+    limit: string,
+    withUsers = false
+  ) {
+    const req = Requests.getTopFolloweeWindowed(type, window, limit, withUsers)
+    return await this._makeRequest(req)
+  }
+
+  async getBestNewReleases(
+    encodedUserId: string,
+    window: string,
+    limit: string,
+    withUsers = false
+  ) {
+    const req = Requests.getBestNewReleases(
+      window,
+      limit,
+      encodedUserId,
+      withUsers
+    )
+    return await this._makeRequest(req)
+  }
+
+  /**
+   * @deprecated Migrate to using getMostLovedTracks
+   */
+  async getTopFolloweeSaves(type: string, limit: string, withUsers = false) {
+    const req = Requests.getTopFolloweeSaves(type, limit, withUsers)
+    return await this._makeRequest(req)
+  }
+
+  async getMostLovedTracks(
+    encodedUserId: string,
+    limit: string,
+    withUsers = false
+  ) {
+    const req = Requests.getMostLovedTracks(encodedUserId, limit, withUsers)
+    return await this._makeRequest(req)
+  }
+
+  async getFeelingLuckyTracks(
+    encodedUserId: string,
+    limit: string,
+    withUsers = false
+  ) {
+    const req = Requests.getFeelingLuckyTracks(encodedUserId, limit, withUsers)
+    return await this._makeRequest(req)
+  }
+
   async getLatest(type: string, limit = 1, offset = 0) {
     const req = Requests.getLatest(type, limit, offset)
     return await this._makeRequest(req)
