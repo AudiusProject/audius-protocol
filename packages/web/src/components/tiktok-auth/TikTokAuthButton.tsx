@@ -59,7 +59,7 @@ export const TikTokAuth = ({
         } catch (e) {
           reportToSentry({
             error: e as Error,
-            name: 'Sign Up: TikTok auth failed'
+            name: 'Sign Up: Failed to get user from TikTok API'
           })
         }
       })

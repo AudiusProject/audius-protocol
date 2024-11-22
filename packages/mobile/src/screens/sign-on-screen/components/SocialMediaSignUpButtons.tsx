@@ -35,7 +35,7 @@ export const SocialMediaSignUpButtons = ({
   const { toast } = useToast()
   const handleFailure =
     (platform: SocialPlatform) =>
-    (e: unknown, additionalInfo?: Record<any, any>) => {
+    (e: Error | any, additionalInfo?: Record<any, any>) => {
       onError(e)
       reportToSentry({
         level: ErrorLevel.Error,
@@ -43,7 +43,16 @@ export const SocialMediaSignUpButtons = ({
         name: 'Sign Up: Social Media Error',
         additionalInfo: { page, platform, ...additionalInfo }
       })
-      toast({ content: socialMediaMessages.verificationError, type: 'error' })
+
+      const isAccountInUseError =
+        /Another Audius profile has already been authenticated/i.test(e.message)
+      const toastErrMessage = isAccountInUseError
+        ? socialMediaMessages.accountInUseError(platform)
+        : socialMediaMessages.verificationError
+      toast({
+        content: toastErrMessage,
+        type: 'error'
+      })
     }
 
   const handleSuccess = ({

@@ -43,10 +43,9 @@ const useSetProfileFromInstagram = () => {
   const audiusQueryContext = useAudiusQueryContext()
 
   return async ({ code }: { code: string }) => {
-    const { igUserProfile: profile } = await getInstagramProfile(
-      code,
-      env.IDENTITY_SERVICE
-    )
+    const res = await getInstagramProfile(code, env.IDENTITY_SERVICE)
+
+    const { igUserProfile: profile } = res
     // Update info in redux
     dispatch(
       signOnActions.setInstagramProfile(
@@ -125,32 +124,32 @@ export const SignUpFlowInstagramAuth = ({
     payload: InstagramCredentials | { error: string }
   ) => {
     setIsModalOpen(false)
-    if (!('error' in payload)) {
-      const { code } = payload
-      if (code) {
-        try {
-          const { requiresReview, isVerified, handle } =
-            await setProfileFromInstagram({
-              code
-            })
-          // keep analytics up to date
-          track(
-            make({
-              eventName: Name.CREATE_ACCOUNT_COMPLETE_INSTAGRAM,
-              page,
-              isVerified,
-              handle: handle || 'unknown'
-            })
-          )
-          onSuccess({ handle, requiresReview, platform: 'instagram' })
-        } catch (e) {
-          handleError(e)
-        }
-      } else {
-        handleError(new Error('No auth code in response from Instagram'))
+    if ('error' in payload) {
+      handleError(new Error(payload.error))
+    }
+
+    const { code } = payload as InstagramCredentials // already handled error - safe to cast
+    if (code) {
+      try {
+        const { requiresReview, isVerified, handle } =
+          await setProfileFromInstagram({
+            code
+          })
+        // keep analytics up to date
+        track(
+          make({
+            eventName: Name.CREATE_ACCOUNT_COMPLETE_INSTAGRAM,
+            page,
+            isVerified,
+            handle: handle || 'unknown'
+          })
+        )
+        onSuccess({ handle, requiresReview, platform: 'instagram' })
+      } catch (e) {
+        handleError(e)
       }
     } else {
-      handleError(new Error(payload.error))
+      handleError(new Error('No auth code in response from Instagram'))
     }
   }
 

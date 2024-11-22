@@ -8,8 +8,10 @@ import { TwitterProfile } from '@audius/common/store'
 import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
 import { reportToSentry } from 'store/errors/reportToSentry'
 
-const REQUEST_TOKEN_URL = `${audiusBackendInstance.identityServiceUrl}/twitter`
-const LOGIN_URL = `${audiusBackendInstance.identityServiceUrl}/twitter/callback`
+const REQUEST_TOKEN_URL =
+  `${audiusBackendInstance.identityServiceUrl}/twitter` as const
+const LOGIN_URL =
+  `${audiusBackendInstance.identityServiceUrl}/twitter/callback` as const
 
 export type TwitterAuthProps = {
   children?: ReactNode

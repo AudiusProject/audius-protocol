@@ -4,7 +4,6 @@ import {
   formatInstagramProfile
 } from '@audius/common/services'
 import { getContext } from '@audius/common/store'
-import * as Sentry from '@sentry/react-native'
 import { takeEvery, put, takeLatest, call } from 'redux-saga/effects'
 
 import * as oauthActions from './actions'
@@ -52,21 +51,16 @@ function* getOauthToken(
   headers: any,
   credentialsType: CredentialsType
 ) {
-  try {
-    const response = yield call(
-      fetch as any,
-      `${loginUrl}?oauth_verifier=${oAuthVerifier}&oauth_token=${oauthToken}`,
-      {
-        method: 'POST',
-        credentialsType,
-        headers
-      }
-    )
-    return response
-  } catch (error) {
-    console.error(error)
-    throw new Error(error.message)
-  }
+  const response = yield call(
+    fetch as any,
+    `${loginUrl}?oauth_verifier=${oAuthVerifier}&oauth_token=${oauthToken}`,
+    {
+      method: 'POST',
+      credentialsType,
+      headers
+    }
+  )
+  return response
 }
 
 function* doTwitterAuth({
@@ -118,22 +112,22 @@ function* doTwitterAuth({
             yield call(onFailure, 'Failed oauth')
           }
         } else {
-          yield call(onFailure, new Error(credentials.error).message)
+          yield call(onFailure, new Error(credentials.error))
         }
       }
     )
   } catch (error) {
-    yield call(onFailure, (error as any).message)
+    yield call(onFailure, error)
   }
 }
 
 function* watchTwitterAuth() {
   const { IDENTITY_SERVICE, AUDIUS_URL } = yield getContext('env')
+  const reportToSentry = yield getContext('reportToSentry')
   yield takeEvery(oauthActions.REQUEST_TWITTER_AUTH, function* () {
-    function* onFailure(error: any) {
-      console.error(error)
-      yield put(oauthActions.setTwitterError(error))
-      Sentry.captureException(`Twitter getProfile failed with ${error}`)
+    function* onFailure(error: Error) {
+      yield put(oauthActions.setTwitterError(error?.message))
+      reportToSentry({ error, name: 'Sign Up: Twitter auth saga error' })
     }
 
     function* onSuccess(twitterProfileRes: any) {
@@ -155,7 +149,7 @@ function* watchTwitterAuth() {
           )
         )
       } catch (error) {
-        yield call(onFailure, (error as any).message)
+        yield call(onFailure, error)
       }
     }
 
@@ -186,25 +180,22 @@ export const getInstagramProfile = async (
   code: string,
   identityService: string
 ) => {
-  try {
-    const profileResp = await fetch(`${identityService}/instagram`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ code })
-    })
-    const profileRespJson = await profileResp.json()
-    if (!profileRespJson.username) {
-      throw new Error(profileRespJson.error || 'Unable to fetch information')
-    }
-    const igUserProfile = igUserFields.reduce((profile: any, field) => {
-      profile[field] = profileRespJson[field]
-      return profile
-    }, {})
-    return { username: igUserProfile.username, igUserProfile }
-  } catch (error) {
-    Sentry.captureException(`Instagram getProfile failed with ${error}`)
-    throw new Error((error as any).message)
+  const profileResp = await fetch(`${identityService}/instagram`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ code })
+  })
+  const profileRespJson = await profileResp.json()
+  if (!profileRespJson.username) {
+    throw new Error(
+      profileRespJson.error || 'Unable to fetch instagram username'
+    )
   }
+  const igUserProfile = igUserFields.reduce((profile: any, field) => {
+    profile[field] = profileRespJson[field]
+    return profile
+  }, {})
+  return { username: igUserProfile.username, igUserProfile }
 }
 
 function* doInstagramAuth({
@@ -243,12 +234,12 @@ function* doInstagramAuth({
             yield call(onFailure, 'Unable to retrieve information')
           }
         } else {
-          yield call(onFailure, new Error(credentials.error).message)
+          yield call(onFailure, new Error(credentials.error))
         }
       }
     )
   } catch (error) {
-    yield call(onFailure, (error as any).message)
+    yield call(onFailure, error)
   }
 }
 
@@ -256,9 +247,9 @@ function* watchInstagramAuth() {
   const remoteConfigInstance = yield getContext('remoteConfigInstance')
   const { GENERAL_ADMISSION } = yield getContext('env')
   yield takeEvery(oauthActions.REQUEST_INSTAGRAM_AUTH, function* () {
-    function* onFailure(error: any) {
+    function* onFailure(error: Error) {
       console.error(error)
-      yield put(oauthActions.setInstagramError(error))
+      yield put(oauthActions.setInstagramError(error?.message))
     }
 
     function* onSuccess(uuid: string, instagramProfile: any) {
