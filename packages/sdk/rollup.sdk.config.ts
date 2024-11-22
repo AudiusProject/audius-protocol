@@ -1,3 +1,5 @@
 import { outputConfigs } from './rollup.config'
 
-export default [outputConfigs.sdkConfigEs, outputConfigs.sdkConfigCjs]
+// TODO-NOW: revert
+// export default [outputConfigs.sdkConfigEs, outputConfigs.sdkConfigCjs]
+export default [outputConfigs.sdkConfigCjs]

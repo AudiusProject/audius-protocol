@@ -10,6 +10,8 @@ import {
 import type { LoggerService } from '../../services/Logger'
 import type { ClaimableTokensClient } from '../../services/Solana/programs/ClaimableTokensClient/ClaimableTokensClient'
 import type { SolanaClient } from '../../services/Solana/programs/SolanaClient'
+import { HashId } from '../../types/HashId'
+import { generateMetadataCidV1 } from '../../utils/cid'
 import { parseParams } from '../../utils/parseParams'
 import { retry3 } from '../../utils/retry'
 import {
@@ -35,7 +37,9 @@ import {
   SendTipRequest,
   SendTipSchema,
   SendTipReactionRequest,
-  SendTipReactionRequestSchema
+  SendTipReactionRequestSchema,
+  CreateUserRequest,
+  CreateUserSchema
 } from './types'
 
 export class UsersApi extends GeneratedUsersApi {
@@ -50,6 +54,100 @@ export class UsersApi extends GeneratedUsersApi {
   ) {
     super(configuration)
     this.logger = logger.createPrefixedLogger('[users-api]')
+  }
+
+  /** @hidden
+   * Generate a new user id for use in creation flow
+   */
+  async _generateUserId() {
+    const response = new runtime.JSONApiResponse<{ data: string }>(
+      await this.request({
+        path: '/users/unclaimed_id',
+        method: 'GET',
+        headers: {},
+        // TODO: User 'no-cache' header instead?
+        query: {
+          noCache: Math.floor(Math.random() * 1000).toString()
+        }
+      })
+    )
+    return await response.value()
+  }
+
+  /** @hidden
+   * Create a user
+   */
+  async createUser(
+    params: CreateUserRequest,
+    advancedOptions?: AdvancedOptions
+  ) {
+    const { onProgress, profilePictureFile, coverArtFile, metadata } =
+      await parseParams('createUser', CreateUserSchema)(params)
+
+    const { data } = await this._generateUserId()
+    if (!data) {
+      throw new Error('Failed to generate userId')
+    }
+    const userId = HashId.parse(data)
+
+    // TODO: Generate CID multihash
+    // TODO: Pluck out only the fields we care about for creation? Or push that
+    // up to sagas/components
+
+    // TODO: Share with update flow
+    const [profilePictureResp, coverArtResp] = await Promise.all([
+      profilePictureFile &&
+        retry3(
+          async () =>
+            await this.storage.uploadFile({
+              file: profilePictureFile,
+              onProgress,
+              template: 'img_square',
+              auth: this.auth
+            }),
+          (e) => {
+            this.logger.info('Retrying uploadProfilePicture', e)
+          }
+        ),
+      coverArtFile &&
+        retry3(
+          async () =>
+            await this.storage.uploadFile({
+              file: coverArtFile,
+              onProgress,
+              template: 'img_backdrop',
+              auth: this.auth
+            }),
+          (e) => {
+            this.logger.info('Retrying uploadProfileCoverArt', e)
+          }
+        )
+    ])
+
+    const updatedMetadata = snakecaseKeys({
+      ...metadata,
+      ...(profilePictureResp
+        ? { profilePictureSizes: profilePictureResp?.id }
+        : {}),
+      ...(coverArtResp ? { coverPhotoSizes: coverArtResp?.id } : {})
+    })
+
+    const cid = (await generateMetadataCidV1(updatedMetadata)).toString()
+    console.log(JSON.stringify({ cid, data: updatedMetadata }, null, 2))
+
+    // Write metadata to chain
+    return await this.entityManager.manageEntity({
+      userId,
+      entityType: EntityType.USER,
+      entityId: userId,
+      action: Action.CREATE,
+      metadata: JSON.stringify({
+        cid,
+        data: updatedMetadata
+      }),
+      auth: this.auth,
+      ...advancedOptions
+    })
   }
 
   /** @hidden

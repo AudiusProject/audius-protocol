@@ -4,6 +4,35 @@ import { ImageFile } from '../../types/File'
 import { HashId } from '../../types/HashId'
 import { getReaction, reactionsMap } from '../../utils/reactionsMap'
 
+// TODO: Merge shared parts of this with update flow
+export const CreateUserSchema = z.object({
+  profilePictureFile: z.optional(ImageFile),
+  coverArtFile: z.optional(ImageFile),
+  onProgress: z.optional(z.function().args(z.number())),
+  metadata: z
+    .object({
+      name: z.string(),
+      handle: z.string(),
+      bio: z.optional(z.string()),
+      location: z.optional(z.string()),
+      splUsdcPayoutWallet: z.optional(z.string()),
+      profilePictureSizes: z.optional(z.string()),
+      coverPhotoSizes: z.optional(z.string()),
+      website: z.optional(z.string()),
+      donation: z.optional(z.string())
+    })
+    .strict()
+})
+
+export type CreateUserRequest = Omit<
+  z.input<typeof CreateUserSchema>,
+  'onProgress'
+> & {
+  // Typing function manually because z.function() does not
+  // support argument names
+  onProgress?: (progress: number) => void
+}
+
 export const UpdateProfileSchema = z
   .object({
     userId: HashId,

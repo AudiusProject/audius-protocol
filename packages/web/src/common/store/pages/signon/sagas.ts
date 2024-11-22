@@ -479,6 +479,19 @@ function* signUp() {
       handle,
       function* () {
         const reportToSentry = yield* getContext('reportToSentry')
+
+        /*
+        1. Create user on identity
+         - 1a. Check if already has a wallet? If not, do authService signUp()
+         - 1b. generate recovery link
+        2. Create User on chain
+          - 2a. Generate user id
+          - 2b. validate metadata (this happens with zod)
+          - 2c. Upload profile picture and cover photo if they exist
+          - 2d. Generate metadata multihash? (I think we don't need this)
+          - 2e. EM transaction to create user
+          - 2f. Wait for discovery to index
+        */
         const { blockHash, blockNumber, userId, error, errorStatus, phase } =
           yield* call(audiusBackendInstance.signUp, {
             email,
