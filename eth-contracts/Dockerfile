@@ -16,6 +16,7 @@ COPY ./contracts ./contracts
 COPY ./migrations ./migrations 
 COPY ./scripts ./scripts 
 COPY ./utils ./utils
+COPY ./test ./test
 COPY ./truffle-config.js ./contract-config.js .solcover.js ./
 
 RUN chmod +x ./scripts/setup-predeployed-ganache.sh ./scripts/setup-dev.sh
