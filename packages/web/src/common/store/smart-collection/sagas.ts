@@ -13,6 +13,7 @@ import {
   getContext
 } from '@audius/common/store'
 import { encodeHashId, removeNullable, route } from '@audius/common/utils'
+import { BestNewReleasesWindowEnum } from '@audius/sdk/src/sdk/api/generated/full'
 import { takeEvery, put, call, select } from 'typed-redux-saga'
 
 import { processAndCacheTracks } from 'common/store/cache/tracks/utils'
@@ -92,15 +93,14 @@ function* fetchBestNewReleases() {
   if (currentUserId == null) {
     return
   }
-  const tracks = yield* call(
-    [explore, 'getTopFolloweeTracksFromWindow'],
+  const tracks = yield* call([explore, 'getBestNewReleases'], {
     currentUserId,
-    'month'
-  )
+    window: BestNewReleasesWindowEnum.Month
+  })
 
   const trackIds = tracks
     .filter((track) => !track.user.is_deactivated)
-    .map((track: Track) => ({
+    .map((track: UserTrackMetadata) => ({
       time: track.created_at,
       track: track.track_id
     }))
