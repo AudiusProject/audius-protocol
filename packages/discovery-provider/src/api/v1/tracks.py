@@ -1607,7 +1607,11 @@ class FullRemixingRoute(Resource):
 """
 best_new_releases_parser = current_user_parser.copy()
 best_new_releases_parser.add_argument(
-    "window", required=True, choices=("week", "month", "year"), type=str
+    "window",
+    required=True,
+    choices=("week", "month", "year"),
+    type=str,
+    description="The window from now() to look back over",
 )
 best_new_releases_parser.add_argument(
     "limit",
@@ -1628,9 +1632,10 @@ best_new_releases_parser.add_argument(
 class BestNewReleases(Resource):
     @record_metrics
     @full_ns.doc(
-        id="Best New Releases",
+        id="Get Best New Releases",
         description='Gets the tracks found on the "Best New Releases" smart playlist',
     )
+    @full_ns.expect(best_new_releases_parser)
     @full_ns.marshal_with(full_tracks_response)
     @cache(ttl_sec=10)
     def get(self):
