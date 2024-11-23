@@ -55,7 +55,7 @@ const RankAndIndexIndicator = ({
     <>
       {hasOrdering && (
         <div className={styles.order}>
-          {index <= 5 && (
+          {!isLoading && index <= 5 && (
             <div className={styles.crownContainer}>
               <IconCrown />
             </div>
@@ -218,6 +218,7 @@ const TrackTile = ({
             ) : (
               <Flex css={{ marginRight: 132 }}>
                 <TextLink
+                  css={{ alignItems: 'center' }}
                   to={permalink}
                   isActive={isActive}
                   textVariant='title'
