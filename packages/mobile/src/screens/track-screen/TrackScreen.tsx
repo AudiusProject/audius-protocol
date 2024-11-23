@@ -35,7 +35,7 @@ const { getLineup, getRemixParentTrack, getTrack, getUser } = trackPageSelectors
 const { getIsReachable } = reachabilitySelectors
 
 const messages = {
-  moreBy: 'More By',
+  moreBy: 'More by',
   originalTrack: 'Original Track',
   ...trackPageMessages
 }
