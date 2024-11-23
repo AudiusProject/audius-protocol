@@ -2,7 +2,7 @@ import { SagaIterator } from 'redux-saga'
 import { call, put, select, takeLatest } from 'typed-redux-saga'
 
 import { userApiFetchSaga } from '~/api/user'
-import { AccountUserMetadata, Id, Status, User } from '~/models'
+import { AccountUserMetadata, Id, Status } from '~/models'
 import { recordIP } from '~/services/audius-backend/RecordIP'
 import { accountActions, accountSelectors } from '~/store/account'
 import { getUserId, getUserHandle } from '~/store/account/selectors'
