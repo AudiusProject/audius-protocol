@@ -55,7 +55,7 @@ const RankAndIndexIndicator = ({
     <>
       {hasOrdering && (
         <div className={styles.order}>
-          {index <= 5 && (
+          {!isLoading && index <= 5 && (
             <div className={styles.crownContainer}>
               <IconCrown />
             </div>
