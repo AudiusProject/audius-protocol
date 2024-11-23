@@ -60,12 +60,14 @@ export const CommentForm = ({
 
   const location = useLocation()
   const previousLocation = usePrevious(location)
+  const hasLocationChanged =
+    previousLocation && previousLocation.pathname !== location.pathname
   useEffect(() => {
-    if (previousLocation && previousLocation.pathname !== location.pathname) {
+    if (hasLocationChanged) {
       // Reset input text when the location changes
       setMessageId((prev) => prev + 1)
     }
-  }, [previousLocation, location])
+  }, [hasLocationChanged])
 
   const handlePostComment = (message: string, mentions?: CommentMention[]) => {
     const trackPosition = audioPlayer
