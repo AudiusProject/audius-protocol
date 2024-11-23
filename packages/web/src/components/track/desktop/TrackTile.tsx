@@ -218,6 +218,7 @@ const TrackTile = ({
             ) : (
               <Flex css={{ marginRight: 132 }}>
                 <TextLink
+                  css={{ alignItems: 'center' }}
                   to={permalink}
                   isActive={isActive}
                   textVariant='title'
