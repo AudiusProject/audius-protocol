@@ -30,7 +30,7 @@ const FollowsYouBadge = ({
     { disabled: !currentUserId }
   )
 
-  if (!user?.does_current_user_follow) return null
+  if (!user?.does_follow_current_user) return null
 
   return (
     <div

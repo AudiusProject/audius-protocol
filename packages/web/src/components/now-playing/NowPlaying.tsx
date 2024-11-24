@@ -11,7 +11,6 @@ import {
   SquareSizes,
   ID
 } from '@audius/common/models'
-import { trpc } from '@audius/common/services'
 import {
   accountSelectors,
   queueActions,

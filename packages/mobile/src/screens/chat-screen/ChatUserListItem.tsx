@@ -1,6 +1,5 @@
 import { useCallback } from 'react'
 
-import { trpc } from '@audius/common/services'
 import {
   accountSelectors,
   cacheUsersSelectors,
@@ -256,7 +255,7 @@ export const ChatUserListItem = ({
                   </View>
                 )}
               </View>
-              {user?.does_current_user_follow && canCreateChat ? (
+              {user?.does_follow_current_user && canCreateChat ? (
                 <Text
                   fontSize='xxs'
                   weight='heavy'

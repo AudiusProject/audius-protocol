@@ -10,7 +10,6 @@ import {
   Remix,
   AccessConditions
 } from '@audius/common/models'
-import { trpc } from '@audius/common/services'
 import {
   CommonState,
   OverflowAction,

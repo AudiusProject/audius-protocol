@@ -34,6 +34,7 @@ export type UserMetadata = {
   current_user_followee_follow_count: number
   does_current_user_follow: boolean
   does_current_user_subscribe?: boolean
+  does_follow_current_user: boolean
   erc_wallet: WalletAddress
   followee_count: number
   follower_count: number
