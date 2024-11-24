@@ -4,7 +4,6 @@ import { ImageFile } from '../../types/File'
 import { HashId } from '../../types/HashId'
 import { getReaction, reactionsMap } from '../../utils/reactionsMap'
 
-// TODO: Merge shared parts of this with update flow
 export const CreateUserSchema = z.object({
   profilePictureFile: z.optional(ImageFile),
   coverArtFile: z.optional(ImageFile),

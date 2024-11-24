@@ -56,14 +56,15 @@ program
         wallet: await auth.getAddress()
       }
 
-      // TODO: profilePictureFile and coverArtFile?
-      const response = await audiusSdk.users.createUser({ metadata })
+      const {
+        metadata: { userId }
+      } = await audiusSdk.users.createUser({ metadata })
 
       const entropy = audiusLibs.localStorage.getItem('hedgehog-entropy-key')
 
       console.log(chalk.green('Successfully created user!'))
       console.log(chalk.yellow.bold('Handle:   '), metadata.handle)
-      console.log(chalk.yellow.bold('User ID:  '), response.userId)
+      console.log(chalk.yellow.bold('User ID:  '), userId)
       console.log(chalk.yellow.bold('Email:    '), email)
       console.log(chalk.yellow.bold('Password: '), password)
       console.log(chalk.yellow.bold('Entropy:  '), entropy)

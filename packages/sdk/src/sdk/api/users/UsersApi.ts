@@ -65,7 +65,6 @@ export class UsersApi extends GeneratedUsersApi {
         path: '/users/unclaimed_id',
         method: 'GET',
         headers: {},
-        // TODO: User 'no-cache' header instead?
         query: {
           noCache: Math.floor(Math.random() * 1000).toString()
         }
@@ -90,7 +89,6 @@ export class UsersApi extends GeneratedUsersApi {
     }
     const userId = HashId.parse(data)
 
-    // TODO: Share with update flow
     const [profilePictureResp, coverArtResp] = await Promise.all([
       profilePictureFile &&
         retry3(
@@ -134,7 +132,7 @@ export class UsersApi extends GeneratedUsersApi {
     const cid = (await generateMetadataCidV1(entityMetadata)).toString()
 
     // Write metadata to chain
-    await this.entityManager.manageEntity({
+    const { blockHash, blockNumber } = await this.entityManager.manageEntity({
       userId,
       entityType: EntityType.USER,
       entityId: userId,
@@ -146,8 +144,8 @@ export class UsersApi extends GeneratedUsersApi {
       auth: this.auth,
       ...advancedOptions
     })
-    // TODO: Needs a typed response.
-    return updatedMetadata
+
+    return { blockHash, blockNumber, metadata: updatedMetadata }
   }
 
   /** @hidden

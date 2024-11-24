@@ -49,6 +49,7 @@ export default interface SignOnPageState {
   otp: EditableField
   handle: EditableField
   genres: string[]
+  // TODO-NOW: remove, this is added during social account flow
   verified: boolean
   useMetaMask: boolean
   accountReady: boolean
