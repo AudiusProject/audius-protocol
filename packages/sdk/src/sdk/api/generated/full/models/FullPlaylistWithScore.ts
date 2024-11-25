@@ -320,7 +320,7 @@ export interface FullPlaylistWithScore {
      * @type {number}
      * @memberof FullPlaylistWithScore
      */
-    score?: number;
+    score: number;
 }
 
 /**
@@ -353,6 +353,7 @@ export function instanceOfFullPlaylistWithScore(value: object): value is FullPla
     isInstance = isInstance && "userId" in value && value["userId"] !== undefined;
     isInstance = isInstance && "isStreamGated" in value && value["isStreamGated"] !== undefined;
     isInstance = isInstance && "isScheduledRelease" in value && value["isScheduledRelease"] !== undefined;
+    isInstance = isInstance && "score" in value && value["score"] !== undefined;
 
     return isInstance;
 }
@@ -407,7 +408,7 @@ export function FullPlaylistWithScoreFromJSONTyped(json: any, ignoreDiscriminato
         'copyrightLine': !exists(json, 'copyright_line') ? undefined : json['copyright_line'],
         'producerCopyrightLine': !exists(json, 'producer_copyright_line') ? undefined : json['producer_copyright_line'],
         'parentalWarningType': !exists(json, 'parental_warning_type') ? undefined : json['parental_warning_type'],
-        'score': !exists(json, 'score') ? undefined : json['score'],
+        'score': json['score'],
     };
 }
 

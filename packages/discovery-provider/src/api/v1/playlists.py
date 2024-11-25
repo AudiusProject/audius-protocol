@@ -75,7 +75,7 @@ full_playlists_response = make_full_response(
 full_playlist_with_score = full_ns.clone(
     "full_playlist_with_score",
     full_playlist_model,
-    {"score": fields.Float},
+    {"score": fields.Float(required=True)},
 )
 
 full_playlist_with_score_response = make_full_response(
