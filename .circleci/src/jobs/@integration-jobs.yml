@@ -55,6 +55,9 @@ integration-test:
           . ~/.profile
           audius-compose connect --nopass
           ./scripts/check-generated-types.sh
+    # NOTE: disabled until we have a plan for fixing the flakyness
+    # output was already being ignored
+
     # - run:
     #     name: install playwright
     #     command: sudo NEEDRESTART_MODE=l PLAYWRIGHT_BROWSERS_PATH=/home/circleci/.cache/ms-playwright npx playwright install --with-deps
