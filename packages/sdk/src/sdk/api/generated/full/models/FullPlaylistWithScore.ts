@@ -242,7 +242,7 @@ export interface FullPlaylistWithScore {
      * @type {Array<TrackFull>}
      * @memberof FullPlaylistWithScore
      */
-    tracks: Array<TrackFull>;
+    tracks?: Array<TrackFull>;
     /**
      * 
      * @type {string}
@@ -351,7 +351,6 @@ export function instanceOfFullPlaylistWithScore(value: object): value is FullPla
     isInstance = isInstance && "updatedAt" in value && value["updatedAt"] !== undefined;
     isInstance = isInstance && "addedTimestamps" in value && value["addedTimestamps"] !== undefined;
     isInstance = isInstance && "userId" in value && value["userId"] !== undefined;
-    isInstance = isInstance && "tracks" in value && value["tracks"] !== undefined;
     isInstance = isInstance && "isStreamGated" in value && value["isStreamGated"] !== undefined;
     isInstance = isInstance && "isScheduledRelease" in value && value["isScheduledRelease"] !== undefined;
 
@@ -395,7 +394,7 @@ export function FullPlaylistWithScoreFromJSONTyped(json: any, ignoreDiscriminato
         'updatedAt': json['updated_at'],
         'addedTimestamps': ((json['added_timestamps'] as Array<any>).map(PlaylistAddedTimestampFromJSON)),
         'userId': json['user_id'],
-        'tracks': ((json['tracks'] as Array<any>).map(TrackFullFromJSON)),
+        'tracks': !exists(json, 'tracks') ? undefined : ((json['tracks'] as Array<any>).map(TrackFullFromJSON)),
         'coverArt': !exists(json, 'cover_art') ? undefined : json['cover_art'],
         'coverArtSizes': !exists(json, 'cover_art_sizes') ? undefined : json['cover_art_sizes'],
         'coverArtCids': !exists(json, 'cover_art_cids') ? undefined : PlaylistArtworkFromJSON(json['cover_art_cids']),
@@ -448,7 +447,7 @@ export function FullPlaylistWithScoreToJSON(value?: FullPlaylistWithScore | null
         'updated_at': value.updatedAt,
         'added_timestamps': ((value.addedTimestamps as Array<any>).map(PlaylistAddedTimestampToJSON)),
         'user_id': value.userId,
-        'tracks': ((value.tracks as Array<any>).map(TrackFullToJSON)),
+        'tracks': value.tracks === undefined ? undefined : ((value.tracks as Array<any>).map(TrackFullToJSON)),
         'cover_art': value.coverArt,
         'cover_art_sizes': value.coverArtSizes,
         'cover_art_cids': PlaylistArtworkToJSON(value.coverArtCids),
