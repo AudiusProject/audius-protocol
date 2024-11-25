@@ -10,7 +10,7 @@ import {
   isContentFollowGated,
   isContentUSDCPurchaseGated
 } from '@audius/common/models'
-import { CollectionValues, newTrackMetadata } from '@audius/common/schemas'
+import { CollectionValues } from '@audius/common/schemas'
 import {
   fileToSdk,
   trackMetadataForUploadToSdk
@@ -42,10 +42,7 @@ import {
   waitForAccount
 } from '@audius/common/utils'
 import { ProgressHandler, AudiusSdk } from '@audius/sdk'
-import type {
-  TrackMetadata,
-  UploadTrackMetadata
-} from '@audius/sdk-legacy/dist/utils'
+import type { TrackMetadata } from '@audius/sdk-legacy/dist/utils'
 import { push } from 'connected-react-router'
 import { mapValues } from 'lodash'
 import { Channel, Task, buffers, channel } from 'redux-saga'
@@ -87,17 +84,6 @@ type ProgressAction = ReturnType<typeof updateProgress>
 
 const MAX_CONCURRENT_UPLOADS = 6
 const MAX_CONCURRENT_PUBLISHES = 6
-
-/**
- * Convert the track metadata for upload to what libs expects.
- * Only thing that needs to be adjusted is preview start seconds is non-optional, evidently?
- */
-const toUploadTrackMetadata = (
-  trackMetadata: TrackMetadataForUpload
-): UploadTrackMetadata => ({
-  ...trackMetadata,
-  preview_start_seconds: trackMetadata.preview_start_seconds ?? null
-})
 
 /**
  * Combines the metadata for a track and a collection (playlist or album),
@@ -820,10 +806,10 @@ export function* uploadCollection(
   }
 
   // First upload album art
-  const { artwork } = collectionMetadata
-  if (artwork && 'file' in artwork) {
-    yield* call(audiusBackendInstance.uploadImage, artwork.file as File)
-  }
+  // const { artwork } = collectionMetadata
+  // if (artwork && 'file' in artwork) {
+  //   yield* call(audiusBackendInstance.uploadImage, artwork.file as File)
+  // }
 
   // Propagate the collection metadata to the tracks
   for (const track of tracks) {
@@ -1187,7 +1173,7 @@ export function* updateTrackAudioAsync(
 
   if (tracks.length === 0) return
   const track = tracks[0]
-  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
+  const sdk = yield* getSDK()
   const userId = yield* select(accountSelectors.getUserId)
 
   if (!track) return
@@ -1195,14 +1181,7 @@ export function* updateTrackAudioAsync(
     throw new Error('No user id found during upload. Not signed in?')
   }
 
-  const libs = yield* call(audiusBackendInstance.getAudiusLibsTyped)
-  const baseMetadata = newTrackMetadata(toUploadTrackMetadata({ ...track }))
-  // Full Metadata with the updates from the edit form
-  const fullMetadata = {
-    ...baseMetadata,
-    ...(payload.metadata ?? {}),
-    stem_of: track.stem_of ?? null
-  }
+  const metadata = trackMetadataForUploadToSdk(track)
 
   const dispatch = yield* getContext('dispatch')
   const handleProgressUpdate = (progress: Parameters<ProgressHandler>[0]) => {
@@ -1220,30 +1199,28 @@ export function* updateTrackAudioAsync(
   }
 
   const updatedMetadata = yield* call(
-    [libs.Track, libs.Track!.uploadTrackV2],
-    userId,
-    payload.file as File,
-    null,
-    fullMetadata,
-    handleProgressUpdate
+    [sdk.tracks, sdk.tracks.uploadTrackFiles],
+    {
+      userId: Id.parse(userId),
+      trackFile: fileToSdk(payload.file, 'audio'),
+      metadata,
+      onProgress: handleProgressUpdate
+    }
   )
 
   const newMetadata: TrackMetadata = {
-    ...fullMetadata,
-    orig_file_cid: updatedMetadata.orig_file_cid,
-    bpm: fullMetadata.is_custom_bpm ? fullMetadata.bpm : null,
-    musical_key: fullMetadata.is_custom_musical_key
-      ? fullMetadata.musical_key
-      : null,
+    ...track,
+    orig_file_cid: updatedMetadata.origFileCid,
+    bpm: metadata.isCustomBpm ? track.bpm : null,
+    musical_key: metadata.isCustomMusicalKey ? metadata.musicalKey : null,
     audio_analysis_error_count: 0,
-    orig_filename: updatedMetadata.orig_filename,
-    preview_cid: updatedMetadata.preview_cid,
-    preview_start_seconds: updatedMetadata.preview_start_seconds ?? 0,
-    track_cid: updatedMetadata.track_cid,
-    audio_upload_id: updatedMetadata.audio_upload_id,
-    duration: updatedMetadata.duration,
-    // @ts-ignore: Issue with the type
-    file_type: updatedMetadata.file_type
+    orig_filename: updatedMetadata.origFilename || '',
+    preview_cid: updatedMetadata.previewCid || '',
+    preview_start_seconds: updatedMetadata.previewStartSeconds ?? 0,
+    track_cid: updatedMetadata.trackCid || '',
+    audio_upload_id: updatedMetadata.audioUploadId,
+    duration: updatedMetadata.duration
+    // file_type: updatedMetadata.fileType
   }
 
   yield* put(
