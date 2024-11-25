@@ -255,6 +255,15 @@ comment_metadata_format = {
     "track_timestamp_s": None,
 }
 
+encrypted_email_metadata_format = {
+    "email_owner_user_id": None,
+    "primary_user_id": None,
+    "encrypted_email": None,
+    "encrypted_key": None,
+    "delegated_user_ids": None,
+    "delegated_keys": None,
+}
+
 
 class PlaylistMetadata(TypedDict):
     playlist_contents: Optional[Any]
