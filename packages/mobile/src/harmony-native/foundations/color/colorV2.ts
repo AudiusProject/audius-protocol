@@ -1,5 +1,5 @@
-import { primitiveTheme as harmonyPrimitiveTheme } from '@audius/harmony/src/foundations/color/primitive'
-import { themes as harmonyThemes } from '@audius/harmony/src/foundations/theme/theme'
+import { primitiveThemeV2 as harmonyPrimitiveThemeV2 } from '@audius/harmony/src/foundations/color/primitiveV2'
+import { themesV2 as harmonyThemesV2 } from '@audius/harmony/src/foundations/theme/themeV2'
 import { merge } from 'lodash'
 
 // linear-gradient at 315deg
@@ -13,7 +13,10 @@ const primitiveOverrides = {
     special: {
       gradient: {
         ...baseLinearGradient,
-        colors: ['#5B23E1', '#A22FEB']
+        colors: [
+          harmonyPrimitiveThemeV2.day.special.gradientStop1,
+          harmonyPrimitiveThemeV2.day.special.gradientStop2
+        ]
       }
     }
   },
@@ -21,7 +24,10 @@ const primitiveOverrides = {
     special: {
       gradient: {
         ...baseLinearGradient,
-        colors: ['#7652CC', '#B05CE6']
+        colors: [
+          harmonyPrimitiveThemeV2.dark.special.gradientStop1,
+          harmonyPrimitiveThemeV2.dark.special.gradientStop2
+        ]
       }
     }
   },
@@ -29,7 +35,10 @@ const primitiveOverrides = {
     special: {
       gradient: {
         ...baseLinearGradient,
-        colors: ['#7652CC', '#B05CE6']
+        colors: [
+          harmonyPrimitiveThemeV2.matrix.special.gradientStop1,
+          harmonyPrimitiveThemeV2.matrix.special.gradientStop2
+        ]
       }
     }
   }
@@ -62,58 +71,58 @@ const semanticOverrides = {
   }
 }
 
-export const colorTheme = {
+export const colorThemeV2 = {
   day: {
-    ...harmonyThemes.day.color,
+    ...harmonyThemesV2.day.color,
     special: {
-      ...harmonyThemes.day.color.special,
+      ...harmonyThemesV2.day.color.special,
       ...primitiveOverrides.day.special
     },
     text: {
-      ...harmonyThemes.day.color.text,
+      ...harmonyThemesV2.day.color.text,
       ...semanticOverrides.day.text
     },
     icon: {
-      ...harmonyThemes.day.color.icon,
+      ...harmonyThemesV2.day.color.icon,
       ...semanticOverrides.day.icon
     }
   },
   dark: {
-    ...harmonyThemes.dark.color,
+    ...harmonyThemesV2.dark.color,
     special: {
-      ...harmonyThemes.dark.color.special,
+      ...harmonyThemesV2.dark.color.special,
       ...primitiveOverrides.dark.special
     },
     text: {
-      ...harmonyThemes.dark.color.text,
+      ...harmonyThemesV2.dark.color.text,
       ...semanticOverrides.dark.text
     },
     icon: {
-      ...harmonyThemes.dark.color.icon,
+      ...harmonyThemesV2.dark.color.icon,
       ...semanticOverrides.dark.icon
     }
   },
   matrix: {
-    ...harmonyThemes.matrix.color,
+    ...harmonyThemesV2.matrix.color,
     special: {
-      ...harmonyThemes.matrix.color.special,
+      ...harmonyThemesV2.matrix.color.special,
       ...primitiveOverrides.matrix.special
     },
     text: {
-      ...harmonyThemes.matrix.color.text,
+      ...harmonyThemesV2.matrix.color.text,
       ...semanticOverrides.matrix.text
     },
     icon: {
-      ...harmonyThemes.matrix.color.icon,
+      ...harmonyThemesV2.matrix.color.icon,
       ...semanticOverrides.matrix.icon
     }
   }
 }
 
 // Only used for story
-export const primitiveTheme = merge(
+export const primitiveThemeV2 = merge(
   {},
-  harmonyPrimitiveTheme,
+  harmonyPrimitiveThemeV2,
   primitiveOverrides
 )
 

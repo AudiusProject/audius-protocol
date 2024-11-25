@@ -32,8 +32,6 @@ const selectHarmonyTheme = (state: AppState) => {
       return 'dark'
     case Theme.MATRIX:
       return 'matrix'
-    case Theme.DEBUG:
-      return 'debug'
     case Theme.AUTO:
       switch (systemAppearance) {
         case SystemAppearance.DARK:
