@@ -5,7 +5,5 @@ FROM node:18-alpine AS base
 RUN apk add --no-cache bash ffmpeg
 RUN apk update
 
-RUN npx turbo run build --filter=@audius/commands
-
 WORKDIR /app/packages/commands
 CMD sleep infinity
