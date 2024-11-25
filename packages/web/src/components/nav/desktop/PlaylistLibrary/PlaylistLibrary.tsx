@@ -26,10 +26,7 @@ const { getPlaylistLibrary } = accountSelectors
 const { saveCollection } = collectionsSocialActions
 
 const messages = {
-  header: 'Playlists',
-  new: 'New',
-  newPlaylist: 'New Playlist',
-  newPlaylistOrFolderTooltip: 'New Playlist or Folder'
+  header: 'Playlists'
 }
 
 const acceptedKinds: DragDropKind[] = ['playlist']
