@@ -207,25 +207,25 @@ export type UploadTrackRequest = Omit<
   onProgress?: ProgressHandler
 }
 
-// export const createUploadTrackFilesSchema = () =>
-//   z
-//     .object({
-//       userId: HashId,
-//       coverArtFile: z.optional(ImageFile),
-//       metadata: createUploadTrackMetadataSchema().strict(),
-//       onProgress: z.optional(z.function().args(z.number())),
-//       trackFile: AudioFile
-//     })
-//     .strict()
+export const createUploadTrackFilesSchema = () =>
+  z
+    .object({
+      userId: HashId,
+      coverArtFile: z.optional(ImageFile),
+      metadata: createUploadTrackMetadataSchema().strict(),
+      onProgress: z.optional(z.function().args(z.number())),
+      trackFile: AudioFile
+    })
+    .strict()
 
-// export type UploadTrackFilesRequest = Omit<
-//   z.input<ReturnType<typeof createUploadTrackFilesSchema>>,
-//   'onProgress'
-// > & {
-//   // Typing function manually because z.function() does not
-//   // support argument names
-//   onProgress?: ProgressHandler
-// }
+export type UploadTrackFilesRequest = Omit<
+  z.input<ReturnType<typeof createUploadTrackFilesSchema>>,
+  'onProgress'
+> & {
+  // Typing function manually because z.function() does not
+  // support argument names
+  onProgress?: ProgressHandler
+}
 
 export const createUpdateTrackSchema = () =>
   z

@@ -53,7 +53,9 @@ import {
   GetPurchaseTrackInstructionsRequest,
   GetPurchaseTrackInstructionsSchema,
   RecordTrackDownloadRequest,
-  RecordTrackDownloadSchema
+  RecordTrackDownloadSchema,
+  createUploadTrackFilesSchema,
+  UploadTrackFilesRequest
 } from './types'
 
 // Extend that new class
@@ -99,7 +101,7 @@ export class TracksApi extends GeneratedTracksApi {
   /** @hidden
    * Upload track files, does not write to chain
    */
-  async uploadTrackFiles(params: UploadTrackRequest) {
+  async uploadTrackFiles(params: UploadTrackFilesRequest) {
     // Parse inputs
     this.logger.info('Parsing inputs')
     const {
@@ -108,7 +110,10 @@ export class TracksApi extends GeneratedTracksApi {
       coverArtFile,
       metadata: parsedMetadata,
       onProgress
-    } = await parseParams('uploadTrackFiles', createUploadTrackSchema())(params)
+    } = await parseParams(
+      'uploadTrackFiles',
+      createUploadTrackFilesSchema()
+    )(params)
 
     // Transform metadata
     this.logger.info('Transforming metadata')
@@ -120,18 +125,20 @@ export class TracksApi extends GeneratedTracksApi {
     // Upload track audio and cover art to storage node
     this.logger.info('Uploading track audio and cover art')
     const [coverArtResponse, audioResponse] = await Promise.all([
-      retry3(
-        async () =>
-          await this.storage.uploadFile({
-            file: coverArtFile,
-            onProgress,
-            template: 'img_square',
-            auth: this.auth
-          }),
-        (e) => {
-          this.logger.info('Retrying uploadTrackCoverArt', e)
-        }
-      ),
+      coverArtFile
+        ? retry3(
+            async () =>
+              await this.storage.uploadFile({
+                file: coverArtFile,
+                onProgress,
+                template: 'img_square',
+                auth: this.auth
+              }),
+            (e) => {
+              this.logger.info('Retrying uploadTrackCoverArt', e)
+            }
+          )
+        : Promise.resolve(undefined),
       retry3(
         async () =>
           await this.storage.uploadFile({
