@@ -69,7 +69,7 @@ const getButtonText = (
     ? messages.purchasing
     : amountDue > 0
     ? isGuest
-      ? `Guest Purchasedefewa For $${formatPrice(amountDue)}`
+      ? `Guest Purchase For $${formatPrice(amountDue)}`
       : `${messages.buy} $${formatPrice(amountDue)}`
     : messages.buy
 

@@ -139,10 +139,6 @@ const RenderForm = ({
     submitForm()
   }, [submitForm, setPurchaseMethod])
 
-  const handleGuestCheckoutEmail = useCallback(() => {
-    dispatch(setPurchasePage({ page: PurchaseContentPage.PURCHASE }))
-  }, [dispatch])
-
   return (
     <ModalForm className={cn(styles.modalRoot, { [styles.mobile]: isMobile })}>
       <ModalHeader
@@ -157,7 +153,7 @@ const RenderForm = ({
         className={styles.content}
         currentPage={currentPageIndex}
       >
-        <GuestCheckout onConfirm={handleGuestCheckoutEmail} />
+        <GuestCheckout />
         <>
           <Flex p={isMobile ? 'l' : 'xl'} pb='m'>
             <Flex direction='column' gap='xl' w='100%'>
@@ -224,13 +220,6 @@ export const PremiumContentPurchaseModal = () => {
     FeatureFlags.GUEST_CHECKOUT
   )
 
-  const isGuestCheckout =
-    guestCheckoutEnabled &&
-    (!currentUser || (currentUser && !currentUser.handle))
-  if (isGuestCheckout) {
-    dispatch(setPurchasePage({ page: PurchaseContentPage.GUEST_CHECKOUT }))
-  }
-
   const isAlbum = contentType === PurchaseableContentType.ALBUM
   const { data: track } = useGetTrackById(
     { id: contentId! },
@@ -275,6 +264,16 @@ export const PremiumContentPurchaseModal = () => {
         ? PurchaseVendor.COINFLOW
         : PurchaseVendor.STRIPE
     })
+  const showGuestCheckout =
+    guestCheckoutEnabled &&
+    (!currentUser || (currentUser && !currentUser.handle)) &&
+    initialValues.guestEmail === ''
+  if (showGuestCheckout) {
+    console.log('asdf showGuestCheckout', initialValues.guestEmail)
+
+    dispatch(setPurchasePage({ page: PurchaseContentPage.GUEST_CHECKOUT }))
+  }
+
   console.log('asdf initialValues', initialValues)
   // On form mount, pre-create user bank if needed and check for any usdc stuck
   // in root wallet from an aborted withdrawal

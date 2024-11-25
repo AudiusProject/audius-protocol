@@ -6,7 +6,8 @@ import { HarmonyTextField } from 'components/form-fields/HarmonyTextField'
 const messages = {
   continueAsGuest: 'Continue as Guest'
 }
-export const GuestCheckout = ({ onConfirm }: {}) => {
+
+export const GuestCheckout = ({}: {}) => {
   return (
     <Flex direction='column' gap='l'>
       <Text variant='title'>Contact Details</Text>
@@ -17,7 +18,6 @@ export const GuestCheckout = ({ onConfirm }: {}) => {
         color='lightGreen'
         // disabled={isBuyButtonDisabled}
         type='submit'
-        onClick={onConfirm}
       >
         {messages.continueAsGuest}
       </Button>

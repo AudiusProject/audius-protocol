@@ -106,12 +106,17 @@ export const usePurchaseContentFormConfiguration = ({
       if (isUnlocking || !contentId) return
 
       setGuestEmail(guestEmail)
-
+      console.log('asdf onSubmit', page)
       if (
         purchaseMethod === PurchaseMethod.CRYPTO &&
         page === PurchaseContentPage.PURCHASE
       ) {
         dispatch(setPurchasePage({ page: PurchaseContentPage.TRANSFER }))
+      } else if (
+        page === PurchaseContentPage.GUEST_CHECKOUT &&
+        guestEmail !== ''
+      ) {
+        dispatch(setPurchasePage({ page: PurchaseContentPage.PURCHASE }))
       } else {
         const extraAmount = getExtraAmount({
           amountPreset,
