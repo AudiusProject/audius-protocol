@@ -108,11 +108,13 @@ export class Storage implements StorageService {
     file,
     onProgress,
     template,
+    auth,
     options = {}
   }: {
     file: File
     onProgress?: ProgressHandler
     template: FileTemplate
+    auth: AuthService
     options?: { [key: string]: string }
   }) {
     const formData: FormData = new FormData()
@@ -133,11 +135,14 @@ export class Storage implements StorageService {
       method: 'post',
       maxContentLength: Infinity,
       data: formData,
-      headers: formData.getBoundary
-        ? {
-            'Content-Type': `multipart/form-data; boundary=${formData.getBoundary()}`
-          }
-        : undefined,
+      headers: {
+        'X-User-Wallet-Addr': await auth.getAddress(),
+        ...(formData.getBoundary
+          ? {
+              'Content-Type': `multipart/form-data; boundary=${formData.getBoundary()}`
+            }
+          : undefined)
+      },
       onUploadProgress: (progressEvent) => {
         const progress = {
           upload: { loaded: progressEvent.loaded, total: progressEvent.total }
