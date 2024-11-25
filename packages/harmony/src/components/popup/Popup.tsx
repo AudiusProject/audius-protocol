@@ -15,7 +15,7 @@ import ReactDOM from 'react-dom'
 import { useTransition, animated } from 'react-spring'
 import { usePrevious } from 'react-use'
 
-import { PlainButton } from 'components/button'
+import { PlainButton } from 'components/button/PlainButton/PlainButton'
 import { IconClose } from 'icons'
 import { ModalState } from 'utils/modalState'
 
