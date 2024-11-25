@@ -1185,25 +1185,26 @@ export function* updateTrackAudioAsync(
 
   const libs = yield* call(audiusBackendInstance.getAudiusLibsTyped)
   const baseMetadata = newTrackMetadata(toUploadTrackMetadata({ ...track }))
-  // Full Metadata with the updated from the edit form
+  // Full Metadata with the updates from the edit form
   const fullMetadata = {
     ...baseMetadata,
     ...(payload.metadata ?? {}),
     stem_of: track.stem_of ?? null
   }
 
-  const handleProgressUpdate = (_progress: Parameters<ProgressCB>[0]) => {
-    // if (!('audio' in progress)) return
-    // const { upload, transcode } = progress.audio
-    //
-    // const uploadVal =
-    //   transcode === undefined ? (upload?.loaded ?? 0) / (upload?.total ?? 1) : 1
-    //
-    // put(
-    //   replaceTrackProgressModalActions.set({
-    //     progress: { upload: uploadVal, transcode: transcode?.decimal ?? 0 }
-    //   })
-    // )
+  const dispatch = yield* getContext('dispatch')
+  const handleProgressUpdate = (progress: Parameters<ProgressCB>[0]) => {
+    if (!('audio' in progress)) return
+    const { upload, transcode } = progress.audio
+
+    const uploadVal =
+      transcode === undefined ? (upload?.loaded ?? 0) / (upload?.total ?? 1) : 1
+
+    dispatch(
+      replaceTrackProgressModalActions.set({
+        progress: { upload: uploadVal, transcode: transcode?.decimal ?? 0 }
+      })
+    )
   }
 
   const updatedMetadata = yield* call(
