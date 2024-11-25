@@ -409,15 +409,6 @@ export class UsersApi extends GeneratedUsersApi {
       delegatedKeys = []
     } = await parseParams('addEmail', EmailSchema)(params)
 
-    console.log('addEmail', {
-      email_owner_user_id: emailOwnerUserId,
-      primary_user_id: primaryUserId,
-      encrypted_email: encryptedEmail,
-      encrypted_key: encryptedKey,
-      delegated_user_ids: delegatedUserIds,
-      delegated_keys: delegatedKeys
-    })
-
     const metadata = {
       email_owner_user_id: emailOwnerUserId,
       primary_user_id: primaryUserId,
