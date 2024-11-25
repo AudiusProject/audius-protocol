@@ -125,10 +125,16 @@ export const EditTrackPage = (props: EditPageProps) => {
     stems: stemsAsUploads
   }
 
+  const previewUrl =
+    trackAsMetadataForUpload.download?.url ||
+    trackAsMetadataForUpload.stream?.url ||
+    ''
+
   const initialValues: TrackEditFormValues = {
     tracks: [
       {
-        metadata: trackAsMetadataForUpload
+        metadata: trackAsMetadataForUpload,
+        preview: new Audio(previewUrl)
       }
     ],
     trackMetadatas: [trackAsMetadataForUpload],
