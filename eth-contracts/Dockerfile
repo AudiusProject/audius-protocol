@@ -23,10 +23,11 @@ RUN chmod +x ./scripts/setup-predeployed-ganache.sh ./scripts/setup-dev.sh
 # runs openzeppelin patches
 RUN npm run postinstall
 
+RUN ./scripts/setup-predeployed-ganache.sh /usr/db 1000000000000
+
 ARG CONTENT_NODE_VERSION
 ARG DISCOVERY_NODE_VERSION
 
-RUN ./scripts/setup-predeployed-ganache.sh /usr/db 1000000000000
 RUN ./scripts/setup-dev.sh /usr/db 1000000000000
 
 HEALTHCHECK --interval=5s --timeout=5s --retries=10 \
