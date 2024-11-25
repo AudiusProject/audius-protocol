@@ -10,8 +10,7 @@ import {
   IconCart,
   IconReceive,
   IconSpecialAccess,
-  IconCollectible,
-  IconStar
+  IconCollectible
 } from '@audius/harmony-native'
 
 type AccessTypeLabelProps = {
@@ -65,11 +64,6 @@ const ACCESS_TYPE_CONFIG: Record<AccessType, AccessTypeConfig> = {
     icon: IconReceive,
     label: 'Extras',
     color: 'subdued'
-  },
-  [AccessType.ARTIST_PICK]: {
-    icon: IconStar,
-    label: 'Artist Pick',
-    color: 'accent'
   }
 }
 

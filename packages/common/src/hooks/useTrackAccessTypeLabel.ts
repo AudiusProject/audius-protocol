@@ -1,7 +1,6 @@
 import { useSelector } from 'react-redux'
 
 import { useGetTrackById } from '~/api'
-import { User } from '~/models'
 import { AccessType } from '~/models/AccessType'
 import { ID } from '~/models/Identifiers'
 import {
@@ -10,7 +9,7 @@ import {
   isContentUSDCPurchaseGated,
   Track
 } from '~/models/Track'
-import { getAccountUser } from '~/store/account/selectors'
+import { getUserId } from '~/store/account/selectors'
 import { Nullable } from '~/utils'
 
 import { useGatedContentAccess } from './useGatedContent'
@@ -23,7 +22,7 @@ type TrackAccessType = {
 
 export const useTrackAccessTypeLabel = (trackId: ID): TrackAccessType => {
   const { data: track } = useGetTrackById({ id: trackId })
-  const accountUser = useSelector(getAccountUser) as User
+  const currentUserId = useSelector(getUserId)
 
   const { hasStreamAccess, hasDownloadAccess } = useGatedContentAccess(
     track as Nullable<Track>
@@ -32,7 +31,6 @@ export const useTrackAccessTypeLabel = (trackId: ID): TrackAccessType => {
   if (!track) return { type: null }
 
   const {
-    track_id,
     owner_id,
     stream_conditions,
     download_conditions,
@@ -41,10 +39,9 @@ export const useTrackAccessTypeLabel = (trackId: ID): TrackAccessType => {
     release_date
   } = track
 
-  const isOwner = owner_id === accountUser.user_id
+  const isOwner = owner_id === currentUserId
   const isUnlockedStream = !isOwner && hasStreamAccess
   const isUnlockedDownload = !isOwner && hasDownloadAccess
-  const isArtistPick = accountUser.artist_pick_track_id === track_id
   const isPurchaseable = isContentUSDCPurchaseGated(stream_conditions)
   const isCollectibleGated = isContentCollectibleGated(stream_conditions)
   const isSpecialAccess = isContentSpecialAccess(stream_conditions)
@@ -73,8 +70,6 @@ export const useTrackAccessTypeLabel = (trackId: ID): TrackAccessType => {
   } else if (is_downloadable) {
     type = AccessType.EXTRAS
     isUnlocked = isUnlockedDownload
-  } else if (isArtistPick) {
-    type = AccessType.ARTIST_PICK
   }
 
   return {

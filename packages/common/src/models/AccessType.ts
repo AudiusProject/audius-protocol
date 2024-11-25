@@ -5,6 +5,5 @@ export enum AccessType {
   PREMIUM_EXTRAS = 'premium_extras',
   SPECIAL_ACCESS = 'special_access',
   COLLECTIBLE_GATED = 'collectible_gated',
-  EXTRAS = 'extras',
-  ARTIST_PICK = 'artist_pick'
+  EXTRAS = 'extras'
 }
