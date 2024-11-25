@@ -33,8 +33,8 @@ const styles = StyleSheet.create({
   topRight: {
     ...flexRowEnd(),
     position: 'absolute',
-    top: 10,
-    right: 10,
+    top: 8,
+    right: 8,
     left: 0
   }
 })

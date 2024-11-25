@@ -1,4 +1,5 @@
 import { AudiusSdk } from '@audius/sdk'
+import { GetBestNewReleasesWindowEnum } from '@audius/sdk/src/sdk/api/generated/full'
 
 import {
   transformAndCleanList,
@@ -19,21 +20,15 @@ import { encodeHashId, removeNullable } from '../../utils'
 import {
   APIActivityV2,
   APIPlaylist,
-  APITrack,
   responseAdapter,
   makeActivity
 } from '../audius-api-client'
-import { AudiusBackend, AuthHeaders } from '../audius-backend'
+import { AudiusBackend } from '../audius-backend'
 
 type CollectionWithScore = APIPlaylist & { score: number }
 
 const scoreComparator = <T extends { score: number }>(a: T, b: T) =>
   b.score - a.score
-
-type TopUserListen = {
-  userId: number
-  trackId: number
-}
 
 type ExploreConfig = {
   audiusBackendInstance: AudiusBackend
@@ -50,42 +45,23 @@ export class Explore {
   }
 
   /** TRACKS ENDPOINTS */
-  async getTopUserListens(): Promise<TopUserListen[]> {
-    try {
-      const { data, signature } = await this.audiusBackendInstance.signData()
-      return fetch(
-        `${this.audiusBackendInstance.identityServiceUrl}/users/listens/top`,
-        {
-          headers: {
-            [AuthHeaders.Message]: data,
-            [AuthHeaders.Signature]: signature
-          }
-        }
-      )
-        .then((res) => res.json())
-        .then((res) => res.listens)
-    } catch (e) {
-      console.error(e)
-      return []
-    }
-  }
-
-  // TODO(C-2719)
-  async getTopFolloweeTracksFromWindow(
-    userId: ID,
-    window: string,
+  async getBestNewReleases({
+    currentUserId,
+    window = GetBestNewReleasesWindowEnum.Month,
     limit = 25
-  ): Promise<UserTrack[]> {
+  }: {
+    currentUserId: ID
+    window?: GetBestNewReleasesWindowEnum
+    limit?: number
+  }): Promise<UserTrackMetadata[]> {
     try {
-      const encodedUserId = encodeHashId(userId)
-      const libs = await this.audiusBackendInstance.getAudiusLibs()
-      const tracks = await libs.discoveryProvider.getBestNewReleases(
-        encodedUserId,
+      const sdk = await this.audiusSdk()
+      const { data = [] } = await sdk.full.tracks.getBestNewReleases({
         window,
         limit,
-        true
-      )
-      return tracks.map(responseAdapter.makeTrack).filter(removeNullable)
+        userId: OptionalId.parse(currentUserId)
+      })
+      return transformAndCleanList(data, userTrackMetadataFromSDK)
     } catch (e) {
       console.error(e)
       return []
@@ -156,57 +132,30 @@ export class Explore {
     }
   }
 
-  // TODO(C-2719)
-  async getTopFolloweeSaves(limit = 25) {
-    try {
-      const libs = await this.audiusBackendInstance.getAudiusLibs()
-      const tracks: UserTrack[] =
-        await libs.discoveryProvider.getTopFolloweeSaves('track', limit, true)
-      return tracks
-    } catch (e) {
-      console.error(e)
-      return []
-    }
-  }
-
-  // TODO(C-2719)
   async getMostLovedTracks(userId: ID, limit = 25) {
     try {
-      const encodedUserId = encodeHashId(userId)
-      const libs = await this.audiusBackendInstance.getAudiusLibs()
-      const tracks: APITrack[] =
-        await libs.discoveryProvider.getMostLovedTracks(
-          encodedUserId,
-          limit,
-          true
-        )
-      return tracks.map(responseAdapter.makeTrack).filter(removeNullable)
+      const sdk = await this.audiusSdk()
+      const { data = [] } = await sdk.full.tracks.getMostLovedTracks({
+        limit,
+        withUsers: true,
+        userId: OptionalId.parse(userId)
+      })
+      return transformAndCleanList(data, userTrackMetadataFromSDK)
     } catch (e) {
       console.error(e)
       return []
     }
   }
 
-  // TODO(C-2719)
   async getFeelingLuckyTracks(userId: ID | null, limit = 25) {
     try {
-      let tracks: APITrack[]
-      const libs = await this.audiusBackendInstance.getAudiusLibs()
-      if (userId) {
-        const encodedUserId = encodeHashId(userId)
-        tracks = await libs.discoveryProvider.getFeelingLuckyTracks(
-          encodedUserId,
-          limit,
-          true
-        )
-      } else {
-        tracks = await libs.discoveryProvider.getFeelingLuckyTracks(
-          null,
-          limit,
-          false
-        )
-      }
-      return tracks.map(responseAdapter.makeTrack).filter(removeNullable)
+      const sdk = await this.audiusSdk()
+      const { data = [] } = await sdk.full.tracks.getFeelingLuckyTracks({
+        limit,
+        withUsers: true,
+        userId: OptionalId.parse(userId)
+      })
+      return transformAndCleanList(data, userTrackMetadataFromSDK)
     } catch (e) {
       console.error(e)
       return []

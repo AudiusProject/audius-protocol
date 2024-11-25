@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react'
 import { useEffect, useRef, useCallback } from 'react'
 
-import { Theme } from '@audius/common/models'
+import type { Theme } from '@audius/common/models'
 import { Pressable, View } from 'react-native'
 import LinearGradient from 'react-native-linear-gradient'
 import { usePrevious } from 'react-use'
@@ -60,9 +60,7 @@ const BottomTabBarRiveButton = (props: BottomTabBarRiveButtonProps) => {
   const styles = useStyles()
   const { neutralLight8, neutralLight10 } = useThemeColors()
   const riveRef = useRef<RiveRef | null>(null)
-  const riveThemeVariant =
-    themeVariant === Theme.DEBUG ? Theme.DEFAULT : themeVariant
-  const riveResourceName = `${name}_${riveThemeVariant}`
+  const riveResourceName = `${name}_${themeVariant}`
   const previousActive = usePrevious(isActive)
   const initialIsActive = Boolean(
     (isActive && previousActive === undefined) || (previousActive && isActive)

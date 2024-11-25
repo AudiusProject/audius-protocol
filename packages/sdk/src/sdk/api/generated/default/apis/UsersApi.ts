@@ -109,6 +109,13 @@ export interface DownloadSalesAsCSVRequest {
     encodedDataSignature?: string;
 }
 
+export interface DownloadSalesAsJSONRequest {
+    id: string;
+    userId?: string;
+    encodedDataMessage?: string;
+    encodedDataSignature?: string;
+}
+
 export interface DownloadUSDCWithdrawalsAsCSVRequest {
     id: string;
     userId?: string;
@@ -391,6 +398,48 @@ export class UsersApi extends runtime.BaseAPI {
      */
     async downloadSalesAsCSV(params: DownloadSalesAsCSVRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
         await this.downloadSalesAsCSVRaw(params, initOverrides);
+    }
+
+    /**
+     * @hidden
+     * Gets the sales data for the user in JSON format
+     */
+    async downloadSalesAsJSONRaw(params: DownloadSalesAsJSONRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
+        if (params.id === null || params.id === undefined) {
+            throw new runtime.RequiredError('id','Required parameter params.id was null or undefined when calling downloadSalesAsJSON.');
+        }
+
+        const queryParameters: any = {};
+
+        if (params.userId !== undefined) {
+            queryParameters['user_id'] = params.userId;
+        }
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (params.encodedDataMessage !== undefined && params.encodedDataMessage !== null) {
+            headerParameters['Encoded-Data-Message'] = String(params.encodedDataMessage);
+        }
+
+        if (params.encodedDataSignature !== undefined && params.encodedDataSignature !== null) {
+            headerParameters['Encoded-Data-Signature'] = String(params.encodedDataSignature);
+        }
+
+        const response = await this.request({
+            path: `/users/{id}/sales/download/json`.replace(`{${"id"}}`, encodeURIComponent(String(params.id))),
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.VoidApiResponse(response);
+    }
+
+    /**
+     * Gets the sales data for the user in JSON format
+     */
+    async downloadSalesAsJSON(params: DownloadSalesAsJSONRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
+        await this.downloadSalesAsJSONRaw(params, initOverrides);
     }
 
     /**

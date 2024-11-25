@@ -102,11 +102,9 @@ const TrackTile = (props: CombinedProps) => {
     title,
     source,
     renderOverflow,
-    isTrending,
-    fieldVisibility
+    isTrending
   } = props
 
-  const hideShare = fieldVisibility?.share
   const dispatch = useDispatch()
   const [, setModalVisibility] = useModalState('LockedContent')
   const { onOpen: openPremiumContentPurchaseModal } =
@@ -295,7 +293,6 @@ const TrackTile = (props: CombinedProps) => {
             hasStreamAccess={hasStreamAccess}
             streamConditions={streamConditions}
             gatedTrackStatus={gatedTrackStatus}
-            isShareHidden={hideShare}
             isDarkMode={darkMode}
             isMatrixMode={isMatrix}
             isTrack

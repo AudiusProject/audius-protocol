@@ -70,12 +70,13 @@ export function* fetchAccountAsync({ isSignUp = false }): SagaIterator {
   const accountData = yield* call(userApiFetchSaga.getUserAccount, {
     wallet
   })
-  if (!accountData || !accountData.user) {
+  if (!accountData || !accountData?.user) {
     yield* put(
       fetchAccountFailed({
         reason: 'ACCOUNT_NOT_FOUND'
       })
     )
+    return
   }
   const user = accountData.user
   if (user.is_deactivated) {

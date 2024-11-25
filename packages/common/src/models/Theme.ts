@@ -2,8 +2,7 @@ export enum Theme {
   DEFAULT = 'default',
   DARK = 'dark',
   AUTO = 'auto',
-  MATRIX = 'matrix',
-  DEBUG = 'debug'
+  MATRIX = 'matrix'
 }
 
 export enum SystemAppearance {
