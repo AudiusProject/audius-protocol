@@ -42,6 +42,7 @@ import { TransferAudioMobileDrawer } from 'app/components/transfer-audio-mobile-
 import { TrendingRewardsDrawer } from 'app/components/trending-rewards-drawer'
 import { USDCManualTransferDrawer } from 'app/components/usdc-manual-transfer-drawer'
 import { WaitForDownloadDrawer } from 'app/components/wait-for-download-drawer'
+import { ReplaceTrackConfirmationDrawer } from 'app/screens/edit-track-screen/components'
 import { EarlyReleaseConfirmationDrawer } from 'app/screens/edit-track-screen/components/EarlyReleaseConfirmationDrawer'
 import { PublishConfirmationDrawer } from 'app/screens/edit-track-screen/components/PublishConfirmationDrawer'
 import { WelcomeDrawer } from 'app/screens/sign-on-screen/components/WelcomeDrawer'
@@ -129,6 +130,7 @@ const commonDrawersMap: { [Modal in Modals]?: ComponentType } = {
   LeavingAudiusModal: LeavingAudiusDrawer,
   WaitForDownloadModal: WaitForDownloadDrawer,
   PublishConfirmation: PublishConfirmationDrawer,
+  ReplaceTrackConfirmation: ReplaceTrackConfirmationDrawer,
   EarlyReleaseConfirmation: EarlyReleaseConfirmationDrawer,
   ArtistPick: ArtistPickConfirmationDrawer
 }
