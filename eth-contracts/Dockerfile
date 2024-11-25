@@ -10,16 +10,18 @@ WORKDIR /usr/src/app
 COPY --from=builder package*.json ./
 COPY --from=builder /node_modules ./node_modules
 
-RUN npm run postinstall
-
 COPY ./contracts ./contracts
 COPY ./migrations ./migrations 
 COPY ./scripts ./scripts 
 COPY ./utils ./utils
 COPY ./test ./test
+COPY ./patches ./patches
 COPY ./truffle-config.js ./contract-config.js .solcover.js ./
 
 RUN chmod +x ./scripts/setup-predeployed-ganache.sh ./scripts/setup-dev.sh
+
+# runs openzeppelin patches
+RUN npm run postinstall
 
 ARG CONTENT_NODE_VERSION
 ARG DISCOVERY_NODE_VERSION
