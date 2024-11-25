@@ -42,7 +42,6 @@ export const useTrackAccessTypeLabel = (trackId: ID): TrackAccessType => {
   const isOwner = owner_id === currentUserId
   const isUnlockedStream = !isOwner && hasStreamAccess
   const isUnlockedDownload = !isOwner && hasDownloadAccess
-
   const isPurchaseable = isContentUSDCPurchaseGated(stream_conditions)
   const isCollectibleGated = isContentCollectibleGated(stream_conditions)
   const isSpecialAccess = isContentSpecialAccess(stream_conditions)
