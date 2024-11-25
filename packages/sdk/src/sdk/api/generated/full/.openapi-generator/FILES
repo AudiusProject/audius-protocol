@@ -72,6 +72,8 @@ models/FullGetSupporters.ts
 models/FullGetSupporting.ts
 models/FullPlaylistResponse.ts
 models/FullPlaylistTracksResponse.ts
+models/FullPlaylistWithScore.ts
+models/FullPlaylistWithScoreResponse.ts
 models/FullPurchasersResponse.ts
 models/FullRemix.ts
 models/FullRemixParent.ts

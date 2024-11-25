@@ -62,6 +62,8 @@ export * from './FullGetSupporters';
 export * from './FullGetSupporting';
 export * from './FullPlaylistResponse';
 export * from './FullPlaylistTracksResponse';
+export * from './FullPlaylistWithScore';
+export * from './FullPlaylistWithScoreResponse';
 export * from './FullPurchasersResponse';
 export * from './FullRemix';
 export * from './FullRemixParent';
