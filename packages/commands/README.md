@@ -7,6 +7,14 @@ audius-cmd <command> --help
 
 `audius-cmd` is a command line tool to perform actions against the Audius protocol. It is especially useful to seed data on an instance of the protocol running locally
 
+## Building
+
+This tool needs to be built at least once before running.
+
+`npm run build:dist` will issue a turbo-enabled build and write the output to `dist`.
+
+If you plan on developing commands, you can run `npm run watch:dist` to start a watcher, which will rebuild any time the files in `src` change.
+
 ## Examples
 
 **create-user**
