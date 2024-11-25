@@ -35,7 +35,7 @@ const { getLineup, getRemixParentTrack, getTrack, getUser } = trackPageSelectors
 const { getIsReachable } = reachabilitySelectors
 
 const messages = {
-  moreBy: 'More By',
+  moreBy: 'More by',
   originalTrack: 'Original Track',
   ...trackPageMessages
 }
@@ -105,10 +105,7 @@ export const TrackScreen = () => {
 
   const remixParentTrackId = remix_of?.tracks?.[0]?.parent_track_id
 
-  const showMoreByArtistTitle =
-    isReachable &&
-    ((remixParentTrackId && lineup.entries.length > 2) ||
-      (!remixParentTrackId && lineup.entries.length > 1))
+  const showMoreByArtistTitle = isReachable && (user.track_count ?? 0) > 1
 
   const hasValidRemixParent =
     !!remixParentTrackId &&
@@ -135,7 +132,7 @@ export const TrackScreen = () => {
     <Screen url={permalink}>
       <ScreenContent isOfflineCapable>
         <VirtualizedScrollView>
-          <Flex p='m' gap='2xl'>
+          <Flex p='l' gap='2xl'>
             {/* Track Details */}
             <ScreenPrimaryContent skeleton={<TrackScreenSkeleton />}>
               <TrackScreenDetailsTile
@@ -148,48 +145,52 @@ export const TrackScreen = () => {
 
             {isReachable ? (
               <ScreenSecondaryContent>
-                {/* Comments */}
-                {isCommentingEnabled && !comments_disabled ? (
-                  <Flex flex={3}>
-                    <CommentPreview entityId={track_id} />
+                <Flex gap='2xl'>
+                  {/* Comments */}
+                  {isCommentingEnabled && !comments_disabled ? (
+                    <Flex flex={3}>
+                      <CommentPreview entityId={track_id} />
+                    </Flex>
+                  ) : null}
+
+                  {/* Remixes */}
+                  {hasRemixes ? <TrackScreenRemixes track={track} /> : null}
+
+                  {/* More by Artist / Remix Parent */}
+                  <Flex>
+                    {hasValidRemixParent
+                      ? originalTrackTitle
+                      : moreByArtistTitle}
+                    <Lineup
+                      actions={tracksActions}
+                      keyboardShouldPersistTaps='handled'
+                      count={MAX_RELATED_TRACKS_TO_DISPLAY}
+                      lineup={lineup}
+                      start={1}
+                      includeLineupStatus
+                      itemStyles={{
+                        padding: 0,
+                        paddingVertical: 16
+                      }}
+                      leadingElementId={remixParentTrack?.track_id}
+                      leadingElementDelineator={
+                        <Flex>
+                          {lineup.status === Status.SUCCESS ? (
+                            <Flex pt='m' alignItems='flex-start'>
+                              <Button
+                                iconRight={IconArrowRight}
+                                size='xs'
+                                onPress={handlePressGoToOtherRemixes}
+                              >
+                                {messages.viewOtherRemixes}
+                              </Button>
+                            </Flex>
+                          ) : null}
+                          <Flex mt='2xl'>{moreByArtistTitle}</Flex>
+                        </Flex>
+                      }
+                    />
                   </Flex>
-                ) : null}
-
-                {/* Remixes */}
-                {hasRemixes ? <TrackScreenRemixes track={track} /> : null}
-
-                {/* More by Artist / Remix Parent */}
-                <Flex>
-                  {hasValidRemixParent ? originalTrackTitle : moreByArtistTitle}
-                  <Lineup
-                    actions={tracksActions}
-                    keyboardShouldPersistTaps='handled'
-                    count={MAX_RELATED_TRACKS_TO_DISPLAY}
-                    lineup={lineup}
-                    start={1}
-                    includeLineupStatus
-                    itemStyles={{
-                      padding: 0,
-                      paddingVertical: 12
-                    }}
-                    leadingElementId={remixParentTrack?.track_id}
-                    leadingElementDelineator={
-                      <Flex>
-                        {lineup.status === Status.SUCCESS ? (
-                          <Flex pt='m' alignItems='flex-start'>
-                            <Button
-                              iconRight={IconArrowRight}
-                              size='xs'
-                              onPress={handlePressGoToOtherRemixes}
-                            >
-                              {messages.viewOtherRemixes}
-                            </Button>
-                          </Flex>
-                        ) : null}
-                        <Flex mt='2xl'>{moreByArtistTitle}</Flex>
-                      </Flex>
-                    }
-                  />
                 </Flex>
               </ScreenSecondaryContent>
             ) : null}

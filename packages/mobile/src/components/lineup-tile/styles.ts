@@ -31,16 +31,16 @@ export const useStyles = makeStyles(({ palette }) => ({
     width: 72
   },
   imageContainer: {
-    marginTop: spacing(2.5),
-    marginRight: spacing(3),
-    marginLeft: spacing(2.5)
+    marginTop: spacing(2),
+    marginRight: spacing(2),
+    marginLeft: spacing(2)
   },
   titles: {
     justifyContent: 'center',
     alignItems: 'flex-start',
     flexBasis: '65%',
     marginRight: spacing(3),
-    marginTop: spacing(2.5),
+    marginTop: spacing(2),
     gap: 2
   },
   title: {

@@ -100,7 +100,7 @@ const styles = StyleSheet.create({
     flex: 1
   },
   item: {
-    padding: 12,
+    padding: 16,
     paddingBottom: 0
   }
 })
@@ -553,7 +553,7 @@ export const Lineup = ({
         onEndReachedThreshold={LOAD_MORE_THRESHOLD}
         sections={areSectionsEmpty ? [] : sections}
         stickySectionHeadersEnabled={false}
-        keyExtractor={(item, index) => `${item?.id}  ${index}`}
+        keyExtractor={(item, index) => `${item?.id}-${index}`}
         renderItem={renderItem}
         renderSectionHeader={({ section }) => {
           if (section.delineate) {
