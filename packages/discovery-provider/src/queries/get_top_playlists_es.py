@@ -1,11 +1,14 @@
 import time
 
+from src.queries.get_feed_es import fetch_followed_saves_and_reposts
 from src.queries.query_helpers import filter_playlists_with_only_hidden_tracks
+from src.queries.search_es import hydrate_saves_reposts
 from src.utils.db_session import get_db_read_replica
 from src.utils.elasticdsl import (
     ES_PLAYLISTS,
     ES_USERS,
     get_esclient,
+    populate_track_or_playlist_metadata_es,
     populate_user_metadata_es,
 )
 
@@ -100,5 +103,8 @@ def get_top_playlists_es(kind, args):
         u = user_by_id[str(p["playlist_owner_id"])]
         # omit current_user because top playlists are cached across users
         p["user"] = populate_user_metadata_es(u, None)
+        (follow_saves, follow_reposts) = fetch_followed_saves_and_reposts(None, [p])
+        hydrate_saves_reposts(p, follow_saves, follow_reposts)
+        populate_track_or_playlist_metadata_es(p, None)
 
     return playlists

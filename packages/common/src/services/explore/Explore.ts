@@ -1,14 +1,18 @@
 import { AudiusSdk } from '@audius/sdk'
-import { GetBestNewReleasesWindowEnum } from '@audius/sdk/src/sdk/api/generated/full'
+import {
+  FullPlaylistWithScoreResponse,
+  GetBestNewReleasesWindowEnum,
+  FullPlaylistWithScore
+} from '@audius/sdk/src/sdk/api/generated/full'
 
 import {
   transformAndCleanList,
+  userCollectionMetadataFromSDK,
   userFeedItemFromSDK,
   userTrackMetadataFromSDK
 } from '~/adapters'
 
 import {
-  Collection,
   ID,
   Id,
   OptionalId,
@@ -17,15 +21,8 @@ import {
   UserTrackMetadata
 } from '../../models'
 import { encodeHashId, removeNullable } from '../../utils'
-import {
-  APIActivityV2,
-  APIPlaylist,
-  responseAdapter,
-  makeActivity
-} from '../audius-api-client'
+import { APIActivityV2, makeActivity } from '../audius-api-client'
 import { AudiusBackend } from '../audius-backend'
-
-type CollectionWithScore = APIPlaylist & { score: number }
 
 const scoreComparator = <T extends { score: number }>(a: T, b: T) =>
   b.score - a.score
@@ -163,57 +160,56 @@ export class Explore {
   }
 
   /** PLAYLIST ENDPOINTS */
-  // TODO(C-2719)
-  async getTopCollections(
-    type?: 'playlist' | 'album',
-    followeesOnly?: boolean,
+  async getTopCollections({
+    type,
     limit = 20,
-    userId?: number
-  ): Promise<Collection[]> {
+    userId
+  }: {
+    type: 'playlist' | 'album'
+    limit?: number
+    userId?: ID
+  }): Promise<UserCollectionMetadata[]> {
     try {
-      const libs = await this.audiusBackendInstance.getAudiusLibs()
-      const playlists = await libs.discoveryProvider.getTopFullPlaylists({
+      const sdk = await this.audiusSdk()
+      const { data = [] } = await sdk.full.playlists.getTopPlaylists({
         type,
         limit,
-        mood: undefined,
-        filter: followeesOnly ? 'followees' : undefined,
-        withUsers: true,
-        encodedUserId: userId ? encodeHashId(userId) : undefined
+        userId: OptionalId.parse(userId)
       })
-      const adapted = playlists.map(responseAdapter.makePlaylist)
-      return adapted
+      return transformAndCleanList(data, userCollectionMetadataFromSDK)
     } catch (e) {
       console.error(e)
       return []
     }
   }
 
-  async getTopPlaylistsForMood(
-    moods: string[],
+  async getTopPlaylistsForMood({
+    moods,
     limit = 16,
-    userId?: number
-  ): Promise<UserCollectionMetadata[]> {
+    userId
+  }: {
+    moods: string[]
+    limit?: number
+    userId?: ID
+  }): Promise<UserCollectionMetadata[]> {
     try {
-      const libs = await this.audiusBackendInstance.getAudiusLibs()
+      const sdk = await this.audiusSdk()
       const requests = moods.map((mood) => {
-        return libs.discoveryProvider.getTopFullPlaylists({
+        return sdk.full.playlists.getTopPlaylists({
           type: 'playlist',
           limit,
           mood,
-          filter: undefined,
-          withUsers: true,
-          encodedUserId: userId ? encodeHashId(userId) : undefined
+          userId: OptionalId.parse(userId)
         })
       })
-      const playlistsByMood: CollectionWithScore[] = await Promise.all(requests)
-      let allPlaylists: CollectionWithScore[] = []
-      playlistsByMood.forEach((playlists) => {
-        allPlaylists = allPlaylists.concat(playlists)
+      const playlistsByMood: FullPlaylistWithScoreResponse[] =
+        await Promise.all(requests)
+      let allPlaylists: FullPlaylistWithScore[] = []
+      playlistsByMood.forEach(({ data = [] }) => {
+        allPlaylists = allPlaylists.concat(data)
       })
-      const playlists: APIPlaylist[] = allPlaylists
-        .sort(scoreComparator)
-        .slice(0, 20)
-      return playlists.map(responseAdapter.makePlaylist).filter(removeNullable)
+      const playlists = allPlaylists.sort(scoreComparator).slice(0, 20)
+      return transformAndCleanList(playlists, userCollectionMetadataFromSDK)
     } catch (e) {
       console.error(e)
       return []

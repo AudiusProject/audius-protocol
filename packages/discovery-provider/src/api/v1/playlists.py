@@ -72,16 +72,16 @@ full_playlists_response = make_full_response(
     "full_playlist_response", full_ns, fields.List(fields.Nested(full_playlist_model))
 )
 
-playlists_with_score = ns.clone(
-    "playlist_full",
+full_playlist_with_score = full_ns.clone(
+    "full_playlist_with_score",
     full_playlist_model,
     {"score": fields.Float},
 )
 
-full_playlists_with_score_response = make_full_response(
+full_playlist_with_score_response = make_full_response(
     "full_playlist_with_score_response",
     full_ns,
-    fields.List(fields.Nested(playlists_with_score)),
+    fields.List(fields.Nested(full_playlist_with_score)),
 )
 
 
@@ -422,33 +422,34 @@ class PlaylistSearchResult(Resource):
         return success_response(response["playlists"])
 
 
-top_parser = pagination_with_current_user_parser.copy()
-top_parser.add_argument(
+full_top_parser = pagination_with_current_user_parser.copy()
+full_top_parser.add_argument(
     "type",
     required=True,
     choices=("album", "playlist"),
     description="The collection type",
 )
-top_parser.add_argument(
+full_top_parser.add_argument(
     "mood",
     required=False,
     description="Filter to a mood",
 )
-top_parser.add_argument(
+full_top_parser.add_argument(
     "filter",
     required=False,
     description="Filter for the playlist query",
 )
 
 
-@full_ns.route("/top", doc=False)
-class Top(Resource):
+@full_ns.route("/top")
+class FullTopPlaylists(Resource):
     @record_metrics
-    @ns.doc(id="""Top Playlists""", description="""Gets top playlists.""")
-    @ns.marshal_with(full_playlists_with_score_response)
+    @full_ns.doc(id="""Get Top Playlists""", description="""Gets top playlists.""")
+    @full_ns.expect(full_top_parser)
+    @full_ns.marshal_with(full_playlist_with_score_response)
     @cache(ttl_sec=30 * 60)
     def get(self):
-        args = top_parser.parse_args()
+        args = full_top_parser.parse_args()
         if args.get("limit") is None:
             args["limit"] = 100
         else:
@@ -460,11 +461,9 @@ class Top(Resource):
         current_user_id = get_current_user_id(args)
         if current_user_id:
             args["current_user_id"] = current_user_id
-
         args["with_users"] = True
 
         response = get_top_playlists(args.type, args)
-
         playlists = list(map(extend_playlist, response))
         return success_response(playlists)
 
