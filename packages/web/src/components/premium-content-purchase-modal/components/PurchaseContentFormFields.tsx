@@ -86,6 +86,7 @@ export const PurchaseContentFormFields = ({
     method: purchaseMethod,
     setMethod: setPurchaseMethod
   })
+  console.log('asdf price', totalPriceInCents)
 
   const handleChangeMethod = useCallback(
     (method: string) => {
@@ -152,12 +153,12 @@ export const PurchaseContentFormFields = ({
         totalPriceInCents={totalPriceInCents}
         isAlbumPurchase={isAlbumPurchase}
       />
-      {isGuestCheckout ? (
+      {/* {isGuestCheckout ? (
         <Flex direction='column' gap='l'>
           <Text variant='title'>Contact Details</Text>
           <HarmonyTextField name='guestEmail' label='Email' />
         </Flex>
-      ) : null}
+      ) : null} */}
       {isUnlocking || isPurchased ? null : (
         <PaymentMethod
           selectedMethod={purchaseMethod}

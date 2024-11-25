@@ -1,6 +1,7 @@
 import { useCallback, useEffect } from 'react'
 
 import {
+  useGetCurrentUser,
   useGetCurrentUserId,
   useGetPlaylistById,
   useGetTrackById,
@@ -47,6 +48,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 
 import { useHistoryContext } from 'app/HistoryProvider'
+import { GuestCheckout } from 'components/guest-checkout/GuestCheckout'
 import { ModalForm } from 'components/modal-form/ModalForm'
 import { LockedContentDetailsTile } from 'components/track/LockedContentDetailsTile'
 import { USDCManualTransfer } from 'components/usdc-manual-transfer/USDCManualTransfer'
@@ -73,13 +75,14 @@ const messages = {
 }
 
 const pageToPageIndex = (page: PurchaseContentPage) => {
+  console.log('asdf page: ', page)
   switch (page) {
-    case PurchaseContentPage.PURCHASE:
+    case PurchaseContentPage.GUEST_CHECKOUT:
       return 0
-    case PurchaseContentPage.CONFIRM_GUEST:
+    case PurchaseContentPage.PURCHASE:
       return 1
     case PurchaseContentPage.TRANSFER:
-      return 1
+      return 2
   }
 }
 
@@ -136,6 +139,10 @@ const RenderForm = ({
     submitForm()
   }, [submitForm, setPurchaseMethod])
 
+  const handleGuestCheckoutEmail = useCallback(() => {
+    dispatch(setPurchasePage({ page: PurchaseContentPage.PURCHASE }))
+  }, [dispatch])
+
   return (
     <ModalForm className={cn(styles.modalRoot, { [styles.mobile]: isMobile })}>
       <ModalHeader
@@ -150,6 +157,7 @@ const RenderForm = ({
         className={styles.content}
         currentPage={currentPageIndex}
       >
+        <GuestCheckout onConfirm={handleGuestCheckoutEmail} />
         <>
           <Flex p={isMobile ? 'l' : 'xl'} pb='m'>
             <Flex direction='column' gap='xl' w='100%'>
@@ -211,6 +219,17 @@ export const PremiumContentPurchaseModal = () => {
   const isUnlocking = !error && isContentPurchaseInProgress(stage)
   const presetValues = usePayExtraPresets()
   const { data: currentUserId } = useGetCurrentUserId({})
+  const { data: currentUser } = useGetCurrentUser({})
+  const { isEnabled: guestCheckoutEnabled = false } = useFeatureFlag(
+    FeatureFlags.GUEST_CHECKOUT
+  )
+
+  const isGuestCheckout =
+    guestCheckoutEnabled &&
+    (!currentUser || (currentUser && !currentUser.handle))
+  if (isGuestCheckout) {
+    dispatch(setPurchasePage({ page: PurchaseContentPage.GUEST_CHECKOUT }))
+  }
 
   const isAlbum = contentType === PurchaseableContentType.ALBUM
   const { data: track } = useGetTrackById(
@@ -256,7 +275,7 @@ export const PremiumContentPurchaseModal = () => {
         ? PurchaseVendor.COINFLOW
         : PurchaseVendor.STRIPE
     })
-
+  console.log('asdf initialValues', initialValues)
   // On form mount, pre-create user bank if needed and check for any usdc stuck
   // in root wallet from an aborted withdrawal
   useEffect(() => {

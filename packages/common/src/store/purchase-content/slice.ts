@@ -63,6 +63,7 @@ const slice = createSlice({
         guestEmail?: string
       }>
     ) => {
+      console.log('asdf action', action)
       state.page = PurchaseContentPage.PURCHASE
       state.stage = PurchaseContentStage.START
       state.error = undefined
