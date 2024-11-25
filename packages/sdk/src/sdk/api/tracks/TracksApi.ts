@@ -35,7 +35,6 @@ import { BASE_PATH, RequiredError } from '../generated/default/runtime'
 import { TrackUploadHelper } from './TrackUploadHelper'
 import {
   createUpdateTrackSchema,
-  createUploadTrackSchema,
   DeleteTrackRequest,
   DeleteTrackSchema,
   RepostTrackRequest,
@@ -199,7 +198,8 @@ export class TracksApi extends GeneratedTracksApi {
             snakecaseKeys(metadata.downloadConditions),
           stream_conditions:
             metadata.streamConditions &&
-            snakecaseKeys(metadata.streamConditions)
+            snakecaseKeys(metadata.streamConditions),
+          stem_of: metadata.stemOf && snakecaseKeys(metadata.stemOf)
         }
       }),
       auth: this.auth,
@@ -220,6 +220,8 @@ export class TracksApi extends GeneratedTracksApi {
     params: UploadTrackRequest,
     advancedOptions?: AdvancedOptions
   ) {
+    // TODO: parse params for uploadTrackSchema
+
     // Upload track files
     const metadata = await this.uploadTrackFiles(params)
 
@@ -320,7 +322,8 @@ export class TracksApi extends GeneratedTracksApi {
             snakecaseKeys(updatedMetadata.downloadConditions),
           stream_conditions:
             updatedMetadata.streamConditions &&
-            snakecaseKeys(updatedMetadata.streamConditions)
+            snakecaseKeys(updatedMetadata.streamConditions),
+          stem_of: metadata.stemOf && snakecaseKeys(metadata.stemOf)
         }
       }),
       auth: this.auth,

@@ -212,11 +212,19 @@ export const createUploadTrackFilesSchema = () =>
     .object({
       userId: HashId,
       coverArtFile: z.optional(ImageFile),
-      metadata: createUploadTrackMetadataSchema().strict(),
+      metadata: createUploadTrackMetadataSchema()
+        .extend({
+          genre: z.enum(Object.values(Genre) as [Genre, ...Genre[]]).optional()
+        })
+        .strict(),
       onProgress: z.optional(z.function()),
       trackFile: AudioFile
     })
     .strict()
+
+export type TrackFilesMetadata = z.input<
+  ReturnType<typeof createUploadTrackFilesSchema>
+>['metadata']
 
 export type UploadTrackFilesRequest = Omit<
   z.input<ReturnType<typeof createUploadTrackFilesSchema>>,

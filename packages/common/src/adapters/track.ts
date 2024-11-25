@@ -1,5 +1,11 @@
 import { full } from '@audius/sdk'
-import type { CrossPlatformFile, Genre, Mood, TrackMetadata } from '@audius/sdk'
+import type {
+  CrossPlatformFile,
+  Genre,
+  Mood,
+  TrackFilesMetadata,
+  TrackMetadata
+} from '@audius/sdk'
 import camelcaseKeys from 'camelcase-keys'
 import dayjs from 'dayjs'
 import { omit, pick, mapValues } from 'lodash'
@@ -227,13 +233,12 @@ export const stemTrackMetadataFromSDK = (
 
 export const trackMetadataForUploadToSdk = (
   input: TrackMetadataForUpload
-): TrackMetadata => ({
+): TrackFilesMetadata => ({
   ...camelcaseKeys(
     pick(input, [
       'license',
       'isrc',
       'iswc',
-      'genre',
       'is_unlisted',
       'is_premium',
       'premium_conditions',
@@ -252,6 +257,7 @@ export const trackMetadataForUploadToSdk = (
       'parental_warning_type'
     ])
   ),
+  trackId: OptionalId.parse(input.track_id),
   title: input.title,
   description: input.description ?? undefined,
   mood: input.mood as Mood,

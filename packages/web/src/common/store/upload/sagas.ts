@@ -257,9 +257,10 @@ function* uploadWorker(
         {
           userId: Id.parse(userId),
           trackFile: fileToSdk(track.file, 'audio'),
-          // coverArtFile is always defined by combineMetadata
-          // maybe we should change this to prevent duplicate image uploads
-          coverArtFile: fileToSdk(coverArtFile!, 'cover_art'),
+          // coverArtFile will be undefined for stem uploads
+          coverArtFile: coverArtFile
+            ? fileToSdk(coverArtFile!, 'cover_art')
+            : undefined,
           metadata,
           onProgress: makeOnProgress(trackIndex, stemIndex, progressChannel)
         }
