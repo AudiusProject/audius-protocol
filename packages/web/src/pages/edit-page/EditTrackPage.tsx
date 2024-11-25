@@ -12,7 +12,10 @@ import {
 import {
   TrackMetadataForUpload,
   cacheTracksActions,
-  cacheTracksSelectors
+  cacheTracksSelectors,
+  uploadActions,
+  useReplaceTrackConfirmationModal,
+  useReplaceTrackProgressModal
 } from '@audius/common/store'
 import { removeNullable } from '@audius/common/utils'
 import { push as pushRoute } from 'connected-react-router'
@@ -31,6 +34,7 @@ import { useTrackCoverArt } from 'hooks/useTrackCoverArt'
 
 const { editTrack } = cacheTracksActions
 const { getStems } = cacheTracksSelectors
+const { updateTrackAudio } = uploadActions
 
 const messages = {
   title: 'Edit Your Track'
@@ -48,6 +52,9 @@ export const EditTrackPage = (props: EditPageProps) => {
   const dispatch = useDispatch()
   useRequiresAccount()
   useIsUnauthorizedForHandleRedirect(handle)
+  const { onOpen: openReplaceTrackConfirmation } =
+    useReplaceTrackConfirmationModal()
+  const { onOpen: openReplaceTrackProgress } = useReplaceTrackProgressModal()
 
   const { data: currentUserId } = useGetCurrentUserId({})
   const permalink = `/${handle}/${slug}`
@@ -58,6 +65,9 @@ export const EditTrackPage = (props: EditPageProps) => {
 
   const onSubmit = (formValues: TrackEditFormValues) => {
     const metadata = { ...formValues.trackMetadatas[0] }
+    const replaceFile =
+      'file' in formValues.tracks[0] ? formValues.tracks[0].file : null
+
     if (
       metadata.artwork &&
       'file' in metadata.artwork &&
@@ -65,8 +75,24 @@ export const EditTrackPage = (props: EditPageProps) => {
     ) {
       metadata.artwork = null
     }
-    dispatch(editTrack(metadata.track_id, metadata))
-    dispatch(pushRoute(metadata.permalink))
+
+    if (replaceFile) {
+      openReplaceTrackConfirmation({
+        confirmCallback: () => {
+          dispatch(
+            updateTrackAudio({
+              trackId: metadata.track_id,
+              file: replaceFile,
+              metadata
+            })
+          )
+          openReplaceTrackProgress()
+        }
+      })
+    } else {
+      dispatch(editTrack(metadata.track_id, metadata))
+      dispatch(pushRoute(metadata.permalink))
+    }
   }
 
   const coverArtUrl = useTrackCoverArt({

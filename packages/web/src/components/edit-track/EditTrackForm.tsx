@@ -288,8 +288,7 @@ const TrackEditForm = (
               layoutStyles.gap4
             )}
           >
-            {/* TODO: Remove the isUpload part when the other half of the work is done */}
-            {isTrackAudioReplaceEnabled && isUpload ? (
+            {isTrackAudioReplaceEnabled ? (
               <FileReplaceContainer
                 fileName={fileName || messages.untitled}
                 onTogglePlay={handleTogglePreview}

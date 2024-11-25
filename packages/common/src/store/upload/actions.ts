@@ -2,7 +2,13 @@ import { CollectionValues } from '~/schemas'
 
 import { Collection, ID, Track } from '../../models'
 
-import { NativeFile, Progress, TrackForUpload, UploadType } from './types'
+import {
+  NativeFile,
+  Progress,
+  TrackForUpload,
+  TrackMetadataForUpload,
+  UploadType
+} from './types'
 
 export const UPLOAD_TRACKS = 'UPLOAD/UPLOAD_TRACKS'
 export const UPLOAD_TRACKS_REQUESTED = 'UPLOAD/UPLOAD_TRACKS_REQUESTED'
@@ -80,10 +86,11 @@ export const updateProgress = (payload: {
   return { type: UPDATE_PROGRESS, payload }
 }
 
-// Actions for replacing track audio
+// Action for replacing track audio
 export const updateTrackAudio = (payload: {
   trackId: ID
   file: File | NativeFile
+  metadata?: TrackMetadataForUpload
 }) => {
   return {
     type: UPDATE_TRACK_AUDIO,
