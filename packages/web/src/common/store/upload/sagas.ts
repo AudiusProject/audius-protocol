@@ -1,3 +1,4 @@
+import { fileToSdk, trackMetadataForUploadToSdk } from '@audius/common/adapters'
 import {
   Collection,
   CollectionMetadata,
@@ -11,10 +12,6 @@ import {
   isContentUSDCPurchaseGated
 } from '@audius/common/models'
 import { CollectionValues } from '@audius/common/schemas'
-import {
-  fileToSdk,
-  trackMetadataForUploadToSdk
-} from '@audius/common/src/adapters/track'
 import {
   TrackMetadataForUpload,
   LibraryCategory,
