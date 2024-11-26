@@ -192,7 +192,9 @@ def download_purchases(args: DownloadPurchasesArgs):
     return to_download
 
 
-def format_sale_for_csv(result, seller_handle, seller_user_id, include_email=False):
+def format_sale_for_download(
+    result, seller_handle, seller_user_id, include_email=False
+):
     """Format a sale result into a CSV-friendly dictionary format."""
     # Convert datetime to ISO format string
     created_at = result.created_at.isoformat() if result.created_at else None
@@ -200,10 +202,10 @@ def format_sale_for_csv(result, seller_handle, seller_user_id, include_email=Fal
     formatted_result = {
         "title": result.content_title,
         "link": get_link(result.content_type, seller_handle, result.slug),
-        "purchased by": result.buyer_name,
+        "purchased_by": result.buyer_name,
         "date": created_at,
-        "sale price": get_dollar_amount(result.amount),
-        "network fee": next(
+        "sale_price": get_dollar_amount(result.amount),
+        "network_fee": next(
             (
                 0 - get_dollar_amount(item["amount"])
                 for item in result.splits
@@ -211,7 +213,7 @@ def format_sale_for_csv(result, seller_handle, seller_user_id, include_email=Fal
             ),
             None,
         ),
-        "pay extra": get_dollar_amount(result.extra_amount),
+        "pay_extra": get_dollar_amount(result.extra_amount),
         "total": next(
             (
                 get_dollar_amount(str(int(item["amount"]) + int(result.extra_amount)))
@@ -257,7 +259,7 @@ def download_sales(args: DownloadSalesArgs, return_json: bool = False):
     # Build list of dictionary results
     contents = list(
         map(
-            lambda result: format_sale_for_csv(
+            lambda result: format_sale_for_download(
                 result,
                 seller_handle,
                 seller_user_id,
