@@ -7,8 +7,8 @@ buildscript {
         compileSdkVersion = 34
         targetSdkVersion = 34
         castFrameworkVersion = "21.0.0"
-        ndkVersion = "26.1.10909125"
-        kotlinVersion = "1.9.22"
+        ndkVersion = "25.1.8937393"
+        kotlinVersion = "1.8.0"
         ffmpegKitPackage = "https-gpl-lts"
     }
     repositories {
