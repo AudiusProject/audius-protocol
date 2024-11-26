@@ -15,7 +15,7 @@ import { expectSaga } from 'redux-saga-test-plan'
 import { getContext } from 'redux-saga-test-plan/matchers'
 import * as matchers from 'redux-saga-test-plan/matchers'
 import { StaticProvider, throwError } from 'redux-saga-test-plan/providers'
-import { describe, it, vi } from 'vitest'
+import { describe, it, Mock, vi } from 'vitest'
 
 import { remoteConfigInstance } from 'services/remote-config/remote-config-instance'
 import { allSagas, noopReducer } from 'store/testHelper'
@@ -426,7 +426,7 @@ describe.only('editTrack', () => {
     }
 
     // Mock the adapter for this specific test
-    const mockUserTrackMetadataFromSDK = userTrackMetadataFromSDK as vi.Mock
+    const mockUserTrackMetadataFromSDK = userTrackMetadataFromSDK as Mock
     mockUserTrackMetadataFromSDK.mockImplementation(
       () => mockUpdatedPreviewTrack
     )

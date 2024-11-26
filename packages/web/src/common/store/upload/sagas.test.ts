@@ -356,7 +356,7 @@ describe('upload', () => {
       close: vitest.fn()
     }
     const mockWorker = {
-      cancel: vitest.fn(console.log)
+      cancel: vitest.fn()
     }
 
     // Use testSaga so we can control the order of events
