@@ -16,7 +16,7 @@ import Web3 from '../../utils/web3'
 import { createAppWalletClient } from '../AudiusWalletClient'
 import { DiscoveryNodeSelector } from '../DiscoveryNodeSelector'
 
-import { EntityManagerClient } from './EntityManager'
+import { EntityManagerClient } from './EntityManagerClient'
 import { getDefaultEntityManagerConfig } from './getDefaultConfig'
 import { Action, EntityType } from './types'
 

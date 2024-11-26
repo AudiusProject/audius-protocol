@@ -12,7 +12,7 @@ import {
   getDefaultPaymentRouterClientConfig
 } from '../../services'
 import { DiscoveryNodeSelector } from '../../services/DiscoveryNodeSelector'
-import { EntityManager } from '../../services/EntityManager'
+import { EntityManagerClient } from '../../services/EntityManager'
 import { Logger } from '../../services/Logger'
 import {
   ClaimableTokensClient,
@@ -79,7 +79,7 @@ vitest
   .mockImplementation(async () => ({}))
 
 vitest
-  .spyOn(EntityManager.prototype, 'manageEntity')
+  .spyOn(EntityManagerClient.prototype, 'manageEntity')
   .mockImplementation(async () => {
     return {
       blockHash: 'a',
@@ -120,7 +120,7 @@ describe('TracksApi', () => {
         storageNodeSelector,
         logger: new Logger()
       }),
-      new EntityManager({
+      new EntityManagerClient({
         audiusWalletClient,
         discoveryNodeSelector: new DiscoveryNodeSelector()
       }),

@@ -46,7 +46,7 @@ import {
   getDefaultDiscoveryNodeSelectorConfig
 } from './services/DiscoveryNodeSelector'
 import {
-  EntityManager,
+  EntityManagerClient,
   getDefaultEntityManagerConfig
 } from './services/EntityManager'
 import {
@@ -182,7 +182,7 @@ const initializeServices = (config: SdkConfig) => {
 
   const entityManager =
     config.services?.entityManager ??
-    new EntityManager({
+    new EntityManagerClient({
       ...getDefaultEntityManagerConfig(servicesConfig),
       discoveryNodeSelector,
       audiusWalletClient,

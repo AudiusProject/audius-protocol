@@ -7,7 +7,7 @@ import { describe, it, expect, vitest, beforeAll } from 'vitest'
 import { developmentConfig } from '../../config/development'
 import { createAppWalletClient } from '../../services/AudiusWalletClient'
 import { DiscoveryNodeSelector } from '../../services/DiscoveryNodeSelector'
-import { EntityManager } from '../../services/EntityManager'
+import { EntityManagerClient } from '../../services/EntityManager'
 import { Logger } from '../../services/Logger'
 import { SolanaRelay } from '../../services/Solana/SolanaRelay'
 import { SolanaRelayWalletAdapter } from '../../services/Solana/SolanaRelayWalletAdapter'
@@ -83,7 +83,7 @@ vitest
   .mockImplementation(async () => ({}))
 
 vitest
-  .spyOn(EntityManager.prototype, 'manageEntity')
+  .spyOn(EntityManagerClient.prototype, 'manageEntity')
   .mockImplementation(async () => {
     return {
       blockHash: 'a',
@@ -92,7 +92,7 @@ vitest
   })
 
 vitest
-  .spyOn(EntityManager.prototype, 'getCurrentBlock')
+  .spyOn(EntityManagerClient.prototype, 'getCurrentBlock')
   .mockImplementation(async () => {
     return {
       timestamp: 1
@@ -146,7 +146,7 @@ describe('AlbumsApi', () => {
         storageNodeSelector,
         logger: new Logger()
       }),
-      new EntityManager({
+      new EntityManagerClient({
         audiusWalletClient,
         discoveryNodeSelector: new DiscoveryNodeSelector()
       }),

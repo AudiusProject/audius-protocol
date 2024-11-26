@@ -16,7 +16,10 @@ import type { AudiusWalletClient } from '../AudiusWalletClient'
 import type { DiscoveryNodeSelectorService } from '../DiscoveryNodeSelector'
 import type { LoggerService } from '../Logger'
 
-import { EntityManager, type EntityManagerTypes } from './EntityManagerContract'
+import {
+  EntityManager,
+  type EntityManagerTypes
+} from './contract/EntityManagerContract'
 import { getDefaultEntityManagerConfig } from './getDefaultConfig'
 import {
   BlockConfirmation,
