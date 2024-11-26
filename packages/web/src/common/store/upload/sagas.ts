@@ -803,10 +803,10 @@ export function* uploadCollection(
   }
 
   // First upload album art
-  // const { artwork } = collectionMetadata
-  // if (artwork && 'file' in artwork) {
-  //   yield* call(audiusBackendInstance.uploadImage, artwork.file as File)
-  // }
+  const { artwork } = collectionMetadata
+  if (artwork && 'file' in artwork) {
+    yield* call(audiusBackendInstance.uploadImage, artwork.file as File)
+  }
 
   // Propagate the collection metadata to the tracks
   for (const track of tracks) {
