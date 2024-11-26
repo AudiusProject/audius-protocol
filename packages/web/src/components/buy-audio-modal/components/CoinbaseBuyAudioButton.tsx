@@ -1,4 +1,4 @@
-import { useCallback, useContext } from 'react'
+import { useCallback } from 'react'
 
 import { Status } from '@audius/common/models'
 import {
@@ -9,12 +9,12 @@ import {
 import { useDispatch, useSelector } from 'react-redux'
 import { useAsync } from 'react-use'
 
-import { CoinbasePayContext } from 'components/coinbase-pay-button'
 import { OnRampButton } from 'components/on-ramp-button'
 import Tooltip from 'components/tooltip/Tooltip'
 import { getRootSolanaAccount } from 'services/solana/solana'
 
 import styles from './CoinbaseBuyAudioButton.module.css'
+import { useCoinbasePay } from './useCoinbasePay'
 
 const {
   onrampOpened,
@@ -30,7 +30,7 @@ const messages = {
 
 export const CoinbaseBuyAudioButton = () => {
   const dispatch = useDispatch()
-  const coinbasePay = useContext(CoinbasePayContext)
+  const coinbasePay = useCoinbasePay()
   const rootAccount = useAsync(getRootSolanaAccount)
   const purchaseInfoStatus = useSelector(getAudioPurchaseInfoStatus)
   const purchaseInfo = useSelector(getAudioPurchaseInfo)
@@ -45,6 +45,7 @@ export const CoinbaseBuyAudioButton = () => {
   const handleExit = useCallback(() => {
     dispatch(onrampCanceled())
   }, [dispatch])
+
   const handleSuccess = useCallback(() => {
     dispatch(onrampSucceeded())
   }, [dispatch])
@@ -86,13 +87,11 @@ export const CoinbaseBuyAudioButton = () => {
       color='secondary'
       shouldWrapContent={false}
     >
-      <div>
-        <OnRampButton
-          provider={OnRampProvider.COINBASE}
-          disabled={isDisabled}
-          onClick={handleClick}
-        />
-      </div>
+      <OnRampButton
+        provider={OnRampProvider.COINBASE}
+        disabled={isDisabled}
+        onClick={handleClick}
+      />
     </Tooltip>
   )
 }

@@ -1,11 +1,4 @@
-import {
-  createContext,
-  ReactNode,
-  useCallback,
-  useEffect,
-  useRef,
-  useState
-} from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 
 import { initOnRamp } from '@coinbase/cbpay-js'
 
@@ -19,26 +12,8 @@ type ResetParams = {
   onExit?: () => void
 }
 
-export const CoinbasePayContext = createContext<{
-  isReady: boolean
-  isOpen: boolean
-  open: () => void
-  resetParams: (newProps: ResetParams) => void
-}>({
-  isReady: false,
-  isOpen: false,
-  open: () => {},
-  resetParams: (_) => {}
-})
-
-export const CoinbasePayButtonProvider = ({
-  children,
-  ...resetProps
-}: ResetParams & {
-  children: ReactNode
-}) => {
+export const useCoinbasePay = () => {
   const [isReady, setIsReady] = useState(false)
-  const [isOpen, setIsOpen] = useState(false)
   const cbInstance = useRef<ReturnType<typeof initOnRamp>>()
 
   const resetParams = useCallback(
@@ -68,14 +43,8 @@ export const CoinbasePayButtonProvider = ({
             // Update loading/ready states.
             setIsReady(true)
           },
-          onSuccess: () => {
-            onSuccess?.()
-            setIsOpen(false)
-          },
-          onExit: () => {
-            onExit?.()
-            setIsOpen(false)
-          },
+          onSuccess,
+          onExit,
           onEvent: (event: any) => {
             // event stream
             console.info(event)
@@ -88,30 +57,20 @@ export const CoinbasePayButtonProvider = ({
       }
       return () => cbInstance.current?.destroy()
     },
-    [cbInstance, setIsOpen]
+    [cbInstance]
   )
 
   const open = useCallback(() => {
     if (cbInstance.current) {
       cbInstance.current.open()
-      setIsOpen(true)
     }
-  }, [cbInstance, setIsOpen])
+  }, [cbInstance])
 
   useEffect(() => {
-    resetParams(resetProps)
-  }, [resetParams, resetProps])
+    return () => {
+      cbInstance.current?.destroy()
+    }
+  }, [cbInstance])
 
-  return (
-    <CoinbasePayContext.Provider
-      value={{
-        isReady,
-        isOpen,
-        open,
-        resetParams
-      }}
-    >
-      {children}
-    </CoinbasePayContext.Provider>
-  )
+  return { isReady, open, resetParams }
 }
