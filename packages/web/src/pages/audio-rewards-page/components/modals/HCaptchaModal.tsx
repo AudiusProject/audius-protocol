@@ -1,11 +1,7 @@
 import { useCallback } from 'react'
 
 import { useGetCurrentUserId } from '@audius/common/api'
-import {
-  audioRewardsPageActions,
-  getSDK,
-  HCaptchaStatus
-} from '@audius/common/store'
+import { audioRewardsPageActions, HCaptchaStatus } from '@audius/common/store'
 import HCaptcha from '@hcaptcha/react-hcaptcha'
 import { useDispatch } from 'react-redux'
 

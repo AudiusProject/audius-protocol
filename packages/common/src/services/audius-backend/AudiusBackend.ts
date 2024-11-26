@@ -2,7 +2,6 @@ import {
   AudiusSdk,
   Genre,
   Mood,
-  sdk,
   type StorageNodeSelectorService
 } from '@audius/sdk'
 import { DiscoveryAPI } from '@audius/sdk-legacy/dist/core'
@@ -63,8 +62,7 @@ import {
   BrowserNotificationSetting,
   PushNotificationSetting,
   PushNotifications,
-  SearchKind,
-  getSDK
+  SearchKind
 } from '../../store'
 import {
   getErrorMessage,
@@ -2287,6 +2285,7 @@ export const audiusBackend = ({
     setUserHandleForRelay,
     signData,
     signDiscoveryNodeRequest,
+    signIdentityServiceRequest,
     signOut,
     signUp,
     transferAudioToWAudio,
