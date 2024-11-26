@@ -15,7 +15,7 @@ from src.utils.session_manager import SessionManager
 
 logger = logging.getLogger(__name__)
 
-CORE_INDEXER_MINIMUM_TIME_SECS = 3
+CORE_INDEXER_MINIMUM_TIME_SECS = 1
 
 
 def _index_core_txs(
