@@ -7,8 +7,7 @@ import {
   matrixTheme,
   defaultTheme,
   darkTheme,
-  useThemeVariant,
-  debugTheme
+  useThemeVariant
 } from 'app/utils/theme'
 
 import { spacing } from './spacing'
@@ -56,19 +55,10 @@ export const makeStyles = <T extends Record<string, StyleTypes>>(
     })
   )
 
-  const debugStylesheet = StyleSheet.create(
-    styles({
-      type: Theme.DEBUG,
-      palette: debugTheme,
-      ...baseOptions
-    })
-  )
-
   const themedStylesheets = {
     [Theme.DEFAULT]: defaultStylesheet,
     [Theme.DARK]: darkStylesheet,
-    [Theme.MATRIX]: matrixStylesheet,
-    [Theme.DEBUG]: debugStylesheet
+    [Theme.MATRIX]: matrixStylesheet
   }
 
   return function useStyles() {

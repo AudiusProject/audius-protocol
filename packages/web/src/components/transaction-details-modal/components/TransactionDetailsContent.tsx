@@ -14,13 +14,13 @@ import {
 } from '@audius/common/utils'
 import {
   IconExternalLink,
+  IconLogoCoinbasePay,
   IconLogoLinkByStripe as LogoStripeLink
 } from '@audius/harmony'
 import cn from 'classnames'
 import { push as pushRoute } from 'connected-react-router'
 import { useSelector, useDispatch } from 'react-redux'
 
-import LogoCoinbasePay from 'assets/img/coinbase-pay/LogoCoinbasePay.svg'
 import { useSetVisibility } from 'common/hooks/useModalState'
 import { AudioTransactionIcon } from 'components/audio-transaction-icon'
 import { isChangePositive } from 'components/audio-transactions-table/AudioTransactionsTable'
@@ -222,7 +222,7 @@ export const TransactionDetailsContent = ({
           {transactionDetails.transactionType === TransactionType.PURCHASE ? (
             <Block className={styles.header} header={messages.method}>
               {transactionDetails.method === TransactionMethod.COINBASE ? (
-                <LogoCoinbasePay
+                <IconLogoCoinbasePay
                   className={styles.coinbaseLogo}
                   width={155}
                   height={20}

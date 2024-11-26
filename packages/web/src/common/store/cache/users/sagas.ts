@@ -1,10 +1,15 @@
-import { userMetadataListFromSDK } from '@audius/common/adapters'
+import {
+  transformAndCleanList,
+  userCollectionMetadataFromSDK,
+  userMetadataListFromSDK
+} from '@audius/common/adapters'
 import {
   DefaultSizes,
   Kind,
   OptionalId,
   User,
-  UserMetadata
+  UserMetadata,
+  Id
 } from '@audius/common/models'
 import {
   Metadata,
@@ -19,7 +24,7 @@ import {
 } from '@audius/common/store'
 import { waitForAccount, waitForValue } from '@audius/common/utils'
 import { mergeWith } from 'lodash'
-import { call, put, select, takeEvery } from 'typed-redux-saga'
+import { all, call, put, select, takeEvery } from 'typed-redux-saga'
 
 import { retrieveCollections } from 'common/store/cache/collections/utils'
 import { retrieve } from 'common/store/cache/sagas'
@@ -122,16 +127,34 @@ export function* fetchUserByHandle(
  * @param {number} userId target user id
  */
 export function* fetchUserCollections(userId: number) {
-  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
-  // Get playlists.
-  const playlists = yield* call(
-    audiusBackendInstance.getPlaylists,
-    userId,
-    null
-  )
-  const playlistIds = playlists.map((p) => p.playlist_id)
+  const sdk = yield* getSDK()
+  function* getPlaylists() {
+    const { data } = yield* call(
+      [sdk.full.users, sdk.full.users.getPlaylistsByUser],
+      {
+        id: Id.parse(userId),
+        userId: Id.parse(userId)
+      }
+    )
+    return transformAndCleanList(data, userCollectionMetadataFromSDK)
+  }
+  function* getAlbums() {
+    const { data } = yield* call(
+      [sdk.full.users, sdk.full.users.getAlbumsByUser],
+      {
+        id: Id.parse(userId),
+        userId: Id.parse(userId)
+      }
+    )
+    return transformAndCleanList(data, userCollectionMetadataFromSDK)
+  }
+  const [playlists, albums] = yield* all([call(getPlaylists), call(getAlbums)])
 
-  if (!playlistIds.length) {
+  const playlistIds = playlists.map((p) => p.playlist_id)
+  const albumIds = albums.map((a) => a.playlist_id)
+  const ids = [...playlistIds, ...albumIds]
+
+  if (!ids.length) {
     yield* put(
       cacheActions.update(Kind.USERS, [
         {

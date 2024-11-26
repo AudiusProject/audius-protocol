@@ -1,7 +1,7 @@
 import chalk from 'chalk'
 import { program } from 'commander'
 
-import { initializeAudiusLibs, initializeAudiusSdk } from './utils.mjs'
+import { initializeAudiusSdk, getCurrentAudiusSdkUser } from './utils.mjs'
 import { Utils } from '@audius/sdk-legacy/dist/libs.js'
 
 program
@@ -16,23 +16,12 @@ program
     parseFloat
   )
   .action(async (id, price, { from, extraAmount }) => {
-    const audiusLibs = await initializeAudiusLibs(from)
-    const userIdNumber = audiusLibs.getCurrentUser().userId
-    const userId = Utils.encodeHashId(userIdNumber)
-    const trackId = Utils.encodeHashId(id)
-
-    // extract privkey and pubkey from hedgehog
-    // only works with accounts created via audius-cmd
-    const wallet = audiusLibs?.hedgehog?.getWallet()
-    const privKey = wallet?.getPrivateKeyString()
-    const pubKey = wallet?.getAddressString()
-
-    // init sdk with priv and pub keys as api keys and secret
-    // this enables writes via sdk
     const audiusSdk = await initializeAudiusSdk({
-      apiKey: pubKey,
-      apiSecret: privKey
+      handle: from
     })
+    const currentUser = await getCurrentAudiusSdkUser()
+    const userId = currentUser.id
+    const trackId = Utils.encodeHashId(id)
 
     try {
       console.log('Purchasing track...', {
@@ -68,23 +57,12 @@ program
     parseFloat
   )
   .action(async (id, price, { from, extraAmount }) => {
-    const audiusLibs = await initializeAudiusLibs(from)
-    const userIdNumber = audiusLibs.userStateManager.getCurrentUserId()
-    const userId = Utils.encodeHashId(userIdNumber)
-    const albumId = Utils.encodeHashId(id)
-
-    // extract privkey and pubkey from hedgehog
-    // only works with accounts created via audius-cmd
-    const wallet = audiusLibs?.hedgehog?.getWallet()
-    const privKey = wallet?.getPrivateKeyString()
-    const pubKey = wallet?.getAddressString()
-
-    // init sdk with priv and pub keys as api keys and secret
-    // this enables writes via sdk
     const audiusSdk = await initializeAudiusSdk({
-      apiKey: pubKey,
-      apiSecret: privKey
+      handle: from
     })
+    const currentUser = await getCurrentAudiusSdkUser()
+    const userId = currentUser.id
+    const albumId = Utils.encodeHashId(id)
 
     try {
       console.log('Purchasing album...', {

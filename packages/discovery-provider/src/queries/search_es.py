@@ -441,6 +441,8 @@ def finalize_response(
 
     # tracks: finalize
     for k in ["tracks", "saved_tracks"]:
+        if k not in response:
+            continue
         tracks = response[k]
         hydrate_user(tracks, users_by_id)
         if not is_auto_complete:
@@ -454,6 +456,8 @@ def finalize_response(
 
     # users: finalize
     for k in ["users", "followed_users"]:
+        if k not in response:
+            continue
         users = reorder_users(response[k])
         users = users[:limit]
         response[k] = [map_user(user, current_user) for user in users]

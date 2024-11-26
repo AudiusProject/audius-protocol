@@ -173,10 +173,6 @@ const CollectionPage = ({
     trackCount > 0 &&
     (tracks.status === Status.LOADING || tracks.status === Status.IDLE)
 
-  const coverArtSizes =
-    metadata && metadata?.variant !== Variant.SMART
-      ? metadata._cover_art_sizes
-      : null
   const duration =
     dataSource.reduce(
       (duration: number, entry: CollectionTrack) =>
@@ -250,7 +246,6 @@ const CollectionPage = ({
       title={playlistName}
       artistName={playlistOwnerName}
       artistHandle={playlistOwnerHandle}
-      coverArtSizes={coverArtSizes}
       description={description}
       isOwner={isOwner}
       isAlbum={isAlbum}

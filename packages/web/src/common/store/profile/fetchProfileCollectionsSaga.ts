@@ -1,12 +1,16 @@
-import { Kind } from '@audius/common/models'
+import {
+  userCollectionMetadataFromSDK,
+  transformAndCleanList
+} from '@audius/common/adapters'
+import { Id, Kind } from '@audius/common/models'
 import {
   cacheActions,
   profilePageActions,
   profilePageSelectors,
-  getContext
+  getSDK
 } from '@audius/common/store'
 import { isEqual } from 'lodash'
-import { put, select, takeLatest, call } from 'typed-redux-saga'
+import { put, select, takeLatest, call, all } from 'typed-redux-saga'
 
 import { processAndCacheCollections } from 'common/store/cache/collections/utils'
 
@@ -26,6 +30,7 @@ export function* watchFetchProfileCollections() {
 function* fetchProfileCollectionsAsync(
   action: ReturnType<typeof fetchCollections>
 ) {
+  const sdk = yield* getSDK()
   const { handle } = action
   const user = yield* select((state) => getProfileUser(state, { handle }))
 
@@ -35,15 +40,32 @@ function* fetchProfileCollectionsAsync(
   }
 
   const { user_id, _collectionIds } = user
-  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
-
-  try {
-    const latestCollections = yield* call(
-      audiusBackendInstance.getPlaylists,
-      user_id,
-      null,
-      false
+  function* getPlaylists() {
+    const { data } = yield* call(
+      [sdk.full.users, sdk.full.users.getPlaylistsByUser],
+      {
+        id: Id.parse(user_id),
+        userId: Id.parse(user_id)
+      }
     )
+    return transformAndCleanList(data, userCollectionMetadataFromSDK)
+  }
+  function* getAlbums() {
+    const { data } = yield* call(
+      [sdk.full.users, sdk.full.users.getAlbumsByUser],
+      {
+        id: Id.parse(user_id),
+        userId: Id.parse(user_id)
+      }
+    )
+    return transformAndCleanList(data, userCollectionMetadataFromSDK)
+  }
+  try {
+    const [playlists, albums] = yield* all([
+      call(getPlaylists),
+      call(getAlbums)
+    ])
+    const latestCollections = [...playlists, ...albums]
 
     const latestCollectionIds = latestCollections.map(
       ({ playlist_id }) => playlist_id

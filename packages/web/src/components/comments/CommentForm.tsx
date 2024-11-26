@@ -12,6 +12,7 @@ import { Avatar, Flex } from '@audius/harmony'
 import { CommentMention } from '@audius/sdk'
 import { useSelector } from 'react-redux'
 import { useLocation } from 'react-router-dom'
+import { usePrevious } from 'react-use'
 
 import { ComposerInput } from 'components/composer-input/ComposerInput'
 import { useIsMobile } from 'hooks/useIsMobile'
@@ -58,10 +59,15 @@ export const CommentForm = ({
   const [editComment] = useEditComment()
 
   const location = useLocation()
+  const previousLocation = usePrevious(location)
+  const hasLocationChanged =
+    previousLocation && previousLocation.pathname !== location.pathname
   useEffect(() => {
-    // Reset input text when the location changes
-    setMessageId((prev) => prev + 1)
-  }, [location])
+    if (hasLocationChanged) {
+      // Reset input text when the location changes
+      setMessageId((prev) => prev + 1)
+    }
+  }, [hasLocationChanged])
 
   const handlePostComment = (message: string, mentions?: CommentMention[]) => {
     const trackPosition = audioPlayer

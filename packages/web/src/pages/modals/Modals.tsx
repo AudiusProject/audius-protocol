@@ -33,6 +33,7 @@ import { PayoutWalletModal } from 'components/payout-wallet-modal/PayoutWalletMo
 import { PremiumContentPurchaseModal } from 'components/premium-content-purchase-modal/PremiumContentPurchaseModal'
 import { PublishConfirmationModal } from 'components/publish-confirmation-modal/PublishConfirmationModal'
 import { ReplaceTrackConfirmationModal } from 'components/replace-track-confirmation-modal/ReplaceTrackConfirmationModal'
+import { ReplaceTrackProgressModal } from 'components/replace-track-progress-modal/ReplaceTrackProgressModal'
 import { TipAudioModal } from 'components/tipping/tip-audio/TipAudioModal'
 import ConnectedMobileOverflowModal from 'components/track-overflow-modal/ConnectedMobileOverflowModal'
 import { TransactionDetailsModal } from 'components/transaction-details-modal'
@@ -90,6 +91,7 @@ const commonModalsMap: { [Modal in ModalTypes]?: ComponentType } = {
   DeletePlaylistConfirmation: DeletePlaylistConfirmationModal,
   DeleteTrackConfirmation: DeleteTrackConfirmationModal,
   ReplaceTrackConfirmation: ReplaceTrackConfirmationModal,
+  ReplaceTrackProgress: ReplaceTrackProgressModal,
   DuplicateAddConfirmation: DuplicateAddConfirmationModal,
   AudioBreakdown: AudioBreakdownModal,
   UploadConfirmation: UploadConfirmationModal,

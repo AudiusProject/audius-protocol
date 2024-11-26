@@ -155,58 +155,6 @@ export const primitiveTheme = {
       aiGreen: '#1FD187',
       gradient: 'linear-gradient(323.08deg, #4FF069 36.13%, #09BD51 133.51%)'
     }
-  },
-  debug: {
-    static: {
-      white: '#FF00001A',
-      black: '#FF00001A',
-      primary: '#FF00001A'
-    },
-    primary: {
-      primary: '#FF00001A',
-      p100: '#FF00001A',
-      p200: '#FF00001A',
-      p300: '#FF00001A',
-      p400: '#FF00001A',
-      p500: '#FF00001A'
-    },
-    secondary: {
-      secondary: '#FF00001A',
-      s100: '#FF00001A',
-      s200: '#FF00001A',
-      s300: '#FF00001A',
-      s400: '#FF00001A',
-      s500: '#FF00001A'
-    },
-    neutral: {
-      neutral: '#FF00001A',
-      n25: '#FF00001A',
-      n50: '#FF00001A',
-      n100: '#FF00001A',
-      n150: '#FF00001A',
-      n200: '#FF00001A',
-      n300: '#FF00001A',
-      n400: '#FF00001A',
-      n500: '#FF00001A',
-      n600: '#FF00001A',
-      n700: '#FF00001A',
-      n800: '#FF00001A',
-      n900: '#FF00001A',
-      n950: '#FF00001A'
-    },
-    special: {
-      white: '#FF00001A',
-      background: '#FF00001A',
-      blue: '#FF00001A',
-      orange: '#FF00001A',
-      red: '#FF00001A',
-      darkRed: '#FF00001A',
-      green: '#FF00001A',
-      lightGreen: '#FF00001A',
-      trendingBlue: '#FF00001A',
-      aiGreen: '#FF00001A',
-      gradient: 'linear-gradient(315deg, #FF00001A 0%, #FF00001A 100%)'
-    }
   }
 }
 

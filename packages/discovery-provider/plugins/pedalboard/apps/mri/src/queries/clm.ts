@@ -1,12 +1,11 @@
 import { Knex } from 'knex'
 import { logger as plogger } from '../logger'
 import { toCsvString } from '../csv'
-import { S3Config, publishToS3 } from '../s3'
+import { S3Config, publish } from '../s3'
 import { readConfig } from '../config'
 import { formatDate } from '../date'
 
 const config = readConfig()
-const isDev = config.env === 'dev'
 
 type ClientLabelMetadata = {
   UniqueTrackIdentifier: number
@@ -81,14 +80,13 @@ export const clm = async (
   `, {start, end}).then(result => result.rows)
 
   const csv = toCsvString(clmRows, ClientLabelMetadataHeader)
-  if (isDev) {
-    logger.info(csv)
-  }
-
-  const uploads = s3s.map((s3config) =>
-    publishToS3(logger, s3config, csv, formatDate(date))
+  const results = await publish(
+    logger,
+    s3s,
+    csv,
+    formatDate(date)
   )
-  const results = await Promise.allSettled(uploads)
+
   results.forEach((objUrl) =>
     logger.info({ objUrl, records: clmRows.length }, 'upload result')
   )

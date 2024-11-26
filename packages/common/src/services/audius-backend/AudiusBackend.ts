@@ -1022,31 +1022,6 @@ export const audiusBackend = ({
     return followers
   }
 
-  // TODO(C-2719)
-  async function getPlaylists(
-    userId: Nullable<ID>,
-    playlistIds: Nullable<ID[]>,
-    withUsers = true
-  ): Promise<CollectionMetadata[]> {
-    try {
-      const playlists = await withEagerOption(
-        {
-          normal: (libs) => libs.Playlist.getPlaylists,
-          eager: DiscoveryAPI.getPlaylists
-        },
-        100,
-        0,
-        playlistIds,
-        userId,
-        withUsers
-      )
-      return (playlists || []).map(getCollectionImages)
-    } catch (err) {
-      console.error(getErrorMessage(err))
-      return []
-    }
-  }
-
   async function createPlaylist(
     playlistId: ID,
     metadata: Partial<Collection>,
@@ -1146,22 +1121,6 @@ export const audiusBackend = ({
       const { isValid, invalidTrackIds } =
         await audiusLibs.Playlist.validateTracksInPlaylist(playlistId)
       return { error: false, isValid, invalidTrackIds }
-    } catch (error) {
-      console.error(getErrorMessage(error))
-      return { error }
-    }
-  }
-
-  // NOTE: This is called to explicitly set a playlist track ids w/out running validation checks.
-  // This should NOT be used to set the playlist order
-  // It's added for the purpose of manually fixing broken playlists
-  async function dangerouslySetPlaylistOrder(playlistId: ID, trackIds: ID[]) {
-    try {
-      await audiusLibs.contracts.PlaylistFactoryClient.orderPlaylistTracks(
-        playlistId,
-        trackIds
-      )
-      return { error: false }
     } catch (error) {
       console.error(getErrorMessage(error))
       return { error }
@@ -2185,7 +2144,6 @@ export const audiusBackend = ({
     clearNotificationBadges,
     createPlaylist,
     currentDiscoveryProvider,
-    dangerouslySetPlaylistOrder,
     deletePlaylist,
     deletePlaylistTrack,
     deregisterDeviceToken,
@@ -2212,7 +2170,6 @@ export const audiusBackend = ({
     getEmailNotificationSettings,
     getFolloweeFollows,
     getImageUrl,
-    getPlaylists,
     getPushNotificationSettings,
     getRandomFeePayer,
     getSafariBrowserPushEnabled,

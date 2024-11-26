@@ -3,13 +3,13 @@ import { View } from 'react-native'
 import Text from 'app/components/text'
 import { flexRowCentered, makeStyles } from 'app/styles'
 
-const useStyles = makeStyles(({ palette }) => ({
+const useStyles = makeStyles(({ palette, spacing }) => ({
   root: {
     width: '100%',
     ...flexRowCentered(),
     justifyContent: 'center',
-    marginTop: 12,
-    paddingHorizontal: 12
+    marginTop: spacing(4),
+    paddingHorizontal: spacing(4)
   },
 
   line: {

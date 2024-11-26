@@ -2,11 +2,15 @@ import { SquareSizes } from '@audius/common/models'
 import { Text } from '@audius/harmony'
 import { merge } from 'lodash'
 import { Routes, Route } from 'react-router-dom-v5-compat'
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, vi } from 'vitest'
 
 import { RenderOptions, render, screen } from 'test/test-utils'
 
 import { CollectionCard } from './CollectionCard'
+
+vi.mock('../../utils/image', () => ({
+  preload: vi.fn((url: string) => Promise.resolve())
+}))
 
 function renderCollectionCard(options?: RenderOptions) {
   return render(
@@ -34,9 +38,12 @@ function renderCollectionCard(options?: RenderOptions) {
                   permalink: '/test-user/test-collection',
                   repost_count: 10,
                   save_count: 5,
-                  _cover_art_sizes: {
-                    [SquareSizes.SIZE_150_BY_150]: 'image-small.jpg',
-                    [SquareSizes.SIZE_480_BY_480]: 'image-medium.jpg'
+                  artwork: {
+                    [SquareSizes.SIZE_150_BY_150]:
+                      'https://node.com/image-small.jpg',
+                    [SquareSizes.SIZE_480_BY_480]:
+                      'https://node.com/image-medium.jpg',
+                    mirrors: ['https://node.com']
                   }
                 }
               }
@@ -75,11 +82,11 @@ describe('CollectionCard', () => {
     ).toBeInTheDocument()
   })
 
-  it('renders the cover image', () => {
+  it('renders the cover image', async () => {
     renderCollectionCard()
-    expect(screen.getByTestId('cover-art-1')).toHaveAttribute(
+    expect(await screen.findByTestId('cover-art-1')).toHaveAttribute(
       'src',
-      'image-medium.jpg'
+      'https://node.com/image-medium.jpg'
     )
   })
 

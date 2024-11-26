@@ -197,8 +197,6 @@ export const matrixTheme = {
   focus: '#184F17'
 }
 
-export const debugTheme = defaultTheme
-
 export type ThemeColors = {
   aiPrimary: string
   aiSecondary: string
@@ -266,14 +264,12 @@ export type ThemeColors = {
 }
 
 const themeColorsByThemeVariant: Record<
-  Theme.DARK | Theme.DEFAULT | Theme.MATRIX | Theme.DEBUG,
+  Theme.DARK | Theme.DEFAULT | Theme.MATRIX,
   ThemeColors
 > = {
   [Theme.DEFAULT]: defaultTheme,
   [Theme.DARK]: darkTheme,
-  [Theme.MATRIX]: matrixTheme,
-  // TODO: could use debug theme, but keeping it as default to aide in harmony transition
-  [Theme.DEBUG]: defaultTheme
+  [Theme.MATRIX]: matrixTheme
 }
 
 export const selectSystemTheme = (state: CommonState) => {

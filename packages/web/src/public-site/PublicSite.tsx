@@ -94,7 +94,7 @@ export const PublicSite = (props: PublicSiteProps) => {
       </div>
 
       <Suspense fallback={<div style={{ width: '100vw', height: '100vh' }} />}>
-        <ThemeProvider theme='day'>
+        <ThemeProvider theme='day' version={'v1'}>
           <AppContextProvider>
             <Router history={history}>
               <NavScreen
