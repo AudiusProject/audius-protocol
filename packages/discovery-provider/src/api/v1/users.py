@@ -93,6 +93,7 @@ from src.api.v1.models.users import (
     user_model,
     user_model_full,
     user_subscribers,
+    sale_json_model,
 )
 from src.api.v1.playlists import get_tracks_for_playlist
 from src.challenges.challenge_event_bus import setup_challenge_bus
@@ -2629,6 +2630,18 @@ class SalesDownload(Resource):
         return response
 
 
+sales_json_response = make_response(
+    "sales_json_response",
+    ns,
+    {
+        "decryption_key": fields.String(
+            description="Encrypted key for decrypting buyer emails", allow_null=True
+        ),
+        "sales": fields.List(fields.Nested(sale_json_model)),
+    },
+)
+
+
 @ns.route("/<string:id>/sales/download/json")
 class SalesDownloadJSON(Resource):
     @ns.doc(
@@ -2638,6 +2651,7 @@ class SalesDownloadJSON(Resource):
     )
     @ns.produces(["application/json"])
     @ns.expect(sales_download_parser)
+    @ns.marshal_with(sales_json_response)
     @auth_middleware(sales_download_parser, require_auth=True)
     def get(self, id, authed_user_id):
         decoded_id = decode_with_abort(id, ns)

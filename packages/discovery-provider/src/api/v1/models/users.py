@@ -287,3 +287,30 @@ email_access_key = ns.model(
         "updated_at": fields.DateTime(required=True),
     },
 )
+
+
+sale_json_model = ns.model(
+    "sale_json",
+    {
+        "title": fields.String(
+            description="Title of the content (track/album/playlist)"
+        ),
+        "link": fields.String(description="Full URL link to the content"),
+        "purchased_by": fields.String(description="Name of the buyer"),
+        "date": fields.String(
+            description="ISO format date string of when the sale occurred"
+        ),
+        "sale_price": fields.Float(description="Base sale price in USDC"),
+        "network_fee": fields.Float(
+            description="Network fee deducted from sale in USDC"
+        ),
+        "pay_extra": fields.Float(description="Extra amount paid by buyer in USDC"),
+        "total": fields.Float(description="Total amount received by seller in USDC"),
+        "country": fields.String(
+            description="Country code where purchase was made", allow_null=True
+        ),
+        "encrypted_email": fields.String(
+            description="Encrypted email of buyer if available", allow_null=True
+        ),
+    },
+)
