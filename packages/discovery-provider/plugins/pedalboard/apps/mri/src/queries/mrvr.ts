@@ -84,7 +84,7 @@ export const mrvr = async (
   date: Date
 ): Promise<void> => {
   // Get exchange rate from usd to eur for CBS reporting
-  const usdToEurRate = await fetch('https://open.er-api.com/v6/latest/USD')
+  const usdToEurRate = await fetch('https://api.frankfurter.app/latest?base=USD')
     .then(response => response.json())
     .then(data => data.rates.EUR)
 
