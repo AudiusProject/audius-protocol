@@ -247,12 +247,12 @@ def create_comment(params: ManageEntityParameters):
 
     if parent_comment_id:
         # Avoid re-adding stem if it already exists
-        existing_stem = (
+        existing_comment_thread = (
             params.session.query(CommentThread)
             .filter_by(parent_comment_id=parent_comment_id, comment_id=comment_id)
             .first()
         )
-        if existing_stem:
+        if existing_comment_thread:
             return
 
         comment_thread = CommentThread(
