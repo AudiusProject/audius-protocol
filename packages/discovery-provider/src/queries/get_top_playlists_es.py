@@ -104,7 +104,7 @@ def get_top_playlists_es(kind, args):
         # omit current_user because top playlists are cached across users
         p["user"] = populate_user_metadata_es(u, None)
         (follow_saves, follow_reposts) = fetch_followed_saves_and_reposts(None, [p])
-        hydrate_saves_reposts(p, follow_saves, follow_reposts)
+        hydrate_saves_reposts([p], follow_saves, follow_reposts)
         populate_track_or_playlist_metadata_es(p, None)
 
     return playlists
