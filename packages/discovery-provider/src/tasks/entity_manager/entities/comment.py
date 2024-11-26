@@ -246,13 +246,20 @@ def create_comment(params: ManageEntityParameters):
                 safe_add_notification(params, mention_notification)
 
     if parent_comment_id:
+        # Avoid re-adding stem if it already exists
+        existing_stem = (
+            params.session.query(CommentThread)
+            .filter_by(parent_comment_id=parent_comment_id, comment_id=comment_id)
+            .first()
+        )
+        if existing_stem:
+            return
+
         comment_thread = CommentThread(
             parent_comment_id=parent_comment_id,
             comment_id=comment_id,
         )
-        params.add_record(
-            (parent_comment_id, comment_id), comment_thread, EntityType.COMMENT_THREAD
-        )
+        params.session.add(comment_thread)
 
         parent_comment_owner_notifications_off = params.session.query(
             params.session.query(CommentNotificationSetting)
