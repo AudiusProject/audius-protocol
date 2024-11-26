@@ -56,10 +56,16 @@ export function* fetchAccountAsync({ isSignUp = false }): SagaIterator {
   if (accountStatus !== Status.SUCCESS) {
     yield* put(accountActions.fetchAccountRequested())
   }
+  yield* call([
+    authService.hedgehogInstance,
+    authService.hedgehogInstance.refreshWallet
+  ])
+
   const { accountWalletAddress: wallet, web3WalletAddress } = yield* call([
     authService,
     authService.getWalletAddresses
   ])
+
   if (!wallet) {
     yield* put(
       fetchAccountFailed({
@@ -103,9 +109,6 @@ export function* fetchAccountAsync({ isSignUp = false }): SagaIterator {
   yield* put(fetchBlockees())
   yield* put(fetchBlockers())
 
-  yield* put(
-    setWalletAddresses({ currentUser: wallet, web3User: web3WalletAddress })
-  )
   // Sync current user info to libs
   const libs = yield* call([
     audiusBackendInstance,

@@ -138,7 +138,7 @@ const RenderForm = ({
     setPurchaseMethod(PurchaseMethod.BALANCE)
     submitForm()
   }, [submitForm, setPurchaseMethod])
-
+  console.log('asdf metadata', metadata)
   return (
     <ModalForm className={cn(styles.modalRoot, { [styles.mobile]: isMobile })}>
       <ModalHeader
@@ -153,7 +153,11 @@ const RenderForm = ({
         className={styles.content}
         currentPage={currentPageIndex}
       >
-        <GuestCheckout />
+        <GuestCheckout
+          metadata={metadata}
+          price={price}
+          onClickSignIn={onClose}
+        />
         <>
           <Flex p={isMobile ? 'l' : 'xl'} pb='m'>
             <Flex direction='column' gap='xl' w='100%'>

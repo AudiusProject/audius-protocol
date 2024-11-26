@@ -52,6 +52,7 @@ export const LockedContentDetailsTile = ({
   disabled = false,
   earnAmount
 }: LockedContentDetailsTileProps) => {
+  console.log('asdf metadata: ', metadata)
   const { stream_conditions: streamConditions } = metadata
   const isAlbum = 'playlist_id' in metadata
   const contentId = isAlbum ? metadata.playlist_id : metadata.track_id
