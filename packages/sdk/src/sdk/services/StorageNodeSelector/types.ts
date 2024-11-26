@@ -31,7 +31,7 @@ export type StorageNodeSelectorConfig =
     /**
      * The Authentication service, used to get the user's wallet for rendevous calculations
      */
-    auth: AudiusWalletClient
+    audiusWalletClient: AudiusWalletClient
 
     /**
      * DiscoveryNodeSelector instance being used, so that the node can listen for

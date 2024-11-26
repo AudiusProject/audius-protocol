@@ -15,6 +15,7 @@ export type StorageServiceConfig = Partial<StorageServiceConfigInternal> & {
    * The StorageNodeSelector service used to get the relevant storage node for content
    */
   storageNodeSelector: StorageNodeSelectorService
+  audiusWalletClient: AudiusWalletClient
 }
 
 export type ProgressCB = (loaded: number, total: number) => void

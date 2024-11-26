@@ -1,69 +1,27 @@
-import {
-  type GetTypedDataMessage,
-  type Hash,
-  type Hex,
-  type PublicClient,
-  type TypedDataDefinition
-} from 'viem'
+import type { TypedData } from 'viem'
 
 import { abi } from './abi'
-import { AUDIUS_TOKEN_CONTRACT_ADDRESS, audiusTokenTypes } from './constants'
-import type { AudiusTokenTypedData } from './types'
 
+export type AudiusTokenTypes = typeof AudiusToken.types
 export class AudiusToken {
-  public readonly abi = abi
-  public readonly address: Hex
+  public static readonly abi = abi
 
-  private readonly client: PublicClient
+  public static readonly address =
+    '0x18aAA7115705e8be94bfFEBDE57Af9BFc265B998' as const
 
-  constructor(client: PublicClient, { address }: { address?: Hex } = {}) {
-    this.client = client
-    this.address = address ?? AUDIUS_TOKEN_CONTRACT_ADDRESS
-  }
-
-  public async balanceOf({ account }: { account: `0x${string}` }) {
-    return await this.client.readContract({
-      address: this.address,
-      abi,
-      functionName: 'balanceOf',
-      args: [account]
-    })
-  }
-
-  public async getPermitTypedData(
-    args: GetTypedDataMessage<AudiusTokenTypedData, 'Permit'>['message']
-  ): Promise<TypedDataDefinition<AudiusTokenTypedData, 'Permit'>> {
-    return {
-      primaryType: 'Permit',
-      domain: await this.getDomain(),
-      types: audiusTokenTypes,
-      message: args
-    }
-  }
-
-  public async name() {
-    return await this.client.readContract({
-      address: this.address,
-      abi,
-      functionName: 'name'
-    })
-  }
-
-  public async nonces(from: Hash) {
-    return await this.client.readContract({
-      address: this.address,
-      abi,
-      functionName: 'nonces',
-      args: [from]
-    })
-  }
-
-  private async getDomain() {
-    return {
-      name: await this.name(),
-      verifyingContract: this.address,
-      chainId: BigInt(await this.client.getChainId()),
-      version: '1'
-    }
-  }
+  public static readonly types = {
+    EIP712Domain: [
+      { name: 'name', type: 'string' },
+      { name: 'version', type: 'string' },
+      { name: 'chainId', type: 'uint256' },
+      { name: 'verifyingContract', type: 'address' }
+    ],
+    Permit: [
+      { name: 'owner', type: 'address' },
+      { name: 'spender', type: 'address' },
+      { name: 'value', type: 'uint256' },
+      { name: 'nonce', type: 'uint256' },
+      { name: 'deadline', type: 'uint256' }
+    ]
+  } as const satisfies TypedData
 }

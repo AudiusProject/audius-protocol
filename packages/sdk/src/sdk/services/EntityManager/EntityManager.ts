@@ -1,22 +1,26 @@
-import type Web3Type from 'web3'
+import {
+  createPublicClient,
+  encodeFunctionData,
+  http,
+  type Hex,
+  type PublicClient,
+  type TypedDataDefinition
+} from 'viem'
 import type { TransactionReceipt } from 'web3-core'
-import type { Contract } from 'web3-eth-contract'
-import type { AbiItem } from 'web3-utils'
 
-import { abi as EntityManagerABI } from '../../abi/EntityManager.json'
 import { productionConfig } from '../../config/production'
 import fetch, { Headers } from '../../utils/fetch'
 import { mergeConfigWithDefaults } from '../../utils/mergeConfigs'
-import { getNonce, generators } from '../../utils/signatureSchemas'
-import Web3 from '../../utils/web3'
+import { getNonce } from '../../utils/signatureSchemas'
+import type { AudiusWalletClient } from '../AudiusWalletClient'
 import type { DiscoveryNodeSelectorService } from '../DiscoveryNodeSelector'
 import type { LoggerService } from '../Logger'
 
+import { EntityManager, type EntityManagerTypes } from './EntityManagerContract'
 import { getDefaultEntityManagerConfig } from './getDefaultConfig'
 import {
   BlockConfirmation,
   EntityManagerConfig,
-  EntityManagerConfigInternal,
   EntityManagerService,
   ManageEntityOptions
 } from './types'
@@ -25,44 +29,36 @@ const DEFAULT_GAS_LIMIT = 2000000
 const CONFIRMATION_POLLING_INTERVAL = 2000
 const CONFIRMATION_TIMEOUT = 45000
 
-export class EntityManager implements EntityManagerService {
-  /**
-   * Configuration passed in by consumer (with defaults)
-   */
-  private readonly config: EntityManagerConfigInternal
+export class EntityManagerClient implements EntityManagerService {
   private readonly discoveryNodeSelector: DiscoveryNodeSelectorService
+  private readonly audiusWalletClient: AudiusWalletClient
   private readonly logger: LoggerService
 
-  private contract!: Contract
-  private web3!: Web3Type
+  private readonly chainId: number
+  private readonly contractAddress: string
 
-  constructor(config: EntityManagerConfig) {
-    this.config = mergeConfigWithDefaults(
-      config,
+  private publicClient: PublicClient | undefined
+
+  constructor(config_: EntityManagerConfig) {
+    const config = mergeConfigWithDefaults(
+      config_,
       getDefaultEntityManagerConfig(productionConfig)
     )
     this.discoveryNodeSelector = config.discoveryNodeSelector
-    this.logger = this.config.logger.createPrefixedLogger('[entity-manager]')
+    this.audiusWalletClient = config.audiusWalletClient
+    this.chainId = config.chainId
+    this.contractAddress = config.contractAddress
+    this.logger = config.logger.createPrefixedLogger('[entity-manager]')
   }
 
-  /**
-   * Initializes web3 and contract instances
-   */
-  private async init() {
-    if (!this.web3) {
+  private async getClient() {
+    if (!this.publicClient) {
       const web3Provider = `${await this.discoveryNodeSelector.getSelectedEndpoint()}/chain`
-      this.web3 = new Web3(
-        new Web3.providers.HttpProvider(web3Provider, {
-          timeout: 10000
-        })
-      )
+      this.publicClient = createPublicClient({
+        transport: http(web3Provider)
+      })
     }
-    if (!this.contract) {
-      this.contract = new this.web3.eth.Contract(
-        EntityManagerABI as AbiItem[],
-        this.config.contractAddress
-      )
-    }
+    return this.publicClient
   }
 
   /**
@@ -74,40 +70,34 @@ export class EntityManager implements EntityManagerService {
     entityId,
     action,
     metadata = '',
-    auth,
     confirmationTimeout = CONFIRMATION_TIMEOUT,
     skipConfirmation = false
   }: ManageEntityOptions): Promise<
     Pick<TransactionReceipt, 'blockHash' | 'blockNumber'>
   > {
-    await this.init()
     const nonce = await getNonce()
-    const chainId = Number(this.config.chainId)
-    const signatureData = generators.getManageEntityData(
-      chainId,
-      this.config.contractAddress,
-      // TODO: This should be required, but not certain all
-      // callers are requiring it.
-      userId!,
-      entityType,
-      entityId,
-      action,
-      metadata,
-      nonce
-    )
 
-    const senderAddress = await auth.getAddress()
-    const signature = await auth.signTypedData(signatureData)
+    const typedData: TypedDataDefinition<EntityManagerTypes, 'ManageEntity'> = {
+      domain: {
+        name: 'Entity Manager',
+        chainId: BigInt(this.chainId),
+        version: '1',
+        verifyingContract: this.contractAddress as Hex
+      },
+      primaryType: 'ManageEntity',
+      message: {
+        userId: userId!,
+        entityType,
+        entityId,
+        action,
+        metadata,
+        nonce
+      },
+      types: EntityManager.types
+    }
 
-    const method = await this.contract.methods.manageEntity(
-      userId,
-      entityType,
-      entityId,
-      action,
-      metadata,
-      nonce,
-      signature
-    )
+    const [senderAddress] = await this.audiusWalletClient.getAddresses()
+    const signature = await this.audiusWalletClient.signTypedData(typedData)
 
     const url = `${await this.discoveryNodeSelector.getSelectedEndpoint()}/relay`
     this.logger.info(`Making relay request to ${url}`)
@@ -117,9 +107,21 @@ export class EntityManager implements EntityManagerService {
         'Content-Type': 'application/json'
       }),
       body: JSON.stringify({
-        contractAddress: this.config.contractAddress,
+        contractAddress: this.contractAddress,
         contractRegistryKey: 'EntityManager',
-        encodedABI: method.encodeABI(),
+        encodedABI: encodeFunctionData({
+          abi: EntityManager.abi,
+          args: [
+            userId,
+            entityType,
+            entityId,
+            action,
+            metadata,
+            nonce,
+            signature
+          ],
+          functionName: 'manageEntity'
+        }),
         // Gas limit not really needed with ACDC
         gasLimit: DEFAULT_GAS_LIMIT,
         senderAddress
@@ -206,10 +208,9 @@ export class EntityManager implements EntityManagerService {
   }
 
   public async getCurrentBlock() {
-    await this.init()
-    const currentBlockNumber = await this.web3.eth.getBlockNumber()
-    return (await this.web3.eth.getBlock(currentBlockNumber)) as {
-      timestamp: number
-    }
+    const client = await this.getClient()
+    const currentBlockNumber = await client.getBlockNumber()
+    const block = await client.getBlock({ blockNumber: currentBlockNumber })
+    return { ...block, timestamp: Number(block.timestamp) }
   }
 }

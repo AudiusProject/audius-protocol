@@ -31,6 +31,7 @@ export type EntityManagerConfig = Partial<EntityManagerConfigInternal> & {
    * The DiscoveryNodeSelector service used to get a discovery node to confirm blocks
    */
   discoveryNodeSelector: DiscoveryNodeSelectorService
+  audiusWalletClient: AudiusWalletClient
 }
 
 export type EntityManagerService = {
@@ -118,10 +119,6 @@ export type ManageEntityOptions = {
    * Metadata associated with the action
    */
   metadata?: string
-  /**
-   * An instance of AuthService
-   */
-  auth: AudiusWalletClient
 } & AdvancedOptions
 
 export enum BlockConfirmation {

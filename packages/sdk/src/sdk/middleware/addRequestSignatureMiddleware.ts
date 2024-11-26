@@ -19,7 +19,7 @@ const SIGNATURE_HEADER = 'Encoded-Data-Signature'
 export const addRequestSignatureMiddleware = ({
   services
 }: {
-  services: Pick<ServicesContainer, 'walletClient' | 'logger'>
+  services: Pick<ServicesContainer, 'audiusWalletClient' | 'logger'>
 }): Middleware => {
   const mutex = new Mutex()
   let message: string | null = null
@@ -31,8 +31,8 @@ export const addRequestSignatureMiddleware = ({
     // Run this exclusively to prevent multiple requests from updating the signature at the same time
     // and reverting to an older signature
     return mutex.runExclusive(async () => {
-      const { walletClient: auth, logger } = services
-      const currentAddress = await auth.getAddress()
+      const { audiusWalletClient, logger } = services
+      const [currentAddress] = await audiusWalletClient.getAddresses()
       const currentTimestamp = new Date().getTime()
       const isExpired =
         !timestamp || timestamp + SIGNATURE_EXPIRY_MS < currentTimestamp
@@ -45,22 +45,19 @@ export const addRequestSignatureMiddleware = ({
 
       if (needsUpdate) {
         try {
+          if (!currentAddress) {
+            throw new Error('Could not get a wallet address.')
+          }
           signatureAddress = currentAddress
 
           const m = `signature:${currentTimestamp}`
-          const prefix = `\x19Ethereum Signed Message:\n${m.length}`
-          const prefixedMessage = prefix + m
 
-          const [sig, recid] = await auth.sign(
-            Buffer.from(prefixedMessage, 'utf-8')
-          )
-          const r = Buffer.from(sig.slice(0, 32)).toString('hex')
-          const s = Buffer.from(sig.slice(32, 64)).toString('hex')
-          const v = (recid + 27).toString(16)
+          signature = await audiusWalletClient.signMessage({
+            message: m
+          })
 
           // Cache the new signature and message
           message = m
-          signature = `0x${r}${s}${v}`
           timestamp = currentTimestamp
         } catch (e) {
           logger.warn(`Unable to add request signature: ${e}`)

@@ -1,28 +1,14 @@
-import type { LocalStorage } from '@audius/hedgehog'
-import type { Hex, TransactionType } from 'viem'
+import type { Account, Chain, Client, Hex, RpcSchema, Transport } from 'viem'
+import type { Prettify } from 'viem/_types/types/utils'
 
-export type TypedData = {
-  domain?: Partial<{
-    name: string
-    version: string
-    chainId: bigint
-    verifyingContract: string
-  }>
-  types: Record<string, Readonly<Array<{ name: string; type: string }>>>
-  primaryType: string
-  message: Record<string, any>
-}
+import type { AudiusWalletActions } from './decorators/audiusWallet'
 
-export type TransactionRequest = {
-  type?: TransactionType
-  data?: Hex
-  gas?: bigint
-  nonce?: number
-  to?: Hex
-  value?: bigint
-}
-
-export type AudiusWalletClient = {
+/**
+ * The AudiusAccount is like the LocalAccount from Viem, except it
+ * has raw signing and sharedSecret capabilities for encryption purposes,
+ * used for communications with comms to keep chats/DMs e2ee.
+ */
+export type AudiusAccount = Account & {
   /**
    * Get a shared secret, used for Chats
    */
@@ -30,40 +16,24 @@ export type AudiusWalletClient = {
   /**
    * Signs the keccak hash of some data, used for Chats
    */
-  sign: (data: string | Uint8Array) => Promise<[Uint8Array, number]>
-  /**
-   * Calculates an Ethereum-specific signature in [EIP-191 format](https://eips.ethereum.org/EIPS/eip-191): `keccak256("\x19Ethereum Signed Message:\n" + len(message) + message))`.
-   */
-  signMessage: (message: string) => Promise<string>
-  /**
-   * Signs typed data and calculates an Ethereum-specific signature in [EIP-712 format](https://eips.ethereum.org/EIPS/eip-712): `sign(keccak256("\x19\x01" ‖ domainSeparator ‖ hashStruct(message)))`
-   */
-  signTypedData: (data: TypedData) => Promise<string>
-  /**
-   * Sends a transaction
-   */
-  sendTransaction: (data: TransactionRequest) => Promise<string>
-  /**
-   * Get the sender address, used for EntityManager writes
-   */
-  getAddress: () => Promise<string>
+  sign: (data: Hex) => Promise<Hex>
 }
 
-export type HedgehogWalletClientConfigInternal = {
-  /**
-   * The identity service that backs hedgehog authentication
-   */
-  identityService: string
-
-  /**
-   * Whether hedgehog uses local storage to keep user sessions
-   */
-  useLocalStorage: boolean
-
-  /**
-   * An interface to local storage provided to hedgehog
-   */
-  localStorage: Promise<LocalStorage>
-}
-
-export type UserAuthConfig = Partial<HedgehogWalletClientConfigInternal>
+/**
+ * AudiusWalletClient is the combination of a subset of WalletClient from Viem
+ * and some additional actions, `getSharedSecret` and `sign`.
+ */
+export type AudiusWalletClient<
+  TTransport extends Transport = Transport,
+  TChain extends Chain | undefined = Chain | undefined,
+  TAccount extends AudiusAccount = AudiusAccount,
+  TRpcSchema extends RpcSchema | undefined = undefined
+> = Prettify<
+  Client<
+    TTransport,
+    TChain,
+    TAccount,
+    TRpcSchema,
+    AudiusWalletActions<TChain, TAccount>
+  >
+>

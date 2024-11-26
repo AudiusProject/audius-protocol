@@ -7,6 +7,7 @@ import { uniqBy } from 'lodash'
 import * as aes from 'micro-aes-gcm'
 import type TypedEmitter from 'typed-emitter'
 import { ulid } from 'ulid'
+import { hexToBytes } from 'viem'
 
 import type { AudiusWalletClient } from '../../services/AudiusWalletClient'
 import type { DiscoveryNodeSelectorService } from '../../services/DiscoveryNodeSelector/types'
@@ -101,7 +102,7 @@ export class ChatsApi
 
   constructor(
     config: Configuration,
-    private readonly auth: AudiusWalletClient,
+    private readonly audiusWalletClient: AudiusWalletClient,
     private readonly discoveryNodeSelectorService: DiscoveryNodeSelectorService,
     private readonly logger: LoggerService
   ) {
@@ -707,7 +708,9 @@ export class ChatsApi
     inviteePublicKey: Uint8Array,
     chatSecret: Uint8Array
   ) {
-    const sharedSecret = await this.auth.getSharedSecret(inviteePublicKey)
+    const sharedSecret = await this.audiusWalletClient.getSharedSecret({
+      publicKey: inviteePublicKey
+    })
     const encryptedChatSecret = await this.encrypt(sharedSecret, chatSecret)
     const inviteCode = new Uint8Array(65 + encryptedChatSecret.length)
     inviteCode.set(userPublicKey)
@@ -718,7 +721,9 @@ export class ChatsApi
   private async readInviteCode(inviteCode: Uint8Array) {
     const friendPublicKey = inviteCode.slice(0, 65)
     const chatSecretEncrypted = inviteCode.slice(65)
-    const sharedSecret = await this.auth.getSharedSecret(friendPublicKey)
+    const sharedSecret = await this.audiusWalletClient.getSharedSecret({
+      publicKey: friendPublicKey
+    })
     return await this.decrypt(sharedSecret, chatSecretEncrypted)
   }
 
@@ -839,11 +844,11 @@ export class ChatsApi
   }
 
   private async getSignatureHeader(payload: string) {
-    const [allSignatureBytes, recoveryByte] = await this.auth.sign(payload)
-    const signatureBytes = new Uint8Array(65)
-    signatureBytes.set(allSignatureBytes, 0)
-    signatureBytes[64] = recoveryByte
-    return { 'x-sig': base64.encode(signatureBytes) }
+    const signatureHex = await this.audiusWalletClient.sign({
+      message: payload
+    })
+    const signature = hexToBytes(signatureHex)
+    return { 'x-sig': base64.encode(signature) }
   }
 
   private async signAndSendRequest(request: RequestOpts) {

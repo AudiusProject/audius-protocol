@@ -4,7 +4,7 @@ import { AudiusLibs } from '@audius/sdk-legacy/dist/libs'
 import { discoveryNodeSelectorService } from 'services/audius-sdk/discoveryNodeSelector'
 import { env } from 'services/env'
 
-import { sdkAuthAdapter } from './auth'
+import { audiusWalletClient } from './auth'
 
 declare global {
   interface Window {
@@ -49,7 +49,7 @@ const initSdk = async () => {
     services: {
       discoveryNodeSelector,
       solanaRelay,
-      walletClient: sdkAuthAdapter
+      audiusWalletClient
     }
   })
   console.debug('[audiusSdk] SDK initted.')

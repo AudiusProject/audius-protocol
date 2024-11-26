@@ -94,7 +94,7 @@ describe('TracksApi', () => {
   const logger = new Logger()
   const discoveryNodeSelector = new DiscoveryNodeSelector()
   const storageNodeSelector = new StorageNodeSelector({
-    auth,
+    audiusWalletClient: auth,
     discoveryNodeSelector,
     logger
   })

@@ -32,6 +32,7 @@ export class Storage implements StorageService {
    */
   private readonly config: StorageServiceConfigInternal
   private readonly storageNodeSelector: StorageNodeSelectorService
+  private readonly audiusWalletClient: AudiusWalletClient
   private readonly logger: LoggerService
 
   constructor(config: StorageServiceConfig) {
@@ -40,6 +41,7 @@ export class Storage implements StorageService {
       getDefaultStorageServiceConfig(productionConfig)
     )
     this.storageNodeSelector = config.storageNodeSelector
+    this.audiusWalletClient = config.audiusWalletClient
     this.logger = this.config.logger.createPrefixedLogger('[storage]')
   }
 
@@ -52,12 +54,10 @@ export class Storage implements StorageService {
    */
   async editFile({
     uploadId,
-    data,
-    auth
+    data
   }: {
     uploadId: string
     data: { [key: string]: string }
-    auth: AudiusWalletClient
   }) {
     // Generate signature
 
@@ -66,7 +66,9 @@ export class Storage implements StorageService {
       timestamp: Date.now()
     }
     const sigJson = JSON.stringify(sortObjectKeys(signatureData))
-    const signature = await auth.signMessage(sigJson)
+    const signature = await this.audiusWalletClient.signMessage({
+      message: sigJson
+    })
     const signatureEnvelope = {
       data: sigJson,
       signature
@@ -107,14 +109,12 @@ export class Storage implements StorageService {
     file,
     onProgress,
     template,
-    options = {},
-    auth
+    options = {}
   }: {
     file: File
     onProgress?: ProgressCB
     template: FileTemplate
     options?: { [key: string]: string }
-    auth: AudiusWalletClient
   }) {
     const formData: FormData = new FormData()
     formData.append('template', template)
@@ -131,7 +131,9 @@ export class Storage implements StorageService {
       timestamp: Date.now()
     }
     const sigJson = JSON.stringify(sortObjectKeys(signatureData))
-    const signature = await auth.signMessage(sigJson)
+    const signature = await this.audiusWalletClient.signMessage({
+      message: sigJson
+    })
     const signatureEnvelope = {
       data: sigJson,
       signature

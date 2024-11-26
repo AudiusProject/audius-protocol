@@ -1,8 +1,9 @@
-import type { AudiusWalletClient } from '../../../AudiusWalletClient'
-import type { EthereumContractConfigInternal } from '../types'
+import type { Hex } from 'viem'
 
-export type AudiusTokenConfig = AudiusTokenConfigInternal & {
-  walletClient: AudiusWalletClient
+import type { EthereumClientConfig } from '../types'
+
+export type AudiusTokenConfig = AudiusTokenConfigInternal & EthereumClientConfig
+
+export type AudiusTokenConfigInternal = {
+  address: Hex
 }
-
-export type AudiusTokenConfigInternal = EthereumContractConfigInternal

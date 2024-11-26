@@ -1,13 +1,13 @@
 import { describe, it, expect } from 'vitest'
 
-import { LocalWalletClient, Logger } from '../services'
+import { createAppWalletClient, Logger } from '../services'
 
 import { addRequestSignatureMiddleware } from './addRequestSignatureMiddleware'
 
 describe('addRequestSignatureMiddleware', () => {
   it('generates a signature', async () => {
     const services = {
-      walletClient: new LocalWalletClient(
+      audiusWalletClient: createAppWalletClient(
         '0x4ac8b3eff248bfbf20b324b575c1b333d42c6db3dbe19fd587c3d1e11323a25a'
       ),
       logger: new Logger()
@@ -31,7 +31,7 @@ describe('addRequestSignatureMiddleware', () => {
 
   it('reuses a signature', async () => {
     const services = {
-      walletClient: new LocalWalletClient(
+      audiusWalletClient: createAppWalletClient(
         '0x4ac8b3eff248bfbf20b324b575c1b333d42c6db3dbe19fd587c3d1e11323a25a'
       ),
       logger: new Logger()

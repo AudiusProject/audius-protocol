@@ -1,23 +1,33 @@
-import { AudiusToken } from '@audius/eth'
-import { type Hex, encodeFunctionData, hexToSignature } from 'viem'
+import { AudiusToken, AudiusTokenTypes } from '@audius/eth'
+import {
+  type GetTypedDataDomain,
+  type Hex,
+  type TypedDataDefinition,
+  type PublicClient,
+  hexToSignature,
+  type WalletClient
+} from 'viem'
+import type { GetAccountParameter } from 'viem/_types/types/account'
+import type { UnionOmit } from 'viem/_types/types/utils'
+import { type FormattedTransactionRequest } from 'viem/utils'
 
-import type {
-  AudiusWalletClient,
-  TransactionRequest
-} from '../../../AudiusWalletClient'
-import { EthereumContract } from '../EthereumContract'
+import type { AudiusWalletClient } from '../../../AudiusWalletClient'
 
 import type { AudiusTokenConfig } from './types'
 
-export class AudiusTokenClient extends EthereumContract {
-  private readonly contract: AudiusToken
-  private readonly walletClient: AudiusWalletClient
+const ONE_HOUR_IN_MS = 1000 * 60 * 60
+
+export class AudiusTokenClient {
+  private readonly audiusWalletClient: AudiusWalletClient
+  private readonly walletClient: WalletClient
+  private readonly publicClient: PublicClient
+  private readonly contractAddress: Hex
 
   constructor(config: AudiusTokenConfig) {
-    super(config)
-
-    this.contract = new AudiusToken(config.client)
-    this.walletClient = config.walletClient
+    this.audiusWalletClient = config.audiusWalletClient
+    this.walletClient = config.ethWalletClient
+    this.publicClient = config.ethPublicClient
+    this.contractAddress = config.address
   }
 
   public async permit(
@@ -28,29 +38,65 @@ export class AudiusTokenClient extends EthereumContract {
         value: bigint
         deadline?: bigint
       }
-    } & Omit<TransactionRequest, 'data' | 'to'>
+    } & GetAccountParameter &
+      UnionOmit<FormattedTransactionRequest, 'from' | 'to' | 'data' | 'value'>
   ) {
     const {
-      args: { owner: owner_, spender, value, deadline: deadline_ },
-      ...transactionRequest
+      args: {
+        owner = (await this.audiusWalletClient.getAddresses())[0],
+        spender,
+        value,
+        deadline = BigInt(Date.now() + ONE_HOUR_IN_MS)
+      },
+      ...other
     } = params
-    const owner = owner_ ?? ((await this.walletClient.getAddress()) as Hex)
-    const deadline = deadline_ ?? BigInt(Date.now() + 1000 * 60 * 60)
-    const nonce = await this.contract.nonces(owner)
-    const signedArgs = { owner, spender, value, nonce, deadline }
-    const typedData = await this.contract.getPermitTypedData(signedArgs)
-    const signature = await this.walletClient.signTypedData(typedData)
-    const { r, s, v } = hexToSignature(signature as Hex)
-    const args = [owner, spender, value, deadline, Number(v), r, s] as const
-    const data = encodeFunctionData({
-      abi: this.contract.abi,
+
+    // Get args
+    if (owner === undefined) {
+      throw new Error(
+        'Parameter "owner" could not be derived from wallet client.'
+      )
+    }
+    const nonce = await this.publicClient.readContract({
+      address: this.contractAddress,
+      abi: AudiusToken.abi,
+      functionName: 'nonces',
+      args: [owner]
+    })
+
+    // Sign the typed data with the user's Audius wallet
+    const typedData: TypedDataDefinition<AudiusTokenTypes, 'Permit'> = {
+      primaryType: 'Permit',
+      domain: await this.domain(),
+      message: { owner, spender, value, nonce, deadline },
+      types: AudiusToken.types
+    }
+    const signature = await this.audiusWalletClient.signTypedData(typedData)
+    const { r, s, v } = hexToSignature(signature)
+
+    // Send the transaction on Ethereum
+    const { request } = await this.publicClient.simulateContract({
+      address: this.contractAddress,
+      abi: AudiusToken.abi,
       functionName: 'permit',
-      args
+      args: [owner, spender, value, deadline, Number(v), r, s] as const,
+      ...other
     })
-    return await this.walletClient.sendTransaction({
-      data,
-      to: this.contract.address,
-      ...transactionRequest
-    })
+    return await this.walletClient.writeContract(request)
+  }
+
+  private async domain(): Promise<
+    GetTypedDataDomain<AudiusTokenTypes>['domain']
+  > {
+    return {
+      name: await this.publicClient.readContract({
+        abi: AudiusToken.abi,
+        address: this.contractAddress,
+        functionName: 'name'
+      }),
+      chainId: BigInt(await this.publicClient.getChainId()),
+      verifyingContract: this.contractAddress,
+      version: '1'
+    }
   }
 }
