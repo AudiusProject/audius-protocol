@@ -32,6 +32,7 @@ from src.models.social.subscription import Subscription
 from src.models.tracks.track import Track
 from src.models.tracks.track_route import TrackRoute
 from src.models.users.associated_wallet import AssociatedWallet
+from src.models.users.email import EmailAccessKey, EmailEncryptionKey, EncryptedEmail
 from src.models.users.user import User
 from src.models.users.user_events import UserEvent
 from src.queries.confirm_indexing_transaction_error import (
@@ -61,6 +62,10 @@ from src.tasks.entity_manager.entities.developer_app import (
     create_developer_app,
     delete_developer_app,
     update_developer_app,
+)
+from src.tasks.entity_manager.entities.email import (
+    create_encrypted_email,
+    update_encrypted_email,
 )
 from src.tasks.entity_manager.entities.grant import (
     approve_grant,
@@ -140,6 +145,9 @@ entity_type_table_mapping = {
     "CommentReaction": CommentReaction.__tablename__,
     "MutedUser": MutedUser.__tablename__,
     "CommentNotificationSetting": CommentNotificationSetting.__tablename__,
+    "EncryptedEmail": EncryptedEmail.__tablename__,
+    "EmailEncryptionKey": EmailEncryptionKey.__tablename__,
+    "EmailAccessKey": EmailAccessKey.__tablename__,
 }
 
 
@@ -423,6 +431,16 @@ def entity_manager_update(
                         params.action == Action.MUTE or params.action == Action.UNMUTE
                     ) and params.entity_type == EntityType.COMMENT:
                         update_comment_notification_setting(params)
+                    elif (
+                        params.action == Action.ADD_EMAIL
+                        and params.entity_type == EntityType.ENCRYPTED_EMAIL
+                    ):
+                        create_encrypted_email(params)
+                    elif (
+                        params.action == Action.UPDATE_EMAIL
+                        and params.entity_type == EntityType.ENCRYPTED_EMAIL
+                    ):
+                        update_encrypted_email(params)
 
                     logger.debug("process transaction")  # log event context
                 except IndexingValidationError as e:
@@ -560,7 +578,15 @@ def copy_original_records(existing_records):
 
 
 entity_types_to_fetch = set(
-    [EntityType.USER, EntityType.TRACK, EntityType.PLAYLIST, EntityType.COMMENT]
+    [
+        EntityType.USER,
+        EntityType.TRACK,
+        EntityType.PLAYLIST,
+        EntityType.COMMENT,
+        EntityType.ENCRYPTED_EMAIL,
+        EntityType.EMAIL_ENCRYPTION_KEY,
+        EntityType.EMAIL_ACCESS_KEY,
+    ]
 )
 
 
@@ -760,6 +786,39 @@ def collect_entities_to_fetch(update_task, entity_manager_txs):
                     user_id = json_metadata.get("ai_attribution_user_id")
                     if user_id:
                         entities_to_fetch[EntityType.USER].add(user_id)
+
+            if entity_type == EntityType.ENCRYPTED_EMAIL:
+                try:
+                    json_metadata = json.loads(metadata)
+                except Exception as e:
+                    logger.error(
+                        f"tasks | entity_manager.py | Exception deserializing {action} {entity_type} event metadata: {e}"
+                    )
+                    # skip invalid metadata
+                    continue
+
+                # Add primary user's email and key records to fetch
+                primary_user_id = json_metadata.get("primary_user_id")
+                if primary_user_id:
+                    entities_to_fetch[EntityType.ENCRYPTED_EMAIL].add(primary_user_id)
+                    entities_to_fetch[EntityType.EMAIL_ENCRYPTION_KEY].add(
+                        primary_user_id
+                    )
+
+                # Add delegated users' access keys to fetch
+                delegated_user_ids = json_metadata.get("delegated_user_ids", [])
+                for delegated_user_id in delegated_user_ids:
+                    entities_to_fetch[EntityType.EMAIL_ACCESS_KEY].add(
+                        (primary_user_id, delegated_user_id)
+                    )
+
+                # For updates, we need to fetch existing records
+                if action == Action.UPDATE_EMAIL:
+                    email_owner_user_id = json_metadata.get("email_owner_user_id")
+                    if email_owner_user_id:
+                        entities_to_fetch[EntityType.ENCRYPTED_EMAIL].add(
+                            (primary_user_id, email_owner_user_id)
+                        )
 
     return entities_to_fetch
 
@@ -1386,6 +1445,79 @@ def fetch_existing_entities(session: Session, entities_to_fetch: EntitiesToFetch
                 comment_notification_setting["entity_type"],
             ): comment_notification_setting
             for _, comment_notification_setting in comment_notification_settings
+        }
+
+    # Add new email-related entity fetching
+    if entities_to_fetch[EntityType.ENCRYPTED_EMAIL.value]:
+        encrypted_emails: List[Tuple[EncryptedEmail, dict]] = (
+            session.query(
+                EncryptedEmail,
+                literal_column(f"row_to_json({EncryptedEmail.__tablename__})"),
+            )
+            .filter(
+                EncryptedEmail.primary_user_id.in_(
+                    entities_to_fetch[EntityType.ENCRYPTED_EMAIL.value]
+                )
+            )
+            .all()
+        )
+        existing_entities[EntityType.ENCRYPTED_EMAIL] = {
+            encrypted_email.primary_user_id: encrypted_email
+            for encrypted_email, _ in encrypted_emails
+        }
+        existing_entities_in_json[EntityType.ENCRYPTED_EMAIL] = {
+            encrypted_email_json["primary_user_id"]: encrypted_email_json
+            for _, encrypted_email_json in encrypted_emails
+        }
+
+    if entities_to_fetch[EntityType.EMAIL_ENCRYPTION_KEY.value]:
+        encryption_keys: List[Tuple[EmailEncryptionKey, dict]] = (
+            session.query(
+                EmailEncryptionKey,
+                literal_column(f"row_to_json({EmailEncryptionKey.__tablename__})"),
+            )
+            .filter(
+                EmailEncryptionKey.primary_user_id.in_(
+                    entities_to_fetch[EntityType.EMAIL_ENCRYPTION_KEY.value]
+                )
+            )
+            .all()
+        )
+        existing_entities[EntityType.EMAIL_ENCRYPTION_KEY] = {
+            key.primary_user_id: key for key, _ in encryption_keys
+        }
+        existing_entities_in_json[EntityType.EMAIL_ENCRYPTION_KEY] = {
+            key_json["primary_user_id"]: key_json for _, key_json in encryption_keys
+        }
+
+    if entities_to_fetch[EntityType.EMAIL_ACCESS_KEY.value]:
+        access_keys_to_fetch: Set[Tuple[int, int]] = entities_to_fetch[
+            EntityType.EMAIL_ACCESS_KEY.value
+        ]
+        or_queries = []
+        for access_key in access_keys_to_fetch:
+            primary_user_id, delegated_user_id = access_key
+            or_queries.append(
+                and_(
+                    EmailAccessKey.primary_user_id == primary_user_id,
+                    EmailAccessKey.delegated_user_id == delegated_user_id,
+                )
+            )
+
+        access_keys: List[Tuple[EmailAccessKey, dict]] = (
+            session.query(
+                EmailAccessKey,
+                literal_column(f"row_to_json({EmailAccessKey.__tablename__})"),
+            )
+            .filter(or_(*or_queries))
+            .all()
+        )
+        existing_entities[EntityType.EMAIL_ACCESS_KEY] = {
+            (key.primary_user_id, key.delegated_user_id): key for key, _ in access_keys
+        }
+        existing_entities_in_json[EntityType.EMAIL_ACCESS_KEY] = {
+            (key_json["primary_user_id"], key_json["delegated_user_id"]): key_json
+            for _, key_json in access_keys
         }
 
     return existing_entities, existing_entities_in_json

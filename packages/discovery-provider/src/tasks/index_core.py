@@ -1,5 +1,5 @@
 import logging
-from time import sleep
+import time
 from typing import Optional
 
 from sqlalchemy.orm.session import Session
@@ -14,6 +14,8 @@ from src.utils.prometheus_metric import save_duration_metric
 from src.utils.session_manager import SessionManager
 
 logger = logging.getLogger(__name__)
+
+CORE_INDEXER_MINIMUM_TIME_SECS = 1
 
 
 def _index_core_txs(
@@ -57,7 +59,6 @@ def _index_core(db: SessionManager) -> Optional[BlockResponse]:
         return None
 
     chainid = node_info.chainid
-    logger.info(f"index_core.py | got node info {node_info}")
 
     with db.scoped_session() as session:
         latest_indexed_block = core.latest_indexed_block(
@@ -69,22 +70,17 @@ def _index_core(db: SessionManager) -> Optional[BlockResponse]:
         if latest_indexed_block:
             next_block = latest_indexed_block.height + 1
 
-        logger.debug(f"index_core.py | querying block {next_block} on chain {chainid}")
-
         block, indexed_block = core.get_block(session=session, height=next_block)
         if not block:
             logger.error(f"index_core.py | could not get block {next_block} {chainid}")
             return None
 
         if indexed_block:
-            logger.debug(f"index_core.py | block already indexed {next_block}")
             return None
 
         # core returns -1 for block that doesn't exist
         if block.height < 0:
             return None
-
-        logger.debug(f"index_core.py | got block {block.height} on chain {chainid}")
 
         challenge_bus: ChallengeEventBus = index_core.challenge_event_bus
         _index_core_txs(
@@ -116,12 +112,13 @@ def index_core(self):
 
     # Define redis lock object
     update_lock = redis.lock("index_core_lock")
+
+    start_time = time.time()
     try:
         # Attempt to acquire lock
         have_lock = update_lock.acquire(blocking=False)
         if have_lock:
             indexed_block = _index_core(db)
-            sleep(1)
             if indexed_block:
                 logger.debug(f"index_core.py | indexed block {indexed_block.height}")
         else:
@@ -139,4 +136,7 @@ def index_core(self):
     finally:
         if have_lock:
             update_lock.release()
+        elapsed_time = time.time() - start_time
+        if elapsed_time < CORE_INDEXER_MINIMUM_TIME_SECS:
+            time.sleep(CORE_INDEXER_MINIMUM_TIME_SECS - elapsed_time)
         celery.send_task("index_core")
