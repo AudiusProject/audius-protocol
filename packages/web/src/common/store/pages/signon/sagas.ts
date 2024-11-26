@@ -31,11 +31,9 @@ import {
   settingsPageActions,
   collectionsSocialActions,
   usersSocialActions as socialActions,
-  solanaSelectors,
   toastActions,
   getContext,
   confirmerActions,
-  confirmTransaction,
   getSDK,
   fetchAccountAsync
 } from '@audius/common/store'
@@ -80,7 +78,6 @@ import { FollowArtistsCategory, Pages } from './types'
 
 const { FEED_PAGE, SIGN_IN_PAGE, SIGN_UP_PAGE } = route
 const { requestPushNotificationPermissions } = settingsPageActions
-const { getFeePayer } = solanaSelectors
 const { saveCollection } = collectionsSocialActions
 const { getUsers } = cacheUsersSelectors
 const { getAccountUser, getHasAccount } = accountSelectors
@@ -523,6 +520,48 @@ function* associateSocialAccounts({
   }
 }
 
+function* sendRecoveryEmail({
+  handle,
+  email
+}: {
+  handle: string
+  email: string
+}) {
+  const authService = yield* getContext('authService')
+  const getHostUrl = yield* getContext('getHostUrl')
+  const host = getHostUrl()
+  const sdk = yield* getSDK()
+
+  try {
+    const recoveryInfo = yield* call([
+      authService.hedgehogInstance,
+      authService.hedgehogInstance.generateRecoveryInfo
+    ])
+
+    const unixTs = Math.round(new Date().getTime() / 1000) // current unix timestamp (sec)
+    const data = `Click sign to authenticate with identity service: ${unixTs}`
+    const signature = yield* call(
+      [sdk.services.auth, sdk.services.auth.hashAndSign],
+      data
+    )
+
+    const recoveryData = {
+      login: recoveryInfo.login,
+      host: host ?? recoveryInfo.host,
+      data,
+      signature
+    }
+    yield* call([authService, authService.sendRecoveryInfo], recoveryData)
+  } catch (err) {
+    const reportToSentry = yield* getContext('reportToSentry')
+    reportToSentry({
+      error: err instanceof Error ? err : new Error(err as string),
+      name: 'Sign Up: Failed to send recovery email',
+      additionalInfo: { handle, email, host }
+    })
+  }
+}
+
 function* signUp() {
   const signOn = yield* select(getSignOn)
   const email = signOn.email.value
@@ -548,7 +587,6 @@ function* signUp() {
   const name = signOn.name.value.trim()
 
   const handle = signOn.handle.value
-  // TODO-NOW: How is this determined?
   const alreadyExisted = signOn.accountAlreadyExisted
   const referrer = signOn.referrer
 
@@ -561,17 +599,21 @@ function* signUp() {
         const reportToSentry = yield* getContext('reportToSentry')
         const isNativeMobile = yield* getContext('isNativeMobile')
 
-        // TODO-NOW: Check if wallet is already valid
-        const newWallet = yield* call(
-          [authService.hedgehogInstance, authService.hedgehogInstance.signUp],
-          {
-            username: email,
-            password
-          }
-        )
+        if (!alreadyExisted) {
+          yield* call(
+            [authService.hedgehogInstance, authService.hedgehogInstance.signUp],
+            {
+              username: email,
+              password
+            }
+          )
 
-        // TODO-NOW: fork generating recovery link (with retries)
-        const wallet = yield* call([newWallet, newWallet.getAddressString])
+          yield* fork(sendRecoveryEmail, { handle, email })
+        }
+        const wallet = (yield* call([
+          authService,
+          authService.getWalletAddresses
+        ])).web3WalletAddress
 
         const events: CreateUserRequest['metadata']['events'] = {}
         if (referrer) {
@@ -613,9 +655,6 @@ function* signUp() {
             })
           }
 
-          // TODO-NOW: Isn't this usually done during onSignIn?
-          // Most of the stuff from here to the confirm at the
-          // bottom seems like it can go in the onSuccess function
           yield* put(
             identify(handle, {
               name,
@@ -669,7 +708,6 @@ function* signUp() {
                 handle,
                 email,
                 location,
-                // userId,
                 formFields: createUserMetadata,
                 hasWallet: alreadyExisted
               }
@@ -692,7 +730,6 @@ function* signUp() {
                 handle,
                 email,
                 location,
-                // userId,
                 formFields: createUserMetadata,
                 hasWallet: alreadyExisted
               }
@@ -701,12 +738,11 @@ function* signUp() {
             reportToSentry({
               error,
               level: ErrorLevel.Error,
-              name: 'Sign Up: Unknown sign up error',
+              name: 'Sign Up: Other Error',
               additionalInfo: {
                 handle,
                 email,
                 location,
-                // userId,
                 formFields: createUserMetadata,
                 hasWallet: alreadyExisted
               }
@@ -714,16 +750,6 @@ function* signUp() {
           }
           yield* put(signOnActions.signUpFailed(params))
         }
-
-        // const { blockHash, blockNumber, userId, error, errorStatus, phase } =
-        //   yield* call(audiusBackendInstance.signUp, {
-        //     email,
-        //     password,
-        //     formFields: createUserMetadata,
-        //     hasWallet: alreadyExisted,
-        //     referrer,
-        //     feePayerOverride
-        //   })
       },
       function* () {
         // TODO (PAY-3479): This is temporary until hedgehog is fully moved out of libs

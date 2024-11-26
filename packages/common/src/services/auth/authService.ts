@@ -29,6 +29,12 @@ export type AuthService = {
     otp?: string
   ) => Promise<SignInResponse>
   signOut: () => Promise<void>
+  sendRecoveryInfo: (params: {
+    login: string
+    host: string
+    data: string
+    signature: string
+  }) => Promise<void>
   getWalletAddresses: () => Promise<GetWalletAddressesResult>
 }
 
@@ -76,5 +82,16 @@ export const createAuthService = ({
     }
   }
 
-  return { hedgehogInstance, signIn, signOut, getWalletAddresses }
+  // TODO: This could use a regular response type
+  const sendRecoveryInfo = async (params: {}) => {
+    await identityService.sendRecoveryInfo(params)
+  }
+
+  return {
+    hedgehogInstance,
+    signIn,
+    signOut,
+    getWalletAddresses,
+    sendRecoveryInfo
+  }
 }
