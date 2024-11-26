@@ -90,10 +90,10 @@ from src.api.v1.models.users import (
     purchase,
     remixed_track_aggregate,
     sales_aggregate,
+    sales_json_content,
     user_model,
     user_model_full,
     user_subscribers,
-    sale_json_model,
 )
 from src.api.v1.playlists import get_tracks_for_playlist
 from src.challenges.challenge_event_bus import setup_challenge_bus
@@ -2631,14 +2631,7 @@ class SalesDownload(Resource):
 
 
 sales_json_response = make_response(
-    "sales_json_response",
-    ns,
-    {
-        "decryption_key": fields.String(
-            description="Encrypted key for decrypting buyer emails", allow_null=True
-        ),
-        "sales": fields.List(fields.Nested(sale_json_model)),
-    },
+    "sales_json_response", ns, fields.Nested(sales_json_content)
 )
 
 

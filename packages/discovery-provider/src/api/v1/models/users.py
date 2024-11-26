@@ -314,3 +314,13 @@ sale_json_model = ns.model(
         ),
     },
 )
+
+sales_json_content = ns.model(
+    "sales_json_content",
+    {
+        "decryption_key": fields.String(
+            description="Encrypted key for decrypting buyer emails", allow_null=True
+        ),
+        "sales": fields.List(fields.Nested(sale_json_model)),
+    },
+)
