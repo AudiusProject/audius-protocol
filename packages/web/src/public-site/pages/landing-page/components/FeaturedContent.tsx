@@ -4,7 +4,7 @@ import {
   transformAndCleanList,
   userCollectionMetadataFromSDK
 } from '@audius/common/adapters'
-import { Id, UserCollectionMetadata } from '@audius/common/models'
+import { Id } from '@audius/common/models'
 import { route } from '@audius/common/utils'
 // eslint-disable-next-line no-restricted-imports -- TODO: migrate to @react-spring/web
 import { useSpring, animated } from 'react-spring'

@@ -44,7 +44,8 @@ function* fetchProfileCollectionsAsync(
     const { data } = yield* call(
       [sdk.full.users, sdk.full.users.getPlaylistsByUser],
       {
-        id: Id.parse(user_id)
+        id: Id.parse(user_id),
+        userId: Id.parse(user_id)
       }
     )
     return transformAndCleanList(data, userCollectionMetadataFromSDK)
@@ -53,7 +54,8 @@ function* fetchProfileCollectionsAsync(
     const { data } = yield* call(
       [sdk.full.users, sdk.full.users.getAlbumsByUser],
       {
-        id: Id.parse(user_id)
+        id: Id.parse(user_id),
+        userId: Id.parse(user_id)
       }
     )
     return transformAndCleanList(data, userCollectionMetadataFromSDK)
