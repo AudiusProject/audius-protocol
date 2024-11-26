@@ -190,7 +190,7 @@ type WaitForLibsInit = () => Promise<unknown>
 
 type AudiusBackendParams = {
   claimDistributionContractAddress: Maybe<string>
-  imagePreloader: (url: string) => Promise<boolean>
+  imagePreloader: (url: string) => Promise<void>
   env: Env
   ethOwnerWallet: Maybe<string>
   ethProviderUrls: Maybe<string[]>
@@ -253,7 +253,6 @@ export const audiusBackend = ({
   ethRegistryAddress,
   ethTokenAddress,
   discoveryNodeSelectorService,
-  getFeatureEnabled,
   getHostUrl,
   getLibs,
   getStorageNodeSelector,
@@ -379,9 +378,11 @@ export const audiusBackend = ({
     for (const storageNode of storageNodes) {
       const imageUrl = `${storageNode}/content/${cidFileName}`
 
-      const preloaded = await imagePreloader(imageUrl)
-      if (preloaded) {
+      try {
+        await imagePreloader(imageUrl)
         return imageUrl
+      } catch (e) {
+        console.error(e)
       }
     }
     return ''
