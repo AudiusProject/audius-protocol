@@ -4,6 +4,11 @@ import { ImageFile } from '../../types/File'
 import { HashId } from '../../types/HashId'
 import { getReaction, reactionsMap } from '../../utils/reactionsMap'
 
+export const UserEventsSchema = z.object({
+  referrer: z.optional(HashId),
+  isMobileUser: z.optional(z.boolean())
+})
+
 export const CreateUserSchema = z.object({
   profilePictureFile: z.optional(ImageFile),
   coverArtFile: z.optional(ImageFile),
@@ -14,6 +19,7 @@ export const CreateUserSchema = z.object({
       coverPhotoSizes: z.optional(z.string()),
       donation: z.optional(z.string()),
       handle: z.string(),
+      events: z.optional(UserEventsSchema),
       location: z.optional(z.string()),
       name: z.string(),
       profilePictureSizes: z.optional(z.string()),
@@ -36,6 +42,7 @@ export type CreateUserRequest = Omit<
 export const UpdateProfileSchema = z
   .object({
     userId: HashId,
+    events: z.optional(UserEventsSchema),
     profilePictureFile: z.optional(ImageFile),
     coverArtFile: z.optional(ImageFile),
     onProgress: z.optional(z.function().args(z.number())),
@@ -43,6 +50,7 @@ export const UpdateProfileSchema = z
       .object({
         name: z.optional(z.string()),
         bio: z.optional(z.string()),
+        events: z.optional(UserEventsSchema),
         location: z.optional(z.string()),
         isDeactivated: z.optional(z.boolean()),
         artistPickTrackId: z.optional(HashId)

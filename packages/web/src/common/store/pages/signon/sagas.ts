@@ -12,14 +12,16 @@ import {
   ErrorLevel,
   InstagramUser,
   TikTokUser,
-  AccountUserMetadata
+  AccountUserMetadata,
+  OptionalId
 } from '@audius/common/models'
 import {
   IntKeys,
   FeatureFlags,
   MAX_HANDLE_LENGTH,
   getCityAndRegion,
-  SignInResponse
+  SignInResponse,
+  IS_MOBILE_USER_KEY
 } from '@audius/common/services'
 import {
   accountActions,
@@ -43,7 +45,8 @@ import {
   waitForAccount,
   parseHandleReservedStatusFromSocial,
   isValidEmailString,
-  route
+  route,
+  isResponseError
 } from '@audius/common/utils'
 import { CreateUserRequest } from '@audius/sdk'
 import { push as pushRoute } from 'connected-react-router'
@@ -435,6 +438,91 @@ function* refreshHedgehogWallet() {
   ])
 }
 
+function* associateSocialAccounts({
+  userId,
+  handle,
+  blockNumber,
+  twitterId,
+  instagramId,
+  tikTokId
+}: {
+  userId: ID
+  handle: string
+  blockNumber: number
+  twitterId?: string
+  instagramId?: string
+  tikTokId?: string
+}) {
+  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
+  const reportToSentry = yield* getContext('reportToSentry')
+
+  if (twitterId) {
+    const { error } = yield* call(
+      audiusBackendInstance.associateTwitterAccount,
+      twitterId,
+      userId,
+      handle,
+      blockNumber
+    )
+    if (error) {
+      reportToSentry({
+        error: error instanceof Error ? error : new Error(error as string),
+        name: 'Sign Up: Error while associating Twitter account',
+        additionalInfo: {
+          handle,
+          userId,
+          twitterId
+        }
+      })
+      yield* put(signOnActions.setTwitterProfileError(error as string))
+    }
+  }
+  if (instagramId) {
+    const { error } = yield* call(
+      audiusBackendInstance.associateInstagramAccount,
+      instagramId,
+      userId,
+      handle,
+      blockNumber
+    )
+    if (error) {
+      reportToSentry({
+        error: error instanceof Error ? error : new Error(error as string),
+        name: 'Sign Up: Error while associating Instagram account',
+        additionalInfo: {
+          handle,
+          userId,
+          instagramId
+        }
+      })
+      yield* put(signOnActions.setInstagramProfileError(error as string))
+    }
+  }
+
+  if (tikTokId) {
+    const { error } = yield* call(
+      audiusBackendInstance.associateTikTokAccount,
+      tikTokId,
+      userId,
+      handle,
+      blockNumber
+    )
+
+    if (error) {
+      reportToSentry({
+        error: error instanceof Error ? error : new Error(error as string),
+        name: 'Sign Up: Error while associating TikTok account',
+        additionalInfo: {
+          handle,
+          userId,
+          tikTokId
+        }
+      })
+      yield* put(signOnActions.setTikTokProfileError(error as string))
+    }
+  }
+}
+
 function* signUp() {
   const signOn = yield* select(getSignOn)
   const email = signOn.email.value
@@ -453,8 +541,6 @@ function* signUp() {
   const sdk = yield* getSDK()
   const authService = yield* getContext('authService')
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
-  const { waitForRemoteConfig } = yield* getContext('remoteConfigInstance')
-  const getFeatureEnabled = yield* getContext('getFeatureEnabled')
 
   yield* call(waitForWrite)
 
@@ -462,6 +548,7 @@ function* signUp() {
   const name = signOn.name.value.trim()
 
   const handle = signOn.handle.value
+  // TODO-NOW: How is this determined?
   const alreadyExisted = signOn.accountAlreadyExisted
   const referrer = signOn.referrer
 
@@ -472,10 +559,7 @@ function* signUp() {
       handle,
       async function* () {
         const reportToSentry = yield* getContext('reportToSentry')
-
-        /*
-        3. User Events (referrer / isMobileUser)
-        */
+        const isNativeMobile = yield* getContext('isNativeMobile')
 
         // TODO-NOW: Check if wallet is already valid
         const newWallet = yield* call(
@@ -486,84 +570,47 @@ function* signUp() {
           }
         )
 
-        // TODO-NOW: fork generating recovery link
+        // TODO-NOW: fork generating recovery link (with retries)
         const wallet = yield* call([newWallet, newWallet.getAddressString])
+
+        const events: CreateUserRequest['metadata']['events'] = {}
+        if (referrer) {
+          events.referrer = OptionalId.parse(referrer)
+        }
+        if (isNativeMobile) {
+          events.isMobileUser = true
+        }
 
         const createUserMetadata: CreateUserRequest = {
           profilePictureFile: (signOn.profileImage?.file as File) || null,
           coverArtFile: (signOn.coverPhoto?.file as File) || null,
           metadata: {
-            isVerified: signOn.verified,
             location: location ?? undefined,
             name,
+            events,
             handle,
             wallet
           }
         }
 
         try {
-          const { blockHash, blockNumber, metadata } = yield* call(
+          const { blockNumber, metadata } = yield* call(
             [sdk.users, sdk.users.createUser],
             createUserMetadata
           )
           const { userId } = metadata
+          const { twitterId, instagramId, tikTokId, useMetaMask } = signOn
 
-          // TODO-NOW: Concurrently update user events(referrer,is_mobile_user) and
-          // do appropriate social account associations.
-          // Social stuff should go into another function
-
-          if (!signOn.useMetaMask && signOn.twitterId) {
-            const { error } = yield* call(
-              audiusBackendInstance.associateTwitterAccount,
-              signOn.twitterId,
+          if (!useMetaMask && (twitterId || instagramId || tikTokId)) {
+            // TODO: Make sure this can't throw uncaught errors and kill the parent task
+            yield* fork(associateSocialAccounts, {
               userId,
               handle,
-              blockNumber
-            )
-            if (error) {
-              reportToSentry({
-                error: new Error(error as string),
-                name: 'Sign Up: Error while associating Twitter account'
-              })
-              yield* put(signOnActions.setTwitterProfileError(error as string))
-            }
-          }
-          if (!signOn.useMetaMask && signOn.instagramId) {
-            const { error } = yield* call(
-              audiusBackendInstance.associateInstagramAccount,
-              signOn.instagramId,
-              userId,
-              handle,
-              blockNumber
-            )
-            if (error) {
-              reportToSentry({
-                error: new Error(error as string),
-                name: 'Sign Up: Error while associating Instagram account'
-              })
-              yield* put(
-                signOnActions.setInstagramProfileError(error as string)
-              )
-            }
-          }
-
-          if (!signOn.useMetaMask && signOn.tikTokId) {
-            const { error } = yield* call(
-              audiusBackendInstance.associateTikTokAccount,
-              signOn.tikTokId,
-              userId,
-              handle,
-              blockNumber
-            )
-
-            // TODO-NOW: Simplify errors and report them in one spot
-            if (error) {
-              reportToSentry({
-                error: new Error(error as string),
-                name: 'Sign Up: Error while associating TikTok account'
-              })
-              yield* put(signOnActions.setTikTokProfileError(error as string))
-            }
+              blockNumber,
+              twitterId,
+              instagramId,
+              tikTokId
+            })
           }
 
           // TODO-NOW: Isn't this usually done during onSignIn?
@@ -579,58 +626,29 @@ function* signUp() {
 
           yield* put(signOnActions.signUpSucceededWithId(userId))
 
-          const isNativeMobile = yield* getContext('isNativeMobile')
-
-          yield* call(waitForRemoteConfig)
-
           if (!isNativeMobile) {
             // Set the has request browser permission to true as the signon provider will open it
             setHasRequestedBrowserPermission()
-          }
-
-          // TODO-NOW: I think this is already being confirmed inside
-          // of SDK
-
-          // Check feature flag to disable confirmation
-          const disableSignUpConfirmation = yield* call(
-            getFeatureEnabled,
-            FeatureFlags.DISABLE_SIGN_UP_CONFIRMATION
-          )
-
-          if (!disableSignUpConfirmation) {
-            const confirmed = yield* call(
-              confirmTransaction,
-              blockHash,
-              blockNumber
+          } else {
+            yield* call(
+              [localStorage, localStorage.setItem],
+              IS_MOBILE_USER_KEY,
+              'true'
             )
-            if (!confirmed) {
-              const error = new Error(`Could not confirm sign up for user`)
-              reportToSentry({
-                error,
-                name: 'Sign Up',
-                additionalInfo: {
-                  userId,
-                  disableSignUpConfirmation,
-                  handle,
-                  name,
-                  email
-                }
-              })
-              throw error
-            }
           }
-        } catch (e: unknown) {
-          // TODO-NOW: SDK re-throws createUser errors without status codes.
-          // Need to fix that and double check any code using entity
-          // manager in SDK.
-          const error = e as Error
+        } catch (err: unknown) {
           // We are including 0 status code here to indicate rate limit,
           // which appears to be happening for some devices.
-          const rateLimited = errorStatus === 429 || errorStatus === 0
-          const blocked = errorStatus === 403
+          const rateLimited =
+            isResponseError(err) && [0, 429].includes(err.response.status)
+          const blocked = isResponseError(err) && err.response.status === 403
+          const error = err instanceof Error ? err : new Error(err as string)
           const params: signOnActions.SignUpFailedParams = {
-            error,
-            phase,
+            error: error.message,
+            // TODO: Remove phase, stop using error Sagas for signup
+            // We are mostly handling reporting here already and we're
+            // only using it for error redirects.
+            phase: 'CREATE_USER',
             shouldReport: !rateLimited && !blocked,
             shouldToast: rateLimited
           }
