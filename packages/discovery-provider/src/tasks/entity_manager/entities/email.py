@@ -26,20 +26,24 @@ def validate_email_metadata(params: ManageEntityParameters) -> None:
         if not primary_user_id:
             raise IndexingValidationError("primary_user_id is required")
 
-        if params.action in [Action.ADD_EMAIL, Action.UPDATE_EMAIL]:
-            required_fields = [
-                "primary_user_id",
-                "email_owner_user_id",
-                "encrypted_email",
-                "encrypted_key",
-            ]
-            missing_fields = [
-                field for field in required_fields if not params.metadata.get(field)
-            ]
-            if missing_fields:
-                raise IndexingValidationError(
-                    f"Missing required fields: {', '.join(missing_fields)}"
-                )
+        if params.action not in [Action.ADD_EMAIL, Action.UPDATE_EMAIL]:
+            raise IndexingValidationError(
+                "email.py | Expected action to be AddEmail or UpdateEmail"
+            )
+
+        required_fields = [
+            "primary_user_id",
+            "email_owner_user_id",
+            "encrypted_email",
+            "encrypted_key",
+        ]
+        missing_fields = [
+            field for field in required_fields if not params.metadata.get(field)
+        ]
+        if missing_fields:
+            raise IndexingValidationError(
+                f"Missing required fields: {', '.join(missing_fields)}"
+            )
 
     except Exception as e:
         logger.error(
@@ -50,7 +54,7 @@ def validate_email_metadata(params: ManageEntityParameters) -> None:
                 "primary_user_id": params.metadata.get("primary_user_id"),
             },
         )
-        raise
+        raise e
 
 
 def validate_delegated_access(

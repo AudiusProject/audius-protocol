@@ -43,6 +43,7 @@ from src.models.tracks.track_price_history import TrackPriceHistory
 from src.models.tracks.track_route import TrackRoute
 from src.models.users.aggregate_user import AggregateUser
 from src.models.users.associated_wallet import AssociatedWallet, WalletChain
+from src.models.users.email import EmailAccessKey, EmailEncryptionKey, EncryptedEmail
 from src.models.users.supporter_rank_up import SupporterRankUp
 from src.models.users.usdc_purchase import PurchaseAccessType, USDCPurchase
 from src.models.users.usdc_transactions_history import (
@@ -179,6 +180,9 @@ def populate_mock_db(db, entities, block_offset=None):
         track_price_history = entities.get("track_price_history", [])
         album_price_history = entities.get("album_price_history", [])
         user_payout_wallet_history = entities.get("user_payout_wallet_history", [])
+        encrypted_emails = entities.get("encrypted_emails", [])
+        email_encryption_keys = entities.get("email_encryption_keys", [])
+        email_access_keys = entities.get("email_access_keys", [])
 
         num_blocks = max(
             len(tracks),
@@ -895,5 +899,34 @@ def populate_mock_db(db, entities, block_offset=None):
                 blocknumber=i + block_offset,
             )
             session.add(muted_user_record)
+
+        for i, encrypted_email_meta in enumerate(encrypted_emails):
+            encrypted_email = EncryptedEmail(
+                email_owner_user_id=encrypted_email_meta.get("email_owner_user_id", i),
+                primary_user_id=encrypted_email_meta.get("primary_user_id", i),
+                encrypted_email=encrypted_email_meta.get("encrypted_email", ""),
+                created_at=encrypted_email_meta.get("created_at", datetime.now()),
+                updated_at=encrypted_email_meta.get("updated_at", datetime.now()),
+            )
+            session.add(encrypted_email)
+
+        for i, email_encryption_key_meta in enumerate(email_encryption_keys):
+            email_encryption_key = EmailEncryptionKey(
+                primary_user_id=email_encryption_key_meta.get("primary_user_id", i),
+                encrypted_key=email_encryption_key_meta.get("encrypted_key", ""),
+                created_at=email_encryption_key_meta.get("created_at", datetime.now()),
+                updated_at=email_encryption_key_meta.get("updated_at", datetime.now()),
+            )
+            session.add(email_encryption_key)
+
+        for i, email_access_key_meta in enumerate(email_access_keys):
+            email_access_key = EmailAccessKey(
+                primary_user_id=email_access_key_meta.get("primary_user_id", i),
+                delegated_user_id=email_access_key_meta.get("delegated_user_id", i),
+                encrypted_key=email_access_key_meta.get("encrypted_key", ""),
+                created_at=email_access_key_meta.get("created_at", datetime.now()),
+                updated_at=email_access_key_meta.get("updated_at", datetime.now()),
+            )
+            session.add(email_access_key)
 
         session.commit()
