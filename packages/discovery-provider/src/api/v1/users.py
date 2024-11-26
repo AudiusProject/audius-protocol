@@ -902,7 +902,7 @@ playlists_response_full = make_full_response(
 )
 
 
-@full_ns.route(USER_PLAYLISTS_ROUTE, doc=False)
+@full_ns.route(USER_PLAYLISTS_ROUTE)
 class PlaylistsFull(Resource):
     def _get(self, id, authed_user_id):
         decoded_id = decode_with_abort(id, ns)
@@ -970,12 +970,12 @@ USER_ALBUMS_ROUTE = "/<string:id>/albums"
 
 albums_response_full = make_full_response(
     "albums_response_full",
-    ns,
+    full_ns,
     fields.List(fields.Nested(full_playlist_without_tracks_model)),
 )
 
 
-@full_ns.route(USER_ALBUMS_ROUTE, doc=False)
+@full_ns.route(USER_ALBUMS_ROUTE)
 class AlbumsFull(Resource):
     def _get(self, id, authed_user_id):
         decoded_id = decode_with_abort(id, ns)
@@ -1350,6 +1350,7 @@ class UserSearchResult(Resource):
 subscribers_response = make_response(
     "subscribers_response", ns, fields.List(fields.Nested(user_model))
 )
+
 full_subscribers_response = make_full_response(
     "full_subscribers_response", full_ns, fields.List(fields.Nested(user_model_full))
 )
@@ -1609,6 +1610,7 @@ related_artist_route_parser = pagination_with_current_user_parser.copy()
 related_artist_response = make_response(
     "related_artist_response", ns, fields.List(fields.Nested(user_model))
 )
+
 related_artist_response_full = make_full_response(
     "related_artist_response_full", full_ns, fields.List(fields.Nested(user_model_full))
 )
@@ -2420,7 +2422,6 @@ purchases_response = make_full_response(
     "purchases_response", full_ns, fields.List(fields.Nested(purchase))
 )
 
-
 purchases_count_response = make_full_response(
     "purchases_count_response", full_ns, fields.Integer()
 )
@@ -2619,11 +2620,32 @@ class SalesDownload(Resource):
     def get(self, id, authed_user_id):
         decoded_id = decode_with_abort(id, ns)
         check_authorized(decoded_id, authed_user_id)
-        args = DownloadSalesArgs(seller_user_id=decoded_id)
-        sales = download_sales(args)
+
+        download_args = DownloadSalesArgs(seller_user_id=decoded_id)
+        sales = download_sales(download_args, return_json=False)
+
         response = Response(sales, content_type="text/csv")
         response.headers["Content-Disposition"] = "attachment; filename=sales.csv"
         return response
+
+
+@ns.route("/<string:id>/sales/download/json")
+class SalesDownloadJSON(Resource):
+    @ns.doc(
+        id="Download Sales as JSON",
+        description="Gets the sales data for the user in JSON format",
+        params={"id": "A User ID"},
+    )
+    @ns.produces(["application/json"])
+    @ns.expect(sales_download_parser)
+    @auth_middleware(sales_download_parser, require_auth=True)
+    def get(self, id, authed_user_id):
+        decoded_id = decode_with_abort(id, ns)
+        check_authorized(decoded_id, authed_user_id)
+
+        download_args = DownloadSalesArgs(seller_user_id=decoded_id)
+        sales = download_sales(download_args, return_json=True)
+        return success_response(sales)
 
 
 withdrawals_download_parser = current_user_parser.copy()

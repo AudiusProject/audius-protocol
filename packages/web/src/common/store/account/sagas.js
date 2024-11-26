@@ -1,19 +1,13 @@
 import { userApiFetchSaga } from '@audius/common/api'
 import { ErrorLevel, Kind } from '@audius/common/models'
-import {
-  FeatureFlags,
-  createUserBankIfNeeded,
-  getRootSolanaAccount
-} from '@audius/common/services'
+import { getRootSolanaAccount } from '@audius/common/services'
 import {
   accountActions,
   accountSelectors,
   cacheActions,
   profilePageActions,
-  solanaSelectors,
   getContext,
-  fetchAccountAsync,
-  cacheAccount
+  fetchAccountAsync
 } from '@audius/common/store'
 import { call, put, fork, select, takeEvery } from 'redux-saga/effects'
 
@@ -25,28 +19,26 @@ import { waitForWrite, waitForRead } from 'utils/sagaHelpers'
 import { retrieveCollections } from '../cache/collections/utils'
 
 const { fetchProfile } = profilePageActions
-const { getFeePayer } = solanaSelectors
 
 const {
   getUserId,
   getUserHandle,
   getAccountUser,
   getAccountSavedPlaylistIds,
-  getAccountOwnedPlaylistIds,
-  getAccountToCache
+  getAccountOwnedPlaylistIds
 } = accountSelectors
 
 const {
   signedIn,
   showPushNotificationConfirmation,
   fetchAccountFailed,
+  fetchAccountSucceeded,
   fetchAccount,
   fetchLocalAccount,
   twitterLogin,
   instagramLogin,
   tikTokLogin,
   fetchSavedPlaylists,
-  addAccountPlaylist,
   resetAccount
 } = accountActions
 
@@ -76,7 +68,6 @@ const setSentryUser = (sentry, user, traits) => {
 function* onSignedIn({ payload: { account } }) {
   const audiusBackendInstance = yield getContext('audiusBackendInstance')
   const sentry = yield getContext('sentry')
-  const analytics = yield getContext('analytics')
   const authService = yield getContext('authService')
 
   const libs = yield call([
@@ -143,17 +134,6 @@ function* onSignedIn({ payload: { account } }) {
   // Add playlists that might not have made it into the user's library.
   // This could happen if the user creates a new playlist and then leaves their session.
   yield fork(addPlaylistsNotInLibrary)
-
-  // Create userbank only if lazy is not enabled
-  const feePayerOverride = yield select(getFeePayer)
-  const getFeatureEnabled = yield getContext('getFeatureEnabled')
-  if (!getFeatureEnabled(FeatureFlags.LAZY_USERBANK_CREATION_ENABLED)) {
-    yield call(createUserBankIfNeeded, audiusBackendInstance, {
-      recordAnalytics: analytics.track,
-      feePayerOverride,
-      ethAddress: account.wallet
-    })
-  }
 }
 
 export function* fetchLocalAccountAsync() {
@@ -165,22 +145,20 @@ export function* fetchLocalAccountAsync() {
   const cachedAccountUser = yield call([localStorage, 'getAudiusAccountUser'])
 
   if (cachedAccount && cachedAccountUser && !cachedAccountUser.is_deactivated) {
-    yield call(
-      cacheAccount,
-      { ...cachedAccountUser, local: true },
-      cachedAccountUser.orderedPlaylists
+    yield put(
+      cacheActions.add(Kind.USERS, [
+        {
+          id: cachedAccountUser.user_id,
+          uid: 'USER_ACCOUNT',
+          metadata: cachedAccountUser
+        }
+      ])
     )
+
+    yield put(fetchAccountSucceeded(cachedAccount))
   } else {
     yield put(fetchAccountFailed({ reason: 'ACCOUNT_NOT_FOUND_LOCAL' }))
   }
-}
-export function* reCacheAccount() {
-  const localStorage = yield getContext('localStorage')
-  const account = yield select(getAccountToCache)
-  const accountUser = yield select(getAccountUser)
-
-  yield call([localStorage, 'setAudiusAccount'], account)
-  yield call([localStorage, 'setAudiusAccountUser'], accountUser)
 }
 
 function* associateTwitterAccount(action) {
@@ -326,10 +304,6 @@ function* watchFetchSavedPlaylists() {
   yield takeEvery(fetchSavedPlaylists.type, fetchSavedPlaylistsAsync)
 }
 
-function* watchAddAccountPlaylist() {
-  yield takeEvery(addAccountPlaylist.type, reCacheAccount)
-}
-
 function* watchResetAccount() {
   yield takeEvery(resetAccount.type, function* () {
     const audiusBackendInstance = yield getContext('audiusBackendInstance')
@@ -351,7 +325,6 @@ export default function sagas() {
     watchInstagramLogin,
     watchTikTokLogin,
     watchFetchSavedPlaylists,
-    watchAddAccountPlaylist,
     watchResetAccount
   ]
 }

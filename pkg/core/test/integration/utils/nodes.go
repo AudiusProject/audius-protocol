@@ -10,20 +10,24 @@ import (
 var (
 	discoveryOneGrpc = getEnvWithDefault("discoveryOneGRPC", "0.0.0.0:6613")
 	discoveryOneJrpc = getEnvWithDefault("discoveryOneJRPC", "http://0.0.0.0:6612")
+	discoveryOneOapi = getEnvWithDefault("discoveryOneOAPI", "audius-protocol-discovery-provider-1")
 
 	contentOneGrpc = getEnvWithDefault("contentOneGRPC", "0.0.0.0:6713")
 	contentOneJrpc = getEnvWithDefault("contentOneJRPC", "http://0.0.0.0:6712")
+	contentOneOapi = getEnvWithDefault("contentOneOAPI", "audius-protocol-creator-node-1")
 
 	contentTwoGrpc = getEnvWithDefault("contentTwoGRPC", "0.0.0.0:6723")
-	contentTwoJrpc = getEnvWithDefault("contentOneJRPC", "http://0.0.0.0:6722")
+	contentTwoJrpc = getEnvWithDefault("contentTwoJRPC", "http://0.0.0.0:6722")
+	contentTwoOapi = getEnvWithDefault("contentTwoOAPI", "audius-protocol-creator-node-2")
 
 	contentThreeGrpc = getEnvWithDefault("contentThreeGRPC", "0.0.0.0:6733")
 	contentThreeJrpc = getEnvWithDefault("contentThreeJRPC", "http://0.0.0.0:6732")
+	contentThreeOapi = getEnvWithDefault("contentThreeOAPI", "audius-protocol-creator-node-3")
 
-	DiscoveryOne = newTestSdk(discoveryOneGrpc, discoveryOneJrpc, "audius-protocol-discovery-provider-1")
-	ContentOne   = newTestSdk(contentOneGrpc, contentOneJrpc, "audius-protocol-creator-node-1")
-	ContentTwo   = newTestSdk(contentTwoGrpc, contentTwoJrpc, "audius-protocol-creator-node-2")
-	ContentThree = newTestSdk(contentThreeGrpc, contentThreeJrpc, "audius-protocol-creator-node-3")
+	DiscoveryOne = newTestSdk(discoveryOneGrpc, discoveryOneJrpc, discoveryOneOapi)
+	ContentOne   = newTestSdk(contentOneGrpc, contentOneJrpc, contentOneOapi)
+	ContentTwo   = newTestSdk(contentTwoGrpc, contentTwoJrpc, contentTwoOapi)
+	ContentThree = newTestSdk(contentThreeGrpc, contentThreeJrpc, contentThreeOapi)
 )
 
 func getEnvWithDefault(key, defaultValue string) string {

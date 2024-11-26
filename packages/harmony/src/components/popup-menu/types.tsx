@@ -81,4 +81,9 @@ export type PopupMenuItem = {
    * The optional description of the menu item
    */
   subtext?: string | React.ReactNode
+
+  /**
+   * Optional bool to tell if the option is dangerous
+   */
+  destructive?: boolean
 }

@@ -71,7 +71,13 @@ export enum Action {
   PIN = 'Pin',
   UNPIN = 'Unpin',
   MUTE = 'Mute',
-  UNMUTE = 'Unmute'
+  UNMUTE = 'Unmute',
+  ADD_EMAIL = 'AddEmail',
+  UPDATE_EMAIL = 'UpdateEmail',
+  ADD_EMAIL_KEY = 'AddEmailKey',
+  UPDATE_EMAIL_KEY = 'UpdateEmailKey',
+  ADD_ACCESS_KEY = 'AddAccessKey',
+  UPDATE_ACCESS_KEY = 'UpdateAccessKey'
 }
 
 export enum EntityType {
@@ -84,7 +90,10 @@ export enum EntityType {
   GRANT = 'Grant',
   DASHBOARD_WALLET_USER = 'DashboardWalletUser',
   TIP = 'Tip',
-  COMMENT = 'Comment'
+  COMMENT = 'Comment',
+  ENCRYPTED_EMAIL = 'EncryptedEmail',
+  EMAIL_ENCRYPTION_KEY = 'EmailEncryptionKey',
+  EMAIL_ACCESS_KEY = 'EmailAccessKey'
 }
 
 export type AdvancedOptions = {

@@ -406,4 +406,59 @@ describe('UsersApi', () => {
       })
     })
   })
+
+  describe('addEmail', () => {
+    it('adds an encrypted email if valid metadata is provided', async () => {
+      const result = await users.addEmail({
+        emailOwnerUserId: 123,
+        primaryUserId: 456,
+        encryptedEmail: 'encryptedEmailString',
+        encryptedKey: 'encryptedKeyString',
+        delegatedUserIds: [789],
+        delegatedKeys: ['delegatedKeyString']
+      })
+
+      expect(result).toStrictEqual({
+        blockHash: 'a',
+        blockNumber: 1
+      })
+    })
+
+    it('adds an encrypted email without optional delegated fields', async () => {
+      const result = await users.addEmail({
+        emailOwnerUserId: 123,
+        primaryUserId: 456,
+        encryptedEmail: 'encryptedEmailString',
+        encryptedKey: 'encryptedKeyString'
+      })
+
+      expect(result).toStrictEqual({
+        blockHash: 'a',
+        blockNumber: 1
+      })
+    })
+
+    it('throws an error if required fields are missing', async () => {
+      await expect(async () => {
+        await users.addEmail({
+          emailOwnerUserId: 123,
+          // Missing primaryUserId
+          encryptedEmail: 'encryptedEmailString',
+          encryptedKey: 'encryptedKeyString'
+        } as any)
+      }).rejects.toThrow()
+    })
+
+    it('throws an error if invalid metadata is provided', async () => {
+      await expect(async () => {
+        await users.addEmail({
+          emailOwnerUserId: 123,
+          // Incorrect type for primaryUserId
+          primaryUserId: '456',
+          encryptedEmail: 'encryptedEmailString',
+          encryptedKey: 'encryptedKeyString'
+        } as any)
+      }).rejects.toThrow()
+    })
+  })
 })

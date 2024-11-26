@@ -8,6 +8,7 @@ import { ArtistPickModalState } from './artist-pick-modal'
 import { CoinflowOnrampModalState } from './coinflow-onramp-modal'
 import { CoinflowWithdrawModalState } from './coinflow-withdraw-modal'
 import { ChatBlastModalState } from './create-chat-blast-modal'
+import { DeleteTrackConfirmationModalState } from './delete-track-confirmation-modal'
 import { EarlyReleaseConfirmationModalState } from './early-release-confirmation-modal'
 import { EditAccessConfirmationModalState } from './edit-access-confirmation-modal'
 import { HideContentConfirmationModalState } from './hide-confirmation-modal'
@@ -15,6 +16,8 @@ import { InboxUnavailableModalState } from './inbox-unavailable-modal'
 import { LeavingAudiusModalState } from './leaving-audius-modal'
 import { PremiumContentPurchaseModalState } from './premium-content-purchase-modal'
 import { PublishConfirmationModalState } from './publish-confirmation-modal'
+import { ReplaceTrackConfirmationModalState } from './replace-track-confirmation-modal'
+import { ReplaceTrackProgressModalState } from './replace-track-progress-modal'
 import { UploadConfirmationModalState } from './upload-confirmation-modal'
 import { USDCManualTransferModalState } from './usdc-manual-transfer-modal'
 import { USDCPurchaseDetailsModalState } from './usdc-purchase-details-modal'
@@ -58,6 +61,9 @@ export type Modals =
   | 'Overflow'
   | 'AddToCollection'
   | 'DeletePlaylistConfirmation'
+  | 'DeleteTrackConfirmation'
+  | 'ReplaceTrackConfirmation'
+  | 'ReplaceTrackProgress'
   | 'FeatureFlagOverride'
   | 'BuyAudio'
   | 'BuyAudioRecovery'
@@ -121,6 +127,9 @@ export type StatefulModalsState = {
   EarlyReleaseConfirmation: EarlyReleaseConfirmationModalState
   PublishConfirmation: PublishConfirmationModalState
   HideContentConfirmation: HideContentConfirmationModalState
+  DeleteTrackConfirmation: DeleteTrackConfirmationModalState
+  ReplaceTrackConfirmation: ReplaceTrackConfirmationModalState
+  ReplaceTrackProgress: ReplaceTrackProgressModalState
 }
 
 export type ModalsState = BasicModalsState & StatefulModalsState

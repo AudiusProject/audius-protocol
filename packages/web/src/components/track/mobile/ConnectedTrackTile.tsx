@@ -7,7 +7,7 @@ import {
   FavoriteSource,
   ID
 } from '@audius/common/models'
-import { FeatureFlags, trpc } from '@audius/common/services'
+import { trpc } from '@audius/common/services'
 import {
   accountSelectors,
   cacheTracksSelectors,
@@ -28,7 +28,6 @@ import { Dispatch } from 'redux'
 import Menu from 'components/menu/Menu'
 import { OwnProps as TrackMenuProps } from 'components/menu/TrackMenu'
 import { TrackTileProps } from 'components/track/types'
-import { useFlag } from 'hooks/useRemoteConfig'
 import { AppState } from 'store/types'
 import { isMatrix, shouldShowDark } from 'utils/theme/theme'
 
@@ -57,7 +56,6 @@ type OwnProps = Omit<
   | 'repostCount'
   | 'saveCount'
   | 'commentCount'
-  | 'coverArtSizes'
   | 'followeeReposts'
   | 'followeeSaves'
   | 'hasCurrentUserReposted'
@@ -118,7 +116,6 @@ const ConnectedTrackTile = ({
     followee_saves,
     has_current_user_reposted,
     has_current_user_saved,
-    _cover_art_sizes,
     activity_timestamp,
     _co_sign,
     is_scheduled_release: isScheduledRelease,
@@ -132,10 +129,6 @@ const ConnectedTrackTile = ({
 
   const isOwner = user_id === currentUserId
 
-  const { isEnabled: isNewPodcastControlsEnabled } = useFlag(
-    FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED,
-    FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED_FALLBACK
-  )
   const { data: albumInfo } = trpc.tracks.getAlbumBacklink.useQuery(
     { trackId: track_id },
     { enabled: !!track_id }
@@ -235,7 +228,7 @@ const ConnectedTrackTile = ({
       favoriteAction,
       addToAlbumAction,
       !is_unlisted || isOwner ? OverflowAction.ADD_TO_PLAYLIST : null,
-      isNewPodcastControlsEnabled && isLongFormContent
+      isLongFormContent
         ? OverflowAction.VIEW_EPISODE_PAGE
         : OverflowAction.VIEW_TRACK_PAGE,
       albumInfo ? OverflowAction.VIEW_ALBUM_PAGE : null,
@@ -269,7 +262,6 @@ const ConnectedTrackTile = ({
       hasCurrentUserReposted={has_current_user_reposted}
       hasCurrentUserSaved={has_current_user_saved}
       duration={duration}
-      coverArtSizes={_cover_art_sizes}
       activityTimestamp={activity_timestamp}
       trackTileStyles={trackTileStyles}
       size={size}

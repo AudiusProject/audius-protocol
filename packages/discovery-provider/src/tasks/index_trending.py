@@ -123,6 +123,24 @@ def index_trending(self, db: SessionManager, redis: Redis, timestamp):
                         f"index_trending.py | Cached trending ({version.name} version) \
                         for {genre}-{time_range} in {total_time} seconds"
                     )
+            # Cache premium tracks
+            cache_start_time = time.time()
+            res = generate_unpopulated_trending_from_mat_views(
+                session=session,
+                genre=genre,
+                time_range="week",
+                strategy=strategy,
+                usdc_purchase_only=True,
+            )
+            key = make_trending_tracks_cache_key("week", None, strategy.version)
+            key += ":usdc_purchase_only"
+            set_json_cached_key(redis, key, res)
+            cache_end_time = time.time()
+            total_time = cache_end_time - cache_start_time
+            logger.debug(
+                f"index_trending.py | Cached premium tracks ({version.name} version) \
+                -in {total_time} seconds"
+            )
 
         # Cache underground trending
         underground_trending_versions = trending_strategy_factory.get_versions_for_type(

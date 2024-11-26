@@ -19,7 +19,7 @@ func (r *Registry) Start() error {
 			time.Sleep(delay)
 			retries -= 1
 			if retries == 0 {
-				r.logger.Warn("exhaused registration retries")
+				r.logger.Warn("exhausted registration retries")
 				break
 			}
 		} else {

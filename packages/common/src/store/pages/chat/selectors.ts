@@ -290,11 +290,10 @@ export const getCanCreateChat = createSelector(
     // Use a callback fn to prevent iteration until necessary to improve perf
     // Note: this only works if the respective chat has been fetched already, like in chatsUserList
     const encodedUserId = encodeHashId(user.user_id)
-    const hasExistingChat = () =>
-      !!chats.find(
-        (c) =>
-          !c.is_blast && c.chat_members.find((u) => u.user_id === encodedUserId)
-      )
+    const existingChat = chats.find(
+      (c) =>
+        !c.is_blast && c.chat_members.find((u) => u.user_id === encodedUserId)
+    )
 
     const userPermissions = chatPermissions[user.user_id]
     const isBlockee = blockees.includes(user.user_id)
@@ -303,7 +302,9 @@ export const getCanCreateChat = createSelector(
       !isBlockee &&
       !isBlocker &&
       ((userPermissions?.current_user_has_permission ?? true) ||
-        hasExistingChat())
+        (!!existingChat &&
+          !existingChat.is_blast &&
+          !existingChat?.recheck_permissions))
 
     let action = ChatPermissionAction.NOT_APPLICABLE
     if (!canCreateChat) {
@@ -311,12 +312,12 @@ export const getCanCreateChat = createSelector(
         action = ChatPermissionAction.WAIT
       } else if (blockees.includes(user.user_id)) {
         action = ChatPermissionAction.UNBLOCK
-      } else if (userPermissions.permit_list.includes(ChatPermission.TIPPERS)) {
-        action = ChatPermissionAction.TIP
       } else if (
         userPermissions.permit_list.includes(ChatPermission.FOLLOWERS)
       ) {
         action = ChatPermissionAction.FOLLOW
+      } else if (userPermissions.permit_list.includes(ChatPermission.TIPPERS)) {
+        action = ChatPermissionAction.TIP
       } else {
         action = ChatPermissionAction.NONE
       }

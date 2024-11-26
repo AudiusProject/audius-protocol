@@ -16,6 +16,7 @@
 
 import * as runtime from '../runtime';
 import type {
+  AlbumsResponseFull,
   CollectionLibraryResponseFull,
   FollowingResponseFull,
   FullBulkSubscribersResponse,
@@ -33,6 +34,7 @@ import type {
   HistoryResponseFull,
   ManagedUsersResponse,
   ManagersResponse,
+  PlaylistsResponseFull,
   PurchasersCountResponse,
   PurchasesCountResponse,
   PurchasesResponse,
@@ -47,6 +49,8 @@ import type {
   UserFeedResponse,
 } from '../models';
 import {
+    AlbumsResponseFullFromJSON,
+    AlbumsResponseFullToJSON,
     CollectionLibraryResponseFullFromJSON,
     CollectionLibraryResponseFullToJSON,
     FollowingResponseFullFromJSON,
@@ -81,6 +85,8 @@ import {
     ManagedUsersResponseToJSON,
     ManagersResponseFromJSON,
     ManagersResponseToJSON,
+    PlaylistsResponseFullFromJSON,
+    PlaylistsResponseFullToJSON,
     PurchasersCountResponseFromJSON,
     PurchasersCountResponseToJSON,
     PurchasesCountResponseFromJSON,
@@ -125,6 +131,15 @@ export interface GetAIAttributedTracksByUserHandleRequest {
     sortMethod?: GetAIAttributedTracksByUserHandleSortMethodEnum;
     sortDirection?: GetAIAttributedTracksByUserHandleSortDirectionEnum;
     filterTracks?: GetAIAttributedTracksByUserHandleFilterTracksEnum;
+    encodedDataMessage?: string;
+    encodedDataSignature?: string;
+}
+
+export interface GetAlbumsByUserRequest {
+    id: string;
+    offset?: number;
+    limit?: number;
+    userId?: string;
     encodedDataMessage?: string;
     encodedDataSignature?: string;
 }
@@ -192,6 +207,15 @@ export interface GetManagersRequest {
 
 export interface GetMutedUsersRequest {
     id: string;
+    encodedDataMessage?: string;
+    encodedDataSignature?: string;
+}
+
+export interface GetPlaylistsByUserRequest {
+    id: string;
+    offset?: number;
+    limit?: number;
+    userId?: string;
     encodedDataMessage?: string;
     encodedDataSignature?: string;
 }
@@ -611,6 +635,57 @@ export class UsersApi extends runtime.BaseAPI {
 
     /**
      * @hidden
+     * Gets the albums created by a user using their user ID
+     */
+    async getAlbumsByUserRaw(params: GetAlbumsByUserRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<AlbumsResponseFull>> {
+        if (params.id === null || params.id === undefined) {
+            throw new runtime.RequiredError('id','Required parameter params.id was null or undefined when calling getAlbumsByUser.');
+        }
+
+        const queryParameters: any = {};
+
+        if (params.offset !== undefined) {
+            queryParameters['offset'] = params.offset;
+        }
+
+        if (params.limit !== undefined) {
+            queryParameters['limit'] = params.limit;
+        }
+
+        if (params.userId !== undefined) {
+            queryParameters['user_id'] = params.userId;
+        }
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (params.encodedDataMessage !== undefined && params.encodedDataMessage !== null) {
+            headerParameters['Encoded-Data-Message'] = String(params.encodedDataMessage);
+        }
+
+        if (params.encodedDataSignature !== undefined && params.encodedDataSignature !== null) {
+            headerParameters['Encoded-Data-Signature'] = String(params.encodedDataSignature);
+        }
+
+        const response = await this.request({
+            path: `/users/{id}/albums`.replace(`{${"id"}}`, encodeURIComponent(String(params.id))),
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => AlbumsResponseFullFromJSON(jsonValue));
+    }
+
+    /**
+     * Gets the albums created by a user using their user ID
+     */
+    async getAlbumsByUser(params: GetAlbumsByUserRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<AlbumsResponseFull> {
+        const response = await this.getAlbumsByUserRaw(params, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * @hidden
      * Gets the count of the user\'s $AUDIO transaction history within the App
      */
     async getAudioTransactionCountRaw(params: GetAudioTransactionCountRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<TransactionHistoryCountResponse>> {
@@ -1009,6 +1084,57 @@ export class UsersApi extends runtime.BaseAPI {
      */
     async getMutedUsers(params: GetMutedUsersRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<FullUserResponse> {
         const response = await this.getMutedUsersRaw(params, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * @hidden
+     * Gets the playlists created by a user using their user ID
+     */
+    async getPlaylistsByUserRaw(params: GetPlaylistsByUserRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<PlaylistsResponseFull>> {
+        if (params.id === null || params.id === undefined) {
+            throw new runtime.RequiredError('id','Required parameter params.id was null or undefined when calling getPlaylistsByUser.');
+        }
+
+        const queryParameters: any = {};
+
+        if (params.offset !== undefined) {
+            queryParameters['offset'] = params.offset;
+        }
+
+        if (params.limit !== undefined) {
+            queryParameters['limit'] = params.limit;
+        }
+
+        if (params.userId !== undefined) {
+            queryParameters['user_id'] = params.userId;
+        }
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (params.encodedDataMessage !== undefined && params.encodedDataMessage !== null) {
+            headerParameters['Encoded-Data-Message'] = String(params.encodedDataMessage);
+        }
+
+        if (params.encodedDataSignature !== undefined && params.encodedDataSignature !== null) {
+            headerParameters['Encoded-Data-Signature'] = String(params.encodedDataSignature);
+        }
+
+        const response = await this.request({
+            path: `/users/{id}/playlists`.replace(`{${"id"}}`, encodeURIComponent(String(params.id))),
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => PlaylistsResponseFullFromJSON(jsonValue));
+    }
+
+    /**
+     * Gets the playlists created by a user using their user ID
+     */
+    async getPlaylistsByUser(params: GetPlaylistsByUserRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<PlaylistsResponseFull> {
+        const response = await this.getPlaylistsByUserRaw(params, initOverrides);
         return await response.value();
     }
 

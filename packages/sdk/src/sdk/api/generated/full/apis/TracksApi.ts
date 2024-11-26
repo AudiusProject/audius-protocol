@@ -53,6 +53,13 @@ import {
     TrendingIdsResponseToJSON,
 } from '../models';
 
+export interface GetBestNewReleasesRequest {
+    window: GetBestNewReleasesWindowEnum;
+    userId?: string;
+    limit?: number;
+    withUsers?: boolean;
+}
+
 export interface GetBulkTracksRequest {
     userId?: string;
     permalink?: Array<string>;
@@ -219,8 +226,28 @@ export class TracksApi extends runtime.BaseAPI {
      * @hidden
      * Gets the tracks found on the \"Best New Releases\" smart playlist
      */
-    async bestNewReleasesRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<FullTracksResponse>> {
+    async getBestNewReleasesRaw(params: GetBestNewReleasesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<FullTracksResponse>> {
+        if (params.window === null || params.window === undefined) {
+            throw new runtime.RequiredError('window','Required parameter params.window was null or undefined when calling getBestNewReleases.');
+        }
+
         const queryParameters: any = {};
+
+        if (params.userId !== undefined) {
+            queryParameters['user_id'] = params.userId;
+        }
+
+        if (params.window !== undefined) {
+            queryParameters['window'] = params.window;
+        }
+
+        if (params.limit !== undefined) {
+            queryParameters['limit'] = params.limit;
+        }
+
+        if (params.withUsers !== undefined) {
+            queryParameters['with_users'] = params.withUsers;
+        }
 
         const headerParameters: runtime.HTTPHeaders = {};
 
@@ -237,8 +264,8 @@ export class TracksApi extends runtime.BaseAPI {
     /**
      * Gets the tracks found on the \"Best New Releases\" smart playlist
      */
-    async bestNewReleases(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<FullTracksResponse> {
-        const response = await this.bestNewReleasesRaw(initOverrides);
+    async getBestNewReleases(params: GetBestNewReleasesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<FullTracksResponse> {
+        const response = await this.getBestNewReleasesRaw(params, initOverrides);
         return await response.value();
     }
 
@@ -1217,6 +1244,15 @@ export class TracksApi extends runtime.BaseAPI {
 
 }
 
+/**
+ * @export
+ */
+export const GetBestNewReleasesWindowEnum = {
+    Week: 'week',
+    Month: 'month',
+    Year: 'year'
+} as const;
+export type GetBestNewReleasesWindowEnum = typeof GetBestNewReleasesWindowEnum[keyof typeof GetBestNewReleasesWindowEnum];
 /**
  * @export
  */

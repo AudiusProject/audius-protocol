@@ -30,7 +30,11 @@ export const fetchExploreContent = async (
   exploreContentUrl: string = STATIC_EXPLORE_CONTENT_URL
 ): Promise<ExploreContent> => {
   const response = await fetch(exploreContentUrl)
-  return await response.json()
+  const json = await response.json()
+  return {
+    featuredPlaylists: json.featuredPlaylists.map((id: string) => parseInt(id)),
+    featuredProfiles: json.featuredProfiles.map((id: string) => parseInt(id))
+  }
 }
 
 function* watchFetchExplore() {

@@ -20,38 +20,33 @@ const { fetch, fetchSucceeded } = explorePageCollectionsActions
 function* fetchLetThemDJ() {
   const explore = yield* getContext('explore')
   const user = yield* select(getAccountUser)
-  const collections = yield* call(
-    [explore, 'getTopCollections'],
-    'playlist',
-    true,
-    20,
-    user?.user_id
-  )
+  const collections = yield* call([explore, 'getTopCollections'], {
+    type: 'playlist',
+    limit: 20,
+    userId: user?.user_id
+  })
   return collections
 }
 
 function* fetchTopAlbums() {
   const explore = yield* getContext('explore')
   const user = yield* select(getAccountUser)
-  const collections = yield* call(
-    [explore, 'getTopCollections'],
-    'album',
-    false,
-    20,
-    user?.user_id
-  )
+  const collections = yield* call([explore, 'getTopCollections'], {
+    type: 'album',
+    limit: 20,
+    userId: user?.user_id
+  })
   return collections
 }
 
 function* fetchMoodPlaylists(moods: string[]) {
   const explore = yield* getContext('explore')
   const user = yield* select(getAccountUser)
-  const collections = yield* call(
-    [explore, 'getTopPlaylistsForMood'],
+  const collections = yield* call([explore, 'getTopPlaylistsForMood'], {
     moods,
-    20,
-    user?.user_id
-  )
+    limit: 20,
+    userId: user?.user_id
+  })
   return collections
 }
 

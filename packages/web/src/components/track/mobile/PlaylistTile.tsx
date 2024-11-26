@@ -268,7 +268,6 @@ const PlaylistTile = (props: PlaylistTileProps & ExtraProps) => {
             id={props.id}
             isTrack={false}
             showSkeleton={props.showSkeleton}
-            coverArtSizes={props.coverArtSizes}
             className={styles.albumArtContainer}
             isPlaying={props.isPlaying}
             isBuffering={props.isLoading}

@@ -49,7 +49,6 @@ import { ComponentPlacement } from 'components/types'
 import { useIsMobile } from 'hooks/useIsMobile'
 import { useFlag } from 'hooks/useRemoteConfig'
 import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
-import { env } from 'services/env'
 import { isElectron } from 'utils/clientUtil'
 import { useSelector } from 'utils/reducer'
 
@@ -75,8 +74,6 @@ const { getAllowAiAttribution } = settingsPageSelectors
 const { version } = packageInfo
 
 const EMAIL_TOAST_TIMEOUT = 2000
-
-const isStaging = env.ENVIRONMENT === 'staging'
 
 export type SettingsPageProps = {
   title: string
@@ -256,9 +253,6 @@ export const SettingsPage = (props: SettingsPageProps) => {
     if (showMatrix) {
       options.push({ key: Theme.MATRIX, text: messages.matrixMode })
     }
-    if (isStaging) {
-      options.push({ key: Theme.DEBUG, text: messages.debugMode })
-    }
     return options
   }, [showMatrix])
 
@@ -266,9 +260,6 @@ export const SettingsPage = (props: SettingsPageProps) => {
     FeatureFlags.PAYOUT_WALLET_ENABLED
   )
   const allowAiAttribution = useSelector(getAllowAiAttribution)
-  const { isEnabled: isAiAttributionEnabled } = useFlag(
-    FeatureFlags.AI_ATTRIBUTION
-  )
   const { isEnabled: isManagerModeEnabled } = useFlag(FeatureFlags.MANAGER_MODE)
   const { isEnabled: isCommentsEnabled } = useFlag(
     FeatureFlags.COMMENTS_ENABLED
@@ -420,26 +411,24 @@ export const SettingsPage = (props: SettingsPageProps) => {
             <AccountsYouManageSettingsCard />
           </>
         ) : null}
-        {isAiAttributionEnabled ? (
-          <SettingsCard
-            icon={<IconRobot />}
-            title={messages.aiGeneratedCardTitle}
-            description={messages.aiGeneratedCardDescription}
+        <SettingsCard
+          icon={<IconRobot />}
+          title={messages.aiGeneratedCardTitle}
+          description={messages.aiGeneratedCardDescription}
+        >
+          {allowAiAttribution ? (
+            <span className={styles.aiAttributionEnabled}>
+              {messages.aiGeneratedEnabled}
+            </span>
+          ) : null}
+          <Button
+            onClick={openAiAttributionSettingsModal}
+            variant='secondary'
+            fullWidth
           >
-            {allowAiAttribution ? (
-              <span className={styles.aiAttributionEnabled}>
-                {messages.aiGeneratedEnabled}
-              </span>
-            ) : null}
-            <Button
-              onClick={openAiAttributionSettingsModal}
-              variant='secondary'
-              fullWidth
-            >
-              {messages.aiGeneratedButtonText}
-            </Button>
-          </SettingsCard>
-        ) : null}
+            {messages.aiGeneratedButtonText}
+          </Button>
+        </SettingsCard>
         {isDownloadDesktopEnabled ? (
           <SettingsCard
             icon={<IconReceive />}

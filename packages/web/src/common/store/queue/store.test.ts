@@ -9,6 +9,7 @@ import {
   QueueSource,
   playerReducer,
   playerActions,
+  reachabilitySelectors,
   QueueState,
   Queueable
 } from '@audius/common/store'
@@ -448,7 +449,10 @@ describe('watchQueueAutoplay', () => {
       }
     ]
     await expectSaga(sagas.watchQueueAutoplay)
-      .provide([[matchers.call.fn(getRecommendedTracks), recommendedTracks]])
+      .provide([
+        [matchers.call.fn(getRecommendedTracks), recommendedTracks],
+        [matchers.select(reachabilitySelectors.getIsReachable), true]
+      ])
       .dispatch(actions.queueAutoplay({}))
       .put(actions.add({ entries: expectedRecommendedTracks }))
       .silentRun()

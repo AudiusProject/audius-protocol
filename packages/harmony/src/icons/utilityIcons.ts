@@ -3,6 +3,7 @@ import IconAllTimeSVG from '../assets/icons/AllTime.svg'
 import IconAppearanceSVG from '../assets/icons/Appearance.svg'
 import IconArrowLeftSVG from '../assets/icons/ArrowLeft.svg'
 import IconArrowRightSVG from '../assets/icons/ArrowRight.svg'
+import IconArrowUpToLineSVG from '../assets/icons/ArrowUpToLine.svg'
 import IconBlogSVG from '../assets/icons/Blog.svg'
 import IconBoxHeartSVG from '../assets/icons/BoxHeart.svg'
 import IconCalendarDaySVG from '../assets/icons/CalendarDay.svg'
@@ -166,6 +167,7 @@ export const IconArrowLeft = IconArrowLeftSVG as IconComponent
 export const IconHeart = IconHeartSVG as IconComponent
 export const IconShare = IconShareSVG as IconComponent
 export const IconArrowRight = IconArrowRightSVG as IconComponent
+export const IconArrowUpToLine = IconArrowUpToLineSVG as IconComponent
 export const IconImage = IconImageSVG as IconComponent
 export const IconShieldCheck = IconShieldCheckSVG as IconComponent
 export const IconShieldUser = IconShieldUserSVG as IconComponent

@@ -102,7 +102,9 @@ export const PopupMenu = forwardRef<HTMLDivElement, PopupMenuProps>(
                 <li
                   key={typeof item.text === 'string' ? item.text : i}
                   role='menuitem'
-                  className={cn(styles.item, item.className)}
+                  className={cn(styles.item, item.className, {
+                    [styles.destructive]: item.destructive
+                  })}
                   onClick={handleMenuItemClick(item)}
                   tabIndex={i === 0 ? 0 : -1}
                 >
