@@ -59,7 +59,7 @@ vi.mock('@audius/common/adapters', async () => ({
   ).trackMetadataForUploadToSdk
 }))
 
-describe.only('editTrack', () => {
+describe('editTrack', () => {
   const mockTrackId = 1
   const mockUserId = 123
   const mockTrack = {
