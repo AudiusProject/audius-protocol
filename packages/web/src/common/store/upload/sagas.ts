@@ -298,7 +298,7 @@ function* publishWorker(
       }
 
       const { trackId: updatedTrackId } = yield* call(
-        [sdk.tracks, sdk.tracks.writeTrackUploadToChain],
+        [sdk.tracks, sdk.tracks.writeTrackToChain],
         Id.parse(userId),
         metadata
       )
@@ -1220,7 +1220,6 @@ export function* updateTrackAudioAsync(
     track_cid: updatedMetadata.trackCid || '',
     audio_upload_id: updatedMetadata.audioUploadId,
     duration: updatedMetadata.duration
-    // file_type: updatedMetadata.fileType
   }
 
   yield* put(

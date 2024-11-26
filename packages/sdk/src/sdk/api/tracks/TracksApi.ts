@@ -54,7 +54,8 @@ import {
   RecordTrackDownloadRequest,
   RecordTrackDownloadSchema,
   createUploadTrackFilesSchema,
-  UploadTrackFilesRequest
+  UploadTrackFilesRequest,
+  createUploadTrackSchema
 } from './types'
 
 // Extend that new class
@@ -165,7 +166,7 @@ export class TracksApi extends GeneratedTracksApi {
   /** @hidden
    * Write track upload to chain
    */
-  async writeTrackUploadToChain(
+  async writeTrackToChain(
     userId: string,
     metadata: ReturnType<
       typeof this.trackUploadHelper.populateTrackMetadataWithUploadResponse
@@ -181,7 +182,7 @@ export class TracksApi extends GeneratedTracksApi {
     const decodedUserId = decodeHashId(userId) ?? undefined
 
     if (!decodedUserId) {
-      throw new Error('writeTrackUploadToChain: userId could not be decoded')
+      throw new Error('writeTrackToChain: userId could not be decoded')
     }
 
     const response = await this.entityManager.manageEntity({
@@ -220,17 +221,16 @@ export class TracksApi extends GeneratedTracksApi {
     params: UploadTrackRequest,
     advancedOptions?: AdvancedOptions
   ) {
-    // TODO: parse params for uploadTrackSchema
+    // Validate inputs
+    await parseParams('uploadTrack', createUploadTrackSchema())(params)
 
     // Upload track files
-    const metadata = await this.uploadTrackFiles(params)
+    const metadata = await this.uploadTrackFiles(
+      params as UploadTrackFilesRequest
+    )
 
     // Write track metadata to chain
-    return this.writeTrackUploadToChain(
-      params.userId,
-      metadata,
-      advancedOptions
-    )
+    return this.writeTrackToChain(params.userId, metadata, advancedOptions)
   }
 
   /** @hidden

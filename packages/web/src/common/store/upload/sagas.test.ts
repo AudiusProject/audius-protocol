@@ -162,7 +162,7 @@ describe('upload', () => {
                 tracks: {
                   generateTrackId: () => i++,
                   uploadTrackFiles: () => testTrack.metadata,
-                  writeTrackUploadToChain: () => ({
+                  writeTrackToChain: () => ({
                     trackId: '7eP5n'
                   })
                 }
@@ -261,7 +261,7 @@ describe('upload', () => {
               return {
                 tracks: {
                   uploadTrackFiles: mockUploadTrackFiles,
-                  writeTrackUploadToChain: mockWriteTrackUploadToChain
+                  writeTrackToChain: mockWriteTrackUploadToChain
                 }
               }
             }
@@ -630,7 +630,7 @@ describe('upload', () => {
         uploadTrack: vitest
           .fn()
           .mockImplementation((_audio, _art, metadata) => metadata),
-        writeTrackUploadToChain: vitest.fn().mockImplementation((metadata) => ({
+        writeTrackToChain: vitest.fn().mockImplementation((metadata) => ({
           trackId: metadata.track_id
         }))
       }

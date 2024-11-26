@@ -214,7 +214,7 @@ export const createUploadTrackFilesSchema = () =>
       coverArtFile: z.optional(ImageFile),
       metadata: createUploadTrackMetadataSchema()
         .extend({
-          genre: z.enum(Object.values(Genre) as [Genre, ...Genre[]]).optional()
+          genre: z.optional(z.enum(Object.values(Genre) as [Genre, ...Genre[]]))
         })
         .strict(),
       onProgress: z.optional(z.function()),
