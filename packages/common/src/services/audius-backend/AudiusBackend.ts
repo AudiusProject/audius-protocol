@@ -1,4 +1,10 @@
-import { Genre, Mood, type StorageNodeSelectorService } from '@audius/sdk'
+import {
+  AudiusSdk,
+  Genre,
+  Mood,
+  sdk,
+  type StorageNodeSelectorService
+} from '@audius/sdk'
 import { DiscoveryAPI } from '@audius/sdk-legacy/dist/core'
 import { type AudiusLibs as AudiusLibsType } from '@audius/sdk-legacy/dist/libs'
 import type { HedgehogConfig } from '@audius/sdk-legacy/dist/services/hedgehog'
@@ -57,7 +63,8 @@ import {
   BrowserNotificationSetting,
   PushNotificationSetting,
   PushNotifications,
-  SearchKind
+  SearchKind,
+  getSDK
 } from '../../store'
 import {
   getErrorMessage,
@@ -1416,12 +1423,16 @@ export const audiusBackend = ({
     }
   }
 
-  async function markAllNotificationAsViewed({ userId }: { userId: ID }) {
-    await waitForLibsInit()
-
+  async function markAllNotificationAsViewed({
+    userId,
+    sdk
+  }: {
+    userId: ID
+    sdk: AudiusSdk
+  }) {
     let notificationsReadResponse
     try {
-      const { data, signature } = await signData()
+      const { data, signature } = await signIdentityServiceRequest({ sdk })
       // Passing `user_id` to support manager mode
       const response = await fetch(
         `${identityServiceUrl}/notifications/all?user_id=${userId}`,
@@ -1447,10 +1458,9 @@ export const audiusBackend = ({
     return notificationsReadResponse
   }
 
-  async function clearNotificationBadges() {
-    await waitForLibsInit()
+  async function clearNotificationBadges({ sdk }: { sdk: AudiusSdk }) {
     try {
-      const { data, signature } = await signData()
+      const { data, signature } = await signIdentityServiceRequest({ sdk })
       return await fetch(`${identityServiceUrl}/notifications/clear_badges`, {
         method: 'POST',
         headers: {
@@ -1464,11 +1474,9 @@ export const audiusBackend = ({
     }
   }
 
-  async function getEmailNotificationSettings() {
-    await waitForLibsInit()
-
+  async function getEmailNotificationSettings({ sdk }: { sdk: AudiusSdk }) {
     try {
-      const { data, signature } = await signData()
+      const { data, signature } = await signIdentityServiceRequest({ sdk })
       const res = await fetch(`${identityServiceUrl}/notifications/settings`, {
         method: 'GET',
         headers: {
@@ -1484,16 +1492,16 @@ export const audiusBackend = ({
   }
 
   async function updateEmailNotificationSettings({
+    sdk,
     emailFrequency,
     userId
   }: {
+    sdk: AudiusSdk
     emailFrequency: string
     userId: ID
   }) {
-    await waitForLibsInit()
-
     try {
-      const { data, signature } = await signData()
+      const { data, signature } = await signIdentityServiceRequest({ sdk })
       const res = await fetch(
         `${identityServiceUrl}/notifications/settings?user_id=${userId}`,
         {
@@ -1512,13 +1520,15 @@ export const audiusBackend = ({
     }
   }
 
-  async function updateNotificationSettings(
+  async function updateNotificationSettings({
+    sdk,
+    settings
+  }: {
+    sdk: AudiusSdk
     settings: Partial<Record<BrowserNotificationSetting, boolean>>
-  ) {
-    await waitForLibsInit()
-
+  }) {
     try {
-      const { data, signature } = await signData()
+      const { data, signature } = await signIdentityServiceRequest({ sdk })
       return await fetch(
         `${identityServiceUrl}/push_notifications/browser/settings`,
         {
@@ -1536,13 +1546,15 @@ export const audiusBackend = ({
     }
   }
 
-  async function updatePushNotificationSettings(
+  async function updatePushNotificationSettings({
+    sdk,
+    settings
+  }: {
+    sdk: AudiusSdk
     settings: Partial<Record<PushNotificationSetting, boolean>>
-  ) {
-    await waitForLibsInit()
-
+  }) {
     try {
-      const { data, signature } = await signData()
+      const { data, signature } = await signIdentityServiceRequest({ sdk })
       return await fetch(`${identityServiceUrl}/push_notifications/settings`, {
         method: 'POST',
         headers: {
@@ -1557,18 +1569,31 @@ export const audiusBackend = ({
     }
   }
 
-  async function signData() {
-    await waitForLibsInit()
-    const unixTs = Math.round(new Date().getTime() / 1000) // current unix timestamp (sec)
-    const data = `Click sign to authenticate with identity service: ${unixTs}`
-    const signature = await audiusLibs.Account.web3Manager.sign(
-      Buffer.from(data, 'utf-8')
+  async function signData({ sdk, data }: { sdk: AudiusSdk; data: string }) {
+    const prefixedMessage = `\x19Ethereum Signed Message:\n${data.length}${data}`
+    const [sig, recid] = await sdk.services.auth.sign(
+      Buffer.from(prefixedMessage, 'utf-8')
     )
+    const r = Buffer.from(sig.slice(0, 32)).toString('hex')
+    const s = Buffer.from(sig.slice(32, 64)).toString('hex')
+    const v = (recid + 27).toString(16)
+    const signature = `0x${r}${s}${v}`
     return { data, signature }
   }
 
-  async function signDiscoveryNodeRequest(input?: any) {
-    await waitForLibsInit()
+  async function signIdentityServiceRequest({ sdk }: { sdk: AudiusSdk }) {
+    const unixTs = Math.round(new Date().getTime() / 1000) // current unix timestamp (sec)
+    const data = `Click sign to authenticate with identity service: ${unixTs}`
+    return await signData({ sdk, data })
+  }
+
+  async function signDiscoveryNodeRequest({
+    sdk,
+    input
+  }: {
+    sdk: AudiusSdk
+    input?: any
+  }) {
     let data
     if (input) {
       data = input
@@ -1576,15 +1601,16 @@ export const audiusBackend = ({
       const unixTs = Math.round(new Date().getTime() / 1000) // current unix timestamp (sec)
       data = `Click sign to authenticate with discovery node: ${unixTs}`
     }
-    const signature = await audiusLibs.Account.web3Manager.sign(data)
-    return { data, signature }
+    return await signData({ sdk, data })
   }
 
-  async function getBrowserPushNotificationSettings() {
-    await waitForLibsInit()
-
+  async function getBrowserPushNotificationSettings({
+    sdk
+  }: {
+    sdk: AudiusSdk
+  }) {
     try {
-      const { data, signature } = await signData()
+      const { data, signature } = await signIdentityServiceRequest({ sdk })
       return await fetch(
         `${identityServiceUrl}/push_notifications/browser/settings`,
         {
@@ -1602,11 +1628,17 @@ export const audiusBackend = ({
     }
   }
 
-  async function getBrowserPushSubscription(pushEndpoint: string) {
+  async function getBrowserPushSubscription({
+    sdk,
+    pushEndpoint
+  }: {
+    sdk: AudiusSdk
+    pushEndpoint: string
+  }) {
     await waitForLibsInit()
 
     try {
-      const { data, signature } = await signData()
+      const { data, signature } = await signIdentityServiceRequest({ sdk })
       const endpiont = encodeURIComponent(pushEndpoint)
       return await fetch(
         `${identityServiceUrl}/push_notifications/browser/enabled?endpoint=${endpiont}`,
@@ -1625,11 +1657,17 @@ export const audiusBackend = ({
     }
   }
 
-  async function getSafariBrowserPushEnabled(deviceToken: string) {
+  async function getSafariBrowserPushEnabled({
+    sdk,
+    deviceToken
+  }: {
+    sdk: AudiusSdk
+    deviceToken: string
+  }) {
     await waitForLibsInit()
 
     try {
-      const { data, signature } = await signData()
+      const { data, signature } = await signIdentityServiceRequest({ sdk })
       return await fetch(
         `${identityServiceUrl}/push_notifications/device_token/enabled?deviceToken=${deviceToken}&deviceType=safari`,
         {
@@ -1648,14 +1686,16 @@ export const audiusBackend = ({
   }
 
   async function updateBrowserNotifications({
+    sdk,
     enabled = true,
     subscription
   }: {
+    sdk: AudiusSdk
     enabled: boolean
     subscription: PushSubscription
   }) {
     await waitForLibsInit()
-    const { data, signature } = await signData()
+    const { data, signature } = await signIdentityServiceRequest({ sdk })
     return await fetch(
       `${identityServiceUrl}/push_notifications/browser/register`,
       {
@@ -1671,12 +1711,14 @@ export const audiusBackend = ({
   }
 
   async function disableBrowserNotifications({
+    sdk,
     subscription
   }: {
+    sdk: AudiusSdk
     subscription: PushSubscription
   }) {
     await waitForLibsInit()
-    const { data, signature } = await signData()
+    const { data, signature } = await signIdentityServiceRequest({ sdk })
     return await fetch(
       `${identityServiceUrl}/push_notifications/browser/deregister`,
       {
@@ -1691,11 +1733,11 @@ export const audiusBackend = ({
     ).then((res) => res.json())
   }
 
-  async function getPushNotificationSettings() {
+  async function getPushNotificationSettings({ sdk }: { sdk: AudiusSdk }) {
     await waitForLibsInit()
 
     try {
-      const { data, signature } = await signData()
+      const { data, signature } = await signIdentityServiceRequest({ sdk })
       return await fetch(`${identityServiceUrl}/push_notifications/settings`, {
         headers: {
           [AuthHeaders.Message]: data,
@@ -1710,11 +1752,19 @@ export const audiusBackend = ({
     }
   }
 
-  async function registerDeviceToken(deviceToken: string, deviceType: string) {
+  async function registerDeviceToken({
+    sdk,
+    deviceToken,
+    deviceType
+  }: {
+    sdk: AudiusSdk
+    deviceToken: string
+    deviceType: string
+  }) {
     await waitForLibsInit()
 
     try {
-      const { data, signature } = await signData()
+      const { data, signature } = await signIdentityServiceRequest({ sdk })
       return await fetch(
         `${identityServiceUrl}/push_notifications/device_token`,
         {
@@ -1735,11 +1785,15 @@ export const audiusBackend = ({
     }
   }
 
-  async function deregisterDeviceToken(deviceToken: string) {
-    await waitForLibsInit()
-
+  async function deregisterDeviceToken({
+    sdk,
+    deviceToken
+  }: {
+    sdk: AudiusSdk
+    deviceToken: string
+  }) {
     try {
-      const { data, signature } = await signData()
+      const { data, signature } = await signIdentityServiceRequest({ sdk })
       return await fetch(
         `${identityServiceUrl}/push_notifications/device_token/deregister`,
         {
@@ -1795,11 +1849,9 @@ export const audiusBackend = ({
     }
   }
 
-  async function updateUserLocationTimezone() {
-    await waitForLibsInit()
-
+  async function updateUserLocationTimezone({ sdk }: { sdk: AudiusSdk }) {
     try {
-      const { data, signature } = await signData()
+      const { data, signature } = await signIdentityServiceRequest({ sdk })
       const timezone = dayjs.tz.guess()
       const res = await fetch(`${identityServiceUrl}/users/update`, {
         method: 'POST',
@@ -1816,11 +1868,15 @@ export const audiusBackend = ({
     }
   }
 
-  async function sendWelcomeEmail({ name }: { name: string }) {
-    await waitForLibsInit()
-
+  async function sendWelcomeEmail({
+    sdk,
+    name
+  }: {
+    sdk: AudiusSdk
+    name: string
+  }) {
     try {
-      const { data, signature } = await signData()
+      const { data, signature } = await signIdentityServiceRequest({ sdk })
       return await fetch(`${identityServiceUrl}/email/welcome`, {
         method: 'POST',
         headers: {
@@ -1836,14 +1892,14 @@ export const audiusBackend = ({
   }
 
   async function updateUserEvent({
+    sdk,
     hasSignedInNativeMobile
   }: {
+    sdk: AudiusSdk
     hasSignedInNativeMobile: boolean
   }) {
-    await waitForLibsInit()
-
     try {
-      const { data, signature } = await signData()
+      const { data, signature } = await signIdentityServiceRequest({ sdk })
       const res = await fetch(`${identityServiceUrl}/userEvents`, {
         method: 'POST',
         headers: {
@@ -1879,10 +1935,15 @@ export const audiusBackend = ({
     }
   }
 
-  async function updateHCaptchaScore({ token }: { token: string }) {
-    await waitForLibsInit()
+  async function updateHCaptchaScore({
+    sdk,
+    token
+  }: {
+    sdk: AudiusSdk
+    token: string
+  }) {
     try {
-      const { data, signature } = await signData()
+      const { data, signature } = await signIdentityServiceRequest({ sdk })
       return await fetch(`${identityServiceUrl}/score/hcaptcha`, {
         method: 'POST',
         headers: {

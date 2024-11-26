@@ -5,7 +5,8 @@ import {
   settingsPageInitialState as initialState,
   settingsPageActions,
   PushNotificationSetting,
-  getContext
+  getContext,
+  getSDK
 } from '@audius/common/store'
 import {
   getErrorMessage,
@@ -38,9 +39,13 @@ function* getIsMobilePushEnabled() {
 
 export function* deregisterPushNotifications() {
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
+  const sdk = yield* getSDK()
   const { token } = yield* call([PushNotifications, 'getToken'])
   PushNotifications.deregister()
-  yield* call(audiusBackendInstance.deregisterDeviceToken, token)
+  yield* call(audiusBackendInstance.deregisterDeviceToken, {
+    sdk,
+    deviceToken: token
+  })
 }
 
 function* registerDeviceToken() {
@@ -48,7 +53,12 @@ function* registerDeviceToken() {
   const { token, os } = yield* call([PushNotifications, 'getToken'])
 
   const audiusBackend = yield* getContext('audiusBackendInstance')
-  yield* call(audiusBackend.registerDeviceToken, token, os)
+  const sdk = yield* getSDK()
+  yield* call(audiusBackend.registerDeviceToken, {
+    sdk,
+    deviceToken: token,
+    deviceType: os
+  })
 }
 
 function* reregisterDeviceTokenOnStartup() {
@@ -71,6 +81,7 @@ function* enablePushNotifications() {
   yield* call(registerDeviceToken)
 
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
+  const sdk = yield* getSDK()
 
   // Enabling push notifications should enable all of the notification types
   const newSettings = { ...initialState.pushNotifications }
@@ -79,11 +90,15 @@ function* enablePushNotifications() {
   // We need a user for this to work (and in the case of sign up, we might not
   // have one right away when this function is called)
   yield* call(waitForValue, getAccountUser)
-  yield* call(audiusBackendInstance.updatePushNotificationSettings, newSettings)
+  yield* call(audiusBackendInstance.updatePushNotificationSettings, {
+    sdk,
+    settings: newSettings
+  })
 }
 
 function* disablePushNotifications() {
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
+  const sdk = yield* getSDK()
   const newSettings = mapValues(
     initialState.pushNotifications,
     function (_val: boolean) {
@@ -92,7 +107,10 @@ function* disablePushNotifications() {
   )
   yield* put(settingsPageActions.setPushNotificationSettings(newSettings))
   yield* call(waitForValue, getAccountUser)
-  yield* call(audiusBackendInstance.updatePushNotificationSettings, newSettings)
+  yield* call(audiusBackendInstance.updatePushNotificationSettings, {
+    sdk,
+    settings: newSettings
+  })
   yield* call(deregisterPushNotifications)
 }
 
@@ -106,6 +124,7 @@ function pushNotificationsEnabled(settings: TPushNotifications): boolean {
 
 function* watchGetPushNotificationSettings() {
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
+  const sdk = yield* getSDK()
   yield* takeEvery(
     settingsPageActions.GET_PUSH_NOTIFICATION_SETTINGS,
     function* () {
@@ -115,7 +134,8 @@ function* watchGetPushNotificationSettings() {
 
       try {
         const settings = yield* call(
-          audiusBackendInstance.getPushNotificationSettings
+          audiusBackendInstance.getPushNotificationSettings,
+          { sdk }
         )
         let pushNotificationSettings = mapValues(
           initialState.pushNotifications,
@@ -151,6 +171,7 @@ function* watchGetPushNotificationSettings() {
 
 function* watchUpdatePushNotificationSettings() {
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
+  const sdk = yield* getSDK()
   yield* takeEvery(
     settingsPageActions.TOGGLE_PUSH_NOTIFICATION_SETTING,
     function* (action: settingsPageActions.TogglePushNotificationSetting) {
@@ -171,7 +192,8 @@ function* watchUpdatePushNotificationSettings() {
             isOn = !pushNotificationSettings[action.notificationType]
           }
           yield* call(audiusBackendInstance.updatePushNotificationSettings, {
-            [action.notificationType]: isOn
+            sdk,
+            settings: { [action.notificationType]: isOn }
           })
         }
       } catch (e) {

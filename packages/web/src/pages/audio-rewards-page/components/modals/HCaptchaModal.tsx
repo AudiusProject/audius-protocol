@@ -1,12 +1,17 @@
 import { useCallback } from 'react'
 
 import { useGetCurrentUserId } from '@audius/common/api'
-import { audioRewardsPageActions, HCaptchaStatus } from '@audius/common/store'
+import {
+  audioRewardsPageActions,
+  getSDK,
+  HCaptchaStatus
+} from '@audius/common/store'
 import HCaptcha from '@hcaptcha/react-hcaptcha'
 import { useDispatch } from 'react-redux'
 
 import { useModalState } from 'common/hooks/useModalState'
 import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
+import { audiusSdk } from 'services/audius-sdk'
 import { env } from 'services/env'
 
 import styles from './HCaptchaModal.module.css'
@@ -40,7 +45,11 @@ export const HCaptchaModal = () => {
         dispatch(setHCaptchaStatus({ status: HCaptchaStatus.ERROR }))
         return
       }
-      const result = await audiusBackendInstance.updateHCaptchaScore({ token })
+      const sdk = await audiusSdk()
+      const result = await audiusBackendInstance.updateHCaptchaScore({
+        sdk,
+        token
+      })
       if (result.error) {
         dispatch(setHCaptchaStatus({ status: HCaptchaStatus.ERROR }))
       } else {
