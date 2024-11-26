@@ -1,5 +1,6 @@
 import { useState, useCallback, useRef, CSSProperties } from 'react'
 
+import { Text } from '@audius/harmony'
 import { useTheme } from '@emotion/react'
 import AntTooltip from 'antd/lib/tooltip'
 import cn from 'classnames'
@@ -96,7 +97,11 @@ export const Tooltip = ({
       {...visibleProps}
       overlayStyle={overlayStyle}
       placement={placement}
-      title={text}
+      title={
+        <Text color='staticWhite' lineHeight='single'>
+          {text}
+        </Text>
+      }
       color={themedColor}
       // @ts-ignore
       getPopupContainer={getPopupContainer || popupContainer}
