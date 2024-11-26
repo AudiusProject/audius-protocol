@@ -1,11 +1,11 @@
+import { PurchaseableContentMetadata } from '@audius/common/src/hooks/purchaseContent/types'
 import { isPurchaseableAlbum } from '@audius/common/src/hooks/purchaseContent/utils'
-import { usePurchaseMethod } from '@audius/common/src/hooks/usePurchaseMethod'
 import { SIGN_IN_PAGE } from '@audius/common/src/utils/route'
 import { USDC } from '@audius/fixed-decimal'
 import { Button, Flex, Text } from '@audius/harmony'
 
 import { HarmonyTextField } from 'components/form-fields/HarmonyTextField'
-import { TextLink, UserLink } from 'components/link'
+import { TextLink } from 'components/link'
 import { PurchaseSummaryTable } from 'components/premium-content-purchase-modal/components/PurchaseSummaryTable'
 import { usePurchaseContentFormState } from 'components/premium-content-purchase-modal/hooks/usePurchaseContentFormState'
 import { LockedContentDetailsTile } from 'components/track/LockedContentDetailsTile'
@@ -19,10 +19,20 @@ const messages = {
   yourEmail: 'Your Email'
 }
 
-export const GuestCheckout = ({ metadata, price, onClickSignIn }) => {
-  console.log('asdf guest checkout metadata', metadata)
-  const { error, isUnlocking, purchaseSummaryValues, stage, page } =
-    usePurchaseContentFormState({ price })
+interface GuestCheckoutProps {
+  metadata: PurchaseableContentMetadata
+  price: number
+  onClickSignIn: () => void
+}
+
+export const GuestCheckout = ({
+  metadata,
+  price,
+  onClickSignIn
+}: GuestCheckoutProps) => {
+  const { purchaseSummaryValues } = usePurchaseContentFormState({
+    price
+  })
   const isMobile = useIsMobile()
 
   const isAlbumPurchase = isPurchaseableAlbum(metadata)

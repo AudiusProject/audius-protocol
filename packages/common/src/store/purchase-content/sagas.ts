@@ -626,7 +626,6 @@ function* doStartPurchaseContentFlow({
     guestEmail
   }
 }: ReturnType<typeof startPurchaseContentFlow>) {
-  console.log('asdf do start puchase')
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
 
   const usdcConfig = yield* call(getBuyUSDCRemoteConfig)

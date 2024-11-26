@@ -65,7 +65,6 @@ export function* fetchAccountAsync({ isSignUp = false }): SagaIterator {
     authService,
     authService.getWalletAddresses
   ])
-
   if (!wallet) {
     yield* put(
       fetchAccountFailed({
@@ -109,6 +108,9 @@ export function* fetchAccountAsync({ isSignUp = false }): SagaIterator {
   yield* put(fetchBlockees())
   yield* put(fetchBlockers())
 
+  yield* put(
+    setWalletAddresses({ currentUser: wallet, web3User: web3WalletAddress })
+  )
   // Sync current user info to libs
   const libs = yield* call([
     audiusBackendInstance,

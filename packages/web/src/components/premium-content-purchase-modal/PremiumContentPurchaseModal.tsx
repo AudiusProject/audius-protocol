@@ -75,7 +75,6 @@ const messages = {
 }
 
 const pageToPageIndex = (page: PurchaseContentPage) => {
-  console.log('asdf page: ', page)
   switch (page) {
     case PurchaseContentPage.GUEST_CHECKOUT:
       return 0
@@ -138,7 +137,6 @@ const RenderForm = ({
     setPurchaseMethod(PurchaseMethod.BALANCE)
     submitForm()
   }, [submitForm, setPurchaseMethod])
-  console.log('asdf metadata', metadata)
   return (
     <ModalForm className={cn(styles.modalRoot, { [styles.mobile]: isMobile })}>
       <ModalHeader
@@ -273,12 +271,9 @@ export const PremiumContentPurchaseModal = () => {
     (!currentUser || (currentUser && !currentUser.handle)) &&
     initialValues.guestEmail === ''
   if (showGuestCheckout) {
-    console.log('asdf showGuestCheckout', initialValues.guestEmail)
-
     dispatch(setPurchasePage({ page: PurchaseContentPage.GUEST_CHECKOUT }))
   }
 
-  console.log('asdf initialValues', initialValues)
   // On form mount, pre-create user bank if needed and check for any usdc stuck
   // in root wallet from an aborted withdrawal
   useEffect(() => {

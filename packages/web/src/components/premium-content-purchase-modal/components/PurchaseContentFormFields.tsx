@@ -10,7 +10,6 @@ import {
   usePurchaseMethod,
   PurchaseableContentMetadata,
   isPurchaseableAlbum,
-  GUEST_CHECKOUT,
   PURCHASE_METHOD_MINT_ADDRESS
 } from '@audius/common/hooks'
 import { PurchaseMethod, PurchaseVendor } from '@audius/common/models'
@@ -19,7 +18,6 @@ import { PurchaseContentStage } from '@audius/common/store'
 import { Flex, Text, IconValidationCheck, Box } from '@audius/harmony'
 import { useField } from 'formik'
 
-import { HarmonyTextField } from 'components/form-fields/HarmonyTextField'
 import { PaymentMethod } from 'components/payment-method/PaymentMethod'
 
 import { PurchaseContentFormState } from '../hooks/usePurchaseContentFormState'
@@ -63,7 +61,6 @@ export const PurchaseContentFormFields = ({
     useField(PURCHASE_METHOD)
   const [{ value: purchaseVendor }, , { setValue: setPurchaseVendor }] =
     useField(PURCHASE_VENDOR)
-  const [{ value: isGuestCheckout }] = useField(GUEST_CHECKOUT)
 
   const [
     { value: purchaseMethodMintAddress },
@@ -86,7 +83,6 @@ export const PurchaseContentFormFields = ({
     method: purchaseMethod,
     setMethod: setPurchaseMethod
   })
-  console.log('asdf price', totalPriceInCents)
 
   const handleChangeMethod = useCallback(
     (method: string) => {
@@ -153,12 +149,6 @@ export const PurchaseContentFormFields = ({
         totalPriceInCents={totalPriceInCents}
         isAlbumPurchase={isAlbumPurchase}
       />
-      {/* {isGuestCheckout ? (
-        <Flex direction='column' gap='l'>
-          <Text variant='title'>Contact Details</Text>
-          <HarmonyTextField name='guestEmail' label='Email' />
-        </Flex>
-      ) : null} */}
       {isUnlocking || isPurchased ? null : (
         <PaymentMethod
           selectedMethod={purchaseMethod}
