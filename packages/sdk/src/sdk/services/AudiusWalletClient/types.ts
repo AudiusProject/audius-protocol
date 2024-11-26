@@ -1,5 +1,6 @@
 import type { Account, Chain, Client, Hex, RpcSchema, Transport } from 'viem'
-import type { Prettify } from 'viem/_types/types/utils'
+
+import type { Prettify } from '../../utils/prettify'
 
 import type { AudiusWalletActions } from './decorators/audiusWallet'
 

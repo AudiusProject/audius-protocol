@@ -7,13 +7,15 @@ import {
   hexToSignature,
   type WalletClient
 } from 'viem'
-import type { GetAccountParameter } from 'viem/_types/types/account'
-import type { UnionOmit } from 'viem/_types/types/utils'
-import { type FormattedTransactionRequest } from 'viem/utils'
 
+import { parseParams } from '../../../../utils/parseParams'
 import type { AudiusWalletClient } from '../../../AudiusWalletClient'
 
-import type { AudiusTokenConfig } from './types'
+import {
+  PermitSchema,
+  type AudiusTokenConfig,
+  type PermitParams
+} from './types'
 
 const ONE_HOUR_IN_MS = 1000 * 60 * 60
 
@@ -30,17 +32,7 @@ export class AudiusTokenClient {
     this.contractAddress = config.address
   }
 
-  public async permit(
-    params: {
-      args: {
-        owner?: Hex
-        spender: Hex
-        value: bigint
-        deadline?: bigint
-      }
-    } & GetAccountParameter &
-      UnionOmit<FormattedTransactionRequest, 'from' | 'to' | 'data' | 'value'>
-  ) {
+  public async permit(params: PermitParams) {
     const {
       args: {
         owner = (await this.audiusWalletClient.getAddresses())[0],
@@ -49,7 +41,7 @@ export class AudiusTokenClient {
         deadline = BigInt(Date.now() + ONE_HOUR_IN_MS)
       },
       ...other
-    } = params
+    } = await parseParams('permit', PermitSchema)(params)
 
     // Get args
     if (owner === undefined) {
