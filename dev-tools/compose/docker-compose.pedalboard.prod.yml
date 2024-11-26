@@ -46,14 +46,10 @@ services:
     profiles:
       - discovery
     healthcheck:
-      test:
-        [
-          'CMD-SHELL',
-          'curl -f http://localhost:6001/relay/health || exit 1'
-        ]
-      interval: 5s
-      timeout: 30s
-      retries: 5
+      test: ['CMD', 'curl', '-f', 'http://127.0.0.1:6001/relay/health']
+      interval: 1s
+      timeout: 1s
+      retries: 60
       start_period: 5s
     depends_on:
       db:
@@ -85,14 +81,10 @@ services:
       mode: replicated
       replicas: '${DISCOVERY_PROVIDER_REPLICAS}'
     healthcheck:
-      test:
-        [
-          'CMD-SHELL',
-          'curl -f http://localhost:6002/solana/health_check || exit 1'
-        ]
-      interval: 5s
-      timeout: 30s
-      retries: 15
+      test: ['CMD', 'curl', '-f', 'http://127.0.0.1:6002/solana/health_check']
+      interval: 1s
+      timeout: 1s
+      retries: 60
       start_period: 5s
     depends_on:
       db:

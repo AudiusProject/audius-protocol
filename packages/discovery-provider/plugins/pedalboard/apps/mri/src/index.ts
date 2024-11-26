@@ -6,6 +6,7 @@ import { createS3Instances } from './s3'
 import { clm } from './queries/clm'
 import { readConfig } from './config'
 import { udr } from './queries/udr'
+import { mrvr } from './queries/mrvr'
 
 const main = async () => {
   logger.info({}, 'good morning')
@@ -17,7 +18,7 @@ const main = async () => {
     connection: config.dbUrl
   })
 
-  const { clmS3s, udrS3s } = await createS3Instances()
+  const { clmS3s, udrS3s, mrvrS3s } = await createS3Instances()
 
   const clmJob = CronJob.from({
     // run at 10 AM PST every day
@@ -37,11 +38,20 @@ const main = async () => {
     },
     timeZone: 'America/Los_Angeles'
   })
+  const mrvrJob = CronJob.from({
+    // run once per month, 1 hour into the next month
+    cronTime: '0 1 1 * *',
+    onTick: async function () {
+      await mrvr(db, mrvrS3s, new Date())
+    },
+    timeZone: 'America/Los_Angeles'
+  })
 
   clmJob.start()
   udrJob.start()
+  mrvrJob.start()
 
-  const server = webServer(db, { clmS3s, udrS3s })
+  const server = webServer(db, { clmS3s, udrS3s, mrvrS3s })
   const port = process.env.audius_mri_port || 6003
   server.listen(port, () => logger.info({ port }, 'webserver is running'))
 }

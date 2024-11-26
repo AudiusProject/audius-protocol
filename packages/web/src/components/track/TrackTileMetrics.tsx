@@ -145,10 +145,11 @@ export const SavesMetric = (props: SavesMetricProps) => {
 
 type CommentMetricProps = {
   trackId: ID
+  size: TrackTileSize
 }
 
 export const CommentMetric = (props: CommentMetricProps) => {
-  const { trackId } = props
+  const { trackId, size } = props
   const isMobile = useIsMobile()
   const { data: track } = useGetTrackById(
     { id: trackId },
@@ -172,11 +173,14 @@ export const CommentMetric = (props: CommentMetricProps) => {
   const url = isMobile
     ? `${permalink}/comments`
     : `${permalink}?showComments=true`
+  const isSmall = size === TrackTileSize.SMALL
 
   return (
     <VanityMetric ellipses to={url} onClick={handleClick}>
       <IconMessage size='s' color='subdued' />
-      {comment_count > 0 ? formatCount(comment_count) : 'Leave a comment'}
+      {comment_count > 0 || isSmall
+        ? formatCount(comment_count)
+        : 'Leave a comment'}
     </VanityMetric>
   )
 }

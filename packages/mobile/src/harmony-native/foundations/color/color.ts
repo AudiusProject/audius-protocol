@@ -32,14 +32,6 @@ const primitiveOverrides = {
         colors: ['#7652CC', '#B05CE6']
       }
     }
-  },
-  debug: {
-    special: {
-      gradient: {
-        ...baseLinearGradient,
-        colors: ['#FF00001A', '#FF00001A']
-      }
-    }
   }
 }
 
@@ -66,14 +58,6 @@ const semanticOverrides = {
     },
     icon: {
       heading: primitiveOverrides.matrix.special.gradient
-    }
-  },
-  debug: {
-    text: {
-      heading: primitiveOverrides.debug.special.gradient
-    },
-    icon: {
-      heading: primitiveOverrides.debug.special.gradient
     }
   }
 }
@@ -122,21 +106,6 @@ export const colorTheme = {
     icon: {
       ...harmonyThemes.matrix.color.icon,
       ...semanticOverrides.matrix.icon
-    }
-  },
-  debug: {
-    ...harmonyThemes.debug.color,
-    special: {
-      ...harmonyThemes.debug.color.special,
-      ...primitiveOverrides.debug.special
-    },
-    text: {
-      ...harmonyThemes.debug.color.text,
-      ...semanticOverrides.debug.text
-    },
-    icon: {
-      ...harmonyThemes.debug.color.icon,
-      ...semanticOverrides.debug.icon
     }
   }
 }
