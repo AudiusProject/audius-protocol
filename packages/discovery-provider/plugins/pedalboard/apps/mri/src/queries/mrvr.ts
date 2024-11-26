@@ -304,7 +304,10 @@ export const mrvr = async (
               and td.country = plays."country"
           ) as "Total Downloads",
           count(*) as "Total Streams",
-          'USD' as "Currency"
+          case when
+            is_country_eur("country") then 'EUR'
+            else 'USD'
+          end as "Currency"
         from plays
         where
           created_at >= :start
