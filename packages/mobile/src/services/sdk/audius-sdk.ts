@@ -5,7 +5,7 @@ import { Configuration, SolanaRelay, sdk } from '@audius/sdk'
 
 import { env } from 'app/env'
 
-import { auth } from './auth'
+import { audiusWalletClient } from './auth'
 import { discoveryNodeSelectorService } from './discoveryNodeSelector'
 
 let inProgress = false
@@ -46,7 +46,7 @@ const initSdk = async () => {
     services: {
       discoveryNodeSelector,
       solanaRelay,
-      auth
+      audiusWalletClient
     }
   })
   sdkInstance = audiusSdk

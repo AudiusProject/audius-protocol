@@ -5,7 +5,7 @@ import { OS, MobileOS } from '@audius/common/src/models/OS'
 
 declare global {
   interface Window {
-    opera: any
+    opera: string
     // @ts-ignore -- TODO fix mobile imports causing type errors
     MSStream: boolean
   }

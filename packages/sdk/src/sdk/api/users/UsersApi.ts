@@ -417,7 +417,6 @@ export class UsersApi extends GeneratedUsersApi {
         cid: '',
         data: metadata
       }),
-      auth: this.auth,
       ...advancedOptions
     })
   }
@@ -447,7 +446,6 @@ export class UsersApi extends GeneratedUsersApi {
         delegated_user_ids: delegatedUserIds,
         delegated_keys: delegatedKeys
       }),
-      auth: this.auth,
       ...advancedOptions
     })
   }
