@@ -2,10 +2,10 @@ import { Knex } from 'knex'
 import { logger as plogger } from '../logger'
 import { toCsvString } from '../csv'
 import { S3Config, publish } from '../s3'
-import { readConfig } from '../config'
 import dayjs from 'dayjs'
 import quarterOfYear from 'dayjs/plugin/quarterOfYear'
 import { formatDateISO, getYearMonth, getYearMonthDay, getYearMonthShorthand } from '../date'
+import fetch from 'cross-fetch'
 
 dayjs.extend(quarterOfYear)
 
@@ -83,6 +83,11 @@ export const mrvr = async (
   s3s: S3Config[],
   date: Date
 ): Promise<void> => {
+  // Get exchange rate from usd to eur for CBS reporting
+  const usdToEurRate = await fetch('https://open.er-api.com/v6/latest/USD')
+    .then(response => response.json())
+    .then(data => data.rates.EUR)
+
   const logger = plogger.child({ date: date.toISOString() })
   logger.info('beginning usage detail report processing')
   const startOfThisMonth = dayjs(date).startOf('month')
@@ -239,8 +244,8 @@ export const mrvr = async (
         "Gross revenue With Deductions", 
         "Territory",
         case when ("Total Downloads" > 0 or "Total Streams" > 0) then true else false end as "Has_usage_flag",
-        "Total Downloads",
-        "Total Streams",
+        coalesce("Total Downloads", 0) as "Total Downloads",
+        coalesce("Total Streams", 0) as "Total Streams",
         "Currency"
       from (
         -- paid portion of MRVR
@@ -248,8 +253,20 @@ export const mrvr = async (
           'Downloads / Monetized Content' as "Offering",
           'Paid' as "UserType",
           count(distinct "buyer_user_id") as "Subscriber Count",
-          trunc(sum(usd), 2) as "Gross Revenue",
-          trunc(sum(usd), 2) as "Gross revenue With Deductions",
+          trunc(
+            case when
+              is_country_eur("country") then sum("usd") * :usdToEurRate
+              else sum("usd")
+            end,
+            2
+          ) as "Gross Revenue",
+          trunc(
+            case when
+              is_country_eur("country") then sum("usd") * :usdToEurRate
+              else sum("usd")
+            end,
+            2
+          ) as "Gross revenue With Deductions",
           country_to_iso_alpha2(coalesce("country", '')) as "Territory",
           (
             select coalesce(download_count, 0)
@@ -261,7 +278,10 @@ export const mrvr = async (
             from streams s
             where s.country = purchases.country
           ) as "Total Streams",
-          'USD' as "Currency"
+          case when
+            is_country_eur("country") then 'EUR'
+            else 'USD'
+          end as "Currency"
         from purchases
         where "country" is not null
         group by "country"
@@ -293,7 +313,7 @@ export const mrvr = async (
         group by country
       ) subq;
       `,
-      { start, end }
+      { start, end, usdToEurRate }
     )
 
     const mrvrCbsRows: MrvrAffirmative[] = mrvrCbs.rows
