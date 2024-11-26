@@ -252,14 +252,12 @@ def create_comment(params: ManageEntityParameters):
             .filter_by(parent_comment_id=parent_comment_id, comment_id=comment_id)
             .first()
         )
-        if existing_comment_thread:
-            return
-
-        comment_thread = CommentThread(
-            parent_comment_id=parent_comment_id,
-            comment_id=comment_id,
-        )
-        params.session.add(comment_thread)
+        if not existing_comment_thread:
+            comment_thread = CommentThread(
+                parent_comment_id=parent_comment_id,
+                comment_id=comment_id,
+            )
+            params.session.add(comment_thread)
 
         parent_comment_owner_notifications_off = params.session.query(
             params.session.query(CommentNotificationSetting)
