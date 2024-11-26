@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 
 import { initOnRamp } from '@coinbase/cbpay-js'
 
@@ -63,6 +63,12 @@ export const useCoinbasePay = () => {
   const open = useCallback(() => {
     if (cbInstance.current) {
       cbInstance.current.open()
+    }
+  }, [cbInstance])
+
+  useEffect(() => {
+    return () => {
+      cbInstance.current?.destroy()
     }
   }, [cbInstance])
 

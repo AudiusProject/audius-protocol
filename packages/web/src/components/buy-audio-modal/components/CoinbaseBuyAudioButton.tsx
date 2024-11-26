@@ -45,6 +45,7 @@ export const CoinbaseBuyAudioButton = () => {
   const handleExit = useCallback(() => {
     dispatch(onrampCanceled())
   }, [dispatch])
+
   const handleSuccess = useCallback(() => {
     dispatch(onrampSucceeded())
   }, [dispatch])
