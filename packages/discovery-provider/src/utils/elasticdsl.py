@@ -74,8 +74,8 @@ def populate_user_metadata_es(user, current_user):
 def populate_track_or_playlist_metadata_es(item, current_user):
     if current_user:
         my_id = current_user["user_id"]
-        item["has_current_user_reposted"] = my_id in item["reposted_by"]
-        item["has_current_user_saved"] = my_id in item["saved_by"]
+        item["has_current_user_reposted"] = my_id in item.get("reposted_by", [])
+        item["has_current_user_saved"] = my_id in item.get("saved_by", [])
     else:
         item["has_current_user_reposted"] = False
         item["has_current_user_saved"] = False
