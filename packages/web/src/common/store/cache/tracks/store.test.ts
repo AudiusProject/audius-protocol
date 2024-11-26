@@ -7,7 +7,8 @@ import {
   cacheTracksSelectors,
   confirmTransaction,
   initialConfirmerState,
-  confirmerReducer
+  confirmerReducer,
+  confirmerSagas
 } from '@audius/common/store'
 import { combineReducers } from 'redux'
 import { expectSaga } from 'redux-saga-test-plan'
@@ -19,7 +20,9 @@ import { describe, it, vi } from 'vitest'
 import { remoteConfigInstance } from 'services/remote-config/remote-config-instance'
 import { allSagas, noopReducer } from 'store/testHelper'
 
-import sagas from './sagas'
+import trackCacheSagas from './sagas'
+
+const sagas = () => [...trackCacheSagas(), ...confirmerSagas()]
 
 const { asCache, initialCacheState } = cacheReducer
 const { getTrack } = cacheTracksSelectors

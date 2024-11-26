@@ -3,8 +3,7 @@ import type {
   CrossPlatformFile,
   Genre,
   Mood,
-  TrackFilesMetadata,
-  TrackMetadata
+  TrackFilesMetadata
 } from '@audius/sdk'
 import camelcaseKeys from 'camelcase-keys'
 import dayjs from 'dayjs'
