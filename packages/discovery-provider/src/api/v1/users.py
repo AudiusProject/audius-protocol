@@ -970,7 +970,7 @@ USER_ALBUMS_ROUTE = "/<string:id>/albums"
 
 albums_response_full = make_full_response(
     "albums_response_full",
-    ns,
+    full_ns,
     fields.List(fields.Nested(full_playlist_without_tracks_model)),
 )
 

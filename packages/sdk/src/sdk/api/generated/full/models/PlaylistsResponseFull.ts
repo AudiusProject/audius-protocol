@@ -14,12 +14,12 @@
  */
 
 import { exists, mapValues } from '../runtime';
-import type { PlaylistFull } from './PlaylistFull';
+import type { PlaylistFullWithoutTracks } from './PlaylistFullWithoutTracks';
 import {
-    PlaylistFullFromJSON,
-    PlaylistFullFromJSONTyped,
-    PlaylistFullToJSON,
-} from './PlaylistFull';
+    PlaylistFullWithoutTracksFromJSON,
+    PlaylistFullWithoutTracksFromJSONTyped,
+    PlaylistFullWithoutTracksToJSON,
+} from './PlaylistFullWithoutTracks';
 import type { VersionMetadata } from './VersionMetadata';
 import {
     VersionMetadataFromJSON,
@@ -77,10 +77,10 @@ export interface PlaylistsResponseFull {
     version: VersionMetadata;
     /**
      * 
-     * @type {Array<PlaylistFull>}
+     * @type {Array<PlaylistFullWithoutTracks>}
      * @memberof PlaylistsResponseFull
      */
-    data?: Array<PlaylistFull>;
+    data?: Array<PlaylistFullWithoutTracks>;
 }
 
 /**
@@ -116,7 +116,7 @@ export function PlaylistsResponseFullFromJSONTyped(json: any, ignoreDiscriminato
         'signature': json['signature'],
         'timestamp': json['timestamp'],
         'version': VersionMetadataFromJSON(json['version']),
-        'data': !exists(json, 'data') ? undefined : ((json['data'] as Array<any>).map(PlaylistFullFromJSON)),
+        'data': !exists(json, 'data') ? undefined : ((json['data'] as Array<any>).map(PlaylistFullWithoutTracksFromJSON)),
     };
 }
 
@@ -136,7 +136,7 @@ export function PlaylistsResponseFullToJSON(value?: PlaylistsResponseFull | null
         'signature': value.signature,
         'timestamp': value.timestamp,
         'version': VersionMetadataToJSON(value.version),
-        'data': value.data === undefined ? undefined : ((value.data as Array<any>).map(PlaylistFullToJSON)),
+        'data': value.data === undefined ? undefined : ((value.data as Array<any>).map(PlaylistFullWithoutTracksToJSON)),
     };
 }
 

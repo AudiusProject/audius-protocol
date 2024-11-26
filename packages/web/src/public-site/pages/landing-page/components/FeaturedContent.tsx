@@ -1,6 +1,9 @@
 import { useEffect, useState } from 'react'
 
-import { userCollectionMetadataFromSDK } from '@audius/common/adapters'
+import {
+  transformAndCleanList,
+  userCollectionMetadataFromSDK
+} from '@audius/common/adapters'
 import { Id, UserCollectionMetadata } from '@audius/common/models'
 import { route } from '@audius/common/utils'
 // eslint-disable-next-line no-restricted-imports -- TODO: migrate to @react-spring/web
@@ -139,12 +142,10 @@ const FeaturedContent = (props: FeaturedContentProps) => {
       const featuredContent = await fetchExploreContent(env.EXPLORE_CONTENT_URL)
       const ids = featuredContent.featuredPlaylists
       const sdk = await audiusSdk()
-      const playlists = await sdk.full.playlists.getBulkPlaylists({
+      const { data } = await sdk.full.playlists.getBulkPlaylists({
         id: ids.map((id) => Id.parse(id))
       })
-      return (playlists.data
-        ?.map((p) => userCollectionMetadataFromSDK(p))
-        .filter(Boolean) ?? []) as UserCollectionMetadata[]
+      return transformAndCleanList(data, userCollectionMetadataFromSDK)
     }, [])
 
   useEffect(() => {
