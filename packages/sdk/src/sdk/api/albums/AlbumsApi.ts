@@ -2,7 +2,6 @@ import { USDC } from '@audius/fixed-decimal'
 import { TransactionInstruction } from '@solana/web3.js'
 
 import type {
-  AudiusWalletClient,
   ClaimableTokensClient,
   PaymentRouterClient,
   SolanaRelayService,
@@ -53,7 +52,6 @@ export class AlbumsApi {
     configuration: Configuration,
     storage: StorageService,
     entityManager: EntityManagerService,
-    private auth: AudiusWalletClient,
     private logger: LoggerService,
     private claimableTokensClient: ClaimableTokensClient,
     private paymentRouterClient: PaymentRouterClient,
@@ -64,7 +62,6 @@ export class AlbumsApi {
       configuration,
       storage,
       entityManager,
-      auth,
       logger
     )
   }
@@ -406,10 +403,8 @@ export class AlbumsApi {
       })
     } else {
       // Use the authed wallet's userbank and relay
-      const ethWallet = await this.auth.getAddress()
       this.logger.debug(
         `Using userBank ${await this.claimableTokensClient.deriveUserBank({
-          ethWallet,
           mint: 'USDC'
         })} to purchase...`
       )
@@ -420,15 +415,12 @@ export class AlbumsApi {
 
       const transferSecpInstruction =
         await this.claimableTokensClient.createTransferSecpInstruction({
-          ethWallet,
           destination: paymentRouterTokenAccount.address,
           mint,
-          amount: total,
-          auth: this.auth
+          amount: total
         })
       const transferInstruction =
         await this.claimableTokensClient.createTransferInstruction({
-          ethWallet,
           destination: paymentRouterTokenAccount.address,
           mint
         })

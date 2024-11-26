@@ -211,6 +211,7 @@ export class EntityManagerClient implements EntityManagerService {
     const client = await this.getClient()
     const currentBlockNumber = await client.getBlockNumber()
     const block = await client.getBlock({ blockNumber: currentBlockNumber })
+    // TODO: Make this not need to be cast to number
     return { ...block, timestamp: Number(block.timestamp) }
   }
 }

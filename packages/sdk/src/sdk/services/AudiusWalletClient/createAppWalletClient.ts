@@ -1,4 +1,10 @@
-import { createClient, custom, type CustomTransport, type Hex } from 'viem'
+import {
+  createClient,
+  custom,
+  type CustomTransport,
+  type Hex,
+  type LocalAccount
+} from 'viem'
 
 import { audiusWalletActions } from './decorators/audiusWallet'
 import { localTransport } from './localTransport'
@@ -20,7 +26,7 @@ export const createAppWalletClient = (
     return createClient<CustomTransport, undefined, AudiusAccount>({
       name: 'Audius Readonly App',
       type: 'audius',
-      account: apiKey,
+      account: { address: apiKey, type: 'local' } as LocalAccount<'custom'>,
       transport: custom(localTransport())
     }).extend(audiusWalletActions)
   }

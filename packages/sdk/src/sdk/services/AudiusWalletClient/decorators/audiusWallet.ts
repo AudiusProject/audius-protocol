@@ -1,4 +1,4 @@
-import type { Chain, Client, Hex, Transport, WalletActions } from 'viem'
+import type { Chain, Client, Transport, WalletActions } from 'viem'
 import { getAddresses, signMessage, signTypedData } from 'viem/actions'
 
 import {
@@ -180,7 +180,7 @@ export type AudiusWalletActions<
    *
    * @returns the signature encoded as a hex string, with the 0x prefix
    */
-  sign: (args: SignParameters) => Promise<Hex>
+  sign: (args: SignParameters) => Promise<[Uint8Array, number]>
   /**
    * Gets a secret to be shared between this wallet and the target publicKey.
    *

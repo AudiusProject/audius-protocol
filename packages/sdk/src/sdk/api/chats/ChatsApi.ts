@@ -7,7 +7,6 @@ import { uniqBy } from 'lodash'
 import * as aes from 'micro-aes-gcm'
 import type TypedEmitter from 'typed-emitter'
 import { ulid } from 'ulid'
-import { hexToBytes } from 'viem'
 
 import type { AudiusWalletClient } from '../../services/AudiusWalletClient'
 import type { DiscoveryNodeSelectorService } from '../../services/DiscoveryNodeSelector/types'
@@ -844,10 +843,12 @@ export class ChatsApi
   }
 
   private async getSignatureHeader(payload: string) {
-    const signatureHex = await this.audiusWalletClient.sign({
+    const [signature, recid] = await this.audiusWalletClient.sign({
       message: payload
     })
-    const signature = hexToBytes(signatureHex)
+    const signatureBytes = new Uint8Array(65)
+    signatureBytes.set(signature, 0)
+    signatureBytes[64] = recid
     return { 'x-sig': base64.encode(signature) }
   }
 

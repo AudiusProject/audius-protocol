@@ -1,5 +1,5 @@
 import type { UsersApi, Configuration, User } from '../../api/generated/default'
-import type { AudiusWalletClient, EntityManagerService } from '../../services'
+import type { EntityManagerService } from '../../services'
 import { Action, EntityType } from '../../services/EntityManager/types'
 import { encodeHashId } from '../../utils/hashId'
 import { parseParams } from '../../utils/parseParams'
@@ -21,7 +21,6 @@ export class GrantsApi {
   constructor(
     _config: Configuration,
     private readonly entityManager: EntityManagerService,
-    private readonly auth: AudiusWalletClient,
     private readonly usersApi: UsersApi
   ) {}
 
@@ -42,8 +41,7 @@ export class GrantsApi {
       action: Action.CREATE,
       metadata: JSON.stringify({
         grantee_address: `0x${appApiKey}`
-      }),
-      auth: this.auth
+      })
     })
   }
 
@@ -79,8 +77,7 @@ export class GrantsApi {
       action: Action.CREATE,
       metadata: JSON.stringify({
         grantee_address: managerUser!.ercWallet
-      }),
-      auth: this.auth
+      })
     })
   }
 
@@ -115,8 +112,7 @@ export class GrantsApi {
       action: Action.DELETE,
       metadata: JSON.stringify({
         grantee_address: managerUser!.ercWallet
-      }),
-      auth: this.auth
+      })
     })
   }
 
@@ -136,8 +132,7 @@ export class GrantsApi {
       action: Action.DELETE,
       metadata: JSON.stringify({
         grantee_address: `0x${appApiKey}`
-      }),
-      auth: this.auth
+      })
     })
   }
 
@@ -157,8 +152,7 @@ export class GrantsApi {
       action: Action.APPROVE,
       metadata: JSON.stringify({
         grantor_user_id: grantorUserId
-      }),
-      auth: this.auth
+      })
     })
   }
 }

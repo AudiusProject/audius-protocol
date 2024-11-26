@@ -247,6 +247,7 @@ const initializeServices = (config: SdkConfig) => {
     new ClaimableTokensClient({
       ...getDefaultClaimableTokensConfig(servicesConfig),
       solanaClient,
+      audiusWalletClient,
       logger
     })
 
@@ -394,7 +395,6 @@ const initializeApis = ({
     services.discoveryNodeSelector,
     services.storage,
     services.entityManager,
-    services.audiusWalletClient,
     services.logger,
     services.claimableTokensClient,
     services.paymentRouterClient,
@@ -405,7 +405,6 @@ const initializeApis = ({
     generatedApiClientConfig,
     services.storage,
     services.entityManager,
-    services.audiusWalletClient,
     services.logger,
     services.claimableTokensClient,
     services.solanaClient
@@ -414,7 +413,6 @@ const initializeApis = ({
     generatedApiClientConfig,
     services.storage,
     services.entityManager,
-    services.audiusWalletClient,
     services.logger,
     services.claimableTokensClient,
     services.paymentRouterClient,
@@ -425,13 +423,11 @@ const initializeApis = ({
     generatedApiClientConfig,
     services.storage,
     services.entityManager,
-    services.audiusWalletClient,
     services.logger
   )
   const comments = new CommentsApi(
     generatedApiClientConfig,
     services.entityManager,
-    services.audiusWalletClient,
     services.logger
   )
   const tips = new TipsApi(generatedApiClientConfig)
@@ -450,7 +446,6 @@ const initializeApis = ({
   const grants = new GrantsApi(
     generatedApiClientConfig,
     services.entityManager,
-    services.audiusWalletClient,
     users
   )
 
@@ -461,8 +456,7 @@ const initializeApis = ({
 
   const dashboardWalletUsers = new DashboardWalletUsersApi(
     generatedApiClientConfig,
-    services.entityManager,
-    services.audiusWalletClient
+    services.entityManager
   )
 
   const challenges = new ChallengesApi(

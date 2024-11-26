@@ -8,9 +8,9 @@ import {
   PaymentRouterClient,
   SolanaRelay,
   SolanaRelayWalletAdapter,
+  createAppWalletClient,
   getDefaultPaymentRouterClientConfig
 } from '../../services'
-import { DefaultWalletClient } from '../../services/AudiusWalletClient/DefaultWalletClient'
 import { DiscoveryNodeSelector } from '../../services/DiscoveryNodeSelector'
 import { EntityManager } from '../../services/EntityManager'
 import { Logger } from '../../services/Logger'
@@ -88,13 +88,15 @@ vitest
   })
 
 describe('TracksApi', () => {
+  // TODO: Move this out of describe
   let tracks: TracksApi
 
-  const auth = new DefaultWalletClient()
+  // eslint-disable-next-line mocha/no-setup-in-describe
+  const audiusWalletClient = createAppWalletClient('0x')
   const logger = new Logger()
   const discoveryNodeSelector = new DiscoveryNodeSelector()
   const storageNodeSelector = new StorageNodeSelector({
-    audiusWalletClient: auth,
+    audiusWalletClient,
     discoveryNodeSelector,
     logger
   })
@@ -113,12 +115,19 @@ describe('TracksApi', () => {
     tracks = new TracksApi(
       new Configuration(),
       new DiscoveryNodeSelector(),
-      new Storage({ storageNodeSelector, logger: new Logger() }),
-      new EntityManager({ discoveryNodeSelector: new DiscoveryNodeSelector() }),
-      auth,
+      new Storage({
+        audiusWalletClient,
+        storageNodeSelector,
+        logger: new Logger()
+      }),
+      new EntityManager({
+        audiusWalletClient,
+        discoveryNodeSelector: new DiscoveryNodeSelector()
+      }),
       new Logger(),
       new ClaimableTokensClient({
         ...getDefaultClaimableTokensConfig(developmentConfig),
+        audiusWalletClient,
         solanaClient
       }),
       new PaymentRouterClient({

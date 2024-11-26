@@ -16,7 +16,7 @@ export type AudiusAccount = Account & {
   /**
    * Signs the keccak hash of some data, used for Chats
    */
-  sign: (data: Hex) => Promise<Hex>
+  sign: (data: Hex) => Promise<[Uint8Array, number]>
 }
 
 /**

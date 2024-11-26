@@ -38,8 +38,7 @@ export const addAppInfoMiddleware = ({
         })
         const developerApps = new DeveloperAppsApi(
           apiClientConfig,
-          services.entityManager,
-          services.auth
+          services.entityManager
         )
 
         apiKey = providedApiKey ?? (await services.auth.getAddress())

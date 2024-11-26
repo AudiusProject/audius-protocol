@@ -1,4 +1,4 @@
-import type { Chain, Client, Hex, SignableMessage, Transport } from 'viem'
+import type { Chain, Client, SignableMessage, Transport } from 'viem'
 import { stringToHex, toHex } from 'viem/utils'
 
 import type { AudiusAccount } from '../types'
@@ -16,7 +16,7 @@ export async function sign<
 >(
   client: Client<Transport, TChain, TAccount>,
   { account: account_ = client.account, message: message_ }: SignParameters
-): Promise<Hex> {
+): Promise<[Uint8Array, number]> {
   if (!account_) throw new Error('Account not found')
   const account =
     typeof account_ === 'string'

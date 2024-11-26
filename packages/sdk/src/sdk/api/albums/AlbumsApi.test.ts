@@ -1,10 +1,11 @@
 import fs from 'fs'
 import path from 'path'
 
+import type { GetBlockReturnType } from 'viem/actions'
 import { describe, it, expect, vitest, beforeAll } from 'vitest'
 
 import { developmentConfig } from '../../config/development'
-import { DefaultWalletClient } from '../../services/AudiusWalletClient/DefaultWalletClient'
+import { createAppWalletClient } from '../../services/AudiusWalletClient'
 import { DiscoveryNodeSelector } from '../../services/DiscoveryNodeSelector'
 import { EntityManager } from '../../services/EntityManager'
 import { Logger } from '../../services/Logger'
@@ -95,7 +96,7 @@ vitest
   .mockImplementation(async () => {
     return {
       timestamp: 1
-    }
+    } as GetBlockReturnType & { timestamp: number }
   })
 
 vitest
@@ -115,13 +116,14 @@ vitest
   })
 
 describe('AlbumsApi', () => {
+  // TODO: Remove this setup in describe
   let albums: AlbumsApi
-
-  const auth = new DefaultWalletClient()
+  // eslint-disable-next-line mocha/no-setup-in-describe
+  const audiusWalletClient = createAppWalletClient('0x')
   const logger = new Logger()
   const discoveryNodeSelector = new DiscoveryNodeSelector()
   const storageNodeSelector = new StorageNodeSelector({
-    audiusWalletClient: auth,
+    audiusWalletClient,
     discoveryNodeSelector,
     logger
   })
@@ -139,12 +141,19 @@ describe('AlbumsApi', () => {
     })
     albums = new AlbumsApi(
       new Configuration(),
-      new Storage({ storageNodeSelector, logger: new Logger() }),
-      new EntityManager({ discoveryNodeSelector: new DiscoveryNodeSelector() }),
-      auth,
+      new Storage({
+        audiusWalletClient,
+        storageNodeSelector,
+        logger: new Logger()
+      }),
+      new EntityManager({
+        audiusWalletClient,
+        discoveryNodeSelector: new DiscoveryNodeSelector()
+      }),
       logger,
       new ClaimableTokensClient({
         ...getDefaultClaimableTokensConfig(developmentConfig),
+        audiusWalletClient,
         solanaClient
       }),
       new PaymentRouterClient({

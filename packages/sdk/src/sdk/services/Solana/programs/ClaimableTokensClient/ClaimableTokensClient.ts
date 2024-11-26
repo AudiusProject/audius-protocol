@@ -19,6 +19,7 @@ import { mergeConfigWithDefaults } from '../../../../utils/mergeConfigs'
 import { mintFixedDecimalMap } from '../../../../utils/mintFixedDecimalMap'
 import { parseMintToken } from '../../../../utils/parseMintToken'
 import { parseParams } from '../../../../utils/parseParams'
+import type { AudiusWalletClient } from '../../../AudiusWalletClient'
 import type { LoggerService } from '../../../Logger'
 import type { TokenName } from '../../types'
 import { CustomInstructionError } from '../CustomInstructionError'
@@ -77,6 +78,7 @@ export class ClaimableTokensClient {
   /** Map from token mint name to derived user bank authority. */
   private readonly authorities: Record<TokenName, PublicKey>
   private readonly logger: LoggerService
+  private readonly audiusWalletClient: AudiusWalletClient
 
   /**
    * Map of user banks to user bank creation promises.
@@ -110,6 +112,7 @@ export class ClaimableTokensClient {
         mint: configWithDefaults.mints.USDC
       })
     }
+    this.audiusWalletClient = configWithDefaults.audiusWalletClient
     this.logger = configWithDefaults.logger.createPrefixedLogger(
       '[claimable-tokens-client]'
     )
@@ -197,7 +200,7 @@ export class ClaimableTokensClient {
   async createTransferInstruction(params: CreateTransferRequest) {
     const {
       feePayer: feePayerOverride,
-      ethWallet,
+      ethWallet = (await this.audiusWalletClient.getAddresses())[0]!,
       mint,
       destination
     } = await parseParams(
@@ -230,11 +233,16 @@ export class ClaimableTokensClient {
    * @see {@link createTransferInstruction}
    */
   async createTransferSecpInstruction(params: CreateSecpRequest) {
-    const { ethWallet, destination, amount, mint, instructionIndex, auth } =
-      await parseParams(
-        'createTransferSecpInstruction',
-        CreateSecpSchema
-      )(params)
+    const {
+      ethWallet = (await this.audiusWalletClient.getAddresses())[0]!,
+      destination,
+      amount,
+      mint,
+      instructionIndex
+    } = await parseParams(
+      'createTransferSecpInstruction',
+      CreateSecpSchema
+    )(params)
 
     const { token } = parseMintToken(mint, this.mints)
 
@@ -256,7 +264,9 @@ export class ClaimableTokensClient {
       amount: mintFixedDecimalMap[token](amount).value,
       nonce
     })
-    const [signature, recoveryId] = await auth.sign(data)
+    const [signature, recoveryId] = await this.audiusWalletClient.sign({
+      message: { raw: data }
+    })
     return Secp256k1Program.createInstructionWithEthAddress({
       ethAddress: ethWallet,
       message: data,
@@ -272,10 +282,10 @@ export class ClaimableTokensClient {
    * Use {@link getOrCreateUserBank} instead if you want to ensure the userBank exists.
    */
   public async deriveUserBank(params: DeriveUserBankRequest) {
-    const { ethWallet, mint } = await parseParams(
-      'deriveUserBank',
-      GetOrCreateUserBankSchema
-    )(params)
+    const {
+      ethWallet = (await this.audiusWalletClient.getAddresses())[0]!,
+      mint
+    } = await parseParams('deriveUserBank', GetOrCreateUserBankSchema)(params)
 
     const { token } = parseMintToken(mint, this.mints)
 

@@ -1,6 +1,6 @@
 import snakecaseKeys from 'snakecase-keys'
 
-import type { AudiusWalletClient, StorageService } from '../../services'
+import type { StorageService } from '../../services'
 import {
   Action,
   EntityManagerService,
@@ -43,7 +43,6 @@ export class UsersApi extends GeneratedUsersApi {
     configuration: Configuration,
     private readonly storage: StorageService,
     private readonly entityManager: EntityManagerService,
-    private readonly auth: AudiusWalletClient,
     private readonly logger: LoggerService,
     private readonly claimableTokens: ClaimableTokensClient,
     private readonly solanaClient: SolanaClient
@@ -70,8 +69,7 @@ export class UsersApi extends GeneratedUsersApi {
             await this.storage.uploadFile({
               file: profilePictureFile,
               onProgress,
-              template: 'img_square',
-              auth: this.auth
+              template: 'img_square'
             }),
           (e) => {
             this.logger.info('Retrying uploadProfilePicture', e)
@@ -83,8 +81,7 @@ export class UsersApi extends GeneratedUsersApi {
             await this.storage.uploadFile({
               file: coverArtFile,
               onProgress,
-              template: 'img_backdrop',
-              auth: this.auth
+              template: 'img_backdrop'
             }),
           (e) => {
             this.logger.info('Retrying uploadProfileCoverArt', e)
@@ -108,7 +105,6 @@ export class UsersApi extends GeneratedUsersApi {
         cid: '',
         data: snakecaseKeys(updatedMetadata)
       }),
-      auth: this.auth,
       ...advancedOptions
     })
   }
@@ -131,7 +127,6 @@ export class UsersApi extends GeneratedUsersApi {
       entityType: EntityType.USER,
       entityId: followeeUserId,
       action: Action.FOLLOW,
-      auth: this.auth,
       ...advancedOptions
     })
   }
@@ -154,7 +149,6 @@ export class UsersApi extends GeneratedUsersApi {
       entityType: EntityType.USER,
       entityId: followeeUserId,
       action: Action.UNFOLLOW,
-      auth: this.auth,
       ...advancedOptions
     })
   }
@@ -177,7 +171,6 @@ export class UsersApi extends GeneratedUsersApi {
       entityType: EntityType.USER,
       entityId: subscribeeUserId,
       action: Action.SUBSCRIBE,
-      auth: this.auth,
       ...advancedOptions
     })
   }
@@ -200,7 +193,6 @@ export class UsersApi extends GeneratedUsersApi {
       entityType: EntityType.USER,
       entityId: subscribeeUserId,
       action: Action.UNSUBSCRIBE,
-      auth: this.auth,
       ...advancedOptions
     })
   }
@@ -334,8 +326,7 @@ export class UsersApi extends GeneratedUsersApi {
       ethWallet,
       destination,
       amount,
-      mint: 'wAUDIO',
-      auth: this.auth
+      mint: 'wAUDIO'
     })
     const transfer = await this.claimableTokens.createTransferInstruction({
       ethWallet,
@@ -368,7 +359,6 @@ export class UsersApi extends GeneratedUsersApi {
       entityType: EntityType.TIP,
       entityId: userId,
       action: Action.UPDATE,
-      auth: this.auth,
       metadata: JSON.stringify({
         cid: '',
         data: snakecaseKeys(metadata)

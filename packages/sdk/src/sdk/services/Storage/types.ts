@@ -27,23 +27,19 @@ export type StorageService = {
     file,
     onProgress,
     template,
-    options,
-    auth
+    options
   }: {
     file: File
     onProgress?: ProgressCB
     template: FileTemplate
     options?: { [key: string]: string }
-    auth: AudiusWalletClient
   }) => Promise<UploadResponse>
   editFile: ({
     uploadId,
-    data,
-    auth
+    data
   }: {
     uploadId: string
     data: { [key: string]: string }
-    auth: AudiusWalletClient
   }) => Promise<UploadResponse>
 }
 

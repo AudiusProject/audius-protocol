@@ -1,9 +1,10 @@
 import fs from 'fs'
 import path from 'path'
 
+import type { GetBlockReturnType } from 'viem'
 import { describe, it, beforeAll, expect, vitest } from 'vitest'
 
-import { DefaultWalletClient } from '../../services/AudiusWalletClient/DefaultWalletClient'
+import { createAppWalletClient } from '../../services'
 import { DiscoveryNodeSelector } from '../../services/DiscoveryNodeSelector'
 import { EntityManager } from '../../services/EntityManager'
 import { Logger } from '../../services/Logger'
@@ -83,7 +84,7 @@ vitest
   .mockImplementation(async () => {
     return {
       timestamp: 1
-    }
+    } as GetBlockReturnType & { timestamp: number }
   })
 
 vitest
@@ -103,13 +104,15 @@ vitest
   })
 
 describe('PlaylistsApi', () => {
+  // TODO: Move this setup out of describe
   let playlists: PlaylistsApi
 
-  const auth = new DefaultWalletClient()
+  // eslint-disable-next-line mocha/no-setup-in-describe
+  const audiusWalletClient = createAppWalletClient('0x')
   const logger = new Logger()
   const discoveryNodeSelector = new DiscoveryNodeSelector()
   const storageNodeSelector = new StorageNodeSelector({
-    audiusWalletClient: auth,
+    audiusWalletClient,
     discoveryNodeSelector,
     logger
   })
@@ -117,9 +120,15 @@ describe('PlaylistsApi', () => {
   beforeAll(() => {
     playlists = new PlaylistsApi(
       new Configuration(),
-      new Storage({ storageNodeSelector, logger: new Logger() }),
-      new EntityManager({ discoveryNodeSelector: new DiscoveryNodeSelector() }),
-      auth,
+      new Storage({
+        audiusWalletClient,
+        storageNodeSelector,
+        logger: new Logger()
+      }),
+      new EntityManager({
+        audiusWalletClient,
+        discoveryNodeSelector: new DiscoveryNodeSelector()
+      }),
       new Logger()
     )
     vitest.spyOn(console, 'warn').mockImplementation(() => {})
