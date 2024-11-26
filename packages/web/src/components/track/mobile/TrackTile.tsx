@@ -212,7 +212,6 @@ const TrackTile = (props: CombinedProps) => {
             isPlaying={isPlaying}
             isBuffering={isBuffering}
             showSkeleton={showSkeleton}
-            coverArtSizes={props.coverArtSizes}
             coSign={coSign}
             className={styles.albumArtContainer}
             label={`${title} by ${props.artistName}`}

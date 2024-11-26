@@ -82,7 +82,6 @@ const CollectionArtCard = g(
       playlist_id,
       playlist_name,
       is_album,
-      _cover_art_sizes,
       has_current_user_reposted,
       has_current_user_saved,
       is_stream_gated,
@@ -132,12 +131,11 @@ const CollectionArtCard = g(
       setModalVisibility()
     }, [setFavoriteUsers, setModalVisibility, playlist_id])
 
-    const image = useCollectionCoverArt(
-      playlist_id,
-      _cover_art_sizes,
-      SquareSizes.SIZE_480_BY_480,
-      placeholderArt
-    )
+    const image = useCollectionCoverArt({
+      collectionId: playlist_id,
+      size: SquareSizes.SIZE_480_BY_480,
+      defaultImage: placeholderArt
+    })
 
     useEffect(() => {
       if (image && setDidLoad) setDidLoad(index)

@@ -129,7 +129,6 @@ const ConnectedPlaylistTile = ({
     playlist_name: title,
     playlist_id: id,
     is_private: isUnlisted,
-    _cover_art_sizes: coverArtSizes,
     has_current_user_reposted: isReposted,
     has_current_user_saved: isFavorited,
     track_count: trackCount,
@@ -245,7 +244,6 @@ const ConnectedPlaylistTile = ({
   const renderImage = useCallback(() => {
     const artworkProps = {
       id,
-      coverArtSizes,
       size: 'large',
       isBuffering: isBuffering && isActive,
       isPlaying: isPlaylistPlaying,
@@ -254,7 +252,7 @@ const ConnectedPlaylistTile = ({
       showSkeleton: isLoading
     }
     return <CollectionArtwork {...artworkProps} />
-  }, [id, coverArtSizes, isActive, isBuffering, isPlaylistPlaying, isLoading])
+  }, [id, isActive, isBuffering, isPlaylistPlaying, isLoading])
 
   const renderOverflowMenu = () => {
     const menu: Omit<CollectionkMenuProps, 'children'> = {

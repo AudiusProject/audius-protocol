@@ -180,11 +180,10 @@ const CollectionHeader = ({
     onClickMobileOverflow?.(collectionId, overflowActions)
   }
 
-  const image = useCollectionCoverArt(
+  const image = useCollectionCoverArt({
     collectionId,
-    coverArtSizes,
-    SquareSizes.SIZE_1000_BY_1000
-  )
+    size: SquareSizes.SIZE_1000_BY_1000
+  })
 
   const handleClickEdit = useCallback(() => {
     navigate({ pathname: `${permalink}/edit`, search: `?focus=artwork` })

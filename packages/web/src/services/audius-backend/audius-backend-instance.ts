@@ -24,6 +24,16 @@ declare global {
   }
 }
 
+const imagePreloader = async (imageUrl: string) => {
+  try {
+    await preload(imageUrl)
+    return true
+  } catch (e) {
+    console.error(e)
+    return false
+  }
+}
+
 /**
  * audiusBackend initialized for a web environment
  */
@@ -142,5 +152,5 @@ export const audiusBackendInstance = audiusBackend({
     solTokenBridgeAddress: env.SOL_TOKEN_BRIDGE_ADDRESS ?? undefined,
     wormholeRpcHosts: env.WORMHOLE_RPC_HOSTS ?? undefined
   },
-  imagePreloader: preload
+  imagePreloader
 })

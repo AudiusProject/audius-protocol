@@ -57,11 +57,15 @@ export interface TrackMetadataForUpload extends Omit<TrackMetadata, 'artwork'> {
  * Unlike normal CollectionMetadata, CollectionMetadataForUpload has artwork
  * and track details to be passed to its descendant tracks.
  */
-export interface CollectionMetadataForUpload extends CollectionMetadata {
-  artwork: {
-    file?: Blob
-    url: string
-  }
+export interface CollectionMetadataForUpload
+  extends Omit<CollectionMetadata, 'artwork'> {
+  artwork?:
+    | Nullable<{
+        file?: Blob | NativeFile
+        url: string
+        source?: string
+      }>
+    | CollectionMetadata['artwork']
   trackDetails: {
     genre: string
     mood: string

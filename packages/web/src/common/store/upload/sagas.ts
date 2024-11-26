@@ -1,4 +1,8 @@
 import {
+  transformAndCleanList,
+  userCollectionMetadataFromSDK
+} from '@audius/common/adapters'
+import {
   Collection,
   CollectionMetadata,
   FieldVisibility,
@@ -6,6 +10,7 @@ import {
   Id,
   Kind,
   Name,
+  OptionalId,
   StemUploadWithFile,
   isContentFollowGated,
   isContentUSDCPurchaseGated
@@ -871,9 +876,18 @@ export function* uploadCollection(
           throw new Error(`Could not confirm playlist creation`)
         }
 
-        return (yield* call(audiusBackendInstance.getPlaylists, userId, [
-          playlistId
-        ]))[0]
+        const { data = [] } = yield* call(
+          [sdk.full.playlists, sdk.full.playlists.getPlaylist],
+          {
+            playlistId: Id.parse(playlistId),
+            userId: OptionalId.parse(userId)
+          }
+        )
+        const [collection] = transformAndCleanList(
+          data,
+          userCollectionMetadataFromSDK
+        )
+        return collection
       },
       function* (confirmedPlaylist: Collection) {
         yield* put(

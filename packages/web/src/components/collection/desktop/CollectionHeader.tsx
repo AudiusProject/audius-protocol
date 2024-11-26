@@ -4,7 +4,6 @@ import { useGetCurrentUserId, useGetPlaylistById } from '@audius/common/api'
 import {
   AccessConditions,
   AccessPermissions,
-  CoverArtSizes,
   ID,
   ModalSource,
   Variant,
@@ -69,7 +68,6 @@ type CollectionHeaderProps = {
   ownerId: Nullable<ID>
   type: CollectionsPageType | 'Playlist' | 'Audio NFT Playlist'
   title: string
-  coverArtSizes: Nullable<CoverArtSizes>
   artistName: string
   description: string
   artistHandle: string
@@ -99,7 +97,6 @@ export const CollectionHeader = (props: CollectionHeaderProps) => {
     ownerId,
     type,
     title,
-    coverArtSizes,
     description,
     isOwner,
     isPlayable,
@@ -178,7 +175,6 @@ export const CollectionHeader = (props: CollectionHeaderProps) => {
     <Flex gap='xl' p='l' backgroundColor='white'>
       <Artwork
         collectionId={collectionId}
-        coverArtSizes={coverArtSizes}
         callback={handleLoadArtwork}
         gradient={gradient}
         icon={icon}
