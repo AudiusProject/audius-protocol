@@ -10,9 +10,21 @@ from src.challenges.challenge_event_bus import ChallengeEventBus
 from src.models.social.play import Play
 from src.tasks.core.core_client import CoreClient
 from src.tasks.core.gen.protocol_pb2 import BlockResponse, SignedTransaction
-from src.tasks.index_solana_plays import PlayInfo
 
 logger = logging.getLogger(__name__)
+
+
+class PlayInfo(TypedDict):
+    user_id: int | None
+    play_item_id: int
+    created_at: datetime
+    updated_at: datetime
+    source: str
+    city: str
+    region: str
+    country: str
+    slot: int
+    signature: str
 
 
 class PlayChallengeInfo(TypedDict):
@@ -36,11 +48,22 @@ def index_core_play(
     challenge_bus_events: List[PlayChallengeInfo] = []
 
     tx_plays = tx.plays
+
     for tx_play in tx_plays.plays:
+        user_id = None
+        try:
+            user_id = int(tx_play.user_id)
+        except ValueError:
+            log = ("Recording anonymous listen {!r}".format(tx_play.user_id),)
+            logger.debug(
+                log,
+                exc_info=False,
+            )
+
         signature = tx_play.signature
         timestamp = tx_play.timestamp.ToDatetime()
         track_id = int(tx_play.track_id)
-        user_id = int(tx_play.user_id)
+        user_id = user_id
         slot = block.height  # plus last solana slot
 
         plays.append(
@@ -50,7 +73,6 @@ def index_core_play(
                 "updated_at": datetime.now(),
                 "slot": slot,
                 "signature": signature,
-                # TODO: add after proxy service
                 "created_at": timestamp,
                 "source": "",
                 "city": "",
@@ -59,6 +81,8 @@ def index_core_play(
             }
         )
 
+        # Only enqueue a challenge event if it's *not*
+        # an anonymous listen
         if user_id is not None:
             challenge_bus_events.append(
                 {
@@ -67,8 +91,6 @@ def index_core_play(
                     "created_at": timestamp,
                 }
             )
-
-        # TODO: enqueue challenge events
 
     if not plays:
         return
