@@ -241,7 +241,7 @@ export const SalesTab = ({
   onClickRow,
   isEmpty,
   isLoading
-}: Omit<ReturnType<typeof useSales>, 'downloadCSV'>) => {
+}: Omit<ReturnType<typeof useSales>, 'downloadCSV' | 'downloadSalesAsCSV'>) => {
   const isMobile = useIsMobile()
   const mainContentRef = useMainContentRef()
   const { color } = useTheme()
