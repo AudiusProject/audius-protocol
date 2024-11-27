@@ -384,6 +384,10 @@ type UploadTrackResponse =
   | { type: 'PUBLISHED'; payload: PublishedPayload }
   | { type: 'ERROR'; payload: ErrorPayload }
 
+function isTask(worker: unknown): worker is Task {
+  return worker !== null && typeof worker === 'object' && 'isRunning' in worker
+}
+
 /**
  * Spins up workers to handle uploading of tracks and their stems in parallel.
  *
@@ -701,10 +705,14 @@ export function* handleUploads({
 
   console.debug('Spinning down workers')
   for (const worker of uploadWorkers) {
-    yield* cancel(worker)
+    if (isTask(worker)) {
+      yield* cancel(worker)
+    }
   }
   for (const worker of publishWorkers) {
-    yield* cancel(worker)
+    if (isTask(worker)) {
+      yield* cancel(worker)
+    }
   }
   yield* call(progressChannel.close)
   yield* cancel(actionDispatcherTask)
