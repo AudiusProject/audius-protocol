@@ -8,6 +8,7 @@ from src.challenges.challenge_event_bus import ChallengeEventBus
 from src.tasks.celery_app import celery
 from src.tasks.core.core_client import CoreClient, get_core_instance
 from src.tasks.core.gen.protocol_pb2 import BlockResponse
+from src.tasks.core.plays_cutover import CutoverManager
 from src.tasks.index_core_manage_entities import index_core_manage_entity
 from src.tasks.index_core_plays import index_core_play
 from src.utils.prometheus_metric import save_duration_metric
@@ -16,6 +17,8 @@ from src.utils.session_manager import SessionManager
 logger = logging.getLogger(__name__)
 
 CORE_INDEXER_MINIMUM_TIME_SECS = 1
+
+cutover_manager = CutoverManager()
 
 
 def _index_core_txs(
@@ -61,6 +64,10 @@ def _index_core(db: SessionManager) -> Optional[BlockResponse]:
     chainid = node_info.chainid
 
     with db.scoped_session() as session:
+        cutover = cutover_manager.has_cutover(session=session)
+        if not cutover:
+            return None
+
         latest_indexed_block = core.latest_indexed_block(
             session=session, chain_id=chainid
         )

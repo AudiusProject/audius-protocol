@@ -42,6 +42,7 @@ class CutoverManager:
             case _:
                 raise Exception(f"unknown env {environment}")
 
+    # maybe should pass in solana and core clients here?
     def has_cutover(self, session: Session) -> bool:
         # check db for indexed slot
         # check db for indexed core blocks
