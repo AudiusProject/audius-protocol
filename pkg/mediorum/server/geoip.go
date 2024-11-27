@@ -1,12 +1,17 @@
-package geoip
+package server
 
 import (
 	_ "embed"
 	"errors"
+	"fmt"
 	"net"
 
+	"github.com/jaswdr/faker"
 	"github.com/oschwald/maxminddb-golang"
 )
+
+//go:embed embeds/GeoLite2-City.mmdb
+var geoLiteDB []byte
 
 type GeoLocation struct {
 	Country struct {
@@ -36,16 +41,25 @@ type GeoResult struct {
 	Longitude   float64 `json:"longitude"`
 }
 
-//go:embed GeoLite2-City.mmdb
-var geoLiteDB []byte
-
-func GetGeoFromIP(ip string) (*GeoResult, error) {
-	// Open the embedded MaxMind database
+func (ss *MediorumServer) loadGeoIPDatabase() error {
 	db, err := maxminddb.FromBytes(geoLiteDB)
 	if err != nil {
-		return nil, errors.New("failed to open database: " + err.Error())
+		return fmt.Errorf("could not load maxminddb: %v", err)
 	}
-	defer db.Close()
+
+	ss.geoIPdb = db
+	close(ss.geoIPdbReady)
+	return nil
+}
+
+func (ss *MediorumServer) getGeoFromIP(ip string) (*GeoResult, error) {
+	// await geoIPdb initialization
+	<-ss.geoIPdbReady
+
+	db := ss.geoIPdb
+	if db == nil {
+		return nil, errors.New("geoIPdb not initialized but channel closed")
+	}
 
 	// Parse the IP address
 	parsedIP := net.ParseIP(ip)
@@ -55,7 +69,7 @@ func GetGeoFromIP(ip string) (*GeoResult, error) {
 
 	// Lookup the IP in the database
 	record := GeoLocation{}
-	err = db.Lookup(parsedIP, &record)
+	err := db.Lookup(parsedIP, &record)
 	if err != nil {
 		return nil, errors.New("failed to lookup IP: " + err.Error())
 	}
@@ -77,6 +91,21 @@ func GetGeoFromIP(ip string) (*GeoResult, error) {
 		RegionCode:  regionCode,
 		Latitude:    record.Location.Latitude,
 		Longitude:   record.Location.Longitude,
+	}
+
+	// use mock location for local
+	if ss.Config.Env == "dev" || ss.Config.Env == "local" {
+		f := faker.New()
+		addr := f.Address()
+		if result.City == "" {
+			result.City = addr.City()
+		}
+		if result.Country == "" {
+			result.Country = addr.Country()
+		}
+		if result.Region == "" {
+			result.Region = addr.State()
+		}
 	}
 
 	return result, nil
