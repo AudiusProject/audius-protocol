@@ -303,12 +303,12 @@ function* publishWorker(
         trackId: updatedTrackId,
         txReceipt: { blockHash, blockNumber }
       } = yield* call(
-        [libs.Track, libs.Track!.writeTrackToChain],
+        [libs.Track, libs.Track!.writeTrackToChain as any],
         userId,
         metadata,
         EntityManagerAction.CREATE,
         presetTrackId
-      )
+      ) as any
       const confirmed = yield* call(confirmTransaction, blockHash, blockNumber)
       if (!confirmed) {
         throw new Error(
