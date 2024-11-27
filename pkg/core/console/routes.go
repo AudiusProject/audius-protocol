@@ -36,10 +36,11 @@ func (c *Console) registerRoutes(logger *common.Logger, e *echo.Echo) {
 	g.GET("/node", c.nodesPage)
 	g.GET("/node/:node", c.nodePage)
 	g.GET("/content", c.contentFragment)
-	g.GET("/uptime", c.uptimeFragment)
+	g.GET("/uptime/:rollup", c.uptimeFragment)
 	g.GET("/block/:block", c.blockPage)
 	g.GET("/tx/:tx", c.txPage)
 	g.GET("/genesis", c.genesisPage)
+	g.GET("/health_check", c.getHealth)
 
 	g.GET("/fragments/nav/chain_data", c.navChainData)
 	g.GET("/fragments/analytics/header", c.analyticsHeader)

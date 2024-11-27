@@ -91,7 +91,7 @@ templ (c *Pages) UptimePageHTML(props *UptimePageView) {
             <ul>
                 for _, rr := range props.RecentRollups {
                     <li class={ recentRollupItem() }>
-                        <a href={ templ.URL(fmt.Sprintf("/console/sla/%d", rr.ID)) }>{ rr.Time.Time.String() }</a>
+                        <a href={ templ.URL(fmt.Sprintf("/console/uptime/%d", rr.ID)) }>{ rr.Time.Time.String() }</a>
                     </li>
                 }
             </ul>
