@@ -1,5 +1,6 @@
 import { AccessType } from '@audius/common/models'
 import { formatReleaseDate } from '@audius/common/utils'
+import { getLocalTimezone } from 'utils/dateUtils'
 
 import type { IconColors, IconComponent } from '@audius/harmony-native'
 import {
@@ -26,7 +27,10 @@ type AccessTypeConfig = {
 }
 
 const formatScheduledDate = (date: string) =>
-  `Releases ${formatReleaseDate({ date, withHour: true })}`
+  `Releases ${formatReleaseDate({
+    date,
+    withHour: true
+  })} ${getLocalTimezone()}`
 
 const ACCESS_TYPE_CONFIG: Record<AccessType, AccessTypeConfig> = {
   [AccessType.SCHEDULED_RELEASE]: {

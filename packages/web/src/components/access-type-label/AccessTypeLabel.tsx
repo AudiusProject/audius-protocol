@@ -12,6 +12,8 @@ import {
   Text
 } from '@audius/harmony'
 
+import { getLocalTimezone } from 'utils/dateUtils'
+
 type AccessTypeLabelProps = {
   type?: AccessType
   scheduledReleaseDate?: string
@@ -25,7 +27,10 @@ type AccessTypeConfig = {
 }
 
 const formatScheduledDate = (date: string) =>
-  `Releases ${formatReleaseDate({ date, withHour: true })}`
+  `Releases ${formatReleaseDate({
+    date,
+    withHour: true
+  })} ${getLocalTimezone()}`
 
 const ACCESS_TYPE_CONFIG: Record<AccessType, AccessTypeConfig> = {
   [AccessType.SCHEDULED_RELEASE]: {
