@@ -112,6 +112,11 @@ export const usePurchaseContentFormConfiguration = ({
         page === PurchaseContentPage.PURCHASE
       ) {
         dispatch(setPurchasePage({ page: PurchaseContentPage.TRANSFER }))
+      } else if (
+        page === PurchaseContentPage.GUEST_CHECKOUT &&
+        guestEmail !== ''
+      ) {
+        dispatch(setPurchasePage({ page: PurchaseContentPage.PURCHASE }))
       } else {
         const extraAmount = getExtraAmount({
           amountPreset,

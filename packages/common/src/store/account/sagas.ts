@@ -56,6 +56,11 @@ export function* fetchAccountAsync({ isSignUp = false }): SagaIterator {
   if (accountStatus !== Status.SUCCESS) {
     yield* put(accountActions.fetchAccountRequested())
   }
+  yield* call([
+    authService.hedgehogInstance,
+    authService.hedgehogInstance.refreshWallet
+  ])
+
   const { accountWalletAddress: wallet, web3WalletAddress } = yield* call([
     authService,
     authService.getWalletAddresses
