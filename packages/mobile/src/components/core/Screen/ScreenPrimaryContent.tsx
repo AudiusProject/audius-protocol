@@ -1,8 +1,5 @@
 import { useEffect, type ReactNode } from 'react'
 
-import { Platform } from 'react-native'
-import Animated, { FadeIn } from 'react-native-reanimated'
-
 import { useScreenContext } from './ScreenContextProvider'
 
 type ScreenPrimaryContentProps = {
@@ -26,13 +23,5 @@ export const ScreenPrimaryContent = (props: ScreenPrimaryContentProps) => {
     setIsPrimaryContentReady(true)
   }, [isScreenReady, setIsPrimaryContentReady])
 
-  // Note: not animating on Android because shadows are rendered natively behind the
-  // animated view and thus don't follow the animation.
-  return isScreenReady ? (
-    <Animated.View entering={Platform.OS === 'ios' ? FadeIn : undefined}>
-      {children}
-    </Animated.View>
-  ) : (
-    <>{skeleton ?? null}</>
-  )
+  return isScreenReady ? <>{children}</> : <>{skeleton ?? null}</>
 }
