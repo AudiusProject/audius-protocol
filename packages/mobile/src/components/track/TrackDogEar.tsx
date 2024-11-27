@@ -9,10 +9,11 @@ type TrackDogEarProps = {
 } & Partial<DogEarProps>
 
 export const TrackDogEar = (props: TrackDogEarProps) => {
-  const { trackId, hideUnlocked, ...other } = props
-  const dogEarType = useTrackDogEar(trackId, hideUnlocked)
+  return null
+  // const { trackId, hideUnlocked, ...other } = props
+  // const dogEarType = useTrackDogEar(trackId, hideUnlocked)
 
-  if (!dogEarType) return null
+  // if (!dogEarType) return null
 
-  return <DogEar type={dogEarType} {...other} />
+  // return <DogEar type={dogEarType} {...other} />
 }

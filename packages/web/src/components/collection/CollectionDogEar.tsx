@@ -8,10 +8,11 @@ type CollectionDogEarProps = {
 } & Partial<DogEarProps>
 
 export const CollectionDogEar = (props: CollectionDogEarProps) => {
-  const { collectionId, hideUnlocked, ...other } = props
-  const dogEarType = useCollectionDogEar(collectionId, hideUnlocked)
+  return null
+  // const { collectionId, hideUnlocked, ...other } = props
+  // // const dogEarType = useCollectionDogEar(collectionId, hideUnlocked)
 
-  if (!dogEarType) return null
+  // if (!dogEarType) return null
 
-  return <DogEar type={dogEarType} {...other} />
+  // return <DogEar type={dogEarType} {...other} />
 }
