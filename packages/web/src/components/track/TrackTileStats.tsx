@@ -60,7 +60,7 @@ export const TrackTileStats = (props: TrackTileStatsProps) => {
           <>
             <RepostsMetric trackId={trackId} size={size} />
             <SavesMetric trackId={trackId} />
-            <CommentMetric trackId={trackId} size={size} />
+            <CommentMetric trackId={trackId} />
           </>
         )}
       </Flex>

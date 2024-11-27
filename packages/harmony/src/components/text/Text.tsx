@@ -88,8 +88,7 @@ export const Text = forwardRef(
         lineClamp: `${maxLines}`,
         WebkitLineClamp: `${maxLines}`,
         WebkitBoxOrient: 'vertical'
-      }),
-      unicodeBidi: 'isolate'
+      })
     }
 
     // @ts-ignore
