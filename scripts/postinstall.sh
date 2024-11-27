@@ -27,6 +27,16 @@ if [[ -z "${SKIP_POD_INSTALL}" ]]; then
   fi
 fi
 
+cd node_modules
+
+source_path=../packages/mobile/node_modules/react-native
+target_path=react-native
+if [ ! -e "$target_path" ]; then
+  ln -s "$source_path" "$target_path"
+fi
+
+cd ..
+
 if [[ -z "${SKIP_POD_INSTALL}" ]]; then
 
   mobile_directory="./packages/mobile"
@@ -38,12 +48,6 @@ if [[ -z "${SKIP_POD_INSTALL}" ]]; then
       # support nohoist
 
       cd ./packages/mobile/node_modules
-
-      source_path=../../../node_modules/react-native
-      target_path=react-native
-      if [ ! -e "$target_path" ]; then
-        ln -s "$source_path" "$target_path"
-      fi
 
       source_path=../../../node_modules/react-native-code-push
       target_path=react-native-code-push
