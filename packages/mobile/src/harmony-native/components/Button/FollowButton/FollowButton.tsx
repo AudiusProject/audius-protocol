@@ -2,7 +2,6 @@ import type { ChangeEvent } from 'react'
 import { useCallback, useEffect, useState } from 'react'
 
 import { css } from '@emotion/native'
-import type { GestureResponderEvent } from 'react-native'
 import { Pressable } from 'react-native'
 
 import {
@@ -33,7 +32,7 @@ export const FollowButton = (props: FollowButtonProps) => {
     onChange,
     ...other
   } = props
-  const { disabled, onPress } = other
+  const { disabled } = other
   const [following, setFollowing] = useState(isFollowing)
   const { color, cornerRadius } = useTheme()
   const isInput = !!onChange
@@ -44,22 +43,18 @@ export const FollowButton = (props: FollowButtonProps) => {
 
   const Icon = following ? IconUserFollowing : IconUserFollow
 
-  const handlePress = useCallback(
-    (event: GestureResponderEvent) => {
-      if (following) {
-        onUnfollow?.()
-      } else {
-        haptics.medium()
-        onFollow?.()
-      }
-      onChange?.({
-        target: { value, checked: !following, type: 'checkbox' }
-      } as ChangeEvent<HTMLInputElement>)
-      setFollowing(!following)
-      onPress?.(event)
-    },
-    [following, onChange, value, onUnfollow, onFollow, onPress]
-  )
+  const handlePress = useCallback(() => {
+    if (following) {
+      onUnfollow?.()
+    } else {
+      haptics.medium()
+      onFollow?.()
+    }
+    onChange?.({
+      target: { value, checked: !following, type: 'checkbox' }
+    } as ChangeEvent<HTMLInputElement>)
+    setFollowing(!following)
+  }, [following, onChange, value, onUnfollow, onFollow])
 
   const inputProps = isInput
     ? {
@@ -71,7 +66,7 @@ export const FollowButton = (props: FollowButtonProps) => {
     : null
 
   return (
-    <Pressable onPress={handlePress} {...inputProps}>
+    <Pressable onPress={handlePress} {...other} {...inputProps}>
       <Flex
         h={size === 'small' ? 28 : 32}
         direction='row'
