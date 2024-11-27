@@ -1,7 +1,7 @@
 {
   "images" : [
     {
-      "filename" : "AppIcon1024x1024.png",
+      "filename" : "Icon-Light-1024x1024.png",
       "idiom" : "universal",
       "platform" : "ios",
       "size" : "1024x1024"
@@ -13,7 +13,7 @@
           "value" : "dark"
         }
       ],
-      "filename" : "AppIcon1024x1024~dark.png",
+      "filename" : "Icon-Dark-1024x1024.png",
       "idiom" : "universal",
       "platform" : "ios",
       "size" : "1024x1024"
@@ -25,7 +25,7 @@
           "value" : "tinted"
         }
       ],
-      "filename" : "AppIcon1024x1024~tinted.png",
+      "filename" : "Icon-Tinted-1024x1024.png",
       "idiom" : "universal",
       "platform" : "ios",
       "size" : "1024x1024"
