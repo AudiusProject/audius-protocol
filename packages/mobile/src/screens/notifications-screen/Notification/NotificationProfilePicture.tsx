@@ -40,8 +40,6 @@ export const NotificationProfilePicture = (
     }
   }, [navigation, navigationType, profile])
 
-  if (!profile?.user_id) return null
-
   const profilePictureElement = (
     <ProfilePicture
       userId={profile.user_id}
