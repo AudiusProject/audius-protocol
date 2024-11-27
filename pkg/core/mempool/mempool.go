@@ -18,6 +18,13 @@ import (
 
 var (
 	ErrFullMempool = errors.New("mempool full")
+
+	devHostnameOverrides = map[string]string{
+		"audius-protocol-discovery-provider-1": "core-discovery-1:26659",
+		"audius-protocol-creator-node-1":       "core-content-1:26659",
+		"audius-protocol-creator-node-2":       "core-content-2:26659",
+		"audius-protocol-creator-node-3":       "core-content-3:26659",
+	}
 )
 
 type Mempool struct {
@@ -191,6 +198,12 @@ func (m *Mempool) CreateValidatorClients() error {
 
 			// TODO: init all these clients at a higher level including non validators
 			oapiendpoint := parsedURL.Host
+			override, hasOverride := devHostnameOverrides[oapiendpoint]
+			if hasOverride {
+				oapiendpoint = override
+			}
+			m.logger.Info("oapiendpoint", "url", oapiendpoint, "override", override, "hasOverride", hasOverride)
+
 			peerSdk, err := sdk.NewSdk(sdk.WithOapiendpoint(oapiendpoint))
 			if err != nil {
 				m.logger.Errorf("could not init sdk for %s %s: %v", oapiendpoint, validatorAddr, err)
