@@ -102,11 +102,17 @@ export const EditTrackForm = (props: EditTrackFormProps) => {
         onSubmit(values)
       }
 
+      const replaceFile =
+        'file' in values.tracks[0] ? values.tracks[0].file : null
       const usersMayLoseAccess =
         !isUpload && !initiallyHidden && values.trackMetadatas[0].is_unlisted
       const isToBePublished =
         !isUpload && initiallyHidden && !values.trackMetadatas[0].is_unlisted
-      if (usersMayLoseAccess) {
+
+      if (replaceFile) {
+        // Replace audio confirmation is handled in the edit track page if needed
+        onSubmit(values)
+      } else if (usersMayLoseAccess) {
         openHideContentConfirmation({ confirmCallback })
       } else if (isToBePublished && isInitiallyScheduled) {
         openEarlyReleaseConfirmation({ contentType: 'track', confirmCallback })
