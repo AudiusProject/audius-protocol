@@ -63,10 +63,10 @@ export const SelectArtistsPreviewContextProvider = (props: {
 
   // Request preview playback
   const playPreview = useCallback(async (artistId: ID) => {
+    await TrackPlayer.reset()
     setHasPlayed(true)
     setNowPlayingArtistId(artistId)
     setIsPlaying(true)
-    TrackPlayer.reset()
   }, [])
 
   // Initiates preview playback once trackUrl is available
