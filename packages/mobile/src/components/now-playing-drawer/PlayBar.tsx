@@ -235,7 +235,7 @@ export const PlayBar = (props: PlayBarProps) => {
           {shouldShowPreviewLock ? (
             <View>
               <LockedStatusBadge
-                variant='premium'
+                variant='purchase'
                 locked
                 coloredWhenLocked
                 iconSize='small'

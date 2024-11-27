@@ -2,6 +2,7 @@ import type { ReactNode } from 'react'
 
 import type {
   PlaybackSource,
+  FavoriteType,
   Collection,
   ID,
   UID,
@@ -9,6 +10,7 @@ import type {
   User
 } from '@audius/common/models'
 import type {
+  RepostType,
   EnhancedCollectionTrack,
   LineupBaseActions
 } from '@audius/common/store'
@@ -82,8 +84,17 @@ export type LineupTileProps = Omit<LineupItemProps, 'togglePlay'> & {
   /** Duration of the tile's tracks */
   duration?: number
 
+  /** Favorite type used for the favorited user list */
+  favoriteType: FavoriteType
+
+  /** Hide the play count */
+  hidePlays?: boolean
+
   /** Hide the share button */
   hideShare?: boolean
+
+  /** Hide the comments stat */
+  hideComments?: boolean
 
   /** ID of the item */
   id: ID
@@ -120,6 +131,15 @@ export type LineupTileProps = Omit<LineupItemProps, 'togglePlay'> & {
 
   /** Function to call when the edit button is pressed */
   onPressEdit?: GestureResponderHandler
+
+  /** Amount of plays on this item */
+  playCount?: number
+
+  /** Amount of comments on this item */
+  commentCount?: number
+
+  /** Repost type used for the reposted user list */
+  repostType: RepostType
 
   /** Title of the item */
   title: string

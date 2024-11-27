@@ -164,7 +164,9 @@ const DetailsTileNoAccessSection = ({
           <LockedStatusBadge
             locked={true}
             variant={
-              isContentUSDCPurchaseGated(streamConditions) ? 'premium' : 'gated'
+              isContentUSDCPurchaseGated(streamConditions)
+                ? 'purchase'
+                : 'gated'
             }
           />
         )}

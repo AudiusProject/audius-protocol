@@ -6,6 +6,7 @@ import {
   RepostSource,
   FavoriteSource,
   PlaybackSource,
+  FavoriteType,
   SquareSizes,
   isContentUSDCPurchaseGated
 } from '@audius/common/models'
@@ -19,6 +20,7 @@ import {
   shareModalUIActions,
   OverflowAction,
   OverflowSource,
+  RepostType,
   playerSelectors
 } from '@audius/common/store'
 import type { EnhancedCollectionTrack, CommonState } from '@audius/common/store'
@@ -255,6 +257,8 @@ const CollectionTileComponent = ({
     <LineupTile
       {...lineupTileProps}
       duration={duration}
+      favoriteType={FavoriteType.PLAYLIST}
+      repostType={RepostType.COLLECTION}
       id={playlist_id}
       renderImage={renderImage}
       isPlayingUid={isPlayingUid}
@@ -270,6 +274,7 @@ const CollectionTileComponent = ({
       user={user}
       variant={variant}
       isUnlisted={isPrivate}
+      hideComments
     >
       <CollectionTileTrackList
         tracks={tracks}

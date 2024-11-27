@@ -1,15 +1,17 @@
 import { useCallback } from 'react'
 
+import { useFeatureFlag } from '@audius/common/hooks'
 import {
   ShareSource,
   RepostSource,
   FavoriteSource,
   PlaybackSource,
+  FavoriteType,
   SquareSizes,
   isContentUSDCPurchaseGated
 } from '@audius/common/models'
 import type { Track, User } from '@audius/common/models'
-import { trpc } from '@audius/common/services'
+import { FeatureFlags, trpc } from '@audius/common/services'
 import {
   accountSelectors,
   cacheTracksSelectors,
@@ -19,6 +21,7 @@ import {
   shareModalUIActions,
   OverflowAction,
   OverflowSource,
+  RepostType,
   playerSelectors,
   playbackPositionSelectors,
   trackPageActions,
@@ -105,6 +108,7 @@ export const TrackTileComponent = ({
     is_unlisted,
     has_current_user_reposted,
     has_current_user_saved,
+    play_count,
     title,
     track_id,
     genre,
@@ -112,8 +116,14 @@ export const TrackTileComponent = ({
     preview_cid,
     ddex_app: ddexApp,
     is_unlisted: isUnlisted,
-    _co_sign: coSign
+    _co_sign: coSign,
+    comment_count,
+    comments_disabled
   } = track
+
+  const { isEnabled: isCommentsEnabled } = useFeatureFlag(
+    FeatureFlags.COMMENTS_ENABLED
+  )
 
   const { artist_pick_track_id } = user
   const isArtistPick = isOwner && artist_pick_track_id === track_id
@@ -253,6 +263,8 @@ export const TrackTileComponent = ({
   }, [navigation, track_id])
 
   const hideShare = !isOwner && field_visibility?.share === false
+  const hidePlays = !isOwner && field_visibility?.play_count === false
+  const hideComments = comments_disabled || !isCommentsEnabled
 
   return (
     <LineupTile
@@ -260,8 +272,12 @@ export const TrackTileComponent = ({
       coSign={coSign}
       duration={duration}
       isPlayingUid={isPlayingUid}
+      favoriteType={FavoriteType.TRACK}
+      repostType={RepostType.TRACK}
       hasPreview={hasPreview}
       hideShare={hideShare}
+      hidePlays={hidePlays}
+      hideComments={hideComments}
       id={track_id}
       uid={lineupTileProps.uid}
       renderImage={renderImage}
@@ -274,6 +290,8 @@ export const TrackTileComponent = ({
       onPressTitle={handlePressTitle}
       onPressPublish={handlePressPublish}
       onPressEdit={onPressEdit}
+      playCount={play_count}
+      commentCount={comment_count}
       title={title}
       item={track}
       user={user}

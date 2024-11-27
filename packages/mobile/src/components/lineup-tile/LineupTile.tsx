@@ -16,12 +16,11 @@ import { setVisibility } from 'app/store/drawers/slice'
 import { CollectionDogEar } from '../collection/CollectionDogEar'
 import { TrackDogEar } from '../track/TrackDogEar'
 
-import { CollectionTileStats } from './CollectionTileStats'
 import { LineupTileActionButtons } from './LineupTileActionButtons'
 import { LineupTileMetadata } from './LineupTileMetadata'
 import { LineupTileRoot } from './LineupTileRoot'
+import { LineupTileStats } from './LineupTileStats'
 import { LineupTileTopRight } from './LineupTileTopRight'
-import { TrackTileStats } from './TrackTileStats'
 
 const { getUserId } = accountSelectors
 const { setLockedContentId } = gatedContentActions
@@ -30,8 +29,11 @@ export const LineupTile = ({
   children,
   coSign,
   duration,
+  favoriteType,
   hasPreview,
+  hidePlays,
   hideShare,
+  hideComments,
   id,
   index,
   isTrending,
@@ -45,7 +47,10 @@ export const LineupTile = ({
   onPressTitle,
   onPressPublish,
   onPressEdit,
+  playCount,
+  commentCount,
   renderImage,
+  repostType,
   title,
   item,
   user,
@@ -56,7 +61,12 @@ export const LineupTile = ({
   uid,
   actions
 }: LineupTileProps) => {
-  const { has_current_user_reposted, has_current_user_saved } = item
+  const {
+    has_current_user_reposted,
+    has_current_user_saved,
+    repost_count,
+    save_count
+  } = item
   const dispatch = useDispatch()
   const { user_id } = user
   const currentUserId = useSelector(getUserId)
@@ -111,21 +121,29 @@ export const LineupTile = ({
         />
         {/* We weren't passing coSign in and the ui is broken so I'm disabling for now */}
         {/* {coSign ? <LineupTileCoSign coSign={coSign} /> : null} */}
-        {isTrack ? (
-          <TrackTileStats
-            trackId={id}
-            rankIndex={index}
-            isTrending={isTrending}
-            uid={uid}
-            actions={actions}
-          />
-        ) : (
-          <CollectionTileStats
-            collectionId={id}
-            rankIndex={index}
-            isTrending={isTrending}
-          />
-        )}
+        <LineupTileStats
+          favoriteType={favoriteType}
+          repostType={repostType}
+          hidePlays={hidePlays}
+          hideComments={hideComments}
+          id={id}
+          uid={uid}
+          index={index}
+          isCollection={isCollection}
+          isTrending={isTrending}
+          variant={variant}
+          isUnlisted={isUnlisted}
+          playCount={playCount}
+          repostCount={repost_count}
+          saveCount={save_count}
+          commentCount={commentCount}
+          hasStreamAccess={hasStreamAccess}
+          streamConditions={streamConditions}
+          isOwner={isOwner}
+          source={source}
+          type={contentType}
+          actions={actions}
+        />
       </View>
       {children}
       {isReadonly ? null : (

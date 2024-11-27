@@ -140,7 +140,7 @@ export const CollectionCard = (props: CollectionCardProps) => {
           </>
         )}
         {isPurchase && !isOwner ? (
-          <LockedStatusBadge variant='premium' locked={!access.stream} />
+          <LockedStatusBadge variant='purchase' locked={!access.stream} />
         ) : null}
         {offline ? (
           <CollectionDownloadStatusIndicator

@@ -46,7 +46,7 @@ const ACCESS_TYPE_CONFIG: Record<AccessType, AccessTypeConfig> = {
   },
   [AccessType.PREMIUM_EXTRAS]: {
     icon: IconReceive,
-    label: 'Extras',
+    label: 'Premium Extras',
     color: 'premium'
   },
   [AccessType.SPECIAL_ACCESS]: {

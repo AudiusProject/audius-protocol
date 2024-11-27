@@ -28,7 +28,7 @@ const useStyles = makeStyles(({ palette, spacing, typography }) => ({
 
 export type LockedStatusBadgeProps = {
   locked: boolean
-  variant?: 'premium' | 'gated'
+  variant?: 'purchase' | 'gated'
   text?: string
   /** Whether the badge is colored when locked */
   coloredWhenLocked?: boolean
@@ -36,14 +36,13 @@ export type LockedStatusBadgeProps = {
 }
 
 /** Renders a small badge with locked or unlocked icon */
-export const LockedStatusBadge = (props: LockedStatusBadgeProps) => {
-  const {
-    locked,
-    variant = 'gated',
-    text,
-    coloredWhenLocked = false,
-    iconSize = 'medium'
-  } = props
+export const LockedStatusBadge = ({
+  locked,
+  variant = 'gated',
+  text,
+  coloredWhenLocked = false,
+  iconSize = 'medium'
+}: LockedStatusBadgeProps) => {
   const styles = useStyles()
   const staticWhite = useColor('staticWhite')
   const LockComponent = locked ? IconLock : IconLockUnlocked
@@ -53,7 +52,7 @@ export const LockedStatusBadge = (props: LockedStatusBadgeProps) => {
         styles.root,
         locked && !coloredWhenLocked
           ? styles.locked
-          : variant === 'premium'
+          : variant === 'purchase'
           ? styles.premium
           : null
       ]}
