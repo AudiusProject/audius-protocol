@@ -1,3 +1,5 @@
+import { memo } from 'react'
+
 import { times, random } from 'lodash'
 import { View } from 'react-native'
 
@@ -107,7 +109,7 @@ const useStyles = makeStyles(({ palette, spacing }) => ({
   }
 }))
 
-const BioSkeleton = () => {
+const BioSkeleton = memo(() => {
   const baseStyle = {
     height: 12,
     marginRight: 4,
@@ -125,9 +127,9 @@ const BioSkeleton = () => {
       ))}
     </>
   )
-}
+})
 
-export const ExpandableSectionSkeleton = () => {
+export const ExpandableSectionSkeleton = memo(() => {
   const styles = useStyles()
   return (
     <Flex column gap='s'>
@@ -145,9 +147,9 @@ export const ExpandableSectionSkeleton = () => {
       {/* TODO: add tip button and supporters skeletons */}
     </Flex>
   )
-}
+})
 
-export const ProfileHeaderSkeleton = () => {
+export const ProfileHeaderSkeleton = memo(() => {
   const styles = useStyles()
   const statSkeleton = <Skeleton style={styles.stat} />
 
@@ -174,9 +176,9 @@ export const ProfileHeaderSkeleton = () => {
       </Flex>
     </Flex>
   )
-}
+})
 
-export const ProfileTabsSkeleton = () => {
+export const ProfileTabsSkeleton = memo(() => {
   const styles = useStyles()
 
   const lineupTile = (
@@ -193,9 +195,9 @@ export const ProfileTabsSkeleton = () => {
       {lineupTile}
     </>
   )
-}
+})
 
-export const ProfileScreenSkeleton = () => {
+export const ProfileScreenSkeleton = memo(() => {
   return (
     <Flex column h='100%'>
       <ProfileHeaderSkeleton />
@@ -203,4 +205,4 @@ export const ProfileScreenSkeleton = () => {
       <ProfileTabsSkeleton />
     </Flex>
   )
-}
+})
