@@ -701,10 +701,10 @@ export function* handleUploads({
 
   console.debug('Spinning down workers')
   for (const worker of uploadWorkers) {
-    worker.cancel()
+    yield* cancel(worker)
   }
   for (const worker of publishWorkers) {
-    worker.cancel()
+    yield* cancel(worker)
   }
   yield* call(progressChannel.close)
   yield* cancel(actionDispatcherTask)
