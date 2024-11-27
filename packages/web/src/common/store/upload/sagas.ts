@@ -1259,7 +1259,7 @@ export function* updateTrackAudioAsync(
   yield* delay(3000)
 
   yield* put(replaceTrackProgressModalActions.close())
-  yield* put(push(newMetadata.permalink))
+  yield* put(push(baseMetadata.permalink))
 }
 
 function* watchUploadTracks() {

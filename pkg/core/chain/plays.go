@@ -22,5 +22,7 @@ func (core *CoreApplication) finalizePlayTransaction(ctx context.Context, stx *g
 		return nil, errors.New("invalid play tx")
 	}
 
+	core.logger.Infof("finalizing play tx: %v", tx)
+
 	return tx, nil
 }
