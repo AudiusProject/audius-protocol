@@ -1873,6 +1873,9 @@ PODS:
     - React-Core
     - RNZipArchive/Core (= 7.0.1)
     - SSZipArchive (~> 2.5.5)
+  - RNZipArchive/Core (7.0.1):
+    - React-Core
+    - SSZipArchive (~> 2.5.5)
   - SDWebImage (5.11.1):
     - SDWebImage/Core (= 5.11.1)
   - SDWebImage/Core (5.11.1)
@@ -2405,6 +2408,6 @@ SPEC CHECKSUMS:
   TOCropViewController: 80b8985ad794298fb69d3341de183f33d1853654
   Yoga: 055f92ad73f8c8600a93f0e25ac0b2344c3b07e6
 
-PODFILE CHECKSUM: 5a7fd542b0e975255433e61e18b2041151e970bd
+PODFILE CHECKSUM: 991e040b79c5e18ea6badc3b8e0115357b21a662
 
-COCOAPODS: 1.13.0
+COCOAPODS: 1.15.2
