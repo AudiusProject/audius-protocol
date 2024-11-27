@@ -1,8 +1,10 @@
 import logging
 from enum import Enum
 
+from sqlalchemy import desc
 from sqlalchemy.orm.session import Session
 
+from src.models.social.play import Play
 from src.utils.config import shared_config
 
 logger = logging.getLogger(__name__)
@@ -28,6 +30,7 @@ class CutoverManager:
     PROD_SOL_FINAL_SLOT: int = -1
     PROD_CORE_STARTING_BLOCK: int = -1
 
+    cutover: bool = False
     env: Env
 
     def __init__(self) -> None:
@@ -44,12 +47,44 @@ class CutoverManager:
 
     # maybe should pass in solana and core clients here?
     def has_cutover(self, session: Session) -> bool:
-        # check db for indexed slot
-        # check db for indexed core blocks
+        # if already calculated, return true
+        if self.cutover:
+            return self.cutover
+
+        highest_slot_query = (
+            session.query(Play)
+            .filter(Play.slot != None)
+            .filter(Play.signature != None)
+            .order_by(desc(Play.slot))
+        ).first()
+
+        match self.env:
+            case Env.Dev:
+                if (
+                    highest_slot_query is not None
+                    and highest_slot_query.slot >= self.DEV_SOL_FINAL_SLOT
+                ):
+                    self.cutover = True
+            case Env.Stage:
+                # don't cutover in stage
+                return False
+                if (
+                    highest_slot_query is not None
+                    and highest_slot_query.slot >= self.STAGE_SOL_FINAL_SLOT
+                ):
+                    self.cutover = True
+            case Env.Prod:
+                # don't cutover in prod
+                return False
+                if (
+                    highest_slot_query is not None
+                    and highest_slot_query.slot >= self.PROD_CORE_STARTING_BLOCK
+                ):
+                    self.cutover = True
 
         # check against constants in env
         # return true or false if cutover has been hit
-        return False
+        return self.cutover
 
     def get_adjusted_core_block_num(self, block_num: int) -> int:
         """Returns a new core block number with the final solana slot added.
@@ -72,3 +107,6 @@ class CutoverManager:
                 return adjusted_block_num - self.STAGE_SOL_FINAL_SLOT
             case Env.Prod:
                 return adjusted_block_num - self.PROD_SOL_FINAL_SLOT
+
+
+CUTOVER_MANAGER = CutoverManager()
