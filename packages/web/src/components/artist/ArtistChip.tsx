@@ -7,7 +7,7 @@ import { ArtistPopover } from 'components/artist/ArtistPopover'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import { MountPlacement } from 'components/types'
 import UserBadges from 'components/user-badges/UserBadges'
-import { useProfilePicture3 } from 'hooks/useUserProfilePicture'
+import { useProfilePicture } from 'hooks/useUserProfilePicture'
 
 import styles from './ArtistChip.module.css'
 import { ArtistChipFollowers } from './ArtistChipFollowers'
@@ -99,7 +99,7 @@ const ArtistChip = ({
 }: ArtistChipProps) => {
   const { user_id: userId, name, handle, follower_count: followers } = user
 
-  const profilePicture = useProfilePicture3({
+  const profilePicture = useProfilePicture({
     userId,
     size: SquareSizes.SIZE_150_BY_150
   })

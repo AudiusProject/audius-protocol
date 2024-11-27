@@ -27,7 +27,7 @@ import { TikTokAuthButton } from 'components/tiktok-auth/TikTokAuthButton'
 import { TwitterAuthButton } from 'components/twitter-auth/TwitterAuthButton'
 import UserBadges from 'components/user-badges/UserBadges'
 import { useRemoteVar } from 'hooks/useRemoteConfig'
-import { useProfilePicture3 } from 'hooks/useUserProfilePicture'
+import { useProfilePicture } from 'hooks/useUserProfilePicture'
 
 import styles from './VerificationModal.module.css'
 
@@ -168,7 +168,7 @@ type SuccessBodyProps = {
 }
 
 const SuccessBody = ({ handle, userId, name, goToRoute }: SuccessBodyProps) => {
-  const profilePicture = useProfilePicture3({
+  const profilePicture = useProfilePicture({
     userId,
     size: SquareSizes.SIZE_150_BY_150
   })

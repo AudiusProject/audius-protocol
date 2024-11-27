@@ -9,7 +9,7 @@ import { Dispatch } from 'redux'
 
 import RemixCard from 'components/remix-card/RemixCard'
 import { useTrackCoverArt } from 'hooks/useTrackCoverArt'
-import { useProfilePicture3 } from 'hooks/useUserProfilePicture'
+import { useProfilePicture } from 'hooks/useUserProfilePicture'
 import { AppState } from 'store/types'
 import { withNullGuard } from 'utils/withNullGuard'
 const { profilePage } = route
@@ -30,7 +30,7 @@ const g = withNullGuard(
 )
 
 const ConnectedRemixCard = g(({ track, user, goToRoute }) => {
-  const profilePictureImage = useProfilePicture3({
+  const profilePictureImage = useProfilePicture({
     userId: user.user_id,
     size: SquareSizes.SIZE_150_BY_150
   })

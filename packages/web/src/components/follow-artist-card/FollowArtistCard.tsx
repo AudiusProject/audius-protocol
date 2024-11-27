@@ -26,7 +26,7 @@ import { useHover } from 'react-use'
 import { make } from 'common/store/analytics/actions'
 import { Avatar } from 'components/avatar/Avatar'
 import Skeleton from 'components/skeleton/Skeleton'
-import { useCoverPhoto3 } from 'hooks/useCoverPhoto'
+import { useCoverPhoto } from 'hooks/useCoverPhoto'
 import { useMedia } from 'hooks/useMedia'
 
 import { SelectArtistsPreviewContext } from './selectArtistsPreviewContext'
@@ -41,7 +41,7 @@ export const FollowArtistCard = (props: FollowArtistTileProps) => {
   } = props
   const dispatch = useDispatch()
   const { isMobile } = useMedia()
-  const coverPhoto = useCoverPhoto3({
+  const coverPhoto = useCoverPhoto({
     userId: user_id,
     size: WidthSizes.SIZE_640,
     defaultImage: imageCoverPhotoBlank

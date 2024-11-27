@@ -16,7 +16,7 @@ import { usePrevious } from 'react-use'
 
 import { ComposerInput } from 'components/composer-input/ComposerInput'
 import { useIsMobile } from 'hooks/useIsMobile'
-import { useProfilePicture3 } from 'hooks/useUserProfilePicture'
+import { useProfilePicture } from 'hooks/useUserProfilePicture'
 import { make, track } from 'services/analytics'
 import { audioPlayer } from 'services/audio-player'
 
@@ -98,7 +98,7 @@ export const CommentForm = ({
     )
   }, [entityId])
 
-  const profileImage = useProfilePicture3({
+  const profileImage = useProfilePicture({
     userId: currentUserId ?? undefined,
     size: SquareSizes.SIZE_150_BY_150
   })

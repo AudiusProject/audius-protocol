@@ -8,7 +8,7 @@ import { useSelector } from 'utils/reducer'
 
 const { getUser } = cacheUsersSelectors
 
-export const useProfilePicture3 = ({
+export const useProfilePicture = ({
   userId,
   size,
   defaultImage

@@ -5,9 +5,9 @@ import { Text } from '@audius/harmony'
 
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import UserBadges from 'components/user-badges/UserBadges'
-import { useCoverPhoto3 } from 'hooks/useCoverPhoto'
+import { useCoverPhoto } from 'hooks/useCoverPhoto'
 import { useNavigateToPage } from 'hooks/useNavigateToPage'
-import { useProfilePicture3 } from 'hooks/useUserProfilePicture'
+import { useProfilePicture } from 'hooks/useUserProfilePicture'
 
 import styles from './ArtistCard.module.css'
 
@@ -20,11 +20,11 @@ type ArtistCardProps = {
 }
 
 export const ArtistCard = ({ userId, handle, name }: ArtistCardProps) => {
-  const profilePicture = useProfilePicture3({
+  const profilePicture = useProfilePicture({
     userId,
     size: SquareSizes.SIZE_150_BY_150
   })
-  const coverPhoto = useCoverPhoto3({
+  const coverPhoto = useCoverPhoto({
     userId: userId ?? undefined,
     size: WidthSizes.SIZE_2000,
     defaultImage: imageCoverPhotoBlank

@@ -10,8 +10,8 @@ import { useDispatch } from 'react-redux'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import FollowsYouBadge from 'components/user-badges/FollowsYouBadge'
 import UserBadges from 'components/user-badges/UserBadges'
-import { useCoverPhoto3 } from 'hooks/useCoverPhoto'
-import { useProfilePicture3 } from 'hooks/useUserProfilePicture'
+import { useCoverPhoto } from 'hooks/useCoverPhoto'
+import { useProfilePicture } from 'hooks/useUserProfilePicture'
 
 import styles from './ArtistCardCover.module.css'
 
@@ -30,12 +30,12 @@ export const ArtistCardCover = (props: ArtistCoverProps) => {
   const { user_id, name, handle } = artist
   const dispatch = useDispatch()
 
-  const coverPhoto = useCoverPhoto3({
+  const coverPhoto = useCoverPhoto({
     userId: user_id,
     size: WidthSizes.SIZE_640,
     defaultImage: imageCoverPhotoBlank
   })
-  const profilePicture = useProfilePicture3({
+  const profilePicture = useProfilePicture({
     userId: user_id,
     size: SquareSizes.SIZE_150_BY_150
   })

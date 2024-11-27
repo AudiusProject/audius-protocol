@@ -7,7 +7,7 @@ import { useDispatch } from 'react-redux'
 
 import { ArtistPopover } from 'components/artist/ArtistPopover'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
-import { useProfilePicture3 } from 'hooks/useUserProfilePicture'
+import { useProfilePicture } from 'hooks/useUserProfilePicture'
 import { closeNotificationPanel } from 'store/application/ui/notifications/notificationsUISlice'
 
 import styles from './ProfilePicture.module.css'
@@ -32,7 +32,7 @@ export const ProfilePicture = (props: ProfilePictureProps) => {
   } = props
   const { user_id, handle } = user
   const dispatch = useDispatch()
-  const profilePicture = useProfilePicture3({
+  const profilePicture = useProfilePicture({
     userId: user_id,
     size: SquareSizes.SIZE_150_BY_150
   })

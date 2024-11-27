@@ -26,7 +26,7 @@ import {
 } from 'common/store/pages/signon/selectors'
 import Drawer from 'components/drawer/Drawer'
 import { useMedia } from 'hooks/useMedia'
-import { useProfilePicture3 } from 'hooks/useUserProfilePicture'
+import { useProfilePicture } from 'hooks/useUserProfilePicture'
 import { CoverPhotoBanner } from 'pages/sign-up-page/components/CoverPhotoBanner'
 import { useSelector } from 'utils/reducer'
 
@@ -40,7 +40,7 @@ export const WelcomeModal = () => {
   const accountName = useSelector(getUserName)
   const profileImageField = useSelector(getProfileImageField)
   const userId = useSelector(getUserId)
-  const presavedProfilePic = useProfilePicture3({
+  const presavedProfilePic = useProfilePicture({
     userId: userId ?? undefined,
     size: SquareSizes.SIZE_150_BY_150
   })

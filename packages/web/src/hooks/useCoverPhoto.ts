@@ -9,11 +9,11 @@ import { cacheUsersSelectors } from '@audius/common/store'
 import { preload } from 'utils/image'
 import { useSelector } from 'utils/reducer'
 
-import { useProfilePicture3 } from './useUserProfilePicture'
+import { useProfilePicture } from './useUserProfilePicture'
 
 const { getUser } = cacheUsersSelectors
 
-export const useCoverPhoto3 = ({
+export const useCoverPhoto = ({
   userId,
   size,
   defaultImage
@@ -22,7 +22,7 @@ export const useCoverPhoto3 = ({
   size: WidthSizes
   defaultImage?: string
 }) => {
-  const profilePicture = useProfilePicture3({
+  const profilePicture = useProfilePicture({
     userId,
     size:
       size === WidthSizes.SIZE_640

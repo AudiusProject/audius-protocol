@@ -15,8 +15,8 @@ import { push as pushRoute } from 'connected-react-router'
 import { useDispatch, useSelector } from 'react-redux'
 
 import UserBadges from 'components/user-badges/UserBadges'
-import { useCoverPhoto3 } from 'hooks/useCoverPhoto'
-import { useProfilePicture3 } from 'hooks/useUserProfilePicture'
+import { useCoverPhoto } from 'hooks/useCoverPhoto'
+import { useProfilePicture } from 'hooks/useUserProfilePicture'
 import { AppState } from 'store/types'
 import { TIPPING_TOP_RANK_THRESHOLD } from 'utils/constants'
 
@@ -35,11 +35,11 @@ export const SupportingTile = ({ supporting }: SupportingCardProps) => {
   const { rank } = supporting
   const handle = receiver?.handle
   const isTopRank = rank >= 1 && rank <= TIPPING_TOP_RANK_THRESHOLD
-  const profileImage = useProfilePicture3({
+  const profileImage = useProfilePicture({
     userId: receiver?.user_id,
     size: SquareSizes.SIZE_150_BY_150
   })
-  const coverPhoto = useCoverPhoto3({
+  const coverPhoto = useCoverPhoto({
     userId: receiver?.user_id,
     size: WidthSizes.SIZE_640,
     defaultImage: imageCoverPhotoBlank

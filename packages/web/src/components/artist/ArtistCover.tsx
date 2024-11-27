@@ -11,8 +11,8 @@ import { IconArtistBadge as BadgeArtist } from '@audius/harmony'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import FollowsYouBadge from 'components/user-badges/FollowsYouBadge'
 import UserBadges from 'components/user-badges/UserBadges'
-import { useCoverPhoto3 } from 'hooks/useCoverPhoto'
-import { useProfilePicture3 } from 'hooks/useUserProfilePicture'
+import { useCoverPhoto } from 'hooks/useCoverPhoto'
+import { useProfilePicture } from 'hooks/useUserProfilePicture'
 
 import styles from './ArtistCard.module.css'
 
@@ -37,12 +37,12 @@ export const ArtistCover = ({
   profilePictureSizes,
   coverPhotoSizes
 }: ArtistCoverProps) => {
-  const coverPhoto = useCoverPhoto3({
+  const coverPhoto = useCoverPhoto({
     userId,
     size: WidthSizes.SIZE_640,
     defaultImage: imageCoverPhotoBlank
   })
-  const profilePicture = useProfilePicture3({
+  const profilePicture = useProfilePicture({
     userId,
     size: SquareSizes.SIZE_150_BY_150
   })

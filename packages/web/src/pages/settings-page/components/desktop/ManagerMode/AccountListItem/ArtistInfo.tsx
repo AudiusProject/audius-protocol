@@ -3,12 +3,12 @@ import { Flex, Text, useTheme } from '@audius/harmony'
 
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import UserBadges from 'components/user-badges/UserBadges'
-import { useProfilePicture3 } from 'hooks/useUserProfilePicture'
+import { useProfilePicture } from 'hooks/useUserProfilePicture'
 
 import styles from './ArtistInfo.module.css'
 
 export const ArtistInfo = ({ user }: { user: UserMetadata }) => {
-  const profilePicture = useProfilePicture3({
+  const profilePicture = useProfilePicture({
     userId: user.user_id,
     size: SquareSizes.SIZE_150_BY_150
   })

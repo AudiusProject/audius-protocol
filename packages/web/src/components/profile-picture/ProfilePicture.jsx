@@ -8,7 +8,7 @@ import Lottie from 'react-lottie'
 import loadingSpinner from 'assets/animations/loadingSpinner.json'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import ImageSelectionButton from 'components/image-selection/ImageSelectionButton'
-import { useProfilePicture3 } from 'hooks/useUserProfilePicture'
+import { useProfilePicture } from 'hooks/useUserProfilePicture'
 
 import styles from './ProfilePicture.module.css'
 
@@ -30,7 +30,7 @@ const ProfilePicture = ({
   includePopup,
   hasProfilePicture
 }) => {
-  const image = useProfilePicture3({
+  const image = useProfilePicture({
     userId,
     size: SquareSizes.SIZE_480_BY_480
   })

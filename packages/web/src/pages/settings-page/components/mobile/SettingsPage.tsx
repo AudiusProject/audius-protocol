@@ -25,7 +25,7 @@ import Row from 'components/groupable-list/Row'
 import NavContext, { LeftPreset } from 'components/nav/mobile/NavContext'
 import Page from 'components/page/Page'
 import useScrollToTop from 'hooks/useScrollToTop'
-import { useProfilePicture3 } from 'hooks/useUserProfilePicture'
+import { useProfilePicture } from 'hooks/useUserProfilePicture'
 import { isDarkMode } from 'utils/theme/theme'
 
 import AboutSettingsPage from './AboutSettingsPage'
@@ -140,7 +140,7 @@ const SettingsPage = (props: SettingsPageProps) => {
     setCenter(subPage || messages.pageTitle)
   }, [setLeft, setCenter, setRight, subPage])
 
-  const profilePicture = useProfilePicture3({
+  const profilePicture = useProfilePicture({
     userId,
     size: SquareSizes.SIZE_150_BY_150
   })

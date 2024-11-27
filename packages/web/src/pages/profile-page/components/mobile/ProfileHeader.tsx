@@ -37,8 +37,8 @@ import FollowsYouBadge from 'components/user-badges/FollowsYouBadge'
 import ProfilePageBadge from 'components/user-badges/ProfilePageBadge'
 import UserBadges from 'components/user-badges/UserBadges'
 import { UserGeneratedText } from 'components/user-generated-text'
-import { useCoverPhoto3 } from 'hooks/useCoverPhoto'
-import { useProfilePicture3 } from 'hooks/useUserProfilePicture'
+import { useCoverPhoto } from 'hooks/useCoverPhoto'
+import { useProfilePicture } from 'hooks/useUserProfilePicture'
 
 import GrowingCoverPhoto from './GrowingCoverPhoto'
 import styles from './ProfileHeader.module.css'
@@ -202,7 +202,7 @@ const ProfileHeader = ({
     }
   }, [website, donation, hasEllipsis, setHasEllipsis])
 
-  let coverPhoto = useCoverPhoto3({
+  let coverPhoto = useCoverPhoto({
     userId,
     size: WidthSizes.SIZE_2000
   })
@@ -214,7 +214,7 @@ const ProfileHeader = ({
       backgroundSize: '300px 300px'
     }
   }
-  const profilePicture = useProfilePicture3({
+  const profilePicture = useProfilePicture({
     userId,
     size: SquareSizes.SIZE_150_BY_150
   })

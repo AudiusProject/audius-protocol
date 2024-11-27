@@ -28,7 +28,7 @@ import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import { MountPlacement } from 'components/types'
 import UserBadges from 'components/user-badges/UserBadges'
 import { useIsMobile } from 'hooks/useIsMobile'
-import { useProfilePicture3 } from 'hooks/useUserProfilePicture'
+import { useProfilePicture } from 'hooks/useUserProfilePicture'
 
 import styles from './ArtistRecommendations.module.css'
 
@@ -59,7 +59,7 @@ const ArtistProfilePictureWrapper = ({
   userId: number
   handle: string
 }) => {
-  const profilePicture = useProfilePicture3({
+  const profilePicture = useProfilePicture({
     userId,
     size: SquareSizes.SIZE_150_BY_150
   })

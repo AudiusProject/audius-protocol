@@ -20,7 +20,7 @@ import { make, useRecord } from 'common/store/analytics/actions'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import MobilePageContainer from 'components/mobile-page-container/MobilePageContainer'
 import { ToastContext } from 'components/toast/ToastContext'
-import { useProfilePicture3 } from 'hooks/useUserProfilePicture'
+import { useProfilePicture } from 'hooks/useUserProfilePicture'
 import SignOutModal from 'pages/settings-page/components/mobile/SignOutModal'
 import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
 
@@ -138,7 +138,7 @@ const AccountSettingsPage = ({
   const [showModalSignOut, setShowModalSignOut] = useState(false)
   const { toast } = useContext(ToastContext)
 
-  const profilePicture = useProfilePicture3({
+  const profilePicture = useProfilePicture({
     userId,
     size: SquareSizes.SIZE_480_BY_480
   })

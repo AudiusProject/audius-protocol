@@ -10,7 +10,7 @@ import Lottie from 'react-lottie'
 import loadingSpinner from 'assets/animations/loadingSpinner.json'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import ImageSelectionButton from 'components/image-selection/ImageSelectionButton'
-import { useCoverPhoto3 } from 'hooks/useCoverPhoto'
+import { useCoverPhoto } from 'hooks/useCoverPhoto'
 
 import styles from './CoverPhoto.module.css'
 
@@ -46,7 +46,7 @@ const CoverPhoto = ({
     ? 'linear-gradient(180deg, rgba(0,0,0,0.25) 0%, rgba(0,0,0,0.75) 100%)'
     : 'linear-gradient(rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0.05) 70%, rgba(0, 0, 0, 0.2) 100%)'
 
-  const image = useCoverPhoto3({
+  const image = useCoverPhoto({
     userId: userId ?? undefined,
     size: WidthSizes.SIZE_2000,
     defaultImage: imageCoverPhotoBlank

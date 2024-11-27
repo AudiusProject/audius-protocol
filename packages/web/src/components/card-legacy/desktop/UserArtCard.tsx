@@ -12,7 +12,7 @@ import { Dispatch } from 'redux'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import PerspectiveCard from 'components/perspective-card/PerspectiveCard'
 import UserBadges from 'components/user-badges/UserBadges'
-import { useProfilePicture3 } from 'hooks/useUserProfilePicture'
+import { useProfilePicture } from 'hooks/useUserProfilePicture'
 import {
   setUsers,
   setVisibility
@@ -73,7 +73,7 @@ const UserArtCard = g(
       setModalVisibility()
     }, [setFollowerUser, setModalVisibility, user_id])
 
-    const image = useProfilePicture3({
+    const image = useProfilePicture({
       userId: user_id,
       size: SquareSizes.SIZE_480_BY_480,
       defaultImage: placeholderArt
