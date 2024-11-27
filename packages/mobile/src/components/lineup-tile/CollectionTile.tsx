@@ -157,13 +157,11 @@ const CollectionTileComponent = ({
   const handlePress = useCallback(() => {
     if (!tracks.length) return
 
-    setTimeout(() => {
-      togglePlay({
-        uid: currentTrack?.uid ?? tracks[0]?.uid ?? null,
-        id: currentTrack?.track_id ?? tracks[0]?.track_id ?? null,
-        source: PlaybackSource.PLAYLIST_TILE_TRACK
-      })
-    }, 100)
+    togglePlay({
+      uid: currentTrack?.uid ?? tracks[0]?.uid ?? null,
+      id: currentTrack?.track_id ?? tracks[0]?.track_id ?? null,
+      source: PlaybackSource.PLAYLIST_TILE_TRACK
+    })
   }, [currentTrack, togglePlay, tracks])
 
   const handlePressTitle = useCallback(() => {
