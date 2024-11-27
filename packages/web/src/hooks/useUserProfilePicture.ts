@@ -1,58 +1,12 @@
 import { imageProfilePicEmpty as profilePicEmpty } from '@audius/common/assets'
-import { useImageSize, useImageSize2 } from '@audius/common/hooks'
+import { useImageSize2 } from '@audius/common/hooks'
 import { SquareSizes, ID } from '@audius/common/models'
-import { cacheUsersActions, cacheUsersSelectors } from '@audius/common/store'
-import { useDispatch } from 'react-redux'
+import { cacheUsersSelectors } from '@audius/common/store'
 
+import { preload } from 'utils/image'
 import { useSelector } from 'utils/reducer'
 
-const { fetchProfilePicture } = cacheUsersActions
 const { getUser } = cacheUsersSelectors
-
-export const useProfilePicture = (
-  userId: number | null,
-  size: SquareSizes,
-  defaultImage: string = profilePicEmpty as string,
-  load = true
-) => {
-  const dispatch = useDispatch()
-  const profilePictureSizes = useSelector(
-    (state) => getUser(state, { id: userId })?._profile_picture_sizes
-  )
-  return useImageSize({
-    dispatch,
-    id: userId,
-    sizes: profilePictureSizes ?? null,
-    size,
-    action: fetchProfilePicture,
-    defaultImage,
-    load
-  })
-}
-
-// /**
-//  * Like useUserProfilePicture, but onDemand is set to true, which
-//  * returns a callback that can be used to fetch the image on demand.
-//  */
-// export const useOnUserProfilePicture = (
-//   userId: number | null,
-//   profilePictureSizes: ProfilePictureSizes | null,
-//   size: SquareSizes,
-//   defaultImage: string = profilePicEmpty as string,
-//   load = true
-// ) => {
-//   const dispatch = useDispatch()
-//   return useImageSize({
-//     dispatch,
-//     id: userId,
-//     sizes: profilePictureSizes,
-//     size,
-//     action: fetchProfilePicture,
-//     defaultImage,
-//     load,
-//     onDemand: true
-//   })
-// }
 
 export const useProfilePicture3 = ({
   userId,
@@ -69,7 +23,8 @@ export const useProfilePicture3 = ({
   const image = useImageSize2({
     artwork,
     targetSize: size,
-    defaultImage: defaultImage ?? profilePicEmpty
+    defaultImage: defaultImage ?? profilePicEmpty,
+    preloadImageFn: preload
   })
 
   return image

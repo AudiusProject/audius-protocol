@@ -37,7 +37,7 @@ import FollowsYouBadge from 'components/user-badges/FollowsYouBadge'
 import ProfilePageBadge from 'components/user-badges/ProfilePageBadge'
 import UserBadges from 'components/user-badges/UserBadges'
 import { UserGeneratedText } from 'components/user-generated-text'
-import { useCoverPhoto } from 'hooks/useCoverPhoto'
+import { useCoverPhoto3 } from 'hooks/useCoverPhoto'
 import { useProfilePicture3 } from 'hooks/useUserProfilePicture'
 
 import GrowingCoverPhoto from './GrowingCoverPhoto'
@@ -202,7 +202,10 @@ const ProfileHeader = ({
     }
   }, [website, donation, hasEllipsis, setHasEllipsis])
 
-  let { source: coverPhoto } = useCoverPhoto(userId, WidthSizes.SIZE_2000)
+  let coverPhoto = useCoverPhoto3({
+    userId,
+    size: WidthSizes.SIZE_2000
+  })
   coverPhoto = isDeactivated ? imageProfilePicEmpty : coverPhoto
   let coverPhotoStyle = {}
   if (coverPhoto === imageCoverPhotoBlank) {

@@ -214,7 +214,6 @@ export const ArtistRecommendations = forwardRef<
               <ArtistProfilePictureWrapper
                 userId={a.user_id}
                 handle={a.handle}
-                profilePictureSizes={a._profile_picture_sizes}
               />
             </div>
           ))}

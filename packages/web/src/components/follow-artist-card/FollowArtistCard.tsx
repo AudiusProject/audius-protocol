@@ -1,5 +1,6 @@
 import { HTMLProps, useContext } from 'react'
 
+import { imageCoverPhotoBlank } from '@audius/common/assets'
 import { Name, WidthSizes, UserMetadata } from '@audius/common/models'
 import { formatCount } from '@audius/common/utils'
 import {
@@ -25,7 +26,7 @@ import { useHover } from 'react-use'
 import { make } from 'common/store/analytics/actions'
 import { Avatar } from 'components/avatar/Avatar'
 import Skeleton from 'components/skeleton/Skeleton'
-import { useCoverPhoto } from 'hooks/useCoverPhoto'
+import { useCoverPhoto3 } from 'hooks/useCoverPhoto'
 import { useMedia } from 'hooks/useMedia'
 
 import { SelectArtistsPreviewContext } from './selectArtistsPreviewContext'
@@ -40,10 +41,11 @@ export const FollowArtistCard = (props: FollowArtistTileProps) => {
   } = props
   const dispatch = useDispatch()
   const { isMobile } = useMedia()
-  const { source: coverPhoto, shouldBlur } = useCoverPhoto(
-    user_id,
-    WidthSizes.SIZE_640
-  )
+  const coverPhoto = useCoverPhoto3({
+    userId: user_id,
+    size: WidthSizes.SIZE_640,
+    defaultImage: imageCoverPhotoBlank
+  })
   const [followField] = useField({ name: 'selectedArtists', type: 'checkbox' })
   const { spacing } = useTheme()
 
@@ -140,7 +142,7 @@ export const FollowArtistCard = (props: FollowArtistTileProps) => {
               width: '100%',
               borderRadius: '8px',
               overflow: 'hidden',
-              ...(shouldBlur
+              ...(coverPhoto === imageCoverPhotoBlank
                 ? {
                     backdropFilter: 'blur(25px)'
                   }

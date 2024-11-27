@@ -1,11 +1,6 @@
 import { useContext, useEffect, FC } from 'react'
 
-import {
-  SquareSizes,
-  Theme,
-  ID,
-  ProfilePictureSizes
-} from '@audius/common/models'
+import { SquareSizes, Theme, ID } from '@audius/common/models'
 import {
   BrowserNotificationSetting,
   PushNotificationSetting,

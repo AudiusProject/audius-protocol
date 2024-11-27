@@ -334,7 +334,6 @@ const VerificationModal = (props: VerificationModalProps) => {
         userId={props.userId}
         handle={props.handle}
         name={props.name}
-        profilePictureSizes={props.profilePictureSizes}
         goToRoute={props.goToRoute}
       />
     )

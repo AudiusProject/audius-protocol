@@ -160,17 +160,10 @@ type SuccessBodyProps = {
   userId: ID
   handle: string
   name: string
-  profilePictureSizes: ProfilePictureSizes | null
   goToRoute: (route: string) => void
 }
 
-const SuccessBody = ({
-  handle,
-  userId,
-  name,
-  profilePictureSizes,
-  goToRoute
-}: SuccessBodyProps) => {
+const SuccessBody = ({ handle, userId, name, goToRoute }: SuccessBodyProps) => {
   const profilePicture = useProfilePicture3({
     userId,
     size: SquareSizes.SIZE_150_BY_150
@@ -213,7 +206,6 @@ const VerificationPage = ({
   handle,
   userId,
   name,
-  profilePictureSizes,
   goToRoute,
   onTwitterLogin,
   onInstagramLogin,
@@ -318,7 +310,6 @@ const VerificationPage = ({
         userId={userId}
         handle={handle}
         name={name}
-        profilePictureSizes={profilePictureSizes}
         goToRoute={goToRoute}
       />
     )

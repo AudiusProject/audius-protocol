@@ -1,5 +1,6 @@
 import { useCallback } from 'react'
 
+import { imageCoverPhotoBlank } from '@audius/common/assets'
 import { SquareSizes, WidthSizes, User } from '@audius/common/models'
 import { route } from '@audius/common/utils'
 import { IconArtistBadge as BadgeArtist } from '@audius/harmony'
@@ -9,7 +10,7 @@ import { useDispatch } from 'react-redux'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import FollowsYouBadge from 'components/user-badges/FollowsYouBadge'
 import UserBadges from 'components/user-badges/UserBadges'
-import { useCoverPhoto } from 'hooks/useCoverPhoto'
+import { useCoverPhoto3 } from 'hooks/useCoverPhoto'
 import { useProfilePicture3 } from 'hooks/useUserProfilePicture'
 
 import styles from './ArtistCardCover.module.css'
@@ -29,10 +30,11 @@ export const ArtistCardCover = (props: ArtistCoverProps) => {
   const { user_id, name, handle } = artist
   const dispatch = useDispatch()
 
-  const { source: coverPhoto, shouldBlur } = useCoverPhoto(
-    user_id,
-    WidthSizes.SIZE_640
-  )
+  const coverPhoto = useCoverPhoto3({
+    userId: user_id,
+    size: WidthSizes.SIZE_640,
+    defaultImage: imageCoverPhotoBlank
+  })
   const profilePicture = useProfilePicture3({
     userId: user_id,
     size: SquareSizes.SIZE_150_BY_150
@@ -52,7 +54,7 @@ export const ArtistCardCover = (props: ArtistCoverProps) => {
       wrapperClassName={styles.artistCoverPhoto}
       image={darkenedCoverPhoto}
       immediate
-      useBlur={shouldBlur}
+      useBlur={coverPhoto === imageCoverPhotoBlank}
     >
       <div className={styles.coverPhotoContentContainer}>
         {isArtist ? <BadgeArtist className={styles.badgeArtist} /> : null}

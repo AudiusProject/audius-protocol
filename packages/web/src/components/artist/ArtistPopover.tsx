@@ -92,7 +92,6 @@ export const ArtistPopover = ({
         'artistPopover',
         containerClassName
       )}
-      onMouseEnter={onMouseEnter}
     >
       <Popover
         mouseEnterDelay={mouseEnterDelay}

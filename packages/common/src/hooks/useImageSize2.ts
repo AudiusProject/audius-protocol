@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 
-import { Collection, SquareSizes, Track, User, WidthSizes } from '~/models'
+import { SquareSizes, WidthSizes } from '~/models'
 import { Maybe } from '~/utils/typeUtils'
 
 // Global image cache
@@ -10,6 +10,8 @@ const IMAGE_CACHE = new Set<string>()
 const getWidth = (size: string) => {
   return parseInt(size.split('x')[0])
 }
+
+type Artwork<T extends string | number | symbol> = { [key in T]?: string }
 
 /**
  * Fetches an image from the given artwork object managing sizes and using fallback mirrors if necessary.
@@ -22,28 +24,19 @@ const getWidth = (size: string) => {
  * @returns The url of the image, or undefined if the image is not available
  */
 export const useImageSize2 = <
-  SizeType extends SquareSizes | WidthSizes = SquareSizes
+  SizeType extends SquareSizes | WidthSizes,
+  ArtworkType extends Artwork<SizeType> & { mirrors?: string[] | undefined }
 >({
   artwork,
   targetSize,
   defaultImage,
   preloadImageFn
-}:
-  | {
-      artwork?:
-        | Track['artwork']
-        | Collection['artwork']
-        | User['profile_picture']
-      targetSize: SizeType
-      defaultImage: string
-      preloadImageFn: (url: string) => Promise<void>
-    }
-  | {
-      artwork?: User['cover_photo']
-      targetSize: SizeType
-      defaultImage: string
-      preloadImageFn: (url: string) => Promise<void>
-    }) => {
+}: {
+  artwork?: ArtworkType
+  targetSize: SizeType
+  defaultImage: string
+  preloadImageFn: (url: string) => Promise<void>
+}) => {
   const [imageUrl, setImageUrl] = useState<Maybe<string>>(undefined)
 
   const fetchWithFallback = useCallback(
@@ -93,18 +86,18 @@ export const useImageSize2 = <
       (size) =>
         getWidth(size) < getWidth(targetSize) &&
         size in artwork &&
-        artwork[size] &&
-        IMAGE_CACHE.has(artwork[size as SquareSizes]!)
-    ) as SquareSizes | undefined
+        artwork[size as SizeType] &&
+        IMAGE_CACHE.has(artwork[size as SizeType]!)
+    ) as SizeType | undefined
 
     // Check for larger size
     // If found, set the image url to the larger size and return
     const largerSize = Object.keys(artwork).find(
       (size) =>
         getWidth(size) > getWidth(targetSize) &&
-        artwork[size as SquareSizes] &&
-        IMAGE_CACHE.has(artwork[size as SquareSizes]!)
-    ) as SquareSizes | undefined
+        artwork[size as SizeType] &&
+        IMAGE_CACHE.has(artwork[size as SizeType]!)
+    ) as SizeType | undefined
 
     if (largerSize) {
       console.debug(

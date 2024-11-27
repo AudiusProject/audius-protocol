@@ -10,7 +10,7 @@ import Lottie from 'react-lottie'
 import loadingSpinner from 'assets/animations/loadingSpinner.json'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import ImageSelectionButton from 'components/image-selection/ImageSelectionButton'
-import { useCoverPhoto } from 'hooks/useCoverPhoto'
+import { useCoverPhoto3 } from 'hooks/useCoverPhoto'
 
 import styles from './CoverPhoto.module.css'
 
@@ -46,10 +46,11 @@ const CoverPhoto = ({
     ? 'linear-gradient(180deg, rgba(0,0,0,0.25) 0%, rgba(0,0,0,0.75) 100%)'
     : 'linear-gradient(rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0.05) 70%, rgba(0, 0, 0, 0.2) 100%)'
 
-  const { source: image, shouldBlur } = useCoverPhoto(
-    userId,
-    WidthSizes.SIZE_2000
-  )
+  const image = useCoverPhoto3({
+    userId: userId ?? undefined,
+    size: WidthSizes.SIZE_2000,
+    defaultImage: imageCoverPhotoBlank
+  })
 
   const imageSettings = useMemo(() => {
     if (image) {
@@ -112,7 +113,7 @@ const CoverPhoto = ({
         isUrl={false}
         wrapperClassName={styles.photo}
         imageStyle={imageSettings.backgroundStyle}
-        useBlur={shouldBlur}
+        useBlur={image === imageCoverPhotoBlank}
         usePlaceholder={false}
         immediate={imageSettings.immediate}
       >
