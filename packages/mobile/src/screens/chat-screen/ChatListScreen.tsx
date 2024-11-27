@@ -13,7 +13,6 @@ import {
   ScreenContent,
   HeaderShadow
 } from 'app/components/core'
-import { ScreenPrimaryContent } from 'app/components/core/Screen/ScreenPrimaryContent'
 import { useNavigation } from 'app/hooks/useNavigation'
 import type { AppTabScreenParamList } from 'app/screens/app-screen'
 import { makeStyles } from 'app/styles'
@@ -166,34 +165,32 @@ export const ChatListScreen = () => {
     >
       <ScreenContent>
         <HeaderShadow />
-        <ScreenPrimaryContent>
-          <View style={styles.rootContainer}>
-            {isLoadingFirstTime ? (
-              Array(4)
-                .fill(null)
-                .map((_, index) => (
-                  <ChatListItemSkeleton
-                    key={index}
-                    index={index}
-                    shouldFade={true}
-                  />
-                ))
-            ) : (
-              <FlatList
-                refreshing={chatsStatus === 'REFRESHING'}
-                onRefresh={refresh}
-                data={nonEmptyChats}
-                contentContainerStyle={styles.listContainer}
-                renderItem={renderItem}
-                keyExtractor={(chat) => chat.chat_id}
-                ListEmptyComponent={() => (
-                  <ChatsEmpty onPress={navigateToChatUserList} />
-                )}
-                onEndReached={handleLoadMore}
-              />
-            )}
-          </View>
-        </ScreenPrimaryContent>
+        <View style={styles.rootContainer}>
+          {isLoadingFirstTime ? (
+            Array(4)
+              .fill(null)
+              .map((_, index) => (
+                <ChatListItemSkeleton
+                  key={index}
+                  index={index}
+                  shouldFade={true}
+                />
+              ))
+          ) : (
+            <FlatList
+              refreshing={chatsStatus === 'REFRESHING'}
+              onRefresh={refresh}
+              data={nonEmptyChats}
+              contentContainerStyle={styles.listContainer}
+              renderItem={renderItem}
+              keyExtractor={(chat) => chat.chat_id}
+              ListEmptyComponent={() => (
+                <ChatsEmpty onPress={navigateToChatUserList} />
+              )}
+              onEndReached={handleLoadMore}
+            />
+          )}
+        </View>
       </ScreenContent>
     </Screen>
   )

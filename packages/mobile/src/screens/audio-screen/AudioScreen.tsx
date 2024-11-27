@@ -42,8 +42,6 @@ import {
   Tile,
   ScreenContent
 } from 'app/components/core'
-import { ScreenPrimaryContent } from 'app/components/core/Screen/ScreenPrimaryContent'
-import { ScreenSecondaryContent } from 'app/components/core/Screen/ScreenSecondaryContent'
 import LoadingSpinner from 'app/components/loading-spinner'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { useRemoteVar } from 'app/hooks/useRemoteConfig'
@@ -460,19 +458,15 @@ export const AudioScreen = () => {
       title={messages.title}
     >
       <ScreenContent>
-        <ScreenPrimaryContent>
-          <ScrollView style={styles.tiles}>
-            {audioFeaturesDegradedText ? renderNoticeTile() : null}
-            {renderAudioTile()}
-            {renderWalletTile()}
-            {renderRewardsTile()}
-            <ScreenSecondaryContent>
-              {renderTrendingTile()}
-              {renderTierTile()}
-              {renderWhatTile()}
-            </ScreenSecondaryContent>
-          </ScrollView>
-        </ScreenPrimaryContent>
+        <ScrollView style={styles.tiles}>
+          {audioFeaturesDegradedText ? renderNoticeTile() : null}
+          {renderAudioTile()}
+          {renderWalletTile()}
+          {renderRewardsTile()}
+          {renderTrendingTile()}
+          {renderTierTile()}
+          {renderWhatTile()}
+        </ScrollView>
       </ScreenContent>
     </Screen>
   )
