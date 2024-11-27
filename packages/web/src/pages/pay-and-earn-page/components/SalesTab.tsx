@@ -1,12 +1,12 @@
 import { useCallback, useState } from 'react'
 
-import { useGetSales, useGetSalesCount, Id } from '@audius/common/api'
+import { Id, useGetSales, useGetSalesCount } from '@audius/common/api'
 import { useAllPaginatedQuery } from '@audius/common/audius-query'
 import { useFeatureFlag } from '@audius/common/hooks'
 import {
+  combineStatuses,
   Status,
   statusIsNotFinalized,
-  combineStatuses,
   USDCPurchaseDetails
 } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
@@ -145,6 +145,66 @@ export const useSales = () => {
   const isEmpty = status === Status.SUCCESS && sales.length === 0
   const isLoading = statusIsNotFinalized(status)
 
+  const downloadSalesAsCSV = async () => {
+    try {
+      const sdk = await audiusSdk()
+      const salesAsJSON = await sdk.users.getSalesAsJSON({
+        id: Id.parse(userId)
+      })
+
+      if (!salesAsJSON.data?.sales || salesAsJSON.data.sales.length === 0) {
+        return
+      }
+
+      // Convert sales data to CSV format
+      const headers = [
+        'Title',
+        'Link',
+        'Purchased By',
+        'Email',
+        'Date',
+        'Sale Price',
+        'Network Fee',
+        'Pay Extra',
+        'Total',
+        'Country'
+      ]
+      const rows = salesAsJSON.data.sales.map((sale) => [
+        sale.title,
+        sale.link,
+        sale.purchasedBy,
+        sale.encryptedEmail,
+        sale.date ? new Date(sale.date).toLocaleDateString() : '',
+        sale.salePrice,
+        sale.networkFee,
+        sale.payExtra,
+        sale.total,
+        sale.country
+      ])
+
+      // Create CSV content
+      const csvContent = [
+        headers.join(','),
+        ...rows.map((row) => row.join(','))
+      ].join('\n')
+
+      // Create blob and download
+      const blob = new Blob([csvContent], { type: 'text/csv' })
+      const url = URL.createObjectURL(blob)
+      const link = document.createElement('a')
+      link.href = url
+      link.download = `audius-sales-${
+        new Date().toISOString().split('T')[0]
+      }.csv`
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+      URL.revokeObjectURL(url)
+    } catch (error) {
+      console.error('Error downloading sales data:', error)
+    }
+  }
+
   const downloadCSV = useCallback(async () => {
     const sdk = await audiusSdk()
     const blob = await sdk.users.downloadSalesAsCSVBlob({
@@ -166,7 +226,8 @@ export const useSales = () => {
     onClickRow,
     isEmpty,
     isLoading,
-    downloadCSV
+    downloadCSV,
+    downloadSalesAsCSV
   }
 }
 /**

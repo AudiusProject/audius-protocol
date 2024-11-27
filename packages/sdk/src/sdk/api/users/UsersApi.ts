@@ -16,8 +16,10 @@ import {
   Configuration,
   DownloadPurchasesAsCSVRequest,
   DownloadSalesAsCSVRequest,
+  DownloadSalesAsJSONRequest,
   DownloadUSDCWithdrawalsAsCSVRequest,
-  UsersApi as GeneratedUsersApi
+  UsersApi as GeneratedUsersApi,
+  SalesJsonResponse
 } from '../generated/default'
 import * as runtime from '../generated/default/runtime'
 
@@ -248,7 +250,9 @@ export class UsersApi extends GeneratedUsersApi {
    * @returns Promise<any> The sales data in JSON format
    * @throws {RequiredError}
    */
-  async getSalesAsJSON(params: DownloadSalesAsCSVRequest): Promise<any> {
+  async getSalesAsJSON(
+    params: DownloadSalesAsJSONRequest
+  ): Promise<SalesJsonResponse> {
     if (params.id === null || params.id === undefined) {
       throw new runtime.RequiredError(
         'id',
