@@ -1,3 +1,4 @@
+import { GUEST_EMAIL } from '@audius/common/src/hooks/purchaseContent/constants'
 import { PurchaseableContentMetadata } from '@audius/common/src/hooks/purchaseContent/types'
 import { isPurchaseableAlbum } from '@audius/common/src/hooks/purchaseContent/utils'
 import { SIGN_IN_PAGE } from '@audius/common/src/utils/route'
@@ -90,7 +91,7 @@ export const GuestCheckout = ({
               </Text>
             </Flex>
 
-            <HarmonyTextField name='guestEmail' label={messages.yourEmail} />
+            <HarmonyTextField name={GUEST_EMAIL} label={messages.yourEmail} />
           </Flex>
           <Button fullWidth type='submit'>
             {messages.continueAsGuest}

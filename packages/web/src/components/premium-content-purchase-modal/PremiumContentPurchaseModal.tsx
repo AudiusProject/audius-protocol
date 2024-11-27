@@ -270,9 +270,11 @@ export const PremiumContentPurchaseModal = () => {
     guestCheckoutEnabled &&
     (!currentUser || (currentUser && !currentUser.handle)) &&
     initialValues.guestEmail === ''
-  if (showGuestCheckout) {
-    dispatch(setPurchasePage({ page: PurchaseContentPage.GUEST_CHECKOUT }))
-  }
+  useEffect(() => {
+    if (showGuestCheckout) {
+      dispatch(setPurchasePage({ page: PurchaseContentPage.GUEST_CHECKOUT }))
+    }
+  }, [showGuestCheckout, dispatch])
 
   // On form mount, pre-create user bank if needed and check for any usdc stuck
   // in root wallet from an aborted withdrawal
