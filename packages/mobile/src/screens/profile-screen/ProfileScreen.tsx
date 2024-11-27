@@ -203,10 +203,8 @@ export const ProfileScreen = () => {
                   <OfflinePlaceholder />
                 </>
               ) : (
-                <>
-                  <ScreenPrimaryContent skeleton={<ProfileScreenSkeleton />}>
-                    <PortalHost name='PullToRefreshPortalHost' />
-                  </ScreenPrimaryContent>
+                <ScreenPrimaryContent skeleton={<ProfileScreenSkeleton />}>
+                  <PortalHost name='PullToRefreshPortalHost' />
                   <ScreenSecondaryContent skeleton={<ProfileScreenSkeleton />}>
                     <ProfileTabNavigator
                       renderHeader={renderHeader}
@@ -215,7 +213,7 @@ export const ProfileScreen = () => {
                       onRefresh={handleRefresh}
                     />
                   </ScreenSecondaryContent>
-                </>
+                </ScreenPrimaryContent>
               )}
             </View>
           </>
