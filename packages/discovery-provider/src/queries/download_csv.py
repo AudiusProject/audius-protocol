@@ -202,10 +202,10 @@ def format_sale_for_download(
     formatted_result = {
         "title": result.content_title,
         "link": get_link(result.content_type, seller_handle, result.slug),
-        "purchased by": result.buyer_name,
+        "purchased_by": result.buyer_name,
         "date": created_at,
-        "sale price": get_dollar_amount(result.amount),
-        "network fee": next(
+        "sale_price": get_dollar_amount(result.amount),
+        "network_fee": next(
             (
                 0 - get_dollar_amount(item["amount"])
                 for item in result.splits
@@ -213,7 +213,7 @@ def format_sale_for_download(
             ),
             None,
         ),
-        "pay extra": get_dollar_amount(result.extra_amount),
+        "pay_extra": get_dollar_amount(result.extra_amount),
         "total": next(
             (
                 get_dollar_amount(str(int(item["amount"]) + int(result.extra_amount)))

@@ -114,3 +114,22 @@ export const SendTipReactionRequestSchema = z.object({
 export type SendTipReactionRequest = z.input<
   typeof SendTipReactionRequestSchema
 >
+
+// Email-related types
+export interface EmailRequest {
+  emailOwnerUserId: number
+  primaryUserId: number
+  encryptedEmail: string
+  encryptedKey: string
+  delegatedUserIds?: number[]
+  delegatedKeys?: string[]
+}
+
+export const EmailSchema = z.object({
+  emailOwnerUserId: z.number(),
+  primaryUserId: z.number(),
+  encryptedEmail: z.string(),
+  encryptedKey: z.string(),
+  delegatedUserIds: z.array(z.number()).optional(),
+  delegatedKeys: z.array(z.string()).optional()
+})

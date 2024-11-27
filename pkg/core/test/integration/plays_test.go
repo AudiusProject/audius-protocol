@@ -26,18 +26,27 @@ var _ = Describe("Plays", func() {
 				TrackId:   uuid.NewString(),
 				Timestamp: timestamppb.New(time.Now()),
 				Signature: "todo: impl",
+				City:      uuid.NewString(),
+				Region:    uuid.NewString(),
+				Country:   uuid.NewString(),
 			},
 			{
 				UserId:    uuid.NewString(),
 				TrackId:   uuid.NewString(),
 				Timestamp: timestamppb.New(time.Now()),
 				Signature: "todo: impl",
+				City:      uuid.NewString(),
+				Region:    uuid.NewString(),
+				Country:   uuid.NewString(),
 			},
 			{
 				UserId:    uuid.NewString(),
 				TrackId:   uuid.NewString(),
 				Timestamp: timestamppb.New(time.Now()),
 				Signature: "todo: impl",
+				City:      uuid.NewString(),
+				Region:    uuid.NewString(),
+				Country:   uuid.NewString(),
 			},
 		}
 

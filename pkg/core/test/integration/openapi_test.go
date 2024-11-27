@@ -44,6 +44,9 @@ var _ = Describe("OpenAPI", func() {
 			TrackID:   "track1",
 			Timestamp: strfmt.DateTime(time.Now()),
 			Signature: "signature1",
+			City:      "city1",
+			Region:    uuid.NewString(),
+			Country:   uuid.NewString(),
 		}
 
 		playTwo := &models.ProtocolTrackPlay{
@@ -51,6 +54,9 @@ var _ = Describe("OpenAPI", func() {
 			TrackID:   "track1",
 			Timestamp: strfmt.DateTime(time.Now()),
 			Signature: "signature2",
+			City:      "city2",
+			Region:    uuid.NewString(),
+			Country:   uuid.NewString(),
 		}
 
 		trackPlays := &models.ProtocolTrackPlays{
@@ -95,8 +101,15 @@ var _ = Describe("OpenAPI", func() {
 		Expect(getPlayOne.Signature).To(Equal(playOne.Signature))
 		Expect(getPlayOne.UserID).To(Equal(playOne.UserID))
 		Expect(getPlayOne.TrackID).To(Equal(playOne.TrackID))
+		Expect(getPlayOne.City).To(Equal(playOne.City))
+		Expect(getPlayOne.Region).To(Equal(playOne.Region))
+		Expect(getPlayOne.Country).To(Equal(playOne.Country))
+
 		Expect(getPlayTwo.Signature).To(Equal(playTwo.Signature))
 		Expect(getPlayTwo.UserID).To(Equal(playTwo.UserID))
 		Expect(getPlayTwo.TrackID).To(Equal(playTwo.TrackID))
+		Expect(getPlayTwo.City).To(Equal(playTwo.City))
+		Expect(getPlayTwo.Region).To(Equal(playTwo.Region))
+		Expect(getPlayTwo.Country).To(Equal(playTwo.Country))
 	})
 })
