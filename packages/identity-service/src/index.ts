@@ -1,6 +1,6 @@
 'use strict'
 
-import { ethereumRouter } from './typed-routes/ethereum/ethRelay'
+import { ethereumRouter } from './typed-routes/ethereum/ethRpc'
 import { solanaRouter } from './typed-routes/solana/solanaRelay'
 
 // Import libs before anything else becaues it takes a very long time to load.
