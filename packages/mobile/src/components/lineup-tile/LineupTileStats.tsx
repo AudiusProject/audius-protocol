@@ -205,11 +205,11 @@ export const LineupTileStats = ({
         {isTrending ? (
           <LineupTileRankIcon showCrown={showRankIcon} index={index} />
         ) : null}
-        {isCollection ? (
+        {/* {isCollection ? (
           <CollectionAccessTypeLabel collectionId={id} />
         ) : (
           <TrackAccessTypeLabel trackId={id} />
-        )}
+        )} */}
         <View style={styles.leftStats}>
           {hasEngagement && !isUnlisted ? (
             <>
