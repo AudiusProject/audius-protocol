@@ -5,8 +5,6 @@ import {
   IconPlaylists
 } from '@audius/harmony-native'
 import { Screen, ScreenContent, ScreenHeader } from 'app/components/core'
-import { ScreenPrimaryContent } from 'app/components/core/Screen/ScreenPrimaryContent'
-import { ScreenSecondaryContent } from 'app/components/core/Screen/ScreenSecondaryContent'
 import { TopTabNavigator } from 'app/components/top-tab-bar'
 import { useAppTabScreen } from 'app/hooks/useAppTabScreen'
 import { makeStyles } from 'app/styles'
@@ -53,23 +51,19 @@ export const FavoritesScreen = () => {
 
   return (
     <Screen>
-      <ScreenPrimaryContent>
-        <ScreenHeader
-          text={messages.header}
-          icon={IconLibrary}
-          styles={headerStyles}
-        >
-          <FavoritesDownloadSection />
-          <LibraryCategorySelectionMenu />
-        </ScreenHeader>
-      </ScreenPrimaryContent>
+      <ScreenHeader
+        text={messages.header}
+        icon={IconLibrary}
+        styles={headerStyles}
+      >
+        <FavoritesDownloadSection />
+        <LibraryCategorySelectionMenu />
+      </ScreenHeader>
       <ScreenContent isOfflineCapable>
-        <ScreenSecondaryContent>
-          <TopTabNavigator
-            screens={favoritesScreens}
-            screenOptions={{ lazy: true }}
-          />
-        </ScreenSecondaryContent>
+        <TopTabNavigator
+          screens={favoritesScreens}
+          screenOptions={{ lazy: true }}
+        />
       </ScreenContent>
     </Screen>
   )

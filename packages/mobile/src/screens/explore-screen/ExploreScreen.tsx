@@ -10,8 +10,6 @@ import {
   IconUser
 } from '@audius/harmony-native'
 import { Screen, ScreenContent, ScreenHeader } from 'app/components/core'
-import { ScreenPrimaryContent } from 'app/components/core/Screen/ScreenPrimaryContent'
-import { ScreenSecondaryContent } from 'app/components/core/Screen/ScreenSecondaryContent'
 import { TopTabNavigator } from 'app/components/top-tab-bar'
 import { useAppTabScreen } from 'app/hooks/useAppTabScreen'
 
@@ -61,20 +59,16 @@ const ExploreScreen = () => {
 
   return (
     <Screen>
-      <ScreenPrimaryContent>
-        <ScreenHeader
-          text={messages.header}
-          icon={IconExplore}
-          iconProps={{ height: 30 }}
-        />
-      </ScreenPrimaryContent>
+      <ScreenHeader
+        text={messages.header}
+        icon={IconExplore}
+        iconProps={{ height: 30 }}
+      />
       <ScreenContent>
-        <ScreenSecondaryContent>
-          <TopTabNavigator
-            screens={exploreScreens}
-            screenOptions={{ lazy: true }}
-          />
-        </ScreenSecondaryContent>
+        <TopTabNavigator
+          screens={exploreScreens}
+          screenOptions={{ lazy: true }}
+        />
       </ScreenContent>
     </Screen>
   )
