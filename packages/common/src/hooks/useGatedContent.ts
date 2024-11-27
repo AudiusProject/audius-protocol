@@ -15,7 +15,7 @@ import {
   isContentTipGated,
   isContentUSDCPurchaseGated
 } from '~/models/Track'
-import { getHasAccount } from '~/store/account/selectors'
+import { getAccountUser } from '~/store/account/selectors'
 import { cacheTracksSelectors, cacheUsersSelectors } from '~/store/cache'
 import { gatedContentSelectors } from '~/store/gated-content'
 import { CommonState } from '~/store/reducers'
@@ -31,7 +31,7 @@ export const useGatedContentAccess = (
   content: Nullable<Partial<Track | Collection>>
 ) => {
   const nftAccessSignatureMap = useSelector(getNftAccessSignatureMap)
-  const hasAccount = useSelector(getHasAccount)
+  const user = useSelector(getAccountUser)
 
   const { isFetchingNFTAccess, hasStreamAccess, hasDownloadAccess } =
     useMemo(() => {
@@ -66,14 +66,14 @@ export const useGatedContentAccess = (
         // if nft gated track, the signature would have been fetched separately
         nftAccessSignatureMap[trackId] === undefined &&
         // signature is fetched only if the user is logged in
-        hasAccount
+        !!user
 
       return {
         isFetchingNFTAccess: !hasNftAccessSignature && isSignatureToBeFetched,
         hasStreamAccess: !isStreamGated || !!stream,
         hasDownloadAccess: !isDownloadGated || !!download
       }
-    }, [content, nftAccessSignatureMap, hasAccount])
+    }, [content, nftAccessSignatureMap, user])
 
   return { isFetchingNFTAccess, hasStreamAccess, hasDownloadAccess }
 }
@@ -83,7 +83,7 @@ export const useGatedContentAccess = (
 // {[id: ID]: { isFetchingNFTAccess: boolean, hasStreamAccess: boolean }}
 export const useGatedContentAccessMap = (tracks: Partial<Track>[]) => {
   const nftAccessSignatureMap = useSelector(getNftAccessSignatureMap)
-  const hasAccount = useSelector(getHasAccount)
+  const user = useSelector(getAccountUser)
 
   const result = useMemo(() => {
     const map: {
@@ -105,7 +105,7 @@ export const useGatedContentAccessMap = (tracks: Partial<Track>[]) => {
         // if nft gated track, the signature would have been fetched separately
         nftAccessSignatureMap[trackId] === undefined &&
         // signature is fetched only if the user is logged in
-        hasAccount
+        !!user
 
       map[trackId] = {
         isFetchingNFTAccess: !hasNftAccessSignature && isSignatureToBeFetched,
@@ -114,7 +114,7 @@ export const useGatedContentAccessMap = (tracks: Partial<Track>[]) => {
     })
 
     return map
-  }, [tracks, nftAccessSignatureMap, hasAccount])
+  }, [tracks, nftAccessSignatureMap, user])
 
   return result
 }

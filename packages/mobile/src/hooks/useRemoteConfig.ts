@@ -8,11 +8,11 @@ import { useSelector } from 'react-redux'
 
 import { remoteConfigInstance } from 'app/services/remote-config/remote-config-instance'
 const { isRemoteConfigLoaded } = remoteConfigSelectors
-const { getHasAccount } = accountSelectors
+const { getAccountUser } = accountSelectors
 
 export const useFeatureFlag = createUseFeatureFlagHook({
   remoteConfigInstance,
-  useHasAccount: () => useSelector(getHasAccount),
+  useHasAccount: () => !!useSelector(getAccountUser),
   useHasConfigLoaded: () => !!useSelector(isRemoteConfigLoaded),
   setLocalStorageItem: AsyncStorage.setItem,
   getLocalStorageItem: AsyncStorage.getItem
@@ -20,6 +20,6 @@ export const useFeatureFlag = createUseFeatureFlagHook({
 
 export const useRemoteVar = createUseRemoteVarHook({
   remoteConfigInstance,
-  useHasAccount: () => useSelector(getHasAccount),
+  useHasAccount: () => !!useSelector(getAccountUser),
   useHasConfigLoaded: () => !!useSelector(isRemoteConfigLoaded)
 })

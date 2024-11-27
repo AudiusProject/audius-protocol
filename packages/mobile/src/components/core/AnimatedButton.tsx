@@ -50,7 +50,7 @@ export const AnimatedButton = ({
   wrapperStyle,
   haptics,
   hapticsConfig,
-  waitForAnimationFinish = true,
+  waitForAnimationFinish,
   children,
   lottieProps,
   ...pressableProps
@@ -118,8 +118,8 @@ export const AnimatedButton = ({
     handleHaptics()
 
     if (hasMultipleStates || !isActive) {
-      animationRef.current?.play()
       setIsPlaying(true)
+      animationRef.current?.play()
     }
     if (!waitForAnimationFinish) {
       onPress?.()
@@ -148,8 +148,8 @@ export const AnimatedButton = ({
   useEffect(() => {
     if (hasMultipleStates) {
       if (isActive !== previousActiveState && !isPlaying) {
-        animationRef.current?.play()
         setIsPlaying(true)
+        animationRef.current?.play()
       }
     }
   }, [
