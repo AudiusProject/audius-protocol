@@ -3,7 +3,7 @@ import { View } from 'react-native'
 
 import { Flex } from '@audius/harmony-native'
 import { LineupTileSkeleton } from 'app/components/lineup-tile'
-import Skeleton, { StaticSkeleton } from 'app/components/skeleton'
+import Skeleton from 'app/components/skeleton'
 import { makeStyles } from 'app/styles'
 
 const useStyles = makeStyles(({ palette, spacing }) => ({
@@ -117,7 +117,11 @@ const BioSkeleton = () => {
   return (
     <>
       {elements.map((elementWidth: number, i) => (
-        <StaticSkeleton key={i} style={[baseStyle, { width: elementWidth }]} />
+        <Skeleton
+          key={i}
+          noShimmer
+          style={[baseStyle, { width: elementWidth }]}
+        />
       ))}
     </>
   )
@@ -126,18 +130,18 @@ const BioSkeleton = () => {
 export const ExpandableSectionSkeleton = () => {
   const styles = useStyles()
   return (
-    <Flex column gap='s' backgroundColor='white'>
+    <Flex column gap='s'>
       <Flex row wrap='wrap'>
         <BioSkeleton />
       </Flex>
-      <Flex style={styles.tierAndSocials} backgroundColor='white'>
-        <StaticSkeleton style={styles.tier} />
+      <View style={styles.tierAndSocials}>
+        <Skeleton style={styles.tier} />
         <View style={styles.socialLinks}>
-          <StaticSkeleton style={styles.socialLink} />
-          <StaticSkeleton style={styles.socialLink} />
-          <StaticSkeleton style={styles.socialLink} />
+          <Skeleton style={styles.socialLink} />
+          <Skeleton style={styles.socialLink} />
+          <Skeleton style={styles.socialLink} />
         </View>
-      </Flex>
+      </View>
       {/* TODO: add tip button and supporters skeletons */}
     </Flex>
   )
@@ -145,21 +149,21 @@ export const ExpandableSectionSkeleton = () => {
 
 export const ProfileHeaderSkeleton = () => {
   const styles = useStyles()
-  const statSkeleton = <StaticSkeleton style={styles.stat} />
+  const statSkeleton = <Skeleton style={styles.stat} />
 
   return (
-    <Flex backgroundColor='white'>
-      <StaticSkeleton height={96} />
+    <Flex column>
+      <Skeleton height={96} />
       <Skeleton style={styles.profilePicture} />
-      <Flex p='l' gap='s' backgroundColor='white'>
-        <Flex row justifyContent='space-between' backgroundColor='white'>
+      <Flex p='l' gap='s'>
+        <Flex row justifyContent='space-between'>
           <Flex mt='3xl'>
-            <StaticSkeleton style={styles.name} />
-            <StaticSkeleton style={styles.handle} />
+            <Skeleton style={styles.name} />
+            <Skeleton style={styles.handle} />
           </Flex>
           <Flex row gap='s'>
-            <StaticSkeleton height={32} width={32} />
-            <StaticSkeleton height={32} width={120} />
+            <Skeleton height={32} width={32} />
+            <Skeleton height={32} width={120} />
           </Flex>
         </Flex>
         <Flex row>
@@ -183,7 +187,7 @@ export const ProfileTabsSkeleton = () => {
 
   return (
     <>
-      <StaticSkeleton style={styles.tabs} />
+      <Skeleton style={styles.tabs} />
       {lineupTile}
       {lineupTile}
       {lineupTile}
