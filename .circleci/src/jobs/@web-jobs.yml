@@ -287,7 +287,7 @@ web-dist-mac-staging:
   # run on macos so dmg can be created and signed.
   resource_class: macos.m1.large.gen1
   macos:
-    xcode: '15.4.0'
+    xcode: '16.0.0'
   steps:
     - web-distribute:
         build-type: mac-publish
@@ -320,7 +320,7 @@ web-dist-mac-production:
   # run on macos so dmg can be created and signed.
   resource_class: macos.m1.large.gen1
   macos:
-    xcode: '15.4.0'
+    xcode: '16.0.0'
   steps:
     - web-distribute:
         build-type: mac-publish-production
