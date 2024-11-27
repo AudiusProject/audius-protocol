@@ -268,7 +268,7 @@ def download_sales(args: DownloadSalesArgs, return_json: bool = False):
                 result,
                 seller_handle,
                 seller_user_id,
-                is_for_json_response=return_json,  # Only include email for JSON response
+                is_for_json_response=return_json,  # Used to determine if we should include email
             ),
             results,
         )
