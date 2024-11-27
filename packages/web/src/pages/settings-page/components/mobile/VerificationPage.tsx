@@ -1,12 +1,6 @@
 import { useCallback, useState } from 'react'
 
-import {
-  Name,
-  SquareSizes,
-  Status,
-  ID,
-  ProfilePictureSizes
-} from '@audius/common/models'
+import { Name, SquareSizes, Status, ID } from '@audius/common/models'
 import { BooleanKeys } from '@audius/common/services'
 import {
   InstagramProfile,
