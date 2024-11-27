@@ -212,17 +212,17 @@ core-down-sandbox:
 	@docker compose -f ./cmd/core/infra/docker-compose.yml --profile prod --profile stage --profile dev down
 
 .PHONY: core-prod-sandbox
-core-prod-sandbox:
+core-prod-sandbox: core-build-amd64
 	@scripts/add-sandbox-hosts.sh
 	@docker compose -f ./cmd/core/infra/docker-compose.yml --profile prod up --build -d
 
 .PHONY: core-stage-sandbox
-core-stage-sandbox:
+core-stage-sandbox: core-build-amd64
 	@scripts/add-sandbox-hosts.sh
 	@docker compose -f ./cmd/core/infra/docker-compose.yml --profile stage up --build -d
 
 .PHONY: core-dev-sandbox
-core-dev-sandbox:
+core-dev-sandbox: core-build-amd64
 	@scripts/add-sandbox-hosts.sh
 	@docker compose -f ./cmd/core/infra/docker-compose.yml --profile dev up --build -d
 

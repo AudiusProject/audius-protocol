@@ -180,7 +180,11 @@ export const formOAuthResponse = async ({
   const message = `${header}.${payload}`
   let signedData: { data: string; signature: string }
   try {
-    signedData = await audiusBackendInstance.signDiscoveryNodeRequest(message)
+    const sdk = await audiusSdk()
+    signedData = await audiusBackendInstance.signDiscoveryNodeRequest({
+      sdk,
+      input: message
+    })
   } catch {
     onError()
     return

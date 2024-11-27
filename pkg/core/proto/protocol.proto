@@ -104,6 +104,9 @@ message TrackPlay {
   string track_id = 2;
   google.protobuf.Timestamp timestamp = 3;
   string signature = 4;
+  string city = 5;
+  string region = 6;
+  string country = 7;
 }
 
 message PingRequest {}

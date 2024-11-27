@@ -82,6 +82,8 @@ func (s *GRPCServer) SendTransaction(ctx context.Context, req *proto.SendTransac
 	txHashCh := ps.Subscribe(txhash)
 	defer ps.Unsubscribe(txhash, txHashCh)
 
+	s.logger.Infof("adding tx: %v", req.Transaction)
+
 	// add transaction to mempool with broadcast set to true
 	err = s.mempool.AddTransaction(txhash, mempoolTx, true)
 	if err != nil {
@@ -111,7 +113,7 @@ func (s *GRPCServer) ForwardTransaction(ctx context.Context, req *proto.ForwardT
 		return nil, fmt.Errorf("could not get tx hash of signed tx: %v", err)
 	}
 
-	s.logger.Infof("received forwarded tx: %s", mempoolKey)
+	s.logger.Infof("received forwarded tx: %v", req.Transaction)
 
 	// TODO: intake block deadline from request
 	status, err := s.cometRpc.Status(ctx)

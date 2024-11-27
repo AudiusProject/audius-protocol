@@ -1,7 +1,8 @@
 import {
   accountSelectors,
   notificationsActions,
-  getContext
+  getContext,
+  getSDK
 } from '@audius/common/store'
 import commonNotificationsSagas, {
   getPollingIntervalMs
@@ -24,7 +25,8 @@ function* resetNotificationBadgeCount() {
     const hasAccount = yield* select(getHasAccount)
     if (hasAccount) {
       PushNotifications.setBadgeCount(0)
-      yield* call(audiusBackendInstance.clearNotificationBadges)
+      const sdk = yield* getSDK()
+      yield* call(audiusBackendInstance.clearNotificationBadges, { sdk })
     }
   } catch (error) {
     console.error(error)

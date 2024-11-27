@@ -986,6 +986,7 @@ function* followArtists(
 ) {
   const { skipDefaultFollows } = action
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
+  const sdk = yield* getSDK()
   const { ENVIRONMENT } = yield* getContext('env')
   const defaultFollowUserIds = skipDefaultFollows
     ? new Set([])
@@ -1053,7 +1054,7 @@ function* followArtists(
     yield* put(signOnActions.setAccountReady())
     // The update user location depends on the user being discoverable in discprov
     // So we wait until both the user is indexed and the follow user actions are finished
-    yield* call(audiusBackendInstance.updateUserLocationTimezone)
+    yield* call(audiusBackendInstance.updateUserLocationTimezone, { sdk })
   } catch (err: any) {
     const reportToSentry = yield* getContext('reportToSentry')
     reportToSentry({
@@ -1139,12 +1140,14 @@ function* watchOpenSignOn() {
 
 function* watchSendWelcomeEmail() {
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
+  const sdk = yield* getSDK()
   yield* takeLatest(
     signOnActions.SEND_WELCOME_EMAIL,
     function* (action: ReturnType<typeof signOnActions.sendWelcomeEmail>) {
       const hasAccount = yield* select(getHasAccount)
       if (!hasAccount) return
       yield* call(audiusBackendInstance.sendWelcomeEmail, {
+        sdk,
         name: action.name
       })
     }
