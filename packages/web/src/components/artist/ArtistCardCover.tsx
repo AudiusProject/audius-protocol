@@ -1,6 +1,5 @@
 import { useCallback } from 'react'
 
-import { imageCoverPhotoBlank } from '@audius/common/assets'
 import { SquareSizes, WidthSizes, User } from '@audius/common/models'
 import { route } from '@audius/common/utils'
 import { IconArtistBadge as BadgeArtist } from '@audius/harmony'
@@ -30,10 +29,9 @@ export const ArtistCardCover = (props: ArtistCoverProps) => {
   const { user_id, name, handle } = artist
   const dispatch = useDispatch()
 
-  const coverPhoto = useCoverPhoto({
+  const { image: coverPhoto, shouldBlur } = useCoverPhoto({
     userId: user_id,
-    size: WidthSizes.SIZE_640,
-    defaultImage: imageCoverPhotoBlank
+    size: WidthSizes.SIZE_640
   })
   const profilePicture = useProfilePicture({
     userId: user_id,
@@ -54,7 +52,7 @@ export const ArtistCardCover = (props: ArtistCoverProps) => {
       wrapperClassName={styles.artistCoverPhoto}
       image={darkenedCoverPhoto}
       immediate
-      useBlur={coverPhoto === imageCoverPhotoBlank}
+      useBlur={shouldBlur}
     >
       <div className={styles.coverPhotoContentContainer}>
         {isArtist ? <BadgeArtist className={styles.badgeArtist} /> : null}

@@ -1,6 +1,5 @@
 import { HTMLProps, useContext } from 'react'
 
-import { imageCoverPhotoBlank } from '@audius/common/assets'
 import { Name, WidthSizes, UserMetadata } from '@audius/common/models'
 import { formatCount } from '@audius/common/utils'
 import {
@@ -41,10 +40,9 @@ export const FollowArtistCard = (props: FollowArtistTileProps) => {
   } = props
   const dispatch = useDispatch()
   const { isMobile } = useMedia()
-  const coverPhoto = useCoverPhoto({
+  const { image: coverPhoto, shouldBlur } = useCoverPhoto({
     userId: user_id,
-    size: WidthSizes.SIZE_640,
-    defaultImage: imageCoverPhotoBlank
+    size: WidthSizes.SIZE_640
   })
   const [followField] = useField({ name: 'selectedArtists', type: 'checkbox' })
   const { spacing } = useTheme()
@@ -142,7 +140,7 @@ export const FollowArtistCard = (props: FollowArtistTileProps) => {
               width: '100%',
               borderRadius: '8px',
               overflow: 'hidden',
-              ...(coverPhoto === imageCoverPhotoBlank
+              ...(shouldBlur
                 ? {
                     backdropFilter: 'blur(25px)'
                   }

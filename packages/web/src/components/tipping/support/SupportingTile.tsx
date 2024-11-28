@@ -1,6 +1,5 @@
 import { useCallback } from 'react'
 
-import { imageCoverPhotoBlank } from '@audius/common/assets'
 import {
   SquareSizes,
   WidthSizes,
@@ -39,10 +38,9 @@ export const SupportingTile = ({ supporting }: SupportingCardProps) => {
     userId: receiver?.user_id,
     size: SquareSizes.SIZE_150_BY_150
   })
-  const coverPhoto = useCoverPhoto({
+  const { image: coverPhoto, shouldBlur } = useCoverPhoto({
     userId: receiver?.user_id,
-    size: WidthSizes.SIZE_640,
-    defaultImage: imageCoverPhotoBlank
+    size: WidthSizes.SIZE_640
   })
 
   const handleClick = useCallback(() => {
@@ -65,7 +63,7 @@ export const SupportingTile = ({ supporting }: SupportingCardProps) => {
           left: 0,
           height: '100%',
           width: '100%',
-          ...(coverPhoto === imageCoverPhotoBlank
+          ...(shouldBlur
             ? {
                 backdropFilter: 'blur(25px)'
               }

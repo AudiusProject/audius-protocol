@@ -202,7 +202,7 @@ const ProfileHeader = ({
     }
   }, [website, donation, hasEllipsis, setHasEllipsis])
 
-  let coverPhoto = useCoverPhoto({
+  let { image: coverPhoto } = useCoverPhoto({
     userId,
     size: WidthSizes.SIZE_2000
   })

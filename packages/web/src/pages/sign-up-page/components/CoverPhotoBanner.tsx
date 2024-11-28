@@ -39,7 +39,7 @@ export const CoverPhotoBanner = (props: CoverPhotoBannerProps) => {
     userId: userId ?? undefined,
     size: SquareSizes.SIZE_150_BY_150
   })
-  const accountCoverPhoto = useCoverPhoto({
+  const { image: accountCoverPhoto } = useCoverPhoto({
     userId: userId ?? undefined,
     size: WidthSizes.SIZE_640,
     defaultImage: undefined

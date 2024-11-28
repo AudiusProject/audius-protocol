@@ -1,4 +1,3 @@
-import { imageCoverPhotoBlank } from '@audius/common/assets'
 import { SquareSizes, WidthSizes, ID } from '@audius/common/models'
 import { route } from '@audius/common/utils'
 import { Text } from '@audius/harmony'
@@ -24,10 +23,9 @@ export const ArtistCard = ({ userId, handle, name }: ArtistCardProps) => {
     userId,
     size: SquareSizes.SIZE_150_BY_150
   })
-  const coverPhoto = useCoverPhoto({
+  const { image: coverPhoto, shouldBlur } = useCoverPhoto({
     userId: userId ?? undefined,
-    size: WidthSizes.SIZE_2000,
-    defaultImage: imageCoverPhotoBlank
+    size: WidthSizes.SIZE_2000
   })
   const navigate = useNavigateToPage()
 
@@ -37,7 +35,7 @@ export const ArtistCard = ({ userId, handle, name }: ArtistCardProps) => {
         className={styles.coverPhoto}
         wrapperClassName={styles.coverPhotoWrapper}
         image={coverPhoto}
-        useBlur={coverPhoto === imageCoverPhotoBlank}
+        useBlur={shouldBlur}
       />
       <div className={styles.details}>
         <DynamicImage

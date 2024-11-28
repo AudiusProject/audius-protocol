@@ -39,15 +39,13 @@ export const useCoverPhoto = ({
     preloadImageFn: preload
   })
 
-  if (user?.updatedCoverPhoto) {
-    return user.updatedCoverPhoto.url
-  }
-
   const isDefaultCover = image === imageCoverPhotoBlank
   const isDefaultProfile = profilePicture === imageProfilePicEmpty
+  const shouldBlur = isDefaultCover && !isDefaultProfile
 
-  if (isDefaultCover && !isDefaultProfile) {
-    return profilePicture
+  if (user?.updatedCoverPhoto && !shouldBlur) {
+    return { image: user.updatedCoverPhoto.url, shouldBlur }
   }
-  return image
+
+  return { image: shouldBlur ? profilePicture : image, shouldBlur }
 }

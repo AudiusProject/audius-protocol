@@ -1,4 +1,3 @@
-import { imageCoverPhotoBlank } from '@audius/common/assets'
 import {
   SquareSizes,
   WidthSizes,
@@ -33,14 +32,11 @@ export const ArtistCover = ({
   name,
   handle,
   isArtist,
-  onNameClick,
-  profilePictureSizes,
-  coverPhotoSizes
+  onNameClick
 }: ArtistCoverProps) => {
-  const coverPhoto = useCoverPhoto({
+  const { image: coverPhoto, shouldBlur } = useCoverPhoto({
     userId,
-    size: WidthSizes.SIZE_640,
-    defaultImage: imageCoverPhotoBlank
+    size: WidthSizes.SIZE_640
   })
   const profilePicture = useProfilePicture({
     userId,
@@ -54,7 +50,7 @@ export const ArtistCover = ({
       wrapperClassName={styles.artistCoverPhoto}
       image={darkenedCoverPhoto}
       immediate
-      useBlur={coverPhoto === imageCoverPhotoBlank}
+      useBlur={shouldBlur}
     >
       <div className={styles.coverPhotoContentContainer}>
         {isArtist ? <BadgeArtist className={styles.badgeArtist} /> : null}
