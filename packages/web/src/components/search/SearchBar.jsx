@@ -322,7 +322,7 @@ class SearchBar extends Component {
                   id={String(opt.id)}
                   userId={opt.userId}
                   sizes={opt.sizes}
-                  imageMultihash={opt.imageMultihash}
+                  artwork={opt.artwork}
                   size={opt.size}
                   primary={opt.primary}
                   defaultImage={opt.defaultImage}
