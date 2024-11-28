@@ -34,9 +34,9 @@ module.exports = function (app) {
     handleResponse(async (req, res, next) => {
       const redis = req.app.get('redis')
       const sendgrid = req.app.get('sendgrid')
-      // if (!sendgrid) {
-      //   req.logger.error('Missing sendgrid api key')
-      // }
+      if (!sendgrid) {
+        req.logger.error('Missing sendgrid api key')
+      }
 
       // body should contain {iv, cipherText, lookupKey}
       const body = req.body
