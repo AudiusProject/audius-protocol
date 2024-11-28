@@ -341,6 +341,9 @@ immutable_user_fields = immutable_fields | {
     "wallet",
     "is_available",
     "is_verified",
+    # Legacy fields that can be removed
+    "profile_picture",
+    "cover_photo",
 }
 
 track_comment_notification_setting_format = {

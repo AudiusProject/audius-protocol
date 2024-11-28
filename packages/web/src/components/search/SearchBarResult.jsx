@@ -1,39 +1,26 @@
-import { useState, useEffect, memo } from 'react'
+import { memo } from 'react'
 
 import { imageBlank as placeholderArt } from '@audius/common/assets'
+import { useImageSize2 } from '@audius/common/hooks'
 import { Kind } from '@audius/common/models'
 import cn from 'classnames'
 import PropTypes from 'prop-types'
 
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import UserBadges from 'components/user-badges/UserBadges'
-import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
+import { preload } from 'utils/image'
 
 import searchBarStyles from './SearchBar.module.css'
 import styles from './SearchBarResult.module.css'
 
 const Image = memo((props) => {
-  const { defaultImage, imageMultihash, size, isUser } = props
-  const [image, setImage] = useState(imageMultihash ? '' : defaultImage)
-  useEffect(() => {
-    if (!imageMultihash) return
-    let isCanceled = false
-    const getImage = async () => {
-      try {
-        const url = await audiusBackendInstance.getImageUrl(
-          imageMultihash,
-          size
-        )
-        if (!isCanceled) setImage(url || defaultImage)
-      } catch (err) {
-        if (!isCanceled) setImage(defaultImage)
-      }
-    }
-    getImage()
-    return () => {
-      isCanceled = true
-    }
-  }, [defaultImage, imageMultihash, size])
+  const { defaultImage, artwork, size, isUser } = props
+  const image = useImageSize2({
+    artwork,
+    targetSize: size,
+    defaultImage,
+    preloadImageFn: preload
+  })
   return (
     <DynamicImage
       skeletonClassName={cn({ [styles.userImageContainerSkeleton]: isUser })}
@@ -56,7 +43,7 @@ const SearchBarResult = memo((props) => {
     sizes,
     primary,
     secondary,
-    imageMultihash,
+    artwork,
     size,
     defaultImage,
     isVerifiedUser,
@@ -71,7 +58,7 @@ const SearchBarResult = memo((props) => {
         isUser={isUser}
         id={id}
         sizes={sizes}
-        imageMultihash={imageMultihash}
+        artwork={artwork}
         defaultImage={defaultImage}
         size={size}
       />
@@ -121,7 +108,7 @@ SearchBarResult.propTypes = {
   kind: PropTypes.string,
   id: PropTypes.string,
   sizes: PropTypes.object,
-  imageMultihash: PropTypes.string,
+  artwork: PropTypes.object,
   size: PropTypes.string,
   defaultImage: PropTypes.string,
   isVerifiedUser: PropTypes.bool

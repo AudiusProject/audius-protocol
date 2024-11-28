@@ -10,15 +10,7 @@
           "type": ["string", "null"],
           "default": null
         },
-        "profile_picture": {
-          "type": ["string", "null"],
-          "default": null
-        },
         "profile_picture_sizes": {
-          "type": ["string", "null"],
-          "default": null
-        },
-        "cover_photo": {
           "type": ["string", "null"],
           "default": null
         },
@@ -100,7 +92,6 @@
         "cover_photo_sizes",
         "location",
         "name",
-        "profile_picture",
         "profile_picture_sizes",
         "artist_pick_track_id"
       ],

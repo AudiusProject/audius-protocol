@@ -299,10 +299,16 @@ function* publishWorker(
         throw new Error('No user id found during upload. Not signed in?')
       }
       const libs = yield* call(audiusBackendInstance.getAudiusLibsTyped)
+      // TODO - I am unsure why these types are not working as expected.
+      // Nothing around it appears to change but this code should be removed
+      // with the move of upload to sdk.
       const {
+        // @ts-ignore
         trackId: updatedTrackId,
+        // @ts-ignore
         txReceipt: { blockHash, blockNumber }
       } = yield* call(
+        // @ts-ignore
         [libs.Track, libs.Track!.writeTrackToChain],
         userId,
         metadata,

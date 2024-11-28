@@ -8,7 +8,7 @@ import Lottie from 'react-lottie'
 import loadingSpinner from 'assets/animations/loadingSpinner.json'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import ImageSelectionButton from 'components/image-selection/ImageSelectionButton'
-import { useUserProfilePicture } from 'hooks/useUserProfilePicture'
+import { useProfilePicture } from 'hooks/useProfilePicture'
 
 import styles from './ProfilePicture.module.css'
 
@@ -30,11 +30,10 @@ const ProfilePicture = ({
   includePopup,
   hasProfilePicture
 }) => {
-  const image = useUserProfilePicture(
+  const image = useProfilePicture({
     userId,
-    profilePictureSizes,
-    SquareSizes.SIZE_480_BY_480
-  )
+    size: SquareSizes.SIZE_480_BY_480
+  })
   const [hasChanged, setHasChanged] = useState(false)
   const [processing, setProcessing] = useState(false)
   const [modalOpen, setModalOpen] = useState(false)
