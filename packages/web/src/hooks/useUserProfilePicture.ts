@@ -17,15 +17,18 @@ export const useProfilePicture = ({
   size: SquareSizes
   defaultImage?: string
 }) => {
-  const artwork = useSelector(
-    (state) => getUser(state, { id: userId })?.profile_picture
-  )
+  const user = useSelector((state) => getUser(state, { id: userId }))
+
+  const profilePicture = user?.profile_picture
   const image = useImageSize2({
-    artwork,
+    artwork: profilePicture,
     targetSize: size,
     defaultImage: defaultImage ?? profilePicEmpty,
     preloadImageFn: preload
   })
 
+  if (user?.updatedProfilePicture) {
+    return user.updatedProfilePicture.url
+  }
   return image
 }

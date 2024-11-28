@@ -30,21 +30,24 @@ export const useCoverPhoto = ({
         : SquareSizes.SIZE_1000_BY_1000,
     defaultImage: imageProfilePicEmpty
   })
-  const artwork = useSelector(
-    (state) => getUser(state, { id: userId })?.cover_photo
-  )
-  const coverPhoto = useImageSize2({
-    artwork,
+  const user = useSelector((state) => getUser(state, { id: userId }))
+  const coverPhoto = user?.cover_photo
+  const image = useImageSize2({
+    artwork: coverPhoto,
     targetSize: size,
     defaultImage: defaultImage ?? imageCoverPhotoBlank,
     preloadImageFn: preload
   })
 
-  const isDefaultCover = coverPhoto === imageCoverPhotoBlank
+  if (user?.updatedCoverPhoto) {
+    return user.updatedCoverPhoto.url
+  }
+
+  const isDefaultCover = image === imageCoverPhotoBlank
   const isDefaultProfile = profilePicture === imageProfilePicEmpty
 
   if (isDefaultCover && !isDefaultProfile) {
     return profilePicture
   }
-  return coverPhoto
+  return image
 }

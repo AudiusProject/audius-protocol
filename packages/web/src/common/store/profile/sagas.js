@@ -605,11 +605,13 @@ function* confirmUpdateProfile(userId, metadata) {
         if (metadata.updatedCoverPhoto) {
           newMetadata.cover_photo_sizes = confirmedUser.cover_photo_sizes
           newMetadata.cover_photo_cids = confirmedUser.cover_photo_cids
+          newMetadata.cover_photo = confirmedUser.cover_photo
         }
         if (metadata.updatedProfilePicture) {
           newMetadata.profile_picture_sizes =
             confirmedUser.profile_picture_sizes
           newMetadata.profile_picture_cids = confirmedUser.profile_picture_cids
+          newMetadata.profile_picture = confirmedUser.profile_picture
         }
         yield put(
           cacheActions.update(Kind.USERS, [
