@@ -7,7 +7,7 @@ import { ArtistPopover } from 'components/artist/ArtistPopover'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import { MountPlacement } from 'components/types'
 import UserBadges from 'components/user-badges/UserBadges'
-import { useProfilePicture } from 'hooks/useUserProfilePicture'
+import { useProfilePicture } from 'hooks/useProfilePicture'
 
 import styles from './ArtistChip.module.css'
 import { ArtistChipFollowers } from './ArtistChipFollowers'

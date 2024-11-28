@@ -26,7 +26,7 @@ import {
 } from 'common/store/pages/signon/selectors'
 import Drawer from 'components/drawer/Drawer'
 import { useMedia } from 'hooks/useMedia'
-import { useProfilePicture } from 'hooks/useUserProfilePicture'
+import { useProfilePicture } from 'hooks/useProfilePicture'
 import { CoverPhotoBanner } from 'pages/sign-up-page/components/CoverPhotoBanner'
 import { useSelector } from 'utils/reducer'
 

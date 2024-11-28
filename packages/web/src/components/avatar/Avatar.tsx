@@ -9,7 +9,7 @@ import {
 
 import { UserLink } from 'components/link'
 import { MountPlacement } from 'components/types'
-import { useProfilePicture } from 'hooks/useUserProfilePicture'
+import { useProfilePicture } from 'hooks/useProfilePicture'
 import { useSelector } from 'utils/reducer'
 
 const { getUserId } = accountSelectors

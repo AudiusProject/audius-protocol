@@ -9,7 +9,7 @@ import { cacheUsersSelectors } from '@audius/common/store'
 import { preload } from 'utils/image'
 import { useSelector } from 'utils/reducer'
 
-import { useProfilePicture } from './useUserProfilePicture'
+import { useProfilePicture } from './useProfilePicture'
 
 const { getUser } = cacheUsersSelectors
 

@@ -4,7 +4,7 @@ import styled from '@emotion/styled'
 
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import UserBadges from 'components/user-badges/UserBadges'
-import { useProfilePicture } from 'hooks/useUserProfilePicture'
+import { useProfilePicture } from 'hooks/useProfilePicture'
 import { backgroundOverlay } from 'utils/styleUtils'
 
 import styles from './AccountSwitcherRow.module.css'

@@ -16,7 +16,7 @@ import { usePrevious } from 'react-use'
 
 import { ComposerInput } from 'components/composer-input/ComposerInput'
 import { useIsMobile } from 'hooks/useIsMobile'
-import { useProfilePicture } from 'hooks/useUserProfilePicture'
+import { useProfilePicture } from 'hooks/useProfilePicture'
 import { make, track } from 'services/analytics'
 import { audioPlayer } from 'services/audio-player'
 

@@ -20,7 +20,7 @@ import { make, useRecord } from 'common/store/analytics/actions'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import MobilePageContainer from 'components/mobile-page-container/MobilePageContainer'
 import { ToastContext } from 'components/toast/ToastContext'
-import { useProfilePicture } from 'hooks/useUserProfilePicture'
+import { useProfilePicture } from 'hooks/useProfilePicture'
 import SignOutModal from 'pages/settings-page/components/mobile/SignOutModal'
 import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
 

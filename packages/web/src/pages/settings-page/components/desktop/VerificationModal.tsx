@@ -26,8 +26,8 @@ import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import { TikTokAuthButton } from 'components/tiktok-auth/TikTokAuthButton'
 import { TwitterAuthButton } from 'components/twitter-auth/TwitterAuthButton'
 import UserBadges from 'components/user-badges/UserBadges'
+import { useProfilePicture } from 'hooks/useProfilePicture'
 import { useRemoteVar } from 'hooks/useRemoteConfig'
-import { useProfilePicture } from 'hooks/useUserProfilePicture'
 
 import styles from './VerificationModal.module.css'
 

@@ -3,7 +3,7 @@ import { Nullable } from '@audius/common/utils'
 import cn from 'classnames'
 
 import UserBadges from 'components/user-badges/UserBadges'
-import { useProfilePicture } from 'hooks/useUserProfilePicture'
+import { useProfilePicture } from 'hooks/useProfilePicture'
 
 import styles from './ProfileInfo.module.css'
 

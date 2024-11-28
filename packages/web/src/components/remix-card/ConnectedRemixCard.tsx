@@ -8,8 +8,8 @@ import { connect } from 'react-redux'
 import { Dispatch } from 'redux'
 
 import RemixCard from 'components/remix-card/RemixCard'
+import { useProfilePicture } from 'hooks/useProfilePicture'
 import { useTrackCoverArt } from 'hooks/useTrackCoverArt'
-import { useProfilePicture } from 'hooks/useUserProfilePicture'
 import { AppState } from 'store/types'
 import { withNullGuard } from 'utils/withNullGuard'
 const { profilePage } = route

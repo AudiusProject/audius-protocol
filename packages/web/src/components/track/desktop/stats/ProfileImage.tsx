@@ -7,7 +7,7 @@ import { connect } from 'react-redux'
 import { Dispatch } from 'redux'
 
 import DynamicImage from 'components/dynamic-image/DynamicImage'
-import { useProfilePicture } from 'hooks/useUserProfilePicture'
+import { useProfilePicture } from 'hooks/useProfilePicture'
 import { AppState } from 'store/types'
 
 import styles from './ProfileImage.module.css'

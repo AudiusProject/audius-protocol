@@ -7,7 +7,7 @@ import { useDispatch } from 'react-redux'
 
 import { ArtistPopover } from 'components/artist/ArtistPopover'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
-import { useProfilePicture } from 'hooks/useUserProfilePicture'
+import { useProfilePicture } from 'hooks/useProfilePicture'
 import { closeNotificationPanel } from 'store/application/ui/notifications/notificationsUISlice'
 
 import styles from './ProfilePicture.module.css'

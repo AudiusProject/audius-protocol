@@ -24,7 +24,7 @@ import {
   getProfileImageField
 } from 'common/store/pages/signon/selectors'
 import { useMedia } from 'hooks/useMedia'
-import { useProfilePicture } from 'hooks/useUserProfilePicture'
+import { useProfilePicture } from 'hooks/useProfilePicture'
 import { useSelector } from 'utils/reducer'
 
 import { CoverPhotoBanner } from './CoverPhotoBanner'
