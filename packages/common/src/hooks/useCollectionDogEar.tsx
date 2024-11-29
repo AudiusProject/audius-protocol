@@ -1,31 +1,29 @@
 import { useSelector } from 'react-redux'
 
-import { useGetPlaylistById } from '~/api'
-import {
-  Collection,
-  DogEarType,
-  ID,
-  isContentUSDCPurchaseGated
-} from '~/models'
+import { DogEarType, ID, isContentUSDCPurchaseGated } from '~/models'
+import { cacheCollectionsSelectors, CommonState } from '~/store'
 import { getUserId } from '~/store/account/selectors'
 import { Nullable } from '~/utils'
 
-import { useGatedContentAccess } from './useGatedContent'
+import { useGatedCollectionAccess } from './useGatedContent'
+
+const { getCollection } = cacheCollectionsSelectors
 
 export const useCollectionDogEar = (collectionId: ID, hideUnlocked = false) => {
-  const { data: collection } = useGetPlaylistById({ playlistId: collectionId })
-  const currentUserId = useSelector(getUserId)
+  const isPurchaseable = useSelector((state: CommonState) => {
+    const collection = getCollection(state, { id: collectionId })
+    return isContentUSDCPurchaseGated(collection?.stream_conditions)
+  })
 
-  const { hasStreamAccess } = useGatedContentAccess(
-    collection as Nullable<Collection>
-  )
+  const isOwner = useSelector((state: CommonState) => {
+    const collection = getCollection(state, { id: collectionId })
+    if (!collection) return false
+    return collection.playlist_owner_id === getUserId(state)
+  })
 
-  if (!collection) return null
-  const { playlist_owner_id, stream_conditions } = collection
+  const { hasStreamAccess } = useGatedCollectionAccess(collectionId)
 
-  const isOwner = playlist_owner_id === currentUserId
   const hideUnlockedStream = !isOwner && hasStreamAccess && hideUnlocked
-  const isPurchaseable = isContentUSDCPurchaseGated(stream_conditions)
 
   let dogEarType: Nullable<DogEarType> = null
 
