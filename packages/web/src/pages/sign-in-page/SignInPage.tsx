@@ -77,8 +77,8 @@ export const SignInPage = () => {
   const handleSubmit = useCallback(
     (values: SignInValues) => {
       const { email, password } = values
-      dispatch(setValueField('email', email))
-      dispatch(setValueField('password', password))
+      // dispatch(setValueField('email', email))
+      // dispatch(setValueField('password', password))
       dispatch(signIn(email, password))
     },
     [dispatch]

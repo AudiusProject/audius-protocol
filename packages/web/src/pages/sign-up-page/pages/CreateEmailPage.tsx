@@ -207,7 +207,10 @@ export const CreateEmailPage = () => {
               <ConnectedMetaMaskModal
                 open={isMetaMaskModalOpen}
                 onBack={() => setIsMetaMaskModalOpen(false)}
-                onSuccess={() => navigate(SIGN_UP_HANDLE_PAGE)}
+                onSuccess={() => {
+                  console.log('asdf create email page')
+                  navigate(SIGN_UP_HANDLE_PAGE)
+                }}
               />
               <Text size='s' variant='body'>
                 {createEmailPageMessages.metaMaskNotRecommended}{' '}

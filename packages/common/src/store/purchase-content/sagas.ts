@@ -680,13 +680,16 @@ function* doStartPurchaseContentFlow({
     if (isGuestCheckoutEnabled) {
       const feePayerOverride = yield* select(getFeePayer)
       const currentUser = yield* select(getAccountUser)
-
+      console.log('asdf currentUser', currentUser)
       if (!currentUser && guestEmail) {
+        console.log('asdf guest signing up')
+
         yield* call(
           audiusBackendInstance.guestSignUp,
           guestEmail,
           feePayerOverride
         )
+        // TODO wait for confirmation
 
         yield* call(fetchAccountAsync, { isSignUp: true })
       }

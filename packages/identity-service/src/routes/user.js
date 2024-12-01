@@ -96,24 +96,17 @@ module.exports = function (app) {
       let email = req.query.email
       if (email) {
         email = email.toLowerCase()
+        console.log('asdf email', email)
         const existingUser = await models.User.findOne({
           where: {
             email
           }
         })
         if (existingUser) {
-          const userEvent = await models.UserEvents.findOne({
-            where: {
-              walletAddress: existingUser.walletAddress
-            }
+          return successResponse({
+            exists: true,
+            isGuest: existingUser.isGuest
           })
-          if (!userEvent && !existingUser.handle) {
-            // user does not have recovery email nor handle
-            // delete existing user record to restart sign up
-            existingUser.destroy()
-            return successResponse({ exists: false })
-          }
-          return successResponse({ exists: true })
         } else {
           return successResponse({ exists: false })
         }

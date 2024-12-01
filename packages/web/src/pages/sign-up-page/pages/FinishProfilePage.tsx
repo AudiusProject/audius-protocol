@@ -19,12 +19,14 @@ import {
   setField,
   setValueField,
   setFinishedPhase1,
-  signUp
+  signUp,
+  finishProfileForGuest
 } from 'common/store/pages/signon/actions'
 import {
   getCoverPhotoField,
   getEmailField,
   getHandleField,
+  getIsGuest,
   getIsSocialConnected,
   getLinkedSocialOnFirstPage,
   getNameField,
@@ -90,6 +92,7 @@ export const FinishProfilePage = () => {
   const { value: savedDisplayName } = useSelector(getNameField)
   const handle = useSelector(getHandleField)
   const email = useSelector(getEmailField)
+  const isGuest = useSelector(getIsGuest)
   const isSocialConnected = useSelector(getIsSocialConnected)
   const linkedSocialOnFirstPage = useSelector(getLinkedSocialOnFirstPage)
   const savedCoverPhoto = useSelector(getCoverPhotoField)
@@ -136,14 +139,18 @@ export const FinishProfilePage = () => {
         dispatch(setField('coverPhoto', coverPhoto))
       }
       dispatch(setFinishedPhase1(true))
-      dispatch(signUp())
+      if (!isGuest) {
+        dispatch(finishProfileForGuest())
+      } else {
+        dispatch(signUp())
+      }
       if (hasReferrer && isMobile) {
         navigate(SIGN_UP_LOADING_PAGE)
       } else {
         navigate(SIGN_UP_GENRES_PAGE)
       }
     },
-    [dispatch, hasReferrer, isMobile, navigate]
+    [dispatch, hasReferrer, isGuest, isMobile, navigate]
   )
 
   return (

@@ -50,6 +50,7 @@ export const createAuthService = ({
     visitorId?: string,
     otp?: string
   ) => {
+    console.log('asdf hedegehog', email, password)
     const wallet = await hedgehogInstance.login({
       email,
       username: email,

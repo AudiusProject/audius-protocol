@@ -32,6 +32,7 @@ export type CreatePasswordValues = {
 const passwordFormikSchema = toFormikValidationSchema(passwordSchema)
 
 export const CreatePasswordPage = () => {
+  console.log('asdf create password page')
   const dispatch = useDispatch()
   const emailField = useSelector(getEmailField)
   const navigate = useNavigateToPage()
@@ -42,6 +43,7 @@ export const CreatePasswordPage = () => {
     (values: CreatePasswordValues) => {
       const { password } = values
       dispatch(setValueField('password', password))
+      console.log('asdf handle submit password')
       navigate(SIGN_UP_HANDLE_PAGE)
     },
     [dispatch, navigate]

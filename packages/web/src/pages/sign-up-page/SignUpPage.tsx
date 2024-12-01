@@ -2,6 +2,8 @@ import { route } from '@audius/common/utils'
 import { Helmet } from 'react-helmet'
 import { Redirect, Route, RouteProps, Switch } from 'react-router-dom'
 
+import { getPage } from '@audius/web/src/common/store/pages/signon/selectors'
+import { useSelector } from 'common/hooks/useSelector'
 import { useDetermineAllowedRoute } from 'pages/sign-up-page/utils/useDetermineAllowedRoutes'
 
 import { CreateEmailPage } from './pages/CreateEmailPage'
@@ -53,6 +55,14 @@ export function SignUpRoute({ children, ...rest }: RouteProps) {
         const { isAllowedRoute, correctedRoute } = determineAllowedRoute(
           location.pathname
         )
+        console.log(
+          'asdf sign up route',
+          children,
+          rest,
+          location.pathname,
+          isAllowedRoute,
+          correctedRoute
+        )
 
         return isAllowedRoute ? (
           <>{children}</>
@@ -65,6 +75,7 @@ export function SignUpRoute({ children, ...rest }: RouteProps) {
 }
 
 export const SignUpPage = () => {
+  console.log('asdf')
   return (
     <RouteContextProvider>
       <Helmet>
