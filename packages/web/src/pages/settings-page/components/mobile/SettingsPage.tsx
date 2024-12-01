@@ -56,7 +56,7 @@ const messages = {
   pageTitle: 'Settings',
   appearanceTitle: 'Appearance',
   appearance:
-    'Enable dark mode or choose ‘Auto’ to change with your system settings',
+    "Enable dark mode or choose 'Auto' to change with your system settings",
   aboutTitle: 'About',
   cast: 'Select your prefered casting method.',
   title: 'Settings',

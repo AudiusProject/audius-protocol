@@ -1,9 +1,10 @@
 import {
   useAccountHasClaimableRewards,
+  useFeatureFlag,
   useIsManagedAccount
 } from '@audius/common/hooks'
 import { Name } from '@audius/common/models'
-import { StringKeys } from '@audius/common/services'
+import { FeatureFlags, StringKeys } from '@audius/common/services'
 import { chatSelectors } from '@audius/common/store'
 import { removeNullable, route } from '@audius/common/utils'
 import {
@@ -21,6 +22,7 @@ import { useDispatch } from 'react-redux'
 
 import { make } from 'common/store/analytics/actions'
 import { AudioBalancePill } from 'components/audio-balance-pill/AUDIOBalancePill'
+import FeatureFlag from 'components/feature-flag/FeatureFlag'
 import { NotificationDot } from 'components/notification-dot'
 import { USDCBalancePill } from 'components/usdc-balance-pill/USDCBalancePill'
 import { useIsUSDCEnabled } from 'hooks/useIsUSDCEnabled'
@@ -49,6 +51,7 @@ export const NavMenuButton = () => {
   const navigate = useNavigateToPage()
   const hasUnreadMessages = useSelector(chatSelectors.getHasUnreadMessages)
   const isUSDCEnabled = useIsUSDCEnabled()
+  const { isEnabled: isThemeV2Enabled } = useFeatureFlag(FeatureFlags.THEME_V2)
   const challengeRewardIds = useRemoteVar(StringKeys.CHALLENGE_REWARD_IDS)
   const hasClaimableRewards = useAccountHasClaimableRewards(challengeRewardIds)
   const isManagedAccount = useIsManagedAccount()
@@ -80,7 +83,9 @@ export const NavMenuButton = () => {
 
   const payAndEarnItem = isUSDCEnabled
     ? {
-        className: styles.item,
+        className: cn(styles.item, {
+          [styles.item2]: isThemeV2Enabled
+        }),
         text: (
           <div className={styles.popupItemText}>
             <span>{messages.payAndEarn}</span>
@@ -113,7 +118,9 @@ export const NavMenuButton = () => {
     <IconCrown />
   )
   const rewardsItem = {
-    className: styles.item,
+    className: cn(styles.item, {
+      [styles.item2]: isThemeV2Enabled
+    }),
     text: (
       <div className={styles.popupItemText}>
         <span>{messages.rewards}</span>
