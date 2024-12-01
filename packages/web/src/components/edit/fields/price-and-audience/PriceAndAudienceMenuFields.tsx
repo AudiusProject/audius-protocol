@@ -85,20 +85,7 @@ export const PriceAndAudienceMenuFields = (
   const { isEnabled: isUdscPurchaseEnabled } = useFeatureFlag(
     FeatureFlags.USDC_PURCHASES
   )
-  const { isEnabled: isPremiumAlbumsEnabled } = useFeatureFlag(
-    FeatureFlags.PREMIUM_ALBUMS_ENABLED
-  )
 
-<<<<<<< Updated upstream
-  const { isEnabled: isHiddenPaidScheduledEnabled } = useFeatureFlag(
-    FeatureFlags.HIDDEN_PAID_SCHEDULED
-  )
-  const isUsdcUploadEnabled = isAlbum
-    ? isPremiumAlbumsEnabled && isUdscPurchaseEnabled
-    : isUdscPurchaseEnabled
-
-=======
->>>>>>> Stashed changes
   const [availabilityField] = useField({ name: STREAM_AVAILABILITY_TYPE })
 
   const { disableSpecialAccessGate, disableSpecialAccessGateFields } =
@@ -125,25 +112,6 @@ export const PriceAndAudienceMenuFields = (
       )}
       {isPublishDisabled ? <Hint>{messages.publishDisabled}</Hint> : null}
       <RadioGroup {...availabilityField} aria-label={messages.title}>
-<<<<<<< Updated upstream
-        {isHiddenPaidScheduledEnabled ? (
-          <ModalRadioItem
-            label={messages.free}
-            description={messages.freeSubtitle(isAlbum ? 'album' : 'track')}
-            value={StreamTrackAvailabilityType.FREE}
-            disabled={isPublishDisabled}
-          />
-        ) : (
-          <ModalRadioItem
-            icon={<IconVisibilityPublic />}
-            label={messages.public}
-            description={messages.publicSubtitle(isAlbum ? 'album' : 'track')}
-            value={StreamTrackAvailabilityType.PUBLIC}
-            disabled={isPublishDisabled}
-          />
-        )}
-        {isUsdcUploadEnabled ? (
-=======
         <ModalRadioItem
           label={messages.free}
           description={messages.freeSubtitle(isAlbum ? 'album' : 'track')}
@@ -151,7 +119,6 @@ export const PriceAndAudienceMenuFields = (
           disabled={isPublishDisabled}
         />
         {isUdscPurchaseEnabled ? (
->>>>>>> Stashed changes
           <UsdcPurchaseGatedRadioField
             isRemix={isRemix}
             isUpload={isUpload}

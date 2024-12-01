@@ -69,9 +69,6 @@ export const EditCollectionForm = (props: EditCollectionFormProps) => {
 
   const [isDeleteConfirmationOpen, setIsDeleteConfirmationOpen] =
     useState(false)
-  const { isEnabled: isPremiumAlbumsEnabled } = useFeatureFlag(
-    FeatureFlags.PREMIUM_ALBUMS_ENABLED
-  )
 
   const { onOpen: openHideContentConfirmation } =
     useHideContentConfirmationModal()
@@ -150,23 +147,6 @@ export const EditCollectionForm = (props: EditCollectionFormProps) => {
               />
             </div>
           </div>
-<<<<<<< Updated upstream
-          {isHiddenPaidScheduledEnabled ? (
-            <VisibilityField
-              entityType={isAlbum ? 'album' : 'playlist'}
-              isUpload={isUpload}
-              isPublishable={
-                isAlbum ||
-                (!isAlbum &&
-                  (initialContents?.track_ids?.length ?? 1) > 0 &&
-                  !isUpload)
-              }
-            />
-          ) : (
-            <ReleaseDateFieldLegacy />
-          )}
-          {isAlbum && isPremiumAlbumsEnabled ? (
-=======
           <VisibilityField
             entityType={isAlbum ? 'album' : 'playlist'}
             isUpload={isUpload}
@@ -178,7 +158,6 @@ export const EditCollectionForm = (props: EditCollectionFormProps) => {
             }
           />
           {isAlbum ? (
->>>>>>> Stashed changes
             <PriceAndAudienceField isAlbum={isAlbum} isUpload={isUpload} />
           ) : null}
           {isAlbum ? <AdvancedAlbumField /> : null}
