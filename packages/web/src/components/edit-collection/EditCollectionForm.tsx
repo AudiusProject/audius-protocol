@@ -1,12 +1,10 @@
 import { useCallback, useState } from 'react'
 
-import { useFeatureFlag } from '@audius/common/hooks'
 import {
   AlbumSchema,
   CollectionValues,
   PlaylistSchema
 } from '@audius/common/schemas'
-import { FeatureFlags } from '@audius/common/services'
 import {
   useEarlyReleaseConfirmationModal,
   useHideContentConfirmationModal,
@@ -21,7 +19,6 @@ import { AnchoredSubmitRow } from 'components/edit/AnchoredSubmitRow'
 import { AnchoredSubmitRowEdit } from 'components/edit/AnchoredSubmitRowEdit'
 import { AdvancedAlbumField } from 'components/edit/fields/AdvancedAlbumField'
 import { CollectionTrackFieldArray } from 'components/edit/fields/CollectionTrackFieldArray'
-import { ReleaseDateFieldLegacy } from 'components/edit/fields/ReleaseDateFieldLegacy'
 import { SelectGenreField } from 'components/edit/fields/SelectGenreField'
 import { SelectMoodField } from 'components/edit/fields/SelectMoodField'
 import { StemsAndDownloadsCollectionField } from 'components/edit/fields/StemsAndDownloadsCollectionsField'
@@ -81,10 +78,6 @@ export const EditCollectionForm = (props: EditCollectionFormProps) => {
   const { onOpen: openEarlyReleaseConfirmation } =
     useEarlyReleaseConfirmationModal()
   const { onOpen: openPublishConfirmation } = usePublishConfirmationModal()
-
-  const { isEnabled: isHiddenPaidScheduledEnabled } = useFeatureFlag(
-    FeatureFlags.HIDDEN_PAID_SCHEDULED
-  )
 
   const collectionTypeName = isAlbum ? 'Album' : 'Playlist'
   const validationSchema = isAlbum ? AlbumSchema : PlaylistSchema
@@ -157,6 +150,7 @@ export const EditCollectionForm = (props: EditCollectionFormProps) => {
               />
             </div>
           </div>
+<<<<<<< Updated upstream
           {isHiddenPaidScheduledEnabled ? (
             <VisibilityField
               entityType={isAlbum ? 'album' : 'playlist'}
@@ -172,6 +166,19 @@ export const EditCollectionForm = (props: EditCollectionFormProps) => {
             <ReleaseDateFieldLegacy />
           )}
           {isAlbum && isPremiumAlbumsEnabled ? (
+=======
+          <VisibilityField
+            entityType={isAlbum ? 'album' : 'playlist'}
+            isUpload={isUpload}
+            isPublishable={
+              isAlbum ||
+              (!isAlbum &&
+                (initialContents?.track_ids?.length ?? 1) > 0 &&
+                !isUpload)
+            }
+          />
+          {isAlbum ? (
+>>>>>>> Stashed changes
             <PriceAndAudienceField isAlbum={isAlbum} isUpload={isUpload} />
           ) : null}
           {isAlbum ? <AdvancedAlbumField /> : null}
