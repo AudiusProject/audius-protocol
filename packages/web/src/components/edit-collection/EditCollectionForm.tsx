@@ -72,9 +72,6 @@ export const EditCollectionForm = (props: EditCollectionFormProps) => {
 
   const [isDeleteConfirmationOpen, setIsDeleteConfirmationOpen] =
     useState(false)
-  const { isEnabled: isPremiumAlbumsEnabled } = useFeatureFlag(
-    FeatureFlags.PREMIUM_ALBUMS_ENABLED
-  )
 
   const { onOpen: openHideContentConfirmation } =
     useHideContentConfirmationModal()
@@ -171,7 +168,7 @@ export const EditCollectionForm = (props: EditCollectionFormProps) => {
           ) : (
             <ReleaseDateFieldLegacy />
           )}
-          {isAlbum && isPremiumAlbumsEnabled ? (
+          {isAlbum ? (
             <PriceAndAudienceField isAlbum={isAlbum} isUpload={isUpload} />
           ) : null}
           {isAlbum ? <AdvancedAlbumField /> : null}

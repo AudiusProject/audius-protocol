@@ -53,11 +53,6 @@ export function* fetchNotifications(config: FetchNotificationsParams) {
     FeatureFlags.USDC_PURCHASES
   )
 
-  const isPurchaseableAlbumsEnabled = yield* call(
-    getFeatureEnabled,
-    FeatureFlags.PREMIUM_ALBUMS_ENABLED
-  )
-
   const isManagerModeEnabled = yield* call(
     getFeatureEnabled,
     FeatureFlags.MANAGER_MODE
@@ -76,7 +71,7 @@ export function* fetchNotifications(config: FetchNotificationsParams) {
     isTastemakerEnabled ? ValidTypes.Tastemaker : null,
     isUSDCPurchasesEnabled ? ValidTypes.UsdcPurchaseBuyer : null,
     isUSDCPurchasesEnabled ? ValidTypes.UsdcPurchaseSeller : null,
-    isPurchaseableAlbumsEnabled ? ValidTypes.TrackAddedToPurchasedAlbum : null,
+    ValidTypes.TrackAddedToPurchasedAlbum,
     isManagerModeEnabled ? ValidTypes.RequestManager : null,
     isManagerModeEnabled ? ValidTypes.ApproveManagerRequest : null,
     isCommentsEnabled ? ValidTypes.Comment : null,
