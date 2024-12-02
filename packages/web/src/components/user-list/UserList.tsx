@@ -1,5 +1,6 @@
 import { useEffect, useState, useCallback } from 'react'
 
+import { useGetCurrentUserId } from '@audius/common/api'
 import { FollowSource, ID } from '@audius/common/models'
 import {
   accountSelectors,
@@ -25,9 +26,9 @@ const { makeGetOptimisticUserIdsIfNeeded } = userListSelectors
 const { loadMore, reset } = userListActions
 const { getUsers } = cacheUsersSelectors
 const { setNotificationSubscription } = profilePageActions
-const getUserId = accountSelectors.getUserId
+const { getHasAccount } = accountSelectors
 
-type UserListProps = {
+type ConnectedUserListProps = {
   // A tag uniquely identifying this particular instance of a UserList in the store.
   // Because multiple lists may exist, all listening to the same actions,
   // the tag is required to forward actions to a particular UserList.
@@ -53,13 +54,14 @@ const ConnectedUserList = ({
   beforeClickArtistName,
   getScrollParent,
   onNavigateAway
-}: UserListProps) => {
+}: ConnectedUserListProps) => {
   const dispatch = useDispatch()
   const isMobile = useIsMobile()
   const [hasLoaded, setHasLoaded] = useState(false)
 
   const { hasMore, loading, userIds } = useSelector(stateSelector)
-  const userId = useSelector(getUserId)
+  const loggedIn = useSelector(getHasAccount)
+  const { data: userId } = useGetCurrentUserId({})
   const otherUserId = useSelector(
     (state: AppState) => userIdSelector?.(state) ?? undefined
   )
@@ -78,7 +80,7 @@ const ConnectedUserList = ({
 
   const handleFollow = (userId: ID) => {
     dispatch(socialActions.followUser(userId, FollowSource.USER_LIST))
-    if (!userId && afterFollow) afterFollow()
+    if (!loggedIn && afterFollow) afterFollow()
   }
 
   const handleUnfollow = (userId: ID) => {
@@ -88,7 +90,7 @@ const ConnectedUserList = ({
       dispatch(socialActions.unfollowUser(userId, FollowSource.USER_LIST))
       dispatch(setNotificationSubscription(userId, false, false))
     }
-    if (!userId && afterUnfollow) afterUnfollow()
+    if (!loggedIn && afterUnfollow) afterUnfollow()
   }
 
   const handleClickArtistName = (handle: string) => {
