@@ -44,7 +44,7 @@ type UserListProps = {
   onNavigateAway?: () => void
 }
 
-const UserListContainer = ({
+const ConnectedUserList = ({
   tag,
   stateSelector,
   userIdSelector,
@@ -143,4 +143,4 @@ const UserListContainer = ({
   )
 }
 
-export default UserListContainer
+export default ConnectedUserList
