@@ -1,17 +1,24 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 
 import { useIsManagedAccount } from '@audius/common/hooks'
-import { settingsMessages as messages } from '@audius/common/messages'
-import { ID, Name, ProfilePictureSizes, Theme } from '@audius/common/models'
+import { settingsMessages } from '@audius/common/messages'
+import { Name, Theme } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
 import {
   BrowserNotificationSetting,
   EmailFrequency,
   InstagramProfile,
-  Notifications,
   TikTokProfile,
   TwitterProfile,
-  settingsPageSelectors
+  accountActions,
+  settingsPageActions,
+  settingsPageSelectors,
+  themeSelectors,
+  themeActions,
+  signOutActions,
+  accountSelectors,
+  getTierAndVerifiedForUser,
+  musicConfettiActions
 } from '@audius/common/store'
 import { route } from '@audius/common/utils'
 import {
@@ -36,6 +43,8 @@ import {
   SegmentedControl
 } from '@audius/harmony'
 import cn from 'classnames'
+import { push as pushRoute } from 'connected-react-router'
+import { useDispatch } from 'react-redux'
 import { Link } from 'react-router-dom'
 
 import { useModalState } from 'common/hooks/useModalState'
@@ -49,8 +58,18 @@ import { ComponentPlacement } from 'components/types'
 import { useIsMobile } from 'hooks/useIsMobile'
 import { useFlag } from 'hooks/useRemoteConfig'
 import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
+import { env } from 'services/env'
+import { AppState } from 'store/types'
+import {
+  isPushManagerAvailable,
+  isSafariPushAvailable,
+  getSafariPushBrowser,
+  subscribeSafariPushBrowser,
+  Permission
+} from 'utils/browserNotifications'
 import { isElectron } from 'utils/clientUtil'
 import { useSelector } from 'utils/reducer'
+import { THEME_KEY } from 'utils/theme/theme'
 
 import packageInfo from '../../../../../package.json'
 
@@ -64,6 +83,30 @@ import SettingsCard from './SettingsCard'
 import styles from './SettingsPage.module.css'
 import VerificationModal from './VerificationModal'
 
+const { show } = musicConfettiActions
+const { signOut: signOutAction } = signOutActions
+const { setTheme } = themeActions
+const { getTheme } = themeSelectors
+const { getBrowserNotificationSettings, getEmailFrequency } =
+  settingsPageSelectors
+const {
+  setBrowserNotificationEnabled,
+  setBrowserNotificationSettingsOff,
+  setBrowserNotificationSettingsOn,
+  setBrowserNotificationPermission,
+  toggleNotificationSetting: toggleNotificationSettingAction,
+  getNotificationSettings,
+  updateEmailFrequency: updateEmailFrequencyAction
+} = settingsPageActions
+const {
+  getAccountVerified,
+  getAccountProfilePictureSizes,
+  getUserId,
+  getUserHandle,
+  getUserName
+} = accountSelectors
+const { subscribeBrowserPushNotifications } = accountActions
+
 const {
   DOWNLOAD_LINK,
   PRIVACY_POLICY,
@@ -73,69 +116,31 @@ const {
 const { getAllowAiAttribution } = settingsPageSelectors
 const { version } = packageInfo
 
+const isStaging = env.ENVIRONMENT === 'staging'
+
 const EMAIL_TOAST_TIMEOUT = 2000
 
-export type SettingsPageProps = {
-  title: string
-  description: string
-  isVerified: boolean
-  userId: ID
-  handle: string
-  name: string
-  profilePictureSizes: ProfilePictureSizes | null
-  theme: any
-  toggleTheme: (theme: any) => void
-  goToRoute: (route: string) => void
-  notificationSettings: Notifications
-  getNotificationSettings: () => void
-  onInstagramLogin: (uuid: string, profile: InstagramProfile) => void
-  onTwitterLogin: (uuid: string, profile: TwitterProfile) => void
-  onTikTokLogin: (uuid: string, profile: TikTokProfile) => void
-  toggleBrowserPushNotificationPermissions: (
-    notificationType: BrowserNotificationSetting,
-    isOn: boolean
-  ) => void
-  toggleNotificationSetting: (
-    notificationType: BrowserNotificationSetting,
-    isOn: boolean
-  ) => void
-  emailFrequency: EmailFrequency
-  updateEmailFrequency: (frequency: EmailFrequency) => void
-  recordSignOut: (callback?: () => void) => void
-  recordAccountRecovery: () => void
-  recordDownloadDesktopApp: () => void
-  showMatrix: boolean
-  signOut: () => void
+const messages = {
+  title: 'Settings',
+  description: 'Configure your Audius account'
 }
 
-export const SettingsPage = (props: SettingsPageProps) => {
-  const {
-    getNotificationSettings,
-    recordSignOut,
-    signOut,
-    recordAccountRecovery,
-    recordDownloadDesktopApp,
-    showMatrix,
-    theme,
-    title,
-    description,
-    toggleTheme,
-    userId,
-    handle,
-    name,
-    goToRoute,
-    profilePictureSizes,
-    isVerified,
-    onInstagramLogin,
-    onTikTokLogin,
-    onTwitterLogin,
-    toggleBrowserPushNotificationPermissions,
-    toggleNotificationSetting,
-    notificationSettings,
-    updateEmailFrequency,
-    emailFrequency
-  } = props
+export const SettingsPage = () => {
+  const dispatch = useDispatch()
   const isManagedAccount = useIsManagedAccount()
+
+  const userId = useSelector(getUserId) ?? 0
+  const handle = useSelector(getUserHandle) ?? ''
+  const name = useSelector(getUserName) ?? ''
+  const isVerified = useSelector(getAccountVerified)
+  const profilePictureSizes = useSelector(getAccountProfilePictureSizes)
+  const theme = useSelector(getTheme)
+  const emailFrequency = useSelector(getEmailFrequency)
+  const notificationSettings = useSelector(getBrowserNotificationSettings)
+  const tier = useSelector(
+    (state: AppState) => getTierAndVerifiedForUser(state, { userId }).tier
+  )
+  const showMatrix = tier === 'gold' || tier === 'platinum' || isStaging
 
   const [isSignOutModalVisible, setIsSignOutModalVisible] = useState(false)
   const [
@@ -147,7 +152,9 @@ export const SettingsPage = (props: SettingsPageProps) => {
     useState(false)
   const [isChangeEmailModalVisible, setIsChangeEmailModalVisible] =
     useState(false)
-  const [emailToastText, setEmailToastText] = useState(messages.emailSent)
+  const [emailToastText, setEmailToastText] = useState(
+    settingsMessages.emailSent
+  )
   const [, setIsInboxSettingsModalVisible] = useModalState('InboxSettings')
   const [, setIsCommentSettingsModalVisible] = useModalState('CommentSettings')
   const [, setIsAIAttributionSettingsModalVisible] = useModalState(
@@ -155,8 +162,8 @@ export const SettingsPage = (props: SettingsPageProps) => {
   )
 
   useEffect(() => {
-    getNotificationSettings()
-  }, [getNotificationSettings])
+    dispatch(getNotificationSettings())
+  }, [dispatch])
 
   const openSignOutModal = useCallback(() => {
     setIsSignOutModalVisible(true)
@@ -174,20 +181,24 @@ export const SettingsPage = (props: SettingsPageProps) => {
     setIsNotificationSettingsModalVisible(false)
   }, [setIsNotificationSettingsModalVisible])
 
+  const signOut = useCallback(() => {
+    dispatch(signOutAction())
+  }, [dispatch])
+
   const handleSignOut = useCallback(() => {
-    recordSignOut(signOut)
-  }, [recordSignOut, signOut])
+    dispatch(make(Name.SETTINGS_LOG_OUT, { callback: signOut }))
+  }, [dispatch, signOut])
 
   const showEmailToast = useCallback(() => {
     const fn = async () => {
       try {
         await audiusBackendInstance.sendRecoveryEmail(handle)
-        setEmailToastText(messages.emailSent)
+        setEmailToastText(settingsMessages.emailSent)
         setIsEmailToastVisible(true)
-        recordAccountRecovery()
+        dispatch(make(Name.SETTINGS_RESEND_ACCOUNT_RECOVERY, {}))
       } catch (e) {
         console.error(e)
-        setEmailToastText(messages.emailNotSent)
+        setEmailToastText(settingsMessages.emailNotSent)
         setIsEmailToastVisible(true)
       }
       setTimeout(() => {
@@ -195,12 +206,12 @@ export const SettingsPage = (props: SettingsPageProps) => {
       }, EMAIL_TOAST_TIMEOUT)
     }
     fn()
-  }, [handle, setIsEmailToastVisible, recordAccountRecovery, setEmailToastText])
+  }, [handle, setIsEmailToastVisible, setEmailToastText, dispatch])
 
   const handleDownloadDesktopAppClicked = useCallback(() => {
-    recordDownloadDesktopApp()
+    dispatch(make(Name.ACCOUNT_HEALTH_DOWNLOAD_DESKTOP, { source: 'settings' }))
     window.location.href = `https://audius.co${DOWNLOAD_LINK}`
-  }, [recordDownloadDesktopApp])
+  }, [dispatch])
 
   const openChangePasswordModal = useCallback(() => {
     setIsChangePasswordModalVisible(true)
@@ -230,28 +241,121 @@ export const SettingsPage = (props: SettingsPageProps) => {
     setIsAIAttributionSettingsModalVisible(true)
   }, [setIsAIAttributionSettingsModalVisible])
 
+  const onTwitterLogin = useCallback(
+    (uuid: string, profile: TwitterProfile) =>
+      dispatch(accountActions.twitterLogin({ uuid, profile })),
+    [dispatch]
+  )
+  const onInstagramLogin = useCallback(
+    (uuid: string, profile: InstagramProfile) =>
+      dispatch(accountActions.instagramLogin({ uuid, profile })),
+    [dispatch]
+  )
+  const onTikTokLogin = useCallback(
+    (uuid: string, profile: TikTokProfile) =>
+      dispatch(accountActions.tikTokLogin({ uuid, profile })),
+    [dispatch]
+  )
+  const toggleNotificationSetting = useCallback(
+    (notificationType: BrowserNotificationSetting, isOn: boolean) => {
+      dispatch(toggleNotificationSettingAction(notificationType, isOn))
+    },
+    [dispatch]
+  )
+  const updateEmailFrequency = useCallback(
+    (frequency: EmailFrequency) => {
+      dispatch(updateEmailFrequencyAction(frequency))
+    },
+    [dispatch]
+  )
+  const goToRoute = useCallback(
+    (route: string) => dispatch(pushRoute(route)),
+    [dispatch]
+  )
   const record = useRecord()
   const recordExportPrivateKeyLinkClicked = useCallback(() => {
     record(make(Name.EXPORT_PRIVATE_KEY_LINK_CLICKED, { handle, userId }))
   }, [record, handle, userId])
 
+  const toggleBrowserPushNotificationPermissions = useCallback(
+    (notificationType: BrowserNotificationSetting, isOn: boolean) => {
+      if (!isOn) {
+        dispatch(setBrowserNotificationEnabled(false))
+        dispatch(setBrowserNotificationSettingsOff())
+      } else if (notificationSettings.permission === Permission.GRANTED) {
+        dispatch(setBrowserNotificationEnabled(true))
+        dispatch(setBrowserNotificationSettingsOn())
+        dispatch(toggleNotificationSettingAction(notificationType, isOn))
+        dispatch(subscribeBrowserPushNotifications())
+      } else {
+        if (isPushManagerAvailable) {
+          dispatch(setBrowserNotificationEnabled(true))
+          dispatch(subscribeBrowserPushNotifications())
+          dispatch(toggleNotificationSettingAction(notificationType, isOn))
+        } else if (isSafariPushAvailable) {
+          const safariPermission = getSafariPushBrowser()
+          if (safariPermission.permission === Permission.GRANTED) {
+            dispatch(subscribeBrowserPushNotifications())
+          } else {
+            const getSafariPermission = async () => {
+              const permissionData = await subscribeSafariPushBrowser(
+                audiusBackendInstance
+              )
+              if (
+                permissionData &&
+                permissionData.permission === Permission.GRANTED
+              ) {
+                dispatch(subscribeBrowserPushNotifications())
+              } else if (
+                permissionData &&
+                permissionData.permission === Permission.DENIED
+              ) {
+                dispatch(setBrowserNotificationPermission(Permission.DENIED))
+              }
+            }
+            getSafariPermission()
+          }
+        }
+      }
+    },
+    [dispatch, notificationSettings.permission]
+  )
+
+  const toggleTheme = (option: Theme) => {
+    dispatch(
+      make(Name.SETTINGS_CHANGE_THEME, {
+        mode:
+          option === Theme.DEFAULT
+            ? 'light'
+            : (option.toLowerCase() as 'dark' | 'light' | 'matrix' | 'auto')
+      })
+    )
+    dispatch(setTheme({ theme: option }))
+    if (option === Theme.MATRIX) {
+      dispatch(show())
+    }
+    if (typeof window !== 'undefined') {
+      window.localStorage.setItem(THEME_KEY, option)
+    }
+  }
+
   const appearanceOptions = useMemo(() => {
     const options = [
       {
         key: Theme.AUTO,
-        text: messages.autoMode
+        text: settingsMessages.autoMode
       },
       {
         key: Theme.DEFAULT,
-        text: messages.lightMode
+        text: settingsMessages.lightMode
       },
       {
         key: Theme.DARK,
-        text: messages.darkMode
+        text: settingsMessages.darkMode
       }
     ]
     if (showMatrix) {
-      options.push({ key: Theme.MATRIX, text: messages.matrixMode })
+      options.push({ key: Theme.MATRIX, text: settingsMessages.matrixMode })
     }
     return options
   }, [showMatrix])
@@ -264,12 +368,12 @@ export const SettingsPage = (props: SettingsPageProps) => {
   const isMobile = useIsMobile()
   const isDownloadDesktopEnabled = !isMobile && !isElectron()
 
-  const header = <Header primary={messages.pageTitle} />
+  const header = <Header primary={messages.title} />
 
   return (
     <Page
-      title={title}
-      description={description}
+      title={messages.title}
+      description={messages.description}
       containerClassName={styles.settingsPageContainer}
       contentClassName={styles.settingsPageContent}
       header={header}
@@ -278,13 +382,13 @@ export const SettingsPage = (props: SettingsPageProps) => {
         {!isManagedAccount ? (
           <SettingsCard
             icon={<IconAppearance />}
-            title={messages.appearanceTitle}
-            description={messages.appearanceDescription}
+            title={settingsMessages.appearanceTitle}
+            description={settingsMessages.appearanceDescription}
             isFull={true}
           >
             <SegmentedControl
               fullWidth
-              label={messages.appearanceTitle}
+              label={settingsMessages.appearanceTitle}
               options={appearanceOptions}
               selected={theme || Theme.DEFAULT}
               onSelectOption={(option) => toggleTheme(option)}
@@ -295,51 +399,51 @@ export const SettingsPage = (props: SettingsPageProps) => {
         {!isManagedAccount ? (
           <SettingsCard
             icon={<IconMessages />}
-            title={messages.inboxSettingsCardTitle}
-            description={messages.inboxSettingsCardDescription}
+            title={settingsMessages.inboxSettingsCardTitle}
+            description={settingsMessages.inboxSettingsCardDescription}
           >
             <Button
               variant='secondary'
               onClick={openInboxSettingsModal}
               fullWidth
             >
-              {messages.inboxSettingsButtonText}
+              {settingsMessages.inboxSettingsButtonText}
             </Button>
           </SettingsCard>
         ) : null}
         {isCommentsEnabled ? (
           <SettingsCard
             icon={<IconMessage />}
-            title={messages.commentSettingsCardTitle}
-            description={messages.commentSettingsCardDescription}
+            title={settingsMessages.commentSettingsCardTitle}
+            description={settingsMessages.commentSettingsCardDescription}
           >
             <Button
               variant='secondary'
               onClick={openCommentSettingsModal}
               fullWidth
             >
-              {messages.commentSettingsButtonText}
+              {settingsMessages.commentSettingsButtonText}
             </Button>
           </SettingsCard>
         ) : null}
         <SettingsCard
           icon={<IconNotification />}
-          title={messages.notificationsCardTitle}
-          description={messages.notificationsCardDescription}
+          title={settingsMessages.notificationsCardTitle}
+          description={settingsMessages.notificationsCardDescription}
         >
           <Button
             variant='secondary'
             onClick={openNotificationSettings}
             fullWidth
           >
-            {messages.notificationsButtonText}
+            {settingsMessages.notificationsButtonText}
           </Button>
         </SettingsCard>
         {!isManagedAccount ? (
           <SettingsCard
             icon={<IconMail />}
-            title={messages.accountRecoveryCardTitle}
-            description={messages.accountRecoveryCardDescription}
+            title={settingsMessages.accountRecoveryCardTitle}
+            description={settingsMessages.accountRecoveryCardDescription}
           >
             <Toast
               tooltipClassName={styles.cardToast}
@@ -349,15 +453,15 @@ export const SettingsPage = (props: SettingsPageProps) => {
               fillParent={false}
             >
               <Button onClick={showEmailToast} variant='secondary' fullWidth>
-                {messages.accountRecoveryButtonText}
+                {settingsMessages.accountRecoveryButtonText}
               </Button>
             </Toast>
           </SettingsCard>
         ) : null}
         <SettingsCard
           icon={<IconVerified className={styles.iconVerified} size='l' />}
-          title={messages.verificationCardTitle}
-          description={messages.verificationCardDescription}
+          title={settingsMessages.verificationCardTitle}
+          description={settingsMessages.verificationCardDescription}
         >
           <VerificationModal
             userId={userId}
@@ -374,30 +478,30 @@ export const SettingsPage = (props: SettingsPageProps) => {
         {!isManagedAccount ? (
           <SettingsCard
             icon={<IconEmailAddress />}
-            title={messages.changeEmailCardTitle}
-            description={messages.changeEmailCardDescription}
+            title={settingsMessages.changeEmailCardTitle}
+            description={settingsMessages.changeEmailCardDescription}
           >
             <Button
               onClick={openChangeEmailModal}
               variant='secondary'
               fullWidth
             >
-              {messages.changeEmailButtonText}
+              {settingsMessages.changeEmailButtonText}
             </Button>
           </SettingsCard>
         ) : null}
         {!isManagedAccount ? (
           <SettingsCard
             icon={<IconKey />}
-            title={messages.changePasswordCardTitle}
-            description={messages.changePasswordCardDescription}
+            title={settingsMessages.changePasswordCardTitle}
+            description={settingsMessages.changePasswordCardDescription}
           >
             <Button
               onClick={openChangePasswordModal}
               variant='secondary'
               fullWidth
             >
-              {messages.changePasswordButtonText}
+              {settingsMessages.changePasswordButtonText}
             </Button>
           </SettingsCard>
         ) : null}
@@ -405,12 +509,12 @@ export const SettingsPage = (props: SettingsPageProps) => {
         <AccountsYouManageSettingsCard />
         <SettingsCard
           icon={<IconRobot />}
-          title={messages.aiGeneratedCardTitle}
-          description={messages.aiGeneratedCardDescription}
+          title={settingsMessages.aiGeneratedCardTitle}
+          description={settingsMessages.aiGeneratedCardDescription}
         >
           {allowAiAttribution ? (
             <span className={styles.aiAttributionEnabled}>
-              {messages.aiGeneratedEnabled}
+              {settingsMessages.aiGeneratedEnabled}
             </span>
           ) : null}
           <Button
@@ -418,21 +522,21 @@ export const SettingsPage = (props: SettingsPageProps) => {
             variant='secondary'
             fullWidth
           >
-            {messages.aiGeneratedButtonText}
+            {settingsMessages.aiGeneratedButtonText}
           </Button>
         </SettingsCard>
         {isDownloadDesktopEnabled ? (
           <SettingsCard
             icon={<IconReceive />}
-            title={messages.desktopAppCardTitle}
-            description={messages.desktopAppCardDescription}
+            title={settingsMessages.desktopAppCardTitle}
+            description={settingsMessages.desktopAppCardDescription}
           >
             <Button
               onClick={handleDownloadDesktopAppClicked}
               variant='secondary'
               fullWidth
             >
-              {messages.desktopAppButtonText}
+              {settingsMessages.desktopAppButtonText}
             </Button>
           </SettingsCard>
         ) : null}
@@ -448,18 +552,18 @@ export const SettingsPage = (props: SettingsPageProps) => {
           onClick={openSignOutModal}
           css={(theme) => ({ marginBottom: theme.spacing.l })}
         >
-          {messages.signOut}
+          {settingsMessages.signOut}
         </Button>
-        <span>{`${messages.version} ${version}`}</span>
+        <span>{`${settingsMessages.version} ${version}`}</span>
         <span>
-          {messages.copyright} -{' '}
+          {settingsMessages.copyright} -{' '}
           <Link
             className={styles.link}
             to={TERMS_OF_SERVICE}
             target='_blank'
             rel='noreferrer'
           >
-            {messages.terms}
+            {settingsMessages.terms}
           </Link>{' '}
           -{' '}
           <Link
@@ -468,7 +572,7 @@ export const SettingsPage = (props: SettingsPageProps) => {
             target='_blank'
             rel='noreferrer'
           >
-            {messages.privacy}
+            {settingsMessages.privacy}
           </Link>
         </span>
         {!isManagedAccount ? (
@@ -477,7 +581,7 @@ export const SettingsPage = (props: SettingsPageProps) => {
             to={PRIVATE_KEY_EXPORTER_SETTINGS_PAGE}
             onClick={recordExportPrivateKeyLinkClicked}
           >
-            {messages.showPrivateKey}
+            {settingsMessages.showPrivateKey}
           </Link>
         ) : null}
       </div>
@@ -496,7 +600,9 @@ export const SettingsPage = (props: SettingsPageProps) => {
           />
         </ModalHeader>
         <ModalContent>
-          <ModalContentText>{messages.signOutModalText}</ModalContentText>
+          <ModalContentText>
+            {settingsMessages.signOutModalText}
+          </ModalContentText>
           <ModalFooter>
             <Button variant='secondary' onClick={closeSignOutModal} fullWidth>
               Nevermind
