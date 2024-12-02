@@ -1,11 +1,10 @@
-import { ComponentType, PureComponent } from 'react'
+import { ComponentType, useCallback } from 'react'
 
 import { Name, Theme } from '@audius/common/models'
 import {
   accountActions,
   accountSelectors,
   settingsPageSelectors,
-  settingsPageActions as settingPageActions,
   BrowserNotificationSetting,
   PushNotificationSetting,
   EmailFrequency,
@@ -17,13 +16,13 @@ import {
   musicConfettiActions,
   InstagramProfile,
   TwitterProfile,
-  TikTokProfile
+  TikTokProfile,
+  settingsPageActions
 } from '@audius/common/store'
 import { push as pushRoute, goBack } from 'connected-react-router'
-import { connect } from 'react-redux'
-import { Dispatch } from 'redux'
+import { useDispatch, useSelector } from 'react-redux'
 
-import { make, TrackEvent } from 'common/store/analytics/actions'
+import { make } from 'common/store/analytics/actions'
 import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
 import { env } from 'services/env'
 import { AppState } from 'store/types'
@@ -35,7 +34,7 @@ import {
   Permission
 } from 'utils/browserNotifications'
 import { THEME_KEY } from 'utils/theme/theme'
-import { withClassNullGuard } from 'utils/withNullGuard'
+import { withNullGuard } from 'utils/withNullGuard'
 
 import { SettingsPageProps as DesktopSettingsPageProps } from './components/desktop/SettingsPage'
 import {
@@ -47,12 +46,23 @@ const { show } = musicConfettiActions
 const { signOut } = signOutActions
 const { setTheme } = themeActions
 const { getTheme } = themeSelectors
-const { setVisibility } = modalsActions
 const {
   getBrowserNotificationSettings,
   getPushNotificationSettings,
   getEmailFrequency
 } = settingsPageSelectors
+const {
+  setBrowserNotificationEnabled,
+  setBrowserNotificationSettingsOff,
+  setBrowserNotificationSettingsOn,
+  setBrowserNotificationPermission,
+  toggleNotificationSetting,
+  togglePushNotificationSetting,
+  getNotificationSettings,
+  getPushNotificationSettings: getPushNotificationSettingsAction,
+  updateEmailFrequency
+} = settingsPageActions
+const { subscribeBrowserPushNotifications } = accountActions
 
 const {
   getAccountVerified,
@@ -77,266 +87,174 @@ type OwnProps = {
   subPage?: SubPage
 }
 
-type SettingsPageProps = OwnProps &
-  ReturnType<ReturnType<typeof makeMapStateToProps>> &
-  ReturnType<typeof mapDispatchToProps>
+const g = withNullGuard((props: OwnProps) => {
+  const { children } = props
+  if (children) return { ...props, children }
+})
 
-type SettingsPageState = {
-  darkModeSetting: boolean | null
-}
+const SettingsPage = g(({ children: Children, subPage }: OwnProps) => {
+  const dispatch = useDispatch()
 
-const mapper = (props: SettingsPageProps) => {
-  const { name, handle, userId } = props
-  if (handle && name && userId !== null)
-    return { ...props, name, handle, userId }
-}
+  const userId = useSelector(getUserId) ?? 0
+  const handle = useSelector(getUserHandle)
+  const name = useSelector(getUserName)
+  const isVerified = useSelector(getAccountVerified)
+  const hasTracks = useSelector(getAccountHasTracks)
+  const profilePictureSizes = useSelector(getAccountProfilePictureSizes)
+  const theme = useSelector(getTheme)
+  const emailFrequency = useSelector(getEmailFrequency)
+  const notificationSettings = useSelector(getBrowserNotificationSettings)
+  const pushNotificationSettings = useSelector(getPushNotificationSettings)
+  const tier = useSelector(
+    (state: AppState) => getTierAndVerifiedForUser(state, { userId }).tier
+  )
+  console.log('REED render')
 
-class SettingsPage extends PureComponent<
-  NonNullable<ReturnType<typeof mapper>>,
-  SettingsPageState
-> {
-  state = {
-    darkModeSetting: null
-  }
-
-  toggleTheme = (option: Theme) => {
-    this.props.recordThemeChange(option)
-    this.props.setTheme(option)
+  const toggleTheme = (option: Theme) => {
+    dispatch(
+      make(Name.SETTINGS_CHANGE_THEME, {
+        mode:
+          option === Theme.DEFAULT
+            ? 'light'
+            : (option.toLowerCase() as 'dark' | 'light' | 'matrix' | 'auto')
+      })
+    )
+    dispatch(setTheme({ theme: option }))
     if (option === Theme.MATRIX) {
-      this.props.showMatrixConfetti()
+      dispatch(show())
+    }
+    if (typeof window !== 'undefined') {
+      window.localStorage.setItem(THEME_KEY, option)
     }
   }
 
-  toggleBrowserPushNotificationPermissions = (
-    notificationType: BrowserNotificationSetting,
-    isOn: boolean
-  ) => {
-    if (!isOn) {
-      // if turning off, set all settings values to false
-      this.props.setBrowserNotificationEnabled(false)
-      this.props.setBrowserNotificationSettingsOff()
-    } else if (
-      this.props.notificationSettings.permission === Permission.GRANTED
-    ) {
-      // Permission is already granted, don't need to popup confirmation modal.
-      this.props.setBrowserNotificationEnabled(true)
-      this.props.setBrowserNotificationSettingsOn()
-      this.props.toggleNotificationSetting(notificationType, isOn)
-      this.props.subscribeBrowserPushNotifications()
-    } else {
-      if (isPushManagerAvailable) {
-        this.props.setBrowserNotificationEnabled(true)
-        this.props.subscribeBrowserPushNotifications()
-        this.props.toggleNotificationSetting(notificationType, isOn)
-      } else if (isSafariPushAvailable) {
-        // NOTE: The call call request browser permission must be done directly
-        // b/c safari requires the user action to trigger the premission request
-        const safariPermission = getSafariPushBrowser()
-        if (safariPermission.permission === Permission.GRANTED) {
-          this.props.subscribeBrowserPushNotifications()
-        } else {
-          const getSafariPermission = async () => {
-            const permissionData = await subscribeSafariPushBrowser(
-              audiusBackendInstance
-            )
-            if (
-              permissionData &&
-              permissionData.permission === Permission.GRANTED
-            ) {
-              this.props.subscribeBrowserPushNotifications()
-            } else if (
-              permissionData &&
-              permissionData.permission === Permission.DENIED
-            ) {
-              this.props.setBrowserNotificationPermission(Permission.DENIED)
+  const toggleBrowserPushNotificationPermissions = useCallback(
+    (notificationType: BrowserNotificationSetting, isOn: boolean) => {
+      if (!isOn) {
+        dispatch(setBrowserNotificationEnabled(false))
+        dispatch(setBrowserNotificationSettingsOff())
+      } else if (notificationSettings.permission === Permission.GRANTED) {
+        dispatch(setBrowserNotificationEnabled(true))
+        dispatch(setBrowserNotificationSettingsOn())
+        dispatch(toggleNotificationSetting(notificationType, isOn))
+        dispatch(subscribeBrowserPushNotifications())
+      } else {
+        if (isPushManagerAvailable) {
+          dispatch(setBrowserNotificationEnabled(true))
+          dispatch(subscribeBrowserPushNotifications())
+          dispatch(toggleNotificationSetting(notificationType, isOn))
+        } else if (isSafariPushAvailable) {
+          const safariPermission = getSafariPushBrowser()
+          if (safariPermission.permission === Permission.GRANTED) {
+            dispatch(subscribeBrowserPushNotifications())
+          } else {
+            const getSafariPermission = async () => {
+              const permissionData = await subscribeSafariPushBrowser(
+                audiusBackendInstance
+              )
+              if (
+                permissionData &&
+                permissionData.permission === Permission.GRANTED
+              ) {
+                dispatch(subscribeBrowserPushNotifications())
+              } else if (
+                permissionData &&
+                permissionData.permission === Permission.DENIED
+              ) {
+                dispatch(setBrowserNotificationPermission(Permission.DENIED))
+              }
             }
+            getSafariPermission()
           }
-          getSafariPermission()
         }
       }
-    }
-  }
-
-  render() {
-    const {
-      subPage,
-      isVerified,
-      hasTracks,
-      userId,
-      handle,
-      name,
-      profilePictureSizes,
-      theme,
-      notificationSettings,
-      emailFrequency,
-      pushNotificationSettings,
-      getNotificationSettings,
-      getPushNotificationSettings,
-      onTwitterLogin,
-      onInstagramLogin,
-      onTikTokLogin,
-      toggleNotificationSetting,
-      togglePushNotificationSetting,
-      updateEmailFrequency,
-      goToRoute,
-      goBack,
-      recordSignOut,
-      recordAccountRecovery,
-      recordDownloadDesktopApp,
-      tier,
-      signOut
-    } = this.props
-
-    const showMatrix = tier === 'gold' || tier === 'platinum' || isStaging
-
-    const childProps = {
-      title: messages.title,
-      description: messages.description,
-      isVerified,
-      hasTracks,
-      userId,
-      handle,
-      name,
-      profilePictureSizes,
-      theme,
-      toggleTheme: this.toggleTheme,
-      onInstagramLogin,
-      recordSignOut,
-      recordAccountRecovery,
-      notificationSettings,
-      emailFrequency,
-      pushNotificationSettings,
-      getNotificationSettings,
-      getPushNotificationSettings,
-      onTwitterLogin,
-      onTikTokLogin,
-      toggleNotificationSetting,
-      toggleBrowserPushNotificationPermissions:
-        this.toggleBrowserPushNotificationPermissions,
-      togglePushNotificationSetting,
-      updateEmailFrequency,
-      recordDownloadDesktopApp,
-      goToRoute,
-      goBack,
-      showMatrix,
-      signOut
-    }
-
-    const mobileProps = { subPage }
-
-    return <this.props.children {...childProps} {...mobileProps} />
-  }
-}
-
-function makeMapStateToProps() {
-  return (state: AppState) => {
-    const userId = getUserId(state) ?? 0
-    return {
-      handle: getUserHandle(state),
-      name: getUserName(state),
-      isVerified: getAccountVerified(state),
-      hasTracks: getAccountHasTracks(state),
-      userId,
-      profilePictureSizes: getAccountProfilePictureSizes(state),
-      theme: getTheme(state),
-      emailFrequency: getEmailFrequency(state),
-      notificationSettings: getBrowserNotificationSettings(state),
-      pushNotificationSettings: getPushNotificationSettings(state),
-      tier: getTierAndVerifiedForUser(state, { userId }).tier
-    }
-  }
-}
-
-function mapDispatchToProps(dispatch: Dispatch) {
-  return {
-    setTheme: (theme: any) => {
-      dispatch(setTheme({ theme }))
-      if (typeof window !== 'undefined') {
-        window.localStorage.setItem(THEME_KEY, theme)
-      }
     },
-    getNotificationSettings: () =>
-      dispatch(settingPageActions.getNotificationSettings()),
-    getPushNotificationSettings: () =>
-      dispatch(settingPageActions.getPushNotificationSettings()),
-    onTwitterLogin: (uuid: string, profile: TwitterProfile) =>
-      dispatch(accountActions.twitterLogin({ uuid, profile })),
-    onInstagramLogin: (uuid: string, profile: InstagramProfile) =>
-      dispatch(accountActions.instagramLogin({ uuid, profile })),
-    onTikTokLogin: (uuid: string, profile: TikTokProfile) =>
-      dispatch(accountActions.tikTokLogin({ uuid, profile })),
-    subscribeBrowserPushNotifications: () =>
-      dispatch(accountActions.subscribeBrowserPushNotifications()),
-    setBrowserNotificationSettingsOn: () =>
-      dispatch(settingPageActions.setBrowserNotificationSettingsOn()),
-    setBrowserNotificationSettingsOff: () =>
-      dispatch(settingPageActions.setBrowserNotificationSettingsOff()),
-    setNotificationSettings: (settings: object) =>
-      dispatch(settingPageActions.setNotificationSettings(settings)),
-    setBrowserNotificationEnabled: (enabled: boolean) =>
-      dispatch(settingPageActions.setBrowserNotificationEnabled(enabled)),
-    setBrowserNotificationPermission: (permission: Permission) =>
-      dispatch(settingPageActions.setBrowserNotificationPermission(permission)),
-    openBrowserPushPermissionModal: () =>
-      dispatch(
-        setVisibility({
-          modal: 'BrowserPushPermissionConfirmation',
-          visible: true
-        })
-      ),
-    toggleNotificationSetting: (
-      notificationType: BrowserNotificationSetting,
-      isOn: boolean
-    ) =>
-      dispatch(
-        settingPageActions.toggleNotificationSetting(notificationType, isOn)
-      ),
-    togglePushNotificationSetting: (
-      notificationType: PushNotificationSetting,
-      isOn: boolean
-    ) =>
-      dispatch(
-        settingPageActions.togglePushNotificationSetting(notificationType, isOn)
-      ),
-    updateEmailFrequency: (frequency: EmailFrequency) =>
-      dispatch(settingPageActions.updateEmailFrequency(frequency)),
-    goToRoute: (route: string) => dispatch(pushRoute(route)),
-    goBack: () => dispatch(goBack()),
-    recordThemeChange: (themeSettings: string) => {
-      const theme =
-        themeSettings === Theme.DEFAULT
-          ? 'light'
-          : themeSettings.toLocaleLowerCase()
-      const trackEvent: TrackEvent = make(Name.SETTINGS_CHANGE_THEME, {
-        mode: theme as 'dark' | 'light' | 'matrix' | 'auto'
-      })
-      dispatch(trackEvent)
-    },
-    recordSignOut: (callback?: () => void) => {
-      const trackEvent: TrackEvent = make(Name.SETTINGS_LOG_OUT, { callback })
-      dispatch(trackEvent)
-    },
-    recordAccountRecovery: () => {
-      const trackEvent: TrackEvent = make(
-        Name.SETTINGS_RESEND_ACCOUNT_RECOVERY,
-        {}
-      )
-      dispatch(trackEvent)
-    },
-    recordDownloadDesktopApp: () => {
+    [dispatch, notificationSettings.permission]
+  )
+
+  const showMatrix = tier === 'gold' || tier === 'platinum' || isStaging
+
+  const childProps = {
+    title: messages.title,
+    description: messages.description,
+    isVerified,
+    hasTracks,
+    userId,
+    handle,
+    name,
+    profilePictureSizes,
+    theme,
+    toggleTheme,
+    notificationSettings,
+    emailFrequency,
+    pushNotificationSettings,
+    toggleBrowserPushNotificationPermissions,
+    showMatrix,
+    onTwitterLogin: useCallback(
+      (uuid: string, profile: TwitterProfile) =>
+        dispatch(accountActions.twitterLogin({ uuid, profile })),
+      [dispatch]
+    ),
+    onInstagramLogin: useCallback(
+      (uuid: string, profile: InstagramProfile) =>
+        dispatch(accountActions.instagramLogin({ uuid, profile })),
+      [dispatch]
+    ),
+    onTikTokLogin: useCallback(
+      (uuid: string, profile: TikTokProfile) =>
+        dispatch(accountActions.tikTokLogin({ uuid, profile })),
+      [dispatch]
+    ),
+    getNotificationSettings: useCallback(
+      () => dispatch(getNotificationSettings()),
+      [dispatch]
+    ),
+    getPushNotificationSettings: useCallback(
+      () => dispatch(getPushNotificationSettingsAction()),
+      [dispatch]
+    ),
+    toggleNotificationSetting: useCallback(
+      (notificationType: BrowserNotificationSetting, isOn: boolean) =>
+        dispatch(toggleNotificationSetting(notificationType, isOn)),
+      [dispatch]
+    ),
+    togglePushNotificationSetting: useCallback(
+      (notificationType: PushNotificationSetting, isOn: boolean) =>
+        dispatch(togglePushNotificationSetting(notificationType, isOn)),
+      [dispatch]
+    ),
+    updateEmailFrequency: useCallback(
+      (frequency: EmailFrequency) => dispatch(updateEmailFrequency(frequency)),
+      [dispatch]
+    ),
+    goToRoute: useCallback(
+      (route: string) => dispatch(pushRoute(route)),
+      [dispatch]
+    ),
+    goBack: useCallback(() => dispatch(goBack()), [dispatch]),
+    recordSignOut: useCallback(
+      (callback?: () => void) =>
+        dispatch(make(Name.SETTINGS_LOG_OUT, { callback })),
+      [dispatch]
+    ),
+    recordAccountRecovery: useCallback(
+      () => dispatch(make(Name.SETTINGS_RESEND_ACCOUNT_RECOVERY, {})),
+      [dispatch]
+    ),
+    recordDownloadDesktopApp: () =>
       dispatch(
         make(Name.ACCOUNT_HEALTH_DOWNLOAD_DESKTOP, { source: 'settings' })
-      )
-    },
-    showMatrixConfetti: () => {
-      dispatch(show())
-    },
-    signOut: () => {
-      dispatch(signOut())
-    }
+      ),
+    signOut: useCallback(() => dispatch(signOut()), [dispatch])
   }
-}
 
-const g = withClassNullGuard(mapper)
+  const mobileProps = { subPage }
 
-export default connect(makeMapStateToProps, mapDispatchToProps)(g(SettingsPage))
+  if (!handle || !name || !userId) {
+    return null
+  }
+
+  return <Children {...childProps} {...mobileProps} />
+})
+
+export default SettingsPage
