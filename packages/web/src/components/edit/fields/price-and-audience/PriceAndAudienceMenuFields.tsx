@@ -1,8 +1,5 @@
 import { useFeatureFlag, useAccessAndRemixSettings } from '@audius/common/hooks'
-import {
-  AccessConditions,
-  StreamTrackAvailabilityType
-} from '@audius/common/models'
+import { StreamTrackAvailabilityType } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
 import {
   RadioGroup,
@@ -62,7 +59,6 @@ type PriceAndAudienceMenuFieldsProps = {
   isAlbum?: boolean
   isInitiallyUnlisted?: boolean
   isScheduledRelease?: boolean
-  initialStreamConditions?: AccessConditions | undefined
   isPublishDisabled?: boolean
 }
 
@@ -74,14 +70,10 @@ export const PriceAndAudienceMenuFields = (
     isUpload,
     isAlbum,
     isInitiallyUnlisted,
-    initialStreamConditions,
     isScheduledRelease,
     isPublishDisabled = false
   } = props
 
-  const { isEnabled: isEditableAccessEnabled } = useFeatureFlag(
-    FeatureFlags.EDITABLE_ACCESS_ENABLED
-  )
   const { isEnabled: isUdscPurchaseEnabled } = useFeatureFlag(
     FeatureFlags.USDC_PURCHASES
   )
@@ -90,11 +82,9 @@ export const PriceAndAudienceMenuFields = (
 
   const { disableSpecialAccessGate, disableSpecialAccessGateFields } =
     useAccessAndRemixSettings({
-      isEditableAccessEnabled: !!isEditableAccessEnabled,
       isUpload: !!isUpload,
       isRemix,
       isAlbum,
-      initialStreamConditions: initialStreamConditions ?? null,
       isInitiallyUnlisted: !!isInitiallyUnlisted,
       isScheduledRelease: !!isScheduledRelease,
       isPublishDisabled
@@ -123,7 +113,6 @@ export const PriceAndAudienceMenuFields = (
             isRemix={isRemix}
             isUpload={isUpload}
             isAlbum={isAlbum}
-            initialStreamConditions={initialStreamConditions}
             isInitiallyUnlisted={isInitiallyUnlisted}
             isPublishDisabled={isPublishDisabled}
           />
@@ -149,7 +138,6 @@ export const PriceAndAudienceMenuFields = (
           <CollectibleGatedRadioField
             isRemix={isRemix}
             isUpload={isUpload}
-            initialStreamConditions={initialStreamConditions}
             isInitiallyUnlisted={isInitiallyUnlisted}
           />
         ) : null}
