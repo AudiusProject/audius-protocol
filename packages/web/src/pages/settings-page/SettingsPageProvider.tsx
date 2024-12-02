@@ -12,7 +12,6 @@ import {
   getTierAndVerifiedForUser,
   themeActions,
   themeSelectors,
-  modalsActions,
   musicConfettiActions,
   InstagramProfile,
   TwitterProfile,
@@ -34,7 +33,6 @@ import {
   Permission
 } from 'utils/browserNotifications'
 import { THEME_KEY } from 'utils/theme/theme'
-import { withNullGuard } from 'utils/withNullGuard'
 
 import { SettingsPageProps as DesktopSettingsPageProps } from './components/desktop/SettingsPage'
 import {
@@ -87,12 +85,10 @@ type OwnProps = {
   subPage?: SubPage
 }
 
-const g = withNullGuard((props: OwnProps) => {
-  const { children } = props
-  if (children) return { ...props, children }
-})
-
-const SettingsPage = g(({ children: Children, subPage }: OwnProps) => {
+export const SettingsPageProvider = ({
+  children: Children,
+  subPage
+}: OwnProps) => {
   const dispatch = useDispatch()
 
   const userId = useSelector(getUserId) ?? 0
@@ -108,7 +104,6 @@ const SettingsPage = g(({ children: Children, subPage }: OwnProps) => {
   const tier = useSelector(
     (state: AppState) => getTierAndVerifiedForUser(state, { userId }).tier
   )
-  console.log('REED render')
 
   const toggleTheme = (option: Theme) => {
     dispatch(
@@ -254,7 +249,11 @@ const SettingsPage = g(({ children: Children, subPage }: OwnProps) => {
     return null
   }
 
-  return <Children {...childProps} {...mobileProps} />
-})
+  const nonNullProps = {
+    ...childProps,
+    handle,
+    name
+  }
 
-export default SettingsPage
+  return <Children {...nonNullProps} {...mobileProps} />
+}

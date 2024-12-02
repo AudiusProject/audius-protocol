@@ -2,7 +2,7 @@ import { RefObject } from 'react'
 
 import { useIsMobile } from 'hooks/useIsMobile'
 
-import SettingsPageProvider from './SettingsPageProvider'
+import { SettingsPageProvider } from './SettingsPageProvider'
 import { SettingsPage as DesktopSettingsPage } from './components/desktop/SettingsPage'
 import MobileSettingsPage, { SubPage } from './components/mobile/SettingsPage'
 
