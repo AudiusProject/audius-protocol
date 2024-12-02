@@ -3,9 +3,9 @@ import snakecaseKeys from 'snakecase-keys'
 import type { AuthService, StorageService } from '../../services'
 import {
   Action,
+  AdvancedOptions,
   EntityManagerService,
-  EntityType,
-  AdvancedOptions
+  EntityType
 } from '../../services/EntityManager/types'
 import type { LoggerService } from '../../services/Logger'
 import type { ClaimableTokensClient } from '../../services/Solana/programs/ClaimableTokensClient/ClaimableTokensClient'
@@ -24,24 +24,24 @@ import {
 import * as runtime from '../generated/default/runtime'
 
 import {
+  CreateUserRequest,
+  CreateUserSchema,
+  EmailRequest,
+  EmailSchema,
   FollowUserRequest,
   FollowUserSchema,
+  SendTipReactionRequest,
+  SendTipReactionRequestSchema,
+  SendTipRequest,
+  SendTipSchema,
   SubscribeToUserRequest,
   SubscribeToUserSchema,
-  UpdateProfileRequest,
   UnfollowUserRequest,
   UnfollowUserSchema,
   UnsubscribeFromUserRequest,
   UnsubscribeFromUserSchema,
-  UpdateProfileSchema,
-  SendTipRequest,
-  SendTipSchema,
-  SendTipReactionRequest,
-  SendTipReactionRequestSchema,
-  CreateUserRequest,
-  CreateUserSchema,
-  EmailRequest,
-  EmailSchema
+  UpdateProfileRequest,
+  UpdateProfileSchema
 } from './types'
 
 export class UsersApi extends GeneratedUsersApi {

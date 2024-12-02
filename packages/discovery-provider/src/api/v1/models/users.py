@@ -252,38 +252,38 @@ remixed_track_aggregate = ns.model(
     },
 )
 
-# Email Models
-encrypted_email = ns.model(
-    "encrypted_email",
+sale_json_model = ns.model(
+    "sale_json",
     {
-        "id": fields.Integer(required=True),
-        "email_owner_user_id": fields.Integer(required=True),
-        "primary_user_id": fields.Integer(required=True),
-        "encrypted_email": fields.String(required=True),
-        "created_at": fields.DateTime(required=True),
-        "updated_at": fields.DateTime(required=True),
+        "title": fields.String(
+            description="Title of the content (track/album/playlist)"
+        ),
+        "link": fields.String(description="Full URL link to the content"),
+        "purchased_by": fields.String(description="Name of the buyer"),
+        "date": fields.String(
+            description="ISO format date string of when the sale occurred"
+        ),
+        "sale_price": fields.Float(description="Base sale price in USDC"),
+        "network_fee": fields.Float(
+            description="Network fee deducted from sale in USDC"
+        ),
+        "pay_extra": fields.Float(description="Extra amount paid by buyer in USDC"),
+        "total": fields.Float(description="Total amount received by seller in USDC"),
+        "country": fields.String(
+            description="Country code where purchase was made", allow_null=True
+        ),
+        "encrypted_email": fields.String(
+            description="Encrypted email of buyer if available", allow_null=True
+        ),
     },
 )
 
-email_encryption_key = ns.model(
-    "email_encryption_key",
+sales_json_content = ns.model(
+    "sales_json_content",
     {
-        "id": fields.Integer(required=True),
-        "primary_user_id": fields.Integer(required=True),
-        "encrypted_key": fields.String(required=True),
-        "created_at": fields.DateTime(required=True),
-        "updated_at": fields.DateTime(required=True),
-    },
-)
-
-email_access_key = ns.model(
-    "email_access_key",
-    {
-        "id": fields.Integer(required=True),
-        "primary_user_id": fields.Integer(required=True),
-        "delegated_user_id": fields.Integer(required=True),
-        "encrypted_key": fields.String(required=True),
-        "created_at": fields.DateTime(required=True),
-        "updated_at": fields.DateTime(required=True),
+        "decryption_key": fields.String(
+            description="Encrypted key for decrypting buyer emails", allow_null=True
+        ),
+        "sales": fields.List(fields.Nested(sale_json_model)),
     },
 )

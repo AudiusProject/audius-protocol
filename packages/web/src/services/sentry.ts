@@ -1,6 +1,8 @@
+import { DoubleKeys } from '@audius/common/services'
 import * as Sentry from '@sentry/browser'
 
 import { env } from './env'
+import { remoteConfigInstance } from './remote-config/remote-config-instance'
 
 const analyticsBlacklist = [
   'google-analytics',
@@ -13,7 +15,8 @@ const analyticsBlacklist = [
 
 const MAX_BREADCRUMBS = 300
 
-export const initializeSentry = () => {
+export const initializeSentry = async () => {
+  await remoteConfigInstance.waitForRemoteConfig()
   Sentry.init({
     dsn: env.SENTRY_DSN,
     transport: Sentry.makeBrowserOfflineTransport(Sentry.makeFetchTransport),
@@ -60,6 +63,10 @@ export const initializeSentry = () => {
     // This is the sample rate for healthy sessions without errors - set to 0 since we only care about errors
     replaysSessionSampleRate: 0,
     // This is a sample rate specific to when errors occur. We want to see 100% of them
-    replaysOnErrorSampleRate: 1.0
+    replaysOnErrorSampleRate: Number(
+      remoteConfigInstance.getRemoteVar(
+        DoubleKeys.SENTRY_REPLAY_ERROR_SAMPLE_RATE
+      ) ?? 0
+    )
   })
 }
