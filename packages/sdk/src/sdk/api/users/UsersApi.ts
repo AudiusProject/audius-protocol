@@ -16,8 +16,10 @@ import {
   Configuration,
   DownloadPurchasesAsCSVRequest,
   DownloadSalesAsCSVRequest,
+  DownloadSalesAsJSONRequest,
   DownloadUSDCWithdrawalsAsCSVRequest,
-  UsersApi as GeneratedUsersApi
+  UsersApi as GeneratedUsersApi,
+  SalesJsonResponse
 } from '../generated/default'
 import * as runtime from '../generated/default/runtime'
 
@@ -240,6 +242,43 @@ export class UsersApi extends GeneratedUsersApi {
     })
 
     return await new runtime.BlobApiResponse(response).value()
+  }
+
+  /**
+   * Gets the sales data for the user in JSON format
+   * @param params The params to get sales data in JSON format
+   * @returns Promise<any> The sales data in JSON format
+   * @throws {RequiredError}
+   */
+  async getSalesAsJSON(
+    params: DownloadSalesAsJSONRequest
+  ): Promise<SalesJsonResponse> {
+    if (params.id === null || params.id === undefined) {
+      throw new runtime.RequiredError(
+        'id',
+        'Required parameter params.id was null or undefined when calling downloadSalesAsJSON.'
+      )
+    }
+
+    const queryParameters: any = {}
+
+    if (params.userId !== undefined) {
+      queryParameters.user_id = params.userId
+    }
+
+    const headerParameters: runtime.HTTPHeaders = {}
+
+    const response = await this.request({
+      path: `/users/{id}/sales/download/json`.replace(
+        `{${'id'}}`,
+        encodeURIComponent(String(params.id))
+      ),
+      method: 'GET',
+      headers: headerParameters,
+      query: queryParameters
+    })
+
+    return await response.json()
   }
 
   /**
