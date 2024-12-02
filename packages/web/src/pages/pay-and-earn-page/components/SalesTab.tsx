@@ -151,7 +151,7 @@ export const useSales = () => {
 
     try {
       const sdk = await audiusSdk()
-      const salesAsJSON = await sdk.users.getSalesAsJSON({
+      const salesAsJSON = await sdk.users.downloadSalesAsJSON({
         id: Id.parse(userId)
       })
 
@@ -172,6 +172,7 @@ export const useSales = () => {
         'Total',
         'Country'
       ]
+
       const rows = salesAsJSON.data.sales.map((sale) => [
         sale.title,
         sale.link,
