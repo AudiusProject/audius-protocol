@@ -40,10 +40,10 @@ export const FollowArtistCard = (props: FollowArtistTileProps) => {
   } = props
   const dispatch = useDispatch()
   const { isMobile } = useMedia()
-  const { source: coverPhoto, shouldBlur } = useCoverPhoto(
-    user_id,
-    WidthSizes.SIZE_640
-  )
+  const { image: coverPhoto, shouldBlur } = useCoverPhoto({
+    userId: user_id,
+    size: WidthSizes.SIZE_640
+  })
   const [followField] = useField({ name: 'selectedArtists', type: 'checkbox' })
   const { spacing } = useTheme()
 

@@ -123,7 +123,7 @@ const useStyles = makeStyles(({ spacing, palette, typography }) => ({
     marginVertical: spacing(4)
   },
   audioAmount: {
-    color: palette.staticWhite,
+    color: palette.staticStaticWhite,
     fontSize: typography.fontSize.xxxxxl,
     fontFamily: typography.fontByWeight.heavy,
     textShadowColor: 'rgba(0,0,0,0.1)',
@@ -164,7 +164,7 @@ const useStyles = makeStyles(({ spacing, palette, typography }) => ({
     padding: spacing(2)
   },
   noticeTileText: {
-    color: palette.staticWhite
+    color: palette.staticStaticWhite
   }
 }))
 
@@ -249,7 +249,7 @@ export const AudioScreen = () => {
             />
           ) : (
             <Text style={styles.audioAmount}>
-              {formatWei(totalBalance, true, 0)}{' '}
+              {formatWei(totalBalance, true, 0)}
             </Text>
           )}
         </View>

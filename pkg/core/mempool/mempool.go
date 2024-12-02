@@ -72,6 +72,12 @@ func (m *Mempool) AddTransaction(key string, tx *MempoolTransaction, broadcast b
 		return ErrFullMempool
 	}
 
+	_, exists := m.txMap[key]
+	if exists {
+		m.logger.Warningf("duplicate tx %s tried to add to mempool", key)
+		return nil
+	}
+
 	element := m.deque.PushBack(tx)
 	m.txMap[key] = element
 
@@ -99,6 +105,28 @@ func (m *Mempool) GetBatch(batchSize int, currentBlock int64) []*proto.SignedTra
 
 		batch = append(batch, tx.Tx)
 		count++
+	}
+
+	return batch
+}
+
+func (m *Mempool) GetAll() []*proto.SignedTransaction {
+	m.mutex.Lock()
+	defer m.mutex.Unlock()
+
+	batch := []*proto.SignedTransaction{}
+
+	for {
+		e := m.deque.Front()
+		if e.Next() != nil {
+			tx, ok := e.Value.(*MempoolTransaction)
+			if !ok {
+				continue
+			}
+			batch = append(batch, tx.Tx)
+			continue
+		}
+		break
 	}
 
 	return batch

@@ -20,7 +20,7 @@ export enum PurchaseContentStage {
 
 export enum PurchaseContentPage {
   PURCHASE = 'purchase',
-  CONFIRM_GUEST = 'confirm_guest',
+  GUEST_CHECKOUT = 'guest-checkout',
   TRANSFER = 'crypto-transfer'
 }
 

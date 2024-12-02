@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
 
-import { FeatureFlags } from '@audius/common/services'
 import { accountSelectors } from '@audius/common/store'
 import { route } from '@audius/common/utils'
 import {
@@ -16,7 +15,6 @@ import { useDispatch, useSelector } from 'react-redux'
 import Header from 'components/header/desktop/Header'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import Page from 'components/page/Page'
-import { useFlag } from 'hooks/useRemoteConfig'
 
 import styles from '../PayAndEarnPage.module.css'
 import { PayoutWalletCard } from '../components/PayoutWalletCard'
@@ -130,10 +128,6 @@ export const PayAndEarnPage = ({ tableView }: PayAndEarnPageProps) => {
     },
     [setSelectedTable, dispatch]
   )
-  const { isEnabled: isPayoutWalletEnabled } = useFlag(
-    FeatureFlags.PAYOUT_WALLET_ENABLED
-  )
-
   return (
     <Page
       title={messages.title}
@@ -146,7 +140,7 @@ export const PayAndEarnPage = ({ tableView }: PayAndEarnPageProps) => {
       ) : (
         <>
           <USDCCard />
-          {isPayoutWalletEnabled ? <PayoutWalletCard /> : null}
+          <PayoutWalletCard />
           <Paper w='100%'>
             <Flex direction='column' w='100%'>
               <Flex

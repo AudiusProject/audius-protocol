@@ -10,7 +10,7 @@ export function useEnvironmentSelection(): [
   let [searchParams] = useSearchParams()
 
   const isStage = !!searchParams.get(isStageParam)
-  const nodeType = searchParams.get(nodeTypeParam) || 'discovery'
+  const nodeType = (searchParams.get(nodeTypeParam) as 'content' | 'discovery' | 'core') || 'discovery'
 
   return [
     isStage ? 'staging' : 'prod',

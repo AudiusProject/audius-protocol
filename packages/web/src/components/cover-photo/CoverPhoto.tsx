@@ -46,10 +46,10 @@ const CoverPhoto = ({
     ? 'linear-gradient(180deg, rgba(0,0,0,0.25) 0%, rgba(0,0,0,0.75) 100%)'
     : 'linear-gradient(rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0.05) 70%, rgba(0, 0, 0, 0.2) 100%)'
 
-  const { source: image, shouldBlur } = useCoverPhoto(
-    userId,
-    WidthSizes.SIZE_2000
-  )
+  const { image, shouldBlur } = useCoverPhoto({
+    userId: userId ?? undefined,
+    size: WidthSizes.SIZE_2000
+  })
 
   const imageSettings = useMemo(() => {
     if (image) {

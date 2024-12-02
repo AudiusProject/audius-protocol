@@ -1,10 +1,8 @@
-import { useGetTrackById } from '@audius/common/api'
 import {
-  useGatedContentAccess,
+  useGatedTrackAccess,
   useTrackLockedStatusVariant
 } from '@audius/common/hooks'
-import type { ID, Track } from '@audius/common/models'
-import type { Nullable } from '@audius/common/utils'
+import type { ID } from '@audius/common/models'
 
 import { LockedStatusBadge } from '../core/LockedStatusBadge'
 
@@ -14,12 +12,7 @@ type TrackLockedStatusBadgeProps = {
 
 export const TrackLockedStatusBadge = (props: TrackLockedStatusBadgeProps) => {
   const { trackId } = props
-  const { data: track } = useGetTrackById(
-    { id: trackId },
-    { disabled: !trackId }
-  )
-
-  const { hasStreamAccess } = useGatedContentAccess(track as Nullable<Track>)
+  const { hasStreamAccess } = useGatedTrackAccess(trackId)
   const variant = useTrackLockedStatusVariant(trackId)
   if (!variant) return null
 

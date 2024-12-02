@@ -1,4 +1,4 @@
-import { Name, Kind, ID } from '@audius/common/models'
+import { Name, Kind, ID, UserMetadata } from '@audius/common/models'
 import {
   accountSelectors,
   cacheActions,
@@ -48,7 +48,7 @@ export function* followUser(
   }
 
   const users = yield* select(getUsers, { ids: [action.userId, accountId] })
-  let followedUser = users[action.userId]
+  let followedUser: UserMetadata = users[action.userId]
   const currentUser = users[accountId]
 
   if (!followedUser) {

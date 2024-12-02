@@ -64,7 +64,7 @@ export const primitiveThemeV2 = {
     static: {
       primary: '#B94CC2',
       white: '#2F3348',
-      staticWhite: '#F6F8FC',
+      staticWhite: '#FFFFFF',
       black: '#000000'
     },
     primary: {
@@ -125,7 +125,7 @@ export const primitiveThemeV2 = {
     static: {
       primary: '#B94CC2',
       white: '#020804',
-      staticWhite: '#F6F8FC',
+      staticWhite: '#FFFFFF',
       black: '#000000'
     },
     primary: {

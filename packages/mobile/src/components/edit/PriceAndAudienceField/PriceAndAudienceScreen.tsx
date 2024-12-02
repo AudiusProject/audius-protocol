@@ -51,9 +51,6 @@ export const PriceAndAudienceScreen = () => {
   const [{ value: isUpload }] = useField<boolean>('isUpload')
   const isRemix = !!remixOf
 
-  const { isEnabled: isEditableAccessEnabled } = useFeatureFlag(
-    FeatureFlags.EDITABLE_ACCESS_ENABLED
-  )
   const { isEnabled: isUsdcEnabled } = useFeatureFlag(
     FeatureFlags.USDC_PURCHASES
   )
@@ -87,10 +84,8 @@ export const PriceAndAudienceScreen = () => {
     disableCollectibleGate,
     disableCollectibleGateFields
   } = useAccessAndRemixSettings({
-    isEditableAccessEnabled: !!isEditableAccessEnabled,
     isUpload,
     isRemix,
-    initialStreamConditions,
     isInitiallyUnlisted: initialValues.is_unlisted,
     isScheduledRelease
   })
@@ -164,14 +159,13 @@ export const PriceAndAudienceScreen = () => {
 
   const handleSubmit = useCallback(() => {
     validateForm() // Fixes any erroneous errors that haven't been revalidated
-    if (!isUpload && isEditableAccessEnabled && usersMayLoseAccess) {
+    if (!isUpload && usersMayLoseAccess) {
       onOpenEditAccessConfirmationModal({
         confirmCallback: navigation.goBack,
         cancelCallback: navigation.goBack
       })
     }
   }, [
-    isEditableAccessEnabled,
     isUpload,
     usersMayLoseAccess,
     validateForm,

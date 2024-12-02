@@ -59,11 +59,21 @@ export const userMetadataFromSDK = (
     user_id: decodedUserId,
     spl_wallet: input.splWallet as SolanaWalletAddress,
     spl_usdc_payout_wallet: input.splUsdcPayoutWallet as SolanaWalletAddress,
-
-    // Legacy Overrides
-    cover_photo: input.coverPhotoLegacy ?? null,
-    profile_picture: input.profilePictureLegacy ?? null,
-
+    cover_photo: input.coverPhoto
+      ? {
+          '640x': input.coverPhoto._640x,
+          '2000x': input.coverPhoto._2000x,
+          mirrors: input.coverPhoto.mirrors
+        }
+      : {},
+    profile_picture: input.profilePicture
+      ? {
+          '150x150': input.profilePicture._150x150,
+          '480x480': input.profilePicture._480x480,
+          '1000x1000': input.profilePicture._1000x1000,
+          mirrors: input.profilePicture.mirrors
+        }
+      : {},
     // Required Nullable fields
     bio: input.bio ?? null,
     twitter_handle: input.twitterHandle ?? null,
