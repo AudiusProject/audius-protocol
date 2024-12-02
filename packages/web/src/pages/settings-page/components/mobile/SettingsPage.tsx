@@ -3,7 +3,6 @@ import { useContext, useEffect, FC } from 'react'
 import { SquareSizes, Theme, ID } from '@audius/common/models'
 import {
   BrowserNotificationSetting,
-  PushNotificationSetting,
   EmailFrequency,
   InstagramProfile,
   TwitterProfile,

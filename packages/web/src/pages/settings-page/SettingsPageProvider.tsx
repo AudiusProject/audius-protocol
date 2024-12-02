@@ -6,7 +6,6 @@ import {
   accountSelectors,
   settingsPageSelectors,
   BrowserNotificationSetting,
-  PushNotificationSetting,
   EmailFrequency,
   signOutActions,
   getTierAndVerifiedForUser,
