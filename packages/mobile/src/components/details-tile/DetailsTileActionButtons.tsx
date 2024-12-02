@@ -1,7 +1,5 @@
 import { useGetPlaylistById, useGetCurrentUserId } from '@audius/common/api'
-import { useFeatureFlag } from '@audius/common/hooks'
 import type { ID } from '@audius/common/models'
-import { FeatureFlags } from '@audius/common/services'
 import { cacheCollectionsSelectors } from '@audius/common/store'
 import type { CommonState } from '@audius/common/store'
 import { useSelector } from 'react-redux'
@@ -81,10 +79,6 @@ export const DetailsTileActionButtons = ({
   onPressSave,
   onPressShare
 }: DetailsTileActionButtonsProps) => {
-  const { isEnabled: isHiddenPaidScheduledEnabled } = useFeatureFlag(
-    FeatureFlags.HIDDEN_PAID_SCHEDULED
-  )
-
   const styles = useStyles()
   const isCollectionEmpty = useSelector((state: CommonState) =>
     getIsCollectionEmpty(state, { id: collectionId })
@@ -161,10 +155,7 @@ export const DetailsTileActionButtons = ({
     <IconButton
       color='subdued'
       icon={IconRocket}
-      disabled={
-        isCollectionEmpty ||
-        (collectionHasHiddenTracks && !isHiddenPaidScheduledEnabled)
-      }
+      disabled={isCollectionEmpty}
       disabledHint={
         collectionHasHiddenTracks
           ? messages.publishButtonHiddenDisabledContent

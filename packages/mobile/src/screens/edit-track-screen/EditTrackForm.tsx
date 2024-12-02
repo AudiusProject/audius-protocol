@@ -1,6 +1,5 @@
 import { useCallback } from 'react'
 
-import { FeatureFlags } from '@audius/common/services'
 import type { TrackForUpload } from '@audius/common/store'
 import {
   useEarlyReleaseConfirmationModal,
@@ -23,7 +22,6 @@ import { PriceAndAudienceField } from 'app/components/edit/PriceAndAudienceField
 import { VisibilityField } from 'app/components/edit/VisibilityField'
 import { PickArtworkField, TextField } from 'app/components/fields'
 import { useNavigation } from 'app/hooks/useNavigation'
-import { useFeatureFlag } from 'app/hooks/useRemoteConfig'
 import { FormScreen } from 'app/screens/form-screen'
 import { setVisibility } from 'app/store/drawers/slice'
 import { makeStyles } from 'app/styles'
@@ -38,7 +36,6 @@ import {
   TagField,
   SubmenuList,
   RemixSettingsField,
-  ReleaseDateField,
   AdvancedField
 } from './fields'
 import type { EditTrackFormProps } from './types'
@@ -138,10 +135,6 @@ export const EditTrackForm = (props: EditTrackFormProps) => {
     openPublishConfirmation
   ])
 
-  const { isEnabled: isHiddenPaidScheduledEnabled } = useFeatureFlag(
-    FeatureFlags.HIDDEN_PAID_SCHEDULED
-  )
-
   return (
     <>
       <FormScreen
@@ -190,11 +183,7 @@ export const EditTrackForm = (props: EditTrackFormProps) => {
               <TagField />
               <DescriptionField />
               <SubmenuList removeBottomDivider>
-                {isHiddenPaidScheduledEnabled ? (
-                  <VisibilityField />
-                ) : (
-                  <ReleaseDateField />
-                )}
+                <VisibilityField />
                 <PriceAndAudienceField />
                 <RemixSettingsField />
                 <AdvancedField />

@@ -22,9 +22,6 @@ import { ScheduledReleaseDateField } from './ScheduledReleaseDateField'
 type VisibilityType = 'scheduled' | 'public' | 'hidden'
 
 export const VisibilityScreen = () => {
-  const { isEnabled: isEditableAccessEnabled } = useFeatureFlag(
-    FeatureFlags.EDITABLE_ACCESS_ENABLED
-  )
   const { isEnabled: isPaidScheduledEnabled } = useFeatureFlag(
     FeatureFlags.PAID_SCHEDULED
   )
@@ -121,7 +118,6 @@ export const VisibilityScreen = () => {
           label={messages.hidden}
           icon={IconVisibilityHidden}
           description={messages.hiddenDescription}
-          disabled={!isEditableAccessEnabled && initiallyPublic}
         />
         {!initiallyPublic &&
         (entityType === 'track' ||
