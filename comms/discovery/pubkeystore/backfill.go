@@ -12,23 +12,18 @@ func StartPubkeyBackfill() {
 	ctx := context.Background()
 
 	sql := `
-	select user_id from users where
-	is_current = true
-	and user_id > (select coalesce(max(user_id), 0) from user_pubkeys)
-	order by user_id asc
-	limit 100000;
+	select user_id
+	from users
+	where not exists (select 1 from user_pubkeys p where users.user_id = p.user_id);
 	`
 
 	for {
 		// space it out a bit
-		time.Sleep(time.Minute * 5)
+		time.Sleep(time.Minute * 2)
 
 		ids := []int{}
 		err := db.Conn.Select(&ids, sql)
 		if err != nil {
-			break
-		}
-		if len(ids) == 0 {
 			break
 		}
 		for _, id := range ids {
@@ -37,6 +32,8 @@ func StartPubkeyBackfill() {
 				slog.Debug("pubkey backfill: failed to recover", "user_id", id, "err", err)
 			}
 		}
+
+		time.Sleep(time.Minute * 8)
 
 	}
 
