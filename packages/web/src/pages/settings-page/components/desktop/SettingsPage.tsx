@@ -256,9 +256,6 @@ export const SettingsPage = (props: SettingsPageProps) => {
     return options
   }, [showMatrix])
 
-  const { isEnabled: isPayoutWalletEnabled } = useFlag(
-    FeatureFlags.PAYOUT_WALLET_ENABLED
-  )
   const allowAiAttribution = useSelector(getAllowAiAttribution)
   const { isEnabled: isCommentsEnabled } = useFlag(
     FeatureFlags.COMMENTS_ENABLED
@@ -442,7 +439,7 @@ export const SettingsPage = (props: SettingsPageProps) => {
 
         <AuthorizedAppsSettingsCard />
         <DeveloperAppsSettingsCard />
-        {isPayoutWalletEnabled ? <PayoutWalletSettingsCard /> : null}
+        <PayoutWalletSettingsCard />
       </div>
       <div className={styles.version}>
         <Button
