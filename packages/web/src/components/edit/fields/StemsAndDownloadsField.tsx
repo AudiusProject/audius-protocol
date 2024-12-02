@@ -280,12 +280,7 @@ export const StemsAndDownloadsField = (props: StemsAndDownloadsFieldProps) => {
           ...usdcPurchaseConfig
         })
       )}
-      menuFields={
-        <StemsAndDownloadsMenuFields
-          isUpload={isUpload}
-          initialDownloadConditions={savedDownloadConditions}
-        />
-      }
+      menuFields={<StemsAndDownloadsMenuFields isUpload={isUpload} />}
       closeMenuCallback={closeMenuCallback}
       displayMenuErrorMessage={(
         errors: FormikErrors<StemsAndDownloadsFormValues>

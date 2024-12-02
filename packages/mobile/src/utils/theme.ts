@@ -1,7 +1,11 @@
+import { useFeatureFlag } from '@audius/common/hooks'
 import { Theme } from '@audius/common/models'
+import { FeatureFlags } from '@audius/common/services'
 import type { CommonState } from '@audius/common/store'
 import { themeSelectors } from '@audius/common/store'
 import { useSelector } from 'react-redux'
+
+import { themeColorsV2 } from './themeV2'
 
 const { getTheme, getSystemAppearance } = themeSelectors
 
@@ -287,12 +291,24 @@ export const useThemeVariant = (): keyof typeof themeColorsByThemeVariant => {
 
 export const useThemeColors = () => {
   const themeVariant = useThemeVariant()
-  return themeColorsByThemeVariant[themeVariant]
+  const { isEnabled: isThemeV2Enabled } = useFeatureFlag(FeatureFlags.THEME_V2)
+
+  const themeColors = isThemeV2Enabled
+    ? themeColorsV2
+    : themeColorsByThemeVariant
+
+  return themeColors[themeVariant]
 }
 
 export const useThemePalette = () => {
   const themeVariant = useThemeVariant()
-  return themeColorsByThemeVariant[themeVariant]
+  const { isEnabled: isThemeV2Enabled } = useFeatureFlag(FeatureFlags.THEME_V2)
+
+  const themeColors = isThemeV2Enabled
+    ? themeColorsV2
+    : themeColorsByThemeVariant
+
+  return themeColors[themeVariant]
 }
 
 export const useColor = (color: string): string => {
