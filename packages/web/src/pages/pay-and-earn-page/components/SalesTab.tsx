@@ -145,7 +145,10 @@ export const useSales = () => {
   const isEmpty = status === Status.SUCCESS && sales.length === 0
   const isLoading = statusIsNotFinalized(status)
 
-  const downloadSalesAsCSV = async () => {
+  const downloadSalesAsCSVFromJSON = async () => {
+    let link = null
+    let url = null
+
     try {
       const sdk = await audiusSdk()
       const salesAsJSON = await sdk.users.getSalesAsJSON({
@@ -190,18 +193,21 @@ export const useSales = () => {
 
       // Create blob and download
       const blob = new Blob([csvContent], { type: 'text/csv' })
-      const url = URL.createObjectURL(blob)
-      const link = document.createElement('a')
+      url = URL.createObjectURL(blob)
+      link = document.createElement('a')
       link.href = url
-      link.download = `audius-sales-${
-        new Date().toISOString().split('T')[0]
-      }.csv`
+      link.download = `audius_sales_${formatToday()}.csv`
       document.body.appendChild(link)
       link.click()
-      document.body.removeChild(link)
-      URL.revokeObjectURL(url)
     } catch (error) {
       console.error('Error downloading sales data:', error)
+    } finally {
+      if (link) {
+        document.body.removeChild(link)
+      }
+      if (url) {
+        URL.revokeObjectURL(url)
+      }
     }
   }
 
@@ -227,7 +233,7 @@ export const useSales = () => {
     isEmpty,
     isLoading,
     downloadCSV,
-    downloadSalesAsCSV
+    downloadSalesAsCSVFromJSON
   }
 }
 /**
@@ -241,7 +247,10 @@ export const SalesTab = ({
   onClickRow,
   isEmpty,
   isLoading
-}: Omit<ReturnType<typeof useSales>, 'downloadCSV' | 'downloadSalesAsCSV'>) => {
+}: Omit<
+  ReturnType<typeof useSales>,
+  'downloadCSV' | 'downloadSalesAsCSVFromJSON'
+>) => {
   const isMobile = useIsMobile()
   const mainContentRef = useMainContentRef()
   const { color } = useTheme()
