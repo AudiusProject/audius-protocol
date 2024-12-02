@@ -26,8 +26,8 @@ import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import { TikTokAuthButton } from 'components/tiktok-auth/TikTokAuthButton'
 import { TwitterAuthButton } from 'components/twitter-auth/TwitterAuthButton'
 import UserBadges from 'components/user-badges/UserBadges'
+import { useProfilePicture } from 'hooks/useProfilePicture'
 import { useRemoteVar } from 'hooks/useRemoteConfig'
-import { useUserProfilePicture } from 'hooks/useUserProfilePicture'
 
 import styles from './VerificationModal.module.css'
 
@@ -164,22 +164,14 @@ type SuccessBodyProps = {
   userId: ID
   handle: string
   name: string
-  profilePictureSizes: ProfilePictureSizes | null
   goToRoute: (route: string) => void
 }
 
-const SuccessBody = ({
-  handle,
-  userId,
-  name,
-  profilePictureSizes,
-  goToRoute
-}: SuccessBodyProps) => {
-  const profilePicture = useUserProfilePicture(
+const SuccessBody = ({ handle, userId, name, goToRoute }: SuccessBodyProps) => {
+  const profilePicture = useProfilePicture({
     userId,
-    profilePictureSizes,
-    SquareSizes.SIZE_150_BY_150
-  )
+    size: SquareSizes.SIZE_150_BY_150
+  })
 
   const onClick = useCallback(() => {
     goToRoute(profilePage(handle))
@@ -342,7 +334,6 @@ const VerificationModal = (props: VerificationModalProps) => {
         userId={props.userId}
         handle={props.handle}
         name={props.name}
-        profilePictureSizes={props.profilePictureSizes}
         goToRoute={props.goToRoute}
       />
     )

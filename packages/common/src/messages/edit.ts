@@ -10,8 +10,6 @@ export const visibilityMessages = {
   scheduledRelease: 'Scheduled Release',
   scheduledReleaseDescription:
     'Select the date and time this will become public.',
-  hiddenHint: (entityType: 'track' | 'album' | 'playlist') =>
-    `You can’t make a public ${entityType} hidden`,
   dateLabel: 'Release Date',
   timeLabel: 'Time',
   futureReleaseHint: (timezone: string) =>

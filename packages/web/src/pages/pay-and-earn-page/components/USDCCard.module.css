@@ -22,16 +22,6 @@
   justify-content: space-between;
 }
 
-.usdcTitle {
-  display: flex;
-  align-items: center;
-  gap: var(--harmony-unit-2);
-}
-
-.usdc {
-  opacity: 0.8;
-}
-
 .balance {
   display: inline-flex;
   align-items: center;
@@ -45,7 +35,7 @@
 }
 
 .spinner g path {
-  stroke: var(--harmony-static-white) !important;
+  stroke: var(--harmony-static-static-white);
 }
 
 .usdcInfo {

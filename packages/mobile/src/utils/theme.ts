@@ -1,7 +1,11 @@
+import { useFeatureFlag } from '@audius/common/hooks'
 import { Theme } from '@audius/common/models'
+import { FeatureFlags } from '@audius/common/services'
 import type { CommonState } from '@audius/common/store'
 import { themeSelectors } from '@audius/common/store'
 import { useSelector } from 'react-redux'
+
+import { themeColorsV2 } from './themeV2'
 
 const { getTheme, getSystemAppearance } = themeSelectors
 
@@ -54,6 +58,7 @@ export const defaultTheme = {
   shadow: '#E3E3E3',
   staticTwitterBlue: '#1BA1F1',
   staticWhite: '#FFFFFF',
+  staticStaticWhite: '#FFFFFF',
   staticNeutral: '#858199',
   staticNeutralLight2: '#AAA7B8',
   staticNeutralLight8: '#F2F2F4',
@@ -120,6 +125,7 @@ export const darkTheme = {
   shadow: '#35364F',
   staticTwitterBlue: '#1BA1F1',
   staticWhite: '#FFFFFF',
+  staticStaticWhite: '#FFFFFF',
   staticNeutral: '#858199',
   staticNeutralLight2: '#AAA7B8',
   staticNeutralLight8: '#F2F2F4',
@@ -175,6 +181,7 @@ export const matrixTheme = {
   white: '#1F211F',
   staticTwitterBlue: '#1BA1F1',
   staticWhite: '#FFFFFF',
+  staticStaticWhite: '#FFFFFF',
   staticNeutral: '#858199',
   staticNeutralLight2: '#AAA7B8',
   staticNeutralLight8: '#F2F2F4',
@@ -244,6 +251,8 @@ export type ThemeColors = {
   shadow: string
   staticTwitterBlue: string
   staticWhite: string
+  // TODO: Remove when theme v2 is enabled
+  staticStaticWhite: string
   staticNeutral: string
   staticNeutralLight2: string
   staticNeutralLight8: string
@@ -287,12 +296,24 @@ export const useThemeVariant = (): keyof typeof themeColorsByThemeVariant => {
 
 export const useThemeColors = () => {
   const themeVariant = useThemeVariant()
-  return themeColorsByThemeVariant[themeVariant]
+  const { isEnabled: isThemeV2Enabled } = useFeatureFlag(FeatureFlags.THEME_V2)
+
+  const themeColors = isThemeV2Enabled
+    ? themeColorsV2
+    : themeColorsByThemeVariant
+
+  return themeColors[themeVariant]
 }
 
 export const useThemePalette = () => {
   const themeVariant = useThemeVariant()
-  return themeColorsByThemeVariant[themeVariant]
+  const { isEnabled: isThemeV2Enabled } = useFeatureFlag(FeatureFlags.THEME_V2)
+
+  const themeColors = isThemeV2Enabled
+    ? themeColorsV2
+    : themeColorsByThemeVariant
+
+  return themeColors[themeVariant]
 }
 
 export const useColor = (color: string): string => {

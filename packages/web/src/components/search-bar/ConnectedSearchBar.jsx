@@ -198,12 +198,10 @@ class ConnectedSearchBar extends Component {
               primary: user.name || user.handle,
               userId: user.user_id,
               id: user.user_id,
-              imageMultihash:
-                user.profile_picture_sizes || user.profile_picture,
+              artwork: user.profile_picture,
               size: user.profile_picture_sizes
                 ? SquareSizes.SIZE_150_BY_150
                 : null,
-              creatorNodeEndpoint: user.creator_node_endpoint,
               defaultImage: profilePicEmpty,
               isVerifiedUser: user.is_verified,
               tier: getTierForUser(user),
@@ -220,11 +218,8 @@ class ConnectedSearchBar extends Component {
               secondary: track.user ? track.user.name : '',
               id: track.track_id,
               userId: track.owner_id,
-              imageMultihash: track.cover_art_sizes || track.cover_art,
+              artwork: track.artwork,
               size: track.cover_art_sizes ? SquareSizes.SIZE_150_BY_150 : null,
-              creatorNodeEndpoint: track.user
-                ? track.user.creator_node_endpoint
-                : '',
               defaultImage: placeholderArt,
               isVerifiedUser: track.user.is_verified,
               tier: getTierForUser(track.user),
@@ -249,14 +244,11 @@ class ConnectedSearchBar extends Component {
                 : '',
               id: playlist.playlist_id,
               userId: playlist.playlist_owner_id,
-              imageMultihash: playlist.cover_art_sizes || playlist.cover_art,
+              artwork: playlist.artwork,
               size: playlist.cover_art_sizes
                 ? SquareSizes.SIZE_150_BY_150
                 : null,
               defaultImage: placeholderArt,
-              creatorNodeEndpoint: playlist.user
-                ? playlist.user.creator_node_endpoint
-                : '',
               isVerifiedUser: playlist.user.is_verified,
               tier: getTierForUser(playlist.user),
               kind: Kind.COLLECTIONS
@@ -280,12 +272,9 @@ class ConnectedSearchBar extends Component {
               secondary: album.user ? album.user.name : '',
               id: album.playlist_id,
               userId: album.playlist_owner_id,
-              imageMultihash: album.cover_art_sizes || album.cover_art,
+              artwork: album.artwork,
               size: album.cover_art_sizes ? SquareSizes.SIZE_150_BY_150 : null,
               defaultImage: placeholderArt,
-              creatorNodeEndpoint: album.user
-                ? album.user.creator_node_endpoint
-                : '',
               isVerifiedUser: album.user.is_verified,
               tier: getTierForUser(album.user),
               kind: Kind.COLLECTIONS

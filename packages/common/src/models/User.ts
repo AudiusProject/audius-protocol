@@ -29,7 +29,7 @@ export type UserMetadata = {
   collectiblesOrderUnset?: boolean
   cover_photo_cids?: Nullable<CoverPhotoSizesCids>
   cover_photo_sizes: Nullable<CID>
-  cover_photo: Nullable<CID>
+  cover_photo: CoverPhotoSizes & { mirrors?: string[] | undefined }
   creator_node_endpoint: Nullable<string>
   current_user_followee_follow_count: number
   does_current_user_follow: boolean
@@ -56,7 +56,7 @@ export type UserMetadata = {
   playlist_count: number
   profile_picture_cids?: Nullable<ProfilePictureSizesCids>
   profile_picture_sizes: Nullable<CID>
-  profile_picture: Nullable<CID>
+  profile_picture: ProfilePictureSizes & { mirrors?: string[] | undefined }
   repost_count: number
   solanaCollectibleList?: Collectible[]
   spl_wallet: Nullable<SolanaWalletAddress>

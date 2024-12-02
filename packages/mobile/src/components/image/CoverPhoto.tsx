@@ -49,8 +49,8 @@ export const useCoverPhoto = (
   const cid = useSelector((state) => {
     const user = getUser(state, { id: userId })
     if (!user) return null
-    const { cover_photo_sizes, cover_photo } = user
-    return cover_photo_sizes || cover_photo
+    const { cover_photo_sizes } = user
+    return cover_photo_sizes
   })
 
   const cidMap = useSelector(

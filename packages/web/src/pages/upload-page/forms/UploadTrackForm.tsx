@@ -3,7 +3,6 @@ import { useCallback, useMemo } from 'react'
 import { TrackForUpload } from '@audius/common/store'
 import moment from 'moment'
 
-import { defaultHiddenFields } from 'components/edit/fields/stream-availability/HiddenAvailabilityFields'
 import { EditTrackForm } from 'components/edit-track/EditTrackForm'
 import { TrackEditFormValues } from 'components/edit-track/types'
 
@@ -12,6 +11,15 @@ import { TrackFormState } from '../types'
 type UploadTrackFormProps = {
   formState: TrackFormState
   onContinue: (formState: TrackFormState) => void
+}
+
+const defaultHiddenFields = {
+  genre: true,
+  mood: true,
+  tags: true,
+  share: false,
+  play_count: false
+  // REMIXES handled by a separate field
 }
 
 export const UploadTrackForm = (props: UploadTrackFormProps) => {

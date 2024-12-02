@@ -1,12 +1,10 @@
 import { useIsManagedAccount } from '@audius/common/hooks'
-import { FeatureFlags } from '@audius/common/services'
 import { accountSelectors } from '@audius/common/store'
 import { route } from '@audius/common/utils'
 import { Box, Flex, Text, useTheme } from '@audius/harmony'
 
 import { AvatarLegacy } from 'components/avatar/AvatarLegacy'
 import { TextLink, UserLink } from 'components/link'
-import { useFlag } from 'hooks/useRemoteConfig'
 import { useSelector } from 'utils/reducer'
 import { backgroundOverlay } from 'utils/styleUtils'
 
@@ -25,10 +23,7 @@ export const AccountDetails = () => {
   const accountHandle = useSelector(getUserHandle)
   const accountUserId = useSelector(getUserId)
   const { color } = useTheme()
-  const { isEnabled: isManagerModeEnabled = false } = useFlag(
-    FeatureFlags.MANAGER_MODE
-  )
-  const isManagedAccount = useIsManagedAccount() && isManagerModeEnabled
+  const isManagedAccount = useIsManagedAccount()
 
   const profileLink = profilePage(accountHandle ?? '')
 
@@ -94,7 +89,7 @@ export const AccountDetails = () => {
                       })
                     }}
                   />
-                  {isManagerModeEnabled ? <AccountSwitcher /> : null}
+                  <AccountSwitcher />
                 </Flex>
                 <TextLink
                   size='s'
