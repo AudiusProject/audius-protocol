@@ -10,7 +10,9 @@ import { Nullable } from '@audius/common/utils'
 import {
   Scrollbar,
   IconNotificationOn as IconNotification,
-  Popup
+  Popup,
+  Flex,
+  Text
 } from '@audius/harmony'
 import InfiniteScroll from 'react-infinite-scroller'
 import { useDispatch, useSelector } from 'react-redux'
@@ -134,14 +136,35 @@ export const NotificationPanel = ({ anchorRef }: NotificationPanelProps) => {
         shadow='emphasis'
         zIndex={zIndex.NAVIGATOR_POPUP}
       >
-        <div className={styles.panelContainer} ref={panelRef}>
-          <div className={styles.header}>
-            <IconNotification
+        <Flex
+          backgroundColor='white'
+          column
+          borderRadius='m'
+          w={428}
+          ref={panelRef}
+        >
+          <Flex
+            inline
+            justifyContent='center'
+            alignItems='center'
+            backgroundColor='accent'
+            borderBottom='default'
+            borderTopLeftRadius='m'
+            borderTopRightRadius='m'
+            p='s'
+            gap='s'
+          >
+            <IconNotification color='staticWhite' size='xl' />
+            <Text
+              variant='label'
+              size='xl'
+              strength='strong'
               color='staticWhite'
-              className={styles.iconNotification}
-            />
-            <h3 className={styles.title}>{messages.title}</h3>
-          </div>
+              lineHeight='single'
+            >
+              {messages.title}
+            </Text>
+          </Flex>
           <Scrollbar className={styles.scrollContent} id={scrollbarId}>
             <InfiniteScroll
               loadMore={handleLoadMore}
@@ -173,7 +196,7 @@ export const NotificationPanel = ({ anchorRef }: NotificationPanelProps) => {
               )}
             </InfiniteScroll>
           </Scrollbar>
-        </div>
+        </Flex>
       </Popup>
       <NotificationModal
         isOpen={isNotificationModalOpen}
