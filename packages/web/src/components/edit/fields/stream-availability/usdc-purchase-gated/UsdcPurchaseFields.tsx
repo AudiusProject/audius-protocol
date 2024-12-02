@@ -7,7 +7,6 @@ import {
 } from 'react'
 
 import { AccessConditions } from '@audius/common/models'
-import { FeatureFlags } from '@audius/common/services'
 import {
   decimalIntegerToHumanReadable,
   filterDecimalString,
@@ -19,7 +18,6 @@ import cn from 'classnames'
 import { useField } from 'formik'
 
 import layoutStyles from 'components/layout/layout.module.css'
-import { useMessages } from 'hooks/useMessages'
 
 import { BoxedTextField } from '../../BoxedTextField'
 import {
@@ -33,67 +31,39 @@ import {
 
 import { RightsDeclaration } from './RightsDeclaration'
 
-const messagesV1 = {
+const messages = {
   price: {
-    // Standalone purchaseable track flow
     standaloneTrackPrice: {
       title: 'Set a Price',
-      description:
-        'Set the price fans must pay to unlock this track (minimum price of $1.00)',
+      description: 'The price to unlock this track (min $1)',
       label: 'Cost to Unlock',
       placeholder: '1.00'
     },
     // Album purchase flow
     albumPrice: {
-      title: 'Album Price',
-      description:
-        'Set the price fans must pay to unlock this album (minimum price of $1.00) ',
+      title: 'Set Album Price',
+      description: 'The price to unlock the entire album (min $1)',
       label: 'Album Price',
       placeholder: '5.00'
     },
-    // Applies to the individual tracks within album upload flow
     albumTrackPrice: {
       title: 'Track Price',
       description:
-        'Set the price fans must pay to unlock a single track on your album (minimum price of $1.00)',
+        'The price for each track on the album when purchased individually. (min $1)',
       label: 'Track Price',
       placeholder: '1.00'
     }
   },
   preview: {
-    title: '30 Second Preview',
-    description:
-      'A 30 second preview will be generated. Specify a starting timestamp below.',
+    title: 'Track Preview',
+    description: 'Specify when you want your 30 second track preview to start.',
     placeholder: 'Start Time'
   },
+  seconds: 'Seconds',
   dollars: '$',
   usdc: '(USDC)',
-  seconds: '(Seconds)',
   premiumDownloads:
     'Setting your track to Premium will remove the availability settings you set on your premium downloads. Don’t worry, your stems are still saved!'
-}
-
-const messagesV2 = {
-  price: {
-    standaloneTrackPrice: {
-      description: 'The price to unlock this track (min $1)'
-    },
-    // Album purchase flow
-    albumPrice: {
-      title: 'Set Album Price',
-      description: 'The price to unlock the entire album (min $1)'
-    },
-    albumTrackPrice: {
-      title: 'Track Price',
-      description:
-        'The price for each track on the album when purchased individually. (min $1)'
-    }
-  },
-  preview: {
-    title: 'Track Preview',
-    description: 'Specify when you want your 30 second track preview to start.'
-  },
-  seconds: 'Seconds'
 }
 
 export enum UsdcPurchaseType {
@@ -107,7 +77,7 @@ export type TrackAvailabilityFieldsProps = {
   isUpload?: boolean
 }
 
-type PriceMessages = typeof messagesV1.price
+type PriceMessages = typeof messages.price
 export type PriceFieldProps = TrackAvailabilityFieldsProps & {
   messaging: PriceMessages[keyof PriceMessages]
   fieldName: typeof PRICE | typeof ALBUM_TRACK_PRICE
@@ -123,12 +93,6 @@ export const UsdcPurchaseFields = (props: TrackAvailabilityFieldsProps) => {
   const [{ value: lastGateKeeper }] = useField<GateKeeper>(LAST_GATE_KEEPER)
   const showPremiumDownloadsMessage =
     downloadConditions && lastGateKeeper.access === 'stemsAndDownloads'
-
-  const messages = useMessages(
-    messagesV1,
-    messagesV2,
-    FeatureFlags.HIDDEN_PAID_SCHEDULED
-  )
 
   return (
     <div className={cn(layoutStyles.col, layoutStyles.gap4)}>
@@ -178,12 +142,6 @@ const PreviewField = (props: TrackAvailabilityFieldsProps) => {
     value?.toString()
   )
 
-  const messages = useMessages(
-    messagesV1,
-    messagesV2,
-    FeatureFlags.HIDDEN_PAID_SCHEDULED
-  )
-
   const handlePreviewChange: ChangeEventHandler<HTMLInputElement> = useCallback(
     (e) => {
       const input = e.target.value.replace(/[^0-9]+/g, '')
@@ -217,12 +175,6 @@ const PriceField = (props: PriceFieldProps) => {
   } = props
   const [{ value }, _ignored, { setValue: setPrice }] = useField<number | null>(
     fieldName
-  )
-
-  const messages = useMessages(
-    messagesV1,
-    messagesV2,
-    FeatureFlags.HIDDEN_PAID_SCHEDULED
   )
 
   const [humanizedValue, setHumanizedValue] = useState<string | null>(

@@ -4,24 +4,13 @@ import {
   AccessConditions
 } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
-import { pluralize } from '@audius/common/utils'
 import { IconCart } from '@audius/harmony'
 
 import { ModalRadioItem } from 'components/modal-radio/ModalRadioItem'
-import { useMessages } from 'hooks/useMessages'
 
 import { UsdcPurchaseFields } from './UsdcPurchaseFields'
 
-const messagesV1 = {
-  usdcPurchase: 'Premium (Pay-to-Unlock)',
-  usdcPurchaseSubtitle: (contentType: 'album' | 'track') =>
-    `Unlockable by purchase, these ${pluralize(
-      contentType,
-      2
-    )} are visible to everyone but only playable by users who have paid for access.`
-}
-
-const messagesV2 = {
+const messages = {
   usdcPurchase: 'Premium',
   usdcPurchaseSubtitle: (contentType: 'album' | 'track') =>
     `Only fans who make a purchase can play your ${contentType}.`,
@@ -49,12 +38,6 @@ export const UsdcPurchaseGatedRadioField = (
     isInitiallyUnlisted,
     isPublishDisabled
   } = props
-
-  const messages = useMessages(
-    messagesV1,
-    messagesV2,
-    FeatureFlags.HIDDEN_PAID_SCHEDULED
-  )
 
   const { isEnabled: isEditableAccessEnabled } = useFeatureFlag(
     FeatureFlags.EDITABLE_ACCESS_ENABLED
