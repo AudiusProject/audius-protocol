@@ -1,7 +1,5 @@
 import { lazy, Suspense, useState, useCallback, useEffect } from 'react'
 
-import { useFeatureFlag } from '@audius/common/hooks'
-import { FeatureFlags } from '@audius/common/services'
 import { route } from '@audius/common/utils'
 import { ThemeProvider } from '@audius/harmony'
 import { Router, Route } from 'react-router-dom'
@@ -46,7 +44,6 @@ export const PublicSite = (props: PublicSiteProps) => {
   const { isMobile, setRenderPublicSite } = props
   const [isMobileOrNarrow, setIsMobileOrNarrow] = useState(isMobile)
   const { history } = useHistoryContext()
-  const { isEnabled: isThemeV2Enabled } = useFeatureFlag(FeatureFlags.THEME_V2)
   const handleMobileMediaQuery = useCallback(() => {
     if (MOBILE_WIDTH_MEDIA_QUERY.matches) setIsMobileOrNarrow(true)
     else setIsMobileOrNarrow(isMobile)
@@ -97,7 +94,7 @@ export const PublicSite = (props: PublicSiteProps) => {
       </div>
 
       <Suspense fallback={<div style={{ width: '100vw', height: '100vh' }} />}>
-        <ThemeProvider theme='day' version={isThemeV2Enabled ? 'v2' : 'v1'}>
+        <ThemeProvider theme='day' version={'v1'}>
           <AppContextProvider>
             <Router history={history}>
               <NavScreen

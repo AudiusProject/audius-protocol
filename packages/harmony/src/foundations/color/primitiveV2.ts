@@ -3,8 +3,7 @@ export const primitiveThemeV2 = {
     static: {
       primary: '#CC0FE0',
       white: '#FFFFFF',
-      default: '#CC0FE0',
-      static: '#CC0FE0',
+      staticWhite: '#FFFFFF',
       black: '#000000'
     },
     primary: {
@@ -64,9 +63,8 @@ export const primitiveThemeV2 = {
   dark: {
     static: {
       primary: '#B94CC2',
-      white: '#F6F8FC',
-      default: '#B94CC2',
-      static: '#B94CC2',
+      white: '#2F3348',
+      staticWhite: '#FFFFFF',
       black: '#000000'
     },
     primary: {
@@ -126,9 +124,8 @@ export const primitiveThemeV2 = {
   matrix: {
     static: {
       primary: '#B94CC2',
-      white: '#F6F8FC',
-      default: '#B94CC2',
-      static: '#B94CC2',
+      white: '#020804',
+      staticWhite: '#FFFFFF',
       black: '#000000'
     },
     primary: {

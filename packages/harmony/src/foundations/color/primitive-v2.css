@@ -5,7 +5,8 @@
 /* Theme Color Definitions */
 :root {
   /* Static Colors */
-  --harmony-static-white: #ffffff;
+  /* TODO: This becomes static-white when v2 is enabled */
+  --harmony-static-static-white: #ffffff;
   --harmony-static-black: #000000;
   --harmony-static-primary: #cc0fe0;
 
@@ -108,6 +109,9 @@ html[data-theme='day-v2'] {
   --harmony-trending-blue: #216fdc;
   --harmony-ai-green: #1fd187;
   --harmony-glass-overlay: #ffffffd9;
+
+  /* Overrides static-white to be regular white */
+  --harmony-static-white: var(--harmony-white);
 }
 
 /* Dark Theme */
@@ -159,6 +163,9 @@ html[data-theme='dark-v2'] {
   --harmony-trending-blue: #216fdc;
   --harmony-ai-green: #1fd187;
   --harmony-glass-overlay: #2f334899;
+
+  /* Overrides static-white to be regular white */
+  --harmony-static-white: var(--harmony-white);
 }
 
 /* Matrix Theme */
@@ -210,4 +217,7 @@ html[data-theme='matrix-v2'] {
   --harmony-trending-blue: #216fdc;
   --harmony-ai-green: #1fd187;
   --harmony-glass-overlay: #01010199;
+
+  /* Overrides static-white to be regular white */
+  --harmony-static-white: var(--harmony-white);
 }

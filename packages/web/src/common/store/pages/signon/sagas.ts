@@ -33,7 +33,6 @@ import {
   toastActions,
   getContext,
   confirmerActions,
-  confirmTransaction,
   getSDK,
   fetchAccountAsync
 } from '@audius/common/store'
@@ -451,7 +450,6 @@ function* signUp() {
 
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
   const { waitForRemoteConfig } = yield* getContext('remoteConfigInstance')
-  const getFeatureEnabled = yield* getContext('getFeatureEnabled')
 
   yield* call(waitForWrite)
 
@@ -479,15 +477,17 @@ function* signUp() {
       handle,
       function* () {
         const reportToSentry = yield* getContext('reportToSentry')
-        const { blockHash, blockNumber, userId, error, errorStatus, phase } =
-          yield* call(audiusBackendInstance.signUp, {
+        const { blockNumber, userId, error, errorStatus, phase } = yield* call(
+          audiusBackendInstance.signUp,
+          {
             email,
             password,
             formFields: createUserMetadata,
             hasWallet: alreadyExisted,
             referrer,
             feePayerOverride
-          })
+          }
+        )
 
         if (error) {
           // We are including 0 status code here to indicate rate limit,
@@ -631,35 +631,6 @@ function* signUp() {
         if (!isNativeMobile) {
           // Set the has request browser permission to true as the signon provider will open it
           setHasRequestedBrowserPermission()
-        }
-
-        // Check feature flag to disable confirmation
-        const disableSignUpConfirmation = yield* call(
-          getFeatureEnabled,
-          FeatureFlags.DISABLE_SIGN_UP_CONFIRMATION
-        )
-
-        if (!disableSignUpConfirmation) {
-          const confirmed = yield* call(
-            confirmTransaction,
-            blockHash,
-            blockNumber
-          )
-          if (!confirmed) {
-            const error = new Error(`Could not confirm sign up for user`)
-            reportToSentry({
-              error,
-              name: 'Sign Up',
-              additionalInfo: {
-                userId,
-                disableSignUpConfirmation,
-                handle,
-                name,
-                email
-              }
-            })
-            throw error
-          }
         }
       },
       function* () {
@@ -986,6 +957,7 @@ function* followArtists(
 ) {
   const { skipDefaultFollows } = action
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
+  const sdk = yield* getSDK()
   const { ENVIRONMENT } = yield* getContext('env')
   const defaultFollowUserIds = skipDefaultFollows
     ? new Set([])
@@ -1053,7 +1025,7 @@ function* followArtists(
     yield* put(signOnActions.setAccountReady())
     // The update user location depends on the user being discoverable in discprov
     // So we wait until both the user is indexed and the follow user actions are finished
-    yield* call(audiusBackendInstance.updateUserLocationTimezone)
+    yield* call(audiusBackendInstance.updateUserLocationTimezone, { sdk })
   } catch (err: any) {
     const reportToSentry = yield* getContext('reportToSentry')
     reportToSentry({
@@ -1139,12 +1111,14 @@ function* watchOpenSignOn() {
 
 function* watchSendWelcomeEmail() {
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
+  const sdk = yield* getSDK()
   yield* takeLatest(
     signOnActions.SEND_WELCOME_EMAIL,
     function* (action: ReturnType<typeof signOnActions.sendWelcomeEmail>) {
       const hasAccount = yield* select(getHasAccount)
       if (!hasAccount) return
       yield* call(audiusBackendInstance.sendWelcomeEmail, {
+        sdk,
         name: action.name
       })
     }

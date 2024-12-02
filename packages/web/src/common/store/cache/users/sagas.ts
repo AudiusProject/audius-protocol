@@ -1,11 +1,9 @@
-import { userMetadataListFromSDK } from '@audius/common/adapters'
 import {
-  DefaultSizes,
-  Kind,
-  OptionalId,
-  User,
-  UserMetadata
-} from '@audius/common/models'
+  transformAndCleanList,
+  userCollectionMetadataFromSDK,
+  userMetadataListFromSDK
+} from '@audius/common/adapters'
+import { Kind, OptionalId, User, UserMetadata, Id } from '@audius/common/models'
 import {
   Metadata,
   accountSelectors,
@@ -19,7 +17,7 @@ import {
 } from '@audius/common/store'
 import { waitForAccount, waitForValue } from '@audius/common/utils'
 import { mergeWith } from 'lodash'
-import { call, put, select, takeEvery } from 'typed-redux-saga'
+import { all, call, put, select, takeEvery } from 'typed-redux-saga'
 
 import { retrieveCollections } from 'common/store/cache/collections/utils'
 import { retrieve } from 'common/store/cache/sagas'
@@ -40,9 +38,10 @@ export function* fetchUsers(
   requiredFields?: Set<string>,
   forceRetrieveFromSource?: boolean
 ) {
-  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
+  const sdk = yield* getSDK()
+  const userId = yield* select(getUserId)
 
-  return yield* call(retrieve<User>, {
+  return yield* call(retrieve<UserMetadata>, {
     ids: userIds,
     selectFromCache: function* (ids) {
       return yield* select(getUsers, { ids: ids as number[] })
@@ -50,8 +49,16 @@ export function* fetchUsers(
     getEntriesTimestamp: function* (ids) {
       return yield* select(getUserTimestamps, { ids: ids as number[] })
     },
-    retrieveFromSource: (ids: (number | string)[]) =>
-      audiusBackendInstance.getCreators(ids as number[]),
+    retrieveFromSource: function* (ids: (number | string)[]) {
+      const { data } = yield* call(
+        [sdk.full.users, sdk.full.users.getBulkUsers],
+        {
+          id: ids.map((id) => Id.parse(id)),
+          userId: OptionalId.parse(userId)
+        }
+      )
+      return userMetadataListFromSDK(data)
+    },
     kind: Kind.USERS,
     idField: 'user_id',
     requiredFields,
@@ -122,16 +129,34 @@ export function* fetchUserByHandle(
  * @param {number} userId target user id
  */
 export function* fetchUserCollections(userId: number) {
-  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
-  // Get playlists.
-  const playlists = yield* call(
-    audiusBackendInstance.getPlaylists,
-    userId,
-    null
-  )
-  const playlistIds = playlists.map((p) => p.playlist_id)
+  const sdk = yield* getSDK()
+  function* getPlaylists() {
+    const { data } = yield* call(
+      [sdk.full.users, sdk.full.users.getPlaylistsByUser],
+      {
+        id: Id.parse(userId),
+        userId: Id.parse(userId)
+      }
+    )
+    return transformAndCleanList(data, userCollectionMetadataFromSDK)
+  }
+  function* getAlbums() {
+    const { data } = yield* call(
+      [sdk.full.users, sdk.full.users.getAlbumsByUser],
+      {
+        id: Id.parse(userId),
+        userId: Id.parse(userId)
+      }
+    )
+    return transformAndCleanList(data, userCollectionMetadataFromSDK)
+  }
+  const [playlists, albums] = yield* all([call(getPlaylists), call(getAlbums)])
 
-  if (!playlistIds.length) {
+  const playlistIds = playlists.map((p) => p.playlist_id)
+  const albumIds = albums.map((a) => a.playlist_id)
+  const ids = [...playlistIds, ...albumIds]
+
+  if (!ids.length) {
     yield* put(
       cacheActions.update(Kind.USERS, [
         {
@@ -256,26 +281,6 @@ function* watchFetchProfilePicture() {
               ])
             )
           }
-        } else if (user.profile_picture) {
-          const url = yield* call(
-            audiusBackendInstance.getImageUrl,
-            user.profile_picture
-          )
-          if (url) {
-            yield* put(
-              cacheActions.update(Kind.USERS, [
-                {
-                  id: userId,
-                  metadata: {
-                    _profile_picture_sizes: {
-                      ...user._profile_picture_sizes,
-                      [DefaultSizes.OVERRIDE]: url
-                    }
-                  }
-                }
-              ])
-            )
-          }
         }
       } catch (e) {
         console.error(`Unable to fetch profile picture for user ${userId}`)
@@ -320,22 +325,6 @@ function* watchFetchCoverPhoto() {
             user._cover_photo_sizes = {
               ...user._cover_photo_sizes,
               [size]: url
-            }
-            yield* put(
-              cacheActions.update(Kind.USERS, [{ id: userId, metadata: user }])
-            )
-          }
-        } else if (user.cover_photo) {
-          const url = yield* call(
-            audiusBackendInstance.getImageUrl,
-            user.cover_photo
-          )
-          if (url) {
-            user = yield* select(getUser, { id: userId })
-            if (!user) return
-            user._cover_photo_sizes = {
-              ...user._cover_photo_sizes,
-              [DefaultSizes.OVERRIDE]: url
             }
             yield* put(
               cacheActions.update(Kind.USERS, [{ id: userId, metadata: user }])

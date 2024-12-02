@@ -7,7 +7,7 @@ import {
 
 import MobilePageContainer from 'components/mobile-page-container/MobilePageContainer'
 import NavContext, { LeftPreset } from 'components/nav/mobile/NavContext'
-import UserList from 'components/user-list/UserList'
+import { UserList } from 'components/user-list/UserList'
 
 const { getUserList } = topSupportersUserListSelectors
 

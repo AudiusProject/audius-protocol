@@ -1,13 +1,8 @@
 import {
   useAccessAndRemixSettings,
-  useFeatureFlag,
   useHasNoCollectibles
 } from '@audius/common/hooks'
-import {
-  StreamTrackAvailabilityType,
-  AccessConditions
-} from '@audius/common/models'
-import { FeatureFlags } from '@audius/common/services'
+import { StreamTrackAvailabilityType } from '@audius/common/models'
 import { IconCollectible } from '@audius/harmony'
 
 import { ModalRadioItem } from 'components/modal-radio/ModalRadioItem'
@@ -27,33 +22,21 @@ type CollectibleGatedRadioFieldProps = {
   isRemix: boolean
   isUpload?: boolean
   isAlbum?: boolean
-  initialStreamConditions?: AccessConditions
   isInitiallyUnlisted?: boolean
 }
 
 export const CollectibleGatedRadioField = (
   props: CollectibleGatedRadioFieldProps
 ) => {
-  const {
-    isRemix,
-    isUpload,
-    isAlbum,
-    initialStreamConditions,
-    isInitiallyUnlisted
-  } = props
+  const { isRemix, isUpload, isAlbum, isInitiallyUnlisted } = props
 
-  const { isEnabled: isEditableAccessEnabled } = useFeatureFlag(
-    FeatureFlags.EDITABLE_ACCESS_ENABLED
-  )
   const hasNoCollectibles = useHasNoCollectibles()
   const {
     disableCollectibleGate: disabled,
     disableCollectibleGateFields: fieldsDisabled
   } = useAccessAndRemixSettings({
-    isEditableAccessEnabled: !!isEditableAccessEnabled,
     isUpload: !!isUpload,
     isRemix,
-    initialStreamConditions: initialStreamConditions ?? null,
     isInitiallyUnlisted: !!isInitiallyUnlisted
   })
 

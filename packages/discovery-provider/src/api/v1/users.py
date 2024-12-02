@@ -90,6 +90,7 @@ from src.api.v1.models.users import (
     purchase,
     remixed_track_aggregate,
     sales_aggregate,
+    sales_json_content,
     user_model,
     user_model_full,
     user_subscribers,
@@ -902,7 +903,7 @@ playlists_response_full = make_full_response(
 )
 
 
-@full_ns.route(USER_PLAYLISTS_ROUTE, doc=False)
+@full_ns.route(USER_PLAYLISTS_ROUTE)
 class PlaylistsFull(Resource):
     def _get(self, id, authed_user_id):
         decoded_id = decode_with_abort(id, ns)
@@ -970,12 +971,12 @@ USER_ALBUMS_ROUTE = "/<string:id>/albums"
 
 albums_response_full = make_full_response(
     "albums_response_full",
-    ns,
+    full_ns,
     fields.List(fields.Nested(full_playlist_without_tracks_model)),
 )
 
 
-@full_ns.route(USER_ALBUMS_ROUTE, doc=False)
+@full_ns.route(USER_ALBUMS_ROUTE)
 class AlbumsFull(Resource):
     def _get(self, id, authed_user_id):
         decoded_id = decode_with_abort(id, ns)
@@ -2629,6 +2630,11 @@ class SalesDownload(Resource):
         return response
 
 
+sales_json_response = make_response(
+    "sales_json_response", ns, fields.Nested(sales_json_content)
+)
+
+
 @ns.route("/<string:id>/sales/download/json")
 class SalesDownloadJSON(Resource):
     @ns.doc(
@@ -2638,6 +2644,7 @@ class SalesDownloadJSON(Resource):
     )
     @ns.produces(["application/json"])
     @ns.expect(sales_download_parser)
+    @ns.marshal_with(sales_json_response)
     @auth_middleware(sales_download_parser, require_auth=True)
     def get(self, id, authed_user_id):
         decoded_id = decode_with_abort(id, ns)

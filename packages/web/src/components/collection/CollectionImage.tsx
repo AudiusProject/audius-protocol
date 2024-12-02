@@ -1,12 +1,9 @@
 import { ComponentProps } from 'react'
 
 import { ID, SquareSizes } from '@audius/common/models'
-import { cacheCollectionsSelectors } from '@audius/common/store'
 import { Artwork } from '@audius/harmony'
 
 import { useCollectionCoverArt } from 'hooks/useCollectionCoverArt'
-import { useSelector } from 'utils/reducer'
-const { getCollection } = cacheCollectionsSelectors
 
 type CollectionImageProps = {
   collectionId: ID
@@ -16,12 +13,10 @@ type CollectionImageProps = {
 export const CollectionImage = (props: CollectionImageProps) => {
   const { collectionId, size, ...other } = props
 
-  const coverArtSizes = useSelector(
-    (state) =>
-      getCollection(state, { id: collectionId })?._cover_art_sizes ?? null
-  )
-
-  const imageSource = useCollectionCoverArt(collectionId, coverArtSizes, size)
+  const imageSource = useCollectionCoverArt({
+    collectionId,
+    size
+  })
 
   return <Artwork src={imageSource} {...other} />
 }

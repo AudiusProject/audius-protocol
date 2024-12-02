@@ -13,7 +13,8 @@ const createSemanticThemeV2 = (primitives: PrimitiveColorsV2) => ({
     // The following are for compatibility
     heading: primitives.special.gradient,
     active: primitives.primary.p300,
-    staticWhite: primitives.static.white,
+    staticWhite: primitives.special.white,
+    staticStaticWhite: primitives.static.staticWhite,
     warning: primitives.special.orange,
     danger: primitives.special.red,
     premium: primitives.special.lightGreen,
@@ -30,7 +31,8 @@ const createSemanticThemeV2 = (primitives: PrimitiveColorsV2) => ({
     // The following are for compatibility
     heading: primitives.special.gradient,
     active: primitives.primary.p300,
-    staticWhite: primitives.static.white,
+    staticWhite: primitives.special.white,
+    staticStaticWhite: primitives.static.staticWhite,
     warning: primitives.special.orange,
     danger: primitives.special.red,
     premium: primitives.special.lightGreen,

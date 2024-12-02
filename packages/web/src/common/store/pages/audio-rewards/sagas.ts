@@ -657,6 +657,7 @@ function* watchUpdateOptimisticListenStreak() {
 
 function* watchUpdateHCaptchaScore() {
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
+  const sdk = yield* getSDK()
   yield* takeEvery(
     updateHCaptchaScore.type,
     function* (action: ReturnType<typeof updateHCaptchaScore>): any {
@@ -667,6 +668,7 @@ function* watchUpdateHCaptchaScore() {
         return
       }
       const result = yield* call(audiusBackendInstance.updateHCaptchaScore, {
+        sdk,
         token
       })
       if (result.error) {

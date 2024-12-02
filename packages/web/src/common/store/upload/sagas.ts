@@ -1,4 +1,9 @@
-import { fileToSdk, trackMetadataForUploadToSdk } from '@audius/common/adapters'
+import {
+  fileToSdk,
+  trackMetadataForUploadToSdk,
+  transformAndCleanList,
+  userCollectionMetadataFromSDK
+} from '@audius/common/adapters'
 import {
   Collection,
   CollectionMetadata,
@@ -7,6 +12,7 @@ import {
   Id,
   Kind,
   Name,
+  OptionalId,
   StemUploadWithFile,
   isContentFollowGated,
   isContentUSDCPurchaseGated
@@ -379,6 +385,10 @@ type UploadTrackResponse =
   | { type: 'PUBLISHED'; payload: PublishedPayload }
   | { type: 'ERROR'; payload: ErrorPayload }
 
+function isTask(worker: unknown): worker is Task {
+  return worker !== null && typeof worker === 'object' && 'isRunning' in worker
+}
+
 /**
  * Spins up workers to handle uploading of tracks and their stems in parallel.
  *
@@ -698,10 +708,14 @@ export function* handleUploads({
 
   console.debug('Spinning down workers')
   for (const worker of uploadWorkers) {
-    worker.cancel()
+    if (isTask(worker)) {
+      yield* cancel(worker)
+    }
   }
   for (const worker of publishWorkers) {
-    worker.cancel()
+    if (isTask(worker)) {
+      yield* cancel(worker)
+    }
   }
   yield* call(progressChannel.close)
   yield* cancel(actionDispatcherTask)
@@ -873,9 +887,18 @@ export function* uploadCollection(
           throw new Error(`Could not confirm playlist creation`)
         }
 
-        return (yield* call(audiusBackendInstance.getPlaylists, userId, [
-          playlistId
-        ]))[0]
+        const { data = [] } = yield* call(
+          [sdk.full.playlists, sdk.full.playlists.getPlaylist],
+          {
+            playlistId: Id.parse(playlistId),
+            userId: OptionalId.parse(userId)
+          }
+        )
+        const [collection] = transformAndCleanList(
+          data,
+          userCollectionMetadataFromSDK
+        )
+        return collection
       },
       function* (confirmedPlaylist: Collection) {
         yield* put(
@@ -1230,7 +1253,7 @@ export function* updateTrackAudioAsync(
   yield* delay(3000)
 
   yield* put(replaceTrackProgressModalActions.close())
-  yield* put(push(newMetadata.permalink))
+  yield* put(push(baseMetadata.permalink))
 }
 
 function* watchUploadTracks() {

@@ -1,12 +1,11 @@
 import { useCallback, useMemo, useState } from 'react'
 
-import { useFeatureFlag, useUSDCPurchaseConfig } from '@audius/common/hooks'
+import { useUSDCPurchaseConfig } from '@audius/common/hooks'
 import {
   isContentCollectibleGated,
   isContentFollowGated,
   isContentTipGated,
   isContentUSDCPurchaseGated,
-  FieldVisibility,
   StreamTrackAvailabilityType,
   CollectibleGatedConditions,
   FollowGatedConditions,
@@ -15,7 +14,6 @@ import {
   AccessConditions
 } from '@audius/common/models'
 import { CollectionValues } from '@audius/common/schemas'
-import { FeatureFlags } from '@audius/common/services'
 import {
   accountSelectors,
   EditCollectionValues,
@@ -28,7 +26,6 @@ import {
   IconVisibilityHidden as IconHidden,
   IconNote,
   IconSpecialAccess,
-  IconVisibilityPublic,
   Text
 } from '@audius/harmony'
 import { useField, useFormikContext } from 'formik'
@@ -79,10 +76,12 @@ import { priceAndAudienceSchema } from './priceAndAudienceSchema'
 const { getUserId } = accountSelectors
 
 const messages = {
-  title: 'Access & Sale',
-  description:
-    "Customize your music's availability for different audiences, and create personalized gated experiences for your fans.",
-  public: 'Public (Free to Stream)',
+  title: 'Price & Audience',
+  freePremiumDescription:
+    'Customize who can listen to this release. Sell your music and create gated experiences for your fans.',
+  specialAccessDescription:
+    'Customize your music’s audience and create gated experiences for your fans.',
+  public: 'Free for Everyone',
   premium: 'Premium',
   specialAccess: 'Special Access',
   collectibleGated: 'Collectible Gated',
@@ -103,16 +102,6 @@ const messages = {
   preview: (seconds: number) => {
     return `${seconds.toString()} seconds`
   }
-}
-
-const messagesV2 = {
-  title: 'Price & Audience',
-  freePremiumDescription:
-    'Customize who can listen to this release. Sell your music and create gated experiences for your fans.',
-  specialAccessDescription:
-    'Customize your music’s audience and create gated experiences for your fans.',
-  public: 'Free for Everyone',
-  premium: 'Premium'
 }
 
 type PriceAndAudienceFieldProps = {
@@ -147,13 +136,6 @@ export const PriceAndAudienceField = (props: PriceAndAudienceFieldProps) => {
   const trackLength = isUpload ? previewTrackLength : trackDuration
 
   const usdcPurchaseConfig = useUSDCPurchaseConfig()
-
-  const { isEnabled: isEditableAccessEnabled } = useFeatureFlag(
-    FeatureFlags.EDITABLE_ACCESS_ENABLED
-  )
-  const { isEnabled: isHiddenPaidScheduledEnabled } = useFeatureFlag(
-    FeatureFlags.HIDDEN_PAID_SCHEDULED
-  )
 
   // For edit flows we need to track initial stream conditions from the parent form (not from inside contextual menu)
   // So we take this from the parent form and pass it down to the menu fields
@@ -252,9 +234,7 @@ export const PriceAndAudienceField = (props: PriceAndAudienceFieldProps) => {
     set(initialValues, LAST_GATE_KEEPER, lastGateKeeper ?? {})
     set(initialValues, IS_OWNED_BY_USER, isOwnedByUser)
 
-    let availabilityType = isHiddenPaidScheduledEnabled
-      ? StreamTrackAvailabilityType.FREE
-      : StreamTrackAvailabilityType.PUBLIC
+    let availabilityType = StreamTrackAvailabilityType.FREE
 
     if (isUsdcGated) {
       availabilityType = StreamTrackAvailabilityType.USDC_PURCHASE
@@ -271,9 +251,6 @@ export const PriceAndAudienceField = (props: PriceAndAudienceFieldProps) => {
     }
     if (isCollectibleGated) {
       availabilityType = StreamTrackAvailabilityType.COLLECTIBLE_GATED
-    }
-    if (isUnlisted && !isScheduledRelease && !isHiddenPaidScheduledEnabled) {
-      availabilityType = StreamTrackAvailabilityType.HIDDEN
     }
     set(initialValues, STREAM_AVAILABILITY_TYPE, availabilityType)
     set(initialValues, FIELD_VISIBILITY, fieldVisibility)
@@ -293,12 +270,10 @@ export const PriceAndAudienceField = (props: PriceAndAudienceFieldProps) => {
     downloadConditions,
     isDownloadable,
     lastGateKeeper,
-    isHiddenPaidScheduledEnabled,
     isUsdcGated,
     isFollowGated,
     isTipGated,
     isCollectibleGated,
-    isScheduledRelease,
     fieldVisibility,
     preview,
     isOwnedByUser
@@ -321,14 +296,6 @@ export const PriceAndAudienceField = (props: PriceAndAudienceFieldProps) => {
       setIsStreamGated(false)
       setStreamConditionsValue(null)
       setPreviewValue(undefined)
-
-      if (!isHiddenPaidScheduledEnabled) {
-        if (availabilityType === StreamTrackAvailabilityType.HIDDEN) {
-          setIsUnlistedValue(true)
-        } else {
-          setIsUnlistedValue(false)
-        }
-      }
 
       // For gated options, extract the correct stream conditions based on the selected availability type
       switch (availabilityType) {
@@ -434,7 +401,6 @@ export const PriceAndAudienceField = (props: PriceAndAudienceFieldProps) => {
       setIsDownloadGated,
       setDownloadConditionsValue,
       setIsDownloadable,
-      isHiddenPaidScheduledEnabled,
       isDownloadable,
       setLastGateKeeper,
       setIsOwnedByUser
@@ -510,29 +476,8 @@ export const PriceAndAudienceField = (props: PriceAndAudienceFieldProps) => {
       selectedValues = [specialAccessValue, messages.followersOnly]
     } else if (isContentTipGated(savedStreamConditions)) {
       selectedValues = [specialAccessValue, messages.supportersOnly]
-    } else if (
-      isUnlisted &&
-      !isScheduledRelease &&
-      !isHiddenPaidScheduledEnabled
-    ) {
-      const fieldVisibilityKeys = Object.keys(
-        messages.fieldVisibility
-      ) as Array<keyof FieldVisibility>
-
-      const fieldVisibilityLabels =
-        fieldVisibility && !isAlbum
-          ? fieldVisibilityKeys
-              .filter((visibilityKey) => fieldVisibility[visibilityKey])
-              .map((visibilityKey) => messages.fieldVisibility[visibilityKey])
-          : []
-      selectedValues = [
-        { label: messages.hidden, icon: IconHidden },
-        ...fieldVisibilityLabels
-      ]
     } else {
-      selectedValues = isHiddenPaidScheduledEnabled
-        ? [{ label: messagesV2.public }]
-        : [{ label: messages.public, icon: IconVisibilityPublic }]
+      selectedValues = [{ label: messages.public }]
     }
 
     return (
@@ -553,26 +498,15 @@ export const PriceAndAudienceField = (props: PriceAndAudienceFieldProps) => {
         })}
       </div>
     )
-  }, [
-    savedStreamConditions,
-    isUnlisted,
-    isScheduledRelease,
-    preview,
-    isUpload,
-    fieldVisibility,
-    isAlbum,
-    isHiddenPaidScheduledEnabled
-  ])
+  }, [savedStreamConditions, preview, isUpload])
 
   return (
     <ContextualMenu
-      label={isHiddenPaidScheduledEnabled ? messagesV2.title : messages.title}
+      label={messages.title}
       description={
-        isHiddenPaidScheduledEnabled
-          ? isFollowGated || isCollectibleGated
-            ? messagesV2.specialAccessDescription
-            : messagesV2.freePremiumDescription
-          : messages.description
+        isFollowGated || isCollectibleGated
+          ? messages.specialAccessDescription
+          : messages.freePremiumDescription
       }
       icon={<IconHidden />}
       initialValues={initialValues}
@@ -586,7 +520,7 @@ export const PriceAndAudienceField = (props: PriceAndAudienceFieldProps) => {
             specialAccessType === SpecialAccessType.FOLLOW ? 'follow' : 'tip'
         })
 
-        if (!isUpload && isEditableAccessEnabled && usersMayLoseAccess) {
+        if (!isUpload && usersMayLoseAccess) {
           onOpenEditAccessConfirmationModal({
             confirmCallback: () => handleSubmit(values),
             cancelCallback: () => {
@@ -612,23 +546,14 @@ export const PriceAndAudienceField = (props: PriceAndAudienceFieldProps) => {
           isUpload={isUpload}
           isAlbum={isAlbum}
           streamConditions={tempStreamConditions}
-          initialStreamConditions={
-            parentFormInitialStreamConditions ?? undefined
-          }
           isScheduledRelease={isScheduledRelease}
           isInitiallyUnlisted={isUnlisted}
           isPublishDisabled={isPublishDisabled}
         />
       }
-      forceOpen={
-        isEditableAccessEnabled && isConfirmationCancelled
-          ? isConfirmationCancelled
-          : forceOpen
-      }
+      forceOpen={isConfirmationCancelled || forceOpen}
       setForceOpen={
-        isEditableAccessEnabled && isConfirmationCancelled
-          ? setIsConfirmationCancelled
-          : setForceOpen
+        isConfirmationCancelled ? setIsConfirmationCancelled : setForceOpen
       }
     />
   )

@@ -1,7 +1,12 @@
-import { OnRampProvider } from '@audius/common/store'
-import { Button, ButtonProps, IconLogoLinkByStripe } from '@audius/harmony'
+import { forwardRef } from 'react'
 
-import CoinbasePayLogo from 'assets/img/coinbase-pay/LogoCoinbasePay.svg'
+import { OnRampProvider } from '@audius/common/store'
+import {
+  Button,
+  ButtonProps,
+  IconLogoCoinbasePay,
+  IconLogoLinkByStripe
+} from '@audius/harmony'
 
 const messages = {
   buyWith: 'Buy with',
@@ -17,30 +22,39 @@ type OnRampButtonProps = ButtonProps & {
   textClassName?: string
 }
 
-export const OnRampButton = (props: OnRampButtonProps) => {
-  const { buttonPrefix: buttonPrefixProp, provider, ...otherProps } = props
-  const isStripe = provider === OnRampProvider.STRIPE
-  const isCoinbase = provider === OnRampProvider.COINBASE
-  const buttonPrefix =
-    buttonPrefixProp || (isStripe ? messages.buyUsing : messages.buyWith)
+export const OnRampButton = forwardRef<HTMLButtonElement, OnRampButtonProps>(
+  (props, ref) => {
+    const { buttonPrefix: buttonPrefixProp, provider, ...otherProps } = props
+    const isStripe = provider === OnRampProvider.STRIPE
+    const isCoinbase = provider === OnRampProvider.COINBASE
+    const buttonPrefix =
+      buttonPrefixProp || (isStripe ? messages.buyUsing : messages.buyWith)
 
-  return (
-    <Button
-      aria-label={`${buttonPrefix} ${provider}`}
-      hexColor={isStripe ? stripeColor : isCoinbase ? coinbaseColor : undefined}
-      fullWidth
-      {...otherProps}
-    >
-      {buttonPrefix}
-      {isStripe ? (
-        <IconLogoLinkByStripe
-          width={'6em'}
-          height={'1.33em'}
-          color='staticWhite'
-        />
-      ) : (
-        <CoinbasePayLogo width={'6em'} height={'1.33em'} color='staticWhite' />
-      )}
-    </Button>
-  )
-}
+    return (
+      <Button
+        ref={ref}
+        aria-label={`${buttonPrefix} ${provider}`}
+        hexColor={
+          isStripe ? stripeColor : isCoinbase ? coinbaseColor : undefined
+        }
+        fullWidth
+        {...otherProps}
+      >
+        {buttonPrefix}
+        {isStripe ? (
+          <IconLogoLinkByStripe
+            width={'6em'}
+            height={'1.33em'}
+            color='staticWhite'
+          />
+        ) : (
+          <IconLogoCoinbasePay
+            width={'6em'}
+            height={'1.33em'}
+            color='staticWhite'
+          />
+        )}
+      </Button>
+    )
+  }
+)

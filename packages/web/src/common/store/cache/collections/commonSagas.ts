@@ -1,3 +1,4 @@
+import { userCollectionMetadataFromSDK } from '@audius/common/adapters'
 import {
   Name,
   DefaultSizes,
@@ -10,7 +11,9 @@ import {
   UserFollowees,
   FolloweeRepost,
   UID,
-  isContentUSDCPurchaseGated
+  isContentUSDCPurchaseGated,
+  Id,
+  OptionalId
 } from '@audius/common/models'
 import { TransactionReceipt } from '@audius/common/services'
 import {
@@ -191,6 +194,8 @@ function* confirmEditPlaylist(
   formFields: Collection
 ) {
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
+  const audiusSdk = yield* getContext('audiusSdk')
+  const sdk = yield* call(audiusSdk)
   yield* put(
     confirmerActions.requestConfirmation(
       makeKindId(Kind.COLLECTIONS, playlistId),
@@ -212,10 +217,14 @@ function* confirmEditPlaylist(
             `Could not confirm playlist edition for playlist id ${playlistId}`
           )
         }
-
-        return (yield* call(audiusBackendInstance.getPlaylists, userId, [
-          playlistId
-        ]))[0]
+        const { data: playlist } = yield* call(
+          [sdk.full.playlists, sdk.full.playlists.getPlaylist],
+          {
+            userId: OptionalId.parse(userId),
+            playlistId: Id.parse(playlistId)
+          }
+        )
+        return playlist?.[0] ? userCollectionMetadataFromSDK(playlist[0]) : null
       },
       function* (confirmedPlaylist: Collection) {
         // Update the cached collection so it no longer contains image upload artifacts
@@ -485,6 +494,8 @@ function* confirmPublishPlaylist(
   isAlbum?: boolean
 ) {
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
+  const audiusSdk = yield* getContext('audiusSdk')
+  const sdk = yield* call(audiusSdk)
   yield* put(
     confirmerActions.requestConfirmation(
       makeKindId(Kind.COLLECTIONS, playlistId),
@@ -505,9 +516,14 @@ function* confirmPublishPlaylist(
             `Could not confirm publish playlist for playlist id ${playlistId}`
           )
         }
-        return (yield* call(audiusBackendInstance.getPlaylists, userId, [
-          playlistId
-        ]))[0]
+        const { data } = yield* call(
+          [sdk.full.playlists, sdk.full.playlists.getPlaylist],
+          {
+            userId: OptionalId.parse(userId),
+            playlistId: Id.parse(playlistId)
+          }
+        )
+        return data?.[0] ? userCollectionMetadataFromSDK(data[0]) : null
       },
       function* (confirmedPlaylist: Collection) {
         confirmedPlaylist.is_private = false

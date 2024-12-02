@@ -56,6 +56,11 @@ export function* fetchAccountAsync({ isSignUp = false }): SagaIterator {
   if (accountStatus !== Status.SUCCESS) {
     yield* put(accountActions.fetchAccountRequested())
   }
+  yield* call([
+    authService.hedgehogInstance,
+    authService.hedgehogInstance.refreshWallet
+  ])
+
   const { accountWalletAddress: wallet, web3WalletAddress } = yield* call([
     authService,
     authService.getWalletAddresses
@@ -133,6 +138,7 @@ export function* cacheAccount(account: AccountUserMetadata) {
 
 function* recordIPIfNotRecent(handle: string): SagaIterator {
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
+  const sdk = yield* getSDK()
   const localStorage = yield* getContext('localStorage')
   const timeBetweenRefresh = 24 * 60 * 60 * 1000
   const now = Date.now()
@@ -140,7 +146,10 @@ function* recordIPIfNotRecent(handle: string): SagaIterator {
   const storedIPStr = yield* call([localStorage, 'getItem'], IP_STORAGE_KEY)
   const storedIP = storedIPStr && JSON.parse(storedIPStr)
   if (!storedIP || !storedIP[handle] || storedIP[handle].timestamp < minAge) {
-    const result = yield* call(recordIP, audiusBackendInstance)
+    const result = yield* call(recordIP, {
+      audiusBackendInstance,
+      sdk
+    })
     if ('userIP' in result) {
       const { userIP } = result
       yield* call(

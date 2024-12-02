@@ -1,19 +1,17 @@
 import { useState, useEffect, useCallback } from 'react'
 
-import { SquareSizes, Track } from '~/models'
+import { SquareSizes, WidthSizes } from '~/models'
 import { Maybe } from '~/utils/typeUtils'
 
 // Global image cache
 const IMAGE_CACHE = new Set<string>()
 
-const preloadImage = (url: string) => {
-  return new Promise<void>((resolve, reject) => {
-    const img = new Image()
-    img.src = url
-    img.onload = () => resolve()
-    img.onerror = () => reject(new Error('Failed to load image'))
-  })
+// Gets the width from a given image size, e.g. '150x150' => 150
+const getWidth = (size: string) => {
+  return parseInt(size.split('x')[0])
 }
+
+type Artwork<T extends string | number | symbol> = { [key in T]?: string }
 
 /**
  * Fetches an image from the given artwork object managing sizes and using fallback mirrors if necessary.
@@ -25,14 +23,19 @@ const preloadImage = (url: string) => {
  * @param defaultImage - The fallback image to use if no image is found in the `artwork` object
  * @returns The url of the image, or undefined if the image is not available
  */
-export const useImageSize2 = ({
+export const useImageSize2 = <
+  SizeType extends SquareSizes | WidthSizes,
+  ArtworkType extends Artwork<SizeType> & { mirrors?: string[] | undefined }
+>({
   artwork,
   targetSize,
-  defaultImage
+  defaultImage,
+  preloadImageFn
 }: {
-  artwork?: Track['artwork']
-  targetSize: SquareSizes
+  artwork?: ArtworkType
+  targetSize: SizeType
   defaultImage: string
+  preloadImageFn: (url: string) => Promise<void>
 }) => {
   const [imageUrl, setImageUrl] = useState<Maybe<string>>(undefined)
 
@@ -43,7 +46,7 @@ export const useImageSize2 = ({
 
       while (mirrors.length > 0) {
         try {
-          await preloadImage(currentUrl)
+          await preloadImageFn(currentUrl)
           return currentUrl
         } catch {
           const nextMirror = mirrors.shift()
@@ -54,9 +57,9 @@ export const useImageSize2 = ({
         }
       }
 
-      throw new Error('Failed to fetch image from all mirrors')
+      throw new Error(`Failed to fetch image from all mirrors ${url}`)
     },
-    [artwork?.mirrors]
+    [artwork?.mirrors, preloadImageFn]
   )
 
   const resolveImageUrl = useCallback(async () => {
@@ -81,19 +84,20 @@ export const useImageSize2 = ({
     // If found, set the image url and preload the actual target url
     const smallerSize = Object.keys(artwork).find(
       (size) =>
-        parseInt(size) < parseInt(targetSize) &&
-        artwork[size as SquareSizes] &&
-        IMAGE_CACHE.has(artwork[size as SquareSizes]!)
-    ) as SquareSizes | undefined
+        getWidth(size) < getWidth(targetSize) &&
+        size in artwork &&
+        artwork[size as SizeType] &&
+        IMAGE_CACHE.has(artwork[size as SizeType]!)
+    ) as SizeType | undefined
 
     // Check for larger size
     // If found, set the image url to the larger size and return
     const largerSize = Object.keys(artwork).find(
       (size) =>
-        parseInt(size) > parseInt(targetSize) &&
-        artwork[size as SquareSizes] &&
-        IMAGE_CACHE.has(artwork[size as SquareSizes]!)
-    ) as SquareSizes | undefined
+        getWidth(size) > getWidth(targetSize) &&
+        artwork[size as SizeType] &&
+        IMAGE_CACHE.has(artwork[size as SizeType]!)
+    ) as SizeType | undefined
 
     if (largerSize) {
       console.debug(
@@ -120,8 +124,8 @@ export const useImageSize2 = ({
       const finalUrl = await fetchWithFallback(targetUrl)
       IMAGE_CACHE.add(finalUrl)
       setImageUrl(finalUrl)
-    } catch {
-      console.error(`Unable to load image ${targetUrl} after retries`)
+    } catch (e) {
+      console.error(`Unable to load image ${targetUrl} after retries: ${e}`)
     }
   }, [artwork, targetSize, fetchWithFallback, defaultImage])
 

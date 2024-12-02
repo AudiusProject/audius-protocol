@@ -2,11 +2,15 @@ import { SquareSizes } from '@audius/common/models'
 import { Text } from '@audius/harmony'
 import { merge } from 'lodash'
 import { Route, Routes } from 'react-router-dom-v5-compat'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 
 import { RenderOptions, render, screen } from 'test/test-utils'
 
 import { UserCard } from './UserCard'
+
+vi.mock('../../utils/image', () => ({
+  preload: vi.fn((url: string) => Promise.resolve())
+}))
 
 function renderUserCard(options?: RenderOptions) {
   return render(
@@ -27,9 +31,12 @@ function renderUserCard(options?: RenderOptions) {
                   user_id: 1,
                   handle: 'test-user',
                   name: 'Test User',
-                  _profile_picture_sizes: {
-                    [SquareSizes.SIZE_150_BY_150]: 'image-small.jpg',
-                    [SquareSizes.SIZE_480_BY_480]: 'image-medium.jpg'
+                  profile_picture: {
+                    [SquareSizes.SIZE_150_BY_150]:
+                      'https://node.com/image-small.jpg',
+                    [SquareSizes.SIZE_480_BY_480]:
+                      'https://node.com/image-medium.jpg',
+                    mirrors: ['https://node.com']
                   },
                   follower_count: 1
                 }
@@ -62,12 +69,12 @@ describe('UserCard', () => {
     ).toBeInTheDocument()
   })
 
-  it('renders the profile picture', () => {
+  it('renders the profile picture', async () => {
     renderUserCard()
 
-    expect(screen.getByRole('img', { hidden: true })).toHaveAttribute(
+    expect(await screen.getByRole('img', { hidden: true })).toHaveAttribute(
       'src',
-      'image-small.jpg'
+      'https://node.com/image-small.jpg'
     )
   })
 

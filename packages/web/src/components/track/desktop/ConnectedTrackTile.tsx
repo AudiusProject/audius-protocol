@@ -105,7 +105,6 @@ const ConnectedTrackTile = ({
     _co_sign: coSign,
     has_current_user_reposted: isReposted,
     has_current_user_saved: isFavorited,
-    _cover_art_sizes,
     duration,
     ddex_app: ddexApp
   } = trackWithFallback
@@ -142,7 +141,6 @@ const ConnectedTrackTile = ({
   const renderImage = () => {
     const artworkProps = {
       id: trackId,
-      coverArtSizes: _cover_art_sizes,
       coSign: coSign || undefined,
       size: 'large',
       isBuffering: isTrackBuffering,

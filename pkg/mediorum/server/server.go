@@ -29,6 +29,7 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
+	"github.com/oschwald/maxminddb-golang"
 	"gocloud.dev/blob"
 	"golang.org/x/exp/slog"
 
@@ -86,7 +87,6 @@ type MediorumServer struct {
 	trustedNotifier  *ethcontracts.NotifierInfo
 	reqClient        *req.Client
 	rendezvousHasher *RendezvousHasher
-	coreSdk          *core.Sdk
 	transcodeWork    chan *Upload
 
 	// simplify
@@ -119,6 +119,12 @@ type MediorumServer struct {
 	Config    MediorumConfig
 
 	crudSweepMutex sync.Mutex
+
+	coreSdk      *core.Sdk
+	coreSdkReady chan struct{}
+
+	geoIPdb      *maxminddb.Reader
+	geoIPdbReady chan struct{}
 }
 
 type PeerHealth struct {
@@ -291,8 +297,10 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 		uploadOrigCidCache: imcache.New(imcache.WithMaxEntriesLimitOption[string, string](50_000, imcache.EvictionPolicyLRU)),
 		imageCache:         imcache.New(imcache.WithMaxEntriesLimitOption[string, []byte](10_000, imcache.EvictionPolicyLRU)),
 
-		StartedAt: time.Now().UTC(),
-		Config:    config,
+		StartedAt:    time.Now().UTC(),
+		Config:       config,
+		coreSdkReady: make(chan struct{}),
+		geoIPdbReady: make(chan struct{}),
 	}
 
 	routes := echoServer.Group(apiBasePath)
@@ -399,6 +407,9 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 
 	// internal: testing
 	internalApi.GET("/proxy_health_check", ss.proxyHealthCheck)
+
+	go ss.loadGeoIPDatabase()
+	go ss.initCoreSdk()
 
 	return ss, nil
 

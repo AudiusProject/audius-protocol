@@ -38,6 +38,7 @@ from src.models.users.user import User
 from src.solana.solana_client_manager import SolanaClientManager
 from src.tasks.metadata import (
     comment_metadata_format,
+    encrypted_email_metadata_format,
     playlist_metadata_format,
     track_comment_notification_setting_format,
     track_download_metadata_format,
@@ -85,6 +86,8 @@ class Action(str, Enum):
     UNPIN = "Unpin"
     MUTE = "Mute"
     UNMUTE = "Unmute"
+    ADD_EMAIL = "AddEmail"
+    UPDATE_EMAIL = "UpdateEmail"
     REPORT = "Report"
 
     def __str__(self) -> str:
@@ -120,6 +123,9 @@ class EntityType(str, Enum):
     COMMENT_MENTION = "CommentMention"
     MUTED_USER = "MutedUser"
     COMMENT_NOTIFICATION_SETTING = "CommentNotificationSetting"
+    ENCRYPTED_EMAIL = "EncryptedEmail"
+    EMAIL_ENCRYPTION_KEY = "EmailEncryptionKey"
+    EMAIL_ACCESS_KEY = "EmailAccessKey"
 
     def __str__(self) -> str:
         return str.__str__(self)
@@ -206,6 +212,9 @@ class EntitiesToFetchDict(TypedDict):
     CommentNotificationSetting: Set[Tuple]
     MutedUser: Set[Tuple]
     CommentReport: Set[Tuple]
+    EncryptedEmail: Set[int]
+    EmailEncryptionKey: Set[int]
+    EmailAccessKey: Set[Tuple[int, int]]
 
 
 MANAGE_ENTITY_EVENT_TYPE = "ManageEntity"
@@ -360,6 +369,9 @@ def get_metadata_type_and_format(entity_type, action=None):
     elif entity_type == EntityType.COMMENT:
         metadata_type = "comment"
         metadata_format = comment_metadata_format
+    elif entity_type == EntityType.ENCRYPTED_EMAIL:
+        metadata_type = "encrypted_email"
+        metadata_format = encrypted_email_metadata_format
     else:
         raise IndexingValidationError(f"Unknown metadata type ${entity_type}")
     return metadata_type, metadata_format

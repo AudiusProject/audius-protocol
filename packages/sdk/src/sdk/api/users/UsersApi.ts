@@ -3,9 +3,9 @@ import snakecaseKeys from 'snakecase-keys'
 import type { AuthService, StorageService } from '../../services'
 import {
   Action,
+  AdvancedOptions,
   EntityManagerService,
-  EntityType,
-  AdvancedOptions
+  EntityType
 } from '../../services/EntityManager/types'
 import type { LoggerService } from '../../services/Logger'
 import type { ClaimableTokensClient } from '../../services/Solana/programs/ClaimableTokensClient/ClaimableTokensClient'
@@ -22,20 +22,22 @@ import {
 import * as runtime from '../generated/default/runtime'
 
 import {
+  EmailRequest,
+  EmailSchema,
   FollowUserRequest,
   FollowUserSchema,
+  SendTipReactionRequest,
+  SendTipReactionRequestSchema,
+  SendTipRequest,
+  SendTipSchema,
   SubscribeToUserRequest,
   SubscribeToUserSchema,
-  UpdateProfileRequest,
   UnfollowUserRequest,
   UnfollowUserSchema,
   UnsubscribeFromUserRequest,
   UnsubscribeFromUserSchema,
-  UpdateProfileSchema,
-  SendTipRequest,
-  SendTipSchema,
-  SendTipReactionRequest,
-  SendTipReactionRequestSchema
+  UpdateProfileRequest,
+  UpdateProfileSchema
 } from './types'
 
 export class UsersApi extends GeneratedUsersApi {
@@ -392,5 +394,71 @@ export class UsersApi extends GeneratedUsersApi {
       mint: 'wAUDIO'
     })
     return { ethWallet, userBank }
+  }
+
+  /** @hidden
+   * Add an encrypted email for a user
+   */
+  async addEmail(params: EmailRequest, advancedOptions?: AdvancedOptions) {
+    const {
+      emailOwnerUserId,
+      primaryUserId,
+      encryptedEmail,
+      encryptedKey,
+      delegatedUserIds = [],
+      delegatedKeys = []
+    } = await parseParams('addEmail', EmailSchema)(params)
+
+    const metadata = {
+      email_owner_user_id: emailOwnerUserId,
+      primary_user_id: primaryUserId,
+      encrypted_email: encryptedEmail,
+      encrypted_key: encryptedKey,
+      delegated_user_ids: delegatedUserIds,
+      delegated_keys: delegatedKeys
+    }
+
+    return await this.entityManager.manageEntity({
+      userId: primaryUserId,
+      entityType: EntityType.ENCRYPTED_EMAIL,
+      entityId: primaryUserId,
+      action: Action.ADD_EMAIL,
+      metadata: JSON.stringify({
+        cid: '',
+        data: metadata
+      }),
+      auth: this.auth,
+      ...advancedOptions
+    })
+  }
+
+  /** @hidden
+   * Update an encrypted email for a user
+   */
+  async updateEmail(params: EmailRequest, advancedOptions?: AdvancedOptions) {
+    const {
+      emailOwnerUserId,
+      primaryUserId,
+      encryptedEmail,
+      encryptedKey,
+      delegatedUserIds = [],
+      delegatedKeys = []
+    } = await parseParams('updateEmail', EmailSchema)(params)
+
+    return await this.entityManager.manageEntity({
+      entityType: EntityType.ENCRYPTED_EMAIL,
+      entityId: primaryUserId,
+      action: Action.UPDATE_EMAIL,
+      metadata: JSON.stringify({
+        email_owner_user_id: emailOwnerUserId,
+        primary_user_id: primaryUserId,
+        encrypted_email: encryptedEmail,
+        encrypted_key: encryptedKey,
+        delegated_user_ids: delegatedUserIds,
+        delegated_keys: delegatedKeys
+      }),
+      auth: this.auth,
+      ...advancedOptions
+    })
   }
 }

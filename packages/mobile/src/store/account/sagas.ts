@@ -1,6 +1,11 @@
 import type { User } from '@audius/common/models'
 import { SquareSizes, WidthSizes } from '@audius/common/models'
-import { accountActions, accountSagas, getContext } from '@audius/common/store'
+import {
+  accountActions,
+  accountSagas,
+  getContext,
+  getSDK
+} from '@audius/common/store'
 import { removeNullable } from '@audius/common/utils'
 import webAccountSagas from 'common/store/account/sagas'
 import { updateProfileAsync } from 'common/store/profile/sagas'
@@ -52,6 +57,7 @@ function* onSignedIn({ payload: { account } }: ReturnType<typeof signedIn>) {
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
   const localStorage = yield* getContext('localStorage')
   const isMobileUser = yield* call(localStorage.getItem, IS_MOBILE_USER)
+  const sdk = yield* getSDK()
 
   yield* call(cacheUserImages, account)
 
@@ -60,6 +66,7 @@ function* onSignedIn({ payload: { account } }: ReturnType<typeof signedIn>) {
       // Legacy method to update whether a user has signed in on
       // native mobile. Used in identity service for notification indexing
       yield* call(audiusBackendInstance.updateUserEvent, {
+        sdk,
         hasSignedInNativeMobile: true
       })
       // Updates the user metadata with an event `is_mobile_user` set to true

@@ -6,7 +6,8 @@ import {
 import {
   notificationsActions,
   getContext,
-  accountSelectors
+  accountSelectors,
+  getSDK
 } from '@audius/common/store'
 import { call, takeEvery, select } from 'typed-redux-saga'
 
@@ -42,11 +43,15 @@ function* watchMarkAllNotificationsViewed() {
 
 export function* markAllNotificationsViewed() {
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
+  const sdk = yield* getSDK()
   const userId = yield* select(accountSelectors.getUserId)
   if (!userId) return
 
   yield* call(waitForWrite)
-  yield* call(audiusBackendInstance.markAllNotificationAsViewed, { userId })
+  yield* call(audiusBackendInstance.markAllNotificationAsViewed, {
+    userId,
+    sdk
+  })
 }
 
 export default function sagas() {
