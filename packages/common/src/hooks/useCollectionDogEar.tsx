@@ -1,13 +1,12 @@
 import { useSelector } from 'react-redux'
 
 import { DogEarType, ID, isContentUSDCPurchaseGated } from '~/models'
-import { cacheCollectionsSelectors, CommonState } from '~/store'
+import { CommonState } from '~/store'
 import { getUserId } from '~/store/account/selectors'
+import { getCollection } from '~/store/cache/collections/selectors'
 import { Nullable } from '~/utils'
 
 import { useGatedCollectionAccess } from './useGatedContent'
-
-const { getCollection } = cacheCollectionsSelectors
 
 export const useCollectionDogEar = (collectionId: ID, hideUnlocked = false) => {
   const isPurchaseable = useSelector((state: CommonState) => {
