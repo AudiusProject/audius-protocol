@@ -1,11 +1,6 @@
 import { useContext, useEffect, FC } from 'react'
 
-import {
-  SquareSizes,
-  Theme,
-  ID,
-  ProfilePictureSizes
-} from '@audius/common/models'
+import { SquareSizes, Theme, ID } from '@audius/common/models'
 import {
   BrowserNotificationSetting,
   PushNotificationSetting,
@@ -29,8 +24,8 @@ import Grouping from 'components/groupable-list/Grouping'
 import Row from 'components/groupable-list/Row'
 import NavContext, { LeftPreset } from 'components/nav/mobile/NavContext'
 import Page from 'components/page/Page'
+import { useProfilePicture } from 'hooks/useProfilePicture'
 import useScrollToTop from 'hooks/useScrollToTop'
-import { useUserProfilePicture } from 'hooks/useUserProfilePicture'
 import { isDarkMode } from 'utils/theme/theme'
 
 import AboutSettingsPage from './AboutSettingsPage'
@@ -61,7 +56,7 @@ const messages = {
   pageTitle: 'Settings',
   appearanceTitle: 'Appearance',
   appearance:
-    'Enable dark mode or choose ‘Auto’ to change with your system settings',
+    "Enable dark mode or choose 'Auto' to change with your system settings",
   aboutTitle: 'About',
   cast: 'Select your prefered casting method.',
   title: 'Settings',
@@ -79,7 +74,6 @@ type OwnProps = {
   name: string
   theme: Theme | null
   toggleTheme: (theme: any) => void
-  profilePictureSizes: ProfilePictureSizes | null
   goToRoute: (route: string) => void
   goBack: () => void
   isVerified: boolean
@@ -122,7 +116,6 @@ const SettingsPage = (props: SettingsPageProps) => {
     userId,
     name,
     handle,
-    profilePictureSizes,
     theme,
     toggleTheme,
     getNotificationSettings,
@@ -147,11 +140,10 @@ const SettingsPage = (props: SettingsPageProps) => {
     setCenter(subPage || messages.pageTitle)
   }, [setLeft, setCenter, setRight, subPage])
 
-  const profilePicture = useUserProfilePicture(
+  const profilePicture = useProfilePicture({
     userId,
-    profilePictureSizes,
-    SquareSizes.SIZE_150_BY_150
-  )
+    size: SquareSizes.SIZE_150_BY_150
+  })
 
   // Render out subPage if we're on one.
   if (subPage && subPage in SubPages) {

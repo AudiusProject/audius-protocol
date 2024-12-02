@@ -321,6 +321,7 @@ func (ss *MediorumServer) logTrackListen(c echo.Context) {
 
 	// fire and forget core play record
 	go func() {
+
 		ctx := context.Background()
 		defer func() {
 			if r := recover(); r != nil {
@@ -330,6 +331,7 @@ func (ss *MediorumServer) logTrackListen(c echo.Context) {
 
 		sdk, err := ss.getCoreSdk()
 		if err != nil || sdk == nil {
+			ss.logger.Info("returning early from core sdk err", "error", err, "sdk", sdk)
 			return
 		}
 
@@ -340,12 +342,21 @@ func (ss *MediorumServer) logTrackListen(c echo.Context) {
 			return
 		}
 
+		geoData, err := ss.getGeoFromIP(c.RealIP())
+		if err != nil {
+			ss.logger.Error("core listens bad ip: %v", err)
+			return
+		}
+
 		// construct play data into event
 		play := &proto.TrackPlay{
 			UserId:    userId,
 			TrackId:   fmt.Sprint(sig.Data.TrackId),
 			Timestamp: timestamppb.New(parsedTime),
 			Signature: signatureData.Signature,
+			City:      geoData.City,
+			Country:   geoData.Country,
+			Region:    geoData.Region,
 		}
 
 		// form actual proto event for signing
@@ -367,6 +378,8 @@ func (ss *MediorumServer) logTrackListen(c echo.Context) {
 				Plays: playsTx,
 			},
 		}
+
+		ss.logger.Info("sending", "tx", signedTx)
 
 		// submit to configured core node
 		res, err := sdk.SendTransaction(ctx, &proto.SendTransactionRequest{

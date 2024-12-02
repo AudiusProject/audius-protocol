@@ -1,3 +1,5 @@
+import { useMemo } from 'react'
+
 import { times, random } from 'lodash'
 import { View } from 'react-native'
 
@@ -113,7 +115,12 @@ const BioSkeleton = () => {
     marginRight: 4,
     marginBottom: 8
   }
-  const elements = times(random(5, 15), () => random(20, 100))
+
+  const elements = useMemo(
+    () => times(random(5, 15), () => random(20, 100)),
+    []
+  )
+
   return (
     <>
       {elements.map((elementWidth: number, i) => (
@@ -126,11 +133,11 @@ const BioSkeleton = () => {
 export const ExpandableSectionSkeleton = () => {
   const styles = useStyles()
   return (
-    <Flex column gap='s' backgroundColor='white'>
+    <Flex column gap='s' backgroundColor='white' p='l'>
       <Flex row wrap='wrap'>
         <BioSkeleton />
       </Flex>
-      <Flex style={styles.tierAndSocials} backgroundColor='white'>
+      <Flex style={styles.tierAndSocials}>
         <StaticSkeleton style={styles.tier} />
         <View style={styles.socialLinks}>
           <StaticSkeleton style={styles.socialLink} />

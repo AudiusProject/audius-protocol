@@ -7,6 +7,7 @@ import {
   cacheActions,
   profilePageActions,
   getContext,
+  getSDK,
   fetchAccountAsync
 } from '@audius/common/store'
 import { call, put, fork, select, takeEvery } from 'redux-saga/effects'
@@ -69,6 +70,7 @@ function* onSignedIn({ payload: { account } }) {
   const audiusBackendInstance = yield getContext('audiusBackendInstance')
   const sentry = yield getContext('sentry')
   const authService = yield getContext('authService')
+  const sdk = yield* getSDK()
 
   const libs = yield call([
     audiusBackendInstance,
@@ -123,7 +125,7 @@ function* onSignedIn({ payload: { account } }) {
 
   yield put(showPushNotificationConfirmation())
 
-  yield fork(audiusBackendInstance.updateUserLocationTimezone)
+  yield fork(audiusBackendInstance.updateUserLocationTimezone, { sdk })
 
   // Fetch the profile so we get everything we need to populate
   // the left nav / other site-wide metadata.

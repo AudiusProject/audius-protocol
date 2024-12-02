@@ -5,7 +5,8 @@
 /* Theme Color Definitions */
 :root {
   /* Static Colors */
-  /* --harmony-static-white: #ffffff; */
+  /* TODO: This becomes static-white when v2 is enabled */
+  --harmony-static-static-white: #ffffff;
   --harmony-static-black: #000000;
   --harmony-static-primary: #cc0fe0;
 

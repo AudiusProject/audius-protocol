@@ -192,12 +192,15 @@ def download_purchases(args: DownloadPurchasesArgs):
     return to_download
 
 
-def format_sale_for_csv(result, seller_handle, seller_user_id, include_email=False):
+def format_sale_for_download(
+    result, seller_handle, seller_user_id, is_for_json_response=False
+):
     """Format a sale result into a CSV-friendly dictionary format."""
     # Convert datetime to ISO format string
     created_at = result.created_at.isoformat() if result.created_at else None
 
-    formatted_result = {
+    # Base fields without underscores
+    base_fields = {
         "title": result.content_title,
         "link": get_link(result.content_type, seller_handle, result.slug),
         "purchased by": result.buyer_name,
@@ -223,13 +226,17 @@ def format_sale_for_csv(result, seller_handle, seller_user_id, include_email=Fal
         "country": result.country,
     }
 
-    # Only include encrypted_email if specifically requested (for JSON response)
-    if include_email:
-        formatted_result["encrypted_email"] = (
+    if is_for_json_response:
+        # Replace spaces with underscores and add encrypted_email
+        fields_with_underscores = {
+            key.replace(" ", "_"): value for key, value in base_fields.items()
+        }
+        fields_with_underscores["encrypted_email"] = (
             result.encrypted_email if hasattr(result, "encrypted_email") else None
         )
+        return fields_with_underscores
 
-    return formatted_result
+    return base_fields
 
 
 # Returns USDC sales for a given artist in a CSV format
@@ -257,11 +264,11 @@ def download_sales(args: DownloadSalesArgs, return_json: bool = False):
     # Build list of dictionary results
     contents = list(
         map(
-            lambda result: format_sale_for_csv(
+            lambda result: format_sale_for_download(
                 result,
                 seller_handle,
                 seller_user_id,
-                include_email=return_json,  # Only include email for JSON response
+                is_for_json_response=return_json,  # Used to determine if we should include email
             ),
             results,
         )

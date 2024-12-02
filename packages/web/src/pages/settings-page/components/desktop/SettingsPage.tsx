@@ -256,11 +256,7 @@ export const SettingsPage = (props: SettingsPageProps) => {
     return options
   }, [showMatrix])
 
-  const { isEnabled: isPayoutWalletEnabled } = useFlag(
-    FeatureFlags.PAYOUT_WALLET_ENABLED
-  )
   const allowAiAttribution = useSelector(getAllowAiAttribution)
-  const { isEnabled: isManagerModeEnabled } = useFlag(FeatureFlags.MANAGER_MODE)
   const { isEnabled: isCommentsEnabled } = useFlag(
     FeatureFlags.COMMENTS_ENABLED
   )
@@ -405,12 +401,8 @@ export const SettingsPage = (props: SettingsPageProps) => {
             </Button>
           </SettingsCard>
         ) : null}
-        {isManagerModeEnabled ? (
-          <>
-            <AccountsManagingYouSettingsCard />
-            <AccountsYouManageSettingsCard />
-          </>
-        ) : null}
+        <AccountsManagingYouSettingsCard />
+        <AccountsYouManageSettingsCard />
         <SettingsCard
           icon={<IconRobot />}
           title={messages.aiGeneratedCardTitle}
@@ -447,7 +439,7 @@ export const SettingsPage = (props: SettingsPageProps) => {
 
         <AuthorizedAppsSettingsCard />
         <DeveloperAppsSettingsCard />
-        {isPayoutWalletEnabled ? <PayoutWalletSettingsCard /> : null}
+        <PayoutWalletSettingsCard />
       </div>
       <div className={styles.version}>
         <Button
