@@ -46,7 +46,7 @@ import { ChatBlastAudience } from '@audius/sdk'
 import { useRouteMatch } from 'react-router-dom'
 
 import { useSelector } from 'common/hooks/useSelector'
-import UserList from 'components/user-list/UserList'
+import { UserList } from 'components/user-list/UserList'
 import { useFlag } from 'hooks/useRemoteConfig'
 import { ChatBlastWithAudienceCTA } from 'pages/chat-page/components/ChatBlastWithAudienceCTA'
 import { UserListType } from 'store/application/ui/userListModal/types'
