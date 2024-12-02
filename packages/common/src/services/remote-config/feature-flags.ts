@@ -4,7 +4,6 @@ import { Environment } from '../env'
 export enum FeatureFlags {
   SURFACE_AUDIO_ENABLED = 'surface_audio_enabled',
   PREFER_HIGHER_PATCH_FOR_SECONDARIES = 'prefer_higher_patch_for_secondaries',
-  DISABLE_SIGN_UP_CONFIRMATION = 'disable_sign_up_confirmation',
   BUY_AUDIO_COINBASE_ENABLED = 'buy_audio_coinbase_enabled',
   BUY_AUDIO_STRIPE_ENABLED = 'buy_audio_stripe_enabled',
   VERIFY_HANDLE_WITH_TIKTOK = 'verify_handle_with_tiktok',
@@ -59,7 +58,6 @@ export const environmentFlagDefaults: Record<
 export const flagDefaults: FlagDefaults = {
   [FeatureFlags.SURFACE_AUDIO_ENABLED]: false,
   [FeatureFlags.PREFER_HIGHER_PATCH_FOR_SECONDARIES]: true,
-  [FeatureFlags.DISABLE_SIGN_UP_CONFIRMATION]: false,
   [FeatureFlags.BUY_AUDIO_COINBASE_ENABLED]: false,
   [FeatureFlags.BUY_AUDIO_STRIPE_ENABLED]: false,
   [FeatureFlags.VERIFY_HANDLE_WITH_TIKTOK]: false,
