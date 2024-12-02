@@ -39,8 +39,6 @@ export const SelectablePill = (props: SelectablePillProps) => {
     color: theme.color.static.white,
     border: `1px solid ${theme.color.secondary.secondary}`,
     ...(size === 'large' && {
-      backgroundColor: theme.color.secondary.s100,
-      border: `1px solid ${theme.color.secondary.s200}`,
       boxShadow: 'none'
     })
   }
@@ -49,7 +47,6 @@ export const SelectablePill = (props: SelectablePillProps) => {
     backgroundColor: theme.color.secondary.s400,
     color: theme.color.static.white,
     border: `1px solid ${theme.color.secondary.s400}`,
-
     ...(size === 'large' && {
       boxShadow: 'none'
     })

@@ -2,10 +2,8 @@ import { useCallback } from 'react'
 
 import { useGetCurrentUserId, useGetPlaylistById } from '@audius/common/api'
 import { Collection } from '@audius/common/models'
-import { FeatureFlags } from '@audius/common/src/services'
 import {
   cacheCollectionsActions,
-  cacheCollectionsSelectors,
   collectionPageSelectors,
   CommonState,
   useEarlyReleaseConfirmationModal,
@@ -15,18 +13,14 @@ import { IconRocket, IconButton, IconButtonProps } from '@audius/harmony'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { Tooltip } from 'components/tooltip'
-import { useFlag } from 'hooks/useRemoteConfig'
 
 const { getCollection } = collectionPageSelectors
-const { getCollectionHasHiddenTracks } = cacheCollectionsSelectors
 
 const messages = {
   publish: 'Make Public',
   publishing: 'Making Public',
   emptyPlaylistTooltipText: 'You must add at least 1 song.',
-  missingArtworkTooltipText: 'You must add artwork',
-  hiddenTracksTooltipText: (collectionType: 'playlist' | 'album') =>
-    `You cannot make a ${collectionType} with hidden tracks public.`
+  missingArtworkTooltipText: 'You must add artwork'
 }
 
 type PublishButtonProps = Partial<IconButtonProps> & {
@@ -45,24 +39,12 @@ export const PublishButton = (props: PublishButtonProps) => {
   })
   const { track_count, cover_art_sizes } = collection ?? {}
 
-  const hasHiddenTracks = useSelector((state: CommonState) =>
-    getCollectionHasHiddenTracks(state, { id: collectionId })
-  )
-
-  const { isEnabled: isHiddenPaidScheduledEnabled } = useFlag(
-    FeatureFlags.HIDDEN_PAID_SCHEDULED
-  )
-
   const { onOpen: openPublishConfirmation } = usePublishConfirmationModal()
   const { onOpen: openEarlyReleaseConfirmation } =
     useEarlyReleaseConfirmationModal()
 
   const dispatch = useDispatch()
-  const isDisabled =
-    !track_count ||
-    track_count === 0 ||
-    (!isHiddenPaidScheduledEnabled && hasHiddenTracks) ||
-    !cover_art_sizes
+  const isDisabled = !track_count || track_count === 0 || !cover_art_sizes
 
   const publishRelease = useCallback(() => {
     dispatch(
@@ -110,11 +92,7 @@ export const PublishButton = (props: PublishButtonProps) => {
       {isDisabled ? (
         <Tooltip
           text={
-            !isHiddenPaidScheduledEnabled && hasHiddenTracks
-              ? messages.hiddenTracksTooltipText(
-                  is_album ? 'album' : 'playlist'
-                )
-              : !track_count || track_count === 0
+            !track_count || track_count === 0
               ? messages.emptyPlaylistTooltipText
               : !cover_art_sizes
               ? messages.missingArtworkTooltipText
