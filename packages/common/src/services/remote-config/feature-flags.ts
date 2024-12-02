@@ -26,7 +26,8 @@ export enum FeatureFlags {
   RIGHTS_AND_COVERS = 'rights_and_covers',
   GUEST_CHECKOUT = 'guest_checkout',
   TRACK_AUDIO_REPLACE = 'track_audio_replace',
-  THEME_V2 = 'theme_v2'
+  THEME_V2 = 'theme_v2',
+  OWN_YOUR_FANS = 'own_your_fans'
 }
 
 type FlagDefaults = Record<FeatureFlags, boolean>
@@ -68,5 +69,6 @@ export const flagDefaults: FlagDefaults = {
   [FeatureFlags.SOCIAL_SIGNUP]: false,
   [FeatureFlags.RIGHTS_AND_COVERS]: false,
   [FeatureFlags.TRACK_AUDIO_REPLACE]: false,
-  [FeatureFlags.THEME_V2]: false
+  [FeatureFlags.THEME_V2]: false,
+  [FeatureFlags.OWN_YOUR_FANS]: false
 }
