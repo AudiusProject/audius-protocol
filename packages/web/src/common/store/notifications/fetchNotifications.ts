@@ -58,11 +58,6 @@ export function* fetchNotifications(config: FetchNotificationsParams) {
     FeatureFlags.PREMIUM_ALBUMS_ENABLED
   )
 
-  const isManagerModeEnabled = yield* call(
-    getFeatureEnabled,
-    FeatureFlags.MANAGER_MODE
-  )
-
   const isCommentsEnabled = yield* call(
     getFeatureEnabled,
     FeatureFlags.COMMENTS_ENABLED
@@ -77,8 +72,8 @@ export function* fetchNotifications(config: FetchNotificationsParams) {
     isUSDCPurchasesEnabled ? ValidTypes.UsdcPurchaseBuyer : null,
     isUSDCPurchasesEnabled ? ValidTypes.UsdcPurchaseSeller : null,
     isPurchaseableAlbumsEnabled ? ValidTypes.TrackAddedToPurchasedAlbum : null,
-    isManagerModeEnabled ? ValidTypes.RequestManager : null,
-    isManagerModeEnabled ? ValidTypes.ApproveManagerRequest : null,
+    ValidTypes.RequestManager,
+    ValidTypes.ApproveManagerRequest,
     isCommentsEnabled ? ValidTypes.Comment : null,
     isCommentsEnabled ? ValidTypes.CommentThread : null,
     isCommentsEnabled ? ValidTypes.CommentMention : null,
