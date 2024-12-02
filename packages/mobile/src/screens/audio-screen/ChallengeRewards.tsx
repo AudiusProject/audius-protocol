@@ -6,7 +6,7 @@ import {
 } from '@audius/common/hooks'
 import { Name, ChallengeName } from '@audius/common/models'
 import type { ChallengeRewardID } from '@audius/common/models'
-import { StringKeys, FeatureFlags } from '@audius/common/services'
+import { StringKeys } from '@audius/common/services'
 import {
   challengesSelectors,
   audioRewardsPageSelectors,
@@ -37,7 +37,7 @@ import {
 } from '@audius/harmony-native'
 import LoadingSpinner from 'app/components/loading-spinner'
 import type { SummaryTableItem } from 'app/components/summary-table/SummaryTable'
-import { useFeatureFlag, useRemoteVar } from 'app/hooks/useRemoteConfig'
+import { useRemoteVar } from 'app/hooks/useRemoteConfig'
 import { make, track } from 'app/services/analytics'
 import { makeStyles } from 'app/styles'
 import { getChallengeConfig } from 'app/utils/challenges'
@@ -153,10 +153,6 @@ export const ChallengeRewards = () => {
   const dispatch = useDispatch()
   const { cooldownChallenges, cooldownAmount, claimableAmount, isEmpty } =
     useChallengeCooldownSchedule({ multiple: true })
-  const { isEnabled: isRewardsCooldownEnabled } = useFeatureFlag(
-    FeatureFlags.REWARDS_COOLDOWN
-  )
-
   const userChallengesLoading = useSelector(getUserChallengesLoading)
   const userChallenges = useSelector(getUserChallenges)
   const optimisticUserChallenges = useSelector((state: CommonState) =>
@@ -225,7 +221,7 @@ export const ChallengeRewards = () => {
         <LoadingSpinner style={styles.loading} />
       ) : (
         <Flex gap='2xl'>
-          {isRewardsCooldownEnabled && !isEmpty ? (
+          {!isEmpty ? (
             <Paper shadow='flat' border='strong' p='l' gap='m'>
               <Flex direction='row' justifyContent='flex-start' gap='s'>
                 {claimableAmount > 0 ? (

@@ -27,35 +27,9 @@ export function* fetchNotifications(config: FetchNotificationsParams) {
   const userId = yield* select(accountSelectors.getUserId)
   const encodedUserId = Id.parse(userId)
 
-  const isRepostOfRepostEnabled = yield* call(
-    getFeatureEnabled,
-    FeatureFlags.REPOST_OF_REPOST_NOTIFICATIONS
-  )
-  const isSaveOfRepostEnabled = yield* call(
-    getFeatureEnabled,
-    FeatureFlags.SAVE_OF_REPOST_NOTIFICATIONS
-  )
-  const isTrendingPlaylistEnabled = yield* call(
-    getFeatureEnabled,
-    FeatureFlags.TRENDING_PLAYLIST_NOTIFICATIONS
-  )
-  const isTrendingUndergroundEnabled = yield* call(
-    getFeatureEnabled,
-    FeatureFlags.TRENDING_UNDERGROUND_NOTIFICATIONS
-  )
-  const isTastemakerEnabled = yield* call(
-    getFeatureEnabled,
-    FeatureFlags.TASTEMAKER_NOTIFICATIONS
-  )
-
   const isUSDCPurchasesEnabled = yield* call(
     getFeatureEnabled,
     FeatureFlags.USDC_PURCHASES
-  )
-
-  const isPurchaseableAlbumsEnabled = yield* call(
-    getFeatureEnabled,
-    FeatureFlags.PREMIUM_ALBUMS_ENABLED
   )
 
   const isManagerModeEnabled = yield* call(
@@ -69,14 +43,14 @@ export function* fetchNotifications(config: FetchNotificationsParams) {
   )
 
   const validTypes = [
-    isRepostOfRepostEnabled ? ValidTypes.RepostOfRepost : null,
-    isSaveOfRepostEnabled ? ValidTypes.SaveOfRepost : null,
-    isTrendingPlaylistEnabled ? ValidTypes.TrendingPlaylist : null,
-    isTrendingUndergroundEnabled ? ValidTypes.TrendingUnderground : null,
-    isTastemakerEnabled ? ValidTypes.Tastemaker : null,
+    ValidTypes.RepostOfRepost,
+    ValidTypes.SaveOfRepost,
+    ValidTypes.TrendingPlaylist,
+    ValidTypes.TrendingUnderground,
+    ValidTypes.Tastemaker,
     isUSDCPurchasesEnabled ? ValidTypes.UsdcPurchaseBuyer : null,
     isUSDCPurchasesEnabled ? ValidTypes.UsdcPurchaseSeller : null,
-    isPurchaseableAlbumsEnabled ? ValidTypes.TrackAddedToPurchasedAlbum : null,
+    ValidTypes.TrackAddedToPurchasedAlbum,
     isManagerModeEnabled ? ValidTypes.RequestManager : null,
     isManagerModeEnabled ? ValidTypes.ApproveManagerRequest : null,
     isCommentsEnabled ? ValidTypes.Comment : null,
