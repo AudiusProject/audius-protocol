@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 
 import {
-  AccessConditions,
   DownloadTrackAvailabilityType,
   StemCategory,
   StemUploadWithFile,
@@ -131,7 +130,6 @@ export const stemsAndDownloadsSchema = ({
 // May do another pass later to refactor.
 type StemsAndDownloadsMenuFieldsProps = {
   isUpload: boolean
-  initialDownloadConditions: Nullable<AccessConditions>
   stems?: StemUploadWithFile[]
   onAddStems?: (stems: any) => void
   onSelectCategory?: (category: StemCategory, index: number) => void
@@ -269,7 +267,6 @@ export const StemsAndDownloadsMenuFields = (
       <Divider />
       <DownloadAvailability
         isUpload={props.isUpload}
-        initialDownloadConditions={props.initialDownloadConditions}
         value={availabilityType}
         setValue={setAvailabilityType}
       />

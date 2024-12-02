@@ -3,7 +3,7 @@ import { Nullable } from '@audius/common/utils'
 import cn from 'classnames'
 
 import UserBadges from 'components/user-badges/UserBadges'
-import { useUserProfilePicture } from 'hooks/useUserProfilePicture'
+import { useProfilePicture } from 'hooks/useProfilePicture'
 
 import styles from './ProfileInfo.module.css'
 
@@ -25,11 +25,10 @@ export const ProfileInfo = ({
   displayNameClassName,
   handleClassName
 }: ProfileInfoProps) => {
-  const image = useUserProfilePicture(
-    user?.user_id ?? null,
-    user?._profile_picture_sizes ?? null,
-    SquareSizes.SIZE_150_BY_150
-  )
+  const image = useProfilePicture({
+    userId: user?.user_id,
+    size: SquareSizes.SIZE_150_BY_150
+  })
 
   return user ? (
     <div className={cn(styles.receiver, className)}>

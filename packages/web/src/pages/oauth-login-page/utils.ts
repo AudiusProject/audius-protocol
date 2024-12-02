@@ -157,14 +157,6 @@ export const formOAuthResponse = async ({
         }`
       }
     }
-  } else if (account.profile_picture) {
-    const storageNode = storageNodeSelector.getNodes(account.profile_picture)[0]
-    const url = `${storageNode}/content/${account.profile_picture}`
-    profilePicture = {
-      '150x150': url,
-      '480x480': url,
-      '1000x1000': url
-    }
   }
   const timestamp = Math.round(new Date().getTime() / 1000)
   const userId = encodeHashId(account?.user_id)

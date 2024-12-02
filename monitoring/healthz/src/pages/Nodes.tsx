@@ -16,15 +16,33 @@ const awsBackendIco = new URL('../images/aws.ico', import.meta.url).href
 const bytesToGb = (bytes: number) => Math.floor(bytes / 10 ** 9)
 const fetcher = (url: string) => fetch(url).then((res) => res.json())
 
+const discprovWhitelist = [
+  ".audius.co",
+  ".creatorseed.com",
+  ".monophonic.digital",
+  ".figment.io",
+  ".tikilabs.com",
+]
+
 export default function Nodes() {
   const [env, nodeType] = useEnvironmentSelection()
-  const { data: sps, error } = useServiceProviders(env, nodeType)
+  let { data: sps, error } = useServiceProviders(env, nodeType)
 
   const isContent = nodeType == 'content'
   const isDiscovery = nodeType == 'discovery'
 
   if (error) return <div className="text-red-600 dark:text-red-400">Error</div>
   if (!sps) return <div className="text-gray-600 dark:text-gray-300">Loading...</div>
+
+  // Filter out un-whitelisted dns
+  if (isDiscovery && sps) {
+    sps = sps.filter(
+      sp => discprovWhitelist.reduce(
+        (isWhitelisted, li) => isWhitelisted || sp.endpoint.endsWith(li),
+        false,
+      )
+    )
+  }
 
   if (isContent || isDiscovery) {  // legacy healthcheck
     return (

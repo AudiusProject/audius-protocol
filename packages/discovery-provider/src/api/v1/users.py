@@ -90,6 +90,7 @@ from src.api.v1.models.users import (
     purchase,
     remixed_track_aggregate,
     sales_aggregate,
+    sales_json_content,
     user_model,
     user_model_full,
     user_subscribers,
@@ -2629,6 +2630,11 @@ class SalesDownload(Resource):
         return response
 
 
+sales_json_response = make_response(
+    "sales_json_response", ns, fields.Nested(sales_json_content)
+)
+
+
 @ns.route("/<string:id>/sales/download/json")
 class SalesDownloadJSON(Resource):
     @ns.doc(
@@ -2638,6 +2644,7 @@ class SalesDownloadJSON(Resource):
     )
     @ns.produces(["application/json"])
     @ns.expect(sales_download_parser)
+    @ns.marshal_with(sales_json_response)
     @auth_middleware(sales_download_parser, require_auth=True)
     def get(self, id, authed_user_id):
         decoded_id = decode_with_abort(id, ns)

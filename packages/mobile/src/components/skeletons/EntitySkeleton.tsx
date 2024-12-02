@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react'
+import { useMemo, type ReactNode } from 'react'
 
 import { times, random } from 'lodash'
 import { View } from 'react-native'
@@ -106,6 +106,11 @@ export const EntitySkeleton = (props: EntitySkeletonProps) => {
   const { entityType, children } = props
   const styles = useStyles()
 
+  const descriptionElementCount = useMemo(
+    () => times(random(5, 15), () => random(20, 100)),
+    []
+  )
+
   return (
     <Tile styles={{ root: styles.root, content: styles.content }}>
       <View style={styles.heading}>
@@ -135,14 +140,12 @@ export const EntitySkeleton = (props: EntitySkeletonProps) => {
           <StaticSkeleton style={styles.metric} />
         </View>
         <View style={styles.description}>
-          {times(random(5, 15), () => random(20, 100)).map(
-            (elementWidth: number, i) => (
-              <StaticSkeleton
-                key={i}
-                style={[styles.descriptionText, { width: elementWidth }]}
-              />
-            )
-          )}
+          {descriptionElementCount.map((elementWidth: number, i) => (
+            <StaticSkeleton
+              key={i}
+              style={[styles.descriptionText, { width: elementWidth }]}
+            />
+          ))}
         </View>
         <Divider style={styles.divider} />
         <View style={styles.metadataSection}>

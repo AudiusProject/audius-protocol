@@ -71,10 +71,10 @@ export const PlainButton = (props: PlainButtonProps) => {
 
   const invertedStyles = {
     default: {
-      text: color.static.white
+      text: color.static.staticWhite
     },
     press: {
-      text: color.static.white
+      text: color.static.staticWhite
     }
   }
 

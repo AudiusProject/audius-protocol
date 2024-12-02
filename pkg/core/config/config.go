@@ -49,7 +49,7 @@ const (
 	DevPersistentPeers   = "ffad25668e060a357bbe534c8b7e5b4e1274368b@core-discovery-1:26656"
 )
 
-const dbUrlLocalPattern string = `^postgresql:\/\/\w+:\w+@(db|localhost):.*`
+const dbUrlLocalPattern string = `^postgresql:\/\/\w+:\w+@(db|localhost|postgres):.*`
 
 var isLocalDbUrlRegex = regexp.MustCompile(dbUrlLocalPattern)
 
@@ -146,7 +146,7 @@ func ReadConfig(logger *common.Logger) (*Config, error) {
 		cfg.NodeType = Content
 		cfg.Environment = os.Getenv("MEDIORUM_ENV")
 		delegatePrivateKey = os.Getenv("delegatePrivateKey")
-		cfg.PSQLConn = getEnvWithDefault("dbUrl", "postgresql://postgres:postgres@localhost:5432/audius_creator_node")
+		cfg.PSQLConn = getEnvWithDefault("dbUrl", "postgresql://postgres:postgres@postgres:5432/audius_creator_node")
 		cfg.EthRPCUrl = os.Getenv("ethProviderUrl")
 		cfg.NodeEndpoint = os.Getenv("creatorNodeEndpoint")
 	}

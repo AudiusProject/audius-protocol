@@ -1,12 +1,6 @@
 import { useCallback, useState } from 'react'
 
-import {
-  Name,
-  SquareSizes,
-  Status,
-  ID,
-  ProfilePictureSizes
-} from '@audius/common/models'
+import { Name, SquareSizes, Status, ID } from '@audius/common/models'
 import { BooleanKeys } from '@audius/common/services'
 import {
   InstagramProfile,
@@ -25,8 +19,8 @@ import Page from 'components/page/Page'
 import { TikTokAuthButton } from 'components/tiktok-auth/TikTokAuthButton'
 import { TwitterAuthButton } from 'components/twitter-auth/TwitterAuthButton'
 import UserBadges from 'components/user-badges/UserBadges'
+import { useProfilePicture } from 'hooks/useProfilePicture'
 import { useRemoteVar } from 'hooks/useRemoteConfig'
-import { useUserProfilePicture } from 'hooks/useUserProfilePicture'
 
 import { SettingsPageProps } from './SettingsPage'
 import settingsPageStyles from './SettingsPage.module.css'
@@ -160,22 +154,14 @@ type SuccessBodyProps = {
   userId: ID
   handle: string
   name: string
-  profilePictureSizes: ProfilePictureSizes | null
   goToRoute: (route: string) => void
 }
 
-const SuccessBody = ({
-  handle,
-  userId,
-  name,
-  profilePictureSizes,
-  goToRoute
-}: SuccessBodyProps) => {
-  const profilePicture = useUserProfilePicture(
+const SuccessBody = ({ handle, userId, name, goToRoute }: SuccessBodyProps) => {
+  const profilePicture = useProfilePicture({
     userId,
-    profilePictureSizes,
-    SquareSizes.SIZE_150_BY_150
-  )
+    size: SquareSizes.SIZE_150_BY_150
+  })
 
   const onClick = useCallback(() => {
     goToRoute(profilePage(handle))
@@ -214,7 +200,6 @@ const VerificationPage = ({
   handle,
   userId,
   name,
-  profilePictureSizes,
   goToRoute,
   onTwitterLogin,
   onInstagramLogin,
@@ -319,7 +304,6 @@ const VerificationPage = ({
         userId={userId}
         handle={handle}
         name={name}
-        profilePictureSizes={profilePictureSizes}
         goToRoute={goToRoute}
       />
     )
