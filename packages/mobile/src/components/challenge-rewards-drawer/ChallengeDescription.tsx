@@ -1,7 +1,5 @@
 import type { ReactNode } from 'react'
 
-import { useFeatureFlag } from '@audius/common/hooks'
-import { FeatureFlags } from '@audius/common/services'
 import { View } from 'react-native'
 
 import { Flex, Text } from '@audius/harmony-native'
@@ -37,10 +35,6 @@ export const ChallengeDescription = ({
   description,
   renderDescription
 }: ChallengeDescriptionProps) => {
-  const { isEnabled: isRewardsCooldownEnabled } = useFeatureFlag(
-    FeatureFlags.REWARDS_COOLDOWN
-  )
-
   const styles = useStyles()
   return (
     <View style={styles.task}>
@@ -60,11 +54,9 @@ export const ChallengeDescription = ({
       ) : (
         <Flex gap='m' mb='l'>
           <Text variant='body'>{description}</Text>
-          {isRewardsCooldownEnabled ? (
-            <Text variant='body' color='subdued'>
-              {messages.cooldownDescription}
-            </Text>
-          ) : null}
+          <Text variant='body' color='subdued'>
+            {messages.cooldownDescription}
+          </Text>
         </Flex>
       )}
     </View>

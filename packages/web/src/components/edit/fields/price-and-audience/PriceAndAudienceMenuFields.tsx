@@ -97,17 +97,10 @@ export const PriceAndAudienceMenuFields = (
   const { isEnabled: isUdscPurchaseEnabled } = useFeatureFlag(
     FeatureFlags.USDC_PURCHASES
   )
-  const { isEnabled: isPremiumAlbumsEnabled } = useFeatureFlag(
-    FeatureFlags.PREMIUM_ALBUMS_ENABLED
-  )
 
   const { isEnabled: isHiddenPaidScheduledEnabled } = useFeatureFlag(
     FeatureFlags.HIDDEN_PAID_SCHEDULED
   )
-  const isUsdcUploadEnabled = isAlbum
-    ? isPremiumAlbumsEnabled && isUdscPurchaseEnabled
-    : isUdscPurchaseEnabled
-
   const [availabilityField] = useField({ name: STREAM_AVAILABILITY_TYPE })
 
   const messages = useMessages(
@@ -159,7 +152,7 @@ export const PriceAndAudienceMenuFields = (
             disabled={isPublishDisabled}
           />
         )}
-        {isUsdcUploadEnabled ? (
+        {isUdscPurchaseEnabled ? (
           <UsdcPurchaseGatedRadioField
             isRemix={isRemix}
             isUpload={isUpload}
