@@ -248,9 +248,6 @@ const RenderForm = ({
   const { isEnabled: isIOSUSDCPurchaseEnabled } = useFeatureFlag(
     FeatureFlags.IOS_USDC_PURCHASE_ENABLED
   )
-  const { isEnabled: isPayWithAnythingEnabledFlag } = useFeatureFlag(
-    FeatureFlags.PAY_WITH_ANYTHING_ENABLED
-  )
   const isIOSDisabled = Platform.OS === 'ios' && !isIOSUSDCPurchaseEnabled
 
   const { submitForm, resetForm } = useFormikContext()
@@ -384,7 +381,7 @@ const RenderForm = ({
                     isExistingBalanceDisabled={isExistingBalanceDisabled}
                     showExistingBalance={!!(balance && !balance.isZero())}
                     isCoinflowEnabled={showCoinflow}
-                    isPayWithAnythingEnabled={isPayWithAnythingEnabledFlag}
+                    isPayWithAnythingEnabled
                     showVendorChoice={false}
                   />
                 )}
