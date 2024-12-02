@@ -55,7 +55,6 @@ const {
   setBrowserNotificationSettingsOn,
   setBrowserNotificationPermission,
   toggleNotificationSetting,
-  togglePushNotificationSetting,
   getNotificationSettings,
   getPushNotificationSettings: getPushNotificationSettingsAction,
   updateEmailFrequency
@@ -211,11 +210,6 @@ export const SettingsPageProvider = ({
     toggleNotificationSetting: useCallback(
       (notificationType: BrowserNotificationSetting, isOn: boolean) =>
         dispatch(toggleNotificationSetting(notificationType, isOn)),
-      [dispatch]
-    ),
-    togglePushNotificationSetting: useCallback(
-      (notificationType: PushNotificationSetting, isOn: boolean) =>
-        dispatch(togglePushNotificationSetting(notificationType, isOn)),
       [dispatch]
     ),
     updateEmailFrequency: useCallback(

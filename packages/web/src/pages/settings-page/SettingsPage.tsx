@@ -4,7 +4,10 @@ import { useIsMobile } from 'hooks/useIsMobile'
 
 import { SettingsPageProvider } from './SettingsPageProvider'
 import { SettingsPage as DesktopSettingsPage } from './components/desktop/SettingsPage'
-import MobileSettingsPage, { SubPage } from './components/mobile/SettingsPage'
+import {
+  SettingsPage as MobileSettingsPage,
+  SubPage
+} from './components/mobile/SettingsPage'
 
 type SettingsPageProps = {
   containerRef: RefObject<HTMLDivElement>

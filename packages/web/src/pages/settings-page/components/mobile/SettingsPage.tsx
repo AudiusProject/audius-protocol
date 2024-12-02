@@ -90,10 +90,6 @@ type OwnProps = {
     notificationType: BrowserNotificationSetting,
     isOn: boolean
   ) => void
-  togglePushNotificationSetting: (
-    notificationType: PushNotificationSetting,
-    isOn: boolean
-  ) => void
   updateEmailFrequency: (frequency: EmailFrequency) => void
   recordSignOut: (callback?: () => void) => void
   showMatrix: boolean
@@ -110,7 +106,7 @@ const SubPages = {
   [SubPage.CHANGE_EMAIL]: ChangeEmailMobilePage as FC<SettingsPageProps>
 }
 
-const SettingsPage = (props: SettingsPageProps) => {
+export const SettingsPage = (props: SettingsPageProps) => {
   const {
     subPage,
     userId,
@@ -243,5 +239,3 @@ const SettingsPage = (props: SettingsPageProps) => {
     </Page>
   )
 }
-
-export default SettingsPage
