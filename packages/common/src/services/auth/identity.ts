@@ -8,6 +8,12 @@ import { AuthHeaders } from './types'
 
 type Data = Record<string, unknown>
 type SetAuthFnParams = Parameters<SetAuthFn>[0]
+export type RecoveryInfoParams = {
+  login: string
+  host: string
+  data: string
+  signature: string
+}
 
 export type IdentityRequestError = AxiosError
 
@@ -71,11 +77,11 @@ export class IdentityService {
   }
 
   /* ------- USER FUNCTIONS ------- */
-  async sendRecoveryInfo(obj: Record<string, unknown>) {
+  async sendRecoveryInfo(data: RecoveryInfoParams) {
     return await this._makeRequest<{ status: true }>({
       url: '/recovery',
       method: 'post',
-      data: obj
+      data
     })
   }
 

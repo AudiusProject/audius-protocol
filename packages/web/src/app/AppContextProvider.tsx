@@ -27,6 +27,7 @@ export const AppContextProvider = (props: AppContextProviderProps) => {
       imageUtils: {
         generatePlaylistArtwork
       },
+      // TODO-NOW: Match this to
       getHostUrl: () => window.location.origin,
       audiusBackend: audiusBackendInstance,
       remoteConfig: remoteConfigInstance

@@ -1,4 +1,4 @@
-import { CID } from 'multiformats/cid'
+import { CID } from 'multiformats'
 import { encode, code } from 'multiformats/codecs/json'
 import { sha256 } from 'multiformats/hashes/sha2'
 

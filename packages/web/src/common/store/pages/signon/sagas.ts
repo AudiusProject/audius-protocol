@@ -595,7 +595,7 @@ function* signUp() {
   yield* put(
     confirmerActions.requestConfirmation(
       handle,
-      async function* () {
+      function* () {
         const reportToSentry = yield* getContext('reportToSentry')
         const isNativeMobile = yield* getContext('isNativeMobile')
 

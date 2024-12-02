@@ -61,7 +61,7 @@ export class UsersApi extends GeneratedUsersApi {
   /** @hidden
    * Generate a new user id for use in creation flow
    */
-  async _generateUserId() {
+  private async generateUserId() {
     const response = new runtime.JSONApiResponse<{ data: string }>(
       await this.request({
         path: '/users/unclaimed_id',
@@ -85,7 +85,7 @@ export class UsersApi extends GeneratedUsersApi {
     const { onProgress, profilePictureFile, coverArtFile, metadata } =
       await parseParams('createUser', CreateUserSchema)(params)
 
-    const { data } = await this._generateUserId()
+    const { data } = await this.generateUserId()
     if (!data) {
       throw new Error('Failed to generate userId')
     }

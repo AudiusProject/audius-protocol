@@ -1,7 +1,7 @@
 import type { LocalStorage } from '../local-storage'
 
 import { HedgehogConfig, createHedgehog } from './hedgehog'
-import type { IdentityService } from './identity'
+import type { IdentityService, RecoveryInfoParams } from './identity'
 
 export type AuthServiceConfig = {
   identityService: IdentityService
@@ -82,8 +82,7 @@ export const createAuthService = ({
     }
   }
 
-  // TODO: This could use a regular response type
-  const sendRecoveryInfo = async (params: {}) => {
+  const sendRecoveryInfo = async (params: RecoveryInfoParams) => {
     await identityService.sendRecoveryInfo(params)
   }
 
