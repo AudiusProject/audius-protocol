@@ -22,7 +22,6 @@ import { useDispatch } from 'react-redux'
 
 import { make } from 'common/store/analytics/actions'
 import { AudioBalancePill } from 'components/audio-balance-pill/AUDIOBalancePill'
-import FeatureFlag from 'components/feature-flag/FeatureFlag'
 import { NotificationDot } from 'components/notification-dot'
 import { USDCBalancePill } from 'components/usdc-balance-pill/USDCBalancePill'
 import { useIsUSDCEnabled } from 'hooks/useIsUSDCEnabled'
