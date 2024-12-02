@@ -28,9 +28,15 @@ const { setNotificationSubscription } = profilePageActions
 const getUserId = accountSelectors.getUserId
 
 type UserListProps = {
+  // A tag uniquely identifying this particular instance of a UserList in the store.
+  // Because multiple lists may exist, all listening to the same actions,
+  // the tag is required to forward actions to a particular UserList.
   tag: string
+  // Selector pointing to this particular instance of the UserList in the global store.
   stateSelector: (state: AppState) => UserListStoreState
+  // Selector pointing to relevant userId in the context of this modal
   userIdSelector?: (state: AppState) => ID | null
+  // Optional sideeffects on/before performing actions
   afterFollow?: () => void
   afterUnfollow?: () => void
   beforeClickArtistName?: () => void
@@ -98,6 +104,20 @@ const UserListContainer = ({
 
   useEffect(() => {
     if (!hasLoaded) {
+      /**
+       * Reset on initial load in case the list modal for the
+       * given tag was already open before for another user.
+       * If we do no reset on initial load (or on exiting the modal),
+       * then the list modal will be confused and may not refresh
+       * for the current user, or it may refresh but not have the
+       * correct total count which messes up the logic for loading
+       * more users as we scroll down the modal.
+       * The reason why we reset on initial load rather than on
+       * exiting the modal is because it's possible that one modal
+       * opens another (e.g. clicking artist hover tile supporting section),
+       * and resetting on modal exit in that case may reset the data for the
+       * incoming modal after it loads and end up showing an empty modal.
+       */
       handleReset()
       handleLoadMore()
       setHasLoaded(true)
