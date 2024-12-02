@@ -69,7 +69,6 @@ export const EditCollectionForm = (props: EditCollectionFormProps) => {
 
   const [isDeleteConfirmationOpen, setIsDeleteConfirmationOpen] =
     useState(false)
-
   const { onOpen: openHideContentConfirmation } =
     useHideContentConfirmationModal()
   const { onOpen: openEarlyReleaseConfirmation } =

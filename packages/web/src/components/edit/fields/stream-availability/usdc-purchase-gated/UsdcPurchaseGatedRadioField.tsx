@@ -1,9 +1,5 @@
-import { useFeatureFlag, useAccessAndRemixSettings } from '@audius/common/hooks'
-import {
-  StreamTrackAvailabilityType,
-  AccessConditions
-} from '@audius/common/models'
-import { FeatureFlags } from '@audius/common/services'
+import { useAccessAndRemixSettings } from '@audius/common/hooks'
+import { StreamTrackAvailabilityType } from '@audius/common/models'
 import { IconCart } from '@audius/harmony'
 
 import { ModalRadioItem } from 'components/modal-radio/ModalRadioItem'
@@ -22,7 +18,6 @@ type UsdcPurchaseGatedRadioFieldProps = {
   isRemix: boolean
   isUpload?: boolean
   isAlbum?: boolean
-  initialStreamConditions?: AccessConditions
   isInitiallyUnlisted?: boolean
   isPublishDisabled?: boolean
 }
@@ -30,25 +25,13 @@ type UsdcPurchaseGatedRadioFieldProps = {
 export const UsdcPurchaseGatedRadioField = (
   props: UsdcPurchaseGatedRadioFieldProps
 ) => {
-  const {
-    isRemix,
-    isUpload,
-    isAlbum,
-    initialStreamConditions,
-    isInitiallyUnlisted,
-    isPublishDisabled
-  } = props
-
-  const { isEnabled: isEditableAccessEnabled } = useFeatureFlag(
-    FeatureFlags.EDITABLE_ACCESS_ENABLED
-  )
+  const { isRemix, isUpload, isAlbum, isInitiallyUnlisted, isPublishDisabled } =
+    props
 
   const { disableUsdcGate } = useAccessAndRemixSettings({
-    isEditableAccessEnabled: !!isEditableAccessEnabled,
     isUpload: !!isUpload,
     isRemix,
     isAlbum,
-    initialStreamConditions: initialStreamConditions ?? null,
     isInitiallyUnlisted: !!isInitiallyUnlisted,
     isPublishDisabled
   })

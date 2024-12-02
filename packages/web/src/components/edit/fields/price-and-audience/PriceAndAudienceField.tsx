@@ -1,6 +1,6 @@
 import { useCallback, useMemo, useState } from 'react'
 
-import { useFeatureFlag, useUSDCPurchaseConfig } from '@audius/common/hooks'
+import { useUSDCPurchaseConfig } from '@audius/common/hooks'
 import {
   isContentCollectibleGated,
   isContentFollowGated,
@@ -14,7 +14,6 @@ import {
   AccessConditions
 } from '@audius/common/models'
 import { CollectionValues } from '@audius/common/schemas'
-import { FeatureFlags } from '@audius/common/services'
 import {
   accountSelectors,
   EditCollectionValues,
@@ -137,10 +136,6 @@ export const PriceAndAudienceField = (props: PriceAndAudienceFieldProps) => {
   const trackLength = isUpload ? previewTrackLength : trackDuration
 
   const usdcPurchaseConfig = useUSDCPurchaseConfig()
-
-  const { isEnabled: isEditableAccessEnabled } = useFeatureFlag(
-    FeatureFlags.EDITABLE_ACCESS_ENABLED
-  )
 
   // For edit flows we need to track initial stream conditions from the parent form (not from inside contextual menu)
   // So we take this from the parent form and pass it down to the menu fields
@@ -525,7 +520,7 @@ export const PriceAndAudienceField = (props: PriceAndAudienceFieldProps) => {
             specialAccessType === SpecialAccessType.FOLLOW ? 'follow' : 'tip'
         })
 
-        if (!isUpload && isEditableAccessEnabled && usersMayLoseAccess) {
+        if (!isUpload && usersMayLoseAccess) {
           onOpenEditAccessConfirmationModal({
             confirmCallback: () => handleSubmit(values),
             cancelCallback: () => {
@@ -551,23 +546,14 @@ export const PriceAndAudienceField = (props: PriceAndAudienceFieldProps) => {
           isUpload={isUpload}
           isAlbum={isAlbum}
           streamConditions={tempStreamConditions}
-          initialStreamConditions={
-            parentFormInitialStreamConditions ?? undefined
-          }
           isScheduledRelease={isScheduledRelease}
           isInitiallyUnlisted={isUnlisted}
           isPublishDisabled={isPublishDisabled}
         />
       }
-      forceOpen={
-        isEditableAccessEnabled && isConfirmationCancelled
-          ? isConfirmationCancelled
-          : forceOpen
-      }
+      forceOpen={isConfirmationCancelled || forceOpen}
       setForceOpen={
-        isEditableAccessEnabled && isConfirmationCancelled
-          ? setIsConfirmationCancelled
-          : setForceOpen
+        isConfirmationCancelled ? setIsConfirmationCancelled : setForceOpen
       }
     />
   )
