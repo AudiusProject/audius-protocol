@@ -1,4 +1,4 @@
-import { DoubleKeys, StringKeys } from '@audius/common/services'
+import { DoubleKeys } from '@audius/common/services'
 import * as Sentry from '@sentry/browser'
 
 import { env } from './env'
@@ -65,7 +65,7 @@ export const initializeSentry = async () => {
     // This is a sample rate specific to when errors occur. We want to see 100% of them
     replaysOnErrorSampleRate: Number(
       remoteConfigInstance.getRemoteVar(
-        StringKeys.SENTRY_REPLAY_ERROR_SAMPLE_RATE
+        DoubleKeys.SENTRY_REPLAY_ERROR_SAMPLE_RATE
       ) ?? 0
     )
   })
