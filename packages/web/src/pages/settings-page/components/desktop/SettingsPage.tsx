@@ -105,7 +105,7 @@ const {
   getUserHandle,
   getUserName
 } = accountSelectors
-const { subscribeBrowserPushNotifications } = accountActions
+const { subscribeBrowserPushNotifications, instagramLogin } = accountActions
 
 const {
   DOWNLOAD_LINK,
@@ -248,7 +248,7 @@ export const SettingsPage = () => {
   )
   const onInstagramLogin = useCallback(
     (uuid: string, profile: InstagramProfile) =>
-      dispatch(accountActions.instagramLogin({ uuid, profile })),
+      dispatch(instagramLogin({ uuid, profile })),
     [dispatch]
   )
   const onTikTokLogin = useCallback(
