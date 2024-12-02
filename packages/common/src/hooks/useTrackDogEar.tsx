@@ -1,39 +1,41 @@
 import { useSelector } from 'react-redux'
 
-import { useGetTrackById } from '~/api'
 import { DogEarType } from '~/models'
 import { ID } from '~/models/Identifiers'
 import {
   isContentCollectibleGated,
   isContentSpecialAccess,
-  isContentUSDCPurchaseGated,
-  Track
+  isContentUSDCPurchaseGated
 } from '~/models/Track'
+import { CommonState } from '~/store'
 import { getUserId } from '~/store/account/selectors'
+import { getTrack } from '~/store/cache/tracks/selectors'
 import { Nullable } from '~/utils'
 
-import { useGatedContentAccess } from './useGatedContent'
+import { useGatedTrackAccess } from './useGatedContent'
 
 export const useTrackDogEar = (trackId: ID, hideUnlocked = false) => {
-  const { data: track } = useGetTrackById({ id: trackId })
-  const currentUserId = useSelector(getUserId)
+  const streamConditions = useSelector((state: CommonState) => {
+    return getTrack(state, { id: trackId })?.stream_conditions
+  })
 
-  const { hasStreamAccess, hasDownloadAccess } = useGatedContentAccess(
-    track as Nullable<Track>
-  )
+  const downloadConditions = useSelector((state: CommonState) => {
+    return getTrack(state, { id: trackId })?.download_conditions
+  })
 
-  if (!track) return null
+  const isOwner = useSelector((state: CommonState) => {
+    return getTrack(state, { id: trackId })?.owner_id === getUserId(state)
+  })
 
-  const { owner_id, stream_conditions, download_conditions } = track
+  const { hasStreamAccess, hasDownloadAccess } = useGatedTrackAccess(trackId)
 
-  const isOwner = owner_id === currentUserId
   const hideUnlockedStream = !isOwner && hasStreamAccess && hideUnlocked
   const hideUnlockedDownload = !isOwner && hasDownloadAccess && hideUnlocked
 
-  const isPurchaseable = isContentUSDCPurchaseGated(stream_conditions)
-  const isCollectibileGated = isContentCollectibleGated(stream_conditions)
-  const isSpecialAccess = isContentSpecialAccess(stream_conditions)
-  const isDownloadGated = isContentUSDCPurchaseGated(download_conditions)
+  const isPurchaseable = isContentUSDCPurchaseGated(streamConditions)
+  const isCollectibileGated = isContentCollectibleGated(streamConditions)
+  const isSpecialAccess = isContentSpecialAccess(streamConditions)
+  const isDownloadGated = isContentUSDCPurchaseGated(downloadConditions)
 
   let dogEarType: Nullable<DogEarType> = null
 

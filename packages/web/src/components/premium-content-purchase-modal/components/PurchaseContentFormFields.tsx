@@ -51,11 +51,7 @@ export const PurchaseContentFormFields = ({
   const { isEnabled: isCoinflowEnabled } = useFeatureFlag(
     FeatureFlags.BUY_WITH_COINFLOW
   )
-  const { isEnabled: isPayWithAnythingEnabledFlag } = useFeatureFlag(
-    FeatureFlags.PAY_WITH_ANYTHING_ENABLED
-  )
-  const isPayWithAnythingEnabled =
-    isPayWithAnythingEnabledFlag && !!window.solana
+  const isPayWithAnythingEnabled = !!window.solana
 
   const [{ value: purchaseMethod }, , { setValue: setPurchaseMethod }] =
     useField(PURCHASE_METHOD)

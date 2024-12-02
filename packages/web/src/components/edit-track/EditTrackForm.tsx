@@ -26,7 +26,6 @@ import { AnchoredSubmitRow } from 'components/edit/AnchoredSubmitRow'
 import { AnchoredSubmitRowEdit } from 'components/edit/AnchoredSubmitRowEdit'
 import { AdvancedField } from 'components/edit/fields/AdvancedField'
 import { MultiTrackSidebar } from 'components/edit/fields/MultiTrackSidebar'
-import { ReleaseDateField } from 'components/edit/fields/ReleaseDateField'
 import { RemixSettingsField } from 'components/edit/fields/RemixSettingsField'
 import { StemsAndDownloadsField } from 'components/edit/fields/StemsAndDownloadsField'
 import { TrackMetadataFields } from 'components/edit/fields/TrackMetadataFields'
@@ -182,9 +181,6 @@ const TrackEditForm = (
     useContext(UploadPreviewContext)
   const isPreviewPlaying = playingPreviewIndex === trackIdx
 
-  const { isEnabled: isHiddenPaidScheduledEnabled } = useFeatureFlag(
-    FeatureFlags.HIDDEN_PAID_SCHEDULED
-  )
   const { isEnabled: isTrackAudioReplaceEnabled } = useFeatureFlag(
     FeatureFlags.TRACK_AUDIO_REPLACE
   )
@@ -306,11 +302,7 @@ const TrackEditForm = (
             ) : null}
             <TrackMetadataFields />
             <div className={cn(layoutStyles.col, layoutStyles.gap4)}>
-              {isHiddenPaidScheduledEnabled ? (
-                <VisibilityField entityType='track' isUpload={isUpload} />
-              ) : (
-                <ReleaseDateField />
-              )}
+              <VisibilityField entityType='track' isUpload={isUpload} />
               <PriceAndAudienceField
                 isUpload={isUpload}
                 forceOpen={forceOpenAccessAndSale}
