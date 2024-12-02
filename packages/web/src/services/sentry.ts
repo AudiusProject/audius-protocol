@@ -17,11 +17,6 @@ const MAX_BREADCRUMBS = 300
 
 export const initializeSentry = async () => {
   await remoteConfigInstance.waitForRemoteConfig()
-  console.log({
-    sampleRate: remoteConfigInstance.getRemoteVar(
-      DoubleKeys.SENTRY_REPLAY_ERROR_SAMPLE_RATE
-    )
-  })
   Sentry.init({
     dsn: env.SENTRY_DSN,
     transport: Sentry.makeBrowserOfflineTransport(Sentry.makeFetchTransport),
