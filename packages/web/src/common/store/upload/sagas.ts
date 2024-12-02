@@ -295,12 +295,13 @@ function* publishWorker(
         trackId: updatedTrackId,
         txReceipt: { blockHash, blockNumber }
       } = yield* call(
+        // @ts-ignore
         [libs.Track, libs.Track!.writeTrackToChain],
         userId,
         metadata,
         EntityManagerAction.CREATE,
         presetTrackId
-      )
+      ) as any
       const confirmed = yield* call(confirmTransaction, blockHash, blockNumber)
       if (!confirmed) {
         throw new Error(
@@ -375,6 +376,10 @@ type UploadTrackResponse =
   | { type: 'UPLOADED'; payload: UploadedPayload }
   | { type: 'PUBLISHED'; payload: PublishedPayload }
   | { type: 'ERROR'; payload: ErrorPayload }
+
+function isTask(worker: unknown): worker is Task {
+  return worker !== null && typeof worker === 'object' && 'isRunning' in worker
+}
 
 /**
  * Spins up workers to handle uploading of tracks and their stems in parallel.
@@ -693,10 +698,14 @@ export function* handleUploads({
 
   console.debug('Spinning down workers')
   for (const worker of uploadWorkers) {
-    worker.cancel()
+    if (isTask(worker)) {
+      yield* cancel(worker)
+    }
   }
   for (const worker of publishWorkers) {
-    worker.cancel()
+    if (isTask(worker)) {
+      yield* cancel(worker)
+    }
   }
   yield* call(progressChannel.close)
   yield* cancel(actionDispatcherTask)
