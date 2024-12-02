@@ -1,10 +1,8 @@
-import { useGetPlaylistById } from '@audius/common/api'
 import {
   useCollectionLockedStatusVariant,
-  useGatedContentAccess
+  useGatedCollectionAccess
 } from '@audius/common/hooks'
-import type { Collection, ID } from '@audius/common/models'
-import type { Nullable } from '@audius/common/utils'
+import type { ID } from '@audius/common/models'
 
 import { LockedStatusBadge } from '../core/LockedStatusBadge'
 
@@ -16,14 +14,7 @@ export const CollectionLockedStatusBadge = (
   props: CollectionLockedStatusBadgeProps
 ) => {
   const { collectionId } = props
-  const { data: collection } = useGetPlaylistById(
-    { playlistId: collectionId },
-    { disabled: !collectionId }
-  )
-
-  const { hasStreamAccess } = useGatedContentAccess(
-    collection as Nullable<Collection>
-  )
+  const { hasStreamAccess } = useGatedCollectionAccess(collectionId)
   const variant = useCollectionLockedStatusVariant(collectionId)
 
   if (!variant) return null
