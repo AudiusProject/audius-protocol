@@ -7,13 +7,12 @@ import {
   isContentSpecialAccess,
   isContentUSDCPurchaseGated
 } from '~/models/Track'
-import { cacheTracksSelectors, CommonState } from '~/store'
+import { CommonState } from '~/store'
 import { getUserId } from '~/store/account/selectors'
+import { getTrack } from '~/store/cache/tracks/selectors'
 import { Nullable } from '~/utils'
 
 import { useGatedTrackAccess } from './useGatedContent'
-
-const { getTrack } = cacheTracksSelectors
 
 export const useTrackDogEar = (trackId: ID, hideUnlocked = false) => {
   const streamConditions = useSelector((state: CommonState) => {
