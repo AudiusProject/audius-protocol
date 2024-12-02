@@ -1,8 +1,10 @@
 import { useEffect, useState, useCallback } from 'react'
 
 import { useGetCurrentUserId } from '@audius/common/api'
-import { FollowSource, ID } from '@audius/common/models'
+import { ID, FollowSource } from '@audius/common/models'
 import {
+  TOP_SUPPORTERS_USER_LIST_TAG,
+  SUPPORTING_USER_LIST_TAG,
   accountSelectors,
   cacheUsersSelectors,
   profilePageActions,
@@ -12,14 +14,21 @@ import {
   UserListStoreState
 } from '@audius/common/store'
 import { route } from '@audius/common/utils'
+import { FollowButton } from '@audius/harmony'
+import cn from 'classnames'
 import { push as pushRoute } from 'connected-react-router'
+import InfiniteScroll from 'react-infinite-scroller'
+import Lottie from 'react-lottie'
 import { useDispatch, useSelector } from 'react-redux'
 
+import loadingSpinner from 'assets/animations/loadingSpinner.json'
+import ArtistChip from 'components/artist/ArtistChip'
+import { MountPlacement } from 'components/types'
 import * as unfollowConfirmationActions from 'components/unfollow-confirmation-modal/store/actions'
 import { useIsMobile } from 'hooks/useIsMobile'
 import { AppState } from 'store/types'
 
-import UserList from './components/UserList'
+import styles from './UserList.module.css'
 
 const { profilePage } = route
 const { makeGetOptimisticUserIdsIfNeeded } = userListSelectors
@@ -28,7 +37,9 @@ const { getUsers } = cacheUsersSelectors
 const { setNotificationSubscription } = profilePageActions
 const { getHasAccount } = accountSelectors
 
-type ConnectedUserListProps = {
+const SCROLL_THRESHOLD = 400
+
+type UserListProps = {
   // A tag uniquely identifying this particular instance of a UserList in the store.
   // Because multiple lists may exist, all listening to the same actions,
   // the tag is required to forward actions to a particular UserList.
@@ -45,7 +56,7 @@ type ConnectedUserListProps = {
   onNavigateAway?: () => void
 }
 
-const ConnectedUserList = ({
+export const UserList = ({
   tag,
   stateSelector,
   userIdSelector,
@@ -54,7 +65,7 @@ const ConnectedUserList = ({
   beforeClickArtistName,
   getScrollParent,
   onNavigateAway
-}: ConnectedUserListProps) => {
+}: UserListProps) => {
   const dispatch = useDispatch()
   const isMobile = useIsMobile()
   const [hasLoaded, setHasLoaded] = useState(false)
@@ -127,22 +138,65 @@ const ConnectedUserList = ({
   }, [handleLoadMore, handleReset, hasLoaded])
 
   return (
-    <UserList
-      hasMore={hasMore}
-      onFollow={handleFollow}
-      onUnfollow={handleUnfollow}
-      users={users}
-      loading={loading}
-      userId={userId}
-      onClickArtistName={handleClickArtistName}
-      loadMore={handleLoadMore}
-      isMobile={isMobile}
-      getScrollParent={getScrollParent}
-      tag={tag}
-      otherUserId={otherUserId}
-      onNavigateAway={onNavigateAway}
-    />
+    <div className={styles.content}>
+      <InfiniteScroll
+        pageStart={0}
+        loadMore={handleLoadMore}
+        hasMore={hasMore}
+        useWindow={!getScrollParent}
+        initialLoad={false}
+        threshold={SCROLL_THRESHOLD}
+        getScrollParent={getScrollParent}
+      >
+        {users.map((user, index) => (
+          <div
+            key={user.user_id}
+            className={cn(styles.user, {
+              [styles.notLastUser]: index !== users.length - 1
+            })}
+          >
+            <ArtistChip
+              user={user}
+              onClickArtistName={() => {
+                handleClickArtistName(user.handle)
+              }}
+              onNavigateAway={onNavigateAway}
+              showPopover={!isMobile}
+              popoverMount={MountPlacement.BODY}
+              showSupportFor={
+                tag === TOP_SUPPORTERS_USER_LIST_TAG ? otherUserId : undefined
+              }
+              showSupportFrom={
+                tag === SUPPORTING_USER_LIST_TAG ? otherUserId : undefined
+              }
+            />
+            {user.user_id !== userId ? (
+              <FollowButton
+                size='small'
+                isFollowing={user.does_current_user_follow}
+                onFollow={() => handleFollow(user.user_id)}
+                onUnfollow={() => handleUnfollow(user.user_id)}
+                fullWidth={false}
+              />
+            ) : null}
+          </div>
+        ))}
+        {/* Only show the spacer if we're in fullscreen mode (no getScrollParent) */}
+        {loading && !getScrollParent && <div className={styles.spacer} />}
+        <div
+          className={cn(styles.loadingAnimation, {
+            [styles.show]: loading
+          })}
+        >
+          <Lottie
+            options={{
+              loop: true,
+              autoplay: true,
+              animationData: loadingSpinner
+            }}
+          />
+        </div>
+      </InfiniteScroll>
+    </div>
   )
 }
-
-export default ConnectedUserList
