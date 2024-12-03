@@ -1,4 +1,4 @@
-import { toChainId, chains } from '@wormhole-foundation/sdk'
+import { toChainId, chains } from '@wormhole-foundation/sdk-base'
 import { type Account, type Hex } from 'viem'
 import { z } from 'zod'
 
