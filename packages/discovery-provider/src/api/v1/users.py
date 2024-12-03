@@ -121,6 +121,7 @@ from src.queries.get_developer_apps import (
     get_developer_apps_with_grant_for_user,
 )
 from src.queries.get_feed import get_feed
+from src.queries.get_follow_intersection_users import get_follow_intersection_users
 from src.queries.get_followees_for_user import get_followees_for_user
 from src.queries.get_followers_for_user import get_followers_for_user
 from src.queries.get_managed_users import (
@@ -1573,8 +1574,8 @@ class FullFollowingUsers(Resource):
         offset = get_default_max(args.get("offset"), 0)
         current_user_id = get_current_user_id(args)
         args = {
-            "follower_user_id": decoded_id,
-            "current_user_id": current_user_id,
+            "followee_user_id": decoded_id,
+            "follower_user_id": current_user_id,
             "limit": limit,
             "offset": offset,
         }
@@ -1606,6 +1607,64 @@ class FollowingUsers(FullFollowingUsers):
     @ns.marshal_with(following_response)
     def get(self, id):
         return super()._get(id)
+
+
+mutual_followers_response = make_response(
+    "mutual_followers_response", ns, fields.List(fields.Nested(user_model))
+)
+full_mutual_followers_response = make_full_response(
+    "full_mutual_followers_response",
+    full_ns,
+    fields.List(fields.Nested(user_model_full)),
+)
+
+USER_MUTUAL_FOLLOWERS_ROUTE = "/<string:id>/mutuals"
+
+
+@full_ns.route(USER_MUTUAL_FOLLOWERS_ROUTE)
+class FullMutualFollowers(Resource):
+    @log_duration(logger)
+    def _get_user_mutual_followers(self, id):
+        decoded_id = decode_with_abort(id, full_ns)
+        args = pagination_with_current_user_parser.parse_args()
+        limit = get_default_max(args.get("limit"), 10, 100)
+        offset = get_default_max(args.get("offset"), 0)
+        current_user_id = get_current_user_id(args)
+        args = {
+            "follower_user_id": current_user_id,
+            "followee_user_id": decoded_id,
+            "limit": limit,
+            "offset": offset,
+        }
+        users = get_follow_intersection_users(args)
+        users = list(map(extend_user, users))
+        return success_response(users)
+
+    @full_ns.doc(
+        id="""Get Mutual Followers""",
+        description="""Get intersection of users that follow followeeUserId and users that are followed by followerUserId""",
+        params={"id": "A User ID"},
+        responses={200: "Success", 400: "Bad request", 500: "Server error"},
+    )
+    @full_ns.expect(pagination_with_current_user_parser)
+    @full_ns.marshal_with(full_mutual_followers_response)
+    @cache(ttl_sec=5)
+    def get(self, id):
+        return self._get_user_mutual_followers(id)
+
+
+@ns.route(USER_MUTUAL_FOLLOWERS_ROUTE)
+class MutualFollowers(FullMutualFollowers):
+    @ns.doc(
+        id="""Get Mutual Followers""",
+        description="""Get intersection of users that follow followeeUserId and users that are followed by followerUserId""",
+        params={"id": "A User ID"},
+        responses={200: "Success", 400: "Bad request", 500: "Server error"},
+    )
+    @ns.expect(pagination_with_current_user_parser)
+    @ns.marshal_with(mutual_followers_response)
+    def get(self, id):
+        return super()._get_user_mutual_followers(id)
 
 
 related_artist_route_parser = pagination_with_current_user_parser.copy()

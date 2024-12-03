@@ -6,6 +6,7 @@ import {
   useChangeEmailFormConfiguration
 } from '@audius/common/hooks'
 import { Button, Flex, IconArrowRight, Paper, Text } from '@audius/harmony'
+import { goBack } from 'connected-react-router'
 import { Form, Formik, useFormikContext } from 'formik'
 
 import {
@@ -16,7 +17,6 @@ import {
 import NavContext, { LeftPreset } from 'components/nav/mobile/NavContext'
 import { ToastContext } from 'components/toast/ToastContext'
 
-import { SettingsPageProps } from './SettingsPage'
 import { SlidingPages } from './SlidingPages'
 
 const messages = {
@@ -64,7 +64,7 @@ const ChangeEmailMobileForm = ({ page }: { page: ChangeEmailPage }) => {
   )
 }
 
-export const ChangeEmailMobilePage = ({ goBack }: SettingsPageProps) => {
+export const ChangeEmailMobilePage = () => {
   const navContext = useContext(NavContext)!
   const { toast } = useContext(ToastContext)
 
@@ -78,7 +78,7 @@ export const ChangeEmailMobilePage = ({ goBack }: SettingsPageProps) => {
   const onSuccess = useCallback(() => {
     goBack()
     toast(messages.success)
-  }, [goBack, toast])
+  }, [toast])
 
   const { page, ...formikConfiguration } =
     useChangeEmailFormConfiguration(onSuccess)

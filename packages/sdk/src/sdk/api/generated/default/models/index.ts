@@ -37,6 +37,7 @@ export * from './GetChallenges';
 export * from './GetSupportedUsers';
 export * from './GetSupporters';
 export * from './GetTipsResponse';
+export * from './MutualFollowersResponse';
 export * from './NftCollection';
 export * from './NftGate';
 export * from './Playlist';

@@ -84,6 +84,7 @@ func NewServer(discoveryConfig *config.DiscoveryConfig, proc *rpcz.RPCProcessor)
 	g.GET("/debug/sse", s.debugSse)
 	g.GET("/debug/cursors", s.debugCursors)
 	g.GET("/debug/failed", s.debugFailed)
+	g.GET("/debug/missing_pubkeys", s.debugMissingPubkeys)
 
 	g.GET("/rpc/bulk", s.getRpcBulk, middleware.BasicAuth(s.checkRegisteredNodeBasicAuth))
 	g.POST("/rpc/receive", s.postRpcReceive, middleware.BasicAuth(s.checkRegisteredNodeBasicAuth))
@@ -265,6 +266,18 @@ func (s *ChatServer) debugFailed(c echo.Context) error {
 		return err
 	}
 	return c.JSON(200, failed)
+}
+
+func (s *ChatServer) debugMissingPubkeys(c echo.Context) error {
+	q := `
+	select count(user_id) from users where not exists (select 1 from user_pubkeys p where users.user_id = p.user_id);
+	`
+	missing := 0
+	err := db.Conn.Get(&missing, q)
+	if err != nil {
+		return err
+	}
+	return c.JSON(200, missing)
 }
 
 func (s *ChatServer) debugSse(c echo.Context) error {

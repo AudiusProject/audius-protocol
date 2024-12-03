@@ -959,47 +959,6 @@ export const audiusBackend = ({
     }
   }
 
-  async function followUser(followeeUserId: ID) {
-    try {
-      return await audiusLibs.EntityManager.followUser(followeeUserId)
-    } catch (err) {
-      console.error(getErrorMessage(err))
-      throw err
-    }
-  }
-
-  async function unfollowUser(followeeUserId: ID) {
-    try {
-      return await audiusLibs.EntityManager.unfollowUser(followeeUserId)
-    } catch (err) {
-      console.error(getErrorMessage(err))
-      throw err
-    }
-  }
-
-  // TODO(C-2719)
-  async function getFolloweeFollows(userId: ID, limit = 100, offset = 0) {
-    let followers = []
-    try {
-      await waitForLibsInit()
-      followers = await audiusLibs.User.getMutualFollowers(
-        limit,
-        offset,
-        userId
-      )
-
-      if (followers.length) {
-        return Promise.all(
-          followers.map((follower: User) => getUserImages(follower))
-        )
-      }
-    } catch (err) {
-      console.error(getErrorMessage(err))
-    }
-
-    return followers
-  }
-
   async function createPlaylist(
     playlistId: ID,
     metadata: Partial<Collection>,
@@ -2187,7 +2146,6 @@ export const audiusBackend = ({
     fetchUserAssociatedEthWallets,
     fetchUserAssociatedSolWallets,
     fetchUserAssociatedWallets,
-    followUser,
     getAddressTotalStakedBalance,
     getAddressWAudioBalance,
     getAddressSolBalance,
@@ -2199,7 +2157,6 @@ export const audiusBackend = ({
     getBrowserPushSubscription,
     getCollectionImages,
     getEmailNotificationSettings,
-    getFolloweeFollows,
     getImageUrl,
     getPushNotificationSettings,
     getRandomFeePayer,
@@ -2239,7 +2196,6 @@ export const audiusBackend = ({
     instagramHandle,
     tiktokHandle,
     undoRepostCollection,
-    unfollowUser,
     unsaveCollection,
     updateBrowserNotifications,
     updateCreator,

@@ -61,6 +61,7 @@ export * from './FullGetSupportedUsers';
 export * from './FullGetSupporter';
 export * from './FullGetSupporters';
 export * from './FullGetSupporting';
+export * from './FullMutualFollowersResponse';
 export * from './FullPlaylistResponse';
 export * from './FullPlaylistTracksResponse';
 export * from './FullPlaylistWithScore';

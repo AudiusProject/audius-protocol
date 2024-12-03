@@ -456,26 +456,30 @@ function* watchFetchFollowUsers(action) {
 }
 
 function* fetchFolloweeFollows(action) {
-  const { handle } = action
+  const { handle, limit, offset } = action
   if (!handle) return
-  const audiusBackendInstance = yield getContext('audiusBackendInstance')
+  const audiusSdk = yield getContext('audiusSdk')
+  const sdk = yield call(audiusSdk)
   const profileUserId = yield select((state) => getProfileUserId(state, handle))
+  const currentUserId = yield select(getUserId)
   if (!profileUserId) return
-  const followeeFollows = yield call(
-    audiusBackendInstance.getFolloweeFollows,
-    profileUserId,
-    action.limit,
-    action.offset
-  )
+  const response = yield call([sdk.users, sdk.users.getMutualFollowers], {
+    userId: Id.parse(currentUserId),
+    id: Id.parse(profileUserId),
+    limit,
+    offset
+  })
+  if (!response.data) return
 
-  const followerIds = yield call(cacheUsers, followeeFollows)
+  const users = userMetadataListFromSDK(response.data)
+  const followerIds = yield call(cacheUsers, users)
 
   yield put(
     profileActions.fetchFollowUsersSucceeded(
       FollowType.FOLLOWEE_FOLLOWS,
       followerIds,
-      action.limit,
-      action.offset,
+      limit,
+      offset,
       handle
     )
   )
