@@ -471,7 +471,8 @@ function* fetchFolloweeFollows(action) {
   })
   if (!response.data) return
 
-  const followerIds = yield call(cacheUsers, response.data)
+  const users = userMetadataListFromSDK(response.data)
+  const followerIds = yield call(cacheUsers, users)
 
   yield put(
     profileActions.fetchFollowUsersSucceeded(
