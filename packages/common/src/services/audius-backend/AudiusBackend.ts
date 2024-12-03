@@ -1207,10 +1207,7 @@ export const audiusBackend = ({
     )
   }
 
-  async function guestSignUp(
-    email: string,
-    feePayerOverride: Nullable<string>
-  ) {
+  async function guestSignUp(email: strin) {
     await waitForLibsInit()
     const metadata = schemas.newUserMetadata()
 

@@ -37,7 +37,6 @@ export const SIGN_IN_FAILED = 'SIGN_ON/SIGN_IN_FAILED'
 
 export const SIGN_UP = 'SIGN_ON/SIGN_UP'
 export const START_SIGN_UP = 'SIGN_ON/START_SIGN_UP'
-export const FINISH_PROFILE_FOR_GUEST = 'SIGN_ON/COMPLETE_PROFILE_FOR_GUEST'
 
 /** @deprecated */
 export const FINISH_SIGN_UP = 'SIGN_ON/FINISH_SIGN_UP'
@@ -170,14 +169,6 @@ export function validateHandleSucceeded() {
  */
 export function validateHandleFailed(error: string) {
   return { type: VALIDATE_HANDLE_FAILED, error }
-}
-
-/**
- * sign up
- * takes params from store signon state
- */
-export function finishProfileForGuest() {
-  return { type: FINISH_PROFILE_FOR_GUEST }
 }
 
 /**

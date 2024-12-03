@@ -19,8 +19,7 @@ import {
   setField,
   setValueField,
   setFinishedPhase1,
-  signUp,
-  finishProfileForGuest
+  signUp
 } from 'common/store/pages/signon/actions'
 import {
   getCoverPhotoField,
@@ -92,7 +91,6 @@ export const FinishProfilePage = () => {
   const { value: savedDisplayName } = useSelector(getNameField)
   const handle = useSelector(getHandleField)
   const email = useSelector(getEmailField)
-  const isGuest = useSelector(getIsGuest)
   const isSocialConnected = useSelector(getIsSocialConnected)
   const linkedSocialOnFirstPage = useSelector(getLinkedSocialOnFirstPage)
   const savedCoverPhoto = useSelector(getCoverPhotoField)
@@ -218,4 +216,22 @@ export const FinishProfilePage = () => {
   )
 }
 
-const UploadProfilePhotoHelperText = () => {}
+const UploadProfilePhotoHelperText = () => {
+  const [{ value: displayName }, { touched }] = useField('displayName')
+  const [{ value: profileImage }] = useField('profileImage')
+  const isVisible = displayName && touched && !profileImage
+  const { motion } = useTheme()
+
+  return (
+    <Text
+      variant='body'
+      textAlign='center'
+      css={{
+        opacity: isVisible ? 1 : 0,
+        transition: `opacity ${motion.calm}`
+      }}
+    >
+      {finishProfilePageMessages.uploadProfilePhoto}
+    </Text>
+  )
+}

@@ -1163,17 +1163,6 @@ function* watchValidateHandle() {
   yield* takeLatest(signOnActions.VALIDATE_HANDLE, validateHandle)
 }
 
-function* watchFinishProfileForGuest() {
-  yield* takeLatest(
-    signOnActions.FINISH_PROFILE_FOR_GUEST,
-    function* (_action: ReturnType<typeof signOnActions.signUp>) {
-      // Fetch the default follow artists in parallel so that we don't have to block on this later (thus adding perceived sign up time) in the follow artists step.
-      yield* fork(fetchDefaultFollowArtists)
-      // yield* finishProfileForGuest()
-    }
-  )
-}
-
 function* watchSignUp() {
   yield* takeLatest(
     signOnActions.SIGN_UP,
@@ -1233,7 +1222,6 @@ export default function sagas() {
     watchValidateHandle,
     watchSignUp,
     watchSignIn,
-    watchFinishProfileForGuest,
     watchFollowArtists,
     watchGetArtistsToFollow,
     watchConfigureMetaMask,
