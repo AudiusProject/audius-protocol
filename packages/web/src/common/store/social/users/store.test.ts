@@ -6,6 +6,7 @@ import {
 import { combineReducers } from 'redux'
 import { expectSaga } from 'redux-saga-test-plan'
 import { call } from 'redux-saga-test-plan/matchers'
+import * as matchers from 'redux-saga-test-plan/matchers'
 import { StaticProvider } from 'redux-saga-test-plan/providers'
 import { describe, it } from 'vitest'
 
@@ -17,7 +18,12 @@ import { waitForWrite } from 'utils/sagaHelpers'
 const followedUser = { follower_count: 5 }
 const accountUser = { followee_count: 1 }
 
-const defaultProviders: StaticProvider[] = [[call.fn(waitForWrite), undefined]]
+const mockAudiusSdk = {}
+
+const defaultProviders: StaticProvider[] = [
+  [call.fn(waitForWrite), undefined],
+  [matchers.getContext('audiusSdk'), async () => mockAudiusSdk]
+]
 
 describe('follow', () => {
   it('follows', async () => {
