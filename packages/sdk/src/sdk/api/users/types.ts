@@ -13,6 +13,7 @@ export const UpdateProfileSchema = z
     metadata: z
       .object({
         name: z.optional(z.string()),
+        handle: z.optional(z.string()),
         bio: z.optional(z.string()),
         location: z.optional(z.string()),
         isDeactivated: z.optional(z.boolean()),

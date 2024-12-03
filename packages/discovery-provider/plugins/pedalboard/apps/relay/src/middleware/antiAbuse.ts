@@ -27,11 +27,18 @@ export const antiAbuseMiddleware = async (
   next: NextFunction
 ) => {
   const aaoConfig = config.aao
-  const { ip, recoveredSigner, signerIsApp, isAnonymousAllowed, isSenderVerifier, validatedRelayRequest, logger } = response.locals.ctx
+  const {
+    ip,
+    recoveredSigner,
+    signerIsApp,
+    isAnonymousAllowed,
+    isSenderVerifier,
+    logger
+  } = response.locals.ctx
 
   // no AAO to check and creates / deactivates should always be allowed
   if (signerIsApp || isAnonymousAllowed || isSenderVerifier) {
-    logger.info({ isAnonymousAllowed, isSenderVerifier }, "antiabuse skipped")
+    logger.info({ isAnonymousAllowed, isSenderVerifier }, 'antiabuse skipped')
     next()
     return
   }
@@ -42,27 +49,20 @@ export const antiAbuseMiddleware = async (
     logger.error({ error: e }, 'AAO uncaught exception')
   })
 
-  if (!user.handle) {
-    logger.error({ validatedRelayRequest }, "user found without handle")
-    internalError(
-      next,
-      `user found but without handle, investigate ${JSON.stringify(user)}`
-    )
-    return
-  }
+  if (user.handle) {
+    // read from cache and determine if blocked from relay
+    const userAbuseRules = await readAAOState(user.handle)
+    if (userAbuseRules === null) {
+      // first relay, allow passage
+      next()
+      return
+    }
 
-  // read from cache and determine if blocked from relay
-  const userAbuseRules = await readAAOState(user.handle)
-  if (userAbuseRules === null) {
-    // first relay, allow passage
-    next()
-    return
-  }
-
-  if (userAbuseRules?.blockedFromRelay) {
-    logger.info(`blocked from relay ${user.handle_lc}`)
-    antiAbuseError(next, 'blocked from relay')
-    return
+    if (userAbuseRules?.blockedFromRelay) {
+      logger.info(`blocked from relay ${user.handle_lc}`)
+      antiAbuseError(next, 'blocked from relay')
+      return
+    }
   }
 
   // relay allowed from AAO perspective, advance forward
@@ -85,9 +85,16 @@ export const detectAbuse = async (
     rules = await requestAbuseData(aaoConfig, user.handle, reqIp, false)
   } catch (e) {
     const aaoError = unknownToError(e)
-    logger.error({
-      handle: user.handle_lc, userId: user.user_id, address: user.wallet, error: aaoError.message, errorStackTrace: aaoError.stack
-    }, "error returned from anti abuse oracle")
+    logger.error(
+      {
+        handle: user.handle_lc,
+        userId: user.user_id,
+        address: user.wallet,
+        error: aaoError.message,
+        errorStackTrace: aaoError.stack
+      },
+      'error returned from anti abuse oracle'
+    )
     return
   }
   const userAbuseRules = determineAbuseRules(aaoConfig, rules)

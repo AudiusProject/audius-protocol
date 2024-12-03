@@ -57,7 +57,6 @@ export const CreatePasswordPage = () => {
             password
           })
         )
-        dispatch(resendRecoveryEmail())
       }
       navigate(SIGN_UP_HANDLE_PAGE)
     },

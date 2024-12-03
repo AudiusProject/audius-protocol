@@ -217,10 +217,6 @@ export class Account extends Base {
       })
 
       this.web3Manager.setOwnerWallet(ownerWallet)
-      if (generateRecoveryLink) {
-        await this.generateRecoveryLink({ handle: '', host })
-      }
-
       // Add user to chain
       phase = phases.ADD_USER
       const { newMetadata, blockHash, blockNumber } =

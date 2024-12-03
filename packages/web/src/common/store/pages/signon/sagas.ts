@@ -44,8 +44,10 @@ import {
   waitForAccount,
   parseHandleReservedStatusFromSocial,
   isValidEmailString,
-  route
+  route,
+  encodeHashId
 } from '@audius/common/utils'
+import { UpdateProfileRequest } from '@audius/sdk'
 import { push as pushRoute } from 'connected-react-router'
 import { isEmpty } from 'lodash'
 import {
@@ -454,10 +456,17 @@ function* signUp() {
   const { waitForRemoteConfig } = yield* getContext('remoteConfigInstance')
   const getFeatureEnabled = yield* getContext('getFeatureEnabled')
 
+  const sdk = yield* getSDK()
+  const authService = yield* getContext('authService')
+
+  const isGuest = select(getIsGuest)
+
   yield* call(waitForWrite)
 
   const location = yield* call(getCityAndRegion)
   const name = signOn.name.value.trim()
+  const wallet = (yield* call([authService, authService.getWalletAddresses]))
+    .web3WalletAddress
 
   const handle = signOn.handle.value
   const alreadyExisted = signOn.accountAlreadyExisted
@@ -480,140 +489,42 @@ function* signUp() {
       handle,
       function* () {
         const reportToSentry = yield* getContext('reportToSentry')
-        const { blockHash, blockNumber, userId, error, errorStatus, phase } =
-          yield* call(audiusBackendInstance.signUp, {
-            email,
-            password,
-            formFields: createUserMetadata,
-            hasWallet: alreadyExisted,
-            referrer,
-            feePayerOverride
-          })
-
-        if (error) {
-          // We are including 0 status code here to indicate rate limit,
-          // which appears to be happening for some devices.
-          const rateLimited = errorStatus === 429 || errorStatus === 0
-          const blocked = errorStatus === 403
-          const params: signOnActions.SignUpFailedParams = {
+        const account: AccountUserMetadata | null = yield* call(
+          userApiFetchSaga.getUserAccount,
+          {
+            wallet
+          }
+        )
+        if (!account) {
+          const error = new Error('Account user ID does not exist')
+          reportToSentry({
             error,
-            phase,
-            shouldReport: !rateLimited && !blocked,
-            shouldToast: rateLimited
-          }
-          if (rateLimited) {
-            params.message = 'Please try again later'
-            yield* put(
-              make(Name.CREATE_ACCOUNT_RATE_LIMIT, {
-                handle,
-                email,
-                location
-              })
-            )
-            reportToSentry({
-              error,
-              level: ErrorLevel.Warning,
-              name: 'Sign Up: User rate limited',
-              additionalInfo: {
-                handle,
-                email,
-                location,
-                userId,
-                formFields: createUserMetadata,
-                hasWallet: alreadyExisted
-              }
-            })
-          } else if (blocked) {
-            params.message = 'User was blocked'
-            params.uiErrorCode = UiErrorCode.RELAY_BLOCKED
-            yield* put(
-              make(Name.CREATE_ACCOUNT_BLOCKED, {
-                handle,
-                email,
-                location
-              })
-            )
-            reportToSentry({
-              error,
-              level: ErrorLevel.Warning,
-              name: 'Sign Up: User was blocked',
-              additionalInfo: {
-                handle,
-                email,
-                location,
-                userId,
-                formFields: createUserMetadata,
-                hasWallet: alreadyExisted
-              }
-            })
-          } else {
-            reportToSentry({
-              error,
-              level: ErrorLevel.Error,
-              name: 'Sign Up: Unknown sign up error',
-              additionalInfo: {
-                handle,
-                email,
-                location,
-                userId,
-                formFields: createUserMetadata,
-                hasWallet: alreadyExisted
-              }
-            })
-          }
-          yield* put(signOnActions.signUpFailed(params))
-          return
+            name: 'Sign Up: Cannot complete account user ID does not exist',
+            additionalInfo: {
+              handle,
+              email,
+              location,
+              formFields: createUserMetadata,
+              hasWallet: alreadyExisted
+            }
+          })
+          throw error
         }
-
-        if (!signOn.useMetaMask && signOn.twitterId) {
-          const { error } = yield* call(
-            audiusBackendInstance.associateTwitterAccount,
-            signOn.twitterId,
-            userId,
-            handle,
-            blockNumber
-          )
-          if (error) {
-            reportToSentry({
-              error: new Error(error as string),
-              name: 'Sign Up: Error while associating Twitter account'
-            })
-            yield* put(signOnActions.setTwitterProfileError(error as string))
-          }
-        }
-        if (!signOn.useMetaMask && signOn.instagramId) {
-          const { error } = yield* call(
-            audiusBackendInstance.associateInstagramAccount,
-            signOn.instagramId,
-            userId,
-            handle,
-            blockNumber
-          )
-          if (error) {
-            reportToSentry({
-              error: new Error(error as string),
-              name: 'Sign Up: Error while associating Instagram account'
-            })
-            yield* put(signOnActions.setInstagramProfileError(error as string))
+        const userId = account.user.user_id
+        const completeProfileMetadataRequest: UpdateProfileRequest = {
+          userId: encodeHashId(userId),
+          profilePictureFile: signOn.profileImage?.file as File,
+          metadata: {
+            location: location ?? undefined,
+            name,
+            handle
           }
         }
 
-        if (!signOn.useMetaMask && signOn.tikTokId) {
-          const { error } = yield* call(
-            audiusBackendInstance.associateTikTokAccount,
-            signOn.tikTokId,
-            userId,
-            handle,
-            blockNumber
-          )
-          if (error) {
-            reportToSentry({
-              error: new Error(error as string),
-              name: 'Sign Up: Error while associating TikTok account'
-            })
-            yield* put(signOnActions.setTikTokProfileError(error as string))
-          }
-        }
+        const { blockNumber, blockHash } = yield* call(
+          [sdk.users, sdk.users.updateProfile],
+          completeProfileMetadataRequest
+        )
 
         yield* put(
           identify(handle, {
@@ -1143,7 +1054,7 @@ function* watchFinishProfileForGuest() {
     function* (_action: ReturnType<typeof signOnActions.signUp>) {
       // Fetch the default follow artists in parallel so that we don't have to block on this later (thus adding perceived sign up time) in the follow artists step.
       yield* fork(fetchDefaultFollowArtists)
-      yield* finishProfileForGuest()
+      // yield* finishProfileForGuest()
     }
   )
 }

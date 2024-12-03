@@ -24,6 +24,7 @@ const messages = {
 export const AccountDetails = () => {
   const accountHandle = useSelector(getUserHandle)
   const accountUserId = useSelector(getUserId)
+  console.log('asdf accountHandle', accountHandle)
   const { color } = useTheme()
   const { isEnabled: isManagerModeEnabled = false } = useFlag(
     FeatureFlags.MANAGER_MODE
