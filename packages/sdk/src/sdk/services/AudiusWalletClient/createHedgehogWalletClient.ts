@@ -55,8 +55,8 @@ export function createHedgehogWalletClient(
       client.account = account
     })
     .catch(() => {
-      // Do nothing - user is probably just not logged in yet.
-      // When they actually try to do something with the wallet we'll throw.
+      // Do nothing - to be expected if the user is not logged in yet.
+      // Throw only if they actually try to do something without a wallet.
     })
 
   // Custom implements each action to inject the account asynchronously, since
