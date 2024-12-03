@@ -766,8 +766,6 @@ function* signUp() {
         }
       },
       function* () {
-        // TODO (PAY-3479): This is temporary until hedgehog is fully moved out of libs
-        yield* call(refreshHedgehogWallet)
         yield* put(signOnActions.sendWelcomeEmail(name))
         yield* call(fetchAccountAsync, { isSignUp: true })
         yield* put(signOnActions.followArtists())

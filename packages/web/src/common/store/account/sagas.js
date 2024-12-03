@@ -167,7 +167,6 @@ function* associateTwitterAccount(action) {
   const { uuid, profile } = action.payload
   yield waitForWrite()
   const audiusBackendInstance = yield getContext('audiusBackendInstance')
-  // TODO: ABE associate functions don't throw, so we won't catch errors here.
   try {
     const userId = yield select(getUserId)
     const handle = yield select(getUserHandle)

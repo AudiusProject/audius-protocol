@@ -20,7 +20,8 @@ const external = [
   'hashids/cjs',
   'readable-stream',
   '@noble/hashes/utils',
-  'debug'
+  'debug',
+  /multiformats\/*/,
 ]
 
 const pluginTypescript = typescript({ tsconfig: './tsconfig.json' })
