@@ -453,7 +453,6 @@ function* signUp() {
 
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
   const { waitForRemoteConfig } = yield* getContext('remoteConfigInstance')
-  const getFeatureEnabled = yield* getContext('getFeatureEnabled')
 
   const sdk = yield* getSDK()
   const authService = yield* getContext('authService')

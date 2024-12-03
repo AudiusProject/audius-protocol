@@ -18,12 +18,10 @@ import {
   setValueField,
   signIn
 } from '@audius/web/src/common/store/pages/signon/actions'
-import { getEmailField } from 'common/store/pages/signon/selectors'
 import {
   HarmonyTextField,
   HarmonyTextFieldProps
 } from 'components/form-fields/HarmonyTextField'
-import { useSelector } from 'utils/reducer'
 
 const { SIGN_IN_PAGE } = route
 
@@ -49,12 +47,11 @@ export const EmailField = (props: Partial<HarmonyTextFieldProps>) => {
 
 export const NewEmailField = () => {
   const dispatch = useDispatch()
-  const [, { error }] = useField('email')
+  const [{ value: email }, { error }] = useField('email')
   const { isValidating } = useFormikContext()
   const emailInUse = error === emailSchemaMessages.emailInUse
   const isGuest = error === emailSchemaMessages.completeYourProfile
   dispatch(setField('isGuest', isGuest))
-  const email = useSelector(getEmailField)
   const hasError = emailInUse || isGuest
   // Used to ensure the hint doesn't go away while validation is ocurring
   const hadError = usePrevious(hasError)
@@ -67,7 +64,7 @@ export const NewEmailField = () => {
   const handleClickConfirmEmail = useCallback(() => {
     dispatch(setValueField('email', email))
     dispatch(setValueField('password', TEMPORARY_PASSWORD))
-    dispatch(signIn(email.value, TEMPORARY_PASSWORD))
+    dispatch(signIn(email, TEMPORARY_PASSWORD))
   }, [dispatch, email])
 
   const confirmEmailLink = (

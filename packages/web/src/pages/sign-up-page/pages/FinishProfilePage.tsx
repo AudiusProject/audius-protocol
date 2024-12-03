@@ -25,7 +25,6 @@ import {
   getCoverPhotoField,
   getEmailField,
   getHandleField,
-  getIsGuest,
   getIsSocialConnected,
   getLinkedSocialOnFirstPage,
   getNameField,

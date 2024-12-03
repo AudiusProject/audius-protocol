@@ -134,8 +134,6 @@ const TrackTile = (props: CombinedProps) => {
   }, [trackId, dispatch, setModalVisibility])
 
   const onClickPillRequiresAccount = useRequiresAccountOnClick(() => {
-    console.log('asdf click pill requires account')
-
     if (isPurchase && trackId) {
       openPremiumContentPurchaseModal(
         { contentId: trackId, contentType: PurchaseableContentType.TRACK },
@@ -153,7 +151,6 @@ const TrackTile = (props: CombinedProps) => {
   ])
 
   const onClickPill = useCallback(() => {
-    console.log('asdf click pill')
     if (isPurchase && trackId) {
       openPremiumContentPurchaseModal(
         { contentId: trackId, contentType: PurchaseableContentType.TRACK },
