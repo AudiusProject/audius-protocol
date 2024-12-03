@@ -258,7 +258,6 @@ export const audiusBackend = ({
   ethRegistryAddress,
   ethTokenAddress,
   discoveryNodeSelectorService,
-  getFeatureEnabled,
   getHostUrl,
   getLibs,
   getStorageNodeSelector,
@@ -454,7 +453,7 @@ export const audiusBackend = ({
     const profilePictureSizes: ProfilePictureSizes = {}
     const coverPhotoSizes: CoverPhotoSizes = {}
 
-    // Images are fetched on demand async w/ the `useUserProfilePicture`/`useUserCoverPhoto` and
+    // Images are fetched on demand async w/ the `useXProfilePicture`/`useXCoverPhoto` and
     // transitioned in w/ the dynamicImageComponent
     if (!user.profile_picture_sizes && !user.profile_picture) {
       profilePictureSizes[DefaultSizes.OVERRIDE] =
@@ -863,32 +862,6 @@ export const audiusBackend = ({
 
   async function uploadImage(file: File) {
     return await audiusLibs.creatorNode.uploadTrackCoverArtV2(file, () => {})
-  }
-
-  // TODO(C-2719)
-  async function getCreators(ids: ID[]) {
-    try {
-      if (ids.length === 0) return []
-      const creators: User[] = await withEagerOption(
-        {
-          normal: (libs) => libs.User.getUsers,
-          eager: DiscoveryAPI.getUsers
-        },
-        ids.length,
-        0,
-        ids
-      )
-      if (!creators) {
-        return []
-      }
-
-      return Promise.all(
-        creators.map(async (creator: User) => getUserImages(creator))
-      )
-    } catch (err) {
-      console.error(getErrorMessage(err))
-      return []
-    }
   }
 
   /**
@@ -2228,7 +2201,6 @@ export const audiusBackend = ({
     getBrowserPushNotificationSettings,
     getBrowserPushSubscription,
     getCollectionImages,
-    getCreators,
     getEmailNotificationSettings,
     getFolloweeFollows,
     getImageUrl,

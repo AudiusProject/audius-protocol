@@ -1,16 +1,14 @@
-import { SIGN_UP_PASSWORD_PAGE } from '@audius/common/src/utils/route'
 import { accountSelectors } from '@audius/common/store'
 import { route } from '@audius/common/utils'
 import { useSelector } from 'react-redux'
 
 import { useModalState } from 'common/hooks/useModalState'
-import { signUp } from 'common/store/pages/signon/actions'
 import {
   getAccountAlreadyExisted,
   getReferrer,
   getSignOn
 } from 'common/store/pages/signon/selectors'
-import { EditingStatus, Pages } from 'common/store/pages/signon/types'
+import { EditingStatus } from 'common/store/pages/signon/types'
 import { useMedia } from 'hooks/useMedia'
 import { env } from 'services/env'
 
@@ -36,6 +34,7 @@ export const useDetermineAllowedRoute = () => {
   const { isMobile } = useMedia()
 
   const pastAccountPhase = signUpState.finishedPhase1 || hasAccount
+
   // this requestedRoute string should have already trimmed out /signup/
   return (
     requestedRoute: string | typeof SignUpPath

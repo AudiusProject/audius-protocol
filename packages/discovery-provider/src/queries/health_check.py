@@ -70,7 +70,7 @@ def health_check():
 
     (health_results, error) = get_health(args)
     return success_response(
-        health_results, 200, sign_response=False, extras=comms_health
+        health_results, 500 if error else 200, sign_response=False, extras=comms_health
     )
 
 
@@ -96,7 +96,7 @@ def block_check():
     }
 
     (health_results, error) = get_health(args, use_redis_cache=False)
-    return success_response(health_results, 200, sign_response=False)
+    return success_response(health_results, 500 if error else 200, sign_response=False)
 
 
 # Health check for latest play stored in the db

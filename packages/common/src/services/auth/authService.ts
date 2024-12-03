@@ -22,13 +22,6 @@ export type GetWalletAddressesResult = {
   web3WalletAddress: string
 }
 
-export declare type ChangeCredentialsArgs = {
-  newUsername: string
-  newPassword: string
-  oldUsername: string
-  oldPassword: string
-}
-
 export type AuthService = {
   hedgehogInstance: ReturnType<typeof createHedgehog>
   signIn: (

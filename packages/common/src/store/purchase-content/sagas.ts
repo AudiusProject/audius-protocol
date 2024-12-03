@@ -687,7 +687,6 @@ function* doStartPurchaseContentFlow({
           guestEmail,
           feePayerOverride
         )
-        // TODO wait for confirmation before syncing?
 
         yield* call(fetchAccountAsync, { isSignUp: true })
       }
