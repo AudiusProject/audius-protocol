@@ -3,9 +3,10 @@ import { useCallback } from 'react'
 import { USDC } from '@audius/fixed-decimal'
 import BN from 'bn.js'
 import { useDispatch, useSelector } from 'react-redux'
-import { useLocalStorage } from 'react-use'
+import { z } from 'zod'
 
 import { useGetCurrentUser } from '~/api'
+import { useAudiusQueryContext } from '~/audius-query/AudiusQueryContext'
 import { UserCollectionMetadata } from '~/models'
 import { PurchaseMethod, PurchaseVendor } from '~/models/PurchaseContent'
 import { UserTrackMetadata } from '~/models/Track'
@@ -34,7 +35,7 @@ import {
 } from './constants'
 import { PayExtraAmountPresetValues, PayExtraPreset } from './types'
 import { getExtraAmount } from './utils'
-import { PurchaseContentSchema, PurchaseContentValues } from './validation'
+import { createPurchaseContentSchema } from './validation'
 
 const { startPurchaseContentFlow, setPurchasePage } = purchaseContentActions
 const {
@@ -56,6 +57,8 @@ export const usePurchaseContentFormConfiguration = ({
   presetValues: PayExtraAmountPresetValues
   purchaseVendor?: PurchaseVendor
 }) => {
+  const audiusQueryContext = useAudiusQueryContext()
+
   const dispatch = useDispatch()
   const isAlbum = isContentCollection(metadata)
   const isTrack = isContentTrack(metadata)
@@ -65,7 +68,6 @@ export const usePurchaseContentFormConfiguration = ({
   const isUnlocking = !error && isContentPurchaseInProgress(stage)
   const { data: balanceBN } = useUSDCBalance()
   const balance = USDC(balanceBN ?? new BN(0)).value
-  const [guestEmail, setGuestEmail] = useLocalStorage(GUEST_EMAIL, '')
   const { data: currentUser } = useGetCurrentUser({})
   const { isEnabled: guestCheckoutEnabled = false } = useFeatureFlag(
     FeatureFlags.GUEST_CHECKOUT
@@ -84,7 +86,7 @@ export const usePurchaseContentFormConfiguration = ({
         : PurchaseMethod.CARD,
     [PURCHASE_VENDOR]: purchaseVendor ?? PurchaseVendor.STRIPE,
     [GUEST_CHECKOUT]: isGuestCheckout,
-    [GUEST_EMAIL]: guestEmail,
+    [GUEST_EMAIL]: '',
     [PURCHASE_METHOD_MINT_ADDRESS]: USDC_TOKEN_ADDRESS
   }
 
@@ -93,6 +95,9 @@ export const usePurchaseContentFormConfiguration = ({
     : isTrack
     ? metadata?.track_id
     : undefined
+
+  const validationSchema = createPurchaseContentSchema(audiusQueryContext)
+  type PurchaseContentValues = z.input<typeof validationSchema>
 
   const onSubmit = useCallback(
     ({
@@ -104,8 +109,6 @@ export const usePurchaseContentFormConfiguration = ({
       purchaseMethodMintAddress
     }: PurchaseContentValues) => {
       if (isUnlocking || !contentId) return
-
-      setGuestEmail(guestEmail)
 
       if (
         purchaseMethod === PurchaseMethod.CRYPTO &&
@@ -139,20 +142,12 @@ export const usePurchaseContentFormConfiguration = ({
         )
       }
     },
-    [
-      isUnlocking,
-      contentId,
-      setGuestEmail,
-      page,
-      dispatch,
-      presetValues,
-      isAlbum
-    ]
+    [isUnlocking, contentId, page, dispatch, presetValues, isAlbum]
   )
 
   return {
     initialValues,
-    validationSchema: PurchaseContentSchema,
+    validationSchema,
     onSubmit
   }
 }

@@ -36,6 +36,7 @@ export const SIGN_IN_SUCCEEDED = 'SIGN_ON/SIGN_IN_SUCCEEDED'
 export const SIGN_IN_FAILED = 'SIGN_ON/SIGN_IN_FAILED'
 
 export const SIGN_UP = 'SIGN_ON/SIGN_UP'
+export const GUEST_SIGN_UP = 'SIGN_ON/GUEST_SIGN_UP'
 export const START_SIGN_UP = 'SIGN_ON/START_SIGN_UP'
 
 /** @deprecated */

@@ -1,8 +1,7 @@
 import { signInPageMessages } from '@audius/common/messages'
 import { route } from '@audius/common/utils'
-import { useField } from 'formik'
 import { Helmet } from 'react-helmet'
-import { useDispatch, useSelector } from 'react-redux'
+import { useSelector } from 'react-redux'
 import { Redirect, Route, Switch } from 'react-router-dom'
 import { useFirstMountState } from 'react-use'
 
