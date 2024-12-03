@@ -43,22 +43,12 @@ module.exports = {
       items: ['developers/guides/log-in-with-audius', 'developers/guides/hedgehog'],
       collapsed: false,
     },
-    {
-      type: 'category',
-      label: 'The Graph',
-      items: [
-        'developers/subgraph/overview',
-        'developers/subgraph/entities',
-        'developers/subgraph/queries',
-      ],
-      collapsed: false,
-    },
   ],
 
   sdk: [
     {
       type: 'category',
-      label: 'Javascript SDK',
+      label: 'Official Javascript SDK',
       items: [
         'developers/sdk/overview',
         'developers/sdk/tracks',
@@ -74,10 +64,28 @@ module.exports = {
     },
     {
       type: 'category',
-      label: 'Community Projects',
+      label: 'Community Integrations',
       items: [
-        'developers/community-projects/unreal-engine-plugin',
-        'developers/community-projects/go-sdk',
+        {
+          type: 'category',
+          label: 'Go',
+          items: ['developers/community-projects/go-sdk'],
+          collapsed: true,
+        },
+        {
+          type: 'category',
+          label: 'Python',
+          items: [
+            'developers/community-projects/audius-py',
+          ],
+          collapsed: true,
+        },
+        {
+          type: 'category',
+          label: 'Unreal Engine',
+          items: ['developers/community-projects/unreal-engine-plugin'],
+          collapsed: true,
+        },
       ],
       collapsed: false,
     },
@@ -175,6 +183,16 @@ module.exports = {
       type: 'category',
       label: 'Contracts and Programs',
       items: ['reference/eth-contracts', 'reference/solana-programs'],
+      collapsed: false,
+    },
+    {
+      type: 'category',
+      label: 'The Graph',
+      items: [
+        'developers/subgraph/overview',
+        'developers/subgraph/entities',
+        'developers/subgraph/queries',
+      ],
       collapsed: false,
     },
   ],
