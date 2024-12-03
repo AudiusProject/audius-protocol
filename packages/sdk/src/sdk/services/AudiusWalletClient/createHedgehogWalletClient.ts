@@ -33,7 +33,7 @@ export function createHedgehogWalletClient(
     await hedgehog.waitUntilReady()
     const wallet = hedgehog.getWallet()
     if (!wallet) {
-      throw new Error('No wallet')
+      throw new Error('Hedgehog wallet not found. Is the user logged in?')
     }
 
     if (!account_ || account_.address !== wallet.getAddressString()) {
@@ -49,10 +49,15 @@ export function createHedgehogWalletClient(
     transport: custom(localTransport())
   })
 
-  // Set the account as fast as we can without making this method async
-  getAccount().then((account) => {
-    client.account = account
-  })
+  // Set the account lazily, without making this method async
+  getAccount()
+    .then((account) => {
+      client.account = account
+    })
+    .catch(() => {
+      // Do nothing - user is probably just not logged in yet.
+      // When they actually try to do something with the wallet we'll throw.
+    })
 
   // Custom implements each action to inject the account asynchronously, since
   // Hedgehog needs to make the async calls to storage to restore wallets.
