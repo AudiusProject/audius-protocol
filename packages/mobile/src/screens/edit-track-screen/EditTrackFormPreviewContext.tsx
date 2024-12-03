@@ -38,7 +38,7 @@ export const EditTrackFormPreviewContextProvider = (props: {
 
   // Request preview playback
   const playPreview = useCallback(async (url: string) => {
-    console.log('PLAY PREVIEW', { url })
+    // console.log('PLAY PREVIEW', { url })
     setIsPlaying(true)
 
     // --- 1 ---
@@ -50,10 +50,8 @@ export const EditTrackFormPreviewContextProvider = (props: {
     //   }
     //   // when loaded successfully
     //   console.log(
-    //     'duration in seconds: ' +
-    //       sound.getDuration() +
-    //       'number of channels: ' +
-    //       sound.getNumberOfChannels()
+    //     'preview duration: ' +
+    //       sound.getDuration()
     //   )
     // })
     // sound.setVolume(1)
@@ -70,7 +68,7 @@ export const EditTrackFormPreviewContextProvider = (props: {
   }, [])
 
   const stopPreview = useCallback(async () => {
-    console.log('STOP PREVIEW')
+    // console.log('STOP PREVIEW')
     setIsPlaying(false)
 
     // --- 1 ---

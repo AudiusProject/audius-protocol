@@ -1,9 +1,9 @@
 import { useCallback, useContext, useEffect, useState } from 'react'
 
+import { useFeatureFlag } from '@audius/common/hooks'
+import { FeatureFlags } from '@audius/common/services'
 import type { TrackForUpload } from '@audius/common/store'
 import {
-  // useReplaceTrackConfirmationModal,
-  // useReplaceTrackProgressModal,
   useEarlyReleaseConfirmationModal,
   useHideContentConfirmationModal,
   usePublishConfirmationModal
@@ -93,6 +93,9 @@ export const EditTrackForm = (props: EditTrackFormProps) => {
   const navigation = useNavigation()
   const dispatch = useDispatch()
   const { track } = useContext(UploadFileContext)
+  const { isEnabled: isTrackReplaceEnabled } = useFeatureFlag(
+    FeatureFlags.TRACK_AUDIO_REPLACE
+  )
   const initiallyHidden = initialValues.is_unlisted
   const isInitiallyScheduled = initialValues.is_scheduled_release
   const usersMayLoseAccess = !isUpload && !initiallyHidden && values.is_unlisted
@@ -110,9 +113,6 @@ export const EditTrackForm = (props: EditTrackFormProps) => {
     setIsOverflowMenuOpen(false)
   }, [])
 
-  // const { onOpen: openReplaceTrackConfirmation } =
-  //   useReplaceTrackConfirmationModal()
-  // const { onOpen: openReplaceTrackProgress } = useReplaceTrackProgressModal()
   const { onOpen: openHideContentConfirmation } =
     useHideContentConfirmationModal()
   const { onOpen: openEarlyReleaseConfirmation } =
@@ -208,7 +208,7 @@ export const EditTrackForm = (props: EditTrackFormProps) => {
           <>
             <KeyboardAwareScrollView>
               <Tile style={styles.tile}>
-                {isUpload ? (
+                {isTrackReplaceEnabled && isUpload ? (
                   <Flex pt='l' ph='l'>
                     <FileReplaceContainer
                       fileName={file?.name || origFilename || messages.untitled}
