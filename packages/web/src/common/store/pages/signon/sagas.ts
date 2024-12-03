@@ -34,7 +34,6 @@ import {
   toastActions,
   getContext,
   confirmerActions,
-  confirmTransaction,
   getSDK,
   fetchAccountAsync
 } from '@audius/common/store'
@@ -489,43 +488,188 @@ function* signUp() {
       handle,
       function* () {
         const reportToSentry = yield* getContext('reportToSentry')
-        const account: AccountUserMetadata | null = yield* call(
-          userApiFetchSaga.getUserAccount,
-          {
-            wallet
-          }
-        )
-        if (!account) {
-          const error = new Error('Account user ID does not exist')
-          reportToSentry({
-            error,
-            name: 'Sign Up: Cannot complete account user ID does not exist',
-            additionalInfo: {
-              handle,
-              email,
-              location,
-              formFields: createUserMetadata,
-              hasWallet: alreadyExisted
+        let userId: ID
+        if (isGuest) {
+          const account: AccountUserMetadata | null = yield* call(
+            userApiFetchSaga.getUserAccount,
+            {
+              wallet
             }
+          )
+          if (!account) {
+            const error = new Error('Account user ID does not exist')
+            reportToSentry({
+              error,
+              name: 'Sign Up: Cannot complete account user ID does not exist',
+              additionalInfo: {
+                handle,
+                email,
+                location,
+                formFields: createUserMetadata,
+                hasWallet: alreadyExisted
+              }
+            })
+            throw error
+          }
+          userId = account.user.user_id
+          const completeProfileMetadataRequest: UpdateProfileRequest = {
+            userId: encodeHashId(userId),
+            profilePictureFile: signOn.profileImage?.file as File,
+            metadata: {
+              location: location ?? undefined,
+              name,
+              handle
+            }
+          }
+
+          yield* call(
+            [sdk.users, sdk.users.updateProfile],
+            completeProfileMetadataRequest
+          )
+        } else {
+          const {
+            blockNumber,
+            error,
+            errorStatus,
+            phase,
+            userId: confirmedUserId
+          } = yield* call(audiusBackendInstance.signUp, {
+            email,
+            password,
+            formFields: createUserMetadata,
+            hasWallet: alreadyExisted,
+            referrer,
+            feePayerOverride
           })
-          throw error
-        }
-        const userId = account.user.user_id
-        const completeProfileMetadataRequest: UpdateProfileRequest = {
-          userId: encodeHashId(userId),
-          profilePictureFile: signOn.profileImage?.file as File,
-          metadata: {
-            location: location ?? undefined,
-            name,
-            handle
+          userId = confirmedUserId
+
+          if (error) {
+            // We are including 0 status code here to indicate rate limit,
+            // which appears to be happening for some devices.
+            const rateLimited = errorStatus === 429 || errorStatus === 0
+            const blocked = errorStatus === 403
+            const params: signOnActions.SignUpFailedParams = {
+              error,
+              phase,
+              shouldReport: !rateLimited && !blocked,
+              shouldToast: rateLimited
+            }
+            if (rateLimited) {
+              params.message = 'Please try again later'
+              yield* put(
+                make(Name.CREATE_ACCOUNT_RATE_LIMIT, {
+                  handle,
+                  email,
+                  location
+                })
+              )
+              reportToSentry({
+                error,
+                level: ErrorLevel.Warning,
+                name: 'Sign Up: User rate limited',
+                additionalInfo: {
+                  handle,
+                  email,
+                  location,
+                  userId,
+                  formFields: createUserMetadata,
+                  hasWallet: alreadyExisted
+                }
+              })
+            } else if (blocked) {
+              params.message = 'User was blocked'
+              params.uiErrorCode = UiErrorCode.RELAY_BLOCKED
+              yield* put(
+                make(Name.CREATE_ACCOUNT_BLOCKED, {
+                  handle,
+                  email,
+                  location
+                })
+              )
+              reportToSentry({
+                error,
+                level: ErrorLevel.Warning,
+                name: 'Sign Up: User was blocked',
+                additionalInfo: {
+                  handle,
+                  email,
+                  location,
+                  userId,
+                  formFields: createUserMetadata,
+                  hasWallet: alreadyExisted
+                }
+              })
+            } else {
+              reportToSentry({
+                error,
+                level: ErrorLevel.Error,
+                name: 'Sign Up: Unknown sign up error',
+                additionalInfo: {
+                  handle,
+                  email,
+                  location,
+                  userId,
+                  formFields: createUserMetadata,
+                  hasWallet: alreadyExisted
+                }
+              })
+            }
+            yield* put(signOnActions.signUpFailed(params))
+            return
+          }
+
+          if (!signOn.useMetaMask && signOn.twitterId) {
+            const { error } = yield* call(
+              audiusBackendInstance.associateTwitterAccount,
+              signOn.twitterId,
+              userId,
+              handle,
+              blockNumber
+            )
+            if (error) {
+              reportToSentry({
+                error: new Error(error as string),
+                name: 'Sign Up: Error while associating Twitter account'
+              })
+              yield* put(signOnActions.setTwitterProfileError(error as string))
+            }
+          }
+          if (!signOn.useMetaMask && signOn.instagramId) {
+            const { error } = yield* call(
+              audiusBackendInstance.associateInstagramAccount,
+              signOn.instagramId,
+              userId,
+              handle,
+              blockNumber
+            )
+            if (error) {
+              reportToSentry({
+                error: new Error(error as string),
+                name: 'Sign Up: Error while associating Instagram account'
+              })
+              yield* put(
+                signOnActions.setInstagramProfileError(error as string)
+              )
+            }
+          }
+
+          if (!signOn.useMetaMask && signOn.tikTokId) {
+            const { error } = yield* call(
+              audiusBackendInstance.associateTikTokAccount,
+              signOn.tikTokId,
+              userId,
+              handle,
+              blockNumber
+            )
+            if (error) {
+              reportToSentry({
+                error: new Error(error as string),
+                name: 'Sign Up: Error while associating TikTok account'
+              })
+              yield* put(signOnActions.setTikTokProfileError(error as string))
+            }
           }
         }
-
-        const { blockNumber, blockHash } = yield* call(
-          [sdk.users, sdk.users.updateProfile],
-          completeProfileMetadataRequest
-        )
-
         yield* put(
           identify(handle, {
             name,
@@ -543,35 +687,6 @@ function* signUp() {
         if (!isNativeMobile) {
           // Set the has request browser permission to true as the signon provider will open it
           setHasRequestedBrowserPermission()
-        }
-
-        // Check feature flag to disable confirmation
-        const disableSignUpConfirmation = yield* call(
-          getFeatureEnabled,
-          FeatureFlags.DISABLE_SIGN_UP_CONFIRMATION
-        )
-
-        if (!disableSignUpConfirmation) {
-          const confirmed = yield* call(
-            confirmTransaction,
-            blockHash,
-            blockNumber
-          )
-          if (!confirmed) {
-            const error = new Error(`Could not confirm sign up for user`)
-            reportToSentry({
-              error,
-              name: 'Sign Up',
-              additionalInfo: {
-                userId,
-                disableSignUpConfirmation,
-                handle,
-                name,
-                email
-              }
-            })
-            throw error
-          }
         }
       },
       function* () {

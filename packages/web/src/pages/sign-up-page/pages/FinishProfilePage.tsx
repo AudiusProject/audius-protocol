@@ -139,18 +139,14 @@ export const FinishProfilePage = () => {
         dispatch(setField('coverPhoto', coverPhoto))
       }
       dispatch(setFinishedPhase1(true))
-      if (!isGuest) {
-        dispatch(signUp())
-      } else {
-        dispatch(signUp())
-      }
+      dispatch(signUp())
       if (hasReferrer && isMobile) {
         navigate(SIGN_UP_LOADING_PAGE)
       } else {
         navigate(SIGN_UP_GENRES_PAGE)
       }
     },
-    [dispatch, hasReferrer, isGuest, isMobile, navigate]
+    [dispatch, hasReferrer, isMobile, navigate]
   )
 
   return (
@@ -222,22 +218,4 @@ export const FinishProfilePage = () => {
   )
 }
 
-const UploadProfilePhotoHelperText = () => {
-  const [{ value: displayName }, { touched }] = useField('displayName')
-  const [{ value: profileImage }] = useField('profileImage')
-  const isVisible = displayName && touched && !profileImage
-  const { motion } = useTheme()
-
-  return (
-    <Text
-      variant='body'
-      textAlign='center'
-      css={{
-        opacity: isVisible ? 1 : 0,
-        transition: `opacity ${motion.calm}`
-      }}
-    >
-      {finishProfilePageMessages.uploadProfilePhoto}
-    </Text>
-  )
-}
+const UploadProfilePhotoHelperText = () => {}

@@ -44,7 +44,8 @@ function renderCollectionCard(options?: RenderOptions) {
                     [SquareSizes.SIZE_480_BY_480]:
                       'https://node.com/image-medium.jpg',
                     mirrors: ['https://node.com']
-                  }
+                  },
+                  access: { stream: true }
                 }
               }
             }

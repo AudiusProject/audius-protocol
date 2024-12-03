@@ -190,12 +190,7 @@ export class Account extends Base {
     }
   }
 
-  async guestSignUp(
-    email: string,
-    metadata: UserMetadata,
-    host = (typeof window !== 'undefined' && window.location.origin) || null,
-    generateRecoveryLink = true
-  ) {
+  async guestSignUp(email: string, metadata: UserMetadata) {
     const phases = {
       CREATE_USER_RECORD: 'CREATE_USER_RECORD',
       HEDGEHOG_SIGNUP: 'HEDGEHOG_SIGNUP',

@@ -1,0 +1,50 @@
+.user {
+  padding: 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  cursor: pointer;
+}
+.user:hover {
+  background: var(--harmony-n-25);
+}
+.user:active {
+  background: var(--harmony-n-50);
+}
+.user.notLastUser {
+  border-bottom: 1px solid var(--harmony-n-150);
+}
+
+.content {
+  width: 100%;
+  background-color: var(--harmony-white);
+}
+
+.loadingAnimation {
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.3s ease-in-out;
+  display: none;
+  margin: 24px 0;
+}
+.loadingAnimation.show {
+  opacity: 1;
+  display: block;
+}
+.loadingAnimation > div {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.loadingAnimation svg {
+  max-height: 24px;
+  max-width: 24px;
+}
+.loadingAnimation g path {
+  stroke: var(--harmony-n-500) !important;
+}
+
+.spacer {
+  display: flex;
+  height: 100px;
+}

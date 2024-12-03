@@ -959,24 +959,6 @@ export const audiusBackend = ({
     }
   }
 
-  async function followUser(followeeUserId: ID) {
-    try {
-      return await audiusLibs.EntityManager.followUser(followeeUserId)
-    } catch (err) {
-      console.error(getErrorMessage(err))
-      throw err
-    }
-  }
-
-  async function unfollowUser(followeeUserId: ID) {
-    try {
-      return await audiusLibs.EntityManager.unfollowUser(followeeUserId)
-    } catch (err) {
-      console.error(getErrorMessage(err))
-      throw err
-    }
-  }
-
   // TODO(C-2719)
   async function getFolloweeFollows(userId: ID, limit = 100, offset = 0) {
     let followers = []
@@ -1232,20 +1214,7 @@ export const audiusBackend = ({
     await waitForLibsInit()
     const metadata = schemas.newUserMetadata()
 
-    return await audiusLibs.Account.guestSignUp(
-      email,
-      metadata,
-      getHostUrl(),
-      (eventName: string, properties: Record<string, unknown>) =>
-        recordAnalytics({ eventName, properties }),
-      {
-        Request: Name.CREATE_USER_BANK_REQUEST,
-        Success: Name.CREATE_USER_BANK_SUCCESS,
-        Failure: Name.CREATE_USER_BANK_FAILURE
-      },
-      feePayerOverride,
-      true
-    )
+    return await audiusLibs.Account.guestSignUp(email, metadata)
   }
   async function resetPassword(username: string, password: string) {
     const libs = await getAudiusLibsTyped()
@@ -2190,7 +2159,6 @@ export const audiusBackend = ({
     fetchUserAssociatedEthWallets,
     fetchUserAssociatedSolWallets,
     fetchUserAssociatedWallets,
-    followUser,
     getAddressTotalStakedBalance,
     getAddressWAudioBalance,
     getAddressSolBalance,
@@ -2242,7 +2210,6 @@ export const audiusBackend = ({
     instagramHandle,
     tiktokHandle,
     undoRepostCollection,
-    unfollowUser,
     unsaveCollection,
     updateBrowserNotifications,
     updateCreator,

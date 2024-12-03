@@ -5,7 +5,7 @@ import { Maybe, route } from '@audius/common/utils'
 import { Link } from 'react-router-dom'
 
 import DynamicImage from 'components/dynamic-image/DynamicImage'
-import { useProfilePicture } from 'hooks/useUserProfilePicture'
+import { useProfilePicture } from 'hooks/useProfilePicture'
 import { useSelector } from 'utils/reducer'
 
 import styles from './AvatarLegacy.module.css'
@@ -30,10 +30,10 @@ type AvatarProps = {
  */
 export const AvatarLegacy = (props: AvatarProps) => {
   const { userId } = props
-  const profileImage = useProfilePicture(
-    userId ?? null,
-    SquareSizes.SIZE_150_BY_150
-  )
+  const profileImage = useProfilePicture({
+    userId,
+    size: SquareSizes.SIZE_150_BY_150
+  })
 
   const image = userId ? profileImage : imageProfilePicEmpty
 

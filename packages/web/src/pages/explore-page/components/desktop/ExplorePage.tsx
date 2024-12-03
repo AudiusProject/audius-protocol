@@ -161,7 +161,7 @@ const ExplorePage = ({
                 i.variant !== ExploreCollectionsVariant.DIRECT_LINK
               }
               backgroundIcon={
-                <Icon height={512} width={512} color='staticWhite' />
+                <Icon height={512} width={512} color='staticStaticWhite' />
               }
               backgroundIconClassName={
                 title === PREMIUM_TRACKS.title

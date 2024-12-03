@@ -38,7 +38,7 @@ import ProfilePageBadge from 'components/user-badges/ProfilePageBadge'
 import UserBadges from 'components/user-badges/UserBadges'
 import { UserGeneratedText } from 'components/user-generated-text'
 import { useCoverPhoto } from 'hooks/useCoverPhoto'
-import { useUserProfilePicture } from 'hooks/useUserProfilePicture'
+import { useProfilePicture } from 'hooks/useProfilePicture'
 
 import GrowingCoverPhoto from './GrowingCoverPhoto'
 import styles from './ProfileHeader.module.css'
@@ -202,7 +202,10 @@ const ProfileHeader = ({
     }
   }, [website, donation, hasEllipsis, setHasEllipsis])
 
-  let { source: coverPhoto } = useCoverPhoto(userId, WidthSizes.SIZE_2000)
+  let { image: coverPhoto } = useCoverPhoto({
+    userId,
+    size: WidthSizes.SIZE_2000
+  })
   coverPhoto = isDeactivated ? imageProfilePicEmpty : coverPhoto
   let coverPhotoStyle = {}
   if (coverPhoto === imageCoverPhotoBlank) {
@@ -211,11 +214,10 @@ const ProfileHeader = ({
       backgroundSize: '300px 300px'
     }
   }
-  const profilePicture = useUserProfilePicture(
+  const profilePicture = useProfilePicture({
     userId,
-    isDeactivated ? null : profilePictureSizes,
-    SquareSizes.SIZE_150_BY_150
-  )
+    size: SquareSizes.SIZE_150_BY_150
+  })
   const record = useRecord()
 
   const onGoToInstagram = useCallback(() => {

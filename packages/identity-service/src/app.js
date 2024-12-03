@@ -31,7 +31,6 @@ const {
   getIP
 } = require('./rateLimiter.js')
 const cors = require('./corsMiddleware')
-const { getFeatureFlag, FEATURE_FLAGS } = require('./featureFlag')
 const { startRegistrationQueue } = require('./solanaNodeRegistration')
 
 class App {

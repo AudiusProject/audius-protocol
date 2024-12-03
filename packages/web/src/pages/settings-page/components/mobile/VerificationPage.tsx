@@ -1,21 +1,19 @@
 import { useCallback, useState } from 'react'
 
-import {
-  Name,
-  SquareSizes,
-  Status,
-  ID,
-  ProfilePictureSizes
-} from '@audius/common/models'
+import { Name, SquareSizes, Status, ID } from '@audius/common/models'
 import { BooleanKeys } from '@audius/common/services'
 import {
   InstagramProfile,
   TwitterProfile,
-  TikTokProfile
+  TikTokProfile,
+  accountSelectors,
+  accountActions
 } from '@audius/common/store'
 import { route } from '@audius/common/utils'
 import { IconValidationX, IconNote, Button } from '@audius/harmony'
 import cn from 'classnames'
+import { push as pushRoute } from 'connected-react-router'
+import { useDispatch, useSelector } from 'react-redux'
 
 import { useRecord, make, TrackEvent } from 'common/store/analytics/actions'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
@@ -25,13 +23,18 @@ import Page from 'components/page/Page'
 import { TikTokAuthButton } from 'components/tiktok-auth/TikTokAuthButton'
 import { TwitterAuthButton } from 'components/twitter-auth/TwitterAuthButton'
 import UserBadges from 'components/user-badges/UserBadges'
+import { useProfilePicture } from 'hooks/useProfilePicture'
 import { useRemoteVar } from 'hooks/useRemoteConfig'
-import { useUserProfilePicture } from 'hooks/useUserProfilePicture'
 
-import { SettingsPageProps } from './SettingsPage'
 import settingsPageStyles from './SettingsPage.module.css'
 import styles from './VerificationPage.module.css'
 
+const { getUserId, getUserHandle, getUserName } = accountSelectors
+const {
+  twitterLogin: twitterLoginAction,
+  instagramLogin: instagramLoginAction,
+  tikTokLogin: tikTokLoginAction
+} = accountActions
 const { profilePage } = route
 
 const messages = {
@@ -160,22 +163,14 @@ type SuccessBodyProps = {
   userId: ID
   handle: string
   name: string
-  profilePictureSizes: ProfilePictureSizes | null
   goToRoute: (route: string) => void
 }
 
-const SuccessBody = ({
-  handle,
-  userId,
-  name,
-  profilePictureSizes,
-  goToRoute
-}: SuccessBodyProps) => {
-  const profilePicture = useUserProfilePicture(
+const SuccessBody = ({ handle, userId, name, goToRoute }: SuccessBodyProps) => {
+  const profilePicture = useProfilePicture({
     userId,
-    profilePictureSizes,
-    SquareSizes.SIZE_150_BY_150
-  )
+    size: SquareSizes.SIZE_150_BY_150
+  })
 
   const onClick = useCallback(() => {
     goToRoute(profilePage(handle))
@@ -210,16 +205,11 @@ const SuccessBody = ({
   )
 }
 
-const VerificationPage = ({
-  handle,
-  userId,
-  name,
-  profilePictureSizes,
-  goToRoute,
-  onTwitterLogin,
-  onInstagramLogin,
-  onTikTokLogin
-}: SettingsPageProps) => {
+const VerificationPage = () => {
+  const dispatch = useDispatch()
+  const userId = useSelector(getUserId) ?? 0
+  const handle = useSelector(getUserHandle) ?? ''
+  const name = useSelector(getUserName) ?? ''
   const [error, setError] = useState('')
   const [status, setStatus] = useState('')
 
@@ -229,6 +219,10 @@ const VerificationPage = ({
     setError(messages.failure)
     setStatus(Status.ERROR)
   }, [setError, setStatus])
+  const goToRoute = useCallback(
+    (route: string) => dispatch(pushRoute(route)),
+    [dispatch]
+  )
 
   const instagramLogin = useCallback(
     (uuid: string, profile: InstagramProfile) => {
@@ -239,7 +233,7 @@ const VerificationPage = ({
         setError(messages.errorHandle)
         setStatus(Status.ERROR)
       } else {
-        onInstagramLogin(uuid, profile)
+        dispatch(instagramLoginAction({ uuid, profile }))
         setStatus(Status.SUCCESS)
       }
       const trackEvent: TrackEvent = make(
@@ -248,7 +242,7 @@ const VerificationPage = ({
       )
       record(trackEvent)
     },
-    [handle, onInstagramLogin, setError, record]
+    [handle, dispatch, setError, record]
   )
 
   const twitterLogin = useCallback(
@@ -260,7 +254,7 @@ const VerificationPage = ({
         setError(messages.errorHandle)
         setStatus(Status.ERROR)
       } else {
-        onTwitterLogin(uuid, profile)
+        dispatch(twitterLoginAction({ uuid, profile }))
         setStatus(Status.SUCCESS)
       }
       const trackEvent: TrackEvent = make(
@@ -273,7 +267,7 @@ const VerificationPage = ({
       )
       record(trackEvent)
     },
-    [handle, onTwitterLogin, setError, record]
+    [handle, dispatch, setError, record]
   )
 
   const tikTokLogin = useCallback(
@@ -285,7 +279,7 @@ const VerificationPage = ({
         setError(messages.errorHandle)
         setStatus(Status.ERROR)
       } else {
-        onTikTokLogin(uuid, profile)
+        dispatch(tikTokLoginAction({ uuid, profile }))
         setStatus(Status.SUCCESS)
       }
       const trackEvent: TrackEvent = make(Name.SETTINGS_COMPLETE_TIKTOK_OAUTH, {
@@ -295,7 +289,7 @@ const VerificationPage = ({
       })
       record(trackEvent)
     },
-    [handle, onTikTokLogin, setError, record]
+    [handle, dispatch, setError, record]
   )
 
   let body
@@ -319,7 +313,6 @@ const VerificationPage = ({
         userId={userId}
         handle={handle}
         name={name}
-        profilePictureSizes={profilePictureSizes}
         goToRoute={goToRoute}
       />
     )

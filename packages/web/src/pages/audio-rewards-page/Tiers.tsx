@@ -24,6 +24,7 @@ import {
 } from '@audius/harmony'
 import { useDispatch } from 'react-redux'
 
+import { Tooltip } from 'components/tooltip'
 import { useWithMobileStyle } from 'hooks/useWithMobileStyle'
 import { useSelector } from 'utils/reducer'
 
@@ -289,12 +290,14 @@ const TierColumn = ({
               <Flex h={24} direction='row' alignItems='center' gap='m'>
                 <IconValidationCheck />
                 {feature === 'customDiscordRole' && current ? (
-                  <Button
-                    size='small'
-                    variant='tertiary'
-                    iconLeft={IconRefresh}
-                    onClick={onClickDiscord}
-                  />
+                  <Tooltip text='Refresh Discord role'>
+                    <Button
+                      size='small'
+                      variant='secondary'
+                      iconLeft={IconRefresh}
+                      onClick={onClickDiscord}
+                    />
+                  </Tooltip>
                 ) : null}
               </Flex>
             ) : (

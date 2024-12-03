@@ -1,10 +1,17 @@
 import { useState, useEffect, useCallback } from 'react'
 
-import { Collection, SquareSizes, Track } from '~/models'
+import { SquareSizes, WidthSizes } from '~/models'
 import { Maybe } from '~/utils/typeUtils'
 
 // Global image cache
 const IMAGE_CACHE = new Set<string>()
+
+// Gets the width from a given image size, e.g. '150x150' => 150
+const getWidth = (size: string) => {
+  return parseInt(size.split('x')[0])
+}
+
+type Artwork<T extends string | number | symbol> = { [key in T]?: string }
 
 /**
  * Fetches an image from the given artwork object managing sizes and using fallback mirrors if necessary.
@@ -16,14 +23,17 @@ const IMAGE_CACHE = new Set<string>()
  * @param defaultImage - The fallback image to use if no image is found in the `artwork` object
  * @returns The url of the image, or undefined if the image is not available
  */
-export const useImageSize2 = ({
+export const useImageSize2 = <
+  SizeType extends SquareSizes | WidthSizes,
+  ArtworkType extends Artwork<SizeType> & { mirrors?: string[] | undefined }
+>({
   artwork,
   targetSize,
   defaultImage,
   preloadImageFn
 }: {
-  artwork?: Track['artwork'] | Collection['artwork']
-  targetSize: SquareSizes
+  artwork?: ArtworkType
+  targetSize: SizeType
   defaultImage: string
   preloadImageFn: (url: string) => Promise<void>
 }) => {
@@ -74,19 +84,20 @@ export const useImageSize2 = ({
     // If found, set the image url and preload the actual target url
     const smallerSize = Object.keys(artwork).find(
       (size) =>
-        parseInt(size) < parseInt(targetSize) &&
-        artwork[size as SquareSizes] &&
-        IMAGE_CACHE.has(artwork[size as SquareSizes]!)
-    ) as SquareSizes | undefined
+        getWidth(size) < getWidth(targetSize) &&
+        size in artwork &&
+        artwork[size as SizeType] &&
+        IMAGE_CACHE.has(artwork[size as SizeType]!)
+    ) as SizeType | undefined
 
     // Check for larger size
     // If found, set the image url to the larger size and return
     const largerSize = Object.keys(artwork).find(
       (size) =>
-        parseInt(size) > parseInt(targetSize) &&
-        artwork[size as SquareSizes] &&
-        IMAGE_CACHE.has(artwork[size as SquareSizes]!)
-    ) as SquareSizes | undefined
+        getWidth(size) > getWidth(targetSize) &&
+        artwork[size as SizeType] &&
+        IMAGE_CACHE.has(artwork[size as SizeType]!)
+    ) as SizeType | undefined
 
     if (largerSize) {
       console.debug(

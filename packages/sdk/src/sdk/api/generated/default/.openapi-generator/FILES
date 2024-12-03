@@ -63,8 +63,11 @@ models/RemixedTrackAggregate.ts
 models/RemixersResponse.ts
 models/ReplyComment.ts
 models/Reposts.ts
+models/SaleJson.ts
 models/SalesAggregate.ts
 models/SalesAggregateResponse.ts
+models/SalesJsonContent.ts
+models/SalesJsonResponse.ts
 models/Stem.ts
 models/StemsResponse.ts
 models/StreamUrlResponse.ts

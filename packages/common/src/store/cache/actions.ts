@@ -2,15 +2,7 @@ import { ID } from '~/models/Identifiers'
 import { Kind } from '~/models/Kind'
 import { Status } from '~/models/Status'
 
-import {
-  CacheType,
-  EntriesByKind,
-  Entry,
-  Metadata,
-  SubscriberInfo,
-  SubscriptionInfo,
-  UnsubscribeInfo
-} from './types'
+import { EntriesByKind, Entry, Metadata } from './types'
 
 export const ADD = 'CACHE/ADD'
 export const ADD_SUCCEEDED = 'CACHE/ADD_SUCCEEDED'
@@ -18,11 +10,6 @@ export const ADD_ENTRIES = 'CACHE/ADD_ENTRIES'
 export const UPDATE = 'CACHE/UPDATE'
 export const INCREMENT = 'CACHE/INCREMENT'
 export const SET_STATUS = 'CACHE/SET_STATUS'
-export const SUBSCRIBE = 'CACHE/SUBSCRIBE'
-export const UNSUBSCRIBE = 'CACHE/UNSUBSCRIBE'
-export const UNSUBSCRIBE_SUCCEEDED = 'CACHE/UNSUBSCRIBE_SUCCEEDED'
-export const REMOVE = 'CACHE/REMOVE'
-export const REMOVE_SUCCEEDED = 'CACHE/REMOVE_SUCCEEDED'
 export const SET_EXPIRED = 'CACHE/SET_EXPIRED'
 export const SET_CACHE_CONFIG = 'CACHE/SET_CONFIG'
 
@@ -105,15 +92,10 @@ export const addEntries = (
  * E.g. if a collection references multiple tracks, the collection should be subscribed to those
  * tracks.
  */
-export const update = (
-  kind: Kind,
-  entries: Entry[],
-  subscriptions: SubscriptionInfo[] = []
-) => ({
+export const update = (kind: Kind, entries: Entry[]) => ({
   type: UPDATE,
   kind,
-  entries,
-  subscriptions
+  entries
 })
 
 /**
@@ -129,25 +111,6 @@ export const increment = (kind: Kind, entries: Entry[]) => ({
 })
 
 /**
- * Sets the status of an entry from the cache as to be removed. The
- * entries actually get removed by the removeSucceeded action
- */
-export const remove = (kind: Kind, ids: (ID | string)[]) => ({
-  type: REMOVE,
-  kind,
-  ids
-})
-
-/**
- * Removes entries from the cache
- */
-export const removeSucceeded = (kind: Kind, ids: ID[]) => ({
-  type: REMOVE_SUCCEEDED,
-  kind,
-  ids
-})
-
-/**
  * Sets the status of N entries.
  */
 export const setStatus = (
@@ -157,36 +120,6 @@ export const setStatus = (
   type: SET_STATUS,
   kind,
   statuses
-})
-
-/**
- * Subscribes uids to ids in the cache.
- */
-export const subscribe = (kind: Kind, subscribers: SubscriberInfo[]) => ({
-  type: SUBSCRIBE,
-  kind,
-  subscribers
-})
-
-/**
- * Unsubscribes a uid from an id in the cache. Automatically clears transitive subscriptions.
- */
-export const unsubscribe = (kind: Kind, unsubscribers: UnsubscribeInfo[]) => ({
-  type: UNSUBSCRIBE,
-  kind,
-  unsubscribers
-})
-
-/**
- * Realizes an unsubscription action and potentially removes the entry from the cache.
- */
-export const unsubscribeSucceeded = (
-  kind: Kind,
-  unsubscribers: UnsubscribeInfo[]
-) => ({
-  type: UNSUBSCRIBE_SUCCEEDED,
-  kind,
-  unsubscribers
 })
 
 /**
@@ -201,9 +134,7 @@ export const setExpired = (kind: Kind, id: ID) => ({
 })
 
 export type SetCacheConfigAction = {
-  cacheType: CacheType
   entryTTL: number
-  simple: boolean
 }
 
 export const setCacheConfig = (config: SetCacheConfigAction) => ({
