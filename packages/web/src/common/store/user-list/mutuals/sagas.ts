@@ -1,5 +1,5 @@
+import { userMetadataListFromSDK } from '@audius/common/adapters'
 import { Id, ID, User } from '@audius/common/models'
-import { userMetadataListFromSDK } from '@audius/common/src/adapters'
 import {
   cacheUsersSelectors,
   UserListSagaFactory,
