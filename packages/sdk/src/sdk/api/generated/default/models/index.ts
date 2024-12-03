@@ -22,6 +22,7 @@ export * from './DecodedUserToken';
 export * from './DeveloperApp';
 export * from './DeveloperAppResponse';
 export * from './DeveloperApps';
+export * from './EmailKeyResponse';
 export * from './EncodedUserId';
 export * from './ExtendedAccessGate';
 export * from './ExtendedPaymentSplit';

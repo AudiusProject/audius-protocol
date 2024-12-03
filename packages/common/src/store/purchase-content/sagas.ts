@@ -642,11 +642,33 @@ function* collectEmailAfterPurchase({
       return
     }
 
-    const { ownerEncryptedKey, symmetricKey } = yield* call(
-      [sdk.emails, sdk.emails.createSharedKey],
-      encodeHashId(sellerId),
-      [encodeHashId(purchaserUserId)]
+    const { data: encryptedKey } = yield* call(
+      [sdk.users, sdk.users.getUserEmailKey],
+      {
+        id: encodeHashId(sellerId)
+      }
     )
+
+    let symmetricKey
+    let ownerEncryptedKey = encryptedKey ?? ''
+    if (encryptedKey) {
+      symmetricKey = yield* call(
+        [sdk.emails, sdk.emails.decryptSymmetricKey],
+        encryptedKey,
+        encodeHashId(sellerId)
+      )
+    } else {
+      const {
+        symmetricKey: newSymmetricKey,
+        ownerEncryptedKey: newOwnerEncryptedKey
+      } = yield* call(
+        [sdk.emails, sdk.emails.createSharedKey],
+        encodeHashId(sellerId),
+        [encodeHashId(purchaserUserId)]
+      )
+      symmetricKey = newSymmetricKey
+      ownerEncryptedKey = newOwnerEncryptedKey
+    }
 
     const encryptedEmail = yield* call(
       [sdk.emails, sdk.emails.encryptEmail],
@@ -662,7 +684,7 @@ function* collectEmailAfterPurchase({
     })
   } catch (error) {
     // Log error but don't disrupt purchase flow
-    console.error('Failed to process email after purchase:', error)
+    yield* call(console.error, 'Failed to process email after purchase:', error)
   }
 }
 

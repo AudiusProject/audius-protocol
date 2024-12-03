@@ -20,6 +20,7 @@ import type {
   AuthorizedApps,
   ConnectedWalletsResponse,
   DeveloperApps,
+  EmailKeyResponse,
   FavoritesResponse,
   FollowersResponse,
   FollowingResponse,
@@ -52,6 +53,8 @@ import {
     ConnectedWalletsResponseToJSON,
     DeveloperAppsFromJSON,
     DeveloperAppsToJSON,
+    EmailKeyResponseFromJSON,
+    EmailKeyResponseToJSON,
     FavoritesResponseFromJSON,
     FavoritesResponseToJSON,
     FollowersResponseFromJSON,
@@ -290,6 +293,10 @@ export interface GetUserByHandleRequest {
 export interface GetUserChallengesRequest {
     id: string;
     showHistorical?: boolean;
+}
+
+export interface GetUserEmailKeyRequest {
+    id: string;
 }
 
 export interface GetUserIDFromWalletRequest {
@@ -1511,6 +1518,39 @@ export class UsersApi extends runtime.BaseAPI {
      */
     async getUserChallenges(params: GetUserChallengesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<GetChallenges> {
         const response = await this.getUserChallengesRaw(params, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * @hidden
+     * Gets the email encryption key for a user by their user ID
+     * Get the email encryption key for a user
+     */
+    async getUserEmailKeyRaw(params: GetUserEmailKeyRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<EmailKeyResponse>> {
+        if (params.id === null || params.id === undefined) {
+            throw new runtime.RequiredError('id','Required parameter params.id was null or undefined when calling getUserEmailKey.');
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        const response = await this.request({
+            path: `/users/{id}/emails/key`.replace(`{${"id"}}`, encodeURIComponent(String(params.id))),
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => EmailKeyResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Gets the email encryption key for a user by their user ID
+     * Get the email encryption key for a user
+     */
+    async getUserEmailKey(params: GetUserEmailKeyRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<EmailKeyResponse> {
+        const response = await this.getUserEmailKeyRaw(params, initOverrides);
         return await response.value();
     }
 
