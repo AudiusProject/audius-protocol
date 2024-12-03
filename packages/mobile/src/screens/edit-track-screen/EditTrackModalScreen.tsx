@@ -60,6 +60,7 @@ export const EditTrackModalScreen = () => {
   return (
     <ModalScreen>
       <EditTrackScreen
+        handleSelectTrack={() => {}}
         initialValues={initialValues}
         onSubmit={handleSubmit}
         title={messages.title}
