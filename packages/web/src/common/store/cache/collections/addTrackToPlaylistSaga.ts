@@ -79,10 +79,6 @@ function* addTrackToPlaylistAsync(action: AddTrackToPlaylistAction) {
     `collection:${action.playlistId}`
   )
 
-  yield* put(
-    cacheActions.subscribe(Kind.TRACKS, [{ uid: trackUid, id: action.trackId }])
-  )
-
   const currentBlockNumber = yield* call([web3.eth, 'getBlockNumber'])
   const currentBlock = (yield* call(
     [web3.eth, 'getBlock'],
