@@ -201,6 +201,28 @@ func (q *Queries) GetNodeByEndpoint(ctx context.Context, endpoint string) (CoreV
 	return i, err
 }
 
+const getPreviousSlaRollupFromId = `-- name: GetPreviousSlaRollupFromId :one
+select id, tx_hash, block_start, block_end, time from sla_rollups
+where time < (
+    select time from sla_rollups sr where sr.id = $1
+)
+order by time desc
+limit 1
+`
+
+func (q *Queries) GetPreviousSlaRollupFromId(ctx context.Context, id int32) (SlaRollup, error) {
+	row := q.db.QueryRow(ctx, getPreviousSlaRollupFromId, id)
+	var i SlaRollup
+	err := row.Scan(
+		&i.ID,
+		&i.TxHash,
+		&i.BlockStart,
+		&i.BlockEnd,
+		&i.Time,
+	)
+	return i, err
+}
+
 const getRecentBlocks = `-- name: GetRecentBlocks :many
 select rowid, height, chain_id, created_at from core_blocks order by created_at desc limit 10
 `
@@ -230,25 +252,55 @@ func (q *Queries) GetRecentBlocks(ctx context.Context) ([]CoreBlock, error) {
 	return items, nil
 }
 
-const getRecentRollups = `-- name: GetRecentRollups :many
-select id, tx_hash, block_start, block_end, time from sla_rollups order by time desc limit 10
+const getRecentRollupsForNode = `-- name: GetRecentRollupsForNode :many
+with recent_rollups as (
+    select id, tx_hash, block_start, block_end, time
+    from sla_rollups
+    order by time desc
+    limit 30
+)
+select
+    rr.id,
+    sr.tx_hash,
+    sr.block_start,
+    sr.block_end,
+    sr.time,
+    nr.address,
+    nr.blocks_proposed
+from recent_rollups rr
+left join sla_node_reports nr
+on rr.id = nr.sla_rollup_id and nr.address = $1
+left join sla_rollups sr
+on rr.id = sr.id
 `
 
-func (q *Queries) GetRecentRollups(ctx context.Context) ([]SlaRollup, error) {
-	rows, err := q.db.Query(ctx, getRecentRollups)
+type GetRecentRollupsForNodeRow struct {
+	ID             int32
+	TxHash         pgtype.Text
+	BlockStart     pgtype.Int8
+	BlockEnd       pgtype.Int8
+	Time           pgtype.Timestamp
+	Address        pgtype.Text
+	BlocksProposed pgtype.Int4
+}
+
+func (q *Queries) GetRecentRollupsForNode(ctx context.Context, address string) ([]GetRecentRollupsForNodeRow, error) {
+	rows, err := q.db.Query(ctx, getRecentRollupsForNode, address)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []SlaRollup
+	var items []GetRecentRollupsForNodeRow
 	for rows.Next() {
-		var i SlaRollup
+		var i GetRecentRollupsForNodeRow
 		if err := rows.Scan(
 			&i.ID,
 			&i.TxHash,
 			&i.BlockStart,
 			&i.BlockEnd,
 			&i.Time,
+			&i.Address,
+			&i.BlocksProposed,
 		); err != nil {
 			return nil, err
 		}
@@ -364,6 +416,28 @@ func (q *Queries) GetRegisteredNodesByType(ctx context.Context, nodeType string)
 		return nil, err
 	}
 	return items, nil
+}
+
+const getRollupReportForNodeAndId = `-- name: GetRollupReportForNodeAndId :one
+select id, address, blocks_proposed, sla_rollup_id from sla_node_reports
+where address = $1 and sla_rollup_id = $2
+`
+
+type GetRollupReportForNodeAndIdParams struct {
+	Address     string
+	SlaRollupID pgtype.Int4
+}
+
+func (q *Queries) GetRollupReportForNodeAndId(ctx context.Context, arg GetRollupReportForNodeAndIdParams) (SlaNodeReport, error) {
+	row := q.db.QueryRow(ctx, getRollupReportForNodeAndId, arg.Address, arg.SlaRollupID)
+	var i SlaNodeReport
+	err := row.Scan(
+		&i.ID,
+		&i.Address,
+		&i.BlocksProposed,
+		&i.SlaRollupID,
+	)
+	return i, err
 }
 
 const getRollupReportsForId = `-- name: GetRollupReportsForId :many
