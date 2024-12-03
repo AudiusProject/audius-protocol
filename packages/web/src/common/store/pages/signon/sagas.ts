@@ -427,14 +427,6 @@ function* validateEmail(
   }
 }
 
-function* refreshHedgehogWallet() {
-  const authService = yield* getContext('authService')
-  yield* call([
-    authService.hedgehogInstance,
-    authService.hedgehogInstance.refreshWallet
-  ])
-}
-
 function* associateSocialAccounts({
   userId,
   handle,
