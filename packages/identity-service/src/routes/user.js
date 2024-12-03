@@ -96,7 +96,6 @@ module.exports = function (app) {
       let email = req.query.email
       if (email) {
         email = email.toLowerCase()
-        console.log('asdf email', email)
         const existingUser = await models.User.findOne({
           where: {
             email

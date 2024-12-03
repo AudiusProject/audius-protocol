@@ -6,7 +6,7 @@ import {
 } from '@audius/common/messages'
 import { emailSchemaMessages } from '@audius/common/schemas'
 import { SIGN_IN_CONFIRM_EMAIL_PAGE } from '@audius/common/src/utils/route'
-import { route } from '@audius/common/utils'
+import { route, TEMPORARY_PASSWORD } from '@audius/common/utils'
 import { Hint, IconError, TextLink } from '@audius/harmony'
 import { useField, useFormikContext } from 'formik'
 import { useDispatch } from 'react-redux'
@@ -65,11 +65,9 @@ export const NewEmailField = () => {
     </TextLink>
   )
   const handleClickConfirmEmail = useCallback(() => {
-    console.log('asdf dispatching email', email)
     dispatch(setValueField('email', email))
-    dispatch(setValueField('password', 'TemporaryPassword'))
-
-    dispatch(signIn(email, 'TemporaryPassword'))
+    dispatch(setValueField('password', TEMPORARY_PASSWORD))
+    dispatch(signIn(email.value, TEMPORARY_PASSWORD))
   }, [dispatch, email])
 
   const confirmEmailLink = (

@@ -41,7 +41,7 @@ const messages = {
   newEmail: 'New email',
   continue: 'Continue',
   somethingWrong: 'Something went wrong.',
-  verifyEmailHelp: 'Enter the verification code sent to your emcail.',
+  verifyEmailHelp: 'Enter the verification code sent to your email.',
   resendHelp: 'Didn’t get an email? ',
   resend: 'Resend code.',
   code: 'Code',

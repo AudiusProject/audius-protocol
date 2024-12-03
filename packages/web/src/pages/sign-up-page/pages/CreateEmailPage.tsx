@@ -208,7 +208,6 @@ export const CreateEmailPage = () => {
                 open={isMetaMaskModalOpen}
                 onBack={() => setIsMetaMaskModalOpen(false)}
                 onSuccess={() => {
-                  console.log('asdf create email page')
                   navigate(SIGN_UP_HANDLE_PAGE)
                 }}
               />

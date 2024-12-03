@@ -140,7 +140,7 @@ export const FinishProfilePage = () => {
       }
       dispatch(setFinishedPhase1(true))
       if (!isGuest) {
-        dispatch(finishProfileForGuest())
+        dispatch(signUp())
       } else {
         dispatch(signUp())
       }
