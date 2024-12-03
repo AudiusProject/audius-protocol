@@ -58,6 +58,7 @@ export const defaultTheme = {
   shadow: '#E3E3E3',
   staticTwitterBlue: '#1BA1F1',
   staticWhite: '#FFFFFF',
+  staticStaticWhite: '#FFFFFF',
   staticNeutral: '#858199',
   staticNeutralLight2: '#AAA7B8',
   staticNeutralLight8: '#F2F2F4',
@@ -124,6 +125,7 @@ export const darkTheme = {
   shadow: '#35364F',
   staticTwitterBlue: '#1BA1F1',
   staticWhite: '#FFFFFF',
+  staticStaticWhite: '#FFFFFF',
   staticNeutral: '#858199',
   staticNeutralLight2: '#AAA7B8',
   staticNeutralLight8: '#F2F2F4',
@@ -179,6 +181,7 @@ export const matrixTheme = {
   white: '#1F211F',
   staticTwitterBlue: '#1BA1F1',
   staticWhite: '#FFFFFF',
+  staticStaticWhite: '#FFFFFF',
   staticNeutral: '#858199',
   staticNeutralLight2: '#AAA7B8',
   staticNeutralLight8: '#F2F2F4',
@@ -248,6 +251,8 @@ export type ThemeColors = {
   shadow: string
   staticTwitterBlue: string
   staticWhite: string
+  // TODO: Remove when theme v2 is enabled
+  staticStaticWhite: string
   staticNeutral: string
   staticNeutralLight2: string
   staticNeutralLight8: string

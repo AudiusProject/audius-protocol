@@ -1,14 +1,14 @@
 import { useSelector } from 'react-redux'
 
-import { useGetPlaylistById } from '~/api/collection'
 import { AccessType } from '~/models/AccessType'
-import { Collection } from '~/models/Collection'
 import { ID } from '~/models/Identifiers'
 import { isContentUSDCPurchaseGated } from '~/models/Track'
+import { CommonState } from '~/store'
 import { getUserId } from '~/store/account/selectors'
+import { getCollection } from '~/store/cache/collections/selectors'
 import { Nullable } from '~/utils'
 
-import { useGatedContentAccess } from './useGatedContent'
+import { useGatedCollectionAccess } from './useGatedContent'
 
 type CollectionAccessType = {
   type: Nullable<AccessType>
@@ -19,32 +19,39 @@ type CollectionAccessType = {
 export const useCollectionAccessTypeLabel = (
   collectionId: ID
 ): CollectionAccessType => {
-  const { data: collection } = useGetPlaylistById({
-    playlistId: collectionId
+  const { hasStreamAccess } = useGatedCollectionAccess(collectionId)
+
+  const isPurchaseable = useSelector((state: CommonState) => {
+    return isContentUSDCPurchaseGated(
+      getCollection(state, { id: collectionId })?.stream_conditions
+    )
   })
-  const currentUserId = useSelector(getUserId)
 
-  const { hasStreamAccess } = useGatedContentAccess(
-    collection as Nullable<Collection>
-  )
+  const releaseDate = useSelector((state: CommonState) => {
+    return getCollection(state, { id: collectionId })?.release_date
+  })
 
-  if (!collection) return { type: null }
+  const isScheduledRelease = releaseDate && new Date(releaseDate) > new Date()
 
-  const { playlist_owner_id, stream_conditions, is_private, release_date } =
-    collection
+  const isPrivate = useSelector((state: CommonState) => {
+    return getCollection(state, { id: collectionId })?.is_private
+  })
 
-  const isOwner = playlist_owner_id === currentUserId
+  const isOwner = useSelector((state: CommonState) => {
+    return (
+      getCollection(state, { id: collectionId })?.playlist_owner_id ===
+      getUserId(state)
+    )
+  })
+
   const isUnlockedStream = !isOwner && hasStreamAccess
-
-  const isPurchaseable = isContentUSDCPurchaseGated(stream_conditions)
-  const isScheduledRelease = release_date && new Date(release_date) > new Date()
 
   let type: Nullable<AccessType> = null
   let isUnlocked = false
 
   if (isScheduledRelease) {
     type = AccessType.SCHEDULED_RELEASE
-  } else if (is_private) {
+  } else if (isPrivate) {
     type = AccessType.HIDDEN
   } else if (isPurchaseable) {
     type = AccessType.PREMIUM
@@ -54,6 +61,6 @@ export const useCollectionAccessTypeLabel = (
   return {
     type,
     isUnlocked,
-    scheduledReleaseDate: isScheduledRelease ? release_date : undefined
+    scheduledReleaseDate: isScheduledRelease ? releaseDate : undefined
   }
 }

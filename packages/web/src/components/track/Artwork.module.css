@@ -50,7 +50,7 @@
 }
 
 .artworkWrapper .artworkIcon path {
-  fill: var(--harmony-static-white);
+  fill: var(--harmony-static-static-white);
 }
 .artworkWrapper .artworkIcon g circle[fill='#FFFFFF'] {
   fill: rgba(0, 0, 0, 0);
@@ -69,5 +69,5 @@
 }
 
 .spinner g path {
-  stroke: var(--harmony-static-white);
+  stroke: var(--harmony-static-static-white);
 }

@@ -32,6 +32,7 @@ import type {
   RemixersResponse,
   Reposts,
   SalesAggregateResponse,
+  SalesJsonResponse,
   SubscribersResponse,
   TagsResponse,
   TracksResponse,
@@ -75,6 +76,8 @@ import {
     RepostsToJSON,
     SalesAggregateResponseFromJSON,
     SalesAggregateResponseToJSON,
+    SalesJsonResponseFromJSON,
+    SalesJsonResponseToJSON,
     SubscribersResponseFromJSON,
     SubscribersResponseToJSON,
     TagsResponseFromJSON,
@@ -404,7 +407,7 @@ export class UsersApi extends runtime.BaseAPI {
      * @hidden
      * Gets the sales data for the user in JSON format
      */
-    async downloadSalesAsJSONRaw(params: DownloadSalesAsJSONRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
+    async downloadSalesAsJSONRaw(params: DownloadSalesAsJSONRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<SalesJsonResponse>> {
         if (params.id === null || params.id === undefined) {
             throw new runtime.RequiredError('id','Required parameter params.id was null or undefined when calling downloadSalesAsJSON.');
         }
@@ -432,14 +435,15 @@ export class UsersApi extends runtime.BaseAPI {
             query: queryParameters,
         }, initOverrides);
 
-        return new runtime.VoidApiResponse(response);
+        return new runtime.JSONApiResponse(response, (jsonValue) => SalesJsonResponseFromJSON(jsonValue));
     }
 
     /**
      * Gets the sales data for the user in JSON format
      */
-    async downloadSalesAsJSON(params: DownloadSalesAsJSONRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
-        await this.downloadSalesAsJSONRaw(params, initOverrides);
+    async downloadSalesAsJSON(params: DownloadSalesAsJSONRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SalesJsonResponse> {
+        const response = await this.downloadSalesAsJSONRaw(params, initOverrides);
+        return await response.value();
     }
 
     /**

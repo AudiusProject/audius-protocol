@@ -959,24 +959,6 @@ export const audiusBackend = ({
     }
   }
 
-  async function followUser(followeeUserId: ID) {
-    try {
-      return await audiusLibs.EntityManager.followUser(followeeUserId)
-    } catch (err) {
-      console.error(getErrorMessage(err))
-      throw err
-    }
-  }
-
-  async function unfollowUser(followeeUserId: ID) {
-    try {
-      return await audiusLibs.EntityManager.unfollowUser(followeeUserId)
-    } catch (err) {
-      console.error(getErrorMessage(err))
-      throw err
-    }
-  }
-
   // TODO(C-2719)
   async function getFolloweeFollows(userId: ID, limit = 100, offset = 0) {
     let followers = []
@@ -2187,7 +2169,6 @@ export const audiusBackend = ({
     fetchUserAssociatedEthWallets,
     fetchUserAssociatedSolWallets,
     fetchUserAssociatedWallets,
-    followUser,
     getAddressTotalStakedBalance,
     getAddressWAudioBalance,
     getAddressSolBalance,
@@ -2239,7 +2220,6 @@ export const audiusBackend = ({
     instagramHandle,
     tiktokHandle,
     undoRepostCollection,
-    unfollowUser,
     unsaveCollection,
     updateBrowserNotifications,
     updateCreator,

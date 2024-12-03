@@ -55,7 +55,8 @@ const createMobileThemeFromHarmony = (
     accentPurple: color.secondary.s300, // Using secondary as fallback
     shadow: color.border.default,
     staticTwitterBlue: color.special.blue,
-    staticWhite: color.static.staticWhite,
+    staticWhite: color.static.white,
+    staticStaticWhite: color.static.staticWhite,
     staticNeutral: color.neutral.n800,
     staticNeutralLight2: color.neutral.n600,
     staticNeutralLight8: color.neutral.n100,

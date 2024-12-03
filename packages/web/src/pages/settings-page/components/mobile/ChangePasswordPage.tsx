@@ -13,6 +13,7 @@ import {
   Paper,
   Text
 } from '@audius/harmony'
+import { goBack } from 'connected-react-router'
 import { Form, Formik, useFormikContext } from 'formik'
 
 import {
@@ -23,7 +24,6 @@ import { NewPasswordPage } from 'components/change-password/ChangePasswordModal'
 import NavContext, { LeftPreset } from 'components/nav/mobile/NavContext'
 import { ToastContext } from 'components/toast/ToastContext'
 
-import { SettingsPageProps } from './SettingsPage'
 import { SlidingPages } from './SlidingPages'
 
 const messages = {
@@ -71,7 +71,7 @@ const ChangePasswordMobileForm = ({ page }: { page: ChangePasswordPage }) => {
   )
 }
 
-export const ChangePasswordMobilePage = ({ goBack }: SettingsPageProps) => {
+export const ChangePasswordMobilePage = () => {
   const navContext = useContext(NavContext)!
   const { toast } = useContext(ToastContext)
 
@@ -85,7 +85,7 @@ export const ChangePasswordMobilePage = ({ goBack }: SettingsPageProps) => {
   const onSuccess = useCallback(() => {
     goBack()
     toast(messages.success)
-  }, [goBack, toast])
+  }, [toast])
 
   const { page, ...formikConfiguration } =
     useChangePasswordFormConfiguration(onSuccess)

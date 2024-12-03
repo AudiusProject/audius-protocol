@@ -691,6 +691,17 @@ def _populate_gated_content_metadata(session, entities, current_user_id):
                     "stream": True,
                     "download": True,
                 }
+                if entity.get("track_id"):
+                    entity[
+                        response_name_constants.stream
+                    ] = get_stream_url_with_mirrors(
+                        entity, current_user_id, is_authorized_as_user=False
+                    )
+                    entity[
+                        response_name_constants.download
+                    ] = get_download_url_with_mirrors(
+                        entity, current_user_id, is_authorized_as_user=False
+                    )
             elif stream_conditions:
                 entity[response_name_constants.access] = {
                     "stream": False,
@@ -701,6 +712,12 @@ def _populate_gated_content_metadata(session, entities, current_user_id):
                     "stream": True,
                     "download": False,
                 }
+                if entity.get("track_id"):
+                    entity[
+                        response_name_constants.stream
+                    ] = get_stream_url_with_mirrors(
+                        entity, current_user_id, is_authorized_as_user=False
+                    )
         return
 
     current_user_wallet = (
