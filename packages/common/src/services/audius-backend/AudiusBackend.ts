@@ -46,8 +46,7 @@ import {
   UserMetadata,
   UserCollection,
   WidthSizes,
-  ComputedUserProperties,
-  Id
+  ComputedUserProperties
 } from '../../models'
 import { AnalyticsEvent } from '../../models/Analytics'
 import { ReportToSentryArgs } from '../../models/ErrorReporting'
