@@ -453,70 +453,85 @@ function* associateSocialAccounts({
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
   const reportToSentry = yield* getContext('reportToSentry')
 
-  if (twitterId) {
-    const { error } = yield* call(
-      audiusBackendInstance.associateTwitterAccount,
-      twitterId,
-      userId,
-      handle,
-      blockNumber
-    )
-    if (error) {
-      reportToSentry({
-        error: error instanceof Error ? error : new Error(error as string),
-        name: 'Sign Up: Error while associating Twitter account',
-        additionalInfo: {
-          handle,
-          userId,
-          twitterId
-        }
-      })
-      yield* put(signOnActions.setTwitterProfileError(error as string))
+  try {
+    if (twitterId) {
+      const { error } = yield* call(
+        audiusBackendInstance.associateTwitterAccount,
+        twitterId,
+        userId,
+        handle,
+        blockNumber
+      )
+      if (error) {
+        reportToSentry({
+          error: error instanceof Error ? error : new Error(error as string),
+          name: 'Sign Up: Error while associating Twitter account',
+          additionalInfo: {
+            handle,
+            userId,
+            twitterId
+          }
+        })
+        yield* put(signOnActions.setTwitterProfileError(error as string))
+      }
     }
-  }
-  if (instagramId) {
-    const { error } = yield* call(
-      audiusBackendInstance.associateInstagramAccount,
-      instagramId,
-      userId,
-      handle,
-      blockNumber
-    )
-    if (error) {
-      reportToSentry({
-        error: error instanceof Error ? error : new Error(error as string),
-        name: 'Sign Up: Error while associating Instagram account',
-        additionalInfo: {
-          handle,
-          userId,
-          instagramId
-        }
-      })
-      yield* put(signOnActions.setInstagramProfileError(error as string))
+    if (instagramId) {
+      const { error } = yield* call(
+        audiusBackendInstance.associateInstagramAccount,
+        instagramId,
+        userId,
+        handle,
+        blockNumber
+      )
+      if (error) {
+        reportToSentry({
+          error: error instanceof Error ? error : new Error(error as string),
+          name: 'Sign Up: Error while associating Instagram account',
+          additionalInfo: {
+            handle,
+            userId,
+            instagramId
+          }
+        })
+        yield* put(signOnActions.setInstagramProfileError(error as string))
+      }
     }
-  }
 
-  if (tikTokId) {
-    const { error } = yield* call(
-      audiusBackendInstance.associateTikTokAccount,
-      tikTokId,
-      userId,
-      handle,
-      blockNumber
-    )
+    if (tikTokId) {
+      const { error } = yield* call(
+        audiusBackendInstance.associateTikTokAccount,
+        tikTokId,
+        userId,
+        handle,
+        blockNumber
+      )
 
-    if (error) {
-      reportToSentry({
-        error: error instanceof Error ? error : new Error(error as string),
-        name: 'Sign Up: Error while associating TikTok account',
-        additionalInfo: {
-          handle,
-          userId,
-          tikTokId
-        }
-      })
-      yield* put(signOnActions.setTikTokProfileError(error as string))
+      if (error) {
+        reportToSentry({
+          error: error instanceof Error ? error : new Error(error as string),
+          name: 'Sign Up: Error while associating TikTok account',
+          additionalInfo: {
+            handle,
+            userId,
+            tikTokId
+          }
+        })
+        yield* put(signOnActions.setTikTokProfileError(error as string))
+      }
     }
+  } catch (err) {
+    const error = err instanceof Error ? err : new Error(err as string)
+    reportToSentry({
+      error,
+      name: 'Sign Up: Uncaught error while associating social accounts',
+      additionalInfo: {
+        handle,
+        userId,
+        twitterId,
+        instagramId,
+        tikTokId
+      }
+    })
   }
 }
 
@@ -624,8 +639,8 @@ function* signUp() {
         }
 
         const createUserMetadata: CreateUserRequest = {
-          profilePictureFile: (signOn.profileImage?.file as File) || null,
-          coverArtFile: (signOn.coverPhoto?.file as File) || null,
+          profilePictureFile: signOn.profileImage?.file as File,
+          coverArtFile: signOn.coverPhoto?.file as File,
           metadata: {
             location: location ?? undefined,
             name,
@@ -644,7 +659,6 @@ function* signUp() {
           const { twitterId, instagramId, tikTokId, useMetaMask } = signOn
 
           if (!useMetaMask && (twitterId || instagramId || tikTokId)) {
-            // TODO: Make sure this can't throw uncaught errors and kill the parent task
             yield* fork(associateSocialAccounts, {
               userId,
               handle,
@@ -688,7 +702,7 @@ function* signUp() {
             // We are mostly handling reporting here already and we're
             // only using it for error redirects.
             phase: 'CREATE_USER',
-            shouldReport: !rateLimited && !blocked,
+            shouldReport: false, // We are reporting in this saga
             shouldToast: rateLimited
           }
           if (rateLimited) {
