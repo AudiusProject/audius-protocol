@@ -34,10 +34,11 @@ export class EmailsApi extends BaseAPI {
     // Encrypt for owner
     const ownerPublicKey = await this.getPublicKey(ownerId)
     const ownerSharedSecret = await this.auth.getSharedSecret(ownerPublicKey)
-    const ownerEncryptedKey = await CryptoUtils.encrypt(
+    const ownerEncryptedKeyBytes = await CryptoUtils.encrypt(
       ownerSharedSecret,
       symmetricKey
     )
+    const ownerEncryptedKey = base64.encode(ownerEncryptedKeyBytes)
 
     // Encrypt for each grantee
     const granteeEncryptedKeys = await Promise.all(
@@ -46,19 +47,18 @@ export class EmailsApi extends BaseAPI {
         const granteeSharedSecret = await this.auth.getSharedSecret(
           granteePublicKey
         )
-        const encryptedKey = await CryptoUtils.encrypt(
+        const encryptedKeyBytes = await CryptoUtils.encrypt(
           granteeSharedSecret,
           symmetricKey
         )
         return {
           granteeId,
-          encryptedKey
+          encryptedKey: base64.encode(encryptedKeyBytes)
         }
       })
     )
 
     return {
-      ownerId,
       ownerEncryptedKey,
       granteeEncryptedKeys,
       symmetricKey
@@ -67,43 +67,44 @@ export class EmailsApi extends BaseAPI {
 
   /**
    * Decrypts the symmetric key for either an owner or grantee
-   * @param encryptedKey The encrypted symmetric key
+   * @param encryptedKey The encrypted symmetric key as a base64 string
    * @param userId The ID of the user who encrypted the key
    * @returns The decrypted symmetric key
    */
   async decryptSymmetricKey(
-    encryptedKey: Uint8Array,
+    encryptedKey: string,
     userId: string
   ): Promise<Uint8Array> {
     const userPublicKey = await this.getPublicKey(userId)
     const sharedSecret = await this.auth.getSharedSecret(userPublicKey)
-    return await CryptoUtils.decrypt(sharedSecret, encryptedKey)
+    return await CryptoUtils.decrypt(sharedSecret, base64.decode(encryptedKey))
   }
 
   /**
    * Encrypts an email using a symmetric key
    * @param email The email to encrypt
    * @param symmetricKey The symmetric key to use for encryption
-   * @returns The encrypted email as a Uint8Array
+   * @returns The encrypted email as a base64 string
    */
-  async encryptEmail(
-    email: string,
-    symmetricKey: Uint8Array
-  ): Promise<Uint8Array> {
-    return await CryptoUtils.encryptString(symmetricKey, email)
+  async encryptEmail(email: string, symmetricKey: Uint8Array): Promise<string> {
+    const encryptedBytes = await CryptoUtils.encryptString(symmetricKey, email)
+    return base64.encode(encryptedBytes)
   }
 
   /**
    * Decrypts an email using a symmetric key
-   * @param encryptedEmail The encrypted email
+   * @param encryptedEmail The encrypted email as a base64 string
    * @param symmetricKey The symmetric key to use for decryption
    * @returns The decrypted email as a string
    */
   async decryptEmail(
-    encryptedEmail: Uint8Array,
+    encryptedEmail: string,
     symmetricKey: Uint8Array
   ): Promise<string> {
-    return await CryptoUtils.decryptString(symmetricKey, encryptedEmail)
+    return await CryptoUtils.decryptString(
+      symmetricKey,
+      base64.decode(encryptedEmail)
+    )
   }
 
   /**

@@ -7,6 +7,7 @@ import { ChatsApi } from './api/chats/ChatsApi'
 import { CommentsApi } from './api/comments/CommentsAPI'
 import { DashboardWalletUsersApi } from './api/dashboard-wallet-users/DashboardWalletUsersApi'
 import { DeveloperAppsApi } from './api/developer-apps/DeveloperAppsApi'
+import { EmailsApi } from './api/emails/EmailsApi'
 import { Configuration, TipsApi } from './api/generated/default'
 import {
   TracksApi as TracksApiFull,
@@ -363,6 +364,12 @@ const initializeApis = ({
     middleware
   })
 
+  const noBasePathConfig = new Configuration({
+    fetchApi: fetch,
+    basePath: '',
+    middleware
+  })
+
   const tracks = new TracksApi(
     generatedApiClientConfig,
     services.discoveryNodeSelector,
@@ -411,16 +418,16 @@ const initializeApis = ({
   const tips = new TipsApi(generatedApiClientConfig)
   const resolveApi = new ResolveApi(generatedApiClientConfig)
   const resolve = resolveApi.resolve.bind(resolveApi)
+
   const chats = new ChatsApi(
-    new Configuration({
-      fetchApi: fetch,
-      basePath: '',
-      middleware
-    }),
+    noBasePathConfig,
     services.auth,
     services.discoveryNodeSelector,
     services.logger
   )
+
+  const emails = new EmailsApi(noBasePathConfig, services.auth)
+
   const grants = new GrantsApi(
     generatedApiClientConfig,
     services.entityManager,
@@ -481,7 +488,8 @@ const initializeApis = ({
     dashboardWalletUsers,
     challenges,
     services,
-    comments
+    comments,
+    emails
   }
 }
 
