@@ -1,11 +1,13 @@
-import { ID, User } from '@audius/common/models'
+import { Id, ID, User } from '@audius/common/models'
+import { userMetadataListFromSDK } from '@audius/common/src/adapters/user'
 import {
   cacheUsersSelectors,
   UserListSagaFactory,
   mutualsUserListActions,
   mutualsUserListSelectors,
   MUTUALS_USER_LIST_TAG,
-  getContext
+  getContext,
+  accountSelectors
 } from '@audius/common/store'
 import { call, put, select } from 'typed-redux-saga'
 
@@ -14,6 +16,7 @@ import { createUserListProvider } from 'common/store/user-list/utils'
 const { getMutualsError } = mutualsUserListActions
 const { getId, getUserList, getUserIds } = mutualsUserListSelectors
 const { getUser } = cacheUsersSelectors
+const { getUserId } = accountSelectors
 
 type FetchMutualsConfig = {
   limit: number
@@ -27,15 +30,22 @@ const fetchMutualFollowers = function* ({
   offset,
   entityId: userId
 }: FetchMutualsConfig) {
-  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
+  const audiusSdk = yield* getContext('audiusSdk')
+  const sdk = yield* call(audiusSdk)
 
-  const mutuals = yield* call(
-    [audiusBackendInstance, audiusBackendInstance.getFolloweeFollows],
-    userId,
-    limit,
-    offset
+  const currentUserId = yield* select(getUserId)
+  const response = yield* call(
+    [sdk.full.users, sdk.full.users.getMutualFollowers],
+    {
+      userId: Id.parse(currentUserId),
+      id: Id.parse(userId),
+      limit,
+      offset
+    }
   )
-  return { users: mutuals }
+  if (!response.data) return { users: [] }
+  const users = userMetadataListFromSDK(response.data)
+  return { users }
 }
 
 const provider = createUserListProvider<User>({
