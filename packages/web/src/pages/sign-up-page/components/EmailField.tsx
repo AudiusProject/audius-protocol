@@ -85,9 +85,7 @@ export const NewEmailField = () => {
         <Hint icon={IconError}>
           {emailSchemaMessages.completeYourProfile} {confirmEmailLink}
         </Hint>
-      ) : null}
-
-      {(!isGuest && emailInUse) || (hadError && isValidating) ? (
+      ) : emailInUse || (hadError && isValidating) ? (
         <Hint icon={IconError}>
           {emailSchemaMessages.emailInUse} {signInLink}
         </Hint>
