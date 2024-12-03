@@ -14,7 +14,7 @@ export function privateKeyToAudiusAccount(privateKey: Hex): AudiusAccount {
     ...privateKeyAccount,
     source: 'custom',
     getSharedSecret: async (publicKey: string | Uint8Array) => {
-      return secp256k1.getSharedSecret(hexToBytes(privateKey), publicKey)
+      return secp256k1.getSharedSecret(hexToBytes(privateKey), publicKey, true)
     },
     sign: async (data: Hex) => {
       return secp256k1.sign(
