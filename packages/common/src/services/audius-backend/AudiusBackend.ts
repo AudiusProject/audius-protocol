@@ -1207,7 +1207,7 @@ export const audiusBackend = ({
     )
   }
 
-  async function guestSignUp(email: strin) {
+  async function guestSignUp(email: string) {
     await waitForLibsInit()
     const metadata = schemas.newUserMetadata()
 

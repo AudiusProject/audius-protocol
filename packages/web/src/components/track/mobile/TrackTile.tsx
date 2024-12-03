@@ -6,6 +6,8 @@ import {
   ID,
   AccessConditions
 } from '@audius/common/models'
+import { useFeatureFlag } from '@audius/common/src/hooks/useFeatureFlag'
+import { FeatureFlags } from '@audius/common/src/services/remote-config/feature-flags'
 import {
   usePremiumContentPurchaseModal,
   gatedContentActions,
@@ -131,7 +133,9 @@ const TrackTile = (props: CombinedProps) => {
     }
   }, [trackId, dispatch, setModalVisibility])
 
-  const onClickPill = useRequiresAccountOnClick(() => {
+  const onClickPillRequiresAccount = useRequiresAccountOnClick(() => {
+    console.log('asdf click pill requires account')
+
     if (isPurchase && trackId) {
       openPremiumContentPurchaseModal(
         { contentId: trackId, contentType: PurchaseableContentType.TRACK },
@@ -147,6 +151,29 @@ const TrackTile = (props: CombinedProps) => {
     hasStreamAccess,
     openLockedContentModal
   ])
+
+  const onClickPill = useCallback(() => {
+    console.log('asdf click pill')
+    if (isPurchase && trackId) {
+      openPremiumContentPurchaseModal(
+        { contentId: trackId, contentType: PurchaseableContentType.TRACK },
+        { source: source ?? ModalSource.TrackTile }
+      )
+    } else if (trackId && !hasStreamAccess) {
+      openLockedContentModal()
+    }
+  }, [
+    isPurchase,
+    trackId,
+    hasStreamAccess,
+    openPremiumContentPurchaseModal,
+    source,
+    openLockedContentModal
+  ])
+
+  const { isEnabled: isGuestCheckoutEnabled } = useFeatureFlag(
+    FeatureFlags.GUEST_CHECKOUT
+  )
 
   useEffect(() => {
     if (!showSkeleton) {
@@ -284,7 +311,9 @@ const TrackTile = (props: CombinedProps) => {
             onShare={onClickShare}
             onClickOverflow={onClickOverflowMenu}
             renderOverflow={renderOverflow}
-            onClickGatedUnlockPill={onClickPill}
+            onClickGatedUnlockPill={
+              isGuestCheckoutEnabled ? onClickPill : onClickPillRequiresAccount
+            }
             isOwner={isOwner}
             readonly={isReadonly}
             isLoading={isLoading}

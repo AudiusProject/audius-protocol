@@ -43,7 +43,7 @@ export type FollowArtists = {
 }
 
 export default interface SignOnPageState {
-  email: EditableField
+  email: EditableField | string
   name: EditableField
   password: EditableField
   otp: EditableField

@@ -82,7 +82,6 @@ import { pollGatedContent } from '../gated-content/sagas'
 import { updateGatedContentStatus } from '../gated-content/slice'
 import { getSDK } from '../sdkUtils'
 import { saveCollection } from '../social/collections/actions'
-import { getFeePayer } from '../solana/selectors'
 import { TOKEN_LISTING_MAP } from '../ui'
 
 import {
