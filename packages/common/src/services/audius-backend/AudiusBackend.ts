@@ -959,29 +959,6 @@ export const audiusBackend = ({
     }
   }
 
-  // TODO(C-2719)
-  async function getFolloweeFollows(userId: ID, limit = 100, offset = 0) {
-    let followers = []
-    try {
-      await waitForLibsInit()
-      followers = await audiusLibs.User.getMutualFollowers(
-        limit,
-        offset,
-        userId
-      )
-
-      if (followers.length) {
-        return Promise.all(
-          followers.map((follower: User) => getUserImages(follower))
-        )
-      }
-    } catch (err) {
-      console.error(getErrorMessage(err))
-    }
-
-    return followers
-  }
-
   async function createPlaylist(
     playlistId: ID,
     metadata: Partial<Collection>,
@@ -2180,7 +2157,6 @@ export const audiusBackend = ({
     getBrowserPushSubscription,
     getCollectionImages,
     getEmailNotificationSettings,
-    getFolloweeFollows,
     getImageUrl,
     getPushNotificationSettings,
     getRandomFeePayer,
