@@ -253,17 +253,16 @@ const TrackEditForm = (
   )
 
   const onClickDownload = useCallback(() => {
-    if (!track.file) return
+    const { url } = track?.metadata?.download
+    if (!url) return
 
-    const url = URL.createObjectURL(track.file)
     const link = document.createElement('a')
     link.href = url
-    link.download = track.file.name || 'download'
+    link.download = track.metadata.orig_filename || 'download'
     document.body.appendChild(link)
     link.click()
     document.body.removeChild(link)
-    URL.revokeObjectURL(url)
-  }, [track.file])
+  }, [track.metadata])
 
   return (
     <Form id={formId}>
