@@ -3,6 +3,7 @@ import { useCallback, useRef } from 'react'
 import { createPasswordPageMessages } from '@audius/common/messages'
 import { passwordSchema } from '@audius/common/schemas'
 import { changePassword } from '@audius/common/src/store/change-password/slice'
+import { recoveryEmailActions } from '@audius/common/store'
 import { route, TEMPORARY_PASSWORD } from '@audius/common/utils'
 import { Flex } from '@audius/harmony'
 import { Form, Formik } from 'formik'
@@ -31,6 +32,7 @@ export type CreatePasswordValues = {
 }
 
 const passwordFormikSchema = toFormikValidationSchema(passwordSchema)
+const { resendRecoveryEmail } = recoveryEmailActions
 
 export const CreatePasswordPage = () => {
   const dispatch = useDispatch()
@@ -46,6 +48,7 @@ export const CreatePasswordPage = () => {
     (values: CreatePasswordValues) => {
       const { password } = values
       dispatch(setValueField('password', password))
+
       if (isGuest) {
         dispatch(
           changePassword({
@@ -54,7 +57,7 @@ export const CreatePasswordPage = () => {
             password
           })
         )
-        // should send recovery here
+        dispatch(resendRecoveryEmail())
       }
       navigate(SIGN_UP_HANDLE_PAGE)
     },
