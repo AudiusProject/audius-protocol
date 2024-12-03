@@ -43,7 +43,6 @@ const fetchMutualFollowers = function* ({
       offset
     }
   )
-  if (!response.data) return { users: [] }
   const users = userMetadataListFromSDK(response.data)
   return { users }
 }

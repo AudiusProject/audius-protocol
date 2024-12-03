@@ -1,5 +1,3 @@
-import logging
-
 from src.models.social.follow import Follow
 from src.models.users.user import User
 from src.queries import response_name_constants
@@ -10,8 +8,6 @@ from src.queries.query_helpers import (
 )
 from src.utils import helpers
 from src.utils.db_session import get_db_read_replica
-
-logger = logging.getLogger(__name__)
 
 
 def get_follow_intersection_users(args):

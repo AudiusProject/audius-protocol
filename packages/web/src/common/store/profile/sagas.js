@@ -446,7 +446,6 @@ function* fetchProfileAsync(action) {
 function* watchFetchFollowUsers(action) {
   yield takeEvery(profileActions.FETCH_FOLLOW_USERS, function* (action) {
     yield call(waitForRead)
-    console.log('REED watchFetchFollowUsers', { action })
     switch (action.followerGroup) {
       case FollowType.FOLLOWEE_FOLLOWS:
         yield call(fetchFolloweeFollows, action)
