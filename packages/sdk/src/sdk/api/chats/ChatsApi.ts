@@ -849,7 +849,7 @@ export class ChatsApi
     const signatureBytes = new Uint8Array(65)
     signatureBytes.set(signature, 0)
     signatureBytes[64] = recid
-    return { 'x-sig': base64.encode(signature) }
+    return { 'x-sig': base64.encode(signatureBytes) }
   }
 
   private async signAndSendRequest(request: RequestOpts) {
