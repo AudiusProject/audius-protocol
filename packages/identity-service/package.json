@@ -19,7 +19,7 @@
     "report": "nyc report --reporter=html",
     "lint:fix": "eslint --fix --ext=js,ts src",
     "lint": "eslint --ext=js,ts src",
-    "copyfiles": "cp ./src/notifications/browserPush/*.zip ./build/src/notifications/browserPush && cp -r ./src/notifications/browserPush/audius.pushpackage ./build/src/notifications/browserPush && cp -r ./src/notifications/emails ./build/src/notifications",
+    "copyfiles": "cp -r ./src/notifications/emails ./build/src/notifications",
     "build": "tsc --project tsconfig.build.json && npm run copyfiles",
     "typecheck": "tsc",
     "typecheck:watch": "tsc --watch",
