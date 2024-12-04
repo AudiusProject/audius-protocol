@@ -4,8 +4,10 @@ import { USDC } from '@audius/fixed-decimal'
 import BN from 'bn.js'
 import { useDispatch, useSelector } from 'react-redux'
 import { useLocalStorage } from 'react-use'
+import { z } from 'zod'
 
 import { useGetCurrentUser } from '~/api'
+import { useAudiusQueryContext } from '~/audius-query/AudiusQueryContext'
 import { UserCollectionMetadata } from '~/models'
 import { PurchaseMethod, PurchaseVendor } from '~/models/PurchaseContent'
 import { UserTrackMetadata } from '~/models/Track'
@@ -34,7 +36,7 @@ import {
 } from './constants'
 import { PayExtraAmountPresetValues, PayExtraPreset } from './types'
 import { getExtraAmount } from './utils'
-import { PurchaseContentSchema, PurchaseContentValues } from './validation'
+import { createPurchaseContentSchema } from './validation'
 
 const { startPurchaseContentFlow, setPurchasePage } = purchaseContentActions
 const {
@@ -56,6 +58,8 @@ export const usePurchaseContentFormConfiguration = ({
   presetValues: PayExtraAmountPresetValues
   purchaseVendor?: PurchaseVendor
 }) => {
+  const audiusQueryContext = useAudiusQueryContext()
+
   const dispatch = useDispatch()
   const isAlbum = isContentCollection(metadata)
   const isTrack = isContentTrack(metadata)
@@ -93,6 +97,9 @@ export const usePurchaseContentFormConfiguration = ({
     : isTrack
     ? metadata?.track_id
     : undefined
+
+  const validationSchema = createPurchaseContentSchema(audiusQueryContext)
+  type PurchaseContentValues = z.input<typeof validationSchema>
 
   const onSubmit = useCallback(
     ({
@@ -152,7 +159,7 @@ export const usePurchaseContentFormConfiguration = ({
 
   return {
     initialValues,
-    validationSchema: PurchaseContentSchema,
+    validationSchema,
     onSubmit
   }
 }

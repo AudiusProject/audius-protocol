@@ -17,21 +17,20 @@ export const getRedisConnection = async () => {
   return redisClient
 }
 
-export const aaoStateKey = (handle: string): string =>
-  `relay:aao:${handle}`
+export const aaoStateKey = (userId: number): string => `relay:aao:${userId}`
 
 // stores the AAO status of a user into redis
 export const storeAAOState = async (
-  handle: string,
+  userId: number,
   abuseStatus: AbuseStatus
 ) => {
   try {
-    const cacheKey = aaoStateKey(handle)
+    const cacheKey = aaoStateKey(userId)
     const redis = await getRedisConnection()
     const cacheValue = JSON.stringify(abuseStatus)
     await redis.set(cacheKey, cacheValue)
   } catch (e) {
-    logger.error({ handle, error: e }, "could not store aao state")
+    logger.error({ userId, error: e }, 'could not store aao state')
   }
 }
 
@@ -39,16 +38,16 @@ export const storeAAOState = async (
 // returns null if not found
 // antiAbuseMiddleware updates the cache asynchronously
 export const readAAOState = async (
-  handle: string
+  userId: number
 ): Promise<AbuseStatus | null> => {
   try {
-    const cacheKey = aaoStateKey(handle)
+    const cacheKey = aaoStateKey(userId)
     const redis = await getRedisConnection()
     const cacheValue = await redis.get(cacheKey)
     if (cacheValue === null) return null
     return JSON.parse(cacheValue)
   } catch (e) {
-    logger.error({ handle, error: e }, "could not read aao state")
+    logger.error({ userId, error: e }, 'could not read aao state')
     return null
   }
 }

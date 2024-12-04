@@ -5,12 +5,12 @@ import { SIGN_IN_PAGE } from '@audius/common/src/utils/route'
 import { USDC } from '@audius/fixed-decimal'
 import { Button, Flex, Text } from '@audius/harmony'
 
-import { HarmonyTextField } from 'components/form-fields/HarmonyTextField'
 import { TextLink } from 'components/link'
 import { PurchaseSummaryTable } from 'components/premium-content-purchase-modal/components/PurchaseSummaryTable'
 import { usePurchaseContentFormState } from 'components/premium-content-purchase-modal/hooks/usePurchaseContentFormState'
 import { LockedContentDetailsTile } from 'components/track/LockedContentDetailsTile'
 import { useIsMobile } from 'hooks/useIsMobile'
+import { EmailField } from 'pages/sign-up-page/components/EmailField'
 
 const messages = {
   continueAsGuest: 'Continue as Guest',
@@ -91,7 +91,7 @@ export const GuestCheckout = ({
               </Text>
             </Flex>
 
-            <HarmonyTextField name={GUEST_EMAIL} label={messages.yourEmail} />
+            <EmailField name={GUEST_EMAIL} />
           </Flex>
           <Button fullWidth type='submit'>
             {messages.continueAsGuest}

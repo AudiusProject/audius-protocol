@@ -1,3 +1,5 @@
+import { ChangeCredentialsArgs } from '@audius/hedgehog/dist/types'
+
 import type { LocalStorage } from '../local-storage'
 
 import { HedgehogConfig, createHedgehog } from './hedgehog'
@@ -43,6 +45,7 @@ export type AuthService = {
     signature: string
   }) => Promise<void>
   getWalletAddresses: () => Promise<GetWalletAddressesResult>
+  changeCredentials: (args: ChangeCredentialsArgs) => Promise<void>
 }
 
 export const createAuthService = ({
@@ -99,6 +102,9 @@ export const createAuthService = ({
     }
   }
 
+  const changeCredentials = async (args: ChangeCredentialsArgs) => {
+    return await hedgehogInstance.changeCredentials(args)
+  }
   const sendRecoveryInfo = async (params: RecoveryInfoParams) => {
     await identityService.sendRecoveryInfo(params)
   }
@@ -108,6 +114,7 @@ export const createAuthService = ({
     signIn,
     signOut,
     getWalletAddresses,
+    changeCredentials,
     sendRecoveryInfo,
     resetPassword
   }
