@@ -44,9 +44,10 @@ import {
   parseHandleReservedStatusFromSocial,
   isValidEmailString,
   route,
-  isResponseError
+  isResponseError,
+  encodeHashId
 } from '@audius/common/utils'
-import { CreateUserRequest } from '@audius/sdk'
+import { CreateUserRequest, UpdateProfileRequest } from '@audius/sdk'
 import { push as pushRoute } from 'connected-react-router'
 import { isEmpty } from 'lodash'
 import {
@@ -73,10 +74,10 @@ import { waitForRead, waitForWrite } from 'utils/sagaHelpers'
 
 import * as signOnActions from './actions'
 import { watchSignOnError } from './errorSagas'
-import { getRouteOnCompletion, getSignOn } from './selectors'
+import { getIsGuest, getRouteOnCompletion, getSignOn } from './selectors'
 import { FollowArtistsCategory, Pages } from './types'
 
-const { FEED_PAGE, SIGN_IN_PAGE, SIGN_UP_PAGE } = route
+const { FEED_PAGE, SIGN_IN_PAGE, SIGN_UP_PAGE, SIGN_UP_PASSWORD_PAGE } = route
 const { requestPushNotificationPermissions } = settingsPageActions
 const { saveCollection } = collectionsSocialActions
 const { getUsers } = cacheUsersSelectors
@@ -601,11 +602,14 @@ function* signUp() {
     const sdk = yield* getSDK()
     const authService = yield* getContext('authService')
     const audiusBackendInstance = yield* getContext('audiusBackendInstance')
+    const isGuest = select(getIsGuest)
 
     yield* call(waitForWrite)
 
     const location = yield* call(getCityAndRegion)
     const name = signOn.name.value.trim()
+    const wallet = (yield* call([authService, authService.getWalletAddresses]))
+      .web3WalletAddress
 
     const handle = signOn.handle.value
     const alreadyExisted = signOn.accountAlreadyExisted
@@ -620,62 +624,99 @@ function* signUp() {
           const reportToSentry = yield* getContext('reportToSentry')
           const isNativeMobile = yield* getContext('isNativeMobile')
 
-          if (!alreadyExisted) {
-            yield* call(
-              [
-                authService.hedgehogInstance,
-                authService.hedgehogInstance.signUp
-              ],
-              {
-                username: email,
-                password
-              }
-            )
-
-            yield* fork(sendRecoveryEmail, { handle, email })
-          }
-          const wallet = (yield* call([
-            authService,
-            authService.getWalletAddresses
-          ])).web3WalletAddress
-
-          const events: CreateUserRequest['metadata']['events'] = {}
-          if (referrer) {
-            events.referrer = OptionalId.parse(referrer)
-          }
-          if (isNativeMobile) {
-            events.isMobileUser = true
+          const createUserMetadata = {
+            name,
+            handle,
+            profilePicture: (signOn.profileImage?.file as File) || null,
+            coverPhoto: (signOn.coverPhoto?.file as File) || null,
+            isVerified: signOn.verified,
+            location
           }
 
-          const createUserMetadata: CreateUserRequest = {
-            profilePictureFile: signOn.profileImage?.file as File,
-            coverArtFile: signOn.coverPhoto?.file as File,
-            metadata: {
-              location: location ?? undefined,
-              name,
-              events,
-              handle,
-              wallet
-            }
-          }
-
+          let userId: ID
           try {
-            const { blockNumber, metadata } = yield* call(
-              [sdk.users, sdk.users.createUser],
-              createUserMetadata
-            )
-            const { userId } = metadata
-            const { twitterId, instagramId, tikTokId, useMetaMask } = signOn
+            if (isGuest) {
+              const account: AccountUserMetadata | null = yield* call(
+                userApiFetchSaga.getUserAccount,
+                {
+                  wallet
+                }
+              )
+              if (!account) {
+                throw new Error('Account user ID does not exist')
+              }
+              userId = account.user.user_id
+              const completeProfileMetadataRequest: UpdateProfileRequest = {
+                userId: encodeHashId(userId),
+                profilePictureFile: signOn.profileImage?.file as File,
+                metadata: {
+                  location: location ?? undefined,
+                  name,
+                  handle
+                }
+              }
 
-            if (!useMetaMask && (twitterId || instagramId || tikTokId)) {
-              yield* fork(associateSocialAccounts, {
-                userId,
-                handle,
-                blockNumber,
-                twitterId,
-                instagramId,
-                tikTokId
-              })
+              yield* call(
+                [sdk.users, sdk.users.updateProfile],
+                completeProfileMetadataRequest
+              )
+            } else {
+              if (!alreadyExisted) {
+                yield* call(
+                  [
+                    authService.hedgehogInstance,
+                    authService.hedgehogInstance.signUp
+                  ],
+                  {
+                    username: email,
+                    password
+                  }
+                )
+
+                yield* fork(sendRecoveryEmail, { handle, email })
+              }
+              const wallet = (yield* call([
+                authService,
+                authService.getWalletAddresses
+              ])).web3WalletAddress
+
+              const events: CreateUserRequest['metadata']['events'] = {}
+              if (referrer) {
+                events.referrer = OptionalId.parse(referrer)
+              }
+              if (isNativeMobile) {
+                events.isMobileUser = true
+              }
+
+              const createUserMetadata: CreateUserRequest = {
+                profilePictureFile: signOn.profileImage?.file as File,
+                coverArtFile: signOn.coverPhoto?.file as File,
+                metadata: {
+                  location: location ?? undefined,
+                  name,
+                  events,
+                  handle,
+                  wallet
+                }
+              }
+
+              const { blockNumber, metadata } = yield* call(
+                [sdk.users, sdk.users.createUser],
+                createUserMetadata
+              )
+              userId = metadata.userId
+              const { twitterId, instagramId, tikTokId, useMetaMask } = signOn
+
+              if (!useMetaMask && (twitterId || instagramId || tikTokId)) {
+                yield* fork(associateSocialAccounts, {
+                  userId,
+                  handle,
+                  blockNumber,
+                  twitterId,
+                  instagramId,
+                  tikTokId
+                })
+              }
             }
 
             yield* put(
@@ -891,16 +932,47 @@ function* signIn(action: ReturnType<typeof signOnActions.signIn>) {
 
     // Loging succeeded and we found a user, but it's missing name, likely
     // due to incomplete signup
+    const isGuest = select(getIsGuest)
+
     if (!user.name) {
-      yield* put(
-        signOnActions.openSignOn(false, Pages.PROFILE, {
-          accountAlreadyExisted: true,
-          handle: {
-            value: user.handle,
-            status: 'disabled'
+      if (isGuest) {
+        yield* put(
+          signOnActions.openSignOn(false, Pages.PASSWORD, {
+            accountAlreadyExisted: true,
+            handle: {
+              value: user.handle,
+              status: 'disabled'
+            }
+          })
+        )
+        yield* put(pushRoute(SIGN_UP_PASSWORD_PAGE))
+        const { web3Error, libsError } = yield* call(
+          audiusBackendInstance.setup,
+          {
+            wallet: signInResponse.walletAddress,
+            userId: user.user_id
           }
-        })
-      )
+        )
+        if (web3Error || libsError) {
+          yield* put(
+            signOnActions.signInFailed(
+              'Failed to setup AudiusBackend for guest profile completion',
+              'SETUP',
+              true
+            )
+          )
+        }
+      } else {
+        yield* put(
+          signOnActions.openSignOn(false, Pages.PROFILE, {
+            accountAlreadyExisted: true,
+            handle: {
+              value: user.handle,
+              status: 'disabled'
+            }
+          })
+        )
+      }
       yield* put(toastActions.toast({ content: messages.incompleteAccount }))
 
       yield* put(

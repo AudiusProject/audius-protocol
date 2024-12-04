@@ -1184,27 +1184,11 @@ export const audiusBackend = ({
     )
   }
 
-  async function guestSignUp(
-    email: string,
-    feePayerOverride: Nullable<string>
-  ) {
+  async function guestSignUp(email: string) {
     await waitForLibsInit()
     const metadata = schemas.newUserMetadata()
 
-    return await audiusLibs.Account.guestSignUp(
-      email,
-      metadata,
-      getHostUrl(),
-      (eventName: string, properties: Record<string, unknown>) =>
-        recordAnalytics({ eventName, properties }),
-      {
-        Request: Name.CREATE_USER_BANK_REQUEST,
-        Success: Name.CREATE_USER_BANK_SUCCESS,
-        Failure: Name.CREATE_USER_BANK_FAILURE
-      },
-      feePayerOverride,
-      true
-    )
+    return await audiusLibs.Account.guestSignUp(email, metadata)
   }
 
   async function sendRecoveryEmail(handle: string) {
@@ -1216,9 +1200,12 @@ export const audiusBackend = ({
   async function emailInUse(email: string) {
     await waitForLibsInit()
     try {
-      const { exists: emailExists } =
+      const { exists: emailExists, isGuest } =
         await audiusLibs.Account.checkIfEmailRegistered(email)
-      return emailExists as boolean
+      return {
+        emailExists: emailExists as boolean,
+        isGuest: isGuest as boolean
+      }
     } catch (error) {
       console.error(getErrorMessage(error))
       throw error

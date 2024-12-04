@@ -13,7 +13,7 @@ import {
   tracksSocialActions,
   collectionsSocialActions
 } from '@audius/common/store'
-import { formatPrice } from '@audius/common/utils'
+import { formatPrice, route } from '@audius/common/utils'
 import {
   Button,
   IconCaretRight,
@@ -21,8 +21,10 @@ import {
   Text,
   PlainButton,
   IconRepost,
-  Flex
+  Flex,
+  Divider
 } from '@audius/harmony'
+import { push as pushRoute } from 'connected-react-router'
 import { useField } from 'formik'
 import { capitalize } from 'lodash'
 import { useDispatch } from 'react-redux'
@@ -35,6 +37,8 @@ import { PurchaseContentFormState } from '../hooks/usePurchaseContentFormState'
 
 import styles from './PurchaseContentFormFooter.module.css'
 
+const { SIGN_UP_PAGE } = route
+
 const messages = {
   buy: 'Buy',
   viewContent: (contentType: 'track' | 'album') =>
@@ -44,7 +48,11 @@ const messages = {
   shareTwitterText: (contentType: string, title: string, handle: string) =>
     `I bought the ${contentType} ${title} by ${handle} on @Audius! $AUDIO #AudiusPremium`,
   reposted: 'Reposted',
-  repost: 'Repost'
+  repost: 'Repost',
+  finishSigningUp: 'Finish Signing Up',
+  finishSettingUpYourAccount: 'Finish setting up your free Audius account now!',
+  finishSigningUpDescription:
+    'An Audius account will let you easily access your purchases, upload music, interact with others, leave comments, curate playlists, and more! '
 }
 
 const ContentPurchaseError = ({
@@ -105,6 +113,10 @@ export const PurchaseContentFormFooter = ({
   const { totalPrice } = purchaseSummaryValues
   const [{ value: isGuestCheckout }] = useField(GUEST_CHECKOUT)
 
+  const handleFinishSigningUp = useCallback(() => {
+    dispatch(pushRoute(SIGN_UP_PAGE))
+  }, [dispatch])
+
   const handleTwitterShare = useCallback(
     (handle: string) => {
       const shareText = messages.shareTwitterText(
@@ -140,39 +152,67 @@ export const PurchaseContentFormFooter = ({
       <Flex direction='column' gap='xl' alignSelf='stretch'>
         {isHidden ? null : (
           <Flex gap='l'>
-            <Button
-              type='button'
-              variant={isReposted ? 'primary' : 'secondary'}
-              fullWidth
-              iconLeft={IconRepost}
-              onClick={onRepost}
-              role='log'
-            >
-              {isReposted ? messages.reposted : messages.repost}
-            </Button>
-            {permalink ? (
-              <TwitterShareButton
-                fullWidth
-                type='dynamic'
-                url={
-                  isAlbum
-                    ? fullCollectionPage(handle, null, null, permalink)
-                    : fullTrackPage(permalink)
-                }
-                shareData={handleTwitterShare}
-                handle={handle}
-              />
-            ) : null}
+            {isGuestCheckout ? (
+              <Flex direction='column'>
+                <Divider />
+                <Flex mv='xl' direction='column'>
+                  <Text variant='title'>
+                    {messages.finishSettingUpYourAccount}
+                  </Text>
+                  <Text>{messages.finishSigningUpDescription}</Text>
+                </Flex>
+                <Flex gap='s'>
+                  <Button fullWidth onClick={handleFinishSigningUp}>
+                    {messages.finishSigningUp}
+                  </Button>
+                  <Button
+                    fullWidth
+                    variant='secondary'
+                    onClick={onViewTrackClicked}
+                  >
+                    {messages.viewContent(isAlbum ? 'album' : 'track')}
+                  </Button>
+                </Flex>
+              </Flex>
+            ) : (
+              <>
+                <Button
+                  type='button'
+                  variant={isReposted ? 'primary' : 'secondary'}
+                  fullWidth
+                  iconLeft={IconRepost}
+                  onClick={onRepost}
+                  role='log'
+                >
+                  {isReposted ? messages.reposted : messages.repost}
+                </Button>
+                {permalink ? (
+                  <TwitterShareButton
+                    fullWidth
+                    type='dynamic'
+                    url={
+                      isAlbum
+                        ? fullCollectionPage(handle, null, null, permalink)
+                        : fullTrackPage(permalink)
+                    }
+                    shareData={handleTwitterShare}
+                    handle={handle}
+                  />
+                ) : null}
+              </>
+            )}
           </Flex>
         )}
-        <PlainButton
-          onClick={onViewTrackClicked}
-          iconRight={IconCaretRight}
-          variant='subdued'
-          size='large'
-        >
-          {messages.viewContent(isAlbum ? 'album' : 'track')}
-        </PlainButton>
+        {isGuestCheckout ? null : (
+          <PlainButton
+            onClick={onViewTrackClicked}
+            iconRight={IconCaretRight}
+            variant='subdued'
+            size='large'
+          >
+            {messages.viewContent(isAlbum ? 'album' : 'track')}
+          </PlainButton>
+        )}
       </Flex>
     )
   }

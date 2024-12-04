@@ -113,7 +113,7 @@ func (s *GRPCServer) ForwardTransaction(ctx context.Context, req *proto.ForwardT
 		return nil, fmt.Errorf("could not get tx hash of signed tx: %v", err)
 	}
 
-	s.logger.Infof("received forwarded tx: %v", req.Transaction)
+	s.logger.Debugf("received forwarded tx: %v", req.Transaction)
 
 	// TODO: intake block deadline from request
 	status, err := s.cometRpc.Status(ctx)
@@ -138,7 +138,7 @@ func (s *GRPCServer) ForwardTransaction(ctx context.Context, req *proto.ForwardT
 func (s *GRPCServer) GetTransaction(ctx context.Context, req *proto.GetTransactionRequest) (*proto.TransactionResponse, error) {
 	txhash := req.GetTxhash()
 
-	s.logger.Info("query", "txhash", txhash)
+	s.logger.Debug("query", "txhash", txhash)
 
 	tx, err := s.db.GetTx(ctx, txhash)
 	if err != nil {

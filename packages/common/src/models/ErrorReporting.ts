@@ -29,7 +29,8 @@ export enum ErrorLevel {
 export type AdditionalErrorReportInfo = Record<string, unknown>
 
 /**
- * Bucket-able app core flows that help us query for errors in sentry
+ * Areas of our app that we want to group sentry logs together in
+ * Used to create query-able sentry tags
  */
 export enum Feature {
   SignUp = 'sign-up',

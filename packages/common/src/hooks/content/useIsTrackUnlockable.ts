@@ -1,19 +1,22 @@
-import { useGetTrackById } from '~/api'
+import { useSelector } from 'react-redux'
+
 import {
   isContentSpecialAccess,
   isContentCollectibleGated,
   isContentUSDCPurchaseGated,
   ID
 } from '~/models'
+import { CommonState } from '~/store'
+import { getTrack } from '~/store/cache/tracks/selectors'
 
 export const useIsTrackUnlockable = (trackId: ID) => {
-  const { data: track } = useGetTrackById({ id: trackId })
+  return useSelector((state: CommonState) => {
+    const streamConditions = getTrack(state, { id: trackId })?.stream_conditions
 
-  if (!track) return false
-  const { stream_conditions } = track
-  const isPurchaseable = isContentUSDCPurchaseGated(stream_conditions)
-  const isCollectibleGated = isContentCollectibleGated(stream_conditions)
-  const isSpecialAccess = isContentSpecialAccess(stream_conditions)
+    const isPurchaseable = isContentUSDCPurchaseGated(streamConditions)
+    const isCollectibleGated = isContentCollectibleGated(streamConditions)
+    const isSpecialAccess = isContentSpecialAccess(streamConditions)
 
-  return isPurchaseable || isCollectibleGated || isSpecialAccess
+    return isPurchaseable || isCollectibleGated || isSpecialAccess
+  })
 }
