@@ -1718,42 +1718,6 @@ export const audiusBackend = ({
     }
   }
 
-  async function subscribeToUser({
-    subscribeToUserId,
-    userId
-  }: {
-    subscribeToUserId: ID
-    userId: ID
-  }) {
-    try {
-      await waitForLibsInit()
-      return await audiusLibs.User.addUserSubscribe(subscribeToUserId, userId)
-    } catch (err) {
-      console.error(getErrorMessage(err))
-      throw err
-    }
-  }
-
-  async function unsubscribeFromUser({
-    subscribedToUserId,
-    userId
-  }: {
-    subscribedToUserId: ID
-    userId: ID
-  }) {
-    try {
-      await waitForLibsInit()
-
-      return await audiusLibs.User.deleteUserSubscribe(
-        subscribedToUserId,
-        userId
-      )
-    } catch (err) {
-      console.error(getErrorMessage(err))
-      throw err
-    }
-  }
-
   async function updateUserLocationTimezone({ sdk }: { sdk: AudiusSdk }) {
     try {
       const { data, signature } = await signIdentityServiceRequest({ sdk })
@@ -2207,8 +2171,6 @@ export const audiusBackend = ({
     updatePushNotificationSettings,
     updateUserEvent,
     updateUserLocationTimezone,
-    subscribeToUser,
-    unsubscribeFromUser,
     uploadImage,
     userNodeUrl,
     validateTracksInPlaylist,
