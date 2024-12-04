@@ -28,7 +28,6 @@ import { HarmonyTextField } from 'components/form-fields/HarmonyTextField'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import { ModalForm } from 'components/modal-form/ModalForm'
 import { ToastContext } from 'components/toast/ToastContext'
-import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
 import { authService } from 'services/audius-sdk/auth'
 import { identityServiceInstance } from 'services/audius-sdk/identity'
 

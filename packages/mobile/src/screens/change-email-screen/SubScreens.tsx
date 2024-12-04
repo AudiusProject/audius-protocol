@@ -7,7 +7,6 @@ import { formatOtp } from '~/schemas/sign-on/confirmEmailSchema'
 import { Box, Text } from '@audius/harmony-native'
 import { HarmonyTextField, PasswordField } from 'app/components/fields'
 import LoadingSpinner from 'app/components/loading-spinner'
-import { audiusBackendInstance } from 'app/services/audius-backend-instance'
 import { authService } from 'app/services/sdk/auth'
 import { identityServiceInstance } from 'app/services/sdk/identity'
 
