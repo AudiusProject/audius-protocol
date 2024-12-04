@@ -1639,8 +1639,6 @@ export const audiusBackend = ({
   }
 
   async function getPushNotificationSettings({ sdk }: { sdk: AudiusSdk }) {
-    await waitForLibsInit()
-
     try {
       const { data, signature } = await signIdentityServiceRequest({ sdk })
       return await fetch(`${identityServiceUrl}/push_notifications/settings`, {
@@ -1666,8 +1664,6 @@ export const audiusBackend = ({
     deviceToken: string
     deviceType: string
   }) {
-    await waitForLibsInit()
-
     try {
       const { data, signature } = await signIdentityServiceRequest({ sdk })
       return await fetch(
