@@ -41,10 +41,29 @@ PODS:
   - libwebp/sharpyuv (1.3.2)
   - libwebp/webp (1.3.2):
     - libwebp/sharpyuv
-  - lottie-ios (4.3.4)
-  - lottie-react-native (6.4.1):
-    - lottie-ios (~> 4.3.3)
+  - lottie-ios (4.5.0)
+  - lottie-react-native (7.1.0):
+    - DoubleConversion
+    - glog
+    - hermes-engine
+    - lottie-ios (= 4.5.0)
+    - RCT-Folly (= 2024.01.01.00)
+    - RCTRequired
+    - RCTTypeSafety
+    - React-Codegen
     - React-Core
+    - React-debug
+    - React-Fabric
+    - React-featureflags
+    - React-graphics
+    - React-ImageManager
+    - React-NativeModulesApple
+    - React-RCTFabric
+    - React-rendererdebug
+    - React-utils
+    - ReactCommon/turbomodule/bridging
+    - ReactCommon/turbomodule/core
+    - Yoga
   - nSure (1.3.3):
     - FingerprintPro (~> 2.2)
   - PromisesObjC (2.4.0)
@@ -1327,10 +1346,6 @@ PODS:
     - React-logger (= 0.74.6)
     - React-perflogger (= 0.74.6)
     - React-utils (= 0.74.6)
-  - rive-react-native (6.2.3):
-    - React-Core
-    - RiveRuntime (= 5.5.1)
-  - RiveRuntime (5.5.1)
   - RNBootSplash (5.2.1):
     - React-Core
   - RNCAsyncStorage (1.21.0):
@@ -1493,7 +1508,7 @@ DEPENDENCIES:
   - fmt (from `../node_modules/react-native/third-party-podspecs/fmt.podspec`)
   - glog (from `../node_modules/react-native/third-party-podspecs/glog.podspec`)
   - hermes-engine (from `../node_modules/react-native/sdks/hermes-engine/hermes-engine.podspec`)
-  - lottie-react-native (from `../node_modules/lottie-react-native`)
+  - lottie-react-native (from `../../../node_modules/lottie-react-native`)
   - nSure
   - RCT-Folly (from `../node_modules/react-native/third-party-podspecs/RCT-Folly.podspec`)
   - RCT-Folly/Fabric (from `../node_modules/react-native/third-party-podspecs/RCT-Folly.podspec`)
@@ -1569,7 +1584,6 @@ DEPENDENCIES:
   - React-runtimescheduler (from `../node_modules/react-native/ReactCommon/react/renderer/runtimescheduler`)
   - React-utils (from `../node_modules/react-native/ReactCommon/react/utils`)
   - ReactCommon/turbomodule/core (from `../node_modules/react-native/ReactCommon`)
-  - rive-react-native (from `../../../node_modules/rive-react-native`)
   - RNBootSplash (from `../node_modules/react-native-bootsplash`)
   - "RNCAsyncStorage (from `../../../node_modules/@react-native-async-storage/async-storage`)"
   - "RNCClipboard (from `../node_modules/@react-native-clipboard/clipboard`)"
@@ -1605,7 +1619,6 @@ SPEC REPOS:
     - lottie-ios
     - nSure
     - PromisesObjC
-    - RiveRuntime
     - SDWebImage
     - SDWebImageWebPCoder
     - Sentry
@@ -1639,7 +1652,7 @@ EXTERNAL SOURCES:
     :podspec: "../node_modules/react-native/sdks/hermes-engine/hermes-engine.podspec"
     :tag: hermes-2024-09-30-RNv0.74.6-6f503f52cbf98b2b37c4d3900e7f1193d6512548
   lottie-react-native:
-    :path: "../node_modules/lottie-react-native"
+    :path: "../../../node_modules/lottie-react-native"
   RCT-Folly:
     :podspec: "../node_modules/react-native/third-party-podspecs/RCT-Folly.podspec"
   RCTDeprecation:
@@ -1784,8 +1797,6 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native/ReactCommon/react/utils"
   ReactCommon:
     :path: "../node_modules/react-native/ReactCommon"
-  rive-react-native:
-    :path: "../../../node_modules/rive-react-native"
   RNBootSplash:
     :path: "../node_modules/react-native-bootsplash"
   RNCAsyncStorage:
@@ -1848,8 +1859,8 @@ SPEC CHECKSUMS:
   hermes-engine: 2102c92e54a031a270fd1fe84169ec8a0901b7bd
   JWT: ef71dfb03e1f842081e64dc42eef0e164f35d251
   libwebp: 1786c9f4ff8a279e4dac1e8f385004d5fc253009
-  lottie-ios: 3d98679b41fa6fd6aff2352b3953dbd3df8a397e
-  lottie-react-native: a2ae9c27c273b060b2affff2957bc0ff7fdca353
+  lottie-ios: a881093fab623c467d3bce374367755c272bdd59
+  lottie-react-native: 810dfddcceec23b045b78d2b963d6460035cb8ea
   nSure: ce410631caf715d7080838c00a42169427847a01
   PromisesObjC: f5707f49cb48b9636751c5b2e7d227e43fba9f47
   RCT-Folly: 02617c592a293bd6d418e0a88ff4ee1f88329b47
@@ -1924,8 +1935,6 @@ SPEC CHECKSUMS:
   React-runtimescheduler: b63ebebd3e000e0ba4ac19ca69bdac071559ad57
   React-utils: 2955bdc1b2ed495f14dc7d3bfbbb7e3624cfc0fc
   ReactCommon: 5c504a77030c7ab89eee75b1725b80d8cee7f5d7
-  rive-react-native: 79777686cb29eaba6a28a0534fe82c8b8da41b4a
-  RiveRuntime: b57830ff73f406f3b4022f457b16690535ca4d05
   RNBootSplash: f7fd5a7d4f1c13be3d0f5f31d27af7bcc1b1acef
   RNCAsyncStorage: 618d03a5f52fbccb3d7010076bc54712844c18ef
   RNCClipboard: 60fed4b71560d7bfe40e9d35dea9762b024da86d
