@@ -26,7 +26,7 @@ export type ClaimableTokensConfig = Prettify<
 export const GetOrCreateUserBankSchema = z
   .object({
     /** The user's Ethereum wallet. */
-    ethWallet: z.string(),
+    ethWallet: z.string().optional(),
     /** The name of the token mint. */
     mint: MintSchema,
     /**

@@ -126,7 +126,10 @@ export class ClaimableTokensClient {
       'getOrCreateUserBank',
       GetOrCreateUserBankSchema
     )(params)
-    const { ethWallet, feePayer: feePayerOverride } = args
+    const {
+      ethWallet = await this.getDefaultWalletAddress(),
+      feePayer: feePayerOverride
+    } = args
     const { mint, token } = parseMintToken(args.mint, this.mints)
     const feePayer = feePayerOverride ?? (await this.client.getFeePayer())
     const userBank = await this.deriveUserBank(args)
@@ -200,7 +203,7 @@ export class ClaimableTokensClient {
   async createTransferInstruction(params: CreateTransferRequest) {
     const {
       feePayer: feePayerOverride,
-      ethWallet = (await this.audiusWalletClient.getAddresses())[0]!,
+      ethWallet = await this.getDefaultWalletAddress(),
       mint,
       destination
     } = await parseParams(
@@ -339,5 +342,15 @@ export class ClaimableTokensClient {
       }
       throw e
     }
+  }
+
+  private async getDefaultWalletAddress() {
+    const addresses = await this.audiusWalletClient.getAddresses()
+    if (!addresses || !addresses[0]) {
+      throw new Error(
+        'Failed to infer wallet address. Did you forget the "ethAddress" argument?'
+      )
+    }
+    return addresses[0]
   }
 }
