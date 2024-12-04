@@ -317,6 +317,10 @@ func setupNode(logger *common.Logger) (*config.Config, *cconfig.Config, error) {
 	}
 
 	// after succesful setup, setup comet config.toml
+
+	// https://docs.cometbft.com/main/references/config/config.toml#log_level
+	cometConfig.LogLevel = envConfig.LogLevel
+
 	// postgres indexer config
 	cometConfig.TxIndex.Indexer = "psql"
 	cometConfig.TxIndex.PsqlConn = envConfig.PSQLConn
@@ -332,7 +336,7 @@ func setupNode(logger *common.Logger) (*config.Config, *cconfig.Config, error) {
 	// this keeps the mempool from taking up too much memory
 	cometConfig.Mempool.MaxTxsBytes = 10485760
 	cometConfig.Mempool.MaxTxBytes = 307200
-	cometConfig.Mempool.Size = 2000
+	cometConfig.Mempool.Size = 30000
 
 	isDev := envConfig.Environment == "dev" || envConfig.Environment == "local"
 
