@@ -31,7 +31,8 @@ import {
   PurchaseContentStage,
   PurchaseContentPage,
   isContentPurchaseInProgress,
-  PurchaseableContentType
+  PurchaseableContentType,
+  accountSelectors
 } from '@audius/common/store'
 import { USDC } from '@audius/fixed-decimal'
 import {
@@ -69,6 +70,7 @@ const { startRecoveryIfNecessary, cleanup: cleanupUSDCRecovery } =
 const { cleanup, setPurchasePage, eagerCreateUserBank } = purchaseContentActions
 const { getPurchaseContentFlowStage, getPurchaseContentError } =
   purchaseContentSelectors
+const { getHasAccount } = accountSelectors
 
 const messages = {
   completePurchase: 'Complete Purchase'
@@ -85,20 +87,15 @@ const pageToPageIndex = (page: PurchaseContentPage) => {
   }
 }
 
-// The bulk of the form rendering is in a nested component because we want access
-// to the FormikContext, which can only be used in a component which is a descendant
-// of the `<Formik />` component
-const RenderForm = ({
-  onClose,
-  metadata,
-  purchaseConditions,
-  contentId
-}: {
+type PremiumContentPurchaseFormProps = {
   onClose: () => void
   metadata: PurchaseableContentMetadata
   purchaseConditions: USDCPurchaseConditions
   contentId: ID
-}) => {
+}
+
+const PremiumContentPurchaseForm = (props: PremiumContentPurchaseFormProps) => {
+  const { onClose, metadata, purchaseConditions, contentId } = props
   const dispatch = useDispatch()
   const isMobile = useIsMobile()
   const { permalink } = metadata
@@ -116,6 +113,7 @@ const RenderForm = ({
 
   const { submitForm, resetForm } = useFormikContext()
   const { history } = useHistoryContext()
+  const isSignedIn = useSelector(getHasAccount)
 
   // Reset form on track change
   useEffect(() => {
@@ -137,6 +135,7 @@ const RenderForm = ({
     setPurchaseMethod(PurchaseMethod.BALANCE)
     submitForm()
   }, [submitForm, setPurchaseMethod])
+
   return (
     <ModalForm className={cn(styles.modalRoot, { [styles.mobile]: isMobile })}>
       <ModalHeader
@@ -151,33 +150,33 @@ const RenderForm = ({
         className={styles.content}
         currentPage={currentPageIndex}
       >
-        <GuestCheckout
-          metadata={metadata}
-          price={price}
-          onClickSignIn={onClose}
-        />
-        <>
-          <Flex p={isMobile ? 'l' : 'xl'} pb='m'>
-            <Flex direction='column' gap='xl' w='100%'>
-              <LockedContentDetailsTile
-                showLabel={false}
-                metadata={metadata}
-                owner={metadata.user}
-                disabled={isLinkDisabled}
-                earnAmount={USDC(price / 100)
-                  .round()
-                  .toShorthand()}
-              />
-              <PurchaseContentFormFields
-                stage={stage}
-                purchaseSummaryValues={purchaseSummaryValues}
-                isUnlocking={isUnlocking}
-                price={price}
-                metadata={metadata}
-              />
-            </Flex>
+        {!isSignedIn ? (
+          <GuestCheckout
+            metadata={metadata}
+            price={price}
+            onClickSignIn={onClose}
+          />
+        ) : null}
+        <Flex p={isMobile ? 'l' : 'xl'} pb='m'>
+          <Flex direction='column' gap='xl' w='100%'>
+            <LockedContentDetailsTile
+              showLabel={false}
+              metadata={metadata}
+              owner={metadata.user}
+              disabled={isLinkDisabled}
+              earnAmount={USDC(price / 100)
+                .round()
+                .toShorthand()}
+            />
+            <PurchaseContentFormFields
+              stage={stage}
+              purchaseSummaryValues={purchaseSummaryValues}
+              isUnlocking={isUnlocking}
+              price={price}
+              metadata={metadata}
+            />
           </Flex>
-        </>
+        </Flex>
         <USDCManualTransfer
           onClose={handleUSDCManualTransferClose}
           amountInCents={price}
@@ -329,7 +328,7 @@ export const PremiumContentPurchaseModal = () => {
           validationSchema={toFormikValidationSchema(validationSchema)}
           onSubmit={onSubmit}
         >
-          <RenderForm
+          <PremiumContentPurchaseForm
             contentId={contentId}
             metadata={metadata}
             onClose={handleClose}

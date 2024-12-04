@@ -20,17 +20,14 @@ const messages = {
   yourEmail: 'Your Email'
 }
 
-interface GuestCheckoutProps {
+type GuestCheckoutProps = {
   metadata: PurchaseableContentMetadata
   price: number
   onClickSignIn: () => void
 }
 
-export const GuestCheckout = ({
-  metadata,
-  price,
-  onClickSignIn
-}: GuestCheckoutProps) => {
+export const GuestCheckout = (props: GuestCheckoutProps) => {
+  const { metadata, price, onClickSignIn } = props
   const { purchaseSummaryValues } = usePurchaseContentFormState({
     price
   })
@@ -48,56 +45,55 @@ export const GuestCheckout = ({
       ? 1
       : 0
   const streamPurchaseCount = metadata.is_stream_gated ? 1 : 0
-  return (
-    <>
-      <Flex p={isMobile ? 'l' : 'xl'} pb='m'>
-        <Flex direction='column' gap='xl' w='100%'>
-          <LockedContentDetailsTile
-            showLabel={false}
-            metadata={metadata}
-            owner={metadata.user}
-            earnAmount={USDC(price / 100)
-              .round()
-              .toShorthand()}
-          />
-          <PurchaseSummaryTable
-            {...purchaseSummaryValues}
-            stemsPurchaseCount={stemsPurchaseCount}
-            downloadPurchaseCount={downloadPurchaseCount}
-            streamPurchaseCount={streamPurchaseCount}
-            totalPriceInCents={price}
-            isAlbumPurchase={isAlbumPurchase}
-          />
-          <Flex
-            direction='column'
-            border='default'
-            borderRadius='s'
-            p='l'
-            gap='l'
-          >
-            <Flex gap='xs'>
-              <Text variant='body' strength='strong'>
-                {messages.alreadyHaveAnAccount}
-              </Text>
-              <TextLink
-                to={SIGN_IN_PAGE}
-                variant='visible'
-                onClick={onClickSignIn}
-              >
-                {messages.signIn}
-              </TextLink>
-              <Text variant='body' strength='strong'>
-                {messages.orContinueGuest}
-              </Text>
-            </Flex>
 
-            <HarmonyTextField name={GUEST_EMAIL} label={messages.yourEmail} />
+  return (
+    <Flex p={isMobile ? 'l' : 'xl'} pb='m'>
+      <Flex direction='column' gap='xl' w='100%'>
+        <LockedContentDetailsTile
+          showLabel={false}
+          metadata={metadata}
+          owner={metadata.user}
+          earnAmount={USDC(price / 100)
+            .round()
+            .toShorthand()}
+        />
+        <PurchaseSummaryTable
+          {...purchaseSummaryValues}
+          stemsPurchaseCount={stemsPurchaseCount}
+          downloadPurchaseCount={downloadPurchaseCount}
+          streamPurchaseCount={streamPurchaseCount}
+          totalPriceInCents={price}
+          isAlbumPurchase={isAlbumPurchase}
+        />
+        <Flex
+          direction='column'
+          border='default'
+          borderRadius='s'
+          p='l'
+          gap='l'
+        >
+          <Flex gap='xs'>
+            <Text variant='body' strength='strong'>
+              {messages.alreadyHaveAnAccount}
+            </Text>
+            <TextLink
+              to={SIGN_IN_PAGE}
+              variant='visible'
+              onClick={onClickSignIn}
+            >
+              {messages.signIn}
+            </TextLink>
+            <Text variant='body' strength='strong'>
+              {messages.orContinueGuest}
+            </Text>
           </Flex>
-          <Button fullWidth type='submit'>
-            {messages.continueAsGuest}
-          </Button>
+
+          <HarmonyTextField name={GUEST_EMAIL} label={messages.yourEmail} />
         </Flex>
+        <Button fullWidth type='submit'>
+          {messages.continueAsGuest}
+        </Button>
       </Flex>
-    </>
+    </Flex>
   )
 }
