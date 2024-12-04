@@ -67,6 +67,7 @@ export const EditCollectionScreen = () => {
       <Formik
         initialValues={initialValues}
         initialStatus={{ imageLoading: false, imageGenerating: false }}
+        enableReinitialize
         onSubmit={handleSubmit}
         validationSchema={toFormikValidationSchema(validationSchema)}
       >

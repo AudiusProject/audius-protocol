@@ -1,7 +1,6 @@
 import { userCollectionMetadataFromSDK } from '@audius/common/adapters'
 import {
   Name,
-  DefaultSizes,
   Kind,
   PlaylistContents,
   ID,
