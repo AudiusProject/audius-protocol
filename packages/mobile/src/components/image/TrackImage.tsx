@@ -1,4 +1,4 @@
-import { useImageSize2 } from '@audius/common/hooks'
+import { useImageSize } from '@audius/common/hooks'
 import type { SquareSizes, ID } from '@audius/common/models'
 import {
   cacheTracksSelectors,
@@ -49,7 +49,7 @@ export const useTrackImage = ({
   const artwork = useSelector(
     (state) => getTrack(state, { id: trackId })?.artwork
   )
-  const image = useImageSize2({
+  const image = useImageSize({
     artwork,
     targetSize: size,
     defaultImage: '',

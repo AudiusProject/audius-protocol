@@ -1,4 +1,4 @@
-import { useImageSize2 } from '@audius/common/hooks'
+import { useImageSize } from '@audius/common/hooks'
 import type { SquareSizes, ID } from '@audius/common/models'
 import { cacheUsersSelectors } from '@audius/common/store'
 import { Image } from 'react-native'
@@ -28,7 +28,7 @@ export const useProfilePicture = ({
   const user = useSelector((state) => getUser(state, { id: userId }))
 
   const profilePicture = user?.profile_picture
-  const image = useImageSize2({
+  const image = useImageSize({
     artwork: profilePicture,
     targetSize: size,
     defaultImage: '',

@@ -1,4 +1,4 @@
-import { useImageSize2 } from '@audius/common/hooks'
+import { useImageSize } from '@audius/common/hooks'
 import type { ID } from '@audius/common/models'
 import { SquareSizes, WidthSizes } from '@audius/common/models'
 import { cacheUsersSelectors } from '@audius/common/store'
@@ -58,7 +58,7 @@ export const useCoverPhoto = ({
     })
   const user = useSelector((state) => getUser(state, { id: userId }))
   const coverPhoto = user?.cover_photo
-  const image = useImageSize2({
+  const image = useImageSize({
     artwork: coverPhoto,
     targetSize: size,
     defaultImage: '',

@@ -1,7 +1,7 @@
 import { useEffect, memo, useCallback } from 'react'
 
 import { imageBlank as placeholderArt } from '@audius/common/assets'
-import { useImageSize2 } from '@audius/common/hooks'
+import { useImageSize } from '@audius/common/hooks'
 import { Kind } from '@audius/common/models'
 import { cacheUsersActions } from '@audius/common/store'
 import { Tag } from '@audius/harmony'
@@ -24,7 +24,7 @@ const messages = {
 
 const Image = memo((props) => {
   const { defaultImage, artwork, size, isUser } = props
-  const image = useImageSize2({
+  const image = useImageSize({
     artwork,
     targetSize: size,
     defaultImage,

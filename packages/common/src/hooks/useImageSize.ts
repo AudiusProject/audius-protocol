@@ -23,7 +23,7 @@ type Artwork<T extends string | number | symbol> = { [key in T]?: string }
  * @param defaultImage - The fallback image to use if no image is found in the `artwork` object
  * @returns The url of the image, or undefined if the image is not available
  */
-export const useImageSize2 = <
+export const useImageSize = <
   SizeType extends SquareSizes | WidthSizes,
   ArtworkType extends Artwork<SizeType> & { mirrors?: string[] | undefined }
 >({

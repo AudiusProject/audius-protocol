@@ -1,4 +1,4 @@
-import { useImageSize2 } from '@audius/common/hooks'
+import { useImageSize } from '@audius/common/hooks'
 import type { SquareSizes, ID } from '@audius/common/models'
 import type { CommonState } from '@audius/common/store'
 import {
@@ -52,7 +52,7 @@ export const useCollectionImage = ({
   const artwork = useSelector(
     (state: CommonState) => getCollection(state, { id: collectionId })?.artwork
   )
-  const image = useImageSize2({
+  const image = useImageSize({
     artwork,
     targetSize: size,
     defaultImage: '',
