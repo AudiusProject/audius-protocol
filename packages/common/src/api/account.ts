@@ -37,9 +37,9 @@ const accountApi = createApi({
     resetPassword: {
       async fetch(args: ResetPasswordArgs, context) {
         const { email, password } = args
-        const { userAuth } = context
-        await userAuth.resetPassword({
-          email,
+        const { authService } = context
+        await authService.resetPassword({
+          username: email,
           password
         })
         return { status: 'ok' }

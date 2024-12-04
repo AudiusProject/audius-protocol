@@ -1,10 +1,11 @@
 import { createContext, useContext } from 'react'
 
-import type { AudiusSdk, UserAuth } from '@audius/sdk'
+import type { AudiusSdk } from '@audius/sdk'
 import type { Dispatch } from 'redux'
 import { getContext } from 'typed-redux-saga'
 
 import type { AudiusAPIClient } from '~/services/audius-api-client'
+import type { AuthService } from '~/services/auth'
 import {
   AudiusBackend,
   Env,
@@ -22,7 +23,7 @@ export type AudiusQueryContextType = {
   apiClient: AudiusAPIClient
   audiusSdk: () => Promise<AudiusSdk>
   audiusBackend: AudiusBackend
-  userAuth: UserAuth
+  authService: AuthService
   dispatch: Dispatch
   reportToSentry: (args: ReportToSentryArgs) => void
   env: Env
