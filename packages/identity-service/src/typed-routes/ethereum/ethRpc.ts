@@ -19,7 +19,10 @@ import {
   rpcTransactionType,
   type TransactionRequestLegacy,
   type TransactionRequestEIP1559,
-  type TransactionRequestEIP2930
+  type TransactionRequestEIP2930,
+  numberToHex,
+  type TransactionRequestEIP4844,
+  type TransactionRequestEIP7702
 } from 'viem'
 import { mainnet } from 'viem/chains'
 import { privateKeyToAccount } from 'viem/accounts'
@@ -66,6 +69,12 @@ const toTransactionRequest = (
     gasPrice,
     maxFeePerGas,
     maxPriorityFeePerGas,
+    maxFeePerBlobGas,
+    blobVersionedHashes,
+    blobs,
+    kzg,
+    sidecars,
+    authorizationList,
     nonce,
     type: hexType,
     value,
@@ -109,6 +118,36 @@ const toTransactionRequest = (
         : undefined,
       type
     } satisfies TransactionRequestEIP1559
+  }
+  if (type === 'eip4844') {
+    return {
+      ...base,
+      to: base.to!,
+      accessList,
+      blobs: blobs!,
+      blobVersionedHashes,
+      kzg,
+      sidecars,
+      maxFeePerBlobGas: hexToBigInt(maxFeePerBlobGas!)
+    } satisfies TransactionRequestEIP4844
+  }
+  if (type === 'eip7702') {
+    return {
+      ...base,
+      authorizationList: authorizationList!.map((a) => ({
+        contractAddress: a.address,
+        r: a.r,
+        s: a.s,
+        chainId: hexToNumber(a.chainId),
+        nonce: hexToNumber(a.nonce),
+        ...(typeof a.yParity !== 'undefined'
+          ? { yParity: hexToNumber(a.yParity as unknown as Hex) }
+          : {}),
+        ...(typeof a.v !== 'undefined' && typeof a.yParity === 'undefined'
+          ? { v: hexToBigInt(a.v as unknown as Hex) }
+          : {})
+      }))
+    } satisfies TransactionRequestEIP7702
   }
   return base
 }
