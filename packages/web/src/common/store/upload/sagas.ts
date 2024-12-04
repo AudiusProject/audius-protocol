@@ -698,11 +698,11 @@ export function* handleUploads({
   while (hasUnprocessedTracks() && !collectionUploadErrored()) {
     const { type, payload } = yield* take(responseChannel)
     if (type === 'UPLOADED') {
-      yield* handleUploaded(payload)
+      yield* call(handleUploaded, payload)
     } else if (type === 'PUBLISHED') {
-      yield* handlePublished(payload)
+      yield* call(handlePublished, payload)
     } else if (type === 'ERROR') {
-      yield* handleWorkerError(payload)
+      yield* call(handleWorkerError, payload)
     }
   }
 
@@ -1253,7 +1253,7 @@ export function* updateTrackAudioAsync(
   yield* delay(3000)
 
   yield* put(replaceTrackProgressModalActions.close())
-  yield* put(push(baseMetadata.permalink))
+  yield* put(push(track.permalink))
 }
 
 function* watchUploadTracks() {
