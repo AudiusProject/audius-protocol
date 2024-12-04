@@ -128,6 +128,18 @@ export class Storage implements StorageService {
       file.name ?? 'blob'
     )
 
+    // Generate signature
+    const signatureData = {
+      timestamp: Date.now()
+    }
+    const signature = await auth.hashAndSign(
+      JSON.stringify(sortObjectKeys(signatureData))
+    )
+    const signatureEnvelope = {
+      data: JSON.stringify(signatureData),
+      signature
+    }
+
     // Using axios for now because it supports upload progress,
     // and Node doesn't support XmlHttpRequest
     let response: AxiosResponse<any> | null = null
@@ -135,8 +147,8 @@ export class Storage implements StorageService {
       method: 'post',
       maxContentLength: Infinity,
       data: formData,
+      params: { signature: JSON.stringify(signatureEnvelope) },
       headers: {
-        'X-User-Wallet-Addr': await auth.getAddress(),
         ...(formData.getBoundary
           ? {
               'Content-Type': `multipart/form-data; boundary=${formData.getBoundary()}`
