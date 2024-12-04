@@ -26,6 +26,7 @@ import type {
   GetChallenges,
   GetSupportedUsers,
   GetSupporters,
+  MutualFollowersResponse,
   PlaylistsResponse,
   PurchasersResponse,
   RelatedArtistResponse,
@@ -64,6 +65,8 @@ import {
     GetSupportedUsersToJSON,
     GetSupportersFromJSON,
     GetSupportersToJSON,
+    MutualFollowersResponseFromJSON,
+    MutualFollowersResponseToJSON,
     PlaylistsResponseFromJSON,
     PlaylistsResponseToJSON,
     PurchasersResponseFromJSON,
@@ -188,6 +191,13 @@ export interface GetMutedUsersRequest {
     id: string;
     encodedDataMessage?: string;
     encodedDataSignature?: string;
+}
+
+export interface GetMutualFollowersRequest {
+    id: string;
+    offset?: number;
+    limit?: number;
+    userId?: string;
 }
 
 export interface GetPlaylistsByUserRequest {
@@ -891,6 +901,49 @@ export class UsersApi extends runtime.BaseAPI {
      */
     async getMutedUsers(params: GetMutedUsersRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<UsersResponse> {
         const response = await this.getMutedUsersRaw(params, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * @hidden
+     * Get intersection of users that follow followeeUserId and users that are followed by followerUserId
+     */
+    async getMutualFollowersRaw(params: GetMutualFollowersRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<MutualFollowersResponse>> {
+        if (params.id === null || params.id === undefined) {
+            throw new runtime.RequiredError('id','Required parameter params.id was null or undefined when calling getMutualFollowers.');
+        }
+
+        const queryParameters: any = {};
+
+        if (params.offset !== undefined) {
+            queryParameters['offset'] = params.offset;
+        }
+
+        if (params.limit !== undefined) {
+            queryParameters['limit'] = params.limit;
+        }
+
+        if (params.userId !== undefined) {
+            queryParameters['user_id'] = params.userId;
+        }
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        const response = await this.request({
+            path: `/users/{id}/mutuals`.replace(`{${"id"}}`, encodeURIComponent(String(params.id))),
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => MutualFollowersResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Get intersection of users that follow followeeUserId and users that are followed by followerUserId
+     */
+    async getMutualFollowers(params: GetMutualFollowersRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<MutualFollowersResponse> {
+        const response = await this.getMutualFollowersRaw(params, initOverrides);
         return await response.value();
     }
 

@@ -32,7 +32,6 @@ import {
   getContext,
   confirmerActions,
   confirmTransaction,
-  SubscriptionInfo,
   Entry,
   trackPageActions
 } from '@audius/common/store'
@@ -697,7 +696,6 @@ function* confirmDeleteAlbum(playlistId: ID, userId: ID) {
       },
       function* () {
         console.debug(`Successfully deleted album ${playlistId}`)
-        yield* put(cacheActions.remove(Kind.COLLECTIONS, [playlistId]))
       },
       function* ({ error, timeout, message }) {
         console.error(`Failed to delete album ${playlistId}`)
@@ -794,7 +792,6 @@ function* confirmDeletePlaylist(userId: ID, playlistId: ID) {
       },
       function* () {
         console.debug(`Successfully deleted playlist ${playlistId}`)
-        yield* put(cacheActions.remove(Kind.COLLECTIONS, [playlistId]))
       },
       function* ({ error, timeout, message }) {
         console.error(`Failed to delete playlist ${playlistId}`)
@@ -856,7 +853,6 @@ function* fetchRepostInfo(entries: Entry<Collection>[]) {
     const { entries: users, uids } = yield* call(fetchUsers, userIds)
 
     const updates: UserFollowees[] = []
-    const subscriptions: SubscriptionInfo[] = []
     entries.forEach((entry) => {
       const followeeRepostUsers: {
         id: ID
@@ -871,18 +867,9 @@ function* fetchRepostInfo(entries: Entry<Collection>[]) {
         subscriptionUids.push(uids[repost.user_id])
       })
       updates.push(followeeRepostUsers)
-      if (subscriptionUids.length > 0) {
-        subscriptions.concat(
-          subscriptionUids.map((uid) => ({
-            id: entry.id,
-            kind: Kind.USERS,
-            uid
-          }))
-        )
-      }
     })
 
-    yield* put(cacheActions.update(Kind.COLLECTIONS, updates, subscriptions))
+    yield* put(cacheActions.update(Kind.COLLECTIONS, updates))
   }
 }
 

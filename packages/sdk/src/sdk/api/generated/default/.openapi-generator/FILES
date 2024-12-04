@@ -46,6 +46,7 @@ models/GetChallenges.ts
 models/GetSupportedUsers.ts
 models/GetSupporters.ts
 models/GetTipsResponse.ts
+models/MutualFollowersResponse.ts
 models/NftCollection.ts
 models/NftGate.ts
 models/Playlist.ts

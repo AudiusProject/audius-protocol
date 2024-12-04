@@ -51,7 +51,7 @@ module.exports = function (app) {
         const email = body.username.toLowerCase()
         const existingUser = await models.User.findOne({
           where: {
-            email: email
+            email
           }
         })
 
@@ -71,7 +71,8 @@ module.exports = function (app) {
             walletAddress: body.walletAddress.toLowerCase(),
             lastSeenDate: Date.now(),
             IP,
-            isEmailDeliverable: isDeliverable
+            isEmailDeliverable: isDeliverable,
+            isGuest: body.isGuest
           })
 
           return successResponse()
@@ -97,7 +98,7 @@ module.exports = function (app) {
         email = email.toLowerCase()
         const existingUser = await models.User.findOne({
           where: {
-            email: email
+            email
           }
         })
         if (existingUser) {
