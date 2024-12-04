@@ -71,7 +71,7 @@ const config = {
     splPath
   ],
   resolver: {
-    assetExts: assetExts.filter((ext) => ext !== 'svg'),
+    assetExts: [...assetExts.filter((ext) => ext !== 'svg'), 'lottie'],
     sourceExts: [...sourceExts, 'svg', 'cjs', 'workerscript'],
     extraNodeModules: {
       ...require('node-libs-react-native'),

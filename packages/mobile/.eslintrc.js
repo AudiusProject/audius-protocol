@@ -27,7 +27,7 @@ module.exports = {
           ['utils', '@audius/web/src/utils'],
           ['common', '@audius/web/src/common']
         ],
-        extensions: ['.ts', '.tsx', '.js', '.jsx', '.json']
+        extensions: ['.ts', '.tsx', '.js', '.jsx', '.json', '.lottie']
       }
     }
   },

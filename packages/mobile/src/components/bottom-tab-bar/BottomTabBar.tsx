@@ -3,33 +3,30 @@ import { useCallback } from 'react'
 import type { BottomTabBarProps as RNBottomTabBarProps } from '@react-navigation/bottom-tabs'
 import type { BottomTabNavigationEventMap } from '@react-navigation/bottom-tabs/lib/typescript/src/types'
 import type { NavigationHelpers, ParamListBase } from '@react-navigation/native'
-import { Animated, View } from 'react-native'
+import { Animated } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
+import { Flex } from '@audius/harmony-native'
 import { FULL_DRAWER_HEIGHT } from 'app/components/drawer'
 import { PLAY_BAR_HEIGHT } from 'app/components/now-playing-drawer'
 import * as haptics from 'app/haptics'
-import { makeStyles } from 'app/styles'
 
-import { bottomTabBarButtons } from './bottom-tab-bar-buttons'
+import {
+  NotificationsButton,
+  LibraryButton,
+  ExploreButton,
+  TrendingButton,
+  FeedButton
+} from './bottom-tab-bar-buttons'
 import { BOTTOM_BAR_HEIGHT } from './constants'
 
-const useStyles = makeStyles(({ palette }) => ({
-  root: {
-    zIndex: 4,
-    elevation: 4
-  },
-  bottomBar: {
-    borderTopWidth: 1,
-    borderTopColor: palette.neutralLight8,
-    backgroundColor: palette.neutralLight10,
-    display: 'flex',
-    flexDirection: 'row',
-    flexWrap: 'nowrap',
-    alignItems: 'center',
-    justifyContent: 'space-evenly'
-  }
-}))
+export const bottomTabBarButtons = {
+  feed: FeedButton,
+  trending: TrendingButton,
+  explore: ExploreButton,
+  library: LibraryButton,
+  notifications: NotificationsButton
+}
 
 const interpolatePostion = (
   translationAnim: Animated.Value,
@@ -70,7 +67,6 @@ export type BottomTabBarProps = Pick<RNBottomTabBarProps, 'state'> & {
 }
 
 export const BottomTabBar = (props: BottomTabBarProps) => {
-  const styles = useStyles()
   const { translationAnim, navigation, state } = props
   const { routes, index: activeIndex } = state
   const insets = useSafeAreaInsets()
@@ -110,11 +106,19 @@ export const BottomTabBar = (props: BottomTabBarProps) => {
 
   return (
     <Animated.View
-      style={[styles.root, interpolatePostion(translationAnim, insets.bottom)]}
+      style={[
+        { zIndex: 4, elevation: 4 },
+        interpolatePostion(translationAnim, insets.bottom)
+      ]}
     >
-      <View
+      <Flex
+        row
         pointerEvents='auto'
-        style={[styles.bottomBar, { paddingBottom: insets.bottom }]}
+        borderTop='default'
+        backgroundColor='surface1'
+        wrap='nowrap'
+        justifyContent='space-evenly'
+        pb={insets.bottom}
       >
         {routes.map(({ name, key }, index) => {
           const BottomTabBarButton = bottomTabBarButtons[name]
@@ -129,7 +133,7 @@ export const BottomTabBar = (props: BottomTabBarProps) => {
             />
           )
         })}
-      </View>
+      </Flex>
     </Animated.View>
   )
 }
