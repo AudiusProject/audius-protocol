@@ -77,6 +77,7 @@ module.exports = {
           label: 'Python',
           items: [
             'developers/community-projects/audius-py',
+            'developers/community-projects/pyaudius',
           ],
           collapsed: true,
         },
