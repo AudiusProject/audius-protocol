@@ -336,7 +336,7 @@ func setupNode(logger *common.Logger) (*config.Config, *cconfig.Config, error) {
 	// this keeps the mempool from taking up too much memory
 	cometConfig.Mempool.MaxTxsBytes = 10485760
 	cometConfig.Mempool.MaxTxBytes = 307200
-	cometConfig.Mempool.Size = 2000
+	cometConfig.Mempool.Size = 30000
 
 	isDev := envConfig.Environment == "dev" || envConfig.Environment == "local"
 
