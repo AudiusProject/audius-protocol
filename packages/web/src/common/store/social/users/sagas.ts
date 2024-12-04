@@ -333,14 +333,18 @@ export function* subscribeToUserAsync(userId: ID) {
 }
 
 export function* confirmSubscribeToUser(userId: ID, accountId: ID) {
-  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
+  const audiusSdk = yield* getContext('audiusSdk')
+  const sdk = yield* call(audiusSdk)
   yield* put(
     confirmerActions.requestConfirmation(
       makeKindId(Kind.USERS, userId),
       function* () {
         const { blockHash, blockNumber } = yield* call(
-          audiusBackendInstance.subscribeToUser,
-          { subscribeToUserId: userId, userId: accountId }
+          [sdk.users, sdk.users.subscribeToUser],
+          {
+            subscribeeUserId: encodeHashId(userId),
+            userId: encodeHashId(accountId)
+          }
         )
         const confirmed = yield* call(
           confirmTransaction,
@@ -399,14 +403,18 @@ export function* unsubscribeFromUserAsync(userId: ID) {
 }
 
 export function* confirmUnsubscribeFromUser(userId: ID, accountId: ID) {
-  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
+  const audiusSdk = yield* getContext('audiusSdk')
+  const sdk = yield* call(audiusSdk)
   yield* put(
     confirmerActions.requestConfirmation(
       makeKindId(Kind.USERS, userId),
       function* () {
         const { blockHash, blockNumber } = yield* call(
-          audiusBackendInstance.unsubscribeFromUser,
-          { subscribedToUserId: userId, userId: accountId }
+          [sdk.users, sdk.users.unsubscribeFromUser],
+          {
+            subscribeeUserId: encodeHashId(userId),
+            userId: encodeHashId(accountId)
+          }
         )
         const confirmed = yield* call(
           confirmTransaction,

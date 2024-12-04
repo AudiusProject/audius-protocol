@@ -8,6 +8,12 @@ import { AuthHeaders } from './types'
 
 type Data = Record<string, unknown>
 type SetAuthFnParams = Parameters<SetAuthFn>[0]
+export type RecoveryInfoParams = {
+  login: string
+  host: string
+  data: string
+  signature: string
+}
 
 export type IdentityRequestError = AxiosError
 
@@ -70,8 +76,18 @@ export class IdentityService {
     })
   }
 
+  /* ------- USER FUNCTIONS ------- */
+  async sendRecoveryInfo(data: RecoveryInfoParams) {
+    return await this._makeRequest<{ status: true }>({
+      url: '/recovery',
+      method: 'post',
+      data
+    })
+  }
+
   /* ------- INTERNAL FUNCTIONS ------- */
 
+  // TODO: Use regular `fetch` and same request patterns as SDK
   async _makeRequest<T = unknown>(axiosRequestObj: AxiosRequestConfig) {
     axiosRequestObj.baseURL =
       axiosRequestObj.baseURL || this.identityServiceEndpoint

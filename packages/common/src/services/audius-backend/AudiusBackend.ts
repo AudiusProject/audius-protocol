@@ -959,29 +959,6 @@ export const audiusBackend = ({
     }
   }
 
-  // TODO(C-2719)
-  async function getFolloweeFollows(userId: ID, limit = 100, offset = 0) {
-    let followers = []
-    try {
-      await waitForLibsInit()
-      followers = await audiusLibs.User.getMutualFollowers(
-        limit,
-        offset,
-        userId
-      )
-
-      if (followers.length) {
-        return Promise.all(
-          followers.map((follower: User) => getUserImages(follower))
-        )
-      }
-    } catch (err) {
-      console.error(getErrorMessage(err))
-    }
-
-    return followers
-  }
-
   async function createPlaylist(
     playlistId: ID,
     metadata: Partial<Collection>,
@@ -1212,10 +1189,6 @@ export const audiusBackend = ({
     const metadata = schemas.newUserMetadata()
 
     return await audiusLibs.Account.guestSignUp(email, metadata)
-  }
-  async function resetPassword(username: string, password: string) {
-    const libs = await getAudiusLibsTyped()
-    return libs.Account!.resetPassword({ username, password })
   }
 
   async function sendRecoveryEmail(handle: string) {
@@ -1649,8 +1622,6 @@ export const audiusBackend = ({
   }
 
   async function getPushNotificationSettings({ sdk }: { sdk: AudiusSdk }) {
-    await waitForLibsInit()
-
     try {
       const { data, signature } = await signIdentityServiceRequest({ sdk })
       return await fetch(`${identityServiceUrl}/push_notifications/settings`, {
@@ -1676,8 +1647,6 @@ export const audiusBackend = ({
     deviceToken: string
     deviceType: string
   }) {
-    await waitForLibsInit()
-
     try {
       const { data, signature } = await signIdentityServiceRequest({ sdk })
       return await fetch(
@@ -1725,42 +1694,6 @@ export const audiusBackend = ({
       ).then((res) => res.json())
     } catch (e) {
       console.error(e)
-    }
-  }
-
-  async function subscribeToUser({
-    subscribeToUserId,
-    userId
-  }: {
-    subscribeToUserId: ID
-    userId: ID
-  }) {
-    try {
-      await waitForLibsInit()
-      return await audiusLibs.User.addUserSubscribe(subscribeToUserId, userId)
-    } catch (err) {
-      console.error(getErrorMessage(err))
-      throw err
-    }
-  }
-
-  async function unsubscribeFromUser({
-    subscribedToUserId,
-    userId
-  }: {
-    subscribedToUserId: ID
-    userId: ID
-  }) {
-    try {
-      await waitForLibsInit()
-
-      return await audiusLibs.User.deleteUserSubscribe(
-        subscribedToUserId,
-        userId
-      )
-    } catch (err) {
-      console.error(getErrorMessage(err))
-      throw err
     }
   }
 
@@ -2167,7 +2100,6 @@ export const audiusBackend = ({
     getBrowserPushSubscription,
     getCollectionImages,
     getEmailNotificationSettings,
-    getFolloweeFollows,
     getImageUrl,
     getPushNotificationSettings,
     getRandomFeePayer,
@@ -2186,7 +2118,6 @@ export const audiusBackend = ({
     recordTrackListen,
     registerDeviceToken,
     repostCollection,
-    resetPassword,
     guestSignUp,
     saveCollection,
     searchTags,
@@ -2218,8 +2149,6 @@ export const audiusBackend = ({
     updatePushNotificationSettings,
     updateUserEvent,
     updateUserLocationTimezone,
-    subscribeToUser,
-    unsubscribeFromUser,
     uploadImage,
     userNodeUrl,
     validateTracksInPlaylist,

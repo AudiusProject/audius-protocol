@@ -51,6 +51,7 @@ export type CommonStoreContext = {
       properties: any
     }
   }
+  getHostUrl: () => string
   remoteConfigInstance: RemoteConfigInstance
   audiusBackendInstance: AudiusBackend
   apiClient: AudiusAPIClient

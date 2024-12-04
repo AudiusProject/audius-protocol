@@ -5,6 +5,7 @@ import type { Dispatch } from 'redux'
 import { getContext } from 'typed-redux-saga'
 
 import type { AudiusAPIClient } from '~/services/audius-api-client'
+import type { AuthService } from '~/services/auth'
 import {
   AudiusBackend,
   Env,
@@ -22,6 +23,7 @@ export type AudiusQueryContextType = {
   apiClient: AudiusAPIClient
   audiusSdk: () => Promise<AudiusSdk>
   audiusBackend: AudiusBackend
+  authService: AuthService
   dispatch: Dispatch
   reportToSentry: (args: ReportToSentryArgs) => void
   env: Env
@@ -77,6 +79,9 @@ export function* getAudiusQueryContext(): Generator<
     ),
     audiusBackend: yield* getContext<AudiusQueryContextType['audiusBackend']>(
       'audiusBackendInstance'
+    ),
+    authService: yield* getContext<AudiusQueryContextType['authService']>(
+      'authService'
     ),
     audiusSdk: yield* getContext<AudiusQueryContextType['audiusSdk']>(
       'audiusSdk'

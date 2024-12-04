@@ -3,7 +3,7 @@ import { ChangeCredentialsArgs } from '@audius/hedgehog/dist/types'
 import type { LocalStorage } from '../local-storage'
 
 import { HedgehogConfig, createHedgehog } from './hedgehog'
-import type { IdentityService } from './identity'
+import type { IdentityService, RecoveryInfoParams } from './identity'
 
 export type AuthServiceConfig = {
   identityService: IdentityService
@@ -31,6 +31,19 @@ export type AuthService = {
     otp?: string
   ) => Promise<SignInResponse>
   signOut: () => Promise<void>
+  resetPassword: ({
+    username,
+    password
+  }: {
+    username: string
+    password: string
+  }) => Promise<void>
+  sendRecoveryInfo: (params: {
+    login: string
+    host: string
+    data: string
+    signature: string
+  }) => Promise<void>
   getWalletAddresses: () => Promise<GetWalletAddressesResult>
   changeCredentials: (args: ChangeCredentialsArgs) => Promise<void>
 }
@@ -69,6 +82,16 @@ export const createAuthService = ({
     return hedgehogInstance.logout()
   }
 
+  const resetPassword = async ({
+    username,
+    password
+  }: {
+    username: string
+    password: string
+  }) => {
+    return hedgehogInstance.resetPassword({ username, password })
+  }
+
   const getWalletAddresses = async () => {
     const walletOverride = await localStorage.getAudiusUserWalletOverride()
     await hedgehogInstance.waitUntilReady()
@@ -81,6 +104,8 @@ export const createAuthService = ({
 
   const changeCredentials = async (args: ChangeCredentialsArgs) => {
     return await hedgehogInstance.changeCredentials(args)
+  const sendRecoveryInfo = async (params: RecoveryInfoParams) => {
+    await identityService.sendRecoveryInfo(params)
   }
 
   return {
@@ -88,6 +113,8 @@ export const createAuthService = ({
     signIn,
     signOut,
     getWalletAddresses,
-    changeCredentials
+    changeCredentials,
+    sendRecoveryInfo,
+    resetPassword
   }
 }
