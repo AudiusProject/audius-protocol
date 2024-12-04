@@ -4,11 +4,11 @@ import { call, put, takeEvery } from 'redux-saga/effects'
 import * as actions from './actions'
 
 function* watchChangePassword() {
+  const authService = yield* getContext('authService')
   yield takeEvery(
     actions.CHANGE_PASSWORD,
     function* (action: actions.ChangePasswordAction) {
       try {
-        const authService = yield* getContext('authService')
         yield call(authService.resetPassword, {
           username: action.email,
           password: action.password
