@@ -16,7 +16,7 @@ export function privateKeyToAudiusAccount(privateKey: Hex): AudiusAccount {
     getSharedSecret: async (publicKey: string | Uint8Array) => {
       return secp256k1.getSharedSecret(hexToBytes(privateKey), publicKey, true)
     },
-    sign: async (data: Hex) => {
+    signRaw: async (data: Hex) => {
       return secp256k1.sign(
         keccak_256(hexToBytes(data)),
         hexToBytes(privateKey),

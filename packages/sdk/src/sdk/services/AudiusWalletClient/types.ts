@@ -16,8 +16,9 @@ export type AudiusAccount = Account & {
   getSharedSecret: (publicKey: string | Uint8Array) => Promise<Uint8Array>
   /**
    * Signs the keccak hash of some data, used for Chats
+   * @deprecated use signMessage instead
    */
-  sign: (data: Hex) => Promise<[Uint8Array, number]>
+  signRaw: (data: Hex) => Promise<[Uint8Array, number]>
 }
 
 /**

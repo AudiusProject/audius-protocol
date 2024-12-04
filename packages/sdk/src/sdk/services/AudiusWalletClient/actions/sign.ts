@@ -29,8 +29,8 @@ export async function sign<
     return message_.raw
   })()
 
-  if ('sign' in account && account.sign) {
-    return account.sign(message)
+  if ('signRaw' in account && account.signRaw) {
+    return account.signRaw(message)
   }
   throw new Error(
     `Account type '${account.type}' does not implement 'sign' method.`

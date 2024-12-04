@@ -1,11 +1,10 @@
 import { AudiusToken, AudiusTokenTypes } from '@audius/eth'
 import {
-  type GetTypedDataDomain,
   type Hex,
   type TypedDataDefinition,
   type PublicClient,
-  hexToSignature,
-  type WalletClient
+  type WalletClient,
+  parseSignature
 } from 'viem'
 
 import { parseParams } from '../../../../utils/parseParams'
@@ -64,7 +63,7 @@ export class AudiusTokenClient {
       types: AudiusToken.types
     }
     const signature = await this.audiusWalletClient.signTypedData(typedData)
-    const { r, s, v } = hexToSignature(signature)
+    const { r, s, v } = parseSignature(signature)
 
     // Send the transaction on Ethereum
     const { request } = await this.publicClient.simulateContract({
@@ -78,7 +77,7 @@ export class AudiusTokenClient {
   }
 
   private async domain(): Promise<
-    GetTypedDataDomain<AudiusTokenTypes>['domain']
+    TypedDataDefinition<AudiusTokenTypes, 'EIP712Domain'>['domain']
   > {
     return {
       name: await this.publicClient.readContract({

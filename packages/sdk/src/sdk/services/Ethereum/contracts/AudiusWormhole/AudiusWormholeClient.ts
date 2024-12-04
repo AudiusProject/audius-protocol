@@ -1,11 +1,10 @@
 import { AudiusWormhole, type AudiusWormholeTypes } from '@audius/eth'
 import {
-  hexToSignature,
-  type GetTypedDataDomain,
   type Hex,
   type PublicClient,
   type TypedDataDefinition,
-  type WalletClient
+  type WalletClient,
+  parseSignature
 } from 'viem'
 
 import { parseParams } from '../../../../utils/parseParams'
@@ -77,7 +76,7 @@ export class AudiusWormholeClient {
       types: AudiusWormhole.types
     }
     const signature = await this.audiusWalletClient.signTypedData(typedData)
-    const { r, s, v } = hexToSignature(signature)
+    const { r, s, v } = parseSignature(signature)
 
     // Send the transaction on Ethereum
     const { request } = await this.publicClient.simulateContract({
@@ -101,7 +100,7 @@ export class AudiusWormholeClient {
   }
 
   private async domain(): Promise<
-    GetTypedDataDomain<AudiusWormholeTypes>['domain']
+    TypedDataDefinition<AudiusWormholeTypes, 'EIP712Domain'>['domain']
   > {
     return {
       name: 'AudiusWormholeClient',
