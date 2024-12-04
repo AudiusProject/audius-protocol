@@ -23,7 +23,7 @@ import { useNavigation } from 'app/hooks/useNavigation'
 
 import { CollectionDogEar } from '../collection/CollectionDogEar'
 import { LockedStatusBadge } from '../core'
-import { CollectionImageV2 } from '../image/CollectionImageV2'
+import { CollectionImage } from '../image/CollectionImage'
 import { CollectionDownloadStatusIndicator } from '../offline-downloads'
 
 const { getCollection } = cacheCollectionsSelectors
@@ -86,7 +86,7 @@ export const CollectionCard = (props: CollectionCardProps) => {
     <Paper border='default' onPress={handlePress}>
       <CollectionDogEar collectionId={playlist_id} />
       <Flex p='s' gap='s'>
-        <CollectionImageV2
+        <CollectionImage
           collectionId={playlist_id}
           size={SquareSizes.SIZE_480_BY_480}
           style={{ flex: 1 }}

@@ -14,13 +14,13 @@ import { useDispatch, useSelector } from 'react-redux'
 
 import { IconLock } from '@audius/harmony-native'
 import { FavoriteButton } from 'app/components/favorite-button'
-import { TrackImage } from 'app/components/image/TrackImage'
 import Text from 'app/components/text'
 import { makeStyles } from 'app/styles'
 import { useColor } from 'app/utils/theme'
 import { zIndex } from 'app/utils/zIndex'
 
 import { LockedStatusBadge } from '../core'
+import { TrackImage } from '../image/TrackImage'
 
 import { PlayButton } from './PlayButton'
 import { TrackingBar } from './TrackingBar'
@@ -211,8 +211,8 @@ export const PlayBar = (props: PlayBarProps) => {
                 </View>
               ) : null}
               <TrackImage
+                trackId={track?.track_id}
                 style={styles.artwork}
-                track={track}
                 size={SquareSizes.SIZE_150_BY_150}
               />
             </View>

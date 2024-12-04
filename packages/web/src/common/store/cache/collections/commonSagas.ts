@@ -884,61 +884,6 @@ function* watchAdd() {
   )
 }
 
-function* watchFetchCoverArt() {
-  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
-  const inProgress = new Set()
-  yield* takeEvery(
-    collectionActions.FETCH_COVER_ART,
-    function* ({
-      collectionId,
-      size
-    }: ReturnType<typeof collectionActions.fetchCoverArt>) {
-      // Unique on id and size
-      const key = `${collectionId}-${size}`
-      if (inProgress.has(key)) return
-      inProgress.add(key)
-
-      try {
-        const collection: Collection | null = yield* select(getCollection, {
-          id: collectionId
-        })
-        if (
-          !collection ||
-          (!collection.cover_art_sizes && !collection.cover_art)
-        )
-          return
-
-        const multihash = collection.cover_art_sizes || collection.cover_art
-        const coverArtSize =
-          multihash === collection.cover_art_sizes ? size : undefined
-
-        const url = yield* call(
-          audiusBackendInstance.getImageUrl,
-          multihash,
-          coverArtSize,
-          collection.cover_art_cids
-        )
-        collection._cover_art_sizes = {
-          ...collection._cover_art_sizes,
-          [coverArtSize || DefaultSizes.OVERRIDE]: url
-        }
-        yield* put(
-          cacheActions.update(Kind.COLLECTIONS, [
-            { id: collectionId, metadata: collection }
-          ])
-        )
-      } catch (e) {
-        console.error(
-          `Unable to fetch cover art for collection ${collectionId}`,
-          e
-        )
-      } finally {
-        inProgress.delete(key)
-      }
-    }
-  )
-}
-
 export default function sagas() {
   return [
     watchAdd,
@@ -949,7 +894,6 @@ export default function sagas() {
     watchOrderPlaylist,
     watchPublishPlaylist,
     watchDeletePlaylist,
-    watchFetchCoverArt,
     watchTrackErrors
   ]
 }

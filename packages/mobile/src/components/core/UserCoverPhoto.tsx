@@ -1,4 +1,4 @@
-import type { ID } from '@audius/common/models'
+import { WidthSizes, type ID } from '@audius/common/models'
 
 import type { CoverPhotoProps } from '@audius/harmony-native'
 import { CoverPhoto } from '@audius/harmony-native'
@@ -12,13 +12,15 @@ type UserCoverPhotoProps = {
 export const UserCoverPhoto = (props: UserCoverPhotoProps) => {
   const { userId, ...other } = props
 
-  const { source, handleError, shouldBlur } = useCoverPhoto(userId)
+  const { source, shouldBlur } = useCoverPhoto({
+    userId,
+    size: WidthSizes.SIZE_640
+  })
 
   return (
     <CoverPhoto
       coverPhoto={shouldBlur ? undefined : source}
       profilePicture={shouldBlur ? source : undefined}
-      onError={handleError}
       {...other}
     />
   )

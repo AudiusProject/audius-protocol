@@ -18,8 +18,8 @@ import {
   useTheme
 } from '@audius/harmony-native'
 import { ProfilePicture } from 'app/components/core'
-import { CollectionImageV2 } from 'app/components/image/CollectionImageV2'
-import { TrackImageV2 } from 'app/components/image/TrackImageV2'
+import { CollectionImage } from 'app/components/image/CollectionImage'
+import { TrackImage } from 'app/components/image/TrackImage'
 import Skeleton from 'app/components/skeleton'
 import { UserLink } from 'app/components/user-link'
 import { useNavigation } from 'app/hooks/useNavigation'
@@ -100,7 +100,7 @@ export const SearchItemTrack = (props: SearchItemProps) => {
 
   return (
     <SearchItemContainer {...props} onPress={handlePress}>
-      <TrackImageV2
+      <TrackImage
         trackId={id}
         size={SquareSizes.SIZE_150_BY_150}
         style={{
@@ -165,7 +165,7 @@ export const SearchItemCollection = (props: SearchItemProps) => {
 
   return (
     <SearchItemContainer {...props} onPress={handlePress}>
-      <CollectionImageV2
+      <CollectionImage
         collectionId={id}
         size={SquareSizes.SIZE_150_BY_150}
         style={{ height: spacing.unit10, width: spacing.unit10 }}

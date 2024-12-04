@@ -32,3 +32,5 @@ export const FastImage = (props: FastImageProps) => {
 
   return <RNFastImage source={imageSource} {...other} />
 }
+
+export const preload = RNFastImage.preload

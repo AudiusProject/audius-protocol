@@ -1,65 +1,69 @@
+import { useImageSize2 } from '@audius/common/hooks'
 import type { SquareSizes, ID } from '@audius/common/models'
 import { cacheUsersSelectors } from '@audius/common/store'
-import type { Nullable } from '@audius/common/utils'
+import { Image } from 'react-native'
 import { useSelector } from 'react-redux'
 
 import { FastImage } from '@audius/harmony-native'
 import type { FastImageProps } from '@audius/harmony-native'
 import profilePicEmpty from 'app/assets/images/imageProfilePicEmpty2X.png'
-import type { ContentNodeImageSource } from 'app/hooks/useContentNodeImage'
-import { useContentNodeImage } from 'app/hooks/useContentNodeImage'
+
+import { primitiveToImageSource } from './primitiveToImageSource'
 
 const { getUser } = cacheUsersSelectors
 
 type UseUserImageOptions = {
-  userId: Nullable<ID>
+  userId?: ID
   size: SquareSizes
 }
 
-export const useProfilePicture = (
-  userId: Nullable<number>,
-  size: SquareSizes,
-  cidOverride?: Nullable<string>
-): ContentNodeImageSource => {
-  const cid = useSelector((state) => {
-    if (cidOverride) return cidOverride
-    const user = getUser(state, { id: userId })
-    if (!user) return null
-    const { profile_picture_sizes } = user
-    return profile_picture_sizes
-  })
+export const useProfilePicture = ({
+  userId,
+  size
+}: {
+  userId?: ID
+  size: SquareSizes
+  defaultImage?: string
+}) => {
+  const user = useSelector((state) => getUser(state, { id: userId }))
 
-  const cidMap = useSelector(
-    (state) => getUser(state, { id: userId })?.profile_picture_cids
-  )
-
-  const updatedSource = useSelector((state) => {
-    const user = getUser(state, { id: userId })
-    if (!user) return null
-    const { updatedProfilePicture } = user
-    if (!updatedProfilePicture) return null
-    return {
-      source: { uri: updatedProfilePicture.url },
-      handleError: () => {},
-      isFallbackImage: false
+  const profilePicture = user?.profile_picture
+  const image = useImageSize2({
+    artwork: profilePicture,
+    targetSize: size,
+    defaultImage: '',
+    preloadImageFn: async (url: string) => {
+      Image.prefetch(url)
     }
   })
 
-  const imageSource = useContentNodeImage({
-    cid,
-    size,
-    fallbackImageSource: profilePicEmpty,
-    cidMap
-  })
+  if (image === '') {
+    return {
+      source: profilePicEmpty,
+      isFallbackImage: true
+    }
+  }
 
-  return updatedSource ?? imageSource
+  if (user?.updatedProfilePicture) {
+    return {
+      source: primitiveToImageSource(user.updatedProfilePicture.url),
+      isFallbackImage: false
+    }
+  }
+
+  return {
+    source: primitiveToImageSource(image),
+    isFallbackImage: false
+  }
 }
 
 export type UserImageProps = UseUserImageOptions & Partial<FastImageProps>
 
 export const UserImage = (props: UserImageProps) => {
   const { userId, size, ...imageProps } = props
-  const { source, handleError } = useProfilePicture(userId, size)
+  const { source } = useProfilePicture({ userId, size })
 
-  return <FastImage {...imageProps} source={source} onError={handleError} />
+  if (!source) return null
+
+  return <FastImage {...imageProps} source={source} />
 }

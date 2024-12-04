@@ -11,9 +11,9 @@ import { Dimensions } from 'react-native'
 import { useSelector } from 'react-redux'
 
 import { Shadow } from 'app/components/core'
-import { TrackImage } from 'app/components/image/TrackImage'
 import { makeStyles } from 'app/styles'
 
+import { TrackImage } from '../image/TrackImage'
 import { TrackDogEar } from '../track/TrackDogEar'
 const { getPreviewing } = playerSelectors
 const { getDominantColorsByTrack } = averageColorSelectors
@@ -75,8 +75,8 @@ export const Artwork = ({ track }: ArtworkProps) => {
   return (
     <Shadow opacity={0.2} radius={8} color={shadowColor} style={styles.root}>
       <TrackImage
+        trackId={track?.track_id}
         style={styles.image}
-        track={track}
         size={SquareSizes.SIZE_1000_BY_1000}
       />
       {shouldShowDogEar ? (
