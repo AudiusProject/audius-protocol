@@ -3,6 +3,7 @@ import { useCallback } from 'react'
 import { USDC } from '@audius/fixed-decimal'
 import BN from 'bn.js'
 import { useDispatch, useSelector } from 'react-redux'
+import { useLocalStorage } from 'react-use'
 import { z } from 'zod'
 
 import { useGetCurrentUser } from '~/api'
@@ -68,6 +69,7 @@ export const usePurchaseContentFormConfiguration = ({
   const isUnlocking = !error && isContentPurchaseInProgress(stage)
   const { data: balanceBN } = useUSDCBalance()
   const balance = USDC(balanceBN ?? new BN(0)).value
+  const [guestEmail, setGuestEmail] = useLocalStorage(GUEST_EMAIL, '')
   const { data: currentUser } = useGetCurrentUser({})
   const { isEnabled: guestCheckoutEnabled = false } = useFeatureFlag(
     FeatureFlags.GUEST_CHECKOUT
@@ -86,7 +88,7 @@ export const usePurchaseContentFormConfiguration = ({
         : PurchaseMethod.CARD,
     [PURCHASE_VENDOR]: purchaseVendor ?? PurchaseVendor.STRIPE,
     [GUEST_CHECKOUT]: isGuestCheckout,
-    [GUEST_EMAIL]: '',
+    [GUEST_EMAIL]: guestEmail,
     [PURCHASE_METHOD_MINT_ADDRESS]: USDC_TOKEN_ADDRESS
   }
 
@@ -110,6 +112,8 @@ export const usePurchaseContentFormConfiguration = ({
     }: PurchaseContentValues) => {
       if (isUnlocking || !contentId) return
 
+      setGuestEmail(guestEmail)
+
       if (
         purchaseMethod === PurchaseMethod.CRYPTO &&
         page === PurchaseContentPage.PURCHASE
@@ -121,6 +125,7 @@ export const usePurchaseContentFormConfiguration = ({
       ) {
         dispatch(setPurchasePage({ page: PurchaseContentPage.PURCHASE }))
       } else {
+        console.log('asdf starting purchasing content flow')
         const extraAmount = getExtraAmount({
           amountPreset,
           presetValues,
@@ -142,7 +147,15 @@ export const usePurchaseContentFormConfiguration = ({
         )
       }
     },
-    [isUnlocking, contentId, page, dispatch, presetValues, isAlbum]
+    [
+      isUnlocking,
+      contentId,
+      setGuestEmail,
+      page,
+      dispatch,
+      presetValues,
+      isAlbum
+    ]
   )
 
   return {
