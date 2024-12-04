@@ -14,10 +14,10 @@ type LibraryButtonProps = BottomTabBarButtonProps
 export const LibraryButton = (props: LibraryButtonProps) => {
   return (
     <BottomTabBarButton
+      {...props}
       name='library'
       colorKeypaths={colorKeypaths}
       source={iconLibrary}
-      {...props}
     />
   )
 }

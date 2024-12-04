@@ -10,14 +10,18 @@ import { usePrevious } from 'react-use'
 
 import { BOTTOM_BAR_BUTTON_HEIGHT } from '../constants'
 
-export type BottomTabBarButtonProps = {
+export type BaseBottomTabBarButtonProps = {
   name: string
   children?: ReactNode
   isActive: boolean
   onPress: (isActive: boolean, routeName: string, routeKey: string) => void
   onLongPress: () => void
   routeKey: string
+}
+
+export type BottomTabBarButtonProps = BaseBottomTabBarButtonProps & {
   colorKeypaths?: string[]
+  routeKey: string
 } & LottieViewProps
 
 const styles = StyleSheet.create({

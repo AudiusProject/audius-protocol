@@ -1,5 +1,3 @@
-import { memo } from 'react'
-
 import type { BottomTabBarButtonProps } from './BottomTabBarButton'
 import { BottomTabBarButton } from './BottomTabBarButton'
 import iconTrending from './animations/iconTrending.lottie'
@@ -13,13 +11,13 @@ const colorKeypaths = [
 
 type TrendingButtonProps = BottomTabBarButtonProps
 
-export const TrendingButton = memo((props: TrendingButtonProps) => {
+export const TrendingButton = (props: TrendingButtonProps) => {
   return (
     <BottomTabBarButton
+      {...props}
       name='trending'
       source={iconTrending}
       colorKeypaths={colorKeypaths}
-      {...props}
     />
   )
-})
+}

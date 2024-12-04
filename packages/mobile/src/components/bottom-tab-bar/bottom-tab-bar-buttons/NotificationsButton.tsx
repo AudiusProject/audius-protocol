@@ -12,7 +12,7 @@ const { getNotificationUnviewedCount } = notificationsSelectors
 
 const colorKeypaths = ['Bell.Group 1.Fill 1', 'Clapper.Group 1.Fill 1']
 
-export type NotificationsButtonProps = BottomTabBarButtonProps
+type NotificationsButtonProps = BottomTabBarButtonProps
 
 const useStyles = makeStyles(({ spacing, palette, typography }) => ({
   notifBubble: {
@@ -42,10 +42,10 @@ export const NotificationsButton = (props: NotificationsButtonProps) => {
 
   return (
     <BottomTabBarButton
+      {...props}
       name='notifications'
       source={iconNotifications}
       colorKeypaths={colorKeypaths}
-      {...props}
     >
       {notificationCount > 0 ? (
         <View style={styles.notifBubble}>

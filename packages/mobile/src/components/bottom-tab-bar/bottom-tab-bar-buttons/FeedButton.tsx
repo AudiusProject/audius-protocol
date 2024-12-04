@@ -1,7 +1,4 @@
-import type {
-  BaseBottomTabBarButtonProps,
-  BottomTabBarButtonProps
-} from './BottomTabBarButton'
+import type { BottomTabBarButtonProps } from './BottomTabBarButton'
 import { BottomTabBarButton } from './BottomTabBarButton'
 import iconFeed from './animations/iconFeed.lottie'
 
@@ -18,10 +15,10 @@ type FeedButtonProps = BottomTabBarButtonProps
 export const FeedButton = (props: FeedButtonProps) => {
   return (
     <BottomTabBarButton
+      {...props}
       name='feed'
       source={iconFeed}
       colorKeypaths={colorKeypaths}
-      {...props}
     />
   )
 }

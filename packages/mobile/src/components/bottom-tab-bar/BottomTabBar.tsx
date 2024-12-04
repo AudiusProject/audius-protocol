@@ -11,13 +11,11 @@ import { FULL_DRAWER_HEIGHT } from 'app/components/drawer'
 import { PLAY_BAR_HEIGHT } from 'app/components/now-playing-drawer'
 import * as haptics from 'app/haptics'
 
-import {
-  NotificationsButton,
-  LibraryButton,
-  ExploreButton,
-  TrendingButton,
-  FeedButton
-} from './bottom-tab-bar-buttons'
+import { ExploreButton } from './bottom-tab-bar-buttons/ExploreButton'
+import { FeedButton } from './bottom-tab-bar-buttons/FeedButton'
+import { LibraryButton } from './bottom-tab-bar-buttons/LibraryButton'
+import { NotificationsButton } from './bottom-tab-bar-buttons/NotificationsButton'
+import { TrendingButton } from './bottom-tab-bar-buttons/TrendingButton'
 import { BOTTOM_BAR_HEIGHT } from './constants'
 
 export const bottomTabBarButtons = {

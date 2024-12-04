@@ -1,4 +1,4 @@
-import type { BaseBottomTabBarButtonProps } from './BottomTabBarButton'
+import type { BottomTabBarButtonProps } from './BottomTabBarButton'
 import { BottomTabBarButton } from './BottomTabBarButton'
 import iconExplore from './animations/iconExplore.lottie'
 
@@ -7,15 +7,15 @@ const colorKeypaths = [
   'icon_Explore Outlines.Group 2.Fill 1'
 ]
 
-type ExploreButtonProps = BaseBottomTabBarButtonProps
+type ExploreButtonProps = BottomTabBarButtonProps
 
 export const ExploreButton = (props: ExploreButtonProps) => {
   return (
     <BottomTabBarButton
+      {...props}
       name='explore'
       source={iconExplore}
       colorKeypaths={colorKeypaths}
-      {...props}
     />
   )
 }
