@@ -13,8 +13,8 @@ import { useDispatch, useSelector } from 'react-redux'
 import { useHistory, useLocation } from 'react-router-dom'
 
 import { make, useRecord } from 'common/store/analytics/actions'
-import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
-import { audiusSdk } from 'services/audius-sdk'
+import { audiusSdk, authService } from 'services/audius-sdk'
+import { identityServiceInstance } from 'services/audius-sdk/identity'
 import * as errorActions from 'store/errors/actions'
 import { reportToSentry } from 'store/errors/reportToSentry'
 
@@ -34,6 +34,8 @@ import {
   WriteOnceParams,
   WriteOnceTx
 } from './utils'
+
+const { hedgehogInstance } = authService
 const { getAccountStatus, getUserId } = accountSelectors
 
 export const useParsedQueryParams = () => {
@@ -267,7 +269,11 @@ export const useOAuthSetup = ({
     const getAndSetEmail = async () => {
       let email: string
       try {
-        email = await audiusBackendInstance.getUserEmail()
+        const wallet = hedgehogInstance.getWallet()
+        if (!wallet) throw new Error('No wallet found')
+        const emailRes = await identityServiceInstance.getUserEmail(wallet)
+        if (!emailRes.email) throw new Error('No email found')
+        email = emailRes.email
       } catch {
         setUserEmail(null)
         dispatch(

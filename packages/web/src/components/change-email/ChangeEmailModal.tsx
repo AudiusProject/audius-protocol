@@ -29,8 +29,12 @@ import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import { ModalForm } from 'components/modal-form/ModalForm'
 import { ToastContext } from 'components/toast/ToastContext'
 import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
+import { authService } from 'services/audius-sdk/auth'
+import { identityServiceInstance } from 'services/audius-sdk/identity'
 
 import styles from './ChangeEmailModal.module.css'
+
+const { hedgehogInstance } = authService
 
 const messages = {
   changeEmail: 'Change Email',
@@ -63,10 +67,12 @@ export const ResendCodeLink = () => {
 
   const handleClick = useCallback(async () => {
     setIsSending(true)
-    const libs = await audiusBackendInstance.getAudiusLibsTyped()
     // Try to confirm without OTP to force OTP refresh
     try {
-      await libs.identityService?.changeEmail({
+      const wallet = hedgehogInstance.getWallet()
+      if (!wallet) throw new Error('No wallet found - is user logged in?')
+      await identityServiceInstance.changeEmail({
+        wallet,
         email
       })
     } catch (e) {
@@ -90,7 +96,12 @@ const CurrentEmail = () => {
   const [{ value: oldEmail }, , { setValue: setOldEmail }] =
     useField('oldEmail')
   // Load the email for the user
-  const emailRequest = useAsync(audiusBackendInstance.getUserEmail)
+  const wallet = hedgehogInstance.getWallet()
+  const emailRequest = useAsync(async () => {
+    if (!wallet) return
+    const { email } = await identityServiceInstance.getUserEmail(wallet)
+    return email
+  })
   useEffect(() => {
     if (emailRequest.value) {
       setOldEmail(emailRequest.value)

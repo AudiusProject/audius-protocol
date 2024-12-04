@@ -1,4 +1,4 @@
-import { SetAuthFn } from '@audius/hedgehog'
+import { EthWallet, SetAuthFn } from '@audius/hedgehog'
 import axios, { AxiosError, AxiosRequestConfig, AxiosResponse } from 'axios'
 import sigUtil from 'eth-sig-util'
 
@@ -50,16 +50,7 @@ export class IdentityService {
     // @ts-ignore
     delete obj.wallet
 
-    const unixTs = Math.round(new Date().getTime() / 1000) // current unix timestamp (sec)
-    const data = `Click sign to authenticate with identity service: ${unixTs}`
-    const signature = sigUtil.personalSign(ownerWallet.getPrivateKey(), {
-      data
-    })
-    const headers = {
-      [AuthHeaders.Message]: data,
-      [AuthHeaders.Signature]: signature
-    }
-
+    const headers = await this._signData(ownerWallet)
     return await this._makeRequest({
       url: '/authentication',
       method: 'post',
@@ -83,6 +74,47 @@ export class IdentityService {
       method: 'post',
       data
     })
+  }
+
+  /**
+   * Get the user's email used for notifications and display.
+   */
+  async getUserEmail(wallet: EthWallet) {
+    const headers = await this._signData(wallet)
+    if (headers[AuthHeaders.Message] && headers[AuthHeaders.Signature]) {
+      return await this._makeRequest<{ email: string | undefined | null }>({
+        url: '/user/email',
+        method: 'get',
+        headers
+      })
+    } else {
+      throw new Error('Cannot get user email - user is not authenticated')
+    }
+  }
+
+  /**
+   * Change the user's email used for notifications and display.
+   */
+  async changeEmail({
+    wallet,
+    email,
+    otp
+  }: {
+    wallet: EthWallet
+    email: string
+    otp?: string
+  }) {
+    const headers = await this._signData(wallet)
+    if (headers[AuthHeaders.Message] && headers[AuthHeaders.Signature]) {
+      return await this._makeRequest({
+        url: '/user/email',
+        method: 'PUT',
+        headers,
+        data: { email, otp }
+      })
+    } else {
+      throw new Error('Cannot change user email - user is not authenticated')
+    }
   }
 
   /* ------- INTERNAL FUNCTIONS ------- */
@@ -117,6 +149,18 @@ export class IdentityService {
         )
       }
       throw error
+    }
+  }
+
+  async _signData(wallet: any) {
+    const unixTs = Math.round(new Date().getTime() / 1000) // current unix timestamp (sec)
+    const message = `Click sign to authenticate with identity service: ${unixTs}`
+    const signature = sigUtil.personalSign(wallet.getPrivateKey(), {
+      data: message
+    })
+    return {
+      [AuthHeaders.Message]: message,
+      [AuthHeaders.Signature]: signature
     }
   }
 }

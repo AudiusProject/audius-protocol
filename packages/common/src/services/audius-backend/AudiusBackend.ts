@@ -854,12 +854,6 @@ export const audiusBackend = ({
     }
   }
 
-  async function getUserEmail(): Promise<string> {
-    await waitForLibsInit()
-    const { email } = await audiusLibs.Account.getUserEmail()
-    return email
-  }
-
   async function uploadImage(file: File) {
     return await audiusLibs.creatorNode.uploadTrackCoverArtV2(file, () => {})
   }
@@ -2163,7 +2157,6 @@ export const audiusBackend = ({
     getSafariBrowserPushEnabled,
     getSignature,
     getTrackImages,
-    getUserEmail,
     getUserImages,
     getUserListenCountsMonthly,
     getWAudioBalance,

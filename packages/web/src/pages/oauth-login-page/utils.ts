@@ -8,10 +8,13 @@ import { CreateGrantRequest } from '@audius/sdk'
 import base64url from 'base64url'
 
 import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
-import { audiusSdk } from 'services/audius-sdk'
+import { audiusSdk, authService } from 'services/audius-sdk'
+import { identityServiceInstance } from 'services/audius-sdk/identity'
 import { getStorageNodeSelector } from 'services/audius-sdk/storageNodeSelector'
 
 import { messages } from './messages'
+
+const { hedgehogInstance } = authService
 
 export const getIsRedirectValid = ({
   parsedRedirectUri,
@@ -117,7 +120,11 @@ export const formOAuthResponse = async ({
   let email: string
   if (!userEmail) {
     try {
-      email = await audiusBackendInstance.getUserEmail()
+      const wallet = hedgehogInstance.getWallet()
+      if (!wallet) throw new Error('No wallet found')
+      const emailRes = await identityServiceInstance.getUserEmail(wallet)
+      if (!emailRes.email) throw new Error('No email found')
+      email = emailRes.email
     } catch {
       onError()
       return
