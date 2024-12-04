@@ -1,19 +1,18 @@
-import { useGetPlaylistById } from '~/api'
+import { useSelector } from 'react-redux'
+
 import { ID, isContentUSDCPurchaseGated } from '~/models'
+import { CommonState } from '~/store'
+import { getCollection } from '~/store/cache/collections/selectors'
 import { Nullable } from '~/utils'
 
 import { LockedStatusVariant } from './types'
 
 export const useCollectionLockedStatusVariant = (collectionId: ID) => {
-  const { data: collection } = useGetPlaylistById(
-    { playlistId: collectionId },
-    { disabled: !collectionId }
-  )
+  const streamConditions = useSelector((state: CommonState) => {
+    return getCollection(state, { id: collectionId })?.stream_conditions
+  })
 
-  if (!collection) return null
-  const { stream_conditions } = collection
-
-  const isPurchaseable = isContentUSDCPurchaseGated(stream_conditions)
+  const isPurchaseable = isContentUSDCPurchaseGated(streamConditions)
 
   let variant: Nullable<LockedStatusVariant> = null
   if (isPurchaseable) {
