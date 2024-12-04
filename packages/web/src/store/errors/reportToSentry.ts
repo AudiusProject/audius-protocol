@@ -26,6 +26,10 @@ const jsLoggerMapping: { [level in ErrorLevel]: ConsoleLoggingMethod } = {
   Log: 'log'
 }
 
+export const SentryCategory = {
+  Upload: 'upload'
+}
+
 /**
  * Helper fn that reports to sentry while creating a localized scope to contain additional data
  * Also logs to console with the appropriate level (console.log, console.warn, console.error, etc)

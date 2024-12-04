@@ -5,6 +5,7 @@ import {
 import {
   Collection,
   CollectionMetadata,
+  ErrorLevel,
   FieldVisibility,
   ID,
   Id,
@@ -65,7 +66,7 @@ import {
 import { make } from 'common/store/analytics/actions'
 import { prepareStemsForUpload } from 'pages/upload-page/store/utils/stems'
 import * as errorActions from 'store/errors/actions'
-import { reportToSentry } from 'store/errors/reportToSentry'
+import { reportToSentry, SentryCategory } from 'store/errors/reportToSentry'
 import { waitForWrite } from 'utils/sagaHelpers'
 
 import { getUnclaimedPlaylistId } from '../cache/collections/utils/getUnclaimedPlaylistId'
@@ -671,7 +672,7 @@ export function* handleUploads({
     // Report to sentry
     const e = error instanceof Error ? error : new Error(String(error))
     yield* call(reportToSentry, {
-      name: 'Upload Worker Failed',
+      name: 'UploadWorker',
       error: e,
       additionalInfo: {
         trackId,
@@ -686,7 +687,11 @@ export function* handleUploads({
         stemCount: stems,
         phase,
         kind
-      }
+      },
+      tags: {
+        category: SentryCategory.Upload
+      },
+      level: ErrorLevel.Fatal
     })
   }
 
@@ -995,12 +1000,18 @@ export function* uploadCollection(
         }
         // Handle error loses error details, so call reportToSentry explicitly
         yield* call(reportToSentry, {
-          name: 'Upload',
+          name: 'UploadCollection',
           error,
           additionalInfo: {
             trackIds,
-            playlistId
-          }
+            playlistId,
+            isAlbum,
+            collectionMetadata
+          },
+          tags: {
+            category: SentryCategory.Upload
+          },
+          level: ErrorLevel.Fatal
         })
         yield* put(uploadActions.uploadTracksFailed())
         yield* put(
@@ -1174,10 +1185,14 @@ export function* uploadTracksAsync(
     // Handle error loses error details, so call reportToSentry explicitly
     yield* call(reportToSentry, {
       error,
-      name: `Upload: ${error.name}`,
+      name: 'UploadTracks',
       additionalInfo: {
         kind
-      }
+      },
+      tags: {
+        category: SentryCategory.Upload
+      },
+      level: ErrorLevel.Fatal
     })
     yield* put(uploadActions.uploadTracksFailed())
     yield* put(

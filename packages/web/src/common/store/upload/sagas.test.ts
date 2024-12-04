@@ -1,4 +1,4 @@
-import { Name, StemUploadWithFile } from '@audius/common/models'
+import { ErrorLevel, Name, StemUploadWithFile } from '@audius/common/models'
 import {
   TrackForUpload,
   TrackMetadataForUpload,
@@ -15,7 +15,7 @@ import { dynamic } from 'redux-saga-test-plan/providers'
 import { all, fork } from 'typed-redux-saga'
 import { beforeAll, describe, expect, it, vitest } from 'vitest'
 
-import { reportToSentry } from 'store/errors/reportToSentry'
+import { reportToSentry, SentryCategory } from 'store/errors/reportToSentry'
 import { waitForWrite } from 'utils/sagaHelpers'
 
 import { make } from '../analytics/actions'
@@ -278,7 +278,7 @@ describe('upload', () => {
         ])
         // Reports to sentry
         .call(reportToSentry, {
-          name: 'Upload Worker Failed',
+          name: 'UploadWorker',
           error: mockError,
           additionalInfo: {
             trackId: 3,
@@ -290,14 +290,18 @@ describe('upload', () => {
             stemCount: 2,
             phase: 'publish',
             kind: 'tracks'
-          }
+          },
+          tags: {
+            category: SentryCategory.Upload
+          },
+          level: ErrorLevel.Fatal
         })
         // Fails the parent too
         .call.like({
           fn: reportToSentry,
           args: [
             {
-              name: 'Upload Worker Failed',
+              name: 'UploadWorker',
               additionalInfo: {
                 trackId: 1,
                 metadata: testTrack.metadata,
@@ -308,7 +312,11 @@ describe('upload', () => {
                 stemCount: 2,
                 phase: 'publish',
                 kind: 'tracks'
-              }
+              },
+              tags: {
+                category: SentryCategory.Upload
+              },
+              level: ErrorLevel.Fatal
             }
           ]
         })
