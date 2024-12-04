@@ -40,7 +40,6 @@ import {
 import {
   Genre,
   ELECTRONIC_SUBGENRES,
-  waitForAccount,
   parseHandleReservedStatusFromSocial,
   isValidEmailString,
   route,

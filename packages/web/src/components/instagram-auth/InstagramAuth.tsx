@@ -1,13 +1,12 @@
 import { MouseEvent, ReactNode, useCallback } from 'react'
 
+import { Feature } from '@audius/common/models'
 import cn from 'classnames'
 
 import 'url-search-params-polyfill'
 import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
 import { env } from 'services/env'
 import { reportToSentry } from 'store/errors/reportToSentry'
-
-import { Feature } from '@audius/common/models'
 
 const HOSTNAME = env.PUBLIC_HOSTNAME
 const INSTAGRAM_APP_ID = env.INSTAGRAM_APP_ID
