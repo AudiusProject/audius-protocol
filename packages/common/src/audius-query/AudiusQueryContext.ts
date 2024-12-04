@@ -80,7 +80,9 @@ export function* getAudiusQueryContext(): Generator<
     audiusBackend: yield* getContext<AudiusQueryContextType['audiusBackend']>(
       'audiusBackendInstance'
     ),
-    userAuth: yield* getContext<AudiusQueryContextType['userAuth']>('userAuth'),
+    authService: yield* getContext<AudiusQueryContextType['authService']>(
+      'authService'
+    ),
     audiusSdk: yield* getContext<AudiusQueryContextType['audiusSdk']>(
       'audiusSdk'
     ),
