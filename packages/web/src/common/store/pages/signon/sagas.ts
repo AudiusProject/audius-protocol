@@ -608,6 +608,8 @@ function* signUp() {
       handle,
       function* () {
         const reportToSentry = yield* getContext('reportToSentry')
+        const isNativeMobile = yield* getContext('isNativeMobile')
+
         const createUserMetadata = {
           name,
           handle,
@@ -618,105 +620,95 @@ function* signUp() {
         }
 
         let userId: ID
-        if (isGuest) {
-          const account: AccountUserMetadata | null = yield* call(
-            userApiFetchSaga.getUserAccount,
-            {
-              wallet
-            }
-          )
-          if (!account) {
-            const error = new Error('Account user ID does not exist')
-            reportToSentry({
-              error,
-              name: 'Sign Up: Cannot complete account user ID does not exist',
-              additionalInfo: {
-                handle,
-                email,
-                location,
-                formFields: createUserMetadata,
-                hasWallet: alreadyExisted
-              }
-            })
-            throw error
-          }
-          userId = account.user.user_id
-          const completeProfileMetadataRequest: UpdateProfileRequest = {
-            userId: encodeHashId(userId),
-            profilePictureFile: signOn.profileImage?.file as File,
-            metadata: {
-              location: location ?? undefined,
-              name,
-              handle
-            }
-          }
-
-          yield* call(
-            [sdk.users, sdk.users.updateProfile],
-            completeProfileMetadataRequest
-          )
-        } else {
-          const isNativeMobile = yield* getContext('isNativeMobile')
-
-          if (!alreadyExisted) {
-            yield* call(
-              [authService.hedgehogInstance, authService.hedgehogInstance.signUp],
+        try {
+          if (isGuest) {
+            const account: AccountUserMetadata | null = yield* call(
+              userApiFetchSaga.getUserAccount,
               {
-                username: email,
-                password
+                wallet
               }
             )
-  
-            yield* fork(sendRecoveryEmail, { handle, email })
-          }
-          const wallet = (yield* call([
-            authService,
-            authService.getWalletAddresses
-          ])).web3WalletAddress
-  
-          const events: CreateUserRequest['metadata']['events'] = {}
-          if (referrer) {
-            events.referrer = OptionalId.parse(referrer)
-          }
-          if (isNativeMobile) {
-            events.isMobileUser = true
-          }
-  
-          const createUserMetadata: CreateUserRequest = {
-            profilePictureFile: signOn.profileImage?.file as File,
-            coverArtFile: signOn.coverPhoto?.file as File,
-            metadata: {
-              location: location ?? undefined,
-              name,
-              events,
-              handle,
-              wallet
+            if (!account) {
+              throw new Error('Account user ID does not exist')
             }
-          }
-  
-          try {
+            userId = account.user.user_id
+            const completeProfileMetadataRequest: UpdateProfileRequest = {
+              userId: encodeHashId(userId),
+              profilePictureFile: signOn.profileImage?.file as File,
+              metadata: {
+                location: location ?? undefined,
+                name,
+                handle
+              }
+            }
+
+            yield* call(
+              [sdk.users, sdk.users.updateProfile],
+              completeProfileMetadataRequest
+            )
+          } else {
+            if (!alreadyExisted) {
+              yield* call(
+                [
+                  authService.hedgehogInstance,
+                  authService.hedgehogInstance.signUp
+                ],
+                {
+                  username: email,
+                  password
+                }
+              )
+
+              yield* fork(sendRecoveryEmail, { handle, email })
+            }
+            const wallet = (yield* call([
+              authService,
+              authService.getWalletAddresses
+            ])).web3WalletAddress
+
+            const events: CreateUserRequest['metadata']['events'] = {}
+            if (referrer) {
+              events.referrer = OptionalId.parse(referrer)
+            }
+            if (isNativeMobile) {
+              events.isMobileUser = true
+            }
+
+            const createUserMetadata: CreateUserRequest = {
+              profilePictureFile: signOn.profileImage?.file as File,
+              coverArtFile: signOn.coverPhoto?.file as File,
+              metadata: {
+                location: location ?? undefined,
+                name,
+                events,
+                handle,
+                wallet
+              }
+            }
+
             const { blockNumber, metadata } = yield* call(
               [sdk.users, sdk.users.createUser],
               createUserMetadata
             )
-            const { userId } = metadata
+            userId = metadata.userId
             const { twitterId, instagramId, tikTokId, useMetaMask } = signOn
-  
+
             if (!useMetaMask && (twitterId || instagramId || tikTokId)) {
               yield* fork(associateSocialAccounts, {
                 userId,
                 handle,
-              blockNumber,
-              twitterId,
-              instagramId,
-              tikTokId
-            })
-        }
-    
+                blockNumber,
+                twitterId,
+                instagramId,
+                tikTokId
+              })
+            }
+          }
+
           yield* put(
             identify(handle, {
               name,
-            email,
+              email,
               userId
             })
           )
@@ -734,79 +726,79 @@ function* signUp() {
             )
           }
         } catch (err: unknown) {
-            // We are including 0 status code here to indicate rate limit,
-            // which appears to be happening for some devices.
+          // We are including 0 status code here to indicate rate limit,
+          // which appears to be happening for some devices.
           const rateLimited =
             isResponseError(err) && [0, 429].includes(err.response.status)
           const blocked = isResponseError(err) && err.response.status === 403
           const error = err instanceof Error ? err : new Error(err as string)
-            const params: signOnActions.SignUpFailedParams = {
+          const params: signOnActions.SignUpFailedParams = {
             error: error.message,
             // TODO: Remove phase, stop using error Sagas for signup
             // We are mostly handling reporting here already and we're
             // only using it for error redirects.
             phase: 'CREATE_USER',
             shouldReport: false, // We are reporting in this saga
-              shouldToast: rateLimited
-            }
-            if (rateLimited) {
-              params.message = 'Please try again later'
-              yield* put(
-                make(Name.CREATE_ACCOUNT_RATE_LIMIT, {
-                  handle,
-                  email,
-                  location
-                })
-              )
-              reportToSentry({
-                error,
-                level: ErrorLevel.Warning,
-                name: 'Sign Up: User rate limited',
-                additionalInfo: {
-                  handle,
-                  email,
-                  location,
-                  formFields: createUserMetadata,
-                  hasWallet: alreadyExisted
-                }
+            shouldToast: rateLimited
+          }
+          if (rateLimited) {
+            params.message = 'Please try again later'
+            yield* put(
+              make(Name.CREATE_ACCOUNT_RATE_LIMIT, {
+                handle,
+                email,
+                location
               })
-            } else if (blocked) {
-              params.message = 'User was blocked'
-              params.uiErrorCode = UiErrorCode.RELAY_BLOCKED
-              yield* put(
-                make(Name.CREATE_ACCOUNT_BLOCKED, {
-                  handle,
-                  email,
-                  location
-                })
-              )
-              reportToSentry({
-                error,
-                level: ErrorLevel.Warning,
-                name: 'Sign Up: User was blocked',
-                additionalInfo: {
-                  handle,
-                  email,
-                  location,
-                  formFields: createUserMetadata,
-                  hasWallet: alreadyExisted
-                }
+            )
+            reportToSentry({
+              error,
+              level: ErrorLevel.Warning,
+              name: 'Sign Up: User rate limited',
+              additionalInfo: {
+                handle,
+                email,
+                location,
+                formFields: createUserMetadata,
+                hasWallet: alreadyExisted
+              }
+            })
+          } else if (blocked) {
+            params.message = 'User was blocked'
+            params.uiErrorCode = UiErrorCode.RELAY_BLOCKED
+            yield* put(
+              make(Name.CREATE_ACCOUNT_BLOCKED, {
+                handle,
+                email,
+                location
               })
-            } else {
-              reportToSentry({
-                error,
-                level: ErrorLevel.Error,
+            )
+            reportToSentry({
+              error,
+              level: ErrorLevel.Warning,
+              name: 'Sign Up: User was blocked',
+              additionalInfo: {
+                handle,
+                email,
+                location,
+                formFields: createUserMetadata,
+                hasWallet: alreadyExisted
+              }
+            })
+          } else {
+            reportToSentry({
+              error,
+              level: ErrorLevel.Error,
               name: 'Sign Up: Other Error',
-                additionalInfo: {
-                  handle,
-                  email,
-                  location,
-                  formFields: createUserMetadata,
-                  hasWallet: alreadyExisted
-                }
-              })
-            }
-            yield* put(signOnActions.signUpFailed(params))
+              additionalInfo: {
+                handle,
+                email,
+                location,
+                formFields: createUserMetadata,
+                hasWallet: alreadyExisted
+              }
+            })
+          }
+          yield* put(signOnActions.signUpFailed(params))
         }
       },
       function* () {

@@ -104,6 +104,7 @@ export const createAuthService = ({
 
   const changeCredentials = async (args: ChangeCredentialsArgs) => {
     return await hedgehogInstance.changeCredentials(args)
+  }
   const sendRecoveryInfo = async (params: RecoveryInfoParams) => {
     await identityService.sendRecoveryInfo(params)
   }
