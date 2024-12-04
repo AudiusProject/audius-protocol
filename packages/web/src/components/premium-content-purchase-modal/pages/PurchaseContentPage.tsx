@@ -15,23 +15,25 @@ import {
 import { PurchaseMethod, PurchaseVendor } from '@audius/common/models'
 import { IntKeys, FeatureFlags } from '@audius/common/services'
 import { PurchaseContentStage } from '@audius/common/store'
+import { USDC } from '@audius/fixed-decimal'
 import { Flex, Text, IconValidationCheck, Box } from '@audius/harmony'
 import { useField } from 'formik'
 
 import { PaymentMethod } from 'components/payment-method/PaymentMethod'
+import { LockedContentDetailsTile } from 'components/track/LockedContentDetailsTile'
+import { useIsMobile } from 'hooks/useIsMobile'
 
+import { PayExtraFormSection } from '../components/PayExtraFormSection'
+import { PayToUnlockInfo } from '../components/PayToUnlockInfo'
+import { PurchaseSummaryTable } from '../components/PurchaseSummaryTable'
 import { PurchaseContentFormState } from '../hooks/usePurchaseContentFormState'
 import { usePurchaseSummaryValues } from '../hooks/usePurchaseSummaryValues'
-
-import { PayExtraFormSection } from './PayExtraFormSection'
-import { PayToUnlockInfo } from './PayToUnlockInfo'
-import { PurchaseSummaryTable } from './PurchaseSummaryTable'
 
 const messages = {
   purchaseSuccessful: 'Your Purchase Was Successful!'
 }
 
-type PurchaseContentFormFieldsProps = Pick<
+type PurchaseContentPageProps = Pick<
   PurchaseContentFormState,
   'purchaseSummaryValues' | 'stage' | 'isUnlocking'
 > & {
@@ -39,15 +41,11 @@ type PurchaseContentFormFieldsProps = Pick<
   metadata: PurchaseableContentMetadata
 }
 
-export const PurchaseContentFormFields = ({
-  price,
-  purchaseSummaryValues,
-  stage,
-  isUnlocking,
-  metadata
-}: PurchaseContentFormFieldsProps) => {
+export const PurchaseContentPage = (props: PurchaseContentPageProps) => {
+  const { price, purchaseSummaryValues, stage, isUnlocking, metadata } = props
   const payExtraAmountPresetValues = usePayExtraPresets()
   const coinflowMaximumCents = useRemoteVar(IntKeys.COINFLOW_MAXIMUM_CENTS)
+  const isMobile = useIsMobile()
   const { isEnabled: isCoinflowEnabled } = useFeatureFlag(
     FeatureFlags.BUY_WITH_COINFLOW
   )
@@ -131,41 +129,57 @@ export const PurchaseContentFormFields = ({
       : 0
   const streamPurchaseCount = metadata.is_stream_gated ? 1 : 0
 
+  const isLinkDisabled =
+    stage === PurchaseContentStage.START ||
+    stage === PurchaseContentStage.PURCHASING ||
+    stage === PurchaseContentStage.CONFIRMING_PURCHASE
+
   return (
-    <>
-      {isUnlocking || isPurchased ? null : (
-        <Box ph='m'>
-          <PayExtraFormSection
-            amountPresets={payExtraAmountPresetValues}
-            disabled={isUnlocking}
-          />
-        </Box>
-      )}
-      <PurchaseSummaryTable
-        {...purchaseSummaryValues}
-        stemsPurchaseCount={stemsPurchaseCount}
-        downloadPurchaseCount={downloadPurchaseCount}
-        streamPurchaseCount={streamPurchaseCount}
-        totalPriceInCents={totalPriceInCents}
-        isAlbumPurchase={isAlbumPurchase}
-      />
-      {isUnlocking || isPurchased ? null : (
-        <PaymentMethod
-          selectedMethod={purchaseMethod}
-          setSelectedMethod={handleChangeMethod}
-          selectedVendor={purchaseVendor}
-          setSelectedVendor={handleChangeVendor}
-          selectedPurchaseMethodMintAddress={purchaseMethodMintAddress}
-          setSelectedPurchaseMethodMintAddress={setPurchaseMethodMintAddress}
-          balance={balanceBN}
-          isExistingBalanceDisabled={isExistingBalanceDisabled}
-          showExistingBalance={!!(balanceBN && !balanceBN.isZero())}
-          isCoinflowEnabled={showCoinflow}
-          isPayWithAnythingEnabled={isPayWithAnythingEnabled}
-          showVendorChoice={false}
+    <Flex p={isMobile ? 'l' : 'xl'} pb='m'>
+      <Flex direction='column' gap='xl' w='100%'>
+        <LockedContentDetailsTile
+          showLabel={false}
+          metadata={metadata}
+          owner={metadata.user}
+          disabled={isLinkDisabled}
+          earnAmount={USDC(price / 100)
+            .round()
+            .toShorthand()}
         />
-      )}
-      {isUnlocking ? null : <PayToUnlockInfo />}
-    </>
+        {isUnlocking || isPurchased ? null : (
+          <Box ph='m'>
+            <PayExtraFormSection
+              amountPresets={payExtraAmountPresetValues}
+              disabled={isUnlocking}
+            />
+          </Box>
+        )}
+        <PurchaseSummaryTable
+          {...purchaseSummaryValues}
+          stemsPurchaseCount={stemsPurchaseCount}
+          downloadPurchaseCount={downloadPurchaseCount}
+          streamPurchaseCount={streamPurchaseCount}
+          totalPriceInCents={totalPriceInCents}
+          isAlbumPurchase={isAlbumPurchase}
+        />
+        {isUnlocking || isPurchased ? null : (
+          <PaymentMethod
+            selectedMethod={purchaseMethod}
+            setSelectedMethod={handleChangeMethod}
+            selectedVendor={purchaseVendor}
+            setSelectedVendor={handleChangeVendor}
+            selectedPurchaseMethodMintAddress={purchaseMethodMintAddress}
+            setSelectedPurchaseMethodMintAddress={setPurchaseMethodMintAddress}
+            balance={balanceBN}
+            isExistingBalanceDisabled={isExistingBalanceDisabled}
+            showExistingBalance={!!(balanceBN && !balanceBN.isZero())}
+            isCoinflowEnabled={showCoinflow}
+            isPayWithAnythingEnabled={isPayWithAnythingEnabled}
+            showVendorChoice={false}
+          />
+        )}
+        {isUnlocking ? null : <PayToUnlockInfo />}
+      </Flex>
+    </Flex>
   )
 }

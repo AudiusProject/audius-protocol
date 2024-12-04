@@ -180,8 +180,8 @@ export const PurchaseContentFormFooter = ({
     <>
       <Button
         disabled={isUnlocking}
-        color='lightGreen'
-        type={'submit'}
+        color={'lightGreen'}
+        type='submit'
         isLoading={isUnlocking}
         fullWidth
       >

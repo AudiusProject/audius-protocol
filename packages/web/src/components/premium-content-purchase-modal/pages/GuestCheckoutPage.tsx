@@ -26,7 +26,7 @@ type GuestCheckoutProps = {
   onClickSignIn: () => void
 }
 
-export const GuestCheckout = (props: GuestCheckoutProps) => {
+export const GuestCheckoutPage = (props: GuestCheckoutProps) => {
   const { metadata, price, onClickSignIn } = props
   const { purchaseSummaryValues } = usePurchaseContentFormState({
     price
@@ -47,7 +47,12 @@ export const GuestCheckout = (props: GuestCheckoutProps) => {
   const streamPurchaseCount = metadata.is_stream_gated ? 1 : 0
 
   return (
-    <Flex p={isMobile ? 'l' : 'xl'} pb='m'>
+    <Flex
+      p={isMobile ? 'l' : 'xl'}
+      direction='column'
+      pb='m'
+      justifyContent='space-between'
+    >
       <Flex direction='column' gap='xl' w='100%'>
         <LockedContentDetailsTile
           showLabel={false}
@@ -72,28 +77,29 @@ export const GuestCheckout = (props: GuestCheckoutProps) => {
           p='l'
           gap='l'
         >
-          <Flex gap='xs'>
-            <Text variant='body' strength='strong'>
-              {messages.alreadyHaveAnAccount}
-            </Text>
+          <Text variant='body' strength='strong'>
+            {messages.alreadyHaveAnAccount}{' '}
             <TextLink
               to={SIGN_IN_PAGE}
               variant='visible'
               onClick={onClickSignIn}
             >
               {messages.signIn}
-            </TextLink>
-            <Text variant='body' strength='strong'>
-              {messages.orContinueGuest}
-            </Text>
-          </Flex>
+            </TextLink>{' '}
+            {messages.orContinueGuest}
+          </Text>
 
           <HarmonyTextField name={GUEST_EMAIL} label={messages.yourEmail} />
         </Flex>
-        <Button fullWidth type='submit'>
-          {messages.continueAsGuest}
-        </Button>
       </Flex>
     </Flex>
+  )
+}
+
+export const GuestCheckoutFooter = () => {
+  return (
+    <Button fullWidth type='submit'>
+      {messages.continueAsGuest}
+    </Button>
   )
 }
