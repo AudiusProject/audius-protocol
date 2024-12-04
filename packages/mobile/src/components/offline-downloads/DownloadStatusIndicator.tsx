@@ -15,7 +15,7 @@ import {
 } from '@audius/harmony-native'
 import { OfflineDownloadStatus } from 'app/store/offline-downloads/slice'
 
-import iconDownload from './iconDownload.lottie'
+import iconDownloading from './iconDownloading.lottie'
 
 const { getIsReachable } = reachabilitySelectors
 
@@ -45,7 +45,7 @@ export const DownloadStatusIndicator = (
         return (
           <LottieView
             style={{ height: iconSizes[size], width: iconSizes[size] }}
-            source={iconDownload}
+            source={iconDownloading}
             colorFilters={[
               { keypath: 'Arrow.Fill 1', color: color.secondary.secondary },
               {
