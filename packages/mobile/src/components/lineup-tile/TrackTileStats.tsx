@@ -1,7 +1,11 @@
-import { useGetTrackById } from '@audius/common/api'
 import { useIsTrackUnlockable } from '@audius/common/hooks'
 import type { ID } from '@audius/common/models'
-import type { LineupBaseActions } from '@audius/common/store'
+import {
+  cacheTracksSelectors,
+  type CommonState,
+  type LineupBaseActions
+} from '@audius/common/store'
+import { useSelector } from 'react-redux'
 
 import { Flex } from '@audius/harmony-native'
 
@@ -17,6 +21,8 @@ import {
   SavesMetric
 } from './TrackTileMetrics'
 
+const { getTrack } = cacheTracksSelectors
+
 type TrackTileStatsProps = {
   trackId: ID
   isTrending?: boolean
@@ -30,13 +36,9 @@ export const TrackTileStats = (props: TrackTileStatsProps) => {
 
   const isUnlockable = useIsTrackUnlockable(trackId)
 
-  const { data: track } = useGetTrackById(
-    { id: trackId },
-    { disabled: !!trackId }
-  )
-
-  if (!track) return null
-  const { is_unlisted } = track
+  const isUnlisted = useSelector((state: CommonState) => {
+    return getTrack(state, { id: trackId })?.is_unlisted
+  })
 
   return (
     <Flex row justifyContent='space-between' alignItems='center' p='s'>
@@ -45,7 +47,7 @@ export const TrackTileStats = (props: TrackTileStatsProps) => {
           <LineupTileRankIcon index={rankIndex} />
         ) : null}
         <TrackAccessTypeLabel trackId={trackId} />
-        {is_unlisted ? null : (
+        {isUnlisted ? null : (
           <>
             <RepostsMetric trackId={trackId} />
             <SavesMetric trackId={trackId} />
@@ -56,7 +58,7 @@ export const TrackTileStats = (props: TrackTileStatsProps) => {
       </Flex>
       {isUnlockable ? (
         <TrackLockedStatusBadge trackId={trackId} />
-      ) : is_unlisted ? null : (
+      ) : isUnlisted ? null : (
         <PlayMetric trackId={trackId} />
       )}
     </Flex>

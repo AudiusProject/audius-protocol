@@ -30,7 +30,7 @@ import Grouping from 'components/groupable-list/Grouping'
 import { useTemporaryNavContext } from 'components/nav/mobile/NavContext'
 import TextElement, { Type } from 'components/nav/mobile/TextElement'
 import TrackList from 'components/track/mobile/TrackList'
-import { useCollectionCoverArt2 } from 'hooks/useCollectionCoverArt'
+import { useCollectionCoverArt } from 'hooks/useCollectionCoverArt'
 import { useIsUnauthorizedForHandleRedirect } from 'hooks/useManagedAccountNotAllowedRedirect'
 import { useRequiresAccount } from 'hooks/useRequiresAccount'
 import UploadStub from 'pages/profile-page/components/mobile/UploadStub'
@@ -126,10 +126,10 @@ const EditCollectionPage = g(
       }
     }, [setReorderedTracks, reorderedTracks, tracks])
 
-    const artworkUrl = useCollectionCoverArt2(
-      playlist_id,
-      SquareSizes.SIZE_1000_BY_1000
-    )
+    const artworkUrl = useCollectionCoverArt({
+      collectionId: playlist_id,
+      size: SquareSizes.SIZE_1000_BY_1000
+    })
 
     const [isProcessingImage, setIsProcessingImage] = useState(false)
     const [didChangeArtwork, setDidChangeArtwork] = useState(false)

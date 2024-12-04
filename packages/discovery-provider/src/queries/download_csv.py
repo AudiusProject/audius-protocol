@@ -6,6 +6,7 @@ from src.models.playlists.playlist import Playlist
 from src.models.playlists.playlist_route import PlaylistRoute
 from src.models.tracks.track import Track
 from src.models.tracks.track_route import TrackRoute
+from src.models.users.email import EmailEncryptionKey, EncryptedEmail
 from src.models.users.usdc_purchase import PurchaseType, USDCPurchase
 from src.models.users.usdc_transactions_history import (
     USDCTransactionMethod,
@@ -60,7 +61,7 @@ def get_purchases_or_sales(user_id: int, is_purchases: bool):
                 .filter(User.is_current == True)
             )
         else:
-            # Get all sales for the given user and include the buyer name
+            # Get all sales for the given user and include the buyer name and encrypted email
             query = (
                 session.query(
                     USDCPurchase.content_type.label("content_type"),
@@ -70,8 +71,14 @@ def get_purchases_or_sales(user_id: int, is_purchases: bool):
                     USDCPurchase.splits.label("splits"),
                     USDCPurchase.country.label("country"),
                     User.name.label("buyer_name"),
+                    EncryptedEmail.encrypted_email.label("encrypted_email"),
                 )
                 .join(User, User.user_id == USDCPurchase.buyer_user_id)
+                .outerjoin(  # Using outerjoin in case some users don't have encrypted emails
+                    EncryptedEmail,
+                    (EncryptedEmail.email_owner_user_id == User.user_id)
+                    & (EncryptedEmail.primary_user_id == USDCPurchase.seller_user_id),
+                )
                 .filter(USDCPurchase.seller_user_id == user_id)
                 .filter(User.is_current == True)
             )
@@ -185,56 +192,91 @@ def download_purchases(args: DownloadPurchasesArgs):
     return to_download
 
 
+def format_sale_for_download(
+    result, seller_handle, seller_user_id, is_for_json_response=False
+):
+    """Format a sale result into a CSV-friendly dictionary format."""
+    # Convert datetime to ISO format string
+    created_at = result.created_at.isoformat() if result.created_at else None
+
+    # Base fields without underscores
+    base_fields = {
+        "title": result.content_title,
+        "link": get_link(result.content_type, seller_handle, result.slug),
+        "purchased by": result.buyer_name,
+        "date": created_at,
+        "sale price": get_dollar_amount(result.amount),
+        "network fee": next(
+            (
+                0 - get_dollar_amount(item["amount"])
+                for item in result.splits
+                if item["payout_wallet"] == staking_bridge_usdc_payout_wallet
+            ),
+            None,
+        ),
+        "pay extra": get_dollar_amount(result.extra_amount),
+        "total": next(
+            (
+                get_dollar_amount(str(int(item["amount"]) + int(result.extra_amount)))
+                for item in result.splits
+                if item["user_id"] == seller_user_id
+            ),
+            None,
+        ),
+        "country": result.country,
+    }
+
+    if is_for_json_response:
+        # Replace spaces with underscores and add encrypted_email
+        fields_with_underscores = {
+            key.replace(" ", "_"): value for key, value in base_fields.items()
+        }
+        fields_with_underscores["encrypted_email"] = (
+            result.encrypted_email if hasattr(result, "encrypted_email") else None
+        )
+        return fields_with_underscores
+
+    return base_fields
+
+
 # Returns USDC sales for a given artist in a CSV format
-def download_sales(args: DownloadSalesArgs):
+def download_sales(args: DownloadSalesArgs, return_json: bool = False):
     seller_user_id = args["seller_user_id"]
 
     # Get sales for artist
     results = get_purchases_or_sales(seller_user_id, is_purchases=False)
 
-    # Get artist handle
+    # Get artist handle and encryption key
     db = get_db_read_replica()
     with db.scoped_session() as session:
-        seller_handle = (
-            session.query(User.handle)
+        seller_data = (
+            session.query(User.handle, EmailEncryptionKey.encrypted_key)
             .filter(User.user_id == seller_user_id)
             .filter(User.is_current == True)
+            .outerjoin(
+                EmailEncryptionKey, EmailEncryptionKey.primary_user_id == User.user_id
+            )
             .first()
-        )[0]
+        )
+
+        seller_handle, encryption_key = seller_data
 
     # Build list of dictionary results
     contents = list(
         map(
-            lambda result: {
-                "title": result.content_title,
-                "link": get_link(result.content_type, seller_handle, result.slug),
-                "purchased by": result.buyer_name,
-                "date": result.created_at,
-                "sale price": get_dollar_amount(result.amount),
-                "network fee": next(
-                    (
-                        0 - get_dollar_amount(item["amount"])
-                        for item in result.splits
-                        if item["payout_wallet"] == staking_bridge_usdc_payout_wallet
-                    ),
-                    None,
-                ),
-                "pay extra": get_dollar_amount(result.extra_amount),
-                "total": next(
-                    (
-                        get_dollar_amount(
-                            str(int(item["amount"]) + int(result.extra_amount))
-                        )
-                        for item in result.splits
-                        if item["user_id"] == seller_user_id
-                    ),
-                    None,
-                ),
-                "country": result.country,
-            },
+            lambda result: format_sale_for_download(
+                result,
+                seller_handle,
+                seller_user_id,
+                is_for_json_response=return_json,  # Used to determine if we should include email
+            ),
             results,
         )
     )
+
+    # Return JSON if requested
+    if return_json:
+        return {"decryption_key": encryption_key, "sales": contents}
 
     # Get results in CSV format
     to_download = write_csv_string(contents)

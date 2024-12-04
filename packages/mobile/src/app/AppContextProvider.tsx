@@ -3,6 +3,7 @@ import { useMemo, type ReactNode } from 'react'
 import { AppContext } from '@audius/common/context'
 import { useAsync } from 'react-use'
 
+import { env } from 'app/env'
 import * as analytics from 'app/services/analytics'
 import { audiusBackendInstance } from 'app/services/audius-backend-instance'
 import { localStorage } from 'app/services/local-storage'
@@ -24,6 +25,9 @@ export const AppContextProvider = (props: AppContextProviderProps) => {
       analytics,
       storageNodeSelector,
       localStorage,
+      getHostUrl: () => {
+        return `${env.PUBLIC_PROTOCOL}//${env.PUBLIC_HOSTNAME}`
+      },
       imageUtils: { generatePlaylistArtwork },
       audiusBackend: audiusBackendInstance,
       remoteConfig: remoteConfigInstance

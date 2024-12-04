@@ -1,3 +1,4 @@
+import { userCollectionMetadataFromSDK } from '@audius/common/adapters'
 import {
   Name,
   DefaultSizes,
@@ -10,7 +11,9 @@ import {
   UserFollowees,
   FolloweeRepost,
   UID,
-  isContentUSDCPurchaseGated
+  isContentUSDCPurchaseGated,
+  Id,
+  OptionalId
 } from '@audius/common/models'
 import { TransactionReceipt } from '@audius/common/services'
 import {
@@ -29,7 +32,6 @@ import {
   getContext,
   confirmerActions,
   confirmTransaction,
-  SubscriptionInfo,
   Entry,
   trackPageActions
 } from '@audius/common/store'
@@ -64,7 +66,6 @@ import { waitForWrite } from 'utils/sagaHelpers'
 import { watchAddTrackToPlaylist } from './addTrackToPlaylistSaga'
 import { confirmOrderPlaylist } from './confirmOrderPlaylist'
 import { createPlaylistSaga } from './createPlaylistSaga'
-import { fixInvalidTracksInPlaylist } from './fixInvalidTracksInPlaylist'
 import { optimisticUpdateCollection } from './utils/optimisticUpdateCollection'
 import { retrieveCollection } from './utils/retrieveCollections'
 
@@ -192,6 +193,8 @@ function* confirmEditPlaylist(
   formFields: Collection
 ) {
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
+  const audiusSdk = yield* getContext('audiusSdk')
+  const sdk = yield* call(audiusSdk)
   yield* put(
     confirmerActions.requestConfirmation(
       makeKindId(Kind.COLLECTIONS, playlistId),
@@ -213,10 +216,14 @@ function* confirmEditPlaylist(
             `Could not confirm playlist edition for playlist id ${playlistId}`
           )
         }
-
-        return (yield* call(audiusBackendInstance.getPlaylists, userId, [
-          playlistId
-        ]))[0]
+        const { data: playlist } = yield* call(
+          [sdk.full.playlists, sdk.full.playlists.getPlaylist],
+          {
+            userId: OptionalId.parse(userId),
+            playlistId: Id.parse(playlistId)
+          }
+        )
+        return playlist?.[0] ? userCollectionMetadataFromSDK(playlist[0]) : null
       },
       function* (confirmedPlaylist: Collection) {
         // Update the cached collection so it no longer contains image upload artifacts
@@ -331,41 +338,10 @@ function* confirmRemoveTrackFromPlaylist(
     confirmerActions.requestConfirmation(
       makeKindId(Kind.COLLECTIONS, playlistId),
       function* (confirmedPlaylistId: ID) {
-        // NOTE: In an attempt to fix playlists in a corrupted state, only attempt the delete playlist track once,
-        // if it fails, check if the playlist is in a corrupted state and if so fix it before re-attempting to delete track from playlist
-        let { blockHash, blockNumber, error } = yield* call(
+        const { blockHash, blockNumber } = yield* call(
           audiusBackendInstance.deletePlaylistTrack,
           playlist
         )
-        if (error) {
-          const {
-            error: tracksInPlaylistError,
-            isValid,
-            invalidTrackIds
-          } = yield* call(
-            audiusBackendInstance.validateTracksInPlaylist,
-            confirmedPlaylistId
-          )
-          if (tracksInPlaylistError) throw tracksInPlaylistError
-          if (!isValid) {
-            const updatedPlaylist = yield* fixInvalidTracksInPlaylist(
-              confirmedPlaylistId,
-              invalidTrackIds
-            )
-            const isTrackRemoved =
-              countTrackIds(updatedPlaylist?.playlist_contents, trackId) <=
-              count
-            if (isTrackRemoved) return updatedPlaylist
-          }
-          const response = yield* call(
-            audiusBackendInstance.deletePlaylistTrack,
-            playlist
-          )
-          if (response.error) throw response.error
-
-          blockHash = response.blockHash
-          blockNumber = response.blockNumber
-        }
 
         const confirmed = yield* call(
           confirmTransaction,
@@ -517,6 +493,8 @@ function* confirmPublishPlaylist(
   isAlbum?: boolean
 ) {
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
+  const audiusSdk = yield* getContext('audiusSdk')
+  const sdk = yield* call(audiusSdk)
   yield* put(
     confirmerActions.requestConfirmation(
       makeKindId(Kind.COLLECTIONS, playlistId),
@@ -537,9 +515,14 @@ function* confirmPublishPlaylist(
             `Could not confirm publish playlist for playlist id ${playlistId}`
           )
         }
-        return (yield* call(audiusBackendInstance.getPlaylists, userId, [
-          playlistId
-        ]))[0]
+        const { data } = yield* call(
+          [sdk.full.playlists, sdk.full.playlists.getPlaylist],
+          {
+            userId: OptionalId.parse(userId),
+            playlistId: Id.parse(playlistId)
+          }
+        )
+        return data?.[0] ? userCollectionMetadataFromSDK(data[0]) : null
       },
       function* (confirmedPlaylist: Collection) {
         confirmedPlaylist.is_private = false
@@ -713,7 +696,6 @@ function* confirmDeleteAlbum(playlistId: ID, userId: ID) {
       },
       function* () {
         console.debug(`Successfully deleted album ${playlistId}`)
-        yield* put(cacheActions.remove(Kind.COLLECTIONS, [playlistId]))
       },
       function* ({ error, timeout, message }) {
         console.error(`Failed to delete album ${playlistId}`)
@@ -810,7 +792,6 @@ function* confirmDeletePlaylist(userId: ID, playlistId: ID) {
       },
       function* () {
         console.debug(`Successfully deleted playlist ${playlistId}`)
-        yield* put(cacheActions.remove(Kind.COLLECTIONS, [playlistId]))
       },
       function* ({ error, timeout, message }) {
         console.error(`Failed to delete playlist ${playlistId}`)
@@ -872,7 +853,6 @@ function* fetchRepostInfo(entries: Entry<Collection>[]) {
     const { entries: users, uids } = yield* call(fetchUsers, userIds)
 
     const updates: UserFollowees[] = []
-    const subscriptions: SubscriptionInfo[] = []
     entries.forEach((entry) => {
       const followeeRepostUsers: {
         id: ID
@@ -887,18 +867,9 @@ function* fetchRepostInfo(entries: Entry<Collection>[]) {
         subscriptionUids.push(uids[repost.user_id])
       })
       updates.push(followeeRepostUsers)
-      if (subscriptionUids.length > 0) {
-        subscriptions.concat(
-          subscriptionUids.map((uid) => ({
-            id: entry.id,
-            kind: Kind.USERS,
-            uid
-          }))
-        )
-      }
     })
 
-    yield* put(cacheActions.update(Kind.COLLECTIONS, updates, subscriptions))
+    yield* put(cacheActions.update(Kind.COLLECTIONS, updates))
   }
 }
 

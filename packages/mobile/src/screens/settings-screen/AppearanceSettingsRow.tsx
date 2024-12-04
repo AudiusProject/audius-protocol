@@ -42,10 +42,6 @@ export const AppearanceSettingsRow = () => {
     appearanceOptions.push({ key: Theme.MATRIX, text: messages.matrixMode })
   }
 
-  if (isStaging) {
-    appearanceOptions.push({ key: Theme.DEBUG, text: messages.debugMode })
-  }
-
   const handleSetTheme = useCallback(
     (theme: Theme) => {
       dispatch(setTheme({ theme }))

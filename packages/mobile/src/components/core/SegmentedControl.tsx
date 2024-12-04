@@ -1,8 +1,9 @@
 import { Fragment, useState, useEffect, useRef, useCallback } from 'react'
 
 import type { LayoutChangeEvent, TextStyle, ViewStyle } from 'react-native'
-import { Animated, Pressable, View, Text } from 'react-native'
+import { Animated, Pressable, View } from 'react-native'
 
+import { Text } from '@audius/harmony-native'
 import { light } from 'app/haptics'
 import type { StylesProps } from 'app/styles'
 import { makeStyles } from 'app/styles'
@@ -66,11 +67,6 @@ const useStyles = makeStyles(({ palette, typography, spacing }) => ({
     borderRadius: 4,
     justifyContent: 'center',
     alignItems: 'center'
-  },
-  text: {
-    color: palette.neutral,
-    fontSize: 13,
-    fontFamily: typography.fontByWeight.demiBold
   },
   separator: {
     width: 1,
@@ -200,6 +196,7 @@ export const SegmentedControl = <Value,>(
           index === options.length - 1 ||
           // Hide separator right of an option if the next one is selected
           selectedOption === options[index + 1].key
+        const isSelected = option.key === selectedOption
 
         return (
           <Fragment key={option.text}>
@@ -214,11 +211,10 @@ export const SegmentedControl = <Value,>(
               onPress={() => handleSelectOption(option.key)}
             >
               <Text
-                style={[
-                  styles.text,
-                  stylesProp?.text,
-                  selectedOption === option.key && stylesProp?.activeText
-                ]}
+                size='s'
+                color={isSelected ? 'default' : 'subdued'}
+                strength='strong'
+                style={[stylesProp?.text, isSelected && stylesProp?.activeText]}
               >
                 {option.text}
               </Text>

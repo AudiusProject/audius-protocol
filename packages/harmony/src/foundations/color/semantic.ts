@@ -10,6 +10,7 @@ const createSemanticTheme = (primitives: PrimitiveColors) => ({
     active: primitives.primary.primary,
     accent: primitives.secondary.s300,
     staticWhite: primitives.static.white,
+    staticStaticWhite: primitives.static.staticWhite,
     warning: primitives.special.orange,
     danger: primitives.special.red,
     premium: primitives.special.lightGreen,
@@ -23,6 +24,7 @@ const createSemanticTheme = (primitives: PrimitiveColors) => ({
     active: primitives.primary.primary,
     accent: primitives.secondary.s300,
     staticWhite: primitives.static.white,
+    staticStaticWhite: primitives.static.staticWhite,
     warning: primitives.special.orange,
     danger: primitives.special.red,
     premium: primitives.special.lightGreen,
@@ -57,8 +59,7 @@ const createSemanticTheme = (primitives: PrimitiveColors) => ({
 export const semanticTheme = {
   day: createSemanticTheme(primitiveTheme.day),
   dark: createSemanticTheme(primitiveTheme.dark),
-  matrix: createSemanticTheme(primitiveTheme.matrix),
-  debug: createSemanticTheme(primitiveTheme.debug)
+  matrix: createSemanticTheme(primitiveTheme.matrix)
 }
 
 export type SemanticColors = typeof semanticTheme.day

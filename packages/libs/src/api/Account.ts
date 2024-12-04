@@ -212,7 +212,8 @@ export class Account extends Base {
       // guest account secured by OTP
       const ownerWallet = await this.hedgehog.signUp({
         username: email,
-        password: 'TemporaryPassword'
+        password: 'TemporaryPassword',
+        isGuest: true
       })
 
       this.web3Manager.setOwnerWallet(ownerWallet)

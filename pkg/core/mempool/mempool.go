@@ -34,6 +34,8 @@ type Mempool struct {
 	broadcastPeers         map[*sdk.Sdk]struct{}
 }
 
+// signed tx with mempool related metadata
+// deadline - the block MUST be included in a block prior to the deadline
 type MempoolTransaction struct {
 	Deadline int64
 	Tx       *proto.SignedTransaction
@@ -70,6 +72,12 @@ func (m *Mempool) AddTransaction(key string, tx *MempoolTransaction, broadcast b
 		return ErrFullMempool
 	}
 
+	_, exists := m.txMap[key]
+	if exists {
+		m.logger.Warningf("duplicate tx %s tried to add to mempool", key)
+		return nil
+	}
+
 	element := m.deque.PushBack(tx)
 	m.txMap[key] = element
 
@@ -77,7 +85,8 @@ func (m *Mempool) AddTransaction(key string, tx *MempoolTransaction, broadcast b
 	return nil
 }
 
-func (m *Mempool) GetBatch(batchSize int) []*proto.SignedTransaction {
+// gathers a batch of transactions skipping those that have expired
+func (m *Mempool) GetBatch(batchSize int, currentBlock int64) []*proto.SignedTransaction {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
@@ -89,8 +98,35 @@ func (m *Mempool) GetBatch(batchSize int) []*proto.SignedTransaction {
 		if !ok {
 			continue
 		}
+
+		if tx.Deadline <= currentBlock {
+			continue
+		}
+
 		batch = append(batch, tx.Tx)
 		count++
+	}
+
+	return batch
+}
+
+func (m *Mempool) GetAll() []*proto.SignedTransaction {
+	m.mutex.Lock()
+	defer m.mutex.Unlock()
+
+	batch := []*proto.SignedTransaction{}
+
+	for {
+		e := m.deque.Front()
+		if e.Next() != nil {
+			tx, ok := e.Value.(*MempoolTransaction)
+			if !ok {
+				continue
+			}
+			batch = append(batch, tx.Tx)
+			continue
+		}
+		break
 	}
 
 	return batch

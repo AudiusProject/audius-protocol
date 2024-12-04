@@ -13,10 +13,6 @@ export const colorTheme = {
   matrix: {
     ...primitiveTheme.matrix,
     ...semanticTheme.matrix
-  },
-  debug: {
-    ...primitiveTheme.debug,
-    ...semanticTheme.debug
   }
 }
 

@@ -18,7 +18,8 @@ import {
   Flex,
   IconLogoCircleUSDC as LogoUSDC,
   Text,
-  Paper
+  Paper,
+  useTheme
 } from '@audius/harmony'
 import BN from 'bn.js'
 
@@ -46,6 +47,7 @@ export const USDCCard = () => {
   const { onOpen: openWithdrawUSDCModal } = useWithdrawUSDCModal()
   const { onOpen: openAddFundsModal } = useAddFundsModal()
   const { data: balance, status: balanceStatus } = useUSDCBalance()
+  const { color } = useTheme()
 
   const balanceCents = formatUSDCWeiToFloorCentsNumber(
     (balance ?? new BN(0)) as BNUSDC
@@ -81,22 +83,21 @@ export const USDCCard = () => {
     <Paper direction='column' shadow='far' borderRadius='l'>
       <div className={styles.backgroundBlueGradient}>
         <div className={styles.usdcTitleContainer}>
-          <div className={styles.usdcTitle}>
+          <Flex alignItems='center' gap='s'>
             <LogoUSDC
               size='3xl'
-              css={(theme) => ({ path: { fill: theme.color.static.white } })}
+              css={{ path: { fill: color.static.staticWhite } }}
             />
-            <div className={styles.usdc}>
-              <Text
-                variant='heading'
-                size='xl'
-                color='staticWhite'
-                strength='strong'
-              >
-                {messages.usdc}
-              </Text>
-            </div>
-          </div>
+            <Text
+              variant='heading'
+              size='xl'
+              color='staticStaticWhite'
+              strength='strong'
+              css={{ opacity: 0.8 }}
+            >
+              {messages.usdc}
+            </Text>
+          </Flex>
 
           <Flex gap='m'>
             {balanceStatus === Status.LOADING ? (
@@ -104,7 +105,7 @@ export const USDCCard = () => {
             ) : (
               <Text
                 variant='heading'
-                color='staticWhite'
+                color='staticStaticWhite'
                 strength='strong'
                 size='xl'
               >
@@ -114,7 +115,7 @@ export const USDCCard = () => {
           </Flex>
         </div>
         <div className={styles.usdcInfo}>
-          <Text color='staticWhite'>{messages.buyAndSell}</Text>
+          <Text color='staticStaticWhite'>{messages.buyAndSell}</Text>
           <PlainButton
             onClick={handleLearnMore}
             iconLeft={IconQuestionCircle}

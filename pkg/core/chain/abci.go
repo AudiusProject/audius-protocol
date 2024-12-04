@@ -103,7 +103,7 @@ func (app *CoreApplication) PrepareProposal(ctx context.Context, proposal *abcit
 		batch = batch - 1
 	}
 
-	txMemBatch := app.mempl.GetBatch(batch)
+	txMemBatch := app.mempl.GetBatch(batch, proposal.Height)
 
 	// TODO: parallelize
 	for _, tx := range txMemBatch {
@@ -188,6 +188,13 @@ func (app *CoreApplication) FinalizeBlock(ctx context.Context, req *abcitypes.Fi
 			"error",
 			err,
 		)
+	}
+
+	// routine every hundredth block to remove expired txs
+	// run in separate goroutine to not affect consensus time
+	hundredthBlock := req.Height%100 == 0
+	if hundredthBlock {
+		go app.mempl.RemoveExpiredTransactions(req.Height)
 	}
 
 	return &abcitypes.FinalizeBlockResponse{

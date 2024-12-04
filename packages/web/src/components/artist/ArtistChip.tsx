@@ -7,7 +7,7 @@ import { ArtistPopover } from 'components/artist/ArtistPopover'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import { MountPlacement } from 'components/types'
 import UserBadges from 'components/user-badges/UserBadges'
-import { useUserProfilePicture } from 'hooks/useUserProfilePicture'
+import { useProfilePicture } from 'hooks/useProfilePicture'
 
 import styles from './ArtistChip.module.css'
 import { ArtistChipFollowers } from './ArtistChipFollowers'
@@ -97,19 +97,12 @@ const ArtistChip = ({
   customChips = null,
   onNavigateAway
 }: ArtistChipProps) => {
-  const {
-    user_id: userId,
-    name,
-    handle,
-    _profile_picture_sizes: profilePictureSizes,
-    follower_count: followers
-  } = user
+  const { user_id: userId, name, handle, follower_count: followers } = user
 
-  const profilePicture = useUserProfilePicture(
+  const profilePicture = useProfilePicture({
     userId,
-    profilePictureSizes,
-    SquareSizes.SIZE_150_BY_150
-  )
+    size: SquareSizes.SIZE_150_BY_150
+  })
 
   return (
     <div

@@ -13,9 +13,7 @@ import {
   IconCaretLeft,
   IconCaretRight,
   Text,
-  PlainButton,
-  Button,
-  IconTrash
+  PlainButton
 } from '@audius/harmony'
 import cn from 'classnames'
 import { Form, Formik, FormikProps, useField } from 'formik'
@@ -28,15 +26,21 @@ import { AnchoredSubmitRow } from 'components/edit/AnchoredSubmitRow'
 import { AnchoredSubmitRowEdit } from 'components/edit/AnchoredSubmitRowEdit'
 import { AdvancedField } from 'components/edit/fields/AdvancedField'
 import { MultiTrackSidebar } from 'components/edit/fields/MultiTrackSidebar'
-import { ReleaseDateField } from 'components/edit/fields/ReleaseDateField'
 import { RemixSettingsField } from 'components/edit/fields/RemixSettingsField'
 import { StemsAndDownloadsField } from 'components/edit/fields/StemsAndDownloadsField'
 import { TrackMetadataFields } from 'components/edit/fields/TrackMetadataFields'
 import { PriceAndAudienceField } from 'components/edit/fields/price-and-audience/PriceAndAudienceField'
 import { VisibilityField } from 'components/edit/fields/visibility/VisibilityField'
+import {
+  UploadPreviewContextProvider,
+  UploadPreviewContext
+} from 'components/edit-track/utils/uploadPreviewContext'
+import { FileReplaceContainer } from 'components/file-replace-container/FileReplaceContainer'
 import layoutStyles from 'components/layout/layout.module.css'
 import { NavigationPrompt } from 'components/navigation-prompt/NavigationPrompt'
 import { EditFormScrollContext } from 'pages/edit-page/EditTrackPage'
+import { processFiles } from 'pages/upload-page/store/utils/processFiles'
+import { removeNullable } from 'utils/typeUtils'
 
 import styles from './EditTrackForm.module.css'
 import { PreviewButton } from './components/PreviewButton'
@@ -51,7 +55,6 @@ const messages = {
   prev: 'Prev',
   next: 'Next Track',
   preview: 'Preview',
-  deleteTrack: 'DELETE TRACK',
   uploadNavigationPrompt: {
     title: 'Discard upload?',
     body: "Are you sure you want to leave this page?\nAny changes you've made will be lost.",
@@ -63,13 +66,13 @@ const messages = {
     body: "Are you sure you want to leave this page?\nAny changes you've made will be lost.",
     cancel: 'Cancel',
     proceed: 'Discard'
-  }
+  },
+  untitled: 'Untitled'
 }
 
 type EditTrackFormProps = {
   initialValues: TrackEditFormValues
   onSubmit: (values: TrackEditFormValues) => void
-  onDeleteTrack?: () => void
   hideContainer?: boolean
   disableNavigationPrompt?: boolean
 }
@@ -79,13 +82,8 @@ const EditFormValidationSchema = z.object({
 })
 
 export const EditTrackForm = (props: EditTrackFormProps) => {
-  const {
-    initialValues,
-    onSubmit,
-    onDeleteTrack,
-    hideContainer,
-    disableNavigationPrompt
-  } = props
+  const { initialValues, onSubmit, hideContainer, disableNavigationPrompt } =
+    props
   const initialTrackValues = initialValues.trackMetadatas[0] ?? {}
   const isUpload = initialTrackValues.track_id === undefined
   const initiallyHidden = initialTrackValues.is_unlisted
@@ -103,11 +101,17 @@ export const EditTrackForm = (props: EditTrackFormProps) => {
         onSubmit(values)
       }
 
+      const replaceFile =
+        'file' in values.tracks[0] ? values.tracks[0].file : null
       const usersMayLoseAccess =
         !isUpload && !initiallyHidden && values.trackMetadatas[0].is_unlisted
       const isToBePublished =
         !isUpload && initiallyHidden && !values.trackMetadatas[0].is_unlisted
-      if (usersMayLoseAccess) {
+
+      if (replaceFile) {
+        // Replace audio confirmation is handled in the edit track page if needed
+        onSubmit(values)
+      } else if (usersMayLoseAccess) {
         openHideContentConfirmation({ confirmCallback })
       } else if (isToBePublished && isInitiallyScheduled) {
         openEarlyReleaseConfirmation({ contentType: 'track', confirmCallback })
@@ -129,30 +133,30 @@ export const EditTrackForm = (props: EditTrackFormProps) => {
   )
 
   return (
-    <Formik<TrackEditFormValues>
-      initialValues={initialValues}
-      onSubmit={handleSubmit}
-      validationSchema={toFormikValidationSchema(EditFormValidationSchema)}
-    >
-      {(props) => (
-        <>
-          <TrackEditForm
-            {...props}
-            hideContainer={hideContainer}
-            onDeleteTrack={onDeleteTrack}
-            disableNavigationPrompt={disableNavigationPrompt}
-            updatedArtwork={initialTrackValues.artwork}
-          />
-        </>
-      )}
-    </Formik>
+    <UploadPreviewContextProvider>
+      <Formik<TrackEditFormValues>
+        initialValues={initialValues}
+        onSubmit={handleSubmit}
+        validationSchema={toFormikValidationSchema(EditFormValidationSchema)}
+      >
+        {(props) => (
+          <>
+            <TrackEditForm
+              {...props}
+              hideContainer={hideContainer}
+              disableNavigationPrompt={disableNavigationPrompt}
+              updatedArtwork={initialTrackValues.artwork}
+            />
+          </>
+        )}
+      </Formik>
+    </UploadPreviewContextProvider>
   )
 }
 
 const TrackEditForm = (
   props: FormikProps<TrackEditFormValues> & {
     hideContainer?: boolean
-    onDeleteTrack?: () => void
     disableNavigationPrompt?: boolean
     updatedArtwork?: TrackMetadataForUpload['artwork']
   }
@@ -161,7 +165,6 @@ const TrackEditForm = (
     values,
     dirty,
     isSubmitting,
-    onDeleteTrack,
     disableNavigationPrompt = false,
     hideContainer = false,
     updatedArtwork
@@ -174,13 +177,29 @@ const TrackEditForm = (
     setIndex(0)
   })
   const [forceOpenAccessAndSale, setForceOpenAccessAndSale] = useState(false)
+  const { playingPreviewIndex, togglePreview } =
+    useContext(UploadPreviewContext)
+  const isPreviewPlaying = playingPreviewIndex === trackIdx
 
-  const { isEnabled: isHiddenPaidScheduledEnabled } = useFeatureFlag(
-    FeatureFlags.HIDDEN_PAID_SCHEDULED
+  const { isEnabled: isTrackAudioReplaceEnabled } = useFeatureFlag(
+    FeatureFlags.TRACK_AUDIO_REPLACE
   )
-  const [, , { setValue: setArtworkValue }] = useField(
-    getTrackFieldName(0, 'artwork')
+
+  const [{ value: track }, , { setValue: setTrackValue }] = useField(
+    `tracks.${trackIdx}`
   )
+  const [, { touched: isTitleDirty }, { setValue: setTitle }] = useField(
+    getTrackFieldName(trackIdx, 'title')
+  )
+  const [, { touched: isArtworkDirty }, { setValue: setArtworkValue }] =
+    useField(getTrackFieldName(0, 'artwork'))
+  const [, , { setValue: setOrigFilename }] = useField(
+    getTrackFieldName(trackIdx, 'orig_filename')
+  )
+
+  const handleTogglePreview = useCallback(() => {
+    togglePreview(track.preview, trackIdx)
+  }, [togglePreview, trackIdx, track])
 
   const getArtworkUrl = (artwork: typeof updatedArtwork) => {
     if (!artwork) return undefined
@@ -189,6 +208,7 @@ const TrackEditForm = (
     // or potentially return one of the size URLs if needed
     return undefined
   }
+  const fileName = values.trackMetadatas[trackIdx].orig_filename
 
   useEffect(() => {
     setArtworkValue(updatedArtwork)
@@ -197,6 +217,52 @@ const TrackEditForm = (
     // the backend.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [getArtworkUrl(updatedArtwork), setArtworkValue])
+
+  const onClickReplace = useCallback(
+    async (file: File) => {
+      const processedFiles = await Promise.all(
+        processFiles([file], (name, reason) => {
+          console.error('Failed to process file', name, 'due to', reason)
+          // todo: show error state
+        })
+      )
+
+      const files = processedFiles.filter(removeNullable)
+      if (files.length > 0) {
+        const newFile = files[0]
+
+        if (isUpload && !isTitleDirty) {
+          setTitle(newFile.metadata.title.split('.').shift())
+        }
+        if (isUpload && !isArtworkDirty && newFile.metadata.artwork.file) {
+          setArtworkValue(newFile.metadata.artwork)
+        }
+        setTrackValue(newFile)
+        setOrigFilename(newFile.metadata.orig_filename)
+      }
+    },
+    [
+      isArtworkDirty,
+      isTitleDirty,
+      isUpload,
+      setArtworkValue,
+      setOrigFilename,
+      setTitle,
+      setTrackValue
+    ]
+  )
+
+  const onClickDownload = useCallback(() => {
+    const { url } = track?.metadata?.download
+    if (!url) return
+
+    const link = document.createElement('a')
+    link.href = url
+    link.download = track.metadata.orig_filename || 'download'
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+  }, [track.metadata])
 
   return (
     <Form id={formId}>
@@ -223,13 +289,19 @@ const TrackEditForm = (
               layoutStyles.gap4
             )}
           >
+            {isTrackAudioReplaceEnabled ? (
+              <FileReplaceContainer
+                fileName={fileName || messages.untitled}
+                onTogglePlay={handleTogglePreview}
+                isPlaying={isPreviewPlaying}
+                onClickReplace={onClickReplace}
+                onClickDownload={onClickDownload}
+                downloadEnabled={!isUpload}
+              />
+            ) : null}
             <TrackMetadataFields />
             <div className={cn(layoutStyles.col, layoutStyles.gap4)}>
-              {isHiddenPaidScheduledEnabled ? (
-                <VisibilityField entityType='track' isUpload={isUpload} />
-              ) : (
-                <ReleaseDateField />
-              )}
+              <VisibilityField entityType='track' isUpload={isUpload} />
               <PriceAndAudienceField
                 isUpload={isUpload}
                 forceOpen={forceOpenAccessAndSale}
@@ -246,22 +318,13 @@ const TrackEditForm = (
               />
               <RemixSettingsField isUpload={isUpload} />
             </div>
-            <PreviewButton
-              // Since edit form is a single component, render a different preview for each track
-              key={trackIdx}
-              className={styles.previewButton}
-              index={trackIdx}
-            />
-            {!isUpload ? (
-              <Button
-                variant='destructive'
-                size='small'
-                onClick={onDeleteTrack}
-                iconLeft={IconTrash}
-                css={{ alignSelf: 'flex-start' }}
-              >
-                {messages.deleteTrack}
-              </Button>
+            {!isTrackAudioReplaceEnabled && isUpload ? (
+              <PreviewButton
+                // Since edit form is a single component, render a different preview for each track
+                key={trackIdx}
+                className={styles.previewButton}
+                index={trackIdx}
+              />
             ) : null}
           </div>
           {isMultiTrack ? <MultiTrackFooter /> : null}

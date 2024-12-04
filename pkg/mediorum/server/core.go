@@ -1,52 +1,35 @@
 package server
 
 import (
-	"fmt"
+	"time"
 
 	"github.com/AudiusProject/audius-protocol/pkg/core/sdk"
 )
 
-var (
-	initializing              = false
-	initialized               = false
-	initializationError error = nil
-)
-
 func (ss *MediorumServer) getCoreSdk() (*sdk.Sdk, error) {
-	if initializationError != nil {
-		return nil, initializationError
-	}
-
-	if ss.coreSdk != nil {
-		return ss.coreSdk, nil
-	}
-
-	if err := ss.initCoreSdk(); err != nil {
-		return nil, err
-	}
-
+	// await core sdk ready
+	<-ss.coreSdkReady
 	return ss.coreSdk, nil
 }
 
 func (ss *MediorumServer) initCoreSdk() error {
-	// another goroutine is initializing
-	if initialized || initializing {
+	coreSdk, err := sdk.NewSdk(sdk.WithGrpcendpoint(ss.Config.CoreGRPCEndpoint), sdk.WithJrpcendpoint(ss.Config.CoreJRPCEndpoint))
+	if err == nil {
+		ss.coreSdk = coreSdk
+		close(ss.coreSdkReady)
 		return nil
 	}
 
-	defer func() {
-		// initialize on either error or success
-		initialized = true
-		initializing = false
-	}()
+	for {
+		time.Sleep(5 * time.Second)
 
-	// claim lock
-	initializing = true
-	coreSdk, err := sdk.NewSdk(sdk.WithGrpcendpoint(ss.Config.CoreGRPCEndpoint), sdk.WithJrpcendpoint(ss.Config.CoreJRPCEndpoint))
-	if err != nil {
-		initializationError = err
-		return fmt.Errorf("error initialized core sdk: %v", err)
+		coreSdk, err := sdk.NewSdk(sdk.WithGrpcendpoint(ss.Config.CoreGRPCEndpoint), sdk.WithJrpcendpoint(ss.Config.CoreJRPCEndpoint))
+		if err != nil {
+			continue
+		}
+
+		ss.coreSdk = coreSdk
+		close(ss.coreSdkReady)
+		return nil
 	}
-	ss.coreSdk = coreSdk
-	return nil
 }

@@ -189,11 +189,10 @@ const CollectionItem = ({
   collection,
   collectionType
 }: CollectionItemProps) => {
-  const image = useCollectionCoverArt(
-    collection.playlist_id,
-    collection._cover_art_sizes,
-    SquareSizes.SIZE_150_BY_150
-  )
+  const image = useCollectionCoverArt({
+    collectionId: collection.playlist_id,
+    size: SquareSizes.SIZE_150_BY_150
+  })
 
   const messages = getMessages(collectionType)
   return (

@@ -7,8 +7,8 @@ import {
   cacheActions,
   profilePageActions,
   getContext,
-  fetchAccountAsync,
-  cacheAccount
+  getSDK,
+  fetchAccountAsync
 } from '@audius/common/store'
 import { call, put, fork, select, takeEvery } from 'redux-saga/effects'
 
@@ -26,21 +26,20 @@ const {
   getUserHandle,
   getAccountUser,
   getAccountSavedPlaylistIds,
-  getAccountOwnedPlaylistIds,
-  getAccountToCache
+  getAccountOwnedPlaylistIds
 } = accountSelectors
 
 const {
   signedIn,
   showPushNotificationConfirmation,
   fetchAccountFailed,
+  fetchAccountSucceeded,
   fetchAccount,
   fetchLocalAccount,
   twitterLogin,
   instagramLogin,
   tikTokLogin,
   fetchSavedPlaylists,
-  addAccountPlaylist,
   resetAccount
 } = accountActions
 
@@ -71,6 +70,7 @@ function* onSignedIn({ payload: { account } }) {
   const audiusBackendInstance = yield getContext('audiusBackendInstance')
   const sentry = yield getContext('sentry')
   const authService = yield getContext('authService')
+  const sdk = yield* getSDK()
 
   const libs = yield call([
     audiusBackendInstance,
@@ -125,7 +125,7 @@ function* onSignedIn({ payload: { account } }) {
 
   yield put(showPushNotificationConfirmation())
 
-  yield fork(audiusBackendInstance.updateUserLocationTimezone)
+  yield fork(audiusBackendInstance.updateUserLocationTimezone, { sdk })
 
   // Fetch the profile so we get everything we need to populate
   // the left nav / other site-wide metadata.
@@ -147,22 +147,20 @@ export function* fetchLocalAccountAsync() {
   const cachedAccountUser = yield call([localStorage, 'getAudiusAccountUser'])
 
   if (cachedAccount && cachedAccountUser && !cachedAccountUser.is_deactivated) {
-    yield call(
-      cacheAccount,
-      { ...cachedAccountUser, local: true },
-      cachedAccountUser.orderedPlaylists
+    yield put(
+      cacheActions.add(Kind.USERS, [
+        {
+          id: cachedAccountUser.user_id,
+          uid: 'USER_ACCOUNT',
+          metadata: cachedAccountUser
+        }
+      ])
     )
+
+    yield put(fetchAccountSucceeded(cachedAccount))
   } else {
     yield put(fetchAccountFailed({ reason: 'ACCOUNT_NOT_FOUND_LOCAL' }))
   }
-}
-export function* reCacheAccount() {
-  const localStorage = yield getContext('localStorage')
-  const account = yield select(getAccountToCache)
-  const accountUser = yield select(getAccountUser)
-
-  yield call([localStorage, 'setAudiusAccount'], account)
-  yield call([localStorage, 'setAudiusAccountUser'], accountUser)
 }
 
 function* associateTwitterAccount(action) {
@@ -308,10 +306,6 @@ function* watchFetchSavedPlaylists() {
   yield takeEvery(fetchSavedPlaylists.type, fetchSavedPlaylistsAsync)
 }
 
-function* watchAddAccountPlaylist() {
-  yield takeEvery(addAccountPlaylist.type, reCacheAccount)
-}
-
 function* watchResetAccount() {
   yield takeEvery(resetAccount.type, function* () {
     const audiusBackendInstance = yield getContext('audiusBackendInstance')
@@ -333,7 +327,6 @@ export default function sagas() {
     watchInstagramLogin,
     watchTikTokLogin,
     watchFetchSavedPlaylists,
-    watchAddAccountPlaylist,
     watchResetAccount
   ]
 }

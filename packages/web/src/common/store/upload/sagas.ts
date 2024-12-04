@@ -1,4 +1,8 @@
 import {
+  transformAndCleanList,
+  userCollectionMetadataFromSDK
+} from '@audius/common/adapters'
+import {
   Collection,
   CollectionMetadata,
   FieldVisibility,
@@ -6,6 +10,7 @@ import {
   Id,
   Kind,
   Name,
+  OptionalId,
   StemUploadWithFile,
   isContentFollowGated,
   isContentUSDCPurchaseGated
@@ -28,7 +33,8 @@ import {
   savedPageActions,
   uploadActions,
   getSDK,
-  cacheTracksActions
+  cacheTracksActions,
+  replaceTrackProgressModalActions
 } from '@audius/common/store'
 import {
   actionChannelDispatcher,
@@ -41,6 +47,7 @@ import type {
   TrackMetadata,
   UploadTrackMetadata
 } from '@audius/sdk-legacy/dist/utils'
+import { push } from 'connected-react-router'
 import { mapValues } from 'lodash'
 import { Channel, Task, buffers, channel } from 'redux-saga'
 import {
@@ -51,7 +58,8 @@ import {
   put,
   select,
   takeLatest,
-  take
+  take,
+  delay
 } from 'typed-redux-saga'
 
 import { make } from 'common/store/analytics/actions'
@@ -291,16 +299,21 @@ function* publishWorker(
         throw new Error('No user id found during upload. Not signed in?')
       }
       const libs = yield* call(audiusBackendInstance.getAudiusLibsTyped)
+      // TODO - I am unsure why these types are not working as expected.
+      // Nothing around it appears to change but this code should be removed
+      // with the move of upload to sdk.
       const {
+        // @ts-ignore
         trackId: updatedTrackId,
+        // @ts-ignore
         txReceipt: { blockHash, blockNumber }
       } = yield* call(
-        [libs.Track, libs.Track!.writeTrackToChain],
+        [libs.Track, libs.Track!.writeTrackToChain as any],
         userId,
         metadata,
         EntityManagerAction.CREATE,
         presetTrackId
-      )
+      ) as any
       const confirmed = yield* call(confirmTransaction, blockHash, blockNumber)
       if (!confirmed) {
         throw new Error(
@@ -375,6 +388,10 @@ type UploadTrackResponse =
   | { type: 'UPLOADED'; payload: UploadedPayload }
   | { type: 'PUBLISHED'; payload: PublishedPayload }
   | { type: 'ERROR'; payload: ErrorPayload }
+
+function isTask(worker: unknown): worker is Task {
+  return worker !== null && typeof worker === 'object' && 'isRunning' in worker
+}
 
 /**
  * Spins up workers to handle uploading of tracks and their stems in parallel.
@@ -693,10 +710,14 @@ export function* handleUploads({
 
   console.debug('Spinning down workers')
   for (const worker of uploadWorkers) {
-    worker.cancel()
+    if (isTask(worker)) {
+      yield* cancel(worker)
+    }
   }
   for (const worker of publishWorkers) {
-    worker.cancel()
+    if (isTask(worker)) {
+      yield* cancel(worker)
+    }
   }
   yield* call(progressChannel.close)
   yield* cancel(actionDispatcherTask)
@@ -868,9 +889,18 @@ export function* uploadCollection(
           throw new Error(`Could not confirm playlist creation`)
         }
 
-        return (yield* call(audiusBackendInstance.getPlaylists, userId, [
-          playlistId
-        ]))[0]
+        const { data = [] } = yield* call(
+          [sdk.full.playlists, sdk.full.playlists.getPlaylist],
+          {
+            playlistId: Id.parse(playlistId),
+            userId: OptionalId.parse(userId)
+          }
+        )
+        const [collection] = transformAndCleanList(
+          data,
+          userCollectionMetadataFromSDK
+        )
+        return collection
       },
       function* (confirmedPlaylist: Collection) {
         yield* put(
@@ -1181,18 +1211,27 @@ export function* updateTrackAudioAsync(
   }
 
   const libs = yield* call(audiusBackendInstance.getAudiusLibsTyped)
-  const metadata = newTrackMetadata(
-    toUploadTrackMetadata({
-      ...track,
-      // @ts-ignore - stem_of should accept null instead of undefined
-      stem_of: track.stem_of ?? null
-    })
-  )
+  const baseMetadata = newTrackMetadata(toUploadTrackMetadata({ ...track }))
+  // Full Metadata with the updates from the edit form
+  const fullMetadata = {
+    ...baseMetadata,
+    ...(payload.metadata ?? {}),
+    stem_of: track.stem_of ?? null
+  }
 
-  const handleProgressUpdate = (_progress: Parameters<ProgressCB>[0]) => {
-    // Do progress update things here
-    // if (!('audio' in progress)) return
-    // const { upload, transcode } = progress.audio
+  const dispatch = yield* getContext('dispatch')
+  const handleProgressUpdate = (progress: Parameters<ProgressCB>[0]) => {
+    if (!('audio' in progress)) return
+    const { upload, transcode } = progress.audio
+
+    const uploadVal =
+      transcode === undefined ? (upload?.loaded ?? 0) / (upload?.total ?? 1) : 1
+
+    dispatch(
+      replaceTrackProgressModalActions.set({
+        progress: { upload: uploadVal, transcode: transcode?.decimal ?? 0 }
+      })
+    )
   }
 
   const updatedMetadata = yield* call(
@@ -1200,15 +1239,17 @@ export function* updateTrackAudioAsync(
     userId,
     payload.file as File,
     null,
-    metadata,
+    fullMetadata,
     handleProgressUpdate
   )
 
   const newMetadata: TrackMetadata = {
-    ...metadata,
+    ...fullMetadata,
     orig_file_cid: updatedMetadata.orig_file_cid,
-    bpm: metadata.is_custom_bpm ? metadata.bpm : null,
-    musical_key: metadata.is_custom_musical_key ? metadata.musical_key : null,
+    bpm: fullMetadata.is_custom_bpm ? fullMetadata.bpm : null,
+    musical_key: fullMetadata.is_custom_musical_key
+      ? fullMetadata.musical_key
+      : null,
     audio_analysis_error_count: 0,
     orig_filename: updatedMetadata.orig_filename,
     preview_cid: updatedMetadata.preview_cid,
@@ -1226,6 +1267,12 @@ export function* updateTrackAudioAsync(
       newMetadata as TrackMetadataForUpload
     )
   )
+
+  // Delay to allow the user to see that the track replace upload has finished
+  yield* delay(3000)
+
+  yield* put(replaceTrackProgressModalActions.close())
+  yield* put(push(baseMetadata.permalink))
 }
 
 function* watchUploadTracks() {

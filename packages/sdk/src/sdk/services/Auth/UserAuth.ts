@@ -73,9 +73,16 @@ export class UserAuth implements AuthService {
       get,
       setAuth,
       setUser,
-      config?.useLocalStorage ?? true
+      this.config.useLocalStorage
     )
-    this.config.localStorage.then((ls) => (this.hedgehog.localStorage = ls))
+    if (this.config.useLocalStorage) {
+      this.hedgehog.ready = false
+      this.config.localStorage.then(async (ls) => {
+        this.hedgehog.localStorage = ls
+        await this.hedgehog.restoreLocalWallet()
+        this.hedgehog.ready = true
+      })
+    }
   }
 
   signUp = async ({
@@ -125,15 +132,16 @@ export class UserAuth implements AuthService {
       await this.hedgehog.waitUntilReady()
       const wallet = this.hedgehog.getWallet()
       if (!wallet) throw new Error('No wallet found')
-      return secp.getSharedSecret(wallet.getPrivateKeyString(), publicKey, true)
+      return secp.getSharedSecret(wallet.getPrivateKey(), publicKey, true)
     }
 
   sign: (data: string | Uint8Array) => Promise<[Uint8Array, number]> = async (
     data
   ) => {
+    await this.hedgehog.waitUntilReady()
     const wallet = this.hedgehog.getWallet()
     if (!wallet) throw new Error('No wallet')
-    return secp.sign(keccak_256(data), wallet.getPrivateKeyString(), {
+    return secp.sign(keccak_256(data), wallet.getPrivateKey(), {
       recovered: true,
       der: false
     })
@@ -154,7 +162,7 @@ export class UserAuth implements AuthService {
     await this.hedgehog.waitUntilReady()
     const wallet = this.hedgehog.getWallet()
     if (!wallet) throw new Error('No wallet')
-    return signTypedData(Buffer.from(wallet.getPrivateKeyString(), 'hex'), {
+    return signTypedData(wallet.getPrivateKey(), {
       data
     })
   }

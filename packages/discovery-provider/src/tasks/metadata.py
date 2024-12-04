@@ -255,6 +255,15 @@ comment_metadata_format = {
     "track_timestamp_s": None,
 }
 
+encrypted_email_metadata_format = {
+    "email_owner_user_id": None,
+    "primary_user_id": None,
+    "encrypted_email": None,
+    "encrypted_key": None,
+    "delegated_user_ids": None,
+    "delegated_keys": None,
+}
+
 
 class PlaylistMetadata(TypedDict):
     playlist_contents: Optional[Any]
@@ -332,6 +341,9 @@ immutable_user_fields = immutable_fields | {
     "wallet",
     "is_available",
     "is_verified",
+    # Legacy fields that can be removed
+    "profile_picture",
+    "cover_photo",
 }
 
 track_comment_notification_setting_format = {

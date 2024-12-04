@@ -65,11 +65,10 @@ const PlaylistForm = ({
   onDelete
 }: PlaylistFormProps) => {
   const collectionTypeName = isAlbum ? 'Album' : 'Playlist'
-  const coverArtUrl = useCollectionCoverArt(
-    metadata.playlist_id,
-    metadata?._cover_art_sizes ? metadata._cover_art_sizes : null,
-    SquareSizes.SIZE_1000_BY_1000
-  )
+  const coverArtUrl = useCollectionCoverArt({
+    collectionId: metadata.playlist_id,
+    size: SquareSizes.SIZE_1000_BY_1000
+  })
 
   const initialValues = {
     ...metadata,

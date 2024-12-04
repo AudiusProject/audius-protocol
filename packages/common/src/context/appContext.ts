@@ -23,6 +23,7 @@ type AppContextType = {
       imageUrls: string[]
     ) => Promise<{ url: string; file: File }>
   }
+  getHostUrl: () => string
   audiusBackend: AudiusBackend
   remoteConfig: RemoteConfigInstance
   localStorage: LocalStorage

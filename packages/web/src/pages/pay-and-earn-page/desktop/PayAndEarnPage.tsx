@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 
+import { useFeatureFlag } from '@audius/common/hooks'
 import { FeatureFlags } from '@audius/common/services'
 import { accountSelectors } from '@audius/common/store'
 import { route } from '@audius/common/utils'
@@ -16,7 +17,6 @@ import { useDispatch, useSelector } from 'react-redux'
 import Header from 'components/header/desktop/Header'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import Page from 'components/page/Page'
-import { useFlag } from 'hooks/useRemoteConfig'
 
 import styles from '../PayAndEarnPage.module.css'
 import { PayoutWalletCard } from '../components/PayoutWalletCard'
@@ -60,6 +60,10 @@ export const PayAndEarnPage = ({ tableView }: PayAndEarnPageProps) => {
     }
   }, [accountHasTracks, setSelectedTable, tableView, setTableOptions])
 
+  const { isEnabled: isOwnYourFansEnabled } = useFeatureFlag(
+    FeatureFlags.OWN_YOUR_FANS
+  )
+
   const {
     count: salesCount,
     data: sales,
@@ -68,7 +72,8 @@ export const PayAndEarnPage = ({ tableView }: PayAndEarnPageProps) => {
     onClickRow: onSalesClickRow,
     isEmpty: isSalesEmpty,
     isLoading: isSalesLoading,
-    downloadCSV: downloadSalesCSV
+    downloadCSV: downloadSalesCSV,
+    downloadSalesAsCSVFromJSON
   } = useSales()
   const {
     count: purchasesCount,
@@ -96,7 +101,9 @@ export const PayAndEarnPage = ({ tableView }: PayAndEarnPageProps) => {
   const tables: Record<TableType, TableMetadata> = {
     [TableType.SALES]: {
       label: messages.sales,
-      downloadCSV: downloadSalesCSV,
+      downloadCSV: isOwnYourFansEnabled
+        ? downloadSalesAsCSVFromJSON
+        : downloadSalesCSV,
       isDownloadCSVButtonDisabled: isSalesLoading || isSalesEmpty
     },
     [TableType.PURCHASES]: {
@@ -130,10 +137,6 @@ export const PayAndEarnPage = ({ tableView }: PayAndEarnPageProps) => {
     },
     [setSelectedTable, dispatch]
   )
-  const { isEnabled: isPayoutWalletEnabled } = useFlag(
-    FeatureFlags.PAYOUT_WALLET_ENABLED
-  )
-
   return (
     <Page
       title={messages.title}
@@ -146,7 +149,7 @@ export const PayAndEarnPage = ({ tableView }: PayAndEarnPageProps) => {
       ) : (
         <>
           <USDCCard />
-          {isPayoutWalletEnabled ? <PayoutWalletCard /> : null}
+          <PayoutWalletCard />
           <Paper w='100%'>
             <Flex direction='column' w='100%'>
               <Flex

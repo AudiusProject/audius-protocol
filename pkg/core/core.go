@@ -145,7 +145,7 @@ func run(ctx context.Context, logger *common.Logger) error {
 		return registryBridge.Start()
 	})
 
-	_, err = server.NewServer(config, node.Config(), logger, rpc, pool, e)
+	_, err = server.NewServer(config, node.Config(), logger, rpc, pool, e, mempl)
 	if err != nil {
 		return fmt.Errorf("server init error: %v", err)
 	}
@@ -344,7 +344,7 @@ func setupNode(logger *common.Logger) (*config.Config, *cconfig.Config, error) {
 	// empty blocks wait one second to propose since plays should be a steady stream
 	// of txs
 	cometConfig.Mempool.Recheck = false
-	cometConfig.Mempool.Broadcast = !isDev // turn on broadcast when not in dev
+	cometConfig.Mempool.Broadcast = false
 	cometConfig.Consensus.TimeoutCommit = 200 * time.Millisecond
 	cometConfig.Consensus.TimeoutPropose = 200 * time.Millisecond
 	cometConfig.Consensus.TimeoutProposeDelta = 75 * time.Millisecond

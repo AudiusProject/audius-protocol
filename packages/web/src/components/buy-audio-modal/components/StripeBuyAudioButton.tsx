@@ -69,13 +69,11 @@ export const StripeBuyAudioButton = () => {
       color='secondary'
       shouldWrapContent={false}
     >
-      <div>
-        <OnRampButton
-          disabled={belowThreshold}
-          provider={OnRampProvider.STRIPE}
-          onClick={handleClick}
-        />
-      </div>
+      <OnRampButton
+        disabled={belowThreshold}
+        provider={OnRampProvider.STRIPE}
+        onClick={handleClick}
+      />
     </Tooltip>
   )
 }

@@ -33,6 +33,7 @@ export const initialState: BasicModalsState = {
   Overflow: { isOpen: false },
   AddToCollection: { isOpen: false },
   DeletePlaylistConfirmation: { isOpen: false },
+  DeleteTrackConfirmation: { isOpen: false },
   DuplicateAddConfirmation: { isOpen: false },
   FeatureFlagOverride: { isOpen: false },
   BuyAudio: { isOpen: false },
@@ -59,6 +60,8 @@ export const initialState: BasicModalsState = {
   EarlyReleaseConfirmation: { isOpen: false },
   PublishConfirmation: { isOpen: false },
   HideContentConfirmation: { isOpen: false },
+  ReplaceTrackConfirmation: { isOpen: false },
+  ReplaceTrackProgress: { isOpen: false },
   WithdrawUSDCModal: { isOpen: false },
   USDCPurchaseDetailsModal: { isOpen: false },
   USDCTransactionDetailsModal: { isOpen: false },
@@ -69,7 +72,8 @@ export const initialState: BasicModalsState = {
   CoinflowWithdraw: { isOpen: false },
   WaitForDownloadModal: { isOpen: false },
   ArtistPick: { isOpen: false },
-  PayoutWallet: { isOpen: false }
+  PayoutWallet: { isOpen: false },
+  EditTrackFormOverflowMenu: { isOpen: false }
 }
 
 const slice = createSlice({

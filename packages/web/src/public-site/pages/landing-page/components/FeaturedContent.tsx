@@ -1,9 +1,11 @@
 import { useEffect, useState } from 'react'
 
-import { useAppContext } from '@audius/common/context'
-import { SquareSizes, UserCollectionMetadata } from '@audius/common/models'
-import { Nullable, Maybe, route } from '@audius/common/utils'
-import { StorageNodeSelectorService } from '@audius/sdk'
+import {
+  transformAndCleanList,
+  userCollectionMetadataFromSDK
+} from '@audius/common/adapters'
+import { Id } from '@audius/common/models'
+import { route } from '@audius/common/utils'
 // eslint-disable-next-line no-restricted-imports -- TODO: migrate to @react-spring/web
 import { useSpring, animated } from 'react-spring'
 import { useAsyncFn } from 'react-use'
@@ -19,7 +21,7 @@ import { fetchExploreContent } from 'common/store/pages/explore/sagas'
 import useCardWeight from 'hooks/useCardWeight'
 import useHasViewed from 'hooks/useHasViewed'
 import { handleClickRoute } from 'public-site/components/handleClickRoute'
-import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
+import { audiusSdk } from 'services/audius-sdk'
 import { env } from 'services/env'
 
 import styles from './FeaturedContent.module.css'
@@ -133,31 +135,17 @@ type FeaturedContentProps = {
   setRenderPublicSite: (shouldRender: boolean) => void
 }
 
-const getImageUrl = (
-  cid: Nullable<string>,
-  size: SquareSizes,
-  storageNodeSelector: Maybe<StorageNodeSelectorService>,
-  cidMap: Nullable<{ [key: string]: string }> = null
-) => {
-  if (!storageNodeSelector || !cid) return null
-  const node = storageNodeSelector.getNodes(cid)[0]
-  return cidMap && cidMap[size]
-    ? `${node}/content/${cidMap[size]}`
-    : `${node}/content/${cid}/${size}.jpg`
-}
-
 const FeaturedContent = (props: FeaturedContentProps) => {
   const { history } = useHistoryContext()
-  const { storageNodeSelector } = useAppContext()
   const [trendingPlaylistsResponse, fetchTrendingPlaylists] =
     useAsyncFn(async () => {
       const featuredContent = await fetchExploreContent(env.EXPLORE_CONTENT_URL)
       const ids = featuredContent.featuredPlaylists
-      const playlists = audiusBackendInstance.getPlaylists(
-        null,
-        ids
-      ) as any as UserCollectionMetadata[]
-      return playlists
+      const sdk = await audiusSdk()
+      const { data } = await sdk.full.playlists.getBulkPlaylists({
+        id: ids.map((id) => Id.parse(id))
+      })
+      return transformAndCleanList(data, userCollectionMetadataFromSDK)
     }, [])
 
   useEffect(() => {
@@ -209,12 +197,7 @@ const FeaturedContent = (props: FeaturedContentProps) => {
                     key={p.playlist_id}
                     title={p.playlist_name}
                     artist={p.user.name}
-                    imageUrl={getImageUrl(
-                      p.cover_art_sizes,
-                      SquareSizes.SIZE_150_BY_150,
-                      storageNodeSelector,
-                      p.cover_art_cids
-                    )}
+                    imageUrl={p.artwork['480x480'] ?? null}
                     onClick={handleClickRoute(
                       collectionPage(
                         p.user.handle,
@@ -267,12 +250,7 @@ const FeaturedContent = (props: FeaturedContentProps) => {
                     key={p.playlist_id}
                     title={p.playlist_name}
                     artist={p.user.name}
-                    imageUrl={getImageUrl(
-                      p.cover_art_sizes,
-                      SquareSizes.SIZE_1000_BY_1000,
-                      storageNodeSelector,
-                      p.cover_art_cids
-                    )}
+                    imageUrl={p.artwork['480x480'] ?? null}
                     onClick={handleClickRoute(
                       collectionPage(
                         p.user.handle,

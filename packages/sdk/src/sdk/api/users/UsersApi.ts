@@ -3,13 +3,15 @@ import snakecaseKeys from 'snakecase-keys'
 import type { AuthService, StorageService } from '../../services'
 import {
   Action,
+  AdvancedOptions,
   EntityManagerService,
-  EntityType,
-  AdvancedOptions
+  EntityType
 } from '../../services/EntityManager/types'
 import type { LoggerService } from '../../services/Logger'
 import type { ClaimableTokensClient } from '../../services/Solana/programs/ClaimableTokensClient/ClaimableTokensClient'
 import type { SolanaClient } from '../../services/Solana/programs/SolanaClient'
+import { HashId } from '../../types/HashId'
+import { generateMetadataCidV1 } from '../../utils/cid'
 import { parseParams } from '../../utils/parseParams'
 import { retry3 } from '../../utils/retry'
 import {
@@ -22,20 +24,24 @@ import {
 import * as runtime from '../generated/default/runtime'
 
 import {
+  CreateUserRequest,
+  CreateUserSchema,
+  EmailRequest,
+  EmailSchema,
   FollowUserRequest,
   FollowUserSchema,
+  SendTipReactionRequest,
+  SendTipReactionRequestSchema,
+  SendTipRequest,
+  SendTipSchema,
   SubscribeToUserRequest,
   SubscribeToUserSchema,
-  UpdateProfileRequest,
   UnfollowUserRequest,
   UnfollowUserSchema,
   UnsubscribeFromUserRequest,
   UnsubscribeFromUserSchema,
-  UpdateProfileSchema,
-  SendTipRequest,
-  SendTipSchema,
-  SendTipReactionRequest,
-  SendTipReactionRequestSchema
+  UpdateProfileRequest,
+  UpdateProfileSchema
 } from './types'
 
 export class UsersApi extends GeneratedUsersApi {
@@ -50,6 +56,98 @@ export class UsersApi extends GeneratedUsersApi {
   ) {
     super(configuration)
     this.logger = logger.createPrefixedLogger('[users-api]')
+  }
+
+  /** @hidden
+   * Generate a new user id for use in creation flow
+   */
+  private async generateUserId() {
+    const response = new runtime.JSONApiResponse<{ data: string }>(
+      await this.request({
+        path: '/users/unclaimed_id',
+        method: 'GET',
+        headers: {},
+        query: {
+          noCache: Math.floor(Math.random() * 1000).toString()
+        }
+      })
+    )
+    return await response.value()
+  }
+
+  /** @hidden
+   * Create a user
+   */
+  async createUser(
+    params: CreateUserRequest,
+    advancedOptions?: AdvancedOptions
+  ) {
+    const { onProgress, profilePictureFile, coverArtFile, metadata } =
+      await parseParams('createUser', CreateUserSchema)(params)
+
+    const { data } = await this.generateUserId()
+    if (!data) {
+      throw new Error('Failed to generate userId')
+    }
+    const userId = HashId.parse(data)
+
+    const [profilePictureResp, coverArtResp] = await Promise.all([
+      profilePictureFile &&
+        retry3(
+          async () =>
+            await this.storage.uploadFile({
+              file: profilePictureFile,
+              onProgress,
+              template: 'img_square',
+              auth: this.auth
+            }),
+          (e) => {
+            this.logger.info('Retrying uploadProfilePicture', e)
+          }
+        ),
+      coverArtFile &&
+        retry3(
+          async () =>
+            await this.storage.uploadFile({
+              file: coverArtFile,
+              onProgress,
+              template: 'img_backdrop',
+              auth: this.auth
+            }),
+          (e) => {
+            this.logger.info('Retrying uploadProfileCoverArt', e)
+          }
+        )
+    ])
+
+    const updatedMetadata = {
+      ...metadata,
+      userId,
+      ...(profilePictureResp
+        ? { profilePictureSizes: profilePictureResp?.id }
+        : {}),
+      ...(coverArtResp ? { coverPhotoSizes: coverArtResp?.id } : {})
+    }
+
+    const entityMetadata = snakecaseKeys(updatedMetadata)
+
+    const cid = (await generateMetadataCidV1(entityMetadata)).toString()
+
+    // Write metadata to chain
+    const { blockHash, blockNumber } = await this.entityManager.manageEntity({
+      userId,
+      entityType: EntityType.USER,
+      entityId: userId,
+      action: Action.CREATE,
+      metadata: JSON.stringify({
+        cid,
+        data: entityMetadata
+      }),
+      auth: this.auth,
+      ...advancedOptions
+    })
+
+    return { blockHash, blockNumber, metadata: updatedMetadata }
   }
 
   /** @hidden
@@ -392,5 +490,71 @@ export class UsersApi extends GeneratedUsersApi {
       mint: 'wAUDIO'
     })
     return { ethWallet, userBank }
+  }
+
+  /** @hidden
+   * Add an encrypted email for a user
+   */
+  async addEmail(params: EmailRequest, advancedOptions?: AdvancedOptions) {
+    const {
+      emailOwnerUserId,
+      primaryUserId,
+      encryptedEmail,
+      encryptedKey,
+      delegatedUserIds = [],
+      delegatedKeys = []
+    } = await parseParams('addEmail', EmailSchema)(params)
+
+    const metadata = {
+      email_owner_user_id: emailOwnerUserId,
+      primary_user_id: primaryUserId,
+      encrypted_email: encryptedEmail,
+      encrypted_key: encryptedKey,
+      delegated_user_ids: delegatedUserIds,
+      delegated_keys: delegatedKeys
+    }
+
+    return await this.entityManager.manageEntity({
+      userId: primaryUserId,
+      entityType: EntityType.ENCRYPTED_EMAIL,
+      entityId: primaryUserId,
+      action: Action.ADD_EMAIL,
+      metadata: JSON.stringify({
+        cid: '',
+        data: metadata
+      }),
+      auth: this.auth,
+      ...advancedOptions
+    })
+  }
+
+  /** @hidden
+   * Update an encrypted email for a user
+   */
+  async updateEmail(params: EmailRequest, advancedOptions?: AdvancedOptions) {
+    const {
+      emailOwnerUserId,
+      primaryUserId,
+      encryptedEmail,
+      encryptedKey,
+      delegatedUserIds = [],
+      delegatedKeys = []
+    } = await parseParams('updateEmail', EmailSchema)(params)
+
+    return await this.entityManager.manageEntity({
+      entityType: EntityType.ENCRYPTED_EMAIL,
+      entityId: primaryUserId,
+      action: Action.UPDATE_EMAIL,
+      metadata: JSON.stringify({
+        email_owner_user_id: emailOwnerUserId,
+        primary_user_id: primaryUserId,
+        encrypted_email: encryptedEmail,
+        encrypted_key: encryptedKey,
+        delegated_user_ids: delegatedUserIds,
+        delegated_keys: delegatedKeys
+      }),
+      auth: this.auth,
+      ...advancedOptions
+    })
   }
 }

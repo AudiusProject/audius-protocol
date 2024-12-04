@@ -1,10 +1,6 @@
 import { useCallback } from 'react'
 
 import {
-  imageProfilePicEmpty as profilePicEmpty,
-  imageCoverPhotoBlank
-} from '@audius/common/assets'
-import {
   SquareSizes,
   WidthSizes,
   Supporting,
@@ -19,7 +15,7 @@ import { useDispatch, useSelector } from 'react-redux'
 
 import UserBadges from 'components/user-badges/UserBadges'
 import { useCoverPhoto } from 'hooks/useCoverPhoto'
-import { useUserProfilePicture } from 'hooks/useUserProfilePicture'
+import { useProfilePicture } from 'hooks/useProfilePicture'
 import { AppState } from 'store/types'
 import { TIPPING_TOP_RANK_THRESHOLD } from 'utils/constants'
 
@@ -38,15 +34,14 @@ export const SupportingTile = ({ supporting }: SupportingCardProps) => {
   const { rank } = supporting
   const handle = receiver?.handle
   const isTopRank = rank >= 1 && rank <= TIPPING_TOP_RANK_THRESHOLD
-  const profileImage =
-    useUserProfilePicture(
-      receiver?.user_id ?? null,
-      receiver?._profile_picture_sizes ?? null,
-      SquareSizes.SIZE_150_BY_150
-    ) || profilePicEmpty
-  const { source: coverPhoto, shouldBlur } =
-    useCoverPhoto(receiver?.user_id ?? null, WidthSizes.SIZE_640) ||
-    imageCoverPhotoBlank
+  const profileImage = useProfilePicture({
+    userId: receiver?.user_id,
+    size: SquareSizes.SIZE_150_BY_150
+  })
+  const { image: coverPhoto, shouldBlur } = useCoverPhoto({
+    userId: receiver?.user_id,
+    size: WidthSizes.SIZE_640
+  })
 
   const handleClick = useCallback(() => {
     dispatch(pushRoute(`/${handle}`))

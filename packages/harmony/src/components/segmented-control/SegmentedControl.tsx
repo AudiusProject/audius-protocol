@@ -98,11 +98,13 @@ export const SegmentedControl = <T extends string>(
       <animated.div className={styles.tabBackground} style={tabProps} />
       {props.options.map((option, idx) => {
         const isOptionDisabled = props.disabled || option.disabled
+        const isSelected = option.key === selectedOption
+
         return (
           <Fragment key={option.key}>
             <label
               ref={
-                option.key === selectedOption
+                isSelected
                   ? mergeRefs([optionRefs.current[idx], selectedRef])
                   : optionRefs.current[idx]
               }
@@ -120,7 +122,7 @@ export const SegmentedControl = <T extends string>(
               {option.icon}
               <input
                 type='radio'
-                checked={option.key === selectedOption}
+                checked={isSelected}
                 onChange={() => {
                   onSetSelected(option.key)
                 }}
@@ -129,10 +131,8 @@ export const SegmentedControl = <T extends string>(
               <Text
                 variant='body'
                 strength='strong'
-                css={(theme) => ({ lineHeight: theme.typography.lineHeight.s })}
-                color={
-                  option.variant ?? (isOptionDisabled ? 'subdued' : 'default')
-                }
+                color={isSelected ? 'default' : 'subdued'}
+                lineHeight='single'
               >
                 {option.text}
               </Text>

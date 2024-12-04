@@ -106,15 +106,8 @@ export const updatePlaylistArtwork = async (
         tracksForImage.length === 1
           ? SquareSizes.SIZE_1000_BY_1000
           : SquareSizes.SIZE_480_BY_480
-      const trackUrls = await Promise.all(
-        tracksForImage.map(async (track) => {
-          const { cover_art_cids, cover_art_sizes, cover_art } = track
-          return await context.audiusBackend.getImageUrl(
-            cover_art_sizes ?? cover_art,
-            sizes,
-            cover_art_cids
-          )
-        })
+      const trackUrls = tracksForImage.map(
+        (track) => track.artwork[sizes] ?? ''
       )
 
       const artwork = await context.generateImage(trackUrls)

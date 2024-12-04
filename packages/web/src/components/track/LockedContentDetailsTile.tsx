@@ -62,11 +62,10 @@ export const LockedContentDetailsTile = ({
     trackId: contentId,
     size: SquareSizes.SIZE_150_BY_150
   })
-  const albumArt = useCollectionCoverArt(
-    contentId,
-    metadata._cover_art_sizes ?? null,
-    SquareSizes.SIZE_150_BY_150
-  )
+  const albumArt = useCollectionCoverArt({
+    collectionId: contentId,
+    size: SquareSizes.SIZE_150_BY_150
+  })
   const image = isAlbum ? albumArt : trackArt
 
   const label = `${title} by ${owner.name}`

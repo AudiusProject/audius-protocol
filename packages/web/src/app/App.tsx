@@ -6,7 +6,6 @@ import { route } from '@audius/common/utils'
 import { CoinflowPurchaseProtection } from '@coinflowlabs/react'
 import { Redirect, Route, Switch } from 'react-router-dom'
 
-import { CoinbasePayButtonProvider } from 'components/coinbase-pay-button'
 import { AppModal } from 'pages/modals/AppModal'
 import { SomethingWrong } from 'pages/something-wrong/SomethingWrong'
 import { env } from 'services/env'
@@ -78,9 +77,7 @@ export const AppInner = () => {
           </Route>
           <Route path='/'>
             <AppErrorBoundary>
-              <CoinbasePayButtonProvider>
-                <WebPlayer />
-              </CoinbasePayButtonProvider>
+              <WebPlayer />
             </AppErrorBoundary>
           </Route>
         </Switch>

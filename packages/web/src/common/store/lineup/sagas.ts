@@ -12,7 +12,6 @@ import {
 import { StringKeys, FeatureFlags } from '@audius/common/services'
 import {
   accountSelectors,
-  cacheCollectionsSelectors,
   cacheTracksSelectors,
   cacheActions,
   cacheUsersSelectors,
@@ -22,12 +21,9 @@ import {
   queueSelectors,
   getContext,
   playerSelectors,
-  SubscriberInfo,
-  SubscriptionInfo,
   Entry,
   LineupBaseActions,
   QueueSource,
-  UnsubscribeInfo,
   PlayerBehavior
 } from '@audius/common/store'
 import { Uid, makeUids, makeUid, removeNullable } from '@audius/common/utils'
@@ -39,7 +35,6 @@ import {
   fork,
   select,
   take,
-  takeEvery,
   takeLatest,
   race
 } from 'typed-redux-saga'
@@ -53,7 +48,6 @@ const { getSource, getUid, getPositions, getPlayerBehavior } = queueSelectors
 const { getUid: getCurrentPlayerTrackUid, getPlaying } = playerSelectors
 const { getUsers } = cacheUsersSelectors
 const { getTrack, getTracks } = cacheTracksSelectors
-const { getCollection } = cacheCollectionsSelectors
 const { getUserId } = accountSelectors
 
 const getEntryId = <T>(entry: LineupEntry<T>) => `${entry.kind}:${entry.id}`
@@ -76,11 +70,6 @@ function* filterDeletes<T extends Track | Collection>(
     getFeatureEnabled,
     FeatureFlags.USDC_PURCHASES
   )
-  const isPremiumAlbumsEnabled = yield* call(
-    getFeatureEnabled,
-    FeatureFlags.PREMIUM_ALBUMS_ENABLED
-  )
-
   const deniedHandles = remoteConfig
     .getRemoteVar(StringKeys.EXPLORE_PREMIUM_DENIED_USERS)
     ?.split(',')
@@ -101,14 +90,6 @@ function* filterDeletes<T extends Track | Collection>(
         !isUSDCGatedContentEnabled &&
         metadata.is_stream_gated &&
         isContentUSDCPurchaseGated(metadata.stream_conditions)
-      ) {
-        return null
-      }
-
-      if (
-        !isPremiumAlbumsEnabled &&
-        'playlist_id' in metadata &&
-        metadata.is_stream_gated
       ) {
         return null
       }
@@ -146,20 +127,10 @@ function* filterDeletes<T extends Track | Collection>(
     .filter(Boolean)
 }
 
-function getTrackCacheables(
-  metadata: LineupEntry<Track>,
-  uid: UID,
-  trackSubscribers: SubscriberInfo[]
-) {
-  trackSubscribers.push({ uid: metadata.uid || uid, id: metadata.track_id })
-}
-
 function getCollectionCacheables(
   metadata: Collection,
   uid: UID,
-  collectionsToCache: Entry<CollectionMetadata>[],
-  trackSubscriptions: SubscriptionInfo[],
-  trackSubscribers: SubscriberInfo[]
+  collectionsToCache: Entry<CollectionMetadata>[]
 ) {
   collectionsToCache.push({ id: metadata.playlist_id, uid, metadata })
 
@@ -168,17 +139,9 @@ function getCollectionCacheables(
     makeUid(Kind.TRACKS, id, `collection:${metadata.playlist_id}`)
   )
 
-  trackUids.forEach((uid: UID) =>
-    trackSubscriptions.push({
-      id: metadata.playlist_id,
-      kind: Kind.TRACKS,
-      uid
-    })
-  )
   metadata.playlist_contents.track_ids =
     metadata.playlist_contents.track_ids.map((t, i) => {
       const trackUid = t.uid || trackUids[i]
-      trackSubscribers.push({ uid: trackUid, id: t.track })
       return { uid: trackUid, ...t }
     })
 }
@@ -292,64 +255,21 @@ function* fetchLineupMetadatasAsync<T extends Track | Collection>(
       // Cache tracks and collections.
       const collectionsToCache: Entry<Collection>[] = []
 
-      const trackSubscriptions: SubscriptionInfo[] = []
-      let trackSubscribers: SubscriberInfo[] = []
-
       allMetadatas.forEach((metadata, i) => {
         // Need to update the UIDs on the playlist tracks
-        if ('track_id' in metadata) {
-          getTrackCacheables(
-            metadata as LineupEntry<Track>,
-            uids[i],
-            trackSubscribers
-          )
-        } else if ('collection_id' in metadata) {
+        if ('collection_id' in metadata) {
           getCollectionCacheables(
             metadata as LineupEntry<Collection>,
             uids[i],
-            collectionsToCache,
-            trackSubscriptions,
-            trackSubscribers
+            collectionsToCache
           )
         }
-      })
-
-      const lineupCollections = allMetadatas.filter(
-        (item) => 'playlist_id' in item
-      )
-
-      lineupCollections.forEach((metadata) => {
-        if (!('playlist_id' in metadata)) return
-        const trackUids = metadata.playlist_contents.track_ids.map(
-          (track, idx) => {
-            const id = track.track
-            const uid = new Uid(
-              Kind.TRACKS,
-              id,
-              Uid.makeCollectionSourceId(
-                source!,
-                metadata.playlist_id.toString()
-              ),
-              idx
-            )
-            return { id, uid: uid.toString() }
-          }
-        )
-        trackSubscribers = trackSubscribers.concat(trackUids)
       })
 
       // We rewrote the playlist tracks with new UIDs, so we need to update them
       // in the cache.
       if (collectionsToCache.length > 0) {
         yield* put(cacheActions.update(Kind.COLLECTIONS, collectionsToCache))
-      }
-      if (trackSubscriptions.length > 0) {
-        yield* put(
-          cacheActions.update(Kind.COLLECTIONS, [], trackSubscriptions)
-        )
-      }
-      if (trackSubscribers.length > 0) {
-        yield* put(cacheActions.subscribe(Kind.TRACKS, trackSubscribers))
       }
       const currentUserId = yield* select(getUserId)
       // Retain specified info in the lineup itself and resolve with success.
@@ -530,81 +450,8 @@ function* togglePlay<T extends Track | Collection>(
   }
 }
 
-function* reset<T extends Track | Collection>(
-  lineupActions: LineupBaseActions,
-  lineupPrefix: string,
-  lineupSelector: (state: AppState, handle?: string) => LineupState<T>,
-  sourceSelector:
-    | ((state: AppState, handle?: string) => QueueSource | string | null)
-    | undefined,
-  action: ReturnType<LineupBaseActions['reset']>
-) {
-  const lineup = yield* select(lineupSelector)
-  // Remove this lineup as a subscriber from all of its tracks and collections.
-  const subscriptionsToRemove: Partial<Record<Kind, UnsubscribeInfo[]>> = {} // keyed by kind
-  const source = sourceSelector ? yield* select(sourceSelector) : lineupPrefix
-
-  for (const entry of lineup.entries) {
-    const { kind, uid } = entry
-    if (!subscriptionsToRemove[kind]) {
-      subscriptionsToRemove[kind] = [{ uid }]
-    } else {
-      subscriptionsToRemove[kind]!.push({ uid })
-    }
-    if (entry.kind === Kind.COLLECTIONS) {
-      const collection = yield* select(getCollection, { uid: entry.uid })
-      if (!collection) return
-      const removeTrackIds: SubscriptionInfo[] =
-        collection.playlist_contents.track_ids.map(
-          ({ track: trackId }, idx) => {
-            const trackUid = new Uid(
-              Kind.TRACKS,
-              trackId,
-              Uid.makeCollectionSourceId(
-                source!,
-                collection.playlist_id.toString()
-              ),
-              idx
-            )
-            return {
-              uid: trackUid.toString(),
-              id: collection.playlist_id,
-              kind: Kind.TRACKS
-            }
-          }
-        )
-      subscriptionsToRemove[Kind.TRACKS] = (
-        subscriptionsToRemove[Kind.TRACKS] || []
-      ).concat(removeTrackIds)
-    }
-  }
-  yield* all(
-    Object.keys(subscriptionsToRemove).map((kind) =>
-      put(
-        cacheActions.unsubscribe(
-          kind as Kind,
-          subscriptionsToRemove[kind as Kind] ?? []
-        )
-      )
-    )
-  )
-
+function* reset(lineupActions: LineupBaseActions) {
   yield* put(lineupActions.resetSucceeded())
-}
-
-function* add(action: ReturnType<LineupBaseActions['add']>) {
-  if (action.entry && action.id) {
-    const { kind, uid } = action.entry
-    yield* put(cacheActions.subscribe(kind, [{ uid, id: action.id }]))
-  }
-}
-
-function* remove(action: ReturnType<LineupBaseActions['remove']>) {
-  if (action.kind && action.uid) {
-    yield* put(
-      cacheActions.unsubscribe(action.kind as Kind, [{ uid: action.uid }])
-    )
-  }
 }
 
 function* updateLineupOrder(
@@ -797,30 +644,7 @@ export class LineupSagas<T extends Track | Collection> {
       yield* takeLatest(
         baseLineupActions.addPrefix(instance.prefix, baseLineupActions.RESET),
         reset,
-        instance.actions,
-        instance.prefix,
-        instance.selector,
-        instance.sourceSelector
-      )
-    }
-  }
-
-  watchAdd = () => {
-    const instance = this
-    return function* () {
-      yield* takeEvery(
-        baseLineupActions.addPrefix(instance.prefix, baseLineupActions.ADD),
-        add
-      )
-    }
-  }
-
-  watchRemove = () => {
-    const instance = this
-    return function* () {
-      yield* takeEvery(
-        baseLineupActions.addPrefix(instance.prefix, baseLineupActions.REMOVE),
-        remove
+        instance.actions
       )
     }
   }
@@ -862,8 +686,6 @@ export class LineupSagas<T extends Track | Collection> {
       this.watchPauseTrack(),
       this.watchTogglePlay(),
       this.watchReset(),
-      this.watchAdd(),
-      this.watchRemove(),
       this.watchUpdateLineupOrder(),
       this.watchRefreshInView()
     ]

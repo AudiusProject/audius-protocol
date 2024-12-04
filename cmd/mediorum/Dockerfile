@@ -37,9 +37,10 @@ RUN git clone https://github.com/mixxxdj/libKeyFinder.git /libKeyFinder && \
     cmake --build build --parallel $(nproc) && \
     cmake --install build
 
-# essentia release tags are very old - pin to a more recent commit
+# stable version with python3.11 support
 ENV ESSENTIA_COMMIT="eaf8ddfd9a603fdda9850731cc39f06e6262afe5"
-ENV PKG_CONFIG_PATH="/usr/local/lib/pkgconfig:/usr/lib/pkgconfig:/usr/lib/aarch64-linux-gnu/pkgconfig:/usr/share/pkgconfig"
+# include pkg config so that essentia can pull libs in instead of building itself
+ENV PKG_CONFIG_PATH="/usr/local/lib/pkgconfig:/usr/lib/pkgconfig:/usr/lib/aarch64-linux-gnu/pkgconfig:/usr/share/pkgconfig:/usr/lib/x86_64-linux-gnu/pkgconfig"
 RUN git clone --depth 1 https://github.com/MTG/essentia.git /essentia && \
     cd /essentia && \
     git fetch --depth 1 origin $ESSENTIA_COMMIT && \

@@ -1,20 +1,13 @@
 import { useContext, useEffect, FC } from 'react'
 
+import { Name, SquareSizes, Theme } from '@audius/common/models'
 import {
-  SquareSizes,
-  Theme,
-  ID,
-  ProfilePictureSizes
-} from '@audius/common/models'
-import {
-  BrowserNotificationSetting,
-  PushNotificationSetting,
-  EmailFrequency,
-  InstagramProfile,
-  TwitterProfile,
-  TikTokProfile,
-  Notifications,
-  PushNotifications
+  settingsPageActions,
+  themeSelectors,
+  accountSelectors,
+  getTierAndVerifiedForUser,
+  themeActions,
+  musicConfettiActions
 } from '@audius/common/store'
 import { route } from '@audius/common/utils'
 import {
@@ -22,15 +15,19 @@ import {
   IconAudiusLogoHorizontalColor
 } from '@audius/harmony'
 import cn from 'classnames'
+import { useDispatch, useSelector } from 'react-redux'
 
+import { make } from 'common/store/analytics/actions'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import GroupableList from 'components/groupable-list/GroupableList'
 import Grouping from 'components/groupable-list/Grouping'
 import Row from 'components/groupable-list/Row'
 import NavContext, { LeftPreset } from 'components/nav/mobile/NavContext'
 import Page from 'components/page/Page'
+import { useProfilePicture } from 'hooks/useProfilePicture'
 import useScrollToTop from 'hooks/useScrollToTop'
-import { useUserProfilePicture } from 'hooks/useUserProfilePicture'
+import { env } from 'services/env'
+import { AppState } from 'store/types'
 import { isDarkMode } from 'utils/theme/theme'
 
 import AboutSettingsPage from './AboutSettingsPage'
@@ -42,11 +39,21 @@ import styles from './SettingsPage.module.css'
 import VerificationPage from './VerificationPage'
 
 const {
+  getNotificationSettings: getNotificationSettingsAction,
+  getPushNotificationSettings: getPushNotificationSettingsAction
+} = settingsPageActions
+const { getUserId, getUserHandle, getUserName } = accountSelectors
+const { setTheme } = themeActions
+const { getTheme } = themeSelectors
+const { show } = musicConfettiActions
+const {
   ACCOUNT_SETTINGS_PAGE,
   HISTORY_PAGE,
   ABOUT_SETTINGS_PAGE,
   NOTIFICATION_SETTINGS_PAGE
 } = route
+
+const isStaging = env.ENVIRONMENT === 'staging'
 
 export enum SubPage {
   ACCOUNT = 'account',
@@ -61,7 +68,7 @@ const messages = {
   pageTitle: 'Settings',
   appearanceTitle: 'Appearance',
   appearance:
-    'Enable dark mode or choose ‘Auto’ to change with your system settings',
+    "Enable dark mode or choose 'Auto' to change with your system settings",
   aboutTitle: 'About',
   cast: 'Select your prefered casting method.',
   title: 'Settings',
@@ -71,38 +78,7 @@ const messages = {
 }
 
 type OwnProps = {
-  title: string
-  description: string
   subPage?: SubPage
-  userId: ID
-  handle: string
-  name: string
-  theme: Theme | null
-  toggleTheme: (theme: any) => void
-  profilePictureSizes: ProfilePictureSizes | null
-  goToRoute: (route: string) => void
-  goBack: () => void
-  isVerified: boolean
-  onInstagramLogin: (uuid: string, profile: InstagramProfile) => void
-  onTwitterLogin: (uuid: string, profile: TwitterProfile) => void
-  onTikTokLogin: (uuid: string, profile: TikTokProfile) => void
-  notificationSettings: Notifications
-  emailFrequency: EmailFrequency
-  pushNotificationSettings: PushNotifications
-
-  getNotificationSettings: () => void
-  getPushNotificationSettings: () => void
-  toggleBrowserPushNotificationPermissions: (
-    notificationType: BrowserNotificationSetting,
-    isOn: boolean
-  ) => void
-  togglePushNotificationSetting: (
-    notificationType: PushNotificationSetting,
-    isOn: boolean
-  ) => void
-  updateEmailFrequency: (frequency: EmailFrequency) => void
-  recordSignOut: (callback?: () => void) => void
-  showMatrix: boolean
 }
 
 export type SettingsPageProps = OwnProps
@@ -116,28 +92,27 @@ const SubPages = {
   [SubPage.CHANGE_EMAIL]: ChangeEmailMobilePage as FC<SettingsPageProps>
 }
 
-const SettingsPage = (props: SettingsPageProps) => {
-  const {
-    subPage,
-    userId,
-    name,
-    handle,
-    profilePictureSizes,
-    theme,
-    toggleTheme,
-    getNotificationSettings,
-    getPushNotificationSettings,
-    showMatrix
-  } = props
+export const SettingsPage = (props: SettingsPageProps) => {
+  const { subPage } = props
+  const dispatch = useDispatch()
   useScrollToTop()
 
-  useEffect(() => {
-    getPushNotificationSettings()
-  }, [getPushNotificationSettings])
+  const userId = useSelector(getUserId) ?? 0
+  const handle = useSelector(getUserHandle)
+  const name = useSelector(getUserName)
+  const theme = useSelector(getTheme)
+  const tier = useSelector(
+    (state: AppState) => getTierAndVerifiedForUser(state, { userId }).tier
+  )
+  const showMatrix = tier === 'gold' || tier === 'platinum' || isStaging
 
   useEffect(() => {
-    getNotificationSettings()
-  }, [getNotificationSettings])
+    dispatch(getPushNotificationSettingsAction())
+  }, [dispatch])
+
+  useEffect(() => {
+    dispatch(getNotificationSettingsAction())
+  }, [dispatch])
 
   // Set Nav-Bar Menu
   const { setLeft, setCenter, setRight } = useContext(NavContext)!
@@ -147,11 +122,25 @@ const SettingsPage = (props: SettingsPageProps) => {
     setCenter(subPage || messages.pageTitle)
   }, [setLeft, setCenter, setRight, subPage])
 
-  const profilePicture = useUserProfilePicture(
+  const profilePicture = useProfilePicture({
     userId,
-    profilePictureSizes,
-    SquareSizes.SIZE_150_BY_150
-  )
+    size: SquareSizes.SIZE_150_BY_150
+  })
+
+  const toggleTheme = (option: Theme) => {
+    dispatch(
+      make(Name.SETTINGS_CHANGE_THEME, {
+        mode:
+          option === Theme.DEFAULT
+            ? 'light'
+            : (option.toLowerCase() as 'dark' | 'light' | 'matrix' | 'auto')
+      })
+    )
+    dispatch(setTheme({ theme: option }))
+    if (option === Theme.MATRIX) {
+      dispatch(show())
+    }
+  }
 
   // Render out subPage if we're on one.
   if (subPage && subPage in SubPages) {
@@ -190,6 +179,7 @@ const SettingsPage = (props: SettingsPageProps) => {
       />
     )
   }
+
   return (
     <Page
       title={messages.title}
@@ -251,5 +241,3 @@ const SettingsPage = (props: SettingsPageProps) => {
     </Page>
   )
 }
-
-export default SettingsPage

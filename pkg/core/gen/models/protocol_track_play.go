@@ -19,6 +19,15 @@ import (
 // swagger:model protocolTrackPlay
 type ProtocolTrackPlay struct {
 
+	// city
+	City string `json:"city,omitempty"`
+
+	// country
+	Country string `json:"country,omitempty"`
+
+	// region
+	Region string `json:"region,omitempty"`
+
 	// signature
 	Signature string `json:"signature,omitempty"`
 

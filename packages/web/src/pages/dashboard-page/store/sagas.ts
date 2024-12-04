@@ -1,9 +1,14 @@
-import { Collection, ID, Track } from '@audius/common/models'
+import {
+  transformAndCleanList,
+  userCollectionMetadataFromSDK
+} from '@audius/common/adapters'
+import { ID, Track } from '@audius/common/models'
 import { IntKeys } from '@audius/common/services'
 import {
   accountSelectors,
   walletActions,
-  getContext
+  getContext,
+  getSDK
 } from '@audius/common/store'
 import { waitForValue, doEvery, route } from '@audius/common/utils'
 import { each } from 'lodash'
@@ -11,6 +16,7 @@ import moment from 'moment'
 import { EventChannel } from 'redux-saga'
 import { all, call, fork, put, take, takeEvery } from 'typed-redux-saga'
 
+import { processAndCacheCollections } from 'common/store/cache/collections/utils'
 import { retrieveUserTracks } from 'common/store/pages/profile/lineups/tracks/retrieveUserTracks'
 import { requiresAccount } from 'common/utils/requiresAccount'
 import { waitForRead } from 'utils/sagaHelpers'
@@ -50,13 +56,13 @@ function* fetchDashboardTracksAsync(
 function* fetchDashboardAsync(
   action: ReturnType<typeof dashboardActions.fetch>
 ) {
-  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
   yield* call(waitForRead)
 
   const accountHandle = yield* call(waitForValue, getUserHandle)
   const accountUserId = yield* call(waitForValue, getUserId)
   yield* fork(pollForBalance)
 
+  const sdk = yield* getSDK()
   const { offset, limit } = action.payload
   try {
     const data = yield* all([
@@ -67,11 +73,24 @@ function* fetchDashboardAsync(
         limit,
         getUnlisted: true
       }),
-      call(audiusBackendInstance.getPlaylists, accountUserId, [])
+      call([sdk.full.users, sdk.full.users.getPlaylistsByUser], accountUserId),
+      call([sdk.full.users, sdk.full.users.getAlbumsByUser], accountUserId)
     ])
-    // Casting necessary because yield* all is not typed well
     const tracks = data[0] as Track[]
-    const playlists = data[1] as Collection[]
+    const playlists = transformAndCleanList(
+      (data[1] as Awaited<ReturnType<typeof sdk.full.users.getPlaylistsByUser>>)
+        .data,
+      userCollectionMetadataFromSDK
+    )
+    const albums = transformAndCleanList(
+      (data[2] as Awaited<ReturnType<typeof sdk.full.users.getPlaylistsByUser>>)
+        .data,
+      userCollectionMetadataFromSDK
+    )
+    const processedCollections = yield* processAndCacheCollections([
+      ...playlists,
+      ...albums
+    ])
 
     const trackIds = tracks.map((t) => t.track_id)
     const now = moment()
@@ -89,7 +108,7 @@ function* fetchDashboardAsync(
       yield* put(
         dashboardActions.fetchSucceeded({
           tracks,
-          collections: playlists
+          collections: processedCollections
         })
       )
     } else {

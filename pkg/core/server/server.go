@@ -7,6 +7,7 @@ import (
 	"github.com/AudiusProject/audius-protocol/pkg/core/common"
 	"github.com/AudiusProject/audius-protocol/pkg/core/config"
 	"github.com/AudiusProject/audius-protocol/pkg/core/db"
+	"github.com/AudiusProject/audius-protocol/pkg/core/mempool"
 	cconfig "github.com/cometbft/cometbft/config"
 	"github.com/cometbft/cometbft/rpc/client/local"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -20,15 +21,17 @@ type Server struct {
 	rpc     *local.Local
 	db      *db.Queries
 	self    *http.Client
+	mempl   *mempool.Mempool
 }
 
-func NewServer(config *config.Config, cconfig *cconfig.Config, logger *common.Logger, rpc *local.Local, pool *pgxpool.Pool, e *echo.Echo) (*Server, error) {
+func NewServer(config *config.Config, cconfig *cconfig.Config, logger *common.Logger, rpc *local.Local, pool *pgxpool.Pool, e *echo.Echo, mempl *mempool.Mempool) (*Server, error) {
 	s := &Server{
 		config:  config,
 		cconfig: cconfig,
 		rpc:     rpc,
 		logger:  logger.Child("http_server"),
 		db:      db.New(pool),
+		mempl:   mempl,
 		self:    nil,
 	}
 
@@ -39,7 +42,7 @@ func NewServer(config *config.Config, cconfig *cconfig.Config, logger *common.Lo
 }
 
 func (s *Server) registerRoutes(e *echo.Group) {
-	e.GET("/genesis.json", s.getGenesisJSON)
+	/** routes **/
 	e.GET("/nodes", s.getRegisteredNodes)
 	e.GET("/nodes/verbose", s.getRegisteredNodes)
 	e.GET("/nodes/discovery", s.getRegisteredNodes)
@@ -47,6 +50,9 @@ func (s *Server) registerRoutes(e *echo.Group) {
 	e.GET("/nodes/content", s.getRegisteredNodes)
 	e.GET("/nodes/content/verbose", s.getRegisteredNodes)
 	e.Any("/comet*", s.proxyCometRequest)
+
+	/** debugging endpoints **/
+	e.GET("/debug/mempl", s.getMempl)
 	e.GET("/debug/pprof/", echo.WrapHandler(http.HandlerFunc(pprof.Index)))
 	e.GET("/debug/pprof/cmdline", echo.WrapHandler(http.HandlerFunc(pprof.Cmdline)))
 	e.GET("/debug/pprof/profile", echo.WrapHandler(http.HandlerFunc(pprof.Profile)))
