@@ -7,7 +7,7 @@ export const socialMediaMessages = {
   accountInUseError: (platform: SocialPlatform) =>
     `An Audius account with that ${formatCapitalizeString(
       platform
-    )} account already exists. Please sign in instead.`,
+    )} account already exists. Please sign in.`,
   socialMediaLoginSucess: (platform: SocialPlatform) => {
     const platformName = {
       twitter: 'Twitter',
