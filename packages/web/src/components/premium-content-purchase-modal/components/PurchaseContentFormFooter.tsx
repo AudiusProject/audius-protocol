@@ -7,14 +7,13 @@ import {
   usePurchaseContentErrorMessage
 } from '@audius/common/hooks'
 import { Name, RepostSource } from '@audius/common/models'
-import { SIGN_UP_PAGE } from '@audius/common/src/utils/route'
 import {
   PurchaseContentStage,
   PurchaseContentError,
   tracksSocialActions,
   collectionsSocialActions
 } from '@audius/common/store'
-import { formatPrice } from '@audius/common/utils'
+import { formatPrice, route } from '@audius/common/utils'
 import {
   Button,
   IconCaretRight,
@@ -37,6 +36,8 @@ import { fullCollectionPage, fullTrackPage } from 'utils/route'
 import { PurchaseContentFormState } from '../hooks/usePurchaseContentFormState'
 
 import styles from './PurchaseContentFormFooter.module.css'
+
+const { SIGN_UP_PAGE } = route
 
 const messages = {
   buy: 'Buy',
