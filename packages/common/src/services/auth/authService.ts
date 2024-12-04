@@ -29,6 +29,13 @@ export type AuthService = {
     otp?: string
   ) => Promise<SignInResponse>
   signOut: () => Promise<void>
+  resetPassword: ({
+    username,
+    password
+  }: {
+    username: string
+    password: string
+  }) => Promise<void>
   sendRecoveryInfo: (params: {
     login: string
     host: string
@@ -72,6 +79,16 @@ export const createAuthService = ({
     return hedgehogInstance.logout()
   }
 
+  const resetPassword = async ({
+    username,
+    password
+  }: {
+    username: string
+    password: string
+  }) => {
+    return hedgehogInstance.resetPassword({ username, password })
+  }
+
   const getWalletAddresses = async () => {
     const walletOverride = await localStorage.getAudiusUserWalletOverride()
     await hedgehogInstance.waitUntilReady()
@@ -91,6 +108,7 @@ export const createAuthService = ({
     signIn,
     signOut,
     getWalletAddresses,
-    sendRecoveryInfo
+    sendRecoveryInfo,
+    resetPassword
   }
 }
