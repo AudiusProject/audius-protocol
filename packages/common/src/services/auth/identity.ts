@@ -2,6 +2,7 @@ import { EthWallet, SetAuthFn } from '@audius/hedgehog'
 import axios, { AxiosError, AxiosRequestConfig, AxiosResponse } from 'axios'
 import sigUtil from 'eth-sig-util'
 
+import { Nullable } from '~/utils/typeUtils'
 import { uuid } from '~/utils/uid'
 
 import { AuthHeaders } from './types'
@@ -79,17 +80,26 @@ export class IdentityService {
   /**
    * Get the user's email used for notifications and display.
    */
-  async getUserEmail(wallet: EthWallet) {
-    const headers = await this._signData(wallet)
-    if (headers[AuthHeaders.Message] && headers[AuthHeaders.Signature]) {
-      return await this._makeRequest<{ email: string | undefined | null }>({
-        url: '/user/email',
-        method: 'get',
-        headers
-      })
-    } else {
+  async getUserEmail({ wallet }: { wallet?: Nullable<EthWallet> }) {
+    if (!wallet) {
       throw new Error('Cannot get user email - user is not authenticated')
     }
+
+    const headers = await this._signData(wallet)
+    if (!headers[AuthHeaders.Message] || !headers[AuthHeaders.Signature]) {
+      throw new Error('Cannot get user email - user is not authenticated')
+    }
+
+    const res = await this._makeRequest<{ email: string | undefined | null }>({
+      url: '/user/email',
+      method: 'get',
+      headers
+    })
+
+    if (!res.email) {
+      throw new Error('No email found')
+    }
+    return res.email
   }
 
   /**
@@ -100,21 +110,25 @@ export class IdentityService {
     email,
     otp
   }: {
-    wallet: EthWallet
+    wallet?: Nullable<EthWallet>
     email: string
     otp?: string
   }) {
-    const headers = await this._signData(wallet)
-    if (headers[AuthHeaders.Message] && headers[AuthHeaders.Signature]) {
-      return await this._makeRequest({
-        url: '/user/email',
-        method: 'PUT',
-        headers,
-        data: { email, otp }
-      })
-    } else {
+    if (!wallet) {
       throw new Error('Cannot change user email - user is not authenticated')
     }
+
+    const headers = await this._signData(wallet)
+    if (!headers[AuthHeaders.Message] || !headers[AuthHeaders.Signature]) {
+      throw new Error('Cannot change user email - user is not authenticated')
+    }
+
+    return await this._makeRequest({
+      url: '/user/email',
+      method: 'PUT',
+      headers,
+      data: { email, otp }
+    })
   }
 
   /* ------- INTERNAL FUNCTIONS ------- */

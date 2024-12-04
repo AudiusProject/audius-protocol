@@ -37,9 +37,7 @@ export const CurrentEmail = () => {
   // Load the email for the user
   const wallet = hedgehogInstance.getWallet()
   const emailRequest = useAsync(async () => {
-    if (!wallet) return
-    const { email } = await identityServiceInstance.getUserEmail(wallet)
-    return email
+    return await identityServiceInstance.getUserEmail({ wallet })
   })
 
   useEffect(() => {

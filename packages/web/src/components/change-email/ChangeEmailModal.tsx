@@ -70,7 +70,6 @@ export const ResendCodeLink = () => {
     // Try to confirm without OTP to force OTP refresh
     try {
       const wallet = hedgehogInstance.getWallet()
-      if (!wallet) throw new Error('No wallet found - is user logged in?')
       await identityServiceInstance.changeEmail({
         wallet,
         email
@@ -98,9 +97,7 @@ const CurrentEmail = () => {
   // Load the email for the user
   const wallet = hedgehogInstance.getWallet()
   const emailRequest = useAsync(async () => {
-    if (!wallet) return
-    const { email } = await identityServiceInstance.getUserEmail(wallet)
-    return email
+    return await identityServiceInstance.getUserEmail({ wallet })
   })
   useEffect(() => {
     if (emailRequest.value) {

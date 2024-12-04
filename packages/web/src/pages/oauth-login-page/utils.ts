@@ -121,10 +121,7 @@ export const formOAuthResponse = async ({
   if (!userEmail) {
     try {
       const wallet = hedgehogInstance.getWallet()
-      if (!wallet) throw new Error('No wallet found')
-      const emailRes = await identityServiceInstance.getUserEmail(wallet)
-      if (!emailRes.email) throw new Error('No email found')
-      email = emailRes.email
+      email = await identityServiceInstance.getUserEmail({ wallet })
     } catch {
       onError()
       return
