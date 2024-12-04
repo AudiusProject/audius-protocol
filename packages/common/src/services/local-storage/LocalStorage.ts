@@ -3,9 +3,11 @@ import { PLAYBACK_RATE_LS_KEY } from '~/store/index'
 
 import { Nullable } from '../../utils'
 
-const AUDIUS_ACCOUNT_KEY = '@audius/account'
-const AUDIUS_ACCOUNT_USER_KEY = '@audius/audius-user'
-const AUDIUS_USER_WALLET_OVERRIDE_KEY = '@audius/user-wallet-override'
+import {
+  AUDIUS_ACCOUNT_KEY,
+  AUDIUS_ACCOUNT_USER_KEY,
+  AUDIUS_USER_WALLET_OVERRIDE_KEY
+} from './constants'
 
 type LocalStorageType = {
   getItem: (key: string) => Promise<string | null> | string | null

@@ -1,9 +1,7 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useContext, useEffect, useState } from 'react'
 
 import { Name } from '@audius/common/models'
 import { useFocusEffect } from '@react-navigation/native'
-import DocumentPicker from 'react-native-document-picker'
-import { useAsyncFn } from 'react-use'
 
 import { IconClose, IconCloudUpload, Button } from '@audius/harmony-native'
 import {
@@ -21,7 +19,8 @@ import { useThemeColors } from 'app/utils/theme'
 
 import { TopBarIconButton } from '../../app-screen'
 import type { UploadParamList } from '../types'
-import { processTrackFile } from '../utils/processTrackFile'
+
+import { UploadFileContext } from './UploadFileContext'
 
 const messages = {
   screenTitle: 'Upload',
@@ -54,25 +53,10 @@ export const SelectTrackScreen = () => {
   const { neutralLight4 } = useThemeColors()
   const navigation = useNavigation<UploadParamList>()
   const [navigatedBack, setNavigatedBack] = useState(false)
-
-  const [{ value: track, loading, error }, handleSelectTrack] =
-    useAsyncFn(async () => {
-      try {
-        const trackFile = await DocumentPicker.pickSingle({
-          type: DocumentPicker.types.audio,
-          copyTo: 'cachesDirectory'
-        })
-        return processTrackFile(trackFile)
-      } catch (error) {
-        DocumentPicker.isCancel(error)
-        return null
-      }
-    }, [])
+  const { track, loading, error, selectFile } = useContext(UploadFileContext)
 
   useEffect(() => {
-    if (track) {
-      navigation.push('CompleteTrack', track)
-    }
+    if (track) navigation.push('CompleteTrack', {})
   }, [track, navigation])
 
   useFocusEffect(
@@ -122,7 +106,7 @@ export const SelectTrackScreen = () => {
             fullWidth
             variant='primary'
             isLoading={!!isLoading}
-            onPress={handleSelectTrack}
+            onPress={selectFile}
           >
             {messages.browse}
           </Button>

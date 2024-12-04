@@ -299,16 +299,21 @@ function* publishWorker(
         throw new Error('No user id found during upload. Not signed in?')
       }
       const libs = yield* call(audiusBackendInstance.getAudiusLibsTyped)
+      // TODO - I am unsure why these types are not working as expected.
+      // Nothing around it appears to change but this code should be removed
+      // with the move of upload to sdk.
       const {
+        // @ts-ignore
         trackId: updatedTrackId,
+        // @ts-ignore
         txReceipt: { blockHash, blockNumber }
       } = yield* call(
-        [libs.Track, libs.Track!.writeTrackToChain],
+        [libs.Track, libs.Track!.writeTrackToChain as any],
         userId,
         metadata,
         EntityManagerAction.CREATE,
         presetTrackId
-      )
+      ) as any
       const confirmed = yield* call(confirmTransaction, blockHash, blockNumber)
       if (!confirmed) {
         throw new Error(
@@ -383,6 +388,10 @@ type UploadTrackResponse =
   | { type: 'UPLOADED'; payload: UploadedPayload }
   | { type: 'PUBLISHED'; payload: PublishedPayload }
   | { type: 'ERROR'; payload: ErrorPayload }
+
+function isTask(worker: unknown): worker is Task {
+  return worker !== null && typeof worker === 'object' && 'isRunning' in worker
+}
 
 /**
  * Spins up workers to handle uploading of tracks and their stems in parallel.
@@ -701,10 +710,14 @@ export function* handleUploads({
 
   console.debug('Spinning down workers')
   for (const worker of uploadWorkers) {
-    worker.cancel()
+    if (isTask(worker)) {
+      yield* cancel(worker)
+    }
   }
   for (const worker of publishWorkers) {
-    worker.cancel()
+    if (isTask(worker)) {
+      yield* cancel(worker)
+    }
   }
   yield* call(progressChannel.close)
   yield* cancel(actionDispatcherTask)
@@ -1259,7 +1272,7 @@ export function* updateTrackAudioAsync(
   yield* delay(3000)
 
   yield* put(replaceTrackProgressModalActions.close())
-  yield* put(push(newMetadata.permalink))
+  yield* put(push(baseMetadata.permalink))
 }
 
 function* watchUploadTracks() {

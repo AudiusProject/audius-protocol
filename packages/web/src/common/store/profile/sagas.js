@@ -456,26 +456,30 @@ function* watchFetchFollowUsers(action) {
 }
 
 function* fetchFolloweeFollows(action) {
-  const { handle } = action
+  const { handle, limit, offset } = action
   if (!handle) return
-  const audiusBackendInstance = yield getContext('audiusBackendInstance')
+  const audiusSdk = yield getContext('audiusSdk')
+  const sdk = yield call(audiusSdk)
   const profileUserId = yield select((state) => getProfileUserId(state, handle))
+  const currentUserId = yield select(getUserId)
   if (!profileUserId) return
-  const followeeFollows = yield call(
-    audiusBackendInstance.getFolloweeFollows,
-    profileUserId,
-    action.limit,
-    action.offset
-  )
+  const response = yield call([sdk.users, sdk.users.getMutualFollowers], {
+    userId: Id.parse(currentUserId),
+    id: Id.parse(profileUserId),
+    limit,
+    offset
+  })
+  if (!response.data) return
 
-  const followerIds = yield call(cacheUsers, followeeFollows)
+  const users = userMetadataListFromSDK(response.data)
+  const followerIds = yield call(cacheUsers, users)
 
   yield put(
     profileActions.fetchFollowUsersSucceeded(
       FollowType.FOLLOWEE_FOLLOWS,
       followerIds,
-      action.limit,
-      action.offset,
+      limit,
+      offset,
       handle
     )
   )
@@ -598,18 +602,17 @@ function* confirmUpdateProfile(userId, metadata) {
       function* (confirmedUser) {
         // Update the cached user so it no longer contains image upload artifacts
         // and contains updated profile picture / cover photo sizes if any
-        const newMetadata = {
-          updatedProfilePicture: null,
-          updatedCoverPhoto: null
-        }
+        const newMetadata = {}
         if (metadata.updatedCoverPhoto) {
           newMetadata.cover_photo_sizes = confirmedUser.cover_photo_sizes
           newMetadata.cover_photo_cids = confirmedUser.cover_photo_cids
+          newMetadata.cover_photo = confirmedUser.cover_photo
         }
         if (metadata.updatedProfilePicture) {
           newMetadata.profile_picture_sizes =
             confirmedUser.profile_picture_sizes
           newMetadata.profile_picture_cids = confirmedUser.profile_picture_cids
+          newMetadata.profile_picture = confirmedUser.profile_picture
         }
         yield put(
           cacheActions.update(Kind.USERS, [

@@ -3,13 +3,15 @@ import snakecaseKeys from 'snakecase-keys'
 import type { StorageService } from '../../services'
 import {
   Action,
+  AdvancedOptions,
   EntityManagerService,
-  EntityType,
-  AdvancedOptions
+  EntityType
 } from '../../services/EntityManager/types'
 import type { LoggerService } from '../../services/Logger'
 import type { ClaimableTokensClient } from '../../services/Solana/programs/ClaimableTokensClient/ClaimableTokensClient'
 import type { SolanaClient } from '../../services/Solana/programs/SolanaClient'
+import { HashId } from '../../types/HashId'
+import { generateMetadataCidV1 } from '../../utils/cid'
 import { parseParams } from '../../utils/parseParams'
 import { retry3 } from '../../utils/retry'
 import {
@@ -22,22 +24,24 @@ import {
 import * as runtime from '../generated/default/runtime'
 
 import {
+  CreateUserRequest,
+  CreateUserSchema,
+  EmailRequest,
+  EmailSchema,
   FollowUserRequest,
   FollowUserSchema,
+  SendTipReactionRequest,
+  SendTipReactionRequestSchema,
+  SendTipRequest,
+  SendTipSchema,
   SubscribeToUserRequest,
   SubscribeToUserSchema,
-  UpdateProfileRequest,
   UnfollowUserRequest,
   UnfollowUserSchema,
   UnsubscribeFromUserRequest,
   UnsubscribeFromUserSchema,
-  UpdateProfileSchema,
-  SendTipRequest,
-  SendTipSchema,
-  SendTipReactionRequest,
-  EmailRequest,
-  EmailSchema,
-  SendTipReactionRequestSchema
+  UpdateProfileRequest,
+  UpdateProfileSchema
 } from './types'
 
 export class UsersApi extends GeneratedUsersApi {
@@ -51,6 +55,98 @@ export class UsersApi extends GeneratedUsersApi {
   ) {
     super(configuration)
     this.logger = logger.createPrefixedLogger('[users-api]')
+  }
+
+  /** @hidden
+   * Generate a new user id for use in creation flow
+   */
+  private async generateUserId() {
+    const response = new runtime.JSONApiResponse<{ data: string }>(
+      await this.request({
+        path: '/users/unclaimed_id',
+        method: 'GET',
+        headers: {},
+        query: {
+          noCache: Math.floor(Math.random() * 1000).toString()
+        }
+      })
+    )
+    return await response.value()
+  }
+
+  /** @hidden
+   * Create a user
+   */
+  async createUser(
+    params: CreateUserRequest,
+    advancedOptions?: AdvancedOptions
+  ) {
+    const { onProgress, profilePictureFile, coverArtFile, metadata } =
+      await parseParams('createUser', CreateUserSchema)(params)
+
+    const { data } = await this.generateUserId()
+    if (!data) {
+      throw new Error('Failed to generate userId')
+    }
+    const userId = HashId.parse(data)
+
+    const [profilePictureResp, coverArtResp] = await Promise.all([
+      profilePictureFile &&
+        retry3(
+          async () =>
+            await this.storage.uploadFile({
+              file: profilePictureFile,
+              onProgress,
+              template: 'img_square',
+              auth: this.auth
+            }),
+          (e) => {
+            this.logger.info('Retrying uploadProfilePicture', e)
+          }
+        ),
+      coverArtFile &&
+        retry3(
+          async () =>
+            await this.storage.uploadFile({
+              file: coverArtFile,
+              onProgress,
+              template: 'img_backdrop',
+              auth: this.auth
+            }),
+          (e) => {
+            this.logger.info('Retrying uploadProfileCoverArt', e)
+          }
+        )
+    ])
+
+    const updatedMetadata = {
+      ...metadata,
+      userId,
+      ...(profilePictureResp
+        ? { profilePictureSizes: profilePictureResp?.id }
+        : {}),
+      ...(coverArtResp ? { coverPhotoSizes: coverArtResp?.id } : {})
+    }
+
+    const entityMetadata = snakecaseKeys(updatedMetadata)
+
+    const cid = (await generateMetadataCidV1(entityMetadata)).toString()
+
+    // Write metadata to chain
+    const { blockHash, blockNumber } = await this.entityManager.manageEntity({
+      userId,
+      entityType: EntityType.USER,
+      entityId: userId,
+      action: Action.CREATE,
+      metadata: JSON.stringify({
+        cid,
+        data: entityMetadata
+      }),
+      auth: this.auth,
+      ...advancedOptions
+    })
+
+    return { blockHash, blockNumber, metadata: updatedMetadata }
   }
 
   /** @hidden

@@ -25,8 +25,8 @@ export const useProfilePicture = (
     if (cidOverride) return cidOverride
     const user = getUser(state, { id: userId })
     if (!user) return null
-    const { profile_picture_sizes, profile_picture } = user
-    return profile_picture_sizes || profile_picture
+    const { profile_picture_sizes } = user
+    return profile_picture_sizes
   })
 
   const cidMap = useSelector(

@@ -2,9 +2,11 @@ import { RefObject } from 'react'
 
 import { useIsMobile } from 'hooks/useIsMobile'
 
-import SettingsPageProvider from './SettingsPageProvider'
 import { SettingsPage as DesktopSettingsPage } from './components/desktop/SettingsPage'
-import MobileSettingsPage, { SubPage } from './components/mobile/SettingsPage'
+import {
+  SettingsPage as MobileSettingsPage,
+  SubPage
+} from './components/mobile/SettingsPage'
 
 type SettingsPageProps = {
   containerRef: RefObject<HTMLDivElement>
@@ -13,10 +15,11 @@ type SettingsPageProps = {
 
 const SettingsPage = ({ subPage }: SettingsPageProps) => {
   const isMobile = useIsMobile()
-  const content = isMobile ? MobileSettingsPage : DesktopSettingsPage
 
-  return (
-    <SettingsPageProvider subPage={subPage}>{content}</SettingsPageProvider>
+  return isMobile ? (
+    <MobileSettingsPage subPage={subPage} />
+  ) : (
+    <DesktopSettingsPage />
   )
 }
 

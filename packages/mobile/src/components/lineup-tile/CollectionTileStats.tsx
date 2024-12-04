@@ -1,6 +1,8 @@
-import { useGetPlaylistById } from '@audius/common/api'
 import { useIsCollectionUnlockable } from '@audius/common/hooks'
 import type { ID } from '@audius/common/models'
+import type { CommonState } from '@audius/common/store'
+import { cacheCollectionsSelectors } from '@audius/common/store'
+import { useSelector } from 'react-redux'
 
 import { Flex } from '@audius/harmony-native'
 
@@ -10,6 +12,8 @@ import { CollectionDownloadStatusIndicator } from '../offline-downloads'
 
 import { RepostsMetric, SavesMetric } from './CollectionTileMetrics'
 import { LineupTileRankIcon } from './LineupTileRankIcon'
+
+const { getCollection } = cacheCollectionsSelectors
 
 type CollectionTileStatsProps = {
   collectionId: ID
@@ -22,13 +26,9 @@ export const CollectionTileStats = (props: CollectionTileStatsProps) => {
 
   const isUnlockable = useIsCollectionUnlockable(collectionId)
 
-  const { data: collection } = useGetPlaylistById(
-    { playlistId: collectionId },
-    { disabled: !!collectionId }
-  )
-
-  if (!collection) return null
-  const { is_private } = collection
+  const isPrivate = useSelector((state: CommonState) => {
+    return getCollection(state, { id: collectionId })?.is_private
+  })
 
   return (
     <Flex row justifyContent='space-between' alignItems='center' p='s'>
@@ -37,7 +37,7 @@ export const CollectionTileStats = (props: CollectionTileStatsProps) => {
           <LineupTileRankIcon index={rankIndex} />
         ) : null}
         <CollectionAccessTypeLabel collectionId={collectionId} />
-        {is_private ? null : (
+        {isPrivate ? null : (
           <>
             <RepostsMetric collectionId={collectionId} />
             <SavesMetric collectionId={collectionId} />

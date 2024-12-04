@@ -11,10 +11,8 @@ const txRelay = require('../relay/txRelay')
 const captchaMiddleware = require('../captchaMiddleware')
 const { detectAbuse } = require('../utils/antiAbuse')
 const { getFeatureFlag, FEATURE_FLAGS } = require('../featureFlag')
-const models = require('../models')
 const { getIP } = require('../utils/antiAbuse')
 const { libs } = require('@audius/sdk-legacy/dist/libs')
-const config = require('../config.js')
 
 module.exports = function (app) {
   app.post(
@@ -185,7 +183,7 @@ module.exports = function (app) {
           detectAbuse(user, reqIP) // fired & forgotten
         }
 
-        return successResponse({ receipt: receipt })
+        return successResponse({ receipt })
       }
 
       return errorResponseBadRequest(

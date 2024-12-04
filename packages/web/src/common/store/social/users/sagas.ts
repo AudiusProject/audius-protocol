@@ -1,4 +1,4 @@
-import { Name, Kind, ID } from '@audius/common/models'
+import { Name, Kind, ID, UserMetadata } from '@audius/common/models'
 import {
   accountSelectors,
   cacheActions,
@@ -9,7 +9,7 @@ import {
   confirmerActions,
   confirmTransaction
 } from '@audius/common/store'
-import { makeKindId, route } from '@audius/common/utils'
+import { encodeHashId, makeKindId, route } from '@audius/common/utils'
 import { Action } from '@reduxjs/toolkit'
 import { call, select, takeEvery, put } from 'typed-redux-saga'
 
@@ -48,7 +48,7 @@ export function* followUser(
   }
 
   const users = yield* select(getUsers, { ids: [action.userId, accountId] })
-  let followedUser = users[action.userId]
+  let followedUser: UserMetadata = users[action.userId]
   const currentUser = users[accountId]
 
   if (!followedUser) {
@@ -105,14 +105,18 @@ export function* confirmFollowUser(
   accountId: ID,
   onSuccessActions?: Action[]
 ) {
-  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
+  const audiusSdk = yield* getContext('audiusSdk')
+  const sdk = yield* call(audiusSdk)
   yield* put(
     confirmerActions.requestConfirmation(
       makeKindId(Kind.USERS, userId),
       function* () {
         const { blockHash, blockNumber } = yield* call(
-          audiusBackendInstance.followUser,
-          userId
+          [sdk.users, sdk.users.followUser],
+          {
+            userId: encodeHashId(accountId),
+            followeeUserId: encodeHashId(userId)
+          }
         )
         const confirmed = yield* call(
           confirmTransaction,
@@ -241,14 +245,18 @@ export function* unfollowUser(
 }
 
 export function* confirmUnfollowUser(userId: ID, accountId: ID) {
-  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
+  const audiusSdk = yield* getContext('audiusSdk')
+  const sdk = yield* call(audiusSdk)
   yield* put(
     confirmerActions.requestConfirmation(
       makeKindId(Kind.USERS, userId),
       function* () {
         const { blockHash, blockNumber } = yield* call(
-          audiusBackendInstance.unfollowUser,
-          userId
+          [sdk.users, sdk.users.unfollowUser],
+          {
+            userId: encodeHashId(accountId),
+            followeeUserId: encodeHashId(userId)
+          }
         )
         const confirmed = yield* call(
           confirmTransaction,

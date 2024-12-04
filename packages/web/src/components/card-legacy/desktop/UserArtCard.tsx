@@ -12,7 +12,7 @@ import { Dispatch } from 'redux'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import PerspectiveCard from 'components/perspective-card/PerspectiveCard'
 import UserBadges from 'components/user-badges/UserBadges'
-import { useUserProfilePicture } from 'hooks/useUserProfilePicture'
+import { useProfilePicture } from 'hooks/useProfilePicture'
 import {
   setUsers,
   setVisibility
@@ -61,8 +61,7 @@ const UserArtCard = g(
     setModalVisibility,
     goToRoute
   }) => {
-    const { user_id, _profile_picture_sizes, name, handle, follower_count } =
-      user
+    const { user_id, name, handle, follower_count } = user
 
     const goToProfile = useCallback(() => {
       const link = profilePage(handle)
@@ -74,12 +73,11 @@ const UserArtCard = g(
       setModalVisibility()
     }, [setFollowerUser, setModalVisibility, user_id])
 
-    const image = useUserProfilePicture(
-      user_id,
-      _profile_picture_sizes,
-      SquareSizes.SIZE_480_BY_480,
-      placeholderArt
-    )
+    const image = useProfilePicture({
+      userId: user_id,
+      size: SquareSizes.SIZE_480_BY_480,
+      defaultImage: placeholderArt
+    })
 
     useEffect(() => {
       if (image && setDidLoad) setDidLoad(index)

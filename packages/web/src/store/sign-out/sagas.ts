@@ -1,10 +1,12 @@
 import { Name } from '@audius/common/models'
+import { TRENDING_PAGE } from '@audius/common/src/utils/route'
 import {
   accountActions,
   tokenDashboardPageActions,
   signOutActions,
   getContext
 } from '@audius/common/store'
+import { push as pushRoute } from 'connected-react-router'
 import { takeLatest, put } from 'redux-saga/effects'
 
 import { make } from 'common/store/analytics/actions'
@@ -27,6 +29,7 @@ function* watchSignOut() {
           signOut(audiusBackendInstance, localStorage, authService)
       })
     )
+    yield put(pushRoute(TRENDING_PAGE))
   })
 }
 

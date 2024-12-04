@@ -26,7 +26,6 @@ import { AnchoredSubmitRow } from 'components/edit/AnchoredSubmitRow'
 import { AnchoredSubmitRowEdit } from 'components/edit/AnchoredSubmitRowEdit'
 import { AdvancedField } from 'components/edit/fields/AdvancedField'
 import { MultiTrackSidebar } from 'components/edit/fields/MultiTrackSidebar'
-import { ReleaseDateField } from 'components/edit/fields/ReleaseDateField'
 import { RemixSettingsField } from 'components/edit/fields/RemixSettingsField'
 import { StemsAndDownloadsField } from 'components/edit/fields/StemsAndDownloadsField'
 import { TrackMetadataFields } from 'components/edit/fields/TrackMetadataFields'
@@ -102,11 +101,17 @@ export const EditTrackForm = (props: EditTrackFormProps) => {
         onSubmit(values)
       }
 
+      const replaceFile =
+        'file' in values.tracks[0] ? values.tracks[0].file : null
       const usersMayLoseAccess =
         !isUpload && !initiallyHidden && values.trackMetadatas[0].is_unlisted
       const isToBePublished =
         !isUpload && initiallyHidden && !values.trackMetadatas[0].is_unlisted
-      if (usersMayLoseAccess) {
+
+      if (replaceFile) {
+        // Replace audio confirmation is handled in the edit track page if needed
+        onSubmit(values)
+      } else if (usersMayLoseAccess) {
         openHideContentConfirmation({ confirmCallback })
       } else if (isToBePublished && isInitiallyScheduled) {
         openEarlyReleaseConfirmation({ contentType: 'track', confirmCallback })
@@ -176,9 +181,6 @@ const TrackEditForm = (
     useContext(UploadPreviewContext)
   const isPreviewPlaying = playingPreviewIndex === trackIdx
 
-  const { isEnabled: isHiddenPaidScheduledEnabled } = useFeatureFlag(
-    FeatureFlags.HIDDEN_PAID_SCHEDULED
-  )
   const { isEnabled: isTrackAudioReplaceEnabled } = useFeatureFlag(
     FeatureFlags.TRACK_AUDIO_REPLACE
   )
@@ -251,17 +253,16 @@ const TrackEditForm = (
   )
 
   const onClickDownload = useCallback(() => {
-    if (!track.file) return
+    const { url } = track?.metadata?.download
+    if (!url) return
 
-    const url = URL.createObjectURL(track.file)
     const link = document.createElement('a')
     link.href = url
-    link.download = track.file.name || 'download'
+    link.download = track.metadata.orig_filename || 'download'
     document.body.appendChild(link)
     link.click()
     document.body.removeChild(link)
-    URL.revokeObjectURL(url)
-  }, [track.file])
+  }, [track.metadata])
 
   return (
     <Form id={formId}>
@@ -300,11 +301,7 @@ const TrackEditForm = (
             ) : null}
             <TrackMetadataFields />
             <div className={cn(layoutStyles.col, layoutStyles.gap4)}>
-              {isHiddenPaidScheduledEnabled ? (
-                <VisibilityField entityType='track' isUpload={isUpload} />
-              ) : (
-                <ReleaseDateField />
-              )}
+              <VisibilityField entityType='track' isUpload={isUpload} />
               <PriceAndAudienceField
                 isUpload={isUpload}
                 forceOpen={forceOpenAccessAndSale}

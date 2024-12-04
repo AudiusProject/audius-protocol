@@ -54,6 +54,12 @@
   background: var(--harmony-static-white);
 }
 
+.item2:hover .usdcPill,
+.item2:hover .audioPill {
+  color: var(--harmony-static-white);
+  background: var(--harmony-static-static-white);
+}
+
 .item:hover .usdcPill path {
   fill: #2775ca;
 }

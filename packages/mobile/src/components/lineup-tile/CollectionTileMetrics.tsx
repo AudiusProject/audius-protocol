@@ -1,14 +1,15 @@
 import { useCallback } from 'react'
 
-import { useGetPlaylistById } from '@audius/common/api'
 import { FavoriteType, type ID } from '@audius/common/models'
+import type { CommonState } from '@audius/common/store'
 import {
   repostsUserListActions,
   favoritesUserListActions,
-  RepostType
+  RepostType,
+  cacheCollectionsSelectors
 } from '@audius/common/store'
 import { formatCount } from '@audius/common/utils'
-import { useDispatch } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 
 import { IconHeart, IconRepost } from '@audius/harmony-native'
 import { useNavigation } from 'app/hooks/useNavigation'
@@ -17,6 +18,7 @@ import { VanityMetric } from './VanityMetrics'
 
 const { setFavorite } = favoritesUserListActions
 const { setRepost } = repostsUserListActions
+const { getCollection } = cacheCollectionsSelectors
 
 type RepostsMetricProps = {
   collectionId: ID
@@ -25,10 +27,9 @@ type RepostsMetricProps = {
 export const RepostsMetric = (props: RepostsMetricProps) => {
   const { collectionId } = props
 
-  const { data: playlist } = useGetPlaylistById(
-    { playlistId: collectionId },
-    { disabled: !collectionId }
-  )
+  const repostCount = useSelector((state: CommonState) => {
+    return getCollection(state, { id: collectionId })?.repost_count
+  })
   const dispatch = useDispatch()
   const navigation = useNavigation()
 
@@ -40,14 +41,11 @@ export const RepostsMetric = (props: RepostsMetricProps) => {
     })
   }, [collectionId, dispatch, navigation])
 
-  if (!playlist) return null
-  const { repost_count = 0 } = playlist
-
-  if (repost_count === 0) return null
+  if (!repostCount || repostCount === 0) return null
 
   return (
     <VanityMetric icon={IconRepost} onPress={handlePress}>
-      {formatCount(repost_count)}
+      {formatCount(repostCount)}
     </VanityMetric>
   )
 }
@@ -58,10 +56,10 @@ type SavesMetricProps = {
 
 export const SavesMetric = (props: SavesMetricProps) => {
   const { collectionId } = props
-  const { data: playlist } = useGetPlaylistById(
-    { playlistId: collectionId },
-    { disabled: !collectionId }
-  )
+  const saveCount = useSelector((state: CommonState) => {
+    return getCollection(state, { id: collectionId })?.save_count
+  })
+
   const dispatch = useDispatch()
   const navigation = useNavigation()
 
@@ -73,14 +71,11 @@ export const SavesMetric = (props: SavesMetricProps) => {
     })
   }, [collectionId, dispatch, navigation])
 
-  if (!playlist) return null
-  const { save_count = 0 } = playlist
-
-  if (save_count === 0) return null
+  if (!saveCount || saveCount === 0) return null
 
   return (
     <VanityMetric icon={IconHeart} onPress={handlePress}>
-      {formatCount(save_count)}
+      {formatCount(saveCount)}
     </VanityMetric>
   )
 }

@@ -3,7 +3,8 @@ import {
   accountSelectors,
   cacheActions,
   settingsPageActions as actions,
-  getContext
+  getContext,
+  getSDK
 } from '@audius/common/store'
 import { getErrorMessage } from '@audius/common/utils'
 import { call, put, takeEvery, select } from 'typed-redux-saga'
@@ -16,6 +17,7 @@ const { getAccountUser, getUserId } = accountSelectors
 
 function* watchGetSettings() {
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
+  const sdk = yield* getSDK()
   yield* takeEvery(actions.GET_NOTIFICATION_SETTINGS, function* () {
     try {
       yield* call(waitForWrite)
@@ -23,7 +25,8 @@ function* watchGetSettings() {
       if (!userId) return
 
       const emailSettings = yield* call(
-        audiusBackendInstance.getEmailNotificationSettings
+        audiusBackendInstance.getEmailNotificationSettings,
+        { sdk }
       )
       yield* put(
         actions.updateEmailFrequency(
@@ -47,7 +50,9 @@ function* watchUpdateEmailFrequency() {
       const userId = yield* select(getUserId)
 
       if (userId && updateServer) {
+        const sdk = yield* getSDK()
         yield* call(audiusBackendInstance.updateEmailNotificationSettings, {
+          sdk,
           userId,
           emailFrequency
         })

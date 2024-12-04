@@ -1,7 +1,7 @@
 import type { LocalStorage } from '../local-storage'
 
 import { HedgehogConfig, createHedgehog } from './hedgehog'
-import type { IdentityService } from './identity'
+import type { IdentityService, RecoveryInfoParams } from './identity'
 
 export type AuthServiceConfig = {
   identityService: IdentityService
@@ -29,6 +29,12 @@ export type AuthService = {
     otp?: string
   ) => Promise<SignInResponse>
   signOut: () => Promise<void>
+  sendRecoveryInfo: (params: {
+    login: string
+    host: string
+    data: string
+    signature: string
+  }) => Promise<void>
   getWalletAddresses: () => Promise<GetWalletAddressesResult>
 }
 
@@ -76,5 +82,15 @@ export const createAuthService = ({
     }
   }
 
-  return { hedgehogInstance, signIn, signOut, getWalletAddresses }
+  const sendRecoveryInfo = async (params: RecoveryInfoParams) => {
+    await identityService.sendRecoveryInfo(params)
+  }
+
+  return {
+    hedgehogInstance,
+    signIn,
+    signOut,
+    getWalletAddresses,
+    sendRecoveryInfo
+  }
 }

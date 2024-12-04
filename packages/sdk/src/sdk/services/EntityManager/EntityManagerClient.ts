@@ -8,6 +8,7 @@ import {
 } from 'viem'
 import type { TransactionReceipt } from 'web3-core'
 
+import * as runtime from '../../api/generated/default/runtime'
 import { productionConfig } from '../../config/production'
 import fetch, { Headers } from '../../utils/fetch'
 import { mergeConfigWithDefaults } from '../../utils/mergeConfigs'
@@ -142,18 +143,15 @@ export class EntityManagerClient implements EntityManagerService {
         blockHash: jsonResponse.receipt.blockHash,
         blockNumber: jsonResponse.receipt.blockNumber
       }
-    } else if (response.status === 429) {
-      this.logger.error(
-        'API Rate Limit Exceeded: You have exceeded the allowed number of requests for this action. Please wait and try again later. If you require a higher rate limit, please send an email to api@audius.co with your request, detailing the reasons and expected usage.'
-      )
-      throw new Error(
-        'Error making relay request: API Rate Limit Exceeded. If you require a higher rate limit, please send an email to api@audius.co with your request.'
-      )
     } else {
-      throw new Error(
-        `Error making relay request ${response.status} ${
-          jsonResponse?.error?.message ? `: ${jsonResponse.error.message}` : '.'
-        }`
+      if (response.status === 429) {
+        this.logger.error(
+          'API Rate Limit Exceeded: You have exceeded the allowed number of requests for this action. Please wait and try again later. If you require a higher rate limit, please send an email to api@audius.co with your request, detailing the reasons and expected usage.'
+        )
+      }
+      throw new runtime.ResponseError(
+        response,
+        'Response returned an error code'
       )
     }
   }
