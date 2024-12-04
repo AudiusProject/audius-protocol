@@ -127,6 +127,16 @@ export class UserAuth implements AuthService {
     return this.hedgehog.isLoggedIn()
   }
 
+  resetPassword = async ({
+    email,
+    password
+  }: {
+    email: string
+    password: string
+  }) => {
+    await this.hedgehog.resetPassword({ username: email, password })
+  }
+
   getSharedSecret: (publicKey: string | Uint8Array) => Promise<Uint8Array> =
     async (publicKey) => {
       await this.hedgehog.waitUntilReady()

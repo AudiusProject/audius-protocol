@@ -37,9 +37,11 @@ const accountApi = createApi({
     resetPassword: {
       async fetch(args: ResetPasswordArgs, context) {
         const { email, password } = args
-        const { audiusBackend } = context
-
-        await audiusBackend.resetPassword(email, password)
+        const { userAuth } = context
+        await userAuth.resetPassword({
+          email,
+          password
+        })
         return { status: 'ok' }
       },
       options: {
