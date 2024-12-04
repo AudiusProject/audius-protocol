@@ -1,5 +1,6 @@
 import { MouseEvent, ReactElement, cloneElement, useCallback } from 'react'
 
+import { CoreFlow } from '@audius/common/models'
 import { TikTokProfile } from '@audius/common/store'
 
 import {
@@ -59,7 +60,8 @@ export const TikTokAuth = ({
         } catch (e) {
           reportToSentry({
             error: e as Error,
-            name: 'Sign Up: Failed to get user from TikTok API'
+            name: 'Sign Up: Failed to get user from TikTok API',
+            coreFlow: CoreFlow.SignUp
           })
         }
       })

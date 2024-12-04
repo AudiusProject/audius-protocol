@@ -1,3 +1,4 @@
+import { CoreFlow } from '@audius/common/models'
 import type { RemoteConfigInstance } from '@audius/common/services'
 import {
   formatTwitterProfile,
@@ -127,7 +128,11 @@ function* watchTwitterAuth() {
   yield takeEvery(oauthActions.REQUEST_TWITTER_AUTH, function* () {
     function* onFailure(error: Error) {
       yield put(oauthActions.setTwitterError(error?.message))
-      reportToSentry({ error, name: 'Sign Up: Twitter auth saga error' })
+      reportToSentry({
+        error,
+        name: 'Sign Up: Twitter auth saga error',
+        coreFlow: CoreFlow.SignUp
+      })
     }
 
     function* onSuccess(twitterProfileRes: any) {

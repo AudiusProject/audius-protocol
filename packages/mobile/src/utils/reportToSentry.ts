@@ -38,7 +38,8 @@ export const reportToSentry = async ({
   additionalInfo,
   error,
   tags,
-  name
+  name,
+  coreFlow
 }: ReportToSentryArgs) => {
   try {
     withScope(async (scope) => {
@@ -63,8 +64,8 @@ export const reportToSentry = async ({
       if (name) {
         error.name = `${name}: ${error.name}`
       }
-      if (tags) {
-        scope.setTags(tags)
+      if (tags || coreFlow) {
+        scope.setTags({ ...tags, coreFlow })
       }
       // Call JS console method using the specified level
       const consoleMethod =

@@ -116,16 +116,13 @@ export const SignUpFlowInstagramAuth = ({
     setIsModalOpen(false)
   }
 
-  const handleError = (e: Error) => {
-    onError?.(e)
-  }
-
   const handleResponse = async (
     payload: InstagramCredentials | { error: string }
   ) => {
     setIsModalOpen(false)
     if ('error' in payload) {
-      handleError(new Error(payload.error))
+      onError(new Error(payload.error))
+      return
     }
 
     const { code } = payload as InstagramCredentials // already handled error - safe to cast
@@ -146,10 +143,10 @@ export const SignUpFlowInstagramAuth = ({
         )
         onSuccess({ handle, requiresReview, platform: 'instagram' })
       } catch (e) {
-        handleError(e)
+        onError(e)
       }
     } else {
-      handleError(new Error('No auth code in response from Instagram'))
+      onError(new Error('No auth code in response from Instagram'))
     }
   }
 

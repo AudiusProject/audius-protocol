@@ -7,6 +7,8 @@ import { audiusBackendInstance } from 'services/audius-backend/audius-backend-in
 import { env } from 'services/env'
 import { reportToSentry } from 'store/errors/reportToSentry'
 
+import { CoreFlow } from '@audius/common/models'
+
 const HOSTNAME = env.PUBLIC_HOSTNAME
 const INSTAGRAM_APP_ID = env.INSTAGRAM_APP_ID
 const INSTAGRAM_REDIRECT_URL = env.INSTAGRAM_REDIRECT_URL || ''
@@ -93,9 +95,10 @@ const InstagramAuth = ({
       } catch (err: any) {
         reportToSentry({
           error: err,
-          name: 'Sign Up: InstagramAuth getProfile failed'
+          name: 'Sign Up: InstagramAuth getProfile failed',
+          coreFlow: CoreFlow.SignUp
         })
-        onFailure((err as Error).message)
+        onFailure(err)
       }
     },
     [onSuccess, onFailure]
@@ -136,7 +139,8 @@ const InstagramAuth = ({
               )
               reportToSentry({
                 error,
-                name: 'Sign Up: InstagramAuth oauth redirect failed'
+                name: 'Sign Up: InstagramAuth oauth redirect failed',
+                coreFlow: CoreFlow.SignUp
               })
               return onFailure(error)
             }
@@ -169,7 +173,8 @@ const InstagramAuth = ({
     } catch (error) {
       reportToSentry({
         error: error as Error,
-        name: 'Sign Up: InstagramAuth popup polling failed'
+        name: 'Sign Up: InstagramAuth popup polling failed',
+        coreFlow: CoreFlow.SignUp
       })
       if (popup) popup.close()
       return onFailure(error)

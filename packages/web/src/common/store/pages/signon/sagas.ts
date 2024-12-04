@@ -8,11 +8,11 @@ import {
   FavoriteSource,
   ID,
   FollowSource,
-  UserMetadata,
   ErrorLevel,
   InstagramUser,
   TikTokUser,
-  AccountUserMetadata
+  AccountUserMetadata,
+  CoreFlow
 } from '@audius/common/models'
 import {
   IntKeys,
@@ -153,7 +153,8 @@ function* fetchDefaultFollowArtists() {
     const reportToSentry = yield* getContext('reportToSentry')
     reportToSentry({
       error: e,
-      name: 'Sign Up: Unable to fetch default follow artists'
+      name: 'Sign Up: Unable to fetch default follow artists',
+      coreFlow: CoreFlow.SignUp
     })
   }
 }
@@ -179,7 +180,8 @@ function* fetchAllFollowArtist() {
     const reportToSentry = yield* getContext('reportToSentry')
     reportToSentry({
       error: e as Error,
-      name: 'Sign Up: Unable to fetch sign up follows'
+      name: 'Sign Up: Unable to fetch sign up follows',
+      coreFlow: CoreFlow.SignUp
     })
   }
 }
@@ -214,7 +216,8 @@ function* fetchFollowArtistGenre(
     reportToSentry({
       error,
       name: 'Sign Up: fetchFollowArtistGenre failed',
-      additionalInfo: { genres, defaultFollowUserIds }
+      additionalInfo: { genres, defaultFollowUserIds },
+      coreFlow: CoreFlow.SignUp
     })
     yield* put(signOnActions.fetchFollowArtistsFailed(error))
   }
@@ -250,7 +253,8 @@ function* fetchReferrer(
       const reportToSentry = yield* getContext('reportToSentry')
       reportToSentry({
         error: e,
-        name: 'Sign Up: fetchReferrer failed'
+        name: 'Sign Up: fetchReferrer failed',
+        coreFlow: CoreFlow.SignUp
       })
     }
   }
@@ -369,7 +373,8 @@ function* validateHandle(
     const reportToSentry = yield* getContext('reportToSentry')
     reportToSentry({
       error: err,
-      name: 'Sign Up: validateHandle failed'
+      name: 'Sign Up: validateHandle failed',
+      coreFlow: CoreFlow.SignUp
     })
     yield* put(signOnActions.validateHandleFailed(err.message))
     if (onValidate) onValidate(true)
@@ -408,7 +413,8 @@ function* checkEmail(action: ReturnType<typeof signOnActions.checkEmail>) {
     reportToSentry({
       error: error as Error,
       level: ErrorLevel.Error,
-      name: 'Sign Up: email check failed'
+      name: 'Sign Up: email check failed',
+      coreFlow: CoreFlow.SignUp
     })
     yield* put(toast({ content: messages.emailCheckFailed }))
     if (action.onError) {
@@ -515,6 +521,7 @@ function* signUp() {
                 error,
                 level: ErrorLevel.Warning,
                 name: 'Sign Up: User rate limited',
+                coreFlow: CoreFlow.SignUp,
                 additionalInfo: {
                   handle,
                   email,
@@ -538,6 +545,7 @@ function* signUp() {
                 error,
                 level: ErrorLevel.Warning,
                 name: 'Sign Up: User was blocked',
+                coreFlow: CoreFlow.SignUp,
                 additionalInfo: {
                   handle,
                   email,
@@ -552,6 +560,7 @@ function* signUp() {
                 error,
                 level: ErrorLevel.Error,
                 name: 'Sign Up: Unknown sign up error',
+                coreFlow: CoreFlow.SignUp,
                 additionalInfo: {
                   handle,
                   email,
@@ -577,7 +586,8 @@ function* signUp() {
             if (error) {
               reportToSentry({
                 error: new Error(error as string),
-                name: 'Sign Up: Error while associating Twitter account'
+                name: 'Sign Up: Error while associating Twitter account',
+                coreFlow: CoreFlow.SignUp
               })
               yield* put(signOnActions.setTwitterProfileError(error as string))
             }
@@ -593,7 +603,8 @@ function* signUp() {
             if (error) {
               reportToSentry({
                 error: new Error(error as string),
-                name: 'Sign Up: Error while associating Instagram account'
+                name: 'Sign Up: Error while associating Instagram account',
+                coreFlow: CoreFlow.SignUp
               })
               yield* put(
                 signOnActions.setInstagramProfileError(error as string)
@@ -612,7 +623,8 @@ function* signUp() {
             if (error) {
               reportToSentry({
                 error: new Error(error as string),
-                name: 'Sign Up: Error while associating TikTok account'
+                name: 'Sign Up: Error while associating TikTok account',
+                coreFlow: CoreFlow.SignUp
               })
               yield* put(signOnActions.setTikTokProfileError(error as string))
             }
@@ -685,6 +697,7 @@ function* signUp() {
             reportToSentry({
               error,
               name: 'Sign Up: Error in signUp saga',
+              coreFlow: CoreFlow.SignUp,
               additionalInfo: { message, timeout }
             })
           }
@@ -699,7 +712,8 @@ function* signUp() {
   } catch (error) {
     reportToSentry({
       error: error as Error,
-      name: 'Sign Up: Unknown Error'
+      name: 'Sign Up: Unknown Error',
+      coreFlow: CoreFlow.SignUp
     })
   }
 }
@@ -901,7 +915,8 @@ function* followCollections(
       error: err as Error,
       level: ErrorLevel.Error,
       name: 'Sign Up: Follow collections failed',
-      additionalInfo: { collectionIds, favoriteSource }
+      additionalInfo: { collectionIds, favoriteSource },
+      coreFlow: CoreFlow.SignUp
     })
   }
 }
@@ -978,7 +993,8 @@ function* followArtists(
             userId: failed.userId,
             userIdsToFollow,
             skipDefaultFollows
-          }
+          },
+          coreFlow: CoreFlow.SignUp
         })
       }
       const userIndex = userIdsToFollow.findIndex(
@@ -1001,7 +1017,8 @@ function* followArtists(
     const reportToSentry = yield* getContext('reportToSentry')
     reportToSentry({
       error: err,
-      name: 'Sign Up: Unkown error while following artists on sign up'
+      name: 'Sign Up: Unkown error while following artists on sign up',
+      coreFlow: CoreFlow.SignUp
     })
   }
 }
@@ -1014,7 +1031,8 @@ function* configureMetaMask() {
     const reportToSentry = yield* getContext('reportToSentry')
     reportToSentry({
       error: err,
-      name: 'Sign Up: Configure metamask failed'
+      name: 'Sign Up: Configure metamask failed',
+      coreFlow: CoreFlow.SignUp
     })
   }
 }

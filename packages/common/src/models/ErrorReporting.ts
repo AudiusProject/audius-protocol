@@ -1,12 +1,42 @@
 export enum ErrorLevel {
-  'Warning' = 'Warning',
+  /**
+   * FATAL
+   * What to use for: anything that results in app crash / "Something went wrong"
+   * These are high prio for on-call to look into, and generally should trigger an alert of some kind.
+   * Applies to scenarios that are completely unrecoverable other than to refresh client
+   */
   'Fatal' = 'Fatal',
-  'Debug' = 'Debug',
+
+  /**
+   * ERROR
+   * What to use for: Unexpected breakage but recoverable for the user.
+   * e.g. click button but fails & shows error toast. Generally applies things that can be "retried" by the user
+   */
   'Error' = 'Error',
+
+  /**
+   * WARNING
+   * What to use for: Something not ideal but within realm of expected behavior
+   * e.g. discovery network call failure
+   */
+  'Warning' = 'Warning',
+
+  // Misc levels that we generally don't use with sentry since we typically send these to generic console
+  'Debug' = 'Debug',
   'Info' = 'Info',
   'Log' = 'Log'
 }
 export type AdditionalErrorReportInfo = Record<string, unknown>
+
+/**
+ * Bucket-able app core flows that help us query for errors in sentry
+ */
+export enum CoreFlow {
+  SignUp = 'sign-up',
+  Upload = 'upload',
+  Playback = 'playback',
+  Purchase = 'purchase'
+}
 
 export type ReportToSentryArgs = {
   /**
@@ -34,4 +64,8 @@ export type ReportToSentryArgs = {
    * https://docs.sentry.io/platforms/javascript/enriching-events/tags/
    */
   tags?: Record<string, string>
+  /**
+   * Which core flow of the app the error should be bucketed in
+   */
+  coreFlow?: CoreFlow
 }

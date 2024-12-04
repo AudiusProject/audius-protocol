@@ -1,7 +1,7 @@
 import { useRemoteVar } from '@audius/common/hooks'
 import { socialMediaMessages } from '@audius/common/messages'
 import type { SocialPlatform } from '@audius/common/models'
-import { ErrorLevel } from '@audius/common/models'
+import { CoreFlow, ErrorLevel } from '@audius/common/models'
 import { BooleanKeys } from '@audius/common/services'
 
 import { Flex } from '@audius/harmony-native'
@@ -41,6 +41,7 @@ export const SocialMediaSignUpButtons = ({
         level: ErrorLevel.Error,
         error: e as Error,
         name: 'Sign Up: Social Media Error',
+        coreFlow: CoreFlow.SignUp,
         additionalInfo: { page, platform, ...additionalInfo }
       })
 
