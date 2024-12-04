@@ -11,6 +11,8 @@ import { isImageUriSource } from 'app/hooks/useContentNodeImage'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { useRoute } from 'app/hooks/useRoute'
 
+import { UploadFileContextProvider } from '../upload-screen/screens/UploadFileContext'
+
 import { EditTrackScreen } from './EditTrackScreen'
 
 const { getTrack } = cacheTracksSelectors
@@ -59,13 +61,14 @@ export const EditTrackModalScreen = () => {
 
   return (
     <ModalScreen>
-      <EditTrackScreen
-        handleSelectTrack={() => {}}
-        initialValues={initialValues}
-        onSubmit={handleSubmit}
-        title={messages.title}
-        doneText={messages.save}
-      />
+      <UploadFileContextProvider>
+        <EditTrackScreen
+          initialValues={initialValues}
+          onSubmit={handleSubmit}
+          title={messages.title}
+          doneText={messages.save}
+        />
+      </UploadFileContextProvider>
     </ModalScreen>
   )
 }
