@@ -16,11 +16,11 @@ export type BrowserFile = z.infer<typeof BrowserFileSchema>
 
 const NativeFileSchema = z.object({
   uri: z.string(),
-  name: z.string(),
-  type: z.string(),
+  name: z.string().nullable(),
+  type: z.string().nullable(),
   copyError: z.optional(z.string()),
-  fileCopyUri: z.optional(z.string()),
-  size: z.optional(z.number())
+  fileCopyUri: z.optional(z.string()).nullable(),
+  size: z.optional(z.number()).nullable()
 })
 export type NativeFile = z.infer<typeof NativeFileSchema>
 

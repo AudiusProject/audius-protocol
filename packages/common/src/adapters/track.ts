@@ -319,7 +319,7 @@ export const trackMetadataForUploadToSdk = (
 })
 
 export const fileToSdk = (
-  file: Blob | NativeFile,
+  file: Blob | File | NativeFile,
   name: string
 ): CrossPlatformFile => {
   // If we're in react-native, return as-is
