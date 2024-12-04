@@ -14,10 +14,13 @@ export class EntityManager {
       { name: 'chainId', type: 'uint256' },
       { name: 'verifyingContract', type: 'address' }
     ],
+    // NOTE: Need to update "uint" to "uint32" ("uint" isn't a thing).
+    // Can't do so now because would break signature recovery on relay
+    // and in indexing.
     ManageEntity: [
-      { name: 'userId', type: 'uint32' },
+      { name: 'userId', type: 'uint' }, // TODO: Update to uint32
       { name: 'entityType', type: 'string' },
-      { name: 'entityId', type: 'uint32' },
+      { name: 'entityId', type: 'uint' }, // TODO: Update to uint32
       { name: 'action', type: 'string' },
       { name: 'metadata', type: 'string' },
       { name: 'nonce', type: 'bytes32' }

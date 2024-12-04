@@ -81,16 +81,14 @@ export class EntityManagerClient implements EntityManagerService {
     const nonce = await getNonce()
 
     const typedData: TypedDataDefinition<EntityManagerTypes, 'ManageEntity'> = {
-      domain: {
-        name: 'Entity Manager',
-        chainId: BigInt(this.chainId),
-        version: '1',
-        verifyingContract: this.contractAddress as Hex
-      },
+      domain: this.getDomain(),
       primaryType: 'ManageEntity',
       message: {
+        // TODO: Strictly check callsites to ensure userId always passed in
+        // @ts-ignore Need to update this type to "uint32" instead of "uint"
         userId: userId!,
         entityType,
+        // @ts-ignore Need to update this type to "uint32" instead of "uint"
         entityId,
         action,
         metadata,
@@ -216,5 +214,14 @@ export class EntityManagerClient implements EntityManagerService {
     const block = await client.getBlock({ blockNumber: currentBlockNumber })
     // TODO: Make this not need to be cast to number
     return { ...block, timestamp: Number(block.timestamp) }
+  }
+
+  private getDomain() {
+    return {
+      name: 'Entity Manager',
+      chainId: BigInt(this.chainId),
+      version: '1',
+      verifyingContract: this.contractAddress as Hex
+    } as const
   }
 }
