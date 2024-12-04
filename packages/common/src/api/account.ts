@@ -11,11 +11,6 @@ import { accountSelectors } from '~/store/account'
 import { useGetUserAccount } from './user'
 import { Id } from './utils'
 
-type ResetPasswordArgs = {
-  email: string
-  password: string
-}
-
 type RequestAddManagerPayload = {
   userId: number
   managerUser: UserMetadata | User
@@ -34,18 +29,6 @@ type ApproveManagedAccountPayload = {
 const accountApi = createApi({
   reducerPath: 'accountApi',
   endpoints: {
-    resetPassword: {
-      async fetch(args: ResetPasswordArgs, context) {
-        const { email, password } = args
-        const { audiusBackend } = context
-
-        await audiusBackend.resetPassword(email, password)
-        return { status: 'ok' }
-      },
-      options: {
-        type: 'mutation'
-      }
-    },
     getManagedAccounts: {
       async fetch({ userId }: { userId: ID }, { audiusSdk }) {
         const sdk = await audiusSdk()
