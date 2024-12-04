@@ -5,9 +5,8 @@ import {
   createEmailPageMessages
 } from '@audius/common/messages'
 import { emailSchemaMessages } from '@audius/common/schemas'
-import { SIGN_IN_CONFIRM_EMAIL_PAGE } from '@audius/common/src/utils/route'
 import { route, TEMPORARY_PASSWORD } from '@audius/common/utils'
-import { Hint, IconError, TextLink } from '@audius/harmony'
+import { Hint, IconError } from '@audius/harmony'
 import { useField, useFormikContext } from 'formik'
 import { useDispatch } from 'react-redux'
 import { Link } from 'react-router-dom'
@@ -17,13 +16,14 @@ import {
   setField,
   setValueField,
   signIn
-} from '@audius/web/src/common/store/pages/signon/actions'
+} from 'common/store/pages/signon/actions'
 import {
   HarmonyTextField,
   HarmonyTextFieldProps
 } from 'components/form-fields/HarmonyTextField'
+import { TextLink } from 'components/link'
 
-const { SIGN_IN_PAGE } = route
+const { SIGN_IN_PAGE, SIGN_IN_CONFIRM_EMAIL_PAGE } = route
 
 export const EmailField = (props: Partial<HarmonyTextFieldProps>) => {
   const dispatch = useDispatch()

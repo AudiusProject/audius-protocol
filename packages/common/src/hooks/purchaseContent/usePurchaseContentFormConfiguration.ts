@@ -125,7 +125,6 @@ export const usePurchaseContentFormConfiguration = ({
       ) {
         dispatch(setPurchasePage({ page: PurchaseContentPage.PURCHASE }))
       } else {
-        console.log('asdf starting purchasing content flow')
         const extraAmount = getExtraAmount({
           amountPreset,
           presetValues,

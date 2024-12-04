@@ -153,7 +153,7 @@ export const PurchaseContentFormFooter = ({
           <Flex gap='l'>
             {isGuestCheckout ? (
               <Flex direction='column'>
-                <Divider></Divider>
+                <Divider />
                 <Flex mv='xl' direction='column'>
                   <Text variant='title'>
                     {messages.finishSettingUpYourAccount}

@@ -49,9 +49,9 @@ export const antiAbuseMiddleware = async (
     logger.error({ error: e }, 'AAO uncaught exception')
   })
 
-  if (user.handle) {
+  if (user.user_id) {
     // read from cache and determine if blocked from relay
-    const userAbuseRules = await readAAOState(user.handle)
+    const userAbuseRules = await readAAOState(user.user_id)
     if (userAbuseRules === null) {
       // first relay, allow passage
       next()
@@ -59,7 +59,7 @@ export const antiAbuseMiddleware = async (
     }
 
     if (userAbuseRules?.blockedFromRelay) {
-      logger.info(`blocked from relay ${user.handle_lc}`)
+      logger.info(`blocked from relay ${user.user_id}`)
       antiAbuseError(next, 'blocked from relay')
       return
     }
@@ -112,7 +112,7 @@ export const detectAbuse = async (
       blockedFromEmails
     })}`
   )
-  storeAAOState(user.handle, userAbuseRules)
+  storeAAOState(user.user_id, userAbuseRules)
 }
 
 // makes HTTP request to AAO
