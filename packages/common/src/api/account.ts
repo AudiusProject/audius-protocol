@@ -243,7 +243,6 @@ export const useGetCurrentUserId = (
 }
 
 export const {
-  useResetPassword,
   useGetManagedAccounts,
   useGetManagers,
   useRequestAddManager,
