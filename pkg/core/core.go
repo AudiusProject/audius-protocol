@@ -344,7 +344,7 @@ func setupNode(logger *common.Logger) (*config.Config, *cconfig.Config, error) {
 	// empty blocks wait one second to propose since plays should be a steady stream
 	// of txs
 	cometConfig.Mempool.Recheck = false
-	cometConfig.Mempool.Broadcast = !isDev // turn on broadcast when not in dev
+	cometConfig.Mempool.Broadcast = false
 	cometConfig.Consensus.TimeoutCommit = 200 * time.Millisecond
 	cometConfig.Consensus.TimeoutPropose = 200 * time.Millisecond
 	cometConfig.Consensus.TimeoutProposeDelta = 75 * time.Millisecond
