@@ -3,6 +3,7 @@ import type {
   CrossPlatformFile,
   Genre,
   Mood,
+  NativeFile,
   TrackFilesMetadata
 } from '@audius/sdk'
 import camelcaseKeys from 'camelcase-keys'
@@ -19,7 +20,7 @@ import {
   TrackSegment
 } from '~/models'
 import { StemTrackMetadata, UserTrackMetadata } from '~/models/Track'
-import type { NativeFile, TrackMetadataForUpload } from '~/store/upload/types'
+import type { TrackMetadataForUpload } from '~/store/upload/types'
 import { License, Maybe } from '~/utils'
 import { decodeHashId } from '~/utils/hashIds'
 
@@ -244,7 +245,6 @@ export const trackMetadataForUploadToSdk = (
       'is_stream_gated',
       'stream_conditions',
       'is_download_gated',
-      'orig_filename',
       'is_downloadable',
       'is_original_available',
       'bpm',
@@ -271,6 +271,7 @@ export const trackMetadataForUploadToSdk = (
   duration: input.duration ?? undefined,
   trackCid: input.track_cid ?? '',
   origFileCid: input.orig_file_cid ?? '',
+  origFilename: input.orig_filename ?? undefined,
   fieldVisibility: input.field_visibility
     ? mapValues(
         camelcaseKeys(input.field_visibility),
@@ -321,16 +322,11 @@ export const fileToSdk = (
   file: Blob | NativeFile,
   name: string
 ): CrossPlatformFile => {
-  // If we're in react-native
+  // If we're in react-native, return as-is
   if ('uri' in file) {
-    return {
-      buffer: Buffer.from(file.uri),
-      name: file.name ?? name,
-      type: file.type ?? undefined
-    }
+    return file
   }
 
-  // If we're in browser (Blob)
   // If it's already a File, return as-is
   if (file instanceof File) {
     return file
