@@ -1,8 +1,12 @@
 import { useCallback } from 'react'
 
-import { useGetPlaylistById } from '@audius/common/api'
-import { ID } from '@audius/common/models'
-import { repostsUserListActions, RepostType } from '@audius/common/store'
+import { FavoriteType, ID } from '@audius/common/models'
+import {
+  cacheCollectionsSelectors,
+  favoritesUserListActions,
+  repostsUserListActions,
+  RepostType
+} from '@audius/common/store'
 import { formatCount, route } from '@audius/common/utils'
 import { Text, Flex, IconRepost, IconHeart } from '@audius/harmony'
 import { push } from 'connected-react-router'
@@ -20,10 +24,15 @@ import {
   UserListEntityType,
   UserListType
 } from 'store/application/ui/userListModal/types'
+import { useSelector } from 'utils/reducer'
 import { pluralize } from 'utils/stringUtils'
 
 const { REPOSTING_USERS_ROUTE, FAVORITING_USERS_ROUTE } = route
+
+const { setFavorite } = favoritesUserListActions
 const { setRepost } = repostsUserListActions
+
+const { getCollection } = cacheCollectionsSelectors
 
 type RepostsMetricProps = {
   collectionId: ID
@@ -32,10 +41,18 @@ type RepostsMetricProps = {
 
 export const RepostsMetric = (props: RepostsMetricProps) => {
   const { collectionId, size } = props
-  const { data: playlist } = useGetPlaylistById(
-    { playlistId: collectionId },
-    { disabled: !collectionId }
-  )
+  const repostCount = useSelector((state) => {
+    return getCollection(state, { id: collectionId })?.repost_count
+  })
+
+  const followeeReposts = useSelector((state) => {
+    return getCollection(state, { id: collectionId })?.followee_reposts
+  })
+
+  const isAlbum = useSelector((state) => {
+    return getCollection(state, { id: collectionId })?.is_album
+  })
+
   const isMobile = useIsMobile()
   const dispatch = useDispatch()
 
@@ -55,23 +72,22 @@ export const RepostsMetric = (props: RepostsMetricProps) => {
     }
   }, [dispatch, isMobile, collectionId])
 
-  if (!playlist) return null
-  const { repost_count = 0, followee_reposts = [], is_album } = playlist
+  if (repostCount === undefined || followeeReposts === undefined) return null
 
-  if (repost_count === 0)
+  if (repostCount === 0)
     return (
       <VanityMetric disabled>
         <IconRepost size='s' color='subdued' />
         <Text>
-          Be the first to repost this {is_album ? 'album' : 'playlist'}
+          Be the first to repost this {isAlbum ? 'album' : 'playlist'}
         </Text>
       </VanityMetric>
     )
 
   const renderName = () => {
-    const [{ user_id }] = followee_reposts
+    const [{ user_id }] = followeeReposts
 
-    const remainingCount = repost_count - 1
+    const remainingCount = repostCount - 1
     const remainingText =
       remainingCount > 0
         ? ` + ${formatCount(remainingCount)} ${pluralize(
@@ -95,14 +111,14 @@ export const RepostsMetric = (props: RepostsMetricProps) => {
       css={(theme) => ({ gap: theme.spacing.l })}
       onClick={handleClick}
     >
-      {isLargeSize && followee_reposts.length >= 3 ? (
-        <AvatarList users={followee_reposts.map(({ user_id }) => user_id)} />
+      {isLargeSize && followeeReposts.length >= 3 ? (
+        <AvatarList users={followeeReposts.map(({ user_id }) => user_id)} />
       ) : null}
       <Flex gap='xs'>
         <IconRepost size='s' color='subdued' />
-        {isLargeSize && followee_reposts.length > 0
+        {isLargeSize && followeeReposts.length > 0
           ? renderName()
-          : formatCount(repost_count)}
+          : formatCount(repostCount)}
       </Flex>
     </VanityMetric>
   )
@@ -114,16 +130,16 @@ type SavesMetricProps = {
 
 export const SavesMetric = (props: SavesMetricProps) => {
   const { collectionId } = props
-  const { data: playlist } = useGetPlaylistById(
-    { playlistId: collectionId },
-    { disabled: !collectionId }
-  )
+  const saveCount = useSelector((state) => {
+    return getCollection(state, { id: collectionId })?.save_count
+  })
+
   const isMobile = useIsMobile()
   const dispatch = useDispatch()
 
   const handleClick = useCallback(() => {
     if (isMobile) {
-      dispatch(setRepost(collectionId, RepostType.COLLECTION))
+      dispatch(setFavorite(collectionId, FavoriteType.PLAYLIST))
       dispatch(push(FAVORITING_USERS_ROUTE))
     } else {
       dispatch(
@@ -137,15 +153,12 @@ export const SavesMetric = (props: SavesMetricProps) => {
     }
   }, [dispatch, isMobile, collectionId])
 
-  if (!playlist) return null
-  const { save_count = 0 } = playlist
-
-  if (save_count === 0) return null
+  if (!saveCount) return null
 
   return (
     <VanityMetric onClick={handleClick}>
       <IconHeart size='s' color='subdued' />
-      {formatCount(save_count)}
+      {formatCount(saveCount)}
     </VanityMetric>
   )
 }
