@@ -1,13 +1,13 @@
 import { useCallback, useEffect, ReactNode } from 'react'
 
+import { useFeatureFlag } from '@audius/common/hooks'
 import {
   ModalSource,
   isContentUSDCPurchaseGated,
   ID,
   AccessConditions
 } from '@audius/common/models'
-import { useFeatureFlag } from '@audius/common/src/hooks/useFeatureFlag'
-import { FeatureFlags } from '@audius/common/src/services/remote-config/feature-flags'
+import { FeatureFlags } from '@audius/common/services'
 import {
   usePremiumContentPurchaseModal,
   gatedContentActions,

@@ -1,4 +1,4 @@
-import { ChangeCredentialsArgs } from '@audius/hedgehog/dist/types'
+import type { ChangeCredentialsArgs } from '@audius/hedgehog/dist/types'
 
 import type { LocalStorage } from '../local-storage'
 

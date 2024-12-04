@@ -2,8 +2,10 @@ import { useCallback, useRef } from 'react'
 
 import { createPasswordPageMessages } from '@audius/common/messages'
 import { passwordSchema } from '@audius/common/schemas'
-import { changePassword } from '@audius/common/src/store/change-password/slice'
-import { recoveryEmailActions } from '@audius/common/store'
+import {
+  changePasswordActions,
+  recoveryEmailActions
+} from '@audius/common/store'
 import { route, TEMPORARY_PASSWORD } from '@audius/common/utils'
 import { Flex } from '@audius/harmony'
 import { Form, Formik } from 'formik'
@@ -19,6 +21,7 @@ import { EnterPasswordSection } from '../components/EnterPasswordSection'
 import { SignUpAgreementText } from '../components/SignUpPolicyText'
 import { Heading, Page, PageFooter, ReadOnlyField } from '../components/layout'
 
+const { changePassword } = changePasswordActions
 const { SIGN_UP_HANDLE_PAGE } = route
 
 const initialValues = {
