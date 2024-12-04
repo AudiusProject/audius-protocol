@@ -31,8 +31,9 @@ export type AdditionalErrorReportInfo = Record<string, unknown>
 /**
  * Bucket-able app core flows that help us query for errors in sentry
  */
-export enum CoreFlow {
+export enum Feature {
   SignUp = 'sign-up',
+  SignIn = 'sign-in',
   Upload = 'upload',
   Playback = 'playback',
   Purchase = 'purchase'
@@ -67,5 +68,5 @@ export type ReportToSentryArgs = {
   /**
    * Which core flow of the app the error should be bucketed in
    */
-  coreFlow?: CoreFlow
+  feature?: Feature
 }

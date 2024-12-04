@@ -11,7 +11,7 @@ import {
   ErrorLevel,
   InstagramUser,
   TikTokUser,
-  CoreFlow,
+  Feature,
   AccountUserMetadata,
   OptionalId
 } from '@audius/common/models'
@@ -154,7 +154,7 @@ function* fetchDefaultFollowArtists() {
     reportToSentry({
       error: e,
       name: 'Sign Up: Unable to fetch default follow artists',
-      coreFlow: CoreFlow.SignUp
+      feature: Feature.SignUp
     })
   }
 }
@@ -181,7 +181,7 @@ function* fetchAllFollowArtist() {
     reportToSentry({
       error: e as Error,
       name: 'Sign Up: Unable to fetch sign up follows',
-      coreFlow: CoreFlow.SignUp
+      feature: Feature.SignUp
     })
   }
 }
@@ -217,7 +217,7 @@ function* fetchFollowArtistGenre(
       error,
       name: 'Sign Up: fetchFollowArtistGenre failed',
       additionalInfo: { genres, defaultFollowUserIds },
-      coreFlow: CoreFlow.SignUp
+      feature: Feature.SignUp
     })
     yield* put(signOnActions.fetchFollowArtistsFailed(error))
   }
@@ -254,7 +254,7 @@ function* fetchReferrer(
       reportToSentry({
         error: e,
         name: 'Sign Up: fetchReferrer failed',
-        coreFlow: CoreFlow.SignUp
+        feature: Feature.SignUp
       })
     }
   }
@@ -374,7 +374,7 @@ function* validateHandle(
     reportToSentry({
       error: err,
       name: 'Sign Up: validateHandle failed',
-      coreFlow: CoreFlow.SignUp
+      feature: Feature.SignUp
     })
     yield* put(signOnActions.validateHandleFailed(err.message))
     if (onValidate) onValidate(true)
@@ -414,7 +414,7 @@ function* checkEmail(action: ReturnType<typeof signOnActions.checkEmail>) {
       error: error as Error,
       level: ErrorLevel.Error,
       name: 'Sign Up: email check failed',
-      coreFlow: CoreFlow.SignUp
+      feature: Feature.SignUp
     })
     yield* put(toast({ content: messages.emailCheckFailed }))
     if (action.onError) {
@@ -468,7 +468,8 @@ function* associateSocialAccounts({
             handle,
             userId,
             twitterId
-          }
+          },
+          feature: Feature.SignUp
         })
         yield* put(signOnActions.setTwitterProfileError(error as string))
       }
@@ -489,7 +490,8 @@ function* associateSocialAccounts({
             handle,
             userId,
             instagramId
-          }
+          },
+          feature: Feature.SignUp
         })
         yield* put(signOnActions.setInstagramProfileError(error as string))
       }
@@ -512,7 +514,8 @@ function* associateSocialAccounts({
             handle,
             userId,
             tikTokId
-          }
+          },
+          feature: Feature.SignUp
         })
         yield* put(signOnActions.setTikTokProfileError(error as string))
       }
@@ -528,7 +531,8 @@ function* associateSocialAccounts({
         twitterId,
         instagramId,
         tikTokId
-      }
+      },
+      feature: Feature.SignUp
     })
   }
 }
@@ -570,7 +574,9 @@ function* sendRecoveryEmail({
     reportToSentry({
       error: err instanceof Error ? err : new Error(err as string),
       name: 'Sign Up: Failed to send recovery email',
-      additionalInfo: { handle, email, host }
+      additionalInfo: { handle, email, host },
+      level: ErrorLevel.Fatal,
+      feature: Feature.SignUp
     })
   }
 }
@@ -592,266 +598,209 @@ function* signUp() {
       yield* put(backendActions.setupBackend())
     }
 
-  const sdk = yield* getSDK()
-  const authService = yield* getContext('authService')
-  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
+    const sdk = yield* getSDK()
+    const authService = yield* getContext('authService')
+    const audiusBackendInstance = yield* getContext('audiusBackendInstance')
 
     yield* call(waitForWrite)
 
     const location = yield* call(getCityAndRegion)
     const name = signOn.name.value.trim()
 
-  const handle = signOn.handle.value
-  const alreadyExisted = signOn.accountAlreadyExisted
-  const referrer = signOn.referrer
+    const handle = signOn.handle.value
+    const alreadyExisted = signOn.accountAlreadyExisted
+    const referrer = signOn.referrer
 
     yield* call(audiusBackendInstance.setUserHandleForRelay, handle)
 
-  yield* put(
-    confirmerActions.requestConfirmation(
-      handle,
-      function* () {
-        const reportToSentry = yield* getContext('reportToSentry')
-        const isNativeMobile = yield* getContext('isNativeMobile')
-
-        if (!alreadyExisted) {
-          yield* call(
-            [authService.hedgehogInstance, authService.hedgehogInstance.signUp],
-            {
-              username: email,
-              password
-            }
-          )
-
-          yield* fork(sendRecoveryEmail, { handle, email })
-        }
-        const wallet = (yield* call([
-          authService,
-          authService.getWalletAddresses
-        ])).web3WalletAddress
-
-        const events: CreateUserRequest['metadata']['events'] = {}
-        if (referrer) {
-          events.referrer = OptionalId.parse(referrer)
-        }
-        if (isNativeMobile) {
-          events.isMobileUser = true
-        }
-
-        const createUserMetadata: CreateUserRequest = {
-          profilePictureFile: signOn.profileImage?.file as File,
-          coverArtFile: signOn.coverPhoto?.file as File,
-          metadata: {
-            location: location ?? undefined,
-            name,
-            events,
-            handle,
-            wallet
-          }
-        }
-
-        try {
-          const { blockNumber, metadata } = yield* call(
-            [sdk.users, sdk.users.createUser],
-            createUserMetadata
-          )
-          const { userId } = metadata
-          const { twitterId, instagramId, tikTokId, useMetaMask } = signOn
-
-          if (!useMetaMask && (twitterId || instagramId || tikTokId)) {
-            yield* fork(associateSocialAccounts, {
-              userId,
-              handle,
-              blockNumber,
-              twitterId,
-              instagramId,
-              tikTokId
-            })
-          }
-
-          yield* put(
-            identify(handle, {
-              name,
-              email,
-              userId
-            })
-          )
-
-          yield* put(signOnActions.signUpSucceededWithId(userId))
-
-          if (!isNativeMobile) {
-            // Set the has request browser permission to true as the signon provider will open it
-            setHasRequestedBrowserPermission()
-          } else {
-            yield* call(
-              [localStorage, localStorage.setItem],
-              IS_MOBILE_USER_KEY,
-              'true'
-            )
-          }
-        } catch (err: unknown) {
-          // We are including 0 status code here to indicate rate limit,
-          // which appears to be happening for some devices.
-          const rateLimited =
-            isResponseError(err) && [0, 429].includes(err.response.status)
-          const blocked = isResponseError(err) && err.response.status === 403
-          const error = err instanceof Error ? err : new Error(err as string)
-          const params: signOnActions.SignUpFailedParams = {
-            error: error.message,
-            // TODO: Remove phase, stop using error Sagas for signup
-            // We are mostly handling reporting here already and we're
-            // only using it for error redirects.
-            phase: 'CREATE_USER',
-            shouldReport: false, // We are reporting in this saga
-            shouldToast: rateLimited
-          }
-          if (rateLimited) {
-            params.message = 'Please try again later'
-            yield* put(
-              make(Name.CREATE_ACCOUNT_RATE_LIMIT, {
-                handle,
-                email,
-                location
-              })
-            )
-            reportToSentry({
-              error,
-              level: ErrorLevel.Warning,
-              name: 'Sign Up: User rate limited',
-              additionalInfo: {
-                handle,
-                email,
-                location,
-                formFields: createUserMetadata,
-                hasWallet: alreadyExisted
-              }
-            })
-          } else if (blocked) {
-            params.message = 'User was blocked'
-            params.uiErrorCode = UiErrorCode.RELAY_BLOCKED
-            yield* put(
-              make(Name.CREATE_ACCOUNT_BLOCKED, {
-                handle,
-                email,
-                location
-              })
-            )
-            reportToSentry({
-              error,
-              level: ErrorLevel.Warning,
-              name: 'Sign Up: User was blocked',
-              additionalInfo: {
-                handle,
-                email,
-                location,
-                formFields: createUserMetadata,
-                hasWallet: alreadyExisted
-              }
-            })
-          } else {
-            reportToSentry({
-              error,
-              level: ErrorLevel.Error,
-              name: 'Sign Up: Other Error',
-              additionalInfo: {
-                handle,
-                email,
-                location,
-                formFields: createUserMetadata,
-                hasWallet: alreadyExisted
-              }
-            })
-          }
-          yield* put(signOnActions.signUpFailed(params))
-        }
-      },
-      function* () {
-        yield* put(signOnActions.sendWelcomeEmail(name))
-        yield* call(fetchAccountAsync, { isSignUp: true })
-        yield* put(signOnActions.followArtists())
-        yield* put(make(Name.CREATE_ACCOUNT_COMPLETE_CREATING, { handle }))
-        yield* put(signOnActions.signUpSucceeded())
-      },
-      function* ({ timeout, error, message }) {
-        if (timeout) {
-          console.debug('Timed out trying to register')
-          yield* put(signOnActions.signUpTimeout())
-        }
-        if (error) {
-          const reportToSentry = yield* getContext('reportToSentry')
-          reportToSentry({
-            error,
-            name: 'Sign Up: Error in signUp saga',
-            additionalInfo: { message, timeout }
-          })
-        }
-        if (message) {
-          console.debug(message)
-        }
-      },
-      () => {},
-      SIGN_UP_TIMEOUT_MILLIS
-    )
-  )
-}
-
-/**
- * Repairs broken signups from #flare-206
- */
-function* repairSignUp() {
-  try {
-    const audiusBackendInstance = yield* getContext('audiusBackendInstance')
-    yield* call(waitForAccount)
-    const audiusLibs = yield* call([
-      audiusBackendInstance,
-      audiusBackendInstance.getAudiusLibs
-    ])
-
-    // Need at least a name, handle, and wallet to repair
-    const metadata = yield* select(getAccountUser)
-    if (!metadata || !(metadata.name && metadata.handle && metadata.wallet)) {
-      return
-    }
-
-    const User = audiusLibs.User
-    const dnUser = yield* call(
-      [User, User.getUsers],
-      1, // limit
-      0, // offset
-      [metadata.user_id], // userIds
-      null, // walletAddress
-      null, // handle
-      null // minBlockNumber
-    )
-    const users = dnUser as unknown as UserMetadata[] | null | undefined
-    if (users && users.length > 0) {
-      return
-    }
     yield* put(
       confirmerActions.requestConfirmation(
-        metadata.handle,
+        handle,
         function* () {
-          console.info('Repairing user')
-          yield* put(make(Name.SIGN_UP_REPAIR_START, {}))
-          yield* call([User, User.repairEntityManagerUserV2], metadata)
-        },
-        function* () {
-          console.info('Successfully repaired user')
-          yield* put(make(Name.SIGN_UP_REPAIR_SUCCESS, {}))
-          yield* put(signOnActions.sendWelcomeEmail(metadata.name))
-          yield* call(fetchAccountAsync, { isSignUp: true })
-        },
-        function* ({ timeout }) {
           const reportToSentry = yield* getContext('reportToSentry')
-          reportToSentry({
-            error: new Error('Failed to repair user'),
-            name: 'Sign Up',
-            additionalInfo: { userMetadata: metadata, dnUser }
-          })
-          yield* put(make(Name.SIGN_UP_REPAIR_FAILURE, {}))
+          const isNativeMobile = yield* getContext('isNativeMobile')
+
+          if (!alreadyExisted) {
+            yield* call(
+              [
+                authService.hedgehogInstance,
+                authService.hedgehogInstance.signUp
+              ],
+              {
+                username: email,
+                password
+              }
+            )
+
+            yield* fork(sendRecoveryEmail, { handle, email })
+          }
+          const wallet = (yield* call([
+            authService,
+            authService.getWalletAddresses
+          ])).web3WalletAddress
+
+          const events: CreateUserRequest['metadata']['events'] = {}
+          if (referrer) {
+            events.referrer = OptionalId.parse(referrer)
+          }
+          if (isNativeMobile) {
+            events.isMobileUser = true
+          }
+
+          const createUserMetadata: CreateUserRequest = {
+            profilePictureFile: signOn.profileImage?.file as File,
+            coverArtFile: signOn.coverPhoto?.file as File,
+            metadata: {
+              location: location ?? undefined,
+              name,
+              events,
+              handle,
+              wallet
+            }
+          }
+
+          try {
+            const { blockNumber, metadata } = yield* call(
+              [sdk.users, sdk.users.createUser],
+              createUserMetadata
+            )
+            const { userId } = metadata
+            const { twitterId, instagramId, tikTokId, useMetaMask } = signOn
+
+            if (!useMetaMask && (twitterId || instagramId || tikTokId)) {
+              yield* fork(associateSocialAccounts, {
+                userId,
+                handle,
+                blockNumber,
+                twitterId,
+                instagramId,
+                tikTokId
+              })
+            }
+
+            yield* put(
+              identify(handle, {
+                name,
+                email,
+                userId
+              })
+            )
+
+            yield* put(signOnActions.signUpSucceededWithId(userId))
+
+            if (!isNativeMobile) {
+              // Set the has request browser permission to true as the signon provider will open it
+              setHasRequestedBrowserPermission()
+            } else {
+              yield* call(
+                [localStorage, localStorage.setItem],
+                IS_MOBILE_USER_KEY,
+                'true'
+              )
+            }
+          } catch (err: unknown) {
+            // We are including 0 status code here to indicate rate limit,
+            // which appears to be happening for some devices.
+            const rateLimited =
+              isResponseError(err) && [0, 429].includes(err.response.status)
+            const blocked = isResponseError(err) && err.response.status === 403
+            const error = err instanceof Error ? err : new Error(err as string)
+            const params: signOnActions.SignUpFailedParams = {
+              error: error.message,
+              // TODO: Remove phase, stop using error Sagas for signup
+              // We are mostly handling reporting here already and we're
+              // only using it for error redirects.
+              phase: 'CREATE_USER',
+              shouldReport: false, // We are reporting in this saga
+              shouldToast: rateLimited
+            }
+            if (rateLimited) {
+              params.message = 'Please try again later'
+              yield* put(
+                make(Name.CREATE_ACCOUNT_RATE_LIMIT, {
+                  handle,
+                  email,
+                  location
+                })
+              )
+              reportToSentry({
+                error,
+                level: ErrorLevel.Warning,
+                name: 'Sign Up: User rate limited',
+                additionalInfo: {
+                  handle,
+                  email,
+                  location,
+                  formFields: createUserMetadata,
+                  hasWallet: alreadyExisted
+                },
+                feature: Feature.SignUp
+              })
+            } else if (blocked) {
+              params.message = 'User was blocked'
+              params.uiErrorCode = UiErrorCode.RELAY_BLOCKED
+              yield* put(
+                make(Name.CREATE_ACCOUNT_BLOCKED, {
+                  handle,
+                  email,
+                  location
+                })
+              )
+              reportToSentry({
+                error,
+                level: ErrorLevel.Warning,
+                name: 'Sign Up: User was blocked',
+                additionalInfo: {
+                  handle,
+                  email,
+                  location,
+                  formFields: createUserMetadata,
+                  hasWallet: alreadyExisted
+                },
+                feature: Feature.SignUp
+              })
+            } else {
+              reportToSentry({
+                error,
+                level: ErrorLevel.Fatal,
+                name: 'Sign Up: Other Error',
+                additionalInfo: {
+                  handle,
+                  email,
+                  location,
+                  formFields: createUserMetadata,
+                  hasWallet: alreadyExisted
+                },
+                feature: Feature.SignUp
+              })
+            }
+            yield* put(signOnActions.signUpFailed(params))
+          }
+        },
+        function* () {
+          yield* put(signOnActions.sendWelcomeEmail(name))
+          yield* call(fetchAccountAsync, { isSignUp: true })
+          yield* put(signOnActions.followArtists())
+          yield* put(make(Name.CREATE_ACCOUNT_COMPLETE_CREATING, { handle }))
+          yield* put(signOnActions.signUpSucceeded())
+        },
+        function* ({ timeout, error, message }) {
           if (timeout) {
-            console.debug('Timed out trying to fix registration')
+            console.debug('Timed out trying to register')
             yield* put(signOnActions.signUpTimeout())
+          }
+          if (error) {
+            const reportToSentry = yield* getContext('reportToSentry')
+            reportToSentry({
+              error,
+              level: ErrorLevel.Fatal,
+              name: 'Sign Up: Unknown error in signUp saga',
+              additionalInfo: { message, timeout },
+              feature: Feature.SignUp
+            })
+          }
+          if (message) {
+            console.debug(message)
           }
         },
         () => {},
@@ -861,8 +810,9 @@ function* repairSignUp() {
   } catch (error) {
     reportToSentry({
       error: error as Error,
-      name: 'Sign Up: Unknown Error',
-      coreFlow: CoreFlow.SignUp
+      level: ErrorLevel.Fatal,
+      name: 'Sign Up: Unknown error in signUp saga',
+      feature: Feature.SignUp
     })
   }
 }
@@ -1038,7 +988,8 @@ function* signIn(action: ReturnType<typeof signOnActions.signIn>) {
     const reportToSentry = yield* getContext('reportToSentry')
     reportToSentry({
       error: err,
-      name: 'Sign In: unknown error'
+      name: 'Sign In: unknown error',
+      feature: Feature.SignIn
     })
     yield* put(signOnActions.signInFailed(err))
   }
@@ -1065,7 +1016,7 @@ function* followCollections(
       level: ErrorLevel.Error,
       name: 'Sign Up: Follow collections failed',
       additionalInfo: { collectionIds, favoriteSource },
-      coreFlow: CoreFlow.SignUp
+      feature: Feature.SignUp
     })
   }
 }
@@ -1144,7 +1095,7 @@ function* followArtists(
             userIdsToFollow,
             skipDefaultFollows
           },
-          coreFlow: CoreFlow.SignUp
+          feature: Feature.SignUp
         })
       }
       const userIndex = userIdsToFollow.findIndex(
@@ -1163,7 +1114,7 @@ function* followArtists(
     reportToSentry({
       error: err,
       name: 'Sign Up: Unkown error while following artists on sign up',
-      coreFlow: CoreFlow.SignUp
+      feature: Feature.SignUp
     })
   }
 }
@@ -1177,7 +1128,7 @@ function* configureMetaMask() {
     reportToSentry({
       error: err,
       name: 'Sign Up: Configure metamask failed',
-      coreFlow: CoreFlow.SignUp
+      feature: Feature.SignUp
     })
   }
 }

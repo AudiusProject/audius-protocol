@@ -1,4 +1,4 @@
-import { CoreFlow } from '@audius/common/models'
+import { Feature } from '@audius/common/models'
 import type { RemoteConfigInstance } from '@audius/common/services'
 import {
   formatTwitterProfile,
@@ -131,7 +131,7 @@ function* watchTwitterAuth() {
       reportToSentry({
         error,
         name: 'Sign Up: Twitter auth saga error',
-        coreFlow: CoreFlow.SignUp
+        feature: Feature.SignUp
       })
     }
 
