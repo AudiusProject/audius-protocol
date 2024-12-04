@@ -1,4 +1,4 @@
-import type { NativeFile, TrackMetadataForUpload } from '@audius/common/store'
+import type { TrackMetadataForUpload } from '@audius/common/store'
 import type { Nullable } from '@audius/common/utils'
 import type { FormikProps } from 'formik'
 
@@ -24,14 +24,12 @@ export type EditTrackScreenProps = {
     trackArtwork?: string
     isUpload?: boolean
   }
-  file?: File | NativeFile
-  handleSelectTrack: () => void
   doneText?: string
 } & Partial<ScreenProps>
 
 export type EditTrackFormProps = FormikProps<FormValues> &
   Partial<ScreenProps> &
-  Pick<EditTrackScreenProps, 'handleSelectTrack' | 'doneText' | 'file'> & {
+  Pick<EditTrackScreenProps, 'doneText'> & {
     isUpload?: boolean
   }
 

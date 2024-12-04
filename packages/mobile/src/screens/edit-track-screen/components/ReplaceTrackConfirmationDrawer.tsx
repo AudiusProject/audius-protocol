@@ -1,5 +1,3 @@
-import { useCallback } from 'react'
-
 import { useReplaceTrackConfirmationModal } from '@audius/common/store'
 
 import { Hint, IconError } from '@audius/harmony-native'
@@ -15,20 +13,14 @@ const messages = {
 }
 
 export const ReplaceTrackConfirmationDrawer = () => {
-  const { data, onClose } = useReplaceTrackConfirmationModal()
+  const { data } = useReplaceTrackConfirmationModal()
   const { confirmCallback } = data
-
-  const handleConfirm = useCallback(() => {
-    confirmCallback()
-    onClose()
-  }, [confirmCallback, onClose])
 
   return (
     <ConfirmationDrawer
       variant='affirmative'
       modalName='ReplaceTrackConfirmation'
-      onConfirm={handleConfirm}
-      onCancel={onClose}
+      onConfirm={confirmCallback}
       messages={messages}
     >
       <Hint pv='s' icon={IconError}>
