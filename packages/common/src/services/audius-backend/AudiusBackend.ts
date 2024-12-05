@@ -2003,9 +2003,8 @@ export const audiusBackend = ({
     return audiusLibs.solanaWeb3Manager.transferWAudio(address, amount)
   }
 
-  async function getSignature(data: any) {
-    await waitForLibsInit()
-    return audiusLibs.web3Manager.sign(data)
+  async function getSignature({ data, sdk }: { data: any; sdk: AudiusSdk }) {
+    return signData({ data, sdk })
   }
 
   /**
