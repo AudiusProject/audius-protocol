@@ -1,9 +1,11 @@
 import { useCallback, useContext, useEffect, useState } from 'react'
 
 import { useFeatureFlag } from '@audius/common/hooks'
+import { DownloadQuality } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
 import type { TrackForUpload } from '@audius/common/store'
 import {
+  useWaitForDownloadModal,
   uploadActions,
   useReplaceTrackConfirmationModal,
   useReplaceTrackProgressModal,
@@ -125,6 +127,14 @@ export const EditTrackForm = (props: EditTrackFormProps) => {
   const { onOpen: openEarlyReleaseConfirmation } =
     useEarlyReleaseConfirmationModal()
   const { onOpen: openPublishConfirmation } = usePublishConfirmationModal()
+  const { onOpen: openWaitForDownload } = useWaitForDownloadModal()
+
+  const handleDownload = useCallback(() => {
+    openWaitForDownload({
+      trackIds: [values.track_id],
+      quality: DownloadQuality.ORIGINAL
+    })
+  }, [openWaitForDownload, values])
 
   const handlePressBack = useCallback(() => {
     if (!dirty) {
@@ -281,8 +291,7 @@ export const EditTrackForm = (props: EditTrackFormProps) => {
         isOpen={isOverflowMenuOpen}
         onClose={handleOverflowMenuClose}
         onReplace={selectFile}
-        // TODO: Add Downloads for original file or uploaded file
-        onDownload={isUpload ? undefined : () => {}}
+        onDownload={isUpload ? undefined : handleDownload}
       />
     </>
   )
