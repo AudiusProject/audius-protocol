@@ -5,6 +5,7 @@ from typing import Optional
 from eth_account.messages import encode_defunct
 from flask import Response, request
 from flask_restx import Namespace, Resource, fields, inputs, reqparse
+from flask_restx.errors import abort
 
 from src.api.v1.helpers import (
     DescriptiveArgument,
@@ -108,6 +109,7 @@ from src.queries.download_csv import (
 )
 from src.queries.get_associated_user_id import get_associated_user_id
 from src.queries.get_associated_user_wallet import get_associated_user_wallet
+from src.queries.get_authorization import is_authorized_request
 from src.queries.get_challenges import get_challenges
 from src.queries.get_collection_library import (
     CollectionType,
@@ -907,6 +909,8 @@ class PlaylistsFull(Resource):
         args = user_playlists_route_parser.parse_args()
 
         current_user_id = get_current_user_id(args)
+        if current_user_id and not is_authorized_request(current_user_id):
+            abort(403, message="You are not authorized to access this resource")
 
         offset = format_offset(args)
         limit = format_limit(args)
@@ -980,6 +984,8 @@ class AlbumsFull(Resource):
         args = user_albums_route_parser.parse_args()
 
         current_user_id = get_current_user_id(args)
+        if current_user_id and not is_authorized_request(current_user_id):
+            abort(403, message="You are not authorized to access this resource")
 
         offset = format_offset(args)
         limit = format_limit(args)
