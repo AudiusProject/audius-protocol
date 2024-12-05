@@ -547,25 +547,22 @@ export function* unsaveCollectionAsync(
 }
 
 export function* confirmUnsaveCollection(ownerId: ID, collectionId: ID) {
-  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
+  const sdk = yield* getSDK()
   yield* put(
     confirmerActions.requestConfirmation(
       makeKindId(Kind.COLLECTIONS, collectionId),
       function* () {
-        const { blockHash, blockNumber } = yield* call(
-          audiusBackendInstance.unsaveCollection,
-          collectionId
-        )
-        const confirmed = yield* call(
-          confirmTransaction,
-          blockHash,
-          blockNumber
-        )
-        if (!confirmed) {
-          throw new Error(
-            `Could not confirm unsave collection for collection id ${collectionId}`
-          )
+        const userId = yield* select(getUserId)
+        if (!userId) {
+          throw new Error('No userId set, cannot save collection')
         }
+
+        if (!userId) return
+
+        yield* call([sdk.playlists, sdk.playlists.unfavoritePlaylist], {
+          userId: Id.parse(userId),
+          playlistId: Id.parse(collectionId)
+        })
         return collectionId
       },
       function* () {},

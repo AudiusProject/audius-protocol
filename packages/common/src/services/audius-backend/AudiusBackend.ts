@@ -1073,16 +1073,6 @@ export const audiusBackend = ({
     }
   }
 
-  // Unfavorite a playlist
-  async function unsaveCollection(playlistId: ID) {
-    try {
-      return await audiusLibs.EntityManager.unsavePlaylist(playlistId)
-    } catch (err) {
-      console.error(getErrorMessage(err))
-      throw err
-    }
-  }
-
   async function signOut() {
     await waitForLibsInit()
     return audiusLibs.Account.logout()
@@ -2113,7 +2103,6 @@ export const audiusBackend = ({
     instagramHandle,
     tiktokHandle,
     undoRepostCollection,
-    unsaveCollection,
     updateBrowserNotifications,
     updateCreator,
     updateEmailNotificationSettings,
