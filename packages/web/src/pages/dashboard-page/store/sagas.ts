@@ -2,7 +2,7 @@ import {
   transformAndCleanList,
   userCollectionMetadataFromSDK
 } from '@audius/common/adapters'
-import { Id, ID, Track } from '@audius/common/models'
+import { Id, Track } from '@audius/common/models'
 import { IntKeys } from '@audius/common/services'
 import {
   accountSelectors,
