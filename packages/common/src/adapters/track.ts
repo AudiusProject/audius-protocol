@@ -1,5 +1,11 @@
 import { full } from '@audius/sdk'
-import type { CrossPlatformFile, Genre, Mood, TrackMetadata } from '@audius/sdk'
+import type {
+  CrossPlatformFile,
+  Genre,
+  Mood,
+  NativeFile,
+  TrackFilesMetadata
+} from '@audius/sdk'
 import camelcaseKeys from 'camelcase-keys'
 import dayjs from 'dayjs'
 import { omit, pick, mapValues } from 'lodash'
@@ -14,7 +20,7 @@ import {
   TrackSegment
 } from '~/models'
 import { StemTrackMetadata, UserTrackMetadata } from '~/models/Track'
-import type { NativeFile, TrackMetadataForUpload } from '~/store/upload/types'
+import type { TrackMetadataForUpload } from '~/store/upload/types'
 import { License, Maybe } from '~/utils'
 import { decodeHashId } from '~/utils/hashIds'
 
@@ -227,35 +233,30 @@ export const stemTrackMetadataFromSDK = (
 
 export const trackMetadataForUploadToSdk = (
   input: TrackMetadataForUpload
-): TrackMetadata => ({
+): TrackFilesMetadata => ({
   ...camelcaseKeys(
     pick(input, [
-      'track_cid',
       'license',
       'isrc',
       'iswc',
-      'genre',
       'is_unlisted',
       'is_premium',
       'premium_conditions',
       'is_stream_gated',
       'stream_conditions',
       'is_download_gated',
-      'orig_file_cid',
-      'orig_filename',
       'is_downloadable',
       'is_original_available',
       'bpm',
-      'duration',
       'is_custom_bpm',
       'musical_key',
       'is_custom_musical_key',
       'comments_disabled',
       'ddex_release_ids',
-      'parental_warning_type',
-      'audio_upload_id'
+      'parental_warning_type'
     ])
   ),
+  trackId: OptionalId.parse(input.track_id),
   title: input.title,
   description: input.description ?? undefined,
   mood: input.mood as Mood,
@@ -266,6 +267,11 @@ export const trackMetadataForUploadToSdk = (
   previewCid: input.preview_cid ?? '',
   ddexApp: input.ddex_app ?? '',
   aiAttributionUserId: OptionalId.parse(input.ai_attribution_user_id),
+  audioUploadId: input.audio_upload_id ?? undefined,
+  duration: input.duration ?? undefined,
+  trackCid: input.track_cid ?? '',
+  origFileCid: input.orig_file_cid ?? '',
+  origFilename: input.orig_filename ?? undefined,
   fieldVisibility: input.field_visibility
     ? mapValues(
         camelcaseKeys(input.field_visibility),
@@ -312,24 +318,20 @@ export const trackMetadataForUploadToSdk = (
     : undefined
 })
 
-export const artworkFileToSDK = (
-  artwork: Blob | NativeFile
+export const fileToSdk = (
+  file: Blob | File | NativeFile,
+  name: string
 ): CrossPlatformFile => {
-  // If we're in react-native
-  if ('uri' in artwork) {
-    return {
-      buffer: Buffer.from(artwork.uri),
-      name: artwork.name ?? 'artwork',
-      type: artwork.type ?? undefined
-    }
+  // If we're in react-native, return as-is
+  if ('uri' in file) {
+    return file
   }
 
-  // If we're in browser (Blob)
   // If it's already a File, return as-is
-  if (artwork instanceof File) {
-    return artwork
+  if (file instanceof File) {
+    return file
   }
 
   // If it's a Blob, convert to File with a name
-  return new File([artwork], 'artwork', { type: artwork.type })
+  return new File([file], name, { type: file.type })
 }

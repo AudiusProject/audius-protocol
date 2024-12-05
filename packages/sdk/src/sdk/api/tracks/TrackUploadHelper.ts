@@ -60,7 +60,7 @@ export class TrackUploadHelper extends BaseAPI {
   public populateTrackMetadataWithUploadResponse(
     trackMetadata: PlaylistTrackMetadata,
     audioResponse: UploadResponse,
-    coverArtResponse: UploadResponse
+    coverArtResponse?: UploadResponse
   ) {
     return {
       ...trackMetadata,
@@ -74,7 +74,7 @@ export class TrackUploadHelper extends BaseAPI {
       origFileCid: audioResponse.orig_file_cid,
       origFilename: audioResponse.orig_filename || trackMetadata.origFilename,
       audioUploadId: audioResponse.id,
-      coverArtSizes: coverArtResponse.id,
+      coverArtSizes: coverArtResponse?.id,
       duration: parseInt(audioResponse.probe.format.duration, 10),
       bpm: audioResponse.audio_analysis_results?.bpm
         ? audioResponse.audio_analysis_results.bpm

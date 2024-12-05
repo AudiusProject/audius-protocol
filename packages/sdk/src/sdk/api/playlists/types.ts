@@ -19,7 +19,7 @@ export const CreatePlaylistSchema = z
   .object({
     coverArtFile: z.optional(ImageFile),
     metadata: CreatePlaylistMetadataSchema,
-    onProgress: z.optional(z.function().args(z.number())),
+    onProgress: z.optional(z.function()),
     trackIds: z.optional(z.array(HashId)),
     userId: HashId
   })
@@ -53,7 +53,7 @@ export const createUpdatePlaylistSchema = () =>
       playlistId: HashId,
       coverArtFile: z.optional(ImageFile),
       metadata: createUpdatePlaylistMetadataSchema(),
-      onProgress: z.optional(z.function().args(z.number()))
+      onProgress: z.optional(z.function())
     })
     .strict()
 
@@ -108,7 +108,7 @@ export const createUploadPlaylistSchema = () =>
       userId: HashId,
       coverArtFile: ImageFile,
       metadata: createUploadPlaylistMetadataSchema(),
-      onProgress: z.optional(z.function().args(z.number())),
+      onProgress: z.optional(z.function()),
       /**
        * Track metadata is populated from the playlist if fields are missing
        */

@@ -2,13 +2,14 @@ import {
   Genre,
   Mood,
   EthCollectibleGatedConditions,
-  SolCollectibleGatedConditions
+  SolCollectibleGatedConditions,
+  NativeFile
 } from '@audius/sdk'
 import { z } from 'zod'
 
 import { imageBlank } from '~/assets'
 import { Collection } from '~/models'
-import { NativeFile, TrackForEdit, TrackForUpload } from '~/store/upload/types'
+import { TrackForEdit, TrackForUpload } from '~/store/upload/types'
 
 const messages = {
   artworkRequiredError: 'Artwork is required.',
