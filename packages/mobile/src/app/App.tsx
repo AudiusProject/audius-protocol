@@ -50,7 +50,6 @@ Sentry.init({
   dsn: env.SENTRY_DSN,
   integrations: [navigationIntegration, Sentry.reactNativeTracingIntegration()],
   enableUserInteractionTracing: true,
-  debug: true,
   // send 30% of traces to reduce noise
   tracesSampleRate: 0.3
 })
