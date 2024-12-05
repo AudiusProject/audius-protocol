@@ -9,7 +9,7 @@ import { useSetProfileFromTikTok } from '../hooks/socialMediaLogin'
 
 type SignupFlowTikTokAuthProps = {
   onStart: (platform: SocialPlatform) => void
-  onError: (e: Error) => void
+  onFailure: (e: Error) => void
   onSuccess: (info: {
     requiresReview: boolean
     handle: string
@@ -20,7 +20,7 @@ type SignupFlowTikTokAuthProps = {
 
 export const SignupFlowTikTokAuth = ({
   onStart,
-  onError,
+  onFailure,
   onSuccess,
   children
 }: SignupFlowTikTokAuthProps) => {
@@ -31,7 +31,7 @@ export const SignupFlowTikTokAuth = ({
   }
 
   const handleError = (e: Error) => {
-    onError(e)
+    onFailure(e)
   }
 
   const handleTikTokLogin = async ({

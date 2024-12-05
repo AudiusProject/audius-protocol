@@ -21,6 +21,12 @@ import { SignupFlowInstagramAuth } from './SignupFlowInstagramAuth'
 import { SignupFlowTikTokAuth } from './SignupFlowTikTokAuth'
 import { SignupFlowTwitterAuth } from './SignupFlowTwitterAuth'
 
+const platformErrorMap = {
+  [pickHandleErrorMessages.twitterReservedError]: 'twitter',
+  [pickHandleErrorMessages.instagramReservedError]: 'instagram',
+  [pickHandleErrorMessages.tiktokReservedError]: 'tiktok'
+}
+
 const handleAuthMap = {
   [pickHandleErrorMessages.twitterReservedError]: SignupFlowTwitterAuth,
   [pickHandleErrorMessages.instagramReservedError]: SignupFlowInstagramAuth,
@@ -53,12 +59,13 @@ export const HandleField = forwardRef(
 
     const { isWaitingForValidation, handleChange } = useIsWaitingForValidation()
 
+    const platform = platformErrorMap[error ?? '']
     const handleVerifyHandleError = useCallback(
-      (error: Error, platform: SocialPlatform) => {
+      (error: Error) => {
         toast(socialMediaMessages.verificationError)
-        onErrorSocialMediaLogin?.(error, platform)
+        onErrorSocialMediaLogin?.(error, platform as SocialPlatform)
       },
-      [onErrorSocialMediaLogin, toast]
+      [onErrorSocialMediaLogin, platform, toast]
     )
 
     const handleLoginSuccess = useCallback(

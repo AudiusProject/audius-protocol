@@ -106,7 +106,7 @@ export const SocialMediaLoginOptions = ({
         <Box css={{ flex: 1 }}>
           <SignupFlowTikTokAuth
             onStart={handleStart('tiktok')}
-            onError={handleError('tiktok')}
+            onFailure={handleError('tiktok')}
             onSuccess={handleSuccess}
           >
             <SocialButton
