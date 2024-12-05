@@ -32,8 +32,8 @@ const useStyles = makeStyles(({ spacing, palette }) => ({
     borderColor: palette.neutralLight8,
     borderRadius: 4,
     marginBottom: spacing(4),
-    height: 195,
-    width: 195
+    height: 224,
+    width: 224
   },
   trackTitle: {
     marginVertical: spacing(2),
