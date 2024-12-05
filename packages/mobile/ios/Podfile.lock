@@ -1882,8 +1882,6 @@ PODS:
     - Yoga
   - RNShare (10.0.2):
     - React-Core
-  - RNSoundPlayer (0.14.3):
-    - React-Core
   - RNSVG (15.7.1):
     - React-Core
   - RNZipArchive (7.0.1):
@@ -2026,7 +2024,6 @@ DEPENDENCIES:
   - RNScreens (from `../../../node_modules/react-native-screens`)
   - "RNSentry (from `../../../node_modules/@sentry/react-native`)"
   - RNShare (from `../node_modules/react-native-share`)
-  - RNSoundPlayer (from `../../../node_modules/react-native-sound-player`)
   - RNSVG (from `../node_modules/react-native-svg`)
   - RNZipArchive (from `../../../node_modules/react-native-zip-archive`)
   - "snap-kit-react-native (from `../../../node_modules/@snapchat/snap-kit-react-native`)"
@@ -2272,8 +2269,6 @@ EXTERNAL SOURCES:
     :path: "../../../node_modules/@sentry/react-native"
   RNShare:
     :path: "../node_modules/react-native-share"
-  RNSoundPlayer:
-    :path: "../../../node_modules/react-native-sound-player"
   RNSVG:
     :path: "../node_modules/react-native-svg"
   RNZipArchive:
@@ -2404,7 +2399,6 @@ SPEC CHECKSUMS:
   RNScreens: c7ceced6a8384cb9be5e7a5e88e9e714401fd958
   RNSentry: 20fff14a1beee1313d8c3631c54d3e6cced73410
   RNShare: 859ff710211285676b0bcedd156c12437ea1d564
-  RNSoundPlayer: 490822518cc1d6d80495ca7e3223df5869c30851
   RNSVG: 4590aa95758149fa27c5c83e54a6a466349a1688
   RNZipArchive: 7bb4c70d6aa2dd235212c0a4a3de0a4e237e2569
   SDWebImage: a7f831e1a65eb5e285e3fb046a23fcfbf08e696d

@@ -1,9 +1,8 @@
 import { createContext, useCallback, useMemo, useState } from 'react'
 
 import { playerActions, playerSelectors } from '@audius/common/store'
-import SoundPlayer from 'react-native-sound-player'
+import Video from 'react-native-video'
 import { useDispatch, useSelector } from 'react-redux'
-import { useEffectOnce } from 'react-use'
 
 type PreviewContextProps = {
   isPlaying: boolean
@@ -21,22 +20,17 @@ export const EditTrackFormPreviewContextProvider = (props: {
   children: JSX.Element
 }) => {
   const dispatch = useDispatch()
+  const [sourceUri, setSourceUri] = useState('')
   const [isPlaying, setIsPlaying] = useState(false)
   const isPlayerPlaying = useSelector(playerSelectors.getPlaying)
-
-  useEffectOnce(() => {
-    SoundPlayer.addEventListener('FinishedPlaying', () => {
-      setIsPlaying(false)
-    })
-  })
 
   // Request preview playback
   const playPreview = useCallback(
     async (url: string) => {
       if (isPlayerPlaying) dispatch(playerActions.pause())
 
+      setSourceUri(url)
       setIsPlaying(true)
-      SoundPlayer.playUrl(url)
     },
     [dispatch, isPlayerPlaying]
   )
@@ -44,7 +38,7 @@ export const EditTrackFormPreviewContextProvider = (props: {
   // Stop preview playback
   const stopPreview = useCallback(async () => {
     setIsPlaying(false)
-    SoundPlayer.stop()
+    setSourceUri('')
   }, [])
 
   const context = useMemo(
@@ -59,6 +53,14 @@ export const EditTrackFormPreviewContextProvider = (props: {
   return (
     <EditTrackFormPreviewContext.Provider value={context}>
       {props.children}
+      <Video
+        style={{ display: 'none' }}
+        source={{ uri: sourceUri }}
+        paused={!isPlaying}
+        onEnd={() => {
+          setIsPlaying(false)
+        }}
+      />
     </EditTrackFormPreviewContext.Provider>
   )
 }
