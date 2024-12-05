@@ -21,22 +21,20 @@ export const claimRewardCommand = new Command('claim-reward')
     const audiusSdk = await initializeAudiusSdk({ handle: from })
     const userId = await getCurrentUserId()
 
-    try {
-      const specifier = await audiusSdk.challenges.generateSpecifier({
-        challengeId: challengeId as ChallengeId,
-        userId,
-        contentId,
-        referredUserId
-      } as GenerateSpecifierRequest)
-      const res = await audiusSdk.challenges.claimReward({
-        userId,
-        challengeId: challengeId as ChallengeId,
-        specifier,
-        amount
-      })
-      console.log(chalk.green('Successfully claimed reward'))
-      console.log(chalk.yellow('Transaction Signature:'), res)
-    } catch (err) {}
+    const specifier = await audiusSdk.challenges.generateSpecifier({
+      challengeId: challengeId as ChallengeId,
+      userId,
+      contentId,
+      referredUserId
+    } as GenerateSpecifierRequest)
+    const res = await audiusSdk.challenges.claimReward({
+      userId,
+      challengeId: challengeId as ChallengeId,
+      specifier,
+      amount
+    })
+    console.log(chalk.green('Successfully claimed reward'))
+    console.log(chalk.yellow('Transaction Signature:'), res)
   })
 
 export const rewardSpecifierCommand = new Command('reward-specifier')
@@ -56,6 +54,4 @@ export const rewardSpecifierCommand = new Command('reward-specifier')
       referredUserId
     } as GenerateSpecifierRequest)
     console.log(chalk.yellow('Specifier:'), specifier)
-
-    process.exit(0)
   })
