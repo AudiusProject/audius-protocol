@@ -24,7 +24,6 @@ import {
   SignInResponse,
   IS_MOBILE_USER_KEY
 } from '@audius/common/services'
-import { getChangePasswordStatus } from '@audius/common/src/store/change-password/selectors'
 import {
   accountActions,
   accountSelectors,
@@ -38,7 +37,8 @@ import {
   confirmerActions,
   getSDK,
   fetchAccountAsync,
-  changePasswordActions
+  changePasswordActions,
+  changePasswordSelectors
 } from '@audius/common/store'
 import {
   Genre,
@@ -84,6 +84,7 @@ import { FollowArtistsCategory, Pages } from './types'
 
 const { FEED_PAGE, SIGN_IN_PAGE, SIGN_UP_PAGE, SIGN_UP_PASSWORD_PAGE } = route
 const { requestPushNotificationPermissions } = settingsPageActions
+const { getChangePasswordStatus } = changePasswordSelectors
 const { saveCollection } = collectionsSocialActions
 const { getUsers } = cacheUsersSelectors
 const { getAccountUser, getHasAccount } = accountSelectors

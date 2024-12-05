@@ -18,12 +18,14 @@ import { usePrevious } from 'react-use'
 import { Hint, IconError, TextLink } from '@audius/harmony-native'
 import { useNavigation } from 'app/hooks/useNavigation'
 
+import type { SignOnScreenType } from '../screens/types'
 import type { SignUpScreenParamList } from '../types'
 
 import { EmailField, type EmailFieldProps } from './EmailField'
-import type { EmailInUseHintProps } from './EmailInUseHint'
 
-type NewEmailFieldProps = EmailFieldProps & EmailInUseHintProps
+type NewEmailFieldProps = EmailFieldProps & {
+  onChangeScreen: (screen: SignOnScreenType) => void
+}
 
 export const NewEmailField = (props: NewEmailFieldProps) => {
   const dispatch = useDispatch()
