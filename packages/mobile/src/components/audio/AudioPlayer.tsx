@@ -56,6 +56,7 @@ import {
   getLocalAudioPath,
   getLocalTrackCoverArtPath
 } from 'app/services/offline-downloader'
+import { audiusSdk } from 'app/services/sdk/audius-sdk'
 import { DOWNLOAD_REASON_FAVORITES } from 'app/store/offline-downloads/constants'
 import {
   getOfflineTrackStatus,
@@ -338,12 +339,14 @@ export const AudioPlayer = () => {
       } else if (contentNodeStreamUrl) {
         url = contentNodeStreamUrl
       } else {
+        const sdk = await audiusSdk()
         let queryParams = trackQueryParams.current[trackId]
 
         if (!queryParams) {
           const nftAccessSignature = nftAccessSignatureMap[trackId]?.mp3 ?? null
           queryParams = await getQueryParams({
             audiusBackendInstance,
+            sdk,
             nftAccessSignature,
             userId: currentUserId
           })

@@ -120,6 +120,8 @@ export function* watchPlay() {
       const audiusBackendInstance = yield* getContext('audiusBackendInstance')
       const apiClient = yield* getContext('apiClient')
       const currentUserId = yield* select(getUserId)
+      const audiusSdk = yield* getContext('audiusSdk')
+      const sdk = yield* call(audiusSdk)
 
       const encodedTrackId = encodeHashId(trackId)
 
@@ -130,7 +132,8 @@ export function* watchPlay() {
       queryParams = (yield* call(getQueryParams, {
         audiusBackendInstance,
         nftAccessSignature,
-        userId: currentUserId
+        userId: currentUserId,
+        sdk
       })) as unknown as QueryParams
 
       let trackDuration = track.duration
