@@ -7,7 +7,8 @@ import chalk from 'chalk'
 import {
   createRandomImage,
   getCurrentUserId,
-  initializeAudiusSdk
+  initializeAudiusSdk,
+  parseBoolean
 } from '../utils.js'
 import { decodeHashId, Genre, Mood, type AudiusSdk } from '@audius/sdk'
 import { Command } from '@commander-js/extra-typings'
@@ -184,8 +185,9 @@ export const uploadTrackCommand = new Command('upload')
     ''
   )
   .option(
-    '-o, --is-downloadable <is downloadable>',
-    'Whether track is downloadable'
+    '-o, --is-downloadable [is downloadable]',
+    'Whether track is downloadable',
+    parseBoolean
   )
   .option(
     '-dp, --download-price <download price>',
@@ -193,25 +195,37 @@ export const uploadTrackCommand = new Command('upload')
   )
   .option(
     '-dc, --download-conditions <download conditions>',
-    'Manually set a download conditions object. Cannot be used with -dp',
-    ''
+    'Manually set a download conditions object. Cannot be used with -dp'
   )
   .option(
     '--remix-of <remix-of>',
     'Specify the track ID of the original track if this is a remix'
   )
   .option(
-    '--output <path>',
-    'A path to which to write a json file containing the track data'
+    '-h, --is-unlisted [isUnlisted]',
+    'Whether the track is hidden from the feed (ie. is unlisted)',
+    parseBoolean
   )
-  .option(
-    '-h, --hidden',
-    'Whether the track is hidden from the feed (ie. is unlisted)'
-  )
-  .action(async (track, { title = `Track ${randomBytes(2)
-      .toString('hex')
-      .padStart(4, '0')
-      .toUpperCase()}`, tags, description = 'Created with audius-cmd', mood = randomMood(), genre = randomGenre(), previewStartSeconds, license, from, price, streamConditions, isDownloadable, downloadPrice, downloadConditions, remixOf, output, hidden }) => {
+  .action(async (track, options) => {
+    const rand = randomBytes(2).toString('hex').padStart(4, '0').toUpperCase()
+    const {
+      title = `Track ${rand}`,
+      tags,
+      description = `Created with audius-cmd ${rand}`,
+      mood = randomMood(),
+      genre = randomGenre(),
+      previewStartSeconds,
+      license,
+      from,
+      price,
+      streamConditions,
+      isDownloadable,
+      downloadPrice,
+      downloadConditions,
+      remixOf,
+      isUnlisted
+    } = options
+
     const audiusSdk = await initializeAudiusSdk({ handle: from })
     const userId = await getCurrentUserId()
 
@@ -262,10 +276,15 @@ export const uploadTrackCommand = new Command('upload')
         mood,
         license,
         downloadConditions: parsedDownloadConditions,
-        streamConditions: parsedStreamConditions
+        streamConditions: parsedStreamConditions,
+        tags: tags?.join(','),
+        previewStartSeconds,
+        isDownloadable,
+        remixOf: remixOf ? JSON.parse(remixOf) : undefined,
+        isUnlisted
       }
     })
     console.log(chalk.green('Successfully uploaded track!'))
-    console.log(chalk.yellow.bold('Track ID:        '), trackId)
-    console.log(chalk.yellow.bold('Track ID Number: '), decodeHashId(trackId!))
+    console.log(chalk.yellow.bold('Track ID:   '), trackId)
+    console.log(chalk.yellow.bold('Track ID #: '), decodeHashId(trackId!))
   })

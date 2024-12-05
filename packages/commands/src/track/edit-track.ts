@@ -1,6 +1,6 @@
 import chalk from 'chalk'
 import { Command } from '@commander-js/extra-typings'
-import { getCurrentUserId, initializeAudiusSdk } from '../utils'
+import { getCurrentUserId, initializeAudiusSdk, parseBoolean } from '../utils'
 import { Mood, type Genre } from '@audius/sdk'
 
 export const editTrackCommand = new Command('edit')
@@ -23,9 +23,9 @@ export const editTrackCommand = new Command('edit')
     'The stream conditions object; sets track as stream gated'
   )
   .option(
-    '-u, --is-unlisted <isUnlisted>',
+    '-u, --is-unlisted [isUnlisted]',
     'Change track visibility',
-    (arg) => !!arg
+    parseBoolean
   )
   .option('-x, --remixOf <remixOf>', 'Set the original track of this remix')
   .action(

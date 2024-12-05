@@ -23,12 +23,15 @@ export const createUserCommand = new Command('create')
     '-e, --email <email>',
     'The email for the new user (chosen randomly if not specified)'
   )
-  .action(async (handle, { password, email }) => {
+  .action(async (handle, options) => {
     const audiusSdk = await initializeAudiusSdk()
 
     const rand = randomBytes(2).toString('hex').padStart(4, '0').toUpperCase()
 
-    email = email || `audius-cmd+${handle || rand}@audius.co`
+    const {
+      email = `audius-cmd+${handle || rand}@audius.co`,
+      password = 'password'
+    } = options
 
     const hedgehog = getHedgehog()
     // Create identity service user
@@ -51,6 +54,7 @@ export const createUserCommand = new Command('create')
     console.log(chalk.green('Successfully created user!'))
     console.log(chalk.yellow.bold('Handle:   '), metadata.handle)
     console.log(chalk.yellow.bold('User ID:  '), encodeHashId(userId))
+    console.log(chalk.yellow.bold('User ID #:'), userId)
     console.log(chalk.yellow.bold('Email:    '), email)
     console.log(chalk.yellow.bold('Password: '), password)
     console.log(chalk.yellow.bold('Entropy:  '), entropy)

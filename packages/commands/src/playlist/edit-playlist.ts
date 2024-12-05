@@ -1,6 +1,6 @@
 import chalk from 'chalk'
 import { Command } from '@commander-js/extra-typings'
-import { getCurrentUserId, initializeAudiusSdk } from '../utils'
+import { getCurrentUserId, initializeAudiusSdk, parseBoolean } from '../utils'
 
 export const editPlaylistCommand = new Command('edit')
   .description('Update an existing playlist')
@@ -9,9 +9,9 @@ export const editPlaylistCommand = new Command('edit')
   .option('-d, --description <description>', 'Description of playlist')
   .option('-f, --from <from>', 'The account to edit the track from')
   .option(
-    '-p, --is-private <isPrivate>',
+    '-p, --is-private [isPrivate]',
     'Change visibility of the collection',
-    (arg) => !!arg
+    parseBoolean
   )
   .action(
     async (playlistId, { from, playlistName, isPrivate, description }) => {

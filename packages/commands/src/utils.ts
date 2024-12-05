@@ -262,3 +262,11 @@ export const createRandomImage = () => {
   }
   return buffer
 }
+
+/**
+ * Commander parses args as strings, this will coerce to boolean.
+ * The optional args are passed as true, so keep those truthy.
+ */
+export const parseBoolean = (arg: string | true) => {
+  return arg === true || arg === 'true'
+}
