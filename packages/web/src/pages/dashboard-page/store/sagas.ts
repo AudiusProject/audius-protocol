@@ -2,7 +2,7 @@ import {
   transformAndCleanList,
   userCollectionMetadataFromSDK
 } from '@audius/common/adapters'
-import { ID, Track } from '@audius/common/models'
+import { Id, ID, Track } from '@audius/common/models'
 import { IntKeys } from '@audius/common/services'
 import {
   accountSelectors,
@@ -10,12 +10,7 @@ import {
   getContext,
   getSDK
 } from '@audius/common/store'
-import {
-  waitForValue,
-  doEvery,
-  route,
-  encodeHashId
-} from '@audius/common/utils'
+import { waitForValue, doEvery, route } from '@audius/common/utils'
 import { each } from 'lodash'
 import moment from 'moment'
 import { EventChannel } from 'redux-saga'
@@ -83,10 +78,10 @@ function* fetchDashboardAsync(
         getUnlisted: true
       }),
       call([sdk.full.users, sdk.full.users.getPlaylistsByUser], {
-        id: encodeHashId(accountUserId)
+        id: Id.parse(accountUserId)
       }),
       call([sdk.full.users, sdk.full.users.getAlbumsByUser], {
-        id: encodeHashId(accountUserId)
+        id: Id.parse(accountUserId)
       })
     ])
     const tracks = data[0] as Track[]
