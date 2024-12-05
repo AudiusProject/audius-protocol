@@ -30,11 +30,7 @@ export type TwitterAuthProps = {
   text?: string
 }
 
-const messages = {
-  signIn: 'Sign in with Twitter'
-}
-
-const TwitterAuth = (props: TwitterAuthProps) => {
+export const TwitterAuth = (props: TwitterAuthProps) => {
   const {
     children,
     className,
@@ -47,8 +43,7 @@ const TwitterAuth = (props: TwitterAuthProps) => {
     onFailure,
     onSuccess,
     screenName,
-    style,
-    text = messages.signIn
+    style
   } = props
 
   const onButtonClick: MouseEventHandler<HTMLDivElement> = (e) => {
@@ -183,10 +178,6 @@ const TwitterAuth = (props: TwitterAuthProps) => {
       })
   }
 
-  const getDefaultButtonContent = () => {
-    return <span>{text}</span>
-  }
-
   return (
     <span
       role='button'
@@ -194,9 +185,7 @@ const TwitterAuth = (props: TwitterAuthProps) => {
       style={style}
       className={className}
     >
-      {children || getDefaultButtonContent()}
+      {children}
     </span>
   )
 }
-
-export default TwitterAuth

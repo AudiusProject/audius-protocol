@@ -1,7 +1,4 @@
-import {
-  InstagramButton,
-  InstagramButtonProps
-} from 'components/social-button/instagram-button/InstagramButton'
+import { SocialButton } from '@audius/harmony'
 
 import InstagramAuth, {
   InstagramAuthProps
@@ -31,7 +28,7 @@ export const InstagramAuthButton = (props: InstagramAuthButtonProps) => {
       onFailure={onFailure}
       onSuccess={onSuccess}
     >
-      <InstagramButton {...buttonProps} />
+      <SocialButton socialType='instagram' {...buttonProps} />
     </InstagramAuth>
   )
 }

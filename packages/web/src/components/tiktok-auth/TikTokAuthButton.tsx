@@ -2,11 +2,8 @@ import { MouseEvent, ReactElement, cloneElement, useCallback } from 'react'
 
 import { Feature } from '@audius/common/models'
 import { TikTokProfile } from '@audius/common/store'
+import { SocialButton } from '@audius/harmony'
 
-import {
-  TikTokButton,
-  TikTokButtonProps
-} from 'components/social-button/tiktok-button/TikTokButton'
 import { useTikTokAuth } from 'hooks/useTikTokAuth'
 import { reportToSentry } from 'store/errors/reportToSentry'
 
@@ -77,7 +74,7 @@ export const TikTokAuthButton = (props: TikTokAuthButtonProps) => {
 
   return (
     <TikTokAuth onFailure={onFailure} onSuccess={onSuccess} onClick={onClick}>
-      <TikTokButton {...buttonProps} />
+      <SocialButton socialType='tiktok' {...buttonProps} />
     </TikTokAuth>
   )
 }

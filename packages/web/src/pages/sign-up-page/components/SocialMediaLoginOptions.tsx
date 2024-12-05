@@ -31,7 +31,7 @@ export const SocialMediaLoginOptions = ({
 
   const handleStart = (platform: SocialPlatform) => () => onStart(platform)
 
-  const handleFailure = (platform: SocialPlatform) => (err: Error) => {
+  const handleError = (platform: SocialPlatform) => (err: Error) => {
     onError(err, platform)
     const closedByUser = /closed by user/i.test(err.message)
     const isAccountInUseError =
@@ -76,7 +76,7 @@ export const SocialMediaLoginOptions = ({
         <SignupFlowTwitterAuth
           css={{ flex: 1 }}
           onStart={handleStart('twitter')}
-          onFailure={handleFailure('twitter')}
+          onFailure={handleError('twitter')}
           onSuccess={handleSuccess}
         >
           <SocialButton
@@ -91,7 +91,7 @@ export const SocialMediaLoginOptions = ({
         <SignupFlowInstagramAuth
           css={{ flex: 1 }}
           onStart={handleStart('instagram')}
-          onFailure={handleFailure('instagram')}
+          onFailure={handleError('instagram')}
           onSuccess={handleSuccess}
         >
           <SocialButton
@@ -106,7 +106,7 @@ export const SocialMediaLoginOptions = ({
         <Box css={{ flex: 1 }}>
           <SignupFlowTikTokAuth
             onStart={handleStart('tiktok')}
-            onFailure={handleFailure('tiktok')}
+            onError={handleError('tiktok')}
             onSuccess={handleSuccess}
           >
             <SocialButton
