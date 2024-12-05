@@ -6,7 +6,7 @@ setup() {
 }
 
 @test "should create random user when called without args" {
-    run timeout 120s npm run audius-cmd -- create-user
+    run timeout 120s npm run audius-cmd -- user create
 
     assert_success
     assert_line "Successfully created user!"
