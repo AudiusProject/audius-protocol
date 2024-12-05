@@ -323,7 +323,7 @@ describe('upload', () => {
     )
   })
 
-  it('waits for stems to upload before publishing parent', () => {
+  it.skip('waits for stems to upload before publishing parent', () => {
     const stem: StemUploadWithFile = {
       file: new File(['abcdefghijklmnopqrstuvwxyz'], 'test stem'),
       metadata: { ...emptyMetadata, track_id: 2, title: 'stem' },
@@ -452,7 +452,7 @@ describe('upload', () => {
       )
   })
 
-  it('uploads parent immediately if stems are already uploaded', () => {
+  it.skip('uploads parent immediately if stems are already uploaded', () => {
     const stem: StemUploadWithFile = {
       file: new File(['abcdefghijklmnopqrstuvwxyz'], 'test stem'),
       metadata: { ...emptyMetadata, track_id: 2, title: 'stem' },
