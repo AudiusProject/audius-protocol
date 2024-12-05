@@ -32,7 +32,7 @@ export const EditTrackModalScreen = () => {
   const track = useSelector((state) => getTrack(state, { id }))
 
   const trackImage = useTrackImage({
-    track,
+    trackId: track?.track_id,
     size: SquareSizes.SIZE_1000_BY_1000
   })
 
@@ -50,7 +50,7 @@ export const EditTrackModalScreen = () => {
     ...track,
     artwork: null,
     trackArtwork:
-      trackImage && isImageUriSource(trackImage.source)
+      trackImage && trackImage.source && isImageUriSource(trackImage.source)
         ? trackImage.source.uri
         : undefined,
     isUpload: false,

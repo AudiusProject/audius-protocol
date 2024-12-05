@@ -33,18 +33,16 @@ export const ProfilePicture = (props: ProfilePictureProps) => {
     return `${messages.profilePictureFor} ${userName}`
   })
 
-  const { source, handleError } = useProfilePicture(
-    userId ?? null,
-    SquareSizes.SIZE_150_BY_150,
-    'user' in props ? props.user.profile_picture_sizes : undefined
-  )
+  const { source } = useProfilePicture({
+    userId,
+    size: SquareSizes.SIZE_150_BY_150
+  })
 
-  return (
+  return source ? (
     <Avatar
       source={source}
-      onError={handleError}
       accessibilityLabel={accessibilityLabel}
       {...props}
     />
-  )
+  ) : null
 }

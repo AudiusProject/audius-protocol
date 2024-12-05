@@ -1,6 +1,5 @@
 import { useRef, useEffect, useCallback, useState } from 'react'
 
-import { useAppContext } from '@audius/common/context'
 import { Name, SquareSizes } from '@audius/common/models'
 import type { Track } from '@audius/common/models'
 import {
@@ -47,8 +46,6 @@ import TrackPlayer, {
 import { useDispatch, useSelector } from 'react-redux'
 import { useAsync, usePrevious } from 'react-use'
 
-import { DEFAULT_IMAGE_URL } from 'app/components/image/TrackImage'
-import { getImageSourceOptimistic } from 'app/hooks/useContentNodeImage'
 import { make, track as analyticsTrack } from 'app/services/analytics'
 import { apiClient } from 'app/services/audius-api-client'
 import { audiusBackendInstance } from 'app/services/audius-backend-instance'
@@ -66,8 +63,13 @@ import {
   OfflineDownloadStatus
 } from 'app/store/offline-downloads/slice'
 
+import { useTrackImage } from '../image/TrackImage'
+
 import { useChromecast } from './GoogleCast'
 import { useSavePodcastProgress } from './useSavePodcastProgress'
+
+export const DEFAULT_IMAGE_URL =
+  'https://download.audius.co/static-resources/preview-image.jpg'
 
 const { getUserId } = accountSelectors
 const { getUsers } = cacheUsersSelectors
@@ -184,7 +186,6 @@ export const AudioPlayer = () => {
   const isReachable = useSelector(getIsReachable)
   const isNotReachable = isReachable === false
   const nftAccessSignatureMap = useSelector(getNftAccessSignatureMap)
-  const { storageNodeSelector } = useAppContext()
 
   useChromecast()
 
@@ -310,6 +311,11 @@ export const AudioPlayer = () => {
     track
   ])
 
+  const { source: image } = useTrackImage({
+    trackId: track?.track_id,
+    size: SquareSizes.SIZE_1000_BY_1000
+  })
+
   const makeTrackData = useCallback(
     async ({ track, playerBehavior }: QueueableTrack, retries?: number) => {
       if (!track) {
@@ -360,20 +366,15 @@ export const AudioPlayer = () => {
 
       const localTrackImageSource =
         isNotReachable && track
-          ? { uri: `file://${getLocalTrackCoverArtPath(trackId.toString())}` }
+          ? `file://${getLocalTrackCoverArtPath(trackId.toString())}`
           : undefined
 
-      const cid = track ? track.cover_art_sizes || track.cover_art : null
-
       const imageUrl =
-        cid && storageNodeSelector
-          ? getImageSourceOptimistic({
-              cid,
-              endpoints: storageNodeSelector.getNodes(cid),
-              size: SquareSizes.SIZE_1000_BY_1000,
-              localSource: localTrackImageSource
-            })?.uri ?? DEFAULT_IMAGE_URL
-          : DEFAULT_IMAGE_URL
+        localTrackImageSource ??
+        (image && typeof image !== 'number' && 'uri' in image
+          ? image?.uri
+          : undefined) ??
+        DEFAULT_IMAGE_URL
 
       return {
         url,
@@ -395,7 +396,7 @@ export const AudioPlayer = () => {
       nftAccessSignatureMap,
       offlineAvailabilityByTrackId,
       queueTrackOwnersMap,
-      storageNodeSelector,
+      image,
       setRetries
     ]
   )

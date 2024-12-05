@@ -149,12 +149,12 @@ const CollectionScreenComponent = (props: CollectionScreenComponentProps) => {
   const renderImage = useCallback(
     (props: ImageProps) => (
       <CollectionImage
-        collection={collection}
+        collectionId={playlist_id}
         size={SquareSizes.SIZE_480_BY_480}
         {...props}
       />
     ),
-    [collection]
+    [playlist_id]
   )
 
   const currentUserId = useSelector(getUserId)

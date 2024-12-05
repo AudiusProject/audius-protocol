@@ -86,7 +86,7 @@ const SuggestedTrackRow = (props: SuggestedTrackProps) => {
     <View style={styles.suggestedTrack}>
       <View style={styles.trackDetails}>
         <TrackImage
-          track={track}
+          trackId={track.track_id}
           size={SquareSizes.SIZE_150_BY_150}
           style={styles.trackImage}
         />

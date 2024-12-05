@@ -21,13 +21,13 @@ import {
   IconSpecialAccess
 } from '@audius/harmony-native'
 import { Text } from 'app/components/core'
-import { TrackImage } from 'app/components/image/TrackImage'
 import UserBadges from 'app/components/user-badges'
 import { useIsUSDCEnabled } from 'app/hooks/useIsUSDCEnabled'
 import { makeStyles, flexRowCentered, typography } from 'app/styles'
 import { spacing } from 'app/styles/spacing'
 import { useThemeColors } from 'app/utils/theme'
 
+import { TrackImage } from '../image/TrackImage'
 import { TrackDogEar } from '../track/TrackDogEar'
 
 const { getUser } = cacheUsersSelectors
@@ -142,8 +142,8 @@ export const TrackDetailsTile = ({
       <TrackDogEar trackId={trackId} />
       <View style={styles.trackDetails}>
         <TrackImage
+          trackId={trackId}
           style={styles.trackImage}
-          track={track}
           size={SquareSizes.SIZE_150_BY_150}
         />
         <View style={styles.metadataContainer}>

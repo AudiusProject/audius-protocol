@@ -1,6 +1,6 @@
 import { useCallback } from 'react'
 
-import type { Supporting } from '@audius/common/models'
+import { WidthSizes, type Supporting } from '@audius/common/models'
 import { cacheUsersSelectors } from '@audius/common/store'
 import { TIPPING_TOP_RANK_THRESHOLD } from '@audius/web/src/utils/constants'
 import { css } from '@emotion/native'
@@ -89,8 +89,10 @@ export const SupportingTile = (props: SupportingTileProps) => {
     supporting.rank >= 1 && supporting.rank <= TIPPING_TOP_RANK_THRESHOLD
   const { spacing: harmonySpacing } = useTheme()
 
-  const { source: coverPhotoSource, handleError: handleCoverPhotoError } =
-    useCoverPhoto(user_id)
+  const { source: coverPhotoSource } = useCoverPhoto({
+    userId: user_id,
+    size: WidthSizes.SIZE_640
+  })
 
   const handlePress = useCallback(() => {
     if (handle) {
@@ -105,11 +107,7 @@ export const SupportingTile = (props: SupportingTileProps) => {
 
   return user ? (
     <Tile style={[styles.root, style]} onPress={handlePress} scaleTo={scaleTo}>
-      <ImageBackground
-        style={styles.backgroundImage}
-        source={coverPhotoSource}
-        onError={handleCoverPhotoError}
-      >
+      <ImageBackground style={styles.backgroundImage} source={coverPhotoSource}>
         <LinearGradient
           colors={['#0000001A', '#0000004D']}
           useAngle
