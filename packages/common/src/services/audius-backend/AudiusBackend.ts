@@ -1073,22 +1073,6 @@ export const audiusBackend = ({
     }
   }
 
-  // Favorite a playlist
-  async function saveCollection(
-    playlistId: ID,
-    metadata?: { is_save_of_repost: boolean }
-  ) {
-    try {
-      return await audiusLibs.EntityManager.savePlaylist(
-        playlistId,
-        JSON.stringify(metadata)
-      )
-    } catch (err) {
-      console.error(getErrorMessage(err))
-      throw err
-    }
-  }
-
   // Unfavorite a playlist
   async function unsaveCollection(playlistId: ID) {
     try {
@@ -2111,7 +2095,6 @@ export const audiusBackend = ({
     registerDeviceToken,
     repostCollection,
     guestSignUp,
-    saveCollection,
     searchTags,
     sendRecoveryEmail,
     sendTokens,

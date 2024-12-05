@@ -4,7 +4,8 @@ import {
   SmartCollectionVariant,
   ID,
   PlaylistLibrary,
-  User
+  User,
+  Id
 } from '@audius/common/models'
 import {
   accountActions,
@@ -20,7 +21,8 @@ import {
   getContext,
   playlistUpdatesActions,
   confirmerActions,
-  confirmTransaction
+  confirmTransaction,
+  getSDK
 } from '@audius/common/store'
 import { formatShareText, makeKindId, route } from '@audius/common/utils'
 import { call, select, takeEvery, put } from 'typed-redux-saga'
@@ -418,26 +420,27 @@ export function* confirmSaveCollection(
   collectionId: ID,
   metadata?: { is_save_of_repost: boolean }
 ) {
-  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
+  const sdk = yield* getSDK()
+
   yield* put(
     confirmerActions.requestConfirmation(
       makeKindId(Kind.COLLECTIONS, collectionId),
       function* () {
-        const { blockHash, blockNumber } = yield* call(
-          audiusBackendInstance.saveCollection,
-          collectionId,
-          metadata
-        )
-        const confirmed = yield* call(
-          confirmTransaction,
-          blockHash,
-          blockNumber
-        )
-        if (!confirmed) {
-          throw new Error(
-            `Could not confirm save collection for collection id ${collectionId}`
-          )
+        const userId = yield* select(getUserId)
+        if (!userId) {
+          throw new Error('No userId set, cannot save collection')
         }
+
+        if (!userId) return
+
+        yield* call([sdk.playlists, sdk.playlists.favoritePlaylist], {
+          userId: Id.parse(userId),
+          playlistId: Id.parse(collectionId),
+          metadata: {
+            isSaveOfRepost: metadata?.is_save_of_repost ?? false
+          }
+        })
+
         return collectionId
       },
       function* () {},
