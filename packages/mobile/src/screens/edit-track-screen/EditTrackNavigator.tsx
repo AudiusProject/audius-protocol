@@ -11,6 +11,7 @@ import { useAppScreenOptions } from 'app/screens/app-screen/useAppScreenOptions'
 import { messages as completeMessages } from '../upload-screen/screens/CompleteTrackScreen'
 
 import { EditTrackForm } from './EditTrackForm'
+import { ReplaceTrackConfirmationDrawer } from './components'
 import { EarlyReleaseConfirmationDrawer } from './components/EarlyReleaseConfirmationDrawer'
 import { EditAccessConfirmationDrawer } from './components/EditAccessConfirmationDrawer'
 import { HideContentConfirmationDrawer } from './components/HideContentConfirmationDrawer'
@@ -80,6 +81,7 @@ export const EditTrackNavigator = (props: EditTrackNavigatorProps) => {
       <HideContentConfirmationDrawer />
       <PublishConfirmationDrawer />
       <EarlyReleaseConfirmationDrawer />
+      <ReplaceTrackConfirmationDrawer />
     </>
   )
 }

@@ -17,7 +17,7 @@ export const messages = {
 export type CompleteTrackParams = {}
 
 export const CompleteTrackScreen = () => {
-  const { track, selectFile } = useContext(UploadFileContext)
+  const { track } = useContext(UploadFileContext)
   const [uploadAttempt, setUploadAttempt] = useState(1)
   const navigation = useNavigation<UploadParamList>()
 
@@ -37,13 +37,11 @@ export const CompleteTrackScreen = () => {
   )
 
   if (!track) return null
-  const { file, metadata } = track
+  const { metadata } = track
 
   return (
     <EditTrackScreen
       initialValues={{ ...metadata, isUpload: true }}
-      file={file}
-      handleSelectTrack={selectFile}
       onSubmit={handleSubmit}
       title={messages.title}
       url='/complete-track'

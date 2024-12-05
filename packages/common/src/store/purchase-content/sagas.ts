@@ -82,7 +82,6 @@ import { pollGatedContent } from '../gated-content/sagas'
 import { updateGatedContentStatus } from '../gated-content/slice'
 import { getSDK } from '../sdkUtils'
 import { saveCollection } from '../social/collections/actions'
-import { getFeePayer } from '../solana/selectors'
 import { TOKEN_LISTING_MAP } from '../ui'
 
 import {
@@ -678,15 +677,10 @@ function* doStartPurchaseContentFlow({
     )
 
     if (isGuestCheckoutEnabled) {
-      const feePayerOverride = yield* select(getFeePayer)
       const currentUser = yield* select(getAccountUser)
 
       if (!currentUser && guestEmail) {
-        yield* call(
-          audiusBackendInstance.guestSignUp,
-          guestEmail,
-          feePayerOverride
-        )
+        yield* call(audiusBackendInstance.guestSignUp, guestEmail)
 
         yield* call(fetchAccountAsync, { isSignUp: true })
       }

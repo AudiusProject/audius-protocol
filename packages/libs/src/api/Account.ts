@@ -190,12 +190,7 @@ export class Account extends Base {
     }
   }
 
-  async guestSignUp(
-    email: string,
-    metadata: UserMetadata,
-    host = (typeof window !== 'undefined' && window.location.origin) || null,
-    generateRecoveryLink = true
-  ) {
+  async guestSignUp(email: string, metadata: UserMetadata) {
     const phases = {
       CREATE_USER_RECORD: 'CREATE_USER_RECORD',
       HEDGEHOG_SIGNUP: 'HEDGEHOG_SIGNUP',
@@ -217,10 +212,6 @@ export class Account extends Base {
       })
 
       this.web3Manager.setOwnerWallet(ownerWallet)
-      if (generateRecoveryLink) {
-        await this.generateRecoveryLink({ handle: '', host })
-      }
-
       // Add user to chain
       phase = phases.ADD_USER
       const { newMetadata, blockHash, blockNumber } =

@@ -26,10 +26,11 @@ import { removeNullable } from '@audius/common/utils'
 import { useDispatch, useSelector } from 'react-redux'
 
 import type { ImageProps } from '@audius/harmony-native'
-import { CollectionImage } from 'app/components/image/CollectionImage'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { setVisibility } from 'app/store/drawers/slice'
 import { getIsCollectionMarkedForDownload } from 'app/store/offline-downloads/selectors'
+
+import { CollectionImage } from '../image/CollectionImage'
 
 import { CollectionTileTrackList } from './CollectionTileTrackList'
 import { LineupTile } from './LineupTile'
@@ -144,12 +145,12 @@ const CollectionTileComponent = ({
   const renderImage = useCallback(
     (props: ImageProps) => (
       <CollectionImage
-        collection={collection}
+        collectionId={playlist_id}
         size={SquareSizes.SIZE_150_BY_150}
         {...props}
       />
     ),
-    [collection]
+    [playlist_id]
   )
 
   const handlePress = useCallback(() => {

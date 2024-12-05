@@ -1,14 +1,15 @@
-import { useGetPlaylistById } from '~/api'
+import { useSelector } from 'react-redux'
+
 import { ID, isContentUSDCPurchaseGated } from '~/models'
+import { CommonState } from '~/store'
+import { getCollection } from '~/store/cache/collections/selectors'
 
 export const useIsCollectionUnlockable = (collectionId: ID) => {
-  const { data: collection } = useGetPlaylistById({
-    playlistId: collectionId
+  return useSelector((state: CommonState) => {
+    const streamConditions = getCollection(state, {
+      id: collectionId
+    })?.stream_conditions
+
+    return isContentUSDCPurchaseGated(streamConditions)
   })
-
-  if (!collection) return false
-  const { stream_conditions } = collection
-  const isPurchaseable = isContentUSDCPurchaseGated(stream_conditions)
-
-  return isPurchaseable
 }
