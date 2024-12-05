@@ -63,6 +63,7 @@ function* watchUpdateEmailFrequency() {
 
 function* watchSetAiAttribution() {
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
+  const sdk = yield* getSDK()
   yield* takeEvery(
     actions.SET_AI_ATTRIBUTION,
     function* (action: actions.SetAiAttribution) {
@@ -73,11 +74,10 @@ function* watchSetAiAttribution() {
 
       accountUser.allow_ai_attribution = allowAiAttribution
 
-      yield* call(
-        audiusBackendInstance.updateCreator,
-        accountUser,
-        accountUser.user_id
-      )
+      yield* call(audiusBackendInstance.updateCreator, {
+        metadata: accountUser,
+        sdk
+      })
 
       yield* put(
         cacheActions.update(Kind.USERS, [

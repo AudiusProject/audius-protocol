@@ -335,32 +335,6 @@ export const audiusBackend = ({
     }
   }
 
-  async function fetchCID(cid: CID, asUrl = true) {
-    await waitForLibsInit()
-
-    // If requesting a url (we mean a blob url for the file),
-    // otherwise, default to JSON
-    const responseType = asUrl ? 'blob' : 'json'
-
-    try {
-      const res = await audiusLibs.File.fetchCIDFromDiscovery(cid, responseType)
-      if (asUrl) {
-        const url = nativeMobile
-          ? res.config.url
-          : URL.createObjectURL(res.data)
-        return url
-      }
-      return res?.data ?? null
-    } catch (e) {
-      const message = getErrorMessage(e)
-      if (message === 'Unauthorized') {
-        return message
-      }
-      console.error(e)
-      return asUrl ? '' : null
-    }
-  }
-
   async function fetchImageCID(
     cid: CID,
     size?: SquareSizes | WidthSizes,
@@ -694,10 +668,6 @@ export const audiusBackend = ({
     }
   }
 
-  async function setCreatorNodeEndpoint(endpoint: string) {
-    return audiusLibs.creatorNode.setEndpoint(endpoint)
-  }
-
   type SearchTagsArgs = {
     query: string
     userTagCount?: number
@@ -859,69 +829,51 @@ export const audiusBackend = ({
   }
 
   /**
-   * Retrieves the user's eth associated wallets from IPFS using the user's metadata CID and creator node endpoints
-   * @param user The user metadata which contains the CID for the metadata multihash
-   * @returns Object The associated wallets mapping of address to nested signature
-   */
-  // TODO(C-2719)
-  async function fetchUserAssociatedEthWallets(user: User) {
-    const cid = user?.metadata_multihash ?? null
-    if (cid) {
-      const metadata = await fetchCID(cid, /* asUrl */ false)
-      if (metadata?.associated_wallets) {
-        return metadata.associated_wallets
-      }
-    }
-    return null
-  }
-
-  /**
-   * Retrieves the user's solana associated wallets from IPFS using the user's metadata CID and creator node endpoints
-   * @param user The user metadata which contains the CID for the metadata multihash
-   * @returns Object The associated wallets mapping of address to nested signature
-   */
-  // TODO(C-2719)
-  async function fetchUserAssociatedSolWallets(user: User) {
-    const cid = user?.metadata_multihash ?? null
-    if (cid) {
-      const metadata = await fetchCID(cid, /* asUrl */ false)
-      if (metadata?.associated_sol_wallets) {
-        return metadata.associated_sol_wallets
-      }
-    }
-    return null
-  }
-
-  /**
    * Retrieves both the user's ETH and SOL associated wallets from the user's metadata CID
    * @param user The user metadata which contains the CID for the metadata multihash
    * @returns Object The associated wallets mapping of address to nested signature
    */
-  // TODO(C-2719)
-  async function fetchUserAssociatedWallets(user: UserMetadata) {
-    const cid = user?.metadata_multihash ?? null
-    if (cid) {
-      const metadata = await fetchCID(cid, /* asUrl */ false)
-      return {
-        associated_sol_wallets: metadata?.associated_sol_wallets ?? null,
-        associated_wallets: metadata?.associated_wallets ?? null
-      }
+  async function fetchUserAssociatedWallets({
+    user,
+    sdk
+  }: {
+    user: UserMetadata
+    sdk: AudiusSdk
+  }) {
+    if (!user?.metadata_multihash) return null
+
+    const { data } = await sdk.full.cidData.getMetdata({
+      metadataId: user?.metadata_multihash
+    })
+
+    if (!data?.data) return null
+
+    return {
+      associated_sol_wallets: data.data.associatedSolWallets ?? null,
+      associated_wallets: data.data.associatedWallets ?? null
     }
-    return null
   }
 
-  async function updateCreator(
+  async function updateCreator({
+    metadata,
+    sdk
+  }: {
     metadata: UserMetadata &
       Pick<
         ComputedUserProperties,
         'updatedProfilePicture' | 'updatedCoverPhoto'
-      >,
-    _id?: ID
-  ) {
+      >
+    sdk: AudiusSdk
+  }) {
     let newMetadata = { ...metadata }
-    const associatedWallets = await fetchUserAssociatedWallets(metadata)
+    const associatedWallets = await fetchUserAssociatedWallets({
+      user: metadata,
+      sdk
+    })
+    // @ts-ignore when writing data, this type is expected to contain a signature
     newMetadata.associated_wallets =
       newMetadata.associated_wallets || associatedWallets?.associated_wallets
+    // @ts-ignore when writing data, this type is expected to contain a signature
     newMetadata.associated_sol_wallets =
       newMetadata.associated_sol_wallets ||
       associatedWallets?.associated_sol_wallets
@@ -2077,10 +2029,7 @@ export const audiusBackend = ({
     didSelectDiscoveryProviderListeners,
     disableBrowserNotifications,
     emailInUse,
-    fetchCID,
     fetchImageCID,
-    fetchUserAssociatedEthWallets,
-    fetchUserAssociatedSolWallets,
     fetchUserAssociatedWallets,
     getAddressTotalStakedBalance,
     getAddressWAudioBalance,
@@ -2117,7 +2066,6 @@ export const audiusBackend = ({
     sendTokens,
     sendWAudioTokens,
     sendWelcomeEmail,
-    setCreatorNodeEndpoint,
     setup,
     setUserHandleForRelay,
     signData,
