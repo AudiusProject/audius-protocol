@@ -86,7 +86,10 @@ RUN go mod graph | awk '{if ($1 !~ "@") print $2}' | xargs go get
 
 COPY ./pkg ./pkg
 COPY ./cmd/audiusd/main.go ./cmd/audiusd/main.go
+COPY ./cmd/updaterd ./cmd/updaterd
+
 RUN go build -o audiusd cmd/audiusd/main.go
+RUN go build -o /bin/updaterd ./cmd/updaterd/main.go
 
 # encoding and analysis requires a lot of dynamic links
 FROM cpp-builder
