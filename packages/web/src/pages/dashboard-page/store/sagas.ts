@@ -2,7 +2,7 @@ import {
   transformAndCleanList,
   userCollectionMetadataFromSDK
 } from '@audius/common/adapters'
-import { ID, Track } from '@audius/common/models'
+import { Id, ID, Track } from '@audius/common/models'
 import { IntKeys } from '@audius/common/services'
 import {
   accountSelectors,
@@ -59,7 +59,11 @@ function* fetchDashboardAsync(
   yield* call(waitForRead)
 
   const accountHandle = yield* call(waitForValue, getUserHandle)
-  const accountUserId = yield* call(waitForValue, getUserId)
+  const accountUserId: number | null = yield* call(waitForValue, getUserId)
+  if (!accountUserId) {
+    yield* put(dashboardActions.fetchFailed({}))
+    return
+  }
   yield* fork(pollForBalance)
 
   const sdk = yield* getSDK()
@@ -73,8 +77,12 @@ function* fetchDashboardAsync(
         limit,
         getUnlisted: true
       }),
-      call([sdk.full.users, sdk.full.users.getPlaylistsByUser], accountUserId),
-      call([sdk.full.users, sdk.full.users.getAlbumsByUser], accountUserId)
+      call([sdk.full.users, sdk.full.users.getPlaylistsByUser], {
+        id: Id.parse(accountUserId)
+      }),
+      call([sdk.full.users, sdk.full.users.getAlbumsByUser], {
+        id: Id.parse(accountUserId)
+      })
     ])
     const tracks = data[0] as Track[]
     const playlists = transformAndCleanList(
