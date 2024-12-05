@@ -1,3 +1,4 @@
+import { Id } from '@audius/common/models'
 import {
   IntKeys,
   remoteConfigIntDefaults,
@@ -5,7 +6,6 @@ import {
 } from '@audius/common/services'
 import {
   notificationsActions,
-  getContext,
   accountSelectors,
   getSDK
 } from '@audius/common/store'
@@ -42,16 +42,17 @@ function* watchMarkAllNotificationsViewed() {
 }
 
 export function* markAllNotificationsViewed() {
-  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
   const sdk = yield* getSDK()
   const userId = yield* select(accountSelectors.getUserId)
   if (!userId) return
 
   yield* call(waitForWrite)
-  yield* call(audiusBackendInstance.markAllNotificationAsViewed, {
-    userId,
-    sdk
-  })
+  yield* call(
+    [sdk.notifications, sdk.notifications.markAllNotificationsAsViewed],
+    {
+      userId: Id.parse(userId)
+    }
+  )
 }
 
 export default function sagas() {

@@ -55,15 +55,18 @@ function* watchUpdatedPlaylistViewedSaga() {
   yield* takeEvery(
     updatedPlaylistViewed.type,
     function* updatePlaylistLastViewedAt(action: UpdatedPlaylistViewedAction) {
+      const sdk = yield* getSDK()
       const { playlistId } = action.payload
       const userId = yield* select(getUserId)
       if (!userId) return
-      const audiusBackendInstance = yield* getContext('audiusBackendInstance')
 
-      yield* call(audiusBackendInstance.updatePlaylistLastViewedAt, {
-        playlistId,
-        userId
-      })
+      yield* call(
+        [sdk.notifications, sdk.notifications.updatePlaylistLastViewedAt],
+        {
+          playlistId: Id.parse(playlistId),
+          userId: Id.parse(userId)
+        }
+      )
     }
   )
 }

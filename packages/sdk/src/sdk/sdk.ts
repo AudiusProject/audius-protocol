@@ -21,6 +21,7 @@ import {
   CidDataApi as CidDataApiFull
 } from './api/generated/full'
 import { GrantsApi } from './api/grants/GrantsApi'
+import { NotificationsApi } from './api/notifications/NotificationsApi'
 import { PlaylistsApi } from './api/playlists/PlaylistsApi'
 import { TracksApi } from './api/tracks/TracksApi'
 import { UsersApi } from './api/users/UsersApi'
@@ -452,6 +453,12 @@ const initializeApis = ({
     services.solanaClient
   )
 
+  const notifications = new NotificationsApi(
+    generatedApiClientConfig,
+    services.entityManager,
+    services.auth
+  )
+
   const generatedApiClientConfigFull = new ConfigurationFull({
     fetchApi: fetch,
     middleware
@@ -483,7 +490,8 @@ const initializeApis = ({
     dashboardWalletUsers,
     challenges,
     services,
-    comments
+    comments,
+    notifications
   }
 }
 
