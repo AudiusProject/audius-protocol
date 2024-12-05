@@ -1,4 +1,9 @@
-import { ErrorLevel, Name, StemUploadWithFile } from '@audius/common/models'
+import {
+  ErrorLevel,
+  Feature,
+  Name,
+  StemUploadWithFile
+} from '@audius/common/models'
 import {
   TrackForUpload,
   TrackMetadataForUpload,
@@ -16,7 +21,7 @@ import { dynamic } from 'redux-saga-test-plan/providers'
 import { all, fork } from 'typed-redux-saga'
 import { beforeAll, describe, expect, it, vitest } from 'vitest'
 
-import { reportToSentry, SentryCategory } from 'store/errors/reportToSentry'
+import { reportToSentry } from 'store/errors/reportToSentry'
 import { waitForWrite } from 'utils/sagaHelpers'
 
 import { make } from '../analytics/actions'
@@ -286,9 +291,7 @@ describe('upload', () => {
             phase: 'publish',
             kind: 'tracks'
           },
-          tags: {
-            category: SentryCategory.Upload
-          },
+          feature: Feature.Upload,
           level: ErrorLevel.Fatal
         })
         // Fails the parent too
@@ -308,9 +311,7 @@ describe('upload', () => {
                 phase: 'publish',
                 kind: 'tracks'
               },
-              tags: {
-                category: SentryCategory.Upload
-              },
+              feature: Feature.Upload,
               level: ErrorLevel.Fatal
             }
           ]

@@ -1,6 +1,6 @@
 import { useCallback, useState } from 'react'
 
-import { ErrorLevel } from '@audius/common/models'
+import { ErrorLevel, Feature } from '@audius/common/models'
 import { newCollectionMetadata } from '@audius/common/schemas'
 import { UploadType } from '@audius/common/store'
 import { removeNullable, Nullable } from '@audius/common/utils'
@@ -9,7 +9,7 @@ import cn from 'classnames'
 import { AudioQuality } from 'components/upload/AudioQuality'
 import { Dropzone } from 'components/upload/Dropzone'
 import InvalidFileType from 'components/upload/InvalidFileType'
-import { reportToSentry, SentryCategory } from 'store/errors/reportToSentry'
+import { reportToSentry } from 'store/errors/reportToSentry'
 
 import { TracksPreview } from '../components/TracksPreview'
 import { processFiles } from '../store/utils/processFiles'
@@ -50,9 +50,7 @@ export const SelectPage = (props: SelectPageProps) => {
         reportToSentry({
           name: 'UploadProcessFiles',
           error: new Error(`${reason} error for file ${name}`),
-          tags: {
-            category: SentryCategory.Upload
-          },
+          feature: Feature.Upload,
           level: ErrorLevel.Warning,
           additionalInfo: {
             selectedFiles
