@@ -25,7 +25,6 @@ export const EditTrackFormPreviewContextProvider = (props: {
   const isPlayerPlaying = useSelector(playerSelectors.getPlaying)
 
   useEffectOnce(() => {
-    SoundPlayer.setVolume(0.75)
     SoundPlayer.addEventListener('FinishedPlaying', () => {
       setIsPlaying(false)
     })
