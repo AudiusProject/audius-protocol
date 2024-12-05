@@ -226,6 +226,7 @@ function* fetchReferrer(
 ) {
   yield* waitForRead()
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
+  const sdk = yield* getSDK()
   const { handle } = action
   if (handle) {
     try {
@@ -243,8 +244,8 @@ function* fetchReferrer(
         currentUser.user_id !== user.user_id
       ) {
         yield* call(audiusBackendInstance.updateCreator, {
-          ...currentUser,
-          events: { referrer: user.user_id }
+          metadata: { ...currentUser, events: { referrer: user.user_id } },
+          sdk
         })
       }
     } catch (e: any) {
@@ -918,6 +919,7 @@ function* signIn(action: ReturnType<typeof signOnActions.signIn>) {
 
   const fingerprintClient = yield* getContext('fingerprintClient')
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
+  const sdk = yield* getSDK()
   const authService = yield* getContext('authService')
   const isNativeMobile = yield* getContext('isNativeMobile')
   const isElectron = yield* getContext('isElectron')
@@ -1075,8 +1077,8 @@ function* signIn(action: ReturnType<typeof signOnActions.signIn>) {
     // Apply retroactive referral
     if (!user.events?.referrer && signOn.referrer) {
       yield* fork(audiusBackendInstance.updateCreator, {
-        ...user,
-        events: { referrer: signOn.referrer }
+        metadata: { ...user, events: { referrer: signOn.referrer } },
+        sdk
       })
     }
 
