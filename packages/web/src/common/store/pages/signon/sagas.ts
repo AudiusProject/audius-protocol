@@ -602,7 +602,7 @@ function* signUp() {
     const sdk = yield* getSDK()
     const authService = yield* getContext('authService')
     const audiusBackendInstance = yield* getContext('audiusBackendInstance')
-    const isGuest = select(getIsGuest)
+    const isGuest = yield* select(getIsGuest)
 
     yield* call(waitForWrite)
 
