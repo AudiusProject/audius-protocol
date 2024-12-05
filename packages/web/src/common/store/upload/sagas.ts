@@ -7,6 +7,8 @@ import {
 import {
   Collection,
   CollectionMetadata,
+  ErrorLevel,
+  Feature,
   FieldVisibility,
   ID,
   Id,
@@ -669,7 +671,7 @@ export function* handleUploads({
     // Report to sentry
     const e = error instanceof Error ? error : new Error(String(error))
     yield* call(reportToSentry, {
-      name: 'Upload Worker Failed',
+      name: 'UploadWorker',
       error: e,
       additionalInfo: {
         trackId,
@@ -684,7 +686,9 @@ export function* handleUploads({
         stemCount: stems,
         phase,
         kind
-      }
+      },
+      feature: Feature.Upload,
+      level: ErrorLevel.Fatal
     })
   }
 
@@ -996,12 +1000,16 @@ export function* uploadCollection(
         }
         // Handle error loses error details, so call reportToSentry explicitly
         yield* call(reportToSentry, {
-          name: 'Upload',
+          name: 'UploadCollection',
           error,
           additionalInfo: {
             trackIds,
-            playlistId
-          }
+            playlistId,
+            isAlbum,
+            collectionMetadata
+          },
+          feature: Feature.Upload,
+          level: ErrorLevel.Fatal
         })
         yield* put(uploadActions.uploadTracksFailed())
         yield* put(
@@ -1168,10 +1176,13 @@ export function* uploadTracksAsync(
     // Handle error loses error details, so call reportToSentry explicitly
     yield* call(reportToSentry, {
       error,
-      name: `Upload: ${error.name}`,
+      name: 'UploadTracks',
       additionalInfo: {
-        kind
-      }
+        kind,
+        tracks: payload.tracks
+      },
+      feature: Feature.Upload,
+      level: ErrorLevel.Fatal
     })
     yield* put(uploadActions.uploadTracksFailed())
     yield* put(

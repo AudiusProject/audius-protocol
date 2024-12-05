@@ -83,14 +83,14 @@ function* watchFetchProfile() {
 }
 
 function* fetchProfileCustomizedCollectibles(user) {
-  const audiusBackendInstance = yield getContext('audiusBackendInstance')
+  const sdk = yield getSDK()
   const cid = user?.metadata_multihash ?? null
   if (cid) {
-    const metadata = yield call(
-      audiusBackendInstance.fetchCID,
-      cid,
-      /* asUrl */ false
-    )
+    const {
+      data: { data: metadata }
+    } = yield call([sdk.full.cidData, sdk.full.cidData.getMetadata], {
+      metadataId: cid
+    })
     if (metadata?.collectibles) {
       yield put(
         cacheActions.update(Kind.USERS, [
@@ -501,7 +501,7 @@ function* watchUpdateProfile() {
 
 export function* updateProfileAsync(action) {
   yield waitForWrite()
-  const audiusBackendInstance = yield getContext('audiusBackendInstance')
+  const sdk = yield getSDK()
   let metadata = { ...action.metadata }
   metadata.bio = squashNewLines(metadata.bio)
 
@@ -516,13 +516,13 @@ export function* updateProfileAsync(action) {
   const cid = metadata.metadata_multihash ?? null
   if (cid) {
     try {
-      const metadataFromIPFS = yield call(
-        audiusBackendInstance.fetchCID,
-        cid,
-        /* asUrl */ false
-      )
+      const {
+        data: { data }
+      } = yield call([sdk.full.cidData, sdk.full.cidData.getMetadata], {
+        metadataId: cid
+      })
       const collectibles = metadata.collectibles
-      metadata = merge(metadataFromIPFS, metadata)
+      metadata = merge(data, metadata)
       metadata.collectibles = collectibles
     } catch (e) {
       // Although we failed to fetch the existing user metadata, this should only
@@ -575,11 +575,10 @@ function* confirmUpdateProfile(userId, metadata) {
     confirmerActions.requestConfirmation(
       makeKindId(Kind.USERS, userId),
       function* () {
-        const response = yield call(
-          audiusBackendInstance.updateCreator,
+        const response = yield call(audiusBackendInstance.updateCreator, {
           metadata,
-          userId
-        )
+          sdk
+        })
         const { blockHash, blockNumber } = response
 
         const confirmed = yield call(confirmTransaction, blockHash, blockNumber)

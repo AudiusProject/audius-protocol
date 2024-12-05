@@ -13,7 +13,7 @@ export const UserEventsSchema = z.object({
 export const CreateUserSchema = z.object({
   profilePictureFile: z.optional(ImageFile),
   coverArtFile: z.optional(ImageFile),
-  onProgress: z.optional(z.function().args(z.number())),
+  onProgress: z.optional(z.function()),
   metadata: z
     .object({
       bio: z.optional(z.string()),

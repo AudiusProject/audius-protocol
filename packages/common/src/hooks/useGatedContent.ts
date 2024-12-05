@@ -36,21 +36,15 @@ export const useGatedTrackAccess = (trackId: ID) => {
   const hasStreamAccess = useSelector((state: CommonState) => {
     const track = getTrack(state, { id: trackId })
     if (!track) return false
-    const {
-      is_stream_gated,
-      access: { stream }
-    } = track
-    return !is_stream_gated || !!stream
+    const { is_stream_gated, access } = track
+    return !is_stream_gated || !!access?.stream
   })
 
   const hasDownloadAccess = useSelector((state: CommonState) => {
     const track = getTrack(state, { id: trackId })
     if (!track) return false
-    const {
-      is_download_gated,
-      access: { download }
-    } = track
-    return !is_download_gated || !!download
+    const { is_download_gated, access } = track
+    return !is_download_gated || !!access?.download
   })
 
   return { hasStreamAccess, hasDownloadAccess }
@@ -60,11 +54,8 @@ export const useGatedCollectionAccess = (collectionId: ID) => {
   const hasStreamAccess = useSelector((state: CommonState) => {
     const collection = getCollection(state, { id: collectionId })
     if (!collection) return false
-    const {
-      is_stream_gated,
-      access: { stream }
-    } = collection
-    return !is_stream_gated || !!stream
+    const { is_stream_gated, access } = collection
+    return !is_stream_gated || !!access?.stream
   })
 
   return { hasStreamAccess }

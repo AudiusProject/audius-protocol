@@ -17,7 +17,8 @@ import {
   UsersApi as UsersApiFull,
   TipsApi as TipsApiFull,
   TransactionsApi as TransactionsApiFull,
-  NotificationsApi as NotificationsApiFull
+  NotificationsApi as NotificationsApiFull,
+  CidDataApi as CidDataApiFull
 } from './api/generated/full'
 import { GrantsApi } from './api/grants/GrantsApi'
 import { PlaylistsApi } from './api/playlists/PlaylistsApi'
@@ -464,7 +465,8 @@ const initializeApis = ({
     reactions: new ReactionsApiFull(generatedApiClientConfigFull),
     tips: new TipsApiFull(generatedApiClientConfigFull),
     transactions: new TransactionsApiFull(generatedApiClientConfigFull),
-    notifications: new NotificationsApiFull(generatedApiClientConfigFull)
+    notifications: new NotificationsApiFull(generatedApiClientConfigFull),
+    cidData: new CidDataApiFull(generatedApiClientConfigFull)
   }
 
   return {

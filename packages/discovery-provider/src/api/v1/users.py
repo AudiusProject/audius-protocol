@@ -185,7 +185,6 @@ from src.queries.query_helpers import (
 from src.queries.search_queries import SearchKind, search
 from src.utils import web3_provider
 from src.utils.auth_middleware import auth_middleware
-from src.utils.config import shared_config
 from src.utils.db_session import get_db_read_replica
 from src.utils.helpers import decode_string_id, encode_int_id
 from src.utils.redis_cache import cache
@@ -211,9 +210,6 @@ users_response = make_response(
 full_users_response = make_response(
     "full_users_response", full_ns, fields.List(fields.Nested(user_model_full))
 )
-
-# Cache TTL in seconds for the v1/full/users/content_node route
-GET_USERS_CNODE_TTL_SEC = shared_config["discprov"]["get_users_cnode_ttl_sec"]
 
 
 def get_single_user(user_id, current_user_id):
