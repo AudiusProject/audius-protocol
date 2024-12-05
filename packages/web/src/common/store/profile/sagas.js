@@ -575,11 +575,10 @@ function* confirmUpdateProfile(userId, metadata) {
     confirmerActions.requestConfirmation(
       makeKindId(Kind.USERS, userId),
       function* () {
-        const response = yield call(
-          audiusBackendInstance.updateCreator,
+        const response = yield call(audiusBackendInstance.updateCreator, {
           metadata,
-          userId
-        )
+          sdk
+        })
         const { blockHash, blockNumber } = response
 
         const confirmed = yield call(confirmTransaction, blockHash, blockNumber)
