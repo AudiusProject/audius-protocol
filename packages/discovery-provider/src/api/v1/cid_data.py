@@ -18,7 +18,7 @@ def get_data(cid: str):
     return type, metadata
 
 
-CID_METDATA_ROUTE = "/<string:metadata_id>"
+CID_METADATA_ROUTE = "/<string:metadata_id>"
 
 cid_data = full_ns.model(
     "cid_data",
@@ -42,7 +42,7 @@ cid_data_response = make_response(
 )
 
 
-@full_ns.route(CID_METDATA_ROUTE)
+@full_ns.route(CID_METADATA_ROUTE)
 class Metadata(Resource):
     @record_metrics
     @full_ns.doc(
