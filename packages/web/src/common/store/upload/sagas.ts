@@ -47,7 +47,6 @@ import {
   waitForAccount
 } from '@audius/common/utils'
 import { ProgressHandler, AudiusSdk } from '@audius/sdk'
-import type { TrackMetadata } from '@audius/sdk-legacy/dist/utils'
 import { push } from 'connected-react-router'
 import { mapValues } from 'lodash'
 import { Channel, Task, buffers, channel } from 'redux-saga'
@@ -1212,7 +1211,10 @@ export function* updateTrackAudioAsync(
     throw new Error('No user id found during upload. Not signed in?')
   }
 
-  const metadata = trackMetadataForUploadToSdk(track)
+  const metadata = trackMetadataForUploadToSdk({
+    ...track,
+    ...(payload.metadata ?? {})
+  })
 
   const dispatch = yield* getContext('dispatch')
   const handleProgressUpdate = (progress: Parameters<ProgressHandler>[0]) => {
@@ -1239,8 +1241,8 @@ export function* updateTrackAudioAsync(
     }
   )
 
-  const newMetadata: TrackMetadata = {
-    ...track,
+  const newMetadata = {
+    ...metadata,
     orig_file_cid: updatedMetadata.origFileCid,
     bpm: metadata.isCustomBpm ? track.bpm : null,
     musical_key: metadata.isCustomMusicalKey ? metadata.musicalKey : null,
