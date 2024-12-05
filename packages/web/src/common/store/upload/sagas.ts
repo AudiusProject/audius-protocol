@@ -1187,7 +1187,8 @@ export function* uploadTracksAsync(
       error,
       name: 'UploadTracks',
       additionalInfo: {
-        kind
+        kind,
+        tracks: payload.tracks
       },
       tags: {
         category: SentryCategory.Upload
