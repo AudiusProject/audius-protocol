@@ -414,35 +414,41 @@ func runNodeWrapperless(
 	}
 	hostConfig := &container.HostConfig{
 		Mounts: []mount.Mount{
-			mount.Mount{
+			{
 				Type:   mount.TypeBind,
 				Source: "/var/k8s/mediorum",
 				Target: "/tmp/mediorum",
 			},
-			mount.Mount{
+			{
 				Type:   mount.TypeBind,
 				Source: "/var/k8s/creator-node-backend",
 				Target: "/file_storage",
 			},
-			mount.Mount{
+			{
 				Type:   mount.TypeBind,
 				Source: "/var/k8s/creator-node-db-15",
 				Target: "/var/lib/postgresql/data",
 			},
-			mount.Mount{
+			{
 				Type:   mount.TypeBind,
 				Source: "/var/k8s/bolt",
 				Target: "/bolt",
 			},
-			mount.Mount{
+			{
 				Type:   mount.TypeBind,
 				Source: "/var/k8s/bolt",
 				Target: "/audius-core",
 			},
-			mount.Mount{
+			{
 				Type:   mount.TypeBind,
 				Source: "/var/k8s/env",
 				Target: "/env",
+			},
+			// allow me to work on entrypoint without building the image
+			{
+				Type:   mount.TypeBind,
+				Source: "/private/var/orion/audius/audius-protocol/cmd/audiusd/entrypoint.sh",
+				Target: "/bin/entrypoint.sh",
 			},
 		},
 	}
@@ -567,10 +573,10 @@ func runNodeWrapperless(
 		}
 	}
 
-	logger.Info("Creating auto-update cron job")
-	if err := setAutoUpdateCron(host, config.Version, nconf.DeployOn); err != nil {
-		return logger.Error("Failed to add auto-update cron job:", err)
-	}
+	// logger.Info("Creating auto-update cron job")
+	// if err := setAutoUpdateCron(host, config.Version, nconf.DeployOn); err != nil {
+	// 	return logger.Error("Failed to add auto-update cron job:", err)
+	// }
 
 	return nil
 }

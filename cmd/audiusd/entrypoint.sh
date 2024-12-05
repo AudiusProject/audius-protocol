@@ -37,13 +37,15 @@ export uptimeDataDir=${uptimeDataDir:-/data/bolt}
 export audius_core_root_dir=${audius_core_root_dir:-/data/audiusd}
 export creatorNodeEndpoint=${creatorNodeEndpoint:-http://localhost}
 
-if [ ! -d "$POSTGRES_DATA_DIR" ] || [ -z "$(ls -A "$POSTGRES_DATA_DIR")" ]; then
+if [ ! -d "$POSTGRES_DATA_DIR" ] || [ -z "$(ls -A "$POSTGRES_DATA_DIR" 2>/dev/null)" ]; then
     echo "Initializing PostgreSQL data directory at $POSTGRES_DATA_DIR..."
     su - postgres -c "/usr/lib/postgresql/*/bin/initdb -D $POSTGRES_DATA_DIR"
 
     echo "Updating PostgreSQL configuration for password authentication..."
     sed -i "s/peer/trust/g" "$POSTGRES_DATA_DIR/pg_hba.conf"
     sed -i "s/md5/trust/g" "$POSTGRES_DATA_DIR/pg_hba.conf"
+else
+    echo "PostgreSQL data directory already initialized at $POSTGRES_DATA_DIR."
 fi
 
 chown -R postgres:postgres "$POSTGRES_DATA_DIR"
