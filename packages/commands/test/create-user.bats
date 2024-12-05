@@ -16,7 +16,7 @@ setup() {
     TEST_HANDLE="test_$RANDOM"
     TEST_EMAIL="$TEST_HANDLE@audius.co"
 
-    run timeout 120s npm run audius-cmd -- create-user "$TEST_HANDLE" --email "$TEST_EMAIL" --password "test-password"
+    run timeout 120s npm run audius-cmd -- user create "$TEST_HANDLE" --email "$TEST_EMAIL" --password "test-password"
 
     assert_success
     assert_line "Successfully created user!"
