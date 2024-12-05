@@ -41,7 +41,7 @@ export const CreatePasswordPage = () => {
   const dispatch = useDispatch()
   const emailField = useSelector(getEmailField)
 
-  const isGuest = useSelector(getIsGuest)
+  // const isGuest = useSelector(getIsGuest)
 
   const navigate = useNavigateToPage()
   const { isMobile } = useMedia()
@@ -52,19 +52,20 @@ export const CreatePasswordPage = () => {
       const { password } = values
       dispatch(setValueField('password', password))
 
-      if (isGuest) {
-        dispatch(
-          changePassword({
-            email: emailField.value,
-            oldPassword: TEMPORARY_PASSWORD,
-            password
-          })
-        )
-        dispatch(resendRecoveryEmail())
-      }
+      // TODO: Move this to complete profile page
+      // if (isGuest) {
+      //   dispatch(
+      //     changePassword({
+      //       email: emailField.value,
+      //       oldPassword: TEMPORARY_PASSWORD,
+      //       password
+      //     })
+      //   )
+      //   dispatch(resendRecoveryEmail())
+      // }
       navigate(SIGN_UP_HANDLE_PAGE)
     },
-    [dispatch, emailField, isGuest, navigate]
+    [dispatch, navigate]
   )
 
   return (

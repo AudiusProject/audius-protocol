@@ -1,14 +1,20 @@
-import { useCallback, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 
 import { MobileOS } from '@audius/common/models'
 import { accountSelectors } from '@audius/common/store'
-import { getSignOn } from '@audius/web/src/common/store/pages/signon/selectors'
 import type { NativeStackNavigationOptions } from '@react-navigation/native-stack'
 import { createNativeStackNavigator } from '@react-navigation/native-stack'
+import {
+  getFinishedPhase1,
+  getPage,
+  getSignOn
+} from 'common/store/pages/signon/selectors'
+import { Pages } from 'common/store/pages/signon/types'
 import { Platform } from 'react-native'
 import { useSelector } from 'react-redux'
 
 import { ScreenOptionsContext, defaultScreenOptions } from 'app/app/navigation'
+import { useNavigation } from 'app/hooks/useNavigation'
 
 import { AccountLoadingScreen } from './screens/AccountLoadingScreen'
 import { ConfirmEmailScreen } from './screens/ConfirmEmailScreen'
@@ -20,7 +26,8 @@ import { ReviewHandleScreen } from './screens/ReviewHandleScreen'
 import { SelectArtistsScreen } from './screens/SelectArtistScreen'
 import { SelectGenresScreen } from './screens/SelectGenresScreen'
 import { SignOnScreen } from './screens/SignOnScreen'
-const { getHasAccount } = accountSelectors
+import type { SignUpScreenParamList } from './types'
+const { getHasCompletedAccount } = accountSelectors
 
 const Stack = createNativeStackNavigator()
 const screenOptionsOverrides = { animationTypeForReplace: 'pop' as const }
@@ -37,10 +44,10 @@ export const SignOnStack = (props: SignOnStackProps) => {
       ...screenOptionsOverrides
     })
 
-  const signUpState = useSelector(getSignOn)
-  const hasAccount = useSelector(getHasAccount)
+  const finishedPhase1 = useSelector(getFinishedPhase1)
+  const hasCompletedAccount = useSelector(getHasCompletedAccount)
 
-  const pastPhase1 = signUpState.finishedPhase1 || hasAccount
+  const pastPhase1 = finishedPhase1 || hasCompletedAccount
 
   const isAndroid = Platform.OS === MobileOS.ANDROID
 
@@ -55,6 +62,17 @@ export const SignOnStack = (props: SignOnStackProps) => {
     },
     []
   )
+
+  const page = useSelector(getPage)
+  const navigation = useNavigation<SignUpScreenParamList>()
+
+  // Respond to signon saga page changes
+  useEffect(() => {
+    // This occurs when a guest account confirms email and is ready to complete their account
+    if (page === Pages.PASSWORD) {
+      navigation.navigate('CreatePassword')
+    }
+  }, [navigation, page])
 
   return (
     <ScreenOptionsContext.Provider

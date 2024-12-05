@@ -13,7 +13,8 @@ import {
   InstagramUser,
   TikTokUser,
   AccountUserMetadata,
-  OptionalId
+  OptionalId,
+  Status
 } from '@audius/common/models'
 import {
   IntKeys,
@@ -23,6 +24,7 @@ import {
   SignInResponse,
   IS_MOBILE_USER_KEY
 } from '@audius/common/services'
+import { getChangePasswordStatus } from '@audius/common/src/store/change-password/selectors'
 import {
   accountActions,
   accountSelectors,
@@ -35,7 +37,8 @@ import {
   getContext,
   confirmerActions,
   getSDK,
-  fetchAccountAsync
+  fetchAccountAsync,
+  changePasswordActions
 } from '@audius/common/store'
 import {
   Genre,
@@ -45,7 +48,9 @@ import {
   isValidEmailString,
   route,
   isResponseError,
-  encodeHashId
+  encodeHashId,
+  TEMPORARY_PASSWORD,
+  waitForValue
 } from '@audius/common/utils'
 import { CreateUserRequest, UpdateProfileRequest } from '@audius/sdk'
 import { push as pushRoute } from 'connected-react-router'
@@ -642,10 +647,31 @@ function* signUp() {
               }
             }
 
+            console.log('about to call update profile')
             yield* call(
               [sdk.users, sdk.users.updateProfile],
               completeProfileMetadataRequest
             )
+
+            console.log('about to call change password', email, password)
+
+            yield* put(
+              changePasswordActions.changePassword({
+                email,
+                password,
+                oldPassword: TEMPORARY_PASSWORD
+              })
+            )
+
+            console.log('waiting for value')
+            yield* call(
+              waitForValue,
+              getChangePasswordStatus,
+              undefined,
+              (status) => status === Status.SUCCESS
+            )
+            console.log('sending recovery email')
+            yield* fork(sendRecoveryEmail, { handle, email })
           } else {
             if (!alreadyExisted) {
               yield* call(
@@ -705,6 +731,8 @@ function* signUp() {
             }
           }
 
+          console.log('doing the identify stuff i guess?')
+
           yield* put(
             identify(handle, {
               name,
@@ -713,6 +741,7 @@ function* signUp() {
             })
           )
 
+          console.log('calling succeeded')
           yield* put(signOnActions.signUpSucceededWithId(userId))
 
           if (!isNativeMobile) {
@@ -732,6 +761,7 @@ function* signUp() {
             isResponseError(err) && [0, 429].includes(err.response.status)
           const blocked = isResponseError(err) && err.response.status === 403
           const error = err instanceof Error ? err : new Error(err as string)
+          console.log('the error!', error.message)
           const params: signOnActions.SignUpFailedParams = {
             error: error.message,
             // TODO: Remove phase, stop using error Sagas for signup
@@ -990,7 +1020,9 @@ function* signIn(action: ReturnType<typeof signOnActions.signIn>) {
             }
           })
         )
-        yield* put(pushRoute(SIGN_UP_PASSWORD_PAGE))
+        if (!isNativeMobile) {
+          yield* put(pushRoute(SIGN_UP_PASSWORD_PAGE))
+        }
         const { web3Error, libsError } = yield* call(
           audiusBackendInstance.setup,
           {
@@ -1087,7 +1119,6 @@ function* signIn(action: ReturnType<typeof signOnActions.signIn>) {
 
     yield* put(signOnActions.resetSignOn())
 
-    const isNativeMobile = yield* getContext('isNativeMobile')
     if (!isNativeMobile) {
       // Reset the sign on in the background after page load as to relieve the UI loading
       yield* delay(1000)
