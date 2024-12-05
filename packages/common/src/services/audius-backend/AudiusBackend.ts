@@ -1058,21 +1058,6 @@ export const audiusBackend = ({
     }
   }
 
-  async function deletePlaylist(playlistId: ID) {
-    try {
-      const txReceipt = await audiusLibs.EntityManager.deletePlaylist(
-        playlistId
-      )
-      return {
-        blockHash: txReceipt.blockHash,
-        blockNumber: txReceipt.blockNumber
-      }
-    } catch (error) {
-      console.error(getErrorMessage(error))
-      return { error }
-    }
-  }
-
   async function signOut() {
     await waitForLibsInit()
     return audiusLibs.Account.logout()
@@ -2045,7 +2030,6 @@ export const audiusBackend = ({
     clearNotificationBadges,
     createPlaylist,
     currentDiscoveryProvider,
-    deletePlaylist,
     deletePlaylistTrack,
     deregisterDeviceToken,
     didSelectDiscoveryProviderListeners,

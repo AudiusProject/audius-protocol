@@ -431,8 +431,6 @@ export function* confirmSaveCollection(
           throw new Error('No userId set, cannot save collection')
         }
 
-        if (!userId) return
-
         yield* call([sdk.playlists, sdk.playlists.favoritePlaylist], {
           userId: Id.parse(userId),
           playlistId: Id.parse(collectionId),
@@ -556,8 +554,6 @@ export function* confirmUnsaveCollection(ownerId: ID, collectionId: ID) {
         if (!userId) {
           throw new Error('No userId set, cannot save collection')
         }
-
-        if (!userId) return
 
         yield* call([sdk.playlists, sdk.playlists.unfavoritePlaylist], {
           userId: Id.parse(userId),

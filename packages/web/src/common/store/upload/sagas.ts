@@ -869,7 +869,10 @@ export function* uploadCollection(
             console.debug('Deleting playlist')
             // If we got a playlist ID back, that means we
             // created the playlist but adding tracks to it failed. So we must delete the playlist
-            yield* call(audiusBackendInstance.deletePlaylist, playlistId)
+            yield* call([sdk.playlists, sdk.playlists.deletePlaylist], {
+              userId: Id.parse(userId),
+              playlistId: Id.parse(playlistId)
+            })
             console.debug('Playlist deleted successfully')
           }
           // Throw to trigger the fail callback

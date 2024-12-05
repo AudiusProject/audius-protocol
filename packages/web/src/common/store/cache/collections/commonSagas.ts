@@ -32,7 +32,8 @@ import {
   confirmerActions,
   confirmTransaction,
   Entry,
-  trackPageActions
+  trackPageActions,
+  getSDK
 } from '@audius/common/store'
 import {
   squashNewLines,
@@ -645,7 +646,7 @@ function* deletePlaylistAsync(
 }
 
 function* confirmDeleteAlbum(playlistId: ID, userId: ID) {
-  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
+  const sdk = yield* getSDK()
   yield* put(
     confirmerActions.requestConfirmation(
       makeKindId(Kind.COLLECTIONS, playlistId),
@@ -655,6 +656,11 @@ function* confirmDeleteAlbum(playlistId: ID, userId: ID) {
       // deleting an album we know it's persisted to chain already
       // thus we have it's permanent ID.
       function* () {
+        const userId = yield* select(getUserId)
+        if (!userId) {
+          throw new Error('No userId set, cannot save collection')
+        }
+
         // Optimistically mark everything as deleted
         yield* all([
           put(
@@ -677,20 +683,10 @@ function* confirmDeleteAlbum(playlistId: ID, userId: ID) {
           )
         ])
 
-        const { blockHash, blockNumber, error } = (yield* call(
-          audiusBackendInstance.deletePlaylist,
-          playlistId
-        )) as TransactionReceipt & { error?: Error }
-        if (error) throw error
-
-        const confirmed = yield* call(
-          confirmTransaction,
-          blockHash,
-          blockNumber
-        )
-        if (!confirmed) {
-          throw new Error(`Could not confirm delete album for id ${playlistId}`)
-        }
+        yield* call([sdk.playlists, sdk.playlists.deletePlaylist], {
+          userId: Id.parse(userId),
+          playlistId: Id.parse(playlistId)
+        })
         return playlistId
       },
       function* () {
@@ -742,11 +738,16 @@ function* confirmDeleteAlbum(playlistId: ID, userId: ID) {
 }
 
 function* confirmDeletePlaylist(userId: ID, playlistId: ID) {
-  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
+  const sdk = yield* getSDK()
   yield* put(
     confirmerActions.requestConfirmation(
       makeKindId(Kind.COLLECTIONS, playlistId),
       function* (confirmedPlaylistId: ID) {
+        const userId = yield* select(getUserId)
+        if (!userId) {
+          throw new Error('No userId set, cannot save collection')
+        }
+
         // Optimistically mark playlist as removed
         yield* all([
           put(
@@ -771,22 +772,10 @@ function* confirmDeletePlaylist(userId: ID, playlistId: ID) {
 
         yield* call(removePlaylistFromLibrary, playlistId)
 
-        const { blockHash, blockNumber, error } = yield* call(
-          audiusBackendInstance.deletePlaylist,
-          playlistId
-        )
-        if (error) throw error
-
-        const confirmed = yield* call(
-          confirmTransaction,
-          blockHash,
-          blockNumber
-        )
-        if (!confirmed) {
-          throw new Error(
-            `Could not confirm delete playlist track for playlist id ${playlistId}`
-          )
-        }
+        yield* call([sdk.playlists, sdk.playlists.deletePlaylist], {
+          userId: Id.parse(userId),
+          playlistId: Id.parse(playlistId)
+        })
         return playlistId
       },
       function* () {
