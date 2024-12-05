@@ -167,7 +167,10 @@ export const outputConfigs = {
         transformMixedEsModules: true
       }),
       alias({
-        entries: [{ find: 'stream', replacement: 'stream-browserify' }]
+        entries: [
+          { find: 'stream', replacement: 'stream-browserify' },
+          { find: 'crypto', replacement: 'crypto-browserify' }
+        ]
       }),
       nodePolyfills(),
       babel({ babelHelpers: 'bundled', extensions }),
@@ -203,7 +206,10 @@ export const outputConfigs = {
         transformMixedEsModules: true
       }),
       alias({
-        entries: [{ find: 'stream', replacement: 'stream-browserify' }]
+        entries: [
+          { find: 'stream', replacement: 'stream-browserify' },
+          { find: 'crypto', replacement: 'crypto-browserify' }
+        ]
       }),
       nodePolyfills(),
       babel({ babelHelpers: 'bundled', extensions }),
@@ -242,7 +248,10 @@ export const outputConfigs = {
         transformMixedEsModules: true
       }),
       alias({
-        entries: [{ find: 'stream', replacement: 'stream-browserify' }]
+        entries: [
+          { find: 'stream', replacement: 'stream-browserify' },
+          { find: 'crypto', replacement: 'crypto-browserify' }
+        ]
       }),
       nodePolyfills(),
       babel({

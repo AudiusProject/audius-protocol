@@ -68,6 +68,7 @@ type Config struct {
 	AddrBookStrict   bool
 	MaxInboundPeers  int
 	MaxOutboundPeers int
+	LogLevel         string
 
 	/* Audius Config */
 	Environment     string
@@ -116,6 +117,7 @@ func ReadConfig(logger *common.Logger) (*Config, error) {
 
 	var cfg Config
 	// comet config
+	cfg.LogLevel = getEnvWithDefault("audius_core_log_level", "error")
 	cfg.RootDir = getEnvWithDefault("audius_core_root_dir", homeDir+"/.audiusd")
 	cfg.RPCladdr = getEnvWithDefault("rpcLaddr", "tcp://0.0.0.0:26657")
 	cfg.P2PLaddr = getEnvWithDefault("p2pLaddr", "tcp://0.0.0.0:26656")
@@ -178,7 +180,7 @@ func ReadConfig(logger *common.Logger) (*Config, error) {
 			cfg.EthRPCUrl = ProdEthRpc
 		}
 
-		cfg.SlaRollupInterval = 3600 * 24
+		cfg.SlaRollupInterval = 2048
 
 	case "stage", "staging", "testnet":
 		cfg.PersistentPeers = getEnvWithDefault("persistentPeers", StagePersistentPeers)
@@ -186,7 +188,7 @@ func ReadConfig(logger *common.Logger) (*Config, error) {
 		if cfg.EthRPCUrl == "" {
 			cfg.EthRPCUrl = StageEthRpc
 		}
-		cfg.SlaRollupInterval = 3600 * 24
+		cfg.SlaRollupInterval = 2048
 
 	case "dev", "development", "devnet", "local", "sandbox":
 		cfg.PersistentPeers = getEnvWithDefault("persistentPeers", DevPersistentPeers)

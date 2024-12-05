@@ -10,6 +10,7 @@ export const getSignOn = (state: AppState) => state.signOn
 export const getEmailField = (state: AppState) => state.signOn.email
 export const getNameField = (state: AppState) => state.signOn.name
 export const getPasswordField = (state: AppState) => state.signOn.password
+export const getIsGuest = (state: AppState) => state.signOn.isGuest
 export const getOtpField = (state: AppState) => state.signOn.otp
 export const getRequiresOtp = (state: AppState) => {
   const passwordField = getPasswordField(state)

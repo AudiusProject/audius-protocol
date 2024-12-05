@@ -4,6 +4,9 @@ import { useFeatureFlag } from '@audius/common/hooks'
 import { FeatureFlags } from '@audius/common/services'
 import type { TrackForUpload } from '@audius/common/store'
 import {
+  uploadActions,
+  useReplaceTrackConfirmationModal,
+  useReplaceTrackProgressModal,
   useEarlyReleaseConfirmationModal,
   useHideContentConfirmationModal,
   usePublishConfirmationModal
@@ -46,6 +49,9 @@ import {
   AdvancedField
 } from './fields'
 import type { EditTrackFormProps } from './types'
+import { getUploadMetadataFromFormValues } from './util'
+
+const { updateTrackAudio } = uploadActions
 
 const messages = {
   trackName: 'Track Name',
@@ -75,8 +81,6 @@ export const EditTrackForm = (props: EditTrackFormProps) => {
   const {
     handleSubmit: handleSubmitProp,
     initialValues,
-    file,
-    handleSelectTrack,
     values,
     isUpload,
     isSubmitting,
@@ -92,7 +96,7 @@ export const EditTrackForm = (props: EditTrackFormProps) => {
   const styles = useStyles()
   const navigation = useNavigation()
   const dispatch = useDispatch()
-  const { track } = useContext(UploadFileContext)
+  const { track, selectFile } = useContext(UploadFileContext)
   const { isEnabled: isTrackReplaceEnabled } = useFeatureFlag(
     FeatureFlags.TRACK_AUDIO_REPLACE
   )
@@ -113,6 +117,9 @@ export const EditTrackForm = (props: EditTrackFormProps) => {
     setIsOverflowMenuOpen(false)
   }, [])
 
+  const { onOpen: openReplaceTrackConfirmation } =
+    useReplaceTrackConfirmationModal()
+  const { onOpen: openReplaceTrackProgress } = useReplaceTrackProgressModal()
   const { onOpen: openHideContentConfirmation } =
     useHideContentConfirmationModal()
   const { onOpen: openEarlyReleaseConfirmation } =
@@ -135,15 +142,41 @@ export const EditTrackForm = (props: EditTrackFormProps) => {
 
   // Update title when the file is replaced
   useEffect(() => {
-    if (track && !isTitleTouched) {
+    if (isUpload && track && !isTitleTouched) {
       setTitle(track.metadata.title)
     }
-  }, [isTitleTouched, setTitle, track])
+  }, [isTitleTouched, isUpload, setTitle, track])
+
+  const handleReplaceAudio = useCallback(() => {
+    if (!track) return
+
+    const metadata = getUploadMetadataFromFormValues(values, initialValues)
+
+    dispatch(
+      updateTrackAudio({
+        trackId: values.track_id,
+        file: track.file,
+        metadata
+      })
+    )
+    openReplaceTrackProgress()
+    navigation.navigate('Track', { id: values.track_id })
+  }, [
+    dispatch,
+    initialValues,
+    navigation,
+    openReplaceTrackProgress,
+    track,
+    values
+  ])
 
   const handleSubmit = useCallback(() => {
     Keyboard.dismiss()
+    const isFileReplaced = !isUpload && track?.file
 
-    if (usersMayLoseAccess) {
+    if (isFileReplaced) {
+      openReplaceTrackConfirmation({ confirmCallback: handleReplaceAudio })
+    } else if (usersMayLoseAccess) {
       openHideContentConfirmation({ confirmCallback: handleSubmitProp })
     } else if (isToBePublished && isInitiallyScheduled) {
       openEarlyReleaseConfirmation({
@@ -159,11 +192,15 @@ export const EditTrackForm = (props: EditTrackFormProps) => {
       handleSubmitProp()
     }
   }, [
+    isUpload,
+    track?.file,
     usersMayLoseAccess,
     isToBePublished,
     isInitiallyScheduled,
-    handleSubmitProp,
+    openReplaceTrackConfirmation,
+    handleReplaceAudio,
     openHideContentConfirmation,
+    handleSubmitProp,
     openEarlyReleaseConfirmation,
     openPublishConfirmation
   ])
@@ -208,12 +245,14 @@ export const EditTrackForm = (props: EditTrackFormProps) => {
           <>
             <KeyboardAwareScrollView>
               <Tile style={styles.tile}>
-                {isTrackReplaceEnabled && isUpload ? (
+                {isTrackReplaceEnabled ? (
                   <Flex pt='l' ph='l'>
                     <FileReplaceContainer
-                      fileName={file?.name || origFilename || messages.untitled}
+                      fileName={
+                        track?.file.name || origFilename || messages.untitled
+                      }
                       // @ts-ignore
-                      filePath={file?.uri || streamUrl || ''}
+                      filePath={track?.file.uri || streamUrl || ''}
                       onMenuButtonPress={handleOverflowMenuOpen}
                     />
                   </Flex>
@@ -241,8 +280,8 @@ export const EditTrackForm = (props: EditTrackFormProps) => {
       <EditTrackFormOverflowMenuDrawer
         isOpen={isOverflowMenuOpen}
         onClose={handleOverflowMenuClose}
-        onReplace={handleSelectTrack}
-        // TODO: Update this later when edit flow is updated for file replace
+        onReplace={selectFile}
+        // TODO: Add Downloads for original file or uploaded file
         onDownload={isUpload ? undefined : () => {}}
       />
     </>

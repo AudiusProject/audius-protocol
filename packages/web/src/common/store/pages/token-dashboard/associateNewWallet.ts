@@ -4,7 +4,8 @@ import {
   accountSelectors,
   tokenDashboardPageSelectors,
   tokenDashboardPageActions,
-  getContext
+  getContext,
+  getSDK
 } from '@audius/common/store'
 import { call, put, select } from 'typed-redux-saga'
 
@@ -18,6 +19,7 @@ export function* associateNewWallet(signature: string) {
 
   const analytics = yield* getContext('analytics')
   const audiusBackend = yield* getContext('audiusBackendInstance')
+  const sdk = yield* getSDK()
   const userMetadata = yield* select(getAccountUser)
 
   const updatedMetadata = newUserMetadata({ ...userMetadata })
@@ -40,20 +42,18 @@ export function* associateNewWallet(signature: string) {
     return null
   }
 
-  const currentWalletSignatures = yield* call(
-    chain === Chain.Eth
-      ? audiusBackend.fetchUserAssociatedEthWallets
-      : audiusBackend.fetchUserAssociatedSolWallets,
-    updatedMetadata
-  )
+  const associatedWalletsKey =
+    chain === Chain.Eth ? 'associated_wallets' : 'associated_sol_wallets'
+
+  const currentWalletSignatures = (yield* call(
+    audiusBackend.fetchUserAssociatedWallets,
+    { user: updatedMetadata, sdk }
+  ))?.[associatedWalletsKey]
 
   const associatedWallets = {
     ...currentWalletSignatures,
     [wallet]: { signature }
   }
-
-  const associatedWalletsKey =
-    chain === Chain.Eth ? 'associated_wallets' : 'associated_sol_wallets'
 
   updatedMetadata[associatedWalletsKey] = associatedWallets
 

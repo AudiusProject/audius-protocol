@@ -49,6 +49,7 @@ export default interface SignOnPageState {
   otp: EditableField
   handle: EditableField
   genres: string[]
+  isGuest: boolean
   verified: boolean
   useMetaMask: boolean
   accountReady: boolean
@@ -72,7 +73,7 @@ export default interface SignOnPageState {
   finishedPhase1: boolean
   finishedSignUpProcess: boolean
   routeOnExit: string
-  page: number
+  page: Pages
   referrer: ID
   welcomeModalShown: boolean
 }

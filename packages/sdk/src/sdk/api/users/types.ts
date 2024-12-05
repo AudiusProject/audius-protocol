@@ -1,19 +1,58 @@
 import { z } from 'zod'
 
+import { ProgressHandler } from '../../services/Storage/types'
 import { ImageFile } from '../../types/File'
 import { HashId } from '../../types/HashId'
 import { getReaction, reactionsMap } from '../../utils/reactionsMap'
 
+export const UserEventsSchema = z.object({
+  referrer: z.optional(HashId),
+  isMobileUser: z.optional(z.boolean())
+})
+
+export const CreateUserSchema = z.object({
+  profilePictureFile: z.optional(ImageFile),
+  coverArtFile: z.optional(ImageFile),
+  onProgress: z.optional(z.function()),
+  metadata: z
+    .object({
+      bio: z.optional(z.string()),
+      coverPhotoSizes: z.optional(z.string()),
+      donation: z.optional(z.string()),
+      handle: z.string(),
+      events: z.optional(UserEventsSchema),
+      location: z.optional(z.string()),
+      name: z.string(),
+      profilePictureSizes: z.optional(z.string()),
+      splUsdcPayoutWallet: z.optional(z.string()),
+      wallet: z.string(),
+      website: z.optional(z.string())
+    })
+    .strict()
+})
+
+export type CreateUserRequest = Omit<
+  z.input<typeof CreateUserSchema>,
+  'onProgress'
+> & {
+  // Typing function manually because z.function() does not
+  // support argument names
+  onProgress?: (progress: number) => void
+}
+
 export const UpdateProfileSchema = z
   .object({
     userId: HashId,
+    events: z.optional(UserEventsSchema),
     profilePictureFile: z.optional(ImageFile),
     coverArtFile: z.optional(ImageFile),
-    onProgress: z.optional(z.function().args(z.number())),
+    onProgress: z.optional(z.function()),
     metadata: z
       .object({
         name: z.optional(z.string()),
+        handle: z.optional(z.string()),
         bio: z.optional(z.string()),
+        events: z.optional(UserEventsSchema),
         location: z.optional(z.string()),
         isDeactivated: z.optional(z.boolean()),
         artistPickTrackId: z.optional(HashId)
@@ -28,7 +67,7 @@ export type UpdateProfileRequest = Omit<
 > & {
   // Typing function manually because z.function() does not
   // support argument names
-  onProgress?: (progress: number) => void
+  onProgress?: ProgressHandler
 }
 
 export const FollowUserSchema = z

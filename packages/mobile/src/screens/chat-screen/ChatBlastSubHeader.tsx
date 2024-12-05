@@ -5,8 +5,8 @@ import type { ChatBlast } from '@audius/sdk'
 import { css } from '@emotion/native'
 
 import { Flex, Text } from '@audius/harmony-native'
-import { CollectionImageV2 } from 'app/components/image/CollectionImageV2'
-import { TrackImageV2 } from 'app/components/image/TrackImageV2'
+import { CollectionImage } from 'app/components/image/CollectionImage'
+import { TrackImage } from 'app/components/image/TrackImage'
 import { zIndex } from 'app/utils/zIndex'
 
 export const ChatBlastSubHeader = ({ chat }: { chat: ChatBlast }) => {
@@ -28,12 +28,12 @@ export const ChatBlastSubHeader = ({ chat }: { chat: ChatBlast }) => {
       {decodedId ? (
         <Flex row gap='xs'>
           {audienceContentType === 'track' ? (
-            <TrackImageV2
+            <TrackImage
               trackId={decodedId}
               size={SquareSizes.SIZE_150_BY_150}
             />
           ) : (
-            <CollectionImageV2
+            <CollectionImage
               collectionId={decodedId}
               size={SquareSizes.SIZE_150_BY_150}
             />

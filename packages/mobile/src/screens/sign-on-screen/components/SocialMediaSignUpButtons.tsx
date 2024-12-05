@@ -1,7 +1,7 @@
 import { useRemoteVar } from '@audius/common/hooks'
 import { socialMediaMessages } from '@audius/common/messages'
 import type { SocialPlatform } from '@audius/common/models'
-import { ErrorLevel } from '@audius/common/models'
+import { Feature, ErrorLevel } from '@audius/common/models'
 import { BooleanKeys } from '@audius/common/services'
 
 import { Flex } from '@audius/harmony-native'
@@ -35,15 +35,25 @@ export const SocialMediaSignUpButtons = ({
   const { toast } = useToast()
   const handleFailure =
     (platform: SocialPlatform) =>
-    (e: unknown, additionalInfo?: Record<any, any>) => {
+    (e: Error | any, additionalInfo?: Record<any, any>) => {
       onError(e)
       reportToSentry({
         level: ErrorLevel.Error,
         error: e as Error,
         name: 'Sign Up: Social Media Error',
+        feature: Feature.SignUp,
         additionalInfo: { page, platform, ...additionalInfo }
       })
-      toast({ content: socialMediaMessages.verificationError, type: 'error' })
+
+      const isAccountInUseError =
+        /Another Audius profile has already been authenticated/i.test(e.message)
+      const toastErrMessage = isAccountInUseError
+        ? socialMediaMessages.accountInUseError(platform)
+        : socialMediaMessages.verificationError
+      toast({
+        content: toastErrMessage,
+        type: 'error'
+      })
     }
 
   const handleSuccess = ({

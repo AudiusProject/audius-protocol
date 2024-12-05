@@ -8,7 +8,8 @@ import {
   getContext,
   confirmerActions,
   confirmTransaction,
-  ConfirmRemoveWalletAction
+  ConfirmRemoveWalletAction,
+  getSDK
 } from '@audius/common/store'
 import { call, fork, put, select, takeLatest } from 'typed-redux-saga'
 
@@ -35,6 +36,7 @@ const { requestConfirmation } = confirmerActions
 function* removeWallet(action: ConfirmRemoveWalletAction) {
   yield* waitForWrite()
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
+  const sdk = yield* getSDK()
   const removeWallet = action.payload.wallet
   const removeChain = action.payload.chain
   const accountUserId = yield* select(getUserId)
@@ -42,10 +44,10 @@ function* removeWallet(action: ConfirmRemoveWalletAction) {
   const updatedMetadata = newUserMetadata({ ...userMetadata })
 
   if (removeChain === Chain.Eth) {
-    const currentAssociatedWallets = yield* call(
-      audiusBackendInstance.fetchUserAssociatedEthWallets,
-      updatedMetadata
-    )
+    const currentAssociatedWallets = (yield* call(
+      audiusBackendInstance.fetchUserAssociatedWallets,
+      { user: updatedMetadata, sdk }
+    ))?.associated_wallets
     if (
       currentAssociatedWallets &&
       !(removeWallet in currentAssociatedWallets)
@@ -61,10 +63,10 @@ function* removeWallet(action: ConfirmRemoveWalletAction) {
 
     delete updatedMetadata.associated_wallets[removeWallet]
   } else if (removeChain === Chain.Sol) {
-    const currentAssociatedWallets = yield* call(
-      audiusBackendInstance.fetchUserAssociatedSolWallets,
-      updatedMetadata
-    )
+    const currentAssociatedWallets = (yield* call(
+      audiusBackendInstance.fetchUserAssociatedWallets,
+      { user: updatedMetadata, sdk }
+    ))?.associated_sol_wallets
     if (
       currentAssociatedWallets &&
       !(removeWallet in currentAssociatedWallets)
@@ -85,11 +87,10 @@ function* removeWallet(action: ConfirmRemoveWalletAction) {
   }
 
   function* removeWalletFromUser() {
-    const result = yield* call(
-      audiusBackendInstance.updateCreator,
-      updatedMetadata,
-      accountUserId!
-    )
+    const result = yield* call(audiusBackendInstance.updateCreator, {
+      metadata: updatedMetadata,
+      sdk
+    })
     if (!result) {
       return
     }

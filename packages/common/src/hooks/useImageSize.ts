@@ -1,226 +1,137 @@
-import { useCallback, useEffect, useMemo } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 
-import { Dispatch } from 'redux'
+import { SquareSizes, WidthSizes } from '~/models'
+import { Maybe } from '~/utils/typeUtils'
 
-import {
-  DefaultSizes,
-  ImageSizesObject,
-  SquareSizes,
-  URL,
-  WidthSizes
-} from '../models/ImageSizes'
-import { Maybe } from '../utils/typeUtils'
+// Global image cache
+const IMAGE_CACHE = new Set<string>()
 
-import { useInstanceVar } from './useInstanceVar'
-
-type Size = SquareSizes | WidthSizes
-
-/** Gets the width dimension of a size */
-const getWidth = (size: Size): number => parseInt(size.split('x')[0], 10)
-
-/** Sorts sizes according to their width dimension */
-const sortSizes = <ImageSize extends Size>(sizes: ImageSize[]): ImageSize[] => {
-  return sizes.sort((a, b) => getWidth(b) - getWidth(a))
+// Gets the width from a given image size, e.g. '150x150' => 150
+const getWidth = (size: string) => {
+  return parseInt(size.split('x')[0])
 }
+
+type Artwork<T extends string | number | symbol> = { [key in T]?: string }
 
 /**
- * Gets the next available image size (sorted largest to smallest) meeting a condition
+ * Fetches an image from the given artwork object managing sizes and using fallback mirrors if necessary.
+ *  - If a larger image has already been fetched and is in the cache, use it instead
+ *  - If a smaller image has already been fetched and is in the cache, use it while fetching the larger one
+ *  - If fetching a given image fails, substitute out mirrors and try again
+ * @param artwork - The artwork object to fetch from
+ * @param targetSize - The desired size of the image
+ * @param defaultImage - The fallback image to use if no image is found in the `artwork` object
+ * @returns The url of the image, or undefined if the image is not available
  */
-const getNextImage =
-  <ImageSize extends Size, ImageSizes extends ImageSizesObject<ImageSize>>(
-    condition: (desiredWidth: number, currentWidth: number) => boolean
-  ) =>
-  (imageSizes: ImageSizes, size: ImageSize) => {
-    const keys = Object.keys(imageSizes) as ImageSize[]
-
-    const desiredWidth = getWidth(size)
-    const sorted = sortSizes(
-      keys.filter((s) => condition(getWidth(s), desiredWidth))
-    )
-    const next = sorted[0]
-    return imageSizes[next]
-  }
-
-export type BaseUserImageSizeProps<
-  ImageSize extends Size,
-  ImageSizes extends ImageSizesObject<ImageSize>
-> = {
-  // The action to dispatch to fetch the desired size
-  action: (id: number, size: ImageSize) => void
-  // The fallback if no sizes are available
-  defaultImage?: string
-  // A unique id (used to prevent duplicate fetches)
-  id?: number | null | undefined | string
-  // A flag (default = true) that will trigger the image load. Can be used to delay the load
-  load?: boolean
-  // The desired size of the image
-  size: ImageSize
-  // The available sizes of the image
-  sizes: ImageSizes | null
-  // Dispatch for current context. Fixes the issue when trying to use web dispatch in mobile context
-  dispatch: Dispatch<any>
-}
-
-type UseImageSizeOnDemandProps<
-  ImageSize extends Size,
-  ImageSizes extends ImageSizesObject<ImageSize>
-> = BaseUserImageSizeProps<ImageSize, ImageSizes> & {
-  // A flag that will cause the return value to be a function that will trigger the image load
-  onDemand: true
-}
-
-type ImageType =
-  | 'empty'
-  | 'none'
-  | 'override'
-  | 'default'
-  | 'desired'
-  | 'smaller'
-  | 'larger'
-  | 'undefined'
-
-/**
- * Custom hooks that allow a component to use an image size for a
- * track, collection, or user's image.
- *
- * If the desired size is not yet cached, the next best size will be returned.
- * The desired size will be requested and returned when it becomes available
- *
- */
-export function useImageSize<
-  ImageSize extends Size,
-  ImageSizes extends ImageSizesObject<ImageSize>
->(props: UseImageSizeOnDemandProps<ImageSize, ImageSizes>): () => Maybe<string>
-export function useImageSize<
-  ImageSize extends Size,
-  ImageSizes extends ImageSizesObject<ImageSize>
->(props: BaseUserImageSizeProps<ImageSize, ImageSizes>): Maybe<string>
-export function useImageSize<
-  ImageSize extends Size,
-  ImageSizes extends ImageSizesObject<ImageSize>
+export const useImageSize = <
+  SizeType extends SquareSizes | WidthSizes,
+  ArtworkType extends Artwork<SizeType> & { mirrors?: string[] | undefined }
 >({
-  action,
-  defaultImage = '',
-  dispatch,
-  id,
-  load = true,
-  onDemand,
-  size,
-  sizes
-}: BaseUserImageSizeProps<ImageSize, ImageSizes> & {
-  onDemand?: boolean
-}): string | number | undefined | (() => Maybe<string | number>) {
-  const [getPreviousId, setPreviousId] = useInstanceVar<number | null>(null)
+  artwork,
+  targetSize,
+  defaultImage,
+  preloadImageFn
+}: {
+  artwork?: ArtworkType
+  targetSize: SizeType
+  defaultImage: string
+  preloadImageFn: (url: string) => Promise<void>
+}) => {
+  const [imageUrl, setImageUrl] = useState<Maybe<string>>(undefined)
 
-  const getSmallerImage = useMemo(
-    () => getNextImage<ImageSize, ImageSizes>((a, b) => a < b),
-    []
-  )
-  const getLargerImage = useMemo(
-    () => getNextImage<ImageSize, ImageSizes>((a, b) => a > b),
-    []
-  )
+  const fetchWithFallback = useCallback(
+    async (url: string) => {
+      const mirrors = [...(artwork?.mirrors ?? [])]
+      let currentUrl = url
 
-  const getImageSize = useCallback((): {
-    url: Maybe<URL | number>
-    type: ImageType
-  } => {
-    if (id === null || id === undefined || typeof id === 'string') {
-      return { url: '', type: 'empty' }
-    }
-
-    const fallbackImage = (url: URL | number) => {
-      setPreviousId(null)
-      return url
-    }
-
-    // No image sizes object
-    if (!sizes) {
-      return { url: fallbackImage(''), type: 'none' }
-    }
-
-    // An override exists
-    if (DefaultSizes.OVERRIDE in sizes) {
-      const override: Maybe<URL | number> = sizes[DefaultSizes.OVERRIDE]
-      if (override) {
-        return { url: fallbackImage(override), type: 'override' }
+      while (mirrors.length > 0) {
+        try {
+          await preloadImageFn(currentUrl)
+          return currentUrl
+        } catch {
+          const nextMirror = mirrors.shift()
+          if (!nextMirror) throw new Error('No mirror found')
+          const nextUrl = new URL(currentUrl)
+          nextUrl.hostname = new URL(nextMirror).hostname
+          currentUrl = nextUrl.toString()
+        }
       }
 
-      return { url: defaultImage, type: 'default' }
-    }
-
-    // The desired size exists
-    if (size in sizes) {
-      const desired: Maybe<URL> = sizes[size]
-      if (desired) {
-        return { url: desired, type: 'desired' }
-      }
-
-      return { url: defaultImage, type: 'default' }
-    }
-
-    // A larger size exists
-    const larger: Maybe<URL> = getLargerImage(sizes, size)
-    if (larger) {
-      return { url: fallbackImage(larger), type: 'larger' }
-    }
-
-    // A smaller size exists
-    const smaller: Maybe<URL> = getSmallerImage(sizes, size)
-    if (smaller) {
-      return { url: fallbackImage(smaller), type: 'smaller' }
-    }
-
-    return { url: undefined, type: 'undefined' }
-  }, [
-    defaultImage,
-    getLargerImage,
-    getSmallerImage,
-    id,
-    size,
-    sizes,
-    setPreviousId
-  ])
-
-  let imageUrl: Maybe<URL | number>
-  let imageType: Maybe<ImageType>
-
-  if (!onDemand) {
-    const { url, type } = getImageSize()
-    imageUrl = url
-    imageType = type
-  }
-
-  const previousId = getPreviousId()
-
-  const handleFetchLargeImage = useCallback(
-    (imageType: ImageType) => {
-      if (
-        load &&
-        !(id === null || id === undefined || typeof id === 'string') &&
-        previousId !== id &&
-        (imageType === 'smaller' || imageType === 'undefined')
-      ) {
-        setPreviousId(id)
-        dispatch(action(id, size))
-      }
+      throw new Error(`Failed to fetch image from all mirrors ${url}`)
     },
-    [load, id, previousId, action, dispatch, setPreviousId, size]
+    [artwork?.mirrors, preloadImageFn]
   )
 
-  const handleOnDemandImage = useCallback(() => {
-    const { url, type } = getImageSize()
-    handleFetchLargeImage(type)
-    return url
-  }, [getImageSize, handleFetchLargeImage])
-
-  const sizesExist = !!sizes
-  useEffect(() => {
-    if (!onDemand && imageType !== undefined && sizesExist) {
-      handleFetchLargeImage(imageType)
+  const resolveImageUrl = useCallback(async () => {
+    if (!artwork) {
+      console.debug(`useImageSize: no artwork, loading`)
+      return
     }
-  }, [onDemand, handleFetchLargeImage, imageType, sizesExist])
+    const targetUrl = artwork[targetSize]
+    if (!targetUrl) {
+      console.debug(`useImageSize: no target url for ${targetSize}`)
+      setImageUrl(defaultImage)
+      return
+    }
 
-  if (!onDemand) return imageUrl
-  return handleOnDemandImage
+    if (IMAGE_CACHE.has(targetUrl)) {
+      console.debug(`useImageSize: cache hit ${targetUrl}`)
+      setImageUrl(targetUrl)
+      return
+    }
+
+    // Check for smaller size in the cache
+    // If found, set the image url and preload the actual target url
+    const smallerSize = Object.keys(artwork).find(
+      (size) =>
+        getWidth(size) < getWidth(targetSize) &&
+        size in artwork &&
+        artwork[size as SizeType] &&
+        IMAGE_CACHE.has(artwork[size as SizeType]!)
+    ) as SizeType | undefined
+
+    // Check for larger size
+    // If found, set the image url to the larger size and return
+    const largerSize = Object.keys(artwork).find(
+      (size) =>
+        getWidth(size) > getWidth(targetSize) &&
+        artwork[size as SizeType] &&
+        IMAGE_CACHE.has(artwork[size as SizeType]!)
+    ) as SizeType | undefined
+
+    if (largerSize) {
+      console.debug(
+        `useImageSize: cache miss, found larger ${targetUrl} ${largerSize}`
+      )
+      setImageUrl(artwork[largerSize])
+      return
+    }
+
+    if (smallerSize) {
+      console.debug(
+        `useImageSize: cache miss, found smaller ${targetUrl} ${smallerSize}`
+      )
+      setImageUrl(artwork[smallerSize])
+      const finalUrl = await fetchWithFallback(targetUrl)
+      IMAGE_CACHE.add(finalUrl)
+      setImageUrl(finalUrl)
+      return
+    }
+
+    // Fetch image with fallback mirrors
+    try {
+      console.debug(`useImageSize: cache miss fetch original ${targetUrl}`)
+      const finalUrl = await fetchWithFallback(targetUrl)
+      IMAGE_CACHE.add(finalUrl)
+      setImageUrl(finalUrl)
+    } catch (e) {
+      console.error(`Unable to load image ${targetUrl} after retries: ${e}`)
+    }
+  }, [artwork, targetSize, fetchWithFallback, defaultImage])
+
+  useEffect(() => {
+    resolveImageUrl()
+  }, [resolveImageUrl])
+
+  return imageUrl
 }

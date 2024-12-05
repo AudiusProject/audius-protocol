@@ -1,40 +1,24 @@
-import type {
-  SquareSizes,
-  Collection,
-  ID,
-  SearchPlaylist
-} from '@audius/common/models'
-import { reachabilitySelectors } from '@audius/common/store'
-import type { Nullable, Maybe } from '@audius/common/utils'
+import { useImageSize } from '@audius/common/hooks'
+import type { SquareSizes, ID } from '@audius/common/models'
+import type { CommonState } from '@audius/common/store'
+import {
+  cacheCollectionsSelectors,
+  reachabilitySelectors
+} from '@audius/common/store'
+import type { Maybe } from '@audius/common/utils'
 import { useSelector } from 'react-redux'
 
-import { FastImage } from '@audius/harmony-native'
+import { FastImage, preload, useTheme } from '@audius/harmony-native'
 import type { FastImageProps } from '@audius/harmony-native'
 import imageEmpty from 'app/assets/images/imageBlank2x.png'
-import { useContentNodeImage } from 'app/hooks/useContentNodeImage'
 import { getLocalCollectionCoverArtPath } from 'app/services/offline-downloader'
 import { getCollectionDownloadStatus } from 'app/store/offline-downloads/selectors'
 import { OfflineDownloadStatus } from 'app/store/offline-downloads/slice'
-import { useThemeColors } from 'app/utils/theme'
 
 import { primitiveToImageSource } from './primitiveToImageSource'
 
 const { getIsReachable } = reachabilitySelectors
-
-type UseCollectionImageOptions = {
-  collection: Nullable<
-    Pick<
-      Collection | SearchPlaylist,
-      | 'playlist_id'
-      | 'cover_art_sizes'
-      | 'cover_art_cids'
-      | 'cover_art'
-      | 'playlist_owner_id'
-      | '_cover_art_sizes'
-    >
-  >
-  size: SquareSizes
-}
+const { getCollection } = cacheCollectionsSelectors
 
 const useLocalCollectionImageUri = (collectionId: Maybe<ID>) => {
   const collectionImageUri = useSelector((state) => {
@@ -55,57 +39,81 @@ const useLocalCollectionImageUri = (collectionId: Maybe<ID>) => {
     return `file://${getLocalCollectionCoverArtPath(collectionId.toString())}`
   })
 
-  return collectionImageUri
+  return primitiveToImageSource(collectionImageUri)
 }
 
-export const useCollectionImage = (options: UseCollectionImageOptions) => {
-  const { collection, size } = options
-
-  const cid = collection
-    ? collection.cover_art_sizes ?? collection.cover_art
-    : null
-
-  const optimisticCoverArt = primitiveToImageSource(
-    collection?._cover_art_sizes?.OVERRIDE
+export const useCollectionImage = ({
+  collectionId,
+  size
+}: {
+  collectionId: Maybe<ID>
+  size: SquareSizes
+}) => {
+  const artwork = useSelector(
+    (state: CommonState) => getCollection(state, { id: collectionId })?.artwork
   )
-
-  const localCollectionImageUri = useLocalCollectionImageUri(
-    collection?.playlist_id
-  )
-  const localCollectionImageSource = primitiveToImageSource(
-    localCollectionImageUri
-  )
-  const localSource = optimisticCoverArt ?? localCollectionImageSource
-
-  const contentNodeSource = useContentNodeImage({
-    cid,
-    size,
-    fallbackImageSource: imageEmpty,
-    localSource,
-    cidMap: collection?.cover_art_cids
+  const image = useImageSize({
+    artwork,
+    targetSize: size,
+    defaultImage: '',
+    preloadImageFn: async (url: string) => {
+      preload([{ uri: url }])
+    }
   })
 
-  return contentNodeSource
+  if (image === '') {
+    return {
+      source: imageEmpty,
+      isFallbackImage: true
+    }
+  }
+
+  // Return edited artwork from this session, if it exists
+  // TODO(PAY-3588) Update field once we've switched to another property name
+  // for local changes to artwork
+  // @ts-ignore
+  if (artwork?.url) {
+    return {
+      // @ts-ignore
+      source: primitiveToImageSource(artwork.url),
+      isFallbackImage: false
+    }
+  }
+
+  return {
+    source: primitiveToImageSource(image),
+    isFallbackImage: false
+  }
 }
 
-type CollectionImageProps = UseCollectionImageOptions & Partial<FastImageProps>
+type CollectionImageProps = {
+  collectionId: ID
+  size: SquareSizes
+  style?: FastImageProps['style']
+  onLoad?: FastImageProps['onLoad']
+  children?: React.ReactNode
+}
 
 export const CollectionImage = (props: CollectionImageProps) => {
-  const { collection, size, style, ...other } = props
+  const { collectionId, size, style, onLoad, ...other } = props
 
-  const collectionImageSource = useCollectionImage({ collection, size })
-  const { neutralLight6 } = useThemeColors()
+  const localCollectionImageUri = useLocalCollectionImageUri(collectionId)
+  const collectionImageSource = useCollectionImage({ collectionId, size })
+  const { color, cornerRadius } = useTheme()
+  const { source, isFallbackImage } = collectionImageSource
 
-  if (!collectionImageSource) return null
-
-  const { source, handleError, isFallbackImage } = collectionImageSource
+  if (!source && !localCollectionImageUri) return null
 
   return (
     <FastImage
       {...other}
-      style={[style, isFallbackImage && { backgroundColor: neutralLight6 }]}
-      source={source}
-      onError={handleError}
+      style={[
+        { aspectRatio: 1, borderRadius: cornerRadius.s },
+        isFallbackImage && { backgroundColor: color.background.surface2 },
+        style
+      ]}
+      source={source ?? localCollectionImageUri!}
+      onLoad={onLoad}
     />
   )
 }

@@ -1,37 +1,26 @@
-import type { SquareSizes, ID, SearchTrack, Track } from '@audius/common/models'
-import { reachabilitySelectors } from '@audius/common/store'
-import type { Nullable, Maybe } from '@audius/common/utils'
+import { useImageSize } from '@audius/common/hooks'
+import type { SquareSizes, ID } from '@audius/common/models'
+import {
+  cacheTracksSelectors,
+  reachabilitySelectors
+} from '@audius/common/store'
+import type { Maybe } from '@audius/common/utils'
 import { useSelector } from 'react-redux'
 
-import type { FastImageProps } from '@audius/harmony-native'
-import { FastImage } from '@audius/harmony-native'
+import type {
+  CornerRadiusOptions,
+  FastImageProps
+} from '@audius/harmony-native'
+import { FastImage, preload, useTheme } from '@audius/harmony-native'
 import imageEmpty from 'app/assets/images/imageBlank2x.png'
-import { useContentNodeImage } from 'app/hooks/useContentNodeImage'
 import { getLocalTrackCoverArtPath } from 'app/services/offline-downloader'
 import { getTrackDownloadStatus } from 'app/store/offline-downloads/selectors'
 import { OfflineDownloadStatus } from 'app/store/offline-downloads/slice'
-import { useThemeColors } from 'app/utils/theme'
 
 import { primitiveToImageSource } from './primitiveToImageSource'
 
-export const DEFAULT_IMAGE_URL =
-  'https://download.audius.co/static-resources/preview-image.jpg'
-
+const { getTrack } = cacheTracksSelectors
 const { getIsReachable } = reachabilitySelectors
-
-type UseTrackImageOptions = {
-  track: Nullable<
-    Pick<
-      Track | SearchTrack,
-      | 'track_id'
-      | 'cover_art_sizes'
-      | 'cover_art_cids'
-      | 'cover_art'
-      | '_cover_art_sizes'
-    >
-  >
-  size: SquareSizes
-}
 
 const useLocalTrackImageUri = (trackId: Maybe<ID>) => {
   const trackImageUri = useSelector((state) => {
@@ -47,54 +36,89 @@ const useLocalTrackImageUri = (trackId: Maybe<ID>) => {
     return `file://${getLocalTrackCoverArtPath(trackId.toString())}`
   })
 
-  return trackImageUri
+  return primitiveToImageSource(trackImageUri)
 }
 
-/**
- * @deprecated Use TrackImageV2 instead.
- */
-export const useTrackImage = ({ track, size }: UseTrackImageOptions) => {
-  const cid = track ? track.cover_art_sizes || track.cover_art : null
-
-  const optimisticCoverArt = primitiveToImageSource(
-    track?._cover_art_sizes?.OVERRIDE
+export const useTrackImage = ({
+  trackId,
+  size
+}: {
+  trackId?: ID
+  size: SquareSizes
+}) => {
+  const artwork = useSelector(
+    (state) => getTrack(state, { id: trackId })?.artwork
   )
-  const localTrackImageUri = useLocalTrackImageUri(track?.track_id)
-  const localTrackImageSource = primitiveToImageSource(localTrackImageUri)
-  const localSource = optimisticCoverArt ?? localTrackImageSource
-
-  const contentNodeSource = useContentNodeImage({
-    cid,
-    size,
-    fallbackImageSource: imageEmpty,
-    localSource,
-    cidMap: track?.cover_art_cids
+  const image = useImageSize({
+    artwork,
+    targetSize: size,
+    defaultImage: '',
+    preloadImageFn: async (url: string) => {
+      preload([{ uri: url }])
+    }
   })
 
-  return contentNodeSource
+  if (image === '') {
+    return {
+      source: imageEmpty,
+      isFallbackImage: true
+    }
+  }
+
+  // Return edited artwork from this session, if it exists
+  // TODO(PAY-3588) Update field once we've switched to another property name
+  // for local changes to artwork
+  // @ts-ignore
+  if (artwork?.url) {
+    return {
+      // @ts-ignore
+      source: primitiveToImageSource(artwork.url),
+      isFallbackImage: false
+    }
+  }
+
+  return {
+    source: primitiveToImageSource(image),
+    isFallbackImage: false
+  }
 }
 
-type TrackImageProps = UseTrackImageOptions & Partial<FastImageProps>
+type TrackImageProps = {
+  trackId?: ID
+  size: SquareSizes
+  style?: FastImageProps['style']
+  borderRadius?: CornerRadiusOptions
+  onLoad?: FastImageProps['onLoad']
+  children?: React.ReactNode
+}
 
-/**
- * @deprecated Use TrackImageV2 instead.
- */
 export const TrackImage = (props: TrackImageProps) => {
-  const { track, size, style, ...other } = props
+  const {
+    trackId,
+    size,
+    style,
+    borderRadius = 's' as const,
+    onLoad,
+    ...other
+  } = props
 
-  const trackImageSource = useTrackImage({ track, size })
-  const { neutralLight8 } = useThemeColors()
+  const localTrackImageUri = useLocalTrackImageUri(trackId)
+  const trackImageSource = useTrackImage({ trackId, size })
+  const { color, cornerRadius } = useTheme()
+  const { source, isFallbackImage } = trackImageSource
 
-  if (!trackImageSource) return null
-
-  const { source, handleError, isFallbackImage } = trackImageSource
+  if (!source && !localTrackImageUri) return null
 
   return (
     <FastImage
       {...other}
-      style={[style, isFallbackImage && { backgroundColor: neutralLight8 }]}
-      source={source}
-      onError={handleError}
+      style={[
+        { aspectRatio: 1, borderRadius: cornerRadius[borderRadius] },
+        isFallbackImage && { backgroundColor: color.background.surface2 },
+        style
+      ]}
+      source={source ?? localTrackImageUri!}
+      onLoad={onLoad}
     />
   )
 }

@@ -32,6 +32,9 @@ export const storeContext: CommonStoreContext = {
   setLocalStorageItem: async (key, value) => AsyncStorage.setItem(key, value),
   removeLocalStorageItem: async (key) => AsyncStorage.removeItem(key),
   getFeatureEnabled,
+  getHostUrl: () => {
+    return `${env.PUBLIC_PROTOCOL}//${env.PUBLIC_HOSTNAME}`
+  },
   analytics,
   remoteConfigInstance,
   audiusBackendInstance,

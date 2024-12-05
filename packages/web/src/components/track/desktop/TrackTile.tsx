@@ -1,6 +1,8 @@
-import { memo } from 'react'
+import { memo, useCallback } from 'react'
 
+import { useFeatureFlag } from '@audius/common/hooks'
 import { ModalSource, isContentUSDCPurchaseGated } from '@audius/common/models'
+import { FeatureFlags } from '@audius/common/services'
 import {
   accountSelectors,
   usePremiumContentPurchaseModal,
@@ -115,7 +117,25 @@ const TrackTile = ({
     usePremiumContentPurchaseModal()
   const isPurchase = isContentUSDCPurchaseGated(streamConditions)
 
-  const onClickGatedUnlockPill = useRequiresAccountOnClick(() => {
+  const onClickGatedUnlockPillRequiresAccount =
+    useRequiresAccountOnClick(() => {
+      if (isPurchase && trackId) {
+        openPremiumContentPurchaseModal(
+          { contentId: trackId, contentType: PurchaseableContentType.TRACK },
+          { source: source ?? ModalSource.TrackTile }
+        )
+      } else if (trackId && !hasStreamAccess && onClickLocked) {
+        onClickLocked()
+      }
+    }, [
+      isPurchase,
+      trackId,
+      openPremiumContentPurchaseModal,
+      hasStreamAccess,
+      onClickLocked
+    ])
+
+  const onClickGatedUnlockPill = useCallback(() => {
     if (isPurchase && trackId) {
       openPremiumContentPurchaseModal(
         { contentId: trackId, contentType: PurchaseableContentType.TRACK },
@@ -127,10 +147,15 @@ const TrackTile = ({
   }, [
     isPurchase,
     trackId,
-    openPremiumContentPurchaseModal,
     hasStreamAccess,
-    onClickLocked
+    onClickLocked,
+    openPremiumContentPurchaseModal,
+    source
   ])
+
+  const { isEnabled: isGuestCheckoutEnabled } = useFeatureFlag(
+    FeatureFlags.GUEST_CHECKOUT
+  )
 
   const getDurationText = () => {
     if (duration === null || duration === undefined) {
@@ -286,7 +311,11 @@ const TrackTile = ({
                 onClickRepost={onClickRepost}
                 onClickFavorite={onClickFavorite}
                 onClickShare={onClickShare}
-                onClickGatedUnlockPill={onClickGatedUnlockPill}
+                onClickGatedUnlockPill={
+                  isGuestCheckoutEnabled
+                    ? onClickGatedUnlockPill
+                    : onClickGatedUnlockPillRequiresAccount
+                }
               />
             )}
           </>

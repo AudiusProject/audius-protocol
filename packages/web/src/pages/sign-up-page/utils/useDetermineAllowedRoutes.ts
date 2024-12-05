@@ -96,7 +96,11 @@ export const useDetermineAllowedRoute = () => {
         // Already have email
         allowedRoutes.push(SignUpPath.createPassword)
 
-        if (signUpState.password.value || signUpState.useMetaMask) {
+        if (
+          signUpState.password.value ||
+          signUpState.useMetaMask ||
+          (!signUpState.isGuest && attemptedPath === SignUpPath.createPassword) // force redirect to create password
+        ) {
           // Already have password
           if (!signUpState.linkedSocialOnFirstPage) {
             allowedRoutes.push(SignUpPath.pickHandle)

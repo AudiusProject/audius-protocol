@@ -4,7 +4,7 @@ import { SquareSizes } from '@audius/common/models'
 import type { StyleProp, ViewStyle } from 'react-native'
 
 import { Flex, Paper, Text } from '@audius/harmony-native'
-import { TrackImageV2 } from 'app/components/image/TrackImageV2'
+import { TrackImage } from 'app/components/image/TrackImage'
 import { UserLink } from 'app/components/user-link'
 import { makeStyles } from 'app/styles'
 
@@ -63,7 +63,7 @@ export const RemixTrackPill = (props: RemixTrackPillProps) => {
       p='s'
       gap='xs'
     >
-      <TrackImageV2
+      <TrackImage
         trackId={trackId}
         size={SquareSizes.SIZE_150_BY_150}
         style={{ height: 20, width: 20 }}
