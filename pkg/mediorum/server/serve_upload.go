@@ -41,6 +41,13 @@ func (ss *MediorumServer) serveUploadDetail(c echo.Context) error {
 		}
 	}
 
+	if analyze, _ := strconv.ParseBool(c.QueryParam("analyze")); analyze && upload.AudioAnalysisStatus != "done" {
+		err = ss.analyzeAudio(upload, time.Minute*10)
+		if err != nil {
+			return err
+		}
+	}
+
 	return c.JSON(200, upload)
 }
 
