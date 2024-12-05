@@ -15,7 +15,7 @@ type Artwork<T extends string | number | symbol> = { [key in T]?: string }
 
 /**
  * Fetches an image from the given artwork object managing sizes and using fallback mirrors if necessary.
- *  - If a larger image has already been fetched and is in the case, use it instead
+ *  - If a larger image has already been fetched and is in the cache, use it instead
  *  - If a smaller image has already been fetched and is in the cache, use it while fetching the larger one
  *  - If fetching a given image fails, substitute out mirrors and try again
  * @param artwork - The artwork object to fetch from
