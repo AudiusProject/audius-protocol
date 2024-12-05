@@ -166,6 +166,7 @@ export function* sagaWithErrorHandler(saga: () => Generator<any, void, any>) {
         yield* getContext('reportToSentry') as any
 
       yield* call(reportToSentry, {
+        name: 'Uncaught Saga Error',
         level: ErrorLevel.Error,
         error: e as Error
       })

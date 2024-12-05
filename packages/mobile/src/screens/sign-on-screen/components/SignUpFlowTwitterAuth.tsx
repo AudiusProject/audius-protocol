@@ -82,6 +82,9 @@ const useSetProfileFromTwitter = () => {
       twitterApi.headers,
       twitterApi.credentialsType
     )
+    if (tokenRes.error) {
+      throw new Error(tokenRes.error)
+    }
     const { uuid, profile: twitterProfile } = tokenRes
 
     // format results
