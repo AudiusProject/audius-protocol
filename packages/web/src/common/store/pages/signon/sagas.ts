@@ -647,13 +647,10 @@ function* signUp() {
               }
             }
 
-            console.log('about to call update profile')
             yield* call(
               [sdk.users, sdk.users.updateProfile],
               completeProfileMetadataRequest
             )
-
-            console.log('about to call change password', email, password)
 
             yield* put(
               changePasswordActions.changePassword({
@@ -663,14 +660,12 @@ function* signUp() {
               })
             )
 
-            console.log('waiting for value')
             yield* call(
               waitForValue,
               getChangePasswordStatus,
               undefined,
               (status) => status === Status.SUCCESS
             )
-            console.log('sending recovery email')
             yield* fork(sendRecoveryEmail, { handle, email })
           } else {
             if (!alreadyExisted) {
@@ -731,8 +726,6 @@ function* signUp() {
             }
           }
 
-          console.log('doing the identify stuff i guess?')
-
           yield* put(
             identify(handle, {
               name,
@@ -741,7 +734,6 @@ function* signUp() {
             })
           )
 
-          console.log('calling succeeded')
           yield* put(signOnActions.signUpSucceededWithId(userId))
 
           if (!isNativeMobile) {
@@ -761,7 +753,6 @@ function* signUp() {
             isResponseError(err) && [0, 429].includes(err.response.status)
           const blocked = isResponseError(err) && err.response.status === 403
           const error = err instanceof Error ? err : new Error(err as string)
-          console.log('the error!', error.message)
           const params: signOnActions.SignUpFailedParams = {
             error: error.message,
             // TODO: Remove phase, stop using error Sagas for signup

@@ -4,11 +4,7 @@ import { MobileOS } from '@audius/common/models'
 import { accountSelectors } from '@audius/common/store'
 import type { NativeStackNavigationOptions } from '@react-navigation/native-stack'
 import { createNativeStackNavigator } from '@react-navigation/native-stack'
-import {
-  getFinishedPhase1,
-  getPage,
-  getSignOn
-} from 'common/store/pages/signon/selectors'
+import { getFinishedPhase1, getPage } from 'common/store/pages/signon/selectors'
 import { Pages } from 'common/store/pages/signon/types'
 import { Platform } from 'react-native'
 import { useSelector } from 'react-redux'
