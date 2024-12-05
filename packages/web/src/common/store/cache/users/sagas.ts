@@ -130,12 +130,13 @@ export function* fetchUserByHandle(
  */
 export function* fetchUserCollections(userId: number) {
   const sdk = yield* getSDK()
+  const currentUserId = yield* select(getUserId)
   function* getPlaylists() {
     const { data } = yield* call(
       [sdk.full.users, sdk.full.users.getPlaylistsByUser],
       {
         id: Id.parse(userId),
-        userId: Id.parse(userId)
+        userId: OptionalId.parse(currentUserId)
       }
     )
     return transformAndCleanList(data, userCollectionMetadataFromSDK)
@@ -145,7 +146,7 @@ export function* fetchUserCollections(userId: number) {
       [sdk.full.users, sdk.full.users.getAlbumsByUser],
       {
         id: Id.parse(userId),
-        userId: Id.parse(userId)
+        userId: OptionalId.parse(currentUserId)
       }
     )
     return transformAndCleanList(data, userCollectionMetadataFromSDK)
