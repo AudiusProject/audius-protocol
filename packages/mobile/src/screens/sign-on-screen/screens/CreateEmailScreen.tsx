@@ -68,7 +68,7 @@ export const CreateEmailScreen = (props: SignOnScreenProps) => {
       const { email } = values
       dispatch(setValueField('email', email))
       dispatch(startSignUp())
-      navigation.navigate('CreatePassword', { email })
+      navigation.navigate('CreatePassword')
     },
     [dispatch, navigation]
   )
