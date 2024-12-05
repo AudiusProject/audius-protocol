@@ -1,4 +1,9 @@
-import { Name, StemUploadWithFile } from '@audius/common/models'
+import {
+  ErrorLevel,
+  Feature,
+  Name,
+  StemUploadWithFile
+} from '@audius/common/models'
 import {
   TrackForUpload,
   TrackMetadataForUpload,
@@ -273,7 +278,7 @@ describe('upload', () => {
         ])
         // Reports to sentry
         .call(reportToSentry, {
-          name: 'Upload Worker Failed',
+          name: 'UploadWorker',
           error: mockError,
           additionalInfo: {
             trackId: 3,
@@ -285,14 +290,16 @@ describe('upload', () => {
             stemCount: 2,
             phase: 'publish',
             kind: 'tracks'
-          }
+          },
+          feature: Feature.Upload,
+          level: ErrorLevel.Fatal
         })
         // Fails the parent too
         .call.like({
           fn: reportToSentry,
           args: [
             {
-              name: 'Upload Worker Failed',
+              name: 'UploadWorker',
               additionalInfo: {
                 trackId: 1,
                 metadata: testTrack.metadata,
@@ -303,7 +310,9 @@ describe('upload', () => {
                 stemCount: 2,
                 phase: 'publish',
                 kind: 'tracks'
-              }
+              },
+              feature: Feature.Upload,
+              level: ErrorLevel.Fatal
             }
           ]
         })
