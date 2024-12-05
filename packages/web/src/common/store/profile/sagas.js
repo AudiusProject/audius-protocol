@@ -88,7 +88,7 @@ function* fetchProfileCustomizedCollectibles(user) {
   if (cid) {
     const {
       data: { data: metadata }
-    } = yield call([sdk.full.cidData, sdk.full.cidData.getMetdata], {
+    } = yield call([sdk.full.cidData, sdk.full.cidData.getMetadata], {
       metadataId: cid
     })
     if (metadata?.collectibles) {
@@ -518,7 +518,7 @@ export function* updateProfileAsync(action) {
     try {
       const {
         data: { data }
-      } = yield call([sdk.full.cidData, sdk.full.cidData.getMetdata], {
+      } = yield call([sdk.full.cidData, sdk.full.cidData.getMetadata], {
         metadataId: cid
       })
       const collectibles = metadata.collectibles

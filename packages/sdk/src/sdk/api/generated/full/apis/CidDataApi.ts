@@ -23,7 +23,7 @@ import {
     CidDataResponseToJSON,
 } from '../models';
 
-export interface GetMetdataRequest {
+export interface GetMetadataRequest {
     metadataId: string;
 }
 
@@ -36,9 +36,9 @@ export class CidDataApi extends runtime.BaseAPI {
      * @hidden
      * Get a metadata by CID
      */
-    async getMetdataRaw(params: GetMetdataRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<CidDataResponse>> {
+    async getMetadataRaw(params: GetMetadataRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<CidDataResponse>> {
         if (params.metadataId === null || params.metadataId === undefined) {
-            throw new runtime.RequiredError('metadataId','Required parameter params.metadataId was null or undefined when calling getMetdata.');
+            throw new runtime.RequiredError('metadataId','Required parameter params.metadataId was null or undefined when calling getMetadata.');
         }
 
         const queryParameters: any = {};
@@ -58,8 +58,8 @@ export class CidDataApi extends runtime.BaseAPI {
     /**
      * Get a metadata by CID
      */
-    async getMetdata(params: GetMetdataRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<CidDataResponse> {
-        const response = await this.getMetdataRaw(params, initOverrides);
+    async getMetadata(params: GetMetadataRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<CidDataResponse> {
+        const response = await this.getMetadataRaw(params, initOverrides);
         return await response.value();
     }
 
