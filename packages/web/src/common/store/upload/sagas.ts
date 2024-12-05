@@ -8,6 +8,7 @@ import {
   Collection,
   CollectionMetadata,
   ErrorLevel,
+  Feature,
   FieldVisibility,
   ID,
   Id,
@@ -65,7 +66,7 @@ import {
 import { make } from 'common/store/analytics/actions'
 import { prepareStemsForUpload } from 'pages/upload-page/store/utils/stems'
 import * as errorActions from 'store/errors/actions'
-import { reportToSentry, SentryCategory } from 'store/errors/reportToSentry'
+import { reportToSentry } from 'store/errors/reportToSentry'
 import { encodeHashId } from 'utils/hashIds'
 import { waitForWrite } from 'utils/sagaHelpers'
 
@@ -686,9 +687,7 @@ export function* handleUploads({
         phase,
         kind
       },
-      tags: {
-        category: SentryCategory.Upload
-      },
+      feature: Feature.Upload,
       level: ErrorLevel.Fatal
     })
   }
@@ -1006,9 +1005,7 @@ export function* uploadCollection(
             isAlbum,
             collectionMetadata
           },
-          tags: {
-            category: SentryCategory.Upload
-          },
+          feature: Feature.Upload,
           level: ErrorLevel.Fatal
         })
         yield* put(uploadActions.uploadTracksFailed())
@@ -1181,9 +1178,7 @@ export function* uploadTracksAsync(
         kind,
         tracks: payload.tracks
       },
-      tags: {
-        category: SentryCategory.Upload
-      },
+      feature: Feature.Upload,
       level: ErrorLevel.Fatal
     })
     yield* put(uploadActions.uploadTracksFailed())

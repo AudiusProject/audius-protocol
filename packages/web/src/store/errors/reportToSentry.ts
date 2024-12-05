@@ -26,10 +26,6 @@ const jsLoggerMapping: { [level in ErrorLevel]: ConsoleLoggingMethod } = {
   Log: 'log'
 }
 
-export const SentryCategory = {
-  Upload: 'upload'
-}
-
 /**
  * Helper fn that reports to sentry while creating a localized scope to contain additional data
  * Also logs to console with the appropriate level (console.log, console.warn, console.error, etc)
@@ -39,7 +35,8 @@ export const reportToSentry = async ({
   additionalInfo,
   error,
   name,
-  tags
+  tags,
+  feature
 }: ReportToSentryArgs) => {
   try {
     withScope(async (scope) => {
@@ -61,8 +58,8 @@ export const reportToSentry = async ({
       if (additionalInfo) {
         scope.setContext('additionalInfo', additionalInfo)
       }
-      if (tags) {
-        scope.setTags(tags)
+      if (tags || feature) {
+        scope.setTags({ ...tags, feature })
       }
       if (name) {
         error.name = `${name}: ${error.name}`
