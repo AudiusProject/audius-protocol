@@ -10,7 +10,12 @@ import {
   getContext,
   getSDK
 } from '@audius/common/store'
-import { waitForValue, doEvery, route } from '@audius/common/utils'
+import {
+  waitForValue,
+  doEvery,
+  route,
+  encodeHashId
+} from '@audius/common/utils'
 import { each } from 'lodash'
 import moment from 'moment'
 import { EventChannel } from 'redux-saga'
@@ -59,7 +64,11 @@ function* fetchDashboardAsync(
   yield* call(waitForRead)
 
   const accountHandle = yield* call(waitForValue, getUserHandle)
-  const accountUserId = yield* call(waitForValue, getUserId)
+  const accountUserId: number | null = yield* call(waitForValue, getUserId)
+  if (!accountUserId) {
+    yield* put(dashboardActions.fetchFailed({}))
+    return
+  }
   yield* fork(pollForBalance)
 
   const sdk = yield* getSDK()
@@ -73,8 +82,12 @@ function* fetchDashboardAsync(
         limit,
         getUnlisted: true
       }),
-      call([sdk.full.users, sdk.full.users.getPlaylistsByUser], accountUserId),
-      call([sdk.full.users, sdk.full.users.getAlbumsByUser], accountUserId)
+      call([sdk.full.users, sdk.full.users.getPlaylistsByUser], {
+        id: encodeHashId(accountUserId)
+      }),
+      call([sdk.full.users, sdk.full.users.getAlbumsByUser], {
+        id: encodeHashId(accountUserId)
+      })
     ])
     const tracks = data[0] as Track[]
     const playlists = transformAndCleanList(
