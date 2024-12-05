@@ -2,7 +2,7 @@ import {
   transformAndCleanList,
   userCollectionMetadataFromSDK
 } from '@audius/common/adapters'
-import { ID, Track } from '@audius/common/models'
+import { Id, ID, Track } from '@audius/common/models'
 import { IntKeys } from '@audius/common/services'
 import {
   accountSelectors,
@@ -124,19 +124,16 @@ function* fetchDashboardListenDataAsync(
   action: ReturnType<typeof dashboardActions.fetchListenData>
 ) {
   const { start, end } = action.payload
-  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
+  const audiusSdk = yield* getContext('audiusSdk')
+  const sdk = yield* call(audiusSdk)
   const accountUserId = yield* call(waitForValue, getUserId)
-  const listenData: {
-    [key: string]: {
-      totalListens: number
-      trackIds: ID[]
-      listenCounts: Array<{ trackId: ID; date: string; listens: number }>
+  const { data: listenData } = yield* call(
+    [sdk.users, sdk.users.getUserMonthlyTrackListens],
+    {
+      id: Id.parse(accountUserId),
+      startTime: start,
+      endTime: end
     }
-  } = yield* call(
-    audiusBackendInstance.getUserListenCountsMonthly,
-    accountUserId,
-    start,
-    end
   )
   const labels: string[] = []
   const labelIndexMap: { [key: string]: number } = {}
@@ -156,19 +153,21 @@ function* fetchDashboardListenDataAsync(
     }
   }
   each(listenData, (data, date) => {
-    formattedListenData.all.values[labelIndexMap[formatMonth(date)]] =
-      data.totalListens
-    data.listenCounts.forEach((count) => {
-      if (!(count.trackId in formattedListenData)) {
-        formattedListenData[count.trackId] = {
-          labels: [...labels],
-          values: new Array(labels.length).fill(0)
+    const index = labelIndexMap[formatMonth(date)]
+    formattedListenData.all.values[index] = data.totalListens ?? 0
+    if (data.listenCounts) {
+      data.listenCounts.forEach((count) => {
+        if (count.trackId && !(count.trackId in formattedListenData)) {
+          formattedListenData[count.trackId] = {
+            labels: [...labels],
+            values: new Array(labels.length).fill(0)
+          }
         }
-      }
-      formattedListenData[count.trackId].values[
-        labelIndexMap[formatMonth(date)]
-      ] = count.listens
-    })
+        if (count.trackId) {
+          formattedListenData[count.trackId].values[index] = count.listens ?? 0
+        }
+      })
+    }
   })
 
   if (listenData) {

@@ -399,7 +399,7 @@ user_track_listen_counts_response = make_response(
 )
 
 
-@ns.route("/<string:id>/listen_counts_monthly", doc=False)
+@ns.route("/<string:id>/listen_counts_monthly")
 class UserTrackListenCountsMonthly(Resource):
     @record_metrics
     @ns.doc(
