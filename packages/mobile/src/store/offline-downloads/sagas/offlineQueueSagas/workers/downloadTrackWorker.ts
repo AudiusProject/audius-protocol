@@ -2,7 +2,6 @@ import { userTrackMetadataFromSDK } from '@audius/common/adapters'
 import type {
   ID,
   TrackMetadata,
-  Track,
   UserTrackMetadata
 } from '@audius/common/models'
 import { Id, OptionalId, SquareSizes } from '@audius/common/models'
@@ -13,15 +12,10 @@ import {
   gatedContentSelectors,
   getSDK
 } from '@audius/common/store'
-import {
-  encodeHashId,
-  removeNullable,
-  getQueryParams
-} from '@audius/common/utils'
+import { encodeHashId, getQueryParams } from '@audius/common/utils'
 import ReactNativeBlobUtil from 'react-native-blob-util'
 import { select, call, put, all, take, race } from 'typed-redux-saga'
 
-import { createAllImageSources } from 'app/hooks/useContentNodeImage'
 import { make, track } from 'app/services/analytics'
 import {
   getLocalAudioPath,
@@ -29,7 +23,6 @@ import {
   getLocalTrackDir,
   getLocalTrackJsonPath
 } from 'app/services/offline-downloader'
-import { getStorageNodeSelector } from 'app/services/sdk/storageNodeSelector'
 import { EventNames } from 'app/types/analytics'
 
 import { getTrackOfflineDownloadStatus } from '../../../selectors'
@@ -189,21 +182,20 @@ function* downloadTrackAudio(track: UserTrackMetadata, userId: ID) {
 }
 
 function* downloadTrackCoverArt(track: TrackMetadata) {
-  const { cover_art_cids, cover_art_sizes, cover_art, track_id } = track
-  const cid = cover_art_sizes ?? cover_art
+  const { artwork, track_id } = track
 
-  const storageNodeSelector = yield* call(getStorageNodeSelector)
+  const primaryImage = artwork[SquareSizes.SIZE_1000_BY_1000]
+  if (!primaryImage) return
 
-  const imageSources = createAllImageSources({
-    cid,
-    endpoints: cid ? storageNodeSelector.getNodes(cid) : [],
-    size: SquareSizes.SIZE_1000_BY_1000,
-    cidMap: cover_art_cids
-  })
+  const coverArtUris = [
+    primaryImage,
+    ...(artwork.mirrors ?? []).map((mirror) => {
+      const url = new URL(primaryImage)
+      url.hostname = new URL(mirror).hostname
+      return url.toString()
+    })
+  ]
 
-  const coverArtUris = imageSources
-    .map((src) => (typeof src === 'object' && 'uri' in src ? src.uri : null))
-    .filter(removeNullable)
   const covertArtFilePath = getLocalTrackCoverArtDestination(track_id)
 
   for (const coverArtUri of coverArtUris) {
@@ -218,17 +210,11 @@ function* downloadTrackCoverArt(track: TrackMetadata) {
 async function writeTrackMetadata(track: UserTrackMetadata) {
   const { track_id } = track
 
-  const trackMetadata: Track & UserTrackMetadata = {
-    ...track,
-    // Empty cover art sizes because the images are stored locally
-    _cover_art_sizes: {}
-  }
-
   const trackMetadataPath = getLocalTrackJsonPath(track_id.toString())
 
   return await ReactNativeBlobUtil.fs.writeFile(
     trackMetadataPath,
-    JSON.stringify(trackMetadata)
+    JSON.stringify(track)
   )
 }
 

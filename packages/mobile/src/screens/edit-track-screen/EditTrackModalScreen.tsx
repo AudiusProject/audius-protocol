@@ -7,9 +7,9 @@ import { useDispatch, useSelector } from 'react-redux'
 
 import { ModalScreen } from 'app/components/core'
 import { useTrackImage } from 'app/components/image/TrackImage'
-import { isImageUriSource } from 'app/hooks/useContentNodeImage'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { useRoute } from 'app/hooks/useRoute'
+import { isImageUriSource } from 'app/utils/image'
 
 import { UploadFileContextProvider } from '../upload-screen/screens/UploadFileContext'
 

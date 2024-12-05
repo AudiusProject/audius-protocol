@@ -1,5 +1,5 @@
 import { Kind, TrackMetadata, Track } from '@audius/common/models'
-import { cacheActions, getContext } from '@audius/common/store'
+import { cacheActions } from '@audius/common/store'
 import { makeUid } from '@audius/common/utils'
 import { put, call } from 'typed-redux-saga'
 
@@ -16,14 +16,11 @@ export function* processAndCacheTracks<T extends TrackMetadata>(
   tracks: T[]
 ): Generator<any, Track[], any> {
   yield* waitForRead()
-  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
   // Add users
   yield* call(addUsersFromTracks, tracks)
 
   // Remove users, add images
-  const reformattedTracks = tracks.map((track) =>
-    reformat(track, audiusBackendInstance)
-  )
+  const reformattedTracks = tracks.map((track) => reformat(track))
 
   // insert tracks into cache
   yield* put(

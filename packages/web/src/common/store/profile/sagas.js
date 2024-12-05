@@ -2,7 +2,7 @@ import {
   userMetadataListFromSDK,
   userWalletsFromSDK
 } from '@audius/common/adapters'
-import { DefaultSizes, Kind, Id } from '@audius/common/models'
+import { Kind, Id } from '@audius/common/models'
 import { DoubleKeys } from '@audius/common/services'
 import {
   accountSelectors,
@@ -547,20 +547,10 @@ export function* updateProfileAsync(action) {
 
   yield call(confirmUpdateProfile, metadata.user_id, metadata)
 
-  const creator = metadata
-  if (metadata.updatedCoverPhoto) {
-    metadata._cover_photo_sizes[DefaultSizes.OVERRIDE] =
-      metadata.updatedCoverPhoto.url
-  }
-  if (creator.updatedProfilePicture) {
-    metadata._profile_picture_sizes[DefaultSizes.OVERRIDE] =
-      metadata.updatedProfilePicture.url
-  }
-
   yield put(
     cacheActions.update(Kind.USERS, [
       {
-        id: creator.user_id,
+        id: metadata.user_id,
         metadata
       }
     ])

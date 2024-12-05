@@ -22,30 +22,19 @@ import BN from 'bn.js'
 import { Env } from '~/services/env'
 import dayjs from '~/utils/dayjs'
 
-import placeholderCoverArt from '../../assets/img/imageBlank2x.png'
-import imageCoverPhotoBlank from '../../assets/img/imageCoverPhotoBlank.jpg'
-import placeholderProfilePicture from '../../assets/img/imageProfilePicEmpty2X.png'
 import {
   BNWei,
   CID,
   Collection,
-  CollectionMetadata,
-  CoverArtSizes,
-  CoverPhotoSizes,
-  DefaultSizes,
   ID,
   InstagramUser,
   Name,
-  ProfilePictureSizes,
-  SquareSizes,
   TikTokUser,
   Track,
-  TrackMetadata,
   TwitterUser,
   User,
   UserMetadata,
   UserCollection,
-  WidthSizes,
   ComputedUserProperties
 } from '../../models'
 import { AnalyticsEvent } from '../../models/Analytics'
@@ -195,7 +184,6 @@ type WaitForLibsInit = () => Promise<unknown>
 
 type AudiusBackendParams = {
   claimDistributionContractAddress: Maybe<string>
-  imagePreloader: (url: string) => Promise<boolean>
   env: Env
   ethOwnerWallet: Maybe<string>
   ethProviderUrls: Maybe<string[]>
@@ -251,7 +239,6 @@ type AudiusBackendParams = {
 
 export const audiusBackend = ({
   claimDistributionContractAddress,
-  imagePreloader,
   env,
   ethOwnerWallet,
   ethProviderUrls,
@@ -358,116 +345,6 @@ export const audiusBackend = ({
       }
       console.error(e)
       return asUrl ? '' : null
-    }
-  }
-
-  async function fetchImageCID(
-    cid: CID,
-    size?: SquareSizes | WidthSizes,
-    cidMap: Nullable<{ [key: string]: string }> = null
-  ) {
-    let cidFileName = size ? `${cid}/${size}.jpg` : `${cid}.jpg`
-    // For v2 CIDs (aka job IDs), cidMap contains cids for each
-    // image variant. Use the CID for the desired image
-    // size from this map to accurately select the preferred
-    // rendezvous node to query.
-    if (size && cidMap && cidMap[size]) {
-      cidFileName = cidMap[size]
-    }
-
-    const storageNodeSelector = await getStorageNodeSelector()
-    // Only rendezvous hash the cid for extremely old legacy
-    // images that do not have size variants
-    const cidToHash = size ? cidFileName : cid
-    const storageNodes = storageNodeSelector.getNodes(cidToHash)
-    for (const storageNode of storageNodes) {
-      const imageUrl = `${storageNode}/content/${cidFileName}`
-
-      const preloaded = await imagePreloader(imageUrl)
-      if (preloaded) {
-        return imageUrl
-      }
-    }
-    return ''
-  }
-
-  async function getImageUrl(
-    cid: Nullable<CID>,
-    size?: SquareSizes | WidthSizes,
-    cidMap: Nullable<{ [key: string]: string }> = null
-  ) {
-    if (!cid) return ''
-    try {
-      return await fetchImageCID(cid, size, cidMap)
-    } catch (e) {
-      console.error(e)
-      return ''
-    }
-  }
-
-  function getTrackImages(track: TrackMetadata): Track {
-    const coverArtSizes: CoverArtSizes = {}
-    if (!track.cover_art_sizes && !track.cover_art) {
-      coverArtSizes[DefaultSizes.OVERRIDE] = placeholderCoverArt as string
-    }
-
-    return {
-      ...track,
-      // TODO: This method should be renamed as it does more than images.
-      duration:
-        track.duration ||
-        track.track_segments.reduce(
-          (duration, segment) => duration + parseFloat(segment.duration),
-          0
-        ),
-      _cover_art_sizes: coverArtSizes
-    }
-  }
-
-  function getCollectionImages(collection: CollectionMetadata) {
-    const coverArtSizes: CoverArtSizes = {}
-
-    if (
-      collection.playlist_image_sizes_multihash &&
-      !collection.cover_art_sizes
-    ) {
-      collection.cover_art_sizes = collection.playlist_image_sizes_multihash
-    }
-    if (collection.playlist_image_multihash && !collection.cover_art) {
-      collection.cover_art = collection.playlist_image_multihash
-    }
-
-    if (!collection.cover_art_sizes && !collection.cover_art) {
-      coverArtSizes[DefaultSizes.OVERRIDE] = placeholderCoverArt as
-        | string
-        | number // ReactNative require() is a number for images!
-    }
-
-    return {
-      ...collection,
-      _cover_art_sizes: coverArtSizes
-    }
-  }
-
-  function getUserImages(user: UserMetadata) {
-    const profilePictureSizes: ProfilePictureSizes = {}
-    const coverPhotoSizes: CoverPhotoSizes = {}
-
-    // Images are fetched on demand async w/ the `useXProfilePicture`/`useXCoverPhoto` and
-    // transitioned in w/ the dynamicImageComponent
-    if (!user.profile_picture_sizes && !user.profile_picture) {
-      profilePictureSizes[DefaultSizes.OVERRIDE] =
-        placeholderProfilePicture as string
-    }
-
-    if (!user.cover_photo_sizes && !user.cover_photo) {
-      coverPhotoSizes[DefaultSizes.OVERRIDE] = imageCoverPhotoBlank as string
-    }
-
-    return {
-      ...user,
-      _profile_picture_sizes: profilePictureSizes,
-      _cover_photo_sizes: coverPhotoSizes
     }
   }
 
@@ -767,13 +644,11 @@ export const audiusBackend = ({
           savedTracks.filter(notDeleted),
           tracks.filter(notDeleted),
           'track_id'
-        ).map(async (track) => getTrackImages(track))
+        )
       )
 
       const combinedUsers = await Promise.all(
-        combineLists<User>(followedUsers, users, 'user_id').map(async (user) =>
-          getUserImages(user)
-        )
+        combineLists<User>(followedUsers, users, 'user_id')
       )
 
       return {
@@ -2085,7 +1960,6 @@ export const audiusBackend = ({
     disableBrowserNotifications,
     emailInUse,
     fetchCID,
-    fetchImageCID,
     fetchUserAssociatedEthWallets,
     fetchUserAssociatedSolWallets,
     fetchUserAssociatedWallets,
@@ -2098,16 +1972,12 @@ export const audiusBackend = ({
     getBalance,
     getBrowserPushNotificationSettings,
     getBrowserPushSubscription,
-    getCollectionImages,
     getEmailNotificationSettings,
-    getImageUrl,
     getPushNotificationSettings,
     getRandomFeePayer,
     getSafariBrowserPushEnabled,
     getSignature,
-    getTrackImages,
     getUserEmail,
-    getUserImages,
     getUserListenCountsMonthly,
     getWAudioBalance,
     getWeb3,
