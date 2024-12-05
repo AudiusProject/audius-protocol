@@ -22,7 +22,7 @@ const messages = {
       you can send them them messages.
     </>
   ),
-  unblock: 'You cannot send messages to users you have blocked.',
+  unblock: 'You cannot send messages to users you have blocked. ',
   default: (userId: ID) => (
     <Text>
       You can&apos;t send messages to{' '}
@@ -68,8 +68,8 @@ export const InboxUnavailableMessage = ({
       break
     case ChatPermissionAction.UNBLOCK:
       content = (
-        <>
-          {messages.unblock}{' '}
+        <Text>
+          {messages.unblock}
           <TextLink onClick={handleUnblockClicked}>
             {messages.unblockUser}
           </TextLink>
@@ -78,7 +78,7 @@ export const InboxUnavailableMessage = ({
             isVisible={isUnblockUserConfirmationModalVisible}
             onClose={handleCloseUnblockUserConfirmationModal}
           />
-        </>
+        </Text>
       )
       break
     default:
