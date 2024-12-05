@@ -842,7 +842,7 @@ export const audiusBackend = ({
   }) {
     if (!user?.metadata_multihash) return null
 
-    const { data } = await sdk.full.cidData.getMetdata({
+    const { data } = await sdk.full.cidData.getMetadata({
       metadataId: user?.metadata_multihash
     })
 

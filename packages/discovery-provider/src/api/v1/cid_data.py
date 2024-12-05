@@ -46,7 +46,7 @@ cid_data_response = make_response(
 class Metadata(Resource):
     @record_metrics
     @full_ns.doc(
-        id="""Get Metdata""",
+        id="""Get Metadata""",
         description="""Get a metadata by CID""",
         params={"metadata_id": "A Metdata CID"},
         responses={200: "Success", 400: "Bad request", 500: "Server error"},
