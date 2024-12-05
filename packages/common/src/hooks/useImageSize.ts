@@ -21,6 +21,8 @@ type Artwork<T extends string | number | symbol> = { [key in T]?: string }
  * @param artwork - The artwork object to fetch from
  * @param targetSize - The desired size of the image
  * @param defaultImage - The fallback image to use if no image is found in the `artwork` object
+ * @param preloadImageFn - A function to preload an image. If not provided, the image will not be preloaded
+ *    and it is up to the caller to preload the image if desired.
  * @returns The url of the image, or undefined if the image is not available
  */
 export const useImageSize = <
