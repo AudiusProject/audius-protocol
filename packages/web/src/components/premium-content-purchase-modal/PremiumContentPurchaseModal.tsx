@@ -327,6 +327,7 @@ export const PremiumContentPurchaseModal = () => {
           initialValues={initialValues}
           enableReinitialize
           validationSchema={toFormikValidationSchema(validationSchema)}
+          validateOnChange={false}
           onSubmit={onSubmit}
         >
           <RenderForm

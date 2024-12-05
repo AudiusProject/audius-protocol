@@ -1178,31 +1178,11 @@ export const audiusBackend = ({
     )
   }
 
-  async function guestSignUp(
-    email: string,
-    feePayerOverride: Nullable<string>
-  ) {
+  async function guestSignUp(email: string) {
     await waitForLibsInit()
     const metadata = schemas.newUserMetadata()
 
-    return await audiusLibs.Account.guestSignUp(
-      email,
-      metadata,
-      getHostUrl(),
-      (eventName: string, properties: Record<string, unknown>) =>
-        recordAnalytics({ eventName, properties }),
-      {
-        Request: Name.CREATE_USER_BANK_REQUEST,
-        Success: Name.CREATE_USER_BANK_SUCCESS,
-        Failure: Name.CREATE_USER_BANK_FAILURE
-      },
-      feePayerOverride,
-      true
-    )
-  }
-  async function resetPassword(username: string, password: string) {
-    const libs = await getAudiusLibsTyped()
-    return libs.Account!.resetPassword({ username, password })
+    return await audiusLibs.Account.guestSignUp(email, metadata)
   }
 
   async function sendRecoveryEmail(handle: string) {
@@ -1214,9 +1194,12 @@ export const audiusBackend = ({
   async function emailInUse(email: string) {
     await waitForLibsInit()
     try {
-      const { exists: emailExists } =
+      const { exists: emailExists, isGuest } =
         await audiusLibs.Account.checkIfEmailRegistered(email)
-      return emailExists as boolean
+      return {
+        emailExists: emailExists as boolean,
+        isGuest: isGuest as boolean
+      }
     } catch (error) {
       console.error(getErrorMessage(error))
       throw error
@@ -1633,8 +1616,6 @@ export const audiusBackend = ({
   }
 
   async function getPushNotificationSettings({ sdk }: { sdk: AudiusSdk }) {
-    await waitForLibsInit()
-
     try {
       const { data, signature } = await signIdentityServiceRequest({ sdk })
       return await fetch(`${identityServiceUrl}/push_notifications/settings`, {
@@ -1660,8 +1641,6 @@ export const audiusBackend = ({
     deviceToken: string
     deviceType: string
   }) {
-    await waitForLibsInit()
-
     try {
       const { data, signature } = await signIdentityServiceRequest({ sdk })
       return await fetch(
@@ -1709,42 +1688,6 @@ export const audiusBackend = ({
       ).then((res) => res.json())
     } catch (e) {
       console.error(e)
-    }
-  }
-
-  async function subscribeToUser({
-    subscribeToUserId,
-    userId
-  }: {
-    subscribeToUserId: ID
-    userId: ID
-  }) {
-    try {
-      await waitForLibsInit()
-      return await audiusLibs.User.addUserSubscribe(subscribeToUserId, userId)
-    } catch (err) {
-      console.error(getErrorMessage(err))
-      throw err
-    }
-  }
-
-  async function unsubscribeFromUser({
-    subscribedToUserId,
-    userId
-  }: {
-    subscribedToUserId: ID
-    userId: ID
-  }) {
-    try {
-      await waitForLibsInit()
-
-      return await audiusLibs.User.deleteUserSubscribe(
-        subscribedToUserId,
-        userId
-      )
-    } catch (err) {
-      console.error(getErrorMessage(err))
-      throw err
     }
   }
 
@@ -2168,7 +2111,6 @@ export const audiusBackend = ({
     recordTrackListen,
     registerDeviceToken,
     repostCollection,
-    resetPassword,
     guestSignUp,
     saveCollection,
     searchTags,
@@ -2200,8 +2142,6 @@ export const audiusBackend = ({
     updatePushNotificationSettings,
     updateUserEvent,
     updateUserLocationTimezone,
-    subscribeToUser,
-    unsubscribeFromUser,
     uploadImage,
     userNodeUrl,
     validateTracksInPlaylist,

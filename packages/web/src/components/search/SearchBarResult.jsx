@@ -1,7 +1,7 @@
 import { memo } from 'react'
 
 import { imageBlank as placeholderArt } from '@audius/common/assets'
-import { useImageSize2 } from '@audius/common/hooks'
+import { useImageSize } from '@audius/common/hooks'
 import { Kind } from '@audius/common/models'
 import cn from 'classnames'
 import PropTypes from 'prop-types'
@@ -15,7 +15,7 @@ import styles from './SearchBarResult.module.css'
 
 const Image = memo((props) => {
   const { defaultImage, artwork, size, isUser } = props
-  const image = useImageSize2({
+  const image = useImageSize({
     artwork,
     targetSize: size,
     defaultImage,

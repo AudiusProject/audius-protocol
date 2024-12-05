@@ -7,9 +7,10 @@ import {
   IconPause,
   IconPlay
 } from '@audius/harmony-native'
-import { TrackImage } from 'app/components/image/TrackImage'
 import { makeStyles } from 'app/styles'
 import { useThemeColors } from 'app/utils/theme'
+
+import { TrackImage } from '../image/TrackImage'
 
 type TrackArtworkProps = {
   track: Track
@@ -44,7 +45,7 @@ export const TrackArtwork = (props: TrackArtworkProps) => {
 
   return (
     <TrackImage
-      track={track}
+      trackId={track.track_id}
       size={SquareSizes.SIZE_150_BY_150}
       style={styles.image}
     >

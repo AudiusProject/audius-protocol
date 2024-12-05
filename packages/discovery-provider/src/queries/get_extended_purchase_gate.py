@@ -261,7 +261,9 @@ def get_legacy_purchase_gate(gate: AccessGate, session=None):
     if gate and "usdc_purchase" in gate:
         # mypy gets confused....
         gate = cast(PurchaseGate, gate)
-        if isinstance(gate["usdc_purchase"]["splits"], dict):
+        if "splits" in gate["usdc_purchase"] and isinstance(
+            gate["usdc_purchase"]["splits"], dict
+        ):
             return gate
         if session:
             new_gate = _get_extended_purchase_gate(session, gate)
