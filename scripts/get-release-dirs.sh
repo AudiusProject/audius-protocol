@@ -12,7 +12,9 @@ CLIENT_DIRS="packages/web
     packages/harmony \
     packages/libs"
 
-PROTOCOL_DIRS="mediorum \
+PROTOCOL_DIRS="pkg \
+    cmd \
+    dev-tools \
     packages/discovery-provider \
     packages/identity-service \
     packages/ddex* \
