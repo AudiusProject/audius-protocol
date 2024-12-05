@@ -13,8 +13,8 @@ import { useDispatch, useSelector } from 'react-redux'
 import { useHistory, useLocation } from 'react-router-dom'
 
 import { make, useRecord } from 'common/store/analytics/actions'
-import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
-import { audiusSdk } from 'services/audius-sdk'
+import { audiusSdk, authService } from 'services/audius-sdk'
+import { identityServiceInstance } from 'services/audius-sdk/identity'
 import * as errorActions from 'store/errors/actions'
 import { reportToSentry } from 'store/errors/reportToSentry'
 
@@ -34,6 +34,7 @@ import {
   WriteOnceParams,
   WriteOnceTx
 } from './utils'
+
 const { getAccountStatus, getUserId } = accountSelectors
 
 export const useParsedQueryParams = () => {
@@ -267,7 +268,8 @@ export const useOAuthSetup = ({
     const getAndSetEmail = async () => {
       let email: string
       try {
-        email = await audiusBackendInstance.getUserEmail()
+        const wallet = authService.getWallet()
+        email = await identityServiceInstance.getUserEmail({ wallet })
       } catch {
         setUserEmail(null)
         dispatch(
