@@ -1,13 +1,11 @@
 import { isOtpMissingError } from '@audius/common/hooks'
 import { useField } from 'formik'
 import { useAsyncFn } from 'react-use'
-import { authService } from 'services/audius-sdk/auth'
 
 import { TextLink } from '@audius/harmony-native'
 import { useToast } from 'app/hooks/useToast'
+import { authService } from 'app/services/sdk/auth'
 import { identityServiceInstance } from 'app/services/sdk/identity'
-
-const { hedgehogInstance } = authService
 
 const messages = {
   resend: 'Resend code.',
@@ -23,7 +21,7 @@ export const ResendCodeLink = () => {
   const [{ loading }, sendCode] = useAsyncFn(async () => {
     // Try to confirm without OTP to force OTP refresh
     try {
-      const wallet = hedgehogInstance.getWallet()
+      const wallet = authService.getWallet()
       await identityServiceInstance.changeEmail({
         email,
         wallet

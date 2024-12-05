@@ -33,8 +33,6 @@ import { identityServiceInstance } from 'services/audius-sdk/identity'
 
 import styles from './ChangeEmailModal.module.css'
 
-const { hedgehogInstance } = authService
-
 const messages = {
   changeEmail: 'Change Email',
   confirmPasswordHelp: 'Please enter your current password.',
@@ -68,7 +66,7 @@ export const ResendCodeLink = () => {
     setIsSending(true)
     // Try to confirm without OTP to force OTP refresh
     try {
-      const wallet = hedgehogInstance.getWallet()
+      const wallet = authService.getWallet()
       await identityServiceInstance.changeEmail({
         wallet,
         email
@@ -94,7 +92,7 @@ const CurrentEmail = () => {
   const [{ value: oldEmail }, , { setValue: setOldEmail }] =
     useField('oldEmail')
   // Load the email for the user
-  const wallet = hedgehogInstance.getWallet()
+  const wallet = authService.getWallet()
   const emailRequest = useAsync(async () => {
     return await identityServiceInstance.getUserEmail({ wallet })
   })

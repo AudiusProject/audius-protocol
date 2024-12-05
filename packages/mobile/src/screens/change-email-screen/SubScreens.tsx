@@ -14,8 +14,6 @@ import { ResendCodeLink } from '../change-password-screen/ResendCodeLink'
 import { SubScreen } from '../change-password-screen/SubScreen'
 import { SubScreenHeader } from '../change-password-screen/SubScreenHeader'
 
-const { hedgehogInstance } = authService
-
 const messages = {
   changeYourEmail: 'Change Your Email',
   confirmPasswordHelp: 'Please enter your current password.',
@@ -34,7 +32,7 @@ export const CurrentEmail = () => {
     useField('oldEmail')
 
   // Load the email for the user
-  const wallet = hedgehogInstance.getWallet()
+  const wallet = authService.getWallet()
   const emailRequest = useAsync(async () => {
     return await identityServiceInstance.getUserEmail({ wallet })
   })

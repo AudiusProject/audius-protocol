@@ -1,3 +1,5 @@
+import { EthWallet } from '@audius/hedgehog'
+
 import type { LocalStorage } from '../local-storage'
 
 import { HedgehogConfig, createHedgehog } from './hedgehog'
@@ -36,6 +38,7 @@ export type AuthService = {
     signature: string
   }) => Promise<void>
   getWalletAddresses: () => Promise<GetWalletAddressesResult>
+  getWallet: () => EthWallet | null
 }
 
 export const createAuthService = ({
@@ -86,11 +89,16 @@ export const createAuthService = ({
     await identityService.sendRecoveryInfo(params)
   }
 
+  const getWallet = () => {
+    return hedgehogInstance.wallet
+  }
+
   return {
     hedgehogInstance,
     signIn,
     signOut,
     getWalletAddresses,
-    sendRecoveryInfo
+    sendRecoveryInfo,
+    getWallet
   }
 }

@@ -35,7 +35,6 @@ import {
   WriteOnceTx
 } from './utils'
 
-const { hedgehogInstance } = authService
 const { getAccountStatus, getUserId } = accountSelectors
 
 export const useParsedQueryParams = () => {
@@ -269,7 +268,7 @@ export const useOAuthSetup = ({
     const getAndSetEmail = async () => {
       let email: string
       try {
-        const wallet = hedgehogInstance.getWallet()
+        const wallet = authService.getWallet()
         email = await identityServiceInstance.getUserEmail({ wallet })
       } catch {
         setUserEmail(null)

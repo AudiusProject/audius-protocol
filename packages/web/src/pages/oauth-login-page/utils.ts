@@ -14,8 +14,6 @@ import { getStorageNodeSelector } from 'services/audius-sdk/storageNodeSelector'
 
 import { messages } from './messages'
 
-const { hedgehogInstance } = authService
-
 export const getIsRedirectValid = ({
   parsedRedirectUri,
   redirectUri
@@ -120,7 +118,7 @@ export const formOAuthResponse = async ({
   let email: string
   if (!userEmail) {
     try {
-      const wallet = hedgehogInstance.getWallet()
+      const wallet = authService.getWallet()
       email = await identityServiceInstance.getUserEmail({ wallet })
     } catch {
       onError()
