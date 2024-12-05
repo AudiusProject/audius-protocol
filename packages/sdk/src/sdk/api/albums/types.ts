@@ -79,7 +79,7 @@ export const createUploadAlbumSchema = () =>
       userId: HashId,
       coverArtFile: ImageFile,
       metadata: createUploadAlbumMetadataSchema(),
-      onProgress: z.optional(z.function().args(z.number())),
+      onProgress: z.optional(z.function()),
       /**
        * Track metadata is populated from the album if fields are missing
        */
@@ -99,7 +99,7 @@ export const createUpdateAlbumSchema = () =>
       albumId: HashId,
       coverArtFile: z.optional(ImageFile),
       metadata: createUploadAlbumMetadataSchema().partial(),
-      onProgress: z.optional(z.function().args(z.number()))
+      onProgress: z.optional(z.function())
     })
     .strict()
 

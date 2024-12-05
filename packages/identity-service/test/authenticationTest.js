@@ -235,6 +235,22 @@ describe('test authentication routes', function () {
     assert.ok(otp)
   })
 
+  it('is case-insensitive for OTP code checks', async function () {
+    await signUpUser()
+
+    const redis = app.get('redis')
+    await redis.set('otp:dheeraj@audius.co', '123456')
+    // Try getting data with the right params
+    const response = await request(app).get('/authentication').query({
+      lookupKey:
+        '9bdc91e1bb7ef60177131690b18349625778c14656dc17814945b52a3f07ac77',
+      username: 'DhEeRaj@audius.co',
+      otp: '123456'
+    })
+
+    assert.deepStrictEqual(response.statusCode, 200)
+  })
+
   it('sends up to 2 otp codes every 10 minutes', async function () {
     const redis = app.get('redis')
     await signUpUser()

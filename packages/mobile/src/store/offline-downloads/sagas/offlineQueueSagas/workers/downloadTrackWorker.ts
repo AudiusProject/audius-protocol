@@ -159,13 +159,16 @@ function* downloadTrackAudio(track: UserTrackMetadata, userId: ID) {
 
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
   const apiClient = yield* getContext('apiClient')
+  const audiusSdk = yield* getContext('audiusSdk')
+  const sdk = yield* call(audiusSdk)
   const nftAccessSignatureMap = yield* select(getNftAccessSignatureMap)
   const nftAccessSignature = nftAccessSignatureMap[track_id]?.mp3 ?? null
   let queryParams: QueryParams = {}
   queryParams = yield* call(getQueryParams, {
     audiusBackendInstance,
     nftAccessSignature,
-    userId
+    userId,
+    sdk
   })
   // todo: pass in correct filename and whether to download original or mp3
   queryParams.filename = `${title}.mp3`

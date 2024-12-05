@@ -15,7 +15,7 @@ import type { StorageNodeSelectorService } from '../StorageNodeSelector'
 import { getDefaultStorageServiceConfig } from './getDefaultConfig'
 import type {
   FileTemplate,
-  ProgressCB,
+  ProgressHandler,
   StorageService,
   StorageServiceConfig,
   StorageServiceConfigInternal,
@@ -53,22 +53,24 @@ export class Storage implements StorageService {
   async editFile({
     uploadId,
     data,
-    auth
+    auth,
+    onProgress
   }: {
     uploadId: string
     data: { [key: string]: string }
     auth: AuthService
+    onProgress?: ProgressHandler
   }) {
     // Generate signature
-
     const signatureData = {
       upload_id: uploadId,
       timestamp: Date.now()
     }
-    const sigJson = JSON.stringify(sortObjectKeys(signatureData))
-    const signature = await auth.hashAndSign(sigJson)
+    const signature = await auth.hashAndSign(
+      JSON.stringify(sortObjectKeys(signatureData))
+    )
     const signatureEnvelope = {
-      data: sigJson,
+      data: JSON.stringify(signatureData),
       signature
     }
 
@@ -89,9 +91,8 @@ export class Storage implements StorageService {
     // Poll for re-transcoding to complete
     return await this.pollProcessingStatus(
       uploadId,
-      response.data.template === 'audio'
-        ? MAX_TRACK_TRANSCODE_TIMEOUT
-        : MAX_IMAGE_RESIZE_TIMEOUT_MS
+      response.data.template,
+      onProgress
     )
   }
 
@@ -107,14 +108,14 @@ export class Storage implements StorageService {
     file,
     onProgress,
     template,
-    options = {},
-    auth
+    auth,
+    options = {}
   }: {
     file: File
-    onProgress?: ProgressCB
+    onProgress?: ProgressHandler
     template: FileTemplate
-    options?: { [key: string]: string }
     auth: AuthService
+    options?: { [key: string]: string }
   }) {
     const formData: FormData = new FormData()
     formData.append('template', template)
@@ -127,13 +128,15 @@ export class Storage implements StorageService {
       file.name ?? 'blob'
     )
 
+    // Generate signature
     const signatureData = {
       timestamp: Date.now()
     }
-    const sigJson = JSON.stringify(sortObjectKeys(signatureData))
-    const signature = await auth.hashAndSign(sigJson)
+    const signature = await auth.hashAndSign(
+      JSON.stringify(sortObjectKeys(signatureData))
+    )
     const signatureEnvelope = {
-      data: sigJson,
+      data: JSON.stringify(signatureData),
       signature
     }
 
@@ -145,13 +148,21 @@ export class Storage implements StorageService {
       maxContentLength: Infinity,
       data: formData,
       params: { signature: JSON.stringify(signatureEnvelope) },
-      headers: formData.getBoundary
-        ? {
-            'Content-Type': `multipart/form-data; boundary=${formData.getBoundary()}`
-          }
-        : undefined,
-      onUploadProgress: (progressEvent) =>
-        onProgress?.(progressEvent.loaded, progressEvent.total)
+      headers: {
+        ...(formData.getBoundary
+          ? {
+              'Content-Type': `multipart/form-data; boundary=${formData.getBoundary()}`
+            }
+          : undefined)
+      },
+      onUploadProgress: (progressEvent) => {
+        const progress = {
+          upload: { loaded: progressEvent.loaded, total: progressEvent.total }
+        }
+        onProgress?.(
+          template === 'audio' ? { audio: progress } : { art: progress }
+        )
+      }
     }
 
     let lastErr
@@ -177,9 +188,8 @@ export class Storage implements StorageService {
 
     return await this.pollProcessingStatus(
       response.data[0].id,
-      template === 'audio'
-        ? MAX_TRACK_TRANSCODE_TIMEOUT
-        : MAX_IMAGE_RESIZE_TIMEOUT_MS
+      template,
+      onProgress
     )
   }
 
@@ -189,11 +199,28 @@ export class Storage implements StorageService {
    * @param maxPollingMs millis to stop polling and error if job is not done
    * @returns successful job info, or throws error if job fails / times out
    */
-  private async pollProcessingStatus(id: string, maxPollingMs: number) {
+  private async pollProcessingStatus(
+    id: string,
+    template: FileTemplate,
+    onProgress?: ProgressHandler
+  ) {
     const start = Date.now()
+
+    const maxPollingMs =
+      template === 'audio'
+        ? MAX_TRACK_TRANSCODE_TIMEOUT
+        : MAX_IMAGE_RESIZE_TIMEOUT_MS
+
     while (Date.now() - start < maxPollingMs) {
       try {
         const resp = await this.getProcessingStatus(id)
+        if (template === 'audio' && resp.transcode_progress) {
+          onProgress?.({
+            audio: {
+              transcode: { decimal: resp.transcode_progress }
+            }
+          })
+        }
         if (resp?.status === 'done') {
           return resp
         }

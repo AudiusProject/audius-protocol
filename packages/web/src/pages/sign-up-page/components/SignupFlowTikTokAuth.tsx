@@ -31,7 +31,6 @@ export const SignupFlowTikTokAuth = ({
   }
 
   const handleError = (e: Error) => {
-    console.error(e)
     onFailure(e, 'tiktok')
   }
 

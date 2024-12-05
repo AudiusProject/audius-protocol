@@ -3,7 +3,7 @@ import { useCallback } from 'react'
 import { USDC } from '@audius/fixed-decimal'
 import BN from 'bn.js'
 import { useDispatch, useSelector } from 'react-redux'
-import { useLocalStorage } from 'react-use'
+import { useLocalStorage, useEffectOnce } from 'react-use'
 import { z } from 'zod'
 
 import { useGetCurrentUser } from '~/api'
@@ -78,6 +78,12 @@ export const usePurchaseContentFormConfiguration = ({
   const isGuestCheckout =
     guestCheckoutEnabled &&
     (!currentUser || (currentUser && !currentUser.handle))
+
+  useEffectOnce(() => {
+    if (isGuestCheckout && !guestEmail) {
+      dispatch(setPurchasePage({ page: PurchaseContentPage.GUEST_CHECKOUT }))
+    }
+  })
 
   const initialValues: PurchaseContentValues = {
     [CUSTOM_AMOUNT]: undefined,

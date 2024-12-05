@@ -1,9 +1,10 @@
+import { NativeFile } from '@audius/sdk'
+
 import { CollectionValues } from '~/schemas'
 
 import { Collection, ID, Track } from '../../models'
 
 import {
-  NativeFile,
   Progress,
   TrackForUpload,
   TrackMetadataForUpload,
