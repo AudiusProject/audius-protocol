@@ -2,7 +2,7 @@ import {
   transformAndCleanList,
   userCollectionMetadataFromSDK
 } from '@audius/common/adapters'
-import { Id, ID, Track } from '@audius/common/models'
+import { Id, ID, OptionalId, Track } from '@audius/common/models'
 import { IntKeys } from '@audius/common/services'
 import {
   accountSelectors,
@@ -78,10 +78,12 @@ function* fetchDashboardAsync(
         getUnlisted: true
       }),
       call([sdk.full.users, sdk.full.users.getPlaylistsByUser], {
-        id: Id.parse(accountUserId)
+        id: Id.parse(accountUserId),
+        userId: OptionalId.parse(accountUserId)
       }),
       call([sdk.full.users, sdk.full.users.getAlbumsByUser], {
-        id: Id.parse(accountUserId)
+        id: Id.parse(accountUserId),
+        userId: OptionalId.parse(accountUserId)
       })
     ])
     const tracks = data[0] as Track[]
