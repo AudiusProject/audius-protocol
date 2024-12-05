@@ -130,26 +130,23 @@ export function* confirmRepostCollection(
   user: User,
   metadata: { is_repost_of_repost: boolean }
 ) {
-  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
+  const sdk = yield* getSDK()
   yield* put(
     confirmerActions.requestConfirmation(
       makeKindId(Kind.COLLECTIONS, collectionId),
       function* () {
-        const { blockHash, blockNumber } = yield* call(
-          audiusBackendInstance.repostCollection,
-          collectionId,
-          metadata
-        )
-        const confirmed = yield* call(
-          confirmTransaction,
-          blockHash,
-          blockNumber
-        )
-        if (!confirmed) {
-          throw new Error(
-            `Could not confirm repost collection for collection id ${collectionId}`
-          )
+        const userId = yield* select(getUserId)
+        if (!userId) {
+          throw new Error('No userId set, cannot repost collection')
         }
+
+        yield* call([sdk.playlists, sdk.playlists.repostPlaylist], {
+          userId: Id.parse(userId),
+          playlistId: Id.parse(collectionId),
+          metadata: {
+            isRepostOfRepost: metadata?.is_repost_of_repost ?? false
+          }
+        })
         return collectionId
       },
       function* () {},
@@ -242,25 +239,20 @@ export function* confirmUndoRepostCollection(
   collectionId: ID,
   user: User
 ) {
-  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
+  const sdk = yield* getSDK()
   yield* put(
     confirmerActions.requestConfirmation(
       makeKindId(Kind.COLLECTIONS, collectionId),
       function* () {
-        const { blockHash, blockNumber } = yield* call(
-          audiusBackendInstance.undoRepostCollection,
-          collectionId
-        )
-        const confirmed = yield* call(
-          confirmTransaction,
-          blockHash,
-          blockNumber
-        )
-        if (!confirmed) {
-          throw new Error(
-            `Could not confirm undo repost collection for collection id ${collectionId}`
-          )
+        const userId = yield* select(getUserId)
+        if (!userId) {
+          throw new Error('No userId set, cannot undo repost collection')
         }
+
+        yield* call([sdk.playlists, sdk.playlists.unrepostPlaylist], {
+          userId: Id.parse(userId),
+          playlistId: Id.parse(collectionId)
+        })
         return collectionId
       },
       function* () {},

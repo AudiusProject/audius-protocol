@@ -658,7 +658,7 @@ function* confirmDeleteAlbum(playlistId: ID, userId: ID) {
       function* () {
         const userId = yield* select(getUserId)
         if (!userId) {
-          throw new Error('No userId set, cannot save collection')
+          throw new Error('No userId set, cannot delete collection')
         }
 
         // Optimistically mark everything as deleted
@@ -745,7 +745,7 @@ function* confirmDeletePlaylist(userId: ID, playlistId: ID) {
       function* (confirmedPlaylistId: ID) {
         const userId = yield* select(getUserId)
         if (!userId) {
-          throw new Error('No userId set, cannot save collection')
+          throw new Error('No userId set, cannot delete collection')
         }
 
         // Optimistically mark playlist as removed

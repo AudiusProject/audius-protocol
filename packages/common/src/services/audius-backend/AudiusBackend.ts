@@ -830,30 +830,6 @@ export const audiusBackend = ({
     }
   }
 
-  async function repostCollection(
-    playlistId: ID,
-    metadata?: { is_repost_of_repost: boolean }
-  ) {
-    try {
-      return audiusLibs.EntityManager.repostPlaylist(
-        playlistId,
-        JSON.stringify(metadata)
-      )
-    } catch (err) {
-      console.error(getErrorMessage(err))
-      throw err
-    }
-  }
-
-  async function undoRepostCollection(playlistId: ID) {
-    try {
-      return audiusLibs.EntityManager.unrepostPlaylist(playlistId)
-    } catch (err) {
-      console.error(getErrorMessage(err))
-      throw err
-    }
-  }
-
   async function uploadImage(file: File) {
     return await audiusLibs.creatorNode.uploadTrackCoverArtV2(file, () => {})
   }
@@ -2067,7 +2043,6 @@ export const audiusBackend = ({
     publishPlaylist,
     recordTrackListen,
     registerDeviceToken,
-    repostCollection,
     guestSignUp,
     searchTags,
     sendRecoveryEmail,
@@ -2086,7 +2061,6 @@ export const audiusBackend = ({
     twitterHandle,
     instagramHandle,
     tiktokHandle,
-    undoRepostCollection,
     updateBrowserNotifications,
     updateCreator,
     updateEmailNotificationSettings,
