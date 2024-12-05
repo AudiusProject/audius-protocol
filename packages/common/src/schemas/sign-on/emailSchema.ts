@@ -36,6 +36,7 @@ export const emailSchema = <T extends AudiusQueryContextType>(
             code: z.ZodIssueCode.custom,
             message: emailSchemaMessages.completeYourProfile
           })
+          console.log('asdf complete guest account only')
           return true
         } else if (isEmailInUse) {
           ctx.addIssue({

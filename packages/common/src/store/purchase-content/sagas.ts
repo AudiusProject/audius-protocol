@@ -1,5 +1,5 @@
 import { USDC } from '@audius/fixed-decimal'
-import { type AudiusSdk } from '@audius/sdk'
+import { CreateUserRequest, type AudiusSdk } from '@audius/sdk'
 import type { createJupiterApiClient, QuoteResponse } from '@jup-ag/api'
 import { getAccount, getAssociatedTokenAddressSync } from '@solana/spl-token'
 import {
@@ -72,7 +72,7 @@ import {
   CoinflowPurchaseMetadata,
   coinflowOnrampModalActions
 } from '~/store/ui/modals/coinflow-onramp-modal'
-import { waitForValue } from '~/utils'
+import { TEMPORARY_PASSWORD, waitForValue } from '~/utils'
 import { encodeHashId } from '~/utils/hashIds'
 import { BN_USDC_CENT_WEI } from '~/utils/wallet'
 
@@ -92,6 +92,7 @@ import {
   usdcBalanceSufficient,
   purchaseContentFlowFailed,
   startPurchaseContentFlow,
+  createGuestAccount,
   eagerCreateUserBank
 } from './slice'
 import {
@@ -613,6 +614,46 @@ function* purchaseUSDCWithStripe({ amount }: PurchaseUSDCWithStripeArgs) {
   yield* put(usdcBalanceSufficient())
 }
 
+function* doCreateGuestAccount({ payload: { guestEmail } }) {
+  const getFeatureEnabled = yield* getContext('getFeatureEnabled')
+  const sdk = yield* getSDK()
+
+  const authService = yield* getContext('authService')
+
+  // get user & user bank
+  const isGuestCheckoutEnabled = yield* call(
+    getFeatureEnabled,
+    FeatureFlags.GUEST_CHECKOUT
+  )
+
+  if (isGuestCheckoutEnabled) {
+    const currentUser = yield* select(getAccountUser)
+    if (currentUser) {
+      return
+    }
+
+    yield* call(
+      [authService.hedgehogInstance, authService.hedgehogInstance.signUp],
+      {
+        username: guestEmail,
+        password: TEMPORARY_PASSWORD
+      }
+    )
+
+    const wallet = (yield* call([authService, authService.getWalletAddresses]))
+      .web3WalletAddress
+
+    if (!currentUser && guestEmail) {
+      const { blockNumber, metadata } = yield* call([
+        sdk.users,
+        sdk.users.createGuest
+      ])
+
+      yield* call(fetchAccountAsync, { isSignUp: true })
+    }
+  }
+}
+
 function* doStartPurchaseContentFlow({
   payload: {
     extraAmount,
@@ -671,21 +712,6 @@ function* doStartPurchaseContentFlow({
 
   try {
     // get user & user bank
-    const isGuestCheckoutEnabled = yield* call(
-      getFeatureEnabled,
-      FeatureFlags.GUEST_CHECKOUT
-    )
-
-    if (isGuestCheckoutEnabled) {
-      const currentUser = yield* select(getAccountUser)
-
-      if (!currentUser && guestEmail) {
-        yield* call(audiusBackendInstance.guestSignUp, guestEmail)
-
-        yield* call(fetchAccountAsync, { isSignUp: true })
-      }
-    }
-
     const purchaserUserId = yield* select(getUserId)
     if (!purchaserUserId) {
       throw new Error('Failed to fetch purchasing user id')
@@ -1179,6 +1205,10 @@ function* watchStartPurchaseContentFlow() {
   yield takeLatest(startPurchaseContentFlow, doStartPurchaseContentFlow)
 }
 
+function* watchCreateGuestAccount() {
+  yield takeLatest(createGuestAccount, doCreateGuestAccount)
+}
+
 function* watchEagerCreateUserBank() {
   yield takeEvery(eagerCreateUserBank, function* () {
     try {
@@ -1190,5 +1220,9 @@ function* watchEagerCreateUserBank() {
 }
 
 export default function sagas() {
-  return [watchStartPurchaseContentFlow, watchEagerCreateUserBank]
+  return [
+    watchStartPurchaseContentFlow,
+    watchEagerCreateUserBank,
+    watchCreateGuestAccount
+  ]
 }

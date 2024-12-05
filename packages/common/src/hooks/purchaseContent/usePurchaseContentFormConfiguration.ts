@@ -38,7 +38,8 @@ import { PayExtraAmountPresetValues, PayExtraPreset } from './types'
 import { getExtraAmount } from './utils'
 import { createPurchaseContentSchema } from './validation'
 
-const { startPurchaseContentFlow, setPurchasePage } = purchaseContentActions
+const { startPurchaseContentFlow, setPurchasePage, createGuestAccount } =
+  purchaseContentActions
 const {
   getPurchaseContentFlowStage,
   getPurchaseContentError,
@@ -116,10 +117,15 @@ export const usePurchaseContentFormConfiguration = ({
       guestEmail,
       purchaseMethodMintAddress
     }: PurchaseContentValues) => {
+      console.log('asdf onSubmit: ')
       if (isUnlocking || !contentId) return
 
       setGuestEmail(guestEmail)
-
+      if (page === PurchaseContentPage.PURCHASE) {
+        if (guestEmail) {
+          dispatch(createGuestAccount({ guestEmail }))
+        }
+      }
       if (
         purchaseMethod === PurchaseMethod.CRYPTO &&
         page === PurchaseContentPage.PURCHASE

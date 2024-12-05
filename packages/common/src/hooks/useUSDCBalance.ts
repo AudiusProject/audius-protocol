@@ -35,6 +35,7 @@ export const useUSDCBalance = ({
   const { audiusBackend } = useAppContext()
   const { data: user } = useGetCurrentUser({})
   const ethAddress = user?.wallet ?? null
+  // need this ethAddress
   const dispatch = useDispatch()
 
   const [balanceStatus, setBalanceStatus] = useState(Status.IDLE)

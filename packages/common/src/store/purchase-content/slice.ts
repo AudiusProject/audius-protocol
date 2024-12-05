@@ -42,7 +42,8 @@ const initialState: PurchaseContentState = {
   stage: PurchaseContentStage.IDLE,
   purchaseMethod: PurchaseMethod.BALANCE,
   purchaseVendor: undefined,
-  purchaseMethodMintAddress: undefined
+  purchaseMethodMintAddress: undefined,
+  guestEmail: undefined
 }
 
 const slice = createSlice({
@@ -76,6 +77,12 @@ const slice = createSlice({
       state.purchaseVendor = action.payload.purchaseVendor
       state.guestEmail = action.payload.guestEmail
       state.purchaseMethodMintAddress = action.payload.purchaseMethodMintAddress
+    },
+    createGuestAccount: (
+      state,
+      action: PayloadAction<{ guestEmail: string }>
+    ) => {
+      state.guestEmail = action.payload.guestEmail
     },
     buyUSDC: (state) => {
       state.stage = PurchaseContentStage.BUY_USDC
@@ -127,7 +134,8 @@ export const {
   purchaseCanceled,
   purchaseContentFlowFailed,
   cleanup,
-  eagerCreateUserBank
+  eagerCreateUserBank,
+  createGuestAccount
 } = slice.actions
 
 export default slice.reducer
