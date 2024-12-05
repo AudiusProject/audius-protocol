@@ -1,5 +1,4 @@
-import type { ReactNode } from 'react'
-import { useRef } from 'react'
+import { useRef, type ReactNode } from 'react'
 
 import { accountSelectors } from '@audius/common/store'
 import { decodeHashId } from '@audius/common/utils'
@@ -22,11 +21,14 @@ import { getPrimaryRoute } from 'app/utils/navigation'
 import { useThemeVariant } from 'app/utils/theme'
 
 import { navigationThemes } from './navigationThemes'
+import {reactNavigationIntegration} from '@sentry/react-native'
+
 
 const { getUserHandle } = accountSelectors
 
 type NavigationContainerProps = {
   children: ReactNode
+  navigationIntegration: ReturnType<typeof reactNavigationIntegration>
 }
 
 export const navigationRef = createNavigationContainerRef()
@@ -91,7 +93,7 @@ const convertQueryParamsToObject = (url: string) => {
  * and configures linking
  */
 const NavigationContainer = (props: NavigationContainerProps) => {
-  const { children } = props
+  const { children, navigationIntegration } = props
   const theme = useThemeVariant()
   const accountHandle = useSelector(getUserHandle)
 
@@ -359,14 +361,17 @@ const NavigationContainer = (props: NavigationContainerProps) => {
     }
   }
 
+  const onReady = () => {
+    routeNameRef.current = getPrimaryRoute(navigationRef.getRootState())
+    navigationIntegration.registerNavigationContainer(navigationRef)
+  }
+
   return (
     <RNNavigationContainer
       linking={linking}
       theme={navigationThemes[theme]}
       ref={navigationRef}
-      onReady={() => {
-        routeNameRef.current = getPrimaryRoute(navigationRef.getRootState())
-      }}
+      onReady={onReady}
       onStateChange={() => {
         // Record screen views for the primary routes
         // Secondary routes (e.g. Track, Collection, Profile) are recorded via

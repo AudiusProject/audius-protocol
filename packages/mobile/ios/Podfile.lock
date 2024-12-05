@@ -1441,7 +1441,7 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
-  - RNSentry (5.33.1):
+  - RNSentry (6.4.0):
     - DoubleConversion
     - glog
     - hermes-engine
@@ -1462,7 +1462,7 @@ PODS:
     - React-utils
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
-    - Sentry/HybridSDK (= 8.36.0)
+    - Sentry/HybridSDK (= 8.41.0)
     - Yoga
   - RNShare (10.0.2):
     - React-Core
@@ -1480,7 +1480,7 @@ PODS:
   - SDWebImageWebPCoder (0.8.5):
     - libwebp (~> 1.0)
     - SDWebImage/Core (~> 5.10)
-  - Sentry/HybridSDK (8.36.0)
+  - Sentry/HybridSDK (8.41.0)
   - snap-kit-react-native (0.4.0):
     - React-Core
     - SnapSDK/SCSDKCreativeKit (~> 1.15.0)
@@ -1600,7 +1600,7 @@ DEPENDENCIES:
   - RNReactNativeHapticFeedback (from `../node_modules/react-native-haptic-feedback`)
   - RNReanimated (from `../../../node_modules/react-native-reanimated`)
   - RNScreens (from `../../../node_modules/react-native-screens`)
-  - "RNSentry (from `../../../node_modules/@sentry/react-native`)"
+  - "RNSentry (from `../node_modules/@sentry/react-native`)"
   - RNShare (from `../node_modules/react-native-share`)
   - RNSoundPlayer (from `../../../node_modules/react-native-sound-player`)
   - RNSVG (from `../node_modules/react-native-svg`)
@@ -1829,7 +1829,7 @@ EXTERNAL SOURCES:
   RNScreens:
     :path: "../../../node_modules/react-native-screens"
   RNSentry:
-    :path: "../../../node_modules/@sentry/react-native"
+    :path: "../node_modules/@sentry/react-native"
   RNShare:
     :path: "../node_modules/react-native-share"
   RNSoundPlayer:
@@ -1954,14 +1954,14 @@ SPEC CHECKSUMS:
   RNReactNativeHapticFeedback: ec56a5f81c3941206fd85625fa669ffc7b4545f9
   RNReanimated: a0d2b06c7b05ef04ac5a1c286a1c0eb59c62545c
   RNScreens: 23dad53fc9db1da2c93e647ae33fd7ce2bd49d60
-  RNSentry: c74f756c88aa2a90070f555609d2a31ab2a7f461
+  RNSentry: 50ec24687f6419c345ecb4be09378dcfe47ef6c5
   RNShare: 859ff710211285676b0bcedd156c12437ea1d564
   RNSoundPlayer: 490822518cc1d6d80495ca7e3223df5869c30851
   RNSVG: 4590aa95758149fa27c5c83e54a6a466349a1688
   RNZipArchive: 7bb4c70d6aa2dd235212c0a4a3de0a4e237e2569
   SDWebImage: a7f831e1a65eb5e285e3fb046a23fcfbf08e696d
   SDWebImageWebPCoder: 908b83b6adda48effe7667cd2b7f78c897e5111d
-  Sentry: f8374b5415bc38dfb5645941b3ae31230fbeae57
+  Sentry: 54d0fe6c0df448497c8ed4cce66ccf7027e1823e
   snap-kit-react-native: 751006199818fccb38c8a01196495167bc25e9fb
   SnapSDK: 1e68aad748e080f49e3802559b3b76026666ef62
   SocketRocket: abac6f5de4d4d62d24e11868d7a2f427e0ef940d

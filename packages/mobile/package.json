@@ -89,7 +89,7 @@
     "@redux-devtools/remote": "0.8.0",
     "@reduxjs/toolkit": "1.6.1",
     "@sayem314/react-native-keep-awake": "1.2.2",
-    "@sentry/react-native": "5.33.1",
+    "@sentry/react-native": "6.4.0",
     "@snapchat/snap-kit-react-native": "0.4.0",
     "@solana-mobile/mobile-wallet-adapter-protocol": "0.9.9",
     "@solana-mobile/mobile-wallet-adapter-protocol-web3js": "0.9.9",
