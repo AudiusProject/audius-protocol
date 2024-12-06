@@ -28,3 +28,6 @@ cron.schedule('5 12 * * 5', () => {
 }, {
     timezone: "America/Los_Angeles"
 });
+
+
+discoveryProviderConfig: { whitelist: new Set(['https://discoveryprovider.audius.co', 'https://dn2.monophonic.digital', 'https://audius-metadata-1.figment.io', 'https://audius-dp.amsterdam.creatorseed.com'])},
