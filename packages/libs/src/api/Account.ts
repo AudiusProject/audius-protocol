@@ -297,14 +297,6 @@ export class Account extends Base {
   }
 
   /**
-   * Get the current user's email address
-   */
-  async getUserEmail() {
-    this.REQUIRES(Services.IDENTITY_SERVICE)
-    return await this.identityService.getUserEmail()
-  }
-
-  /**
    * Associates a user with a twitter uuid.
    * @param uuid from the Twitter API
    */
