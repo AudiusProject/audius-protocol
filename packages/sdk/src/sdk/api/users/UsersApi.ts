@@ -190,6 +190,8 @@ export class UsersApi extends GeneratedUsersApi {
       ...(coverArtResp ? { coverPhoto: coverArtResp?.id } : {})
     }
 
+    const cid = (await generateMetadataCidV1(updatedMetadata)).toString()
+
     // Write metadata to chain
     return await this.entityManager.manageEntity({
       userId,
@@ -197,7 +199,7 @@ export class UsersApi extends GeneratedUsersApi {
       entityId: userId,
       action: Action.UPDATE,
       metadata: JSON.stringify({
-        cid: '',
+        cid,
         data: snakecaseKeys(updatedMetadata)
       }),
       ...advancedOptions

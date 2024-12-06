@@ -19,6 +19,7 @@ import {
 } from '@solana/web3.js'
 import BN from 'bn.js'
 
+import { userMetadataToSdk } from '~/adapters/user'
 import { Env } from '~/services/env'
 import dayjs from '~/utils/dayjs'
 
@@ -34,7 +35,8 @@ import {
   User,
   UserMetadata,
   UserCollection,
-  ComputedUserProperties
+  ComputedUserProperties,
+  Id
 } from '../../models'
 import { AnalyticsEvent } from '../../models/Analytics'
 import { ReportToSentryArgs } from '../../models/ErrorReporting'
@@ -56,7 +58,6 @@ import {
   getErrorMessage,
   uuid,
   Maybe,
-  encodeHashId,
   Nullable,
   isNullOrUndefined
 } from '../../utils'
@@ -649,7 +650,7 @@ export const audiusBackend = ({
           normal: (libs) => libs.User.getUserListenCountsMonthly,
           eager: DiscoveryAPI.getUserListenCountsMonthly
         },
-        encodeHashId(currentUserId),
+        Id.parse(currentUserId),
         startTime,
         endTime
       )
@@ -753,25 +754,14 @@ export const audiusBackend = ({
       associatedWallets?.associated_sol_wallets
 
     try {
-      if (newMetadata.updatedProfilePicture) {
-        const resp = await audiusLibs.creatorNode.uploadProfilePictureV2(
-          newMetadata.updatedProfilePicture.file
-        )
-        newMetadata.profile_picture_sizes = resp.id
-      }
-
-      if (newMetadata.updatedCoverPhoto) {
-        const resp = await audiusLibs.creatorNode.uploadCoverPhotoV2(
-          newMetadata.updatedCoverPhoto.file
-        )
-        newMetadata.cover_photo_sizes = resp.id
-      }
-
       newMetadata = schemas.newUserMetadata(newMetadata, true)
       const userId = newMetadata.user_id
-      const { blockHash, blockNumber } = await audiusLibs.User.updateMetadataV2(
-        { newMetadata, userId }
-      )
+      const { blockHash, blockNumber } = await sdk.users.updateProfile({
+        userId: Id.parse(userId),
+        profilePictureFile: newMetadata.updatedProfilePicture?.file,
+        coverArtFile: newMetadata.updatedCoverPhoto?.file,
+        metadata: userMetadataToSdk(newMetadata)
+      })
       return { blockHash, blockNumber, userId }
     } catch (err) {
       console.error(getErrorMessage(err))
