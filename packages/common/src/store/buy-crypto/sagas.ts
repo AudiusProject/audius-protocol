@@ -482,6 +482,7 @@ function* doBuyCryptoViaSol({
       audiusBackendInstance,
       {
         wallet: wallet.publicKey,
+        sdk,
         initialBalance,
         retryDelayMs: config.retryDelayMs,
         maxRetryCount: config.maxRetryCount

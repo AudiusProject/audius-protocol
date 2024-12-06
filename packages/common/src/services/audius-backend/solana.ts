@@ -25,7 +25,6 @@ import {
 } from '@solana/web3.js'
 import BN from 'bn.js'
 
-import { Env } from '~/services/env'
 import { CommonStoreContext } from '~/store/storeContext'
 
 import {
@@ -331,18 +330,21 @@ export const pollForBalanceChange = async (
     wallet,
     initialBalance,
     retryDelayMs = DEFAULT_RETRY_DELAY,
-    maxRetryCount = DEFAULT_MAX_RETRY_COUNT
+    maxRetryCount = DEFAULT_MAX_RETRY_COUNT,
+    sdk
   }: {
     wallet: PublicKey
     initialBalance?: bigint
     retryDelayMs?: number
     maxRetryCount?: number
+    sdk: AudiusSdk
   }
 ) => {
   console.info(`Polling SOL balance for ${wallet.toBase58()} ...`)
-  let balanceBN = await audiusBackendInstance.getAddressSolBalance(
-    wallet.toBase58()
-  )
+  let balanceBN = await audiusBackendInstance.getAddressSolBalance({
+    address: wallet.toBase58(),
+    sdk
+  })
   let balance = BigInt(balanceBN.toString())
   if (initialBalance === undefined) {
     initialBalance = balance
@@ -353,9 +355,10 @@ export const pollForBalanceChange = async (
       `Polling SOL balance (${initialBalance} === ${balance}) [${retries}/${maxRetryCount}]`
     )
     await delay(retryDelayMs)
-    balanceBN = await audiusBackendInstance.getAddressSolBalance(
-      wallet.toBase58()
-    )
+    balanceBN = await audiusBackendInstance.getAddressSolBalance({
+      address: wallet.toBase58(),
+      sdk
+    })
     balance = BigInt(balanceBN.toString())
   }
   if (balance !== initialBalance) {
