@@ -14,7 +14,8 @@ import {
   walletSelectors,
   walletActions,
   getContext,
-  InputSendDataAction
+  InputSendDataAction,
+  getSDK
 } from '@audius/common/store'
 import {
   getErrorMessage,
@@ -85,11 +86,12 @@ function* sendAsync({
   const weiBNAmount = stringWeiToBN(weiAudioAmount)
   const accountBalance = yield* select(getAccountBalance)
   const weiBNBalance = accountBalance ?? (new BN('0') as BNWei)
+  const sdk = yield* getSDK()
 
-  const waudioWeiAmount: BNWei | null = yield* call([
-    walletClient,
-    'getCurrentWAudioBalance'
-  ])
+  const waudioWeiAmount: BNWei | null = yield* call(
+    [walletClient, 'getCurrentWAudioBalance'],
+    { sdk }
+  )
 
   if (isNullOrUndefined(waudioWeiAmount)) {
     yield* put(sendFailed({ error: 'Failed to fetch current wAudio balance.' }))
@@ -207,6 +209,8 @@ function* getWalletBalanceAndWallets() {
 function* fetchBalanceAsync() {
   yield* waitForWrite()
   const walletClient = yield* getContext('walletClient')
+  const sdk = yield* getSDK()
+  const authService = yield* getContext('authService')
 
   const account = yield* select(getAccountUser)
   if (!account || !account.wallet) return
@@ -225,7 +229,11 @@ function* fetchBalanceAsync() {
         ethAddress: account.wallet,
         bustCache: localBalanceChange
       }),
-      call([walletClient, 'getCurrentWAudioBalance'], account.wallet)
+      call([walletClient, 'getCurrentWAudioBalance'], {
+        ethAddress: account.wallet,
+        sdk,
+        authService
+      })
     ])
 
     if (isNullOrUndefined(currentEthAudioWeiBalance)) {

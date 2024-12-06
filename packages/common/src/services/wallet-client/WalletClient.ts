@@ -1,4 +1,4 @@
-import { AudiusSdk } from '@audius/sdk'
+import { AudiusSdk, AuthService } from '@audius/sdk'
 import BN from 'bn.js'
 
 import { userWalletsFromSDK } from '~/adapters'
@@ -59,13 +59,18 @@ export class WalletClient {
   }
 
   /** Get user's current SOL Audio balance. Returns null on failure. */
-  async getCurrentWAudioBalance(ethAddress?: string): Promise<BNWei | null> {
-    const balance = await this.audiusBackendInstance.getWAudioBalance(
-      ethAddress
-    )
-    return (
-      isNullOrUndefined(balance) ? null : new BN(balance.toString())
-    ) as BNWei | null
+  async getCurrentWAudioBalance({
+    ethAddress,
+    sdk
+  }: {
+    ethAddress?: string
+    sdk: AudiusSdk
+  }): Promise<BNWei | null> {
+    const balance = await this.audiusBackendInstance.getWAudioBalance({
+      ethAddress,
+      sdk
+    })
+    return balance as BNWei
   }
 
   async getAssociatedTokenAccountInfo(address: string) {
@@ -75,6 +80,7 @@ export class WalletClient {
       return tokenAccountInfo
     } catch (err) {
       console.error(err)
+      return null
     }
   }
 

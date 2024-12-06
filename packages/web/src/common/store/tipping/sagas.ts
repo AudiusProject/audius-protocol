@@ -264,11 +264,14 @@ function* confirmTipIndexed({
 
 function* wormholeAudioIfNecessary({ amount }: { amount: number }) {
   const walletClient = yield* getContext('walletClient')
+  const sdk = yield* getSDK()
 
-  const waudioBalanceWei = yield* call([
-    walletClient,
-    'getCurrentWAudioBalance'
-  ])
+  const waudioBalanceWei = yield* call(
+    [walletClient, 'getCurrentWAudioBalance'],
+    {
+      sdk
+    }
+  )
   const audioWeiAmount = new BN(AUDIO(amount).value.toString()) as BNWei
 
   if (isNullOrUndefined(waudioBalanceWei)) {

@@ -25,6 +25,7 @@ import {
 } from '@solana/web3.js'
 import BN from 'bn.js'
 
+import { Env } from '~/services/env'
 import { CommonStoreContext } from '~/store/storeContext'
 
 import {
@@ -85,12 +86,12 @@ export const getRootSolanaAccount = async (
 /**
  * Gets the Solana connection libs is currently using
  */
-export const getSolanaConnection = async (
-  audiusBackendInstance: AudiusBackend
-) => {
-  return (
-    await audiusBackendInstance.getAudiusLibsTyped()
-  ).solanaWeb3Manager!.getConnection()
+let solanaConnection: Connection
+export const getSolanaConnection = async ({ env }: { env: Env }) => {
+  if (!solanaConnection) {
+    solanaConnection = new Connection(env.SOLANA_CLUSTER_ENDPOINT)
+  }
+  return solanaConnection
 }
 
 /**

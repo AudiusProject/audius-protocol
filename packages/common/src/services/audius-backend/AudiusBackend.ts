@@ -62,6 +62,7 @@ import {
 } from '../../utils'
 import type { DiscoveryNodeSelectorService } from '../sdk/discovery-node-selector'
 
+import { getSolanaConnection } from './solana'
 import { MonitoringCallbacks } from './types'
 
 type DisplayEncoding = 'utf8' | 'hex'
@@ -105,6 +106,9 @@ declare global {
 
 const SEARCH_MAX_SAVED_RESULTS = 10
 const SEARCH_MAX_TOTAL_RESULTS = 50
+export const AUDIO_DECIMALS = 18
+export const WAUDIO_DECIMALS = 8
+export const USDC_DECIMALS = 6
 
 export const AuthHeaders = Object.freeze({
   Message: 'Encoded-Data-Message',
@@ -1683,15 +1687,27 @@ export const audiusBackend = ({
    * @params {string} ethAddress - Optional ETH wallet address to derive user bank. Defaults to hedgehog wallet
    * @returns {Promise<BN>} balance or null if failed to fetch balance
    */
-  async function getWAudioBalance(ethAddress?: string): Promise<BN | null> {
-    await waitForLibsInit()
-
+  async function getWAudioBalance({
+    ethAddress,
+    sdk
+  }: {
+    ethAddress?: string
+    sdk: AudiusSdk
+  }): Promise<BN | null> {
     try {
-      const userBank = await audiusLibs.solanaWeb3Manager.deriveUserBank({
-        ethAddress
-      })
-      const ownerWAudioBalance =
-        await audiusLibs.solanaWeb3Manager.getWAudioBalance(userBank)
+      const { userBank } =
+        await sdk.services.claimableTokensClient.getOrCreateUserBank({
+          ethWallet: ethAddress ?? (await sdk.services.auth.getAddress()),
+          mint: 'wAUDIO'
+        })
+      const connection = await getSolanaConnection({ env })
+      const {
+        value: { amount, decimals: waudioDecimals }
+      } = await connection.getTokenAccountBalance(userBank)
+      const decimals = AUDIO_DECIMALS - waudioDecimals
+      const ownerWAudioBalance = new BN(amount).mul(
+        new BN(10).pow(new BN(decimals))
+      )
       if (isNullOrUndefined(ownerWAudioBalance)) {
         throw new Error('Failed to fetch account waudio balance')
       }
@@ -1709,9 +1725,15 @@ export const audiusBackend = ({
    * @returns {Promise<BNWei>}
    */
   async function getAddressSolBalance(address: string): Promise<BNWei> {
-    await waitForLibsInit()
-    const solBalance = await audiusLibs.solanaWeb3Manager.getSolBalance(address)
-    return solBalance
+    try {
+      const addressPubKey = new PublicKey(address)
+      const connection = await getSolanaConnection({ env })
+      const solBalance = await connection.getBalance(addressPubKey)
+      return new BN(solBalance ?? 0) as BNWei
+    } catch (e) {
+      reportError({ error: e as Error })
+      return new BN(0) as BNWei
+    }
   }
 
   /**
