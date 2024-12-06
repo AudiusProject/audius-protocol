@@ -6,6 +6,7 @@ import {
   Configuration,
   querystring
 } from '../api/generated/default'
+import type { ServicesContainer } from '../types'
 import fetch from '../utils/fetch'
 
 let appName: string | undefined
@@ -23,7 +24,7 @@ export const addAppInfoMiddleware = ({
 }: {
   apiKey?: string
   appName?: string
-  services: any
+  services: ServicesContainer
 }): Middleware => {
   apiKey = providedApiKey
   appName = providedAppName
@@ -41,7 +42,9 @@ export const addAppInfoMiddleware = ({
           services.entityManager
         )
 
-        apiKey = providedApiKey ?? (await services.auth.getAddress())
+        apiKey =
+          providedApiKey ??
+          (await services.audiusWalletClient.getAddresses())[0]
         if (apiKey) {
           appName = (
             await developerApps.getDeveloperApp({
