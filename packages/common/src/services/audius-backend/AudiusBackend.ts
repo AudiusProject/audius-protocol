@@ -1904,13 +1904,6 @@ export const audiusBackend = ({
     didSelectDiscoveryProviderListeners,
     disableBrowserNotifications,
     emailInUse,
-<<<<<<< HEAD
-    fetchCID,
-    fetchUserAssociatedEthWallets,
-    fetchUserAssociatedSolWallets,
-=======
-    fetchImageCID,
->>>>>>> origin/main
     fetchUserAssociatedWallets,
     getAddressTotalStakedBalance,
     getAddressWAudioBalance,
@@ -1926,12 +1919,6 @@ export const audiusBackend = ({
     getRandomFeePayer,
     getSafariBrowserPushEnabled,
     getSignature,
-<<<<<<< HEAD
-    getUserEmail,
-=======
-    getTrackImages,
-    getUserImages,
->>>>>>> origin/main
     getUserListenCountsMonthly,
     getWAudioBalance,
     getWeb3,
