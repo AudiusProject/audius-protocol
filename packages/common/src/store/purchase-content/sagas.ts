@@ -30,10 +30,7 @@ import {
 import { isContentUSDCPurchaseGated } from '~/models/Track'
 import { User } from '~/models/User'
 import { BNUSDC } from '~/models/Wallet'
-import {
-  getRootSolanaAccount,
-  getSolanaConnection
-} from '~/services/audius-backend/solana'
+import { getRootSolanaAccount } from '~/services/audius-backend/solana'
 import { FeatureFlags } from '~/services/remote-config/feature-flags'
 import { accountSelectors } from '~/store/account'
 import {

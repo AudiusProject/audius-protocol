@@ -36,7 +36,6 @@ import {
   createUserBankIfNeeded,
   createVersionedTransaction,
   getRootSolanaAccount,
-  getSolanaConnection,
   getTokenAccountInfo,
   pollForBalanceChange,
   pollForTokenBalanceChange,
@@ -727,8 +726,8 @@ function* recoverBuyCryptoViaSolIfNecessary() {
 
   // Get config
   const wallet = yield* call(getRootSolanaAccount, audiusBackendInstance)
-  const env = yield* getContext('env')
-  const connection = yield* call(getSolanaConnection, { env })
+  const sdk = yield* getSDK()
+  const connection = sdk.services.solanaClient.connection
   const feePayerAddress = yield* waitForValue(getFeePayer)
   const config = yield* call(getBuyCryptoRemoteConfig, mint)
   const outputToken = TOKEN_LISTING_MAP[mint.toUpperCase()]
