@@ -1,6 +1,5 @@
 import { describe, it, beforeAll, expect, vitest } from 'vitest'
 
-import { DefaultAuth } from '../../services/Auth/DefaultAuth'
 import { DiscoveryNodeSelector } from '../../services/DiscoveryNodeSelector'
 import { EntityManager } from '../../services/EntityManager'
 import { Configuration } from '../generated/default'
@@ -25,12 +24,13 @@ vitest
 describe('NotificationsApi', () => {
   let notifications: NotificationsApi
 
-  const auth = new DefaultAuth()
-
   beforeAll(() => {
     notifications = new NotificationsApi(
       new Configuration(),
-      new EntityManager({ discoveryNodeSelector: new DiscoveryNodeSelector() }),
+      new EntityManager({
+        discoveryNodeSelector: new DiscoveryNodeSelector(),
+        audiusWalletClient: createAppWalletClient('0x')
+      }),
       auth
     )
     vitest.spyOn(console, 'warn').mockImplementation(() => {})
