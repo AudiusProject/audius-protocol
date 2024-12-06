@@ -2,7 +2,6 @@ import { Kind } from '@audius/common/models'
 import {
   cacheActions,
   collectionPageLineupActions as tracksActions,
-  collectionPageSelectors,
   collectionPageActions as collectionActions,
   reachabilitySelectors
 } from '@audius/common/store'
@@ -18,7 +17,6 @@ import {
 import tracksSagas from './lineups/sagas'
 
 const { NOT_FOUND_PAGE } = route
-const { getCollectionUid, getUserUid } = collectionPageSelectors
 const { fetchCollectionSucceeded, fetchCollectionFailed } = collectionActions
 const { getIsReachable } = reachabilitySelectors
 

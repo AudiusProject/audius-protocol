@@ -1,4 +1,4 @@
-import { mergeWith, add, isEqual } from 'lodash'
+import { mergeWith, add } from 'lodash'
 
 import { ID, UID } from '~/models/Identifiers'
 import { Status } from '~/models/Status'
@@ -10,7 +10,6 @@ import {
   UPDATE,
   SET_STATUS,
   SUBSCRIBE,
-  SET_EXPIRED,
   INCREMENT,
   AddSuccededAction,
   ADD_ENTRIES,
@@ -178,9 +177,10 @@ const addEntries = (state: CacheState, entries: Entry[], replace?: boolean) => {
         _timestamp: entity.timestamp ?? now,
         metadata: entity.metadata
       }
+      if (entity.uid) {
+        newUids[entity.uid] = entity.id
+      }
     }
-
-    newUids[entity.uid] = entity.id
   }
 
   return {

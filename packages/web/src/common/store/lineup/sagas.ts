@@ -12,7 +12,6 @@ import {
 import { StringKeys, FeatureFlags } from '@audius/common/services'
 import {
   accountSelectors,
-  cacheCollectionsSelectors,
   cacheTracksSelectors,
   cacheActions,
   cacheUsersSelectors,
@@ -23,11 +22,9 @@ import {
   getContext,
   playerSelectors,
   SubscriberInfo,
-  SubscriptionInfo,
   Entry,
   LineupBaseActions,
   QueueSource,
-  UnsubscribeInfo,
   PlayerBehavior
 } from '@audius/common/store'
 import { Uid, makeUids, makeUid, removeNullable } from '@audius/common/utils'
@@ -53,7 +50,6 @@ const { getSource, getUid, getPositions, getPlayerBehavior } = queueSelectors
 const { getUid: getCurrentPlayerTrackUid, getPlaying } = playerSelectors
 const { getUsers } = cacheUsersSelectors
 const { getTrack, getTracks } = cacheTracksSelectors
-const { getCollection } = cacheCollectionsSelectors
 const { getUserId } = accountSelectors
 
 const getEntryId = <T>(entry: LineupEntry<T>) => `${entry.kind}:${entry.id}`
@@ -703,10 +699,7 @@ export class LineupSagas<T extends Track | Collection> {
       yield* takeLatest(
         baseLineupActions.addPrefix(instance.prefix, baseLineupActions.RESET),
         reset,
-        instance.actions,
-        instance.prefix,
-        instance.selector,
-        instance.sourceSelector
+        instance.actions
       )
     }
   }

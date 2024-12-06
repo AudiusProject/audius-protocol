@@ -2,14 +2,7 @@ import { ID } from '~/models/Identifiers'
 import { Kind } from '~/models/Kind'
 import { Status } from '~/models/Status'
 
-import {
-  CacheType,
-  EntriesByKind,
-  Entry,
-  Metadata,
-  SubscriberInfo,
-  UnsubscribeInfo
-} from './types'
+import { EntriesByKind, Entry, Metadata, SubscriberInfo } from './types'
 
 export const ADD = 'CACHE/ADD'
 export const ADD_SUCCEEDED = 'CACHE/ADD_SUCCEEDED'
