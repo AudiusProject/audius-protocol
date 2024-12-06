@@ -10,7 +10,7 @@ import { reportToSentry } from 'store/errors/reportToSentry'
 type TikTokAuthButtonProps = {
   onFailure: (e: Error) => void
   onSuccess: (uuid: string, profile: TikTokProfile) => void
-} & SocialButtonProps
+} & Omit<SocialButtonProps, 'socialType'>
 
 type TikTokAuthProps = Pick<
   TikTokAuthButtonProps,

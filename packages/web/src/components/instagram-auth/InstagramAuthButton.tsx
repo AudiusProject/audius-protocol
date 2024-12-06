@@ -1,4 +1,4 @@
-import { SocialButton } from '@audius/harmony'
+import { SocialButton, SocialButtonProps } from '@audius/harmony'
 
 import InstagramAuth, {
   InstagramAuthProps
@@ -8,7 +8,7 @@ type InstagramAuthButtonProps = Pick<
   InstagramAuthProps,
   'onSuccess' | 'onFailure' | 'disabled'
 > &
-  InstagramButtonProps & {
+  Omit<SocialButtonProps, 'socialType'> & {
     containerClassName?: string
   }
 

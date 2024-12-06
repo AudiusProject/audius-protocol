@@ -1,4 +1,4 @@
-import { SocialButton } from '@audius/harmony'
+import { SocialButton, SocialButtonProps } from '@audius/harmony'
 
 import { TwitterAuth, TwitterAuthProps } from './TwitterAuth'
 
@@ -7,7 +7,7 @@ type TwitterAuthButtonProps = Omit<
   'requestTokenUrl' | 'loginUrl'
 > & {
   containerClassName?: string
-}
+} & Omit<SocialButtonProps, 'socialType'>
 
 export const TwitterAuthButton = (props: TwitterAuthButtonProps) => {
   const { containerClassName, onFailure, onSuccess, ...buttonProps } = props
