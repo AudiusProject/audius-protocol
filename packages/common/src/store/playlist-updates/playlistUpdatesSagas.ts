@@ -3,7 +3,6 @@ import { call, takeEvery, select, put } from 'typed-redux-saga'
 import { playlistUpdateFromSDK, transformAndCleanList } from '~/adapters'
 import { Id } from '~/models'
 import { Name } from '~/models/Analytics'
-import { getContext } from '~/store/effects'
 
 import { getUserId } from '../account/selectors'
 import { getSDK } from '../sdkUtils'
