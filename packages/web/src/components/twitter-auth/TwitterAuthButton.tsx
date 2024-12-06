@@ -1,4 +1,4 @@
-import { CSSProperties, MouseEventHandler } from 'react'
+import { MouseEventHandler } from 'react'
 
 import 'whatwg-fetch'
 import 'url-search-params-polyfill'
@@ -26,7 +26,6 @@ export type TwitterAuthButtonProps = {
   onFailure: (error: any) => void
   onSuccess: (uuid: string, profile: TwitterProfile) => void
   screenName?: string
-  style?: CSSProperties
   children?: string
 }
 
@@ -42,7 +41,6 @@ export const TwitterAuthButton = (props: TwitterAuthButtonProps) => {
     onFailure,
     onSuccess,
     screenName,
-    style,
     children
   } = props
 
