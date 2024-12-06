@@ -11,8 +11,8 @@ export type SharedSymmetricKey = {
 
 export type EncryptedEmailsResult = {
   encryptedEmails: string[]
-  ownerKey: string
-  granteeKeys: EncryptedKey[]
+  primaryUserEncryptedKey: string
+  granteeEncryptedKeys: EncryptedKey[]
 }
 
 export type BatchEncryptionInput = {
@@ -24,6 +24,6 @@ export type BatchEncryptionInput = {
 export type BatchEncryptionResult = {
   seller_user_id: number
   encryptedEmails: string[]
-  ownerKey: string
-  granteeKeys: EncryptedKey[]
+  primaryUserEncryptedKey: string
+  granteeEncryptedKeys: EncryptedKey[]
 }

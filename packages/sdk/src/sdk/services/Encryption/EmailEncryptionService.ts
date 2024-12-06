@@ -139,8 +139,8 @@ export class EmailEncryptionService extends BaseAPI {
 
     return {
       encryptedEmails,
-      ownerKey: primaryUserEncryptedKey,
-      granteeKeys: granteeEncryptedKeys
+      primaryUserEncryptedKey,
+      granteeEncryptedKeys
     }
   }
 
@@ -163,18 +163,21 @@ export class EmailEncryptionService extends BaseAPI {
           throw new Error('Invalid seller ID')
         }
 
-        const { encryptedEmails, ownerKey, granteeKeys } =
-          await this.encryptEmails(
-            encodedSellerId,
-            encodedGranteeIds,
-            buyer_details
-          )
+        const {
+          encryptedEmails,
+          primaryUserEncryptedKey,
+          granteeEncryptedKeys
+        } = await this.encryptEmails(
+          encodedSellerId,
+          encodedGranteeIds,
+          buyer_details
+        )
 
         return {
           seller_user_id,
           encryptedEmails,
-          ownerKey,
-          granteeKeys
+          primaryUserEncryptedKey,
+          granteeEncryptedKeys
         }
       })
     )
