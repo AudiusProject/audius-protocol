@@ -12,7 +12,7 @@ export const UserEventsSchema = z.object({
 export const CreateUserSchema = z.object({
   profilePictureFile: z.optional(ImageFile),
   coverArtFile: z.optional(ImageFile),
-  onProgress: z.optional(z.function().args(z.number())),
+  onProgress: z.optional(z.function()),
   metadata: z
     .object({
       bio: z.optional(z.string()),
@@ -45,7 +45,7 @@ export const UpdateProfileSchema = z
     events: z.optional(UserEventsSchema),
     profilePictureFile: z.optional(ImageFile),
     coverArtFile: z.optional(ImageFile),
-    onProgress: z.optional(z.function().args(z.number())),
+    onProgress: z.optional(z.function()),
     metadata: z
       .object({
         name: z.optional(z.string()),
@@ -66,7 +66,7 @@ export type UpdateProfileRequest = Omit<
 > & {
   // Typing function manually because z.function() does not
   // support argument names
-  onProgress?: (progress: number) => void
+  onProgress?: ProgressHandler
 }
 
 export const FollowUserSchema = z

@@ -116,15 +116,10 @@ export const usePurchaseContentFormConfiguration = ({
       guestEmail,
       purchaseMethodMintAddress
     }: PurchaseContentValues) => {
-      console.log('asdf onSubmit: ')
       if (isUnlocking || !contentId) return
 
       setGuestEmail(guestEmail)
-      // if (page === PurchaseContentPage.PURCHASE) {
-      //   if (guestEmail) {
-      //     dispatch(createGuestAccount({ guestEmail }))
-      //   }
-      // }
+
       if (
         purchaseMethod === PurchaseMethod.CRYPTO &&
         page === PurchaseContentPage.PURCHASE

@@ -40,6 +40,7 @@ export const createPurchaseContentSchema = (
         [GUEST_EMAIL]: z.string().email().optional(),
         [PURCHASE_METHOD_MINT_ADDRESS]: z.string().optional()
       })
+      // TODO validate email and handle signed in guest state
       // .merge(
       //   z.object({
       //     [GUEST_EMAIL]: emailSchema(queryContext).shape.email.optional()

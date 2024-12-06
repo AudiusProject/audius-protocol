@@ -1,5 +1,5 @@
 import { USDC } from '@audius/fixed-decimal'
-import { CreateUserRequest, type AudiusSdk } from '@audius/sdk'
+import { type AudiusSdk } from '@audius/sdk'
 import type { createJupiterApiClient, QuoteResponse } from '@jup-ag/api'
 import { getAccount, getAssociatedTokenAddressSync } from '@solana/spl-token'
 import {
@@ -72,11 +72,10 @@ import {
   CoinflowPurchaseMetadata,
   coinflowOnrampModalActions
 } from '~/store/ui/modals/coinflow-onramp-modal'
-import { TEMPORARY_PASSWORD, waitForValue } from '~/utils'
+import { waitForValue } from '~/utils'
 import { encodeHashId } from '~/utils/hashIds'
 import { BN_USDC_CENT_WEI } from '~/utils/wallet'
 
-import { fetchAccountAsync } from '../account/sagas'
 import { cacheActions } from '../cache'
 import { pollGatedContent } from '../gated-content/sagas'
 import { updateGatedContentStatus } from '../gated-content/slice'

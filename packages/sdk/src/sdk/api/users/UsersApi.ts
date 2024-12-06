@@ -151,7 +151,7 @@ export class UsersApi extends GeneratedUsersApi {
   }
 
   /** @hidden
-   * Create a guest
+   * Creates a guest for guest checkout
    */
   async createGuest(advancedOptions?: AdvancedOptions) {
     const { data } = await this.generateUserId()
