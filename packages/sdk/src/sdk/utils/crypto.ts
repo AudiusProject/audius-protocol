@@ -16,7 +16,7 @@ export class CryptoUtils {
    * @param payload The string to encrypt
    */
   static async encryptString(secret: Uint8Array, payload: string) {
-    return await this.encrypt(secret, new TextEncoder().encode(payload))
+    return await CryptoUtils.encrypt(secret, new TextEncoder().encode(payload))
   }
 
   /**
@@ -34,6 +34,6 @@ export class CryptoUtils {
    * @param payload The data to decrypt
    */
   static async decryptString(secret: Uint8Array, payload: Uint8Array) {
-    return new TextDecoder().decode(await this.decrypt(secret, payload))
+    return new TextDecoder().decode(await CryptoUtils.decrypt(secret, payload))
   }
 }

@@ -3108,7 +3108,7 @@ class UserEmailKey(Resource):
     @record_metrics
     @ns.doc(
         id="""Get User Email Key""",
-        description="Gets the email encryption key for a user by their user ID",
+        description="Gets a key for a user by their user ID. The key, which is an encrypted symmetric key, can be used to encrypt and decrypt emails shared with the user.",
         params={"id": "A User ID"},
         responses={200: "Success", 400: "Bad request", 500: "Server error"},
     )

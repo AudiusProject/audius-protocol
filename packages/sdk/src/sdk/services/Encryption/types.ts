@@ -4,7 +4,7 @@ export type EncryptedKey = {
 }
 
 export type SharedSymmetricKey = {
-  ownerEncryptedKey: string
+  primaryUserEncryptedKey: string
   granteeEncryptedKeys: EncryptedKey[]
   symmetricKey: Uint8Array
 }

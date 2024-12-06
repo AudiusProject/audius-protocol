@@ -2,9 +2,9 @@ import { base64 } from '@scure/base'
 
 import type { Configuration } from '../..'
 import { BaseAPI } from '../..'
-import type { AuthService } from '../../services/Auth'
 import { CryptoUtils } from '../../utils/crypto'
 import { encodeHashId } from '../../utils/hashId'
+import type { AuthService } from '../Auth'
 
 import type {
   BatchEncryptionInput,
@@ -13,32 +13,34 @@ import type {
   SharedSymmetricKey
 } from './types'
 
-export class EmailsApi extends BaseAPI {
+export class EmailEncryptionService extends BaseAPI {
   constructor(config: Configuration, private readonly auth: AuthService) {
     super(config)
   }
 
   /**
-   * Creates and distributes a symmetric key between an owner and their grantees
-   * @param ownerId The ID of the owner (e.g. seller, artist)
+   * Creates and distributes a symmetric key between a primary user and their grantees
+   * @param primaryUserId The ID of the primary user (e.g. seller, artist)
    * @param granteeIds List of grantee user IDs who will receive the encrypted key
    * @returns The encrypted symmetric keys for storage
    */
   async createSharedKey(
-    ownerId: string,
+    primaryUserId: string,
     granteeIds: string[]
   ): Promise<SharedSymmetricKey> {
     // Generate random symmetric key
     const symmetricKey = crypto.getRandomValues(new Uint8Array(32))
 
-    // Encrypt for owner
-    const ownerPublicKey = await this.getPublicKey(ownerId)
-    const ownerSharedSecret = await this.auth.getSharedSecret(ownerPublicKey)
-    const ownerEncryptedKeyBytes = await CryptoUtils.encrypt(
-      ownerSharedSecret,
+    // Encrypt for primary user
+    const primaryUserPublicKey = await this.getPublicKey(primaryUserId)
+    const primaryUserSharedSecret = await this.auth.getSharedSecret(
+      primaryUserPublicKey
+    )
+    const primaryUserEncryptedKeyBytes = await CryptoUtils.encrypt(
+      primaryUserSharedSecret,
       symmetricKey
     )
-    const ownerEncryptedKey = base64.encode(ownerEncryptedKeyBytes)
+    const primaryUserEncryptedKey = base64.encode(primaryUserEncryptedKeyBytes)
 
     // Encrypt for each grantee
     const granteeEncryptedKeys = await Promise.all(
@@ -59,14 +61,14 @@ export class EmailsApi extends BaseAPI {
     )
 
     return {
-      ownerEncryptedKey,
+      primaryUserEncryptedKey,
       granteeEncryptedKeys,
       symmetricKey
     }
   }
 
   /**
-   * Decrypts the symmetric key for either an owner or grantee
+   * Decrypts the symmetric key for either a primary user or grantee
    * @param encryptedKey The encrypted symmetric key as a base64 string
    * @param userId The ID of the user who encrypted the key
    * @returns The decrypted symmetric key
@@ -120,7 +122,7 @@ export class EmailsApi extends BaseAPI {
     emails: string[]
   ): Promise<EncryptedEmailsResult> {
     // Create symmetric key for seller and grantees
-    const { symmetricKey, ownerEncryptedKey, granteeEncryptedKeys } =
+    const { symmetricKey, primaryUserEncryptedKey, granteeEncryptedKeys } =
       await this.createSharedKey(sellerId, granteeIds)
 
     // Encrypt emails with symmetric key
@@ -130,7 +132,7 @@ export class EmailsApi extends BaseAPI {
 
     return {
       encryptedEmails,
-      ownerKey: ownerEncryptedKey,
+      ownerKey: primaryUserEncryptedKey,
       granteeKeys: granteeEncryptedKeys
     }
   }

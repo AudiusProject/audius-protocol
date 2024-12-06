@@ -7,7 +7,6 @@ import { ChatsApi } from './api/chats/ChatsApi'
 import { CommentsApi } from './api/comments/CommentsAPI'
 import { DashboardWalletUsersApi } from './api/dashboard-wallet-users/DashboardWalletUsersApi'
 import { DeveloperAppsApi } from './api/developer-apps/DeveloperAppsApi'
-import { EmailsApi } from './api/emails/EmailsApi'
 import { Configuration, TipsApi } from './api/generated/default'
 import {
   TracksApi as TracksApiFull,
@@ -45,6 +44,7 @@ import {
   DiscoveryNodeSelector,
   getDefaultDiscoveryNodeSelectorConfig
 } from './services/DiscoveryNodeSelector'
+import { EmailEncryptionService } from './services/Encryption'
 import {
   EntityManager,
   getDefaultEntityManagerConfig
@@ -198,6 +198,11 @@ const initializeServices = (config: SdkConfig) => {
       antiAbuseOracleSelector
     })
 
+  const middleware = [
+    addRequestSignatureMiddleware({ services: { auth, logger } }),
+    discoveryNodeSelector.createMiddleware()
+  ]
+
   /* Solana Programs */
   const solanaRelay = config.services?.solanaRelay
     ? config.services.solanaRelay.withMiddleware(
@@ -205,12 +210,20 @@ const initializeServices = (config: SdkConfig) => {
       )
     : new SolanaRelay(
         new Configuration({
-          middleware: [
-            addRequestSignatureMiddleware({ services: { auth, logger } }),
-            discoveryNodeSelector.createMiddleware()
-          ]
+          middleware
         })
       )
+
+  const emailEncryptionService =
+    config.services?.emailEncryptionService ??
+    new EmailEncryptionService(
+      new Configuration({
+        fetchApi: fetch,
+        basePath: '',
+        middleware
+      }),
+      auth
+    )
 
   const solanaWalletAdapter =
     config.services?.solanaWalletAdapter ??
@@ -340,6 +353,7 @@ const initializeServices = (config: SdkConfig) => {
     serviceTypeManagerClient,
     serviceProviderFactoryClient,
     ethRewardsManagerClient,
+    emailEncryptionService,
     logger
   }
   return services
@@ -389,7 +403,8 @@ const initializeApis = ({
     services.auth,
     services.logger,
     services.claimableTokensClient,
-    services.solanaClient
+    services.solanaClient,
+    services.emailEncryptionService
   )
   const albums = new AlbumsApi(
     generatedApiClientConfig,
@@ -425,8 +440,6 @@ const initializeApis = ({
     services.discoveryNodeSelector,
     services.logger
   )
-
-  const emails = new EmailsApi(noBasePathConfig, services.auth)
 
   const grants = new GrantsApi(
     generatedApiClientConfig,
@@ -488,8 +501,7 @@ const initializeApis = ({
     dashboardWalletUsers,
     challenges,
     services,
-    comments,
-    emails
+    comments
   }
 }
 
