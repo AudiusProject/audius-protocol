@@ -32,7 +32,6 @@ export class Account extends Base {
     this.changeCredentials = this.changeCredentials.bind(this)
     this.resetPassword = this.resetPassword.bind(this)
     this.checkIfEmailRegistered = this.checkIfEmailRegistered.bind(this)
-    this.getUserEmail = this.getUserEmail.bind(this)
     this.associateTwitterUser = this.associateTwitterUser.bind(this)
     this.associateInstagramUser = this.associateInstagramUser.bind(this)
     this.associateTikTokUser = this.associateTikTokUser.bind(this)
