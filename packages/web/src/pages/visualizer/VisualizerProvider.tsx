@@ -168,7 +168,6 @@ const Visualizer = ({
     return track && user && uid ? (
       <div className={styles.trackInfoWrapper}>
         <PlayingTrackInfo
-          profilePictureSizes={user._profile_picture_sizes}
           trackId={track.track_id}
           isOwner={track.owner_id === user.user_id}
           trackTitle={track.title}

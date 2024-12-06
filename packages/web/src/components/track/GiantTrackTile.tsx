@@ -3,7 +3,6 @@ import { Suspense, lazy, useCallback, useState } from 'react'
 import {
   isContentUSDCPurchaseGated,
   ID,
-  CoverArtSizes,
   FieldVisibility,
   Remix,
   AccessConditions
@@ -95,7 +94,6 @@ export type GiantTrackTileProps = {
   artistHandle: string
   trendingBadgeLabel: Nullable<string>
   coSign: Nullable<Remix>
-  coverArtSizes: Nullable<CoverArtSizes>
   credits: string
   currentUserId: Nullable<ID>
   description: string
@@ -145,7 +143,6 @@ export const GiantTrackTile = ({
   artistHandle,
   trendingBadgeLabel,
   coSign,
-  coverArtSizes,
   description,
   hasStreamAccess,
   duration,
@@ -441,7 +438,6 @@ export const GiantTrackTile = ({
       <Flex p='l' gap='xl' css={{ flexWrap: 'wrap' }}>
         <GiantArtwork
           trackId={trackId}
-          coverArtSizes={coverArtSizes}
           coSign={coSign}
           callback={onArtworkLoad}
         />

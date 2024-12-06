@@ -31,7 +31,6 @@ import { useDispatch, useSelector } from 'react-redux'
 import { IconWaveform, Button } from '@audius/harmony-native'
 import { LinearProgress, Text } from 'app/components/core'
 import { env } from 'app/env'
-import { isImageUriSource } from 'app/hooks/useContentNodeImage'
 import { useToast } from 'app/hooks/useToast'
 import { make, track } from 'app/services/analytics'
 import { apiClient } from 'app/services/audius-api-client'
@@ -55,6 +54,7 @@ import {
   getDominantRgb,
   pickTwoMostDominantAndVibrant
 } from 'app/utils/dominantColors'
+import { isImageUriSource } from 'app/utils/image'
 import { reportToSentry } from 'app/utils/reportToSentry'
 import { getTrackRoute } from 'app/utils/routes'
 

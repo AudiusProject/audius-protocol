@@ -60,10 +60,6 @@ export const getAccountCollectibles = createSelector(
     ...(user?.solanaCollectibleList ?? [])
   ]
 )
-export const getAccountProfilePictureSizes = (state: CommonState) => {
-  const user = internalGetAccountUser(state)
-  return user ? user._profile_picture_sizes : null
-}
 export const getPlaylistLibrary = (state: CommonState) => {
   return getAccountUser(state)?.playlist_library ?? null
 }

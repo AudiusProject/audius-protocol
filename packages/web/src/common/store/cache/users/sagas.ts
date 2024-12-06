@@ -18,7 +18,6 @@ import { call, put, select, takeEvery } from 'typed-redux-saga'
 import { retrieve } from 'common/store/cache/sagas'
 import { waitForRead } from 'utils/sagaHelpers'
 
-import { pruneBlobValues } from './utils'
 const { mergeCustomizer } = cacheReducer
 const { getUser, getUsers, getUserTimestamps } = cacheUsersSelectors
 const { getUserId } = accountSelectors
@@ -87,7 +86,6 @@ export function* fetchUserByHandle(
   deleteExistingEntry = false,
   retry = true
 ) {
-  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
   // We only need to handle 1 handle
   const retrieveFromSource = function* (handles: (string | number)[]) {
     return yield* retrieveUserByHandle(handles[0].toString(), retry)
@@ -105,9 +103,7 @@ export function* fetchUserByHandle(
     },
     retrieveFromSource,
     onBeforeAddToCache: function* (users: Metadata[]) {
-      return users.map((user) =>
-        reformatUser(user as User, audiusBackendInstance)
-      )
+      return users.map((user) => reformatUser(user as User))
     },
     kind: Kind.USERS,
     idField: 'user_id',
@@ -142,11 +138,9 @@ function* watchSyncLocalStorageUser() {
       const existing = yield* call([localStorage, 'getAudiusAccountUser'])
       // Merge with the new metadata
       const merged = mergeWith({}, existing, addedUser, mergeCustomizer)
-      // Remove blob urls if any - blob urls only last for the session so we don't want to store those
-      const cleaned = pruneBlobValues(merged)
 
       // Set user back to local storage
-      yield* call([localStorage, 'setAudiusAccountUser'], cleaned)
+      yield* call([localStorage, 'setAudiusAccountUser'], merged)
     }
   }
   yield* takeEvery(cacheActions.ADD_SUCCEEDED, syncLocalStorageUser)

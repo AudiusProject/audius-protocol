@@ -862,8 +862,6 @@ class ProfilePage extends PureComponent<ProfilePageProps, ProfilePageState> {
         ? updatedDonation
         : profile.donation || ''
       : ''
-    const profilePictureSizes = profile ? profile._profile_picture_sizes : null
-    const coverPhotoSizes = profile ? profile._cover_photo_sizes : null
     const hasProfilePicture = profile
       ? !!profile.profile_picture ||
         !!profile.profile_picture_sizes ||
@@ -898,8 +896,6 @@ class ProfilePage extends PureComponent<ProfilePageProps, ProfilePageState> {
       tikTokHandle,
       website,
       donation,
-      coverPhotoSizes,
-      profilePictureSizes,
       hasProfilePicture,
       followers,
       followersLoading,

@@ -1,7 +1,6 @@
 import { userCollectionMetadataFromSDK } from '@audius/common/adapters'
 import {
   Name,
-  DefaultSizes,
   Kind,
   CollectionMetadata,
   Collection,
@@ -75,7 +74,6 @@ function* createPlaylistWorker(
   const initTrack = yield* select(getTrack, { id: initTrackId })
 
   if (initTrack) {
-    collection._cover_art_sizes = initTrack._cover_art_sizes
     collection.cover_art_sizes = initTrack.cover_art_sizes
   }
 
@@ -141,12 +139,6 @@ function* optimisticallySavePlaylist(
     undefined,
     playlist.is_album
   )
-  if (playlist.artwork) {
-    playlist._cover_art_sizes = {
-      ...playlist._cover_art_sizes,
-      [DefaultSizes.OVERRIDE]: playlist.artwork.url
-    }
-  }
 
   yield* put(
     cacheActions.add(
@@ -249,8 +241,7 @@ function* createAndConfirmPlaylist(
 
     const reformattedPlaylist = {
       ...reformatCollection({
-        collection: confirmedPlaylist,
-        audiusBackendInstance
+        collection: confirmedPlaylist
       }),
       ...optimisticPlaylist,
       cover_art_cids: confirmedPlaylist.cover_art_cids,
