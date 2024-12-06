@@ -35,7 +35,8 @@ import {
   getContext,
   confirmerActions,
   getSDK,
-  fetchAccountAsync
+  fetchAccountAsync,
+  getOrCreateUSDCUserBank
 } from '@audius/common/store'
 import {
   Genre,
@@ -45,7 +46,8 @@ import {
   isValidEmailString,
   route,
   isResponseError,
-  encodeHashId
+  encodeHashId,
+  TEMPORARY_PASSWORD
 } from '@audius/common/utils'
 import { CreateUserRequest, UpdateProfileRequest } from '@audius/sdk'
 import { push as pushRoute } from 'connected-react-router'
@@ -81,7 +83,7 @@ const { FEED_PAGE, SIGN_IN_PAGE, SIGN_UP_PAGE, SIGN_UP_PASSWORD_PAGE } = route
 const { requestPushNotificationPermissions } = settingsPageActions
 const { saveCollection } = collectionsSocialActions
 const { getUsers } = cacheUsersSelectors
-const { getAccountUser, getHasAccount } = accountSelectors
+const { getAccountUser, getHasAccount, getUserId } = accountSelectors
 const { toast } = toastActions
 
 const SIGN_UP_TIMEOUT_MILLIS = 20 /* min */ * 60 * 1000
@@ -567,6 +569,60 @@ function* sendRecoveryEmail({
       name: 'Sign Up: Failed to send recovery email',
       additionalInfo: { handle, email, host }
     })
+  }
+}
+
+function* createGuestAccount(
+  action: ReturnType<typeof signOnActions.createGuestAccount>
+) {
+  const { guestEmail } = action
+
+  const getFeatureEnabled = yield* getContext('getFeatureEnabled')
+  const sdk = yield* getSDK()
+
+  const authService = yield* getContext('authService')
+
+  // get user & user bank
+  const isGuestCheckoutEnabled = yield* call(
+    getFeatureEnabled,
+    FeatureFlags.GUEST_CHECKOUT
+  )
+
+  if (isGuestCheckoutEnabled) {
+    const currentUser = yield* select(getAccountUser)
+    if (currentUser) {
+      return
+    }
+
+    yield* call(
+      [authService.hedgehogInstance, authService.hedgehogInstance.signUp],
+      {
+        username: guestEmail,
+        password: TEMPORARY_PASSWORD
+      }
+    )
+
+    const wallet = (yield* call([authService, authService.getWalletAddresses]))
+      .web3WalletAddress
+
+    if (!currentUser && guestEmail) {
+      const { blockNumber, metadata } = yield* call([
+        sdk.users,
+        sdk.users.createGuest
+      ])
+      const userId = metadata.userId
+      yield* put(signOnActions.signUpSucceededWithId(userId))
+
+      yield* call(fetchAccountAsync, { isSignUp: true })
+      const purchaserUserId = yield* select(getUserId)
+      if (!purchaserUserId) {
+        throw new Error('Failed to fetch purchasing user id')
+      }
+      const userBank = yield* call(getOrCreateUSDCUserBank)
+      if (!userBank) {
+        throw new Error('Failed to create user bank')
+      }
+    }
   }
 }
 
@@ -1284,6 +1340,10 @@ function* watchSignUp() {
   )
 }
 
+function* watchCreateGuestAccount() {
+  yield* takeLatest(signOnActions.CREATE_GUEST_ACCOUNT, createGuestAccount)
+}
+
 function* watchSignIn() {
   yield* takeLatest(signOnActions.SIGN_IN, signIn)
 }
@@ -1338,7 +1398,8 @@ export default function sagas() {
     watchOpenSignOn,
     watchSignOnError,
     watchSendWelcomeEmail,
-    repairSignUp
+    repairSignUp,
+    watchCreateGuestAccount
   ]
   return sagas
 }

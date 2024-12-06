@@ -159,6 +159,9 @@ export class UsersApi extends GeneratedUsersApi {
       throw new Error('Failed to generate userId')
     }
     const userId = HashId.parse(data)
+    const metadata = {
+      userId
+    }
 
     // Write metadata to chain
     const { blockHash, blockNumber } = await this.entityManager.manageEntity({
@@ -175,7 +178,7 @@ export class UsersApi extends GeneratedUsersApi {
       ...advancedOptions
     })
 
-    return { blockHash, blockNumber }
+    return { blockHash, blockNumber, metadata }
   }
 
   /** @hidden

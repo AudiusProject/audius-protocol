@@ -92,7 +92,6 @@ import {
   usdcBalanceSufficient,
   purchaseContentFlowFailed,
   startPurchaseContentFlow,
-  createGuestAccount,
   eagerCreateUserBank
 } from './slice'
 import {
@@ -614,46 +613,6 @@ function* purchaseUSDCWithStripe({ amount }: PurchaseUSDCWithStripeArgs) {
   yield* put(usdcBalanceSufficient())
 }
 
-function* doCreateGuestAccount({ payload: { guestEmail } }) {
-  const getFeatureEnabled = yield* getContext('getFeatureEnabled')
-  const sdk = yield* getSDK()
-
-  const authService = yield* getContext('authService')
-
-  // get user & user bank
-  const isGuestCheckoutEnabled = yield* call(
-    getFeatureEnabled,
-    FeatureFlags.GUEST_CHECKOUT
-  )
-
-  if (isGuestCheckoutEnabled) {
-    const currentUser = yield* select(getAccountUser)
-    if (currentUser) {
-      return
-    }
-
-    yield* call(
-      [authService.hedgehogInstance, authService.hedgehogInstance.signUp],
-      {
-        username: guestEmail,
-        password: TEMPORARY_PASSWORD
-      }
-    )
-
-    const wallet = (yield* call([authService, authService.getWalletAddresses]))
-      .web3WalletAddress
-
-    if (!currentUser && guestEmail) {
-      const { blockNumber, metadata } = yield* call([
-        sdk.users,
-        sdk.users.createGuest
-      ])
-
-      yield* call(fetchAccountAsync, { isSignUp: true })
-    }
-  }
-}
-
 function* doStartPurchaseContentFlow({
   payload: {
     extraAmount,
@@ -666,8 +625,6 @@ function* doStartPurchaseContentFlow({
     guestEmail
   }
 }: ReturnType<typeof startPurchaseContentFlow>) {
-  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
-
   const usdcConfig = yield* call(getBuyUSDCRemoteConfig)
   const reportToSentry = yield* getContext('reportToSentry')
   const { track, make } = yield* getContext('analytics')
@@ -1205,10 +1162,6 @@ function* watchStartPurchaseContentFlow() {
   yield takeLatest(startPurchaseContentFlow, doStartPurchaseContentFlow)
 }
 
-function* watchCreateGuestAccount() {
-  yield takeLatest(createGuestAccount, doCreateGuestAccount)
-}
-
 function* watchEagerCreateUserBank() {
   yield takeEvery(eagerCreateUserBank, function* () {
     try {
@@ -1220,9 +1173,5 @@ function* watchEagerCreateUserBank() {
 }
 
 export default function sagas() {
-  return [
-    watchStartPurchaseContentFlow,
-    watchEagerCreateUserBank,
-    watchCreateGuestAccount
-  ]
+  return [watchStartPurchaseContentFlow, watchEagerCreateUserBank]
 }

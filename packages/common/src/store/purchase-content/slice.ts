@@ -78,12 +78,6 @@ const slice = createSlice({
       state.guestEmail = action.payload.guestEmail
       state.purchaseMethodMintAddress = action.payload.purchaseMethodMintAddress
     },
-    createGuestAccount: (
-      state,
-      action: PayloadAction<{ guestEmail: string }>
-    ) => {
-      state.guestEmail = action.payload.guestEmail
-    },
     buyUSDC: (state) => {
       state.stage = PurchaseContentStage.BUY_USDC
     },
@@ -134,8 +128,7 @@ export const {
   purchaseCanceled,
   purchaseContentFlowFailed,
   cleanup,
-  eagerCreateUserBank,
-  createGuestAccount
+  eagerCreateUserBank
 } = slice.actions
 
 export default slice.reducer
