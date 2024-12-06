@@ -5,7 +5,6 @@ import {
   isContentCollectibleGated,
   isContentUSDCPurchaseGated,
   ID,
-  CoverArtSizes,
   FieldVisibility,
   Remix,
   AccessConditions
@@ -117,7 +116,6 @@ type TrackHeaderProps = {
   title: string
   trackId: ID
   userId: ID
-  coverArtSizes: CoverArtSizes | null
   description: string
   releaseDate: string
   genre: string

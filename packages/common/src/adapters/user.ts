@@ -1,7 +1,9 @@
-import type { full } from '@audius/sdk'
-import { omit } from 'lodash'
+import type { full, UpdateProfileRequest } from '@audius/sdk'
+import camelcaseKeys from 'camelcase-keys'
+import { omit, pick } from 'lodash'
 import snakecaseKeys from 'snakecase-keys'
 
+import { OptionalId } from '~/models/Identifiers'
 import {
   AccountUserMetadata,
   ManagedUserMetadata,
@@ -148,3 +150,34 @@ export const accountFromSDK = (
     ...accountMetadata
   }
 }
+
+export const userMetadataToSdk = (
+  input: UserMetadata
+): UpdateProfileRequest['metadata'] => ({
+  ...camelcaseKeys(
+    pick(input, [
+      'name',
+      'handle',
+      'metadata_multihash',
+      'is_deactivated',
+      'allow_ai_attribution',
+      'playlist_library',
+      'collectibles_order_unset',
+      'associated_wallets',
+      'associated_sol_wallets'
+    ])
+  ),
+  bio: input.bio ?? undefined,
+  website: input.website ?? undefined,
+  donation: input.donation ?? undefined,
+  artistPickTrackId: OptionalId.parse(input.artist_pick_track_id ?? undefined),
+  events: {
+    referrer: OptionalId.parse(input.events?.referrer ?? undefined),
+    isMobileUser: input.events?.is_mobile_user ?? undefined
+  },
+  location: input.location ?? undefined,
+  collectibles: input.collectibles ?? undefined,
+  twitterHandle: input.twitter_handle ?? undefined,
+  instagramHandle: input.instagram_handle ?? undefined,
+  tiktokHandle: input.tiktok_handle ?? undefined
+})

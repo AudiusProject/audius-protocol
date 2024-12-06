@@ -101,6 +101,7 @@ export type Modals =
   | 'ArtistPick'
   | 'AlbumTrackRemoveConfirmation'
   | 'PayoutWallet'
+  | 'EditTrackFormOverflowMenu'
 
 export type BasicModalsState = {
   [modal in Modals]: BaseModalState

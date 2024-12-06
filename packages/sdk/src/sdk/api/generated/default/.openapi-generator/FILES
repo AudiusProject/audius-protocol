@@ -47,6 +47,8 @@ models/GetChallenges.ts
 models/GetSupportedUsers.ts
 models/GetSupporters.ts
 models/GetTipsResponse.ts
+models/ListenCount.ts
+models/MonthlyAggregatePlay.ts
 models/MutualFollowersResponse.ts
 models/NftCollection.ts
 models/NftGate.ts
@@ -100,6 +102,7 @@ models/User.ts
 models/UserAssociatedWalletResponse.ts
 models/UserResponse.ts
 models/UserSearch.ts
+models/UserTrackListenCountsResponse.ts
 models/UserTracksRemixedResponse.ts
 models/UsersResponse.ts
 models/VerifyToken.ts

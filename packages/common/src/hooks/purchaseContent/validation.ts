@@ -1,6 +1,8 @@
 import { z } from 'zod'
 
+import { AudiusQueryContextType } from '~/audius-query/AudiusQueryContext'
 import { PurchaseMethod, PurchaseVendor } from '~/models/PurchaseContent'
+import { emailSchema } from '~/schemas/sign-on/emailSchema'
 
 import {
   AMOUNT_PRESET,
@@ -19,7 +21,9 @@ const messages = {
   amountInvalid: 'Please specify an amount between $1 and $100'
 }
 
-const createPurchaseContentSchema = () => {
+export const createPurchaseContentSchema = (
+  queryContext: AudiusQueryContextType
+) => {
   return z
     .object({
       [CUSTOM_AMOUNT]: z
@@ -35,6 +39,11 @@ const createPurchaseContentSchema = () => {
       [GUEST_EMAIL]: z.string().email().optional(),
       [PURCHASE_METHOD_MINT_ADDRESS]: z.string().optional()
     })
+    .merge(
+      z.object({
+        [GUEST_EMAIL]: emailSchema(queryContext).shape.email.optional()
+      })
+    )
     .refine(
       ({ amountPreset, customAmount }) => {
         if (amountPreset !== PayExtraPreset.CUSTOM) return true
@@ -59,6 +68,3 @@ const createPurchaseContentSchema = () => {
       }
     )
 }
-
-export const PurchaseContentSchema = createPurchaseContentSchema()
-export type PurchaseContentValues = z.input<typeof PurchaseContentSchema>

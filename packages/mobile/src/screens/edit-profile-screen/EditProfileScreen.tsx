@@ -1,7 +1,7 @@
 import { useCallback } from 'react'
 
 import type { UserMetadata } from '@audius/common/models'
-import { SquareSizes } from '@audius/common/models'
+import { SquareSizes, WidthSizes } from '@audius/common/models'
 import { accountSelectors, profilePageActions } from '@audius/common/store'
 import type { FormikProps } from 'formik'
 import { Formik } from 'formik'
@@ -18,10 +18,10 @@ import { ScrollView } from 'app/components/core'
 import { ImageField } from 'app/components/fields'
 import { useCoverPhoto } from 'app/components/image/CoverPhoto'
 import { useProfilePicture } from 'app/components/image/UserImage'
-import { isImageUriSource } from 'app/hooks/useContentNodeImage'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { makeStyles } from 'app/styles'
 import type { Image } from 'app/types/image'
+import { isImageUriSource } from 'app/utils/image'
 
 import { FormScreen } from './FormScreen'
 import { ProfileTextField } from './ProfileTextField'
@@ -145,11 +145,14 @@ export const EditProfileScreen = () => {
 
   const navigation = useNavigation()
 
-  const { source: coverPhotoSource } = useCoverPhoto(user_id)
-  const { source: imageSource } = useProfilePicture(
-    user_id,
-    SquareSizes.SIZE_480_BY_480
-  )
+  const { source: coverPhotoSource } = useCoverPhoto({
+    userId: user_id,
+    size: WidthSizes.SIZE_640
+  })
+  const { source: imageSource } = useProfilePicture({
+    userId: user_id,
+    size: SquareSizes.SIZE_480_BY_480
+  })
 
   const handleSubmit = useCallback(
     (values: ProfileValues) => {
@@ -199,10 +202,13 @@ export const EditProfileScreen = () => {
     website,
     donation,
     cover_photo: {
-      url: isImageUriSource(coverPhotoSource) ? coverPhotoSource.uri : ''
+      url:
+        coverPhotoSource && isImageUriSource(coverPhotoSource)
+          ? coverPhotoSource.uri
+          : ''
     } as Image,
     profile_picture: {
-      url: isImageUriSource(imageSource) ? imageSource.uri : ''
+      url: imageSource && isImageUriSource(imageSource) ? imageSource.uri : ''
     } as Image
   }
 

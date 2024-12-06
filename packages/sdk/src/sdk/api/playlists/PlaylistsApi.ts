@@ -2,7 +2,7 @@ import { pick } from 'lodash'
 import snakecaseKeys from 'snakecase-keys'
 import type { z } from 'zod'
 
-import type { AuthService, StorageService } from '../../services'
+import type { StorageService } from '../../services'
 import {
   Action,
   EntityManagerService,
@@ -53,7 +53,6 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
     configuration: Configuration,
     private readonly storage: StorageService,
     private readonly entityManager: EntityManagerService,
-    private readonly auth: AuthService,
     private readonly logger: LoggerService
   ) {
     super(configuration)
@@ -80,8 +79,7 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
           await this.storage.uploadFile({
             file: coverArtFile,
             onProgress,
-            template: 'img_square',
-            auth: this.auth
+            template: 'img_square'
           }),
         (e) => {
           this.logger.info('Retrying uploadPlaylistCoverArt', e)
@@ -113,7 +111,6 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
         cid: '',
         data: snakecaseKeys(updatedMetadata)
       }),
-      auth: this.auth,
       ...advancedOptions
     })
 
@@ -268,7 +265,6 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
       entityType: EntityType.PLAYLIST,
       entityId: playlistId,
       action: Action.DELETE,
-      auth: this.auth,
       ...advancedOptions
     })
   }
@@ -292,7 +288,6 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
       entityId: playlistId,
       action: Action.SAVE,
       metadata: metadata && JSON.stringify(snakecaseKeys(metadata)),
-      auth: this.auth,
       ...advancedOptions
     })
   }
@@ -315,7 +310,6 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
       entityType: EntityType.PLAYLIST,
       entityId: playlistId,
       action: Action.UNSAVE,
-      auth: this.auth,
       ...advancedOptions
     })
   }
@@ -339,7 +333,6 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
       entityId: playlistId,
       action: Action.REPOST,
       metadata: metadata && JSON.stringify(snakecaseKeys(metadata)),
-      auth: this.auth,
       ...advancedOptions
     })
   }
@@ -362,7 +355,6 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
       entityType: EntityType.PLAYLIST,
       entityId: playlistId,
       action: Action.UNREPOST,
-      auth: this.auth,
       ...advancedOptions
     })
   }
@@ -462,8 +454,7 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
           await this.storage.uploadFile({
             file: coverArtFile,
             onProgress,
-            template: 'img_square',
-            auth: this.auth
+            template: 'img_square'
           }),
         (e) => {
           this.logger.info('Retrying uploadPlaylistCoverArt', e)
@@ -479,8 +470,7 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
                 template: 'audio',
                 options: this.trackUploadHelper.extractMediorumUploadOptions(
                   trackMetadatas[idx]!
-                ),
-                auth: this.auth
+                )
               }),
             (e) => {
               this.logger.info('Retrying uploadTrackAudio', e)
@@ -525,7 +515,6 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
             cid: '',
             data: snakecaseKeys(updatedMetadata)
           }),
-          auth: this.auth,
           ...advancedOptions
         })
 
@@ -559,7 +548,6 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
         cid: '',
         data: snakecaseKeys(updatedMetadata)
       }),
-      auth: this.auth,
       ...advancedOptions
     })
     return {
@@ -594,8 +582,7 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
           await this.storage.uploadFile({
             file: coverArtFile,
             onProgress,
-            template: 'img_square',
-            auth: this.auth
+            template: 'img_square'
           }),
         (e) => {
           this.logger.info('Retrying uploadPlaylistCoverArt', e)
@@ -631,7 +618,6 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
         cid: '',
         data: snakecaseKeys(updatedMetadata)
       }),
-      auth: this.auth,
       ...advancedOptions
     })
   }

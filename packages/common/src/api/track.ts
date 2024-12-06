@@ -30,9 +30,12 @@ const trackApi = createApi({
         { ids, currentUserId }: { ids: ID[]; currentUserId?: Nullable<ID> },
         { audiusSdk }
       ) => {
+        const id = ids.filter((id) => id && id !== -1).map((id) => Id.parse(id))
+        if (id.length === 0) return []
+
         const sdk = await audiusSdk()
         const { data = [] } = await sdk.full.tracks.getBulkTracks({
-          id: ids.filter((id) => id && id !== -1).map((id) => Id.parse(id)),
+          id,
           userId: OptionalId.parse(currentUserId)
         })
         return transformAndCleanList(data, userTrackMetadataFromSDK)
@@ -75,10 +78,13 @@ const trackApi = createApi({
         { ids, currentUserId }: { ids: ID[]; currentUserId: Nullable<ID> },
         { audiusSdk }
       ) => {
+        const id = ids.filter((id) => id && id !== -1).map((id) => Id.parse(id))
+        if (id.length === 0) return []
+
         const sdk = await audiusSdk()
 
         const { data = [] } = await sdk.full.tracks.getBulkTracks({
-          id: ids.map((id) => Id.parse(id)),
+          id,
           userId: OptionalId.parse(currentUserId)
         })
         return transformAndCleanList(data, userTrackMetadataFromSDK)

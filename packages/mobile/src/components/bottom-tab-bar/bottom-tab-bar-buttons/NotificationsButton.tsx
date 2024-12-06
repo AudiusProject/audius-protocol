@@ -4,12 +4,15 @@ import { useSelector } from 'react-redux'
 
 import { makeStyles } from 'app/styles'
 
-import type { BaseBottomTabBarButtonProps } from './BottomTabBarButton'
+import type { BottomTabBarButtonProps } from './BottomTabBarButton'
 import { BottomTabBarButton } from './BottomTabBarButton'
+import iconNotifications from './animations/iconNotifications.lottie'
 
 const { getNotificationUnviewedCount } = notificationsSelectors
 
-export type NotificationsButtonProps = BaseBottomTabBarButtonProps
+const colorKeypaths = ['Bell.Group 1.Fill 1', 'Clapper.Group 1.Fill 1']
+
+type NotificationsButtonProps = BottomTabBarButtonProps
 
 const useStyles = makeStyles(({ spacing, palette, typography }) => ({
   notifBubble: {
@@ -38,7 +41,12 @@ export const NotificationsButton = (props: NotificationsButtonProps) => {
   const notificationCount = useSelector(getNotificationUnviewedCount)
 
   return (
-    <BottomTabBarButton name='notifications' {...props}>
+    <BottomTabBarButton
+      {...props}
+      name='notifications'
+      source={iconNotifications}
+      colorKeypaths={colorKeypaths}
+    >
       {notificationCount > 0 ? (
         <View style={styles.notifBubble}>
           <Text style={styles.notifBubbleText}>

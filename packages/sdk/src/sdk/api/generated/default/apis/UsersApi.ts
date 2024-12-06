@@ -41,6 +41,7 @@ import type {
   UserAssociatedWalletResponse,
   UserResponse,
   UserSearch,
+  UserTrackListenCountsResponse,
   UserTracksRemixedResponse,
   UsersResponse,
   VerifyToken,
@@ -96,6 +97,8 @@ import {
     UserResponseToJSON,
     UserSearchFromJSON,
     UserSearchToJSON,
+    UserTrackListenCountsResponseFromJSON,
+    UserTrackListenCountsResponseToJSON,
     UserTracksRemixedResponseFromJSON,
     UserTracksRemixedResponseToJSON,
     UsersResponseFromJSON,
@@ -311,6 +314,12 @@ export interface GetUserEmailKeyRequest {
 
 export interface GetUserIDFromWalletRequest {
     associatedWallet: string;
+}
+
+export interface GetUserMonthlyTrackListensRequest {
+    id: string;
+    startTime: string;
+    endTime: string;
 }
 
 export interface GetUserTracksRemixedRequest {
@@ -1639,6 +1648,53 @@ export class UsersApi extends runtime.BaseAPI {
      */
     async getUserIDFromWallet(params: GetUserIDFromWalletRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<UserAssociatedWalletResponse> {
         const response = await this.getUserIDFromWalletRaw(params, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * @hidden
+     * Gets the listen data for a user by month and track within a given time frame.
+     */
+    async getUserMonthlyTrackListensRaw(params: GetUserMonthlyTrackListensRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<UserTrackListenCountsResponse>> {
+        if (params.id === null || params.id === undefined) {
+            throw new runtime.RequiredError('id','Required parameter params.id was null or undefined when calling getUserMonthlyTrackListens.');
+        }
+
+        if (params.startTime === null || params.startTime === undefined) {
+            throw new runtime.RequiredError('startTime','Required parameter params.startTime was null or undefined when calling getUserMonthlyTrackListens.');
+        }
+
+        if (params.endTime === null || params.endTime === undefined) {
+            throw new runtime.RequiredError('endTime','Required parameter params.endTime was null or undefined when calling getUserMonthlyTrackListens.');
+        }
+
+        const queryParameters: any = {};
+
+        if (params.startTime !== undefined) {
+            queryParameters['start_time'] = params.startTime;
+        }
+
+        if (params.endTime !== undefined) {
+            queryParameters['end_time'] = params.endTime;
+        }
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        const response = await this.request({
+            path: `/users/{id}/listen_counts_monthly`.replace(`{${"id"}}`, encodeURIComponent(String(params.id))),
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => UserTrackListenCountsResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Gets the listen data for a user by month and track within a given time frame.
+     */
+    async getUserMonthlyTrackListens(params: GetUserMonthlyTrackListensRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<UserTrackListenCountsResponse> {
+        const response = await this.getUserMonthlyTrackListensRaw(params, initOverrides);
         return await response.value();
     }
 

@@ -2,15 +2,16 @@ import {
   userCollectionMetadataFromSDK,
   transformAndCleanList
 } from '@audius/common/adapters'
-import { Id, Kind } from '@audius/common/models'
+import { Id, Kind, OptionalId } from '@audius/common/models'
 import {
   cacheActions,
   profilePageActions,
   profilePageSelectors,
-  getSDK
+  getSDK,
+  accountSelectors
 } from '@audius/common/store'
 import { isEqual } from 'lodash'
-import { put, select, takeLatest, call, all } from 'typed-redux-saga'
+import { put, select, takeEvery, call, all } from 'typed-redux-saga'
 
 import { processAndCacheCollections } from 'common/store/cache/collections/utils'
 
@@ -22,9 +23,10 @@ const {
 } = profilePageActions
 
 const { getProfileUser } = profilePageSelectors
+const { getUserId } = accountSelectors
 
 export function* watchFetchProfileCollections() {
-  yield* takeLatest(FETCH_COLLECTIONS, fetchProfileCollectionsAsync)
+  yield* takeEvery(FETCH_COLLECTIONS, fetchProfileCollectionsAsync)
 }
 
 function* fetchProfileCollectionsAsync(
@@ -33,6 +35,7 @@ function* fetchProfileCollectionsAsync(
   const sdk = yield* getSDK()
   const { handle } = action
   const user = yield* select((state) => getProfileUser(state, { handle }))
+  const currentUserId = yield* select(getUserId)
 
   if (!user) {
     yield* put(fetchCollectionsFailed(handle))
@@ -45,7 +48,7 @@ function* fetchProfileCollectionsAsync(
       [sdk.full.users, sdk.full.users.getPlaylistsByUser],
       {
         id: Id.parse(user_id),
-        userId: Id.parse(user_id)
+        userId: OptionalId.parse(currentUserId)
       }
     )
     return transformAndCleanList(data, userCollectionMetadataFromSDK)
@@ -55,7 +58,7 @@ function* fetchProfileCollectionsAsync(
       [sdk.full.users, sdk.full.users.getAlbumsByUser],
       {
         id: Id.parse(user_id),
-        userId: Id.parse(user_id)
+        userId: OptionalId.parse(currentUserId)
       }
     )
     return transformAndCleanList(data, userCollectionMetadataFromSDK)

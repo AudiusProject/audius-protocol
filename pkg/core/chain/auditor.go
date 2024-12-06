@@ -96,7 +96,7 @@ func (app *CoreApplication) shouldProposeNewRollup(ctx context.Context, height i
 	} else {
 		previousHeight = latestRollup.BlockEnd
 	}
-	return height-previousHeight == int64(app.config.SlaRollupInterval)
+	return height-previousHeight >= int64(app.config.SlaRollupInterval)
 }
 
 func (app *CoreApplication) finalizeSlaRollup(ctx context.Context, event *gen_proto.SignedTransaction, txHash string) (*gen_proto.SlaRollup, error) {

@@ -93,12 +93,7 @@ export const ChatMessagePlaylist = ({
   const tracksWithUids = useMemo(() => {
     return (tracks || []).map((track) => ({
       ...track,
-      _cover_art_sizes: {},
-      user: {
-        ...track.user,
-        _profile_picture_sizes: {},
-        _cover_photo_sizes: {}
-      },
+      user: track.user,
       id: track.track_id,
       uid: uidMap[track.track_id]
     }))

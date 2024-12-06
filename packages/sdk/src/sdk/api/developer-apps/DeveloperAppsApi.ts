@@ -1,13 +1,15 @@
-import type Web3Type from 'web3'
+import { generatePrivateKey, privateKeyToAddress } from 'viem/accounts'
 
-import type { AuthService, EntityManagerService } from '../../services'
+import {
+  createAppWalletClient,
+  type EntityManagerService
+} from '../../services'
 import {
   Action,
   EntityType,
   AdvancedOptions
 } from '../../services/EntityManager/types'
 import { parseParams } from '../../utils/parseParams'
-import Web3 from '../../utils/web3'
 import {
   Configuration,
   DeveloperAppsApi as GeneratedDeveloperAppsApi
@@ -23,16 +25,11 @@ import {
 } from './types'
 
 export class DeveloperAppsApi extends GeneratedDeveloperAppsApi {
-  private readonly web3: Web3Type
-
   constructor(
     config: Configuration,
-    private readonly entityManager: EntityManagerService,
-    private readonly auth: AuthService
+    private readonly entityManager: EntityManagerService
   ) {
     super(config)
-
-    this.web3 = new Web3()
   }
 
   /**
@@ -47,14 +44,14 @@ export class DeveloperAppsApi extends GeneratedDeveloperAppsApi {
       CreateDeveloperAppSchema
     )(params)
 
-    const wallet = this.web3.eth.accounts.create()
-    const privateKey = wallet.privateKey
-    const address = wallet.address
+    const privateKey = generatePrivateKey()
+    const address = privateKeyToAddress(privateKey)
+    const wallet = createAppWalletClient(address, privateKey)
 
     const unixTs = Math.round(new Date().getTime() / 1000) // current unix timestamp (sec)
     const message = `Creating Audius developer app at ${unixTs}`
 
-    const signature = wallet.sign(message).signature
+    const signature = await wallet.sign({ message })
     const response = await this.entityManager.manageEntity({
       userId,
       entityType: EntityType.DEVELOPER_APP,
@@ -69,7 +66,6 @@ export class DeveloperAppsApi extends GeneratedDeveloperAppsApi {
           signature
         }
       }),
-      auth: this.auth,
       ...advancedOptions
     })
 
@@ -103,7 +99,6 @@ export class DeveloperAppsApi extends GeneratedDeveloperAppsApi {
         description,
         image_url: imageUrl
       }),
-      auth: this.auth,
       ...advancedOptions
     })
 
@@ -128,8 +123,7 @@ export class DeveloperAppsApi extends GeneratedDeveloperAppsApi {
       action: Action.DELETE,
       metadata: JSON.stringify({
         address: `0x${appApiKey}`
-      }),
-      auth: this.auth
+      })
     })
   }
 }

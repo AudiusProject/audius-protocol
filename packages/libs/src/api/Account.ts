@@ -32,7 +32,6 @@ export class Account extends Base {
     this.changeCredentials = this.changeCredentials.bind(this)
     this.resetPassword = this.resetPassword.bind(this)
     this.checkIfEmailRegistered = this.checkIfEmailRegistered.bind(this)
-    this.getUserEmail = this.getUserEmail.bind(this)
     this.associateTwitterUser = this.associateTwitterUser.bind(this)
     this.associateInstagramUser = this.associateInstagramUser.bind(this)
     this.associateTikTokUser = this.associateTikTokUser.bind(this)
@@ -190,12 +189,7 @@ export class Account extends Base {
     }
   }
 
-  async guestSignUp(
-    email: string,
-    metadata: UserMetadata,
-    host = (typeof window !== 'undefined' && window.location.origin) || null,
-    generateRecoveryLink = true
-  ) {
+  async guestSignUp(email: string, metadata: UserMetadata) {
     const phases = {
       CREATE_USER_RECORD: 'CREATE_USER_RECORD',
       HEDGEHOG_SIGNUP: 'HEDGEHOG_SIGNUP',
@@ -217,10 +211,6 @@ export class Account extends Base {
       })
 
       this.web3Manager.setOwnerWallet(ownerWallet)
-      if (generateRecoveryLink) {
-        await this.generateRecoveryLink({ handle: '', host })
-      }
-
       // Add user to chain
       phase = phases.ADD_USER
       const { newMetadata, blockHash, blockNumber } =
@@ -303,14 +293,6 @@ export class Account extends Base {
   async checkIfEmailRegistered(email: string) {
     this.REQUIRES(Services.IDENTITY_SERVICE)
     return await this.identityService.checkIfEmailRegistered(email)
-  }
-
-  /**
-   * Get the current user's email address
-   */
-  async getUserEmail() {
-    this.REQUIRES(Services.IDENTITY_SERVICE)
-    return await this.identityService.getUserEmail()
   }
 
   /**

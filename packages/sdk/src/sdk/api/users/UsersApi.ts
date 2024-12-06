@@ -1,6 +1,6 @@
 import snakecaseKeys from 'snakecase-keys'
 
-import type { AuthService, StorageService } from '../../services'
+import type { StorageService } from '../../services'
 import { EmailEncryptionService } from '../../services/Encryption'
 import {
   Action,
@@ -11,6 +11,8 @@ import {
 import type { LoggerService } from '../../services/Logger'
 import type { ClaimableTokensClient } from '../../services/Solana/programs/ClaimableTokensClient/ClaimableTokensClient'
 import type { SolanaClient } from '../../services/Solana/programs/SolanaClient'
+import { HashId } from '../../types/HashId'
+import { generateMetadataCidV1 } from '../../utils/cid'
 import { encodeHashId } from '../../utils/hashId'
 import { parseParams } from '../../utils/parseParams'
 import { retry3 } from '../../utils/retry'
@@ -24,6 +26,8 @@ import {
 import * as runtime from '../generated/default/runtime'
 
 import {
+  CreateUserRequest,
+  CreateUserSchema,
   EmailRequest,
   EmailSchema,
   FollowUserRequest,
@@ -47,7 +51,6 @@ export class UsersApi extends GeneratedUsersApi {
     configuration: Configuration,
     private readonly storage: StorageService,
     private readonly entityManager: EntityManagerService,
-    private readonly auth: AuthService,
     private readonly logger: LoggerService,
     private readonly claimableTokens: ClaimableTokensClient,
     private readonly solanaClient: SolanaClient,
@@ -55,6 +58,95 @@ export class UsersApi extends GeneratedUsersApi {
   ) {
     super(configuration)
     this.logger = logger.createPrefixedLogger('[users-api]')
+  }
+
+  /** @hidden
+   * Generate a new user id for use in creation flow
+   */
+  private async generateUserId() {
+    const response = new runtime.JSONApiResponse<{ data: string }>(
+      await this.request({
+        path: '/users/unclaimed_id',
+        method: 'GET',
+        headers: {},
+        query: {
+          noCache: Math.floor(Math.random() * 1000).toString()
+        }
+      })
+    )
+    return await response.value()
+  }
+
+  /** @hidden
+   * Create a user
+   */
+  async createUser(
+    params: CreateUserRequest,
+    advancedOptions?: AdvancedOptions
+  ) {
+    const { onProgress, profilePictureFile, coverArtFile, metadata } =
+      await parseParams('createUser', CreateUserSchema)(params)
+
+    const { data } = await this.generateUserId()
+    if (!data) {
+      throw new Error('Failed to generate userId')
+    }
+    const userId = HashId.parse(data)
+
+    const [profilePictureResp, coverArtResp] = await Promise.all([
+      profilePictureFile &&
+        retry3(
+          async () =>
+            await this.storage.uploadFile({
+              file: profilePictureFile,
+              onProgress,
+              template: 'img_square'
+            }),
+          (e) => {
+            this.logger.info('Retrying uploadProfilePicture', e)
+          }
+        ),
+      coverArtFile &&
+        retry3(
+          async () =>
+            await this.storage.uploadFile({
+              file: coverArtFile,
+              onProgress,
+              template: 'img_backdrop'
+            }),
+          (e) => {
+            this.logger.info('Retrying uploadProfileCoverArt', e)
+          }
+        )
+    ])
+
+    const updatedMetadata = {
+      ...metadata,
+      userId,
+      ...(profilePictureResp
+        ? { profilePictureSizes: profilePictureResp?.id }
+        : {}),
+      ...(coverArtResp ? { coverPhotoSizes: coverArtResp?.id } : {})
+    }
+
+    const entityMetadata = snakecaseKeys(updatedMetadata)
+
+    const cid = (await generateMetadataCidV1(entityMetadata)).toString()
+
+    // Write metadata to chain
+    const { blockHash, blockNumber } = await this.entityManager.manageEntity({
+      userId,
+      entityType: EntityType.USER,
+      entityId: userId,
+      action: Action.CREATE,
+      metadata: JSON.stringify({
+        cid,
+        data: entityMetadata
+      }),
+      ...advancedOptions
+    })
+
+    return { blockHash, blockNumber, metadata: updatedMetadata }
   }
 
   /** @hidden
@@ -75,8 +167,7 @@ export class UsersApi extends GeneratedUsersApi {
             await this.storage.uploadFile({
               file: profilePictureFile,
               onProgress,
-              template: 'img_square',
-              auth: this.auth
+              template: 'img_square'
             }),
           (e) => {
             this.logger.info('Retrying uploadProfilePicture', e)
@@ -88,8 +179,7 @@ export class UsersApi extends GeneratedUsersApi {
             await this.storage.uploadFile({
               file: coverArtFile,
               onProgress,
-              template: 'img_backdrop',
-              auth: this.auth
+              template: 'img_backdrop'
             }),
           (e) => {
             this.logger.info('Retrying uploadProfileCoverArt', e)
@@ -103,6 +193,8 @@ export class UsersApi extends GeneratedUsersApi {
       ...(coverArtResp ? { coverPhoto: coverArtResp?.id } : {})
     }
 
+    const cid = (await generateMetadataCidV1(updatedMetadata)).toString()
+
     // Write metadata to chain
     return await this.entityManager.manageEntity({
       userId,
@@ -110,10 +202,9 @@ export class UsersApi extends GeneratedUsersApi {
       entityId: userId,
       action: Action.UPDATE,
       metadata: JSON.stringify({
-        cid: '',
+        cid,
         data: snakecaseKeys(updatedMetadata)
       }),
-      auth: this.auth,
       ...advancedOptions
     })
   }
@@ -136,7 +227,6 @@ export class UsersApi extends GeneratedUsersApi {
       entityType: EntityType.USER,
       entityId: followeeUserId,
       action: Action.FOLLOW,
-      auth: this.auth,
       ...advancedOptions
     })
   }
@@ -159,7 +249,6 @@ export class UsersApi extends GeneratedUsersApi {
       entityType: EntityType.USER,
       entityId: followeeUserId,
       action: Action.UNFOLLOW,
-      auth: this.auth,
       ...advancedOptions
     })
   }
@@ -182,7 +271,6 @@ export class UsersApi extends GeneratedUsersApi {
       entityType: EntityType.USER,
       entityId: subscribeeUserId,
       action: Action.SUBSCRIBE,
-      auth: this.auth,
       ...advancedOptions
     })
   }
@@ -205,7 +293,6 @@ export class UsersApi extends GeneratedUsersApi {
       entityType: EntityType.USER,
       entityId: subscribeeUserId,
       action: Action.UNSUBSCRIBE,
-      auth: this.auth,
       ...advancedOptions
     })
   }
@@ -339,8 +426,7 @@ export class UsersApi extends GeneratedUsersApi {
       ethWallet,
       destination,
       amount,
-      mint: 'wAUDIO',
-      auth: this.auth
+      mint: 'wAUDIO'
     })
     const transfer = await this.claimableTokens.createTransferInstruction({
       ethWallet,
@@ -373,7 +459,6 @@ export class UsersApi extends GeneratedUsersApi {
       entityType: EntityType.TIP,
       entityId: userId,
       action: Action.UPDATE,
-      auth: this.auth,
       metadata: JSON.stringify({
         cid: '',
         data: snakecaseKeys(metadata)
@@ -475,7 +560,6 @@ export class UsersApi extends GeneratedUsersApi {
         cid: '',
         data: metadata
       }),
-      auth: this.auth,
       ...advancedOptions
     })
   }

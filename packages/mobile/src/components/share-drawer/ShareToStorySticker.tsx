@@ -26,7 +26,6 @@ type ShareToStoryStickerProps = {
     | 'owner_id'
     | 'title'
     | 'track_id'
-    | '_cover_art_sizes'
   >
   artist: Pick<User, 'user_id' | 'name' | 'is_verified'>
   style?: StyleProp<ViewStyle>
@@ -92,9 +91,9 @@ export const ShareToStorySticker = ({
     <View style={[styles.container, style]}>
       <View>
         <TrackImage
+          trackId={track.track_id}
           size={SquareSizes.SIZE_480_BY_480}
           style={styles.trackImage}
-          track={track}
           onLoad={onLoad}
         />
         <Text

@@ -1,10 +1,10 @@
 import { useState } from 'react'
 
 import { View } from 'react-native'
-import type { VideoProperties } from 'react-native-video'
+import type { ReactVideoProps } from 'react-native-video'
 import Video from 'react-native-video'
 
-type AutoSizeVideoProps = VideoProperties
+type AutoSizeVideoProps = ReactVideoProps
 
 const AutoSizeVideo = (props: AutoSizeVideoProps) => {
   const [size, setSize] = useState(0)

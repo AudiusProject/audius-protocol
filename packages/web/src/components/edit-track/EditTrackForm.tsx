@@ -1,13 +1,15 @@
 import { useCallback, useContext, useEffect, useState } from 'react'
 
 import { useFeatureFlag } from '@audius/common/hooks'
+import { DownloadQuality } from '@audius/common/models'
 import { TrackMetadataFormSchema } from '@audius/common/schemas'
 import { FeatureFlags } from '@audius/common/services'
 import {
   TrackMetadataForUpload,
   useEarlyReleaseConfirmationModal,
   useHideContentConfirmationModal,
-  usePublishConfirmationModal
+  usePublishConfirmationModal,
+  useWaitForDownloadModal
 } from '@audius/common/store'
 import {
   IconCaretLeft,
@@ -252,18 +254,14 @@ const TrackEditForm = (
     ]
   )
 
-  const onClickDownload = useCallback(() => {
-    if (!track.file) return
+  const { onOpen: openWaitforDownload } = useWaitForDownloadModal()
 
-    const url = URL.createObjectURL(track.file)
-    const link = document.createElement('a')
-    link.href = url
-    link.download = track.file.name || 'download'
-    document.body.appendChild(link)
-    link.click()
-    document.body.removeChild(link)
-    URL.revokeObjectURL(url)
-  }, [track.file])
+  const onClickDownload = useCallback(() => {
+    openWaitforDownload({
+      trackIds: [track.metadata.track_id],
+      quality: DownloadQuality.ORIGINAL
+    })
+  }, [openWaitforDownload, track])
 
   return (
     <Form id={formId}>

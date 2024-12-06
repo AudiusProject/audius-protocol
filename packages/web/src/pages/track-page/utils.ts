@@ -15,7 +15,6 @@ export const defaultFieldVisibility = {
 export const getTrackDefaults = (heroTrack: Track | null) => ({
   title: emptyStringGuard(heroTrack?.title),
   trackId: heroTrack?.track_id ?? 0,
-  coverArtSizes: heroTrack?._cover_art_sizes ?? null,
   tags: emptyStringGuard(heroTrack?.tags),
   description: emptyStringGuard(heroTrack?.description),
   playCount: heroTrack?.play_count ?? 0,

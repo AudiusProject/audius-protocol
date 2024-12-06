@@ -1,6 +1,6 @@
-import type { EIP712TypedData } from 'eth-sig-util'
 import { rest } from 'msw'
 import { setupServer } from 'msw/node'
+import type { Hex } from 'viem'
 import {
   vitest,
   it,
@@ -13,10 +13,10 @@ import {
 
 import { developmentConfig } from '../../config/development'
 import Web3 from '../../utils/web3'
-import type { AuthService } from '../Auth/types'
+import { createAppWalletClient } from '../AudiusWalletClient'
 import { DiscoveryNodeSelector } from '../DiscoveryNodeSelector'
 
-import { EntityManager } from './EntityManager'
+import { EntityManagerClient } from './EntityManagerClient'
 import { getDefaultEntityManagerConfig } from './getDefaultConfig'
 import { Action, EntityType } from './types'
 
@@ -51,23 +51,10 @@ vitest
   .spyOn(DiscoveryNodeSelector.prototype, 'getSelectedEndpoint')
   .mockImplementation(async () => discoveryNode)
 
-class MockAuth implements AuthService {
-  getSharedSecret = async () => new Uint8Array()
-
-  signTransaction: (data: EIP712TypedData) => Promise<string> = async () =>
-    '0xcfe7a6974bd1691c0a298e119318337c54bf58175f8a9a6aeeaf3b0346c6105265c83de64ab81da28266c4b5b4ff68d81d9e266f9163d7ebd5b2a52d46e275941c'
-
-  sign: (data: string | Uint8Array) => Promise<[Uint8Array, number]> =
-    async () => [new Uint8Array(), 0]
-
-  hashAndSign: (data: string) => Promise<string> = async () => ''
-
-  getAddress = async () => {
-    return userWallet
-  }
-}
-
-const auth = new MockAuth()
+const audiusWalletClient = createAppWalletClient(userWallet).extend(() => ({
+  signTypedData: async () =>
+    '0xcfe7a6974bd1691c0a298e119318337c54bf58175f8a9a6aeeaf3b0346c6105265c83de64ab81da28266c4b5b4ff68d81d9e266f9163d7ebd5b2a52d46e275941c' as Hex
+}))
 const discoveryNodeSelector = new DiscoveryNodeSelector({
   initialSelectedNode: discoveryNode
 })
@@ -108,8 +95,9 @@ const mswHandlers = [
 
 const server = setupServer(...mswHandlers)
 
-const entityManager = new EntityManager({
+const entityManager = new EntityManagerClient({
   ...getDefaultEntityManagerConfig(developmentConfig),
+  audiusWalletClient,
   discoveryNodeSelector
 })
 
@@ -135,8 +123,7 @@ describe('EntityManager', () => {
         entityType: EntityType.TRACK,
         entityId: 1,
         action: Action.CREATE,
-        metadata: JSON.stringify({}),
-        auth
+        metadata: JSON.stringify({})
       })
 
       expect(confirmWriteSpy).toHaveBeenCalledWith(

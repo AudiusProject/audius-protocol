@@ -860,7 +860,6 @@ export const transferFromUserBank = async ({
 
     const secpTransferInstruction =
       await sdk.services.claimableTokensClient.createTransferSecpInstruction({
-        auth: sdk.services.auth,
         amount,
         ethWallet,
         mint,

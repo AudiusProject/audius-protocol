@@ -67,7 +67,7 @@ export const processTrackFile = async (
     preview: null,
     metadata: newTrackMetadata({
       title,
-      artwork: null,
+      artwork: { file: null, url: '' },
       duration
     })
   }

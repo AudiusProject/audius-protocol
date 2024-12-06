@@ -39,6 +39,7 @@ export const buildStoreContext = ({
   getFeatureEnabled: getFeatureEnabled as unknown as (
     flag: FeatureFlags
   ) => Promise<boolean>,
+  getHostUrl: () => window.location.origin,
   analytics,
   remoteConfigInstance,
   audiusBackendInstance,

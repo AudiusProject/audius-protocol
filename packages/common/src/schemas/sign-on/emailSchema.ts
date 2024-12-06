@@ -8,7 +8,8 @@ export const emailSchemaMessages = {
   emailRequired: 'Please enter an email.',
   invalidEmail: 'Please enter a valid email.',
   emailInUse: 'Email already taken.',
-  somethingWentWrong: 'Something went wrong. Try again later.'
+  somethingWentWrong: 'Something went wrong. Try again later.',
+  completeYourProfile: 'Complete your profile.'
 }
 
 export const emailSchema = <T extends AudiusQueryContextType>(
@@ -21,14 +22,19 @@ export const emailSchema = <T extends AudiusQueryContextType>(
       .superRefine(async (email, ctx) => {
         const validEmail = EMAIL_REGEX.test(email)
         if (!validEmail) return true
-        const isEmailInUse = await signUpFetch.isEmailInUse(
-          { email },
-          queryContext
-        )
+        const { emailExists: isEmailInUse, isGuest } =
+          await signUpFetch.isEmailInUse({ email }, queryContext)
         if (isEmailInUse === undefined) {
           ctx.addIssue({
             code: z.ZodIssueCode.custom,
             message: emailSchemaMessages.somethingWentWrong
+          })
+          return true
+        } else if (isGuest) {
+          // complete guest accounts only
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: emailSchemaMessages.completeYourProfile
           })
           return true
         } else if (isEmailInUse) {

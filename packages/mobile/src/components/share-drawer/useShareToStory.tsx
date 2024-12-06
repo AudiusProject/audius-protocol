@@ -31,7 +31,6 @@ import { useDispatch, useSelector } from 'react-redux'
 import { IconWaveform, Button } from '@audius/harmony-native'
 import { LinearProgress, Text } from 'app/components/core'
 import { env } from 'app/env'
-import { isImageUriSource } from 'app/hooks/useContentNodeImage'
 import { useToast } from 'app/hooks/useToast'
 import { make, track } from 'app/services/analytics'
 import { apiClient } from 'app/services/audius-api-client'
@@ -55,14 +54,18 @@ import {
   getDominantRgb,
   pickTwoMostDominantAndVibrant
 } from 'app/utils/dominantColors'
+import { isImageUriSource } from 'app/utils/image'
 import { reportToSentry } from 'app/utils/reportToSentry'
 import { getTrackRoute } from 'app/utils/routes'
 
 import { HarmonyModalHeader } from '../core/HarmonyModalHeader'
 import { NativeDrawer } from '../drawer'
-import { DEFAULT_IMAGE_URL, useTrackImage } from '../image/TrackImage'
+import { useTrackImage } from '../image/TrackImage'
 
 import { messages } from './messages'
+
+export const DEFAULT_IMAGE_URL =
+  'https://download.audius.co/static-resources/preview-image.jpg'
 
 const DEFAULT_DOMINANT_COLORS = ['000000', '434343']
 const stickerLoadedEventEmitter = new EventEmitter()
@@ -132,7 +135,7 @@ export const useShareToStory = ({
     content?.type === 'track' ? content?.artist.handle : undefined
 
   const trackImage = useTrackImage({
-    track: content?.type === 'track' ? content.track : null,
+    trackId: content?.type === 'track' ? content.track.track_id : undefined,
     size: SquareSizes.SIZE_480_BY_480
   })
   const isStickerImageLoadedRef = useRef(false)
@@ -141,8 +144,11 @@ export const useShareToStory = ({
     stickerLoadedEventEmitter.emit(STICKER_LOADED_EVENT)
   }
   const trackImageUri =
-    content?.type === 'track' && isImageUriSource(trackImage?.source)
-      ? trackImage?.source?.uri
+    content?.type === 'track' &&
+    trackImage &&
+    trackImage.source &&
+    isImageUriSource(trackImage.source)
+      ? trackImage.source.uri
       : DEFAULT_IMAGE_URL
 
   const captureStickerImage = useCallback(async () => {
