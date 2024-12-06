@@ -164,7 +164,7 @@ export type ServicesContainer = {
   antiAbuseOracle: AntiAbuseOracleService
 
   /**
-   * Service used to interact with emails
+   * Service used to handle the encryption and decryption of emails, also used for the encryption needed to share emails between users
    */
   emailEncryptionService: EmailEncryptionService
 }

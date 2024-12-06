@@ -3116,7 +3116,6 @@ class UserEmailKey(Resource):
     )
     @ns.marshal_with(email_key_response)
     def get(self, id):
-        """Get the email encryption key for a user."""
         user_id = decode_string_id(id)
 
         db = get_db_read_replica()
