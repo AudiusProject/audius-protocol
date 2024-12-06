@@ -64,6 +64,8 @@ import { setVisibility } from '~/store/ui/modals/parentSlice'
 import { initializeStripeModal } from '~/store/ui/stripe-modal/slice'
 import { waitForAccount, waitForValue } from '~/utils/sagaHelpers'
 
+import { getSDK } from '../sdkUtils'
+
 import {
   BuyCryptoConfig,
   BuyCryptoError,
@@ -210,7 +212,7 @@ function* swapSolForCrypto({
     parseJupiterInstruction(swapInstruction),
     closeWSOLInstruction
   ]
-  const env = yield* getContext('env')
+  const sdk = yield* getSDK()
   const { transaction, addressLookupTableAccounts } = yield* call(
     createVersionedTransaction,
     audiusBackendInstance,
@@ -218,7 +220,7 @@ function* swapSolForCrypto({
       instructions,
       lookupTableAddresses: addressLookupTableAddresses,
       feePayer,
-      env
+      sdk
     }
   )
   transaction.sign([wallet])
@@ -341,8 +343,8 @@ function* doBuyCryptoViaSol({
       make
     })
 
-    const env = yield* getContext('env')
-    const connection = yield* call(getSolanaConnection, { env })
+    const sdk = yield* getSDK()
+    const connection = sdk.services.solanaClient.connection
     const minRent = yield* call(
       [connection, connection.getMinimumBalanceForRentExemption],
       0

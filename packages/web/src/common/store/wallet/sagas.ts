@@ -317,8 +317,9 @@ function* checkAssociatedTokenAccountOrSol(action: InputSendDataAction) {
     address
   )
   if (!associatedTokenAccount) {
+    const sdk = yield* getSDK()
     const balance: BNWei = yield* call(() =>
-      walletClient.getWalletSolBalance(address)
+      walletClient.getWalletSolBalance({ address, sdk })
     )
 
     // TODO: this can become a call to getAssociatedTokenRentExemptionMinimum

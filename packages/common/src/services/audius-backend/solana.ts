@@ -84,21 +84,10 @@ export const getRootSolanaAccount = async (
 }
 
 /**
- * Gets the Solana connection libs is currently using
- */
-let solanaConnection: Connection
-export const getSolanaConnection = async ({ env }: { env: Env }) => {
-  if (!solanaConnection) {
-    solanaConnection = new Connection(env.SOLANA_CLUSTER_ENDPOINT)
-  }
-  return solanaConnection
-}
-
-/**
  * Gets the latest blockhash using the libs connection
  */
-export const getRecentBlockhash = async ({ env }: { env: Env }) => {
-  const connection = await getSolanaConnection({ env })
+export const getRecentBlockhash = async ({ sdk }: { sdk: AudiusSdk }) => {
+  const connection = sdk.services.solanaClient.connection
   return (await connection.getLatestBlockhash()).blockhash
 }
 
@@ -689,19 +678,19 @@ export const createVersionedTransaction = async (
     instructions,
     lookupTableAddresses,
     feePayer,
-    env
+    sdk
   }: {
     instructions: TransactionInstruction[]
     lookupTableAddresses: string[]
     feePayer: PublicKey
-    env: Env
+    sdk: AudiusSdk
   }
 ) => {
   const addressLookupTableAccounts = await getLookupTableAccounts(
     audiusBackendInstance,
     { lookupTableAddresses }
   )
-  const recentBlockhash = await getRecentBlockhash({ env })
+  const recentBlockhash = await getRecentBlockhash({ sdk })
 
   const message = new TransactionMessage({
     payerKey: feePayer,

@@ -62,7 +62,6 @@ import {
 } from '../../utils'
 import type { DiscoveryNodeSelectorService } from '../sdk/discovery-node-selector'
 
-import { getSolanaConnection } from './solana'
 import { MonitoringCallbacks } from './types'
 
 type DisplayEncoding = 'utf8' | 'hex'
@@ -1700,7 +1699,7 @@ export const audiusBackend = ({
           ethWallet: ethAddress ?? (await sdk.services.auth.getAddress()),
           mint: 'wAUDIO'
         })
-      const connection = await getSolanaConnection({ env })
+      const connection = sdk.services.solanaClient.connection
       const {
         value: { amount, decimals: waudioDecimals }
       } = await connection.getTokenAccountBalance(userBank)
@@ -1724,10 +1723,16 @@ export const audiusBackend = ({
    * @param {string} The solana wallet address
    * @returns {Promise<BNWei>}
    */
-  async function getAddressSolBalance(address: string): Promise<BNWei> {
+  async function getAddressSolBalance({
+    address,
+    sdk
+  }: {
+    address: string
+    sdk: AudiusSdk
+  }): Promise<BNWei> {
     try {
       const addressPubKey = new PublicKey(address)
-      const connection = await getSolanaConnection({ env })
+      const connection = sdk.services.solanaClient.connection
       const solBalance = await connection.getBalance(addressPubKey)
       return new BN(solBalance ?? 0) as BNWei
     } catch (e) {
