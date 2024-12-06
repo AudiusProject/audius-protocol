@@ -32,19 +32,19 @@ export const addRequestSignatureMiddleware = ({
     // and reverting to an older signature
     return mutex.runExclusive(async () => {
       const { audiusWalletClient, logger } = services
-      const [currentAddress] = await audiusWalletClient.getAddresses()
-      const currentTimestamp = new Date().getTime()
-      const isExpired =
-        !timestamp || timestamp + SIGNATURE_EXPIRY_MS < currentTimestamp
+      try {
+        const [currentAddress] = await audiusWalletClient.getAddresses()
+        const currentTimestamp = new Date().getTime()
+        const isExpired =
+          !timestamp || timestamp + SIGNATURE_EXPIRY_MS < currentTimestamp
 
-      const needsUpdate =
-        !message ||
-        !signature ||
-        isExpired ||
-        signatureAddress !== currentAddress
+        const needsUpdate =
+          !message ||
+          !signature ||
+          isExpired ||
+          signatureAddress !== currentAddress
 
-      if (needsUpdate) {
-        try {
+        if (needsUpdate) {
           if (!currentAddress) {
             throw new Error('Could not get a wallet address.')
           }
@@ -59,9 +59,9 @@ export const addRequestSignatureMiddleware = ({
           // Cache the new signature and message
           message = m
           timestamp = currentTimestamp
-        } catch (e) {
-          logger.warn(`Unable to add request signature: ${e}`)
         }
+      } catch (e) {
+        logger.warn(`Unable to add request signature: ${e}`)
       }
       return { message, signature }
     })

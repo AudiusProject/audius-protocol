@@ -5,7 +5,7 @@ setup_file() {
     _common_setup
 
     export TEST_HANDLE="test_$RANDOM"
-    timeout 120s npm run audius-cmd -- create-user "$TEST_HANDLE"
+    timeout 120s npm run audius-cmd -- user create "$TEST_HANDLE"
 }
 
 setup() {
@@ -14,7 +14,7 @@ setup() {
 }
 
 @test "should upload random track when called without args" {
-    run timeout 120s npm run audius-cmd -- upload-track --from "$TEST_HANDLE"
+    run timeout 120s npm run audius-cmd -- track upload --from "$TEST_HANDLE"
 
     assert_success
     assert_line "Successfully uploaded track!"

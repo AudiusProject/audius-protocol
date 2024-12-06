@@ -10,17 +10,19 @@
   "scripts": {
     "audius-cmd": "node dist/index.js",
     "build:dist": "turbo run build",
-    "build": "esbuild --bundle --platform=node --loader:.wasm=binary --outfile=dist/index.js src/index.mjs",
+    "build": "esbuild --bundle --platform=node --loader:.wasm=binary --outfile=dist/index.js src/index.ts",
     "watch:dist": "turbo run watch",
-    "watch": "esbuild --bundle --platform=node --loader:.wasm=binary --outfile=dist/index.js --watch=forever src/index.mjs",
-    "test": "bats test"
+    "watch": "esbuild --bundle --platform=node --loader:.wasm=binary --outfile=dist/index.js --watch=forever src/index.ts",
+    "test": "bats test",
+    "typecheck": "tsc --noEmit"
   },
   "author": "Audius",
   "license": "Apache-2.0",
   "dependencies": {
+    "@audius/hedgehog": "3.0.0-alpha.1",
     "@audius/sdk": "*",
-    "@audius/sdk-legacy": "*",
     "@audius/spl": "*",
+    "@commander-js/extra-typings": "12.1.0",
     "@solana/spl-token": "0.3.8",
     "@solana/web3.js": "1.93.4",
     "bn.js": "^5.2.1",
