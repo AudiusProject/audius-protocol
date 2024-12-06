@@ -26,6 +26,7 @@ export function* confirmTransaction(blockHash: string, blockNumber: number) {
       blockNumber
     }
   )
+  return true
 }
 
 /* Private */
