@@ -1,4 +1,4 @@
-import { AUDIO, FixedDecimal, wAUDIO } from '@audius/fixed-decimal'
+import { AUDIO, wAUDIO } from '@audius/fixed-decimal'
 import {
   AudiusSdk,
   Genre,
