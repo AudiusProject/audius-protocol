@@ -4,12 +4,15 @@ import (
 	"bytes"
 	"fmt"
 	"io"
+	"math/rand"
 	"net"
 	"os"
 	"os/exec"
 	"strings"
+	"time"
 
 	"github.com/AudiusProject/audius-protocol/pkg/conf"
+	"github.com/AudiusProject/audius-protocol/pkg/core/config"
 	"github.com/AudiusProject/audius-protocol/pkg/logger"
 	"github.com/AudiusProject/audius-protocol/pkg/register"
 	"github.com/joho/godotenv"
@@ -51,12 +54,22 @@ func RunAudiusNodes(nodes map[string]conf.NodeConfig, network conf.NetworkConfig
 	}
 
 	for host, nodeConfig := range nodes {
-		if err := runNode(
-			host,
-			nodeConfig,
-			network,
-			audiusdTagOverride,
-		); err != nil {
+		var err error
+		if nodeConfig.Type == conf.Content {
+			err = runNodeWrapperless(
+				host,
+				nodeConfig,
+				network,
+			)
+		} else {
+			err = runNode(
+				host,
+				nodeConfig,
+				network,
+				audiusdTagOverride,
+			)
+		}
+		if err != nil {
 			logger.Warnf("Error encountered starting node %s: %s", host, err.Error())
 			logger.Warnf("View full debug log at %s", logger.GetLogFilepath())
 		} else {
@@ -170,4 +183,53 @@ func resolvesToLocalhost(host string) (bool, error) {
 		}
 	}
 	return false, nil
+}
+
+// WARNING: only effective when run by audius-ctl cli
+func setAutoUpdateCron(host, version string, network conf.NetworkType) error {
+	var updateInterval string
+	rand.Seed(time.Now().UnixNano())
+	if version == "prerelease" && network == conf.Testnet {
+		// Stage nodes should update continuously, slightly staggered
+		updateInterval = fmt.Sprintf("%d-59/5", rand.Intn(5))
+	} else if config.Version == "edge" {
+		// Frequent, staggerd release of foundation and other canary nodes
+		updateInterval = fmt.Sprintf("%d-59/25", rand.Intn(25))
+	} else {
+		// Hourly release for everything else
+		// starting 55 minutes from now (for randomness + prevent updates during CI)
+		fiveMinutesAgo := time.Now().Add(-5 * time.Minute).Minute()
+		updateInterval = fmt.Sprint(fiveMinutesAgo)
+	}
+	schedule := fmt.Sprintf("%s * * * *", updateInterval)
+	executable, err := os.Executable()
+	if err != nil {
+		return logger.Error("Failed to retrieve executable path:", err)
+	}
+	restartCommand := fmt.Sprintf("bash -c '%s restart -f %s'", executable, host)
+	comment := fmt.Sprintf("# audius auto-upgrade for %s", host)
+	cronJob := fmt.Sprintf("%s %s %s", schedule, restartCommand, comment)
+	script := fmt.Sprintf(
+		`(crontab -l | grep -v '%s'; echo "%s" ) | crontab - `,
+		host,
+		cronJob,
+	)
+	if err := execLocal("bash", "-c", script); err != nil {
+		return logger.Error("Failed to execute crontab script:", err)
+	}
+
+	logger.Debugf("auto-upgrade cron job added successfully for %s", host)
+	return nil
+}
+
+func copyFileToHost(host, src, dest string) error {
+	var cmd *exec.Cmd
+	if host == "localhost" {
+		cmd = exec.Command("cp", src, dest)
+	} else {
+		cmd = exec.Command("scp", src, fmt.Sprintf("%s:%s", host, dest))
+	}
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	return cmd.Run()
 }
