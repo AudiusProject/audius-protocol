@@ -209,7 +209,6 @@ function* fetchBalanceAsync() {
   yield* waitForWrite()
   const walletClient = yield* getContext('walletClient')
   const sdk = yield* getSDK()
-  const authService = yield* getContext('authService')
 
   const account = yield* select(getAccountUser)
   if (!account || !account.wallet) return
@@ -230,8 +229,7 @@ function* fetchBalanceAsync() {
       }),
       call([walletClient, 'getCurrentWAudioBalance'], {
         ethAddress: account.wallet,
-        sdk,
-        authService
+        sdk
       })
     ])
 

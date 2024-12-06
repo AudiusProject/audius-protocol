@@ -937,8 +937,8 @@ function* purchaseWithAnything({
   try {
     const audiusSdk = yield* getContext('audiusSdk')
     const sdk = yield* call(audiusSdk)
-    const audiusBackendInstance = yield* getContext('audiusBackendInstance')
-    const connection = yield* call(getSolanaConnection, audiusBackendInstance)
+    const env = yield* getContext('env')
+    const connection = yield* call(getSolanaConnection, { env })
     const getFeatureEnabled = yield* getContext('getFeatureEnabled')
     const isNetworkCutEnabled = yield* call(
       getFeatureEnabled,

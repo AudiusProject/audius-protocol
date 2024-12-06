@@ -339,7 +339,8 @@ function* doBuyCryptoViaSol({
       make
     })
 
-    const connection = yield* call(getSolanaConnection, audiusBackendInstance)
+    const env = yield* getContext('env')
+    const connection = yield* call(getSolanaConnection, { env })
     const minRent = yield* call(
       [connection, connection.getMinimumBalanceForRentExemption],
       0
@@ -722,7 +723,8 @@ function* recoverBuyCryptoViaSolIfNecessary() {
 
   // Get config
   const wallet = yield* call(getRootSolanaAccount, audiusBackendInstance)
-  const connection = yield* call(getSolanaConnection, audiusBackendInstance)
+  const env = yield* getContext('env')
+  const connection = yield* call(getSolanaConnection, { env })
   const feePayerAddress = yield* waitForValue(getFeePayer)
   const config = yield* call(getBuyCryptoRemoteConfig, mint)
   const outputToken = TOKEN_LISTING_MAP[mint.toUpperCase()]
