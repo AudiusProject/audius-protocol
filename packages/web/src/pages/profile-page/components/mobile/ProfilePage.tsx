@@ -24,7 +24,9 @@ import {
   IconNote,
   IconPlaylists,
   IconRepost as IconReposts,
-  LoadingSpinner
+  LoadingSpinner,
+  Box,
+  Flex
 } from '@audius/harmony'
 import cn from 'classnames'
 
@@ -430,7 +432,11 @@ const ProfilePage = g(
           <div className={styles.cardLineupContainer} key='artistAlbums'>
             {collectionStatus !== Status.SUCCESS &&
             collectionStatus !== Status.ERROR ? (
-              <LoadingSpinner />
+              <Flex justifyContent='center' mt='l'>
+                <Box w={24}>
+                  <LoadingSpinner />
+                </Box>
+              </Flex>
             ) : (albums || []).length === 0 ? (
               <EmptyTab
                 message={
@@ -452,7 +458,11 @@ const ProfilePage = g(
           <div className={styles.cardLineupContainer} key='artistPlaylists'>
             {collectionStatus !== Status.SUCCESS &&
             collectionStatus !== Status.ERROR ? (
-              <LoadingSpinner />
+              <Flex justifyContent='center' mt='l'>
+                <Box w={24}>
+                  <LoadingSpinner />
+                </Box>
+              </Flex>
             ) : (playlists || []).length === 0 ? (
               <EmptyTab
                 message={
