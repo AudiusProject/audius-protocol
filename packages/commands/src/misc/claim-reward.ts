@@ -34,7 +34,7 @@ export const claimRewardCommand = new Command('claim-reward')
       amount
     })
     console.log(chalk.green('Successfully claimed reward'))
-    console.log(chalk.yellow('Transaction Signature:'), res)
+    console.log(chalk.yellow.bold('Transaction Signature:'), res)
   })
 
 export const rewardSpecifierCommand = new Command('reward-specifier')
@@ -53,5 +53,5 @@ export const rewardSpecifierCommand = new Command('reward-specifier')
       contentId,
       referredUserId
     } as GenerateSpecifierRequest)
-    console.log(chalk.yellow('Specifier:'), specifier)
+    console.log(chalk.yellow.bold('Specifier:'), specifier)
   })

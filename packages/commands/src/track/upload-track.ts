@@ -64,10 +64,12 @@ function generateWhiteNoise(duration: number, outFile: string) {
 }
 
 const getStreamConditions = async ({
+  userId,
   streamConditions,
   price: priceString,
   audiusSdk
 }: {
+  userId: string
   streamConditions: any
   price?: string
   audiusSdk: AudiusSdk
@@ -82,9 +84,9 @@ const getStreamConditions = async ({
         mint: 'USDC'
       })
     return {
-      usdc_purchase: {
+      usdcPurchase: {
         price,
-        splits: { [userBank.toString()]: price * 10 ** 4 }
+        splits: [{ user_id: decodeHashId(userId), percentage: 100 }]
       }
     }
   } else if (streamConditions) {
@@ -94,12 +96,14 @@ const getStreamConditions = async ({
 }
 
 const getDownloadConditions = async ({
+  userId,
   streamConditions,
   parsedStreamConditions,
   downloadConditions,
   downloadPrice: downloadPriceString,
   audiusSdk
 }: {
+  userId: string
   streamConditions: any
   parsedStreamConditions: any
   downloadConditions: any
@@ -125,9 +129,9 @@ const getDownloadConditions = async ({
         mint: 'USDC'
       })
     return {
-      usdc_purchase: {
+      usdcPurchase: {
         price,
-        splits: { [userBank.toString()]: price * 10 ** 4 }
+        splits: [{ user_id: decodeHashId(userId), percentage: 100 }]
       }
     }
   }
@@ -253,11 +257,13 @@ export const uploadTrackCommand = new Command('upload')
     }
 
     const parsedStreamConditions = await getStreamConditions({
+      userId,
       streamConditions,
       price,
       audiusSdk
     })
     const parsedDownloadConditions = await getDownloadConditions({
+      userId,
       streamConditions,
       parsedStreamConditions,
       downloadConditions,
@@ -275,6 +281,8 @@ export const uploadTrackCommand = new Command('upload')
         genre,
         mood,
         license,
+        isStreamGated: !!parsedStreamConditions,
+        isDownloadGated: !!parsedDownloadConditions,
         downloadConditions: parsedDownloadConditions,
         streamConditions: parsedStreamConditions,
         tags: tags?.join(','),
