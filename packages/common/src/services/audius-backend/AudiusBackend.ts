@@ -335,32 +335,6 @@ export const audiusBackend = ({
     }
   }
 
-  async function fetchCID(cid: CID, asUrl = true) {
-    await waitForLibsInit()
-
-    // If requesting a url (we mean a blob url for the file),
-    // otherwise, default to JSON
-    const responseType = asUrl ? 'blob' : 'json'
-
-    try {
-      const res = await audiusLibs.File.fetchCIDFromDiscovery(cid, responseType)
-      if (asUrl) {
-        const url = nativeMobile
-          ? res.config.url
-          : URL.createObjectURL(res.data)
-        return url
-      }
-      return res?.data ?? null
-    } catch (e) {
-      const message = getErrorMessage(e)
-      if (message === 'Unauthorized') {
-        return message
-      }
-      console.error(e)
-      return asUrl ? '' : null
-    }
-  }
-
   async function fetchImageCID(
     cid: CID,
     size?: SquareSizes | WidthSizes,
@@ -694,10 +668,6 @@ export const audiusBackend = ({
     }
   }
 
-  async function setCreatorNodeEndpoint(endpoint: string) {
-    return audiusLibs.creatorNode.setEndpoint(endpoint)
-  }
-
   type SearchTagsArgs = {
     query: string
     userTagCount?: number
@@ -854,48 +824,8 @@ export const audiusBackend = ({
     }
   }
 
-  async function getUserEmail(): Promise<string> {
-    await waitForLibsInit()
-    const { email } = await audiusLibs.Account.getUserEmail()
-    return email
-  }
-
   async function uploadImage(file: File) {
     return await audiusLibs.creatorNode.uploadTrackCoverArtV2(file, () => {})
-  }
-
-  /**
-   * Retrieves the user's eth associated wallets from IPFS using the user's metadata CID and creator node endpoints
-   * @param user The user metadata which contains the CID for the metadata multihash
-   * @returns Object The associated wallets mapping of address to nested signature
-   */
-  // TODO(C-2719)
-  async function fetchUserAssociatedEthWallets(user: User) {
-    const cid = user?.metadata_multihash ?? null
-    if (cid) {
-      const metadata = await fetchCID(cid, /* asUrl */ false)
-      if (metadata?.associated_wallets) {
-        return metadata.associated_wallets
-      }
-    }
-    return null
-  }
-
-  /**
-   * Retrieves the user's solana associated wallets from IPFS using the user's metadata CID and creator node endpoints
-   * @param user The user metadata which contains the CID for the metadata multihash
-   * @returns Object The associated wallets mapping of address to nested signature
-   */
-  // TODO(C-2719)
-  async function fetchUserAssociatedSolWallets(user: User) {
-    const cid = user?.metadata_multihash ?? null
-    if (cid) {
-      const metadata = await fetchCID(cid, /* asUrl */ false)
-      if (metadata?.associated_sol_wallets) {
-        return metadata.associated_sol_wallets
-      }
-    }
-    return null
   }
 
   /**
@@ -903,31 +833,47 @@ export const audiusBackend = ({
    * @param user The user metadata which contains the CID for the metadata multihash
    * @returns Object The associated wallets mapping of address to nested signature
    */
-  // TODO(C-2719)
-  async function fetchUserAssociatedWallets(user: UserMetadata) {
-    const cid = user?.metadata_multihash ?? null
-    if (cid) {
-      const metadata = await fetchCID(cid, /* asUrl */ false)
-      return {
-        associated_sol_wallets: metadata?.associated_sol_wallets ?? null,
-        associated_wallets: metadata?.associated_wallets ?? null
-      }
+  async function fetchUserAssociatedWallets({
+    user,
+    sdk
+  }: {
+    user: UserMetadata
+    sdk: AudiusSdk
+  }) {
+    if (!user?.metadata_multihash) return null
+
+    const { data } = await sdk.full.cidData.getMetadata({
+      metadataId: user?.metadata_multihash
+    })
+
+    if (!data?.data) return null
+
+    return {
+      associated_sol_wallets: data.data.associatedSolWallets ?? null,
+      associated_wallets: data.data.associatedWallets ?? null
     }
-    return null
   }
 
-  async function updateCreator(
+  async function updateCreator({
+    metadata,
+    sdk
+  }: {
     metadata: UserMetadata &
       Pick<
         ComputedUserProperties,
         'updatedProfilePicture' | 'updatedCoverPhoto'
-      >,
-    _id?: ID
-  ) {
+      >
+    sdk: AudiusSdk
+  }) {
     let newMetadata = { ...metadata }
-    const associatedWallets = await fetchUserAssociatedWallets(metadata)
+    const associatedWallets = await fetchUserAssociatedWallets({
+      user: metadata,
+      sdk
+    })
+    // @ts-ignore when writing data, this type is expected to contain a signature
     newMetadata.associated_wallets =
       newMetadata.associated_wallets || associatedWallets?.associated_wallets
+    // @ts-ignore when writing data, this type is expected to contain a signature
     newMetadata.associated_sol_wallets =
       newMetadata.associated_sol_wallets ||
       associatedWallets?.associated_sol_wallets
@@ -1184,31 +1130,11 @@ export const audiusBackend = ({
     )
   }
 
-  async function guestSignUp(
-    email: string,
-    feePayerOverride: Nullable<string>
-  ) {
+  async function guestSignUp(email: string) {
     await waitForLibsInit()
     const metadata = schemas.newUserMetadata()
 
-    return await audiusLibs.Account.guestSignUp(
-      email,
-      metadata,
-      getHostUrl(),
-      (eventName: string, properties: Record<string, unknown>) =>
-        recordAnalytics({ eventName, properties }),
-      {
-        Request: Name.CREATE_USER_BANK_REQUEST,
-        Success: Name.CREATE_USER_BANK_SUCCESS,
-        Failure: Name.CREATE_USER_BANK_FAILURE
-      },
-      feePayerOverride,
-      true
-    )
-  }
-  async function resetPassword(username: string, password: string) {
-    const libs = await getAudiusLibsTyped()
-    return libs.Account!.resetPassword({ username, password })
+    return await audiusLibs.Account.guestSignUp(email, metadata)
   }
 
   async function sendRecoveryEmail(handle: string) {
@@ -1220,9 +1146,12 @@ export const audiusBackend = ({
   async function emailInUse(email: string) {
     await waitForLibsInit()
     try {
-      const { exists: emailExists } =
+      const { exists: emailExists, isGuest } =
         await audiusLibs.Account.checkIfEmailRegistered(email)
-      return emailExists as boolean
+      return {
+        emailExists: emailExists as boolean,
+        isGuest: isGuest as boolean
+      }
     } catch (error) {
       console.error(getErrorMessage(error))
       throw error
@@ -1639,8 +1568,6 @@ export const audiusBackend = ({
   }
 
   async function getPushNotificationSettings({ sdk }: { sdk: AudiusSdk }) {
-    await waitForLibsInit()
-
     try {
       const { data, signature } = await signIdentityServiceRequest({ sdk })
       return await fetch(`${identityServiceUrl}/push_notifications/settings`, {
@@ -1666,8 +1593,6 @@ export const audiusBackend = ({
     deviceToken: string
     deviceType: string
   }) {
-    await waitForLibsInit()
-
     try {
       const { data, signature } = await signIdentityServiceRequest({ sdk })
       return await fetch(
@@ -1715,42 +1640,6 @@ export const audiusBackend = ({
       ).then((res) => res.json())
     } catch (e) {
       console.error(e)
-    }
-  }
-
-  async function subscribeToUser({
-    subscribeToUserId,
-    userId
-  }: {
-    subscribeToUserId: ID
-    userId: ID
-  }) {
-    try {
-      await waitForLibsInit()
-      return await audiusLibs.User.addUserSubscribe(subscribeToUserId, userId)
-    } catch (err) {
-      console.error(getErrorMessage(err))
-      throw err
-    }
-  }
-
-  async function unsubscribeFromUser({
-    subscribedToUserId,
-    userId
-  }: {
-    subscribedToUserId: ID
-    userId: ID
-  }) {
-    try {
-      await waitForLibsInit()
-
-      return await audiusLibs.User.deleteUserSubscribe(
-        subscribedToUserId,
-        userId
-      )
-    } catch (err) {
-      console.error(getErrorMessage(err))
-      throw err
     }
   }
 
@@ -2060,9 +1949,8 @@ export const audiusBackend = ({
     return audiusLibs.solanaWeb3Manager.transferWAudio(address, amount)
   }
 
-  async function getSignature(data: any) {
-    await waitForLibsInit()
-    return audiusLibs.web3Manager.sign(data)
+  async function getSignature({ data, sdk }: { data: any; sdk: AudiusSdk }) {
+    return signData({ data, sdk })
   }
 
   /**
@@ -2141,10 +2029,7 @@ export const audiusBackend = ({
     didSelectDiscoveryProviderListeners,
     disableBrowserNotifications,
     emailInUse,
-    fetchCID,
     fetchImageCID,
-    fetchUserAssociatedEthWallets,
-    fetchUserAssociatedSolWallets,
     fetchUserAssociatedWallets,
     getAddressTotalStakedBalance,
     getAddressWAudioBalance,
@@ -2163,7 +2048,6 @@ export const audiusBackend = ({
     getSafariBrowserPushEnabled,
     getSignature,
     getTrackImages,
-    getUserEmail,
     getUserImages,
     getUserListenCountsMonthly,
     getWAudioBalance,
@@ -2175,7 +2059,6 @@ export const audiusBackend = ({
     recordTrackListen,
     registerDeviceToken,
     repostCollection,
-    resetPassword,
     guestSignUp,
     saveCollection,
     searchTags,
@@ -2183,7 +2066,6 @@ export const audiusBackend = ({
     sendTokens,
     sendWAudioTokens,
     sendWelcomeEmail,
-    setCreatorNodeEndpoint,
     setup,
     setUserHandleForRelay,
     signData,
@@ -2207,8 +2089,6 @@ export const audiusBackend = ({
     updatePushNotificationSettings,
     updateUserEvent,
     updateUserLocationTimezone,
-    subscribeToUser,
-    unsubscribeFromUser,
     uploadImage,
     userNodeUrl,
     validateTracksInPlaylist,

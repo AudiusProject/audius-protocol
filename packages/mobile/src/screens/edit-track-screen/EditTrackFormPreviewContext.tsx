@@ -1,16 +1,8 @@
 import { createContext, useCallback, useMemo, useState } from 'react'
 
-// import {
-//   playerActions,
-//   playerSelectors,
-//   queueActions,
-//   queueSelectors
-// } from '@audius/common/store'
-// import Sound from 'react-native-sound'
-// import TrackPlayer from 'react-native-track-player'
-// import { useSelector } from 'react-redux'
-
-// Sound.setCategory('Playback')
+import { playerActions, playerSelectors } from '@audius/common/store'
+import Video from 'react-native-video'
+import { useDispatch, useSelector } from 'react-redux'
 
 type PreviewContextProps = {
   isPlaying: boolean
@@ -27,59 +19,26 @@ export const EditTrackFormPreviewContext = createContext<PreviewContextProps>({
 export const EditTrackFormPreviewContextProvider = (props: {
   children: JSX.Element
 }) => {
-  // const dispatch = useDispatch()
+  const dispatch = useDispatch()
+  const [sourceUri, setSourceUri] = useState('')
   const [isPlaying, setIsPlaying] = useState(false)
-  // const uid = useSelector(playerSelectors.getUid)
-  // const queueOrder = useSelector(queueSelectors.getOrder)
-  // const queueLength = useSelector(queueSelectors.getLength)
-  // console.log({ uid, queueLength, queueOrder })
-
-  // const soundRef = useRef<Sound | null>(null)
+  const isPlayerPlaying = useSelector(playerSelectors.getPlaying)
 
   // Request preview playback
-  const playPreview = useCallback(async (url: string) => {
-    // console.log('PLAY PREVIEW', { url })
-    setIsPlaying(true)
+  const playPreview = useCallback(
+    async (url: string) => {
+      if (isPlayerPlaying) dispatch(playerActions.pause())
 
-    // --- 1 ---
-    // const sound = new Sound(url, Sound.MAIN_BUNDLE, (error) => {
-    // const sound = new Sound(url, '', (error) => {
-    //   if (error) {
-    //     console.log('failed to load the sound', error)
-    //     return
-    //   }
-    //   // when loaded successfully
-    //   console.log(
-    //     'preview duration: ' +
-    //       sound.getDuration()
-    //   )
-    // })
-    // sound.setVolume(1)
-    // soundRef.current = sound
-    // soundRef.current.play()
+      setSourceUri(url)
+      setIsPlaying(true)
+    },
+    [dispatch, isPlayerPlaying]
+  )
 
-    // --- 2 ---
-    // if (queueLength) {
-    //   dispatch(playerActions.stop({}))
-    //   dispatch(queueActions.clear({}))
-    // }
-    // await TrackPlayer.load({ url })
-    // await TrackPlayer.play()
-  }, [])
-
+  // Stop preview playback
   const stopPreview = useCallback(async () => {
-    // console.log('STOP PREVIEW')
     setIsPlaying(false)
-
-    // --- 1 ---
-    // soundRef.current?.stop()
-    // dispatch(queueActions.clear({}))
-
-    // --- 2 ---
-    // dispatch(playerActions.stop({}))
-    // dispatch(queueActions.clear({}))
-    // await TrackPlayer.stop()
-    // await TrackPlayer.reset()
+    setSourceUri('')
   }, [])
 
   const context = useMemo(
@@ -94,6 +53,14 @@ export const EditTrackFormPreviewContextProvider = (props: {
   return (
     <EditTrackFormPreviewContext.Provider value={context}>
       {props.children}
+      <Video
+        style={{ display: 'none' }}
+        source={{ uri: sourceUri }}
+        paused={!isPlaying}
+        onEnd={() => {
+          setIsPlaying(false)
+        }}
+      />
     </EditTrackFormPreviewContext.Provider>
   )
 }

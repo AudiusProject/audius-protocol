@@ -5,7 +5,8 @@ import { OS, MobileOS } from '@audius/common/src/models/OS'
 
 declare global {
   interface Window {
-    opera: string
+    // @ts-ignore -- TODO fix mobile imports causing type errors
+    opera: any
     // @ts-ignore -- TODO fix mobile imports causing type errors
     MSStream: boolean
   }
@@ -31,6 +32,7 @@ export const isMobile = () => {
   }
   let check = false
   if (
+    // @ts-ignore -- TODO fix mobile imports causing type errors
     isMobileUserAgent(navigator.userAgent || navigator.vendor || window.opera)
   ) {
     check = true
@@ -71,16 +73,22 @@ export const getOS = () => {
 
 export const getMobileOS = () => {
   if (typeof window === 'undefined') return null
+  // @ts-ignore -- TODO fix mobile imports causing type errors
   const userAgent = navigator.userAgent || navigator.vendor || window.opera
 
   // Windows Phone must come first because its UA also contains "Android"
+  // @ts-ignore -- TODO fix mobile imports causing type errors
   if (/windows phone/i.test(userAgent)) {
     return MobileOS.WINDOWS_PHONE
   }
+
+  // @ts-ignore -- TODO fix mobile imports causing type errors
   if (/android/i.test(userAgent)) {
     return MobileOS.ANDROID
   }
+
   // iOS detection from: http://stackoverflow.com/a/9039885/177710
+  // @ts-ignore -- TODO fix mobile imports causing type errors
   if (/iPad|iPhone|iPod/.test(userAgent) && !window.MSStream) {
     return MobileOS.IOS
   }

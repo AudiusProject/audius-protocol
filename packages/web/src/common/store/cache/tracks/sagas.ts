@@ -1,7 +1,7 @@
 import {
   userTrackMetadataFromSDK,
   trackMetadataForUploadToSdk,
-  artworkFileToSDK
+  fileToSdk
 } from '@audius/common/adapters'
 import {
   Name,
@@ -266,7 +266,7 @@ function* confirmEditTrack(
           userId: Id.parse(userId),
           trackId: Id.parse(trackId),
           coverArtFile: coverArtFile
-            ? artworkFileToSDK(coverArtFile)
+            ? fileToSdk(coverArtFile, 'cover_art')
             : undefined,
           metadata: trackMetadataForUploadToSdk(formFields),
           transcodePreview

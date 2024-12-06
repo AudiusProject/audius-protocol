@@ -6,7 +6,8 @@ import {
   walletActions,
   getContext,
   confirmerActions,
-  confirmTransaction
+  confirmTransaction,
+  getSDK
 } from '@audius/common/store'
 import { call, put, select } from 'typed-redux-saga'
 
@@ -22,15 +23,15 @@ export function* addWalletToUser(
   disconnect: () => Generator
 ) {
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
+  const sdk = yield* getSDK()
   const accountUserId = yield* select(getUserId)
   if (!accountUserId) return
 
   function* transactMetadata() {
-    const result = yield* call(
-      audiusBackendInstance.updateCreator,
-      updatedMetadata,
-      accountUserId!
-    )
+    const result = yield* call(audiusBackendInstance.updateCreator, {
+      metadata: updatedMetadata,
+      sdk
+    })
     if (!result) {
       throw new Error(
         `Could not confirm connect wallet for account user id ${accountUserId}`

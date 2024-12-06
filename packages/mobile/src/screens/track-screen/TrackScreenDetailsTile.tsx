@@ -289,7 +289,11 @@ export const TrackScreenDetailsTile = ({
 
   const renderImage = useCallback(
     (props: ImageProps) => (
-      <TrackImage track={track} size={SquareSizes.SIZE_480_BY_480} {...props} />
+      <TrackImage
+        trackId={track.track_id}
+        size={SquareSizes.SIZE_480_BY_480}
+        {...props}
+      />
     ),
     [track]
   )

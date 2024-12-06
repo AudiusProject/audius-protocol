@@ -31,9 +31,18 @@ export const SocialMediaLoginOptions = ({
 
   const handleStart = (platform: SocialPlatform) => () => onStart(platform)
 
-  const handleFailure = (platform: SocialPlatform) => (err: any) => {
+  const handleFailure = (platform: SocialPlatform) => (err: Error) => {
     onError(err, platform)
-    toast(socialMediaMessages.verificationError)
+    const closedByUser = /closed by user/i.test(err.message)
+    const isAccountInUseError =
+      /Another Audius profile has already been authenticated/i.test(err.message)
+    const toastErrMessage = isAccountInUseError
+      ? socialMediaMessages.accountInUseError('tiktok')
+      : socialMediaMessages.verificationError
+
+    if (!closedByUser) {
+      toast(toastErrMessage)
+    }
   }
 
   const handleSuccess = ({

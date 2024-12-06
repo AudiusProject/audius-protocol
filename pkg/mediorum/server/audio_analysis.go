@@ -33,8 +33,8 @@ func (ss *MediorumServer) startAudioAnalyzer() {
 	}
 
 	// start workers
-	for i := 0; i < numWorkers; i++ {
-		go ss.startAudioAnalysisWorker(i, work)
+	for range make([]struct{}, numWorkers) {
+		go ss.startAudioAnalysisWorker(work)
 	}
 
 	time.Sleep(time.Minute)
@@ -86,7 +86,7 @@ func (ss *MediorumServer) findMissedAudioAnalysisJobs(ctx context.Context, work 
 	}
 }
 
-func (ss *MediorumServer) startAudioAnalysisWorker(n int, work chan *Upload) {
+func (ss *MediorumServer) startAudioAnalysisWorker(work chan *Upload) {
 	for upload := range work {
 		logger := ss.logger.With("upload", upload.ID)
 		logger.Debug("analyzing audio")

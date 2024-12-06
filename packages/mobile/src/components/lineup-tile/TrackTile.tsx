@@ -30,12 +30,12 @@ import { useNavigationState } from '@react-navigation/native'
 import { useDispatch, useSelector } from 'react-redux'
 
 import type { ImageProps } from '@audius/harmony-native'
-import { TrackImage } from 'app/components/image/TrackImage'
 import type { LineupItemProps } from 'app/components/lineup-tile/types'
 import { useIsUSDCEnabled } from 'app/hooks/useIsUSDCEnabled'
 import { useNavigation } from 'app/hooks/useNavigation'
 
 import type { TileProps } from '../core'
+import { TrackImage } from '../image/TrackImage'
 
 import { LineupTile } from './LineupTile'
 
@@ -125,7 +125,11 @@ export const TrackTileComponent = ({
 
   const renderImage = useCallback(
     (props: ImageProps) => (
-      <TrackImage track={track} size={SquareSizes.SIZE_150_BY_150} {...props} />
+      <TrackImage
+        trackId={track.track_id}
+        size={SquareSizes.SIZE_150_BY_150}
+        {...props}
+      />
     ),
     [track]
   )

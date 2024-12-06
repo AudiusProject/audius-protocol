@@ -11,29 +11,11 @@
 		13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
 		13B07FC11A68108700A75B9A /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB71A68108700A75B9A /* main.m */; };
 		13B32CE723D2782B002F0526 /* SampleSwiftFile.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13B32CE623D2782B002F0526 /* SampleSwiftFile.swift */; };
-		23B4E1CE297889CB00016FEE /* notifications_dark.riv in Resources */ = {isa = PBXBuildFile; fileRef = 23B4E1CD297889CB00016FEE /* notifications_dark.riv */; };
-		23C6F6482977C27A00F66384 /* explore_default.riv in Resources */ = {isa = PBXBuildFile; fileRef = 23C6F63E2977C27A00F66384 /* explore_default.riv */; };
-		23C6F6492977C27A00F66384 /* trending_default.riv in Resources */ = {isa = PBXBuildFile; fileRef = 23C6F63F2977C27A00F66384 /* trending_default.riv */; };
-		23C6F64B2977C27A00F66384 /* favorites_dark.riv in Resources */ = {isa = PBXBuildFile; fileRef = 23C6F6412977C27A00F66384 /* favorites_dark.riv */; };
-		23C6F64C2977C27A00F66384 /* favorites_default.riv in Resources */ = {isa = PBXBuildFile; fileRef = 23C6F6422977C27A00F66384 /* favorites_default.riv */; };
-		23C6F64D2977C27A00F66384 /* feed_default.riv in Resources */ = {isa = PBXBuildFile; fileRef = 23C6F6432977C27A00F66384 /* feed_default.riv */; };
-		23C6F64E2977C27A00F66384 /* feed_dark.riv in Resources */ = {isa = PBXBuildFile; fileRef = 23C6F6442977C27A00F66384 /* feed_dark.riv */; };
-		23C6F64F2977C27A00F66384 /* notifications_default.riv in Resources */ = {isa = PBXBuildFile; fileRef = 23C6F6452977C27A00F66384 /* notifications_default.riv */; };
-		23C6F6502977C27A00F66384 /* explore_dark.riv in Resources */ = {isa = PBXBuildFile; fileRef = 23C6F6462977C27A00F66384 /* explore_dark.riv */; };
-		23C6F6512977C27A00F66384 /* trending_dark.riv in Resources */ = {isa = PBXBuildFile; fileRef = 23C6F6472977C27A00F66384 /* trending_dark.riv */; };
-		23C6F6572977C46F00F66384 /* explore_matrix.riv in Resources */ = {isa = PBXBuildFile; fileRef = 23C6F6522977C46F00F66384 /* explore_matrix.riv */; };
-		23C6F6582977C46F00F66384 /* favorites_matrix.riv in Resources */ = {isa = PBXBuildFile; fileRef = 23C6F6532977C46F00F66384 /* favorites_matrix.riv */; };
-		23C6F6592977C46F00F66384 /* trending_matrix.riv in Resources */ = {isa = PBXBuildFile; fileRef = 23C6F6542977C46F00F66384 /* trending_matrix.riv */; };
-		23C6F65A2977C46F00F66384 /* notifications_matrix.riv in Resources */ = {isa = PBXBuildFile; fileRef = 23C6F6552977C46F00F66384 /* notifications_matrix.riv */; };
-		23C6F65B2977C46F00F66384 /* feed_matrix.riv in Resources */ = {isa = PBXBuildFile; fileRef = 23C6F6562977C46F00F66384 /* feed_matrix.riv */; };
 		253BCCFA2B324974007DC74C /* NSureSDK.m in Sources */ = {isa = PBXBuildFile; fileRef = 253BCCF92B324974007DC74C /* NSureSDK.m */; };
 		32FE1B49FE7E47B69CF28E06 /* AvenirNextLTPro-Bold.otf in Resources */ = {isa = PBXBuildFile; fileRef = EA6D8E31A68B4451B423AFF0 /* AvenirNextLTPro-Bold.otf */; };
 		5983D8FED74747CCA45F8FC4 /* AvenirNextLTPro-Medium.otf in Resources */ = {isa = PBXBuildFile; fileRef = 33E11CC84EEA4109B8A1AE2C /* AvenirNextLTPro-Medium.otf */; };
 		7103C3ED2929C6B5002B9072 /* BootSplash.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 7103C3EC2929C6B5002B9072 /* BootSplash.storyboard */; };
 		717F36E82733C73F0017511F /* AvenirNextLTPro-DemiBold.otf in Resources */ = {isa = PBXBuildFile; fileRef = 717F36E72733C73F0017511F /* AvenirNextLTPro-DemiBold.otf */; };
-		71F51B7D29885F9700650D0A /* downloading_dark.riv in Resources */ = {isa = PBXBuildFile; fileRef = 71F51B7A29885F9700650D0A /* downloading_dark.riv */; };
-		71F51B7E29885F9700650D0A /* downloading_default.riv in Resources */ = {isa = PBXBuildFile; fileRef = 71F51B7B29885F9700650D0A /* downloading_default.riv */; };
-		71F51B7F29885F9700650D0A /* downloading_matrix.riv in Resources */ = {isa = PBXBuildFile; fileRef = 71F51B7C29885F9700650D0A /* downloading_matrix.riv */; };
 		838AABE023CE3813004B2DA3 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 838AABDF23CE3813004B2DA3 /* GoogleService-Info.plist */; };
 		83F7359F23C55C2D0040A4C5 /* AirplayViewManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 83F7359E23C55C2D0040A4C5 /* AirplayViewManager.m */; };
 		83F735A523C64C950040A4C5 /* AirplayEvent.m in Sources */ = {isa = PBXBuildFile; fileRef = 83F735A423C64C950040A4C5 /* AirplayEvent.m */; };
@@ -41,9 +23,6 @@
 		9204DC5D38C1495FA330CF12 /* AvenirNextLTPro-Regular.otf in Resources */ = {isa = PBXBuildFile; fileRef = 6F65A9A9BAD047FABD240C59 /* AvenirNextLTPro-Regular.otf */; };
 		9A21B5C22EF94A738EBABFED /* AvenirNextLTPro-Thin.otf in Resources */ = {isa = PBXBuildFile; fileRef = BAEB40775EC64F48AC1983F7 /* AvenirNextLTPro-Thin.otf */; };
 		9E394FBA2BD1B7A8008DD9D2 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 9E5B39082BB49198009C765B /* PrivacyInfo.xcprivacy */; };
-		AA7D28012A68C20F008DF4D3 /* library_dark.riv in Resources */ = {isa = PBXBuildFile; fileRef = AA7D27FE2A68C20F008DF4D3 /* library_dark.riv */; };
-		AA7D28022A68C20F008DF4D3 /* library_matrix.riv in Resources */ = {isa = PBXBuildFile; fileRef = AA7D27FF2A68C20F008DF4D3 /* library_matrix.riv */; };
-		AA7D28032A68C20F008DF4D3 /* library_default.riv in Resources */ = {isa = PBXBuildFile; fileRef = AA7D28002A68C20F008DF4D3 /* library_default.riv */; };
 		C48560F6F96345AC8C69506F /* AvenirNextLTPro-Heavy.otf in Resources */ = {isa = PBXBuildFile; fileRef = D40C2F0A0A4641D18D426558 /* AvenirNextLTPro-Heavy.otf */; };
 		CFE33B15004249189EB75CDC /* AvenirNextLTPro-UltLt.otf in Resources */ = {isa = PBXBuildFile; fileRef = D83DC634C3DC44B588896E10 /* AvenirNextLTPro-UltLt.otf */; };
 		D8A2EF3D01D8D06DFEF19F29 /* libPods-AudiusReactNative.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 622045C334F0F16E3CF4011F /* libPods-AudiusReactNative.a */; };
@@ -63,21 +42,6 @@
 		13B32CE523D2782A002F0526 /* AudiusReactNative-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "AudiusReactNative-Bridging-Header.h"; sourceTree = "<group>"; };
 		13B32CE623D2782B002F0526 /* SampleSwiftFile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SampleSwiftFile.swift; sourceTree = "<group>"; };
 		1FBFACF443D7D1D743A6B13A /* Pods-AudiusReactNative.releasecandidate.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-AudiusReactNative.releasecandidate.xcconfig"; path = "Target Support Files/Pods-AudiusReactNative/Pods-AudiusReactNative.releasecandidate.xcconfig"; sourceTree = "<group>"; };
-		23B4E1CD297889CB00016FEE /* notifications_dark.riv */ = {isa = PBXFileReference; lastKnownFileType = file; name = notifications_dark.riv; path = Assets/notifications_dark.riv; sourceTree = "<group>"; };
-		23C6F63E2977C27A00F66384 /* explore_default.riv */ = {isa = PBXFileReference; lastKnownFileType = file; name = explore_default.riv; path = Assets/explore_default.riv; sourceTree = "<group>"; };
-		23C6F63F2977C27A00F66384 /* trending_default.riv */ = {isa = PBXFileReference; lastKnownFileType = file; name = trending_default.riv; path = Assets/trending_default.riv; sourceTree = "<group>"; };
-		23C6F6412977C27A00F66384 /* favorites_dark.riv */ = {isa = PBXFileReference; lastKnownFileType = file; name = favorites_dark.riv; path = Assets/favorites_dark.riv; sourceTree = "<group>"; };
-		23C6F6422977C27A00F66384 /* favorites_default.riv */ = {isa = PBXFileReference; lastKnownFileType = file; name = favorites_default.riv; path = Assets/favorites_default.riv; sourceTree = "<group>"; };
-		23C6F6432977C27A00F66384 /* feed_default.riv */ = {isa = PBXFileReference; lastKnownFileType = file; name = feed_default.riv; path = Assets/feed_default.riv; sourceTree = "<group>"; };
-		23C6F6442977C27A00F66384 /* feed_dark.riv */ = {isa = PBXFileReference; lastKnownFileType = file; name = feed_dark.riv; path = Assets/feed_dark.riv; sourceTree = "<group>"; };
-		23C6F6452977C27A00F66384 /* notifications_default.riv */ = {isa = PBXFileReference; lastKnownFileType = file; name = notifications_default.riv; path = Assets/notifications_default.riv; sourceTree = "<group>"; };
-		23C6F6462977C27A00F66384 /* explore_dark.riv */ = {isa = PBXFileReference; lastKnownFileType = file; name = explore_dark.riv; path = Assets/explore_dark.riv; sourceTree = "<group>"; };
-		23C6F6472977C27A00F66384 /* trending_dark.riv */ = {isa = PBXFileReference; lastKnownFileType = file; name = trending_dark.riv; path = Assets/trending_dark.riv; sourceTree = "<group>"; };
-		23C6F6522977C46F00F66384 /* explore_matrix.riv */ = {isa = PBXFileReference; lastKnownFileType = file; name = explore_matrix.riv; path = Assets/explore_matrix.riv; sourceTree = "<group>"; };
-		23C6F6532977C46F00F66384 /* favorites_matrix.riv */ = {isa = PBXFileReference; lastKnownFileType = file; name = favorites_matrix.riv; path = Assets/favorites_matrix.riv; sourceTree = "<group>"; };
-		23C6F6542977C46F00F66384 /* trending_matrix.riv */ = {isa = PBXFileReference; lastKnownFileType = file; name = trending_matrix.riv; path = Assets/trending_matrix.riv; sourceTree = "<group>"; };
-		23C6F6552977C46F00F66384 /* notifications_matrix.riv */ = {isa = PBXFileReference; lastKnownFileType = file; name = notifications_matrix.riv; path = Assets/notifications_matrix.riv; sourceTree = "<group>"; };
-		23C6F6562977C46F00F66384 /* feed_matrix.riv */ = {isa = PBXFileReference; lastKnownFileType = file; name = feed_matrix.riv; path = Assets/feed_matrix.riv; sourceTree = "<group>"; };
 		253BCCF82B324974007DC74C /* NSureSDK.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = NSureSDK.h; path = AudiusReactNative/NSureSDK.h; sourceTree = "<group>"; };
 		253BCCF92B324974007DC74C /* NSureSDK.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = NSureSDK.m; path = AudiusReactNative/NSureSDK.m; sourceTree = "<group>"; };
 		33E11CC84EEA4109B8A1AE2C /* AvenirNextLTPro-Medium.otf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "AvenirNextLTPro-Medium.otf"; path = "../src/assets/fonts/AvenirNextLTPro-Medium.otf"; sourceTree = "<group>"; };
@@ -86,9 +50,6 @@
 		6F65A9A9BAD047FABD240C59 /* AvenirNextLTPro-Regular.otf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "AvenirNextLTPro-Regular.otf"; path = "../src/assets/fonts/AvenirNextLTPro-Regular.otf"; sourceTree = "<group>"; };
 		7103C3EC2929C6B5002B9072 /* BootSplash.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = BootSplash.storyboard; path = AudiusReactNative/BootSplash.storyboard; sourceTree = "<group>"; };
 		717F36E72733C73F0017511F /* AvenirNextLTPro-DemiBold.otf */ = {isa = PBXFileReference; lastKnownFileType = file; name = "AvenirNextLTPro-DemiBold.otf"; path = "../src/assets/fonts/AvenirNextLTPro-DemiBold.otf"; sourceTree = "<group>"; };
-		71F51B7A29885F9700650D0A /* downloading_dark.riv */ = {isa = PBXFileReference; lastKnownFileType = file; name = downloading_dark.riv; path = Assets/downloading_dark.riv; sourceTree = "<group>"; };
-		71F51B7B29885F9700650D0A /* downloading_default.riv */ = {isa = PBXFileReference; lastKnownFileType = file; name = downloading_default.riv; path = Assets/downloading_default.riv; sourceTree = "<group>"; };
-		71F51B7C29885F9700650D0A /* downloading_matrix.riv */ = {isa = PBXFileReference; lastKnownFileType = file; name = downloading_matrix.riv; path = Assets/downloading_matrix.riv; sourceTree = "<group>"; };
 		80E769842E137A16D8B24B96 /* Pods-AudiusReactNative.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-AudiusReactNative.debug.xcconfig"; path = "Target Support Files/Pods-AudiusReactNative/Pods-AudiusReactNative.debug.xcconfig"; sourceTree = "<group>"; };
 		838AABDF23CE3813004B2DA3 /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		83E8F64123F6101600817622 /* libRNAnalytics.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = libRNAnalytics.a; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -98,9 +59,6 @@
 		8FFE615B56774422849C5A08 /* AvenirNextLTPro-Light.otf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "AvenirNextLTPro-Light.otf"; path = "../src/assets/fonts/AvenirNextLTPro-Light.otf"; sourceTree = "<group>"; };
 		9E5B39082BB49198009C765B /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		A20D1DBF23ABDA2B003D6530 /* Audius Music.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; name = "Audius Music.entitlements"; path = "AudiusReactNative/Audius Music.entitlements"; sourceTree = "<group>"; };
-		AA7D27FE2A68C20F008DF4D3 /* library_dark.riv */ = {isa = PBXFileReference; lastKnownFileType = file; name = library_dark.riv; path = Assets/library_dark.riv; sourceTree = "<group>"; };
-		AA7D27FF2A68C20F008DF4D3 /* library_matrix.riv */ = {isa = PBXFileReference; lastKnownFileType = file; name = library_matrix.riv; path = Assets/library_matrix.riv; sourceTree = "<group>"; };
-		AA7D28002A68C20F008DF4D3 /* library_default.riv */ = {isa = PBXFileReference; lastKnownFileType = file; name = library_default.riv; path = Assets/library_default.riv; sourceTree = "<group>"; };
 		BAEB40775EC64F48AC1983F7 /* AvenirNextLTPro-Thin.otf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "AvenirNextLTPro-Thin.otf"; path = "../src/assets/fonts/AvenirNextLTPro-Thin.otf"; sourceTree = "<group>"; };
 		CA27166AAEB892DEA975C5CF /* Pods-AudiusReactNative.staging.releasecandidate.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-AudiusReactNative.staging.releasecandidate.xcconfig"; path = "Target Support Files/Pods-AudiusReactNative/Pods-AudiusReactNative.staging.releasecandidate.xcconfig"; sourceTree = "<group>"; };
 		D40C2F0A0A4641D18D426558 /* AvenirNextLTPro-Heavy.otf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "AvenirNextLTPro-Heavy.otf"; path = "../src/assets/fonts/AvenirNextLTPro-Heavy.otf"; sourceTree = "<group>"; };
@@ -145,7 +103,6 @@
 			children = (
 				253BCCF82B324974007DC74C /* NSureSDK.h */,
 				253BCCF92B324974007DC74C /* NSureSDK.m */,
-				23C6F63D2977C23800F66384 /* Assets */,
 				838AABDF23CE3813004B2DA3 /* GoogleService-Info.plist */,
 				A20D1DBF23ABDA2B003D6530 /* Audius Music.entitlements */,
 				008F07F21AC5B25A0029DE68 /* main.jsbundle */,
@@ -159,34 +116,6 @@
 				83F735A423C64C950040A4C5 /* AirplayEvent.m */,
 			);
 			name = AudiusReactNative;
-			sourceTree = "<group>";
-		};
-		23C6F63D2977C23800F66384 /* Assets */ = {
-			isa = PBXGroup;
-			children = (
-				AA7D27FE2A68C20F008DF4D3 /* library_dark.riv */,
-				AA7D28002A68C20F008DF4D3 /* library_default.riv */,
-				AA7D27FF2A68C20F008DF4D3 /* library_matrix.riv */,
-				71F51B7A29885F9700650D0A /* downloading_dark.riv */,
-				71F51B7B29885F9700650D0A /* downloading_default.riv */,
-				71F51B7C29885F9700650D0A /* downloading_matrix.riv */,
-				23B4E1CD297889CB00016FEE /* notifications_dark.riv */,
-				23C6F6522977C46F00F66384 /* explore_matrix.riv */,
-				23C6F6532977C46F00F66384 /* favorites_matrix.riv */,
-				23C6F6562977C46F00F66384 /* feed_matrix.riv */,
-				23C6F6552977C46F00F66384 /* notifications_matrix.riv */,
-				23C6F6542977C46F00F66384 /* trending_matrix.riv */,
-				23C6F6462977C27A00F66384 /* explore_dark.riv */,
-				23C6F63E2977C27A00F66384 /* explore_default.riv */,
-				23C6F6412977C27A00F66384 /* favorites_dark.riv */,
-				23C6F6422977C27A00F66384 /* favorites_default.riv */,
-				23C6F6442977C27A00F66384 /* feed_dark.riv */,
-				23C6F6432977C27A00F66384 /* feed_default.riv */,
-				23C6F6452977C27A00F66384 /* notifications_default.riv */,
-				23C6F6472977C27A00F66384 /* trending_dark.riv */,
-				23C6F63F2977C27A00F66384 /* trending_default.riv */,
-			);
-			name = Assets;
 			sourceTree = "<group>";
 		};
 		2D16E6871FA4F8E400B85C8A /* Frameworks */ = {
@@ -336,40 +265,19 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				23C6F6572977C46F00F66384 /* explore_matrix.riv in Resources */,
-				23C6F6592977C46F00F66384 /* trending_matrix.riv in Resources */,
-				23C6F6512977C27A00F66384 /* trending_dark.riv in Resources */,
 				717F36E82733C73F0017511F /* AvenirNextLTPro-DemiBold.otf in Resources */,
-				23C6F6482977C27A00F66384 /* explore_default.riv in Resources */,
-				23C6F64E2977C27A00F66384 /* feed_dark.riv in Resources */,
-				23C6F6492977C27A00F66384 /* trending_default.riv in Resources */,
 				83FB60B623A4351D00DC2238 /* main.jsbundle in Resources */,
 				9E394FBA2BD1B7A8008DD9D2 /* PrivacyInfo.xcprivacy in Resources */,
 				7103C3ED2929C6B5002B9072 /* BootSplash.storyboard in Resources */,
-				23C6F64B2977C27A00F66384 /* favorites_dark.riv in Resources */,
 				838AABE023CE3813004B2DA3 /* GoogleService-Info.plist in Resources */,
-				23C6F6582977C46F00F66384 /* favorites_matrix.riv in Resources */,
 				13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */,
-				23C6F65A2977C46F00F66384 /* notifications_matrix.riv in Resources */,
 				32FE1B49FE7E47B69CF28E06 /* AvenirNextLTPro-Bold.otf in Resources */,
-				71F51B7E29885F9700650D0A /* downloading_default.riv in Resources */,
-				23C6F64D2977C27A00F66384 /* feed_default.riv in Resources */,
-				AA7D28032A68C20F008DF4D3 /* library_default.riv in Resources */,
 				C48560F6F96345AC8C69506F /* AvenirNextLTPro-Heavy.otf in Resources */,
 				5983D8FED74747CCA45F8FC4 /* AvenirNextLTPro-Medium.otf in Resources */,
-				AA7D28012A68C20F008DF4D3 /* library_dark.riv in Resources */,
 				9204DC5D38C1495FA330CF12 /* AvenirNextLTPro-Regular.otf in Resources */,
-				23B4E1CE297889CB00016FEE /* notifications_dark.riv in Resources */,
-				71F51B7F29885F9700650D0A /* downloading_matrix.riv in Resources */,
 				CFE33B15004249189EB75CDC /* AvenirNextLTPro-UltLt.otf in Resources */,
 				F50849B3CA2D48F3852465FA /* AvenirNextLTPro-Light.otf in Resources */,
-				71F51B7D29885F9700650D0A /* downloading_dark.riv in Resources */,
-				AA7D28022A68C20F008DF4D3 /* library_matrix.riv in Resources */,
-				23C6F6502977C27A00F66384 /* explore_dark.riv in Resources */,
 				9A21B5C22EF94A738EBABFED /* AvenirNextLTPro-Thin.otf in Resources */,
-				23C6F64F2977C27A00F66384 /* notifications_default.riv in Resources */,
-				23C6F64C2977C27A00F66384 /* favorites_default.riv in Resources */,
-				23C6F65B2977C46F00F66384 /* feed_matrix.riv in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -645,6 +553,7 @@
 				OTHER_LDFLAGS = "$(inherited)";
 				REACT_NATIVE_PATH = "${PODS_ROOT}/../../node_modules/react-native";
 				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) DEBUG";
 				USE_HERMES = true;
 			};
 			name = Debug;

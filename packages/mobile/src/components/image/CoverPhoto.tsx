@@ -1,18 +1,16 @@
+import { useImageSize } from '@audius/common/hooks'
 import type { ID } from '@audius/common/models'
 import { SquareSizes, WidthSizes } from '@audius/common/models'
 import { cacheUsersSelectors } from '@audius/common/store'
-import type { Nullable } from '@audius/common/utils'
 import { BlurView } from '@react-native-community/blur'
 import { Animated, StyleSheet } from 'react-native'
 import { useSelector } from 'react-redux'
 
 import type { FastImageProps } from '@audius/harmony-native'
-import { FastImage } from '@audius/harmony-native'
-import imageCoverPhotoBlank from 'app/assets/images/imageCoverPhotoBlank.jpg'
-import type { ContentNodeImageSource } from 'app/hooks/useContentNodeImage'
-import { useContentNodeImage } from 'app/hooks/useContentNodeImage'
+import { FastImage, preload } from '@audius/harmony-native'
 
 import { useProfilePicture } from './UserImage'
+import { primitiveToImageSource } from './primitiveToImageSource'
 
 const { getUser } = cacheUsersSelectors
 
@@ -42,53 +40,47 @@ const interpolateImageTranslate = (animatedValue: Animated.Value) =>
     extrapolateRight: 'clamp'
   })
 
-export const useCoverPhoto = (
-  userId: Nullable<ID> = null,
-  size: WidthSizes = WidthSizes.SIZE_640
-): ContentNodeImageSource & { shouldBlur?: boolean } => {
-  const cid = useSelector((state) => {
-    const user = getUser(state, { id: userId })
-    if (!user) return null
-    const { cover_photo_sizes } = user
-    return cover_photo_sizes
-  })
-
-  const cidMap = useSelector(
-    (state) => getUser(state, { id: userId })?.cover_photo_cids
-  )
-
-  const updatedSource = useSelector((state) => {
-    const user = getUser(state, { id: userId })
-    if (!user) return null
-    const { updatedProfilePicture } = user
-    if (!updatedProfilePicture) return null
-    return {
-      source: { uri: updatedProfilePicture.url },
-      handleError: () => {},
-      isFallbackImage: false
+export const useCoverPhoto = ({
+  userId,
+  size
+}: {
+  userId?: ID
+  size: WidthSizes
+}) => {
+  const { source: profilePicture, isFallbackImage: isDefaultProfile } =
+    useProfilePicture({
+      userId,
+      size:
+        size === WidthSizes.SIZE_640
+          ? SquareSizes.SIZE_480_BY_480
+          : SquareSizes.SIZE_1000_BY_1000,
+      defaultImage: ''
+    })
+  const user = useSelector((state) => getUser(state, { id: userId }))
+  const coverPhoto = user?.cover_photo
+  const image = useImageSize({
+    artwork: coverPhoto,
+    targetSize: size,
+    defaultImage: '',
+    preloadImageFn: async (url: string) => {
+      preload([{ uri: url }])
     }
   })
 
-  const coverPhotoSource = useContentNodeImage({
-    cid,
-    size,
-    fallbackImageSource: imageCoverPhotoBlank,
-    cidMap
-  })
+  const isDefaultCover = image === ''
+  const shouldBlur = isDefaultCover && !isDefaultProfile
 
-  const profilePictureSource = useProfilePicture(
-    userId,
-    size === WidthSizes.SIZE_640
-      ? SquareSizes.SIZE_480_BY_480
-      : SquareSizes.SIZE_1000_BY_1000
-  )
+  if (user?.updatedCoverPhoto && !shouldBlur) {
+    return {
+      source: primitiveToImageSource(user.updatedCoverPhoto.url),
+      shouldBlur
+    }
+  }
 
-  if (updatedSource) return updatedSource
-
-  return coverPhotoSource.isFallbackImage &&
-    !profilePictureSource.isFallbackImage
-    ? { ...profilePictureSource, shouldBlur: true }
-    : { ...coverPhotoSource, shouldBlur: false }
+  if (shouldBlur) {
+    return { source: profilePicture, shouldBlur }
+  }
+  return { source: primitiveToImageSource(image), shouldBlur }
 }
 
 type CoverPhotoProps = {
@@ -99,7 +91,12 @@ type CoverPhotoProps = {
 export const CoverPhoto = (props: CoverPhotoProps) => {
   const { userId, animatedValue, ...imageProps } = props
 
-  const { source, handleError, shouldBlur } = useCoverPhoto(userId)
+  const { source, shouldBlur } = useCoverPhoto({
+    userId,
+    size: WidthSizes.SIZE_640
+  })
+
+  if (!source) return null
 
   return (
     <Animated.View
@@ -112,7 +109,7 @@ export const CoverPhoto = (props: CoverPhotoProps) => {
         }
       }
     >
-      <FastImage source={source} onError={handleError} {...imageProps}>
+      <FastImage source={source} {...imageProps}>
         {shouldBlur || animatedValue ? (
           <AnimatedBlurView
             blurType='light'

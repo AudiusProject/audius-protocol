@@ -130,12 +130,13 @@ export function* fetchUserByHandle(
  */
 export function* fetchUserCollections(userId: number) {
   const sdk = yield* getSDK()
+  const currentUserId = yield* select(getUserId)
   function* getPlaylists() {
     const { data } = yield* call(
       [sdk.full.users, sdk.full.users.getPlaylistsByUser],
       {
         id: Id.parse(userId),
-        userId: Id.parse(userId)
+        userId: OptionalId.parse(currentUserId)
       }
     )
     return transformAndCleanList(data, userCollectionMetadataFromSDK)
@@ -145,7 +146,7 @@ export function* fetchUserCollections(userId: number) {
       [sdk.full.users, sdk.full.users.getAlbumsByUser],
       {
         id: Id.parse(userId),
-        userId: Id.parse(userId)
+        userId: OptionalId.parse(currentUserId)
       }
     )
     return transformAndCleanList(data, userCollectionMetadataFromSDK)
@@ -240,106 +241,6 @@ export function* adjustUserField({
   )
 }
 
-function* watchFetchProfilePicture() {
-  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
-  const inProgress = new Set()
-  yield* takeEvery(
-    userActions.FETCH_PROFILE_PICTURE,
-    function* ({
-      userId,
-      size
-    }: ReturnType<typeof userActions.fetchProfilePicture>) {
-      // Unique on id and size
-      const key = `${userId}-${size}`
-      if (inProgress.has(key)) return
-      inProgress.add(key)
-
-      try {
-        const user: User | null = yield* select(getUser, { id: userId })
-        if (!user || (!user.profile_picture_sizes && !user.profile_picture))
-          return
-        if (user.profile_picture_sizes) {
-          const url = yield* call(
-            audiusBackendInstance.getImageUrl,
-            user.profile_picture_sizes,
-            size,
-            user.profile_picture_cids
-          )
-
-          if (url) {
-            yield* put(
-              cacheActions.update(Kind.USERS, [
-                {
-                  id: userId,
-                  metadata: {
-                    _profile_picture_sizes: {
-                      ...user._profile_picture_sizes,
-                      [size]: url
-                    }
-                  }
-                }
-              ])
-            )
-          }
-        }
-      } catch (e) {
-        console.error(`Unable to fetch profile picture for user ${userId}`)
-      } finally {
-        inProgress.delete(key)
-      }
-    }
-  )
-}
-
-function* watchFetchCoverPhoto() {
-  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
-  const inProgress = new Set()
-  yield* takeEvery(
-    userActions.FETCH_COVER_PHOTO,
-    function* ({
-      userId,
-      size
-    }: ReturnType<typeof userActions.fetchCoverPhoto>) {
-      // Unique on id and size
-      const key = `${userId}-${size}`
-      if (inProgress.has(key)) return
-      inProgress.add(key)
-      try {
-        let user: User | null = yield* select(getUser, { id: userId })
-        if (!user || (!user.cover_photo_sizes && !user.cover_photo)) {
-          inProgress.delete(key)
-          return
-        }
-
-        if (user.cover_photo_sizes) {
-          const url = yield* call(
-            audiusBackendInstance.getImageUrl,
-            user.cover_photo_sizes,
-            size,
-            user.cover_photo_cids
-          )
-
-          if (url) {
-            user = yield* select(getUser, { id: userId })
-            if (!user) return
-            user._cover_photo_sizes = {
-              ...user._cover_photo_sizes,
-              [size]: url
-            }
-            yield* put(
-              cacheActions.update(Kind.USERS, [{ id: userId, metadata: user }])
-            )
-          }
-        }
-      } catch (e) {
-        console.error(`Unable to fetch cover photo for user ${userId}`)
-      } finally {
-        inProgress.delete(key)
-      }
-    }
-  )
-}
-
 export function* fetchUserSocials({
   handle
 }: ReturnType<typeof userActions.fetchUserSocials>) {
@@ -382,13 +283,7 @@ function* watchFetchUsers() {
 }
 
 const sagas = () => {
-  return [
-    watchFetchProfilePicture,
-    watchFetchCoverPhoto,
-    watchSyncLocalStorageUser,
-    watchFetchUserSocials,
-    watchFetchUsers
-  ]
+  return [watchSyncLocalStorageUser, watchFetchUserSocials, watchFetchUsers]
 }
 
 export default sagas

@@ -31,7 +31,7 @@ export const EditCollectionScreen = () => {
   const dispatch = useDispatch()
 
   const trackImage = useCollectionImage({
-    collection: playlist,
+    collectionId: playlist?.playlist_id,
     size: SquareSizes.SIZE_1000_BY_1000
   })
 
@@ -54,7 +54,7 @@ export const EditCollectionScreen = () => {
     description: playlist.description ?? '',
     artwork: {
       url:
-        trackImage && isImageUriSource(trackImage.source)
+        trackImage && trackImage.source && isImageUriSource(trackImage.source)
           ? trackImage.source.uri ?? ''
           : ''
     }
@@ -67,6 +67,7 @@ export const EditCollectionScreen = () => {
       <Formik
         initialValues={initialValues}
         initialStatus={{ imageLoading: false, imageGenerating: false }}
+        enableReinitialize
         onSubmit={handleSubmit}
         validationSchema={toFormikValidationSchema(validationSchema)}
       >

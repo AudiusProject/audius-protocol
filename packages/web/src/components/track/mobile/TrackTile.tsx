@@ -1,11 +1,13 @@
 import { useCallback, useEffect, ReactNode } from 'react'
 
+import { useFeatureFlag } from '@audius/common/hooks'
 import {
   ModalSource,
   isContentUSDCPurchaseGated,
   ID,
   AccessConditions
 } from '@audius/common/models'
+import { FeatureFlags } from '@audius/common/services'
 import {
   usePremiumContentPurchaseModal,
   gatedContentActions,
@@ -131,7 +133,7 @@ const TrackTile = (props: CombinedProps) => {
     }
   }, [trackId, dispatch, setModalVisibility])
 
-  const onClickPill = useRequiresAccountOnClick(() => {
+  const onClickPillRequiresAccount = useRequiresAccountOnClick(() => {
     if (isPurchase && trackId) {
       openPremiumContentPurchaseModal(
         { contentId: trackId, contentType: PurchaseableContentType.TRACK },
@@ -147,6 +149,28 @@ const TrackTile = (props: CombinedProps) => {
     hasStreamAccess,
     openLockedContentModal
   ])
+
+  const onClickPill = useCallback(() => {
+    if (isPurchase && trackId) {
+      openPremiumContentPurchaseModal(
+        { contentId: trackId, contentType: PurchaseableContentType.TRACK },
+        { source: source ?? ModalSource.TrackTile }
+      )
+    } else if (trackId && !hasStreamAccess) {
+      openLockedContentModal()
+    }
+  }, [
+    isPurchase,
+    trackId,
+    hasStreamAccess,
+    openPremiumContentPurchaseModal,
+    source,
+    openLockedContentModal
+  ])
+
+  const { isEnabled: isGuestCheckoutEnabled } = useFeatureFlag(
+    FeatureFlags.GUEST_CHECKOUT
+  )
 
   useEffect(() => {
     if (!showSkeleton) {
@@ -284,7 +308,9 @@ const TrackTile = (props: CombinedProps) => {
             onShare={onClickShare}
             onClickOverflow={onClickOverflowMenu}
             renderOverflow={renderOverflow}
-            onClickGatedUnlockPill={onClickPill}
+            onClickGatedUnlockPill={
+              isGuestCheckoutEnabled ? onClickPill : onClickPillRequiresAccount
+            }
             isOwner={isOwner}
             readonly={isReadonly}
             isLoading={isLoading}
