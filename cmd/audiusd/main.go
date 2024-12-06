@@ -130,14 +130,24 @@ func startEchoProxyWithOptionalTLS(hostUrl *url.URL, enableTLS bool) error {
 		e.AutoTLSManager.Cache = autocert.DirCache("/data/var/www/.cache")
 		e.Pre(middleware.HTTPSRedirect())
 
+		httpsPort := os.Getenv("AUDIUSD_HTTPS_PORT")
+		if httpsPort == "" {
+			httpsPort = "443"
+		}
+
+		httpPort := os.Getenv("AUDIUSD_HTTP_PORT")
+		if httpPort == "" {
+			httpPort = "80"
+		}
+
 		go func() {
-			if err := e.StartAutoTLS(":443"); err != nil && err != http.ErrServerClosed {
+			if err := e.StartAutoTLS(":" + httpsPort); err != nil && err != http.ErrServerClosed {
 				e.Logger.Fatal("shutting down the server")
 			}
 		}()
 
 		go func() {
-			if err := e.Start(":80"); err != nil && err != http.ErrServerClosed {
+			if err := e.Start(":" + httpPort); err != nil && err != http.ErrServerClosed {
 				e.Logger.Fatal("HTTP server failed")
 			}
 		}()
