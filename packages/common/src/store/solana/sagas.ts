@@ -10,7 +10,7 @@ function* watchForFeePayer() {
     sdk.services.solanaRelay,
     sdk.services.solanaRelay.getFeePayer
   ])
-  yield put(setFeePayer({ feePayer: feePayer.toString() }))
+  yield* put(setFeePayer({ feePayer: feePayer.toString() }))
 }
 
 export const sagas = () => {
