@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# Default to prod if NETWORK is not set
+NETWORK=${NETWORK:-prod}
 ENV_FILE="/env/${NETWORK}.env"
 OVERRIDE_ENV_FILE="/env/override.env"
 
@@ -37,35 +39,56 @@ export uptimeDataDir=${uptimeDataDir:-/data/bolt}
 export audius_core_root_dir=${audius_core_root_dir:-/data/audiusd}
 export creatorNodeEndpoint=${creatorNodeEndpoint:-http://localhost}
 
-if [ ! -d "$POSTGRES_DATA_DIR" ] || [ -z "$(ls -A "$POSTGRES_DATA_DIR" 2>/dev/null)" ]; then
-    echo "Initializing PostgreSQL data directory at $POSTGRES_DATA_DIR..."
-    su - postgres -c "/usr/lib/postgresql/*/bin/initdb -D $POSTGRES_DATA_DIR"
+setup_postgres() {
+    # Find PostgreSQL binaries directory
+    PG_BIN="/usr/lib/postgresql/15/bin"
+    
+    # Check if directory exists but is not initialized
+    if [ -d "$POSTGRES_DATA_DIR" ] && ! [ -f "$POSTGRES_DATA_DIR/PG_VERSION" ]; then
+        echo "Directory exists but is not initialized. Cleaning up..."
+        rm -rf "$POSTGRES_DATA_DIR"/*
+    fi
+    
+    # Initialize PostgreSQL if needed
+    if [ ! -d "$POSTGRES_DATA_DIR" ] || ! [ -f "$POSTGRES_DATA_DIR/PG_VERSION" ]; then
+        echo "Initializing PostgreSQL data directory at $POSTGRES_DATA_DIR..."
+        mkdir -p "$POSTGRES_DATA_DIR"
+        chown postgres:postgres "$POSTGRES_DATA_DIR"
+        
+        # Initialize the database
+        su - postgres -c "$PG_BIN/initdb -D $POSTGRES_DATA_DIR"
+        
+        # Configure authentication
+        sed -i "s/peer/trust/g; s/md5/trust/g" "$POSTGRES_DATA_DIR/pg_hba.conf"
+        
+        # Configure logging
+        sed -i "s|#log_destination = 'stderr'|log_destination = 'stderr'|; \
+                s|#logging_collector = on|logging_collector = off|" \
+                "$POSTGRES_DATA_DIR/postgresql.conf"
+    fi
 
-    echo "Updating PostgreSQL configuration for password authentication..."
-    sed -i "s/peer/trust/g" "$POSTGRES_DATA_DIR/pg_hba.conf"
-    sed -i "s/md5/trust/g" "$POSTGRES_DATA_DIR/pg_hba.conf"
-fi
+    # Set permissions
+    chown -R postgres:postgres "$POSTGRES_DATA_DIR"
+    chmod -R 700 "$POSTGRES_DATA_DIR"
 
-chown -R postgres:postgres "$POSTGRES_DATA_DIR"
-chmod -R u+rwx,g-rwx,o-rwx "$POSTGRES_DATA_DIR"
+    # Start PostgreSQL
+    echo "Starting PostgreSQL service..."
+    su - postgres -c "$PG_BIN/pg_ctl -D $POSTGRES_DATA_DIR start"
 
-echo "Configuring PostgreSQL to log to stderr for docker capture..."
-sed -i "s|#log_destination = 'stderr'|log_destination = 'stderr'|" "$POSTGRES_DATA_DIR/postgresql.conf"
-sed -i "s|#logging_collector = on|logging_collector = off|" "$POSTGRES_DATA_DIR/postgresql.conf"
+    # Wait for PostgreSQL to be ready
+    until su - postgres -c "$PG_BIN/pg_isready -q"; do
+        echo "Waiting for PostgreSQL to start..."
+        sleep 2
+    done
 
-echo "Starting PostgreSQL service..."
-su - postgres -c "/usr/lib/postgresql/*/bin/pg_ctl -D $POSTGRES_DATA_DIR -o '-c config_file=$POSTGRES_DATA_DIR/postgresql.conf' start"
+    # Setup database
+    echo "Setting up PostgreSQL user and database..."
+    su - postgres -c "psql -c \"ALTER USER postgres WITH PASSWORD '$POSTGRES_PASSWORD';\""
+    su - postgres -c "psql -tc \"SELECT 1 FROM pg_database WHERE datname = '$POSTGRES_DB'\" | grep -q 1 || \
+                     psql -c \"CREATE DATABASE $POSTGRES_DB;\""
+}
 
-until su - postgres -c "pg_isready -q"; do
-    echo "Waiting for PostgreSQL to start..."
-    sleep 2
-done
-
-echo "Setting up PostgreSQL user and database..."
-su - postgres -c "psql -c \"ALTER USER postgres WITH PASSWORD '$POSTGRES_PASSWORD';\""
-su - postgres -c "psql -tc \"SELECT 1 FROM pg_database WHERE datname = '$POSTGRES_DB'\" | grep -q 1 || psql -c 'CREATE DATABASE $POSTGRES_DB;'"
-
-su - postgres -c "/usr/lib/postgresql/*/bin/pg_ctl -D $POSTGRES_DATA_DIR -o '-c config_file=$POSTGRES_DATA_DIR/postgresql.conf' restart"
+setup_postgres
 
 echo "Starting audiusd..."
 exec /bin/audiusd "$@"
