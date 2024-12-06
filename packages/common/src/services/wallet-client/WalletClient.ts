@@ -1,4 +1,4 @@
-import { AudiusSdk, AuthService } from '@audius/sdk'
+import { AudiusSdk } from '@audius/sdk'
 import BN from 'bn.js'
 
 import { userWalletsFromSDK } from '~/adapters'

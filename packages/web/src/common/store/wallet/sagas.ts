@@ -120,7 +120,6 @@ function* sendAsync({
     )
 
     // Ensure user has userbank
-
     const audiusBackend = yield* getContext('audiusBackendInstance')
     const feePayerOverride = yield* select(getFeePayer)
     if (!feePayerOverride) {
