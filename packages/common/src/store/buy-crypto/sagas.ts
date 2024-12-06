@@ -210,18 +210,19 @@ function* swapSolForCrypto({
     parseJupiterInstruction(swapInstruction),
     closeWSOLInstruction
   ]
+  const env = yield* getContext('env')
   const { transaction, addressLookupTableAccounts } = yield* call(
     createVersionedTransaction,
-    audiusBackendInstance,
     {
       instructions,
       lookupTableAddresses: addressLookupTableAddresses,
-      feePayer
+      feePayer,
+      env
     }
   )
   transaction.sign([wallet])
 
-  return yield* call(relayVersionedTransaction, audiusBackendInstance, {
+  return yield* call(relayVersionedTransaction, {
     transaction,
     addressLookupTableAccounts,
     skipPreflight: true

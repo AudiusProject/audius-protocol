@@ -97,10 +97,8 @@ export const getSolanaConnection = async ({ env }: { env: Env }) => {
 /**
  * Gets the latest blockhash using the libs connection
  */
-export const getRecentBlockhash = async (
-  audiusBackendInstance: AudiusBackend
-) => {
-  const connection = await getSolanaConnection(audiusBackendInstance)
+export const getRecentBlockhash = async ({ env }: { env: Env }) => {
+  const connection = await getSolanaConnection({ env })
   return (await connection.getLatestBlockhash()).blockhash
 }
 
@@ -690,18 +688,20 @@ export const createVersionedTransaction = async (
   {
     instructions,
     lookupTableAddresses,
-    feePayer
+    feePayer,
+    env
   }: {
     instructions: TransactionInstruction[]
     lookupTableAddresses: string[]
     feePayer: PublicKey
+    env: Env
   }
 ) => {
   const addressLookupTableAccounts = await getLookupTableAccounts(
     audiusBackendInstance,
     { lookupTableAddresses }
   )
-  const recentBlockhash = await getRecentBlockhash(audiusBackendInstance)
+  const recentBlockhash = await getRecentBlockhash({ env })
 
   const message = new TransactionMessage({
     payerKey: feePayer,

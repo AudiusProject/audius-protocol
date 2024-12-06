@@ -178,7 +178,8 @@ function* transferStep({
     throw new Error('Missing feePayer unexpectedly')
   }
   const feePayerOverride = new PublicKey(feePayer)
-  const recentBlockhash = yield* call(getRecentBlockhash, audiusBackendInstance)
+  const env = yield* getContext('env')
+  const recentBlockhash = yield* call(getRecentBlockhash, { env })
 
   yield* call(
     retry,
