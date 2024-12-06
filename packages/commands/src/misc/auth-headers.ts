@@ -16,6 +16,6 @@ export const authHeadersCommand = new Command('auth-headers')
     const signature = await audiusSdk.services.audiusWalletClient.signMessage({
       message
     })
-    console.log(chalk.yellow('Encoded-Data-Message:'), message)
-    console.log(chalk.yellow('Encoded-Data-Signature:'), signature)
+    console.log(chalk.yellow.bold('Encoded-Data-Message:'), message)
+    console.log(chalk.yellow.bold('Encoded-Data-Signature:'), signature)
   })
