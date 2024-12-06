@@ -3,7 +3,7 @@ import { ReactElement } from 'react'
 import { SocialPlatform } from '@audius/common/models'
 import { TikTokProfile } from '@audius/common/store'
 
-import { TikTokAuth } from 'components/tiktok-auth/TikTokAuthButton'
+import { TikTokAuthButton } from 'components/tiktok-auth/TikTokAuthButton'
 
 import { useSetProfileFromTikTok } from '../hooks/socialMediaLogin'
 
@@ -15,7 +15,7 @@ type SignupFlowTikTokAuthProps = {
     handle: string
     platform: 'tiktok'
   }) => void
-  children: ReactElement
+  children?: ReactElement
 }
 
 export const SignupFlowTikTokAuth = ({
@@ -56,12 +56,13 @@ export const SignupFlowTikTokAuth = ({
   }
 
   return (
-    <TikTokAuth
+    <TikTokAuthButton
       onClick={handleStart}
       onFailure={handleError}
       onSuccess={(uuid, profile) => handleTikTokLogin({ uuid, profile })}
+      css={{ width: '100%', flex: 1, padding: 0 }}
     >
       {children}
-    </TikTokAuth>
+    </TikTokAuthButton>
   )
 }

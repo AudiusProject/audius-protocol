@@ -3,7 +3,7 @@ import { useContext } from 'react'
 import { socialMediaMessages } from '@audius/common/messages'
 import { SocialPlatform } from '@audius/common/models'
 import { BooleanKeys } from '@audius/common/services'
-import { Box, Flex, SocialButton } from '@audius/harmony'
+import { Flex, SocialButton } from '@audius/harmony'
 
 import { ToastContext } from 'components/toast/ToastContext'
 import { useRemoteVar } from 'hooks/useRemoteConfig'
@@ -74,22 +74,14 @@ export const SocialMediaLoginOptions = ({
     <Flex direction='row' gap='s' w='100%'>
       {isTwitterEnabled ? (
         <SignupFlowTwitterAuth
-          css={{ flex: 1 }}
           onStart={handleStart('twitter')}
           onFailure={handleError('twitter')}
           onSuccess={handleSuccess}
-        >
-          <SocialButton
-            type='button'
-            socialType='twitter'
-            css={{ width: '100%' }}
-            aria-label={socialMediaMessages.signUpTwitter}
-          />
-        </SignupFlowTwitterAuth>
+        />
       ) : null}
       {isInstagramEnabled ? (
         <SignupFlowInstagramAuth
-          css={{ flex: 1 }}
+          css={{ flex: 1, width: '100%' }}
           onStart={handleStart('instagram')}
           onFailure={handleError('instagram')}
           onSuccess={handleSuccess}
@@ -103,20 +95,11 @@ export const SocialMediaLoginOptions = ({
         </SignupFlowInstagramAuth>
       ) : null}
       {isTikTokEnabled ? (
-        <Box css={{ flex: 1 }}>
-          <SignupFlowTikTokAuth
-            onStart={handleStart('tiktok')}
-            onFailure={handleError('tiktok')}
-            onSuccess={handleSuccess}
-          >
-            <SocialButton
-              type='button'
-              socialType='tiktok'
-              css={{ width: '100%' }}
-              aria-label={socialMediaMessages.signUpTikTok}
-            />
-          </SignupFlowTikTokAuth>
-        </Box>
+        <SignupFlowTikTokAuth
+          onStart={handleStart('tiktok')}
+          onFailure={handleError('tiktok')}
+          onSuccess={handleSuccess}
+        />
       ) : null}
     </Flex>
   )

@@ -17,7 +17,7 @@ type TikTokAuthProps = Pick<
   'onFailure' | 'onSuccess' | 'onClick'
 > & { children: ReactElement }
 
-export const TikTokAuth = ({
+const TikTokAuthWrapper = ({
   onFailure,
   onSuccess,
   onClick,
@@ -58,7 +58,8 @@ export const TikTokAuth = ({
           reportToSentry({
             error: e as Error,
             name: 'Sign Up: Failed to get user from TikTok API',
-            feature: Feature.SignUp
+            feature: Feature.SignUp,
+            tags: { socialMedia: 'tiktok' }
           })
         }
       })
@@ -73,8 +74,12 @@ export const TikTokAuthButton = (props: TikTokAuthButtonProps) => {
   const { onFailure, onSuccess, onClick, ...buttonProps } = props
 
   return (
-    <TikTokAuth onFailure={onFailure} onSuccess={onSuccess} onClick={onClick}>
+    <TikTokAuthWrapper
+      onFailure={onFailure}
+      onSuccess={onSuccess}
+      onClick={onClick}
+    >
       <SocialButton socialType='tiktok' {...buttonProps} />
-    </TikTokAuth>
+    </TikTokAuthWrapper>
   )
 }

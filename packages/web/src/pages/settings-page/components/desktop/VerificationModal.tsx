@@ -115,7 +115,7 @@ const VerifyBody = (props: VerifyBodyProps) => {
             onClick={handleClickTwitter}
             onFailure={props.onFailure}
             onSuccess={props.onTwitterLogin}
-            fullWidth
+            css={{ width: '100%' }}
           >
             {messages.twitterVerify}
           </TwitterAuthButton>

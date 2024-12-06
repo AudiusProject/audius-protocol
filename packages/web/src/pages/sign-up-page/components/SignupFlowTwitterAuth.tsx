@@ -1,14 +1,15 @@
 import { PropsWithChildren } from 'react'
 
+import { socialMediaMessages } from '@audius/common/messages'
 import { SocialPlatform } from '@audius/common/models'
 import { TwitterProfile } from '@audius/common/store'
+import { SerializedStyles } from '@emotion/react'
 
-import { TwitterAuth } from 'components/twitter-auth/TwitterAuth'
+import { TwitterAuthButton } from 'components/twitter-auth/TwitterAuthButton'
 
 import { useSetProfileFromTwitter } from '../hooks/socialMediaLogin'
 
 type SignupFlowTwitterAuthProps = PropsWithChildren<{
-  className?: string
   onFailure: (e: Error) => void
   onSuccess: (info: {
     requiresReview: boolean
@@ -16,14 +17,14 @@ type SignupFlowTwitterAuthProps = PropsWithChildren<{
     platform: 'twitter'
   }) => void
   onStart: (platform: SocialPlatform) => void
+  css?: SerializedStyles
 }>
 
 export const SignupFlowTwitterAuth = ({
-  className,
   onFailure,
   onSuccess,
   onStart,
-  children
+  css
 }: SignupFlowTwitterAuthProps) => {
   const setProfileFromTwitter = useSetProfileFromTwitter()
 
@@ -50,16 +51,15 @@ export const SignupFlowTwitterAuth = ({
   }
 
   return (
-    <TwitterAuth
-      className={className}
+    <TwitterAuthButton
       forceLogin
       onClick={handleStart}
       onFailure={onFailure}
       onSuccess={(uuid, profile) =>
         handleTwitterLogin({ uuid, twitterProfile: profile })
       }
-    >
-      {children}
-    </TwitterAuth>
+      aria-label={socialMediaMessages.signUpTwitter}
+      css={{ flex: 1, width: '100%', padding: 0 }}
+    />
   )
 }
