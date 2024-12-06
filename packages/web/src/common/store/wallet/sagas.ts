@@ -33,6 +33,7 @@ import { reportToSentry } from 'store/errors/reportToSentry'
 import { waitForWrite } from 'utils/sagaHelpers'
 
 const { getFeePayer } = solanaSelectors
+const { getWalletAddresses } = accountSelectors
 
 const ATA_SIZE = 165 // Size allocated for an associated token account
 
@@ -81,16 +82,20 @@ function* sendAsync({
   yield* waitForWrite()
   const walletClient = yield* getContext('walletClient')
   const { track } = yield* getContext('analytics')
+  const sdk = yield* getSDK()
 
   const account = yield* select(getAccountUser)
   const weiBNAmount = stringWeiToBN(weiAudioAmount)
   const accountBalance = yield* select(getAccountBalance)
   const weiBNBalance = accountBalance ?? (new BN('0') as BNWei)
-  const sdk = yield* getSDK()
+  const { currentUser } = yield* select(getWalletAddresses)
+  if (!currentUser) {
+    throw new Error('Failed to retrieve current user wallet address')
+  }
 
   const waudioWeiAmount: BNWei | null = yield* call(
     [walletClient, 'getCurrentWAudioBalance'],
-    { sdk }
+    { ethAddress: currentUser, sdk }
   )
 
   if (isNullOrUndefined(waudioWeiAmount)) {
