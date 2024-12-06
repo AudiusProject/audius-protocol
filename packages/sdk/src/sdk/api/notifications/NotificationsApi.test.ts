@@ -1,7 +1,8 @@
 import { describe, it, beforeAll, expect, vitest } from 'vitest'
 
+import { createAppWalletClient } from '../../services/AudiusWalletClient'
 import { DiscoveryNodeSelector } from '../../services/DiscoveryNodeSelector'
-import { EntityManager } from '../../services/EntityManager'
+import { EntityManagerClient } from '../../services/EntityManager'
 import { Configuration } from '../generated/default'
 
 import { NotificationsApi } from './NotificationsApi'
@@ -13,7 +14,7 @@ vitest.mock('../../services/Storage')
 vitest.mock('./TrackUploadHelper')
 
 vitest
-  .spyOn(EntityManager.prototype, 'manageEntity')
+  .spyOn(EntityManagerClient.prototype, 'manageEntity')
   .mockImplementation(async () => {
     return {
       blockHash: 'a',
@@ -27,11 +28,10 @@ describe('NotificationsApi', () => {
   beforeAll(() => {
     notifications = new NotificationsApi(
       new Configuration(),
-      new EntityManager({
+      new EntityManagerClient({
         discoveryNodeSelector: new DiscoveryNodeSelector(),
         audiusWalletClient: createAppWalletClient('0x')
-      }),
-      auth
+      })
     )
     vitest.spyOn(console, 'warn').mockImplementation(() => {})
     vitest.spyOn(console, 'info').mockImplementation(() => {})
