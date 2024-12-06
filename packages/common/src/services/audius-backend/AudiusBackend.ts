@@ -24,7 +24,6 @@ import dayjs from '~/utils/dayjs'
 
 import {
   BNWei,
-  CID,
   Collection,
   ID,
   InstagramUser,
