@@ -17,7 +17,6 @@ import {
   supporterMetadataFromSDK
 } from '@audius/common/models'
 import { LocalStorage } from '@audius/common/services'
-import { getWalletAddresses } from '@audius/common/src/store/account/selectors'
 import {
   accountSelectors,
   cacheActions,
@@ -88,7 +87,7 @@ const {
 } = tippingSelectors
 
 const { update } = cacheActions
-const { getAccountUser, getUserId } = accountSelectors
+const { getAccountUser, getUserId, getWalletAddresses } = accountSelectors
 const { fetchPermissions } = chatActions
 
 export const FEED_TIP_DISMISSAL_TIME_LIMIT_SEC = 30 * 24 * 60 * 60 // 30 days
