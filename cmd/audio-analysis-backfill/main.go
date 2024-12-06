@@ -122,7 +122,7 @@ func consumeAnalysisResults(wg *sync.WaitGroup) {
 	}
 	defer file.Close()
 
-	// write "begin;"
+	// write "begin;" and end with "commit;"
 	file.WriteString("begin;")
 	defer file.WriteString("commit;")
 
