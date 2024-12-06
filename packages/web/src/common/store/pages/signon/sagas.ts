@@ -721,6 +721,16 @@ function* signUp() {
                 })
               }
             }
+            const { web3Error, libsError } = yield* call(
+              audiusBackendInstance.setup,
+              {
+                wallet,
+                userId
+              }
+            )
+            if (web3Error || libsError) {
+              throw new Error('Failed to setup backend')
+            }
 
             yield* put(
               identify(handle, {

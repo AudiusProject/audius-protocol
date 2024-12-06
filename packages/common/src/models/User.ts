@@ -98,8 +98,6 @@ export type UserManagerMetadata = {
 }
 
 export type ComputedUserProperties = {
-  _profile_picture_sizes: ProfilePictureSizes
-  _cover_photo_sizes: CoverPhotoSizes
   _collectionIds?: ID[]
   _profile_picture_color?: Color
   updatedProfilePicture?: { file: File; url: string }

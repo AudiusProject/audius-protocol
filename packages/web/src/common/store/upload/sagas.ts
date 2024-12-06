@@ -929,8 +929,7 @@ export function* uploadCollection(
         // Add images to the collection since we're not loading it the traditional way with
         // the `fetchCollections` saga
         confirmedPlaylist = yield* call(reformatCollection, {
-          collection: confirmedPlaylist,
-          audiusBackendInstance
+          collection: confirmedPlaylist
         })
         const uid = yield* makeUid(
           Kind.COLLECTIONS,

@@ -1,8 +1,4 @@
-import {
-  transformAndCleanList,
-  userCollectionMetadataFromSDK,
-  userMetadataListFromSDK
-} from '@audius/common/adapters'
+import { userMetadataListFromSDK } from '@audius/common/adapters'
 import { Kind, OptionalId, User, UserMetadata, Id } from '@audius/common/models'
 import {
   Metadata,
@@ -17,13 +13,11 @@ import {
 } from '@audius/common/store'
 import { waitForAccount, waitForValue } from '@audius/common/utils'
 import { mergeWith } from 'lodash'
-import { all, call, put, select, takeEvery } from 'typed-redux-saga'
+import { call, put, select, takeEvery } from 'typed-redux-saga'
 
-import { retrieveCollections } from 'common/store/cache/collections/utils'
 import { retrieve } from 'common/store/cache/sagas'
 import { waitForRead } from 'utils/sagaHelpers'
 
-import { pruneBlobValues } from './utils'
 const { mergeCustomizer } = cacheReducer
 const { getUser, getUsers, getUserTimestamps } = cacheUsersSelectors
 const { getUserId } = accountSelectors
@@ -92,7 +86,6 @@ export function* fetchUserByHandle(
   deleteExistingEntry = false,
   retry = true
 ) {
-  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
   // We only need to handle 1 handle
   const retrieveFromSource = function* (handles: (string | number)[]) {
     return yield* retrieveUserByHandle(handles[0].toString(), retry)
@@ -110,9 +103,7 @@ export function* fetchUserByHandle(
     },
     retrieveFromSource,
     onBeforeAddToCache: function* (users: Metadata[]) {
-      return users.map((user) =>
-        reformatUser(user as User, audiusBackendInstance)
-      )
+      return users.map((user) => reformatUser(user as User))
     },
     kind: Kind.USERS,
     idField: 'user_id',
@@ -122,66 +113,6 @@ export function* fetchUserByHandle(
     deleteExistingEntry
   })
   return users[handle]
-}
-
-/**
- * @deprecated legacy method for web
- * @param {number} userId target user id
- */
-export function* fetchUserCollections(userId: number) {
-  const sdk = yield* getSDK()
-  const currentUserId = yield* select(getUserId)
-  function* getPlaylists() {
-    const { data } = yield* call(
-      [sdk.full.users, sdk.full.users.getPlaylistsByUser],
-      {
-        id: Id.parse(userId),
-        userId: OptionalId.parse(currentUserId)
-      }
-    )
-    return transformAndCleanList(data, userCollectionMetadataFromSDK)
-  }
-  function* getAlbums() {
-    const { data } = yield* call(
-      [sdk.full.users, sdk.full.users.getAlbumsByUser],
-      {
-        id: Id.parse(userId),
-        userId: OptionalId.parse(currentUserId)
-      }
-    )
-    return transformAndCleanList(data, userCollectionMetadataFromSDK)
-  }
-  const [playlists, albums] = yield* all([call(getPlaylists), call(getAlbums)])
-
-  const playlistIds = playlists.map((p) => p.playlist_id)
-  const albumIds = albums.map((a) => a.playlist_id)
-  const ids = [...playlistIds, ...albumIds]
-
-  if (!ids.length) {
-    yield* put(
-      cacheActions.update(Kind.USERS, [
-        {
-          id: userId,
-          metadata: { _collectionIds: [] }
-        }
-      ])
-    )
-  }
-  const { collections } = yield* call(retrieveCollections, playlistIds, {
-    userId
-  })
-  const cachedCollectionIds = Object.values(collections).map(
-    (c) => c.playlist_id
-  )
-
-  yield* put(
-    cacheActions.update(Kind.USERS, [
-      {
-        id: userId,
-        metadata: { _collectionIds: cachedCollectionIds }
-      }
-    ])
-  )
 }
 
 // For updates and adds, sync the account user to local storage.
@@ -207,11 +138,9 @@ function* watchSyncLocalStorageUser() {
       const existing = yield* call([localStorage, 'getAudiusAccountUser'])
       // Merge with the new metadata
       const merged = mergeWith({}, existing, addedUser, mergeCustomizer)
-      // Remove blob urls if any - blob urls only last for the session so we don't want to store those
-      const cleaned = pruneBlobValues(merged)
 
       // Set user back to local storage
-      yield* call([localStorage, 'setAudiusAccountUser'], cleaned)
+      yield* call([localStorage, 'setAudiusAccountUser'], merged)
     }
   }
   yield* takeEvery(cacheActions.ADD_SUCCEEDED, syncLocalStorageUser)

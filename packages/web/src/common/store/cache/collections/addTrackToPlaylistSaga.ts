@@ -193,8 +193,7 @@ function* confirmAddTrackToPlaylist(
         if (!playlist) return
 
         const formattedCollection = reformatCollection({
-          collection: confirmedPlaylist,
-          audiusBackendInstance
+          collection: confirmedPlaylist
         })
 
         yield* put(
