@@ -31,7 +31,8 @@ import {
   IconRepost as IconReposts,
   Text,
   Hint,
-  IconQuestionCircle
+  IconQuestionCircle,
+  LoadingSpinner
 } from '@audius/harmony'
 
 import CollectiblesPage from 'components/collectibles/components/CollectiblesPage'
@@ -108,6 +109,7 @@ export type ProfilePageProps = {
   albums: Collection[] | null
   playlists: Collection[] | null
   status: Status
+  collectionStatus: Status
   goToRoute: (route: string) => void
   artistTracks: LineupState<Track>
   playArtistTrack: (uid: UID) => void
@@ -213,6 +215,7 @@ const ProfilePage = ({
   onSortByPopular,
   isArtist,
   status: profileLoadingStatus,
+  collectionStatus,
   activeTab,
   shouldMaskContent,
   editMode,
@@ -380,7 +383,14 @@ const ProfilePage = ({
         ) : null}
       </div>,
       <div key={ProfilePageTabs.ALBUMS} className={styles.cards}>
-        {albums.length === 0 && !isOwner ? (
+        {collectionStatus !== Status.SUCCESS &&
+        collectionStatus !== Status.ERROR ? (
+          <Flex justifyContent='center' mt='2xl'>
+            <Box w={24}>
+              <LoadingSpinner />
+            </Box>
+          </Flex>
+        ) : albums.length === 0 && !isOwner ? (
           <EmptyTab
             isOwner={isOwner}
             name={profile.name}
@@ -391,7 +401,14 @@ const ProfilePage = ({
         )}
       </div>,
       <div key={ProfilePageTabs.PLAYLISTS} className={styles.cards}>
-        {playlists.length === 0 && !isOwner ? (
+        {collectionStatus !== Status.SUCCESS &&
+        collectionStatus !== Status.ERROR ? (
+          <Flex justifyContent='center' mt='2xl'>
+            <Box w={24}>
+              <LoadingSpinner />
+            </Box>
+          </Flex>
+        ) : playlists.length === 0 && !isOwner ? (
           <EmptyTab
             isOwner={isOwner}
             name={profile.name}
