@@ -84,7 +84,11 @@ export const TrackScreen = () => {
   }, [dispatch, canBeUnlisted, id, slug, handle, user?.handle, isScreenReady])
 
   if (!track || !user) {
-    return <TrackScreenSkeleton />
+    return (
+      <Flex p='l' gap='2xl'>
+        <TrackScreenSkeleton />
+      </Flex>
+    )
   }
 
   const handlePressGoToOtherRemixes = () => {
