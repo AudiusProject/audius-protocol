@@ -131,7 +131,6 @@ const PremiumContentPurchaseForm = (props: PremiumContentPurchaseFormProps) => {
     setPurchaseMethod(PurchaseMethod.BALANCE)
     submitForm()
   }, [submitForm, setPurchaseMethod])
-  console.log('asdf page: ', currentPageIndex, hasCompletedAccount)
   return (
     <ModalForm className={cn(styles.modalRoot, { [styles.mobile]: isMobile })}>
       <ModalHeader
