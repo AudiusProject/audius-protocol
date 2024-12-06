@@ -213,6 +213,7 @@ function* swapSolForCrypto({
   const env = yield* getContext('env')
   const { transaction, addressLookupTableAccounts } = yield* call(
     createVersionedTransaction,
+    audiusBackendInstance,
     {
       instructions,
       lookupTableAddresses: addressLookupTableAddresses,
@@ -222,7 +223,7 @@ function* swapSolForCrypto({
   )
   transaction.sign([wallet])
 
-  return yield* call(relayVersionedTransaction, {
+  return yield* call(relayVersionedTransaction, audiusBackendInstance, {
     transaction,
     addressLookupTableAccounts,
     skipPreflight: true
