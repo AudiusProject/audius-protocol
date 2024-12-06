@@ -4,7 +4,7 @@ import type { Configuration } from '../..'
 import { BaseAPI } from '../..'
 import { CryptoUtils } from '../../utils/crypto'
 import { encodeHashId } from '../../utils/hashId'
-import type { AuthService } from '../Auth'
+import type { AudiusWalletClient } from '../AudiusWalletClient'
 
 import type {
   BatchEncryptionInput,
@@ -14,7 +14,10 @@ import type {
 } from './types'
 
 export class EmailEncryptionService extends BaseAPI {
-  constructor(config: Configuration, private readonly auth: AuthService) {
+  constructor(
+    config: Configuration,
+    private readonly audiusWalletClient: AudiusWalletClient
+  ) {
     super(config)
   }
 
@@ -33,9 +36,10 @@ export class EmailEncryptionService extends BaseAPI {
 
     // Encrypt for primary user
     const primaryUserPublicKey = await this.getPublicKey(primaryUserId)
-    const primaryUserSharedSecret = await this.auth.getSharedSecret(
-      primaryUserPublicKey
-    )
+    const primaryUserSharedSecret =
+      await this.audiusWalletClient.getSharedSecret({
+        publicKey: primaryUserPublicKey
+      })
     const primaryUserEncryptedKeyBytes = await CryptoUtils.encrypt(
       primaryUserSharedSecret,
       symmetricKey
@@ -46,9 +50,10 @@ export class EmailEncryptionService extends BaseAPI {
     const granteeEncryptedKeys = await Promise.all(
       granteeIds.map(async (granteeId) => {
         const granteePublicKey = await this.getPublicKey(granteeId)
-        const granteeSharedSecret = await this.auth.getSharedSecret(
-          granteePublicKey
-        )
+        const granteeSharedSecret =
+          await this.audiusWalletClient.getSharedSecret({
+            publicKey: granteePublicKey
+          })
         const encryptedKeyBytes = await CryptoUtils.encrypt(
           granteeSharedSecret,
           symmetricKey
@@ -78,7 +83,9 @@ export class EmailEncryptionService extends BaseAPI {
     userId: string
   ): Promise<Uint8Array> {
     const userPublicKey = await this.getPublicKey(userId)
-    const sharedSecret = await this.auth.getSharedSecret(userPublicKey)
+    const sharedSecret = await this.audiusWalletClient.getSharedSecret({
+      publicKey: userPublicKey
+    })
     return await CryptoUtils.decrypt(sharedSecret, base64.decode(encryptedKey))
   }
 
