@@ -19,7 +19,6 @@ import {
   SEARCH_HISTORY_KEY,
   THEME_STORAGE_KEY
 } from 'app/constants/storage-keys'
-import { audiusBackendInstance } from 'app/services/audius-backend-instance'
 import { localStorage } from 'app/services/local-storage'
 
 import { resetOAuthState } from '../oauth/actions'
