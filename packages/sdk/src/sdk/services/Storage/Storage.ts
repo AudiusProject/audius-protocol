@@ -174,13 +174,17 @@ export class Storage implements StorageService {
       request.url = `${selectedNode!}/uploads`
       try {
         response = await axios(request)
-        break
+        // Server will sometimes return empty array in case of error
+        if (response?.data?.length > 0) {
+          break
+        }
       } catch (e: any) {
         lastErr = e // keep trying other nodes
       }
     }
 
-    if (!response) {
+    // Covers no response or empty response
+    if (!response?.data?.length) {
       const msg = `Error sending storagev2 upload request, tried all healthy storage nodes. Last error: ${lastErr}`
       this.logger.error(msg)
       throw new Error(msg)
