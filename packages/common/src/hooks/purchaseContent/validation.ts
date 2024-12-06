@@ -2,7 +2,7 @@ import { z } from 'zod'
 
 import { AudiusQueryContextType } from '~/audius-query/AudiusQueryContext'
 import { PurchaseMethod, PurchaseVendor } from '~/models/PurchaseContent'
-import { emailSchema } from '~/schemas/sign-on/emailSchema'
+// import { emailSchema } from '~/schemas/sign-on/emailSchema'
 
 import {
   AMOUNT_PRESET,

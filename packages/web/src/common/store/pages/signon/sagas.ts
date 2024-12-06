@@ -590,6 +590,8 @@ function* createGuestAccount(
   const { guestEmail } = action
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
   const getFeatureEnabled = yield* getContext('getFeatureEnabled')
+  const reportToSentry = yield* getContext('reportToSentry')
+
   const sdk = yield* getSDK()
   const audiusLibs = yield* call([
     audiusBackendInstance,
@@ -622,31 +624,38 @@ function* createGuestAccount(
       .web3WalletAddress
     audiusLibs.web3Manager.setOwnerWallet(wallet)
     if (!currentUser && guestEmail) {
-      const { blockNumber, metadata } = yield* call([
-        sdk.users,
-        sdk.users.createGuest
-      ])
+      const { metadata } = yield* call([sdk.users, sdk.users.createGuest])
       const userId = metadata.userId
       yield* put(signOnActions.signUpSucceededWithId(userId))
 
       yield* call(fetchAccountAsync, { isSignUp: true })
       const purchaserUserId = yield* select(getUserId)
-      if (!purchaserUserId) {
-        throw new Error('Failed to fetch purchasing user id')
-      }
-      const userBank = yield* call(getOrCreateUSDCUserBank)
-      if (!userBank) {
-        throw new Error('Failed to create user bank')
-      }
-      const { web3Error, libsError } = yield* call(
-        audiusBackendInstance.setup,
-        {
-          wallet,
-          userId
+
+      try {
+        if (!purchaserUserId) {
+          throw new Error('Failed to fetch purchasing user id')
         }
-      )
-      if (web3Error || libsError) {
-        throw new Error('Failed to setup backend')
+        const userBank = yield* call(getOrCreateUSDCUserBank)
+        if (!userBank) {
+          throw new Error('Failed to create user bank')
+        }
+        const { web3Error, libsError } = yield* call(
+          audiusBackendInstance.setup,
+          {
+            wallet,
+            userId
+          }
+        )
+        if (web3Error || libsError) {
+          throw new Error('Failed to setup backend')
+        }
+      } catch (err) {
+        reportToSentry({
+          error: err as Error,
+          level: ErrorLevel.Fatal,
+          name: 'Sign Up: Failed to create guest account',
+          feature: Feature.SignUp
+        })
       }
     }
   }
