@@ -1,6 +1,6 @@
 export * from './AntiAbuseOracle'
 export * from './AntiAbuseOracleSelector'
-export * from './Auth'
+export * from './AudiusWalletClient'
 export * from './DiscoveryNodeSelector'
 export * from './EntityManager'
 export * from './Logger'

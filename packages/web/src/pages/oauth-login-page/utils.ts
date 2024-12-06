@@ -371,7 +371,7 @@ export const handleAuthorizeConnectDashboardWallet = async ({
     const sdk = await audiusSdk()
     await sdk.dashboardWalletUsers.connectUserToDashboardWallet({
       userId: encodeHashId(account.user_id),
-      wallet: txParams!.wallet,
+      wallet: txParams!.wallet as `0x${string}`,
       walletSignature
     })
   } catch (e: unknown) {
@@ -439,7 +439,7 @@ export const handleAuthorizeDisconnectDashboardWallet = async ({
       return false
     }
     await sdk.dashboardWalletUsers.disconnectUserFromDashboardWallet({
-      wallet: txParams.wallet,
+      wallet: txParams.wallet as `0x${string}`,
       userId: encodeHashId(account.user_id)
     })
   } catch (e: unknown) {

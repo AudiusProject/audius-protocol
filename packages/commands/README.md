@@ -1,8 +1,8 @@
 # audius-cmd
 
 ```
-audius-cmd --help
-audius-cmd <command> --help
+audius-cmd help
+audius-cmd <command> help
 ```
 
 `audius-cmd` is a command line tool to perform actions against the Audius protocol. It is especially useful to seed data on an instance of the protocol running locally
@@ -15,133 +15,123 @@ This tool needs to be built at least once before running.
 
 If you plan on developing commands, you can run `npm run watch:dist` to start a watcher, which will rebuild any time the files in `src` change.
 
-## Examples
-
-**create-user**
+## Commands
 
 ```
-audius-cmd create-user freddie_mercury
+Usage: audius-cmd [options] [command]
+
+CLI interface for interacting with a local Audius network.
+
+Options:
+  -h, --help                                     display help for command
+
+Commands:
+  user                                           Commands that create or target a specific user
+  track                                          Commands that create or target a specific track
+  playlist                                       Commands that create or target a specific playlist
+  album                                          Commands that create or target a specific album
+  manager                                        Commands for managing account managers
+  auth-headers [options]                         Output auth headers (for use with curl: `curl -H @<(audius-cmd auth-headers)`)
+  claim-reward [options] <challengeId> <amount>  Claim a challenge reward
+  reward-specifier [options] <challengeId>       Get the specifier for a challenge
+  create-user-bank [options] [handle]            Create userbank for a user
+  mint [options] <amount>                        Mint $AUDIO or $USDC tokens
+  tip-reaction [options] <signature>             Send a tip reaction
+  withdraw-tokens [options] <account> <amount>   Send tokens from a user bank to an external address
+  help [command]                                 display help for command
 ```
 
-**edit-user**
+### User subcommands
 
 ```
-audius-cmd edit-user freddie_mercury --bio "easy come easy go"
+Usage: audius-cmd user [options] [command]
+
+Commands that create or target a specific user
+
+Options:
+  -h, --help                               display help for command
+
+Commands:
+  create [options] [handle]                Create a new user
+  edit [options] <handle>                  Update an existing user
+  follow [options] <followeeUserId>        Follow user
+  get [options] <id>                       Get a user by ID
+  tip [options] <receiverUserId> <amount>  Tip $AUDIO to a user
+  unfollow [options] <followeeUserId>      Unfollow user
+  help [command]                           display help for command
 ```
 
-**upload-track**
+### Track subcommands
 
 ```
-audius-cmd upload-track --from freddie_mercury --title "Bohemian Rhapsody"
+Usage: audius-cmd track [options] [command]
+
+Commands that create or target a specific track
+
+Options:
+  -h, --help                            display help for command
+
+Commands:
+  edit [options] <trackId>              Update an existing track
+  favorite [options] <trackId>          Favorite track
+  get [options] <trackId>               Get a track by ID
+  purchase [options] <trackId> <price>  Buys a track using USDC
+  repost [options] <trackId>            Repost track
+  unfavorite [options] <trackId>        Unfavorite track
+  unrepost [options] <trackId>          Unrepost track
+  upload [options] [track]              Upload a new track
+  help [command]                        display help for command
 ```
 
-**edit-track**
+### Playlist subcommands
 
 ```
-audius-cmd edit-track <track-id> --title "Bohemian Rhapsody (Reprise)"
+Usage: audius-cmd playlist [options] [command]
+
+Commands that create or target a specific playlist
+
+Options:
+  -h, --help                         display help for command
+
+Commands:
+  create [options] <trackIds...>     Create playlist
+  edit [options] <playlistId>        Update an existing playlist
+  favorite [options] <playlistId>    Favorite playlist
+  repost [options] <playlistId>      Repost playlist
+  unfavorite [options] <playlistId>  Unfavorite playlist
+  unrepost [options] <playlistId>    Unrepost playlist
+  help [command]                     display help for command
 ```
 
-**create-playlist**
+### Album subcommands
 
 ```
-audius-cmd create-playlist <track-ids> --from freddie_mercury
+Usage: audius-cmd album [options] [command]
+
+Commands that create or target a specific album
+
+Options:
+  -h, --help                                  display help for command
+
+Commands:
+  purchase-album [options] <albumId> <price>  Buys an album using USDC
+  help [command]                              display help for command
 ```
 
-**edit-playlist**
+### Manager subcommands
 
 ```
-audius-cmd edit-playlist <playlist-id> --name "A Night at the Opera"
-```
+Usage: audius-cmd manager [options] [command]
 
-**favorite-track**
+Commands for managing account managers
 
-```
-audius-cmd favorite-track <track-id>
-```
+Options:
+  -h, --help                  display help for command
 
-**unfavorite-track**
-
-```
-audius-cmd unfavorite-track <track-id>
-```
-
-**favorite-playlist**
-
-```
-audius-cmd favorite-playlist <playlist-id>
-```
-
-**unfavorite-playlist**
-
-```
-audius-cmd unfavorite-playlist <playlist-id>
-```
-
-**repost-track**
-
-```
-audius-cmd repost-track <track-id>
-```
-
-**unrepost-track**
-
-```
-audius-cmd unrepost-track <track-id>
-```
-
-**repost-playlist**
-
-```
-audius-cmd repost-playlist <playlist-id>
-```
-
-**unrepost-playlist**
-
-```
-audius-cmd unrepost-playlist <playlist-id>
-```
-
-**mint-audio**
-
-```
-audius-cmd mint-audio @freddie_mercury 10
-```
-
-**get-audio-balance**
-
-```
-audius-cmd get-audio-balance @freddie_mercury
-```
-
-**tip-audio**
-
-```
-audius-cmd tip-audio @brian_may 10 --from freddie_mercury
-```
-
-**purchase-track**
-
-```
-audius-cmd upload-track --from freddie_mercury --title "Bohemian Rhapsody" --price 100
-
-audius-cmd create-user-bank --mint usdc freddie_mercury
-audius-cmd mint-tokens --from freddie_mercury --mint usdc 10000000
-
-audius-cmd purchase-content <track-id> --type track --from freddie_mercury
-```
-
-**Managed accounts**
-
-```
-# Add a manager
-audius-cmd add-manager --from freddie_mercury jim_beach
-
-# Accept request from manager's account
-audius-cmd approve-manager-request --from jim_beach freddie_mercury
-
-# (OR) Reject request from manager's account
-audius-cmd reject-manager-request --from jim_beach freddie_mercury
-
-# Remove manager
-audius-cmd remove-manager --from freddie_mercury jim_beach
+Commands:
+  add [options] <handle>      Create a pending manager request for a user
+  remove [options] <handle>   Remove a manager
+  approve [options] <handle>  Approve a pending manager request
+  reject [options] <handle>   Reject a pending manager request
+  help [command]              display help for command
 ```

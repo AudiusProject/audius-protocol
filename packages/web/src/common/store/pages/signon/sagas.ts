@@ -559,8 +559,11 @@ function* sendRecoveryEmail({
     const unixTs = Math.round(new Date().getTime() / 1000) // current unix timestamp (sec)
     const data = `Click sign to authenticate with identity service: ${unixTs}`
     const signature = yield* call(
-      [sdk.services.auth, sdk.services.auth.hashAndSign],
-      data
+      [
+        sdk.services.audiusWalletClient,
+        sdk.services.audiusWalletClient.signMessage
+      ],
+      { message: data }
     )
 
     const recoveryData = {
