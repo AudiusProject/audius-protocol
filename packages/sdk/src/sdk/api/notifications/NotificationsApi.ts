@@ -1,5 +1,5 @@
 import type { Configuration } from '../../api/generated/default'
-import type { AuthService, EntityManagerService } from '../../services'
+import type { EntityManagerService } from '../../services'
 import { Action, EntityType } from '../../services/EntityManager/types'
 import { parseParams } from '../../utils/parseParams'
 
@@ -14,8 +14,7 @@ export class NotificationsApi {
   // eslint-disable-next-line no-useless-constructor
   constructor(
     _config: Configuration,
-    private readonly entityManager: EntityManagerService,
-    private readonly auth: AuthService
+    private readonly entityManager: EntityManagerService
   ) {}
 
   /**
@@ -34,8 +33,7 @@ export class NotificationsApi {
       // In this case, we are the entityId since we are marking our own notifications as viewed
       entityId: userId,
       action: Action.VIEW,
-      metadata: '',
-      auth: this.auth
+      metadata: ''
     })
   }
 
@@ -52,8 +50,7 @@ export class NotificationsApi {
       entityType: EntityType.PLAYLIST,
       entityId: playlistId,
       action: Action.VIEW,
-      metadata: '',
-      auth: this.auth
+      metadata: ''
     })
   }
 }

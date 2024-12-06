@@ -474,8 +474,7 @@ const initializeApis = ({
 
   const notifications = new NotificationsApi(
     generatedApiClientConfig,
-    services.entityManager,
-    services.auth
+    services.entityManager
   )
 
   const generatedApiClientConfigFull = new ConfigurationFull({
