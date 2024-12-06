@@ -160,6 +160,7 @@ export const getAssociatedTokenAccountOwner = async (
 export const getUSDCUserBank = async (ethAddress?: string) => {
   const libs = await getLibs()
   const usdcUserBank = await libs.solanaWeb3Manager!.deriveUserBank({
+    ethAddress: ethAddress ?? undefined,
     mint: 'usdc'
   })
   return usdcUserBank

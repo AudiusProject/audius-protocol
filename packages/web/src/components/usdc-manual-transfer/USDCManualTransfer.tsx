@@ -4,7 +4,8 @@ import { useUSDCBalance, useCreateUserbankIfNeeded } from '@audius/common/hooks'
 import { Name } from '@audius/common/models'
 import {
   purchaseContentSelectors,
-  isContentPurchaseInProgress
+  isContentPurchaseInProgress,
+  accountSelectors
 } from '@audius/common/store'
 import { USDC } from '@audius/fixed-decimal'
 import {
@@ -12,8 +13,10 @@ import {
   Flex,
   IconLogoCircleUSDC,
   IconError,
-  Text
+  Text,
+  LoadingSpinner
 } from '@audius/harmony'
+import { getUserAccount } from '@audius/sdk-legacy/dist/services/discoveryProvider/requests'
 import BN from 'bn.js'
 import cn from 'classnames'
 import QRCode from 'react-qr-code'
@@ -33,6 +36,7 @@ import styles from './USDCManualTransfer.module.css'
 
 const { getPurchaseContentFlowStage, getPurchaseContentError } =
   purchaseContentSelectors
+const { getWalletAddresses } = accountSelectors
 
 const USDCLearnMore =
   'https://support.audius.co/help/Understanding-USDC-on-Audius'
@@ -59,6 +63,7 @@ export const USDCManualTransfer = ({
 }) => {
   const stage = useSelector(getPurchaseContentFlowStage)
   const error = useSelector(getPurchaseContentError)
+  const { currentUser: wallet } = useSelector(getWalletAddresses)
   const isUnlocking = !error && isContentPurchaseInProgress(stage)
   const { data: balanceBN } = useUSDCBalance({ isPolling: true })
   const balance = USDC(balanceBN ?? new BN(0)).value
@@ -74,9 +79,11 @@ export const USDCManualTransfer = ({
   const isMobile = useIsMobile()
 
   const { value: USDCUserBank } = useAsync(async () => {
-    const USDCUserBankPubKey = await getUSDCUserBank()
-    return USDCUserBankPubKey?.toString()
-  })
+    if (wallet) {
+      const USDCUserBankPubKey = await getUSDCUserBank(wallet)
+      return USDCUserBankPubKey?.toString()
+    }
+  }, [wallet])
 
   const handleCopy = useCallback(() => {
     copyToClipboard(USDCUserBank ?? '')
@@ -89,7 +96,11 @@ export const USDCManualTransfer = ({
     )
   }, [USDCUserBank, toast])
 
-  return (
+  return wallet === null ? (
+    <Flex justifyContent='center' alignItems='center' p='xl' w='100%'>
+      <LoadingSpinner css={{ height: 32 }} />
+    </Flex>
+  ) : (
     <Flex direction='column' gap='xl' p='xl'>
       <Flex gap='l' alignItems='center' direction={isMobile ? 'column' : 'row'}>
         {isMobile ? <Text>{messages.explainer}</Text> : null}

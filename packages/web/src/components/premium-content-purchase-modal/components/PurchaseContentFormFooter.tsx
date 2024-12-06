@@ -216,7 +216,6 @@ export const PurchaseContentFormFooter = ({
       </Flex>
     )
   }
-  console.log('asdf isUnlocking', isUnlocking, error)
   return (
     <>
       <Button

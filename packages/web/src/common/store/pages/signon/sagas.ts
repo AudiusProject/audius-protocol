@@ -576,9 +576,13 @@ function* createGuestAccount(
   action: ReturnType<typeof signOnActions.createGuestAccount>
 ) {
   const { guestEmail } = action
-
+  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
   const getFeatureEnabled = yield* getContext('getFeatureEnabled')
   const sdk = yield* getSDK()
+  const audiusLibs = yield* call([
+    audiusBackendInstance,
+    audiusBackendInstance.getAudiusLibs
+  ])
 
   const authService = yield* getContext('authService')
 
@@ -604,7 +608,7 @@ function* createGuestAccount(
 
     const wallet = (yield* call([authService, authService.getWalletAddresses]))
       .web3WalletAddress
-
+    audiusLibs.web3Manager.setOwnerWallet(wallet)
     if (!currentUser && guestEmail) {
       const { blockNumber, metadata } = yield* call([
         sdk.users,
@@ -621,6 +625,16 @@ function* createGuestAccount(
       const userBank = yield* call(getOrCreateUSDCUserBank)
       if (!userBank) {
         throw new Error('Failed to create user bank')
+      }
+      const { web3Error, libsError } = yield* call(
+        audiusBackendInstance.setup,
+        {
+          wallet,
+          userId
+        }
+      )
+      if (web3Error || libsError) {
+        throw new Error('Failed to setup backend')
       }
     }
   }
@@ -759,6 +773,17 @@ function* signUp() {
                 tikTokId
               })
             }
+          }
+
+          const { web3Error, libsError } = yield* call(
+            audiusBackendInstance.setup,
+            {
+              wallet,
+              userId
+            }
+          )
+          if (web3Error || libsError) {
+            throw new Error('Failed to setup backend')
           }
 
           yield* put(

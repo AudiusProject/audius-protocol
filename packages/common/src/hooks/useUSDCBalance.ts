@@ -34,7 +34,6 @@ export const useUSDCBalance = ({
 } = {}) => {
   const { audiusBackend } = useAppContext()
   const { data: user } = useGetCurrentUser({})
-  console.log('asdf user: ', user)
   const ethAddress = user?.wallet ?? null
   // need this ethAddress
   const dispatch = useDispatch()
