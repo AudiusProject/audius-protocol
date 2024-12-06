@@ -7,11 +7,14 @@ import { TouchableHighlight, View } from 'react-native'
 import type { SetOptional } from 'type-fest'
 
 import { Text } from 'app/components/core'
+import { useDrawer } from 'app/hooks/useDrawer'
+import type { Drawer } from 'app/store/drawers/slice'
 import { makeStyles } from 'app/styles'
 import { useThemeColors } from 'app/utils/theme'
 
 import type { AppDrawerProps } from '../drawer/AppDrawer'
 import { AppDrawer, useDrawerState } from '../drawer/AppDrawer'
+import { NativeDrawer, type NativeDrawerProps } from '../drawer/NativeDrawer'
 
 export type ActionDrawerRow = {
   text: string
@@ -28,9 +31,15 @@ export type ActionDrawerContentProps = {
   children?: ReactNode | ReactNode[]
 } & Pick<AppDrawerProps, 'onClose'>
 
-type ActionDrawerProps = ActionDrawerContentProps & {
-  modalName: Modals
-} & SetOptional<AppDrawerProps, 'children'>
+type ActionDrawerProps = ActionDrawerContentProps &
+  (
+    | ({
+        modalName: Modals
+      } & SetOptional<AppDrawerProps, 'children'>)
+    | ({
+        drawerName: Drawer
+      } & SetOptional<NativeDrawerProps, 'children'>)
+  )
 
 const useStyles = makeStyles(({ palette, typography, spacing }) => ({
   row: {
@@ -114,17 +123,24 @@ export const ActionDrawerContent = (props: ActionDrawerContentProps) => {
 // `ActionDrawer` is a drawer that presents a list of clickable rows with text
 const ActionDrawer = (props: ActionDrawerProps) => {
   const {
-    modalName,
     rows,
     styles: stylesProp,
     disableAutoClose,
     children,
     ...other
   } = props
-  const { onClose } = useDrawerState(modalName)
+  const { onClose } =
+    'modalName' in props
+      ? // eslint-disable-next-line react-hooks/rules-of-hooks
+        useDrawerState(props.modalName)
+      : // eslint-disable-next-line react-hooks/rules-of-hooks
+        useDrawer(props.drawerName)
+
+  const Drawer = 'modalName' in props ? AppDrawer : NativeDrawer
 
   return (
-    <AppDrawer modalName={modalName} {...other}>
+    // @ts-expect-error
+    <Drawer {...other}>
       <ActionDrawerContent
         onClose={onClose}
         rows={rows}
@@ -133,7 +149,7 @@ const ActionDrawer = (props: ActionDrawerProps) => {
       >
         {children}
       </ActionDrawerContent>
-    </AppDrawer>
+    </Drawer>
   )
 }
 
