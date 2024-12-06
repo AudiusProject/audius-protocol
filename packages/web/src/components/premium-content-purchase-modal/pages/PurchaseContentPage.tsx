@@ -101,17 +101,6 @@ export const PurchaseContentPage = (props: PurchaseContentPageProps) => {
     }
   }, [handleChangeVendor, showCoinflow, purchaseVendor])
 
-  if (isPurchased) {
-    return (
-      <Flex alignItems='center' justifyContent='center' gap='m' p='m'>
-        <IconValidationCheck size='m' />
-        <Text variant='heading' size='s'>
-          {messages.purchaseSuccessful}
-        </Text>
-      </Flex>
-    )
-  }
-
   const isAlbumPurchase = isPurchaseableAlbum(metadata)
   const stemsPurchaseCount =
     'is_download_gated' in metadata && metadata.is_download_gated
@@ -174,7 +163,7 @@ export const PurchaseContentPage = (props: PurchaseContentPageProps) => {
             showVendorChoice={false}
           />
         )}
-        {isUnlocking ? null : <PayToUnlockInfo />}
+        {isUnlocking || isPurchased ? null : <PayToUnlockInfo />}
       </Flex>
     </Flex>
   )

@@ -626,8 +626,6 @@ function* createGuestAccount(
     if (!currentUser && guestEmail) {
       const { metadata } = yield* call([sdk.users, sdk.users.createGuest])
       const userId = metadata.userId
-      yield* put(signOnActions.signUpSucceededWithId(userId))
-
       yield* call(fetchAccountAsync, { isSignUp: true })
       const purchaserUserId = yield* select(getUserId)
 
