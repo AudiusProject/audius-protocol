@@ -14,7 +14,10 @@ source_env_file() {
             [[ -z "$key" ]] && continue
             # only set variables that are not already defined (prioritize docker-passed env)
             if [ -z "${!key}" ]; then
-                export "$key"="$value"
+                # strip quotations
+                val="${value%\"}"
+                val="${val#\"}"
+                export "$key"="$val"
             fi
         done < "$file"
     else
@@ -29,12 +32,12 @@ source_env_file "$OVERRIDE_ENV_FILE"
 POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-postgres}
 POSTGRES_DB=${POSTGRES_DB:-audiusd}
 POSTGRES_DATA_DIR=${POSTGRES_DATA_DIR:-/var/lib/postgresql/data}
-export dbUrl=${dbUrl:-postgresql://postgres:postgres@localhost:5432/audius_creator_node?sslmode=disable}
+export dbUrl=${dbUrl:-postgresql://postgres:postgres@localhost:5432/audiusd?sslmode=disable}
 export uptimeDataDir=${uptimeDataDir:-/data/bolt}
 export audius_core_root_dir=${audius_core_root_dir:-/data/audiusd}
 export creatorNodeEndpoint=${creatorNodeEndpoint:-http://localhost}
 
-if [ ! -d "$POSTGRES_DATA_DIR" ]; then
+if [ ! -d "$POSTGRES_DATA_DIR" ] || [ -z "$(ls -A "$POSTGRES_DATA_DIR" 2>/dev/null)" ]; then
     echo "Initializing PostgreSQL data directory at $POSTGRES_DATA_DIR..."
     su - postgres -c "/usr/lib/postgresql/*/bin/initdb -D $POSTGRES_DATA_DIR"
 
