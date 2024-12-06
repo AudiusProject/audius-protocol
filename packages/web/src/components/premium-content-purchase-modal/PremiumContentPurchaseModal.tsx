@@ -153,11 +153,13 @@ const PremiumContentPurchaseForm = (props: PremiumContentPurchaseFormProps) => {
         className={styles.content}
         currentPage={currentPageIndex}
       >
-        <GuestCheckoutPage
-          metadata={metadata}
-          price={price}
-          onClickSignIn={onClose}
-        />
+        {!isSignedIn ? (
+          <GuestCheckoutPage
+            metadata={metadata}
+            price={price}
+            onClickSignIn={onClose}
+          />
+        ) : null}
         <PurchaseContentPage
           stage={stage}
           isUnlocking={isUnlocking}

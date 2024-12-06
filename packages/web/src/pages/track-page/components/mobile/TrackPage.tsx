@@ -183,7 +183,6 @@ const TrackPage = ({
           title={defaults.title}
           trackId={defaults.trackId}
           userId={heroTrack?.owner_id ?? 0}
-          coverArtSizes={defaults.coverArtSizes}
           tags={defaults.tags}
           description={defaults.description}
           listenCount={defaults.playCount}

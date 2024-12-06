@@ -1,5 +1,4 @@
-import type { User } from '@audius/common/models'
-import { SquareSizes, WidthSizes } from '@audius/common/models'
+import { SquareSizes, WidthSizes, type User } from '@audius/common/models'
 import {
   accountActions,
   accountSagas,
@@ -13,8 +12,6 @@ import FastImage from 'react-native-fast-image'
 import { takeEvery, call } from 'typed-redux-saga'
 
 import { IS_MOBILE_USER } from 'app/constants/storage-keys'
-import { getImageSourceOptimistic } from 'app/hooks/useContentNodeImage'
-import { getStorageNodeSelector } from 'app/services/sdk/storageNodeSelector'
 const { signedIn } = accountActions
 
 /**
@@ -22,27 +19,12 @@ const { signedIn } = accountActions
  */
 function* cacheUserImages(user: User) {
   try {
-    const { profile_picture_sizes, cover_photo_sizes } = user
+    const { profile_picture, cover_photo } = user
 
-    const storageNodeSelector = yield* call(getStorageNodeSelector)
-
-    const profileImageUri = profile_picture_sizes
-      ? getImageSourceOptimistic({
-          cid: profile_picture_sizes,
-          endpoints: storageNodeSelector.getNodes(profile_picture_sizes),
-          size: SquareSizes.SIZE_150_BY_150
-        })?.uri
-      : null
-
-    const coverPhotoUri = cover_photo_sizes
-      ? getImageSourceOptimistic({
-          cid: cover_photo_sizes,
-          endpoints: storageNodeSelector.getNodes(cover_photo_sizes),
-          size: WidthSizes.SIZE_640
-        }).uri
-      : null
-
-    const sourcesToPreload = [profileImageUri, coverPhotoUri]
+    const sourcesToPreload = [
+      profile_picture[SquareSizes.SIZE_150_BY_150],
+      cover_photo[WidthSizes.SIZE_640]
+    ]
       .filter(removeNullable)
       .map((uri) => ({ uri }))
 

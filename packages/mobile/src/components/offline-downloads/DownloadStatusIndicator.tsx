@@ -1,9 +1,9 @@
 import { reachabilitySelectors } from '@audius/common/store'
 import type { Nullable } from '@audius/common/utils'
+import LottieView from 'lottie-react-native'
 import type { StyleProp, ViewStyle } from 'react-native'
 import { View } from 'react-native'
 import { useSelector } from 'react-redux'
-import Rive from 'rive-react-native'
 
 import type { IconSize } from '@audius/harmony-native'
 import {
@@ -14,7 +14,9 @@ import {
   useTheme
 } from '@audius/harmony-native'
 import { OfflineDownloadStatus } from 'app/store/offline-downloads/slice'
-import { useThemeVariant } from 'app/utils/theme'
+
+import iconDownloading from './iconDownloading.lottie'
+
 const { getIsReachable } = reachabilitySelectors
 
 export type DownloadStatusIndicatorProps = {
@@ -27,9 +29,8 @@ export const DownloadStatusIndicator = (
   props: DownloadStatusIndicatorProps
 ) => {
   const { status, size = 'l', style } = props
-  const themeVariant = useThemeVariant()
   const isReachable = useSelector(getIsReachable)
-  const { iconSizes } = useTheme()
+  const { color, iconSizes } = useTheme()
 
   const renderIndicator = () => {
     // If we are offline, display as download succeeded
@@ -42,13 +43,20 @@ export const DownloadStatusIndicator = (
         return <IconCloudDownloadQueued color='subdued' size={size} />
       case OfflineDownloadStatus.LOADING:
         return (
-          <View>
-            <Rive
-              style={{ height: iconSizes[size], width: iconSizes[size] }}
-              resourceName={`downloading_${themeVariant}`}
-              autoplay
-            />
-          </View>
+          <LottieView
+            style={{ height: iconSizes[size], width: iconSizes[size] }}
+            source={iconDownloading}
+            colorFilters={[
+              { keypath: 'Arrow.Fill 1', color: color.secondary.secondary },
+              {
+                keypath: 'Stroke 2.Stroke 1',
+                color: color.secondary.secondary
+              },
+              { keypath: 'Stroke.Stroke 1', color: color.neutral.neutral }
+            ]}
+            autoPlay
+            loop
+          />
         )
       case OfflineDownloadStatus.SUCCESS:
         return <IconCloudDownload color='accent' size={size} />

@@ -11,7 +11,7 @@ import { useSelector } from 'react-redux'
 
 import CoSign, { Size } from 'app/components/co-sign'
 import { ProfilePicture } from 'app/components/core'
-import { TrackImageV2 } from 'app/components/image/TrackImageV2'
+import { TrackImage } from 'app/components/image/TrackImage'
 import Text from 'app/components/text'
 import UserBadges from 'app/components/user-badges'
 import { useNavigation } from 'app/hooks/useNavigation'
@@ -110,7 +110,7 @@ const TrackScreenRemixComponent = ({
         position: 'relative'
       }}
     >
-      <TrackImageV2
+      <TrackImage
         trackId={track.track_id}
         style={css({
           zIndex: 0,

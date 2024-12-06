@@ -1,7 +1,6 @@
 import { audiusBackend } from '@audius/common/services'
 import * as nativeLibs from '@audius/sdk-legacy/dist/native-libs'
 import AsyncStorage from '@react-native-async-storage/async-storage'
-import { Image } from 'react-native'
 
 import { env } from 'app/env'
 import { track } from 'app/services/analytics'
@@ -99,6 +98,5 @@ export const audiusBackendInstance = audiusBackend({
   },
   getLibs: async () => nativeLibs,
   waitForLibsInit,
-  withEagerOption,
-  imagePreloader: (url: string) => Image.prefetch(url)
+  withEagerOption
 })

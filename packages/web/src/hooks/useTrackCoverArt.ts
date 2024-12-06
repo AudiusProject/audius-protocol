@@ -1,7 +1,7 @@
 import { useEffect } from 'react'
 
 import { imageBlank as imageEmpty } from '@audius/common/assets'
-import { useImageSize2 } from '@audius/common/hooks'
+import { useImageSize } from '@audius/common/hooks'
 import { SquareSizes, ID } from '@audius/common/models'
 import { getDominantColorsByTrack } from '@audius/common/src/store/average-color/selectors'
 import { setDominantColors } from '@audius/common/src/store/average-color/slice'
@@ -27,7 +27,7 @@ export const useTrackCoverArt = ({
   const artwork = useSelector(
     (state) => getTrack(state, { id: trackId })?.artwork
   )
-  const image = useImageSize2({
+  const image = useImageSize({
     artwork,
     targetSize: size,
     defaultImage: defaultImage ?? imageEmpty,

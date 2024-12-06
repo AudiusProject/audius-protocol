@@ -1,5 +1,6 @@
 .openapi-generator-ignore
 apis/ChallengesApi.ts
+apis/CidDataApi.ts
 apis/NotificationsApi.ts
 apis/PlaylistsApi.ts
 apis/ReactionsApi.ts
@@ -28,6 +29,8 @@ models/AttestationReponse.ts
 models/ChallengeRewardNotification.ts
 models/ChallengeRewardNotificationAction.ts
 models/ChallengeRewardNotificationActionData.ts
+models/CidData.ts
+models/CidDataResponse.ts
 models/ClaimableRewardNotification.ts
 models/ClaimableRewardNotificationAction.ts
 models/ClaimableRewardNotificationActionData.ts
@@ -57,6 +60,7 @@ models/CreateNotificationAction.ts
 models/CreateNotificationActionData.ts
 models/CreatePlaylistNotificationActionData.ts
 models/CreateTrackNotificationActionData.ts
+models/DataAndType.ts
 models/Favorite.ts
 models/FieldVisibility.ts
 models/FollowGate.ts

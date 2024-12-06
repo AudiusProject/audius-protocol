@@ -184,19 +184,6 @@ export class IdentityService {
     })
   }
 
-  async getUserEmail() {
-    const headers = await this._signData()
-    if (headers[AuthHeaders.MESSAGE] && headers[AuthHeaders.SIGNATURE]) {
-      return await this._makeRequest<{ email: string | undefined | null }>({
-        url: '/user/email',
-        method: 'get',
-        headers
-      })
-    } else {
-      throw new Error('Cannot get user email - user is not authenticated')
-    }
-  }
-
   /**
    * Check if the lookupKey exists.
    * WARNING: might not be the auth credentials for the current user!
@@ -213,23 +200,6 @@ export class IdentityService {
       })
     } else {
       throw new Error('Cannot check credentials - user is not authenticated')
-    }
-  }
-
-  /**
-   * Change the user's email used for notifications and display.
-   */
-  async changeEmail({ email, otp }: { email: string; otp?: string }) {
-    const headers = await this._signData()
-    if (headers[AuthHeaders.MESSAGE] && headers[AuthHeaders.SIGNATURE]) {
-      return await this._makeRequest({
-        url: '/user/email',
-        method: 'PUT',
-        headers,
-        data: { email, otp }
-      })
-    } else {
-      throw new Error('Cannot change user email - user is not authenticated')
     }
   }
 

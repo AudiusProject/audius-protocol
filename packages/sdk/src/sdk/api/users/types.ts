@@ -1,5 +1,6 @@
 import { z } from 'zod'
 
+import { ProgressHandler } from '../../services/Storage/types'
 import { ImageFile } from '../../types/File'
 import { HashId } from '../../types/HashId'
 import { getReaction, reactionsMap } from '../../utils/reactionsMap'

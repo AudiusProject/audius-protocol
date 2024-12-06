@@ -45,18 +45,18 @@ export const UserCard = (props: UserCardProps) => {
     [onPress, noNavigation, navigation, userId]
   )
 
-  const { source, handleError } = useProfilePicture(
+  const { source } = useProfilePicture({
     userId,
-    SquareSizes.SIZE_480_BY_480
-  )
+    size: SquareSizes.SIZE_480_BY_480
+  })
 
-  if (user === null) return null
+  if (user === null || source === undefined) return null
 
   const { handle, follower_count } = user
 
   return (
     <Paper border='default' onPress={handlePress} {...other}>
-      <Avatar source={source} onError={handleError} aria-hidden p='m' pb='s' />
+      <Avatar source={source} aria-hidden p='m' pb='s' />
       <Flex ph='l' pb='s' gap='xs' pointerEvents='none'>
         <UserLink
           userId={userId}

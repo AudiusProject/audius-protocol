@@ -1,8 +1,4 @@
-import {
-  transformAndCleanList,
-  userCollectionMetadataFromSDK,
-  userMetadataListFromSDK
-} from '@audius/common/adapters'
+import { userMetadataListFromSDK } from '@audius/common/adapters'
 import { Kind, OptionalId, User, UserMetadata, Id } from '@audius/common/models'
 import {
   Metadata,
@@ -17,13 +13,11 @@ import {
 } from '@audius/common/store'
 import { waitForAccount, waitForValue } from '@audius/common/utils'
 import { mergeWith } from 'lodash'
-import { all, call, put, select, takeEvery } from 'typed-redux-saga'
+import { call, put, select, takeEvery } from 'typed-redux-saga'
 
-import { retrieveCollections } from 'common/store/cache/collections/utils'
 import { retrieve } from 'common/store/cache/sagas'
 import { waitForRead } from 'utils/sagaHelpers'
 
-import { pruneBlobValues } from './utils'
 const { mergeCustomizer } = cacheReducer
 const { getUser, getUsers, getUserTimestamps } = cacheUsersSelectors
 const { getUserId } = accountSelectors
@@ -92,7 +86,6 @@ export function* fetchUserByHandle(
   deleteExistingEntry = false,
   retry = true
 ) {
-  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
   // We only need to handle 1 handle
   const retrieveFromSource = function* (handles: (string | number)[]) {
     return yield* retrieveUserByHandle(handles[0].toString(), retry)
@@ -110,9 +103,7 @@ export function* fetchUserByHandle(
     },
     retrieveFromSource,
     onBeforeAddToCache: function* (users: Metadata[]) {
-      return users.map((user) =>
-        reformatUser(user as User, audiusBackendInstance)
-      )
+      return users.map((user) => reformatUser(user as User))
     },
     kind: Kind.USERS,
     idField: 'user_id',
@@ -122,65 +113,6 @@ export function* fetchUserByHandle(
     deleteExistingEntry
   })
   return users[handle]
-}
-
-/**
- * @deprecated legacy method for web
- * @param {number} userId target user id
- */
-export function* fetchUserCollections(userId: number) {
-  const sdk = yield* getSDK()
-  function* getPlaylists() {
-    const { data } = yield* call(
-      [sdk.full.users, sdk.full.users.getPlaylistsByUser],
-      {
-        id: Id.parse(userId),
-        userId: Id.parse(userId)
-      }
-    )
-    return transformAndCleanList(data, userCollectionMetadataFromSDK)
-  }
-  function* getAlbums() {
-    const { data } = yield* call(
-      [sdk.full.users, sdk.full.users.getAlbumsByUser],
-      {
-        id: Id.parse(userId),
-        userId: Id.parse(userId)
-      }
-    )
-    return transformAndCleanList(data, userCollectionMetadataFromSDK)
-  }
-  const [playlists, albums] = yield* all([call(getPlaylists), call(getAlbums)])
-
-  const playlistIds = playlists.map((p) => p.playlist_id)
-  const albumIds = albums.map((a) => a.playlist_id)
-  const ids = [...playlistIds, ...albumIds]
-
-  if (!ids.length) {
-    yield* put(
-      cacheActions.update(Kind.USERS, [
-        {
-          id: userId,
-          metadata: { _collectionIds: [] }
-        }
-      ])
-    )
-  }
-  const { collections } = yield* call(retrieveCollections, playlistIds, {
-    userId
-  })
-  const cachedCollectionIds = Object.values(collections).map(
-    (c) => c.playlist_id
-  )
-
-  yield* put(
-    cacheActions.update(Kind.USERS, [
-      {
-        id: userId,
-        metadata: { _collectionIds: cachedCollectionIds }
-      }
-    ])
-  )
 }
 
 // For updates and adds, sync the account user to local storage.
@@ -206,11 +138,9 @@ function* watchSyncLocalStorageUser() {
       const existing = yield* call([localStorage, 'getAudiusAccountUser'])
       // Merge with the new metadata
       const merged = mergeWith({}, existing, addedUser, mergeCustomizer)
-      // Remove blob urls if any - blob urls only last for the session so we don't want to store those
-      const cleaned = pruneBlobValues(merged)
 
       // Set user back to local storage
-      yield* call([localStorage, 'setAudiusAccountUser'], cleaned)
+      yield* call([localStorage, 'setAudiusAccountUser'], merged)
     }
   }
   yield* takeEvery(cacheActions.ADD_SUCCEEDED, syncLocalStorageUser)
@@ -237,106 +167,6 @@ export function* adjustUserField({
         }
       }
     ])
-  )
-}
-
-function* watchFetchProfilePicture() {
-  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
-  const inProgress = new Set()
-  yield* takeEvery(
-    userActions.FETCH_PROFILE_PICTURE,
-    function* ({
-      userId,
-      size
-    }: ReturnType<typeof userActions.fetchProfilePicture>) {
-      // Unique on id and size
-      const key = `${userId}-${size}`
-      if (inProgress.has(key)) return
-      inProgress.add(key)
-
-      try {
-        const user: User | null = yield* select(getUser, { id: userId })
-        if (!user || (!user.profile_picture_sizes && !user.profile_picture))
-          return
-        if (user.profile_picture_sizes) {
-          const url = yield* call(
-            audiusBackendInstance.getImageUrl,
-            user.profile_picture_sizes,
-            size,
-            user.profile_picture_cids
-          )
-
-          if (url) {
-            yield* put(
-              cacheActions.update(Kind.USERS, [
-                {
-                  id: userId,
-                  metadata: {
-                    _profile_picture_sizes: {
-                      ...user._profile_picture_sizes,
-                      [size]: url
-                    }
-                  }
-                }
-              ])
-            )
-          }
-        }
-      } catch (e) {
-        console.error(`Unable to fetch profile picture for user ${userId}`)
-      } finally {
-        inProgress.delete(key)
-      }
-    }
-  )
-}
-
-function* watchFetchCoverPhoto() {
-  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
-  const inProgress = new Set()
-  yield* takeEvery(
-    userActions.FETCH_COVER_PHOTO,
-    function* ({
-      userId,
-      size
-    }: ReturnType<typeof userActions.fetchCoverPhoto>) {
-      // Unique on id and size
-      const key = `${userId}-${size}`
-      if (inProgress.has(key)) return
-      inProgress.add(key)
-      try {
-        let user: User | null = yield* select(getUser, { id: userId })
-        if (!user || (!user.cover_photo_sizes && !user.cover_photo)) {
-          inProgress.delete(key)
-          return
-        }
-
-        if (user.cover_photo_sizes) {
-          const url = yield* call(
-            audiusBackendInstance.getImageUrl,
-            user.cover_photo_sizes,
-            size,
-            user.cover_photo_cids
-          )
-
-          if (url) {
-            user = yield* select(getUser, { id: userId })
-            if (!user) return
-            user._cover_photo_sizes = {
-              ...user._cover_photo_sizes,
-              [size]: url
-            }
-            yield* put(
-              cacheActions.update(Kind.USERS, [{ id: userId, metadata: user }])
-            )
-          }
-        }
-      } catch (e) {
-        console.error(`Unable to fetch cover photo for user ${userId}`)
-      } finally {
-        inProgress.delete(key)
-      }
-    }
   )
 }
 
@@ -382,13 +212,7 @@ function* watchFetchUsers() {
 }
 
 const sagas = () => {
-  return [
-    watchFetchProfilePicture,
-    watchFetchCoverPhoto,
-    watchSyncLocalStorageUser,
-    watchFetchUserSocials,
-    watchFetchUsers
-  ]
+  return [watchSyncLocalStorageUser, watchFetchUserSocials, watchFetchUsers]
 }
 
 export default sagas

@@ -73,7 +73,6 @@ export const ManagedUserListItem = ({
   )
 
   const composeChat = useComposeChat({
-    // @ts-expect-error - This wants a User, but works with UserMetadata
     user
   })
 

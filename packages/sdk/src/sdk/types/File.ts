@@ -14,17 +14,35 @@ export type NodeFile = z.infer<typeof NodeFileSchema>
 const BrowserFileSchema = z.custom<File>((data: unknown) => data)
 export type BrowserFile = z.infer<typeof BrowserFileSchema>
 
+const NativeFileSchema = z.object({
+  uri: z.string(),
+  name: z.string().nullable(),
+  type: z.string().nullable(),
+  copyError: z.optional(z.string()),
+  fileCopyUri: z.optional(z.string()).nullable(),
+  size: z.optional(z.number()).nullable()
+})
+export type NativeFile = z.infer<typeof NativeFileSchema>
+
 /**
  * Type representing a file in Node and browser environments
  */
 export const CrossPlatformFileSchema = z.union([
   NodeFileSchema,
-  BrowserFileSchema
+  BrowserFileSchema,
+  NativeFileSchema
 ])
 export type CrossPlatformFile = z.infer<typeof CrossPlatformFileSchema>
 
 export const isNodeFile = (file: CrossPlatformFile): file is NodeFile => {
   if (file && (file as NodeFile).buffer) {
+    return true
+  }
+  return false
+}
+
+export const isNativeFile = (file: CrossPlatformFile): file is NativeFile => {
+  if (file && (file as NativeFile).uri) {
     return true
   }
   return false
@@ -51,6 +69,10 @@ export const ALLOWED_AUDIO_MIME_TYPES = [
 ]
 
 const getFileType = async (file: CrossPlatformFile) => {
+  if (isNativeFile(file)) {
+    return { mime: file.type }
+  }
+
   let fileTypeBrowser: any
   if (typeof window !== 'undefined' && window) {
     fileTypeBrowser = await import('file-type/browser')

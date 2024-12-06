@@ -180,7 +180,7 @@ func ReadConfig(logger *common.Logger) (*Config, error) {
 			cfg.EthRPCUrl = ProdEthRpc
 		}
 
-		cfg.SlaRollupInterval = 3600 * 24
+		cfg.SlaRollupInterval = 2048
 
 	case "stage", "staging", "testnet":
 		cfg.PersistentPeers = getEnvWithDefault("persistentPeers", StagePersistentPeers)
@@ -188,7 +188,7 @@ func ReadConfig(logger *common.Logger) (*Config, error) {
 		if cfg.EthRPCUrl == "" {
 			cfg.EthRPCUrl = StageEthRpc
 		}
-		cfg.SlaRollupInterval = 3600 * 24
+		cfg.SlaRollupInterval = 2048
 
 	case "dev", "development", "devnet", "local", "sandbox":
 		cfg.PersistentPeers = getEnvWithDefault("persistentPeers", DevPersistentPeers)

@@ -100,7 +100,6 @@ export const updatePlaylistArtwork = async (
     if (tracksForImage.length === 0) {
       // @ts-expect-error
       collection.cover_art_sizes = undefined
-      collection._cover_art_sizes = {}
     } else {
       const sizes =
         tracksForImage.length === 1

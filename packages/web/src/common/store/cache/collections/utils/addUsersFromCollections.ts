@@ -2,8 +2,7 @@ import { Kind, UserCollectionMetadata } from '@audius/common/models'
 import {
   accountSelectors,
   cacheActions,
-  reformatUser,
-  getContext
+  reformatUser
 } from '@audius/common/store'
 import { makeUid } from '@audius/common/utils'
 import { uniqBy } from 'lodash'
@@ -22,12 +21,11 @@ export function* addUsersFromCollections(
   metadataArray: Array<UserCollectionMetadata>
 ) {
   yield* waitForRead()
-  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
   const currentUserId = yield* select(getUserId)
   let users = metadataArray.map((m) => ({
     id: m.user.user_id,
     uid: makeUid(Kind.USERS, m.user.user_id),
-    metadata: reformatUser(m.user, audiusBackendInstance)
+    metadata: reformatUser(m.user)
   }))
 
   // Removes duplicates and self

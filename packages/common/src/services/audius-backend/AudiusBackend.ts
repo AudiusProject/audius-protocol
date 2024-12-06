@@ -22,30 +22,18 @@ import BN from 'bn.js'
 import { Env } from '~/services/env'
 import dayjs from '~/utils/dayjs'
 
-import placeholderCoverArt from '../../assets/img/imageBlank2x.png'
-import imageCoverPhotoBlank from '../../assets/img/imageCoverPhotoBlank.jpg'
-import placeholderProfilePicture from '../../assets/img/imageProfilePicEmpty2X.png'
 import {
   BNWei,
-  CID,
   Collection,
-  CollectionMetadata,
-  CoverArtSizes,
-  CoverPhotoSizes,
-  DefaultSizes,
   ID,
   InstagramUser,
   Name,
-  ProfilePictureSizes,
-  SquareSizes,
   TikTokUser,
   Track,
-  TrackMetadata,
   TwitterUser,
   User,
   UserMetadata,
   UserCollection,
-  WidthSizes,
   ComputedUserProperties
 } from '../../models'
 import { AnalyticsEvent } from '../../models/Analytics'
@@ -195,7 +183,6 @@ type WaitForLibsInit = () => Promise<unknown>
 
 type AudiusBackendParams = {
   claimDistributionContractAddress: Maybe<string>
-  imagePreloader: (url: string) => Promise<boolean>
   env: Env
   ethOwnerWallet: Maybe<string>
   ethProviderUrls: Maybe<string[]>
@@ -251,7 +238,6 @@ type AudiusBackendParams = {
 
 export const audiusBackend = ({
   claimDistributionContractAddress,
-  imagePreloader,
   env,
   ethOwnerWallet,
   ethProviderUrls,
@@ -332,142 +318,6 @@ export const audiusBackend = ({
     didSelectDiscoveryProviderListeners.push(listener)
     if (currentDiscoveryProvider !== null) {
       listener(currentDiscoveryProvider)
-    }
-  }
-
-  async function fetchCID(cid: CID, asUrl = true) {
-    await waitForLibsInit()
-
-    // If requesting a url (we mean a blob url for the file),
-    // otherwise, default to JSON
-    const responseType = asUrl ? 'blob' : 'json'
-
-    try {
-      const res = await audiusLibs.File.fetchCIDFromDiscovery(cid, responseType)
-      if (asUrl) {
-        const url = nativeMobile
-          ? res.config.url
-          : URL.createObjectURL(res.data)
-        return url
-      }
-      return res?.data ?? null
-    } catch (e) {
-      const message = getErrorMessage(e)
-      if (message === 'Unauthorized') {
-        return message
-      }
-      console.error(e)
-      return asUrl ? '' : null
-    }
-  }
-
-  async function fetchImageCID(
-    cid: CID,
-    size?: SquareSizes | WidthSizes,
-    cidMap: Nullable<{ [key: string]: string }> = null
-  ) {
-    let cidFileName = size ? `${cid}/${size}.jpg` : `${cid}.jpg`
-    // For v2 CIDs (aka job IDs), cidMap contains cids for each
-    // image variant. Use the CID for the desired image
-    // size from this map to accurately select the preferred
-    // rendezvous node to query.
-    if (size && cidMap && cidMap[size]) {
-      cidFileName = cidMap[size]
-    }
-
-    const storageNodeSelector = await getStorageNodeSelector()
-    // Only rendezvous hash the cid for extremely old legacy
-    // images that do not have size variants
-    const cidToHash = size ? cidFileName : cid
-    const storageNodes = storageNodeSelector.getNodes(cidToHash)
-    for (const storageNode of storageNodes) {
-      const imageUrl = `${storageNode}/content/${cidFileName}`
-
-      const preloaded = await imagePreloader(imageUrl)
-      if (preloaded) {
-        return imageUrl
-      }
-    }
-    return ''
-  }
-
-  async function getImageUrl(
-    cid: Nullable<CID>,
-    size?: SquareSizes | WidthSizes,
-    cidMap: Nullable<{ [key: string]: string }> = null
-  ) {
-    if (!cid) return ''
-    try {
-      return await fetchImageCID(cid, size, cidMap)
-    } catch (e) {
-      console.error(e)
-      return ''
-    }
-  }
-
-  function getTrackImages(track: TrackMetadata): Track {
-    const coverArtSizes: CoverArtSizes = {}
-    if (!track.cover_art_sizes && !track.cover_art) {
-      coverArtSizes[DefaultSizes.OVERRIDE] = placeholderCoverArt as string
-    }
-
-    return {
-      ...track,
-      // TODO: This method should be renamed as it does more than images.
-      duration:
-        track.duration ||
-        track.track_segments.reduce(
-          (duration, segment) => duration + parseFloat(segment.duration),
-          0
-        ),
-      _cover_art_sizes: coverArtSizes
-    }
-  }
-
-  function getCollectionImages(collection: CollectionMetadata) {
-    const coverArtSizes: CoverArtSizes = {}
-
-    if (
-      collection.playlist_image_sizes_multihash &&
-      !collection.cover_art_sizes
-    ) {
-      collection.cover_art_sizes = collection.playlist_image_sizes_multihash
-    }
-    if (collection.playlist_image_multihash && !collection.cover_art) {
-      collection.cover_art = collection.playlist_image_multihash
-    }
-
-    if (!collection.cover_art_sizes && !collection.cover_art) {
-      coverArtSizes[DefaultSizes.OVERRIDE] = placeholderCoverArt as
-        | string
-        | number // ReactNative require() is a number for images!
-    }
-
-    return {
-      ...collection,
-      _cover_art_sizes: coverArtSizes
-    }
-  }
-
-  function getUserImages(user: UserMetadata) {
-    const profilePictureSizes: ProfilePictureSizes = {}
-    const coverPhotoSizes: CoverPhotoSizes = {}
-
-    // Images are fetched on demand async w/ the `useXProfilePicture`/`useXCoverPhoto` and
-    // transitioned in w/ the dynamicImageComponent
-    if (!user.profile_picture_sizes && !user.profile_picture) {
-      profilePictureSizes[DefaultSizes.OVERRIDE] =
-        placeholderProfilePicture as string
-    }
-
-    if (!user.cover_photo_sizes && !user.cover_photo) {
-      coverPhotoSizes[DefaultSizes.OVERRIDE] = imageCoverPhotoBlank as string
-    }
-
-    return {
-      ...user,
-      _profile_picture_sizes: profilePictureSizes,
-      _cover_photo_sizes: coverPhotoSizes
     }
   }
 
@@ -694,10 +544,6 @@ export const audiusBackend = ({
     }
   }
 
-  async function setCreatorNodeEndpoint(endpoint: string) {
-    return audiusLibs.creatorNode.setEndpoint(endpoint)
-  }
-
   type SearchTagsArgs = {
     query: string
     userTagCount?: number
@@ -767,13 +613,11 @@ export const audiusBackend = ({
           savedTracks.filter(notDeleted),
           tracks.filter(notDeleted),
           'track_id'
-        ).map(async (track) => getTrackImages(track))
+        )
       )
 
       const combinedUsers = await Promise.all(
-        combineLists<User>(followedUsers, users, 'user_id').map(async (user) =>
-          getUserImages(user)
-        )
+        combineLists<User>(followedUsers, users, 'user_id')
       )
 
       return {
@@ -854,48 +698,8 @@ export const audiusBackend = ({
     }
   }
 
-  async function getUserEmail(): Promise<string> {
-    await waitForLibsInit()
-    const { email } = await audiusLibs.Account.getUserEmail()
-    return email
-  }
-
   async function uploadImage(file: File) {
     return await audiusLibs.creatorNode.uploadTrackCoverArtV2(file, () => {})
-  }
-
-  /**
-   * Retrieves the user's eth associated wallets from IPFS using the user's metadata CID and creator node endpoints
-   * @param user The user metadata which contains the CID for the metadata multihash
-   * @returns Object The associated wallets mapping of address to nested signature
-   */
-  // TODO(C-2719)
-  async function fetchUserAssociatedEthWallets(user: User) {
-    const cid = user?.metadata_multihash ?? null
-    if (cid) {
-      const metadata = await fetchCID(cid, /* asUrl */ false)
-      if (metadata?.associated_wallets) {
-        return metadata.associated_wallets
-      }
-    }
-    return null
-  }
-
-  /**
-   * Retrieves the user's solana associated wallets from IPFS using the user's metadata CID and creator node endpoints
-   * @param user The user metadata which contains the CID for the metadata multihash
-   * @returns Object The associated wallets mapping of address to nested signature
-   */
-  // TODO(C-2719)
-  async function fetchUserAssociatedSolWallets(user: User) {
-    const cid = user?.metadata_multihash ?? null
-    if (cid) {
-      const metadata = await fetchCID(cid, /* asUrl */ false)
-      if (metadata?.associated_sol_wallets) {
-        return metadata.associated_sol_wallets
-      }
-    }
-    return null
   }
 
   /**
@@ -903,31 +707,47 @@ export const audiusBackend = ({
    * @param user The user metadata which contains the CID for the metadata multihash
    * @returns Object The associated wallets mapping of address to nested signature
    */
-  // TODO(C-2719)
-  async function fetchUserAssociatedWallets(user: UserMetadata) {
-    const cid = user?.metadata_multihash ?? null
-    if (cid) {
-      const metadata = await fetchCID(cid, /* asUrl */ false)
-      return {
-        associated_sol_wallets: metadata?.associated_sol_wallets ?? null,
-        associated_wallets: metadata?.associated_wallets ?? null
-      }
+  async function fetchUserAssociatedWallets({
+    user,
+    sdk
+  }: {
+    user: UserMetadata
+    sdk: AudiusSdk
+  }) {
+    if (!user?.metadata_multihash) return null
+
+    const { data } = await sdk.full.cidData.getMetadata({
+      metadataId: user?.metadata_multihash
+    })
+
+    if (!data?.data) return null
+
+    return {
+      associated_sol_wallets: data.data.associatedSolWallets ?? null,
+      associated_wallets: data.data.associatedWallets ?? null
     }
-    return null
   }
 
-  async function updateCreator(
+  async function updateCreator({
+    metadata,
+    sdk
+  }: {
     metadata: UserMetadata &
       Pick<
         ComputedUserProperties,
         'updatedProfilePicture' | 'updatedCoverPhoto'
-      >,
-    _id?: ID
-  ) {
+      >
+    sdk: AudiusSdk
+  }) {
     let newMetadata = { ...metadata }
-    const associatedWallets = await fetchUserAssociatedWallets(metadata)
+    const associatedWallets = await fetchUserAssociatedWallets({
+      user: metadata,
+      sdk
+    })
+    // @ts-ignore when writing data, this type is expected to contain a signature
     newMetadata.associated_wallets =
       newMetadata.associated_wallets || associatedWallets?.associated_wallets
+    // @ts-ignore when writing data, this type is expected to contain a signature
     newMetadata.associated_sol_wallets =
       newMetadata.associated_sol_wallets ||
       associatedWallets?.associated_sol_wallets
@@ -2003,9 +1823,8 @@ export const audiusBackend = ({
     return audiusLibs.solanaWeb3Manager.transferWAudio(address, amount)
   }
 
-  async function getSignature(data: any) {
-    await waitForLibsInit()
-    return audiusLibs.web3Manager.sign(data)
+  async function getSignature({ data, sdk }: { data: any; sdk: AudiusSdk }) {
+    return signData({ data, sdk })
   }
 
   /**
@@ -2084,10 +1903,6 @@ export const audiusBackend = ({
     didSelectDiscoveryProviderListeners,
     disableBrowserNotifications,
     emailInUse,
-    fetchCID,
-    fetchImageCID,
-    fetchUserAssociatedEthWallets,
-    fetchUserAssociatedSolWallets,
     fetchUserAssociatedWallets,
     getAddressTotalStakedBalance,
     getAddressWAudioBalance,
@@ -2098,16 +1913,11 @@ export const audiusBackend = ({
     getBalance,
     getBrowserPushNotificationSettings,
     getBrowserPushSubscription,
-    getCollectionImages,
     getEmailNotificationSettings,
-    getImageUrl,
     getPushNotificationSettings,
     getRandomFeePayer,
     getSafariBrowserPushEnabled,
     getSignature,
-    getTrackImages,
-    getUserEmail,
-    getUserImages,
     getUserListenCountsMonthly,
     getWAudioBalance,
     getWeb3,
@@ -2125,7 +1935,6 @@ export const audiusBackend = ({
     sendTokens,
     sendWAudioTokens,
     sendWelcomeEmail,
-    setCreatorNodeEndpoint,
     setup,
     setUserHandleForRelay,
     signData,

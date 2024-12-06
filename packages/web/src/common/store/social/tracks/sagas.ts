@@ -637,6 +637,7 @@ function* downloadTracks({
 
     queryParams = (yield* call(getQueryParams, {
       audiusBackendInstance,
+      sdk,
       nftAccessSignature,
       userId
     })) as unknown as QueryParams

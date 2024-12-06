@@ -18,7 +18,7 @@ import {
 import type { LoggerService } from '../../services/Logger'
 import type { SolanaClient } from '../../services/Solana/programs/SolanaClient'
 import type { StorageService } from '../../services/Storage'
-import { encodeHashId } from '../../utils/hashId'
+import { decodeHashId, encodeHashId } from '../../utils/hashId'
 import { getLocation } from '../../utils/location'
 import { parseParams } from '../../utils/parseParams'
 import { prepareSplits } from '../../utils/preparePaymentSplits'
@@ -35,7 +35,6 @@ import { BASE_PATH, RequiredError } from '../generated/default/runtime'
 import { TrackUploadHelper } from './TrackUploadHelper'
 import {
   createUpdateTrackSchema,
-  createUploadTrackSchema,
   DeleteTrackRequest,
   DeleteTrackSchema,
   RepostTrackRequest,
@@ -53,7 +52,10 @@ import {
   GetPurchaseTrackInstructionsRequest,
   GetPurchaseTrackInstructionsSchema,
   RecordTrackDownloadRequest,
-  RecordTrackDownloadSchema
+  RecordTrackDownloadSchema,
+  createUploadTrackFilesSchema,
+  UploadTrackFilesRequest,
+  createUploadTrackSchema
 } from './types'
 
 // Extend that new class
@@ -97,12 +99,9 @@ export class TracksApi extends GeneratedTracksApi {
   }
 
   /** @hidden
-   * Upload a track
+   * Upload track files, does not write to chain
    */
-  async uploadTrack(
-    params: UploadTrackRequest,
-    advancedOptions?: AdvancedOptions
-  ) {
+  async uploadTrackFiles(params: UploadTrackFilesRequest) {
     // Parse inputs
     this.logger.info('Parsing inputs')
     const {
@@ -111,7 +110,10 @@ export class TracksApi extends GeneratedTracksApi {
       coverArtFile,
       metadata: parsedMetadata,
       onProgress
-    } = await parseParams('uploadTrack', createUploadTrackSchema())(params)
+    } = await parseParams(
+      'uploadTrackFiles',
+      createUploadTrackFilesSchema()
+    )(params)
 
     // Transform metadata
     this.logger.info('Transforming metadata')
@@ -123,18 +125,20 @@ export class TracksApi extends GeneratedTracksApi {
     // Upload track audio and cover art to storage node
     this.logger.info('Uploading track audio and cover art')
     const [coverArtResponse, audioResponse] = await Promise.all([
-      retry3(
-        async () =>
-          await this.storage.uploadFile({
-            file: coverArtFile,
-            onProgress,
-            template: 'img_square',
-            auth: this.auth
-          }),
-        (e) => {
-          this.logger.info('Retrying uploadTrackCoverArt', e)
-        }
-      ),
+      coverArtFile
+        ? retry3(
+            async () =>
+              await this.storage.uploadFile({
+                file: coverArtFile,
+                onProgress,
+                template: 'img_square',
+                auth: this.auth
+              }),
+            (e) => {
+              this.logger.info('Retrying uploadTrackCoverArt', e)
+            }
+          )
+        : Promise.resolve(undefined),
       retry3(
         async () =>
           await this.storage.uploadFile({
@@ -152,31 +156,51 @@ export class TracksApi extends GeneratedTracksApi {
     ])
 
     // Update metadata to include uploaded CIDs
-    const updatedMetadata =
-      this.trackUploadHelper.populateTrackMetadataWithUploadResponse(
-        metadata,
-        audioResponse,
-        coverArtResponse
-      )
+    return this.trackUploadHelper.populateTrackMetadataWithUploadResponse(
+      metadata,
+      audioResponse,
+      coverArtResponse
+    )
+  }
 
+  /** @hidden
+   * Write track upload to chain
+   */
+  async writeTrackToChain(
+    userId: string,
+    metadata: ReturnType<
+      typeof this.trackUploadHelper.populateTrackMetadataWithUploadResponse
+    >,
+    advancedOptions?: AdvancedOptions
+  ) {
     // Write metadata to chain
     this.logger.info('Writing metadata to chain')
-    const trackId = await this.trackUploadHelper.generateId('track')
+
+    const entityId =
+      metadata.trackId || (await this.trackUploadHelper.generateId('track'))
+
+    const decodedUserId = decodeHashId(userId) ?? undefined
+
+    if (!decodedUserId) {
+      throw new Error('writeTrackToChain: userId could not be decoded')
+    }
+
     const response = await this.entityManager.manageEntity({
-      userId,
+      userId: decodedUserId,
       entityType: EntityType.TRACK,
-      entityId: trackId,
+      entityId,
       action: Action.CREATE,
       metadata: JSON.stringify({
         cid: '',
         data: {
-          ...snakecaseKeys(updatedMetadata),
+          ...snakecaseKeys(metadata),
           download_conditions:
-            updatedMetadata.downloadConditions &&
-            snakecaseKeys(updatedMetadata.downloadConditions),
+            metadata.downloadConditions &&
+            snakecaseKeys(metadata.downloadConditions),
           stream_conditions:
-            updatedMetadata.streamConditions &&
-            snakecaseKeys(updatedMetadata.streamConditions)
+            metadata.streamConditions &&
+            snakecaseKeys(metadata.streamConditions),
+          stem_of: metadata.stemOf && snakecaseKeys(metadata.stemOf)
         }
       }),
       auth: this.auth,
@@ -186,8 +210,27 @@ export class TracksApi extends GeneratedTracksApi {
     this.logger.info('Successfully uploaded track')
     return {
       ...response,
-      trackId: encodeHashId(trackId)
+      trackId: encodeHashId(entityId)!
     }
+  }
+
+  /** @hidden
+   * Upload a track
+   */
+  async uploadTrack(
+    params: UploadTrackRequest,
+    advancedOptions?: AdvancedOptions
+  ) {
+    // Validate inputs
+    await parseParams('uploadTrack', createUploadTrackSchema())(params)
+
+    // Upload track files
+    const metadata = await this.uploadTrackFiles(
+      params as UploadTrackFilesRequest
+    )
+
+    // Write track metadata to chain
+    return this.writeTrackToChain(params.userId, metadata, advancedOptions)
   }
 
   /** @hidden
@@ -279,7 +322,8 @@ export class TracksApi extends GeneratedTracksApi {
             snakecaseKeys(updatedMetadata.downloadConditions),
           stream_conditions:
             updatedMetadata.streamConditions &&
-            snakecaseKeys(updatedMetadata.streamConditions)
+            snakecaseKeys(updatedMetadata.streamConditions),
+          stem_of: metadata.stemOf && snakecaseKeys(metadata.stemOf)
         }
       }),
       auth: this.auth,
@@ -660,5 +704,14 @@ export class TracksApi extends GeneratedTracksApi {
       )
     }
     return this.solanaClient.sendTransaction(transaction)
+  }
+
+  /**
+   * Generates a new track ID
+   *
+   * @hidden
+   */
+  async generateTrackId() {
+    return this.trackUploadHelper.generateId('track')
   }
 }

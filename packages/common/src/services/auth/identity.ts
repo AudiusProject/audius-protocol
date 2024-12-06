@@ -1,7 +1,8 @@
-import { SetAuthFn } from '@audius/hedgehog'
+import { EthWallet, SetAuthFn } from '@audius/hedgehog'
 import axios, { AxiosError, AxiosRequestConfig, AxiosResponse } from 'axios'
 import sigUtil from 'eth-sig-util'
 
+import { Nullable } from '~/utils/typeUtils'
 import { uuid } from '~/utils/uid'
 
 import { AuthHeaders } from './types'
@@ -50,16 +51,7 @@ export class IdentityService {
     // @ts-ignore
     delete obj.wallet
 
-    const unixTs = Math.round(new Date().getTime() / 1000) // current unix timestamp (sec)
-    const data = `Click sign to authenticate with identity service: ${unixTs}`
-    const signature = sigUtil.personalSign(ownerWallet.getPrivateKey(), {
-      data
-    })
-    const headers = {
-      [AuthHeaders.Message]: data,
-      [AuthHeaders.Signature]: signature
-    }
-
+    const headers = await this._signData(ownerWallet)
     return await this._makeRequest({
       url: '/authentication',
       method: 'post',
@@ -82,6 +74,60 @@ export class IdentityService {
       url: '/recovery',
       method: 'post',
       data
+    })
+  }
+
+  /**
+   * Get the user's email used for notifications and display.
+   */
+  async getUserEmail({ wallet }: { wallet?: Nullable<EthWallet> }) {
+    if (!wallet) {
+      throw new Error('Cannot get user email - user is not authenticated')
+    }
+
+    const headers = await this._signData(wallet)
+    if (!headers[AuthHeaders.Message] || !headers[AuthHeaders.Signature]) {
+      throw new Error('Cannot get user email - user is not authenticated')
+    }
+
+    const res = await this._makeRequest<{ email: string | undefined | null }>({
+      url: '/user/email',
+      method: 'get',
+      headers
+    })
+
+    if (!res.email) {
+      throw new Error('No email found')
+    }
+    return res.email
+  }
+
+  /**
+   * Change the user's email used for notifications and display.
+   */
+  async changeEmail({
+    wallet,
+    email,
+    otp
+  }: {
+    wallet?: Nullable<EthWallet>
+    email: string
+    otp?: string
+  }) {
+    if (!wallet) {
+      throw new Error('Cannot change user email - user is not authenticated')
+    }
+
+    const headers = await this._signData(wallet)
+    if (!headers[AuthHeaders.Message] || !headers[AuthHeaders.Signature]) {
+      throw new Error('Cannot change user email - user is not authenticated')
+    }
+
+    return await this._makeRequest({
+      url: '/user/email',
+      method: 'PUT',
+      headers,
+      data: { email, otp }
     })
   }
 
@@ -117,6 +163,18 @@ export class IdentityService {
         )
       }
       throw error
+    }
+  }
+
+  async _signData(wallet: any) {
+    const unixTs = Math.round(new Date().getTime() / 1000) // current unix timestamp (sec)
+    const message = `Click sign to authenticate with identity service: ${unixTs}`
+    const signature = sigUtil.personalSign(wallet.getPrivateKey(), {
+      data: message
+    })
+    return {
+      [AuthHeaders.Message]: message,
+      [AuthHeaders.Signature]: signature
     }
   }
 }
