@@ -1,3 +1,4 @@
+import { AUDIO, FixedDecimal, wAUDIO } from '@audius/fixed-decimal'
 import {
   AudiusSdk,
   Genre,
@@ -105,9 +106,6 @@ declare global {
 
 const SEARCH_MAX_SAVED_RESULTS = 10
 const SEARCH_MAX_TOTAL_RESULTS = 50
-export const AUDIO_DECIMALS = 18
-export const WAUDIO_DECIMALS = 8
-export const USDC_DECIMALS = 6
 
 export const AuthHeaders = Object.freeze({
   Message: 'Encoded-Data-Message',
@@ -1701,16 +1699,16 @@ export const audiusBackend = ({
         })
       const connection = sdk.services.solanaClient.connection
       const {
-        value: { amount, decimals: waudioDecimals }
+        value: { amount }
       } = await connection.getTokenAccountBalance(userBank)
-      const decimals = AUDIO_DECIMALS - waudioDecimals
-      const ownerWAudioBalance = new BN(amount).mul(
-        new BN(10).pow(new BN(decimals))
+      const ownerWAudioBalance = new FixedDecimal(
+        amount,
+        AUDIO(0).decimalPlaces - wAUDIO(0).decimalPlaces
       )
       if (isNullOrUndefined(ownerWAudioBalance)) {
         throw new Error('Failed to fetch account waudio balance')
       }
-      return ownerWAudioBalance
+      return new BN(ownerWAudioBalance.value.toString())
     } catch (e) {
       console.error(e)
       reportError({ error: e as Error })
