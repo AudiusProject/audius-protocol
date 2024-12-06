@@ -1,30 +1,38 @@
 #!/bin/bash
 
-# Default to prod if NETWORK is not set
-NETWORK=${NETWORK:-prod}
+# Set default network to prod if not specified
+NETWORK="${NETWORK:-prod}"
 ENV_FILE="/env/${NETWORK}.env"
 OVERRIDE_ENV_FILE="/env/override.env"
+
+# Validate environment files exist
+if [ ! -f "$ENV_FILE" ]; then
+    echo "Error: Network environment file not found at $ENV_FILE"
+    exit 1
+fi
 
 # source environment variables without overwriting existing ones
 source_env_file() {
     local file=$1
-    if [ -f "$file" ]; then
-        echo "Sourcing environment variables from $file"
-        while IFS='=' read -r key value || [ -n "$key" ]; do
-            # skip lines that are comments or empty
-            [[ "$key" =~ ^#.*$ ]] && continue
-            [[ -z "$key" ]] && continue
-            # only set variables that are not already defined (prioritize docker-passed env)
-            if [ -z "${!key}" ]; then
-                # strip quotations
-                val="${value%\"}"
-                val="${val#\"}"
-                export "$key"="$val"
-            fi
-        done < "$file"
-    else
-        echo "Environment file $file not found!"
+    if [ ! -f "$file" ]; then
+        echo "Environment file $file not found"
+        return
     fi
+
+    echo "Loading environment from $file"
+    while IFS='=' read -r key value || [ -n "$key" ]; do
+        # skip comments and empty lines
+        [[ "$key" =~ ^#.*$ ]] && continue
+        [[ -z "$key" ]] && continue
+        
+        # only set if not already defined (prioritize docker-passed env)
+        if [ -z "${!key}" ]; then
+            # strip quotations
+            val="${value%\"}"
+            val="${val#\"}"
+            export "$key"="$val"
+        fi
+    done < "$file"
 }
 
 source_env_file "$ENV_FILE"
@@ -33,10 +41,10 @@ source_env_file "$OVERRIDE_ENV_FILE"
 # minimum values for a core node to just run
 POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-postgres}
 POSTGRES_DB=${POSTGRES_DB:-audiusd}
-POSTGRES_DATA_DIR=${POSTGRES_DATA_DIR:-/var/lib/postgresql/data}
+POSTGRES_DATA_DIR=${POSTGRES_DATA_DIR:-/data/postgres}
 export dbUrl=${dbUrl:-postgresql://postgres:postgres@localhost:5432/audiusd?sslmode=disable}
 export uptimeDataDir=${uptimeDataDir:-/data/bolt}
-export audius_core_root_dir=${audius_core_root_dir:-/data/audiusd}
+export audius_core_root_dir=${audius_core_root_dir:-/data/core}
 export creatorNodeEndpoint=${creatorNodeEndpoint:-http://localhost}
 
 setup_postgres() {

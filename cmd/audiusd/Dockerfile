@@ -115,12 +115,12 @@ EXPOSE 80
 EXPOSE 443
 EXPOSE 26656
 
-# Make sure the data directory exists and has correct permissions
-RUN mkdir -p /var/lib/postgresql/data && \
-    chown -R postgres:postgres /var/lib/postgresql/data && \
-    chmod -R 700 /var/lib/postgresql/data
+# Set up data directory structure
+RUN mkdir -p /data/postgres && \
+    chown -R postgres:postgres /data/postgres && \
+    chmod -R 700 /data/postgres
 
-VOLUME ["/var/lib/postgresql/data"]
+# Single volume mount point
 VOLUME ["/data"]
 
 ENTRYPOINT ["/bin/entrypoint.sh"]
