@@ -1,4 +1,9 @@
-FROM debian:bookworm AS cpp-builder
+FROM debian:bullseye AS cpp-builder
+
+RUN apt-get update && \
+    apt-get install -y curl gnupg2 lsb-release && \
+    curl -fsSL https://www.postgresql.org/media/keys/ACCC4CF8.asc | gpg --dearmor -o /usr/share/keyrings/postgresql-keyring.gpg && \
+    echo "deb [signed-by=/usr/share/keyrings/postgresql-keyring.gpg] http://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/postgresql.list
 
 RUN apt-get update && apt-get install -y \
     build-essential \
@@ -19,6 +24,7 @@ RUN apt-get update && apt-get install -y \
     libavformat-dev \
     libavutil-dev \
     libswresample-dev \
+    libavresample-dev \
     libsamplerate0-dev \
     libtag1-dev \
     libchromaprint-dev \
@@ -73,11 +79,11 @@ RUN g++ -o /bin/analyze-key /app/cpp/keyfinder.cpp \
 RUN g++ -o /bin/analyze-bpm /app/cpp/bpm-analyzer.cpp \
     -I/usr/include/eigen3 -I/usr/local/include/essentia -I/usr/local/include \
     -L/usr/local/lib \
-    -lessentia -ltag -lyaml -lfftw3 -lfftw3f -lavcodec -lavformat -lavutil -lavfilter -lsamplerate -lswresample -lpthread -lz -lchromaprint && \
+    -lessentia -ltag -lyaml -lfftw3 -lfftw3f -lavcodec -lavformat -lavutil -lavfilter -lsamplerate -lavresample -lpthread -lz -lchromaprint && \
     chmod +x /bin/analyze-bpm
 
 
-FROM golang:1.22-bookworm AS go-builder
+FROM golang:1.22-bullseye AS go-builder
 
 WORKDIR /app
 
