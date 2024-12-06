@@ -16,7 +16,6 @@ import {
   Text,
   LoadingSpinner
 } from '@audius/harmony'
-import { getUserAccount } from '@audius/sdk-legacy/dist/services/discoveryProvider/requests'
 import BN from 'bn.js'
 import cn from 'classnames'
 import QRCode from 'react-qr-code'
