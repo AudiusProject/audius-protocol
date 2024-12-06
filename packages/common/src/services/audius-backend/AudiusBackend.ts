@@ -1627,12 +1627,9 @@ export const audiusBackend = ({
     }
   }
 
-  async function getRandomFeePayer() {
-    await waitForLibsInit()
+  async function getRandomFeePayer({ sdk }: { sdk: AudiusSdk }) {
     try {
-      const { feePayer } =
-        await audiusLibs.solanaWeb3Manager.getRandomFeePayer()
-      audiusLibs.solanaWeb3Manager.feePayerKey = new PublicKey(feePayer)
+      const feePayer = await sdk.services.solanaRelay.getFeePayer()
       return { feePayer }
     } catch (err) {
       console.error(getErrorMessage(err))
@@ -1683,15 +1680,21 @@ export const audiusBackend = ({
    * @params {string} ethAddress - Optional ETH wallet address to derive user bank. Defaults to hedgehog wallet
    * @returns {Promise<BN>} balance or null if failed to fetch balance
    */
-  async function getWAudioBalance(ethAddress?: string): Promise<BN | null> {
-    await waitForLibsInit()
-
+  async function getWAudioBalance({
+    ethAddress,
+    sdk
+  }: {
+    ethAddress?: string
+    sdk: AudiusSdk
+  }): Promise<BN | null> {
     try {
-      const userBank = await audiusLibs.solanaWeb3Manager.deriveUserBank({
-        ethAddress
-      })
+      const userBank =
+        await sdk.services.claimableTokensClient.getOrCreateUserBank({
+          ethWallet: ethAddress ?? (await sdk.services.auth.getAddress()),
+          mint: 'wAUDIO'
+        })
       const ownerWAudioBalance =
-        await audiusLibs.solanaWeb3Manager.getWAudioBalance(userBank)
+        await sdk.services.solanaClient.getWaudioBalance(userBank)
       if (isNullOrUndefined(ownerWAudioBalance)) {
         throw new Error('Failed to fetch account waudio balance')
       }
