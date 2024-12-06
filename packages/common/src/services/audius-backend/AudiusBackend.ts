@@ -35,7 +35,8 @@ import {
   User,
   UserMetadata,
   UserCollection,
-  ComputedUserProperties
+  ComputedUserProperties,
+  Id
 } from '../../models'
 import { AnalyticsEvent } from '../../models/Analytics'
 import { ReportToSentryArgs } from '../../models/ErrorReporting'
@@ -57,7 +58,6 @@ import {
   getErrorMessage,
   uuid,
   Maybe,
-  encodeHashId,
   Nullable,
   isNullOrUndefined
 } from '../../utils'
@@ -650,7 +650,7 @@ export const audiusBackend = ({
           normal: (libs) => libs.User.getUserListenCountsMonthly,
           eager: DiscoveryAPI.getUserListenCountsMonthly
         },
-        encodeHashId(currentUserId),
+        Id.parse(currentUserId),
         startTime,
         endTime
       )
@@ -757,7 +757,7 @@ export const audiusBackend = ({
       newMetadata = schemas.newUserMetadata(newMetadata, true)
       const userId = newMetadata.user_id
       const { blockHash, blockNumber } = await sdk.users.updateProfile({
-        userId: encodeHashId(userId),
+        userId: Id.parse(userId),
         profilePictureFile: newMetadata.updatedProfilePicture?.file,
         coverArtFile: newMetadata.updatedCoverPhoto?.file,
         metadata: userMetadataToSdk(newMetadata)
