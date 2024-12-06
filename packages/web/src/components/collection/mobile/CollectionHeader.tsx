@@ -80,7 +80,6 @@ const CollectionHeader = ({
   userId,
   title,
   ddexApp,
-  coverArtSizes,
   description = '',
   isOwner = false,
   isReposted = false,

@@ -228,6 +228,7 @@ function* fetchReferrer(
 ) {
   yield* waitForRead()
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
+  const sdk = yield* getSDK()
   const { handle } = action
   if (handle) {
     try {
@@ -245,8 +246,8 @@ function* fetchReferrer(
         currentUser.user_id !== user.user_id
       ) {
         yield* call(audiusBackendInstance.updateCreator, {
-          ...currentUser,
-          events: { referrer: user.user_id }
+          metadata: { ...currentUser, events: { referrer: user.user_id } },
+          sdk
         })
       }
     } catch (e: any) {
@@ -558,8 +559,11 @@ function* sendRecoveryEmail({
     const unixTs = Math.round(new Date().getTime() / 1000) // current unix timestamp (sec)
     const data = `Click sign to authenticate with identity service: ${unixTs}`
     const signature = yield* call(
-      [sdk.services.auth, sdk.services.auth.hashAndSign],
-      data
+      [
+        sdk.services.audiusWalletClient,
+        sdk.services.audiusWalletClient.signMessage
+      ],
+      { message: data }
     )
 
     const recoveryData = {
@@ -601,7 +605,7 @@ function* signUp() {
     const sdk = yield* getSDK()
     const authService = yield* getContext('authService')
     const audiusBackendInstance = yield* getContext('audiusBackendInstance')
-    const isGuest = select(getIsGuest)
+    const isGuest = yield* select(getIsGuest)
 
     yield* call(waitForWrite)
 
@@ -716,6 +720,16 @@ function* signUp() {
                   tikTokId
                 })
               }
+            }
+            const { web3Error, libsError } = yield* call(
+              audiusBackendInstance.setup,
+              {
+                wallet,
+                userId
+              }
+            )
+            if (web3Error || libsError) {
+              throw new Error('Failed to setup backend')
             }
 
             yield* put(
@@ -872,6 +886,7 @@ function* signIn(action: ReturnType<typeof signOnActions.signIn>) {
 
   const fingerprintClient = yield* getContext('fingerprintClient')
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
+  const sdk = yield* getSDK()
   const authService = yield* getContext('authService')
   const isNativeMobile = yield* getContext('isNativeMobile')
   const isElectron = yield* getContext('isElectron')
@@ -1029,8 +1044,8 @@ function* signIn(action: ReturnType<typeof signOnActions.signIn>) {
     // Apply retroactive referral
     if (!user.events?.referrer && signOn.referrer) {
       yield* fork(audiusBackendInstance.updateCreator, {
-        ...user,
-        events: { referrer: signOn.referrer }
+        metadata: { ...user, events: { referrer: signOn.referrer } },
+        sdk
       })
     }
 

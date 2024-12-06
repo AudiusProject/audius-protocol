@@ -1,3 +1,5 @@
+import type { Hex } from 'viem'
+
 import type { DiscoveryNode, StorageNode } from '../services'
 
 export type SdkServicesConfig = {
@@ -29,9 +31,11 @@ export type SdkServicesConfig = {
   ethereum: {
     rpcEndpoint: string
     addresses: {
-      serviceTypeManagerAddress: `0x${string}`
-      serviceProviderFactoryAddress: `0x${string}`
-      ethRewardsManagerAddress: `0x${string}`
+      serviceTypeManagerAddress: Hex
+      serviceProviderFactoryAddress: Hex
+      ethRewardsManagerAddress: Hex
+      audiusTokenAddress: Hex
+      audiusWormholeAddress: Hex
     }
   }
 }

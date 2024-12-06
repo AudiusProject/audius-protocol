@@ -539,10 +539,6 @@ export const productionConfig: SdkServicesConfig = {
         "delegateOwnerWallet": "0x69e749266C59757dA81F8C659Be6B07ce5Bac6C9"
       },
       {
-        "endpoint": "https://audius-content-1.jollyworld.xyz",
-        "delegateOwnerWallet": "0x125A9f40CFB329266ef415b9510D4E716Dba8Da6"
-      },
-      {
         "endpoint": "https://audius-creator-1.theblueprint.xyz",
         "delegateOwnerWallet": "0x0E0aF7035581C615d07372be16D99A9B64E5B2e9"
       },
@@ -577,6 +573,46 @@ export const productionConfig: SdkServicesConfig = {
       {
         "endpoint": "https://audius-cn1.tikilabs.com",
         "delegateOwnerWallet": "0x159200F84c2cF000b3A014cD4D8244500CCc36ca"
+      },
+      {
+        "endpoint": "https://audius-creator-7.theblueprint.xyz",
+        "delegateOwnerWallet": "0x720758adEa33433833c14e2516fA421261D0875e"
+      },
+      {
+        "endpoint": "https://cn1.shakespearetech.com",
+        "delegateOwnerWallet": "0x44955AD360652c302644F564B42D1458C584A4ec"
+      },
+      {
+        "endpoint": "https://cn2.shakespearetech.com",
+        "delegateOwnerWallet": "0x68835714d9c208f9d6F4953F0555507e492fd898"
+      },
+      {
+        "endpoint": "https://cn3.shakespearetech.com",
+        "delegateOwnerWallet": "0x7162Ee2b7F0cB9651fd2FA2838B0CAF225B2a8D3"
+      },
+      {
+        "endpoint": "https://audius-creator-8.theblueprint.xyz",
+        "delegateOwnerWallet": "0x078842E88B82e6a69549043269AE3aADD5581105"
+      },
+      {
+        "endpoint": "https://audius-creator-9.theblueprint.xyz",
+        "delegateOwnerWallet": "0x2DfC8152eF49e91b83638ad2bd0D2F9efC6f65b5"
+      },
+      {
+        "endpoint": "https://audius-creator-10.theblueprint.xyz",
+        "delegateOwnerWallet": "0x97BcBFA8289731d694440795094E831599Ab7A11"
+      },
+      {
+        "endpoint": "https://audius-creator-11.theblueprint.xyz",
+        "delegateOwnerWallet": "0xfe38c5Ea3579c9333fE302414fe1895F7a320beF"
+      },
+      {
+        "endpoint": "https://audius-creator-12.theblueprint.xyz",
+        "delegateOwnerWallet": "0x8C78ef541135e2cb037f91109fb8EE780fa4709d"
+      },
+      {
+        "endpoint": "https://audius-creator-13.theblueprint.xyz",
+        "delegateOwnerWallet": "0x75D2269D18C59CC2ED00a63a40367AC495E3F330"
       }
     ],
     "antiAbuseOracleNodes": {
@@ -613,7 +649,9 @@ export const productionConfig: SdkServicesConfig = {
     "addresses": {
       "ethRewardsManagerAddress": "0x5aa6B99A2B461bA8E97207740f0A689C5C39C3b0",
       "serviceProviderFactoryAddress": "0xD17A9bc90c582249e211a4f4b16721e7f65156c8",
-      "serviceTypeManagerAddress": "0x9EfB0f4F38aFbb4b0984D00C126E97E21b8417C5"
+      "serviceTypeManagerAddress": "0x9EfB0f4F38aFbb4b0984D00C126E97E21b8417C5",
+      "audiusTokenAddress": "0x18aAA7115705e8be94bfFEBDE57Af9BFc265B998",
+      "audiusWormholeAddress": "0x6E7a1F7339bbB62b23D44797b63e4258d283E095"
     }
   }
 }

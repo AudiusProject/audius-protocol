@@ -5,7 +5,6 @@ import {
 } from '@audius/common/adapters'
 import {
   Name,
-  DefaultSizes,
   Kind,
   Track,
   Collection,
@@ -160,12 +159,6 @@ function* editTrackAsync(action: ReturnType<typeof trackActions.editTrack>) {
 
   const track = { ...trackForEdit } as Track & TrackMetadataForUpload
   track.track_id = action.trackId
-  if (track.artwork && 'file' in track.artwork && track.artwork.file) {
-    track._cover_art_sizes = {
-      ...track._cover_art_sizes,
-      [DefaultSizes.OVERRIDE]: track.artwork.url
-    }
-  }
 
   if (track.stems) {
     const inProgressStemUploads = yield* select(

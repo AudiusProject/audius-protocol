@@ -13,7 +13,7 @@ export const UserEventsSchema = z.object({
 export const CreateUserSchema = z.object({
   profilePictureFile: z.optional(ImageFile),
   coverArtFile: z.optional(ImageFile),
-  onProgress: z.optional(z.function().args(z.number())),
+  onProgress: z.optional(z.function()),
   metadata: z
     .object({
       bio: z.optional(z.string()),
@@ -40,6 +40,66 @@ export type CreateUserRequest = Omit<
   onProgress?: (progress: number) => void
 }
 
+export const CreateAssociatedWalletsSchema = z.record(
+  z.string(),
+  z.object({
+    signature: z.string()
+  })
+)
+
+const CollectiblesMetadataSchema = z
+  .object({
+    order: z.array(z.string())
+  })
+  .catchall(z.object({}))
+
+const PlaylistIdentifierSchema = z.object({
+  type: z.literal('playlist'),
+  playlist_id: z.number()
+})
+
+const ExplorePlaylistIdentifierSchema = z.object({
+  type: z.literal('explore_playlist'),
+  playlist_id: z.string()
+})
+
+const AudioNftPlaylistIdentifierSchema = z.object({
+  type: z.literal('audio_nft_playlist'),
+  playlist_id: z.literal('Audio NFTs')
+})
+
+const PlaylistLibraryIdentifierSchema = z.union([
+  PlaylistIdentifierSchema,
+  ExplorePlaylistIdentifierSchema,
+  AudioNftPlaylistIdentifierSchema
+])
+
+type PlaylistLibraryFolder = {
+  id: string
+  type: 'folder'
+  name: string
+  contents: Array<
+    PlaylistLibraryFolder | z.infer<typeof PlaylistLibraryIdentifierSchema>
+  >
+}
+
+const PlaylistLibraryFolderSchema: z.ZodType<PlaylistLibraryFolder> = z.object({
+  id: z.string(),
+  type: z.literal('folder'),
+  name: z.string(),
+  contents: z.array(
+    z.lazy(() =>
+      z.union([PlaylistLibraryFolderSchema, PlaylistLibraryIdentifierSchema])
+    )
+  )
+})
+
+const PlaylistLibrarySchema = z.object({
+  contents: z.array(
+    z.union([PlaylistLibraryFolderSchema, PlaylistLibraryIdentifierSchema])
+  )
+})
+
 export const UpdateProfileSchema = z
   .object({
     userId: HashId,
@@ -52,10 +112,22 @@ export const UpdateProfileSchema = z
         name: z.optional(z.string()),
         handle: z.optional(z.string()),
         bio: z.optional(z.string()),
-        events: z.optional(UserEventsSchema),
+        website: z.optional(z.string()),
+        donation: z.optional(z.string()),
         location: z.optional(z.string()),
+        metadataMultihash: z.optional(z.string()),
+        events: z.optional(UserEventsSchema),
         isDeactivated: z.optional(z.boolean()),
-        artistPickTrackId: z.optional(HashId)
+        artistPickTrackId: z.optional(HashId),
+        allowAiAttribution: z.optional(z.boolean()),
+        playlistLibrary: z.optional(PlaylistLibrarySchema),
+        collectibles: z.optional(CollectiblesMetadataSchema),
+        collectiblesOrderUnset: z.optional(z.boolean()),
+        twitterHandle: z.optional(z.string()),
+        instagramHandle: z.optional(z.string()),
+        tiktokHandle: z.optional(z.string()),
+        associatedWallets: z.optional(CreateAssociatedWalletsSchema),
+        associatedSolWallets: z.optional(CreateAssociatedWalletsSchema)
       })
       .strict()
   })

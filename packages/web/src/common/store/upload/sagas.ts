@@ -7,6 +7,8 @@ import {
 import {
   Collection,
   CollectionMetadata,
+  ErrorLevel,
+  Feature,
   FieldVisibility,
   ID,
   Id,
@@ -45,7 +47,6 @@ import {
   waitForAccount
 } from '@audius/common/utils'
 import { ProgressHandler, AudiusSdk } from '@audius/sdk'
-import type { TrackMetadata } from '@audius/sdk-legacy/dist/utils'
 import { push } from 'connected-react-router'
 import { mapValues } from 'lodash'
 import { Channel, Task, buffers, channel } from 'redux-saga'
@@ -669,7 +670,7 @@ export function* handleUploads({
     // Report to sentry
     const e = error instanceof Error ? error : new Error(String(error))
     yield* call(reportToSentry, {
-      name: 'Upload Worker Failed',
+      name: 'UploadWorker',
       error: e,
       additionalInfo: {
         trackId,
@@ -684,7 +685,9 @@ export function* handleUploads({
         stemCount: stems,
         phase,
         kind
-      }
+      },
+      feature: Feature.Upload,
+      level: ErrorLevel.Fatal
     })
   }
 
@@ -926,8 +929,7 @@ export function* uploadCollection(
         // Add images to the collection since we're not loading it the traditional way with
         // the `fetchCollections` saga
         confirmedPlaylist = yield* call(reformatCollection, {
-          collection: confirmedPlaylist,
-          audiusBackendInstance
+          collection: confirmedPlaylist
         })
         const uid = yield* makeUid(
           Kind.COLLECTIONS,
@@ -993,12 +995,16 @@ export function* uploadCollection(
         }
         // Handle error loses error details, so call reportToSentry explicitly
         yield* call(reportToSentry, {
-          name: 'Upload',
+          name: 'UploadCollection',
           error,
           additionalInfo: {
             trackIds,
-            playlistId
-          }
+            playlistId,
+            isAlbum,
+            collectionMetadata
+          },
+          feature: Feature.Upload,
+          level: ErrorLevel.Fatal
         })
         yield* put(uploadActions.uploadTracksFailed())
         yield* put(
@@ -1165,10 +1171,13 @@ export function* uploadTracksAsync(
     // Handle error loses error details, so call reportToSentry explicitly
     yield* call(reportToSentry, {
       error,
-      name: `Upload: ${error.name}`,
+      name: 'UploadTracks',
       additionalInfo: {
-        kind
-      }
+        kind,
+        tracks: payload.tracks
+      },
+      feature: Feature.Upload,
+      level: ErrorLevel.Fatal
     })
     yield* put(uploadActions.uploadTracksFailed())
     yield* put(
@@ -1201,7 +1210,10 @@ export function* updateTrackAudioAsync(
     throw new Error('No user id found during upload. Not signed in?')
   }
 
-  const metadata = trackMetadataForUploadToSdk(track)
+  const metadata = trackMetadataForUploadToSdk({
+    ...track,
+    ...(payload.metadata ?? {})
+  })
 
   const dispatch = yield* getContext('dispatch')
   const handleProgressUpdate = (progress: Parameters<ProgressHandler>[0]) => {
@@ -1228,8 +1240,8 @@ export function* updateTrackAudioAsync(
     }
   )
 
-  const newMetadata: TrackMetadata = {
-    ...track,
+  const newMetadata = {
+    ...metadata,
     orig_file_cid: updatedMetadata.origFileCid,
     bpm: metadata.isCustomBpm ? track.bpm : null,
     musical_key: metadata.isCustomMusicalKey ? metadata.musicalKey : null,

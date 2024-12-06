@@ -91,10 +91,6 @@ export const PickArtworkField = (props: PickArtworkFieldProps) => {
 
   const source = useMemo(() => ({ uri: trackArtworkUrl }), [trackArtworkUrl])
 
-  if (!source.uri) {
-    return null
-  }
-
   return (
     <View style={styles.root}>
       <DynamicImage

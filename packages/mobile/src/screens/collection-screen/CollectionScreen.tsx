@@ -96,11 +96,11 @@ export const CollectionScreen = () => {
   const collection = cachedCollection ?? searchCollection
   const user = cachedUser ?? searchCollection?.user
 
-  return !collection || !user ? (
-    <CollectionScreenSkeleton collectionType={collectionType} />
-  ) : (
-    <CollectionScreenComponent collection={collection} user={user} />
-  )
+  if (!collection || !user) {
+    return <CollectionScreenSkeleton collectionType={collectionType} />
+  }
+
+  return <CollectionScreenComponent collection={collection} user={user} />
 }
 
 type CollectionScreenComponentProps = {

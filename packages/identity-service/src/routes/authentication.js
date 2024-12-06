@@ -233,6 +233,8 @@ module.exports = function (app) {
       if (!email) {
         return errorResponseBadRequest('Missing email')
       }
+      // Avoid issues looking up values if user enters email in different casing
+      email = email.toLowerCase()
 
       const existingUser = await models.Authentication.findOne({
         where: { lookupKey }
@@ -256,10 +258,7 @@ module.exports = function (app) {
           req,
           authUser: existingUser
         })
-        if (
-          associatedEmail &&
-          email.toLowerCase() !== associatedEmail.toLowerCase()
-        ) {
+        if (associatedEmail && email !== associatedEmail.toLowerCase()) {
           req.logger.error(
             {
               reqEmail: email,

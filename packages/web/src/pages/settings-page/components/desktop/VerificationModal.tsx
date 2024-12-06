@@ -1,12 +1,6 @@
 import { useCallback, useState } from 'react'
 
-import {
-  Name,
-  SquareSizes,
-  Status,
-  ID,
-  ProfilePictureSizes
-} from '@audius/common/models'
+import { Name, SquareSizes, Status, ID } from '@audius/common/models'
 import { BooleanKeys } from '@audius/common/services'
 import {
   musicConfettiActions,
@@ -212,7 +206,6 @@ type VerificationModalProps = {
   userId: ID
   handle: string
   name: string
-  profilePictureSizes: ProfilePictureSizes | null
   isVerified?: boolean
   goToRoute: (route: string) => void
   onInstagramLogin: (uuid: string, profile: InstagramProfile) => void

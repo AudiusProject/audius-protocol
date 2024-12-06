@@ -148,7 +148,6 @@ const TrackPage = ({
       aiAttributionUserId={defaults.aiAttributionUserId}
       userId={user?.user_id ?? 0}
       artistHandle={emptyStringGuard(user?.handle)}
-      coverArtSizes={defaults.coverArtSizes}
       tags={defaults.tags}
       description={defaults.description}
       listenCount={defaults.playCount}

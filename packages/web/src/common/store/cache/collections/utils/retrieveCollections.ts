@@ -184,7 +184,6 @@ export function* retrieveCollectionByPermalink(
       return metadatasWithDeleted
     },
     onBeforeAddToCache: function* (collections: UserCollectionMetadata[]) {
-      const audiusBackendInstance = yield* getContext('audiusBackendInstance')
       yield* addUsersFromCollections(collections)
       yield* addTracksFromCollections(collections)
 
@@ -200,7 +199,7 @@ export function* retrieveCollectionByPermalink(
       }
 
       const reformattedCollections = collections.map((c) =>
-        reformatCollection({ collection: c, audiusBackendInstance })
+        reformatCollection({ collection: c })
       )
 
       return reformattedCollections
@@ -279,7 +278,6 @@ export function* retrieveCollections(
       return metadatasWithDeleted
     },
     onBeforeAddToCache: function* (metadatas: UserCollectionMetadata[]) {
-      const audiusBackendInstance = yield* getContext('audiusBackendInstance')
       yield* addUsersFromCollections(metadatas)
       yield* addTracksFromCollections(metadatas)
 
@@ -288,7 +286,7 @@ export function* retrieveCollections(
       }
 
       const reformattedCollections = metadatas.map((c) =>
-        reformatCollection({ collection: c, audiusBackendInstance })
+        reformatCollection({ collection: c })
       )
 
       return reformattedCollections

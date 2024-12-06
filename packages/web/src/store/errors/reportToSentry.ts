@@ -35,7 +35,8 @@ export const reportToSentry = async ({
   additionalInfo,
   error,
   name,
-  tags
+  tags,
+  feature
 }: ReportToSentryArgs) => {
   try {
     withScope(async (scope) => {
@@ -57,8 +58,8 @@ export const reportToSentry = async ({
       if (additionalInfo) {
         scope.setContext('additionalInfo', additionalInfo)
       }
-      if (tags) {
-        scope.setTags(tags)
+      if (tags || feature) {
+        scope.setTags({ ...tags, feature })
       }
       if (name) {
         error.name = `${name}: ${error.name}`

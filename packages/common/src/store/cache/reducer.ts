@@ -144,25 +144,6 @@ export const mergeCustomizer = (objValue: any, srcValue: any, key: string) => {
   }
 }
 
-const updateImageCache = (existing: Metadata, next: Metadata, merged: any) => {
-  if (
-    'profile_picture_sizes' in existing &&
-    'profile_picture_sizes' in next &&
-    existing.profile_picture_sizes !== next.profile_picture_sizes
-  ) {
-    merged._profile_picture_sizes = {}
-  }
-  if (
-    'cover_photo_sizes' in existing &&
-    'cover_photo_sizes' in next &&
-    existing.cover_photo_sizes !== next.cover_photo_sizes
-  ) {
-    merged._cover_photo_sizes = {}
-  }
-
-  return merged
-}
-
 const addEntries = (state: CacheState, entries: Entry[], replace?: boolean) => {
   const { entryTTL } = state
   const newEntries = { ...state.entries }
@@ -187,13 +168,12 @@ const addEntries = (state: CacheState, entries: Entry[], replace?: boolean) => {
       // do nothing
     } else if (existing) {
       delete existing.local
-      let newMetadata = mergeWith(
+      const newMetadata = mergeWith(
         {},
         existing,
         entity.metadata,
         mergeCustomizer
       )
-      newMetadata = updateImageCache(existing, entity.metadata, newMetadata)
       newEntries[entity.id] = wrapEntry(newMetadata, now)
     } else {
       newEntries[entity.id] = {
@@ -238,8 +218,7 @@ const actionsMap = {
 
     action.entries.forEach((e: { id: string | number; metadata: any }) => {
       const existing = { ...unwrapEntry(state.entries[e.id]) }
-      let newEntry = mergeWith({}, existing, e.metadata, mergeCustomizer)
-      newEntry = updateImageCache(existing, e.metadata, newEntry)
+      const newEntry = mergeWith({}, existing, e.metadata, mergeCustomizer)
       newEntries[e.id] = wrapEntry(newEntry)
     })
 
