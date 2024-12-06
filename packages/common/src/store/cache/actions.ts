@@ -2,7 +2,14 @@ import { ID } from '~/models/Identifiers'
 import { Kind } from '~/models/Kind'
 import { Status } from '~/models/Status'
 
-import { EntriesByKind, Entry, Metadata } from './types'
+import {
+  CacheType,
+  EntriesByKind,
+  Entry,
+  Metadata,
+  SubscriberInfo,
+  UnsubscribeInfo
+} from './types'
 
 export const ADD = 'CACHE/ADD'
 export const ADD_SUCCEEDED = 'CACHE/ADD_SUCCEEDED'
@@ -10,6 +17,7 @@ export const ADD_ENTRIES = 'CACHE/ADD_ENTRIES'
 export const UPDATE = 'CACHE/UPDATE'
 export const INCREMENT = 'CACHE/INCREMENT'
 export const SET_STATUS = 'CACHE/SET_STATUS'
+export const SUBSCRIBE = 'CACHE/SUBSCRIBE'
 export const SET_EXPIRED = 'CACHE/SET_EXPIRED'
 export const SET_CACHE_CONFIG = 'CACHE/SET_CONFIG'
 
@@ -88,9 +96,7 @@ export const addEntries = (
 })
 
 /**
- * Updates an entry in the cache. Can also add transitive cache subscriptions.
- * E.g. if a collection references multiple tracks, the collection should be subscribed to those
- * tracks.
+ * Updates an entry in the cache.
  */
 export const update = (kind: Kind, entries: Entry[]) => ({
   type: UPDATE,
@@ -120,6 +126,15 @@ export const setStatus = (
   type: SET_STATUS,
   kind,
   statuses
+})
+
+/**
+ * Subscribes uids to ids in the cache.
+ */
+export const subscribe = (kind: Kind, subscribers: SubscriberInfo[]) => ({
+  type: SUBSCRIBE,
+  kind,
+  subscribers
 })
 
 /**

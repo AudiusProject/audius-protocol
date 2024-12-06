@@ -1,6 +1,8 @@
 import { Kind } from '@audius/common/models'
 import {
+  cacheActions,
   collectionPageLineupActions as tracksActions,
+  collectionPageSelectors,
   collectionPageActions as collectionActions,
   reachabilitySelectors
 } from '@audius/common/store'
@@ -16,6 +18,7 @@ import {
 import tracksSagas from './lineups/sagas'
 
 const { NOT_FOUND_PAGE } = route
+const { getCollectionUid, getUserUid } = collectionPageSelectors
 const { fetchCollectionSucceeded, fetchCollectionFailed } = collectionActions
 const { getIsReachable } = reachabilitySelectors
 
@@ -53,6 +56,11 @@ function* watchFetchCollection() {
     const userUid = makeUid(Kind.USERS, collection.playlist_owner_id)
     const collectionUid = collectionUids[identifier]
     if (collection) {
+      yield put(
+        cacheActions.subscribe(Kind.USERS, [
+          { uid: userUid, id: collection.playlist_owner_id }
+        ])
+      )
       yield put(
         fetchCollectionSucceeded(
           collection.playlist_id,

@@ -1,8 +1,9 @@
-import { type Track } from '@audius/common/models'
+import { Kind, type Track } from '@audius/common/models'
 import { QueryParams } from '@audius/common/services'
 import {
   accountSelectors,
   cacheTracksSelectors,
+  cacheActions,
   queueActions,
   reachabilitySelectors,
   tracksSocialActions,
@@ -71,6 +72,7 @@ const { recordListen } = tracksSocialActions
 const { getNftAccessSignatureMap } = gatedContentSelectors
 const { getIsReachable } = reachabilitySelectors
 
+const PLAYER_SUBSCRIBER_NAME = 'PLAYER'
 const RECORD_LISTEN_SECONDS = 1
 const RECORD_LISTEN_INTERVAL = 1000
 
@@ -201,6 +203,11 @@ export function* watchPlay() {
         return () => {}
       })
       yield* spawn(actionChannelDispatcher, endChannel)
+      yield* put(
+        cacheActions.subscribe(Kind.TRACKS, [
+          { uid: PLAYER_SUBSCRIBER_NAME, id: trackId }
+        ])
+      )
 
       if (isLongFormContent) {
         // Make sure that the playback rate is set when playing a podcast

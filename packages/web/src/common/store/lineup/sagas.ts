@@ -12,6 +12,7 @@ import {
 import { StringKeys, FeatureFlags } from '@audius/common/services'
 import {
   accountSelectors,
+  cacheCollectionsSelectors,
   cacheTracksSelectors,
   cacheActions,
   cacheUsersSelectors,
@@ -21,9 +22,12 @@ import {
   queueSelectors,
   getContext,
   playerSelectors,
+  SubscriberInfo,
+  SubscriptionInfo,
   Entry,
   LineupBaseActions,
   QueueSource,
+  UnsubscribeInfo,
   PlayerBehavior
 } from '@audius/common/store'
 import { Uid, makeUids, makeUid, removeNullable } from '@audius/common/utils'
@@ -35,6 +39,7 @@ import {
   fork,
   select,
   take,
+  takeEvery,
   takeLatest,
   race
 } from 'typed-redux-saga'
@@ -48,6 +53,7 @@ const { getSource, getUid, getPositions, getPlayerBehavior } = queueSelectors
 const { getUid: getCurrentPlayerTrackUid, getPlaying } = playerSelectors
 const { getUsers } = cacheUsersSelectors
 const { getTrack, getTracks } = cacheTracksSelectors
+const { getCollection } = cacheCollectionsSelectors
 const { getUserId } = accountSelectors
 
 const getEntryId = <T>(entry: LineupEntry<T>) => `${entry.kind}:${entry.id}`
@@ -127,10 +133,19 @@ function* filterDeletes<T extends Track | Collection>(
     .filter(Boolean)
 }
 
+function getTrackCacheables(
+  metadata: LineupEntry<Track>,
+  uid: UID,
+  trackSubscribers: SubscriberInfo[]
+) {
+  trackSubscribers.push({ uid: metadata.uid || uid, id: metadata.track_id })
+}
+
 function getCollectionCacheables(
   metadata: Collection,
   uid: UID,
-  collectionsToCache: Entry<CollectionMetadata>[]
+  collectionsToCache: Entry<CollectionMetadata>[],
+  trackSubscribers: SubscriberInfo[]
 ) {
   collectionsToCache.push({ id: metadata.playlist_id, uid, metadata })
 
@@ -142,6 +157,7 @@ function getCollectionCacheables(
   metadata.playlist_contents.track_ids =
     metadata.playlist_contents.track_ids.map((t, i) => {
       const trackUid = t.uid || trackUids[i]
+      trackSubscribers.push({ uid: trackUid, id: t.track })
       return { uid: trackUid, ...t }
     })
 }
@@ -255,21 +271,57 @@ function* fetchLineupMetadatasAsync<T extends Track | Collection>(
       // Cache tracks and collections.
       const collectionsToCache: Entry<Collection>[] = []
 
+      let trackSubscribers: SubscriberInfo[] = []
+
       allMetadatas.forEach((metadata, i) => {
         // Need to update the UIDs on the playlist tracks
-        if ('collection_id' in metadata) {
+        if ('track_id' in metadata) {
+          getTrackCacheables(
+            metadata as LineupEntry<Track>,
+            uids[i],
+            trackSubscribers
+          )
+        } else if ('collection_id' in metadata) {
           getCollectionCacheables(
             metadata as LineupEntry<Collection>,
             uids[i],
-            collectionsToCache
+            collectionsToCache,
+            trackSubscribers
           )
         }
+      })
+
+      const lineupCollections = allMetadatas.filter(
+        (item) => 'playlist_id' in item
+      )
+
+      lineupCollections.forEach((metadata) => {
+        if (!('playlist_id' in metadata)) return
+        const trackUids = metadata.playlist_contents.track_ids.map(
+          (track, idx) => {
+            const id = track.track
+            const uid = new Uid(
+              Kind.TRACKS,
+              id,
+              Uid.makeCollectionSourceId(
+                source!,
+                metadata.playlist_id.toString()
+              ),
+              idx
+            )
+            return { id, uid: uid.toString() }
+          }
+        )
+        trackSubscribers = trackSubscribers.concat(trackUids)
       })
 
       // We rewrote the playlist tracks with new UIDs, so we need to update them
       // in the cache.
       if (collectionsToCache.length > 0) {
         yield* put(cacheActions.update(Kind.COLLECTIONS, collectionsToCache))
+      }
+      if (trackSubscribers.length > 0) {
+        yield* put(cacheActions.subscribe(Kind.TRACKS, trackSubscribers))
       }
       const currentUserId = yield* select(getUserId)
       // Retain specified info in the lineup itself and resolve with success.
@@ -452,6 +504,13 @@ function* togglePlay<T extends Track | Collection>(
 
 function* reset(lineupActions: LineupBaseActions) {
   yield* put(lineupActions.resetSucceeded())
+}
+
+function* add(action: ReturnType<LineupBaseActions['add']>) {
+  if (action.entry && action.id) {
+    const { kind, uid } = action.entry
+    yield* put(cacheActions.subscribe(kind, [{ uid, id: action.id }]))
+  }
 }
 
 function* updateLineupOrder(
@@ -644,7 +703,20 @@ export class LineupSagas<T extends Track | Collection> {
       yield* takeLatest(
         baseLineupActions.addPrefix(instance.prefix, baseLineupActions.RESET),
         reset,
-        instance.actions
+        instance.actions,
+        instance.prefix,
+        instance.selector,
+        instance.sourceSelector
+      )
+    }
+  }
+
+  watchAdd = () => {
+    const instance = this
+    return function* () {
+      yield* takeEvery(
+        baseLineupActions.addPrefix(instance.prefix, baseLineupActions.ADD),
+        add
       )
     }
   }
@@ -686,6 +758,7 @@ export class LineupSagas<T extends Track | Collection> {
       this.watchPauseTrack(),
       this.watchTogglePlay(),
       this.watchReset(),
+      this.watchAdd(),
       this.watchUpdateLineupOrder(),
       this.watchRefreshInView()
     ]

@@ -15,6 +15,8 @@ import {
   accountSelectors,
   cacheCollectionsSelectors,
   cacheTracksSelectors,
+  cacheActions,
+  cacheSelectors,
   cacheUsersSelectors,
   lineupRegistry,
   queueActions,
@@ -53,12 +55,16 @@ const {
   getPlayerBehavior
 } = playerSelectors
 
-const { add, clear, next, pause, play, queueAutoplay, previous } = queueActions
+const { add, clear, next, pause, play, queueAutoplay, previous, remove } =
+  queueActions
+const { getId } = cacheSelectors
 const { getUser } = cacheUsersSelectors
 const { getTrack } = cacheTracksSelectors
 const { getCollection } = cacheCollectionsSelectors
 const { getUserId } = accountSelectors
 const { getIsReachable } = reachabilitySelectors
+
+const QUEUE_SUBSCRIBER_NAME = 'QUEUE'
 
 export function* getToQueue(
   prefix: string,
@@ -505,13 +511,40 @@ export function* watchPrevious() {
   )
 }
 
+export function* watchAdd() {
+  yield* takeEvery(add.type, function* (action: ReturnType<typeof add>) {
+    const { entries } = action.payload
+
+    const subscribers = entries.map((entry) => ({
+      uid: QUEUE_SUBSCRIBER_NAME,
+      id: entry.id
+    }))
+    yield* put(cacheActions.subscribe(Kind.TRACKS, subscribers))
+  })
+}
+
+export function* watchRemove() {
+  yield* takeEvery(remove.type, function* (action: ReturnType<typeof remove>) {
+    const { uid } = action.payload
+
+    const id = yield* select(getId, { kind: Kind.TRACKS, uid })
+    yield* put(
+      cacheActions.unsubscribe(Kind.TRACKS, [
+        { uid: QUEUE_SUBSCRIBER_NAME, id }
+      ])
+    )
+  })
+}
+
 const sagas = () => {
   const sagas = [
     watchPlay,
     watchPause,
     watchNext,
     watchQueueAutoplay,
-    watchPrevious
+    watchPrevious,
+    watchAdd,
+    watchRemove
   ]
   return sagas
 }
