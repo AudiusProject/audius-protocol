@@ -1131,41 +1131,6 @@ export const audiusBackend = ({
     }
   }
 
-  async function markAllNotificationAsViewed({
-    userId,
-    sdk
-  }: {
-    userId: ID
-    sdk: AudiusSdk
-  }) {
-    let notificationsReadResponse
-    try {
-      const { data, signature } = await signIdentityServiceRequest({ sdk })
-      // Passing `user_id` to support manager mode
-      const response = await fetch(
-        `${identityServiceUrl}/notifications/all?user_id=${userId}`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            [AuthHeaders.Message]: data,
-            [AuthHeaders.Signature]: signature
-          },
-          body: JSON.stringify({ isViewed: true, clearBadges: !!nativeMobile })
-        }
-      )
-      notificationsReadResponse = await response.json()
-    } catch (e) {
-      console.error(e)
-    }
-    try {
-      await audiusLibs.Notifications.viewNotification({ userId })
-    } catch (err) {
-      console.error(err)
-    }
-    return notificationsReadResponse
-  }
-
   async function clearNotificationBadges({ sdk }: { sdk: AudiusSdk }) {
     try {
       const { data, signature } = await signIdentityServiceRequest({ sdk })
@@ -1583,26 +1548,6 @@ export const audiusBackend = ({
     }
   }
 
-  /**
-   * Sets the playlist as viewed to reset the playlist updates notifications timer
-   * @param {playlistId} playlistId playlist id or folder id
-   */
-  async function updatePlaylistLastViewedAt({
-    playlistId,
-    userId
-  }: {
-    playlistId: ID
-    userId: ID
-  }) {
-    await waitForLibsInit()
-
-    try {
-      return await audiusLibs.Notifications.viewPlaylist({ playlistId, userId })
-    } catch (err) {
-      console.error(getErrorMessage(err))
-    }
-  }
-
   async function updateHCaptchaScore({
     sdk,
     token
@@ -1922,7 +1867,6 @@ export const audiusBackend = ({
     getWAudioBalance,
     getWeb3,
     identityServiceUrl,
-    markAllNotificationAsViewed,
     orderPlaylist,
     publishPlaylist,
     recordTrackListen,
@@ -1954,7 +1898,6 @@ export const audiusBackend = ({
     updateHCaptchaScore,
     updateNotificationSettings,
     updatePlaylist,
-    updatePlaylistLastViewedAt,
     updatePushNotificationSettings,
     updateUserEvent,
     updateUserLocationTimezone,

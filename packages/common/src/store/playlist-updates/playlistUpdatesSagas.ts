@@ -3,7 +3,6 @@ import { call, takeEvery, select, put } from 'typed-redux-saga'
 import { playlistUpdateFromSDK, transformAndCleanList } from '~/adapters'
 import { Id } from '~/models'
 import { Name } from '~/models/Analytics'
-import { getContext } from '~/store/effects'
 
 import { getUserId } from '../account/selectors'
 import { getSDK } from '../sdkUtils'
@@ -55,15 +54,18 @@ function* watchUpdatedPlaylistViewedSaga() {
   yield* takeEvery(
     updatedPlaylistViewed.type,
     function* updatePlaylistLastViewedAt(action: UpdatedPlaylistViewedAction) {
+      const sdk = yield* getSDK()
       const { playlistId } = action.payload
       const userId = yield* select(getUserId)
       if (!userId) return
-      const audiusBackendInstance = yield* getContext('audiusBackendInstance')
 
-      yield* call(audiusBackendInstance.updatePlaylistLastViewedAt, {
-        playlistId,
-        userId
-      })
+      yield* call(
+        [sdk.notifications, sdk.notifications.updatePlaylistLastViewedAt],
+        {
+          playlistId: Id.parse(playlistId),
+          userId: Id.parse(userId)
+        }
+      )
     }
   )
 }
