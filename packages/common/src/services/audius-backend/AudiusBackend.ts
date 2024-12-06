@@ -1701,14 +1701,11 @@ export const audiusBackend = ({
       const {
         value: { amount }
       } = await connection.getTokenAccountBalance(userBank)
-      const ownerWAudioBalance = new FixedDecimal(
-        amount,
-        AUDIO(0).decimalPlaces - wAUDIO(0).decimalPlaces
-      )
+      const ownerWAudioBalance = AUDIO(wAUDIO(BigInt(amount))).value
       if (isNullOrUndefined(ownerWAudioBalance)) {
         throw new Error('Failed to fetch account waudio balance')
       }
-      return new BN(ownerWAudioBalance.value.toString())
+      return new BN(ownerWAudioBalance.toString())
     } catch (e) {
       console.error(e)
       reportError({ error: e as Error })
