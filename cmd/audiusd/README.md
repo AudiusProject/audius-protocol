@@ -20,6 +20,7 @@ To operate a [registered](https://docs.audius.org/node-operator/setup/registrati
 # directory for data and configuration persistence
 mkdir -p ~/.audiusd
 
+# note that as on now, only creator nodes are supported
 cat <<EOF > ~/.audiusd/override.env
 creatorNodeEndpoint=https://
 delegateOwnerWallet=
