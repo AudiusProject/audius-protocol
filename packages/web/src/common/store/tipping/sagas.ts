@@ -17,6 +17,7 @@ import {
   supporterMetadataFromSDK
 } from '@audius/common/models'
 import { LocalStorage } from '@audius/common/services'
+import { getWalletAddresses } from '@audius/common/src/store/account/selectors'
 import {
   accountSelectors,
   cacheActions,
@@ -265,10 +266,15 @@ function* confirmTipIndexed({
 function* wormholeAudioIfNecessary({ amount }: { amount: number }) {
   const walletClient = yield* getContext('walletClient')
   const sdk = yield* getSDK()
+  const { currentUser } = yield* select(getWalletAddresses)
+  if (!currentUser) {
+    throw new Error('Failed to retrieve current user wallet address')
+  }
 
   const waudioBalanceWei = yield* call(
     [walletClient, 'getCurrentWAudioBalance'],
     {
+      ethAddress: currentUser,
       sdk
     }
   )

@@ -63,7 +63,7 @@ export class WalletClient {
     ethAddress,
     sdk
   }: {
-    ethAddress?: string
+    ethAddress: string
     sdk: AudiusSdk
   }): Promise<BNWei | null> {
     const balance = await this.audiusBackendInstance.getWAudioBalance({

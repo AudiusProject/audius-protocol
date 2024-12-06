@@ -1690,13 +1690,13 @@ export const audiusBackend = ({
     ethAddress,
     sdk
   }: {
-    ethAddress?: string
+    ethAddress: string
     sdk: AudiusSdk
   }): Promise<BN | null> {
     try {
       const { userBank } =
         await sdk.services.claimableTokensClient.getOrCreateUserBank({
-          ethWallet: ethAddress ?? (await sdk.services.auth.getAddress()),
+          ethWallet: ethAddress,
           mint: 'wAUDIO'
         })
       const connection = sdk.services.solanaClient.connection
