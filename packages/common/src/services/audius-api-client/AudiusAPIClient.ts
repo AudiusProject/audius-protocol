@@ -1,32 +1,13 @@
-import type { AudiusLibs } from '@audius/sdk-legacy/dist/libs'
-
-import { ID } from '../../models'
-import { encodeHashId } from '../../utils/hashIds'
-import { Nullable } from '../../utils/typeUtils'
 import type { AudiusBackend } from '../audius-backend'
 import { getEagerDiscprov } from '../audius-backend/eagerLoadUtils'
 import { Env } from '../env'
 import { LocalStorage } from '../local-storage'
 import { RemoteConfigInstance } from '../remote-config'
 
-import { APIBlockConfirmation, APIResponse, OpaqueID } from './types'
-
-// TODO: declare this at the root and use actual audiusLibs type
-declare global {
-  interface Window {
-    audiusLibs: AudiusLibs
-  }
-}
-
 enum PathType {
   RootPath = '',
   VersionPath = '/v1',
   VersionFullPath = '/v1/full'
-}
-
-const ROOT_ENDPOINT_MAP = {
-  healthCheck: '/health_check',
-  blockConfirmation: '/block_confirmation'
 }
 
 export type QueryParams = {
@@ -50,12 +31,10 @@ type InitializationState =
 
 type AudiusAPIClientConfig = {
   audiusBackendInstance: AudiusBackend
-  getAudiusLibs: () => Nullable<AudiusLibs>
   overrideEndpoint?: string
   remoteConfigInstance: RemoteConfigInstance
   localStorage: LocalStorage
   env: Env
-  waitForLibsInit: () => Promise<unknown>
   appName: string
   apiKey: string
 }
@@ -66,60 +45,34 @@ export class AudiusAPIClient {
   }
 
   audiusBackendInstance: AudiusBackend
-  getAudiusLibs: () => Nullable<AudiusLibs>
   overrideEndpoint?: string
   remoteConfigInstance: RemoteConfigInstance
   localStorage: LocalStorage
   env: Env
   isReachable?: boolean = true
-  waitForLibsInit: () => Promise<unknown>
   appName: string
   apiKey: string
 
   constructor({
     audiusBackendInstance,
-    getAudiusLibs,
     overrideEndpoint,
     remoteConfigInstance,
     localStorage,
     env,
-    waitForLibsInit,
     appName,
     apiKey
   }: AudiusAPIClientConfig) {
     this.audiusBackendInstance = audiusBackendInstance
-    this.getAudiusLibs = getAudiusLibs
     this.overrideEndpoint = overrideEndpoint
     this.remoteConfigInstance = remoteConfigInstance
     this.localStorage = localStorage
     this.env = env
-    this.waitForLibsInit = waitForLibsInit
     this.appName = appName
     this.apiKey = apiKey
   }
 
   setIsReachable(isReachable: boolean) {
     this.isReachable = isReachable
-  }
-
-  async getBlockConfirmation(
-    blockhash: string,
-    blocknumber: number
-  ): Promise<
-    | {
-        block_found: boolean
-        block_passed: boolean
-      }
-    | {}
-  > {
-    const response = await this._getResponse<APIResponse<APIBlockConfirmation>>(
-      ROOT_ENDPOINT_MAP.blockConfirmation,
-      { blockhash, blocknumber },
-      true,
-      PathType.RootPath
-    )
-    if (!response) return {}
-    return response.data
   }
 
   async init() {
@@ -178,91 +131,8 @@ export class AudiusAPIClient {
   }
 
   // Helpers
-
-  _assertInitialized() {
-    if (this.initializationState.state !== 'initialized')
-      throw new Error('AudiusAPIClient must be initialized before use')
-  }
-
-  async _getResponse<T>(
-    path: string,
-    params: QueryParams = {},
-    retry = false,
-    pathType: PathType = PathType.VersionFullPath,
-    headers?: { [key: string]: string },
-    splitArrayParams = false,
-    abortOnUnreachable = true
-  ): Promise<Nullable<T>> {
-    if (this.initializationState.state !== 'initialized')
-      throw new Error('_getResponse called uninitialized')
-
-    // If not reachable, abort
-    if (!this.isReachable && abortOnUnreachable) {
-      console.debug(`APIClient: Not reachable, aborting request`)
-      return null
-    }
-
-    // If a param has a null value, remove it
-    const sanitizedParams = Object.keys(params).reduce((acc, cur) => {
-      const val = params[cur]
-      if (val === null || val === undefined) return acc
-      return { ...acc, [cur]: val }
-    }, {})
-
-    const formattedPath = this._formatPath(pathType, path)
-    const audiusLibs = this.getAudiusLibs()
-
-    if (audiusLibs && this.initializationState.type === 'libs') {
-      const data = await audiusLibs.discoveryProvider?._makeRequest(
-        {
-          endpoint: formattedPath,
-          queryParams: sanitizedParams,
-          headers
-        },
-        retry
-      )
-      if (!data) return null
-      // TODO: Type boundaries of API
-      return { data } as any
-    }
-
-    // Initialization type is manual. Make requests with fetch and handle failures.
-    const resource = this._constructUrl(
-      formattedPath,
-      sanitizedParams,
-      splitArrayParams
-    )
-    try {
-      const response = await fetch(resource, { headers })
-      if (!response.ok) {
-        throw new Error(response.statusText)
-      }
-      return response.json()
-    } catch (e) {
-      // Something went wrong with the request and we should wait for the libs
-      // initialization state if needed before retrying
-      if (this.initializationState.type === 'manual') {
-        await this.waitForLibsInit()
-        this.initializationState = {
-          type: 'libs',
-          state: 'initialized',
-          endpoint: this.initializationState.endpoint
-        }
-      }
-      return this._getResponse(path, sanitizedParams, retry, pathType)
-    }
-  }
-
   _formatPath(pathType: PathType, path: string) {
     return `${pathType}${path}`
-  }
-
-  _encodeOrThrow(id: ID): OpaqueID {
-    const encoded = encodeHashId(id)
-    if (!encoded) {
-      throw new Error(`Unable to encode id: ${id}`)
-    }
-    return encoded
   }
 
   _constructUrl(

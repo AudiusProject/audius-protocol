@@ -661,15 +661,29 @@ export const audiusBackend = ({
     }
   }
 
-  async function recordTrackListen(userId: ID, trackId: ID) {
+  async function recordTrackListen({
+    userId,
+    trackId,
+    sdk
+  }: {
+    userId: ID
+    trackId: ID
+    sdk: AudiusSdk
+  }) {
     try {
-      const listen = await audiusLibs.Track.logTrackListen(
-        trackId,
-        unauthenticatedUuid,
-        userId,
-        true
-      )
-      return listen
+      const { data, signature } = await signIdentityServiceRequest({ sdk })
+      await fetch(`${identityServiceUrl}/tracks/${trackId}/listen`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          [AuthHeaders.Message]: data,
+          [AuthHeaders.Signature]: signature
+        },
+        body: JSON.stringify({
+          userId: userId ?? unauthenticatedUuid,
+          solanaListen: true
+        })
+      })
     } catch (err) {
       console.error(getErrorMessage(err))
     }
@@ -862,18 +876,6 @@ export const audiusBackend = ({
     }
   }
 
-  // TODO(C-2719)
-  async function validateTracksInPlaylist(playlistId: ID) {
-    try {
-      const { isValid, invalidTrackIds } =
-        await audiusLibs.Playlist.validateTracksInPlaylist(playlistId)
-      return { error: false, isValid, invalidTrackIds }
-    } catch (error) {
-      console.error(getErrorMessage(error))
-      return { error }
-    }
-  }
-
   async function deletePlaylist(playlistId: ID) {
     try {
       const txReceipt = await audiusLibs.EntityManager.deletePlaylist(
@@ -913,11 +915,6 @@ export const audiusBackend = ({
       console.error(getErrorMessage(err))
       throw err
     }
-  }
-
-  async function signOut() {
-    await waitForLibsInit()
-    return audiusLibs.Account.logout()
   }
 
   /**
@@ -1874,7 +1871,6 @@ export const audiusBackend = ({
     signData,
     signDiscoveryNodeRequest,
     signIdentityServiceRequest,
-    signOut,
     signUp,
     transferAudioToWAudio,
     twitterHandle,
@@ -1893,7 +1889,6 @@ export const audiusBackend = ({
     updateUserLocationTimezone,
     uploadImage,
     userNodeUrl,
-    validateTracksInPlaylist,
     waitForLibsInit,
     waitForWeb3
   }
