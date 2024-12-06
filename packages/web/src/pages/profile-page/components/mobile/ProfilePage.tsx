@@ -23,7 +23,8 @@ import {
   IconCollectible as IconCollectibles,
   IconNote,
   IconPlaylists,
-  IconRepost as IconReposts
+  IconRepost as IconReposts,
+  LoadingSpinner
 } from '@audius/harmony'
 import cn from 'classnames'
 
@@ -95,6 +96,7 @@ export type ProfilePageProps = {
   albums: Collection[] | null
   playlists: Collection[] | null
   status: Status
+  collectionStatus: Status
   goToRoute: (route: string) => void
   artistTracks: LineupState<Track>
   userFeed: LineupState<Track | Collection>
@@ -236,6 +238,7 @@ const ProfilePage = g(
     bio,
     location,
     status,
+    collectionStatus,
     isArtist,
     isOwner,
     verified,
@@ -425,7 +428,10 @@ const ProfilePage = g(
             )}
           </div>,
           <div className={styles.cardLineupContainer} key='artistAlbums'>
-            {(albums || []).length === 0 ? (
+            {collectionStatus !== Status.SUCCESS &&
+            collectionStatus !== Status.ERROR ? (
+              <LoadingSpinner />
+            ) : (albums || []).length === 0 ? (
               <EmptyTab
                 message={
                   <>
@@ -444,7 +450,10 @@ const ProfilePage = g(
             )}
           </div>,
           <div className={styles.cardLineupContainer} key='artistPlaylists'>
-            {(playlists || []).length === 0 ? (
+            {collectionStatus !== Status.SUCCESS &&
+            collectionStatus !== Status.ERROR ? (
+              <LoadingSpinner />
+            ) : (playlists || []).length === 0 ? (
               <EmptyTab
                 message={
                   <>

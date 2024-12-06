@@ -11,7 +11,7 @@ import {
   accountSelectors
 } from '@audius/common/store'
 import { isEqual } from 'lodash'
-import { put, select, takeLatest, call, all } from 'typed-redux-saga'
+import { put, select, takeEvery, call, all } from 'typed-redux-saga'
 
 import { processAndCacheCollections } from 'common/store/cache/collections/utils'
 
@@ -26,7 +26,7 @@ const { getProfileUser } = profilePageSelectors
 const { getUserId } = accountSelectors
 
 export function* watchFetchProfileCollections() {
-  yield* takeLatest(FETCH_COLLECTIONS, fetchProfileCollectionsAsync)
+  yield* takeEvery(FETCH_COLLECTIONS, fetchProfileCollectionsAsync)
 }
 
 function* fetchProfileCollectionsAsync(

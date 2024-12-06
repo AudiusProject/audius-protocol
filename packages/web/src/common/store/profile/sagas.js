@@ -18,7 +18,8 @@ import {
   collectiblesActions,
   confirmerActions,
   confirmTransaction,
-  getSDK
+  getSDK,
+  profilePageActions
 } from '@audius/common/store'
 import {
   squashNewLines,
@@ -47,7 +48,6 @@ import {
 import {
   fetchUsers,
   fetchUserByHandle,
-  fetchUserCollections,
   fetchUserSocials
 } from 'common/store/cache/users/sagas'
 import feedSagas from 'common/store/pages/profile/lineups/feed/sagas.js'
@@ -386,7 +386,8 @@ function* fetchProfileAsync(action) {
     if (!isNativeMobile) {
       // Fetch user socials and collections after fetching the user itself
       yield fork(fetchUserSocials, action)
-      yield fork(fetchUserCollections, user.user_id)
+      // Note that mobile dispatches this action at the component level
+      yield put(profilePageActions.fetchCollections(user.handle))
       yield fork(fetchSupportersAndSupporting, user.user_id)
     }
 
