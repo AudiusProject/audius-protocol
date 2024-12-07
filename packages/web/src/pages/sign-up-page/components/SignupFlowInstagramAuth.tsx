@@ -9,7 +9,7 @@ import { useSetProfileFromInstagram } from '../hooks/socialMediaLogin'
 
 type SignupFlowInstagramAuthProps = PropsWithChildren<{
   className?: string
-  onFailure: (e: Error, platform: SocialPlatform) => void
+  onFailure: (e: Error) => void
   onSuccess: (info: {
     requiresReview: boolean
     handle: string
@@ -31,11 +31,6 @@ export const SignupFlowInstagramAuth = ({
     onStart('instagram')
   }
 
-  const handleError = (e: Error) => {
-    console.error(e)
-    onFailure(e, 'instagram')
-  }
-
   const handleInstagramLogin = async ({
     uuid,
     profile
@@ -47,7 +42,7 @@ export const SignupFlowInstagramAuth = ({
     try {
       res = await setProfileFromInstagram({ uuid, instagramProfile: profile })
     } catch (e) {
-      handleError(e as Error)
+      onFailure(e as Error)
       return
     }
     onSuccess({
@@ -61,7 +56,7 @@ export const SignupFlowInstagramAuth = ({
     <InstagramAuth
       className={className}
       onClick={handleStart}
-      onFailure={handleError}
+      onFailure={onFailure}
       onSuccess={(uuid, profile) => handleInstagramLogin({ uuid, profile })}
     >
       {children}

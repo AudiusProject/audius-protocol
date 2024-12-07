@@ -1,14 +1,12 @@
 import { useRemoteVar } from '@audius/common/hooks'
 import { socialMediaMessages } from '@audius/common/messages'
 import type { SocialPlatform } from '@audius/common/models'
-import { Feature, ErrorLevel } from '@audius/common/models'
 import { BooleanKeys } from '@audius/common/services'
 
 import { Flex } from '@audius/harmony-native'
 import { useToast } from 'app/hooks/useToast'
 import { SignUpFlowInstagramAuth } from 'app/screens/sign-on-screen/components/SignUpFlowInstagramAuth'
 import { SignUpFlowTwitterAuth } from 'app/screens/sign-on-screen/components/SignUpFlowTwitterAuth'
-import { reportToSentry } from 'app/utils/reportToSentry'
 
 import { SignUpFlowTikTokAuth } from './SignUpFlowTikTokAuth'
 
@@ -33,28 +31,18 @@ export const SocialMediaSignUpButtons = ({
   page
 }: SocialMediaLoginOptionsProps) => {
   const { toast } = useToast()
-  const handleFailure =
-    (platform: SocialPlatform) =>
-    (e: Error | any, additionalInfo?: Record<any, any>) => {
-      onError(e)
-      reportToSentry({
-        level: ErrorLevel.Error,
-        error: e as Error,
-        name: 'Sign Up: Social Media Error',
-        feature: Feature.SignUp,
-        additionalInfo: { page, platform, ...additionalInfo }
-      })
-
-      const isAccountInUseError =
-        /Another Audius profile has already been authenticated/i.test(e.message)
-      const toastErrMessage = isAccountInUseError
-        ? socialMediaMessages.accountInUseError(platform)
-        : socialMediaMessages.verificationError
-      toast({
-        content: toastErrMessage,
-        type: 'error'
-      })
-    }
+  const handleError = (platform: SocialPlatform) => (e: Error | any) => {
+    const isAccountInUseError =
+      /Another Audius profile has already been authenticated/i.test(e.message)
+    const toastErrMessage = isAccountInUseError
+      ? socialMediaMessages.accountInUseError(platform)
+      : socialMediaMessages.verificationError
+    toast({
+      content: toastErrMessage,
+      type: 'error'
+    })
+    onError(e)
+  }
 
   const handleSuccess = ({
     handle,
@@ -87,7 +75,7 @@ export const SocialMediaSignUpButtons = ({
     <Flex direction='row' gap='s' w='100%'>
       {isTwitterEnabled ? (
         <SignUpFlowTwitterAuth
-          onError={handleFailure('twitter')}
+          onError={handleError('twitter')}
           onSuccess={handleSuccess}
           onStart={onStart}
           onClose={onClose}
@@ -96,7 +84,7 @@ export const SocialMediaSignUpButtons = ({
       ) : null}
       {isInstagramEnabled ? (
         <SignUpFlowInstagramAuth
-          onError={handleFailure('instagram')}
+          onError={handleError('instagram')}
           onSuccess={handleSuccess}
           onStart={onStart}
           onClose={onClose}
@@ -105,7 +93,7 @@ export const SocialMediaSignUpButtons = ({
       ) : null}
       {isTikTokEnabled ? (
         <SignUpFlowTikTokAuth
-          onFailure={handleFailure('tiktok')}
+          onError={handleError('tiktok')}
           onSuccess={handleSuccess}
           onStart={onStart}
           onClose={onClose}

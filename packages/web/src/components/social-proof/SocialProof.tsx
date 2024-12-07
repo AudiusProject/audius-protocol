@@ -108,8 +108,9 @@ const VerifyBody = ({
             onSuccess={onTwitterLogin}
             onFailure={(error: Error) => onFailure('twitter', error)}
             onClick={handleClickTwitter}
-            text={messages.twitterConfirm}
-          />
+          >
+            {messages.twitterConfirm}
+          </TwitterAuthButton>
         ) : null}
         {isInstagramEnabled && (
           <InstagramAuthButton

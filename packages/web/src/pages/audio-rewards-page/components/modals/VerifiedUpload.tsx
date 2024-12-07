@@ -5,11 +5,11 @@ import {
   IconTwitter,
   IconCloudUpload,
   IconInstagram,
-  Button
+  Button,
+  SocialButton
 } from '@audius/harmony'
 
 import { useModalState } from 'common/hooks/useModalState'
-import { InstagramButton, TwitterButton } from 'components/social-button'
 import { useIsMobile } from 'hooks/useIsMobile'
 import { useNavigateToPage } from 'hooks/useNavigateToPage'
 import { useWithMobileStyle } from 'hooks/useWithMobileStyle'
@@ -70,15 +70,16 @@ const VerifiedUpload = ({ dismissModal }: { dismissModal: () => void }) => {
       <span className={styles.title}>{messages.step1Title}</span>
       <span className={styles.subtitle}>{messages.step1Subtitle}</span>
       <div className={styles.verifyButtons}>
-        <TwitterButton onClick={onClickVerify}>
+        <SocialButton socialType='twitter' onClick={onClickVerify}>
           {messages.verifyTwitterButton}
-        </TwitterButton>
-        <InstagramButton
+        </SocialButton>
+        <SocialButton
+          socialType='instagram'
           className={styles.instagramButton}
           onClick={onClickVerify}
         >
           {messages.verifyIGButton}
-        </InstagramButton>
+        </SocialButton>
       </div>
       <Divider />
       <span className={styles.title}>{messages.step2Title}</span>
