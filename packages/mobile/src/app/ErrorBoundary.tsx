@@ -1,9 +1,8 @@
 import type { ReactNode } from 'react'
 import { PureComponent, useEffect } from 'react'
 
-import { ErrorLevel, Feature } from '@audius/common/models'
+import { ErrorLevel } from '@audius/common/models'
 import type { Nullable } from '@audius/common/utils'
-import * as Sentry from '@sentry/react-native'
 
 import { useToast } from 'app/hooks/useToast'
 import { make, track } from 'app/services/analytics'
