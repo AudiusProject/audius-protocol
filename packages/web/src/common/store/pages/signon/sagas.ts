@@ -23,6 +23,7 @@ import {
   SignInResponse,
   IS_MOBILE_USER_KEY
 } from '@audius/common/services'
+import { setWalletAddresses } from '@audius/common/src/store/account/slice'
 import {
   accountActions,
   accountSelectors,
@@ -606,12 +607,14 @@ function* createGuestAccount(
     FeatureFlags.GUEST_CHECKOUT
   )
 
-  if (isGuestCheckoutEnabled) {
-    const currentUser = yield* select(getAccountUser)
+  if (!isGuestCheckoutEnabled) {
+    return
+  }
+  const currentUser = yield* select(getAccountUser)
+  try {
     if (currentUser) {
-      return
+      throw new Error('User already exists')
     }
-
     yield* call(
       [authService.hedgehogInstance, authService.hedgehogInstance.signUp],
       {
@@ -620,42 +623,44 @@ function* createGuestAccount(
       }
     )
 
-    const wallet = (yield* call([authService, authService.getWalletAddresses]))
-      .web3WalletAddress
-    audiusLibs.web3Manager.setOwnerWallet(wallet)
-    if (!currentUser && guestEmail) {
-      const { metadata } = yield* call([sdk.users, sdk.users.createGuest])
-      const userId = metadata.userId
-      yield* call(fetchAccountAsync, { isSignUp: true })
-      const purchaserUserId = yield* select(getUserId)
+    const { accountWalletAddress: wallet, web3WalletAddress } = yield* call([
+      authService,
+      authService.getWalletAddresses
+    ])
 
-      try {
-        if (!purchaserUserId) {
-          throw new Error('Failed to fetch purchasing user id')
-        }
-        const userBank = yield* call(getOrCreateUSDCUserBank)
-        if (!userBank) {
-          throw new Error('Failed to create user bank')
-        }
-        const { web3Error, libsError } = yield* call(
-          audiusBackendInstance.setup,
-          {
-            wallet,
-            userId
-          }
-        )
-        if (web3Error || libsError) {
-          throw new Error('Failed to setup backend')
-        }
-      } catch (err) {
-        reportToSentry({
-          error: err as Error,
-          level: ErrorLevel.Fatal,
-          name: 'Sign Up: Failed to create guest account',
-          feature: Feature.SignUp
-        })
-      }
+    audiusLibs.web3Manager.setOwnerWallet(wallet)
+    if (!guestEmail) {
+      throw new Error('No email set for guest account')
     }
+    const { metadata } = yield* call([sdk.users, sdk.users.createGuest])
+    const userId = metadata.userId
+    yield* call(fetchAccountAsync, { isSignUp: true })
+
+    const userBank = yield* call(getOrCreateUSDCUserBank)
+    yield* put(
+      setWalletAddresses({
+        currentUser: wallet,
+        web3User: web3WalletAddress
+      })
+    )
+
+    if (!userBank) {
+      throw new Error('Failed to create user bank')
+    }
+    const { web3Error, libsError } = yield* call(audiusBackendInstance.setup, {
+      wallet,
+      userId
+    })
+    if (web3Error || libsError) {
+      throw new Error('Failed to setup backend')
+    }
+  } catch (err) {
+    reportToSentry({
+      error: err as Error,
+      level: ErrorLevel.Fatal,
+      name: 'Sign Up: Failed to create guest account',
+      feature: Feature.SignUp
+    })
   }
 }
 
