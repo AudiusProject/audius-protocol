@@ -8,7 +8,6 @@ import {
   PlayableType,
   ID
 } from '@audius/common/models'
-import { trpc } from '@audius/common/services'
 import {
   accountSelectors,
   cacheCollectionsActions,
@@ -31,7 +30,7 @@ import { Dispatch } from 'redux'
 import * as embedModalActions from 'components/embed-modal/store/actions'
 import { ToastContext } from 'components/toast/ToastContext'
 import { AppState } from 'store/types'
-import { albumPage } from 'utils/route'
+import { playlistIdPage } from 'utils/route'
 
 const { profilePage } = route
 const { requestOpen: openAddToCollection } = addToCollectionUIActions
@@ -105,14 +104,18 @@ export type TrackMenuProps = OwnProps &
   ReturnType<typeof mapStateToProps>
 
 const TrackMenu = (props: TrackMenuProps) => {
-  const { trackPermalink, goToRoute } = props
+  const { trackId, trackPermalink, goToRoute } = props
   const { toast } = useContext(ToastContext)
   const dispatch = useDispatch()
   const currentUserId = useSelector(getUserId)
   const { onOpen: openDeleteTrackConfirmation } =
     useDeleteTrackConfirmationModal()
 
-  const { data: track } = useGetTrackById({ id: props.trackId })
+  const { data: track } = useGetTrackById({ id: trackId })
+
+  const {
+    playlists_containing_track: [albumId]
+  } = track!
 
   const onDeleteTrack = (trackId: Nullable<number>) => {
     if (!trackId) return
@@ -172,10 +175,6 @@ const TrackMenu = (props: TrackMenuProps) => {
       unsetArtistPick
     } = props
 
-    const { data: albumInfo } = trpc.tracks.getAlbumBacklink.useQuery(
-      { trackId },
-      { enabled: !!trackId }
-    )
     const isLongFormContent =
       genre === Genre.PODCASTS || genre === Genre.AUDIOBOOKS
 
@@ -265,11 +264,7 @@ const TrackMenu = (props: TrackMenuProps) => {
 
     const albumPageMenuItem = {
       text: messages.visitAlbumPage,
-      onClick: () =>
-        albumInfo &&
-        goToRoute(
-          albumPage(handle, albumInfo?.playlist_name, albumInfo?.playlist_id)
-        )
+      onClick: () => albumId && playlistIdPage(albumId)
     }
 
     const artistPageMenuItem = {
@@ -331,7 +326,7 @@ const TrackMenu = (props: TrackMenuProps) => {
     if (trackId && isOwner && includeArtistPick && !isDeleted) {
       menu.items.push(artistPickMenuItem)
     }
-    if (albumInfo && includeAlbumPage) {
+    if (albumId && includeAlbumPage) {
       menu.items.push(albumPageMenuItem)
     }
     if (handle && !isOwnerDeactivated) {

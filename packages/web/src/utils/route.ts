@@ -1,6 +1,10 @@
 import { SearchCategory, SearchFilters } from '@audius/common/api'
 import type { ID } from '@audius/common/models'
-import { convertGenreLabelToValue, route } from '@audius/common/utils'
+import {
+  convertGenreLabelToValue,
+  encodeHashId,
+  route
+} from '@audius/common/utils'
 import { Genre } from '@audius/sdk'
 import { push as pushRoute } from 'connected-react-router'
 import { Location } from 'history'
@@ -40,6 +44,11 @@ export const fullAiPage = (handle: string) => {
 export const albumPage = (handle: string, title: string, id: ID) => {
   return `/${encodeUrlName(handle)}/album/${encodeUrlName(title)}-${id}`
 }
+
+export const playlistIdPage = (id: ID) => {
+  return `/playlists/${encodeHashId(id)}`
+}
+
 export const fullAlbumPage = (handle: string, title: string, id: ID) => {
   return `${BASE_URL}${albumPage(handle, title, id)}`
 }
