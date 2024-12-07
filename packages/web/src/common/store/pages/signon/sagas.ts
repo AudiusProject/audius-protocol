@@ -35,7 +35,8 @@ import {
   getContext,
   confirmerActions,
   getSDK,
-  fetchAccountAsync
+  fetchAccountAsync,
+  getOrCreateUSDCUserBank
 } from '@audius/common/store'
 import {
   Genre,
@@ -44,7 +45,8 @@ import {
   isValidEmailString,
   route,
   isResponseError,
-  encodeHashId
+  encodeHashId,
+  TEMPORARY_PASSWORD
 } from '@audius/common/utils'
 import { CreateUserRequest, UpdateProfileRequest } from '@audius/sdk'
 import { push as pushRoute } from 'connected-react-router'
@@ -580,6 +582,85 @@ function* sendRecoveryEmail({
       name: 'Sign Up: Failed to send recovery email',
       additionalInfo: { handle, email, host },
       level: ErrorLevel.Fatal,
+      feature: Feature.SignUp
+    })
+  }
+}
+
+function* createGuestAccount(
+  action: ReturnType<typeof signOnActions.createGuestAccount>
+) {
+  const { guestEmail } = action
+  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
+  const getFeatureEnabled = yield* getContext('getFeatureEnabled')
+  const reportToSentry = yield* getContext('reportToSentry')
+
+  const sdk = yield* getSDK()
+  const audiusLibs = yield* call([
+    audiusBackendInstance,
+    audiusBackendInstance.getAudiusLibs
+  ])
+
+  const authService = yield* getContext('authService')
+
+  // get user & user bank
+  const isGuestCheckoutEnabled = yield* call(
+    getFeatureEnabled,
+    FeatureFlags.GUEST_CHECKOUT
+  )
+
+  if (!isGuestCheckoutEnabled) {
+    return
+  }
+  const currentUser = yield* select(getAccountUser)
+  try {
+    if (currentUser) {
+      throw new Error('User already exists')
+    }
+    yield* call(
+      [authService.hedgehogInstance, authService.hedgehogInstance.signUp],
+      {
+        username: guestEmail,
+        password: TEMPORARY_PASSWORD
+      }
+    )
+
+    const { accountWalletAddress: wallet, web3WalletAddress } = yield* call([
+      authService,
+      authService.getWalletAddresses
+    ])
+
+    audiusLibs.web3Manager.setOwnerWallet(wallet)
+    if (!guestEmail) {
+      throw new Error('No email set for guest account')
+    }
+    const { metadata } = yield* call([sdk.users, sdk.users.createGuest])
+    const userId = metadata.userId
+    yield* call(fetchAccountAsync, { isSignUp: true })
+
+    const userBank = yield* call(getOrCreateUSDCUserBank)
+    yield* put(
+      accountActions.setWalletAddresses({
+        currentUser: wallet,
+        web3User: web3WalletAddress
+      })
+    )
+
+    if (!userBank) {
+      throw new Error('Failed to create user bank')
+    }
+    const { web3Error, libsError } = yield* call(audiusBackendInstance.setup, {
+      wallet,
+      userId
+    })
+    if (web3Error || libsError) {
+      throw new Error('Failed to setup backend')
+    }
+  } catch (err) {
+    reportToSentry({
+      error: err as Error,
+      level: ErrorLevel.Fatal,
+      name: 'Sign Up: Failed to create guest account',
       feature: Feature.SignUp
     })
   }
@@ -1258,6 +1339,10 @@ function* watchSignUp() {
   )
 }
 
+function* watchCreateGuestAccount() {
+  yield* takeLatest(signOnActions.CREATE_GUEST_ACCOUNT, createGuestAccount)
+}
+
 function* watchSignIn() {
   yield* takeLatest(signOnActions.SIGN_IN, signIn)
 }
@@ -1311,6 +1396,8 @@ export default function sagas() {
     watchConfigureMetaMask,
     watchOpenSignOn,
     watchSignOnError,
+    watchSendWelcomeEmail,
+    watchCreateGuestAccount,
     watchSendWelcomeEmail
   ]
   return sagas
