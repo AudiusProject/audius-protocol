@@ -1,5 +1,6 @@
 import { Kind } from '@audius/common/models'
 import {
+  cacheActions,
   collectionPageLineupActions as tracksActions,
   collectionPageActions as collectionActions,
   reachabilitySelectors
@@ -53,6 +54,11 @@ function* watchFetchCollection() {
     const userUid = makeUid(Kind.USERS, collection.playlist_owner_id)
     const collectionUid = collectionUids[identifier]
     if (collection) {
+      yield put(
+        cacheActions.subscribe(Kind.USERS, [
+          { uid: userUid, id: collection.playlist_owner_id }
+        ])
+      )
       yield put(
         fetchCollectionSucceeded(
           collection.playlist_id,
