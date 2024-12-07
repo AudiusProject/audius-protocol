@@ -351,6 +351,12 @@ export class CreatorNode {
         )
       }
     })
+
+    // Covers no response or empty response
+    if (!response?.data?.length) {
+      throw new Error('No upload response from storage node')
+    }
+
     return await this.pollProcessingStatusV2(
       response.data[0].id,
       template,

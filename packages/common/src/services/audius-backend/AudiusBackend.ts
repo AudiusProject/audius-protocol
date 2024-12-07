@@ -1559,19 +1559,6 @@ export const audiusBackend = ({
     }
   }
 
-  async function getRandomFeePayer() {
-    await waitForLibsInit()
-    try {
-      const { feePayer } =
-        await audiusLibs.solanaWeb3Manager.getRandomFeePayer()
-      audiusLibs.solanaWeb3Manager.feePayerKey = new PublicKey(feePayer)
-      return { feePayer }
-    } catch (err) {
-      console.error(getErrorMessage(err))
-      return { error: true }
-    }
-  }
-
   /**
    * Make a request to fetch the eth AUDIO balance of the the user
    * @params {bool} bustCache
@@ -1847,7 +1834,6 @@ export const audiusBackend = ({
     getBrowserPushSubscription,
     getEmailNotificationSettings,
     getPushNotificationSettings,
-    getRandomFeePayer,
     getSafariBrowserPushEnabled,
     getSignature,
     getUserListenCountsMonthly,

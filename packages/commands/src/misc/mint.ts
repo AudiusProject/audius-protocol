@@ -51,10 +51,13 @@ export const mintCommand = new Command('mint')
       )
       const accountInfo = await getAccount(connection, splWallet)
       console.log(chalk.green(`Successfully minted ${mint}`))
-      console.log(chalk.yellow('Transaction Signature:'), tx)
-      console.log(chalk.yellow('User bank address:    '), splWallet.toBase58())
+      console.log(chalk.yellow.bold('Transaction Signature:'), tx)
       console.log(
-        chalk.yellow('Balance:              '),
+        chalk.yellow.bold('User bank address:    '),
+        splWallet.toBase58()
+      )
+      console.log(
+        chalk.yellow.bold('Balance:              '),
         accountInfo.amount.toString()
       )
     } catch (err) {

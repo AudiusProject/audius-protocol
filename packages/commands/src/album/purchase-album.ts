@@ -33,5 +33,5 @@ export const purchaseAlbumCommand = new Command('purchase-album')
       includeNetworkCut: true
     })
     console.log(chalk.green('Successfully purchased album'))
-    console.log(chalk.yellow('Transaction Signature:'), response)
+    console.log(chalk.yellow.bold('Transaction Signature:'), response)
   })

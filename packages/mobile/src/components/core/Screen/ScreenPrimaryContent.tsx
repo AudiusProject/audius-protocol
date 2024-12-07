@@ -26,13 +26,14 @@ export const ScreenPrimaryContent = (props: ScreenPrimaryContentProps) => {
     setIsPrimaryContentReady(true)
   }, [isScreenReady, setIsPrimaryContentReady])
 
+  const screenContent =
+    skeleton || Platform.OS === 'ios' ? (
+      children
+    ) : (
+      <Animated.View entering={FadeIn}>{children}</Animated.View>
+    )
+
   // Note: not animating on Android because shadows are rendered natively behind the
   // animated view and thus don't follow the animation.
-  return isScreenReady ? (
-    <Animated.View entering={Platform.OS === 'ios' ? FadeIn : undefined}>
-      {children}
-    </Animated.View>
-  ) : (
-    <>{skeleton ?? null}</>
-  )
+  return <>{isScreenReady ? screenContent : skeleton ?? null}</>
 }

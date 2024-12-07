@@ -20,5 +20,5 @@ export const tipUserCommand = new Command('tip')
       amount
     })
     console.log(chalk.green('Successfully tipped audio'))
-    console.log(chalk.yellow('Transaction Signature:'), signature)
+    console.log(chalk.yellow.bold('Transaction Signature:'), signature)
   })
