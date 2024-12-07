@@ -42,7 +42,6 @@ export class ChallengesApi extends runtime.BaseAPI {
     async getUndisbursedChallengesRaw(params: GetUndisbursedChallengesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<UndisbursedChallenges>> {
         const queryParameters: any = {};
 
-        console.log('getUndisbursedChallengesRaw', params)
         if (params.offset !== undefined) {
             queryParameters['offset'] = params.offset;
         }
@@ -60,7 +59,6 @@ export class ChallengesApi extends runtime.BaseAPI {
         }
 
         const headerParameters: runtime.HTTPHeaders = {};
-        console.log('headerParameters', headerParameters)
 
         const response = await this.request({
             path: `/challenges/undisbursed`,
@@ -68,13 +66,6 @@ export class ChallengesApi extends runtime.BaseAPI {
             headers: headerParameters,
             query: queryParameters,
         }, initOverrides);
-        console.log('response', response, response.bodyUsed)
-        console.log('response headers:')
-        for (const [key, value] of response.headers.entries()) {
-            console.log(`${key}: ${value}`)
-        }
-        const text = await response.text()
-        console.log('text', text)
 
         return new runtime.JSONApiResponse(response, (jsonValue) => UndisbursedChallengesFromJSON(jsonValue));
     }

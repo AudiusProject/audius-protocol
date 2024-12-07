@@ -185,65 +185,55 @@ export class DiscoveryNodeSelector implements DiscoveryNodeSelectorService {
         return { url, init: context.init }
       },
       post: async (context: ResponseContext) => {
-        this.logger.info('post', context.response)
         const response = context.response
-        return response
-        // const endpoint = await this.getSelectedEndpoint()
-        // this.logger.info('endpoint', endpoint)
-        // if (!endpoint) {
-        //   await this.select(endpoint)
-        // } else if (response.ok) {
-        //   this.logger.info('response.ok')
-        //   // Even when successful, copy response to read JSON body to
-        //   // check for signs the DN is unhealthy and reselect if necessary.
-        //   // This will get the client to pick new discovery providers
-        //   // if the selected one falls behind, even if requests are succeeding
-        //   const responseClone = response.clone()
-        //   const contentType = responseClone.headers.get('Content-Type')
-        //   if (!contentType?.includes('json')) {
-        //     return response
-        //   }
-        //   this.logger.info('contentType', contentType)
-        //   // const data = (await responseClone.json()) as ApiHealthResponseData
-        //   // this.logger.info('data', data)
-        //   // const { health, reason } = parseApiHealthStatusReason({
-        //   //   data,
-        //   //   healthCheckThresholds: this.config.healthCheckThresholds
-        //   // })
-        //   // this.logger.info('health', health)
-        //   // const blockDiff = isFullFlaskResponse(data)
-        //   //   ? (data.latest_chain_block ?? 0) - (data.latest_indexed_block ?? 0)
-        //   //   : 0
-        //   // this.logger.info('blockDiff', blockDiff)
-        //   // const version = isFullFlaskResponse(data)
-        //   //   ? data.version?.version ?? ''
-        //   //   : ''
-        //   // this.logger.info('version', version)
-        //   // await this.reselectIfNecessary({
-        //   //   endpoint,
-        //   //   health,
-        //   //   reason,
-        //   //   data: {
-        //   //     block_difference: blockDiff,
-        //   //     version
-        //   //   }
-        //   // })
-        //   this.logger.info('end of post', context.response)
-        // } else {
-        //   const userError = response !== undefined && response.status < 500
+        const endpoint = await this.getSelectedEndpoint()
+        if (!endpoint) {
+          await this.select(endpoint)
+        } else if (response.ok) {
+          // Even when successful, copy response to read JSON body to
+          // check for signs the DN is unhealthy and reselect if necessary.
+          // This will get the client to pick new discovery providers
+          // if the selected one falls behind, even if requests are succeeding
+          const responseClone = response.clone()
+          const contentType = responseClone.headers.get('Content-Type')
+          if (!contentType?.includes('json')) {
+            return response
+          }
 
-        //   if (userError) {
-        //     this.logger.warn(
-        //       `status code ${response.status} below 500, not reselecting`,
-        //       endpoint,
-        //       context
-        //     )
-        //     return response
-        //   }
-        //   this.logger.info('reselecting')
-        //   return await this.reselectAndRetry({ context, endpoint })
-        // }
-        // return response
+          const data = (await responseClone.json()) as ApiHealthResponseData
+          const { health, reason } = parseApiHealthStatusReason({
+            data,
+            healthCheckThresholds: this.config.healthCheckThresholds
+          })
+          const blockDiff = isFullFlaskResponse(data)
+            ? (data.latest_chain_block ?? 0) - (data.latest_indexed_block ?? 0)
+            : 0
+          const version = isFullFlaskResponse(data)
+            ? data.version?.version ?? ''
+            : ''
+          await this.reselectIfNecessary({
+            endpoint,
+            health,
+            reason,
+            data: {
+              block_difference: blockDiff,
+              version
+            }
+          })
+        } else {
+          const userError = response !== undefined && response.status < 500
+
+          if (userError) {
+            this.logger.warn(
+              `status code ${response.status} below 500, not reselecting`,
+              endpoint,
+              context
+            )
+            return response
+          }
+          return await this.reselectAndRetry({ context, endpoint })
+        }
+        return response
       },
       onError: async (context: ErrorContext) => {
         const endpoint = await this.getSelectedEndpoint()
@@ -424,13 +414,9 @@ export class DiscoveryNodeSelector implements DiscoveryNodeSelectorService {
    * @returns a healthy discovery node endpoint
    */
   private async select(prevSelectedNode: string | null) {
-    this.logger.info('bbuok?')
-    this.logger.info('start select', prevSelectedNode, this.selectedNode)
     if (this.reselectLock) {
-      this.logger.info('selecting', prevSelectedNode, this.selectedNode)
       await new Promise<void>((resolve) => {
         this.eventEmitter.once('reselectAttemptComplete', () => {
-          this.logger.info('event emitter', prevSelectedNode, this.selectedNode)
           resolve()
         })
       })
@@ -558,13 +544,9 @@ export class DiscoveryNodeSelector implements DiscoveryNodeSelectorService {
         this.selectedNode = selectedService
         this.eventEmitter.emit('change', selectedService)
       }
-      this.logger.info(
-        `Selected discprov!!!! ${selectedService}`,
-        decisionTree,
-        {
-          attemptedServicesCount
-        }
-      )
+      this.logger.info(`Selected discprov ${selectedService}`, decisionTree, {
+        attemptedServicesCount
+      })
       this.isBehind = false
       return this.selectedNode
     } finally {
