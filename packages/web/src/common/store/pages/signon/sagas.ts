@@ -23,7 +23,6 @@ import {
   SignInResponse,
   IS_MOBILE_USER_KEY
 } from '@audius/common/services'
-import { setWalletAddresses } from '@audius/common/src/store/account/slice'
 import {
   accountActions,
   accountSelectors,
@@ -638,7 +637,7 @@ function* createGuestAccount(
 
     const userBank = yield* call(getOrCreateUSDCUserBank)
     yield* put(
-      setWalletAddresses({
+      accountActions.setWalletAddresses({
         currentUser: wallet,
         web3User: web3WalletAddress
       })
