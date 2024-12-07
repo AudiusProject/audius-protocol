@@ -1,19 +1,30 @@
 import cron from "node-cron"
 import { App } from '@pedalboard/basekit'
 import { SharedData, initSharedData } from './config'
-import { disburseTrendingRewards } from './app'
+import { disburseTrendingRewards } from './rewards'
 import { establishSlackConnection } from './slack'
 import { announceTopFiveTrending } from './trending'
 
+
+const onDemandRun = async (app: App<SharedData>) => {
+  if (process.env.tcrDryRun === 'true') {
+    await disburseTrendingRewards(app)
+  }
+}
+
 export const main = async () => {
+  console.log('main')
   const data = await initSharedData()
 
   await new App<SharedData>({ appData: data })
     .task(establishSlackConnection)
+    .task(onDemandRun)
     .run()
+
+  
 }
 
-// Friday at 12:01 pm PST, extra five minutes for trending to calculate
+// Friday at 12:05 pm PST, extra five minutes for trending to calculate
 cron.schedule('5 12 * * 5', () => {
   initSharedData().then((data) => {
     // make new appdata instance to satisfy types
@@ -28,6 +39,3 @@ cron.schedule('5 12 * * 5', () => {
 }, {
     timezone: "America/Los_Angeles"
 });
-
-
-discoveryProviderConfig: { whitelist: new Set(['https://discoveryprovider.audius.co', 'https://dn2.monophonic.digital', 'https://audius-metadata-1.figment.io', 'https://audius-dp.amsterdam.creatorseed.com'])},

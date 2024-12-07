@@ -1,11 +1,14 @@
-import { AudiusLibs } from '@audius/sdk-legacy/dist/libs'
-import { initAudiusLibs } from './libs'
+import { audiusSdk } from './sdk'
+import { AudiusSdk } from '@audius/sdk'
+import dotenv from 'dotenv'
+
+dotenv.config()
 
 export type SharedData = {
   oracleEthAddress: string
   AAOEndpoint: string
-  feePayerOverride: string
-  libs: AudiusLibs
+  // feePayerOverride: string
+  sdk: AudiusSdk
   localEndpoint: string
   dryRun: boolean
 }
@@ -14,15 +17,14 @@ let sharedData: SharedData | undefined = undefined
 
 export const initSharedData = async (): Promise<SharedData> => {
   if (sharedData !== undefined) return sharedData
-
-  const libs = await initAudiusLibs()
+  const sdk = audiusSdk()
 
   // default to true if undefined, otherwise explicitly state false to not do dry run
   const dryRun = !(
     (process.env.tcrDryRun || 'true').toLocaleLowerCase() === 'false'
   )
 
-  const feePayerOverride = process.env.audius_fee_payer_override
+  // const feePayerOverride = process.env.audius_fee_payer_override
   const AAOEndpoint =
     process.env.audius_aao_endpoint || 'https://antiabuseoracle.audius.co'
   const oracleEthAddress =
@@ -30,17 +32,17 @@ export const initSharedData = async (): Promise<SharedData> => {
     '0x9811BA3eAB1F2Cd9A2dFeDB19e8c2a69729DC8b6'
   const localEndpoint = process.env.audius_discprov_url || 'http://server:5000'
 
-  if (feePayerOverride === undefined)
-    throw new Error('feePayerOverride undefined')
+  // if (feePayerOverride === undefined)
+  //   throw new Error('feePayerOverride undefined')
 
   sharedData = {
     oracleEthAddress,
     AAOEndpoint,
-    feePayerOverride,
-    libs,
+    // feePayerOverride,
+    sdk,
     localEndpoint,
     dryRun
   }
-  // @ts-ignore
   return sharedData
 }
+

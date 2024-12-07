@@ -119,7 +119,10 @@ export class BaseAPI {
     /** @hidden */
     protected async request(context: RequestOpts, initOverrides?: RequestInit | InitOverrideFunction): Promise<Response> {
         const { url, init } = await this.createFetchParams(context, initOverrides);
+        console.log('url', url)
+        console.log('init', init)
         const response = await this.fetchApi(url, init);
+        console.log('response from request', response)
         if (response && (response.status >= 200 && response.status < 300)) {
             return response;
         }
