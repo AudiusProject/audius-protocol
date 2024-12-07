@@ -71,7 +71,6 @@ export class ChallengesApi extends runtime.BaseAPI {
         }
 
         const headerParameters: runtime.HTTPHeaders = {};
-        console.log('queryParameters = ', queryParameters)
 
         const response = await this.request({
             path: `/challenges/{challenge_id}/attest`.replace(`{${"challenge_id"}}`, encodeURIComponent(String(params.challengeId))),

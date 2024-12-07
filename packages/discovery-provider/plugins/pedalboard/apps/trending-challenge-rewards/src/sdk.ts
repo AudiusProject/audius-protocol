@@ -26,12 +26,10 @@ const solanaRelay = new SolanaRelay(
   })
 )
 
-export const audiusSdk = () => {
+export const audiusSdk = ({ environment }: { environment: 'development' | 'staging' | 'production' }) => {
   return sdk({
     appName: 'trending-challenge-rewards',
-    apiKey: process.env.API_KEY,
-    apiSecret: process.env.API_SECRET,
-    environment: process.env.ENVIRONMENT as 'development' | 'staging' | 'production' | undefined ?? 'staging',
+    environment,
     services: {
       discoveryNodeSelector,
       solanaRelay,

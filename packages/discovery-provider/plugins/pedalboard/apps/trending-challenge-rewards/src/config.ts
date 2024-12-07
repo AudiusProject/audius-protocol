@@ -5,44 +5,28 @@ import dotenv from 'dotenv'
 dotenv.config()
 
 export type SharedData = {
-  oracleEthAddress: string
-  AAOEndpoint: string
-  // feePayerOverride: string
   sdk: AudiusSdk
-  localEndpoint: string
   dryRun: boolean
+  audiusDbUrl: string
+  slackChannel?: string
+  slackSigningSecret?: string
+  slackBotToken?: string
+  slackAppToken?: string
 }
 
 let sharedData: SharedData | undefined = undefined
 
 export const initSharedData = async (): Promise<SharedData> => {
   if (sharedData !== undefined) return sharedData
-  const sdk = audiusSdk()
-
-  // default to true if undefined, otherwise explicitly state false to not do dry run
-  const dryRun = !(
-    (process.env.tcrDryRun || 'true').toLocaleLowerCase() === 'false'
-  )
-
-  // const feePayerOverride = process.env.audius_fee_payer_override
-  const AAOEndpoint =
-    process.env.audius_aao_endpoint || 'https://antiabuseoracle.audius.co'
-  const oracleEthAddress =
-    process.env.audius_aao_address ||
-    '0x9811BA3eAB1F2Cd9A2dFeDB19e8c2a69729DC8b6'
-  const localEndpoint = process.env.audius_discprov_url || 'http://server:5000'
-
-  // if (feePayerOverride === undefined)
-  //   throw new Error('feePayerOverride undefined')
 
   sharedData = {
-    oracleEthAddress,
-    AAOEndpoint,
-    // feePayerOverride,
-    sdk,
-    localEndpoint,
-    dryRun
+    sdk: audiusSdk({ environment: process.env.environment as 'development' | 'staging' | 'production' }),
+    dryRun: process.env.tcr_dry_run === 'true',
+    audiusDbUrl: process.env.audius_db_url!,
+    slackChannel: process.env.slack_channel,
+    slackSigningSecret: process.env.slack_signing_secret,
+    slackBotToken: process.env.slack_bot_token,
+    slackAppToken: process.env.slack_app_token
   }
   return sharedData
 }
-

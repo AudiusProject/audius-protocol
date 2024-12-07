@@ -7,13 +7,14 @@ import { announceTopFiveTrending } from './trending'
 
 
 const onDemandRun = async (app: App<SharedData>) => {
-  if (process.env.tcrDryRun === 'true') {
+  // Run on demand only if dryRun is true
+  const { dryRun } = app.viewAppData()
+  if (dryRun) {
     await disburseTrendingRewards(app)
   }
 }
 
 export const main = async () => {
-  console.log('main')
   const data = await initSharedData()
 
   await new App<SharedData>({ appData: data })
