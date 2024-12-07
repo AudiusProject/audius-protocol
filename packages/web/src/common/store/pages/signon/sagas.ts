@@ -83,7 +83,7 @@ const { FEED_PAGE, SIGN_IN_PAGE, SIGN_UP_PAGE, SIGN_UP_PASSWORD_PAGE } = route
 const { requestPushNotificationPermissions } = settingsPageActions
 const { saveCollection } = collectionsSocialActions
 const { getUsers } = cacheUsersSelectors
-const { getAccountUser, getHasAccount, getUserId } = accountSelectors
+const { getAccountUser, getHasAccount } = accountSelectors
 const { toast } = toastActions
 
 const SIGN_UP_TIMEOUT_MILLIS = 20 /* min */ * 60 * 1000
