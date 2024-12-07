@@ -16,7 +16,6 @@ const { resetState: resetWalletState } = tokenDashboardPageActions
 const { signOut: signOutAction } = signOutActions
 
 function* watchSignOut() {
-  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
   const localStorage = yield* getContext('localStorage')
   const authService = yield* getContext('authService')
   yield takeLatest(signOutAction.type, function* () {
@@ -25,8 +24,7 @@ function* watchSignOut() {
     yield put(resetWalletState())
     yield put(
       make(Name.SETTINGS_LOG_OUT, {
-        callback: () =>
-          signOut(audiusBackendInstance, localStorage, authService)
+        callback: () => signOut(localStorage, authService)
       })
     )
     yield put(pushRoute(TRENDING_PAGE))
