@@ -10,6 +10,19 @@ import {
 import { WebClient } from '@slack/web-api'
 import { formatDisbursementTable } from './slack'
 import { discoveryDb } from './utils'
+import { ChallengeId, ChallengeResponse } from '@audius/sdk'
+import axios from 'axios'
+
+type Challenge = {
+  challenge_id: string
+  user_id: string
+  specifier: string
+  amount: string
+  completed_blocknumber: number
+  handle: string
+  wallet: string
+}
+
 
 // TODO: move something like this into App so results are commonplace for handlers
 export const disburseTrendingRewards = async (
@@ -48,50 +61,53 @@ export const onDisburse = async (
     completedBlock = challenge.completed_blocknumber! - 1
     specifier = challenge.specifier
   }
-  console.log('go!!!')
-  const { data: undisbursed } = await sdk.challenges.getUndisbursedChallenges({
-    completedBlocknumber: completedBlock,
-  })
-  console.log('asdf')
-  console.log('undisbursed = ', undisbursed)
-  for (const challenge of undisbursed ?? []) {
+  
+  const trimmedSpecifier = specifier.split(':')[0]
+  console.log('trimmedSpecifier = ', trimmedSpecifier)
+  const endpoint = await sdk.services.discoveryNodeSelector.getSelectedEndpoint()
+  console.log('endpoint = ', endpoint)
+  const res = await axios.get(
+    `${endpoint}/v1/challenges/undisbursed?completed_blocknumber=${completedBlock}`
+  )
+
+  const data: Challenge[] = res.data.data
+
+  const toDisburse = data.filter((c) =>
+    ['tt', 'tp', 'tut'].includes(c.challenge_id)
+  )
+
+  for (const challenge of toDisburse) {
     console.log('undisbursed challenge = ', challenge)
+    const challengeId = Object.values(ChallengeId).find(id => id === challenge.challenge_id)!
+    console.log('challengeId = ', challengeId)
+    let res
+    try {
+      res = await sdk.challenges.claimReward({
+        challengeId,
+        userId: challenge.user_id,
+        specifier: challenge.specifier,
+        amount: parseFloat(challenge.amount),
+      })
+    } catch (e) {
+      console.error('error claiming reward', e)
+    }
+    console.log('res = ', res)
   }
-  // console.log({completedBlock, specifier, undisbursed})
-  // console.log('undisbursed = ', undisbursed)
 
-//   const trimmedSpecifier = specifier.split(':')[0]
-  // const res = await axios.get(
-  //   `${localEndpoint}/v1/challenges/undisbursed?completed_blocknumber=${startBlock}`
-  // )
+  const friendly = await getChallengesDisbursementsUserbanksFriendlyEnsureSlots(
+    db,
+    trimmedSpecifier
+  )
 
-  // const data: Challenge[] = res.data.data
+  const formattedResults = formatDisbursementTable(friendly)
+  console.log(formattedResults)
 
-  // const toDisburse = data.filter((c) =>
-  //   ['tt', 'tp', 'tut'].includes(c.challenge_id)
-  // )
-
-  // console.log(`Found ${toDisburse.length} trending challenges to disburse`)
-  // await sdk.challenges.claimReward({
-
-  // const nodeGroups = await assembleNodeGroups(libs)
-
-  // await getAllChallenges(app, nodeGroups, completedBlock, dryRun)
-
-  // const friendly = await getChallengesDisbursementsUserbanksFriendlyEnsureSlots(
-  //   db,
-  //   trimmedSpecifier
-  // )
-
-  // const formattedResults = formatDisbursementTable(friendly)
-  // console.log(formattedResults)
-
-  // const channel = process.env.SLACK_CHANNEL
-  // if (channel === undefined) return new Err('SLACK_CHANNEL not defined')
-  // await client.chat.postMessage({
-  //   channel,
-  //   text: '```' + formattedResults + '```'
-  // })
+  const channel = process.env.SLACK_CHANNEL
+  if (channel === undefined) return new Err('SLACK_CHANNEL not defined')
+  await client.chat.postMessage({
+    channel,
+    text: '```' + formattedResults + '```'
+  })
 
   return new Ok(undefined)
 }

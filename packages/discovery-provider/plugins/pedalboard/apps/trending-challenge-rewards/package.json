@@ -6,8 +6,7 @@
     "build": "tsc",
     "clean": "rm -rf dist",
     "watch": "tsc --watch",
-    "dev": "nodemon --exec \"node -r esbuild-register ./src/index.ts\" -e .ts",
-    "devs": "concurrently \"npm run watch\" \"npm run start\"",
+    "dev": "concurrently \"npm run watch\" \"npm run start\"",
     "lint": "tsc --noEmit && eslint \"src/**/*.ts*\"",
     "start": "node ./dist/index.js",
     "test": "jest --detectOpenHandles"
