@@ -36,6 +36,8 @@ import { initializeStripeModal } from '~/store/ui/stripe-modal/slice'
 import { setUSDCBalance } from '~/store/wallet/slice'
 import { waitForRead } from '~/utils'
 
+import { getSDK } from '../sdkUtils'
+
 import {
   buyUSDCFlowFailed,
   buyUSDCFlowSucceeded,
@@ -178,7 +180,8 @@ function* transferStep({
     throw new Error('Missing feePayer unexpectedly')
   }
   const feePayerOverride = new PublicKey(feePayer)
-  const recentBlockhash = yield* call(getRecentBlockhash, audiusBackendInstance)
+  const sdk = yield* getSDK()
+  const recentBlockhash = yield* call(getRecentBlockhash, { sdk })
 
   yield* call(
     retry,

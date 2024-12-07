@@ -83,23 +83,10 @@ export const getRootSolanaAccount = async (
 }
 
 /**
- * Gets the Solana connection libs is currently using
- */
-export const getSolanaConnection = async (
-  audiusBackendInstance: AudiusBackend
-) => {
-  return (
-    await audiusBackendInstance.getAudiusLibsTyped()
-  ).solanaWeb3Manager!.getConnection()
-}
-
-/**
  * Gets the latest blockhash using the libs connection
  */
-export const getRecentBlockhash = async (
-  audiusBackendInstance: AudiusBackend
-) => {
-  const connection = await getSolanaConnection(audiusBackendInstance)
+export const getRecentBlockhash = async ({ sdk }: { sdk: AudiusSdk }) => {
+  const connection = sdk.services.solanaClient.connection
   return (await connection.getLatestBlockhash()).blockhash
 }
 
@@ -343,18 +330,21 @@ export const pollForBalanceChange = async (
     wallet,
     initialBalance,
     retryDelayMs = DEFAULT_RETRY_DELAY,
-    maxRetryCount = DEFAULT_MAX_RETRY_COUNT
+    maxRetryCount = DEFAULT_MAX_RETRY_COUNT,
+    sdk
   }: {
     wallet: PublicKey
     initialBalance?: bigint
     retryDelayMs?: number
     maxRetryCount?: number
+    sdk: AudiusSdk
   }
 ) => {
   console.info(`Polling SOL balance for ${wallet.toBase58()} ...`)
-  let balanceBN = await audiusBackendInstance.getAddressSolBalance(
-    wallet.toBase58()
-  )
+  let balanceBN = await audiusBackendInstance.getAddressSolBalance({
+    address: wallet.toBase58(),
+    sdk
+  })
   let balance = BigInt(balanceBN.toString())
   if (initialBalance === undefined) {
     initialBalance = balance
@@ -365,9 +355,10 @@ export const pollForBalanceChange = async (
       `Polling SOL balance (${initialBalance} === ${balance}) [${retries}/${maxRetryCount}]`
     )
     await delay(retryDelayMs)
-    balanceBN = await audiusBackendInstance.getAddressSolBalance(
-      wallet.toBase58()
-    )
+    balanceBN = await audiusBackendInstance.getAddressSolBalance({
+      address: wallet.toBase58(),
+      sdk
+    })
     balance = BigInt(balanceBN.toString())
   }
   if (balance !== initialBalance) {
@@ -689,18 +680,20 @@ export const createVersionedTransaction = async (
   {
     instructions,
     lookupTableAddresses,
-    feePayer
+    feePayer,
+    sdk
   }: {
     instructions: TransactionInstruction[]
     lookupTableAddresses: string[]
     feePayer: PublicKey
+    sdk: AudiusSdk
   }
 ) => {
   const addressLookupTableAccounts = await getLookupTableAccounts(
     audiusBackendInstance,
     { lookupTableAddresses }
   )
-  const recentBlockhash = await getRecentBlockhash(audiusBackendInstance)
+  const recentBlockhash = await getRecentBlockhash({ sdk })
 
   const message = new TransactionMessage({
     payerKey: feePayer,

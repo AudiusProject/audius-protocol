@@ -1,3 +1,4 @@
+import { AUDIO, wAUDIO } from '@audius/fixed-decimal'
 import {
   AudiusSdk,
   Genre,
@@ -1605,19 +1606,28 @@ export const audiusBackend = ({
    * @params {string} ethAddress - Optional ETH wallet address to derive user bank. Defaults to hedgehog wallet
    * @returns {Promise<BN>} balance or null if failed to fetch balance
    */
-  async function getWAudioBalance(ethAddress?: string): Promise<BN | null> {
-    await waitForLibsInit()
-
+  async function getWAudioBalance({
+    ethAddress,
+    sdk
+  }: {
+    ethAddress: string
+    sdk: AudiusSdk
+  }): Promise<BN | null> {
     try {
-      const userBank = await audiusLibs.solanaWeb3Manager.deriveUserBank({
-        ethAddress
-      })
-      const ownerWAudioBalance =
-        await audiusLibs.solanaWeb3Manager.getWAudioBalance(userBank)
+      const { userBank } =
+        await sdk.services.claimableTokensClient.getOrCreateUserBank({
+          ethWallet: ethAddress,
+          mint: 'wAUDIO'
+        })
+      const connection = sdk.services.solanaClient.connection
+      const {
+        value: { amount }
+      } = await connection.getTokenAccountBalance(userBank)
+      const ownerWAudioBalance = AUDIO(wAUDIO(BigInt(amount))).value
       if (isNullOrUndefined(ownerWAudioBalance)) {
         throw new Error('Failed to fetch account waudio balance')
       }
-      return ownerWAudioBalance
+      return new BN(ownerWAudioBalance.toString())
     } catch (e) {
       console.error(e)
       reportError({ error: e as Error })
@@ -1630,10 +1640,22 @@ export const audiusBackend = ({
    * @param {string} The solana wallet address
    * @returns {Promise<BNWei>}
    */
-  async function getAddressSolBalance(address: string): Promise<BNWei> {
-    await waitForLibsInit()
-    const solBalance = await audiusLibs.solanaWeb3Manager.getSolBalance(address)
-    return solBalance
+  async function getAddressSolBalance({
+    address,
+    sdk
+  }: {
+    address: string
+    sdk: AudiusSdk
+  }): Promise<BNWei> {
+    try {
+      const addressPubKey = new PublicKey(address)
+      const connection = sdk.services.solanaClient.connection
+      const solBalance = await connection.getBalance(addressPubKey)
+      return new BN(solBalance ?? 0) as BNWei
+    } catch (e) {
+      reportError({ error: e as Error })
+      return new BN(0) as BNWei
+    }
   }
 
   /**
