@@ -7,7 +7,7 @@ import { combineReducers } from 'redux'
 import { expectSaga } from 'redux-saga-test-plan'
 import * as matchers from 'redux-saga-test-plan/matchers'
 import { StaticProvider } from 'redux-saga-test-plan/providers'
-import { describe, expect, it } from 'vitest'
+import { describe, it } from 'vitest'
 
 import { waitForBackendSetup } from 'common/store/backend/sagas'
 import * as sagas from 'common/store/social/tracks/sagas'
