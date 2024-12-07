@@ -182,8 +182,23 @@ func (ss *MediorumServer) postUpload(c echo.Context) error {
 		placementHosts = strings.Split(v, ",")
 	}
 
-	if placementHosts != nil && !slices.Contains(placementHosts, ss.Config.Self.Host) {
-		return c.String(400, "if placement_hosts is specified, you must upload to one of the placement_hosts")
+	if placementHosts != nil {
+		if !slices.Contains(placementHosts, ss.Config.Self.Host) {
+			return c.String(400, "if placement_hosts is specified, you must upload to one of the placement_hosts")
+		}
+		// validate that the placement hosts are all registered nodes
+		for _, host := range placementHosts {
+			isRegistered := false
+			for _, peer := range ss.Config.Peers {
+				if peer.Host == host {
+					isRegistered = true
+					break
+				}
+			}
+			if !isRegistered {
+				return c.String(400, "all placement_hosts must be registered signers")
+			}
+		}
 	}
 
 	if previewStart != "" {
