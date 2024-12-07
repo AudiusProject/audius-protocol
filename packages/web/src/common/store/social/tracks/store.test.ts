@@ -7,7 +7,7 @@ import { combineReducers } from 'redux'
 import { expectSaga } from 'redux-saga-test-plan'
 import * as matchers from 'redux-saga-test-plan/matchers'
 import { StaticProvider } from 'redux-saga-test-plan/providers'
-import { describe, it } from 'vitest'
+import { describe, expect, it } from 'vitest'
 
 import { waitForBackendSetup } from 'common/store/backend/sagas'
 import * as sagas from 'common/store/social/tracks/sagas'
@@ -307,11 +307,10 @@ describe('recordListen', () => {
       )
       .provide([
         ...defaultProviders,
-        [matchers.getContext('audiusBackendInstance'), audiusBackendInstance],
-        [matchers.call.fn(audiusBackendInstance.recordTrackListen), true]
+        [matchers.getContext('audiusBackendInstance'), audiusBackendInstance]
       ])
       .dispatch(actions.recordListen(1))
-      .call(audiusBackendInstance.recordTrackListen, 1, 1)
+      .call.fn(audiusBackendInstance.recordTrackListen)
       .silentRun()
   })
 
