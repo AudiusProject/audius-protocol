@@ -623,7 +623,6 @@ function* downloadTracks({
   const { trackId: parentTrackId } = tracks[0]
   try {
     const audiusBackendInstance = yield* getContext('audiusBackendInstance')
-    const apiClient = yield* getContext('apiClient')
     const audiusSdk = yield* getContext('audiusSdk')
     const sdk = yield* call(audiusSdk)
     const trackDownload = yield* getContext('trackDownload')
@@ -647,10 +646,9 @@ function* downloadTracks({
     const files = tracks.map(({ trackId, filename }) => {
       queryParams.filename = filename
       return {
-        url: apiClient.makeUrl(
-          `/tracks/${encodeHashId(trackId)}/download`,
-          queryParams
-        ),
+        url: `https://discoveryprovider.audius.co/tracks/${encodeHashId(
+          trackId
+        )}/download?${new URLSearchParams(queryParams).toString()}`,
         filename
       }
     })

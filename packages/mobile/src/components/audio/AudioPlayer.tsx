@@ -47,7 +47,6 @@ import { useDispatch, useSelector } from 'react-redux'
 import { useAsync, usePrevious } from 'react-use'
 
 import { make, track as analyticsTrack } from 'app/services/analytics'
-import { apiClient } from 'app/services/audius-api-client'
 import { audiusBackendInstance } from 'app/services/audius-backend-instance'
 import {
   getLocalAudioPath,
@@ -361,10 +360,7 @@ export const AudioPlayer = () => {
 
         queryParams = { ...queryParams, preview: shouldPreview }
 
-        url = apiClient.makeUrl(
-          `/tracks/${encodeHashId(track.track_id)}/stream`,
-          queryParams
-        )
+        throw new Error('Not implemented')
       }
 
       const localTrackImageSource =

@@ -1,11 +1,5 @@
-import { audiusLibs, waitForLibsInit } from './libs'
-
 export const getUSDCUserBank = async (ethWallet?: string) => {
-  await waitForLibsInit()
-  return await audiusLibs?.solanaWeb3Manager?.deriveUserBank({
-    ethAddress: ethWallet,
-    mint: 'usdc'
-  })
+  throw new Error('Not implemented')
 }
 
 export const createStripeSession = async ({
@@ -17,10 +11,5 @@ export const createStripeSession = async ({
   amount: string
   destinationCurrency: 'sol' | 'usdc'
 }) => {
-  await waitForLibsInit()
-  return await audiusLibs?.identityService?.createStripeSession({
-    destinationWallet,
-    amount,
-    destinationCurrency
-  })
+  throw new Error('Not implemented')
 }

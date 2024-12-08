@@ -32,10 +32,8 @@ const { setIsConnectingWallet, connectNewWallet: baseConnectNewWallet } =
 const { getUserId } = accountSelectors
 
 export function* convertToChecksumAddress(address: WalletAddress) {
-  const audiusBackend = yield* getContext('audiusBackendInstance')
-  const audiusLibs = yield* call(audiusBackend.getAudiusLibs)
-  const ethWeb3 = audiusLibs.ethWeb3Manager.getWeb3()
-  return ethWeb3.utils.toChecksumAddress(address)
+  throw new Error('Not implemented')
+  // return ethWeb3.utils.toChecksumAddress(address)
 }
 
 // Connection a new wallet to an Audius account
@@ -146,33 +144,34 @@ function* connectNewWalletAsync(action: ConnectNewWalletAction) {
     }
     case 'wallet-connect': {
       const { publicKey } = action.payload
-      const wallet = yield* call(convertToChecksumAddress, publicKey)
+      throw new Error('Not implemented')
+      // const wallet = yield* call(convertToChecksumAddress, publicKey)
 
-      const isNewWallet = yield* checkIsNewWallet(wallet, Chain.Eth)
-      if (!isNewWallet) return
+      // const isNewWallet = yield* checkIsNewWallet(wallet, Chain.Eth)
+      // if (!isNewWallet) return
 
-      const { balance, collectibleCount } = yield* getWalletInfo(
-        wallet,
-        Chain.Eth
-      )
+      // const { balance, collectibleCount } = yield* getWalletInfo(
+      //   wallet,
+      //   Chain.Eth
+      // )
 
-      yield* put(
-        setIsConnectingWallet({
-          wallet,
-          chain: Chain.Eth,
-          balance,
-          collectibleCount
-        })
-      )
+      // yield* put(
+      //   setIsConnectingWallet({
+      //     wallet,
+      //     chain: Chain.Eth,
+      //     balance,
+      //     collectibleCount
+      //   })
+      // )
 
-      eventProperties = {
-        chain: Chain.Eth,
-        walletAddress: wallet
-      }
+      // eventProperties = {
+      //   chain: Chain.Eth,
+      //   walletAddress: wallet
+      // }
 
-      yield* put(setConnectionStatus({ status: 'connected' }))
+      // yield* put(setConnectionStatus({ status: 'connected' }))
 
-      break
+      // break
     }
   }
 

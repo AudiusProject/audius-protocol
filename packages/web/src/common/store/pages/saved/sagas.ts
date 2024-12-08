@@ -4,7 +4,6 @@ import {
   UserTrackMetadata,
   User
 } from '@audius/common/models'
-import { makeActivity, APIActivityV2 } from '@audius/common/services'
 import {
   accountSelectors,
   savedPageTracksLineupActions as tracksActions,
@@ -77,27 +76,28 @@ function* sendLibraryRequest({
       type: category
     }
   )) as any
-  const savedTracksResponseData = savedTracksResponse.data as APIActivityV2[]
-  const tracks = savedTracksResponse.data
-    ?.map(makeActivity)
-    .filter(removeNullable) as UserTrackMetadata[]
-  if (!tracks) {
-    throw new Error('Something went wrong with library tracks request.')
-  }
+  throw new Error('Not implemented')
+  // const savedTracksResponseData = savedTracksResponse.data as APIActivityV2[]
+  // const tracks = savedTracksResponse.data
+  //   ?.map(makeActivity)
+  //   .filter(removeNullable) as UserTrackMetadata[]
+  // if (!tracks) {
+  //   throw new Error('Something went wrong with library tracks request.')
+  // }
 
-  const saves = savedTracksResponseData
-    .filter((save) => Boolean(save.timestamp && save.item))
-    .map((save) => ({
-      created_at: save.timestamp!,
-      save_item_id: decodeHashId(save.item!.id!),
-      save_type: FavoriteType.TRACK,
-      user_id: userId
-    })) as Favorite[]
+  // const saves = savedTracksResponseData
+  //   .filter((save) => Boolean(save.timestamp && save.item))
+  //   .map((save) => ({
+  //     created_at: save.timestamp!,
+  //     save_item_id: decodeHashId(save.item!.id!),
+  //     save_type: FavoriteType.TRACK,
+  //     user_id: userId
+  //   })) as Favorite[]
 
-  return {
-    saves,
-    tracks
-  }
+  // return {
+  //   saves,
+  //   tracks
+  // }
 }
 
 function prepareParams({

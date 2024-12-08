@@ -16,7 +16,6 @@ type FailureReason =
   | 'ACCOUNT_DEACTIVATED'
   | 'ACCOUNT_NOT_FOUND'
   | 'ACCOUNT_NOT_FOUND_LOCAL'
-  | 'LIBS_ERROR'
 
 const initialState = {
   collections: {} as { [id: number]: AccountCollection },

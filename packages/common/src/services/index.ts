@@ -1,7 +1,6 @@
 export * from './auth'
 export * from './remote-config'
 export * from './RandomImage'
-export * from './audius-api-client'
 export * from './audius-backend'
 export * from './fingerprint'
 export * from './local-storage'

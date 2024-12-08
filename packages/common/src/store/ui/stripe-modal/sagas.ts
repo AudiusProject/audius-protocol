@@ -1,4 +1,3 @@
-import { IdentityRequestError } from '@audius/sdk-legacy/dist/libs'
 import {
   call,
   takeEvery,
@@ -65,7 +64,7 @@ function* handleInitializeStripeModal({
       code,
       message: stripeErrorMessage,
       type
-    } = ((e as IdentityRequestError).response?.data ??
+    } = ((e as any).response?.data ??
       {}) as StripeSessionCreationErrorResponseData
 
     const error = new StripeSessionCreationError(code, stripeErrorMessage, type)

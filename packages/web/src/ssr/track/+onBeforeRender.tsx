@@ -1,7 +1,3 @@
-import {
-  makeTrack,
-  makeUser
-} from '@audius/common/src/services/audius-api-client/ResponseAdapter'
 import { developmentConfig } from '@audius/sdk/src/sdk/config/development'
 import { productionConfig } from '@audius/sdk/src/sdk/config/production'
 import { stagingConfig } from '@audius/sdk/src/sdk/config/staging'
@@ -35,27 +31,28 @@ export async function onBeforeRender(pageContext: PageContextServer) {
       throw new Error(discoveryRequestUrl)
     }
 
-    const { data } = await res.json()
-    const [apiTrack] = data
-    // Include artwork in the track object
-    const track = {
-      ...makeTrack(apiTrack),
-      cover_art: apiTrack.artwork?.['1000x1000']
-    }
+    throw new Error('Not implemented')
+    // const { data } = await res.json()
+    // const [apiTrack] = data
+    // // Include artwork in the track object
+    // const track = {
+    //   ...makeTrack(apiTrack),
+    //   cover_art: apiTrack.artwork?.['1000x1000']
+    // }
 
-    const { user: apiUser } = apiTrack
-    // Include api user images.
-    const user = {
-      ...makeUser(apiUser),
-      cover_photo: apiUser.cover_photo?.['2000x'],
-      profile_picture: apiUser.profile_picture?.['1000x1000']
-    }
+    // const { user: apiUser } = apiTrack
+    // // Include api user images.
+    // const user = {
+    //   ...makeUser(apiUser),
+    //   cover_photo: apiUser.cover_photo?.['2000x'],
+    //   profile_picture: apiUser.profile_picture?.['1000x1000']
+    // }
 
-    return {
-      pageContext: {
-        pageProps: { track, user }
-      }
-    }
+    // return {
+    //   pageContext: {
+    //     pageProps: { track, user }
+    //   }
+    // }
   } catch (e) {
     console.error(
       'Error fetching track for track page SSR',

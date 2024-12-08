@@ -19,7 +19,6 @@ import {
 import { REACHABILITY_LONG_TIMEOUT } from 'store/reachability/sagas'
 
 import * as backendActions from './actions'
-import { watchBackendErrors } from './errorSagas'
 import { getIsSettingUp, getIsSetup } from './selectors'
 const { getIsReachable } = reachabilitySelectors
 
@@ -63,10 +62,6 @@ export function* setupBackend() {
   // This ensures we always get the cached account when starting offline if available
   yield* put(accountActions.fetchLocalAccount())
 
-  // Init APICLient
-  const apiClient = yield* getContext('apiClient')
-  apiClient.init()
-
   const establishedReachability = yield* call(awaitReachability)
   // If we couldn't connect, just sit here waiting for reachability.
   if (!establishedReachability) {
@@ -102,17 +97,7 @@ export function* setupBackend() {
   // Start remote account fetch while we setup backend
   yield* put(accountActions.fetchAccount())
 
-  const { web3Error, libsError } = yield* call(
-    audiusBackendInstance.setup,
-    setupArgs
-  )
-
-  if (libsError) {
-    yield* put(accountActions.fetchAccountFailed({ reason: 'LIBS_ERROR' }))
-    yield* put(backendActions.setupBackendFailed())
-    yield* put(backendActions.libsError(libsError))
-    return
-  }
+  const { web3Error } = yield* call(audiusBackendInstance.setup, setupArgs)
 
   const isReachable = yield* select(getIsReachable)
   // Bail out before success if we are now offline
@@ -145,5 +130,5 @@ function* init() {
 }
 
 export default function sagas() {
-  return [init, watchSetupBackend, watchBackendErrors, watchSetReachable]
+  return [init, watchSetupBackend, watchSetReachable]
 }

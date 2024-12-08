@@ -5,7 +5,6 @@ import {
   Track,
   UserTrackMetadata
 } from '@audius/common/models'
-import { makeActivity } from '@audius/common/services'
 import {
   accountSelectors,
   getContext,
@@ -41,27 +40,28 @@ function* getHistoryTracks() {
     const activityData = activity.data
     if (!activityData) return []
 
-    const tracks = activityData
-      .map(makeActivity)
-      .filter(removeNullable) as UserTrackMetadata[]
+    throw new Error('Not implemented')
+    // const tracks = activityData
+    //   .map(makeActivity)
+    //   .filter(removeNullable) as UserTrackMetadata[]
 
-    const processedTracks = yield* call(processAndCacheTracks, tracks)
-    const processedTracksMap = keyBy(processedTracks, 'track_id')
+    // const processedTracks = yield* call(processAndCacheTracks, tracks)
+    // const processedTracksMap = keyBy(processedTracks, 'track_id')
 
-    const lineupTracks: Track[] = []
-    activityData.forEach((activity) => {
-      const trackMetadata = activity.item
-        ? processedTracksMap[decodeHashId(activity.item.id)!]
-        : null
-      // Prevent history for invalid tracks from getting into the lineup.
-      if (trackMetadata && !trackMetadata.is_unlisted) {
-        lineupTracks.push({
-          ...trackMetadata,
-          dateListened: activity.timestamp
-        })
-      }
-    })
-    return lineupTracks
+    // const lineupTracks: Track[] = []
+    // activityData.forEach((activity) => {
+    //   const trackMetadata = activity.item
+    //     ? processedTracksMap[decodeHashId(activity.item.id)!]
+    //     : null
+    //   // Prevent history for invalid tracks from getting into the lineup.
+    //   if (trackMetadata && !trackMetadata.is_unlisted) {
+    //     lineupTracks.push({
+    //       ...trackMetadata,
+    //       dateListened: activity.timestamp
+    //     })
+    //   }
+    // })
+    // return lineupTracks
   } catch (e) {
     console.error(e)
     return []

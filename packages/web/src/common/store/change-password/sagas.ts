@@ -18,59 +18,51 @@ function* handleConfirmCredentials(
 ) {
   const { email, password } = action.payload
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
-  const libs = yield* call([
-    audiusBackendInstance,
-    audiusBackendInstance.getAudiusLibsTyped
-  ])
-  yield* call(waitForWrite)
-  try {
-    const confirmed = yield* call(libs.Account!.confirmCredentials, {
-      username: email,
-      password
-    })
-    if (!confirmed) {
-      yield* put(confirmCredentialsFailed())
-    } else {
-      yield* put(confirmCredentialsSucceeded())
-    }
-  } catch {
-    yield* put(confirmCredentialsFailed())
-  }
+  throw new Error('Not implemented')
+  // try {
+  //   const confirmed = yield* call(x.Account!.confirmCredentials, {
+  //     username: email,
+  //     password
+  //   })
+  //   if (!confirmed) {
+  //     yield* put(confirmCredentialsFailed())
+  //   } else {
+  //     yield* put(confirmCredentialsSucceeded())
+  //   }
+  // } catch {
+  //   yield* put(confirmCredentialsFailed())
+  // }
 }
 
 function* handleChangePassword(action: ReturnType<typeof changePassword>) {
   const { email, password, oldPassword } = action.payload
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
-  const libs = yield* call([
-    audiusBackendInstance,
-    audiusBackendInstance.getAudiusLibsTyped
-  ])
-  yield* call(waitForWrite)
-  try {
-    yield* call(libs.Account!.changeCredentials, {
-      newUsername: email,
-      newPassword: password,
-      oldUsername: email,
-      oldPassword
-    })
-    yield* put(changePasswordSucceeded())
-    const trackEvent: TrackEvent = make(
-      Name.SETTINGS_COMPLETE_CHANGE_PASSWORD,
-      {
-        status: 'success'
-      }
-    )
-    yield* put(trackEvent)
-  } catch {
-    yield* put(changePasswordFailed())
-    const trackEvent: TrackEvent = make(
-      Name.SETTINGS_COMPLETE_CHANGE_PASSWORD,
-      {
-        status: 'failure'
-      }
-    )
-    yield* put(trackEvent)
-  }
+  throw new Error('Not implemented')
+  // try {
+  //   yield* call(x.Account!.changeCredentials, {
+  //     newUsername: email,
+  //     newPassword: password,
+  //     oldUsername: email,
+  //     oldPassword
+  //   })
+  //   yield* put(changePasswordSucceeded())
+  //   const trackEvent: TrackEvent = make(
+  //     Name.SETTINGS_COMPLETE_CHANGE_PASSWORD,
+  //     {
+  //       status: 'success'
+  //     }
+  //   )
+  //   yield* put(trackEvent)
+  // } catch {
+  //   yield* put(changePasswordFailed())
+  //   const trackEvent: TrackEvent = make(
+  //     Name.SETTINGS_COMPLETE_CHANGE_PASSWORD,
+  //     {
+  //       status: 'failure'
+  //     }
+  //   )
+  //   yield* put(trackEvent)
+  // }
 }
 
 function* watchConfirmCredentials() {

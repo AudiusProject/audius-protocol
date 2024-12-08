@@ -1,9 +1,3 @@
-import { APITrack } from '@audius/common/src/services'
-import {
-  makePlaylist,
-  makeTrack,
-  makeUser
-} from '@audius/common/src/services/audius-api-client/ResponseAdapter'
 import { developmentConfig } from '@audius/sdk/src/sdk/config/development'
 import { productionConfig } from '@audius/sdk/src/sdk/config/production'
 import { stagingConfig } from '@audius/sdk/src/sdk/config/staging'
@@ -38,49 +32,50 @@ export async function onBeforeRender(pageContext: PageContextServer) {
     throw new Error(discoveryRequestUrl)
   }
 
-  const { data } = await res.json()
-  const [apiCollection] = data
-  const collection = {
-    ...makePlaylist(apiCollection),
-    cover_art: apiCollection.artwork?.['1000x1000']
-  }
+  throw new Error('Not implemented')
+  // const { data } = await res.json()
+  // const [apiCollection] = data
+  // const collection = {
+  //   ...makePlaylist(apiCollection),
+  //   cover_art: apiCollection.artwork?.['1000x1000']
+  // }
 
-  const { user: apiUser } = apiCollection
-  const user = {
-    ...makeUser(apiUser),
-    cover_photo: apiUser.cover_photo?.['2000x'],
-    profile_picture: apiUser.profile_picture?.['1000x1000']
-  }
+  // const { user: apiUser } = apiCollection
+  // const user = {
+  //   ...makeUser(apiUser),
+  //   cover_photo: apiUser.cover_photo?.['2000x'],
+  //   profile_picture: apiUser.profile_picture?.['1000x1000']
+  // }
 
-  const tracks = apiCollection.tracks.map((apiTrack: APITrack) => ({
-    ...makeTrack(apiTrack),
-    cover_art: apiTrack.artwork?.['150x150']
-  }))
+  // const tracks = apiCollection.tracks.map((apiTrack: APITrack) => ({
+  //   ...makeTrack(apiTrack),
+  //   cover_art: apiTrack.artwork?.['150x150']
+  // }))
 
-  try {
-    return {
-      pageContext: {
-        pageProps: {
-          collection,
-          user,
-          tracks
-        }
-      }
-    }
-  } catch (e) {
-    console.error(
-      'Error fetching collection for collection page SSR',
-      'handle',
-      handle,
-      'slug',
-      slug,
-      'error',
-      e
-    )
-    return {
-      pageContext: {
-        pageProps: {}
-      }
-    }
-  }
+  // try {
+  //   return {
+  //     pageContext: {
+  //       pageProps: {
+  //         collection,
+  //         user,
+  //         tracks
+  //       }
+  //     }
+  //   }
+  // } catch (e) {
+  //   console.error(
+  //     'Error fetching collection for collection page SSR',
+  //     'handle',
+  //     handle,
+  //     'slug',
+  //     slug,
+  //     'error',
+  //     e
+  //   )
+  //   return {
+  //     pageContext: {
+  //       pageProps: {}
+  //     }
+  //   }
+  // }
 }

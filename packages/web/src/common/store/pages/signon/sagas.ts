@@ -599,7 +599,6 @@ function* signUp() {
 
     if (email && password && useMetamask) {
       yield* call([localStorage, localStorage.removeItem], 'useMetaMask')
-      yield* put(backendActions.setupBackend())
     }
 
     const sdk = yield* getSDK()
@@ -720,16 +719,6 @@ function* signUp() {
                   tikTokId
                 })
               }
-            }
-            const { web3Error, libsError } = yield* call(
-              audiusBackendInstance.setup,
-              {
-                wallet,
-                userId
-              }
-            )
-            if (web3Error || libsError) {
-              throw new Error('Failed to setup backend')
             }
 
             yield* put(
@@ -960,22 +949,6 @@ function* signIn(action: ReturnType<typeof signOnActions.signIn>) {
           })
         )
         yield* put(pushRoute(SIGN_UP_PASSWORD_PAGE))
-        const { web3Error, libsError } = yield* call(
-          audiusBackendInstance.setup,
-          {
-            wallet: signInResponse.walletAddress,
-            userId: user.user_id
-          }
-        )
-        if (web3Error || libsError) {
-          yield* put(
-            signOnActions.signInFailed(
-              'Failed to setup AudiusBackend for guest profile completion',
-              'SETUP',
-              true
-            )
-          )
-        }
       } else {
         yield* put(
           signOnActions.openSignOn(false, Pages.PROFILE, {
@@ -1001,22 +974,6 @@ function* signIn(action: ReturnType<typeof signOnActions.signIn>) {
     // which will pull cached account data from call above.
     yield* put(accountActions.fetchAccount())
 
-    // Re-setup backend to make sure libs has the correct hedgehog wallet and userId
-    const { web3Error, libsError } = yield* call(audiusBackendInstance.setup, {
-      wallet: signInResponse.walletAddress,
-      userId: user.user_id
-    })
-
-    if (web3Error || libsError) {
-      yield* put(
-        signOnActions.signInFailed(
-          'Failed to setup AudiusBackend',
-          'SETUP',
-          true
-        )
-      )
-      return
-    }
     yield* put(signOnActions.signInSucceeded())
     const route = yield* select(getRouteOnCompletion)
 
@@ -1208,7 +1165,6 @@ function* followArtists(
 function* configureMetaMask() {
   try {
     window.localStorage.setItem('useMetaMask', JSON.stringify(true))
-    yield* put(backendActions.setupBackend())
   } catch (err: any) {
     const reportToSentry = yield* getContext('reportToSentry')
     reportToSentry({

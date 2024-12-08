@@ -23,7 +23,6 @@ import {
   stringWeiToBN,
   weiToString
 } from '@audius/common/utils'
-import type { AudiusLibs } from '@audius/sdk-legacy/dist/libs'
 import BN from 'bn.js'
 import { all, call, put, take, takeEvery, select } from 'typed-redux-saga'
 
@@ -312,39 +311,35 @@ function* checkAssociatedTokenAccountOrSol(action: InputSendDataAction) {
   const audiusBackend = yield* getContext('audiusBackendInstance')
   const address = action.payload.wallet
 
-  const audiusLibs = yield* call(audiusBackend.getAudiusLibs)
-  const connection = (
-    audiusLibs as AudiusLibs
-  ).solanaWeb3Manager!.getConnection()
+  throw new Error('Not implemented')
+  // const associatedTokenAccount = yield* call(
+  //   [walletClient, 'getAssociatedTokenAccountInfo'],
+  //   address
+  // )
+  // if (!associatedTokenAccount) {
+  //   const sdk = yield* getSDK()
+  //   const balance: BNWei = yield* call(() =>
+  //     walletClient.getWalletSolBalance({ address, sdk })
+  //   )
 
-  const associatedTokenAccount = yield* call(
-    [walletClient, 'getAssociatedTokenAccountInfo'],
-    address
-  )
-  if (!associatedTokenAccount) {
-    const sdk = yield* getSDK()
-    const balance: BNWei = yield* call(() =>
-      walletClient.getWalletSolBalance({ address, sdk })
-    )
-
-    // TODO: this can become a call to getAssociatedTokenRentExemptionMinimum
-    // when the BuyAudio service has been migrated
-    const minRentForATA = yield* call(
-      [connection, 'getMinimumBalanceForRentExemption'],
-      ATA_SIZE,
-      'processed'
-    )
-    const minRentBN = new BN(minRentForATA)
-    if (balance.lt(minRentBN)) {
-      yield* put(
-        setCanRecipientReceiveWAudio({ canRecipientReceiveWAudio: 'false' })
-      )
-      return
-    }
-  }
-  yield* put(
-    setCanRecipientReceiveWAudio({ canRecipientReceiveWAudio: 'true' })
-  )
+  //   // TODO: this can become a call to getAssociatedTokenRentExemptionMinimum
+  //   // when the BuyAudio service has been migrated
+  //   const minRentForATA = yield* call(
+  //     [connection, 'getMinimumBalanceForRentExemption'],
+  //     ATA_SIZE,
+  //     'processed'
+  //   )
+  //   const minRentBN = new BN(minRentForATA)
+  //   if (balance.lt(minRentBN)) {
+  //     yield* put(
+  //       setCanRecipientReceiveWAudio({ canRecipientReceiveWAudio: 'false' })
+  //     )
+  //     return
+  //   }
+  // }
+  // yield* put(
+  //   setCanRecipientReceiveWAudio({ canRecipientReceiveWAudio: 'true' })
+  // )
 }
 
 function* watchSend() {

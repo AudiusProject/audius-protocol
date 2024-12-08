@@ -7,8 +7,6 @@ import { Formik } from 'formik'
 import TrackPlayer, { RepeatMode, State } from 'react-native-track-player'
 import { useAsync, useEffectOnce } from 'react-use'
 
-import { apiClient } from 'app/services/audius-api-client'
-
 type PreviewContextProps = {
   hasPlayed: boolean
   isPlaying: boolean
@@ -45,7 +43,9 @@ const useGetTrackUrl = (artistId: ID) => {
   const trackId = artistTracks?.find((track) => track.is_available)?.track_id
   if (!trackId) return null
 
-  return apiClient.makeUrl(`/tracks/${encodeHashId(trackId)}/stream`)
+  return `https://discoveryprovider.audius.co/tracks/${encodeHashId(
+    trackId
+  )}/stream`
 }
 
 export const SelectArtistsPreviewContextProvider = (props: {

@@ -158,7 +158,6 @@ function* downloadTrackAudio(track: UserTrackMetadata, userId: ID) {
   const encodedTrackId = encodeHashId(track_id)
 
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
-  const apiClient = yield* getContext('apiClient')
   const audiusSdk = yield* getContext('audiusSdk')
   const sdk = yield* call(audiusSdk)
   const nftAccessSignatureMap = yield* select(getNftAccessSignatureMap)
@@ -173,10 +172,8 @@ function* downloadTrackAudio(track: UserTrackMetadata, userId: ID) {
   // todo: pass in correct filename and whether to download original or mp3
   queryParams.filename = `${title}.mp3`
 
-  const trackAudioUri = apiClient.makeUrl(
-    `/tracks/${encodedTrackId}/stream`,
-    queryParams
-  )
+  const queryString = new URLSearchParams(queryParams).toString()
+  const trackAudioUri = `https://discoveryprovider.audius.co/tracks/${encodedTrackId}/stream?${queryString}`
   const response = yield* call(downloadFile, trackAudioUri, trackFilePath)
   const { status } = response.info()
   if (status === 200) return
