@@ -516,7 +516,7 @@ export class UsersApi extends GeneratedUsersApi {
   }
 
   /** @hidden
-   * Add an encrypted email for a user
+   * Share an encrypted email with a user
    */
   async shareEmail(params: EmailRequest, advancedOptions?: AdvancedOptions) {
     const { emailOwnerUserId, primaryUserId, email } = await parseParams(

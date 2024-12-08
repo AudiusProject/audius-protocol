@@ -18,10 +18,10 @@ import {
   SolanaRelay,
   SolanaRelayWalletAdapter,
   createAppWalletClient,
-  getDefaultClaimableTokensConfig
+  getDefaultClaimableTokensConfig,
+  EmailEncryptionService
 } from '../../services'
 import { DiscoveryNodeSelector } from '../../services/DiscoveryNodeSelector'
-import { EmailEncryptionService } from '../../services/Encryption'
 import { EntityManagerClient } from '../../services/EntityManager'
 import { Logger } from '../../services/Logger'
 import { SolanaClient } from '../../services/Solana/programs/SolanaClient'
@@ -415,6 +415,38 @@ describe('UsersApi', () => {
   })
 
   describe('shareEmail', () => {
+    beforeAll(() => {
+      // Mock getUserEmailKey
+      vitest
+        .spyOn(UsersApi.prototype, 'getUserEmailKey')
+        .mockImplementation(async () => {
+          return { data: 'mockEncryptedKey' }
+        })
+
+      // Mock EmailEncryptionService methods
+      vitest
+        .spyOn(EmailEncryptionService.prototype, 'decryptSymmetricKey')
+        .mockImplementation(async () => {
+          return new Uint8Array(32) // Mock 32-byte key
+        })
+
+      vitest
+        .spyOn(EmailEncryptionService.prototype, 'createSharedKey')
+        .mockImplementation(async () => {
+          return {
+            symmetricKey: new Uint8Array(32),
+            primaryUserEncryptedKey: 'mockPrimaryUserEncryptedKey',
+            granteeEncryptedKeys: []
+          }
+        })
+
+      vitest
+        .spyOn(EmailEncryptionService.prototype, 'encryptEmail')
+        .mockImplementation(async () => {
+          return 'mockEncryptedEmail'
+        })
+    })
+
     it('adds an encrypted email if valid metadata is provided', async () => {
       const result = await users.shareEmail({
         emailOwnerUserId: 123,
