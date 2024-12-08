@@ -155,7 +155,13 @@ export const useSales = () => {
         id: Id.parse(userId)
       })
 
-      if (!salesAsJSON.data?.sales || salesAsJSON.data.sales.length === 0) {
+      const userDecryptionKey = salesAsJSON.data?.decryptionKey
+
+      if (
+        !salesAsJSON.data?.sales ||
+        salesAsJSON.data.sales.length === 0 ||
+        !userDecryptionKey
+      ) {
         return
       }
 
@@ -173,18 +179,32 @@ export const useSales = () => {
         'Country'
       ]
 
-      const rows = salesAsJSON.data.sales.map((sale) => [
-        sale.title,
-        sale.link,
-        sale.purchasedBy,
-        sale.encryptedEmail,
-        sale.date ? new Date(sale.date).toLocaleDateString() : '',
-        sale.salePrice,
-        sale.networkFee,
-        sale.payExtra,
-        sale.total,
-        sale.country
-      ])
+      const symettricKey =
+        await sdk.services.emailEncryptionService.decryptSymmetricKey(
+          userDecryptionKey,
+          Id.parse(userId)
+        )
+
+      const rows = await Promise.all(
+        salesAsJSON.data.sales.map(async (sale) => [
+          sale.title,
+          sale.link,
+          sale.purchasedBy,
+          // Decrypt the email using the symmetric key
+          sale.encryptedEmail
+            ? await sdk.services.emailEncryptionService.decryptEmail(
+                sale.encryptedEmail,
+                symettricKey
+              )
+            : '',
+          sale.date ? new Date(sale.date).toLocaleDateString() : '',
+          sale.salePrice,
+          sale.networkFee,
+          sale.payExtra,
+          sale.total,
+          sale.country
+        ])
+      )
 
       // Create CSV content
       const csvContent = [
