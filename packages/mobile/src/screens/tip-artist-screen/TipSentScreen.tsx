@@ -7,8 +7,7 @@ import { useNavigation } from '@react-navigation/native'
 import { Platform } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 
-import { IconCheck, IconClose } from '@audius/harmony-native'
-import { TextButton } from 'app/components/core'
+import { IconCheck, IconClose, PlainButton } from '@audius/harmony-native'
 import { TwitterButton } from 'app/components/twitter-button'
 import { env } from 'app/env'
 import { makeStyles } from 'app/styles'
@@ -40,6 +39,9 @@ const useStyles = makeStyles(({ spacing }) => ({
     marginBottom: spacing(6)
   },
   close: {
+    alignSelf: 'center'
+  },
+  button: {
     alignSelf: 'center'
   }
 }))
@@ -125,15 +127,14 @@ export const TipSentScreen = () => {
             : undefined
         }
       />
-      <TextButton
-        variant='neutralLight4'
-        title={messages.done}
-        icon={IconCheck}
-        iconPosition='left'
-        TextProps={{ variant: 'h1', noGutter: true }}
+      <PlainButton
+        variant='subdued'
+        iconLeft={IconCheck}
+        style={styles.button}
         onPress={handleClose}
-        style={styles.close}
-      />
+      >
+        {messages.done}
+      </PlainButton>
     </TipScreen>
   )
 }

@@ -12,10 +12,15 @@ import { capitalize } from 'lodash'
 import { View } from 'react-native'
 import { useDispatch } from 'react-redux'
 
-import { Flex, IconClose, IconTrash, Button } from '@audius/harmony-native'
+import {
+  Flex,
+  IconClose,
+  IconTrash,
+  Button,
+  PlainButton
+} from '@audius/harmony-native'
 import {
   Divider,
-  TextButton,
   Tile,
   VirtualizedKeyboardAwareScrollView
 } from 'app/components/core'
@@ -176,17 +181,14 @@ export const EditCollectionForm = (
             </View>
             <Divider />
             <TrackListFieldArray />
-            <TextButton
-              variant='neutralLight4'
-              title={messages.deletePlaylist}
-              icon={IconTrash}
-              iconPosition='left'
+            <PlainButton
+              variant='subdued'
+              iconLeft={IconTrash}
+              style={styles.deleteButtonRoot}
               onPress={openDeleteDrawer}
-              styles={{
-                root: styles.deleteButtonRoot,
-                text: styles.deleteButtonText
-              }}
-            />
+            >
+              {messages.deletePlaylist}
+            </PlainButton>
           </Tile>
         </VirtualizedKeyboardAwareScrollView>
       </FormScreen>

@@ -26,7 +26,7 @@ import {
   Flex
 } from '@audius/harmony-native'
 import EmojiRaisedHands from 'app/assets/images/emojis/person-raising-both-hands-in-celebration.png'
-import { Text, TextButton, Tile } from 'app/components/core'
+import { Text, PlainButton, Tile } from 'app/components/core'
 import {
   LineupTileSkeleton,
   TrackTileComponent
@@ -164,15 +164,14 @@ export const UploadCompleteScreen = () => {
         url={getTrackRoute(track!, true)}
         shareText={messages.twitterShareText(title)}
       />
-      <TextButton
-        variant='neutralLight4'
-        icon={IconShare}
-        title={isLinkCopied ? messages.linkCopied : messages.copyLink}
+      <PlainButton
+        variant='subdued'
+        iconLeft={IconShare}
         style={styles.shareButton}
         onPress={handleCopyLink}
-        TextProps={{ variant: 'h3', noGutter: true }}
-        IconProps={{ height: 14, width: 14 }}
-      />
+      >
+        {isLinkCopied ? messages.linkCopied : messages.copyLink}
+      </PlainButton>
     </>
   )
 
