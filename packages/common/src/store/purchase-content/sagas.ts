@@ -623,14 +623,21 @@ function* collectEmailAfterPurchase({
   metadata: Collection | Track
 }) {
   try {
-    const audiusBackendInstance = yield* getContext('audiusBackendInstance')
     const audiusSdk = yield* getContext('audiusSdk')
+
     const sdk = yield* call(audiusSdk)
+    const identityServiceInstance = yield* getContext('identityServiceInstance')
+    const authService = yield* getContext('authService')
     const isAlbum = 'playlist_id' in metadata
 
     const purchaserUserId = yield* select(getUserId)
     const sellerId = isAlbum ? metadata.playlist_owner_id : metadata.owner_id
-    const email = yield* call(audiusBackendInstance.getUserEmail)
+    const wallet = authService.getWallet()
+
+    const email = yield* call(
+      [identityServiceInstance, identityServiceInstance.getUserEmail],
+      { wallet }
+    )
 
     if (!purchaserUserId) {
       throw new Error('Purchaser user ID not found')
@@ -648,7 +655,7 @@ function* collectEmailAfterPurchase({
     })
   } catch (error) {
     // Log error but don't disrupt purchase flow
-    yield* call(console.error, 'Failed to process email after purchase:', error)
+    console.error('Failed to process email after purchase:', error)
   }
 }
 
