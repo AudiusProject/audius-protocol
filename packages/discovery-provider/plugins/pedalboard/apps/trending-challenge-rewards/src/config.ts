@@ -6,6 +6,7 @@ dotenv.config()
 
 export type SharedData = {
   sdk: AudiusSdk
+  runNow: boolean
   dryRun: boolean
   audiusDbUrl: string
   slackChannel?: string
@@ -20,7 +21,11 @@ export const initSharedData = async (): Promise<SharedData> => {
   if (sharedData !== undefined) return sharedData
 
   sharedData = {
-    sdk: audiusSdk({ environment: process.env.environment as 'development' | 'staging' | 'production' }),
+    sdk: audiusSdk({
+      environment: process.env.environment as 'development' | 'staging' | 'production',
+      discoveryNodeAllowlist: process.env.discovery_node_allowlist?.split(',') ?? undefined
+    }),
+    runNow: process.env.run_now === 'true',
     dryRun: process.env.tcr_dry_run === 'true',
     audiusDbUrl: process.env.audius_db_url!,
     slackChannel: process.env.slack_channel,

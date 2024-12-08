@@ -1,12 +1,11 @@
 import { Configuration, DiscoveryNodeSelector, SolanaRelay, sdk } from '@audius/sdk' 
 
-const discoveryNodeSelector = new DiscoveryNodeSelector({
-  allowlist: new Set([
-    'https://discoveryprovider.audius.co',
-    'https://dn2.monophonic.digital',
-    'https://audius-metadata-1.figment.io'
-  ]),
-})
+
+const makeDiscoveryNodeSelector = (allowlist?: string[]) => {
+  return new DiscoveryNodeSelector({
+    allowlist: allowlist ? new Set(allowlist) : undefined,
+  })
+}
 
 const solanaRelay = new SolanaRelay(
   new Configuration({
@@ -26,12 +25,15 @@ const solanaRelay = new SolanaRelay(
   })
 )
 
-export const audiusSdk = ({ environment }: { environment: 'development' | 'staging' | 'production' }) => {
+export const audiusSdk = (
+  { environment, discoveryNodeAllowlist }:
+  { environment: 'development' | 'staging' | 'production', discoveryNodeAllowlist?: string[] }
+) => {
   return sdk({
     appName: 'trending-challenge-rewards',
     environment,
     services: {
-      discoveryNodeSelector,
+      discoveryNodeSelector: makeDiscoveryNodeSelector(discoveryNodeAllowlist),
       solanaRelay,
     },
   })

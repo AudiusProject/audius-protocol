@@ -76,8 +76,10 @@ export const onDisburse = async (
 // Claim all undisbursed challenges
 for (const challenge of toDisburse) {
   const challengeId = Object.values(ChallengeId).find(id => id === challenge.challenge_id)!
-    console.log('Claimable challengeId = ', challengeId)
-    let res
+  console.log('Claimable challengeId = ', challenge)
+  let res
+  let retries = 10
+  while (retries > 0) {
     try {
       if (!dryRun) {
         res = await sdk.challenges.claimReward({
@@ -87,11 +89,17 @@ for (const challenge of toDisburse) {
           amount: parseFloat(challenge.amount),
         })
         console.log('res = ', res)
+        break // Success - exit retry loop
       }
     } catch (e) {
-      console.error('Error claiming reward, challengeId = ', challengeId, 'error = ', e)
+      console.error(`Error claiming reward, challengeId = ${challengeId}, attempt ${11 - retries} of 10, error = `, e)
+      retries--
+      if (retries === 0) {
+        console.error(`Failed to claim reward after 10 attempts for challengeId = ${challengeId}`)
+      }
     }
   }
+}
   
   // Look at database to see if all challenges have been disbursed
   const trimmedSpecifier = specifier.split(':')[0]
@@ -118,9 +126,6 @@ export const findStartingBlock = async (
   db: Knex
 ): Promise<Result<[number, string], string>> => {
   const challenges = await getTrendingChallenges(db)
-  for (const challenge of challenges) {
-    console.log('challenge = ', challenge)
-  }
   const firstChallenge = challenges[0]
   if (firstChallenge === undefined)
     return new Err(`no challenges found ${challenges}`)

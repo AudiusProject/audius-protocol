@@ -6,6 +6,7 @@ Plugin to handle distribution of rewards for trending challenges.
 
 ```
 audius_db_url=... \
+run_now=true \
 dry_run=true \
 npm run dev
 ```

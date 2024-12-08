@@ -8,8 +8,8 @@ import { announceTopFiveTrending } from './trending'
 
 const onDemandRun = async (app: App<SharedData>) => {
   // Run on demand only if dryRun is true
-  const { dryRun } = app.viewAppData()
-  if (dryRun) {
+  const { runNow } = app.viewAppData()
+  if (runNow) {
     await disburseTrendingRewards(app)
   }
 }
