@@ -98,5 +98,5 @@ export const withdrawTokensCommand = new Command('withdraw-tokens')
         transaction
       )
     console.log(chalk.green('Successfully withdrew USDC'))
-    console.log(chalk.yellow('Transaction Signature:'), signature)
+    console.log(chalk.yellow.bold('Transaction Signature:'), signature)
   })

@@ -32,5 +32,5 @@ export const purchaseTrackCommand = new Command('purchase')
       includeNetworkCut: true
     })
     console.log(chalk.green('Successfully purchased track'))
-    console.log(chalk.yellow('Transaction Signature:'), response)
+    console.log(chalk.yellow.bold('Transaction Signature:'), response)
   })

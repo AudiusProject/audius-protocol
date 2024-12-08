@@ -20,3 +20,8 @@ export type Metadata = {
   blocknumber?: number
   local?: boolean
 } & Record<string, any>
+
+export type SubscriberInfo = {
+  uid: UID
+  id: string | number
+}

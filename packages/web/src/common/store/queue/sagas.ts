@@ -15,6 +15,7 @@ import {
   accountSelectors,
   cacheCollectionsSelectors,
   cacheTracksSelectors,
+  cacheActions,
   cacheUsersSelectors,
   lineupRegistry,
   queueActions,
@@ -59,6 +60,8 @@ const { getTrack } = cacheTracksSelectors
 const { getCollection } = cacheCollectionsSelectors
 const { getUserId } = accountSelectors
 const { getIsReachable } = reachabilitySelectors
+
+const QUEUE_SUBSCRIBER_NAME = 'QUEUE'
 
 export function* getToQueue(
   prefix: string,
@@ -505,13 +508,26 @@ export function* watchPrevious() {
   )
 }
 
+export function* watchAdd() {
+  yield* takeEvery(add.type, function* (action: ReturnType<typeof add>) {
+    const { entries } = action.payload
+
+    const subscribers = entries.map((entry) => ({
+      uid: QUEUE_SUBSCRIBER_NAME,
+      id: entry.id
+    }))
+    yield* put(cacheActions.subscribe(Kind.TRACKS, subscribers))
+  })
+}
+
 const sagas = () => {
   const sagas = [
     watchPlay,
     watchPause,
     watchNext,
     watchQueueAutoplay,
-    watchPrevious
+    watchPrevious,
+    watchAdd
   ]
   return sagas
 }

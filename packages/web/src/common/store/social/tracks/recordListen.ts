@@ -4,7 +4,8 @@ import {
   cacheTracksSelectors,
   audioRewardsPageActions,
   tracksSocialActions,
-  getContext
+  getContext,
+  getSDK
 } from '@audius/common/store'
 import { call, put, select, takeEvery } from 'typed-redux-saga'
 
@@ -18,6 +19,7 @@ const { getUserId } = accountSelectors
 function* recordListen(action: { trackId: number }) {
   const { trackId } = action
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
+  const sdk = yield* getSDK()
 
   yield* call(waitForWrite)
   const userId = yield* select(getUserId)
@@ -28,7 +30,7 @@ function* recordListen(action: { trackId: number }) {
     return
   }
 
-  yield* call(audiusBackendInstance.recordTrackListen, userId, trackId)
+  yield* call(audiusBackendInstance.recordTrackListen, { userId, trackId, sdk })
 
   yield* put(make(Name.LISTEN, { trackId }))
   if (track.is_stream_gated) {
