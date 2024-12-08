@@ -5,7 +5,8 @@
   "scripts": {
     "build": "tsc",
     "clean": "rm -rf dist",
-    "dev": "nodemon --exec \"node -r esbuild-register ./src/index.ts\" -e .ts",
+    "watch": "tsc --watch",
+    "dev": "concurrently \"npm run watch\" \"npm run start\"",
     "lint": "tsc --noEmit && eslint \"src/**/*.ts*\"",
     "start": "node ./dist/index.js",
     "test": "jest --detectOpenHandles"
@@ -15,25 +16,21 @@
   },
   "dependencies": {
     "@audius/sdk": "*",
-    "@audius/sdk-legacy": "*",
     "@pedalboard/basekit": "*",
     "@pedalboard/logger": "*",
     "@pedalboard/storage": "*",
     "@slack/bolt": "^3.13.1",
     "@slack/web-api": "^6.8.1",
     "ascii-table3": "^0.8.2",
-    "body-parser": "^1.19.0",
     "cors": "^2.8.5",
     "dotenv": "^16.1.4",
     "express": "^4.17.1",
     "knex": "^2.4.2",
     "moment": "^2.29.4",
     "morgan": "^1.10.0",
-    "node-cron": "^3.0.3",
     "ts-results": "^3.3.0"
   },
   "devDependencies": {
-    "@types/body-parser": "^1.19.0",
     "@types/cors": "^2.8.10",
     "@types/express": "^4.17.12",
     "@types/jest": "^26.0.22",

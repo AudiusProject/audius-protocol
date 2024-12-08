@@ -62,12 +62,13 @@ export const announceTopFiveTrending = async (
     undergroundEntries
   )
 
-  const webClient = new WebClient(process.env.SLACK_BOT_TOKEN)
+  const { slackBotToken, slackChannel } = app.viewAppData()
+  const webClient = new WebClient(slackBotToken)
   await sendTweet(webClient, [
     trendingTracksTweet,
     trendingPlaylistTweet,
     trendingUndergroundTweet
-  ])
+  ], slackChannel)
 }
 
 export const queryTopFiveTrending = async (
@@ -164,8 +165,7 @@ export const composeTweet = (
   return '```\n' + `${title} (${week})` + newLine + handles + '```'
 }
 
-const sendTweet = async (slack: WebClient, tweets: string[]) => {
-  const channel = process.env.SLACK_CHANNEL
+const sendTweet = async (slack: WebClient, tweets: string[], channel?: string) => {
   if (channel === undefined) throw Error('SLACK_CHANNEL not defined')
   for (const tweet of tweets) {
     await slack.chat.postMessage({
