@@ -155,7 +155,13 @@ export const useSales = () => {
         id: Id.parse(userId)
       })
 
-      if (!salesAsJSON.data?.sales || salesAsJSON.data.sales.length === 0) {
+      const userDecryptionKey = salesAsJSON.data?.decryptionKey
+
+      if (
+        !salesAsJSON.data?.sales ||
+        salesAsJSON.data.sales.length === 0 ||
+        !userDecryptionKey
+      ) {
         return
       }
 
@@ -173,18 +179,40 @@ export const useSales = () => {
         'Country'
       ]
 
-      const rows = salesAsJSON.data.sales.map((sale) => [
-        sale.title,
-        sale.link,
-        sale.purchasedBy,
-        sale.encryptedEmail,
-        sale.date ? new Date(sale.date).toLocaleDateString() : '',
-        sale.salePrice,
-        sale.networkFee,
-        sale.payExtra,
-        sale.total,
-        sale.country
-      ])
+      const symettricKey =
+        await sdk.services.emailEncryptionService.decryptSymmetricKey(
+          userDecryptionKey,
+          Id.parse(userId)
+        )
+
+      const rows = await Promise.all(
+        salesAsJSON.data.sales.map(async (sale) => {
+          try {
+            const decryptedEmail = sale.encryptedEmail
+              ? await sdk.services.emailEncryptionService
+                  .decryptEmail(sale.encryptedEmail, symettricKey)
+                  .catch(() => '')
+              : ''
+
+            return [
+              sale.title,
+              sale.link,
+              sale.purchasedBy,
+              decryptedEmail,
+              sale.date,
+              sale.salePrice,
+              sale.networkFee,
+              sale.payExtra,
+              sale.total,
+              sale.country
+            ]
+          } catch (err) {
+            console.error('Error processing sale row:', err)
+            // Return empty row rather than failing entire export
+            return Array(10).fill('')
+          }
+        })
+      )
 
       // Create CSV content
       const csvContent = [
