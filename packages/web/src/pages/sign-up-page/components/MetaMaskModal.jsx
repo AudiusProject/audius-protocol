@@ -5,7 +5,6 @@ import { Button, Flex, Box, Text } from '@audius/harmony'
 import cn from 'classnames'
 import PropTypes from 'prop-types'
 
-import { waitForLibsInit } from 'services/audius-backend/eagerLoadUtils'
 import { env } from 'services/env'
 
 import styles from './MetaMaskModal.module.css'
@@ -47,7 +46,6 @@ class MetaMaskModal extends Component {
   onClickContinue = async () => {
     this.resetState()
     this.setState({ submitting: true })
-    await waitForLibsInit()
     try {
       await window.ethereum?.enable()
     } catch (err) {

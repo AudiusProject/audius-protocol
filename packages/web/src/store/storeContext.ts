@@ -5,7 +5,6 @@ import { setTag, configureScope } from '@sentry/browser'
 
 import * as analytics from 'services/analytics'
 import { audioPlayer } from 'services/audio-player'
-import { apiClient } from 'services/audius-api-client'
 import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
 import { audiusSdk, authService } from 'services/audius-sdk'
 import { env } from 'services/env'
@@ -43,7 +42,6 @@ export const buildStoreContext = ({
   analytics,
   remoteConfigInstance,
   audiusBackendInstance,
-  apiClient,
   fingerprintClient,
   walletClient,
   localStorage,

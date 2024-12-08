@@ -1,5 +1,4 @@
 import { AudiusSdk } from '@audius/sdk'
-import { AudiusLibs } from '@audius/sdk-legacy/dist/libs'
 import { u8 } from '@solana/buffer-layout'
 import {
   Account,
@@ -56,7 +55,6 @@ const MINT_DECIMALS: Record<MintName, number> = {
   usdc: 6
 }
 
-// TODO: Import from libs https://linear.app/audius/issue/PAY-1750/export-mintname-and-default-mint-from-libs
 export type MintName = 'audio' | 'usdc'
 export const DEFAULT_MINT: MintName = 'audio'
 
@@ -76,14 +74,11 @@ const delay = (ms: number) =>
 export const getRootSolanaAccount = async (
   audiusBackendInstance: AudiusBackend
 ) => {
-  const audiusLibs: AudiusLibs = await audiusBackendInstance.getAudiusLibs()
-  return audiusLibs.solanaWeb3Manager!.solanaWeb3.Keypair.fromSeed(
-    audiusLibs.Account!.hedgehog.wallet!.getPrivateKey()
-  )
+  throw new Error('Not implemented')
 }
 
 /**
- * Gets the latest blockhash using the libs connection
+ * Gets the latest blockhash
  */
 export const getRecentBlockhash = async ({ sdk }: { sdk: AudiusSdk }) => {
   const connection = sdk.services.solanaClient.connection
@@ -103,20 +98,14 @@ export const getTokenAccountInfo = async (
     commitment?: Commitment
   }
 ): Promise<Account | null> => {
-  return (
-    await audiusBackendInstance.getAudiusLibs()
-  ).solanaWeb3Manager!.getTokenAccountInfo(tokenAccount.toString(), commitment)
+  throw new Error('Not implemented')
 }
 
 export const deriveUserBankPubkey = async (
   audiusBackendInstance: AudiusBackend,
   { ethAddress, mint = DEFAULT_MINT }: UserBankConfig = {}
 ) => {
-  const audiusLibs: AudiusLibs = await audiusBackendInstance.getAudiusLibs()
-  return await audiusLibs.solanaWeb3Manager!.deriveUserBank({
-    ethAddress,
-    mint
-  })
+  throw new Error('Not implemented')
 }
 
 export const deriveUserBankAddress = async (
@@ -172,24 +161,7 @@ export const getUserbankAccountInfo = async (
   { ethAddress: sourceEthAddress, mint = DEFAULT_MINT }: UserBankConfig = {},
   commitment?: Commitment
 ): Promise<Account | null> => {
-  const libs: AudiusLibs = await audiusBackendInstance.getAudiusLibsTyped()
-
-  const ethAddress = sourceEthAddress ?? libs.getCurrentUser().wallet
-  if (!ethAddress) {
-    throw new Error(
-      `getUserbankAccountInfo: unexpected error getting eth address`
-    )
-  }
-
-  const tokenAccount = await deriveUserBankPubkey(audiusBackendInstance, {
-    ethAddress,
-    mint
-  })
-
-  return getTokenAccountInfo(audiusBackendInstance, {
-    tokenAccount,
-    commitment
-  })
+  throw new Error('Not implemented')
 }
 
 /**
@@ -205,57 +177,7 @@ export const createUserBankIfNeeded = async (
     ethAddress
   }: CreateUserBankIfNeededConfig
 ) => {
-  const audiusLibs: AudiusLibs = await audiusBackendInstance.getAudiusLibs()
-
-  const recipientEthAddress = ethAddress ?? audiusLibs.getCurrentUser().wallet
-
-  if (!recipientEthAddress) {
-    throw new Error(
-      `createUserBankIfNeeded: Unexpectedly couldn't get recipient eth address`
-    )
-  }
-
-  try {
-    const res: CreateUserBankIfNeededResult =
-      await audiusLibs.solanaWeb3Manager!.createUserBankIfNeeded({
-        feePayerOverride,
-        ethAddress: recipientEthAddress,
-        mint
-      })
-
-    if (isCreateUserBankIfNeededError(res)) {
-      // Will catch and log below
-      throw res
-    }
-
-    // If it already existed, return early
-    if (res.didExist) {
-      console.debug('Userbank already exists')
-    } else {
-      // Otherwise we must have tried to create one
-      console.info(`Userbank doesn't exist, attempted to create...`)
-
-      recordAnalytics({
-        eventName: Name.CREATE_USER_BANK_SUCCESS,
-        properties: { mint, recipientEthAddress }
-      })
-    }
-    return res.userbank
-  } catch (err: any) {
-    // Catching error here for analytics purposes
-    const errorMessage = 'error' in err ? err.error : (err as any).toString()
-    const errorCode = 'errorCode' in err ? err.errorCode : undefined
-    recordAnalytics({
-      eventName: Name.CREATE_USER_BANK_FAILURE,
-      properties: {
-        mint,
-        recipientEthAddress,
-        errorCode,
-        errorMessage
-      }
-    })
-    throw new Error(`Failed to create user bank: ${errorMessage}`)
-  }
+  throw new Error('Not implemented')
 }
 
 /**
@@ -376,9 +298,7 @@ export const findAssociatedTokenAddress = async (
   audiusBackendInstance: AudiusBackend,
   { solanaAddress, mint }: { solanaAddress: string; mint: MintName }
 ) => {
-  return (
-    await audiusBackendInstance.getAudiusLibsTyped()
-  ).solanaWeb3Manager!.findAssociatedTokenAddress(solanaAddress, mint)
+  throw new Error('Not implemented')
 }
 
 /** Converts a Coinflow transaction which transfers directly from root wallet USDC
@@ -392,96 +312,95 @@ export const decorateCoinflowWithdrawalTransaction = async (
   audiusBackendInstance: AudiusBackend,
   { transaction, feePayer }: { transaction: Transaction; feePayer: PublicKey }
 ) => {
-  const libs = await audiusBackendInstance.getAudiusLibsTyped()
-  const solanaWeb3Manager = libs.solanaWeb3Manager!
+  throw new Error('Not implemented')
 
-  const userBank = await deriveUserBankPubkey(audiusBackendInstance, {
-    mint: 'usdc'
-  })
-  const wallet = await getRootSolanaAccount(audiusBackendInstance)
-  const walletUSDCTokenAccount =
-    await solanaWeb3Manager.findAssociatedTokenAddress(
-      wallet.publicKey.toBase58(),
-      'usdc'
-    )
+  // const userBank = await deriveUserBankPubkey(audiusBackendInstance, {
+  //   mint: 'usdc'
+  // })
+  // const wallet = await getRootSolanaAccount(audiusBackendInstance)
+  // const walletUSDCTokenAccount =
+  //   await solanaWeb3Manager.findAssociatedTokenAddress(
+  //     wallet.publicKey.toBase58(),
+  //     'usdc'
+  //   )
 
-  // Filter any compute budget instructions since the budget will
-  // definitely change
-  const instructions = transaction.instructions.filter(
-    (instruction) =>
-      !instruction.programId.equals(ComputeBudgetProgram.programId)
-  )
+  // // Filter any compute budget instructions since the budget will
+  // // definitely change
+  // const instructions = transaction.instructions.filter(
+  //   (instruction) =>
+  //     !instruction.programId.equals(ComputeBudgetProgram.programId)
+  // )
 
-  // Find original transfer instruction and index
-  const transferInstructionIndex = instructions.findIndex(
-    isTransferCheckedInstruction
-  )
-  const transferInstruction = instructions[transferInstructionIndex]
-  if (!transferInstruction) {
-    throw new Error('No transfer instruction found')
-  }
+  // // Find original transfer instruction and index
+  // const transferInstructionIndex = instructions.findIndex(
+  //   isTransferCheckedInstruction
+  // )
+  // const transferInstruction = instructions[transferInstructionIndex]
+  // if (!transferInstruction) {
+  //   throw new Error('No transfer instruction found')
+  // }
 
-  const { keys, data } = decodeTransferCheckedInstruction(
-    transferInstruction,
-    TOKEN_PROGRAM_ID
-  )
-  if (!walletUSDCTokenAccount.equals(keys.source.pubkey)) {
-    throw new Error(
-      `Original sender ${keys.source.pubkey} does not match wallet ${walletUSDCTokenAccount}`
-    )
-  }
+  // const { keys, data } = decodeTransferCheckedInstruction(
+  //   transferInstruction,
+  //   TOKEN_PROGRAM_ID
+  // )
+  // if (!walletUSDCTokenAccount.equals(keys.source.pubkey)) {
+  //   throw new Error(
+  //     `Original sender ${keys.source.pubkey} does not match wallet ${walletUSDCTokenAccount}`
+  //   )
+  // }
 
-  const transferToUserBankInstruction = createTransferCheckedInstruction(
-    walletUSDCTokenAccount,
-    keys.mint.pubkey,
-    userBank,
-    wallet.publicKey,
-    data.amount,
-    data.decimals
-  )
+  // const transferToUserBankInstruction = createTransferCheckedInstruction(
+  //   walletUSDCTokenAccount,
+  //   keys.mint.pubkey,
+  //   userBank,
+  //   wallet.publicKey,
+  //   data.amount,
+  //   data.decimals
+  // )
 
-  const transferFromUserBankInstructions =
-    await solanaWeb3Manager.createTransferInstructionsFromCurrentUser({
-      amount: new BN(data.amount.toString()),
-      mint: 'usdc',
-      senderSolanaAddress: userBank,
-      recipientSolanaAddress: keys.destination.pubkey.toBase58(),
-      instructionIndex: transferInstructionIndex + 1,
-      feePayerKey: feePayer
-    })
+  // const transferFromUserBankInstructions =
+  //   await solanaWeb3Manager.createTransferInstructionsFromCurrentUser({
+  //     amount: new BN(data.amount.toString()),
+  //     mint: 'usdc',
+  //     senderSolanaAddress: userBank,
+  //     recipientSolanaAddress: keys.destination.pubkey.toBase58(),
+  //     instructionIndex: transferInstructionIndex + 1,
+  //     feePayerKey: feePayer
+  //   })
 
-  const withdrawalMemoInstruction = new TransactionInstruction({
-    keys: [
-      {
-        pubkey: wallet.publicKey,
-        isSigner: true,
-        isWritable: true
-      }
-    ],
-    programId: MEMO_PROGRAM_ID,
-    data: Buffer.from(WITHDRAWAL_MEMO_STRING)
-  })
+  // const withdrawalMemoInstruction = new TransactionInstruction({
+  //   keys: [
+  //     {
+  //       pubkey: wallet.publicKey,
+  //       isSigner: true,
+  //       isWritable: true
+  //     }
+  //   ],
+  //   programId: MEMO_PROGRAM_ID,
+  //   data: Buffer.from(WITHDRAWAL_MEMO_STRING)
+  // })
 
-  // Remove original transfer instruction and replace with our set of transfer steps
-  instructions.splice(
-    transferInstructionIndex,
-    1,
-    transferToUserBankInstruction,
-    ...transferFromUserBankInstructions,
-    withdrawalMemoInstruction
-  )
+  // // Remove original transfer instruction and replace with our set of transfer steps
+  // instructions.splice(
+  //   transferInstructionIndex,
+  //   1,
+  //   transferToUserBankInstruction,
+  //   ...transferFromUserBankInstructions,
+  //   withdrawalMemoInstruction
+  // )
 
-  const { blockhash, lastValidBlockHeight } = await solanaWeb3Manager
-    .getConnection()
-    .getLatestBlockhash()
-  const modifiedTransaction = new Transaction({
-    blockhash,
-    feePayer,
-    lastValidBlockHeight
-  })
-  modifiedTransaction.add(...instructions)
+  // const { blockhash, lastValidBlockHeight } = await solanaWeb3Manager
+  //   .getConnection()
+  //   .getLatestBlockhash()
+  // const modifiedTransaction = new Transaction({
+  //   blockhash,
+  //   feePayer,
+  //   lastValidBlockHeight
+  // })
+  // modifiedTransaction.add(...instructions)
 
-  return modifiedTransaction
+  // return modifiedTransaction
 }
 
 export const createTransferToUserBankTransaction = async (
@@ -504,39 +423,7 @@ export const createTransferToUserBankTransaction = async (
     recentBlockhash?: string
   }
 ) => {
-  const libs = await audiusBackendInstance.getAudiusLibsTyped()
-  const mintPublicKey = libs.solanaWeb3Manager!.mints[mint]
-  const associatedTokenAccount = await findAssociatedTokenAddress(
-    audiusBackendInstance,
-    {
-      solanaAddress: wallet.publicKey.toBase58(),
-      mint
-    }
-  )
-  // See: https://github.com/solana-labs/solana-program-library/blob/d6297495ea4dcc1bd48f3efdd6e3bbdaef25a495/memo/js/src/index.ts#L27
-  const memoInstruction = new TransactionInstruction({
-    keys: [
-      {
-        pubkey: wallet.publicKey,
-        isSigner: true,
-        isWritable: true
-      }
-    ],
-    programId: MEMO_PROGRAM_ID,
-    data: Buffer.from(memo)
-  })
-  const transferInstruction = createTransferCheckedInstruction(
-    associatedTokenAccount, // source
-    mintPublicKey, // mint
-    userBank, // destination
-    wallet.publicKey, // owner
-    amount, // amount
-    MINT_DECIMALS[mint] // decimals
-  )
-  const tx = new Transaction({ recentBlockhash, feePayer })
-  tx.add(memoInstruction)
-  tx.add(transferInstruction)
-  return tx
+  throw new Error('Not implemented')
 }
 
 /**
@@ -553,30 +440,11 @@ export const createPaymentRouterRouteTransaction = async (
     splits: Record<string, number | BN>
   }
 ) => {
-  const solanaWeb3Manager = (await audiusBackendInstance.getAudiusLibsTyped())
-    .solanaWeb3Manager!
-  const { blockhash } = await solanaWeb3Manager
-    .getConnection()
-    .getLatestBlockhash()
-  const [transfer, route] =
-    // All the memo related parameters are ignored
-    await solanaWeb3Manager.getPurchaseContentWithPaymentRouterInstructions({
-      id: 0, // ignored
-      type: 'track', // ignored
-      blocknumber: 0, // ignored
-      splits,
-      purchaserUserId: 0, // ignored
-      senderAccount: sender,
-      purchaseAccess: PurchaseAccess.STREAM // ignored
-    })
-  return new Transaction({
-    recentBlockhash: blockhash,
-    feePayer: sender
-  }).add(transfer, route)
+  throw new Error('Not implemented')
 }
 
 /**
- * Relays the given transaction using the libs transaction handler
+ * Relays the given transaction using the transaction handler
  */
 export const relayTransaction = async (
   audiusBackendInstance: AudiusBackend,
@@ -590,28 +458,11 @@ export const relayTransaction = async (
     useCoinflowRelay?: boolean
   }
 ) => {
-  const libs = await audiusBackendInstance.getAudiusLibsTyped()
-  const instructions = transaction.instructions
-  const signatures = transaction.signatures
-    .filter((s) => s.signature !== null)
-    .map((s) => ({
-      signature: s.signature!, // safe from filter
-      publicKey: s.publicKey.toString()
-    }))
-  const feePayerOverride = transaction.feePayer
-  const recentBlockhash = transaction.recentBlockhash
-  return await libs.solanaWeb3Manager!.transactionHandler.handleTransaction({
-    instructions,
-    recentBlockhash,
-    signatures,
-    feePayerOverride,
-    skipPreflight,
-    useCoinflowRelay
-  })
+  throw new Error('Not implemented')
 }
 
 /**
- * Relays the given versioned transaction using the libs transaction handler
+ * Relays the given versioned transaction
  */
 export const relayVersionedTransaction = async (
   audiusBackendInstance: AudiusBackend,
@@ -625,28 +476,7 @@ export const relayVersionedTransaction = async (
     skipPreflight?: boolean
   }
 ) => {
-  const placeholderSignature = Buffer.from(PLACEHOLDER_SIGNATURE)
-  const libs = await audiusBackendInstance.getAudiusLibsTyped()
-  const decompiledMessage = TransactionMessage.decompile(transaction.message, {
-    addressLookupTableAccounts
-  })
-  const signatures = transaction.message.staticAccountKeys
-    .slice(0, transaction.message.header.numRequiredSignatures)
-    .map((publicKey, index) => ({
-      publicKey: publicKey.toBase58(),
-      signature: Buffer.from(transaction.signatures[index])
-    }))
-    .filter((meta) => !meta.signature.equals(placeholderSignature))
-  return await libs.solanaWeb3Manager!.transactionHandler.handleTransaction({
-    instructions: decompiledMessage.instructions,
-    recentBlockhash: decompiledMessage.recentBlockhash,
-    signatures,
-    feePayerOverride: decompiledMessage.payerKey,
-    lookupTableAddresses: addressLookupTableAccounts.map((lut) =>
-      lut.key.toBase58()
-    ),
-    skipPreflight
-  })
+  throw new Error('Not implemented')
 }
 
 /**
@@ -657,19 +487,7 @@ export const getLookupTableAccounts = async (
   audiusBackendInstance: AudiusBackend,
   { lookupTableAddresses }: { lookupTableAddresses: string[] }
 ) => {
-  const libs = await audiusBackendInstance.getAudiusLibsTyped()
-  const connection = libs.solanaWeb3Manager!.getConnection()
-  return await Promise.all(
-    lookupTableAddresses.map(async (address) => {
-      const account = await connection.getAddressLookupTable(
-        new PublicKey(address)
-      )
-      if (account.value == null) {
-        throw new Error(`Couldn't find lookup table ${address}`)
-      }
-      return account.value
-    })
-  )
+  throw new Error('Not implemented')
 }
 
 /**

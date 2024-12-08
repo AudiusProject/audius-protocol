@@ -31,7 +31,7 @@ export const getEagerDiscprov = async (
 }
 
 /**
- * Takes a request object provided from the audius libs API and makes the request
+ * Takes a request object provided from the audiusAPI and makes the request
  * using the fetch API.
  */
 export const makeEagerRequest = async (

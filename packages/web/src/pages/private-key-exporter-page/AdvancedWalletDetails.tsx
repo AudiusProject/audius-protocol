@@ -9,7 +9,6 @@ import pkg from 'bs58'
 import { make, useRecord } from 'common/store/analytics/actions'
 import { ToastContext } from 'components/toast/ToastContext'
 import { useIsMobile } from 'hooks/useIsMobile'
-import { waitForLibsInit } from 'services/audius-backend/eagerLoadUtils'
 import { copyToClipboard } from 'utils/clipboardUtil'
 import { useSelector } from 'utils/reducer'
 
@@ -94,17 +93,7 @@ export const AdvancedWalletDetails = () => {
 
   useEffect(() => {
     const fetchKeypair = async () => {
-      await waitForLibsInit()
-      const libs = window.audiusLibs
-      const privateKey = libs.Account?.hedgehog?.wallet?.getPrivateKey()
-      if (privateKey) {
-        const keypair =
-          libs.solanaWeb3Manager?.solanaWeb3?.Keypair?.fromSeed(privateKey)
-        if (keypair) {
-          setPublicKey(keypair.publicKey.toString())
-          setEncodedPrivateKey(pkg.encode(keypair.secretKey))
-        }
-      }
+      throw new Error('Not implemented')
     }
     fetchKeypair()
   }, [])

@@ -8,7 +8,6 @@ import {
 } from '@solana/spl-token'
 import { PublicKey, Transaction, Keypair } from '@solana/web3.js'
 
-import { getLibs } from 'services/audius-libs'
 import { audiusSdk } from 'services/audius-sdk'
 
 export const ROOT_ACCOUNT_SIZE = 0 // Root account takes 0 bytes, but still pays rent!
@@ -53,8 +52,7 @@ export const isTokenAccount = async ({
  * Gets the current user's root solana account.
  */
 export const getRootSolanaAccount = async () => {
-  const libs = await getLibs()
-  return Keypair.fromSeed(libs.Account!.hedgehog.wallet!.getPrivateKey())
+  throw new Error('Not implemented')
 }
 
 /**
@@ -93,10 +91,7 @@ export const getTokenAccountInfo = async ({
   tokenAccount: PublicKey
   mint?: MintName
 }): Promise<Account | null> => {
-  const libs = await getLibs()
-  return await libs.solanaWeb3Manager!.getTokenAccountInfo(
-    tokenAccount.toString()
-  )
+  throw new Error('Not implemented')
 }
 
 /**
@@ -135,11 +130,7 @@ export const getAssociatedTokenAccountRent = async () => {
 export const getUSDCAssociatedTokenAccount = async (
   solanaRootAccountPubkey: PublicKey
 ) => {
-  const libs = await getLibs()
-  return getAssociatedTokenAddressSync(
-    libs.solanaWeb3Manager!.mints.usdc,
-    solanaRootAccountPubkey
-  )
+  throw new Error('Not implemented')
 }
 
 /**
@@ -158,9 +149,5 @@ export const getAssociatedTokenAccountOwner = async (
  * Returns the current user's USDC user bank.
  */
 export const getUSDCUserBank = async (ethAddress?: string) => {
-  const libs = await getLibs()
-  const usdcUserBank = await libs.solanaWeb3Manager!.deriveUserBank({
-    mint: 'usdc'
-  })
-  return usdcUserBank
+  throw new Error('Not implemented')
 }

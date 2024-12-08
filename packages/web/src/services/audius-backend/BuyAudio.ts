@@ -14,7 +14,6 @@ import {
   TransactionInstruction
 } from '@solana/web3.js'
 
-import { getLibs } from 'services/audius-libs'
 import { getSolanaConnection } from 'services/solana/solana'
 
 const DEFAULT_RETRY_DELAY = 1000
@@ -65,10 +64,7 @@ export const getAudioAccount = async ({
 }: {
   rootAccount: PublicKey
 }) => {
-  const libs = await getLibs()
-  return await libs.solanaWeb3Manager!.findAssociatedTokenAddress(
-    rootAccount.toString()
-  )
+  throw new Error('Not implemented')
 }
 
 export const getAudioAccountInfo = async ({
@@ -76,10 +72,7 @@ export const getAudioAccountInfo = async ({
 }: {
   tokenAccount: PublicKey
 }) => {
-  const libs = await getLibs()
-  return await libs.solanaWeb3Manager!.getTokenAccountInfo(
-    tokenAccount.toString()
-  )
+  throw new Error('Not implemented')
 }
 
 export const pollForAudioBalanceChange = async ({
@@ -211,40 +204,7 @@ export const createTransferToUserBankTransaction = async ({
   amount: bigint
   memo: string
 }) => {
-  const libs = await getLibs()
-  const mintPublicKey = new PublicKey(libs.solanaWeb3Config.mintAddress)
-  const associatedTokenAccount = await getAudioAccount({
-    rootAccount: fromAccount
-  })
-  // See: https://github.com/solana-labs/solana-program-library/blob/d6297495ea4dcc1bd48f3efdd6e3bbdaef25a495/memo/js/src/index.ts#L27
-  const memoInstruction = new TransactionInstruction({
-    keys: [
-      {
-        pubkey: fromAccount,
-        isSigner: true,
-        isWritable: true
-      }
-    ],
-    programId: MEMO_PROGRAM_ID,
-    data: Buffer.from(memo)
-  })
-  const transferInstruction = createTransferCheckedInstruction(
-    associatedTokenAccount,
-    mintPublicKey,
-    userBank,
-    fromAccount,
-    amount,
-    8
-  )
-  const tx = new Transaction()
-  tx.add(memoInstruction)
-  tx.add(transferInstruction)
-  tx.add(
-    ComputeBudgetProgram.setComputeUnitPrice({
-      microLamports: 100000
-    })
-  )
-  return tx
+  throw new Error('Not implemented')
 }
 
 export const saveUserBankTransactionMetadata = async ({
@@ -254,18 +214,11 @@ export const saveUserBankTransactionMetadata = async ({
   transactionSignature: string
   metadata: InAppAudioPurchaseMetadata
 }) => {
-  const libs = await getLibs()
-  return await libs.identityService!.saveUserBankTransactionMetadata({
-    transactionSignature,
-    metadata
-  })
+  throw new Error('Not implemented')
 }
 
 export const getUserBankTransactionMetadata = async (transactionId: string) => {
-  const libs = await getLibs()
-  return await libs.identityService!.getUserBankTransactionMetadata(
-    transactionId
-  )
+  throw new Error('Not implemented')
 }
 
 export const createStripeSession = async ({
@@ -277,10 +230,5 @@ export const createStripeSession = async ({
   amount: string
   destinationCurrency?: 'sol' | 'usdc'
 }) => {
-  const libs = await getLibs()
-  return await libs.identityService!.createStripeSession({
-    destinationWallet,
-    amount,
-    destinationCurrency
-  })
+  throw new Error('Not implemented')
 }

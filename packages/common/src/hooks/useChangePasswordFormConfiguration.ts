@@ -77,50 +77,14 @@ export const useChangePasswordFormConfiguration = (onComplete: () => void) => {
       values: ChangePasswordFormValues,
       helpers: FormikHelpers<ChangePasswordFormValues>
     ) => {
-      const { oldEmail: email, password, otp } = values
-      const sanitizedOtp = otp.replace(/\s/g, '')
-      const libs = await audiusBackend.getAudiusLibsTyped()
-      try {
-        const confirmed = await libs.Account?.confirmCredentials({
-          email,
-          username: email,
-          password,
-          otp: sanitizedOtp
-        })
-        if (confirmed) {
-          // Move "password" to "oldPassword" to prevent it from conflicting
-          helpers.resetForm({
-            values: { ...values, oldPassword: password, password: '' }
-          })
-          setPage(ChangePasswordPage.NewPassword)
-        } else {
-          helpers.setFieldError('otp', messages.accountMatchError)
-        }
-      } catch (e) {
-        if (isOtpMissingError(e)) {
-          helpers.resetForm({ values })
-          setPage(ChangePasswordPage.VerifyEmail)
-        } else if (page === ChangePasswordPage.ConfirmPassword) {
-          helpers.setFieldError('password', messages.invalidCredentials)
-        } else if (page === ChangePasswordPage.VerifyEmail) {
-          helpers.setFieldError('otp', messages.invalidCredentials)
-        }
-      }
+      throw new Error('Not implemented')
     },
     [setPage, page, audiusBackend]
   )
 
   const changeCredentials = useCallback(
     async (values: ChangePasswordFormValues) => {
-      const { oldEmail: email, oldPassword, password } = values
-      const libs = await audiusBackend.getAudiusLibsTyped()
-      await libs.Account?.changeCredentials({
-        newUsername: email,
-        newPassword: password,
-        oldUsername: email,
-        oldPassword
-      })
-      onComplete()
+      throw new Error('Not implemented')
     },
     [onComplete, audiusBackend]
   )

@@ -6,7 +6,6 @@ import * as Sentry from '@sentry/react-native'
 import { env } from 'app/env'
 import * as analytics from 'app/services/analytics'
 import { audioPlayer } from 'app/services/audio-player'
-import { apiClient } from 'app/services/audius-api-client'
 import { audiusBackendInstance } from 'app/services/audius-backend-instance'
 import { explore } from 'app/services/explore'
 import { fingerprintClient } from 'app/services/fingerprint'
@@ -18,7 +17,6 @@ import {
 import { audiusSdk } from 'app/services/sdk/audius-sdk'
 import { authService } from 'app/services/sdk/auth'
 import { trackDownload } from 'app/services/track-download'
-import { walletClient } from 'app/services/wallet-client'
 import {
   connect,
   signAndSendTransaction
@@ -38,9 +36,7 @@ export const storeContext: CommonStoreContext = {
   analytics,
   remoteConfigInstance,
   audiusBackendInstance,
-  apiClient,
   fingerprintClient,
-  walletClient,
   localStorage,
   isNativeMobile: true,
   isElectron: false,

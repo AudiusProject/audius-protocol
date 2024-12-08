@@ -33,7 +33,6 @@ import { LinearProgress, Text } from 'app/components/core'
 import { env } from 'app/env'
 import { useToast } from 'app/hooks/useToast'
 import { make, track } from 'app/services/analytics'
-import { apiClient } from 'app/services/audius-api-client'
 import { setVisibility } from 'app/store/drawers/slice'
 import {
   getCancel,
@@ -357,9 +356,7 @@ export const useShareToStory = ({
         dispatch(setProgress(20))
 
         const encodedTrackId = encodeHashId(content.track.track_id)
-        const streamMp3Url = apiClient.makeUrl(
-          `/tracks/${encodedTrackId}/stream`
-        )
+        const streamMp3Url = `https://discoveryprovider.audius.co/tracks/${encodedTrackId}/stream`
         const storyVideoPath = path.join(
           RNFS.TemporaryDirectoryPath,
           `storyVideo-${uuid()}.mp4`

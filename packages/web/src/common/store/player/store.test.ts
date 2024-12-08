@@ -12,7 +12,6 @@ import * as matchers from 'redux-saga-test-plan/matchers'
 import { StaticProvider } from 'redux-saga-test-plan/providers'
 import { describe, it, expect, vitest } from 'vitest'
 
-import { apiClient } from 'services/audius-api-client'
 import { noopReducer } from 'store/testHelper'
 import { waitForWrite } from 'utils/sagaHelpers'
 
@@ -46,15 +45,12 @@ const makeInitialPlayer = (playing: boolean) => ({
   playing
 })
 
-vitest.mock('services/audius-api-client')
-
 const mockAudiusSdk = {}
 const defaultProviders: StaticProvider[] = [
   [call.fn(waitForWrite), undefined],
   [select(reachabilitySelectors.getIsReachable), true],
   [select(gatedContentSelectors.getNftAccessSignatureMap), {}],
   [call.fn(getQueryParams), {}],
-  [getContext('apiClient'), apiClient],
   [getContext('getFeatureEnabled'), () => false],
   [matchers.getContext('audiusSdk'), async () => mockAudiusSdk]
 ]
