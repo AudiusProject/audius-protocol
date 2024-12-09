@@ -14,7 +14,7 @@ import { audiusSdk } from 'app/services/sdk/audius-sdk'
 import { authService } from 'app/services/sdk/auth'
 import { store } from 'app/store'
 import { reportToSentry } from 'app/utils/reportToSentry'
-import { identityServiceInstance } from 'app/services/sdk/identity'
+import { identityService } from 'app/services/sdk/identity'
 
 type AudiusQueryProviderProps = {
   children: ReactNode
@@ -25,7 +25,7 @@ export const audiusQueryContext = {
   audiusBackend: audiusBackendInstance,
   audiusSdk,
   authService,
-  identityService: identityServiceInstance,
+  identityService: identityService,
   dispatch: store.dispatch,
   reportToSentry,
   env,
