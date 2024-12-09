@@ -177,6 +177,10 @@ func (ss *MediorumServer) postUpload(c echo.Context) error {
 	selectedPreview := sql.NullString{Valid: false}
 	previewStart := c.FormValue("previewStartSeconds")
 
+	if err := validateJobTemplate(template); err != nil {
+		return c.String(400, err.Error())
+	}
+
 	var placementHosts []string = nil
 	if v := c.FormValue("placement_hosts"); v != "" {
 		placementHosts = strings.Split(v, ",")
@@ -260,10 +264,10 @@ func (ss *MediorumServer) postUpload(c echo.Context) error {
 
 			// ffprobe:
 			upload.FFProbe, err = ffprobe(tmpFile.Name())
-			if err != nil && upload.Template == JobTemplateAudio {
-				// fail audio upload if ffprobe fails
+			if err != nil {
+				// fail upload if ffprobe fails
 				upload.Error = err.Error()
-				return err
+				return c.String(400, err.Error())
 			}
 
 			// ffprobe: restore orig filename
