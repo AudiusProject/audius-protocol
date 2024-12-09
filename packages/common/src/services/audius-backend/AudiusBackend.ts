@@ -1814,7 +1814,7 @@ export const audiusBackend = ({
         return { error: 'Phantom failed to sign and send transaction' }
       }
       await connection.confirmTransaction({
-        signature: signature.toString().toString(),
+        signature: signature.toString(),
         lastValidBlockHeight,
         blockhash: recentBlockhash
       })
@@ -1885,7 +1885,7 @@ export const audiusBackend = ({
       `Transfering ${amount.toString()} wei $AUDIO to ${recipientSolanaAddress}`
     )
 
-    const wAudioAmount = wAudioFromWeiAudio(amount)
+    const wAudioAmount = wAUDIO(AUDIO(amount))
     const recipientSolanaAddressPubKey = new PublicKey(recipientSolanaAddress)
     const secpTransactionInstruction =
       await sdk.services.claimableTokensClient.createTransferSecpInstruction({

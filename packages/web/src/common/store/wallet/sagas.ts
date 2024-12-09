@@ -211,7 +211,6 @@ function* getWalletBalanceAndWallets() {
 function* fetchBalanceAsync() {
   yield* waitForWrite()
   const walletClient = yield* getContext('walletClient')
-  const sdk = yield* getSDK()
 
   const account = yield* select(getAccountUser)
   if (!account || !account.wallet) return
