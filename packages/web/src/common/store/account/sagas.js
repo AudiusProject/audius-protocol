@@ -15,19 +15,14 @@ import { call, put, fork, select, takeEvery } from 'redux-saga/effects'
 import { identify } from 'common/store/analytics/actions'
 import { addPlaylistsNotInLibrary } from 'common/store/playlist-library/sagas'
 import { reportToSentry } from 'store/errors/reportToSentry'
-import { waitForWrite, waitForRead } from 'utils/sagaHelpers'
+import { waitForRead } from 'utils/sagaHelpers'
 
 import { retrieveCollections } from '../cache/collections/utils'
 
 const { fetchProfile } = profilePageActions
 
-const {
-  getUserId,
-  getUserHandle,
-  getAccountUser,
-  getAccountSavedPlaylistIds,
-  getAccountOwnedPlaylistIds
-} = accountSelectors
+const { getUserId, getAccountSavedPlaylistIds, getAccountOwnedPlaylistIds } =
+  accountSelectors
 
 const {
   signedIn,

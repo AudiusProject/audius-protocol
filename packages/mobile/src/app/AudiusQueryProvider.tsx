@@ -25,7 +25,7 @@ export const audiusQueryContext = {
   audiusBackend: audiusBackendInstance,
   audiusSdk,
   authService,
-  identityService: identityService,
+  identityService,
   dispatch: store.dispatch,
   reportToSentry,
   env,

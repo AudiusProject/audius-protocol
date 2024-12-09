@@ -14,6 +14,7 @@ import { getContext } from '~/store/effects'
 import { chatActions } from '~/store/pages/chat'
 import { UPLOAD_TRACKS_SUCCEEDED } from '~/store/upload/actions'
 
+import { cacheActions } from '../cache'
 import { getSDK } from '../sdkUtils'
 
 import {
@@ -27,7 +28,6 @@ import {
   tikTokLogin,
   signedIn
 } from './slice'
-import { cacheActions } from '../cache'
 
 const { fetchBlockees, fetchBlockers } = chatActions
 const IP_STORAGE_KEY = 'user-ip-timestamp'

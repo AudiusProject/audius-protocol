@@ -26,7 +26,7 @@ export const AudiusQueryProvider = (props: AudiusQueryProviderProps) => {
         audiusBackend: audiusBackendInstance,
         audiusSdk,
         authService,
-        identityService: identityService,
+        identityService,
         dispatch,
         reportToSentry,
         env,

@@ -2,11 +2,11 @@ import { EthWallet, SetAuthFn } from '@audius/hedgehog'
 import axios, { AxiosError, AxiosRequestConfig, AxiosResponse } from 'axios'
 import sigUtil from 'eth-sig-util'
 
+import { TwitterUser } from '~/models'
 import { Nullable } from '~/utils/typeUtils'
 import { uuid } from '~/utils/uid'
 
 import { AuthHeaders } from './types'
-import { TwitterUser } from '~/models'
 
 type Data = Record<string, unknown>
 type SetAuthFnParams = Parameters<SetAuthFn>[0]
