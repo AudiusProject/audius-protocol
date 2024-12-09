@@ -9,7 +9,7 @@ import {
   ADD_SUCCEEDED,
   UPDATE,
   SET_STATUS,
-  SET_EXPIRED,
+  SUBSCRIBE,
   INCREMENT,
   AddSuccededAction,
   ADD_ENTRIES,
@@ -23,7 +23,6 @@ type CacheState = {
   entries: Record<ID, { _timestamp: number; metadata: Metadata }>
   statuses: Record<ID, Status>
   uids: Record<UID, ID>
-  idsToPrune: Set<ID>
   entryTTL: number
 }
 
@@ -44,9 +43,7 @@ export const initialCacheState: CacheState = {
   statuses: {},
   // uid => id
   uids: {},
-  // id => Set(uid)
   // Set { id }
-  idsToPrune: new Set(),
   entryTTL: Infinity
 }
 
@@ -144,25 +141,6 @@ export const mergeCustomizer = (objValue: any, srcValue: any, key: string) => {
   }
 }
 
-const updateImageCache = (existing: Metadata, next: Metadata, merged: any) => {
-  if (
-    'profile_picture_sizes' in existing &&
-    'profile_picture_sizes' in next &&
-    existing.profile_picture_sizes !== next.profile_picture_sizes
-  ) {
-    merged._profile_picture_sizes = {}
-  }
-  if (
-    'cover_photo_sizes' in existing &&
-    'cover_photo_sizes' in next &&
-    existing.cover_photo_sizes !== next.cover_photo_sizes
-  ) {
-    merged._cover_photo_sizes = {}
-  }
-
-  return merged
-}
-
 const addEntries = (state: CacheState, entries: Entry[], replace?: boolean) => {
   const { entryTTL } = state
   const newEntries = { ...state.entries }
@@ -187,18 +165,20 @@ const addEntries = (state: CacheState, entries: Entry[], replace?: boolean) => {
       // do nothing
     } else if (existing) {
       delete existing.local
-      let newMetadata = mergeWith(
+      const newMetadata = mergeWith(
         {},
         existing,
         entity.metadata,
         mergeCustomizer
       )
-      newMetadata = updateImageCache(existing, entity.metadata, newMetadata)
       newEntries[entity.id] = wrapEntry(newMetadata, now)
     } else {
       newEntries[entity.id] = {
         _timestamp: entity.timestamp ?? now,
         metadata: entity.metadata
+      }
+      if (entity.uid) {
+        newUids[entity.uid] = entity.id
       }
     }
   }
@@ -238,8 +218,7 @@ const actionsMap = {
 
     action.entries.forEach((e: { id: string | number; metadata: any }) => {
       const existing = { ...unwrapEntry(state.entries[e.id]) }
-      let newEntry = mergeWith({}, existing, e.metadata, mergeCustomizer)
-      newEntry = updateImageCache(existing, e.metadata, newEntry)
+      const newEntry = mergeWith({}, existing, e.metadata, mergeCustomizer)
       newEntries[e.id] = wrapEntry(newEntry)
     })
 
@@ -274,8 +253,18 @@ const actionsMap = {
       statuses: newStatuses
     }
   },
-  [SET_EXPIRED](state: CacheState) {
-    return state
+  [SUBSCRIBE](state: CacheState, action: { id: any; subscribers: any[] }) {
+    const newUids = { ...state.uids }
+
+    action.subscribers.forEach((s: { id: any; uid: any }) => {
+      const { id, uid } = s
+      newUids[uid] = id
+    })
+
+    return {
+      ...state,
+      uids: newUids
+    }
   }
 }
 
@@ -289,8 +278,6 @@ export const asCache =
         statuses: {}
         // uid => id
         uids: {}
-        // Set { id }
-        idsToPrune: Set<unknown>
       }
       (arg0: any, arg1: any): any
     },

@@ -5,58 +5,57 @@
 /* Theme Color Definitions */
 :root {
   /* Static Colors */
-  /* TODO: This becomes static-white when v2 is enabled */
-  --harmony-static-static-white: #ffffff;
+  --harmony-static-static-white: #ffffffff;
   --harmony-static-black: #000000;
-  --harmony-static-primary: #cc0fe0;
+  --harmony-static-primary: #cc0fe0ff;
 
   /* Default Theme (Day Theme) */
   /* Primary Colors */
-  --harmony-primary: #cc0fe0;
-  --harmony-p-100: #d63fe6;
-  --harmony-p-200: #d127e3;
-  --harmony-p-300: #cc0fe0;
-  --harmony-p-400: #b80eca;
-  --harmony-p-500: #a30cb3;
+  --harmony-primary: #cc0fe0ff;
+  --harmony-p-100: #d63fe6ff;
+  --harmony-p-200: #d127e3ff;
+  --harmony-p-300: #cc0fe0ff;
+  --harmony-p-400: #b80ecaff;
+  --harmony-p-500: #a30cb3ff;
 
   /* Secondary Colors */
-  --harmony-secondary: #7e1bcc;
-  --harmony-s-100: #9849d6;
-  --harmony-s-200: #8b32d1;
-  --harmony-s-300: #7e1bcc;
-  --harmony-s-400: #7118b8;
-  --harmony-s-500: #6516a3;
+  --harmony-secondary: #7e1bccff;
+  --harmony-s-100: #9849d6ff;
+  --harmony-s-200: #8b32d1ff;
+  --harmony-s-300: #7e1bccff;
+  --harmony-s-400: #7118b8ff;
+  --harmony-s-500: #6516a3ff;
 
   /* Neutral Colors */
-  --harmony-neutral: #6c6780;
-  --harmony-n-25: #fefefe;
-  --harmony-n-50: #f7f7f8;
-  --harmony-n-100: #efeff1;
-  --harmony-n-150: #e7e7ea;
-  --harmony-n-200: #d6d5db;
-  --harmony-n-300: #c3c1cb;
-  --harmony-n-400: #a2a0af;
-  --harmony-n-500: #938fa3;
-  --harmony-n-600: #817d95;
-  --harmony-n-700: #736e88;
-  --harmony-n-800: #6c6780;
-  --harmony-n-900: #615d73;
-  --harmony-n-950: #524f62;
+  --harmony-neutral: #6c6780ff;
+  --harmony-n-25: #fefefeff;
+  --harmony-n-50: #f7f7f8ff;
+  --harmony-n-100: #efeff1ff;
+  --harmony-n-150: #e7e7eaff;
+  --harmony-n-200: #d6d5dbff;
+  --harmony-n-300: #c3c1cbff;
+  --harmony-n-400: #a2a0afff;
+  --harmony-n-500: #938fa3ff;
+  --harmony-n-600: #817d95ff;
+  --harmony-n-700: #736e88ff;
+  --harmony-n-800: #6c6780ff;
+  --harmony-n-900: #615d73ff;
+  --harmony-n-950: #524f62ff;
 
   /* Special Colors */
-  --harmony-white: #ffffff;
-  --harmony-background: #f6f5f7;
-  --harmony-blue: #1ba1f1;
-  --harmony-orange: #ff9400;
-  --harmony-red: #d0021b;
-  --harmony-dark-red: #bb0218;
-  --harmony-green: #0f9e48;
-  --harmony-light-green: #13c65a;
-  --harmony-gradient-color-1: #5b23e1;
-  --harmony-gradient-color-2: #a22feb;
-  --harmony-gradient: linear-gradient(315deg, #5b23e1 0%, #a22feb 100%);
-  --harmony-trending-blue: #216fdc;
-  --harmony-ai-green: #1fd187;
+  --harmony-white: #ffffffff;
+  --harmony-background: #f6f5f7ff;
+  --harmony-blue: #1ba1f1ff;
+  --harmony-orange: #ff9400ff;
+  --harmony-red: #d0021bff;
+  --harmony-dark-red: #bb0218ff;
+  --harmony-green: #0f9e48ff;
+  --harmony-light-green: #13c65aff;
+  --harmony-gradient-color-1: #5b23e1ff;
+  --harmony-gradient-color-2: #a22febff;
+  --harmony-gradient: linear-gradient(315deg, #5b23e1ff 0%, #a22febff 100%);
+  --harmony-trending-blue: #216fdcff;
+  --harmony-ai-green: #1fd187ff;
   --harmony-glass-overlay: #ffffffd9;
 }
 
@@ -117,6 +116,17 @@ html[data-theme='day-v2'] {
 /* Dark Theme */
 html[data-theme='dark-v2'] {
   /* Primary Colors */
+  --harmony-primary: #d767e1ff;
+  --harmony-p-100: #924699ff;
+  --harmony-p-200: #b356bbff;
+  --harmony-p-300: #d767e1ff;
+  --harmony-p-400: #f479ffff;
+  --harmony-p-500: #f7a4ffff;
+
+  /* Secondary Colors */
+  --harmony-secondary: #c67cffff;
+  --harmony-s-100: #9a66caff;
+  --harmony-s-200: #b071e4ff;
   --harmony-primary: #d767e1;
   --harmony-p-100: #924699;
   --harmony-p-200: #b356bb;

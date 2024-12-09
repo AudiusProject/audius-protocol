@@ -1,3 +1,5 @@
+import { NativeFile } from '@audius/sdk'
+
 import { CollectionValues } from '~/schemas'
 
 import {
@@ -9,15 +11,6 @@ import {
   TrackMetadata
 } from '../../models'
 import { Nullable } from '../../utils/typeUtils'
-
-export type NativeFile = {
-  uri: string
-  name: string | null
-  copyError?: string
-  fileCopyUri: string | null
-  type: string | null
-  size: number | null
-}
 
 export enum UploadType {
   INDIVIDUAL_TRACK = 0,

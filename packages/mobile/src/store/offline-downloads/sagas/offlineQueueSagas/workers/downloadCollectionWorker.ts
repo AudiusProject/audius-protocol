@@ -8,11 +8,9 @@ import type {
 } from '@audius/common/models'
 import { Id, OptionalId, SquareSizes } from '@audius/common/models'
 import { accountSelectors, getSDK } from '@audius/common/store'
-import { removeNullable } from '@audius/common/utils'
 import ReactNativeBlobUtil from 'react-native-blob-util'
 import { select, call, put, take, race, all } from 'typed-redux-saga'
 
-import { createAllImageSources } from 'app/hooks/useContentNodeImage'
 import { make, track } from 'app/services/analytics'
 import {
   getCollectionCoverArtPath,
@@ -20,7 +18,6 @@ import {
   getLocalCollectionJsonPath,
   mkdirSafe
 } from 'app/services/offline-downloader'
-import { getStorageNodeSelector } from 'app/services/sdk/storageNodeSelector'
 import { DOWNLOAD_REASON_FAVORITES } from 'app/store/offline-downloads/constants'
 import { EventNames } from 'app/types/analytics'
 
@@ -157,20 +154,20 @@ function* downloadCollectionAsync(
 }
 
 function* downloadCollectionCoverArt(collection: CollectionMetadata) {
-  const { cover_art_cids, cover_art_sizes, cover_art, playlist_id } = collection
-  const cid = cover_art_sizes ?? cover_art
-  const storageNodeSelector = yield* call(getStorageNodeSelector)
+  const { artwork, playlist_id } = collection
 
-  const imageSources = createAllImageSources({
-    cid,
-    endpoints: cid ? storageNodeSelector.getNodes(cid) : [],
-    size: SquareSizes.SIZE_1000_BY_1000,
-    cidMap: cover_art_cids
-  })
+  const primaryImage = artwork[SquareSizes.SIZE_1000_BY_1000]
+  if (!primaryImage) return
 
-  const coverArtUris = imageSources
-    .map((src) => (typeof src === 'object' && 'uri' in src ? src.uri : null))
-    .filter(removeNullable)
+  const coverArtUris = [
+    primaryImage,
+    ...(artwork.mirrors ?? []).map((mirror) => {
+      const url = new URL(primaryImage)
+      url.hostname = new URL(mirror).hostname
+      return url.toString()
+    })
+  ]
+
   const covertArtFilePath = getCollectionCoverArtPath(playlist_id)
 
   for (const coverArtUri of coverArtUris) {

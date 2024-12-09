@@ -21,6 +21,6 @@
   },
   "homepage": "https://github.com/AudiusProject/audius-protocol/tree/main/packages/eth",
   "dependencies": {
-    "viem": "1.21.1"
+    "viem": "2.21.21"
   }
 }

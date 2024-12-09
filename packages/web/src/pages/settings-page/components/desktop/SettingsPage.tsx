@@ -98,13 +98,8 @@ const {
   getNotificationSettings,
   updateEmailFrequency: updateEmailFrequencyAction
 } = settingsPageActions
-const {
-  getAccountVerified,
-  getAccountProfilePictureSizes,
-  getUserId,
-  getUserHandle,
-  getUserName
-} = accountSelectors
+const { getAccountVerified, getUserId, getUserHandle, getUserName } =
+  accountSelectors
 const { subscribeBrowserPushNotifications, instagramLogin } = accountActions
 
 const {
@@ -133,7 +128,6 @@ export const SettingsPage = () => {
   const handle = useSelector(getUserHandle) ?? ''
   const name = useSelector(getUserName) ?? ''
   const isVerified = useSelector(getAccountVerified)
-  const profilePictureSizes = useSelector(getAccountProfilePictureSizes)
   const theme = useSelector(getTheme)
   const emailFrequency = useSelector(getEmailFrequency)
   const notificationSettings = useSelector(getBrowserNotificationSettings)
@@ -467,7 +461,6 @@ export const SettingsPage = () => {
             userId={userId}
             handle={handle}
             name={name}
-            profilePictureSizes={profilePictureSizes}
             goToRoute={goToRoute}
             isVerified={isVerified}
             onInstagramLogin={onInstagramLogin}

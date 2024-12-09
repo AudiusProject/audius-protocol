@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 
 import { useDispatch } from 'react-redux'
 import type { AnyAction } from 'redux'
@@ -15,9 +15,7 @@ export const useSocialMediaLoader = ({
 }) => {
   const dispatch = useDispatch()
   const [isWaitingForSocialLogin, setIsWaitingForSocialLogin] = useState(false)
-  const [openTimeout, setOpenTimeout] = useState<
-    ReturnType<typeof setTimeout> | undefined
-  >(undefined)
+  const openTimeoutId = useRef<ReturnType<typeof setTimeout>>()
 
   const { updateOptions: updateScreenOptions } = useScreenOptions()
 
@@ -35,10 +33,8 @@ export const useSocialMediaLoader = ({
     // Without this setTimeout, the header just "disappears"
     // My suspicion is this is something related to animations
     setTimeout(() => updateScreenOptions(undefined), 0)
-    if (openTimeout) {
-      clearTimeout(openTimeout)
-    }
-  }, [openTimeout, updateScreenOptions])
+    openTimeoutId.current = undefined
+  }, [openTimeoutId, updateScreenOptions])
 
   const handleStartSocialMediaLogin = useCallback(() => {
     // NOTE: this cannot go inside the timeout or it will cause the header to just disappear
@@ -57,7 +53,7 @@ export const useSocialMediaLoader = ({
     const timeoutId = setTimeout(() => {
       setIsWaitingForSocialLogin(true)
     }, 1500)
-    setOpenTimeout(timeoutId)
+    openTimeoutId.current = timeoutId
   }, [updateScreenOptions])
 
   const handleErrorSocialMediaLogin = useCallback(() => {
@@ -65,10 +61,10 @@ export const useSocialMediaLoader = ({
     // Without this setTimeout, the header just "disappears"
     // My suspicion is this is something related to animations
     setTimeout(() => updateScreenOptions(undefined), 0)
-    if (openTimeout) {
-      clearTimeout(openTimeout)
+    if (openTimeoutId.current) {
+      clearTimeout(openTimeoutId.current)
     }
-  }, [openTimeout, updateScreenOptions])
+  }, [updateScreenOptions])
 
   const handleCompleteSocialMediaLogin = useCallback(() => {
     setIsWaitingForSocialLogin(false)

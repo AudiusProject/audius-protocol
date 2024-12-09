@@ -107,10 +107,7 @@ export const RepostsMetric = (props: RepostsMetricProps) => {
   const isLargeSize = size === TrackTileSize.LARGE && !isMobile
 
   return (
-    <VanityMetric
-      css={(theme) => ({ gap: theme.spacing.l })}
-      onClick={handleClick}
-    >
+    <VanityMetric onClick={handleClick}>
       {isLargeSize && followeeReposts.length >= 3 ? (
         <AvatarList users={followeeReposts.map(({ user_id }) => user_id)} />
       ) : null}

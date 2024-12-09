@@ -13,9 +13,9 @@ import { toFormikValidationSchema } from 'zod-formik-adapter'
 
 import { ModalScreen } from 'app/components/core'
 import { useCollectionImage } from 'app/components/image/CollectionImage'
-import { isImageUriSource } from 'app/hooks/useContentNodeImage'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { useRoute } from 'app/hooks/useRoute'
+import { isImageUriSource } from 'app/utils/image'
 
 import { EditCollectionNavigator } from './EditCollectionNavigator'
 

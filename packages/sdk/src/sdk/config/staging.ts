@@ -95,7 +95,9 @@ export const stagingConfig: SdkServicesConfig = {
     "addresses": {
       "ethRewardsManagerAddress": "0x563483ccD66a49Ca730275F8cf37Dd3E6Da864f1",
       "serviceProviderFactoryAddress": "0x377BE01aD31360d0DFB16035A4515954395A8185",
-      "serviceTypeManagerAddress": "0x9fd76d2cD48022526F3a164541E6552291F4a862"
+      "serviceTypeManagerAddress": "0x9fd76d2cD48022526F3a164541E6552291F4a862",
+      "audiusTokenAddress": "0x1376180Ee935AA64A27780F4BE97726Df7B0e2B2",
+      "audiusWormholeAddress": "0xf6f45e4d836da1d4ecd43bb1074620bfb0b7e0d7"
     }
   }
 }

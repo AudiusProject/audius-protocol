@@ -30,10 +30,7 @@ import {
 import { isContentUSDCPurchaseGated } from '~/models/Track'
 import { User } from '~/models/User'
 import { BNUSDC } from '~/models/Wallet'
-import {
-  getRootSolanaAccount,
-  getSolanaConnection
-} from '~/services/audius-backend/solana'
+import { getRootSolanaAccount } from '~/services/audius-backend/solana'
 import { FeatureFlags } from '~/services/remote-config/feature-flags'
 import { accountSelectors } from '~/store/account'
 import {
@@ -937,8 +934,7 @@ function* purchaseWithAnything({
   try {
     const audiusSdk = yield* getContext('audiusSdk')
     const sdk = yield* call(audiusSdk)
-    const audiusBackendInstance = yield* getContext('audiusBackendInstance')
-    const connection = yield* call(getSolanaConnection, audiusBackendInstance)
+    const connection = sdk.services.solanaClient.connection
     const getFeatureEnabled = yield* getContext('getFeatureEnabled')
     const isNetworkCutEnabled = yield* call(
       getFeatureEnabled,

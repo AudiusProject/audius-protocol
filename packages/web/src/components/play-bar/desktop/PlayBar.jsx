@@ -307,7 +307,6 @@ class PlayBar extends Component {
     let artistHandle = ''
     let artistUserId = null
     let isVerified = false
-    let profilePictureSizes = null
     let trackId = null
     let duration = null
     let isOwner = false
@@ -321,7 +320,6 @@ class PlayBar extends Component {
       artistHandle = user.handle
       artistUserId = user.user_id
       isVerified = user.is_verified
-      profilePictureSizes = user._profile_picture_sizes
       isOwner = track.owner_id === userId
       trackPermalink = track.permalink
 
@@ -336,7 +334,6 @@ class PlayBar extends Component {
       artistHandle = user.handle
       artistUserId = user.user_id
       isVerified = user.is_verified
-      profilePictureSizes = user._profile_picture_sizes
       isOwner = this.props.accountUserId === user.user_id
       duration = audioPlayer.getDuration()
     }
@@ -359,7 +356,6 @@ class PlayBar extends Component {
         <div className={styles.playBarContentWrapper}>
           <div className={styles.playBarPlayingInfo}>
             <PlayingTrackInfo
-              profilePictureSizes={profilePictureSizes}
               trackId={trackId}
               isOwner={isOwner}
               trackTitle={trackTitle}

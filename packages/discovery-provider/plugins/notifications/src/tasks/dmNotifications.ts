@@ -204,7 +204,9 @@ async function getNewBlasts(
       )
       .orderBy('chat_blast.created_at', 'asc')
       .first()
-    newBlastIdCursor = blastIdResult ? blastIdResult.blast_id : lastIndexedBlastId
+    newBlastIdCursor = blastIdResult
+      ? blastIdResult.blast_id
+      : lastIndexedBlastId
     newUserIdCursor = blastIdResult ? null : lastIndexedBlastUserId
   } else {
     newBlastIdCursor = formattedMessages[0].blast_id
@@ -244,7 +246,7 @@ function setLastIndexedBlastIds(
   if (blastId) {
     redis.set(config.lastIndexedBlastIdRedisKey, blastId)
   }
-  userId === null 
+  userId === null
     ? redis.del(config.lastIndexedBlastUserIdRedisKey)
     : redis.set(config.lastIndexedBlastUserIdRedisKey, userId)
 }

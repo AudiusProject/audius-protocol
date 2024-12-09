@@ -2,8 +2,7 @@ import { Kind, TrackMetadata, User } from '@audius/common/models'
 import {
   accountSelectors,
   cacheActions,
-  reformatUser,
-  getContext
+  reformatUser
 } from '@audius/common/store'
 import { makeUid } from '@audius/common/utils'
 import { uniqBy } from 'lodash'
@@ -21,7 +20,6 @@ export function* addUsersFromTracks<T extends TrackMetadata & { user?: User }>(
   metadataArray: T[]
 ) {
   yield* waitForRead()
-  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
   const currentUserId = yield* select(getUserId)
   let users = metadataArray
     .filter((m) => m.user)
@@ -30,7 +28,7 @@ export function* addUsersFromTracks<T extends TrackMetadata & { user?: User }>(
       return {
         id: track.user.user_id,
         uid: makeUid(Kind.USERS, track.user.user_id),
-        metadata: reformatUser(track.user, audiusBackendInstance)
+        metadata: reformatUser(track.user)
       }
     })
 

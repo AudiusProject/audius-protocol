@@ -1,5 +1,5 @@
 import type { CrossPlatformFile as File } from '../../types/File'
-import type { AuthService } from '../Auth'
+import type { AudiusWalletClient } from '../AudiusWalletClient'
 import type { LoggerService } from '../Logger'
 import type { StorageNodeSelectorService } from '../StorageNodeSelector'
 
@@ -15,9 +15,26 @@ export type StorageServiceConfig = Partial<StorageServiceConfigInternal> & {
    * The StorageNodeSelector service used to get the relevant storage node for content
    */
   storageNodeSelector: StorageNodeSelectorService
+  audiusWalletClient: AudiusWalletClient
 }
 
-export type ProgressCB = (loaded: number, total: number) => void
+export type ProgressHandler = (
+  progress:
+    | {
+        art: {
+          upload?: { loaded: number; total: number }
+          transcode?: { decimal: number }
+          resize?: undefined
+        }
+      }
+    | {
+        audio: {
+          upload?: { loaded: number; total: number }
+          transcode?: { decimal: number }
+          resize?: undefined
+        }
+      }
+) => void
 
 export type FileTemplate = 'audio' | 'img_square' | 'img_backdrop'
 
@@ -26,23 +43,19 @@ export type StorageService = {
     file,
     onProgress,
     template,
-    options,
-    auth
+    options
   }: {
     file: File
-    onProgress?: ProgressCB
+    onProgress?: ProgressHandler
     template: FileTemplate
     options?: { [key: string]: string }
-    auth: AuthService
   }) => Promise<UploadResponse>
   editFile: ({
     uploadId,
-    data,
-    auth
+    data
   }: {
     uploadId: string
     data: { [key: string]: string }
-    auth: AuthService
   }) => Promise<UploadResponse>
 }
 
@@ -72,4 +85,5 @@ export type UploadResponse = {
       duration: string
     }
   }
+  transcode_progress?: number
 }

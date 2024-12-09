@@ -157,8 +157,7 @@ const searchApi = createApi({
               user: {
                 ...((track as UserTrackMetadata).user ?? {}),
                 user_id: track.owner_id
-              },
-              _cover_art_sizes: {}
+              }
             }
           })
         }

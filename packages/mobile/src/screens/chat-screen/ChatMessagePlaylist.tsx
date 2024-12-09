@@ -36,7 +36,7 @@ export const ChatMessagePlaylist = ({
   const playingUid = useSelector(getUid)
 
   const permalink = getPathFromPlaylistUrl(link) ?? ''
-  const { data: playlist } = useGetPlaylistByPermalink(
+  const { data: collection } = useGetPlaylistByPermalink(
     {
       permalink,
       currentUserId: currentUserId!
@@ -44,18 +44,8 @@ export const ChatMessagePlaylist = ({
     { disabled: !permalink || !currentUserId }
   )
 
-  const collection = useMemo(() => {
-    return playlist
-      ? {
-          ...playlist,
-          // Include this field to conform with the component prop type.
-          _cover_art_sizes: {}
-        }
-      : null
-  }, [playlist])
-
   const trackIds =
-    playlist?.playlist_contents?.track_ids?.map((t) => t.track) ?? []
+    collection?.playlist_contents?.track_ids?.map((t) => t.track) ?? []
   const { data: tracks } = useGetTracksByIds(
     {
       ids: trackIds,
@@ -64,7 +54,7 @@ export const ChatMessagePlaylist = ({
     { disabled: !trackIds.length }
   )
 
-  const collectionId = playlist?.playlist_id
+  const collectionId = collection?.playlist_id
 
   const uid = useMemo(() => {
     return collectionId ? makeUid(Kind.COLLECTIONS, collectionId) : null
@@ -86,12 +76,7 @@ export const ChatMessagePlaylist = ({
   const tracksWithUids = useMemo(() => {
     return (tracks || []).map((track) => ({
       ...track,
-      _cover_art_sizes: {},
-      user: {
-        ...track.user,
-        _profile_picture_sizes: {},
-        _cover_photo_sizes: {}
-      },
+      user: track.user,
       id: track.track_id,
       uid: uidMap[track.track_id]
     }))

@@ -8,7 +8,8 @@ import { CreateGrantRequest } from '@audius/sdk'
 import base64url from 'base64url'
 
 import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
-import { audiusSdk } from 'services/audius-sdk'
+import { audiusSdk, authService } from 'services/audius-sdk'
+import { identityServiceInstance } from 'services/audius-sdk/identity'
 import { getStorageNodeSelector } from 'services/audius-sdk/storageNodeSelector'
 
 import { messages } from './messages'
@@ -117,7 +118,8 @@ export const formOAuthResponse = async ({
   let email: string
   if (!userEmail) {
     try {
-      email = await audiusBackendInstance.getUserEmail()
+      const wallet = authService.getWallet()
+      email = await identityServiceInstance.getUserEmail({ wallet })
     } catch {
       onError()
       return
@@ -369,7 +371,7 @@ export const handleAuthorizeConnectDashboardWallet = async ({
     const sdk = await audiusSdk()
     await sdk.dashboardWalletUsers.connectUserToDashboardWallet({
       userId: encodeHashId(account.user_id),
-      wallet: txParams!.wallet,
+      wallet: txParams!.wallet as `0x${string}`,
       walletSignature
     })
   } catch (e: unknown) {
@@ -437,7 +439,7 @@ export const handleAuthorizeDisconnectDashboardWallet = async ({
       return false
     }
     await sdk.dashboardWalletUsers.disconnectUserFromDashboardWallet({
-      wallet: txParams.wallet,
+      wallet: txParams.wallet as `0x${string}`,
       userId: encodeHashId(account.user_id)
     })
   } catch (e: unknown) {
