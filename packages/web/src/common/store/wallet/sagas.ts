@@ -81,7 +81,6 @@ function* sendAsync({
   yield* waitForWrite()
   const walletClient = yield* getContext('walletClient')
   const { track } = yield* getContext('analytics')
-  const sdk = yield* getSDK()
 
   const account = yield* select(getAccountUser)
   const weiBNAmount = stringWeiToBN(weiAudioAmount)
@@ -94,7 +93,7 @@ function* sendAsync({
 
   const waudioWeiAmount: BNWei | null = yield* call(
     [walletClient, 'getCurrentWAudioBalance'],
-    { ethAddress: currentUser, sdk }
+    { ethAddress: currentUser }
   )
 
   if (isNullOrUndefined(waudioWeiAmount)) {
@@ -313,11 +312,11 @@ function* checkAssociatedTokenAccountOrSol(action: InputSendDataAction) {
 
   const associatedTokenAccount = yield* call(
     [walletClient, 'getAssociatedTokenAccountInfo'],
-    { sdk, address }
+    { address }
   )
   if (!associatedTokenAccount) {
     const balance: BNWei = yield* call(() =>
-      walletClient.getWalletSolBalance({ address, sdk })
+      walletClient.getWalletSolBalance({ address })
     )
 
     // TODO: this can become a call to getAssociatedTokenRentExemptionMinimum
