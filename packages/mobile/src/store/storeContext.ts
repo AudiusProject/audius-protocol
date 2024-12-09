@@ -69,7 +69,11 @@ export const storeContext: CommonStoreContext = {
   share: (url: string, message?: string) => share({ url, message }),
   audiusSdk,
   authService,
+<<<<<<< HEAD
   identityService: identityServiceInstance,
+=======
+  identityServiceInstance,
+>>>>>>> origin/main
   imageUtils: {
     generatePlaylistArtwork
   },

@@ -80,7 +80,11 @@ export type CommonStoreContext = {
   share: (url: string, message?: string) => Promise<void> | void
   audiusSdk: () => Promise<AudiusSdk>
   authService: AuthService
+<<<<<<< HEAD
   identityService: IdentityService
+=======
+  identityServiceInstance: IdentityService
+>>>>>>> origin/main
   imageUtils: {
     generatePlaylistArtwork: (
       urls: string[]

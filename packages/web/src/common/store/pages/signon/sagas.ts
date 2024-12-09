@@ -35,7 +35,8 @@ import {
   getContext,
   confirmerActions,
   getSDK,
-  fetchAccountAsync
+  fetchAccountAsync,
+  changePasswordActions
 } from '@audius/common/store'
 import {
   Genre,
@@ -44,7 +45,8 @@ import {
   isValidEmailString,
   route,
   isResponseError,
-  encodeHashId
+  encodeHashId,
+  TEMPORARY_PASSWORD
 } from '@audius/common/utils'
 import { CreateUserRequest, UpdateProfileRequest } from '@audius/sdk'
 import { push as pushRoute } from 'connected-react-router'
@@ -656,6 +658,16 @@ function* signUp() {
                 [sdk.users, sdk.users.updateProfile],
                 completeProfileMetadataRequest
               )
+
+              yield* put(
+                changePasswordActions.changePassword({
+                  email,
+                  password,
+                  oldPassword: TEMPORARY_PASSWORD
+                })
+              )
+
+              yield* fork(sendRecoveryEmail, { handle, email })
             } else {
               if (!alreadyExisted) {
                 yield* call(
@@ -952,7 +964,9 @@ function* signIn(action: ReturnType<typeof signOnActions.signIn>) {
             }
           })
         )
-        yield* put(pushRoute(SIGN_UP_PASSWORD_PAGE))
+        if (!isNativeMobile) {
+          yield* put(pushRoute(SIGN_UP_PASSWORD_PAGE))
+        }
         const { web3Error, libsError } = yield* call(
           audiusBackendInstance.setup,
           {
@@ -1049,7 +1063,6 @@ function* signIn(action: ReturnType<typeof signOnActions.signIn>) {
 
     yield* put(signOnActions.resetSignOn())
 
-    const isNativeMobile = yield* getContext('isNativeMobile')
     if (!isNativeMobile) {
       // Reset the sign on in the background after page load as to relieve the UI loading
       yield* delay(1000)

@@ -10,7 +10,7 @@ import {
   TransactionMessage,
   VersionedTransaction
 } from '@solana/web3.js'
-import { describe, it, beforeAll, expect, vitest } from 'vitest'
+import { beforeAll, describe, expect, it, vitest } from 'vitest'
 
 import { developmentConfig } from '../../config/development'
 import {
@@ -18,7 +18,8 @@ import {
   SolanaRelay,
   SolanaRelayWalletAdapter,
   createAppWalletClient,
-  getDefaultClaimableTokensConfig
+  getDefaultClaimableTokensConfig,
+  EmailEncryptionService
 } from '../../services'
 import { DiscoveryNodeSelector } from '../../services/DiscoveryNodeSelector'
 import { EntityManagerClient } from '../../services/EntityManager'
@@ -86,6 +87,11 @@ const claimableTokens = new ClaimableTokensClient({
   solanaClient
 })
 
+const emailEncryption = new EmailEncryptionService(
+  new Configuration(),
+  audiusWalletClient
+)
+
 describe('UsersApi', () => {
   beforeAll(() => {
     users = new UsersApi(
@@ -101,7 +107,8 @@ describe('UsersApi', () => {
       }),
       new Logger(),
       claimableTokens,
-      solanaClient
+      solanaClient,
+      emailEncryption
     )
     vitest.spyOn(console, 'warn').mockImplementation(() => {})
     vitest.spyOn(console, 'info').mockImplementation(() => {})
@@ -407,15 +414,44 @@ describe('UsersApi', () => {
     })
   })
 
-  describe('addEmail', () => {
+  describe('shareEmail', () => {
+    beforeAll(() => {
+      // Mock getUserEmailKey
+      vitest
+        .spyOn(UsersApi.prototype, 'getUserEmailKey')
+        .mockImplementation(async () => {
+          return { data: 'mockEncryptedKey' }
+        })
+
+      // Mock EmailEncryptionService methods
+      vitest
+        .spyOn(EmailEncryptionService.prototype, 'decryptSymmetricKey')
+        .mockImplementation(async () => {
+          return new Uint8Array(32) // Mock 32-byte key
+        })
+
+      vitest
+        .spyOn(EmailEncryptionService.prototype, 'createSharedKey')
+        .mockImplementation(async () => {
+          return {
+            symmetricKey: new Uint8Array(32),
+            primaryUserEncryptedKey: 'mockPrimaryUserEncryptedKey',
+            granteeEncryptedKeys: []
+          }
+        })
+
+      vitest
+        .spyOn(EmailEncryptionService.prototype, 'encryptEmail')
+        .mockImplementation(async () => {
+          return 'mockEncryptedEmail'
+        })
+    })
+
     it('adds an encrypted email if valid metadata is provided', async () => {
-      const result = await users.addEmail({
+      const result = await users.shareEmail({
         emailOwnerUserId: 123,
         primaryUserId: 456,
-        encryptedEmail: 'encryptedEmailString',
-        encryptedKey: 'encryptedKeyString',
-        delegatedUserIds: [789],
-        delegatedKeys: ['delegatedKeyString']
+        email: 'email@example.com'
       })
 
       expect(result).toStrictEqual({
@@ -425,11 +461,10 @@ describe('UsersApi', () => {
     })
 
     it('adds an encrypted email without optional delegated fields', async () => {
-      const result = await users.addEmail({
+      const result = await users.shareEmail({
         emailOwnerUserId: 123,
         primaryUserId: 456,
-        encryptedEmail: 'encryptedEmailString',
-        encryptedKey: 'encryptedKeyString'
+        email: 'email@example.com'
       })
 
       expect(result).toStrictEqual({
@@ -440,7 +475,7 @@ describe('UsersApi', () => {
 
     it('throws an error if required fields are missing', async () => {
       await expect(async () => {
-        await users.addEmail({
+        await users.shareEmail({
           emailOwnerUserId: 123,
           // Missing primaryUserId
           encryptedEmail: 'encryptedEmailString',
@@ -451,7 +486,7 @@ describe('UsersApi', () => {
 
     it('throws an error if invalid metadata is provided', async () => {
       await expect(async () => {
-        await users.addEmail({
+        await users.shareEmail({
           emailOwnerUserId: 123,
           // Incorrect type for primaryUserId
           primaryUserId: '456',

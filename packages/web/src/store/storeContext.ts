@@ -7,11 +7,16 @@ import * as analytics from 'services/analytics'
 import { audioPlayer } from 'services/audio-player'
 import { apiClient } from 'services/audius-api-client'
 import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
+<<<<<<< HEAD
 import {
   audiusSdk,
   authService,
   identityServiceInstance
 } from 'services/audius-sdk'
+=======
+import { audiusSdk, authService } from 'services/audius-sdk'
+import { identityServiceInstance } from 'services/audius-sdk/identity'
+>>>>>>> origin/main
 import { env } from 'services/env'
 import { explore } from 'services/explore'
 import { fingerprintClient } from 'services/fingerprint'
@@ -78,7 +83,11 @@ export const buildStoreContext = ({
   share: getShare(isMobile),
   audiusSdk,
   authService,
+<<<<<<< HEAD
   identityService: identityServiceInstance,
+=======
+  identityServiceInstance,
+>>>>>>> origin/main
   imageUtils: {
     generatePlaylistArtwork
   },

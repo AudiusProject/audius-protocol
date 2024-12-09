@@ -24,7 +24,7 @@ export const PlainButton = (props: PlainButtonProps) => {
   const { disabled, isLoading, onPress } = baseProps
   const isDisabled = disabled || isLoading
   const isPressable = !isDisabled && onPress
-  const { color, spacing, typography } = useTheme()
+  const { color, spacing, typography, type } = useTheme()
   const pressed = useSharedValue(0)
 
   // - Size Styles -
@@ -108,7 +108,7 @@ export const PlainButton = (props: PlainButtonProps) => {
         [dynamicStyles.default.text, dynamicStyles.press.text]
       )
     }),
-    [variant],
+    [variant, type],
     animatedPropAdapter
   )
 
@@ -124,7 +124,7 @@ export const PlainButton = (props: PlainButtonProps) => {
 
       ...(size === 'large' ? largeTextStyles : defaultTextStyles)
     }),
-    [size, isPressable]
+    [size, isPressable, type]
   )
 
   return (
