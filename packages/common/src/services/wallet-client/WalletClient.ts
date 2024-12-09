@@ -249,13 +249,12 @@ export class WalletClient {
       throw new Error('Insufficient Audio to transfer')
     }
     try {
-      const { res, error, errorCode } =
-        await this.audiusBackendInstance.sendWAudioTokens({
-          address,
-          amount,
-          ethAddress,
-          sdk
-        })
+      const { res, error } = await this.audiusBackendInstance.sendWAudioTokens({
+        address,
+        amount,
+        ethAddress,
+        sdk
+      })
       if (error) {
         if (error === 'Missing social proof') {
           throw new Error(error)
@@ -268,15 +267,12 @@ export class WalletClient {
         }
         console.error(
           `Error sending sol wrapped audio amount ${amount.toString()} to ${address.toString()}` +
-            `with error ${error.toString()} and errorCode: ${errorCode}`
+            `with error ${error.toString()}`
         )
-        throw new Error(
-          `Error: ${error.toString()}, with code ${errorCode?.toString()}`
-        )
+        throw new Error(`Error: ${error.toString()}`)
       }
       return res
     } catch (err) {
-      console.error('REED', { logs: await err.getLogs() })
       console.error(err)
       throw err
     }

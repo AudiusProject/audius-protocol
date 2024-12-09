@@ -1811,7 +1811,7 @@ export const audiusBackend = ({
       const { signature, lastValidBlockHeight, recentBlockhash } =
         await window.solana.signAndSendTransaction(tx)
       if (!signature || !lastValidBlockHeight || !recentBlockhash) {
-        throw new Error('Phantom failed to sign and send transaction')
+        return { error: 'Phantom failed to sign and send transaction' }
       }
       await connection.confirmTransaction({
         signature: signature.toString().toString(),
@@ -1819,12 +1819,14 @@ export const audiusBackend = ({
         blockhash: recentBlockhash
       })
     }
-    return transferWAudio({
+
+    const res = await transferWAudio({
       recipientSolanaAddress: address,
       amount,
       ethAddress,
       sdk
     })
+    return { res, error: null }
   }
 
   async function transferWAudio({
