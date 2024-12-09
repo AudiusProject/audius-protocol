@@ -6,6 +6,7 @@ import { Nullable } from '~/utils/typeUtils'
 import { uuid } from '~/utils/uid'
 
 import { AuthHeaders } from './types'
+import { TwitterUser } from '~/models'
 
 type Data = Record<string, unknown>
 type SetAuthFnParams = Parameters<SetAuthFn>[0]
@@ -86,6 +87,72 @@ export class IdentityService {
       url: '/recovery',
       method: 'post',
       data
+    })
+  }
+
+  async lookupTwitterHandle(handle: string): Promise<TwitterUser> {
+    if (handle) {
+      return await this._makeRequest({
+        url: '/twitter/handle_lookup',
+        method: 'get',
+        params: { handle }
+      })
+    } else {
+      throw new Error('No handle passed into function lookupTwitterHandle')
+    }
+  }
+
+  async associateTwitterUser(
+    uuid: string,
+    userId: number,
+    handle: string,
+    blockNumber?: number
+  ) {
+    return await this._makeRequest({
+      url: '/twitter/associate',
+      method: 'post',
+      data: {
+        uuid,
+        userId,
+        handle,
+        blockNumber
+      }
+    })
+  }
+
+  async associateInstagramUser(
+    uuid: string,
+    userId: number,
+    handle: string,
+    blockNumber?: number
+  ) {
+    return await this._makeRequest({
+      url: '/instagram/associate',
+      method: 'post',
+      data: {
+        uuid,
+        userId,
+        handle,
+        blockNumber
+      }
+    })
+  }
+
+  async associateTikTokUser(
+    uuid: string,
+    userId: number,
+    handle: string,
+    blockNumber?: number
+  ) {
+    return await this._makeRequest({
+      url: '/tiktok/associate',
+      method: 'post',
+      data: {
+        uuid,
+        userId,
+        handle,
+        blockNumber
+      }
     })
   }
 
