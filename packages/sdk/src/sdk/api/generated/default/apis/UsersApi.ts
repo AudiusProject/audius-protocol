@@ -1585,7 +1585,7 @@ export class UsersApi extends runtime.BaseAPI {
 
     /**
      * @hidden
-     * Gets a key for a user by their user ID. The key, which is an encrypted symmetric key, can be used to encrypt and decrypt emails shared with the user.
+     * Gets an encrypted symmetric key, can be used to encrypt and decrypt emails shared with the user.
      */
     async getUserEmailKeyRaw(params: GetUserEmailKeyRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<EmailKeyResponse>> {
         if (params.id === null || params.id === undefined) {
@@ -1607,7 +1607,7 @@ export class UsersApi extends runtime.BaseAPI {
     }
 
     /**
-     * Gets a key for a user by their user ID. The key, which is an encrypted symmetric key, can be used to encrypt and decrypt emails shared with the user.
+     * Gets an encrypted symmetric key, can be used to encrypt and decrypt emails shared with the user.
      */
     async getUserEmailKey(params: GetUserEmailKeyRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<EmailKeyResponse> {
         const response = await this.getUserEmailKeyRaw(params, initOverrides);
