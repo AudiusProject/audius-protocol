@@ -13,7 +13,7 @@ import {
   ASSOCIATED_TOKEN_PROGRAM_ID,
   getAccount,
   TOKEN_PROGRAM_ID,
-  TokenInvalidAccountError,
+  TokeInvalidAccountError,
   TokenInvalidAccountOwnerError
 } from '@solana/spl-token'
 import {
@@ -1712,24 +1712,6 @@ export const audiusBackend = ({
     return receipt
   }
 
-  async function findAssociatedTokenAddress({
-    solanaWalletKey
-  }: {
-    solanaWalletKey: PublicKey
-  }) {
-    const solanaTokenProgramKey = new PublicKey(TOKEN_PROGRAM_ID)
-    const mintKey = new PublicKey(env.WAUDIO_MINT_ADDRESS)
-    const addresses = PublicKey.findProgramAddressSync(
-      [
-        solanaWalletKey.toBuffer(),
-        solanaTokenProgramKey.toBuffer(),
-        mintKey.toBuffer()
-      ],
-      ASSOCIATED_TOKEN_PROGRAM_ID
-    )
-    return addresses[0]
-  }
-
   async function getTokenAccount({
     address,
     sdk
@@ -1743,7 +1725,6 @@ export const audiusBackend = ({
       return tokenAccountInfo
     } catch (err) {
       if (err instanceof TokenInvalidAccountOwnerError) {
-        console.error('Given account was not a token account')
         return null
       }
       throw err
@@ -1767,8 +1748,9 @@ export const audiusBackend = ({
           'Provided recipient solana address was not a token account'
         )
         // If not, check to see if it already has an associated token account.
-        const associatedTokenAccount = await findAssociatedTokenAddress({
-          solanaWalletKey: pubkey
+        const associatedTokenAccount = findAssociatedTokenAddress({
+          solanaWalletKey: pubkey,
+          mintKey: new PublicKey(env.WAUDIO_MINT_ADDRESS)
         })
         tokenAccountInfo = await getTokenAccount({
           address: associatedTokenAccount,
@@ -1973,19 +1955,17 @@ export const audiusBackend = ({
  * Finds the associated token address given a solana wallet public key
  * @param solanaWalletKey Public Key for a given solana account (a wallet)
  * @param mintKey
- * @param solanaTokenProgramKey
  * @returns token account public key
  */
-async function findAssociatedTokenAddress({
+function findAssociatedTokenAddress({
   solanaWalletKey,
-  mintKey,
-  solanaTokenProgramKey
+  mintKey
 }: {
   solanaWalletKey: PublicKey
   mintKey: PublicKey
-  solanaTokenProgramKey: PublicKey
 }) {
-  const addresses = await PublicKey.findProgramAddress(
+  const solanaTokenProgramKey = new PublicKey(TOKEN_PROGRAM_ID)
+  const addresses = PublicKey.findProgramAddressSync(
     [
       solanaWalletKey.toBuffer(),
       solanaTokenProgramKey.toBuffer(),
@@ -2018,10 +1998,9 @@ async function getCreateAssociatedTokenAccountTransaction({
   solanaTokenProgramKey: PublicKey
   connection: typeof AudiusLibs.IdentityService
 }) {
-  const associatedTokenAddress = await findAssociatedTokenAddress({
+  const associatedTokenAddress = findAssociatedTokenAddress({
     solanaWalletKey,
-    mintKey,
-    solanaTokenProgramKey
+    mintKey
   })
   const accounts = [
     // 0. `[sw]` Funding account (must be a system account)
