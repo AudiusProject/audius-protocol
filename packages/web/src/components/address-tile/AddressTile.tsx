@@ -38,8 +38,7 @@ export const AddressTile = ({
   const { toast } = useContext(ToastContext)
   const isMobile = useIsMobile()
   const { data: balanceBN } = useUSDCBalance({
-    isPolling: true,
-    commitment: 'finalized'
+    isPolling: true
   })
   const handleCopyPress = useCallback(() => {
     copyToClipboard(address)

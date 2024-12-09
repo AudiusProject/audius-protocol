@@ -65,8 +65,7 @@ export const USDCManualTransfer = ({
   const { currentUser: wallet } = useSelector(getWalletAddresses)
   const isUnlocking = !error && isContentPurchaseInProgress(stage)
   const { data: balanceBN } = useUSDCBalance({
-    isPolling: true,
-    commitment: 'finalized'
+    isPolling: true
   })
   const balance = USDC(balanceBN ?? new BN(0)).value
   const amount = USDC((amountInCents ?? 0) / 100).value
