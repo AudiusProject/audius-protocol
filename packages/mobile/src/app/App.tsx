@@ -42,8 +42,15 @@ import ErrorBoundary from './ErrorBoundary'
 import { ThemeProvider } from './ThemeProvider'
 import { AudiusTrpcProvider } from './TrpcProvider'
 
+const navigationIntegration = Sentry.reactNavigationIntegration({
+  enableTimeToInitialDisplay: true
+})
+
 Sentry.init({
-  dsn: env.SENTRY_DSN
+  dsn: env.SENTRY_DSN,
+  integrations: [navigationIntegration, Sentry.reactNativeTracingIntegration()],
+  enableUserInteractionTracing: true,
+  tracesSampleRate: 1
 })
 
 const tanQueryClient = new TanQueryClient()
@@ -92,7 +99,9 @@ const App = () => {
                       <GestureHandlerRootView style={{ flex: 1 }}>
                         <PortalProvider>
                           <ErrorBoundary>
-                            <NavigationContainer>
+                            <NavigationContainer
+                              navigationIntegration={navigationIntegration}
+                            >
                               <BottomSheetModalProvider>
                                 <CommentDrawerProvider>
                                   <Toasts />
