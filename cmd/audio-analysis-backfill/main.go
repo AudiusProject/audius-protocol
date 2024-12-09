@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"strings"
@@ -10,6 +11,14 @@ import (
 	"github.com/AudiusProject/audius-protocol/pkg/mediorum/server"
 	"github.com/go-resty/resty/v2"
 )
+
+/*
+stage examples:
+https://creatornode11.staging.audius.co/uploads/01JD8DCN4K6AEK8JQM34R80BX4
+
+prod examples:
+
+*/
 
 // not actual go errors since the db record is a string
 // bpm has a few more specific errors
@@ -91,30 +100,65 @@ func reprocessAudioAnalysis(wg *sync.WaitGroup, r *resty.Client, uploadID string
 	return nil
 }
 
-func consumeUploadBatches(wg *sync.WaitGroup) {
+func intakeUploadBatches(ctx context.Context, wg *sync.WaitGroup) {
+	defer wg.Done()
+
+	// TODO: intake in batches from postgres
+	for {
+		select {
+		case <-ctx.Done():
+			fmt.Println("intakeUploadBatches exiting due to context cancellation")
+			return
+		default:
+			// Perform your batch intake logic here
+		}
+	}
+}
+
+func consumeUploadBatches(ctx context.Context, wg *sync.WaitGroup) {
 	defer wg.Done()
 
 	client := resty.New()
 
-	for ulidBatch := range analyzeBatchQueueChan {
-		var bwg sync.WaitGroup
+	for {
+		select {
+		case <-ctx.Done():
+			fmt.Println("consumeUploadBatches exiting due to context cancellation")
+			return
+		case ulidBatch, ok := <-analyzeBatchQueueChan:
+			if !ok {
+				// Channel closed, exit the loop
+				return
+			}
 
-		bwg.Add(len(ulidBatch))
-		for _, ulid := range ulidBatch {
-			go reprocessAudioAnalysis(&bwg, client, ulid)
+			var bwg sync.WaitGroup
+			bwg.Add(len(ulidBatch))
+
+			for _, ulid := range ulidBatch {
+				go func(ulid string) {
+					defer bwg.Done()
+					select {
+					case <-ctx.Done():
+						// Stop any ongoing processing due to context cancellation
+						fmt.Printf("Stopping reprocessing for ULID: %s\n", ulid)
+					default:
+						reprocessAudioAnalysis(&bwg, client, ulid)
+					}
+				}(ulid)
+			}
+
+			bwg.Wait()
 		}
-
-		bwg.Wait()
 	}
 }
 
-func consumeAnalysisResults(wg *sync.WaitGroup) {
+func consumeAnalysisResults(ctx context.Context, wg *sync.WaitGroup) {
 	defer wg.Done()
 
-	now := time.Now().UTC().Second()
+	now := time.Now().UTC().Unix()
 	filename := fmt.Sprintf("./output/%d_audio_analysis_backfill.sql", now)
 
-	// write .sql file
+	// Write .sql file
 	file, err := os.Create(filename)
 	if err != nil {
 		fmt.Println("error creating file:", err)
@@ -122,23 +166,40 @@ func consumeAnalysisResults(wg *sync.WaitGroup) {
 	}
 	defer file.Close()
 
-	// write "begin;" and end with "commit;"
-	file.WriteString("begin;")
-	defer file.WriteString("commit;")
+	// Write "begin;" and end with "commit;"
+	file.WriteString("begin;\n\n")
+	defer file.WriteString("\ncommit;")
 
-	for upload := range analyzeSuccessChan {
-		line := fmt.Sprintf("update tracks set bpm = %d, musical_key = '%s' where audio_upload_id = '%s';", &upload.AudioAnalysisResults.BPM, upload.AudioAnalysisResults.Key, upload.ID)
-		file.WriteString(line)
+	for {
+		select {
+		case <-ctx.Done():
+			fmt.Println("consumeAnalysisResults exiting due to context cancellation")
+			return
+		case upload, ok := <-analyzeSuccessChan:
+			if !ok {
+				// Channel closed, exit the loop
+				return
+			}
+
+			line := fmt.Sprintf("update tracks set bpm = %g, musical_key = '%s' where audio_upload_id = '%s';\n",
+				upload.AudioAnalysisResults.BPM, upload.AudioAnalysisResults.Key, upload.ID)
+			if _, err := file.WriteString(line); err != nil {
+				fmt.Println("error writing to file:", err)
+				return
+			}
+		}
 	}
 }
 
 func main() {
+	ctx, _ := context.WithCancel(context.Background())
 	var wg sync.WaitGroup
 
-	wg.Add(2)
+	wg.Add(3)
 
-	go consumeUploadBatches(&wg)
-	go consumeAnalysisResults(&wg)
+	go intakeUploadBatches(ctx, &wg)
+	go consumeUploadBatches(ctx, &wg)
+	go consumeAnalysisResults(ctx, &wg)
 
 	wg.Wait()
 }
