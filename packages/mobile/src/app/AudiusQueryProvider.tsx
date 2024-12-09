@@ -12,9 +12,9 @@ import {
 } from 'app/services/remote-config'
 import { audiusSdk } from 'app/services/sdk/audius-sdk'
 import { authService } from 'app/services/sdk/auth'
+import { identityService } from 'app/services/sdk/identity'
 import { store } from 'app/store'
 import { reportToSentry } from 'app/utils/reportToSentry'
-import { identityService } from 'app/services/sdk/identity'
 
 type AudiusQueryProviderProps = {
   children: ReactNode
