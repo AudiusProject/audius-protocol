@@ -7,28 +7,29 @@
  * modeled off: https://github.com/ethereum/EIPs/blob/master/EIPS/eip-712.md
  */
 import { bytesToHex as toHex, randomBytes } from '@noble/hashes/utils'
+import type { Hex, TypedData } from 'viem'
 
 export const getNonce = async () => {
-  return '0x' + toHex(randomBytes(32))
+  return ('0x' + toHex(randomBytes(32))) as Hex
 }
 
 const domains = {
   getEntityManagerDomain: (chainId: number, contractAddress: string) => ({
     name: 'Entity Manager',
     version: '1',
-    chainId,
+    chainId: BigInt(chainId),
     verifyingContract: contractAddress
   })
 }
 
-const schemas = {
-  domain: [
+const types = {
+  EIP712Domain: [
     { name: 'name', type: 'string' },
     { name: 'version', type: 'string' },
     { name: 'chainId', type: 'uint256' },
     { name: 'verifyingContract', type: 'address' }
   ],
-  manageEntity: [
+  ManageEntity: [
     { name: 'userId', type: 'uint' },
     { name: 'entityType', type: 'string' },
     { name: 'entityId', type: 'uint' },
@@ -36,7 +37,7 @@ const schemas = {
     { name: 'metadata', type: 'string' },
     { name: 'nonce', type: 'bytes32' }
   ]
-}
+} as const satisfies TypedData
 
 export const generators = {
   getManageEntityData: (
@@ -58,14 +59,10 @@ export const generators = {
       nonce
     }
     const domainData = domains.getEntityManagerDomain(chainId, contractAddress)
-    const types = {
-      EIP712Domain: schemas.domain,
-      ManageEntity: schemas.manageEntity
-    }
     return {
       types,
       domain: domainData,
-      primaryType: 'ManageEntity',
+      primaryType: 'ManageEntity' as const,
       message
     }
   }

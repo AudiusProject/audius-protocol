@@ -3,7 +3,6 @@ import { ChangeEvent, MouseEventHandler } from 'react'
 import {
   AccessConditions,
   AccessPermissions,
-  CoverArtSizes,
   ID,
   Variant
 } from '@audius/common/models'
@@ -25,7 +24,6 @@ export type CollectionHeaderProps = {
   ownerId: ID | null
   type: CollectionsPageType | 'Playlist' | 'Audio NFT Playlist'
   title: string
-  coverArtSizes: CoverArtSizes | null
   artistName: string
   description: string
   artistHandle: string

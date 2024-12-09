@@ -1,9 +1,12 @@
+import type { PublicClient, Transport, WalletClient } from 'viem'
+import type { mainnet } from 'viem/chains'
 import { z } from 'zod'
 
 import { AntiAbuseOracleService } from './services/AntiAbuseOracle/types'
 import type { AntiAbuseOracleSelectorService } from './services/AntiAbuseOracleSelector/types'
-import type { AuthService } from './services/Auth'
+import type { AudiusWalletClient } from './services/AudiusWalletClient'
 import type { DiscoveryNodeSelectorService } from './services/DiscoveryNodeSelector'
+import { EmailEncryptionService } from './services/Encryption'
 import type { EntityManagerService } from './services/EntityManager'
 import {
   AudiusTokenClient,
@@ -14,7 +17,7 @@ import {
   RegistryClient,
   ServiceProviderFactoryClient,
   TrustedNotifierManagerClient,
-  WormholeClient
+  AudiusWormholeClient
 } from './services/Ethereum'
 import { ServiceTypeManagerClient } from './services/Ethereum/contracts/ServiceTypeManager'
 import { StakingClient } from './services/Ethereum/contracts/Staking/StakingClient'
@@ -52,9 +55,13 @@ export type ServicesContainer = {
   storage: StorageService
 
   /**
-   * Helpers to faciliate requests that require signatures or encryption
+   * For interacting with the user or app's wallet for signatures or secrets.
    */
-  auth: AuthService
+  audiusWalletClient: AudiusWalletClient
+
+  ethWalletClient: WalletClient<Transport, typeof mainnet>
+
+  ethPublicClient: PublicClient<Transport, typeof mainnet>
 
   /**
    * Contract client to interact with the Audius token
@@ -84,7 +91,7 @@ export type ServicesContainer = {
   /**
    * Contract client to interact with wormhole
    */
-  wormholeClient: WormholeClient
+  audiusWormholeClient: AudiusWormholeClient
 
   /**
    * Contract client to interact with the eth contract registry
@@ -155,6 +162,11 @@ export type ServicesContainer = {
    * Service used to interact with Anti Abuse Oracle
    */
   antiAbuseOracle: AntiAbuseOracleService
+
+  /**
+   * Service used to handle the encryption and decryption of emails, also used for the encryption needed to share emails between users
+   */
+  emailEncryptionService: EmailEncryptionService
 }
 
 /**

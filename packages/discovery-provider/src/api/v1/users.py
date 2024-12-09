@@ -5,6 +5,7 @@ from typing import Optional
 from eth_account.messages import encode_defunct
 from flask import Response, request
 from flask_restx import Namespace, Resource, fields, inputs, reqparse
+from flask_restx.errors import abort
 
 from src.api.v1.helpers import (
     DescriptiveArgument,
@@ -98,6 +99,7 @@ from src.api.v1.models.users import (
 from src.api.v1.playlists import get_tracks_for_playlist
 from src.challenges.challenge_event_bus import setup_challenge_bus
 from src.exceptions import PermissionError
+from src.models.users.email import EmailEncryptionKey
 from src.queries.download_csv import (
     DownloadPurchasesArgs,
     DownloadSalesArgs,
@@ -108,6 +110,7 @@ from src.queries.download_csv import (
 )
 from src.queries.get_associated_user_id import get_associated_user_id
 from src.queries.get_associated_user_wallet import get_associated_user_wallet
+from src.queries.get_authorization import is_authorized_request
 from src.queries.get_challenges import get_challenges
 from src.queries.get_collection_library import (
     CollectionType,
@@ -185,7 +188,6 @@ from src.queries.query_helpers import (
 from src.queries.search_queries import SearchKind, search
 from src.utils import web3_provider
 from src.utils.auth_middleware import auth_middleware
-from src.utils.config import shared_config
 from src.utils.db_session import get_db_read_replica
 from src.utils.helpers import decode_string_id, encode_int_id
 from src.utils.redis_cache import cache
@@ -211,9 +213,6 @@ users_response = make_response(
 full_users_response = make_response(
     "full_users_response", full_ns, fields.List(fields.Nested(user_model_full))
 )
-
-# Cache TTL in seconds for the v1/full/users/content_node route
-GET_USERS_CNODE_TTL_SEC = shared_config["discprov"]["get_users_cnode_ttl_sec"]
 
 
 def get_single_user(user_id, current_user_id):
@@ -911,6 +910,8 @@ class PlaylistsFull(Resource):
         args = user_playlists_route_parser.parse_args()
 
         current_user_id = get_current_user_id(args)
+        if current_user_id and not is_authorized_request(current_user_id):
+            abort(403, message="You are not authorized to access this resource")
 
         offset = format_offset(args)
         limit = format_limit(args)
@@ -984,6 +985,8 @@ class AlbumsFull(Resource):
         args = user_albums_route_parser.parse_args()
 
         current_user_id = get_current_user_id(args)
+        if current_user_id and not is_authorized_request(current_user_id):
+            abort(403, message="You are not authorized to access this resource")
 
         offset = format_offset(args)
         limit = format_limit(args)
@@ -3095,3 +3098,36 @@ class FullMutedUsers(Resource):
         muted_users = get_muted_users(decoded_id)
         muted_users = list(map(extend_user, muted_users))
         return success_response(muted_users)
+
+
+email_key_response = make_response(
+    "email_key_response", ns, fields.String(required=False, allow_null=True)
+)
+
+
+@ns.route("/<string:id>/emails/key")
+class UserEmailKey(Resource):
+    @record_metrics
+    @ns.doc(
+        id="""Get User Email Key""",
+        summary="Get user's email encryption key",
+        description="Gets an encrypted symmetric key, can be used to encrypt and decrypt emails shared with the user.",
+        params={"id": "A User ID"},
+        responses={200: "Success", 400: "Bad request", 500: "Server error"},
+    )
+    @ns.marshal_with(email_key_response)
+    def get(self, id):
+        user_id = decode_string_id(id)
+
+        db = get_db_read_replica()
+        with db.scoped_session() as session:
+            key = (
+                session.query(EmailEncryptionKey)
+                .filter(EmailEncryptionKey.primary_user_id == user_id)
+                .first()
+            )
+
+            if not key:
+                return success_response(None)
+
+            return success_response(key.encrypted_key)

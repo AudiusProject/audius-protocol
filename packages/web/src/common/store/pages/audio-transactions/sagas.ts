@@ -8,7 +8,12 @@ import {
   InAppAudioPurchaseMetadata,
   TransactionDetails
 } from '@audius/common/store'
-import { formatDate, Nullable, removeNullable } from '@audius/common/utils'
+import {
+  formatDate,
+  Nullable,
+  removeNullable,
+  waitForRead
+} from '@audius/common/utils'
 import { full } from '@audius/sdk'
 import { AudiusLibs } from '@audius/sdk-legacy/dist/libs'
 import { call, takeLatest, put } from 'typed-redux-saga'
@@ -141,13 +146,12 @@ function* fetchTransactionMetadata() {
   yield* takeLatest(
     fetchAudioTransactionMetadata.type,
     function* (action: ReturnType<typeof fetchAudioTransactionMetadata>) {
+      yield* waitForRead()
       const { txDetails } = action.payload
       if (txDetails.transactionType !== TransactionType.PURCHASE) {
         return
       }
-      const apiClient = yield* getContext('apiClient')
       const audiusBackendInstance = yield* getContext('audiusBackendInstance')
-      yield* call([apiClient, apiClient.waitForLibsInit])
       const libs: AudiusLibs = yield* call(audiusBackendInstance.getAudiusLibs)
       const response = yield* call(
         [

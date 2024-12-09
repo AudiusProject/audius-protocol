@@ -36,7 +36,6 @@ import {
   createUserBankIfNeeded,
   createVersionedTransaction,
   getRootSolanaAccount,
-  getSolanaConnection,
   getTokenAccountInfo,
   pollForBalanceChange,
   pollForTokenBalanceChange,
@@ -63,6 +62,8 @@ import { OnRampProvider } from '~/store/ui/buy-audio/types'
 import { setVisibility } from '~/store/ui/modals/parentSlice'
 import { initializeStripeModal } from '~/store/ui/stripe-modal/slice'
 import { waitForAccount, waitForValue } from '~/utils/sagaHelpers'
+
+import { getSDK } from '../sdkUtils'
 
 import {
   BuyCryptoConfig,
@@ -210,13 +211,15 @@ function* swapSolForCrypto({
     parseJupiterInstruction(swapInstruction),
     closeWSOLInstruction
   ]
+  const sdk = yield* getSDK()
   const { transaction, addressLookupTableAccounts } = yield* call(
     createVersionedTransaction,
     audiusBackendInstance,
     {
       instructions,
       lookupTableAddresses: addressLookupTableAddresses,
-      feePayer
+      feePayer,
+      sdk
     }
   )
   transaction.sign([wallet])
@@ -339,7 +342,8 @@ function* doBuyCryptoViaSol({
       make
     })
 
-    const connection = yield* call(getSolanaConnection, audiusBackendInstance)
+    const sdk = yield* getSDK()
+    const connection = sdk.services.solanaClient.connection
     const minRent = yield* call(
       [connection, connection.getMinimumBalanceForRentExemption],
       0
@@ -478,6 +482,7 @@ function* doBuyCryptoViaSol({
       audiusBackendInstance,
       {
         wallet: wallet.publicKey,
+        sdk,
         initialBalance,
         retryDelayMs: config.retryDelayMs,
         maxRetryCount: config.maxRetryCount
@@ -722,7 +727,8 @@ function* recoverBuyCryptoViaSolIfNecessary() {
 
   // Get config
   const wallet = yield* call(getRootSolanaAccount, audiusBackendInstance)
-  const connection = yield* call(getSolanaConnection, audiusBackendInstance)
+  const sdk = yield* getSDK()
+  const connection = sdk.services.solanaClient.connection
   const feePayerAddress = yield* waitForValue(getFeePayer)
   const config = yield* call(getBuyCryptoRemoteConfig, mint)
   const outputToken = TOKEN_LISTING_MAP[mint.toUpperCase()]

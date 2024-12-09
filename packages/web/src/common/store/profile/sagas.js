@@ -2,7 +2,7 @@ import {
   userMetadataListFromSDK,
   userWalletsFromSDK
 } from '@audius/common/adapters'
-import { DefaultSizes, Kind, Id } from '@audius/common/models'
+import { Kind, Id } from '@audius/common/models'
 import { DoubleKeys } from '@audius/common/services'
 import {
   accountSelectors,
@@ -18,7 +18,8 @@ import {
   collectiblesActions,
   confirmerActions,
   confirmTransaction,
-  getSDK
+  getSDK,
+  profilePageActions
 } from '@audius/common/store'
 import {
   squashNewLines,
@@ -47,7 +48,6 @@ import {
 import {
   fetchUsers,
   fetchUserByHandle,
-  fetchUserCollections,
   fetchUserSocials
 } from 'common/store/cache/users/sagas'
 import feedSagas from 'common/store/pages/profile/lineups/feed/sagas.js'
@@ -83,14 +83,14 @@ function* watchFetchProfile() {
 }
 
 function* fetchProfileCustomizedCollectibles(user) {
-  const audiusBackendInstance = yield getContext('audiusBackendInstance')
+  const sdk = yield getSDK()
   const cid = user?.metadata_multihash ?? null
   if (cid) {
-    const metadata = yield call(
-      audiusBackendInstance.fetchCID,
-      cid,
-      /* asUrl */ false
-    )
+    const {
+      data: { data: metadata }
+    } = yield call([sdk.full.cidData, sdk.full.cidData.getMetadata], {
+      metadataId: cid
+    })
     if (metadata?.collectibles) {
       yield put(
         cacheActions.update(Kind.USERS, [
@@ -386,7 +386,8 @@ function* fetchProfileAsync(action) {
     if (!isNativeMobile) {
       // Fetch user socials and collections after fetching the user itself
       yield fork(fetchUserSocials, action)
-      yield fork(fetchUserCollections, user.user_id)
+      // Note that mobile dispatches this action at the component level
+      yield put(profilePageActions.fetchCollections(user.handle))
       yield fork(fetchSupportersAndSupporting, user.user_id)
     }
 
@@ -501,7 +502,7 @@ function* watchUpdateProfile() {
 
 export function* updateProfileAsync(action) {
   yield waitForWrite()
-  const audiusBackendInstance = yield getContext('audiusBackendInstance')
+  const sdk = yield getSDK()
   let metadata = { ...action.metadata }
   metadata.bio = squashNewLines(metadata.bio)
 
@@ -516,13 +517,13 @@ export function* updateProfileAsync(action) {
   const cid = metadata.metadata_multihash ?? null
   if (cid) {
     try {
-      const metadataFromIPFS = yield call(
-        audiusBackendInstance.fetchCID,
-        cid,
-        /* asUrl */ false
-      )
+      const {
+        data: { data }
+      } = yield call([sdk.full.cidData, sdk.full.cidData.getMetadata], {
+        metadataId: cid
+      })
       const collectibles = metadata.collectibles
-      metadata = merge(metadataFromIPFS, metadata)
+      metadata = merge(data, metadata)
       metadata.collectibles = collectibles
     } catch (e) {
       // Although we failed to fetch the existing user metadata, this should only
@@ -547,20 +548,10 @@ export function* updateProfileAsync(action) {
 
   yield call(confirmUpdateProfile, metadata.user_id, metadata)
 
-  const creator = metadata
-  if (metadata.updatedCoverPhoto) {
-    metadata._cover_photo_sizes[DefaultSizes.OVERRIDE] =
-      metadata.updatedCoverPhoto.url
-  }
-  if (creator.updatedProfilePicture) {
-    metadata._profile_picture_sizes[DefaultSizes.OVERRIDE] =
-      metadata.updatedProfilePicture.url
-  }
-
   yield put(
     cacheActions.update(Kind.USERS, [
       {
-        id: creator.user_id,
+        id: metadata.user_id,
         metadata
       }
     ])
@@ -575,11 +566,10 @@ function* confirmUpdateProfile(userId, metadata) {
     confirmerActions.requestConfirmation(
       makeKindId(Kind.USERS, userId),
       function* () {
-        const response = yield call(
-          audiusBackendInstance.updateCreator,
+        const response = yield call(audiusBackendInstance.updateCreator, {
           metadata,
-          userId
-        )
+          sdk
+        })
         const { blockHash, blockNumber } = response
 
         const confirmed = yield call(confirmTransaction, blockHash, blockNumber)

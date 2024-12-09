@@ -14,23 +14,12 @@ import { remoteConfigInstance } from 'services/remote-config/remote-config-insta
 import { monitoringCallbacks } from 'services/serviceMonitoring'
 import { reportToSentry } from 'store/errors/reportToSentry'
 import { isElectron } from 'utils/clientUtil'
-import { preload } from 'utils/image'
 
 import { env } from '../env'
 
 declare global {
   interface Window {
     audiusLibs: AudiusLibs
-  }
-}
-
-const imagePreloader = async (imageUrl: string) => {
-  try {
-    await preload(imageUrl)
-    return true
-  } catch (e) {
-    console.error(e)
-    return false
   }
 }
 
@@ -151,6 +140,5 @@ export const audiusBackendInstance = audiusBackend({
     solBridgeAddress: env.SOL_BRIDGE_ADDRESS ?? undefined,
     solTokenBridgeAddress: env.SOL_TOKEN_BRIDGE_ADDRESS ?? undefined,
     wormholeRpcHosts: env.WORMHOLE_RPC_HOSTS ?? undefined
-  },
-  imagePreloader
+  }
 })

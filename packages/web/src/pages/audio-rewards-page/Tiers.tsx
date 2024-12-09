@@ -49,10 +49,10 @@ const messages = {
     offlineListening: 'Offline Listening',
     gatedContent: 'Gated Content',
     directMessaging: 'Direct Messaging',
+    nftGallery: 'NFT Collectibles Gallery',
     messageBlasts: 'Message Blasts',
     flairBadges: 'Flair Badges',
     customDiscordRole: 'Custom Discord Role',
-    nftGallery: 'NFT Collectibles Gallery',
     customThemes: 'Custom App Themes'
   },
   learnMore: 'Learn more',
@@ -173,10 +173,10 @@ const tierFeatureMap: Record<
     offlineListening: true,
     gatedContent: true,
     directMessaging: true,
+    nftGallery: true,
     messageBlasts: false,
     flairBadges: false,
     customDiscordRole: false,
-    nftGallery: false,
     customThemes: false
   },
   bronze: {
@@ -187,10 +187,10 @@ const tierFeatureMap: Record<
     offlineListening: true,
     gatedContent: true,
     directMessaging: true,
+    nftGallery: true,
     messageBlasts: true,
     flairBadges: true,
     customDiscordRole: true,
-    nftGallery: false,
     customThemes: false
   },
   silver: {
@@ -201,10 +201,10 @@ const tierFeatureMap: Record<
     offlineListening: true,
     gatedContent: true,
     directMessaging: true,
+    nftGallery: true,
     messageBlasts: true,
     flairBadges: true,
     customDiscordRole: true,
-    nftGallery: true,
     customThemes: false
   },
   gold: {
@@ -215,10 +215,10 @@ const tierFeatureMap: Record<
     offlineListening: true,
     gatedContent: true,
     directMessaging: true,
+    nftGallery: true,
     messageBlasts: true,
     flairBadges: true,
     customDiscordRole: true,
-    nftGallery: true,
     customThemes: true
   },
   platinum: {
@@ -229,10 +229,10 @@ const tierFeatureMap: Record<
     offlineListening: true,
     gatedContent: true,
     directMessaging: true,
+    nftGallery: true,
     messageBlasts: true,
     flairBadges: true,
     customDiscordRole: true,
-    nftGallery: true,
     customThemes: true
   }
 }

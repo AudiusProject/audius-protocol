@@ -1,12 +1,7 @@
 import { memo } from 'react'
 
 import { useGatedContentAccess } from '@audius/common/hooks'
-import {
-  SquareSizes,
-  Color,
-  ID,
-  ProfilePictureSizes
-} from '@audius/common/models'
+import { SquareSizes, Color, ID } from '@audius/common/models'
 import {
   cacheTracksSelectors,
   playerSelectors,
@@ -37,7 +32,6 @@ interface PlayingTrackInfoProps {
   isOwner: boolean
   trackTitle: string
   trackPermalink: string
-  profilePictureSizes: ProfilePictureSizes
   isVerified: boolean
   isTrackUnlisted: boolean
   isStreamGated: boolean

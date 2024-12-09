@@ -314,7 +314,6 @@ export type Stem = {
 
 export type ComputedTrackProperties = {
   // All below, added clientside
-  _cover_art_sizes: CoverArtSizes
   _first_segment?: string
   _followees?: Followee[]
   _marked_deleted?: boolean

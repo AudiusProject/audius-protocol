@@ -1,11 +1,12 @@
 import fs from 'fs'
 import path from 'path'
 
+import type { GetBlockReturnType } from 'viem'
 import { describe, it, beforeAll, expect, vitest } from 'vitest'
 
-import { DefaultAuth } from '../../services/Auth/DefaultAuth'
+import { createAppWalletClient } from '../../services'
 import { DiscoveryNodeSelector } from '../../services/DiscoveryNodeSelector'
-import { EntityManager } from '../../services/EntityManager'
+import { EntityManagerClient } from '../../services/EntityManager'
 import { Logger } from '../../services/Logger'
 import { Storage } from '../../services/Storage'
 import { StorageNodeSelector } from '../../services/StorageNodeSelector'
@@ -70,7 +71,7 @@ vitest
   .mockImplementation(async () => ({}))
 
 vitest
-  .spyOn(EntityManager.prototype, 'manageEntity')
+  .spyOn(EntityManagerClient.prototype, 'manageEntity')
   .mockImplementation(async () => {
     return {
       blockHash: 'a',
@@ -79,11 +80,11 @@ vitest
   })
 
 vitest
-  .spyOn(EntityManager.prototype, 'getCurrentBlock')
+  .spyOn(EntityManagerClient.prototype, 'getCurrentBlock')
   .mockImplementation(async () => {
     return {
       timestamp: 1
-    }
+    } as GetBlockReturnType & { timestamp: number }
   })
 
 vitest
@@ -103,13 +104,15 @@ vitest
   })
 
 describe('PlaylistsApi', () => {
+  // TODO: Move this setup out of describe
   let playlists: PlaylistsApi
 
-  const auth = new DefaultAuth()
+  // eslint-disable-next-line mocha/no-setup-in-describe
+  const audiusWalletClient = createAppWalletClient('0x')
   const logger = new Logger()
   const discoveryNodeSelector = new DiscoveryNodeSelector()
   const storageNodeSelector = new StorageNodeSelector({
-    auth,
+    audiusWalletClient,
     discoveryNodeSelector,
     logger
   })
@@ -117,9 +120,15 @@ describe('PlaylistsApi', () => {
   beforeAll(() => {
     playlists = new PlaylistsApi(
       new Configuration(),
-      new Storage({ storageNodeSelector, logger: new Logger() }),
-      new EntityManager({ discoveryNodeSelector: new DiscoveryNodeSelector() }),
-      auth,
+      new Storage({
+        audiusWalletClient,
+        storageNodeSelector,
+        logger: new Logger()
+      }),
+      new EntityManagerClient({
+        audiusWalletClient,
+        discoveryNodeSelector: new DiscoveryNodeSelector()
+      }),
       new Logger()
     )
     vitest.spyOn(console, 'warn').mockImplementation(() => {})

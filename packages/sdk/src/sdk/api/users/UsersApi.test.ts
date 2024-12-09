@@ -10,18 +10,19 @@ import {
   TransactionMessage,
   VersionedTransaction
 } from '@solana/web3.js'
-import { describe, it, beforeAll, expect, vitest } from 'vitest'
+import { beforeAll, describe, expect, it, vitest } from 'vitest'
 
 import { developmentConfig } from '../../config/development'
 import {
-  AppAuth,
   ClaimableTokensClient,
   SolanaRelay,
   SolanaRelayWalletAdapter,
-  getDefaultClaimableTokensConfig
+  createAppWalletClient,
+  getDefaultClaimableTokensConfig,
+  EmailEncryptionService
 } from '../../services'
 import { DiscoveryNodeSelector } from '../../services/DiscoveryNodeSelector'
-import { EntityManager } from '../../services/EntityManager'
+import { EntityManagerClient } from '../../services/EntityManager'
 import { Logger } from '../../services/Logger'
 import { SolanaClient } from '../../services/Solana/programs/SolanaClient'
 import { Storage } from '../../services/Storage'
@@ -58,7 +59,7 @@ vitest.spyOn(Storage.prototype, 'uploadFile').mockImplementation(async () => {
 })
 
 vitest
-  .spyOn(EntityManager.prototype, 'manageEntity')
+  .spyOn(EntityManagerClient.prototype, 'manageEntity')
   .mockImplementation(async () => {
     return {
       blockHash: 'a',
@@ -68,11 +69,11 @@ vitest
 
 let users: UsersApi
 
-const auth = new AppAuth('key', 'secret')
+const audiusWalletClient = createAppWalletClient('0x')
 const logger = new Logger()
 const discoveryNodeSelector = new DiscoveryNodeSelector()
 const storageNodeSelector = new StorageNodeSelector({
-  auth,
+  audiusWalletClient,
   discoveryNodeSelector,
   logger
 })
@@ -82,19 +83,32 @@ const solanaClient = new SolanaClient({
 })
 const claimableTokens = new ClaimableTokensClient({
   ...getDefaultClaimableTokensConfig(developmentConfig),
+  audiusWalletClient,
   solanaClient
 })
+
+const emailEncryption = new EmailEncryptionService(
+  new Configuration(),
+  audiusWalletClient
+)
 
 describe('UsersApi', () => {
   beforeAll(() => {
     users = new UsersApi(
       new Configuration(),
-      new Storage({ storageNodeSelector, logger: new Logger() }),
-      new EntityManager({ discoveryNodeSelector: new DiscoveryNodeSelector() }),
-      auth,
+      new Storage({
+        audiusWalletClient,
+        storageNodeSelector,
+        logger: new Logger()
+      }),
+      new EntityManagerClient({
+        audiusWalletClient,
+        discoveryNodeSelector: new DiscoveryNodeSelector()
+      }),
       new Logger(),
       claimableTokens,
-      solanaClient
+      solanaClient,
+      emailEncryption
     )
     vitest.spyOn(console, 'warn').mockImplementation(() => {})
     vitest.spyOn(console, 'info').mockImplementation(() => {})
@@ -341,7 +355,7 @@ describe('UsersApi', () => {
         })
 
       // Mock sign
-      vitest.spyOn(auth, 'sign').mockImplementation(async () => {
+      vitest.spyOn(audiusWalletClient, 'sign').mockImplementation(async () => {
         return [Uint8Array.from(new Array(64).fill(0)), 0]
       })
 
@@ -400,15 +414,44 @@ describe('UsersApi', () => {
     })
   })
 
-  describe('addEmail', () => {
+  describe('shareEmail', () => {
+    beforeAll(() => {
+      // Mock getUserEmailKey
+      vitest
+        .spyOn(UsersApi.prototype, 'getUserEmailKey')
+        .mockImplementation(async () => {
+          return { data: 'mockEncryptedKey' }
+        })
+
+      // Mock EmailEncryptionService methods
+      vitest
+        .spyOn(EmailEncryptionService.prototype, 'decryptSymmetricKey')
+        .mockImplementation(async () => {
+          return new Uint8Array(32) // Mock 32-byte key
+        })
+
+      vitest
+        .spyOn(EmailEncryptionService.prototype, 'createSharedKey')
+        .mockImplementation(async () => {
+          return {
+            symmetricKey: new Uint8Array(32),
+            primaryUserEncryptedKey: 'mockPrimaryUserEncryptedKey',
+            granteeEncryptedKeys: []
+          }
+        })
+
+      vitest
+        .spyOn(EmailEncryptionService.prototype, 'encryptEmail')
+        .mockImplementation(async () => {
+          return 'mockEncryptedEmail'
+        })
+    })
+
     it('adds an encrypted email if valid metadata is provided', async () => {
-      const result = await users.addEmail({
+      const result = await users.shareEmail({
         emailOwnerUserId: 123,
         primaryUserId: 456,
-        encryptedEmail: 'encryptedEmailString',
-        encryptedKey: 'encryptedKeyString',
-        delegatedUserIds: [789],
-        delegatedKeys: ['delegatedKeyString']
+        email: 'email@example.com'
       })
 
       expect(result).toStrictEqual({
@@ -418,11 +461,10 @@ describe('UsersApi', () => {
     })
 
     it('adds an encrypted email without optional delegated fields', async () => {
-      const result = await users.addEmail({
+      const result = await users.shareEmail({
         emailOwnerUserId: 123,
         primaryUserId: 456,
-        encryptedEmail: 'encryptedEmailString',
-        encryptedKey: 'encryptedKeyString'
+        email: 'email@example.com'
       })
 
       expect(result).toStrictEqual({
@@ -433,7 +475,7 @@ describe('UsersApi', () => {
 
     it('throws an error if required fields are missing', async () => {
       await expect(async () => {
-        await users.addEmail({
+        await users.shareEmail({
           emailOwnerUserId: 123,
           // Missing primaryUserId
           encryptedEmail: 'encryptedEmailString',
@@ -444,7 +486,7 @@ describe('UsersApi', () => {
 
     it('throws an error if invalid metadata is provided', async () => {
       await expect(async () => {
-        await users.addEmail({
+        await users.shareEmail({
           emailOwnerUserId: 123,
           // Incorrect type for primaryUserId
           primaryUserId: '456',

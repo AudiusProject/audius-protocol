@@ -1,4 +1,3 @@
-import type { EIP712TypedData } from 'eth-sig-util'
 import { rest } from 'msw'
 import { setupServer } from 'msw/node'
 import {
@@ -12,7 +11,7 @@ import {
 } from 'vitest'
 import waitForExpect from 'wait-for-expect'
 
-import type { AuthService } from '../Auth/types'
+import { createAppWalletClient } from '../AudiusWalletClient'
 import { DiscoveryNodeSelector } from '../DiscoveryNodeSelector'
 import type { HealthCheckResponseData } from '../DiscoveryNodeSelector/healthCheckTypes'
 import { Logger } from '../Logger'
@@ -32,22 +31,7 @@ const userWallet = '0xc0ffee254729296a45a3885639AC7E10F9d54979'
 
 const discoveryNode = 'https://discovery-provider.audius.co'
 
-class MockAuth implements AuthService {
-  getSharedSecret = async () => new Uint8Array()
-
-  signTransaction: (data: EIP712TypedData) => Promise<string> = async () => ''
-
-  sign: (data: string | Uint8Array) => Promise<[Uint8Array, number]> =
-    async () => [new Uint8Array(), 0]
-
-  hashAndSign: (data: string) => Promise<string> = async () => ''
-
-  getAddress = async () => {
-    return userWallet
-  }
-}
-
-const auth = new MockAuth()
+const audiusWalletClient = createAppWalletClient(userWallet)
 const logger = new Logger()
 const discoveryNodeSelector = new DiscoveryNodeSelector({
   initialSelectedNode: discoveryNode
@@ -109,7 +93,7 @@ describe('StorageNodeSelector', () => {
 
     const storageNodeSelector = new StorageNodeSelector({
       bootstrapNodes,
-      auth,
+      audiusWalletClient,
       discoveryNodeSelector,
       logger
     })
@@ -129,7 +113,7 @@ describe('StorageNodeSelector', () => {
 
     const storageNodeSelector = new StorageNodeSelector({
       bootstrapNodes,
-      auth,
+      audiusWalletClient,
       discoveryNodeSelector,
       logger
     })
@@ -149,7 +133,7 @@ describe('StorageNodeSelector', () => {
 
     const storageNodeSelector = new StorageNodeSelector({
       discoveryNodeSelector,
-      auth,
+      audiusWalletClient,
       logger
     })
 
@@ -175,7 +159,7 @@ describe('StorageNodeSelector', () => {
 
     const storageNodeSelector = new StorageNodeSelector({
       discoveryNodeSelector,
-      auth,
+      audiusWalletClient,
       logger
     })
 
@@ -192,7 +176,7 @@ describe('StorageNodeSelector', () => {
 
     const storageNodeSelector = new StorageNodeSelector({
       bootstrapNodes,
-      auth,
+      audiusWalletClient,
       discoveryNodeSelector,
       logger
     })
@@ -208,7 +192,7 @@ describe('StorageNodeSelector', () => {
 
     const storageNodeSelector = new StorageNodeSelector({
       bootstrapNodes,
-      auth,
+      audiusWalletClient,
       discoveryNodeSelector,
       logger
     })
@@ -238,7 +222,7 @@ describe('StorageNodeSelector', () => {
 
     const storageNodeSelector = new StorageNodeSelector({
       bootstrapNodes,
-      auth,
+      audiusWalletClient,
       discoveryNodeSelector,
       logger
     })

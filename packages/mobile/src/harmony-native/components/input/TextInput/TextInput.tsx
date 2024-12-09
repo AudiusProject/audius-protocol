@@ -86,7 +86,7 @@ export const TextInput = forwardRef(
 
     const innerInputRef = useRef<RNTextInput>(null)
 
-    const { typography, color, motion, cornerRadius } = useTheme()
+    const { typography, color, motion, cornerRadius, type } = useTheme()
 
     let endAdornment: null | ReactNode
     if (EndIcon != null) {
@@ -209,7 +209,7 @@ export const TextInput = forwardRef(
             [color.border.default, color.secondary.s400]
           )
       }
-    })
+    }, [statusColor, _isFocused, type])
 
     const animatedLabelStyle = useAnimatedStyle(() => ({
       fontSize: hasValue

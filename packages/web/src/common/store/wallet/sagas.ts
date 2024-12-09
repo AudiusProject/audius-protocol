@@ -14,7 +14,8 @@ import {
   walletSelectors,
   walletActions,
   getContext,
-  InputSendDataAction
+  InputSendDataAction,
+  getSDK
 } from '@audius/common/store'
 import {
   getErrorMessage,
@@ -32,6 +33,7 @@ import { reportToSentry } from 'store/errors/reportToSentry'
 import { waitForWrite } from 'utils/sagaHelpers'
 
 const { getFeePayer } = solanaSelectors
+const { getWalletAddresses } = accountSelectors
 
 const ATA_SIZE = 165 // Size allocated for an associated token account
 
@@ -80,16 +82,21 @@ function* sendAsync({
   yield* waitForWrite()
   const walletClient = yield* getContext('walletClient')
   const { track } = yield* getContext('analytics')
+  const sdk = yield* getSDK()
 
   const account = yield* select(getAccountUser)
   const weiBNAmount = stringWeiToBN(weiAudioAmount)
   const accountBalance = yield* select(getAccountBalance)
   const weiBNBalance = accountBalance ?? (new BN('0') as BNWei)
+  const { currentUser } = yield* select(getWalletAddresses)
+  if (!currentUser) {
+    throw new Error('Failed to retrieve current user wallet address')
+  }
 
-  const waudioWeiAmount: BNWei | null = yield* call([
-    walletClient,
-    'getCurrentWAudioBalance'
-  ])
+  const waudioWeiAmount: BNWei | null = yield* call(
+    [walletClient, 'getCurrentWAudioBalance'],
+    { ethAddress: currentUser, sdk }
+  )
 
   if (isNullOrUndefined(waudioWeiAmount)) {
     yield* put(sendFailed({ error: 'Failed to fetch current wAudio balance.' }))
@@ -118,7 +125,6 @@ function* sendAsync({
     )
 
     // Ensure user has userbank
-
     const audiusBackend = yield* getContext('audiusBackendInstance')
     const feePayerOverride = yield* select(getFeePayer)
     if (!feePayerOverride) {
@@ -207,6 +213,7 @@ function* getWalletBalanceAndWallets() {
 function* fetchBalanceAsync() {
   yield* waitForWrite()
   const walletClient = yield* getContext('walletClient')
+  const sdk = yield* getSDK()
 
   const account = yield* select(getAccountUser)
   if (!account || !account.wallet) return
@@ -225,7 +232,10 @@ function* fetchBalanceAsync() {
         ethAddress: account.wallet,
         bustCache: localBalanceChange
       }),
-      call([walletClient, 'getCurrentWAudioBalance'], account.wallet)
+      call([walletClient, 'getCurrentWAudioBalance'], {
+        ethAddress: account.wallet,
+        sdk
+      })
     ])
 
     if (isNullOrUndefined(currentEthAudioWeiBalance)) {
@@ -312,8 +322,9 @@ function* checkAssociatedTokenAccountOrSol(action: InputSendDataAction) {
     address
   )
   if (!associatedTokenAccount) {
+    const sdk = yield* getSDK()
     const balance: BNWei = yield* call(() =>
-      walletClient.getWalletSolBalance(address)
+      walletClient.getWalletSolBalance({ address, sdk })
     )
 
     // TODO: this can become a call to getAssociatedTokenRentExemptionMinimum

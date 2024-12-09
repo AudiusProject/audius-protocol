@@ -1,6 +1,6 @@
 import type { TransactionReceipt } from 'web3-core'
 
-import type { AuthService } from '../Auth'
+import type { AudiusWalletClient } from '../AudiusWalletClient'
 import type { DiscoveryNodeSelectorService } from '../DiscoveryNodeSelector'
 import type { LoggerService } from '../Logger'
 
@@ -31,6 +31,7 @@ export type EntityManagerConfig = Partial<EntityManagerConfigInternal> & {
    * The DiscoveryNodeSelector service used to get a discovery node to confirm blocks
    */
   discoveryNodeSelector: DiscoveryNodeSelectorService
+  audiusWalletClient: AudiusWalletClient
 }
 
 export type EntityManagerService = {
@@ -127,10 +128,6 @@ export type ManageEntityOptions = {
    * Metadata associated with the action
    */
   metadata?: string
-  /**
-   * An instance of AuthService
-   */
-  auth: AuthService
 } & AdvancedOptions
 
 export enum BlockConfirmation {

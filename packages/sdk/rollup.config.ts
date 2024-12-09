@@ -15,8 +15,6 @@ const extensions = ['.js', '.ts']
 const external = [
   ...Object.keys(pkg.dependencies),
   ...Object.keys(pkg.devDependencies),
-  'ethers/lib/utils',
-  'ethers/lib/index',
   'hashids/cjs',
   'readable-stream',
   '@noble/hashes/utils',
@@ -31,16 +29,10 @@ const pluginTypescript = typescript({ tsconfig: './tsconfig.json' })
  * - are ignored via `ignore`
  */
 const browserInternal = [
-  '@metamask/eth-sig-util',
   '@scure/base',
   '@noble/hashes/utils',
-  'eth-sig-util',
-  'ethereumjs-tx',
-  'ethereumjs-util',
-  'ethereumjs-wallet',
   'graceful-fs',
   'node-localstorage',
-  'abi-decoder',
   'web3',
   'xmlhttprequest'
 ]
