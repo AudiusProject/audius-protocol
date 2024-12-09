@@ -147,8 +147,7 @@ function* sendAsync({
       try {
         yield* call([walletClient, 'sendWAudioTokens'], {
           address: recipientWallet as SolanaWalletAddress,
-          amount: weiBNAmount,
-          ethAddress: currentUser
+          amount: weiBNAmount
         })
       } catch (e) {
         const errorMessage = getErrorMessage(e)
@@ -312,7 +311,7 @@ function* checkAssociatedTokenAccountOrSol(action: InputSendDataAction) {
 
   const associatedTokenAccount = yield* call(
     [walletClient, 'getAssociatedTokenAccountInfo'],
-    { address }
+    { sdk, address }
   )
   if (!associatedTokenAccount) {
     const balance: BNWei = yield* call(() =>
