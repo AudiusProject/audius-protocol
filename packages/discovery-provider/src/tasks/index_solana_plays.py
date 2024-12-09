@@ -21,6 +21,7 @@ from src.models.social.play import Play
 from src.solana.constants import FETCH_TX_SIGNATURES_BATCH_SIZE
 from src.solana.solana_client_manager import SolanaClientManager
 from src.tasks.celery_app import celery
+from src.tasks.core.plays_cutover import CutoverManager
 from src.utils.cache_solana_program import (
     CachedProgramTxInfo,
     cache_sol_db_tx,
@@ -49,6 +50,8 @@ REDIS_TX_CACHE_QUEUE_PREFIX = "plays-tx-cache-queue"
 # Intended to relieve RPC and DB pressure
 TX_SIGNATURES_PROCESSING_SIZE = 100
 INITIAL_FETCH_SIZE = 30
+
+cutover_manager = CutoverManager()
 
 logger = logging.getLogger(__name__)
 
@@ -577,6 +580,10 @@ def process_solana_plays(solana_client_manager: SolanaClientManager, redis: Redi
         return
 
     db = index_solana_plays.db
+
+    cutover = cutover_manager.has_cutover(session=db)
+    if cutover:
+        return
 
     # Highest currently processed slot in the DB
     latest_processed_slot = get_latest_slot(db)
