@@ -1,4 +1,5 @@
 import { AudiusSdk } from '@audius/sdk'
+import { PublicKey } from '@solana/web3.js'
 import BN from 'bn.js'
 
 import { userWalletsFromSDK } from '~/adapters'
@@ -15,6 +16,7 @@ import { stringWeiToBN } from '~/utils/wallet'
 import { AudiusAPIClient } from '../audius-api-client'
 import {
   AudiusBackend,
+  findAssociatedTokenAddress,
   getUserbankAccountInfo,
   pollForTokenBalanceChange
 } from '../audius-backend'
@@ -142,7 +144,10 @@ export class WalletClient {
           )
         ),
         ...associatedWallets.sol_wallets.map((wallet) =>
-          this.audiusBackendInstance.getAddressWAudioBalance(wallet)
+          this.audiusBackendInstance.getAddressWAudioBalance({
+            address: wallet,
+            sdk
+          })
         )
       ])
 
@@ -189,11 +194,18 @@ export class WalletClient {
     wallets: string[]
   ): Promise<{ address: string; balance: BNWei }[]> {
     try {
+      const sdk = await this.audiusSdk()
       const balances: { address: string; balance: BNWei }[] = await Promise.all(
         wallets.map(async (wallet) => {
-          const balance =
-            await this.audiusBackendInstance.getAddressWAudioBalance(wallet)
-          return { address: wallet, balance: balance as BNWei }
+          const tokenAccountInfo =
+            await this.audiusBackendInstance.getAssociatedTokenAccountInfo({
+              address: wallet,
+              sdk
+            })
+          return {
+            address: wallet,
+            balance: new BN(tokenAccountInfo?.amount.toString() ?? 0) as BNWei
+          }
         })
       )
       return balances
