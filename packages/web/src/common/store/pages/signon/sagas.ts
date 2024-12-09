@@ -618,7 +618,8 @@ function* createGuestAccount(
       [authService.hedgehogInstance, authService.hedgehogInstance.signUp],
       {
         username: guestEmail,
-        password: TEMPORARY_PASSWORD
+        password: TEMPORARY_PASSWORD,
+        isGuest: true
       }
     )
 

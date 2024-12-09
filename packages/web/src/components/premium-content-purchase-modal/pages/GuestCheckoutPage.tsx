@@ -5,7 +5,7 @@ import { PurchaseableContentMetadata } from '@audius/common/src/hooks/purchaseCo
 import { isPurchaseableAlbum } from '@audius/common/src/hooks/purchaseContent/utils'
 import { SIGN_IN_PAGE } from '@audius/common/src/utils/route'
 import { USDC } from '@audius/fixed-decimal'
-import { Button, Flex, Text } from '@audius/harmony'
+import { Button, Flex, Hint, Text } from '@audius/harmony'
 import { useField } from 'formik'
 import { useDispatch } from 'react-redux'
 
@@ -36,7 +36,7 @@ export const GuestCheckoutPage = (props: GuestCheckoutProps) => {
     price
   })
   const isMobile = useIsMobile()
-
+  const [, { error }] = useField(GUEST_EMAIL)
   const isAlbumPurchase = isPurchaseableAlbum(metadata)
   const stemsPurchaseCount =
     'is_download_gated' in metadata && metadata.is_download_gated
@@ -93,7 +93,8 @@ export const GuestCheckoutPage = (props: GuestCheckoutProps) => {
             {messages.orContinueGuest}
           </Text>
 
-          <EmailField name={GUEST_EMAIL} />
+          <EmailField name={GUEST_EMAIL} helperText={''} />
+          {error ? <Hint>{error}</Hint> : null}
         </Flex>
       </Flex>
     </Flex>

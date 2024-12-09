@@ -39,7 +39,7 @@ export const AddressTile = ({
   const isMobile = useIsMobile()
   const { data: balanceBN } = useUSDCBalance({
     isPolling: true,
-    commitment: 'confirmed'
+    commitment: 'finalized'
   })
   const handleCopyPress = useCallback(() => {
     copyToClipboard(address)
