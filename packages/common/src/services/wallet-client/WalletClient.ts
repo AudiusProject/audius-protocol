@@ -198,14 +198,9 @@ export class WalletClient {
     }
   }
 
-  async getWalletSolBalance({
-    address,
-    sdk
-  }: {
-    address: string
-    sdk: AudiusSdk
-  }): Promise<BNWei> {
+  async getWalletSolBalance({ address }: { address: string }): Promise<BNWei> {
     try {
+      const sdk = await this.audiusSdk()
       const balance = await this.audiusBackendInstance.getAddressSolBalance({
         address,
         sdk
