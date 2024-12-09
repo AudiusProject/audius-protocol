@@ -3,7 +3,6 @@ import { z } from 'zod'
 import { signUpFetch } from '~/api'
 import { AudiusQueryContextType } from '~/audius-query/AudiusQueryContext'
 import { PurchaseMethod, PurchaseVendor } from '~/models/PurchaseContent'
-import { emailSchema } from '~/schemas/sign-on/emailSchema'
 import { PurchaseContentPage } from '~/store'
 
 import {
