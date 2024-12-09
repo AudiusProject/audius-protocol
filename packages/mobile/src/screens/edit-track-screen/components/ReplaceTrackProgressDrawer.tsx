@@ -1,6 +1,7 @@
 import { useReplaceTrackProgressModal } from '@audius/common/store'
 
 import {
+  Button,
   Flex,
   IconAudiusLogo,
   IconValidationCheck,
@@ -15,12 +16,13 @@ const messages = {
     'Please hold on while we upload and replace the file for this track.',
   inProgress: 'Upload in progress',
   finalizing: 'Finalizing...',
-  cancel: 'Cancel'
+  error: 'Something went wrong. Please try again later',
+  close: 'Close'
 }
 
 export const ReplaceTrackProgressDrawer = () => {
-  const { data } = useReplaceTrackProgressModal()
-  const { progress } = data
+  const { data, onClose } = useReplaceTrackProgressModal()
+  const { progress, error } = data
 
   const uploadProgress = Math.min(progress.upload + progress.transcode, 2) / 2
   const isUploadComplete = uploadProgress >= 1
@@ -28,32 +30,45 @@ export const ReplaceTrackProgressDrawer = () => {
   return (
     <AppDrawer modalName='ReplaceTrackProgress' isFullscreen>
       <Flex h='100%' justifyContent='center'>
-        <Flex direction='column' gap='3xl' ph='2xl' pb='3xl'>
-          <Flex alignItems='center' direction='column' gap='xl'>
-            <IconAudiusLogo height={48} width={48} color='default' />
-            <Text variant='body' size='l'>
-              {messages.description}
-            </Text>
-          </Flex>
-          <Flex direction='column'>
-            <Flex justifyContent='space-between' direction='row'>
-              <Text variant='label' size='s'>
-                {isUploadComplete ? messages.finalizing : messages.inProgress}
+        {error ? (
+          <Flex direction='column' gap='3xl' ph='2xl'>
+            <Flex w={220} alignSelf='center' alignItems='center'>
+              <Text variant='body' size='l' color='danger' textAlign='center'>
+                {messages.error}
               </Text>
-              <Flex alignItems='center' gap='l' direction='row'>
-                <Text variant='label' size='s'>
-                  {Math.round(uploadProgress * 100)}%
-                </Text>
-                {isUploadComplete ? (
-                  <IconValidationCheck size='s' />
-                ) : (
-                  <LoadingSpinner style={{ height: 16, width: 16 }} />
-                )}
-              </Flex>
             </Flex>
-            <ProgressBar progress={uploadProgress} max={1} />
+            <Button variant='secondary' onPress={onClose}>
+              {messages.close}
+            </Button>
           </Flex>
-        </Flex>
+        ) : (
+          <Flex direction='column' gap='3xl' ph='2xl' pb='3xl'>
+            <Flex alignItems='center' direction='column' gap='xl'>
+              <IconAudiusLogo height={48} width={48} color='default' />
+              <Text variant='body' size='l'>
+                {messages.description}
+              </Text>
+            </Flex>
+            <Flex direction='column'>
+              <Flex justifyContent='space-between' direction='row'>
+                <Text variant='label' size='s'>
+                  {isUploadComplete ? messages.finalizing : messages.inProgress}
+                </Text>
+                <Flex alignItems='center' gap='l' direction='row'>
+                  <Text variant='label' size='s'>
+                    {Math.round(uploadProgress * 100)}%
+                  </Text>
+                  {isUploadComplete ? (
+                    <IconValidationCheck size='s' />
+                  ) : (
+                    <LoadingSpinner style={{ height: 16, width: 16 }} />
+                  )}
+                </Flex>
+              </Flex>
+              <ProgressBar progress={uploadProgress} max={1} />
+            </Flex>
+          </Flex>
+        )}
       </Flex>
     </AppDrawer>
   )
