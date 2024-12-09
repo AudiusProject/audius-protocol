@@ -760,28 +760,6 @@ export const audiusBackend = ({
     }
   }
 
-  async function addPlaylistTrack(playlist: Collection) {
-    try {
-      const { blockHash, blockNumber } =
-        await audiusLibs.EntityManager.updatePlaylist(playlist)
-      return { blockHash, blockNumber }
-    } catch (error) {
-      console.error(getErrorMessage(error))
-      return { error }
-    }
-  }
-
-  async function deletePlaylistTrack(playlist: Collection) {
-    try {
-      const { blockHash, blockNumber } =
-        await audiusLibs.EntityManager.updatePlaylist(playlist)
-      return { blockHash, blockNumber }
-    } catch (error) {
-      console.error(getErrorMessage(error))
-      return { error }
-    }
-  }
-
   /**
    * @param formFields {name, handle, profilePicture, coverPhoto, isVerified, location}
    * @param hasWallet the user already has a wallet but didn't complete sign up
@@ -1694,14 +1672,12 @@ export const audiusBackend = ({
 
   return {
     addDiscoveryProviderSelectionListener,
-    addPlaylistTrack,
     audiusLibs: audiusLibs as AudiusLibsType,
     associateInstagramAccount,
     associateTwitterAccount,
     associateTikTokAccount,
     clearNotificationBadges,
     currentDiscoveryProvider,
-    deletePlaylistTrack,
     deregisterDeviceToken,
     didSelectDiscoveryProviderListeners,
     disableBrowserNotifications,

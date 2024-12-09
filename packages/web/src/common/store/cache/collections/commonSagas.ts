@@ -32,7 +32,6 @@ import {
   toastActions,
   getContext,
   confirmerActions,
-  confirmTransaction,
   Entry,
   trackPageActions,
   getSDK
@@ -320,27 +319,16 @@ function* confirmRemoveTrackFromPlaylist(
   count: number,
   playlist: Collection
 ) {
-  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
-
+  const sdk = yield* getSDK()
   yield* put(
     confirmerActions.requestConfirmation(
       makeKindId(Kind.COLLECTIONS, playlistId),
       function* (confirmedPlaylistId: ID) {
-        const { blockHash, blockNumber } = yield* call(
-          audiusBackendInstance.deletePlaylistTrack,
-          playlist
-        )
-
-        const confirmed = yield* call(
-          confirmTransaction,
-          blockHash,
-          blockNumber
-        )
-        if (!confirmed) {
-          throw new Error(
-            `Could not confirm remove playlist track for playlist id ${playlistId} and track id ${trackId}`
-          )
-        }
+        yield* call([sdk.playlists, sdk.playlists.updatePlaylist], {
+          metadata: collectionMetadataForSDK(playlist),
+          userId: Id.parse(userId),
+          playlistId: Id.parse(playlistId)
+        })
         return confirmedPlaylistId
       },
       function* (confirmedPlaylistId: ID) {
