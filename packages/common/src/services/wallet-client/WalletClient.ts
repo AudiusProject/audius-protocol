@@ -237,18 +237,17 @@ export class WalletClient {
   async sendWAudioTokens({
     address,
     amount,
-    ethAddress,
-    sdk
+    ethAddress
   }: {
     address: SolanaWalletAddress
     amount: BNWei
     ethAddress: string
-    sdk: AudiusSdk
   }): Promise<void> {
     if (amount.lt(MIN_TRANSFERRABLE_WEI)) {
       throw new Error('Insufficient Audio to transfer')
     }
     try {
+      const sdk = await this.audiusSdk()
       const { res, error } = await this.audiusBackendInstance.sendWAudioTokens({
         address,
         amount,
