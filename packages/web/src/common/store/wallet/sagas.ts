@@ -138,14 +138,18 @@ function* sendAsync({
     // user bank balance, transfer all eth AUDIO to spl wrapped audio
     if (chain === Chain.Sol && weiBNAmount.gt(waudioWeiAmount)) {
       yield* put(transferEthAudioToSolWAudio())
-      yield* call([walletClient, 'transferTokensFromEthToSol'])
+      yield* call([walletClient, walletClient.transferTokensFromEthToSol])
     }
 
     if (chain === Chain.Eth) {
-      yield* call([walletClient, 'sendTokens'], recipientWallet, weiBNAmount)
+      yield* call(
+        [walletClient, walletClient.sendTokens],
+        recipientWallet,
+        weiBNAmount
+      )
     } else {
       try {
-        yield* call([walletClient, 'sendWAudioTokens'], {
+        yield* call([walletClient, walletClient.sendWAudioTokens], {
           address: recipientWallet as SolanaWalletAddress,
           amount: weiBNAmount,
           ethAddress: currentUser

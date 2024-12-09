@@ -237,7 +237,7 @@ export class WalletClient {
     }
     try {
       const sdk = await this.audiusSdk()
-      const { res, error } = await this.audiusBackendInstance.sendWAudioTokens({
+      const { error } = await this.audiusBackendInstance.sendWAudioTokens({
         address,
         amount,
         ethAddress,
@@ -259,7 +259,6 @@ export class WalletClient {
         )
         throw new Error(`Error: ${error.toString()}`)
       }
-      return res
     } catch (err) {
       console.error(err)
       throw err
