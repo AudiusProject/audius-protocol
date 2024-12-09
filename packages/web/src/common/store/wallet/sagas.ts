@@ -147,11 +147,11 @@ function* sendAsync({
       yield* call([walletClient, 'sendTokens'], recipientWallet, weiBNAmount)
     } else {
       try {
-        yield* call(
-          [walletClient, 'sendWAudioTokens'],
-          recipientWallet as SolanaWalletAddress,
-          weiBNAmount
-        )
+        yield* call([walletClient, 'sendWAudioTokens'], {
+          address: recipientWallet as SolanaWalletAddress,
+          amount: weiBNAmount,
+          sdk
+        })
       } catch (e) {
         const errorMessage = getErrorMessage(e)
         if (errorMessage === 'Missing social proof') {
@@ -309,20 +309,15 @@ function* fetchBalanceAsync() {
  */
 function* checkAssociatedTokenAccountOrSol(action: InputSendDataAction) {
   const walletClient = yield* getContext('walletClient')
-  const audiusBackend = yield* getContext('audiusBackendInstance')
   const address = action.payload.wallet
-
-  const audiusLibs = yield* call(audiusBackend.getAudiusLibs)
-  const connection = (
-    audiusLibs as AudiusLibs
-  ).solanaWeb3Manager!.getConnection()
+  const sdk = yield* getSDK()
+  const connection = sdk.services.solanaClient.connection
 
   const associatedTokenAccount = yield* call(
     [walletClient, 'getAssociatedTokenAccountInfo'],
-    address
+    { sdk, address }
   )
   if (!associatedTokenAccount) {
-    const sdk = yield* getSDK()
     const balance: BNWei = yield* call(() =>
       walletClient.getWalletSolBalance({ address, sdk })
     )

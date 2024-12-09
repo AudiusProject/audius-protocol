@@ -1,4 +1,6 @@
 import { AudiusSdk } from '@audius/sdk'
+import { getAccount } from '@solana/spl-token'
+import { PublicKey } from '@solana/web3.js'
 import BN from 'bn.js'
 
 import { userWalletsFromSDK } from '~/adapters'
@@ -73,10 +75,19 @@ export class WalletClient {
     return balance as BNWei
   }
 
-  async getAssociatedTokenAccountInfo(address: string) {
+  async getAssociatedTokenAccountInfo({
+    address,
+    sdk
+  }: {
+    address: string
+    sdk: AudiusSdk
+  }) {
     try {
       const tokenAccountInfo =
-        await this.audiusBackendInstance.getAssociatedTokenAccountInfo(address)
+        await this.audiusBackendInstance.getAssociatedTokenAccountInfo({
+          address,
+          sdk
+        })
       return tokenAccountInfo
     } catch (err) {
       console.error(err)
@@ -225,16 +236,25 @@ export class WalletClient {
     }
   }
 
-  async sendWAudioTokens(
-    address: SolanaWalletAddress,
+  async sendWAudioTokens({
+    address,
+    amount,
+    sdk
+  }: {
+    address: SolanaWalletAddress
     amount: BNWei
-  ): Promise<void> {
+    sdk: AudiusSdk
+  }): Promise<void> {
     if (amount.lt(MIN_TRANSFERRABLE_WEI)) {
       throw new Error('Insufficient Audio to transfer')
     }
     try {
       const { res, error, errorCode } =
-        await this.audiusBackendInstance.sendWAudioTokens(address, amount)
+        await this.audiusBackendInstance.sendWAudioTokens({
+          address,
+          amount,
+          sdk
+        })
       if (error) {
         if (error === 'Missing social proof') {
           throw new Error(error)
