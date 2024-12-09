@@ -13,7 +13,6 @@ import {
   ASSOCIATED_TOKEN_PROGRAM_ID,
   getAccount,
   TOKEN_PROGRAM_ID,
-  TokeInvalidAccountError,
   TokenInvalidAccountOwnerError
 } from '@solana/spl-token'
 import {

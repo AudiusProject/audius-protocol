@@ -1,6 +1,4 @@
 import { AudiusSdk } from '@audius/sdk'
-import { getAccount } from '@solana/spl-token'
-import { PublicKey } from '@solana/web3.js'
 import BN from 'bn.js'
 
 import { userWalletsFromSDK } from '~/adapters'

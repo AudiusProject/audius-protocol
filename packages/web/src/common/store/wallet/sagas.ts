@@ -23,7 +23,6 @@ import {
   stringWeiToBN,
   weiToString
 } from '@audius/common/utils'
-import type { AudiusLibs } from '@audius/sdk-legacy/dist/libs'
 import BN from 'bn.js'
 import { all, call, put, take, takeEvery, select } from 'typed-redux-saga'
 
