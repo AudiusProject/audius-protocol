@@ -47,7 +47,8 @@ export const createUpdatePlaylistMetadataSchema = () =>
               trackId: HashId
             })
           )
-        )
+        ),
+        coverArtCid: z.optional(z.string())
       })
     )
     .strict()

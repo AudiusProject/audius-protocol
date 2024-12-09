@@ -760,51 +760,6 @@ export const audiusBackend = ({
     }
   }
 
-  async function createPlaylist(
-    playlistId: ID,
-    metadata: Partial<Collection>,
-    isAlbum = false,
-    trackIds: ID[] = [],
-    isPrivate = true
-  ) {
-    try {
-      const web3 = await audiusLibs.web3Manager.getWeb3()
-      const currentBlockNumber = await web3.eth.getBlockNumber()
-      const currentBlock = await web3.eth.getBlock(currentBlockNumber)
-      const playlistTracks = trackIds.map((trackId) => ({
-        track: trackId,
-        metadata_time: currentBlock.timestamp
-      }))
-      const response = await audiusLibs.EntityManager.createPlaylist({
-        ...metadata,
-        playlist_id: playlistId,
-        playlist_contents: { track_ids: playlistTracks },
-        is_album: isAlbum,
-        is_private: isPrivate
-      })
-      const { blockHash, blockNumber, error } = response
-      if (error) return { playlistId, error }
-      return { blockHash, blockNumber, playlistId }
-    } catch (err) {
-      // This code path should never execute
-      console.debug('Reached client createPlaylist catch block')
-      console.error(getErrorMessage(err))
-      return { playlistId: null, error: true }
-    }
-  }
-
-  async function updatePlaylist(metadata: Collection) {
-    try {
-      const { blockHash, blockNumber } =
-        await audiusLibs.EntityManager.updatePlaylist(metadata)
-
-      return { blockHash, blockNumber }
-    } catch (error) {
-      console.error(getErrorMessage(error))
-      return { error }
-    }
-  }
-
   async function orderPlaylist(playlist: any) {
     try {
       const { blockHash, blockNumber } =
@@ -1771,7 +1726,6 @@ export const audiusBackend = ({
     associateTwitterAccount,
     associateTikTokAccount,
     clearNotificationBadges,
-    createPlaylist,
     currentDiscoveryProvider,
     deletePlaylistTrack,
     deregisterDeviceToken,
@@ -1821,7 +1775,6 @@ export const audiusBackend = ({
     updateEmailNotificationSettings,
     updateHCaptchaScore,
     updateNotificationSettings,
-    updatePlaylist,
     updatePushNotificationSettings,
     updateUserEvent,
     updateUserLocationTimezone,

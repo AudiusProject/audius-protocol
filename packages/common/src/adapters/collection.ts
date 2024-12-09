@@ -5,6 +5,7 @@ import snakecaseKeys from 'snakecase-keys'
 
 import {
   AccountCollection,
+  Collection,
   PlaylistTrackId,
   UserCollectionMetadata,
   Variant
@@ -146,11 +147,12 @@ export const accountCollectionFromSDK = (
 }
 
 export const collectionMetadataForSDK = (
-  metadata: EditCollectionValues
+  metadata: Collection
 ): CreatePlaylistMetadata => {
   return {
     playlistName: metadata.playlist_name ?? '',
     description: metadata.description ?? '',
-    coverArtCid: metadata.cover_art_sizes ?? ''
+    coverArtCid: metadata.cover_art_sizes ?? '',
+    isPrivate: metadata.is_private ?? false
   }
 }

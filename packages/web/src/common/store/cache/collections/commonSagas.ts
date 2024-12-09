@@ -1,4 +1,7 @@
-import { userCollectionMetadataFromSDK } from '@audius/common/adapters'
+import {
+  collectionMetadataForSDK,
+  userCollectionMetadataFromSDK
+} from '@audius/common/adapters'
 import {
   Name,
   Kind,
@@ -191,30 +194,17 @@ function* confirmEditPlaylist(
   userId: ID,
   formFields: Collection
 ) {
-  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
-  const audiusSdk = yield* getContext('audiusSdk')
-  const sdk = yield* call(audiusSdk)
+  const sdk = yield* getSDK()
   yield* put(
     confirmerActions.requestConfirmation(
       makeKindId(Kind.COLLECTIONS, playlistId),
       function* (_confirmedPlaylistId: ID) {
-        const { blockHash, blockNumber, error } = yield* call(
-          audiusBackendInstance.updatePlaylist,
-          formFields
-        )
+        yield* call([sdk.playlists, sdk.playlists.updatePlaylist], {
+          metadata: collectionMetadataForSDK(formFields),
+          userId: Id.parse(userId),
+          playlistId: Id.parse(playlistId)
+        })
 
-        if (error) throw error
-
-        const confirmed = yield* call(
-          confirmTransaction,
-          blockHash,
-          blockNumber
-        )
-        if (!confirmed) {
-          throw new Error(
-            `Could not confirm playlist edition for playlist id ${playlistId}`
-          )
-        }
         const { data: playlist } = yield* call(
           [sdk.full.playlists, sdk.full.playlists.getPlaylist],
           {
