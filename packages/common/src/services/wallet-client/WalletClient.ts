@@ -225,22 +225,24 @@ export class WalletClient {
 
   async sendWAudioTokens({
     address,
-    amount
+    amount,
+    ethAddress
   }: {
     address: SolanaWalletAddress
     amount: BNWei
+    ethAddress: string
   }): Promise<void> {
     if (amount.lt(MIN_TRANSFERRABLE_WEI)) {
       throw new Error('Insufficient Audio to transfer')
     }
     try {
       const sdk = await this.audiusSdk()
-      const { res, error, errorCode } =
-        await this.audiusBackendInstance.sendWAudioTokens({
-          address,
-          amount,
-          sdk
-        })
+      const { error } = await this.audiusBackendInstance.sendWAudioTokens({
+        address,
+        amount,
+        ethAddress,
+        sdk
+      })
       if (error) {
         if (error === 'Missing social proof') {
           throw new Error(error)
@@ -253,13 +255,10 @@ export class WalletClient {
         }
         console.error(
           `Error sending sol wrapped audio amount ${amount.toString()} to ${address.toString()}` +
-            `with error ${error.toString()} and errorCode: ${errorCode}`
+            `with error ${error.toString()}`
         )
-        throw new Error(
-          `Error: ${error.toString()}, with code ${errorCode?.toString()}`
-        )
+        throw new Error(`Error: ${error.toString()}`)
       }
-      return res
     } catch (err) {
       console.error(err)
       throw err
