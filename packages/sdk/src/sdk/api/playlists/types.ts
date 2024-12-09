@@ -11,12 +11,18 @@ const CreatePlaylistMetadataSchema = z
   .object({
     description: z.optional(z.string().max(1000)),
     playlistName: z.string(),
-    isPrivate: z.optional(z.boolean())
+    isPrivate: z.optional(z.boolean()),
+    coverArtCid: z.optional(z.string())
   })
   .strict()
 
+export type CreatePlaylistMetadata = z.input<
+  typeof CreatePlaylistMetadataSchema
+>
+
 export const CreatePlaylistSchema = z
   .object({
+    playlistId: z.optional(HashId),
     coverArtFile: z.optional(ImageFile),
     metadata: CreatePlaylistMetadataSchema,
     onProgress: z.optional(z.function()),

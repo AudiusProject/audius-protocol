@@ -1,4 +1,7 @@
-import { userCollectionMetadataFromSDK } from '@audius/common/adapters'
+import {
+  collectionMetadataForSDK,
+  userCollectionMetadataFromSDK
+} from '@audius/common/adapters'
 import {
   Name,
   Kind,
@@ -21,11 +24,10 @@ import {
   cacheUsersSelectors,
   savedPageActions,
   LibraryCategory,
-  getContext,
   confirmerActions,
-  confirmTransaction,
   EditCollectionValues,
-  RequestConfirmationError
+  RequestConfirmationError,
+  getSDK
 } from '@audius/common/store'
 import { makeKindId, Nullable, route } from '@audius/common/utils'
 import { call, put, select, takeLatest } from 'typed-redux-saga'
@@ -40,7 +42,7 @@ const { addLocalCollection } = savedPageActions
 const { getUser } = cacheUsersSelectors
 
 const { requestConfirmation } = confirmerActions
-const { getAccountUser } = accountSelectors
+const { getUserId, getAccountUser } = accountSelectors
 const { getTrack } = cacheTracksSelectors
 const { getCollection } = cacheCollectionsSelectors
 const { collectionPage } = route
@@ -187,10 +189,7 @@ function* createAndConfirmPlaylist(
   source: string,
   isAlbum: boolean
 ) {
-  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
-  const audiusSdk = yield* getContext('audiusSdk')
-  const sdk = yield* call(audiusSdk)
-  const { createPlaylist } = audiusBackendInstance
+  const sdk = yield* getSDK()
 
   const event = make(Name.PLAYLIST_START_CREATE, {
     source,
@@ -201,22 +200,17 @@ function* createAndConfirmPlaylist(
   yield* put(event)
 
   function* confirmPlaylist() {
-    const { blockHash, blockNumber, error } = yield* call(
-      createPlaylist,
-      playlistId,
-      formFields,
-      isAlbum,
-      initTrack ? [initTrack.track_id] : undefined
-    )
-
-    if (error || !playlistId) throw new Error('Unable to create playlist')
-
-    const confirmed = yield* call(confirmTransaction, blockHash, blockNumber)
-    if (!confirmed) {
-      throw new Error(
-        `Could not confirm playlist creation for playlist id ${playlistId}`
-      )
+    const userId = yield* select(getUserId)
+    if (!userId) {
+      throw new Error('No userId set, cannot repost collection')
     }
+
+    yield* call([sdk.playlists, sdk.playlists.createPlaylist], {
+      userId: Id.parse(userId),
+      playlistId: Id.parse(playlistId),
+      trackIds: initTrack ? [Id.parse(initTrack.track_id)] : undefined,
+      metadata: collectionMetadataForSDK(formFields)
+    })
 
     // Merge the confirmed playlist with the optimistic playlist, preferring
     // optimistic data in case other unconfirmed edits have been made.

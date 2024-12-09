@@ -68,8 +68,14 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
     advancedOptions?: AdvancedOptions
   ) {
     // Parse inputs
-    const { userId, coverArtFile, metadata, onProgress, trackIds } =
-      await parseParams('createPlaylist', CreatePlaylistSchema)(params)
+    const {
+      userId,
+      coverArtFile,
+      metadata,
+      onProgress,
+      trackIds,
+      playlistId: providedPlaylistId
+    } = await parseParams('createPlaylist', CreatePlaylistSchema)(params)
 
     // Upload cover art to storage node
     const coverArtResponse =
@@ -86,7 +92,7 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
         }
       ))
 
-    const playlistId = await this.trackUploadHelper.generateId('playlist')
+    const playlistId = providedPlaylistId || (await this.generatePlaylistId())
     const currentBlock = await this.entityManager.getCurrentBlock()
 
     // Update metadata to include track ids
@@ -98,7 +104,7 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
           time: currentBlock.timestamp
         }))
       },
-      playlistImageSizesMultihash: coverArtResponse?.id
+      playlistImageSizesMultihash: coverArtResponse?.id ?? metadata.coverArtCid
     }
 
     // Write playlist metadata to chain
@@ -620,5 +626,14 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
       }),
       ...advancedOptions
     })
+  }
+
+  /**
+   * Generates a new playlist ID
+   *
+   * @hidden
+   */
+  async generatePlaylistId() {
+    return this.trackUploadHelper.generateId('playlist')
   }
 }

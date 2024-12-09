@@ -14,7 +14,6 @@ import {
   Id,
   OptionalId
 } from '@audius/common/models'
-import { TransactionReceipt } from '@audius/common/services'
 import {
   accountActions,
   accountSelectors,

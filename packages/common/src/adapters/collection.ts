@@ -1,4 +1,4 @@
-import { full } from '@audius/sdk'
+import { full, CreatePlaylistMetadata } from '@audius/sdk'
 import dayjs from 'dayjs'
 import { omit } from 'lodash'
 import snakecaseKeys from 'snakecase-keys'
@@ -10,6 +10,7 @@ import {
   Variant
 } from '~/models/Collection'
 import { Copyright } from '~/models/Track'
+import { EditCollectionValues } from '~/store'
 import { decodeHashId } from '~/utils/hashIds'
 
 import { accessConditionsFromSDK } from './access'
@@ -141,5 +142,15 @@ export const accountCollectionFromSDK = (
       handle: input.user.handle,
       is_deactivated: !!input.user.isDeactivated
     }
+  }
+}
+
+export const collectionMetadataForSDK = (
+  metadata: EditCollectionValues
+): CreatePlaylistMetadata => {
+  return {
+    playlistName: metadata.playlist_name ?? '',
+    description: metadata.description ?? '',
+    coverArtCid: metadata.cover_art_sizes ?? ''
   }
 }

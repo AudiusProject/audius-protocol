@@ -21,7 +21,6 @@ import {
   getContext,
   playlistUpdatesActions,
   confirmerActions,
-  confirmTransaction,
   getSDK
 } from '@audius/common/store'
 import {
