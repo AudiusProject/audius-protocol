@@ -13,17 +13,14 @@ import { View } from 'react-native'
 import { useDispatch } from 'react-redux'
 
 import {
-  Flex,
   IconClose,
   IconTrash,
-  Button,
-  PlainButton
-} from '@audius/harmony-native'
-import {
+  PlainButton,
   Divider,
-  Tile,
-  VirtualizedKeyboardAwareScrollView
-} from 'app/components/core'
+  Flex,
+  Button
+} from '@audius/harmony-native'
+import { Tile, VirtualizedKeyboardAwareScrollView } from 'app/components/core'
 import { PriceAndAudienceField } from 'app/components/edit/PriceAndAudienceField'
 import { VisibilityField } from 'app/components/edit/VisibilityField'
 import { useNavigation } from 'app/hooks/useNavigation'

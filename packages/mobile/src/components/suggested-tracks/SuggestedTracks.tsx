@@ -13,9 +13,10 @@ import {
   IconCaretDown,
   IconRefresh,
   Button,
-  PlainButton
+  PlainButton,
+  Divider
 } from '@audius/harmony-native'
-import { Divider, Text, Tile } from 'app/components/core'
+import { Text, Tile } from 'app/components/core'
 import { makeStyles } from 'app/styles'
 
 import { TrackImage } from '../image/TrackImage'

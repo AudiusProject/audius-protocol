@@ -24,7 +24,7 @@ import type { ProfileTabScreenParamList } from '../app-screen/ProfileTabScreen'
 import { AccountSettingsRow } from './AccountSettingsRow'
 import { AppearanceSettingsRow } from './AppearanceSettingsRow'
 import { CastSettingsRow } from './CastSettingsRow'
-import { Divider } from './Divider'
+import { SettingsDivider } from './SettingsDivider'
 import { SettingsRowLabel } from './SettingRowLabel'
 import { SettingsRow } from './SettingsRow'
 import { SettingsRowDescription } from './SettingsRowDescription'
@@ -98,7 +98,7 @@ export const SettingsScreen = () => {
         <ScrollView>
           <Image source={audiusLogoHorizontal} style={styles.logo} />
           <AccountSettingsRow />
-          <Divider />
+          <SettingsDivider />
           <AppearanceSettingsRow />
           <SettingsRow onPress={handlePressInbox}>
             <SettingsRowLabel label={messages.inbox} icon={IconMessage} />
@@ -133,11 +133,11 @@ export const SettingsScreen = () => {
               icon={IconCloudDownload}
             />
           </SettingsRow>
-          <Divider />
+          <SettingsDivider />
           <SettingsRow onPress={handlePressAbout}>
             <SettingsRowLabel label={messages.about} icon={IconInfo} />
           </SettingsRow>
-          <Divider />
+          <SettingsDivider />
         </ScrollView>
       </ScreenContent>
     </Screen>

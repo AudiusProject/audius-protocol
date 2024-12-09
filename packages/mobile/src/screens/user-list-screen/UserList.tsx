@@ -13,7 +13,8 @@ import { View } from 'react-native'
 import type { Selector } from 'react-redux'
 import { useDispatch, useSelector } from 'react-redux'
 
-import { Divider, FlatList } from 'app/components/core'
+import { Divider } from '@audius/harmony-native'
+import { FlatList } from 'app/components/core'
 import LoadingSpinner from 'app/components/loading-spinner'
 import { makeStyles } from 'app/styles'
 
