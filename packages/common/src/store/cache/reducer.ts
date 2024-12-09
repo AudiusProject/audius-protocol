@@ -9,7 +9,7 @@ import {
   ADD_SUCCEEDED,
   UPDATE,
   SET_STATUS,
-  SET_EXPIRED,
+  SUBSCRIBE,
   INCREMENT,
   AddSuccededAction,
   ADD_ENTRIES,
@@ -23,7 +23,6 @@ type CacheState = {
   entries: Record<ID, { _timestamp: number; metadata: Metadata }>
   statuses: Record<ID, Status>
   uids: Record<UID, ID>
-  idsToPrune: Set<ID>
   entryTTL: number
 }
 
@@ -44,9 +43,7 @@ export const initialCacheState: CacheState = {
   statuses: {},
   // uid => id
   uids: {},
-  // id => Set(uid)
   // Set { id }
-  idsToPrune: new Set(),
   entryTTL: Infinity
 }
 
@@ -180,6 +177,9 @@ const addEntries = (state: CacheState, entries: Entry[], replace?: boolean) => {
         _timestamp: entity.timestamp ?? now,
         metadata: entity.metadata
       }
+      if (entity.uid) {
+        newUids[entity.uid] = entity.id
+      }
     }
   }
 
@@ -253,8 +253,18 @@ const actionsMap = {
       statuses: newStatuses
     }
   },
-  [SET_EXPIRED](state: CacheState) {
-    return state
+  [SUBSCRIBE](state: CacheState, action: { id: any; subscribers: any[] }) {
+    const newUids = { ...state.uids }
+
+    action.subscribers.forEach((s: { id: any; uid: any }) => {
+      const { id, uid } = s
+      newUids[uid] = id
+    })
+
+    return {
+      ...state,
+      uids: newUids
+    }
   }
 }
 
@@ -268,8 +278,6 @@ export const asCache =
         statuses: {}
         // uid => id
         uids: {}
-        // Set { id }
-        idsToPrune: Set<unknown>
       }
       (arg0: any, arg1: any): any
     },

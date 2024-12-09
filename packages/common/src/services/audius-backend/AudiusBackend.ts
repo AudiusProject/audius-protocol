@@ -1,3 +1,4 @@
+import { AUDIO, wAUDIO } from '@audius/fixed-decimal'
 import {
   AudiusSdk,
   Genre,
@@ -661,15 +662,29 @@ export const audiusBackend = ({
     }
   }
 
-  async function recordTrackListen(userId: ID, trackId: ID) {
+  async function recordTrackListen({
+    userId,
+    trackId,
+    sdk
+  }: {
+    userId: ID
+    trackId: ID
+    sdk: AudiusSdk
+  }) {
     try {
-      const listen = await audiusLibs.Track.logTrackListen(
-        trackId,
-        unauthenticatedUuid,
-        userId,
-        true
-      )
-      return listen
+      const { data, signature } = await signIdentityServiceRequest({ sdk })
+      await fetch(`${identityServiceUrl}/tracks/${trackId}/listen`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          [AuthHeaders.Message]: data,
+          [AuthHeaders.Signature]: signature
+        },
+        body: JSON.stringify({
+          userId: userId ?? unauthenticatedUuid,
+          solanaListen: true
+        })
+      })
     } catch (err) {
       console.error(getErrorMessage(err))
     }
@@ -862,18 +877,6 @@ export const audiusBackend = ({
     }
   }
 
-  // TODO(C-2719)
-  async function validateTracksInPlaylist(playlistId: ID) {
-    try {
-      const { isValid, invalidTrackIds } =
-        await audiusLibs.Playlist.validateTracksInPlaylist(playlistId)
-      return { error: false, isValid, invalidTrackIds }
-    } catch (error) {
-      console.error(getErrorMessage(error))
-      return { error }
-    }
-  }
-
   async function deletePlaylist(playlistId: ID) {
     try {
       const txReceipt = await audiusLibs.EntityManager.deletePlaylist(
@@ -913,11 +916,6 @@ export const audiusBackend = ({
       console.error(getErrorMessage(err))
       throw err
     }
-  }
-
-  async function signOut() {
-    await waitForLibsInit()
-    return audiusLibs.Account.logout()
   }
 
   /**
@@ -1562,19 +1560,6 @@ export const audiusBackend = ({
     }
   }
 
-  async function getRandomFeePayer() {
-    await waitForLibsInit()
-    try {
-      const { feePayer } =
-        await audiusLibs.solanaWeb3Manager.getRandomFeePayer()
-      audiusLibs.solanaWeb3Manager.feePayerKey = new PublicKey(feePayer)
-      return { feePayer }
-    } catch (err) {
-      console.error(getErrorMessage(err))
-      return { error: true }
-    }
-  }
-
   /**
    * Make a request to fetch the eth AUDIO balance of the the user
    * @params {bool} bustCache
@@ -1618,19 +1603,28 @@ export const audiusBackend = ({
    * @params {string} ethAddress - Optional ETH wallet address to derive user bank. Defaults to hedgehog wallet
    * @returns {Promise<BN>} balance or null if failed to fetch balance
    */
-  async function getWAudioBalance(ethAddress?: string): Promise<BN | null> {
-    await waitForLibsInit()
-
+  async function getWAudioBalance({
+    ethAddress,
+    sdk
+  }: {
+    ethAddress: string
+    sdk: AudiusSdk
+  }): Promise<BN | null> {
     try {
-      const userBank = await audiusLibs.solanaWeb3Manager.deriveUserBank({
-        ethAddress
-      })
-      const ownerWAudioBalance =
-        await audiusLibs.solanaWeb3Manager.getWAudioBalance(userBank)
+      const { userBank } =
+        await sdk.services.claimableTokensClient.getOrCreateUserBank({
+          ethWallet: ethAddress,
+          mint: 'wAUDIO'
+        })
+      const connection = sdk.services.solanaClient.connection
+      const {
+        value: { amount }
+      } = await connection.getTokenAccountBalance(userBank)
+      const ownerWAudioBalance = AUDIO(wAUDIO(BigInt(amount))).value
       if (isNullOrUndefined(ownerWAudioBalance)) {
         throw new Error('Failed to fetch account waudio balance')
       }
-      return ownerWAudioBalance
+      return new BN(ownerWAudioBalance.toString())
     } catch (e) {
       console.error(e)
       reportError({ error: e as Error })
@@ -1643,10 +1637,22 @@ export const audiusBackend = ({
    * @param {string} The solana wallet address
    * @returns {Promise<BNWei>}
    */
-  async function getAddressSolBalance(address: string): Promise<BNWei> {
-    await waitForLibsInit()
-    const solBalance = await audiusLibs.solanaWeb3Manager.getSolBalance(address)
-    return solBalance
+  async function getAddressSolBalance({
+    address,
+    sdk
+  }: {
+    address: string
+    sdk: AudiusSdk
+  }): Promise<BNWei> {
+    try {
+      const addressPubKey = new PublicKey(address)
+      const connection = sdk.services.solanaClient.connection
+      const solBalance = await connection.getBalance(addressPubKey)
+      return new BN(solBalance ?? 0) as BNWei
+    } catch (e) {
+      reportError({ error: e as Error })
+      return new BN(0) as BNWei
+    }
   }
 
   /**
@@ -1850,7 +1856,6 @@ export const audiusBackend = ({
     getBrowserPushSubscription,
     getEmailNotificationSettings,
     getPushNotificationSettings,
-    getRandomFeePayer,
     getSafariBrowserPushEnabled,
     getSignature,
     getUserListenCountsMonthly,
@@ -1874,7 +1879,6 @@ export const audiusBackend = ({
     signData,
     signDiscoveryNodeRequest,
     signIdentityServiceRequest,
-    signOut,
     signUp,
     transferAudioToWAudio,
     twitterHandle,
@@ -1893,7 +1897,6 @@ export const audiusBackend = ({
     updateUserLocationTimezone,
     uploadImage,
     userNodeUrl,
-    validateTracksInPlaylist,
     waitForLibsInit,
     waitForWeb3
   }

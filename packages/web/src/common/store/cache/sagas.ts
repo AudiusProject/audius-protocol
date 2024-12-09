@@ -7,7 +7,7 @@ import {
   confirmerSelectors,
   getContext
 } from '@audius/common/store'
-import type { Metadata, Entry } from '@audius/common/store'
+import type { Metadata, Entry, SubscriberInfo } from '@audius/common/store'
 import { makeUids, getIdFromKindId } from '@audius/common/utils'
 import { pick } from 'lodash'
 import { SelectEffect } from 'redux-saga/effects'
@@ -265,12 +265,13 @@ export function* add(
   )
 
   const entriesToAdd: Entry[] = []
+  const entriesToSubscribe: SubscriberInfo[] = []
   entries.forEach((entry) => {
     // If something is confirming and in the cache, we probably don't
     // want to replace it (unless explicit) because we would lose client
     // state, e.g. "has_current_user_reposted"
     if (!replace && entry.id in confirmCallsInCache && entry.uid) {
-      // do nothing
+      entriesToSubscribe.push({ uid: entry.uid, id: entry.id })
     } else {
       entriesToAdd.push(entry)
     }
@@ -284,6 +285,9 @@ export function* add(
         persist
       })
     )
+  }
+  if (entriesToSubscribe.length > 0) {
+    yield* put(cacheActions.subscribe(kind, entriesToSubscribe))
   }
 }
 

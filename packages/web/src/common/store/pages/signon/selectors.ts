@@ -22,6 +22,8 @@ export const getCanShowOtp = (state: AppState) => {
   const { value: password, error } = getPasswordField(state)
   return email && password && error
 }
+export const getFinishedPhase1 = (state: AppState) =>
+  state.signOn.finishedPhase1
 export const getHandleField = (state: AppState) => state.signOn.handle
 export const getIsVerified = (state: AppState) => state.signOn.verified
 export const getCoverPhotoField = (state: AppState) => state.signOn.coverPhoto

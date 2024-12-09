@@ -332,15 +332,6 @@ def extend_track(track, session=None):
         "is_deactivated"
     )
 
-    # TODO: This block is only for legacy tracks that have track_segments instead of duration
-    duration = track.get("duration")
-    if not duration:
-        duration = 0.0
-        for segment in track["track_segments"]:
-            # NOTE: Legacy track segments store the duration as a string
-            duration += float(segment["duration"])
-        track["duration"] = round(duration)
-
     # Transform new format of splits to legacy format for client compatibility
     if "stream_conditions" in track:
         track["stream_conditions"] = get_legacy_purchase_gate(
