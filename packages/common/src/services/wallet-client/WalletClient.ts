@@ -60,12 +60,11 @@ export class WalletClient {
 
   /** Get user's current SOL Audio balance. Returns null on failure. */
   async getCurrentWAudioBalance({
-    ethAddress,
-    sdk
+    ethAddress
   }: {
     ethAddress: string
-    sdk: AudiusSdk
   }): Promise<BNWei | null> {
+    const sdk = await this.audiusSdk()
     const balance = await this.audiusBackendInstance.getWAudioBalance({
       ethAddress,
       sdk

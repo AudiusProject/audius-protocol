@@ -149,8 +149,7 @@ function* sendAsync({
         yield* call([walletClient, 'sendWAudioTokens'], {
           address: recipientWallet as SolanaWalletAddress,
           amount: weiBNAmount,
-          ethAddress: currentUser,
-          sdk
+          ethAddress: currentUser
         })
       } catch (e) {
         const errorMessage = getErrorMessage(e)
@@ -233,8 +232,7 @@ function* fetchBalanceAsync() {
         bustCache: localBalanceChange
       }),
       call([walletClient, 'getCurrentWAudioBalance'], {
-        ethAddress: account.wallet,
-        sdk
+        ethAddress: account.wallet
       })
     ])
 
