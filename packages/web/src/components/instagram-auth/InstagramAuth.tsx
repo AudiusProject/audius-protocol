@@ -95,6 +95,7 @@ const InstagramAuth = ({
         reportToSentry({
           error: err,
           name: 'Sign Up: InstagramAuth getProfile failed',
+          tags: { socialMedia: 'instagram' },
           feature: Feature.SignUp
         })
         onFailure(err)
@@ -139,7 +140,8 @@ const InstagramAuth = ({
               reportToSentry({
                 error,
                 name: 'Sign Up: InstagramAuth oauth redirect failed',
-                feature: Feature.SignUp
+                feature: Feature.SignUp,
+                tags: { socialMedia: 'instagram' }
               })
               return onFailure(error)
             }
@@ -159,7 +161,9 @@ const InstagramAuth = ({
     if (!popup) {
       reportToSentry({
         error: new Error('Unable to open InstagramAuth popup'),
-        name: 'Sign Up'
+        name: 'Sign Up',
+        feature: Feature.SignUp,
+        tags: { socialMedia: 'instagram' }
       })
     }
     try {
@@ -173,7 +177,8 @@ const InstagramAuth = ({
       reportToSentry({
         error: error as Error,
         name: 'Sign Up: InstagramAuth popup polling failed',
-        feature: Feature.SignUp
+        feature: Feature.SignUp,
+        tags: { socialMedia: 'instagram' }
       })
       if (popup) popup.close()
       return onFailure(error)
