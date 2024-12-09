@@ -12,6 +12,7 @@ import {
   createNavigationContainerRef,
   getStateFromPath
 } from '@react-navigation/native'
+import type { reactNavigationIntegration } from '@sentry/react-native'
 import queryString from 'query-string'
 import { useSelector } from 'react-redux'
 
@@ -21,8 +22,6 @@ import { getPrimaryRoute } from 'app/utils/navigation'
 import { useThemeVariant } from 'app/utils/theme'
 
 import { navigationThemes } from './navigationThemes'
-import {reactNavigationIntegration} from '@sentry/react-native'
-
 
 const { getUserHandle } = accountSelectors
 
