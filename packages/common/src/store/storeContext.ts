@@ -5,7 +5,7 @@ import { Location } from 'history'
 import { Dispatch } from 'redux'
 import nacl from 'tweetnacl'
 
-import { AuthService } from '~/services'
+import { AuthService, IdentityService } from '~/services'
 
 import {
   AllTrackingEvents,
@@ -80,6 +80,7 @@ export type CommonStoreContext = {
   share: (url: string, message?: string) => Promise<void> | void
   audiusSdk: () => Promise<AudiusSdk>
   authService: AuthService
+  identityServiceInstance: IdentityService
   imageUtils: {
     generatePlaylistArtwork: (
       urls: string[]

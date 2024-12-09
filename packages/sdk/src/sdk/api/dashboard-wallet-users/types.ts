@@ -1,13 +1,11 @@
 import { z } from 'zod'
 
+import { EthAddressSchema } from '../../types/EthAddress'
 import { HashId } from '../../types/HashId'
-import { isEthAddressValid } from '../../utils/ethAddress'
 
 export const CreateDashboardWalletUser = z
   .object({
-    wallet: z.custom<string>((data: unknown) => {
-      return isEthAddressValid(data as string)
-    }),
+    wallet: EthAddressSchema,
     userId: HashId,
     walletSignature: z
       .object({
@@ -35,9 +33,7 @@ export type CreateDashboardWalletUserRequest = z.input<
 
 export const DeleteDashboardWalletUserSchema = z.object({
   userId: HashId,
-  wallet: z.custom<string>((data: unknown) => {
-    return isEthAddressValid(data as string)
-  })
+  wallet: EthAddressSchema
 })
 
 export type DeleteDashboardWalletUserRequest = z.input<

@@ -4,13 +4,13 @@ import { primitiveThemeV2 } from './primitiveV2'
 const createSemanticThemeV2 = (primitives: PrimitiveColorsV2) => ({
   text: {
     default: primitives.neutral.n800,
-    disabled: primitives.neutral.n150,
     subdued: primitives.neutral.n400,
-    accent: primitives.secondary.s300,
+    disabled: primitives.neutral.n150,
     link: primitives.primary.p500,
-    inverseWhite: primitives.primary.p500,
+    accent: primitives.secondary.s300,
+    inverse: primitives.special.white,
 
-    // The following are for compatibility
+    // Legacy compatibility
     heading: primitives.special.gradient,
     active: primitives.primary.p300,
     staticWhite: primitives.special.white,
@@ -22,13 +22,13 @@ const createSemanticThemeV2 = (primitives: PrimitiveColorsV2) => ({
   },
   icon: {
     default: primitives.neutral.n800,
-    disabled: primitives.neutral.n150,
     subdued: primitives.neutral.n400,
-    accent: primitives.secondary.s300,
+    disabled: primitives.neutral.n150,
     link: primitives.primary.p500,
-    inverseWhite: primitives.primary.p500,
+    accent: primitives.secondary.s300,
+    inverse: primitives.special.white,
 
-    // The following are for compatibility
+    // Legacy compatibility
     heading: primitives.special.gradient,
     active: primitives.primary.p300,
     staticWhite: primitives.special.white,
@@ -50,12 +50,13 @@ const createSemanticThemeV2 = (primitives: PrimitiveColorsV2) => ({
     surface2: primitives.neutral.n100,
     white: primitives.special.white,
 
-    // The following are for compatibility
+    // Legacy compatibility
     accent: primitives.secondary.s300
   },
   border: {
     default: primitives.neutral.n100,
     strong: primitives.neutral.n150,
+    negative: primitives.special.white,
     accent: primitives.secondary.s300
   },
   focus: {
@@ -64,7 +65,8 @@ const createSemanticThemeV2 = (primitives: PrimitiveColorsV2) => ({
   status: {
     error: primitives.special.red,
     warning: primitives.special.orange,
-    success: primitives.special.green
+    success: primitives.special.green,
+    danger: primitives.special.red
   }
 })
 

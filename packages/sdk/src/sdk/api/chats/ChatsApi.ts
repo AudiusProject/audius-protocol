@@ -4,14 +4,14 @@ import * as secp from '@noble/secp256k1'
 import { base64 } from '@scure/base'
 import WebSocket from 'isomorphic-ws'
 import { uniqBy } from 'lodash'
-import * as aes from 'micro-aes-gcm'
 import type TypedEmitter from 'typed-emitter'
 import { ulid } from 'ulid'
 
-import type { AuthService } from '../../services/Auth'
+import type { AudiusWalletClient } from '../../services/AudiusWalletClient'
 import type { DiscoveryNodeSelectorService } from '../../services/DiscoveryNodeSelector/types'
 import type { LoggerService } from '../../services/Logger'
 import type { EventEmitterTarget } from '../../utils/EventEmitterTarget'
+import { CryptoUtils } from '../../utils/crypto'
 import { encodeHashId } from '../../utils/hashId'
 import { parseParams } from '../../utils/parseParams'
 import {
@@ -59,14 +59,14 @@ import {
   UnfurlResponse
 } from './clientTypes'
 import {
+  type ChatCreateRPC,
   type ChatInvite,
-  type UserChat,
   type ChatMessage,
   type ChatWebsocketEventData,
   type RPCPayloadRequest,
-  type ValidatedChatPermissions,
-  type ChatCreateRPC,
   type UpgradableChatBlast,
+  type UserChat,
+  type ValidatedChatPermissions,
   ChatBlastAudience,
   ChatPermission
 } from './serverTypes'
@@ -101,7 +101,7 @@ export class ChatsApi
 
   constructor(
     config: Configuration,
-    private readonly auth: AuthService,
+    private readonly audiusWalletClient: AudiusWalletClient,
     private readonly discoveryNodeSelectorService: DiscoveryNodeSelectorService,
     private readonly logger: LoggerService
   ) {
@@ -267,7 +267,7 @@ export class ChatsApi
         ...m,
         message: m.is_plaintext
           ? m.message
-          : await this.decryptString(
+          : await CryptoUtils.decryptString(
               sharedSecret,
               base64.decode(m.message)
             ).catch((e) => {
@@ -499,7 +499,7 @@ export class ChatsApi
       ChatMessageRequestSchema
     )(params)
     const chatSecret = await this.getChatSecret(chatId)
-    const encrypted = await this.encryptString(chatSecret, message)
+    const encrypted = await CryptoUtils.encryptString(chatSecret, message)
     const encodedMessage = base64.encode(encrypted)
 
     return await this.sendRpc({
@@ -707,8 +707,13 @@ export class ChatsApi
     inviteePublicKey: Uint8Array,
     chatSecret: Uint8Array
   ) {
-    const sharedSecret = await this.auth.getSharedSecret(inviteePublicKey)
-    const encryptedChatSecret = await this.encrypt(sharedSecret, chatSecret)
+    const sharedSecret = await this.audiusWalletClient.getSharedSecret({
+      publicKey: inviteePublicKey
+    })
+    const encryptedChatSecret = await CryptoUtils.encrypt(
+      sharedSecret,
+      chatSecret
+    )
     const inviteCode = new Uint8Array(65 + encryptedChatSecret.length)
     inviteCode.set(userPublicKey)
     inviteCode.set(encryptedChatSecret, 65)
@@ -718,24 +723,10 @@ export class ChatsApi
   private async readInviteCode(inviteCode: Uint8Array) {
     const friendPublicKey = inviteCode.slice(0, 65)
     const chatSecretEncrypted = inviteCode.slice(65)
-    const sharedSecret = await this.auth.getSharedSecret(friendPublicKey)
-    return await this.decrypt(sharedSecret, chatSecretEncrypted)
-  }
-
-  private async encrypt(secret: Uint8Array, payload: Uint8Array) {
-    return await aes.encrypt(secret.slice(secret.length - 32), payload)
-  }
-
-  private async encryptString(secret: Uint8Array, payload: string) {
-    return await this.encrypt(secret, new TextEncoder().encode(payload))
-  }
-
-  private async decrypt(secret: Uint8Array, payload: Uint8Array) {
-    return await aes.decrypt(secret.slice(secret.length - 32), payload)
-  }
-
-  private async decryptString(secret: Uint8Array, payload: Uint8Array) {
-    return new TextDecoder().decode(await this.decrypt(secret, payload))
+    const sharedSecret = await this.audiusWalletClient.getSharedSecret({
+      publicKey: friendPublicKey
+    })
+    return await CryptoUtils.decrypt(sharedSecret, chatSecretEncrypted)
   }
 
   private async decryptLastChatMessage(c: UserChat): Promise<UserChat> {
@@ -744,7 +735,7 @@ export class ChatsApi
     try {
       const sharedSecret = await this.getChatSecret(c.chat_id)
       if (c.last_message && c.last_message.length > 0) {
-        lastMessage = await this.decryptString(
+        lastMessage = await CryptoUtils.decryptString(
           sharedSecret,
           base64.decode(c.last_message)
         )
@@ -839,10 +830,12 @@ export class ChatsApi
   }
 
   private async getSignatureHeader(payload: string) {
-    const [allSignatureBytes, recoveryByte] = await this.auth.sign(payload)
+    const [signature, recid] = await this.audiusWalletClient.sign({
+      message: payload
+    })
     const signatureBytes = new Uint8Array(65)
-    signatureBytes.set(allSignatureBytes, 0)
-    signatureBytes[64] = recoveryByte
+    signatureBytes.set(signature, 0)
+    signatureBytes[64] = recid
     return { 'x-sig': base64.encode(signatureBytes) }
   }
 
@@ -897,7 +890,7 @@ export class ChatsApi
               message_id: data.rpc.params.message_id,
               message: data.rpc.params.is_plaintext
                 ? data.rpc.params.message
-                : await this.decryptString(
+                : await CryptoUtils.decryptString(
                     sharedSecret,
                     base64.decode(data.rpc.params.message)
                   ).catch((e) => {

@@ -8,7 +8,10 @@ import type { Drawer as DrawerName } from 'app/store/drawers/slice'
 import type { DrawerProps } from './Drawer'
 import Drawer from './Drawer'
 
-type NativeDrawerProps = SetOptional<DrawerProps, 'isOpen' | 'onClose'> & {
+export type NativeDrawerProps = SetOptional<
+  DrawerProps,
+  'isOpen' | 'onClose'
+> & {
   drawerName: DrawerName
 }
 

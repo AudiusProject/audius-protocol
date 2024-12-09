@@ -36,7 +36,8 @@ import {
   confirmerActions,
   getSDK,
   fetchAccountAsync,
-  getOrCreateUSDCUserBank
+  getOrCreateUSDCUserBank,
+  changePasswordActions
 } from '@audius/common/store'
 import {
   Genre,
@@ -561,8 +562,11 @@ function* sendRecoveryEmail({
     const unixTs = Math.round(new Date().getTime() / 1000) // current unix timestamp (sec)
     const data = `Click sign to authenticate with identity service: ${unixTs}`
     const signature = yield* call(
-      [sdk.services.auth, sdk.services.auth.hashAndSign],
-      data
+      [
+        sdk.services.audiusWalletClient,
+        sdk.services.audiusWalletClient.signMessage
+      ],
+      { message: data }
     )
 
     const recoveryData = {
@@ -742,6 +746,16 @@ function* signUp() {
                 [sdk.users, sdk.users.updateProfile],
                 completeProfileMetadataRequest
               )
+
+              yield* put(
+                changePasswordActions.changePassword({
+                  email,
+                  password,
+                  oldPassword: TEMPORARY_PASSWORD
+                })
+              )
+
+              yield* fork(sendRecoveryEmail, { handle, email })
             } else {
               if (!alreadyExisted) {
                 yield* call(
@@ -799,6 +813,16 @@ function* signUp() {
                   tikTokId
                 })
               }
+            }
+            const { web3Error, libsError } = yield* call(
+              audiusBackendInstance.setup,
+              {
+                wallet,
+                userId
+              }
+            )
+            if (web3Error || libsError) {
+              throw new Error('Failed to setup backend')
             }
 
             yield* put(
@@ -1028,7 +1052,9 @@ function* signIn(action: ReturnType<typeof signOnActions.signIn>) {
             }
           })
         )
-        yield* put(pushRoute(SIGN_UP_PASSWORD_PAGE))
+        if (!isNativeMobile) {
+          yield* put(pushRoute(SIGN_UP_PASSWORD_PAGE))
+        }
         const { web3Error, libsError } = yield* call(
           audiusBackendInstance.setup,
           {
@@ -1125,7 +1151,6 @@ function* signIn(action: ReturnType<typeof signOnActions.signIn>) {
 
     yield* put(signOnActions.resetSignOn())
 
-    const isNativeMobile = yield* getContext('isNativeMobile')
     if (!isNativeMobile) {
       // Reset the sign on in the background after page load as to relieve the UI loading
       yield* delay(1000)

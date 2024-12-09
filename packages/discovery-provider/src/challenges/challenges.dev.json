@@ -80,7 +80,7 @@
     "active": true,
     "starting_block": 0,
     "amount": 100,
-    "weekly_pool": 500
+    "weekly_pool": 10000
   },
   {
     "id": "tut",
@@ -88,7 +88,7 @@
     "active": true,
     "starting_block": 0,
     "amount": 100,
-    "weekly_pool": 500
+    "weekly_pool": 10000
   },
   {
     "id": "tp",
@@ -96,7 +96,7 @@
     "active": true,
     "starting_block": 0,
     "amount": 100,
-    "weekly_pool": 500
+    "weekly_pool": 10000
   },
   {
     "id": "ft",

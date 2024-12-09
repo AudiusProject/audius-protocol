@@ -64,7 +64,7 @@ const createMobileThemeFromHarmony = (
     specialLightGreen: color.special.lightGreen,
     specialGreen: color.special.green,
     staticPrimary: color.static.primary,
-    staticSecondary: color.secondary.s300,
+    staticSecondary: color.static.secondary,
     pageHeaderGradientColor1: color.special.gradientStop1,
     pageHeaderGradientColor2: color.special.gradientStop2,
     skeleton: color.neutral.n50,

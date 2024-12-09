@@ -43,7 +43,7 @@ export const IconButton = (props: IconButtonProps) => {
     ...other
   } = props
   const pressed = useSharedValue(0)
-  const { color, spacing } = useTheme()
+  const { color, spacing, type } = useTheme()
   const { toast } = useToast()
 
   const buttonStyles = {
@@ -51,13 +51,16 @@ export const IconButton = (props: IconButtonProps) => {
     padding: spacing.xs
   }
 
-  const rippleStyles = useAnimatedStyle(() => ({
-    backgroundColor: interpolateColor(
-      pressed.value,
-      [0, 1],
-      ['transparent', color.neutral.n150]
-    )
-  }))
+  const rippleStyles = useAnimatedStyle(
+    () => ({
+      backgroundColor: interpolateColor(
+        pressed.value,
+        [0, 1],
+        ['transparent', color.neutral.n150]
+      )
+    }),
+    [type]
+  )
 
   const handlePress = useCallback(
     (e: GestureResponderEvent) => {
