@@ -760,17 +760,6 @@ export const audiusBackend = ({
     }
   }
 
-  async function orderPlaylist(playlist: any) {
-    try {
-      const { blockHash, blockNumber } =
-        await audiusLibs.EntityManager.updatePlaylist(playlist)
-      return { blockHash, blockNumber }
-    } catch (error) {
-      console.error(getErrorMessage(error))
-      return { error }
-    }
-  }
-
   async function addPlaylistTrack(playlist: Collection) {
     try {
       const { blockHash, blockNumber } =
@@ -1735,7 +1724,6 @@ export const audiusBackend = ({
     getWAudioBalance,
     getWeb3,
     identityServiceUrl,
-    orderPlaylist,
     recordTrackListen,
     registerDeviceToken,
     guestSignUp,

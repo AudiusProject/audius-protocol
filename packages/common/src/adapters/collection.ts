@@ -1,8 +1,9 @@
-import { full, CreatePlaylistMetadata } from '@audius/sdk'
+import { full, UpdatePlaylistRequest } from '@audius/sdk'
 import dayjs from 'dayjs'
 import { omit } from 'lodash'
 import snakecaseKeys from 'snakecase-keys'
 
+import { Id } from '~/models'
 import {
   AccountCollection,
   Collection,
@@ -11,7 +12,6 @@ import {
   Variant
 } from '~/models/Collection'
 import { Copyright } from '~/models/Track'
-import { EditCollectionValues } from '~/store'
 import { decodeHashId } from '~/utils/hashIds'
 
 import { accessConditionsFromSDK } from './access'
@@ -147,12 +147,19 @@ export const accountCollectionFromSDK = (
 }
 
 export const collectionMetadataForSDK = (
-  metadata: Collection
-): CreatePlaylistMetadata => {
+  input: Collection
+): UpdatePlaylistRequest['metadata'] => {
   return {
-    playlistName: metadata.playlist_name ?? '',
-    description: metadata.description ?? '',
-    coverArtCid: metadata.cover_art_sizes ?? '',
-    isPrivate: metadata.is_private ?? false
+    playlistContents: input.playlist_contents
+      ? input.playlist_contents.track_ids.map((t) => ({
+          timestamp: t.time,
+          trackId: Id.parse(t.track),
+          metadataTimestamp: t.metadata_time
+        }))
+      : undefined,
+    playlistName: input.playlist_name ?? '',
+    description: input.description ?? '',
+    coverArtCid: input.cover_art_sizes ?? '',
+    isPrivate: input.is_private ?? false
   }
 }
