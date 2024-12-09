@@ -1889,7 +1889,7 @@ export const audiusBackend = ({
     const recipientSolanaAddressPubKey = new PublicKey(recipientSolanaAddress)
     const secpTransactionInstruction =
       await sdk.services.claimableTokensClient.createTransferSecpInstruction({
-        amount: BigInt(wAudioAmount.toString()),
+        amount: wAudioAmount.value,
         ethWallet: ethAddress,
         mint: 'wAUDIO',
         destination: recipientSolanaAddressPubKey
