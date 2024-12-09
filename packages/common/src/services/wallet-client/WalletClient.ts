@@ -1,5 +1,4 @@
 import { AudiusSdk } from '@audius/sdk'
-import { PublicKey } from '@solana/web3.js'
 import BN from 'bn.js'
 
 import { userWalletsFromSDK } from '~/adapters'
@@ -16,7 +15,6 @@ import { stringWeiToBN } from '~/utils/wallet'
 import { AudiusAPIClient } from '../audius-api-client'
 import {
   AudiusBackend,
-  findAssociatedTokenAddress,
   getUserbankAccountInfo,
   pollForTokenBalanceChange
 } from '../audius-backend'
