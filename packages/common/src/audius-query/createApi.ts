@@ -339,7 +339,7 @@ const fetchData = async <Args, Data>(
   setForce?: (force: ForceType) => void,
   currentUserId?: Nullable<number>
 ) => {
-  const { audiusBackend, dispatch } = context
+  const { dispatch } = context
   try {
     dispatch(
       // @ts-ignore
@@ -398,7 +398,7 @@ const fetchData = async <Args, Data>(
       // Format entities before adding to cache
       entities[Kind.USERS] = mapValues(
         entities[Kind.USERS] ?? [],
-        (user: UserMetadata) => reformatUser(user, audiusBackend)
+        (user: UserMetadata) => reformatUser(user)
       )
 
       // Hack alert: We can't overwrite the current user, since it contains
@@ -413,7 +413,6 @@ const fetchData = async <Args, Data>(
         (collection: CollectionMetadata | UserCollectionMetadata) =>
           reformatCollection({
             collection,
-            audiusBackendInstance: audiusBackend,
             omitUser: false
           })
       )

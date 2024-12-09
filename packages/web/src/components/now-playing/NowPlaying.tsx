@@ -212,13 +212,6 @@ const NowPlaying = g(
         title: collectible?.name as string,
         track_id: collectible?.id as string,
         owner_id: user?.user_id,
-        _cover_art_sizes: {
-          [SquareSizes.SIZE_480_BY_480]:
-            collectible?.imageUrl ??
-            collectible?.frameUrl ??
-            collectible?.gifUrl ??
-            ''
-        },
         has_current_user_saved: false,
         has_current_user_reposted: false,
         _co_sign: null

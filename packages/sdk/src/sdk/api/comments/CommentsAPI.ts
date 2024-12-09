@@ -1,7 +1,7 @@
 import snakecaseKeys from 'snakecase-keys'
 import { OverrideProperties } from 'type-fest'
 
-import { AuthService, LoggerService } from '../../services'
+import { LoggerService } from '../../services'
 import {
   Action,
   EntityManagerService,
@@ -43,7 +43,6 @@ export class CommentsApi extends GeneratedCommentsApi {
   constructor(
     configuration: Configuration,
     private readonly entityManager: EntityManagerService,
-    private readonly auth: AuthService,
     private readonly logger: LoggerService
   ) {
     super(configuration)
@@ -69,8 +68,7 @@ export class CommentsApi extends GeneratedCommentsApi {
       metadata: JSON.stringify({
         cid: '',
         data: snakecaseKeys({ entityType, ...metadata })
-      }),
-      auth: this.auth
+      })
     })
     this.logger.info('Successfully posted a comment')
     return encodeHashId(newCommentId)
@@ -86,8 +84,7 @@ export class CommentsApi extends GeneratedCommentsApi {
       metadata: JSON.stringify({
         cid: '',
         data: snakecaseKeys({ ...metadata, entityId: trackId })
-      }),
-      auth: this.auth
+      })
     })
     return response
   }
@@ -99,8 +96,7 @@ export class CommentsApi extends GeneratedCommentsApi {
       entityType: EntityType.COMMENT,
       entityId,
       action: Action.DELETE,
-      metadata: '',
-      auth: this.auth
+      metadata: ''
     })
     return response
   }
@@ -115,8 +111,7 @@ export class CommentsApi extends GeneratedCommentsApi {
       metadata: JSON.stringify({
         cid: '',
         data: snakecaseKeys({ entityId: trackId, entityType: EntityType.TRACK })
-      }),
-      auth: this.auth
+      })
     })
     return response
   }
@@ -131,8 +126,7 @@ export class CommentsApi extends GeneratedCommentsApi {
       metadata: JSON.stringify({
         cid: '',
         data: snakecaseKeys({ entityId: trackId })
-      }),
-      auth: this.auth
+      })
     })
     return response
   }
@@ -143,8 +137,7 @@ export class CommentsApi extends GeneratedCommentsApi {
       entityType: EntityType.COMMENT,
       entityId,
       action: Action.REPORT,
-      metadata: '',
-      auth: this.auth
+      metadata: ''
     })
     return response
   }
@@ -155,8 +148,7 @@ export class CommentsApi extends GeneratedCommentsApi {
       entityType: EntityType.USER,
       entityId: mutedUserId,
       action: isMuted ? Action.UNMUTE : Action.MUTE,
-      metadata: '',
-      auth: this.auth
+      metadata: ''
     })
     return response
   }
@@ -164,8 +156,7 @@ export class CommentsApi extends GeneratedCommentsApi {
   async updateCommentNotificationSetting(config: CommentNotificationOptions) {
     const response = await this.entityManager.manageEntity({
       ...config,
-      metadata: '',
-      auth: this.auth
+      metadata: ''
     })
     return response
   }

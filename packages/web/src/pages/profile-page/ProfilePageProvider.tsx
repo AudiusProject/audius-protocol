@@ -77,6 +77,7 @@ const { createPlaylist } = cacheCollectionsActions
 
 const {
   makeGetProfile,
+  getCollectionsStatus,
   getProfileFeedLineup,
   getProfileTracksLineup,
   getProfileUserId
@@ -770,6 +771,7 @@ class ProfilePage extends PureComponent<ProfilePageProps, ProfilePageState> {
         playlists,
         isSubscribed
       },
+      collectionStatus,
       // Tracks
       artistTracks,
       playArtistTrack,
@@ -860,8 +862,6 @@ class ProfilePage extends PureComponent<ProfilePageProps, ProfilePageState> {
         ? updatedDonation
         : profile.donation || ''
       : ''
-    const profilePictureSizes = profile ? profile._profile_picture_sizes : null
-    const coverPhotoSizes = profile ? profile._cover_photo_sizes : null
     const hasProfilePicture = profile
       ? !!profile.profile_picture ||
         !!profile.profile_picture_sizes ||
@@ -896,8 +896,6 @@ class ProfilePage extends PureComponent<ProfilePageProps, ProfilePageState> {
       tikTokHandle,
       website,
       donation,
-      coverPhotoSizes,
-      profilePictureSizes,
       hasProfilePicture,
       followers,
       followersLoading,
@@ -913,6 +911,7 @@ class ProfilePage extends PureComponent<ProfilePageProps, ProfilePageState> {
       status: profileLoadingStatus,
       albums: uniq(albums),
       playlists: uniq(playlists),
+      collectionStatus,
       artistTracks,
       playArtistTrack,
       pauseArtistTrack,
@@ -1040,6 +1039,7 @@ function makeMapStateToProps() {
     return {
       accountUserId,
       profile: getProfile(state, handleLower),
+      collectionStatus: getCollectionsStatus(state, handleLower),
       artistTracks: getProfileTracksLineup(state, handleLower),
       userFeed: getProfileFeedLineup(state, handleLower),
       currentQueueItem: getCurrentQueueItem(state),

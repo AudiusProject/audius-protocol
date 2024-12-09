@@ -233,8 +233,7 @@ function* confirmEditPlaylist(
               id: confirmedPlaylist.playlist_id,
               metadata: {
                 ...reformatCollection({
-                  collection: confirmedPlaylist,
-                  audiusBackendInstance
+                  collection: confirmedPlaylist
                 }),
                 artwork: {}
               }

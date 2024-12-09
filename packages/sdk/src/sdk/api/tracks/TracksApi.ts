@@ -4,7 +4,6 @@ import snakecaseKeys from 'snakecase-keys'
 
 import type {
   EntityManagerService,
-  AuthService,
   ClaimableTokensClient,
   PaymentRouterClient,
   SolanaRelayService
@@ -67,7 +66,6 @@ export class TracksApi extends GeneratedTracksApi {
     private readonly discoveryNodeSelectorService: DiscoveryNodeSelectorService,
     private readonly storage: StorageService,
     private readonly entityManager: EntityManagerService,
-    private readonly auth: AuthService,
     private readonly logger: LoggerService,
     private readonly claimableTokensClient: ClaimableTokensClient,
     private readonly paymentRouterClient: PaymentRouterClient,
@@ -131,8 +129,7 @@ export class TracksApi extends GeneratedTracksApi {
               await this.storage.uploadFile({
                 file: coverArtFile,
                 onProgress,
-                template: 'img_square',
-                auth: this.auth
+                template: 'img_square'
               }),
             (e) => {
               this.logger.info('Retrying uploadTrackCoverArt', e)
@@ -146,8 +143,7 @@ export class TracksApi extends GeneratedTracksApi {
             onProgress,
             template: 'audio',
             options:
-              this.trackUploadHelper.extractMediorumUploadOptions(metadata),
-            auth: this.auth
+              this.trackUploadHelper.extractMediorumUploadOptions(metadata)
           }),
         (e) => {
           this.logger.info('Retrying uploadTrackAudio', e)
@@ -203,7 +199,6 @@ export class TracksApi extends GeneratedTracksApi {
           stem_of: metadata.stemOf && snakecaseKeys(metadata.stemOf)
         }
       }),
-      auth: this.auth,
       ...advancedOptions
     })
 
@@ -264,8 +259,7 @@ export class TracksApi extends GeneratedTracksApi {
           await this.storage.uploadFile({
             file: coverArtFile,
             onProgress,
-            template: 'img_square',
-            auth: this.auth
+            template: 'img_square'
           }),
         (e) => {
           this.logger.info('Retrying uploadTrackCoverArt', e)
@@ -294,8 +288,7 @@ export class TracksApi extends GeneratedTracksApi {
         async () =>
           await this.storage.editFile({
             uploadId: updatedMetadata.audioUploadId!,
-            data: editFileData,
-            auth: this.auth
+            data: editFileData
           }),
         (e) => {
           this.logger.info('Retrying editFileV2', e)
@@ -326,7 +319,6 @@ export class TracksApi extends GeneratedTracksApi {
           stem_of: metadata.stemOf && snakecaseKeys(metadata.stemOf)
         }
       }),
-      auth: this.auth,
       ...advancedOptions
     })
   }
@@ -349,7 +341,6 @@ export class TracksApi extends GeneratedTracksApi {
       entityType: EntityType.TRACK,
       entityId: trackId,
       action: Action.DELETE,
-      auth: this.auth,
       ...advancedOptions
     })
   }
@@ -373,7 +364,6 @@ export class TracksApi extends GeneratedTracksApi {
       entityId: trackId,
       action: Action.SAVE,
       metadata: metadata && JSON.stringify(snakecaseKeys(metadata)),
-      auth: this.auth,
       ...advancedOptions
     })
   }
@@ -396,7 +386,6 @@ export class TracksApi extends GeneratedTracksApi {
       entityType: EntityType.TRACK,
       entityId: trackId,
       action: Action.UNSAVE,
-      auth: this.auth,
       ...advancedOptions
     })
   }
@@ -420,7 +409,6 @@ export class TracksApi extends GeneratedTracksApi {
       entityId: trackId,
       action: Action.REPOST,
       metadata: metadata && JSON.stringify(snakecaseKeys(metadata)),
-      auth: this.auth,
       ...advancedOptions
     })
   }
@@ -443,7 +431,6 @@ export class TracksApi extends GeneratedTracksApi {
       entityType: EntityType.TRACK,
       entityId: trackId,
       action: Action.UNREPOST,
-      auth: this.auth,
       ...advancedOptions
     })
   }
@@ -467,7 +454,6 @@ export class TracksApi extends GeneratedTracksApi {
       entityType: EntityType.TRACK,
       entityId: trackId,
       action: Action.DOWNLOAD,
-      auth: this.auth,
       metadata: location
         ? JSON.stringify({
             cid: '',
@@ -653,10 +639,8 @@ export class TracksApi extends GeneratedTracksApi {
       })
     } else {
       // Use the authed wallet's userbank and relay
-      const ethWallet = await this.auth.getAddress()
       this.logger.debug(
         `Using userBank ${await this.claimableTokensClient.deriveUserBank({
-          ethWallet,
           mint: 'USDC'
         })} to purchase...`
       )
@@ -667,15 +651,12 @@ export class TracksApi extends GeneratedTracksApi {
 
       const transferSecpInstruction =
         await this.claimableTokensClient.createTransferSecpInstruction({
-          ethWallet,
           destination: paymentRouterTokenAccount.address,
           mint,
-          amount: total,
-          auth: this.auth
+          amount: total
         })
       const transferInstruction =
         await this.claimableTokensClient.createTransferInstruction({
-          ethWallet,
           destination: paymentRouterTokenAccount.address,
           mint
         })

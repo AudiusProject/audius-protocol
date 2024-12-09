@@ -1,4 +1,7 @@
-import type { AuthService, StorageNodeSelectorService } from '@audius/sdk'
+import type {
+  AudiusWalletClient,
+  StorageNodeSelectorService
+} from '@audius/sdk'
 import {
   StorageNodeSelector,
   developmentConfig,
@@ -16,13 +19,13 @@ import { DiscoveryNodeSelectorService } from './discovery-node-selector'
 let storageNodeSelectorPromise: Maybe<Promise<StorageNodeSelectorService>>
 
 type StorageNodeSelectorConfig = {
-  auth: AuthService
+  audiusWalletClient: AudiusWalletClient
   discoveryNodeSelectorService: DiscoveryNodeSelectorService
   env: Env
 }
 
 const makeStorageNodeSelector = async (config: StorageNodeSelectorConfig) => {
-  const { discoveryNodeSelectorService, auth, env } = config
+  const { discoveryNodeSelectorService, audiusWalletClient, env } = config
   const discoveryNodeSelector = await discoveryNodeSelectorService.getInstance()
   return new StorageNodeSelector({
     ...getDefaultStorageNodeSelectorConfig(
@@ -32,7 +35,7 @@ const makeStorageNodeSelector = async (config: StorageNodeSelectorConfig) => {
         ? stagingConfig
         : productionConfig
     ),
-    auth,
+    audiusWalletClient,
     discoveryNodeSelector
   })
 }

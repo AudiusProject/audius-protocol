@@ -14,14 +14,14 @@ import { describe, it, beforeAll, expect, vitest } from 'vitest'
 
 import { developmentConfig } from '../../config/development'
 import {
-  AppAuth,
   ClaimableTokensClient,
   SolanaRelay,
   SolanaRelayWalletAdapter,
+  createAppWalletClient,
   getDefaultClaimableTokensConfig
 } from '../../services'
 import { DiscoveryNodeSelector } from '../../services/DiscoveryNodeSelector'
-import { EntityManager } from '../../services/EntityManager'
+import { EntityManagerClient } from '../../services/EntityManager'
 import { Logger } from '../../services/Logger'
 import { SolanaClient } from '../../services/Solana/programs/SolanaClient'
 import { Storage } from '../../services/Storage'
@@ -58,7 +58,7 @@ vitest.spyOn(Storage.prototype, 'uploadFile').mockImplementation(async () => {
 })
 
 vitest
-  .spyOn(EntityManager.prototype, 'manageEntity')
+  .spyOn(EntityManagerClient.prototype, 'manageEntity')
   .mockImplementation(async () => {
     return {
       blockHash: 'a',
@@ -68,11 +68,11 @@ vitest
 
 let users: UsersApi
 
-const auth = new AppAuth('key', 'secret')
+const audiusWalletClient = createAppWalletClient('0x')
 const logger = new Logger()
 const discoveryNodeSelector = new DiscoveryNodeSelector()
 const storageNodeSelector = new StorageNodeSelector({
-  auth,
+  audiusWalletClient,
   discoveryNodeSelector,
   logger
 })
@@ -82,6 +82,7 @@ const solanaClient = new SolanaClient({
 })
 const claimableTokens = new ClaimableTokensClient({
   ...getDefaultClaimableTokensConfig(developmentConfig),
+  audiusWalletClient,
   solanaClient
 })
 
@@ -89,9 +90,15 @@ describe('UsersApi', () => {
   beforeAll(() => {
     users = new UsersApi(
       new Configuration(),
-      new Storage({ storageNodeSelector, logger: new Logger() }),
-      new EntityManager({ discoveryNodeSelector: new DiscoveryNodeSelector() }),
-      auth,
+      new Storage({
+        audiusWalletClient,
+        storageNodeSelector,
+        logger: new Logger()
+      }),
+      new EntityManagerClient({
+        audiusWalletClient,
+        discoveryNodeSelector: new DiscoveryNodeSelector()
+      }),
       new Logger(),
       claimableTokens,
       solanaClient
@@ -341,7 +348,7 @@ describe('UsersApi', () => {
         })
 
       // Mock sign
-      vitest.spyOn(auth, 'sign').mockImplementation(async () => {
+      vitest.spyOn(audiusWalletClient, 'sign').mockImplementation(async () => {
         return [Uint8Array.from(new Array(64).fill(0)), 0]
       })
 

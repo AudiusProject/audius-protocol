@@ -87,7 +87,6 @@ export type OfflineCollectionMetadata = {
 export type ComputedCollectionProperties = {
   _is_publishing?: boolean
   _marked_deleted?: boolean
-  _cover_art_sizes: CoverArtSizes
   _moved?: UID
   _temp?: boolean
   artwork?: CollectionMetadata['artwork'] & {

@@ -1,25 +1,16 @@
 import { put, call } from 'typed-redux-saga'
 
-import { getContext } from '../effects'
+import { getSDK } from '../sdkUtils'
 
 import { setFeePayer } from './slice'
 
 function* watchForFeePayer() {
-  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
-  const { feePayer, error } = yield* call(
-    audiusBackendInstance.getRandomFeePayer as () => Promise<
-      | {
-          feePayer: string
-          error: undefined
-        }
-      | { feePayer: undefined; error: boolean }
-    >
-  )
-  if (error) {
-    console.error('Could not get fee payer.')
-  } else {
-    yield put(setFeePayer({ feePayer: feePayer as string }))
-  }
+  const sdk = yield* getSDK()
+  const feePayer = yield* call([
+    sdk.services.solanaRelay,
+    sdk.services.solanaRelay.getFeePayer
+  ])
+  yield* put(setFeePayer({ feePayer: feePayer.toString() }))
 }
 
 export const sagas = () => {

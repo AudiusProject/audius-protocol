@@ -1,6 +1,6 @@
 {
   "name": "root",
-  "version": "1.5.111",
+  "version": "1.5.112",
   "workspaces": [
     "packages/*",
     "packages/discovery-provider/plugins/pedalboard/apps/*",
@@ -103,6 +103,7 @@
   },
   "dependencies": {
     "@audius/hedgehog": "3.0.0-alpha.1",
+    "@babel/core": "7.23.7",
     "@changesets/cli": "2.27.1",
     "@escape.tech/mookme": "2.4.1",
     "@redux-devtools/remote": "0.8.0",

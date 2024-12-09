@@ -7,8 +7,8 @@ import type { CrossPlatformFile as File } from '../../types/File'
 import fetch from '../../utils/fetch'
 import { mergeConfigWithDefaults } from '../../utils/mergeConfigs'
 import { wait } from '../../utils/wait'
-import type { AuthService } from '../Auth'
-import { sortObjectKeys } from '../Auth/utils'
+import type { AudiusWalletClient } from '../AudiusWalletClient'
+import { sortObjectKeys } from '../AudiusWalletClient/utils'
 import type { LoggerService } from '../Logger'
 import type { StorageNodeSelectorService } from '../StorageNodeSelector'
 
@@ -32,6 +32,7 @@ export class Storage implements StorageService {
    */
   private readonly config: StorageServiceConfigInternal
   private readonly storageNodeSelector: StorageNodeSelectorService
+  private readonly audiusWalletClient: AudiusWalletClient
   private readonly logger: LoggerService
 
   constructor(config: StorageServiceConfig) {
@@ -40,6 +41,7 @@ export class Storage implements StorageService {
       getDefaultStorageServiceConfig(productionConfig)
     )
     this.storageNodeSelector = config.storageNodeSelector
+    this.audiusWalletClient = config.audiusWalletClient
     this.logger = this.config.logger.createPrefixedLogger('[storage]')
   }
 
@@ -53,12 +55,10 @@ export class Storage implements StorageService {
   async editFile({
     uploadId,
     data,
-    auth,
     onProgress
   }: {
     uploadId: string
     data: { [key: string]: string }
-    auth: AuthService
     onProgress?: ProgressHandler
   }) {
     // Generate signature
@@ -66,9 +66,10 @@ export class Storage implements StorageService {
       upload_id: uploadId,
       timestamp: Date.now()
     }
-    const signature = await auth.hashAndSign(
-      JSON.stringify(sortObjectKeys(signatureData))
-    )
+    const sigJson = JSON.stringify(sortObjectKeys(signatureData))
+    const signature = await this.audiusWalletClient.signMessage({
+      message: sigJson
+    })
     const signatureEnvelope = {
       data: JSON.stringify(signatureData),
       signature
@@ -108,13 +109,11 @@ export class Storage implements StorageService {
     file,
     onProgress,
     template,
-    auth,
     options = {}
   }: {
     file: File
     onProgress?: ProgressHandler
     template: FileTemplate
-    auth: AuthService
     options?: { [key: string]: string }
   }) {
     const formData: FormData = new FormData()
@@ -132,9 +131,10 @@ export class Storage implements StorageService {
     const signatureData = {
       timestamp: Date.now()
     }
-    const signature = await auth.hashAndSign(
-      JSON.stringify(sortObjectKeys(signatureData))
-    )
+    const sigJson = JSON.stringify(sortObjectKeys(signatureData))
+    const signature = await this.audiusWalletClient.signMessage({
+      message: sigJson
+    })
     const signatureEnvelope = {
       data: JSON.stringify(signatureData),
       signature
@@ -174,13 +174,17 @@ export class Storage implements StorageService {
       request.url = `${selectedNode!}/uploads`
       try {
         response = await axios(request)
-        break
+        // Server will sometimes return empty array in case of error
+        if (response?.data?.length > 0) {
+          break
+        }
       } catch (e: any) {
         lastErr = e // keep trying other nodes
       }
     }
 
-    if (!response) {
+    // Covers no response or empty response
+    if (!response?.data?.length) {
       const msg = `Error sending storagev2 upload request, tried all healthy storage nodes. Last error: ${lastErr}`
       this.logger.error(msg)
       throw new Error(msg)

@@ -24,7 +24,12 @@ import {
   confirmTransaction,
   getSDK
 } from '@audius/common/store'
-import { formatShareText, makeKindId, route } from '@audius/common/utils'
+import {
+  formatShareText,
+  makeUid,
+  makeKindId,
+  route
+} from '@audius/common/utils'
 import { call, select, takeEvery, put } from 'typed-redux-saga'
 
 import { make } from 'common/store/analytics/actions'
@@ -372,6 +377,17 @@ export function* saveCollectionAsync(
   if (!collection.is_album) {
     yield* put(updatedPlaylistViewed({ playlistId: action.collectionId }))
   }
+
+  const subscribedUid = makeUid(
+    Kind.COLLECTIONS,
+    collection.playlist_id,
+    'account'
+  )
+  yield* put(
+    cacheActions.subscribe(Kind.COLLECTIONS, [
+      { uid: subscribedUid, id: collection.playlist_id }
+    ])
+  )
 
   yield* put(
     accountActions.addAccountPlaylist({
