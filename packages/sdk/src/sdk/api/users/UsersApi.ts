@@ -168,7 +168,6 @@ export class UsersApi extends GeneratedUsersApi {
       entityType: EntityType.USER,
       entityId: userId,
       action: Action.CREATE,
-      auth: this.auth,
       metadata: JSON.stringify({
         cid: null,
         data: null
