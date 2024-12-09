@@ -15,19 +15,14 @@ import { call, put, fork, select, takeEvery } from 'redux-saga/effects'
 import { identify } from 'common/store/analytics/actions'
 import { addPlaylistsNotInLibrary } from 'common/store/playlist-library/sagas'
 import { reportToSentry } from 'store/errors/reportToSentry'
-import { waitForWrite, waitForRead } from 'utils/sagaHelpers'
+import { waitForRead } from 'utils/sagaHelpers'
 
 import { retrieveCollections } from '../cache/collections/utils'
 
 const { fetchProfile } = profilePageActions
 
-const {
-  getUserId,
-  getUserHandle,
-  getAccountUser,
-  getAccountSavedPlaylistIds,
-  getAccountOwnedPlaylistIds
-} = accountSelectors
+const { getUserId, getAccountSavedPlaylistIds, getAccountOwnedPlaylistIds } =
+  accountSelectors
 
 const {
   signedIn,
@@ -36,9 +31,6 @@ const {
   fetchAccountSucceeded,
   fetchAccount,
   fetchLocalAccount,
-  twitterLogin,
-  instagramLogin,
-  tikTokLogin,
   fetchSavedPlaylists,
   resetAccount
 } = accountActions
@@ -163,88 +155,6 @@ export function* fetchLocalAccountAsync() {
   }
 }
 
-function* associateTwitterAccount(action) {
-  const { uuid, profile } = action.payload
-  yield waitForWrite()
-  const audiusBackendInstance = yield getContext('audiusBackendInstance')
-  try {
-    const userId = yield select(getUserId)
-    const handle = yield select(getUserHandle)
-    yield call(
-      audiusBackendInstance.associateTwitterAccount,
-      uuid,
-      userId,
-      handle
-    )
-
-    const account = yield select(getAccountUser)
-    const { verified } = profile
-    if (!account.is_verified && verified) {
-      yield put(
-        cacheActions.update(Kind.USERS, [
-          { id: userId, metadata: { is_verified: true } }
-        ])
-      )
-    }
-  } catch (err) {
-    console.error(err.message)
-  }
-}
-
-function* associateInstagramAccount(action) {
-  const { uuid, profile } = action.payload
-  const audiusBackendInstance = yield getContext('audiusBackendInstance')
-  try {
-    const userId = yield select(getUserId)
-    const handle = yield select(getUserHandle)
-    yield call(
-      audiusBackendInstance.associateInstagramAccount,
-      uuid,
-      userId,
-      handle
-    )
-
-    const account = yield select(getAccountUser)
-    const { is_verified: verified } = profile
-    if (!account.is_verified && verified) {
-      yield put(
-        cacheActions.update(Kind.USERS, [
-          { id: userId, metadata: { is_verified: true } }
-        ])
-      )
-    }
-  } catch (err) {
-    console.error(err.message)
-  }
-}
-
-function* associateTikTokAccount(action) {
-  const { uuid, profile } = action.payload
-  const audiusBackendInstance = yield getContext('audiusBackendInstance')
-  try {
-    const userId = yield select(getUserId)
-    const handle = yield select(getUserHandle)
-    yield call(
-      audiusBackendInstance.associateTikTokAccount,
-      uuid,
-      userId,
-      handle
-    )
-
-    const account = yield select(getAccountUser)
-    const { is_verified: verified } = profile
-    if (!account.is_verified && verified) {
-      yield put(
-        cacheActions.update(Kind.USERS, [
-          { id: userId, metadata: { is_verified: true } }
-        ])
-      )
-    }
-  } catch (err) {
-    console.error(err.message)
-  }
-}
-
 function* fetchSavedPlaylistsAsync() {
   yield waitForRead()
 
@@ -290,18 +200,6 @@ function* watchSignedIn() {
   yield takeEvery(signedIn.type, onSignedIn)
 }
 
-function* watchTwitterLogin() {
-  yield takeEvery(twitterLogin.type, associateTwitterAccount)
-}
-
-function* watchInstagramLogin() {
-  yield takeEvery(instagramLogin.type, associateInstagramAccount)
-}
-
-function* watchTikTokLogin() {
-  yield takeEvery(tikTokLogin.type, associateTikTokAccount)
-}
-
 function* watchFetchSavedPlaylists() {
   yield takeEvery(fetchSavedPlaylists.type, fetchSavedPlaylistsAsync)
 }
@@ -323,9 +221,6 @@ export default function sagas() {
     watchFetchLocalAccount,
     watchFetchAccountFailed,
     watchSignedIn,
-    watchTwitterLogin,
-    watchInstagramLogin,
-    watchTikTokLogin,
     watchFetchSavedPlaylists,
     watchResetAccount
   ]

@@ -14,7 +14,7 @@ import { useHistory, useLocation } from 'react-router-dom'
 
 import { make, useRecord } from 'common/store/analytics/actions'
 import { audiusSdk, authService } from 'services/audius-sdk'
-import { identityServiceInstance } from 'services/audius-sdk/identity'
+import { identityService } from 'services/audius-sdk/identity'
 import * as errorActions from 'store/errors/actions'
 import { reportToSentry } from 'store/errors/reportToSentry'
 
@@ -269,7 +269,7 @@ export const useOAuthSetup = ({
       let email: string
       try {
         const wallet = authService.getWallet()
-        email = await identityServiceInstance.getUserEmail({ wallet })
+        email = await identityService.getUserEmail({ wallet })
       } catch {
         setUserEmail(null)
         dispatch(

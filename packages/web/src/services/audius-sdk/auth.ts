@@ -3,11 +3,11 @@ import { createHedgehogWalletClient } from '@audius/sdk'
 
 import { localStorage } from '../local-storage'
 
-import { identityServiceInstance } from './identity'
+import { identityService } from './identity'
 
 export const authService = createAuthService({
   localStorage,
-  identityService: identityServiceInstance
+  identityService
 })
 
 export const audiusWalletClient = createHedgehogWalletClient(

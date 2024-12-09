@@ -32,7 +32,6 @@ import {
   Name,
   TikTokUser,
   Track,
-  TwitterUser,
   User,
   UserMetadata,
   UserCollection,
@@ -1020,18 +1019,6 @@ export const audiusBackend = ({
     }
   }
 
-  async function twitterHandle(handle: string) {
-    await waitForLibsInit()
-    try {
-      const user: TwitterUser = await audiusLibs.Account.lookupTwitterHandle(
-        handle
-      )
-      return { success: true, user }
-    } catch (error) {
-      return { success: false, error }
-    }
-  }
-
   async function instagramHandle(handle: string) {
     try {
       const res = await fetch(
@@ -1053,69 +1040,6 @@ export const audiusBackend = ({
     } catch (error) {
       console.error(error)
       return null
-    }
-  }
-
-  async function associateTwitterAccount(
-    twitterId: string,
-    userId: ID,
-    handle: string,
-    blockNumber: number
-  ) {
-    await waitForLibsInit()
-    try {
-      await audiusLibs.Account.associateTwitterUser(
-        twitterId,
-        userId,
-        handle,
-        blockNumber
-      )
-      return { success: true }
-    } catch (error) {
-      console.error(getErrorMessage(error))
-      return { success: false, error }
-    }
-  }
-
-  async function associateInstagramAccount(
-    instagramId: string,
-    userId: ID,
-    handle: string,
-    blockNumber: number
-  ) {
-    await waitForLibsInit()
-    try {
-      await audiusLibs.Account.associateInstagramUser(
-        instagramId,
-        userId,
-        handle,
-        blockNumber
-      )
-      return { success: true }
-    } catch (error) {
-      console.error(getErrorMessage(error))
-      return { success: false, error }
-    }
-  }
-
-  async function associateTikTokAccount(
-    tikTokId: string,
-    userId: ID,
-    handle: string,
-    blockNumber: number
-  ) {
-    await waitForLibsInit()
-    try {
-      await audiusLibs.Account.associateTikTokUser(
-        tikTokId,
-        userId,
-        handle,
-        blockNumber
-      )
-      return { success: true }
-    } catch (error) {
-      console.error(getErrorMessage(error))
-      return { success: false, error }
     }
   }
 
@@ -1832,9 +1756,6 @@ export const audiusBackend = ({
     addDiscoveryProviderSelectionListener,
     addPlaylistTrack,
     audiusLibs: audiusLibs as AudiusLibsType,
-    associateInstagramAccount,
-    associateTwitterAccount,
-    associateTikTokAccount,
     clearNotificationBadges,
     createPlaylist,
     currentDiscoveryProvider,
@@ -1881,7 +1802,6 @@ export const audiusBackend = ({
     signIdentityServiceRequest,
     signUp,
     transferAudioToWAudio,
-    twitterHandle,
     instagramHandle,
     tiktokHandle,
     undoRepostCollection,

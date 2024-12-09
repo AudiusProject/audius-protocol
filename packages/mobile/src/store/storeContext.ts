@@ -17,7 +17,7 @@ import {
 } from 'app/services/remote-config'
 import { audiusSdk } from 'app/services/sdk/audius-sdk'
 import { authService } from 'app/services/sdk/auth'
-import { identityServiceInstance } from 'app/services/sdk/identity'
+import { identityService } from 'app/services/sdk/identity'
 import { trackDownload } from 'app/services/track-download'
 import { walletClient } from 'app/services/wallet-client'
 import {
@@ -69,7 +69,7 @@ export const storeContext: CommonStoreContext = {
   share: (url: string, message?: string) => share({ url, message }),
   audiusSdk,
   authService,
-  identityServiceInstance,
+  identityService,
   imageUtils: {
     generatePlaylistArtwork
   },
