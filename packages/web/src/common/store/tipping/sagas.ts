@@ -264,7 +264,6 @@ function* confirmTipIndexed({
 
 function* wormholeAudioIfNecessary({ amount }: { amount: number }) {
   const walletClient = yield* getContext('walletClient')
-  const sdk = yield* getSDK()
   const { currentUser } = yield* select(getWalletAddresses)
   if (!currentUser) {
     throw new Error('Failed to retrieve current user wallet address')
@@ -273,8 +272,7 @@ function* wormholeAudioIfNecessary({ amount }: { amount: number }) {
   const waudioBalanceWei = yield* call(
     [walletClient, 'getCurrentWAudioBalance'],
     {
-      ethAddress: currentUser,
-      sdk
+      ethAddress: currentUser
     }
   )
   const audioWeiAmount = new BN(AUDIO(amount).value.toString()) as BNWei

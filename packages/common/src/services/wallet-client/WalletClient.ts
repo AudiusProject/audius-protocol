@@ -60,12 +60,11 @@ export class WalletClient {
 
   /** Get user's current SOL Audio balance. Returns null on failure. */
   async getCurrentWAudioBalance({
-    ethAddress,
-    sdk
+    ethAddress
   }: {
     ethAddress: string
-    sdk: AudiusSdk
   }): Promise<BNWei | null> {
+    const sdk = await this.audiusSdk()
     const balance = await this.audiusBackendInstance.getWAudioBalance({
       ethAddress,
       sdk
@@ -73,10 +72,14 @@ export class WalletClient {
     return balance as BNWei
   }
 
-  async getAssociatedTokenAccountInfo(address: string) {
+  async getAssociatedTokenAccountInfo({ address }: { address: string }) {
     try {
+      const sdk = await this.audiusSdk()
       const tokenAccountInfo =
-        await this.audiusBackendInstance.getAssociatedTokenAccountInfo(address)
+        await this.audiusBackendInstance.getAssociatedTokenAccountInfo({
+          address,
+          sdk
+        })
       return tokenAccountInfo
     } catch (err) {
       console.error(err)
@@ -194,14 +197,9 @@ export class WalletClient {
     }
   }
 
-  async getWalletSolBalance({
-    address,
-    sdk
-  }: {
-    address: string
-    sdk: AudiusSdk
-  }): Promise<BNWei> {
+  async getWalletSolBalance({ address }: { address: string }): Promise<BNWei> {
     try {
+      const sdk = await this.audiusSdk()
       const balance = await this.audiusBackendInstance.getAddressSolBalance({
         address,
         sdk
@@ -225,16 +223,24 @@ export class WalletClient {
     }
   }
 
-  async sendWAudioTokens(
-    address: SolanaWalletAddress,
+  async sendWAudioTokens({
+    address,
+    amount
+  }: {
+    address: SolanaWalletAddress
     amount: BNWei
-  ): Promise<void> {
+  }): Promise<void> {
     if (amount.lt(MIN_TRANSFERRABLE_WEI)) {
       throw new Error('Insufficient Audio to transfer')
     }
     try {
+      const sdk = await this.audiusSdk()
       const { res, error, errorCode } =
-        await this.audiusBackendInstance.sendWAudioTokens(address, amount)
+        await this.audiusBackendInstance.sendWAudioTokens({
+          address,
+          amount,
+          sdk
+        })
       if (error) {
         if (error === 'Missing social proof') {
           throw new Error(error)
