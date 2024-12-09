@@ -3,11 +3,11 @@ import { type AudiusSdk } from '@audius/sdk'
 import type { createJupiterApiClient, QuoteResponse } from '@jup-ag/api'
 import { getAccount, getAssociatedTokenAddressSync } from '@solana/spl-token'
 import {
-  PublicKey,
-  VersionedTransaction,
   AddressLookupTableAccount,
+  PublicKey,
+  TransactionInstruction,
   TransactionMessage,
-  TransactionInstruction
+  VersionedTransaction
 } from '@solana/web3.js'
 import BN from 'bn.js'
 import bs58 from 'bs58'
@@ -17,17 +17,17 @@ import nacl, { BoxKeyPair } from 'tweetnacl'
 import { call, put, race, select, take, takeEvery } from 'typed-redux-saga'
 
 import { userTrackMetadataFromSDK } from '~/adapters'
-import { PurchaseableContentMetadata, isPurchaseableAlbum } from '~/hooks'
-import { Kind } from '~/models'
+import { isPurchaseableAlbum, PurchaseableContentMetadata } from '~/hooks'
+import { Collection, Kind } from '~/models'
 import { FavoriteSource, Name } from '~/models/Analytics'
 import { ErrorLevel } from '~/models/ErrorReporting'
 import { ID, Id, OptionalId } from '~/models/Identifiers'
 import {
+  PurchaseAccess,
   PurchaseMethod,
-  PurchaseVendor,
-  PurchaseAccess
+  PurchaseVendor
 } from '~/models/PurchaseContent'
-import { isContentUSDCPurchaseGated } from '~/models/Track'
+import { isContentUSDCPurchaseGated, Track } from '~/models/Track'
 import { User } from '~/models/User'
 import { BNUSDC } from '~/models/Wallet'
 import { getRootSolanaAccount } from '~/services/audius-backend/solana'
@@ -43,8 +43,8 @@ import { BuyCryptoError } from '~/store/buy-crypto/types'
 import {
   buyUSDCFlowFailed,
   buyUSDCFlowSucceeded,
-  onrampOpened,
-  onrampCanceled
+  onrampCanceled,
+  onrampOpened
 } from '~/store/buy-usdc/slice'
 import { BuyUSDCError } from '~/store/buy-usdc/types'
 import {
@@ -66,8 +66,8 @@ import {
   transactionSucceeded
 } from '~/store/ui/coinflow-modal/slice'
 import {
-  CoinflowPurchaseMetadata,
-  coinflowOnrampModalActions
+  coinflowOnrampModalActions,
+  CoinflowPurchaseMetadata
 } from '~/store/ui/modals/coinflow-onramp-modal'
 import { waitForValue } from '~/utils'
 import { encodeHashId } from '~/utils/hashIds'
@@ -83,13 +83,13 @@ import { TOKEN_LISTING_MAP } from '../ui'
 
 import {
   buyUSDC,
+  eagerCreateUserBank,
   purchaseCanceled,
   purchaseConfirmed,
-  purchaseSucceeded,
-  usdcBalanceSufficient,
   purchaseContentFlowFailed,
+  purchaseSucceeded,
   startPurchaseContentFlow,
-  eagerCreateUserBank
+  usdcBalanceSufficient
 } from './slice'
 import {
   PurchaseableContentType,
@@ -610,6 +610,52 @@ function* purchaseUSDCWithStripe({ amount }: PurchaseUSDCWithStripeArgs) {
   yield* put(usdcBalanceSufficient())
 }
 
+/**
+ * Collects and encrypts user's email after a successful purchase
+ * @param metadata The metadata of the purchased content
+ */
+function* collectEmailAfterPurchase({
+  metadata
+}: {
+  metadata: Collection | Track
+}) {
+  try {
+    const audiusSdk = yield* getContext('audiusSdk')
+
+    const sdk = yield* call(audiusSdk)
+    const identityServiceInstance = yield* getContext('identityServiceInstance')
+    const authService = yield* getContext('authService')
+    const isAlbum = 'playlist_id' in metadata
+
+    const purchaserUserId = yield* select(getUserId)
+    const sellerId = isAlbum ? metadata.playlist_owner_id : metadata.owner_id
+    const wallet = authService.getWallet()
+
+    const email = yield* call(
+      [identityServiceInstance, identityServiceInstance.getUserEmail],
+      { wallet }
+    )
+
+    if (!purchaserUserId) {
+      throw new Error('Purchaser user ID not found')
+    }
+
+    if (!email) {
+      console.warn('No email found for user after purchase')
+      return
+    }
+
+    yield* call([sdk.users, sdk.users.shareEmail], {
+      emailOwnerUserId: purchaserUserId,
+      primaryUserId: sellerId,
+      email
+    })
+  } catch (error) {
+    // Log error but don't disrupt purchase flow
+    console.error('Failed to process email after purchase:', error)
+  }
+}
+
 function* doStartPurchaseContentFlow({
   payload: {
     extraAmount,
@@ -816,6 +862,10 @@ function* doStartPurchaseContentFlow({
       contentId,
       contentType
     })
+
+    // Collect email after successful purchase
+    yield* call(collectEmailAfterPurchase, { metadata })
+
     // Auto-favorite the purchased item
     if (contentType === PurchaseableContentType.TRACK) {
       yield* put(saveTrack(contentId, FavoriteSource.IMPLICIT))

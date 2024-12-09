@@ -99,6 +99,7 @@ from src.api.v1.models.users import (
 from src.api.v1.playlists import get_tracks_for_playlist
 from src.challenges.challenge_event_bus import setup_challenge_bus
 from src.exceptions import PermissionError
+from src.models.users.email import EmailEncryptionKey
 from src.queries.download_csv import (
     DownloadPurchasesArgs,
     DownloadSalesArgs,
@@ -3097,3 +3098,36 @@ class FullMutedUsers(Resource):
         muted_users = get_muted_users(decoded_id)
         muted_users = list(map(extend_user, muted_users))
         return success_response(muted_users)
+
+
+email_key_response = make_response(
+    "email_key_response", ns, fields.String(required=False, allow_null=True)
+)
+
+
+@ns.route("/<string:id>/emails/key")
+class UserEmailKey(Resource):
+    @record_metrics
+    @ns.doc(
+        id="""Get User Email Key""",
+        summary="Get user's email encryption key",
+        description="Gets an encrypted symmetric key, can be used to encrypt and decrypt emails shared with the user.",
+        params={"id": "A User ID"},
+        responses={200: "Success", 400: "Bad request", 500: "Server error"},
+    )
+    @ns.marshal_with(email_key_response)
+    def get(self, id):
+        user_id = decode_string_id(id)
+
+        db = get_db_read_replica()
+        with db.scoped_session() as session:
+            key = (
+                session.query(EmailEncryptionKey)
+                .filter(EmailEncryptionKey.primary_user_id == user_id)
+                .first()
+            )
+
+            if not key:
+                return success_response(None)
+
+            return success_response(key.encrypted_key)

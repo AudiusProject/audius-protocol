@@ -1,6 +1,7 @@
 import snakecaseKeys from 'snakecase-keys'
 
 import type { StorageService } from '../../services'
+import { EmailEncryptionService } from '../../services/Encryption'
 import {
   Action,
   AdvancedOptions,
@@ -12,6 +13,7 @@ import type { ClaimableTokensClient } from '../../services/Solana/programs/Claim
 import type { SolanaClient } from '../../services/Solana/programs/SolanaClient'
 import { HashId } from '../../types/HashId'
 import { generateMetadataCidV1 } from '../../utils/cid'
+import { encodeHashId } from '../../utils/hashId'
 import { parseParams } from '../../utils/parseParams'
 import { retry3 } from '../../utils/retry'
 import {
@@ -51,7 +53,8 @@ export class UsersApi extends GeneratedUsersApi {
     private readonly entityManager: EntityManagerService,
     private readonly logger: LoggerService,
     private readonly claimableTokens: ClaimableTokensClient,
-    private readonly solanaClient: SolanaClient
+    private readonly solanaClient: SolanaClient,
+    private readonly emailEncryption: EmailEncryptionService
   ) {
     super(configuration)
     this.logger = logger.createPrefixedLogger('[users-api]')
@@ -481,26 +484,71 @@ export class UsersApi extends GeneratedUsersApi {
     return { ethWallet, userBank }
   }
 
-  /** @hidden
-   * Add an encrypted email for a user
+  /**
+   * Helper method to manage email encryption keys
    */
-  async addEmail(params: EmailRequest, advancedOptions?: AdvancedOptions) {
-    const {
-      emailOwnerUserId,
-      primaryUserId,
-      encryptedEmail,
-      encryptedKey,
-      delegatedUserIds = [],
-      delegatedKeys = []
-    } = await parseParams('addEmail', EmailSchema)(params)
+  private async getEmailEncryptionKeys({
+    primaryUserIdHash,
+    emailOwnerUserIdHash
+  }: {
+    primaryUserIdHash: string
+    emailOwnerUserIdHash: string
+  }) {
+    const { data: encryptedEmailKey } = await this.getUserEmailKey({
+      id: primaryUserIdHash
+    })
+
+    // If we already have an encrypted key, decrypt it
+    if (encryptedEmailKey) {
+      const symmetricKey = await this.emailEncryption.decryptSymmetricKey(
+        encryptedEmailKey,
+        primaryUserIdHash
+      )
+      return { symmetricKey, primaryUserEncryptedKey: encryptedEmailKey }
+    }
+
+    // Otherwise create a new shared key
+    const { symmetricKey, primaryUserEncryptedKey } =
+      await this.emailEncryption.createSharedKey(primaryUserIdHash, [
+        emailOwnerUserIdHash
+      ])
+    return { symmetricKey, primaryUserEncryptedKey }
+  }
+
+  /** @hidden
+   * Share an encrypted email with a user
+   */
+  async shareEmail(params: EmailRequest, advancedOptions?: AdvancedOptions) {
+    const { emailOwnerUserId, primaryUserId, email } = await parseParams(
+      'shareEmail',
+      EmailSchema
+    )(params)
+
+    // Get hashed IDs and validate
+    const primaryUserIdHash = encodeHashId(primaryUserId)
+    const emailOwnerUserIdHash = encodeHashId(emailOwnerUserId)
+    if (!primaryUserIdHash || !emailOwnerUserIdHash) {
+      throw new Error('Primary user ID and email owner user ID are required')
+    }
+
+    const { symmetricKey, primaryUserEncryptedKey } =
+      await this.getEmailEncryptionKeys({
+        primaryUserIdHash,
+        emailOwnerUserIdHash
+      })
+
+    const encryptedEmail = await this.emailEncryption.encryptEmail(
+      email,
+      symmetricKey
+    )
 
     const metadata = {
       email_owner_user_id: emailOwnerUserId,
       primary_user_id: primaryUserId,
       encrypted_email: encryptedEmail,
-      encrypted_key: encryptedKey,
-      delegated_user_ids: delegatedUserIds,
-      delegated_keys: delegatedKeys
+      encrypted_key: primaryUserEncryptedKey,
+      delegated_user_ids: [],
+      delegated_keys: []
     }
 
     return await this.entityManager.manageEntity({
@@ -511,35 +559,6 @@ export class UsersApi extends GeneratedUsersApi {
       metadata: JSON.stringify({
         cid: '',
         data: metadata
-      }),
-      ...advancedOptions
-    })
-  }
-
-  /** @hidden
-   * Update an encrypted email for a user
-   */
-  async updateEmail(params: EmailRequest, advancedOptions?: AdvancedOptions) {
-    const {
-      emailOwnerUserId,
-      primaryUserId,
-      encryptedEmail,
-      encryptedKey,
-      delegatedUserIds = [],
-      delegatedKeys = []
-    } = await parseParams('updateEmail', EmailSchema)(params)
-
-    return await this.entityManager.manageEntity({
-      entityType: EntityType.ENCRYPTED_EMAIL,
-      entityId: primaryUserId,
-      action: Action.UPDATE_EMAIL,
-      metadata: JSON.stringify({
-        email_owner_user_id: emailOwnerUserId,
-        primary_user_id: primaryUserId,
-        encrypted_email: encryptedEmail,
-        encrypted_key: encryptedKey,
-        delegated_user_ids: delegatedUserIds,
-        delegated_keys: delegatedKeys
       }),
       ...advancedOptions
     })
