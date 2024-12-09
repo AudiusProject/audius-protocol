@@ -451,9 +451,9 @@ function* publishPlaylistAsync(
   const event = make(Name.PLAYLIST_MAKE_PUBLIC, { id: action.playlistId })
   yield* put(event)
 
-  const playlist = yield* select(getCollection, { id: action.playlistId })
+  let playlist = yield* select(getCollection, { id: action.playlistId })
   if (!playlist) return
-  playlist._is_publishing = true
+  playlist = { ...playlist, _is_publishing: true }
   yield* put(
     cacheActions.update(Kind.COLLECTIONS, [
       {
@@ -480,29 +480,20 @@ function* confirmPublishPlaylist(
   dismissToastKey?: string,
   isAlbum?: boolean
 ) {
-  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
-  const audiusSdk = yield* getContext('audiusSdk')
-  const sdk = yield* call(audiusSdk)
+  const sdk = yield* getSDK()
   yield* put(
     confirmerActions.requestConfirmation(
       makeKindId(Kind.COLLECTIONS, playlistId),
       function* (_confirmedPlaylistId: ID) {
-        const { blockHash, blockNumber, error } = yield* call(
-          audiusBackendInstance.publishPlaylist,
-          playlist
-        )
-        if (error) throw error
+        yield* call([sdk.playlists, sdk.playlists.updatePlaylist], {
+          metadata: {
+            ...collectionMetadataForSDK(playlist),
+            isPrivate: false
+          },
+          userId: Id.parse(userId),
+          playlistId: Id.parse(playlistId)
+        })
 
-        const confirmed = yield* call(
-          confirmTransaction,
-          blockHash,
-          blockNumber
-        )
-        if (!confirmed) {
-          throw new Error(
-            `Could not confirm publish playlist for playlist id ${playlistId}`
-          )
-        }
         const { data } = yield* call(
           [sdk.full.playlists, sdk.full.playlists.getPlaylist],
           {

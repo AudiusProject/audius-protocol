@@ -771,21 +771,6 @@ export const audiusBackend = ({
     }
   }
 
-  async function publishPlaylist(playlist: Collection) {
-    try {
-      playlist.is_private = false
-      const { blockHash, blockNumber } =
-        await audiusLibs.EntityManager.updatePlaylist({
-          ...playlist,
-          is_private: false
-        })
-      return { blockHash, blockNumber }
-    } catch (error) {
-      console.error(getErrorMessage(error))
-      return { error }
-    }
-  }
-
   async function addPlaylistTrack(playlist: Collection) {
     try {
       const { blockHash, blockNumber } =
@@ -1751,7 +1736,6 @@ export const audiusBackend = ({
     getWeb3,
     identityServiceUrl,
     orderPlaylist,
-    publishPlaylist,
     recordTrackListen,
     registerDeviceToken,
     guestSignUp,
