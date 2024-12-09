@@ -11,7 +11,6 @@ const clientPath = path.resolve(__dirname, '../web')
 const commonPath = path.resolve(__dirname, '../../packages/common')
 const harmonyPath = path.resolve(__dirname, '../../packages/harmony')
 const splPath = path.resolve(__dirname, '../../packages/spl')
-const libsPath = path.resolve(__dirname, '../../packages/libs')
 const sdkPath = path.resolve(__dirname, '../../packages/sdk')
 const ethPath = path.resolve(__dirname, '../../packages/eth')
 const emptyPolyfill = path.resolve(__dirname, 'src/mocks/empty.ts')
@@ -65,7 +64,6 @@ const config = {
     commonPath,
     harmonyPath,
     sdkPath,
-    libsPath,
     ethPath,
     fixedDecimalPath,
     splPath

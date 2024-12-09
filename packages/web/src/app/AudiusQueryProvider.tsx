@@ -4,7 +4,6 @@ import { AudiusQueryContext } from '@audius/common/audius-query'
 import { useDispatch } from 'react-redux'
 
 import * as analytics from 'services/analytics'
-import { apiClient } from 'services/audius-api-client'
 import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
 import { audiusSdk, authService } from 'services/audius-sdk'
 import { env } from 'services/env'
@@ -22,7 +21,6 @@ export const AudiusQueryProvider = (props: AudiusQueryProviderProps) => {
   return (
     <AudiusQueryContext.Provider
       value={{
-        apiClient,
         audiusBackend: audiusBackendInstance,
         audiusSdk,
         authService,

@@ -15,7 +15,6 @@ import {
   Track
 } from '../models'
 import { AudioPlayer } from '../services/audio-player'
-import { AudiusAPIClient } from '../services/audius-api-client'
 import { AudiusBackend } from '../services/audius-backend'
 import { Env } from '../services/env'
 import { Explore } from '../services/explore'
@@ -54,7 +53,6 @@ export type CommonStoreContext = {
   getHostUrl: () => string
   remoteConfigInstance: RemoteConfigInstance
   audiusBackendInstance: AudiusBackend
-  apiClient: AudiusAPIClient
   fingerprintClient: FingerprintClient<any>
   walletClient: WalletClient
   localStorage: LocalStorage

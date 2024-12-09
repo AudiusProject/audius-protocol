@@ -5,19 +5,9 @@ import {
   Mood,
   type StorageNodeSelectorService
 } from '@audius/sdk'
-import { DiscoveryAPI } from '@audius/sdk-legacy/dist/core'
-import { type AudiusLibs as AudiusLibsType } from '@audius/sdk-legacy/dist/libs'
 import type { HedgehogConfig } from '@audius/sdk-legacy/dist/services/hedgehog'
 import type { LocalStorage } from '@audius/sdk-legacy/dist/utils/localStorage'
-import { ASSOCIATED_TOKEN_PROGRAM_ID } from '@solana/spl-token'
-import {
-  PublicKey,
-  SystemProgram,
-  SYSVAR_RENT_PUBKEY,
-  Transaction,
-  TransactionInstruction,
-  VersionedTransaction
-} from '@solana/web3.js'
+import { PublicKey, Transaction, VersionedTransaction } from '@solana/web3.js'
 import BN from 'bn.js'
 
 import { userMetadataToSdk } from '~/adapters/user'
@@ -29,13 +19,8 @@ import {
   Collection,
   ID,
   InstagramUser,
-  Name,
   TikTokUser,
-  Track,
-  TwitterUser,
-  User,
   UserMetadata,
-  UserCollection,
   ComputedUserProperties,
   Id
 } from '../../models'
@@ -44,9 +29,6 @@ import { ReportToSentryArgs } from '../../models/ErrorReporting'
 import * as schemas from '../../schemas'
 import {
   FeatureFlags,
-  BooleanKeys,
-  IntKeys,
-  StringKeys,
   RemoteConfigInstance
 } from '../../services/remote-config'
 import {
@@ -105,44 +87,12 @@ declare global {
   }
 }
 
-const SEARCH_MAX_SAVED_RESULTS = 10
-const SEARCH_MAX_TOTAL_RESULTS = 50
-
 export const AuthHeaders = Object.freeze({
   Message: 'Encoded-Data-Message',
   Signature: 'Encoded-Data-Signature'
 })
 
-// TODO: type these once libs types are improved
-let AudiusLibs: any = null
-export let BackendUtils: any = null
-let SolanaUtils: any = null
-
-let audiusLibs: any = null
 const unauthenticatedUuid = uuid()
-/**
- * Combines two lists by concatting `maxSaved` results from the `savedList` onto the head of `normalList`,
- * ensuring that no item is duplicated in the resulting list (deduped by `uniqueKey`). The final list length is capped
- * at `maxTotal` items.
- */
-const combineLists = <Entity extends Track | User>(
-  savedList: Entity[],
-  normalList: Entity[],
-  uniqueKey: keyof Entity,
-  maxSaved = SEARCH_MAX_SAVED_RESULTS,
-  maxTotal = SEARCH_MAX_TOTAL_RESULTS
-) => {
-  const truncatedSavedList = savedList.slice(
-    0,
-    Math.min(maxSaved, savedList.length)
-  )
-  const saveListsSet = new Set(truncatedSavedList.map((s) => s[uniqueKey]))
-  const filteredList = normalList.filter((n) => !saveListsSet.has(n[uniqueKey]))
-  const combinedLists = savedList.concat(filteredList)
-  return combinedLists.slice(0, Math.min(maxTotal, combinedLists.length))
-}
-
-const notDeleted = (e: { is_delete: boolean }) => !e.is_delete
 
 export type TransactionReceipt = { blockHash: string; blockNumber: number }
 
@@ -171,18 +121,6 @@ type AudiusBackendWormholeConfig = Partial<{
   wormholeRpcHosts: string
 }>
 
-type WithEagerOption = (
-  options: {
-    normal: (libs: any) => any
-    eager: (...args: any) => any
-    endpoint?: string
-    requiresUser?: boolean
-  },
-  ...args: any
-) => Promise<any>
-
-type WaitForLibsInit = () => Promise<unknown>
-
 type AudiusBackendParams = {
   claimDistributionContractAddress: Maybe<string>
   env: Env
@@ -196,15 +134,7 @@ type AudiusBackendParams = {
     fallbackFlag?: FeatureFlags
   ) => Promise<boolean | null> | null | boolean
   getHostUrl: () => Nullable<string>
-  getLibs: () => Promise<any>
   getStorageNodeSelector: () => Promise<StorageNodeSelectorService>
-  getWeb3Config: (
-    libs: any,
-    registryAddress: Maybe<string>,
-    entityManagerAddress: Maybe<string>,
-    web3ProviderUrls: Maybe<string[]>,
-    web3NetworkId: Maybe<string>
-  ) => Promise<any>
   // Not required on web
   hedgehogConfig?: {
     createKey: HedgehogConfig['createKey']
@@ -215,7 +145,6 @@ type AudiusBackendParams = {
   localStorage?: LocalStorage
   monitoringCallbacks: MonitoringCallbacks
   nativeMobile: Maybe<boolean>
-  onLibsInit: (libs: any) => void
   recaptchaSiteKey: Maybe<string>
   recordAnalytics: (event: AnalyticsEvent, callback?: () => void) => void
   reportError: ({
@@ -230,89 +159,22 @@ type AudiusBackendParams = {
   setLocalStorageItem: (key: string, value: string) => Promise<void>
   solanaConfig: AudiusBackendSolanaConfig
   userNodeUrl: Maybe<string>
-  waitForLibsInit: WaitForLibsInit
   waitForWeb3: () => Promise<void>
   web3NetworkId: Maybe<string>
   web3ProviderUrls: Maybe<string[]>
-  withEagerOption: WithEagerOption
   wormholeConfig: AudiusBackendWormholeConfig
 }
 
 export const audiusBackend = ({
-  claimDistributionContractAddress,
-  env,
-  ethOwnerWallet,
-  ethProviderUrls,
-  ethRegistryAddress,
-  ethTokenAddress,
-  discoveryNodeSelectorService,
-  getHostUrl,
-  getLibs,
-  getStorageNodeSelector,
-  getWeb3Config,
-  hedgehogConfig,
   identityServiceUrl,
   generalAdmissionUrl,
-  isElectron,
-  localStorage,
-  monitoringCallbacks,
   nativeMobile,
-  onLibsInit,
-  recaptchaSiteKey,
-  recordAnalytics,
-  registryAddress,
-  entityManagerAddress,
   reportError,
-  remoteConfigInstance,
-  setLocalStorageItem,
-  solanaConfig: {
-    claimableTokenPda,
-    claimableTokenProgramAddress,
-    rewardsManagerProgramId,
-    rewardsManagerProgramPda,
-    rewardsManagerTokenPda,
-    paymentRouterProgramId,
-    solanaClusterEndpoint,
-    solanaFeePayerAddress,
-    solanaTokenAddress,
-    waudioMintAddress,
-    usdcMintAddress,
-    wormholeAddress
-  },
   userNodeUrl,
-  waitForLibsInit,
-  waitForWeb3,
-  web3NetworkId,
-  web3ProviderUrls,
-  withEagerOption,
-  wormholeConfig: {
-    ethBridgeAddress,
-    ethTokenBridgeAddress,
-    solBridgeAddress,
-    solTokenBridgeAddress,
-    wormholeRpcHosts
-  }
+  waitForWeb3
 }: AudiusBackendParams) => {
-  const { getRemoteVar, waitForRemoteConfig } = remoteConfigInstance
-
   const currentDiscoveryProvider: Nullable<string> = null
   const didSelectDiscoveryProviderListeners: DiscoveryProviderListener[] = []
-
-  /**
-   * Gets a blockList set from remote config
-   */
-  const getBlockList = (remoteVarKey: StringKeys) => {
-    const list = getRemoteVar(remoteVarKey)
-    if (list) {
-      try {
-        return new Set(list.split(','))
-      } catch (e) {
-        console.error(e)
-        return null
-      }
-    }
-    return null
-  }
 
   function addDiscoveryProviderSelectionListener(
     listener: DiscoveryProviderListener
@@ -320,229 +182,6 @@ export const audiusBackend = ({
     didSelectDiscoveryProviderListeners.push(listener)
     if (currentDiscoveryProvider !== null) {
       listener(currentDiscoveryProvider)
-    }
-  }
-
-  // Record the endpoint and reason for selecting the endpoint
-  function discoveryProviderSelectionCallback(
-    endpoint: string,
-    decisionTree: { stage: string }[]
-  ) {
-    recordAnalytics({
-      eventName: Name.DISCOVERY_PROVIDER_SELECTION,
-      properties: {
-        endpoint,
-        reason: decisionTree.map((reason) => reason.stage).join(' -> ')
-      }
-    })
-    didSelectDiscoveryProviderListeners.forEach((listener) =>
-      listener(endpoint)
-    )
-  }
-
-  async function setup({
-    wallet,
-    userId
-  }: {
-    /* wallet/userId/handle will be passed to libs services and used as parameters
-    in various API calls and utility functions. They are optional here because we
-    may not be logged in yet. Values can be updated after initialization by calling
-    libs.setCurrentUser() */
-    wallet?: string
-    userId?: number
-  }) {
-    // Wait for web3 to load if necessary
-    await waitForWeb3()
-    // Wait for optimizely to load if necessary
-    await waitForRemoteConfig()
-
-    const libsModule = await getLibs()
-
-    AudiusLibs = libsModule.AudiusLibs
-    BackendUtils = libsModule.Utils
-    SolanaUtils = libsModule.SolanaUtils
-    // initialize libs
-    let libsError: Nullable<string> = null
-    const { web3Config } = await getWeb3Config(
-      AudiusLibs,
-      registryAddress,
-      entityManagerAddress,
-      web3ProviderUrls,
-      web3NetworkId
-    )
-    const { ethWeb3Config } = getEthWeb3Config()
-    const { solanaWeb3Config } = getSolanaWeb3Config()
-    const { wormholeConfig } = getWormholeConfig()
-
-    const contentNodeBlockList = getBlockList(
-      StringKeys.CONTENT_NODE_BLOCK_LIST
-    )
-    const discoveryNodeBlockList = getBlockList(
-      StringKeys.DISCOVERY_NODE_BLOCK_LIST
-    )
-
-    const discoveryNodeSelector =
-      await discoveryNodeSelectorService.getInstance()
-
-    const initialSelectedNode: string | undefined =
-      // TODO: Need a synchronous method to check if a discovery node is already selected?
-      // Alternatively, remove all this AudiusBackend/Libs init/APIClient init stuff in favor of SDK
-      // @ts-ignore config is private
-      discoveryNodeSelector.config.initialSelectedNode
-    if (initialSelectedNode) {
-      discoveryProviderSelectionCallback(initialSelectedNode, [])
-    }
-    discoveryNodeSelector.addEventListener('change', (endpoint) => {
-      console.debug('[AudiusBackend] DiscoveryNodeSelector changed', endpoint)
-      discoveryProviderSelectionCallback(endpoint, [])
-    })
-
-    const baseCreatorNodeConfig = AudiusLibs.configCreatorNode(
-      userNodeUrl,
-      /* passList */ null,
-      contentNodeBlockList,
-      monitoringCallbacks.contentNode
-    )
-
-    try {
-      const newAudiusLibs = new AudiusLibs({
-        localStorage,
-        web3Config,
-        ethWeb3Config,
-        solanaWeb3Config,
-        wormholeConfig,
-        discoveryProviderConfig: {
-          blacklist: discoveryNodeBlockList,
-          reselectTimeout: getRemoteVar(
-            IntKeys.DISCOVERY_PROVIDER_SELECTION_TIMEOUT_MS
-          ),
-          selectionCallback: discoveryProviderSelectionCallback,
-          monitoringCallbacks: monitoringCallbacks.discoveryNode,
-          selectionRequestTimeout: getRemoteVar(
-            IntKeys.DISCOVERY_NODE_SELECTION_REQUEST_TIMEOUT
-          ),
-          selectionRequestRetries: getRemoteVar(
-            IntKeys.DISCOVERY_NODE_SELECTION_REQUEST_RETRIES
-          ),
-          unhealthySlotDiffPlays: getRemoteVar(
-            BooleanKeys.ENABLE_DISCOVERY_NODE_MAX_SLOT_DIFF_PLAYS
-          )
-            ? getRemoteVar(IntKeys.DISCOVERY_NODE_MAX_SLOT_DIFF_PLAYS)
-            : null,
-          unhealthyBlockDiff:
-            getRemoteVar(IntKeys.DISCOVERY_NODE_MAX_BLOCK_DIFF) ?? undefined,
-
-          discoveryNodeSelector,
-          wallet,
-          userId
-        },
-        identityServiceConfig:
-          AudiusLibs.configIdentityService(identityServiceUrl),
-        creatorNodeConfig: {
-          ...baseCreatorNodeConfig,
-          wallet,
-          userId,
-          storageNodeSelector: await getStorageNodeSelector()
-        },
-        // Electron cannot use captcha until it serves its assets from
-        // a "domain" (e.g. localhost) rather than the file system itself.
-        // i.e. there is no way to instruct captcha that the domain is "file://"
-        captchaConfig: isElectron ? undefined : { siteKey: recaptchaSiteKey },
-        isServer: false,
-        preferHigherPatchForPrimary: true,
-        preferHigherPatchForSecondaries: false,
-        hedgehogConfig,
-        userId,
-        wallet
-      })
-      await newAudiusLibs.init()
-      audiusLibs = newAudiusLibs
-      onLibsInit(audiusLibs)
-      audiusLibs.web3Manager.discoveryProvider = audiusLibs.discoveryProvider
-    } catch (err) {
-      console.error(err)
-      libsError = getErrorMessage(err)
-    }
-
-    return { libsError, web3Error: false }
-  }
-
-  function getEthWeb3Config() {
-    // In a dev env, always ignore the remote var which is inherited from staging
-    const isDevelopment = env.ENVIRONMENT === 'development'
-    const providerUrls = isDevelopment
-      ? ethProviderUrls
-      : getRemoteVar(StringKeys.ETH_PROVIDER_URLS) || ethProviderUrls
-
-    return {
-      ethWeb3Config: AudiusLibs.configEthWeb3(
-        ethTokenAddress,
-        ethRegistryAddress,
-        providerUrls,
-        ethOwnerWallet,
-        claimDistributionContractAddress,
-        wormholeAddress
-      )
-    }
-  }
-
-  function getSolanaWeb3Config() {
-    if (
-      !solanaClusterEndpoint ||
-      !waudioMintAddress ||
-      !solanaTokenAddress ||
-      !solanaFeePayerAddress ||
-      !claimableTokenProgramAddress ||
-      !rewardsManagerProgramId ||
-      !rewardsManagerProgramPda ||
-      !rewardsManagerTokenPda ||
-      !paymentRouterProgramId
-    ) {
-      return {
-        error: true
-      }
-    }
-    return {
-      error: false,
-      solanaWeb3Config: AudiusLibs.configSolanaWeb3({
-        solanaClusterEndpoint,
-        mintAddress: waudioMintAddress,
-        usdcMintAddress,
-        solanaTokenAddress,
-        claimableTokenPDA: claimableTokenPda,
-        feePayerAddress: solanaFeePayerAddress,
-        claimableTokenProgramAddress,
-        rewardsManagerProgramId,
-        rewardsManagerProgramPDA: rewardsManagerProgramPda,
-        rewardsManagerTokenPDA: rewardsManagerTokenPda,
-        paymentRouterProgramId,
-        useRelay: true
-      })
-    }
-  }
-
-  function getWormholeConfig() {
-    if (
-      !wormholeRpcHosts ||
-      !ethBridgeAddress ||
-      !solBridgeAddress ||
-      !ethTokenBridgeAddress ||
-      !solTokenBridgeAddress
-    ) {
-      return {
-        error: true
-      }
-    }
-
-    return {
-      error: false,
-      wormholeConfig: AudiusLibs.configWormhole({
-        rpcHosts: wormholeRpcHosts,
-        solBridgeAddress,
-        solTokenBridgeAddress,
-        ethBridgeAddress,
-        ethTokenBridgeAddress
-      })
     }
   }
 
@@ -579,87 +218,7 @@ export const audiusBackend = ({
     isPremium,
     sortMethod
   }: SearchTagsArgs) {
-    try {
-      const searchTags = await withEagerOption(
-        {
-          normal: (libs) => libs.Account.searchTags,
-          eager: DiscoveryAPI.searchTags
-        },
-        query,
-        userTagCount,
-        kind,
-        limit,
-        offset,
-        genre,
-        mood,
-        bpmMin,
-        bpmMax,
-        key,
-        isVerified,
-        hasDownloads,
-        isPremium,
-        sortMethod
-      )
-
-      const {
-        tracks = [],
-        saved_tracks: savedTracks = [],
-        followed_users: followedUsers = [],
-        users = [],
-        playlists = [],
-        albums = []
-      } = searchTags
-
-      const combinedTracks = await Promise.all(
-        combineLists<Track>(
-          savedTracks.filter(notDeleted),
-          tracks.filter(notDeleted),
-          'track_id'
-        )
-      )
-
-      const combinedUsers = await Promise.all(
-        combineLists<User>(followedUsers, users, 'user_id')
-      )
-
-      return {
-        tracks: combinedTracks,
-        users: combinedUsers,
-        playlists: playlists as UserCollection[],
-        albums: albums as UserCollection[]
-      }
-    } catch (e) {
-      console.error(e)
-      return {
-        tracks: [],
-        users: [],
-        playlists: [],
-        albums: []
-      }
-    }
-  }
-
-  // TODO(C-2719)
-  async function getUserListenCountsMonthly(
-    currentUserId: number,
-    startTime: string,
-    endTime: string
-  ) {
-    try {
-      const userListenCountsMonthly = await withEagerOption(
-        {
-          normal: (libs) => libs.User.getUserListenCountsMonthly,
-          eager: DiscoveryAPI.getUserListenCountsMonthly
-        },
-        Id.parse(currentUserId),
-        startTime,
-        endTime
-      )
-      return userListenCountsMonthly
-    } catch (e) {
-      console.error(getErrorMessage(e))
-      return []
-    }
+    throw new Error('Not implemented')
   }
 
   async function recordTrackListen({
@@ -694,28 +253,15 @@ export const audiusBackend = ({
     playlistId: ID,
     metadata?: { is_repost_of_repost: boolean }
   ) {
-    try {
-      return audiusLibs.EntityManager.repostPlaylist(
-        playlistId,
-        JSON.stringify(metadata)
-      )
-    } catch (err) {
-      console.error(getErrorMessage(err))
-      throw err
-    }
+    throw new Error('Not implemented')
   }
 
   async function undoRepostCollection(playlistId: ID) {
-    try {
-      return audiusLibs.EntityManager.unrepostPlaylist(playlistId)
-    } catch (err) {
-      console.error(getErrorMessage(err))
-      throw err
-    }
+    throw new Error('Not implemented')
   }
 
   async function uploadImage(file: File) {
-    return await audiusLibs.creatorNode.uploadTrackCoverArtV2(file, () => {})
+    throw new Error('Not implemented')
   }
 
   /**
@@ -791,105 +337,31 @@ export const audiusBackend = ({
     trackIds: ID[] = [],
     isPrivate = true
   ) {
-    try {
-      const web3 = await audiusLibs.web3Manager.getWeb3()
-      const currentBlockNumber = await web3.eth.getBlockNumber()
-      const currentBlock = await web3.eth.getBlock(currentBlockNumber)
-      const playlistTracks = trackIds.map((trackId) => ({
-        track: trackId,
-        metadata_time: currentBlock.timestamp
-      }))
-      const response = await audiusLibs.EntityManager.createPlaylist({
-        ...metadata,
-        playlist_id: playlistId,
-        playlist_contents: { track_ids: playlistTracks },
-        is_album: isAlbum,
-        is_private: isPrivate
-      })
-      const { blockHash, blockNumber, error } = response
-      if (error) return { playlistId, error }
-      return { blockHash, blockNumber, playlistId }
-    } catch (err) {
-      // This code path should never execute
-      console.debug('Reached client createPlaylist catch block')
-      console.error(getErrorMessage(err))
-      return { playlistId: null, error: true }
-    }
+    throw new Error('Not implemented')
   }
 
   async function updatePlaylist(metadata: Collection) {
-    try {
-      const { blockHash, blockNumber } =
-        await audiusLibs.EntityManager.updatePlaylist(metadata)
-
-      return { blockHash, blockNumber }
-    } catch (error) {
-      console.error(getErrorMessage(error))
-      return { error }
-    }
+    throw new Error('Not implemented')
   }
 
   async function orderPlaylist(playlist: any) {
-    try {
-      const { blockHash, blockNumber } =
-        await audiusLibs.EntityManager.updatePlaylist(playlist)
-      return { blockHash, blockNumber }
-    } catch (error) {
-      console.error(getErrorMessage(error))
-      return { error }
-    }
+    throw new Error('Not implemented')
   }
 
   async function publishPlaylist(playlist: Collection) {
-    try {
-      playlist.is_private = false
-      const { blockHash, blockNumber } =
-        await audiusLibs.EntityManager.updatePlaylist({
-          ...playlist,
-          is_private: false
-        })
-      return { blockHash, blockNumber }
-    } catch (error) {
-      console.error(getErrorMessage(error))
-      return { error }
-    }
+    throw new Error('Not implemented')
   }
 
   async function addPlaylistTrack(playlist: Collection) {
-    try {
-      const { blockHash, blockNumber } =
-        await audiusLibs.EntityManager.updatePlaylist(playlist)
-      return { blockHash, blockNumber }
-    } catch (error) {
-      console.error(getErrorMessage(error))
-      return { error }
-    }
+    throw new Error('Not implemented')
   }
 
   async function deletePlaylistTrack(playlist: Collection) {
-    try {
-      const { blockHash, blockNumber } =
-        await audiusLibs.EntityManager.updatePlaylist(playlist)
-      return { blockHash, blockNumber }
-    } catch (error) {
-      console.error(getErrorMessage(error))
-      return { error }
-    }
+    throw new Error('Not implemented')
   }
 
   async function deletePlaylist(playlistId: ID) {
-    try {
-      const txReceipt = await audiusLibs.EntityManager.deletePlaylist(
-        playlistId
-      )
-      return {
-        blockHash: txReceipt.blockHash,
-        blockNumber: txReceipt.blockNumber
-      }
-    } catch (error) {
-      console.error(getErrorMessage(error))
-      return { error }
-    }
+    throw new Error('Not implemented')
   }
 
   // Favorite a playlist
@@ -897,139 +369,28 @@ export const audiusBackend = ({
     playlistId: ID,
     metadata?: { is_save_of_repost: boolean }
   ) {
-    try {
-      return await audiusLibs.EntityManager.savePlaylist(
-        playlistId,
-        JSON.stringify(metadata)
-      )
-    } catch (err) {
-      console.error(getErrorMessage(err))
-      throw err
-    }
+    throw new Error('Not implemented')
   }
 
   // Unfavorite a playlist
   async function unsaveCollection(playlistId: ID) {
-    try {
-      return await audiusLibs.EntityManager.unsavePlaylist(playlistId)
-    } catch (err) {
-      console.error(getErrorMessage(err))
-      throw err
-    }
-  }
-
-  /**
-   * @param formFields {name, handle, profilePicture, coverPhoto, isVerified, location}
-   * @param hasWallet the user already has a wallet but didn't complete sign up
-   * @param referrer the user_id of the account that referred this one
-   */
-  async function signUp({
-    email,
-    password,
-    formFields,
-    hasWallet = false,
-    referrer = null,
-    feePayerOverride = null
-  }: {
-    email: string
-    password: string
-    formFields: {
-      name?: string
-      handle?: string
-      isVerified?: boolean
-      location?: string | null
-      profilePicture: File | null
-      coverPhoto: File | null
-    }
-    hasWallet: boolean
-    referrer: Nullable<ID>
-    feePayerOverride: Nullable<string>
-  }) {
-    await waitForLibsInit()
-    const metadata = schemas.newUserMetadata()
-    if (formFields.name) {
-      metadata.name = formFields.name
-    }
-    if (formFields.handle) {
-      metadata.handle = formFields.handle
-    }
-    if (formFields.isVerified) {
-      metadata.is_verified = formFields.isVerified
-    }
-    if (formFields.location) {
-      metadata.location = formFields.location
-    }
-
-    const hasEvents = referrer || nativeMobile
-    if (hasEvents) {
-      metadata.events = {}
-    }
-    if (referrer) {
-      metadata.events.referrer = referrer
-    }
-    if (nativeMobile) {
-      metadata.events.is_mobile_user = true
-      setLocalStorageItem('is-mobile-user', 'true')
-    }
-
-    return await audiusLibs.Account.signUpV2(
-      email,
-      password,
-      metadata,
-      formFields.profilePicture,
-      formFields.coverPhoto,
-      hasWallet,
-      getHostUrl(),
-      (eventName: string, properties: Record<string, unknown>) =>
-        recordAnalytics({ eventName, properties }),
-      {
-        Request: Name.CREATE_USER_BANK_REQUEST,
-        Success: Name.CREATE_USER_BANK_SUCCESS,
-        Failure: Name.CREATE_USER_BANK_FAILURE
-      },
-      feePayerOverride,
-      true
-    )
+    throw new Error('Not implemented')
   }
 
   async function guestSignUp(email: string) {
-    await waitForLibsInit()
-    const metadata = schemas.newUserMetadata()
-
-    return await audiusLibs.Account.guestSignUp(email, metadata)
+    throw new Error('Not implemented')
   }
 
   async function sendRecoveryEmail(handle: string) {
-    await waitForLibsInit()
-    const host = getHostUrl()
-    return audiusLibs.Account.generateRecoveryLink({ handle, host })
+    throw new Error('Not implemented')
   }
 
   async function emailInUse(email: string) {
-    await waitForLibsInit()
-    try {
-      const { exists: emailExists, isGuest } =
-        await audiusLibs.Account.checkIfEmailRegistered(email)
-      return {
-        emailExists: emailExists as boolean,
-        isGuest: isGuest as boolean
-      }
-    } catch (error) {
-      console.error(getErrorMessage(error))
-      throw error
-    }
+    throw new Error('Not implemented')
   }
 
   async function twitterHandle(handle: string) {
-    await waitForLibsInit()
-    try {
-      const user: TwitterUser = await audiusLibs.Account.lookupTwitterHandle(
-        handle
-      )
-      return { success: true, user }
-    } catch (error) {
-      return { success: false, error }
-    }
+    throw new Error('Not implemented')
   }
 
   async function instagramHandle(handle: string) {
@@ -1062,19 +423,7 @@ export const audiusBackend = ({
     handle: string,
     blockNumber: number
   ) {
-    await waitForLibsInit()
-    try {
-      await audiusLibs.Account.associateTwitterUser(
-        twitterId,
-        userId,
-        handle,
-        blockNumber
-      )
-      return { success: true }
-    } catch (error) {
-      console.error(getErrorMessage(error))
-      return { success: false, error }
-    }
+    throw new Error('Not implemented')
   }
 
   async function associateInstagramAccount(
@@ -1083,19 +432,7 @@ export const audiusBackend = ({
     handle: string,
     blockNumber: number
   ) {
-    await waitForLibsInit()
-    try {
-      await audiusLibs.Account.associateInstagramUser(
-        instagramId,
-        userId,
-        handle,
-        blockNumber
-      )
-      return { success: true }
-    } catch (error) {
-      console.error(getErrorMessage(error))
-      return { success: false, error }
-    }
+    throw new Error('Not implemented')
   }
 
   async function associateTikTokAccount(
@@ -1104,19 +441,7 @@ export const audiusBackend = ({
     handle: string,
     blockNumber: number
   ) {
-    await waitForLibsInit()
-    try {
-      await audiusLibs.Account.associateTikTokUser(
-        tikTokId,
-        userId,
-        handle,
-        blockNumber
-      )
-      return { success: true }
-    } catch (error) {
-      console.error(getErrorMessage(error))
-      return { success: false, error }
-    }
+    throw new Error('Not implemented')
   }
 
   async function clearNotificationBadges({ sdk }: { sdk: AudiusSdk }) {
@@ -1296,8 +621,6 @@ export const audiusBackend = ({
     sdk: AudiusSdk
     pushEndpoint: string
   }) {
-    await waitForLibsInit()
-
     try {
       const { data, signature } = await signIdentityServiceRequest({ sdk })
       const endpiont = encodeURIComponent(pushEndpoint)
@@ -1325,8 +648,6 @@ export const audiusBackend = ({
     sdk: AudiusSdk
     deviceToken: string
   }) {
-    await waitForLibsInit()
-
     try {
       const { data, signature } = await signIdentityServiceRequest({ sdk })
       return await fetch(
@@ -1355,7 +676,6 @@ export const audiusBackend = ({
     enabled: boolean
     subscription: PushSubscription
   }) {
-    await waitForLibsInit()
     const { data, signature } = await signIdentityServiceRequest({ sdk })
     return await fetch(
       `${identityServiceUrl}/push_notifications/browser/register`,
@@ -1378,7 +698,6 @@ export const audiusBackend = ({
     sdk: AudiusSdk
     subscription: PushSubscription
   }) {
-    await waitForLibsInit()
     const { data, signature } = await signIdentityServiceRequest({ sdk })
     return await fetch(
       `${identityServiceUrl}/push_notifications/browser/deregister`,
@@ -1573,29 +892,7 @@ export const audiusBackend = ({
     ethAddress?: string
     bustCache?: boolean
   } = {}): Promise<BN | null> {
-    await waitForLibsInit()
-
-    const wallet =
-      ethAddress !== undefined
-        ? ethAddress
-        : audiusLibs.web3Manager.getWalletAddress()
-    if (!wallet) return null
-
-    try {
-      const ethWeb3 = audiusLibs.ethWeb3Manager.getWeb3()
-      const checksumWallet = ethWeb3.utils.toChecksumAddress(wallet)
-      if (bustCache) {
-        audiusLibs.ethContracts.AudiusTokenClient.bustCache()
-      }
-      const balance = await audiusLibs.ethContracts.AudiusTokenClient.balanceOf(
-        checksumWallet
-      )
-      return balance
-    } catch (e) {
-      console.error(e)
-      reportError({ error: e as Error })
-      return null
-    }
+    throw new Error('Not implemented')
   }
 
   /**
@@ -1665,103 +962,21 @@ export const audiusBackend = ({
     address: string,
     bustCache = false
   ) {
-    await waitForLibsInit()
-    if (!address) return null
-
-    try {
-      const ethWeb3 = audiusLibs.ethWeb3Manager.getWeb3()
-      const checksumWallet = ethWeb3.utils.toChecksumAddress(address)
-      if (bustCache) {
-        audiusLibs.ethContracts.AudiusTokenClient.bustCache()
-      }
-      const balance = await audiusLibs.ethContracts.AudiusTokenClient.balanceOf(
-        checksumWallet
-      )
-      const delegatedBalance =
-        await audiusLibs.ethContracts.DelegateManagerClient.getTotalDelegatorStake(
-          checksumWallet
-        )
-      const stakedBalance =
-        await audiusLibs.ethContracts.StakingProxyClient.totalStakedFor(
-          checksumWallet
-        )
-
-      return balance.add(delegatedBalance).add(stakedBalance)
-    } catch (e) {
-      reportError({ error: e as Error })
-      console.error(e)
-      return null
-    }
+    throw new Error('Not implemented')
   }
 
   /**
    * Make a request to send
    */
   async function sendTokens(address: string, amount: BNWei) {
-    await waitForLibsInit()
-    const receipt = await audiusLibs.Account.permitAndSendTokens(
-      address,
-      amount
-    )
-    return receipt
-  }
-
-  async function getAssociatedTokenAccountInfo(address: string) {
-    await waitForLibsInit()
-
-    // Check if the user has a user bank acccount
-    let tokenAccountInfo =
-      await audiusLibs.solanaWeb3Manager.getTokenAccountInfo(address)
-    if (!tokenAccountInfo) {
-      console.info('Provided recipient solana address was not a token account')
-      // If not, check to see if it already has an associated token account.
-      const associatedTokenAccount =
-        await audiusLibs.solanaWeb3Manager.findAssociatedTokenAddress(address)
-      tokenAccountInfo = await audiusLibs.solanaWeb3Manager.getTokenAccountInfo(
-        associatedTokenAccount.toString()
-      )
-    }
-    return tokenAccountInfo
+    throw new Error('Not implemented')
   }
 
   /**
    * Make a request to send solana wrapped audio
    */
   async function sendWAudioTokens(address: string, amount: BNWei) {
-    await waitForLibsInit()
-
-    // Check when sending waudio if the user has a user bank acccount
-    const tokenAccountInfo = await getAssociatedTokenAccountInfo(address)
-
-    // If it's not a valid token account, we need to make one first
-    if (!tokenAccountInfo) {
-      // We do not want to relay gas fees for this token account creation,
-      // so we ask the user to create one with phantom, showing an error
-      // if phantom is not found.
-      if (!window.phantom) {
-        return {
-          error:
-            'Recipient has no $AUDIO token account. Please install Phantom-Wallet to create one.'
-        }
-      }
-      if (!window.solana.isConnected) {
-        await window.solana.connect()
-      }
-
-      const phantomWallet = window.solana.publicKey?.toString()
-      const tx = await getCreateAssociatedTokenAccountTransaction({
-        feePayerKey: SolanaUtils.newPublicKeyNullable(phantomWallet),
-        solanaWalletKey: SolanaUtils.newPublicKeyNullable(address),
-        mintKey: audiusLibs.solanaWeb3Manager.mints.audio,
-        solanaTokenProgramKey: audiusLibs.solanaWeb3Manager.solanaTokenKey,
-        connection: audiusLibs.solanaWeb3Manager.getConnection()
-      })
-      const { signature } = await window.solana.signAndSendTransaction(tx)
-      await audiusLibs.solanaWeb3Manager
-        .getConnection()
-        .confirmTransaction(signature)
-    }
-    return audiusLibs.solanaWeb3Manager.transferWAudio(address, amount)
+    throw new Error('Not implemented')
   }
 
   async function getSignature({ data, sdk }: { data: any; sdk: AudiusSdk }) {
@@ -1779,12 +994,7 @@ export const audiusBackend = ({
    * }
    */
   async function transferAudioToWAudio(balance: BN) {
-    await waitForLibsInit()
-    const userBank = await audiusLibs.solanaWeb3Manager.deriveUserBank()
-    return audiusLibs.Account.proxySendTokensFromEthToSol(
-      balance,
-      userBank.toString()
-    )
+    throw new Error('Not implemented')
   }
 
   /**
@@ -1793,45 +1003,12 @@ export const audiusBackend = ({
    * @returns {Promise<BN | null>} Returns the balance, or null if error
    */
   async function getAddressWAudioBalance(address: string) {
-    await waitForLibsInit()
-    const waudioBalance = await audiusLibs.solanaWeb3Manager.getWAudioBalance(
-      address
-    )
-    if (isNullOrUndefined(waudioBalance)) {
-      console.warn(`Failed to get waudio balance for address: ${address}`)
-      reportError({
-        error: new Error('Failed to get wAudio balance for address'),
-        additionalInfo: { address }
-      })
-      return null
-    }
-    return new BN(waudioBalance.toString())
-  }
-
-  async function getAudiusLibs() {
-    await waitForLibsInit()
-    return audiusLibs
-  }
-
-  async function getAudiusLibsTyped() {
-    await waitForLibsInit()
-    return audiusLibs as AudiusLibsType
-  }
-
-  async function getWeb3() {
-    const audiusLibs = await getAudiusLibs()
-    return audiusLibs.web3Manager.getWeb3()
-  }
-
-  async function setUserHandleForRelay(handle: string) {
-    const audiusLibs = await getAudiusLibs()
-    audiusLibs.web3Manager.setUserSuppliedHandle(handle)
+    throw new Error('Not implemented')
   }
 
   return {
     addDiscoveryProviderSelectionListener,
     addPlaylistTrack,
-    audiusLibs: audiusLibs as AudiusLibsType,
     associateInstagramAccount,
     associateTwitterAccount,
     associateTikTokAccount,
@@ -1848,9 +1025,6 @@ export const audiusBackend = ({
     getAddressTotalStakedBalance,
     getAddressWAudioBalance,
     getAddressSolBalance,
-    getAssociatedTokenAccountInfo,
-    getAudiusLibs,
-    getAudiusLibsTyped,
     getBalance,
     getBrowserPushNotificationSettings,
     getBrowserPushSubscription,
@@ -1858,9 +1032,7 @@ export const audiusBackend = ({
     getPushNotificationSettings,
     getSafariBrowserPushEnabled,
     getSignature,
-    getUserListenCountsMonthly,
     getWAudioBalance,
-    getWeb3,
     identityServiceUrl,
     orderPlaylist,
     publishPlaylist,
@@ -1874,12 +1046,9 @@ export const audiusBackend = ({
     sendTokens,
     sendWAudioTokens,
     sendWelcomeEmail,
-    setup,
-    setUserHandleForRelay,
     signData,
     signDiscoveryNodeRequest,
     signIdentityServiceRequest,
-    signUp,
     transferAudioToWAudio,
     twitterHandle,
     instagramHandle,
@@ -1897,124 +1066,8 @@ export const audiusBackend = ({
     updateUserLocationTimezone,
     uploadImage,
     userNodeUrl,
-    waitForLibsInit,
     waitForWeb3
   }
-}
-
-/**
- * Finds the associated token address given a solana wallet public key
- * @param solanaWalletKey Public Key for a given solana account (a wallet)
- * @param mintKey
- * @param solanaTokenProgramKey
- * @returns token account public key
- */
-async function findAssociatedTokenAddress({
-  solanaWalletKey,
-  mintKey,
-  solanaTokenProgramKey
-}: {
-  solanaWalletKey: PublicKey
-  mintKey: PublicKey
-  solanaTokenProgramKey: PublicKey
-}) {
-  const addresses = await PublicKey.findProgramAddress(
-    [
-      solanaWalletKey.toBuffer(),
-      solanaTokenProgramKey.toBuffer(),
-      mintKey.toBuffer()
-    ],
-    ASSOCIATED_TOKEN_PROGRAM_ID
-  )
-  return addresses[0]
-}
-
-/**
- * Creates an associated token account for a given solana account (a wallet)
- * @param feePayerKey
- * @param solanaWalletKey the wallet we wish to create a token account for
- * @param mintKey
- * @param solanaTokenProgramKey
- * @param connection
- * @param identityService
- */
-async function getCreateAssociatedTokenAccountTransaction({
-  feePayerKey,
-  solanaWalletKey,
-  mintKey,
-  solanaTokenProgramKey,
-  connection
-}: {
-  feePayerKey: PublicKey
-  solanaWalletKey: PublicKey
-  mintKey: PublicKey
-  solanaTokenProgramKey: PublicKey
-  connection: typeof AudiusLibs.IdentityService
-}) {
-  const associatedTokenAddress = await findAssociatedTokenAddress({
-    solanaWalletKey,
-    mintKey,
-    solanaTokenProgramKey
-  })
-  const accounts = [
-    // 0. `[sw]` Funding account (must be a system account)
-    {
-      pubkey: feePayerKey,
-      isSigner: true,
-      isWritable: true
-    },
-    // 1. `[w]` Associated token account address to be created
-    {
-      pubkey: associatedTokenAddress,
-      isSigner: false,
-      isWritable: true
-    },
-    // 2. `[r]` Wallet address for the new associated token account
-    {
-      pubkey: solanaWalletKey,
-      isSigner: false,
-      isWritable: false
-    },
-    // 3. `[r]` The token mint for the new associated token account
-    {
-      pubkey: mintKey,
-      isSigner: false,
-      isWritable: false
-    },
-    // 4. `[r]` System program
-    {
-      pubkey: SystemProgram.programId,
-      isSigner: false,
-      isWritable: false
-    },
-    // 5. `[r]` SPL Token program
-    {
-      pubkey: solanaTokenProgramKey,
-      isSigner: false,
-      isWritable: false
-    },
-    // 6. `[r]` Rent sysvar
-    {
-      pubkey: SYSVAR_RENT_PUBKEY,
-      isSigner: false,
-      isWritable: false
-    }
-  ]
-
-  const { blockhash } = await connection.getLatestBlockhash('confirmed')
-  const instr = new TransactionInstruction({
-    keys: accounts.map((account) => ({
-      pubkey: account.pubkey,
-      isSigner: account.isSigner,
-      isWritable: account.isWritable
-    })),
-    programId: ASSOCIATED_TOKEN_PROGRAM_ID,
-    data: Buffer.from([])
-  })
-  const tx = new Transaction({ recentBlockhash: blockhash })
-  tx.feePayer = feePayerKey
-  tx.add(instr)
-  return tx
 }
 
 export type AudiusBackend = ReturnType<typeof audiusBackend>

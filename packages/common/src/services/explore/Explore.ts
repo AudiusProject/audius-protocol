@@ -21,7 +21,6 @@ import {
   UserTrackMetadata
 } from '../../models'
 import { encodeHashId, removeNullable } from '../../utils'
-import { APIActivityV2, makeActivity } from '../audius-api-client'
 import { AudiusBackend } from '../audius-backend'
 
 const scoreComparator = <T extends { score: number }>(a: T, b: T) =>
@@ -83,28 +82,29 @@ export class Explore {
       )
       if (!lineupItems.length) return []
 
-      const tracks = lineupItems.filter(
-        (lineupItem): lineupItem is UserTrack => 'track_id' in lineupItem
-      )
-      const history = await sdk.full.users.getUsersTrackHistory({
-        id: encodeHashId(currentUserId),
-        limit: 100
-      })
-      const activityData = history.data as APIActivityV2[]
-      const listenedToTracks = activityData
-        .map(makeActivity)
-        .filter(removeNullable) as UserTrackMetadata[]
+      throw new Error('Not implemented')
+      // const tracks = lineupItems.filter(
+      //   (lineupItem): lineupItem is UserTrack => 'track_id' in lineupItem
+      // )
+      // const history = await sdk.full.users.getUsersTrackHistory({
+      //   id: encodeHashId(currentUserId),
+      //   limit: 100
+      // })
+      // const activityData = history.data
+      // const listenedToTracks = activityData
+      //   .map(makeActivity)
+      //   .filter(removeNullable) as UserTrackMetadata[]
 
-      // Imperfect solution. Ideally we use an endpoint that gives us true/false
-      // if a user has listened to a passed in array of tracks.
-      const listenendToTrackIds = listenedToTracks.map(
-        (track) => track.track_id
-      )
+      // // Imperfect solution. Ideally we use an endpoint that gives us true/false
+      // // if a user has listened to a passed in array of tracks.
+      // const listenendToTrackIds = listenedToTracks.map(
+      //   (track) => track.track_id
+      // )
 
-      const notListenedToTracks = tracks.filter(
-        (track) => !listenendToTrackIds[track.track_id]
-      )
-      return notListenedToTracks.slice(0, limit)
+      // const notListenedToTracks = tracks.filter(
+      //   (track) => !listenendToTrackIds[track.track_id]
+      // )
+      // return notListenedToTracks.slice(0, limit)
     } catch (e) {
       console.error(e)
       return []

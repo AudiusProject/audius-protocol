@@ -15,7 +15,6 @@ import {
   waitForRead
 } from '@audius/common/utils'
 import { full } from '@audius/sdk'
-import { AudiusLibs } from '@audius/sdk-legacy/dist/libs'
 import { call, takeLatest, put } from 'typed-redux-saga'
 
 import { fetchUsers } from 'common/store/cache/users/sagas'
@@ -151,24 +150,7 @@ function* fetchTransactionMetadata() {
       if (txDetails.transactionType !== TransactionType.PURCHASE) {
         return
       }
-      const audiusBackendInstance = yield* getContext('audiusBackendInstance')
-      const libs: AudiusLibs = yield* call(audiusBackendInstance.getAudiusLibs)
-      const response = yield* call(
-        [
-          libs.identityService!,
-          libs.identityService!.getUserBankTransactionMetadata
-        ],
-        txDetails.signature
-      )
-      yield put(
-        fetchTransactionDetailsSucceeded({
-          transactionId: txDetails.signature,
-          transactionDetails: {
-            ...txDetails,
-            metadata: response as Nullable<InAppAudioPurchaseMetadata>
-          }
-        })
-      )
+      throw new Error('Not implemented')
     }
   )
 }

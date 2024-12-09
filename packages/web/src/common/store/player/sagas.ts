@@ -120,7 +120,6 @@ export function* watchPlay() {
 
       yield* call(waitForWrite)
       const audiusBackendInstance = yield* getContext('audiusBackendInstance')
-      const apiClient = yield* getContext('apiClient')
       const currentUserId = yield* select(getUserId)
       const audiusSdk = yield* getContext('audiusSdk')
       const sdk = yield* call(audiusSdk)
@@ -162,10 +161,9 @@ export function* watchPlay() {
         retries ?? 0
       )
 
-      const discoveryNodeStreamUrl = apiClient.makeUrl(
-        `/tracks/${encodedTrackId}/stream`,
+      const discoveryNodeStreamUrl = `https://discoveryprovider.audius.co/tracks/${encodedTrackId}/stream?${new URLSearchParams(
         queryParams
-      )
+      ).toString()}`
 
       // If we have a stream URL from Discovery already for content node, use that.
       // If not, we might need the NFT gated signature, so fallback to the DN stream endpoint.

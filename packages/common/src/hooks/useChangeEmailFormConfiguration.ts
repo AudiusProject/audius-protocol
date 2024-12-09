@@ -84,23 +84,7 @@ export const useChangeEmailFormConfiguration = (onComplete: () => void) => {
       values: ChangeEmailFormValues,
       helpers: FormikHelpers<ChangeEmailFormValues>
     ) => {
-      const { oldEmail, password } = values
-      const libs = await audiusBackend.getAudiusLibsTyped()
-      try {
-        const confirmed = await libs.Account?.confirmCredentials({
-          username: oldEmail,
-          password,
-          softCheck: true
-        })
-        if (confirmed) {
-          helpers.setFieldTouched('email', false)
-          setPage(ChangeEmailPage.NewEmail)
-        } else {
-          helpers.setFieldError('password', messages.invalidCredentials)
-        }
-      } catch (e) {
-        helpers.setFieldError('password', messages.invalidCredentials)
-      }
+      throw new Error('Not implemented')
     },
     [setPage, audiusBackend]
   )
@@ -110,34 +94,7 @@ export const useChangeEmailFormConfiguration = (onComplete: () => void) => {
       values: ChangeEmailFormValues,
       helpers: FormikHelpers<ChangeEmailFormValues>
     ) => {
-      const { oldEmail, password, email, otp } = values
-      const sanitizedOtp = otp.replace(/\s/g, '')
-      const libs = await audiusBackend.getAudiusLibsTyped()
-
-      try {
-        await libs.Account!.changeCredentials({
-          newUsername: email,
-          newPassword: password,
-          oldUsername: oldEmail,
-          oldPassword: password,
-          otp: sanitizedOtp,
-          email
-        })
-        onComplete()
-      } catch (e) {
-        console.warn(e)
-        if (isOtpMissingError(e)) {
-          helpers.setFieldTouched('otp', false)
-          setPage(ChangeEmailPage.VerifyEmail)
-        } else if (isInvalidCredentialsError(e)) {
-          helpers.setFieldError('otp', messages.invalidCredentials)
-          helpers.setFieldError('email', messages.somethingWrong)
-        } else {
-          helpers.setFieldError('otp', messages.somethingWrong)
-          helpers.setFieldError('email', messages.somethingWrong)
-          reportToSentry({ error: e as Error, name: 'ChangeEmail' })
-        }
-      }
+      throw new Error('Not implemented')
     },
     [setPage, onComplete, audiusBackend, reportToSentry]
   )

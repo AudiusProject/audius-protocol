@@ -72,15 +72,6 @@ function* onSignedIn({ payload: { account } }) {
   const authService = yield getContext('authService')
   const sdk = yield* getSDK()
 
-  const libs = yield call([
-    audiusBackendInstance,
-    audiusBackendInstance.getAudiusLibs
-  ])
-  yield call([libs, libs.setCurrentUser], {
-    wallet: account.wallet,
-    userId: account.user_id
-  })
-
   if (account && account.handle) {
     const { web3WalletAddress } = yield call([
       authService,
@@ -308,10 +299,7 @@ function* watchFetchSavedPlaylists() {
 
 function* watchResetAccount() {
   yield takeEvery(resetAccount.type, function* () {
-    const audiusBackendInstance = yield getContext('audiusBackendInstance')
     const localStorage = yield getContext('localStorage')
-    const libs = yield call(audiusBackendInstance.getAudiusLibs)
-    yield call([libs, 'clearCurrentUser'])
     yield call([localStorage, 'clearAudiusAccount'])
     yield call([localStorage, 'clearAudiusAccountUser'])
   })

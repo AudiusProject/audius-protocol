@@ -4,7 +4,6 @@ import {
   UserTrackMetadata,
   UserTrack
 } from '@audius/common/models'
-import { makeActivity } from '@audius/common/services'
 import {
   accountSelectors,
   smartCollectionPageActions,
@@ -58,32 +57,33 @@ function* fetchHeavyRotation() {
   const activityData = activity.data
   if (!activityData) return { ...HEAVY_ROTATION }
 
-  const mostListenedTracks = (
-    activityData.map(makeActivity).filter(removeNullable) as UserTrackMetadata[]
-  ).filter((track) => !track.is_unlisted)
+  throw new Error('Not implemented')
+  // const mostListenedTracks = (
+  //   activityData.map(makeActivity).filter(removeNullable) as UserTrackMetadata[]
+  // ).filter((track) => !track.is_unlisted)
 
-  const users = yield* call(
-    retrieveUsers,
-    mostListenedTracks.map((t) => t.owner_id)
-  )
+  // const users = yield* call(
+  //   retrieveUsers,
+  //   mostListenedTracks.map((t) => t.owner_id)
+  // )
 
-  const trackIds = mostListenedTracks
-    .filter(
-      (track) =>
-        users.entries[track.owner_id] &&
-        !users.entries[track.owner_id].is_deactivated &&
-        !track.is_delete
-    )
-    .map((track) => ({
-      track: track.track_id
-    }))
+  // const trackIds = mostListenedTracks
+  //   .filter(
+  //     (track) =>
+  //       users.entries[track.owner_id] &&
+  //       !users.entries[track.owner_id].is_deactivated &&
+  //       !track.is_delete
+  //   )
+  //   .map((track) => ({
+  //     track: track.track_id
+  //   }))
 
-  return {
-    ...HEAVY_ROTATION,
-    playlist_contents: {
-      track_ids: trackIds
-    }
-  }
+  // return {
+  //   ...HEAVY_ROTATION,
+  //   playlist_contents: {
+  //     track_ids: trackIds
+  //   }
+  // }
 }
 
 function* fetchBestNewReleases() {
