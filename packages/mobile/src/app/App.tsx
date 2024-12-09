@@ -50,8 +50,7 @@ Sentry.init({
   dsn: env.SENTRY_DSN,
   integrations: [navigationIntegration, Sentry.reactNativeTracingIntegration()],
   enableUserInteractionTracing: true,
-  // send 30% of traces to reduce noise
-  tracesSampleRate: 0.3
+  tracesSampleRate: 1
 })
 
 const tanQueryClient = new TanQueryClient()
