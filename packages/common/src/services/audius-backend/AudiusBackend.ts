@@ -70,6 +70,7 @@ import {
 import type { DiscoveryNodeSelectorService } from '../sdk/discovery-node-selector'
 
 import { MonitoringCallbacks } from './types'
+import { wAudioFromWeiAudio } from './wAudio'
 
 type DisplayEncoding = 'utf8' | 'hex'
 type PhantomEvent = 'disconnect' | 'connect' | 'accountChanged'
@@ -1769,12 +1770,15 @@ export const audiusBackend = ({
   async function sendWAudioTokens({
     address,
     amount,
+    ethAddress,
     sdk
   }: {
     address: string
     amount: BNWei
+    ethAddress: string
     sdk: AudiusSdk
   }) {
+    const connection = sdk.services.solanaClient.connection
     // Check when sending waudio if the user has a user bank acccount
     const tokenAccountInfo = await getAssociatedTokenAccountInfo({
       address,
@@ -1800,16 +1804,107 @@ export const audiusBackend = ({
       const tx = await getCreateAssociatedTokenAccountTransaction({
         feePayerKey: SolanaUtils.newPublicKeyNullable(phantomWallet),
         solanaWalletKey: SolanaUtils.newPublicKeyNullable(address),
-        mintKey: audiusLibs.solanaWeb3Manager.mints.audio,
-        solanaTokenProgramKey: audiusLibs.solanaWeb3Manager.solanaTokenKey,
-        connection: audiusLibs.solanaWeb3Manager.getConnection()
+        mintKey: new PublicKey(env.WAUDIO_MINT_ADDRESS),
+        solanaTokenProgramKey: new PublicKey(TOKEN_PROGRAM_ID),
+        connection
       })
-      const { signature } = await window.solana.signAndSendTransaction(tx)
-      await audiusLibs.solanaWeb3Manager
-        .getConnection()
-        .confirmTransaction(signature)
+      const { signature, lastValidBlockHeight, recentBlockhash } =
+        await window.solana.signAndSendTransaction(tx)
+      if (!signature || !lastValidBlockHeight || !recentBlockhash) {
+        throw new Error('Phantom failed to sign and send transaction')
+      }
+      await connection.confirmTransaction({
+        signature: signature.toString().toString(),
+        lastValidBlockHeight,
+        blockhash: recentBlockhash
+      })
     }
-    return audiusLibs.solanaWeb3Manager.transferWAudio(address, amount)
+    return transferWAudio({
+      recipientSolanaAddress: address,
+      amount,
+      ethAddress,
+      sdk
+    })
+  }
+
+  async function transferWAudio({
+    ethAddress,
+    recipientSolanaAddress,
+    amount,
+    sdk
+  }: {
+    ethAddress: string
+    recipientSolanaAddress: string
+    amount: BN
+    sdk: AudiusSdk
+  }) {
+    // Check if the solana address is a token account
+    let tokenAccountInfo = await getTokenAccount({
+      address: new PublicKey(recipientSolanaAddress),
+      sdk
+    })
+    if (!tokenAccountInfo) {
+      console.info('Provided recipient solana address was not a token account')
+      // If not, check to see if it already has an associated token account.
+      const associatedTokenAccount = findAssociatedTokenAddress({
+        solanaWalletKey: new PublicKey(recipientSolanaAddress),
+        mintKey: new PublicKey(env.WAUDIO_MINT_ADDRESS)
+      })
+      tokenAccountInfo = await getTokenAccount({
+        address: associatedTokenAccount,
+        sdk
+      })
+
+      // If it's not a valid token account, we need to make one first
+      if (!tokenAccountInfo) {
+        console.info(
+          'Provided recipient solana address has no associated token account, creating'
+        )
+        const connection = sdk.services.solanaClient.connection
+        const tx = await getCreateAssociatedTokenAccountTransaction({
+          feePayerKey: await sdk.services.solanaRelay.getFeePayer(),
+          solanaWalletKey: new PublicKey(recipientSolanaAddress),
+          mintKey: new PublicKey(env.WAUDIO_MINT_ADDRESS),
+          solanaTokenProgramKey: new PublicKey(TOKEN_PROGRAM_ID),
+          connection
+        })
+        const { signature } = await sdk.services.solanaRelay.relay({
+          transaction: tx
+        })
+        await sdk.services.solanaClient.confirmAllTransactions(
+          [signature],
+          'confirmed'
+        )
+      }
+      recipientSolanaAddress = associatedTokenAccount.toString()
+    }
+
+    console.info(
+      `Transfering ${amount.toString()} wei $AUDIO to ${recipientSolanaAddress}`
+    )
+
+    const wAudioAmount = wAudioFromWeiAudio(amount)
+    const recipientSolanaAddressPubKey = new PublicKey(recipientSolanaAddress)
+    const secpTransactionInstruction =
+      await sdk.services.claimableTokensClient.createTransferSecpInstruction({
+        amount: wAudioAmount.toNumber(),
+        ethWallet: ethAddress,
+        mint: 'wAUDIO',
+        destination: recipientSolanaAddressPubKey
+      })
+    const transferInstruction =
+      await sdk.services.claimableTokensClient.createTransferInstruction({
+        ethWallet: ethAddress,
+        mint: 'wAUDIO',
+        destination: recipientSolanaAddressPubKey
+      })
+    const transaction = await sdk.services.solanaClient.buildTransaction({
+      instructions: [secpTransactionInstruction, transferInstruction]
+    })
+    const signature = await sdk.services.claimableTokensClient.sendTransaction(
+      transaction
+    )
+    return signature
   }
 
   async function getSignature({ data, sdk }: { data: any; sdk: AudiusSdk }) {

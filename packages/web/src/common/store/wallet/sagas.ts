@@ -149,6 +149,7 @@ function* sendAsync({
         yield* call([walletClient, 'sendWAudioTokens'], {
           address: recipientWallet as SolanaWalletAddress,
           amount: weiBNAmount,
+          ethAddress: currentUser,
           sdk
         })
       } catch (e) {

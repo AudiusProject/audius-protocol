@@ -237,10 +237,12 @@ export class WalletClient {
   async sendWAudioTokens({
     address,
     amount,
+    ethAddress,
     sdk
   }: {
     address: SolanaWalletAddress
     amount: BNWei
+    ethAddress: string
     sdk: AudiusSdk
   }): Promise<void> {
     if (amount.lt(MIN_TRANSFERRABLE_WEI)) {
@@ -251,6 +253,7 @@ export class WalletClient {
         await this.audiusBackendInstance.sendWAudioTokens({
           address,
           amount,
+          ethAddress,
           sdk
         })
       if (error) {
@@ -273,6 +276,7 @@ export class WalletClient {
       }
       return res
     } catch (err) {
+      console.error('REED', { logs: await err.getLogs() })
       console.error(err)
       throw err
     }
