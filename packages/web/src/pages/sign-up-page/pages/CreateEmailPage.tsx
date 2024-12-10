@@ -1,7 +1,6 @@
 import { useCallback, useMemo, useState } from 'react'
 
 import { useAudiusQueryContext } from '@audius/common/audius-query'
-import { GUEST_EMAIL } from '@audius/common/hooks'
 import { createEmailPageMessages } from '@audius/common/messages'
 import { emailSchema } from '@audius/common/schemas'
 import { route } from '@audius/common/utils'
@@ -19,7 +18,7 @@ import {
 import { Form, Formik } from 'formik'
 import { useDispatch, useSelector } from 'react-redux'
 import { Link } from 'react-router-dom'
-import { useLocalStorage, useWindowSize } from 'react-use'
+import { useWindowSize } from 'react-use'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 
 import audiusLogoColored from 'assets/img/audiusLogoColored.png'
@@ -67,7 +66,6 @@ export const CreateEmailPage = () => {
   const navigate = useNavigateToPage()
   const [isMetaMaskModalOpen, setIsMetaMaskModalOpen] = useState(false)
   const existingEmailValue = useSelector(getEmailField)
-  const [guestEmail] = useLocalStorage(GUEST_EMAIL, '')
   const alreadyLinkedSocial = useSelector(getLinkedSocialOnFirstPage)
   const audiusQueryContext = useAudiusQueryContext()
   const EmailSchema = useMemo(
@@ -76,7 +74,7 @@ export const CreateEmailPage = () => {
   )
 
   const initialValues = {
-    email: guestEmail ?? existingEmailValue.value ?? ''
+    email: existingEmailValue.value ?? ''
   }
 
   const {

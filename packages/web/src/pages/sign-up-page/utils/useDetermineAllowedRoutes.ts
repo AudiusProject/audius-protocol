@@ -1,4 +1,3 @@
-import { GUEST_EMAIL } from '@audius/common/src/hooks/purchaseContent'
 import { accountSelectors } from '@audius/common/store'
 import { route } from '@audius/common/utils'
 import { useSelector } from 'react-redux'
@@ -33,10 +32,8 @@ export const useDetermineAllowedRoute = () => {
   const hasAlreadySignedUp = useSelector(getAccountAlreadyExisted)
   const hasReferrer = useSelector(getReferrer)
   const { isMobile } = useMedia()
-  const guestEmail = window.localStorage.getItem(GUEST_EMAIL)
 
-  const pastAccountPhase =
-    !guestEmail && (signUpState.finishedPhase1 || hasAccount)
+  const pastAccountPhase = signUpState.finishedPhase1 || hasAccount
 
   // this requestedRoute string should have already trimmed out /signup/
   return (
