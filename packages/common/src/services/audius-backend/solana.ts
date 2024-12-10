@@ -52,16 +52,16 @@ export const MEMO_PROGRAM_ID = new PublicKey(
 )
 
 const MINT_DECIMALS: Record<MintName, number> = {
-  audio: 8,
-  usdc: 6
+  wAUDIO: 8,
+  USDC: 6
 }
 
 // TODO: Import from libs https://linear.app/audius/issue/PAY-1750/export-mintname-and-default-mint-from-libs
-export type MintName = 'audio' | 'usdc'
-export const DEFAULT_MINT: MintName = 'audio'
+export type MintName = 'wAUDIO' | 'USDC'
+export const DEFAULT_MINT: MintName = 'wAUDIO'
 
 type UserBankConfig = {
-  ethAddress?: string
+  ethAddress: string
   mint?: MintName
 }
 
@@ -94,7 +94,7 @@ export const getRecentBlockhash = async ({ sdk }: { sdk: AudiusSdk }) => {
  * Gets the token account information for a given address and Audius-relevant mint
  */
 export const getTokenAccountInfo = async (
-  audiusBackendInstance: AudiusBackend,
+  sdk: AudiusSdk,
   {
     tokenAccount,
     commitment = 'processed'
@@ -103,27 +103,28 @@ export const getTokenAccountInfo = async (
     commitment?: Commitment
   }
 ): Promise<Account | null> => {
-  return (
-    await audiusBackendInstance.getAudiusLibs()
-  ).solanaWeb3Manager!.getTokenAccountInfo(tokenAccount.toString(), commitment)
+  return await getAccount(
+    sdk.services.solanaClient.connection,
+    tokenAccount,
+    commitment
+  )
 }
 
 export const deriveUserBankPubkey = async (
-  audiusBackendInstance: AudiusBackend,
-  { ethAddress, mint = DEFAULT_MINT }: UserBankConfig = {}
+  sdk: AudiusSdk,
+  { ethAddress, mint = DEFAULT_MINT }: UserBankConfig
 ) => {
-  const audiusLibs: AudiusLibs = await audiusBackendInstance.getAudiusLibs()
-  return await audiusLibs.solanaWeb3Manager!.deriveUserBank({
-    ethAddress,
+  return await sdk.services.claimableTokensClient.deriveUserBank({
+    ethWallet: ethAddress,
     mint
   })
 }
 
 export const deriveUserBankAddress = async (
-  audiusBackendInstance: AudiusBackend,
-  { ethAddress, mint = DEFAULT_MINT }: UserBankConfig = {}
+  sdk: AudiusSdk,
+  { ethAddress, mint = DEFAULT_MINT }: UserBankConfig
 ) => {
-  const pubkey = await deriveUserBankPubkey(audiusBackendInstance, {
+  const pubkey = await deriveUserBankPubkey(sdk, {
     ethAddress,
     mint
   })
@@ -142,7 +143,6 @@ export const isTransferCheckedInstruction = (
 
 type CreateUserBankIfNeededConfig = UserBankConfig & {
   recordAnalytics: (event: AnalyticsEvent, callback?: () => void) => void
-  feePayerOverride: string
 }
 
 type CreateUserBankIfNeededErrorResult = {
@@ -151,7 +151,7 @@ type CreateUserBankIfNeededErrorResult = {
 }
 type CreateUserBankIfNeededSuccessResult = {
   didExist: boolean
-  userbank: PublicKey
+  userBank: PublicKey
 }
 type CreateUserBankIfNeededResult =
   | CreateUserBankIfNeededSuccessResult
@@ -168,25 +168,23 @@ function isCreateUserBankIfNeededError(
  * userbank does not exist, returns null.
  */
 export const getUserbankAccountInfo = async (
-  audiusBackendInstance: AudiusBackend,
-  { ethAddress: sourceEthAddress, mint = DEFAULT_MINT }: UserBankConfig = {},
+  sdk: AudiusSdk,
+  { ethAddress: sourceEthAddress, mint = DEFAULT_MINT }: UserBankConfig,
   commitment?: Commitment
 ): Promise<Account | null> => {
-  const libs: AudiusLibs = await audiusBackendInstance.getAudiusLibsTyped()
-
-  const ethAddress = sourceEthAddress ?? libs.getCurrentUser().wallet
+  const ethAddress = sourceEthAddress
   if (!ethAddress) {
     throw new Error(
       `getUserbankAccountInfo: unexpected error getting eth address`
     )
   }
 
-  const tokenAccount = await deriveUserBankPubkey(audiusBackendInstance, {
+  const tokenAccount = await deriveUserBankPubkey(sdk, {
     ethAddress,
     mint
   })
 
-  return getTokenAccountInfo(audiusBackendInstance, {
+  return getTokenAccountInfo(sdk, {
     tokenAccount,
     commitment
   })
@@ -197,29 +195,17 @@ export const getUserbankAccountInfo = async (
  * Defaults to AUDIO mint and the current user's wallet.
  */
 export const createUserBankIfNeeded = async (
-  audiusBackendInstance: AudiusBackend,
+  sdk: AudiusSdk,
   {
     recordAnalytics,
-    feePayerOverride,
     mint = DEFAULT_MINT,
-    ethAddress
+    ethAddress: recipientEthAddress
   }: CreateUserBankIfNeededConfig
 ) => {
-  const audiusLibs: AudiusLibs = await audiusBackendInstance.getAudiusLibs()
-
-  const recipientEthAddress = ethAddress ?? audiusLibs.getCurrentUser().wallet
-
-  if (!recipientEthAddress) {
-    throw new Error(
-      `createUserBankIfNeeded: Unexpectedly couldn't get recipient eth address`
-    )
-  }
-
   try {
     const res: CreateUserBankIfNeededResult =
-      await audiusLibs.solanaWeb3Manager!.createUserBankIfNeeded({
-        feePayerOverride,
-        ethAddress: recipientEthAddress,
+      await sdk.services.claimableTokensClient.getOrCreateUserBank({
+        ethWallet: recipientEthAddress,
         mint
       })
 
@@ -240,7 +226,7 @@ export const createUserBankIfNeeded = async (
         properties: { mint, recipientEthAddress }
       })
     }
-    return res.userbank
+    return res.userBank
   } catch (err: any) {
     // Catching error here for analytics purposes
     const errorMessage = 'error' in err ? err.error : (err as any).toString()
@@ -263,7 +249,7 @@ export const createUserBankIfNeeded = async (
  * @throws an error if the balance doesn't change within the timeout.
  */
 export const pollForTokenBalanceChange = async (
-  audiusBackendInstance: AudiusBackend,
+  sdk: AudiusSdk,
   {
     tokenAccount,
     initialBalance,
@@ -280,7 +266,7 @@ export const pollForTokenBalanceChange = async (
 ) => {
   const debugTokenName = mint.toUpperCase()
   let retries = 0
-  let tokenAccountInfo = await getTokenAccountInfo(audiusBackendInstance, {
+  let tokenAccountInfo = await getTokenAccountInfo(sdk, {
     tokenAccount
   })
   while (
@@ -301,7 +287,7 @@ export const pollForTokenBalanceChange = async (
       )
     }
     await delay(retryDelayMs)
-    tokenAccountInfo = await getTokenAccountInfo(audiusBackendInstance, {
+    tokenAccountInfo = await getTokenAccountInfo(sdk, {
       tokenAccount
     })
   }
@@ -376,9 +362,10 @@ export const findAssociatedTokenAddress = async (
   audiusBackendInstance: AudiusBackend,
   { solanaAddress, mint }: { solanaAddress: string; mint: MintName }
 ) => {
-  return (
-    await audiusBackendInstance.getAudiusLibsTyped()
-  ).solanaWeb3Manager!.findAssociatedTokenAddress(solanaAddress, mint)
+  return audiusBackendInstance.findAssociatedTokenAddress({
+    solanaWalletKey: new PublicKey(solanaAddress),
+    mint
+  })
 }
 
 /** Converts a Coinflow transaction which transfers directly from root wallet USDC
@@ -389,21 +376,24 @@ export const findAssociatedTokenAddress = async (
  * by the current user's Solana root wallet and the provided fee payer (likely via relay).
  */
 export const decorateCoinflowWithdrawalTransaction = async (
+  sdk: AudiusSdk,
   audiusBackendInstance: AudiusBackend,
   { transaction, feePayer }: { transaction: Transaction; feePayer: PublicKey }
 ) => {
   const libs = await audiusBackendInstance.getAudiusLibsTyped()
   const solanaWeb3Manager = libs.solanaWeb3Manager!
+  const ethAddress = sdk.services.audiusWalletClient.account.address
 
-  const userBank = await deriveUserBankPubkey(audiusBackendInstance, {
-    mint: 'usdc'
+  const userBank = await deriveUserBankPubkey(sdk, {
+    ethAddress,
+    mint: 'USDC'
   })
   const wallet = await getRootSolanaAccount(audiusBackendInstance)
   const walletUSDCTokenAccount =
-    await solanaWeb3Manager.findAssociatedTokenAddress(
-      wallet.publicKey.toBase58(),
-      'usdc'
-    )
+    audiusBackendInstance.findAssociatedTokenAddress({
+      solanaWalletKey: wallet.publicKey,
+      mint: 'USDC'
+    })
 
   // Filter any compute budget instructions since the budget will
   // definitely change
@@ -491,7 +481,7 @@ export const createTransferToUserBankTransaction = async (
     wallet,
     amount,
     memo,
-    mint = 'audio',
+    mint = 'wAUDIO',
     recentBlockhash,
     feePayer
   }: {

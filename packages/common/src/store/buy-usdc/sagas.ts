@@ -22,7 +22,11 @@ import {
   recoverUsdcFromRootWallet,
   relayTransaction
 } from '~/services/audius-backend/solana'
-import { getAccountUser, getHasAccount } from '~/store/account/selectors'
+import {
+  getAccountUser,
+  getHasAccount,
+  getWalletAddresses
+} from '~/store/account/selectors'
 import { getContext } from '~/store/effects'
 import { getFeePayer } from '~/store/solana/selectors'
 import {
@@ -75,21 +79,18 @@ function* purchaseStep({
   maxRetryCount
 }: PurchaseStepParams) {
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
+  const sdk = yield* getSDK()
   const { track, make } = yield* getContext('analytics')
 
   const tokenAccount = yield* call(
     findAssociatedTokenAddress,
     audiusBackendInstance,
-    { solanaAddress: wallet.toString(), mint: 'usdc' }
+    { solanaAddress: wallet.toString(), mint: 'USDC' }
   )
 
-  const initialAccountInfo = yield* call(
-    getTokenAccountInfo,
-    audiusBackendInstance,
-    {
-      tokenAccount
-    }
-  )
+  const initialAccountInfo = yield* call(getTokenAccountInfo, sdk, {
+    tokenAccount
+  })
   const initialBalance = initialAccountInfo?.amount ?? BigInt(0)
 
   yield* put(purchaseStarted())
@@ -133,17 +134,13 @@ function* purchaseStep({
   yield* call(track, make({ eventName: Name.BUY_USDC_ON_RAMP_SUCCESS, vendor }))
 
   // Wait for the funds to come through
-  const newBalance = yield* call(
-    pollForTokenBalanceChange,
-    audiusBackendInstance,
-    {
-      mint: 'usdc',
-      tokenAccount,
-      initialBalance,
-      retryDelayMs,
-      maxRetryCount
-    }
-  )
+  const newBalance = yield* call(pollForTokenBalanceChange, sdk, {
+    mint: 'USDC',
+    tokenAccount,
+    initialBalance,
+    retryDelayMs,
+    maxRetryCount
+  })
 
   // Check that we got the requested amount
   const purchasedAmount = newBalance - initialBalance
@@ -191,7 +188,7 @@ function* transferStep({
         {
           wallet,
           userBank,
-          mint: 'usdc',
+          mint: 'USDC',
           amount,
           memo,
           feePayer: feePayerOverride,
@@ -241,6 +238,7 @@ function* doBuyUSDC({
   const { track, make } = yield* getContext('analytics')
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
   const config = yield* call(getBuyUSDCRemoteConfig)
+  const sdk = yield* getSDK()
 
   const userBank = yield* getOrCreateUSDCUserBank()
   const rootAccount = yield* call(getRootSolanaAccount, audiusBackendInstance)
@@ -370,8 +368,13 @@ function* doBuyUSDC({
     yield* put(buyUSDCFlowSucceeded())
 
     // Update USDC balance in store
-    const account = yield* call(getUserbankAccountInfo, audiusBackendInstance, {
-      mint: 'usdc'
+    const { currentUser: ethAddress } = yield* select(getWalletAddresses)
+    if (!ethAddress) {
+      throw new Error('User is not signed in')
+    }
+    const account = yield* call(getUserbankAccountInfo, sdk, {
+      ethAddress,
+      mint: 'USDC'
     })
     const balance = (account?.amount ?? new BN(0)) as BNUSDC
     yield* put(setUSDCBalance({ amount: balance.toString() as StringUSDC }))
@@ -416,24 +419,22 @@ function* recoverPurchaseIfNecessary() {
   const reportToSentry = yield* getContext('reportToSentry')
   const { track, make } = yield* getContext('analytics')
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
+  const sdk = yield* getSDK()
 
   try {
     const rootAccount = yield* call(getRootSolanaAccount, audiusBackendInstance)
-    const audiusSdk = yield* getContext('audiusSdk')
-    const sdk = yield* call(audiusSdk)
 
     const usdcTokenAccount = yield* call(
       findAssociatedTokenAddress,
       audiusBackendInstance,
-      { solanaAddress: rootAccount.publicKey.toString(), mint: 'usdc' }
-    )
-    const accountInfo = yield* call(
-      getTokenAccountInfo,
-      audiusBackendInstance,
       {
-        tokenAccount: usdcTokenAccount
+        solanaAddress: rootAccount.publicKey.toString(),
+        mint: 'USDC'
       }
     )
+    const accountInfo = yield* call(getTokenAccountInfo, sdk, {
+      tokenAccount: usdcTokenAccount
+    })
     const amount = accountInfo?.amount ?? BigInt(0)
     if (amount === BigInt(0)) {
       return
@@ -481,15 +482,11 @@ function* recoverPurchaseIfNecessary() {
     )
 
     // Ensure RPC catches up to balance change before continuing
-    const updatedBalance = yield* call(
-      pollForTokenBalanceChange,
-      audiusBackendInstance,
-      {
-        tokenAccount: userBank,
-        mint: 'usdc',
-        initialBalance: userBankInitialBalance
-      }
-    )
+    const updatedBalance = yield* call(pollForTokenBalanceChange, sdk, {
+      tokenAccount: userBank,
+      mint: 'USDC',
+      initialBalance: userBankInitialBalance
+    })
 
     yield* put(
       setUSDCBalance({ amount: updatedBalance.toString() as StringUSDC })

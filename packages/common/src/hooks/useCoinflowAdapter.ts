@@ -46,13 +46,13 @@ export const useCoinflowWithdrawalAdapter = () => {
   } = useAppContext()
   const [adapter, setAdapter] = useState<CoinflowAdapter | null>(null)
   const feePayerOverride = useSelector(getFeePayer)
+  const { audiusSdk } = useAudiusQueryContext()
 
   useEffect(() => {
     const initWallet = async () => {
-      const libs = await audiusBackend.getAudiusLibsTyped()
-      if (!libs.solanaWeb3Manager) return
-      const connection = libs.solanaWeb3Manager.getConnection()
       const wallet = await getRootSolanaAccount(audiusBackend)
+      const sdk = await audiusSdk()
+      const connection = sdk.services.solanaClient.connection
 
       setAdapter({
         connection,
@@ -71,7 +71,7 @@ export const useCoinflowWithdrawalAdapter = () => {
             }
             const feePayer = new PublicKey(feePayerOverride)
             const finalTransaction =
-              await decorateCoinflowWithdrawalTransaction(audiusBackend, {
+              await decorateCoinflowWithdrawalTransaction(sdk, audiusBackend, {
                 transaction,
                 feePayer
               })
@@ -115,7 +115,7 @@ export const useCoinflowWithdrawalAdapter = () => {
       })
     }
     initWallet()
-  }, [audiusBackend, feePayerOverride, make, track])
+  }, [audiusBackend, feePayerOverride, make, track, audiusSdk])
 
   return adapter
 }
@@ -138,10 +138,9 @@ export const useCoinflowAdapter = ({
 
   useEffect(() => {
     const initWallet = async () => {
-      const libs = await audiusBackend.getAudiusLibsTyped()
-      if (!libs.solanaWeb3Manager) return
-      const connection = libs.solanaWeb3Manager.getConnection()
       const wallet = await getRootSolanaAccount(audiusBackend)
+      const sdk = await audiusSdk()
+      const connection = sdk.services.solanaClient.connection
       setAdapter({
         connection,
         wallet: {
@@ -149,7 +148,6 @@ export const useCoinflowAdapter = ({
           sendTransaction: async (tx: Transaction | VersionedTransaction) => {
             try {
               const transaction = tx as VersionedTransaction
-              const sdk = await audiusSdk()
 
               // Get a more recent blockhash to prevent BlockhashNotFound errors
               transaction.message.recentBlockhash = (

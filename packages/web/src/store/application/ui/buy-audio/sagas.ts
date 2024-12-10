@@ -6,6 +6,7 @@ import {
   createUserBankIfNeeded,
   LocalStorage
 } from '@audius/common/services'
+import { getWalletAddresses } from '@audius/common/src/store/account/selectors'
 import {
   solanaSelectors,
   walletSelectors,
@@ -22,7 +23,8 @@ import {
   TransactionMetadataType,
   getContext,
   AmountObject,
-  TransactionDetails
+  TransactionDetails,
+  getSDK
 } from '@audius/common/store'
 import {
   dayjs,
@@ -64,7 +66,6 @@ import {
   getAssociatedTokenAccountInfo
 } from 'services/audius-backend/BuyAudio'
 import { JupiterSingleton } from 'services/audius-backend/Jupiter'
-import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
 import {
   TRANSACTION_FEE_FALLBACK,
   getRootAccountRentExemptionMinimum,
@@ -220,6 +221,7 @@ function* getTransactionFees({
   rootAccount: PublicKey
   feesCache: ReturnType<typeof getFeesCache>
 }) {
+  const sdk = yield* getSDK()
   let transactionFees = feesCache?.transactionFees ?? 0
   if (!transactionFees) {
     const { instructions: swapInstructions, lookupTableAddresses } =
@@ -227,7 +229,13 @@ function* getTransactionFees({
         quote,
         userPublicKey: rootAccount
       })
-    const userBank = yield* call(deriveUserBankPubkey, audiusBackendInstance)
+    const { currentUser } = yield* select(getWalletAddresses)
+    if (!currentUser) {
+      throw new Error('Failed to get current user wallet address')
+    }
+    const userBank = yield* call(deriveUserBankPubkey, sdk, {
+      ethAddress: currentUser
+    })
     const transferTransaction = yield* call(
       createTransferToUserBankTransaction,
       {
@@ -372,6 +380,7 @@ function* getBuyAudioRemoteConfig() {
 function* getAudioPurchaseInfo({
   payload: { audioAmount }
 }: ReturnType<typeof calculateAudioPurchaseInfo>) {
+  const sdk = yield* getSDK()
   try {
     // Fail early if audioAmount is too small/large
     const { minAudioAmount, maxAudioAmount, slippageBps } = yield* call(
@@ -401,11 +410,16 @@ function* getAudioPurchaseInfo({
       console.error(`getAudioPurchaseInfo: unexpectedly no fee payer override`)
       return
     }
+    const { currentUser } = yield* select(getWalletAddresses)
+    if (!currentUser) {
+      throw new Error('Failed to get current user wallet address')
+    }
 
     yield* fork(function* () {
-      yield* call(createUserBankIfNeeded, audiusBackendInstance, {
+      yield* call(createUserBankIfNeeded, sdk, {
         recordAnalytics: track,
-        feePayerOverride
+        ethAddress: currentUser,
+        mint: 'wAUDIO'
       })
     })
 
@@ -780,9 +794,16 @@ function* transferStep({
   transactionHandler,
   provider
 }: TransferStepParams) {
+  const sdk = yield* getSDK()
   yield* put(transferStarted())
 
-  const userBank = yield* call(deriveUserBankPubkey, audiusBackendInstance)
+  const { currentUser } = yield* select(getWalletAddresses)
+  if (!currentUser) {
+    throw new Error('Failed to get current user wallet address')
+  }
+  const userBank = yield* call(deriveUserBankPubkey, sdk, {
+    ethAddress: currentUser
+  })
   const transferTransaction = yield* call(createTransferToUserBankTransaction, {
     userBank,
     fromAccount: rootAccount.publicKey,
@@ -840,6 +861,7 @@ function* doBuyAudio({
   payload: { desiredAudioAmount, estimatedSOL, estimatedUSD }
 }: ReturnType<typeof onrampOpened>) {
   const provider = yield* select(getBuyAudioProvider)
+  const sdk = yield* getSDK()
   let userRootWallet = ''
   try {
     // Record start
@@ -888,10 +910,15 @@ function* doBuyAudio({
       console.error('doBuyAudio: unexpectedly no fee payer override')
       return
     }
+    const { currentUser } = yield* select(getWalletAddresses)
+    if (!currentUser) {
+      throw new Error('Failed to get current user wallet address')
+    }
     yield* fork(function* () {
-      yield* call(createUserBankIfNeeded, audiusBackendInstance, {
+      yield* call(createUserBankIfNeeded, sdk, {
         recordAnalytics: track,
-        feePayerOverride
+        mint: 'wAUDIO',
+        ethAddress: currentUser
       })
     })
 

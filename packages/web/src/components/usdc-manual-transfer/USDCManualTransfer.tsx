@@ -27,7 +27,6 @@ import { ToastContext } from 'components/toast/ToastContext'
 import { Hint } from 'components/withdraw-usdc-modal/components/Hint'
 import { useIsMobile } from 'hooks/useIsMobile'
 import { track as trackAnalytics, make } from 'services/analytics'
-import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
 import { getUSDCUserBank } from 'services/solana/solana'
 import { copyToClipboard } from 'utils/clipboardUtil'
 
@@ -73,8 +72,7 @@ export const USDCManualTransfer = ({
 
   useCreateUserbankIfNeeded({
     recordAnalytics: trackAnalytics,
-    audiusBackendInstance,
-    mint: 'usdc'
+    mint: 'USDC'
   })
   const { toast } = useContext(ToastContext)
   const isMobile = useIsMobile()
