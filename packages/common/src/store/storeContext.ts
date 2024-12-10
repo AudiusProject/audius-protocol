@@ -71,7 +71,8 @@ export type CommonStoreContext = {
   nftClient: FetchNFTClient
   sentry: {
     setTag: (key: string, value: string) => void
-    configureScope: (fn: (scope: { setUser: any }) => void) => void
+    // Made optional to accommodate sentry-react-native
+    configureScope?: (fn: (scope: { setUser: any }) => void) => void
   }
   reportToSentry: (args: ReportToSentryArgs) => void
   trackDownload: TrackDownload
