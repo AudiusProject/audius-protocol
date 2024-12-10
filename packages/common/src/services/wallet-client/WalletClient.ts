@@ -253,14 +253,13 @@ export class WalletClient {
         ) {
           throw new Error(error)
         }
-        console.error(
-          `Error sending sol wrapped audio amount ${amount.toString()} to ${address.toString()}` +
-            `with error ${error.toString()}`
-        )
-        throw new Error(`Error: ${error.toString()}`)
+        throw error
       }
     } catch (err) {
-      console.error(err)
+      console.error(
+        `Error sending sol wrapped audio amount ${amount.toString()} to ${address.toString()}` +
+          `with error ${(err as Error).toString()}`
+      )
       throw err
     }
   }
