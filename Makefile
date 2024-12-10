@@ -229,3 +229,12 @@ core-dev-sandbox: core-build-amd64
 .PHONY: core-livereload
 core-livereload:
 	modd
+
+#############################
+## Audio Analysis Backfill ##
+#############################
+
+.PHONY: build-aa-backfill
+build-aa-backfill:
+	@docker build -t audius:audio-analysis-backfill -f ./cmd/audio-analysis-backfill/Dockerfile .
+
