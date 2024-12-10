@@ -1,7 +1,7 @@
 import { imageProfilePicEmpty } from '@audius/common/assets'
 import { SquareSizes, ID } from '@audius/common/models'
 import { accountSelectors, cacheUsersSelectors } from '@audius/common/store'
-import { Maybe } from '@audius/common/utils'
+import { Maybe, Nullable } from '@audius/common/utils'
 import {
   Avatar as HarmonyAvatar,
   type AvatarProps as HarmonyAvatarProps
@@ -24,7 +24,7 @@ const messages = {
 
 export type AvatarProps = Omit<HarmonyAvatarProps, 'src'> & {
   'aria-hidden'?: true
-  userId: Maybe<ID>
+  userId: Maybe<Nullable<ID>>
   onClick?: () => void
   imageSize?: SquareSizes
   popover?: boolean
@@ -39,7 +39,11 @@ export const Avatar = (props: AvatarProps) => {
     popover,
     ...other
   } = props
-  const profileImage = useProfilePicture({ userId, size: imageSize })
+
+  const profileImage = useProfilePicture({
+    userId: userId ?? undefined,
+    size: imageSize
+  })
 
   const image = userId ? profileImage : imageProfilePicEmpty
 

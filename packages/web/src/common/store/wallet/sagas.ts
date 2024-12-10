@@ -23,7 +23,6 @@ import {
   stringWeiToBN,
   weiToString
 } from '@audius/common/utils'
-import type { AudiusLibs } from '@audius/sdk-legacy/dist/libs'
 import BN from 'bn.js'
 import { all, call, put, take, takeEvery, select } from 'typed-redux-saga'
 
@@ -82,7 +81,6 @@ function* sendAsync({
   yield* waitForWrite()
   const walletClient = yield* getContext('walletClient')
   const { track } = yield* getContext('analytics')
-  const sdk = yield* getSDK()
 
   const account = yield* select(getAccountUser)
   const weiBNAmount = stringWeiToBN(weiAudioAmount)
@@ -94,8 +92,8 @@ function* sendAsync({
   }
 
   const waudioWeiAmount: BNWei | null = yield* call(
-    [walletClient, 'getCurrentWAudioBalance'],
-    { ethAddress: currentUser, sdk }
+    [walletClient, walletClient.getCurrentWAudioBalance],
+    { ethAddress: currentUser }
   )
 
   if (isNullOrUndefined(waudioWeiAmount)) {
@@ -140,18 +138,21 @@ function* sendAsync({
     // user bank balance, transfer all eth AUDIO to spl wrapped audio
     if (chain === Chain.Sol && weiBNAmount.gt(waudioWeiAmount)) {
       yield* put(transferEthAudioToSolWAudio())
-      yield* call([walletClient, 'transferTokensFromEthToSol'])
+      yield* call([walletClient, walletClient.transferTokensFromEthToSol])
     }
 
     if (chain === Chain.Eth) {
-      yield* call([walletClient, 'sendTokens'], recipientWallet, weiBNAmount)
+      yield* call(
+        [walletClient, walletClient.sendTokens],
+        recipientWallet,
+        weiBNAmount
+      )
     } else {
       try {
-        yield* call(
-          [walletClient, 'sendWAudioTokens'],
-          recipientWallet as SolanaWalletAddress,
-          weiBNAmount
-        )
+        yield* call([walletClient, walletClient.sendWAudioTokens], {
+          address: recipientWallet as SolanaWalletAddress,
+          amount: weiBNAmount
+        })
       } catch (e) {
         const errorMessage = getErrorMessage(e)
         if (errorMessage === 'Missing social proof') {
@@ -213,7 +214,6 @@ function* getWalletBalanceAndWallets() {
 function* fetchBalanceAsync() {
   yield* waitForWrite()
   const walletClient = yield* getContext('walletClient')
-  const sdk = yield* getSDK()
 
   const account = yield* select(getAccountUser)
   if (!account || !account.wallet) return
@@ -228,13 +228,12 @@ function* fetchBalanceAsync() {
       yield* select(getLocalBalanceDidChange)
 
     const [currentEthAudioWeiBalance, currentSolAudioWeiBalance] = yield* all([
-      call([walletClient, 'getCurrentBalance'], {
+      call([walletClient, walletClient.getCurrentBalance], {
         ethAddress: account.wallet,
         bustCache: localBalanceChange
       }),
-      call([walletClient, 'getCurrentWAudioBalance'], {
-        ethAddress: account.wallet,
-        sdk
+      call([walletClient, walletClient.getCurrentWAudioBalance], {
+        ethAddress: account.wallet
       })
     ])
 
@@ -252,7 +251,7 @@ function* fetchBalanceAsync() {
     }
 
     const associatedWalletBalance: BNWei | null = yield* call(
-      [walletClient, 'getAssociatedWalletBalance'],
+      [walletClient, walletClient.getAssociatedWalletBalance],
       account.user_id,
       /* bustCache */ localBalanceChange
     )
@@ -309,28 +308,23 @@ function* fetchBalanceAsync() {
  */
 function* checkAssociatedTokenAccountOrSol(action: InputSendDataAction) {
   const walletClient = yield* getContext('walletClient')
-  const audiusBackend = yield* getContext('audiusBackendInstance')
   const address = action.payload.wallet
-
-  const audiusLibs = yield* call(audiusBackend.getAudiusLibs)
-  const connection = (
-    audiusLibs as AudiusLibs
-  ).solanaWeb3Manager!.getConnection()
+  const sdk = yield* getSDK()
+  const connection = sdk.services.solanaClient.connection
 
   const associatedTokenAccount = yield* call(
-    [walletClient, 'getAssociatedTokenAccountInfo'],
-    address
+    [walletClient, walletClient.getAssociatedTokenAccountInfo],
+    { address }
   )
   if (!associatedTokenAccount) {
-    const sdk = yield* getSDK()
     const balance: BNWei = yield* call(() =>
-      walletClient.getWalletSolBalance({ address, sdk })
+      walletClient.getWalletSolBalance({ address })
     )
 
     // TODO: this can become a call to getAssociatedTokenRentExemptionMinimum
     // when the BuyAudio service has been migrated
     const minRentForATA = yield* call(
-      [connection, 'getMinimumBalanceForRentExemption'],
+      [connection, connection.getMinimumBalanceForRentExemption],
       ATA_SIZE,
       'processed'
     )

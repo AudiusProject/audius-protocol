@@ -148,6 +148,7 @@ function* getArtistsToFollow() {
   yield* put(signOnActions.setUsersToFollow(users))
 }
 
+// Fetches whatever artists we want to follow for all accounts by default - aka the Audius acct
 function* fetchDefaultFollowArtists() {
   yield* call(waitForRead)
   try {
@@ -157,7 +158,8 @@ function* fetchDefaultFollowArtists() {
     const reportToSentry = yield* getContext('reportToSentry')
     reportToSentry({
       error: e,
-      name: 'Sign Up: Unable to fetch default follow artists',
+      level: ErrorLevel.Fatal, // fatal reasoning - this is required to follow t
+      name: 'Sign Up: Unable to fetch default follow artists (aka Audius acct)',
       feature: Feature.SignUp
     })
   }
@@ -184,7 +186,8 @@ function* fetchAllFollowArtist() {
     const reportToSentry = yield* getContext('reportToSentry')
     reportToSentry({
       error: e as Error,
-      name: 'Sign Up: Unable to fetch sign up follows',
+      level: ErrorLevel.Fatal, // fatal reasoning - this is required for users to follow the artists they selected in signup
+      name: 'Sign Up: Unable to fetch sign up follows requested by user',
       feature: Feature.SignUp
     })
   }
@@ -275,6 +278,7 @@ function* validateHandle(
 ) {
   const { handle, isOauthVerified, onValidate } = action
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
+  const identityService = yield* getContext('identityService')
   const remoteConfigInstance = yield* getContext('remoteConfigInstance')
   const { ENVIRONMENT } = yield* getContext('env')
 
@@ -326,7 +330,10 @@ function* validateHandle(
       const [twitterResult, instagramResult, tiktokResult] = yield* all([
         race({
           data: verifyTwitter
-            ? call(audiusBackendInstance.twitterHandle, handle)
+            ? call(
+                [identityService, identityService.lookupTwitterHandle],
+                handle
+              )
             : null,
           timeout: delay(handleCheckTimeout)
         }),
@@ -355,7 +362,7 @@ function* validateHandle(
       const handleCheckStatus = parseHandleReservedStatusFromSocial({
         isOauthVerified,
         // @ts-ignore
-        lookedUpTwitterUser: twitterUserQuery?.user?.profile?.[0] ?? null,
+        lookedUpTwitterUser: twitterUserQuery?.profile?.[0] ?? null,
         lookedUpInstagramUser: (instagramUser as InstagramUser) || null,
         lookedUpTikTokUser: (tikTokUser as TikTokUser) || null
       })
@@ -453,92 +460,81 @@ function* associateSocialAccounts({
   instagramId?: string
   tikTokId?: string
 }) {
-  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
+  const identityService = yield* getContext('identityService')
   const reportToSentry = yield* getContext('reportToSentry')
 
-  try {
-    if (twitterId) {
-      const { error } = yield* call(
-        audiusBackendInstance.associateTwitterAccount,
+  if (twitterId) {
+    try {
+      yield* call(
+        [identityService, identityService.associateTwitterUser],
         twitterId,
         userId,
         handle,
         blockNumber
       )
-      if (error) {
-        reportToSentry({
-          error: error instanceof Error ? error : new Error(error as string),
-          name: 'Sign Up: Error while associating Twitter account',
-          additionalInfo: {
-            handle,
-            userId,
-            twitterId
-          },
-          feature: Feature.SignUp
-        })
-        yield* put(signOnActions.setTwitterProfileError(error as string))
-      }
+    } catch (err) {
+      const error = err instanceof Error ? err : new Error(err as string)
+      reportToSentry({
+        error,
+        name: 'Sign Up: Error while associating Twitter account',
+        additionalInfo: {
+          handle,
+          userId,
+          twitterId
+        },
+        feature: Feature.SignUp
+      })
+      yield* put(signOnActions.setTwitterProfileError(error.message))
     }
-    if (instagramId) {
-      const { error } = yield* call(
-        audiusBackendInstance.associateInstagramAccount,
+  }
+  if (instagramId) {
+    try {
+      yield* call(
+        [identityService, identityService.associateInstagramUser],
         instagramId,
         userId,
         handle,
         blockNumber
       )
-      if (error) {
-        reportToSentry({
-          error: error instanceof Error ? error : new Error(error as string),
-          name: 'Sign Up: Error while associating Instagram account',
-          additionalInfo: {
-            handle,
-            userId,
-            instagramId
-          },
-          feature: Feature.SignUp
-        })
-        yield* put(signOnActions.setInstagramProfileError(error as string))
-      }
+    } catch (err) {
+      const error = err instanceof Error ? err : new Error(err as string)
+      reportToSentry({
+        error,
+        name: 'Sign Up: Error while associating Instagram account',
+        additionalInfo: {
+          handle,
+          userId,
+          instagramId
+        },
+        feature: Feature.SignUp
+      })
+      yield* put(signOnActions.setInstagramProfileError(error.message))
     }
+  }
 
-    if (tikTokId) {
-      const { error } = yield* call(
-        audiusBackendInstance.associateTikTokAccount,
+  if (tikTokId) {
+    try {
+      yield* call(
+        [identityService, identityService.associateTikTokUser],
         tikTokId,
         userId,
         handle,
         blockNumber
       )
-
-      if (error) {
-        reportToSentry({
-          error: error instanceof Error ? error : new Error(error as string),
-          name: 'Sign Up: Error while associating TikTok account',
-          additionalInfo: {
-            handle,
-            userId,
-            tikTokId
-          },
-          feature: Feature.SignUp
-        })
-        yield* put(signOnActions.setTikTokProfileError(error as string))
-      }
+    } catch (err) {
+      const error = err instanceof Error ? err : new Error(err as string)
+      reportToSentry({
+        error,
+        name: 'Sign Up: Error while associating TikTok account',
+        additionalInfo: {
+          handle,
+          userId,
+          tikTokId
+        },
+        feature: Feature.SignUp
+      })
+      yield* put(signOnActions.setTikTokProfileError(error.message))
     }
-  } catch (err) {
-    const error = err instanceof Error ? err : new Error(err as string)
-    reportToSentry({
-      error,
-      name: 'Sign Up: Uncaught error while associating social accounts',
-      additionalInfo: {
-        handle,
-        userId,
-        twitterId,
-        instagramId,
-        tikTokId
-      },
-      feature: Feature.SignUp
-    })
   }
 }
 
@@ -1171,7 +1167,8 @@ function* signIn(action: ReturnType<typeof signOnActions.signIn>) {
     reportToSentry({
       error: err,
       name: 'Sign In: unknown error',
-      feature: Feature.SignIn
+      feature: Feature.SignIn,
+      level: ErrorLevel.Fatal
     })
     yield* put(signOnActions.signInFailed(err))
   }
@@ -1195,7 +1192,6 @@ function* followCollections(
     const reportToSentry = yield* getContext('reportToSentry')
     reportToSentry({
       error: err as Error,
-      level: ErrorLevel.Error,
       name: 'Sign Up: Follow collections failed',
       additionalInfo: { collectionIds, favoriteSource },
       feature: Feature.SignUp
@@ -1295,6 +1291,7 @@ function* followArtists(
     const reportToSentry = yield* getContext('reportToSentry')
     reportToSentry({
       error: err,
+      level: ErrorLevel.Fatal,
       name: 'Sign Up: Unkown error while following artists on sign up',
       feature: Feature.SignUp
     })

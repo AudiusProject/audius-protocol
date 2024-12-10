@@ -1,6 +1,7 @@
 import { accountSelectors } from '@audius/common/store'
 import { route } from '@audius/common/utils'
 import { useSelector } from 'react-redux'
+import { useLocalStorage } from 'react-use'
 
 import { useModalState } from 'common/hooks/useModalState'
 import {
@@ -13,7 +14,7 @@ import { useMedia } from 'hooks/useMedia'
 import { env } from 'services/env'
 
 const { FEED_PAGE, SignUpPath } = route
-const { getHasAccount, getAccountFolloweeCount } = accountSelectors
+const { getIsAccountComplete, getAccountFolloweeCount } = accountSelectors
 
 const isDevEnvironment =
   env.ENVIRONMENT === 'development' ||
@@ -28,12 +29,13 @@ export const useDetermineAllowedRoute = () => {
   const [, setIsWelcomeModalOpen] = useModalState('Welcome')
   const signUpState = useSelector(getSignOn)
   const followeeCount = useSelector(getAccountFolloweeCount)
-  const hasAccount = useSelector(getHasAccount)
+  const isAccountComplete = useSelector(getIsAccountComplete)
   const hasAlreadySignedUp = useSelector(getAccountAlreadyExisted)
   const hasReferrer = useSelector(getReferrer)
   const { isMobile } = useMedia()
+  const [guestEmail] = useLocalStorage('guestEmail', '')
 
-  const pastAccountPhase = signUpState.finishedPhase1 || hasAccount
+  const pastAccountPhase = signUpState.finishedPhase1 || isAccountComplete
 
   // this requestedRoute string should have already trimmed out /signup/
   return (
@@ -53,7 +55,13 @@ export const useDetermineAllowedRoute = () => {
     }
     const attemptedPath = requestedRoute.toString().replace('/signup/', '')
     // Have to type as string[] to avoid too narrow of a type for comparing against
-    let allowedRoutes: string[] = [SignUpPath.createEmail] // create email is available by default
+    let allowedRoutes: string[] = []
+
+    if (guestEmail) {
+      allowedRoutes.push(SignUpPath.createPassword)
+    } else {
+      allowedRoutes.push(SignUpPath.createEmail)
+    }
     if (signUpState.linkedSocialOnFirstPage) {
       allowedRoutes.push(SignUpPath.createLoginDetails)
       allowedRoutes.push(SignUpPath.reviewHandle)
@@ -83,7 +91,10 @@ export const useDetermineAllowedRoute = () => {
           // Already have 3 artists followed, ready to finish sign up
           allowedRoutes.push(SignUpPath.appCta)
 
-          if (signUpState.status === EditingStatus.SUCCESS || hasAccount) {
+          if (
+            signUpState.status === EditingStatus.SUCCESS ||
+            isAccountComplete
+          ) {
             allowedRoutes.push(SignUpPath.completedRedirect)
           } else {
             allowedRoutes.push(SignUpPath.loading)

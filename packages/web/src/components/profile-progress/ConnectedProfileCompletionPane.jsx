@@ -5,6 +5,7 @@ import {
   challengesSelectors,
   musicConfettiActions
 } from '@audius/common/store'
+import { Flex } from '@audius/harmony'
 import { connect, useDispatch } from 'react-redux'
 // eslint-disable-next-line no-restricted-imports -- TODO: migrate to @react-spring/web
 import { animated } from 'react-spring'
@@ -60,7 +61,7 @@ const ConnectedProfileCompletionPanel = ({
   const transitions = useSlideDown(!isHidden, ORIGINAL_HEIGHT_PIXELS, true)
 
   return (
-    <>
+    <Flex justifyContent='center'>
       {!shouldNeverShow && isLoggedIn
         ? transitions.map(({ item, key, props }) =>
             item ? (
@@ -85,7 +86,7 @@ const ConnectedProfileCompletionPanel = ({
             ) : null
           )
         : null}
-    </>
+    </Flex>
   )
 }
 

@@ -2,7 +2,6 @@ import { accountSelectors, cacheUsersSelectors } from '@audius/common/store'
 import { createSelector } from 'reselect'
 
 import { AppState } from 'store/types'
-const { getHasAccount } = accountSelectors
 const { getUsers } = cacheUsersSelectors
 
 // Sign On selectors
@@ -64,12 +63,16 @@ export const getSuggestedFollowIds = (state: AppState) => {
 }
 
 export const getHasCompletedAccount = createSelector(
-  [getHasAccount, getStartedSignUpProcess, getFinishedSignUpProcess],
-  (hasAccount, startedSignUpProcess, finishedSignUpProcess) => {
+  [
+    accountSelectors.getIsAccountComplete,
+    getStartedSignUpProcess,
+    getFinishedSignUpProcess
+  ],
+  (isAccountComplete, startedSignUpProcess, finishedSignUpProcess) => {
     // If a user has started the sign up flow,
     // only return true if they finish the flow
     // (including selecting followees)
-    return hasAccount && (!startedSignUpProcess || finishedSignUpProcess)
+    return isAccountComplete && (!startedSignUpProcess || finishedSignUpProcess)
   }
 )
 

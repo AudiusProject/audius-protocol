@@ -5,7 +5,8 @@ import {
   createHedgehogWalletClient,
   type AudiusSdk,
   encodeHashId,
-  decodeHashId
+  decodeHashId,
+  ResponseError
 } from '@audius/sdk'
 
 import {
@@ -53,24 +54,41 @@ export const getHedgehog = () => {
         method: 'GET'
       }
     )
+    if (!res.ok) {
+      throw new ResponseError(res)
+    }
     return (await res.json()) as { iv: string; cipherText: string }
   }
 
   const setAuthFn: SetAuthFn = async (args) => {
-    return await fetch(
+    args.email = args.username
+    const res = await fetch(
       'http://audius-protocol-identity-service-1/authentication',
       {
+        headers: {
+          'Content-Type': 'application/json'
+        },
         method: 'POST',
         body: JSON.stringify(args)
       }
     )
+    if (!res.ok) {
+      throw new ResponseError(res)
+    }
   }
 
   const setUserFn: SetUserFn = async (args) => {
-    return await fetch('http://audius-protocol-identity-service-1/user', {
+    args.email = args.username
+    const res = await fetch('http://audius-protocol-identity-service-1/user', {
+      headers: {
+        'Content-Type': 'application/json'
+      },
       method: 'POST',
       body: JSON.stringify(args)
     })
+    if (!res.ok) {
+      throw new ResponseError(res)
+    }
   }
 
   if (!hedgehog) {
