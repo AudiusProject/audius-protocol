@@ -196,23 +196,12 @@ export const getUserbankAccountInfo = async (
  */
 export const createUserBankIfNeeded = async (
   sdk: AudiusSdk,
-  audiusBackendInstance: AudiusBackend,
   {
     recordAnalytics,
     mint = DEFAULT_MINT,
-    ethAddress
+    ethAddress: recipientEthAddress
   }: CreateUserBankIfNeededConfig
 ) => {
-  const audiusLibs: AudiusLibs = await audiusBackendInstance.getAudiusLibs()
-
-  const recipientEthAddress = ethAddress ?? audiusLibs.getCurrentUser().wallet
-
-  if (!recipientEthAddress) {
-    throw new Error(
-      `createUserBankIfNeeded: Unexpectedly couldn't get recipient eth address`
-    )
-  }
-
   try {
     const res: CreateUserBankIfNeededResult =
       await sdk.services.claimableTokensClient.getOrCreateUserBank({

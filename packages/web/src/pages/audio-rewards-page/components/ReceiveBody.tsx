@@ -52,7 +52,6 @@ const ReceiveBody = ({ wallet, solWallet }: ReceiveBodyProps) => {
 
   useCreateUserbankIfNeeded({
     recordAnalytics: track,
-    audiusBackendInstance,
     mint: 'wAUDIO'
   })
 

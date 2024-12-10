@@ -411,10 +411,15 @@ function* getAudioPurchaseInfo({
       console.error(`getAudioPurchaseInfo: unexpectedly no fee payer override`)
       return
     }
+    const { currentUser } = yield* select(getWalletAddresses)
+    if (!currentUser) {
+      throw new Error('Failed to get current user wallet address')
+    }
 
     yield* fork(function* () {
-      yield* call(createUserBankIfNeeded, sdk, audiusBackendInstance, {
+      yield* call(createUserBankIfNeeded, sdk, {
         recordAnalytics: track,
+        ethAddress: currentUser,
         mint: 'wAUDIO'
       })
     })
@@ -906,10 +911,15 @@ function* doBuyAudio({
       console.error('doBuyAudio: unexpectedly no fee payer override')
       return
     }
+    const { currentUser } = yield* select(getWalletAddresses)
+    if (!currentUser) {
+      throw new Error('Failed to get current user wallet address')
+    }
     yield* fork(function* () {
-      yield* call(createUserBankIfNeeded, sdk, audiusBackendInstance, {
+      yield* call(createUserBankIfNeeded, sdk, {
         recordAnalytics: track,
-        mint: 'wAUDIO'
+        mint: 'wAUDIO',
+        ethAddress: currentUser
       })
     })
 

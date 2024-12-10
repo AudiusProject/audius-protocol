@@ -123,13 +123,16 @@ function* sendAsync({
     )
 
     // Ensure user has userbank
-    const audiusBackend = yield* getContext('audiusBackendInstance')
     const feePayerOverride = yield* select(getFeePayer)
     if (!feePayerOverride) {
       console.error(`sendAsync: unexpectedly no fee payer`)
       return
     }
-    yield* call(createUserBankIfNeeded, sdk, audiusBackend, {
+    const { currentUser } = yield* select(getWalletAddresses)
+    if (!currentUser) {
+      throw new Error('Failed to get current user wallet address')
+    }
+    yield* call(createUserBankIfNeeded, sdk, {
       recordAnalytics: track,
       ethAddress: currentUser,
       mint: 'wAUDIO'

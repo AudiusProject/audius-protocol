@@ -63,6 +63,7 @@ import { setVisibility } from '~/store/ui/modals/parentSlice'
 import { initializeStripeModal } from '~/store/ui/stripe-modal/slice'
 import { waitForAccount, waitForValue } from '~/utils/sagaHelpers'
 
+import { getWalletAddresses } from '../account/selectors'
 import { getSDK } from '../sdkUtils'
 
 import {
@@ -324,9 +325,14 @@ function* doBuyCryptoViaSol({
     // Set up computed vars
     const outputTokenLamports = 10 ** outputToken.decimals
     const feePayer = new PublicKey(feePayerAddress)
-    userbank = yield* call(createUserBankIfNeeded, sdk, audiusBackendInstance, {
+    const { currentUser } = yield* select(getWalletAddresses)
+    if (!currentUser) {
+      throw new Error('Failed to get current user wallet address')
+    }
+    userbank = yield* call(createUserBankIfNeeded, sdk, {
       mint,
-      recordAnalytics: track
+      recordAnalytics: track,
+      ethAddress: currentUser
     })
 
     // Get required SOL purchase amount via ExactOut + minRent.
@@ -746,9 +752,14 @@ function* recoverBuyCryptoViaSolIfNecessary() {
     const outputTokenLamports = 10 ** outputToken.decimals
     const expectedAmount = Math.ceil(amount * outputTokenLamports)
     const feePayer = new PublicKey(feePayerAddress)
-    userbank = yield* call(createUserBankIfNeeded, sdk, audiusBackendInstance, {
+    const { currentUser } = yield* select(getWalletAddresses)
+    if (!currentUser) {
+      throw new Error('Failed to get current user wallet address')
+    }
+    userbank = yield* call(createUserBankIfNeeded, sdk, {
       mint: localStorageState.mint,
-      recordAnalytics: track
+      recordAnalytics: track,
+      ethAddress: currentUser
     })
 
     // Get swappable salvage amount
