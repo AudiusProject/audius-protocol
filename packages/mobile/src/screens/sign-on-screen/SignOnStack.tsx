@@ -23,7 +23,7 @@ import { SelectArtistsScreen } from './screens/SelectArtistScreen'
 import { SelectGenresScreen } from './screens/SelectGenresScreen'
 import { SignOnScreen } from './screens/SignOnScreen'
 import type { SignUpScreenParamList } from './types'
-const { getHasCompletedAccount } = accountSelectors
+const { getIsAccountComplete: getHasCompletedAccount } = accountSelectors
 
 const Stack = createNativeStackNavigator()
 const screenOptionsOverrides = { animationTypeForReplace: 'pop' as const }

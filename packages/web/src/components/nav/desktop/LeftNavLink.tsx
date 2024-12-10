@@ -6,16 +6,31 @@ import { Interpolation, Theme } from '@emotion/react'
 import { Slot } from '@radix-ui/react-slot'
 import { NavLink, NavLinkProps } from 'react-router-dom'
 
+import {
+  RestrictionType,
+  useRequiresAccountOnClick
+} from 'hooks/useRequiresAccount'
+
 export type LeftNavLinkProps =
   | { disabled?: boolean; asChild?: boolean } & (
       | Omit<NavLinkProps, 'onDrop'>
       | Omit<ComponentProps<'div'>, 'onDrop'>
-    )
+    ) & {
+        restriction?: RestrictionType
+      }
 
 export const LeftNavLink = (props: LeftNavLinkProps) => {
-  const { asChild, disabled, children, ...other } = props
+  const { asChild, disabled, children, onClick, restriction, ...other } = props
 
   const theme = useTheme()
+
+  const handleClick = useRequiresAccountOnClick(
+    (e) => onClick?.(e as any),
+    [onClick],
+    undefined,
+    undefined,
+    restriction
+  )
 
   const css = useMemo(() => {
     const { color, spacing, typography, cornerRadius } = theme
@@ -96,14 +111,14 @@ export const LeftNavLink = (props: LeftNavLinkProps) => {
 
   if ('to' in other) {
     return (
-      <NavLink {...other} activeClassName='active' css={css}>
+      <NavLink
+        {...other}
+        onClick={handleClick}
+        activeClassName='active'
+        css={css}
+      >
         <TextComp {...textProps}>{children}</TextComp>
       </NavLink>
     )
   }
-  return (
-    <div {...other} css={css}>
-      <TextComp {...textProps}>{children}</TextComp>
-    </div>
-  )
 }
