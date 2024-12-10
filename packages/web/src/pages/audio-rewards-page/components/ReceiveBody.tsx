@@ -5,7 +5,6 @@ import cn from 'classnames'
 
 import { useLocalStorage } from 'hooks/useLocalStorage'
 import { track } from 'services/analytics'
-import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
 
 import { ModalBodyWrapper } from '../WalletModal'
 

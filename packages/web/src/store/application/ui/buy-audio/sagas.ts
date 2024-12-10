@@ -66,7 +66,6 @@ import {
   getAssociatedTokenAccountInfo
 } from 'services/audius-backend/BuyAudio'
 import { JupiterSingleton } from 'services/audius-backend/Jupiter'
-import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
 import {
   TRANSACTION_FEE_FALLBACK,
   getRootAccountRentExemptionMinimum,
