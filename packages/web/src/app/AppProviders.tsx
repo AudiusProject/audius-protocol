@@ -24,7 +24,6 @@ import { useHistoryContext } from './HistoryProvider'
 import { ReduxProvider } from './ReduxProvider'
 import { SvgGradientProvider } from './SvgGradientProvider'
 import { ThemeProvider } from './ThemeProvider'
-import { TrpcProvider } from './TrpcProvider'
 
 const tanQueryClient = new TanQueryClient()
 
@@ -49,32 +48,30 @@ export const AppProviders = ({ children }: AppContextProps) => {
       <ConnectedRouter history={history}>
         <CompatRouter>
           <LastLocationProvider>
-            <TrpcProvider>
-              <AudiusQueryProvider>
-                <QueryClientProvider client={tanQueryClient}>
-                  <ReactQueryDevtools initialIsOpen={false} />
-                  <AppContextProvider>
-                    <ThemeProvider>
-                      <NavProvider>
-                        <ScrollProvider>
-                          <RouterContextProvider>
-                            <MainContentContextProvider>
-                              <SvgGradientProvider>
-                                <HeaderContextProvider>
-                                  <ToastContextProvider>
-                                    {children}
-                                  </ToastContextProvider>
-                                </HeaderContextProvider>
-                              </SvgGradientProvider>
-                            </MainContentContextProvider>
-                          </RouterContextProvider>
-                        </ScrollProvider>
-                      </NavProvider>
-                    </ThemeProvider>
-                  </AppContextProvider>
-                </QueryClientProvider>
-              </AudiusQueryProvider>
-            </TrpcProvider>
+            <AudiusQueryProvider>
+              <QueryClientProvider client={tanQueryClient}>
+                <ReactQueryDevtools initialIsOpen={false} />
+                <AppContextProvider>
+                  <ThemeProvider>
+                    <NavProvider>
+                      <ScrollProvider>
+                        <RouterContextProvider>
+                          <MainContentContextProvider>
+                            <SvgGradientProvider>
+                              <HeaderContextProvider>
+                                <ToastContextProvider>
+                                  {children}
+                                </ToastContextProvider>
+                              </HeaderContextProvider>
+                            </SvgGradientProvider>
+                          </MainContentContextProvider>
+                        </RouterContextProvider>
+                      </ScrollProvider>
+                    </NavProvider>
+                  </ThemeProvider>
+                </AppContextProvider>
+              </QueryClientProvider>
+            </AudiusQueryProvider>
           </LastLocationProvider>
         </CompatRouter>
       </ConnectedRouter>
