@@ -47,12 +47,11 @@ const setSentryUser = (sentry, user, traits) => {
   if (traits.managerUserId) {
     sentry.setTag('isManagerMode', 'true')
   }
-  sentry.configureScope((currentScope) => {
-    currentScope.setUser({
-      id: `${user.user_id}`,
-      username: user.handle,
-      ...traits
-    })
+  const scope = sentry.getCurrentScope()
+  scope.setUser({
+    id: `${user.user_id}`,
+    username: user.handle,
+    ...traits
   })
 }
 

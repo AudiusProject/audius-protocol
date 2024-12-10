@@ -67,7 +67,7 @@ export const buildStoreContext = ({
       metadataProgramId: env.METADATA_PROGRAM_ID
     }
   }),
-  sentry: { setTag, configureScope },
+  sentry: { setTag, getCurrentScope },
   reportToSentry,
   trackDownload,
   instagramAppId: env.INSTAGRAM_APP_ID,
