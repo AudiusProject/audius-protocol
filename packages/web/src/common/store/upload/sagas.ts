@@ -1273,7 +1273,7 @@ export function* updateTrackAudioAsync(
     )
 
     // Delay to allow the user to see that the track replace upload has finished
-    yield* delay(3000)
+    yield* delay(1500)
 
     yield* put(replaceTrackProgressModalActions.close())
     yield* put(push(track.permalink))

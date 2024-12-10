@@ -44,7 +44,7 @@ export const ReplaceTrackProgressDrawer = () => {
         ) : (
           <Flex direction='column' gap='3xl' ph='2xl' pb='3xl'>
             <Flex alignItems='center' direction='column' gap='xl'>
-              <IconAudiusLogo height={48} width={48} color='default' />
+              <IconAudiusLogo height={48} width={48} color='subdued' />
               <Text variant='body' size='l'>
                 {messages.description}
               </Text>

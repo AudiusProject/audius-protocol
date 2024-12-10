@@ -179,9 +179,13 @@ const TrackEditForm = (
     setIndex(0)
   })
   const [forceOpenAccessAndSale, setForceOpenAccessAndSale] = useState(false)
-  const { playingPreviewIndex, togglePreview } =
+  const { playingPreviewIndex, togglePreview, stopPreview } =
     useContext(UploadPreviewContext)
   const isPreviewPlaying = playingPreviewIndex === trackIdx
+
+  useUnmount(() => {
+    stopPreview()
+  })
 
   const { isEnabled: isTrackAudioReplaceEnabled } = useFeatureFlag(
     FeatureFlags.TRACK_AUDIO_REPLACE
