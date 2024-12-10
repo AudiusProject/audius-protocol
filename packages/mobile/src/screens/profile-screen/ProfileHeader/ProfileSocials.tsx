@@ -5,9 +5,8 @@ import { cacheUsersActions } from '@audius/common/store'
 import { View, Animated } from 'react-native'
 import { useDispatch } from 'react-redux'
 
-import { Divider } from 'app/components/core'
+import { Divider } from '@audius/harmony-native'
 import { makeStyles } from 'app/styles'
-import { spacing } from 'app/styles/spacing'
 
 import { useSelectProfile } from '../selectors'
 
@@ -31,9 +30,6 @@ const useStyles = makeStyles(({ spacing }) => ({
   },
   socialsCentered: {
     justifyContent: 'center'
-  },
-  divider: {
-    marginVertical: spacing(1)
   }
 }))
 
@@ -106,10 +102,8 @@ export const ProfileSocials = () => {
         {index === socialLinks.length - 1 ? null : (
           <Divider
             orientation='vertical'
-            style={[
-              styles.divider,
-              { marginHorizontal: spacing(socialsCount === 2 ? 6 : 4) }
-            ]}
+            mv='xs'
+            mh={socialsCount === 2 ? 's' : 'xs'}
           />
         )}
       </Fragment>
