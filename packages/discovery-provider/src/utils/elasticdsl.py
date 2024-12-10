@@ -79,6 +79,11 @@ def populate_track_or_playlist_metadata_es(item, current_user):
     else:
         item["has_current_user_reposted"] = False
         item["has_current_user_saved"] = False
+    if "playlist_id" in item:
+        item["tracks"] = [
+            populate_track_or_playlist_metadata_es(track, current_user)
+            for track in item["tracks"]
+        ]
     return omit_indexed_fields(item)
 
 
@@ -87,7 +92,6 @@ omit_keys = [
     "following_ids",
     "follower_ids",
     "subscribed_ids",
-    "tracks",
     # track index
     "reposted_by",
     "saved_by",

@@ -791,6 +791,8 @@ def _populate_gated_content_metadata(session, entities, current_user_id):
         ] = has_download_access
 
     for entity in entities:
+        if "playlist_id" in entity:
+            _populate_gated_content_metadata(session, entity["tracks"], current_user_id)
         content_id = getContentId(entity)
         if content_id not in gated_content_ids:
             entity[response_name_constants.access] = {

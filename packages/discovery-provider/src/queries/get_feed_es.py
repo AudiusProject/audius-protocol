@@ -1,4 +1,3 @@
-from src.models.tracks.track import Track
 from src.queries.query_helpers import (
     _populate_gated_content_metadata,
     filter_hidden_tracks,
@@ -123,6 +122,7 @@ def get_feed_es(args, limit=10, offset=0):
     # track timestamps and duplicates
     seen = set()
     unsorted_feed = []
+    playlist_track_ids = set()
 
     for playlist in playlists:
         # Q: should es-indexer set item_key on track / playlist too?
@@ -143,6 +143,7 @@ def get_feed_es(args, limit=10, offset=0):
         # supress individual tracks from said album appearing in feed
         for track in playlist["tracks"]:
             seen.add(item_key(track))
+            playlist_track_ids.add(track["track_id"])
 
     for track in tracks:
         track["item_key"] = item_key(track)
@@ -219,45 +220,43 @@ def get_feed_es(args, limit=10, offset=0):
                 )
                 repost_playlist_track_ids = repost_playlist_track_ids.union(track_ids)
 
-    # get hidden track ids in reposted playlists
-    hidden_playlist_track_ids = []
-    db = get_db_read_replica()
-    if repost_playlist_track_ids:
-        with db.scoped_session() as session:
-            hidden_playlist_track_ids = (
-                session.query(Track.track_id)
-                .filter(Track.track_id.in_(list(repost_playlist_track_ids)))
-                .filter(Track.is_unlisted == True)
-                .all()
-            )
-            hidden_playlist_track_ids = [t[0] for t in hidden_playlist_track_ids]
+    # attach playlist tracks
+    playlist_tracks = esclient.mget(index=ES_TRACKS, ids=list(playlist_track_ids))
+    playlist_tracks_by_id = {
+        d["_id"]: d["_source"] for d in playlist_tracks["docs"] if d["found"]
+    }
 
     # replace repost with underlying items
     sorted_feed = []
     for x in sorted_with_reposts:
         if "min_created_at" not in x:
-            x["activity_timestamp"] = x["created_at"]
-            sorted_feed.append(x)
+            item = x
+            item["activity_timestamp"] = x["created_at"]
         else:
             k = x["key"]
             if k not in keyed_reposts:
                 # MISSING: see above
                 continue
             item = keyed_reposts[k]
-
-            # exclude reposted playlists with only hidden tracks and empty reposted playlists
-            if "playlist_id" in item:
-                track_ids = set(
-                    map(
-                        lambda t: t["track"],
-                        item.get("playlist_contents", {}).get("track_ids", []),
-                    )
-                )
-                if all([t in hidden_playlist_track_ids for t in track_ids]):
-                    continue
-
             item["activity_timestamp"] = x["min_created_at"]["value_as_string"]
-            sorted_feed.append(item)
+
+        # exclude reposted playlists with only hidden tracks and empty reposted playlists
+        if "playlist_id" in item:
+            track_ids = list(
+                map(
+                    lambda t: t["track"],
+                    item.get("playlist_contents", {}).get("track_ids", []),
+                )
+            )
+            tracks = []
+            for track_id in track_ids:
+                if str(track_id) in playlist_tracks_by_id:
+                    tracks.append(playlist_tracks_by_id[str(track_id)])
+            if all([t["is_unlisted"] for t in tracks]):
+                continue
+            item["tracks"] = tracks
+
+        sorted_feed.append(item)
 
     # attach users
     user_id_set = set([str(id) for id in get_users_ids(sorted_feed)])
@@ -303,6 +302,7 @@ def get_feed_es(args, limit=10, offset=0):
     )
 
     # batch populate gated track and collection metadata
+    db = get_db_read_replica()
     with db.scoped_session() as session:
         _populate_gated_content_metadata(session, sorted_feed, current_user["user_id"])
 

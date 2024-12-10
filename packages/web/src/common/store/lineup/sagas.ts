@@ -193,13 +193,6 @@ function* fetchLineupMetadatasAsync<T extends Track | Collection>(
         )
       )
 
-      // Let page animations on mobile have time to breathe
-      // TODO: Get rid of this once we figure out how to make loading better
-      const isNativeMobile = yield* getContext('isNativeMobile')
-      if (!isNativeMobile && isMobileWeb()) {
-        yield* delay(100)
-      }
-
       const lineupMetadatasResponse: LineupEntry<T>[] = yield* call(
         lineupMetadatasCall,
         action

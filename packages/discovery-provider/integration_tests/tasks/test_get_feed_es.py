@@ -142,6 +142,9 @@ def test_get_feed_es(app):
         assert feed_results[0]["playlist_id"] == 1
         assert feed_results[0]["save_count"] == 1
         assert len(feed_results[0]["followee_reposts"]) == 1
+        assert len(feed_results[0]["tracks"]) == 1
+        assert len(feed_results[0]["tracks"][0]["track_id"]) == 1
+        assert len(feed_results[0]["tracks"][0]["track_id"]) == 1
 
         assert feed_results[1]["track_id"] == 1
         assert feed_results[1]["save_count"] == 1
