@@ -9,9 +9,9 @@ import { useEffectOnce } from 'react-use'
 
 import { Screen, ScreenContent } from 'app/components/core'
 
-import { SettingsDivider } from './SettingsDivider'
 import { EmailFrequencyControlRow } from './EmailFrequencyControlRow'
 import { NotificationRow } from './NotificationRow'
+import { SettingsDivider } from './SettingsDivider'
 
 const { getPushNotificationSettings, getNotificationSettings } =
   settingsPageActions

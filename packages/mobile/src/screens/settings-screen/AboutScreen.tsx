@@ -17,8 +17,8 @@ import { makeStyles } from 'app/styles'
 
 import packageInfo from '../../../package.json'
 
-import { SettingsDivider } from './SettingsDivider'
 import { SettingsRowLabel } from './SettingRowLabel'
+import { SettingsDivider } from './SettingsDivider'
 import { SettingsRow } from './SettingsRow'
 
 const { version: appVersion } = packageInfo
