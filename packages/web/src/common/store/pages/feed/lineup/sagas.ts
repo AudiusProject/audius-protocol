@@ -78,11 +78,12 @@ function* getTracks({
   if (feed === null) return null
   const filteredFeed = feed.filter((record) => !record.user.is_deactivated)
   const [tracks, collections] = getTracksAndCollections(filteredFeed)
+  const trackIds = tracks.map((t) => t.track_id)
 
   // Process (e.g. cache and remove entries)
   const [processedTracks, processedCollections] = (yield* all([
     processAndCacheTracks(tracks),
-    processAndCacheCollections(collections, false)
+    processAndCacheCollections(collections, true, trackIds)
   ])) as [LineupTrack[], Collection[]]
   const processedTracksMap = processedTracks.reduce<Record<ID, LineupTrack>>(
     (acc, cur) => ({ ...acc, [cur.track_id]: cur }),
