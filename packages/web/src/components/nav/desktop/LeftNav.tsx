@@ -22,7 +22,7 @@ import { Dispatch } from 'redux'
 import { make, useRecord } from 'common/store/analytics/actions'
 import * as signOnActions from 'common/store/pages/signon/actions'
 import { DragAutoscroller } from 'components/drag-autoscroller/DragAutoscroller'
-import ConnectedProfileCompletionPane from 'components/profile-progress/ConnectedProfileCompletionPane'
+import { ProfileCompletionPanel } from 'components/profile-progress/ProfileCompletionPanel'
 import { selectDraggingKind } from 'store/dragndrop/slice'
 import { AppState } from 'store/types'
 
@@ -111,12 +111,6 @@ const LeftNav = (props: NavColumnProps) => {
         scrollbarRef.current.scrollTop + difference
     }
   }, [])
-
-  const profileCompletionMeter = (
-    <Flex justifyContent='center'>
-      <ConnectedProfileCompletionPane />
-    </Flex>
-  )
 
   const navLoaded =
     accountStatus === Status.SUCCESS || accountStatus === Status.ERROR
@@ -228,7 +222,7 @@ const LeftNav = (props: NavColumnProps) => {
         </Scrollbar>
       </Flex>
       <Flex direction='column' alignItems='center' pt='l' borderTop='default'>
-        {profileCompletionMeter}
+        <ProfileCompletionPanel />
         <LeftNavCTA />
         <NowPlayingArtworkTile />
       </Flex>
