@@ -31,7 +31,6 @@ import { Uid, makeUids, makeUid, removeNullable } from '@audius/common/utils'
 import {
   all,
   call,
-  delay,
   put,
   fork,
   select,
@@ -42,7 +41,6 @@ import {
 } from 'typed-redux-saga'
 
 import { getToQueue } from 'common/store/queue/sagas'
-import { isMobileWeb } from 'common/utils/isMobileWeb'
 import { isPreview } from 'common/utils/isPreview'
 import { AppState } from 'store/types'
 

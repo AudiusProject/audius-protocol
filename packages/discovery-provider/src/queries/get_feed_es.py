@@ -143,7 +143,6 @@ def get_feed_es(args, limit=10, offset=0):
         # supress individual tracks from said album appearing in feed
         for track in playlist["tracks"]:
             seen.add(item_key(track))
-            playlist_track_ids.add(track["track_id"])
 
     for track in tracks:
         track["item_key"] = item_key(track)
@@ -187,8 +186,6 @@ def get_feed_es(args, limit=10, offset=0):
         else:
             mget_reposts.append({"_index": ES_PLAYLISTS, "_id": id})
 
-    repost_playlist_track_ids = set()
-
     if mget_reposts:
         reposted_docs = esclient.mget(docs=mget_reposts)
         for doc in reposted_docs["docs"]:
@@ -209,22 +206,22 @@ def get_feed_es(args, limit=10, offset=0):
                 # MISSING: skip reposts for delete, private, unlisted, stem_of, is_stream_gated
                 # this is why we took soft limit above
                 continue
+            if "playlist_id" in s:
+                for track in s["playlist_contents"]["track_ids"]:
+                    playlist_track_ids.add(track["track"])
             keyed_reposts[s["item_key"]] = s
 
-            if "playlist_id" in s:
-                track_ids = set(
-                    map(
-                        lambda t: t["track"],
-                        s.get("playlist_contents", {}).get("track_ids", []),
-                    )
-                )
-                repost_playlist_track_ids = repost_playlist_track_ids.union(track_ids)
-
     # attach playlist tracks
-    playlist_tracks = esclient.mget(index=ES_TRACKS, ids=list(playlist_track_ids))
-    playlist_tracks_by_id = {
-        d["_id"]: d["_source"] for d in playlist_tracks["docs"] if d["found"]
-    }
+    playlist_tracks = (
+        esclient.mget(index=ES_TRACKS, ids=list(playlist_track_ids))
+        if len(playlist_track_ids) > 0
+        else []
+    )
+    playlist_tracks_by_id = (
+        {d["_id"]: d["_source"] for d in playlist_tracks["docs"] if d["found"]}
+        if len(playlist_track_ids) > 0
+        else {}
+    )
 
     # replace repost with underlying items
     sorted_feed = []
@@ -238,9 +235,9 @@ def get_feed_es(args, limit=10, offset=0):
                 # MISSING: see above
                 continue
             item = keyed_reposts[k]
-            item["activity_timestamp"] = x["min_created_at"]["value_as_string"]
+            if "playlist_id" in item:
+                item["activity_timestamp"] = x["min_created_at"]["value_as_string"]
 
-        # exclude reposted playlists with only hidden tracks and empty reposted playlists
         if "playlist_id" in item:
             track_ids = list(
                 map(
@@ -252,7 +249,8 @@ def get_feed_es(args, limit=10, offset=0):
             for track_id in track_ids:
                 if str(track_id) in playlist_tracks_by_id:
                     tracks.append(playlist_tracks_by_id[str(track_id)])
-            if all([t["is_unlisted"] for t in tracks]):
+            # exclude reposted playlists with only hidden tracks
+            if len(tracks) > 0 and all([t["is_unlisted"] for t in tracks]):
                 continue
             item["tracks"] = tracks
 

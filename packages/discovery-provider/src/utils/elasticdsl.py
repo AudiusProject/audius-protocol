@@ -79,7 +79,7 @@ def populate_track_or_playlist_metadata_es(item, current_user):
     else:
         item["has_current_user_reposted"] = False
         item["has_current_user_saved"] = False
-    if "playlist_id" in item:
+    if "playlist_id" in item and "tracks" in item:
         item["tracks"] = [
             populate_track_or_playlist_metadata_es(track, current_user)
             for track in item["tracks"]
