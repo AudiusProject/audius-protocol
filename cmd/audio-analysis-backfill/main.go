@@ -114,7 +114,7 @@ func intakeUploadBatches(ctx context.Context, wg *sync.WaitGroup) {
 	}
 	defer db.Close()
 
-	query := `select count(*) from uploads where template = 'audio' and audio_analysis_status = 'error' and audio_analysis_error ilike 'command exited with status -1:%';`
+	query := `select id from uploads where template = 'audio' and audio_analysis_status = 'error' and audio_analysis_error ilike 'command exited with status -1:%';`
 	rows, err := db.Query(query)
 	if err != nil {
 		fmt.Println("couldn't query postgres:", err)
@@ -237,7 +237,7 @@ func consumeAnalysisResults(ctx context.Context, wg *sync.WaitGroup) {
 }
 
 func main() {
-	ctx, _ := context.WithCancel(context.Background())
+	ctx, cancel := context.WithCancel(context.Background())
 	var wg sync.WaitGroup
 
 	wg.Add(3)
@@ -247,4 +247,5 @@ func main() {
 	go consumeAnalysisResults(ctx, &wg)
 
 	wg.Wait()
+	cancel()
 }

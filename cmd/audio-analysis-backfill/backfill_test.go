@@ -11,10 +11,6 @@ import (
 	"github.com/google/uuid"
 )
 
-func TestManualList(t *testing.T) {
-
-}
-
 func TestWriteFile(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
 
