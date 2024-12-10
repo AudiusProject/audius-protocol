@@ -6,6 +6,7 @@ import { AntiAbuseOracleService } from './services/AntiAbuseOracle/types'
 import type { AntiAbuseOracleSelectorService } from './services/AntiAbuseOracleSelector/types'
 import type { AudiusWalletClient } from './services/AudiusWalletClient'
 import type { DiscoveryNodeSelectorService } from './services/DiscoveryNodeSelector'
+import { EmailEncryptionService } from './services/Encryption'
 import type { EntityManagerService } from './services/EntityManager'
 import {
   AudiusTokenClient,
@@ -161,6 +162,11 @@ export type ServicesContainer = {
    * Service used to interact with Anti Abuse Oracle
    */
   antiAbuseOracle: AntiAbuseOracleService
+
+  /**
+   * Service used to handle the encryption and decryption of emails, also used for the encryption needed to share emails between users
+   */
+  emailEncryptionService: EmailEncryptionService
 }
 
 /**

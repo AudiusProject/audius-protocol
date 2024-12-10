@@ -427,9 +427,11 @@ export function removeFollowArtists(userIds: ID[]) {
   return { type: REMOVE_FOLLOW_ARTISTS, userIds }
 }
 
-export const showRequiresAccountToast = () =>
+export const showRequiresAccountToast = (isAccountIncomplete?: boolean) =>
   toastActions.toast({
-    content: 'Oops, it looks like you need an account to do that!'
+    content: isAccountIncomplete
+      ? 'Finish setting up your account to continue'
+      : 'Oops, it looks like you need an account to do that!'
   })
 
 /**

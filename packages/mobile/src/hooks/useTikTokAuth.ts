@@ -1,5 +1,6 @@
 import { createUseTikTokAuthHook, useFeatureFlag } from '@audius/common/hooks'
 import type { UseTikTokAuthArguments, Credentials } from '@audius/common/hooks'
+import { Feature } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import CookieManager from '@react-native-cookies/cookies'
@@ -16,6 +17,7 @@ import { dispatch } from 'app/store'
 import * as oauthActions from 'app/store/oauth/actions'
 import { Provider } from 'app/store/oauth/reducer'
 import { EventNames } from 'app/types/analytics'
+import { reportToSentry } from 'app/utils/reportToSentry'
 
 const authenticationUrl = `${env.IDENTITY_SERVICE}/tiktok`
 
@@ -62,7 +64,21 @@ const createAuthenticate =
         }
 
         if (error) {
-          return reject(new Error(errorMessage))
+          const authError = new Error(errorMessage)
+          reportToSentry({
+            error: authError,
+            name: 'Sign Up: TikTok auth response had an error',
+            additionalInfo: {
+              code,
+              hasError: error,
+              errorMessage
+            },
+            tags: {
+              socialMedia: 'tiktok'
+            },
+            feature: Feature.SignUp
+          })
+          return reject(authError)
         }
 
         // Need to set a csrf cookie because it is required for web
@@ -88,6 +104,20 @@ const createAuthenticate =
           )
 
           if (!response.ok) {
+            const authError = new Error(errorMessage)
+            reportToSentry({
+              error: authError,
+              name: 'Sign Up: Invalid response from identity tiktok/access_token',
+              additionalInfo: {
+                code,
+                hasError: error,
+                errorMessage
+              },
+              tags: {
+                socialMedia: 'tiktok'
+              },
+              feature: Feature.SignUp
+            })
             return reject(
               new Error(response.status + ' ' + (await response.text()))
             )
@@ -110,6 +140,19 @@ const createAuthenticate =
             expiresIn: expires_in
           })
         } catch (e) {
+          reportToSentry({
+            error: e as Error,
+            name: 'Sign Up: Unknown TikTok Auth Error',
+            additionalInfo: {
+              code,
+              hasError: error,
+              errorMessage
+            },
+            tags: {
+              socialMedia: 'tiktok'
+            },
+            feature: Feature.SignUp
+          })
           return reject(e)
         }
       }

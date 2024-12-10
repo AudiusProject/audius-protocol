@@ -24,10 +24,10 @@ import {
   Flex,
   Divider
 } from '@audius/harmony'
-import { push as pushRoute } from 'connected-react-router'
 import { useField } from 'formik'
 import { capitalize } from 'lodash'
 import { useDispatch } from 'react-redux'
+import { Link } from 'react-router-dom-v5-compat'
 
 import { make } from 'common/store/analytics/actions'
 import { TwitterShareButton } from 'components/twitter-share-button/TwitterShareButton'
@@ -113,10 +113,6 @@ export const PurchaseContentFormFooter = ({
   const { totalPrice } = purchaseSummaryValues
   const [{ value: isGuestCheckout }] = useField(GUEST_CHECKOUT)
 
-  const handleFinishSigningUp = useCallback(() => {
-    dispatch(pushRoute(SIGN_UP_PAGE))
-  }, [dispatch])
-
   const handleTwitterShare = useCallback(
     (handle: string) => {
       const shareText = messages.shareTwitterText(
@@ -162,8 +158,8 @@ export const PurchaseContentFormFooter = ({
                   <Text>{messages.finishSigningUpDescription}</Text>
                 </Flex>
                 <Flex gap='s'>
-                  <Button fullWidth onClick={handleFinishSigningUp}>
-                    {messages.finishSigningUp}
+                  <Button fullWidth asChild>
+                    <Link to={SIGN_UP_PAGE}>{messages.finishSigningUp}</Link>
                   </Button>
                   <Button
                     fullWidth
@@ -216,6 +212,7 @@ export const PurchaseContentFormFooter = ({
       </Flex>
     )
   }
+
   return (
     <>
       <Button

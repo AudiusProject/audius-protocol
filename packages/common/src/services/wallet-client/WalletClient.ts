@@ -60,12 +60,11 @@ export class WalletClient {
 
   /** Get user's current SOL Audio balance. Returns null on failure. */
   async getCurrentWAudioBalance({
-    ethAddress,
-    sdk
+    ethAddress
   }: {
     ethAddress: string
-    sdk: AudiusSdk
   }): Promise<BNWei | null> {
+    const sdk = await this.audiusSdk()
     const balance = await this.audiusBackendInstance.getWAudioBalance({
       ethAddress,
       sdk
@@ -73,14 +72,9 @@ export class WalletClient {
     return balance as BNWei
   }
 
-  async getAssociatedTokenAccountInfo({
-    address,
-    sdk
-  }: {
-    address: string
-    sdk: AudiusSdk
-  }) {
+  async getAssociatedTokenAccountInfo({ address }: { address: string }) {
     try {
+      const sdk = await this.audiusSdk()
       const tokenAccountInfo =
         await this.audiusBackendInstance.getAssociatedTokenAccountInfo({
           address,
@@ -213,14 +207,9 @@ export class WalletClient {
     }
   }
 
-  async getWalletSolBalance({
-    address,
-    sdk
-  }: {
-    address: string
-    sdk: AudiusSdk
-  }): Promise<BNWei> {
+  async getWalletSolBalance({ address }: { address: string }): Promise<BNWei> {
     try {
+      const sdk = await this.audiusSdk()
       const balance = await this.audiusBackendInstance.getAddressSolBalance({
         address,
         sdk
@@ -246,17 +235,16 @@ export class WalletClient {
 
   async sendWAudioTokens({
     address,
-    amount,
-    sdk
+    amount
   }: {
     address: SolanaWalletAddress
     amount: BNWei
-    sdk: AudiusSdk
   }): Promise<void> {
     if (amount.lt(MIN_TRANSFERRABLE_WEI)) {
       throw new Error('Insufficient Audio to transfer')
     }
     try {
+      const sdk = await this.audiusSdk()
       const { res, error, errorCode } =
         await this.audiusBackendInstance.sendWAudioTokens({
           address,

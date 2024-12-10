@@ -143,13 +143,12 @@ def test_index_invalid_email(app, mocker):
         web3 = Web3()
         update_task = UpdateTask(web3, None)
 
-        # Test data for invalid email operations
+        # Test data for invalid email operations - missing required fields
         invalid_email_data = {
-            "primary_user_id": 999,  # Non-existent user
+            "primary_user_id": 999,
             "email_owner_user_id": 999,
-            "encrypted_email": "encrypted_email_content",
-            "encrypted_key": "encrypted_key_content",
-            "delegated_user_ids": [888],  # Non-existent delegated user
+            # Missing encrypted_email and encrypted_key fields
+            "delegated_user_ids": [888],
             "delegated_keys": ["delegated_key"],
         }
 
@@ -165,7 +164,7 @@ def test_index_invalid_email(app, mocker):
                             "_metadata": json.dumps(
                                 {"cid": "", "data": invalid_email_data}
                             ),
-                            "_signer": "nonexistentwallet",
+                            "_signer": "any_wallet",
                         }
                     )
                 }
