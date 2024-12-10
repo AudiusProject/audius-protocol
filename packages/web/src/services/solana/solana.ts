@@ -157,10 +157,11 @@ export const getAssociatedTokenAccountOwner = async (
 /**
  * Returns the current user's USDC user bank.
  */
-export const getUSDCUserBank = async (ethAddress?: string) => {
-  const libs = await getLibs()
-  const usdcUserBank = await libs.solanaWeb3Manager!.deriveUserBank({
-    mint: 'usdc'
+export const getUSDCUserBank = async (ethAddress: string) => {
+  const sdk = await audiusSdk()
+  const usdcUserBank = await sdk.services.claimableTokensClient.deriveUserBank({
+    ethWallet: ethAddress,
+    mint: 'USDC'
   })
   return usdcUserBank
 }

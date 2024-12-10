@@ -16,7 +16,7 @@ import { PurchaseMethod, PurchaseVendor } from '@audius/common/models'
 import { IntKeys, FeatureFlags } from '@audius/common/services'
 import { PurchaseContentStage } from '@audius/common/store'
 import { USDC } from '@audius/fixed-decimal'
-import { Flex, Text, IconValidationCheck, Box } from '@audius/harmony'
+import { Flex, Box } from '@audius/harmony'
 import { useField } from 'formik'
 
 import { PaymentMethod } from 'components/payment-method/PaymentMethod'
@@ -28,10 +28,6 @@ import { PayToUnlockInfo } from '../components/PayToUnlockInfo'
 import { PurchaseSummaryTable } from '../components/PurchaseSummaryTable'
 import { PurchaseContentFormState } from '../hooks/usePurchaseContentFormState'
 import { usePurchaseSummaryValues } from '../hooks/usePurchaseSummaryValues'
-
-const messages = {
-  purchaseSuccessful: 'Your Purchase Was Successful!'
-}
 
 type PurchaseContentPageProps = Pick<
   PurchaseContentFormState,
@@ -101,17 +97,6 @@ export const PurchaseContentPage = (props: PurchaseContentPageProps) => {
     }
   }, [handleChangeVendor, showCoinflow, purchaseVendor])
 
-  if (isPurchased) {
-    return (
-      <Flex alignItems='center' justifyContent='center' gap='m' p='m'>
-        <IconValidationCheck size='m' />
-        <Text variant='heading' size='s'>
-          {messages.purchaseSuccessful}
-        </Text>
-      </Flex>
-    )
-  }
-
   const isAlbumPurchase = isPurchaseableAlbum(metadata)
   const stemsPurchaseCount =
     'is_download_gated' in metadata && metadata.is_download_gated
@@ -174,7 +159,7 @@ export const PurchaseContentPage = (props: PurchaseContentPageProps) => {
             showVendorChoice={false}
           />
         )}
-        {isUnlocking ? null : <PayToUnlockInfo />}
+        {isUnlocking || isPurchased ? null : <PayToUnlockInfo />}
       </Flex>
     </Flex>
   )

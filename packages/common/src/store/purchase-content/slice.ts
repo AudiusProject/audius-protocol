@@ -42,7 +42,8 @@ const initialState: PurchaseContentState = {
   stage: PurchaseContentStage.IDLE,
   purchaseMethod: PurchaseMethod.BALANCE,
   purchaseVendor: undefined,
-  purchaseMethodMintAddress: undefined
+  purchaseMethodMintAddress: undefined,
+  guestEmail: undefined
 }
 
 const slice = createSlice({

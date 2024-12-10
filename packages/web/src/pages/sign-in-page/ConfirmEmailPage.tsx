@@ -11,7 +11,11 @@ import { Form, Formik, useField } from 'formik'
 import { useDispatch } from 'react-redux'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 
-import { setValueField, signIn } from 'common/store/pages/signon/actions'
+import {
+  setValueField,
+  signIn,
+  startSignUp
+} from 'common/store/pages/signon/actions'
 import {
   getEmailField,
   getOtpField,
@@ -47,6 +51,7 @@ export const ConfirmEmailPage = () => {
       const sanitizedOtp = otp.replace(/\s/g, '')
       dispatch(setValueField('otp', sanitizedOtp))
       dispatch(setValueField('email', email))
+      dispatch(startSignUp())
       dispatch(signIn(email, password, undefined, sanitizedOtp))
     },
     [dispatch, email, password]

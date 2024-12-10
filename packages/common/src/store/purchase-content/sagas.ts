@@ -73,7 +73,6 @@ import { waitForValue } from '~/utils'
 import { encodeHashId } from '~/utils/hashIds'
 import { BN_USDC_CENT_WEI } from '~/utils/wallet'
 
-import { fetchAccountAsync } from '../account/sagas'
 import { cacheActions } from '../cache'
 import { pollGatedContent } from '../gated-content/sagas'
 import { updateGatedContentStatus } from '../gated-content/slice'
@@ -667,8 +666,6 @@ function* doStartPurchaseContentFlow({
     guestEmail
   }
 }: ReturnType<typeof startPurchaseContentFlow>) {
-  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
-
   const usdcConfig = yield* call(getBuyUSDCRemoteConfig)
   const reportToSentry = yield* getContext('reportToSentry')
   const { track, make } = yield* getContext('analytics')
@@ -713,21 +710,6 @@ function* doStartPurchaseContentFlow({
 
   try {
     // get user & user bank
-    const isGuestCheckoutEnabled = yield* call(
-      getFeatureEnabled,
-      FeatureFlags.GUEST_CHECKOUT
-    )
-
-    if (isGuestCheckoutEnabled) {
-      const currentUser = yield* select(getAccountUser)
-
-      if (!currentUser && guestEmail) {
-        yield* call(audiusBackendInstance.guestSignUp, guestEmail)
-
-        yield* call(fetchAccountAsync, { isSignUp: true })
-      }
-    }
-
     const purchaserUserId = yield* select(getUserId)
     if (!purchaserUserId) {
       throw new Error('Failed to fetch purchasing user id')
