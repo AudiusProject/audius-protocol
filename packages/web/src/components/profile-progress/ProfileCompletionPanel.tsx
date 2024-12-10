@@ -13,7 +13,7 @@ import { useSpring, animated } from 'react-spring'
 import SegmentedProgressBar from 'components/segmented-progress-bar/SegmentedProgressBar'
 
 import styles from './ProfileCompletionPanel.module.css'
-import ProfileCompletionTooltip from './components/ProfileCompletionTooltip'
+import { ProfileCompletionTooltip } from './components/ProfileCompletionTooltip'
 import { useProfileCompletionDismissal, useSlideDown } from './hooks'
 
 const { getOrderedCompletionStages, getIsAccountLoaded } = challengesSelectors
@@ -65,14 +65,7 @@ export const ProfileCompletionPanel = () => {
     }
   }, [didCompleteThisSession, dispatch])
 
-  const transitions = useSlideDown(!isHidden, ORIGINAL_HEIGHT_PIXELS, true)
-
-  const { animatedCompletion } = useSpring({
-    animatedCompletion: completionPercentage,
-    from: { animatedCompletion: 0 }
-  })
-
-  if (!isLoggedIn || shouldNeverShow) return null
+  const transitions = useSlideDown(!isHidden, ORIGINAL_HEIGHT_PIXELS)
 
   const stepsComplete = completionStages.reduce(
     (acc, cur) => acc + (cur.isCompleted ? 1 : 0),
@@ -80,6 +73,13 @@ export const ProfileCompletionPanel = () => {
   )
   const numSteps = completionStages.length
   const completionPercentage = (stepsComplete / numSteps) * 100
+
+  const { animatedCompletion } = useSpring({
+    animatedCompletion: completionPercentage,
+    from: { animatedCompletion: 0 }
+  })
+
+  if (!isLoggedIn || shouldNeverShow) return null
 
   return (
     <Flex justifyContent='center'>
@@ -95,7 +95,7 @@ export const ProfileCompletionPanel = () => {
                 <div className={styles.outerPadding}>
                   <div className={styles.container}>
                     <animated.div className={styles.completionText}>
-                      {animatedCompletion.interpolate((v: number) =>
+                      {(animatedCompletion as any).interpolate((v: number) =>
                         strings.completionText(Math.round(v))
                       )}
                     </animated.div>

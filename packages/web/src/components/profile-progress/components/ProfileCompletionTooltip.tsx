@@ -57,7 +57,6 @@ export const ProfileCompletionTooltip = ({
       shouldDismissOnClick={shouldDismissOnClick}
       text={<TooltipContent completionStages={completionStages} />}
       placement='right'
-      mount={null}
     >
       {children}
     </Tooltip>
