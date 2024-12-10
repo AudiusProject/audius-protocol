@@ -571,7 +571,7 @@ function* purchaseUSDCWithStripe({ amount }: PurchaseUSDCWithStripeArgs) {
       buyCryptoViaSol({
         // expects "friendly" amount, so dollars
         amount: cents / 100.0,
-        mint: 'usdc',
+        mint: 'USDC',
         provider: OnRampProvider.STRIPE
       })
     )

@@ -184,7 +184,7 @@ function* transferStep({
         {
           wallet,
           userBank,
-          mint: 'usdc',
+          mint: 'USDC',
           amount,
           memo,
           feePayer: feePayerOverride,

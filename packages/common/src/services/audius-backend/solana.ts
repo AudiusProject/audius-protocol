@@ -143,7 +143,6 @@ export const isTransferCheckedInstruction = (
 
 type CreateUserBankIfNeededConfig = UserBankConfig & {
   recordAnalytics: (event: AnalyticsEvent, callback?: () => void) => void
-  feePayerOverride: string
 }
 
 type CreateUserBankIfNeededErrorResult = {
@@ -152,7 +151,7 @@ type CreateUserBankIfNeededErrorResult = {
 }
 type CreateUserBankIfNeededSuccessResult = {
   didExist: boolean
-  userbank: PublicKey
+  userBank: PublicKey
 }
 type CreateUserBankIfNeededResult =
   | CreateUserBankIfNeededSuccessResult
@@ -201,7 +200,6 @@ export const createUserBankIfNeeded = async (
   audiusBackendInstance: AudiusBackend,
   {
     recordAnalytics,
-    feePayerOverride,
     mint = DEFAULT_MINT,
     ethAddress
   }: CreateUserBankIfNeededConfig
@@ -240,7 +238,7 @@ export const createUserBankIfNeeded = async (
         properties: { mint, recipientEthAddress }
       })
     }
-    return res.userbank
+    return res.userBank
   } catch (err: any) {
     // Catching error here for analytics purposes
     const errorMessage = 'error' in err ? err.error : (err as any).toString()
