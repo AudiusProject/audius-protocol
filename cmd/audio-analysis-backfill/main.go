@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"fmt"
 	"os"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -24,8 +25,6 @@ prod examples:
 // not actual go errors since the db record is a string
 // bpm has a few more specific errors
 const (
-	Endpoint = "https://creatornode11.staging.audius.co"
-
 	ErrParseBPM       = "failed to parse BPM from output"
 	ErrParseStringBPM = "failed to parse formatted BPM string"
 	ErrAnalyzeExit    = "command exited with status"
@@ -36,6 +35,8 @@ const (
 )
 
 var (
+	Endpoint = ""
+
 	SkippableErrors = []string{ErrParseBPM, ErrParseStringBPM}
 	RetryableErrors = []string{ErrAnalyzeExit, ErrAnalyzeExec}
 
@@ -237,6 +238,18 @@ func consumeAnalysisResults(ctx context.Context, wg *sync.WaitGroup) {
 }
 
 func main() {
+	isProdVar := os.Getenv("IS_PROD")
+	isProd, err := strconv.ParseBool(isProdVar)
+	if err != nil {
+		isProd = false
+	}
+
+	if isProd {
+		Endpoint = "https://creatornode2.audius.co"
+	} else {
+		Endpoint = "https://creatornode11.staging.audius.co"
+	}
+
 	ctx, cancel := context.WithCancel(context.Background())
 	var wg sync.WaitGroup
 
