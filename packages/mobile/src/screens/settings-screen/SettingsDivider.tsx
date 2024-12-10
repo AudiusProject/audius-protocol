@@ -1,5 +1,5 @@
-import { Divider as DividerBase } from '@audius/harmony-native'
+import { Divider } from '@audius/harmony-native'
 
 export const SettingsDivider = () => {
-  return <DividerBase h='xl' />
+  return <Divider h='xl' />
 }
