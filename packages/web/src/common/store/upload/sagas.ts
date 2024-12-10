@@ -80,6 +80,7 @@ import {
   getUSDCMetadata,
   recordGatedTracks
 } from './sagaHelpers'
+import { TryCatch } from '@sentry/browser'
 
 const { updateProgress } = uploadActions
 const { getUserId, getAccountUser } = accountSelectors
@@ -1196,76 +1197,95 @@ export function* updateTrackAudioAsync(
   yield* call(waitForWrite)
   const payload = action.payload
 
-  const tracks = yield* call(retrieveTracks, {
-    trackIds: [payload.trackId]
-  })
+  try {
+    const tracks = yield* call(retrieveTracks, {
+      trackIds: [payload.trackId]
+    })
 
-  if (tracks.length === 0) return
-  const track = tracks[0]
-  const sdk = yield* getSDK()
-  const userId = yield* select(accountSelectors.getUserId)
+    if (!tracks[0]) {
+      throw new Error('Missing track for track audio replace.')
+    }
+    const track = tracks[0]
+    const sdk = yield* getSDK()
+    const userId = yield* select(accountSelectors.getUserId)
 
-  if (!track) return
-  if (!userId) {
-    throw new Error('No user id found during upload. Not signed in?')
-  }
+    if (!userId) {
+      throw new Error('No user id found during upload. Not signed in?')
+    }
 
-  const metadata = trackMetadataForUploadToSdk({
-    ...track,
-    ...(payload.metadata ?? {})
-  })
+    const metadata = trackMetadataForUploadToSdk({
+      ...track,
+      ...(payload.metadata ?? {})
+    })
 
-  const dispatch = yield* getContext('dispatch')
-  const handleProgressUpdate = (progress: Parameters<ProgressHandler>[0]) => {
-    if (!('audio' in progress)) return
-    const { upload, transcode } = progress.audio
+    const dispatch = yield* getContext('dispatch')
+    const handleProgressUpdate = (progress: Parameters<ProgressHandler>[0]) => {
+      if (!('audio' in progress)) return
+      const { upload, transcode } = progress.audio
 
-    const uploadVal =
-      transcode === undefined ? (upload?.loaded ?? 0) / (upload?.total ?? 1) : 1
+      const uploadVal =
+        transcode === undefined
+          ? (upload?.loaded ?? 0) / (upload?.total ?? 1)
+          : 1
 
-    dispatch(
+      dispatch(
+        replaceTrackProgressModalActions.set({
+          progress: { upload: uploadVal, transcode: transcode?.decimal ?? 0 },
+          error: false
+        })
+      )
+    }
+
+    yield* put(
       replaceTrackProgressModalActions.set({
-        progress: { upload: uploadVal, transcode: transcode?.decimal ?? 0 }
+        progress: { upload: 0, transcode: 0 },
+        error: false
+      })
+    )
+    const updatedMetadata = yield* call(
+      [sdk.tracks, sdk.tracks.uploadTrackFiles],
+      {
+        userId: Id.parse(userId),
+        trackFile: fileToSdk(payload.file, 'audio'),
+        metadata,
+        onProgress: handleProgressUpdate
+      }
+    )
+
+    const newMetadata = {
+      ...metadata,
+      orig_file_cid: updatedMetadata.origFileCid,
+      bpm: metadata.isCustomBpm ? track.bpm : null,
+      musical_key: metadata.isCustomMusicalKey ? metadata.musicalKey : null,
+      audio_analysis_error_count: 0,
+      orig_filename: updatedMetadata.origFilename || '',
+      preview_cid: updatedMetadata.previewCid || '',
+      preview_start_seconds: updatedMetadata.previewStartSeconds ?? 0,
+      track_cid: updatedMetadata.trackCid || '',
+      audio_upload_id: updatedMetadata.audioUploadId,
+      duration: updatedMetadata.duration
+    }
+
+    yield* put(
+      cacheTracksActions.editTrack(
+        track.track_id,
+        newMetadata as TrackMetadataForUpload
+      )
+    )
+
+    // Delay to allow the user to see that the track replace upload has finished
+    yield* delay(3000)
+
+    yield* put(replaceTrackProgressModalActions.close())
+    yield* put(push(track.permalink))
+  } catch (e) {
+    yield* put(
+      replaceTrackProgressModalActions.set({
+        progress: { upload: 0, transcode: 0 },
+        error: true
       })
     )
   }
-
-  const updatedMetadata = yield* call(
-    [sdk.tracks, sdk.tracks.uploadTrackFiles],
-    {
-      userId: Id.parse(userId),
-      trackFile: fileToSdk(payload.file, 'audio'),
-      metadata,
-      onProgress: handleProgressUpdate
-    }
-  )
-
-  const newMetadata = {
-    ...metadata,
-    orig_file_cid: updatedMetadata.origFileCid,
-    bpm: metadata.isCustomBpm ? track.bpm : null,
-    musical_key: metadata.isCustomMusicalKey ? metadata.musicalKey : null,
-    audio_analysis_error_count: 0,
-    orig_filename: updatedMetadata.origFilename || '',
-    preview_cid: updatedMetadata.previewCid || '',
-    preview_start_seconds: updatedMetadata.previewStartSeconds ?? 0,
-    track_cid: updatedMetadata.trackCid || '',
-    audio_upload_id: updatedMetadata.audioUploadId,
-    duration: updatedMetadata.duration
-  }
-
-  yield* put(
-    cacheTracksActions.editTrack(
-      track.track_id,
-      newMetadata as TrackMetadataForUpload
-    )
-  )
-
-  // Delay to allow the user to see that the track replace upload has finished
-  yield* delay(3000)
-
-  yield* put(replaceTrackProgressModalActions.close())
-  yield* put(push(track.permalink))
 }
 
 function* watchUploadTracks() {
