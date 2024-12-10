@@ -1,13 +1,11 @@
 import { useCallback, useEffect, useState } from 'react'
 
-import { AudiusSdk, sdk } from '@audius/sdk'
 import { Commitment } from '@solana/web3.js'
 import BN from 'bn.js'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { useGetCurrentUser } from '~/api'
 import { useAudiusQueryContext } from '~/audius-query'
-import { useAppContext } from '~/context/appContext'
 import { Status } from '~/models/Status'
 import { BNUSDC, StringUSDC } from '~/models/Wallet'
 import { getUserbankAccountInfo } from '~/services/index'
