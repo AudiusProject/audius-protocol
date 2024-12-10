@@ -131,3 +131,28 @@ func TestUploadPlacement(t *testing.T) {
 	}
 
 }
+
+func TestUploadWithInvalidPlacementHosts(t *testing.T) {
+	s1 := testNetwork[0]
+
+	// Create placement hosts array with invalid host
+	invalidPlacementHosts := []string{
+		s1.Config.Self.Host,
+		"http://invalid-host:1991", // This host is not in config.Peers
+	}
+
+	var uploads []Upload
+
+	resp, err := s1.reqClient.R().
+		SetFile("files", "testdata/tom.wav").
+		SetFormData(map[string]string{
+			"template":        "audio",
+			"placement_hosts": strings.Join(invalidPlacementHosts, ","),
+		}).
+		SetSuccessResult(&uploads).
+		Post(s1.Config.Self.Host + "/uploads")
+
+	assert.NoError(t, err)
+	assert.Equal(t, 400, resp.StatusCode)
+	assert.Contains(t, string(resp.Bytes()), "all placement_hosts must be registered")
+}

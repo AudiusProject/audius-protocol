@@ -38,7 +38,7 @@ import { useNavigateToPage } from 'hooks/useNavigateToPage'
 import { SocialMediaLoginOptions } from 'pages/sign-up-page/components/SocialMediaLoginOptions'
 
 import ConnectedMetaMaskModal from '../components/ConnectedMetaMaskModal'
-import { NewEmailField } from '../components/EmailField'
+import { NewEmailField } from '../components/NewEmailField'
 import { SocialMediaLoading } from '../components/SocialMediaLoading'
 import { Heading, Page } from '../components/layout'
 import { useSocialMediaLoader } from '../hooks/useSocialMediaLoader'

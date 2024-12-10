@@ -231,7 +231,7 @@ export const Button = (props: ButtonProps) => {
             [dynamicStyles.default.background, dynamicStyles.press.background]
           )
     }
-  }, [isDisabled, variant, color])
+  }, [isDisabled, variant, color, type])
 
   const textStyles = isSmallOrXs ? smallTextStyles : defaultTextStyles
 
@@ -243,7 +243,7 @@ export const Button = (props: ButtonProps) => {
         [dynamicStyles.default.text, dynamicStyles.press.text]
       )
     }
-  }, [variant])
+  }, [variant, type])
 
   const animatedIconProps = useAnimatedProps(
     () => ({
@@ -256,7 +256,7 @@ export const Button = (props: ButtonProps) => {
               [dynamicStyles.default.icon, dynamicStyles.press.icon]
             )
     }),
-    [variant, isDisabled],
+    [variant, isDisabled, type],
     animatedPropAdapter
   )
 

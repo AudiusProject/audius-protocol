@@ -92,7 +92,7 @@ function* sendAsync({
   }
 
   const waudioWeiAmount: BNWei | null = yield* call(
-    [walletClient, 'getCurrentWAudioBalance'],
+    [walletClient, walletClient.getCurrentWAudioBalance],
     { ethAddress: currentUser }
   )
 
@@ -229,11 +229,11 @@ function* fetchBalanceAsync() {
       yield* select(getLocalBalanceDidChange)
 
     const [currentEthAudioWeiBalance, currentSolAudioWeiBalance] = yield* all([
-      call([walletClient, 'getCurrentBalance'], {
+      call([walletClient, walletClient.getCurrentBalance], {
         ethAddress: account.wallet,
         bustCache: localBalanceChange
       }),
-      call([walletClient, 'getCurrentWAudioBalance'], {
+      call([walletClient, walletClient.getCurrentWAudioBalance], {
         ethAddress: account.wallet
       })
     ])
@@ -252,7 +252,7 @@ function* fetchBalanceAsync() {
     }
 
     const associatedWalletBalance: BNWei | null = yield* call(
-      [walletClient, 'getAssociatedWalletBalance'],
+      [walletClient, walletClient.getAssociatedWalletBalance],
       account.user_id,
       /* bustCache */ localBalanceChange
     )
@@ -314,7 +314,7 @@ function* checkAssociatedTokenAccountOrSol(action: InputSendDataAction) {
   const connection = sdk.services.solanaClient.connection
 
   const associatedTokenAccount = yield* call(
-    [walletClient, 'getAssociatedTokenAccountInfo'],
+    [walletClient, walletClient.getAssociatedTokenAccountInfo],
     { address }
   )
   if (!associatedTokenAccount) {
@@ -325,7 +325,7 @@ function* checkAssociatedTokenAccountOrSol(action: InputSendDataAction) {
     // TODO: this can become a call to getAssociatedTokenRentExemptionMinimum
     // when the BuyAudio service has been migrated
     const minRentForATA = yield* call(
-      [connection, 'getMinimumBalanceForRentExemption'],
+      [connection, connection.getMinimumBalanceForRentExemption],
       ATA_SIZE,
       'processed'
     )

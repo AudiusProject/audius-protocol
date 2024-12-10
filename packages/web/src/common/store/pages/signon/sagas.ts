@@ -35,7 +35,8 @@ import {
   getContext,
   confirmerActions,
   getSDK,
-  fetchAccountAsync
+  fetchAccountAsync,
+  changePasswordActions
 } from '@audius/common/store'
 import {
   Genre,
@@ -44,7 +45,8 @@ import {
   isValidEmailString,
   route,
   isResponseError,
-  encodeHashId
+  encodeHashId,
+  TEMPORARY_PASSWORD
 } from '@audius/common/utils'
 import { CreateUserRequest, UpdateProfileRequest } from '@audius/sdk'
 import { push as pushRoute } from 'connected-react-router'
@@ -271,6 +273,7 @@ function* validateHandle(
 ) {
   const { handle, isOauthVerified, onValidate } = action
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
+  const identityService = yield* getContext('identityService')
   const remoteConfigInstance = yield* getContext('remoteConfigInstance')
   const { ENVIRONMENT } = yield* getContext('env')
 
@@ -322,7 +325,10 @@ function* validateHandle(
       const [twitterResult, instagramResult, tiktokResult] = yield* all([
         race({
           data: verifyTwitter
-            ? call(audiusBackendInstance.twitterHandle, handle)
+            ? call(
+                [identityService, identityService.lookupTwitterHandle],
+                handle
+              )
             : null,
           timeout: delay(handleCheckTimeout)
         }),
@@ -351,7 +357,7 @@ function* validateHandle(
       const handleCheckStatus = parseHandleReservedStatusFromSocial({
         isOauthVerified,
         // @ts-ignore
-        lookedUpTwitterUser: twitterUserQuery?.user?.profile?.[0] ?? null,
+        lookedUpTwitterUser: twitterUserQuery?.profile?.[0] ?? null,
         lookedUpInstagramUser: (instagramUser as InstagramUser) || null,
         lookedUpTikTokUser: (tikTokUser as TikTokUser) || null
       })
@@ -449,92 +455,81 @@ function* associateSocialAccounts({
   instagramId?: string
   tikTokId?: string
 }) {
-  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
+  const identityService = yield* getContext('identityService')
   const reportToSentry = yield* getContext('reportToSentry')
 
-  try {
-    if (twitterId) {
-      const { error } = yield* call(
-        audiusBackendInstance.associateTwitterAccount,
+  if (twitterId) {
+    try {
+      yield* call(
+        [identityService, identityService.associateTwitterUser],
         twitterId,
         userId,
         handle,
         blockNumber
       )
-      if (error) {
-        reportToSentry({
-          error: error instanceof Error ? error : new Error(error as string),
-          name: 'Sign Up: Error while associating Twitter account',
-          additionalInfo: {
-            handle,
-            userId,
-            twitterId
-          },
-          feature: Feature.SignUp
-        })
-        yield* put(signOnActions.setTwitterProfileError(error as string))
-      }
+    } catch (err) {
+      const error = err instanceof Error ? err : new Error(err as string)
+      reportToSentry({
+        error,
+        name: 'Sign Up: Error while associating Twitter account',
+        additionalInfo: {
+          handle,
+          userId,
+          twitterId
+        },
+        feature: Feature.SignUp
+      })
+      yield* put(signOnActions.setTwitterProfileError(error.message))
     }
-    if (instagramId) {
-      const { error } = yield* call(
-        audiusBackendInstance.associateInstagramAccount,
+  }
+  if (instagramId) {
+    try {
+      yield* call(
+        [identityService, identityService.associateInstagramUser],
         instagramId,
         userId,
         handle,
         blockNumber
       )
-      if (error) {
-        reportToSentry({
-          error: error instanceof Error ? error : new Error(error as string),
-          name: 'Sign Up: Error while associating Instagram account',
-          additionalInfo: {
-            handle,
-            userId,
-            instagramId
-          },
-          feature: Feature.SignUp
-        })
-        yield* put(signOnActions.setInstagramProfileError(error as string))
-      }
+    } catch (err) {
+      const error = err instanceof Error ? err : new Error(err as string)
+      reportToSentry({
+        error,
+        name: 'Sign Up: Error while associating Instagram account',
+        additionalInfo: {
+          handle,
+          userId,
+          instagramId
+        },
+        feature: Feature.SignUp
+      })
+      yield* put(signOnActions.setInstagramProfileError(error.message))
     }
+  }
 
-    if (tikTokId) {
-      const { error } = yield* call(
-        audiusBackendInstance.associateTikTokAccount,
+  if (tikTokId) {
+    try {
+      yield* call(
+        [identityService, identityService.associateTikTokUser],
         tikTokId,
         userId,
         handle,
         blockNumber
       )
-
-      if (error) {
-        reportToSentry({
-          error: error instanceof Error ? error : new Error(error as string),
-          name: 'Sign Up: Error while associating TikTok account',
-          additionalInfo: {
-            handle,
-            userId,
-            tikTokId
-          },
-          feature: Feature.SignUp
-        })
-        yield* put(signOnActions.setTikTokProfileError(error as string))
-      }
+    } catch (err) {
+      const error = err instanceof Error ? err : new Error(err as string)
+      reportToSentry({
+        error,
+        name: 'Sign Up: Error while associating TikTok account',
+        additionalInfo: {
+          handle,
+          userId,
+          tikTokId
+        },
+        feature: Feature.SignUp
+      })
+      yield* put(signOnActions.setTikTokProfileError(error.message))
     }
-  } catch (err) {
-    const error = err instanceof Error ? err : new Error(err as string)
-    reportToSentry({
-      error,
-      name: 'Sign Up: Uncaught error while associating social accounts',
-      additionalInfo: {
-        handle,
-        userId,
-        twitterId,
-        instagramId,
-        tikTokId
-      },
-      feature: Feature.SignUp
-    })
   }
 }
 
@@ -663,6 +658,16 @@ function* signUp() {
                 [sdk.users, sdk.users.updateProfile],
                 completeProfileMetadataRequest
               )
+
+              yield* put(
+                changePasswordActions.changePassword({
+                  email,
+                  password,
+                  oldPassword: TEMPORARY_PASSWORD
+                })
+              )
+
+              yield* fork(sendRecoveryEmail, { handle, email })
             } else {
               if (!alreadyExisted) {
                 yield* call(
@@ -959,7 +964,9 @@ function* signIn(action: ReturnType<typeof signOnActions.signIn>) {
             }
           })
         )
-        yield* put(pushRoute(SIGN_UP_PASSWORD_PAGE))
+        if (!isNativeMobile) {
+          yield* put(pushRoute(SIGN_UP_PASSWORD_PAGE))
+        }
         const { web3Error, libsError } = yield* call(
           audiusBackendInstance.setup,
           {
@@ -1056,7 +1063,6 @@ function* signIn(action: ReturnType<typeof signOnActions.signIn>) {
 
     yield* put(signOnActions.resetSignOn())
 
-    const isNativeMobile = yield* getContext('isNativeMobile')
     if (!isNativeMobile) {
       // Reset the sign on in the background after page load as to relieve the UI loading
       yield* delay(1000)

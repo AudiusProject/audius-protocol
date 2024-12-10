@@ -29,7 +29,7 @@ import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import { ModalForm } from 'components/modal-form/ModalForm'
 import { ToastContext } from 'components/toast/ToastContext'
 import { authService } from 'services/audius-sdk/auth'
-import { identityServiceInstance } from 'services/audius-sdk/identity'
+import { identityService } from 'services/audius-sdk/identity'
 
 import styles from './ChangeEmailModal.module.css'
 
@@ -67,7 +67,7 @@ export const ResendCodeLink = () => {
     // Try to confirm without OTP to force OTP refresh
     try {
       const wallet = authService.getWallet()
-      await identityServiceInstance.changeEmail({
+      await identityService.changeEmail({
         wallet,
         email
       })
@@ -94,7 +94,7 @@ const CurrentEmail = () => {
   // Load the email for the user
   const wallet = authService.getWallet()
   const emailRequest = useAsync(async () => {
-    return await identityServiceInstance.getUserEmail({ wallet })
+    return await identityService.getUserEmail({ wallet })
   })
   useEffect(() => {
     if (emailRequest.value) {
