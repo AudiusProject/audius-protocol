@@ -1,4 +1,4 @@
-import { Box, Divider, Flex, Paper } from '@audius/harmony-native'
+import { Divider, Box, Flex, Paper } from '@audius/harmony-native'
 
 import { Skeleton } from '../skeleton'
 

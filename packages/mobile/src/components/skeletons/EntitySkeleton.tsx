@@ -3,7 +3,8 @@ import { useMemo, type ReactNode } from 'react'
 import { times, random } from 'lodash'
 import { View } from 'react-native'
 
-import { Tile, Text, Divider } from 'app/components/core'
+import { Divider } from '@audius/harmony-native'
+import { Tile, Text } from 'app/components/core'
 import Skeleton, { StaticSkeleton } from 'app/components/skeleton/Skeleton'
 import { makeStyles } from 'app/styles'
 
@@ -59,10 +60,6 @@ const useStyles = makeStyles(({ spacing, palette }) => ({
     height: 25,
     marginHorizontal: spacing(4)
   },
-  divider: {
-    width: '100%',
-    marginVertical: spacing(2)
-  },
   metrics: {
     width: '100%',
     flexDirection: 'row',
@@ -111,6 +108,8 @@ export const EntitySkeleton = (props: EntitySkeletonProps) => {
     []
   )
 
+  const divider = <Divider w='100%' mv='s' />
+
   return (
     <Tile styles={{ root: styles.root, content: styles.content }}>
       <View style={styles.heading}>
@@ -133,7 +132,7 @@ export const EntitySkeleton = (props: EntitySkeletonProps) => {
           <StaticSkeleton style={styles.socialAction} />
           <StaticSkeleton style={styles.socialAction} />
         </View>
-        <Divider style={styles.divider} />
+        {divider}
         <View style={styles.metrics}>
           <StaticSkeleton style={styles.metric} />
           <StaticSkeleton style={styles.metric} />
@@ -147,7 +146,7 @@ export const EntitySkeleton = (props: EntitySkeletonProps) => {
             />
           ))}
         </View>
-        <Divider style={styles.divider} />
+        {divider}
         <View style={styles.metadataSection}>
           <StaticSkeleton style={styles.metadata} />
           <StaticSkeleton style={styles.metadata} />
@@ -155,7 +154,7 @@ export const EntitySkeleton = (props: EntitySkeletonProps) => {
         </View>
         {children ? (
           <>
-            <Divider style={styles.divider} />
+            {divider}
             {children}
           </>
         ) : null}

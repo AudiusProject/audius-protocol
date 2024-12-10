@@ -3,8 +3,7 @@ import { useCallback } from 'react'
 import { RandomImage } from '@audius/common/services'
 import { useField } from 'formik'
 
-import { IconSearch } from '@audius/harmony-native'
-import { TextButton } from 'app/components/core'
+import { IconSearch, PlainButton } from '@audius/harmony-native'
 import { flexRowCentered, makeStyles } from 'app/styles'
 
 const messages = {
@@ -56,13 +55,12 @@ export const RandomImageInput = (props: RandomImageInputProps) => {
   }, [onProcessing, setValue])
 
   return (
-    <TextButton
-      variant='secondary'
-      title={messages.getRandomArt}
-      icon={IconSearch}
-      iconPosition='left'
+    <PlainButton
+      iconLeft={IconSearch}
+      style={styles.root}
       onPress={handlePress}
-      styles={{ root: styles.root, icon: styles.icon }}
-    />
+    >
+      {messages.getRandomArt}
+    </PlainButton>
   )
 }
