@@ -81,7 +81,7 @@ function* sendAsync({
   yield* waitForWrite()
   const walletClient = yield* getContext('walletClient')
   const { track } = yield* getContext('analytics')
-
+  const sdk = yield* getSDK()
   const account = yield* select(getAccountUser)
   const weiBNAmount = stringWeiToBN(weiAudioAmount)
   const accountBalance = yield* select(getAccountBalance)
@@ -129,7 +129,7 @@ function* sendAsync({
       console.error(`sendAsync: unexpectedly no fee payer`)
       return
     }
-    yield* call(createUserBankIfNeeded, audiusBackend, {
+    yield* call(createUserBankIfNeeded, sdk, audiusBackend, {
       recordAnalytics: track,
       feePayerOverride
     })
@@ -138,7 +138,9 @@ function* sendAsync({
     // user bank balance, transfer all eth AUDIO to spl wrapped audio
     if (chain === Chain.Sol && weiBNAmount.gt(waudioWeiAmount)) {
       yield* put(transferEthAudioToSolWAudio())
-      yield* call([walletClient, walletClient.transferTokensFromEthToSol])
+      yield* call([walletClient, walletClient.transferTokensFromEthToSol], {
+        sdk
+      })
     }
 
     if (chain === Chain.Eth) {

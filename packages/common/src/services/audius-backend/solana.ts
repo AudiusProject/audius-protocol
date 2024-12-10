@@ -198,6 +198,7 @@ export const getUserbankAccountInfo = async (
  */
 export const createUserBankIfNeeded = async (
   sdk: AudiusSdk,
+  audiusBackendInstance: AudiusBackend,
   {
     recordAnalytics,
     feePayerOverride,
@@ -377,7 +378,7 @@ export const findAssociatedTokenAddress = async (
 ) => {
   return audiusBackendInstance.findAssociatedTokenAddress({
     solanaWalletKey: new PublicKey(solanaAddress),
-    mintKey: new PublicKey(mint)
+    mint
   })
 }
 
@@ -389,21 +390,24 @@ export const findAssociatedTokenAddress = async (
  * by the current user's Solana root wallet and the provided fee payer (likely via relay).
  */
 export const decorateCoinflowWithdrawalTransaction = async (
+  sdk: AudiusSdk,
   audiusBackendInstance: AudiusBackend,
   { transaction, feePayer }: { transaction: Transaction; feePayer: PublicKey }
 ) => {
   const libs = await audiusBackendInstance.getAudiusLibsTyped()
   const solanaWeb3Manager = libs.solanaWeb3Manager!
+  const ethAddress = sdk.services.audiusWalletClient.account.address
 
-  const userBank = await deriveUserBankPubkey(audiusBackendInstance, {
-    mint: 'usdc'
+  const userBank = await deriveUserBankPubkey(sdk, {
+    ethAddress,
+    mint: 'USDC'
   })
   const wallet = await getRootSolanaAccount(audiusBackendInstance)
   const walletUSDCTokenAccount =
-    await solanaWeb3Manager.findAssociatedTokenAddress(
-      wallet.publicKey.toBase58(),
-      'usdc'
-    )
+    audiusBackendInstance.findAssociatedTokenAddress({
+      solanaWalletKey: wallet.publicKey,
+      mint: 'USDC'
+    })
 
   // Filter any compute budget instructions since the budget will
   // definitely change

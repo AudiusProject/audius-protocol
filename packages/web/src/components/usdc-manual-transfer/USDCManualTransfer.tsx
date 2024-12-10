@@ -68,7 +68,7 @@ export const USDCManualTransfer = ({
   useCreateUserbankIfNeeded({
     recordAnalytics: trackAnalytics,
     audiusBackendInstance,
-    mint: 'usdc'
+    mint: 'USDC'
   })
   const { toast } = useContext(ToastContext)
   const isMobile = useIsMobile()

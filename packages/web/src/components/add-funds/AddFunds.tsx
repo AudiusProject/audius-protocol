@@ -35,7 +35,7 @@ export const AddFunds = ({
   useCreateUserbankIfNeeded({
     recordAnalytics: track,
     audiusBackendInstance,
-    mint: 'usdc'
+    mint: 'USDC'
   })
   const [selectedPurchaseMethod, setSelectedPurchaseMethod] =
     useState<PurchaseMethod>(PurchaseMethod.CARD)

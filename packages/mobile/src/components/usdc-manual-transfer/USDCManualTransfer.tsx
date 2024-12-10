@@ -101,7 +101,7 @@ export const USDCManualTransfer = ({
   useCreateUserbankIfNeeded({
     recordAnalytics: track,
     audiusBackendInstance,
-    mint: 'usdc'
+    mint: 'USDC'
   })
 
   const { value: USDCUserBank } = useAsync(async () => {

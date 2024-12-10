@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react'
 
-import { AudiusSdk } from '@audius/sdk'
 import {
   Connection,
   PublicKey,
@@ -72,7 +71,7 @@ export const useCoinflowWithdrawalAdapter = async () => {
             }
             const feePayer = new PublicKey(feePayerOverride)
             const finalTransaction =
-              await decorateCoinflowWithdrawalTransaction(audiusBackend, {
+              await decorateCoinflowWithdrawalTransaction(sdk, audiusBackend, {
                 transaction,
                 feePayer
               })
@@ -116,7 +115,7 @@ export const useCoinflowWithdrawalAdapter = async () => {
       })
     }
     initWallet()
-  }, [audiusBackend, feePayerOverride, make, track, audiusSdk, connection])
+  }, [audiusBackend, feePayerOverride, make, track, audiusSdk, connection, sdk])
 
   return adapter
 }

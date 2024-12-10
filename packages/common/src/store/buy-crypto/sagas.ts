@@ -108,7 +108,7 @@ function* getBuyAudioRemoteConfig() {
 }
 
 function* getBuyCryptoRemoteConfig(mint: MintName) {
-  if (mint === 'usdc') {
+  if (mint === 'USDC') {
     const config = yield* call(getBuyUSDCRemoteConfig)
     return {
       maxAmount: config.maxUSDCPurchaseAmountCents / 100.0,
@@ -263,6 +263,7 @@ function* doBuyCryptoViaSol({
   const { track, make } = yield* getContext('analytics')
   const reportToSentry = yield* getContext('reportToSentry')
   const audiusLocalStorage = yield* getContext('localStorage')
+  const sdk = yield* getSDK()
 
   yield* call(
     track,
@@ -323,7 +324,7 @@ function* doBuyCryptoViaSol({
     // Set up computed vars
     const outputTokenLamports = 10 ** outputToken.decimals
     const feePayer = new PublicKey(feePayerAddress)
-    userbank = yield* call(createUserBankIfNeeded, audiusBackendInstance, {
+    userbank = yield* call(createUserBankIfNeeded, sdk, audiusBackendInstance, {
       mint,
       feePayerOverride: feePayerAddress,
       recordAnalytics: track
@@ -342,7 +343,6 @@ function* doBuyCryptoViaSol({
       make
     })
 
-    const sdk = yield* getSDK()
     const connection = sdk.services.solanaClient.connection
     const minRent = yield* call(
       [connection, connection.getMinimumBalanceForRentExemption],
@@ -595,17 +595,13 @@ function* doBuyCryptoViaSol({
         recoveryError,
         mint
       })
-      const outputTokenChange = yield* call(
-        pollForTokenBalanceChange,
-        audiusBackendInstance,
-        {
-          initialBalance: preSwapTokenBalance,
-          tokenAccount: userbank,
-          mint,
-          retryDelayMs: config.retryDelayMs,
-          maxRetryCount: config.maxRetryCount
-        }
-      )
+      const outputTokenChange = yield* call(pollForTokenBalanceChange, sdk, {
+        initialBalance: preSwapTokenBalance,
+        tokenAccount: userbank,
+        mint,
+        retryDelayMs: config.retryDelayMs,
+        maxRetryCount: config.maxRetryCount
+      })
       console.info(
         `Salvaged ${
           exactInQuote.inAmount
@@ -751,7 +747,7 @@ function* recoverBuyCryptoViaSolIfNecessary() {
     const outputTokenLamports = 10 ** outputToken.decimals
     const expectedAmount = Math.ceil(amount * outputTokenLamports)
     const feePayer = new PublicKey(feePayerAddress)
-    userbank = yield* call(createUserBankIfNeeded, audiusBackendInstance, {
+    userbank = yield* call(createUserBankIfNeeded, sdk, audiusBackendInstance, {
       mint: localStorageState.mint,
       feePayerOverride: feePayerAddress,
       recordAnalytics: track
@@ -819,17 +815,13 @@ function* recoverBuyCryptoViaSolIfNecessary() {
 
     // Get the token difference
     const initialBalance = account?.amount ?? BigInt(0)
-    const newBalance = yield* call(
-      pollForTokenBalanceChange,
-      audiusBackendInstance,
-      {
-        initialBalance,
-        tokenAccount: userbank,
-        mint,
-        retryDelayMs: config.retryDelayMs,
-        maxRetryCount: config.maxRetryCount
-      }
-    )
+    const newBalance = yield* call(pollForTokenBalanceChange, sdk, {
+      initialBalance,
+      tokenAccount: userbank,
+      mint,
+      retryDelayMs: config.retryDelayMs,
+      maxRetryCount: config.maxRetryCount
+    })
     const balanceChange = newBalance - initialBalance
 
     // Report to the console what we got

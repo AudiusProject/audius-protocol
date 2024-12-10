@@ -2,6 +2,7 @@ import { useEffect } from 'react'
 
 import { useSelector } from 'react-redux'
 
+import { useAppContext } from '~/context'
 import { AnalyticsEvent } from '~/models/Analytics'
 import {
   AudiusBackend,
@@ -17,16 +18,17 @@ export const useCreateUserbankIfNeeded = ({
 }: {
   recordAnalytics: (event: AnalyticsEvent) => void
   audiusBackendInstance: AudiusBackend
-  mint: 'usdc' | 'audio'
+  mint: 'USDC' | 'wAUDIO'
 }) => {
   const feePayerOverride = useSelector(getFeePayer)
+  const { audiusSdk: sdk } = useAppContext()
 
   useEffect(() => {
-    if (!feePayerOverride) return
-    createUserBankIfNeeded(audiusBackendInstance, {
+    if (!feePayerOverride || !sdk) return
+    createUserBankIfNeeded(sdk, audiusBackendInstance, {
       recordAnalytics,
       mint,
       feePayerOverride
     })
-  }, [feePayerOverride, audiusBackendInstance, mint, recordAnalytics])
+  }, [feePayerOverride, audiusBackendInstance, mint, recordAnalytics, sdk])
 }
