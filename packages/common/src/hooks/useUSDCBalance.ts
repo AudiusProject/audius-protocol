@@ -51,7 +51,7 @@ export const useUSDCBalance = ({
 
   const refresh = useCallback(async () => {
     const sdk = await audiusSdk()
-    if (!ethAddress || !sdk) {
+    if (!ethAddress) {
       return
     }
     setBalanceStatus(Status.LOADING)
