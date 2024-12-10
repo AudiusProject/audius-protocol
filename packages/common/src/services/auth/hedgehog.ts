@@ -76,11 +76,8 @@ export const createHedgehog = ({
   }
 
   const setAuthFn: SetAuthFn = async (params) => {
-    // get wallet from hedgehog and set as owner wallet
-    const ownerWallet = params.wallet
-    // delete wallet object so it's not passed to identity
-    // @ts-ignore
-    delete params.wallet
+    // Get wallet from hedgehog to use for signing, remove from params sent to identity
+    const { wallet: ownerWallet, ...data } = params
 
     const unixTs = Math.round(new Date().getTime() / 1000) // current unix timestamp (sec)
     const message = `Click sign to authenticate with identity service: ${unixTs}`
@@ -96,7 +93,7 @@ export const createHedgehog = ({
       url: '/authentication',
       method: 'post',
       headers,
-      data: params
+      data
     })
   }
 
