@@ -55,7 +55,7 @@ export const CoinflowWithdrawModal = () => {
     [dispatch, onClose]
   )
 
-  const showContent = isOpen && !!adapter && amount !== undefined
+  const showContent = isOpen && adapter && amount !== undefined
 
   return (
     <ModalDrawer
