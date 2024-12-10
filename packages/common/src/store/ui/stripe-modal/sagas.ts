@@ -1,4 +1,3 @@
-import { IdentityRequestError } from '@audius/sdk-legacy/dist/libs'
 import {
   call,
   takeEvery,
@@ -12,7 +11,7 @@ import {
 
 import { Name } from '~/models/Analytics'
 import { ErrorLevel } from '~/models/ErrorReporting'
-import { createStripeSession } from '~/services/audius-backend/stripe'
+import { IdentityRequestError } from '~/services/auth/identity'
 import { getContext } from '~/store/effects'
 
 import { setVisibility } from '../modals/parentSlice'
@@ -41,16 +40,24 @@ const messages = {
 function* handleInitializeStripeModal({
   payload: { amount, destinationCurrency, destinationWallet }
 }: ReturnType<typeof initializeStripeModal>) {
-  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
+  const identityService = yield* getContext('identityService')
   const reportToSentry = yield* getContext('reportToSentry')
   const { track, make } = yield* getContext('analytics')
   const { onrampFailed } = yield* select(getStripeModalState)
   try {
-    const res = yield* call(createStripeSession, audiusBackendInstance, {
+    identityService.createStripeSession({
       amount,
       destinationCurrency,
       destinationWallet
     })
+    const res = yield* call(
+      [identityService, identityService.createStripeSession],
+      {
+        amount,
+        destinationCurrency,
+        destinationWallet
+      }
+    )
     yield* put(stripeSessionCreated({ clientSecret: res.client_secret }))
     yield* call(
       track,

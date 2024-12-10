@@ -541,9 +541,9 @@ function* sendRecoveryEmail({
   email: string
 }) {
   const authService = yield* getContext('authService')
+  const identityService = yield* getContext('identityService')
   const getHostUrl = yield* getContext('getHostUrl')
   const host = getHostUrl()
-  const sdk = yield* getSDK()
 
   try {
     const recoveryInfo = yield* call([
@@ -551,23 +551,14 @@ function* sendRecoveryEmail({
       authService.hedgehogInstance.generateRecoveryInfo
     ])
 
-    const unixTs = Math.round(new Date().getTime() / 1000) // current unix timestamp (sec)
-    const data = `Click sign to authenticate with identity service: ${unixTs}`
-    const signature = yield* call(
-      [
-        sdk.services.audiusWalletClient,
-        sdk.services.audiusWalletClient.signMessage
-      ],
-      { message: data }
-    )
-
     const recoveryData = {
       login: recoveryInfo.login,
-      host: host ?? recoveryInfo.host,
-      data,
-      signature
+      host: host ?? recoveryInfo.host
     }
-    yield* call([authService, authService.sendRecoveryInfo], recoveryData)
+    yield* call(
+      [identityService, identityService.sendRecoveryInfo],
+      recoveryData
+    )
   } catch (err) {
     const reportToSentry = yield* getContext('reportToSentry')
     reportToSentry({

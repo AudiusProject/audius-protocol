@@ -3,7 +3,6 @@ import { call, put, select, takeEvery, takeLatest } from 'typed-redux-saga'
 
 import { userApiFetchSaga } from '~/api/user'
 import { AccountUserMetadata, Id, Kind, Status } from '~/models'
-import { recordIP } from '~/services/audius-backend/RecordIP'
 import { accountActions, accountSelectors } from '~/store/account'
 import {
   getUserId,
@@ -145,8 +144,7 @@ export function* cacheAccount(account: AccountUserMetadata) {
 }
 
 function* recordIPIfNotRecent(handle: string): SagaIterator {
-  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
-  const sdk = yield* getSDK()
+  const identityService = yield* getContext('identityService')
   const localStorage = yield* getContext('localStorage')
   const timeBetweenRefresh = 24 * 60 * 60 * 1000
   const now = Date.now()
@@ -154,10 +152,7 @@ function* recordIPIfNotRecent(handle: string): SagaIterator {
   const storedIPStr = yield* call([localStorage, 'getItem'], IP_STORAGE_KEY)
   const storedIP = storedIPStr && JSON.parse(storedIPStr)
   if (!storedIP || !storedIP[handle] || storedIP[handle].timestamp < minAge) {
-    const result = yield* call(recordIP, {
-      audiusBackendInstance,
-      sdk
-    })
+    const result = yield* call([identityService, identityService.recordIP])
     if ('userIP' in result) {
       const { userIP } = result
       yield* call(

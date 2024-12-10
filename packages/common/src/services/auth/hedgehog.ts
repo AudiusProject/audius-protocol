@@ -1,12 +1,16 @@
 import { Hedgehog, WalletManager, getPlatformCreateKey } from '@audius/hedgehog'
 import type { SetAuthFn, SetUserFn, GetFn, CreateKey } from '@audius/hedgehog'
+import axios, { AxiosError, AxiosRequestConfig, AxiosResponse } from 'axios'
+import sigUtil from 'eth-sig-util'
+
+import { uuid } from '~/utils/uid'
 
 import type { LocalStorage } from '../local-storage'
 
-import type { IdentityService } from './identity'
+import { AuthHeaders } from './types'
 
 export type HedgehogConfig = {
-  identityService: IdentityService
+  identityServiceEndpoint: string
   useLocalStorage?: boolean
   localStorage?: LocalStorage
   createKey?: CreateKey
@@ -25,21 +29,83 @@ export type HedgehogInstance = Hedgehog & {
 }
 
 export const createHedgehog = ({
-  identityService,
+  identityServiceEndpoint,
   useLocalStorage = true,
   localStorage,
   createKey = getPlatformCreateKey()
 }: HedgehogConfig): HedgehogInstance => {
-  const getFn: IdentityService['getFn'] = async (obj) => {
-    return await identityService.getFn(obj)
+  const makeIdentityRequest = async <T = unknown>(
+    axiosRequestObj: AxiosRequestConfig
+  ) => {
+    axiosRequestObj.baseURL = identityServiceEndpoint
+
+    const requestId = uuid()
+    axiosRequestObj.headers = {
+      ...(axiosRequestObj.headers || {}),
+      'X-Request-ID': requestId
+    }
+
+    // Axios throws for non-200 responses
+    try {
+      const resp: AxiosResponse<T> = await axios(axiosRequestObj)
+      if (!resp.data) {
+        throw new Error(
+          `Identity response missing data field for url: ${axiosRequestObj.url}, req-id: ${requestId}`
+        )
+      }
+      return resp.data
+    } catch (e) {
+      const error = e as AxiosError
+      if (error.response?.data?.error) {
+        console.error(
+          `Server returned error for requestId ${requestId}: [${error.response.status.toString()}] ${
+            error.response.data.error
+          }`
+        )
+      }
+      throw error
+    }
   }
 
-  const setAuthFn: SetAuthFn = async (obj) => {
-    return await identityService.setAuthFn(obj)
+  const getFn: GetFn = async (params) => {
+    return await makeIdentityRequest({
+      url: '/authentication',
+      method: 'GET',
+      params
+    })
   }
 
-  const setUserFn: SetUserFn = async (obj) => {
-    return await identityService.setUserFn(obj)
+  const setAuthFn: SetAuthFn = async (params) => {
+    // get wallet from hedgehog and set as owner wallet
+    const ownerWallet = params.wallet
+    // delete wallet object so it's not passed to identity
+    // @ts-ignore
+    delete params.wallet
+
+    const unixTs = Math.round(new Date().getTime() / 1000) // current unix timestamp (sec)
+    const message = `Click sign to authenticate with identity service: ${unixTs}`
+    const signature = sigUtil.personalSign(ownerWallet.getPrivateKey(), {
+      data: message
+    })
+    const headers = {
+      [AuthHeaders.Message]: message,
+      [AuthHeaders.Signature]: signature
+    }
+
+    return await makeIdentityRequest({
+      url: '/authentication',
+      method: 'post',
+      headers,
+      data: params
+    })
+  }
+
+  const setUserFn: SetUserFn = async (params) => {
+    return await makeIdentityRequest({
+      url: '/user',
+      method: 'post',
+      data: params
+    })
   }
 
   const hedgehog = new Hedgehog(
