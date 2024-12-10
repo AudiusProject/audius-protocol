@@ -69,7 +69,7 @@ const { startRecoveryIfNecessary, cleanup: cleanupUSDCRecovery } =
 const { cleanup, setPurchasePage, eagerCreateUserBank } = purchaseContentActions
 const { getPurchaseContentFlowStage, getPurchaseContentError } =
   purchaseContentSelectors
-const { getHasCompletedAccount } = accountSelectors
+const { getIsAccountComplete } = accountSelectors
 
 const messages = {
   guestCheckout: 'Guest Checkout',
@@ -109,7 +109,7 @@ const PremiumContentPurchaseForm = (props: PremiumContentPurchaseFormProps) => {
 
   const { submitForm, resetForm } = useFormikContext()
   const { history } = useHistoryContext()
-  const hasCompletedAccount = useSelector(getHasCompletedAccount)
+  const isAccountComplete = useSelector(getIsAccountComplete)
 
   // Reset form on track change
   useEffect(() => {
@@ -151,10 +151,10 @@ const PremiumContentPurchaseForm = (props: PremiumContentPurchaseFormProps) => {
         contentClassName={styles.content}
         className={styles.content}
         currentPage={
-          hasCompletedAccount ? currentPageIndex - 1 : currentPageIndex
+          isAccountComplete ? currentPageIndex - 1 : currentPageIndex
         }
       >
-        {!hasCompletedAccount ? (
+        {!isAccountComplete ? (
           <GuestCheckoutPage
             metadata={metadata}
             price={price}
