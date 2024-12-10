@@ -11,7 +11,8 @@ import {
   PurchaseContentStage,
   PurchaseContentError,
   tracksSocialActions,
-  collectionsSocialActions
+  collectionsSocialActions,
+  usePremiumContentPurchaseModal
 } from '@audius/common/store'
 import { formatPrice, route } from '@audius/common/utils'
 import {
@@ -127,6 +128,12 @@ export const PurchaseContentFormFooter = ({
     },
     [title, isAlbum]
   )
+  const { onClose } = usePremiumContentPurchaseModal()
+
+  const handleClickSignUp = useCallback(() => {
+    console.log('asdf close')
+    onClose()
+  }, [onClose])
 
   const onRepost = useCallback(() => {
     dispatch(
@@ -159,7 +166,9 @@ export const PurchaseContentFormFooter = ({
                 </Flex>
                 <Flex gap='s'>
                   <Button fullWidth asChild>
-                    <Link to={SIGN_UP_PAGE}>{messages.finishSigningUp}</Link>
+                    <Link to={SIGN_UP_PAGE} onClick={handleClickSignUp}>
+                      {messages.finishSigningUp}
+                    </Link>
                   </Button>
                   <Button
                     fullWidth
