@@ -408,7 +408,7 @@ function* getAudioPurchaseInfo({
     yield* fork(function* () {
       yield* call(createUserBankIfNeeded, sdk, audiusBackendInstance, {
         recordAnalytics: track,
-        feePayerOverride
+        mint: 'wAUDIO'
       })
     })
 
@@ -896,7 +896,7 @@ function* doBuyAudio({
     yield* fork(function* () {
       yield* call(createUserBankIfNeeded, sdk, audiusBackendInstance, {
         recordAnalytics: track,
-        feePayerOverride
+        mint: 'wAUDIO'
       })
     })
 
