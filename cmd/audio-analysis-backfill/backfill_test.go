@@ -25,12 +25,8 @@ func TestSingleTrack(t *testing.T) {
 	go consumeAnalysisResults(ctx, &wg)
 
 	// manually send batch to process
-	analyzeBatchQueueChan <- []string{"01JD96JNSWJAT3RV7GGYDCPKD5",
-		"01JD94ZQRWZTFSV4DQ1637V0M2",
-		"01JD94RC6ER0119GYBNAFS9A9W",
-		"01JD8HAQ5K2KJB0Z44TJTTTHXV",
-		"01JD8GY3HQJAV34JDJ4EP9JDDN",
-		"01JD8GKGCK9V9KE9EAPZBDCQMV"}
+	analyzeBatchQueueChan <- []string{
+		"01JD8DKANJF4RVXY83RPDVBPX3"}
 	close(analyzeBatchQueueChan)
 
 	go func() {

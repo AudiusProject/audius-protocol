@@ -234,11 +234,8 @@ core-livereload:
 ## Audio Analysis Backfill ##
 #############################
 
-.PHONY: build-aa-backfill
-build-aa-backfill:
-	@docker build -t audius:audio-analysis-backfill -f ./cmd/audio-analysis-backfill/Dockerfile .
-
-	#### saving for later
-	docker build -t audius-app .
-	docker run -v $(pwd)/output:/app/output audius-app
+.PHONY: release-aa-backfill
+release-aa-backfill:
+	@docker build -t audius/audio-analysis-backfill:latest -f ./cmd/audio-analysis-backfill/Dockerfile .
+	@docker push audius/audio-analysis-backfill:latest
 

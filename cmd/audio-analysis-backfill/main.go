@@ -14,6 +14,7 @@ import (
 
 	"github.com/AudiusProject/audius-protocol/pkg/mediorum/server"
 	"github.com/go-resty/resty/v2"
+	_ "github.com/lib/pq"
 )
 
 /*
