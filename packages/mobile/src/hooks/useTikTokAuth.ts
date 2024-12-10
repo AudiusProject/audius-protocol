@@ -55,7 +55,7 @@ const createAuthenticate =
 
       const handleTikTokAuth = async (
         code: string,
-        error: boolean | null,
+        hasError: boolean | null,
         errorMessage: string
       ) => {
         if (authDone) {
@@ -63,14 +63,14 @@ const createAuthenticate =
           return
         }
 
-        if (error) {
-          const authError = new Error(errorMessage)
+        if (hasError) {
+          const error = new Error(errorMessage)
           reportToSentry({
-            error: authError,
+            error,
             name: 'Sign Up: TikTok auth response had an error',
             additionalInfo: {
               code,
-              hasError: error,
+              hasError,
               errorMessage
             },
             tags: {
@@ -78,7 +78,7 @@ const createAuthenticate =
             },
             feature: Feature.SignUp
           })
-          return reject(authError)
+          return reject(error)
         }
 
         // Need to set a csrf cookie because it is required for web
@@ -110,7 +110,7 @@ const createAuthenticate =
               name: 'Sign Up: Invalid response from identity tiktok/access_token',
               additionalInfo: {
                 code,
-                hasError: error,
+                hasError,
                 errorMessage
               },
               tags: {
@@ -145,7 +145,7 @@ const createAuthenticate =
             name: 'Sign Up: Unknown TikTok Auth Error',
             additionalInfo: {
               code,
-              hasError: error,
+              hasError,
               errorMessage
             },
             tags: {

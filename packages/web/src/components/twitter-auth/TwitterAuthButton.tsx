@@ -84,6 +84,7 @@ export const TwitterAuthButton = (props: TwitterAuthButtonProps) => {
         reportToSentry({
           error: error as Error,
           additionalInfo: { authenticationUrl, screenName },
+          tags: { socialMedia: 'twitter' },
           name: 'Sign Up: Twitter getRequestToken popup failed',
           feature: Feature.SignUp
         })
@@ -137,6 +138,7 @@ export const TwitterAuthButton = (props: TwitterAuthButtonProps) => {
             reportToSentry({
               error,
               additionalInfo: { popupLocation: popup.location },
+              tags: { socialMedia: 'twitter' },
               name: 'Sign Up: Twitter oauth redirect failed',
               feature: Feature.SignUp
             })
@@ -169,6 +171,7 @@ export const TwitterAuthButton = (props: TwitterAuthButtonProps) => {
       .catch((error) => {
         reportToSentry({
           error: error as Error,
+          tags: { socialMedia: 'twitter' },
           name: 'Sign Up: Twitter getOauthToken failed',
           feature: Feature.SignUp
         })
