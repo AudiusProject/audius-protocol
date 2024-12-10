@@ -59,19 +59,6 @@ export class IdentityService {
     }
   }
 
-  // TODO-NOW: Update usages of this
-  // getAuthHeaders(wallet: SetAuthFnParams['wallet']) {
-  //   const unixTs = Math.round(new Date().getTime() / 1000) // current unix timestamp (sec)
-  //   const data = `Click sign to authenticate with identity service: ${unixTs}`
-  //   const signature = sigUtil.personalSign(wallet.getPrivateKey(), {
-  //     data
-  //   })
-  //   return {
-  //     [AuthHeaders.Message]: data,
-  //     [AuthHeaders.Signature]: signature
-  //   }
-  // }
-
   // TODO: Use regular `fetch` and same request patterns as SDK
   // Likely this means extending BaseAPI and using request sig middleware
   // But calling code needs to update to follow SDK patterns as well
@@ -189,7 +176,6 @@ export class IdentityService {
   /**
    * Get the user's email used for notifications and display.
    */
-  // TODO-NOW: Update usages of this
   async getUserEmail() {
     const headers = await this._getSignatureHeaders()
 
