@@ -151,7 +151,8 @@ function* sendAsync({
       try {
         yield* call([walletClient, walletClient.sendWAudioTokens], {
           address: recipientWallet as SolanaWalletAddress,
-          amount: weiBNAmount
+          amount: weiBNAmount,
+          ethAddress: currentUser
         })
       } catch (e) {
         const errorMessage = getErrorMessage(e)

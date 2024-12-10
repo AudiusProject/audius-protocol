@@ -270,7 +270,7 @@ function* wormholeAudioIfNecessary({ amount }: { amount: number }) {
   }
 
   const waudioBalanceWei = yield* call(
-    [walletClient, 'getCurrentWAudioBalance'],
+    [walletClient, walletClient.getCurrentWAudioBalance],
     {
       ethAddress: currentUser
     }
