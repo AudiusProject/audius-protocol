@@ -1860,11 +1860,17 @@ export const audiusBackend = ({
    * @param {string} The solana wallet address
    * @returns {Promise<BN | null>} Returns the balance, or null if error
    */
-  async function getAddressWAudioBalance(address: string) {
-    await waitForLibsInit()
-    const waudioBalance = await audiusLibs.solanaWeb3Manager.getWAudioBalance(
-      address
-    )
+  async function getAddressWAudioBalance({
+    address,
+    sdk
+  }: {
+    address: string
+    sdk: AudiusSdk
+  }) {
+    const waudioBalance = await getWAudioBalance({
+      ethAddress: address,
+      sdk
+    })
     if (isNullOrUndefined(waudioBalance)) {
       console.warn(`Failed to get waudio balance for address: ${address}`)
       reportError({
