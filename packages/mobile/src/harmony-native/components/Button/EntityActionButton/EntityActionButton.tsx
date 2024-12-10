@@ -19,7 +19,7 @@ import type { EntityActionButtonProps } from './types'
 
 export const EntityActionButton = (props: EntityActionButtonProps) => {
   const { onPress, isActive, style, ...other } = props
-  const { color, spacing, cornerRadius, typography } = useTheme()
+  const { color, spacing, cornerRadius, typography, type } = useTheme()
   const pressed = useSharedValue(0)
 
   const [active, setActive] = useState(isActive)
@@ -69,7 +69,7 @@ export const EntityActionButton = (props: EntityActionButtonProps) => {
         [dynamicStyles.default.background, dynamicStyles.press.background]
       )
     }
-  }, [active])
+  }, [active, type])
 
   const textStyles: TextStyle = {
     fontFamily: typography.fontByWeight.bold,
@@ -86,7 +86,7 @@ export const EntityActionButton = (props: EntityActionButtonProps) => {
         [dynamicStyles.default.text, dynamicStyles.press.text]
       )
     }
-  }, [active])
+  }, [active, type])
 
   const animatedIconProps = useAnimatedProps(
     () => {
@@ -98,7 +98,7 @@ export const EntityActionButton = (props: EntityActionButtonProps) => {
         )
       }
     },
-    [active],
+    [active, type],
     animatedPropAdapter
   )
 

@@ -143,7 +143,10 @@ export class WalletClient {
           )
         ),
         ...associatedWallets.sol_wallets.map((wallet) =>
-          this.audiusBackendInstance.getAddressWAudioBalance(wallet)
+          this.audiusBackendInstance.getAddressWAudioBalance({
+            address: wallet,
+            sdk
+          })
         )
       ])
 
@@ -190,11 +193,18 @@ export class WalletClient {
     wallets: string[]
   ): Promise<{ address: string; balance: BNWei }[]> {
     try {
+      const sdk = await this.audiusSdk()
       const balances: { address: string; balance: BNWei }[] = await Promise.all(
         wallets.map(async (wallet) => {
-          const balance =
-            await this.audiusBackendInstance.getAddressWAudioBalance(wallet)
-          return { address: wallet, balance: balance as BNWei }
+          const tokenAccountInfo =
+            await this.audiusBackendInstance.getAssociatedTokenAccountInfo({
+              address: wallet,
+              sdk
+            })
+          return {
+            address: wallet,
+            balance: new BN(tokenAccountInfo?.amount.toString() ?? 0) as BNWei
+          }
         })
       )
       return balances
@@ -260,14 +270,13 @@ export class WalletClient {
         ) {
           throw new Error(error)
         }
-        console.error(
-          `Error sending sol wrapped audio amount ${amount.toString()} to ${address.toString()}` +
-            `with error ${error.toString()}`
-        )
-        throw new Error(`Error: ${error.toString()}`)
+        throw error
       }
     } catch (err) {
-      console.error(err)
+      console.error(
+        `Error sending sol wrapped audio amount ${amount.toString()} to ${address.toString()}` +
+          `with error ${(err as Error).toString()}`
+      )
       throw err
     }
   }

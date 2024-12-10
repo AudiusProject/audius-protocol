@@ -2,6 +2,7 @@ package server
 
 import (
 	"database/sql"
+	"fmt"
 	"time"
 
 	"github.com/AudiusProject/audius-protocol/pkg/mediorum/crudr"
@@ -79,6 +80,13 @@ const (
 	JobTemplateImgSquare   JobTemplate = "img_square"
 	JobTemplateImgBackdrop JobTemplate = "img_backdrop"
 )
+
+func validateJobTemplate(t JobTemplate) error {
+	if t == JobTemplateAudio || t == JobTemplateImgSquare || t == JobTemplateImgBackdrop {
+		return nil
+	}
+	return fmt.Errorf("invalid job template: %s", t)
+}
 
 // Job statuses
 const (

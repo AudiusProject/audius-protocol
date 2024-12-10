@@ -2,12 +2,7 @@ from typing import List, Optional
 
 from src.exceptions import IndexingValidationError
 from src.models.users.email import EmailAccessKey, EmailEncryptionKey, EncryptedEmail
-from src.tasks.entity_manager.utils import (
-    Action,
-    EntityType,
-    ManageEntityParameters,
-    validate_signer,
-)
+from src.tasks.entity_manager.utils import Action, EntityType, ManageEntityParameters
 from src.utils.structured_logger import StructuredLogger
 
 logger = StructuredLogger(__name__)
@@ -146,7 +141,6 @@ def create_encrypted_email(params: ManageEntityParameters) -> None:
     )
 
     try:
-        validate_signer(params)
         validate_email_metadata(params)
 
         # Check for existing email
@@ -206,7 +200,6 @@ def update_encrypted_email(params: ManageEntityParameters) -> None:
     )
 
     try:
-        validate_signer(params)
         validate_email_metadata(params)
 
         # Get existing email
