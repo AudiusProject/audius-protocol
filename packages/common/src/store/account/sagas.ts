@@ -80,9 +80,13 @@ export function* fetchAccountAsync({ isSignUp = false }): SagaIterator {
       })
     )
   }
-  const accountData = yield* call(userApiFetchSaga.getUserAccount, {
-    wallet
-  })
+  const accountData = yield* call(
+    userApiFetchSaga.getUserAccount,
+    {
+      wallet
+    },
+    true // force refresh to get updated user w handle
+  )
   if (!accountData || !accountData?.user) {
     yield* put(
       fetchAccountFailed({
