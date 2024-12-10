@@ -80,7 +80,6 @@ import {
   getUSDCMetadata,
   recordGatedTracks
 } from './sagaHelpers'
-import { TryCatch } from '@sentry/browser'
 
 const { updateProgress } = uploadActions
 const { getUserId, getAccountUser } = accountSelectors
