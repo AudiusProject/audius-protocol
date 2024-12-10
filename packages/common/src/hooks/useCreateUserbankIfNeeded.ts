@@ -27,8 +27,7 @@ export const useCreateUserbankIfNeeded = ({
     if (!feePayerOverride || !sdk) return
     createUserBankIfNeeded(sdk, audiusBackendInstance, {
       recordAnalytics,
-      mint,
-      feePayerOverride
+      mint
     })
-  }, [feePayerOverride, audiusBackendInstance, mint, recordAnalytics, sdk])
+  }, [audiusBackendInstance, feePayerOverride, mint, recordAnalytics, sdk])
 }

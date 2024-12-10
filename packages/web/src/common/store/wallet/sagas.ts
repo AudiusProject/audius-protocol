@@ -131,7 +131,7 @@ function* sendAsync({
     }
     yield* call(createUserBankIfNeeded, sdk, audiusBackend, {
       recordAnalytics: track,
-      feePayerOverride
+      mint: 'wAUDIO'
     })
 
     // If transferring spl wrapped audio and there are insufficent funds with only the

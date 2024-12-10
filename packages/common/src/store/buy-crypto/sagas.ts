@@ -326,7 +326,6 @@ function* doBuyCryptoViaSol({
     const feePayer = new PublicKey(feePayerAddress)
     userbank = yield* call(createUserBankIfNeeded, sdk, audiusBackendInstance, {
       mint,
-      feePayerOverride: feePayerAddress,
       recordAnalytics: track
     })
 
@@ -749,7 +748,6 @@ function* recoverBuyCryptoViaSolIfNecessary() {
     const feePayer = new PublicKey(feePayerAddress)
     userbank = yield* call(createUserBankIfNeeded, sdk, audiusBackendInstance, {
       mint: localStorageState.mint,
-      feePayerOverride: feePayerAddress,
       recordAnalytics: track
     })
 
