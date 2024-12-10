@@ -131,7 +131,6 @@ export const PurchaseContentFormFooter = ({
   const { onClose } = usePremiumContentPurchaseModal()
 
   const handleClickSignUp = useCallback(() => {
-    console.log('asdf close')
     onClose()
   }, [onClose])
 
