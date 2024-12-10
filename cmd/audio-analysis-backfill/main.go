@@ -32,6 +32,7 @@ const (
 	ErrAnalyzeExit    = "command exited with status"
 	ErrAnalyzeExec    = "failed to execute command"
 
+	IsProdEnvVar = "isProd"
 	BatchSize    = 20
 	PostgresConn = "postgresql://postgres:postgres@0.0.0.0:5432/audius_creator_node"
 )
@@ -68,9 +69,7 @@ func IsRetryable(err string) bool {
 // get transcoded mirrors
 // call ?analyze=true on one of the mirrors
 // call uploads endpoint again to get new data
-func reprocessAudioAnalysis(wg *sync.WaitGroup, r *resty.Client, uploadID string) error {
-	defer wg.Done()
-
+func reprocessAudioAnalysis(r *resty.Client, uploadID string) error {
 	uploadRes := &server.Upload{}
 	_, err := r.R().SetResult(uploadRes).Get(fmt.Sprintf("%s/uploads/%s", Endpoint, uploadID))
 	if err != nil {
@@ -109,6 +108,7 @@ func reprocessAudioAnalysis(wg *sync.WaitGroup, r *resty.Client, uploadID string
 
 func intakeUploadBatches(ctx context.Context, wg *sync.WaitGroup) {
 	defer wg.Done()
+	defer close(analyzeBatchQueueChan)
 
 	db, err := sql.Open("postgres", PostgresConn)
 	if err != nil {
@@ -163,6 +163,7 @@ func intakeUploadBatches(ctx context.Context, wg *sync.WaitGroup) {
 
 func consumeUploadBatches(ctx context.Context, wg *sync.WaitGroup) {
 	defer wg.Done()
+	defer close(analyzeSuccessChan)
 
 	client := resty.New()
 
@@ -186,7 +187,7 @@ func consumeUploadBatches(ctx context.Context, wg *sync.WaitGroup) {
 					case <-ctx.Done():
 						fmt.Printf("Stopping reprocessing for ULID: %s\n", ulid)
 					default:
-						reprocessAudioAnalysis(&bwg, client, ulid)
+						reprocessAudioAnalysis(client, ulid)
 					}
 				}(ulid)
 			}
@@ -221,7 +222,6 @@ func consumeAnalysisResults(ctx context.Context, wg *sync.WaitGroup) {
 			return
 		case upload, ok := <-analyzeSuccessChan:
 			if !ok {
-				// Channel closed, exit the loop
 				return
 			}
 
@@ -235,8 +235,8 @@ func consumeAnalysisResults(ctx context.Context, wg *sync.WaitGroup) {
 	}
 }
 
-func main() {
-	isProdVar := os.Getenv("IS_PROD")
+func setEndpoint() {
+	isProdVar := os.Getenv(IsProdEnvVar)
 	isProd, err := strconv.ParseBool(isProdVar)
 	if err != nil {
 		isProd = false
@@ -244,9 +244,15 @@ func main() {
 
 	if isProd {
 		Endpoint = "https://creatornode2.audius.co"
+		fmt.Println("running in production")
 	} else {
+		fmt.Println("running in staging")
 		Endpoint = "https://creatornode11.staging.audius.co"
 	}
+}
+
+func main() {
+	setEndpoint()
 
 	ctx, cancel := context.WithCancel(context.Background())
 	var wg sync.WaitGroup
