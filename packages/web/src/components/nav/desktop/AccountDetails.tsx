@@ -165,7 +165,7 @@ const GuestView = () => {
     <AccountContentWrapper>
       <Avatar userId={null} h={48} w={48} />
       <AccountInfo>
-        <Text variant='title' size='s'>
+        <Text variant='title' size='s' ellipses>
           {guestEmail}
         </Text>
         <TextLink to={SIGN_UP_PAGE} variant='visible' size='s'>
