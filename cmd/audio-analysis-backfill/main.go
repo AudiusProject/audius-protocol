@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"database/sql"
 	"fmt"
 	"os"
 	"strings"
@@ -29,6 +30,9 @@ const (
 	ErrParseStringBPM = "failed to parse formatted BPM string"
 	ErrAnalyzeExit    = "command exited with status"
 	ErrAnalyzeExec    = "failed to execute command"
+
+	BatchSize    = 20
+	PostgresConn = "postgresql://postgres:postgres@0.0.0.0:5432/audius_creator_node"
 )
 
 var (
@@ -103,6 +107,30 @@ func reprocessAudioAnalysis(wg *sync.WaitGroup, r *resty.Client, uploadID string
 func intakeUploadBatches(ctx context.Context, wg *sync.WaitGroup) {
 	defer wg.Done()
 
+	db, err := sql.Open("postgres", PostgresConn)
+	if err != nil {
+		fmt.Println("couldn't connect to postgres:", err)
+		return
+	}
+	defer db.Close()
+
+	query := `select count(*) from uploads where template = 'audio' and audio_analysis_status = 'error' and audio_analysis_error ilike 'command exited with status -1:%';`
+	rows, err := db.Query(query)
+	if err != nil {
+		fmt.Println("couldn't query postgres:", err)
+		return
+	}
+	defer rows.Close()
+
+	allIds := []string{}
+	for rows.Next() {
+		var id string
+		if err := rows.Scan(&id); err != nil {
+			fmt.Println("couldn't scan row:", err)
+		}
+		allIds = append(allIds, id)
+	}
+
 	// TODO: intake in batches from postgres
 	for {
 		select {
@@ -110,7 +138,24 @@ func intakeUploadBatches(ctx context.Context, wg *sync.WaitGroup) {
 			fmt.Println("intakeUploadBatches exiting due to context cancellation")
 			return
 		default:
-			// Perform your batch intake logic here
+			// Process array in batches of 10
+			if len(allIds) == 0 {
+				fmt.Println("All batches processed")
+				return
+			}
+
+			// Determine the end of the current batch
+			end := BatchSize
+			if len(allIds) < BatchSize {
+				end = len(allIds)
+			}
+
+			// Pop the batch from the array
+			batch := allIds[:end]
+			allIds = allIds[end:]
+
+			// Process the batch
+			analyzeBatchQueueChan <- batch
 		}
 	}
 }
