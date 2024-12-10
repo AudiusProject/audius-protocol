@@ -313,13 +313,8 @@ function* checkAssociatedTokenAccountOrSol(action: InputSendDataAction) {
   const connection = sdk.services.solanaClient.connection
 
   const associatedTokenAccount = yield* call(
-<<<<<<< HEAD
-    [walletClient, 'getAssociatedTokenAccountInfo'],
-    { sdk, address }
-=======
     [walletClient, walletClient.getAssociatedTokenAccountInfo],
     { address }
->>>>>>> origin/main
   )
   if (!associatedTokenAccount) {
     const balance: BNWei = yield* call(() =>
