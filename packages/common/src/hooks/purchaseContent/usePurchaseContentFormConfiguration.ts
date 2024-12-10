@@ -104,7 +104,7 @@ export const usePurchaseContentFormConfiguration = ({
     ? metadata?.track_id
     : undefined
 
-  const validationSchema = createPurchaseContentSchema(audiusQueryContext)
+  const validationSchema = createPurchaseContentSchema(audiusQueryContext, page)
   type PurchaseContentValues = z.input<typeof validationSchema>
 
   const onSubmit = useCallback(

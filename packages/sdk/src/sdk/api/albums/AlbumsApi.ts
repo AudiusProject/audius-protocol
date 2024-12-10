@@ -448,6 +448,8 @@ export class AlbumsApi {
         this.solanaClient.connection
       )
     }
-    return this.solanaClient.sendTransaction(transaction)
+    return this.solanaClient.sendTransaction(transaction, {
+      skipPreflight: true
+    })
   }
 }

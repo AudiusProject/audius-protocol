@@ -684,7 +684,9 @@ export class TracksApi extends GeneratedTracksApi {
         this.solanaClient.connection
       )
     }
-    return this.solanaClient.sendTransaction(transaction)
+    return this.solanaClient.sendTransaction(transaction, {
+      skipPreflight: true
+    })
   }
 
   /**
