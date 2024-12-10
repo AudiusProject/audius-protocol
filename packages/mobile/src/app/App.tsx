@@ -90,7 +90,9 @@ const App = () => {
                       <GestureHandlerRootView style={{ flex: 1 }}>
                         <PortalProvider>
                           <ErrorBoundary>
-                            <NavigationContainer>
+                            <NavigationContainer
+                              navigationIntegration={navigationIntegration}
+                            >
                               <BottomSheetModalProvider>
                                 <CommentDrawerProvider>
                                   <Toasts />
