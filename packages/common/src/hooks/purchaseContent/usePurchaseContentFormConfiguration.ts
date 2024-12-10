@@ -1,4 +1,4 @@
-import { useCallback } from 'react'
+import { useCallback, useMemo } from 'react'
 
 import { USDC } from '@audius/fixed-decimal'
 import BN from 'bn.js'
@@ -104,7 +104,10 @@ export const usePurchaseContentFormConfiguration = ({
     ? metadata?.track_id
     : undefined
 
-  const validationSchema = createPurchaseContentSchema(audiusQueryContext, page)
+  const validationSchema = useMemo(
+    () => createPurchaseContentSchema(audiusQueryContext, page),
+    [audiusQueryContext, page]
+  )
   type PurchaseContentValues = z.input<typeof validationSchema>
 
   const onSubmit = useCallback(

@@ -1,4 +1,9 @@
-import { accountSelectors, cacheUsersSelectors } from '@audius/common/store'
+import { GUEST_EMAIL } from '@audius/common/hooks'
+import {
+  accountSelectors,
+  cacheUsersSelectors,
+  getContext
+} from '@audius/common/store'
 import { createSelector } from 'reselect'
 
 import { AppState } from 'store/types'
@@ -69,6 +74,7 @@ export const getHasCompletedAccount = createSelector(
     // If a user has started the sign up flow,
     // only return true if they finish the flow
     // (including selecting followees)
+
     return hasAccount && (!startedSignUpProcess || finishedSignUpProcess)
   }
 )

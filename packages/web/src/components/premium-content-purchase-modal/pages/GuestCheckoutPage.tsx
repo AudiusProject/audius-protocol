@@ -10,6 +10,7 @@ import { useField } from 'formik'
 import { useDispatch } from 'react-redux'
 
 import * as signOnActions from 'common/store/pages/signon/actions'
+import { startSignUp } from 'common/store/pages/signon/actions'
 import { TextLink } from 'components/link'
 import { PurchaseSummaryTable } from 'components/premium-content-purchase-modal/components/PurchaseSummaryTable'
 import { usePurchaseContentFormState } from 'components/premium-content-purchase-modal/hooks/usePurchaseContentFormState'

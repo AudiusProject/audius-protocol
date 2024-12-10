@@ -3,6 +3,7 @@ import {
   transformAndCleanList
 } from '@audius/common/adapters'
 import { userApiFetchSaga } from '@audius/common/api'
+import { GUEST_EMAIL } from '@audius/common/hooks'
 import {
   Name,
   FavoriteSource,
@@ -636,7 +637,7 @@ function* createGuestAccount(
     if (!guestEmail) {
       throw new Error('No email set for guest account')
     }
-    const { metadata } = yield* call([sdk.users, sdk.users.createGuest])
+    const { metadata } = yield* call([sdk.users, sdk.users.createGuestAccount])
     const userId = metadata.userId
     yield* call(fetchAccountAsync, { isSignUp: true })
 
@@ -756,6 +757,7 @@ function* signUp() {
               )
 
               yield* fork(sendRecoveryEmail, { handle, email })
+              yield* call([localStorage, localStorage.removeItem], GUEST_EMAIL)
             } else {
               if (!alreadyExisted) {
                 yield* call(

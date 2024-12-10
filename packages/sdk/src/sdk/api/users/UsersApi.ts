@@ -152,7 +152,7 @@ export class UsersApi extends GeneratedUsersApi {
   /** @hidden
    * Creates a guest for guest checkout
    */
-  async createGuest(advancedOptions?: AdvancedOptions) {
+  async createGuestAccount(advancedOptions?: AdvancedOptions) {
     const { data } = await this.generateUserId()
     if (!data) {
       throw new Error('Failed to generate userId')
@@ -219,7 +219,12 @@ export class UsersApi extends GeneratedUsersApi {
 
     const updatedMetadata = {
       ...metadata,
-      ...(profilePictureResp ? { profilePicture: profilePictureResp?.id } : {}),
+      ...(profilePictureResp
+        ? {
+            profilePicture: profilePictureResp?.id,
+            profilePictureSizes: profilePictureResp?.id
+          }
+        : {}),
       ...(coverArtResp ? { coverPhoto: coverArtResp?.id } : {})
     }
 

@@ -1,5 +1,6 @@
 import { ReactNode, useEffect, useLayoutEffect, useRef, useState } from 'react'
 
+import { GUEST_EMAIL } from '@audius/common/hooks'
 import { FEED_PAGE } from '@audius/common/src/utils/route'
 import { route } from '@audius/common/utils'
 import {
@@ -300,8 +301,8 @@ export const SignOnPage = () => {
   useEffectOnce(() => {
     setIsLoaded(true)
   })
-
-  if (hasCompletedAccount) {
+  const guestEmail = window.localStorage.getItem(GUEST_EMAIL)
+  if (hasCompletedAccount && !guestEmail) {
     return <Redirect to={FEED_PAGE} />
   }
 
