@@ -148,10 +148,10 @@ const SignedOutView = () => (
   <AccountContentWrapper>
     <Avatar userId={null} h={48} w={48} />
     <AccountInfo>
-      <Text variant='body' size='s' strength='strong'>
+      <Text variant='title' size='s'>
         {messages.haveAccount}
       </Text>
-      <TextLink to={SIGN_IN_PAGE} variant='visible' size='xs' strength='weak'>
+      <TextLink to={SIGN_IN_PAGE} variant='visible' size='s'>
         {messages.signIn}
       </TextLink>
     </AccountInfo>
@@ -165,10 +165,10 @@ const GuestView = () => {
     <AccountContentWrapper>
       <Avatar userId={null} h={48} w={48} />
       <AccountInfo>
-        <Text variant='body' size='s' strength='strong'>
+        <Text variant='title' size='s'>
           {guestEmail}
         </Text>
-        <TextLink to={SIGN_UP_PAGE} variant='visible' size='xs' strength='weak'>
+        <TextLink to={SIGN_UP_PAGE} variant='visible' size='s'>
           {messages.finishSignUp}
         </TextLink>
       </AccountInfo>

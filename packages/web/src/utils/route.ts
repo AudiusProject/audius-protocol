@@ -11,14 +11,8 @@ import { env } from 'services/env'
 
 import { encodeUrlName } from './urlUtils'
 
-const {
-  getHash,
-  SIGN_UP_PAGE,
-  SIGN_UP_PASSWORD_PAGE,
-  SEARCH_PAGE,
-  profilePage,
-  collectionPage
-} = route
+const { getHash, SIGN_UP_PAGE, SEARCH_PAGE, profilePage, collectionPage } =
+  route
 
 const USE_HASH_ROUTING = env.USE_HASH_ROUTING
 

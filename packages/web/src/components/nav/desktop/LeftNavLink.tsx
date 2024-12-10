@@ -121,4 +121,10 @@ export const LeftNavLink = (props: LeftNavLinkProps) => {
       </NavLink>
     )
   }
+
+  return (
+    <div {...other} css={css}>
+      <TextComp {...textProps}>{children}</TextComp>
+    </div>
+  )
 }
