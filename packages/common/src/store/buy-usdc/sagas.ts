@@ -22,7 +22,11 @@ import {
   recoverUsdcFromRootWallet,
   relayTransaction
 } from '~/services/audius-backend/solana'
-import { getAccountUser, getHasAccount } from '~/store/account/selectors'
+import {
+  getAccountUser,
+  getHasAccount,
+  getWalletAddresses
+} from '~/store/account/selectors'
 import { getContext } from '~/store/effects'
 import { getFeePayer } from '~/store/solana/selectors'
 import {
@@ -234,6 +238,7 @@ function* doBuyUSDC({
   const { track, make } = yield* getContext('analytics')
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
   const config = yield* call(getBuyUSDCRemoteConfig)
+  const sdk = yield* getSDK()
 
   const userBank = yield* getOrCreateUSDCUserBank()
   const rootAccount = yield* call(getRootSolanaAccount, audiusBackendInstance)
@@ -362,9 +367,13 @@ function* doBuyUSDC({
 
     yield* put(buyUSDCFlowSucceeded())
 
-    const sdk = yield* getSDK()
     // Update USDC balance in store
+    const { currentUser: ethAddress } = yield* select(getWalletAddresses)
+    if (!ethAddress) {
+      throw new Error('User is not signed in')
+    }
     const account = yield* call(getUserbankAccountInfo, sdk, {
+      ethAddress,
       mint: 'USDC'
     })
     const balance = (account?.amount ?? new BN(0)) as BNUSDC

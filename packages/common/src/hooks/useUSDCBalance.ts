@@ -1,10 +1,12 @@
 import { useCallback, useEffect, useState } from 'react'
 
+import { AudiusSdk, sdk } from '@audius/sdk'
 import { Commitment } from '@solana/web3.js'
 import BN from 'bn.js'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { useGetCurrentUser } from '~/api'
+import { useAudiusQueryContext } from '~/audius-query'
 import { useAppContext } from '~/context/appContext'
 import { Status } from '~/models/Status'
 import { BNUSDC, StringUSDC } from '~/models/Wallet'
@@ -32,7 +34,7 @@ export const useUSDCBalance = ({
   pollingInterval?: number
   commitment?: Commitment
 } = {}) => {
-  const { audiusSdk: sdk } = useAppContext()
+  const { audiusSdk } = useAudiusQueryContext()
   const { data: user } = useGetCurrentUser({})
   const ethAddress = user?.wallet ?? null
   const dispatch = useDispatch()
@@ -48,6 +50,7 @@ export const useUSDCBalance = ({
   )
 
   const refresh = useCallback(async () => {
+    const sdk = await audiusSdk()
     if (!ethAddress || !sdk) {
       return
     }
@@ -56,6 +59,7 @@ export const useUSDCBalance = ({
       const account = await getUserbankAccountInfo(
         sdk,
         {
+          ethAddress,
           mint: 'USDC'
         },
         commitment
@@ -66,7 +70,7 @@ export const useUSDCBalance = ({
     } catch (e) {
       setBalanceStatus(Status.ERROR)
     }
-  }, [ethAddress, sdk, setData, commitment])
+  }, [audiusSdk, ethAddress, commitment, setData])
 
   // Refresh balance on mount
   useEffect(() => {

@@ -131,6 +131,7 @@ function* sendAsync({
     }
     yield* call(createUserBankIfNeeded, sdk, audiusBackend, {
       recordAnalytics: track,
+      ethAddress: currentUser,
       mint: 'wAUDIO'
     })
 
@@ -139,7 +140,8 @@ function* sendAsync({
     if (chain === Chain.Sol && weiBNAmount.gt(waudioWeiAmount)) {
       yield* put(transferEthAudioToSolWAudio())
       yield* call([walletClient, walletClient.transferTokensFromEthToSol], {
-        sdk
+        sdk,
+        ethAddress: currentUser
       })
     }
 

@@ -6,6 +6,7 @@ import {
   createUserBankIfNeeded,
   LocalStorage
 } from '@audius/common/services'
+import { getWalletAddresses } from '@audius/common/src/store/account/selectors'
 import {
   solanaSelectors,
   walletSelectors,
@@ -229,7 +230,13 @@ function* getTransactionFees({
         quote,
         userPublicKey: rootAccount
       })
-    const userBank = yield* call(deriveUserBankPubkey, sdk)
+    const { currentUser } = yield* select(getWalletAddresses)
+    if (!currentUser) {
+      throw new Error('Failed to get current user wallet address')
+    }
+    const userBank = yield* call(deriveUserBankPubkey, sdk, {
+      ethAddress: currentUser
+    })
     const transferTransaction = yield* call(
       createTransferToUserBankTransaction,
       {
@@ -786,7 +793,13 @@ function* transferStep({
   const sdk = yield* getSDK()
   yield* put(transferStarted())
 
-  const userBank = yield* call(deriveUserBankPubkey, sdk)
+  const { currentUser } = yield* select(getWalletAddresses)
+  if (!currentUser) {
+    throw new Error('Failed to get current user wallet address')
+  }
+  const userBank = yield* call(deriveUserBankPubkey, sdk, {
+    ethAddress: currentUser
+  })
   const transferTransaction = yield* call(createTransferToUserBankTransaction, {
     userBank,
     fromAccount: rootAccount.publicKey,

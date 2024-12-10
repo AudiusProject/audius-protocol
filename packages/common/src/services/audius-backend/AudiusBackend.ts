@@ -16,6 +16,7 @@ import {
   TokenInvalidAccountOwnerError
 } from '@solana/spl-token'
 import {
+  Connection,
   PublicKey,
   SystemProgram,
   SYSVAR_RENT_PUBKEY,
@@ -2022,7 +2023,7 @@ export const audiusBackend = ({
     solanaWalletKey: PublicKey
     mint: MintName
     solanaTokenProgramKey: PublicKey
-    connection: typeof AudiusLibs.IdentityService
+    connection: Connection
   }) {
     const associatedTokenAddress = findAssociatedTokenAddress({
       solanaWalletKey,

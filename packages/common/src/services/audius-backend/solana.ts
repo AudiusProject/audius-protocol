@@ -61,7 +61,7 @@ export type MintName = 'wAUDIO' | 'USDC'
 export const DEFAULT_MINT: MintName = 'wAUDIO'
 
 type UserBankConfig = {
-  ethAddress?: string
+  ethAddress: string
   mint?: MintName
 }
 
@@ -112,7 +112,7 @@ export const getTokenAccountInfo = async (
 
 export const deriveUserBankPubkey = async (
   sdk: AudiusSdk,
-  { ethAddress, mint = DEFAULT_MINT }: UserBankConfig = {}
+  { ethAddress, mint = DEFAULT_MINT }: UserBankConfig
 ) => {
   return await sdk.services.claimableTokensClient.deriveUserBank({
     ethWallet: ethAddress,
@@ -122,7 +122,7 @@ export const deriveUserBankPubkey = async (
 
 export const deriveUserBankAddress = async (
   sdk: AudiusSdk,
-  { ethAddress, mint = DEFAULT_MINT }: UserBankConfig = {}
+  { ethAddress, mint = DEFAULT_MINT }: UserBankConfig
 ) => {
   const pubkey = await deriveUserBankPubkey(sdk, {
     ethAddress,
@@ -169,11 +169,10 @@ function isCreateUserBankIfNeededError(
  */
 export const getUserbankAccountInfo = async (
   sdk: AudiusSdk,
-  { ethAddress: sourceEthAddress, mint = DEFAULT_MINT }: UserBankConfig = {},
+  { ethAddress: sourceEthAddress, mint = DEFAULT_MINT }: UserBankConfig,
   commitment?: Commitment
 ): Promise<Account | null> => {
-  const ethAddress =
-    sourceEthAddress ?? sdk.services.audiusWalletClient.account.publicKey
+  const ethAddress = sourceEthAddress
   if (!ethAddress) {
     throw new Error(
       `getUserbankAccountInfo: unexpected error getting eth address`

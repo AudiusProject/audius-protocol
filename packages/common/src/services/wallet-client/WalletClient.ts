@@ -87,8 +87,15 @@ export class WalletClient {
     }
   }
 
-  async transferTokensFromEthToSol({ sdk }: { sdk: AudiusSdk }): Promise<void> {
+  async transferTokensFromEthToSol({
+    sdk,
+    ethAddress
+  }: {
+    sdk: AudiusSdk
+    ethAddress: string
+  }): Promise<void> {
     const account = await getUserbankAccountInfo(sdk, {
+      ethAddress,
       mint: 'wAUDIO'
     })
     if (!account) {

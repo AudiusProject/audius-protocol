@@ -292,7 +292,10 @@ function* wormholeAudioIfNecessary({ amount }: { amount: number }) {
       yield delay(1000)
       yield put(convert())
     })
-    yield call([walletClient, walletClient.transferTokensFromEthToSol], { sdk })
+    yield call([walletClient, walletClient.transferTokensFromEthToSol], {
+      sdk,
+      ethAddress: currentUser
+    })
     // Cancel showing the notice if the conversion was magically super quick
     yield cancel(showConvertingMessage)
   }

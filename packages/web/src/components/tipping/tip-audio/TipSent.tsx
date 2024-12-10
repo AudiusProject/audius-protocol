@@ -33,6 +33,9 @@ export const TipSent = () => {
   const accountUserId = useSelector(getUserId)
   const accountHandle = useSelector(getUserHandle)
   const accountErcWallet = useSelector(getAccountERCWallet)
+  if (!accountErcWallet) {
+    throw new Error('Failed to get account ERC wallet')
+  }
   const sendTipData = useSelector(getSendTipData)
   const { user: recipient, amount: sendAmount, source } = sendTipData
 
@@ -49,7 +52,7 @@ export const TipSent = () => {
 
       const [senderWallet, recipientWallet] = await Promise.all([
         deriveUserBankAddress(sdk, {
-          ethAddress: accountErcWallet ?? undefined
+          ethAddress: accountErcWallet
         }),
         deriveUserBankAddress(sdk, {
           ethAddress: recipient.erc_wallet
