@@ -51,7 +51,7 @@ export class IdentityService {
 
     const unixTs = Math.round(new Date().getTime() / 1000) // current unix timestamp (sec)
     const message = `Click sign to authenticate with identity service: ${unixTs}`
-    const signature = this.audiusWalletClient.signMessage({ message })
+    const signature = await this.audiusWalletClient.signMessage({ message })
 
     return {
       [AuthHeaders.Message]: message,
