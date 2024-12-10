@@ -32,7 +32,7 @@ export const useUSDCBalance = ({
   pollingInterval?: number
   commitment?: Commitment
 } = {}) => {
-  const { audiusBackend } = useAppContext()
+  const { audiusSdk: sdk } = useAppContext()
   const { data: user } = useGetCurrentUser({})
   const ethAddress = user?.wallet ?? null
   const dispatch = useDispatch()
@@ -54,9 +54,9 @@ export const useUSDCBalance = ({
     setBalanceStatus(Status.LOADING)
     try {
       const account = await getUserbankAccountInfo(
-        audiusBackend,
+        sdk,
         {
-          mint: 'usdc'
+          mint: 'USDC'
         },
         commitment
       )
@@ -66,7 +66,7 @@ export const useUSDCBalance = ({
     } catch (e) {
       setBalanceStatus(Status.ERROR)
     }
-  }, [ethAddress, audiusBackend, setData, commitment])
+  }, [ethAddress, sdk, setData, commitment])
 
   // Refresh balance on mount
   useEffect(() => {

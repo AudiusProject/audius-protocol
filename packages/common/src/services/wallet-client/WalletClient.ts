@@ -87,9 +87,9 @@ export class WalletClient {
     }
   }
 
-  async transferTokensFromEthToSol(): Promise<void> {
-    const account = await getUserbankAccountInfo(this.audiusBackendInstance, {
-      mint: 'audio'
+  async transferTokensFromEthToSol({ sdk }: { sdk: AudiusSdk }): Promise<void> {
+    const account = await getUserbankAccountInfo(sdk, {
+      mint: 'wAUDIO'
     })
     if (!account) {
       throw new Error('No userbank account.')
@@ -103,10 +103,10 @@ export class WalletClient {
       ercAudioBalance.gt(new BN('0'))
     ) {
       await this.audiusBackendInstance.transferAudioToWAudio(ercAudioBalance)
-      await pollForTokenBalanceChange(this.audiusBackendInstance, {
+      await pollForTokenBalanceChange(sdk, {
         tokenAccount: account?.address,
         initialBalance: account?.amount,
-        mint: 'audio',
+        mint: 'wAUDIO',
         retryDelayMs: 5000,
         maxRetryCount: 720 /* one hour */
       })

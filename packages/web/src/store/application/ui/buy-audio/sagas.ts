@@ -22,7 +22,8 @@ import {
   TransactionMetadataType,
   getContext,
   AmountObject,
-  TransactionDetails
+  TransactionDetails,
+  getSDK
 } from '@audius/common/store'
 import {
   dayjs,
@@ -220,6 +221,7 @@ function* getTransactionFees({
   rootAccount: PublicKey
   feesCache: ReturnType<typeof getFeesCache>
 }) {
+  const sdk = yield* getSDK()
   let transactionFees = feesCache?.transactionFees ?? 0
   if (!transactionFees) {
     const { instructions: swapInstructions, lookupTableAddresses } =
@@ -227,7 +229,7 @@ function* getTransactionFees({
         quote,
         userPublicKey: rootAccount
       })
-    const userBank = yield* call(deriveUserBankPubkey, audiusBackendInstance)
+    const userBank = yield* call(deriveUserBankPubkey, sdk)
     const transferTransaction = yield* call(
       createTransferToUserBankTransaction,
       {
@@ -372,6 +374,7 @@ function* getBuyAudioRemoteConfig() {
 function* getAudioPurchaseInfo({
   payload: { audioAmount }
 }: ReturnType<typeof calculateAudioPurchaseInfo>) {
+  const sdk = yield* getSDK()
   try {
     // Fail early if audioAmount is too small/large
     const { minAudioAmount, maxAudioAmount, slippageBps } = yield* call(
@@ -403,7 +406,7 @@ function* getAudioPurchaseInfo({
     }
 
     yield* fork(function* () {
-      yield* call(createUserBankIfNeeded, audiusBackendInstance, {
+      yield* call(createUserBankIfNeeded, sdk, {
         recordAnalytics: track,
         feePayerOverride
       })
@@ -780,9 +783,10 @@ function* transferStep({
   transactionHandler,
   provider
 }: TransferStepParams) {
+  const sdk = yield* getSDK()
   yield* put(transferStarted())
 
-  const userBank = yield* call(deriveUserBankPubkey, audiusBackendInstance)
+  const userBank = yield* call(deriveUserBankPubkey, sdk)
   const transferTransaction = yield* call(createTransferToUserBankTransaction, {
     userBank,
     fromAccount: rootAccount.publicKey,

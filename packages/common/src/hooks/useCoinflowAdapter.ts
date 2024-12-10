@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 
+import { AudiusSdk } from '@audius/sdk'
 import {
   Connection,
   PublicKey,
@@ -39,19 +40,19 @@ type CoinflowAdapter = {
  * the incoming transaction to route it through a user bank. The transcation will then be
  * signed with the current user's Solana root wallet and sent/confirmed via Relay.
  */
-export const useCoinflowWithdrawalAdapter = () => {
+export const useCoinflowWithdrawalAdapter = async () => {
   const {
     audiusBackend,
     analytics: { make, track }
   } = useAppContext()
   const [adapter, setAdapter] = useState<CoinflowAdapter | null>(null)
   const feePayerOverride = useSelector(getFeePayer)
+  const { audiusSdk } = useAudiusQueryContext()
+  const sdk = await audiusSdk()
+  const connection = sdk.services.solanaClient.connection
 
   useEffect(() => {
     const initWallet = async () => {
-      const libs = await audiusBackend.getAudiusLibsTyped()
-      if (!libs.solanaWeb3Manager) return
-      const connection = libs.solanaWeb3Manager.getConnection()
       const wallet = await getRootSolanaAccount(audiusBackend)
 
       setAdapter({
@@ -115,7 +116,7 @@ export const useCoinflowWithdrawalAdapter = () => {
       })
     }
     initWallet()
-  }, [audiusBackend, feePayerOverride, make, track])
+  }, [audiusBackend, feePayerOverride, make, track, audiusSdk, connection])
 
   return adapter
 }
@@ -124,7 +125,7 @@ export const useCoinflowWithdrawalAdapter = () => {
  * current user's Solana root wallet and send/confirm locally (no relay).
  * @param onSuccess optional callback to invoke when the relay succeeds
  */
-export const useCoinflowAdapter = ({
+export const useCoinflowAdapter = async ({
   onSuccess,
   onFailure
 }: {
@@ -134,13 +135,12 @@ export const useCoinflowAdapter = ({
   const { audiusBackend } = useAppContext()
   const [adapter, setAdapter] = useState<CoinflowAdapter | null>(null)
   const { audiusSdk } = useAudiusQueryContext()
+  const sdk = await audiusSdk()
+  const connection = sdk.services.solanaClient.connection
   const dispatch = useDispatch()
 
   useEffect(() => {
     const initWallet = async () => {
-      const libs = await audiusBackend.getAudiusLibsTyped()
-      if (!libs.solanaWeb3Manager) return
-      const connection = libs.solanaWeb3Manager.getConnection()
       const wallet = await getRootSolanaAccount(audiusBackend)
       setAdapter({
         connection,
@@ -149,7 +149,6 @@ export const useCoinflowAdapter = ({
           sendTransaction: async (tx: Transaction | VersionedTransaction) => {
             try {
               const transaction = tx as VersionedTransaction
-              const sdk = await audiusSdk()
 
               // Get a more recent blockhash to prevent BlockhashNotFound errors
               transaction.message.recentBlockhash = (
@@ -193,7 +192,15 @@ export const useCoinflowAdapter = ({
       })
     }
     initWallet()
-  }, [audiusBackend, audiusSdk, dispatch, onSuccess, onFailure])
+  }, [
+    audiusBackend,
+    audiusSdk,
+    dispatch,
+    onSuccess,
+    onFailure,
+    connection,
+    sdk.services.solanaRelay
+  ])
 
   return adapter
 }

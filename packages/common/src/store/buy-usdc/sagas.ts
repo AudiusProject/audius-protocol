@@ -75,21 +75,18 @@ function* purchaseStep({
   maxRetryCount
 }: PurchaseStepParams) {
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
+  const sdk = yield* getSDK()
   const { track, make } = yield* getContext('analytics')
 
   const tokenAccount = yield* call(
     findAssociatedTokenAddress,
     audiusBackendInstance,
-    { solanaAddress: wallet.toString(), mint: 'usdc' }
+    { solanaAddress: wallet.toString(), mint: 'USDC' }
   )
 
-  const initialAccountInfo = yield* call(
-    getTokenAccountInfo,
-    audiusBackendInstance,
-    {
-      tokenAccount
-    }
-  )
+  const initialAccountInfo = yield* call(getTokenAccountInfo, sdk, {
+    tokenAccount
+  })
   const initialBalance = initialAccountInfo?.amount ?? BigInt(0)
 
   yield* put(purchaseStarted())
@@ -133,17 +130,13 @@ function* purchaseStep({
   yield* call(track, make({ eventName: Name.BUY_USDC_ON_RAMP_SUCCESS, vendor }))
 
   // Wait for the funds to come through
-  const newBalance = yield* call(
-    pollForTokenBalanceChange,
-    audiusBackendInstance,
-    {
-      mint: 'usdc',
-      tokenAccount,
-      initialBalance,
-      retryDelayMs,
-      maxRetryCount
-    }
-  )
+  const newBalance = yield* call(pollForTokenBalanceChange, sdk, {
+    mint: 'USDC',
+    tokenAccount,
+    initialBalance,
+    retryDelayMs,
+    maxRetryCount
+  })
 
   // Check that we got the requested amount
   const purchasedAmount = newBalance - initialBalance
@@ -369,9 +362,10 @@ function* doBuyUSDC({
 
     yield* put(buyUSDCFlowSucceeded())
 
+    const sdk = yield* getSDK()
     // Update USDC balance in store
-    const account = yield* call(getUserbankAccountInfo, audiusBackendInstance, {
-      mint: 'usdc'
+    const account = yield* call(getUserbankAccountInfo, sdk, {
+      mint: 'USDC'
     })
     const balance = (account?.amount ?? new BN(0)) as BNUSDC
     yield* put(setUSDCBalance({ amount: balance.toString() as StringUSDC }))
@@ -416,24 +410,22 @@ function* recoverPurchaseIfNecessary() {
   const reportToSentry = yield* getContext('reportToSentry')
   const { track, make } = yield* getContext('analytics')
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
+  const sdk = yield* getSDK()
 
   try {
     const rootAccount = yield* call(getRootSolanaAccount, audiusBackendInstance)
-    const audiusSdk = yield* getContext('audiusSdk')
-    const sdk = yield* call(audiusSdk)
 
     const usdcTokenAccount = yield* call(
       findAssociatedTokenAddress,
       audiusBackendInstance,
-      { solanaAddress: rootAccount.publicKey.toString(), mint: 'usdc' }
-    )
-    const accountInfo = yield* call(
-      getTokenAccountInfo,
-      audiusBackendInstance,
       {
-        tokenAccount: usdcTokenAccount
+        solanaAddress: rootAccount.publicKey.toString(),
+        mint: 'USDC'
       }
     )
+    const accountInfo = yield* call(getTokenAccountInfo, sdk, {
+      tokenAccount: usdcTokenAccount
+    })
     const amount = accountInfo?.amount ?? BigInt(0)
     if (amount === BigInt(0)) {
       return
