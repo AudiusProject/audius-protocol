@@ -15,4 +15,7 @@ WORKDIR /app
 
 COPY --from=builder /app/main .
 
+RUN mkdir -p /app/output
+VOLUME /app/output
+
 CMD ["./main"]

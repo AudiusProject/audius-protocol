@@ -5,9 +5,11 @@ import (
 	"database/sql"
 	"fmt"
 	"os"
+	"os/signal"
 	"strconv"
 	"strings"
 	"sync"
+	"syscall"
 	"time"
 
 	"github.com/AudiusProject/audius-protocol/pkg/mediorum/server"
@@ -132,14 +134,12 @@ func intakeUploadBatches(ctx context.Context, wg *sync.WaitGroup) {
 		allIds = append(allIds, id)
 	}
 
-	// TODO: intake in batches from postgres
 	for {
 		select {
 		case <-ctx.Done():
 			fmt.Println("intakeUploadBatches exiting due to context cancellation")
 			return
 		default:
-			// Process array in batches of 10
 			if len(allIds) == 0 {
 				fmt.Println("All batches processed")
 				return
@@ -173,7 +173,6 @@ func consumeUploadBatches(ctx context.Context, wg *sync.WaitGroup) {
 			return
 		case ulidBatch, ok := <-analyzeBatchQueueChan:
 			if !ok {
-				// Channel closed, exit the loop
 				return
 			}
 
@@ -185,7 +184,6 @@ func consumeUploadBatches(ctx context.Context, wg *sync.WaitGroup) {
 					defer bwg.Done()
 					select {
 					case <-ctx.Done():
-						// Stop any ongoing processing due to context cancellation
 						fmt.Printf("Stopping reprocessing for ULID: %s\n", ulid)
 					default:
 						reprocessAudioAnalysis(&bwg, client, ulid)
@@ -259,6 +257,13 @@ func main() {
 	go consumeUploadBatches(ctx, &wg)
 	go consumeAnalysisResults(ctx, &wg)
 
+	signalChan := make(chan os.Signal, 1)
+	signal.Notify(signalChan, os.Interrupt, syscall.SIGTERM)
+
+	go func() {
+		<-signalChan
+		cancel()
+	}()
+
 	wg.Wait()
-	cancel()
 }

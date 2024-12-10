@@ -238,3 +238,7 @@ core-livereload:
 build-aa-backfill:
 	@docker build -t audius:audio-analysis-backfill -f ./cmd/audio-analysis-backfill/Dockerfile .
 
+	#### saving for later
+	docker build -t audius-app .
+	docker run -v $(pwd)/output:/app/output audius-app
+
