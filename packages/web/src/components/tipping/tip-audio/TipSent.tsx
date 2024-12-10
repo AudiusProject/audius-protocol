@@ -10,6 +10,7 @@ import cn from 'classnames'
 import { useSelector } from 'common/hooks/useSelector'
 import { useRecord, make } from 'common/store/analytics/actions'
 import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
+import { audiusSdk } from 'services/audius-sdk'
 import { env } from 'services/env'
 import { openTwitterLink } from 'utils/tweet'
 
@@ -38,6 +39,7 @@ export const TipSent = () => {
 
   const handleShareClick = useCallback(async () => {
     const formattedSendAmount = formatNumberCommas(sendAmount)
+    const sdk = await audiusSdk()
     if (accountUserId && recipient) {
       let recipientAndAmount = `${recipient.name} ${formattedSendAmount}`
       if (recipient.twitter_handle) {
@@ -47,10 +49,10 @@ export const TipSent = () => {
       openTwitterLink(`${env.AUDIUS_URL}/${recipient.handle}`, message)
 
       const [senderWallet, recipientWallet] = await Promise.all([
-        deriveUserBankAddress(audiusBackendInstance, {
+        deriveUserBankAddress(sdk, {
           ethAddress: accountErcWallet ?? undefined
         }),
-        deriveUserBankAddress(audiusBackendInstance, {
+        deriveUserBankAddress(sdk, {
           ethAddress: recipient.erc_wallet
         })
       ])

@@ -473,15 +473,11 @@ function* recoverPurchaseIfNecessary() {
     )
 
     // Ensure RPC catches up to balance change before continuing
-    const updatedBalance = yield* call(
-      pollForTokenBalanceChange,
-      audiusBackendInstance,
-      {
-        tokenAccount: userBank,
-        mint: 'usdc',
-        initialBalance: userBankInitialBalance
-      }
-    )
+    const updatedBalance = yield* call(pollForTokenBalanceChange, sdk, {
+      tokenAccount: userBank,
+      mint: 'USDC',
+      initialBalance: userBankInitialBalance
+    })
 
     yield* put(
       setUSDCBalance({ amount: updatedBalance.toString() as StringUSDC })

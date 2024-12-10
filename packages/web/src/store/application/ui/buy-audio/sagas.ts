@@ -406,7 +406,7 @@ function* getAudioPurchaseInfo({
     }
 
     yield* fork(function* () {
-      yield* call(createUserBankIfNeeded, sdk, {
+      yield* call(createUserBankIfNeeded, sdk, audiusBackendInstance, {
         recordAnalytics: track,
         feePayerOverride
       })
@@ -844,6 +844,7 @@ function* doBuyAudio({
   payload: { desiredAudioAmount, estimatedSOL, estimatedUSD }
 }: ReturnType<typeof onrampOpened>) {
   const provider = yield* select(getBuyAudioProvider)
+  const sdk = yield* getSDK()
   let userRootWallet = ''
   try {
     // Record start
@@ -893,7 +894,7 @@ function* doBuyAudio({
       return
     }
     yield* fork(function* () {
-      yield* call(createUserBankIfNeeded, audiusBackendInstance, {
+      yield* call(createUserBankIfNeeded, sdk, audiusBackendInstance, {
         recordAnalytics: track,
         feePayerOverride
       })

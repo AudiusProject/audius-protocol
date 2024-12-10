@@ -48,7 +48,7 @@ export const useUSDCBalance = ({
   )
 
   const refresh = useCallback(async () => {
-    if (!ethAddress) {
+    if (!ethAddress || !sdk) {
       return
     }
     setBalanceStatus(Status.LOADING)
