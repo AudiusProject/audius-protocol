@@ -135,7 +135,7 @@ def add_user_artwork(user):
             "1000x1000": make_image(profile_endpoint, profile_cid, 1000, 1000),
             "mirrors": profile_mirrors,
         }
-    elif user.get("profile_picture"):
+    elif user.get("profile_picture") and type(user.get("profile_picture")) == str:
         profile_cid = user.get("profile_picture")
         profile_endpoints = get_n_primary_endpoints(user, profile_cid, 3)
         profile_endpoint = profile_endpoints[0]
@@ -163,7 +163,7 @@ def add_user_artwork(user):
             "2000x": make_image(cover_endpoint, cover_cid, 2000),
             "mirrors": cover_mirrors,
         }
-    elif user.get("cover_photo"):
+    elif user.get("cover_photo") and type(user.get("cover_photo")) == str:
         cover_cid = user.get("cover_photo")
         cover_endpoints = get_n_primary_endpoints(user, cover_cid, 3)
         cover_endpoint = cover_endpoints[0]
