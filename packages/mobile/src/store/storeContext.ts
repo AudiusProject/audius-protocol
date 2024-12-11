@@ -16,7 +16,7 @@ import {
   remoteConfigInstance
 } from 'app/services/remote-config'
 import { audiusSdk } from 'app/services/sdk/audius-sdk'
-import { authService } from 'app/services/sdk/auth'
+import { authService, solanaWalletService } from 'app/services/sdk/auth'
 import { identityService } from 'app/services/sdk/identity'
 import { trackDownload } from 'app/services/track-download'
 import { walletClient } from 'app/services/wallet-client'
@@ -70,6 +70,7 @@ export const storeContext: CommonStoreContext = {
   audiusSdk,
   authService,
   identityService,
+  solanaWalletService,
   imageUtils: {
     generatePlaylistArtwork
   },

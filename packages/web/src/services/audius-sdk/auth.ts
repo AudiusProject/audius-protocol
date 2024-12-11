@@ -1,4 +1,7 @@
-import { createAuthService } from '@audius/common/services'
+import {
+  createAuthService,
+  createHedgehogSolanaWalletService
+} from '@audius/common/services'
 import { createHedgehogWalletClient } from '@audius/sdk'
 
 import { env } from '../env'
@@ -10,5 +13,9 @@ export const authService = createAuthService({
 })
 
 export const audiusWalletClient = createHedgehogWalletClient(
+  authService.hedgehogInstance
+)
+
+export const solanaWalletService = createHedgehogSolanaWalletService(
   authService.hedgehogInstance
 )
