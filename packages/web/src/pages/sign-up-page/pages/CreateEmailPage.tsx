@@ -169,7 +169,11 @@ export const CreateEmailPage = () => {
                 />
               )}
             </Box>
-            <Heading heading={messages.title} tag='h1' centered={isMobile} />
+            <Heading
+              heading={isGuest ? messages.finishSigningUp : messages.title}
+              tag='h1'
+              centered={isMobile}
+            />
             <Flex direction='column' gap='l'>
               <NewEmailField />
               {isGuest ? null : (

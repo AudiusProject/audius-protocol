@@ -1,22 +1,11 @@
-import { useCallback, useEffect } from 'react'
-
-import {
-  confirmEmailMessages,
-  createEmailPageMessages
-} from '@audius/common/messages'
+import { createEmailPageMessages } from '@audius/common/messages'
 import { emailSchemaMessages } from '@audius/common/schemas'
-import { route, TEMPORARY_PASSWORD } from '@audius/common/utils'
+import { route } from '@audius/common/utils'
 import { Hint, IconError } from '@audius/harmony'
 import { useField, useFormikContext } from 'formik'
-import { useDispatch } from 'react-redux'
 import { Link } from 'react-router-dom'
 import { usePrevious } from 'react-use'
 
-import {
-  setField,
-  setValueField,
-  signIn
-} from 'common/store/pages/signon/actions'
 import { TextLink } from 'components/link'
 
 import { EmailField } from './EmailField'

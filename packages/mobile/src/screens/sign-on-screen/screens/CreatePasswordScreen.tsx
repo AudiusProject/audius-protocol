@@ -3,7 +3,7 @@ import { useCallback } from 'react'
 import { createPasswordPageMessages as messages } from '@audius/common/messages'
 import { passwordSchema } from '@audius/common/schemas'
 import { setValueField } from 'common/store/pages/signon/actions'
-import { getEmailField, getIsGuest } from 'common/store/pages/signon/selectors'
+import { getEmailField } from 'common/store/pages/signon/selectors'
 import { Formik } from 'formik'
 import { useDispatch, useSelector } from 'react-redux'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
@@ -33,7 +33,6 @@ const passwordFormikSchema = toFormikValidationSchema(passwordSchema)
 
 export const CreatePasswordScreen = () => {
   const { value: email } = useSelector(getEmailField)
-  const isGuest = useSelector(getIsGuest)
   const dispatch = useDispatch()
   const navigation = useNavigation<SignUpScreenParamList>()
 
@@ -59,13 +58,11 @@ export const CreatePasswordScreen = () => {
           <KeyboardAvoidingView keyboardShowingOffset={220}>
             <Flex direction='column' h='100%' gap='l'>
               <Heading
-                heading={isGuest ? messages.finishSigningUp : messages.createYourPassword}
+                heading={messages.createYourPassword}
                 description={messages.description}
               />
-              <ReadOnlyField
-                label={messages.yourEmail}
-                value={email}
-              />
+
+              <ReadOnlyField label={messages.yourEmail} value={email} />
               <PasswordField
                 name='password'
                 clearErrorOnChange={false}

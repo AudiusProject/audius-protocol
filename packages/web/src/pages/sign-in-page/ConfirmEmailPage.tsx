@@ -8,7 +8,7 @@ import {
 } from '@audius/common/schemas'
 import { Text, TextLink } from '@audius/harmony'
 import { Form, Formik, useField } from 'formik'
-import { useDispatch, useSelector } from 'react-redux'
+import { useDispatch } from 'react-redux'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 
 import {
@@ -26,6 +26,7 @@ import { HarmonyTextField } from 'components/form-fields/HarmonyTextField'
 import { ToastContext } from 'components/toast/ToastContext'
 import { useMedia } from 'hooks/useMedia'
 import { Heading, Page, PageFooter } from 'pages/sign-up-page/components/layout'
+import { useSelector } from 'utils/reducer'
 
 const initialValues = {
   otp: ''

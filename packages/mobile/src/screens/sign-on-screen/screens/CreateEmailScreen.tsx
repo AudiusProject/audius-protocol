@@ -5,9 +5,12 @@ import { useFeatureFlag } from '@audius/common/hooks'
 import { createEmailPageMessages as messages } from '@audius/common/messages'
 import { emailSchema, emailSchemaMessages } from '@audius/common/schemas'
 import { FeatureFlags } from '@audius/common/services'
+import { TEMPORARY_PASSWORD } from '@audius/common/utils'
 import {
+  setField,
   setLinkedSocialOnFirstPage,
   setValueField,
+  signIn,
   startSignUp
 } from 'common/store/pages/signon/actions'
 import {
@@ -99,6 +102,18 @@ export const CreateEmailScreen = (props: SignOnScreenProps) => {
     [dispatch, handleCompleteSocialMediaLogin, navigation]
   )
 
+  const handleGuestSubmit = useCallback(
+    (values: SignUpEmailValues) => {
+      const { email } = values
+      dispatch(setValueField('email', email))
+      dispatch(setValueField('password', TEMPORARY_PASSWORD))
+      dispatch(setField('isGuest', true))
+      dispatch(signIn(email, TEMPORARY_PASSWORD))
+      navigation.navigate('ConfirmEmail')
+    },
+    [dispatch, navigation]
+  )
+
   return (
     <Formik
       initialValues={initialValues}
@@ -106,7 +121,7 @@ export const CreateEmailScreen = (props: SignOnScreenProps) => {
       validationSchema={EmailSchema}
       validateOnChange={false}
     >
-      {({ handleSubmit, errors }) => {
+      {({ handleSubmit, errors, values }) => {
         const isGuest = errors.email === emailSchemaMessages.completeYourProfile
 
         return (
@@ -115,14 +130,17 @@ export const CreateEmailScreen = (props: SignOnScreenProps) => {
               <SocialMediaLoading onClose={handleCloseSocialMediaLogin} />
             ) : null}
             <Flex style={{ zIndex: 1 }} gap='l'>
-              <Heading heading={messages.title} centered />
+              <Heading
+                heading={isGuest ? messages.finishSigningUp : messages.title}
+                centered
+              />
               <Flex direction='column' gap='l'>
                 <NewEmailField
                   name='email'
                   label={messages.emailLabel}
                   onChangeScreen={onChangeScreen}
                 />
-                {!isGuest && isSocialSignupEnabled && (
+                {!isGuest && isSocialSignupEnabled ? (
                   <>
                     <Divider>
                       <Text variant='body' size='s' color='subdued'>
@@ -137,26 +155,32 @@ export const CreateEmailScreen = (props: SignOnScreenProps) => {
                       page='create-email'
                     />
                   </>
-                )}
+                ) : null}
               </Flex>
               <Flex direction='column' gap='l'>
                 <Button
                   variant='primary'
-                  onPress={() => handleSubmit()}
+                  onPress={
+                    isGuest
+                      ? () => handleGuestSubmit(values)
+                      : () => handleSubmit()
+                  }
                   fullWidth
                   iconRight={IconArrowRight}
                 >
                   {isGuest ? messages.finishSigningUp : messages.signUp}
                 </Button>
-                <Text variant='body' size='m' textAlign='center'>
-                  {messages.haveAccount}{' '}
-                  <TextLink
-                    variant='visible'
-                    onPress={() => onChangeScreen('sign-in')}
-                  >
-                    {messages.signIn}
-                  </TextLink>
-                </Text>
+                {isGuest ? null : (
+                  <Text variant='body' size='m' textAlign='center'>
+                    {messages.haveAccount}{' '}
+                    <TextLink
+                      variant='visible'
+                      onPress={() => onChangeScreen('sign-in')}
+                    >
+                      {messages.signIn}
+                    </TextLink>
+                  </Text>
+                )}
               </Flex>
             </Flex>
           </>
