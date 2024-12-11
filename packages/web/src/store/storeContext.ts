@@ -1,7 +1,7 @@
 import { FeatureFlags } from '@audius/common/services'
 import { CommonStoreContext } from '@audius/common/store'
 import { FetchNFTClient } from '@audius/fetch-nft'
-import { setTag, configureScope } from '@sentry/browser'
+import { setTag, getCurrentScope } from '@sentry/browser'
 
 import * as analytics from 'services/analytics'
 import { audioPlayer } from 'services/audio-player'
