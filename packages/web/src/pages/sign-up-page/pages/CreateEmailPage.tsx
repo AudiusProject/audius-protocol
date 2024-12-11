@@ -104,14 +104,18 @@ export const CreateEmailPage = () => {
 
   const handleSubmit = useCallback(
     async (values: SignUpEmailValues) => {
-      const { email, withMetaMask } = values
-      dispatch(startSignUp())
+      const { email } = values
       dispatch(setValueField('email', email))
-      if (withMetaMask) {
-        setIsMetaMaskModalOpen(true)
-      } else {
-        navigate(SIGN_UP_PASSWORD_PAGE)
-      }
+      navigate(SIGN_UP_PASSWORD_PAGE)
+    },
+    [dispatch, navigate]
+  )
+
+  const handleGuestSubmit = useCallback(
+    (values: SignUpEmailValues) => {
+      const { email } = values
+      dispatch(setValueField('email', email))
+      navigate(SIGN_UP_PASSWORD_PAGE)
     },
     [dispatch, navigate]
   )
@@ -135,11 +139,21 @@ export const CreateEmailPage = () => {
         isSubmitting,
         setFieldValue,
         submitForm,
+        values,
         errors,
         dirty,
         isValid
       }) => {
         const isGuest = errors.email === emailSchemaMessages.completeYourProfile
+
+        const handleButtonClick = () => {
+          setFieldValue('withMetaMask', false)
+          if (isGuest) {
+            handleGuestSubmit(values)
+          } else {
+            submitForm()
+          }
+        }
 
         return (
           <Page as={Form} pt={isMobile ? 'xl' : 'unit13'}>
@@ -161,45 +175,46 @@ export const CreateEmailPage = () => {
             <Heading heading={messages.title} tag='h1' centered={isMobile} />
             <Flex direction='column' gap='l'>
               <NewEmailField />
-              <Divider>
-                <Text
-                  variant='body'
-                  size={isMobile ? 's' : 'm'}
-                  color='subdued'
-                >
-                  {messages.socialsDividerText}
-                </Text>
-              </Divider>
-              {!isGuest && (
-                <SocialMediaLoginOptions
-                  onError={handleErrorSocialMediaLogin}
-                  onStart={handleStartSocialMediaLogin}
-                  onCompleteSocialMediaLogin={handleCompleteSocialMediaLogin}
-                />
+              {isGuest ? null : (
+                <>
+                  <Divider>
+                    <Text
+                      variant='body'
+                      size={isMobile ? 's' : 'm'}
+                      color='subdued'
+                    >
+                      {messages.socialsDividerText}
+                    </Text>
+                  </Divider>
+                  <SocialMediaLoginOptions
+                    onError={handleErrorSocialMediaLogin}
+                    onStart={handleStartSocialMediaLogin}
+                    onCompleteSocialMediaLogin={handleCompleteSocialMediaLogin}
+                  />
+                </>
               )}
             </Flex>
             <Flex direction='column' gap='l'>
               <Button
                 variant='primary'
-                type='submit'
+                type={isGuest ? 'button' : 'submit'}
                 fullWidth
                 iconRight={IconArrowRight}
                 isLoading={isSubmitting}
-                onClick={() => {
-                  setFieldValue('withMetaMask', false)
-                  submitForm()
-                }}
+                onClick={isGuest ? () => handleGuestSubmit(values) : undefined}
               >
                 {isGuest ? messages.finishSigningUp : messages.signUp}
               </Button>
 
-              <Text
-                variant='body'
-                size={isMobile ? 'm' : 'l'}
-                textAlign={isMobile ? 'center' : undefined}
-              >
-                {messages.haveAccount} {signInLink}
-              </Text>
+              {isGuest ? null : (
+                <Text
+                  variant='body'
+                  size={isMobile ? 'm' : 'l'}
+                  textAlign={isMobile ? 'center' : undefined}
+                >
+                  {messages.haveAccount} {signInLink}
+                </Text>
+              )}
             </Flex>
             {!isMobile && window.ethereum ? (
               <Flex direction='column' gap='s'>
