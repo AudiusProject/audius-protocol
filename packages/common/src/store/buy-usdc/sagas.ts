@@ -238,7 +238,11 @@ function* doBuyUSDC({
   const config = yield* call(getBuyUSDCRemoteConfig)
   const sdk = yield* getSDK()
 
-  const userBank = yield* getOrCreateUSDCUserBank()
+  const { currentUser: ethAddress } = yield* select(getWalletAddresses)
+  if (!ethAddress) {
+    throw new Error('User is not signed in')
+  }
+  const userBank = yield* getOrCreateUSDCUserBank(ethAddress)
   const rootAccount = yield* call(getRootSolanaAccount, audiusBackendInstance)
 
   try {
@@ -370,10 +374,6 @@ function* doBuyUSDC({
     yield* put(buyUSDCFlowSucceeded())
 
     // Update USDC balance in store
-    const { currentUser: ethAddress } = yield* select(getWalletAddresses)
-    if (!ethAddress) {
-      throw new Error('User is not signed in')
-    }
     const account = yield* call(getUserbankAccountInfo, sdk, {
       ethAddress,
       mint: 'USDC'
