@@ -58,11 +58,9 @@ import {
   getAssociatedTokenRentExemptionMinimum,
   getAudioAccount,
   getAudioAccountInfo,
-  getUserBankTransactionMetadata,
   pollForAudioBalanceChange,
   pollForNewTransaction,
   pollForSolBalanceChange,
-  saveUserBankTransactionMetadata,
   getAssociatedTokenAccountInfo
 } from 'services/audius-backend/BuyAudio'
 import { JupiterSingleton } from 'services/audius-backend/Jupiter'
@@ -516,6 +514,7 @@ Total: ${estimatedLamports / LAMPORTS_PER_SOL} SOL ($${
 function* populateAndSaveTransactionDetails() {
   // Get transaction details from local storage
   const [, localStorageState] = yield* getLocalStorageStateWithFallback()
+  const identityService = yield* getContext('identityService')
   const {
     purchaseTransactionId,
     swapTransactionId,
@@ -575,10 +574,13 @@ function* populateAndSaveTransactionDetails() {
       transactionDetails
     })
   )
-  yield* call(saveUserBankTransactionMetadata, {
-    transactionSignature: transferTransactionId,
-    metadata: transactionMetadata
-  })
+  yield* call(
+    [identityService, identityService.saveUserBankTransactionMetadata],
+    {
+      transactionSignature: transferTransactionId,
+      metadata: transactionMetadata
+    }
+  )
 
   // Clear local storage
   console.debug('Clearing BUY_AUDIO_LOCAL_STORAGE...')
@@ -1029,6 +1031,7 @@ function* recoverPurchaseIfNecessary() {
     // Bail if not enabled
     yield* call(waitForWrite)
     const getFeatureEnabled = yield* getContext('getFeatureEnabled')
+    const identityService = yield* getContext('identityService')
 
     if (
       !(
@@ -1211,7 +1214,7 @@ function* recoverPurchaseIfNecessary() {
         // If we previously just failed to save the metadata, try that again
         console.debug('Only need to resend metadata...')
         const metadata = yield* call(
-          getUserBankTransactionMetadata,
+          [identityService, identityService.getUserBankTransactionMetadata],
           localStorageState.transactionDetailsArgs.transferTransactionId
         )
         if (!metadata) {

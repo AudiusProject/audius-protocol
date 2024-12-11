@@ -1,5 +1,4 @@
 import { MEMO_PROGRAM_ID } from '@audius/common/services'
-import { InAppAudioPurchaseMetadata } from '@audius/common/store'
 import {
   TokenAccountNotFoundError,
   createTransferCheckedInstruction,
@@ -245,25 +244,4 @@ export const createTransferToUserBankTransaction = async ({
     })
   )
   return tx
-}
-
-export const saveUserBankTransactionMetadata = async ({
-  transactionSignature,
-  metadata
-}: {
-  transactionSignature: string
-  metadata: InAppAudioPurchaseMetadata
-}) => {
-  const libs = await getLibs()
-  return await libs.identityService!.saveUserBankTransactionMetadata({
-    transactionSignature,
-    metadata
-  })
-}
-
-export const getUserBankTransactionMetadata = async (transactionId: string) => {
-  const libs = await getLibs()
-  return await libs.identityService!.getUserBankTransactionMetadata(
-    transactionId
-  )
 }
