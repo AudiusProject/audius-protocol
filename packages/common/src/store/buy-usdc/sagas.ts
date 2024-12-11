@@ -19,8 +19,7 @@ import {
   getTokenAccountInfo,
   getUserbankAccountInfo,
   pollForTokenBalanceChange,
-  recoverUsdcFromRootWallet,
-  relayTransaction
+  recoverUsdcFromRootWallet
 } from '~/services/audius-backend/solana'
 import {
   getAccountUser,
@@ -184,6 +183,7 @@ function* transferStep({
     retry,
     async () => {
       const transferTransaction = await createTransferToUserBankTransaction(
+        sdk,
         audiusBackendInstance,
         {
           wallet,
@@ -198,12 +198,12 @@ function* transferStep({
       transferTransaction.partialSign(wallet)
 
       console.debug(`Starting transfer transaction...`)
-      const { res, error } = await relayTransaction(audiusBackendInstance, {
+      const { signature } = await sdk.services.solanaRelay.relay({
         transaction: transferTransaction
       })
 
-      if (res) {
-        console.debug(`Transfer transaction succeeded: ${res}`)
+      if (signature) {
+        console.debug(`Transfer transaction succeeded: ${signature}`)
         return
       }
 
@@ -212,8 +212,6 @@ function* transferStep({
           transferTransaction
         )}`
       )
-      // Throw to retry
-      throw new Error(error ?? 'Unknown USDC user bank transfer error')
     },
     {
       minTimeout: retryDelayMs,
@@ -240,7 +238,11 @@ function* doBuyUSDC({
   const config = yield* call(getBuyUSDCRemoteConfig)
   const sdk = yield* getSDK()
 
-  const userBank = yield* getOrCreateUSDCUserBank()
+  const { currentUser: ethAddress } = yield* select(getWalletAddresses)
+  if (!ethAddress) {
+    throw new Error('User is not signed in')
+  }
+  const userBank = yield* getOrCreateUSDCUserBank(ethAddress)
   const rootAccount = yield* call(getRootSolanaAccount, audiusBackendInstance)
 
   try {
@@ -325,12 +327,16 @@ function* doBuyUSDC({
         // Required as only the payment router program is allowed via coinflow.
         const coinflowTransaction = yield* call(
           createPaymentRouterRouteTransaction,
-          audiusBackendInstance,
+          sdk,
           {
             sender: rootAccount.publicKey,
-            splits: {
-              [userBank.toBase58()]: new BN(USDC(amount).value.toString())
-            }
+            splits: [
+              {
+                wallet: userBank,
+                amount: USDC(amount).value
+              }
+            ],
+            total: USDC(amount).value
           }
         )
         const serializedTransaction = coinflowTransaction
@@ -368,10 +374,6 @@ function* doBuyUSDC({
     yield* put(buyUSDCFlowSucceeded())
 
     // Update USDC balance in store
-    const { currentUser: ethAddress } = yield* select(getWalletAddresses)
-    if (!ethAddress) {
-      throw new Error('User is not signed in')
-    }
     const account = yield* call(getUserbankAccountInfo, sdk, {
       ethAddress,
       mint: 'USDC'

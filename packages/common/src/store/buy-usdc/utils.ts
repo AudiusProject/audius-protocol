@@ -11,7 +11,7 @@ import {
   BUY_TOKEN_VIA_SOL_SLIPPAGE_BPS
 } from '~/services/remote-config/defaults'
 
-import { getAccountUser } from '../account/selectors'
+import { getWalletAddresses } from '../account/selectors'
 import { getContext } from '../effects'
 import { getSDK } from '../sdkUtils'
 
@@ -27,11 +27,11 @@ export function* getOrCreateUSDCUserBank(ethAddress?: string) {
   const sdk = yield* call(audiusSdk)
   let ethWallet = ethAddress
   if (!ethWallet) {
-    const user = yield* select(getAccountUser)
-    if (!user?.wallet) {
+    const { currentUser } = yield* select(getWalletAddresses)
+    if (!currentUser) {
       throw new Error('Failed to create USDC user bank: No user wallet found.')
     }
-    ethWallet = user.wallet
+    ethWallet = currentUser
   }
   const { userBank } = yield* call(
     [
