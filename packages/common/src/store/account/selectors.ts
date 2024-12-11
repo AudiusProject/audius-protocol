@@ -16,14 +16,14 @@ export const internalGetAccountUser = (state: CommonState) =>
 const hasTracksInternal = (state: CommonState) => state.account.hasTracks
 
 export const getHasAccount = (state: CommonState) => !!state.account.userId
-export const getHasCompletedAccount = (state: CommonState) => {
+export const getIsAccountComplete = (state: CommonState) => {
   const { userId } = state.account
 
   const user = getUser(state, { id: userId })
   if (!user) return false
 
   const { handle, name } = user
-  return handle && !!name
+  return Boolean(handle && name)
 }
 export const getUserId = (state: CommonState) => state.account.userId
 export const getAccountStatus = (state: CommonState) => state.account.status

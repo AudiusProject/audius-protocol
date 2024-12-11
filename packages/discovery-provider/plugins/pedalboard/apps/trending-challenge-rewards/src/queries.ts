@@ -1,6 +1,5 @@
 import { Knex } from 'knex'
 import { Table, UserChallenges } from '@pedalboard/storage'
-import { discoveryDb } from './utils'
 
 export type ChallengeDisbursementUserbank = {
   challenge_id: string
@@ -94,6 +93,7 @@ export const getChallengesDisbursementsUserbanksFriendlyEnsureSlots = async (
     const totalChallenges = challenges.length
     const challengesWithSlots = challenges.filter((challenge) => challenge.slot !== null)
     const totalSlots = challengesWithSlots.length
+    console.log('percent complete = ', totalSlots / totalChallenges * 100, '%')
     if (totalChallenges === totalSlots) return challenges
     await new Promise(r => setTimeout(r, 5000))
     retries -= 1

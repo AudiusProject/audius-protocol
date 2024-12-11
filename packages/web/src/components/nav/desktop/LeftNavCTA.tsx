@@ -16,16 +16,20 @@ import { useDispatch, useSelector } from 'react-redux'
 import { Link } from 'react-router-dom'
 
 import { make, useRecord } from 'common/store/analytics/actions'
+import { SignOnLink } from 'components/SignOnLink'
+import { useLocalStorage } from 'hooks/useLocalStorage'
 
 const { SIGN_UP_PAGE, UPLOAD_PAGE } = route
-const { getAccountStatus, getHasAccount } = accountSelectors
+const { getAccountStatus, getHasAccount, getIsAccountComplete } =
+  accountSelectors
 const { resetState: resetUploadState } = uploadActions
 const { getIsUploading } = uploadSelectors
 
 const messages = {
   signUp: 'Sign up',
   uploadTrack: 'Upload Track',
-  uploading: 'Uploading...'
+  uploading: 'Uploading...',
+  finishSignUp: 'Finish Signing Up'
 }
 
 export const LeftNavCTA = () => {
@@ -34,11 +38,14 @@ export const LeftNavCTA = () => {
   const isSignedIn = useSelector(getHasAccount)
   const accountStatus = useSelector(getAccountStatus)
   const isUploading = useSelector(getIsUploading)
+  const hasCompletedAccount = useSelector(getIsAccountComplete)
+  const [guestEmail] = useLocalStorage('guestEmail', '')
 
   let status = 'signedOut'
   if (isSignedIn) status = 'signedIn'
   if (isUploading) status = 'uploading'
   if (accountStatus === Status.LOADING) status = 'loading'
+  if (!hasCompletedAccount && guestEmail) status = 'guest'
 
   const handleSignup = useCallback(() => {
     record(make(Name.CREATE_ACCOUNT_OPEN, { source: 'nav button' }))
@@ -70,6 +77,13 @@ export const LeftNavCTA = () => {
       break
     case 'loading':
       button = null
+      break
+    case 'guest':
+      button = (
+        <Button variant='primary' size='small' asChild>
+          <SignOnLink signUp>{messages.finishSignUp}</SignOnLink>
+        </Button>
+      )
       break
     case 'signedOut':
     default:

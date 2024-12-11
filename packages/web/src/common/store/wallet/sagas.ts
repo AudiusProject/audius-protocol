@@ -81,6 +81,7 @@ function* sendAsync({
   yield* waitForWrite()
   const walletClient = yield* getContext('walletClient')
   const { track } = yield* getContext('analytics')
+  const sdk = yield* getSDK()
 
   const account = yield* select(getAccountUser)
   const weiBNAmount = stringWeiToBN(weiAudioAmount)
@@ -123,22 +124,29 @@ function* sendAsync({
     )
 
     // Ensure user has userbank
-    const audiusBackend = yield* getContext('audiusBackendInstance')
     const feePayerOverride = yield* select(getFeePayer)
     if (!feePayerOverride) {
       console.error(`sendAsync: unexpectedly no fee payer`)
       return
     }
-    yield* call(createUserBankIfNeeded, audiusBackend, {
+    const { currentUser } = yield* select(getWalletAddresses)
+    if (!currentUser) {
+      throw new Error('Failed to get current user wallet address')
+    }
+    yield* call(createUserBankIfNeeded, sdk, {
       recordAnalytics: track,
-      feePayerOverride
+      ethAddress: currentUser,
+      mint: 'wAUDIO'
     })
 
     // If transferring spl wrapped audio and there are insufficent funds with only the
     // user bank balance, transfer all eth AUDIO to spl wrapped audio
     if (chain === Chain.Sol && weiBNAmount.gt(waudioWeiAmount)) {
       yield* put(transferEthAudioToSolWAudio())
-      yield* call([walletClient, walletClient.transferTokensFromEthToSol])
+      yield* call([walletClient, walletClient.transferTokensFromEthToSol], {
+        sdk,
+        ethAddress: currentUser
+      })
     }
 
     if (chain === Chain.Eth) {
@@ -151,7 +159,8 @@ function* sendAsync({
       try {
         yield* call([walletClient, walletClient.sendWAudioTokens], {
           address: recipientWallet as SolanaWalletAddress,
-          amount: weiBNAmount
+          amount: weiBNAmount,
+          ethAddress: currentUser
         })
       } catch (e) {
         const errorMessage = getErrorMessage(e)

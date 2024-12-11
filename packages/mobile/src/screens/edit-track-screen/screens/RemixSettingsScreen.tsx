@@ -15,9 +15,14 @@ import { debounce } from 'lodash'
 import { View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 
-import { IconCaretLeft, IconRemix, Button } from '@audius/harmony-native'
+import {
+  IconCaretLeft,
+  IconRemix,
+  Button,
+  Divider
+} from '@audius/harmony-native'
 import type { TextProps } from 'app/components/core'
-import { TextInput, Divider, Switch, Text } from 'app/components/core'
+import { TextInput, Switch, Text } from 'app/components/core'
 import { InputErrorMessage } from 'app/components/core/InputErrorMessage'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { TopBarIconButton } from 'app/screens/app-screen'

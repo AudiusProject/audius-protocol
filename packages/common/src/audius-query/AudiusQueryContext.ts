@@ -10,7 +10,8 @@ import {
   AudiusBackend,
   Env,
   FeatureFlags,
-  RemoteConfigInstance
+  RemoteConfigInstance,
+  SolanaWalletService
 } from '~/services/index'
 
 import {
@@ -24,6 +25,7 @@ export type AudiusQueryContextType = {
   audiusSdk: () => Promise<AudiusSdk>
   audiusBackend: AudiusBackend
   authService: AuthService
+  solanaWalletService: SolanaWalletService
   identityService: IdentityService
   dispatch: Dispatch
   reportToSentry: (args: ReportToSentryArgs) => void
@@ -90,6 +92,9 @@ export function* getAudiusQueryContext(): Generator<
     audiusSdk: yield* getContext<AudiusQueryContextType['audiusSdk']>(
       'audiusSdk'
     ),
+    solanaWalletService: yield* getContext<
+      AudiusQueryContextType['solanaWalletService']
+    >('solanaWalletService'),
     dispatch: yield* getContext<AudiusQueryContextType['dispatch']>('dispatch'),
     env: yield* getContext<AudiusQueryContextType['env']>('env'),
     fetch,

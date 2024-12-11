@@ -5,6 +5,7 @@ export type ReplaceTrackProgressModalState = {
     upload: number
     transcode: number
   }
+  error: boolean
 }
 
 const replaceTrackProgressModal = createModal<ReplaceTrackProgressModalState>({
@@ -14,7 +15,8 @@ const replaceTrackProgressModal = createModal<ReplaceTrackProgressModalState>({
     progress: {
       upload: 0,
       transcode: 0
-    }
+    },
+    error: false
   },
   sliceSelector: (state) => state.ui.modals
 })

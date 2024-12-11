@@ -11,9 +11,10 @@ import {
   PurchaseContentStage,
   PurchaseContentError,
   tracksSocialActions,
-  collectionsSocialActions
+  collectionsSocialActions,
+  usePremiumContentPurchaseModal
 } from '@audius/common/store'
-import { formatPrice, route } from '@audius/common/utils'
+import { formatPrice } from '@audius/common/utils'
 import {
   Button,
   IconCaretRight,
@@ -24,20 +25,18 @@ import {
   Flex,
   Divider
 } from '@audius/harmony'
-import { push as pushRoute } from 'connected-react-router'
 import { useField } from 'formik'
 import { capitalize } from 'lodash'
 import { useDispatch } from 'react-redux'
 
 import { make } from 'common/store/analytics/actions'
+import { SignOnLink } from 'components/SignOnLink'
 import { TwitterShareButton } from 'components/twitter-share-button/TwitterShareButton'
 import { fullCollectionPage, fullTrackPage } from 'utils/route'
 
 import { PurchaseContentFormState } from '../hooks/usePurchaseContentFormState'
 
 import styles from './PurchaseContentFormFooter.module.css'
-
-const { SIGN_UP_PAGE } = route
 
 const messages = {
   buy: 'Buy',
@@ -113,10 +112,6 @@ export const PurchaseContentFormFooter = ({
   const { totalPrice } = purchaseSummaryValues
   const [{ value: isGuestCheckout }] = useField(GUEST_CHECKOUT)
 
-  const handleFinishSigningUp = useCallback(() => {
-    dispatch(pushRoute(SIGN_UP_PAGE))
-  }, [dispatch])
-
   const handleTwitterShare = useCallback(
     (handle: string) => {
       const shareText = messages.shareTwitterText(
@@ -131,6 +126,7 @@ export const PurchaseContentFormFooter = ({
     },
     [title, isAlbum]
   )
+  const { onClose } = usePremiumContentPurchaseModal()
 
   const onRepost = useCallback(() => {
     dispatch(
@@ -162,8 +158,10 @@ export const PurchaseContentFormFooter = ({
                   <Text>{messages.finishSigningUpDescription}</Text>
                 </Flex>
                 <Flex gap='s'>
-                  <Button fullWidth onClick={handleFinishSigningUp}>
-                    {messages.finishSigningUp}
+                  <Button fullWidth asChild>
+                    <SignOnLink signUp onClick={onClose}>
+                      {messages.finishSigningUp}
+                    </SignOnLink>
                   </Button>
                   <Button
                     fullWidth
@@ -216,6 +214,7 @@ export const PurchaseContentFormFooter = ({
       </Flex>
     )
   }
+
   return (
     <>
       <Button

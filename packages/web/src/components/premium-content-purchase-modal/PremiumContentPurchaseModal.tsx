@@ -69,7 +69,7 @@ const { startRecoveryIfNecessary, cleanup: cleanupUSDCRecovery } =
 const { cleanup, setPurchasePage, eagerCreateUserBank } = purchaseContentActions
 const { getPurchaseContentFlowStage, getPurchaseContentError } =
   purchaseContentSelectors
-const { getHasAccount } = accountSelectors
+const { getIsAccountComplete } = accountSelectors
 
 const messages = {
   guestCheckout: 'Guest Checkout',
@@ -109,7 +109,7 @@ const PremiumContentPurchaseForm = (props: PremiumContentPurchaseFormProps) => {
 
   const { submitForm, resetForm } = useFormikContext()
   const { history } = useHistoryContext()
-  const isSignedIn = useSelector(getHasAccount)
+  const isAccountComplete = useSelector(getIsAccountComplete)
 
   // Reset form on track change
   useEffect(() => {
@@ -131,7 +131,6 @@ const PremiumContentPurchaseForm = (props: PremiumContentPurchaseFormProps) => {
     setPurchaseMethod(PurchaseMethod.BALANCE)
     submitForm()
   }, [submitForm, setPurchaseMethod])
-
   return (
     <ModalForm className={cn(styles.modalRoot, { [styles.mobile]: isMobile })}>
       <ModalHeader
@@ -151,9 +150,11 @@ const PremiumContentPurchaseForm = (props: PremiumContentPurchaseFormProps) => {
       <ModalContentPages
         contentClassName={styles.content}
         className={styles.content}
-        currentPage={currentPageIndex}
+        currentPage={
+          isAccountComplete ? currentPageIndex - 1 : currentPageIndex
+        }
       >
-        {!isSignedIn ? (
+        {!isAccountComplete ? (
           <GuestCheckoutPage
             metadata={metadata}
             price={price}
@@ -174,15 +175,15 @@ const PremiumContentPurchaseForm = (props: PremiumContentPurchaseFormProps) => {
         />
       </ModalContentPages>
       <ModalFooter className={styles.footer}>
-        {page === PurchaseContentPageType.GUEST_CHECKOUT ? (
+        {page !== PurchaseContentPageType.GUEST_CHECKOUT ? (
           <GuestCheckoutFooter />
-        ) : page === PurchaseContentPageType.PURCHASE ? (
+        ) : page === PurchaseContentPageType.GUEST_CHECKOUT ? (
           <PurchaseContentFormFooter
             error={error}
             isUnlocking={isUnlocking}
             onViewContentClicked={onClose}
             purchaseSummaryValues={purchaseSummaryValues}
-            stage={stage}
+            stage={PurchaseContentStage.FINISH}
             metadata={metadata}
           />
         ) : null}

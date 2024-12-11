@@ -30,7 +30,6 @@ import {
 import { isContentUSDCPurchaseGated, Track } from '~/models/Track'
 import { User } from '~/models/User'
 import { BNUSDC } from '~/models/Wallet'
-import { getRootSolanaAccount } from '~/services/audius-backend/solana'
 import { FeatureFlags } from '~/services/remote-config/feature-flags'
 import { accountSelectors } from '~/store/account'
 import {
@@ -73,7 +72,6 @@ import { waitForValue } from '~/utils'
 import { encodeHashId } from '~/utils/hashIds'
 import { BN_USDC_CENT_WEI } from '~/utils/wallet'
 
-import { fetchAccountAsync } from '../account/sagas'
 import { cacheActions } from '../cache'
 import { pollGatedContent } from '../gated-content/sagas'
 import { updateGatedContentStatus } from '../gated-content/slice'
@@ -371,8 +369,14 @@ function* purchaseTrackWithCoinflow(args: {
     guestEmail
   } = args
 
-  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
-  const wallet = yield* call(getRootSolanaAccount, audiusBackendInstance)
+  const solanaWalletService = yield* getContext('solanaWalletService')
+  const wallet = yield* call([
+    solanaWalletService,
+    solanaWalletService.getKeypair
+  ])
+  if (!wallet) {
+    throw new Error('Missing solana root wallet')
+  }
 
   const params = {
     price: args.price,
@@ -472,9 +476,14 @@ function* purchaseAlbumWithCoinflow(args: {
     includeNetworkCut = false,
     guestEmail
   } = args
-
-  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
-  const wallet = yield* call(getRootSolanaAccount, audiusBackendInstance)
+  const solanaWalletService = yield* getContext('solanaWalletService')
+  const wallet = yield* call([
+    solanaWalletService,
+    solanaWalletService.getKeypair
+  ])
+  if (!wallet) {
+    throw new Error('Missing solana root wallet')
+  }
 
   const params = {
     price: args.price,
@@ -571,7 +580,7 @@ function* purchaseUSDCWithStripe({ amount }: PurchaseUSDCWithStripeArgs) {
       buyCryptoViaSol({
         // expects "friendly" amount, so dollars
         amount: cents / 100.0,
-        mint: 'usdc',
+        mint: 'USDC',
         provider: OnRampProvider.STRIPE
       })
     )
@@ -624,16 +633,12 @@ function* collectEmailAfterPurchase({
 
     const sdk = yield* call(audiusSdk)
     const identityService = yield* getContext('identityService')
-    const authService = yield* getContext('authService')
     const isAlbum = 'playlist_id' in metadata
 
     const purchaserUserId = yield* select(getUserId)
     const sellerId = isAlbum ? metadata.playlist_owner_id : metadata.owner_id
-    const wallet = authService.getWallet()
 
-    const email = yield* call([identityService, identityService.getUserEmail], {
-      wallet
-    })
+    const email = yield* call([identityService, identityService.getUserEmail])
 
     if (!purchaserUserId) {
       throw new Error('Purchaser user ID not found')
@@ -667,8 +672,6 @@ function* doStartPurchaseContentFlow({
     guestEmail
   }
 }: ReturnType<typeof startPurchaseContentFlow>) {
-  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
-
   const usdcConfig = yield* call(getBuyUSDCRemoteConfig)
   const reportToSentry = yield* getContext('reportToSentry')
   const { track, make } = yield* getContext('analytics')
@@ -713,21 +716,6 @@ function* doStartPurchaseContentFlow({
 
   try {
     // get user & user bank
-    const isGuestCheckoutEnabled = yield* call(
-      getFeatureEnabled,
-      FeatureFlags.GUEST_CHECKOUT
-    )
-
-    if (isGuestCheckoutEnabled) {
-      const currentUser = yield* select(getAccountUser)
-
-      if (!currentUser && guestEmail) {
-        yield* call(audiusBackendInstance.guestSignUp, guestEmail)
-
-        yield* call(fetchAccountAsync, { isSignUp: true })
-      }
-    }
-
     const purchaserUserId = yield* select(getUserId)
     if (!purchaserUserId) {
       throw new Error('Failed to fetch purchasing user id')

@@ -3,6 +3,7 @@ import {
   transformAndCleanList
 } from '@audius/common/adapters'
 import { userApiFetchSaga } from '@audius/common/api'
+import { GUEST_EMAIL } from '@audius/common/hooks'
 import {
   Name,
   FavoriteSource,
@@ -36,6 +37,7 @@ import {
   confirmerActions,
   getSDK,
   fetchAccountAsync,
+  getOrCreateUSDCUserBank,
   changePasswordActions
 } from '@audius/common/store'
 import {
@@ -146,6 +148,7 @@ function* getArtistsToFollow() {
   yield* put(signOnActions.setUsersToFollow(users))
 }
 
+// Fetches whatever artists we want to follow for all accounts by default - aka the Audius acct
 function* fetchDefaultFollowArtists() {
   yield* call(waitForRead)
   try {
@@ -155,7 +158,8 @@ function* fetchDefaultFollowArtists() {
     const reportToSentry = yield* getContext('reportToSentry')
     reportToSentry({
       error: e,
-      name: 'Sign Up: Unable to fetch default follow artists',
+      level: ErrorLevel.Fatal, // fatal reasoning - this is required to follow t
+      name: 'Sign Up: Unable to fetch default follow artists (aka Audius acct)',
       feature: Feature.SignUp
     })
   }
@@ -182,7 +186,8 @@ function* fetchAllFollowArtist() {
     const reportToSentry = yield* getContext('reportToSentry')
     reportToSentry({
       error: e as Error,
-      name: 'Sign Up: Unable to fetch sign up follows',
+      level: ErrorLevel.Fatal, // fatal reasoning - this is required for users to follow the artists they selected in signup
+      name: 'Sign Up: Unable to fetch sign up follows requested by user',
       feature: Feature.SignUp
     })
   }
@@ -541,9 +546,9 @@ function* sendRecoveryEmail({
   email: string
 }) {
   const authService = yield* getContext('authService')
+  const identityService = yield* getContext('identityService')
   const getHostUrl = yield* getContext('getHostUrl')
   const host = getHostUrl()
-  const sdk = yield* getSDK()
 
   try {
     const recoveryInfo = yield* call([
@@ -551,23 +556,14 @@ function* sendRecoveryEmail({
       authService.hedgehogInstance.generateRecoveryInfo
     ])
 
-    const unixTs = Math.round(new Date().getTime() / 1000) // current unix timestamp (sec)
-    const data = `Click sign to authenticate with identity service: ${unixTs}`
-    const signature = yield* call(
-      [
-        sdk.services.audiusWalletClient,
-        sdk.services.audiusWalletClient.signMessage
-      ],
-      { message: data }
-    )
-
     const recoveryData = {
       login: recoveryInfo.login,
-      host: host ?? recoveryInfo.host,
-      data,
-      signature
+      host: host ?? recoveryInfo.host
     }
-    yield* call([authService, authService.sendRecoveryInfo], recoveryData)
+    yield* call(
+      [identityService, identityService.sendRecoveryInfo],
+      recoveryData
+    )
   } catch (err) {
     const reportToSentry = yield* getContext('reportToSentry')
     reportToSentry({
@@ -575,6 +571,86 @@ function* sendRecoveryEmail({
       name: 'Sign Up: Failed to send recovery email',
       additionalInfo: { handle, email, host },
       level: ErrorLevel.Fatal,
+      feature: Feature.SignUp
+    })
+  }
+}
+
+function* createGuestAccount(
+  action: ReturnType<typeof signOnActions.createGuestAccount>
+) {
+  const { guestEmail } = action
+  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
+  const getFeatureEnabled = yield* getContext('getFeatureEnabled')
+  const reportToSentry = yield* getContext('reportToSentry')
+
+  const sdk = yield* getSDK()
+  const audiusLibs = yield* call([
+    audiusBackendInstance,
+    audiusBackendInstance.getAudiusLibs
+  ])
+
+  const authService = yield* getContext('authService')
+
+  // get user & user bank
+  const isGuestCheckoutEnabled = yield* call(
+    getFeatureEnabled,
+    FeatureFlags.GUEST_CHECKOUT
+  )
+
+  if (!isGuestCheckoutEnabled) {
+    return
+  }
+  const currentUser = yield* select(getAccountUser)
+  try {
+    if (currentUser) {
+      throw new Error('User already exists')
+    }
+    yield* call(
+      [authService.hedgehogInstance, authService.hedgehogInstance.signUp],
+      {
+        username: guestEmail,
+        password: TEMPORARY_PASSWORD,
+        isGuest: true
+      }
+    )
+
+    const { accountWalletAddress: wallet, web3WalletAddress } = yield* call([
+      authService,
+      authService.getWalletAddresses
+    ])
+
+    audiusLibs.web3Manager.setOwnerWallet(wallet)
+    if (!guestEmail) {
+      throw new Error('No email set for guest account')
+    }
+    const { metadata } = yield* call([sdk.users, sdk.users.createGuestAccount])
+    const userId = metadata.userId
+    yield* call(fetchAccountAsync, { isSignUp: true })
+
+    const userBank = yield* call(getOrCreateUSDCUserBank)
+    yield* put(
+      accountActions.setWalletAddresses({
+        currentUser: wallet,
+        web3User: web3WalletAddress
+      })
+    )
+
+    if (!userBank) {
+      throw new Error('Failed to create user bank')
+    }
+    const { web3Error, libsError } = yield* call(audiusBackendInstance.setup, {
+      wallet,
+      userId
+    })
+    if (web3Error || libsError) {
+      throw new Error('Failed to setup backend')
+    }
+  } catch (err) {
+    reportToSentry({
+      error: err as Error,
+      level: ErrorLevel.Fatal,
+      name: 'Sign Up: Failed to create guest account',
       feature: Feature.SignUp
     })
   }
@@ -668,6 +744,7 @@ function* signUp() {
               )
 
               yield* fork(sendRecoveryEmail, { handle, email })
+              yield* call([localStorage, localStorage.removeItem], GUEST_EMAIL)
             } else {
               if (!alreadyExisted) {
                 yield* call(
@@ -757,6 +834,7 @@ function* signUp() {
                 'true'
               )
             }
+            return handle
           } catch (err: unknown) {
             // We are including 0 status code here to indicate rate limit,
             // which appears to be happening for some devices.
@@ -993,8 +1071,9 @@ function* signIn(action: ReturnType<typeof signOnActions.signIn>) {
             }
           })
         )
+
+        yield* put(toastActions.toast({ content: messages.incompleteAccount }))
       }
-      yield* put(toastActions.toast({ content: messages.incompleteAccount }))
 
       yield* put(
         make(Name.SIGN_IN_WITH_INCOMPLETE_ACCOUNT, {
@@ -1081,7 +1160,8 @@ function* signIn(action: ReturnType<typeof signOnActions.signIn>) {
     reportToSentry({
       error: err,
       name: 'Sign In: unknown error',
-      feature: Feature.SignIn
+      feature: Feature.SignIn,
+      level: ErrorLevel.Fatal
     })
     yield* put(signOnActions.signInFailed(err))
   }
@@ -1105,7 +1185,6 @@ function* followCollections(
     const reportToSentry = yield* getContext('reportToSentry')
     reportToSentry({
       error: err as Error,
-      level: ErrorLevel.Error,
       name: 'Sign Up: Follow collections failed',
       additionalInfo: { collectionIds, favoriteSource },
       feature: Feature.SignUp
@@ -1205,6 +1284,7 @@ function* followArtists(
     const reportToSentry = yield* getContext('reportToSentry')
     reportToSentry({
       error: err,
+      level: ErrorLevel.Fatal,
       name: 'Sign Up: Unkown error while following artists on sign up',
       feature: Feature.SignUp
     })
@@ -1264,6 +1344,10 @@ function* watchSignUp() {
   )
 }
 
+function* watchCreateGuestAccount() {
+  yield* takeLatest(signOnActions.CREATE_GUEST_ACCOUNT, createGuestAccount)
+}
+
 function* watchSignIn() {
   yield* takeLatest(signOnActions.SIGN_IN, signIn)
 }
@@ -1317,6 +1401,8 @@ export default function sagas() {
     watchConfigureMetaMask,
     watchOpenSignOn,
     watchSignOnError,
+    watchSendWelcomeEmail,
+    watchCreateGuestAccount,
     watchSendWelcomeEmail
   ]
   return sagas

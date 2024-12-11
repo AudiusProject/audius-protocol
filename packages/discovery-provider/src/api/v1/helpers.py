@@ -51,6 +51,11 @@ def make_image(endpoint, cid, width="", height=""):
     return f"{endpoint}/content/{cid}/{width}x{height}.jpg"
 
 
+def make_legacy_image(endpoint, cid):
+    # These images have no sizes, so just route to the cid
+    return f"{endpoint}/content/{cid}"
+
+
 def init_rendezvous(user, cid):
     if not cid:
         return ""
@@ -119,12 +124,8 @@ def extend_search(resp):
 
 
 def add_user_artwork(user):
-    # Legacy CID-only references to images
-    user["cover_photo_legacy"] = user.get("cover_photo")
-    user["profile_picture_legacy"] = user.get("profile_picture")
-
-    profile_cid = user.get("profile_picture_sizes")
-    if profile_cid:
+    if user.get("profile_picture_sizes"):
+        profile_cid = user.get("profile_picture_sizes")
         profile_endpoints = get_n_primary_endpoints(user, profile_cid, 3)
         profile_endpoint = profile_endpoints[0]
         profile_mirrors = profile_endpoints[1:]
@@ -134,6 +135,17 @@ def add_user_artwork(user):
             "1000x1000": make_image(profile_endpoint, profile_cid, 1000, 1000),
             "mirrors": profile_mirrors,
         }
+    elif user.get("profile_picture") and type(user.get("profile_picture")) == str:
+        profile_cid = user.get("profile_picture")
+        profile_endpoints = get_n_primary_endpoints(user, profile_cid, 3)
+        profile_endpoint = profile_endpoints[0]
+        profile_mirrors = profile_endpoints[1:]
+        user["profile_picture"] = {
+            "150x150": make_legacy_image(profile_endpoint, profile_cid),
+            "480x480": make_legacy_image(profile_endpoint, profile_cid),
+            "1000x1000": make_legacy_image(profile_endpoint, profile_cid),
+            "mirrors": profile_mirrors,
+        }
     else:
         user["profile_picture"] = {
             "150x150": None,
@@ -141,14 +153,24 @@ def add_user_artwork(user):
             "1000x1000": None,
             "mirrors": [],
         }
-    cover_cid = user.get("cover_photo_sizes")
-    if cover_cid:
+    if user.get("cover_photo_sizes"):
+        cover_cid = user.get("cover_photo_sizes")
         cover_endpoints = get_n_primary_endpoints(user, cover_cid, 3)
         cover_endpoint = cover_endpoints[0]
         cover_mirrors = cover_endpoints[1:]
         user["cover_photo"] = {
             "640x": make_image(cover_endpoint, cover_cid, 640),
             "2000x": make_image(cover_endpoint, cover_cid, 2000),
+            "mirrors": cover_mirrors,
+        }
+    elif user.get("cover_photo") and type(user.get("cover_photo")) == str:
+        cover_cid = user.get("cover_photo")
+        cover_endpoints = get_n_primary_endpoints(user, cover_cid, 3)
+        cover_endpoint = cover_endpoints[0]
+        cover_mirrors = cover_endpoints[1:]
+        user["cover_photo"] = {
+            "640x": make_legacy_image(cover_endpoint, cover_cid),
+            "2000x": make_legacy_image(cover_endpoint, cover_cid),
             "mirrors": cover_mirrors,
         }
     else:
@@ -282,8 +304,8 @@ def parse_unix_epoch_param_non_utc(time, default=0):
 def add_track_artwork(track):
     if "user" not in track:
         return track
-    cid = track["cover_art_sizes"]
-    if cid:
+    if track.get("cover_art_sizes"):
+        cid = track["cover_art_sizes"]
         endpoints = get_n_primary_endpoints(track["user"], cid, 3)
         endpoint = endpoints[0]
         mirrors = endpoints[1:]
@@ -291,6 +313,17 @@ def add_track_artwork(track):
             "150x150": make_image(endpoint, cid, 150, 150),
             "480x480": make_image(endpoint, cid, 480, 480),
             "1000x1000": make_image(endpoint, cid, 1000, 1000),
+            "mirrors": mirrors,
+        }
+    elif track.get("cover_art"):
+        cid = track["cover_art"]
+        endpoints = get_n_primary_endpoints(track["user"], cid, 3)
+        endpoint = endpoints[0]
+        mirrors = endpoints[1:]
+        track["artwork"] = {
+            "150x150": make_legacy_image(endpoint, cid),
+            "480x480": make_legacy_image(endpoint, cid),
+            "1000x1000": make_legacy_image(endpoint, cid),
             "mirrors": mirrors,
         }
     else:
@@ -368,8 +401,8 @@ def add_playlist_artwork(playlist):
     if "user" not in playlist:
         return playlist
 
-    cid = playlist["playlist_image_sizes_multihash"]
-    if cid:
+    if playlist.get("playlist_image_sizes_multihash"):
+        cid = playlist["playlist_image_sizes_multihash"]
         endpoints = get_n_primary_endpoints(playlist["user"], cid, 3)
         endpoint = endpoints[0]
         mirrors = endpoints[1:]
@@ -377,6 +410,17 @@ def add_playlist_artwork(playlist):
             "150x150": make_image(endpoint, cid, 150, 150),
             "480x480": make_image(endpoint, cid, 480, 480),
             "1000x1000": make_image(endpoint, cid, 1000, 1000),
+            "mirrors": mirrors,
+        }
+    elif playlist.get("playlist_image_multihash"):
+        cid = playlist["playlist_image_multihash"]
+        endpoints = get_n_primary_endpoints(playlist["user"], cid, 3)
+        endpoint = endpoints[0]
+        mirrors = endpoints[1:]
+        playlist["artwork"] = {
+            "150x150": make_legacy_image(endpoint, cid),
+            "480x480": make_legacy_image(endpoint, cid),
+            "1000x1000": make_legacy_image(endpoint, cid),
             "mirrors": mirrors,
         }
     else:

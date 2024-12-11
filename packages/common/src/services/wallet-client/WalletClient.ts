@@ -87,9 +87,16 @@ export class WalletClient {
     }
   }
 
-  async transferTokensFromEthToSol(): Promise<void> {
-    const account = await getUserbankAccountInfo(this.audiusBackendInstance, {
-      mint: 'audio'
+  async transferTokensFromEthToSol({
+    sdk,
+    ethAddress
+  }: {
+    sdk: AudiusSdk
+    ethAddress: string
+  }): Promise<void> {
+    const account = await getUserbankAccountInfo(sdk, {
+      ethAddress,
+      mint: 'wAUDIO'
     })
     if (!account) {
       throw new Error('No userbank account.')
@@ -103,10 +110,10 @@ export class WalletClient {
       ercAudioBalance.gt(new BN('0'))
     ) {
       await this.audiusBackendInstance.transferAudioToWAudio(ercAudioBalance)
-      await pollForTokenBalanceChange(this.audiusBackendInstance, {
+      await pollForTokenBalanceChange(sdk, {
         tokenAccount: account?.address,
         initialBalance: account?.amount,
-        mint: 'audio',
+        mint: 'wAUDIO',
         retryDelayMs: 5000,
         maxRetryCount: 720 /* one hour */
       })
@@ -136,7 +143,10 @@ export class WalletClient {
           )
         ),
         ...associatedWallets.sol_wallets.map((wallet) =>
-          this.audiusBackendInstance.getAddressWAudioBalance(wallet)
+          this.audiusBackendInstance.getAddressWAudioBalance({
+            address: wallet,
+            sdk
+          })
         )
       ])
 
@@ -183,11 +193,18 @@ export class WalletClient {
     wallets: string[]
   ): Promise<{ address: string; balance: BNWei }[]> {
     try {
+      const sdk = await this.audiusSdk()
       const balances: { address: string; balance: BNWei }[] = await Promise.all(
         wallets.map(async (wallet) => {
-          const balance =
-            await this.audiusBackendInstance.getAddressWAudioBalance(wallet)
-          return { address: wallet, balance: balance as BNWei }
+          const tokenAccountInfo =
+            await this.audiusBackendInstance.getAssociatedTokenAccountInfo({
+              address: wallet,
+              sdk
+            })
+          return {
+            address: wallet,
+            balance: new BN(tokenAccountInfo?.amount.toString() ?? 0) as BNWei
+          }
         })
       )
       return balances
@@ -225,22 +242,24 @@ export class WalletClient {
 
   async sendWAudioTokens({
     address,
-    amount
+    amount,
+    ethAddress
   }: {
     address: SolanaWalletAddress
     amount: BNWei
+    ethAddress: string
   }): Promise<void> {
     if (amount.lt(MIN_TRANSFERRABLE_WEI)) {
       throw new Error('Insufficient Audio to transfer')
     }
     try {
       const sdk = await this.audiusSdk()
-      const { res, error, errorCode } =
-        await this.audiusBackendInstance.sendWAudioTokens({
-          address,
-          amount,
-          sdk
-        })
+      const { error } = await this.audiusBackendInstance.sendWAudioTokens({
+        address,
+        amount,
+        ethAddress,
+        sdk
+      })
       if (error) {
         if (error === 'Missing social proof') {
           throw new Error(error)
@@ -251,17 +270,13 @@ export class WalletClient {
         ) {
           throw new Error(error)
         }
-        console.error(
-          `Error sending sol wrapped audio amount ${amount.toString()} to ${address.toString()}` +
-            `with error ${error.toString()} and errorCode: ${errorCode}`
-        )
-        throw new Error(
-          `Error: ${error.toString()}, with code ${errorCode?.toString()}`
-        )
+        throw error
       }
-      return res
     } catch (err) {
-      console.error(err)
+      console.error(
+        `Error sending sol wrapped audio amount ${amount.toString()} to ${address.toString()}` +
+          `with error ${(err as Error).toString()}`
+      )
       throw err
     }
   }

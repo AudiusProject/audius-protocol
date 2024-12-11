@@ -1,8 +1,6 @@
 import { useCallback } from 'react'
 
 import { useGetCurrentUserId } from '@audius/common/api'
-import { useFeatureFlag } from '@audius/common/hooks'
-import { FeatureFlags } from '@audius/common/services'
 import {
   followersUserListActions,
   followersUserListSelectors
@@ -34,9 +32,6 @@ export const FollowersScreen = () => {
   const handleSetFollowers = useCallback(() => {
     dispatch(setFollowers(userId))
   }, [dispatch, userId])
-  const { isEnabled: isOneToManyDMsEnabled } = useFeatureFlag(
-    FeatureFlags.ONE_TO_MANY_DMS
-  )
 
   return (
     <UserListScreen title={messages.title} titleIcon={IconUserFollowers}>
@@ -46,7 +41,7 @@ export const FollowersScreen = () => {
           tag='FOLLOWERS'
           setUserList={handleSetFollowers}
         />
-        {isOneToManyDMsEnabled && currentUserId === userId ? (
+        {currentUserId === userId ? (
           <Box
             style={css({
               position: 'absolute',

@@ -1,7 +1,6 @@
-import { useCallback, useState } from 'react'
+import { useCallback } from 'react'
 
 import { Name, ShareSource } from '@audius/common/models'
-import { FeatureFlags } from '@audius/common/services'
 import type { CommonState } from '@audius/common/store'
 import {
   accountSelectors,
@@ -12,7 +11,6 @@ import {
   uploadSelectors
 } from '@audius/common/store'
 import { make } from '@audius/web/src/common/store/analytics/actions'
-import Clipboard from '@react-native-clipboard/clipboard'
 import { View, Image } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 import { useEffectOnce } from 'react-use'
@@ -26,14 +24,12 @@ import {
   Flex
 } from '@audius/harmony-native'
 import EmojiRaisedHands from 'app/assets/images/emojis/person-raising-both-hands-in-celebration.png'
-import { Text, TextButton, Tile } from 'app/components/core'
+import { Text, Tile } from 'app/components/core'
 import {
   LineupTileSkeleton,
   TrackTileComponent
 } from 'app/components/lineup-tile'
-import { TwitterButton } from 'app/components/twitter-button'
 import { useNavigation } from 'app/hooks/useNavigation'
-import { useFeatureFlag } from 'app/hooks/useRemoteConfig'
 import { FormScreen } from 'app/screens/form-screen'
 import { makeStyles } from 'app/styles'
 import { getTrackRoute } from 'app/utils/routes'
@@ -93,17 +89,12 @@ export const UploadCompleteScreen = () => {
   const track = useSelector(
     (state: CommonState) => getTracks(state)?.[0]?.metadata
   )
-  const { title, permalink } = track!
+  const { permalink } = track!
   const navigation = useNavigation()
   const dispatch = useDispatch()
   const accountUser = useSelector(getAccountUser)
   const uploadedTrack = useSelector((state) => getTrack(state, { permalink }))
   const trackRoute = getTrackRoute(track!, true)
-  const [isLinkCopied, setIsLinkCopied] = useState(false)
-
-  const { isEnabled: isOneToManyDmsEnabled } = useFeatureFlag(
-    FeatureFlags.ONE_TO_MANY_DMS
-  )
 
   useEffectOnce(() => {
     const params = parseTrackRoute(permalink)
@@ -112,11 +103,6 @@ export const UploadCompleteScreen = () => {
       dispatch(fetchTrack(null, slug!, handle!))
     }
   })
-
-  const handleCopyLink = useCallback(() => {
-    Clipboard.setString(trackRoute)
-    setIsLinkCopied(true)
-  }, [trackRoute])
 
   const handleClose = useCallback(() => {
     navigation.getParent()?.goBack()
@@ -156,26 +142,6 @@ export const UploadCompleteScreen = () => {
     handleClose()
   }, [dispatch, handleClose, navigation, trackRoute])
 
-  const legacyShareButtons = (
-    <>
-      <TwitterButton
-        type='static'
-        fullWidth
-        url={getTrackRoute(track!, true)}
-        shareText={messages.twitterShareText(title)}
-      />
-      <TextButton
-        variant='neutralLight4'
-        icon={IconShare}
-        title={isLinkCopied ? messages.linkCopied : messages.copyLink}
-        style={styles.shareButton}
-        onPress={handleCopyLink}
-        TextProps={{ variant: 'h3', noGutter: true }}
-        IconProps={{ height: 14, width: 14 }}
-      />
-    </>
-  )
-
   return (
     <FormScreen
       title={messages.title}
@@ -207,28 +173,24 @@ export const UploadCompleteScreen = () => {
               <Text variant='body' style={styles.description}>
                 {messages.share}
               </Text>
-              {!isOneToManyDmsEnabled ? (
-                legacyShareButtons
-              ) : (
-                <Flex w='100%' column gap='s' alignItems='center'>
-                  <Button
-                    variant='secondary'
-                    iconLeft={IconMessage}
-                    onPress={handleShareToDirectMessage}
-                    fullWidth
-                  >
-                    {messages.directMessageButton}
-                  </Button>
-                  <Button
-                    variant='secondary'
-                    iconLeft={IconShare}
-                    onPress={handleShare}
-                    fullWidth
-                  >
-                    {messages.shareButton}
-                  </Button>
-                </Flex>
-              )}
+              <Flex w='100%' column gap='s' alignItems='center'>
+                <Button
+                  variant='secondary'
+                  iconLeft={IconMessage}
+                  onPress={handleShareToDirectMessage}
+                  fullWidth
+                >
+                  {messages.directMessageButton}
+                </Button>
+                <Button
+                  variant='secondary'
+                  iconLeft={IconShare}
+                  onPress={handleShare}
+                  fullWidth
+                >
+                  {messages.shareButton}
+                </Button>
+              </Flex>
             </>
           ) : null}
         </Tile>

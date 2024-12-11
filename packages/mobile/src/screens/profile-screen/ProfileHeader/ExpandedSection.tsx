@@ -1,7 +1,6 @@
 import { View } from 'react-native'
 
-import { IconTipping } from '@audius/harmony-native'
-import { Divider, Text } from 'app/components/core'
+import { IconTipping, Divider, Text } from '@audius/harmony-native'
 import { makeStyles } from 'app/styles'
 import { useThemeColors } from 'app/utils/theme'
 

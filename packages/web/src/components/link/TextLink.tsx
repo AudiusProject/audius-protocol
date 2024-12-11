@@ -1,17 +1,25 @@
-import { Ref, forwardRef, useCallback, MouseEvent } from 'react'
+import { Ref, forwardRef, useCallback, MouseEvent, ComponentType } from 'react'
 
 import { ID } from '@audius/common/models'
+import { route } from '@audius/common/utils'
 import {
   TextLink as HarmonyTextLink,
   TextLinkProps as HarmonyTextLinkProps
 } from '@audius/harmony'
 import { Link, LinkProps } from 'react-router-dom'
 
+import { RestrictedLink, RestrictedLinkProps } from 'components/RestrictedLink'
+import { SignOnLink, SignOnLinkProps } from 'components/SignOnLink'
+import { RestrictionType } from 'hooks/useRequiresAccount'
+
+const { SIGN_IN_PAGE, SIGN_UP_PAGE } = route
+
 export type LinkKind = 'track' | 'collection' | 'user' | 'mention' | 'other'
 
 export type TextLinkProps = HarmonyTextLinkProps &
   Partial<Omit<LinkProps, 'color' | 'onClick'>> & {
     stopPropagation?: boolean
+    restriction?: RestrictionType
     onClick?: (
       e: MouseEvent<HTMLAnchorElement>,
       linkKind?: LinkKind,
@@ -20,7 +28,14 @@ export type TextLinkProps = HarmonyTextLinkProps &
   }
 
 export const TextLink = forwardRef((props: TextLinkProps, ref: Ref<'a'>) => {
-  const { to, children, stopPropagation = true, onClick, ...other } = props
+  const {
+    to,
+    children,
+    stopPropagation = true,
+    onClick,
+    restriction,
+    ...other
+  } = props
 
   const handleClick = useCallback(
     (e: MouseEvent<HTMLAnchorElement>) => {
@@ -32,9 +47,30 @@ export const TextLink = forwardRef((props: TextLinkProps, ref: Ref<'a'>) => {
     [stopPropagation, onClick]
   )
 
+  let LinkComponent: ComponentType<any> = Link
+
+  let linkProps: Partial<LinkProps | RestrictedLinkProps | SignOnLinkProps> = {
+    to
+  }
+
+  if (restriction) {
+    LinkComponent = RestrictedLink
+    linkProps = { to, restriction }
+  } else if (to === SIGN_IN_PAGE) {
+    LinkComponent = SignOnLink
+    linkProps = { signIn: true }
+  } else if (to === SIGN_UP_PAGE) {
+    LinkComponent = SignOnLink
+    linkProps = { signUp: true }
+  }
+
   return (
     <HarmonyTextLink ref={ref} asChild onClick={handleClick} {...other}>
-      {to ? <Link to={to}>{children}</Link> : <span>{children}</span>}
+      {to ? (
+        <LinkComponent {...linkProps}>{children}</LinkComponent>
+      ) : (
+        <span>{children}</span>
+      )}
     </HarmonyTextLink>
   )
 })

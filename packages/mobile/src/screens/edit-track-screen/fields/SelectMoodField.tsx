@@ -1,9 +1,9 @@
 import { useCallback } from 'react'
 
-import { Image, View } from 'react-native'
+import { View, Image } from 'react-native'
 
 import type { ContextualMenuProps } from 'app/components/core'
-import { Pill, Text } from 'app/components/core'
+import { SelectedValue, Text } from 'app/components/core'
 import { makeStyles } from 'app/styles'
 import { moodMap } from 'app/utils/moods'
 
@@ -37,12 +37,12 @@ export const SelectMoodField = (props: SelectMoodFieldProps) => {
     (value: string) => {
       return (
         <View style={styles.value}>
-          <Pill>
+          <SelectedValue>
             <Image source={moodMap[value]} style={styles.emoji} />
             <Text fontSize='small' weight='demiBold' style={styles.text}>
               {value}
             </Text>
-          </Pill>
+          </SelectedValue>
         </View>
       )
     },

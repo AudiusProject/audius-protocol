@@ -36,7 +36,7 @@ export const NewEmailField = (props: NewEmailFieldProps) => {
   const [{ value: email }, { error }] = useField(name)
   const { isValidating } = useFormikContext()
   const emailInUse = error === emailSchemaMessages.emailInUse
-  const isGuest = error === emailSchemaMessages.completeYourProfile
+  const isGuest = error === emailSchemaMessages.guestAccountExists
   const hasError = emailInUse || isGuest
 
   // Track which specific error was shown last
@@ -55,7 +55,7 @@ export const NewEmailField = (props: NewEmailFieldProps) => {
 
   const showGuestError =
     isGuest ||
-    (isValidating && lastShownError === emailSchemaMessages.completeYourProfile)
+    (isValidating && lastShownError === emailSchemaMessages.guestAccountExists)
 
   const showEmailInUseError =
     emailInUse ||
@@ -70,7 +70,7 @@ export const NewEmailField = (props: NewEmailFieldProps) => {
       />
       {showGuestError ? (
         <Hint icon={IconError}>
-          {emailSchemaMessages.completeYourProfile}{' '}
+          {emailSchemaMessages.guestAccountExists}{' '}
           <TextLink variant='visible' onPress={handlePressConfirmEmail}>
             {confirmEmailMessages.title}
           </TextLink>
