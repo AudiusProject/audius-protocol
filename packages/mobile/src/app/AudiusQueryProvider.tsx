@@ -11,7 +11,7 @@ import {
   remoteConfigInstance
 } from 'app/services/remote-config'
 import { audiusSdk } from 'app/services/sdk/audius-sdk'
-import { authService } from 'app/services/sdk/auth'
+import { authService, solanaWalletService } from 'app/services/sdk/auth'
 import { identityService } from 'app/services/sdk/identity'
 import { store } from 'app/store'
 import { reportToSentry } from 'app/utils/reportToSentry'
@@ -26,6 +26,7 @@ export const audiusQueryContext = {
   audiusSdk,
   authService,
   identityService,
+  solanaWalletService,
   dispatch: store.dispatch,
   reportToSentry,
   env,

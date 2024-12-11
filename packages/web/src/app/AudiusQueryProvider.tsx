@@ -6,7 +6,12 @@ import { useDispatch } from 'react-redux'
 import * as analytics from 'services/analytics'
 import { apiClient } from 'services/audius-api-client'
 import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
-import { audiusSdk, authService, identityService } from 'services/audius-sdk'
+import {
+  audiusSdk,
+  authService,
+  identityService,
+  solanaWalletService
+} from 'services/audius-sdk'
 import { env } from 'services/env'
 import { getFeatureEnabled } from 'services/remote-config/featureFlagHelpers'
 import { remoteConfigInstance } from 'services/remote-config/remote-config-instance'
@@ -27,6 +32,7 @@ export const AudiusQueryProvider = (props: AudiusQueryProviderProps) => {
         audiusSdk,
         authService,
         identityService,
+        solanaWalletService,
         dispatch,
         reportToSentry,
         env,

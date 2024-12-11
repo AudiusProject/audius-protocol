@@ -6,7 +6,7 @@ import {
   getAssociatedTokenAddressSync,
   getAccount
 } from '@solana/spl-token'
-import { PublicKey, Transaction, Keypair } from '@solana/web3.js'
+import { PublicKey, Transaction } from '@solana/web3.js'
 
 import { getLibs } from 'services/audius-libs'
 import { audiusSdk } from 'services/audius-sdk'
@@ -47,14 +47,6 @@ export const isTokenAccount = async ({
     mint
   })
   return info !== null
-}
-
-/**
- * Gets the current user's root solana account.
- */
-export const getRootSolanaAccount = async () => {
-  const libs = await getLibs()
-  return Keypair.fromSeed(libs.Account!.hedgehog.wallet!.getPrivateKey())
 }
 
 /**

@@ -6,6 +6,7 @@ import { Dispatch } from 'redux'
 import nacl from 'tweetnacl'
 
 import { AuthService, IdentityService } from '~/services'
+import { SolanaWalletService } from '~/services/solana'
 
 import {
   AllTrackingEvents,
@@ -81,6 +82,7 @@ export type CommonStoreContext = {
   audiusSdk: () => Promise<AudiusSdk>
   authService: AuthService
   identityService: IdentityService
+  solanaWalletService: SolanaWalletService
   imageUtils: {
     generatePlaylistArtwork: (
       urls: string[]

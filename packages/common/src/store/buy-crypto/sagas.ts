@@ -35,7 +35,6 @@ import {
   MintName,
   createUserBankIfNeeded,
   createVersionedTransaction,
-  getRootSolanaAccount,
   getTokenAccountInfo,
   pollForBalanceChange,
   pollForTokenBalanceChange,
@@ -261,6 +260,7 @@ function* doBuyCryptoViaSol({
 }: ReturnType<typeof buyCryptoViaSol>) {
   // Pull from context
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
+  const solanaWalletService = yield* getContext('solanaWalletService')
   const { track, make } = yield* getContext('analytics')
   const reportToSentry = yield* getContext('reportToSentry')
   const audiusLocalStorage = yield* getContext('localStorage')
@@ -277,12 +277,18 @@ function* doBuyCryptoViaSol({
   )
 
   // Get config
-  const wallet = yield* call(getRootSolanaAccount, audiusBackendInstance)
+  const wallet = yield* call([
+    solanaWalletService,
+    solanaWalletService.getKeypair
+  ])
   const feePayerAddress = yield* select(getFeePayer)
   const config = yield* call(getBuyCryptoRemoteConfig, mint)
   const outputToken = TOKEN_LISTING_MAP[mint.toUpperCase()]
   let userbank: PublicKey | null = null
   try {
+    if (!wallet) {
+      throw new Error('Missing Solana root wallet')
+    }
     // Validate inputs
     // TODO: Re-add Coinbase support when rewriting BuyAudio
     if (provider !== OnRampProvider.STRIPE) {
@@ -661,7 +667,7 @@ function* doBuyCryptoViaSol({
       level: ErrorLevel.Error,
       error,
       additionalInfo: {
-        wallet: wallet.publicKey.toBase58(),
+        wallet: wallet ? wallet.publicKey.toBase58() : '',
         userbank: userbank?.toBase58()
       }
     })
@@ -688,7 +694,7 @@ function* doBuyCryptoViaSol({
 function* recoverBuyCryptoViaSolIfNecessary() {
   yield* call(waitForAccount)
   // Pull from context
-  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
+  const solanaWalletService = yield* getContext('solanaWalletService')
   const getFeatureEnabled = yield* getContext('getFeatureEnabled')
   const { track, make } = yield* getContext('analytics')
   const reportToSentry = yield* getContext('reportToSentry')
@@ -727,7 +733,10 @@ function* recoverBuyCryptoViaSolIfNecessary() {
   )
 
   // Get config
-  const wallet = yield* call(getRootSolanaAccount, audiusBackendInstance)
+  const wallet = yield* call([
+    solanaWalletService,
+    solanaWalletService.getKeypair
+  ])
   const sdk = yield* getSDK()
   const connection = sdk.services.solanaClient.connection
   const feePayerAddress = yield* waitForValue(getFeePayer)
@@ -742,6 +751,10 @@ function* recoverBuyCryptoViaSolIfNecessary() {
   )
 
   try {
+    if (!wallet) {
+      throw new Error('Missing Solana root wallet')
+    }
+
     if (!feePayerAddress) {
       throw new BuyCryptoError(
         BuyCryptoErrorCode.BAD_FEE_PAYER,
@@ -899,7 +912,7 @@ function* recoverBuyCryptoViaSolIfNecessary() {
       level: ErrorLevel.Error,
       error,
       additionalInfo: {
-        wallet: wallet.publicKey.toBase58(),
+        wallet: wallet ? wallet.publicKey.toBase58() : '',
         userbank: userbank?.toBase58()
       }
     })

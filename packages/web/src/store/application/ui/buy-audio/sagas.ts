@@ -69,7 +69,6 @@ import { JupiterSingleton } from 'services/audius-backend/Jupiter'
 import {
   TRANSACTION_FEE_FALLBACK,
   getRootAccountRentExemptionMinimum,
-  getRootSolanaAccount,
   getSolanaConnection,
   getTransferTransactionFee
 } from 'services/solana/solana'
@@ -303,7 +302,15 @@ function* getTransactionFees({
  */
 function* getSwapFees({ quote }: { quote: QuoteResponse }) {
   const feesCache = yield* select(getFeesCache)
-  const rootAccount = yield* call(getRootSolanaAccount)
+  const solanaWalletService = yield* getContext('solanaWalletService')
+  const rootAccount = yield* call([
+    solanaWalletService,
+    solanaWalletService.getKeypair
+  ])
+
+  if (!rootAccount) {
+    throw new Error('Missing solana root wallet')
+  }
 
   const transferFee = yield* call(
     getTransferTransactionFee,
@@ -381,6 +388,7 @@ function* getAudioPurchaseInfo({
   payload: { audioAmount }
 }: ReturnType<typeof calculateAudioPurchaseInfo>) {
   const sdk = yield* getSDK()
+  const solanaWalletService = yield* getContext('solanaWalletService')
   try {
     // Fail early if audioAmount is too small/large
     const { minAudioAmount, maxAudioAmount, slippageBps } = yield* call(
@@ -425,7 +433,13 @@ function* getAudioPurchaseInfo({
 
     // Setup
     const connection = yield* call(getSolanaConnection)
-    const rootAccount = yield* call(getRootSolanaAccount)
+    const rootAccount = yield* call([
+      solanaWalletService,
+      solanaWalletService.getKeypair
+    ])
+    if (!rootAccount) {
+      throw new Error('Missing solana root wallet')
+    }
 
     // Get AUDIO => SOL quote
     const reverseQuote = yield* call(JupiterSingleton.getQuote, {
@@ -862,6 +876,7 @@ function* doBuyAudio({
 }: ReturnType<typeof onrampOpened>) {
   const provider = yield* select(getBuyAudioProvider)
   const sdk = yield* getSDK()
+  const solanaWalletService = yield* getContext('solanaWalletService')
   let userRootWallet = ''
   try {
     // Record start
@@ -889,7 +904,14 @@ function* doBuyAudio({
     )
 
     // Setup
-    const rootAccount: Keypair = yield* call(getRootSolanaAccount)
+    const rootAccount = yield* call([
+      solanaWalletService,
+      solanaWalletService.getKeypair
+    ])
+    if (!rootAccount) {
+      throw new Error('Missing solana root wallet')
+    }
+
     const connection = yield* call(getSolanaConnection)
     const transactionHandler = new TransactionHandler({
       connection,
@@ -1029,6 +1051,7 @@ function* recoverPurchaseIfNecessary() {
     // Bail if not enabled
     yield* call(waitForWrite)
     const getFeatureEnabled = yield* getContext('getFeatureEnabled')
+    const solanaWalletService = yield* getContext('solanaWalletService')
 
     if (
       !(
@@ -1040,7 +1063,14 @@ function* recoverPurchaseIfNecessary() {
     }
 
     // Setup
-    const rootAccount: Keypair = yield* call(getRootSolanaAccount)
+    const rootAccount = yield* call([
+      solanaWalletService,
+      solanaWalletService.getKeypair
+    ])
+    if (!rootAccount) {
+      throw new Error('Missing solana root wallet')
+    }
+
     const connection = yield* call(getSolanaConnection)
     const transactionHandler = new TransactionHandler({
       connection,

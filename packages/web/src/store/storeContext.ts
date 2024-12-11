@@ -7,7 +7,11 @@ import * as analytics from 'services/analytics'
 import { audioPlayer } from 'services/audio-player'
 import { apiClient } from 'services/audius-api-client'
 import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
-import { audiusSdk, authService } from 'services/audius-sdk'
+import {
+  audiusSdk,
+  authService,
+  solanaWalletService
+} from 'services/audius-sdk'
 import { identityService } from 'services/audius-sdk/identity'
 import { env } from 'services/env'
 import { explore } from 'services/explore'
@@ -74,6 +78,7 @@ export const buildStoreContext = ({
   instagramRedirectUrl: env.INSTAGRAM_REDIRECT_URL,
   share: getShare(isMobile),
   audiusSdk,
+  solanaWalletService,
   authService,
   identityService,
   imageUtils: {
