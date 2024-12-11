@@ -1,5 +1,6 @@
-import { useCallback, useEffect } from 'react'
+import { useCallback, useEffect, useMemo } from 'react'
 
+import { useAudiusQueryContext } from '@audius/common/audius-query'
 import { signInPageMessages } from '@audius/common/messages'
 import { signInSchema, signInErrorMessages } from '@audius/common/schemas'
 import {
@@ -24,8 +25,6 @@ import { Heading } from '../components/layout'
 import type { SignUpScreenParamList } from '../types'
 import { useTrackScreen } from '../utils/useTrackScreen'
 
-const SignInSchema = toFormikValidationSchema(signInSchema)
-
 type SignInValues = {
   email: string
   password: string
@@ -40,6 +39,12 @@ export const SignInScreen = () => {
   const requiresOtp = useSelector(getRequiresOtp)
   const navigation = useNavigation<SignUpScreenParamList>()
   useTrackScreen('SignIn')
+
+  const audiusQueryContext = useAudiusQueryContext()
+  const SignInSchema = useMemo(
+    () => toFormikValidationSchema(signInSchema(audiusQueryContext)),
+    [audiusQueryContext]
+  )
 
   useEffect(() => {
     if (requiresOtp) {

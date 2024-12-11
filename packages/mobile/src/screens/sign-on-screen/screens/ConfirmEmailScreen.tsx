@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 
-import { confirmEmailMessages } from '@audius/common/messages'
+import { confirmEmailMessages as messages } from '@audius/common/messages'
 import {
   confirmEmailSchema,
   formatOtp,
@@ -10,7 +10,8 @@ import { setValueField, signIn } from 'common/store/pages/signon/actions'
 import {
   getEmailField,
   getOtpField,
-  getPasswordField
+  getPasswordField,
+  getIsGuest
 } from 'common/store/pages/signon/selectors'
 import { Formik, useField } from 'formik'
 import { useDispatch, useSelector } from 'react-redux'
@@ -39,6 +40,7 @@ export const ConfirmEmailScreen = () => {
   const { value: email } = useSelector(getEmailField)
   const { value: password } = useSelector(getPasswordField)
   const { value: otp } = useSelector(getOtpField)
+  const isGuest = useSelector(getIsGuest)
   const isSubmitting = !!otp
 
   useTrackScreen('ConfirmEmail')
@@ -62,12 +64,12 @@ export const ConfirmEmailScreen = () => {
     >
       <Page>
         <Heading
-          heading={confirmEmailMessages.title}
-          description={confirmEmailMessages.description}
+          heading={isGuest ? messages.finishSigningUp : messages.title}
+          description={messages.description}
         />
         <VerificationCodeField />
         <Text variant='body'>
-          {confirmEmailMessages.noEmailNotice} <ResendCodeLink />
+          {messages.noEmailNotice} <ResendCodeLink />
         </Text>
         <PageFooter
           shadow='flat'
@@ -97,8 +99,8 @@ const VerificationCodeField = () => {
     <HarmonyTextField
       name='otp'
       keyboardType='number-pad'
-      label={confirmEmailMessages.otpLabel}
-      placeholder={confirmEmailMessages.otpPlaceholder}
+      label={messages.otpLabel}
+      placeholder={messages.otpPlaceholder}
       transformValueOnChange={formatOtp}
     />
   )
@@ -113,7 +115,7 @@ const ResendCodeLink = () => {
 
   const handleClick = useCallback(() => {
     dispatch(signIn(email, password))
-    toast({ content: confirmEmailMessages.resentToast })
+    toast({ content: messages.resentToast })
     setHasResendCode(true)
   }, [dispatch, email, password, toast])
 
@@ -123,7 +125,7 @@ const ResendCodeLink = () => {
       onPress={handleClick}
       disabled={hasResentCode}
     >
-      {confirmEmailMessages.resendCode}
+      {messages.resendCode}
     </TextLink>
   )
 }

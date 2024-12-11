@@ -1,6 +1,6 @@
 import { useCallback } from 'react'
 
-import { createPasswordPageMessages } from '@audius/common/messages'
+import { createPasswordPageMessages as messages } from '@audius/common/messages'
 import { passwordSchema } from '@audius/common/schemas'
 import { setValueField } from 'common/store/pages/signon/actions'
 import { getEmailField } from 'common/store/pages/signon/selectors'
@@ -58,22 +58,20 @@ export const CreatePasswordScreen = () => {
           <KeyboardAvoidingView keyboardShowingOffset={220}>
             <Flex direction='column' h='100%' gap='l'>
               <Heading
-                heading={createPasswordPageMessages.createYourPassword}
-                description={createPasswordPageMessages.description}
+                heading={messages.createYourPassword}
+                description={messages.description}
               />
-              <ReadOnlyField
-                label={createPasswordPageMessages.yourEmail}
-                value={email}
-              />
+
+              <ReadOnlyField label={messages.yourEmail} value={email} />
               <PasswordField
                 name='password'
                 clearErrorOnChange={false}
-                label={createPasswordPageMessages.passwordLabel}
+                label={messages.passwordLabel}
               />
               <PasswordField
                 name='confirmPassword'
                 clearErrorOnChange={false}
-                label={createPasswordPageMessages.confirmPasswordLabel}
+                label={messages.confirmPasswordLabel}
               />
               <PasswordCompletionChecklist />
               <SignUpAgreementText />
