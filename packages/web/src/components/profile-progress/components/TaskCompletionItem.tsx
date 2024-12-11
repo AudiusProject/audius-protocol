@@ -1,11 +1,14 @@
 import { IconValidationCheck } from '@audius/harmony'
 import cn from 'classnames'
-import PropTypes from 'prop-types'
 
-import { CompletionStage } from './PropTypes'
 import styles from './TaskCompletionItem.module.css'
+import { CompletionStage } from './types'
 
-const CompletionIcon = ({ isCompleted }) => {
+type CompletionIconProps = {
+  isCompleted: boolean
+}
+
+const CompletionIcon = ({ isCompleted }: CompletionIconProps) => {
   return (
     <div className={styles.iconWrapper}>
       {isCompleted ? (
@@ -17,22 +20,12 @@ const CompletionIcon = ({ isCompleted }) => {
   )
 }
 
-CompletionIcon.propTypes = {
-  isCompleted: PropTypes.bool.isRequired
-}
-
 /**
  * `TaskCompletionItem` represents a single item in a `TaskCompletionList`
- *
- * @param {Object} { title, isCompleted }
  */
-const TaskCompletionItem = ({ title, isCompleted }) => (
+export const TaskCompletionItem = ({ title, isCompleted }: CompletionStage) => (
   <div className={styles.taskCompletionItem}>
     <CompletionIcon isCompleted={isCompleted} />
     <span className={cn({ [styles.completedItem]: isCompleted })}>{title}</span>
   </div>
 )
-
-TaskCompletionItem.propTypes = CompletionStage.isRequired
-
-export default TaskCompletionItem

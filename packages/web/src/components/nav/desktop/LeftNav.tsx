@@ -15,7 +15,7 @@ import useMeasure from 'react-use-measure'
 import { Dispatch } from 'redux'
 
 import { DragAutoscroller } from 'components/drag-autoscroller/DragAutoscroller'
-import ConnectedProfileCompletionPane from 'components/profile-progress/ConnectedProfileCompletionPane'
+import { ProfileCompletionPanel } from 'components/profile-progress/ProfileCompletionPanel'
 import { selectDraggingKind } from 'store/dragndrop/slice'
 import { AppState } from 'store/types'
 import { useSelector } from 'utils/reducer'
@@ -194,7 +194,7 @@ const LeftNav = (props: NavColumnProps) => {
         </Scrollbar>
       </Flex>
       <Flex direction='column' alignItems='center' pt='l' borderTop='default'>
-        <ConnectedProfileCompletionPane />
+        <ProfileCompletionPanel />
         <LeftNavCTA />
         <NowPlayingArtworkTile />
       </Flex>
