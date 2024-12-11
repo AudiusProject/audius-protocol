@@ -32,7 +32,6 @@ models/DecodedUserToken.ts
 models/DeveloperApp.ts
 models/DeveloperAppResponse.ts
 models/DeveloperApps.ts
-models/EmailKeyResponse.ts
 models/EncodedUserId.ts
 models/ExtendedAccessGate.ts
 models/ExtendedPaymentSplit.ts
