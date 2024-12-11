@@ -646,7 +646,7 @@ function* collectEmailAfterPurchase({
 
     yield* call([sdk.users, sdk.users.shareEmail], {
       emailOwnerUserId: purchaserUserId,
-      primaryUserId: sellerId,
+      receivingUserId: sellerId,
       email
     })
   } catch (error) {
