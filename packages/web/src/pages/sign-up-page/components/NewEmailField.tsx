@@ -28,7 +28,7 @@ export const NewEmailField = () => {
   const [{ value: email }, { error }] = useField('email')
   const { isValidating } = useFormikContext()
   const emailInUse = error === emailSchemaMessages.emailInUse
-  const isGuest = error === emailSchemaMessages.completeYourProfile
+  const isGuest = error === emailSchemaMessages.guestAccountExists
   const hasError = emailInUse || isGuest
 
   // Track which specific error was shown last
@@ -50,17 +50,17 @@ export const NewEmailField = () => {
     dispatch(signIn(email, TEMPORARY_PASSWORD))
   }, [dispatch, email])
 
-  const confirmEmailLink = (
+  const finishSigningUpLink = (
     <TextLink variant='visible' asChild>
       <Link to={SIGN_IN_CONFIRM_EMAIL_PAGE} onClick={handleClickConfirmEmail}>
-        {confirmEmailMessages.title}
+        {confirmEmailMessages.finishSigningUp}
       </Link>
     </TextLink>
   )
 
   const showGuestError =
     isGuest ||
-    (isValidating && lastShownError === emailSchemaMessages.completeYourProfile)
+    (isValidating && lastShownError === emailSchemaMessages.guestAccountExists)
 
   const showEmailInUseError =
     emailInUse ||
@@ -71,11 +71,11 @@ export const NewEmailField = () => {
       <EmailField helperText={hasError ? '' : undefined} />
       {showGuestError ? (
         <Hint icon={IconError}>
-          {emailSchemaMessages.completeYourProfile} {confirmEmailLink}
+          {error} {finishSigningUpLink}
         </Hint>
       ) : showEmailInUseError ? (
         <Hint icon={IconError}>
-          {emailSchemaMessages.emailInUse} {signInLink}
+          {error} {signInLink}
         </Hint>
       ) : null}
     </>

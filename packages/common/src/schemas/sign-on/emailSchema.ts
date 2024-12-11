@@ -9,7 +9,7 @@ export const emailSchemaMessages = {
   invalidEmail: 'Please enter a valid email.',
   emailInUse: 'Email already taken.',
   somethingWentWrong: 'Something went wrong. Try again later.',
-  completeYourProfile: 'Complete your profile.'
+  guestAccountExists: 'Guest account exists.'
 }
 
 export const emailSchema = <T extends AudiusQueryContextType>(
@@ -31,7 +31,7 @@ export const emailSchema = <T extends AudiusQueryContextType>(
           // complete guest accounts only
           ctx.addIssue({
             code: z.ZodIssueCode.custom,
-            message: emailSchemaMessages.completeYourProfile
+            message: emailSchemaMessages.guestAccountExists
           })
           return true
         } else if (isEmailInUse) {
