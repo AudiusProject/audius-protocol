@@ -1,14 +1,18 @@
 import { FeatureFlags } from '@audius/common/services'
 import { CommonStoreContext } from '@audius/common/store'
 import { FetchNFTClient } from '@audius/fetch-nft'
-import { setTag, configureScope } from '@sentry/browser'
+import { setTag, getCurrentScope } from '@sentry/browser'
 
 import * as analytics from 'services/analytics'
 import { audioPlayer } from 'services/audio-player'
 import { apiClient } from 'services/audius-api-client'
 import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
-import { audiusSdk, authService } from 'services/audius-sdk'
-import { identityServiceInstance } from 'services/audius-sdk/identity'
+import {
+  audiusSdk,
+  authService,
+  solanaWalletService
+} from 'services/audius-sdk'
+import { identityService } from 'services/audius-sdk/identity'
 import { env } from 'services/env'
 import { explore } from 'services/explore'
 import { fingerprintClient } from 'services/fingerprint'
@@ -67,15 +71,16 @@ export const buildStoreContext = ({
       metadataProgramId: env.METADATA_PROGRAM_ID
     }
   }),
-  sentry: { setTag, configureScope },
+  sentry: { setTag, getCurrentScope },
   reportToSentry,
   trackDownload,
   instagramAppId: env.INSTAGRAM_APP_ID,
   instagramRedirectUrl: env.INSTAGRAM_REDIRECT_URL,
   share: getShare(isMobile),
   audiusSdk,
+  solanaWalletService,
   authService,
-  identityServiceInstance,
+  identityService,
   imageUtils: {
     generatePlaylistArtwork
   },

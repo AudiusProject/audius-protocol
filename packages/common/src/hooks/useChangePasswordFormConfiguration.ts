@@ -4,7 +4,8 @@ import { FormikHelpers } from 'formik'
 import { z } from 'zod'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 
-import { useAppContext } from '../context'
+import { useAudiusQueryContext } from '~/audius-query'
+
 import { confirmEmailSchema, passwordSchema } from '../schemas'
 
 const messages = {
@@ -60,7 +61,7 @@ const initialValues: ChangePasswordFormValues = {
 }
 
 export const useChangePasswordFormConfiguration = (onComplete: () => void) => {
-  const { audiusBackend } = useAppContext()
+  const { authService } = useAudiusQueryContext()
   const [page, setPage] = useState(ChangePasswordPage.ConfirmPassword)
 
   const validationSchema =
@@ -79,9 +80,8 @@ export const useChangePasswordFormConfiguration = (onComplete: () => void) => {
     ) => {
       const { oldEmail: email, password, otp } = values
       const sanitizedOtp = otp.replace(/\s/g, '')
-      const libs = await audiusBackend.getAudiusLibsTyped()
       try {
-        const confirmed = await libs.Account?.confirmCredentials({
+        const confirmed = await authService.confirmCredentials({
           email,
           username: email,
           password,
@@ -107,14 +107,13 @@ export const useChangePasswordFormConfiguration = (onComplete: () => void) => {
         }
       }
     },
-    [setPage, page, audiusBackend]
+    [setPage, page, authService]
   )
 
   const changeCredentials = useCallback(
     async (values: ChangePasswordFormValues) => {
       const { oldEmail: email, oldPassword, password } = values
-      const libs = await audiusBackend.getAudiusLibsTyped()
-      await libs.Account?.changeCredentials({
+      await authService.changeCredentials({
         newUsername: email,
         newPassword: password,
         oldUsername: email,
@@ -122,7 +121,7 @@ export const useChangePasswordFormConfiguration = (onComplete: () => void) => {
       })
       onComplete()
     },
-    [onComplete, audiusBackend]
+    [onComplete, authService]
   )
 
   const onSubmit = useCallback(

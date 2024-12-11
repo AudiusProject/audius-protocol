@@ -1,6 +1,6 @@
 import { createContext, useContext } from 'react'
 
-import type { StorageNodeSelectorService } from '@audius/sdk'
+import type { AudiusSdk, StorageNodeSelectorService } from '@audius/sdk'
 
 import { AnalyticsEvent, AllTrackingEvents } from '~/models/Analytics'
 import { AudiusBackend } from '~/services/audius-backend'
@@ -25,6 +25,7 @@ type AppContextType = {
   }
   getHostUrl: () => string
   audiusBackend: AudiusBackend
+  audiusSdk?: AudiusSdk
   remoteConfig: RemoteConfigInstance
   localStorage: LocalStorage
 }

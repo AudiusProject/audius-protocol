@@ -1,8 +1,6 @@
 import { useCallback } from 'react'
 
 import { useGetCurrentUserId } from '@audius/common/api'
-import { useFeatureFlag } from '@audius/common/hooks'
-import { FeatureFlags } from '@audius/common/services'
 import {
   cacheUsersSelectors,
   topSupportersUserListActions,
@@ -51,9 +49,6 @@ export const TopSupportersScreen = () => {
     getUser(state, { id: supportersId })
   )
   const dispatch = useDispatch()
-  const { isEnabled: isOneToManyDMsEnabled } = useFeatureFlag(
-    FeatureFlags.ONE_TO_MANY_DMS
-  )
 
   const handleSetSupporters = useCallback(() => {
     dispatch(setTopSupporters(userId))
@@ -79,7 +74,7 @@ export const TopSupportersScreen = () => {
           tag='TOP SUPPORTERS'
           setUserList={handleSetSupporters}
         />
-        {isOneToManyDMsEnabled && currentUserId === userId ? (
+        {currentUserId === userId ? (
           <Box
             style={css({
               position: 'absolute',

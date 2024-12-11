@@ -1,7 +1,7 @@
 import type { CommonStoreContext } from '@audius/common/store'
 import { FetchNFTClient } from '@audius/fetch-nft'
 import AsyncStorage from '@react-native-async-storage/async-storage'
-import * as Sentry from '@sentry/react-native'
+import { setTag, getCurrentScope } from '@sentry/react-native'
 
 import { env } from 'app/env'
 import * as analytics from 'app/services/analytics'
@@ -16,8 +16,8 @@ import {
   remoteConfigInstance
 } from 'app/services/remote-config'
 import { audiusSdk } from 'app/services/sdk/audius-sdk'
-import { authService } from 'app/services/sdk/auth'
-import { identityServiceInstance } from 'app/services/sdk/identity'
+import { authService, solanaWalletService } from 'app/services/sdk/auth'
+import { identityService } from 'app/services/sdk/identity'
 import { trackDownload } from 'app/services/track-download'
 import { walletClient } from 'app/services/wallet-client'
 import {
@@ -59,7 +59,7 @@ export const storeContext: CommonStoreContext = {
       metadataProgramId: env.METADATA_PROGRAM_ID
     }
   }),
-  sentry: Sentry,
+  sentry: { setTag, getCurrentScope },
   reportToSentry,
   // Shim in main, but defined in native-reloaded branch
   audioPlayer,
@@ -69,7 +69,8 @@ export const storeContext: CommonStoreContext = {
   share: (url: string, message?: string) => share({ url, message }),
   audiusSdk,
   authService,
-  identityServiceInstance,
+  identityService,
+  solanaWalletService,
   imageUtils: {
     generatePlaylistArtwork
   },

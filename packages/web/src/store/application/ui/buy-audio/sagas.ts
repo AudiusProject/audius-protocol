@@ -6,6 +6,7 @@ import {
   createUserBankIfNeeded,
   LocalStorage
 } from '@audius/common/services'
+import { getWalletAddresses } from '@audius/common/src/store/account/selectors'
 import {
   solanaSelectors,
   walletSelectors,
@@ -22,7 +23,8 @@ import {
   TransactionMetadataType,
   getContext,
   AmountObject,
-  TransactionDetails
+  TransactionDetails,
+  getSDK
 } from '@audius/common/store'
 import {
   dayjs,
@@ -56,19 +58,15 @@ import {
   getAssociatedTokenRentExemptionMinimum,
   getAudioAccount,
   getAudioAccountInfo,
-  getUserBankTransactionMetadata,
   pollForAudioBalanceChange,
   pollForNewTransaction,
   pollForSolBalanceChange,
-  saveUserBankTransactionMetadata,
   getAssociatedTokenAccountInfo
 } from 'services/audius-backend/BuyAudio'
 import { JupiterSingleton } from 'services/audius-backend/Jupiter'
-import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
 import {
   TRANSACTION_FEE_FALLBACK,
   getRootAccountRentExemptionMinimum,
-  getRootSolanaAccount,
   getSolanaConnection,
   getTransferTransactionFee
 } from 'services/solana/solana'
@@ -220,6 +218,7 @@ function* getTransactionFees({
   rootAccount: PublicKey
   feesCache: ReturnType<typeof getFeesCache>
 }) {
+  const sdk = yield* getSDK()
   let transactionFees = feesCache?.transactionFees ?? 0
   if (!transactionFees) {
     const { instructions: swapInstructions, lookupTableAddresses } =
@@ -227,7 +226,13 @@ function* getTransactionFees({
         quote,
         userPublicKey: rootAccount
       })
-    const userBank = yield* call(deriveUserBankPubkey, audiusBackendInstance)
+    const { currentUser } = yield* select(getWalletAddresses)
+    if (!currentUser) {
+      throw new Error('Failed to get current user wallet address')
+    }
+    const userBank = yield* call(deriveUserBankPubkey, sdk, {
+      ethAddress: currentUser
+    })
     const transferTransaction = yield* call(
       createTransferToUserBankTransaction,
       {
@@ -295,7 +300,15 @@ function* getTransactionFees({
  */
 function* getSwapFees({ quote }: { quote: QuoteResponse }) {
   const feesCache = yield* select(getFeesCache)
-  const rootAccount = yield* call(getRootSolanaAccount)
+  const solanaWalletService = yield* getContext('solanaWalletService')
+  const rootAccount = yield* call([
+    solanaWalletService,
+    solanaWalletService.getKeypair
+  ])
+
+  if (!rootAccount) {
+    throw new Error('Missing solana root wallet')
+  }
 
   const transferFee = yield* call(
     getTransferTransactionFee,
@@ -372,6 +385,8 @@ function* getBuyAudioRemoteConfig() {
 function* getAudioPurchaseInfo({
   payload: { audioAmount }
 }: ReturnType<typeof calculateAudioPurchaseInfo>) {
+  const sdk = yield* getSDK()
+  const solanaWalletService = yield* getContext('solanaWalletService')
   try {
     // Fail early if audioAmount is too small/large
     const { minAudioAmount, maxAudioAmount, slippageBps } = yield* call(
@@ -401,17 +416,28 @@ function* getAudioPurchaseInfo({
       console.error(`getAudioPurchaseInfo: unexpectedly no fee payer override`)
       return
     }
+    const { currentUser } = yield* select(getWalletAddresses)
+    if (!currentUser) {
+      throw new Error('Failed to get current user wallet address')
+    }
 
     yield* fork(function* () {
-      yield* call(createUserBankIfNeeded, audiusBackendInstance, {
+      yield* call(createUserBankIfNeeded, sdk, {
         recordAnalytics: track,
-        feePayerOverride
+        ethAddress: currentUser,
+        mint: 'wAUDIO'
       })
     })
 
     // Setup
     const connection = yield* call(getSolanaConnection)
-    const rootAccount = yield* call(getRootSolanaAccount)
+    const rootAccount = yield* call([
+      solanaWalletService,
+      solanaWalletService.getKeypair
+    ])
+    if (!rootAccount) {
+      throw new Error('Missing solana root wallet')
+    }
 
     // Get AUDIO => SOL quote
     const reverseQuote = yield* call(JupiterSingleton.getQuote, {
@@ -502,6 +528,7 @@ Total: ${estimatedLamports / LAMPORTS_PER_SOL} SOL ($${
 function* populateAndSaveTransactionDetails() {
   // Get transaction details from local storage
   const [, localStorageState] = yield* getLocalStorageStateWithFallback()
+  const identityService = yield* getContext('identityService')
   const {
     purchaseTransactionId,
     swapTransactionId,
@@ -561,10 +588,13 @@ function* populateAndSaveTransactionDetails() {
       transactionDetails
     })
   )
-  yield* call(saveUserBankTransactionMetadata, {
-    transactionSignature: transferTransactionId,
-    metadata: transactionMetadata
-  })
+  yield* call(
+    [identityService, identityService.saveUserBankTransactionMetadata],
+    {
+      transactionSignature: transferTransactionId,
+      metadata: transactionMetadata
+    }
+  )
 
   // Clear local storage
   console.debug('Clearing BUY_AUDIO_LOCAL_STORAGE...')
@@ -780,9 +810,16 @@ function* transferStep({
   transactionHandler,
   provider
 }: TransferStepParams) {
+  const sdk = yield* getSDK()
   yield* put(transferStarted())
 
-  const userBank = yield* call(deriveUserBankPubkey, audiusBackendInstance)
+  const { currentUser } = yield* select(getWalletAddresses)
+  if (!currentUser) {
+    throw new Error('Failed to get current user wallet address')
+  }
+  const userBank = yield* call(deriveUserBankPubkey, sdk, {
+    ethAddress: currentUser
+  })
   const transferTransaction = yield* call(createTransferToUserBankTransaction, {
     userBank,
     fromAccount: rootAccount.publicKey,
@@ -840,6 +877,8 @@ function* doBuyAudio({
   payload: { desiredAudioAmount, estimatedSOL, estimatedUSD }
 }: ReturnType<typeof onrampOpened>) {
   const provider = yield* select(getBuyAudioProvider)
+  const sdk = yield* getSDK()
+  const solanaWalletService = yield* getContext('solanaWalletService')
   let userRootWallet = ''
   try {
     // Record start
@@ -867,7 +906,14 @@ function* doBuyAudio({
     )
 
     // Setup
-    const rootAccount: Keypair = yield* call(getRootSolanaAccount)
+    const rootAccount = yield* call([
+      solanaWalletService,
+      solanaWalletService.getKeypair
+    ])
+    if (!rootAccount) {
+      throw new Error('Missing solana root wallet')
+    }
+
     const connection = yield* call(getSolanaConnection)
     const transactionHandler = new TransactionHandler({
       connection,
@@ -888,10 +934,15 @@ function* doBuyAudio({
       console.error('doBuyAudio: unexpectedly no fee payer override')
       return
     }
+    const { currentUser } = yield* select(getWalletAddresses)
+    if (!currentUser) {
+      throw new Error('Failed to get current user wallet address')
+    }
     yield* fork(function* () {
-      yield* call(createUserBankIfNeeded, audiusBackendInstance, {
+      yield* call(createUserBankIfNeeded, sdk, {
         recordAnalytics: track,
-        feePayerOverride
+        mint: 'wAUDIO',
+        ethAddress: currentUser
       })
     })
 
@@ -1002,6 +1053,8 @@ function* recoverPurchaseIfNecessary() {
     // Bail if not enabled
     yield* call(waitForWrite)
     const getFeatureEnabled = yield* getContext('getFeatureEnabled')
+    const solanaWalletService = yield* getContext('solanaWalletService')
+    const identityService = yield* getContext('identityService')
 
     if (
       !(
@@ -1013,7 +1066,14 @@ function* recoverPurchaseIfNecessary() {
     }
 
     // Setup
-    const rootAccount: Keypair = yield* call(getRootSolanaAccount)
+    const rootAccount = yield* call([
+      solanaWalletService,
+      solanaWalletService.getKeypair
+    ])
+    if (!rootAccount) {
+      throw new Error('Missing solana root wallet')
+    }
+
     const connection = yield* call(getSolanaConnection)
     const transactionHandler = new TransactionHandler({
       connection,
@@ -1184,7 +1244,7 @@ function* recoverPurchaseIfNecessary() {
         // If we previously just failed to save the metadata, try that again
         console.debug('Only need to resend metadata...')
         const metadata = yield* call(
-          getUserBankTransactionMetadata,
+          [identityService, identityService.getUserBankTransactionMetadata],
           localStorageState.transactionDetailsArgs.transferTransactionId
         )
         if (!metadata) {

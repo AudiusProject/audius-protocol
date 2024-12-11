@@ -1,6 +1,6 @@
 import { useCallback, useRef } from 'react'
 
-import { createPasswordPageMessages } from '@audius/common/messages'
+import { createPasswordPageMessages as messages } from '@audius/common/messages'
 import { passwordSchema } from '@audius/common/schemas'
 import { route } from '@audius/common/utils'
 import { Flex } from '@audius/harmony'
@@ -60,12 +60,12 @@ export const CreatePasswordPage = () => {
           autoFocusInputRef={passwordInputRef}
         >
           <Heading
-            heading={createPasswordPageMessages.createYourPassword}
-            description={createPasswordPageMessages.description}
+            heading={messages.createYourPassword}
+            description={messages.description}
           />
           <Flex direction='column' h='100%' gap='l'>
             <ReadOnlyField
-              label={createPasswordPageMessages.yourEmail}
+              label={messages.yourEmail}
               value={emailField.value}
             />
             <EnterPasswordSection inputRef={passwordInputRef} />

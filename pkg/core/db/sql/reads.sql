@@ -34,11 +34,37 @@ where node_type = $1;
 -- name: GetLatestSlaRollup :one
 select * from sla_rollups order by time desc limit 1;
 
--- name: GetRecentRollups :many
-select * from sla_rollups order by time desc limit 10;
+-- name: GetRecentRollupsForNode :many
+with recent_rollups as (
+    select *
+    from sla_rollups
+    order by time desc
+    limit 30
+)
+select
+    rr.id,
+    sr.tx_hash,
+    sr.block_start,
+    sr.block_end,
+    sr.time,
+    nr.address,
+    nr.blocks_proposed
+from recent_rollups rr
+left join sla_node_reports nr
+on rr.id = nr.sla_rollup_id and nr.address = $1
+left join sla_rollups sr
+on rr.id = sr.id;
 
 -- name: GetSlaRollupWithId :one
 select * from sla_rollups where id = $1;
+
+-- name: GetPreviousSlaRollupFromId :one
+select * from sla_rollups
+where time < (
+    select time from sla_rollups sr where sr.id = $1
+)
+order by time desc
+limit 1;
 
 -- name: GetInProgressRollupReports :many
 select * from sla_node_reports
@@ -49,6 +75,11 @@ order by address;
 select * from sla_node_reports
 where sla_rollup_id = $1
 order by address;
+
+-- name: GetRollupReportForNodeAndId :one
+select * from sla_node_reports
+where address = $1 and sla_rollup_id = $2;
+
 
 -- name: GetRegisteredNodeByEthAddress :one
 select * from core_validators where eth_address = $1;

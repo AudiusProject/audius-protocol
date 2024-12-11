@@ -35,7 +35,7 @@ const signUpApi = createApi({
     getHandleReservedStatus: {
       fetch: async (
         { handle }: { handle: string },
-        { audiusBackend, remoteConfigInstance, env }
+        { audiusBackend, identityService, remoteConfigInstance, env }
       ) => {
         const handleCheckTimeout =
           remoteConfigInstance.getRemoteVar(
@@ -47,7 +47,7 @@ const signUpApi = createApi({
             FeatureFlags.VERIFY_HANDLE_WITH_TWITTER
           )
             ? promiseWithTimeout(
-                audiusBackend.twitterHandle(handle),
+                identityService.lookupTwitterHandle(handle),
                 handleCheckTimeout
               )
             : null
@@ -77,7 +77,7 @@ const signUpApi = createApi({
 
           const reservedStatus = parseHandleReservedStatusFromSocial({
             isOauthVerified: false,
-            lookedUpTwitterUser: twitterUser?.user ?? null,
+            lookedUpTwitterUser: twitterUser,
             lookedUpInstagramUser: instagramUser,
             lookedUpTikTokUser: tiktokUser
           })

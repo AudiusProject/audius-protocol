@@ -12,7 +12,21 @@ import {
   updateRouteOnExit
 } from 'common/store/pages/signon/actions'
 import { useSelector } from 'utils/reducer'
-const { getHasAccount, getAccountStatus } = accountSelectors
+
+const { getAccountStatus, getIsAccountComplete, getHasAccount } =
+  accountSelectors
+
+export type RestrictionType = 'none' | 'guest' | 'account'
+
+const canAccess = (
+  restriction: RestrictionType,
+  hasAccount: boolean,
+  isAccountComplete: boolean
+): boolean => {
+  if (restriction === 'none') return true
+  if (restriction === 'guest') return hasAccount
+  return isAccountComplete
+}
 
 /**
  * Like useCallback but designed to be used to redirect unauthenticated users
@@ -22,9 +36,11 @@ export const useRequiresAccountCallback = <T extends (...args: any) => any>(
   callback: T,
   deps: any[],
   onOpenAuthModal?: () => void,
-  returnRouteOverride?: string
+  returnRouteOverride?: string,
+  restriction: RestrictionType = 'account'
 ) => {
   const hasAccount = useSelector(getHasAccount)
+  const isAccountComplete = useSelector(getIsAccountComplete)
   const accountStatus = useSelector(getAccountStatus)
   const dispatch = useDispatch()
   const location = useLocation()
@@ -32,11 +48,18 @@ export const useRequiresAccountCallback = <T extends (...args: any) => any>(
 
   return useCallback(
     (...args: Parameters<T>) => {
-      if (accountStatus !== Status.LOADING && !hasAccount) {
+      if (
+        accountStatus !== Status.LOADING &&
+        !canAccess(restriction, hasAccount, isAccountComplete)
+      ) {
+        // Prevent the default event from occuring
+        if (args[0]?.preventDefault) {
+          args[0].preventDefault()
+        }
         dispatch(updateRouteOnExit(returnRoute))
         dispatch(updateRouteOnCompletion(returnRoute))
         dispatch(openSignOn(/** signIn */ false))
-        dispatch(showRequiresAccountToast())
+        dispatch(showRequiresAccountToast(hasAccount && !isAccountComplete))
         onOpenAuthModal?.()
       } else {
         // eslint-disable-next-line n/no-callback-literal
@@ -44,12 +67,12 @@ export const useRequiresAccountCallback = <T extends (...args: any) => any>(
       }
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [hasAccount, dispatch, ...deps]
+    [isAccountComplete, dispatch, restriction, ...deps]
   )
 }
 
 /**
- * Like useAuthenticatedCallback but designed to be used for click handlers so that
+ * Like useRequiresAccountCallback but designed to be used for click handlers so that
  * clicks are not propagated.
  */
 export const useRequiresAccountOnClick = <
@@ -58,7 +81,8 @@ export const useRequiresAccountOnClick = <
   callback: T,
   deps: any[],
   onOpenAuthModal?: () => void,
-  returnRouteOverride?: string
+  returnRouteOverride?: string,
+  restriction: RestrictionType = 'account'
 ) => {
   return useRequiresAccountCallback(
     (e: ReactMouseEvent<Element, MouseEvent>) => {
@@ -68,7 +92,8 @@ export const useRequiresAccountOnClick = <
     // eslint-disable-next-line react-hooks/exhaustive-deps
     deps,
     onOpenAuthModal,
-    returnRouteOverride
+    returnRouteOverride,
+    restriction
   )
 }
 
@@ -80,14 +105,19 @@ export const useRequiresAccountOnClick = <
  * informing the user that an account is required for the action.
  *
  * @param returnRouteOverride - Optional route to navigate to after successful sign-up
+ * @param restriction - Optional restriction type ('none' | 'guest' | 'account')
  * @returns A function that, when called, performs the authentication check and redirection
  */
-export const useRequiresAccountFn = (returnRouteOverride?: string) => {
+export const useRequiresAccountFn = (
+  returnRouteOverride?: string,
+  restriction: RestrictionType = 'account'
+) => {
   const requiresAccount = useRequiresAccountCallback(
     () => {},
     [],
     undefined,
-    returnRouteOverride
+    returnRouteOverride,
+    restriction
   )
   return { requiresAccount }
 }
@@ -100,9 +130,16 @@ export const useRequiresAccountFn = (returnRouteOverride?: string) => {
  * whenever its dependencies change.
  *
  * @param returnRouteOverride - Optional route to navigate to after successful sign-up
+ * @param restriction - Optional restriction type ('none' | 'guest' | 'account')
  */
-export const useRequiresAccount = (returnRouteOverride?: string) => {
-  const { requiresAccount } = useRequiresAccountFn(returnRouteOverride)
+export const useRequiresAccount = (
+  returnRouteOverride?: string,
+  restriction: RestrictionType = 'account'
+) => {
+  const { requiresAccount } = useRequiresAccountFn(
+    returnRouteOverride,
+    restriction
+  )
 
   useEffect(() => {
     requiresAccount()

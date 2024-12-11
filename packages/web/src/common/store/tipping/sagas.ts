@@ -271,10 +271,9 @@ function* wormholeAudioIfNecessary({ amount }: { amount: number }) {
   }
 
   const waudioBalanceWei = yield* call(
-    [walletClient, 'getCurrentWAudioBalance'],
+    [walletClient, walletClient.getCurrentWAudioBalance],
     {
-      ethAddress: currentUser,
-      sdk
+      ethAddress: currentUser
     }
   )
   const audioWeiAmount = new BN(AUDIO(amount).value.toString()) as BNWei
@@ -293,7 +292,10 @@ function* wormholeAudioIfNecessary({ amount }: { amount: number }) {
       yield delay(1000)
       yield put(convert())
     })
-    yield call([walletClient, walletClient.transferTokensFromEthToSol])
+    yield call([walletClient, walletClient.transferTokensFromEthToSol], {
+      sdk,
+      ethAddress: currentUser
+    })
     // Cancel showing the notice if the conversion was magically super quick
     yield cancel(showConvertingMessage)
   }

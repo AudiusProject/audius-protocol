@@ -1,10 +1,11 @@
+import type { ReactNode } from 'react'
 import { useCallback } from 'react'
 
-import type { ViewStyle } from 'react-native'
+import type { StyleProp, ViewStyle } from 'react-native'
 import { TouchableOpacity, View } from 'react-native'
 
-import { IconCaretRight } from '@audius/harmony-native'
-import { Divider, Text } from 'app/components/core'
+import { Divider, IconCaretRight } from '@audius/harmony-native'
+import { Text } from 'app/components/core'
 import { useNavigation } from 'app/hooks/useNavigation'
 import type { StylesProp } from 'app/styles'
 import { makeStyles } from 'app/styles'
@@ -12,7 +13,6 @@ import { spacing } from 'app/styles/spacing'
 import { useThemeColors } from 'app/utils/theme'
 
 import { InputErrorMessage } from './InputErrorMessage'
-import { Pill } from './Pill'
 
 export type ContextualMenuProps = {
   label: string
@@ -29,7 +29,7 @@ export type ContextualMenuProps = {
   renderValue?: (value: any) => JSX.Element | null
 }
 
-const useStyles = makeStyles(({ spacing }) => ({
+const useStyles = makeStyles(({ spacing, palette }) => ({
   content: {
     marginVertical: spacing(4),
     paddingHorizontal: spacing(4)
@@ -51,6 +51,17 @@ const useStyles = makeStyles(({ spacing }) => ({
   pill: {
     marginTop: spacing(2),
     marginRight: spacing(2)
+  },
+  optionPill: {
+    paddingHorizontal: spacing(2),
+    paddingVertical: spacing(1),
+    backgroundColor: palette.neutralLight8,
+    borderWidth: 1,
+    borderColor: palette.neutralLight7,
+    opacity: 0.8,
+    borderRadius: 2,
+    flexDirection: 'row',
+    alignItems: 'center'
   }
 }))
 
@@ -80,11 +91,11 @@ export const ContextualMenu = (props: ContextualMenuProps) => {
     return (
       <View style={styles.optionPills}>
         {values.map((value, i) => (
-          <Pill key={`${value}-${i}`} style={styles.pill}>
+          <SelectedValue key={`${value}-${i}`} style={styles.pill}>
             <Text fontSize='small' weight='demiBold'>
               {value}
             </Text>
-          </Pill>
+          </SelectedValue>
         ))}
       </View>
     )
@@ -122,4 +133,16 @@ export const ContextualMenu = (props: ContextualMenuProps) => {
       {lastItem ? <Divider style={stylesProp?.divider} /> : null}
     </TouchableOpacity>
   )
+}
+
+type SelectedValueProps = {
+  children: ReactNode
+  style?: StyleProp<ViewStyle>
+}
+
+export const SelectedValue = (props: SelectedValueProps) => {
+  const { children, style } = props
+  const styles = useStyles()
+
+  return <View style={[styles.optionPill, style]}>{children}</View>
 }

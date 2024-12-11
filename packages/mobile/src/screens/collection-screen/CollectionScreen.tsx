@@ -33,12 +33,11 @@ import { encodeUrlName, removeNullable } from '@audius/common/utils'
 import type { Nullable } from '@audius/common/utils'
 import { useDispatch, useSelector } from 'react-redux'
 
-import type { ImageProps } from '@audius/harmony-native'
+import { Divider, type ImageProps } from '@audius/harmony-native'
 import {
   ScreenContent,
   Screen,
-  VirtualizedScrollView,
-  Divider
+  VirtualizedScrollView
 } from 'app/components/core'
 import { ScreenSecondaryContent } from 'app/components/core/Screen/ScreenSecondaryContent'
 import { CollectionImage } from 'app/components/image/CollectionImage'
@@ -48,7 +47,6 @@ import { useRoute } from 'app/hooks/useRoute'
 import { setVisibility } from 'app/store/drawers/slice'
 import { getIsCollectionMarkedForDownload } from 'app/store/offline-downloads/selectors'
 import { makeStyles } from 'app/styles'
-import { useThemePalette } from 'app/utils/theme'
 
 import { CollectionScreenDetailsTile } from './CollectionScreenDetailsTile'
 import { CollectionScreenSkeleton } from './CollectionScreenSkeleton'
@@ -69,10 +67,6 @@ const getUserId = accountSelectors.getUserId
 const useStyles = makeStyles(({ spacing }) => ({
   root: {
     padding: spacing(3)
-  },
-  divider: {
-    marginTop: spacing(2),
-    marginBottom: spacing(8)
   }
 }))
 
@@ -135,8 +129,6 @@ const CollectionScreenComponent = (props: CollectionScreenComponentProps) => {
   const { onOpen: openPublishConfirmation } = usePublishConfirmationModal()
   const { onOpen: openEarlyReleaseConfirmation } =
     useEarlyReleaseConfirmationModal()
-
-  const { neutralLight5 } = useThemePalette()
 
   const releaseDate =
     'release_date' in collection ? collection.release_date : created_at
@@ -315,7 +307,7 @@ const CollectionScreenComponent = (props: CollectionScreenComponentProps) => {
             />
             {isOwner && !is_album && !ddex_app ? (
               <ScreenSecondaryContent>
-                <Divider style={styles.divider} color={neutralLight5} />
+                <Divider mt='s' mb='2xl' />
                 <SuggestedTracks collectionId={playlist_id} />
               </ScreenSecondaryContent>
             ) : null}

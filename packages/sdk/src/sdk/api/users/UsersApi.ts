@@ -150,6 +150,36 @@ export class UsersApi extends GeneratedUsersApi {
   }
 
   /** @hidden
+   * Creates a guest for guest checkout
+   */
+  async createGuestAccount(advancedOptions?: AdvancedOptions) {
+    const { data } = await this.generateUserId()
+    if (!data) {
+      throw new Error('Failed to generate userId')
+    }
+    const userId = HashId.parse(data)
+    const metadata = {
+      userId
+    }
+
+    // Write metadata to chain
+    const { blockHash, blockNumber } = await this.entityManager.manageEntity({
+      userId,
+      entityType: EntityType.USER,
+      entityId: userId,
+      action: Action.CREATE,
+      metadata: JSON.stringify({
+        cid: null,
+        data: null
+      }),
+
+      ...advancedOptions
+    })
+
+    return { blockHash, blockNumber, metadata }
+  }
+
+  /** @hidden
    * Update a user profile
    */
   async updateProfile(
@@ -189,7 +219,12 @@ export class UsersApi extends GeneratedUsersApi {
 
     const updatedMetadata = {
       ...metadata,
-      ...(profilePictureResp ? { profilePicture: profilePictureResp?.id } : {}),
+      ...(profilePictureResp
+        ? {
+            profilePicture: profilePictureResp?.id,
+            profilePictureSizes: profilePictureResp?.id
+          }
+        : {}),
       ...(coverArtResp ? { coverPhoto: coverArtResp?.id } : {})
     }
 

@@ -5,12 +5,13 @@ import type { Dispatch } from 'redux'
 import { getContext } from 'typed-redux-saga'
 
 import type { AudiusAPIClient } from '~/services/audius-api-client'
-import type { AuthService } from '~/services/auth'
+import type { AuthService, IdentityService } from '~/services/auth'
 import {
   AudiusBackend,
   Env,
   FeatureFlags,
-  RemoteConfigInstance
+  RemoteConfigInstance,
+  SolanaWalletService
 } from '~/services/index'
 
 import {
@@ -24,6 +25,8 @@ export type AudiusQueryContextType = {
   audiusSdk: () => Promise<AudiusSdk>
   audiusBackend: AudiusBackend
   authService: AuthService
+  solanaWalletService: SolanaWalletService
+  identityService: IdentityService
   dispatch: Dispatch
   reportToSentry: (args: ReportToSentryArgs) => void
   env: Env
@@ -83,9 +86,15 @@ export function* getAudiusQueryContext(): Generator<
     authService: yield* getContext<AudiusQueryContextType['authService']>(
       'authService'
     ),
+    identityService: yield* getContext<
+      AudiusQueryContextType['identityService']
+    >('identityService'),
     audiusSdk: yield* getContext<AudiusQueryContextType['audiusSdk']>(
       'audiusSdk'
     ),
+    solanaWalletService: yield* getContext<
+      AudiusQueryContextType['solanaWalletService']
+    >('solanaWalletService'),
     dispatch: yield* getContext<AudiusQueryContextType['dispatch']>('dispatch'),
     env: yield* getContext<AudiusQueryContextType['env']>('env'),
     fetch,

@@ -25,6 +25,7 @@ import {
   TextInput,
   TokenAmountInput
 } from '@audius/harmony'
+import { PublicKey } from '@solana/web3.js'
 
 import { remoteConfigInstance } from 'services/remote-config/remote-config-instance'
 
@@ -97,13 +98,8 @@ type SendInputBodyProps = {
 }
 
 const isValidSolDestination = (wallet: SolanaWalletAddress) => {
-  const solanaweb3 = window.audiusLibs.solanaWeb3Manager?.solanaWeb3
-  if (!solanaweb3) {
-    console.error('No solana web3 found')
-    return false
-  }
   try {
-    const ignored = new solanaweb3.PublicKey(wallet)
+    const ignored = new PublicKey(wallet)
     return true
   } catch (err) {
     console.info(err)

@@ -17,9 +17,10 @@ import {
   IconNote,
   IconPlaylists,
   IconUserFollowers,
-  IconUserList
+  IconUserList,
+  Divider
 } from '@audius/harmony-native'
-import { Divider, Text } from 'app/components/core'
+import { Text } from 'app/components/core'
 import { makeStyles } from 'app/styles'
 import { spacing } from 'app/styles/spacing'
 import { useThemeColors } from 'app/utils/theme'

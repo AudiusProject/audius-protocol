@@ -36,6 +36,7 @@ export const SIGN_IN_SUCCEEDED = 'SIGN_ON/SIGN_IN_SUCCEEDED'
 export const SIGN_IN_FAILED = 'SIGN_ON/SIGN_IN_FAILED'
 
 export const SIGN_UP = 'SIGN_ON/SIGN_UP'
+export const CREATE_GUEST_ACCOUNT = 'SIGN_ON/CREATE_GUEST_ACCOUNT'
 export const START_SIGN_UP = 'SIGN_ON/START_SIGN_UP'
 
 /** @deprecated */
@@ -177,6 +178,13 @@ export function validateHandleFailed(error: string) {
  */
 export function signUp() {
   return { type: SIGN_UP }
+}
+
+/**
+ * create guest account
+ */
+export function createGuestAccount(guestEmail: string) {
+  return { type: CREATE_GUEST_ACCOUNT, guestEmail }
 }
 
 /**
@@ -427,9 +435,11 @@ export function removeFollowArtists(userIds: ID[]) {
   return { type: REMOVE_FOLLOW_ARTISTS, userIds }
 }
 
-export const showRequiresAccountToast = () =>
+export const showRequiresAccountToast = (isAccountIncomplete?: boolean) =>
   toastActions.toast({
-    content: 'Oops, it looks like you need an account to do that!'
+    content: isAccountIncomplete
+      ? 'Finish setting up your account to continue'
+      : 'Oops, it looks like you need an account to do that!'
   })
 
 /**
