@@ -1869,10 +1869,11 @@ export const audiusBackend = ({
     address: string
     sdk: AudiusSdk
   }) {
-    const waudioBalance = await getWAudioBalance({
-      ethAddress: address,
+    const accountInfo = await getAssociatedTokenAccountInfo({
+      address,
       sdk
     })
+    const waudioBalance = accountInfo?.amount
     if (isNullOrUndefined(waudioBalance)) {
       console.warn(`Failed to get waudio balance for address: ${address}`)
       reportError({
