@@ -31,13 +31,6 @@ export type ConfirmCredentialsArgs = {
 
 export type HedgehogInstance = Hedgehog & {
   generateRecoveryInfo: () => Promise<{ login: string; host: string }>
-  getLookupKey: ({
-    username,
-    password
-  }: {
-    username: string
-    password: string
-  }) => Promise<string>
   refreshWallet: () => Promise<void>
   confirmCredentials: (args: ConfirmCredentialsArgs) => Promise<boolean>
 }
@@ -169,9 +162,6 @@ export const createHedgehog = ({
       hedgehog.createKey
     )
   }
-
-  // @ts-expect-error -- adding our own custom method to hedgehog
-  hedgehog.getLookupKey = getLookupKey
 
   // @ts-expect-error -- adding our own custom method to hedgehog
   hedgehog.refreshWallet = async () => {
