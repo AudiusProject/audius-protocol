@@ -1,9 +1,9 @@
 import { useCallback, useMemo, useState } from 'react'
 
 import { useAudiusQueryContext } from '@audius/common/audius-query'
-import { createEmailPageMessages as messages } from '@audius/common/messages'
-import { emailSchema, emailSchemaMessages } from '@audius/common/schemas'
-import { route, TEMPORARY_PASSWORD } from '@audius/common/utils'
+import { createEmailPageMessages } from '@audius/common/messages'
+import { emailSchema } from '@audius/common/schemas'
+import { route } from '@audius/common/utils'
 import {
   Box,
   Button,
@@ -26,9 +26,7 @@ import {
   resetSignOn,
   setLinkedSocialOnFirstPage,
   setValueField,
-  startSignUp,
-  signIn,
-  setField
+  startSignUp
 } from 'common/store/pages/signon/actions'
 import {
   getEmailField,
@@ -50,8 +48,7 @@ const {
   SIGN_UP_CREATE_LOGIN_DETAILS,
   SIGN_UP_HANDLE_PAGE,
   SIGN_UP_PASSWORD_PAGE,
-  SIGN_UP_REVIEW_HANDLE_PAGE,
-  SIGN_IN_CONFIRM_EMAIL_PAGE
+  SIGN_UP_REVIEW_HANDLE_PAGE
 } = route
 
 const smallDesktopWindowHeight = 900
@@ -107,28 +104,21 @@ export const CreateEmailPage = () => {
 
   const handleSubmit = useCallback(
     async (values: SignUpEmailValues) => {
-      const { email } = values
+      const { email, withMetaMask } = values
+      dispatch(startSignUp())
       dispatch(setValueField('email', email))
-      navigate(SIGN_UP_PASSWORD_PAGE)
-    },
-    [dispatch, navigate]
-  )
-
-  const handleGuestSubmit = useCallback(
-    (values: SignUpEmailValues) => {
-      const { email } = values
-      dispatch(setValueField('email', email))
-      dispatch(setValueField('password', TEMPORARY_PASSWORD))
-      dispatch(setField('isGuest', true))
-      dispatch(signIn(email, TEMPORARY_PASSWORD))
-      navigate(SIGN_IN_CONFIRM_EMAIL_PAGE)
+      if (withMetaMask) {
+        setIsMetaMaskModalOpen(true)
+      } else {
+        navigate(SIGN_UP_PASSWORD_PAGE)
+      }
     },
     [dispatch, navigate]
   )
 
   const signInLink = (
     <TextLink variant='visible' asChild>
-      <Link to={SIGN_IN_PAGE}>{messages.signIn}</Link>
+      <Link to={SIGN_IN_PAGE}>{createEmailPageMessages.signIn}</Link>
     </TextLink>
   )
 
@@ -141,111 +131,94 @@ export const CreateEmailPage = () => {
       validationSchema={EmailSchema}
       validateOnChange={false}
     >
-      {({
-        isSubmitting,
-        setFieldValue,
-        submitForm,
-        values,
-        errors,
-        dirty,
-        isValid
-      }) => {
-        const isGuest = errors.email === emailSchemaMessages.completeYourProfile
-
-        return (
-          <Page as={Form} pt={isMobile ? 'xl' : 'unit13'}>
-            <Box alignSelf='center'>
-              {isMobile || isSmallDesktop ? (
-                <IconAudiusLogoHorizontalColor />
-              ) : (
-                <PreloadImage
-                  src={audiusLogoColored}
-                  alt='Audius Colored Logo'
-                  css={{
-                    height: 160,
-                    width: 160,
-                    objectFit: 'contain'
-                  }}
-                />
-              )}
-            </Box>
-            <Heading
-              heading={isGuest ? messages.finishSigningUp : messages.title}
-              tag='h1'
-              centered={isMobile}
+      {({ isSubmitting, setFieldValue, submitForm }) => (
+        <Page as={Form} pt={isMobile ? 'xl' : 'unit13'}>
+          <Box alignSelf='center'>
+            {isMobile || isSmallDesktop ? (
+              <IconAudiusLogoHorizontalColor />
+            ) : (
+              <PreloadImage
+                src={audiusLogoColored}
+                alt='Audius Colored Logo'
+                css={{
+                  height: 160,
+                  width: 160,
+                  objectFit: 'contain'
+                }}
+              />
+            )}
+          </Box>
+          <Heading
+            heading={createEmailPageMessages.title}
+            tag='h1'
+            centered={isMobile}
+          />
+          <Flex direction='column' gap='l'>
+            <NewEmailField />
+            <Divider>
+              <Text variant='body' size={isMobile ? 's' : 'm'} color='subdued'>
+                {createEmailPageMessages.socialsDividerText}
+              </Text>
+            </Divider>
+            <SocialMediaLoginOptions
+              onError={handleErrorSocialMediaLogin}
+              onStart={handleStartSocialMediaLogin}
+              onCompleteSocialMediaLogin={handleCompleteSocialMediaLogin}
             />
-            <Flex direction='column' gap='l'>
-              <NewEmailField />
-              {isGuest ? null : (
-                <>
-                  <Divider>
-                    <Text
-                      variant='body'
-                      size={isMobile ? 's' : 'm'}
-                      color='subdued'
-                    >
-                      {messages.socialsDividerText}
-                    </Text>
-                  </Divider>
-                  <SocialMediaLoginOptions
-                    onError={handleErrorSocialMediaLogin}
-                    onStart={handleStartSocialMediaLogin}
-                    onCompleteSocialMediaLogin={handleCompleteSocialMediaLogin}
-                  />
-                </>
-              )}
-            </Flex>
-            <Flex direction='column' gap='l'>
-              <Button
-                variant='primary'
-                type={isGuest ? 'button' : 'submit'}
-                fullWidth
-                iconRight={IconArrowRight}
-                isLoading={isSubmitting}
-                onClick={isGuest ? () => handleGuestSubmit(values) : undefined}
-              >
-                {isGuest ? messages.finishSigningUp : messages.signUp}
-              </Button>
+          </Flex>
+          <Flex direction='column' gap='l'>
+            <Button
+              variant='primary'
+              type='submit'
+              fullWidth
+              iconRight={IconArrowRight}
+              isLoading={isSubmitting}
+              onClick={() => {
+                setFieldValue('withMetaMask', false)
+                submitForm()
+              }}
+            >
+              {createEmailPageMessages.signUp}
+            </Button>
 
-              {isGuest ? null : (
-                <Text
-                  variant='body'
-                  size={isMobile ? 'm' : 'l'}
-                  textAlign={isMobile ? 'center' : undefined}
-                >
-                  {messages.haveAccount} {signInLink}
-                </Text>
-              )}
+            <Text
+              variant='body'
+              size={isMobile ? 'm' : 'l'}
+              textAlign={isMobile ? 'center' : undefined}
+            >
+              {createEmailPageMessages.haveAccount} {signInLink}
+            </Text>
+          </Flex>
+          {!isMobile && window.ethereum ? (
+            <Flex direction='column' gap='s'>
+              <Button
+                variant='secondary'
+                iconRight={IconMetamask}
+                isStaticIcon
+                fullWidth
+                type='submit'
+                onClick={() => {
+                  setFieldValue('withMetaMask', true)
+                  submitForm()
+                }}
+              >
+                {createEmailPageMessages.signUpMetamask}
+              </Button>
+              <ConnectedMetaMaskModal
+                open={isMetaMaskModalOpen}
+                onBack={() => setIsMetaMaskModalOpen(false)}
+                onSuccess={() => navigate(SIGN_UP_HANDLE_PAGE)}
+              />
+              <Text size='s' variant='body'>
+                {createEmailPageMessages.metaMaskNotRecommended}{' '}
+                <TextLink variant='visible'>
+                  {createEmailPageMessages.learnMore}
+                </TextLink>
+              </Text>
             </Flex>
-            {!isMobile && window.ethereum ? (
-              <Flex direction='column' gap='s'>
-                <Button
-                  variant='secondary'
-                  iconRight={IconMetamask}
-                  isStaticIcon
-                  fullWidth
-                  type='submit'
-                  onClick={() => {
-                    setFieldValue('withMetaMask', true)
-                    submitForm()
-                  }}
-                >
-                  {messages.signUpMetamask}
-                </Button>
-                <ConnectedMetaMaskModal
-                  open={isMetaMaskModalOpen}
-                  onBack={() => setIsMetaMaskModalOpen(false)}
-                  onSuccess={() => navigate(SIGN_UP_HANDLE_PAGE)}
-                />
-                <Text size='s' variant='body'>
-                  {messages.metaMaskNotRecommended}{' '}
-                  <TextLink variant='visible'>{messages.learnMore}</TextLink>
-                </Text>
-              </Flex>
-            ) : null}
-          </Page>
-        )
-      }}
+          ) : null}
+        </Page>
+      )}
     </Formik>
   )
 }
