@@ -130,19 +130,6 @@ export const getAssociatedTokenAccountRent = async () => {
 }
 
 /**
- * Returns the associated USDC token account for the given solana account.
- */
-export const getUSDCAssociatedTokenAccount = async (
-  solanaRootAccountPubkey: PublicKey
-) => {
-  const libs = await getLibs()
-  return getAssociatedTokenAddressSync(
-    libs.solanaWeb3Manager!.mints.usdc,
-    solanaRootAccountPubkey
-  )
-}
-
-/**
  * Returns the owner of the token acccount, if the provided account
  * is a token account. Otherwise, just returns the account
  */
