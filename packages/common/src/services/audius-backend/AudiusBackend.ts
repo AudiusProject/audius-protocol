@@ -768,12 +768,11 @@ export const audiusBackend = ({
     })
     // @ts-ignore when writing data, this type is expected to contain a signature
     newMetadata.associated_wallets =
-      newMetadata.associated_wallets || associatedWallets?.associated_wallets
+      newMetadata.associated_wallets ?? associatedWallets?.associated_wallets
     // @ts-ignore when writing data, this type is expected to contain a signature
     newMetadata.associated_sol_wallets =
-      newMetadata.associated_sol_wallets ||
+      newMetadata.associated_sol_wallets ??
       associatedWallets?.associated_sol_wallets
-
     try {
       newMetadata = schemas.newUserMetadata(newMetadata, true)
       const userId = newMetadata.user_id
