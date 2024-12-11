@@ -17,6 +17,8 @@ import {
 import { getLibs } from 'services/audius-libs'
 import { getSolanaConnection } from 'services/solana/solana'
 
+import { audiusBackendInstance } from './audius-backend-instance'
+
 const DEFAULT_RETRY_DELAY = 1000
 const DEFAULT_MAX_RETRY_COUNT = 120
 
@@ -65,10 +67,10 @@ export const getAudioAccount = async ({
 }: {
   rootAccount: PublicKey
 }) => {
-  const libs = await getLibs()
-  return await libs.solanaWeb3Manager!.findAssociatedTokenAddress(
-    rootAccount.toString()
-  )
+  return audiusBackendInstance.findAssociatedTokenAddress({
+    solanaWalletKey: rootAccount,
+    mint: 'wAUDIO'
+  })
 }
 
 export const getAudioAccountInfo = async ({
@@ -76,10 +78,8 @@ export const getAudioAccountInfo = async ({
 }: {
   tokenAccount: PublicKey
 }) => {
-  const libs = await getLibs()
-  return await libs.solanaWeb3Manager!.getTokenAccountInfo(
-    tokenAccount.toString()
-  )
+  const connection = await getSolanaConnection()
+  return await getAccount(connection, tokenAccount)
 }
 
 export const pollForAudioBalanceChange = async ({

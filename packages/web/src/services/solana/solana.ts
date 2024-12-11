@@ -3,8 +3,8 @@ import { DEFAULT_MINT, MintName } from '@audius/common/services'
 import {
   Account,
   getMinimumBalanceForRentExemptAccount,
-  getAssociatedTokenAddressSync,
-  getAccount
+  getAccount,
+  getAssociatedTokenAddressSync
 } from '@solana/spl-token'
 import { PublicKey, Transaction, Keypair } from '@solana/web3.js'
 
@@ -93,10 +93,8 @@ export const getTokenAccountInfo = async ({
   tokenAccount: PublicKey
   mint?: MintName
 }): Promise<Account | null> => {
-  const libs = await getLibs()
-  return await libs.solanaWeb3Manager!.getTokenAccountInfo(
-    tokenAccount.toString()
-  )
+  const connection = await getSolanaConnection()
+  return await getAccount(connection, tokenAccount)
 }
 
 /**
