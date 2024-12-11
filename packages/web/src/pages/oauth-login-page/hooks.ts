@@ -13,7 +13,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import { useHistory, useLocation } from 'react-router-dom'
 
 import { make, useRecord } from 'common/store/analytics/actions'
-import { audiusSdk, authService } from 'services/audius-sdk'
+import { audiusSdk } from 'services/audius-sdk'
 import { identityService } from 'services/audius-sdk/identity'
 import * as errorActions from 'store/errors/actions'
 import { reportToSentry } from 'store/errors/reportToSentry'
@@ -268,8 +268,7 @@ export const useOAuthSetup = ({
     const getAndSetEmail = async () => {
       let email: string
       try {
-        const wallet = authService.getWallet()
-        email = await identityService.getUserEmail({ wallet })
+        email = await identityService.getUserEmail()
       } catch {
         setUserEmail(null)
         dispatch(

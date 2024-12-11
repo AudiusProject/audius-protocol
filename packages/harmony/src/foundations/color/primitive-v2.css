@@ -155,12 +155,12 @@ html[data-theme='dark-v2'] {
   --harmony-red: #f9344cff;
   --harmony-dark-red: #c43047ff;
   --harmony-green: #6cdf44ff;
-  --harmony-light-green: #13c65aff;
+  --harmony-light-green: #15d864ff;
   --harmony-gradient-color-1: #9469eeff;
   --harmony-gradient-color-2: #c781fcff;
   --harmony-gradient: linear-gradient(315deg, #9469eeff 0%, #c781fcff 100%);
-  --harmony-trending-blue: #216fdcff;
-  --harmony-ai-green: #1fd187ff;
+  --harmony-trending-blue: #2a85e8ff;
+  --harmony-ai-green: #1ecf7aff;
   --harmony-glass-overlay: #2f334899;
 
   /* Overrides static-white to be regular white */
@@ -186,35 +186,35 @@ html[data-theme='matrix-v2'] {
   --harmony-s-500: #3cfb6bff;
 
   /* Neutral Colors */
-  --harmony-neutral: #3af267ff;
-  --harmony-n-25: #041208ff;
-  --harmony-n-50: #071c0cff;
-  --harmony-n-100: #0d3718ff;
-  --harmony-n-150: #18632aff;
-  --harmony-n-200: #1c7632ff;
-  --harmony-n-300: #218b3bff;
-  --harmony-n-400: #28a747ff;
-  --harmony-n-500: #2ec253ff;
-  --harmony-n-600: #33d75cff;
-  --harmony-n-700: #37e762ff;
-  --harmony-n-800: #3af267ff;
-  --harmony-n-900: #3cfa6bff;
-  --harmony-n-950: #49fb72ff;
+  --harmony-neutral: #3ef56bff;
+  --harmony-n-25: #010b06ff;
+  --harmony-n-50: #041308ff;
+  --harmony-n-100: #0a1f0dff;
+  --harmony-n-150: #0f2f15ff;
+  --harmony-n-200: #123f1bff;
+  --harmony-n-300: #166527ff;
+  --harmony-n-400: #1c8736ff;
+  --harmony-n-500: #1f9e3fff;
+  --harmony-n-600: #2eb954ff;
+  --harmony-n-700: #34d561ff;
+  --harmony-n-800: #3ef56bff;
+  --harmony-n-900: #54ff80ff;
+  --harmony-n-950: #9bffa7ff;
 
   /* Special Colors */
   --harmony-white: #020804ff;
   --harmony-background: #000000ff;
-  --harmony-blue: #58b9f4ff;
-  --harmony-orange: #efa947ff;
+  --harmony-blue: #20e290ff;
+  --harmony-orange: #ffa524ff;
   --harmony-red: #f9344cff;
-  --harmony-dark-red: #c43047ff;
-  --harmony-green: #6cdf44ff;
-  --harmony-light-green: #13c65aff;
+  --harmony-dark-red: #d63c5aff;
+  --harmony-green: #2eb954ff;
+  --harmony-light-green: #0bf90bff;
   --harmony-gradient-color-1: #6cdf44ff;
   --harmony-gradient-color-2: #13c65aff;
   --harmony-gradient: linear-gradient(315deg, #6cdf44ff 0%, #13c65aff 100%);
-  --harmony-trending-blue: #216fdcff;
-  --harmony-ai-green: #1fd187ff;
+  --harmony-trending-blue: #1eeb6fff;
+  --harmony-ai-green: #1eeb57ff;
   --harmony-glass-overlay: #01010199;
 
   /* Overrides static-white to be regular white */

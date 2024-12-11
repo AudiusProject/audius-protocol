@@ -102,7 +102,6 @@ export const CreatePlaylistLibraryItemButton = (props: Props) => {
           getPopupContainer={getTooltipPopupContainer}
         >
           <Pill
-            // @ts-ignore
             ref={anchorRef}
             iconLeft={IconSave}
             onClick={() => handleClickPill(onClick)}

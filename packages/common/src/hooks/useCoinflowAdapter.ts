@@ -22,6 +22,7 @@ import {
   PurchaseErrorCode,
   purchaseContentActions
 } from '~/store'
+import { getWalletAddresses } from '~/store/account/selectors'
 import { BuyCryptoError } from '~/store/buy-crypto/types'
 import { getFeePayer } from '~/store/solana/selectors'
 
@@ -50,6 +51,7 @@ export const useCoinflowWithdrawalAdapter = ({
   } = useAppContext()
   const [adapter, setAdapter] = useState<CoinflowAdapter | null>(null)
   const feePayerOverride = useSelector(getFeePayer)
+  const { currentUser } = useSelector(getWalletAddresses)
   const { audiusSdk } = useAudiusQueryContext()
 
   useEffect(() => {
@@ -75,9 +77,13 @@ export const useCoinflowWithdrawalAdapter = ({
                 'VersionedTransaction not supported in withdrawal adapter'
               )
             }
+            if (!currentUser) {
+              throw new Error('Missing current user')
+            }
             const feePayer = new PublicKey(feePayerOverride)
             const finalTransaction =
               await decorateCoinflowWithdrawalTransaction(sdk, audiusBackend, {
+                ethAddress: currentUser,
                 transaction,
                 feePayer,
                 privateKey
