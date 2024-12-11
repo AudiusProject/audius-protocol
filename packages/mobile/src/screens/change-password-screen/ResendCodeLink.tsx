@@ -4,7 +4,6 @@ import { useAsyncFn } from 'react-use'
 
 import { TextLink } from '@audius/harmony-native'
 import { useToast } from 'app/hooks/useToast'
-import { authService } from 'app/services/sdk/auth'
 import { identityService } from 'app/services/sdk/identity'
 
 const messages = {
@@ -21,10 +20,8 @@ export const ResendCodeLink = () => {
   const [{ loading }, sendCode] = useAsyncFn(async () => {
     // Try to confirm without OTP to force OTP refresh
     try {
-      const wallet = authService.getWallet()
       await identityService.changeEmail({
-        email,
-        wallet
+        email
       })
     } catch (e) {
       if (isOtpMissingError(e)) {

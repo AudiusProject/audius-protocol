@@ -3,10 +3,10 @@ import { DEFAULT_MINT, MintName } from '@audius/common/services'
 import {
   Account,
   getMinimumBalanceForRentExemptAccount,
-  getAssociatedTokenAddressSync,
-  getAccount
+  getAccount,
+  getAssociatedTokenAddressSync
 } from '@solana/spl-token'
-import { PublicKey, Transaction, Keypair } from '@solana/web3.js'
+import { PublicKey, Transaction } from '@solana/web3.js'
 
 import { getLibs } from 'services/audius-libs'
 import { audiusSdk } from 'services/audius-sdk'
@@ -50,14 +50,6 @@ export const isTokenAccount = async ({
 }
 
 /**
- * Gets the current user's root solana account.
- */
-export const getRootSolanaAccount = async () => {
-  const libs = await getLibs()
-  return Keypair.fromSeed(libs.Account!.hedgehog.wallet!.getPrivateKey())
-}
-
-/**
  * Checks whether the input address is a valid solana address.
  */
 export const isValidSolAddress = async (address: SolanaWalletAddress) => {
@@ -93,10 +85,8 @@ export const getTokenAccountInfo = async ({
   tokenAccount: PublicKey
   mint?: MintName
 }): Promise<Account | null> => {
-  const libs = await getLibs()
-  return await libs.solanaWeb3Manager!.getTokenAccountInfo(
-    tokenAccount.toString()
-  )
+  const connection = await getSolanaConnection()
+  return await getAccount(connection, tokenAccount)
 }
 
 /**

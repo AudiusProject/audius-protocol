@@ -30,7 +30,6 @@ import {
 import { isContentUSDCPurchaseGated, Track } from '~/models/Track'
 import { User } from '~/models/User'
 import { BNUSDC } from '~/models/Wallet'
-import { getRootSolanaAccount } from '~/services/audius-backend/solana'
 import { FeatureFlags } from '~/services/remote-config/feature-flags'
 import { accountSelectors } from '~/store/account'
 import {
@@ -370,8 +369,14 @@ function* purchaseTrackWithCoinflow(args: {
     guestEmail
   } = args
 
-  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
-  const wallet = yield* call(getRootSolanaAccount, audiusBackendInstance)
+  const solanaWalletService = yield* getContext('solanaWalletService')
+  const wallet = yield* call([
+    solanaWalletService,
+    solanaWalletService.getKeypair
+  ])
+  if (!wallet) {
+    throw new Error('Missing solana root wallet')
+  }
 
   const params = {
     price: args.price,
@@ -471,9 +476,14 @@ function* purchaseAlbumWithCoinflow(args: {
     includeNetworkCut = false,
     guestEmail
   } = args
-
-  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
-  const wallet = yield* call(getRootSolanaAccount, audiusBackendInstance)
+  const solanaWalletService = yield* getContext('solanaWalletService')
+  const wallet = yield* call([
+    solanaWalletService,
+    solanaWalletService.getKeypair
+  ])
+  if (!wallet) {
+    throw new Error('Missing solana root wallet')
+  }
 
   const params = {
     price: args.price,
@@ -623,16 +633,12 @@ function* collectEmailAfterPurchase({
 
     const sdk = yield* call(audiusSdk)
     const identityService = yield* getContext('identityService')
-    const authService = yield* getContext('authService')
     const isAlbum = 'playlist_id' in metadata
 
     const purchaserUserId = yield* select(getUserId)
     const sellerId = isAlbum ? metadata.playlist_owner_id : metadata.owner_id
-    const wallet = authService.getWallet()
 
-    const email = yield* call([identityService, identityService.getUserEmail], {
-      wallet
-    })
+    const email = yield* call([identityService, identityService.getUserEmail])
 
     if (!purchaserUserId) {
       throw new Error('Purchaser user ID not found')

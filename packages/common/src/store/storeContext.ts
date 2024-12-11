@@ -6,6 +6,7 @@ import { Dispatch } from 'redux'
 import nacl from 'tweetnacl'
 
 import { AuthService, IdentityService } from '~/services'
+import { SolanaWalletService } from '~/services/solana'
 
 import {
   AllTrackingEvents,
@@ -71,8 +72,7 @@ export type CommonStoreContext = {
   nftClient: FetchNFTClient
   sentry: {
     setTag: (key: string, value: string) => void
-    // Made optional to accommodate sentry-react-native
-    configureScope?: (fn: (scope: { setUser: any }) => void) => void
+    getCurrentScope: () => { setUser: (user: any) => void }
   }
   reportToSentry: (args: ReportToSentryArgs) => void
   trackDownload: TrackDownload
@@ -82,6 +82,7 @@ export type CommonStoreContext = {
   audiusSdk: () => Promise<AudiusSdk>
   authService: AuthService
   identityService: IdentityService
+  solanaWalletService: SolanaWalletService
   imageUtils: {
     generatePlaylistArtwork: (
       urls: string[]

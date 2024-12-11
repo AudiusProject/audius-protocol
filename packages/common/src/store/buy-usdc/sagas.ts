@@ -15,7 +15,6 @@ import {
   createTransferToUserBankTransaction,
   findAssociatedTokenAddress,
   getRecentBlockhash,
-  getRootSolanaAccount,
   getTokenAccountInfo,
   getUserbankAccountInfo,
   pollForTokenBalanceChange,
@@ -237,13 +236,23 @@ function* doBuyUSDC({
   const reportToSentry = yield* getContext('reportToSentry')
   const { track, make } = yield* getContext('analytics')
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
+  const solanaWalletService = yield* getContext('solanaWalletService')
   const config = yield* call(getBuyUSDCRemoteConfig)
   const sdk = yield* getSDK()
 
   const userBank = yield* getOrCreateUSDCUserBank()
-  const rootAccount = yield* call(getRootSolanaAccount, audiusBackendInstance)
 
   try {
+    const rootAccount = yield* call([
+      solanaWalletService,
+      solanaWalletService.getKeypair
+    ])
+    if (!rootAccount) {
+      throw new BuyUSDCError(
+        BuyUSDCErrorCode.OnrampError,
+        'Missing solana root wallet'
+      )
+    }
     if (desiredAmount < config.minUSDCPurchaseAmountCents) {
       throw new BuyUSDCError(
         BuyUSDCErrorCode.MinAmountNotMet,
@@ -314,10 +323,6 @@ function* doBuyUSDC({
         if (!feePayerAddress) {
           throw new Error('Missing feePayer unexpectedly')
         }
-        const rootAccount = yield* call(
-          getRootSolanaAccount,
-          audiusBackendInstance
-        )
 
         const amount = desiredAmount / 100.0
         // Send the USDC through the payment router, sans purchase memo, and
@@ -419,10 +424,17 @@ function* recoverPurchaseIfNecessary() {
   const reportToSentry = yield* getContext('reportToSentry')
   const { track, make } = yield* getContext('analytics')
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
+  const solanaWalletService = yield* getContext('solanaWalletService')
   const sdk = yield* getSDK()
 
   try {
-    const rootAccount = yield* call(getRootSolanaAccount, audiusBackendInstance)
+    const rootAccount = yield* call([
+      solanaWalletService,
+      solanaWalletService.getKeypair
+    ])
+    if (!rootAccount) {
+      throw new Error('Missing solana root wallet')
+    }
 
     const usdcTokenAccount = yield* call(
       findAssociatedTokenAddress,

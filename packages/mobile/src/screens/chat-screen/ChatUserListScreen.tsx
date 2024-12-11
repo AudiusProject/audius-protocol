@@ -1,9 +1,8 @@
 import { useCallback, useEffect, useState } from 'react'
 
-import { useFeatureFlag, useProxySelector } from '@audius/common/hooks'
+import { useProxySelector } from '@audius/common/hooks'
 import { Status, statusIsNotFinalized } from '@audius/common/models'
 import type { User } from '@audius/common/models'
-import { FeatureFlags } from '@audius/common/services'
 import {
   accountSelectors,
   cacheUsersSelectors,
@@ -213,9 +212,6 @@ export const ChatUserListScreen = () => {
   const defaultUserList = useDefaultUserList(defaultUserListType)
   const queryUserList = useQueryUserList(query)
 
-  const { isEnabled: isOneToManyDMsEnabled } = useFeatureFlag(
-    FeatureFlags.ONE_TO_MANY_DMS
-  )
   const hasQuery = query.length > 0
 
   const { hasMore, loadMore, status, userIds } = hasQuery
@@ -323,11 +319,9 @@ export const ChatUserListScreen = () => {
             />
           )}
         </View>
-        {isOneToManyDMsEnabled ? (
-          <View style={styles.footerContainer}>
-            <ChatBlastCTA />
-          </View>
-        ) : null}
+        <View style={styles.footerContainer}>
+          <ChatBlastCTA />
+        </View>
       </ScreenContent>
     </Screen>
   )

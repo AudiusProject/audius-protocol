@@ -1,6 +1,5 @@
 import { userApiFetchSaga } from '@audius/common/api'
 import { ErrorLevel, Kind } from '@audius/common/models'
-import { getRootSolanaAccount } from '@audius/common/services'
 import {
   accountActions,
   accountSelectors,
@@ -47,12 +46,11 @@ const setSentryUser = (sentry, user, traits) => {
   if (traits.managerUserId) {
     sentry.setTag('isManagerMode', 'true')
   }
-  sentry.configureScope((currentScope) => {
-    currentScope.setUser({
-      id: `${user.user_id}`,
-      username: user.handle,
-      ...traits
-    })
+  const scope = sentry.getCurrentScope()
+  scope.setUser({
+    id: `${user.user_id}`,
+    username: user.handle,
+    ...traits
   })
 }
 
@@ -62,6 +60,7 @@ function* onSignedIn({ payload: { account } }) {
   const audiusBackendInstance = yield getContext('audiusBackendInstance')
   const sentry = yield getContext('sentry')
   const authService = yield getContext('authService')
+  const solanaWalletService = yield getContext('solanaWalletService')
   const sdk = yield* getSDK()
 
   const libs = yield call([
@@ -94,10 +93,10 @@ function* onSignedIn({ payload: { account } }) {
       // If not a managed account, identify the Solana wallet associated with
       // the hedgehog wallet
       try {
-        solanaWallet = (yield call(
-          getRootSolanaAccount,
-          audiusBackendInstance
-        )).publicKey.toBase58()
+        solanaWallet = (yield call([
+          solanaWalletService,
+          solanaWalletService.getKeypair
+        ])).publicKey.toBase58()
       } catch (e) {
         console.error('Failed to fetch Solana root wallet during identify()', e)
       }

@@ -13,8 +13,7 @@ import { useAppContext } from '~/context'
 import { Name } from '~/models/Analytics'
 import {
   decorateCoinflowWithdrawalTransaction,
-  relayTransaction,
-  getRootSolanaAccount
+  relayTransaction
 } from '~/services/audius-backend'
 import {
   BuyUSDCError,
@@ -22,6 +21,7 @@ import {
   PurchaseErrorCode,
   purchaseContentActions
 } from '~/store'
+import { getWalletAddresses } from '~/store/account/selectors'
 import { BuyCryptoError } from '~/store/buy-crypto/types'
 import { getFeePayer } from '~/store/solana/selectors'
 
@@ -46,13 +46,21 @@ export const useCoinflowWithdrawalAdapter = () => {
   } = useAppContext()
   const [adapter, setAdapter] = useState<CoinflowAdapter | null>(null)
   const feePayerOverride = useSelector(getFeePayer)
-  const { audiusSdk } = useAudiusQueryContext()
+  const { currentUser } = useSelector(getWalletAddresses)
+  const { audiusSdk, solanaWalletService } = useAudiusQueryContext()
 
   useEffect(() => {
     const initWallet = async () => {
-      const wallet = await getRootSolanaAccount(audiusBackend)
+      const wallet = solanaWalletService.getKeypair()
       const sdk = await audiusSdk()
       const connection = sdk.services.solanaClient.connection
+
+      if (!wallet) {
+        console.error(
+          'useCoinflowWithdrawalAdapter: Missing solana root wallet'
+        )
+        return
+      }
 
       setAdapter({
         connection,
@@ -69,11 +77,16 @@ export const useCoinflowWithdrawalAdapter = () => {
                 'VersionedTransaction not supported in withdrawal adapter'
               )
             }
+            if (!currentUser) {
+              throw new Error('Missing current user')
+            }
             const feePayer = new PublicKey(feePayerOverride)
             const finalTransaction =
               await decorateCoinflowWithdrawalTransaction(sdk, audiusBackend, {
+                ethAddress: currentUser,
                 transaction,
-                feePayer
+                feePayer,
+                wallet
               })
             finalTransaction.partialSign(wallet)
             const { res, error, errorCode } = await relayTransaction(
@@ -115,7 +128,15 @@ export const useCoinflowWithdrawalAdapter = () => {
       })
     }
     initWallet()
-  }, [audiusBackend, feePayerOverride, make, track, audiusSdk])
+  }, [
+    audiusBackend,
+    feePayerOverride,
+    currentUser,
+    solanaWalletService,
+    make,
+    track,
+    audiusSdk
+  ])
 
   return adapter
 }
@@ -133,14 +154,21 @@ export const useCoinflowAdapter = ({
 }) => {
   const { audiusBackend } = useAppContext()
   const [adapter, setAdapter] = useState<CoinflowAdapter | null>(null)
-  const { audiusSdk } = useAudiusQueryContext()
+  const { audiusSdk, solanaWalletService } = useAudiusQueryContext()
   const dispatch = useDispatch()
 
   useEffect(() => {
     const initWallet = async () => {
-      const wallet = await getRootSolanaAccount(audiusBackend)
+      const wallet = solanaWalletService.getKeypair()
       const sdk = await audiusSdk()
       const connection = sdk.services.solanaClient.connection
+      if (!wallet) {
+        console.error(
+          'useCoinflowWithdrawalAdapter: Missing solana root wallet'
+        )
+        return
+      }
+
       setAdapter({
         connection,
         wallet: {
@@ -191,7 +219,14 @@ export const useCoinflowAdapter = ({
       })
     }
     initWallet()
-  }, [audiusBackend, audiusSdk, dispatch, onSuccess, onFailure])
+  }, [
+    audiusBackend,
+    solanaWalletService,
+    audiusSdk,
+    dispatch,
+    onSuccess,
+    onFailure
+  ])
 
   return adapter
 }
