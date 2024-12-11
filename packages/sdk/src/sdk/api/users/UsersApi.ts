@@ -488,11 +488,9 @@ export class UsersApi extends GeneratedUsersApi {
    * Helper method to manage email encryption keys
    */
   private async getEmailEncryptionKeys({
-    primaryUserIdHash,
-    emailOwnerUserIdHash
+    primaryUserIdHash
   }: {
     primaryUserIdHash: string
-    emailOwnerUserIdHash: string
   }) {
     const { data: encryptedEmailKey } = await this.getUserEmailKey({
       id: primaryUserIdHash
@@ -509,9 +507,7 @@ export class UsersApi extends GeneratedUsersApi {
 
     // Otherwise create a new shared key
     const { symmetricKey, primaryUserEncryptedKey } =
-      await this.emailEncryption.createSharedKey(primaryUserIdHash, [
-        emailOwnerUserIdHash
-      ])
+      await this.emailEncryption.createSharedKey(primaryUserIdHash)
     return { symmetricKey, primaryUserEncryptedKey }
   }
 
@@ -532,10 +528,7 @@ export class UsersApi extends GeneratedUsersApi {
     }
 
     const { symmetricKey, primaryUserEncryptedKey } =
-      await this.getEmailEncryptionKeys({
-        primaryUserIdHash,
-        emailOwnerUserIdHash
-      })
+      await this.getEmailEncryptionKeys({ primaryUserIdHash })
 
     const encryptedEmail = await this.emailEncryption.encryptEmail(
       email,

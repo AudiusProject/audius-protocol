@@ -29,7 +29,7 @@ export class EmailEncryptionService extends BaseAPI {
    */
   async createSharedKey(
     primaryUserId: string,
-    granteeIds: string[]
+    granteeIds: string[] = []
   ): Promise<SharedSymmetricKey> {
     // Generate random symmetric key
     const symmetricKey = crypto.getRandomValues(new Uint8Array(32))
