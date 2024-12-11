@@ -1,6 +1,7 @@
 import { useCallback } from 'react'
 
 import { useCoinflowWithdrawalAdapter } from '@audius/common/hooks'
+import { ErrorLevel } from '@audius/common/src/models/ErrorReporting'
 import {
   useCoinflowWithdrawModal,
   withdrawUSDCActions,
@@ -12,6 +13,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import ModalDrawer from 'pages/audio-rewards-page/components/modals/ModalDrawer'
 import { authService } from 'services/audius-sdk'
 import { env } from 'services/env'
+import { reportToSentry } from 'store/errors/reportToSentry'
 import zIndex from 'utils/zIndex'
 
 import styles from './CoinflowWithdrawModal.module.css'
@@ -40,7 +42,15 @@ export const CoinflowWithdrawModal = () => {
   const amount = useSelector(getWithdrawAmount)
 
   const privateKey = authService.getWallet()?.getPrivateKey()
-  const adapter = useCoinflowWithdrawalAdapter({ privateKey })
+  if (!privateKey) {
+    reportToSentry({
+      level: ErrorLevel.Error,
+      error: new Error('No private key found in coinflow withdrawal modal')
+    })
+  }
+  const adapter = useCoinflowWithdrawalAdapter({
+    privateKey: privateKey ?? Buffer.from('')
+  })
   const dispatch = useDispatch()
 
   const handleClose = useCallback(() => {

@@ -1,7 +1,11 @@
 import { useCallback, useState } from 'react'
 
 import { DEFAULT_PURCHASE_AMOUNT_CENTS } from '@audius/common/hooks'
-import { PurchaseMethod, PurchaseVendor } from '@audius/common/models'
+import {
+  ErrorLevel,
+  PurchaseMethod,
+  PurchaseVendor
+} from '@audius/common/models'
 import {
   buyUSDCActions,
   useUSDCManualTransferModal,
@@ -13,9 +17,11 @@ import { useDispatch, useSelector } from 'react-redux'
 import { Button } from '@audius/harmony-native'
 import { Text } from 'app/components/core'
 import Drawer from 'app/components/drawer'
+import { authService } from 'app/services/sdk/auth'
 import { getPurchaseVendor } from 'app/store/purchase-vendor/selectors'
 import { reset as resetPurchaseMethod } from 'app/store/purchase-vendor/slice'
 import { flexRowCentered, makeStyles } from 'app/styles'
+import { reportToSentry } from 'app/utils/reportToSentry'
 
 import { PaymentMethod } from '../payment-method/PaymentMethod'
 import { USDCBalanceRow } from '../usdc-balance-row/USDCBalanceRow'
@@ -51,12 +57,21 @@ export const AddFundsDrawer = () => {
     useState<PurchaseMethod>(PurchaseMethod.CARD)
 
   const openCardFlow = useCallback(() => {
+    const privateKey = authService.getWallet()?.getPrivateKey()
+    if (!privateKey) {
+      reportToSentry({
+        level: ErrorLevel.Error,
+        error: new Error('No private key found in add funds drawer')
+      })
+      return
+    }
     dispatch(
       buyUSDCActions.onrampOpened({
         vendor: purchaseVendorState ?? PurchaseVendor.STRIPE,
         purchaseInfo: {
           desiredAmount: DEFAULT_PURCHASE_AMOUNT_CENTS
-        }
+        },
+        privateKey
       })
     )
   }, [dispatch, purchaseVendorState])

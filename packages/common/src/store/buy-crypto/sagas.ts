@@ -685,11 +685,9 @@ function* doBuyCryptoViaSol({
  * output token. If we get enough of the output token after the swap, it's a
  * successful recovery.
  */
-function* recoverBuyCryptoViaSolIfNecessary({
-  privateKey
-}: {
-  privateKey: Buffer
-}) {
+function* recoverBuyCryptoViaSolIfNecessary(
+  payload: ReturnType<typeof startRecoveryIfNecessary>
+) {
   yield* call(waitForAccount)
   // Pull from context
   const getFeatureEnabled = yield* getContext('getFeatureEnabled')

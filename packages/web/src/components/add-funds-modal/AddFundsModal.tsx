@@ -1,7 +1,11 @@
 import { useCallback, useEffect, useState } from 'react'
 
 import { DEFAULT_PURCHASE_AMOUNT_CENTS } from '@audius/common/hooks'
-import { PurchaseMethod, PurchaseVendor } from '@audius/common/models'
+import {
+  ErrorLevel,
+  PurchaseMethod,
+  PurchaseVendor
+} from '@audius/common/models'
 import {
   buyUSDCActions,
   buyUSDCSelectors,
@@ -16,6 +20,8 @@ import { AddFunds } from 'components/add-funds/AddFunds'
 import { USDCManualTransfer } from 'components/usdc-manual-transfer/USDCManualTransfer'
 import { useIsMobile } from 'hooks/useIsMobile'
 import ModalDrawer from 'pages/audio-rewards-page/components/modals/ModalDrawer'
+import { authService } from 'services/audius-sdk'
+import { reportToSentry } from 'store/errors/reportToSentry'
 import zIndex from 'utils/zIndex'
 
 import styles from './AddFundsModal.module.css'
@@ -59,12 +65,21 @@ export const AddFundsModal = () => {
           setPage('crypto-transfer')
           break
         case PurchaseMethod.CARD: {
+          const privateKey = authService.getWallet()?.getPrivateKey()
+          if (!privateKey) {
+            reportToSentry({
+              level: ErrorLevel.Error,
+              error: new Error('No private key found in add funds modal')
+            })
+            return
+          }
           dispatch(
             buyUSDCActions.onrampOpened({
               vendor: purchaseVendor || PurchaseVendor.STRIPE,
               purchaseInfo: {
                 desiredAmount: DEFAULT_PURCHASE_AMOUNT_CENTS
-              }
+              },
+              privateKey
             })
           )
           break

@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 
 import { useCoinflowAdapter } from '@audius/common/hooks'
+import { ErrorLevel } from '@audius/common/models'
 import {
   coinflowModalUIActions,
   useCoinflowOnrampModal
@@ -14,8 +15,10 @@ import { IconCloseAlt } from '@audius/harmony-native'
 import { AppDrawer } from 'app/components/drawer'
 import { env } from 'app/env'
 import { getCoinflowDeviceId } from 'app/services/coinflow'
+import { authService } from 'app/services/sdk/auth'
 import { makeStyles } from 'app/styles'
 import { spacing } from 'app/styles/spacing'
+import { reportToSentry } from 'app/utils/reportToSentry'
 import { useThemeColors } from 'app/utils/theme'
 import { zIndex } from 'app/utils/zIndex'
 
@@ -97,9 +100,17 @@ export const CoinflowOnrampDrawer = () => {
     onClose()
   }, [dispatch, onClose])
 
+  const privateKey = authService.getWallet()?.getPrivateKey()
+  if (!privateKey) {
+    reportToSentry({
+      level: ErrorLevel.Error,
+      error: new Error('No private key found in coinflow onramp drawer')
+    })
+  }
   const adapter = useCoinflowAdapter({
     onSuccess: handleSuccess,
-    onFailure: handleClose
+    onFailure: handleClose,
+    privateKey: privateKey ?? Buffer.from('')
   })
   const deviceId = getCoinflowDeviceId()
   const showContent = isOpen && adapter
