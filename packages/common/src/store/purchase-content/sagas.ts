@@ -623,16 +623,12 @@ function* collectEmailAfterPurchase({
 
     const sdk = yield* call(audiusSdk)
     const identityService = yield* getContext('identityService')
-    const authService = yield* getContext('authService')
     const isAlbum = 'playlist_id' in metadata
 
     const purchaserUserId = yield* select(getUserId)
     const sellerId = isAlbum ? metadata.playlist_owner_id : metadata.owner_id
-    const wallet = authService.getWallet()
 
-    const email = yield* call([identityService, identityService.getUserEmail], {
-      wallet
-    })
+    const email = yield* call([identityService, identityService.getUserEmail])
 
     if (!purchaserUserId) {
       throw new Error('Purchaser user ID not found')

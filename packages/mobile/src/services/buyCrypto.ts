@@ -7,20 +7,3 @@ export const getUSDCUserBank = async (ethWallet?: string) => {
     mint: 'usdc'
   })
 }
-
-export const createStripeSession = async ({
-  destinationWallet,
-  amount,
-  destinationCurrency
-}: {
-  destinationWallet: string
-  amount: string
-  destinationCurrency: 'sol' | 'usdc'
-}) => {
-  await waitForLibsInit()
-  return await audiusLibs?.identityService?.createStripeSession({
-    destinationWallet,
-    amount,
-    destinationCurrency
-  })
-}
