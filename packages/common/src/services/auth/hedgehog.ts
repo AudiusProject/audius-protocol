@@ -1,4 +1,9 @@
-import { Hedgehog, WalletManager, getPlatformCreateKey } from '@audius/hedgehog'
+import {
+  EthWallet,
+  Hedgehog,
+  WalletManager,
+  getPlatformCreateKey
+} from '@audius/hedgehog'
 import type { SetAuthFn, SetUserFn, GetFn, CreateKey } from '@audius/hedgehog'
 import axios, { AxiosError, AxiosRequestConfig, AxiosResponse } from 'axios'
 import sigUtil from 'eth-sig-util'
@@ -16,16 +21,18 @@ export type HedgehogConfig = {
   createKey?: CreateKey
 }
 
+export type ConfirmCredentialsArgs = {
+  username: string
+  password: string
+  email?: string
+  otp?: string
+  softCheck?: boolean
+}
+
 export type HedgehogInstance = Hedgehog & {
   generateRecoveryInfo: () => Promise<{ login: string; host: string }>
-  getLookupKey: ({
-    username,
-    password
-  }: {
-    username: string
-    password: string
-  }) => Promise<string>
   refreshWallet: () => Promise<void>
+  confirmCredentials: (args: ConfirmCredentialsArgs) => Promise<boolean>
 }
 
 export const createHedgehog = ({
@@ -34,6 +41,18 @@ export const createHedgehog = ({
   localStorage,
   createKey = getPlatformCreateKey()
 }: HedgehogConfig): HedgehogInstance => {
+  const getAuthHeaders = async (wallet: EthWallet) => {
+    const unixTs = Math.round(new Date().getTime() / 1000) // current unix timestamp (sec)
+    const message = `Click sign to authenticate with identity service: ${unixTs}`
+    const signature = sigUtil.personalSign(wallet.getPrivateKey(), {
+      data: message
+    })
+    return {
+      [AuthHeaders.Message]: message,
+      [AuthHeaders.Signature]: signature
+    }
+  }
+
   const makeIdentityRequest = async <T = unknown>(
     axiosRequestObj: AxiosRequestConfig
   ) => {
@@ -79,15 +98,7 @@ export const createHedgehog = ({
     // Get wallet from hedgehog to use for signing, remove from params sent to identity
     const { wallet: ownerWallet, ...data } = params
 
-    const unixTs = Math.round(new Date().getTime() / 1000) // current unix timestamp (sec)
-    const message = `Click sign to authenticate with identity service: ${unixTs}`
-    const signature = sigUtil.personalSign(ownerWallet.getPrivateKey(), {
-      data: message
-    })
-    const headers = {
-      [AuthHeaders.Message]: message,
-      [AuthHeaders.Signature]: signature
-    }
+    const headers = await getAuthHeaders(ownerWallet)
 
     return await makeIdentityRequest({
       url: '/authentication',
@@ -138,8 +149,7 @@ export const createHedgehog = ({
     return recoveryInfo
   }
 
-  // @ts-expect-error -- adding our own custom method to hedgehog
-  hedgehog.getLookupKey = async ({
+  const getLookupKey = async ({
     username,
     password
   }: {
@@ -173,6 +183,43 @@ export const createHedgehog = ({
     } finally {
       hedgehog.ready = true
     }
+  }
+
+  const originalConfirmCredentials = hedgehog.confirmCredentials.bind(hedgehog)
+  hedgehog.confirmCredentials = async ({
+    softCheck,
+    ...confirmCredentialsArgs
+  }: ConfirmCredentialsArgs) => {
+    if (softCheck) {
+      const lookupKey = await getLookupKey({
+        username: confirmCredentialsArgs.username,
+        password: confirmCredentialsArgs.password
+      })
+      try {
+        const wallet = hedgehog.wallet
+        if (!wallet) {
+          throw new Error(
+            'Cannot check credentials - user is not authenticated'
+          )
+        }
+        const headers = await getAuthHeaders(wallet)
+        if (headers[AuthHeaders.Message] && headers[AuthHeaders.Signature]) {
+          return await makeIdentityRequest({
+            url: '/authentication/check',
+            method: 'GET',
+            headers,
+            params: { lookupKey }
+          })
+        } else {
+          throw new Error(
+            'Cannot check credentials - user is not authenticated'
+          )
+        }
+      } catch (e) {
+        return false
+      }
+    }
+    return await originalConfirmCredentials(confirmCredentialsArgs)
   }
 
   return hedgehog as HedgehogInstance

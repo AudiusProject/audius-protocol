@@ -25,6 +25,21 @@ type CreateStripeSessionResponse = {
   status: string
 }
 
+enum TransactionMetadataType {
+  PURCHASE_SOL_AUDIO_SWAP = 'PURCHASE_SOL_AUDIO_SWAP'
+}
+
+type InAppAudioPurchaseMetadata = {
+  discriminator: TransactionMetadataType.PURCHASE_SOL_AUDIO_SWAP
+  usd: string
+  sol: string
+  audio: string
+  purchaseTransactionId: string
+  setupTransactionId?: string
+  swapTransactionId: string
+  cleanupTransactionId?: string
+}
+
 export type IdentityServiceConfig = {
   identityServiceEndpoint: string
   audiusWalletClient: AudiusWalletClient
@@ -224,6 +239,33 @@ export class IdentityService {
     return await this._makeRequest({
       url: '/record_ip',
       method: 'post',
+      headers
+    })
+  }
+
+  async getUserBankTransactionMetadata(transactionId: string) {
+    const headers = await this._getSignatureHeaders()
+
+    const metadatas = await this._makeRequest<
+      Array<{ metadata: InAppAudioPurchaseMetadata }>
+    >({
+      url: `/transaction_metadata?id=${transactionId}`,
+      method: 'get',
+      headers
+    })
+    return metadatas[0]?.metadata ?? null
+  }
+
+  async saveUserBankTransactionMetadata(data: {
+    transactionSignature: string
+    metadata: InAppAudioPurchaseMetadata
+  }) {
+    const headers = await this._getSignatureHeaders()
+
+    return await this._makeRequest({
+      url: '/transaction_metadata',
+      method: 'post',
+      data,
       headers
     })
   }
