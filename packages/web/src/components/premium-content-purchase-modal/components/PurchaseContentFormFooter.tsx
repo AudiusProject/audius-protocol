@@ -14,7 +14,7 @@ import {
   collectionsSocialActions,
   usePremiumContentPurchaseModal
 } from '@audius/common/store'
-import { formatPrice, route } from '@audius/common/utils'
+import { formatPrice } from '@audius/common/utils'
 import {
   Button,
   IconCaretRight,
@@ -28,17 +28,15 @@ import {
 import { useField } from 'formik'
 import { capitalize } from 'lodash'
 import { useDispatch } from 'react-redux'
-import { Link } from 'react-router-dom-v5-compat'
 
 import { make } from 'common/store/analytics/actions'
+import { SignOnLink } from 'components/SignOnLink'
 import { TwitterShareButton } from 'components/twitter-share-button/TwitterShareButton'
 import { fullCollectionPage, fullTrackPage } from 'utils/route'
 
 import { PurchaseContentFormState } from '../hooks/usePurchaseContentFormState'
 
 import styles from './PurchaseContentFormFooter.module.css'
-
-const { SIGN_UP_PAGE } = route
 
 const messages = {
   buy: 'Buy',
@@ -130,10 +128,6 @@ export const PurchaseContentFormFooter = ({
   )
   const { onClose } = usePremiumContentPurchaseModal()
 
-  const handleClickSignUp = useCallback(() => {
-    onClose()
-  }, [onClose])
-
   const onRepost = useCallback(() => {
     dispatch(
       isReposted
@@ -165,9 +159,9 @@ export const PurchaseContentFormFooter = ({
                 </Flex>
                 <Flex gap='s'>
                   <Button fullWidth asChild>
-                    <Link to={SIGN_UP_PAGE} onClick={handleClickSignUp}>
+                    <SignOnLink signUp onClick={onClose}>
                       {messages.finishSigningUp}
-                    </Link>
+                    </SignOnLink>
                   </Button>
                   <Button
                     fullWidth

@@ -152,11 +152,17 @@ const LeftNav = (props: NavColumnProps) => {
               ) : null}
               <Box>
                 <GroupHeader>{messages.discover}</GroupHeader>
-                <LeftNavLink to={FEED_PAGE} disabled={!isAccountComplete}>
+                <LeftNavLink
+                  to={FEED_PAGE}
+                  disabled={!isAccountComplete}
+                  restriction='account'
+                >
                   Feed
                 </LeftNavLink>
-                <LeftNavLink to={TRENDING_PAGE}>Trending</LeftNavLink>
-                <LeftNavLink to={EXPLORE_PAGE} exact>
+                <LeftNavLink to={TRENDING_PAGE} restriction='none'>
+                  Trending
+                </LeftNavLink>
+                <LeftNavLink to={EXPLORE_PAGE} exact restriction='none'>
                   Explore
                 </LeftNavLink>
               </Box>
@@ -172,7 +178,11 @@ const LeftNav = (props: NavColumnProps) => {
                     Library
                   </LeftNavLink>
                 </LeftNavDroppable>
-                <LeftNavLink to={HISTORY_PAGE} disabled={!isAccountComplete}>
+                <LeftNavLink
+                  to={HISTORY_PAGE}
+                  disabled={!isAccountComplete}
+                  restriction='account'
+                >
                   History
                 </LeftNavLink>
               </Box>
