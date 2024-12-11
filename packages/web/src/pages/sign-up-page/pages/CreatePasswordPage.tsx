@@ -1,6 +1,6 @@
 import { useCallback, useRef } from 'react'
 
-import { createPasswordPageMessages } from '@audius/common/messages'
+import { createPasswordPageMessages as messages } from '@audius/common/messages'
 import { passwordSchema } from '@audius/common/schemas'
 import { route } from '@audius/common/utils'
 import { Flex } from '@audius/harmony'
@@ -9,7 +9,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 
 import { setValueField } from 'common/store/pages/signon/actions'
-import { getEmailField } from 'common/store/pages/signon/selectors'
+import { getEmailField, getIsGuest } from 'common/store/pages/signon/selectors'
 import { useMedia } from 'hooks/useMedia'
 import { useNavigateToPage } from 'hooks/useNavigateToPage'
 
@@ -34,6 +34,7 @@ const passwordFormikSchema = toFormikValidationSchema(passwordSchema)
 export const CreatePasswordPage = () => {
   const dispatch = useDispatch()
   const emailField = useSelector(getEmailField)
+  const isGuest = useSelector(getIsGuest)
   const navigate = useNavigateToPage()
   const { isMobile } = useMedia()
   const passwordInputRef = useRef<HTMLInputElement>(null)
@@ -60,12 +61,12 @@ export const CreatePasswordPage = () => {
           autoFocusInputRef={passwordInputRef}
         >
           <Heading
-            heading={createPasswordPageMessages.createYourPassword}
-            description={createPasswordPageMessages.description}
+            heading={isGuest ? messages.finishSigningUp : messages.createYourPassword}
+            description={messages.description}
           />
           <Flex direction='column' h='100%' gap='l'>
             <ReadOnlyField
-              label={createPasswordPageMessages.yourEmail}
+              label={messages.yourEmail}
               value={emailField.value}
             />
             <EnterPasswordSection inputRef={passwordInputRef} />

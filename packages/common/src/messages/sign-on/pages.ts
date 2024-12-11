@@ -30,7 +30,8 @@ export const createEmailPageMessages = {
   unknownError: 'Unknown error occurred.',
   metaMaskNotRecommended: 'Signing up with MetaMask is not recommended.',
   signUpMetamask: 'Sign Up With MetaMask',
-  learnMore: 'Learn More'
+  learnMore: 'Learn More',
+  finishSigningUp: 'Finish Signing Up'
 }
 
 export type CompletionChecklistType =

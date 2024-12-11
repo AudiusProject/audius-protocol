@@ -2,8 +2,8 @@ import { useCallback, useMemo } from 'react'
 
 import { useAudiusQueryContext } from '@audius/common/audius-query'
 import { useFeatureFlag } from '@audius/common/hooks'
-import { createEmailPageMessages } from '@audius/common/messages'
-import { emailSchema } from '@audius/common/schemas'
+import { createEmailPageMessages as messages } from '@audius/common/messages'
+import { emailSchema, emailSchemaMessages } from '@audius/common/schemas'
 import { FeatureFlags } from '@audius/common/services'
 import {
   setLinkedSocialOnFirstPage,
@@ -106,57 +106,62 @@ export const CreateEmailScreen = (props: SignOnScreenProps) => {
       validationSchema={EmailSchema}
       validateOnChange={false}
     >
-      {({ handleSubmit }) => (
-        <>
-          {isWaitingForSocialLogin ? (
-            <SocialMediaLoading onClose={handleCloseSocialMediaLogin} />
-          ) : null}
-          <Flex style={{ zIndex: 1 }} gap='l'>
-            <Heading heading={createEmailPageMessages.title} centered />
-            <Flex direction='column' gap='l'>
-              <NewEmailField
-                name='email'
-                label={createEmailPageMessages.emailLabel}
-                onChangeScreen={onChangeScreen}
-              />
-              {isSocialSignupEnabled ? (
-                <>
-                  <Divider>
-                    <Text variant='body' size='s' color='subdued'>
-                      {createEmailPageMessages.socialsDividerText}
-                    </Text>
-                  </Divider>
-                  <SocialMediaSignUpButtons
-                    onError={handleErrorSocialMediaLogin}
-                    onStart={handleStartSocialMediaLogin}
-                    onCompleteSocialMediaLogin={handleSocialMediaLoginSuccess}
-                    onClose={handleCloseSocialMediaLogin}
-                    page='create-email'
-                  />
-                </>
-              ) : null}
-            </Flex>
-            <Flex direction='column' gap='l'>
-              <Button
-                onPress={() => handleSubmit()}
-                fullWidth
-                iconRight={IconArrowRight}
-              >
-                {createEmailPageMessages.signUp}
-              </Button>
-              <Text variant='body' size='m' textAlign='center'>
-                {createEmailPageMessages.haveAccount}{' '}
-                <TextLink
-                  variant='visible'
-                  onPress={() => onChangeScreen('sign-in')}
+      {({ handleSubmit, errors }) => {
+        const isGuest = errors.email === emailSchemaMessages.completeYourProfile
+
+        return (
+          <>
+            {isWaitingForSocialLogin ? (
+              <SocialMediaLoading onClose={handleCloseSocialMediaLogin} />
+            ) : null}
+            <Flex style={{ zIndex: 1 }} gap='l'>
+              <Heading heading={messages.title} centered />
+              <Flex direction='column' gap='l'>
+                <NewEmailField
+                  name='email'
+                  label={messages.emailLabel}
+                  onChangeScreen={onChangeScreen}
+                />
+                {!isGuest && isSocialSignupEnabled && (
+                  <>
+                    <Divider>
+                      <Text variant='body' size='s' color='subdued'>
+                        {messages.socialsDividerText}
+                      </Text>
+                    </Divider>
+                    <SocialMediaSignUpButtons
+                      onError={handleErrorSocialMediaLogin}
+                      onStart={handleStartSocialMediaLogin}
+                      onCompleteSocialMediaLogin={handleSocialMediaLoginSuccess}
+                      onClose={handleCloseSocialMediaLogin}
+                      page='create-email'
+                    />
+                  </>
+                )}
+              </Flex>
+              <Flex direction='column' gap='l'>
+                <Button
+                  variant='primary'
+                  onPress={() => handleSubmit()}
+                  fullWidth
+                  iconRight={IconArrowRight}
                 >
-                  {createEmailPageMessages.signIn}
-                </TextLink>
-              </Text>
+                  {isGuest ? messages.finishSigningUp : messages.signUp}
+                </Button>
+                <Text variant='body' size='m' textAlign='center'>
+                  {messages.haveAccount}{' '}
+                  <TextLink
+                    variant='visible'
+                    onPress={() => onChangeScreen('sign-in')}
+                  >
+                    {messages.signIn}
+                  </TextLink>
+                </Text>
+              </Flex>
             </Flex>
-          </Flex>
-        </>
-      )}
+          </>
+        )
+      }}
     </Formik>
   )
 }
