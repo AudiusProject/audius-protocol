@@ -378,11 +378,14 @@ export const findAssociatedTokenAddress = async (
 export const decorateCoinflowWithdrawalTransaction = async (
   sdk: AudiusSdk,
   audiusBackendInstance: AudiusBackend,
-  { transaction, feePayer }: { transaction: Transaction; feePayer: PublicKey }
+  {
+    transaction,
+    feePayer,
+    ethAddress
+  }: { transaction: Transaction; feePayer: PublicKey; ethAddress: string }
 ) => {
   const libs = await audiusBackendInstance.getAudiusLibsTyped()
   const solanaWeb3Manager = libs.solanaWeb3Manager!
-  const ethAddress = sdk.services.audiusWalletClient.account.address
 
   const userBank = await deriveUserBankPubkey(sdk, {
     ethAddress,
