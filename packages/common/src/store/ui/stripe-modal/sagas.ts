@@ -45,11 +45,6 @@ function* handleInitializeStripeModal({
   const { track, make } = yield* getContext('analytics')
   const { onrampFailed } = yield* select(getStripeModalState)
   try {
-    identityService.createStripeSession({
-      amount,
-      destinationCurrency,
-      destinationWallet
-    })
     const res = yield* call(
       [identityService, identityService.createStripeSession],
       {
