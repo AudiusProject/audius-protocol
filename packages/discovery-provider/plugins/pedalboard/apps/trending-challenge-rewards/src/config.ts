@@ -23,10 +23,11 @@ export const initSharedData = async (): Promise<SharedData> => {
   sharedData = {
     sdk: audiusSdk({
       environment: process.env.environment as 'development' | 'staging' | 'production',
-      discoveryNodeAllowlist: process.env.discovery_node_allowlist?.split(',') ?? undefined
+      discoveryNodeAllowlist: process.env.discovery_node_allowlist?.split(',') ?? undefined,
+      solanaRelayNode: process.env.solana_relay_node!
     }),
-    runNow: process.env.run_now === 'true',
-    dryRun: process.env.tcr_dry_run === 'true',
+    runNow: process.env.run_now?.toLowerCase() === 'true',
+    dryRun: process.env.tcr_dry_run?.toLowerCase() === 'true',
     audiusDbUrl: process.env.audius_db_url!,
     slackChannel: process.env.slack_channel,
     slackSigningSecret: process.env.slack_signing_secret,

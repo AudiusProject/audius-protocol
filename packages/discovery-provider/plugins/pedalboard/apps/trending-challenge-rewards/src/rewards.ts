@@ -23,6 +23,11 @@ type Challenge = {
   wallet: string
 }
 
+const TRENDING_ID = 'tt'
+const UNDERGROUND_TRENDING_ID = 'tut'
+const PLAY_TRENDING_ID = 'tp'
+const TRENDING_REWARD_IDS = [TRENDING_ID, PLAY_TRENDING_ID, UNDERGROUND_TRENDING_ID]
+
 
 // TODO: move something like this into App so results are commonplace for handlers
 export const disburseTrendingRewards = async (
@@ -41,10 +46,10 @@ export const onDisburse = async (
 ): Promise<Result<undefined, string>> => {
   const db = discoveryDb
   const { slackBotToken, slackChannel } = app.viewAppData()
-  if (slackBotToken === undefined) return new Err('SLACK_BOT_TOKEN undefined')
+  if (slackBotToken === undefined) throw new Err('slackBotToken undefined')
   const client = new WebClient(slackBotToken)
 
-  console.log(`doing ${dryRun ? 'a dry run' : 'the real deal'}`)
+  console.log(`doing ${dryRun ? 'a dry run' : 'a live run'}`)
 
   const sdk = app.viewAppData().sdk
 
@@ -70,15 +75,16 @@ export const onDisburse = async (
   )
   const data: Challenge[] = res.data.data
   const toDisburse = data.filter((c) =>
-    ['tt', 'tp', 'tut'].includes(c.challenge_id)
+    TRENDING_REWARD_IDS.includes(c.challenge_id)
 )
 
 // Claim all undisbursed challenges
 for (const challenge of toDisburse) {
   const challengeId = Object.values(ChallengeId).find(id => id === challenge.challenge_id)!
   console.log('Claimable challengeId = ', challenge)
+  const totalRetries = 10
   let res
-  let retries = 10
+  let retries = totalRetries
   while (retries > 0) {
     try {
       if (!dryRun) {
@@ -92,10 +98,10 @@ for (const challenge of toDisburse) {
         break // Success - exit retry loop
       }
     } catch (e) {
-      console.error(`Error claiming reward, challengeId = ${challengeId}, attempt ${11 - retries} of 10, error = `, e)
-      retries--
+      console.error(`Error claiming reward, challengeId = ${challengeId}, attempt ${totalRetries - retries + 1} of ${totalRetries}, error = `, e)
+      retries -= 1
       if (retries === 0) {
-        console.error(`Failed to claim reward after 10 attempts for challengeId = ${challengeId}`)
+        console.error(`Failed to claim reward after ${totalRetries} attempts for challengeId = ${challengeId}`)
       }
     }
   }
@@ -133,7 +139,6 @@ export const findStartingBlock = async (
   if (completedBlocknumber === null)
     return new Err(`completed block number is null ${firstChallenge}`)
   const specifier = firstChallenge.specifier
-  // why we subtract one
-  // https://www.notion.so/audiusproject/Manually-Complete-Rewards-Challenge-Manually-disburse-trending-24daed058dc54e4a8adb4912814481f2?pvs=4#1ced75c9c41740ce8facd19bf0d46720
+  // Start from one before the first challenge
   return new Ok([completedBlocknumber - 1, specifier])
 }

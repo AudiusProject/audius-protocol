@@ -1,6 +1,5 @@
 import { Knex } from 'knex'
 import { Table, UserChallenges } from '@pedalboard/storage'
-import { discoveryDb } from './utils'
 
 export type ChallengeDisbursementUserbank = {
   challenge_id: string

@@ -1,13 +1,11 @@
 import { Configuration, DiscoveryNodeSelector, SolanaRelay, sdk } from '@audius/sdk' 
 
 
-const makeDiscoveryNodeSelector = (allowlist?: string[]) => {
-  return new DiscoveryNodeSelector({
+const makeDiscoveryNodeSelector = (allowlist?: string[]) => new DiscoveryNodeSelector({
     allowlist: allowlist ? new Set(allowlist) : undefined,
   })
-}
 
-const solanaRelay = new SolanaRelay(
+const makeSolanaRelay = (relayNode: string) => new SolanaRelay(
   new Configuration({
     basePath: '/solana',
     headers: {
@@ -16,7 +14,7 @@ const solanaRelay = new SolanaRelay(
     middleware: [
       {
         pre: async (context) => {
-          const endpoint = 'https://discoveryprovider.audius.co'
+          const endpoint = relayNode
           const url = `${endpoint}${context.url}`
           return { url, init: context.init }
         }
@@ -26,15 +24,15 @@ const solanaRelay = new SolanaRelay(
 )
 
 export const audiusSdk = (
-  { environment, discoveryNodeAllowlist }:
-  { environment: 'development' | 'staging' | 'production', discoveryNodeAllowlist?: string[] }
+  { environment, discoveryNodeAllowlist, solanaRelayNode }:
+  { environment: 'development' | 'staging' | 'production', discoveryNodeAllowlist?: string[], solanaRelayNode: string }
 ) => {
   return sdk({
     appName: 'trending-challenge-rewards',
     environment,
     services: {
       discoveryNodeSelector: makeDiscoveryNodeSelector(discoveryNodeAllowlist),
-      solanaRelay,
+      solanaRelay: makeSolanaRelay(solanaRelayNode),
     },
   })
 }
