@@ -118,7 +118,7 @@ func intakeUploadBatches(ctx context.Context, wg *sync.WaitGroup) {
 	}
 	defer db.Close()
 
-	query := `select id from uploads where template = 'audio' and audio_analysis_status = 'error' and audio_analysis_error ilike 'command exited with status -1:%';`
+	query := `select id from uploads where template = 'audio' and audio_analysis_status = 'error' and audio_analysis_error ilike 'command exited with status -1:%' and created_at >= now() - interval '1 months';`
 	rows, err := db.Query(query)
 	if err != nil {
 		fmt.Println("couldn't query postgres:", err)
@@ -226,8 +226,12 @@ func consumeAnalysisResults(ctx context.Context, wg *sync.WaitGroup) {
 				return
 			}
 
-			line := fmt.Sprintf("update tracks set bpm = %g, musical_key = '%s' where audio_upload_id = '%s';\n",
-				upload.AudioAnalysisResults.BPM, upload.AudioAnalysisResults.Key, upload.ID)
+			line := fmt.Sprintf(
+				"update tracks set bpm = %g, musical_key = '%s' where audio_upload_id = '%s' and (bpm is null or musical_key is null);\n",
+				upload.AudioAnalysisResults.BPM,
+				upload.AudioAnalysisResults.Key,
+				upload.ID,
+			)
 			if _, err := file.WriteString(line); err != nil {
 				fmt.Println("error writing to file:", err)
 				return
