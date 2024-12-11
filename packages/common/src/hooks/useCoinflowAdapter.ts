@@ -13,7 +13,6 @@ import { useAppContext } from '~/context'
 import { Name } from '~/models/Analytics'
 import {
   decorateCoinflowWithdrawalTransaction,
-  relayTransaction,
   getRootSolanaAccount
 } from '~/services/audius-backend'
 import {
@@ -76,40 +75,30 @@ export const useCoinflowWithdrawalAdapter = () => {
                 feePayer
               })
             finalTransaction.partialSign(wallet)
-            const { res, error, errorCode } = await relayTransaction(
-              audiusBackend,
-              {
-                transaction: finalTransaction,
+            const { signature } = await sdk.services.solanaRelay.relay({
+              transaction: finalTransaction,
+              sendOptions: {
                 skipPreflight: true
               }
-            )
-            if (!res) {
+            })
+            if (!signature) {
               console.error('Relaying Coinflow transaction failed.', {
-                error,
-                errorCode,
                 finalTransaction
               })
               track(
                 make({
-                  eventName:
-                    Name.WITHDRAW_USDC_COINFLOW_SEND_TRANSACTION_FAILED,
-                  error: error ?? undefined,
-                  errorCode: errorCode ?? undefined
+                  eventName: Name.WITHDRAW_USDC_COINFLOW_SEND_TRANSACTION_FAILED
                 })
               )
-              throw new Error(
-                `Relaying Coinflow transaction failed: ${
-                  error ?? 'Unknown error'
-                }`
-              )
+              throw new Error('Relaying Coinflow transaction failed')
             }
             track(
               make({
                 eventName: Name.WITHDRAW_USDC_COINFLOW_SEND_TRANSACTION,
-                signature: res
+                signature
               })
             )
-            return res
+            return signature
           }
         }
       })

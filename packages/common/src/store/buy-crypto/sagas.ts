@@ -38,8 +38,7 @@ import {
   getRootSolanaAccount,
   getTokenAccountInfo,
   pollForBalanceChange,
-  pollForTokenBalanceChange,
-  relayVersionedTransaction
+  pollForTokenBalanceChange
 } from '~/services/audius-backend/solana'
 import { FeatureFlags } from '~/services/index'
 import { IntKeys } from '~/services/remote-config/types'
@@ -143,7 +142,6 @@ function* swapSolForCrypto({
   userbank: PublicKey
   quoteResponse: Awaited<ReturnType<typeof jupiterInstance.quoteGet>>
 }) {
-  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
   // Create a memo
   // See: https://github.com/solana-labs/solana-program-library/blob/d6297495ea4dcc1bd48f3efdd6e3bbdaef25a495/memo/js/src/index.ts#L27
   const memoInstruction = new TransactionInstruction({
@@ -213,22 +211,20 @@ function* swapSolForCrypto({
     closeWSOLInstruction
   ]
   const sdk = yield* getSDK()
-  const { transaction, addressLookupTableAccounts } = yield* call(
-    createVersionedTransaction,
-    sdk,
-    {
-      instructions,
-      lookupTableAddresses: addressLookupTableAddresses,
-      feePayer
-    }
-  )
+  const { transaction } = yield* call(createVersionedTransaction, sdk, {
+    instructions,
+    lookupTableAddresses: addressLookupTableAddresses,
+    feePayer
+  })
   transaction.sign([wallet])
 
-  return yield* call(relayVersionedTransaction, audiusBackendInstance, {
+  const { signature } = yield* call(sdk.services.solanaRelay.relay, {
     transaction,
-    addressLookupTableAccounts,
-    skipPreflight: true
+    sendOptions: {
+      skipPreflight: true
+    }
   })
+  return signature
 }
 
 function* assertRecoverySuccess({
@@ -528,7 +524,7 @@ function* doBuyCryptoViaSol({
     const maxRetryCount = 3
     const retryDelayMs = 3000
     do {
-      const { res, error } = yield* call(swapSolForCrypto, {
+      const { signature } = yield* call(swapSolForCrypto, {
         feePayer,
         mint,
         wallet,
@@ -805,7 +801,7 @@ function* recoverBuyCryptoViaSolIfNecessary() {
 
     // Do the swap. Just do it once, slippage shouldn't be a
     // concern since the quote is fresh and the tolerance is high.
-    const { res, error: recoveryError } = yield* call(swapSolForCrypto, {
+    const signature = yield* call(swapSolForCrypto, {
       quoteResponse: exactInQuote,
       mint,
       wallet,

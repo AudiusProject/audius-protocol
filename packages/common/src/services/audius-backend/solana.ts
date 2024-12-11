@@ -430,15 +430,24 @@ export const decorateCoinflowWithdrawalTransaction = async (
     data.decimals
   )
 
-  const transferFromUserBankInstructions =
-    await solanaWeb3Manager.createTransferInstructionsFromCurrentUser({
-      amount: new BN(data.amount.toString()),
-      mint: 'usdc',
-      senderSolanaAddress: userBank,
-      recipientSolanaAddress: keys.destination.pubkey.toBase58(),
-      instructionIndex: transferInstructionIndex + 1,
-      feePayerKey: feePayer
+  const transferFromUserBankSecpInstruction =
+    await sdk.services.claimableTokensClient.createTransferSecpInstruction({
+      amount: data.amount,
+      mint: 'USDC',
+      destination: keys.destination.pubkey,
+      ethWallet: ethAddress,
+      instructionIndex: transferInstructionIndex + 1
     })
+  const transferFromUserBankInstruction =
+    await sdk.services.claimableTokensClient.createTransferInstruction({
+      feePayer,
+      mint: 'USDC',
+      destination: keys.destination.pubkey,
+      ethWallet: ethAddress
+    })
+  const priorityFeeInstruction = ComputeBudgetProgram.setComputeUnitPrice({
+    microLamports: 100000
+  })
 
   const withdrawalMemoInstruction = new TransactionInstruction({
     keys: [
@@ -457,7 +466,9 @@ export const decorateCoinflowWithdrawalTransaction = async (
     transferInstructionIndex,
     1,
     transferToUserBankInstruction,
-    ...transferFromUserBankInstructions,
+    transferFromUserBankSecpInstruction,
+    transferFromUserBankInstruction,
+    priorityFeeInstruction,
     withdrawalMemoInstruction
   )
 
@@ -475,6 +486,7 @@ export const decorateCoinflowWithdrawalTransaction = async (
 }
 
 export const createTransferToUserBankTransaction = async (
+  sdk: AudiusSdk,
   audiusBackendInstance: AudiusBackend,
   {
     userBank,
@@ -494,8 +506,6 @@ export const createTransferToUserBankTransaction = async (
     recentBlockhash?: string
   }
 ) => {
-  const libs = await audiusBackendInstance.getAudiusLibsTyped()
-  const mintPublicKey = libs.solanaWeb3Manager!.mints[mint]
   const associatedTokenAccount = await findAssociatedTokenAddress(
     audiusBackendInstance,
     {
@@ -534,31 +544,30 @@ export const createTransferToUserBankTransaction = async (
  * that doesn't add the purchase memo.
  */
 export const createPaymentRouterRouteTransaction = async (
-  audiusBackendInstance: AudiusBackend,
+  sdk: AudiusSdk,
   {
     sender,
-    splits
+    splits,
+    total
   }: {
     sender: PublicKey
-    splits: Record<string, number | BN>
+    splits: { amount: bigint; wallet: PublicKey }[]
+    total: bigint
   }
 ) => {
-  const solanaWeb3Manager = (await audiusBackendInstance.getAudiusLibsTyped())
-    .solanaWeb3Manager!
-  const { blockhash } = await solanaWeb3Manager
-    .getConnection()
-    .getLatestBlockhash()
-  const [transfer, route] =
-    // All the memo related parameters are ignored
-    await solanaWeb3Manager.getPurchaseContentWithPaymentRouterInstructions({
-      id: 0, // ignored
-      type: 'track', // ignored
-      blocknumber: 0, // ignored
-      splits,
-      purchaserUserId: 0, // ignored
-      senderAccount: sender,
-      purchaseAccess: PurchaseAccess.STREAM // ignored
+  const connection = sdk.services.solanaClient.connection
+  const { blockhash } = await connection.getLatestBlockhash()
+  const transfer =
+    await sdk.services.paymentRouterClient.createTransferInstruction({
+      total,
+      sourceWallet: sender,
+      mint: 'USDC'
     })
+  const route = await sdk.services.paymentRouterClient.createRouteInstruction({
+    total,
+    splits,
+    mint: 'USDC'
+  })
   return new Transaction({
     recentBlockhash: blockhash,
     feePayer: sender
@@ -597,45 +606,6 @@ export const relayTransaction = async (
     feePayerOverride,
     skipPreflight,
     useCoinflowRelay
-  })
-}
-
-/**
- * Relays the given versioned transaction using the libs transaction handler
- */
-export const relayVersionedTransaction = async (
-  audiusBackendInstance: AudiusBackend,
-  {
-    transaction,
-    addressLookupTableAccounts,
-    skipPreflight
-  }: {
-    transaction: VersionedTransaction
-    addressLookupTableAccounts: AddressLookupTableAccount[]
-    skipPreflight?: boolean
-  }
-) => {
-  const placeholderSignature = Buffer.from(PLACEHOLDER_SIGNATURE)
-  const libs = await audiusBackendInstance.getAudiusLibsTyped()
-  const decompiledMessage = TransactionMessage.decompile(transaction.message, {
-    addressLookupTableAccounts
-  })
-  const signatures = transaction.message.staticAccountKeys
-    .slice(0, transaction.message.header.numRequiredSignatures)
-    .map((publicKey, index) => ({
-      publicKey: publicKey.toBase58(),
-      signature: Buffer.from(transaction.signatures[index])
-    }))
-    .filter((meta) => !meta.signature.equals(placeholderSignature))
-  return await libs.solanaWeb3Manager!.transactionHandler.handleTransaction({
-    instructions: decompiledMessage.instructions,
-    recentBlockhash: decompiledMessage.recentBlockhash,
-    signatures,
-    feePayerOverride: decompiledMessage.payerKey,
-    lookupTableAddresses: addressLookupTableAccounts.map((lut) =>
-      lut.key.toBase58()
-    ),
-    skipPreflight
   })
 }
 
