@@ -3,7 +3,7 @@ import { useCallback, useMemo, useState } from 'react'
 import { useAudiusQueryContext } from '@audius/common/audius-query'
 import { createEmailPageMessages as messages } from '@audius/common/messages'
 import { emailSchema, emailSchemaMessages } from '@audius/common/schemas'
-import { route } from '@audius/common/utils'
+import { route, TEMPORARY_PASSWORD } from '@audius/common/utils'
 import {
   Box,
   Button,
@@ -26,7 +26,9 @@ import {
   resetSignOn,
   setLinkedSocialOnFirstPage,
   setValueField,
-  startSignUp
+  startSignUp,
+  signIn,
+  setField
 } from 'common/store/pages/signon/actions'
 import {
   getEmailField,
@@ -48,7 +50,8 @@ const {
   SIGN_UP_CREATE_LOGIN_DETAILS,
   SIGN_UP_HANDLE_PAGE,
   SIGN_UP_PASSWORD_PAGE,
-  SIGN_UP_REVIEW_HANDLE_PAGE
+  SIGN_UP_REVIEW_HANDLE_PAGE,
+  SIGN_IN_CONFIRM_EMAIL_PAGE
 } = route
 
 const smallDesktopWindowHeight = 900
@@ -115,7 +118,10 @@ export const CreateEmailPage = () => {
     (values: SignUpEmailValues) => {
       const { email } = values
       dispatch(setValueField('email', email))
-      navigate(SIGN_UP_PASSWORD_PAGE)
+      dispatch(setValueField('password', TEMPORARY_PASSWORD))
+      dispatch(setField('isGuest', true))
+      dispatch(signIn(email, TEMPORARY_PASSWORD))
+      navigate(SIGN_IN_CONFIRM_EMAIL_PAGE)
     },
     [dispatch, navigate]
   )
@@ -145,15 +151,6 @@ export const CreateEmailPage = () => {
         isValid
       }) => {
         const isGuest = errors.email === emailSchemaMessages.completeYourProfile
-
-        const handleButtonClick = () => {
-          setFieldValue('withMetaMask', false)
-          if (isGuest) {
-            handleGuestSubmit(values)
-          } else {
-            submitForm()
-          }
-        }
 
         return (
           <Page as={Form} pt={isMobile ? 'xl' : 'unit13'}>

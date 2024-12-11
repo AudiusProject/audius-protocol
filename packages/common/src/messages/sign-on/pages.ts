@@ -17,7 +17,8 @@ export const confirmEmailMessages = {
   otpPlaceholder: '123 456',
   noEmailNotice: "Didn't get an email?",
   resendCode: 'Resend Code',
-  resentToast: 'Verification code resent.'
+  resentToast: 'Verification code resent.',
+  finishSigningUp: 'Finish Signing Up'
 }
 
 export const createEmailPageMessages = {

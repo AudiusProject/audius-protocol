@@ -21,22 +21,17 @@ import { TextLink } from 'components/link'
 
 import { EmailField } from './EmailField'
 
-const { SIGN_IN_PAGE, SIGN_IN_CONFIRM_EMAIL_PAGE } = route
+const { SIGN_IN_PAGE } = route
 
 export const NewEmailField = () => {
-  const dispatch = useDispatch()
-  const [{ value: email }, { error }] = useField('email')
+  const [, { error }] = useField('email')
   const { isValidating } = useFormikContext()
   const emailInUse = error === emailSchemaMessages.emailInUse
   const isGuest = error === emailSchemaMessages.completeYourProfile
-  const hasError = emailInUse || isGuest
+  const hasSpecialError = emailInUse || isGuest
 
   // Track which specific error was shown last
   const lastShownError = usePrevious(error)
-
-  useEffect(() => {
-    dispatch(setField('isGuest', isGuest))
-  }, [dispatch, isGuest])
 
   const signInLink = (
     <TextLink variant='visible' asChild>
@@ -44,36 +39,17 @@ export const NewEmailField = () => {
     </TextLink>
   )
 
-  const handleClickConfirmEmail = useCallback(() => {
-    dispatch(setValueField('email', email))
-    dispatch(setValueField('password', TEMPORARY_PASSWORD))
-    dispatch(signIn(email, TEMPORARY_PASSWORD))
-  }, [dispatch, email])
-
-  const confirmEmailLink = (
-    <TextLink variant='visible' asChild>
-      <Link to={SIGN_IN_CONFIRM_EMAIL_PAGE} onClick={handleClickConfirmEmail}>
-        {confirmEmailMessages.title}
-      </Link>
-    </TextLink>
-  )
-
-  const showGuestError =
-    isGuest ||
-    (isValidating && lastShownError === emailSchemaMessages.completeYourProfile)
-
   const showEmailInUseError =
     emailInUse ||
     (isValidating && lastShownError === emailSchemaMessages.emailInUse)
 
   return (
     <>
-      <EmailField helperText={hasError ? '' : undefined} />
-      {showGuestError ? (
-        <Hint icon={IconError}>
-          {emailSchemaMessages.completeYourProfile} {confirmEmailLink}
-        </Hint>
-      ) : showEmailInUseError ? (
+      <EmailField
+        error={!!error && !hasSpecialError}
+        helperText={hasSpecialError ? '' : undefined}
+      />
+      {showEmailInUseError ? (
         <Hint icon={IconError}>
           {emailSchemaMessages.emailInUse} {signInLink}
         </Hint>

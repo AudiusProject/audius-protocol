@@ -9,7 +9,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 
 import { setValueField } from 'common/store/pages/signon/actions'
-import { getEmailField, getIsGuest } from 'common/store/pages/signon/selectors'
+import { getEmailField } from 'common/store/pages/signon/selectors'
 import { useMedia } from 'hooks/useMedia'
 import { useNavigateToPage } from 'hooks/useNavigateToPage'
 
@@ -34,7 +34,6 @@ const passwordFormikSchema = toFormikValidationSchema(passwordSchema)
 export const CreatePasswordPage = () => {
   const dispatch = useDispatch()
   const emailField = useSelector(getEmailField)
-  const isGuest = useSelector(getIsGuest)
   const navigate = useNavigateToPage()
   const { isMobile } = useMedia()
   const passwordInputRef = useRef<HTMLInputElement>(null)
@@ -61,7 +60,7 @@ export const CreatePasswordPage = () => {
           autoFocusInputRef={passwordInputRef}
         >
           <Heading
-            heading={isGuest ? messages.finishSigningUp : messages.createYourPassword}
+            heading={messages.createYourPassword}
             description={messages.description}
           />
           <Flex direction='column' h='100%' gap='l'>
