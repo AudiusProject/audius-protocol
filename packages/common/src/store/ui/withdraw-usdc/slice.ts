@@ -36,6 +36,7 @@ const slice = createSlice({
         /** Transfer amount in cents */
         amount: number
         destinationAddress: string
+        privateKey: Buffer
       }>
     ) => {
       state.withdrawStatus = Status.LOADING

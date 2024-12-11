@@ -257,7 +257,7 @@ function* assertRecoverySuccess({
 }
 
 function* doBuyCryptoViaSol({
-  payload: { amount, mint, provider }
+  payload: { amount, mint, provider, privateKey }
 }: ReturnType<typeof buyCryptoViaSol>) {
   // Pull from context
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
@@ -277,7 +277,7 @@ function* doBuyCryptoViaSol({
   )
 
   // Get config
-  const wallet = yield* call(getRootSolanaAccount, audiusBackendInstance)
+  const wallet = yield* call(getRootSolanaAccount, { privateKey })
   const feePayerAddress = yield* select(getFeePayer)
   const config = yield* call(getBuyCryptoRemoteConfig, mint)
   const outputToken = TOKEN_LISTING_MAP[mint.toUpperCase()]
@@ -685,10 +685,13 @@ function* doBuyCryptoViaSol({
  * output token. If we get enough of the output token after the swap, it's a
  * successful recovery.
  */
-function* recoverBuyCryptoViaSolIfNecessary() {
+function* recoverBuyCryptoViaSolIfNecessary({
+  privateKey
+}: {
+  privateKey: Buffer
+}) {
   yield* call(waitForAccount)
   // Pull from context
-  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
   const getFeatureEnabled = yield* getContext('getFeatureEnabled')
   const { track, make } = yield* getContext('analytics')
   const reportToSentry = yield* getContext('reportToSentry')
@@ -727,7 +730,7 @@ function* recoverBuyCryptoViaSolIfNecessary() {
   )
 
   // Get config
-  const wallet = yield* call(getRootSolanaAccount, audiusBackendInstance)
+  const wallet = yield* call(getRootSolanaAccount, { privateKey })
   const sdk = yield* getSDK()
   const connection = sdk.services.solanaClient.connection
   const feePayerAddress = yield* waitForValue(getFeePayer)

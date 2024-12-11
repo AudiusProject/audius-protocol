@@ -53,6 +53,7 @@ import { useIsMobile } from 'hooks/useIsMobile'
 import { useIsUSDCEnabled } from 'hooks/useIsUSDCEnabled'
 import { useManagedAccountNotAllowedCallback } from 'hooks/useManagedAccountNotAllowedRedirect'
 import ModalDrawer from 'pages/audio-rewards-page/components/modals/ModalDrawer'
+import { authService } from 'services/audius-sdk'
 import { pushUniqueRoute } from 'utils/route'
 import zIndex from 'utils/zIndex'
 
@@ -248,6 +249,10 @@ export const PremiumContentPurchaseModal = () => {
     : null
 
   const price = purchaseConditions ? purchaseConditions?.usdc_purchase.price : 0
+  const privateKey = authService.getWallet()?.getPrivateKey()
+  if (!privateKey) {
+    throw new Error('No private key found - is user logged in?')
+  }
 
   const { initialValues, validationSchema, onSubmit } =
     usePurchaseContentFormConfiguration({
@@ -256,7 +261,8 @@ export const PremiumContentPurchaseModal = () => {
       presetValues,
       purchaseVendor: isCoinflowEnabled
         ? PurchaseVendor.COINFLOW
-        : PurchaseVendor.STRIPE
+        : PurchaseVendor.STRIPE,
+      privateKey
     })
 
   const showGuestCheckout =
@@ -277,8 +283,8 @@ export const PremiumContentPurchaseModal = () => {
   useEffect(() => {
     if (showGuestCheckout) return
     dispatch(eagerCreateUserBank())
-    dispatch(startRecoveryIfNecessary())
-  }, [dispatch, showGuestCheckout])
+    dispatch(startRecoveryIfNecessary({ privateKey }))
+  }, [dispatch, showGuestCheckout, privateKey])
 
   const handleClose = useCallback(() => {
     // Don't allow closing if we're in the middle of a purchase

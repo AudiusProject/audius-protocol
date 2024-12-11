@@ -359,6 +359,7 @@ function* purchaseTrackWithCoinflow(args: {
   extraAmount?: number
   guestEmail?: string
   includeNetworkCut?: boolean
+  privateKey: Buffer
 }) {
   const {
     sdk,
@@ -367,11 +368,11 @@ function* purchaseTrackWithCoinflow(args: {
     price,
     extraAmount = 0,
     includeNetworkCut = false,
-    guestEmail
+    guestEmail,
+    privateKey
   } = args
 
-  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
-  const wallet = yield* call(getRootSolanaAccount, audiusBackendInstance)
+  const wallet = yield* call(getRootSolanaAccount, { privateKey })
 
   const params = {
     price: args.price,
@@ -461,6 +462,7 @@ function* purchaseAlbumWithCoinflow(args: {
   extraAmount?: number
   includeNetworkCut?: boolean
   guestEmail?: string
+  privateKey: Buffer
 }) {
   const {
     sdk,
@@ -469,11 +471,11 @@ function* purchaseAlbumWithCoinflow(args: {
     price,
     extraAmount = 0,
     includeNetworkCut = false,
-    guestEmail
+    guestEmail,
+    privateKey
   } = args
 
-  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
-  const wallet = yield* call(getRootSolanaAccount, audiusBackendInstance)
+  const wallet = yield* call(getRootSolanaAccount, { privateKey })
 
   const params = {
     price: args.price,
@@ -554,8 +556,13 @@ function* purchaseAlbumWithCoinflow(args: {
 type PurchaseUSDCWithStripeArgs = {
   /** Amount of USDC to purchase, as dollars */
   amount: number
+  privateKey: Buffer
 }
-function* purchaseUSDCWithStripe({ amount }: PurchaseUSDCWithStripeArgs) {
+
+function* purchaseUSDCWithStripe({
+  amount,
+  privateKey
+}: PurchaseUSDCWithStripeArgs) {
   yield* put(buyUSDC())
   const getFeatureEnabled = yield* getContext('getFeatureEnabled')
   const isBuyUSDCViaSolEnabled = yield* call(
@@ -571,7 +578,8 @@ function* purchaseUSDCWithStripe({ amount }: PurchaseUSDCWithStripeArgs) {
         // expects "friendly" amount, so dollars
         amount: cents / 100.0,
         mint: 'USDC',
-        provider: OnRampProvider.STRIPE
+        provider: OnRampProvider.STRIPE,
+        privateKey
       })
     )
     result = yield* race({
@@ -585,7 +593,8 @@ function* purchaseUSDCWithStripe({ amount }: PurchaseUSDCWithStripeArgs) {
         vendor: PurchaseVendor.STRIPE,
         purchaseInfo: {
           desiredAmount: cents
-        }
+        },
+        privateKey
       })
     )
 
@@ -663,7 +672,8 @@ function* doStartPurchaseContentFlow({
     purchaseMethodMintAddress,
     contentId,
     contentType = PurchaseableContentType.TRACK,
-    guestEmail
+    guestEmail,
+    privateKey
   }
 }: ReturnType<typeof startPurchaseContentFlow>) {
   const usdcConfig = yield* call(getBuyUSDCRemoteConfig)
@@ -793,7 +803,8 @@ function* doStartPurchaseContentFlow({
                 price: price / 100.0,
                 extraAmount: extraAmount ? extraAmount / 100.0 : undefined,
                 guestEmail,
-                includeNetworkCut: isNetworkCutEnabled
+                includeNetworkCut: isNetworkCutEnabled,
+                privateKey
               })
             } else {
               yield* call(purchaseAlbumWithCoinflow, {
@@ -803,13 +814,17 @@ function* doStartPurchaseContentFlow({
                 price: price / 100.0,
                 extraAmount: extraAmount ? extraAmount / 100.0 : undefined,
                 guestEmail,
-                includeNetworkCut: isNetworkCutEnabled
+                includeNetworkCut: isNetworkCutEnabled,
+                privateKey
               })
             }
             break
           case PurchaseVendor.STRIPE:
             // Buy USDC with Stripe. Once funded, continue with purchase.
-            yield* call(purchaseUSDCWithStripe, { amount: purchaseAmount })
+            yield* call(purchaseUSDCWithStripe, {
+              amount: purchaseAmount,
+              privateKey
+            })
             if (contentType === PurchaseableContentType.TRACK) {
               yield* call([sdk.tracks, sdk.tracks.purchaseTrack], {
                 userId: encodeHashId(purchaserUserId),

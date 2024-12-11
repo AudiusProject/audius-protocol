@@ -11,7 +11,6 @@ import { useDispatch, useSelector } from 'react-redux'
 
 import { OnRampButton } from 'components/on-ramp-button'
 import Tooltip from 'components/tooltip/Tooltip'
-import { authService } from 'services/audius-sdk'
 import { getRootSolanaAccount } from 'services/solana/solana'
 
 import styles from './StripeBuyAudioButton.module.css'

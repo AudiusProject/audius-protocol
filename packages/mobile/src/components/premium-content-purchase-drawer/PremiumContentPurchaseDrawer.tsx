@@ -62,6 +62,7 @@ import { useIsUSDCEnabled } from 'app/hooks/useIsUSDCEnabled'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { useFeatureFlag } from 'app/hooks/useRemoteConfig'
 import { make, track as trackEvent } from 'app/services/analytics'
+import { authService } from 'app/services/sdk/auth'
 import { getPurchaseVendor } from 'app/store/purchase-vendor/selectors'
 import { flexRowCentered, makeStyles } from 'app/styles'
 import { spacing } from 'app/styles/spacing'
@@ -493,12 +494,17 @@ export const PremiumContentPurchaseDrawer = () => {
     : null
 
   const price = purchaseConditions ? purchaseConditions?.usdc_purchase.price : 0
+  const privateKey = authService.getWallet()?.getPrivateKey()
+  if (!privateKey) {
+    throw new Error('No private key found - is user logged in?')
+  }
 
   const { initialValues, onSubmit, validationSchema } =
     usePurchaseContentFormConfiguration({
       metadata,
       presetValues,
-      price
+      price,
+      privateKey
     })
 
   const handleClosed = useCallback(() => {

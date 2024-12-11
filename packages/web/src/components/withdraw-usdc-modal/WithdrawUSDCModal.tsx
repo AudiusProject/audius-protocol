@@ -9,7 +9,8 @@ import {
   Name,
   Status,
   BNUSDC,
-  SolanaWalletAddress
+  SolanaWalletAddress,
+  ErrorLevel
 } from '@audius/common/models'
 import { IntKeys, FeatureFlags } from '@audius/common/services'
 import {
@@ -34,7 +35,9 @@ import { z } from 'zod'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 
 import { make, track } from 'services/analytics'
+import { authService } from 'services/audius-sdk'
 import { isValidSolAddress } from 'services/solana/solana'
+import { reportToSentry } from 'store/errors/reportToSentry'
 
 import styles from './WithdrawUSDCModal.module.css'
 import { CoinflowWithdrawPage } from './components/CoinflowWithdrawPage'
@@ -184,12 +187,21 @@ export const WithdrawUSDCModal = () => {
       address: string
       method: WithdrawMethod
     }) => {
+      const privateKey = authService.getWallet()?.getPrivateKey()
+      if (!privateKey) {
+        reportToSentry({
+          level: ErrorLevel.Error,
+          error: new Error('No private key found in withdraw USDC modal')
+        })
+        return
+      }
       dispatch(
         beginWithdrawUSDC({
           amount,
           method,
           currentBalance: balanceNumberCents,
-          destinationAddress: address
+          destinationAddress: address,
+          privateKey
         })
       )
     },

@@ -51,12 +51,14 @@ export const usePurchaseContentFormConfiguration = ({
   metadata,
   price,
   presetValues,
-  purchaseVendor
+  purchaseVendor,
+  privateKey
 }: {
   metadata?: UserTrackMetadata | UserCollectionMetadata
   price: number
   presetValues: PayExtraAmountPresetValues
   purchaseVendor?: PurchaseVendor
+  privateKey: Buffer
 }) => {
   const audiusQueryContext = useAudiusQueryContext()
 
@@ -150,7 +152,8 @@ export const usePurchaseContentFormConfiguration = ({
             contentType: isAlbum
               ? PurchaseableContentType.ALBUM
               : PurchaseableContentType.TRACK,
-            guestEmail
+            guestEmail,
+            privateKey
           })
         )
       }
@@ -162,7 +165,8 @@ export const usePurchaseContentFormConfiguration = ({
       page,
       dispatch,
       presetValues,
-      isAlbum
+      isAlbum,
+      privateKey
     ]
   )
 

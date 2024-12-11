@@ -40,10 +40,11 @@ const { set: setWithdrawUSDCModalData, close: closeWithdrawUSDCModal } =
 
 function* doWithdrawUSDCCoinflow({
   amount,
-  currentBalance
+  currentBalance,
+  privateKey
 }: Pick<
   ReturnType<typeof beginWithdrawUSDC>['payload'],
-  'amount' | 'currentBalance'
+  'amount' | 'currentBalance' | 'privateKey'
 >) {
   const { track, make } = yield* getContext('analytics')
   const sdk = yield* getSDK()
@@ -151,7 +152,7 @@ function* doWithdrawUSDCCoinflow({
           ...analyticsFields
         })
       )
-      yield* put(buyUSDCActions.startRecoveryIfNecessary())
+      yield* put(buyUSDCActions.startRecoveryIfNecessary({ privateKey }))
       // Wait for the recovery to succeed or error
       const action = yield* take<
         ReturnType<typeof buyUSDCActions.recoveryStatusChanged>
@@ -283,11 +284,15 @@ function* doWithdrawUSDCManualTransfer({
  * Handles all logic for withdrawing USDC to a given destination. Expects amount in cents.
  */
 function* doWithdrawUSDC({
-  payload: { amount, method, currentBalance, destinationAddress }
+  payload: { amount, method, currentBalance, destinationAddress, privateKey }
 }: ReturnType<typeof beginWithdrawUSDC>) {
   switch (method) {
     case WithdrawMethod.COINFLOW:
-      yield* call(doWithdrawUSDCCoinflow, { amount, currentBalance })
+      yield* call(doWithdrawUSDCCoinflow, {
+        amount,
+        currentBalance,
+        privateKey
+      })
       break
     case WithdrawMethod.MANUAL_TRANSFER:
       yield* call(doWithdrawUSDCManualTransfer, {

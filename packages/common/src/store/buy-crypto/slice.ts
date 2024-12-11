@@ -19,6 +19,10 @@ type BuyCryptoPayload = {
    * The service used to purchase the SOL necessary
    */
   provider: OnRampProvider
+  /**
+   * The private key of the user's wallet
+   */
+  privateKey: Buffer
 }
 
 type BuyCryptoState = {}

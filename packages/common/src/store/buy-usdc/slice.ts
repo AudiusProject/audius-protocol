@@ -81,7 +81,10 @@ const slice = createSlice({
     ) => {
       state.stripeSessionStatus = action.payload.status
     },
-    startRecoveryIfNecessary: () => {
+    startRecoveryIfNecessary: (
+      _state,
+      _action: PayloadAction<{ privateKey: Buffer }>
+    ) => {
       // triggers sagas
     },
     recoveryStatusChanged: (

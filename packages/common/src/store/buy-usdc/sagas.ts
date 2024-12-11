@@ -315,7 +315,7 @@ function* doBuyUSDC({
         if (!feePayerAddress) {
           throw new Error('Missing feePayer unexpectedly')
         }
-        const rootAccount = yield* call(getRootSolanaAccount)
+        const rootAccount = yield* call(getRootSolanaAccount, { privateKey })
 
         const amount = desiredAmount / 100.0
         // Send the USDC through the payment router, sans purchase memo, and
@@ -409,7 +409,7 @@ function* doBuyUSDC({
   }
 }
 
-function* recoverPurchaseIfNecessary() {
+function* recoverPurchaseIfNecessary({ privateKey }: { privateKey: Buffer }) {
   yield* waitForRead()
   const hasAccount = yield* select(getHasAccount)
   if (!hasAccount) return
@@ -420,7 +420,7 @@ function* recoverPurchaseIfNecessary() {
   const sdk = yield* getSDK()
 
   try {
-    const rootAccount = yield* call(getRootSolanaAccount, audiusBackendInstance)
+    const rootAccount = yield* call(getRootSolanaAccount, { privateKey })
 
     const usdcTokenAccount = yield* call(
       findAssociatedTokenAddress,

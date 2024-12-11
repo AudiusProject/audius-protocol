@@ -62,6 +62,7 @@ const slice = createSlice({
         contentType?: PurchaseableContentType
         onSuccess?: OnSuccess
         guestEmail?: string
+        privateKey: Buffer
       }>
     ) => {
       state.page = PurchaseContentPage.PURCHASE
