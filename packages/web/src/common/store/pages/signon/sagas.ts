@@ -834,6 +834,7 @@ function* signUp() {
                 'true'
               )
             }
+            return handle
           } catch (err: unknown) {
             // We are including 0 status code here to indicate rate limit,
             // which appears to be happening for some devices.
