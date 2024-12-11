@@ -1,7 +1,7 @@
 import type { CommonStoreContext } from '@audius/common/store'
 import { FetchNFTClient } from '@audius/fetch-nft'
 import AsyncStorage from '@react-native-async-storage/async-storage'
-import * as Sentry from '@sentry/react-native'
+import { setTag, getCurrentScope } from '@sentry/react-native'
 
 import { env } from 'app/env'
 import * as analytics from 'app/services/analytics'
@@ -59,7 +59,7 @@ export const storeContext: CommonStoreContext = {
       metadataProgramId: env.METADATA_PROGRAM_ID
     }
   }),
-  sentry: Sentry,
+  sentry: { setTag, getCurrentScope },
   reportToSentry,
   // Shim in main, but defined in native-reloaded branch
   audioPlayer,
