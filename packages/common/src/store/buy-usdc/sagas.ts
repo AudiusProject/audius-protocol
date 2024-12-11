@@ -231,7 +231,8 @@ function* transferStep({
 function* doBuyUSDC({
   payload: {
     vendor,
-    purchaseInfo: { desiredAmount }
+    purchaseInfo: { desiredAmount },
+    privateKey
   }
 }: ReturnType<typeof onrampOpened>) {
   const reportToSentry = yield* getContext('reportToSentry')
@@ -241,7 +242,7 @@ function* doBuyUSDC({
   const sdk = yield* getSDK()
 
   const userBank = yield* getOrCreateUSDCUserBank()
-  const rootAccount = yield* call(getRootSolanaAccount, audiusBackendInstance)
+  const rootAccount = yield* call(getRootSolanaAccount, { privateKey })
 
   try {
     if (desiredAmount < config.minUSDCPurchaseAmountCents) {
@@ -314,10 +315,7 @@ function* doBuyUSDC({
         if (!feePayerAddress) {
           throw new Error('Missing feePayer unexpectedly')
         }
-        const rootAccount = yield* call(
-          getRootSolanaAccount,
-          audiusBackendInstance
-        )
+        const rootAccount = yield* call(getRootSolanaAccount)
 
         const amount = desiredAmount / 100.0
         // Send the USDC through the payment router, sans purchase memo, and

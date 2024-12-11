@@ -3,13 +3,11 @@ import { DEFAULT_MINT, MintName } from '@audius/common/services'
 import {
   Account,
   getMinimumBalanceForRentExemptAccount,
-  getAssociatedTokenAddressSync,
   getAccount
 } from '@solana/spl-token'
 import { PublicKey, Transaction, Keypair } from '@solana/web3.js'
 
-import { getLibs } from 'services/audius-libs'
-import { audiusSdk } from 'services/audius-sdk'
+import { authService, audiusSdk } from 'services/audius-sdk'
 
 export const ROOT_ACCOUNT_SIZE = 0 // Root account takes 0 bytes, but still pays rent!
 export const TRANSACTION_FEE_FALLBACK = 10000
@@ -52,9 +50,12 @@ export const isTokenAccount = async ({
 /**
  * Gets the current user's root solana account.
  */
-export const getRootSolanaAccount = async () => {
-  const libs = await getLibs()
-  return Keypair.fromSeed(libs.Account!.hedgehog.wallet!.getPrivateKey())
+export const getRootSolanaAccount = () => {
+  const privateKey = authService.getWallet()?.getPrivateKey()
+  if (!privateKey) {
+    throw new Error('No private key found - is user logged in?')
+  }
+  return Keypair.fromSeed(privateKey)
 }
 
 /**
@@ -93,10 +94,8 @@ export const getTokenAccountInfo = async ({
   tokenAccount: PublicKey
   mint?: MintName
 }): Promise<Account | null> => {
-  const libs = await getLibs()
-  return await libs.solanaWeb3Manager!.getTokenAccountInfo(
-    tokenAccount.toString()
-  )
+  const connection = await getSolanaConnection()
+  return await getAccount(connection, tokenAccount)
 }
 
 /**
@@ -127,19 +126,6 @@ export const getTransferTransactionFee = async (
 export const getAssociatedTokenAccountRent = async () => {
   const connection = await getSolanaConnection()
   return await getMinimumBalanceForRentExemptAccount(connection)
-}
-
-/**
- * Returns the associated USDC token account for the given solana account.
- */
-export const getUSDCAssociatedTokenAccount = async (
-  solanaRootAccountPubkey: PublicKey
-) => {
-  const libs = await getLibs()
-  return getAssociatedTokenAddressSync(
-    libs.solanaWeb3Manager!.mints.usdc,
-    solanaRootAccountPubkey
-  )
 }
 
 /**

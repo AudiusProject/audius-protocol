@@ -94,10 +94,10 @@ function* onSignedIn({ payload: { account } }) {
       // If not a managed account, identify the Solana wallet associated with
       // the hedgehog wallet
       try {
-        solanaWallet = (yield call(
-          getRootSolanaAccount,
-          audiusBackendInstance
-        )).publicKey.toBase58()
+        const privateKey = authService.getWallet()?.getPrivateKey()
+        solanaWallet = (yield call(getRootSolanaAccount, {
+          privateKey
+        })).publicKey.toBase58()
       } catch (e) {
         console.error('Failed to fetch Solana root wallet during identify()', e)
       }

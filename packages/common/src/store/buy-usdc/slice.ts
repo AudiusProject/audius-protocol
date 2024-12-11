@@ -42,6 +42,7 @@ const slice = createSlice({
       action: PayloadAction<{
         purchaseInfo: PurchaseInfo
         vendor: PurchaseVendor
+        privateKey: Buffer
       }>
     ) => {
       state.stage = BuyUSDCStage.START

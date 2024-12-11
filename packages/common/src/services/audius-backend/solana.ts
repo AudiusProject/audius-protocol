@@ -1,5 +1,4 @@
 import { AudiusSdk } from '@audius/sdk'
-import { AudiusLibs } from '@audius/sdk-legacy/dist/libs'
 import { u8 } from '@solana/buffer-layout'
 import {
   Account,
@@ -73,13 +72,12 @@ const delay = (ms: number) =>
 /**
  * Gets a Solana wallet derived from the user's Hedgehog wallet
  */
-export const getRootSolanaAccount = async (
-  audiusBackendInstance: AudiusBackend
-) => {
-  const audiusLibs: AudiusLibs = await audiusBackendInstance.getAudiusLibs()
-  return audiusLibs.solanaWeb3Manager!.solanaWeb3.Keypair.fromSeed(
-    audiusLibs.Account!.hedgehog.wallet!.getPrivateKey()
-  )
+export const getRootSolanaAccount = async ({
+  privateKey
+}: {
+  privateKey: Buffer
+}) => {
+  return Keypair.fromSeed(privateKey)
 }
 
 /**
@@ -378,7 +376,11 @@ export const findAssociatedTokenAddress = async (
 export const decorateCoinflowWithdrawalTransaction = async (
   sdk: AudiusSdk,
   audiusBackendInstance: AudiusBackend,
-  { transaction, feePayer }: { transaction: Transaction; feePayer: PublicKey }
+  {
+    transaction,
+    feePayer,
+    privateKey
+  }: { transaction: Transaction; feePayer: PublicKey; privateKey: Buffer }
 ) => {
   const libs = await audiusBackendInstance.getAudiusLibsTyped()
   const solanaWeb3Manager = libs.solanaWeb3Manager!
@@ -388,7 +390,7 @@ export const decorateCoinflowWithdrawalTransaction = async (
     ethAddress,
     mint: 'USDC'
   })
-  const wallet = await getRootSolanaAccount(audiusBackendInstance)
+  const wallet = await getRootSolanaAccount({ privateKey })
   const walletUSDCTokenAccount =
     audiusBackendInstance.findAssociatedTokenAddress({
       solanaWalletKey: wallet.publicKey,

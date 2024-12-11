@@ -39,7 +39,11 @@ type CoinflowAdapter = {
  * the incoming transaction to route it through a user bank. The transcation will then be
  * signed with the current user's Solana root wallet and sent/confirmed via Relay.
  */
-export const useCoinflowWithdrawalAdapter = () => {
+export const useCoinflowWithdrawalAdapter = ({
+  privateKey
+}: {
+  privateKey: Buffer
+}) => {
   const {
     audiusBackend,
     analytics: { make, track }
@@ -50,7 +54,9 @@ export const useCoinflowWithdrawalAdapter = () => {
 
   useEffect(() => {
     const initWallet = async () => {
-      const wallet = await getRootSolanaAccount(audiusBackend)
+      const wallet = await getRootSolanaAccount({
+        privateKey
+      })
       const sdk = await audiusSdk()
       const connection = sdk.services.solanaClient.connection
 
@@ -73,7 +79,8 @@ export const useCoinflowWithdrawalAdapter = () => {
             const finalTransaction =
               await decorateCoinflowWithdrawalTransaction(sdk, audiusBackend, {
                 transaction,
-                feePayer
+                feePayer,
+                privateKey
               })
             finalTransaction.partialSign(wallet)
             const { res, error, errorCode } = await relayTransaction(
@@ -115,7 +122,7 @@ export const useCoinflowWithdrawalAdapter = () => {
       })
     }
     initWallet()
-  }, [audiusBackend, feePayerOverride, make, track, audiusSdk])
+  }, [audiusBackend, feePayerOverride, make, track, audiusSdk, privateKey])
 
   return adapter
 }
@@ -126,10 +133,12 @@ export const useCoinflowWithdrawalAdapter = () => {
  */
 export const useCoinflowAdapter = ({
   onSuccess,
-  onFailure
+  onFailure,
+  privateKey
 }: {
   onSuccess: () => void
   onFailure: () => void
+  privateKey: Buffer
 }) => {
   const { audiusBackend } = useAppContext()
   const [adapter, setAdapter] = useState<CoinflowAdapter | null>(null)
@@ -138,7 +147,7 @@ export const useCoinflowAdapter = ({
 
   useEffect(() => {
     const initWallet = async () => {
-      const wallet = await getRootSolanaAccount(audiusBackend)
+      const wallet = await getRootSolanaAccount({ privateKey })
       const sdk = await audiusSdk()
       const connection = sdk.services.solanaClient.connection
       setAdapter({
@@ -191,7 +200,7 @@ export const useCoinflowAdapter = ({
       })
     }
     initWallet()
-  }, [audiusBackend, audiusSdk, dispatch, onSuccess, onFailure])
+  }, [audiusBackend, audiusSdk, dispatch, onSuccess, onFailure, privateKey])
 
   return adapter
 }

@@ -7,7 +7,6 @@ import {
   OnRampProvider
 } from '@audius/common/store'
 import { useDispatch, useSelector } from 'react-redux'
-import { useAsync } from 'react-use'
 
 import { OnRampButton } from 'components/on-ramp-button'
 import Tooltip from 'components/tooltip/Tooltip'
@@ -31,7 +30,7 @@ const messages = {
 export const CoinbaseBuyAudioButton = () => {
   const dispatch = useDispatch()
   const coinbasePay = useCoinbasePay()
-  const rootAccount = useAsync(getRootSolanaAccount)
+  const rootAccount = getRootSolanaAccount()
   const purchaseInfoStatus = useSelector(getAudioPurchaseInfoStatus)
   const purchaseInfo = useSelector(getAudioPurchaseInfo)
   const amount =
@@ -56,7 +55,7 @@ export const CoinbaseBuyAudioButton = () => {
       purchaseInfo?.isError === false
     ) {
       coinbasePay.resetParams({
-        destinationWalletAddress: rootAccount.value?.publicKey.toString(),
+        destinationWalletAddress: rootAccount.publicKey.toString(),
         presetCryptoAmount: amount,
         onSuccess: handleSuccess,
         onExit: handleExit

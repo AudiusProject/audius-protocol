@@ -10,6 +10,7 @@ import { CoinflowWithdraw } from '@coinflowlabs/react'
 import { useDispatch, useSelector } from 'react-redux'
 
 import ModalDrawer from 'pages/audio-rewards-page/components/modals/ModalDrawer'
+import { authService } from 'services/audius-sdk'
 import { env } from 'services/env'
 import zIndex from 'utils/zIndex'
 
@@ -38,7 +39,8 @@ export const CoinflowWithdrawModal = () => {
   const { isOpen, onClose, onClosed } = useCoinflowWithdrawModal()
   const amount = useSelector(getWithdrawAmount)
 
-  const adapter = useCoinflowWithdrawalAdapter()
+  const privateKey = authService.getWallet()?.getPrivateKey()
+  const adapter = useCoinflowWithdrawalAdapter({ privateKey })
   const dispatch = useDispatch()
 
   const handleClose = useCallback(() => {
