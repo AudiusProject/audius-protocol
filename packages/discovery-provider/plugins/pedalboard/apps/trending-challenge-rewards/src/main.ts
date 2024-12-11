@@ -1,19 +1,31 @@
 import cron from "node-cron"
 import { App } from '@pedalboard/basekit'
 import { SharedData, initSharedData } from './config'
-import { disburseTrendingRewards } from './app'
+import { disburseTrendingRewards } from './rewards'
 import { establishSlackConnection } from './slack'
 import { announceTopFiveTrending } from './trending'
+
+
+const onDemandRun = async (app: App<SharedData>) => {
+  // Run on demand only if runNow is true
+  const { runNow } = app.viewAppData()
+  if (runNow) {
+    await disburseTrendingRewards(app)
+  }
+}
 
 export const main = async () => {
   const data = await initSharedData()
 
   await new App<SharedData>({ appData: data })
     .task(establishSlackConnection)
+    .task(onDemandRun)
     .run()
+
+  
 }
 
-// Friday at 12:01 pm PST, extra five minutes for trending to calculate
+// Friday at 12:05 pm PST, extra five minutes for trending to calculate
 cron.schedule('5 12 * * 5', () => {
   initSharedData().then((data) => {
     // make new appdata instance to satisfy types
