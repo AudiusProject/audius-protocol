@@ -1,9 +1,9 @@
-import { audiusLibs, waitForLibsInit } from './libs'
+import { audiusSdk } from 'app/services/sdk/audius-sdk'
 
 export const getUSDCUserBank = async (ethWallet?: string) => {
-  await waitForLibsInit()
-  return await audiusLibs?.solanaWeb3Manager?.deriveUserBank({
-    ethAddress: ethWallet,
-    mint: 'usdc'
+  const sdk = await audiusSdk()
+  return await sdk.services.claimableTokensClient.deriveUserBank({
+    ethWallet,
+    mint: 'USDC'
   })
 }
