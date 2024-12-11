@@ -175,15 +175,15 @@ const PremiumContentPurchaseForm = (props: PremiumContentPurchaseFormProps) => {
         />
       </ModalContentPages>
       <ModalFooter className={styles.footer}>
-        {page === PurchaseContentPageType.GUEST_CHECKOUT ? (
+        {page !== PurchaseContentPageType.GUEST_CHECKOUT ? (
           <GuestCheckoutFooter />
-        ) : page === PurchaseContentPageType.PURCHASE ? (
+        ) : page === PurchaseContentPageType.GUEST_CHECKOUT ? (
           <PurchaseContentFormFooter
             error={error}
             isUnlocking={isUnlocking}
             onViewContentClicked={onClose}
             purchaseSummaryValues={purchaseSummaryValues}
-            stage={stage}
+            stage={PurchaseContentStage.FINISH}
             metadata={metadata}
           />
         ) : null}

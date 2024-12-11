@@ -16,13 +16,14 @@ import { useSelector } from 'utils/reducer'
 const { getAccountStatus, getIsAccountComplete, getHasAccount } =
   accountSelectors
 
-export type RestrictionType = 'guest' | 'account'
+export type RestrictionType = 'none' | 'guest' | 'account'
 
 const canAccess = (
   restriction: RestrictionType,
   hasAccount: boolean,
   isAccountComplete: boolean
 ): boolean => {
+  if (restriction === 'none') return true
   if (restriction === 'guest') return hasAccount
   return isAccountComplete
 }

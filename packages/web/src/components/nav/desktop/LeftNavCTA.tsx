@@ -16,6 +16,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import { Link } from 'react-router-dom'
 
 import { make, useRecord } from 'common/store/analytics/actions'
+import { SignOnLink } from 'components/SignOnLink'
 import { useLocalStorage } from 'hooks/useLocalStorage'
 
 const { SIGN_UP_PAGE, UPLOAD_PAGE } = route
@@ -80,7 +81,7 @@ export const LeftNavCTA = () => {
     case 'guest':
       button = (
         <Button variant='primary' size='small' asChild>
-          <Link to={SIGN_UP_PAGE}>{messages.finishSignUp}</Link>
+          <SignOnLink signUp>{messages.finishSignUp}</SignOnLink>
         </Button>
       )
       break
