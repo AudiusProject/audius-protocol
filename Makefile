@@ -236,6 +236,6 @@ core-livereload:
 
 .PHONY: release-aa-backfill
 release-aa-backfill:
-	@docker build -t audius/audio-analysis-backfill:latest -f ./cmd/audio-analysis-backfill/Dockerfile .
+	@DOCKER_DEFAULT_PLATFORM=linux/amd64 docker build -t audius/audio-analysis-backfill:latest -f ./cmd/audio-analysis-backfill/Dockerfile .
 	@docker push audius/audio-analysis-backfill:latest
 

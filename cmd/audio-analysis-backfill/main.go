@@ -35,7 +35,7 @@ const (
 
 	IsProdEnvVar = "isProd"
 	BatchSize    = 20
-	PostgresConn = "postgresql://postgres:postgres@0.0.0.0:5432/audius_creator_node"
+	PostgresConn = "postgresql://postgres:postgres@postgres:5432/audius_creator_node?sslmode=disable"
 )
 
 var (

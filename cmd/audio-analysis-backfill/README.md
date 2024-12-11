@@ -9,5 +9,5 @@ this will create a docker image and push it to audius dockerhub, make sure to be
 
 
 ```
-docker run -v $(pwd)/output:/app/output -e isProd="false" audius/audio-analysis-backfill:latest
+docker run --pull always --network creator-node_creator-node-network -v $(pwd)/output:/app/output -e isProd="false" audius/audio-analysis-backfill:latest
 ```
