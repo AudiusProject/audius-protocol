@@ -151,7 +151,7 @@ const PremiumContentPurchaseForm = (props: PremiumContentPurchaseFormProps) => {
       <ModalContentPages
         contentClassName={styles.content}
         className={styles.content}
-        currentPage={currentPageIndex}
+        currentPage={isSignedIn ? currentPageIndex - 1 : currentPageIndex}
       >
         {!isSignedIn ? (
           <GuestCheckoutPage
