@@ -12,9 +12,7 @@ export const emailSchemaMessages = {
   guestAccountExists: 'Guest account exists.'
 }
 
-export const emailSchema = <T extends AudiusQueryContextType>(
-  queryContext: T
-) =>
+export const emailSchema = (queryContext: AudiusQueryContextType) =>
   z.object({
     email: z
       .string({ required_error: emailSchemaMessages.emailRequired })
