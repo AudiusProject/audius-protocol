@@ -24,6 +24,9 @@ export class NotificationSeenListener {
     logger.info('did connect')
 
     this.client.on('notification', async (msg: Notification) => {
+      // Only process events from notification_seen table
+      if (msg.channel !== 'notification_seen') return
+
       const { user_id }: { user_id: number } = JSON.parse(msg.payload)
       await this.updateBadgeCount(user_id)
     })
