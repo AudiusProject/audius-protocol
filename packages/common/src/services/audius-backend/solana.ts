@@ -644,11 +644,10 @@ export const relayVersionedTransaction = async (
  * not the accounts _in_ the lookup table) from their addresses.
  */
 export const getLookupTableAccounts = async (
-  audiusBackendInstance: AudiusBackend,
+  sdk: AudiusSdk,
   { lookupTableAddresses }: { lookupTableAddresses: string[] }
 ) => {
-  const libs = await audiusBackendInstance.getAudiusLibsTyped()
-  const connection = libs.solanaWeb3Manager!.getConnection()
+  const connection = sdk.services.solanaClient.connection
   return await Promise.all(
     lookupTableAddresses.map(async (address) => {
       const account = await connection.getAddressLookupTable(
@@ -666,23 +665,20 @@ export const getLookupTableAccounts = async (
  * Helper to create a versioned transaction with lookup tables
  */
 export const createVersionedTransaction = async (
-  audiusBackendInstance: AudiusBackend,
+  sdk: AudiusSdk,
   {
     instructions,
     lookupTableAddresses,
-    feePayer,
-    sdk
+    feePayer
   }: {
     instructions: TransactionInstruction[]
     lookupTableAddresses: string[]
     feePayer: PublicKey
-    sdk: AudiusSdk
   }
 ) => {
-  const addressLookupTableAccounts = await getLookupTableAccounts(
-    audiusBackendInstance,
-    { lookupTableAddresses }
-  )
+  const addressLookupTableAccounts = await getLookupTableAccounts(sdk, {
+    lookupTableAddresses
+  })
   const recentBlockhash = await getRecentBlockhash({ sdk })
 
   const message = new TransactionMessage({

@@ -215,12 +215,11 @@ function* swapSolForCrypto({
   const sdk = yield* getSDK()
   const { transaction, addressLookupTableAccounts } = yield* call(
     createVersionedTransaction,
-    audiusBackendInstance,
+    sdk,
     {
       instructions,
       lookupTableAddresses: addressLookupTableAddresses,
-      feePayer,
-      sdk
+      feePayer
     }
   )
   transaction.sign([wallet])
