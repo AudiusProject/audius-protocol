@@ -1,7 +1,4 @@
-import {
-  findAssociatedTokenAddress,
-  MEMO_PROGRAM_ID
-} from '@audius/common/services'
+import { MEMO_PROGRAM_ID } from '@audius/common/services'
 import { InAppAudioPurchaseMetadata } from '@audius/common/store'
 import {
   TokenAccountNotFoundError,
