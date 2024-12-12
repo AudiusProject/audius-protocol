@@ -190,8 +190,7 @@ export enum Name {
   TRACK_UPLOAD_TRACK_UPLOADING = 'Track Upload: Track Uploading',
   // Note that upload is considered complete if it is explicitly rejected
   // by the node receiving the file (HTTP 403).
-  TRACK_UPLOAD_COMPLETE_UPLOAD = 'Track Upload: Complete Upload', // Note: this applies
-  TRACK_UPLOAD_FINISH_UPLOADING = 'Track Upload: Finish Uploading',
+  TRACK_UPLOAD_COMPLETE_UPLOAD = 'Track Upload: Complete Upload',
   TRACK_UPLOAD_COPY_LINK = 'Track Upload: Copy Link',
   TRACK_UPLOAD_SHARE_WITH_FANS = 'Track Upload: Share with your fans',
   TRACK_UPLOAD_VIEW_TRACK_PAGE = 'Track Upload: View Track page',
