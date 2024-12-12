@@ -1,12 +1,7 @@
 import logging
 from typing import Any, Dict, Optional
 
-from src.api.v1.helpers import (
-    extend_playlist,
-    extend_track,
-    extend_user,
-    parse_bool_param,
-)
+from src.api.v1.helpers import extend_playlist, extend_track, extend_user
 from src.queries.get_feed_es import fetch_followed_saves_and_reposts, item_key
 from src.queries.query_helpers import (
     _populate_gated_content_metadata,
@@ -104,22 +99,26 @@ def search_es_full(args: dict):
     limit = args.get("limit", 10)
     offset = args.get("offset", 0)
     search_type = args.get("kind", "all")
-    is_auto_complete = args.get("is_auto_complete")
-    only_downloadable = args.get("only_downloadable", False)
-    include_purchaseable = args.get("include_purchaseable", False)
+    sort_method = args.get("sort_method", "relevant")
+
     genres = format_genres(args.get("genres", []))
     moods = format_moods(args.get("moods", []))
     bpm_min = args.get("bpm_min")
     bpm_max = args.get("bpm_max")
     keys = args.get("keys", [])
+
+    only_downloadable = args.get("only_downloadable", False)
+    include_purchaseable = args.get("include_purchaseable", False)
     only_verified = args.get("only_verified", False)
     only_with_downloads = args.get("only_with_downloads", False)
     only_purchaseable = args.get("only_purchaseable", False)
-    sort_method = args.get("sort_method", "relevant")
+
     do_tracks = search_type == "all" or search_type == "tracks"
     do_users = search_type == "all" or search_type == "users"
     do_playlists = search_type == "all" or search_type == "playlists"
     do_albums = search_type == "all" or search_type == "albums"
+
+    is_auto_complete = args.get("is_auto_complete")
 
     mdsl: Any = []
 
@@ -252,25 +251,29 @@ def search_tags_es(args: dict):
         raise Exception("esclient is None")
 
     tag_search = (args.get("query", "") or "").strip()
-    current_user_id = args.get("current_user_id", None)
+
+    current_user_id = args.get("current_user_id")
     limit = args.get("limit", 10)
     offset = args.get("offset", 0)
     search_type = args.get("kind", "all")
     sort_method = args.get("sort_method", "relevant")
 
-    genres = format_genres(args.get("genre"))
-    moods = format_moods(args.get("mood"))
+    genres = format_genres(args.get("genres", []))
+    moods = format_moods(args.get("moods", []))
     bpm_min = args.get("bpm_min")
     bpm_max = args.get("bpm_max")
-    keys = format_keys(args.get("key", []))
+    keys = args.get("keys", [])
 
-    only_downloadable = False
-    include_purchaseable = (
-        parse_bool_param(args.get("include_purchaseable", False)) or False
-    )
-    only_verified = parse_bool_param(args.get("is_verified", False)) or False
-    only_with_downloads = parse_bool_param(args.get("has_downloads", False)) or False
-    only_purchaseable = parse_bool_param(args.get("is_purchasable", False)) or False
+    only_downloadable = args.get("only_downloadable", False)
+    include_purchaseable = args.get("include_purchaseable", False)
+    only_verified = args.get("only_verified", False)
+    only_with_downloads = args.get("only_with_downloads", False)
+    only_purchaseable = args.get("only_purchaseable", False)
+
+    do_tracks = search_type == "all" or search_type == "tracks"
+    do_users = search_type == "all" or search_type == "users"
+    do_playlists = search_type == "all" or search_type == "playlists"
+    do_albums = search_type == "all" or search_type == "albums"
 
     do_tracks = search_type == "all" or search_type == "tracks"
     do_users = search_type == "all" or search_type == "users"
@@ -1181,7 +1184,7 @@ def base_playlist_dsl(
                 {
                     "script_score": {
                         "script": {
-                            "source": """ 
+                            "source": """
                                 double matchedTracks = 0;
                                 for (track in params['_source'].tracks) {
                                     if (params.moods.contains(track.mood)) {
