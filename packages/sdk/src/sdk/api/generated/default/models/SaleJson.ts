@@ -39,6 +39,12 @@ export interface SaleJson {
      */
     purchasedBy?: string;
     /**
+     * User ID of the buyer
+     * @type {number}
+     * @memberof SaleJson
+     */
+    buyerUserId?: number;
+    /**
      * ISO format date string of when the sale occurred
      * @type {string}
      * @memberof SaleJson
@@ -80,6 +86,12 @@ export interface SaleJson {
      * @memberof SaleJson
      */
     encryptedEmail?: string;
+    /**
+     * Encrypted key for decrypting the buyer's email
+     * @type {string}
+     * @memberof SaleJson
+     */
+    encryptedKey?: string;
 }
 
 /**
@@ -104,6 +116,7 @@ export function SaleJsonFromJSONTyped(json: any, ignoreDiscriminator: boolean): 
         'title': !exists(json, 'title') ? undefined : json['title'],
         'link': !exists(json, 'link') ? undefined : json['link'],
         'purchasedBy': !exists(json, 'purchased_by') ? undefined : json['purchased_by'],
+        'buyerUserId': !exists(json, 'buyer_user_id') ? undefined : json['buyer_user_id'],
         'date': !exists(json, 'date') ? undefined : json['date'],
         'salePrice': !exists(json, 'sale_price') ? undefined : json['sale_price'],
         'networkFee': !exists(json, 'network_fee') ? undefined : json['network_fee'],
@@ -111,6 +124,7 @@ export function SaleJsonFromJSONTyped(json: any, ignoreDiscriminator: boolean): 
         'total': !exists(json, 'total') ? undefined : json['total'],
         'country': !exists(json, 'country') ? undefined : json['country'],
         'encryptedEmail': !exists(json, 'encrypted_email') ? undefined : json['encrypted_email'],
+        'encryptedKey': !exists(json, 'encrypted_key') ? undefined : json['encrypted_key'],
     };
 }
 
@@ -126,6 +140,7 @@ export function SaleJsonToJSON(value?: SaleJson | null): any {
         'title': value.title,
         'link': value.link,
         'purchased_by': value.purchasedBy,
+        'buyer_user_id': value.buyerUserId,
         'date': value.date,
         'sale_price': value.salePrice,
         'network_fee': value.networkFee,
@@ -133,6 +148,7 @@ export function SaleJsonToJSON(value?: SaleJson | null): any {
         'total': value.total,
         'country': value.country,
         'encrypted_email': value.encryptedEmail,
+        'encrypted_key': value.encryptedKey,
     };
 }
 

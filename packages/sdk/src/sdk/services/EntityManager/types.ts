@@ -73,11 +73,7 @@ export enum Action {
   MUTE = 'Mute',
   UNMUTE = 'Unmute',
   ADD_EMAIL = 'AddEmail',
-  UPDATE_EMAIL = 'UpdateEmail',
-  ADD_EMAIL_KEY = 'AddEmailKey',
-  UPDATE_EMAIL_KEY = 'UpdateEmailKey',
-  ADD_ACCESS_KEY = 'AddAccessKey',
-  UPDATE_ACCESS_KEY = 'UpdateAccessKey'
+  GRANT_ACCESS = 'GrantAccess'
 }
 
 export enum EntityType {
@@ -92,8 +88,7 @@ export enum EntityType {
   TIP = 'Tip',
   COMMENT = 'Comment',
   ENCRYPTED_EMAIL = 'EncryptedEmail',
-  EMAIL_ENCRYPTION_KEY = 'EmailEncryptionKey',
-  EMAIL_ACCESS_KEY = 'EmailAccessKey'
+  EMAIL_ACCESS = 'EmailAccess'
 }
 
 export type AdvancedOptions = {

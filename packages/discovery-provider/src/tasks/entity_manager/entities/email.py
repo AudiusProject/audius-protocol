@@ -1,7 +1,5 @@
-from typing import List, Optional
-
 from src.exceptions import IndexingValidationError
-from src.models.users.email import EmailAccessKey, EmailEncryptionKey, EncryptedEmail
+from src.models.users.email import EmailAccess, EncryptedEmail
 from src.tasks.entity_manager.utils import Action, EntityType, ManageEntityParameters
 from src.utils.structured_logger import StructuredLogger
 
@@ -17,19 +15,124 @@ def validate_email_metadata(params: ManageEntityParameters) -> None:
         if not isinstance(params.metadata, dict):
             raise IndexingValidationError("Email metadata must be a dictionary")
 
-        primary_user_id = params.metadata.get("primary_user_id")
-        if not primary_user_id:
-            raise IndexingValidationError("primary_user_id is required")
-
-        if params.action not in [Action.ADD_EMAIL, Action.UPDATE_EMAIL]:
+        if params.action not in [Action.ADD_EMAIL]:
             raise IndexingValidationError(
                 "email.py | Expected action to be AddEmail or UpdateEmail"
             )
 
+        # Validate required fields
         required_fields = [
-            "primary_user_id",
             "email_owner_user_id",
             "encrypted_email",
+            "access_grants",  # New field containing list of access grants
+        ]
+        missing_fields = [
+            field for field in required_fields if not params.metadata.get(field)
+        ]
+        if missing_fields:
+            raise IndexingValidationError(
+                f"Missing required fields: {', '.join(missing_fields)}"
+            )
+
+        # Validate access_grants structure
+        access_grants = params.metadata["access_grants"]
+        if not isinstance(access_grants, list):
+            raise IndexingValidationError("access_grants must be a list")
+
+        for grant in access_grants:
+            if not all(
+                k in grant
+                for k in ["receiving_user_id", "grantor_user_id", "encrypted_key"]
+            ):
+                raise IndexingValidationError(
+                    "Each access grant must contain receiving_user_id, grantor_user_id, and encrypted_key"
+                )
+
+    except Exception as e:
+        logger.error(
+            "email.py | Error validating email metadata",
+            extra={
+                "error": str(e),
+                "action": params.action,
+                "email_owner_user_id": params.metadata.get("email_owner_user_id"),
+            },
+        )
+        raise
+
+
+def create_encrypted_email(params: ManageEntityParameters) -> None:
+    """Create a new encrypted email record with access grants."""
+    logger.debug(
+        "email.py | Processing create email request",
+        extra={"email_owner_user_id": params.metadata.get("email_owner_user_id")},
+    )
+
+    try:
+        validate_email_metadata(params)
+
+        # Check for existing email
+        existing_email = (
+            params.session.query(EncryptedEmail)
+            .filter(
+                EncryptedEmail.email_owner_user_id
+                == params.metadata["email_owner_user_id"]
+            )
+            .first()
+        )
+        if existing_email:
+            logger.info(
+                "email.py | Email already exists",
+                extra={"email_owner_user_id": params.metadata["email_owner_user_id"]},
+            )
+            return
+
+        # Create email record
+        new_email = EncryptedEmail(
+            email_owner_user_id=params.metadata["email_owner_user_id"],
+            encrypted_email=params.metadata["encrypted_email"],
+        )
+        params.add_record(
+            params.metadata["email_owner_user_id"],
+            new_email,
+            EntityType.ENCRYPTED_EMAIL,
+        )
+
+        # Create access records
+        for grant in params.metadata["access_grants"]:
+            new_access = EmailAccess(
+                email_owner_user_id=params.metadata["email_owner_user_id"],
+                receiving_user_id=grant["receiving_user_id"],
+                grantor_user_id=grant["grantor_user_id"],
+                encrypted_key=grant["encrypted_key"],
+            )
+            params.add_record(
+                grant["receiving_user_id"], new_access, EntityType.EMAIL_ACCESS
+            )
+
+        logger.debug(
+            "email.py | Successfully created encrypted email",
+            extra={"email_owner_user_id": params.metadata["email_owner_user_id"]},
+        )
+
+    except Exception as e:
+        logger.error(
+            "email.py | Error creating encrypted email",
+            extra={
+                "error": str(e),
+                "email_owner_user_id": params.metadata.get("email_owner_user_id"),
+            },
+        )
+        raise
+
+
+def grant_email_access(params: ManageEntityParameters) -> None:
+    """Grant access to an encrypted email."""
+    try:
+        # Validate required fields
+        required_fields = [
+            "email_owner_user_id",
+            "receiving_user_id",
+            "grantor_user_id",
             "encrypted_key",
         ]
         missing_fields = [
@@ -40,218 +143,37 @@ def validate_email_metadata(params: ManageEntityParameters) -> None:
                 f"Missing required fields: {', '.join(missing_fields)}"
             )
 
-    except Exception as e:
-        logger.error(
-            "email.py | Error validating email metadata",
-            extra={
-                "error": str(e),
-                "action": params.action,
-                "primary_user_id": params.metadata.get("primary_user_id"),
-            },
-        )
-        raise e
-
-
-def validate_delegated_access(
-    delegated_user_ids: List[int], delegated_keys: List[str]
-) -> None:
-    """
-    Validates delegated access data
-    Raises IndexingValidationError if validation fails
-    """
-    if len(delegated_user_ids) != len(delegated_keys):
-        raise IndexingValidationError(
-            f"Mismatched number of delegated users ({len(delegated_user_ids)}) and keys ({len(delegated_keys)})"
-        )
-
-
-def get_existing_email(
-    params: ManageEntityParameters,
-) -> Optional[EncryptedEmail]:
-    """Gets existing email record if it exists"""
-    try:
-        return (
-            params.session.query(EncryptedEmail)
+        # Verify granter has access
+        granter_access = (
+            params.session.query(EmailAccess)
             .filter(
-                EncryptedEmail.primary_user_id == params.metadata["primary_user_id"],
-                EncryptedEmail.email_owner_user_id
+                EmailAccess.email_owner_user_id
                 == params.metadata["email_owner_user_id"],
+                EmailAccess.receiving_user_id == params.metadata["grantor_user_id"],
             )
             .first()
         )
-    except Exception as e:
-        logger.error(
-            "email.py | Error fetching existing email",
-            extra={
-                "error": str(e),
-                "primary_user_id": params.metadata.get("primary_user_id"),
-                "email_owner_user_id": params.metadata.get("email_owner_user_id"),
-            },
-        )
-        raise
+        if not granter_access:
+            raise IndexingValidationError("Granter does not have access to the email")
 
-
-def handle_delegated_access(
-    params: ManageEntityParameters,
-) -> None:
-    """
-    Handles creation/update of delegated access keys
-    """
-    try:
-        delegated_user_ids = params.metadata.get("delegated_user_ids", [])
-        delegated_keys = params.metadata.get("delegated_keys", [])
-
-        validate_delegated_access(delegated_user_ids, delegated_keys)
-
-        # Remove existing access keys if updating
-        if params.action == Action.UPDATE_EMAIL:
-            params.session.query(EmailAccessKey).filter(
-                EmailAccessKey.primary_user_id == params.metadata["primary_user_id"]
-            ).delete()
-
-        # Add new access keys
-        for delegated_user_id, delegated_key in zip(delegated_user_ids, delegated_keys):
-            new_access_key = EmailAccessKey(
-                primary_user_id=params.metadata["primary_user_id"],
-                delegated_user_id=delegated_user_id,
-                encrypted_key=delegated_key,
-            )
-            params.add_record(
-                params.metadata["primary_user_id"],
-                new_access_key,
-                EntityType.EMAIL_ACCESS_KEY,
-            )
-
-    except Exception as e:
-        logger.error(
-            "email.py | Error handling delegated access",
-            extra={
-                "error": str(e),
-                "primary_user_id": params.metadata.get("primary_user_id"),
-            },
-        )
-        raise
-
-
-def create_encrypted_email(params: ManageEntityParameters) -> None:
-    """Create a new encrypted email record with encryption key and optional delegated access."""
-    logger.debug(
-        "email.py | Processing create email request",
-        extra={"primary_user_id": params.metadata.get("primary_user_id")},
-    )
-
-    try:
-        validate_email_metadata(params)
-
-        # Check for existing email
-        if get_existing_email(params):
-            logger.info(
-                "email.py | Email already exists",
-                extra={
-                    "primary_user_id": params.metadata["primary_user_id"],
-                    "email_owner_user_id": params.metadata["email_owner_user_id"],
-                },
-            )
-            return
-
-        # Create email record
-        new_email = EncryptedEmail(
+        # Create new access record
+        new_access = EmailAccess(
             email_owner_user_id=params.metadata["email_owner_user_id"],
-            primary_user_id=params.metadata["primary_user_id"],
-            encrypted_email=params.metadata["encrypted_email"],
-        )
-        params.add_record(
-            params.metadata["primary_user_id"], new_email, EntityType.ENCRYPTED_EMAIL
-        )
-
-        # Create encryption key record
-        new_key = EmailEncryptionKey(
-            primary_user_id=params.metadata["primary_user_id"],
+            receiving_user_id=params.metadata["receiving_user_id"],
+            grantor_user_id=params.metadata["grantor_user_id"],
             encrypted_key=params.metadata["encrypted_key"],
         )
         params.add_record(
-            params.metadata["primary_user_id"], new_key, EntityType.EMAIL_ENCRYPTION_KEY
-        )
-
-        # Handle delegated access
-        handle_delegated_access(params)
-
-        logger.debug(
-            "email.py | Successfully created encrypted email",
-            extra={"primary_user_id": params.metadata["primary_user_id"]},
+            params.metadata["receiving_user_id"], new_access, EntityType.EMAIL_ACCESS
         )
 
     except Exception as e:
         logger.error(
-            "email.py | Error creating encrypted email",
+            "email.py | Error granting email access",
             extra={
                 "error": str(e),
-                "primary_user_id": params.metadata.get("primary_user_id"),
-            },
-        )
-        raise
-
-
-def update_encrypted_email(params: ManageEntityParameters) -> None:
-    """Update an encrypted email record with encryption key and delegated access."""
-    logger.debug(
-        "email.py | Processing update email request",
-        extra={"primary_user_id": params.metadata.get("primary_user_id")},
-    )
-
-    try:
-        validate_email_metadata(params)
-
-        # Get existing email
-        email = get_existing_email(params)
-        if not email:
-            raise IndexingValidationError("Email record not found")
-
-        # Update email
-        email.encrypted_email = params.metadata["encrypted_email"]
-        params.add_record(
-            params.metadata["primary_user_id"], email, EntityType.ENCRYPTED_EMAIL
-        )
-
-        # Update encryption key
-        key = (
-            params.session.query(EmailEncryptionKey)
-            .filter(
-                EmailEncryptionKey.primary_user_id == params.metadata["primary_user_id"]
-            )
-            .first()
-        )
-
-        if key:
-            key.encrypted_key = params.metadata["encrypted_key"]
-            params.add_record(
-                params.metadata["primary_user_id"], key, EntityType.EMAIL_ENCRYPTION_KEY
-            )
-        else:
-            new_key = EmailEncryptionKey(
-                primary_user_id=params.metadata["primary_user_id"],
-                encrypted_key=params.metadata["encrypted_key"],
-            )
-            params.add_record(
-                params.metadata["primary_user_id"],
-                new_key,
-                EntityType.EMAIL_ENCRYPTION_KEY,
-            )
-
-        # Handle delegated access
-        handle_delegated_access(params)
-
-        logger.debug(
-            "email.py | Successfully updated encrypted email",
-            extra={"primary_user_id": params.metadata["primary_user_id"]},
-        )
-
-    except Exception as e:
-        logger.error(
-            "email.py | Error updating encrypted email",
-            extra={
-                "error": str(e),
-                "primary_user_id": params.metadata.get("primary_user_id"),
+                "email_owner_user_id": params.metadata.get("email_owner_user_id"),
+                "receiving_user_id": params.metadata.get("receiving_user_id"),
             },
         )
         raise

@@ -519,77 +519,74 @@ export class UsersApi extends GeneratedUsersApi {
     return { ethWallet, userBank }
   }
 
-  /**
-   * Helper method to manage email encryption keys
-   */
-  private async getEmailEncryptionKeys({
-    primaryUserIdHash,
-    emailOwnerUserIdHash
-  }: {
-    primaryUserIdHash: string
-    emailOwnerUserIdHash: string
-  }) {
-    const { data: encryptedEmailKey } = await this.getUserEmailKey({
-      id: primaryUserIdHash
-    })
-
-    // If we already have an encrypted key, decrypt it
-    if (encryptedEmailKey) {
-      const symmetricKey = await this.emailEncryption.decryptSymmetricKey(
-        encryptedEmailKey,
-        primaryUserIdHash
-      )
-      return { symmetricKey, primaryUserEncryptedKey: encryptedEmailKey }
-    }
-
-    // Otherwise create a new shared key
-    const { symmetricKey, primaryUserEncryptedKey } =
-      await this.emailEncryption.createSharedKey(primaryUserIdHash, [
-        emailOwnerUserIdHash
-      ])
-    return { symmetricKey, primaryUserEncryptedKey }
-  }
-
   /** @hidden
    * Share an encrypted email with a user
    */
   async shareEmail(params: EmailRequest, advancedOptions?: AdvancedOptions) {
-    const { emailOwnerUserId, primaryUserId, email } = await parseParams(
+    const { emailOwnerUserId, receivingUserId, email } = await parseParams(
       'shareEmail',
       EmailSchema
     )(params)
 
+    let symmetricKey
     // Get hashed IDs and validate
-    const primaryUserIdHash = encodeHashId(primaryUserId)
     const emailOwnerUserIdHash = encodeHashId(emailOwnerUserId)
-    if (!primaryUserIdHash || !emailOwnerUserIdHash) {
-      throw new Error('Primary user ID and email owner user ID are required')
+    const receivingUserIdHash = encodeHashId(receivingUserId)
+    if (!emailOwnerUserIdHash || !receivingUserIdHash) {
+      throw new Error('Email owner user ID and receiving user ID are required')
     }
 
-    const { symmetricKey, primaryUserEncryptedKey } =
-      await this.getEmailEncryptionKeys({
-        primaryUserIdHash,
+    const accessGrants = []
+    const { data: emailOwnerKey = '' } = await this.getUserEmailKey({
+      receivingUserId: emailOwnerUserIdHash,
+      grantorUserId: emailOwnerUserIdHash
+    })
+
+    if (emailOwnerKey) {
+      symmetricKey = await this.emailEncryption.decryptSymmetricKey(
+        emailOwnerKey,
         emailOwnerUserIdHash
+      )
+    } else {
+      symmetricKey = this.emailEncryption.createSymmetricKey()
+      // Create encrypted keys for owner and receiver
+      const ownerEncryptedKey = await this.emailEncryption.encryptSymmetricKey(
+        emailOwnerUserIdHash,
+        symmetricKey
+      )
+      accessGrants.push({
+        receiving_user_id: emailOwnerUserId,
+        grantor_user_id: emailOwnerUserId,
+        encrypted_key: ownerEncryptedKey
       })
+    }
 
     const encryptedEmail = await this.emailEncryption.encryptEmail(
       email,
       symmetricKey
     )
 
+    const receiverEncryptedKey = await this.emailEncryption.encryptSymmetricKey(
+      receivingUserIdHash,
+      symmetricKey
+    )
+
+    accessGrants.push({
+      receiving_user_id: receivingUserId,
+      grantor_user_id: emailOwnerUserId,
+      encrypted_key: receiverEncryptedKey
+    })
+
     const metadata = {
       email_owner_user_id: emailOwnerUserId,
-      primary_user_id: primaryUserId,
       encrypted_email: encryptedEmail,
-      encrypted_key: primaryUserEncryptedKey,
-      delegated_user_ids: [],
-      delegated_keys: []
+      access_grants: accessGrants
     }
 
     return await this.entityManager.manageEntity({
-      userId: primaryUserId,
+      userId: emailOwnerUserId,
       entityType: EntityType.ENCRYPTED_EMAIL,
-      entityId: primaryUserId,
+      entityId: emailOwnerUserId,
       action: Action.ADD_EMAIL,
       metadata: JSON.stringify({
         cid: '',

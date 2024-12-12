@@ -10,7 +10,8 @@ import type {
   BatchEncryptionInput,
   BatchEncryptionResult,
   EncryptedEmailsResult,
-  SharedSymmetricKey
+  SharedSymmetricKey,
+  EncryptedKey
 } from './types'
 
 export class EmailEncryptionService extends BaseAPI {
@@ -22,58 +23,36 @@ export class EmailEncryptionService extends BaseAPI {
   }
 
   /**
-   * Creates and distributes a symmetric key between a primary user and their grantees
-   * @param primaryUserId The ID of the primary user (e.g. seller, artist)
-   * @param granteeIds List of grantee user IDs who will receive the encrypted key
-   * @returns The encrypted symmetric keys for storage
+   * Creates a new symmetric key for email encryption
+   * @returns The symmetric key as Uint8Array
    */
-  async createSharedKey(
-    primaryUserId: string,
-    granteeIds: string[]
-  ): Promise<SharedSymmetricKey> {
-    // Generate random symmetric key
-    const symmetricKey = crypto.getRandomValues(new Uint8Array(32))
-
-    // Encrypt for primary user
-    const primaryUserPublicKey = await this.getPublicKey(primaryUserId)
-    const primaryUserSharedSecret =
-      await this.audiusWalletClient.getSharedSecret({
-        publicKey: primaryUserPublicKey
-      })
-    const primaryUserEncryptedKeyBytes = await CryptoUtils.encrypt(
-      primaryUserSharedSecret,
-      symmetricKey
-    )
-    const primaryUserEncryptedKey = base64.encode(primaryUserEncryptedKeyBytes)
-
-    // Encrypt for each grantee
-    const granteeEncryptedKeys = await Promise.all(
-      granteeIds.map(async (granteeId) => {
-        const granteePublicKey = await this.getPublicKey(granteeId)
-        const granteeSharedSecret =
-          await this.audiusWalletClient.getSharedSecret({
-            publicKey: granteePublicKey
-          })
-        const encryptedKeyBytes = await CryptoUtils.encrypt(
-          granteeSharedSecret,
-          symmetricKey
-        )
-        return {
-          granteeId,
-          encryptedKey: base64.encode(encryptedKeyBytes)
-        }
-      })
-    )
-
-    return {
-      primaryUserEncryptedKey,
-      granteeEncryptedKeys,
-      symmetricKey
-    }
+  createSymmetricKey(): Uint8Array {
+    return crypto.getRandomValues(new Uint8Array(32))
   }
 
   /**
-   * Decrypts the symmetric key for either a primary user or grantee
+   * Encrypts a symmetric key for a user using their public key and shared secret
+   * @param userId The ID of the user to encrypt for
+   * @param symmetricKey The symmetric key to encrypt
+   * @returns The encrypted key as a base64 string
+   */
+  async encryptSymmetricKey(
+    userId: string,
+    symmetricKey: Uint8Array
+  ): Promise<string> {
+    const userPublicKey = await this.getPublicKey(userId)
+    const sharedSecret = await this.audiusWalletClient.getSharedSecret({
+      publicKey: userPublicKey
+    })
+    const encryptedKeyBytes = await CryptoUtils.encrypt(
+      sharedSecret,
+      symmetricKey
+    )
+    return base64.encode(encryptedKeyBytes)
+  }
+
+  /**
+   * Decrypts a symmetric key using a user's shared secret
    * @param encryptedKey The encrypted symmetric key as a base64 string
    * @param userId The ID of the user who encrypted the key
    * @returns The decrypted symmetric key
@@ -92,7 +71,7 @@ export class EmailEncryptionService extends BaseAPI {
   /**
    * Encrypts an email using a symmetric key
    * @param email The email to encrypt
-   * @param symmetricKey The symmetric key to use for encryption
+   * @param symmetricKey The symmetric key to use
    * @returns The encrypted email as a base64 string
    */
   async encryptEmail(email: string, symmetricKey: Uint8Array): Promise<string> {
@@ -103,8 +82,8 @@ export class EmailEncryptionService extends BaseAPI {
   /**
    * Decrypts an email using a symmetric key
    * @param encryptedEmail The encrypted email as a base64 string
-   * @param symmetricKey The symmetric key to use for decryption
-   * @returns The decrypted email as a string
+   * @param symmetricKey The symmetric key to use
+   * @returns The decrypted email
    */
   async decryptEmail(
     encryptedEmail: string,
@@ -117,20 +96,64 @@ export class EmailEncryptionService extends BaseAPI {
   }
 
   /**
-   * Encrypts emails for a seller and their grantees
-   * @param sellerId The ID of the seller
-   * @param granteeIds List of grantee user IDs
+   * Creates and distributes a symmetric key between an email owner and recipients
+   * @param emailOwnerId The ID of the email owner
+   * @param receivingIds List of user IDs who will receive access
+   * @param grantorId The ID of the user granting access
+   * @returns The encrypted symmetric keys for storage
+   */
+  async createSharedKey(
+    emailOwnerId: string,
+    receivingIds: string[],
+    grantorId: string
+  ): Promise<SharedSymmetricKey> {
+    // Generate random symmetric key
+    const symmetricKey = this.createSymmetricKey()
+
+    // Include email owner in the list of recipients
+    const allRecipientIds = [emailOwnerId, ...receivingIds]
+
+    // Encrypt for each receiving user including the owner
+    const receiverEncryptedKeys: EncryptedKey[] = await Promise.all(
+      allRecipientIds.map(async (receivingId) => {
+        const encryptedKey = await this.encryptSymmetricKey(
+          receivingId,
+          symmetricKey
+        )
+        return {
+          receivingId,
+          encryptedKey,
+          grantorId
+        }
+      })
+    )
+
+    return {
+      symmetricKey,
+      receiverEncryptedKeys
+    }
+  }
+
+  /**
+   * Encrypts emails for multiple recipients
+   * @param emailOwnerId The ID of the email owner
+   * @param receivingIds List of user IDs who will receive access
+   * @param grantorId The ID of the user granting access
    * @param emails List of emails to encrypt
-   * @returns Object containing encrypted emails and encrypted symmetric keys for both seller and grantees
+   * @returns Object containing encrypted emails and encrypted symmetric keys
    */
   async encryptEmails(
-    sellerId: string,
-    granteeIds: string[],
+    emailOwnerId: string,
+    receivingIds: string[],
+    grantorId: string,
     emails: string[]
   ): Promise<EncryptedEmailsResult> {
-    // Create symmetric key for seller and grantees
-    const { symmetricKey, primaryUserEncryptedKey, granteeEncryptedKeys } =
-      await this.createSharedKey(sellerId, granteeIds)
+    // Create symmetric key for all recipients
+    const { symmetricKey, receiverEncryptedKeys } = await this.createSharedKey(
+      emailOwnerId,
+      receivingIds,
+      grantorId
+    )
 
     // Encrypt emails with symmetric key
     const encryptedEmails = await Promise.all(
@@ -139,47 +162,46 @@ export class EmailEncryptionService extends BaseAPI {
 
     return {
       encryptedEmails,
-      primaryUserEncryptedKey,
-      granteeEncryptedKeys
+      receiverEncryptedKeys
     }
   }
 
   /**
-   * Batch encrypts emails for multiple sellers and their grantees
-   * @param data Array of objects containing seller IDs, grantee IDs, and emails to encrypt
-   * @returns Array of encryption results for each seller
+   * Batch encrypts emails for multiple recipients
+   * @param data Array of objects containing email owner IDs, receiving IDs, and emails to encrypt
+   * @returns Array of encryption results
    */
   async batchEncryptEmails(
     data: BatchEncryptionInput[]
   ): Promise<BatchEncryptionResult[]> {
     return Promise.all(
-      data.map(async ({ seller_user_id, grantee_user_ids, buyer_details }) => {
-        const encodedSellerId = encodeHashId(seller_user_id)
-        const encodedGranteeIds = (
-          grantee_user_ids?.map((id) => encodeHashId(id)) || []
-        ).filter((id): id is string => id !== null)
+      data.map(
+        async ({ email_owner_id, receiving_ids, grantor_id, emails }) => {
+          const encodedOwnerId = encodeHashId(email_owner_id)
+          const encodedReceivingIds = (
+            receiving_ids?.map((id) => encodeHashId(id)) || []
+          ).filter((id): id is string => id !== null)
+          const encodedGrantorId = encodeHashId(grantor_id)
 
-        if (!encodedSellerId) {
-          throw new Error('Invalid seller ID')
+          if (!encodedOwnerId || !encodedGrantorId) {
+            throw new Error('Invalid user ID')
+          }
+
+          const { encryptedEmails, receiverEncryptedKeys } =
+            await this.encryptEmails(
+              encodedOwnerId,
+              encodedReceivingIds,
+              encodedGrantorId,
+              emails
+            )
+
+          return {
+            email_owner_id,
+            encryptedEmails,
+            receiverEncryptedKeys
+          }
         }
-
-        const {
-          encryptedEmails,
-          primaryUserEncryptedKey,
-          granteeEncryptedKeys
-        } = await this.encryptEmails(
-          encodedSellerId,
-          encodedGranteeIds,
-          buyer_details
-        )
-
-        return {
-          seller_user_id,
-          encryptedEmails,
-          primaryUserEncryptedKey,
-          granteeEncryptedKeys
-        }
-      })
+      )
     )
   }
 

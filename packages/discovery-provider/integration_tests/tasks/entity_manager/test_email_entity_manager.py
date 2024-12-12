@@ -5,7 +5,7 @@ from web3.datastructures import AttributeDict
 
 from integration_tests.challenges.index_helpers import UpdateTask
 from integration_tests.utils import populate_mock_db
-from src.models.users.email import EmailAccessKey, EmailEncryptionKey, EncryptedEmail
+from src.models.users.email import EmailAccess, EncryptedEmail
 from src.tasks.entity_manager.entity_manager import entity_manager_update
 from src.tasks.entity_manager.utils import Action, EntityType
 from src.utils.db_session import get_db
@@ -122,17 +122,14 @@ def test_index_valid_email(app, mocker):
             assert email.email_owner_user_id == valid_email_data["email_owner_user_id"]
             assert email.encrypted_email == "encrypted_email_content"
 
-            # Validate encryption key
-            encryption_key = session.query(EmailEncryptionKey).first()
-            assert encryption_key is not None
-            assert encryption_key.primary_user_id == valid_email_data["primary_user_id"]
-            assert encryption_key.encrypted_key == "encrypted_key_content"
-
             # Validate access keys
-            access_keys = session.query(EmailAccessKey).all()
+            access_keys = session.query(EmailAccess).all()
             assert len(access_keys) == 1
-            assert access_keys[0].primary_user_id == valid_email_data["primary_user_id"]
-            assert access_keys[0].delegated_user_id == 2
+            assert (
+                access_keys[0].email_owner_user_id
+                == valid_email_data["email_owner_user_id"]
+            )
+            assert access_keys[0].receiving_user_id == 2
             assert access_keys[0].encrypted_key == "delegated_key"
 
 
@@ -211,10 +208,6 @@ def test_index_invalid_email(app, mocker):
             encrypted_emails = session.query(EncryptedEmail).all()
             assert len(encrypted_emails) == 0
 
-            # Validate no encryption key was created
-            encryption_key = session.query(EmailEncryptionKey).first()
-            assert encryption_key is None
-
             # Validate no access keys were created
-            access_keys = session.query(EmailAccessKey).all()
+            access_keys = session.query(EmailAccess).all()
             assert len(access_keys) == 0
