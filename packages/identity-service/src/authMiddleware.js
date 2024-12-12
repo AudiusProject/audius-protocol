@@ -149,7 +149,8 @@ async function authMiddleware(req, res, next) {
         const discprovUser = await queryDiscprovForUserId(walletAddress, handle)
         user = await user.update({
           blockchainUserId: discprovUser.user_id,
-          handle: discprovUser.handle
+          handle: discprovUser.handle,
+          isGuest: false
         })
       }
       req.user = user

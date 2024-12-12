@@ -8,6 +8,7 @@ import { USDC } from '@audius/fixed-decimal'
 import { Button, Flex, Hint, Text } from '@audius/harmony'
 import { useField } from 'formik'
 import { useDispatch } from 'react-redux'
+import { useLocalStorage } from 'react-use'
 
 import * as signOnActions from 'common/store/pages/signon/actions'
 import { TextLink } from 'components/link'
@@ -15,7 +16,6 @@ import { PurchaseSummaryTable } from 'components/premium-content-purchase-modal/
 import { usePurchaseContentFormState } from 'components/premium-content-purchase-modal/hooks/usePurchaseContentFormState'
 import { LockedContentDetailsTile } from 'components/track/LockedContentDetailsTile'
 import { useIsMobile } from 'hooks/useIsMobile'
-import { useLocalStorage } from 'hooks/useLocalStorage'
 import { EmailField } from 'pages/sign-up-page/components/EmailField'
 
 const messages = {
@@ -105,15 +105,19 @@ export const GuestCheckoutPage = (props: GuestCheckoutProps) => {
 export const GuestCheckoutFooter = () => {
   const dispatch = useDispatch()
   const [{ value: guestEmail }] = useField(GUEST_EMAIL)
-  const [emailFromLocalStorage] = useLocalStorage(GUEST_EMAIL, '')
-
+  const [emailFromLocalStorage, setGuestEmailInLocalStorage] = useLocalStorage(
+    GUEST_EMAIL,
+    ''
+  )
   const handleContinueAsGuest = useCallback(() => {
     if (emailFromLocalStorage !== guestEmail) {
       // only create guest account if email has changed
       // enable multiple purchases with same guest email
+      setGuestEmailInLocalStorage(guestEmail)
+      window.dispatchEvent(new CustomEvent(GUEST_EMAIL))
       dispatch(signOnActions.createGuestAccount(guestEmail))
     }
-  }, [dispatch, emailFromLocalStorage, guestEmail])
+  }, [dispatch, emailFromLocalStorage, guestEmail, setGuestEmailInLocalStorage])
 
   return (
     <Button fullWidth type='submit' onClick={handleContinueAsGuest}>

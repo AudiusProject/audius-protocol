@@ -86,9 +86,6 @@ const LeftNav = (props: NavColumnProps) => {
     }
   }, [])
 
-  const navLoaded =
-    accountStatus === Status.SUCCESS || accountStatus === Status.ERROR
-
   return (
     <Flex
       backgroundColor='surface1'
@@ -118,7 +115,6 @@ const LeftNav = (props: NavColumnProps) => {
               : dragScrollingDirection === 'down'
               ? 'inset 0px -8px 5px -5px var(--tile-shadow-3)'
               : undefined,
-          opacity: navLoaded ? 1 : 0,
           overflow: 'hidden',
           transition: 'opacity 0.3s ease-in-out, box-shadow 0.2s ease'
         }}

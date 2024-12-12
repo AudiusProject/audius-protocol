@@ -87,16 +87,7 @@ export function* fetchAccountAsync({ isSignUp = false }): SagaIterator {
     },
     true // force refresh to get updated user w handle
   )
-  const { data: accountCidData } = yield* call(
-    [sdk.full.cidData, sdk.full.cidData.getMetadata],
-    {
-      metadataId: accountData?.user?.metadata_multihash
-    }
-  )
-  accountData.user = {
-    ...accountData.user,
-    ...(accountCidData?.data ?? {})
-  }
+
   if (!accountData || !accountData?.user) {
     yield* put(
       fetchAccountFailed({
@@ -114,6 +105,20 @@ export function* fetchAccountAsync({ isSignUp = false }): SagaIterator {
       })
     )
   }
+
+  if (accountData?.user?.metadata_multihash) {
+    const { data: accountCidData } = yield* call(
+      [sdk.full.cidData, sdk.full.cidData.getMetadata],
+      {
+        metadataId: accountData?.user?.metadata_multihash
+      }
+    )
+    accountData.user = {
+      ...accountData.user,
+      ...(accountCidData?.data ?? {})
+    }
+  }
+
   // Set the userId in the remoteConfigInstance
   remoteConfigInstance.setUserId(user.user_id)
 
