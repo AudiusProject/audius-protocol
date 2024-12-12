@@ -2437,11 +2437,9 @@ class Managers(Resource):
         },
     )
     @full_ns.expect(managed_users_route_parser)
-    @auth_middleware(managed_users_route_parser, require_auth=True)
     @full_ns.marshal_with(managers_response)
-    def get(self, id, authed_user_id):
+    def get(self, id):
         user_id = decode_with_abort(id, full_ns)
-        check_authorized(user_id, authed_user_id)
 
         args = managed_users_route_parser.parse_args()
         logger.debug(f"DEBUG::args: {args}")

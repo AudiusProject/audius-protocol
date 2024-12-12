@@ -230,11 +230,13 @@ export type SendTipReactionRequest = z.input<
 export interface EmailRequest {
   emailOwnerUserId: number
   receivingUserId: number
+  granteeUserIds?: string[]
   email: string
 }
 
 export const EmailSchema = z.object({
   emailOwnerUserId: z.number(),
   receivingUserId: z.number(),
+  granteeUserIds: z.array(z.string()).optional(),
   email: z.string()
 })

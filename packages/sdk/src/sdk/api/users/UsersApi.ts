@@ -13,7 +13,7 @@ import type { ClaimableTokensClient } from '../../services/Solana/programs/Claim
 import type { SolanaClient } from '../../services/Solana/programs/SolanaClient'
 import { HashId } from '../../types/HashId'
 import { generateMetadataCidV1 } from '../../utils/cid'
-import { encodeHashId } from '../../utils/hashId'
+import { decodeHashId, encodeHashId } from '../../utils/hashId'
 import { parseParams } from '../../utils/parseParams'
 import { retry3 } from '../../utils/retry'
 import {
@@ -523,12 +523,10 @@ export class UsersApi extends GeneratedUsersApi {
    * Share an encrypted email with a user
    */
   async shareEmail(params: EmailRequest, advancedOptions?: AdvancedOptions) {
-    const { emailOwnerUserId, receivingUserId, email } = await parseParams(
-      'shareEmail',
-      EmailSchema
-    )(params)
+    const { emailOwnerUserId, receivingUserId, email, granteeUserIds } =
+      await parseParams('shareEmail', EmailSchema)(params)
 
-    let symmetricKey
+    let symmetricKey: Uint8Array
     // Get hashed IDs and validate
     const emailOwnerUserIdHash = encodeHashId(emailOwnerUserId)
     const receivingUserIdHash = encodeHashId(receivingUserId)
@@ -537,6 +535,7 @@ export class UsersApi extends GeneratedUsersApi {
     }
 
     const accessGrants = []
+
     const { data: emailOwnerKey = '' } = await this.getUserEmailKey({
       receivingUserId: emailOwnerUserIdHash,
       grantorUserId: emailOwnerUserIdHash
@@ -576,6 +575,24 @@ export class UsersApi extends GeneratedUsersApi {
       grantor_user_id: emailOwnerUserId,
       encrypted_key: receiverEncryptedKey
     })
+
+    if (granteeUserIds?.length) {
+      await Promise.all(
+        granteeUserIds.map(async (granteeUserIdHash) => {
+          const granteeEncryptedKey =
+            await this.emailEncryption.encryptSymmetricKey(
+              granteeUserIdHash,
+              symmetricKey
+            )
+
+          accessGrants.push({
+            receiving_user_id: decodeHashId(granteeUserIdHash),
+            grantor_user_id: receivingUserId, // The primary receiver grants access
+            encrypted_key: granteeEncryptedKey
+          })
+        })
+      )
+    }
 
     const metadata = {
       email_owner_user_id: emailOwnerUserId,
