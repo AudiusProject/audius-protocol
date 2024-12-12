@@ -12,6 +12,7 @@ import (
 	"syscall"
 
 	"log"
+	"net"
 
 	"github.com/AudiusProject/audius-protocol/pkg/core"
 	"github.com/AudiusProject/audius-protocol/pkg/core/common"
@@ -126,7 +127,26 @@ func startEchoProxyWithOptionalTLS(hostUrl *url.URL, enableTLS bool) error {
 	e.Any("/*", echo.WrapHandler(mediorumProxy))
 
 	if enableTLS {
-		e.AutoTLSManager.HostPolicy = autocert.HostWhitelist(hostUrl.Hostname())
+		// Get server's IP addresses
+		addrs, err := net.InterfaceAddrs()
+		if err != nil {
+			e.Logger.Warn("Failed to get interface addresses:", err)
+		}
+
+		// Build whitelist starting with hostname and localhost
+		whitelist := []string{hostUrl.Hostname(), "localhost"}
+
+		// Add all non-loopback IPv4 addresses
+		for _, addr := range addrs {
+			if ipnet, ok := addr.(*net.IPNet); ok && !ipnet.IP.IsLoopback() {
+				if ip4 := ipnet.IP.To4(); ip4 != nil {
+					whitelist = append(whitelist, ip4.String())
+				}
+			}
+		}
+
+		e.Logger.Info("TLS host whitelist:", whitelist)
+		e.AutoTLSManager.HostPolicy = autocert.HostWhitelist(whitelist...)
 		e.AutoTLSManager.Cache = autocert.DirCache("/data/var/www/.cache")
 		e.Pre(middleware.HTTPSRedirect())
 
