@@ -240,7 +240,7 @@ export const createUpdateTrackSchema = () =>
       userId: HashId,
       trackId: HashId,
       metadata: createUploadTrackMetadataSchema().strict().partial(),
-      transcodePreview: z.optional(z.boolean()),
+      generatePreview: z.optional(z.boolean()),
       coverArtFile: z.optional(ImageFile),
       onProgress: z.optional(z.function())
     })

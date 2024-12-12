@@ -28,12 +28,6 @@ import {
  */
 export interface SalesJsonContent {
     /**
-     * Encrypted key for decrypting buyer emails
-     * @type {string}
-     * @memberof SalesJsonContent
-     */
-    decryptionKey?: string;
-    /**
      * 
      * @type {Array<SaleJson>}
      * @memberof SalesJsonContent
@@ -60,7 +54,6 @@ export function SalesJsonContentFromJSONTyped(json: any, ignoreDiscriminator: bo
     }
     return {
         
-        'decryptionKey': !exists(json, 'decryption_key') ? undefined : json['decryption_key'],
         'sales': !exists(json, 'sales') ? undefined : ((json['sales'] as Array<any>).map(SaleJsonFromJSON)),
     };
 }
@@ -74,7 +67,6 @@ export function SalesJsonContentToJSON(value?: SalesJsonContent | null): any {
     }
     return {
         
-        'decryption_key': value.decryptionKey,
         'sales': value.sales === undefined ? undefined : ((value.sales as Array<any>).map(SaleJsonToJSON)),
     };
 }

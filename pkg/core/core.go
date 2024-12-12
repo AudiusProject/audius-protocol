@@ -102,7 +102,7 @@ func run(ctx context.Context, logger *common.Logger) error {
 	txPubsub := pubsub.NewPubsub[struct{}]()
 
 	mempl := mempool.NewMempool(logger, config, db.New(pool), cometConfig.Mempool.Size)
-	mempl.CreateValidatorClients()
+	mempl.InitializeValidatorClients()
 
 	node, err := chain.NewNode(logger, config, cometConfig, pool, c, mempl, txPubsub)
 	if err != nil {
@@ -185,7 +185,7 @@ func run(ctx context.Context, logger *common.Logger) error {
 				continue
 			}
 
-			err := mempl.CreateValidatorClients()
+			err := mempl.InitializeValidatorClients()
 			if err != nil {
 				continue
 			}

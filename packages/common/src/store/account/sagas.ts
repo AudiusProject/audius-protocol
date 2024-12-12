@@ -58,6 +58,7 @@ export function* fetchAccountAsync({ isSignUp = false }): SagaIterator {
   const remoteConfigInstance = yield* getContext('remoteConfigInstance')
   const authService = yield* getContext('authService')
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
+  const sdk = yield* getSDK()
   const accountStatus = yield* select(accountSelectors.getAccountStatus)
   // Don't revert successful local account fetch
   if (accountStatus !== Status.SUCCESS) {
@@ -86,6 +87,16 @@ export function* fetchAccountAsync({ isSignUp = false }): SagaIterator {
     },
     true // force refresh to get updated user w handle
   )
+  const { data: accountCidData } = yield* call(
+    [sdk.full.cidData, sdk.full.cidData.getMetadata],
+    {
+      metadataId: accountData?.user?.metadata_multihash
+    }
+  )
+  accountData.user = {
+    ...accountData.user,
+    ...(accountCidData?.data ?? {})
+  }
   if (!accountData || !accountData?.user) {
     yield* put(
       fetchAccountFailed({
@@ -105,7 +116,12 @@ export function* fetchAccountAsync({ isSignUp = false }): SagaIterator {
   }
   // Set the userId in the remoteConfigInstance
   remoteConfigInstance.setUserId(user.user_id)
-  yield* call(recordIPIfNotRecent, user.handle)
+
+  if (user.handle) {
+    // guest account don't have handles
+    yield* call(recordIPIfNotRecent, user.handle)
+  }
+
   // Cache the account and put the signedIn action. We're done.
   yield* call(cacheAccount, accountData)
   const formattedAccount = {

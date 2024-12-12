@@ -242,7 +242,7 @@ export class TracksApi extends GeneratedTracksApi {
       coverArtFile,
       metadata: parsedMetadata,
       onProgress,
-      transcodePreview
+      generatePreview
     } = await parseParams('updateTrack', createUpdateTrackSchema())(params)
 
     // Transform metadata
@@ -272,7 +272,7 @@ export class TracksApi extends GeneratedTracksApi {
       ...(coverArtResp ? { coverArtSizes: coverArtResp.id } : {})
     }
 
-    if (transcodePreview) {
+    if (generatePreview) {
       if (updatedMetadata.previewStartSeconds === undefined) {
         throw new Error('No track preview start time specified')
       }
@@ -280,24 +280,20 @@ export class TracksApi extends GeneratedTracksApi {
         throw new Error('Missing required audio_upload_id')
       }
 
-      // Transocde track preview
-      const editFileData = {
-        previewStartSeconds: updatedMetadata.previewStartSeconds!.toString()
-      }
-      const updatePreviewResp = await retry3(
+      // Generate track preview
+      const previewCid = await retry3(
         async () =>
-          await this.storage.editFile({
-            uploadId: updatedMetadata.audioUploadId!,
-            data: editFileData
+          await this.storage.generatePreview({
+            cid: updatedMetadata.trackCid!,
+            secondOffset: updatedMetadata.previewStartSeconds!
           }),
         (e) => {
-          this.logger.info('Retrying editFileV2', e)
+          this.logger.info('Retrying generatePreview', e)
         }
       )
 
       // Update metadata to include updated preview CID
-      const previewKey = `320_preview|${updatedMetadata.previewStartSeconds}`
-      updatedMetadata.previewCid = updatePreviewResp.results[previewKey]
+      updatedMetadata.previewCid = previewCid
     }
 
     // Write metadata to chain

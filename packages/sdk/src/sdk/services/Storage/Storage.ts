@@ -7,8 +7,6 @@ import type { CrossPlatformFile as File } from '../../types/File'
 import fetch from '../../utils/fetch'
 import { mergeConfigWithDefaults } from '../../utils/mergeConfigs'
 import { wait } from '../../utils/wait'
-import type { AudiusWalletClient } from '../AudiusWalletClient'
-import { sortObjectKeys } from '../AudiusWalletClient/utils'
 import type { LoggerService } from '../Logger'
 import type { StorageNodeSelectorService } from '../StorageNodeSelector'
 
@@ -32,7 +30,6 @@ export class Storage implements StorageService {
    */
   private readonly config: StorageServiceConfigInternal
   private readonly storageNodeSelector: StorageNodeSelectorService
-  private readonly audiusWalletClient: AudiusWalletClient
   private readonly logger: LoggerService
 
   constructor(config: StorageServiceConfig) {
@@ -41,60 +38,7 @@ export class Storage implements StorageService {
       getDefaultStorageServiceConfig(productionConfig)
     )
     this.storageNodeSelector = config.storageNodeSelector
-    this.audiusWalletClient = config.audiusWalletClient
     this.logger = this.config.logger.createPrefixedLogger('[storage]')
-  }
-
-  /**
-   * Upload a file on content nodes
-   * @param uploadId
-   * @param data
-   * @param auth
-   * @returns
-   */
-  async editFile({
-    uploadId,
-    data,
-    onProgress
-  }: {
-    uploadId: string
-    data: { [key: string]: string }
-    onProgress?: ProgressHandler
-  }) {
-    // Generate signature
-    const signatureData = {
-      upload_id: uploadId,
-      timestamp: Date.now()
-    }
-    const sigJson = JSON.stringify(sortObjectKeys(signatureData))
-    const signature = await this.audiusWalletClient.signMessage({
-      message: sigJson
-    })
-    const signatureEnvelope = {
-      data: JSON.stringify(signatureData),
-      signature
-    }
-
-    const contentNodeEndpoint = await this.storageNodeSelector.getSelectedNode()
-
-    if (!contentNodeEndpoint) {
-      throw new Error('No content node available for upload')
-    }
-
-    const response = await axios({
-      method: 'post',
-      url: `${contentNodeEndpoint}/uploads/${uploadId}`,
-      maxContentLength: Infinity,
-      data,
-      params: { signature: JSON.stringify(signatureEnvelope) }
-    })
-
-    // Poll for re-transcoding to complete
-    return await this.pollProcessingStatus(
-      uploadId,
-      response.data.template,
-      onProgress
-    )
   }
 
   /**
@@ -121,24 +65,24 @@ export class Storage implements StorageService {
     Object.keys(options).forEach((key) => {
       formData.append(key, `${options[key]}`)
     })
+
+    const formDataFile =
+      'uri' in file
+        ? {
+            ...file,
+            // NOTE this is required for react-native
+            // certain characters in the file name make formData invalid
+            name: file.name
+              ? encodeURIComponent(file.name.replace(/[()]/g, ''))
+              : 'blob'
+          }
+        : file
+
     formData.append(
       'files',
-      isNodeFile(file) ? file.buffer : file,
+      isNodeFile(formDataFile) ? formDataFile.buffer : formDataFile,
       file.name ?? 'blob'
     )
-
-    // Generate signature
-    const signatureData = {
-      timestamp: Date.now()
-    }
-    const sigJson = JSON.stringify(sortObjectKeys(signatureData))
-    const signature = await this.audiusWalletClient.signMessage({
-      message: sigJson
-    })
-    const signatureEnvelope = {
-      data: JSON.stringify(signatureData),
-      signature
-    }
 
     // Using axios for now because it supports upload progress,
     // and Node doesn't support XmlHttpRequest
@@ -147,7 +91,6 @@ export class Storage implements StorageService {
       method: 'post',
       maxContentLength: Infinity,
       data: formData,
-      params: { signature: JSON.stringify(signatureEnvelope) },
       headers: {
         ...(formData.getBoundary
           ? {
@@ -195,6 +138,34 @@ export class Storage implements StorageService {
       template,
       onProgress
     )
+  }
+
+  /**
+   * Generates a preview for a track at the given second offset
+   * @param {Object} params
+   * @param {string} params.cid - The CID of the track to generate a preview for
+   * @param {number} params.secondOffset - The offset in seconds to start the preview from
+   * @returns {Promise<string>} The CID of the generated preview
+   */
+  async generatePreview({
+    cid,
+    secondOffset
+  }: {
+    cid: string
+    secondOffset: number
+  }) {
+    const contentNodeEndpoint = await this.storageNodeSelector.getSelectedNode()
+
+    if (!contentNodeEndpoint) {
+      throw new Error('No content node available')
+    }
+
+    const response = await axios({
+      method: 'post',
+      url: `${contentNodeEndpoint}/generate_preview/${cid}/${secondOffset}`
+    })
+
+    return response.data.cid
   }
 
   /**

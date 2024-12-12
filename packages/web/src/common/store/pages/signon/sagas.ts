@@ -583,6 +583,7 @@ function* createGuestAccount(
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
   const getFeatureEnabled = yield* getContext('getFeatureEnabled')
   const reportToSentry = yield* getContext('reportToSentry')
+  const localStorage = yield* getContext('localStorage')
 
   const sdk = yield* getSDK()
   const audiusLibs = yield* call([
@@ -601,8 +602,17 @@ function* createGuestAccount(
   if (!isGuestCheckoutEnabled) {
     return
   }
-  const currentUser = yield* select(getAccountUser)
+
   try {
+    // clear existing user state
+    yield* call([audiusLibs, 'clearCurrentUser'])
+    yield* call([localStorage, 'clearAudiusAccount'])
+    yield* call([localStorage, 'clearAudiusAccountUser'])
+    yield* call([authService, authService.signOut])
+    yield put(accountActions.resetAccount())
+
+    const currentUser = yield* select(getAccountUser)
+
     if (currentUser) {
       throw new Error('User already exists')
     }
@@ -615,7 +625,7 @@ function* createGuestAccount(
       }
     )
 
-    const { accountWalletAddress: wallet, web3WalletAddress } = yield* call([
+    const { accountWalletAddress: wallet } = yield* call([
       authService,
       authService.getWalletAddresses
     ])
@@ -629,13 +639,6 @@ function* createGuestAccount(
     yield* call(fetchAccountAsync, { isSignUp: true })
 
     const userBank = yield* call(getOrCreateUSDCUserBank)
-    yield* put(
-      accountActions.setWalletAddresses({
-        currentUser: wallet,
-        web3User: web3WalletAddress
-      })
-    )
-
     if (!userBank) {
       throw new Error('Failed to create user bank')
     }
@@ -966,6 +969,7 @@ function* signIn(action: ReturnType<typeof signOnActions.signIn>) {
     yield* call([localStorage, localStorage.removeItem], 'useMetaMask')
     yield* put(backendActions.setupBackend())
   }
+  yield* put(make(Name.SIGN_IN_START, {}))
 
   const fingerprintClient = yield* getContext('fingerprintClient')
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
@@ -1071,8 +1075,9 @@ function* signIn(action: ReturnType<typeof signOnActions.signIn>) {
             }
           })
         )
+
+        yield* put(toastActions.toast({ content: messages.incompleteAccount }))
       }
-      yield* put(toastActions.toast({ content: messages.incompleteAccount }))
 
       yield* put(
         make(Name.SIGN_IN_WITH_INCOMPLETE_ACCOUNT, {

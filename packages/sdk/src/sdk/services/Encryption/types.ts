@@ -1,29 +1,28 @@
 export type EncryptedKey = {
-  granteeId: string
+  receivingId: string
   encryptedKey: string
+  grantorId: string
 }
 
 export type SharedSymmetricKey = {
-  primaryUserEncryptedKey: string
-  granteeEncryptedKeys: EncryptedKey[]
   symmetricKey: Uint8Array
+  receiverEncryptedKeys: EncryptedKey[]
 }
 
 export type EncryptedEmailsResult = {
   encryptedEmails: string[]
-  primaryUserEncryptedKey: string
-  granteeEncryptedKeys: EncryptedKey[]
+  receiverEncryptedKeys: EncryptedKey[]
 }
 
 export type BatchEncryptionInput = {
-  seller_user_id: number
-  grantee_user_ids: number[] | null
-  buyer_details: string[]
+  email_owner_id: number
+  receiving_ids: number[] | null
+  grantor_id: number
+  emails: string[]
 }
 
 export type BatchEncryptionResult = {
-  seller_user_id: number
+  email_owner_id: number
   encryptedEmails: string[]
-  primaryUserEncryptedKey: string
-  granteeEncryptedKeys: EncryptedKey[]
+  receiverEncryptedKeys: EncryptedKey[]
 }

@@ -126,8 +126,12 @@ export const UpdateProfileSchema = z
         twitterHandle: z.optional(z.string()),
         instagramHandle: z.optional(z.string()),
         tiktokHandle: z.optional(z.string()),
-        associatedWallets: z.optional(CreateAssociatedWalletsSchema),
-        associatedSolWallets: z.optional(CreateAssociatedWalletsSchema)
+        associatedWallets: z.optional(
+          z.union([CreateAssociatedWalletsSchema, z.null()])
+        ),
+        associatedSolWallets: z.optional(
+          z.union([CreateAssociatedWalletsSchema, z.null()])
+        )
       })
       .strict()
   })
@@ -229,12 +233,14 @@ export type SendTipReactionRequest = z.input<
 // Email-related types
 export interface EmailRequest {
   emailOwnerUserId: number
-  primaryUserId: number
+  receivingUserId: number
+  granteeUserIds?: string[]
   email: string
 }
 
 export const EmailSchema = z.object({
   emailOwnerUserId: z.number(),
-  primaryUserId: z.number(),
+  receivingUserId: z.number(),
+  granteeUserIds: z.array(z.string()).optional(),
   email: z.string()
 })

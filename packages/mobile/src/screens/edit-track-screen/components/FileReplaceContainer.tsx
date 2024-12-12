@@ -42,7 +42,7 @@ export const FileReplaceContainer = ({
       gap='l'
     >
       <PlainButton
-        size='large'
+        size='default'
         style={{ flexShrink: 1, paddingRight: 8 }}
         iconLeft={isPlaying ? IconPause : IconPlay}
         onPress={handleTogglePlay}

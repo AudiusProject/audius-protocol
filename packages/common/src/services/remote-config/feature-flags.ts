@@ -23,7 +23,8 @@ export enum FeatureFlags {
   GUEST_CHECKOUT = 'guest_checkout',
   TRACK_AUDIO_REPLACE = 'track_audio_replace',
   THEME_V2 = 'theme_v2',
-  OWN_YOUR_FANS = 'own_your_fans'
+  OWN_YOUR_FANS = 'own_your_fans',
+  FAST_REFERRAL = 'fast_referral'
 }
 
 type FlagDefaults = Record<FeatureFlags, boolean>
@@ -62,5 +63,6 @@ export const flagDefaults: FlagDefaults = {
   [FeatureFlags.RIGHTS_AND_COVERS]: false,
   [FeatureFlags.TRACK_AUDIO_REPLACE]: false,
   [FeatureFlags.THEME_V2]: false,
-  [FeatureFlags.OWN_YOUR_FANS]: false
+  [FeatureFlags.OWN_YOUR_FANS]: false,
+  [FeatureFlags.FAST_REFERRAL]: false
 }
