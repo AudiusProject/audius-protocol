@@ -21,7 +21,7 @@ const { getUserId } = accountSelectors
 function* getSearchPageResultsTracks({
   offset,
   limit,
-  payload: { category, query, isTagSearch, filters, dispatch }
+  payload: { category, query, filters }
 }: {
   offset: number
   limit: number
