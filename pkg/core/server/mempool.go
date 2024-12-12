@@ -1,3 +1,5 @@
+// The mempool (memory pool) stores and broadcasts transactions that are prepared to be included in a block.
+// There is no guarantee that when a transaction makes it into the mempool that it will be included in a block.
 package server
 
 import (

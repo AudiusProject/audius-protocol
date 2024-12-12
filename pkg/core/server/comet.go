@@ -1,3 +1,4 @@
+// Request forward for the internal cometbft rpc. Debug info and to be turned off by default.
 package server
 
 import (

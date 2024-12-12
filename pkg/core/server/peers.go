@@ -1,3 +1,6 @@
+// Peers that core is aware of and uses. This is different than the lower level p2p list that cometbft manages.
+// This is where we store sdk clients for other validators for the purposes of forwarding transactions, querying health checks, and
+// anything else.
 package server
 
 import (
