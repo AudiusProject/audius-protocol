@@ -49,12 +49,12 @@ export const CoinbaseBuyAudioButton = () => {
     dispatch(onrampSucceeded())
   }, [dispatch])
 
-  const handleClick = useCallback(() => {
+  const handleClick = useCallback(async () => {
     if (
       purchaseInfoStatus === Status.SUCCESS &&
       purchaseInfo?.isError === false
     ) {
-      const rootAccount = solanaWalletService.getKeypair()
+      const rootAccount = await solanaWalletService.getKeypair()
       if (!rootAccount) {
         console.error('CoinbaseBuyAudioButton: Missing solana root account')
         return

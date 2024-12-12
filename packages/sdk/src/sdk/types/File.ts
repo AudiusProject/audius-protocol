@@ -57,16 +57,7 @@ export const ALLOWED_IMAGE_MIME_TYPES = [
   'image/webp'
 ]
 
-export const ALLOWED_AUDIO_MIME_TYPES = [
-  'audio/mpeg',
-  'audio/mp3',
-  'audio/aiff',
-  'audio/flac',
-  'audio/x-flac',
-  'audio/ogg',
-  'audio/wav',
-  'audio/vnd.wave'
-]
+export const ALLOWED_AUDIO_MIME_TYPES_REGEX = /audio\/.+/
 
 const getFileType = async (file: CrossPlatformFile) => {
   if (isNativeFile(file)) {
@@ -94,5 +85,5 @@ export const ImageFile = CrossPlatformFileSchema.refine(async (file) => {
 
 export const AudioFile = CrossPlatformFileSchema.refine(async (file) => {
   const fileType = await getFileType(file)
-  return fileType && ALLOWED_AUDIO_MIME_TYPES.includes(fileType.mime)
-}, `Audio file has invalid file type. Supported file types are: ${ALLOWED_AUDIO_MIME_TYPES.join(', ')}`)
+  return fileType && ALLOWED_AUDIO_MIME_TYPES_REGEX.test(fileType.mime)
+}, `Audio file has invalid file type. Supported file types are: audio/*`)

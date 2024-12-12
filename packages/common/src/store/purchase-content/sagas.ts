@@ -96,7 +96,7 @@ import {
 } from './types'
 import { getBalanceNeeded } from './utils'
 
-const { getUserId, getAccountUser } = accountSelectors
+const { getUserId, getAccountUser, getWalletAddresses } = accountSelectors
 
 type RaceStatusResult = {
   succeeded?:
@@ -688,6 +688,14 @@ function* doStartPurchaseContentFlow({
   const { track, make } = yield* getContext('analytics')
   const audiusSdk = yield* getContext('audiusSdk')
   const sdk = yield* call(audiusSdk)
+
+  // wait for guest account creation
+  yield* call(
+    waitForValue,
+    getWalletAddresses,
+    null,
+    (value) => !!value?.currentUser
+  )
 
   const getFeatureEnabled = yield* getContext('getFeatureEnabled')
   const isNetworkCutEnabled = yield* call(
