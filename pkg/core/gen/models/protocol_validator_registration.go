@@ -29,6 +29,13 @@ type ProtocolValidatorRegistration struct {
 	// node type
 	NodeType string `json:"nodeType,omitempty"`
 
+	// power
+	Power string `json:"power,omitempty"`
+
+	// pub key
+	// Format: byte
+	PubKey strfmt.Base64 `json:"pubKey,omitempty"`
+
 	// sp Id
 	SpID string `json:"spId,omitempty"`
 }

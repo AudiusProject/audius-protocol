@@ -134,6 +134,7 @@ func (app *CoreApplication) ProcessProposal(ctx context.Context, proposal *abcit
 func (app *CoreApplication) FinalizeBlock(ctx context.Context, req *abcitypes.FinalizeBlockRequest) (*abcitypes.FinalizeBlockResponse, error) {
 	logger := app.logger
 	var txs = make([]*abcitypes.ExecTxResult, len(req.Txs))
+	var validatorUpdates = abcitypes.ValidatorUpdates{}
 
 	// open in progres pg transaction
 	app.startInProgressTx(ctx)
@@ -158,6 +159,17 @@ func (app *CoreApplication) FinalizeBlock(ctx context.Context, req *abcitypes.Fi
 			if err := app.persistTxStat(ctx, finalizedTx, txhash, req.Height, req.Time); err != nil {
 				// don't halt consensus on this
 				app.logger.Errorf("failed to persist tx stat: %v", err)
+			}
+
+			if vr := signedTx.GetValidatorRegistration(); vr != nil {
+				validatorUpdates = append(
+					validatorUpdates,
+					abcitypes.ValidatorUpdate{
+						Power:       vr.Power,
+						PubKeyBytes: vr.PubKey,
+						PubKeyType:  "ed25519",
+					},
+				)
 			}
 
 			// set finalized txs in finalize step to remove from mempool during commit step
@@ -198,8 +210,9 @@ func (app *CoreApplication) FinalizeBlock(ctx context.Context, req *abcitypes.Fi
 	}
 
 	return &abcitypes.FinalizeBlockResponse{
-		TxResults: txs,
-		AppHash:   nextAppHash,
+		TxResults:        txs,
+		AppHash:          nextAppHash,
+		ValidatorUpdates: validatorUpdates,
 	}, nil
 }
 

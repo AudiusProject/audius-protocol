@@ -97,6 +97,8 @@ message ValidatorRegistration {
   string eth_block = 3;
   string node_type = 4;
   string sp_id = 5;
+  bytes pub_key = 6;
+  int64 power = 7;
 }
 
 message TrackPlay {

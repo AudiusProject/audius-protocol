@@ -25,10 +25,6 @@ const (
 	Identity
 )
 
-type RollupInterval struct {
-	BlockInterval int
-}
-
 const (
 	ProdRegistryAddress  = "0xd976d3b4f4e22a238c1A736b6612D22f17b6f64C"
 	StageRegistryAddress = "0xc682C2166E11690B64338e11633Cb8Bb60B0D9c0"
@@ -47,6 +43,15 @@ const (
 	ProdPersistentPeers  = "53a2506dcf34b267c3e04bb63e0ee4f563c7850d@34.67.133.214:26656,f0d79ce5eb91847db0a1b9ad4c8a15824710f9c3@34.121.217.14:26656,edf0b62f900c6319fdb482b0379b91b8a3c0d773@35.223.56.100:26656,35207ecb279b19ab53e0172f0e3ae47ac930d147@35.193.73.250:26656,bc6662eb1cff8c214fdd2147cef52ce6abc0b441@35.162.219.88:26656,2c47b1aba8e89caee91ac00c856b551a3035acad@34.208.174.151:26656,3afb27bab2cc0cea09fc65a9c33ffa8592a2eaf1@149.28.155.8:26656,d494895a1af5760d68566e4febf6d98de62cd575@207.246.72.205:26656"
 	StagePersistentPeers = "0f4be2aaa70e9570eee3485d8fa54502cf1a9fc0@34.67.210.7:26656,2f13439b2ee4c34bafe643f89575f40b7863a079@34.136.137.33:26656,c9b1ed3d3040e0c2ac70e3215f0ea9b16b401bca@34.68.24.207:26656,1eec5742f64fb243d22594e4143e14e77a38f232@34.71.167.168:26656,2da43f6e1b5614ea8fc8b7e89909863033ca6a27@35.208.173.168:26656"
 	DevPersistentPeers   = "ffad25668e060a357bbe534c8b7e5b4e1274368b@core-discovery-1:26656"
+)
+
+const (
+	mainnetValidatorVotingPower = 10
+	testnetValidatorVotingPower = 10
+	devnetValidatorVotingPower  = 25
+	mainnetRollupInterval       = 2048
+	testnetRollupInterval       = 2048
+	devnetRollupInterval        = 200
 )
 
 const dbUrlLocalPattern string = `^postgresql:\/\/\w+:\w+@(db|localhost|postgres):.*`
@@ -86,14 +91,15 @@ type Config struct {
 	StandaloneConsole bool
 
 	/* System Config */
-	RunDownMigration bool
+	RunDownMigration     bool
+	SlaRollupInterval    int
+	ValidatorVotingPower int
 
 	/* Derived Config */
-	GenesisFile       *types.GenesisDoc
-	EthereumKey       *ecdsa.PrivateKey
-	CometKey          *ed25519.PrivKey
-	NodeType          NodeType
-	SlaRollupInterval int
+	GenesisFile *types.GenesisDoc
+	EthereumKey *ecdsa.PrivateKey
+	CometKey    *ed25519.PrivKey
+	NodeType    NodeType
 }
 
 func ReadConfig(logger *common.Logger) (*Config, error) {
@@ -180,7 +186,8 @@ func ReadConfig(logger *common.Logger) (*Config, error) {
 			cfg.EthRPCUrl = ProdEthRpc
 		}
 
-		cfg.SlaRollupInterval = 2048
+		cfg.SlaRollupInterval = mainnetRollupInterval
+		cfg.ValidatorVotingPower = mainnetValidatorVotingPower
 
 	case "stage", "staging", "testnet":
 		cfg.PersistentPeers = getEnvWithDefault("persistentPeers", StagePersistentPeers)
@@ -188,7 +195,8 @@ func ReadConfig(logger *common.Logger) (*Config, error) {
 		if cfg.EthRPCUrl == "" {
 			cfg.EthRPCUrl = StageEthRpc
 		}
-		cfg.SlaRollupInterval = 2048
+		cfg.SlaRollupInterval = testnetRollupInterval
+		cfg.ValidatorVotingPower = testnetValidatorVotingPower
 
 	case "dev", "development", "devnet", "local", "sandbox":
 		cfg.PersistentPeers = getEnvWithDefault("persistentPeers", DevPersistentPeers)
@@ -200,7 +208,8 @@ func ReadConfig(logger *common.Logger) (*Config, error) {
 		if cfg.EthRegistryAddress == "" {
 			cfg.EthRegistryAddress = DevRegistryAddress
 		}
-		cfg.SlaRollupInterval = 200
+		cfg.SlaRollupInterval = devnetRollupInterval
+		cfg.ValidatorVotingPower = devnetValidatorVotingPower
 	}
 
 	// Disable ssl for local postgres db connection

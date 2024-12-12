@@ -105,6 +105,8 @@ func (r *Registry) registerSelfOnComet(ethBlock, spID string) error {
 		EthBlock:     ethBlock,
 		NodeType:     common.HexToUtf8(serviceType),
 		SpId:         spID,
+		PubKey:       r.config.CometKey.PubKey().Bytes(),
+		Power:        int64(r.config.ValidatorVotingPower),
 	}
 
 	eventBytes, err := proto.Marshal(registrationTx)

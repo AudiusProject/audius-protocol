@@ -31,7 +31,7 @@ type Mempool struct {
 	db *db.Queries
 
 	maxMempoolTransactions int
-	broadcastPeers         map[*sdk.Sdk]struct{}
+	broadcastPeers         map[string]*sdk.Sdk
 }
 
 // signed tx with mempool related metadata
@@ -47,14 +47,29 @@ func NewMempool(logger *common.Logger, config *config.Config, db *db.Queries, ma
 		config:                 config,
 		deque:                  list.New(),
 		txMap:                  make(map[string]*list.Element),
-		broadcastPeers:         make(map[*sdk.Sdk]struct{}),
+		broadcastPeers:         make(map[string]*sdk.Sdk),
 		db:                     db,
 		maxMempoolTransactions: maxTransactions,
 	}
 }
 
-func (m *Mempool) AddPeer(peer *sdk.Sdk) {
-	m.broadcastPeers[peer] = struct{}{}
+func (m *Mempool) AddPeer(address, endpoint string) error {
+	parsedURL, err := url.Parse(endpoint)
+	if err != nil {
+		m.logger.Errorf("could not parse url for %s: %v", endpoint, err)
+		return err
+	}
+
+	oapiendpoint := parsedURL.Host
+	peerSdk, err := sdk.NewSdk(sdk.WithOapiendpoint(oapiendpoint))
+	if err != nil {
+		m.logger.Errorf("could not init sdk for %s %s: %v", oapiendpoint, address, err)
+		return err
+	}
+
+	m.broadcastPeers[address] = peerSdk
+	m.logger.Infof("added peer %s", oapiendpoint)
+	return nil
 }
 
 func (m *Mempool) AddTransaction(key string, tx *MempoolTransaction, broadcast bool) error {
@@ -152,7 +167,7 @@ func (m *Mempool) BroadcastTransaction(key string, tx *MempoolTransaction) {
 		return
 	}
 
-	for peer := range m.broadcastPeers {
+	for _, peer := range m.broadcastPeers {
 		go func(logger *common.Logger, peer *sdk.Sdk) {
 			params := protocol.NewProtocolForwardTransactionParams()
 			params.SetTransaction(common.SignedTxProtoIntoSignedTxOapi(tx.Tx))
@@ -190,7 +205,7 @@ func (m *Mempool) MempoolSize() (int, int) {
 // utility method to add validator types to this instance of the mempool
 // reads validators from genesis doc, gets urls from db, then creates
 // sdk instances to all of them for broadcasting capabilities
-func (m *Mempool) CreateValidatorClients() error {
+func (m *Mempool) InitializeValidatorClients() error {
 	gendoc := m.config.GenesisFile
 	validators := gendoc.Validators
 
@@ -211,23 +226,8 @@ func (m *Mempool) CreateValidatorClients() error {
 				return err
 			}
 
-			parsedURL, err := url.Parse(validatorRecord.Endpoint)
-			if err != nil {
-				m.logger.Errorf("could not parse url for %s: %v", validatorRecord.Endpoint, err)
-				return err
-			}
+			return m.AddPeer(validatorAddr, validatorRecord.Endpoint)
 
-			// TODO: init all these clients at a higher level including non validators
-			oapiendpoint := parsedURL.Host
-			peerSdk, err := sdk.NewSdk(sdk.WithOapiendpoint(oapiendpoint))
-			if err != nil {
-				m.logger.Errorf("could not init sdk for %s %s: %v", oapiendpoint, validatorAddr, err)
-				return err
-			}
-
-			m.AddPeer(peerSdk)
-			m.logger.Infof("added peer %s", oapiendpoint)
-			return nil
 		})
 	}
 
