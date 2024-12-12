@@ -33,8 +33,7 @@ func NewServer(config *config.Config, cconfig *cconfig.Config, logger *common.Lo
 		peers:          []*sdk.Sdk{},
 	}
 
-	g := e.Group("/core")
-	s.registerRoutes(g)
+	s.registerRoutes(e)
 
 	return s, nil
 }

@@ -19,7 +19,7 @@ func (s *Server) proxyCometRequest(c echo.Context) error {
 
 	s.logger.Info("request", "url", rpcUrl, "method", c.Request().Method, "url", c.Request().RequestURI)
 
-	path := rpcUrl + strings.TrimPrefix(c.Request().RequestURI, "/core/comet")
+	path := rpcUrl + strings.TrimPrefix(c.Request().RequestURI, "/core/debug/comet")
 
 	req, err := http.NewRequest(c.Request().Method, path, c.Request().Body)
 	if err != nil {
