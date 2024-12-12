@@ -18,7 +18,7 @@ export const email = ({
 
   const signUpLink = `${getHostname()}/signup?guestEmail=${encodeURIComponent(
     email
-  )}`
+  )}&routeOnCompletion=${encodeURIComponent('/audio')}`
 
   return `
   <!doctype html>
