@@ -416,17 +416,34 @@ describe('UsersApi', () => {
 
   describe('shareEmail', () => {
     beforeAll(() => {
-      // Mock EmailEncryptionService methods
       vitest
         .spyOn(EmailEncryptionService.prototype, 'decryptSymmetricKey')
         .mockImplementation(async () => {
-          return new Uint8Array(32) // Mock 32-byte key
+          return new Uint8Array(32)
+        })
+
+      vitest
+        .spyOn(EmailEncryptionService.prototype, 'createSymmetricKey')
+        .mockImplementation(() => {
+          return new Uint8Array(32)
+        })
+
+      vitest
+        .spyOn(EmailEncryptionService.prototype, 'encryptSymmetricKey')
+        .mockImplementation(async () => {
+          return 'mockEncryptedKey'
         })
 
       vitest
         .spyOn(EmailEncryptionService.prototype, 'encryptEmail')
         .mockImplementation(async () => {
           return 'mockEncryptedEmail'
+        })
+
+      vitest
+        .spyOn(UsersApi.prototype, 'getUserEmailKey')
+        .mockImplementation(async () => {
+          return { data: 'mockEncryptedKey' }
         })
     })
 
