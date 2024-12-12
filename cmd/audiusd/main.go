@@ -113,6 +113,17 @@ func main() {
 }
 
 func startEchoProxyWithOptionalTLS(hostUrl *url.URL, enableTLS bool) error {
+
+	httpPort := os.Getenv("AUDIUSD_HTTP_PORT")
+	if httpPort == "" {
+		httpPort = "80"
+	}
+
+	httpsPort := os.Getenv("AUDIUSD_HTTPS_PORT")
+	if httpsPort == "" {
+		httpsPort = "443"
+	}
+
 	e := echo.New()
 
 	e.Use(middleware.Logger())
@@ -171,16 +182,6 @@ func startEchoProxyWithOptionalTLS(hostUrl *url.URL, enableTLS bool) error {
 		e.AutoTLSManager.Cache = autocert.DirCache(getEnvString("audius_core_root_dir", "/audius-core") + "/echo/cache")
 		e.Pre(middleware.HTTPSRedirect())
 
-		httpsPort := os.Getenv("AUDIUSD_HTTPS_PORT")
-		if httpsPort == "" {
-			httpsPort = "443"
-		}
-
-		httpPort := os.Getenv("AUDIUSD_HTTP_PORT")
-		if httpPort == "" {
-			httpPort = "80"
-		}
-
 		go func() {
 			if err := e.StartAutoTLS(":" + httpsPort); err != nil && err != http.ErrServerClosed {
 				e.Logger.Fatal("shutting down the server")
@@ -196,7 +197,7 @@ func startEchoProxyWithOptionalTLS(hostUrl *url.URL, enableTLS bool) error {
 		return nil
 	}
 
-	return e.Start(":80")
+	return e.Start(":" + httpPort)
 }
 
 func getEnv[T any](key string, defaultVal T, parse func(string) (T, error)) T {

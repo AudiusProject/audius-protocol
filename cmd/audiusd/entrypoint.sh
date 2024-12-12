@@ -37,8 +37,6 @@ source_env_file "$OVERRIDE_ENV_FILE"
 # Set database name based on creatorNodeEndpoint
 if [ -n "$creatorNodeEndpoint" ]; then
     POSTGRES_DB="audius_creator_node"
-elif [ -n "$audius_discprov_url" ]; then
-    POSTGRES_DB="audius_discovery" 
 else
     POSTGRES_DB="audiusd"
 fi
