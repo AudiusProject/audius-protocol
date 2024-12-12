@@ -29,6 +29,7 @@ export type AnalyticsEvent = {
 }
 
 export enum Name {
+  APP_ERROR = 'App Error', // Generic app error
   SESSION_START = 'Session Start',
   // Account creation
   // When the user opens the create account page
@@ -92,7 +93,7 @@ export enum Name {
   // When the user clicks the "Upload Track" CTA in the welcome modal
   CREATE_ACCOUNT_WELCOME_MODAL_UPLOAD_TRACK = 'Create Account: Welcome Modal Upload Track Clicked',
   // Sign in
-  SIGN_IN_OPEN = 'Sign In: Open',
+  SIGN_IN_START = 'Sign In: Start',
   SIGN_IN_FINISH = 'Sign In: Finish',
   SIGN_IN_WITH_INCOMPLETE_ACCOUNT = 'Sign In: Incomplete Account',
 
@@ -189,7 +190,8 @@ export enum Name {
   TRACK_UPLOAD_TRACK_UPLOADING = 'Track Upload: Track Uploading',
   // Note that upload is considered complete if it is explicitly rejected
   // by the node receiving the file (HTTP 403).
-  TRACK_UPLOAD_COMPLETE_UPLOAD = 'Track Upload: Complete Upload',
+  TRACK_UPLOAD_COMPLETE_UPLOAD = 'Track Upload: Complete Upload', // Note: this applies
+  TRACK_UPLOAD_FINISH_UPLOADING = 'Track Upload: Finish Uploading',
   TRACK_UPLOAD_COPY_LINK = 'Track Upload: Copy Link',
   TRACK_UPLOAD_SHARE_WITH_FANS = 'Track Upload: Share with your fans',
   TRACK_UPLOAD_VIEW_TRACK_PAGE = 'Track Upload: View Track page',
@@ -573,6 +575,11 @@ type PageView = {
   route: string
 }
 
+type AppError = {
+  eventName: Name.APP_ERROR
+  errorMessage: string
+}
+
 // Create Account
 export type CreateAccountOpen = {
   eventName: Name.CREATE_ACCOUNT_OPEN
@@ -744,9 +751,8 @@ type CreateAccountOpenFinish = {
 }
 
 // Sign In
-type SignInOpen = {
-  eventName: Name.SIGN_IN_OPEN
-  source: 'sign up page'
+type SignInStart = {
+  eventName: Name.SIGN_IN_START
 }
 type SignInFinish = {
   eventName: Name.SIGN_IN_FINISH
@@ -2730,6 +2736,7 @@ export type CommentsOpenInstallAppModal = {
 export type BaseAnalyticsEvent = { type: typeof ANALYTICS_TRACK_EVENT }
 
 export type AllTrackingEvents =
+  | AppError
   | CreateAccountOpen
   | CreateAccountCompleteEmail
   | CreateAccountCompletePassword
@@ -2758,7 +2765,7 @@ export type AllTrackingEvents =
   | CreateAccountPreviewArtist
   | CreateAccountWelcomeModal
   | CreateAccountWelcomeModalUploadTrack
-  | SignInOpen
+  | SignInStart
   | SignInFinish
   | SignInWithIncompleteAccount
   | SettingsChangeTheme
