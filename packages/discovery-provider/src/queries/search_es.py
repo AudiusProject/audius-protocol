@@ -250,7 +250,7 @@ def search_tags_es(args: dict):
     if not esclient:
         raise Exception("esclient is None")
 
-    tag_search = (args.get("query", "") or "").strip()
+    tag_search = args.get("query", "").strip()
 
     current_user_id = args.get("current_user_id")
     limit = args.get("limit", 10)
@@ -295,11 +295,13 @@ def search_tags_es(args: dict):
                     bpm_min=bpm_min,
                     bpm_max=bpm_max,
                     keys=keys,
+                    must_saved=False,
                     only_downloadable=only_downloadable,
                     only_with_downloads=only_with_downloads,
                     only_purchaseable=only_purchaseable,
                     include_purchaseable=include_purchaseable,
                     sort_method=sort_method,
+                    only_verified=only_verified,
                 ),
             ]
         )
@@ -332,6 +334,7 @@ def search_tags_es(args: dict):
                     genres=genres,
                     moods=moods,
                     sort_method=sort_method,
+                    only_verified=only_verified,
                 ),
             ]
         )
@@ -350,6 +353,7 @@ def search_tags_es(args: dict):
                     only_with_downloads=only_with_downloads,
                     only_purchaseable=only_purchaseable,
                     sort_method=sort_method,
+                    only_verified=only_verified,
                 ),
             ]
         )
