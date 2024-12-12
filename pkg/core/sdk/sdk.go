@@ -1,5 +1,3 @@
-//go:generate go run ../scripts/generate_options.go Sdk sdk_options.go
-
 package sdk
 
 import (
