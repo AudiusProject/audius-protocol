@@ -29,6 +29,8 @@ export const email = ({
 }) => {
   const copyrightYear = new Date().getFullYear().toString()
 
+  const isGuestCheckout = !purchaserName
+
   return `
   <!doctype html>
   <html lang="en" xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">
@@ -301,7 +303,11 @@ export const email = ({
   </tr>
   <tr>
   <td style="vertical-align: middle;">
-  <div style="line-height:24px;text-align:left;"><span style="color:#52505f;font-family:Inter,Arial,sans-serif;font-size:16px;line-height:24px;text-align:left;">Congratulations! </span><a href="${purchaserLink}" target="_blank"><span style="color:#cc0fe0;font-family:Inter,Arial,sans-serif;font-size:16px;line-height:24px;text-align:left;">${purchaserName}</span></a><span style="color:#52505f;font-family:Inter,Arial,sans-serif;font-size:16px;line-height:24px;text-align:left;"> just purchased your ${contentType} </span><a href="${contentLink}" target="_blank"><span style="color:#cc0fe0;font-family:Inter,Arial,sans-serif;font-size:16px;line-height:24px;text-align:left;">${contentTitle} </span></a><span style="color:#52505f;font-family:Inter,Arial,sans-serif;font-size:16px;line-height:24px;text-align:left;">on Audius!</span></div>
+  <div style="line-height:24px;text-align:left;"><span style="color:#52505f;font-family:Inter,Arial,sans-serif;font-size:16px;line-height:24px;text-align:left;">Congratulations! </span>${
+    isGuestCheckout
+      ? `<span style="color:#52505f;font-family:Inter,Arial,sans-serif;font-size:16px;line-height:24px;text-align:left;">Someone</span>`
+      : `<a href="${purchaserLink}" target="_blank"><span style="color:#cc0fe0;font-family:Inter,Arial,sans-serif;font-size:16px;line-height:24px;text-align:left;">${purchaserName}</span></a>`
+  }<span style="color:#52505f;font-family:Inter,Arial,sans-serif;font-size:16px;line-height:24px;text-align:left;"> just purchased your ${contentType} </span><a href="${contentLink}" target="_blank"><span style="color:#cc0fe0;font-family:Inter,Arial,sans-serif;font-size:16px;line-height:24px;text-align:left;">${contentTitle} </span></a><span style="color:#52505f;font-family:Inter,Arial,sans-serif;font-size:16px;line-height:24px;text-align:left;">on Audius!</span></div>
   </td>
   </tr>
   <tr>
