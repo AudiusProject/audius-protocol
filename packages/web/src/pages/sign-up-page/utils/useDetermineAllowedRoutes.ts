@@ -31,7 +31,7 @@ export const useDetermineAllowedRoute = () => {
   const followeeCount = useSelector(getAccountFolloweeCount)
   const isAccountComplete = useSelector(getIsAccountComplete)
   const hasAlreadySignedUp = useSelector(getAccountAlreadyExisted)
-  const hasReferrer = useFastReferral()
+  const isFastReferral = useFastReferral()
   const [guestEmail] = useLocalStorage('guestEmail', '')
 
   const pastAccountPhase = signUpState.finishedPhase1 || isAccountComplete
@@ -70,7 +70,7 @@ export const useDetermineAllowedRoute = () => {
       // Either way the user can't go back any more
       allowedRoutes = [SignUpPath.selectGenres]
 
-      if (hasReferrer) {
+      if (isFastReferral) {
         allowedRoutes.push(SignUpPath.selectArtists)
         allowedRoutes.push(SignUpPath.appCta)
         allowedRoutes.push(SignUpPath.completedRedirect)

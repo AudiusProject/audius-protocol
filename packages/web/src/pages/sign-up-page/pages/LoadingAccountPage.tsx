@@ -23,12 +23,12 @@ const messages = {
 // The user just waits here until the account is created and before being shown the welcome modal on the trending page
 export const LoadingAccountPage = () => {
   const navigate = useNavigateToPage()
-  const hasReferrer = useFastReferral()
+  const isFastReferral = useFastReferral()
   const accountReady = useSelector(getAccountReady)
 
   const accountCreationStatus = useSelector(getStatus)
 
-  const isAccountReady = hasReferrer
+  const isAccountReady = isFastReferral
     ? accountReady
     : accountCreationStatus === EditingStatus.SUCCESS
 

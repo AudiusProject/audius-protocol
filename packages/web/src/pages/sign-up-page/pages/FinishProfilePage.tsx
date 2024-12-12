@@ -94,7 +94,7 @@ export const FinishProfilePage = () => {
   const linkedSocialOnFirstPage = useSelector(getLinkedSocialOnFirstPage)
   const savedCoverPhoto = useSelector(getCoverPhotoField)
   const savedProfileImage = useSelector(getProfileImageField)
-  const hasReferrer = useFastReferral()
+  const isFastReferral = useFastReferral()
 
   // If the user comes back from a later page we start with whats in the store
   const initialValues = {
@@ -137,20 +137,20 @@ export const FinishProfilePage = () => {
       }
       dispatch(setFinishedPhase1(true))
       dispatch(signUp())
-      if (hasReferrer) {
+      if (isFastReferral) {
         navigate(SIGN_UP_LOADING_PAGE)
       } else {
         navigate(SIGN_UP_GENRES_PAGE)
       }
     },
-    [dispatch, hasReferrer, navigate]
+    [dispatch, isFastReferral, navigate]
   )
 
   return (
     <Formik
       initialValues={initialValues}
       onSubmit={handleSubmit}
-      validationSchema={hasReferrer ? referralformSchema : formSchema}
+      validationSchema={isFastReferral ? referralformSchema : formSchema}
       validateOnMount
       validateOnChange
     >
@@ -199,7 +199,9 @@ export const FinishProfilePage = () => {
             sticky
             buttonProps={{ disabled: !isValid }}
             prefix={
-              isMobile && !hasReferrer ? <UploadProfilePhotoHelperText /> : null
+              isMobile && !isFastReferral ? (
+                <UploadProfilePhotoHelperText />
+              ) : null
             }
             postfix={
               isMobile || isSocialConnected ? null : (

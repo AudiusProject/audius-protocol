@@ -118,13 +118,13 @@ export const PickHandlePage = () => {
   const { value: handle } = useSelector(getHandleField)
   const isLinkingSocialOnFirstPage = useSelector(getLinkedSocialOnFirstPage)
   const handleInputRef = useRef<HTMLInputElement>(null)
-  const hasReferrer = useFastReferral()
+  const isFastReferral = useFastReferral()
 
   const handleSubmit = useCallback(
     (values: PickHandleValues) => {
       const { handle } = values
       dispatch(setValueField('handle', handle))
-      if (hasReferrer) {
+      if (isFastReferral) {
         dispatch(setValueField('name', handle))
       }
       navigate(
@@ -133,7 +133,7 @@ export const PickHandlePage = () => {
           : SIGN_UP_FINISH_PROFILE_PAGE
       )
     },
-    [dispatch, hasReferrer, navigate, isLinkingSocialOnFirstPage]
+    [dispatch, isFastReferral, navigate, isLinkingSocialOnFirstPage]
   )
 
   const handleCompleteSocialMediaLogin = useCallback(

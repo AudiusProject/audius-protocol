@@ -73,7 +73,7 @@ export const SelectArtistsPage = () => {
   const navigate = useNavigateToPage()
   const { color } = useTheme()
   const headerContainerRef = useRef<HTMLDivElement | null>(null)
-  const hasReferrer = useFastReferral()
+  const isFastReferral = useFastReferral()
   const { isMobile } = useMedia()
 
   const handleChangeGenre = useCallback((e: ChangeEvent<HTMLInputElement>) => {
@@ -265,7 +265,7 @@ export const SelectArtistsPage = () => {
                 disabled: !isValid || isSubmitting,
                 isLoading: isSubmitting || isValidating
               }}
-              prefix={hasReferrer ? <SkipButton /> : null}
+              prefix={isFastReferral ? <SkipButton /> : null}
               postfix={
                 <Text variant='body'>
                   {selectArtistsPageMessages.selected}{' '}

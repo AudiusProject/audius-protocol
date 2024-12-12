@@ -31,7 +31,7 @@ export const SelectGenresPage = () => {
 
   const [currentGenres, setCurrentGenres] = useState<Genre[]>([])
   const savedGenres = useSelector(getGenres)
-  const hasReferrer = useFastReferral()
+  const isFastReferral = useFastReferral()
   const { isMobile } = useMedia()
 
   const initialValues: SelectGenresValue = {
@@ -120,7 +120,7 @@ export const SelectGenresPage = () => {
               centered
               sticky
               buttonProps={{ disabled: !isValid }}
-              prefix={hasReferrer ? <SkipButton /> : null}
+              prefix={isFastReferral ? <SkipButton /> : null}
             />
           </Page>
         )}
