@@ -15,6 +15,7 @@ import { PurchaseSummaryTable } from 'components/premium-content-purchase-modal/
 import { usePurchaseContentFormState } from 'components/premium-content-purchase-modal/hooks/usePurchaseContentFormState'
 import { LockedContentDetailsTile } from 'components/track/LockedContentDetailsTile'
 import { useIsMobile } from 'hooks/useIsMobile'
+import { useLocalStorage } from 'hooks/useLocalStorage'
 import { EmailField } from 'pages/sign-up-page/components/EmailField'
 
 const messages = {
@@ -104,10 +105,15 @@ export const GuestCheckoutPage = (props: GuestCheckoutProps) => {
 export const GuestCheckoutFooter = () => {
   const dispatch = useDispatch()
   const [{ value: guestEmail }] = useField(GUEST_EMAIL)
+  const [emailFromLocalStorage] = useLocalStorage(GUEST_EMAIL, '')
 
   const handleContinueAsGuest = useCallback(() => {
-    dispatch(signOnActions.createGuestAccount(guestEmail))
-  }, [dispatch, guestEmail])
+    if (emailFromLocalStorage !== guestEmail) {
+      // only create guest account if email has changed
+      // enable multiple purchases with same guest email
+      dispatch(signOnActions.createGuestAccount(guestEmail))
+    }
+  }, [dispatch, emailFromLocalStorage, guestEmail])
 
   return (
     <Button fullWidth type='submit' onClick={handleContinueAsGuest}>

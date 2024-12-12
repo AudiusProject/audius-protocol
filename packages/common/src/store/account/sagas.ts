@@ -116,7 +116,12 @@ export function* fetchAccountAsync({ isSignUp = false }): SagaIterator {
   }
   // Set the userId in the remoteConfigInstance
   remoteConfigInstance.setUserId(user.user_id)
-  yield* call(recordIPIfNotRecent, user.handle)
+
+  if (user.handle) {
+    // guest account don't have handles
+    yield* call(recordIPIfNotRecent, user.handle)
+  }
+
   // Cache the account and put the signedIn action. We're done.
   yield* call(cacheAccount, accountData)
   const formattedAccount = {
