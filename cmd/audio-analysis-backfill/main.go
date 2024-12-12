@@ -226,15 +226,17 @@ func consumeAnalysisResults(ctx context.Context, wg *sync.WaitGroup) {
 				return
 			}
 
-			line := fmt.Sprintf(
-				"update tracks set bpm = %g, musical_key = '%s' where audio_upload_id = '%s' and (bpm is null or musical_key is null);\n",
-				upload.AudioAnalysisResults.BPM,
-				upload.AudioAnalysisResults.Key,
-				upload.ID,
-			)
-			if _, err := file.WriteString(line); err != nil {
-				fmt.Println("error writing to file:", err)
-				return
+			if upload != nil && upload.AudioAnalysisResults != nil {
+				line := fmt.Sprintf(
+					"update tracks set bpm = %g, musical_key = '%s' where audio_upload_id = '%s' and (bpm is null or musical_key is null);\n",
+					upload.AudioAnalysisResults.BPM,
+					upload.AudioAnalysisResults.Key,
+					upload.ID,
+				)
+				if _, err := file.WriteString(line); err != nil {
+					fmt.Println("error writing to file:", err)
+					return
+				}
 			}
 		}
 	}
