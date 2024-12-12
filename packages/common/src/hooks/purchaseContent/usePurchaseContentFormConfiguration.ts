@@ -71,15 +71,16 @@ export const usePurchaseContentFormConfiguration = ({
   const balance = USDC(balanceBN ?? new BN(0)).value
   const [guestEmail, setGuestEmail] = useLocalStorage(GUEST_EMAIL, '')
   const { data: currentUser } = useGetCurrentUser({})
-  const featureFlag = useFeatureFlag(FeatureFlags.GUEST_CHECKOUT)
-  const guestCheckoutEnabled = featureFlag.isEnabled
-  console.log('asdf isGuestCheckout', guestCheckoutEnabled)
+  const { isEnabled: guestCheckoutEnabled } = useFeatureFlag(
+    FeatureFlags.GUEST_CHECKOUT
+  )
 
   const isGuestCheckout =
     guestCheckoutEnabled &&
     (!currentUser || (currentUser && !currentUser.handle))
 
   useEffect(() => {
+    // check if feature flag loaded to set the page
     if (isGuestCheckout) {
       dispatch(setPurchasePage({ page: PurchaseContentPage.GUEST_CHECKOUT }))
     }

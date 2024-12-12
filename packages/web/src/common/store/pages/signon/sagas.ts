@@ -1064,8 +1064,9 @@ function* signIn(action: ReturnType<typeof signOnActions.signIn>) {
             }
           })
         )
+
+        yield* put(toastActions.toast({ content: messages.incompleteAccount }))
       }
-      yield* put(toastActions.toast({ content: messages.incompleteAccount }))
 
       yield* put(
         make(Name.SIGN_IN_WITH_INCOMPLETE_ACCOUNT, {
