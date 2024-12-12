@@ -1,3 +1,5 @@
+import { getHostname } from '../../../utils/env'
+
 type PurchaseEmailConfig = {
   purchaserEmail: string
   purchaserName: string
@@ -34,6 +36,10 @@ export const email = ({
   contentLink = isGuestCheckout
     ? `${contentLink}?guestEmail=${encodeURIComponent(purchaserEmail)}`
     : contentLink
+
+  const signUpLink = `${getHostname()}/signup?guestEmail=${encodeURIComponent(
+    purchaserEmail
+  )}`
 
   return `
   <!doctype html>
@@ -806,6 +812,45 @@ export const email = ({
   <div style="line-height:24px;text-align:center;"><span style="color:#7e1bcc;font-weight:600;font-family:Inter,Arial,sans-serif;font-size:16px;line-height:24px;text-align:center;">Earned tokens will be ready to claim in 7 days!</span></div>
   </td>
   </tr>
+  ${
+    isGuestCheckout
+      ? `
+  <tr>
+  <td height="24" style="height:24px; min-height:24px; line-height:24px;"></td>
+  </tr>
+  <tr>
+  <td align="center">
+  <table cellspacing="0" cellpadding="0" border="0">
+  <tr>
+  <td style="vertical-align: middle;" align="center" width="420" class="stack-column-center">
+  <table cellspacing="0" cellpadding="0" border="0">
+  <tr>
+  <td width="420" align="center" style="vertical-align: middle;">
+  <table width="100%" border="0" cellpadding="0" cellspacing="0">
+  <tr>
+  <td style="vertical-align: middle;" align="center">
+  <div>
+  <!--[if mso]>
+                          <v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" xmlns:w="urn:schemas-microsoft-com:office:word" href="${contentLink}" style="height:48px;v-text-anchor:middle;width:420px;" fillcolor="#7e1bcc"  stroke="f" arcsize="17%">
+                          <w:anchorlock/>
+                          <center style="white-space:nowrap;display:inline-block;text-align:center;color:#ffffff;font-weight:600;font-family:Inter,Arial,sans-serif;font-size:18px;">Complete Account to Claim Rewards</center>
+                          </v:roundrect>
+                      <![endif]-->
+  <a target="_blank" href="${signUpLink}" style="white-space:nowrap;background-color:#7e1bcc;border-radius:8px; display:inline-block;text-align:center;color:#ffffff;font-weight:600;font-family:Inter,Arial,sans-serif;font-size:18px;line-height:48px;width:100%; -webkit-text-size-adjust:none;mso-hide:all;box-shadow: 0px 2px 0px 0px rgba(0, 0, 0, 0.0430000014603138);">Complete Account to Claim Rewards</a>
+  </div>
+  </td>
+  </tr>
+  </table>
+  </td>
+  </tr>
+  </table>
+  </td>
+  </tr>
+  </table>
+  </td>
+  </tr>`
+      : ''
+  }
   <tr>
   <td height="16" style="height:16px; min-height:16px; line-height:16px;"></td>
   </tr>
