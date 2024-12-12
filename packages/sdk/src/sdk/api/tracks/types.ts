@@ -122,9 +122,7 @@ export const createUploadTrackMetadataSchema = () =>
         ])
       )
       .nullable(),
-    releaseDate: z.optional(
-      z.date().max(new Date(), { message: messages.invalidReleaseDateError })
-    ),
+    releaseDate: z.optional(z.date()),
     remixOf: z.optional(
       z
         .object({
@@ -180,7 +178,8 @@ export const createUploadTrackMetadataSchema = () =>
     musicalKey: z.optional(z.string().nullable()),
     isCustomMusicalKey: z.optional(z.boolean()),
     audioAnalysisErrorCount: z.optional(z.number()),
-    commentsDisabled: z.optional(z.boolean())
+    commentsDisabled: z.optional(z.boolean()),
+    isScheduledRelease: z.optional(z.boolean())
   })
 
 export type TrackMetadata = z.input<
