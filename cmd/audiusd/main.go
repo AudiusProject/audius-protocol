@@ -168,7 +168,7 @@ func startEchoProxyWithOptionalTLS(hostUrl *url.URL, enableTLS bool) error {
 
 		e.Logger.Info("TLS host whitelist:", whitelist)
 		e.AutoTLSManager.HostPolicy = autocert.HostWhitelist(whitelist...)
-		e.AutoTLSManager.Cache = autocert.DirCache("/data/var/www/.cache")
+		e.AutoTLSManager.Cache = autocert.DirCache(getEnvString("audius_core_root_dir", "/audius-core") + "/echo/cache")
 		e.Pre(middleware.HTTPSRedirect())
 
 		httpsPort := os.Getenv("AUDIUSD_HTTPS_PORT")
@@ -199,28 +199,25 @@ func startEchoProxyWithOptionalTLS(hostUrl *url.URL, enableTLS bool) error {
 	return e.Start(":80")
 }
 
-func keyGen() (pKey string, addr string) {
-	privateKey, err := crypto.GenerateKey()
-	if err != nil {
-		log.Fatalf("Failed to generate private key: %v", err)
-	}
-	privateKeyBytes := crypto.FromECDSA(privateKey)
-	privateKeyStr := hex.EncodeToString(privateKeyBytes)
-	address := crypto.PubkeyToAddress(privateKey.PublicKey)
-	return privateKeyStr, address.Hex()
-}
-
-func getEnvBool(key string, defaultVal bool) bool {
+func getEnv[T any](key string, defaultVal T, parse func(string) (T, error)) T {
 	val, ok := os.LookupEnv(key)
 	if !ok {
 		return defaultVal
 	}
-	parsed, err := strconv.ParseBool(val)
+	parsed, err := parse(val)
 	if err != nil {
 		log.Printf("Invalid value for %s: %v, defaulting to %v", key, val, defaultVal)
 		return defaultVal
 	}
 	return parsed
+}
+
+func getEnvString(key, defaultVal string) string {
+	return getEnv(key, defaultVal, func(s string) (string, error) { return s, nil })
+}
+
+func getEnvBool(key string, defaultVal bool) bool {
+	return getEnv(key, defaultVal, strconv.ParseBool)
 }
 
 func getHostUrl() (*url.URL, error) {
@@ -232,4 +229,15 @@ func getHostUrl() (*url.URL, error) {
 		ep = "localhost"
 	}
 	return url.Parse(ep)
+}
+
+func keyGen() (pKey string, addr string) {
+	privateKey, err := crypto.GenerateKey()
+	if err != nil {
+		log.Fatalf("Failed to generate private key: %v", err)
+	}
+	privateKeyBytes := crypto.FromECDSA(privateKey)
+	privateKeyStr := hex.EncodeToString(privateKeyBytes)
+	address := crypto.PubkeyToAddress(privateKey.PublicKey)
+	return privateKeyStr, address.Hex()
 }
