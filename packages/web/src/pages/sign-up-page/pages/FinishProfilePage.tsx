@@ -28,8 +28,7 @@ import {
   getIsSocialConnected,
   getLinkedSocialOnFirstPage,
   getNameField,
-  getProfileImageField,
-  getReferrer
+  getProfileImageField
 } from 'common/store/pages/signon/selectors'
 import { HarmonyTextField } from 'components/form-fields/HarmonyTextField'
 import { useMedia } from 'hooks/useMedia'
@@ -39,6 +38,7 @@ import { AccountHeader } from '../components/AccountHeader'
 import { ImageFieldValue } from '../components/ImageField'
 import { OutOfText } from '../components/OutOfText'
 import { Heading, Page, PageFooter } from '../components/layout'
+import { useFastReferral } from '../hooks/useFastReferral'
 
 const { SIGN_UP_GENRES_PAGE, SIGN_UP_LOADING_PAGE } = route
 
@@ -94,7 +94,7 @@ export const FinishProfilePage = () => {
   const linkedSocialOnFirstPage = useSelector(getLinkedSocialOnFirstPage)
   const savedCoverPhoto = useSelector(getCoverPhotoField)
   const savedProfileImage = useSelector(getProfileImageField)
-  const hasReferrer = useSelector(getReferrer)
+  const hasReferrer = useFastReferral()
 
   // If the user comes back from a later page we start with whats in the store
   const initialValues = {
@@ -137,13 +137,13 @@ export const FinishProfilePage = () => {
       }
       dispatch(setFinishedPhase1(true))
       dispatch(signUp())
-      if (hasReferrer && isMobile) {
+      if (hasReferrer) {
         navigate(SIGN_UP_LOADING_PAGE)
       } else {
         navigate(SIGN_UP_GENRES_PAGE)
       }
     },
-    [dispatch, hasReferrer, isMobile, navigate]
+    [dispatch, hasReferrer, navigate]
   )
 
   return (

@@ -20,8 +20,7 @@ import {
 import {
   getHandleField,
   getIsSocialConnected,
-  getLinkedSocialOnFirstPage,
-  getReferrer
+  getLinkedSocialOnFirstPage
 } from 'common/store/pages/signon/selectors'
 import { ToastContext } from 'components/toast/ToastContext'
 import { useMedia } from 'hooks/useMedia'
@@ -33,6 +32,7 @@ import { OutOfText } from '../components/OutOfText'
 import { SocialMediaLoading } from '../components/SocialMediaLoading'
 import { SocialMediaLoginOptions } from '../components/SocialMediaLoginOptions'
 import { Heading, Page, PageFooter } from '../components/layout'
+import { useFastReferral } from '../hooks/useFastReferral'
 import { useSocialMediaLoader } from '../hooks/useSocialMediaLoader'
 
 const {
@@ -118,7 +118,7 @@ export const PickHandlePage = () => {
   const { value: handle } = useSelector(getHandleField)
   const isLinkingSocialOnFirstPage = useSelector(getLinkedSocialOnFirstPage)
   const handleInputRef = useRef<HTMLInputElement>(null)
-  const hasReferrer = useSelector(getReferrer)
+  const hasReferrer = useFastReferral()
 
   const handleSubmit = useCallback(
     (values: PickHandleValues) => {

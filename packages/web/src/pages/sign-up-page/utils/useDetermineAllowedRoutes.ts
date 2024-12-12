@@ -6,12 +6,12 @@ import { useLocalStorage } from 'react-use'
 import { useModalState } from 'common/hooks/useModalState'
 import {
   getAccountAlreadyExisted,
-  getReferrer,
   getSignOn
 } from 'common/store/pages/signon/selectors'
 import { EditingStatus } from 'common/store/pages/signon/types'
-import { useMedia } from 'hooks/useMedia'
 import { env } from 'services/env'
+
+import { useFastReferral } from '../hooks/useFastReferral'
 
 const { FEED_PAGE, SignUpPath } = route
 const { getIsAccountComplete, getAccountFolloweeCount } = accountSelectors
@@ -31,8 +31,7 @@ export const useDetermineAllowedRoute = () => {
   const followeeCount = useSelector(getAccountFolloweeCount)
   const isAccountComplete = useSelector(getIsAccountComplete)
   const hasAlreadySignedUp = useSelector(getAccountAlreadyExisted)
-  const hasReferrer = useSelector(getReferrer)
-  const { isMobile } = useMedia()
+  const hasReferrer = useFastReferral()
   const [guestEmail] = useLocalStorage('guestEmail', '')
 
   const pastAccountPhase = signUpState.finishedPhase1 || isAccountComplete
@@ -71,7 +70,7 @@ export const useDetermineAllowedRoute = () => {
       // Either way the user can't go back any more
       allowedRoutes = [SignUpPath.selectGenres]
 
-      if (isMobile && hasReferrer) {
+      if (hasReferrer) {
         allowedRoutes.push(SignUpPath.selectArtists)
         allowedRoutes.push(SignUpPath.appCta)
         allowedRoutes.push(SignUpPath.completedRedirect)
