@@ -1,9 +1,9 @@
-import { useCallback, useMemo } from 'react'
+import { useCallback, useEffect, useMemo } from 'react'
 
 import { USDC } from '@audius/fixed-decimal'
 import BN from 'bn.js'
 import { useDispatch, useSelector } from 'react-redux'
-import { useLocalStorage, useEffectOnce } from 'react-use'
+import { useLocalStorage } from 'react-use'
 import { z } from 'zod'
 
 import { useGetCurrentUser } from '~/api'
@@ -71,19 +71,19 @@ export const usePurchaseContentFormConfiguration = ({
   const balance = USDC(balanceBN ?? new BN(0)).value
   const [guestEmail, setGuestEmail] = useLocalStorage(GUEST_EMAIL, '')
   const { data: currentUser } = useGetCurrentUser({})
-  const { isEnabled: guestCheckoutEnabled = false } = useFeatureFlag(
-    FeatureFlags.GUEST_CHECKOUT
-  )
+  const featureFlag = useFeatureFlag(FeatureFlags.GUEST_CHECKOUT)
+  const guestCheckoutEnabled = featureFlag.isEnabled
+  console.log('asdf isGuestCheckout', guestCheckoutEnabled)
 
   const isGuestCheckout =
     guestCheckoutEnabled &&
     (!currentUser || (currentUser && !currentUser.handle))
 
-  useEffectOnce(() => {
-    if (isGuestCheckout && !guestEmail) {
+  useEffect(() => {
+    if (isGuestCheckout) {
       dispatch(setPurchasePage({ page: PurchaseContentPage.GUEST_CHECKOUT }))
     }
-  })
+  }, [dispatch, isGuestCheckout])
 
   const initialValues: PurchaseContentValues = {
     [CUSTOM_AMOUNT]: undefined,

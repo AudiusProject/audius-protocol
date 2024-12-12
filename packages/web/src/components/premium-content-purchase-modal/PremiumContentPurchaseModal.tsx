@@ -105,13 +105,12 @@ const PremiumContentPurchaseForm = (props: PremiumContentPurchaseFormProps) => {
   const { error, isUnlocking, purchaseSummaryValues, stage, page } =
     usePurchaseContentFormState({ price })
   const [, , { setValue: setPurchaseMethod }] = useField(PURCHASE_METHOD)
+
   const currentPageIndex = pageToPageIndex(page)
 
   const { submitForm, resetForm } = useFormikContext()
   const { history } = useHistoryContext()
   const isAccountComplete = useSelector(getIsAccountComplete)
-
-  // Reset form on track change
   useEffect(() => {
     resetForm()
   }, [contentId, resetForm])
@@ -131,6 +130,13 @@ const PremiumContentPurchaseForm = (props: PremiumContentPurchaseFormProps) => {
     setPurchaseMethod(PurchaseMethod.BALANCE)
     submitForm()
   }, [submitForm, setPurchaseMethod])
+  console.log(
+    'asdf isAccountComplete',
+    isAccountComplete,
+    page,
+    currentPageIndex
+  )
+
   return (
     <ModalForm className={cn(styles.modalRoot, { [styles.mobile]: isMobile })}>
       <ModalHeader
@@ -210,7 +216,7 @@ export const PremiumContentPurchaseModal = () => {
   const presetValues = usePayExtraPresets()
   const { data: currentUserId } = useGetCurrentUserId({})
   const { data: currentUser } = useGetCurrentUser({})
-  const { isEnabled: guestCheckoutEnabled = false } = useFeatureFlag(
+  const { isEnabled: guestCheckoutEnabled } = useFeatureFlag(
     FeatureFlags.GUEST_CHECKOUT
   )
 
@@ -324,6 +330,7 @@ export const PremiumContentPurchaseModal = () => {
           initialValues={initialValues}
           enableReinitialize
           validationSchema={toFormikValidationSchema(validationSchema)}
+          validateOnBlur={false}
           validateOnChange={false}
           onSubmit={onSubmit}
         >

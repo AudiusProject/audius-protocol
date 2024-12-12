@@ -615,7 +615,7 @@ function* createGuestAccount(
       }
     )
 
-    const { accountWalletAddress: wallet, web3WalletAddress } = yield* call([
+    const { accountWalletAddress: wallet } = yield* call([
       authService,
       authService.getWalletAddresses
     ])
@@ -629,13 +629,6 @@ function* createGuestAccount(
     yield* call(fetchAccountAsync, { isSignUp: true })
 
     const userBank = yield* call(getOrCreateUSDCUserBank)
-    yield* put(
-      accountActions.setWalletAddresses({
-        currentUser: wallet,
-        web3User: web3WalletAddress
-      })
-    )
-
     if (!userBank) {
       throw new Error('Failed to create user bank')
     }
