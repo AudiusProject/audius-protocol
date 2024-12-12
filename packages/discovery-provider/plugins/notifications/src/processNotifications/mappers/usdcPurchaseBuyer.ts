@@ -164,11 +164,14 @@ export class USDCPurchaseBuyer extends BaseNotification<USDCPurchaseBuyerRow> {
       await this.incrementBadgeCount(this.notificationReceiverUserId)
     }
 
+    const purchaserEmail = userNotificationSettings.getUserEmail(
+      this.notificationReceiverUserId
+    )
+
     await sendTransactionalEmail({
-      email: userNotificationSettings.getUserEmail(
-        this.notificationReceiverUserId
-      ),
+      email: purchaserEmail,
       html: email({
+        purchaserEmail,
         purchaserName: purchaserUsername,
         purchaserProfileImage: formatImageUrl(
           purchaserProfilePictureSizes,
