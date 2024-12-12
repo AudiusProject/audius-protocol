@@ -72,6 +72,7 @@ def get_purchases_or_sales(user_id: int, is_purchases: bool):
                     USDCPurchase.splits.label("splits"),
                     USDCPurchase.country.label("country"),
                     User.name.label("buyer_name"),
+                    User.user_id.label("buyer_user_id"),
                     EncryptedEmail.encrypted_email.label("encrypted_email"),
                     EmailAccess.encrypted_key.label("encrypted_key"),
                 )
@@ -244,6 +245,9 @@ def format_sale_for_download(
         )
         fields_with_underscores["encrypted_key"] = (
             result.encrypted_key if hasattr(result, "encrypted_key") else None
+        )
+        fields_with_underscores["buyer_user_id"] = (
+            result.buyer_user_id if hasattr(result, "buyer_user_id") else None
         )
         return fields_with_underscores
 

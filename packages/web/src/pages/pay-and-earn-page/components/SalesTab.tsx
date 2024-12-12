@@ -155,13 +155,9 @@ export const useSales = () => {
         id: Id.parse(userId)
       })
 
-      const userDecryptionKey = salesAsJSON.data?.decryptionKey
+      const sales = salesAsJSON.data?.sales
 
-      if (
-        !salesAsJSON.data?.sales ||
-        salesAsJSON.data.sales.length === 0 ||
-        !userDecryptionKey
-      ) {
+      if (!sales || sales.length === 0) {
         return
       }
 
@@ -179,15 +175,15 @@ export const useSales = () => {
         'Country'
       ]
 
-      const symettricKey =
-        await sdk.services.emailEncryptionService.decryptSymmetricKey(
-          userDecryptionKey,
-          Id.parse(userId)
-        )
-
       const rows = await Promise.all(
-        salesAsJSON.data.sales.map(async (sale) => {
+        sales.map(async (sale) => {
           try {
+            const symettricKey =
+              await sdk.services.emailEncryptionService.decryptSymmetricKey(
+                sale.encryptedKey ?? '',
+                Id.parse(sale.buyerUserId)
+              )
+
             const decryptedEmail = sale.encryptedEmail
               ? await sdk.services.emailEncryptionService
                   .decryptEmail(sale.encryptedEmail, symettricKey)

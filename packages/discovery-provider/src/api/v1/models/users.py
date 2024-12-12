@@ -260,6 +260,9 @@ sale_json_model = ns.model(
         ),
         "link": fields.String(description="Full URL link to the content"),
         "purchased_by": fields.String(description="Name of the buyer"),
+        "buyer_user_id": fields.Integer(
+            description="User ID of the buyer", allow_null=True
+        ),
         "date": fields.String(
             description="ISO format date string of when the sale occurred"
         ),

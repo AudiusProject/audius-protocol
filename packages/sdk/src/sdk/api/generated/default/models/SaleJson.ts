@@ -39,6 +39,12 @@ export interface SaleJson {
      */
     purchasedBy?: string;
     /**
+     * User ID of the buyer
+     * @type {number}
+     * @memberof SaleJson
+     */
+    buyerUserId?: number;
+    /**
      * ISO format date string of when the sale occurred
      * @type {string}
      * @memberof SaleJson
@@ -110,6 +116,7 @@ export function SaleJsonFromJSONTyped(json: any, ignoreDiscriminator: boolean): 
         'title': !exists(json, 'title') ? undefined : json['title'],
         'link': !exists(json, 'link') ? undefined : json['link'],
         'purchasedBy': !exists(json, 'purchased_by') ? undefined : json['purchased_by'],
+        'buyerUserId': !exists(json, 'buyer_user_id') ? undefined : json['buyer_user_id'],
         'date': !exists(json, 'date') ? undefined : json['date'],
         'salePrice': !exists(json, 'sale_price') ? undefined : json['sale_price'],
         'networkFee': !exists(json, 'network_fee') ? undefined : json['network_fee'],
@@ -133,6 +140,7 @@ export function SaleJsonToJSON(value?: SaleJson | null): any {
         'title': value.title,
         'link': value.link,
         'purchased_by': value.purchasedBy,
+        'buyer_user_id': value.buyerUserId,
         'date': value.date,
         'sale_price': value.salePrice,
         'network_fee': value.networkFee,
