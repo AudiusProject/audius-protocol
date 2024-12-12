@@ -14,7 +14,7 @@ ABI_ARTIFACTS := $(ABI_ARTIFACT_DIR)/ERC20Detailed.json $(ABI_ARTIFACT_DIR)/Regi
 SQL_SRCS := $(shell find pkg/core/db/sql -type f -name '*.sql') pkg/core/db/sqlc.yaml
 SQL_ARTIFACTS := $(wildcard pkg/core/db/*.sql.go)
 
-PROTO_SRCS := pkg/core/proto/protocol.proto
+PROTO_SRCS := pkg/core/protocol/protocol.proto
 PROTO_ARTIFACTS := $(wildcard pkg/core/gen/core_proto/*.pb.go)
 
 TEMPL_SRCS := $(shell find pkg/core/console -type f -name "*.templ")
