@@ -1,4 +1,4 @@
-from typing import TypedDict
+from typing import Optional, TypedDict
 
 from sqlalchemy import and_, desc, or_
 
@@ -33,6 +33,7 @@ class DownloadPurchasesArgs(TypedDict):
 
 class DownloadSalesArgs(TypedDict):
     seller_user_id: int
+    grantee_user_id: Optional[int]
 
 
 class DownloadWithdrawalsArgs(TypedDict):
@@ -40,7 +41,9 @@ class DownloadWithdrawalsArgs(TypedDict):
 
 
 # Get all purchases or sales for a given artist.
-def get_purchases_or_sales(user_id: int, is_purchases: bool):
+def get_purchases_or_sales(
+    user_id: int, is_purchases: bool, grantee_user_id: Optional[int] = None
+):
     """Get all purchases or sales for a given artist."""
     db = get_db_read_replica()
     with db.scoped_session() as session:
@@ -62,7 +65,21 @@ def get_purchases_or_sales(user_id: int, is_purchases: bool):
                 .filter(User.is_current == True)
             )
         else:
-            # Get all sales for the given user and include the buyer name and encrypted email
+            # Set email access conditions based on grantee_user_id
+            if grantee_user_id is not None:
+                email_access_condition = and_(
+                    EmailAccess.email_owner_user_id == USDCPurchase.buyer_user_id,
+                    EmailAccess.receiving_user_id == grantee_user_id,
+                    EmailAccess.grantor_user_id == user_id,
+                )
+            else:
+                # When seller is directly accessing buyer emails
+                email_access_condition = and_(
+                    EmailAccess.email_owner_user_id == USDCPurchase.buyer_user_id,
+                    EmailAccess.receiving_user_id == user_id,
+                    EmailAccess.grantor_user_id == USDCPurchase.buyer_user_id,
+                )
+
             query = (
                 session.query(
                     USDCPurchase.content_type.label("content_type"),
@@ -77,16 +94,13 @@ def get_purchases_or_sales(user_id: int, is_purchases: bool):
                     EmailAccess.encrypted_key.label("encrypted_key"),
                 )
                 .join(User, User.user_id == USDCPurchase.buyer_user_id)
-                .outerjoin(  # Using outerjoin in case some users don't have encrypted emails
+                .outerjoin(
                     EncryptedEmail,
                     EncryptedEmail.email_owner_user_id == USDCPurchase.buyer_user_id,
                 )
-                .outerjoin(  # Using outerjoin to get the encrypted key for the seller
+                .outerjoin(
                     EmailAccess,
-                    and_(
-                        EmailAccess.email_owner_user_id == USDCPurchase.buyer_user_id,
-                        EmailAccess.receiving_user_id == user_id,
-                    ),
+                    email_access_condition,
                 )
                 .filter(USDCPurchase.seller_user_id == user_id)
                 .filter(User.is_current == True)
@@ -257,9 +271,12 @@ def format_sale_for_download(
 def download_sales(args: DownloadSalesArgs, return_json: bool = False):
     """Returns USDC sales for a given artist in CSV or JSON format."""
     seller_user_id = args["seller_user_id"]
+    grantee_user_id = args.get("grantee_user_id")
 
     # Get sales for artist
-    results = get_purchases_or_sales(seller_user_id, is_purchases=False)
+    results = get_purchases_or_sales(
+        seller_user_id, is_purchases=False, grantee_user_id=grantee_user_id
+    )
 
     # Get artist handle
     db = get_db_read_replica()

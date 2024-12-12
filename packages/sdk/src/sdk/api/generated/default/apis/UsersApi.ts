@@ -124,6 +124,7 @@ export interface DownloadSalesAsCSVRequest {
 export interface DownloadSalesAsJSONRequest {
     id: string;
     userId?: string;
+    granteeUserId?: string;
     encodedDataMessage?: string;
     encodedDataSignature?: string;
 }
@@ -443,6 +444,10 @@ export class UsersApi extends runtime.BaseAPI {
 
         if (params.userId !== undefined) {
             queryParameters['user_id'] = params.userId;
+        }
+
+        if (params.granteeUserId !== undefined) {
+            queryParameters['grantee_user_id'] = params.granteeUserId;
         }
 
         const headerParameters: runtime.HTTPHeaders = {};

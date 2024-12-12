@@ -2696,6 +2696,14 @@ sales_json_response = make_response(
     "sales_json_response", ns, fields.Nested(sales_json_content)
 )
 
+sales_download_parser = current_user_parser.copy()
+sales_download_parser.add_argument(
+    "grantee_user_id",
+    required=False,
+    description="Optional receiving user ID for email decryption",
+    type=str,
+)
+
 
 @ns.route("/<string:id>/sales/download/json")
 class SalesDownloadJSON(Resource):
@@ -2712,7 +2720,16 @@ class SalesDownloadJSON(Resource):
         decoded_id = decode_with_abort(id, ns)
         check_authorized(decoded_id, authed_user_id)
 
-        download_args = DownloadSalesArgs(seller_user_id=decoded_id)
+        args = sales_download_parser.parse_args()
+        grantee_user_id = (
+            decode_with_abort(args.get("grantee_user_id"), ns)
+            if args.get("grantee_user_id")
+            else None
+        )
+
+        download_args = DownloadSalesArgs(
+            seller_user_id=decoded_id, grantee_user_id=grantee_user_id
+        )
         sales = download_sales(download_args, return_json=True)
         return success_response(sales)
 
