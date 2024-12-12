@@ -22,16 +22,16 @@ export const ScheduledReleaseDateField = (
   const { releaseDate, onChange, dateError, dateTimeError } = props
 
   const handleDateChange = (date: string) => {
-    const currentDate = dayjs(releaseDate)
     const newDate = dayjs(date)
 
     let updatedDate: Dayjs
     if (dayjs().isSame(newDate, 'day')) {
       updatedDate = newDate.set('hour', 23).set('minute', 59)
     } else {
+      const currentDate = dayjs(releaseDate)
       updatedDate = newDate
-        .hour(currentDate.hour())
-        .minute(currentDate.minute())
+        .hour(currentDate.isValid() ? currentDate.hour() : 0)
+        .minute(currentDate.isValid() ? currentDate.minute() : 0)
     }
 
     onChange(updatedDate.toString())
