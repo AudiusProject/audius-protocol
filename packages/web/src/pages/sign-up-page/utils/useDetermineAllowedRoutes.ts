@@ -30,13 +30,7 @@ export const useDetermineAllowedRoute = () => {
   const followeeCount = useSelector(getAccountFolloweeCount)
   const hasAccount = useSelector(getHasAccount)
   const hasAlreadySignedUp = useSelector(getAccountAlreadyExisted)
-<<<<<<< HEAD
-  const hasReferrer = useSelector(getReferrer)
-  const { isMobile } = useMedia()
-=======
   const isFastReferral = useFastReferral()
-  const [guestEmail] = useLocalStorage('guestEmail', '')
->>>>>>> bd0c8ea9bb (Feature flag fast referral signup (#10701))
 
   const pastAccountPhase = signUpState.finishedPhase1 || hasAccount
 
