@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"encoding/hex"
+	"log/slog"
 	"net/http"
 	"net/http/httputil"
 	"net/url"
@@ -30,7 +31,27 @@ func main() {
 	tlsEnabled := getEnvBool("ENABLE_TLS", false)
 	storageEnabled := getEnvBool("ENABLE_STORAGE", false)
 
-	logger := common.NewLogger(nil)
+	var slogLevel slog.Level
+	if logLevel := os.Getenv("audiusd_log_level"); logLevel != "" {
+		switch logLevel {
+		case "debug":
+			slogLevel = slog.LevelDebug
+		case "info":
+			slogLevel = slog.LevelInfo
+		case "warn":
+			slogLevel = slog.LevelWarn
+		case "error":
+			slogLevel = slog.LevelError
+		default:
+			slogLevel = slog.LevelWarn
+		}
+	} else {
+		slogLevel = slog.LevelInfo
+	}
+
+	logger := common.NewLogger(&slog.HandlerOptions{
+		Level: slogLevel,
+	})
 
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()

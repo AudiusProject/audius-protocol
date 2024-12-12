@@ -320,6 +320,7 @@ func setupNode(logger *common.Logger) (*config.Config, *cconfig.Config, error) {
 
 	// https://docs.cometbft.com/main/references/config/config.toml#log_level
 	cometConfig.LogLevel = envConfig.LogLevel
+	logger.Infof("Setting cometConfig.LogLevel = envConfig.LogLevel: %s, %s", cometConfig.LogLevel, envConfig.LogLevel)
 
 	// postgres indexer config
 	cometConfig.TxIndex.Indexer = "psql"
