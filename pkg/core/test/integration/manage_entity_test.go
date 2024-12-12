@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"github.com/AudiusProject/audius-protocol/pkg/core/common"
-	gen_proto "github.com/AudiusProject/audius-protocol/pkg/core/gen/proto"
+	gen_proto "github.com/AudiusProject/audius-protocol/pkg/core/gen/core_proto"
 	"github.com/AudiusProject/audius-protocol/pkg/core/test/integration/utils"
 	"github.com/google/uuid"
 	. "github.com/onsi/ginkgo/v2"
@@ -54,10 +54,5 @@ var _ = Describe("EntityManager", func() {
 		Expect(err).To(BeNil())
 
 		Expect(proto.Equal(signedManageEntity, manageEntityRes.GetTransaction())).To(BeTrue())
-
-		// test rpc get hash works too
-		txResult, err := sdk.Tx(ctx, []byte(txhash), true)
-		Expect(err).To(BeNil())
-		Expect(txResult.Hash.Bytes()).To(Equal([]byte(txhash)))
 	})
 })

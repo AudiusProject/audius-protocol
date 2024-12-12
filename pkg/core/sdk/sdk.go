@@ -8,7 +8,7 @@ import (
 
 	"github.com/AudiusProject/audius-protocol/pkg/core/gen/core_openapi"
 	"github.com/AudiusProject/audius-protocol/pkg/core/gen/core_openapi/protocol"
-	"github.com/AudiusProject/audius-protocol/pkg/core/gen/proto"
+	"github.com/AudiusProject/audius-protocol/pkg/core/gen/core_proto"
 	"github.com/cometbft/cometbft/rpc/client/http"
 	"golang.org/x/sync/errgroup"
 	"google.golang.org/grpc"
@@ -23,7 +23,7 @@ type Sdk struct {
 	GRPCEndpoint string
 	JRPCEndpoint string
 	protocol.ClientService
-	proto.ProtocolClient
+	core_proto.ProtocolClient
 	http.HTTP
 }
 
@@ -81,10 +81,10 @@ func initSdk(sdk *Sdk) error {
 				return err
 			}
 
-			grpcClient := proto.NewProtocolClient(grpcConn)
+			grpcClient := core_proto.NewProtocolClient(grpcConn)
 
 			for tries := retries; tries >= 0; tries-- {
-				_, err := grpcClient.Ping(ctx, &proto.PingRequest{})
+				_, err := grpcClient.Ping(ctx, &core_proto.PingRequest{})
 				if err == nil {
 					break
 				}

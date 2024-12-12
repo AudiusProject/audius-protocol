@@ -11,7 +11,7 @@ import (
 	"github.com/AudiusProject/audius-protocol/pkg/core/config"
 	"github.com/AudiusProject/audius-protocol/pkg/core/db"
 	"github.com/AudiusProject/audius-protocol/pkg/core/gen/core_openapi/protocol"
-	"github.com/AudiusProject/audius-protocol/pkg/core/gen/proto"
+	"github.com/AudiusProject/audius-protocol/pkg/core/gen/core_proto"
 	"github.com/AudiusProject/audius-protocol/pkg/core/sdk"
 	"golang.org/x/sync/errgroup"
 )
@@ -38,7 +38,7 @@ type Mempool struct {
 // deadline - the block MUST be included in a block prior to the deadline
 type MempoolTransaction struct {
 	Deadline int64
-	Tx       *proto.SignedTransaction
+	Tx       *core_proto.SignedTransaction
 }
 
 func NewMempool(logger *common.Logger, config *config.Config, db *db.Queries, maxTransactions int) *Mempool {
@@ -86,11 +86,11 @@ func (m *Mempool) AddTransaction(key string, tx *MempoolTransaction, broadcast b
 }
 
 // gathers a batch of transactions skipping those that have expired
-func (m *Mempool) GetBatch(batchSize int, currentBlock int64) []*proto.SignedTransaction {
+func (m *Mempool) GetBatch(batchSize int, currentBlock int64) []*core_proto.SignedTransaction {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
-	batch := []*proto.SignedTransaction{}
+	batch := []*core_proto.SignedTransaction{}
 	count := 0
 
 	for e := m.deque.Front(); e != nil && count < batchSize; e = e.Next() {
@@ -110,11 +110,11 @@ func (m *Mempool) GetBatch(batchSize int, currentBlock int64) []*proto.SignedTra
 	return batch
 }
 
-func (m *Mempool) GetAll() []*proto.SignedTransaction {
+func (m *Mempool) GetAll() []*core_proto.SignedTransaction {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
-	batch := []*proto.SignedTransaction{}
+	batch := []*core_proto.SignedTransaction{}
 
 	for {
 		e := m.deque.Front()
@@ -148,7 +148,7 @@ func (m *Mempool) RemoveBatch(ids []string) {
 func (m *Mempool) BroadcastTransaction(key string, tx *MempoolTransaction) {
 	// only broadcast certain types of txs, don't broadcast these ones
 	switch tx.Tx.Transaction.(type) {
-	case *proto.SignedTransaction_SlaRollup:
+	case *core_proto.SignedTransaction_SlaRollup:
 		return
 	}
 

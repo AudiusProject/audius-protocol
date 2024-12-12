@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/AudiusProject/audius-protocol/pkg/core/db"
-	gen_proto "github.com/AudiusProject/audius-protocol/pkg/core/gen/proto"
+	gen_proto "github.com/AudiusProject/audius-protocol/pkg/core/gen/core_proto"
 	"github.com/AudiusProject/audius-protocol/pkg/core/grpc"
 	"github.com/jackc/pgx/v5/pgtype"
 	"google.golang.org/protobuf/proto"

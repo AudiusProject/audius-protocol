@@ -4,7 +4,7 @@
 // - protoc             (unknown)
 // source: protocol.proto
 
-package proto
+package core_proto
 
 import (
 	context "context"

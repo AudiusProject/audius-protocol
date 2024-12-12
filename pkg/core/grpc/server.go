@@ -11,7 +11,7 @@ import (
 	"github.com/AudiusProject/audius-protocol/pkg/core/common"
 	"github.com/AudiusProject/audius-protocol/pkg/core/config"
 	"github.com/AudiusProject/audius-protocol/pkg/core/db"
-	"github.com/AudiusProject/audius-protocol/pkg/core/gen/proto"
+	"github.com/AudiusProject/audius-protocol/pkg/core/gen/core_proto"
 	"github.com/AudiusProject/audius-protocol/pkg/core/mempool"
 	"github.com/AudiusProject/audius-protocol/pkg/core/pubsub"
 	"github.com/cometbft/cometbft/abci/types"
@@ -30,7 +30,7 @@ type GRPCServer struct {
 	config   *config.Config
 	mempool  *mempool.Mempool
 	txPubsub *pubsub.TransactionHashPubsub
-	proto.UnimplementedProtocolServer
+	core_proto.UnimplementedProtocolServer
 }
 
 func NewGRPCServer(logger *common.Logger, config *config.Config, cometRpc *local.Local, pool *pgxpool.Pool, mempool *mempool.Mempool, txPubsub *pubsub.TransactionHashPubsub) (*GRPCServer, error) {
@@ -44,7 +44,7 @@ func NewGRPCServer(logger *common.Logger, config *config.Config, cometRpc *local
 	}
 
 	s := grpc.NewServer()
-	proto.RegisterProtocolServer(s, server)
+	core_proto.RegisterProtocolServer(s, server)
 	server.server = s
 
 	return server, nil
@@ -58,7 +58,7 @@ func (s *GRPCServer) Serve(lis net.Listener) error {
 	return s.server.Serve(lis)
 }
 
-func (s *GRPCServer) SendTransaction(ctx context.Context, req *proto.SendTransactionRequest) (*proto.TransactionResponse, error) {
+func (s *GRPCServer) SendTransaction(ctx context.Context, req *core_proto.SendTransactionRequest) (*core_proto.TransactionResponse, error) {
 	// TODO: do validation check
 	txhash, err := common.ToTxHash(req.GetTransaction())
 	if err != nil {
@@ -93,7 +93,7 @@ func (s *GRPCServer) SendTransaction(ctx context.Context, req *proto.SendTransac
 
 	select {
 	case <-txHashCh:
-		return &proto.TransactionResponse{
+		return &core_proto.TransactionResponse{
 			Txhash:      txhash,
 			Transaction: req.GetTransaction(),
 		}, nil
@@ -103,7 +103,7 @@ func (s *GRPCServer) SendTransaction(ctx context.Context, req *proto.SendTransac
 	}
 }
 
-func (s *GRPCServer) ForwardTransaction(ctx context.Context, req *proto.ForwardTransactionRequest) (*proto.ForwardTransactionResponse, error) {
+func (s *GRPCServer) ForwardTransaction(ctx context.Context, req *core_proto.ForwardTransactionRequest) (*core_proto.ForwardTransactionResponse, error) {
 	// TODO: check signature from known node
 
 	// TODO: validate transaction in same way as send transaction
@@ -132,10 +132,10 @@ func (s *GRPCServer) ForwardTransaction(ctx context.Context, req *proto.ForwardT
 		return nil, fmt.Errorf("could not add tx to mempool %v", err)
 	}
 
-	return &proto.ForwardTransactionResponse{}, nil
+	return &core_proto.ForwardTransactionResponse{}, nil
 }
 
-func (s *GRPCServer) GetTransaction(ctx context.Context, req *proto.GetTransactionRequest) (*proto.TransactionResponse, error) {
+func (s *GRPCServer) GetTransaction(ctx context.Context, req *core_proto.GetTransactionRequest) (*core_proto.TransactionResponse, error) {
 	txhash := req.GetTxhash()
 
 	s.logger.Debug("query", "txhash", txhash)
@@ -151,13 +151,13 @@ func (s *GRPCServer) GetTransaction(ctx context.Context, req *proto.GetTransacti
 		return nil, err
 	}
 
-	var transaction proto.SignedTransaction
+	var transaction core_proto.SignedTransaction
 	err = protob.Unmarshal(txResult.GetTx(), &transaction)
 	if err != nil {
 		return nil, err
 	}
 
-	res := &proto.TransactionResponse{
+	res := &core_proto.TransactionResponse{
 		Txhash:      txhash,
 		Transaction: &transaction,
 	}
@@ -165,13 +165,13 @@ func (s *GRPCServer) GetTransaction(ctx context.Context, req *proto.GetTransacti
 	return res, nil
 }
 
-func (s *GRPCServer) GetBlock(ctx context.Context, req *proto.GetBlockRequest) (*proto.BlockResponse, error) {
+func (s *GRPCServer) GetBlock(ctx context.Context, req *core_proto.GetBlockRequest) (*core_proto.BlockResponse, error) {
 	block, err := s.cometRpc.Block(ctx, &req.Height)
 	if err != nil {
 		blockInFutureMsg := "must be less than or equal to the current blockchain height"
 		if strings.Contains(err.Error(), blockInFutureMsg) {
 			// return block with -1 to indicate it doesn't exist yet
-			return &proto.BlockResponse{
+			return &core_proto.BlockResponse{
 				Chainid: s.config.GenesisFile.ChainID,
 				Height:  -1,
 			}, nil
@@ -180,9 +180,9 @@ func (s *GRPCServer) GetBlock(ctx context.Context, req *proto.GetBlockRequest) (
 		return nil, err
 	}
 
-	txs := []*proto.SignedTransaction{}
+	txs := []*core_proto.SignedTransaction{}
 	for _, tx := range block.Block.Txs {
-		var transaction proto.SignedTransaction
+		var transaction core_proto.SignedTransaction
 		err = protob.Unmarshal(tx, &transaction)
 		if err != nil {
 			return nil, err
@@ -190,7 +190,7 @@ func (s *GRPCServer) GetBlock(ctx context.Context, req *proto.GetBlockRequest) (
 		txs = append(txs, &transaction)
 	}
 
-	res := &proto.BlockResponse{
+	res := &core_proto.BlockResponse{
 		Blockhash:    block.BlockID.Hash.String(),
 		Chainid:      s.config.GenesisFile.ChainID,
 		Proposer:     block.Block.ProposerAddress.String(),
@@ -200,13 +200,13 @@ func (s *GRPCServer) GetBlock(ctx context.Context, req *proto.GetBlockRequest) (
 
 	return res, nil
 }
-func (s *GRPCServer) GetNodeInfo(ctx context.Context, req *proto.GetNodeInfoRequest) (*proto.NodeInfoResponse, error) {
+func (s *GRPCServer) GetNodeInfo(ctx context.Context, req *core_proto.GetNodeInfoRequest) (*core_proto.NodeInfoResponse, error) {
 	status, err := s.cometRpc.Status(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	res := &proto.NodeInfoResponse{
+	res := &core_proto.NodeInfoResponse{
 		Chainid:       s.config.GenesisFile.ChainID,
 		Synced:        !status.SyncInfo.CatchingUp,
 		CometAddress:  s.config.ProposerAddress,
@@ -216,6 +216,6 @@ func (s *GRPCServer) GetNodeInfo(ctx context.Context, req *proto.GetNodeInfoRequ
 	return res, nil
 }
 
-func (s *GRPCServer) Ping(ctx context.Context, req *proto.PingRequest) (*proto.PingResponse, error) {
-	return &proto.PingResponse{Message: "pong"}, nil
+func (s *GRPCServer) Ping(ctx context.Context, req *core_proto.PingRequest) (*core_proto.PingResponse, error) {
+	return &core_proto.PingResponse{Message: "pong"}, nil
 }

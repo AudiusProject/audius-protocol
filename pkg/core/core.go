@@ -15,7 +15,7 @@ import (
 	"github.com/AudiusProject/audius-protocol/pkg/core/console"
 	"github.com/AudiusProject/audius-protocol/pkg/core/contracts"
 	"github.com/AudiusProject/audius-protocol/pkg/core/db"
-	"github.com/AudiusProject/audius-protocol/pkg/core/gen/proto"
+	"github.com/AudiusProject/audius-protocol/pkg/core/gen/core_proto"
 	"github.com/AudiusProject/audius-protocol/pkg/core/grpc"
 	"github.com/AudiusProject/audius-protocol/pkg/core/mempool"
 	"github.com/AudiusProject/audius-protocol/pkg/core/pubsub"
@@ -127,7 +127,7 @@ func run(ctx context.Context, logger *common.Logger) error {
 	}
 
 	gwMux := runtime.NewServeMux()
-	err = proto.RegisterProtocolHandlerServer(ctx, gwMux, grpcServer)
+	err = core_proto.RegisterProtocolHandlerServer(ctx, gwMux, grpcServer)
 	if err != nil {
 		return fmt.Errorf("grpc http handler issue: %v", err)
 	}

@@ -10,7 +10,7 @@ import (
 	"github.com/AudiusProject/audius-protocol/pkg/core/config"
 	"github.com/AudiusProject/audius-protocol/pkg/core/contracts"
 	"github.com/AudiusProject/audius-protocol/pkg/core/db"
-	gen_proto "github.com/AudiusProject/audius-protocol/pkg/core/gen/proto"
+	gen_proto "github.com/AudiusProject/audius-protocol/pkg/core/gen/core_proto"
 	"github.com/AudiusProject/audius-protocol/pkg/core/mempool"
 	"github.com/AudiusProject/audius-protocol/pkg/core/pubsub"
 	abcitypes "github.com/cometbft/cometbft/abci/types"

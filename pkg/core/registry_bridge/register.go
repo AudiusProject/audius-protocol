@@ -10,7 +10,7 @@ import (
 	"github.com/AudiusProject/audius-protocol/pkg/core/accounts"
 	"github.com/AudiusProject/audius-protocol/pkg/core/common"
 	"github.com/AudiusProject/audius-protocol/pkg/core/contracts"
-	gen_proto "github.com/AudiusProject/audius-protocol/pkg/core/gen/proto"
+	gen_proto "github.com/AudiusProject/audius-protocol/pkg/core/gen/core_proto"
 	"github.com/AudiusProject/audius-protocol/pkg/logger"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/crypto"

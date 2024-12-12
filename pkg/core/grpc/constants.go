@@ -3,7 +3,7 @@ package grpc
 import (
 	"reflect"
 
-	gen_proto "github.com/AudiusProject/audius-protocol/pkg/core/gen/proto"
+	gen_proto "github.com/AudiusProject/audius-protocol/pkg/core/gen/core_proto"
 	"github.com/iancoleman/strcase"
 	"google.golang.org/protobuf/proto"
 )

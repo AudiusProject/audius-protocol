@@ -5,7 +5,7 @@ package protocol;
 import "google/api/annotations.proto";
 import "google/protobuf/timestamp.proto";
 
-option go_package = "./proto;proto";
+option go_package = "./core_proto;core_proto";
 
 service Protocol {
   rpc SendTransaction(SendTransactionRequest) returns (TransactionResponse) {

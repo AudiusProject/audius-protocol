@@ -6,7 +6,7 @@ import (
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 
-	"github.com/AudiusProject/audius-protocol/pkg/core/gen/proto"
+	"github.com/AudiusProject/audius-protocol/pkg/core/gen/core_proto"
 	"github.com/AudiusProject/audius-protocol/pkg/core/test/integration/utils"
 )
 
@@ -16,29 +16,29 @@ var _ = Describe("Block", func() {
 
 		sdk := utils.ContentOne
 
-		infoRes, err := sdk.GetNodeInfo(ctx, &proto.GetNodeInfoRequest{})
+		infoRes, err := sdk.GetNodeInfo(ctx, &core_proto.GetNodeInfoRequest{})
 		Expect(err).To(BeNil())
 
-		var blockOne *proto.BlockResponse
-		var blockTwo *proto.BlockResponse
-		var blockThree *proto.BlockResponse
+		var blockOne *core_proto.BlockResponse
+		var blockTwo *core_proto.BlockResponse
+		var blockThree *core_proto.BlockResponse
 
 		// index first three blocks
 		// we return a success response with -1 if block does not exist
 		for {
-			blockOneRes, err := sdk.GetBlock(ctx, &proto.GetBlockRequest{Height: 1})
+			blockOneRes, err := sdk.GetBlock(ctx, &core_proto.GetBlockRequest{Height: 1})
 			Expect(err).To(BeNil())
 			if blockOneRes.Height > 0 {
 				blockOne = blockOneRes
 			}
 
-			blockTwoRes, err := sdk.GetBlock(ctx, &proto.GetBlockRequest{Height: 2})
+			blockTwoRes, err := sdk.GetBlock(ctx, &core_proto.GetBlockRequest{Height: 2})
 			Expect(err).To(BeNil())
 			if blockOneRes.Height > 0 {
 				blockTwo = blockTwoRes
 			}
 
-			blockThreeRes, err := sdk.GetBlock(ctx, &proto.GetBlockRequest{Height: 3})
+			blockThreeRes, err := sdk.GetBlock(ctx, &core_proto.GetBlockRequest{Height: 3})
 			Expect(err).To(BeNil())
 			if blockOneRes.Height > 0 {
 				blockThree = blockThreeRes
