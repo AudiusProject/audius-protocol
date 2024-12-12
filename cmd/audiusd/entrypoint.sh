@@ -51,17 +51,17 @@ setup_postgres() {
     # Find PostgreSQL binaries directory
     PG_BIN="/usr/lib/postgresql/15/bin"
     
-    # Check if directory exists but is not initialized
-    if [ -d "$POSTGRES_DATA_DIR" ] && ! [ -f "$POSTGRES_DATA_DIR/PG_VERSION" ]; then
-        echo "Directory exists but is not initialized. Cleaning up..."
-        rm -rf "$POSTGRES_DATA_DIR"/*
-    fi
+    # Ensure parent data directory exists with correct permissions
+    mkdir -p /data
+    chown postgres:postgres /data
     
-    # Initialize PostgreSQL if needed
-    if [ ! -d "$POSTGRES_DATA_DIR" ] || ! [ -f "$POSTGRES_DATA_DIR/PG_VERSION" ]; then
+    # Ensure postgres data directory exists with correct permissions
+    mkdir -p "$POSTGRES_DATA_DIR"
+    chown postgres:postgres "$POSTGRES_DATA_DIR"
+
+    # Check if directory is empty or not initialized
+    if [ -z "$(ls -A $POSTGRES_DATA_DIR)" ] || ! [ -f "$POSTGRES_DATA_DIR/PG_VERSION" ]; then
         echo "Initializing PostgreSQL data directory at $POSTGRES_DATA_DIR..."
-        mkdir -p "$POSTGRES_DATA_DIR"
-        chown postgres:postgres "$POSTGRES_DATA_DIR"
         
         # Initialize the database
         su - postgres -c "$PG_BIN/initdb -D $POSTGRES_DATA_DIR"
@@ -75,7 +75,7 @@ setup_postgres() {
                 "$POSTGRES_DATA_DIR/postgresql.conf"
     fi
 
-    # Set permissions
+    # Set permissions (after initialization or for existing data)
     chown -R postgres:postgres "$POSTGRES_DATA_DIR"
     chmod -R 700 "$POSTGRES_DATA_DIR"
 
