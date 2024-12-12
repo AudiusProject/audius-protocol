@@ -6,6 +6,7 @@ import {
 } from '@audius/sdk/src/sdk/api/generated/full'
 
 import {
+  activityFromSDK,
   transformAndCleanList,
   userCollectionMetadataFromSDK,
   userFeedItemFromSDK,
@@ -21,7 +22,6 @@ import {
   UserTrackMetadata
 } from '../../models'
 import { encodeHashId, removeNullable } from '../../utils'
-import { APIActivityV2, makeActivity } from '../audius-api-client'
 import { AudiusBackend } from '../audius-backend'
 
 const scoreComparator = <T extends { score: number }>(a: T, b: T) =>
@@ -90,10 +90,13 @@ export class Explore {
         id: encodeHashId(currentUserId),
         limit: 100
       })
-      const activityData = history.data as APIActivityV2[]
-      const listenedToTracks = activityData
-        .map(makeActivity)
-        .filter(removeNullable) as UserTrackMetadata[]
+      const listenedToTracks = transformAndCleanList(
+        history.data,
+        activityFromSDK
+      )
+        .filter((t) => t.item_type === 'track')
+        .map((t) => t.item)
+        .filter(removeNullable)
 
       // Imperfect solution. Ideally we use an endpoint that gives us true/false
       // if a user has listened to a passed in array of tracks.

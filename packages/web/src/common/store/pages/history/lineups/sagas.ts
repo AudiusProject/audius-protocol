@@ -1,11 +1,5 @@
-import {
-  Id,
-  Kind,
-  LineupEntry,
-  Track,
-  UserTrackMetadata
-} from '@audius/common/models'
-import { makeActivity } from '@audius/common/services'
+import { activityFromSDK, transformAndCleanList } from '@audius/common/adapters'
+import { Id, Kind, LineupEntry, Track } from '@audius/common/models'
 import {
   accountSelectors,
   getContext,
@@ -41,9 +35,10 @@ function* getHistoryTracks() {
     const activityData = activity.data
     if (!activityData) return []
 
-    const tracks = activityData
-      .map(makeActivity)
-      .filter(removeNullable) as UserTrackMetadata[]
+    const tracks = transformAndCleanList(activityData, activityFromSDK)
+      .filter((t) => t.item_type === 'track')
+      .map((t) => t.item)
+      .filter(removeNullable)
 
     const processedTracks = yield* call(processAndCacheTracks, tracks)
     const processedTracksMap = keyBy(processedTracks, 'track_id')

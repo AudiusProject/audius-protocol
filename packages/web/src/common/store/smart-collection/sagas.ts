@@ -1,10 +1,10 @@
+import { activityFromSDK, transformAndCleanList } from '@audius/common/adapters'
 import {
   SmartCollectionVariant,
   Track,
   UserTrackMetadata,
   UserTrack
 } from '@audius/common/models'
-import { makeActivity } from '@audius/common/services'
 import {
   accountSelectors,
   smartCollectionPageActions,
@@ -58,9 +58,14 @@ function* fetchHeavyRotation() {
   const activityData = activity.data
   if (!activityData) return { ...HEAVY_ROTATION }
 
-  const mostListenedTracks = (
-    activityData.map(makeActivity).filter(removeNullable) as UserTrackMetadata[]
-  ).filter((track) => !track.is_unlisted)
+  const mostListenedTracks = transformAndCleanList(
+    activityData,
+    activityFromSDK
+  )
+    .filter((t) => t.item_type === 'track')
+    .map((t) => t.item)
+    .filter(removeNullable)
+    .filter((track) => !track.is_unlisted)
 
   const users = yield* call(
     retrieveUsers,

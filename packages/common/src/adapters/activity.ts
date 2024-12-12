@@ -3,7 +3,7 @@ import { full } from '@audius/sdk'
 import { userCollectionMetadataFromSDK } from './collection'
 import { userTrackMetadataFromSDK } from './track'
 
-export const repostActivityFromSDK = (input: full.ActivityFull) => {
+export const activityFromSDK = (input: full.ActivityFull) => {
   const { timestamp, itemType: item_type, item } = input
   if (item_type === full.ActivityFullItemTypeEnum.Track) {
     return {
