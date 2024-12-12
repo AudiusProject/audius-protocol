@@ -293,7 +293,7 @@ require (
 	golang.org/x/oauth2 v0.21.0 // indirect
 	golang.org/x/term v0.24.0 // indirect
 	golang.org/x/text v0.17.0 // indirect
-	golang.org/x/time v0.5.0 // indirect
+	golang.org/x/time v0.6.0 // indirect
 	golang.org/x/tools v0.24.0 // indirect
 	golang.org/x/xerrors v0.0.0-20231012003039-104605ab7028 // indirect
 	google.golang.org/api v0.180.0 // indirect
@@ -310,6 +310,7 @@ require (
 require (
 	github.com/caseymrm/menuet v1.0.3
 	github.com/cometbft/cometbft-load-test v0.3.0
+	github.com/go-resty/resty/v2 v2.16.2
 	github.com/jaswdr/faker v1.19.1
 	github.com/klauspost/cpuid/v2 v2.2.7 // indirect
 	github.com/minio/sha256-simd v1.0.0 // indirect
