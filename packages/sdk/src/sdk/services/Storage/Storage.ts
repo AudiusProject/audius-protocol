@@ -65,9 +65,22 @@ export class Storage implements StorageService {
     Object.keys(options).forEach((key) => {
       formData.append(key, `${options[key]}`)
     })
+
+    const formDataFile =
+      'uri' in file
+        ? {
+            ...file,
+            // NOTE this is required for react-native
+            // certain characters in the file name make formData invalid
+            name: file.name
+              ? encodeURIComponent(file.name.replace(/[()]/g, ''))
+              : 'blob'
+          }
+        : file
+
     formData.append(
       'files',
-      isNodeFile(file) ? file.buffer : file,
+      isNodeFile(formDataFile) ? formDataFile.buffer : formDataFile,
       file.name ?? 'blob'
     )
 
