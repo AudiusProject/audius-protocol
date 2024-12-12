@@ -106,8 +106,8 @@ export const usePurchaseContentFormConfiguration = ({
     : undefined
 
   const validationSchema = useMemo(
-    () => createPurchaseContentSchema(audiusQueryContext, page),
-    [audiusQueryContext, page]
+    () => createPurchaseContentSchema(audiusQueryContext, page, guestEmail),
+    [audiusQueryContext, guestEmail, page]
   )
   type PurchaseContentValues = z.input<typeof validationSchema>
 
