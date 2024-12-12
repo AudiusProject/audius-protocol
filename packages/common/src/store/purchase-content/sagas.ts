@@ -649,10 +649,21 @@ function* collectEmailAfterPurchase({
       return
     }
 
+    const { data: managers } = yield* call(
+      [sdk.full.users, sdk.full.users.getManagers],
+      {
+        id: Id.parse(sellerId),
+        isApproved: true
+      }
+    )
+
+    const grantees = managers?.map((m) => m.manager.id)
+
     yield* call([sdk.users, sdk.users.shareEmail], {
       emailOwnerUserId: purchaserUserId,
-      primaryUserId: sellerId,
-      email
+      receivingUserId: sellerId,
+      email,
+      granteeUserIds: grantees
     })
   } catch (error) {
     // Log error but don't disrupt purchase flow
