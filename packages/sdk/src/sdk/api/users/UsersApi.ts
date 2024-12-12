@@ -230,6 +230,13 @@ export class UsersApi extends GeneratedUsersApi {
 
     const cid = (await generateMetadataCidV1(updatedMetadata)).toString()
 
+    const {
+      associatedWallets,
+      associatedSolWallets,
+      collectibles,
+      ...indexedMetadataValues
+    } = updatedMetadata
+
     // Write metadata to chain
     return await this.entityManager.manageEntity({
       userId,
@@ -238,7 +245,13 @@ export class UsersApi extends GeneratedUsersApi {
       action: Action.UPDATE,
       metadata: JSON.stringify({
         cid,
-        data: snakecaseKeys(updatedMetadata)
+        data: {
+          ...snakecaseKeys(indexedMetadataValues),
+          // Do not snake case values that are part of cid data.
+          associated_wallets: associatedWallets,
+          associated_sol_wallets: associatedSolWallets,
+          collectibles
+        }
       }),
       ...advancedOptions
     })
