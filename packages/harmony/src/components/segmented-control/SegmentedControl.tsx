@@ -15,21 +15,30 @@ import { SegmentedControlProps } from './types'
  * A hybrid somewhere between a button group, radio buttons, and tabs;
  * segmented controls are used to switch between different options or views.
  */
-export const SegmentedControl = <T extends string>(
-  props: SegmentedControlProps<T>
-) => {
-  const optionRefs = useRef(
-    props.options.map((_) => createRef<HTMLLabelElement>())
-  )
-  const [selected, setSelected] = useState(props.options[0].key)
+export const SegmentedControl = <T extends string>({
+  options,
+  selected,
+  onSelectOption,
+  className,
+  fullWidth,
+  isMobile,
+  disabled,
+  label,
+  'aria-labelledby': ariaLabelledBy,
+  equalWidth,
+  forceRefreshAfterMs
+}: SegmentedControlProps<T>) => {
+  const optionRefs = useRef(options.map((_) => createRef<HTMLLabelElement>()))
+  const [localSelected, setLocalSelected] = useState(options[0].key)
   const [maxOptionWidth, setMaxOptionWidth] = useState(0)
 
-  const selectedOption = props.selected || selected
+  const selectedOption = selected || localSelected
+  console.log('selectedOption', selectedOption)
 
   const onSetSelected = (option: T) => {
     // Call props function if controlled
-    if (props.onSelectOption) props.onSelectOption(option)
-    setSelected(option)
+    if (onSelectOption) onSelectOption(option)
+    setLocalSelected(option)
   }
 
   const [tabProps, tabApi] = useSpring(() => ({
@@ -55,12 +64,12 @@ export const SegmentedControl = <T extends string>(
   useEffect(() => {
     setTimeout(() => {
       setForceRefresh(!forceRefresh)
-    }, props.forceRefreshAfterMs)
+    }, forceRefreshAfterMs)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   useEffect(() => {
-    let selectedRefIdx = props.options.findIndex(
+    let selectedRefIdx = options.findIndex(
       (option) => option.key === selectedOption
     )
     if (selectedRefIdx === -1) selectedRefIdx = 0
@@ -73,12 +82,12 @@ export const SegmentedControl = <T extends string>(
       to: { left: `${left}px`, width: `${width}px` }
     })
   }, [
-    props.options,
-    props.equalWidth,
+    options,
+    equalWidth,
     selectedOption,
-    props.selected,
-    tabApi,
     selected,
+    tabApi,
+    localSelected,
     optionRefs,
     bounds,
     forceRefresh
@@ -86,19 +95,20 @@ export const SegmentedControl = <T extends string>(
 
   return (
     <div
-      className={cn(styles.tabs, props.className, {
-        [styles.containerFullWidth]: !!props.fullWidth,
-        [styles.isMobile]: props.isMobile,
-        [styles.disabled]: props.disabled
+      className={cn(styles.tabs, className, {
+        [styles.containerFullWidth]: !!fullWidth,
+        [styles.isMobile]: isMobile,
+        [styles.disabled]: disabled
       })}
       role='radiogroup'
-      aria-label={props.label}
-      aria-labelledby={props['aria-labelledby']}
+      aria-label={label}
+      aria-labelledby={ariaLabelledBy}
     >
       <animated.div className={styles.tabBackground} style={tabProps} />
-      {props.options.map((option, idx) => {
-        const isOptionDisabled = props.disabled || option.disabled
+      {options.map((option, idx) => {
+        const isOptionDisabled = disabled || option.disabled
         const isSelected = option.key === selectedOption
+        console.log('isSelectedd', isSelected, option.key, selectedOption)
 
         return (
           <Fragment key={option.key}>
@@ -109,12 +119,12 @@ export const SegmentedControl = <T extends string>(
                   : optionRefs.current[idx]
               }
               className={cn(styles.tab, {
-                [styles.tabFullWidth]: !!props.fullWidth,
-                [styles.disabled]: !props.disabled && option.disabled,
-                [styles.isMobile]: props.isMobile
+                [styles.tabFullWidth]: !!fullWidth,
+                [styles.disabled]: !disabled && option.disabled,
+                [styles.isMobile]: isMobile
               })}
               style={
-                props.equalWidth && maxOptionWidth
+                equalWidth && maxOptionWidth
                   ? { width: `${maxOptionWidth}px` }
                   : undefined
               }
@@ -137,16 +147,16 @@ export const SegmentedControl = <T extends string>(
                 {option.text}
               </Text>
             </label>
-            {idx !== props.options.length - 1 ? (
+            {idx !== options.length - 1 ? (
               <div
                 className={cn(styles.separator, {
                   [styles.invisible]:
                     // Hide separator right of the selected option
                     selectedOption === option.key ||
                     // Hide separator right of the last option
-                    idx === props.options.length - 1 ||
+                    idx === options.length - 1 ||
                     // Hide separator right of an option if the next one is selected
-                    selectedOption === props.options[idx + 1].key
+                    selectedOption === options[idx + 1].key
                 })}
               />
             ) : null}

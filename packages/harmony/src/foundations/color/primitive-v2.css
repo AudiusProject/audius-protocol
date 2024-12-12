@@ -28,7 +28,7 @@
 
   /* Neutral Colors */
   --harmony-neutral: #6c6780ff;
-  --harmony-n-25: #fefefeff;
+  --harmony-n-25: #fafafaff;
   --harmony-n-50: #f7f7f8ff;
   --harmony-n-100: #efeff1ff;
   --harmony-n-150: #e7e7eaff;
@@ -79,7 +79,7 @@ html[data-theme='day-v2'] {
 
   /* Neutral Colors */
   --harmony-neutral: #6c6780ff;
-  --harmony-n-25: #fefefeff;
+  --harmony-n-25: #fafafaff;
   --harmony-n-50: #f7f7f8ff;
   --harmony-n-100: #efeff1ff;
   --harmony-n-150: #e7e7eaff;
