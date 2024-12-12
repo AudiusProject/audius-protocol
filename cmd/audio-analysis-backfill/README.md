@@ -14,7 +14,6 @@ docker run --pull always --network creator-node_creator-node-network -v $(pwd)/o
 
 take the file and gist it or something so you can commit as a migration to discovery provider
 ```
-
 curl -X POST -H "Authorization: token GITHUB_ACCESS_TOKEN" \
 -d '{
   "description": "Stage Audio Analysis 1733939952_2",
