@@ -1,5 +1,6 @@
 import { visibilityMessages as messages } from '@audius/common/messages'
 import { getLocalTimezone, type Nullable } from '@audius/common/utils'
+import type { Dayjs } from 'dayjs'
 import dayjs from 'dayjs'
 import calendar from 'dayjs/plugin/calendar'
 
@@ -19,6 +20,31 @@ export const ScheduledReleaseDateField = (
   props: ScheduledReleaseDateFieldProps
 ) => {
   const { releaseDate, onChange, dateError, dateTimeError } = props
+
+  const handleDateChange = (date: string) => {
+    const currentDate = dayjs(releaseDate)
+    const newDate = dayjs(date)
+
+    let updatedDate: Dayjs
+    if (dayjs().isSame(newDate, 'day')) {
+      updatedDate = newDate.set('hour', 23).set('minute', 59)
+    } else {
+      updatedDate = newDate
+        .hour(currentDate.hour())
+        .minute(currentDate.minute())
+    }
+
+    onChange(updatedDate.toString())
+  }
+
+  const handleTimeChange = (time: string) => {
+    const updatedDate = dayjs(releaseDate)
+      .hour(dayjs(time).hour())
+      .minute(dayjs(time).minute())
+      .toString()
+    onChange(updatedDate)
+  }
+
   return (
     <Flex direction='column' gap='l'>
       <Flex gap='l'>
@@ -26,15 +52,7 @@ export const ScheduledReleaseDateField = (
           <DateTimeInput
             mode='date'
             date={releaseDate ?? undefined}
-            onChange={(date) => {
-              if (dayjs().isSame(dayjs(date), 'day')) {
-                onChange(
-                  dayjs(date).set('hour', 23).set('minutes', 59).toString()
-                )
-              } else {
-                onChange(date)
-              }
-            }}
+            onChange={handleDateChange}
             formatDate={(date) =>
               dayjs(date).calendar(null, {
                 sameDay: '[Today]',
@@ -58,7 +76,7 @@ export const ScheduledReleaseDateField = (
           <DateTimeInput
             mode='time'
             date={releaseDate ?? undefined}
-            onChange={onChange}
+            onChange={handleTimeChange}
             inputProps={{
               label: messages.timeLabel,
               error: !!dateTimeError,

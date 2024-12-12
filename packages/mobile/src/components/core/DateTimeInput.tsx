@@ -40,11 +40,13 @@ export const DateTimeInput = (props: DateTimeModalProps) => {
 
   const handleChange = useCallback(
     (date: Date) => {
-      date.setHours(0, 0, 0, 0)
+      if (mode === 'date') {
+        date.setHours(0, 0, 0, 0)
+      }
       onChange(date.toString())
       setIsDateTimeOpen((d) => !d)
     },
-    [onChange, setIsDateTimeOpen]
+    [onChange, setIsDateTimeOpen, mode]
   )
 
   const dateProps: Partial<ReactNativeModalDateTimePickerProps> = {
