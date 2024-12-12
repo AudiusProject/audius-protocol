@@ -18,14 +18,17 @@ def test_index_valid_email(app, mocker):
         web3 = Web3()
         update_task = UpdateTask(web3, None)
 
-        # Test data for valid email operations
+        # Updated test data to match new schema
         valid_email_data = {
-            "primary_user_id": 1,
-            "email_owner_user_id": 1,
+            "email_owner_user_id": 1,  # Changed from primary_user_id
             "encrypted_email": "encrypted_email_content",
-            "encrypted_key": "encrypted_key_content",
-            "delegated_user_ids": [2],
-            "delegated_keys": ["delegated_key"],
+            "access_grants": [  # New format for access grants
+                {
+                    "receiving_user_id": 2,
+                    "grantor_user_id": 1,  # The owner is granting access
+                    "encrypted_key": "delegated_key",
+                }
+            ],
         }
 
         tx_receipts = {
@@ -35,40 +38,12 @@ def test_index_valid_email(app, mocker):
                         {
                             "_entityId": 0,
                             "_entityType": EntityType.ENCRYPTED_EMAIL,
-                            "_userId": valid_email_data["primary_user_id"],
+                            "_userId": valid_email_data[
+                                "email_owner_user_id"
+                            ],  # Updated to use email_owner_user_id
                             "_action": Action.ADD_EMAIL,
                             "_metadata": json.dumps(
                                 {"cid": "", "data": valid_email_data}
-                            ),
-                            "_signer": "user1wallet",
-                        }
-                    )
-                }
-            ],
-            "UpdateEmailTx": [
-                {
-                    "args": AttributeDict(
-                        {
-                            "_entityId": 0,
-                            "_entityType": EntityType.ENCRYPTED_EMAIL,
-                            "_userId": valid_email_data["primary_user_id"],
-                            "_action": Action.UPDATE_EMAIL,
-                            "_metadata": json.dumps(
-                                {
-                                    "cid": "",
-                                    "data": {
-                                        "primary_user_id": valid_email_data[
-                                            "primary_user_id"
-                                        ],
-                                        "email_owner_user_id": valid_email_data[
-                                            "email_owner_user_id"
-                                        ],
-                                        "encrypted_email": "updated_encrypted_email",
-                                        "encrypted_key": "updated_encrypted_key",
-                                        "delegated_user_ids": [2],
-                                        "delegated_keys": ["updated_delegated_key"],
-                                    },
-                                }
                             ),
                             "_signer": "user1wallet",
                         }
@@ -118,19 +93,29 @@ def test_index_valid_email(app, mocker):
             encrypted_emails = session.query(EncryptedEmail).all()
             assert len(encrypted_emails) == 1
             email = encrypted_emails[0]
-            assert email.primary_user_id == valid_email_data["primary_user_id"]
             assert email.email_owner_user_id == valid_email_data["email_owner_user_id"]
             assert email.encrypted_email == "encrypted_email_content"
 
             # Validate access keys
             access_keys = session.query(EmailAccess).all()
             assert len(access_keys) == 1
+            access_key = access_keys[0]
             assert (
-                access_keys[0].email_owner_user_id
+                access_key.email_owner_user_id
                 == valid_email_data["email_owner_user_id"]
             )
-            assert access_keys[0].receiving_user_id == 2
-            assert access_keys[0].encrypted_key == "delegated_key"
+            assert (
+                access_key.receiving_user_id
+                == valid_email_data["access_grants"][0]["receiving_user_id"]
+            )
+            assert (
+                access_key.grantor_user_id
+                == valid_email_data["access_grants"][0]["grantor_user_id"]
+            )
+            assert (
+                access_key.encrypted_key
+                == valid_email_data["access_grants"][0]["encrypted_key"]
+            )
 
 
 def test_index_invalid_email(app, mocker):
@@ -140,13 +125,10 @@ def test_index_invalid_email(app, mocker):
         web3 = Web3()
         update_task = UpdateTask(web3, None)
 
-        # Test data for invalid email operations - missing required fields
+        # Updated invalid test data - missing required fields
         invalid_email_data = {
-            "primary_user_id": 999,
             "email_owner_user_id": 999,
-            # Missing encrypted_email and encrypted_key fields
-            "delegated_user_ids": [888],
-            "delegated_keys": ["delegated_key"],
+            # Missing encrypted_email and access_grants fields
         }
 
         tx_receipts = {
@@ -156,7 +138,7 @@ def test_index_invalid_email(app, mocker):
                         {
                             "_entityId": 0,
                             "_entityType": EntityType.ENCRYPTED_EMAIL,
-                            "_userId": invalid_email_data["primary_user_id"],
+                            "_userId": invalid_email_data["email_owner_user_id"],
                             "_action": Action.ADD_EMAIL,
                             "_metadata": json.dumps(
                                 {"cid": "", "data": invalid_email_data}
