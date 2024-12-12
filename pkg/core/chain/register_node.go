@@ -141,5 +141,10 @@ func (core *CoreApplication) finalizeRegisterNode(ctx context.Context, tx *gen_p
 		}
 	}
 
+	err = core.mempl.AddPeer(registerNode.GetCometAddress(), registerNode.GetEndpoint())
+	if err != nil {
+		return nil, fmt.Errorf("error adding peer to mempool: %v", err)
+	}
+
 	return vr, nil
 }
