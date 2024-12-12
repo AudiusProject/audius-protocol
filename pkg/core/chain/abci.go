@@ -10,7 +10,7 @@ import (
 	"github.com/AudiusProject/audius-protocol/pkg/core/config"
 	"github.com/AudiusProject/audius-protocol/pkg/core/contracts"
 	"github.com/AudiusProject/audius-protocol/pkg/core/db"
-	gen_proto "github.com/AudiusProject/audius-protocol/pkg/core/gen/core_proto"
+	"github.com/AudiusProject/audius-protocol/pkg/core/gen/core_proto"
 	"github.com/AudiusProject/audius-protocol/pkg/core/mempool"
 	"github.com/AudiusProject/audius-protocol/pkg/core/pubsub"
 	abcitypes "github.com/cometbft/cometbft/abci/types"
@@ -245,8 +245,8 @@ func (app *CoreApplication) VerifyVoteExtension(_ context.Context, verify *abcit
 	return &abcitypes.VerifyVoteExtensionResponse{}, nil
 }
 
-func (app *CoreApplication) isValidSignedTransaction(tx []byte) (*gen_proto.SignedTransaction, error) {
-	var msg gen_proto.SignedTransaction
+func (app *CoreApplication) isValidSignedTransaction(tx []byte) (*core_proto.SignedTransaction, error) {
+	var msg core_proto.SignedTransaction
 	err := proto.Unmarshal(tx, &msg)
 	if err != nil {
 		return nil, err
@@ -264,9 +264,9 @@ func (app *CoreApplication) validateBlockTxs(ctx context.Context, blockTime time
 		}
 
 		switch protoEvent.Transaction.(type) {
-		case *gen_proto.SignedTransaction_Plays:
-		case *gen_proto.SignedTransaction_ValidatorRegistration:
-		case *gen_proto.SignedTransaction_SlaRollup:
+		case *core_proto.SignedTransaction_Plays:
+		case *core_proto.SignedTransaction_ValidatorRegistration:
+		case *core_proto.SignedTransaction_SlaRollup:
 			if alreadyContainsRollup {
 				app.logger.Error(" **** Invalid block already have rollup")
 				return false, nil

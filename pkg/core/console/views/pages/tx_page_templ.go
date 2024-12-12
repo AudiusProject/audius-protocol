@@ -10,7 +10,7 @@ import templruntime "github.com/a-h/templ/runtime"
 
 import (
 	"encoding/json"
-	gen_proto "github.com/AudiusProject/audius-protocol/pkg/core/gen/core_proto"
+	"github.com/AudiusProject/audius-protocol/pkg/core/gen/core_proto"
 	"github.com/dustin/go-humanize"
 	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/proto"
@@ -43,7 +43,7 @@ func (p *Pages) TxPageJSON(data *TxView) (*TxPageJSONResponse, error) {
 func (p *Pages) toJSON(tx []byte) map[string]interface{} {
 	empty := make(map[string]interface{})
 
-	var transaction gen_proto.SignedTransaction
+	var transaction core_proto.SignedTransaction
 	err := proto.Unmarshal(tx, &transaction)
 	if err != nil {
 		//  fmt.Errorf("could not marshal tx into signed tx: %v", err)

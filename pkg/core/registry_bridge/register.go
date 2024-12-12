@@ -10,7 +10,7 @@ import (
 	"github.com/AudiusProject/audius-protocol/pkg/core/accounts"
 	"github.com/AudiusProject/audius-protocol/pkg/core/common"
 	"github.com/AudiusProject/audius-protocol/pkg/core/contracts"
-	gen_proto "github.com/AudiusProject/audius-protocol/pkg/core/gen/core_proto"
+	"github.com/AudiusProject/audius-protocol/pkg/core/gen/core_proto"
 	"github.com/AudiusProject/audius-protocol/pkg/logger"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/crypto"
@@ -99,7 +99,7 @@ func (r *Registry) registerSelfOnComet(ethBlock, spID string) error {
 		return fmt.Errorf("invalid node type: %v", err)
 	}
 
-	registrationTx := &gen_proto.ValidatorRegistration{
+	registrationTx := &core_proto.ValidatorRegistration{
 		Endpoint:     r.config.NodeEndpoint,
 		CometAddress: r.config.ProposerAddress,
 		EthBlock:     ethBlock,
@@ -117,15 +117,15 @@ func (r *Registry) registerSelfOnComet(ethBlock, spID string) error {
 		return fmt.Errorf("could not sign register event: %v", err)
 	}
 
-	tx := &gen_proto.SignedTransaction{
+	tx := &core_proto.SignedTransaction{
 		Signature: sig,
 		RequestId: uuid.NewString(),
-		Transaction: &gen_proto.SignedTransaction_ValidatorRegistration{
+		Transaction: &core_proto.SignedTransaction_ValidatorRegistration{
 			ValidatorRegistration: registrationTx,
 		},
 	}
 
-	req := &gen_proto.SendTransactionRequest{
+	req := &core_proto.SendTransactionRequest{
 		Transaction: tx,
 	}
 

@@ -8,14 +8,14 @@ import (
 	"github.com/AudiusProject/audius-protocol/pkg/core/accounts"
 	"github.com/AudiusProject/audius-protocol/pkg/core/common"
 	"github.com/AudiusProject/audius-protocol/pkg/core/db"
-	gen_proto "github.com/AudiusProject/audius-protocol/pkg/core/gen/core_proto"
+	"github.com/AudiusProject/audius-protocol/pkg/core/gen/core_proto"
 	"github.com/jackc/pgx/v5"
 	"google.golang.org/protobuf/proto"
 )
 
 // checks if the register node event is valid
 // calls ethereum mainnet and validates signature to confirm node should be a validator
-func (core *CoreApplication) isValidRegisterNodeEvent(ctx context.Context, e *gen_proto.SignedTransaction) error {
+func (core *CoreApplication) isValidRegisterNodeEvent(ctx context.Context, e *core_proto.SignedTransaction) error {
 	sig := e.GetSignature()
 	if sig == "" {
 		return fmt.Errorf("no signature provided for finalizeRegisterNode: %v", e)
@@ -86,7 +86,7 @@ func (core *CoreApplication) isValidRegisterNodeEvent(ctx context.Context, e *ge
 }
 
 // persists the register node request should it pass validation
-func (core *CoreApplication) finalizeRegisterNode(ctx context.Context, e *gen_proto.SignedTransaction) (*gen_proto.ValidatorRegistration, error) {
+func (core *CoreApplication) finalizeRegisterNode(ctx context.Context, e *core_proto.SignedTransaction) (*core_proto.ValidatorRegistration, error) {
 	if err := core.isValidRegisterNodeEvent(ctx, e); err != nil {
 		return nil, fmt.Errorf("invalid register node event: %v", err)
 	}

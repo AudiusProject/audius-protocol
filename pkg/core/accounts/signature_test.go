@@ -3,7 +3,7 @@ package accounts
 import (
 	"testing"
 
-	gen_proto "github.com/AudiusProject/audius-protocol/pkg/core/gen/core_proto"
+	"github.com/AudiusProject/audius-protocol/pkg/core/gen/core_proto"
 	"github.com/stretchr/testify/require"
 	"google.golang.org/protobuf/proto"
 )
@@ -17,7 +17,7 @@ func TestSignAndRecover(t *testing.T) {
 	privKey, err := EthToEthKey(privKeyHex)
 	require.Nil(t, err)
 
-	registerEvent := &gen_proto.ValidatorRegistration{
+	registerEvent := &core_proto.ValidatorRegistration{
 		Endpoint:     "http://road-to-uninode.audius.co",
 		CometAddress: "12345",
 	}

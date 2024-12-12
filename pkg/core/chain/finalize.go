@@ -6,21 +6,21 @@ import (
 	"time"
 
 	"github.com/AudiusProject/audius-protocol/pkg/core/db"
-	gen_proto "github.com/AudiusProject/audius-protocol/pkg/core/gen/core_proto"
+	"github.com/AudiusProject/audius-protocol/pkg/core/gen/core_proto"
 	"github.com/AudiusProject/audius-protocol/pkg/core/grpc"
 	"github.com/jackc/pgx/v5/pgtype"
 	"google.golang.org/protobuf/proto"
 )
 
-func (core *CoreApplication) finalizeTransaction(ctx context.Context, msg *gen_proto.SignedTransaction, txHash string) (proto.Message, error) {
+func (core *CoreApplication) finalizeTransaction(ctx context.Context, msg *core_proto.SignedTransaction, txHash string) (proto.Message, error) {
 	switch t := msg.Transaction.(type) {
-	case *gen_proto.SignedTransaction_Plays:
+	case *core_proto.SignedTransaction_Plays:
 		return core.finalizePlayTransaction(ctx, msg)
-	case *gen_proto.SignedTransaction_ManageEntity:
+	case *core_proto.SignedTransaction_ManageEntity:
 		return core.finalizeManageEntity(ctx, msg)
-	case *gen_proto.SignedTransaction_ValidatorRegistration:
+	case *core_proto.SignedTransaction_ValidatorRegistration:
 		return core.finalizeRegisterNode(ctx, msg)
-	case *gen_proto.SignedTransaction_SlaRollup:
+	case *core_proto.SignedTransaction_SlaRollup:
 		return core.finalizeSlaRollup(ctx, msg, txHash)
 	default:
 		return nil, fmt.Errorf("unhandled proto event: %v %T", msg, t)

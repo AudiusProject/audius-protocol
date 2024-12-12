@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/AudiusProject/audius-protocol/pkg/core/db"
-	gen_proto "github.com/AudiusProject/audius-protocol/pkg/core/gen/core_proto"
+	"github.com/AudiusProject/audius-protocol/pkg/core/gen/core_proto"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgtype"
 	"google.golang.org/protobuf/proto"
@@ -19,8 +19,8 @@ func (app *CoreApplication) createRollupTx(ctx context.Context, ts time.Time, he
 	if err != nil {
 		return []byte{}, err
 	}
-	e := gen_proto.SignedTransaction{
-		Transaction: &gen_proto.SignedTransaction_SlaRollup{
+	e := core_proto.SignedTransaction{
+		Transaction: &core_proto.SignedTransaction_SlaRollup{
 			SlaRollup: rollup,
 		},
 	}
@@ -31,8 +31,8 @@ func (app *CoreApplication) createRollupTx(ctx context.Context, ts time.Time, he
 	return rollupTx, nil
 }
 
-func (app *CoreApplication) createRollup(ctx context.Context, timestamp time.Time, height int64) (*gen_proto.SlaRollup, error) {
-	var rollup *gen_proto.SlaRollup
+func (app *CoreApplication) createRollup(ctx context.Context, timestamp time.Time, height int64) (*core_proto.SlaRollup, error) {
+	var rollup *core_proto.SlaRollup
 	var start int64 = 0
 	latestRollup, err := app.queries.GetLatestSlaRollup(ctx)
 	if err == nil {
@@ -44,14 +44,14 @@ func (app *CoreApplication) createRollup(ctx context.Context, timestamp time.Tim
 		return rollup, err
 	}
 
-	rollup = &gen_proto.SlaRollup{
+	rollup = &core_proto.SlaRollup{
 		Timestamp:  timestamppb.New(timestamp),
 		BlockStart: start,
 		BlockEnd:   height - 1, // exclude current block
-		Reports:    make([]*gen_proto.SlaNodeReport, 0, len(reports)),
+		Reports:    make([]*core_proto.SlaNodeReport, 0, len(reports)),
 	}
 	for _, r := range reports {
-		proto_rep := gen_proto.SlaNodeReport{
+		proto_rep := core_proto.SlaNodeReport{
 			Address:           r.Address,
 			NumBlocksProposed: r.BlocksProposed,
 		}
@@ -62,7 +62,7 @@ func (app *CoreApplication) createRollup(ctx context.Context, timestamp time.Tim
 }
 
 // Checks if the given sla rollup matches our local tallies
-func (app *CoreApplication) isValidRollup(ctx context.Context, timestamp time.Time, height int64, rollup *gen_proto.SlaRollup) (bool, error) {
+func (app *CoreApplication) isValidRollup(ctx context.Context, timestamp time.Time, height int64, rollup *core_proto.SlaRollup) (bool, error) {
 	if !app.shouldProposeNewRollup(ctx, height) {
 		return false, nil
 	}
@@ -99,7 +99,7 @@ func (app *CoreApplication) shouldProposeNewRollup(ctx context.Context, height i
 	return height-previousHeight >= int64(app.config.SlaRollupInterval)
 }
 
-func (app *CoreApplication) finalizeSlaRollup(ctx context.Context, event *gen_proto.SignedTransaction, txHash string) (*gen_proto.SlaRollup, error) {
+func (app *CoreApplication) finalizeSlaRollup(ctx context.Context, event *core_proto.SignedTransaction, txHash string) (*core_proto.SlaRollup, error) {
 	appDb := app.getDb()
 	rollup := event.GetSlaRollup()
 

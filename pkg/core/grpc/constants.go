@@ -3,7 +3,7 @@ package grpc
 import (
 	"reflect"
 
-	gen_proto "github.com/AudiusProject/audius-protocol/pkg/core/gen/core_proto"
+	"github.com/AudiusProject/audius-protocol/pkg/core/gen/core_proto"
 	"github.com/iancoleman/strcase"
 	"google.golang.org/protobuf/proto"
 )
@@ -16,10 +16,10 @@ var (
 )
 
 func init() {
-	TrackPlaysProtoName = GetProtoTypeName(&gen_proto.TrackPlays{})
-	ManageEntitiesProtoName = GetProtoTypeName(&gen_proto.ManageEntityLegacy{})
-	SlaRollupProtoName = GetProtoTypeName(&gen_proto.SlaRollup{})
-	SlaNodeReportProtoName = GetProtoTypeName(&gen_proto.SlaNodeReport{})
+	TrackPlaysProtoName = GetProtoTypeName(&core_proto.TrackPlays{})
+	ManageEntitiesProtoName = GetProtoTypeName(&core_proto.ManageEntityLegacy{})
+	SlaRollupProtoName = GetProtoTypeName(&core_proto.SlaRollup{})
+	SlaNodeReportProtoName = GetProtoTypeName(&core_proto.SlaNodeReport{})
 }
 
 func GetProtoTypeName(msg proto.Message) string {
