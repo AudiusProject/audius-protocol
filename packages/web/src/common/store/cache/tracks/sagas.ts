@@ -231,7 +231,7 @@ function* confirmEditTrack(
 ) {
   yield* waitForWrite()
   const sdk = yield* getSDK()
-  const transcodePreview =
+  const generatePreview =
     (formFields.preview_start_seconds !== null &&
       formFields.preview_start_seconds !== undefined &&
       currentTrack.preview_start_seconds !==
@@ -262,7 +262,7 @@ function* confirmEditTrack(
             ? fileToSdk(coverArtFile, 'cover_art')
             : undefined,
           metadata: trackMetadataForUploadToSdk(formFields),
-          transcodePreview
+          generatePreview
         })
 
         const { data } = yield* call(
