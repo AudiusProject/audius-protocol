@@ -696,6 +696,7 @@ export const Drawer: DrawerComponent = ({
             titleIcon={titleIcon}
             titleImage={titleImage}
             isFullscreen={isFullscreen}
+            blockClose={blockClose}
           />
         )}
         {children}
