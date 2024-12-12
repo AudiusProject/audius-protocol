@@ -42,7 +42,7 @@ export const StripeBuyAudioButton = () => {
     }
     dispatch(onrampOpened(purchaseInfo))
     try {
-      const rootWallet = solanaWalletService.getKeypair()
+      const rootWallet = await solanaWalletService.getKeypair()
       if (!rootWallet) {
         console.error('StripeBuyAudioButton: Missing solana root wallet')
         return

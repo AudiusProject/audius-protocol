@@ -51,7 +51,7 @@ export const useCoinflowWithdrawalAdapter = () => {
 
   useEffect(() => {
     const initWallet = async () => {
-      const wallet = solanaWalletService.getKeypair()
+      const wallet = await solanaWalletService.getKeypair()
       const sdk = await audiusSdk()
       const connection = sdk.services.solanaClient.connection
 
@@ -159,7 +159,7 @@ export const useCoinflowAdapter = ({
 
   useEffect(() => {
     const initWallet = async () => {
-      const wallet = solanaWalletService.getKeypair()
+      const wallet = await solanaWalletService.getKeypair()
       const sdk = await audiusSdk()
       const connection = sdk.services.solanaClient.connection
       if (!wallet) {
