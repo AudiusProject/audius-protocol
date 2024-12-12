@@ -116,7 +116,6 @@ describe('TracksApi', () => {
       new Configuration(),
       new DiscoveryNodeSelector(),
       new Storage({
-        audiusWalletClient,
         storageNodeSelector,
         logger: new Logger()
       }),

@@ -97,7 +97,6 @@ describe('UsersApi', () => {
     users = new UsersApi(
       new Configuration(),
       new Storage({
-        audiusWalletClient,
         storageNodeSelector,
         logger: new Logger()
       }),
