@@ -29,13 +29,13 @@ spOwnerWallet=
 ENABLE_STORAGE=true
 EOF
 
-docker run -d -ti --env-file ~/.audiusd/override.env -v ~/.audiusd/data:/data -p 80:80 -p 443:443 -p 26656:26656 audius/audiusd:latest
+docker run -d -ti --env-file ~/.audiusd/override.env -v ~/.audiusd/data:/data -p 80:80 -p 443:443 -p 26656:26656 audius/audiusd:current
 ```
 
 If you are migrating from an **existing registered production node**, you will want to pay attention to the persistent volume mount point. Which will likely look something more like this:
 
 ```bash
-docker run -d -ti --env-file ~/.audiusd/override.env -v /var/k8s:/data -p 80:80 -p 443:443 -p 26656:26656 audius/audiusd:latest
+docker run -d -ti --env-file ~/.audiusd/override.env -v /var/k8s:/data -p 80:80 -p 443:443 -p 26656:26656 audius/audiusd:current
 ```
 
 ### P2P Ports

@@ -105,7 +105,12 @@ COPY ./cmd/audiusd/env/dev.env ./cmd/audiusd/env/stage.env ./cmd/audiusd/env/pro
 COPY ./cmd/audiusd/entrypoint.sh /bin/entrypoint.sh
 RUN chmod +x /bin/entrypoint.sh
 
-RUN mkdir -p /data && chown -R postgres:postgres /data
+# Set up data directory structure with proper permissions
+RUN mkdir -p /data && \
+    mkdir -p /data/postgres && \
+    chown -R postgres:postgres /data/postgres && \
+    chmod -R 700 /data/postgres
+
 RUN localedef -i en_US -f UTF-8 en_US.UTF-8
 
 ARG git_sha
@@ -114,11 +119,6 @@ ENV GIT_SHA=$git_sha
 EXPOSE 80
 EXPOSE 443
 EXPOSE 26656
-
-# Set up data directory structure
-RUN mkdir -p /data/postgres && \
-    chown -R postgres:postgres /data/postgres && \
-    chmod -R 700 /data/postgres
 
 # Single volume mount point
 VOLUME ["/data"]
