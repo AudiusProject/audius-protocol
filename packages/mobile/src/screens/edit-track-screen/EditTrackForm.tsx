@@ -1,4 +1,4 @@
-import { useCallback, useContext, useEffect, useState } from 'react'
+import { useCallback, useContext, useEffect, useRef, useState } from 'react'
 
 import { useFeatureFlag } from '@audius/common/hooks'
 import { DownloadQuality } from '@audius/common/models'
@@ -111,6 +111,7 @@ export const EditTrackForm = (props: EditTrackFormProps) => {
   const [{ value: streamUrl }] = useField('stream.url')
   const [, { touched: isTitleTouched }, { setValue: setTitle }] =
     useField('title')
+  const hasTitleEverBeenTouched = useRef(false)
 
   const handleOverflowMenuOpen = useCallback(() => {
     setIsOverflowMenuOpen(true)
@@ -150,12 +151,18 @@ export const EditTrackForm = (props: EditTrackFormProps) => {
     }
   }, [dirty, navigation, dispatch])
 
+  useEffect(() => {
+    if (isTitleTouched) {
+      hasTitleEverBeenTouched.current = true
+    }
+  }, [isTitleTouched])
+
   // Update title when the file is replaced
   useEffect(() => {
-    if (isUpload && track && !isTitleTouched) {
+    if (isUpload && track && !hasTitleEverBeenTouched.current) {
       setTitle(track.metadata.title)
     }
-  }, [isTitleTouched, isUpload, setTitle, track])
+  }, [isUpload, setTitle, track])
 
   const handleReplaceAudio = useCallback(() => {
     if (!track) return
