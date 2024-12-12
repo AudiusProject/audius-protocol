@@ -52,6 +52,15 @@ For this to function correctly, the following conditions must be met:
 - Your service must be publicly accessible via the URL specified in the `creatorNodeEndpoint` environment variable.
 - Your service must be reachable on both port `:80` and port `:443`
 
+**CLOUDFLARE PROXY**
+
+If you are using Cloudflare Proxy, and want to use auto TLS, you will need to start with DNS-only mode:
+   - Configure Cloudflare in DNS-only mode initially (not proxied)
+   - Let the node obtain its LetsEncrypt certificate (requires HTTP access)
+   - Once certificate is obtained, you can enable Cloudflare proxy
+
+See Cloudflare [ssl-mode docs](https://developers.cloudflare.com/ssl/origin-configuration/ssl-modes/) for more details.
+
 ## Development
 
 ```
