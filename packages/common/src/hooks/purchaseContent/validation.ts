@@ -29,7 +29,8 @@ const messages = {
 
 export const createPurchaseContentSchema = (
   queryContext: AudiusQueryContextType,
-  page: PurchaseContentPage
+  page: PurchaseContentPage,
+  emailFromLocalStorage?: string
 ) => {
   return z
     .object({
@@ -74,7 +75,12 @@ export const createPurchaseContentSchema = (
       }
     )
     .superRefine(async ({ guestEmail }, ctx) => {
-      if (page !== PurchaseContentPage.GUEST_CHECKOUT || !guestEmail) {
+      if (
+        page !== PurchaseContentPage.GUEST_CHECKOUT ||
+        !guestEmail ||
+        guestEmail === emailFromLocalStorage
+      ) {
+        // only validate email if on guest checkout page and email is different
         return
       }
 
