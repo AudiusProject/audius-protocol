@@ -274,6 +274,7 @@ const TrackTile = (props: CombinedProps) => {
           isTrending={isTrending}
           rankIndex={index}
           size={TrackTileSize.SMALL}
+          isLoading={isLoading}
         />
         {isReadonly ? null : (
           <BottomButtons

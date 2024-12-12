@@ -4,17 +4,13 @@ import { route } from '@audius/common/utils'
 import { Flex } from '@audius/harmony'
 import { useSelector } from 'react-redux'
 
-import {
-  getStatus,
-  getReferrer,
-  getAccountReady
-} from 'common/store/pages/signon/selectors'
+import { getStatus, getAccountReady } from 'common/store/pages/signon/selectors'
 import { EditingStatus } from 'common/store/pages/signon/types'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
-import { useMedia } from 'hooks/useMedia'
 import { useNavigateToPage } from 'hooks/useNavigateToPage'
 
 import { Heading, Page } from '../components/layout'
+import { useFastReferral } from '../hooks/useFastReferral'
 
 const { SIGN_UP_COMPLETED_REDIRECT } = route
 
@@ -27,16 +23,14 @@ const messages = {
 // The user just waits here until the account is created and before being shown the welcome modal on the trending page
 export const LoadingAccountPage = () => {
   const navigate = useNavigateToPage()
-  const hasReferrer = useSelector(getReferrer)
+  const isFastReferral = useFastReferral()
   const accountReady = useSelector(getAccountReady)
-  const { isMobile } = useMedia()
 
   const accountCreationStatus = useSelector(getStatus)
 
-  const isAccountReady =
-    hasReferrer && isMobile
-      ? accountReady
-      : accountCreationStatus === EditingStatus.SUCCESS
+  const isAccountReady = isFastReferral
+    ? accountReady
+    : accountCreationStatus === EditingStatus.SUCCESS
 
   useEffect(() => {
     if (isAccountReady) {
