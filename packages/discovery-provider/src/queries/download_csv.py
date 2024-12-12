@@ -1,6 +1,6 @@
 from typing import TypedDict
 
-from sqlalchemy import desc, or_
+from sqlalchemy import and_, desc, or_
 
 from src.models.playlists.playlist import Playlist
 from src.models.playlists.playlist_route import PlaylistRoute
@@ -82,7 +82,7 @@ def get_purchases_or_sales(user_id: int, is_purchases: bool):
                 )
                 .outerjoin(  # Using outerjoin to get the encrypted key for the seller
                     EmailAccess,
-                    db.and_(
+                    and_(
                         EmailAccess.email_owner_user_id == USDCPurchase.buyer_user_id,
                         EmailAccess.receiving_user_id == user_id,
                     ),

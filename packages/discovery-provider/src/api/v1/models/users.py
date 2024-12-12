@@ -275,15 +275,16 @@ sale_json_model = ns.model(
         "encrypted_email": fields.String(
             description="Encrypted email of buyer if available", allow_null=True
         ),
+        "encrypted_key": fields.String(
+            description="Encrypted key for decrypting the buyer's email",
+            allow_null=True,
+        ),
     },
 )
 
 sales_json_content = ns.model(
     "sales_json_content",
     {
-        "decryption_key": fields.String(
-            description="Encrypted key for decrypting buyer emails", allow_null=True
-        ),
         "sales": fields.List(fields.Nested(sale_json_model)),
     },
 )

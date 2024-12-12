@@ -80,6 +80,12 @@ export interface SaleJson {
      * @memberof SaleJson
      */
     encryptedEmail?: string;
+    /**
+     * Encrypted key for decrypting the buyer's email
+     * @type {string}
+     * @memberof SaleJson
+     */
+    encryptedKey?: string;
 }
 
 /**
@@ -111,6 +117,7 @@ export function SaleJsonFromJSONTyped(json: any, ignoreDiscriminator: boolean): 
         'total': !exists(json, 'total') ? undefined : json['total'],
         'country': !exists(json, 'country') ? undefined : json['country'],
         'encryptedEmail': !exists(json, 'encrypted_email') ? undefined : json['encrypted_email'],
+        'encryptedKey': !exists(json, 'encrypted_key') ? undefined : json['encrypted_key'],
     };
 }
 
@@ -133,6 +140,7 @@ export function SaleJsonToJSON(value?: SaleJson | null): any {
         'total': value.total,
         'country': value.country,
         'encrypted_email': value.encryptedEmail,
+        'encrypted_key': value.encryptedKey,
     };
 }
 
