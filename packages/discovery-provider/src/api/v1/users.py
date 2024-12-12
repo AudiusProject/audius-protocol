@@ -99,6 +99,7 @@ from src.api.v1.models.users import (
 from src.api.v1.playlists import get_tracks_for_playlist
 from src.challenges.challenge_event_bus import setup_challenge_bus
 from src.exceptions import PermissionError
+from src.models.users.email import EmailAccess
 from src.queries.download_csv import (
     DownloadPurchasesArgs,
     DownloadSalesArgs,
@@ -3097,3 +3098,44 @@ class FullMutedUsers(Resource):
         muted_users = get_muted_users(decoded_id)
         muted_users = list(map(extend_user, muted_users))
         return success_response(muted_users)
+
+
+email_key_response = make_response(
+    "email_key_response", ns, fields.String(required=False, allow_null=True)
+)
+
+
+@ns.route("/<string:receiving_user_id>/emails/<string:grantor_user_id>/key")
+class UserEmailKey(Resource):
+    @record_metrics
+    @ns.doc(
+        id="""Get User Email Key""",
+        summary="Get user's email encryption key",
+        description="Gets the encrypted key for email access between the receiving user and granting user.",
+        params={
+            "receiving_user_id": "ID of user receiving email access",
+            "grantor_user_id": "ID of user granting email access",
+        },
+        responses={200: "Success", 400: "Bad request", 500: "Server error"},
+    )
+    @ns.marshal_with(email_key_response)
+    @cache(ttl_sec=5)
+    def get(self, receiving_user_id, grantor_user_id):
+        receiving_user_id = decode_with_abort(receiving_user_id, ns)
+        grantor_user_id = decode_with_abort(grantor_user_id, ns)
+
+        db = get_db_read_replica()
+        with db.scoped_session() as session:
+            email_access = (
+                session.query(EmailAccess)
+                .filter(
+                    EmailAccess.receiving_user_id == receiving_user_id,
+                    EmailAccess.grantor_user_id == grantor_user_id,
+                )
+                .first()
+            )
+
+            if not email_access:
+                return success_response(None)
+
+            return success_response(email_access.encrypted_key)
