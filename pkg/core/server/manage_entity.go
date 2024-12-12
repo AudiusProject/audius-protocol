@@ -1,4 +1,4 @@
-package chain
+package server
 
 import (
 	"context"
@@ -9,7 +9,7 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
-func (core *CoreApplication) validateManageEntity(_ context.Context, stx *core_proto.SignedTransaction) (proto.Message, error) {
+func (s *Server) validateManageEntity(_ context.Context, stx *core_proto.SignedTransaction) (proto.Message, error) {
 	manageEntity := stx.GetManageEntity()
 	if manageEntity == nil {
 		return nil, errors.New("not manage entity")
@@ -17,8 +17,8 @@ func (core *CoreApplication) validateManageEntity(_ context.Context, stx *core_p
 	return manageEntity, nil
 }
 
-func (core *CoreApplication) finalizeManageEntity(ctx context.Context, stx *core_proto.SignedTransaction) (proto.Message, error) {
-	tx, err := core.validateManageEntity(ctx, stx)
+func (s *Server) finalizeManageEntity(ctx context.Context, stx *core_proto.SignedTransaction) (proto.Message, error) {
+	tx, err := s.validateManageEntity(ctx, stx)
 	if err != nil {
 		return nil, fmt.Errorf("invalid manage entity: %v", err)
 	}

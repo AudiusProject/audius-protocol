@@ -1,4 +1,4 @@
-package chain
+package server
 
 import (
 	"context"
@@ -14,8 +14,8 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
-func (app *CoreApplication) createRollupTx(ctx context.Context, ts time.Time, height int64) ([]byte, error) {
-	rollup, err := app.createRollup(ctx, ts, height)
+func (s *Server) createRollupTx(ctx context.Context, ts time.Time, height int64) ([]byte, error) {
+	rollup, err := s.createRollup(ctx, ts, height)
 	if err != nil {
 		return []byte{}, err
 	}
@@ -31,15 +31,15 @@ func (app *CoreApplication) createRollupTx(ctx context.Context, ts time.Time, he
 	return rollupTx, nil
 }
 
-func (app *CoreApplication) createRollup(ctx context.Context, timestamp time.Time, height int64) (*core_proto.SlaRollup, error) {
+func (s *Server) createRollup(ctx context.Context, timestamp time.Time, height int64) (*core_proto.SlaRollup, error) {
 	var rollup *core_proto.SlaRollup
 	var start int64 = 0
-	latestRollup, err := app.queries.GetLatestSlaRollup(ctx)
+	latestRollup, err := s.db.GetLatestSlaRollup(ctx)
 	if err == nil {
 		start = latestRollup.BlockEnd + 1
 	}
 
-	reports, err := app.queries.GetInProgressRollupReports(ctx)
+	reports, err := s.db.GetInProgressRollupReports(ctx)
 	if err != nil && !errors.Is(err, pgx.ErrNoRows) {
 		return rollup, err
 	}
@@ -62,15 +62,15 @@ func (app *CoreApplication) createRollup(ctx context.Context, timestamp time.Tim
 }
 
 // Checks if the given sla rollup matches our local tallies
-func (app *CoreApplication) isValidRollup(ctx context.Context, timestamp time.Time, height int64, rollup *core_proto.SlaRollup) (bool, error) {
-	if !app.shouldProposeNewRollup(ctx, height) {
+func (s *Server) isValidRollup(ctx context.Context, timestamp time.Time, height int64, rollup *core_proto.SlaRollup) (bool, error) {
+	if !s.shouldProposeNewRollup(ctx, height) {
 		return false, nil
 	}
 	if rollup.BlockStart > rollup.BlockEnd {
 		return false, nil
 	}
 
-	myRollup, err := app.createRollup(ctx, timestamp, height)
+	myRollup, err := s.createRollup(ctx, timestamp, height)
 	if err != nil {
 		return false, err
 	}
@@ -87,20 +87,20 @@ func (app *CoreApplication) isValidRollup(ctx context.Context, timestamp time.Ti
 	return true, nil
 }
 
-func (app *CoreApplication) shouldProposeNewRollup(ctx context.Context, height int64) bool {
+func (s *Server) shouldProposeNewRollup(ctx context.Context, height int64) bool {
 	previousHeight := int64(0)
-	latestRollup, err := app.queries.GetLatestSlaRollup(ctx)
+	latestRollup, err := s.db.GetLatestSlaRollup(ctx)
 	if err != nil && !errors.Is(err, pgx.ErrNoRows) {
-		app.logger.Error("Error retrieving latest SLA rollup", "error", err)
+		s.logger.Error("Error retrieving latest SLA rollup", "error", err)
 		return false
 	} else {
 		previousHeight = latestRollup.BlockEnd
 	}
-	return height-previousHeight >= int64(app.config.SlaRollupInterval)
+	return height-previousHeight >= int64(s.config.SlaRollupInterval)
 }
 
-func (app *CoreApplication) finalizeSlaRollup(ctx context.Context, event *core_proto.SignedTransaction, txHash string) (*core_proto.SlaRollup, error) {
-	appDb := app.getDb()
+func (s *Server) finalizeSlaRollup(ctx context.Context, event *core_proto.SignedTransaction, txHash string) (*core_proto.SlaRollup, error) {
+	appDb := s.getDb()
 	rollup := event.GetSlaRollup()
 
 	id, err := appDb.CommitSlaRollup(
