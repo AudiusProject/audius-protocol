@@ -1,31 +1,35 @@
 build-audiusd:
-  machine:
-    image: ubuntu-2204:current
-  resource_class: large
+  machine: true
+  resource_class: audiusproject/gcp-n2-standard-4
+  working_directory: ~/audius-protocol
   steps:
     - attach_workspace:
         at: ./
     - checkout
+    - run:
+        name: "Do not block on apt install"
+        command: |
+          echo 'export NEEDRESTART_MODE=l' >> $BASH_ENV
     - gh/setup
+    - docker-login
     - run:
         name: install go
         command: |
           sudo apt-get update
-          sudo apt-get install -y golang
+          sudo NEEDRESTART_MODE=l apt-get install -y golang
     - run:
         name: Build audius-d wrapper image
         command: |
           IMAGE_TAG="$(sha1sum pkg/orchestration/Dockerfile | awk '{print $1}')"
           DOCKER_IMAGE="audius/audius-d:$IMAGE_TAG"
 
-          echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
-          
           if docker buildx imagetools inspect $DOCKER_IMAGE >/dev/null 2>&1; then
             echo "Docker image $DOCKER_IMAGE already exists. Skipping build."
           else
             echo "Docker image $DOCKER_IMAGE not found. Building and pushing..."
             docker buildx create --use
             make build-push-wrapper WRAPPER_TAG="$IMAGE_TAG"
+            docker buildx rm
           fi
     - run:
         name: Build audiusd image
@@ -37,12 +41,10 @@ build-audiusd:
             echo "Docker image $DOCKER_IMAGE already exists. Skipping build."
           else
             echo "Docker image $DOCKER_IMAGE not found. Building and pushing..."
-            echo "Pulling current image to preload build cache..."
-            # TODO: use self-hosted server
-            docker pull audius/audiusd:edge
-            echo "Building..."
             make build-push-audiusd AD_TAG="$CIRCLE_SHA1"
           fi
+    - docker-logout
+    - docker-prune
     - run:
         name: Build audius-ctl for production
         command: |
