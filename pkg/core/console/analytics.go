@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/AudiusProject/audius-protocol/pkg/core/console/views/pages"
-	"github.com/AudiusProject/audius-protocol/pkg/core/grpc"
+	"github.com/AudiusProject/audius-protocol/pkg/core/server"
 	"github.com/dustin/go-humanize"
 	"github.com/labstack/echo/v4"
 )
@@ -22,7 +22,7 @@ func (con *Console) analyticsPage(c echo.Context) error {
 		return err
 	}
 
-	totalPlays, err := con.db.TotalTransactionsByType(ctx, grpc.TrackPlaysProtoName)
+	totalPlays, err := con.db.TotalTransactionsByType(ctx, server.TrackPlaysProtoName)
 	if err != nil {
 		return err
 	}
@@ -39,7 +39,7 @@ func (con *Console) analyticsPage(c echo.Context) error {
 
 	chartData := []pages.AnalyticsChartData{}
 	for _, record := range txsPerHour {
-		if record.TxType == grpc.TrackPlaysProtoName {
+		if record.TxType == server.TrackPlaysProtoName {
 			chartData = append(chartData, pages.AnalyticsChartData{
 				Label: humanize.Time(record.Hour.Time),
 				Value: record.TxCount,

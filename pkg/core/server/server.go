@@ -8,7 +8,7 @@ import (
 	"github.com/AudiusProject/audius-protocol/pkg/core/config"
 	"github.com/AudiusProject/audius-protocol/pkg/core/contracts"
 	"github.com/AudiusProject/audius-protocol/pkg/core/db"
-	"github.com/AudiusProject/audius-protocol/pkg/core/grpc"
+	"github.com/AudiusProject/audius-protocol/pkg/core/gen/core_proto"
 	"github.com/AudiusProject/audius-protocol/pkg/core/mempool"
 	"github.com/AudiusProject/audius-protocol/pkg/core/pubsub"
 	"github.com/AudiusProject/audius-protocol/pkg/core/sdk"
@@ -18,8 +18,8 @@ import (
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/labstack/echo/v4"
-	"github.com/labstack/echo/v4/middleware"
 	"golang.org/x/sync/errgroup"
+	"google.golang.org/grpc"
 )
 
 type Server struct {
@@ -28,7 +28,7 @@ type Server struct {
 	logger         *common.Logger
 
 	httpServer *echo.Echo
-	grpcServer *grpc.GRPCServer
+	grpcServer *grpc.Server
 	pool       *pgxpool.Pool
 	contracts  *contracts.AudiusContracts
 
@@ -42,6 +42,8 @@ type Server struct {
 	txPubsub *pubsub.TransactionHashPubsub
 
 	abciState *ABCIState
+
+	core_proto.UnimplementedProtocolServer
 }
 
 func NewServer(config *config.Config, cconfig *cconfig.Config, logger *common.Logger, pool *pgxpool.Pool, eth *ethclient.Client) (*Server, error) {
@@ -60,27 +62,13 @@ func NewServer(config *config.Config, cconfig *cconfig.Config, logger *common.Lo
 		return nil, fmt.Errorf("contracts init error: %v", err)
 	}
 
-	// create grpc server
-	grpcServer, err := grpc.NewGRPCServer(logger, config, rpc, pool, mempl, txPubsub)
-	if err != nil {
-		return nil, fmt.Errorf("grpc init error: %v", err)
-	}
-
-	// create http server
-	httpServer := echo.New()
-	httpServer.Pre(middleware.RemoveTrailingSlash())
-	httpServer.Use(middleware.Recover())
-	httpServer.HideBanner = true
-
 	s := &Server{
 		config:         config,
 		cometbftConfig: cconfig,
 		logger:         logger.Child("server"),
 
-		httpServer: httpServer,
-		grpcServer: grpcServer,
-		pool:       pool,
-		contracts:  contracts,
+		pool:      pool,
+		contracts: contracts,
 
 		db:        db.New(pool),
 		eth:       eth,
@@ -91,16 +79,6 @@ func NewServer(config *config.Config, cconfig *cconfig.Config, logger *common.Lo
 	}
 
 	return s, nil
-}
-
-func (s *Server) startEchoServer() error {
-	s.logger.Info("core HTTP server starting")
-	s.registerRoutes()
-	return s.httpServer.Start(s.config.CoreServerAddr)
-}
-
-func (s *Server) GetEcho() *echo.Echo {
-	return s.httpServer
 }
 
 func (s *Server) Start(ctx context.Context) error {
@@ -124,7 +102,7 @@ func (s *Server) Shutdown(ctx context.Context) error {
 	g.Go(func() error { return s.httpServer.Shutdown(ctx) })
 	g.Go(s.node.Stop)
 	g.Go(func() error {
-		s.grpcServer.GetServer().GracefulStop()
+		s.grpcServer.GracefulStop()
 		return nil
 	})
 

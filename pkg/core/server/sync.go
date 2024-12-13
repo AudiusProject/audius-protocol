@@ -17,16 +17,14 @@ func (s *Server) startSyncTasks() error {
 	ticker := time.NewTicker(5 * time.Second)
 	defer ticker.Stop()
 
-	for {
-		select {
-		case <-ticker.C:
-			if err := s.onSyncTick(); err != nil {
-				s.logger.Debugf("still syncing: %v", err)
-			} else {
-				return nil
-			}
+	for range ticker.C {
+		if err := s.onSyncTick(); err != nil {
+			s.logger.Debugf("still syncing: %v", err)
+		} else {
+			return nil
 		}
 	}
+	return nil
 }
 
 func (s *Server) onSyncTick() error {

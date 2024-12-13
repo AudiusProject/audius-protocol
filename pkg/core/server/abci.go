@@ -11,7 +11,6 @@ import (
 	"github.com/AudiusProject/audius-protocol/pkg/core/common"
 	"github.com/AudiusProject/audius-protocol/pkg/core/db"
 	"github.com/AudiusProject/audius-protocol/pkg/core/gen/core_proto"
-	"github.com/AudiusProject/audius-protocol/pkg/core/grpc"
 	abcitypes "github.com/cometbft/cometbft/abci/types"
 	cfg "github.com/cometbft/cometbft/config"
 	nm "github.com/cometbft/cometbft/node"
@@ -366,7 +365,7 @@ func (s *Server) finalizeTransaction(ctx context.Context, msg *core_proto.Signed
 
 func (s *Server) persistTxStat(ctx context.Context, tx proto.Message, txhash string, height int64, blockTime time.Time) error {
 	if err := s.getDb().InsertTxStat(ctx, db.InsertTxStatParams{
-		TxType:      grpc.GetProtoTypeName(tx),
+		TxType:      GetProtoTypeName(tx),
 		TxHash:      txhash,
 		BlockHeight: height,
 		CreatedAt: pgtype.Timestamp{

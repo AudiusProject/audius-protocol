@@ -9,17 +9,24 @@ import (
 	"github.com/AudiusProject/audius-protocol/pkg/core/gen/core_proto"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v4/middleware"
 )
 
-func (s *Server) registerRoutes() {
-	e := s.httpServer
+func (s *Server) startEchoServer() error {
+	s.logger.Info("core HTTP server starting")
+	// create http server
+	httpServer := echo.New()
+	httpServer.Pre(middleware.RemoveTrailingSlash())
+	httpServer.Use(middleware.Recover())
+	httpServer.HideBanner = true
+	s.httpServer = httpServer
 
 	gwMux := runtime.NewServeMux()
-	if err := core_proto.RegisterProtocolHandlerServer(context.TODO(), gwMux, s.grpcServer); err != nil {
+	if err := core_proto.RegisterProtocolHandlerServer(context.TODO(), gwMux, s); err != nil {
 		s.logger.Errorf("could not register protocol handler server: %v", err)
 	}
 
-	g := e.Group("/core")
+	g := s.httpServer.Group("/core")
 
 	/** /core routes **/
 	g.Any("/grpc/*", echo.WrapHandler(gwMux))
@@ -50,4 +57,10 @@ func (s *Server) registerRoutes() {
 		g.GET("/debug/pprof/threadcreate", echo.WrapHandler(pprof.Handler("threadcreate")))
 		g.GET("/debug/pprof/block", echo.WrapHandler(pprof.Handler("block")))
 	}
+
+	return s.httpServer.Start(s.config.CoreServerAddr)
+}
+
+func (s *Server) GetEcho() *echo.Echo {
+	return s.httpServer
 }
