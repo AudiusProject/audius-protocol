@@ -15,25 +15,27 @@ import { SegmentedControlProps } from './types'
  * A hybrid somewhere between a button group, radio buttons, and tabs;
  * segmented controls are used to switch between different options or views.
  */
-export const SegmentedControl = <T extends string>({
-  options,
-  selected,
-  onSelectOption,
-  className,
-  fullWidth,
-  isMobile,
-  disabled,
-  label,
-  'aria-labelledby': ariaLabelledBy,
-  equalWidth,
-  forceRefreshAfterMs
-}: SegmentedControlProps<T>) => {
+export const SegmentedControl = <T extends string>(
+  props: SegmentedControlProps<T>
+) => {
+  const {
+    options,
+    selected,
+    onSelectOption,
+    className,
+    fullWidth,
+    isMobile,
+    disabled,
+    label,
+    'aria-labelledby': ariaLabelledBy,
+    equalWidth,
+    forceRefreshAfterMs
+  } = props
   const optionRefs = useRef(options.map((_) => createRef<HTMLLabelElement>()))
   const [localSelected, setLocalSelected] = useState(options[0].key)
   const [maxOptionWidth, setMaxOptionWidth] = useState(0)
 
   const selectedOption = selected || localSelected
-  console.log('selectedOption', selectedOption)
 
   const onSetSelected = (option: T) => {
     // Call props function if controlled
