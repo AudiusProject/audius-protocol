@@ -23,8 +23,6 @@ import {
 import { PlaylistsApi } from '../playlists/PlaylistsApi'
 
 import {
-  createUpdateAlbumSchema,
-  createUploadAlbumSchema,
   DeleteAlbumRequest,
   DeleteAlbumSchema,
   FavoriteAlbumRequest,
@@ -43,7 +41,9 @@ import {
   UnrepostAlbumRequest,
   UnrepostAlbumSchema,
   UpdateAlbumRequest,
-  UploadAlbumRequest
+  UpdateAlbumSchema,
+  UploadAlbumRequest,
+  UploadAlbumSchema
 } from './types'
 
 export class AlbumsApi {
@@ -93,7 +93,7 @@ export class AlbumsApi {
   ) {
     const { metadata, ...parsedParameters } = await parseParams(
       'uploadAlbum',
-      createUploadAlbumSchema()
+      UploadAlbumSchema
     )(params)
 
     const { albumName, ...playlistMetadata } = metadata
@@ -127,7 +127,7 @@ export class AlbumsApi {
   ) {
     const { albumId, metadata, ...parsedParameters } = await parseParams(
       'updateAlbum',
-      createUpdateAlbumSchema()
+      UpdateAlbumSchema
     )(params)
 
     const { albumName, ...playlistMetadata } = metadata
