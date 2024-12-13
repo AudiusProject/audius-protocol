@@ -37,7 +37,6 @@ func (config *NodeConfig) ToOverrideEnv(host string, nc NetworkConfig) map[strin
 		if config.HttpsPort != 0 {
 			overrideEnv["AUDIUSD_HTTPS_PORT"] = fmt.Sprint(config.HttpsPort)
 		}
-
 		if config.Storage.StorageUrl != "" {
 			overrideEnv["AUDIUS_STORAGE_DRIVER_URL"] = config.Storage.StorageUrl
 			if config.Storage.GoogleApplicationCredentials != "" {
