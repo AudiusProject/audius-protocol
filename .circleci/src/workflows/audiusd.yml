@@ -1,15 +1,18 @@
 when: << pipeline.parameters.run-audiusd-workflow >>
 jobs:
+  - build-audius-ctl:
+      context: github
   - build-audiusd:
       context: github
   - test-audiusd-devnet:
       context: github
       requires:
         - build-audiusd
+        - build-audius-ctl
   - test-config-subcommands:
       context: github
       requires:
-        - build-audiusd
+        - build-audius-ctl
   - publish-audius-ctl:
       context: github
       requires:
