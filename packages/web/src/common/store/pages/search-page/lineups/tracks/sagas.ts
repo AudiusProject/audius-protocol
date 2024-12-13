@@ -8,11 +8,9 @@ import {
   searchResultsPageSelectors,
   SearchKind
 } from '@audius/common/store'
-import { trimToAlphaNumeric } from '@audius/common/utils'
 import { select, call } from 'typed-redux-saga'
 
 import { LineupSagas } from 'common/store/lineup/sagas'
-import { getTagSearchResults } from 'common/store/pages/search-page/sagas'
 import { isMobileWeb } from 'common/utils/isMobileWeb'
 
 const { getSearchTracksLineup, getSearchResultsPageTracks } =
@@ -23,7 +21,7 @@ const { getUserId } = accountSelectors
 function* getSearchPageResultsTracks({
   offset,
   limit,
-  payload: { category, query, isTagSearch, filters, dispatch }
+  payload: { category, query, filters }
 }: {
   offset: number
   limit: number
@@ -37,38 +35,20 @@ function* getSearchPageResultsTracks({
     isMobileWeb() ||
     category === SearchKind.ALL
   ) {
-    // If we are on the tracks sub-page of search or mobile, which we should paginate on
-    let results: Track[]
-    if (isTagSearch) {
-      const { tracks } = yield* call(
-        getTagSearchResults,
-        trimToAlphaNumeric(query),
+    const currentUserId = yield* select(getUserId)
+    // searchApiFetch.getSearchResults handles tag search automatically based on query,
+    const { tracks }: { tracks: Track[] } = yield* call(
+      searchApiFetchSaga.getSearchResults,
+      {
+        currentUserId,
+        query,
         category,
         limit,
-        offset
-      )
-      results = tracks
-      return results
-    } else {
-      const currentUserId = yield* select(getUserId)
-
-      // searchApiFetch.getSearchResults already handles tag search,
-      // so we don't need to specify isTagSearch necessarily
-      const { tracks }: { tracks: Track[] } = yield* call(
-        searchApiFetchSaga.getSearchResults,
-        {
-          currentUserId,
-          query,
-          category,
-          limit,
-          offset,
-          ...filters
-        }
-      )
-
-      if (tracks) return tracks
-    }
-    return [] as Track[]
+        offset,
+        ...filters
+      }
+    )
+    return tracks
   } else {
     // If we are part of the all results search page
     try {
