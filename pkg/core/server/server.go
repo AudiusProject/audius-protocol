@@ -9,7 +9,6 @@ import (
 	"github.com/AudiusProject/audius-protocol/pkg/core/contracts"
 	"github.com/AudiusProject/audius-protocol/pkg/core/db"
 	"github.com/AudiusProject/audius-protocol/pkg/core/gen/core_proto"
-	"github.com/AudiusProject/audius-protocol/pkg/core/mempool"
 	"github.com/AudiusProject/audius-protocol/pkg/core/pubsub"
 	"github.com/AudiusProject/audius-protocol/pkg/core/sdk"
 	cconfig "github.com/cometbft/cometbft/config"
@@ -37,7 +36,7 @@ type Server struct {
 	node  *nm.Node
 	rpc   *local.Local
 	peers []*sdk.Sdk
-	mempl *mempool.Mempool
+	mempl *Mempool
 
 	txPubsub *pubsub.TransactionHashPubsub
 
@@ -48,7 +47,7 @@ type Server struct {
 
 func NewServer(config *config.Config, cconfig *cconfig.Config, logger *common.Logger, pool *pgxpool.Pool, eth *ethclient.Client) (*Server, error) {
 	// create mempool
-	mempl := mempool.NewMempool(logger, config, db.New(pool), cconfig.Mempool.Size)
+	mempl := NewMempool(logger, config, db.New(pool), cconfig.Mempool.Size)
 
 	// TODO: don't do this immediately
 	mempl.CreateValidatorClients()

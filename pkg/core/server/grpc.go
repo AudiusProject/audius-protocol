@@ -12,7 +12,6 @@ import (
 
 	"github.com/AudiusProject/audius-protocol/pkg/core/common"
 	"github.com/AudiusProject/audius-protocol/pkg/core/gen/core_proto"
-	"github.com/AudiusProject/audius-protocol/pkg/core/mempool"
 	"github.com/cometbft/cometbft/abci/types"
 	gogo "github.com/cosmos/gogoproto/proto"
 	"github.com/iancoleman/strcase"
@@ -52,7 +51,7 @@ func (s *Server) SendTransaction(ctx context.Context, req *core_proto.SendTransa
 	}
 
 	deadline := status.SyncInfo.LatestBlockHeight + 10
-	mempoolTx := &mempool.MempoolTransaction{
+	mempoolTx := &MempoolTransaction{
 		Tx:       req.GetTransaction(),
 		Deadline: deadline,
 	}
@@ -102,7 +101,7 @@ func (s *Server) ForwardTransaction(ctx context.Context, req *core_proto.Forward
 	}
 
 	deadline := status.SyncInfo.LatestBlockHeight + 10
-	mempoolTx := &mempool.MempoolTransaction{
+	mempoolTx := &MempoolTransaction{
 		Tx:       req.GetTransaction(),
 		Deadline: deadline,
 	}
