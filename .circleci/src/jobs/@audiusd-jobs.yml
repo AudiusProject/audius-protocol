@@ -37,7 +37,10 @@ build-audiusd:
             echo "Docker image $DOCKER_IMAGE already exists. Skipping build."
           else
             echo "Docker image $DOCKER_IMAGE not found. Building and pushing..."
-            docker buildx create --use
+            echo "Pulling current image to preload build cache..."
+            # TODO: use self-hosted server
+            docker pull audius/audiusd:edge
+            echo "Building..."
             make build-push-audiusd AD_TAG="$CIRCLE_SHA1"
           fi
     - run:

@@ -21,8 +21,6 @@ jobs:
             - main
   - deploy-audiusd-staging:
       context: [github, dockerhub]
-      requires:
-        - publish-audius-ctl
       filters:
         branches:
           only:
