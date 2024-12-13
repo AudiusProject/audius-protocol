@@ -873,18 +873,20 @@ function* doStartPurchaseContentFlow({
     yield* call(collectEmailAfterPurchase, { metadata })
 
     // Auto-favorite the purchased item
-    if (contentType === PurchaseableContentType.TRACK) {
-      yield* put(saveTrack(contentId, FavoriteSource.IMPLICIT))
-    }
-    if (contentType === PurchaseableContentType.ALBUM) {
-      yield* put(saveCollection(contentId, FavoriteSource.IMPLICIT))
-      if (
-        'playlist_contents' in metadata &&
-        metadata.playlist_contents.track_ids &&
-        !metadata.is_private
-      ) {
-        for (const track of metadata.playlist_contents.track_ids) {
-          yield* put(saveTrack(track.track, FavoriteSource.IMPLICIT))
+    if (!guestEmail) {
+      if (contentType === PurchaseableContentType.TRACK) {
+        yield* put(saveTrack(contentId, FavoriteSource.IMPLICIT))
+      }
+      if (contentType === PurchaseableContentType.ALBUM) {
+        yield* put(saveCollection(contentId, FavoriteSource.IMPLICIT))
+        if (
+          'playlist_contents' in metadata &&
+          metadata.playlist_contents.track_ids &&
+          !metadata.is_private
+        ) {
+          for (const track of metadata.playlist_contents.track_ids) {
+            yield* put(saveTrack(track.track, FavoriteSource.IMPLICIT))
+          }
         }
       }
     }
