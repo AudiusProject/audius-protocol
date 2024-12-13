@@ -1,5 +1,12 @@
-import { Name, Kind, ID, Track, User, Id } from '@audius/common/models'
-import { QueryParams } from '@audius/common/services'
+import {
+  Name,
+  Kind,
+  ID,
+  Track,
+  User,
+  Id,
+  OptionalId
+} from '@audius/common/models'
 import {
   accountSelectors,
   cacheTracksSelectors,
@@ -17,7 +24,6 @@ import {
   encodeHashId,
   makeKindId,
   waitForValue,
-  getQueryParams,
   removeNullable,
   getFilename
 } from '@audius/common/utils'
@@ -622,12 +628,10 @@ function* downloadTracks({
 }) {
   const { trackId: parentTrackId } = tracks[0]
   try {
-    const audiusBackendInstance = yield* getContext('audiusBackendInstance')
-    const apiClient = yield* getContext('apiClient')
     const audiusSdk = yield* getContext('audiusSdk')
     const sdk = yield* call(audiusSdk)
     const trackDownload = yield* getContext('trackDownload')
-    let queryParams: QueryParams = {}
+    // let queryParams: QueryParams = {}
 
     const nftAccessSignatureMap = yield* select(getNftAccessSignatureMap)
     const userId = yield* select(getUserId)
@@ -635,30 +639,49 @@ function* downloadTracks({
       ? nftAccessSignatureMap[parentTrackId]?.original ?? null
       : nftAccessSignatureMap[parentTrackId]?.mp3 ?? null
 
-    queryParams = (yield* call(getQueryParams, {
-      audiusBackendInstance,
-      sdk,
-      nftAccessSignature,
-      userId
-    })) as unknown as QueryParams
+    // queryParams = (yield* call(getQueryParams, {
+    //   audiusBackendInstance,
+    //   sdk,
+    //   nftAccessSignature,
+    //   userId
+    // })) as unknown as QueryParams
 
-    queryParams.original = original
+    // queryParams.original = original
 
     const files = tracks.map(({ trackId, filename }) => {
-      queryParams.filename = filename
-      return {
-        url: apiClient.makeUrl(
-          `/tracks/${encodeHashId(trackId)}/download`,
-          queryParams
-        ),
-        filename
-      }
+      // queryParams.filename = filename
+      // return {
+      //   url: apiClient.makeUrl(
+      //     `/tracks/${encodeHashId(trackId)}/download`,
+      //     queryParams
+      //   ),
+      //   filename
+      // }
     })
-    yield* call(trackDownload.downloadTracks, {
-      files,
-      rootDirectoryName,
-      abortSignal
+    yield* call(async () => {
+      const files = await Promise.all(
+        tracks.map(async ({ trackId, filename }) => {
+          const url = await sdk.tracks.getTrackStreamUrl({
+            trackId: Id.parse(trackId),
+            userId: OptionalId.parse(userId),
+            nftAccessSignature: nftAccessSignature
+              ? JSON.stringify(nftAccessSignature)
+              : undefined,
+            original
+          })
+          return {
+            url,
+            filename
+          }
+        })
+      )
+      await trackDownload.downloadTracks({
+        files,
+        rootDirectoryName,
+        abortSignal
+      })
     })
+
     yield* call(async () => {
       await Promise.all(
         tracks.map(async ({ trackId }) => {

@@ -12,7 +12,6 @@ import {
 import { isNullOrUndefined } from '~/utils/typeUtils'
 import { stringWeiToBN } from '~/utils/wallet'
 
-import { AudiusAPIClient } from '../audius-api-client'
 import {
   AudiusBackend,
   getUserbankAccountInfo,
@@ -26,18 +25,15 @@ export const MIN_TRANSFERRABLE_WEI = stringWeiToBN(
 
 type WalletClientConfig = {
   audiusBackendInstance: AudiusBackend
-  apiClient: AudiusAPIClient
   audiusSdk: () => Promise<AudiusSdk>
 }
 
 export class WalletClient {
   audiusBackendInstance: AudiusBackend
-  apiClient: AudiusAPIClient
   audiusSdk: () => Promise<AudiusSdk>
 
   constructor(config: WalletClientConfig) {
     this.audiusBackendInstance = config.audiusBackendInstance
-    this.apiClient = config.apiClient
     this.audiusSdk = config.audiusSdk
   }
 

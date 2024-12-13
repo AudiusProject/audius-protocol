@@ -3,11 +3,11 @@ import { useCallback, useMemo, useRef, useState } from 'react'
 import EventEmitter from 'events'
 import path from 'path'
 
-import { ErrorLevel, SquareSizes } from '@audius/common/models'
+import { ErrorLevel, Id, SquareSizes } from '@audius/common/models'
 import type { Color } from '@audius/common/models'
 import { modalsActions } from '@audius/common/store'
 import type { ShareContent } from '@audius/common/store'
-import { encodeHashId, uuid } from '@audius/common/utils'
+import { uuid } from '@audius/common/utils'
 import type { Nullable } from '@audius/common/utils'
 import {
   activateKeepAwake,
@@ -33,7 +33,7 @@ import { LinearProgress, Text } from 'app/components/core'
 import { env } from 'app/env'
 import { useToast } from 'app/hooks/useToast'
 import { make, track } from 'app/services/analytics'
-import { apiClient } from 'app/services/audius-api-client'
+import { audiusSdk } from 'app/services/sdk/audius-sdk'
 import { setVisibility } from 'app/store/drawers/slice'
 import {
   getCancel,
@@ -280,6 +280,8 @@ export const useShareToStory = ({
 
   const generateStory = useCallback(
     async (platform: ShareToStoryPlatform) => {
+      const sdk = await audiusSdk()
+
       if (content?.type === 'track') {
         track(
           make({
@@ -356,10 +358,9 @@ export const useShareToStory = ({
         // For simplicity, assume that calculating dominant colors and generating the sticker takes 20% of the total loading time:
         dispatch(setProgress(20))
 
-        const encodedTrackId = encodeHashId(content.track.track_id)
-        const streamMp3Url = apiClient.makeUrl(
-          `/tracks/${encodedTrackId}/stream`
-        )
+        const streamMp3Url = await sdk.tracks.getTrackStreamUrl({
+          trackId: Id.parse(content.track.track_id)
+        })
         const storyVideoPath = path.join(
           RNFS.TemporaryDirectoryPath,
           `storyVideo-${uuid()}.mp4`

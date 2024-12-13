@@ -4,7 +4,6 @@ import type { AudiusSdk } from '@audius/sdk'
 import type { Dispatch } from 'redux'
 import { getContext } from 'typed-redux-saga'
 
-import type { AudiusAPIClient } from '~/services/audius-api-client'
 import type { AuthService, IdentityService } from '~/services/auth'
 import {
   AudiusBackend,
@@ -21,7 +20,6 @@ import {
 } from '../models'
 
 export type AudiusQueryContextType = {
-  apiClient: AudiusAPIClient
   audiusSdk: () => Promise<AudiusSdk>
   audiusBackend: AudiusBackend
   authService: AuthService
@@ -77,9 +75,6 @@ export function* getAudiusQueryContext(): Generator<
 > {
   // We can't use common typed `getContext` here because of circular dependency
   return {
-    apiClient: yield* getContext<AudiusQueryContextType['apiClient']>(
-      'apiClient'
-    ),
     audiusBackend: yield* getContext<AudiusQueryContextType['audiusBackend']>(
       'audiusBackendInstance'
     ),

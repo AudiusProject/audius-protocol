@@ -1,6 +1,6 @@
 import { useRef, useEffect, useCallback, useState } from 'react'
 
-import { Name, SquareSizes } from '@audius/common/models'
+import { Id, Name, OptionalId, SquareSizes } from '@audius/common/models'
 import type { Track } from '@audius/common/models'
 import {
   accountSelectors,
@@ -24,10 +24,8 @@ import {
 import type { Queueable, CommonState } from '@audius/common/store'
 import {
   Genre,
-  encodeHashId,
   shallowCompare,
   removeNullable,
-  getQueryParams,
   getTrackPreviewDuration
 } from '@audius/common/utils'
 import type { Nullable } from '@audius/common/utils'
@@ -47,8 +45,6 @@ import { useDispatch, useSelector } from 'react-redux'
 import { useAsync, usePrevious } from 'react-use'
 
 import { make, track as analyticsTrack } from 'app/services/analytics'
-import { apiClient } from 'app/services/audius-api-client'
-import { audiusBackendInstance } from 'app/services/audius-backend-instance'
 import {
   getLocalAudioPath,
   getLocalTrackCoverArtPath
@@ -346,25 +342,14 @@ export const AudioPlayer = () => {
         url = contentNodeStreamUrl
       } else {
         const sdk = await audiusSdk()
-        let queryParams = trackQueryParams.current[trackId]
-
-        if (!queryParams) {
-          const nftAccessSignature = nftAccessSignatureMap[trackId]?.mp3 ?? null
-          queryParams = await getQueryParams({
-            audiusBackendInstance,
-            sdk,
-            nftAccessSignature,
-            userId: currentUserId
-          })
-          trackQueryParams.current[trackId] = queryParams
-        }
-
-        queryParams = { ...queryParams, preview: shouldPreview }
-
-        url = apiClient.makeUrl(
-          `/tracks/${encodeHashId(track.track_id)}/stream`,
-          queryParams
-        )
+        const nftAccessSignature = nftAccessSignatureMap[trackId]?.mp3 ?? null
+        url = await sdk.tracks.getTrackStreamUrl({
+          trackId: Id.parse(track.track_id),
+          userId: OptionalId.parse(currentUserId),
+          nftAccessSignature: nftAccessSignature
+            ? JSON.stringify(nftAccessSignature)
+            : undefined
+        })
       }
 
       const localTrackImageSource =

@@ -1,5 +1,4 @@
-import { Kind, type Track } from '@audius/common/models'
-import { QueryParams } from '@audius/common/services'
+import { Id, Kind, OptionalId, type Track } from '@audius/common/models'
 import {
   accountSelectors,
   cacheTracksSelectors,
@@ -19,10 +18,8 @@ import {
 import {
   Genre,
   actionChannelDispatcher,
-  getQueryParams,
   getTrackPreviewDuration,
-  Nullable,
-  encodeHashId
+  Nullable
 } from '@audius/common/utils'
 import { eventChannel } from 'redux-saga'
 import {
@@ -119,24 +116,13 @@ export function* watchPlay() {
       }
 
       yield* call(waitForWrite)
-      const audiusBackendInstance = yield* getContext('audiusBackendInstance')
-      const apiClient = yield* getContext('apiClient')
       const currentUserId = yield* select(getUserId)
       const audiusSdk = yield* getContext('audiusSdk')
       const sdk = yield* call(audiusSdk)
 
-      const encodedTrackId = encodeHashId(trackId)
-
-      let queryParams: QueryParams = {}
       const nftAccessSignatureMap = yield* select(getNftAccessSignatureMap)
       const nftAccessSignature =
         nftAccessSignatureMap[track.track_id]?.mp3 ?? null
-      queryParams = (yield* call(getQueryParams, {
-        audiusBackendInstance,
-        nftAccessSignature,
-        userId: currentUserId,
-        sdk
-      })) as unknown as QueryParams
 
       let trackDuration = track.duration
 
@@ -151,8 +137,6 @@ export function* watchPlay() {
       }
 
       if (shouldPreview) {
-        // Add preview query string and calculate preview duration for use later
-        queryParams.preview = true
         trackDuration = getTrackPreviewDuration(track)
       }
 
@@ -162,9 +146,16 @@ export function* watchPlay() {
         retries ?? 0
       )
 
-      const discoveryNodeStreamUrl = apiClient.makeUrl(
-        `/tracks/${encodedTrackId}/stream`,
-        queryParams
+      const discoveryNodeStreamUrl = yield* call(
+        [sdk.tracks, sdk.tracks.getTrackStreamUrl],
+        {
+          trackId: Id.parse(trackId),
+          userId: OptionalId.parse(currentUserId),
+          nftAccessSignature: nftAccessSignature
+            ? JSON.stringify(nftAccessSignature)
+            : undefined,
+          preview: shouldPreview ? true : undefined
+        }
       )
 
       // If we have a stream URL from Discovery already for content node, use that.
