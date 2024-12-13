@@ -1,22 +1,33 @@
+build-audius-ctl:
+  machine:
+    image: ubuntu-2204:current
+  resource_class: medium
+  steps:
+    - attach_workspace:
+        at: ./
+    - checkout
+    - gh/setup
+    - run:
+        name: install go
+        command: |
+          sudo apt-get update
+          sudo apt-get install -y golang
+    - run:
+        name: Build audius-ctl for production
+        command: |
+          make audius-ctl-production-build
+    - persist_to_workspace:
+        root: ./
+        paths:
+          - bin/audius-ctl*
+
 build-audiusd:
   machine: true
   resource_class: audiusproject/gcp-n2-standard-4
   working_directory: ~/audius-protocol
   steps:
-    - attach_workspace:
-        at: ./
     - checkout
-    - run:
-        name: "Do not block on apt install"
-        command: |
-          echo 'export NEEDRESTART_MODE=l' >> $BASH_ENV
-    - gh/setup
     - docker-login
-    - run:
-        name: install go
-        command: |
-          sudo apt-get update
-          sudo NEEDRESTART_MODE=l apt-get install -y golang
     - run:
         name: Build audius-d wrapper image
         command: |
@@ -45,14 +56,6 @@ build-audiusd:
           fi
     - docker-logout
     - docker-prune
-    - run:
-        name: Build audius-ctl for production
-        command: |
-          make audius-ctl-production-build
-    - persist_to_workspace:
-        root: ./
-        paths:
-          - bin/audius-ctl*
 
 test-audiusd-devnet:
   machine:
