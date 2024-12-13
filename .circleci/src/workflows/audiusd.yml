@@ -21,6 +21,8 @@ jobs:
             - main
   - deploy-audiusd-staging:
       context: [github, dockerhub]
+      requires:
+        - build-audiusd
       filters:
         branches:
           only:
