@@ -6,7 +6,8 @@ import {
   chatSelectors,
   chatActions,
   useInboxUnavailableModal,
-  type CommonState
+  type CommonState,
+  cacheUsersSelectors
 } from '@audius/common/store'
 import { makeSolanaTransactionLink } from '@audius/common/utils'
 import {
@@ -18,7 +19,9 @@ import {
   Text,
   Flex,
   IconMessage,
-  IconExternalLink
+  IconExternalLink,
+  Hint,
+  IconCart
 } from '@audius/harmony'
 import moment from 'moment'
 import { useDispatch, useSelector } from 'react-redux'
@@ -33,6 +36,7 @@ import styles from './styles.module.css'
 
 const { getCanCreateChat } = chatSelectors
 const { createChat } = chatActions
+const { getIsGuestUser } = cacheUsersSelectors
 
 const messages = {
   by: 'Purchased By',
@@ -40,7 +44,9 @@ const messages = {
   done: 'Done',
   saleDetails: 'Sale Details',
   messageBuyer: 'Message Buyer',
-  transaction: 'Explore Transaction'
+  transaction: 'Explore Transaction',
+  guestCheckoutHint:
+    'This purchase was completed using guest checkout. Once they create an account, their profile will be visible here.'
 }
 
 type SaleModalContentProps = {
@@ -67,6 +73,9 @@ export const SaleModalContent = ({
   const { canCreateChat } = useSelector((state: CommonState) =>
     getCanCreateChat(state, { userId: purchaseDetails.buyerUserId })
   )
+  const isGuestUser = useSelector((state: CommonState) =>
+    getIsGuestUser(state, { id: purchaseDetails.buyerUserId })
+  )
 
   const handleClickMessageBuyer = useCallback(() => {
     onClose()
@@ -86,7 +95,7 @@ export const SaleModalContent = ({
   return (
     <>
       <ModalHeader>
-        <ModalTitle title={messages.saleDetails} />
+        <ModalTitle title={messages.saleDetails} icon={<IconCart />} />
       </ModalHeader>
       <ModalContent>
         <Flex gap='l' direction='column'>
@@ -106,15 +115,19 @@ export const SaleModalContent = ({
               link={link}
             />
           </DetailSection>
-          <DetailSection label={messages.by}>
-            <UserLink
-              variant='visible'
-              userId={purchaseDetails.buyerUserId}
-              popover
-              size='l'
-              onClick={onClose}
-            />
-          </DetailSection>
+          {isGuestUser ? (
+            <Hint>{messages.guestCheckoutHint}</Hint>
+          ) : (
+            <DetailSection label={messages.by}>
+              <UserLink
+                variant='visible'
+                userId={purchaseDetails.buyerUserId}
+                popover
+                size='l'
+                onClick={onClose}
+              />
+            </DetailSection>
+          )}
           <DetailSection
             label={messages.transactionDate}
             actionButton={
@@ -141,7 +154,7 @@ export const SaleModalContent = ({
       </ModalContent>
       <ModalFooter style={{ paddingTop: 0 }}>
         <Flex w='100%' gap='s'>
-          {!isManagedAccount ? (
+          {!isManagedAccount && !isGuestUser ? (
             <Button
               onClick={handleClickMessageBuyer}
               fullWidth

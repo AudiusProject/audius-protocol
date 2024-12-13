@@ -32,9 +32,9 @@ const body = (
   contentType: string,
   price: string
 ): string =>
-  `Congrats, ${capitalize(
-    buyerUsername
-  )} just bought your ${contentType} ${purchasedContentName} for $${price}!`
+  `Congrats, ${
+    capitalize(buyerUsername) || 'someone'
+  } just bought your ${contentType} ${purchasedContentName} for $${price}!`
 export class USDCPurchaseSeller extends BaseNotification<USDCPurchaseSellerRow> {
   notificationReceiverUserId: number
   buyerUserId: number
@@ -110,7 +110,7 @@ export class USDCPurchaseSeller extends BaseNotification<USDCPurchaseSellerRow> 
         logger.error(`Missing title in album ${album}`)
         return
       }
-      title = 'Album sold'
+      title = 'Album Sold'
       purchasedContentName = album.playlist_name
       cover_art_sizes = album.playlist_image_sizes_multihash
       slug = `album/${album.slug}`

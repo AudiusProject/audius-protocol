@@ -282,13 +282,15 @@ const notificationMap = {
     )
   },
   ['usdc_purchase_seller'](notification) {
-    const entityName = notification.entity.name
-    const [buyerUser] = notification.users
-    const amount = notification.amount
+    const { entity, users, amount } = notification
+    const { name: entityName, type } = entity
+    const [buyerUser] = users
     return (
       <span className={'notificationText'}>
         <BodyText
-          text={`Congrats, ${buyerUser.name} just bought your track ${entityName} for $${amount}!`}
+          text={`Congrats, ${
+            buyerUser.name || 'someone'
+          } just bought your ${type.toLowerCase()} ${entityName} for $${amount}!`}
         />
       </span>
     )
