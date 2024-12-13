@@ -33,7 +33,6 @@ import { BASE_PATH, RequiredError } from '../generated/default/runtime'
 
 import { TrackUploadHelper } from './TrackUploadHelper'
 import {
-  createUpdateTrackSchema,
   DeleteTrackRequest,
   DeleteTrackSchema,
   RepostTrackRequest,
@@ -52,9 +51,10 @@ import {
   GetPurchaseTrackInstructionsSchema,
   RecordTrackDownloadRequest,
   RecordTrackDownloadSchema,
-  createUploadTrackFilesSchema,
   UploadTrackFilesRequest,
-  createUploadTrackSchema
+  UploadTrackSchema,
+  UpdateTrackSchema,
+  UploadTrackFilesSchema
 } from './types'
 
 // Extend that new class
@@ -108,10 +108,7 @@ export class TracksApi extends GeneratedTracksApi {
       coverArtFile,
       metadata: parsedMetadata,
       onProgress
-    } = await parseParams(
-      'uploadTrackFiles',
-      createUploadTrackFilesSchema()
-    )(params)
+    } = await parseParams('uploadTrackFiles', UploadTrackFilesSchema)(params)
 
     // Transform metadata
     this.logger.info('Transforming metadata')
@@ -217,7 +214,7 @@ export class TracksApi extends GeneratedTracksApi {
     advancedOptions?: AdvancedOptions
   ) {
     // Validate inputs
-    await parseParams('uploadTrack', createUploadTrackSchema())(params)
+    await parseParams('uploadTrack', UploadTrackSchema)(params)
 
     // Upload track files
     const metadata = await this.uploadTrackFiles(
@@ -243,7 +240,7 @@ export class TracksApi extends GeneratedTracksApi {
       metadata: parsedMetadata,
       onProgress,
       transcodePreview
-    } = await parseParams('updateTrack', createUpdateTrackSchema())(params)
+    } = await parseParams('updateTrack', UpdateTrackSchema)(params)
 
     // Transform metadata
     const metadata = this.trackUploadHelper.transformTrackUploadMetadata(

@@ -5,7 +5,7 @@ import { AudioFile, ImageFile } from '../../types/File'
 import { Genre } from '../../types/Genre'
 import { HashId } from '../../types/HashId'
 import { Mood } from '../../types/Mood'
-import { createUploadTrackMetadataSchema } from '../tracks/types'
+import { UploadTrackMetadataSchema } from '../tracks/types'
 
 const CreatePlaylistMetadataSchema = z
   .object({
@@ -28,8 +28,7 @@ export const CreatePlaylistSchema = z
 export type CreatePlaylistRequest = z.input<typeof CreatePlaylistSchema>
 
 export const createUpdatePlaylistMetadataSchema = () =>
-  createUploadPlaylistMetadataSchema()
-    .partial()
+  UploadPlaylistMetadataSchema.partial()
     .merge(
       z.object({
         isPrivate: z.optional(z.boolean()),
@@ -61,58 +60,50 @@ export type UpdatePlaylistRequest = z.input<
   ReturnType<typeof createUpdatePlaylistSchema>
 >
 
-const createUploadPlaylistMetadataSchema = () =>
-  z
-    .object({
-      description: z.optional(z.string().max(1000)),
-      genre: z.enum(Object.values(Genre) as [Genre, ...Genre[]]),
-      license: z.optional(z.string()),
-      mood: z.optional(z.enum(Object.values(Mood) as [Mood, ...Mood[]])),
-      playlistName: z.string(),
-      releaseDate: z.optional(
-        z.date().max(new Date(), { message: 'should not be in the future' })
-      ),
-      ddexReleaseIds: z.optional(z.record(z.string()).nullable()),
-      ddexApp: z.optional(z.string()),
-      tags: z.optional(z.string()),
-      upc: z.optional(z.string()),
-      artists: z.optional(z.array(DDEXResourceContributor).nullable()),
-      copyrightLine: z.optional(DDEXCopyright.nullable()),
-      producerCopyrightLine: z.optional(DDEXCopyright.nullable()),
-      parentalWarningType: z.optional(z.string().nullable())
-    })
-    .strict()
-
-export type PlaylistMetadata = z.input<
-  ReturnType<typeof createUploadPlaylistMetadataSchema>
->
-
-const createPlaylistTrackMetadataSchema = () =>
-  createUploadTrackMetadataSchema().partial({
-    genre: true,
-    mood: true,
-    tags: true
+export const UploadPlaylistMetadataSchema = z
+  .object({
+    description: z.optional(z.string().max(1000)),
+    genre: z.enum(Object.values(Genre) as [Genre, ...Genre[]]),
+    license: z.optional(z.string()),
+    mood: z.optional(z.enum(Object.values(Mood) as [Mood, ...Mood[]])),
+    playlistName: z.string(),
+    releaseDate: z.optional(z.date()),
+    ddexReleaseIds: z.optional(z.record(z.string()).nullable()),
+    ddexApp: z.optional(z.string()),
+    tags: z.optional(z.string()),
+    upc: z.optional(z.string()),
+    artists: z.optional(z.array(DDEXResourceContributor).nullable()),
+    copyrightLine: z.optional(DDEXCopyright.nullable()),
+    producerCopyrightLine: z.optional(DDEXCopyright.nullable()),
+    parentalWarningType: z.optional(z.string().nullable())
   })
+  .strict()
+
+export type PlaylistMetadata = z.input<typeof UploadPlaylistMetadataSchema>
+
+const PlaylistTrackMetadataSchema = UploadTrackMetadataSchema.partial({
+  genre: true,
+  mood: true,
+  tags: true
+})
 
 /**
  * PlaylistTrackMetadata is less strict than TrackMetadata because
  * `genre`, `mood`, and `tags` are optional
  */
-export type PlaylistTrackMetadata = z.infer<
-  ReturnType<typeof createPlaylistTrackMetadataSchema>
->
+export type PlaylistTrackMetadata = z.infer<typeof PlaylistTrackMetadataSchema>
 
 export const createUploadPlaylistSchema = () =>
   z
     .object({
       userId: HashId,
       coverArtFile: ImageFile,
-      metadata: createUploadPlaylistMetadataSchema(),
+      metadata: UploadPlaylistMetadataSchema,
       onProgress: z.optional(z.function()),
       /**
        * Track metadata is populated from the playlist if fields are missing
        */
-      trackMetadatas: z.array(createPlaylistTrackMetadataSchema()),
+      trackMetadatas: z.array(PlaylistTrackMetadataSchema),
       trackFiles: z.array(AudioFile)
     })
     .strict()
