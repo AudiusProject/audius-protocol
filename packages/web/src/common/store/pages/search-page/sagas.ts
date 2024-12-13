@@ -21,7 +21,6 @@ import { select, call, takeLatest, put } from 'typed-redux-saga'
 
 import { processAndCacheCollections } from 'common/store/cache/collections/utils'
 import { processAndCacheTracks } from 'common/store/cache/tracks/utils'
-import { fetchUsers } from 'common/store/cache/users/sagas'
 import tracksSagas from 'common/store/pages/search-page/lineups/tracks/sagas'
 import { waitForRead } from 'utils/sagaHelpers'
 
@@ -48,43 +47,48 @@ export function* getTagSearchResults(
   isPremium?: boolean,
   sortMethod?: SearchSortMethod
 ) {
-  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
-  const [bpmMin, bpmMax] = getMinMaxFromBpm(bpm)
+  yield* waitForRead()
+  const getFeatureEnabled = yield* getContext('getFeatureEnabled')
+  const isUSDCEnabled = yield* call(
+    getFeatureEnabled,
+    FeatureFlags.USDC_PURCHASES
+  )
 
-  // @ts-ignore
-  const results = yield* call(audiusBackendInstance.searchTags, {
-    query: tag.toLowerCase(),
-    userTagCount: 1,
+  const sdk = yield* getSDK()
+  const userId = yield* select(getUserId)
+  const [bpmMin, bpmMax] = getMinMaxFromBpm(bpm)
+  const formattedKey = formatMusicalKey(key)
+
+  const { data } = yield* call([sdk.full.search, sdk.full.search.searchTags], {
+    bpmMax,
+    bpmMin,
+    hasDownloads,
+    includePurchaseable: isUSDCEnabled,
+    isPurchaseable: isPremium,
+    isVerified,
     kind,
     limit,
     offset,
-    genre,
-    mood,
-    bpmMin,
-    bpmMax,
-    key: formatMusicalKey(key),
-    isVerified,
-    hasDownloads,
-    isPremium,
-    sortMethod
+    query: tag.toLowerCase(),
+    sortMethod,
+    userId: OptionalId.parse(userId),
+    genre: genre ? [genre] : undefined,
+    mood: mood ? [mood] : undefined,
+    key: formattedKey ? [formattedKey] : undefined
   })
-  const { users, tracks } = results
+  const { tracks, albums, playlists, users } = searchResultsFromSDK(data)
 
-  const creatorIds = tracks
-    .map((t) => t.owner_id)
-    .concat(users.map((u) => u.user_id))
+  yield* call(processAndCacheUsers, users)
+  yield* call(processAndCacheTracks, tracks)
 
-  yield* call(fetchUsers, creatorIds)
+  const collections = albums.concat(playlists)
+  yield* call(
+    processAndCacheCollections,
+    collections,
+    /* shouldRetrieveTracks */ false
+  )
 
-  const { entries } = yield* call(fetchUsers, creatorIds)
-
-  const tracksWithUsers = tracks.map((track) => ({
-    ...track,
-    user: entries[track.owner_id]
-  }))
-  yield* call(processAndCacheTracks, tracksWithUsers)
-
-  return { users, tracks }
+  return { users, tracks, albums, playlists }
 }
 
 export function* fetchSearchPageTags(

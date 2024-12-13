@@ -969,6 +969,7 @@ function* signIn(action: ReturnType<typeof signOnActions.signIn>) {
     yield* call([localStorage, localStorage.removeItem], 'useMetaMask')
     yield* put(backendActions.setupBackend())
   }
+  yield* put(make(Name.SIGN_IN_START, {}))
 
   const fingerprintClient = yield* getContext('fingerprintClient')
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')

@@ -26,7 +26,7 @@ export const primitiveThemeV2 = {
       secondary: '#7E1BCCFF'
     },
     neutral: {
-      n25: '#FEFEFEFF',
+      n25: '#FAFAFAFF',
       n50: '#F7F7F8FF',
       n100: '#EFEFF1FF',
       n150: '#E7E7EAFF',

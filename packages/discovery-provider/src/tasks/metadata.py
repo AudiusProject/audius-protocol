@@ -257,11 +257,8 @@ comment_metadata_format = {
 
 encrypted_email_metadata_format = {
     "email_owner_user_id": None,
-    "primary_user_id": None,
     "encrypted_email": None,
-    "encrypted_key": None,
-    "delegated_user_ids": None,
-    "delegated_keys": None,
+    "access_grants": None,
 }
 
 

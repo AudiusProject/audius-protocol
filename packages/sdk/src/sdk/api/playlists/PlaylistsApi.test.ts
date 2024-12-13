@@ -121,7 +121,6 @@ describe('PlaylistsApi', () => {
     playlists = new PlaylistsApi(
       new Configuration(),
       new Storage({
-        audiusWalletClient,
         storageNodeSelector,
         logger: new Logger()
       }),

@@ -136,12 +136,12 @@ export const ShareBanner = (props: ShareBannerProps) => {
         backgroundImage: `linear-gradient(315deg, rgba(91, 35, 225, 0.8) 0%, rgba(162, 47, 237, 0.8) 100%), url(${backgroundPlaceholder})`
       }}
     >
-      <Text variant='display' tag='h3' size='s' color='staticWhite'>
+      <Text variant='display' tag='h3' size='s' color='staticStaticWhite'>
         {messages.uploadComplete}
       </Text>
       {!isUnlistedTrack ? (
         <>
-          <Text variant='heading' size='m' color='staticWhite'>
+          <Text variant='heading' size='m' color='staticStaticWhite'>
             {messages.shareText(uploadType)}
           </Text>
           <div className={styles.buttonContainer}>

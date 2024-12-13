@@ -1,12 +1,12 @@
-from typing import TypedDict
+from typing import Optional, TypedDict
 
-from sqlalchemy import desc, or_
+from sqlalchemy import and_, desc, or_
 
 from src.models.playlists.playlist import Playlist
 from src.models.playlists.playlist_route import PlaylistRoute
 from src.models.tracks.track import Track
 from src.models.tracks.track_route import TrackRoute
-from src.models.users.email import EmailEncryptionKey, EncryptedEmail
+from src.models.users.email import EmailAccess, EncryptedEmail
 from src.models.users.usdc_purchase import PurchaseType, USDCPurchase
 from src.models.users.usdc_transactions_history import (
     USDCTransactionMethod,
@@ -33,6 +33,7 @@ class DownloadPurchasesArgs(TypedDict):
 
 class DownloadSalesArgs(TypedDict):
     seller_user_id: int
+    grantee_user_id: Optional[int]
 
 
 class DownloadWithdrawalsArgs(TypedDict):
@@ -40,7 +41,10 @@ class DownloadWithdrawalsArgs(TypedDict):
 
 
 # Get all purchases or sales for a given artist.
-def get_purchases_or_sales(user_id: int, is_purchases: bool):
+def get_purchases_or_sales(
+    user_id: int, is_purchases: bool, grantee_user_id: Optional[int] = None
+):
+    """Get all purchases or sales for a given artist."""
     db = get_db_read_replica()
     with db.scoped_session() as session:
         if is_purchases:
@@ -61,7 +65,21 @@ def get_purchases_or_sales(user_id: int, is_purchases: bool):
                 .filter(User.is_current == True)
             )
         else:
-            # Get all sales for the given user and include the buyer name and encrypted email
+            # Set email access conditions based on grantee_user_id
+            if grantee_user_id is not None:
+                email_access_condition = and_(
+                    EmailAccess.email_owner_user_id == USDCPurchase.buyer_user_id,
+                    EmailAccess.receiving_user_id == grantee_user_id,
+                    EmailAccess.grantor_user_id == user_id,
+                )
+            else:
+                # When seller is directly accessing buyer emails
+                email_access_condition = and_(
+                    EmailAccess.email_owner_user_id == USDCPurchase.buyer_user_id,
+                    EmailAccess.receiving_user_id == user_id,
+                    EmailAccess.grantor_user_id == USDCPurchase.buyer_user_id,
+                )
+
             query = (
                 session.query(
                     USDCPurchase.content_type.label("content_type"),
@@ -71,13 +89,18 @@ def get_purchases_or_sales(user_id: int, is_purchases: bool):
                     USDCPurchase.splits.label("splits"),
                     USDCPurchase.country.label("country"),
                     User.name.label("buyer_name"),
+                    User.user_id.label("buyer_user_id"),
                     EncryptedEmail.encrypted_email.label("encrypted_email"),
+                    EmailAccess.encrypted_key.label("encrypted_key"),
                 )
                 .join(User, User.user_id == USDCPurchase.buyer_user_id)
-                .outerjoin(  # Using outerjoin in case some users don't have encrypted emails
+                .outerjoin(
                     EncryptedEmail,
-                    (EncryptedEmail.email_owner_user_id == User.user_id)
-                    & (EncryptedEmail.primary_user_id == USDCPurchase.seller_user_id),
+                    EncryptedEmail.email_owner_user_id == USDCPurchase.buyer_user_id,
+                )
+                .outerjoin(
+                    EmailAccess,
+                    email_access_condition,
                 )
                 .filter(USDCPurchase.seller_user_id == user_id)
                 .filter(User.is_current == True)
@@ -227,56 +250,56 @@ def format_sale_for_download(
     }
 
     if is_for_json_response:
-        # Replace spaces with underscores and add encrypted_email
+        # Replace spaces with underscores and add encrypted data
         fields_with_underscores = {
             key.replace(" ", "_"): value for key, value in base_fields.items()
         }
         fields_with_underscores["encrypted_email"] = (
             result.encrypted_email if hasattr(result, "encrypted_email") else None
         )
+        fields_with_underscores["encrypted_key"] = (
+            result.encrypted_key if hasattr(result, "encrypted_key") else None
+        )
+        fields_with_underscores["buyer_user_id"] = (
+            result.buyer_user_id if hasattr(result, "buyer_user_id") else None
+        )
         return fields_with_underscores
 
     return base_fields
 
 
-# Returns USDC sales for a given artist in a CSV format
 def download_sales(args: DownloadSalesArgs, return_json: bool = False):
+    """Returns USDC sales for a given artist in CSV or JSON format."""
     seller_user_id = args["seller_user_id"]
+    grantee_user_id = args.get("grantee_user_id")
 
     # Get sales for artist
-    results = get_purchases_or_sales(seller_user_id, is_purchases=False)
+    results = get_purchases_or_sales(
+        seller_user_id, is_purchases=False, grantee_user_id=grantee_user_id
+    )
 
-    # Get artist handle and encryption key
+    # Get artist handle
     db = get_db_read_replica()
     with db.scoped_session() as session:
-        seller_data = (
-            session.query(User.handle, EmailEncryptionKey.encrypted_key)
+        seller = (
+            session.query(User.handle)
             .filter(User.user_id == seller_user_id)
             .filter(User.is_current == True)
-            .outerjoin(
-                EmailEncryptionKey, EmailEncryptionKey.primary_user_id == User.user_id
-            )
             .first()
         )
+        seller_handle = seller.handle if seller else None
 
-        seller_handle, encryption_key = seller_data
-
-    # Build list of dictionary results
-    contents = list(
-        map(
-            lambda result: format_sale_for_download(
-                result,
-                seller_handle,
-                seller_user_id,
-                is_for_json_response=return_json,  # Used to determine if we should include email
-            ),
-            results,
+    # Build list of results
+    contents = []
+    for result in results:
+        sale_data = format_sale_for_download(
+            result, seller_handle, seller_user_id, is_for_json_response=return_json
         )
-    )
+        contents.append(sale_data)
 
     # Return JSON if requested
     if return_json:
-        return {"decryption_key": encryption_key, "sales": contents}
+        return {"sales": contents}
 
     # Get results in CSV format
     to_download = write_csv_string(contents)

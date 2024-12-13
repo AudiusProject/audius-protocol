@@ -775,12 +775,6 @@ export function* handleUploads({
   }
 
   console.debug('Finished uploads')
-  yield* put(
-    make(Name.TRACK_UPLOAD_COMPLETE_UPLOAD, {
-      kind,
-      trackCount: publishedTrackIds.length
-    })
-  )
   return publishedTrackIds
 }
 
@@ -1166,6 +1160,12 @@ export function* uploadTracksAsync(
     } else {
       yield* call(uploadMultipleTracks, tracks, payload.uploadType)
     }
+    yield* put(
+      make(Name.TRACK_UPLOAD_COMPLETE_UPLOAD, {
+        trackCount: payload.tracks.length,
+        kind
+      })
+    )
   } catch (e) {
     const error = e instanceof Error ? e : new Error(String(e))
     // Handle error loses error details, so call reportToSentry explicitly

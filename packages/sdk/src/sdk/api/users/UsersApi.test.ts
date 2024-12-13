@@ -97,7 +97,6 @@ describe('UsersApi', () => {
     users = new UsersApi(
       new Configuration(),
       new Storage({
-        audiusWalletClient,
         storageNodeSelector,
         logger: new Logger()
       }),
@@ -416,28 +415,22 @@ describe('UsersApi', () => {
 
   describe('shareEmail', () => {
     beforeAll(() => {
-      // Mock getUserEmailKey
-      vitest
-        .spyOn(UsersApi.prototype, 'getUserEmailKey')
-        .mockImplementation(async () => {
-          return { data: 'mockEncryptedKey' }
-        })
-
-      // Mock EmailEncryptionService methods
       vitest
         .spyOn(EmailEncryptionService.prototype, 'decryptSymmetricKey')
         .mockImplementation(async () => {
-          return new Uint8Array(32) // Mock 32-byte key
+          return new Uint8Array(32)
         })
 
       vitest
-        .spyOn(EmailEncryptionService.prototype, 'createSharedKey')
+        .spyOn(EmailEncryptionService.prototype, 'createSymmetricKey')
+        .mockImplementation(() => {
+          return new Uint8Array(32)
+        })
+
+      vitest
+        .spyOn(EmailEncryptionService.prototype, 'encryptSymmetricKey')
         .mockImplementation(async () => {
-          return {
-            symmetricKey: new Uint8Array(32),
-            primaryUserEncryptedKey: 'mockPrimaryUserEncryptedKey',
-            granteeEncryptedKeys: []
-          }
+          return 'mockEncryptedKey'
         })
 
       vitest
@@ -445,12 +438,18 @@ describe('UsersApi', () => {
         .mockImplementation(async () => {
           return 'mockEncryptedEmail'
         })
+
+      vitest
+        .spyOn(UsersApi.prototype, 'getUserEmailKey')
+        .mockImplementation(async () => {
+          return { data: 'mockEncryptedKey' }
+        })
     })
 
     it('adds an encrypted email if valid metadata is provided', async () => {
       const result = await users.shareEmail({
         emailOwnerUserId: 123,
-        primaryUserId: 456,
+        receivingUserId: 456,
         email: 'email@example.com'
       })
 
@@ -463,7 +462,7 @@ describe('UsersApi', () => {
     it('adds an encrypted email without optional delegated fields', async () => {
       const result = await users.shareEmail({
         emailOwnerUserId: 123,
-        primaryUserId: 456,
+        receivingUserId: 456,
         email: 'email@example.com'
       })
 
@@ -477,7 +476,7 @@ describe('UsersApi', () => {
       await expect(async () => {
         await users.shareEmail({
           emailOwnerUserId: 123,
-          // Missing primaryUserId
+          // Missing receivingUserId
           encryptedEmail: 'encryptedEmailString',
           encryptedKey: 'encryptedKeyString'
         } as any)
@@ -488,8 +487,8 @@ describe('UsersApi', () => {
       await expect(async () => {
         await users.shareEmail({
           emailOwnerUserId: 123,
-          // Incorrect type for primaryUserId
-          primaryUserId: '456',
+          // Incorrect type for receivingUserId
+          receivingUserId: '456',
           encryptedEmail: 'encryptedEmailString',
           encryptedKey: 'encryptedKeyString'
         } as any)

@@ -410,6 +410,14 @@
         },
         "spId": {
           "type": "string"
+        },
+        "pubKey": {
+          "type": "string",
+          "format": "byte"
+        },
+        "power": {
+          "type": "string",
+          "format": "int64"
         }
       }
     },
