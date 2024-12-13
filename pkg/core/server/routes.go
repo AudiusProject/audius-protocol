@@ -2,16 +2,27 @@
 package server
 
 import (
+	"context"
 	"net/http"
 	"net/http/pprof"
 
+	"github.com/AudiusProject/audius-protocol/pkg/core/gen/core_proto"
+	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"github.com/labstack/echo/v4"
 )
 
-func (s *Server) registerRoutes(e *echo.Echo) {
+func (s *Server) registerRoutes() {
+	e := s.httpServer
+
+	gwMux := runtime.NewServeMux()
+	if err := core_proto.RegisterProtocolHandlerServer(context.TODO(), gwMux, s.grpcServer); err != nil {
+		s.logger.Errorf("could not register protocol handler server: %v", err)
+	}
+
 	g := e.Group("/core")
 
 	/** /core routes **/
+	g.Any("/grpc/*", echo.WrapHandler(gwMux))
 	g.GET("/nodes", s.getRegisteredNodes)
 	g.GET("/nodes/verbose", s.getRegisteredNodes)
 	g.GET("/nodes/discovery", s.getRegisteredNodes)

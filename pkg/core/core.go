@@ -3,36 +3,22 @@ package core
 import (
 	"context"
 	"fmt"
-	"net"
-	"net/http"
 	_ "net/http/pprof"
 	"time"
 
-	"github.com/AudiusProject/audius-protocol/pkg/core/chain"
 	"github.com/AudiusProject/audius-protocol/pkg/core/common"
 	"github.com/AudiusProject/audius-protocol/pkg/core/config"
 	"github.com/AudiusProject/audius-protocol/pkg/core/config/genesis"
 	"github.com/AudiusProject/audius-protocol/pkg/core/console"
-	"github.com/AudiusProject/audius-protocol/pkg/core/contracts"
 	"github.com/AudiusProject/audius-protocol/pkg/core/db"
-	"github.com/AudiusProject/audius-protocol/pkg/core/gen/core_proto"
-	"github.com/AudiusProject/audius-protocol/pkg/core/grpc"
-	"github.com/AudiusProject/audius-protocol/pkg/core/mempool"
-	"github.com/AudiusProject/audius-protocol/pkg/core/pubsub"
-	"github.com/AudiusProject/audius-protocol/pkg/core/registry_bridge"
 	"github.com/AudiusProject/audius-protocol/pkg/core/server"
-	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 
 	cconfig "github.com/cometbft/cometbft/config"
 	"github.com/cometbft/cometbft/p2p"
 	"github.com/cometbft/cometbft/privval"
 
-	"github.com/cometbft/cometbft/rpc/client/local"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/labstack/echo/v4"
-	"github.com/labstack/echo/v4/middleware"
-	"golang.org/x/sync/errgroup"
 )
 
 func Run(ctx context.Context, logger *common.Logger) error {
@@ -63,148 +49,38 @@ func run(ctx context.Context, logger *common.Logger) error {
 	}
 	defer pool.Close()
 
-	// Create an errgroup to manage concurrent tasks with context
-	eg, ctx := errgroup.WithContext(ctx)
-
-	// start pprof server
-	eg.Go(func() error {
-		logger.Info("pprof server starting")
-		return http.ListenAndServe(":6060", nil)
-	})
-
-	e := echo.New()
-	e.Pre(middleware.RemoveTrailingSlash())
-	e.Use(middleware.Recover())
-	e.HideBanner = true
-
 	ethrpc, err := ethclient.Dial(config.EthRPCUrl)
 	if err != nil {
 		return fmt.Errorf("eth client dial err: %v", err)
 	}
 	defer ethrpc.Close()
 
-	c, err := contracts.NewAudiusContracts(ethrpc, config.EthRegistryAddress)
-	if err != nil {
-		return fmt.Errorf("contracts init error: %v", err)
-	}
-	logger.Info("initialized contracts")
-
-	eg.Go(func() error {
-		con, err := console.NewConsole(config, logger, e, pool)
-		if err != nil {
-			return fmt.Errorf("console init error: %v", err)
-		}
-
-		logger.Info("core Console starting")
-		return con.Start()
-	})
-
-	txPubsub := pubsub.NewPubsub[struct{}]()
-
-	mempl := mempool.NewMempool(logger, config, db.New(pool), cometConfig.Mempool.Size)
-	mempl.CreateValidatorClients()
-
-	node, err := chain.NewNode(logger, config, cometConfig, pool, c, mempl, txPubsub)
-	if err != nil {
-		return fmt.Errorf("node init error: %v", err)
-	}
-
-	// Start the node (cometbft)
-	eg.Go(func() error {
-		logger.Info("core CometBFT node starting")
-		return node.Start()
-	})
-
-	logger.Info("new node created")
-
-	rpc := local.New(node)
-
-	logger.Info("local rpc initialized")
-
-	grpcServer, err := grpc.NewGRPCServer(logger, config, rpc, pool, mempl, txPubsub)
-	if err != nil {
-		return fmt.Errorf("grpc init error: %v", err)
-	}
-
-	gwMux := runtime.NewServeMux()
-	err = core_proto.RegisterProtocolHandlerServer(ctx, gwMux, grpcServer)
-	if err != nil {
-		return fmt.Errorf("grpc http handler issue: %v", err)
-	}
-
-	logger.Info("grpc server created")
-
-	// Start the registry bridge
-	eg.Go(func() error {
-		registryBridge, err := registry_bridge.NewRegistryBridge(logger, config, rpc, grpcServer, c, pool)
-		if err != nil {
-			return fmt.Errorf("registry bridge init error: %v", err)
-		}
-
-		logger.Info("core registry bridge starting")
-		return registryBridge.Start()
-	})
-
-	_, err = server.NewServer(config, node.Config(), logger, rpc, pool, e, mempl)
+	s, err := server.NewServer(config, cometConfig, logger, pool, ethrpc)
 	if err != nil {
 		return fmt.Errorf("server init error: %v", err)
 	}
 
-	// Start the HTTP server
-	eg.Go(func() error {
-		logger.Info("core HTTP server starting")
+	// TODO: make configurable in envconfig
+	runConsole := true
+	if runConsole {
+		go func() {
+			e := s.GetEcho()
+			con, err := console.NewConsole(config, logger, e, pool)
+			if err != nil {
+				logger.Errorf("console init error: %v", err)
+				return
+			}
 
-		// register grpc http route
-		e.Any("/core/grpc/*", echo.WrapHandler(gwMux))
-		return e.Start(config.CoreServerAddr)
-	})
-
-	grpcLis, err := net.Listen("tcp", config.GRPCladdr)
-	if err != nil {
-		return fmt.Errorf("grpc listener not created: %v", err)
+			logger.Info("core console starting")
+			if err := con.Start(); err != nil {
+				logger.Errorf("console couldn't start or crashed: %v", err)
+				return
+			}
+		}()
 	}
 
-	// Start the gRPC server
-	eg.Go(func() error {
-		logger.Info("core gRPC server starting")
-		return grpcServer.Serve(grpcLis)
-	})
-
-	// fire off any routines once node is synced
-	// query if we're synced every 5 seconds
-	eg.Go(func() error {
-		for {
-			time.Sleep(5 * time.Second)
-
-			status, _ := rpc.Status(context.Background())
-			if status == nil {
-				continue
-			}
-
-			if status.SyncInfo.CatchingUp {
-				continue
-			}
-
-			err := mempl.CreateValidatorClients()
-			if err != nil {
-				continue
-			}
-
-			return nil
-		}
-	})
-
-	// Close all services when the context is canceled
-	defer func() {
-		logger.Info("Shutting down all services...")
-		e.Shutdown(ctx)
-		node.Stop()
-		grpcLis.Close()
-		ethrpc.Close()
-	}()
-
-	// Wait for all services to finish or for context cancellation
-	return eg.Wait()
+	defer s.Shutdown(ctx)
+	return s.Start(ctx)
 }
 
 /*

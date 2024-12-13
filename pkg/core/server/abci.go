@@ -18,6 +18,7 @@ import (
 	"github.com/cometbft/cometbft/p2p"
 	"github.com/cometbft/cometbft/privval"
 	"github.com/cometbft/cometbft/proxy"
+	"github.com/cometbft/cometbft/rpc/client/local"
 	cometbfttypes "github.com/cometbft/cometbft/types"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgtype"
@@ -30,10 +31,18 @@ type ABCIState struct {
 	finalizedTxs []string
 }
 
+func NewABCIState() *ABCIState {
+	return &ABCIState{
+		onGoingBlock: nil,
+		finalizedTxs: []string{},
+	}
+}
+
 var _ abcitypes.Application = (*Server)(nil)
 
 // initializes the cometbft node and the abci application which is the server itself
-func (s *Server) initializeABCI() error {
+// connects the local rpc instance to the abci application once successfully created
+func (s *Server) startABCI() error {
 	cometConfig := s.cometbftConfig
 	pv := privval.LoadFilePV(
 		cometConfig.PrivValidatorKeyFile(),
@@ -61,7 +70,10 @@ func (s *Server) initializeABCI() error {
 		return fmt.Errorf("creating node: %v", err)
 	}
 	s.node = node
-	return nil
+	s.rpc = local.New(s.node)
+
+	s.logger.Info("core CometBFT node starting")
+	return node.Start()
 }
 
 func (s *Server) Info(ctx context.Context, info *abcitypes.InfoRequest) (*abcitypes.InfoResponse, error) {

@@ -14,6 +14,10 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
+func (s *Server) startRegistryBridge() error {
+	return nil
+}
+
 // checks if the register node event is valid
 // calls ethereum mainnet and validates signature to confirm node should be a validator
 func (s *Server) isValidRegisterNodeEvent(ctx context.Context, e *core_proto.SignedTransaction) error {

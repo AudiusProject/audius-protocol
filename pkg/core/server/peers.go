@@ -31,6 +31,10 @@ type RegisteredNodesEndpointResponse struct {
 	RegisteredNodes []string `json:"data"`
 }
 
+func (s *Server) startPeerManager() error {
+	return nil
+}
+
 func (s *Server) getRegisteredNodes(c echo.Context) error {
 	ctx := c.Request().Context()
 	queries := s.db
