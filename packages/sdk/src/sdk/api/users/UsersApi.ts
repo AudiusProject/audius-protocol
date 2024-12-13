@@ -1,6 +1,7 @@
 import snakecaseKeys from 'snakecase-keys'
 
 import type { StorageService } from '../../services'
+import { EmailEncryptionService } from '../../services/Encryption'
 import {
   Action,
   AdvancedOptions,
@@ -12,6 +13,7 @@ import type { ClaimableTokensClient } from '../../services/Solana/programs/Claim
 import type { SolanaClient } from '../../services/Solana/programs/SolanaClient'
 import { HashId } from '../../types/HashId'
 import { generateMetadataCidV1 } from '../../utils/cid'
+import { decodeHashId, encodeHashId } from '../../utils/hashId'
 import { parseParams } from '../../utils/parseParams'
 import { retry3 } from '../../utils/retry'
 import {
@@ -51,7 +53,8 @@ export class UsersApi extends GeneratedUsersApi {
     private readonly entityManager: EntityManagerService,
     private readonly logger: LoggerService,
     private readonly claimableTokens: ClaimableTokensClient,
-    private readonly solanaClient: SolanaClient
+    private readonly solanaClient: SolanaClient,
+    private readonly emailEncryption: EmailEncryptionService
   ) {
     super(configuration)
     this.logger = logger.createPrefixedLogger('[users-api]')
@@ -147,6 +150,36 @@ export class UsersApi extends GeneratedUsersApi {
   }
 
   /** @hidden
+   * Creates a guest for guest checkout
+   */
+  async createGuestAccount(advancedOptions?: AdvancedOptions) {
+    const { data } = await this.generateUserId()
+    if (!data) {
+      throw new Error('Failed to generate userId')
+    }
+    const userId = HashId.parse(data)
+    const metadata = {
+      userId
+    }
+
+    // Write metadata to chain
+    const { blockHash, blockNumber } = await this.entityManager.manageEntity({
+      userId,
+      entityType: EntityType.USER,
+      entityId: userId,
+      action: Action.CREATE,
+      metadata: JSON.stringify({
+        cid: null,
+        data: null
+      }),
+
+      ...advancedOptions
+    })
+
+    return { blockHash, blockNumber, metadata }
+  }
+
+  /** @hidden
    * Update a user profile
    */
   async updateProfile(
@@ -186,11 +219,23 @@ export class UsersApi extends GeneratedUsersApi {
 
     const updatedMetadata = {
       ...metadata,
-      ...(profilePictureResp ? { profilePicture: profilePictureResp?.id } : {}),
+      ...(profilePictureResp
+        ? {
+            profilePicture: profilePictureResp?.id,
+            profilePictureSizes: profilePictureResp?.id
+          }
+        : {}),
       ...(coverArtResp ? { coverPhoto: coverArtResp?.id } : {})
     }
 
     const cid = (await generateMetadataCidV1(updatedMetadata)).toString()
+
+    const {
+      associatedWallets,
+      associatedSolWallets,
+      collectibles,
+      ...indexedMetadataValues
+    } = updatedMetadata
 
     // Write metadata to chain
     return await this.entityManager.manageEntity({
@@ -200,7 +245,13 @@ export class UsersApi extends GeneratedUsersApi {
       action: Action.UPDATE,
       metadata: JSON.stringify({
         cid,
-        data: snakecaseKeys(updatedMetadata)
+        data: {
+          ...snakecaseKeys(indexedMetadataValues),
+          // Do not snake case values that are part of cid data.
+          associated_wallets: associatedWallets,
+          associated_sol_wallets: associatedSolWallets,
+          collectibles
+        }
       }),
       ...advancedOptions
     })
@@ -482,64 +533,94 @@ export class UsersApi extends GeneratedUsersApi {
   }
 
   /** @hidden
-   * Add an encrypted email for a user
+   * Share an encrypted email with a user
    */
-  async addEmail(params: EmailRequest, advancedOptions?: AdvancedOptions) {
-    const {
-      emailOwnerUserId,
-      primaryUserId,
-      encryptedEmail,
-      encryptedKey,
-      delegatedUserIds = [],
-      delegatedKeys = []
-    } = await parseParams('addEmail', EmailSchema)(params)
+  async shareEmail(params: EmailRequest, advancedOptions?: AdvancedOptions) {
+    const { emailOwnerUserId, receivingUserId, email, granteeUserIds } =
+      await parseParams('shareEmail', EmailSchema)(params)
+
+    let symmetricKey: Uint8Array
+    // Get hashed IDs and validate
+    const emailOwnerUserIdHash = encodeHashId(emailOwnerUserId)
+    const receivingUserIdHash = encodeHashId(receivingUserId)
+    if (!emailOwnerUserIdHash || !receivingUserIdHash) {
+      throw new Error('Email owner user ID and receiving user ID are required')
+    }
+
+    const accessGrants = []
+
+    const { data: emailOwnerKey = '' } = await this.getUserEmailKey({
+      receivingUserId: emailOwnerUserIdHash,
+      grantorUserId: emailOwnerUserIdHash
+    })
+
+    if (emailOwnerKey) {
+      symmetricKey = await this.emailEncryption.decryptSymmetricKey(
+        emailOwnerKey,
+        emailOwnerUserIdHash
+      )
+    } else {
+      symmetricKey = this.emailEncryption.createSymmetricKey()
+      // Create encrypted keys for owner and receiver
+      const ownerEncryptedKey = await this.emailEncryption.encryptSymmetricKey(
+        emailOwnerUserIdHash,
+        symmetricKey
+      )
+      accessGrants.push({
+        receiving_user_id: emailOwnerUserId,
+        grantor_user_id: emailOwnerUserId,
+        encrypted_key: ownerEncryptedKey
+      })
+    }
+
+    const encryptedEmail = await this.emailEncryption.encryptEmail(
+      email,
+      symmetricKey
+    )
+
+    const receiverEncryptedKey = await this.emailEncryption.encryptSymmetricKey(
+      receivingUserIdHash,
+      symmetricKey
+    )
+
+    accessGrants.push({
+      receiving_user_id: receivingUserId,
+      grantor_user_id: emailOwnerUserId,
+      encrypted_key: receiverEncryptedKey
+    })
+
+    if (granteeUserIds?.length) {
+      await Promise.all(
+        granteeUserIds.map(async (granteeUserIdHash) => {
+          const granteeEncryptedKey =
+            await this.emailEncryption.encryptSymmetricKey(
+              granteeUserIdHash,
+              symmetricKey
+            )
+
+          accessGrants.push({
+            receiving_user_id: decodeHashId(granteeUserIdHash),
+            grantor_user_id: receivingUserId, // The primary receiver grants access
+            encrypted_key: granteeEncryptedKey
+          })
+        })
+      )
+    }
 
     const metadata = {
       email_owner_user_id: emailOwnerUserId,
-      primary_user_id: primaryUserId,
       encrypted_email: encryptedEmail,
-      encrypted_key: encryptedKey,
-      delegated_user_ids: delegatedUserIds,
-      delegated_keys: delegatedKeys
+      access_grants: accessGrants
     }
 
     return await this.entityManager.manageEntity({
-      userId: primaryUserId,
+      userId: emailOwnerUserId,
       entityType: EntityType.ENCRYPTED_EMAIL,
-      entityId: primaryUserId,
+      entityId: emailOwnerUserId,
       action: Action.ADD_EMAIL,
       metadata: JSON.stringify({
         cid: '',
         data: metadata
-      }),
-      ...advancedOptions
-    })
-  }
-
-  /** @hidden
-   * Update an encrypted email for a user
-   */
-  async updateEmail(params: EmailRequest, advancedOptions?: AdvancedOptions) {
-    const {
-      emailOwnerUserId,
-      primaryUserId,
-      encryptedEmail,
-      encryptedKey,
-      delegatedUserIds = [],
-      delegatedKeys = []
-    } = await parseParams('updateEmail', EmailSchema)(params)
-
-    return await this.entityManager.manageEntity({
-      entityType: EntityType.ENCRYPTED_EMAIL,
-      entityId: primaryUserId,
-      action: Action.UPDATE_EMAIL,
-      metadata: JSON.stringify({
-        email_owner_user_id: emailOwnerUserId,
-        primary_user_id: primaryUserId,
-        encrypted_email: encryptedEmail,
-        encrypted_key: encryptedKey,
-        delegated_user_ids: delegatedUserIds,
-        delegated_keys: delegatedKeys
       }),
       ...advancedOptions
     })

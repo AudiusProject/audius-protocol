@@ -1,13 +1,18 @@
-import { AudiusLibs } from '@audius/sdk-legacy/dist/libs'
-import { initAudiusLibs } from './libs'
+import { audiusSdk } from './sdk'
+import { AudiusSdk } from '@audius/sdk'
+import dotenv from 'dotenv'
+
+dotenv.config()
 
 export type SharedData = {
-  oracleEthAddress: string
-  AAOEndpoint: string
-  feePayerOverride: string
-  libs: AudiusLibs
-  localEndpoint: string
+  sdk: AudiusSdk
+  runNow: boolean
   dryRun: boolean
+  audiusDbUrl: string
+  slackChannel?: string
+  slackSigningSecret?: string
+  slackBotToken?: string
+  slackAppToken?: string
 }
 
 let sharedData: SharedData | undefined = undefined
@@ -15,32 +20,19 @@ let sharedData: SharedData | undefined = undefined
 export const initSharedData = async (): Promise<SharedData> => {
   if (sharedData !== undefined) return sharedData
 
-  const libs = await initAudiusLibs()
-
-  // default to true if undefined, otherwise explicitly state false to not do dry run
-  const dryRun = !(
-    (process.env.tcrDryRun || 'true').toLocaleLowerCase() === 'false'
-  )
-
-  const feePayerOverride = process.env.audius_fee_payer_override
-  const AAOEndpoint =
-    process.env.audius_aao_endpoint || 'https://antiabuseoracle.audius.co'
-  const oracleEthAddress =
-    process.env.audius_aao_address ||
-    '0x9811BA3eAB1F2Cd9A2dFeDB19e8c2a69729DC8b6'
-  const localEndpoint = process.env.audius_discprov_url || 'http://server:5000'
-
-  if (feePayerOverride === undefined)
-    throw new Error('feePayerOverride undefined')
-
   sharedData = {
-    oracleEthAddress,
-    AAOEndpoint,
-    feePayerOverride,
-    libs,
-    localEndpoint,
-    dryRun
+    sdk: audiusSdk({
+      environment: process.env.environment as 'development' | 'staging' | 'production',
+      discoveryNodeAllowlist: process.env.discovery_node_allowlist?.split(',') ?? undefined,
+      solanaRelayNode: process.env.solana_relay_node!
+    }),
+    runNow: process.env.run_now?.toLowerCase() === 'true',
+    dryRun: process.env.tcr_dry_run?.toLowerCase() === 'true',
+    audiusDbUrl: process.env.audius_db_url!,
+    slackChannel: process.env.slack_channel,
+    slackSigningSecret: process.env.slack_signing_secret,
+    slackBotToken: process.env.slack_bot_token,
+    slackAppToken: process.env.slack_app_token
   }
-  // @ts-ignore
   return sharedData
 }

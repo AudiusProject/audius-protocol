@@ -8,8 +8,8 @@ import { CreateGrantRequest } from '@audius/sdk'
 import base64url from 'base64url'
 
 import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
-import { audiusSdk, authService } from 'services/audius-sdk'
-import { identityServiceInstance } from 'services/audius-sdk/identity'
+import { audiusSdk } from 'services/audius-sdk'
+import { identityService } from 'services/audius-sdk/identity'
 import { getStorageNodeSelector } from 'services/audius-sdk/storageNodeSelector'
 
 import { messages } from './messages'
@@ -118,8 +118,7 @@ export const formOAuthResponse = async ({
   let email: string
   if (!userEmail) {
     try {
-      const wallet = authService.getWallet()
-      email = await identityServiceInstance.getUserEmail({ wallet })
+      email = await identityService.getUserEmail()
     } catch {
       onError()
       return

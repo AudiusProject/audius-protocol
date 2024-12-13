@@ -5,7 +5,6 @@ import { z } from 'zod'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 
 import { useAudiusQueryContext } from '~/audius-query'
-import { useAppContext } from '~/context'
 import { confirmEmailSchema, emailSchema } from '~/schemas'
 
 import { isOtpMissingError } from './useChangePasswordFormConfiguration'
@@ -61,9 +60,9 @@ const confirmPasswordFormikSchema = toFormikValidationSchema(
 const verifyEmailFormikSchema = toFormikValidationSchema(confirmEmailSchema)
 
 export const useChangeEmailFormConfiguration = (onComplete: () => void) => {
-  const { audiusBackend } = useAppContext()
   const [page, setPage] = useState(ChangeEmailPage.ConfirmPassword)
   const audiusQueryContext = useAudiusQueryContext()
+  const { authService } = audiusQueryContext
   const EmailSchema = useMemo(
     () => toFormikValidationSchema(emailSchema(audiusQueryContext)),
     [audiusQueryContext]
@@ -85,9 +84,8 @@ export const useChangeEmailFormConfiguration = (onComplete: () => void) => {
       helpers: FormikHelpers<ChangeEmailFormValues>
     ) => {
       const { oldEmail, password } = values
-      const libs = await audiusBackend.getAudiusLibsTyped()
       try {
-        const confirmed = await libs.Account?.confirmCredentials({
+        const confirmed = await authService.confirmCredentials({
           username: oldEmail,
           password,
           softCheck: true
@@ -102,7 +100,7 @@ export const useChangeEmailFormConfiguration = (onComplete: () => void) => {
         helpers.setFieldError('password', messages.invalidCredentials)
       }
     },
-    [setPage, audiusBackend]
+    [setPage, authService]
   )
 
   const changeEmail = useCallback(
@@ -112,10 +110,9 @@ export const useChangeEmailFormConfiguration = (onComplete: () => void) => {
     ) => {
       const { oldEmail, password, email, otp } = values
       const sanitizedOtp = otp.replace(/\s/g, '')
-      const libs = await audiusBackend.getAudiusLibsTyped()
 
       try {
-        await libs.Account!.changeCredentials({
+        await authService.changeCredentials({
           newUsername: email,
           newPassword: password,
           oldUsername: oldEmail,
@@ -139,7 +136,7 @@ export const useChangeEmailFormConfiguration = (onComplete: () => void) => {
         }
       }
     },
-    [setPage, onComplete, audiusBackend, reportToSentry]
+    [setPage, onComplete, authService, reportToSentry]
   )
 
   const onSubmit = useCallback(

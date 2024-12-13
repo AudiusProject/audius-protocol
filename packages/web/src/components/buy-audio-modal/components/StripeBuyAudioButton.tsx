@@ -1,5 +1,6 @@
 import { useCallback } from 'react'
 
+import { useAudiusQueryContext } from '@audius/common/audius-query'
 import {
   stripeModalUIActions,
   buyAudioActions,
@@ -11,7 +12,6 @@ import { useDispatch, useSelector } from 'react-redux'
 
 import { OnRampButton } from 'components/on-ramp-button'
 import Tooltip from 'components/tooltip/Tooltip'
-import { getRootSolanaAccount } from 'services/solana/solana'
 
 import styles from './StripeBuyAudioButton.module.css'
 const { setVisibility } = modalsActions
@@ -26,6 +26,7 @@ const messages = {
 
 export const StripeBuyAudioButton = () => {
   const dispatch = useDispatch()
+  const { solanaWalletService } = useAudiusQueryContext()
 
   const purchaseInfo = useSelector(getAudioPurchaseInfo)
   const amount =
@@ -41,9 +42,12 @@ export const StripeBuyAudioButton = () => {
     }
     dispatch(onrampOpened(purchaseInfo))
     try {
-      const destinationWallet: string = (
-        await getRootSolanaAccount()
-      ).publicKey.toString()
+      const rootWallet = await solanaWalletService.getKeypair()
+      if (!rootWallet) {
+        console.error('StripeBuyAudioButton: Missing solana root wallet')
+        return
+      }
+      const destinationWallet: string = rootWallet.publicKey.toString()
       dispatch(
         initializeStripeModal({
           amount,
@@ -59,7 +63,7 @@ export const StripeBuyAudioButton = () => {
       dispatch(onrampCanceled())
       console.error(e)
     }
-  }, [dispatch, amount, purchaseInfo])
+  }, [dispatch, amount, purchaseInfo, solanaWalletService])
 
   return (
     <Tooltip

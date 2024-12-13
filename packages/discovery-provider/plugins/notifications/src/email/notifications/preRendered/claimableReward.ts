@@ -1,15 +1,24 @@
+import { getHostname } from '../../../utils/env'
+
 export const email = ({
   name,
   handle,
   profilePicture,
-  profileLink
+  profileLink,
+  email
 }: {
   name: string
   handle: string
   profilePicture: string
   profileLink: string
+  email: string
 }) => {
   const copyrightYear = new Date().getFullYear().toString()
+  const isGuestCheckout = !name && !handle
+
+  const signUpLink = `${getHostname()}/signup?guestEmail=${encodeURIComponent(
+    email
+  )}&routeOnCompletion=${encodeURIComponent('/audio')}`
 
   return `
   <!doctype html>
@@ -184,6 +193,79 @@ export const email = ({
   <td width="100%">
   <table width="100%" cellspacing="0" cellpadding="0" border="0">
   <tr>
+  ${
+    isGuestCheckout
+      ? `
+  <td width="584" style="vertical-align: middle; background-color:#ffffff;  border-width: 0px 0px 1px 0px; border-color:#eeedef; border-style:solid; padding-left:8px; padding-right:8px;" bgcolor="#ffffff">
+  <table width="100%" border="0" cellpadding="0" cellspacing="0">
+  <tr>
+  <td height="8" style="height:8px; min-height:8px; line-height:8px;"></td>
+  </tr>
+  <tr>
+  <td style="vertical-align: middle;" width="224"><img src="https://download.audius.co/welcome-email/Uz1cn9ptGz0zHqqougR9jczjWIzEi2.jpeg" width="224" border="0" style="max-width:224px; width: 100%;
+           height: auto; display: block;"></td>
+  <td></td>
+  <td style="vertical-align: middle;" width="120">
+  <table cellspacing="0" cellpadding="0" border="0">
+  <tr>
+  <td width="112" align="center" style="vertical-align: middle; border-radius:2px;  padding-left:4px; padding-right:4px;">
+  <table width="100%" border="0" cellpadding="0" cellspacing="0">
+  <tr>
+  <td height="4" style="height:4px; min-height:4px; line-height:4px;"></td>
+  </tr>
+  <tr>
+  <td style="vertical-align: middle;">
+  <table cellspacing="0" cellpadding="0" border="0">
+  <tr>
+  <td align="right" style="vertical-align: middle; height:32px; border-radius:2px;  padding-left:4px; padding-right:4px;">
+  <table width="100%" border="0" cellpadding="0" cellspacing="0">
+  <tr>
+  <td height="4" style="height:4px; min-height:4px; line-height:4px;"></td>
+  </tr>
+  <tr>
+  <td style="vertical-align: middle;">
+  <table cellspacing="0" cellpadding="0" border="0">
+  <tr>
+  <td style="vertical-align: middle;  ">
+  <table width="100%" border="0" cellpadding="0" cellspacing="0">
+  <tr>
+  <td style="vertical-align: middle;"><a target="_blank" href="https://twitter.com/audius"><img src="https://download.audius.co/welcome-email/wD4gGCdHNNWPmqcVaVODlWgVaMF632.png" width="24" border="0" style="min-width:24px; width:24px;
+           height: auto; display: block;"></a></td>
+  <td style="width:16px; min-width:16px;" width="16"></td>
+  <td style="vertical-align: middle;"><a target="_blank" href="https://www.instagram.com/audius/"><img src="https://download.audius.co/welcome-email/34rb0mOMe83vV5t7IykMNFM0HPwsSP.png" width="24" border="0" style="min-width:24px; width:24px;
+           height: auto; display: block;"></a></td>
+  <td style="width:16px; min-width:16px;" width="16"></td>
+  <td style="vertical-align: middle;"><a target="_blank" href="https://tiktok.com/@audius"><img src="https://download.audius.co/welcome-email/11MnDiUVzMuQyikvAHjRMkEOd2Dt7c.png" width="24" border="0" style="min-width:24px; width:24px;
+           height: auto; display: block;"></a></td>
+  <td style="width:16px; min-width:16px;" width="16"></td>
+  <td style="vertical-align: middle;"><a target="_blank" href="https://www.youtube.com/@AudiusMusic"><img src="https://download.audius.co/welcome-email/zTUTTlgXyRIkRgqgJ59JSs6QGkV2K2.png" width="24" border="0" style="min-width:24px; width:24px;
+           height: auto; display: block;"></a></td>
+  </tr>
+  </table>
+  </td>
+  </tr>
+  </table>
+  </td>
+  </tr>
+  <tr>
+  <td height="4" style="height:4px; min-height:4px; line-height:4px;"></td>
+  </tr>
+  </table>
+  </td>
+  </tr>
+  </table>
+  </td>
+  </tr>
+  </table>
+  </td>
+  </tr>
+  <tr>
+  <td height="8" style="height:8px; min-height:8px; line-height:8px;"></td>
+  </tr>
+  </table>
+  </td>
+  `
+      : `
   <td width="100%" align="center" style="vertical-align: middle; background-color:#ffffff;   padding-left:8px; padding-right:8px;" bgcolor="#ffffff">
   <table border="0" cellpadding="0" cellspacing="0">
   <tr>
@@ -243,6 +325,8 @@ export const email = ({
   </tr>
   </table>
   </td>
+  `
+  }
   </tr>
   </table>
   </td>
@@ -695,6 +779,43 @@ export const email = ({
   </table>
   </td>
   </tr>
+  ${
+    isGuestCheckout
+      ? `
+  <tr>
+  <td width="600">
+  <tr>
+  <td height="24" style="height:24px; min-height:24px; line-height:24px;"></td>
+  </tr>
+  <tr>
+  <td align="center">
+  <table cellspacing="0" cellpadding="0" border="0">
+  <tr>
+  <td style="vertical-align: middle;" align="center" width="420" class="stack-column-center">
+  <table cellspacing="0" cellpadding="0" border="0">
+  <tr>
+  <td width="420" align="center" style="vertical-align: middle;">
+  <table width="100%" border="0" cellpadding="0" cellspacing="0">
+  <tr>
+  <td style="vertical-align: middle;" align="center">
+  <div>
+  <a target="_blank" href="${signUpLink}" style="white-space:nowrap;background-color:#7e1bcc;border-radius:8px; display:inline-block;text-align:center;color:#ffffff;font-weight:600;font-family:Inter,Arial,sans-serif;font-size:18px;line-height:48px;width:100%; -webkit-text-size-adjust:none;mso-hide:all;box-shadow: 0px 2px 0px 0px rgba(0, 0, 0, 0.0430000014603138);">Complete Account to Claim Rewards</a>
+  </div>
+  </td>
+  </tr>
+  </table>
+  </td>
+  </tr>
+  </table>
+  </td>
+  </tr>
+  </table>
+  </td>
+  </tr>
+  </td>
+  </tr>`
+      : ''
+  }
   <tr>
   <td width="600">
   <table cellspacing="0" cellpadding="0" border="0">

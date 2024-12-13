@@ -29,6 +29,7 @@ export type AnalyticsEvent = {
 }
 
 export enum Name {
+  APP_ERROR = 'App Error', // Generic app error
   SESSION_START = 'Session Start',
   // Account creation
   // When the user opens the create account page
@@ -92,7 +93,7 @@ export enum Name {
   // When the user clicks the "Upload Track" CTA in the welcome modal
   CREATE_ACCOUNT_WELCOME_MODAL_UPLOAD_TRACK = 'Create Account: Welcome Modal Upload Track Clicked',
   // Sign in
-  SIGN_IN_OPEN = 'Sign In: Open',
+  SIGN_IN_START = 'Sign In: Start',
   SIGN_IN_FINISH = 'Sign In: Finish',
   SIGN_IN_WITH_INCOMPLETE_ACCOUNT = 'Sign In: Incomplete Account',
 
@@ -573,6 +574,11 @@ type PageView = {
   route: string
 }
 
+type AppError = {
+  eventName: Name.APP_ERROR
+  errorMessage: string
+}
+
 // Create Account
 export type CreateAccountOpen = {
   eventName: Name.CREATE_ACCOUNT_OPEN
@@ -744,9 +750,8 @@ type CreateAccountOpenFinish = {
 }
 
 // Sign In
-type SignInOpen = {
-  eventName: Name.SIGN_IN_OPEN
-  source: 'sign up page'
+type SignInStart = {
+  eventName: Name.SIGN_IN_START
 }
 type SignInFinish = {
   eventName: Name.SIGN_IN_FINISH
@@ -2730,6 +2735,7 @@ export type CommentsOpenInstallAppModal = {
 export type BaseAnalyticsEvent = { type: typeof ANALYTICS_TRACK_EVENT }
 
 export type AllTrackingEvents =
+  | AppError
   | CreateAccountOpen
   | CreateAccountCompleteEmail
   | CreateAccountCompletePassword
@@ -2758,7 +2764,7 @@ export type AllTrackingEvents =
   | CreateAccountPreviewArtist
   | CreateAccountWelcomeModal
   | CreateAccountWelcomeModalUploadTrack
-  | SignInOpen
+  | SignInStart
   | SignInFinish
   | SignInWithIncompleteAccount
   | SettingsChangeTheme

@@ -17,14 +17,14 @@ export enum FeatureFlags {
   COMMENTS_ENABLED = 'comments_enabled',
   COMMENT_POSTING_ENABLED = 'comment_posting_enabled',
   PAID_SCHEDULED = 'paid_scheduled',
-  ONE_TO_MANY_DMS = 'one_to_many_dms',
   NETWORK_CUT_ENABLED = 'network_cut_enabled',
   SOCIAL_SIGNUP = 'social_signup',
   RIGHTS_AND_COVERS = 'rights_and_covers',
   GUEST_CHECKOUT = 'guest_checkout',
   TRACK_AUDIO_REPLACE = 'track_audio_replace',
   THEME_V2 = 'theme_v2',
-  OWN_YOUR_FANS = 'own_your_fans'
+  OWN_YOUR_FANS = 'own_your_fans',
+  FAST_REFERRAL = 'fast_referral'
 }
 
 type FlagDefaults = Record<FeatureFlags, boolean>
@@ -58,11 +58,11 @@ export const flagDefaults: FlagDefaults = {
   [FeatureFlags.COMMENTS_ENABLED]: false,
   [FeatureFlags.COMMENT_POSTING_ENABLED]: false,
   [FeatureFlags.GUEST_CHECKOUT]: false,
-  [FeatureFlags.ONE_TO_MANY_DMS]: false,
   [FeatureFlags.NETWORK_CUT_ENABLED]: false,
   [FeatureFlags.SOCIAL_SIGNUP]: false,
   [FeatureFlags.RIGHTS_AND_COVERS]: false,
   [FeatureFlags.TRACK_AUDIO_REPLACE]: false,
   [FeatureFlags.THEME_V2]: false,
-  [FeatureFlags.OWN_YOUR_FANS]: false
+  [FeatureFlags.OWN_YOUR_FANS]: false,
+  [FeatureFlags.FAST_REFERRAL]: false
 }

@@ -7,8 +7,7 @@ import { formatOtp } from '~/schemas/sign-on/confirmEmailSchema'
 import { Box, Text } from '@audius/harmony-native'
 import { HarmonyTextField, PasswordField } from 'app/components/fields'
 import LoadingSpinner from 'app/components/loading-spinner'
-import { authService } from 'app/services/sdk/auth'
-import { identityServiceInstance } from 'app/services/sdk/identity'
+import { identityService } from 'app/services/sdk/identity'
 
 import { ResendCodeLink } from '../change-password-screen/ResendCodeLink'
 import { SubScreen } from '../change-password-screen/SubScreen'
@@ -32,9 +31,8 @@ export const CurrentEmail = () => {
     useField('oldEmail')
 
   // Load the email for the user
-  const wallet = authService.getWallet()
   const emailRequest = useAsync(async () => {
-    return await identityServiceInstance.getUserEmail({ wallet })
+    return await identityService.getUserEmail()
   })
 
   useEffect(() => {

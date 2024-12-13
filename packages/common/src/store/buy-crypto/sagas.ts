@@ -35,7 +35,6 @@ import {
   MintName,
   createUserBankIfNeeded,
   createVersionedTransaction,
-  getRootSolanaAccount,
   getTokenAccountInfo,
   pollForBalanceChange,
   pollForTokenBalanceChange,
@@ -63,6 +62,7 @@ import { setVisibility } from '~/store/ui/modals/parentSlice'
 import { initializeStripeModal } from '~/store/ui/stripe-modal/slice'
 import { waitForAccount, waitForValue } from '~/utils/sagaHelpers'
 
+import { getWalletAddresses } from '../account/selectors'
 import { getSDK } from '../sdkUtils'
 
 import {
@@ -108,7 +108,7 @@ function* getBuyAudioRemoteConfig() {
 }
 
 function* getBuyCryptoRemoteConfig(mint: MintName) {
-  if (mint === 'usdc') {
+  if (mint === 'USDC') {
     const config = yield* call(getBuyUSDCRemoteConfig)
     return {
       maxAmount: config.maxUSDCPurchaseAmountCents / 100.0,
@@ -260,9 +260,11 @@ function* doBuyCryptoViaSol({
 }: ReturnType<typeof buyCryptoViaSol>) {
   // Pull from context
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
+  const solanaWalletService = yield* getContext('solanaWalletService')
   const { track, make } = yield* getContext('analytics')
   const reportToSentry = yield* getContext('reportToSentry')
   const audiusLocalStorage = yield* getContext('localStorage')
+  const sdk = yield* getSDK()
 
   yield* call(
     track,
@@ -275,12 +277,18 @@ function* doBuyCryptoViaSol({
   )
 
   // Get config
-  const wallet = yield* call(getRootSolanaAccount, audiusBackendInstance)
+  const wallet = yield* call([
+    solanaWalletService,
+    solanaWalletService.getKeypair
+  ])
   const feePayerAddress = yield* select(getFeePayer)
   const config = yield* call(getBuyCryptoRemoteConfig, mint)
   const outputToken = TOKEN_LISTING_MAP[mint.toUpperCase()]
   let userbank: PublicKey | null = null
   try {
+    if (!wallet) {
+      throw new Error('Missing Solana root wallet')
+    }
     // Validate inputs
     // TODO: Re-add Coinbase support when rewriting BuyAudio
     if (provider !== OnRampProvider.STRIPE) {
@@ -323,10 +331,14 @@ function* doBuyCryptoViaSol({
     // Set up computed vars
     const outputTokenLamports = 10 ** outputToken.decimals
     const feePayer = new PublicKey(feePayerAddress)
-    userbank = yield* call(createUserBankIfNeeded, audiusBackendInstance, {
+    const { currentUser } = yield* select(getWalletAddresses)
+    if (!currentUser) {
+      throw new Error('Failed to get current user wallet address')
+    }
+    userbank = yield* call(createUserBankIfNeeded, sdk, {
       mint,
-      feePayerOverride: feePayerAddress,
-      recordAnalytics: track
+      recordAnalytics: track,
+      ethAddress: currentUser
     })
 
     // Get required SOL purchase amount via ExactOut + minRent.
@@ -342,7 +354,6 @@ function* doBuyCryptoViaSol({
       make
     })
 
-    const sdk = yield* getSDK()
     const connection = sdk.services.solanaClient.connection
     const minRent = yield* call(
       [connection, connection.getMinimumBalanceForRentExemption],
@@ -511,7 +522,7 @@ function* doBuyCryptoViaSol({
     )
 
     // Save pre swap token balance
-    const account = yield* call(getTokenAccountInfo, audiusBackendInstance, {
+    const account = yield* call(getTokenAccountInfo, sdk, {
       tokenAccount: userbank
     })
     const preSwapTokenBalance = account?.amount ?? BigInt(0)
@@ -595,17 +606,13 @@ function* doBuyCryptoViaSol({
         recoveryError,
         mint
       })
-      const outputTokenChange = yield* call(
-        pollForTokenBalanceChange,
-        audiusBackendInstance,
-        {
-          initialBalance: preSwapTokenBalance,
-          tokenAccount: userbank,
-          mint,
-          retryDelayMs: config.retryDelayMs,
-          maxRetryCount: config.maxRetryCount
-        }
-      )
+      const outputTokenChange = yield* call(pollForTokenBalanceChange, sdk, {
+        initialBalance: preSwapTokenBalance,
+        tokenAccount: userbank,
+        mint,
+        retryDelayMs: config.retryDelayMs,
+        maxRetryCount: config.maxRetryCount
+      })
       console.info(
         `Salvaged ${
           exactInQuote.inAmount
@@ -660,7 +667,7 @@ function* doBuyCryptoViaSol({
       level: ErrorLevel.Error,
       error,
       additionalInfo: {
-        wallet: wallet.publicKey.toBase58(),
+        wallet: wallet ? wallet.publicKey.toBase58() : '',
         userbank: userbank?.toBase58()
       }
     })
@@ -687,7 +694,7 @@ function* doBuyCryptoViaSol({
 function* recoverBuyCryptoViaSolIfNecessary() {
   yield* call(waitForAccount)
   // Pull from context
-  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
+  const solanaWalletService = yield* getContext('solanaWalletService')
   const getFeatureEnabled = yield* getContext('getFeatureEnabled')
   const { track, make } = yield* getContext('analytics')
   const reportToSentry = yield* getContext('reportToSentry')
@@ -726,7 +733,10 @@ function* recoverBuyCryptoViaSolIfNecessary() {
   )
 
   // Get config
-  const wallet = yield* call(getRootSolanaAccount, audiusBackendInstance)
+  const wallet = yield* call([
+    solanaWalletService,
+    solanaWalletService.getKeypair
+  ])
   const sdk = yield* getSDK()
   const connection = sdk.services.solanaClient.connection
   const feePayerAddress = yield* waitForValue(getFeePayer)
@@ -741,6 +751,10 @@ function* recoverBuyCryptoViaSolIfNecessary() {
   )
 
   try {
+    if (!wallet) {
+      throw new Error('Missing Solana root wallet')
+    }
+
     if (!feePayerAddress) {
       throw new BuyCryptoError(
         BuyCryptoErrorCode.BAD_FEE_PAYER,
@@ -751,10 +765,14 @@ function* recoverBuyCryptoViaSolIfNecessary() {
     const outputTokenLamports = 10 ** outputToken.decimals
     const expectedAmount = Math.ceil(amount * outputTokenLamports)
     const feePayer = new PublicKey(feePayerAddress)
-    userbank = yield* call(createUserBankIfNeeded, audiusBackendInstance, {
+    const { currentUser } = yield* select(getWalletAddresses)
+    if (!currentUser) {
+      throw new Error('Failed to get current user wallet address')
+    }
+    userbank = yield* call(createUserBankIfNeeded, sdk, {
       mint: localStorageState.mint,
-      feePayerOverride: feePayerAddress,
-      recordAnalytics: track
+      recordAnalytics: track,
+      ethAddress: currentUser
     })
 
     // Get swappable salvage amount
@@ -782,7 +800,7 @@ function* recoverBuyCryptoViaSolIfNecessary() {
     }
 
     // Get pre swap token balance
-    const account = yield* call(getTokenAccountInfo, audiusBackendInstance, {
+    const account = yield* call(getTokenAccountInfo, sdk, {
       tokenAccount: userbank
     })
 
@@ -819,17 +837,13 @@ function* recoverBuyCryptoViaSolIfNecessary() {
 
     // Get the token difference
     const initialBalance = account?.amount ?? BigInt(0)
-    const newBalance = yield* call(
-      pollForTokenBalanceChange,
-      audiusBackendInstance,
-      {
-        initialBalance,
-        tokenAccount: userbank,
-        mint,
-        retryDelayMs: config.retryDelayMs,
-        maxRetryCount: config.maxRetryCount
-      }
-    )
+    const newBalance = yield* call(pollForTokenBalanceChange, sdk, {
+      initialBalance,
+      tokenAccount: userbank,
+      mint,
+      retryDelayMs: config.retryDelayMs,
+      maxRetryCount: config.maxRetryCount
+    })
     const balanceChange = newBalance - initialBalance
 
     // Report to the console what we got
@@ -898,7 +912,7 @@ function* recoverBuyCryptoViaSolIfNecessary() {
       level: ErrorLevel.Error,
       error,
       additionalInfo: {
-        wallet: wallet.publicKey.toBase58(),
+        wallet: wallet ? wallet.publicKey.toBase58() : '',
         userbank: userbank?.toBase58()
       }
     })

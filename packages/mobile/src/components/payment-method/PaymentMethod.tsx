@@ -19,9 +19,10 @@ import {
   Flex,
   IconQrCode,
   IconPhantomPlain,
-  IconCaretRight
+  IconCaretRight,
+  Divider
 } from '@audius/harmony-native'
-import { Divider, RadioButton } from 'app/components/core'
+import { RadioButton } from 'app/components/core'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { getPurchaseVendor } from 'app/store/purchase-vendor/selectors'
 import { setPurchaseVendor } from 'app/store/purchase-vendor/slice'

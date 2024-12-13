@@ -7,6 +7,7 @@ import { useSelector } from 'react-redux'
 
 import type { IconComponent } from '@audius/harmony-native'
 import { Flex, Text } from '@audius/harmony-native'
+import { DEFAULT_HIT_SLOP } from 'app/harmony-native/constants'
 
 const { getUser } = cacheUsersSelectors
 
@@ -21,7 +22,11 @@ export const VanityMetric = (props: VanityMetricProps) => {
   const { icon: Icon, children, onPress, disabled } = props
 
   return (
-    <TouchableOpacity onPress={onPress} disabled={disabled}>
+    <TouchableOpacity
+      onPress={onPress}
+      disabled={disabled}
+      hitSlop={DEFAULT_HIT_SLOP}
+    >
       <Flex row alignItems='center' gap='xs'>
         {Icon ? <Icon size='s' color='subdued' /> : null}
         <Text size='xs' color='subdued'>

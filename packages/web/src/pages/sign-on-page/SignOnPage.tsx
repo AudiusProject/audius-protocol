@@ -13,12 +13,18 @@ import {
 } from '@audius/harmony'
 import { useDispatch, useSelector } from 'react-redux'
 import { Link, Redirect, Route, Switch, useRouteMatch } from 'react-router-dom'
-import { useEffectOnce, useLocation, useMeasure } from 'react-use'
+import { useSearchParams } from 'react-router-dom-v5-compat'
+import { useEffectOnce, useLocalStorage, useMeasure } from 'react-use'
 
 import djBackground from 'assets/img/2-DJ-4-3.jpg'
 import djPortrait from 'assets/img/DJportrait.jpg'
 import imagePhone from 'assets/img/imagePhone.png'
-import { fetchReferrer } from 'common/store/pages/signon/actions'
+import {
+  fetchReferrer,
+  setField,
+  setValueField,
+  updateRouteOnCompletion
+} from 'common/store/pages/signon/actions'
 import {
   getHasCompletedAccount,
   getRouteOnExit
@@ -280,17 +286,31 @@ const MobileSignOnRoot = (props: MobileSignOnRootProps) => {
 export const SignOnPage = () => {
   const { isMobile } = useMedia()
   const hasCompletedAccount = useSelector(getHasCompletedAccount)
-  const location = useLocation()
   const dispatch = useDispatch()
+  const [searchParams] = useSearchParams()
+  const [guestEmailLocalStorage] = useLocalStorage('guestEmail', '')
 
   useEffectOnce(() => {
     // Check for referrals and set them in the store
-    const rf = new URLSearchParams(location.search).get('rf')
-    const ref = new URLSearchParams(location.search).get('ref')
+    const rf = searchParams.get('rf')
+    const ref = searchParams.get('ref')
     if (rf) {
       dispatch(fetchReferrer(rf))
     } else if (ref) {
       dispatch(fetchReferrer(ref))
+    }
+
+    // Handle completionOnExit parameter
+    const routeOnCompletion = searchParams.get('routeOnCompletion')
+    if (routeOnCompletion) {
+      dispatch(updateRouteOnCompletion(routeOnCompletion))
+    }
+
+    const guestEmailParam = searchParams.get('guestEmail')
+    const guestEmail = guestEmailLocalStorage || guestEmailParam
+    if (guestEmail) {
+      dispatch(setValueField('email', guestEmail))
+      dispatch(setField('isGuest', true))
     }
   })
 

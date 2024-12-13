@@ -66,11 +66,13 @@ export class TrackUploadHelper extends BaseAPI {
       ...trackMetadata,
       trackSegments: [],
       trackCid: audioResponse.results['320'],
-      previewCid: trackMetadata.previewStartSeconds
-        ? audioResponse.results[
-            `320_preview|${trackMetadata.previewStartSeconds}`
-          ]
-        : trackMetadata.previewCid,
+      previewCid:
+        trackMetadata.previewStartSeconds !== undefined &&
+        trackMetadata.previewStartSeconds !== null
+          ? audioResponse.results[
+              `320_preview|${trackMetadata.previewStartSeconds}`
+            ]
+          : trackMetadata.previewCid,
       origFileCid: audioResponse.orig_file_cid,
       origFilename: audioResponse.orig_filename || trackMetadata.origFilename,
       audioUploadId: audioResponse.id,
@@ -88,7 +90,10 @@ export class TrackUploadHelper extends BaseAPI {
 
   public extractMediorumUploadOptions(metadata: PlaylistTrackMetadata) {
     const uploadOptions: { [key: string]: string } = {}
-    if (metadata.previewStartSeconds) {
+    if (
+      metadata.previewStartSeconds !== undefined &&
+      metadata.previewStartSeconds !== null
+    ) {
       uploadOptions.previewStartSeconds =
         metadata.previewStartSeconds.toString()
     }

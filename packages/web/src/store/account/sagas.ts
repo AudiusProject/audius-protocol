@@ -1,3 +1,4 @@
+import { GUEST_EMAIL } from '@audius/common/hooks'
 import {
   accountActions,
   accountSelectors,
@@ -43,7 +44,10 @@ const setBrowerPushPermissionConfirmationModal = setVisibility({
  */
 export function* showPushNotificationConfirmation() {
   const isMobile = yield* getContext('isMobile')
-  if (isMobile || isElectron() || !shouldRequestBrowserPermission()) return
+  const isGuest = window?.localStorage?.getItem(GUEST_EMAIL)
+
+  if (isMobile || isElectron() || !shouldRequestBrowserPermission() || isGuest)
+    return
   setHasRequestedBrowserPermission()
   const hasAccount = yield* select(getHasAccount)
   if (!hasAccount) return

@@ -23,8 +23,6 @@ import {
 import { PlaylistsApi } from '../playlists/PlaylistsApi'
 
 import {
-  createUpdateAlbumSchema,
-  createUploadAlbumSchema,
   DeleteAlbumRequest,
   DeleteAlbumSchema,
   FavoriteAlbumRequest,
@@ -43,14 +41,20 @@ import {
   UnrepostAlbumRequest,
   UnrepostAlbumSchema,
   UpdateAlbumRequest,
-  UploadAlbumRequest
+  UpdateAlbumSchema,
+  UploadAlbumRequest,
+  UploadAlbumSchema,
+  CreateAlbumRequest,
+  CreateAlbumSchema
 } from './types'
+import { retry3 } from '../../utils/retry'
+import { PlaylistMetadata } from '../playlists/types'
 
 export class AlbumsApi {
   private readonly playlistsApi: PlaylistsApi
   constructor(
     configuration: Configuration,
-    storage: StorageService,
+    private storage: StorageService,
     entityManager: EntityManagerService,
     private logger: LoggerService,
     private claimableTokensClient: ClaimableTokensClient,
@@ -83,6 +87,43 @@ export class AlbumsApi {
   }
 
   // WRITES
+
+  /** @hidden
+   * Create an album from existing tracks
+   */
+  async createAlbum(
+    params: CreateAlbumRequest,
+    advancedOptions?: AdvancedOptions
+  ) {
+    // Parse inputs
+    const { metadata, ...parsedParameters } = await parseParams(
+      'createAlbum',
+      CreateAlbumSchema
+    )(params)
+
+    const { albumName, ...playlistMetadata } = metadata
+
+    // Call createPlaylistInternal with parsed inputs
+    const response = await this.playlistsApi.createPlaylistInternal<
+      PlaylistMetadata & { isAlbum: boolean }
+    >(
+      {
+        ...parsedParameters,
+        metadata: {
+          ...playlistMetadata,
+          playlistName: albumName,
+          isAlbum: true
+        }
+      },
+      advancedOptions
+    )
+
+    return {
+      ...response,
+      albumId: response.playlistId
+    }
+  }
+
   /** @hidden
    * Upload an album
    * Uploads the specified tracks and combines them into an album
@@ -93,7 +134,7 @@ export class AlbumsApi {
   ) {
     const { metadata, ...parsedParameters } = await parseParams(
       'uploadAlbum',
-      createUploadAlbumSchema()
+      UploadAlbumSchema
     )(params)
 
     const { albumName, ...playlistMetadata } = metadata
@@ -127,7 +168,7 @@ export class AlbumsApi {
   ) {
     const { albumId, metadata, ...parsedParameters } = await parseParams(
       'updateAlbum',
-      createUpdateAlbumSchema()
+      UpdateAlbumSchema
     )(params)
 
     const { albumName, ...playlistMetadata } = metadata
@@ -448,6 +489,8 @@ export class AlbumsApi {
         this.solanaClient.connection
       )
     }
-    return this.solanaClient.sendTransaction(transaction)
+    return this.solanaClient.sendTransaction(transaction, {
+      skipPreflight: true
+    })
   }
 }

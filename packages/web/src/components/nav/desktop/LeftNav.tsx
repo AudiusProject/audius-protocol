@@ -1,11 +1,6 @@
-import { MouseEvent, useCallback, useRef, useState } from 'react'
+import { useCallback, useRef, useState } from 'react'
 
-import {
-  Name,
-  FavoriteSource,
-  Status,
-  CreateAccountOpen
-} from '@audius/common/models'
+import { FavoriteSource, Status } from '@audius/common/models'
 import {
   accountSelectors,
   collectionsSocialActions,
@@ -19,12 +14,11 @@ import { RouteComponentProps, withRouter } from 'react-router-dom'
 import useMeasure from 'react-use-measure'
 import { Dispatch } from 'redux'
 
-import { make, useRecord } from 'common/store/analytics/actions'
-import * as signOnActions from 'common/store/pages/signon/actions'
 import { DragAutoscroller } from 'components/drag-autoscroller/DragAutoscroller'
-import ConnectedProfileCompletionPane from 'components/profile-progress/ConnectedProfileCompletionPane'
+import { ProfileCompletionPanel } from 'components/profile-progress/ProfileCompletionPanel'
 import { selectDraggingKind } from 'store/dragndrop/slice'
 import { AppState } from 'store/types'
+import { useSelector } from 'utils/reducer'
 
 import { AccountDetails } from './AccountDetails'
 import { ConnectInstagram } from './ConnectInstagram'
@@ -41,7 +35,8 @@ const { EXPLORE_PAGE, FEED_PAGE, HISTORY_PAGE, LIBRARY_PAGE, TRENDING_PAGE } =
   route
 const { saveTrack } = tracksSocialActions
 const { saveCollection } = collectionsSocialActions
-const { getAccountStatus, getUserId, getUserHandle } = accountSelectors
+const { getAccountStatus, getUserId, getUserHandle, getIsAccountComplete } =
+  accountSelectors
 
 export const LEFT_NAV_WIDTH = 240
 
@@ -63,15 +58,13 @@ const LeftNav = (props: NavColumnProps) => {
   const {
     accountUserId,
     accountHandle,
-    showActionRequiresAccount,
     isElectron,
     draggingKind,
     saveTrack,
     saveCollection,
-    accountStatus,
-    goToSignUp: routeToSignup
+    accountStatus
   } = props
-  const record = useRecord()
+  const isAccountComplete = useSelector(getIsAccountComplete)
   const [navBodyContainerMeasureRef, navBodyContainerBoundaries] = useMeasure({
     polyfill: ResizeObserver
   })
@@ -86,37 +79,12 @@ const LeftNav = (props: NavColumnProps) => {
     []
   )
 
-  const goToSignUp = useCallback(
-    (source: CreateAccountOpen['source']) => {
-      routeToSignup()
-      record(make(Name.CREATE_ACCOUNT_OPEN, { source }))
-    },
-    [record, routeToSignup]
-  )
-
-  const onClickNavLinkWithAccount = useCallback(
-    (e?: MouseEvent) => {
-      if (!accountUserId) {
-        e?.preventDefault()
-        goToSignUp('restricted page')
-        showActionRequiresAccount()
-      }
-    },
-    [accountUserId, goToSignUp, showActionRequiresAccount]
-  )
-
   const updateScrollTopPosition = useCallback((difference: number) => {
     if (scrollbarRef != null && scrollbarRef.current !== null) {
       scrollbarRef.current.scrollTop =
         scrollbarRef.current.scrollTop + difference
     }
   }, [])
-
-  const profileCompletionMeter = (
-    <Flex justifyContent='center'>
-      <ConnectedProfileCompletionPane />
-    </Flex>
-  )
 
   const navLoaded =
     accountStatus === Status.SUCCESS || accountStatus === Status.ERROR
@@ -166,7 +134,6 @@ const LeftNav = (props: NavColumnProps) => {
             onChangeDragScrollingDirection={handleChangeDragScrollingDirection}
           >
             <AccountDetails />
-
             <Flex
               direction='column'
               gap='unit5'
@@ -187,13 +154,15 @@ const LeftNav = (props: NavColumnProps) => {
                 <GroupHeader>{messages.discover}</GroupHeader>
                 <LeftNavLink
                   to={FEED_PAGE}
-                  disabled={!accountUserId}
-                  onClick={onClickNavLinkWithAccount}
+                  disabled={!isAccountComplete}
+                  restriction='account'
                 >
                   Feed
                 </LeftNavLink>
-                <LeftNavLink to={TRENDING_PAGE}>Trending</LeftNavLink>
-                <LeftNavLink to={EXPLORE_PAGE} exact>
+                <LeftNavLink to={TRENDING_PAGE} restriction='none'>
+                  Trending
+                </LeftNavLink>
+                <LeftNavLink to={EXPLORE_PAGE} exact restriction='none'>
                   Explore
                 </LeftNavLink>
               </Box>
@@ -205,17 +174,14 @@ const LeftNav = (props: NavColumnProps) => {
                   acceptOwner={false}
                   onDrop={draggingKind === 'album' ? saveCollection : saveTrack}
                 >
-                  <LeftNavLink
-                    to={LIBRARY_PAGE}
-                    onClick={onClickNavLinkWithAccount}
-                  >
+                  <LeftNavLink to={LIBRARY_PAGE} restriction='guest'>
                     Library
                   </LeftNavLink>
                 </LeftNavDroppable>
                 <LeftNavLink
                   to={HISTORY_PAGE}
-                  onClick={onClickNavLinkWithAccount}
-                  disabled={!accountUserId}
+                  disabled={!isAccountComplete}
+                  restriction='account'
                 >
                   History
                 </LeftNavLink>
@@ -228,7 +194,7 @@ const LeftNav = (props: NavColumnProps) => {
         </Scrollbar>
       </Flex>
       <Flex direction='column' alignItems='center' pt='l' borderTop='default'>
-        {profileCompletionMeter}
+        <ProfileCompletionPanel />
         <LeftNavCTA />
         <NowPlayingArtworkTile />
       </Flex>
@@ -249,10 +215,7 @@ const mapDispatchToProps = (dispatch: Dispatch) => ({
   saveTrack: (trackId: number) =>
     dispatch(saveTrack(trackId, FavoriteSource.NAVIGATOR)),
   saveCollection: (collectionId: number) =>
-    dispatch(saveCollection(collectionId, FavoriteSource.NAVIGATOR)),
-  showActionRequiresAccount: () =>
-    dispatch(signOnActions.showRequiresAccountToast()),
-  goToSignUp: () => dispatch(signOnActions.openSignOn(/** signIn */ false))
+    dispatch(saveCollection(collectionId, FavoriteSource.NAVIGATOR))
 })
 
 const ConnectedLeftNav = withRouter(

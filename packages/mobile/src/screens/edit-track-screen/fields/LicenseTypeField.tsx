@@ -5,7 +5,7 @@ import { useField } from 'formik'
 import { View } from 'react-native'
 
 import type { ContextualMenuProps } from 'app/components/core'
-import { ContextualMenu, Pill } from 'app/components/core'
+import { ContextualMenu, SelectedValue } from 'app/components/core'
 import { makeStyles } from 'app/styles'
 import { spacing } from 'app/styles/spacing'
 import { useThemeColors } from 'app/utils/theme'
@@ -22,7 +22,7 @@ const useStyles = makeStyles(({ spacing }) => ({
     marginTop: spacing(4),
     alignItems: 'flex-start'
   },
-  pill: {
+  selectedValue: {
     paddingVertical: 2
   },
   licenseIcon: {
@@ -56,7 +56,7 @@ export const LicenseTypeField = (props: LicenseTypeFieldProps) => {
 
     return licenseIcons ? (
       <View style={styles.licenseIcons}>
-        <Pill style={styles.pill}>
+        <SelectedValue style={styles.selectedValue}>
           {licenseIcons.map(([Icon, key]) => (
             <Icon
               key={key}
@@ -66,7 +66,7 @@ export const LicenseTypeField = (props: LicenseTypeFieldProps) => {
               width={spacing(6)}
             />
           ))}
-        </Pill>
+        </SelectedValue>
       </View>
     ) : null
   }, [allowAttribution, commercialUse, derivativeWorks, styles, neutral])

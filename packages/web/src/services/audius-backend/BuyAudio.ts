@@ -1,5 +1,4 @@
 import { MEMO_PROGRAM_ID } from '@audius/common/services'
-import { InAppAudioPurchaseMetadata } from '@audius/common/store'
 import {
   TokenAccountNotFoundError,
   createTransferCheckedInstruction,
@@ -16,6 +15,8 @@ import {
 
 import { getLibs } from 'services/audius-libs'
 import { getSolanaConnection } from 'services/solana/solana'
+
+import { audiusBackendInstance } from './audius-backend-instance'
 
 const DEFAULT_RETRY_DELAY = 1000
 const DEFAULT_MAX_RETRY_COUNT = 120
@@ -65,10 +66,10 @@ export const getAudioAccount = async ({
 }: {
   rootAccount: PublicKey
 }) => {
-  const libs = await getLibs()
-  return await libs.solanaWeb3Manager!.findAssociatedTokenAddress(
-    rootAccount.toString()
-  )
+  return audiusBackendInstance.findAssociatedTokenAddress({
+    solanaWalletKey: rootAccount,
+    mint: 'wAUDIO'
+  })
 }
 
 export const getAudioAccountInfo = async ({
@@ -76,10 +77,8 @@ export const getAudioAccountInfo = async ({
 }: {
   tokenAccount: PublicKey
 }) => {
-  const libs = await getLibs()
-  return await libs.solanaWeb3Manager!.getTokenAccountInfo(
-    tokenAccount.toString()
-  )
+  const connection = await getSolanaConnection()
+  return await getAccount(connection, tokenAccount)
 }
 
 export const pollForAudioBalanceChange = async ({
@@ -245,42 +244,4 @@ export const createTransferToUserBankTransaction = async ({
     })
   )
   return tx
-}
-
-export const saveUserBankTransactionMetadata = async ({
-  transactionSignature,
-  metadata
-}: {
-  transactionSignature: string
-  metadata: InAppAudioPurchaseMetadata
-}) => {
-  const libs = await getLibs()
-  return await libs.identityService!.saveUserBankTransactionMetadata({
-    transactionSignature,
-    metadata
-  })
-}
-
-export const getUserBankTransactionMetadata = async (transactionId: string) => {
-  const libs = await getLibs()
-  return await libs.identityService!.getUserBankTransactionMetadata(
-    transactionId
-  )
-}
-
-export const createStripeSession = async ({
-  destinationWallet,
-  amount,
-  destinationCurrency = 'sol'
-}: {
-  destinationWallet: string
-  amount: string
-  destinationCurrency?: 'sol' | 'usdc'
-}) => {
-  const libs = await getLibs()
-  return await libs.identityService!.createStripeSession({
-    destinationWallet,
-    amount,
-    destinationCurrency
-  })
 }

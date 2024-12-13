@@ -15,7 +15,6 @@ import {
   waitForRead
 } from '@audius/common/utils'
 import { full } from '@audius/sdk'
-import { AudiusLibs } from '@audius/sdk-legacy/dist/libs'
 import { call, takeLatest, put } from 'typed-redux-saga'
 
 import { fetchUsers } from 'common/store/cache/users/sagas'
@@ -134,7 +133,7 @@ function* fetchAudioTransactionsAsync() {
         .filter((tx) => tx !== null)
       yield* call(
         fetchUsers,
-        userIds.filter(removeNullable).map(parseInt),
+        userIds.filter(removeNullable).map((id) => parseInt(id)),
         undefined, // requiredFields
         false // forceRetrieveFromSource
       )
@@ -151,13 +150,9 @@ function* fetchTransactionMetadata() {
       if (txDetails.transactionType !== TransactionType.PURCHASE) {
         return
       }
-      const audiusBackendInstance = yield* getContext('audiusBackendInstance')
-      const libs: AudiusLibs = yield* call(audiusBackendInstance.getAudiusLibs)
+      const identityService = yield* getContext('identityService')
       const response = yield* call(
-        [
-          libs.identityService!,
-          libs.identityService!.getUserBankTransactionMetadata
-        ],
+        [identityService, identityService.getUserBankTransactionMetadata],
         txDetails.signature
       )
       yield put(

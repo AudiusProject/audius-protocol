@@ -349,7 +349,7 @@ export const DetailsTileNoAccess = (props: DetailsTileNoAccessProps) => {
     }
     if (isContentUSDCPurchaseGated(streamConditions)) {
       return (
-        <>
+        <Flex gap='s'>
           <View style={styles.descriptionContainer}>
             <Text style={styles.description}>
               {messages.lockedUSDCPurchase}
@@ -358,7 +358,7 @@ export const DetailsTileNoAccess = (props: DetailsTileNoAccessProps) => {
           <Button color='lightGreen' onPress={handlePurchasePress} fullWidth>
             {messages.buy(formatPrice(streamConditions.usdc_purchase.price))}
           </Button>
-        </>
+        </Flex>
       )
     }
 

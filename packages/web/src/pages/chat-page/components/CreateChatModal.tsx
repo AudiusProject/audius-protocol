@@ -1,8 +1,6 @@
 import { useCallback, useEffect } from 'react'
 
-import { useFeatureFlag } from '@audius/common/hooks'
 import { User } from '@audius/common/models'
-import { FeatureFlags } from '@audius/common/services'
 import {
   accountSelectors,
   chatActions,
@@ -36,10 +34,6 @@ const { getUserList: getChatsUserList } = chatSelectors
 const { fetchBlockers, fetchMoreChats } = chatActions
 
 export const CreateChatModal = () => {
-  const { isEnabled: isChatBlastsEnabled } = useFeatureFlag(
-    FeatureFlags.ONE_TO_MANY_DMS
-  )
-
   const dispatch = useDispatch()
   const currentUserId = useSelector(getUserId)
   const { isOpen, onClose, onClosed, data } = useCreateChatModal()
@@ -115,9 +109,7 @@ export const CreateChatModal = () => {
         onClose={onClose}
         onClosed={onClosed}
         onCancel={handleCancel}
-        footer={
-          isChatBlastsEnabled ? <ChatBlastCTA onClick={onClose} /> : undefined
-        }
+        footer={<ChatBlastCTA onClick={onClose} />}
       />
     </>
   )

@@ -13,6 +13,7 @@ import {
 
 import { getAccountUser } from '../account/selectors'
 import { getContext } from '../effects'
+import { getSDK } from '../sdkUtils'
 
 const POLL_ACCOUNT_INFO_DELAY_MS = 1000
 const POLL_ACCOUNT_INFO_RETRIES = 30
@@ -57,16 +58,12 @@ export function* pollForTokenAccountInfo({
   retryDelayMs?: number
   maxRetryCount?: number
 }) {
-  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
+  const sdk = yield* getSDK()
 
   let retries = 0
   let result
   while (retries < maxRetryCount && !result) {
-    result = yield* call(
-      getTokenAccountInfo,
-      audiusBackendInstance,
-      getTokenAccountInfoArgs
-    )
+    result = yield* call(getTokenAccountInfo, sdk, getTokenAccountInfoArgs)
     retries += 1
     yield* delay(retryDelayMs)
   }

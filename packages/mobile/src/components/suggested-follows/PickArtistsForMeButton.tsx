@@ -9,8 +9,7 @@ import {
 import { sampleSize } from 'lodash'
 import { useDispatch, useSelector } from 'react-redux'
 
-import { IconWand } from '@audius/harmony-native'
-import { TextButton } from 'app/components/core'
+import { IconWand, PlainButton } from '@audius/harmony-native'
 import { makeStyles } from 'app/styles'
 
 const messages = {
@@ -49,13 +48,8 @@ export const PickArtistsForMeButton = () => {
   }, [followedArtistIds, suggestedArtistIds, dispatch])
 
   return (
-    <TextButton
-      style={styles.root}
-      variant='neutral'
-      icon={IconWand}
-      title={messages.pickForMe}
-      activeUnderline
-      onPress={handlePress}
-    />
+    <PlainButton style={styles.root} iconLeft={IconWand} onPress={handlePress}>
+      {messages.pickForMe}
+    </PlainButton>
   )
 }

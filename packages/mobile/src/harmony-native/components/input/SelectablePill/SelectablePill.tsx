@@ -12,6 +12,8 @@ import Animated, {
   withTiming
 } from 'react-native-reanimated'
 
+import { DEFAULT_HIT_SLOP } from 'app/harmony-native/constants'
+
 import { useTheme } from '../../../foundations/theme'
 import { Text } from '../../Text/Text'
 import { Flex } from '../../layout'
@@ -37,7 +39,13 @@ export const SelectablePill = (props: SelectablePillProps) => {
     disableUnselectAnimation,
     ...other
   } = props
-  const { color, motion, cornerRadius, typography } = useTheme()
+  const {
+    color,
+    motion,
+    cornerRadius,
+    typography,
+    type: themeType
+  } = useTheme()
   const [isPressing, setIsPressing] = useState(false)
   const [isSelected, setIsSelected] = useControlled({
     controlledProp: isSelectedProp,
@@ -93,34 +101,41 @@ export const SelectablePill = (props: SelectablePillProps) => {
     disableUnselectAnimation
   ])
 
-  const animatedRootStyles = useAnimatedStyle(() => ({
-    opacity: withTiming(disabled ? 0.45 : 1, motion.press),
-    backgroundColor: interpolateColor(
-      selected.value,
-      [0, 1],
-      [color.background.white, color.secondary.s400]
-    ),
-    borderColor: interpolateColor(
-      selected.value,
-      [0, 1],
-      [color.border.strong, color.secondary.s400]
-    ),
-    transform: [{ scale: interpolate(pressed.value, [0, 1], [1, 0.97]) }]
-  }))
+  const animatedRootStyles = useAnimatedStyle(
+    () => ({
+      opacity: withTiming(disabled ? 0.45 : 1, motion.press),
+      backgroundColor: interpolateColor(
+        selected.value,
+        [0, 1],
+        [color.background.white, color.secondary.s400]
+      ),
+      borderColor: interpolateColor(
+        selected.value,
+        [0, 1],
+        [color.border.strong, color.secondary.s400]
+      ),
+      transform: [{ scale: interpolate(pressed.value, [0, 1], [1, 0.97]) }]
+    }),
+    [disabled, themeType]
+  )
 
-  const animatedTextStyles = useAnimatedStyle(() => ({
-    color: interpolateColor(
-      selected.value,
-      [0, 1],
-      [color.text.default, color.static.white]
-    )
-  }))
+  const animatedTextStyles = useAnimatedStyle(
+    () => ({
+      color: interpolateColor(
+        selected.value,
+        [0, 1],
+        [color.text.default, color.static.white]
+      )
+    }),
+    [themeType]
+  )
 
   return (
     <Pressable
       onPressIn={handlePressIn}
       onTouchCancel={handleTouchCancel}
       onPress={handlePress}
+      hitSlop={DEFAULT_HIT_SLOP}
       style={[
         css({ alignSelf: 'flex-start', borderRadius: cornerRadius['2xl'] }),
         styleProp

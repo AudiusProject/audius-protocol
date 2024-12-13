@@ -2,6 +2,7 @@ export const primitiveThemeV2 = {
   day: {
     static: {
       primary: '#CC0FE0FF',
+      secondary: '#7E1BCCFF',
       white: '#FFFFFFFF',
       staticWhite: '#FFFFFFFF',
       black: '#000000'
@@ -63,6 +64,7 @@ export const primitiveThemeV2 = {
   dark: {
     static: {
       primary: '#B94CC2FF',
+      secondary: '#7E1BCCFF',
       white: '#2F3348FF',
       staticWhite: '#F6F8FCFF',
       black: '#000000'
@@ -124,6 +126,7 @@ export const primitiveThemeV2 = {
   matrix: {
     static: {
       primary: '#B94CC2FF',
+      secondary: '#7E1BCCFF',
       white: '#020804FF',
       staticWhite: '#F6F8FCFF',
       black: '#000000'
