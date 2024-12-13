@@ -9,7 +9,6 @@ import (
 	"github.com/AudiusProject/audius-protocol/pkg/core/contracts"
 	"github.com/AudiusProject/audius-protocol/pkg/core/db"
 	"github.com/AudiusProject/audius-protocol/pkg/core/gen/core_proto"
-	"github.com/AudiusProject/audius-protocol/pkg/core/pubsub"
 	"github.com/AudiusProject/audius-protocol/pkg/core/sdk"
 	cconfig "github.com/cometbft/cometbft/config"
 	nm "github.com/cometbft/cometbft/node"
@@ -38,7 +37,7 @@ type Server struct {
 	peers []*sdk.Sdk
 	mempl *Mempool
 
-	txPubsub *pubsub.TransactionHashPubsub
+	txPubsub *TransactionHashPubsub
 
 	abciState *ABCIState
 
@@ -53,7 +52,7 @@ func NewServer(config *config.Config, cconfig *cconfig.Config, logger *common.Lo
 	mempl.CreateValidatorClients()
 
 	// create pubsubs
-	txPubsub := pubsub.NewPubsub[struct{}]()
+	txPubsub := NewPubsub[struct{}]()
 
 	// create contracts
 	contracts, err := contracts.NewAudiusContracts(eth, config.EthRegistryAddress)
