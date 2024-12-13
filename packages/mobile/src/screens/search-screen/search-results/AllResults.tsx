@@ -73,7 +73,7 @@ const skeletonSections = [
   {
     title: 'profiles',
     data: range(5).map((i) => ({
-      id: `user_skeleton_${i}`,
+      id: i,
       kind: Kind.USERS,
       status: Status.LOADING
     }))
@@ -81,7 +81,7 @@ const skeletonSections = [
   {
     title: 'tracks',
     data: range(5).map((i) => ({
-      id: `track_skeleton_${i}`,
+      id: i,
       kind: Kind.TRACKS,
       status: Status.LOADING
     }))
@@ -89,7 +89,7 @@ const skeletonSections = [
   {
     title: 'playlists',
     data: range(5).map((i) => ({
-      id: `playlist_skeleton_${i}`,
+      id: i,
       kind: Kind.COLLECTIONS,
       status: Status.LOADING
     }))
@@ -97,7 +97,7 @@ const skeletonSections = [
   {
     title: 'albums',
     data: range(5).map((i) => ({
-      id: `album_skeleton_${i}`,
+      id: i,
       kind: Kind.COLLECTIONS,
       status: Status.LOADING
     }))
