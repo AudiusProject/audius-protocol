@@ -272,8 +272,8 @@ export const PremiumContentPurchaseModal = () => {
       if (values.guestEmail && emailFromLocalStorage !== values.guestEmail) {
         // only create guest account if email has changed
         // enable multiple purchases with same guest email
-        setGuestEmailInLocalStorage(values.guestEmail)
         dispatch(createGuestAccount(values.guestEmail))
+        setGuestEmailInLocalStorage(values.guestEmail)
       }
       onSubmit(values)
     },
