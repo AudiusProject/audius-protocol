@@ -1,6 +1,6 @@
 import { useCallback, useRef, useState } from 'react'
 
-import { FavoriteSource, Status } from '@audius/common/models'
+import { FavoriteSource } from '@audius/common/models'
 import {
   accountSelectors,
   collectionsSocialActions,
@@ -61,8 +61,7 @@ const LeftNav = (props: NavColumnProps) => {
     isElectron,
     draggingKind,
     saveTrack,
-    saveCollection,
-    accountStatus
+    saveCollection
   } = props
   const isAccountComplete = useSelector(getIsAccountComplete)
   const [navBodyContainerMeasureRef, navBodyContainerBoundaries] = useMeasure({

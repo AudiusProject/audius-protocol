@@ -1,10 +1,8 @@
-import { useEffect, useState } from 'react'
-
 import { GUEST_EMAIL, useIsManagedAccount } from '@audius/common/hooks'
 import { accountSelectors } from '@audius/common/store'
 import { route } from '@audius/common/utils'
 import { Box, Flex, Text, useTheme } from '@audius/harmony'
-import { useLocalStorage } from 'react-use'
+import { useLocalStorage } from '@uidotdev/usehooks'
 
 import { Avatar } from 'components/avatar/Avatar'
 import { TextLink, UserLink } from 'components/link'
@@ -160,23 +158,8 @@ const SignedOutView = () => (
 )
 
 const GuestView = () => {
-  const [guestEmailFromLocalStorage] = useLocalStorage(GUEST_EMAIL, '')
+  const [guestEmail] = useLocalStorage(GUEST_EMAIL, '')
 
-  const [guestEmail, setGuestEmail] = useState(guestEmailFromLocalStorage)
-
-  useEffect(() => {
-    // Listen for changes to the guest email in local storage
-    function listenForStorage() {
-      const storedGuestEmail = localStorage.getItem(GUEST_EMAIL)
-      if (storedGuestEmail) {
-        setGuestEmail(JSON.parse(storedGuestEmail))
-      }
-    }
-    window.addEventListener(GUEST_EMAIL, listenForStorage)
-    return () => {
-      window.removeEventListener(GUEST_EMAIL, listenForStorage)
-    }
-  }, [])
   return (
     <AccountContentWrapper>
       <Avatar userId={null} h={48} w={48} />

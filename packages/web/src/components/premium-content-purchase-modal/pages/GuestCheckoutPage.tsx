@@ -6,9 +6,9 @@ import { isPurchaseableAlbum } from '@audius/common/src/hooks/purchaseContent/ut
 import { SIGN_IN_PAGE } from '@audius/common/src/utils/route'
 import { USDC } from '@audius/fixed-decimal'
 import { Button, Flex, Hint, Text } from '@audius/harmony'
+import { useLocalStorage } from '@uidotdev/usehooks'
 import { useField } from 'formik'
 import { useDispatch } from 'react-redux'
-import { useLocalStorage } from 'react-use'
 
 import * as signOnActions from 'common/store/pages/signon/actions'
 import { TextLink } from 'components/link'
@@ -114,7 +114,6 @@ export const GuestCheckoutFooter = () => {
       // only create guest account if email has changed
       // enable multiple purchases with same guest email
       setGuestEmailInLocalStorage(guestEmail)
-      window.dispatchEvent(new CustomEvent(GUEST_EMAIL))
       dispatch(signOnActions.createGuestAccount(guestEmail))
     }
   }, [dispatch, emailFromLocalStorage, guestEmail, setGuestEmailInLocalStorage])
