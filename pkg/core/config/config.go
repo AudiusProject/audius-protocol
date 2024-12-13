@@ -25,6 +25,16 @@ const (
 	Identity
 )
 
+const (
+	ModuleConsole = "console"
+	ModuleDebug   = "debug"
+	ModulePprof   = "pprof"
+	ModuleComet   = "comet"
+)
+
+// once completely released, remove debug and comet
+var defaultModules = []string{ModuleConsole, ModuleDebug, ModulePprof, ModuleComet}
+
 type RollupInterval struct {
 	BlockInterval int
 }
@@ -82,9 +92,6 @@ type Config struct {
 	EthRPCUrl          string
 	EthRegistryAddress string
 
-	/* Console Config */
-	StandaloneConsole bool
-
 	/* System Config */
 	RunDownMigration bool
 
@@ -94,6 +101,12 @@ type Config struct {
 	CometKey          *ed25519.PrivKey
 	NodeType          NodeType
 	SlaRollupInterval int
+
+	/* Optional Modules */
+	ConsoleModule bool
+	DebugModule   bool
+	CometModule   bool
+	PprofModule   bool
 }
 
 func ReadConfig(logger *common.Logger) (*Config, error) {
@@ -125,12 +138,6 @@ func ReadConfig(logger *common.Logger) (*Config, error) {
 	cfg.GRPCladdr = getEnvWithDefault("grpcLaddr", "0.0.0.0:50051")
 	cfg.CoreServerAddr = getEnvWithDefault("coreServerAddr", "0.0.0.0:26659")
 
-	standaloneConsoleStr := getEnvWithDefault("standaloneConsole", "false")
-	standaloneConsole, err := strconv.ParseBool(standaloneConsoleStr)
-	if err != nil {
-		standaloneConsole = false
-	}
-	cfg.StandaloneConsole = standaloneConsole
 	cfg.MaxInboundPeers = getEnvIntWithDefault("maxInboundPeers", 200)
 	cfg.MaxOutboundPeers = getEnvIntWithDefault("maxOutboundPeers", 200)
 
@@ -208,7 +215,26 @@ func ReadConfig(logger *common.Logger) (*Config, error) {
 		cfg.PSQLConn += "?sslmode=disable"
 	}
 
+	enableModules(&cfg)
+
 	return &cfg, nil
+}
+
+func enableModules(config *Config) {
+	moduleSettings := defaultModules
+	// TODO: set module settings from env var
+	for _, module := range moduleSettings {
+		switch module {
+		case ModuleComet:
+			config.CometModule = true
+		case ModuleDebug:
+			config.DebugModule = true
+		case ModulePprof:
+			config.PprofModule = true
+		case ModuleConsole:
+			config.ConsoleModule = true
+		}
+	}
 }
 
 func getEnvWithDefault(key, defaultValue string) string {
@@ -230,8 +256,5 @@ func getEnvIntWithDefault(key string, defaultValue int) int {
 }
 
 func (c *Config) RunDownMigrations() bool {
-	if c.StandaloneConsole {
-		return false
-	}
 	return c.RunDownMigration
 }

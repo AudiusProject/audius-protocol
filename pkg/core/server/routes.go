@@ -30,17 +30,24 @@ func (s *Server) registerRoutes() {
 	g.GET("/nodes/content", s.getRegisteredNodes)
 	g.GET("/nodes/content/verbose", s.getRegisteredNodes)
 
-	/** /core debug routes **/
-	g.Any("/debug/comet*", s.proxyCometRequest)
-	g.GET("/debug/mempl", s.getMempl)
-	g.GET("/debug/pprof/", echo.WrapHandler(http.HandlerFunc(pprof.Index)))
-	g.GET("/debug/pprof/cmdline", echo.WrapHandler(http.HandlerFunc(pprof.Cmdline)))
-	g.GET("/debug/pprof/profile", echo.WrapHandler(http.HandlerFunc(pprof.Profile)))
-	g.GET("/debug/pprof/symbol", echo.WrapHandler(http.HandlerFunc(pprof.Symbol)))
-	g.POST("/debug/pprof/symbol", echo.WrapHandler(http.HandlerFunc(pprof.Symbol)))
-	g.GET("/debug/pprof/trace", echo.WrapHandler(http.HandlerFunc(pprof.Trace)))
-	g.GET("/debug/pprof/heap", echo.WrapHandler(pprof.Handler("heap")))
-	g.GET("/debug/pprof/goroutine", echo.WrapHandler(pprof.Handler("goroutine")))
-	g.GET("/debug/pprof/threadcreate", echo.WrapHandler(pprof.Handler("threadcreate")))
-	g.GET("/debug/pprof/block", echo.WrapHandler(pprof.Handler("block")))
+	if s.config.CometModule {
+		g.Any("/debug/comet*", s.proxyCometRequest)
+	}
+
+	if s.config.DebugModule {
+		g.GET("/debug/mempl", s.getMempl)
+	}
+
+	if s.config.PprofModule {
+		g.GET("/debug/pprof/", echo.WrapHandler(http.HandlerFunc(pprof.Index)))
+		g.GET("/debug/pprof/cmdline", echo.WrapHandler(http.HandlerFunc(pprof.Cmdline)))
+		g.GET("/debug/pprof/profile", echo.WrapHandler(http.HandlerFunc(pprof.Profile)))
+		g.GET("/debug/pprof/symbol", echo.WrapHandler(http.HandlerFunc(pprof.Symbol)))
+		g.POST("/debug/pprof/symbol", echo.WrapHandler(http.HandlerFunc(pprof.Symbol)))
+		g.GET("/debug/pprof/trace", echo.WrapHandler(http.HandlerFunc(pprof.Trace)))
+		g.GET("/debug/pprof/heap", echo.WrapHandler(pprof.Handler("heap")))
+		g.GET("/debug/pprof/goroutine", echo.WrapHandler(pprof.Handler("goroutine")))
+		g.GET("/debug/pprof/threadcreate", echo.WrapHandler(pprof.Handler("threadcreate")))
+		g.GET("/debug/pprof/block", echo.WrapHandler(pprof.Handler("block")))
+	}
 }

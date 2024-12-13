@@ -60,9 +60,7 @@ func run(ctx context.Context, logger *common.Logger) error {
 		return fmt.Errorf("server init error: %v", err)
 	}
 
-	// TODO: make configurable in envconfig
-	runConsole := true
-	if runConsole {
+	if config.ConsoleModule {
 		go func() {
 			e := s.GetEcho()
 			con, err := console.NewConsole(config, logger, e, pool)
@@ -104,10 +102,6 @@ func setupNode(logger *common.Logger) (*config.Config, *cconfig.Config, error) {
 		return nil, nil, fmt.Errorf("reading genesis: %v", err)
 	}
 	envConfig.GenesisFile = genDoc
-
-	if envConfig.StandaloneConsole {
-		return envConfig, nil, nil
-	}
 
 	// gather chain id
 	chainID := genDoc.ChainID
