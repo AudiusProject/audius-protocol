@@ -5,16 +5,280 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"math/big"
+	"time"
 
 	"github.com/AudiusProject/audius-protocol/pkg/core/accounts"
 	"github.com/AudiusProject/audius-protocol/pkg/core/common"
+	"github.com/AudiusProject/audius-protocol/pkg/core/contracts"
 	"github.com/AudiusProject/audius-protocol/pkg/core/db"
 	"github.com/AudiusProject/audius-protocol/pkg/core/gen/core_proto"
+	"github.com/AudiusProject/audius-protocol/pkg/logger"
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
+	"github.com/ethereum/go-ethereum/crypto"
+	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"google.golang.org/protobuf/proto"
 )
 
 func (s *Server) startRegistryBridge() error {
+	// check eth status
+	_, err := s.eth.ChainID(context.Background())
+	if err != nil {
+		return fmt.Errorf("init registry bridge failed eth chain id: %v", err)
+	}
+
+	// check comet status
+	_, err = s.rpc.Status(context.Background())
+	if err != nil {
+		return fmt.Errorf("init registry bridge failed comet rpc status: %v", err)
+	}
+
+	retries := 60
+	delay := 1 * time.Minute
+
+	if err := s.awaitNodeCatchup(context.Background()); err != nil {
+		return err
+	}
+
+	for {
+		if err := s.RegisterSelf(); err != nil {
+			s.logger.Errorf("node registration failed, will try again: %v", err)
+			time.Sleep(delay)
+			retries -= 1
+			if retries == 0 {
+				s.logger.Warn("exhausted registration retries")
+				break
+			}
+		} else {
+			return nil
+		}
+	}
+	return nil
+}
+
+// checks mainnet eth for itself, if registered and not
+// already in the comet state will register itself on comet
+func (s *Server) RegisterSelf() error {
+	ctx := context.Background()
+
+	if s.isSelfAlreadyRegistered(ctx) {
+		s.logger.Info("Skipping registration, we are already registered.")
+		return nil
+	}
+
+	nodeAddress := crypto.PubkeyToAddress(s.config.EthereumKey.PublicKey)
+	nodeEndpoint := s.config.NodeEndpoint
+
+	isRegistered, err := s.isSelfRegisteredOnEth()
+	if err != nil {
+		return fmt.Errorf("could not check ethereum registration status: %v", err)
+	}
+	if !isRegistered {
+		s.logger.Infof("node %s : %s not registered on Ethereum", nodeAddress.Hex(), nodeEndpoint)
+		if s.isDevEnvironment() {
+			if err := s.registerSelfOnEth(); err != nil {
+				return fmt.Errorf("error registering onto eth: %v", err)
+			}
+		} else {
+			logger.Info("continuing unregistered")
+			return nil
+		}
+	}
+
+	spf, err := s.contracts.GetServiceProviderFactoryContract()
+	if err != nil {
+		return fmt.Errorf("could not get service provider factory: %v", err)
+	}
+
+	spID, err := spf.GetServiceProviderIdFromEndpoint(nil, nodeEndpoint)
+	if err != nil {
+		return fmt.Errorf("issue getting sp data: %v", err)
+	}
+
+	serviceType, err := contracts.ServiceType(s.config.NodeType)
+	if err != nil {
+		return fmt.Errorf("invalid node type: %v", err)
+	}
+
+	info, err := spf.GetServiceEndpointInfo(nil, serviceType, spID)
+	if err != nil {
+		return fmt.Errorf("could not get service endpoint info: %v", err)
+	}
+
+	if info.DelegateOwnerWallet != nodeAddress {
+		return fmt.Errorf("node %s is claiming to be %s but that endpoint is owned by %s", nodeAddress.Hex(), nodeEndpoint, info.DelegateOwnerWallet.Hex())
+	}
+
+	ethBlock := info.BlockNumber.String()
+
+	nodeRecord, err := s.db.GetNodeByEndpoint(ctx, nodeEndpoint)
+	if errors.Is(err, pgx.ErrNoRows) {
+		s.logger.Infof("node %s not found on comet but found on eth, registering", nodeEndpoint)
+		if err := s.registerSelfOnComet(ethBlock, spID.String()); err != nil {
+			return fmt.Errorf("could not register on comet: %v", err)
+		}
+		return nil
+	} else if err != nil {
+		return err
+	}
+
+	s.logger.Infof("node %s : %s registered on network %s", nodeRecord.EthAddress, nodeRecord.Endpoint, s.config.Environment)
+	return nil
+}
+
+func (s *Server) isDevEnvironment() bool {
+	return s.config.Environment == "dev" || s.config.Environment == "sandbox"
+}
+
+func (s *Server) registerSelfOnComet(ethBlock, spID string) error {
+	serviceType, err := contracts.ServiceType(s.config.NodeType)
+	if err != nil {
+		return fmt.Errorf("invalid node type: %v", err)
+	}
+
+	registrationTx := &core_proto.ValidatorRegistration{
+		Endpoint:     s.config.NodeEndpoint,
+		CometAddress: s.config.ProposerAddress,
+		EthBlock:     ethBlock,
+		NodeType:     common.HexToUtf8(serviceType),
+		SpId:         spID,
+	}
+
+	eventBytes, err := proto.Marshal(registrationTx)
+	if err != nil {
+		return fmt.Errorf("failure to marshal register event: %v", err)
+	}
+
+	sig, err := accounts.EthSign(s.config.EthereumKey, eventBytes)
+	if err != nil {
+		return fmt.Errorf("could not sign register event: %v", err)
+	}
+
+	tx := &core_proto.SignedTransaction{
+		Signature: sig,
+		RequestId: uuid.NewString(),
+		Transaction: &core_proto.SignedTransaction_ValidatorRegistration{
+			ValidatorRegistration: registrationTx,
+		},
+	}
+
+	req := &core_proto.SendTransactionRequest{
+		Transaction: tx,
+	}
+
+	txhash, err := s.SendTransaction(context.Background(), req)
+	if err != nil {
+		return fmt.Errorf("send register tx failed: %v", err)
+	}
+
+	s.logger.Infof("registered node %s in tx %s", s.config.NodeEndpoint, txhash)
+
+	return nil
+}
+
+func (s *Server) awaitNodeCatchup(ctx context.Context) error {
+	retries := 60
+	for tries := retries; tries >= 0; tries-- {
+		res, err := s.rpc.Status(ctx)
+		if err != nil {
+			s.logger.Errorf("error getting comet health: %v", err)
+			time.Sleep(10 * time.Second)
+			continue
+		}
+
+		if res.SyncInfo.CatchingUp {
+			s.logger.Infof("comet catching up: latest seen block %d", res.SyncInfo.LatestBlockHeight)
+			time.Sleep(10 * time.Second)
+			continue
+		}
+
+		// no health error nor catching up
+		return nil
+	}
+	return errors.New("timeout waiting for comet to catch up")
+}
+
+func (s *Server) isSelfAlreadyRegistered(ctx context.Context) bool {
+	res, err := s.db.GetNodeByEndpoint(ctx, s.config.NodeEndpoint)
+
+	if errors.Is(err, pgx.ErrNoRows) {
+		return false
+	}
+
+	if err != nil {
+		s.logger.Errorf("error getting registered nodes: %v", err)
+		return false
+	}
+
+	// return if owner wallets match
+	return res.EthAddress == s.config.WalletAddress
+}
+
+func (s *Server) isSelfRegisteredOnEth() (bool, error) {
+	spf, err := s.contracts.GetServiceProviderFactoryContract()
+	if err != nil {
+		return false, fmt.Errorf("could not get service provider factory: %v", err)
+	}
+
+	spID, err := spf.GetServiceProviderIdFromEndpoint(nil, s.config.NodeEndpoint)
+	if err != nil {
+		return false, fmt.Errorf("issue getting sp data: %v", err)
+	}
+
+	// contract returns 0 if endpoint not registered
+	return spID.Uint64() != 0, nil
+}
+
+func (s *Server) registerSelfOnEth() error {
+	chainID, err := s.contracts.Rpc.ChainID(context.Background())
+	if err != nil {
+		return fmt.Errorf("could not get chain id: %v", err)
+	}
+
+	opts, err := bind.NewKeyedTransactorWithChainID(s.config.EthereumKey, chainID)
+	if err != nil {
+		return fmt.Errorf("could not create keyed transactor: %v", err)
+	}
+
+	token, err := s.contracts.GetAudioTokenContract()
+	if err != nil {
+		return fmt.Errorf("could not get token contract: %v", err)
+	}
+
+	spf, err := s.contracts.GetServiceProviderFactoryContract()
+	if err != nil {
+		return fmt.Errorf("could not get service provider factory contract: %v", err)
+	}
+
+	stakingAddress, err := spf.GetStakingAddress(nil)
+	if err != nil {
+		return fmt.Errorf("could not get staking address: %v", err)
+	}
+
+	decimals := 18
+	stake := new(big.Int).Mul(big.NewInt(200000), new(big.Int).Exp(big.NewInt(10), big.NewInt(int64(decimals)), nil))
+
+	_, err = token.Approve(opts, stakingAddress, stake)
+	if err != nil {
+		return fmt.Errorf("could not approve tokens: %v", err)
+	}
+
+	serviceType, err := contracts.ServiceType(s.config.NodeType)
+	if err != nil {
+		return fmt.Errorf("invalid node type: %v", err)
+	}
+
+	endpoint := s.config.NodeEndpoint
+	delegateOwnerWallet := crypto.PubkeyToAddress(s.config.EthereumKey.PublicKey)
+
+	_, err = spf.Register(opts, serviceType, endpoint, stake, delegateOwnerWallet)
+	if err != nil {
+		return fmt.Errorf("couldn't register node: %v", err)
+	}
+
+	s.logger.Infof("node %s registered on eth", endpoint)
+
 	return nil
 }
 
