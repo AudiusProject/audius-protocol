@@ -22,7 +22,7 @@ import { ReviewHandleScreen } from './screens/ReviewHandleScreen'
 import { SelectArtistsScreen } from './screens/SelectArtistScreen'
 import { SelectGenresScreen } from './screens/SelectGenresScreen'
 import { SignOnScreen } from './screens/SignOnScreen'
-import type { SignUpScreenParamList } from './types'
+import type { SignOnScreenParamList } from './types'
 const { getIsAccountComplete: getHasCompletedAccount } = accountSelectors
 
 const Stack = createNativeStackNavigator()
@@ -60,7 +60,7 @@ export const SignOnStack = (props: SignOnStackProps) => {
   )
 
   const page = useSelector(getPage)
-  const navigation = useNavigation<SignUpScreenParamList>()
+  const navigation = useNavigation<SignOnScreenParamList>()
 
   // Respond to signon saga page changes
   useEffect(() => {

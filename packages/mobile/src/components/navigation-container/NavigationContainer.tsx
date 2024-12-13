@@ -23,7 +23,7 @@ import { useThemeVariant } from 'app/utils/theme'
 
 import { navigationThemes } from './navigationThemes'
 
-const { getUserHandle } = accountSelectors
+const { getUserHandle, getHasAccount } = accountSelectors
 
 type NavigationContainerProps = {
   children: ReactNode
@@ -95,6 +95,7 @@ const NavigationContainer = (props: NavigationContainerProps) => {
   const { children, navigationIntegration } = props
   const theme = useThemeVariant()
   const accountHandle = useSelector(getUserHandle)
+  const hasAccount = useSelector(getHasAccount)
 
   const routeNameRef = useRef<string>()
 
@@ -114,6 +115,11 @@ const NavigationContainer = (props: NavigationContainerProps) => {
     // configuration for matching screens with paths
     config: {
       screens: {
+        SignOnStack: {
+          screens: {
+            SignOn: 'sign-on'
+          }
+        },
         HomeStack: {
           screens: {
             App: {
@@ -353,6 +359,27 @@ const NavigationContainer = (props: NavigationContainerProps) => {
           // set the path as `collection`
           path = path.replace(/(^\/[^/]+\/)(album)(\/[^/]+$)/, '$1collection$3')
           path = `${path}?collectionType=album`
+        }
+      }
+
+      if (!hasAccount && !path.match(/^\/reset-password/)) {
+        // Redirect to sign in with original path in query params
+        const { url, query } = queryString.parseUrl(path)
+
+        // If url is signin or signup, set screen param instead of routeOnCompletion
+        if (url === '/signin' || url === '/signup') {
+          path = queryString.stringifyUrl({
+            url: '/sign-on',
+            query: {
+              ...query,
+              screen: url === '/signin' ? 'sign-in' : 'sign-up'
+            }
+          })
+        } else {
+          path = queryString.stringifyUrl({
+            url: '/sign-on',
+            query: { ...query, screen: 'sign-up', routeOnCompletion: url }
+          })
         }
       }
 

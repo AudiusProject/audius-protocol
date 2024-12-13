@@ -18,7 +18,7 @@ import { EventNames } from 'app/types/analytics'
 
 import { ReadOnlyAccountHeader } from '../components/AccountHeader'
 import { Heading, PageFooter, gutterSize } from '../components/layout'
-import type { SignUpScreenParamList } from '../types'
+import type { SignOnScreenParamList } from '../types'
 import { useTrackScreen } from '../utils/useTrackScreen'
 
 type Genre = (typeof GENRES)[number]
@@ -92,7 +92,7 @@ const SelectGenresFieldArray = () => {
 
 export const SelectGenresScreen = () => {
   const dispatch = useDispatch()
-  const navigation = useNavigation<SignUpScreenParamList>()
+  const navigation = useNavigation<SignOnScreenParamList>()
 
   useEffectOnce(() => {
     dispatch(setFinishedPhase1(true))

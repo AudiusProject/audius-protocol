@@ -151,7 +151,7 @@ export const RootScreen = () => {
               options={isAndroid ? { animation: 'none' } : undefined}
             />
           ) : (
-            <Stack.Screen name='SignOnStackNew'>
+            <Stack.Screen name='SignOnStack'>
               {() => (
                 <SignOnStack
                   isSplashScreenDismissed={isSplashScreenDismissed}
