@@ -106,7 +106,7 @@ export const RootScreen = () => {
     if (showHomeStack && startedSignUp && !welcomeModalShown) {
       openWelcomeDrawer()
       // On iOS this will auto-navigate when we un-render sign up but on Android we have to navigate intentionally
-      if (navigate) {
+      if (isAndroid && navigate) {
         navigate('HomeStack')
       }
     }
@@ -115,7 +115,8 @@ export const RootScreen = () => {
     showHomeStack,
     startedSignUp,
     welcomeModalShown,
-    navigate
+    navigate,
+    isAndroid
   ])
 
   return (
