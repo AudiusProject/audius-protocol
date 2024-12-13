@@ -114,12 +114,14 @@ func main() {
 
 func startEchoProxyWithOptionalTLS(hostUrl *url.URL, enableTLS bool) error {
 
-	httpPort := os.Getenv("AUDIUSD_HTTP_PORT")
+	// "${AUDIUSD_HTTP_PORT:-80}:${AUDIUSD_BIN_HTTP_PORT:-80}"
+	httpPort := os.Getenv("AUDIUSD_BIN_HTTP_PORT")
 	if httpPort == "" {
 		httpPort = "80"
 	}
 
-	httpsPort := os.Getenv("AUDIUSD_HTTPS_PORT")
+	// "${AUDIUSD_HTTPS_PORT:-443}:${AUDIUSD_BIN_HTTPS_PORT:-443}"
+	httpsPort := os.Getenv("AUDIUSD_BIN_HTTPS_PORT")
 	if httpsPort == "" {
 		httpsPort = "443"
 	}
