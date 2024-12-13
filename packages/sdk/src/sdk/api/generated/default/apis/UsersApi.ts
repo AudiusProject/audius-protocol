@@ -20,6 +20,7 @@ import type {
   AuthorizedApps,
   ConnectedWalletsResponse,
   DeveloperApps,
+  EmailKeyResponse,
   FavoritesResponse,
   FollowersResponse,
   FollowingResponse,
@@ -54,6 +55,8 @@ import {
     ConnectedWalletsResponseToJSON,
     DeveloperAppsFromJSON,
     DeveloperAppsToJSON,
+    EmailKeyResponseFromJSON,
+    EmailKeyResponseToJSON,
     FavoritesResponseFromJSON,
     FavoritesResponseToJSON,
     FollowersResponseFromJSON,
@@ -121,6 +124,7 @@ export interface DownloadSalesAsCSVRequest {
 export interface DownloadSalesAsJSONRequest {
     id: string;
     userId?: string;
+    granteeUserId?: string;
     encodedDataMessage?: string;
     encodedDataSignature?: string;
 }
@@ -305,6 +309,11 @@ export interface GetUserChallengesRequest {
     showHistorical?: boolean;
 }
 
+export interface GetUserEmailKeyRequest {
+    receivingUserId: string;
+    grantorUserId: string;
+}
+
 export interface GetUserIDFromWalletRequest {
     associatedWallet: string;
 }
@@ -435,6 +444,10 @@ export class UsersApi extends runtime.BaseAPI {
 
         if (params.userId !== undefined) {
             queryParameters['user_id'] = params.userId;
+        }
+
+        if (params.granteeUserId !== undefined) {
+            queryParameters['grantee_user_id'] = params.granteeUserId;
         }
 
         const headerParameters: runtime.HTTPHeaders = {};
@@ -1573,6 +1586,41 @@ export class UsersApi extends runtime.BaseAPI {
      */
     async getUserChallenges(params: GetUserChallengesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<GetChallenges> {
         const response = await this.getUserChallengesRaw(params, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * @hidden
+     * Gets the encrypted key for email access between the receiving user and granting user.
+     */
+    async getUserEmailKeyRaw(params: GetUserEmailKeyRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<EmailKeyResponse>> {
+        if (params.receivingUserId === null || params.receivingUserId === undefined) {
+            throw new runtime.RequiredError('receivingUserId','Required parameter params.receivingUserId was null or undefined when calling getUserEmailKey.');
+        }
+
+        if (params.grantorUserId === null || params.grantorUserId === undefined) {
+            throw new runtime.RequiredError('grantorUserId','Required parameter params.grantorUserId was null or undefined when calling getUserEmailKey.');
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        const response = await this.request({
+            path: `/users/{receiving_user_id}/emails/{grantor_user_id}/key`.replace(`{${"receiving_user_id"}}`, encodeURIComponent(String(params.receivingUserId))).replace(`{${"grantor_user_id"}}`, encodeURIComponent(String(params.grantorUserId))),
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => EmailKeyResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Gets the encrypted key for email access between the receiving user and granting user.
+     */
+    async getUserEmailKey(params: GetUserEmailKeyRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<EmailKeyResponse> {
+        const response = await this.getUserEmailKeyRaw(params, initOverrides);
         return await response.value();
     }
 

@@ -84,7 +84,7 @@ build-push-wrapper:
 
 .PHONY: build-audiusd-local build-push-audiusd
 build-audiusd-local:
-	docker build -t audius/audiusd:$(AD_TAG) -f ./cmd/audiusd/Dockerfile ./
+	docker build -t audius/audiusd:$(AD_TAG) -t audius/audiusd:current -f ./cmd/audiusd/Dockerfile ./
 
 build-push-audiusd:
 	DOCKER_DEFAULT_PLATFORM=linux/amd64 docker build --push -t audius/audiusd:$(AD_TAG) -f ./cmd/audiusd/Dockerfile ./
@@ -229,3 +229,13 @@ core-dev-sandbox: core-build-amd64
 .PHONY: core-livereload
 core-livereload:
 	modd
+
+#############################
+## Audio Analysis Backfill ##
+#############################
+
+.PHONY: release-aa-backfill
+release-aa-backfill:
+	@DOCKER_DEFAULT_PLATFORM=linux/amd64 docker build -t audius/audio-analysis-backfill:latest -f ./cmd/audio-analysis-backfill/Dockerfile .
+	@docker push audius/audio-analysis-backfill:latest
+

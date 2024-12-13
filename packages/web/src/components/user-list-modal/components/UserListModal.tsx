@@ -2,7 +2,6 @@ import { ReactElement, useRef } from 'react'
 
 import { useGetCurrentUserId } from '@audius/common/api'
 import { ID } from '@audius/common/models'
-import { FeatureFlags } from '@audius/common/services'
 import {
   cacheUsersSelectors,
   profilePageSelectors,
@@ -47,7 +46,6 @@ import { useRouteMatch } from 'react-router-dom'
 
 import { useSelector } from 'common/hooks/useSelector'
 import { UserList } from 'components/user-list/UserList'
-import { useFlag } from 'hooks/useRemoteConfig'
 import { ChatBlastWithAudienceCTA } from 'pages/chat-page/components/ChatBlastWithAudienceCTA'
 import { UserListType } from 'store/application/ui/userListModal/types'
 import { AppState } from 'store/types'
@@ -110,10 +108,6 @@ const UserListModal = ({
     getUser(state, { id: supportersId })
   )
   const { data: currentUserId } = useGetCurrentUserId({})
-
-  const { isEnabled: isOneToManyDmsEnabled } = useFlag(
-    FeatureFlags.ONE_TO_MANY_DMS
-  )
 
   const match = useRouteMatch<{ audience_type: string }>(
     '/messages/:audience_type'
@@ -276,8 +270,7 @@ const UserListModal = ({
           afterUnfollow={onClose}
         />
       </Scrollbar>
-      {isOneToManyDmsEnabled &&
-      !isChatBlastPath &&
+      {!isChatBlastPath &&
       (userListType === UserListType.FOLLOWER ||
         userListType === UserListType.SUPPORTER) &&
       userId === currentUserId ? (

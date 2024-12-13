@@ -260,6 +260,9 @@ sale_json_model = ns.model(
         ),
         "link": fields.String(description="Full URL link to the content"),
         "purchased_by": fields.String(description="Name of the buyer"),
+        "buyer_user_id": fields.Integer(
+            description="User ID of the buyer", allow_null=True
+        ),
         "date": fields.String(
             description="ISO format date string of when the sale occurred"
         ),
@@ -275,15 +278,16 @@ sale_json_model = ns.model(
         "encrypted_email": fields.String(
             description="Encrypted email of buyer if available", allow_null=True
         ),
+        "encrypted_key": fields.String(
+            description="Encrypted key for decrypting the buyer's email",
+            allow_null=True,
+        ),
     },
 )
 
 sales_json_content = ns.model(
     "sales_json_content",
     {
-        "decryption_key": fields.String(
-            description="Encrypted key for decrypting buyer emails", allow_null=True
-        ),
         "sales": fields.List(fields.Nested(sale_json_model)),
     },
 )

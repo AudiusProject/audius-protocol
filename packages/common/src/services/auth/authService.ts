@@ -3,11 +3,14 @@ import type { ChangeCredentialsArgs } from '@audius/hedgehog/dist/types'
 
 import type { LocalStorage } from '../local-storage'
 
-import { HedgehogConfig, createHedgehog } from './hedgehog'
-import type { IdentityService, RecoveryInfoParams } from './identity'
+import {
+  ConfirmCredentialsArgs,
+  HedgehogConfig,
+  createHedgehog
+} from './hedgehog'
 
 export type AuthServiceConfig = {
-  identityService: IdentityService
+  identityServiceEndpoint: string
   localStorage: LocalStorage
   createKey?: HedgehogConfig['createKey']
 }
@@ -39,26 +42,21 @@ export type AuthService = {
     username: string
     password: string
   }) => Promise<void>
-  sendRecoveryInfo: (params: {
-    login: string
-    host: string
-    data: string
-    signature: string
-  }) => Promise<void>
   getWalletAddresses: () => Promise<GetWalletAddressesResult>
   getWallet: () => EthWallet | null
+  confirmCredentials: (args: ConfirmCredentialsArgs) => Promise<boolean>
   changeCredentials: (args: ChangeCredentialsArgs) => Promise<void>
 }
 
 export const createAuthService = ({
   localStorage,
-  identityService,
+  identityServiceEndpoint,
   createKey
 }: AuthServiceConfig): AuthService => {
   const hedgehogInstance = createHedgehog({
     localStorage,
     useLocalStorage: true,
-    identityService,
+    identityServiceEndpoint,
     createKey
   })
 
@@ -104,11 +102,12 @@ export const createAuthService = ({
     }
   }
 
+  const confirmCredentials = async (args: ConfirmCredentialsArgs) => {
+    return await hedgehogInstance.confirmCredentials(args)
+  }
+
   const changeCredentials = async (args: ChangeCredentialsArgs) => {
     return await hedgehogInstance.changeCredentials(args)
-  }
-  const sendRecoveryInfo = async (params: RecoveryInfoParams) => {
-    await identityService.sendRecoveryInfo(params)
   }
 
   const getWallet = () => {
@@ -121,8 +120,8 @@ export const createAuthService = ({
     signOut,
     getWallet,
     getWalletAddresses,
+    confirmCredentials,
     changeCredentials,
-    sendRecoveryInfo,
     resetPassword
   }
 }

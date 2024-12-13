@@ -47,6 +47,7 @@ import {
   DiscoveryNodeSelector,
   getDefaultDiscoveryNodeSelectorConfig
 } from './services/DiscoveryNodeSelector'
+import { EmailEncryptionService } from './services/Encryption'
 import {
   EntityManagerClient,
   getDefaultEntityManagerConfig
@@ -196,7 +197,6 @@ const initializeServices = (config: SdkConfig) => {
     new Storage({
       ...getDefaultStorageServiceConfig(servicesConfig),
       storageNodeSelector,
-      audiusWalletClient,
       logger
     })
 
@@ -213,6 +213,11 @@ const initializeServices = (config: SdkConfig) => {
       antiAbuseOracleSelector
     })
 
+  const middleware = [
+    addRequestSignatureMiddleware({ services: { audiusWalletClient, logger } }),
+    discoveryNodeSelector.createMiddleware()
+  ]
+
   /* Solana Programs */
   const solanaRelay = config.services?.solanaRelay
     ? config.services.solanaRelay.withMiddleware(
@@ -222,14 +227,20 @@ const initializeServices = (config: SdkConfig) => {
       )
     : new SolanaRelay(
         new Configuration({
-          middleware: [
-            addRequestSignatureMiddleware({
-              services: { audiusWalletClient, logger }
-            }),
-            discoveryNodeSelector.createMiddleware()
-          ]
+          middleware
         })
       )
+
+  const emailEncryptionService =
+    config.services?.emailEncryptionService ??
+    new EmailEncryptionService(
+      new Configuration({
+        fetchApi: fetch,
+        basePath: '',
+        middleware
+      }),
+      audiusWalletClient
+    )
 
   const solanaWalletAdapter =
     config.services?.solanaWalletAdapter ??
@@ -368,6 +379,7 @@ const initializeServices = (config: SdkConfig) => {
     serviceTypeManagerClient,
     serviceProviderFactoryClient,
     ethRewardsManagerClient,
+    emailEncryptionService,
     logger
   }
   return services
@@ -392,6 +404,12 @@ const initializeApis = ({
     middleware
   })
 
+  const noBasePathConfig = new Configuration({
+    fetchApi: fetch,
+    basePath: '',
+    middleware
+  })
+
   const tracks = new TracksApi(
     generatedApiClientConfig,
     services.discoveryNodeSelector,
@@ -409,7 +427,8 @@ const initializeApis = ({
     services.entityManager,
     services.logger,
     services.claimableTokensClient,
-    services.solanaClient
+    services.solanaClient,
+    services.emailEncryptionService
   )
   const albums = new AlbumsApi(
     generatedApiClientConfig,
@@ -435,16 +454,14 @@ const initializeApis = ({
   const tips = new TipsApi(generatedApiClientConfig)
   const resolveApi = new ResolveApi(generatedApiClientConfig)
   const resolve = resolveApi.resolve.bind(resolveApi)
+
   const chats = new ChatsApi(
-    new Configuration({
-      fetchApi: fetch,
-      basePath: '',
-      middleware
-    }),
+    noBasePathConfig,
     services.audiusWalletClient,
     services.discoveryNodeSelector,
     services.logger
   )
+
   const grants = new GrantsApi(
     generatedApiClientConfig,
     services.entityManager,

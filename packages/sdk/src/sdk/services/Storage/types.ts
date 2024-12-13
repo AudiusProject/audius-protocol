@@ -1,5 +1,4 @@
 import type { CrossPlatformFile as File } from '../../types/File'
-import type { AudiusWalletClient } from '../AudiusWalletClient'
 import type { LoggerService } from '../Logger'
 import type { StorageNodeSelectorService } from '../StorageNodeSelector'
 
@@ -15,7 +14,6 @@ export type StorageServiceConfig = Partial<StorageServiceConfigInternal> & {
    * The StorageNodeSelector service used to get the relevant storage node for content
    */
   storageNodeSelector: StorageNodeSelectorService
-  audiusWalletClient: AudiusWalletClient
 }
 
 export type ProgressHandler = (
@@ -50,13 +48,13 @@ export type StorageService = {
     template: FileTemplate
     options?: { [key: string]: string }
   }) => Promise<UploadResponse>
-  editFile: ({
-    uploadId,
-    data
+  generatePreview: ({
+    cid,
+    secondOffset
   }: {
-    uploadId: string
-    data: { [key: string]: string }
-  }) => Promise<UploadResponse>
+    cid: string
+    secondOffset: number
+  }) => Promise<string>
 }
 
 export type ProcessingStatus =

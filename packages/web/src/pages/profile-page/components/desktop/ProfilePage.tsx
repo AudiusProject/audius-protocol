@@ -45,7 +45,7 @@ import { LineupVariant } from 'components/lineup/types'
 import Mask from 'components/mask/Mask'
 import NavBanner from 'components/nav-banner/NavBanner'
 import Page from 'components/page/Page'
-import ConnectedProfileCompletionHeroCard from 'components/profile-progress/ConnectedProfileCompletionHeroCard'
+import { ProfileCompletionHeroCard } from 'components/profile-progress/components/ProfileCompletionHeroCard'
 import { ProfileMode, StatBanner } from 'components/stat-banner/StatBanner'
 import { StatProps } from 'components/stats/Stats'
 import UploadChip from 'components/upload/UploadChip'
@@ -264,7 +264,7 @@ const ProfilePage = ({
   didChangeTabsFrom
 }: ProfilePageProps) => {
   const renderProfileCompletionCard = () => {
-    return isOwner ? <ConnectedProfileCompletionHeroCard /> : null
+    return isOwner ? <ProfileCompletionHeroCard /> : null
   }
 
   const profileHasCollectibles =

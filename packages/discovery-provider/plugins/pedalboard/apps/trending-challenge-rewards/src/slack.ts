@@ -6,32 +6,30 @@ import { AlignmentEnum, AsciiTable3 } from 'ascii-table3'
 import { App } from '@pedalboard/basekit'
 import { Err, Ok, Result } from 'ts-results'
 import { SharedData } from './config'
-import { onDisburse } from './app'
+import { onDisburse } from './rewards'
 import { ChallengeDisbursementUserbankFriendly } from './queries'
 import { announceTopFiveTrending } from './trending'
 import { isValidDate } from './utils'
 
 export const establishSlackConnection = async (app: App<SharedData>) => {
   const slack = initSlack(app).unwrap()
-  const port = process.env.SLACK_SOCKET_PORT || 3008
+  const port = 3008
   await slack.start(port)
   console.log('slack connection established ⚡️')
 }
 
 export const initSlack = (app: App<SharedData>): Result<SlackApp, string> => {
-  const botToken = process.env.SLACK_BOT_TOKEN
-  const signingSecret = process.env.SLACK_SIGNING_SECRET
-  const appToken = process.env.SLACK_APP_TOKEN
+  const { slackBotToken, slackSigningSecret, slackAppToken } = app.viewAppData()
 
-  if (botToken === undefined) return new Err('botToken undefined')
-  if (signingSecret === undefined) return new Err('signingSecret undefined')
-  if (appToken === undefined) return new Err('appToken undefined')
+  if (slackBotToken === undefined) return new Err('botToken undefined')
+  if (slackSigningSecret === undefined) return new Err('signingSecret undefined')
+  if (slackAppToken === undefined) return new Err('appToken undefined')
 
   const slackApp = new SlackApp({
-    token: botToken,
-    signingSecret,
+    token: slackBotToken,
+    signingSecret: slackSigningSecret,
     socketMode: true,
-    appToken
+    appToken: slackAppToken
   })
 
   // register callbacks
@@ -80,7 +78,7 @@ const trending = async (
   app: App<SharedData>,
   args: SlackCommandMiddlewareArgs
 ): Promise<void> => {
-  const { command, ack, respond } = args
+  const { command, ack } = args
   await ack()
   const text = command.text
   if (text !== undefined && text.trim() !== '')

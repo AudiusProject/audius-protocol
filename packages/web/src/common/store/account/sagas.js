@@ -1,6 +1,5 @@
 import { userApiFetchSaga } from '@audius/common/api'
 import { ErrorLevel, Kind } from '@audius/common/models'
-import { getRootSolanaAccount } from '@audius/common/services'
 import {
   accountActions,
   accountSelectors,
@@ -15,19 +14,14 @@ import { call, put, fork, select, takeEvery } from 'redux-saga/effects'
 import { identify } from 'common/store/analytics/actions'
 import { addPlaylistsNotInLibrary } from 'common/store/playlist-library/sagas'
 import { reportToSentry } from 'store/errors/reportToSentry'
-import { waitForWrite, waitForRead } from 'utils/sagaHelpers'
+import { waitForRead } from 'utils/sagaHelpers'
 
 import { retrieveCollections } from '../cache/collections/utils'
 
 const { fetchProfile } = profilePageActions
 
-const {
-  getUserId,
-  getUserHandle,
-  getAccountUser,
-  getAccountSavedPlaylistIds,
-  getAccountOwnedPlaylistIds
-} = accountSelectors
+const { getUserId, getAccountSavedPlaylistIds, getAccountOwnedPlaylistIds } =
+  accountSelectors
 
 const {
   signedIn,
@@ -36,9 +30,6 @@ const {
   fetchAccountSucceeded,
   fetchAccount,
   fetchLocalAccount,
-  twitterLogin,
-  instagramLogin,
-  tikTokLogin,
   fetchSavedPlaylists,
   resetAccount
 } = accountActions
@@ -55,12 +46,11 @@ const setSentryUser = (sentry, user, traits) => {
   if (traits.managerUserId) {
     sentry.setTag('isManagerMode', 'true')
   }
-  sentry.configureScope((currentScope) => {
-    currentScope.setUser({
-      id: `${user.user_id}`,
-      username: user.handle,
-      ...traits
-    })
+  const scope = sentry.getCurrentScope()
+  scope.setUser({
+    id: `${user.user_id}`,
+    username: user.handle,
+    ...traits
   })
 }
 
@@ -70,6 +60,7 @@ function* onSignedIn({ payload: { account } }) {
   const audiusBackendInstance = yield getContext('audiusBackendInstance')
   const sentry = yield getContext('sentry')
   const authService = yield getContext('authService')
+  const solanaWalletService = yield getContext('solanaWalletService')
   const sdk = yield* getSDK()
 
   const libs = yield call([
@@ -102,10 +93,10 @@ function* onSignedIn({ payload: { account } }) {
       // If not a managed account, identify the Solana wallet associated with
       // the hedgehog wallet
       try {
-        solanaWallet = (yield call(
-          getRootSolanaAccount,
-          audiusBackendInstance
-        )).publicKey.toBase58()
+        solanaWallet = (yield call([
+          solanaWalletService,
+          solanaWalletService.getKeypair
+        ])).publicKey.toBase58()
       } catch (e) {
         console.error('Failed to fetch Solana root wallet during identify()', e)
       }
@@ -163,88 +154,6 @@ export function* fetchLocalAccountAsync() {
   }
 }
 
-function* associateTwitterAccount(action) {
-  const { uuid, profile } = action.payload
-  yield waitForWrite()
-  const audiusBackendInstance = yield getContext('audiusBackendInstance')
-  try {
-    const userId = yield select(getUserId)
-    const handle = yield select(getUserHandle)
-    yield call(
-      audiusBackendInstance.associateTwitterAccount,
-      uuid,
-      userId,
-      handle
-    )
-
-    const account = yield select(getAccountUser)
-    const { verified } = profile
-    if (!account.is_verified && verified) {
-      yield put(
-        cacheActions.update(Kind.USERS, [
-          { id: userId, metadata: { is_verified: true } }
-        ])
-      )
-    }
-  } catch (err) {
-    console.error(err.message)
-  }
-}
-
-function* associateInstagramAccount(action) {
-  const { uuid, profile } = action.payload
-  const audiusBackendInstance = yield getContext('audiusBackendInstance')
-  try {
-    const userId = yield select(getUserId)
-    const handle = yield select(getUserHandle)
-    yield call(
-      audiusBackendInstance.associateInstagramAccount,
-      uuid,
-      userId,
-      handle
-    )
-
-    const account = yield select(getAccountUser)
-    const { is_verified: verified } = profile
-    if (!account.is_verified && verified) {
-      yield put(
-        cacheActions.update(Kind.USERS, [
-          { id: userId, metadata: { is_verified: true } }
-        ])
-      )
-    }
-  } catch (err) {
-    console.error(err.message)
-  }
-}
-
-function* associateTikTokAccount(action) {
-  const { uuid, profile } = action.payload
-  const audiusBackendInstance = yield getContext('audiusBackendInstance')
-  try {
-    const userId = yield select(getUserId)
-    const handle = yield select(getUserHandle)
-    yield call(
-      audiusBackendInstance.associateTikTokAccount,
-      uuid,
-      userId,
-      handle
-    )
-
-    const account = yield select(getAccountUser)
-    const { is_verified: verified } = profile
-    if (!account.is_verified && verified) {
-      yield put(
-        cacheActions.update(Kind.USERS, [
-          { id: userId, metadata: { is_verified: true } }
-        ])
-      )
-    }
-  } catch (err) {
-    console.error(err.message)
-  }
-}
-
 function* fetchSavedPlaylistsAsync() {
   yield waitForRead()
 
@@ -290,18 +199,6 @@ function* watchSignedIn() {
   yield takeEvery(signedIn.type, onSignedIn)
 }
 
-function* watchTwitterLogin() {
-  yield takeEvery(twitterLogin.type, associateTwitterAccount)
-}
-
-function* watchInstagramLogin() {
-  yield takeEvery(instagramLogin.type, associateInstagramAccount)
-}
-
-function* watchTikTokLogin() {
-  yield takeEvery(tikTokLogin.type, associateTikTokAccount)
-}
-
 function* watchFetchSavedPlaylists() {
   yield takeEvery(fetchSavedPlaylists.type, fetchSavedPlaylistsAsync)
 }
@@ -323,9 +220,6 @@ export default function sagas() {
     watchFetchLocalAccount,
     watchFetchAccountFailed,
     watchSignedIn,
-    watchTwitterLogin,
-    watchInstagramLogin,
-    watchTikTokLogin,
     watchFetchSavedPlaylists,
     watchResetAccount
   ]

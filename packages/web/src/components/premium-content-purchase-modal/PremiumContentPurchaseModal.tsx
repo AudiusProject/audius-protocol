@@ -69,7 +69,7 @@ const { startRecoveryIfNecessary, cleanup: cleanupUSDCRecovery } =
 const { cleanup, setPurchasePage, eagerCreateUserBank } = purchaseContentActions
 const { getPurchaseContentFlowStage, getPurchaseContentError } =
   purchaseContentSelectors
-const { getHasAccount } = accountSelectors
+const { getIsAccountComplete } = accountSelectors
 
 const messages = {
   guestCheckout: 'Guest Checkout',
@@ -109,7 +109,7 @@ const PremiumContentPurchaseForm = (props: PremiumContentPurchaseFormProps) => {
 
   const { submitForm, resetForm } = useFormikContext()
   const { history } = useHistoryContext()
-  const isSignedIn = useSelector(getHasAccount)
+  const isAccountComplete = useSelector(getIsAccountComplete)
 
   // Reset form on track change
   useEffect(() => {
@@ -131,7 +131,6 @@ const PremiumContentPurchaseForm = (props: PremiumContentPurchaseFormProps) => {
     setPurchaseMethod(PurchaseMethod.BALANCE)
     submitForm()
   }, [submitForm, setPurchaseMethod])
-
   return (
     <ModalForm className={cn(styles.modalRoot, { [styles.mobile]: isMobile })}>
       <ModalHeader
@@ -151,9 +150,11 @@ const PremiumContentPurchaseForm = (props: PremiumContentPurchaseFormProps) => {
       <ModalContentPages
         contentClassName={styles.content}
         className={styles.content}
-        currentPage={currentPageIndex}
+        currentPage={
+          isAccountComplete ? currentPageIndex - 1 : currentPageIndex
+        }
       >
-        {!isSignedIn ? (
+        {!isAccountComplete ? (
           <GuestCheckoutPage
             metadata={metadata}
             price={price}
@@ -209,7 +210,7 @@ export const PremiumContentPurchaseModal = () => {
   const presetValues = usePayExtraPresets()
   const { data: currentUserId } = useGetCurrentUserId({})
   const { data: currentUser } = useGetCurrentUser({})
-  const { isEnabled: guestCheckoutEnabled = false } = useFeatureFlag(
+  const { isEnabled: guestCheckoutEnabled } = useFeatureFlag(
     FeatureFlags.GUEST_CHECKOUT
   )
 
@@ -323,6 +324,7 @@ export const PremiumContentPurchaseModal = () => {
           initialValues={initialValues}
           enableReinitialize
           validationSchema={toFormikValidationSchema(validationSchema)}
+          validateOnBlur={false}
           validateOnChange={false}
           onSubmit={onSubmit}
         >

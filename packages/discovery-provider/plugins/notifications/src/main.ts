@@ -21,6 +21,7 @@ import { Server } from './server'
 import { configureWebPush } from './web'
 import { configureAnnouncement } from './processNotifications/mappers/announcement'
 import { logMemStats } from './utils/memStats'
+import { NotificationSeenListener } from './notificationSeenListener'
 
 export class Processor {
   discoveryDB: Knex
@@ -28,6 +29,7 @@ export class Processor {
   appNotificationsProcessor: AppNotificationsProcessor
   isRunning: boolean
   listener: Listener
+  notificationSeenListener: NotificationSeenListener
   lastDailyEmailSent: moment.Moment | null
   lastWeeklyEmailSent: moment.Moment | null
   remoteConfig: RemoteConfig
@@ -67,6 +69,15 @@ export class Processor {
     // Comment out to prevent app notifications until complete
     this.listener = new Listener()
     await this.listener.start(discoveryDBUrl || process.env.DN_DB_URL)
+
+    // Start notification seen listener
+    this.notificationSeenListener = new NotificationSeenListener(
+      this.identityDB
+    )
+    await this.notificationSeenListener.start(
+      discoveryDBUrl || process.env.DN_DB_URL
+    )
+
     await setupTriggers(this.discoveryDB)
     this.appNotificationsProcessor = new AppNotificationsProcessor(
       this.discoveryDB,
@@ -170,6 +181,7 @@ export class Processor {
   close = async () => {
     this.remoteConfig.close()
     await this.listener?.close()
+    await this.notificationSeenListener?.close()
     await this.discoveryDB?.destroy()
     await this.identityDB?.destroy()
   }

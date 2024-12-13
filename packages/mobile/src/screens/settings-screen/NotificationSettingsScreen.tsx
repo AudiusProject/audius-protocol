@@ -9,9 +9,9 @@ import { useEffectOnce } from 'react-use'
 
 import { Screen, ScreenContent } from 'app/components/core'
 
-import { Divider } from './Divider'
 import { EmailFrequencyControlRow } from './EmailFrequencyControlRow'
 import { NotificationRow } from './NotificationRow'
+import { SettingsDivider } from './SettingsDivider'
 
 const { getPushNotificationSettings, getNotificationSettings } =
   settingsPageActions
@@ -45,7 +45,7 @@ export const NotificationSettingsScreen = () => {
   return (
     <Screen title={messages.title} variant='secondary' topbarRight={null}>
       <ScreenContent>
-        <Divider />
+        <SettingsDivider />
         <NotificationRow
           label={messages.enablePn}
           type={PushNotificationSetting.MobilePush}
@@ -90,7 +90,7 @@ export const NotificationSettingsScreen = () => {
             />
           </>
         ) : null}
-        <Divider />
+        <SettingsDivider />
         <EmailFrequencyControlRow />
       </ScreenContent>
     </Screen>

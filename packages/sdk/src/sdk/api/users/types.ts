@@ -19,10 +19,10 @@ export const CreateUserSchema = z.object({
       bio: z.optional(z.string()),
       coverPhotoSizes: z.optional(z.string()),
       donation: z.optional(z.string()),
-      handle: z.string(),
+      handle: z.optional(z.string()),
       events: z.optional(UserEventsSchema),
       location: z.optional(z.string()),
-      name: z.string(),
+      name: z.optional(z.string()),
       profilePictureSizes: z.optional(z.string()),
       splUsdcPayoutWallet: z.optional(z.string()),
       wallet: z.string(),
@@ -126,8 +126,12 @@ export const UpdateProfileSchema = z
         twitterHandle: z.optional(z.string()),
         instagramHandle: z.optional(z.string()),
         tiktokHandle: z.optional(z.string()),
-        associatedWallets: z.optional(CreateAssociatedWalletsSchema),
-        associatedSolWallets: z.optional(CreateAssociatedWalletsSchema)
+        associatedWallets: z.optional(
+          z.union([CreateAssociatedWalletsSchema, z.null()])
+        ),
+        associatedSolWallets: z.optional(
+          z.union([CreateAssociatedWalletsSchema, z.null()])
+        )
       })
       .strict()
   })
@@ -229,18 +233,14 @@ export type SendTipReactionRequest = z.input<
 // Email-related types
 export interface EmailRequest {
   emailOwnerUserId: number
-  primaryUserId: number
-  encryptedEmail: string
-  encryptedKey: string
-  delegatedUserIds?: number[]
-  delegatedKeys?: string[]
+  receivingUserId: number
+  granteeUserIds?: string[]
+  email: string
 }
 
 export const EmailSchema = z.object({
   emailOwnerUserId: z.number(),
-  primaryUserId: z.number(),
-  encryptedEmail: z.string(),
-  encryptedKey: z.string(),
-  delegatedUserIds: z.array(z.number()).optional(),
-  delegatedKeys: z.array(z.string()).optional()
+  receivingUserId: z.number(),
+  granteeUserIds: z.array(z.string()).optional(),
+  email: z.string()
 })

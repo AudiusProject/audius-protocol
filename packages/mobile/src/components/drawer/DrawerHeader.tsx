@@ -15,6 +15,7 @@ type DrawerHeaderProps = {
   titleIcon?: IconComponent
   titleImage?: ImageSourcePropType
   isFullscreen?: boolean
+  blockClose?: boolean
 }
 
 export const useStyles = makeStyles(({ spacing }) => ({
@@ -44,7 +45,8 @@ export const DrawerHeader = (props: DrawerHeaderProps) => {
     title,
     titleIcon: TitleIcon,
     titleImage,
-    isFullscreen
+    isFullscreen,
+    blockClose = false
   } = props
   const styles = useStyles()
   const iconRemoveColor = useColor('neutralLight4')
@@ -52,7 +54,7 @@ export const DrawerHeader = (props: DrawerHeaderProps) => {
 
   return title || isFullscreen ? (
     <View style={styles.titleBarContainer}>
-      {isFullscreen ? (
+      {isFullscreen && !blockClose ? (
         <TouchableOpacity
           activeOpacity={0.7}
           onPress={onClose}

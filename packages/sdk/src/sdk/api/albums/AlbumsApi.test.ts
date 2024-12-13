@@ -142,7 +142,6 @@ describe('AlbumsApi', () => {
     albums = new AlbumsApi(
       new Configuration(),
       new Storage({
-        audiusWalletClient,
         storageNodeSelector,
         logger: new Logger()
       }),

@@ -12,7 +12,7 @@ function* trackLocation() {
   while (true) {
     const {
       payload: {
-        location: { pathname }
+        location: { pathname, search, ...rest }
       }
     } = yield take(LOCATION_CHANGE)
     if (pathname) {
@@ -30,7 +30,7 @@ function* trackLocation() {
         // Dispatch a track event and then resolve page/screen events with segment
         analytics.track({
           eventName: Name.PAGE_VIEW,
-          properties: { route: pathname }
+          properties: { route: pathname, queryParams: search, ...rest }
         })
       }
     }

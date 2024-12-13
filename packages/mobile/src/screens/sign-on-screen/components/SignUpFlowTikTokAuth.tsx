@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 
 import { useAudiusQueryContext } from '@audius/common/audius-query'
-import { Name } from '@audius/common/models'
+import { ErrorLevel, Name } from '@audius/common/models'
 import { pickHandleSchema } from '@audius/common/schemas'
 import { formatTikTokProfile } from '@audius/common/services'
 import type { TikTokProfileData } from '@audius/common/services'
@@ -14,10 +14,11 @@ import { useTikTokAuth } from 'app/hooks/useTikTokAuth'
 import { make, track } from 'app/services/analytics'
 import * as oauthActions from 'app/store/oauth/actions'
 import { getAbandoned, getIsOpen } from 'app/store/oauth/selectors'
+import { reportToSentry } from 'app/utils/reportToSentry'
 
 type SignUpFlowTikTokAuthProps = {
   onStart: () => void
-  onFailure: (e: unknown) => void
+  onError: (e: unknown) => void
   onSuccess: (info: {
     requiresReview: boolean
     handle: string
@@ -31,7 +32,7 @@ type SignUpFlowTikTokAuthProps = {
 export const SignUpFlowTikTokAuth = ({
   onStart,
   onSuccess,
-  onFailure,
+  onError,
   onClose,
   page
 }: SignUpFlowTikTokAuthProps) => {
@@ -86,14 +87,26 @@ export const SignUpFlowTikTokAuth = ({
         platform: 'tiktok'
       })
     } catch (e) {
-      onFailure(e)
+      reportToSentry({
+        error: e as Error,
+        name: 'Sign Up: Failed to parse TikTok profile data',
+        level: ErrorLevel.Fatal,
+        additionalInfo: {
+          profileData,
+          requiresUserReview
+        },
+        tags: {
+          socialMedia: 'tiktok'
+        }
+      })
+      onError(e)
     }
   }
 
   const withTikTokAuth = useTikTokAuth({
     onError: (error) => {
+      onError(error)
       setTikTokOpen(false)
-      onFailure(error)
       dispatch(oauthActions.setTikTokError(error))
     }
   })
@@ -147,7 +160,7 @@ export const SignUpFlowTikTokAuth = ({
         )
         handleSuccess(profileData, requiresUserReview)
       } catch (e) {
-        onFailure(e)
+        onError(e)
       }
     })
   }

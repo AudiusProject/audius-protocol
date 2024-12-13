@@ -4,8 +4,7 @@ import { tokenDashboardPageSelectors } from '@audius/common/store'
 import { FlatList, View } from 'react-native'
 import { useSelector } from 'react-redux'
 
-import { Flex, Text } from '@audius/harmony-native'
-import { Divider } from 'app/components/core'
+import { Divider, Flex, Text } from '@audius/harmony-native'
 import LoadingSpinner from 'app/components/loading-spinner'
 import { makeStyles } from 'app/styles'
 
@@ -37,9 +36,6 @@ const useStyles = makeStyles(({ spacing }) => ({
   },
   gap: {
     flex: 2
-  },
-  divider: {
-    marginVertical: spacing(3)
   }
 }))
 
@@ -106,7 +102,7 @@ export const LinkedWallets = () => {
         </Text>
         <View style={styles.gap} />
       </View>
-      <Divider style={styles.divider} />
+      <Divider mv='m' />
       {loadingStatus === Status.SUCCESS ? (
         <FlatList
           renderItem={({ item }) => (
@@ -120,7 +116,7 @@ export const LinkedWallets = () => {
             />
           )}
           data={wallets}
-          ItemSeparatorComponent={() => <Divider style={styles.divider} />}
+          ItemSeparatorComponent={() => <Divider mv='m' />}
         />
       ) : loadingStatus === Status.IDLE || loadingStatus === Status.LOADING ? (
         <Flex alignSelf='center'>

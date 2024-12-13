@@ -17,6 +17,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import type { IconComponent } from '@audius/harmony-native'
 import {
   Box,
+  Divider,
   Flex,
   FollowButton,
   IconNote,
@@ -30,7 +31,6 @@ import {
   useTheme
 } from '@audius/harmony-native'
 import {
-  Divider,
   ProfilePicture,
   UserCoverPhoto,
   UserDisplayName

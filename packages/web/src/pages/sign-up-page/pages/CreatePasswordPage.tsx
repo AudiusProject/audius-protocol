@@ -1,19 +1,15 @@
 import { useCallback, useRef } from 'react'
 
-import { createPasswordPageMessages } from '@audius/common/messages'
+import { createPasswordPageMessages as messages } from '@audius/common/messages'
 import { passwordSchema } from '@audius/common/schemas'
-import {
-  changePasswordActions,
-  recoveryEmailActions
-} from '@audius/common/store'
-import { route, TEMPORARY_PASSWORD } from '@audius/common/utils'
+import { route } from '@audius/common/utils'
 import { Flex } from '@audius/harmony'
 import { Form, Formik } from 'formik'
 import { useDispatch, useSelector } from 'react-redux'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 
 import { setValueField } from 'common/store/pages/signon/actions'
-import { getEmailField, getIsGuest } from 'common/store/pages/signon/selectors'
+import { getEmailField } from 'common/store/pages/signon/selectors'
 import { useMedia } from 'hooks/useMedia'
 import { useNavigateToPage } from 'hooks/useNavigateToPage'
 
@@ -21,7 +17,6 @@ import { EnterPasswordSection } from '../components/EnterPasswordSection'
 import { SignUpAgreementText } from '../components/SignUpPolicyText'
 import { Heading, Page, PageFooter, ReadOnlyField } from '../components/layout'
 
-const { changePassword } = changePasswordActions
 const { SIGN_UP_HANDLE_PAGE } = route
 
 const initialValues = {
@@ -35,14 +30,10 @@ export type CreatePasswordValues = {
 }
 
 const passwordFormikSchema = toFormikValidationSchema(passwordSchema)
-const { resendRecoveryEmail } = recoveryEmailActions
 
 export const CreatePasswordPage = () => {
   const dispatch = useDispatch()
   const emailField = useSelector(getEmailField)
-
-  const isGuest = useSelector(getIsGuest)
-
   const navigate = useNavigateToPage()
   const { isMobile } = useMedia()
   const passwordInputRef = useRef<HTMLInputElement>(null)
@@ -51,20 +42,9 @@ export const CreatePasswordPage = () => {
     (values: CreatePasswordValues) => {
       const { password } = values
       dispatch(setValueField('password', password))
-
-      if (isGuest) {
-        dispatch(
-          changePassword({
-            email: emailField.value,
-            oldPassword: TEMPORARY_PASSWORD,
-            password
-          })
-        )
-        dispatch(resendRecoveryEmail())
-      }
       navigate(SIGN_UP_HANDLE_PAGE)
     },
-    [dispatch, emailField, isGuest, navigate]
+    [dispatch, navigate]
   )
 
   return (
@@ -80,12 +60,12 @@ export const CreatePasswordPage = () => {
           autoFocusInputRef={passwordInputRef}
         >
           <Heading
-            heading={createPasswordPageMessages.createYourPassword}
-            description={createPasswordPageMessages.description}
+            heading={messages.createYourPassword}
+            description={messages.description}
           />
           <Flex direction='column' h='100%' gap='l'>
             <ReadOnlyField
-              label={createPasswordPageMessages.yourEmail}
+              label={messages.yourEmail}
               value={emailField.value}
             />
             <EnterPasswordSection inputRef={passwordInputRef} />

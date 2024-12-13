@@ -1,8 +1,13 @@
 import { useCallback, useState } from 'react'
 
-import { Id, useGetSales, useGetSalesCount } from '@audius/common/api'
+import {
+  Id,
+  useGetCurrentWeb3User,
+  useGetSales,
+  useGetSalesCount
+} from '@audius/common/api'
 import { useAllPaginatedQuery } from '@audius/common/audius-query'
-import { useFeatureFlag } from '@audius/common/hooks'
+import { useFeatureFlag, useIsManagedAccount } from '@audius/common/hooks'
 import {
   combineStatuses,
   Status,
@@ -91,6 +96,9 @@ const NoSales = () => {
 
 export const useSales = () => {
   const userId = useSelector(getUserId)
+  const isManagerMode = useIsManagedAccount()
+  const { data: currentWeb3User } = useGetCurrentWeb3User({})
+
   // Defaults: sort method = date, sort direction = desc
   const [sortMethod, setSortMethod] =
     useState<full.GetSalesSortMethodEnum>(DEFAULT_SORT_METHOD)
@@ -152,10 +160,15 @@ export const useSales = () => {
     try {
       const sdk = await audiusSdk()
       const salesAsJSON = await sdk.users.downloadSalesAsJSON({
-        id: Id.parse(userId)
+        id: Id.parse(userId),
+        granteeUserId: isManagerMode
+          ? Id.parse(currentWeb3User?.user_id)
+          : undefined
       })
 
-      if (!salesAsJSON.data?.sales || salesAsJSON.data.sales.length === 0) {
+      const sales = salesAsJSON.data?.sales
+
+      if (!sales || sales.length === 0) {
         return
       }
 
@@ -173,18 +186,40 @@ export const useSales = () => {
         'Country'
       ]
 
-      const rows = salesAsJSON.data.sales.map((sale) => [
-        sale.title,
-        sale.link,
-        sale.purchasedBy,
-        sale.encryptedEmail,
-        sale.date ? new Date(sale.date).toLocaleDateString() : '',
-        sale.salePrice,
-        sale.networkFee,
-        sale.payExtra,
-        sale.total,
-        sale.country
-      ])
+      const rows = await Promise.all(
+        sales.map(async (sale) => {
+          try {
+            const symmetricKey =
+              await sdk.services.emailEncryptionService.decryptSymmetricKey(
+                sale.encryptedKey ?? '',
+                Id.parse(sale.buyerUserId)
+              )
+
+            const decryptedEmail = sale.encryptedEmail
+              ? await sdk.services.emailEncryptionService
+                  .decryptEmail(sale.encryptedEmail, symmetricKey)
+                  .catch(() => '')
+              : ''
+
+            return [
+              sale.title,
+              sale.link,
+              sale.purchasedBy,
+              decryptedEmail,
+              sale.date,
+              sale.salePrice,
+              sale.networkFee,
+              sale.payExtra,
+              sale.total,
+              sale.country
+            ]
+          } catch (err) {
+            console.error('Error processing sale row:', err)
+            // Return empty row rather than failing entire export
+            return Array(10).fill('')
+          }
+        })
+      )
 
       // Create CSV content
       const csvContent = [
