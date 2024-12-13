@@ -1,4 +1,5 @@
 import {
+  collectionMetadataForCreateWithSDK,
   fileToSdk,
   trackMetadataForUploadToSdk,
   transformAndCleanList,
@@ -6,7 +7,6 @@ import {
 } from '@audius/common/adapters'
 import {
   Collection,
-  CollectionMetadata,
   ErrorLevel,
   Feature,
   FieldVisibility,
@@ -30,7 +30,6 @@ import {
   accountSelectors,
   cacheActions,
   cacheUsersSelectors,
-  confirmTransaction,
   confirmerActions,
   getContext,
   reformatCollection,
@@ -857,16 +856,31 @@ export function* uploadCollection(
       `${collectionMetadata.playlist_name}_${Date.now()}`,
       function* () {
         console.debug('Creating playlist')
-        const { blockHash, blockNumber, error } = yield* call(
-          audiusBackendInstance.createPlaylist,
-          playlistId,
-          collectionMetadata as unknown as CollectionMetadata,
-          isAlbum,
-          trackIds,
-          !!collectionMetadata.is_private
-        )
+        try {
+          // const createCollection = isAlbum ? sdk.albums.createAlbum : sdk.playlists.createPlaylist
 
-        if (error) {
+          // sdk.playlists.createPlaylist({
+          //   metadata: collectionMetadataForCreateWithSDK(
+          //     collectionMetadata as unknown as Collection
+          //   ),
+          //   userId: Id.parse(userId),
+          //   playlistId: Id.parse(playlistId),
+          //   trackIds: trackIds.map((id) => Id.parse(id)),
+          //   isAlbum,
+          //   isPrivate: !!collectionMetadata.is_private
+          // }
+
+          yield* call([sdk.playlists, sdk.playlists.createPlaylist], {
+            metadata: collectionMetadataForCreateWithSDK(
+              collectionMetadata as unknown as Collection
+            ),
+            userId: Id.parse(userId),
+            playlistId: Id.parse(playlistId),
+            trackIds,
+            isAlbum,
+            isPrivate: !!collectionMetadata.is_private
+          })
+        } catch (error) {
           console.debug('Caught an error creating playlist')
           if (playlistId) {
             console.debug('Deleting playlist')
@@ -882,15 +896,6 @@ export function* uploadCollection(
           throw error instanceof Error
             ? error
             : new Error(`Error creating playlist: ${error}`)
-        }
-
-        const confirmed = yield* call(
-          confirmTransaction,
-          blockHash,
-          blockNumber
-        )
-        if (!confirmed) {
-          throw new Error(`Could not confirm playlist creation`)
         }
 
         const { data = [] } = yield* call(

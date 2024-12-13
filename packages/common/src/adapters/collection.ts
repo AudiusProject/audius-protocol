@@ -1,4 +1,8 @@
-import { full, UpdatePlaylistRequest } from '@audius/sdk'
+import {
+  CreatePlaylistMetadata,
+  full,
+  UpdatePlaylistRequest
+} from '@audius/sdk'
 import dayjs from 'dayjs'
 import { omit } from 'lodash'
 import snakecaseKeys from 'snakecase-keys'
@@ -146,7 +150,7 @@ export const accountCollectionFromSDK = (
   }
 }
 
-export const collectionMetadataForSDK = (
+export const collectionMetadataForUpdateWithSDK = (
   input: Collection
 ): UpdatePlaylistRequest['metadata'] => {
   return {
@@ -157,6 +161,17 @@ export const collectionMetadataForSDK = (
           metadataTimestamp: t.metadata_time
         }))
       : undefined,
+    playlistName: input.playlist_name ?? '',
+    description: input.description ?? '',
+    coverArtCid: input.cover_art_sizes ?? '',
+    isPrivate: input.is_private ?? false
+  }
+}
+
+export const collectionMetadataForCreateWithSDK = (
+  input: Collection
+): CreatePlaylistMetadata => {
+  return {
     playlistName: input.playlist_name ?? '',
     description: input.description ?? '',
     coverArtCid: input.cover_art_sizes ?? '',

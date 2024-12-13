@@ -1,5 +1,5 @@
 import {
-  collectionMetadataForSDK,
+  collectionMetadataForUpdateWithSDK,
   userCollectionMetadataFromSDK
 } from '@audius/common/adapters'
 import {
@@ -199,7 +199,7 @@ function* confirmEditPlaylist(
       makeKindId(Kind.COLLECTIONS, playlistId),
       function* (_confirmedPlaylistId: ID) {
         yield* call([sdk.playlists, sdk.playlists.updatePlaylist], {
-          metadata: collectionMetadataForSDK(formFields),
+          metadata: collectionMetadataForUpdateWithSDK(formFields),
           userId: Id.parse(userId),
           playlistId: Id.parse(playlistId)
         })
@@ -325,7 +325,7 @@ function* confirmRemoveTrackFromPlaylist(
       makeKindId(Kind.COLLECTIONS, playlistId),
       function* (confirmedPlaylistId: ID) {
         yield* call([sdk.playlists, sdk.playlists.updatePlaylist], {
-          metadata: collectionMetadataForSDK(playlist),
+          metadata: collectionMetadataForUpdateWithSDK(playlist),
           userId: Id.parse(userId),
           playlistId: Id.parse(playlistId)
         })
@@ -475,7 +475,7 @@ function* confirmPublishPlaylist(
       function* (_confirmedPlaylistId: ID) {
         yield* call([sdk.playlists, sdk.playlists.updatePlaylist], {
           metadata: {
-            ...collectionMetadataForSDK(playlist),
+            ...collectionMetadataForUpdateWithSDK(playlist),
             isPrivate: false
           },
           userId: Id.parse(userId),

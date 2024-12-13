@@ -1,4 +1,4 @@
-import { collectionMetadataForSDK } from '@audius/common/adapters'
+import { collectionMetadataForUpdateWithSDK } from '@audius/common/adapters'
 import {
   Name,
   Kind,
@@ -18,7 +18,6 @@ import {
   toastActions,
   getContext,
   confirmerActions,
-  confirmTransaction,
   getSDK
 } from '@audius/common/store'
 import {
@@ -174,7 +173,7 @@ function* confirmAddTrackToPlaylist(
       makeKindId(Kind.COLLECTIONS, playlistId),
       function* () {
         yield* call([sdk.playlists, sdk.playlists.updatePlaylist], {
-          metadata: collectionMetadataForSDK(playlist),
+          metadata: collectionMetadataForUpdateWithSDK(playlist),
           userId: Id.parse(userId),
           playlistId: Id.parse(playlistId)
         })

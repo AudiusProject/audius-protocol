@@ -12,7 +12,20 @@ const CreatePlaylistMetadataSchema = z
     description: z.optional(z.string().max(1000)),
     playlistName: z.string(),
     isPrivate: z.optional(z.boolean()),
-    coverArtCid: z.optional(z.string())
+    coverArtCid: z.optional(z.string()),
+    license: z.optional(z.string()),
+    mood: z.optional(z.enum(Object.values(Mood) as [Mood, ...Mood[]])),
+    releaseDate: z.optional(
+      z.date().max(new Date(), { message: 'should not be in the future' })
+    ),
+    ddexReleaseIds: z.optional(z.record(z.string()).nullable()),
+    ddexApp: z.optional(z.string()),
+    tags: z.optional(z.string()),
+    upc: z.optional(z.string()),
+    artists: z.optional(z.array(DDEXResourceContributor).nullable()),
+    copyrightLine: z.optional(DDEXCopyright.nullable()),
+    producerCopyrightLine: z.optional(DDEXCopyright.nullable()),
+    parentalWarningType: z.optional(z.string().nullable())
   })
   .strict()
 
@@ -69,26 +82,9 @@ export type UpdatePlaylistRequest = z.input<
 >
 
 const createUploadPlaylistMetadataSchema = () =>
-  z
-    .object({
-      description: z.optional(z.string().max(1000)),
-      genre: z.enum(Object.values(Genre) as [Genre, ...Genre[]]),
-      license: z.optional(z.string()),
-      mood: z.optional(z.enum(Object.values(Mood) as [Mood, ...Mood[]])),
-      playlistName: z.string(),
-      releaseDate: z.optional(
-        z.date().max(new Date(), { message: 'should not be in the future' })
-      ),
-      ddexReleaseIds: z.optional(z.record(z.string()).nullable()),
-      ddexApp: z.optional(z.string()),
-      tags: z.optional(z.string()),
-      upc: z.optional(z.string()),
-      artists: z.optional(z.array(DDEXResourceContributor).nullable()),
-      copyrightLine: z.optional(DDEXCopyright.nullable()),
-      producerCopyrightLine: z.optional(DDEXCopyright.nullable()),
-      parentalWarningType: z.optional(z.string().nullable())
-    })
-    .strict()
+  CreatePlaylistMetadataSchema.extend({
+    genre: z.enum(Object.values(Genre) as [Genre, ...Genre[]])
+  }).strict()
 
 export type PlaylistMetadata = z.input<
   ReturnType<typeof createUploadPlaylistMetadataSchema>

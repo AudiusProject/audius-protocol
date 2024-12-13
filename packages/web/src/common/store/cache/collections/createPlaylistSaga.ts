@@ -209,7 +209,7 @@ function* createAndConfirmPlaylist(
       userId: Id.parse(userId),
       playlistId: Id.parse(playlistId),
       trackIds: initTrack ? [Id.parse(initTrack.track_id)] : undefined,
-      metadata: collectionMetadataForSDK(formFields)
+      metadata: collectionMetadataForCreateWithSDK(formFields)
     })
 
     // Merge the confirmed playlist with the optimistic playlist, preferring
