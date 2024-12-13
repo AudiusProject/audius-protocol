@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 
-import { useFeatureFlag } from '@audius/common/hooks'
+import { GUEST_EMAIL, useFeatureFlag } from '@audius/common/hooks'
 import { FeatureFlags } from '@audius/common/services'
 import { accountSelectors } from '@audius/common/store'
 import { route } from '@audius/common/utils'
@@ -11,6 +11,7 @@ import {
   Paper,
   SelectablePill
 } from '@audius/harmony'
+import { useLocalStorage } from '@uidotdev/usehooks'
 import { replace } from 'connected-react-router'
 import { useDispatch, useSelector } from 'react-redux'
 
@@ -47,18 +48,18 @@ type TableMetadata = {
 export const PayAndEarnPage = ({ tableView }: PayAndEarnPageProps) => {
   const dispatch = useDispatch()
   const accountHasTracks = useSelector(getAccountHasTracks)
-
+  const isGuest = useLocalStorage(GUEST_EMAIL)
   const [tableOptions, setTableOptions] = useState<TableType[] | null>(null)
   const [selectedTable, setSelectedTable] = useState<TableType | null>(null)
   useEffect(() => {
-    if (accountHasTracks !== null) {
+    if (accountHasTracks !== null || isGuest) {
       const tableOptions = accountHasTracks
         ? [TableType.SALES, TableType.PURCHASES, TableType.WITHDRAWALS]
         : [TableType.PURCHASES, TableType.WITHDRAWALS]
       setTableOptions(tableOptions)
       setSelectedTable(tableView ?? tableOptions[0])
     }
-  }, [accountHasTracks, setSelectedTable, tableView, setTableOptions])
+  }, [accountHasTracks, setSelectedTable, tableView, setTableOptions, isGuest])
 
   const { isEnabled: isOwnYourFansEnabled } = useFeatureFlag(
     FeatureFlags.OWN_YOUR_FANS

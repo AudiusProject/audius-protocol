@@ -14,7 +14,8 @@ import {
   isStreamPurchaseable,
   isTrackDownloadPurchaseable,
   PURCHASE_METHOD,
-  PurchaseableContentMetadata
+  PurchaseableContentMetadata,
+  GUEST_EMAIL
 } from '@audius/common/hooks'
 import {
   ID,
@@ -41,12 +42,15 @@ import {
   IconCart,
   ModalTitle
 } from '@audius/harmony'
+import { useLocalStorage } from '@uidotdev/usehooks'
 import cn from 'classnames'
 import { Formik, useField, useFormikContext } from 'formik'
 import { useDispatch, useSelector } from 'react-redux'
+import { z } from 'zod'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 
 import { useHistoryContext } from 'app/HistoryProvider'
+import * as signOnActions from 'common/store/pages/signon/actions'
 import { ModalForm } from 'components/modal-form/ModalForm'
 import { USDCManualTransfer } from 'components/usdc-manual-transfer/USDCManualTransfer'
 import { useIsMobile } from 'hooks/useIsMobile'
@@ -70,6 +74,7 @@ const { cleanup, setPurchasePage, eagerCreateUserBank } = purchaseContentActions
 const { getPurchaseContentFlowStage, getPurchaseContentError } =
   purchaseContentSelectors
 const { getIsAccountComplete } = accountSelectors
+const { createGuestAccount } = signOnActions
 
 const messages = {
   guestCheckout: 'Guest Checkout',
@@ -213,6 +218,10 @@ export const PremiumContentPurchaseModal = () => {
   const { isEnabled: guestCheckoutEnabled } = useFeatureFlag(
     FeatureFlags.GUEST_CHECKOUT
   )
+  const [emailFromLocalStorage, setGuestEmailInLocalStorage] = useLocalStorage(
+    GUEST_EMAIL,
+    ''
+  )
 
   const isAlbum = contentType === PurchaseableContentType.ALBUM
   const { data: track } = useGetTrackById(
@@ -258,6 +267,18 @@ export const PremiumContentPurchaseModal = () => {
         ? PurchaseVendor.COINFLOW
         : PurchaseVendor.STRIPE
     })
+  const handleFormSubmit = useCallback(
+    (values: z.input<typeof validationSchema>) => {
+      if (values.guestEmail && emailFromLocalStorage !== values.guestEmail) {
+        // only create guest account if email has changed
+        // enable multiple purchases with same guest email
+        setGuestEmailInLocalStorage(values.guestEmail)
+        dispatch(createGuestAccount(values.guestEmail))
+      }
+      onSubmit(values)
+    },
+    [dispatch, emailFromLocalStorage, onSubmit, setGuestEmailInLocalStorage]
+  )
 
   const showGuestCheckout =
     guestCheckoutEnabled &&
@@ -326,7 +347,7 @@ export const PremiumContentPurchaseModal = () => {
           validationSchema={toFormikValidationSchema(validationSchema)}
           validateOnBlur={false}
           validateOnChange={false}
-          onSubmit={onSubmit}
+          onSubmit={handleFormSubmit}
         >
           <PremiumContentPurchaseForm
             contentId={contentId}
