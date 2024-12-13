@@ -55,7 +55,9 @@ export function* repostTrackAsync(
 ) {
   yield* call(waitForWrite)
   const userId = yield* select(getUserId)
-  if (!userId) {
+  const localStorage = yield* getContext('localStorage')
+  const isGuest = yield* call([localStorage, 'getGuestEmail'])
+  if (!userId || isGuest) {
     yield* put(signOnActions.openSignOn(false))
     yield* put(signOnActions.showRequiresAccountToast())
     yield* put(make(Name.CREATE_ACCOUNT_OPEN, { source: 'social action' }))
@@ -205,7 +207,9 @@ export function* undoRepostTrackAsync(
 ) {
   yield* call(waitForWrite)
   const userId = yield* select(getUserId)
-  if (!userId) {
+  const localStorage = yield* getContext('localStorage')
+  const isGuest = yield* call([localStorage, 'getGuestEmail'])
+  if (!userId || isGuest) {
     yield* put(signOnActions.openSignOn(false))
     yield* put(signOnActions.showRequiresAccountToast())
     yield* put(make(Name.CREATE_ACCOUNT_OPEN, { source: 'social action' }))
@@ -309,7 +313,9 @@ export function* saveTrackAsync(
 ) {
   yield* call(waitForWrite)
   const userId = yield* select(getUserId)
-  if (!userId) {
+  const localStorage = yield* getContext('localStorage')
+  const isGuest = yield* call([localStorage, 'getGuestEmail'])
+  if (!userId || isGuest) {
     yield* put(signOnActions.showRequiresAccountToast())
     yield* put(signOnActions.openSignOn(false))
     yield* put(make(Name.CREATE_ACCOUNT_OPEN, { source: 'social action' }))
@@ -452,7 +458,9 @@ export function* unsaveTrackAsync(
 ) {
   yield* call(waitForWrite)
   const userId = yield* select(getUserId)
-  if (!userId) {
+  const localStorage = yield* getContext('localStorage')
+  const isGuest = yield* call([localStorage, 'getGuestEmail'])
+  if (!userId || isGuest) {
     yield* put(signOnActions.openSignOn(false))
     yield* put(signOnActions.showRequiresAccountToast())
     yield* put(make(Name.CREATE_ACCOUNT_OPEN, { source: 'social action' }))

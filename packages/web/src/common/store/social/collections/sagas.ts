@@ -61,7 +61,9 @@ export function* repostCollectionAsync(
 ) {
   yield* call(waitForWrite)
   const userId = yield* select(getUserId)
-  if (!userId) {
+  const localStorage = yield* getContext('localStorage')
+  const isGuest = yield* call([localStorage, 'getGuestEmail'])
+  if (!userId || isGuest) {
     yield* put(signOnActions.openSignOn(false))
     yield* put(signOnActions.showRequiresAccountToast())
     yield* put(make(Name.CREATE_ACCOUNT_OPEN, { source: 'social action' }))
@@ -187,7 +189,9 @@ export function* undoRepostCollectionAsync(
 ) {
   yield* call(waitForWrite)
   const userId = yield* select(getUserId)
-  if (!userId) {
+  const localStorage = yield* getContext('localStorage')
+  const isGuest = yield* call([localStorage, 'getGuestEmail'])
+  if (!userId || isGuest) {
     yield* put(signOnActions.openSignOn(false))
     yield* put(signOnActions.showRequiresAccountToast())
     yield* put(make(Name.CREATE_ACCOUNT_OPEN, { source: 'social action' }))
@@ -311,7 +315,9 @@ export function* saveSmartCollection(
 ) {
   yield* call(waitForWrite)
   const userId = yield* select(getUserId)
-  if (!userId) {
+  const localStorage = yield* getContext('localStorage')
+  const isGuest = yield* call([localStorage, 'getGuestEmail'])
+  if (!userId || isGuest) {
     yield* put(signOnActions.showRequiresAccountToast())
     yield* put(signOnActions.openSignOn(false))
     yield* put(make(Name.CREATE_ACCOUNT_OPEN, { source: 'social action' }))
@@ -343,7 +349,9 @@ export function* saveCollectionAsync(
 ) {
   yield* call(waitForWrite)
   const userId = yield* select(getUserId)
-  if (!userId) {
+  const localStorage = yield* getContext('localStorage')
+  const isGuest = yield* call([localStorage, 'getGuestEmail'])
+  if (!userId || isGuest) {
     yield* put(signOnActions.showRequiresAccountToast())
     yield* put(signOnActions.openSignOn(false))
     yield* put(make(Name.CREATE_ACCOUNT_OPEN, { source: 'social action' }))

@@ -1,7 +1,9 @@
 import { useCallback } from 'react'
 
 import { useCurrentCommentSection } from '@audius/common/context'
+import { GUEST_EMAIL } from '@audius/common/hooks'
 import { Name } from '@audius/common/models'
+import { useLocalStorage } from '@uidotdev/usehooks'
 import { useLocation } from 'react-router-dom'
 import { useToggle } from 'react-use'
 
@@ -21,7 +23,7 @@ export const useCommentActionCallback = <T extends (...args: any[]) => any>(
   const { requiresAccount } = useRequiresAccountFn(
     isMobile ? location.pathname : `${location.pathname}?showComments=true`
   )
-
+  const guestEmail = useLocalStorage(GUEST_EMAIL)
   const wrappedCallback = useCallback(
     (...args: Parameters<T>) => {
       if (isMobile) {
@@ -33,7 +35,7 @@ export const useCommentActionCallback = <T extends (...args: any[]) => any>(
           })
         )
       } else {
-        if (!currentUserId) {
+        if (!currentUserId || guestEmail) {
           requiresAccount()
           track(
             make({
@@ -51,6 +53,7 @@ export const useCommentActionCallback = <T extends (...args: any[]) => any>(
       callback,
       isMobile,
       toggleIsMobileAppDrawer,
+      guestEmail,
       entityId,
       currentUserId,
       requiresAccount,

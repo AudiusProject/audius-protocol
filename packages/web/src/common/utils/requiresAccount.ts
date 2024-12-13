@@ -26,7 +26,9 @@ export function requiresAccount<TArgs extends any[], TReturn>(
     const isNativeMobile = yield* getContext('isNativeMobile')
     yield* waitForAccount()
     const hasAccount = yield* select(getHasAccount)
-    if (!hasAccount) {
+    const localStorage = yield* getContext('localStorage')
+    const isGuest = yield* call([localStorage, 'getGuestEmail'])
+    if (!hasAccount || isGuest) {
       if (!isNativeMobile) {
         if (route) {
           yield* put(updateRouteOnExit(route))

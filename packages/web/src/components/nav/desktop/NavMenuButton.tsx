@@ -1,10 +1,12 @@
 import {
+  GUEST_EMAIL,
   useAccountHasClaimableRewards,
   useFeatureFlag,
   useIsManagedAccount
 } from '@audius/common/hooks'
 import { Name } from '@audius/common/models'
 import { FeatureFlags, StringKeys } from '@audius/common/services'
+import { SIGN_UP_PAGE } from '@audius/common/src/utils/route'
 import { chatSelectors } from '@audius/common/store'
 import { removeNullable, route } from '@audius/common/utils'
 import {
@@ -17,6 +19,7 @@ import {
   PopupMenu,
   PopupMenuItem
 } from '@audius/harmony'
+import { useLocalStorage } from '@uidotdev/usehooks'
 import cn from 'classnames'
 import { useDispatch } from 'react-redux'
 
@@ -49,6 +52,7 @@ export const NavMenuButton = () => {
   const dispatch = useDispatch()
   const navigate = useNavigateToPage()
   const hasUnreadMessages = useSelector(chatSelectors.getHasUnreadMessages)
+  const isGuest = useLocalStorage(GUEST_EMAIL)
   const isUSDCEnabled = useIsUSDCEnabled()
   const { isEnabled: isThemeV2Enabled } = useFeatureFlag(FeatureFlags.THEME_V2)
   const challengeRewardIds = useRemoteVar(StringKeys.CHALLENGE_REWARD_IDS)
@@ -73,8 +77,12 @@ export const NavMenuButton = () => {
         className: styles.item,
         text: messages.messages,
         onClick: () => {
-          navigate(CHATS_PAGE)
-          dispatch(make(Name.CHAT_ENTRY_POINT, { source: 'navmenu' }))
+          if (isGuest) {
+            navigate(SIGN_UP_PAGE)
+          } else {
+            navigate(CHATS_PAGE)
+            dispatch(make(Name.CHAT_ENTRY_POINT, { source: 'navmenu' }))
+          }
         },
         icon: messagesIcon,
         iconClassName: styles.menuItemIcon
@@ -97,13 +105,15 @@ export const NavMenuButton = () => {
       }
     : null
 
-  const dashboardItem = {
-    className: styles.item,
-    text: messages.dashboard,
-    onClick: () => navigate(DASHBOARD_PAGE),
-    icon: <IconDashboard />,
-    iconClassName: styles.menuItemIcon
-  }
+  const dashboardItem = isGuest
+    ? null
+    : {
+        className: styles.item,
+        text: messages.dashboard,
+        onClick: () => navigate(DASHBOARD_PAGE),
+        icon: <IconDashboard />,
+        iconClassName: styles.menuItemIcon
+      }
 
   const rewardsIcon = hasClaimableRewards ? (
     <div>
@@ -126,7 +136,7 @@ export const NavMenuButton = () => {
         <AudioBalancePill className={styles.audioPill} />
       </div>
     ),
-    onClick: () => navigate(AUDIO_PAGE),
+    onClick: () => (isGuest ? navigate(SIGN_UP_PAGE) : navigate(AUDIO_PAGE)),
     icon: rewardsIcon,
     iconClassName: cn(styles.menuItemIcon, styles.crownIcon)
   }
@@ -134,7 +144,7 @@ export const NavMenuButton = () => {
   const settingsItem = {
     className: styles.item,
     text: messages.settings,
-    onClick: () => navigate(SETTINGS_PAGE),
+    onClick: () => (isGuest ? navigate(SIGN_UP_PAGE) : navigate(SETTINGS_PAGE)),
     icon: <IconSettings />,
     iconClassName: styles.menuItemIcon
   }

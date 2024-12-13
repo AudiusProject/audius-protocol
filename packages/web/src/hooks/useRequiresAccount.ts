@@ -1,7 +1,9 @@
 import { useEffect, MouseEvent as ReactMouseEvent, useCallback } from 'react'
 
+import { GUEST_EMAIL } from '@audius/common/hooks'
 import { Status } from '@audius/common/models'
 import { accountSelectors } from '@audius/common/store'
+import { useLocalStorage } from '@uidotdev/usehooks'
 import { useDispatch } from 'react-redux'
 import { useLocation } from 'react-router-dom-v5-compat'
 
