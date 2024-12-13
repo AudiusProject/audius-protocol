@@ -40,7 +40,7 @@ func initSdk(sdk *Sdk) error {
 	ctx := context.Background()
 	// TODO: add default environment here if not set
 
-	// TODO: add node selection logic here, based on environement, if endpoint not configured
+	// TODO: add node selection logic here, based on environment, if endpoint not configured
 
 	g, ctx := errgroup.WithContext(ctx)
 

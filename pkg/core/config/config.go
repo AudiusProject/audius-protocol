@@ -10,7 +10,6 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/AudiusProject/audius-protocol/pkg/core/accounts"
 	"github.com/AudiusProject/audius-protocol/pkg/core/common"
 	"github.com/cometbft/cometbft/crypto/ed25519"
 	"github.com/cometbft/cometbft/types"
@@ -160,7 +159,7 @@ func ReadConfig(logger *common.Logger) (*Config, error) {
 		cfg.NodeEndpoint = os.Getenv("creatorNodeEndpoint")
 	}
 
-	ethKey, err := accounts.EthToEthKey(delegatePrivateKey)
+	ethKey, err := common.EthToEthKey(delegatePrivateKey)
 	if err != nil {
 		return nil, fmt.Errorf("creating eth key %v", err)
 	}
@@ -172,7 +171,7 @@ func ReadConfig(logger *common.Logger) (*Config, error) {
 	}
 	cfg.WalletAddress = ethAddress
 
-	key, err := accounts.EthToCometKey(cfg.EthereumKey)
+	key, err := common.EthToCometKey(cfg.EthereumKey)
 	if err != nil {
 		return nil, fmt.Errorf("creating key %v", err)
 	}

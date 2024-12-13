@@ -8,7 +8,6 @@ import (
 	"math/big"
 	"time"
 
-	"github.com/AudiusProject/audius-protocol/pkg/core/accounts"
 	"github.com/AudiusProject/audius-protocol/pkg/core/common"
 	"github.com/AudiusProject/audius-protocol/pkg/core/contracts"
 	"github.com/AudiusProject/audius-protocol/pkg/core/db"
@@ -150,7 +149,7 @@ func (s *Server) registerSelfOnComet(ethBlock, spID string) error {
 		return fmt.Errorf("failure to marshal register event: %v", err)
 	}
 
-	sig, err := accounts.EthSign(s.config.EthereumKey, eventBytes)
+	sig, err := common.EthSign(s.config.EthereumKey, eventBytes)
 	if err != nil {
 		return fmt.Errorf("could not sign register event: %v", err)
 	}
@@ -322,7 +321,7 @@ func (s *Server) isValidRegisterNodeEvent(ctx context.Context, e *core_proto.Sig
 		return fmt.Errorf("could not marshal event: %v", err)
 	}
 
-	_, address, err := accounts.EthRecover(e.GetSignature(), data)
+	_, address, err := common.EthRecover(e.GetSignature(), data)
 	if err != nil {
 		return fmt.Errorf("could not recover msg sig: %v", err)
 	}
@@ -369,12 +368,12 @@ func (s *Server) finalizeRegisterNode(ctx context.Context, e *core_proto.SignedT
 		return nil, fmt.Errorf("could not unmarshal event bytes: %v", err)
 	}
 
-	pubKey, address, err := accounts.EthRecover(sig, eventBytes)
+	pubKey, address, err := common.EthRecover(sig, eventBytes)
 	if err != nil {
 		return nil, fmt.Errorf("could not recover signer: %v", err)
 	}
 
-	serializedPubKey, err := accounts.SerializePublicKey(pubKey)
+	serializedPubKey, err := common.SerializePublicKey(pubKey)
 	if err != nil {
 		return nil, fmt.Errorf("could not serialize pubkey: %v", err)
 	}
