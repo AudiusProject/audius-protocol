@@ -156,13 +156,20 @@ function* downloadTrackAudio(track: UserTrackMetadata, userId: ID) {
 
   const audiusSdk = yield* getContext('audiusSdk')
   const sdk = yield* call(audiusSdk)
+  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
   const nftAccessSignatureMap = yield* select(getNftAccessSignatureMap)
   const nftAccessSignature = nftAccessSignatureMap[track_id]?.mp3 ?? null
+  const { data, signature } = yield* call(
+    audiusBackendInstance.signGatedContentRequest,
+    { sdk }
+  )
   const trackAudioUri = yield* call(
     [sdk.tracks, sdk.tracks.getTrackStreamUrl],
     {
       trackId: Id.parse(track_id),
       userId: OptionalId.parse(userId),
+      userSignature: signature,
+      userData: data,
       nftAccessSignature: nftAccessSignature
         ? JSON.stringify(nftAccessSignature)
         : undefined

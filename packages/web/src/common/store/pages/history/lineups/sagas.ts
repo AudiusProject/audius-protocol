@@ -1,11 +1,15 @@
-import { activityFromSDK, transformAndCleanList } from '@audius/common/adapters'
+import {
+  trackActivityFromSDK,
+  transformAndCleanList
+} from '@audius/common/adapters'
 import { Id, Kind, LineupEntry, Track } from '@audius/common/models'
 import {
   accountSelectors,
   getContext,
   historyPageTracksLineupActions as tracksActions
 } from '@audius/common/store'
-import { decodeHashId, removeNullable } from '@audius/common/utils'
+import { decodeHashId } from '@audius/common/utils'
+import { full } from '@audius/sdk'
 import { keyBy } from 'lodash'
 import { call, select } from 'typed-redux-saga'
 
@@ -35,10 +39,10 @@ function* getHistoryTracks() {
     const activityData = activity.data
     if (!activityData) return []
 
-    const tracks = transformAndCleanList(activityData, activityFromSDK)
-      .filter((t) => t.item_type === 'track')
-      .map((t) => t.item)
-      .filter(removeNullable)
+    const tracks = transformAndCleanList(
+      activityData,
+      (activity: full.ActivityFull) => trackActivityFromSDK(activity)?.item
+    )
 
     const processedTracks = yield* call(processAndCacheTracks, tracks)
     const processedTracksMap = keyBy(processedTracks, 'track_id')

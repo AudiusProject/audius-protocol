@@ -1,4 +1,7 @@
-import { activityFromSDK, transformAndCleanList } from '@audius/common/adapters'
+import {
+  trackActivityFromSDK,
+  transformAndCleanList
+} from '@audius/common/adapters'
 import { FavoriteType, Favorite, User } from '@audius/common/models'
 import {
   accountSelectors,
@@ -11,7 +14,6 @@ import {
 import {
   decodeHashId,
   encodeHashId,
-  removeNullable,
   waitForValue,
   Nullable
 } from '@audius/common/utils'
@@ -43,8 +45,8 @@ type LibraryParams = {
   offset: number
   limit: number
   query: string
-  sortMethod: full.GetUserLibraryTracksSortMethodEnum
-  sortDirection: full.GetUserLibraryTracksSortDirectionEnum
+  sortMethod: string
+  sortDirection: string
   category: LibraryCategoryType
 }
 
@@ -68,8 +70,9 @@ function* sendLibraryRequest({
       offset,
       limit,
       query,
-      sortMethod,
-      sortDirection,
+      sortMethod: sortMethod as full.GetUserLibraryTracksSortMethodEnum,
+      sortDirection:
+        sortDirection as full.GetUserLibraryTracksSortDirectionEnum,
       type: category
     }
   )
@@ -77,11 +80,8 @@ function* sendLibraryRequest({
   const savedTracksResponseData = savedTracksResponse.data ?? []
   const tracks = transformAndCleanList(
     savedTracksResponse.data,
-    activityFromSDK
+    (activity: full.ActivityFull) => trackActivityFromSDK(activity)?.item
   )
-    .filter((t) => t.item_type === 'track')
-    .map((t) => t.item)
-    .filter(removeNullable)
 
   if (!tracks) {
     throw new Error('Something went wrong with library tracks request.')

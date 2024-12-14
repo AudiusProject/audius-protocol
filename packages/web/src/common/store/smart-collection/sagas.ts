@@ -1,4 +1,7 @@
-import { activityFromSDK, transformAndCleanList } from '@audius/common/adapters'
+import {
+  trackActivityFromSDK,
+  transformAndCleanList
+} from '@audius/common/adapters'
 import {
   SmartCollectionVariant,
   Track,
@@ -12,7 +15,8 @@ import {
   collectionPageActions,
   getContext
 } from '@audius/common/store'
-import { encodeHashId, removeNullable, route } from '@audius/common/utils'
+import { encodeHashId, route } from '@audius/common/utils'
+import { full } from '@audius/sdk'
 import { GetBestNewReleasesWindowEnum } from '@audius/sdk/src/sdk/api/generated/full'
 import { takeEvery, put, call, select } from 'typed-redux-saga'
 
@@ -60,12 +64,8 @@ function* fetchHeavyRotation() {
 
   const mostListenedTracks = transformAndCleanList(
     activityData,
-    activityFromSDK
-  )
-    .filter((t) => t.item_type === 'track')
-    .map((t) => t.item)
-    .filter(removeNullable)
-    .filter((track) => !track.is_unlisted)
+    (activity: full.ActivityFull) => trackActivityFromSDK(activity)?.item
+  ).filter((track) => !track.is_unlisted)
 
   const users = yield* call(
     retrieveUsers,

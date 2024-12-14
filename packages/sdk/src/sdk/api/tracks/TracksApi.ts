@@ -25,6 +25,7 @@ import { retry3 } from '../../utils/retry'
 import {
   Configuration,
   StreamTrackRequest,
+  DownloadTrackRequest,
   TracksApi as GeneratedTracksApi,
   ExtendedPaymentSplit,
   instanceOfExtendedPurchaseGate
@@ -88,12 +89,60 @@ export class TracksApi extends GeneratedTracksApi {
       )
     }
 
+    const queryParams = new URLSearchParams()
+    if (params.userId) queryParams.append('user_id', params.userId)
+    if (params.preview !== undefined)
+      queryParams.append('preview', String(params.preview))
+    if (params.userSignature)
+      queryParams.append('user_signature', params.userSignature)
+    if (params.userData) queryParams.append('user_data', params.userData)
+    if (params.nftAccessSignature)
+      queryParams.append('nft_access_signature', params.nftAccessSignature)
+    if (params.skipPlayCount !== undefined)
+      queryParams.append('skip_play_count', String(params.skipPlayCount))
+    if (params.apiKey) queryParams.append('api_key', params.apiKey)
+    if (params.skipCheck !== undefined)
+      queryParams.append('skip_check', String(params.skipCheck))
+    if (params.noRedirect !== undefined)
+      queryParams.append('no_redirect', String(params.noRedirect))
+
     const path = `/tracks/{track_id}/stream`.replace(
       `{${'track_id'}}`,
       encodeURIComponent(String(params.trackId))
     )
     const host = await this.discoveryNodeSelectorService.getSelectedEndpoint()
     return `${host}${BASE_PATH}${path}`
+  }
+
+  /**
+   * Get the url of the track's downloadable file
+   */
+  async getTrackDownloadUrl(params: DownloadTrackRequest): Promise<string> {
+    if (params.trackId === null || params.trackId === undefined) {
+      throw new RequiredError(
+        'trackId',
+        'Required parameter params.trackId was null or undefined when calling getTrack.'
+      )
+    }
+
+    const queryParams = new URLSearchParams()
+    if (params.userId) queryParams.append('user_id', params.userId)
+    if (params.userSignature)
+      queryParams.append('user_signature', params.userSignature)
+    if (params.userData) queryParams.append('user_data', params.userData)
+    if (params.nftAccessSignature)
+      queryParams.append('nft_access_signature', params.nftAccessSignature)
+    if (params.original !== undefined)
+      queryParams.append('original', String(params.original))
+    if (params.filename) queryParams.append('filename', params.filename)
+
+    const path = `/tracks/{track_id}/download`.replace(
+      `{${'track_id'}}`,
+      encodeURIComponent(String(params.trackId))
+    )
+    const host = await this.discoveryNodeSelectorService.getSelectedEndpoint()
+    const queryString = queryParams.toString()
+    return `${host}${BASE_PATH}${path}${queryString ? '?' + queryString : ''}`
   }
 
   /** @hidden

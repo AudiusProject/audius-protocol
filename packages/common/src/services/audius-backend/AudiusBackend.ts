@@ -1172,6 +1172,11 @@ export const audiusBackend = ({
     return { data, signature }
   }
 
+  async function signGatedContentRequest({ sdk }: { sdk: AudiusSdk }) {
+    const data = `Gated content user signature at ${Date.now()}`
+    return await signData({ sdk, data })
+  }
+
   async function signIdentityServiceRequest({ sdk }: { sdk: AudiusSdk }) {
     const unixTs = Math.round(new Date().getTime() / 1000) // current unix timestamp (sec)
     const data = `Click sign to authenticate with identity service: ${unixTs}`
@@ -2071,6 +2076,7 @@ export const audiusBackend = ({
     setup,
     setUserHandleForRelay,
     signData,
+    signGatedContentRequest,
     signDiscoveryNodeRequest,
     signIdentityServiceRequest,
     signUp,

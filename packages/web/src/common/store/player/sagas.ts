@@ -99,6 +99,7 @@ export function* watchPlay() {
 
     const audioPlayer = yield* getContext('audioPlayer')
     const isNativeMobile = yield getContext('isNativeMobile')
+    const audiusBackendInstance = yield* getContext('audiusBackendInstance')
 
     if (trackId) {
       // Load and set end action.
@@ -145,6 +146,10 @@ export function* watchPlay() {
         shouldPreview,
         retries ?? 0
       )
+      const { data, signature } = yield* call(
+        audiusBackendInstance.signGatedContentRequest,
+        { sdk }
+      )
 
       const discoveryNodeStreamUrl = yield* call(
         [sdk.tracks, sdk.tracks.getTrackStreamUrl],
@@ -154,6 +159,8 @@ export function* watchPlay() {
           nftAccessSignature: nftAccessSignature
             ? JSON.stringify(nftAccessSignature)
             : undefined,
+          userSignature: signature,
+          userData: data,
           preview: shouldPreview ? true : undefined
         }
       )

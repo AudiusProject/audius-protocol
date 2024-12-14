@@ -45,6 +45,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import { useAsync, usePrevious } from 'react-use'
 
 import { make, track as analyticsTrack } from 'app/services/analytics'
+import { audiusBackendInstance } from 'app/services/audius-backend-instance'
 import {
   getLocalAudioPath,
   getLocalTrackCoverArtPath
@@ -343,9 +344,15 @@ export const AudioPlayer = () => {
       } else {
         const sdk = await audiusSdk()
         const nftAccessSignature = nftAccessSignatureMap[trackId]?.mp3 ?? null
+        const { data, signature } =
+          await audiusBackendInstance.signGatedContentRequest({
+            sdk
+          })
         url = await sdk.tracks.getTrackStreamUrl({
           trackId: Id.parse(track.track_id),
           userId: OptionalId.parse(currentUserId),
+          userSignature: signature,
+          userData: data,
           nftAccessSignature: nftAccessSignature
             ? JSON.stringify(nftAccessSignature)
             : undefined
@@ -625,8 +632,6 @@ export const AudioPlayer = () => {
   const enqueueTracksJobRef = useRef<Promise<void>>()
   // A way to abort the enqeue tracks job if a new lineup is played
   const abortEnqueueControllerRef = useRef(new AbortController())
-  // The ref of trackQueryParams to avoid re-generating query params for the same track
-  const trackQueryParams = useRef({})
 
   const handleQueueChange = useCallback(async () => {
     const refUids = queueListRef.current

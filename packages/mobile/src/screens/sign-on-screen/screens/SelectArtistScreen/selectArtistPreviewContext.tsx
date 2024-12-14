@@ -11,6 +11,7 @@ import { Formik } from 'formik'
 import TrackPlayer, { RepeatMode, State } from 'react-native-track-player'
 import { useAsync, useEffectOnce } from 'react-use'
 
+import { audiusBackendInstance } from 'app/services/audius-backend-instance'
 import { audiusSdk } from 'app/services/sdk/audius-sdk'
 
 type PreviewContextProps = {
@@ -67,9 +68,16 @@ export const SelectArtistsPreviewContextProvider = (props: {
       )?.track_id
       if (!trackId) return
 
+      const { data, signature } =
+        await audiusBackendInstance.signGatedContentRequest({
+          sdk
+        })
+
       const url = await sdk.tracks.getTrackStreamUrl({
         trackId: Id.parse(trackId),
-        userId: OptionalId.parse(currentUserId)
+        userId: OptionalId.parse(currentUserId),
+        userSignature: signature,
+        userData: data
       })
 
       setTrackUrl(url)

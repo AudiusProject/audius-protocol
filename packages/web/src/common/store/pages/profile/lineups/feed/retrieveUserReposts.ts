@@ -1,4 +1,7 @@
-import { activityFromSDK, transformAndCleanList } from '@audius/common/adapters'
+import {
+  repostActivityFromSDK,
+  transformAndCleanList
+} from '@audius/common/adapters'
 import {
   ID,
   Track,
@@ -56,7 +59,7 @@ export function* retrieveUserReposts({
   const reposts = transformAndCleanList(
     repostsSDKData,
     // `getTracksAndCollections` below expects a list of just the items
-    (activity: full.ActivityFull) => activityFromSDK(activity)?.item
+    (activity: full.ActivityFull) => repostActivityFromSDK(activity)?.item
   )
 
   const [tracks, collections] = getTracksAndCollections(reposts)

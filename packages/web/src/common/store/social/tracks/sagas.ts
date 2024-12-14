@@ -630,40 +630,27 @@ function* downloadTracks({
   try {
     const audiusSdk = yield* getContext('audiusSdk')
     const sdk = yield* call(audiusSdk)
+    const audiusBackend = yield* getContext('audiusBackendInstance')
     const trackDownload = yield* getContext('trackDownload')
-    // let queryParams: QueryParams = {}
 
     const nftAccessSignatureMap = yield* select(getNftAccessSignatureMap)
     const userId = yield* select(getUserId)
+    const { data, signature } = yield* call(
+      audiusBackend.signGatedContentRequest,
+      { sdk }
+    )
     const nftAccessSignature = original
       ? nftAccessSignatureMap[parentTrackId]?.original ?? null
       : nftAccessSignatureMap[parentTrackId]?.mp3 ?? null
 
-    // queryParams = (yield* call(getQueryParams, {
-    //   audiusBackendInstance,
-    //   sdk,
-    //   nftAccessSignature,
-    //   userId
-    // })) as unknown as QueryParams
-
-    // queryParams.original = original
-
-    const files = tracks.map(({ trackId, filename }) => {
-      // queryParams.filename = filename
-      // return {
-      //   url: apiClient.makeUrl(
-      //     `/tracks/${encodeHashId(trackId)}/download`,
-      //     queryParams
-      //   ),
-      //   filename
-      // }
-    })
     yield* call(async () => {
       const files = await Promise.all(
         tracks.map(async ({ trackId, filename }) => {
-          const url = await sdk.tracks.getTrackStreamUrl({
+          const url = await sdk.tracks.getTrackDownloadUrl({
             trackId: Id.parse(trackId),
             userId: OptionalId.parse(userId),
+            userSignature: signature,
+            userData: data,
             nftAccessSignature: nftAccessSignature
               ? JSON.stringify(nftAccessSignature)
               : undefined,
