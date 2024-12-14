@@ -187,36 +187,3 @@ def enqueue_trending_challenges(
     logger.debug(
         f"calculate_trending_challenges.py | Finished calculating trending in {update_total} seconds"
     )
-
-
-# ####### CELERY TASKS ####### #
-# @celery.task(name="calculate_trending_challenges", bind=True)
-# @save_duration_metric(metric_group="celery_task")
-# def calculate_trending_challenges_task(self, date: Optional[date] = None):
-#     """Caches all trending combination of time-range and genre (including no genre)."""
-#     if date is None:
-#         logger.error("calculate_trending_challenges.py | Must be called with a date")
-#         return
-#     db = calculate_trending_challenges_task.db
-#     redis = calculate_trending_challenges_task.redis
-#     challenge_bus = calculate_trending_challenges_task.challenge_event_bus
-#     web3 = web3_provider.get_web3()
-#     have_lock = False
-#     update_lock = redis.lock("calculate_trending_challenges_lock", timeout=7200)
-#     try:
-#         have_lock = update_lock.acquire(blocking=False)
-#         if have_lock:
-
-#             enqueue_trending_challenges(db, web3, redis, challenge_bus, date)
-#         else:
-#             logger.debug(
-#                 "calculate_trending_challenges.py | Failed to acquire index trending lock"
-#             )
-#     except Exception as e:
-#         logger.error(
-#             "calculate_trending_challenges.py | Fatal error in main loop", exc_info=True
-#         )
-#         raise e
-#     finally:
-#         if have_lock:
-#             update_lock.release()

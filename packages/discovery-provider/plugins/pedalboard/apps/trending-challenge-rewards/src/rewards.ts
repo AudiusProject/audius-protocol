@@ -27,7 +27,6 @@ const TRENDING_ID = 'tt'
 const UNDERGROUND_TRENDING_ID = 'tut'
 const PLAYLIST_TRENDING_ID = 'tp'
 const TRENDING_REWARD_IDS = [TRENDING_ID, PLAYLIST_TRENDING_ID, UNDERGROUND_TRENDING_ID]
-const START_BLOCK = 86579600
 
 
 // TODO: move something like this into App so results are commonplace for handlers
@@ -77,11 +76,12 @@ export const onDisburse = async (
     console.log('endpoint = ', endpoint)
     const toDisburse: Challenge[] = []
     for (const challengeId in TRENDING_REWARD_IDS) {
+      // Get all undisbursed challenges for the given challenge id starting from a bit before
+      // our last completed block.
+      const blockNumber = completedBlock - 1000
       // Fetch all undisbursed challenges
       const res = await axios.get(
-        // Get all undisbursed challenges for the given challenge id starting from a bit before
-        // our last completed block.
-        `${endpoint}/v1/challenges/undisbursed?challenge_id=${challengeId}&completed_blocknumber=${completedBlock - 1000}`
+        `${endpoint}/v1/challenges/undisbursed?challenge_id=${challengeId}&completed_blocknumber=${blockNumber}`
       )
       toDisburse.push(...res.data.data)
     }
