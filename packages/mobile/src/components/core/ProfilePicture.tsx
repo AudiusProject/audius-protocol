@@ -38,11 +38,11 @@ export const ProfilePicture = (props: ProfilePictureProps) => {
     size: SquareSizes.SIZE_150_BY_150
   })
 
-  return source ? (
+  return (
     <Avatar
       source={source}
       accessibilityLabel={accessibilityLabel}
       {...props}
     />
-  ) : null
+  )
 }

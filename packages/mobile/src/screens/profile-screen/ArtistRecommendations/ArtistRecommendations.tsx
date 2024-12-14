@@ -174,7 +174,7 @@ export const ArtistRecommendations = (props: ArtistRecommendationsProps) => {
                 width: spacing.unit13,
                 marginRight: -spacing.s
               })}
-              strokeWidth='thin'
+              borderWidth='thin'
             />
           </TouchableOpacity>
         ))}
