@@ -30,6 +30,7 @@ from src.models.tracks.track_route import TrackRoute
 from src.models.users.associated_wallet import AssociatedWallet
 from src.models.users.user import User
 from src.models.users.user_events import UserEvent
+from src.tasks.calculate_trending_challenges import enqueue_trending_challenges
 from src.tasks.celery_app import celery
 from src.tasks.entity_manager.entity_manager import entity_manager_update
 from src.tasks.sort_block_transactions import sort_block_transactions
@@ -349,12 +350,11 @@ def index_next_block(
                 [should_update, date] = should_trending_challenge_update(
                     session, next_block["timestamp"]
                 )
-                if should_update:
-                    celery.send_task(
-                        "calculate_trending_challenges",
-                        queue="index_nethermind",
-                        kwargs={"date": date},
+                if should_update and date is not None:
+                    enqueue_trending_challenges(
+                        session, web3, redis, challenge_bus, date
                     )
+
         except Exception as e:
             # Do not throw error, as this should not stop indexing
             logger.error(
