@@ -14,6 +14,7 @@ import (
 	"github.com/AudiusProject/audius-protocol/pkg/core/mempool"
 	"github.com/AudiusProject/audius-protocol/pkg/core/pubsub"
 	abcitypes "github.com/cometbft/cometbft/abci/types"
+	"github.com/cometbft/cometbft/crypto/ed25519"
 	cometbfttypes "github.com/cometbft/cometbft/types"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -135,6 +136,7 @@ func (app *CoreApplication) FinalizeBlock(ctx context.Context, req *abcitypes.Fi
 	logger := app.logger
 	var txs = make([]*abcitypes.ExecTxResult, len(req.Txs))
 	var validatorUpdates = abcitypes.ValidatorUpdates{}
+	var validatorUpdatesMap = map[string]bool{}
 
 	// open in progres pg transaction
 	app.startInProgressTx(ctx)
@@ -162,14 +164,20 @@ func (app *CoreApplication) FinalizeBlock(ctx context.Context, req *abcitypes.Fi
 			}
 
 			if vr := signedTx.GetValidatorRegistration(); vr != nil {
-				validatorUpdates = append(
-					validatorUpdates,
-					abcitypes.ValidatorUpdate{
-						Power:       vr.Power,
-						PubKeyBytes: vr.PubKey,
-						PubKeyType:  "ed25519",
-					},
-				)
+				// Avoid error when duplicate validator update txs are in the same block
+				vrPubKey := ed25519.PubKey(vr.GetPubKey())
+				vrAddr := vrPubKey.Address().String()
+				if _, ok := validatorUpdatesMap[vrAddr]; !ok {
+					validatorUpdates = append(
+						validatorUpdates,
+						abcitypes.ValidatorUpdate{
+							Power:       vr.Power,
+							PubKeyBytes: vr.PubKey,
+							PubKeyType:  "ed25519",
+						},
+					)
+					validatorUpdatesMap[vrAddr] = true
+				}
 			}
 
 			// set finalized txs in finalize step to remove from mempool during commit step
