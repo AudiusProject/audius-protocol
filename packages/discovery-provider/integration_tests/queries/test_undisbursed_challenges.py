@@ -146,7 +146,13 @@ def test_undisbursed_challenges(app):
         # Test that all undisbursed challenges are returned in order
         undisbursed = get_undisbursed_challenges(
             session,
-            {"user_id": None, "limit": 10, "offset": 0, "completed_blocknumber": 99},
+            {
+                "user_id": None,
+                "limit": 10,
+                "offset": 0,
+                "completed_blocknumber": 99,
+                "challenge_id": None,
+            },
         )
 
         expected = [
