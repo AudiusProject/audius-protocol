@@ -60,13 +60,13 @@ func (s *Server) startEchoServer() error {
 		g.GET("/debug/pprof/block", echo.WrapHandler(pprof.Handler("block")))
 	}
 
+	close(s.awaitHttpServerReady)
+	s.logger.Info("core http server ready")
+
 	if err := s.httpServer.Start(s.config.CoreServerAddr); err != nil {
 		s.logger.Errorf("echo failed to start: %v", err)
 		return err
 	}
-
-	close(s.awaitHttpServerReady)
-	s.logger.Info("core http server ready")
 	return nil
 }
 

@@ -210,12 +210,12 @@ func (s *Server) startGRPC() error {
 
 	core_proto.RegisterProtocolServer(gs, s)
 
+	close(s.awaitGrpcServerReady)
+	s.logger.Info("core gRPC server ready")
+
 	if err := gs.Serve(grpcLis); err != nil {
 		s.logger.Errorf("grpc failed to start: %v", err)
 		return err
 	}
-
-	close(s.awaitGrpcServerReady)
-	s.logger.Info("core gRPC server ready")
 	return nil
 }
