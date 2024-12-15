@@ -1,5 +1,4 @@
 import {
-  GUEST_EMAIL,
   useAccountHasClaimableRewards,
   useFeatureFlag,
   useIsManagedAccount
@@ -7,7 +6,7 @@ import {
 import { Name } from '@audius/common/models'
 import { FeatureFlags, StringKeys } from '@audius/common/services'
 import { SIGN_UP_PAGE } from '@audius/common/src/utils/route'
-import { chatSelectors } from '@audius/common/store'
+import { accountSelectors, chatSelectors } from '@audius/common/store'
 import { removeNullable, route } from '@audius/common/utils'
 import {
   IconKebabHorizontal,
@@ -19,7 +18,6 @@ import {
   PopupMenu,
   PopupMenuItem
 } from '@audius/harmony'
-import { useLocalStorage } from '@uidotdev/usehooks'
 import cn from 'classnames'
 import { useDispatch } from 'react-redux'
 
@@ -39,6 +37,7 @@ import styles from './NavMenuButton.module.css'
 const { AUDIO_PAGE, CHATS_PAGE, DASHBOARD_PAGE, PAYMENTS_PAGE, SETTINGS_PAGE } =
   route
 
+const { getIsGuestAccount } = accountSelectors
 const messages = {
   settings: 'Settings',
   dashboard: 'Artist Dashboard',
@@ -52,7 +51,7 @@ export const NavMenuButton = () => {
   const dispatch = useDispatch()
   const navigate = useNavigateToPage()
   const hasUnreadMessages = useSelector(chatSelectors.getHasUnreadMessages)
-  const isGuest = useLocalStorage(GUEST_EMAIL)
+  const isGuest = useSelector(getIsGuestAccount)
   const isUSDCEnabled = useIsUSDCEnabled()
   const { isEnabled: isThemeV2Enabled } = useFeatureFlag(FeatureFlags.THEME_V2)
   const challengeRewardIds = useRemoteVar(StringKeys.CHALLENGE_REWARD_IDS)

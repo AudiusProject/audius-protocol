@@ -47,7 +47,7 @@ const { removeFromPlaylistLibrary } = playlistLibraryHelpers
 const { getUser } = cacheUsersSelectors
 const { getCollections, getCollection } = cacheCollectionsSelectors
 const { addLocalCollection, removeLocalCollection } = savedPageActions
-const { getPlaylistLibrary, getUserId } = accountSelectors
+const { getPlaylistLibrary, getUserId, getIsGuestAccount } = accountSelectors
 const { collectionPage } = route
 
 /* REPOST COLLECTION */
@@ -61,8 +61,7 @@ export function* repostCollectionAsync(
 ) {
   yield* call(waitForWrite)
   const userId = yield* select(getUserId)
-  const localStorage = yield* getContext('localStorage')
-  const isGuest = yield* call([localStorage, 'getGuestEmail'])
+  const isGuest = yield* select(getIsGuestAccount)
   if (!userId || isGuest) {
     yield* put(signOnActions.openSignOn(false))
     yield* put(signOnActions.showRequiresAccountToast())
@@ -189,8 +188,7 @@ export function* undoRepostCollectionAsync(
 ) {
   yield* call(waitForWrite)
   const userId = yield* select(getUserId)
-  const localStorage = yield* getContext('localStorage')
-  const isGuest = yield* call([localStorage, 'getGuestEmail'])
+  const isGuest = yield* select(getIsGuestAccount)
   if (!userId || isGuest) {
     yield* put(signOnActions.openSignOn(false))
     yield* put(signOnActions.showRequiresAccountToast())
@@ -315,8 +313,7 @@ export function* saveSmartCollection(
 ) {
   yield* call(waitForWrite)
   const userId = yield* select(getUserId)
-  const localStorage = yield* getContext('localStorage')
-  const isGuest = yield* call([localStorage, 'getGuestEmail'])
+  const isGuest = yield* select(getIsGuestAccount)
   if (!userId || isGuest) {
     yield* put(signOnActions.showRequiresAccountToast())
     yield* put(signOnActions.openSignOn(false))
@@ -349,8 +346,7 @@ export function* saveCollectionAsync(
 ) {
   yield* call(waitForWrite)
   const userId = yield* select(getUserId)
-  const localStorage = yield* getContext('localStorage')
-  const isGuest = yield* call([localStorage, 'getGuestEmail'])
+  const isGuest = yield* select(getIsGuestAccount)
   if (!userId || isGuest) {
     yield* put(signOnActions.showRequiresAccountToast())
     yield* put(signOnActions.openSignOn(false))

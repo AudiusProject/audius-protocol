@@ -23,7 +23,7 @@ import errorSagas from './errorSagas'
 const { profilePage } = route
 const { getUsers, getUser } = cacheUsersSelectors
 const { setNotificationSubscription } = profilePageActions
-const { getUserId } = accountSelectors
+const { getUserId, getIsGuestAccount } = accountSelectors
 
 /* FOLLOW */
 
@@ -36,8 +36,7 @@ export function* followUser(
 ) {
   yield* call(waitForWrite)
   const accountId = yield* select(getUserId)
-  const localStorage = yield* getContext('localStorage')
-  const isGuest = yield* call([localStorage, 'getGuestEmail'])
+  const isGuest = yield* select(getIsGuestAccount)
   if (!accountId || isGuest) {
     yield* put(signOnActions.openSignOn(false))
     yield* put(signOnActions.showRequiresAccountToast())
@@ -195,8 +194,7 @@ export function* unfollowUser(
   /* Make Async Backend Call */
   yield* call(waitForWrite)
   const accountId = yield* select(getUserId)
-  const localStorage = yield* getContext('localStorage')
-  const isGuest = yield* call([localStorage, 'getGuestEmail'])
+  const isGuest = yield* select(getIsGuestAccount)
   if (!accountId || isGuest) {
     yield* put(signOnActions.openSignOn(false))
     yield* put(signOnActions.showRequiresAccountToast())

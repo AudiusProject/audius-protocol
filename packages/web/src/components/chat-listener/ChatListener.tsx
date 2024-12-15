@@ -1,19 +1,17 @@
 import { useEffect } from 'react'
 
-import { GUEST_EMAIL } from '@audius/common/hooks'
 import { Status } from '@audius/common/models'
 import { accountSelectors, chatActions } from '@audius/common/store'
-import { useLocalStorage } from '@uidotdev/usehooks'
 import { useDispatch, useSelector } from 'react-redux'
 
 const { connect, disconnect, fetchMoreChats, fetchUnreadMessagesCount } =
   chatActions
-const { getAccountStatus } = accountSelectors
+const { getAccountStatus, getIsGuestAccount } = accountSelectors
 
 export const ChatListener = () => {
   const dispatch = useDispatch()
   const accountStatus = useSelector(getAccountStatus)
-  const isGuest = useLocalStorage(GUEST_EMAIL)
+  const isGuest = useSelector(getIsGuestAccount)
   // Connect to chats websockets and prefetch chats
   useEffect(() => {
     if (accountStatus === Status.SUCCESS && !isGuest) {

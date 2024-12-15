@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 
-import { GUEST_EMAIL, useFeatureFlag } from '@audius/common/hooks'
+import { useFeatureFlag } from '@audius/common/hooks'
 import { FeatureFlags } from '@audius/common/services'
 import { accountSelectors } from '@audius/common/store'
 import { route } from '@audius/common/utils'
@@ -11,7 +11,6 @@ import {
   Paper,
   SelectablePill
 } from '@audius/harmony'
-import { useLocalStorage } from '@uidotdev/usehooks'
 import { replace } from 'connected-react-router'
 import { useDispatch, useSelector } from 'react-redux'
 
@@ -28,7 +27,7 @@ import { WithdrawalsTab, useWithdrawals } from '../components/WithdrawalsTab'
 import { PayAndEarnPageProps, TableType } from '../types'
 
 const { PURCHASES_PAGE, SALES_PAGE, WITHDRAWALS_PAGE } = route
-const { getAccountHasTracks } = accountSelectors
+const { getAccountHasTracks, getIsGuestAccount } = accountSelectors
 
 export const messages = {
   title: 'Pay & Earn',
@@ -48,7 +47,7 @@ type TableMetadata = {
 export const PayAndEarnPage = ({ tableView }: PayAndEarnPageProps) => {
   const dispatch = useDispatch()
   const accountHasTracks = useSelector(getAccountHasTracks)
-  const isGuest = useLocalStorage(GUEST_EMAIL)
+  const isGuest = useSelector(getIsGuestAccount)
   const [tableOptions, setTableOptions] = useState<TableType[] | null>(null)
   const [selectedTable, setSelectedTable] = useState<TableType | null>(null)
   useEffect(() => {

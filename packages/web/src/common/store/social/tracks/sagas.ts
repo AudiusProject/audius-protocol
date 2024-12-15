@@ -41,7 +41,7 @@ import watchTrackErrors from './errorSagas'
 import { watchRecordListen } from './recordListen'
 const { getUser } = cacheUsersSelectors
 const { getTrack, getTracks } = cacheTracksSelectors
-const { getUserId, getUserHandle } = accountSelectors
+const { getUserId, getUserHandle, getIsGuestAccount } = accountSelectors
 const { getNftAccessSignatureMap } = gatedContentSelectors
 const { setVisibility } = modalsActions
 
@@ -55,8 +55,7 @@ export function* repostTrackAsync(
 ) {
   yield* call(waitForWrite)
   const userId = yield* select(getUserId)
-  const localStorage = yield* getContext('localStorage')
-  const isGuest = yield* call([localStorage, 'getGuestEmail'])
+  const isGuest = yield* select(getIsGuestAccount)
   if (!userId || isGuest) {
     yield* put(signOnActions.openSignOn(false))
     yield* put(signOnActions.showRequiresAccountToast())
@@ -207,8 +206,7 @@ export function* undoRepostTrackAsync(
 ) {
   yield* call(waitForWrite)
   const userId = yield* select(getUserId)
-  const localStorage = yield* getContext('localStorage')
-  const isGuest = yield* call([localStorage, 'getGuestEmail'])
+  const isGuest = yield* select(getIsGuestAccount)
   if (!userId || isGuest) {
     yield* put(signOnActions.openSignOn(false))
     yield* put(signOnActions.showRequiresAccountToast())
@@ -313,8 +311,7 @@ export function* saveTrackAsync(
 ) {
   yield* call(waitForWrite)
   const userId = yield* select(getUserId)
-  const localStorage = yield* getContext('localStorage')
-  const isGuest = yield* call([localStorage, 'getGuestEmail'])
+  const isGuest = yield* select(getIsGuestAccount)
   if (!userId || isGuest) {
     yield* put(signOnActions.showRequiresAccountToast())
     yield* put(signOnActions.openSignOn(false))
@@ -458,8 +455,7 @@ export function* unsaveTrackAsync(
 ) {
   yield* call(waitForWrite)
   const userId = yield* select(getUserId)
-  const localStorage = yield* getContext('localStorage')
-  const isGuest = yield* call([localStorage, 'getGuestEmail'])
+  const isGuest = yield* select(getIsGuestAccount)
   if (!userId || isGuest) {
     yield* put(signOnActions.openSignOn(false))
     yield* put(signOnActions.showRequiresAccountToast())
