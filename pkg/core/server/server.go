@@ -3,6 +3,7 @@ package server
 import (
 	"context"
 	"fmt"
+	"sync"
 
 	"github.com/AudiusProject/audius-protocol/pkg/core/common"
 	"github.com/AudiusProject/audius-protocol/pkg/core/config"
@@ -34,8 +35,10 @@ type Server struct {
 	eth   *ethclient.Client
 	node  *nm.Node
 	rpc   *local.Local
-	peers []*sdk.Sdk
 	mempl *Mempool
+
+	peers   map[string]*sdk.Sdk
+	peersMU sync.RWMutex
 
 	txPubsub *TransactionHashPubsub
 
@@ -51,9 +54,6 @@ type Server struct {
 func NewServer(config *config.Config, cconfig *cconfig.Config, logger *common.Logger, pool *pgxpool.Pool, eth *ethclient.Client) (*Server, error) {
 	// create mempool
 	mempl := NewMempool(logger, config, db.New(pool), cconfig.Mempool.Size)
-
-	// TODO: don't do this immediately
-	mempl.CreateValidatorClients()
 
 	// create pubsubs
 	txPubsub := NewPubsub[struct{}]()
@@ -78,7 +78,7 @@ func NewServer(config *config.Config, cconfig *cconfig.Config, logger *common.Lo
 		db:        db.New(pool),
 		eth:       eth,
 		mempl:     mempl,
-		peers:     []*sdk.Sdk{},
+		peers:     make(map[string]*sdk.Sdk),
 		txPubsub:  txPubsub,
 		abciState: NewABCIState(),
 

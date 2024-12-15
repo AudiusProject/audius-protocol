@@ -1,5 +1,7 @@
 package sdk
 
+import "time"
+
 type SdkOption func(*Sdk)
 
 func NewSdk(opts ...SdkOption) (*Sdk, error) {
@@ -45,5 +47,17 @@ func WithGrpcendpoint(GRPCEndpoint string) SdkOption {
 func WithJrpcendpoint(JRPCEndpoint string) SdkOption {
 	return func(s *Sdk) {
 		s.JRPCEndpoint = JRPCEndpoint
+	}
+}
+
+func WithRetries(retries int) SdkOption {
+	return func(s *Sdk) {
+		s.retries = retries
+	}
+}
+
+func WithDelay(delay time.Duration) SdkOption {
+	return func(s *Sdk) {
+		s.delay = delay
 	}
 }

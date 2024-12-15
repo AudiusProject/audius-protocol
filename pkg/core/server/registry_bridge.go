@@ -36,22 +36,25 @@ func (s *Server) startRegistryBridge() error {
 		return fmt.Errorf("init registry bridge failed comet rpc status: %v", err)
 	}
 
-	retries := 60
-	delay := 1 * time.Minute
-
 	if err := s.awaitNodeCatchup(context.Background()); err != nil {
 		return err
 	}
 
-	for {
+	retries := 60
+	delay := 10 * time.Second
+
+	ticker := time.NewTicker(delay)
+	defer ticker.Stop()
+
+	for range ticker.C {
+		if retries == 0 {
+			s.logger.Warn("exhausted registration retries")
+			return nil
+		}
+
 		if err := s.RegisterSelf(); err != nil {
 			s.logger.Errorf("node registration failed, will try again: %v", err)
-			time.Sleep(delay)
-			retries -= 1
-			if retries == 0 {
-				s.logger.Warn("exhausted registration retries")
-				break
-			}
+			retries--
 		} else {
 			return nil
 		}
@@ -134,6 +137,22 @@ func (s *Server) isDevEnvironment() bool {
 }
 
 func (s *Server) registerSelfOnComet(ethBlock, spID string) error {
+	genValidators := s.config.GenesisFile.Validators
+	isGenValidator := false
+	for _, validator := range genValidators {
+		if validator.Address.String() == s.config.ProposerAddress {
+			isGenValidator = true
+			break
+		}
+	}
+
+	peers := s.GetPeers()
+	noPeers := len(peers) == 0
+
+	if !isGenValidator && noPeers {
+		return fmt.Errorf("not in genesis and no peers, retrying to register on comet later")
+	}
+
 	serviceType, err := contracts.ServiceType(s.config.NodeType)
 	if err != nil {
 		return fmt.Errorf("invalid node type: %v", err)

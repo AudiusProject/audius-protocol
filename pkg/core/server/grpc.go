@@ -63,7 +63,7 @@ func (s *Server) SendTransaction(ctx context.Context, req *core_proto.SendTransa
 	s.logger.Infof("adding tx: %v", req.Transaction)
 
 	// add transaction to mempool with broadcast set to true
-	err = s.mempl.AddTransaction(txhash, mempoolTx, true)
+	err = s.addMempoolTransaction(txhash, mempoolTx, true)
 	if err != nil {
 		s.logger.Errorf("tx could not be included in mempool %s: %v", txhash, err)
 		return nil, fmt.Errorf("could not add tx to mempool %v", err)
@@ -105,7 +105,7 @@ func (s *Server) ForwardTransaction(ctx context.Context, req *core_proto.Forward
 		Deadline: deadline,
 	}
 
-	err = s.mempl.AddTransaction(mempoolKey, mempoolTx, false)
+	err = s.addMempoolTransaction(mempoolKey, mempoolTx, false)
 	if err != nil {
 		return nil, fmt.Errorf("could not add tx to mempool %v", err)
 	}

@@ -42,10 +42,5 @@ func (s *Server) onSyncTick() error {
 		return ErrRpcNotSynced
 	}
 
-	err := s.mempl.CreateValidatorClients()
-	if err != nil {
-		return ErrCreateValidatorClients
-	}
-
 	return nil
 }
