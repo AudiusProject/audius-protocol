@@ -77,7 +77,7 @@ func (s *Server) startABCI() error {
 	s.logger.Info("said node was ready")
 
 	s.rpc = local.New(s.node)
-	close(s.rpcReady)
+	close(s.awaitRpcReady)
 
 	s.logger.Info("core CometBFT node starting")
 

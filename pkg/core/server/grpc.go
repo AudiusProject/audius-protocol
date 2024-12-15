@@ -15,7 +15,6 @@ import (
 	"github.com/cometbft/cometbft/abci/types"
 	gogo "github.com/cosmos/gogoproto/proto"
 	"github.com/iancoleman/strcase"
-	"google.golang.org/grpc"
 	"google.golang.org/protobuf/proto"
 )
 
@@ -202,20 +201,21 @@ func (s *Server) Ping(ctx context.Context, req *core_proto.PingRequest) (*core_p
 func (s *Server) startGRPC() error {
 	s.logger.Info("core gRPC server starting")
 
+	gs := s.grpcServer
+
 	grpcLis, err := net.Listen("tcp", s.config.GRPCladdr)
 	if err != nil {
 		return fmt.Errorf("grpc listener not created: %v", err)
 	}
 
-	gs := grpc.NewServer()
 	core_proto.RegisterProtocolServer(gs, s)
-	s.grpcServer = gs
-	close(s.grpcServerReady)
 
 	if err := gs.Serve(grpcLis); err != nil {
 		s.logger.Errorf("grpc failed to start: %v", err)
 		return err
 	}
 
+	close(s.awaitGrpcServerReady)
+	s.logger.Info("core gRPC server ready")
 	return nil
 }

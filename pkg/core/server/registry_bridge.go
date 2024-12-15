@@ -21,7 +21,7 @@ import (
 )
 
 func (s *Server) startRegistryBridge() error {
-	<-s.rpcReady
+	<-s.awaitRpcReady
 	s.logger.Info("starting registry bridge")
 
 	// check eth status

@@ -20,7 +20,9 @@ func (s *Server) startEchoServer() error {
 	httpServer.Use(middleware.Recover())
 	httpServer.HideBanner = true
 
-	<-s.grpcServerReady
+	// wait for grpc server to start first since the http
+	// forward requires the grpc routes to be functional
+	<-s.awaitGrpcServerReady
 	gwMux := runtime.NewServeMux()
 	if err := core_proto.RegisterProtocolHandlerServer(context.TODO(), gwMux, s); err != nil {
 		s.logger.Errorf("could not register protocol handler server: %v", err)
@@ -63,8 +65,8 @@ func (s *Server) startEchoServer() error {
 		return err
 	}
 
-	close(s.httpServerReady)
-
+	close(s.awaitHttpServerReady)
+	s.logger.Info("core http server ready")
 	return nil
 }
 

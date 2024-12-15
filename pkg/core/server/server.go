@@ -43,9 +43,9 @@ type Server struct {
 
 	core_proto.UnimplementedProtocolServer
 
-	httpServerReady chan struct{}
-	grpcServerReady chan struct{}
-	rpcReady        chan struct{}
+	awaitHttpServerReady chan struct{}
+	awaitGrpcServerReady chan struct{}
+	awaitRpcReady        chan struct{}
 }
 
 func NewServer(config *config.Config, cconfig *cconfig.Config, logger *common.Logger, pool *pgxpool.Pool, eth *ethclient.Client) (*Server, error) {
@@ -65,6 +65,7 @@ func NewServer(config *config.Config, cconfig *cconfig.Config, logger *common.Lo
 	}
 
 	httpServer := echo.New()
+	grpcServer := grpc.NewServer()
 
 	s := &Server{
 		config:         config,
@@ -82,10 +83,11 @@ func NewServer(config *config.Config, cconfig *cconfig.Config, logger *common.Lo
 		abciState: NewABCIState(),
 
 		httpServer: httpServer,
+		grpcServer: grpcServer,
 
-		httpServerReady: make(chan struct{}),
-		grpcServerReady: make(chan struct{}),
-		rpcReady:        make(chan struct{}),
+		awaitHttpServerReady: make(chan struct{}),
+		awaitGrpcServerReady: make(chan struct{}),
+		awaitRpcReady:        make(chan struct{}),
 	}
 
 	return s, nil
