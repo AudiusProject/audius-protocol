@@ -21,6 +21,9 @@ import (
 )
 
 func (s *Server) startRegistryBridge() error {
+	<-s.rpcReady
+	s.logger.Info("starting registry bridge")
+
 	// check eth status
 	_, err := s.eth.ChainID(context.Background())
 	if err != nil {

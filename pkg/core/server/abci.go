@@ -42,6 +42,8 @@ var _ abcitypes.Application = (*Server)(nil)
 // initializes the cometbft node and the abci application which is the server itself
 // connects the local rpc instance to the abci application once successfully created
 func (s *Server) startABCI() error {
+	s.logger.Info("starting abci")
+
 	cometConfig := s.cometbftConfig
 	pv := privval.LoadFilePV(
 		cometConfig.PrivValidatorKeyFile(),
@@ -66,13 +68,24 @@ func (s *Server) startABCI() error {
 	)
 
 	if err != nil {
+		s.logger.Errorf("error creating node: %v", err)
 		return fmt.Errorf("creating node: %v", err)
 	}
+
 	s.node = node
+
+	s.logger.Info("said node was ready")
+
 	s.rpc = local.New(s.node)
+	close(s.rpcReady)
 
 	s.logger.Info("core CometBFT node starting")
-	return node.Start()
+
+	if err := s.node.Start(); err != nil {
+		s.logger.Errorf("cometbft failed to start: %v", err)
+		return err
+	}
+	return nil
 }
 
 func (s *Server) Info(ctx context.Context, info *abcitypes.InfoRequest) (*abcitypes.InfoResponse, error) {

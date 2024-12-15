@@ -15,12 +15,12 @@ import (
 func (s *Server) startEchoServer() error {
 	s.logger.Info("core HTTP server starting")
 	// create http server
-	httpServer := echo.New()
+	httpServer := s.httpServer
 	httpServer.Pre(middleware.RemoveTrailingSlash())
 	httpServer.Use(middleware.Recover())
 	httpServer.HideBanner = true
-	s.httpServer = httpServer
 
+	<-s.grpcServerReady
 	gwMux := runtime.NewServeMux()
 	if err := core_proto.RegisterProtocolHandlerServer(context.TODO(), gwMux, s); err != nil {
 		s.logger.Errorf("could not register protocol handler server: %v", err)
@@ -58,7 +58,14 @@ func (s *Server) startEchoServer() error {
 		g.GET("/debug/pprof/block", echo.WrapHandler(pprof.Handler("block")))
 	}
 
-	return s.httpServer.Start(s.config.CoreServerAddr)
+	if err := s.httpServer.Start(s.config.CoreServerAddr); err != nil {
+		s.logger.Errorf("echo failed to start: %v", err)
+		return err
+	}
+
+	close(s.httpServerReady)
+
+	return nil
 }
 
 func (s *Server) GetEcho() *echo.Echo {

@@ -42,6 +42,10 @@ type Server struct {
 	abciState *ABCIState
 
 	core_proto.UnimplementedProtocolServer
+
+	httpServerReady chan struct{}
+	grpcServerReady chan struct{}
+	rpcReady        chan struct{}
 }
 
 func NewServer(config *config.Config, cconfig *cconfig.Config, logger *common.Logger, pool *pgxpool.Pool, eth *ethclient.Client) (*Server, error) {
@@ -60,6 +64,8 @@ func NewServer(config *config.Config, cconfig *cconfig.Config, logger *common.Lo
 		return nil, fmt.Errorf("contracts init error: %v", err)
 	}
 
+	httpServer := echo.New()
+
 	s := &Server{
 		config:         config,
 		cometbftConfig: cconfig,
@@ -74,6 +80,12 @@ func NewServer(config *config.Config, cconfig *cconfig.Config, logger *common.Lo
 		peers:     []*sdk.Sdk{},
 		txPubsub:  txPubsub,
 		abciState: NewABCIState(),
+
+		httpServer: httpServer,
+
+		httpServerReady: make(chan struct{}),
+		grpcServerReady: make(chan struct{}),
+		rpcReady:        make(chan struct{}),
 	}
 
 	return s, nil

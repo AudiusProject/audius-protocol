@@ -14,6 +14,8 @@ var (
 
 // tasks that execute once the node is fully synced
 func (s *Server) startSyncTasks() error {
+	s.logger.Info("starting sync tasks")
+
 	ticker := time.NewTicker(5 * time.Second)
 	defer ticker.Stop()
 
@@ -28,6 +30,9 @@ func (s *Server) startSyncTasks() error {
 }
 
 func (s *Server) onSyncTick() error {
+	<-s.grpcServerReady
+	<-s.rpcReady
+
 	status, _ := s.rpc.Status(context.Background())
 	if status == nil {
 		return ErrRpcStatusNotFound

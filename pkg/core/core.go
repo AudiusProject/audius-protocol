@@ -61,14 +61,13 @@ func run(ctx context.Context, logger *common.Logger) error {
 	}
 
 	if config.ConsoleModule {
+		e := s.GetEcho()
+		con, err := console.NewConsole(config, logger, e, pool)
+		if err != nil {
+			logger.Errorf("console init error: %v", err)
+			return err
+		}
 		go func() {
-			e := s.GetEcho()
-			con, err := console.NewConsole(config, logger, e, pool)
-			if err != nil {
-				logger.Errorf("console init error: %v", err)
-				return
-			}
-
 			logger.Info("core console starting")
 			if err := con.Start(); err != nil {
 				logger.Errorf("console couldn't start or crashed: %v", err)
@@ -77,8 +76,12 @@ func run(ctx context.Context, logger *common.Logger) error {
 		}()
 	}
 
-	defer s.Shutdown(ctx)
-	return s.Start(ctx)
+	if err := s.Start(ctx); err != nil {
+		logger.Errorf("something crashed: %v", err)
+		return err
+	}
+
+	return s.Shutdown(ctx)
 }
 
 /*
