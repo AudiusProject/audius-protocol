@@ -184,7 +184,7 @@ func startEchoProxyWithOptionalTLS(hostUrl *url.URL, enableTLS bool) error {
 
 		go func() {
 			if err := e.StartAutoTLS(":" + httpsPort); err != nil && err != http.ErrServerClosed {
-				e.Logger.Fatal("shutting down the server")
+				e.Logger.Error("HTTPS server failed")
 			}
 		}()
 
