@@ -23,7 +23,7 @@ import { NewEmailField } from '../components/NewEmailField'
 import { PasswordCompletionChecklist } from '../components/PasswordCompletionChecklist'
 import { SignUpAgreementText } from '../components/SignUpPolicyText'
 import { Heading, Page, PageFooter, ReadOnlyField } from '../components/layout'
-import type { SignUpScreenParamList } from '../types'
+import type { SignOnScreenParamList } from '../types'
 import { useTrackScreen } from '../utils/useTrackScreen'
 
 export type CreateLoginDetailsValues = {
@@ -73,7 +73,7 @@ export const CreateLoginDetailsScreen = () => {
   useTrackScreen('CreateLoginDetails')
 
   const isVerified = useSelector(getIsVerified)
-  const navigation = useNavigation<SignUpScreenParamList>()
+  const navigation = useNavigation<SignOnScreenParamList>()
   const { spacing } = useTheme()
 
   const initialValues = {

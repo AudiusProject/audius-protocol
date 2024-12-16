@@ -34,7 +34,7 @@ import { SocialMediaLoading } from '../components/SocialMediaLoading'
 import { SocialMediaSignUpButtons } from '../components/SocialMediaSignUpButtons'
 import { Heading } from '../components/layout'
 import { useSocialMediaLoader } from '../components/useSocialMediaLoader'
-import type { SignUpScreenParamList } from '../types'
+import type { SignOnScreenParamList } from '../types'
 import { useTrackScreen } from '../utils/useTrackScreen'
 
 import type { SignOnScreenProps } from './types'
@@ -46,7 +46,7 @@ type SignUpEmailValues = {
 export const CreateEmailScreen = (props: SignOnScreenProps) => {
   const { onChangeScreen } = props
   const dispatch = useDispatch()
-  const navigation = useNavigation<SignUpScreenParamList>()
+  const navigation = useNavigation<SignOnScreenParamList>()
   const existingEmailValue = useSelector(getEmailField)
   const alreadyLinkedSocial = useSelector(getLinkedSocialOnFirstPage)
   const queryContext = useAudiusQueryContext()
@@ -105,6 +105,8 @@ export const CreateEmailScreen = (props: SignOnScreenProps) => {
       onSubmit={handleSubmit}
       validationSchema={EmailSchema}
       validateOnChange={false}
+      validateOnMount={!!existingEmailValue}
+      enableReinitialize
     >
       {({ handleSubmit }) => (
         <>

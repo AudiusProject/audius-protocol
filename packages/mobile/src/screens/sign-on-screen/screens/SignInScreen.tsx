@@ -2,7 +2,11 @@ import { useCallback, useEffect, useMemo } from 'react'
 
 import { useAudiusQueryContext } from '@audius/common/audius-query'
 import { signInPageMessages } from '@audius/common/messages'
-import { signInSchema, signInErrorMessages } from '@audius/common/schemas'
+import {
+  signInSchema,
+  signInErrorMessages,
+  emailSchemaMessages
+} from '@audius/common/schemas'
 import {
   getEmailField,
   getPasswordField,
@@ -21,8 +25,9 @@ import { useNavigation } from 'app/hooks/useNavigation'
 import { fingerprintClient } from 'app/services/fingerprint'
 
 import { EmailField } from '../components/EmailField'
+import { GuestEmailHint } from '../components/GuestEmailHint'
 import { Heading } from '../components/layout'
-import type { SignUpScreenParamList } from '../types'
+import type { SignOnScreenParamList } from '../types'
 import { useTrackScreen } from '../utils/useTrackScreen'
 
 type SignInValues = {
@@ -37,7 +42,7 @@ export const SignInScreen = () => {
   const signInStatus = useSelector(getStatus)
   const { onOpen } = useDrawer('ForgotPassword')
   const requiresOtp = useSelector(getRequiresOtp)
-  const navigation = useNavigation<SignUpScreenParamList>()
+  const navigation = useNavigation<SignOnScreenParamList>()
   useTrackScreen('SignIn')
 
   const audiusQueryContext = useAudiusQueryContext()
@@ -78,29 +83,39 @@ export const SignInScreen = () => {
       validateOnChange={false}
       onSubmit={handleSubmit}
     >
-      {({ handleSubmit }) => (
-        <>
-          <Heading heading={signInPageMessages.title} centered />
-          <Flex gap='l'>
-            <EmailField name='email' label={signInPageMessages.emailLabel} />
-            <SignInPasswordField />
-          </Flex>
-          <Flex gap='l'>
-            <Button
-              size='default'
-              fullWidth
-              iconRight={IconArrowRight}
-              isLoading={signInStatus === 'loading'}
-              onPress={async () => await handleSubmit()}
-            >
-              {signInPageMessages.signIn}
-            </Button>
-            <TextLink variant='visible' textAlign='center' onPress={onOpen}>
-              {signInPageMessages.forgotPassword}
-            </TextLink>
-          </Flex>
-        </>
-      )}
+      {({ handleSubmit, errors }) => {
+        const hideEmailError =
+          errors.email === emailSchemaMessages.guestAccountExists
+        return (
+          <>
+            <Heading heading={signInPageMessages.title} centered />
+            <Flex gap='l'>
+              <EmailField
+                name='email'
+                label={signInPageMessages.emailLabel}
+                error={hideEmailError ? false : undefined}
+                helperText={hideEmailError ? false : undefined}
+              />
+              <SignInPasswordField />
+              <GuestEmailHint />
+            </Flex>
+            <Flex gap='l'>
+              <Button
+                size='default'
+                fullWidth
+                iconRight={IconArrowRight}
+                isLoading={signInStatus === 'loading'}
+                onPress={async () => await handleSubmit()}
+              >
+                {signInPageMessages.signIn}
+              </Button>
+              <TextLink variant='visible' textAlign='center' onPress={onOpen}>
+                {signInPageMessages.forgotPassword}
+              </TextLink>
+            </Flex>
+          </>
+        )
+      }}
     </Formik>
   )
 }
