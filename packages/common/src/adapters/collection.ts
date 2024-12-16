@@ -189,7 +189,6 @@ export const playlistMetadataForUpdateWithSDK = (
   }
 }
 
-// scheduled releases
 export const albumMetadataForSDK = (input: Collection): CreateAlbumMetadata => {
   return {
     streamConditions:
