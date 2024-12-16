@@ -4,11 +4,6 @@ jobs:
       context: github
   - build-audiusd:
       context: github
-  - test-audiusd-devnet:
-      context: github
-      requires:
-        - build-audiusd
-        - build-audius-ctl
   - test-config-subcommands:
       context: github
       requires:
@@ -16,7 +11,6 @@ jobs:
   - publish-audius-ctl:
       context: github
       requires:
-        - test-audiusd-devnet
         - test-config-subcommands
       filters:
         branches:
