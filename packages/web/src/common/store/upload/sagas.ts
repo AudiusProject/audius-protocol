@@ -7,7 +7,6 @@ import {
 import {
   Collection,
   CollectionMetadata,
-  ErrorLevel,
   Feature,
   FieldVisibility,
   ID,

@@ -1,4 +1,4 @@
-import { ErrorLevel, Name } from '@audius/common/models'
+import { Name } from '@audius/common/models'
 import {
   recoveryEmailActions,
   getContext,

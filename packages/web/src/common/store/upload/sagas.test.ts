@@ -1,9 +1,4 @@
-import {
-  ErrorLevel,
-  Feature,
-  Name,
-  StemUploadWithFile
-} from '@audius/common/models'
+import { Feature, Name, StemUploadWithFile } from '@audius/common/models'
 import {
   TrackForUpload,
   TrackMetadataForUpload,
