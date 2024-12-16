@@ -93,6 +93,17 @@ build-push-cpp:
 	docker buildx build --platform linux/amd64,linux/arm64 --push -t audius/cpp:latest -f ./cmd/audiusd/Dockerfile.cpp ./
 
 
+.PHONY: force-release-stage force-release-foundation force-release-sps
+force-release-stage:
+	@bash scripts/release-audiusd.sh $@
+
+force-release-foundation:
+	@bash scripts/release-audiusd.sh $@
+
+force-release-sps:
+	@bash scripts/release-audiusd.sh $@
+
+
 .PHONY: install uninstall
 install:
 	@bash scripts/install-audius-ctl.sh local
@@ -187,16 +198,6 @@ bin/core: $(BUILD_SRCS)
 core-build-amd64: bin/core-amd64
 bin/core-amd64: $(BUILD_SRCS)
 	@GOOS=linux GOARCH=amd64 go build -ldflags "$(VERSION_LDFLAG)" -o bin/core-amd64 ./cmd/core/main.go
-
-.PHONY: core-force-release-stage core-force-release-foundation core-force-release-sps
-core-force-release-stage:
-	@bash scripts/release-core.sh $@
-
-core-force-release-foundation:
-	@bash scripts/release-core.sh $@
-
-core-force-release-sps:
-	@bash scripts/release-core.sh $@
 
 .PHONY: core-dev
 core-dev: gen
