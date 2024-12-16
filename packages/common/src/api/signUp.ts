@@ -14,8 +14,8 @@ const signUpApi = createApi({
   reducerPath: 'signUpApi',
   endpoints: {
     isEmailInUse: {
-      fetch: async ({ email }: { email: string }, { audiusBackend }) => {
-        return await audiusBackend.emailInUse(email)
+      fetch: async ({ email }: { email: string }, { identityService }) => {
+        return await identityService.checkIfEmailRegistered(email)
       },
       options: {}
     },
