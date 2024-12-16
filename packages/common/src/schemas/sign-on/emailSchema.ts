@@ -18,7 +18,7 @@ export const emailSchema = (queryContext: AudiusQueryContextType) =>
       .string({ required_error: emailSchemaMessages.emailRequired })
       .regex(EMAIL_REGEX, { message: emailSchemaMessages.invalidEmail })
       .superRefine(async (email, ctx) => {
-        const { emailExists: isEmailInUse, isGuest } =
+        const { exists: isEmailInUse, isGuest } =
           await signUpFetch.isEmailInUse({ email }, queryContext)
         if (isEmailInUse === undefined) {
           ctx.addIssue({

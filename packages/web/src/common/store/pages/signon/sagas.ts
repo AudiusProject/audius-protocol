@@ -71,6 +71,7 @@ import { identify, make } from 'common/store/analytics/actions'
 import * as backendActions from 'common/store/backend/actions'
 import { retrieveCollections } from 'common/store/cache/collections/utils'
 import { fetchUserByHandle, fetchUsers } from 'common/store/cache/users/sagas'
+import { sendRecoveryEmail } from 'common/store/recovery-email/sagas'
 import { UiErrorCode } from 'store/errors/actions'
 import { setHasRequestedBrowserPermission } from 'utils/browserNotifications'
 import { restrictedHandles } from 'utils/restrictedHandles'
@@ -395,14 +396,17 @@ function* validateHandle(
 }
 
 function* checkEmail(action: ReturnType<typeof signOnActions.checkEmail>) {
-  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
+  const identityService = yield* getContext('identityService')
   if (!isValidEmailString(action.email)) {
     yield* put(signOnActions.validateEmailFailed('characters'))
     return
   }
 
   try {
-    const inUse = yield* call(audiusBackendInstance.emailInUse, action.email)
+    const inUse = yield* call(
+      [identityService, identityService.checkIfEmailRegistered],
+      action.email
+    )
     if (inUse) {
       yield* put(signOnActions.goToPage(Pages.SIGNIN))
       // let mobile client know that email is in use
@@ -539,38 +543,21 @@ function* associateSocialAccounts({
   }
 }
 
-function* sendRecoveryEmail({
+function* sendPostSignInRecoveryEmail({
   handle,
   email
 }: {
   handle: string
   email: string
 }) {
-  const authService = yield* getContext('authService')
-  const identityService = yield* getContext('identityService')
-  const getHostUrl = yield* getContext('getHostUrl')
-  const host = getHostUrl()
-
   try {
-    const recoveryInfo = yield* call([
-      authService.hedgehogInstance,
-      authService.hedgehogInstance.generateRecoveryInfo
-    ])
-
-    const recoveryData = {
-      login: recoveryInfo.login,
-      host: host ?? recoveryInfo.host
-    }
-    yield* call(
-      [identityService, identityService.sendRecoveryInfo],
-      recoveryData
-    )
+    yield* call(sendRecoveryEmail)
   } catch (err) {
     const reportToSentry = yield* getContext('reportToSentry')
     reportToSentry({
       error: err instanceof Error ? err : new Error(err as string),
       name: 'Sign Up: Failed to send recovery email',
-      additionalInfo: { handle, email, host },
+      additionalInfo: { handle, email },
       level: ErrorLevel.Fatal,
       feature: Feature.SignUp
     })
@@ -760,7 +747,7 @@ function* signUp() {
                 })
               )
 
-              yield* fork(sendRecoveryEmail, { handle, email })
+              yield* fork(sendPostSignInRecoveryEmail, { handle, email })
               yield* call([localStorage, localStorage.removeItem], GUEST_EMAIL)
               yield* call(confirmTransaction, blockHash, blockNumber)
             } else {
@@ -776,7 +763,7 @@ function* signUp() {
                   }
                 )
 
-                yield* fork(sendRecoveryEmail, { handle, email })
+                yield* fork(sendPostSignInRecoveryEmail, { handle, email })
               }
               const wallet = (yield* call([
                 authService,

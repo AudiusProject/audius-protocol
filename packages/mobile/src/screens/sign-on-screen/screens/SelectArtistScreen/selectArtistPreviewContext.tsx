@@ -1,13 +1,18 @@
 import { createContext, useCallback, useEffect, useMemo, useState } from 'react'
 
-import { useGetUserTracksByHandle, useGetUserById } from '@audius/common/api'
-import type { ID } from '@audius/common/models'
-import { encodeHashId } from '@audius/common/utils'
+import {
+  useGetUserTracksByHandle,
+  useGetUserById,
+  Id,
+  useGetCurrentUserId
+} from '@audius/common/api'
+import { OptionalId, type ID } from '@audius/common/models'
 import { Formik } from 'formik'
 import TrackPlayer, { RepeatMode, State } from 'react-native-track-player'
 import { useAsync, useEffectOnce } from 'react-use'
 
-import { apiClient } from 'app/services/audius-api-client'
+import { audiusBackendInstance } from 'app/services/audius-backend-instance'
+import { audiusSdk } from 'app/services/sdk/audius-sdk'
 
 type PreviewContextProps = {
   hasPlayed: boolean
@@ -25,13 +30,25 @@ export const SelectArtistsPreviewContext = createContext<PreviewContextProps>({
   togglePreview: () => {}
 })
 
-const useGetTrackUrl = (artistId: ID) => {
+export const SelectArtistsPreviewContextProvider = (props: {
+  children: JSX.Element
+}) => {
+  const [hasPlayed, setHasPlayed] = useState(false)
+  const [isPlaying, setIsPlaying] = useState(false)
+  const [nowPlayingArtistId, setNowPlayingArtistId] = useState(-1)
+  const [trackUrl, setTrackUrl] = useState<string | null>(null)
+  const { data: currentUserId } = useGetCurrentUserId({})
+
+  useEffectOnce(() => {
+    TrackPlayer.setRepeatMode(RepeatMode.Track)
+  })
+
   const { data: artist } = useGetUserById(
     {
-      id: artistId,
+      id: nowPlayingArtistId,
       currentUserId: null
     },
-    { disabled: artistId === -1 }
+    { disabled: nowPlayingArtistId === -1 }
   )
 
   const { data: artistTracks } = useGetUserTracksByHandle(
@@ -41,25 +58,32 @@ const useGetTrackUrl = (artistId: ID) => {
     },
     { disabled: !artist?.handle }
   )
+  useEffect(() => {
+    if (!nowPlayingArtistId || !currentUserId || !artistTracks) return
 
-  const trackId = artistTracks?.find((track) => track.is_available)?.track_id
-  if (!trackId) return null
+    const fn = async () => {
+      const sdk = await audiusSdk()
+      const trackId = artistTracks?.find(
+        (track) => track.is_available
+      )?.track_id
+      if (!trackId) return
 
-  return apiClient.makeUrl(`/tracks/${encodeHashId(trackId)}/stream`)
-}
+      const { data, signature } =
+        await audiusBackendInstance.signGatedContentRequest({
+          sdk
+        })
 
-export const SelectArtistsPreviewContextProvider = (props: {
-  children: JSX.Element
-}) => {
-  const [hasPlayed, setHasPlayed] = useState(false)
-  const [isPlaying, setIsPlaying] = useState(false)
-  const [nowPlayingArtistId, setNowPlayingArtistId] = useState(-1)
+      const url = await sdk.tracks.getTrackStreamUrl({
+        trackId: Id.parse(trackId),
+        userId: OptionalId.parse(currentUserId),
+        userSignature: signature,
+        userData: data
+      })
 
-  useEffectOnce(() => {
-    TrackPlayer.setRepeatMode(RepeatMode.Track)
-  })
-
-  const trackUrl = useGetTrackUrl(nowPlayingArtistId)
+      setTrackUrl(url)
+    }
+    fn()
+  }, [nowPlayingArtistId, currentUserId, artistTracks])
 
   // Request preview playback
   const playPreview = useCallback(async (artistId: ID) => {

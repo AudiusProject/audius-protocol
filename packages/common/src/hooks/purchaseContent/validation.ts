@@ -84,8 +84,10 @@ export const createPurchaseContentSchema = (
         return
       }
 
-      const { emailExists: isEmailInUse, isGuest } =
-        await signUpFetch.isEmailInUse({ email: guestEmail }, queryContext)
+      const { exists: isEmailInUse, isGuest } = await signUpFetch.isEmailInUse(
+        { email: guestEmail },
+        queryContext
+      )
 
       if (isEmailInUse === undefined) {
         ctx.addIssue({

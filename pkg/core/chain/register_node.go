@@ -63,8 +63,12 @@ func (core *CoreApplication) isValidRegisterNodeTx(ctx context.Context, tx *gen_
 	vrEndpoint := vr.GetEndpoint()
 	vrEthBlock := vr.GetEthBlock()
 	vrCometAddress := vr.GetCometAddress()
-	vrPubKey := ed25519.PubKey(vr.GetPubKey())
 	vrPower := int(vr.GetPower())
+
+	if len(vr.GetPubKey()) == 0 {
+		return fmt.Errorf("Public Key mission from %s registration tx", vrCometAddress)
+	}
+	vrPubKey := ed25519.PubKey(vr.GetPubKey())
 
 	if onChainOwnerWallet != vrOwnerWallet {
 		return fmt.Errorf("wallet %s tried to register %s as %s", vrOwnerWallet, onChainOwnerWallet, vr.Endpoint)

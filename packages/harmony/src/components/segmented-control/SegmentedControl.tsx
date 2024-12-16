@@ -110,7 +110,6 @@ export const SegmentedControl = <T extends string>(
       {options.map((option, idx) => {
         const isOptionDisabled = disabled || option.disabled
         const isSelected = option.key === selectedOption
-        console.log('isSelectedd', isSelected, option.key, selectedOption)
 
         return (
           <Fragment key={option.key}>

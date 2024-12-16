@@ -82,12 +82,27 @@ build-push-wrapper:
 	@echo "Building and pushing Docker images for all platforms..."
 	docker buildx build --platform linux/amd64,linux/arm64 --push -t audius/audius-d:$(WRAPPER_TAG) pkg/orchestration
 
-.PHONY: build-audiusd-local build-push-audiusd
+.PHONY: build-audiusd-local build-push-audiusd build-push-cpp
 build-audiusd-local:
 	docker build -t audius/audiusd:$(AD_TAG) -t audius/audiusd:current -f ./cmd/audiusd/Dockerfile ./
 
 build-push-audiusd:
 	DOCKER_DEFAULT_PLATFORM=linux/amd64 docker build --push -t audius/audiusd:$(AD_TAG) -f ./cmd/audiusd/Dockerfile ./
+
+build-push-cpp:
+	docker buildx build --platform linux/amd64,linux/arm64 --push -t audius/cpp:latest -f ./cmd/audiusd/Dockerfile.cpp ./
+
+
+.PHONY: force-release-stage force-release-foundation force-release-sps
+force-release-stage:
+	@bash scripts/release-audiusd.sh $@
+
+force-release-foundation:
+	@bash scripts/release-audiusd.sh $@
+
+force-release-sps:
+	@bash scripts/release-audiusd.sh $@
+
 
 .PHONY: install uninstall
 install:
@@ -183,16 +198,6 @@ bin/core: $(BUILD_SRCS)
 core-build-amd64: bin/core-amd64
 bin/core-amd64: $(BUILD_SRCS)
 	@GOOS=linux GOARCH=amd64 go build -ldflags "$(VERSION_LDFLAG)" -o bin/core-amd64 ./cmd/core/main.go
-
-.PHONY: core-force-release-stage core-force-release-foundation core-force-release-sps
-core-force-release-stage:
-	@bash scripts/release-core.sh $@
-
-core-force-release-foundation:
-	@bash scripts/release-core.sh $@
-
-core-force-release-sps:
-	@bash scripts/release-core.sh $@
 
 .PHONY: core-dev
 core-dev: gen

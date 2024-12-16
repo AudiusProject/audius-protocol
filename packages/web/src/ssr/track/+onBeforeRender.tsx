@@ -1,7 +1,7 @@
 import {
-  makeTrack,
-  makeUser
-} from '@audius/common/src/services/audius-api-client/ResponseAdapter'
+  userMetadataFromSDK,
+  userTrackMetadataFromSDK
+} from '@audius/common/adapters'
 import { developmentConfig } from '@audius/sdk/src/sdk/config/development'
 import { productionConfig } from '@audius/sdk/src/sdk/config/production'
 import { stagingConfig } from '@audius/sdk/src/sdk/config/staging'
@@ -39,16 +39,16 @@ export async function onBeforeRender(pageContext: PageContextServer) {
     const [apiTrack] = data
     // Include artwork in the track object
     const track = {
-      ...makeTrack(apiTrack),
+      ...userTrackMetadataFromSDK(apiTrack),
       cover_art: apiTrack.artwork?.['1000x1000']
     }
 
     const { user: apiUser } = apiTrack
     // Include api user images.
     const user = {
-      ...makeUser(apiUser),
-      cover_photo: apiUser.cover_photo?.['2000x'],
-      profile_picture: apiUser.profile_picture?.['1000x1000']
+      ...userMetadataFromSDK(apiUser),
+      cover_photo: apiUser.cover_photo?._2000x,
+      profile_picture: apiUser.profile_picture?._1000x1000
     }
 
     return {

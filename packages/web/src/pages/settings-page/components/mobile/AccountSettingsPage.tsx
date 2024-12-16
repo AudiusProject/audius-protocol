@@ -1,5 +1,6 @@
 import { useState, useContext, useCallback } from 'react'
 
+import { useAudiusQueryContext } from '@audius/common/audius-query'
 import { Name, SquareSizes } from '@audius/common/models'
 import { accountSelectors } from '@audius/common/store'
 import { route } from '@audius/common/utils'
@@ -25,7 +26,6 @@ import MobilePageContainer from 'components/mobile-page-container/MobilePageCont
 import { ToastContext } from 'components/toast/ToastContext'
 import { useProfilePicture } from 'hooks/useProfilePicture'
 import SignOutModal from 'pages/settings-page/components/mobile/SignOutModal'
-import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
 
 import styles from './AccountSettingsPage.module.css'
 import settingsPageStyles from './SettingsPage.module.css'
@@ -134,6 +134,7 @@ const AccountSettingsItem = ({
 
 const AccountSettingsPage = () => {
   const dispatch = useDispatch()
+  const { authService, identityService } = useAudiusQueryContext()
   const userId = useSelector(getUserId) ?? 0
   const handle = useSelector(getUserHandle) ?? ''
   const name = useSelector(getUserName) ?? ''
@@ -156,7 +157,9 @@ const AccountSettingsPage = () => {
       debounce(
         async () => {
           try {
-            await audiusBackendInstance.sendRecoveryEmail(handle)
+            await identityService.sendRecoveryInfo(
+              await authService.generateRecoveryInfo()
+            )
             toast(messages.emailSent)
             record(make(Name.SETTINGS_RESEND_ACCOUNT_RECOVERY, {}))
           } catch (e) {
@@ -166,7 +169,7 @@ const AccountSettingsPage = () => {
         2000,
         { leading: true, trailing: false }
       )(),
-    [handle, toast, record]
+    [authService, identityService, toast, record]
   )
 
   const goToVerificationPage = useCallback(() => {
