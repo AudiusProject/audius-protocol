@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 
 import { useAudiusQueryContext } from '@audius/common/audius-query'
-import { ErrorLevel, Name } from '@audius/common/models'
+import { Name } from '@audius/common/models'
 import { pickHandleSchema } from '@audius/common/schemas'
 import { formatTikTokProfile } from '@audius/common/services'
 import type { TikTokProfileData } from '@audius/common/services'
@@ -90,7 +90,6 @@ export const SignUpFlowTikTokAuth = ({
       reportToSentry({
         error: e as Error,
         name: 'Sign Up: Failed to parse TikTok profile data',
-        level: ErrorLevel.Fatal,
         additionalInfo: {
           profileData,
           requiresUserReview

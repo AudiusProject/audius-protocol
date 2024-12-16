@@ -158,7 +158,6 @@ function* fetchDefaultFollowArtists() {
     const reportToSentry = yield* getContext('reportToSentry')
     reportToSentry({
       error: e,
-      level: ErrorLevel.Fatal, // fatal reasoning - this is required to follow t
       name: 'Sign Up: Unable to fetch default follow artists (aka Audius acct)',
       feature: Feature.SignUp
     })
@@ -186,7 +185,6 @@ function* fetchAllFollowArtist() {
     const reportToSentry = yield* getContext('reportToSentry')
     reportToSentry({
       error: e as Error,
-      level: ErrorLevel.Fatal, // fatal reasoning - this is required for users to follow the artists they selected in signup
       name: 'Sign Up: Unable to fetch sign up follows requested by user',
       feature: Feature.SignUp
     })
@@ -652,7 +650,6 @@ function* createGuestAccount(
   } catch (err) {
     reportToSentry({
       error: err as Error,
-      level: ErrorLevel.Fatal,
       name: 'Sign Up: Failed to create guest account',
       feature: Feature.SignUp
     })
@@ -902,7 +899,6 @@ function* signUp() {
             } else {
               reportToSentry({
                 error,
-                level: ErrorLevel.Fatal,
                 name: 'Sign Up: Other Error',
                 additionalInfo: {
                   handle,
@@ -933,7 +929,6 @@ function* signUp() {
             const reportToSentry = yield* getContext('reportToSentry')
             reportToSentry({
               error,
-              level: ErrorLevel.Fatal,
               name: 'Sign Up: Unknown error in signUp saga',
               additionalInfo: { message, timeout },
               feature: Feature.SignUp
@@ -950,7 +945,6 @@ function* signUp() {
   } catch (error) {
     reportToSentry({
       error: error as Error,
-      level: ErrorLevel.Fatal,
       name: 'Sign Up: Unknown error in signUp saga',
       feature: Feature.SignUp
     })
@@ -1164,8 +1158,7 @@ function* signIn(action: ReturnType<typeof signOnActions.signIn>) {
     reportToSentry({
       error: err,
       name: 'Sign In: unknown error',
-      feature: Feature.SignIn,
-      level: ErrorLevel.Fatal
+      feature: Feature.SignIn
     })
     yield* put(signOnActions.signInFailed(err))
   }
@@ -1288,7 +1281,6 @@ function* followArtists(
     const reportToSentry = yield* getContext('reportToSentry')
     reportToSentry({
       error: err,
-      level: ErrorLevel.Fatal,
       name: 'Sign Up: Unkown error while following artists on sign up',
       feature: Feature.SignUp
     })

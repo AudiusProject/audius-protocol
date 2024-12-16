@@ -21,10 +21,20 @@ function* watchResendRecoveryEmail() {
       audiusBackendInstance.sendRecoveryEmail,
       handle
     )
-    if (response?.status) {
-      yield* put(resendSuccess())
-      yield* put(make(Name.SETTINGS_RESEND_ACCOUNT_RECOVERY, {}))
-    } else {
+    try {
+      if (response?.status) {
+        yield* put(resendSuccess())
+        yield* put(make(Name.SETTINGS_RESEND_ACCOUNT_RECOVERY, {}))
+      } else {
+        yield* put(resendError())
+      }
+    } catch (err) {
+      const reportToSentry = yield* getContext('reportToSentry')
+      reportToSentry({
+        error: err instanceof Error ? err : new Error(err as string),
+        name: 'Resend Recovery: Failed to send recovery email',
+        additionalInfo: { handle }
+      })
       yield* put(resendError())
     }
   })
