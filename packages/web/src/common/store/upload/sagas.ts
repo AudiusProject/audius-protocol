@@ -791,7 +791,6 @@ export function* uploadCollection(
   isAlbum: boolean,
   uploadType: UploadType
 ) {
-  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
   const sdk = yield* getSDK()
 
   yield waitForAccount()

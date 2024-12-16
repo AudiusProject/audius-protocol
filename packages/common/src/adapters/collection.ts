@@ -190,6 +190,7 @@ export const playlistMetadataForUpdateWithSDK = (
   }
 }
 
+// scheduled releases
 export const albumMetadataForSDK = (input: Collection): CreateAlbumMetadata => {
   return {
     albumName: input.playlist_name ?? '',
@@ -202,6 +203,7 @@ export const albumMetadataForSDK = (input: Collection): CreateAlbumMetadata => {
     artists: input.artists ?? null,
     copyrightLine: input.copyright_line ?? null,
     producerCopyrightLine: input.producer_copyright_line ?? null,
-    parentalWarningType: input.parental_warning_type ?? null
+    parentalWarningType: input.parental_warning_type ?? null,
+    isPrivate: input.is_private ?? false
   }
 }

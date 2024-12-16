@@ -35,6 +35,7 @@ export type getAlbumTracksRequest = z.input<typeof getAlbumTracksSchema>
 export const CreateAlbumMetadataSchema = z
   .object({
     albumName: z.string(),
+    isPrivate: z.optional(z.boolean()),
     description: z.optional(z.string().max(1000)),
     license: z.optional(z.string()),
     releaseDate: z.optional(z.date()),
