@@ -1,6 +1,7 @@
 import {
-  collectionMetadataForCreateWithSDK,
+  albumMetadataForSDK,
   fileToSdk,
+  playlistMetadataForCreateWithSDK,
   trackMetadataForUploadToSdk,
   transformAndCleanList,
   userCollectionMetadataFromSDK
@@ -812,12 +813,6 @@ export function* uploadCollection(
     )
   }
 
-  // First upload album art
-  const { artwork } = collectionMetadata
-  if (artwork && 'file' in artwork) {
-    yield* call(audiusBackendInstance.uploadImage, artwork.file as File)
-  }
-
   // Propagate the collection metadata to the tracks
   for (const track of tracks) {
     track.metadata = yield* call(
@@ -849,31 +844,41 @@ export function* uploadCollection(
     confirmerActions.requestConfirmation(
       `${collectionMetadata.playlist_name}_${Date.now()}`,
       function* () {
-        console.debug('Creating playlist')
         try {
-          // const createCollection = isAlbum ? sdk.albums.createAlbum : sdk.playlists.createPlaylist
+          const { artwork } = collectionMetadata
 
-          // sdk.playlists.createPlaylist({
-          //   metadata: collectionMetadataForCreateWithSDK(
-          //     collectionMetadata as unknown as Collection
-          //   ),
-          //   userId: Id.parse(userId),
-          //   playlistId: Id.parse(playlistId),
-          //   trackIds: trackIds.map((id) => Id.parse(id)),
-          //   isAlbum,
-          //   isPrivate: !!collectionMetadata.is_private
-          // }
+          const coverArtFile =
+            artwork && 'file' in artwork ? artwork?.file ?? null : null
 
-          yield* call([sdk.playlists, sdk.playlists.createPlaylist], {
-            metadata: collectionMetadataForCreateWithSDK(
-              collectionMetadata as unknown as Collection
-            ),
-            userId: Id.parse(userId),
-            playlistId: Id.parse(playlistId),
-            trackIds,
-            isAlbum,
-            isPrivate: !!collectionMetadata.is_private
-          })
+          if (isAlbum) {
+            // Create album
+            if (!coverArtFile) {
+              throw new Error('Cover art file is required for albums')
+            }
+
+            yield* call([sdk.albums, sdk.albums.createAlbum], {
+              metadata: albumMetadataForSDK(
+                collectionMetadata as unknown as Collection
+              ),
+              userId: Id.parse(userId),
+              albumId: Id.parse(playlistId),
+              trackIds: trackIds.map((id) => Id.parse(id)),
+              coverArtFile: fileToSdk(coverArtFile, 'cover_art')
+            })
+          } else {
+            // Create playlist
+            yield* call([sdk.playlists, sdk.playlists.createPlaylist], {
+              metadata: playlistMetadataForCreateWithSDK(
+                collectionMetadata as unknown as Collection
+              ),
+              userId: Id.parse(userId),
+              playlistId: Id.parse(playlistId),
+              trackIds: trackIds.map((id) => Id.parse(id)),
+              coverArtFile: coverArtFile
+                ? fileToSdk(coverArtFile!, 'cover_art')
+                : undefined
+            })
+          }
         } catch (error) {
           console.debug('Caught an error creating playlist')
           if (playlistId) {

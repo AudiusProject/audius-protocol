@@ -32,7 +32,6 @@ import dayjs from '~/utils/dayjs'
 
 import {
   BNWei,
-  Collection,
   ID,
   InstagramUser,
   Name,

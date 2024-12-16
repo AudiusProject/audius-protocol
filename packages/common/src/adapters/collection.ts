@@ -1,4 +1,5 @@
 import {
+  CreateAlbumMetadata,
   CreatePlaylistMetadata,
   full,
   UpdatePlaylistRequest
@@ -150,10 +151,31 @@ export const accountCollectionFromSDK = (
   }
 }
 
-export const collectionMetadataForUpdateWithSDK = (
+export const playlistMetadataForCreateWithSDK = (
+  input: Collection
+): CreatePlaylistMetadata => {
+  return {
+    playlistName: input.playlist_name ?? '',
+    description: input.description ?? '',
+    coverArtCid: input.cover_art_sizes ?? '',
+    isPrivate: input.is_private ?? false,
+    license: input.ddex_app ?? '',
+    releaseDate: input.release_date ? new Date(input.release_date) : undefined,
+    ddexReleaseIds: input.ddex_release_ids ?? null,
+    ddexApp: input.ddex_app ?? '',
+    upc: input.upc ?? '',
+    artists: input.artists ?? null,
+    copyrightLine: input.copyright_line ?? null,
+    producerCopyrightLine: input.producer_copyright_line ?? null,
+    parentalWarningType: input.parental_warning_type ?? null
+  }
+}
+
+export const playlistMetadataForUpdateWithSDK = (
   input: Collection
 ): UpdatePlaylistRequest['metadata'] => {
   return {
+    ...playlistMetadataForCreateWithSDK(input),
     playlistContents: input.playlist_contents
       ? input.playlist_contents.track_ids.map((t) => ({
           timestamp: t.time,
@@ -168,13 +190,18 @@ export const collectionMetadataForUpdateWithSDK = (
   }
 }
 
-export const collectionMetadataForCreateWithSDK = (
-  input: Collection
-): CreatePlaylistMetadata => {
+export const albumMetadataForSDK = (input: Collection): CreateAlbumMetadata => {
   return {
-    playlistName: input.playlist_name ?? '',
+    albumName: input.playlist_name ?? '',
     description: input.description ?? '',
-    coverArtCid: input.cover_art_sizes ?? '',
-    isPrivate: input.is_private ?? false
+    license: input.ddex_app ?? '',
+    releaseDate: input.release_date ? new Date(input.release_date) : undefined,
+    ddexReleaseIds: input.ddex_release_ids ?? null,
+    ddexApp: input.ddex_app ?? '',
+    upc: input.upc ?? '',
+    artists: input.artists ?? null,
+    copyrightLine: input.copyright_line ?? null,
+    producerCopyrightLine: input.producer_copyright_line ?? null,
+    parentalWarningType: input.parental_warning_type ?? null
   }
 }

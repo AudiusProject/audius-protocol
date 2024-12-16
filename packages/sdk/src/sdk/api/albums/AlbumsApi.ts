@@ -47,14 +47,13 @@ import {
   CreateAlbumRequest,
   CreateAlbumSchema
 } from './types'
-import { retry3 } from '../../utils/retry'
 import { PlaylistMetadata } from '../playlists/types'
 
 export class AlbumsApi {
   private readonly playlistsApi: PlaylistsApi
   constructor(
     configuration: Configuration,
-    private storage: StorageService,
+    storage: StorageService,
     entityManager: EntityManagerService,
     private logger: LoggerService,
     private claimableTokensClient: ClaimableTokensClient,
@@ -109,6 +108,7 @@ export class AlbumsApi {
     >(
       {
         ...parsedParameters,
+        playlistId: parsedParameters.albumId,
         metadata: {
           ...playlistMetadata,
           playlistName: albumName,

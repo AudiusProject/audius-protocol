@@ -1,5 +1,5 @@
 import {
-  collectionMetadataForSDK,
+  playlistMetadataForCreateWithSDK,
   userCollectionMetadataFromSDK
 } from '@audius/common/adapters'
 import {
@@ -209,7 +209,7 @@ function* createAndConfirmPlaylist(
       userId: Id.parse(userId),
       playlistId: Id.parse(playlistId),
       trackIds: initTrack ? [Id.parse(initTrack.track_id)] : undefined,
-      metadata: collectionMetadataForCreateWithSDK(formFields)
+      metadata: playlistMetadataForCreateWithSDK(formFields)
     })
 
     // Merge the confirmed playlist with the optimistic playlist, preferring

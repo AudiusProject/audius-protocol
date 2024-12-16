@@ -50,7 +50,7 @@ export const UploadPlaylistMetadataSchema = CreatePlaylistMetadataSchema.extend(
   }
 ).strict()
 
-export type PlaylistMetadata = z.input<typeof UploadPlaylistMetadataSchema>
+export type PlaylistMetadata = z.input<typeof CreatePlaylistMetadataSchema>
 
 const PlaylistTrackMetadataSchema = UploadTrackMetadataSchema.partial({
   genre: true,

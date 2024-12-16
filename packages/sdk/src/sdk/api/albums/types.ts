@@ -36,13 +36,10 @@ export const CreateAlbumMetadataSchema = z
   .object({
     albumName: z.string(),
     description: z.optional(z.string().max(1000)),
-    genre: z.enum(Object.values(Genre) as [Genre, ...Genre[]]),
     license: z.optional(z.string()),
-    mood: z.optional(z.enum(Object.values(Mood) as [Mood, ...Mood[]])),
     releaseDate: z.optional(z.date()),
     ddexReleaseIds: z.optional(z.record(z.string()).nullable()),
     ddexApp: z.optional(z.string()),
-    tags: z.optional(z.string()),
     upc: z.optional(z.string()),
     artists: z.optional(z.array(DDEXResourceContributor).nullable()),
     copyrightLine: z.optional(DDEXCopyright.nullable()),
@@ -70,7 +67,11 @@ export const CreateAlbumSchema = z
 
 export type CreateAlbumRequest = z.input<typeof CreateAlbumSchema>
 
-export const UploadAlbumMetadataSchema = CreateAlbumMetadataSchema
+export const UploadAlbumMetadataSchema = CreateAlbumMetadataSchema.extend({
+  genre: z.enum(Object.values(Genre) as [Genre, ...Genre[]]),
+  mood: z.optional(z.enum(Object.values(Mood) as [Mood, ...Mood[]])),
+  tags: z.optional(z.string())
+})
 
 export type AlbumMetadata = z.input<typeof UploadAlbumMetadataSchema>
 

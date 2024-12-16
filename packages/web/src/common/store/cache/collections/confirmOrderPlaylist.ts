@@ -1,4 +1,4 @@
-import { collectionMetadataForUpdateWithSDK } from '@audius/common/adapters'
+import { playlistMetadataForUpdateWithSDK } from '@audius/common/adapters'
 import { Kind, Collection, ID, Id } from '@audius/common/models'
 import {
   cacheCollectionsActions as collectionActions,
@@ -23,7 +23,7 @@ export function* confirmOrderPlaylist(
       makeKindId(Kind.COLLECTIONS, playlistId),
       function* () {
         yield* call([sdk.playlists, sdk.playlists.updatePlaylist], {
-          metadata: collectionMetadataForUpdateWithSDK(playlist),
+          metadata: playlistMetadataForUpdateWithSDK(playlist),
           userId: Id.parse(userId),
           playlistId: Id.parse(playlistId)
         })
