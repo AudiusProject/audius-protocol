@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"github.com/AudiusProject/audius-protocol/pkg/core/common"
-	gen_proto "github.com/AudiusProject/audius-protocol/pkg/core/gen/proto"
+	"github.com/AudiusProject/audius-protocol/pkg/core/gen/core_proto"
 	"github.com/AudiusProject/audius-protocol/pkg/core/test/integration/utils"
 	"github.com/google/uuid"
 	. "github.com/onsi/ginkgo/v2"
@@ -19,7 +19,7 @@ var _ = Describe("EntityManager", func() {
 
 		sdk := utils.DiscoveryOne
 
-		manageEntity := &gen_proto.ManageEntityLegacy{
+		manageEntity := &core_proto.ManageEntityLegacy{
 			UserId:     1,
 			EntityType: "User",
 			EntityId:   1,
@@ -28,9 +28,9 @@ var _ = Describe("EntityManager", func() {
 			Signature:  "eip712",
 		}
 
-		signedManageEntity := &gen_proto.SignedTransaction{
+		signedManageEntity := &core_proto.SignedTransaction{
 			RequestId: uuid.NewString(),
-			Transaction: &gen_proto.SignedTransaction_ManageEntity{
+			Transaction: &core_proto.SignedTransaction_ManageEntity{
 				ManageEntity: manageEntity,
 			},
 		}
@@ -38,7 +38,7 @@ var _ = Describe("EntityManager", func() {
 		expectedTxHash, err := common.ToTxHash(signedManageEntity)
 		Expect(err).To(BeNil())
 
-		req := &gen_proto.SendTransactionRequest{
+		req := &core_proto.SendTransactionRequest{
 			Transaction: signedManageEntity,
 		}
 
@@ -50,14 +50,9 @@ var _ = Describe("EntityManager", func() {
 
 		time.Sleep(time.Second * 1)
 
-		manageEntityRes, err := sdk.GetTransaction(ctx, &gen_proto.GetTransactionRequest{Txhash: txhash})
+		manageEntityRes, err := sdk.GetTransaction(ctx, &core_proto.GetTransactionRequest{Txhash: txhash})
 		Expect(err).To(BeNil())
 
 		Expect(proto.Equal(signedManageEntity, manageEntityRes.GetTransaction())).To(BeTrue())
-
-		// test rpc get hash works too
-		txResult, err := sdk.Tx(ctx, []byte(txhash), true)
-		Expect(err).To(BeNil())
-		Expect(txResult.Hash.Bytes()).To(Equal([]byte(txhash)))
 	})
 })

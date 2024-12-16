@@ -14,8 +14,8 @@ ABI_ARTIFACTS := $(ABI_ARTIFACT_DIR)/ERC20Detailed.json $(ABI_ARTIFACT_DIR)/Regi
 SQL_SRCS := $(shell find pkg/core/db/sql -type f -name '*.sql') pkg/core/db/sqlc.yaml
 SQL_ARTIFACTS := $(wildcard pkg/core/db/*.sql.go)
 
-PROTO_SRCS := pkg/core/proto/protocol.proto
-PROTO_ARTIFACTS := $(wildcard pkg/core/gen/proto/*.pb.go)
+PROTO_SRCS := pkg/core/protocol/protocol.proto
+PROTO_ARTIFACTS := $(wildcard pkg/core/gen/core_proto/*.pb.go)
 
 TEMPL_SRCS := $(shell find pkg/core/console -type f -name "*.templ")
 TEMPL_ARTIFACTS := $(shell find pkg/core/console -type f -name "*_templ.go")
@@ -158,7 +158,7 @@ regen-proto: $(PROTO_ARTIFACTS)
 $(PROTO_ARTIFACTS): $(PROTO_SRCS)
 	@echo Regenerating protobuf code
 	cd pkg/core && buf generate
-	cd pkg/core/gen/proto && swagger generate client -f protocol.swagger.json -t ../ --client-package=core_openapi
+	cd pkg/core/gen/core_proto && swagger generate client -f protocol.swagger.json -t ../ --client-package=core_openapi
 
 .PHONY: regen-sql
 regen-sql: $(SQL_ARTIFACTS)
