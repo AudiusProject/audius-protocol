@@ -1,4 +1,4 @@
-import { Name } from '@audius/common/models'
+import { ErrorLevel, Name } from '@audius/common/models'
 import {
   recoveryEmailActions,
   getContext,
@@ -10,21 +10,40 @@ import { make } from 'common/store/analytics/actions'
 
 const { resendRecoveryEmail, resendSuccess, resendError } = recoveryEmailActions
 
-function* watchResendRecoveryEmail() {
-  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
+export function* sendRecoveryEmail() {
+  const authService = yield* getContext('authService')
+  const identityService = yield* getContext('identityService')
+  const getHostUrl = yield* getContext('getHostUrl')
+  const host = getHostUrl()
+  const recoveryInfo = yield* call([
+    authService.hedgehogInstance,
+    authService.hedgehogInstance.generateRecoveryInfo
+  ])
 
+  const recoveryData = {
+    login: recoveryInfo.login,
+    host: host ?? recoveryInfo.host
+  }
+  yield* call([identityService, identityService.sendRecoveryInfo], recoveryData)
+}
+
+function* watchResendRecoveryEmail() {
   yield* takeLatest(resendRecoveryEmail.type, function* () {
     const handle = yield* select(accountSelectors.getUserHandle)
     if (!handle) return
 
-    const response = yield* call(
-      audiusBackendInstance.sendRecoveryEmail,
-      handle
-    )
-    if (response?.status) {
+    try {
+      yield* call(sendRecoveryEmail)
       yield* put(resendSuccess())
       yield* put(make(Name.SETTINGS_RESEND_ACCOUNT_RECOVERY, {}))
-    } else {
+    } catch (err) {
+      const reportToSentry = yield* getContext('reportToSentry')
+      reportToSentry({
+        error: err instanceof Error ? err : new Error(err as string),
+        name: 'Sign Up: Failed to send recovery email',
+        additionalInfo: { handle },
+        level: ErrorLevel.Fatal
+      })
       yield* put(resendError())
     }
   })
