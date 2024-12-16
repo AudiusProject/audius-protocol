@@ -19,7 +19,7 @@ import {
 import { Copyright } from '~/models/Track'
 import { decodeHashId } from '~/utils/hashIds'
 
-import { accessConditionsFromSDK } from './access'
+import { accessConditionsFromSDK, accessConditionsToSDK } from './access'
 import { resourceContributorFromSDK } from './attribution'
 import { favoriteFromSDK } from './favorite'
 import { coverArtSizesCIDsFromSDK } from './imageSize'
@@ -193,6 +193,14 @@ export const playlistMetadataForUpdateWithSDK = (
 // scheduled releases
 export const albumMetadataForSDK = (input: Collection): CreateAlbumMetadata => {
   return {
+    streamConditions:
+      input.stream_conditions && 'usdc_purchase' in input.stream_conditions
+        ? {
+            usdcPurchase: input.stream_conditions.usdc_purchase
+          }
+        : null,
+    isStreamGated: input.is_stream_gated ?? false,
+    isDownloadGated: input.is_download_gated ?? false,
     albumName: input.playlist_name ?? '',
     description: input.description ?? '',
     license: input.ddex_app ?? '',
