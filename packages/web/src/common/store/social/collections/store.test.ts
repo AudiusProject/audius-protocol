@@ -13,7 +13,7 @@ import * as sagas from 'common/store/social/collections/sagas'
 import { noopReducer } from 'store/testHelper'
 import { waitForWrite } from 'utils/sagaHelpers'
 
-const repostingUser = { repost_count: 0 }
+const repostingUser = { repost_count: 0, handle: 'handle', name: 'name' }
 const defaultProviders: StaticProvider[] = [[call.fn(waitForWrite), undefined]]
 
 describe('repost', () => {

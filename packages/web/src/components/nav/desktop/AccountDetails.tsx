@@ -2,7 +2,7 @@ import { GUEST_EMAIL, useIsManagedAccount } from '@audius/common/hooks'
 import { accountSelectors } from '@audius/common/store'
 import { route } from '@audius/common/utils'
 import { Box, Flex, Text, useTheme } from '@audius/harmony'
-import { useLocalStorage } from '@uidotdev/usehooks'
+import { useLocalStorage } from 'react-use'
 
 import { Avatar } from 'components/avatar/Avatar'
 import { TextLink, UserLink } from 'components/link'

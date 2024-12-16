@@ -42,10 +42,10 @@ import {
   IconCart,
   ModalTitle
 } from '@audius/harmony'
-import { useLocalStorage } from '@uidotdev/usehooks'
 import cn from 'classnames'
 import { Formik, useField, useFormikContext } from 'formik'
 import { useDispatch, useSelector } from 'react-redux'
+import { useLocalStorage } from 'react-use'
 import { z } from 'zod'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 

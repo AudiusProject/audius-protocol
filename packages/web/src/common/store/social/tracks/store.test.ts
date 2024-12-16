@@ -17,8 +17,8 @@ import { waitForWrite } from 'utils/sagaHelpers'
 
 import { watchRecordListen } from './recordListen'
 
-const repostingUser = { repost_count: 0 }
-const saveUser = { handle: 'saveUser' }
+const repostingUser = { repost_count: 0, handle: 'handle', name: 'name' }
+const saveUser = { handle: 'saveUser', name: 'name' }
 
 const mockAudiusSdk = {}
 
