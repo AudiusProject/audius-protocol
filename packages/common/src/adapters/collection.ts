@@ -200,7 +200,7 @@ export const albumMetadataForSDK = (input: Collection): CreateAlbumMetadata => {
           }
         : null,
     isStreamGated: input.is_stream_gated ?? false,
-    isDownloadGated: input.is_download_gated ?? false,
+    isScheduledRelease: input.is_scheduled_release ?? false,
     albumName: input.playlist_name ?? '',
     description: input.description ?? '',
     license: input.ddex_app ?? '',

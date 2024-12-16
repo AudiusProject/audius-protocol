@@ -49,7 +49,8 @@ export const CreateAlbumMetadataSchema = z
     isStreamGated: z.optional(z.boolean()),
     streamConditions: z.optional(USDCPurchaseConditions).nullable(),
     isDownloadGated: z.optional(z.boolean()),
-    downloadConditions: z.optional(USDCPurchaseConditions).nullable()
+    downloadConditions: z.optional(USDCPurchaseConditions).nullable(),
+    isScheduledRelease: z.optional(z.boolean())
   })
   .strict()
 
