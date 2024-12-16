@@ -439,9 +439,9 @@ function* publishPlaylistAsync(
   const event = make(Name.PLAYLIST_MAKE_PUBLIC, { id: action.playlistId })
   yield* put(event)
 
-  let playlist = yield* select(getCollection, { id: action.playlistId })
+  const playlist = yield* select(getCollection, { id: action.playlistId })
   if (!playlist) return
-  playlist = { ...playlist, _is_publishing: true }
+  playlist._is_publishing = true
   yield* put(
     cacheActions.update(Kind.COLLECTIONS, [
       {

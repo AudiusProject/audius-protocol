@@ -634,13 +634,6 @@ export const audiusBackend = ({
     }
   }
 
-  async function guestSignUp(email: string) {
-    await waitForLibsInit()
-    const metadata = schemas.newUserMetadata()
-
-    return await audiusLibs.Account.guestSignUp(email, metadata)
-  }
-
   async function instagramHandle(handle: string) {
     try {
       const res = await fetch(
@@ -1674,7 +1667,6 @@ export const audiusBackend = ({
     identityServiceUrl,
     recordTrackListen,
     registerDeviceToken,
-    guestSignUp,
     sendTokens,
     sendWAudioTokens,
     sendWelcomeEmail,
