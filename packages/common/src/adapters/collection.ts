@@ -1,4 +1,4 @@
-import { full } from '@audius/sdk'
+import type { full } from '@audius/sdk'
 import dayjs from 'dayjs'
 import { omit } from 'lodash'
 import snakecaseKeys from 'snakecase-keys'
@@ -12,7 +12,7 @@ import {
 import { Copyright } from '~/models/Track'
 import { decodeHashId } from '~/utils/hashIds'
 
-import { accessConditionsFromSDK } from './access'
+import { accessConditionsFromSDK } from './accessConditionsFromSDK'
 import { resourceContributorFromSDK } from './attribution'
 import { favoriteFromSDK } from './favorite'
 import { coverArtSizesCIDsFromSDK } from './imageSize'

@@ -1,5 +1,5 @@
-import { full } from '@audius/sdk'
 import type {
+  full,
   CrossPlatformFile,
   Genre,
   Mood,
@@ -24,7 +24,8 @@ import type { TrackMetadataForUpload } from '~/store/upload/types'
 import { License, Maybe } from '~/utils'
 import { decodeHashId } from '~/utils/hashIds'
 
-import { accessConditionsFromSDK, accessConditionsToSDK } from './access'
+import { accessConditionsFromSDK } from './accessConditionsFromSDK'
+import { accessConditionsToSDK } from './accessConditionsToSDK'
 import { resourceContributorFromSDK } from './attribution'
 import { favoriteFromSDK } from './favorite'
 import { coverArtSizesCIDsFromSDK } from './imageSize'

@@ -1,4 +1,3 @@
-import type BN from 'bn.js'
 import type Web3Type from 'web3'
 
 declare global {
@@ -8,11 +7,7 @@ declare global {
   }
 }
 
-type Web3 = typeof Web3Type & {
-  utils: {
-    BN: typeof BN
-  }
-}
+type Web3 = typeof Web3Type
 
 let web3: Web3
 if (typeof window !== 'undefined' && window && window.Web3) {
