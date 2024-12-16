@@ -4,7 +4,6 @@ import { AudiusQueryContext } from '@audius/common/audius-query'
 
 import { env } from 'app/env'
 import * as analytics from 'app/services/analytics'
-import { apiClient } from 'app/services/audius-api-client'
 import { audiusBackendInstance } from 'app/services/audius-backend-instance'
 import {
   getFeatureEnabled,
@@ -21,7 +20,6 @@ type AudiusQueryProviderProps = {
 }
 
 export const audiusQueryContext = {
-  apiClient,
   audiusBackend: audiusBackendInstance,
   audiusSdk,
   authService,

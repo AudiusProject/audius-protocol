@@ -1,8 +1,13 @@
 import { useCallback, useState } from 'react'
 
-import { Id, useGetSales, useGetSalesCount } from '@audius/common/api'
+import {
+  Id,
+  useGetCurrentWeb3User,
+  useGetSales,
+  useGetSalesCount
+} from '@audius/common/api'
 import { useAllPaginatedQuery } from '@audius/common/audius-query'
-import { useFeatureFlag } from '@audius/common/hooks'
+import { useFeatureFlag, useIsManagedAccount } from '@audius/common/hooks'
 import {
   combineStatuses,
   Status,
@@ -91,6 +96,9 @@ const NoSales = () => {
 
 export const useSales = () => {
   const userId = useSelector(getUserId)
+  const isManagerMode = useIsManagedAccount()
+  const { data: currentWeb3User } = useGetCurrentWeb3User({})
+
   // Defaults: sort method = date, sort direction = desc
   const [sortMethod, setSortMethod] =
     useState<full.GetSalesSortMethodEnum>(DEFAULT_SORT_METHOD)
@@ -152,16 +160,15 @@ export const useSales = () => {
     try {
       const sdk = await audiusSdk()
       const salesAsJSON = await sdk.users.downloadSalesAsJSON({
-        id: Id.parse(userId)
+        id: Id.parse(userId),
+        granteeUserId: isManagerMode
+          ? Id.parse(currentWeb3User?.user_id)
+          : undefined
       })
 
-      const userDecryptionKey = salesAsJSON.data?.decryptionKey
+      const sales = salesAsJSON.data?.sales
 
-      if (
-        !salesAsJSON.data?.sales ||
-        salesAsJSON.data.sales.length === 0 ||
-        !userDecryptionKey
-      ) {
+      if (!sales || sales.length === 0) {
         return
       }
 
@@ -179,18 +186,18 @@ export const useSales = () => {
         'Country'
       ]
 
-      const symettricKey =
-        await sdk.services.emailEncryptionService.decryptSymmetricKey(
-          userDecryptionKey,
-          Id.parse(userId)
-        )
-
       const rows = await Promise.all(
-        salesAsJSON.data.sales.map(async (sale) => {
+        sales.map(async (sale) => {
           try {
+            const symmetricKey =
+              await sdk.services.emailEncryptionService.decryptSymmetricKey(
+                sale.encryptedKey ?? '',
+                Id.parse(sale.buyerUserId)
+              )
+
             const decryptedEmail = sale.encryptedEmail
               ? await sdk.services.emailEncryptionService
-                  .decryptEmail(sale.encryptedEmail, symettricKey)
+                  .decryptEmail(sale.encryptedEmail, symmetricKey)
                   .catch(() => '')
               : ''
 

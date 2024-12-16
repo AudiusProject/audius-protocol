@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"encoding/hex"
+	"log/slog"
 	"net/http"
 	"net/http/httputil"
 	"net/url"
@@ -12,6 +13,7 @@ import (
 	"syscall"
 
 	"log"
+	"net"
 
 	"github.com/AudiusProject/audius-protocol/pkg/core"
 	"github.com/AudiusProject/audius-protocol/pkg/core/common"
@@ -29,7 +31,27 @@ func main() {
 	tlsEnabled := getEnvBool("ENABLE_TLS", false)
 	storageEnabled := getEnvBool("ENABLE_STORAGE", false)
 
-	logger := common.NewLogger(nil)
+	var slogLevel slog.Level
+	if logLevel := os.Getenv("audiusd_log_level"); logLevel != "" {
+		switch logLevel {
+		case "debug":
+			slogLevel = slog.LevelDebug
+		case "info":
+			slogLevel = slog.LevelInfo
+		case "warn":
+			slogLevel = slog.LevelWarn
+		case "error":
+			slogLevel = slog.LevelError
+		default:
+			slogLevel = slog.LevelWarn
+		}
+	} else {
+		slogLevel = slog.LevelInfo
+	}
+
+	logger := common.NewLogger(&slog.HandlerOptions{
+		Level: slogLevel,
+	})
 
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
@@ -91,6 +113,17 @@ func main() {
 }
 
 func startEchoProxyWithOptionalTLS(hostUrl *url.URL, enableTLS bool) error {
+
+	httpPort := os.Getenv("AUDIUSD_HTTP_PORT")
+	if httpPort == "" {
+		httpPort = "80"
+	}
+
+	httpsPort := os.Getenv("AUDIUSD_HTTPS_PORT")
+	if httpsPort == "" {
+		httpsPort = "443"
+	}
+
 	e := echo.New()
 
 	e.Use(middleware.Logger())
@@ -126,18 +159,37 @@ func startEchoProxyWithOptionalTLS(hostUrl *url.URL, enableTLS bool) error {
 	e.Any("/*", echo.WrapHandler(mediorumProxy))
 
 	if enableTLS {
-		e.AutoTLSManager.HostPolicy = autocert.HostWhitelist(hostUrl.Hostname())
-		e.AutoTLSManager.Cache = autocert.DirCache("/data/var/www/.cache")
+		// Get server's IP addresses
+		addrs, err := net.InterfaceAddrs()
+		if err != nil {
+			e.Logger.Warn("Failed to get interface addresses:", err)
+		}
+
+		// Build whitelist starting with hostname and localhost
+		whitelist := []string{hostUrl.Hostname(), "localhost"}
+
+		// Add all non-loopback IPv4 addresses
+		for _, addr := range addrs {
+			if ipnet, ok := addr.(*net.IPNet); ok && !ipnet.IP.IsLoopback() {
+				if ip4 := ipnet.IP.To4(); ip4 != nil {
+					whitelist = append(whitelist, ip4.String())
+				}
+			}
+		}
+
+		e.Logger.Info("TLS host whitelist:", whitelist)
+		e.AutoTLSManager.HostPolicy = autocert.HostWhitelist(whitelist...)
+		e.AutoTLSManager.Cache = autocert.DirCache(getEnvString("audius_core_root_dir", "/audius-core") + "/echo/cache")
 		e.Pre(middleware.HTTPSRedirect())
 
 		go func() {
-			if err := e.StartAutoTLS(":443"); err != nil && err != http.ErrServerClosed {
+			if err := e.StartAutoTLS(":" + httpsPort); err != nil && err != http.ErrServerClosed {
 				e.Logger.Fatal("shutting down the server")
 			}
 		}()
 
 		go func() {
-			if err := e.Start(":80"); err != nil && err != http.ErrServerClosed {
+			if err := e.Start(":" + httpPort); err != nil && err != http.ErrServerClosed {
 				e.Logger.Fatal("HTTP server failed")
 			}
 		}()
@@ -145,31 +197,28 @@ func startEchoProxyWithOptionalTLS(hostUrl *url.URL, enableTLS bool) error {
 		return nil
 	}
 
-	return e.Start(":80")
+	return e.Start(":" + httpPort)
 }
 
-func keyGen() (pKey string, addr string) {
-	privateKey, err := crypto.GenerateKey()
-	if err != nil {
-		log.Fatalf("Failed to generate private key: %v", err)
-	}
-	privateKeyBytes := crypto.FromECDSA(privateKey)
-	privateKeyStr := hex.EncodeToString(privateKeyBytes)
-	address := crypto.PubkeyToAddress(privateKey.PublicKey)
-	return privateKeyStr, address.Hex()
-}
-
-func getEnvBool(key string, defaultVal bool) bool {
+func getEnv[T any](key string, defaultVal T, parse func(string) (T, error)) T {
 	val, ok := os.LookupEnv(key)
 	if !ok {
 		return defaultVal
 	}
-	parsed, err := strconv.ParseBool(val)
+	parsed, err := parse(val)
 	if err != nil {
 		log.Printf("Invalid value for %s: %v, defaulting to %v", key, val, defaultVal)
 		return defaultVal
 	}
 	return parsed
+}
+
+func getEnvString(key, defaultVal string) string {
+	return getEnv(key, defaultVal, func(s string) (string, error) { return s, nil })
+}
+
+func getEnvBool(key string, defaultVal bool) bool {
+	return getEnv(key, defaultVal, strconv.ParseBool)
 }
 
 func getHostUrl() (*url.URL, error) {
@@ -181,4 +230,15 @@ func getHostUrl() (*url.URL, error) {
 		ep = "localhost"
 	}
 	return url.Parse(ep)
+}
+
+func keyGen() (pKey string, addr string) {
+	privateKey, err := crypto.GenerateKey()
+	if err != nil {
+		log.Fatalf("Failed to generate private key: %v", err)
+	}
+	privateKeyBytes := crypto.FromECDSA(privateKey)
+	privateKeyStr := hex.EncodeToString(privateKeyBytes)
+	address := crypto.PubkeyToAddress(privateKey.PublicKey)
+	return privateKeyStr, address.Hex()
 }

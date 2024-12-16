@@ -1,9 +1,9 @@
-import { useCallback, useMemo } from 'react'
+import { useCallback, useEffect, useMemo } from 'react'
 
 import { USDC } from '@audius/fixed-decimal'
 import BN from 'bn.js'
 import { useDispatch, useSelector } from 'react-redux'
-import { useLocalStorage, useEffectOnce } from 'react-use'
+import { useLocalStorage } from 'react-use'
 import { z } from 'zod'
 
 import { useGetCurrentUser } from '~/api'
@@ -69,9 +69,9 @@ export const usePurchaseContentFormConfiguration = ({
   const isUnlocking = !error && isContentPurchaseInProgress(stage)
   const { data: balanceBN } = useUSDCBalance()
   const balance = USDC(balanceBN ?? new BN(0)).value
-  const [guestEmail, setGuestEmail] = useLocalStorage(GUEST_EMAIL, '')
+  const [guestEmail] = useLocalStorage(GUEST_EMAIL, '')
   const { data: currentUser } = useGetCurrentUser({})
-  const { isEnabled: guestCheckoutEnabled = false } = useFeatureFlag(
+  const { isEnabled: guestCheckoutEnabled } = useFeatureFlag(
     FeatureFlags.GUEST_CHECKOUT
   )
 
@@ -79,11 +79,12 @@ export const usePurchaseContentFormConfiguration = ({
     guestCheckoutEnabled &&
     (!currentUser || (currentUser && !currentUser.handle))
 
-  useEffectOnce(() => {
-    if (isGuestCheckout && !guestEmail) {
+  useEffect(() => {
+    // check if feature flag loaded to set the page
+    if (isGuestCheckout) {
       dispatch(setPurchasePage({ page: PurchaseContentPage.GUEST_CHECKOUT }))
     }
-  })
+  }, [dispatch, isGuestCheckout])
 
   const initialValues: PurchaseContentValues = {
     [CUSTOM_AMOUNT]: undefined,
@@ -105,8 +106,8 @@ export const usePurchaseContentFormConfiguration = ({
     : undefined
 
   const validationSchema = useMemo(
-    () => createPurchaseContentSchema(audiusQueryContext, page),
-    [audiusQueryContext, page]
+    () => createPurchaseContentSchema(audiusQueryContext, page, guestEmail),
+    [audiusQueryContext, guestEmail, page]
   )
   type PurchaseContentValues = z.input<typeof validationSchema>
 
@@ -120,8 +121,6 @@ export const usePurchaseContentFormConfiguration = ({
       purchaseMethodMintAddress
     }: PurchaseContentValues) => {
       if (isUnlocking || !contentId) return
-
-      setGuestEmail(guestEmail)
 
       if (
         purchaseMethod === PurchaseMethod.CRYPTO &&
@@ -155,15 +154,7 @@ export const usePurchaseContentFormConfiguration = ({
         )
       }
     },
-    [
-      isUnlocking,
-      contentId,
-      setGuestEmail,
-      page,
-      dispatch,
-      presetValues,
-      isAlbum
-    ]
+    [isUnlocking, contentId, page, dispatch, presetValues, isAlbum]
   )
 
   return {

@@ -1,6 +1,6 @@
 {
   "genesis_time": "2024-08-09T00:00:00.0000Z",
-  "chain_id": "audius-testnet-8",
+  "chain_id": "audius-testnet-11",
   "initial_height": "0",
   "consensus_params": {
     "block": {

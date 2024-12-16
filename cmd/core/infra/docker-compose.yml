@@ -45,7 +45,8 @@ services:
       context: ../../../
       dockerfile: ./cmd/core/infra/Dockerfile.dev
     volumes:
-      - /tmp:/tmp
+      - /tmp/audius-core:/audius-core
+      - /tmp/audius-core:/tmp
     restart: unless-stopped
     networks:
       - sandbox-core-net

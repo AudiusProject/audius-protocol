@@ -164,6 +164,8 @@ func (s *Server) registerSelfOnComet(ethBlock, spID string) error {
 		EthBlock:     ethBlock,
 		NodeType:     common.HexToUtf8(serviceType),
 		SpId:         spID,
+		PubKey:       s.config.CometKey.PubKey().Bytes(),
+		Power:        int64(s.config.ValidatorVotingPower),
 	}
 
 	eventBytes, err := proto.Marshal(registrationTx)
@@ -376,21 +378,21 @@ func (s *Server) isValidRegisterNodeEvent(ctx context.Context, e *core_proto.Sig
 }
 
 // persists the register node request should it pass validation
-func (s *Server) finalizeRegisterNode(ctx context.Context, e *core_proto.SignedTransaction) (*core_proto.ValidatorRegistration, error) {
-	if err := s.isValidRegisterNodeEvent(ctx, e); err != nil {
+func (s *Server) finalizeRegisterNode(ctx context.Context, tx *core_proto.SignedTransaction) (*core_proto.ValidatorRegistration, error) {
+	if err := s.isValidRegisterNodeEvent(ctx, tx); err != nil {
 		return nil, fmt.Errorf("invalid register node event: %v", err)
 	}
 
 	qtx := s.getDb()
 
-	event := e.GetValidatorRegistration()
-	sig := e.GetSignature()
-	eventBytes, err := proto.Marshal(event)
+	vr := tx.GetValidatorRegistration()
+	sig := tx.GetSignature()
+	txBytes, err := proto.Marshal(vr)
 	if err != nil {
-		return nil, fmt.Errorf("could not unmarshal event bytes: %v", err)
+		return nil, fmt.Errorf("could not unmarshal tx bytes: %v", err)
 	}
 
-	pubKey, address, err := common.EthRecover(sig, eventBytes)
+	pubKey, address, err := common.EthRecover(sig, txBytes)
 	if err != nil {
 		return nil, fmt.Errorf("could not recover signer: %v", err)
 	}
@@ -400,21 +402,23 @@ func (s *Server) finalizeRegisterNode(ctx context.Context, e *core_proto.SignedT
 		return nil, fmt.Errorf("could not serialize pubkey: %v", err)
 	}
 
-	registerNode := e.GetValidatorRegistration()
+	registerNode := tx.GetValidatorRegistration()
 
-	err = qtx.InsertRegisteredNode(ctx, db.InsertRegisteredNodeParams{
-		PubKey:       serializedPubKey,
-		EthAddress:   address,
-		Endpoint:     registerNode.GetEndpoint(),
-		CometAddress: registerNode.GetCometAddress(),
-		EthBlock:     registerNode.GetEthBlock(),
-		NodeType:     registerNode.GetNodeType(),
-		SpID:         registerNode.GetSpId(),
-	})
-
-	if err != nil {
-		return nil, fmt.Errorf("error inserting registered node: %v", err)
+	if _, err = qtx.GetRegisteredNodeByEthAddress(ctx, address); err != nil {
+		// Do not reinsert duplicate registrations
+		err = qtx.InsertRegisteredNode(ctx, db.InsertRegisteredNodeParams{
+			PubKey:       serializedPubKey,
+			EthAddress:   address,
+			Endpoint:     registerNode.GetEndpoint(),
+			CometAddress: registerNode.GetCometAddress(),
+			EthBlock:     registerNode.GetEthBlock(),
+			NodeType:     registerNode.GetNodeType(),
+			SpID:         registerNode.GetSpId(),
+		})
+		if err != nil {
+			return nil, fmt.Errorf("error inserting registered node: %v", err)
+		}
 	}
 
-	return event, nil
+	return vr, nil
 }

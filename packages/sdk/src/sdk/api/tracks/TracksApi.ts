@@ -25,6 +25,7 @@ import { retry3 } from '../../utils/retry'
 import {
   Configuration,
   StreamTrackRequest,
+  DownloadTrackRequest,
   TracksApi as GeneratedTracksApi,
   ExtendedPaymentSplit,
   instanceOfExtendedPurchaseGate
@@ -33,7 +34,6 @@ import { BASE_PATH, RequiredError } from '../generated/default/runtime'
 
 import { TrackUploadHelper } from './TrackUploadHelper'
 import {
-  createUpdateTrackSchema,
   DeleteTrackRequest,
   DeleteTrackSchema,
   RepostTrackRequest,
@@ -52,9 +52,10 @@ import {
   GetPurchaseTrackInstructionsSchema,
   RecordTrackDownloadRequest,
   RecordTrackDownloadSchema,
-  createUploadTrackFilesSchema,
   UploadTrackFilesRequest,
-  createUploadTrackSchema
+  UploadTrackSchema,
+  UpdateTrackSchema,
+  UploadTrackFilesSchema
 } from './types'
 
 // Extend that new class
@@ -88,12 +89,60 @@ export class TracksApi extends GeneratedTracksApi {
       )
     }
 
+    const queryParams = new URLSearchParams()
+    if (params.userId) queryParams.append('user_id', params.userId)
+    if (params.preview !== undefined)
+      queryParams.append('preview', String(params.preview))
+    if (params.userSignature)
+      queryParams.append('user_signature', params.userSignature)
+    if (params.userData) queryParams.append('user_data', params.userData)
+    if (params.nftAccessSignature)
+      queryParams.append('nft_access_signature', params.nftAccessSignature)
+    if (params.skipPlayCount !== undefined)
+      queryParams.append('skip_play_count', String(params.skipPlayCount))
+    if (params.apiKey) queryParams.append('api_key', params.apiKey)
+    if (params.skipCheck !== undefined)
+      queryParams.append('skip_check', String(params.skipCheck))
+    if (params.noRedirect !== undefined)
+      queryParams.append('no_redirect', String(params.noRedirect))
+
     const path = `/tracks/{track_id}/stream`.replace(
       `{${'track_id'}}`,
       encodeURIComponent(String(params.trackId))
     )
     const host = await this.discoveryNodeSelectorService.getSelectedEndpoint()
     return `${host}${BASE_PATH}${path}`
+  }
+
+  /**
+   * Get the url of the track's downloadable file
+   */
+  async getTrackDownloadUrl(params: DownloadTrackRequest): Promise<string> {
+    if (params.trackId === null || params.trackId === undefined) {
+      throw new RequiredError(
+        'trackId',
+        'Required parameter params.trackId was null or undefined when calling getTrack.'
+      )
+    }
+
+    const queryParams = new URLSearchParams()
+    if (params.userId) queryParams.append('user_id', params.userId)
+    if (params.userSignature)
+      queryParams.append('user_signature', params.userSignature)
+    if (params.userData) queryParams.append('user_data', params.userData)
+    if (params.nftAccessSignature)
+      queryParams.append('nft_access_signature', params.nftAccessSignature)
+    if (params.original !== undefined)
+      queryParams.append('original', String(params.original))
+    if (params.filename) queryParams.append('filename', params.filename)
+
+    const path = `/tracks/{track_id}/download`.replace(
+      `{${'track_id'}}`,
+      encodeURIComponent(String(params.trackId))
+    )
+    const host = await this.discoveryNodeSelectorService.getSelectedEndpoint()
+    const queryString = queryParams.toString()
+    return `${host}${BASE_PATH}${path}${queryString ? '?' + queryString : ''}`
   }
 
   /** @hidden
@@ -108,10 +157,7 @@ export class TracksApi extends GeneratedTracksApi {
       coverArtFile,
       metadata: parsedMetadata,
       onProgress
-    } = await parseParams(
-      'uploadTrackFiles',
-      createUploadTrackFilesSchema()
-    )(params)
+    } = await parseParams('uploadTrackFiles', UploadTrackFilesSchema)(params)
 
     // Transform metadata
     this.logger.info('Transforming metadata')
@@ -217,7 +263,7 @@ export class TracksApi extends GeneratedTracksApi {
     advancedOptions?: AdvancedOptions
   ) {
     // Validate inputs
-    await parseParams('uploadTrack', createUploadTrackSchema())(params)
+    await parseParams('uploadTrack', UploadTrackSchema)(params)
 
     // Upload track files
     const metadata = await this.uploadTrackFiles(
@@ -242,8 +288,8 @@ export class TracksApi extends GeneratedTracksApi {
       coverArtFile,
       metadata: parsedMetadata,
       onProgress,
-      transcodePreview
-    } = await parseParams('updateTrack', createUpdateTrackSchema())(params)
+      generatePreview
+    } = await parseParams('updateTrack', UpdateTrackSchema)(params)
 
     // Transform metadata
     const metadata = this.trackUploadHelper.transformTrackUploadMetadata(
@@ -272,7 +318,7 @@ export class TracksApi extends GeneratedTracksApi {
       ...(coverArtResp ? { coverArtSizes: coverArtResp.id } : {})
     }
 
-    if (transcodePreview) {
+    if (generatePreview) {
       if (updatedMetadata.previewStartSeconds === undefined) {
         throw new Error('No track preview start time specified')
       }
@@ -280,24 +326,20 @@ export class TracksApi extends GeneratedTracksApi {
         throw new Error('Missing required audio_upload_id')
       }
 
-      // Transocde track preview
-      const editFileData = {
-        previewStartSeconds: updatedMetadata.previewStartSeconds!.toString()
-      }
-      const updatePreviewResp = await retry3(
+      // Generate track preview
+      const previewCid = await retry3(
         async () =>
-          await this.storage.editFile({
-            uploadId: updatedMetadata.audioUploadId!,
-            data: editFileData
+          await this.storage.generatePreview({
+            cid: updatedMetadata.trackCid!,
+            secondOffset: updatedMetadata.previewStartSeconds!
           }),
         (e) => {
-          this.logger.info('Retrying editFileV2', e)
+          this.logger.info('Retrying generatePreview', e)
         }
       )
 
       // Update metadata to include updated preview CID
-      const previewKey = `320_preview|${updatedMetadata.previewStartSeconds}`
-      updatedMetadata.previewCid = updatePreviewResp.results[previewKey]
+      updatedMetadata.previewCid = previewCid
     }
 
     // Write metadata to chain

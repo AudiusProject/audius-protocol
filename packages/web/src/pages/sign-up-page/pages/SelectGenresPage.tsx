@@ -11,7 +11,7 @@ import { toFormikValidationSchema } from 'zod-formik-adapter'
 
 import { make } from 'common/store/analytics/actions'
 import { setField } from 'common/store/pages/signon/actions'
-import { getGenres, getReferrer } from 'common/store/pages/signon/selectors'
+import { getGenres } from 'common/store/pages/signon/selectors'
 import { SelectablePillField } from 'components/form-fields/SelectablePillField'
 import { useMedia } from 'hooks/useMedia'
 import { useNavigateToPage } from 'hooks/useNavigateToPage'
@@ -19,6 +19,7 @@ import { useNavigateToPage } from 'hooks/useNavigateToPage'
 import { AccountHeader } from '../components/AccountHeader'
 import { SkipButton } from '../components/SkipButton'
 import { Heading, Page, PageFooter, ScrollView } from '../components/layout'
+import { useFastReferral } from '../hooks/useFastReferral'
 
 const { SIGN_UP_ARTISTS_PAGE } = route
 
@@ -30,7 +31,7 @@ export const SelectGenresPage = () => {
 
   const [currentGenres, setCurrentGenres] = useState<Genre[]>([])
   const savedGenres = useSelector(getGenres)
-  const hasReferrer = useSelector(getReferrer)
+  const isFastReferral = useFastReferral()
   const { isMobile } = useMedia()
 
   const initialValues: SelectGenresValue = {
@@ -119,7 +120,7 @@ export const SelectGenresPage = () => {
               centered
               sticky
               buttonProps={{ disabled: !isValid }}
-              prefix={isMobile && hasReferrer ? <SkipButton /> : null}
+              prefix={isFastReferral ? <SkipButton /> : null}
             />
           </Page>
         )}

@@ -210,7 +210,7 @@ export const PremiumContentPurchaseModal = () => {
   const presetValues = usePayExtraPresets()
   const { data: currentUserId } = useGetCurrentUserId({})
   const { data: currentUser } = useGetCurrentUser({})
-  const { isEnabled: guestCheckoutEnabled = false } = useFeatureFlag(
+  const { isEnabled: guestCheckoutEnabled } = useFeatureFlag(
     FeatureFlags.GUEST_CHECKOUT
   )
 
@@ -324,6 +324,7 @@ export const PremiumContentPurchaseModal = () => {
           initialValues={initialValues}
           enableReinitialize
           validationSchema={toFormikValidationSchema(validationSchema)}
+          validateOnBlur={false}
           validateOnChange={false}
           onSubmit={onSubmit}
         >

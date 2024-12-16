@@ -51,6 +51,8 @@ func SignedTxProtoIntoSignedTxOapi(tx *core_proto.SignedTransaction) *models.Pro
 			EthBlock:     innerTx.ValidatorRegistration.EthBlock,
 			NodeType:     innerTx.ValidatorRegistration.NodeType,
 			SpID:         innerTx.ValidatorRegistration.SpId,
+			Power:        fmt.Sprint(innerTx.ValidatorRegistration.Power),
+			PubKey:       innerTx.ValidatorRegistration.PubKey,
 		}
 	}
 

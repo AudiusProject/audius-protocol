@@ -8,7 +8,7 @@ import { Genre } from '../../types/Genre'
 import { HashId } from '../../types/HashId'
 import { Mood } from '../../types/Mood'
 import {
-  createUploadTrackMetadataSchema,
+  UploadTrackMetadataSchema,
   USDCPurchaseConditions
 } from '../tracks/types'
 
@@ -32,80 +32,68 @@ export const getAlbumTracksSchema = z.object({
 
 export type getAlbumTracksRequest = z.input<typeof getAlbumTracksSchema>
 
-export const createUploadAlbumMetadataSchema = () =>
-  z
-    .object({
-      albumName: z.string(),
-      description: z.optional(z.string().max(1000)),
-      genre: z.enum(Object.values(Genre) as [Genre, ...Genre[]]),
-      license: z.optional(z.string()),
-      mood: z.optional(z.enum(Object.values(Mood) as [Mood, ...Mood[]])),
-      releaseDate: z.optional(
-        z.date().max(new Date(), { message: 'should not be in the future' })
-      ),
-      ddexReleaseIds: z.optional(z.record(z.string()).nullable()),
-      ddexApp: z.optional(z.string()),
-      tags: z.optional(z.string()),
-      upc: z.optional(z.string()),
-      artists: z.optional(z.array(DDEXResourceContributor).nullable()),
-      copyrightLine: z.optional(DDEXCopyright.nullable()),
-      producerCopyrightLine: z.optional(DDEXCopyright.nullable()),
-      parentalWarningType: z.optional(z.string().nullable()),
-      isStreamGated: z.optional(z.boolean()),
-      streamConditions: z.optional(USDCPurchaseConditions).nullable(),
-      isDownloadGated: z.optional(z.boolean()),
-      downloadConditions: z.optional(USDCPurchaseConditions).nullable()
-    })
-    .strict()
-
-export type AlbumMetadata = z.input<
-  ReturnType<typeof createUploadAlbumMetadataSchema>
->
-
-const createAlbumTrackMetadataSchema = () =>
-  createUploadTrackMetadataSchema().partial({
-    genre: true,
-    mood: true,
-    tags: true,
-    isStreamGated: true,
-    streamConditions: true,
-    isDownloadable: true,
-    downloadConditions: true
+export const UploadAlbumMetadataSchema = z
+  .object({
+    albumName: z.string(),
+    description: z.optional(z.string().max(1000)),
+    genre: z.enum(Object.values(Genre) as [Genre, ...Genre[]]),
+    license: z.optional(z.string()),
+    mood: z.optional(z.enum(Object.values(Mood) as [Mood, ...Mood[]])),
+    releaseDate: z.optional(z.date()),
+    ddexReleaseIds: z.optional(z.record(z.string()).nullable()),
+    ddexApp: z.optional(z.string()),
+    tags: z.optional(z.string()),
+    upc: z.optional(z.string()),
+    artists: z.optional(z.array(DDEXResourceContributor).nullable()),
+    copyrightLine: z.optional(DDEXCopyright.nullable()),
+    producerCopyrightLine: z.optional(DDEXCopyright.nullable()),
+    parentalWarningType: z.optional(z.string().nullable()),
+    isStreamGated: z.optional(z.boolean()),
+    streamConditions: z.optional(USDCPurchaseConditions).nullable(),
+    isDownloadGated: z.optional(z.boolean()),
+    downloadConditions: z.optional(USDCPurchaseConditions).nullable()
   })
+  .strict()
 
-export const createUploadAlbumSchema = () =>
-  z
-    .object({
-      userId: HashId,
-      coverArtFile: ImageFile,
-      metadata: createUploadAlbumMetadataSchema(),
-      onProgress: z.optional(z.function()),
-      /**
-       * Track metadata is populated from the album if fields are missing
-       */
-      trackMetadatas: z.array(createAlbumTrackMetadataSchema()),
-      trackFiles: z.array(AudioFile)
-    })
-    .strict()
+export type AlbumMetadata = z.input<typeof UploadAlbumMetadataSchema>
 
-export type UploadAlbumRequest = z.input<
-  ReturnType<typeof createUploadAlbumSchema>
->
+const AlbumTrackMetadataSchema = UploadTrackMetadataSchema.partial({
+  genre: true,
+  mood: true,
+  tags: true,
+  isStreamGated: true,
+  streamConditions: true,
+  isDownloadable: true,
+  downloadConditions: true
+})
 
-export const createUpdateAlbumSchema = () =>
-  z
-    .object({
-      userId: HashId,
-      albumId: HashId,
-      coverArtFile: z.optional(ImageFile),
-      metadata: createUploadAlbumMetadataSchema().partial(),
-      onProgress: z.optional(z.function())
-    })
-    .strict()
+export const UploadAlbumSchema = z
+  .object({
+    userId: HashId,
+    coverArtFile: ImageFile,
+    metadata: UploadAlbumMetadataSchema,
+    onProgress: z.optional(z.function()),
+    /**
+     * Track metadata is populated from the album if fields are missing
+     */
+    trackMetadatas: z.array(AlbumTrackMetadataSchema),
+    trackFiles: z.array(AudioFile)
+  })
+  .strict()
 
-export type UpdateAlbumRequest = z.input<
-  ReturnType<typeof createUpdateAlbumSchema>
->
+export type UploadAlbumRequest = z.input<typeof UploadAlbumSchema>
+
+export const UpdateAlbumSchema = z
+  .object({
+    userId: HashId,
+    albumId: HashId,
+    coverArtFile: z.optional(ImageFile),
+    metadata: UploadAlbumMetadataSchema.partial(),
+    onProgress: z.optional(z.function())
+  })
+  .strict()
+
+export type UpdateAlbumRequest = z.input<typeof UpdateAlbumSchema>
 
 export const DeleteAlbumSchema = z
   .object({

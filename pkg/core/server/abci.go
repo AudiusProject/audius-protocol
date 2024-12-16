@@ -13,6 +13,7 @@ import (
 	"github.com/AudiusProject/audius-protocol/pkg/core/gen/core_proto"
 	abcitypes "github.com/cometbft/cometbft/abci/types"
 	cfg "github.com/cometbft/cometbft/config"
+	"github.com/cometbft/cometbft/crypto/ed25519"
 	nm "github.com/cometbft/cometbft/node"
 	"github.com/cometbft/cometbft/p2p"
 	"github.com/cometbft/cometbft/privval"
@@ -174,6 +175,8 @@ func (s *Server) FinalizeBlock(ctx context.Context, req *abcitypes.FinalizeBlock
 	logger := s.logger
 	state := s.abciState
 	var txs = make([]*abcitypes.ExecTxResult, len(req.Txs))
+	var validatorUpdates = abcitypes.ValidatorUpdates{}
+	var validatorUpdatesMap = map[string]bool{}
 
 	// open in progres pg transaction
 	s.startInProgressTx(ctx)
@@ -198,6 +201,23 @@ func (s *Server) FinalizeBlock(ctx context.Context, req *abcitypes.FinalizeBlock
 			if err := s.persistTxStat(ctx, finalizedTx, txhash, req.Height, req.Time); err != nil {
 				// don't halt consensus on this
 				s.logger.Errorf("failed to persist tx stat: %v", err)
+			}
+
+			if vr := signedTx.GetValidatorRegistration(); vr != nil {
+				// Avoid error when duplicate validator update txs are in the same block
+				vrPubKey := ed25519.PubKey(vr.GetPubKey())
+				vrAddr := vrPubKey.Address().String()
+				if _, ok := validatorUpdatesMap[vrAddr]; !ok {
+					validatorUpdates = append(
+						validatorUpdates,
+						abcitypes.ValidatorUpdate{
+							Power:       vr.Power,
+							PubKeyBytes: vr.PubKey,
+							PubKeyType:  "ed25519",
+						},
+					)
+					validatorUpdatesMap[vrAddr] = true
+				}
 			}
 
 			// set finalized txs in finalize step to remove from mempool during commit step
@@ -238,8 +258,9 @@ func (s *Server) FinalizeBlock(ctx context.Context, req *abcitypes.FinalizeBlock
 	}
 
 	return &abcitypes.FinalizeBlockResponse{
-		TxResults: txs,
-		AppHash:   nextAppHash,
+		TxResults:        txs,
+		AppHash:          nextAppHash,
+		ValidatorUpdates: validatorUpdates,
 	}, nil
 }
 

@@ -12,13 +12,13 @@ if ! which -s crane; then
 fi
 
 case "$make_target" in
-    core-force-release-stage)
+    force-release-stage)
         img_tag=prerelease
         ;;
-    core-force-release-foundation)
+    force-release-foundation)
         img_tag=edge
         ;;
-    core-force-release-sps)
+    force-release-sps)
         img_tag=current
         ;;
     *)
@@ -29,4 +29,5 @@ esac
 CURRENT_SHA=$(git rev-parse HEAD)
 
 DOCKER_DEFAULT_PLATFORM=linux/amd64 audius-compose push --prod "core"
+DOCKER_DEFAULT_PLATFORM=linux/amd64 docker build --push -t audius/audiusd:${img_tag} -f ./cmd/audiusd/Dockerfile ./
 crane copy "audius/core:${CURRENT_SHA}" "audius/core:${img_tag}"

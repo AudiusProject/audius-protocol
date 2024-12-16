@@ -1,6 +1,9 @@
 package conf
 
-import "strings"
+import (
+	"fmt"
+	"strings"
+)
 
 const remoteConfigPlaceholder = "remoteConfigFile"
 
@@ -28,6 +31,12 @@ func (config *NodeConfig) ToOverrideEnv(host string, nc NetworkConfig) map[strin
 		overrideEnv["spOwnerWallet"] = config.RewardsWallet
 		overrideEnv["ethOwnerWallet"] = config.RewardsWallet
 
+		if config.HttpPort != 0 {
+			overrideEnv["AUDIUSD_HTTP_PORT"] = fmt.Sprint(config.HttpPort)
+		}
+		if config.HttpsPort != 0 {
+			overrideEnv["AUDIUSD_HTTPS_PORT"] = fmt.Sprint(config.HttpsPort)
+		}
 		if config.Storage.StorageUrl != "" {
 			overrideEnv["AUDIUS_STORAGE_DRIVER_URL"] = config.Storage.StorageUrl
 			if config.Storage.GoogleApplicationCredentials != "" {

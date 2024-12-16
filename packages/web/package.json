@@ -3,7 +3,7 @@
   "productName": "Audius",
   "description": "The Audius web client reference implementation",
   "author": "Audius",
-  "version": "1.5.112",
+  "version": "1.5.113",
   "private": true,
   "scripts": {
     "DEV & BUILD========================================": "",
@@ -113,6 +113,7 @@
     "@trpc/react-query": "10.38.4",
     "@types/react-dates": "21.8.3",
     "@types/react-twitter-auth": "0.0.4",
+    "@uidotdev/usehooks": "2.4.1",
     "@walletconnect/web3-provider": "1.4.1",
     "ajv": "7.2.4",
     "antd": "4.20.6",

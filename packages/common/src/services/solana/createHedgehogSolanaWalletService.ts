@@ -5,10 +5,11 @@ import { HedgehogInstance } from '../auth/hedgehog'
 import { SolanaWalletService } from './types'
 
 export const createHedgehogSolanaWalletService = (
-  hedghog: HedgehogInstance
+  hedgehog: HedgehogInstance
 ): SolanaWalletService => {
-  const getKeypair = () => {
-    const hedgehogWallet = hedghog.getWallet()
+  const getKeypair = async () => {
+    await hedgehog.waitUntilReady()
+    const hedgehogWallet = hedgehog.getWallet()
     if (!hedgehogWallet) {
       return null
     }

@@ -18,7 +18,6 @@ jobs:
       name: deploy-core-staging
       requires:
         - push-core
-        - test-core
       filters:
         branches:
           only: main

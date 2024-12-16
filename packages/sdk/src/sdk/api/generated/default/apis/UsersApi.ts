@@ -124,6 +124,7 @@ export interface DownloadSalesAsCSVRequest {
 export interface DownloadSalesAsJSONRequest {
     id: string;
     userId?: string;
+    granteeUserId?: string;
     encodedDataMessage?: string;
     encodedDataSignature?: string;
 }
@@ -309,7 +310,8 @@ export interface GetUserChallengesRequest {
 }
 
 export interface GetUserEmailKeyRequest {
-    id: string;
+    receivingUserId: string;
+    grantorUserId: string;
 }
 
 export interface GetUserIDFromWalletRequest {
@@ -442,6 +444,10 @@ export class UsersApi extends runtime.BaseAPI {
 
         if (params.userId !== undefined) {
             queryParameters['user_id'] = params.userId;
+        }
+
+        if (params.granteeUserId !== undefined) {
+            queryParameters['grantee_user_id'] = params.granteeUserId;
         }
 
         const headerParameters: runtime.HTTPHeaders = {};
@@ -1585,11 +1591,15 @@ export class UsersApi extends runtime.BaseAPI {
 
     /**
      * @hidden
-     * Gets an encrypted symmetric key, can be used to encrypt and decrypt emails shared with the user.
+     * Gets the encrypted key for email access between the receiving user and granting user.
      */
     async getUserEmailKeyRaw(params: GetUserEmailKeyRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<EmailKeyResponse>> {
-        if (params.id === null || params.id === undefined) {
-            throw new runtime.RequiredError('id','Required parameter params.id was null or undefined when calling getUserEmailKey.');
+        if (params.receivingUserId === null || params.receivingUserId === undefined) {
+            throw new runtime.RequiredError('receivingUserId','Required parameter params.receivingUserId was null or undefined when calling getUserEmailKey.');
+        }
+
+        if (params.grantorUserId === null || params.grantorUserId === undefined) {
+            throw new runtime.RequiredError('grantorUserId','Required parameter params.grantorUserId was null or undefined when calling getUserEmailKey.');
         }
 
         const queryParameters: any = {};
@@ -1597,7 +1607,7 @@ export class UsersApi extends runtime.BaseAPI {
         const headerParameters: runtime.HTTPHeaders = {};
 
         const response = await this.request({
-            path: `/users/{id}/emails/key`.replace(`{${"id"}}`, encodeURIComponent(String(params.id))),
+            path: `/users/{receiving_user_id}/emails/{grantor_user_id}/key`.replace(`{${"receiving_user_id"}}`, encodeURIComponent(String(params.receivingUserId))).replace(`{${"grantor_user_id"}}`, encodeURIComponent(String(params.grantorUserId))),
             method: 'GET',
             headers: headerParameters,
             query: queryParameters,
@@ -1607,7 +1617,7 @@ export class UsersApi extends runtime.BaseAPI {
     }
 
     /**
-     * Gets an encrypted symmetric key, can be used to encrypt and decrypt emails shared with the user.
+     * Gets the encrypted key for email access between the receiving user and granting user.
      */
     async getUserEmailKey(params: GetUserEmailKeyRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<EmailKeyResponse> {
         const response = await this.getUserEmailKeyRaw(params, initOverrides);

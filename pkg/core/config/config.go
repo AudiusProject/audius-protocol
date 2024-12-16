@@ -58,6 +58,15 @@ const (
 	DevPersistentPeers   = "ffad25668e060a357bbe534c8b7e5b4e1274368b@core-discovery-1:26656"
 )
 
+const (
+	mainnetValidatorVotingPower = 10
+	testnetValidatorVotingPower = 10
+	devnetValidatorVotingPower  = 25
+	mainnetRollupInterval       = 2048
+	testnetRollupInterval       = 2048
+	devnetRollupInterval        = 200
+)
+
 const dbUrlLocalPattern string = `^postgresql:\/\/\w+:\w+@(db|localhost|postgres):.*`
 
 var isLocalDbUrlRegex = regexp.MustCompile(dbUrlLocalPattern)
@@ -92,14 +101,15 @@ type Config struct {
 	EthRegistryAddress string
 
 	/* System Config */
-	RunDownMigration bool
+	RunDownMigration     bool
+	SlaRollupInterval    int
+	ValidatorVotingPower int
 
 	/* Derived Config */
-	GenesisFile       *types.GenesisDoc
-	EthereumKey       *ecdsa.PrivateKey
-	CometKey          *ed25519.PrivKey
-	NodeType          NodeType
-	SlaRollupInterval int
+	GenesisFile *types.GenesisDoc
+	EthereumKey *ecdsa.PrivateKey
+	CometKey    *ed25519.PrivKey
+	NodeType    NodeType
 
 	/* Optional Modules */
 	ConsoleModule bool
@@ -129,7 +139,7 @@ func ReadConfig(logger *common.Logger) (*Config, error) {
 
 	var cfg Config
 	// comet config
-	cfg.LogLevel = getEnvWithDefault("audius_core_log_level", "error")
+	cfg.LogLevel = getEnvWithDefault("audius_core_log_level", "main:info,state:info,statesync:info,p2p:none,mempool:none,*:error")
 	cfg.RootDir = getEnvWithDefault("audius_core_root_dir", homeDir+"/.audiusd")
 	cfg.RPCladdr = getEnvWithDefault("rpcLaddr", "tcp://0.0.0.0:26657")
 	cfg.P2PLaddr = getEnvWithDefault("p2pLaddr", "tcp://0.0.0.0:26656")
@@ -186,7 +196,8 @@ func ReadConfig(logger *common.Logger) (*Config, error) {
 			cfg.EthRPCUrl = ProdEthRpc
 		}
 
-		cfg.SlaRollupInterval = 2048
+		cfg.SlaRollupInterval = mainnetRollupInterval
+		cfg.ValidatorVotingPower = mainnetValidatorVotingPower
 
 	case "stage", "staging", "testnet":
 		cfg.PersistentPeers = getEnvWithDefault("persistentPeers", StagePersistentPeers)
@@ -194,7 +205,8 @@ func ReadConfig(logger *common.Logger) (*Config, error) {
 		if cfg.EthRPCUrl == "" {
 			cfg.EthRPCUrl = StageEthRpc
 		}
-		cfg.SlaRollupInterval = 2048
+		cfg.SlaRollupInterval = testnetRollupInterval
+		cfg.ValidatorVotingPower = testnetValidatorVotingPower
 
 	case "dev", "development", "devnet", "local", "sandbox":
 		cfg.PersistentPeers = getEnvWithDefault("persistentPeers", DevPersistentPeers)
@@ -206,7 +218,8 @@ func ReadConfig(logger *common.Logger) (*Config, error) {
 		if cfg.EthRegistryAddress == "" {
 			cfg.EthRegistryAddress = DevRegistryAddress
 		}
-		cfg.SlaRollupInterval = 200
+		cfg.SlaRollupInterval = devnetRollupInterval
+		cfg.ValidatorVotingPower = devnetValidatorVotingPower
 	}
 
 	// Disable ssl for local postgres db connection

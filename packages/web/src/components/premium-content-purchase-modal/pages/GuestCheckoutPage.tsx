@@ -6,6 +6,7 @@ import { isPurchaseableAlbum } from '@audius/common/src/hooks/purchaseContent/ut
 import { SIGN_IN_PAGE } from '@audius/common/src/utils/route'
 import { USDC } from '@audius/fixed-decimal'
 import { Button, Flex, Hint, Text } from '@audius/harmony'
+import { useLocalStorage } from '@uidotdev/usehooks'
 import { useField } from 'formik'
 import { useDispatch } from 'react-redux'
 
@@ -104,10 +105,18 @@ export const GuestCheckoutPage = (props: GuestCheckoutProps) => {
 export const GuestCheckoutFooter = () => {
   const dispatch = useDispatch()
   const [{ value: guestEmail }] = useField(GUEST_EMAIL)
-
+  const [emailFromLocalStorage, setGuestEmailInLocalStorage] = useLocalStorage(
+    GUEST_EMAIL,
+    ''
+  )
   const handleContinueAsGuest = useCallback(() => {
-    dispatch(signOnActions.createGuestAccount(guestEmail))
-  }, [dispatch, guestEmail])
+    if (emailFromLocalStorage !== guestEmail) {
+      // only create guest account if email has changed
+      // enable multiple purchases with same guest email
+      setGuestEmailInLocalStorage(guestEmail)
+      dispatch(signOnActions.createGuestAccount(guestEmail))
+    }
+  }, [dispatch, emailFromLocalStorage, guestEmail, setGuestEmailInLocalStorage])
 
   return (
     <Button fullWidth type='submit' onClick={handleContinueAsGuest}>

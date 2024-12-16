@@ -41,7 +41,8 @@ const setFieldVisibility = <T extends TrackMetadata>(track: T) => {
         mood: true,
         tags: true,
         share: true,
-        play_count: true
+        play_count: true,
+        remixes: true
       }
     }
   }

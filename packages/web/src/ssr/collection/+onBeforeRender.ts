@@ -1,9 +1,9 @@
-import { APITrack } from '@audius/common/src/services'
 import {
-  makePlaylist,
-  makeTrack,
-  makeUser
-} from '@audius/common/src/services/audius-api-client/ResponseAdapter'
+  userCollectionMetadataFromSDK,
+  userMetadataFromSDK,
+  userTrackMetadataFromSDK
+} from '@audius/common/adapters'
+import type { full } from '@audius/sdk'
 import { developmentConfig } from '@audius/sdk/src/sdk/config/development'
 import { productionConfig } from '@audius/sdk/src/sdk/config/production'
 import { stagingConfig } from '@audius/sdk/src/sdk/config/staging'
@@ -41,20 +41,20 @@ export async function onBeforeRender(pageContext: PageContextServer) {
   const { data } = await res.json()
   const [apiCollection] = data
   const collection = {
-    ...makePlaylist(apiCollection),
-    cover_art: apiCollection.artwork?.['1000x1000']
+    ...userCollectionMetadataFromSDK(apiCollection),
+    cover_art: apiCollection.artwork?._1000x1000
   }
 
   const { user: apiUser } = apiCollection
   const user = {
-    ...makeUser(apiUser),
-    cover_photo: apiUser.cover_photo?.['2000x'],
-    profile_picture: apiUser.profile_picture?.['1000x1000']
+    ...userMetadataFromSDK(apiUser),
+    cover_photo: apiUser.cover_photo?._2000x,
+    profile_picture: apiUser.profile_picture?._1000x1000
   }
 
-  const tracks = apiCollection.tracks.map((apiTrack: APITrack) => ({
-    ...makeTrack(apiTrack),
-    cover_art: apiTrack.artwork?.['150x150']
+  const tracks = apiCollection.tracks.map((apiTrack: full.TrackFull) => ({
+    ...userTrackMetadataFromSDK(apiTrack),
+    cover_art: apiTrack.artwork?._150x150
   }))
 
   try {

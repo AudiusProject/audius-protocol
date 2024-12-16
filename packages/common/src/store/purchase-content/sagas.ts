@@ -96,7 +96,7 @@ import {
 } from './types'
 import { getBalanceNeeded } from './utils'
 
-const { getUserId, getAccountUser } = accountSelectors
+const { getUserId, getAccountUser, getWalletAddresses } = accountSelectors
 
 type RaceStatusResult = {
   succeeded?:
@@ -649,10 +649,21 @@ function* collectEmailAfterPurchase({
       return
     }
 
+    const { data: managers } = yield* call(
+      [sdk.full.users, sdk.full.users.getManagers],
+      {
+        id: Id.parse(sellerId),
+        isApproved: true
+      }
+    )
+
+    const grantees = managers?.map((m) => m.manager.id)
+
     yield* call([sdk.users, sdk.users.shareEmail], {
       emailOwnerUserId: purchaserUserId,
-      primaryUserId: sellerId,
-      email
+      receivingUserId: sellerId,
+      email,
+      granteeUserIds: grantees
     })
   } catch (error) {
     // Log error but don't disrupt purchase flow
@@ -677,6 +688,14 @@ function* doStartPurchaseContentFlow({
   const { track, make } = yield* getContext('analytics')
   const audiusSdk = yield* getContext('audiusSdk')
   const sdk = yield* call(audiusSdk)
+
+  // wait for guest account creation
+  yield* call(
+    waitForValue,
+    getWalletAddresses,
+    null,
+    (value) => !!value?.currentUser
+  )
 
   const getFeatureEnabled = yield* getContext('getFeatureEnabled')
   const isNetworkCutEnabled = yield* call(
@@ -854,18 +873,20 @@ function* doStartPurchaseContentFlow({
     yield* call(collectEmailAfterPurchase, { metadata })
 
     // Auto-favorite the purchased item
-    if (contentType === PurchaseableContentType.TRACK) {
-      yield* put(saveTrack(contentId, FavoriteSource.IMPLICIT))
-    }
-    if (contentType === PurchaseableContentType.ALBUM) {
-      yield* put(saveCollection(contentId, FavoriteSource.IMPLICIT))
-      if (
-        'playlist_contents' in metadata &&
-        metadata.playlist_contents.track_ids &&
-        !metadata.is_private
-      ) {
-        for (const track of metadata.playlist_contents.track_ids) {
-          yield* put(saveTrack(track.track, FavoriteSource.IMPLICIT))
+    if (!guestEmail) {
+      if (contentType === PurchaseableContentType.TRACK) {
+        yield* put(saveTrack(contentId, FavoriteSource.IMPLICIT))
+      }
+      if (contentType === PurchaseableContentType.ALBUM) {
+        yield* put(saveCollection(contentId, FavoriteSource.IMPLICIT))
+        if (
+          'playlist_contents' in metadata &&
+          metadata.playlist_contents.track_ids &&
+          !metadata.is_private
+        ) {
+          for (const track of metadata.playlist_contents.track_ids) {
+            yield* put(saveTrack(track.track, FavoriteSource.IMPLICIT))
+          }
         }
       }
     }

@@ -1,10 +1,5 @@
 import { AUDIO, wAUDIO } from '@audius/fixed-decimal'
-import {
-  AudiusSdk,
-  Genre,
-  Mood,
-  type StorageNodeSelectorService
-} from '@audius/sdk'
+import { AudiusSdk, type StorageNodeSelectorService } from '@audius/sdk'
 import { DiscoveryAPI } from '@audius/sdk-legacy/dist/core'
 import { type AudiusLibs as AudiusLibsType } from '@audius/sdk-legacy/dist/libs'
 import type { HedgehogConfig } from '@audius/sdk-legacy/dist/services/hedgehog'
@@ -37,10 +32,7 @@ import {
   InstagramUser,
   Name,
   TikTokUser,
-  Track,
-  User,
   UserMetadata,
-  UserCollection,
   ComputedUserProperties,
   Id
 } from '../../models'
@@ -57,8 +49,7 @@ import {
 import {
   BrowserNotificationSetting,
   PushNotificationSetting,
-  PushNotifications,
-  SearchKind
+  PushNotifications
 } from '../../store'
 import {
   getErrorMessage,
@@ -111,9 +102,6 @@ declare global {
   }
 }
 
-const SEARCH_MAX_SAVED_RESULTS = 10
-const SEARCH_MAX_TOTAL_RESULTS = 50
-
 export const AuthHeaders = Object.freeze({
   Message: 'Encoded-Data-Message',
   Signature: 'Encoded-Data-Signature'
@@ -126,29 +114,6 @@ let SolanaUtils: any = null
 
 let audiusLibs: any = null
 const unauthenticatedUuid = uuid()
-/**
- * Combines two lists by concatting `maxSaved` results from the `savedList` onto the head of `normalList`,
- * ensuring that no item is duplicated in the resulting list (deduped by `uniqueKey`). The final list length is capped
- * at `maxTotal` items.
- */
-const combineLists = <Entity extends Track | User>(
-  savedList: Entity[],
-  normalList: Entity[],
-  uniqueKey: keyof Entity,
-  maxSaved = SEARCH_MAX_SAVED_RESULTS,
-  maxTotal = SEARCH_MAX_TOTAL_RESULTS
-) => {
-  const truncatedSavedList = savedList.slice(
-    0,
-    Math.min(maxSaved, savedList.length)
-  )
-  const saveListsSet = new Set(truncatedSavedList.map((s) => s[uniqueKey]))
-  const filteredList = normalList.filter((n) => !saveListsSet.has(n[uniqueKey]))
-  const combinedLists = savedList.concat(filteredList)
-  return combinedLists.slice(0, Math.min(maxTotal, combinedLists.length))
-}
-
-const notDeleted = (e: { is_delete: boolean }) => !e.is_delete
 
 export type TransactionReceipt = { blockHash: string; blockNumber: number }
 
@@ -392,7 +357,7 @@ export const audiusBackend = ({
 
     const initialSelectedNode: string | undefined =
       // TODO: Need a synchronous method to check if a discovery node is already selected?
-      // Alternatively, remove all this AudiusBackend/Libs init/APIClient init stuff in favor of SDK
+      // Alternatively, remove all this AudiusBackend/Libs init stuff in favor of SDK
       // @ts-ignore config is private
       discoveryNodeSelector.config.initialSelectedNode
     if (initialSelectedNode) {
@@ -552,99 +517,6 @@ export const audiusBackend = ({
     }
   }
 
-  type SearchTagsArgs = {
-    query: string
-    userTagCount?: number
-    kind?: SearchKind
-    limit?: number
-    offset?: number
-    genre?: Genre
-    mood?: Mood
-    bpmMin?: number
-    bpmMax?: number
-    key?: string
-    isVerified?: boolean
-    hasDownloads?: boolean
-    isPremium?: boolean
-    sortMethod?: 'recent' | 'relevant' | 'popular'
-  }
-
-  async function searchTags({
-    query,
-    userTagCount,
-    kind,
-    offset,
-    limit,
-    genre,
-    mood,
-    bpmMin,
-    bpmMax,
-    key,
-    isVerified,
-    hasDownloads,
-    isPremium,
-    sortMethod
-  }: SearchTagsArgs) {
-    try {
-      const searchTags = await withEagerOption(
-        {
-          normal: (libs) => libs.Account.searchTags,
-          eager: DiscoveryAPI.searchTags
-        },
-        query,
-        userTagCount,
-        kind,
-        limit,
-        offset,
-        genre,
-        mood,
-        bpmMin,
-        bpmMax,
-        key,
-        isVerified,
-        hasDownloads,
-        isPremium,
-        sortMethod
-      )
-
-      const {
-        tracks = [],
-        saved_tracks: savedTracks = [],
-        followed_users: followedUsers = [],
-        users = [],
-        playlists = [],
-        albums = []
-      } = searchTags
-
-      const combinedTracks = await Promise.all(
-        combineLists<Track>(
-          savedTracks.filter(notDeleted),
-          tracks.filter(notDeleted),
-          'track_id'
-        )
-      )
-
-      const combinedUsers = await Promise.all(
-        combineLists<User>(followedUsers, users, 'user_id')
-      )
-
-      return {
-        tracks: combinedTracks,
-        users: combinedUsers,
-        playlists: playlists as UserCollection[],
-        albums: albums as UserCollection[]
-      }
-    } catch (e) {
-      console.error(e)
-      return {
-        tracks: [],
-        users: [],
-        playlists: [],
-        albums: []
-      }
-    }
-  }
-
   // TODO(C-2719)
   async function getUserListenCountsMonthly(
     currentUserId: number,
@@ -768,12 +640,11 @@ export const audiusBackend = ({
     })
     // @ts-ignore when writing data, this type is expected to contain a signature
     newMetadata.associated_wallets =
-      newMetadata.associated_wallets || associatedWallets?.associated_wallets
+      newMetadata.associated_wallets ?? associatedWallets?.associated_wallets
     // @ts-ignore when writing data, this type is expected to contain a signature
     newMetadata.associated_sol_wallets =
-      newMetadata.associated_sol_wallets ||
+      newMetadata.associated_sol_wallets ??
       associatedWallets?.associated_sol_wallets
-
     try {
       newMetadata = schemas.newUserMetadata(newMetadata, true)
       const userId = newMetadata.user_id
@@ -1171,6 +1042,11 @@ export const audiusBackend = ({
     const v = (recid + 27).toString(16)
     const signature = `0x${r}${s}${v}`
     return { data, signature }
+  }
+
+  async function signGatedContentRequest({ sdk }: { sdk: AudiusSdk }) {
+    const data = `Gated content user signature at ${Date.now()}`
+    return await signData({ sdk, data })
   }
 
   async function signIdentityServiceRequest({ sdk }: { sdk: AudiusSdk }) {
@@ -2064,7 +1940,6 @@ export const audiusBackend = ({
     repostCollection,
     guestSignUp,
     saveCollection,
-    searchTags,
     sendRecoveryEmail,
     sendTokens,
     sendWAudioTokens,
@@ -2072,6 +1947,7 @@ export const audiusBackend = ({
     setup,
     setUserHandleForRelay,
     signData,
+    signGatedContentRequest,
     signDiscoveryNodeRequest,
     signIdentityServiceRequest,
     signUp,

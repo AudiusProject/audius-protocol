@@ -28,7 +28,12 @@ export const ReplaceTrackProgressDrawer = () => {
   const isUploadComplete = uploadProgress >= 1
 
   return (
-    <AppDrawer modalName='ReplaceTrackProgress' isFullscreen>
+    <AppDrawer
+      modalName='ReplaceTrackProgress'
+      isFullscreen
+      blockClose={!error}
+      isGestureSupported={error}
+    >
       <Flex h='100%' justifyContent='center'>
         {error ? (
           <Flex direction='column' gap='3xl' ph='2xl'>

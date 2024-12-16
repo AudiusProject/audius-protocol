@@ -87,7 +87,6 @@ class Action(str, Enum):
     MUTE = "Mute"
     UNMUTE = "Unmute"
     ADD_EMAIL = "AddEmail"
-    UPDATE_EMAIL = "UpdateEmail"
     REPORT = "Report"
 
     def __str__(self) -> str:
@@ -124,8 +123,7 @@ class EntityType(str, Enum):
     MUTED_USER = "MutedUser"
     COMMENT_NOTIFICATION_SETTING = "CommentNotificationSetting"
     ENCRYPTED_EMAIL = "EncryptedEmail"
-    EMAIL_ENCRYPTION_KEY = "EmailEncryptionKey"
-    EMAIL_ACCESS_KEY = "EmailAccessKey"
+    EMAIL_ACCESS = "EmailAccess"
 
     def __str__(self) -> str:
         return str.__str__(self)
@@ -213,8 +211,7 @@ class EntitiesToFetchDict(TypedDict):
     MutedUser: Set[Tuple]
     CommentReport: Set[Tuple]
     EncryptedEmail: Set[int]
-    EmailEncryptionKey: Set[int]
-    EmailAccessKey: Set[Tuple[int, int]]
+    EmailAccess: Set[Tuple[int, int, int]]  # (email_owner_id, receiving_id, grantor_id)
 
 
 MANAGE_ENTITY_EVENT_TYPE = "ManageEntity"

@@ -38,7 +38,7 @@ const screenOptionOverrides = { headerRight: () => null }
 type EditTrackNavigatorProps = EditTrackFormProps
 
 export const EditTrackNavigator = (props: EditTrackNavigatorProps) => {
-  const { doneText, initialValues } = props
+  const { doneText, initialValues, isUpload } = props
   const screenOptions = useAppScreenOptions(screenOptionOverrides)
 
   return (
@@ -81,7 +81,7 @@ export const EditTrackNavigator = (props: EditTrackNavigatorProps) => {
       <HideContentConfirmationDrawer />
       <PublishConfirmationDrawer />
       <EarlyReleaseConfirmationDrawer />
-      <ReplaceTrackConfirmationDrawer />
+      {isUpload ? null : <ReplaceTrackConfirmationDrawer />}
     </>
   )
 }

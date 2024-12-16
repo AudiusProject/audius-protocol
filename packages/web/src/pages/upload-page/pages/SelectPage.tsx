@@ -29,7 +29,7 @@ export const SelectPage = (props: SelectPageProps) => {
 
   const [tracks, setTracks] = useState(formState.tracks ?? [])
   const [uploadType, setUploadType] = useState(
-    formState.uploadType ?? UploadType.INDIVIDUAL_TRACK
+    formState.uploadType ?? UploadType.INDIVIDUAL_TRACKS
   )
   const [uploadTrackError, setUploadTrackError] =
     useState<Nullable<ErrorType>>(null)

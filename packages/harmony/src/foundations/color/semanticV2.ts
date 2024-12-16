@@ -1,14 +1,20 @@
+import { Theme } from '../theme/types'
+
 import type { PrimitiveColorsV2 } from './primitiveV2'
 import { primitiveThemeV2 } from './primitiveV2'
 
-const createSemanticThemeV2 = (primitives: PrimitiveColorsV2) => ({
+const createSemanticThemeV2 = (
+  theme: Theme,
+  primitives: PrimitiveColorsV2
+) => ({
   text: {
     default: primitives.neutral.n800,
     subdued: primitives.neutral.n400,
     disabled: primitives.neutral.n150,
     link: primitives.primary.p500,
     accent: primitives.secondary.s300,
-    inverse: primitives.special.white,
+    inverse:
+      theme === 'day' ? primitives.neutral.n950 : primitives.special.white,
 
     // Legacy compatibility
     heading: primitives.special.gradient,
@@ -26,7 +32,8 @@ const createSemanticThemeV2 = (primitives: PrimitiveColorsV2) => ({
     disabled: primitives.neutral.n150,
     link: primitives.primary.p500,
     accent: primitives.secondary.s300,
-    inverse: primitives.special.white,
+    inverse:
+      theme === 'day' ? primitives.neutral.n950 : primitives.special.white,
 
     // Legacy compatibility
     heading: primitives.special.gradient,
@@ -47,7 +54,7 @@ const createSemanticThemeV2 = (primitives: PrimitiveColorsV2) => ({
   background: {
     default: primitives.special.background,
     surface1: primitives.neutral.n25,
-    surface2: primitives.neutral.n100,
+    surface2: primitives.neutral.n50,
     white: primitives.special.white,
 
     // Legacy compatibility
@@ -71,9 +78,9 @@ const createSemanticThemeV2 = (primitives: PrimitiveColorsV2) => ({
 })
 
 export const semanticThemeV2 = {
-  day: createSemanticThemeV2(primitiveThemeV2.day),
-  dark: createSemanticThemeV2(primitiveThemeV2.dark),
-  matrix: createSemanticThemeV2(primitiveThemeV2.matrix)
+  day: createSemanticThemeV2('day', primitiveThemeV2.day),
+  dark: createSemanticThemeV2('dark', primitiveThemeV2.dark),
+  matrix: createSemanticThemeV2('matrix', primitiveThemeV2.matrix)
 }
 
 export type SemanticColorsV2 = typeof semanticThemeV2.day

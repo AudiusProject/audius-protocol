@@ -22,7 +22,8 @@ import imagePhone from 'assets/img/imagePhone.png'
 import {
   fetchReferrer,
   setField,
-  setValueField
+  setValueField,
+  updateRouteOnCompletion
 } from 'common/store/pages/signon/actions'
 import {
   getHasCompletedAccount,
@@ -297,6 +298,12 @@ export const SignOnPage = () => {
       dispatch(fetchReferrer(rf))
     } else if (ref) {
       dispatch(fetchReferrer(ref))
+    }
+
+    // Handle completionOnExit parameter
+    const routeOnCompletion = searchParams.get('routeOnCompletion')
+    if (routeOnCompletion) {
+      dispatch(updateRouteOnCompletion(routeOnCompletion))
     }
 
     const guestEmailParam = searchParams.get('guestEmail')

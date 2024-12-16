@@ -1,10 +1,8 @@
 import {
-  FavoriteType,
-  Favorite,
-  UserTrackMetadata,
-  User
-} from '@audius/common/models'
-import { makeActivity, APIActivityV2 } from '@audius/common/services'
+  trackActivityFromSDK,
+  transformAndCleanList
+} from '@audius/common/adapters'
+import { FavoriteType, Favorite, User } from '@audius/common/models'
 import {
   accountSelectors,
   savedPageTracksLineupActions as tracksActions,
@@ -16,10 +14,10 @@ import {
 import {
   decodeHashId,
   encodeHashId,
-  removeNullable,
   waitForValue,
   Nullable
 } from '@audius/common/utils'
+import { full } from '@audius/sdk'
 import { call, fork, put, select, takeLatest } from 'typed-redux-saga'
 
 import { processAndCacheTracks } from 'common/store/cache/tracks/utils'
@@ -64,23 +62,27 @@ function* sendLibraryRequest({
   const audiusSdk = yield* getContext('audiusSdk')
   const sdk = yield* call(audiusSdk)
 
-  const savedTracksResponse = (yield* call(
-    [sdk.full.users, sdk.full.users.getUserLibraryTracks as any],
+  const savedTracksResponse = yield* call(
+    [sdk.full.users, sdk.full.users.getUserLibraryTracks],
     {
       id: encodeHashId(userId),
       userId: encodeHashId(userId),
       offset,
       limit,
       query,
-      sortMethod,
-      sortDirection,
+      sortMethod: sortMethod as full.GetUserLibraryTracksSortMethodEnum,
+      sortDirection:
+        sortDirection as full.GetUserLibraryTracksSortDirectionEnum,
       type: category
     }
-  )) as any
-  const savedTracksResponseData = savedTracksResponse.data as APIActivityV2[]
-  const tracks = savedTracksResponse.data
-    ?.map(makeActivity)
-    .filter(removeNullable) as UserTrackMetadata[]
+  )
+
+  const savedTracksResponseData = savedTracksResponse.data ?? []
+  const tracks = transformAndCleanList(
+    savedTracksResponse.data,
+    (activity: full.ActivityFull) => trackActivityFromSDK(activity)?.item
+  )
+
   if (!tracks) {
     throw new Error('Something went wrong with library tracks request.')
   }
