@@ -6,13 +6,13 @@ import { FeatureFlags } from '@audius/common/services'
 import { USDC } from '@audius/fixed-decimal'
 import moment from 'moment'
 
-import { UserLink } from 'components/link'
 import { Table } from 'components/table'
 
 import styles from '../PayAndEarnPage.module.css'
 import { PurchaseCell, PurchaseRow } from '../types'
 import { isEmptyPurchaseRow } from '../utils'
 
+import { BuyerUserLink } from './BuyerUserLink'
 import { TrackNameWithArtwork } from './TrackNameWithArtwork'
 
 export type SalesTableColumn =
@@ -59,7 +59,7 @@ const renderContentNameCell = (cellInfo: PurchaseCell) => {
 
 const renderBuyerCell = (cellInfo: PurchaseCell) => {
   const { buyerUserId } = cellInfo.row.original
-  return <UserLink popover userId={buyerUserId} />
+  return <BuyerUserLink userId={buyerUserId} />
 }
 
 const renderDateCell = (cellInfo: PurchaseCell) => {
