@@ -217,7 +217,6 @@ export const audiusBackend = ({
   ethRegistryAddress,
   ethTokenAddress,
   discoveryNodeSelectorService,
-  getHostUrl,
   getLibs,
   getStorageNodeSelector,
   getWeb3Config,
@@ -235,7 +234,6 @@ export const audiusBackend = ({
   entityManagerAddress,
   reportError,
   remoteConfigInstance,
-  setLocalStorageItem,
   solanaConfig: {
     claimableTokenPda,
     claimableTokenProgramAddress,
@@ -792,108 +790,6 @@ export const audiusBackend = ({
     } catch (err) {
       console.error(getErrorMessage(err))
       throw err
-    }
-  }
-
-  /**
-   * @param formFields {name, handle, profilePicture, coverPhoto, isVerified, location}
-   * @param hasWallet the user already has a wallet but didn't complete sign up
-   * @param referrer the user_id of the account that referred this one
-   */
-  async function signUp({
-    email,
-    password,
-    formFields,
-    hasWallet = false,
-    referrer = null,
-    feePayerOverride = null
-  }: {
-    email: string
-    password: string
-    formFields: {
-      name?: string
-      handle?: string
-      isVerified?: boolean
-      location?: string | null
-      profilePicture: File | null
-      coverPhoto: File | null
-    }
-    hasWallet: boolean
-    referrer: Nullable<ID>
-    feePayerOverride: Nullable<string>
-  }) {
-    await waitForLibsInit()
-    const metadata = schemas.newUserMetadata()
-    if (formFields.name) {
-      metadata.name = formFields.name
-    }
-    if (formFields.handle) {
-      metadata.handle = formFields.handle
-    }
-    if (formFields.isVerified) {
-      metadata.is_verified = formFields.isVerified
-    }
-    if (formFields.location) {
-      metadata.location = formFields.location
-    }
-
-    const hasEvents = referrer || nativeMobile
-    if (hasEvents) {
-      metadata.events = {}
-    }
-    if (referrer) {
-      metadata.events.referrer = referrer
-    }
-    if (nativeMobile) {
-      metadata.events.is_mobile_user = true
-      setLocalStorageItem('is-mobile-user', 'true')
-    }
-
-    return await audiusLibs.Account.signUpV2(
-      email,
-      password,
-      metadata,
-      formFields.profilePicture,
-      formFields.coverPhoto,
-      hasWallet,
-      getHostUrl(),
-      (eventName: string, properties: Record<string, unknown>) =>
-        recordAnalytics({ eventName, properties }),
-      {
-        Request: Name.CREATE_USER_BANK_REQUEST,
-        Success: Name.CREATE_USER_BANK_SUCCESS,
-        Failure: Name.CREATE_USER_BANK_FAILURE
-      },
-      feePayerOverride,
-      true
-    )
-  }
-
-  async function guestSignUp(email: string) {
-    await waitForLibsInit()
-    const metadata = schemas.newUserMetadata()
-
-    return await audiusLibs.Account.guestSignUp(email, metadata)
-  }
-
-  async function sendRecoveryEmail(handle: string) {
-    await waitForLibsInit()
-    const host = getHostUrl()
-    return audiusLibs.Account.generateRecoveryLink({ handle, host })
-  }
-
-  async function emailInUse(email: string) {
-    await waitForLibsInit()
-    try {
-      const { exists: emailExists, isGuest } =
-        await audiusLibs.Account.checkIfEmailRegistered(email)
-      return {
-        emailExists: emailExists as boolean,
-        isGuest: isGuest as boolean
-      }
-    } catch (error) {
-      console.error(getErrorMessage(error))
-      throw error
     }
   }
 
@@ -1913,7 +1809,6 @@ export const audiusBackend = ({
     deregisterDeviceToken,
     didSelectDiscoveryProviderListeners,
     disableBrowserNotifications,
-    emailInUse,
     fetchUserAssociatedWallets,
     findAssociatedTokenAddress,
     getAddressTotalStakedBalance,
@@ -1938,9 +1833,7 @@ export const audiusBackend = ({
     recordTrackListen,
     registerDeviceToken,
     repostCollection,
-    guestSignUp,
     saveCollection,
-    sendRecoveryEmail,
     sendTokens,
     sendWAudioTokens,
     sendWelcomeEmail,
@@ -1950,7 +1843,6 @@ export const audiusBackend = ({
     signGatedContentRequest,
     signDiscoveryNodeRequest,
     signIdentityServiceRequest,
-    signUp,
     transferAudioToWAudio,
     instagramHandle,
     tiktokHandle,
