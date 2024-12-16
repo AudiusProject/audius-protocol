@@ -40,7 +40,7 @@ function* watchResendRecoveryEmail() {
       const reportToSentry = yield* getContext('reportToSentry')
       reportToSentry({
         error: err instanceof Error ? err : new Error(err as string),
-        name: 'Sign Up: Failed to send recovery email',
+        name: 'Resend Recovery: Failed to send recovery email',
         additionalInfo: { handle },
         level: ErrorLevel.Fatal
       })
