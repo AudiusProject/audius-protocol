@@ -159,7 +159,6 @@ export const playlistMetadataForCreateWithSDK = (
     description: input.description ?? '',
     coverArtCid: input.cover_art_sizes ?? '',
     isPrivate: input.is_private ?? false,
-    license: input.ddex_app ?? '',
     releaseDate: input.release_date ? new Date(input.release_date) : undefined,
     ddexReleaseIds: input.ddex_release_ids ?? null,
     ddexApp: input.ddex_app ?? '',
