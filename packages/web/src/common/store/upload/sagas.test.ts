@@ -291,8 +291,7 @@ describe('upload', () => {
             phase: 'publish',
             kind: 'tracks'
           },
-          feature: Feature.Upload,
-          level: ErrorLevel.Fatal
+          feature: Feature.Upload
         })
         // Fails the parent too
         .call.like({
@@ -311,8 +310,7 @@ describe('upload', () => {
                 phase: 'publish',
                 kind: 'tracks'
               },
-              feature: Feature.Upload,
-              level: ErrorLevel.Fatal
+              feature: Feature.Upload
             }
           ]
         })

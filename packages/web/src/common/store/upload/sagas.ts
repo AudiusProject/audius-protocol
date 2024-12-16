@@ -686,8 +686,7 @@ export function* handleUploads({
         phase,
         kind
       },
-      feature: Feature.Upload,
-      level: ErrorLevel.Fatal
+      feature: Feature.Upload
     })
   }
 
@@ -997,8 +996,7 @@ export function* uploadCollection(
             isAlbum,
             collectionMetadata
           },
-          feature: Feature.Upload,
-          level: ErrorLevel.Fatal
+          feature: Feature.Upload
         })
         yield* put(uploadActions.uploadTracksFailed())
         yield* put(
@@ -1176,8 +1174,7 @@ export function* uploadTracksAsync(
         kind,
         tracks: payload.tracks
       },
-      feature: Feature.Upload,
-      level: ErrorLevel.Fatal
+      feature: Feature.Upload
     })
     yield* put(uploadActions.uploadTracksFailed())
     yield* put(

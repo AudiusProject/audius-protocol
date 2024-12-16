@@ -90,7 +90,6 @@ export const SignUpFlowTikTokAuth = ({
       reportToSentry({
         error: e as Error,
         name: 'Sign Up: Failed to parse TikTok profile data',
-        level: ErrorLevel.Fatal,
         additionalInfo: {
           profileData,
           requiresUserReview

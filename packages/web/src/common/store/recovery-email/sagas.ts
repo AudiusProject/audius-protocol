@@ -41,8 +41,7 @@ function* watchResendRecoveryEmail() {
       reportToSentry({
         error: err instanceof Error ? err : new Error(err as string),
         name: 'Resend Recovery: Failed to send recovery email',
-        additionalInfo: { handle },
-        level: ErrorLevel.Fatal
+        additionalInfo: { handle }
       })
       yield* put(resendError())
     }
