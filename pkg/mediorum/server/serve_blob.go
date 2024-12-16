@@ -15,7 +15,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/AudiusProject/audius-protocol/pkg/core/gen/proto"
+	"github.com/AudiusProject/audius-protocol/pkg/core/gen/core_proto"
 	"github.com/AudiusProject/audius-protocol/pkg/mediorum/server/signature"
 	"google.golang.org/protobuf/types/known/timestamppb"
 	"gorm.io/gorm"
@@ -349,7 +349,7 @@ func (ss *MediorumServer) logTrackListen(c echo.Context) {
 		}
 
 		// construct play data into event
-		play := &proto.TrackPlay{
+		play := &core_proto.TrackPlay{
 			UserId:    userId,
 			TrackId:   fmt.Sprint(sig.Data.TrackId),
 			Timestamp: timestamppb.New(parsedTime),
@@ -360,8 +360,8 @@ func (ss *MediorumServer) logTrackListen(c echo.Context) {
 		}
 
 		// form actual proto event for signing
-		playsTx := &proto.TrackPlays{
-			Plays: []*proto.TrackPlay{play},
+		playsTx := &core_proto.TrackPlays{
+			Plays: []*core_proto.TrackPlay{play},
 		}
 
 		// sign plays event payload with mediorum priv key
@@ -372,9 +372,9 @@ func (ss *MediorumServer) logTrackListen(c echo.Context) {
 		}
 
 		// construct proto listen signedTx alongside signature of plays signedTx
-		signedTx := &proto.SignedTransaction{
+		signedTx := &core_proto.SignedTransaction{
 			Signature: signedPlaysEvent,
-			Transaction: &proto.SignedTransaction_Plays{
+			Transaction: &core_proto.SignedTransaction_Plays{
 				Plays: playsTx,
 			},
 		}
@@ -382,7 +382,7 @@ func (ss *MediorumServer) logTrackListen(c echo.Context) {
 		ss.logger.Info("sending", "tx", signedTx)
 
 		// submit to configured core node
-		res, err := sdk.SendTransaction(ctx, &proto.SendTransactionRequest{
+		res, err := sdk.SendTransaction(ctx, &core_proto.SendTransactionRequest{
 			Transaction: signedTx,
 		})
 
