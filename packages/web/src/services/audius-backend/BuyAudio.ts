@@ -13,7 +13,7 @@ import {
   TransactionInstruction
 } from '@solana/web3.js'
 
-import { getLibs } from 'services/audius-libs'
+import { env } from 'services/env'
 import { getSolanaConnection } from 'services/solana/solana'
 
 import { audiusBackendInstance } from './audius-backend-instance'
@@ -210,8 +210,7 @@ export const createTransferToUserBankTransaction = async ({
   amount: bigint
   memo: string
 }) => {
-  const libs = await getLibs()
-  const mintPublicKey = new PublicKey(libs.solanaWeb3Config.mintAddress)
+  const mintPublicKey = new PublicKey(env.WAUDIO_MINT_ADDRESS)
   const associatedTokenAccount = await getAudioAccount({
     rootAccount: fromAccount
   })

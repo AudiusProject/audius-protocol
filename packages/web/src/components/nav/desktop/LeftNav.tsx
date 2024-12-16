@@ -1,6 +1,6 @@
 import { useCallback, useRef, useState } from 'react'
 
-import { FavoriteSource, Status } from '@audius/common/models'
+import { FavoriteSource } from '@audius/common/models'
 import {
   accountSelectors,
   collectionsSocialActions,
@@ -61,8 +61,7 @@ const LeftNav = (props: NavColumnProps) => {
     isElectron,
     draggingKind,
     saveTrack,
-    saveCollection,
-    accountStatus
+    saveCollection
   } = props
   const isAccountComplete = useSelector(getIsAccountComplete)
   const [navBodyContainerMeasureRef, navBodyContainerBoundaries] = useMeasure({
@@ -85,9 +84,6 @@ const LeftNav = (props: NavColumnProps) => {
         scrollbarRef.current.scrollTop + difference
     }
   }, [])
-
-  const navLoaded =
-    accountStatus === Status.SUCCESS || accountStatus === Status.ERROR
 
   return (
     <Flex
@@ -118,7 +114,6 @@ const LeftNav = (props: NavColumnProps) => {
               : dragScrollingDirection === 'down'
               ? 'inset 0px -8px 5px -5px var(--tile-shadow-3)'
               : undefined,
-          opacity: navLoaded ? 1 : 0,
           overflow: 'hidden',
           transition: 'opacity 0.3s ease-in-out, box-shadow 0.2s ease'
         }}

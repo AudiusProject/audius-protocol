@@ -3,12 +3,10 @@ import { DEFAULT_MINT, MintName } from '@audius/common/services'
 import {
   Account,
   getMinimumBalanceForRentExemptAccount,
-  getAccount,
-  getAssociatedTokenAddressSync
+  getAccount
 } from '@solana/spl-token'
 import { PublicKey, Transaction } from '@solana/web3.js'
 
-import { getLibs } from 'services/audius-libs'
 import { audiusSdk } from 'services/audius-sdk'
 
 export const ROOT_ACCOUNT_SIZE = 0 // Root account takes 0 bytes, but still pays rent!
@@ -117,19 +115,6 @@ export const getTransferTransactionFee = async (
 export const getAssociatedTokenAccountRent = async () => {
   const connection = await getSolanaConnection()
   return await getMinimumBalanceForRentExemptAccount(connection)
-}
-
-/**
- * Returns the associated USDC token account for the given solana account.
- */
-export const getUSDCAssociatedTokenAccount = async (
-  solanaRootAccountPubkey: PublicKey
-) => {
-  const libs = await getLibs()
-  return getAssociatedTokenAddressSync(
-    libs.solanaWeb3Manager!.mints.usdc,
-    solanaRootAccountPubkey
-  )
 }
 
 /**

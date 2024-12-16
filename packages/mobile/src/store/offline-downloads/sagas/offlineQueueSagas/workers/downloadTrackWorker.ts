@@ -5,14 +5,12 @@ import type {
   UserTrackMetadata
 } from '@audius/common/models'
 import { Id, OptionalId, SquareSizes } from '@audius/common/models'
-import type { QueryParams } from '@audius/common/services'
 import {
   accountSelectors,
   getContext,
   gatedContentSelectors,
   getSDK
 } from '@audius/common/store'
-import { encodeHashId, getQueryParams } from '@audius/common/utils'
 import ReactNativeBlobUtil from 'react-native-blob-util'
 import { select, call, put, all, take, race } from 'typed-redux-saga'
 
@@ -152,30 +150,30 @@ function* downloadTrackAsync(
 }
 
 function* downloadTrackAudio(track: UserTrackMetadata, userId: ID) {
-  const { track_id, title } = track
+  const { track_id } = track
 
   const trackFilePath = getLocalAudioPath(track_id)
-  const encodedTrackId = encodeHashId(track_id)
 
-  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
-  const apiClient = yield* getContext('apiClient')
   const audiusSdk = yield* getContext('audiusSdk')
   const sdk = yield* call(audiusSdk)
+  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
   const nftAccessSignatureMap = yield* select(getNftAccessSignatureMap)
   const nftAccessSignature = nftAccessSignatureMap[track_id]?.mp3 ?? null
-  let queryParams: QueryParams = {}
-  queryParams = yield* call(getQueryParams, {
-    audiusBackendInstance,
-    nftAccessSignature,
-    userId,
-    sdk
-  })
-  // todo: pass in correct filename and whether to download original or mp3
-  queryParams.filename = `${title}.mp3`
-
-  const trackAudioUri = apiClient.makeUrl(
-    `/tracks/${encodedTrackId}/stream`,
-    queryParams
+  const { data, signature } = yield* call(
+    audiusBackendInstance.signGatedContentRequest,
+    { sdk }
+  )
+  const trackAudioUri = yield* call(
+    [sdk.tracks, sdk.tracks.getTrackStreamUrl],
+    {
+      trackId: Id.parse(track_id),
+      userId: OptionalId.parse(userId),
+      userSignature: signature,
+      userData: data,
+      nftAccessSignature: nftAccessSignature
+        ? JSON.stringify(nftAccessSignature)
+        : undefined
+    }
   )
   const response = yield* call(downloadFile, trackAudioUri, trackFilePath)
   const { status } = response.info()

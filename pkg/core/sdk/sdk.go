@@ -1,5 +1,3 @@
-//go:generate go run ../scripts/generate_options.go Sdk sdk_options.go
-
 package sdk
 
 import (
@@ -8,7 +6,7 @@ import (
 
 	"github.com/AudiusProject/audius-protocol/pkg/core/gen/core_openapi"
 	"github.com/AudiusProject/audius-protocol/pkg/core/gen/core_openapi/protocol"
-	"github.com/AudiusProject/audius-protocol/pkg/core/gen/proto"
+	"github.com/AudiusProject/audius-protocol/pkg/core/gen/core_proto"
 	"github.com/cometbft/cometbft/rpc/client/http"
 	"golang.org/x/sync/errgroup"
 	"google.golang.org/grpc"
@@ -16,33 +14,34 @@ import (
 )
 
 type Sdk struct {
-	logger       Logger
-	useHttps     bool
-	privKey      string
+	logger   Logger
+	useHttps bool
+	privKey  string
+
+	retries int
+	delay   time.Duration
+
 	OAPIEndpoint string
 	GRPCEndpoint string
 	JRPCEndpoint string
 	protocol.ClientService
-	proto.ProtocolClient
+	core_proto.ProtocolClient
 	http.HTTP
 }
 
 func defaultSdk() *Sdk {
 	return &Sdk{
-		logger: NewNoOpLogger(),
+		logger:  NewNoOpLogger(),
+		retries: 10,
+		delay:   3 * time.Second,
 	}
 }
-
-const (
-	retries = 10
-	delay   = 3 * time.Second
-)
 
 func initSdk(sdk *Sdk) error {
 	ctx := context.Background()
 	// TODO: add default environment here if not set
 
-	// TODO: add node selection logic here, based on environement, if endpoint not configured
+	// TODO: add node selection logic here, based on environment, if endpoint not configured
 
 	g, ctx := errgroup.WithContext(ctx)
 
@@ -52,6 +51,8 @@ func initSdk(sdk *Sdk) error {
 			if sdk.useHttps {
 				transport.WithSchemes([]string{"https"})
 			}
+
+			retries := sdk.retries
 
 			client := core_openapi.NewHTTPClientWithConfig(nil, transport)
 			for tries := retries; tries >= 0; tries-- {
@@ -65,7 +66,7 @@ func initSdk(sdk *Sdk) error {
 					return err
 				}
 
-				time.Sleep(delay)
+				time.Sleep(sdk.delay)
 			}
 
 			sdk.ClientService = client.Protocol
@@ -81,10 +82,10 @@ func initSdk(sdk *Sdk) error {
 				return err
 			}
 
-			grpcClient := proto.NewProtocolClient(grpcConn)
+			grpcClient := core_proto.NewProtocolClient(grpcConn)
 
-			for tries := retries; tries >= 0; tries-- {
-				_, err := grpcClient.Ping(ctx, &proto.PingRequest{})
+			for tries := sdk.retries; tries >= 0; tries-- {
+				_, err := grpcClient.Ping(ctx, &core_proto.PingRequest{})
 				if err == nil {
 					break
 				}
@@ -94,7 +95,7 @@ func initSdk(sdk *Sdk) error {
 					return err
 				}
 
-				time.Sleep(delay)
+				time.Sleep(sdk.delay)
 			}
 
 			sdk.ProtocolClient = grpcClient
@@ -110,7 +111,7 @@ func initSdk(sdk *Sdk) error {
 				return err
 			}
 
-			for tries := retries; tries >= 0; tries-- {
+			for tries := sdk.retries; tries >= 0; tries-- {
 				_, err := jrpcConn.Health(ctx)
 				if err == nil {
 					break
@@ -121,7 +122,7 @@ func initSdk(sdk *Sdk) error {
 					return err
 				}
 
-				time.Sleep(delay)
+				time.Sleep(sdk.delay)
 			}
 
 			sdk.HTTP = *jrpcConn

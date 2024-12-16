@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 
+import { useAudiusQueryContext } from '@audius/common/audius-query'
 import { useIsManagedAccount } from '@audius/common/hooks'
 import { settingsMessages } from '@audius/common/messages'
 import { Name, Theme } from '@audius/common/models'
@@ -123,6 +124,7 @@ const messages = {
 export const SettingsPage = () => {
   const dispatch = useDispatch()
   const isManagedAccount = useIsManagedAccount()
+  const { authService, identityService } = useAudiusQueryContext()
 
   const userId = useSelector(getUserId) ?? 0
   const handle = useSelector(getUserHandle) ?? ''
@@ -186,7 +188,8 @@ export const SettingsPage = () => {
   const showEmailToast = useCallback(() => {
     const fn = async () => {
       try {
-        await audiusBackendInstance.sendRecoveryEmail(handle)
+        const info = await authService.generateRecoveryInfo()
+        await identityService.sendRecoveryInfo(info)
         setEmailToastText(settingsMessages.emailSent)
         setIsEmailToastVisible(true)
         dispatch(make(Name.SETTINGS_RESEND_ACCOUNT_RECOVERY, {}))
@@ -200,7 +203,13 @@ export const SettingsPage = () => {
       }, EMAIL_TOAST_TIMEOUT)
     }
     fn()
-  }, [handle, setIsEmailToastVisible, setEmailToastText, dispatch])
+  }, [
+    setIsEmailToastVisible,
+    setEmailToastText,
+    identityService,
+    authService,
+    dispatch
+  ])
 
   const handleDownloadDesktopAppClicked = useCallback(() => {
     dispatch(make(Name.ACCOUNT_HEALTH_DOWNLOAD_DESKTOP, { source: 'settings' }))

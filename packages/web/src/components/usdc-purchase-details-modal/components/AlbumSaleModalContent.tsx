@@ -6,7 +6,7 @@ import { useCollectionCoverArt } from 'hooks/useCollectionCoverArt'
 import { SaleModalContent } from './SaleModalContent'
 
 const messages = {
-  album: 'Album'
+  album: 'Album Purchased'
 }
 
 export const AlbumSaleModalContent = ({

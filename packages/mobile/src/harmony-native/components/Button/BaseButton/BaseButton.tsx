@@ -45,7 +45,7 @@ export const BaseButton = (props: BaseButtonProps) => {
   const isTextChild = typeof children === 'string'
 
   const childElement = isTextChild ? (
-    <AnimatedText {...innerProps?.text} style={styles?.text}>
+    <AnimatedText {...innerProps?.text} style={styles?.text} numberOfLines={1}>
       {children}
     </AnimatedText>
   ) : (

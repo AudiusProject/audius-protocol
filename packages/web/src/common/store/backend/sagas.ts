@@ -63,10 +63,6 @@ export function* setupBackend() {
   // This ensures we always get the cached account when starting offline if available
   yield* put(accountActions.fetchLocalAccount())
 
-  // Init APICLient
-  const apiClient = yield* getContext('apiClient')
-  apiClient.init()
-
   const establishedReachability = yield* call(awaitReachability)
   // If we couldn't connect, just sit here waiting for reachability.
   if (!establishedReachability) {

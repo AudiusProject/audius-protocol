@@ -294,8 +294,8 @@ def test_trending_challenge_job(app):
             strategy.update_track_score_query(session)
 
         session.commit()
-    web3 = MockWeb3()
-    enqueue_trending_challenges(db, web3, redis_conn, bus, trending_date)
+        web3 = MockWeb3()
+        enqueue_trending_challenges(session, web3, redis_conn, bus, trending_date)
 
     with db.scoped_session() as session:
         session.query(Challenge).filter(

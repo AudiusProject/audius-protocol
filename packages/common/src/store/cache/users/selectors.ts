@@ -21,6 +21,14 @@ export const getUser = (
   })
 }
 
+export const getIsGuestUser = (
+  state: CommonState,
+  props: { id?: ID | null }
+) => {
+  const user = getUser(state, props)
+  return !user?.handle && !user?.name
+}
+
 export const getUserByHandle = (
   state: CommonState,
   props: { handle: string }

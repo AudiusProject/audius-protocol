@@ -1,10 +1,12 @@
-import { memo, useMemo, useState } from 'react'
+import { memo, useEffect, useMemo, useState } from 'react'
 
 import { createDrawerNavigator } from '@react-navigation/drawer'
 // eslint-disable-next-line import/no-unresolved
 import type { DrawerNavigationHelpers } from '@react-navigation/drawer/lib/typescript/src/types'
-import { useNavigation } from '@react-navigation/native'
+import { useLinkTo, useNavigation } from '@react-navigation/native'
+import { getRouteOnCompletion } from 'common/store/pages/signon/selectors'
 import { Dimensions } from 'react-native'
+import { useSelector } from 'react-redux'
 
 import { AudioPlayer } from 'app/components/audio/AudioPlayer'
 import { RepeatListener } from 'app/components/audio/RepeatListener'
@@ -50,6 +52,16 @@ const AppStack = memo(function AppStack(props: AppTabScreenProps) {
 
 export const AppDrawerScreen = memo(
   () => {
+    const linkTo = useLinkTo()
+    const routeOnCompletion = useSelector(getRouteOnCompletion)
+
+    // Route to the original deep link after user signs up
+    useEffect(() => {
+      if (routeOnCompletion) {
+        linkTo(routeOnCompletion)
+      }
+    }, [routeOnCompletion, linkTo])
+
     const [gesturesDisabled, setGesturesDisabled] = useState(false)
 
     const drawerScreenOptions = useMemo(

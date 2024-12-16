@@ -1,7 +1,7 @@
-build-audiusd:
+build-audius-ctl:
   machine:
     image: ubuntu-2204:current
-  resource_class: large
+  resource_class: medium
   steps:
     - attach_workspace:
         at: ./
@@ -13,19 +13,34 @@ build-audiusd:
           sudo apt-get update
           sudo apt-get install -y golang
     - run:
+        name: Build audius-ctl for production
+        command: |
+          make audius-ctl-production-build
+    - persist_to_workspace:
+        root: ./
+        paths:
+          - bin/audius-ctl*
+
+build-audiusd:
+  machine: true
+  resource_class: audiusproject/gcp-n2-standard-4
+  working_directory: ~/audius-protocol
+  steps:
+    - checkout
+    - docker-login
+    - run:
         name: Build audius-d wrapper image
         command: |
           IMAGE_TAG="$(sha1sum pkg/orchestration/Dockerfile | awk '{print $1}')"
           DOCKER_IMAGE="audius/audius-d:$IMAGE_TAG"
 
-          echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
-          
           if docker buildx imagetools inspect $DOCKER_IMAGE >/dev/null 2>&1; then
             echo "Docker image $DOCKER_IMAGE already exists. Skipping build."
           else
             echo "Docker image $DOCKER_IMAGE not found. Building and pushing..."
             docker buildx create --use
             make build-push-wrapper WRAPPER_TAG="$IMAGE_TAG"
+            docker buildx rm
           fi
     - run:
         name: Build audiusd image
@@ -37,17 +52,10 @@ build-audiusd:
             echo "Docker image $DOCKER_IMAGE already exists. Skipping build."
           else
             echo "Docker image $DOCKER_IMAGE not found. Building and pushing..."
-            docker buildx create --use
             make build-push-audiusd AD_TAG="$CIRCLE_SHA1"
           fi
-    - run:
-        name: Build audius-ctl for production
-        command: |
-          make audius-ctl-production-build
-    - persist_to_workspace:
-        root: ./
-        paths:
-          - bin/audius-ctl*
+    - docker-logout
+    - docker-prune
 
 test-audiusd-devnet:
   machine:

@@ -16,7 +16,7 @@ import { useNavigation } from 'app/hooks/useNavigation'
 import { PasswordCompletionChecklist } from '../components/PasswordCompletionChecklist'
 import { SignUpAgreementText } from '../components/SignUpPolicyText'
 import { Heading, Page, PageFooter, ReadOnlyField } from '../components/layout'
-import type { SignUpScreenParamList } from '../types'
+import type { SignOnScreenParamList } from '../types'
 import { useTrackScreen } from '../utils/useTrackScreen'
 
 const initialValues = {
@@ -34,7 +34,7 @@ const passwordFormikSchema = toFormikValidationSchema(passwordSchema)
 export const CreatePasswordScreen = () => {
   const { value: email } = useSelector(getEmailField)
   const dispatch = useDispatch()
-  const navigation = useNavigation<SignUpScreenParamList>()
+  const navigation = useNavigation<SignOnScreenParamList>()
 
   useTrackScreen('CreatePassword')
 

@@ -1,4 +1,4 @@
-import { makeUser } from '@audius/common/src/services/audius-api-client/ResponseAdapter'
+import { userMetadataFromSDK } from '@audius/common/adapters'
 import { developmentConfig } from '@audius/sdk/src/sdk/config/development'
 import { productionConfig } from '@audius/sdk/src/sdk/config/production'
 import { stagingConfig } from '@audius/sdk/src/sdk/config/staging'
@@ -37,9 +37,9 @@ export async function onBeforeRender(pageContext: PageContextServer) {
 
     // Include api user images.
     const user = {
-      ...makeUser(apiUser),
-      cover_photo: apiUser.cover_photo?.['2000x'],
-      profile_picture: apiUser.profile_picture?.['1000x1000']
+      ...userMetadataFromSDK(apiUser),
+      cover_photo: apiUser.cover_photo?._2000x,
+      profile_picture: apiUser.profile_picture?._1000x1000
     }
 
     return {
