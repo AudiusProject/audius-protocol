@@ -1,9 +1,4 @@
-import {
-  ErrorLevel,
-  Feature,
-  Name,
-  StemUploadWithFile
-} from '@audius/common/models'
+import { Feature, Name, StemUploadWithFile } from '@audius/common/models'
 import {
   TrackForUpload,
   TrackMetadataForUpload,
@@ -291,8 +286,7 @@ describe('upload', () => {
             phase: 'publish',
             kind: 'tracks'
           },
-          feature: Feature.Upload,
-          level: ErrorLevel.Fatal
+          feature: Feature.Upload
         })
         // Fails the parent too
         .call.like({
@@ -311,8 +305,7 @@ describe('upload', () => {
                 phase: 'publish',
                 kind: 'tracks'
               },
-              feature: Feature.Upload,
-              level: ErrorLevel.Fatal
+              feature: Feature.Upload
             }
           ]
         })
