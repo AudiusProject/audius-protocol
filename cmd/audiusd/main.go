@@ -158,7 +158,8 @@ func startEchoProxyWithOptionalTLS(hostUrl *url.URL, enableTLS bool) error {
 
 	e.Any("/*", echo.WrapHandler(mediorumProxy))
 
-	if enableTLS {
+	// if enableTLS {
+	if true {
 		// Get server's IP addresses
 		addrs, err := net.InterfaceAddrs()
 		if err != nil {
