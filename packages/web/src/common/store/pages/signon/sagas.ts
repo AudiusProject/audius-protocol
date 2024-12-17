@@ -1421,8 +1421,7 @@ export default function sagas() {
     watchOpenSignOn,
     watchSignOnError,
     watchSendWelcomeEmail,
-    watchCreateGuestAccount,
-    watchSendWelcomeEmail
+    watchCreateGuestAccount
   ]
   return sagas
 }
