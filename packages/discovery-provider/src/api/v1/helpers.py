@@ -606,6 +606,8 @@ def extend_feed_item(item):
         }
     if item.get("playlist_id"):
         extended_playlist = extend_playlist(item)
+        tracks = list(map(extend_track, item.get("tracks", [])))
+        extended_playlist["tracks"] = tracks
         return {
             "type": "playlist",
             "item": extended_playlist,
