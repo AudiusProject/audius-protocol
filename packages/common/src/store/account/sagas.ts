@@ -58,6 +58,7 @@ export function* fetchAccountAsync({ isSignUp = false }): SagaIterator {
   const remoteConfigInstance = yield* getContext('remoteConfigInstance')
   const authService = yield* getContext('authService')
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
+  const localStorage = yield* getContext('localStorage')
   const sdk = yield* getSDK()
   const accountStatus = yield* select(accountSelectors.getAccountStatus)
   // Don't revert successful local account fetch
@@ -119,6 +120,8 @@ export function* fetchAccountAsync({ isSignUp = false }): SagaIterator {
     }
   }
 
+  accountData.guestEmail = yield* call([localStorage, 'getItem'], 'guestEmail')
+
   // Set the userId in the remoteConfigInstance
   remoteConfigInstance.setUserId(user.user_id)
 
@@ -131,7 +134,8 @@ export function* fetchAccountAsync({ isSignUp = false }): SagaIterator {
   yield* call(cacheAccount, accountData)
   const formattedAccount = {
     userId: user.user_id,
-    collections: accountData.playlists
+    collections: accountData.playlists,
+    guestEmail: accountData.guestEmail
   }
 
   yield* put(fetchAccountSucceeded(formattedAccount))
@@ -155,17 +159,20 @@ export function* fetchAccountAsync({ isSignUp = false }): SagaIterator {
   yield* put(signedIn({ account: user, isSignUp }))
 }
 
-export function* cacheAccount(account: AccountUserMetadata) {
-  const { user: accountUser, playlists: collections } = account
+export function* cacheAccount(
+  account: AccountUserMetadata & { guestEmail: string }
+) {
+  const { user: accountUser, playlists: collections, guestEmail } = account
   const localStorage = yield* getContext('localStorage')
 
   const formattedAccount = {
     userId: accountUser.user_id,
-    collections
+    collections,
+    guestEmail
   }
 
-  yield call([localStorage, 'setAudiusAccount'], formattedAccount)
-  yield call([localStorage, 'setAudiusAccountUser'], accountUser)
+  yield* call([localStorage, 'setAudiusAccount'], formattedAccount)
+  yield* call([localStorage, 'setAudiusAccountUser'], accountUser)
 }
 
 function* recordIPIfNotRecent(handle: string): SagaIterator {
