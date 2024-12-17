@@ -2,7 +2,6 @@ import { Mood } from '@audius/sdk'
 
 import { useGetTrackById } from '~/api/track'
 import { ID } from '~/models'
-import { trpc } from '~/services/trpc'
 import { parseMusicalKey } from '~/utils/musicalKeys'
 import { searchPage } from '~/utils/route'
 
