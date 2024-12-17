@@ -20,7 +20,7 @@ import { userTrackMetadataFromSDK } from '~/adapters'
 import { PurchaseableContentMetadata, isPurchaseableAlbum } from '~/hooks'
 import { Kind } from '~/models'
 import { FavoriteSource, Name } from '~/models/Analytics'
-import { ErrorLevel } from '~/models/ErrorReporting'
+import { ErrorLevel, Feature } from '~/models/ErrorReporting'
 import { ID, Id, OptionalId } from '~/models/Identifiers'
 import {
   PurchaseMethod,
@@ -880,7 +880,8 @@ function* doStartPurchaseContentFlow({
     yield* call(reportToSentry, {
       level: ErrorLevel.Error,
       error,
-      additionalInfo: { contentId, contentType }
+      additionalInfo: { contentId, contentType },
+      feature: Feature.Purchase
     })
     yield* put(purchaseContentFlowFailed({ error }))
     yield* put(updateGatedContentStatus({ contentId, status: 'LOCKED' }))
