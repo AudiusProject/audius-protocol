@@ -3,8 +3,6 @@ import logging
 from src.queries.get_feed_es import get_feed_es
 from src.queries.query_helpers import get_pagination_vars
 
-trackDedupeMaxMinutes = 10
-
 logger = logging.getLogger(__name__)
 
 
