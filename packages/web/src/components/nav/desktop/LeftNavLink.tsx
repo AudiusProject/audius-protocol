@@ -1,6 +1,6 @@
 import { ComponentProps, useMemo } from 'react'
 
-import { Text, TextProps, useTheme } from '@audius/harmony'
+import { Flex, IconComponent, Text, TextProps, useTheme } from '@audius/harmony'
 import { CSSInterpolation } from '@emotion/css'
 import { Interpolation, Theme } from '@emotion/react'
 import { Slot } from '@radix-ui/react-slot'
@@ -12,7 +12,13 @@ import {
 } from 'hooks/useRequiresAccount'
 
 export type LeftNavLinkProps =
-  | { disabled?: boolean; asChild?: boolean } & (
+  | {
+      disabled?: boolean
+      asChild?: boolean
+      icon?: IconComponent
+      iconSize?: 's' | 'm' | 'l'
+      hideIconPadding?: boolean
+    } & (
       | Omit<NavLinkProps, 'onDrop'>
       | Omit<ComponentProps<'div'>, 'onDrop'>
     ) & {
@@ -20,7 +26,16 @@ export type LeftNavLinkProps =
       }
 
 export const LeftNavLink = (props: LeftNavLinkProps) => {
-  const { asChild, disabled, children, onClick, restriction, ...other } = props
+  const {
+    asChild,
+    disabled,
+    children,
+    onClick,
+    restriction,
+    icon: Icon,
+    iconSize = 's',
+    ...other
+  } = props
 
   const theme = useTheme()
 
@@ -33,44 +48,19 @@ export const LeftNavLink = (props: LeftNavLinkProps) => {
   )
 
   const css = useMemo(() => {
-    const { color, spacing, typography, cornerRadius } = theme
-    const indicatorCss: CSSInterpolation = {
-      content: '""',
-      display: 'block',
-      width: spacing.unit5,
-      height: spacing.unit5,
-      position: 'absolute',
-      top: 0,
-      bottom: 0,
-      margin: 'auto 0',
-      left: -spacing.l,
-      borderRadius: cornerRadius.s,
-      borderRightWidth: cornerRadius.s,
-      borderRightStyle: 'solid',
-      borderRightColor: 'transparent'
-    }
+    const { color, spacing, typography } = theme
 
     const linkInteractionCss: CSSInterpolation = {
       '&:hover': {
         cursor: 'pointer',
-        color: color.neutral.n950
+        color: color.neutral.n950,
+        backgroundColor: color.neutral.n100
       },
-      '&:hover:before': [
-        indicatorCss,
-        {
-          borderRightColor: color.neutral.n400
-        }
-      ],
       '&.active': {
         color: color.text.active,
-        fontWeight: typography.weight.medium
-      },
-      '&.active:before': [
-        indicatorCss,
-        {
-          borderRightColor: color.primary.primary
-        }
-      ]
+        fontWeight: typography.weight.medium,
+        backgroundColor: color.neutral.n200
+      }
     }
 
     const disabledDropCss: CSSInterpolation = {
@@ -81,18 +71,20 @@ export const LeftNavLink = (props: LeftNavLinkProps) => {
     const combined: Interpolation<Theme> = [
       {
         position: 'relative',
-        height: spacing.xl,
+        minHeight: spacing.xl,
         display: 'flex',
         alignItems: 'center',
         gap: spacing.s,
         minWidth: 100,
-        // Leaves space for the hover indicator
-        paddingLeft: spacing.unit7,
         paddingRight: spacing.l,
+        paddingLeft: spacing.s,
+        paddingTop: spacing.s,
+        paddingBottom: spacing.s,
         color: color.text.default,
         border: 0,
         background: 'none',
-        textAlign: 'inherit'
+        textAlign: 'inherit',
+        borderRadius: spacing.xs
       },
       linkInteractionCss,
       disabled && disabledDropCss
@@ -104,10 +96,19 @@ export const LeftNavLink = (props: LeftNavLinkProps) => {
   const textProps = asChild
     ? undefined
     : ({
-        tag: 'span',
+        variant: 'title',
         size: 's',
         css: { display: 'flex', alignItems: 'center' }
       } as TextProps<'span'>)
+
+  const content = (
+    <Flex alignItems='center' gap='s' css={{ width: '100%' }}>
+      {Icon && <Icon size={iconSize} color='default' />}
+      <TextComp {...textProps} css={{ width: '100%' }}>
+        {children}
+      </TextComp>
+    </Flex>
+  )
 
   if ('to' in other) {
     return (
@@ -117,14 +118,14 @@ export const LeftNavLink = (props: LeftNavLinkProps) => {
         activeClassName='active'
         css={css}
       >
-        <TextComp {...textProps}>{children}</TextComp>
+        {content}
       </NavLink>
     )
   }
 
   return (
-    <div {...other} css={css}>
-      <TextComp {...textProps}>{children}</TextComp>
+    <div {...other} css={css} onClick={handleClick}>
+      {content}
     </div>
   )
 }
