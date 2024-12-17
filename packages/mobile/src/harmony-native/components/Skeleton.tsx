@@ -1,7 +1,14 @@
-import { useEffect, useRef } from 'react'
+import { useEffect } from 'react'
 
 import { useTheme } from '@emotion/react'
-import { Animated } from 'react-native'
+import Animated, {
+  useAnimatedStyle,
+  useSharedValue,
+  withRepeat,
+  withSequence,
+  withTiming,
+  Easing
+} from 'react-native-reanimated'
 
 import { Box } from './layout/Box/Box'
 import type { BoxProps } from './layout/Box/types'
@@ -15,36 +22,34 @@ export const Skeleton = (props: SkeletonProps) => {
   const color1 = color.neutral.n50
   const color2 = color.neutral.n100
 
-  // Create animated value for shimmer effect
-  const shimmerAnimation = useRef(new Animated.Value(0)).current
+  // Create shared value for shimmer animation
+  const shimmerPosition = useSharedValue(0)
 
   // Setup animation loop
   useEffect(() => {
-    const loop = Animated.loop(
-      Animated.sequence([
-        Animated.timing(shimmerAnimation, {
-          toValue: 1,
+    shimmerPosition.value = withRepeat(
+      withSequence(
+        withTiming(1, {
           duration: 1500,
-          useNativeDriver: true
+          easing: Easing.linear
         }),
-        Animated.timing(shimmerAnimation, {
-          toValue: 0,
-          duration: 0,
-          useNativeDriver: true
+        withTiming(0, {
+          duration: 0
         })
-      ])
+      ),
+      -1 // Infinite repeat
     )
-    loop.start()
+  }, [shimmerPosition])
 
-    return () => {
-      loop.stop()
+  // Create animated styles for the shimmer effect
+  const shimmerStyle = useAnimatedStyle(() => {
+    return {
+      transform: [
+        {
+          translateX: shimmerPosition.value * -200 + 100 // Move from right to left
+        }
+      ]
     }
-  }, [shimmerAnimation])
-
-  // Create interpolated values for the gradient positions
-  const translateX = shimmerAnimation.interpolate({
-    inputRange: [0, 1],
-    outputRange: [100, -100] // Move gradient from right to left
   })
 
   return (
@@ -64,16 +69,18 @@ export const Skeleton = (props: SkeletonProps) => {
       ]}
     >
       <AnimatedBox
-        style={{
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          transform: [{ translateX }],
-          backgroundColor: color2,
-          opacity: 0.5
-        }}
+        style={[
+          {
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: color2,
+            opacity: 0.5
+          },
+          shimmerStyle
+        ]}
       />
     </AnimatedBox>
   )
