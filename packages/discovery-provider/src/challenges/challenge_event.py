@@ -22,3 +22,4 @@ class ChallengeEvent(str, enum.Enum):
     first_playlist = "first_playlist"
     audio_matching_buyer = "audio_matching_buyer"
     audio_matching_seller = "audio_matching_seller"
+    one_shot = "one_shot"
