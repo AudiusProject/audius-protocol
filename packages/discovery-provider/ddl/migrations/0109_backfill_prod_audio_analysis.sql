@@ -1,12 +1,12 @@
 begin;
 do $$ begin
 
-create index idx_tracks_partial_audio_bpm_key on tracks (audio_upload_id) where (bpm is null or musical_key is null);
-
 -- prod gate
 if exists (select * from "blocks" where "blockhash" = '0x8d5e6984014505e1e11bcbb1ca1a13bcc6ae85ac74014710a73271d82ca49f01') then
   alter table tracks disable trigger on_track;
   alter table tracks disable trigger trg_tracks;
+
+  create index idx_tracks_partial_audio_bpm_key on tracks (audio_upload_id) where (bpm is null or musical_key is null);
 
   update tracks set bpm = 102.3, musical_key = 'E minor' where audio_upload_id = '01JCEY24Y7QNQWHW1CRMZZFHG5' and (bpm is null or musical_key is null);
   update tracks set bpm = 142.4, musical_key = 'B flat major' where audio_upload_id = '01JCEX90V0C7D7YFSZDXKNQYKH' and (bpm is null or musical_key is null);
@@ -4448,9 +4448,12 @@ if exists (select * from "blocks" where "blockhash" = '0x8d5e6984014505e1e11bcbb
   update tracks set bpm = 116.7, musical_key = 'A minor' where audio_upload_id = '01JDNMM57SVNAFX0A9KTN52P65' and (bpm is null or musical_key is null);
   update tracks set bpm = 133, musical_key = 'G flat minor' where audio_upload_id = '01JDM4MX3JPYNSR45V3R88VHKW' and (bpm is null or musical_key is null);
 
+  drop index if exists idx_tracks_partial_audio_bpm_key;
+
   alter table tracks enable trigger on_track;
   alter table tracks enable trigger trg_tracks;
 
 end if;
+
 end $$;
 commit;
