@@ -29,7 +29,7 @@ export const UserChatHeader = ({ user }: { user: User }) => {
           <ProfilePicture
             userId={user.user_id}
             size='small'
-            strokeWidth='thin'
+            borderWidth='thin'
           />
           <UserLink userId={user.user_id} textVariant='title' />
         </Flex>

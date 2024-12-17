@@ -21,10 +21,6 @@ const useStyles = makeStyles(({ spacing }) => ({
     alignItems: 'flex-start',
     justifyContent: 'space-between'
   },
-  accountImage: {
-    height: spacing(12.5),
-    width: spacing(12.5)
-  },
   accountName: {
     flexDirection: 'row',
     justifyContent: 'space-around',
@@ -60,9 +56,10 @@ export const AccountDetails = () => {
       <TouchableOpacity onPress={handlePressAccount}>
         <ProfilePicture
           userId={accountUser.user_id}
-          style={styles.accountImage}
+          h={50}
+          w={50}
           mb='l'
-          strokeWidth='thin'
+          borderWidth='thin'
         />
         <View style={styles.accountName}>
           <Text numberOfLines={1} style={styles.name} variant='h1' noGutter>

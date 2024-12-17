@@ -4,7 +4,8 @@ import {
   SmartCollectionVariant,
   ID,
   PlaylistLibrary,
-  User
+  User,
+  Id
 } from '@audius/common/models'
 import {
   accountActions,
@@ -20,7 +21,7 @@ import {
   getContext,
   playlistUpdatesActions,
   confirmerActions,
-  confirmTransaction
+  getSDK
 } from '@audius/common/store'
 import {
   formatShareText,
@@ -134,26 +135,23 @@ export function* confirmRepostCollection(
   user: User,
   metadata: { is_repost_of_repost: boolean }
 ) {
-  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
+  const sdk = yield* getSDK()
   yield* put(
     confirmerActions.requestConfirmation(
       makeKindId(Kind.COLLECTIONS, collectionId),
       function* () {
-        const { blockHash, blockNumber } = yield* call(
-          audiusBackendInstance.repostCollection,
-          collectionId,
-          metadata
-        )
-        const confirmed = yield* call(
-          confirmTransaction,
-          blockHash,
-          blockNumber
-        )
-        if (!confirmed) {
-          throw new Error(
-            `Could not confirm repost collection for collection id ${collectionId}`
-          )
+        const userId = yield* select(getUserId)
+        if (!userId) {
+          throw new Error('No userId set, cannot repost collection')
         }
+
+        yield* call([sdk.playlists, sdk.playlists.repostPlaylist], {
+          userId: Id.parse(userId),
+          playlistId: Id.parse(collectionId),
+          metadata: {
+            isRepostOfRepost: metadata?.is_repost_of_repost ?? false
+          }
+        })
         return collectionId
       },
       function* () {},
@@ -247,25 +245,20 @@ export function* confirmUndoRepostCollection(
   collectionId: ID,
   user: User
 ) {
-  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
+  const sdk = yield* getSDK()
   yield* put(
     confirmerActions.requestConfirmation(
       makeKindId(Kind.COLLECTIONS, collectionId),
       function* () {
-        const { blockHash, blockNumber } = yield* call(
-          audiusBackendInstance.undoRepostCollection,
-          collectionId
-        )
-        const confirmed = yield* call(
-          confirmTransaction,
-          blockHash,
-          blockNumber
-        )
-        if (!confirmed) {
-          throw new Error(
-            `Could not confirm undo repost collection for collection id ${collectionId}`
-          )
+        const userId = yield* select(getUserId)
+        if (!userId) {
+          throw new Error('No userId set, cannot undo repost collection')
         }
+
+        yield* call([sdk.playlists, sdk.playlists.unrepostPlaylist], {
+          userId: Id.parse(userId),
+          playlistId: Id.parse(collectionId)
+        })
         return collectionId
       },
       function* () {},
@@ -438,26 +431,25 @@ export function* confirmSaveCollection(
   collectionId: ID,
   metadata?: { is_save_of_repost: boolean }
 ) {
-  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
+  const sdk = yield* getSDK()
+
   yield* put(
     confirmerActions.requestConfirmation(
       makeKindId(Kind.COLLECTIONS, collectionId),
       function* () {
-        const { blockHash, blockNumber } = yield* call(
-          audiusBackendInstance.saveCollection,
-          collectionId,
-          metadata
-        )
-        const confirmed = yield* call(
-          confirmTransaction,
-          blockHash,
-          blockNumber
-        )
-        if (!confirmed) {
-          throw new Error(
-            `Could not confirm save collection for collection id ${collectionId}`
-          )
+        const userId = yield* select(getUserId)
+        if (!userId) {
+          throw new Error('No userId set, cannot save collection')
         }
+
+        yield* call([sdk.playlists, sdk.playlists.favoritePlaylist], {
+          userId: Id.parse(userId),
+          playlistId: Id.parse(collectionId),
+          metadata: {
+            isSaveOfRepost: metadata?.is_save_of_repost ?? false
+          }
+        })
+
         return collectionId
       },
       function* () {},
@@ -564,25 +556,20 @@ export function* unsaveCollectionAsync(
 }
 
 export function* confirmUnsaveCollection(ownerId: ID, collectionId: ID) {
-  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
+  const sdk = yield* getSDK()
   yield* put(
     confirmerActions.requestConfirmation(
       makeKindId(Kind.COLLECTIONS, collectionId),
       function* () {
-        const { blockHash, blockNumber } = yield* call(
-          audiusBackendInstance.unsaveCollection,
-          collectionId
-        )
-        const confirmed = yield* call(
-          confirmTransaction,
-          blockHash,
-          blockNumber
-        )
-        if (!confirmed) {
-          throw new Error(
-            `Could not confirm unsave collection for collection id ${collectionId}`
-          )
+        const userId = yield* select(getUserId)
+        if (!userId) {
+          throw new Error('No userId set, cannot save collection')
         }
+
+        yield* call([sdk.playlists, sdk.playlists.unfavoritePlaylist], {
+          userId: Id.parse(userId),
+          playlistId: Id.parse(collectionId)
+        })
         return collectionId
       },
       function* () {},

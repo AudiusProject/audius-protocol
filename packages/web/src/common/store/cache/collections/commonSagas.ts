@@ -1,4 +1,7 @@
-import { userCollectionMetadataFromSDK } from '@audius/common/adapters'
+import {
+  playlistMetadataForUpdateWithSDK,
+  userCollectionMetadataFromSDK
+} from '@audius/common/adapters'
 import {
   Name,
   Kind,
@@ -14,7 +17,6 @@ import {
   Id,
   OptionalId
 } from '@audius/common/models'
-import { TransactionReceipt } from '@audius/common/services'
 import {
   accountActions,
   accountSelectors,
@@ -30,9 +32,9 @@ import {
   toastActions,
   getContext,
   confirmerActions,
-  confirmTransaction,
   Entry,
-  trackPageActions
+  trackPageActions,
+  getSDK
 } from '@audius/common/store'
 import {
   squashNewLines,
@@ -191,30 +193,17 @@ function* confirmEditPlaylist(
   userId: ID,
   formFields: Collection
 ) {
-  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
-  const audiusSdk = yield* getContext('audiusSdk')
-  const sdk = yield* call(audiusSdk)
+  const sdk = yield* getSDK()
   yield* put(
     confirmerActions.requestConfirmation(
       makeKindId(Kind.COLLECTIONS, playlistId),
       function* (_confirmedPlaylistId: ID) {
-        const { blockHash, blockNumber, error } = yield* call(
-          audiusBackendInstance.updatePlaylist,
-          formFields
-        )
+        yield* call([sdk.playlists, sdk.playlists.updatePlaylist], {
+          metadata: playlistMetadataForUpdateWithSDK(formFields),
+          userId: Id.parse(userId),
+          playlistId: Id.parse(playlistId)
+        })
 
-        if (error) throw error
-
-        const confirmed = yield* call(
-          confirmTransaction,
-          blockHash,
-          blockNumber
-        )
-        if (!confirmed) {
-          throw new Error(
-            `Could not confirm playlist edition for playlist id ${playlistId}`
-          )
-        }
         const { data: playlist } = yield* call(
           [sdk.full.playlists, sdk.full.playlists.getPlaylist],
           {
@@ -330,27 +319,16 @@ function* confirmRemoveTrackFromPlaylist(
   count: number,
   playlist: Collection
 ) {
-  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
-
+  const sdk = yield* getSDK()
   yield* put(
     confirmerActions.requestConfirmation(
       makeKindId(Kind.COLLECTIONS, playlistId),
       function* (confirmedPlaylistId: ID) {
-        const { blockHash, blockNumber } = yield* call(
-          audiusBackendInstance.deletePlaylistTrack,
-          playlist
-        )
-
-        const confirmed = yield* call(
-          confirmTransaction,
-          blockHash,
-          blockNumber
-        )
-        if (!confirmed) {
-          throw new Error(
-            `Could not confirm remove playlist track for playlist id ${playlistId} and track id ${trackId}`
-          )
-        }
+        yield* call([sdk.playlists, sdk.playlists.updatePlaylist], {
+          metadata: playlistMetadataForUpdateWithSDK(playlist),
+          userId: Id.parse(userId),
+          playlistId: Id.parse(playlistId)
+        })
         return confirmedPlaylistId
       },
       function* (confirmedPlaylistId: ID) {
@@ -490,29 +468,20 @@ function* confirmPublishPlaylist(
   dismissToastKey?: string,
   isAlbum?: boolean
 ) {
-  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
-  const audiusSdk = yield* getContext('audiusSdk')
-  const sdk = yield* call(audiusSdk)
+  const sdk = yield* getSDK()
   yield* put(
     confirmerActions.requestConfirmation(
       makeKindId(Kind.COLLECTIONS, playlistId),
       function* (_confirmedPlaylistId: ID) {
-        const { blockHash, blockNumber, error } = yield* call(
-          audiusBackendInstance.publishPlaylist,
-          playlist
-        )
-        if (error) throw error
+        yield* call([sdk.playlists, sdk.playlists.updatePlaylist], {
+          metadata: {
+            ...playlistMetadataForUpdateWithSDK(playlist),
+            isPrivate: false
+          },
+          userId: Id.parse(userId),
+          playlistId: Id.parse(playlistId)
+        })
 
-        const confirmed = yield* call(
-          confirmTransaction,
-          blockHash,
-          blockNumber
-        )
-        if (!confirmed) {
-          throw new Error(
-            `Could not confirm publish playlist for playlist id ${playlistId}`
-          )
-        }
         const { data } = yield* call(
           [sdk.full.playlists, sdk.full.playlists.getPlaylist],
           {
@@ -644,7 +613,7 @@ function* deletePlaylistAsync(
 }
 
 function* confirmDeleteAlbum(playlistId: ID, userId: ID) {
-  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
+  const sdk = yield* getSDK()
   yield* put(
     confirmerActions.requestConfirmation(
       makeKindId(Kind.COLLECTIONS, playlistId),
@@ -654,6 +623,11 @@ function* confirmDeleteAlbum(playlistId: ID, userId: ID) {
       // deleting an album we know it's persisted to chain already
       // thus we have it's permanent ID.
       function* () {
+        const userId = yield* select(getUserId)
+        if (!userId) {
+          throw new Error('No userId set, cannot delete collection')
+        }
+
         // Optimistically mark everything as deleted
         yield* all([
           put(
@@ -676,20 +650,10 @@ function* confirmDeleteAlbum(playlistId: ID, userId: ID) {
           )
         ])
 
-        const { blockHash, blockNumber, error } = (yield* call(
-          audiusBackendInstance.deletePlaylist,
-          playlistId
-        )) as TransactionReceipt & { error?: Error }
-        if (error) throw error
-
-        const confirmed = yield* call(
-          confirmTransaction,
-          blockHash,
-          blockNumber
-        )
-        if (!confirmed) {
-          throw new Error(`Could not confirm delete album for id ${playlistId}`)
-        }
+        yield* call([sdk.playlists, sdk.playlists.deletePlaylist], {
+          userId: Id.parse(userId),
+          playlistId: Id.parse(playlistId)
+        })
         return playlistId
       },
       function* () {
@@ -741,11 +705,16 @@ function* confirmDeleteAlbum(playlistId: ID, userId: ID) {
 }
 
 function* confirmDeletePlaylist(userId: ID, playlistId: ID) {
-  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
+  const sdk = yield* getSDK()
   yield* put(
     confirmerActions.requestConfirmation(
       makeKindId(Kind.COLLECTIONS, playlistId),
       function* (confirmedPlaylistId: ID) {
+        const userId = yield* select(getUserId)
+        if (!userId) {
+          throw new Error('No userId set, cannot delete collection')
+        }
+
         // Optimistically mark playlist as removed
         yield* all([
           put(
@@ -770,22 +739,10 @@ function* confirmDeletePlaylist(userId: ID, playlistId: ID) {
 
         yield* call(removePlaylistFromLibrary, playlistId)
 
-        const { blockHash, blockNumber, error } = yield* call(
-          audiusBackendInstance.deletePlaylist,
-          playlistId
-        )
-        if (error) throw error
-
-        const confirmed = yield* call(
-          confirmTransaction,
-          blockHash,
-          blockNumber
-        )
-        if (!confirmed) {
-          throw new Error(
-            `Could not confirm delete playlist track for playlist id ${playlistId}`
-          )
-        }
+        yield* call([sdk.playlists, sdk.playlists.deletePlaylist], {
+          userId: Id.parse(userId),
+          playlistId: Id.parse(playlistId)
+        })
         return playlistId
       },
       function* () {

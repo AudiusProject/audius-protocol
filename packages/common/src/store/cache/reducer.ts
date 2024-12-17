@@ -43,7 +43,6 @@ export const initialCacheState: CacheState = {
   statuses: {},
   // uid => id
   uids: {},
-  // Set { id }
   entryTTL: Infinity
 }
 

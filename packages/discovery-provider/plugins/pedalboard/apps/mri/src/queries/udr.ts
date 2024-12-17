@@ -13,9 +13,9 @@ const config = readConfig()
 
 type UsageDetailReporting = {
   client_catalog_id: number
-  'Offering': 'Downloads / Monetized Content' | 'Subscription'
-  'Streams': number
-  'Downloads': number
+  Offering: 'Downloads / Monetized Content' | 'Subscription'
+  Streams: number
+  Downloads: number
   Territory: string
 }
 
@@ -53,9 +53,11 @@ export const udr = async (
     select
       coalesce(t1.client_catalog_id, t2.client_catalog_id) as "client_catalog_id",
       'Downloads / Monetized Content' as "Offering",
+      'Free Trial' as "UserType",
       coalesce(t1."Streams", 0) as "Streams",
       coalesce(t2."Downloads", 0) as "Downloads",
-      coalesce(nullif(country_to_iso_alpha2(coalesce(t1."Territory", t2."Territory", '')), ''), 'WW') as "Territory"
+      coalesce(nullif(country_to_iso_alpha2(coalesce(t1."Territory", t2."Territory", '')), ''), 'WW') as "Territory",
+      coalesce((tracks.download_conditions->'usdc_purchase'->>'price')::float/100, 0.0) as "Price Point"
     from (
       select
         "play_item_id" as "client_catalog_id",
@@ -81,23 +83,21 @@ export const udr = async (
       group by "country", "parent_track_id"
     ) t2
     on t1.client_catalog_id = t2.client_catalog_id and (t1."Territory" = t2."Territory" or t2."Territory" = '')
+    join tracks on t1.client_catalog_id = tracks.track_id
     `,
     { start, end }
   )
 
   const udrRows: UsageDetailReporting[] = queryResult.rows
   const csv = toCsvString(udrRows, UsageDetailReportingHeader)
-  const now = new Date();
+  const now = new Date()
   // Audius_Usage_YYMM_YYYYMMDDhhmmss.csv
   // YYMM = Year and Month of usage, YYYYMMDDhhmmss = time of generation
-  const fileName = `Audius_Usage_${getYearMonthShorthand(start)}_${formatDateISO(now)}`
+  const fileName = `Audius_Usage_${getYearMonthShorthand(
+    start
+  )}_${formatDateISO(now)}`
 
-  const results = await publish(
-    logger,
-    s3s,
-    csv,
-    fileName
-  )
+  const results = await publish(logger, s3s, csv, fileName)
   results.forEach((objUrl) =>
     logger.info({ objUrl, records: udrRows.length }, 'upload result')
   )

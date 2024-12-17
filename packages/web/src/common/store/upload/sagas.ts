@@ -1,12 +1,13 @@
 import {
+  albumMetadataForSDK,
   fileToSdk,
+  playlistMetadataForCreateWithSDK,
   trackMetadataForUploadToSdk,
   transformAndCleanList,
   userCollectionMetadataFromSDK
 } from '@audius/common/adapters'
 import {
   Collection,
-  CollectionMetadata,
   Feature,
   FieldVisibility,
   ID,
@@ -29,7 +30,6 @@ import {
   accountSelectors,
   cacheActions,
   cacheUsersSelectors,
-  confirmTransaction,
   confirmerActions,
   getContext,
   reformatCollection,
@@ -68,7 +68,6 @@ import { reportToSentry } from 'store/errors/reportToSentry'
 import { encodeHashId } from 'utils/hashIds'
 import { waitForWrite } from 'utils/sagaHelpers'
 
-import { getUnclaimedPlaylistId } from '../cache/collections/utils/getUnclaimedPlaylistId'
 import { trackNewRemixEvent } from '../cache/tracks/sagas'
 import { retrieveTracks } from '../cache/tracks/utils'
 import { adjustUserField } from '../cache/users/sagas'
@@ -789,7 +788,6 @@ export function* uploadCollection(
   isAlbum: boolean,
   uploadType: UploadType
 ) {
-  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
   const sdk = yield* getSDK()
 
   yield waitForAccount()
@@ -809,12 +807,6 @@ export function* uploadCollection(
       getUSDCMetadata,
       collectionMetadata.stream_conditions
     )
-  }
-
-  // First upload album art
-  const { artwork } = collectionMetadata
-  if (artwork && 'file' in artwork) {
-    yield* call(audiusBackendInstance.uploadImage, artwork.file as File)
   }
 
   // Propagate the collection metadata to the tracks
@@ -838,7 +830,10 @@ export function* uploadCollection(
     tracks.map((t) => t.metadata)
   )
 
-  const playlistId = yield* call(getUnclaimedPlaylistId)
+  const playlistId = yield* call([
+    sdk.playlists,
+    sdk.playlists.generatePlaylistId
+  ])
   if (playlistId == null) {
     throw new Error('Failed to get playlist ID')
   }
@@ -848,38 +843,57 @@ export function* uploadCollection(
     confirmerActions.requestConfirmation(
       `${collectionMetadata.playlist_name}_${Date.now()}`,
       function* () {
-        console.debug('Creating playlist')
-        const { blockHash, blockNumber, error } = yield* call(
-          audiusBackendInstance.createPlaylist,
-          playlistId,
-          collectionMetadata as unknown as CollectionMetadata,
-          isAlbum,
-          trackIds,
-          !!collectionMetadata.is_private
-        )
+        try {
+          const { artwork } = collectionMetadata
 
-        if (error) {
+          const coverArtFile =
+            artwork && 'file' in artwork ? artwork?.file ?? null : null
+
+          if (isAlbum) {
+            // Create album
+            if (!coverArtFile) {
+              throw new Error('Cover art file is required for albums')
+            }
+
+            yield* call([sdk.albums, sdk.albums.createAlbum], {
+              metadata: albumMetadataForSDK(
+                collectionMetadata as unknown as Collection
+              ),
+              userId: Id.parse(userId),
+              albumId: Id.parse(playlistId),
+              trackIds: trackIds.map((id) => Id.parse(id)),
+              coverArtFile: fileToSdk(coverArtFile, 'cover_art')
+            })
+          } else {
+            // Create playlist
+            yield* call([sdk.playlists, sdk.playlists.createPlaylist], {
+              metadata: playlistMetadataForCreateWithSDK(
+                collectionMetadata as unknown as Collection
+              ),
+              userId: Id.parse(userId),
+              playlistId: Id.parse(playlistId),
+              trackIds: trackIds.map((id) => Id.parse(id)),
+              coverArtFile: coverArtFile
+                ? fileToSdk(coverArtFile!, 'cover_art')
+                : undefined
+            })
+          }
+        } catch (error) {
           console.debug('Caught an error creating playlist')
           if (playlistId) {
             console.debug('Deleting playlist')
             // If we got a playlist ID back, that means we
             // created the playlist but adding tracks to it failed. So we must delete the playlist
-            yield* call(audiusBackendInstance.deletePlaylist, playlistId)
+            yield* call([sdk.playlists, sdk.playlists.deletePlaylist], {
+              userId: Id.parse(userId),
+              playlistId: Id.parse(playlistId)
+            })
             console.debug('Playlist deleted successfully')
           }
           // Throw to trigger the fail callback
           throw error instanceof Error
             ? error
             : new Error(`Error creating playlist: ${error}`)
-        }
-
-        const confirmed = yield* call(
-          confirmTransaction,
-          blockHash,
-          blockNumber
-        )
-        if (!confirmed) {
-          throw new Error(`Could not confirm playlist creation`)
         }
 
         const { data = [] } = yield* call(
