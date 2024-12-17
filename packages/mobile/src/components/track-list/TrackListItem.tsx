@@ -220,7 +220,8 @@ const TrackListItemComponent = (props: TrackListItemComponentProps) => {
     track_id,
     owner_id,
     ddex_app: ddexApp,
-    stream_conditions: streamConditions
+    stream_conditions: streamConditions,
+    album_backlink
   } = track
   const { is_deactivated, name } = user
 
@@ -274,10 +275,7 @@ const TrackListItemComponent = (props: TrackListItemComponentProps) => {
     getTrackPosition(state, { trackId: track_id, userId: currentUserId })
   )
 
-  const { data: albumInfo } = trpc.tracks.getAlbumBacklink.useQuery(
-    { trackId: track_id },
-    { enabled: !!track_id }
-  )
+  const albumInfo = track.album_backlink
 
   const handleOpenOverflowMenu = useCallback(() => {
     const overflowActions = [

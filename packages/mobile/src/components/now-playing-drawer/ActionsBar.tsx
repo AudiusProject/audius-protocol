@@ -124,11 +124,6 @@ export const ActionsBar = ({ track }: ActionsBarProps) => {
     usePremiumContentPurchaseModal()
   const currentQueueItem = useSelector(makeGetCurrent())
 
-  const { data: albumInfo } = trpc.tracks.getAlbumBacklink.useQuery(
-    { trackId: track?.track_id ?? 0 },
-    { enabled: !!track?.track_id }
-  )
-
   const handlePurchasePress = useCallback(() => {
     if (track?.track_id) {
       openPremiumContentPurchaseModal(
@@ -206,7 +201,7 @@ export const ActionsBar = ({ track }: ActionsBarProps) => {
         isLongFormContent
           ? OverflowAction.VIEW_EPISODE_PAGE
           : OverflowAction.VIEW_TRACK_PAGE,
-        albumInfo ? OverflowAction.VIEW_ALBUM_PAGE : null,
+        track.album_backlink ? OverflowAction.VIEW_ALBUM_PAGE : null,
         isLongFormContent
           ? playbackPositionInfo?.status === 'COMPLETED'
             ? OverflowAction.MARK_AS_UNPLAYED
@@ -227,7 +222,6 @@ export const ActionsBar = ({ track }: ActionsBarProps) => {
     track,
     isOwner,
     isUnlisted,
-    albumInfo,
     playbackPositionInfo?.status,
     dispatch
   ])

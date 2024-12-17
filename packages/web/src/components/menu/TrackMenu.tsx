@@ -8,7 +8,6 @@ import {
   PlayableType,
   ID
 } from '@audius/common/models'
-import { trpc } from '@audius/common/services'
 import {
   accountSelectors,
   cacheCollectionsActions,
@@ -172,10 +171,7 @@ const TrackMenu = (props: TrackMenuProps) => {
       unsetArtistPick
     } = props
 
-    const { data: albumInfo } = trpc.tracks.getAlbumBacklink.useQuery(
-      { trackId },
-      { enabled: !!trackId }
-    )
+    const albumInfo = track?.album_backlink
     const isLongFormContent =
       genre === Genre.PODCASTS || genre === Genre.AUDIOBOOKS
 
@@ -268,7 +264,7 @@ const TrackMenu = (props: TrackMenuProps) => {
       onClick: () =>
         albumInfo &&
         goToRoute(
-          albumPage(handle, albumInfo?.playlist_name, albumInfo?.playlist_id)
+          albumPage(handle, albumInfo.playlist_name, albumInfo.playlist_id)
         )
     }
 

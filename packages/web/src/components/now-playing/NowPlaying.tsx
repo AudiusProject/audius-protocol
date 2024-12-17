@@ -11,7 +11,6 @@ import {
   SquareSizes,
   ID
 } from '@audius/common/models'
-import { trpc } from '@audius/common/services'
 import {
   accountSelectors,
   queueActions,
@@ -139,10 +138,7 @@ const NowPlaying = g(
     const { uid, track, user, collectible } = currentQueueItem
     const { history } = useHistoryContext()
 
-    const { data: albumInfo } = trpc.tracks.getAlbumBacklink.useQuery(
-      { trackId: track?.track_id ?? 0 },
-      { enabled: !!track?.track_id }
-    )
+    const albumInfo = track?.album_backlink
 
     // Keep a ref for the artwork and dynamically resize the width of the
     // image as the height changes (which is flexed).

@@ -232,6 +232,7 @@ export const useGetCurrentUser = (
   options?: QueryHookOptions
 ) => {
   const wallets = useSelector(accountSelectors.getWalletAddresses)
+  console.log('wallets?', wallets)
   const result = useGetUserAccount(
     { wallet: wallets.currentUser! },
     { ...options, disabled: !wallets.currentUser }

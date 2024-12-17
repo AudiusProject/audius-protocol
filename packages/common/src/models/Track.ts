@@ -291,6 +291,11 @@ export type TrackMetadata = {
     url?: string
     mirrors: string[]
   }
+  album_backlink?: {
+    playlist_id: ID
+    playlist_name: string
+    permalink: string
+  }
 } & Timestamped
 
 export type DownloadReason = {

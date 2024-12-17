@@ -112,7 +112,8 @@ export const TrackTileComponent = ({
     preview_cid,
     ddex_app: ddexApp,
     is_unlisted: isUnlisted,
-    _co_sign: coSign
+    _co_sign: coSign,
+    album_backlink
   } = track
 
   const { artist_pick_track_id } = user
@@ -132,11 +133,6 @@ export const TrackTileComponent = ({
       />
     ),
     [track]
-  )
-
-  const { data: albumInfo } = trpc.tracks.getAlbumBacklink.useQuery(
-    { trackId: track_id },
-    { enabled: !!track_id }
   )
 
   const handlePress = useCallback(() => {
@@ -171,7 +167,7 @@ export const TrackTileComponent = ({
       isLongFormContent
         ? OverflowAction.VIEW_EPISODE_PAGE
         : OverflowAction.VIEW_TRACK_PAGE,
-      albumInfo ? OverflowAction.VIEW_ALBUM_PAGE : null,
+      album_backlink ? OverflowAction.VIEW_ALBUM_PAGE : null,
       isLongFormContent
         ? playbackPositionInfo?.status === 'COMPLETED'
           ? OverflowAction.MARK_AS_UNPLAYED
@@ -200,7 +196,7 @@ export const TrackTileComponent = ({
     isOwner,
     ddexApp,
     isUnlisted,
-    albumInfo,
+    album_backlink,
     playbackPositionInfo?.status,
     isArtistPick,
     isOnArtistsTracksTab,

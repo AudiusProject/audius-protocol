@@ -88,10 +88,7 @@ const TrackOverflowMenuDrawer = ({ render }: Props) => {
     (t) => t.track === track?.track_id
   )
 
-  const { data: albumInfo } = trpc.tracks.getAlbumBacklink.useQuery(
-    { trackId: id },
-    { enabled: !!id }
-  )
+  const albumInfo = track?.album_backlink
 
   const user = useSelector((state: CommonState) =>
     getUser(state, { id: track?.owner_id })

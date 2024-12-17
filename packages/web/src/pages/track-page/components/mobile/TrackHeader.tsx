@@ -9,7 +9,6 @@ import {
   Remix,
   AccessConditions
 } from '@audius/common/models'
-import { trpc } from '@audius/common/services'
 import {
   CommonState,
   OverflowAction,
@@ -203,10 +202,7 @@ const TrackHeader = ({
   // Play button is conditionally hidden for USDC-gated tracks when the user does not have access
   const showPlay = isUSDCPurchaseGated ? hasStreamAccess : true
   const showListenCount = isOwner || (!isStreamGated && !isUnlisted)
-  const { data: albumInfo } = trpc.tracks.getAlbumBacklink.useQuery(
-    { trackId },
-    { enabled: !!trackId }
-  )
+  const albumInfo = track?.album_backlink
   const shouldShowScheduledRelease =
     track?.release_date && dayjs(track.release_date).isAfter(dayjs())
 
