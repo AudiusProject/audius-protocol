@@ -1117,7 +1117,8 @@ function* recoverPurchaseIfNecessary() {
     )
 
     const rentMinimum = yield* call(getRootAccountRentExemptionMinimum)
-    const threshold = rentMinimum + 100 // pad by 100 lamports
+    // Pad by some extra lamport amount to reduce false positive rate
+    const threshold = rentMinimum + 1000000
     if (existingBalance > threshold) {
       // Get dummy quote and calculate fees
       const quote = yield* call(JupiterSingleton.getQuote, {
