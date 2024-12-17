@@ -1,5 +1,8 @@
 begin;
 do $$ begin
+
+create index idx_tracks_partial_audio_bpm_key on tracks (audio_upload_id) where (bpm is null or musical_key is null);
+
 -- prod gate
 if exists (select * from "blocks" where "blockhash" = '0x8d5e6984014505e1e11bcbb1ca1a13bcc6ae85ac74014710a73271d82ca49f01') then
   alter table tracks disable trigger on_track;
