@@ -33,7 +33,8 @@ import {
   formatWei,
   convertBigIntToAmountObject,
   convertWAudioToWei,
-  convertWeiToWAudio
+  convertWeiToWAudio,
+  waitForValue
 } from '@audius/common/utils'
 /* eslint-disable new-cap */
 import { TransactionHandler } from '@audius/sdk-legacy/dist/core'
@@ -1054,6 +1055,11 @@ function* recoverPurchaseIfNecessary() {
     const getFeatureEnabled = yield* getContext('getFeatureEnabled')
     const solanaWalletService = yield* getContext('solanaWalletService')
     const identityService = yield* getContext('identityService')
+    yield* call(
+      waitForValue,
+      getWalletAddresses,
+      (arg: ReturnType<typeof getWalletAddresses>) => arg.currentUser !== null
+    )
 
     if (
       !(
