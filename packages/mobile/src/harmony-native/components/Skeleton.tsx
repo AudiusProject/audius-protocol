@@ -15,9 +15,12 @@ import type { BoxProps } from './layout/Box/types'
 
 const AnimatedBox = Animated.createAnimatedComponent(Box)
 
-type SkeletonProps = BoxProps
+type SkeletonProps = BoxProps & {
+  noShimmer?: boolean
+}
 
 export const Skeleton = (props: SkeletonProps) => {
+  const { noShimmer, ...rest } = props
   const { color } = useTheme()
   const color1 = color.neutral.n50
   const color2 = color.neutral.n100
@@ -27,6 +30,7 @@ export const Skeleton = (props: SkeletonProps) => {
 
   // Setup animation loop
   useEffect(() => {
+    if (noShimmer) return
     shimmerPosition.value = withRepeat(
       withSequence(
         withTiming(1, {
@@ -39,7 +43,7 @@ export const Skeleton = (props: SkeletonProps) => {
       ),
       -1 // Infinite repeat
     )
-  }, [shimmerPosition])
+  }, [shimmerPosition, noShimmer])
 
   // Create animated styles for the shimmer effect
   const shimmerStyle = useAnimatedStyle(() => {
@@ -54,7 +58,7 @@ export const Skeleton = (props: SkeletonProps) => {
 
   return (
     <AnimatedBox
-      {...props}
+      {...rest}
       style={[
         {
           position: 'absolute',
@@ -65,7 +69,7 @@ export const Skeleton = (props: SkeletonProps) => {
           backgroundColor: color1,
           overflow: 'hidden'
         },
-        props.style
+        rest.style
       ]}
     >
       <AnimatedBox
