@@ -8,7 +8,6 @@ import {
   ModalSource
 } from '@audius/common/models'
 import type { ID } from '@audius/common/models'
-import { trpc } from '@audius/common/services'
 import {
   accountSelectors,
   cacheCollectionsActions,

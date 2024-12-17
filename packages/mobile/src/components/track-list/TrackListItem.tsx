@@ -10,7 +10,6 @@ import {
   type User,
   isContentUSDCPurchaseGated
 } from '@audius/common/models'
-import { trpc } from '@audius/common/services'
 import {
   accountSelectors,
   cacheCollectionsSelectors,
@@ -275,8 +274,6 @@ const TrackListItemComponent = (props: TrackListItemComponentProps) => {
     getTrackPosition(state, { trackId: track_id, userId: currentUserId })
   )
 
-  const albumInfo = track.album_backlink
-
   const handleOpenOverflowMenu = useCallback(() => {
     const overflowActions = [
       !isUnlisted || isTrackOwner ? OverflowAction.SHARE : null,
@@ -298,7 +295,7 @@ const TrackListItemComponent = (props: TrackListItemComponentProps) => {
       isLongFormContent
         ? OverflowAction.VIEW_EPISODE_PAGE
         : OverflowAction.VIEW_TRACK_PAGE,
-      !showViewAlbum && albumInfo ? OverflowAction.VIEW_ALBUM_PAGE : null,
+      !showViewAlbum && album_backlink ? OverflowAction.VIEW_ALBUM_PAGE : null,
       isLongFormContent
         ? playbackPositionInfo?.status === 'COMPLETED'
           ? OverflowAction.MARK_AS_UNPLAYED
@@ -327,7 +324,7 @@ const TrackListItemComponent = (props: TrackListItemComponentProps) => {
     ddexApp,
     isLongFormContent,
     showViewAlbum,
-    albumInfo,
+    album_backlink,
     playbackPositionInfo?.status,
     isContextPlaylistOwner,
     dispatch,

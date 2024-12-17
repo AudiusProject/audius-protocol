@@ -19,7 +19,7 @@ import type {
   Track,
   User
 } from '@audius/common/models'
-import { FeatureFlags, trpc } from '@audius/common/services'
+import { FeatureFlags } from '@audius/common/services'
 import type { CommonState } from '@audius/common/store'
 import {
   accountSelectors,

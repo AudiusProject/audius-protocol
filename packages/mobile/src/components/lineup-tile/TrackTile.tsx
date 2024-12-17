@@ -9,7 +9,6 @@ import {
   isContentUSDCPurchaseGated
 } from '@audius/common/models'
 import type { Track, User } from '@audius/common/models'
-import { trpc } from '@audius/common/services'
 import {
   accountSelectors,
   cacheTracksSelectors,

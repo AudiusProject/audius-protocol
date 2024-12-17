@@ -7,7 +7,6 @@ import {
   ModalSource
 } from '@audius/common/models'
 import type { Track } from '@audius/common/models'
-import { trpc } from '@audius/common/services'
 import {
   accountSelectors,
   castSelectors,
@@ -218,13 +217,7 @@ export const ActionsBar = ({ track }: ActionsBarProps) => {
         })
       )
     }
-  }, [
-    track,
-    isOwner,
-    isUnlisted,
-    playbackPositionInfo?.status,
-    dispatch
-  ])
+  }, [track, isOwner, isUnlisted, playbackPositionInfo?.status, dispatch])
 
   const { openAirplayDialog } = useAirplay()
   const castDevices = useDevices()
