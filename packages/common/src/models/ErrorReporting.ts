@@ -40,7 +40,9 @@ export enum Feature {
   Purchase = 'purchase',
   Comments = 'comments',
   Chats = 'chats',
-  Social = 'social'
+  Social = 'social',
+  Notifications = 'notifications',
+  Rewards = 'rewards'
 }
 
 export type ReportToSentryArgs = {
