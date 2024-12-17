@@ -17,6 +17,7 @@ models/AccountCollection.ts
 models/AccountCollectionUser.ts
 models/AccountFull.ts
 models/ActivityFull.ts
+models/AlbumBacklink.ts
 models/AlbumsResponseFull.ts
 models/AnnouncementNotification.ts
 models/AnnouncementNotificationAction.ts
