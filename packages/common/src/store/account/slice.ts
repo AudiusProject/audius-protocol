@@ -1,6 +1,7 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { keyBy } from 'lodash'
 
+import { GUEST_EMAIL } from '~/hooks/purchaseContent/constants'
 import { AccountCollection, User } from '~/models'
 import { Nullable } from '~/utils/typeUtils'
 
@@ -18,6 +19,8 @@ type FailureReason =
   | 'ACCOUNT_NOT_FOUND_LOCAL'
   | 'LIBS_ERROR'
 
+const guestEmailFromLocalStorage = window.localStorage.getItem(GUEST_EMAIL)
+
 const initialState = {
   collections: {} as { [id: number]: AccountCollection },
   userId: null as number | null,
@@ -29,7 +32,10 @@ const initialState = {
   walletAddresses: { currentUser: null, web3User: null } as {
     currentUser: string | null
     web3User: string | null
-  }
+  },
+  guestEmail: guestEmailFromLocalStorage
+    ? (JSON.parse(guestEmailFromLocalStorage) as string)
+    : null
 }
 
 type FetchAccountSucceededPayload = {
@@ -139,6 +145,14 @@ const slice = createSlice({
       }>
     ) => {
       state.walletAddresses = action.payload
+    },
+    setGuestEmail: (
+      state,
+      action: PayloadAction<{
+        guestEmail: string | null
+      }>
+    ) => {
+      state.guestEmail = action.payload.guestEmail
     }
   }
 })

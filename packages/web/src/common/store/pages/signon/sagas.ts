@@ -14,7 +14,8 @@ import {
   TikTokUser,
   Feature,
   AccountUserMetadata,
-  OptionalId
+  OptionalId,
+  Kind
 } from '@audius/common/models'
 import {
   IntKeys,
@@ -38,7 +39,9 @@ import {
   getSDK,
   fetchAccountAsync,
   getOrCreateUSDCUserBank,
-  changePasswordActions
+  changePasswordActions,
+  confirmTransaction,
+  cacheActions
 } from '@audius/common/store'
 import {
   Genre,
@@ -586,69 +589,85 @@ function* createGuestAccount(
   if (!isGuestCheckoutEnabled) {
     return
   }
+  yield* put(
+    confirmerActions.requestConfirmation(
+      guestEmail,
+      function* () {
+        // clear existing user state
+        yield* call([audiusLibs, 'clearCurrentUser'])
+        yield* call([localStorage, 'clearAudiusAccount'])
+        yield* call([localStorage, 'clearAudiusAccountUser'])
+        yield* call([authService, authService.signOut])
+        yield put(accountActions.resetAccount())
+        yield put(accountActions.setGuestEmail({ guestEmail }))
 
-  try {
-    // clear existing user state
-    yield* call([audiusLibs, 'clearCurrentUser'])
-    yield* call([localStorage, 'clearAudiusAccount'])
-    yield* call([localStorage, 'clearAudiusAccountUser'])
-    yield* call([authService, authService.signOut])
-    yield put(accountActions.resetAccount())
+        const currentUser = yield* select(getAccountUser)
 
-    const currentUser = yield* select(getAccountUser)
+        if (currentUser) {
+          throw new Error('User already exists')
+        }
+        yield* call(
+          [authService.hedgehogInstance, authService.hedgehogInstance.signUp],
+          {
+            username: guestEmail,
+            password: TEMPORARY_PASSWORD,
+            isGuest: true
+          }
+        )
 
-    if (currentUser) {
-      throw new Error('User already exists')
-    }
-    yield* call(
-      [authService.hedgehogInstance, authService.hedgehogInstance.signUp],
-      {
-        username: guestEmail,
-        password: TEMPORARY_PASSWORD,
-        isGuest: true
+        const { accountWalletAddress: wallet } = yield* call([
+          authService,
+          authService.getWalletAddresses
+        ])
+
+        audiusLibs.web3Manager.setOwnerWallet(wallet)
+        if (!guestEmail) {
+          throw new Error('No email set for guest account')
+        }
+        const { blockHash, blockNumber, metadata } = yield* call([
+          sdk.users,
+          sdk.users.createGuestAccount
+        ])
+        const userId = metadata.userId
+        yield* call(confirmTransaction, blockHash, blockNumber)
+        yield* call(fetchAccountAsync, { isSignUp: true })
+
+        const userBank = yield* call(getOrCreateUSDCUserBank)
+        if (!userBank) {
+          throw new Error('Failed to create user bank')
+        }
+        const { web3Error, libsError } = yield* call(
+          audiusBackendInstance.setup,
+          {
+            wallet,
+            userId
+          }
+        )
+        if (web3Error || libsError) {
+          throw new Error('Failed to setup backend')
+        }
+      },
+      () => {},
+      function* ({ error: err }: { error: Error }) {
+        reportToSentry({
+          error: err as Error,
+          level: ErrorLevel.Fatal,
+          name: 'Sign Up: Failed to create guest account',
+          feature: Feature.SignUp
+        })
       }
     )
-
-    const { accountWalletAddress: wallet } = yield* call([
-      authService,
-      authService.getWalletAddresses
-    ])
-
-    audiusLibs.web3Manager.setOwnerWallet(wallet)
-    if (!guestEmail) {
-      throw new Error('No email set for guest account')
-    }
-    const { metadata } = yield* call([sdk.users, sdk.users.createGuestAccount])
-    const userId = metadata.userId
-    yield* call(fetchAccountAsync, { isSignUp: true })
-
-    const userBank = yield* call(getOrCreateUSDCUserBank)
-    if (!userBank) {
-      throw new Error('Failed to create user bank')
-    }
-    const { web3Error, libsError } = yield* call(audiusBackendInstance.setup, {
-      wallet,
-      userId
-    })
-    if (web3Error || libsError) {
-      throw new Error('Failed to setup backend')
-    }
-  } catch (err) {
-    reportToSentry({
-      error: err as Error,
-      name: 'Sign Up: Failed to create guest account',
-      feature: Feature.SignUp
-    })
-  }
+  )
 }
 
 function* signUp() {
   const reportToSentry = yield* getContext('reportToSentry')
+  const localStorage = yield* getContext('localStorage')
+
   try {
     const signOn = yield* select(getSignOn)
     const email = signOn.email.value
     const password = signOn.password.value
-    const localStorage = yield* getContext('localStorage')
     const useMetamask = yield* call(
       [localStorage, localStorage.getItem],
       'useMetaMask'
@@ -696,6 +715,13 @@ function* signUp() {
           let userId: ID
           try {
             if (isGuest) {
+              yield* put(
+                accountActions.setGuestEmail({
+                  guestEmail: null
+                })
+              )
+              yield* call([localStorage, localStorage.removeItem], GUEST_EMAIL)
+
               const account: AccountUserMetadata | null = yield* call(
                 userApiFetchSaga.getUserAccount,
                 {
@@ -716,7 +742,7 @@ function* signUp() {
                 }
               }
 
-              yield* call(
+              const { blockHash, blockNumber } = yield* call(
                 [sdk.users, sdk.users.updateProfile],
                 completeProfileMetadataRequest
               )
@@ -730,7 +756,35 @@ function* signUp() {
               )
 
               yield* fork(sendPostSignInRecoveryEmail, { handle, email })
-              yield* call([localStorage, localStorage.removeItem], GUEST_EMAIL)
+
+              yield* call(confirmTransaction, blockHash, blockNumber)
+              const user = yield* call(
+                userApiFetchSaga.getUserById,
+                {
+                  id: userId
+                },
+                true // force refresh to get updated user w handle
+              )
+              if (!user) {
+                throw new Error('Failed to index guest account creation')
+              }
+
+              // Force refreshing doesn't seem to update the user handle
+              // so this forced cache update is necessary
+              yield* put(
+                cacheActions.update(Kind.USERS, [
+                  {
+                    id: userId,
+                    metadata: {
+                      handle: user.handle,
+                      name: user.name,
+                      profile_picture: user.profile_picture,
+                      location: user.location
+                    }
+                  }
+                ])
+              )
+              return userId
             } else {
               if (!alreadyExisted) {
                 yield* call(

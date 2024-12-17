@@ -1,7 +1,6 @@
 import { accountSelectors } from '@audius/common/store'
 import { route } from '@audius/common/utils'
 import { useSelector } from 'react-redux'
-import { useLocalStorage } from 'react-use'
 
 import { useModalState } from 'common/hooks/useModalState'
 import {
@@ -32,7 +31,6 @@ export const useDetermineAllowedRoute = () => {
   const isAccountComplete = useSelector(getIsAccountComplete)
   const hasAlreadySignedUp = useSelector(getAccountAlreadyExisted)
   const isFastReferral = useFastReferral()
-  const [guestEmail] = useLocalStorage('guestEmail', '')
 
   const pastAccountPhase = signUpState.finishedPhase1 || isAccountComplete
 
@@ -54,13 +52,8 @@ export const useDetermineAllowedRoute = () => {
     }
     const attemptedPath = requestedRoute.toString().replace('/signup/', '')
     // Have to type as string[] to avoid too narrow of a type for comparing against
-    let allowedRoutes: string[] = []
+    let allowedRoutes: string[] = [SignUpPath.createEmail]
 
-    if (guestEmail) {
-      allowedRoutes.push(SignUpPath.createPassword)
-    } else {
-      allowedRoutes.push(SignUpPath.createEmail)
-    }
     if (signUpState.linkedSocialOnFirstPage) {
       allowedRoutes.push(SignUpPath.createLoginDetails)
       allowedRoutes.push(SignUpPath.reviewHandle)

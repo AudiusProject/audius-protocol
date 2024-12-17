@@ -47,7 +47,7 @@ const { removeFromPlaylistLibrary } = playlistLibraryHelpers
 const { getUser } = cacheUsersSelectors
 const { getCollections, getCollection } = cacheCollectionsSelectors
 const { addLocalCollection, removeLocalCollection } = savedPageActions
-const { getPlaylistLibrary, getUserId } = accountSelectors
+const { getPlaylistLibrary, getUserId, getIsGuestAccount } = accountSelectors
 const { collectionPage } = route
 
 /* REPOST COLLECTION */
@@ -61,7 +61,8 @@ export function* repostCollectionAsync(
 ) {
   yield* call(waitForWrite)
   const userId = yield* select(getUserId)
-  if (!userId) {
+  const isGuest = yield* select(getIsGuestAccount)
+  if (!userId || isGuest) {
     yield* put(signOnActions.openSignOn(false))
     yield* put(signOnActions.showRequiresAccountToast())
     yield* put(make(Name.CREATE_ACCOUNT_OPEN, { source: 'social action' }))
@@ -187,7 +188,8 @@ export function* undoRepostCollectionAsync(
 ) {
   yield* call(waitForWrite)
   const userId = yield* select(getUserId)
-  if (!userId) {
+  const isGuest = yield* select(getIsGuestAccount)
+  if (!userId || isGuest) {
     yield* put(signOnActions.openSignOn(false))
     yield* put(signOnActions.showRequiresAccountToast())
     yield* put(make(Name.CREATE_ACCOUNT_OPEN, { source: 'social action' }))
@@ -311,7 +313,8 @@ export function* saveSmartCollection(
 ) {
   yield* call(waitForWrite)
   const userId = yield* select(getUserId)
-  if (!userId) {
+  const isGuest = yield* select(getIsGuestAccount)
+  if (!userId || isGuest) {
     yield* put(signOnActions.showRequiresAccountToast())
     yield* put(signOnActions.openSignOn(false))
     yield* put(make(Name.CREATE_ACCOUNT_OPEN, { source: 'social action' }))
@@ -343,7 +346,8 @@ export function* saveCollectionAsync(
 ) {
   yield* call(waitForWrite)
   const userId = yield* select(getUserId)
-  if (!userId) {
+  const isGuest = yield* select(getIsGuestAccount)
+  if (!userId || isGuest) {
     yield* put(signOnActions.showRequiresAccountToast())
     yield* put(signOnActions.openSignOn(false))
     yield* put(make(Name.CREATE_ACCOUNT_OPEN, { source: 'social action' }))
