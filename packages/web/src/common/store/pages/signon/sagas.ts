@@ -1216,8 +1216,8 @@ function* followCollections(
 export function* completeFollowArtists(
   _action: ReturnType<typeof signOnActions.completeFollowArtists>
 ) {
-  const accountId = yield* select(accountSelectors.getIsAccountComplete)
-  if (accountId) {
+  const isAccountComplete = yield* select(accountSelectors.getIsAccountComplete)
+  if (isAccountComplete) {
     // If account creation has finished we need to make sure followArtists gets called
     // Also we specifically request to not follow the defaults (Audius user, Hot & New Playlist) since that should have already occurred
     yield* put(signOnActions.followArtists(true))
