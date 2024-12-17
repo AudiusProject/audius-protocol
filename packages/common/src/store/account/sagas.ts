@@ -143,7 +143,6 @@ export function* fetchAccountAsync({ isSignUp = false }): SagaIterator {
     collections: accountData.playlists,
     guestEmail: accountData.guestEmail
   }
-  console.log('asdf Formatted Account', formattedAccount)
   yield* put(fetchAccountSucceeded(formattedAccount))
 
   // Fetch user's chat blockee and blocker list after fetching their account
