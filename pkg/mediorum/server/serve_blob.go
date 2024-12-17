@@ -264,13 +264,15 @@ func (ss *MediorumServer) findAndPullBlob(_ context.Context, key string) (string
 }
 
 func (ss *MediorumServer) logTrackListen(c echo.Context) {
+	skipPlayCountQuery, _ := strconv.ParseBool(c.QueryParam("skip_play_count"))
 
-	skipPlayCount, _ := strconv.ParseBool(c.QueryParam("skip_play_count"))
+	identityConfigured := os.Getenv("identityService") == ""
+	rangePresent := !rangeIsFirstByte(c.Request().Header.Get("Range"))
+	methodNotGET := c.Request().Method != "GET"
+	refererMatches := strings.Contains(c.Request().Header.Get("Referer"), c.Request().URL.String())
 
-	if skipPlayCount ||
-		os.Getenv("identityService") == "" ||
-		!rangeIsFirstByte(c.Request().Header.Get("Range")) ||
-		c.Request().Method != "GET" {
+	skipPlayCount := skipPlayCountQuery || identityConfigured || rangePresent || methodNotGET || refererMatches
+	if skipPlayCount {
 		// todo: skip count for trusted notifier requests should be inferred
 		// by the requesting entity and not some query param
 		return
@@ -324,13 +326,6 @@ func (ss *MediorumServer) logTrackListen(c echo.Context) {
 				ss.logger.Error("core panic recovered in goroutine", "err", r)
 			}
 		}()
-
-		sdk, err := ss.getCoreSdk()
-		if err != nil || sdk == nil {
-			ss.logger.Info("returning early from core sdk err", "error", err, "sdk", sdk)
-			return
-		}
-
 		// parse out time as proto object from legacy listen sig
 		parsedTime, err := time.Parse(time.RFC3339, signatureData.Timestamp)
 		if err != nil {

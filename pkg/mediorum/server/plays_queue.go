@@ -12,6 +12,8 @@ import (
 
 const playBatch = 500
 
+var playQueueInterval = 20 * time.Second
+
 type PlayRecord struct {
 	RowID     int
 	UserID    string
@@ -40,9 +42,11 @@ func (ss *MediorumServer) insertPlayRecord(record *PlayRecord) error {
 }
 
 func (ss *MediorumServer) startPlayQueue() {
+	ss.logger.Info("plays queue waiting for core sdk")
 	<-ss.coreSdkReady
+	ss.logger.Info("core sdk initialized")
 
-	ticker := time.NewTicker(5 * time.Second)
+	ticker := time.NewTicker(playQueueInterval)
 	defer ticker.Stop()
 
 	for range ticker.C {
@@ -53,17 +57,9 @@ func (ss *MediorumServer) startPlayQueue() {
 }
 
 func (ss *MediorumServer) processPlayRecordBatch() error {
-	ctx := context.Background()
-
-	tx, err := ss.pgPool.Begin(ctx)
-	if err != nil {
-		return fmt.Errorf("couldn't begin pgpool tx: %v", err)
-	}
-	defer func() {
-		if err != nil {
-			_ = tx.Rollback(ctx)
-		}
-	}()
+	// require all operations in process batch take at most 30 seconds
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
 
 	// get batch of plays from db
 	query := `
@@ -75,7 +71,7 @@ func (ss *MediorumServer) processPlayRecordBatch() error {
 	)
 	SELECT * FROM batch;
 `
-	rows, err := tx.Query(ctx, query, playBatch)
+	rows, err := ss.pgPool.Query(ctx, query, playBatch)
 	if err != nil {
 		return fmt.Errorf("failed to fetch batch: %v", err)
 	}
@@ -145,23 +141,18 @@ func (ss *MediorumServer) processPlayRecordBatch() error {
 
 	// delete play records once persisted in core tx
 	deleteQuery := `
-	DELETE FROM plays_queue
-	WHERE rowid IN (
-		SELECT rowid FROM (
-			SELECT rowid FROM plays_queue
-			ORDER BY rowid
-			LIMIT $1
-		) AS subquery
-	);
-`
-	_, err = tx.Exec(ctx, deleteQuery, playBatch)
+		DELETE FROM plays_queue
+		WHERE rowid IN (
+			SELECT rowid FROM (
+				SELECT rowid FROM plays_queue
+				ORDER BY rowid
+				LIMIT $1
+			) AS subquery
+		);
+	`
+	_, err = ss.pgPool.Exec(ctx, deleteQuery, playBatch)
 	if err != nil {
 		return fmt.Errorf("failed to delete batch: %v", err)
-	}
-
-	// Commit the transaction
-	if err := tx.Commit(ctx); err != nil {
-		return fmt.Errorf("failed to commit transaction: %v", err)
 	}
 
 	return nil
