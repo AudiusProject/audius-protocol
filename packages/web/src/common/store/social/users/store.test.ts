@@ -15,8 +15,8 @@ import * as sagas from 'common/store/social/users/sagas'
 import { noopReducer } from 'store/testHelper'
 import { waitForWrite } from 'utils/sagaHelpers'
 
-const followedUser = { follower_count: 5 }
-const accountUser = { followee_count: 1 }
+const followedUser = { follower_count: 5, handle: 'handle', name: 'name' }
+const accountUser = { followee_count: 1, handle: 'handle', name: 'name' }
 
 const mockAudiusSdk = {}
 

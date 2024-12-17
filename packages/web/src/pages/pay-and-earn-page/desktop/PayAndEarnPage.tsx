@@ -27,7 +27,7 @@ import { WithdrawalsTab, useWithdrawals } from '../components/WithdrawalsTab'
 import { PayAndEarnPageProps, TableType } from '../types'
 
 const { PURCHASES_PAGE, SALES_PAGE, WITHDRAWALS_PAGE } = route
-const { getAccountHasTracks } = accountSelectors
+const { getAccountHasTracks, getIsGuestAccount } = accountSelectors
 
 export const messages = {
   title: 'Pay & Earn',
@@ -47,18 +47,18 @@ type TableMetadata = {
 export const PayAndEarnPage = ({ tableView }: PayAndEarnPageProps) => {
   const dispatch = useDispatch()
   const accountHasTracks = useSelector(getAccountHasTracks)
-
+  const isGuest = useSelector(getIsGuestAccount)
   const [tableOptions, setTableOptions] = useState<TableType[] | null>(null)
   const [selectedTable, setSelectedTable] = useState<TableType | null>(null)
   useEffect(() => {
-    if (accountHasTracks !== null) {
+    if (accountHasTracks !== null || isGuest) {
       const tableOptions = accountHasTracks
         ? [TableType.SALES, TableType.PURCHASES, TableType.WITHDRAWALS]
         : [TableType.PURCHASES, TableType.WITHDRAWALS]
       setTableOptions(tableOptions)
       setSelectedTable(tableView ?? tableOptions[0])
     }
-  }, [accountHasTracks, setSelectedTable, tableView, setTableOptions])
+  }, [accountHasTracks, setSelectedTable, tableView, setTableOptions, isGuest])
 
   const { isEnabled: isOwnYourFansEnabled } = useFeatureFlag(
     FeatureFlags.OWN_YOUR_FANS

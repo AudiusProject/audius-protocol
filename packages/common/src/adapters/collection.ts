@@ -19,7 +19,7 @@ import {
 import { Copyright } from '~/models/Track'
 import { decodeHashId } from '~/utils/hashIds'
 
-import { accessConditionsFromSDK, accessConditionsToSDK } from './access'
+import { accessConditionsFromSDK } from './accessConditionsFromSDK'
 import { resourceContributorFromSDK } from './attribution'
 import { favoriteFromSDK } from './favorite'
 import { coverArtSizesCIDsFromSDK } from './imageSize'

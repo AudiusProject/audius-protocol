@@ -1,4 +1,4 @@
-export * from './access'
+export * from './accessConditionsFromSDK'
 export * from './activity'
 export * from './attribution'
 export * from './challenge'

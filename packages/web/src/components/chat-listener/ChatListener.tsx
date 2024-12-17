@@ -6,14 +6,15 @@ import { useDispatch, useSelector } from 'react-redux'
 
 const { connect, disconnect, fetchMoreChats, fetchUnreadMessagesCount } =
   chatActions
-const { getAccountStatus } = accountSelectors
+const { getAccountStatus, getIsGuestAccount } = accountSelectors
 
 export const ChatListener = () => {
   const dispatch = useDispatch()
   const accountStatus = useSelector(getAccountStatus)
+  const isGuest = useSelector(getIsGuestAccount)
   // Connect to chats websockets and prefetch chats
   useEffect(() => {
-    if (accountStatus === Status.SUCCESS) {
+    if (accountStatus === Status.SUCCESS && !isGuest) {
       dispatch(connect())
       dispatch(fetchMoreChats())
       dispatch(fetchUnreadMessagesCount())
@@ -21,6 +22,6 @@ export const ChatListener = () => {
     return () => {
       dispatch(disconnect())
     }
-  }, [dispatch, accountStatus])
+  }, [dispatch, accountStatus, isGuest])
   return null
 }

@@ -29,12 +29,14 @@ const initialState = {
   walletAddresses: { currentUser: null, web3User: null } as {
     currentUser: string | null
     web3User: string | null
-  }
+  },
+  guestEmail: null as string | null
 }
 
 type FetchAccountSucceededPayload = {
   userId: ID
   collections: AccountCollection[]
+  guestEmail: string | null
 }
 
 type FetchAccountFailedPayload = {
@@ -59,11 +61,12 @@ const slice = createSlice({
       state,
       action: PayloadAction<FetchAccountSucceededPayload>
     ) => {
-      const { userId, collections } = action.payload
+      const { userId, collections, guestEmail } = action.payload
       state.userId = userId
       state.collections = keyBy(collections, 'id')
       state.status = Status.SUCCESS
       state.reason = null
+      state.guestEmail = state.guestEmail ?? guestEmail
     },
     fetchAccountFailed: (
       state,
@@ -139,6 +142,14 @@ const slice = createSlice({
       }>
     ) => {
       state.walletAddresses = action.payload
+    },
+    setGuestEmail: (
+      state,
+      action: PayloadAction<{
+        guestEmail: string | null
+      }>
+    ) => {
+      state.guestEmail = action.payload.guestEmail
     }
   }
 })

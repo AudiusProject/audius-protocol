@@ -23,7 +23,7 @@ import errorSagas from './errorSagas'
 const { profilePage } = route
 const { getUsers, getUser } = cacheUsersSelectors
 const { setNotificationSubscription } = profilePageActions
-const { getUserId } = accountSelectors
+const { getUserId, getIsGuestAccount } = accountSelectors
 
 /* FOLLOW */
 
@@ -35,9 +35,9 @@ export function* followUser(
   action: ReturnType<typeof socialActions.followUser>
 ) {
   yield* call(waitForWrite)
-
   const accountId = yield* select(getUserId)
-  if (!accountId) {
+  const isGuest = yield* select(getIsGuestAccount)
+  if (!accountId || isGuest) {
     yield* put(signOnActions.openSignOn(false))
     yield* put(signOnActions.showRequiresAccountToast())
     yield* put(make(Name.CREATE_ACCOUNT_OPEN, { source: 'social action' }))
@@ -194,7 +194,8 @@ export function* unfollowUser(
   /* Make Async Backend Call */
   yield* call(waitForWrite)
   const accountId = yield* select(getUserId)
-  if (!accountId) {
+  const isGuest = yield* select(getIsGuestAccount)
+  if (!accountId || isGuest) {
     yield* put(signOnActions.openSignOn(false))
     yield* put(signOnActions.showRequiresAccountToast())
     yield* put(make(Name.CREATE_ACCOUNT_OPEN, { source: 'social action' }))

@@ -116,7 +116,8 @@ const actionsMap = {
     return {
       ...state,
       ...action.fields,
-      page: action.page || state.page
+      page: action.page || state.page,
+      routeOnExit: action.routeOnExit || window.location.pathname
     }
   },
   [NEXT_PAGE](state, action) {

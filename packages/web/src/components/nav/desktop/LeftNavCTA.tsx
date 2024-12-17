@@ -17,10 +17,9 @@ import { Link } from 'react-router-dom'
 
 import { make, useRecord } from 'common/store/analytics/actions'
 import { SignOnLink } from 'components/SignOnLink'
-import { useLocalStorage } from 'hooks/useLocalStorage'
 
 const { SIGN_UP_PAGE, UPLOAD_PAGE } = route
-const { getAccountStatus, getHasAccount, getIsAccountComplete } =
+const { getAccountStatus, getHasAccount, getIsAccountComplete, getGuestEmail } =
   accountSelectors
 const { resetState: resetUploadState } = uploadActions
 const { getIsUploading } = uploadSelectors
@@ -39,7 +38,7 @@ export const LeftNavCTA = () => {
   const accountStatus = useSelector(getAccountStatus)
   const isUploading = useSelector(getIsUploading)
   const hasCompletedAccount = useSelector(getIsAccountComplete)
-  const [guestEmail] = useLocalStorage('guestEmail', '')
+  const guestEmail = useSelector(getGuestEmail)
 
   let status = 'signedOut'
   if (isSignedIn) status = 'signedIn'

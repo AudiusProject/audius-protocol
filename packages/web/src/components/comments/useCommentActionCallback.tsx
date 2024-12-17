@@ -2,6 +2,8 @@ import { useCallback } from 'react'
 
 import { useCurrentCommentSection } from '@audius/common/context'
 import { Name } from '@audius/common/models'
+import { accountSelectors } from '@audius/common/store'
+import { useSelector } from 'react-redux'
 import { useLocation } from 'react-router-dom'
 import { useToggle } from 'react-use'
 
@@ -9,6 +11,8 @@ import { DownloadMobileAppDrawer } from 'components/download-mobile-app-drawer/D
 import { useIsMobile } from 'hooks/useIsMobile'
 import { useRequiresAccountFn } from 'hooks/useRequiresAccount'
 import { make, track } from 'services/analytics'
+
+const { getGuestEmail } = accountSelectors
 
 export const useCommentActionCallback = <T extends (...args: any[]) => any>(
   callback: T,
@@ -21,7 +25,7 @@ export const useCommentActionCallback = <T extends (...args: any[]) => any>(
   const { requiresAccount } = useRequiresAccountFn(
     isMobile ? location.pathname : `${location.pathname}?showComments=true`
   )
-
+  const guestEmail = useSelector(getGuestEmail)
   const wrappedCallback = useCallback(
     (...args: Parameters<T>) => {
       if (isMobile) {
@@ -33,7 +37,7 @@ export const useCommentActionCallback = <T extends (...args: any[]) => any>(
           })
         )
       } else {
-        if (!currentUserId) {
+        if (!currentUserId || guestEmail) {
           requiresAccount()
           track(
             make({
@@ -51,6 +55,7 @@ export const useCommentActionCallback = <T extends (...args: any[]) => any>(
       callback,
       isMobile,
       toggleIsMobileAppDrawer,
+      guestEmail,
       entityId,
       currentUserId,
       requiresAccount,
