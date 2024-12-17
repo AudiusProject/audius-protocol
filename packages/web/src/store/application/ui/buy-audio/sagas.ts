@@ -1116,7 +1116,9 @@ function* recoverPurchaseIfNecessary() {
       'finalized'
     )
 
-    if (existingBalance > 0) {
+    const rentMinimum = yield* call(getRootAccountRentExemptionMinimum)
+    const threshold = rentMinimum + 100 // pad by 100 lamports
+    if (existingBalance > threshold) {
       // Get dummy quote and calculate fees
       const quote = yield* call(JupiterSingleton.getQuote, {
         inputTokenSymbol: 'SOL',
@@ -1316,14 +1318,7 @@ function* watchRecovery() {
  * Gate on local storage existing for the previous purchase attempt to reduce RPC load.
  */
 function* recoverOnPageLoad() {
-  const audiusLocalStorage = yield* getContext('localStorage')
-  const savedLocalStorageState = yield* call(
-    (val) => audiusLocalStorage.getJSONValue<BuyAudioLocalStorageState>(val),
-    BUY_AUDIO_LOCAL_STORAGE_KEY
-  )
-  if (savedLocalStorageState !== null && !isMobileWeb()) {
-    yield* put(startRecoveryIfNecessary())
-  }
+  yield* put(startRecoveryIfNecessary())
 }
 
 export default function sagas() {
