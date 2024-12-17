@@ -68,7 +68,6 @@ import { reportToSentry } from 'store/errors/reportToSentry'
 import { encodeHashId } from 'utils/hashIds'
 import { waitForWrite } from 'utils/sagaHelpers'
 
-import { getUnclaimedPlaylistId } from '../cache/collections/utils/getUnclaimedPlaylistId'
 import { trackNewRemixEvent } from '../cache/tracks/sagas'
 import { retrieveTracks } from '../cache/tracks/utils'
 import { adjustUserField } from '../cache/users/sagas'
@@ -831,7 +830,10 @@ export function* uploadCollection(
     tracks.map((t) => t.metadata)
   )
 
-  const playlistId = yield* call(getUnclaimedPlaylistId)
+  const playlistId = yield* call([
+    sdk.playlists,
+    sdk.playlists.generatePlaylistId
+  ])
   if (playlistId == null) {
     throw new Error('Failed to get playlist ID')
   }

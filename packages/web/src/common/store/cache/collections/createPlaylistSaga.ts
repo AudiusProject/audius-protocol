@@ -37,7 +37,6 @@ import { addPlaylistsNotInLibrary } from 'common/store/playlist-library/sagas'
 import { ensureLoggedIn } from 'common/utils/ensureLoggedIn'
 import { waitForWrite } from 'utils/sagaHelpers'
 
-import { getUnclaimedPlaylistId } from './utils/getUnclaimedPlaylistId'
 const { addLocalCollection } = savedPageActions
 const { getUser } = cacheUsersSelectors
 
@@ -70,7 +69,11 @@ function* createPlaylistWorker(
     isAlbum = false
   } = action
   const collection = newCollectionMetadata({ ...formFields, is_album: isAlbum })
-  const collectionId = yield* call(getUnclaimedPlaylistId)
+  const sdk = yield* getSDK()
+  const collectionId = yield* call([
+    sdk.playlists,
+    sdk.playlists.generatePlaylistId
+  ])
   if (!collectionId) return
 
   const initTrack = yield* select(getTrack, { id: initTrackId })
