@@ -51,11 +51,13 @@ export const UploadTrackForm = (props: UploadTrackFormProps) => {
     (values: TrackEditFormValues) => {
       const tracksForUpload = tracks.map((track, i) => {
         const metadata = values.trackMetadatas[i]
-        return { ...track, metadata }
+        const file = (values.tracks[i] as TrackForUpload).file ?? tracks[i].file
+        return { ...track, metadata, file }
       })
+
       onContinue({ ...formState, tracks: tracksForUpload })
     },
-    [formState, onContinue, tracks]
+    [tracks, formState, onContinue]
   )
 
   return <EditTrackForm initialValues={initialValues} onSubmit={onSubmit} />
