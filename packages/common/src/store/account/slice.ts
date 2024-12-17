@@ -19,7 +19,9 @@ type FailureReason =
   | 'ACCOUNT_NOT_FOUND_LOCAL'
   | 'LIBS_ERROR'
 
-const guestEmailFromLocalStorage = window.localStorage.getItem(GUEST_EMAIL)
+const guestEmailFromLocalStorage = window
+  ? window.localStorage.getItem(GUEST_EMAIL)
+  : null
 
 const initialState = {
   collections: {} as { [id: number]: AccountCollection },
