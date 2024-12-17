@@ -31,7 +31,7 @@ const AccountDetailsContainer = ({
 }: AccountDetailsContainerProps) => {
   const { color } = useTheme()
   return (
-    <Flex direction='column' pb='unit5' w='100%'>
+    <Flex direction='column' w='100%'>
       {isManagedAccount ? (
         <Box pv='xs' ph='m' backgroundColor='accent'>
           <Text variant='label' size='xs' color='staticWhite'>

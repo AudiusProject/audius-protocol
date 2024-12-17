@@ -7,7 +7,19 @@ import {
   tracksSocialActions
 } from '@audius/common/store'
 import { route } from '@audius/common/utils'
-import { Box, Flex, Scrollbar } from '@audius/harmony'
+import {
+  Divider,
+  Flex,
+  IconCloudUpload,
+  IconExplore,
+  IconFeed,
+  IconLibrary,
+  IconMessages,
+  IconTrending,
+  IconTrophy,
+  IconWallet,
+  Scrollbar
+} from '@audius/harmony'
 import { ResizeObserver } from '@juggle/resize-observer'
 import { connect } from 'react-redux'
 import { RouteComponentProps, withRouter } from 'react-router-dom'
@@ -21,29 +33,28 @@ import { AppState } from 'store/types'
 import { useSelector } from 'utils/reducer'
 
 import { AccountDetails } from './AccountDetails'
-import { ConnectInstagram } from './ConnectInstagram'
-import { GroupHeader } from './GroupHeader'
-import { LeftNavCTA } from './LeftNavCTA'
-import { LeftNavDroppable } from './LeftNavDroppable'
 import { LeftNavLink } from './LeftNavLink'
 import { NavHeader } from './NavHeader'
 import { NowPlayingArtworkTile } from './NowPlayingArtworkTile'
 import { PlaylistLibrary } from './PlaylistLibrary'
 import { RouteNav } from './RouteNav'
 
-const { EXPLORE_PAGE, FEED_PAGE, HISTORY_PAGE, LIBRARY_PAGE, TRENDING_PAGE } =
-  route
+const {
+  EXPLORE_PAGE,
+  FEED_PAGE,
+  LIBRARY_PAGE,
+  TRENDING_PAGE,
+  CHATS_PAGE,
+  PAYMENTS_PAGE,
+  AUDIO_PAGE,
+  UPLOAD_PAGE
+} = route
 const { saveTrack } = tracksSocialActions
 const { saveCollection } = collectionsSocialActions
 const { getAccountStatus, getUserId, getUserHandle, getIsAccountComplete } =
   accountSelectors
 
 export const LEFT_NAV_WIDTH = 240
-
-const messages = {
-  discover: 'Discover',
-  library: 'Your Music'
-}
 
 type OwnProps = {
   isElectron: boolean
@@ -55,14 +66,7 @@ type NavColumnProps = OwnProps &
   RouteComponentProps
 
 const LeftNav = (props: NavColumnProps) => {
-  const {
-    accountUserId,
-    accountHandle,
-    isElectron,
-    draggingKind,
-    saveTrack,
-    saveCollection
-  } = props
+  const { isElectron } = props
   const isAccountComplete = useSelector(getIsAccountComplete)
   const [navBodyContainerMeasureRef, navBodyContainerBoundaries] = useMeasure({
     polyfill: ResizeObserver
@@ -84,6 +88,12 @@ const LeftNav = (props: NavColumnProps) => {
         scrollbarRef.current.scrollTop + difference
     }
   }, [])
+
+  const [isPlaylistExpanded, setIsPlaylistExpanded] = useState(false)
+
+  const handlePlaylistToggle = useCallback(() => {
+    setIsPlaylistExpanded(!isPlaylistExpanded)
+  }, [isPlaylistExpanded])
 
   return (
     <Flex
@@ -129,68 +139,75 @@ const LeftNav = (props: NavColumnProps) => {
             onChangeDragScrollingDirection={handleChangeDragScrollingDirection}
           >
             <AccountDetails />
-            <Flex
-              direction='column'
-              gap='unit5'
-              flex='1 1 auto'
-              css={{ overflow: 'hidden' }}
-            >
-              {accountHandle === 'fbtest' ? (
-                <Box>
-                  <LeftNavLink to={'/fb/share'}>
-                    Share Profile to Facebook
-                  </LeftNavLink>
-                  <LeftNavLink>
-                    <ConnectInstagram />
-                  </LeftNavLink>
-                </Box>
-              ) : null}
-              <Box>
-                <GroupHeader>{messages.discover}</GroupHeader>
-                <LeftNavLink
-                  to={FEED_PAGE}
-                  disabled={!isAccountComplete}
-                  restriction='account'
-                >
-                  Feed
-                </LeftNavLink>
-                <LeftNavLink to={TRENDING_PAGE} restriction='none'>
-                  Trending
-                </LeftNavLink>
-                <LeftNavLink to={EXPLORE_PAGE} exact restriction='none'>
-                  Explore
-                </LeftNavLink>
-              </Box>
-              <Box>
-                <GroupHeader>{messages.library}</GroupHeader>
-                <LeftNavDroppable
-                  disabled={!accountUserId}
-                  acceptedKinds={['track', 'album']}
-                  acceptOwner={false}
-                  onDrop={draggingKind === 'album' ? saveCollection : saveTrack}
-                >
-                  <LeftNavLink to={LIBRARY_PAGE} restriction='guest'>
-                    Library
-                  </LeftNavLink>
-                </LeftNavDroppable>
-                <LeftNavLink
-                  to={HISTORY_PAGE}
-                  disabled={!isAccountComplete}
-                  restriction='account'
-                >
-                  History
-                </LeftNavLink>
-              </Box>
-              <Box>
-                <PlaylistLibrary scrollbarRef={scrollbarRef} />
-              </Box>
+            <Flex direction='column' gap='unit2' flex='1 1 auto' p={6}>
+              <LeftNavLink
+                to={FEED_PAGE}
+                disabled={!isAccountComplete}
+                restriction='account'
+                icon={IconFeed}
+              >
+                Feed
+              </LeftNavLink>
+              <LeftNavLink
+                to={TRENDING_PAGE}
+                restriction='none'
+                icon={IconTrending}
+              >
+                Trending
+              </LeftNavLink>
+              <LeftNavLink
+                to={EXPLORE_PAGE}
+                exact
+                restriction='none'
+                icon={IconExplore}
+              >
+                Explore
+              </LeftNavLink>
+              <LeftNavLink
+                to={LIBRARY_PAGE}
+                restriction='guest'
+                icon={IconLibrary}
+              >
+                Library
+              </LeftNavLink>
+              <LeftNavLink
+                to={CHATS_PAGE}
+                restriction='guest'
+                icon={IconMessages}
+              >
+                Messages
+              </LeftNavLink>
+              <LeftNavLink
+                to={PAYMENTS_PAGE}
+                restriction='guest'
+                icon={IconWallet}
+              >
+                Wallets
+              </LeftNavLink>
+              <LeftNavLink
+                to={AUDIO_PAGE}
+                restriction='guest'
+                icon={IconTrophy}
+              >
+                Rewards
+              </LeftNavLink>
+              <LeftNavLink
+                to={UPLOAD_PAGE}
+                restriction='guest'
+                icon={IconCloudUpload}
+              >
+                Upload
+              </LeftNavLink>
+              <Divider orientation='horizontal' />
+              <LeftNavLink restriction='guest' onClick={handlePlaylistToggle}>
+                <PlaylistLibrary isExpanded={isPlaylistExpanded} />
+              </LeftNavLink>
             </Flex>
           </DragAutoscroller>
         </Scrollbar>
       </Flex>
       <Flex direction='column' alignItems='center' pt='l' borderTop='default'>
         <ProfileCompletionPanel />
-        <LeftNavCTA />
         <NowPlayingArtworkTile />
       </Flex>
     </Flex>
