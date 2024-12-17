@@ -2,11 +2,11 @@
 // source: protocol.proto
 
 /*
-Package proto is a reverse proxy.
+Package core_proto is a reverse proxy.
 
 It translates gRPC into RESTful JSON APIs.
 */
-package proto
+package core_proto
 
 import (
 	"context"

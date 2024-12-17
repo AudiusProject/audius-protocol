@@ -10,6 +10,7 @@ import (
 	"os"
 	"os/signal"
 	"strconv"
+	"strings"
 	"syscall"
 
 	"log"
@@ -158,7 +159,23 @@ func startEchoProxyWithOptionalTLS(hostUrl *url.URL, enableTLS bool) error {
 
 	e.Any("/*", echo.WrapHandler(mediorumProxy))
 
-	if enableTLS {
+	shouldHaveAutoTLS := []string{
+		"audius.co",
+		"stuffisup.com",
+		"theblueprint.xyz",
+		"tikilabs.com",
+		"shakespearetech.com",
+		"jollyworld.xyz",
+		"figment.io",
+		"cultur3stake.com",
+		"audiusindex.org",
+	}
+
+	domain := extractDomain(os.Getenv("creatorNodeEndpoint"))
+	enableTls := isTldAllowed(domain, shouldHaveAutoTLS)
+
+	// if enableTLS {
+	if enableTls {
 		// Get server's IP addresses
 		addrs, err := net.InterfaceAddrs()
 		if err != nil {
@@ -184,7 +201,7 @@ func startEchoProxyWithOptionalTLS(hostUrl *url.URL, enableTLS bool) error {
 
 		go func() {
 			if err := e.StartAutoTLS(":" + httpsPort); err != nil && err != http.ErrServerClosed {
-				e.Logger.Fatal("shutting down the server")
+				e.Logger.Error("HTTPS server failed")
 			}
 		}()
 
@@ -198,6 +215,30 @@ func startEchoProxyWithOptionalTLS(hostUrl *url.URL, enableTLS bool) error {
 	}
 
 	return e.Start(":" + httpPort)
+}
+
+func extractDomain(fqdn string) string {
+	// Remove the scheme (e.g., "https://")
+	if strings.Contains(fqdn, "://") {
+		fqdn = strings.Split(fqdn, "://")[1]
+	}
+
+	// Remove the path (anything after '/')
+	if strings.Contains(fqdn, "/") {
+		fqdn = strings.Split(fqdn, "/")[0]
+	}
+
+	return fqdn
+}
+
+// isTldAllowed checks if the domain ends with any of the allowed TLDs
+func isTldAllowed(domain string, allowedTlds []string) bool {
+	for _, tld := range allowedTlds {
+		if strings.HasSuffix(domain, tld) {
+			return true
+		}
+	}
+	return false
 }
 
 func getEnv[T any](key string, defaultVal T, parse func(string) (T, error)) T {

@@ -37,7 +37,7 @@ import { launchSelectImageActionSheet } from 'app/utils/launchSelectImageActionS
 
 import { AccountHeader } from '../components/AccountHeader'
 import { Heading, Page, PageFooter } from '../components/layout'
-import type { SignUpScreenParamList } from '../types'
+import type { SignOnScreenParamList } from '../types'
 import { useTrackScreen } from '../utils/useTrackScreen'
 
 const AnimatedText = Animated.createAnimatedComponent(Text)
@@ -51,7 +51,7 @@ type FinishProfileValues = {
 }
 
 export const FinishProfileScreen = () => {
-  const navigation = useNavigation<SignUpScreenParamList>()
+  const navigation = useNavigation<SignOnScreenParamList>()
   const dispatch = useDispatch()
   const { spacing } = useTheme()
   const savedProfileImage = useSelector(getProfileImageField)

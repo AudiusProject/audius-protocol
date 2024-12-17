@@ -1,7 +1,14 @@
 import type { ReactNode } from 'react'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 
 import { css } from '@emotion/native'
+import type { RouteProp } from '@react-navigation/native'
+import { useRoute } from '@react-navigation/native'
+import {
+  setField,
+  updateRouteOnCompletion,
+  setValueField
+} from 'common/store/pages/signon/actions'
 import { ImageBackground, SafeAreaView } from 'react-native'
 import Animated, {
   CurvedTransition,
@@ -23,9 +30,11 @@ import {
 } from '@audius/harmony-native'
 import DJBackground from 'app/assets/images/DJportrait.jpg'
 import type { NonLinkProps } from 'app/harmony-native/components/TextLink/types'
+import { dispatch } from 'app/store'
 
 import { AudiusValues } from '../components/AudiusValues'
 import { PANEL_EXPAND_DURATION } from '../constants'
+import type { SignOnScreenParamList } from '../types'
 
 import { CreateEmailScreen } from './CreateEmailScreen'
 import { SignInScreen } from './SignInScreen'
@@ -134,6 +143,8 @@ const ExpandablePanel = (props: ExpandablePanelProps) => {
 
 export type SignOnScreenParams = {
   screen: SignOnScreenType
+  guestEmail?: string
+  routeOnCompletion?: string
 }
 
 type SignOnScreenProps = {
@@ -146,8 +157,27 @@ type SignOnScreenProps = {
  */
 export const SignOnScreen = (props: SignOnScreenProps) => {
   const { isSplashScreenDismissed } = props
-  const [screen, setScreen] = useState<SignOnScreenType>('sign-up')
+  const { params } = useRoute<RouteProp<SignOnScreenParamList, 'SignOn'>>()
+  const {
+    screen: screenParam = 'sign-up',
+    guestEmail,
+    routeOnCompletion
+  } = params ?? {}
+  const [screen, setScreen] = useState<SignOnScreenType>(screenParam)
   const previousScreen = usePrevious(screen)
+
+  useEffect(() => {
+    if (guestEmail) {
+      dispatch(setValueField('email', guestEmail))
+      dispatch(setField('isGuest', true))
+    }
+
+    if (routeOnCompletion) {
+      dispatch(updateRouteOnCompletion(routeOnCompletion))
+    }
+
+    setScreen(screenParam)
+  }, [guestEmail, routeOnCompletion, screenParam])
 
   return (
     <>

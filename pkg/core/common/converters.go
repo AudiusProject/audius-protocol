@@ -3,21 +3,21 @@ package common
 import (
 	"fmt"
 
+	"github.com/AudiusProject/audius-protocol/pkg/core/gen/core_proto"
 	"github.com/AudiusProject/audius-protocol/pkg/core/gen/models"
-	"github.com/AudiusProject/audius-protocol/pkg/core/gen/proto"
 	"github.com/go-openapi/strfmt"
 )
 
 // converts a proto signed tx into an oapi one, mainly used for tx broadcasting
 // only covers entitymanager and plays
-func SignedTxProtoIntoSignedTxOapi(tx *proto.SignedTransaction) *models.ProtocolSignedTransaction {
+func SignedTxProtoIntoSignedTxOapi(tx *core_proto.SignedTransaction) *models.ProtocolSignedTransaction {
 	oapiTx := &models.ProtocolSignedTransaction{
 		RequestID: tx.RequestId,
 		Signature: tx.Signature,
 	}
 
 	switch innerTx := tx.Transaction.(type) {
-	case *proto.SignedTransaction_Plays:
+	case *core_proto.SignedTransaction_Plays:
 		plays := []*models.ProtocolTrackPlay{}
 
 		for _, play := range innerTx.Plays.GetPlays() {
@@ -35,7 +35,7 @@ func SignedTxProtoIntoSignedTxOapi(tx *proto.SignedTransaction) *models.Protocol
 		oapiTx.Plays = &models.ProtocolTrackPlays{
 			Plays: plays,
 		}
-	case *proto.SignedTransaction_ManageEntity:
+	case *core_proto.SignedTransaction_ManageEntity:
 		oapiTx.ManageEntity = &models.ProtocolManageEntityLegacy{
 			Action:     innerTx.ManageEntity.Action,
 			EntityID:   fmt.Sprint(innerTx.ManageEntity.EntityId),
@@ -44,7 +44,7 @@ func SignedTxProtoIntoSignedTxOapi(tx *proto.SignedTransaction) *models.Protocol
 			UserID:     fmt.Sprint(innerTx.ManageEntity.UserId),
 			Signature:  innerTx.ManageEntity.Signature,
 		}
-	case *proto.SignedTransaction_ValidatorRegistration:
+	case *core_proto.SignedTransaction_ValidatorRegistration:
 		oapiTx.ValidatorRegistration = &models.ProtocolValidatorRegistration{
 			CometAddress: innerTx.ValidatorRegistration.CometAddress,
 			Endpoint:     innerTx.ValidatorRegistration.Endpoint,

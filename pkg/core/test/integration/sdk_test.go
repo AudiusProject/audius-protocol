@@ -6,7 +6,7 @@ import (
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 
-	"github.com/AudiusProject/audius-protocol/pkg/core/gen/proto"
+	"github.com/AudiusProject/audius-protocol/pkg/core/gen/core_proto"
 	"github.com/AudiusProject/audius-protocol/pkg/core/test/integration/utils"
 )
 
@@ -21,7 +21,7 @@ var _ = Describe("Sdk", func() {
 		Expect(err).To(BeNil())
 
 		// test grpc hello route
-		res, err := sdk.Ping(ctx, &proto.PingRequest{})
+		res, err := sdk.Ping(ctx, &core_proto.PingRequest{})
 		Expect(err).To(BeNil())
 		Expect(res.GetMessage()).To(Equal("pong"))
 	})

@@ -1,7 +1,7 @@
 # For details on buf.yaml configuration, visit https://buf.build/docs/configuration/v2/buf-yaml
 version: v2
 modules:
-  - path: proto
+  - path: protocol
 deps:
   - buf.build/googleapis/googleapis
 lint:

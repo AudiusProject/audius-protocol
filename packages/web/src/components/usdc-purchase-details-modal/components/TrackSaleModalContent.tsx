@@ -6,7 +6,7 @@ import { useTrackCoverArt } from 'hooks/useTrackCoverArt'
 import { SaleModalContent } from './SaleModalContent'
 
 const messages = {
-  track: 'Track'
+  track: 'Track Purchased'
 }
 
 export const TrackSaleModalContent = ({

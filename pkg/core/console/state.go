@@ -8,7 +8,7 @@ import (
 	"github.com/AudiusProject/audius-protocol/pkg/core/config"
 	"github.com/AudiusProject/audius-protocol/pkg/core/console/views/pages"
 	"github.com/AudiusProject/audius-protocol/pkg/core/db"
-	"github.com/AudiusProject/audius-protocol/pkg/core/grpc"
+	"github.com/AudiusProject/audius-protocol/pkg/core/server"
 	"github.com/cometbft/cometbft/rpc/client"
 )
 
@@ -71,14 +71,14 @@ func (state *State) recalculateState() {
 		state.totalBlocks = totalBlocks
 	}
 
-	totalPlays, err := state.db.TotalTransactionsByType(ctx, grpc.TrackPlaysProtoName)
+	totalPlays, err := state.db.TotalTransactionsByType(ctx, server.TrackPlaysProtoName)
 	if err != nil {
 		logger.Errorf("could not get total plays: %v", err)
 	} else {
 		state.totalPlays = totalPlays
 	}
 
-	totalManageEntities, err := state.db.TotalTransactionsByType(ctx, grpc.ManageEntitiesProtoName)
+	totalManageEntities, err := state.db.TotalTransactionsByType(ctx, server.ManageEntitiesProtoName)
 	if err != nil {
 		logger.Errorf("could not get total manage entities: %v", err)
 	} else {
@@ -113,7 +113,7 @@ func (state *State) recalculateState() {
 		latestBlocks = append(latestBlocks, pages.BlockView{
 			Height:    block.Height,
 			Timestamp: block.CreatedAt.Time,
-			Txs: txs,
+			Txs:       txs,
 		})
 	}
 
@@ -141,7 +141,7 @@ func (state *State) Start() error {
 			// total blocks hasn't changed
 			continue
 		}
-		
+
 		// new block(s) present, rehydrate
 		state.recalculateState()
 	}

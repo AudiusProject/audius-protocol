@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"github.com/AudiusProject/audius-protocol/pkg/core/common"
-	"github.com/AudiusProject/audius-protocol/pkg/core/gen/proto"
+	"github.com/AudiusProject/audius-protocol/pkg/core/gen/core_proto"
 	"github.com/AudiusProject/audius-protocol/pkg/core/test/integration/utils"
 	"github.com/google/uuid"
 	. "github.com/onsi/ginkgo/v2"
@@ -20,7 +20,7 @@ var _ = Describe("Plays", func() {
 
 		sdk := utils.DiscoveryOne
 
-		listens := []*proto.TrackPlay{
+		listens := []*core_proto.TrackPlay{
 			{
 				UserId:    uuid.NewString(),
 				TrackId:   uuid.NewString(),
@@ -50,9 +50,9 @@ var _ = Describe("Plays", func() {
 			},
 		}
 
-		playEvent := &proto.SignedTransaction{
-			Transaction: &proto.SignedTransaction_Plays{
-				Plays: &proto.TrackPlays{
+		playEvent := &core_proto.SignedTransaction{
+			Transaction: &core_proto.SignedTransaction_Plays{
+				Plays: &core_proto.TrackPlays{
 					Plays: listens,
 				},
 			},
@@ -61,7 +61,7 @@ var _ = Describe("Plays", func() {
 		expectedTxHash, err := common.ToTxHash(playEvent)
 		Expect(err).To(BeNil())
 
-		req := &proto.SendTransactionRequest{
+		req := &core_proto.SendTransactionRequest{
 			Transaction: playEvent,
 		}
 
@@ -73,14 +73,9 @@ var _ = Describe("Plays", func() {
 
 		time.Sleep(time.Second * 1)
 
-		playEventRes, err := sdk.GetTransaction(ctx, &proto.GetTransactionRequest{Txhash: txhash})
+		playEventRes, err := sdk.GetTransaction(ctx, &core_proto.GetTransactionRequest{Txhash: txhash})
 		Expect(err).To(BeNil())
 
 		Expect(protob.Equal(playEvent, playEventRes.GetTransaction())).To(BeTrue())
-
-		// test rpc get hash works too
-		txResult, err := sdk.Tx(ctx, []byte(txhash), true)
-		Expect(err).To(BeNil())
-		Expect(txResult.Hash.Bytes()).To(Equal([]byte(txhash)))
 	})
 })

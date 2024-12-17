@@ -8,7 +8,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/AudiusProject/audius-protocol/pkg/core/gen/proto"
+	"github.com/AudiusProject/audius-protocol/pkg/core/gen/core_proto"
 	"github.com/AudiusProject/audius-protocol/pkg/mediorum/ethcontracts"
 	"github.com/AudiusProject/audius-protocol/pkg/mediorum/server/signature"
 	coretypes "github.com/cometbft/cometbft/rpc/core/types"
@@ -165,7 +165,7 @@ func (ss *MediorumServer) serveHealthCheck(c echo.Context) error {
 				coreHealthResponse.CoreNetInfo = netInfo
 			}
 
-			_, err = sdk.Ping(ctx, &proto.PingRequest{})
+			_, err = sdk.Ping(ctx, &core_proto.PingRequest{})
 			coreHealthResponse.CoreGRPCHealthy = err == nil
 		}
 

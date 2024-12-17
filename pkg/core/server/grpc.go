@@ -1,64 +1,42 @@
-package grpc
+// implementation of the grpc service definition found in the audius protocol.proto spec
+package server
 
 import (
 	"context"
 	"errors"
 	"fmt"
 	"net"
+	"reflect"
 	"strings"
 	"time"
 
 	"github.com/AudiusProject/audius-protocol/pkg/core/common"
-	"github.com/AudiusProject/audius-protocol/pkg/core/config"
-	"github.com/AudiusProject/audius-protocol/pkg/core/db"
-	"github.com/AudiusProject/audius-protocol/pkg/core/gen/proto"
-	"github.com/AudiusProject/audius-protocol/pkg/core/mempool"
-	"github.com/AudiusProject/audius-protocol/pkg/core/pubsub"
+	"github.com/AudiusProject/audius-protocol/pkg/core/gen/core_proto"
 	"github.com/cometbft/cometbft/abci/types"
-	"github.com/cometbft/cometbft/rpc/client/local"
 	gogo "github.com/cosmos/gogoproto/proto"
-	"github.com/jackc/pgx/v5/pgxpool"
-	"google.golang.org/grpc"
-	protob "google.golang.org/protobuf/proto"
+	"github.com/iancoleman/strcase"
+	"google.golang.org/protobuf/proto"
 )
 
-type GRPCServer struct {
-	logger   *common.Logger
-	cometRpc *local.Local
-	server   *grpc.Server
-	db       *db.Queries
-	config   *config.Config
-	mempool  *mempool.Mempool
-	txPubsub *pubsub.TransactionHashPubsub
-	proto.UnimplementedProtocolServer
+var (
+	TrackPlaysProtoName     string
+	ManageEntitiesProtoName string
+	SlaRollupProtoName      string
+	SlaNodeReportProtoName  string
+)
+
+func init() {
+	TrackPlaysProtoName = GetProtoTypeName(&core_proto.TrackPlays{})
+	ManageEntitiesProtoName = GetProtoTypeName(&core_proto.ManageEntityLegacy{})
+	SlaRollupProtoName = GetProtoTypeName(&core_proto.SlaRollup{})
+	SlaNodeReportProtoName = GetProtoTypeName(&core_proto.SlaNodeReport{})
 }
 
-func NewGRPCServer(logger *common.Logger, config *config.Config, cometRpc *local.Local, pool *pgxpool.Pool, mempool *mempool.Mempool, txPubsub *pubsub.TransactionHashPubsub) (*GRPCServer, error) {
-	server := &GRPCServer{
-		logger:   logger.Child("grpc"),
-		cometRpc: cometRpc,
-		config:   config,
-		mempool:  mempool,
-		txPubsub: txPubsub,
-		db:       db.New(pool),
-	}
-
-	s := grpc.NewServer()
-	proto.RegisterProtocolServer(s, server)
-	server.server = s
-
-	return server, nil
+func GetProtoTypeName(msg proto.Message) string {
+	return strcase.ToSnake(reflect.TypeOf(msg).Elem().Name())
 }
 
-func (s *GRPCServer) GetServer() *grpc.Server {
-	return s.server
-}
-
-func (s *GRPCServer) Serve(lis net.Listener) error {
-	return s.server.Serve(lis)
-}
-
-func (s *GRPCServer) SendTransaction(ctx context.Context, req *proto.SendTransactionRequest) (*proto.TransactionResponse, error) {
+func (s *Server) SendTransaction(ctx context.Context, req *core_proto.SendTransactionRequest) (*core_proto.TransactionResponse, error) {
 	// TODO: do validation check
 	txhash, err := common.ToTxHash(req.GetTransaction())
 	if err != nil {
@@ -66,13 +44,13 @@ func (s *GRPCServer) SendTransaction(ctx context.Context, req *proto.SendTransac
 	}
 
 	// TODO: use data companion to keep this value up to date via channel
-	status, err := s.cometRpc.Status(ctx)
+	status, err := s.rpc.Status(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("chain not healthy: %v", err)
 	}
 
 	deadline := status.SyncInfo.LatestBlockHeight + 10
-	mempoolTx := &mempool.MempoolTransaction{
+	mempoolTx := &MempoolTransaction{
 		Tx:       req.GetTransaction(),
 		Deadline: deadline,
 	}
@@ -85,7 +63,7 @@ func (s *GRPCServer) SendTransaction(ctx context.Context, req *proto.SendTransac
 	s.logger.Infof("adding tx: %v", req.Transaction)
 
 	// add transaction to mempool with broadcast set to true
-	err = s.mempool.AddTransaction(txhash, mempoolTx, true)
+	err = s.addMempoolTransaction(txhash, mempoolTx, true)
 	if err != nil {
 		s.logger.Errorf("tx could not be included in mempool %s: %v", txhash, err)
 		return nil, fmt.Errorf("could not add tx to mempool %v", err)
@@ -93,7 +71,7 @@ func (s *GRPCServer) SendTransaction(ctx context.Context, req *proto.SendTransac
 
 	select {
 	case <-txHashCh:
-		return &proto.TransactionResponse{
+		return &core_proto.TransactionResponse{
 			Txhash:      txhash,
 			Transaction: req.GetTransaction(),
 		}, nil
@@ -103,7 +81,7 @@ func (s *GRPCServer) SendTransaction(ctx context.Context, req *proto.SendTransac
 	}
 }
 
-func (s *GRPCServer) ForwardTransaction(ctx context.Context, req *proto.ForwardTransactionRequest) (*proto.ForwardTransactionResponse, error) {
+func (s *Server) ForwardTransaction(ctx context.Context, req *core_proto.ForwardTransactionRequest) (*core_proto.ForwardTransactionResponse, error) {
 	// TODO: check signature from known node
 
 	// TODO: validate transaction in same way as send transaction
@@ -116,26 +94,26 @@ func (s *GRPCServer) ForwardTransaction(ctx context.Context, req *proto.ForwardT
 	s.logger.Debugf("received forwarded tx: %v", req.Transaction)
 
 	// TODO: intake block deadline from request
-	status, err := s.cometRpc.Status(ctx)
+	status, err := s.rpc.Status(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("chain not healthy: %v", err)
 	}
 
 	deadline := status.SyncInfo.LatestBlockHeight + 10
-	mempoolTx := &mempool.MempoolTransaction{
+	mempoolTx := &MempoolTransaction{
 		Tx:       req.GetTransaction(),
 		Deadline: deadline,
 	}
 
-	err = s.mempool.AddTransaction(mempoolKey, mempoolTx, false)
+	err = s.addMempoolTransaction(mempoolKey, mempoolTx, false)
 	if err != nil {
 		return nil, fmt.Errorf("could not add tx to mempool %v", err)
 	}
 
-	return &proto.ForwardTransactionResponse{}, nil
+	return &core_proto.ForwardTransactionResponse{}, nil
 }
 
-func (s *GRPCServer) GetTransaction(ctx context.Context, req *proto.GetTransactionRequest) (*proto.TransactionResponse, error) {
+func (s *Server) GetTransaction(ctx context.Context, req *core_proto.GetTransactionRequest) (*core_proto.TransactionResponse, error) {
 	txhash := req.GetTxhash()
 
 	s.logger.Debug("query", "txhash", txhash)
@@ -151,13 +129,13 @@ func (s *GRPCServer) GetTransaction(ctx context.Context, req *proto.GetTransacti
 		return nil, err
 	}
 
-	var transaction proto.SignedTransaction
-	err = protob.Unmarshal(txResult.GetTx(), &transaction)
+	var transaction core_proto.SignedTransaction
+	err = proto.Unmarshal(txResult.GetTx(), &transaction)
 	if err != nil {
 		return nil, err
 	}
 
-	res := &proto.TransactionResponse{
+	res := &core_proto.TransactionResponse{
 		Txhash:      txhash,
 		Transaction: &transaction,
 	}
@@ -165,13 +143,13 @@ func (s *GRPCServer) GetTransaction(ctx context.Context, req *proto.GetTransacti
 	return res, nil
 }
 
-func (s *GRPCServer) GetBlock(ctx context.Context, req *proto.GetBlockRequest) (*proto.BlockResponse, error) {
-	block, err := s.cometRpc.Block(ctx, &req.Height)
+func (s *Server) GetBlock(ctx context.Context, req *core_proto.GetBlockRequest) (*core_proto.BlockResponse, error) {
+	block, err := s.rpc.Block(ctx, &req.Height)
 	if err != nil {
 		blockInFutureMsg := "must be less than or equal to the current blockchain height"
 		if strings.Contains(err.Error(), blockInFutureMsg) {
 			// return block with -1 to indicate it doesn't exist yet
-			return &proto.BlockResponse{
+			return &core_proto.BlockResponse{
 				Chainid: s.config.GenesisFile.ChainID,
 				Height:  -1,
 			}, nil
@@ -180,17 +158,17 @@ func (s *GRPCServer) GetBlock(ctx context.Context, req *proto.GetBlockRequest) (
 		return nil, err
 	}
 
-	txs := []*proto.SignedTransaction{}
+	txs := []*core_proto.SignedTransaction{}
 	for _, tx := range block.Block.Txs {
-		var transaction proto.SignedTransaction
-		err = protob.Unmarshal(tx, &transaction)
+		var transaction core_proto.SignedTransaction
+		err = proto.Unmarshal(tx, &transaction)
 		if err != nil {
 			return nil, err
 		}
 		txs = append(txs, &transaction)
 	}
 
-	res := &proto.BlockResponse{
+	res := &core_proto.BlockResponse{
 		Blockhash:    block.BlockID.Hash.String(),
 		Chainid:      s.config.GenesisFile.ChainID,
 		Proposer:     block.Block.ProposerAddress.String(),
@@ -200,13 +178,13 @@ func (s *GRPCServer) GetBlock(ctx context.Context, req *proto.GetBlockRequest) (
 
 	return res, nil
 }
-func (s *GRPCServer) GetNodeInfo(ctx context.Context, req *proto.GetNodeInfoRequest) (*proto.NodeInfoResponse, error) {
-	status, err := s.cometRpc.Status(ctx)
+func (s *Server) GetNodeInfo(ctx context.Context, req *core_proto.GetNodeInfoRequest) (*core_proto.NodeInfoResponse, error) {
+	status, err := s.rpc.Status(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	res := &proto.NodeInfoResponse{
+	res := &core_proto.NodeInfoResponse{
 		Chainid:       s.config.GenesisFile.ChainID,
 		Synced:        !status.SyncInfo.CatchingUp,
 		CometAddress:  s.config.ProposerAddress,
@@ -216,6 +194,28 @@ func (s *GRPCServer) GetNodeInfo(ctx context.Context, req *proto.GetNodeInfoRequ
 	return res, nil
 }
 
-func (s *GRPCServer) Ping(ctx context.Context, req *proto.PingRequest) (*proto.PingResponse, error) {
-	return &proto.PingResponse{Message: "pong"}, nil
+func (s *Server) Ping(ctx context.Context, req *core_proto.PingRequest) (*core_proto.PingResponse, error) {
+	return &core_proto.PingResponse{Message: "pong"}, nil
+}
+
+func (s *Server) startGRPC() error {
+	s.logger.Info("core gRPC server starting")
+
+	gs := s.grpcServer
+
+	grpcLis, err := net.Listen("tcp", s.config.GRPCladdr)
+	if err != nil {
+		return fmt.Errorf("grpc listener not created: %v", err)
+	}
+
+	core_proto.RegisterProtocolServer(gs, s)
+
+	close(s.awaitGrpcServerReady)
+	s.logger.Info("core gRPC server ready")
+
+	if err := gs.Serve(grpcLis); err != nil {
+		s.logger.Errorf("grpc failed to start: %v", err)
+		return err
+	}
+	return nil
 }

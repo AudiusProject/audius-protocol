@@ -5,7 +5,7 @@ go 1.22.5
 toolchain go1.23.1
 
 require (
-	github.com/a-h/templ v0.2.778
+	github.com/a-h/templ v0.2.793
 	github.com/cometbft/cometbft v1.0.0-rc1.0.20240821165313-db37bd322ea5
 	github.com/cosmos/gogoproto v1.7.0
 	github.com/disintegration/imaging v1.6.2

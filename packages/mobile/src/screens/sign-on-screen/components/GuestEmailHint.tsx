@@ -2,16 +2,13 @@ import { useCallback } from 'react'
 
 import { confirmEmailMessages } from '@audius/common/messages'
 import { emailSchemaMessages } from '@audius/common/schemas'
-import { route, TEMPORARY_PASSWORD } from '@audius/common/utils'
-import { Hint, IconError } from '@audius/harmony'
+import { TEMPORARY_PASSWORD } from '@audius/common/utils'
+import { signIn, setValueField } from 'common/store/pages/signon/actions'
 import { useField, useFormikContext } from 'formik'
 import { useDispatch } from 'react-redux'
 import { usePrevious } from 'react-use'
 
-import { signIn, setValueField } from 'common/store/pages/signon/actions'
-import { TextLink } from 'components/link'
-
-const { SIGN_IN_CONFIRM_EMAIL_PAGE } = route
+import { Hint, IconError, TextLink } from '@audius/harmony-native'
 
 export const GuestEmailHint = () => {
   const [{ value: email }, { error }] = useField('email')
@@ -35,10 +32,9 @@ export const GuestEmailHint = () => {
     <Hint icon={IconError}>
       {error}{' '}
       <TextLink
-        to={SIGN_IN_CONFIRM_EMAIL_PAGE}
+        to={{ screen: 'ConfirmEmail' }}
         variant='visible'
-        asChild
-        onClick={handleClickConfirmEmail}
+        onPress={handleClickConfirmEmail}
       >
         {confirmEmailMessages.finishSigningUp}
       </TextLink>

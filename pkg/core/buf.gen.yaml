@@ -1,19 +1,19 @@
 version: v2
 plugins:
   - remote: buf.build/protocolbuffers/go:v1.31.0
-    out: gen/proto
+    out: gen/core_proto
     opt:
       - paths=source_relative
   - remote: buf.build/grpc/go:v1.3.0
-    out: gen/proto
+    out: gen/core_proto
     opt:
       - paths=source_relative
   - remote: buf.build/grpc-ecosystem/gateway:v2.16.2
-    out: gen/proto
+    out: gen/core_proto
     opt:
       - paths=source_relative
       - generate_unbound_methods=true
   - remote: buf.build/grpc-ecosystem/openapiv2:v2.23.0
-    out: gen/proto
+    out: gen/core_proto
 inputs:
-  - directory: proto
+  - directory: protocol

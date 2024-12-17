@@ -290,6 +290,29 @@ export const SignOnPage = () => {
   const [searchParams] = useSearchParams()
   const [guestEmailLocalStorage] = useLocalStorage('guestEmail', '')
 
+  const rf = searchParams.get('rf')
+  const ref = searchParams.get('ref')
+  const routeOnCompletion = searchParams.get('routeOnCompletion')
+  const guestEmailParam = searchParams.get('guestEmail')
+  const guestEmail = guestEmailLocalStorage || guestEmailParam
+
+  useEffect(() => {
+    if (rf) {
+      dispatch(fetchReferrer(rf))
+    } else if (ref) {
+      dispatch(fetchReferrer(ref))
+    }
+
+    if (routeOnCompletion) {
+      dispatch(updateRouteOnCompletion(routeOnCompletion))
+    }
+
+    if (guestEmail) {
+      dispatch(setValueField('email', guestEmail))
+      dispatch(setField('isGuest', true))
+    }
+  }, [dispatch, rf, ref, routeOnCompletion, guestEmail])
+
   useEffectOnce(() => {
     // Check for referrals and set them in the store
     const rf = searchParams.get('rf')

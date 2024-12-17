@@ -1,6 +1,6 @@
 import type { SignOnScreenParams } from './screens/SignOnScreen'
 
-export type SignUpScreenParamList = {
+export type SignOnScreenParamList = {
   SignOn: SignOnScreenParams
 
   // Sign In
