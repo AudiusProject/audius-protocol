@@ -74,16 +74,14 @@ function* getTracks({
   const feed = transformAndCleanList(data, userFeedItemFromSDK).map(
     ({ item }) => item
   )
-
   if (feed === null) return null
   const filteredFeed = feed.filter((record) => !record.user.is_deactivated)
   const [tracks, collections] = getTracksAndCollections(filteredFeed)
-  const trackIds = tracks.map((t) => t.track_id)
 
   // Process (e.g. cache and remove entries)
   const [processedTracks, processedCollections] = (yield* all([
     processAndCacheTracks(tracks),
-    processAndCacheCollections(collections, true, trackIds)
+    processAndCacheCollections(collections, false)
   ])) as [LineupTrack[], Collection[]]
   const processedTracksMap = processedTracks.reduce<Record<ID, LineupTrack>>(
     (acc, cur) => ({ ...acc, [cur.track_id]: cur }),
