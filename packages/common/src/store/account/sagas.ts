@@ -120,7 +120,13 @@ export function* fetchAccountAsync({ isSignUp = false }): SagaIterator {
     }
   }
 
-  accountData.guestEmail = yield* call([localStorage, 'getItem'], 'guestEmail')
+  const guestEmailFromLocalStorage = yield* call(
+    [localStorage, 'getItem'],
+    'guestEmail'
+  )
+  accountData.guestEmail = guestEmailFromLocalStorage
+    ? JSON.parse(guestEmailFromLocalStorage)
+    : null
 
   // Set the userId in the remoteConfigInstance
   remoteConfigInstance.setUserId(user.user_id)
@@ -137,7 +143,7 @@ export function* fetchAccountAsync({ isSignUp = false }): SagaIterator {
     collections: accountData.playlists,
     guestEmail: accountData.guestEmail
   }
-
+  console.log('asdf Formatted Account', formattedAccount)
   yield* put(fetchAccountSucceeded(formattedAccount))
 
   // Fetch user's chat blockee and blocker list after fetching their account
