@@ -32,17 +32,15 @@ export const getAlbumTracksSchema = z.object({
 
 export type getAlbumTracksRequest = z.input<typeof getAlbumTracksSchema>
 
-export const UploadAlbumMetadataSchema = z
+export const CreateAlbumMetadataSchema = z
   .object({
     albumName: z.string(),
+    isPrivate: z.optional(z.boolean()),
     description: z.optional(z.string().max(1000)),
-    genre: z.enum(Object.values(Genre) as [Genre, ...Genre[]]),
     license: z.optional(z.string()),
-    mood: z.optional(z.enum(Object.values(Mood) as [Mood, ...Mood[]])),
     releaseDate: z.optional(z.date()),
     ddexReleaseIds: z.optional(z.record(z.string()).nullable()),
     ddexApp: z.optional(z.string()),
-    tags: z.optional(z.string()),
     upc: z.optional(z.string()),
     artists: z.optional(z.array(DDEXResourceContributor).nullable()),
     copyrightLine: z.optional(DDEXCopyright.nullable()),
@@ -51,9 +49,31 @@ export const UploadAlbumMetadataSchema = z
     isStreamGated: z.optional(z.boolean()),
     streamConditions: z.optional(USDCPurchaseConditions).nullable(),
     isDownloadGated: z.optional(z.boolean()),
-    downloadConditions: z.optional(USDCPurchaseConditions).nullable()
+    downloadConditions: z.optional(USDCPurchaseConditions).nullable(),
+    isScheduledRelease: z.optional(z.boolean())
   })
   .strict()
+
+export type CreateAlbumMetadata = z.input<typeof CreateAlbumMetadataSchema>
+
+export const CreateAlbumSchema = z
+  .object({
+    albumId: z.optional(HashId),
+    userId: HashId,
+    coverArtFile: ImageFile,
+    metadata: CreateAlbumMetadataSchema,
+    onProgress: z.optional(z.function()),
+    trackIds: z.optional(z.array(HashId))
+  })
+  .strict()
+
+export type CreateAlbumRequest = z.input<typeof CreateAlbumSchema>
+
+export const UploadAlbumMetadataSchema = CreateAlbumMetadataSchema.extend({
+  genre: z.enum(Object.values(Genre) as [Genre, ...Genre[]]),
+  mood: z.optional(z.enum(Object.values(Mood) as [Mood, ...Mood[]])),
+  tags: z.optional(z.string())
+})
 
 export type AlbumMetadata = z.input<typeof UploadAlbumMetadataSchema>
 

@@ -21,6 +21,7 @@ import {
   type Configuration
 } from '../generated/default'
 import { PlaylistsApi } from '../playlists/PlaylistsApi'
+import { PlaylistMetadata } from '../playlists/types'
 
 import {
   DeleteAlbumRequest,
@@ -43,7 +44,9 @@ import {
   UpdateAlbumRequest,
   UpdateAlbumSchema,
   UploadAlbumRequest,
-  UploadAlbumSchema
+  UploadAlbumSchema,
+  CreateAlbumRequest,
+  CreateAlbumSchema
 } from './types'
 
 export class AlbumsApi {
@@ -83,6 +86,44 @@ export class AlbumsApi {
   }
 
   // WRITES
+
+  /** @hidden
+   * Create an album from existing tracks
+   */
+  async createAlbum(
+    params: CreateAlbumRequest,
+    advancedOptions?: AdvancedOptions
+  ) {
+    // Parse inputs
+    const { metadata, ...parsedParameters } = await parseParams(
+      'createAlbum',
+      CreateAlbumSchema
+    )(params)
+
+    const { albumName, ...playlistMetadata } = metadata
+
+    // Call createPlaylistInternal with parsed inputs
+    const response = await this.playlistsApi.createPlaylistInternal<
+      PlaylistMetadata & { isAlbum: boolean }
+    >(
+      {
+        ...parsedParameters,
+        playlistId: parsedParameters.albumId,
+        metadata: {
+          ...playlistMetadata,
+          playlistName: albumName,
+          isAlbum: true
+        }
+      },
+      advancedOptions
+    )
+
+    return {
+      ...response,
+      albumId: response.playlistId
+    }
+  }
+
   /** @hidden
    * Upload an album
    * Uploads the specified tracks and combines them into an album
