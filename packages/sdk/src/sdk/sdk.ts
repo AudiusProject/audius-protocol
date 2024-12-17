@@ -1,4 +1,3 @@
-import { isBrowser } from 'browser-or-node'
 import { createPublicClient, createWalletClient, http, type Hex } from 'viem'
 import { mainnet } from 'viem/chains'
 
@@ -144,6 +143,8 @@ const initializeServices = (config: SdkConfig) => {
   })
   const logger = config.services?.logger ?? defaultLogger
 
+  const isBrowser: boolean =
+    typeof window !== 'undefined' && typeof window.document !== 'undefined'
   if (config.apiSecret && isBrowser) {
     logger.warn(
       "apiSecret should only be provided server side so that it isn't exposed"
