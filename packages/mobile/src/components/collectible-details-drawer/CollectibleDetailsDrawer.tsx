@@ -34,6 +34,7 @@ export const messages = {
 const useStyles = makeStyles(({ spacing, palette }) => ({
   root: {
     padding: spacing(6),
+    marginTop: spacing(4),
     paddingTop: spacing(2)
   },
   details: {

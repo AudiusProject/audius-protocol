@@ -4,7 +4,7 @@ import type { ImageSourcePropType } from 'react-native'
 import { TouchableOpacity, View, Image } from 'react-native'
 
 import type { IconComponent } from '@audius/harmony-native'
-import { Flex, IconClose } from '@audius/harmony-native'
+import { Flex, IconClose, spacing } from '@audius/harmony-native'
 import { Text } from 'app/components/core'
 import { makeStyles } from 'app/styles'
 import { useColor } from 'app/utils/theme'
@@ -59,6 +59,7 @@ export const DrawerHeader = (props: DrawerHeaderProps) => {
           activeOpacity={0.7}
           onPress={onClose}
           style={styles.dismissContainer}
+          hitSlop={spacing.m}
         >
           <IconClose size='m' fill={iconRemoveColor} />
         </TouchableOpacity>
