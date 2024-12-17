@@ -25,14 +25,13 @@ export const getIsAccountComplete = (state: CommonState) => {
   const { handle, name } = user
   return Boolean(handle && name)
 }
+
+export const getGuestEmail = (state: CommonState) => {
+  return state.account.guestEmail ?? null
+}
+
 export const getIsGuestAccount = (state: CommonState) => {
-  const { userId } = state.account
-
-  const user = getUser(state, { id: userId })
-  if (!user) return false
-
-  const { handle } = user
-  return !handle && userId
+  return !!state.account.guestEmail
 }
 export const getUserId = (state: CommonState) => state.account.userId
 export const getAccountStatus = (state: CommonState) => state.account.status

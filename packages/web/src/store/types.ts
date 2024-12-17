@@ -84,6 +84,9 @@ export type AppState = CommonState & {
       remixes: ReturnType<typeof RemixesPageReducer>
       deleted: ReturnType<typeof DeletedPageReducer>
     }
+    account: {
+      guestEmail: string | null
+    }
   }
 
   // Pages

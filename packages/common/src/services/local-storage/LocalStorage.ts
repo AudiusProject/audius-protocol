@@ -1,4 +1,3 @@
-import { GUEST_EMAIL } from '~/hooks'
 import { User, UserMetadata } from '~/models/User'
 import { PLAYBACK_RATE_LS_KEY } from '~/store/index'
 
@@ -116,9 +115,6 @@ export class LocalStorage {
 
   setAudiusAccountUser = async (value: UserMetadata) =>
     this.setJSONValue(AUDIUS_ACCOUNT_USER_KEY, value)
-
-  getGuestEmail = async (): Promise<string | null> =>
-    this.getJSONValue(GUEST_EMAIL)
 
   clearAudiusAccountUser = async () => this.removeItem(AUDIUS_ACCOUNT_USER_KEY)
 

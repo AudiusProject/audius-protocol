@@ -1,8 +1,7 @@
-import { GUEST_EMAIL, useIsManagedAccount } from '@audius/common/hooks'
+import { useIsManagedAccount } from '@audius/common/hooks'
 import { accountSelectors } from '@audius/common/store'
 import { route } from '@audius/common/utils'
 import { Box, Flex, Text, useTheme } from '@audius/harmony'
-import { useLocalStorage } from 'react-use'
 
 import { Avatar } from 'components/avatar/Avatar'
 import { TextLink, UserLink } from 'components/link'
@@ -12,7 +11,8 @@ import { backgroundOverlay } from 'utils/styleUtils'
 import { AccountSwitcher } from './AccountSwitcher/AccountSwitcher'
 
 const { SIGN_IN_PAGE, SIGN_UP_PAGE, profilePage } = route
-const { getUserHandle, getUserId, getIsAccountComplete } = accountSelectors
+const { getUserHandle, getUserId, getIsAccountComplete, getGuestEmail } =
+  accountSelectors
 const messages = {
   haveAccount: 'Have an Account?',
   managedAccount: 'Managed Account',
@@ -158,8 +158,7 @@ const SignedOutView = () => (
 )
 
 const GuestView = () => {
-  const [guestEmail] = useLocalStorage(GUEST_EMAIL, '')
-
+  const guestEmail = useSelector(getGuestEmail)
   return (
     <AccountContentWrapper>
       <Avatar userId={null} h={48} w={48} />
@@ -180,7 +179,7 @@ export const AccountDetails = () => {
   const accountUserId = useSelector(getUserId)
   const isManagedAccount = useIsManagedAccount()
   const hasCompletedAccount = useSelector(getIsAccountComplete)
-  const [guestEmail] = useLocalStorage(GUEST_EMAIL, '')
+  const guestEmail = useSelector(getGuestEmail)
 
   // Determine which state to show
   if (accountUserId && accountHandle) {

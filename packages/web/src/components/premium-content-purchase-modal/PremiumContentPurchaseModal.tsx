@@ -33,7 +33,8 @@ import {
   PurchaseContentPage as PurchaseContentPageType,
   isContentPurchaseInProgress,
   PurchaseableContentType,
-  accountSelectors
+  accountSelectors,
+  accountActions
 } from '@audius/common/store'
 import {
   ModalContentPages,
@@ -73,7 +74,7 @@ const { startRecoveryIfNecessary, cleanup: cleanupUSDCRecovery } =
 const { cleanup, setPurchasePage, eagerCreateUserBank } = purchaseContentActions
 const { getPurchaseContentFlowStage, getPurchaseContentError } =
   purchaseContentSelectors
-const { getIsAccountComplete } = accountSelectors
+const { getIsAccountComplete, getGuestEmail } = accountSelectors
 const { createGuestAccount } = signOnActions
 
 const messages = {
@@ -218,10 +219,9 @@ export const PremiumContentPurchaseModal = () => {
   const { isEnabled: guestCheckoutEnabled } = useFeatureFlag(
     FeatureFlags.GUEST_CHECKOUT
   )
-  const [emailFromLocalStorage, setGuestEmailInLocalStorage] = useLocalStorage(
-    GUEST_EMAIL,
-    ''
-  )
+  const [, setGuestEmailInLocalStorage] = useLocalStorage(GUEST_EMAIL, '')
+
+  const guestEmail = useSelector(getGuestEmail)
 
   const isAlbum = contentType === PurchaseableContentType.ALBUM
   const { data: track } = useGetTrackById(
@@ -269,15 +269,18 @@ export const PremiumContentPurchaseModal = () => {
     })
   const handleFormSubmit = useCallback(
     (values: z.input<typeof validationSchema>) => {
-      if (values.guestEmail && emailFromLocalStorage !== values.guestEmail) {
+      if (values.guestEmail && guestEmail !== values.guestEmail) {
         // only create guest account if email has changed
         // enable multiple purchases with same guest email
         dispatch(createGuestAccount(values.guestEmail))
         setGuestEmailInLocalStorage(values.guestEmail)
+        dispatch(
+          accountActions.setGuestEmail({ guestEmail: values.guestEmail })
+        )
       }
       onSubmit(values)
     },
-    [dispatch, emailFromLocalStorage, onSubmit, setGuestEmailInLocalStorage]
+    [dispatch, guestEmail, onSubmit, setGuestEmailInLocalStorage]
   )
 
   const showGuestCheckout =

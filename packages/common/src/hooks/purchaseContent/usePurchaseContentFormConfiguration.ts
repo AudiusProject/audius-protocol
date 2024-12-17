@@ -3,7 +3,6 @@ import { useCallback, useEffect, useMemo } from 'react'
 import { USDC } from '@audius/fixed-decimal'
 import BN from 'bn.js'
 import { useDispatch, useSelector } from 'react-redux'
-import { useLocalStorage } from 'react-use'
 import { z } from 'zod'
 
 import { useGetCurrentUser } from '~/api'
@@ -12,6 +11,7 @@ import { UserCollectionMetadata } from '~/models'
 import { PurchaseMethod, PurchaseVendor } from '~/models/PurchaseContent'
 import { UserTrackMetadata } from '~/models/Track'
 import { FeatureFlags } from '~/services'
+import { accountSelectors } from '~/store'
 import {
   PurchaseableContentType,
   PurchaseContentPage,
@@ -44,6 +44,7 @@ const {
   getPurchaseContentError,
   getPurchaseContentPage
 } = purchaseContentSelectors
+const { getGuestEmail } = accountSelectors
 
 const USDC_TOKEN_ADDRESS = 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v'
 
@@ -69,7 +70,7 @@ export const usePurchaseContentFormConfiguration = ({
   const isUnlocking = !error && isContentPurchaseInProgress(stage)
   const { data: balanceBN } = useUSDCBalance()
   const balance = USDC(balanceBN ?? new BN(0)).value
-  const [guestEmail] = useLocalStorage(GUEST_EMAIL, '')
+  const guestEmail = useSelector(getGuestEmail)
   const { data: currentUser } = useGetCurrentUser({})
   const { isEnabled: guestCheckoutEnabled } = useFeatureFlag(
     FeatureFlags.GUEST_CHECKOUT
@@ -95,7 +96,7 @@ export const usePurchaseContentFormConfiguration = ({
         : PurchaseMethod.CARD,
     [PURCHASE_VENDOR]: purchaseVendor ?? PurchaseVendor.STRIPE,
     [GUEST_CHECKOUT]: isGuestCheckout,
-    [GUEST_EMAIL]: guestEmail,
+    [GUEST_EMAIL]: guestEmail ?? undefined,
     [PURCHASE_METHOD_MINT_ADDRESS]: USDC_TOKEN_ADDRESS
   }
 
@@ -106,7 +107,12 @@ export const usePurchaseContentFormConfiguration = ({
     : undefined
 
   const validationSchema = useMemo(
-    () => createPurchaseContentSchema(audiusQueryContext, page, guestEmail),
+    () =>
+      createPurchaseContentSchema(
+        audiusQueryContext,
+        page,
+        guestEmail ?? undefined
+      ),
     [audiusQueryContext, guestEmail, page]
   )
   type PurchaseContentValues = z.input<typeof validationSchema>

@@ -3,7 +3,6 @@ import {
   transformAndCleanList
 } from '@audius/common/adapters'
 import { userApiFetchSaga } from '@audius/common/api'
-import { GUEST_EMAIL } from '@audius/common/hooks'
 import {
   Name,
   FavoriteSource,
@@ -600,6 +599,7 @@ function* createGuestAccount(
         yield* call([localStorage, 'clearAudiusAccountUser'])
         yield* call([authService, authService.signOut])
         yield put(accountActions.resetAccount())
+        yield put(accountActions.setGuestEmail({ guestEmail }))
 
         const currentUser = yield* select(getAccountUser)
 
@@ -748,7 +748,11 @@ function* signUp() {
               )
 
               yield* fork(sendPostSignInRecoveryEmail, { handle, email })
-              yield* call([localStorage, localStorage.removeItem], GUEST_EMAIL)
+              yield* put(
+                accountActions.setGuestEmail({
+                  guestEmail: null
+                })
+              )
               yield* call(confirmTransaction, blockHash, blockNumber)
             } else {
               if (!alreadyExisted) {
