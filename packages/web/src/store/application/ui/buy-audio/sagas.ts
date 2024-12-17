@@ -933,12 +933,9 @@ function* doBuyAudio({
       console.error('doBuyAudio: unexpectedly no fee payer override')
       return
     }
-    const { currentUser, web3User } = yield* select(getWalletAddresses)
+    const { currentUser } = yield* select(getWalletAddresses)
     if (!currentUser) {
       throw new Error('Failed to get current user wallet address')
-    }
-    if (currentUser !== web3User) {
-      throw new Error('Not allowed to recover while in manager mode')
     }
     yield* fork(function* () {
       yield* call(createUserBankIfNeeded, sdk, {
