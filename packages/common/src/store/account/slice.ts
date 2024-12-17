@@ -1,7 +1,6 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { keyBy } from 'lodash'
 
-import { GUEST_EMAIL } from '~/hooks/purchaseContent/constants'
 import { AccountCollection, User } from '~/models'
 import { Nullable } from '~/utils/typeUtils'
 
@@ -19,8 +18,6 @@ type FailureReason =
   | 'ACCOUNT_NOT_FOUND_LOCAL'
   | 'LIBS_ERROR'
 
-const guestEmailFromLocalStorage = window.localStorage.getItem(GUEST_EMAIL)
-
 const initialState = {
   collections: {} as { [id: number]: AccountCollection },
   userId: null as number | null,
@@ -33,14 +30,13 @@ const initialState = {
     currentUser: string | null
     web3User: string | null
   },
-  guestEmail: guestEmailFromLocalStorage
-    ? (JSON.parse(guestEmailFromLocalStorage) as string)
-    : null
+  guestEmail: null as string | null
 }
 
 type FetchAccountSucceededPayload = {
   userId: ID
   collections: AccountCollection[]
+  guestEmail: string | null
 }
 
 type FetchAccountFailedPayload = {
@@ -65,11 +61,12 @@ const slice = createSlice({
       state,
       action: PayloadAction<FetchAccountSucceededPayload>
     ) => {
-      const { userId, collections } = action.payload
+      const { userId, collections, guestEmail } = action.payload
       state.userId = userId
       state.collections = keyBy(collections, 'id')
       state.status = Status.SUCCESS
       state.reason = null
+      state.guestEmail = state.guestEmail ?? guestEmail
     },
     fetchAccountFailed: (
       state,
