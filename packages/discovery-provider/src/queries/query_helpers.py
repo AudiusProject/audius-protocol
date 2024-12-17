@@ -18,10 +18,10 @@ from src.gated_content.signature import (
     GatedContentSignature,
     get_gated_content_signature,
 )
-from src.models.playlists.playlist_track import PlaylistTrack
-from src.models.playlists.playlist_route import PlaylistRoute
 from src.models.playlists.aggregate_playlist import AggregatePlaylist
 from src.models.playlists.playlist import Playlist
+from src.models.playlists.playlist_route import PlaylistRoute
+from src.models.playlists.playlist_track import PlaylistTrack
 from src.models.social.follow import Follow
 from src.models.social.repost import Repost, RepostType
 from src.models.social.save import Save, SaveType
@@ -508,32 +508,26 @@ def populate_track_metadata(
             Playlist.playlist_id,
             Playlist.playlist_name,
             User.handle,
-            PlaylistRoute.slug
+            PlaylistRoute.slug,
         )
-        .join(
-            Playlist,
-            Playlist.playlist_id == PlaylistTrack.playlist_id
-        )
+        .join(Playlist, Playlist.playlist_id == PlaylistTrack.playlist_id)
         .join(
             User,
-            and_(
-                User.user_id == Playlist.playlist_owner_id,
-                User.is_current == True
-            )
+            and_(User.user_id == Playlist.playlist_owner_id, User.is_current == True),
         )
         .join(
             PlaylistRoute,
             and_(
                 PlaylistRoute.playlist_id == Playlist.playlist_id,
-                PlaylistRoute.is_current == True
-            )
+                PlaylistRoute.is_current == True,
+            ),
         )
         .filter(
             PlaylistTrack.track_id.in_(track_ids),
             PlaylistTrack.is_removed == False,
             Playlist.is_album == True,
             Playlist.is_delete == False,
-            Playlist.is_current == True
+            Playlist.is_current == True,
         )
         .order_by(Playlist.created_at.desc())
         .all()
@@ -544,9 +538,9 @@ def populate_track_metadata(
     for track_id, playlist_id, playlist_name, handle, slug in album_backlinks:
         if track_id not in album_backlink_dict:
             album_backlink_dict[track_id] = {
-                'playlist_id': playlist_id,
-                'playlist_name': playlist_name,
-                'permalink': f"/{handle}/album/{slug}" if handle and slug else None
+                "playlist_id": playlist_id,
+                "playlist_name": playlist_name,
+                "permalink": f"/{handle}/album/{slug}" if handle and slug else None,
             }
 
     for track in tracks:
@@ -604,7 +598,7 @@ def populate_track_metadata(
             track[response_name_constants.remix_of] = None
 
         # Add album backlink
-        track['album_backlink'] = album_backlink_dict.get(track_id)
+        track["album_backlink"] = album_backlink_dict.get(track_id)
 
     return tracks
 
@@ -1566,7 +1560,7 @@ def filter_to_playlist_mood(session, mood, query, correlation):
         session.query(
             Track.mood.label("mood"),
             func.max(Track.created_at).label("latest"),
-            func.count(Track.mood).label("cnt")
+            func.count(Track.mood).label("cnt"),
         )
         .filter(
             Track.is_current == True,
