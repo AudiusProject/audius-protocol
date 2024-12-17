@@ -6,6 +6,7 @@ import {
   createUserBankIfNeeded,
   LocalStorage
 } from '@audius/common/services'
+import { getWalletAddresses } from '@audius/common/src/store/account/selectors'
 import {
   solanaSelectors,
   walletSelectors,
@@ -31,7 +32,8 @@ import {
   formatWei,
   convertBigIntToAmountObject,
   convertWAudioToWei,
-  convertWeiToWAudio
+  convertWeiToWAudio,
+  waitForValue
 } from '@audius/common/utils'
 /* eslint-disable new-cap */
 import { TransactionHandler } from '@audius/sdk-legacy/dist/core'
@@ -49,7 +51,6 @@ import { takeLatest, takeLeading } from 'redux-saga/effects'
 import { call, select, put, take, race, fork } from 'typed-redux-saga'
 
 import { make } from 'common/store/analytics/actions'
-import { isMobileWeb } from 'common/utils/isMobileWeb'
 import { track } from 'services/analytics'
 import {
   createTransferToUserBankTransaction,
@@ -1002,6 +1003,11 @@ function* recoverPurchaseIfNecessary() {
     // Bail if not enabled
     yield* call(waitForWrite)
     const getFeatureEnabled = yield* getContext('getFeatureEnabled')
+    yield* call(
+      waitForValue,
+      getWalletAddresses,
+      (arg: ReturnType<typeof getWalletAddresses>) => arg.currentUser !== null
+    )
 
     if (
       !(
@@ -1056,7 +1062,13 @@ function* recoverPurchaseIfNecessary() {
       'finalized'
     )
 
-    if (existingBalance > 0) {
+    const rootMinimum = yield* call(getRootAccountRentExemptionMinimum)
+    const ataMinimum = yield* call(getAssociatedTokenRentExemptionMinimum)
+    // Pad by some extra lamport amount to reduce false positive rate
+    const threshold =
+      rootMinimum + TRANSACTION_FEE_FALLBACK * 3 + ataMinimum * 2
+
+    if (existingBalance > threshold) {
       // Get dummy quote and calculate fees
       const quote = yield* call(JupiterSingleton.getQuote, {
         inputTokenSymbol: 'SOL',
@@ -1256,14 +1268,7 @@ function* watchRecovery() {
  * Gate on local storage existing for the previous purchase attempt to reduce RPC load.
  */
 function* recoverOnPageLoad() {
-  const audiusLocalStorage = yield* getContext('localStorage')
-  const savedLocalStorageState = yield* call(
-    (val) => audiusLocalStorage.getJSONValue<BuyAudioLocalStorageState>(val),
-    BUY_AUDIO_LOCAL_STORAGE_KEY
-  )
-  if (savedLocalStorageState !== null && !isMobileWeb()) {
-    yield* put(startRecoveryIfNecessary())
-  }
+  yield* put(startRecoveryIfNecessary())
 }
 
 export default function sagas() {
