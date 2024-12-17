@@ -143,6 +143,7 @@ def get_feed_es(args, limit=10, offset=0):
         # supress individual tracks from said album appearing in feed
         for track in playlist["tracks"]:
             seen.add(item_key(track))
+            playlist_track_ids.add(track["track_id"])
 
     for track in tracks:
         track["item_key"] = item_key(track)
@@ -271,6 +272,9 @@ def get_feed_es(args, limit=10, offset=0):
         # GOTCHA: es ids must be strings, but our ids are ints...
         uid = str(item.get("playlist_owner_id", item.get("owner_id")))
         item["user"] = user_by_id[uid]
+        if "playlist_id" in item:
+            for track in item["tracks"]:
+                track["user"] = user_by_id[str(track["owner_id"])]
 
     (follow_saves, follow_reposts) = fetch_followed_saves_and_reposts(
         current_user, sorted_feed
@@ -298,7 +302,6 @@ def get_feed_es(args, limit=10, offset=0):
             sorted_feed,
         )
     )
-
     # batch populate gated track and collection metadata
     db = get_db_read_replica()
     with db.scoped_session() as session:

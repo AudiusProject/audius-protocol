@@ -1412,6 +1412,8 @@ def get_users_ids(results):
     for result in results:
         if "playlist_owner_id" in result:
             user_ids.append(int(result["playlist_owner_id"]))
+            for track in result.get("tracks", []):
+                user_ids.append(int(track["owner_id"]))
         elif "owner_id" in result:
             user_ids.append(int(result["owner_id"]))
     # Remove duplicate user ids
