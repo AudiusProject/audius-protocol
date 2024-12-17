@@ -14,8 +14,7 @@ import {
   TikTokUser,
   Feature,
   AccountUserMetadata,
-  OptionalId,
-  Kind
+  OptionalId
 } from '@audius/common/models'
 import {
   IntKeys,
@@ -40,8 +39,7 @@ import {
   fetchAccountAsync,
   getOrCreateUSDCUserBank,
   changePasswordActions,
-  confirmTransaction,
-  cacheActions
+  confirmTransaction
 } from '@audius/common/store'
 import {
   Genre,
