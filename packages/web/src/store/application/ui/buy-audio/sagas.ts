@@ -1126,11 +1126,6 @@ function* recoverPurchaseIfNecessary() {
     const threshold =
       rootMinimum + TRANSACTION_FEE_FALLBACK * 3 + ataMinimum * 2
 
-    console.debug('Checking for BuyAudio Recovery', {
-      rootAccount: rootAccount.publicKey.toString(),
-      existingBalance,
-      threshold
-    })
     if (existingBalance > threshold) {
       // Get dummy quote and calculate fees
       const quote = yield* call(JupiterSingleton.getQuote, {
@@ -1153,12 +1148,6 @@ function* recoverPurchaseIfNecessary() {
             BigInt(existingBalance)
           : BigInt(0)
 
-      console.debug('Got quote.', {
-        existingBalance,
-        totalFees,
-        exchangableBalance,
-        estimatedAudio
-      })
       // Check if there's a non-zero exchangeble amount of SOL and at least one $AUDIO would be output
       // Should only occur as the result of a previously failed Swap
       if (
