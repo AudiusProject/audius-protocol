@@ -91,7 +91,7 @@ func (s *Server) ForwardTransaction(ctx context.Context, req *core_proto.Forward
 		return nil, fmt.Errorf("could not get tx hash of signed tx: %v", err)
 	}
 
-	s.logger.Debugf("received forwarded tx: %v", req.Transaction)
+	s.logger.Infof("received forwarded tx: %v", req.Transaction)
 
 	// TODO: intake block deadline from request
 	status, err := s.rpc.Status(ctx)
