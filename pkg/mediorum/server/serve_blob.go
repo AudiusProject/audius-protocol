@@ -15,9 +15,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/AudiusProject/audius-protocol/pkg/core/gen/core_proto"
 	"github.com/AudiusProject/audius-protocol/pkg/mediorum/server/signature"
-	"google.golang.org/protobuf/types/known/timestamppb"
 	"gorm.io/gorm"
 
 	"github.com/AudiusProject/audius-protocol/pkg/mediorum/cidutil"
@@ -321,8 +319,6 @@ func (ss *MediorumServer) logTrackListen(c echo.Context) {
 
 	// fire and forget core play record
 	go func() {
-
-		ctx := context.Background()
 		defer func() {
 			if r := recover(); r != nil {
 				ss.logger.Error("core panic recovered in goroutine", "err", r)
@@ -348,50 +344,20 @@ func (ss *MediorumServer) logTrackListen(c echo.Context) {
 			return
 		}
 
-		// construct play data into event
-		play := &core_proto.TrackPlay{
-			UserId:    userId,
-			TrackId:   fmt.Sprint(sig.Data.TrackId),
-			Timestamp: timestamppb.New(parsedTime),
+		trackID := fmt.Sprint(sig.Data.TrackId)
+
+		if err := ss.insertPlayRecord(&PlayRecord{
+			UserID:    userId,
+			TrackID:   trackID,
+			PlayTime:  parsedTime,
 			Signature: signatureData.Signature,
 			City:      geoData.City,
 			Country:   geoData.Country,
 			Region:    geoData.Region,
-		}
-
-		// form actual proto event for signing
-		playsTx := &core_proto.TrackPlays{
-			Plays: []*core_proto.TrackPlay{play},
-		}
-
-		// sign plays event payload with mediorum priv key
-		signedPlaysEvent, err := signature.SignCoreBytes(playsTx, ss.Config.privateKey)
-		if err != nil {
-			ss.logger.Error("core error signing listen proto event", "err", err)
+		}); err != nil {
+			ss.logger.Error("could not insert play record", "error", err)
 			return
 		}
-
-		// construct proto listen signedTx alongside signature of plays signedTx
-		signedTx := &core_proto.SignedTransaction{
-			Signature: signedPlaysEvent,
-			Transaction: &core_proto.SignedTransaction_Plays{
-				Plays: playsTx,
-			},
-		}
-
-		ss.logger.Info("sending", "tx", signedTx)
-
-		// submit to configured core node
-		res, err := sdk.SendTransaction(ctx, &core_proto.SendTransactionRequest{
-			Transaction: signedTx,
-		})
-
-		if err != nil {
-			ss.logger.Error("core error submitting listen event", "err", err)
-			return
-		}
-
-		ss.logger.Info("core listen recorded", "tx", res.Txhash)
 	}()
 
 	buf, err := json.Marshal(body)

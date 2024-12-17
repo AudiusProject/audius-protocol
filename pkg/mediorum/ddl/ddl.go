@@ -22,6 +22,9 @@ var dropBlobs string
 //go:embed clean_uploads_audio_analyses.sql
 var cleanUploadsAudioAnalysesDDL string
 
+//go:embed add_play_queue.sql
+var addPlayQueueDDL string
+
 var mediorumMigrationTable = `
 	create table if not exists mediorum_migrations (
 		"hash" text primary key,
@@ -40,6 +43,7 @@ func Migrate(db *sql.DB, myHost string) {
 
 	runMigration(db, delistStatusesDDL)
 	runMigration(db, addDelistReasonsDDL)
+	runMigration(db, addPlayQueueDDL)
 
 	runMigration(db, dropBlobs)
 
