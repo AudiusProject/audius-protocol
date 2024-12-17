@@ -194,14 +194,14 @@ export class WalletClient {
       const sdk = await this.audiusSdk()
       const balances: { address: string; balance: BNWei }[] = await Promise.all(
         wallets.map(async (wallet) => {
-          const tokenAccountInfo =
-            await this.audiusBackendInstance.getAssociatedTokenAccountInfo({
+          const balance =
+            await this.audiusBackendInstance.getAddressWAudioBalance({
               address: wallet,
               sdk
             })
           return {
             address: wallet,
-            balance: new BN(tokenAccountInfo?.amount.toString() ?? 0) as BNWei
+            balance: balance as BNWei
           }
         })
       )
