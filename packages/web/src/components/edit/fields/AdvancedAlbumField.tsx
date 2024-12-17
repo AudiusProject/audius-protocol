@@ -21,8 +21,7 @@ type AdvancedAlbumFieldValues = {
 
 const advancedSchema = z.object({
   upc: z
-    .string()
-    .regex(/^\d{12,13}$/, messages.upcInputError)
+    .optional(z.string().regex(/^\d{12,13}$/, messages.upcInputError))
     .nullable(),
   release_date: z.optional(z.string()).nullable()
 })
