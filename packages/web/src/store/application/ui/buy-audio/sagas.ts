@@ -33,7 +33,8 @@ import {
   formatWei,
   convertBigIntToAmountObject,
   convertWAudioToWei,
-  convertWeiToWAudio
+  convertWeiToWAudio,
+  waitForAccount
 } from '@audius/common/utils'
 /* eslint-disable new-cap */
 import { TransactionHandler } from '@audius/sdk-legacy/dist/core'
@@ -51,7 +52,6 @@ import { takeLatest, takeLeading } from 'redux-saga/effects'
 import { call, select, put, take, race, fork } from 'typed-redux-saga'
 
 import { make } from 'common/store/analytics/actions'
-import { isMobileWeb } from 'common/utils/isMobileWeb'
 import { track } from 'services/analytics'
 import {
   createTransferToUserBankTransaction,
@@ -934,9 +934,12 @@ function* doBuyAudio({
       console.error('doBuyAudio: unexpectedly no fee payer override')
       return
     }
-    const { currentUser } = yield* select(getWalletAddresses)
+    const { currentUser, web3User } = yield* select(getWalletAddresses)
     if (!currentUser) {
       throw new Error('Failed to get current user wallet address')
+    }
+    if (currentUser !== web3User) {
+      throw new Error('Not allowed to recover while in manager mode')
     }
     yield* fork(function* () {
       yield* call(createUserBankIfNeeded, sdk, {
@@ -1052,6 +1055,7 @@ function* recoverPurchaseIfNecessary() {
   try {
     // Bail if not enabled
     yield* call(waitForWrite)
+    yield* call(waitForAccount)
     const getFeatureEnabled = yield* getContext('getFeatureEnabled')
     const solanaWalletService = yield* getContext('solanaWalletService')
     const identityService = yield* getContext('identityService')
@@ -1116,9 +1120,17 @@ function* recoverPurchaseIfNecessary() {
       'finalized'
     )
 
-    const rentMinimum = yield* call(getRootAccountRentExemptionMinimum)
+    const rootMinimum = yield* call(getRootAccountRentExemptionMinimum)
+    const ataMinimum = yield* call(getAssociatedTokenRentExemptionMinimum)
     // Pad by some extra lamport amount to reduce false positive rate
-    const threshold = rentMinimum + 1000000
+    const threshold =
+      rootMinimum + TRANSACTION_FEE_FALLBACK * 3 + ataMinimum * 2
+
+    console.debug('Checking for BuyAudio Recovery', {
+      rootAccount: rootAccount.publicKey.toString(),
+      existingBalance,
+      threshold
+    })
     if (existingBalance > threshold) {
       // Get dummy quote and calculate fees
       const quote = yield* call(JupiterSingleton.getQuote, {
@@ -1141,6 +1153,12 @@ function* recoverPurchaseIfNecessary() {
             BigInt(existingBalance)
           : BigInt(0)
 
+      console.debug('Got quote.', {
+        existingBalance,
+        totalFees,
+        exchangableBalance,
+        estimatedAudio
+      })
       // Check if there's a non-zero exchangeble amount of SOL and at least one $AUDIO would be output
       // Should only occur as the result of a previously failed Swap
       if (
