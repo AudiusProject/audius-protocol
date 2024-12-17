@@ -21,6 +21,7 @@ import {
   type Configuration
 } from '../generated/default'
 import { PlaylistsApi } from '../playlists/PlaylistsApi'
+import { PlaylistMetadata } from '../playlists/types'
 
 import {
   DeleteAlbumRequest,
@@ -47,7 +48,6 @@ import {
   CreateAlbumRequest,
   CreateAlbumSchema
 } from './types'
-import { PlaylistMetadata } from '../playlists/types'
 
 export class AlbumsApi {
   private readonly playlistsApi: PlaylistsApi
