@@ -3,6 +3,7 @@ import {
   transformAndCleanList
 } from '@audius/common/adapters'
 import { userApiFetchSaga } from '@audius/common/api'
+import { GUEST_EMAIL } from '@audius/common/hooks'
 import {
   Name,
   FavoriteSource,
@@ -13,7 +14,8 @@ import {
   TikTokUser,
   Feature,
   AccountUserMetadata,
-  OptionalId
+  OptionalId,
+  Kind
 } from '@audius/common/models'
 import {
   IntKeys,
@@ -38,7 +40,8 @@ import {
   fetchAccountAsync,
   getOrCreateUSDCUserBank,
   changePasswordActions,
-  confirmTransaction
+  confirmTransaction,
+  cacheActions
 } from '@audius/common/store'
 import {
   Genre,
@@ -662,11 +665,12 @@ function* createGuestAccount(
 
 function* signUp() {
   const reportToSentry = yield* getContext('reportToSentry')
+  const localStorage = yield* getContext('localStorage')
+
   try {
     const signOn = yield* select(getSignOn)
     const email = signOn.email.value
     const password = signOn.password.value
-    const localStorage = yield* getContext('localStorage')
     const useMetamask = yield* call(
       [localStorage, localStorage.getItem],
       'useMetaMask'
@@ -714,6 +718,13 @@ function* signUp() {
           let userId: ID
           try {
             if (isGuest) {
+              yield* put(
+                accountActions.setGuestEmail({
+                  guestEmail: null
+                })
+              )
+              yield* call([localStorage, localStorage.removeItem], GUEST_EMAIL)
+
               const account: AccountUserMetadata | null = yield* call(
                 userApiFetchSaga.getUserAccount,
                 {
@@ -748,12 +759,35 @@ function* signUp() {
               )
 
               yield* fork(sendPostSignInRecoveryEmail, { handle, email })
-              yield* put(
-                accountActions.setGuestEmail({
-                  guestEmail: null
-                })
-              )
+
               yield* call(confirmTransaction, blockHash, blockNumber)
+              const user = yield* call(
+                userApiFetchSaga.getUserById,
+                {
+                  id: userId
+                },
+                true // force refresh to get updated user w handle
+              )
+              if (!user) {
+                throw new Error('Failed to index guest account creation')
+              }
+
+              // Force refreshing doesn't seem to update the user handle
+              // so this forced cache update is necessary
+              yield* put(
+                cacheActions.update(Kind.USERS, [
+                  {
+                    id: userId,
+                    metadata: {
+                      handle: user.handle,
+                      name: user.name,
+                      profile_picture: user.profile_picture,
+                      location: user.location
+                    }
+                  }
+                ])
+              )
+              return userId
             } else {
               if (!alreadyExisted) {
                 yield* call(
