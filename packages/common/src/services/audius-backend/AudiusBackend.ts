@@ -8,6 +8,7 @@ import {
   ASSOCIATED_TOKEN_PROGRAM_ID,
   getAccount,
   TOKEN_PROGRAM_ID,
+  TokenAccountNotFoundError,
   TokenInvalidAccountOwnerError
 } from '@solana/spl-token'
 import {
@@ -109,7 +110,6 @@ export const AuthHeaders = Object.freeze({
 // TODO: type these once libs types are improved
 let AudiusLibs: any = null
 export let BackendUtils: any = null
-let SolanaUtils: any = null
 
 let audiusLibs: any = null
 const unauthenticatedUuid = uuid()
@@ -328,7 +328,6 @@ export const audiusBackend = ({
 
     AudiusLibs = libsModule.AudiusLibs
     BackendUtils = libsModule.Utils
-    SolanaUtils = libsModule.SolanaUtils
     // initialize libs
     let libsError: Nullable<string> = null
     const { web3Config } = await getWeb3Config(
@@ -1250,25 +1249,10 @@ export const audiusBackend = ({
     return receipt
   }
 
-  async function getTokenAccount({
-    address,
-    sdk
-  }: {
-    address: PublicKey
-    sdk: AudiusSdk
-  }) {
-    const connection = sdk.services.solanaClient.connection
-    try {
-      const tokenAccountInfo = await getAccount(connection, address)
-      return tokenAccountInfo
-    } catch (err) {
-      if (err instanceof TokenInvalidAccountOwnerError) {
-        return null
-      }
-      throw err
-    }
-  }
-
+  /** Gets associated token account info for the passed account. It will
+   * first check if `address` ia a token account. If not, it will assume
+   * it is a root account and attempt to derive an associated token account from it.
+   */
   async function getAssociatedTokenAccountInfo({
     address,
     sdk
@@ -1276,29 +1260,109 @@ export const audiusBackend = ({
     address: string
     sdk: AudiusSdk
   }) {
+    const connection = sdk.services.solanaClient.connection
+    const pubkey = new PublicKey(address)
     try {
-      // Check if the user has a user bank acccount
-      const pubkey = new PublicKey(address)
-      let tokenAccountInfo = await getTokenAccount({ address: pubkey, sdk })
-
-      if (!tokenAccountInfo) {
+      return await getAccount(connection, pubkey)
+    } catch (err) {
+      // Account exists but is not a token account. Assume it's a root account
+      // and try to derive an associated account from it.
+      if (err instanceof TokenInvalidAccountOwnerError) {
         console.info(
-          'Provided recipient solana address was not a token account'
+          'Provided recipient solana address was not a token account. Assuming root account.'
         )
-        // If not, check to see if it already has an associated token account.
         const associatedTokenAccount = findAssociatedTokenAddress({
           solanaWalletKey: pubkey,
           mint: 'wAUDIO'
         })
-        tokenAccountInfo = await getTokenAccount({
-          address: associatedTokenAccount,
-          sdk
-        })
+        return await getAccount(connection, associatedTokenAccount)
       }
-      return tokenAccountInfo
+      // Other error (including non-existent account)
+      throw err
+    }
+  }
+
+  async function createAssociatedTokenAccountWithPhantom(
+    connection: Connection,
+    address: string
+  ) {
+    if (!window.phantom) {
+      throw new Error(
+        'Recipient has no $AUDIO token account. Please install Phantom-Wallet to create one.'
+      )
+    }
+
+    if (!window.solana.isConnected) {
+      await window.solana.connect()
+    }
+
+    const newAccountKey = new PublicKey(address)
+    const phantomWalletKey = window.solana.publicKey
+    if (!phantomWalletKey) {
+      throw new Error('Failed to resolve Phantom wallet')
+    }
+    const tx = await getCreateAssociatedTokenAccountTransaction({
+      feePayerKey: phantomWalletKey,
+      solanaWalletKey: newAccountKey,
+      mint: 'wAUDIO',
+      solanaTokenProgramKey: new PublicKey(TOKEN_PROGRAM_ID),
+      connection
+    })
+    const { signature, lastValidBlockHeight, recentBlockhash } =
+      await window.solana.signAndSendTransaction(tx)
+    if (!signature || !lastValidBlockHeight || !recentBlockhash) {
+      throw new Error('Phantom failed to sign and send transaction')
+    }
+    await connection.confirmTransaction({
+      signature: signature.toString(),
+      lastValidBlockHeight,
+      blockhash: recentBlockhash
+    })
+    return getAccount(connection, newAccountKey)
+  }
+
+  /** Gets associated token account info for the passed account, deriving the associated address
+   * if necessary. If the account doesn't exist, it will attempt to create it using the user's
+   * browser wallet.
+   */
+  async function getOrCreateAssociatedTokenAccountInfo({
+    address,
+    sdk
+  }: {
+    address: string
+    sdk: AudiusSdk
+  }) {
+    const connection = sdk.services.solanaClient.connection
+    const pubkey = new PublicKey(address)
+    try {
+      return await getAccount(connection, pubkey)
     } catch (err) {
-      console.error(err)
-      return null
+      // Account exists but is not a token account. Assume it's a root account
+      // and try to derive an associated account from it.
+      if (err instanceof TokenInvalidAccountOwnerError) {
+        console.info(
+          'Provided recipient solana address was not a token account. Assuming root account.'
+        )
+        const associatedTokenAccount = findAssociatedTokenAddress({
+          solanaWalletKey: pubkey,
+          mint: 'wAUDIO'
+        })
+        // Atempt to get the associated token account
+        try {
+          return await getAccount(connection, associatedTokenAccount)
+        } catch (err) {
+          // If it's not a valid token account, attempt to create it
+          if (err instanceof TokenAccountNotFoundError) {
+            // We do not want to relay gas fees for this token account creation,
+            // so we ask the user to create one with phantom, showing an error
+            // if phantom is not found.
+            return createAssociatedTokenAccountWithPhantom(connection, address)
+          }
+          throw err
+        }
+      }
+      // Other error (including non-existent account)
+      throw err
     }
   }
 
@@ -1316,50 +1380,14 @@ export const audiusBackend = ({
     ethAddress: string
     sdk: AudiusSdk
   }) {
-    const connection = sdk.services.solanaClient.connection
-    // Check when sending waudio if the user has a user bank acccount
-    const tokenAccountInfo = await getAssociatedTokenAccountInfo({
+    // TODO: Verify mint is wAUDIO
+    const tokenAccountInfo = await getOrCreateAssociatedTokenAccountInfo({
       address,
       sdk
     })
 
-    // If it's not a valid token account, we need to make one first
-    if (!tokenAccountInfo) {
-      // We do not want to relay gas fees for this token account creation,
-      // so we ask the user to create one with phantom, showing an error
-      // if phantom is not found.
-      if (!window.phantom) {
-        return {
-          error:
-            'Recipient has no $AUDIO token account. Please install Phantom-Wallet to create one.'
-        }
-      }
-      if (!window.solana.isConnected) {
-        await window.solana.connect()
-      }
-
-      const phantomWallet = window.solana.publicKey?.toString()
-      const tx = await getCreateAssociatedTokenAccountTransaction({
-        feePayerKey: SolanaUtils.newPublicKeyNullable(phantomWallet),
-        solanaWalletKey: SolanaUtils.newPublicKeyNullable(address),
-        mint: 'wAUDIO',
-        solanaTokenProgramKey: new PublicKey(TOKEN_PROGRAM_ID),
-        connection
-      })
-      const { signature, lastValidBlockHeight, recentBlockhash } =
-        await window.solana.signAndSendTransaction(tx)
-      if (!signature || !lastValidBlockHeight || !recentBlockhash) {
-        return { error: 'Phantom failed to sign and send transaction' }
-      }
-      await connection.confirmTransaction({
-        signature: signature.toString(),
-        lastValidBlockHeight,
-        blockhash: recentBlockhash
-      })
-    }
-
     const res = await transferWAudio({
-      recipientSolanaAddress: address,
+      destination: tokenAccountInfo.address,
       amount,
       ethAddress,
       sdk
@@ -1369,74 +1397,32 @@ export const audiusBackend = ({
 
   async function transferWAudio({
     ethAddress,
-    recipientSolanaAddress,
+    destination,
     amount,
     sdk
   }: {
     ethAddress: string
-    recipientSolanaAddress: string
+    destination: PublicKey
     amount: BN
     sdk: AudiusSdk
   }) {
-    // Check if the solana address is a token account
-    let tokenAccountInfo = await getTokenAccount({
-      address: new PublicKey(recipientSolanaAddress),
-      sdk
-    })
-    if (!tokenAccountInfo) {
-      console.info('Provided recipient solana address was not a token account')
-      // If not, check to see if it already has an associated token account.
-      const associatedTokenAccount = findAssociatedTokenAddress({
-        solanaWalletKey: new PublicKey(recipientSolanaAddress),
-        mint: 'wAUDIO'
-      })
-      tokenAccountInfo = await getTokenAccount({
-        address: associatedTokenAccount,
-        sdk
-      })
-
-      // If it's not a valid token account, we need to make one first
-      if (!tokenAccountInfo) {
-        console.info(
-          'Provided recipient solana address has no associated token account, creating'
-        )
-        const connection = sdk.services.solanaClient.connection
-        const tx = await getCreateAssociatedTokenAccountTransaction({
-          feePayerKey: await sdk.services.solanaRelay.getFeePayer(),
-          solanaWalletKey: new PublicKey(recipientSolanaAddress),
-          mint: 'wAUDIO',
-          solanaTokenProgramKey: new PublicKey(TOKEN_PROGRAM_ID),
-          connection
-        })
-        const { signature } = await sdk.services.solanaRelay.relay({
-          transaction: tx
-        })
-        await sdk.services.solanaClient.confirmAllTransactions(
-          [signature],
-          'confirmed'
-        )
-      }
-      recipientSolanaAddress = associatedTokenAccount.toString()
-    }
-
     console.info(
-      `Transfering ${amount.toString()} wei $AUDIO to ${recipientSolanaAddress}`
+      `Transferring ${amount.toString()} wei $AUDIO to ${destination.toBase58()}`
     )
 
     const wAudioAmount = wAUDIO(AUDIO(amount))
-    const recipientSolanaAddressPubKey = new PublicKey(recipientSolanaAddress)
     const secpTransactionInstruction =
       await sdk.services.claimableTokensClient.createTransferSecpInstruction({
         amount: wAudioAmount.value,
         ethWallet: ethAddress,
         mint: 'wAUDIO',
-        destination: recipientSolanaAddressPubKey
+        destination
       })
     const transferInstruction =
       await sdk.services.claimableTokensClient.createTransferInstruction({
         ethWallet: ethAddress,
         mint: 'wAUDIO',
-        destination: recipientSolanaAddressPubKey
+        destination
       })
     const transaction = await sdk.services.solanaClient.buildTransaction({
       instructions: [secpTransactionInstruction, transferInstruction]
@@ -1473,7 +1459,7 @@ export const audiusBackend = ({
   /**
    * Fetches the SPL WAUDIO balance for the user's solana wallet address
    * @param {string} The solana wallet address
-   * @returns {Promise<BN | null>} Returns the balance, or null if error
+   * @returns {Promise<BN | null>} Returns the balance, 0 for non-existent token accounts
    */
   async function getAddressWAudioBalance({
     address,
@@ -1482,20 +1468,19 @@ export const audiusBackend = ({
     address: string
     sdk: AudiusSdk
   }) {
-    const accountInfo = await getAssociatedTokenAccountInfo({
-      address,
-      sdk
-    })
-    const waudioBalance = accountInfo?.amount
-    if (isNullOrUndefined(waudioBalance)) {
-      console.warn(`Failed to get waudio balance for address: ${address}`)
-      reportError({
-        error: new Error('Failed to get wAudio balance for address'),
-        additionalInfo: { address }
+    try {
+      const { amount } = await getAssociatedTokenAccountInfo({
+        address,
+        sdk
       })
-      return null
+      return new BN(amount.toString())
+    } catch (err) {
+      // Non-existent token accounts indicate 0 balance. Other errors fall through
+      if (err instanceof TokenAccountNotFoundError) {
+        return new BN(0)
+      }
+      throw err
     }
-    return new BN(waudioBalance.toString())
   }
 
   async function getAudiusLibs() {

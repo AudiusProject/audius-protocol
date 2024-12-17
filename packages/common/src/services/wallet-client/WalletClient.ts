@@ -146,6 +146,8 @@ export class WalletClient {
         )
       ])
 
+      // TODO: Remove once getAddressTotalStakedBalance is throwing for unexpected errors
+      // and let the catch below handle things
       if (balances.some((b) => isNullOrUndefined(b))) {
         throw new Error(
           'Unable to fetch balance for one or more associated wallets.'
