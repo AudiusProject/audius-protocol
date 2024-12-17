@@ -20,7 +20,6 @@ type ScreenPrimaryContentProps = {
 export const ScreenPrimaryContent = (props: ScreenPrimaryContentProps) => {
   const { children, skeleton } = props
   const { isScreenReady, setIsPrimaryContentReady } = useScreenContext()
-
   useEffect(() => {
     if (!isScreenReady) return
     setIsPrimaryContentReady(true)

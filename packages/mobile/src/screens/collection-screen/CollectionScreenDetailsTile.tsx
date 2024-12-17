@@ -538,8 +538,10 @@ const CollectionTrackList = ({
 
   const handleFetchCollection = useCallback(() => {
     dispatch(resetCollection())
-    dispatch(fetchCollection(collectionId as number, permalink, true))
-  }, [dispatch, collectionId, permalink])
+    if (numericCollectionId) {
+      dispatch(fetchCollection(collectionId as number, permalink, true))
+    }
+  }, [dispatch, collectionId, permalink, numericCollectionId])
 
   useFetchCollectionLineup(collectionId, handleFetchCollection)
 
