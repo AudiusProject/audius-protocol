@@ -38,7 +38,8 @@ export enum Feature {
   Upload = 'upload',
   Playback = 'playback',
   Purchase = 'purchase',
-  Comments = 'comments'
+  Comments = 'comments',
+  Chats = 'chats'
 }
 
 export type ReportToSentryArgs = {
