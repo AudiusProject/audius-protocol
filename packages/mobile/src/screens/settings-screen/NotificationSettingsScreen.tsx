@@ -7,7 +7,7 @@ import {
 import { useDispatch } from 'react-redux'
 import { useEffectOnce } from 'react-use'
 
-import { Screen, ScreenContent } from 'app/components/core'
+import { Screen, ScreenContent, ScrollView } from 'app/components/core'
 
 import { EmailFrequencyControlRow } from './EmailFrequencyControlRow'
 import { NotificationRow } from './NotificationRow'
@@ -45,53 +45,55 @@ export const NotificationSettingsScreen = () => {
   return (
     <Screen title={messages.title} variant='secondary' topbarRight={null}>
       <ScreenContent>
-        <SettingsDivider />
-        <NotificationRow
-          label={messages.enablePn}
-          type={PushNotificationSetting.MobilePush}
-        />
-        <NotificationRow
-          label={messages.milestones}
-          type={PushNotificationSetting.MilestonesAndAchievements}
-        />
-        <NotificationRow
-          label={messages.followers}
-          type={PushNotificationSetting.Followers}
-        />
-        <NotificationRow
-          label={messages.reposts}
-          type={PushNotificationSetting.Reposts}
-        />
-        <NotificationRow
-          label={messages.favorites}
-          type={PushNotificationSetting.Favorites}
-        />
-        <NotificationRow
-          label={messages.remixes}
-          type={PushNotificationSetting.Remixes}
-        />
-        <NotificationRow
-          label={messages.messages}
-          type={PushNotificationSetting.Messages}
-        />
-        {isCommentsEnabled ? (
-          <>
-            <NotificationRow
-              label={messages.comments}
-              type={PushNotificationSetting.Comments}
-            />
-            <NotificationRow
-              label={messages.mentions}
-              type={PushNotificationSetting.Mentions}
-            />
-            <NotificationRow
-              label={messages.reactions}
-              type={PushNotificationSetting.Reactions}
-            />
-          </>
-        ) : null}
-        <SettingsDivider />
-        <EmailFrequencyControlRow />
+        <ScrollView>
+          <SettingsDivider />
+          <NotificationRow
+            label={messages.enablePn}
+            type={PushNotificationSetting.MobilePush}
+          />
+          <NotificationRow
+            label={messages.milestones}
+            type={PushNotificationSetting.MilestonesAndAchievements}
+          />
+          <NotificationRow
+            label={messages.followers}
+            type={PushNotificationSetting.Followers}
+          />
+          <NotificationRow
+            label={messages.reposts}
+            type={PushNotificationSetting.Reposts}
+          />
+          <NotificationRow
+            label={messages.favorites}
+            type={PushNotificationSetting.Favorites}
+          />
+          <NotificationRow
+            label={messages.remixes}
+            type={PushNotificationSetting.Remixes}
+          />
+          <NotificationRow
+            label={messages.messages}
+            type={PushNotificationSetting.Messages}
+          />
+          {isCommentsEnabled ? (
+            <>
+              <NotificationRow
+                label={messages.comments}
+                type={PushNotificationSetting.Comments}
+              />
+              <NotificationRow
+                label={messages.mentions}
+                type={PushNotificationSetting.Mentions}
+              />
+              <NotificationRow
+                label={messages.reactions}
+                type={PushNotificationSetting.Reactions}
+              />
+            </>
+          ) : null}
+          <SettingsDivider />
+          <EmailFrequencyControlRow />
+        </ScrollView>
       </ScreenContent>
     </Screen>
   )
