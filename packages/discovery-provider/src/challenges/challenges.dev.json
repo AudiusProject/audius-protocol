@@ -139,7 +139,7 @@
     "cooldown_days": 7
   },
   {
-    "id": "os",
+    "id": "o",
     "name": "ONE_SHOT",
     "type": "aggregate",
     "amount": 1,
