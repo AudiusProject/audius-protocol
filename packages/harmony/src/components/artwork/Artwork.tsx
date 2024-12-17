@@ -15,7 +15,7 @@ export type ArtworkProps = {
   BoxProps
 
 /**
- * The artwork component displays the track cover art and appears in several
+ * The artwork component displays entity content and appears in several
  * locations such as track tiles, track and playlist, pages,
  * and the sidebar. It can have interactive elements on hover.
  * This component enhances the listening experience and helps users quickly
