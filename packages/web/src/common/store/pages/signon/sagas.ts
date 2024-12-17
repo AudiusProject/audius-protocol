@@ -769,21 +769,6 @@ function* signUp() {
                 throw new Error('Failed to index guest account creation')
               }
 
-              // Force refreshing doesn't seem to update the user handle
-              // so this forced cache update is necessary
-              yield* put(
-                cacheActions.update(Kind.USERS, [
-                  {
-                    id: userId,
-                    metadata: {
-                      handle: user.handle,
-                      name: user.name,
-                      profile_picture: user.profile_picture,
-                      location: user.location
-                    }
-                  }
-                ])
-              )
               return userId
             } else {
               if (!alreadyExisted) {
@@ -1233,7 +1218,7 @@ function* followCollections(
 export function* completeFollowArtists(
   _action: ReturnType<typeof signOnActions.completeFollowArtists>
 ) {
-  const accountId = yield* select(accountSelectors.getUserId)
+  const accountId = yield* select(accountSelectors.getIsAccountComplete)
   if (accountId) {
     // If account creation has finished we need to make sure followArtists gets called
     // Also we specifically request to not follow the defaults (Audius user, Hot & New Playlist) since that should have already occurred
