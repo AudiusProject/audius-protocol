@@ -5,7 +5,7 @@ import {
 } from '@audius/common/store'
 import { combineReducers } from 'redux'
 import { expectSaga } from 'redux-saga-test-plan'
-import { call } from 'redux-saga-test-plan/matchers'
+import { call, getContext } from 'redux-saga-test-plan/matchers'
 import { StaticProvider } from 'redux-saga-test-plan/providers'
 import { describe, it } from 'vitest'
 
@@ -14,7 +14,17 @@ import { noopReducer } from 'store/testHelper'
 import { waitForWrite } from 'utils/sagaHelpers'
 
 const repostingUser = { repost_count: 0, handle: 'handle', name: 'name' }
-const defaultProviders: StaticProvider[] = [[call.fn(waitForWrite), undefined]]
+const defaultProviders: StaticProvider[] = [
+  [call.fn(waitForWrite), undefined],
+  [
+    getContext('audiusSdk'),
+    () => {
+      return {
+        collections: {}
+      }
+    }
+  ]
+]
 
 describe('repost', () => {
   it('reposts', async () => {
