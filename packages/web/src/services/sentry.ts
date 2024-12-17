@@ -30,10 +30,6 @@ export const initializeSentry = async () => {
     integrations: [
       // Pull extra fields off error objects
       Sentry.extraErrorDataIntegration(),
-      // Catch failed network requests
-      Sentry.httpClientIntegration(),
-      // Capture console.errors in sentry
-      Sentry.captureConsoleIntegration({ levels: ['error'] }),
       // Capture a session recording
       Sentry.replayIntegration({})
     ],
