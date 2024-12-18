@@ -1,11 +1,11 @@
-import { Kind, Collection, ID } from '@audius/common/models'
+import { playlistMetadataForUpdateWithSDK } from '@audius/common/adapters'
+import { Kind, Collection, ID, Id } from '@audius/common/models'
 import {
   cacheCollectionsActions as collectionActions,
   cacheActions,
   PlaylistOperations,
-  getContext,
   confirmerActions,
-  confirmTransaction
+  getSDK
 } from '@audius/common/store'
 import { makeKindId } from '@audius/common/utils'
 import { call, put } from 'typed-redux-saga'
@@ -17,26 +17,16 @@ export function* confirmOrderPlaylist(
   trackIds: ID[],
   playlist: Collection
 ) {
-  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
+  const sdk = yield* getSDK()
   yield* put(
     confirmerActions.requestConfirmation(
       makeKindId(Kind.COLLECTIONS, playlistId),
       function* () {
-        const { blockHash, blockNumber } = yield* call(
-          audiusBackendInstance.orderPlaylist,
-          playlist
-        )
-
-        const confirmed = yield* call(
-          confirmTransaction,
-          blockHash,
-          blockNumber
-        )
-        if (!confirmed) {
-          throw new Error(
-            `Could not confirm order playlist for playlist id ${playlistId}`
-          )
-        }
+        yield* call([sdk.playlists, sdk.playlists.updatePlaylist], {
+          metadata: playlistMetadataForUpdateWithSDK(playlist),
+          userId: Id.parse(userId),
+          playlistId: Id.parse(playlistId)
+        })
 
         return playlistId
       },

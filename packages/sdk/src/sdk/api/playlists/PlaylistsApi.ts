@@ -24,8 +24,6 @@ import {
   AddTrackToPlaylistSchema,
   CreatePlaylistRequest,
   CreatePlaylistSchema,
-  createUpdatePlaylistSchema,
-  createUploadPlaylistSchema,
   DeletePlaylistRequest,
   DeletePlaylistSchema,
   PlaylistMetadata,
@@ -43,7 +41,9 @@ import {
   UnfavoritePlaylistSchema,
   UpdatePlaylistRequest,
   UploadPlaylistRequest,
-  createUpdatePlaylistMetadataSchema
+  UploadPlaylistSchema,
+  UpdatePlaylistSchema,
+  UpdatePlaylistMetadataSchema
 } from './types'
 
 export class PlaylistsApi extends GeneratedPlaylistsApi {
@@ -68,56 +68,13 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
     advancedOptions?: AdvancedOptions
   ) {
     // Parse inputs
-    const { userId, coverArtFile, metadata, onProgress, trackIds } =
-      await parseParams('createPlaylist', CreatePlaylistSchema)(params)
+    const parsedParameters = await parseParams(
+      'createPlaylist',
+      CreatePlaylistSchema
+    )(params)
 
-    // Upload cover art to storage node
-    const coverArtResponse =
-      coverArtFile &&
-      (await retry3(
-        async () =>
-          await this.storage.uploadFile({
-            file: coverArtFile,
-            onProgress,
-            template: 'img_square'
-          }),
-        (e) => {
-          this.logger.info('Retrying uploadPlaylistCoverArt', e)
-        }
-      ))
-
-    const playlistId = await this.trackUploadHelper.generateId('playlist')
-    const currentBlock = await this.entityManager.getCurrentBlock()
-
-    // Update metadata to include track ids
-    const updatedMetadata = {
-      ...metadata,
-      playlistContents: {
-        trackIds: (trackIds ?? []).map((trackId) => ({
-          track: trackId,
-          time: currentBlock.timestamp
-        }))
-      },
-      playlistImageSizesMultihash: coverArtResponse?.id
-    }
-
-    // Write playlist metadata to chain
-    const response = await this.entityManager.manageEntity({
-      userId,
-      entityType: EntityType.PLAYLIST,
-      entityId: playlistId,
-      action: Action.CREATE,
-      metadata: JSON.stringify({
-        cid: '',
-        data: snakecaseKeys(updatedMetadata)
-      }),
-      ...advancedOptions
-    })
-
-    return {
-      ...response,
-      playlistId: encodeHashId(playlistId)
-    }
+    // Call createPlaylistInternal with parsed inputs
+    return await this.createPlaylistInternal(parsedParameters, advancedOptions)
   }
 
   /** @hidden
@@ -131,7 +88,7 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
     // Parse inputs
     const parsedParameters = await parseParams(
       'uploadPlaylist',
-      createUploadPlaylistSchema()
+      UploadPlaylistSchema
     )(params)
 
     // Call uploadPlaylistInternal with parsed inputs
@@ -240,7 +197,7 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
     // Parse inputs
     const parsedParameters = await parseParams(
       'updatePlaylist',
-      createUpdatePlaylistSchema()
+      UpdatePlaylistSchema
     )(params)
 
     // Call updatePlaylistInternal with parsed inputs
@@ -417,7 +374,7 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
     }
 
     const supportedUpdateFields = Object.keys(
-      createUpdatePlaylistMetadataSchema().shape
+      UpdatePlaylistMetadataSchema.shape
     )
 
     return await this.updatePlaylist(
@@ -442,7 +399,7 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
       onProgress,
       metadata,
       trackMetadatas
-    }: z.infer<ReturnType<typeof createUploadPlaylistSchema>> & {
+    }: z.infer<typeof UploadPlaylistSchema> & {
       metadata: Metadata
     },
     advancedOptions?: AdvancedOptions
@@ -569,7 +526,7 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
       coverArtFile,
       onProgress,
       metadata
-    }: z.infer<ReturnType<typeof createUpdatePlaylistSchema>> & {
+    }: z.infer<typeof UpdatePlaylistSchema> & {
       metadata: Metadata
     },
     advancedOptions?: AdvancedOptions
@@ -620,5 +577,78 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
       }),
       ...advancedOptions
     })
+  }
+
+  /** @internal
+   * Method to create a playlist with already parsed inputs
+   * This is used for both playlists and albums
+   */
+  public async createPlaylistInternal<Metadata extends PlaylistMetadata>(
+    {
+      userId,
+      coverArtFile,
+      metadata,
+      onProgress,
+      trackIds,
+      playlistId: providedPlaylistId
+    }: z.infer<typeof CreatePlaylistSchema> & { metadata: Metadata },
+    advancedOptions?: AdvancedOptions
+  ) {
+    // Upload cover art to storage node
+    const coverArtResponse =
+      coverArtFile &&
+      (await retry3(
+        async () =>
+          await this.storage.uploadFile({
+            file: coverArtFile,
+            onProgress,
+            template: 'img_square'
+          }),
+        (e) => {
+          this.logger.info('Retrying uploadPlaylistCoverArt', e)
+        }
+      ))
+
+    const playlistId = providedPlaylistId || (await this.generatePlaylistId())
+    const currentBlock = await this.entityManager.getCurrentBlock()
+
+    // Update metadata to include track ids
+    const updatedMetadata = {
+      ...metadata,
+      playlistContents: {
+        trackIds: (trackIds ?? []).map((trackId) => ({
+          track: trackId,
+          time: currentBlock.timestamp
+        }))
+      },
+      playlistImageSizesMultihash: coverArtResponse?.id ?? metadata.coverArtCid
+    }
+
+    // Write playlist metadata to chain
+    const response = await this.entityManager.manageEntity({
+      userId,
+      entityType: EntityType.PLAYLIST,
+      entityId: playlistId,
+      action: Action.CREATE,
+      metadata: JSON.stringify({
+        cid: '',
+        data: snakecaseKeys(updatedMetadata)
+      }),
+      ...advancedOptions
+    })
+
+    return {
+      ...response,
+      playlistId: encodeHashId(playlistId)
+    }
+  }
+
+  /**
+   * Generates a new playlist ID
+   *
+   * @hidden
+   */
+  async generatePlaylistId() {
+    return this.trackUploadHelper.generateId('playlist')
   }
 }

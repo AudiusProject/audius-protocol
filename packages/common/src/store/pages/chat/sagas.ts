@@ -16,6 +16,7 @@ import {
 import { ulid } from 'ulid'
 
 import { Name } from '~/models/Analytics'
+import { Feature } from '~/models/ErrorReporting'
 import { ID } from '~/models/Identifiers'
 import { Status } from '~/models/Status'
 import { getHasAccount, getUserId } from '~/store/account/selectors'
@@ -124,7 +125,8 @@ function* doFetchUnreadMessagesCount() {
     const reportToSentry = yield* getContext('reportToSentry')
     reportToSentry({
       name: 'Chats',
-      error: e as Error
+      error: e as Error,
+      feature: Feature.Chats
     })
   }
 }
@@ -171,7 +173,8 @@ function* doFetchLatestChats() {
     const reportToSentry = yield* getContext('reportToSentry')
     reportToSentry({
       name: 'Chats',
-      error: e as Error
+      error: e as Error,
+      feature: Feature.Chats
     })
   }
 }
@@ -198,7 +201,8 @@ function* doFetchMoreChats() {
     const reportToSentry = yield* getContext('reportToSentry')
     reportToSentry({
       name: 'Chats',
-      error: e as Error
+      error: e as Error,
+      feature: Feature.Chats
     })
   }
 }
@@ -265,7 +269,8 @@ function* doFetchLatestMessages(
       error: e as Error,
       additionalInfo: {
         chatId
-      }
+      },
+      feature: Feature.Chats
     })
   }
 }
@@ -326,7 +331,8 @@ function* doFetchMoreMessages(action: ReturnType<typeof fetchMoreMessages>) {
       error: e as Error,
       additionalInfo: {
         chatId
-      }
+      },
+      feature: Feature.Chats
     })
   }
 }
@@ -376,7 +382,8 @@ function* doSetMessageReaction(action: ReturnType<typeof setMessageReaction>) {
         messageId,
         reaction,
         userId
-      }
+      },
+      feature: Feature.Chats
     })
     yield* call(
       track,
@@ -439,7 +446,8 @@ function* doCreateChat(action: ReturnType<typeof createChat>) {
       error: e as Error,
       additionalInfo: {
         userIds
-      }
+      },
+      feature: Feature.Chats
     })
     yield* call(track, make({ eventName: Name.CREATE_CHAT_FAILURE }))
   }
@@ -517,7 +525,8 @@ function* doCreateChatBlast(action: ReturnType<typeof createChatBlast>) {
         audience,
         audienceContentId,
         audienceContentType
-      }
+      },
+      feature: Feature.Chats
     })
 
     yield* call(
@@ -553,7 +562,8 @@ function* doMarkChatAsRead(action: ReturnType<typeof markChatAsRead>) {
       error: e as Error,
       additionalInfo: {
         chatId
-      }
+      },
+      feature: Feature.Chats
     })
   }
 }
@@ -640,7 +650,8 @@ function* doSendMessage(action: ReturnType<typeof sendMessage>) {
       additionalInfo: {
         chatId,
         messageId: messageIdToUse
-      }
+      },
+      feature: Feature.Chats
     })
     yield* call(track, make({ eventName: Name.SEND_MESSAGE_FAILURE }))
   }
@@ -680,7 +691,8 @@ function* doFetchBlockees() {
     const reportToSentry = yield* getContext('reportToSentry')
     reportToSentry({
       name: 'Chats',
-      error: e as Error
+      error: e as Error,
+      feature: Feature.Chats
     })
   }
 }
@@ -701,7 +713,8 @@ function* doFetchBlockers() {
     const reportToSentry = yield* getContext('reportToSentry')
     reportToSentry({
       name: 'Chats',
-      error: e as Error
+      error: e as Error,
+      feature: Feature.Chats
     })
   }
 }
@@ -724,7 +737,8 @@ function* doBlockUser(action: ReturnType<typeof blockUser>) {
     const reportToSentry = yield* getContext('reportToSentry')
     reportToSentry({
       name: 'Chats',
-      error: e as Error
+      error: e as Error,
+      feature: Feature.Chats
     })
     yield* call(
       track,
@@ -745,7 +759,8 @@ function* doUnblockUser(action: ReturnType<typeof unblockUser>) {
     const reportToSentry = yield* getContext('reportToSentry')
     reportToSentry({
       name: 'Chats',
-      error: e as Error
+      error: e as Error,
+      feature: Feature.Chats
     })
   }
 }
@@ -776,7 +791,8 @@ function* doFetchPermissions(action: ReturnType<typeof fetchPermissions>) {
     const reportToSentry = yield* getContext('reportToSentry')
     reportToSentry({
       name: 'Chats',
-      error: e as Error
+      error: e as Error,
+      feature: Feature.Chats
     })
   }
 }
@@ -809,7 +825,8 @@ function* doFetchLinkUnfurlMetadata(
         chatId,
         messageId,
         href
-      }
+      },
+      feature: Feature.Chats
     })
   }
 }
@@ -837,7 +854,8 @@ function* doDeleteChat(action: ReturnType<typeof deleteChat>) {
       error: e as Error,
       additionalInfo: {
         chatId
-      }
+      },
+      feature: Feature.Chats
     })
     yield* call(track, make({ eventName: Name.DELETE_CHAT_FAILURE }))
   }
@@ -853,7 +871,8 @@ function* doLogError({ payload: { error } }: ReturnType<typeof logError>) {
     additionalInfo: {
       code,
       url
-    }
+    },
+    feature: Feature.Chats
   })
   yield* call(track, make({ eventName: Name.CHAT_WEBSOCKET_ERROR, code }))
 }

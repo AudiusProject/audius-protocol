@@ -1,10 +1,17 @@
-import type { full } from '@audius/sdk'
+import {
+  CreateAlbumMetadata,
+  CreatePlaylistMetadata,
+  full,
+  UpdatePlaylistRequest
+} from '@audius/sdk'
 import dayjs from 'dayjs'
 import { omit } from 'lodash'
 import snakecaseKeys from 'snakecase-keys'
 
+import { Id } from '~/models'
 import {
   AccountCollection,
+  Collection,
   PlaylistTrackId,
   UserCollectionMetadata,
   Variant
@@ -141,5 +148,68 @@ export const accountCollectionFromSDK = (
       handle: input.user.handle,
       is_deactivated: !!input.user.isDeactivated
     }
+  }
+}
+
+export const playlistMetadataForCreateWithSDK = (
+  input: Collection
+): CreatePlaylistMetadata => {
+  return {
+    playlistName: input.playlist_name ?? '',
+    description: input.description ?? '',
+    coverArtCid: input.cover_art_sizes ?? '',
+    isPrivate: input.is_private ?? false,
+    releaseDate: input.release_date ? new Date(input.release_date) : undefined,
+    ddexReleaseIds: input.ddex_release_ids ?? null,
+    ddexApp: input.ddex_app ?? '',
+    upc: input.upc ?? '',
+    artists: input.artists ?? null,
+    copyrightLine: input.copyright_line ?? null,
+    producerCopyrightLine: input.producer_copyright_line ?? null,
+    parentalWarningType: input.parental_warning_type ?? null
+  }
+}
+
+export const playlistMetadataForUpdateWithSDK = (
+  input: Collection
+): UpdatePlaylistRequest['metadata'] => {
+  return {
+    ...playlistMetadataForCreateWithSDK(input),
+    playlistContents: input.playlist_contents
+      ? input.playlist_contents.track_ids.map((t) => ({
+          timestamp: t.time,
+          trackId: Id.parse(t.track),
+          metadataTimestamp: t.metadata_time
+        }))
+      : undefined,
+    playlistName: input.playlist_name ?? '',
+    description: input.description ?? '',
+    coverArtCid: input.cover_art_sizes ?? '',
+    isPrivate: input.is_private ?? false
+  }
+}
+
+export const albumMetadataForSDK = (input: Collection): CreateAlbumMetadata => {
+  return {
+    streamConditions:
+      input.stream_conditions && 'usdc_purchase' in input.stream_conditions
+        ? {
+            usdcPurchase: input.stream_conditions.usdc_purchase
+          }
+        : null,
+    isStreamGated: input.is_stream_gated ?? false,
+    isScheduledRelease: input.is_scheduled_release ?? false,
+    albumName: input.playlist_name ?? '',
+    description: input.description ?? '',
+    license: input.ddex_app ?? '',
+    releaseDate: input.release_date ? new Date(input.release_date) : undefined,
+    ddexReleaseIds: input.ddex_release_ids ?? null,
+    ddexApp: input.ddex_app ?? '',
+    upc: input.upc ?? '',
+    artists: input.artists ?? null,
+    copyrightLine: input.copyright_line ?? null,
+    producerCopyrightLine: input.producer_copyright_line ?? null,
+    parentalWarningType: input.parental_warning_type ?? null,
+    isPrivate: input.is_private ?? false
   }
 }

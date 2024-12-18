@@ -3,6 +3,7 @@
 export * from './Access';
 export * from './AccessInfoResponse';
 export * from './Activity';
+export * from './AlbumBacklink';
 export * from './AlbumsResponse';
 export * from './AuthorizedApp';
 export * from './AuthorizedApps';

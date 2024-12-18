@@ -20,6 +20,8 @@ from src.gated_content.signature import (
 )
 from src.models.playlists.aggregate_playlist import AggregatePlaylist
 from src.models.playlists.playlist import Playlist
+from src.models.playlists.playlist_route import PlaylistRoute
+from src.models.playlists.playlist_track import PlaylistTrack
 from src.models.social.follow import Follow
 from src.models.social.repost import Repost, RepostType
 from src.models.social.save import Save, SaveType
@@ -499,6 +501,48 @@ def populate_track_metadata(
     # if no current user (guest), populate access based on track stream/download conditions
     _populate_gated_content_metadata(session, tracks, current_user_id)
 
+    # Get album backlinks for all tracks in a single query
+    album_backlinks = (
+        session.query(
+            PlaylistTrack.track_id,
+            Playlist.playlist_id,
+            Playlist.playlist_name,
+            User.handle,
+            PlaylistRoute.slug,
+        )
+        .join(Playlist, Playlist.playlist_id == PlaylistTrack.playlist_id)
+        .join(
+            User,
+            and_(User.user_id == Playlist.playlist_owner_id, User.is_current == True),
+        )
+        .join(
+            PlaylistRoute,
+            and_(
+                PlaylistRoute.playlist_id == Playlist.playlist_id,
+                PlaylistRoute.is_current == True,
+            ),
+        )
+        .filter(
+            PlaylistTrack.track_id.in_(track_ids),
+            PlaylistTrack.is_removed == False,
+            Playlist.is_album == True,
+            Playlist.is_delete == False,
+            Playlist.is_current == True,
+        )
+        .order_by(Playlist.created_at.desc())
+        .all()
+    )
+
+    # Create a dict of track_id to its most recent album (first in the ordered results)
+    album_backlink_dict = {}
+    for track_id, playlist_id, playlist_name, handle, slug in album_backlinks:
+        if track_id not in album_backlink_dict:
+            album_backlink_dict[track_id] = {
+                "playlist_id": playlist_id,
+                "playlist_name": playlist_name,
+                "permalink": f"/{handle}/album/{slug}" if handle and slug else None,
+            }
+
     for track in tracks:
         track_id = track["track_id"]
 
@@ -552,6 +596,9 @@ def populate_track_metadata(
                         remix_track.update(remixes[track["track_id"]][parent_track_id])
         else:
             track[response_name_constants.remix_of] = None
+
+        # Add album backlink
+        track["album_backlink"] = album_backlink_dict.get(track_id)
 
     return tracks
 
@@ -791,6 +838,8 @@ def _populate_gated_content_metadata(session, entities, current_user_id):
         ] = has_download_access
 
     for entity in entities:
+        if "playlist_id" in entity and "tracks" in entity:
+            _populate_gated_content_metadata(session, entity["tracks"], current_user_id)
         content_id = getContentId(entity)
         if content_id not in gated_content_ids:
             entity[response_name_constants.access] = {
@@ -1410,6 +1459,8 @@ def get_users_ids(results):
     for result in results:
         if "playlist_owner_id" in result:
             user_ids.append(int(result["playlist_owner_id"]))
+            for track in result.get("tracks", []):
+                user_ids.append(int(track["owner_id"]))
         elif "owner_id" in result:
             user_ids.append(int(result["owner_id"]))
     # Remove duplicate user ids

@@ -11,62 +11,10 @@ const CreatePlaylistMetadataSchema = z
   .object({
     description: z.optional(z.string().max(1000)),
     playlistName: z.string(),
-    isPrivate: z.optional(z.boolean())
-  })
-  .strict()
-
-export const CreatePlaylistSchema = z
-  .object({
-    coverArtFile: z.optional(ImageFile),
-    metadata: CreatePlaylistMetadataSchema,
-    onProgress: z.optional(z.function()),
-    trackIds: z.optional(z.array(HashId)),
-    userId: HashId
-  })
-  .strict()
-
-export type CreatePlaylistRequest = z.input<typeof CreatePlaylistSchema>
-
-export const createUpdatePlaylistMetadataSchema = () =>
-  UploadPlaylistMetadataSchema.partial()
-    .merge(
-      z.object({
-        isPrivate: z.optional(z.boolean()),
-        playlistContents: z.optional(
-          z.array(
-            z.object({
-              timestamp: z.number(),
-              metadataTimestamp: z.optional(z.number()),
-              trackId: HashId
-            })
-          )
-        )
-      })
-    )
-    .strict()
-
-export const createUpdatePlaylistSchema = () =>
-  z
-    .object({
-      userId: HashId,
-      playlistId: HashId,
-      coverArtFile: z.optional(ImageFile),
-      metadata: createUpdatePlaylistMetadataSchema(),
-      onProgress: z.optional(z.function())
-    })
-    .strict()
-
-export type UpdatePlaylistRequest = z.input<
-  ReturnType<typeof createUpdatePlaylistSchema>
->
-
-export const UploadPlaylistMetadataSchema = z
-  .object({
-    description: z.optional(z.string().max(1000)),
-    genre: z.enum(Object.values(Genre) as [Genre, ...Genre[]]),
+    isPrivate: z.optional(z.boolean()),
+    coverArtCid: z.optional(z.string()),
     license: z.optional(z.string()),
     mood: z.optional(z.enum(Object.values(Mood) as [Mood, ...Mood[]])),
-    playlistName: z.string(),
     releaseDate: z.optional(z.date()),
     ddexReleaseIds: z.optional(z.record(z.string()).nullable()),
     ddexApp: z.optional(z.string()),
@@ -79,7 +27,30 @@ export const UploadPlaylistMetadataSchema = z
   })
   .strict()
 
-export type PlaylistMetadata = z.input<typeof UploadPlaylistMetadataSchema>
+export type CreatePlaylistMetadata = z.input<
+  typeof CreatePlaylistMetadataSchema
+>
+
+export const CreatePlaylistSchema = z
+  .object({
+    playlistId: z.optional(HashId),
+    coverArtFile: z.optional(ImageFile),
+    metadata: CreatePlaylistMetadataSchema,
+    onProgress: z.optional(z.function()),
+    trackIds: z.optional(z.array(HashId)),
+    userId: HashId
+  })
+  .strict()
+
+export type CreatePlaylistRequest = z.input<typeof CreatePlaylistSchema>
+
+export const UploadPlaylistMetadataSchema = CreatePlaylistMetadataSchema.extend(
+  {
+    genre: z.enum(Object.values(Genre) as [Genre, ...Genre[]])
+  }
+).strict()
+
+export type PlaylistMetadata = z.input<typeof CreatePlaylistMetadataSchema>
 
 const PlaylistTrackMetadataSchema = UploadTrackMetadataSchema.partial({
   genre: true,
@@ -93,24 +64,52 @@ const PlaylistTrackMetadataSchema = UploadTrackMetadataSchema.partial({
  */
 export type PlaylistTrackMetadata = z.infer<typeof PlaylistTrackMetadataSchema>
 
-export const createUploadPlaylistSchema = () =>
-  z
-    .object({
-      userId: HashId,
-      coverArtFile: ImageFile,
-      metadata: UploadPlaylistMetadataSchema,
-      onProgress: z.optional(z.function()),
-      /**
-       * Track metadata is populated from the playlist if fields are missing
-       */
-      trackMetadatas: z.array(PlaylistTrackMetadataSchema),
-      trackFiles: z.array(AudioFile)
-    })
+export const UpdatePlaylistMetadataSchema =
+  UploadPlaylistMetadataSchema.partial()
+    .merge(
+      z.object({
+        isPrivate: z.optional(z.boolean()),
+        playlistContents: z.optional(
+          z.array(
+            z.object({
+              timestamp: z.number(),
+              metadataTimestamp: z.optional(z.number()),
+              trackId: HashId
+            })
+          )
+        ),
+        coverArtCid: z.optional(z.string())
+      })
+    )
     .strict()
 
-export type UploadPlaylistRequest = z.input<
-  ReturnType<typeof createUploadPlaylistSchema>
->
+export const UpdatePlaylistSchema = z
+  .object({
+    userId: HashId,
+    playlistId: HashId,
+    coverArtFile: z.optional(ImageFile),
+    metadata: UpdatePlaylistMetadataSchema,
+    onProgress: z.optional(z.function())
+  })
+  .strict()
+
+export type UpdatePlaylistRequest = z.input<typeof UpdatePlaylistSchema>
+
+export const UploadPlaylistSchema = z
+  .object({
+    userId: HashId,
+    coverArtFile: ImageFile,
+    metadata: UploadPlaylistMetadataSchema,
+    onProgress: z.optional(z.function()),
+    /**
+     * Track metadata is populated from the playlist if fields are missing
+     */
+    trackMetadatas: z.array(PlaylistTrackMetadataSchema),
+    trackFiles: z.array(AudioFile)
+  })
+  .strict()
+
+export type UploadPlaylistRequest = z.input<typeof UploadPlaylistSchema>
 
 export const PublishPlaylistSchema = z
   .object({

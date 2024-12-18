@@ -8,7 +8,6 @@ import {
   ModalSource
 } from '@audius/common/models'
 import type { ID } from '@audius/common/models'
-import { trpc } from '@audius/common/services'
 import {
   accountSelectors,
   cacheCollectionsActions,
@@ -88,10 +87,7 @@ const TrackOverflowMenuDrawer = ({ render }: Props) => {
     (t) => t.track === track?.track_id
   )
 
-  const { data: albumInfo } = trpc.tracks.getAlbumBacklink.useQuery(
-    { trackId: id },
-    { enabled: !!id }
-  )
+  const albumInfo = track?.album_backlink
 
   const user = useSelector((state: CommonState) =>
     getUser(state, { id: track?.owner_id })

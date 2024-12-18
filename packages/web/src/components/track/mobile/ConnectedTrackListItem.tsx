@@ -7,7 +7,6 @@ import {
   isContentUSDCPurchaseGated,
   ModalSource
 } from '@audius/common/models'
-import { trpc } from '@audius/common/services'
 import {
   accountSelectors,
   cacheUsersSelectors,
@@ -18,7 +17,8 @@ import {
   OverflowSource,
   PurchaseableContentType,
   gatedContentSelectors,
-  usePremiumContentPurchaseModal
+  usePremiumContentPurchaseModal,
+  cacheTracksSelectors
 } from '@audius/common/store'
 import { push as pushRoute } from 'connected-react-router'
 import { connect, useDispatch } from 'react-redux'
@@ -41,6 +41,7 @@ const { getUserFromTrack } = cacheUsersSelectors
 const { saveTrack, unsaveTrack, repostTrack, undoRepostTrack } =
   tracksSocialActions
 const getUserId = accountSelectors.getUserId
+const { getTrack } = cacheTracksSelectors
 
 type OwnProps = TrackListItemProps
 type StateProps = ReturnType<typeof mapStateToProps>
@@ -61,12 +62,9 @@ const ConnectedTrackListItem = (props: ConnectedTrackListItemProps) => {
     streamConditions,
     trackId,
     isDeleted,
-    user
+    user,
+    albumBacklink
   } = props
-  const { data: albumInfo } = trpc.tracks.getAlbumBacklink.useQuery(
-    { trackId },
-    { enabled: !!trackId }
-  )
   const dispatch = useDispatch()
   const { onOpen: openPremiumContentPurchaseModal } =
     usePremiumContentPurchaseModal()
@@ -97,7 +95,7 @@ const ConnectedTrackListItem = (props: ConnectedTrackListItemProps) => {
         : null,
       !isUnlisted || isOwner ? OverflowAction.ADD_TO_PLAYLIST : null,
       OverflowAction.VIEW_TRACK_PAGE,
-      albumInfo ? OverflowAction.VIEW_ALBUM_PAGE : null,
+      albumBacklink ? OverflowAction.VIEW_ALBUM_PAGE : null,
       OverflowAction.VIEW_ARTIST_PAGE
     ].filter(Boolean) as OverflowAction[]
     clickOverflow(trackId, overflowActions)
@@ -140,7 +138,8 @@ function mapStateToProps(state: AppState, ownProps: OwnProps) {
   return {
     user: getUserFromTrack(state, { id: ownProps.trackId }),
     currentUserId: getUserId(state),
-    gatedContentStatus: id ? getGatedContentStatusMap(state)[id] : undefined
+    gatedContentStatus: id ? getGatedContentStatusMap(state)[id] : undefined,
+    albumBacklink: getTrack(state, { id: ownProps.trackId })?.album_backlink
   }
 }
 

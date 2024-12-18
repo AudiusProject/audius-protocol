@@ -16,6 +16,7 @@ import imageEmpty from 'app/assets/images/imageBlank2x.png'
 import { getLocalTrackCoverArtPath } from 'app/services/offline-downloader'
 import { getTrackDownloadStatus } from 'app/store/offline-downloads/selectors'
 import { OfflineDownloadStatus } from 'app/store/offline-downloads/slice'
+import { useThemeColors } from 'app/utils/theme'
 
 import { primitiveToImageSource } from './primitiveToImageSource'
 
@@ -104,20 +105,23 @@ export const TrackImage = (props: TrackImageProps) => {
 
   const localTrackImageUri = useLocalTrackImageUri(trackId)
   const trackImageSource = useTrackImage({ trackId, size })
-  const { color, cornerRadius } = useTheme()
-  const { source, isFallbackImage } = trackImageSource
+  const { cornerRadius } = useTheme()
+  const { skeleton } = useThemeColors()
+  const { source: loadedSource, isFallbackImage } = trackImageSource
 
-  if (!source && !localTrackImageUri) return null
+  const source = loadedSource ?? localTrackImageUri
 
   return (
     <FastImage
       {...other}
       style={[
         { aspectRatio: 1, borderRadius: cornerRadius[borderRadius] },
-        isFallbackImage && { backgroundColor: color.background.surface2 },
+        (isFallbackImage || !source) && {
+          backgroundColor: skeleton
+        },
         style
       ]}
-      source={source ?? localTrackImageUri!}
+      source={source ?? { uri: '' }}
       onLoad={onLoad}
     />
   )

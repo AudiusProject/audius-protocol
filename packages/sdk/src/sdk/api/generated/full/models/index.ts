@@ -6,6 +6,7 @@ export * from './AccountCollection';
 export * from './AccountCollectionUser';
 export * from './AccountFull';
 export * from './ActivityFull';
+export * from './AlbumBacklink';
 export * from './AlbumsResponseFull';
 export * from './AnnouncementNotification';
 export * from './AnnouncementNotificationAction';

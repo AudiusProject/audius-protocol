@@ -19,7 +19,7 @@ import type {
   Track,
   User
 } from '@audius/common/models'
-import { FeatureFlags, trpc } from '@audius/common/services'
+import { FeatureFlags } from '@audius/common/services'
 import type { CommonState } from '@audius/common/store'
 import {
   accountSelectors,
@@ -196,7 +196,8 @@ export const TrackScreenDetailsTile = ({
     release_date: releaseDate,
     is_scheduled_release: isScheduledRelease,
     _is_publishing,
-    preview_cid
+    preview_cid,
+    album_backlink
   } = track as Track
 
   const isOwner = ownerId === currentUserId
@@ -211,10 +212,6 @@ export const TrackScreenDetailsTile = ({
     (track as Track)?.is_downloadable ||
     ((track as Track)?._stems?.length ?? 0) > 0
 
-  const { data: albumInfo } = trpc.tracks.getAlbumBacklink.useQuery(
-    { trackId },
-    { enabled: !!trackId }
-  )
   const { open: openCommentDrawer } = useCommentDrawer()
 
   const isLongFormContent =
@@ -440,7 +437,7 @@ export const TrackScreenDetailsTile = ({
           ? OverflowAction.MARK_AS_UNPLAYED
           : OverflowAction.MARK_AS_PLAYED
         : null,
-      albumInfo ? OverflowAction.VIEW_ALBUM_PAGE : null,
+      album_backlink ? OverflowAction.VIEW_ALBUM_PAGE : null,
       OverflowAction.VIEW_ARTIST_PAGE,
       isOwner && !ddexApp ? OverflowAction.EDIT_TRACK : null,
       isOwner && isScheduledRelease && isUnlisted

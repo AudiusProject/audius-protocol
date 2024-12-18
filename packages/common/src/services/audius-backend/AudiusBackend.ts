@@ -27,7 +27,6 @@ import dayjs from '~/utils/dayjs'
 
 import {
   BNWei,
-  Collection,
   ID,
   InstagramUser,
   Name,
@@ -566,30 +565,6 @@ export const audiusBackend = ({
     }
   }
 
-  async function repostCollection(
-    playlistId: ID,
-    metadata?: { is_repost_of_repost: boolean }
-  ) {
-    try {
-      return audiusLibs.EntityManager.repostPlaylist(
-        playlistId,
-        JSON.stringify(metadata)
-      )
-    } catch (err) {
-      console.error(getErrorMessage(err))
-      throw err
-    }
-  }
-
-  async function undoRepostCollection(playlistId: ID) {
-    try {
-      return audiusLibs.EntityManager.unrepostPlaylist(playlistId)
-    } catch (err) {
-      console.error(getErrorMessage(err))
-      throw err
-    }
-  }
-
   async function uploadImage(file: File) {
     return await audiusLibs.creatorNode.uploadTrackCoverArtV2(file, () => {})
   }
@@ -653,140 +628,6 @@ export const audiusBackend = ({
         metadata: userMetadataToSdk(newMetadata)
       })
       return { blockHash, blockNumber, userId }
-    } catch (err) {
-      console.error(getErrorMessage(err))
-      throw err
-    }
-  }
-
-  async function createPlaylist(
-    playlistId: ID,
-    metadata: Partial<Collection>,
-    isAlbum = false,
-    trackIds: ID[] = [],
-    isPrivate = true
-  ) {
-    try {
-      const web3 = await audiusLibs.web3Manager.getWeb3()
-      const currentBlockNumber = await web3.eth.getBlockNumber()
-      const currentBlock = await web3.eth.getBlock(currentBlockNumber)
-      const playlistTracks = trackIds.map((trackId) => ({
-        track: trackId,
-        metadata_time: currentBlock.timestamp
-      }))
-      const response = await audiusLibs.EntityManager.createPlaylist({
-        ...metadata,
-        playlist_id: playlistId,
-        playlist_contents: { track_ids: playlistTracks },
-        is_album: isAlbum,
-        is_private: isPrivate
-      })
-      const { blockHash, blockNumber, error } = response
-      if (error) return { playlistId, error }
-      return { blockHash, blockNumber, playlistId }
-    } catch (err) {
-      // This code path should never execute
-      console.debug('Reached client createPlaylist catch block')
-      console.error(getErrorMessage(err))
-      return { playlistId: null, error: true }
-    }
-  }
-
-  async function updatePlaylist(metadata: Collection) {
-    try {
-      const { blockHash, blockNumber } =
-        await audiusLibs.EntityManager.updatePlaylist(metadata)
-
-      return { blockHash, blockNumber }
-    } catch (error) {
-      console.error(getErrorMessage(error))
-      return { error }
-    }
-  }
-
-  async function orderPlaylist(playlist: any) {
-    try {
-      const { blockHash, blockNumber } =
-        await audiusLibs.EntityManager.updatePlaylist(playlist)
-      return { blockHash, blockNumber }
-    } catch (error) {
-      console.error(getErrorMessage(error))
-      return { error }
-    }
-  }
-
-  async function publishPlaylist(playlist: Collection) {
-    try {
-      playlist.is_private = false
-      const { blockHash, blockNumber } =
-        await audiusLibs.EntityManager.updatePlaylist({
-          ...playlist,
-          is_private: false
-        })
-      return { blockHash, blockNumber }
-    } catch (error) {
-      console.error(getErrorMessage(error))
-      return { error }
-    }
-  }
-
-  async function addPlaylistTrack(playlist: Collection) {
-    try {
-      const { blockHash, blockNumber } =
-        await audiusLibs.EntityManager.updatePlaylist(playlist)
-      return { blockHash, blockNumber }
-    } catch (error) {
-      console.error(getErrorMessage(error))
-      return { error }
-    }
-  }
-
-  async function deletePlaylistTrack(playlist: Collection) {
-    try {
-      const { blockHash, blockNumber } =
-        await audiusLibs.EntityManager.updatePlaylist(playlist)
-      return { blockHash, blockNumber }
-    } catch (error) {
-      console.error(getErrorMessage(error))
-      return { error }
-    }
-  }
-
-  async function deletePlaylist(playlistId: ID) {
-    try {
-      const txReceipt = await audiusLibs.EntityManager.deletePlaylist(
-        playlistId
-      )
-      return {
-        blockHash: txReceipt.blockHash,
-        blockNumber: txReceipt.blockNumber
-      }
-    } catch (error) {
-      console.error(getErrorMessage(error))
-      return { error }
-    }
-  }
-
-  // Favorite a playlist
-  async function saveCollection(
-    playlistId: ID,
-    metadata?: { is_save_of_repost: boolean }
-  ) {
-    try {
-      return await audiusLibs.EntityManager.savePlaylist(
-        playlistId,
-        JSON.stringify(metadata)
-      )
-    } catch (err) {
-      console.error(getErrorMessage(err))
-      throw err
-    }
-  }
-
-  // Unfavorite a playlist
-  async function unsaveCollection(playlistId: ID) {
-    try {
-      return await audiusLibs.EntityManager.unsavePlaylist(playlistId)
     } catch (err) {
       console.error(getErrorMessage(err))
       throw err
@@ -1799,13 +1640,9 @@ export const audiusBackend = ({
 
   return {
     addDiscoveryProviderSelectionListener,
-    addPlaylistTrack,
     audiusLibs: audiusLibs as AudiusLibsType,
     clearNotificationBadges,
-    createPlaylist,
     currentDiscoveryProvider,
-    deletePlaylist,
-    deletePlaylistTrack,
     deregisterDeviceToken,
     didSelectDiscoveryProviderListeners,
     disableBrowserNotifications,
@@ -1828,12 +1665,8 @@ export const audiusBackend = ({
     getWAudioBalance,
     getWeb3,
     identityServiceUrl,
-    orderPlaylist,
-    publishPlaylist,
     recordTrackListen,
     registerDeviceToken,
-    repostCollection,
-    saveCollection,
     sendTokens,
     sendWAudioTokens,
     sendWelcomeEmail,
@@ -1846,14 +1679,11 @@ export const audiusBackend = ({
     transferAudioToWAudio,
     instagramHandle,
     tiktokHandle,
-    undoRepostCollection,
-    unsaveCollection,
     updateBrowserNotifications,
     updateCreator,
     updateEmailNotificationSettings,
     updateHCaptchaScore,
     updateNotificationSettings,
-    updatePlaylist,
     updatePushNotificationSettings,
     updateUserEvent,
     updateUserLocationTimezone,
