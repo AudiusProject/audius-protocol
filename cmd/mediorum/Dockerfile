@@ -77,7 +77,7 @@ RUN g++ -o /bin/analyze-bpm /app/cpp/bpm-analyzer.cpp \
     chmod +x /bin/analyze-bpm
 
 
-FROM golang:1.22-bullseye AS go-builder
+FROM golang:1.23-bullseye AS go-builder
 
 WORKDIR /app
 
