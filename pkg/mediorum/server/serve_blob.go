@@ -15,9 +15,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/AudiusProject/audius-protocol/pkg/core/gen/core_proto"
 	"github.com/AudiusProject/audius-protocol/pkg/mediorum/server/signature"
-	"google.golang.org/protobuf/types/known/timestamppb"
 	"gorm.io/gorm"
 
 	"github.com/AudiusProject/audius-protocol/pkg/mediorum/cidutil"
@@ -266,13 +264,15 @@ func (ss *MediorumServer) findAndPullBlob(_ context.Context, key string) (string
 }
 
 func (ss *MediorumServer) logTrackListen(c echo.Context) {
+	skipPlayCountQuery, _ := strconv.ParseBool(c.QueryParam("skip_play_count"))
 
-	skipPlayCount, _ := strconv.ParseBool(c.QueryParam("skip_play_count"))
+	identityConfigured := os.Getenv("identityService") == ""
+	rangePresent := !rangeIsFirstByte(c.Request().Header.Get("Range"))
+	methodNotGET := c.Request().Method != "GET"
+	refererMatches := strings.Contains(c.Request().Header.Get("Referer"), c.Request().URL.String())
 
-	if skipPlayCount ||
-		os.Getenv("identityService") == "" ||
-		!rangeIsFirstByte(c.Request().Header.Get("Range")) ||
-		c.Request().Method != "GET" {
+	skipPlayCount := skipPlayCountQuery || identityConfigured || rangePresent || methodNotGET || refererMatches
+	if skipPlayCount {
 		// todo: skip count for trusted notifier requests should be inferred
 		// by the requesting entity and not some query param
 		return
@@ -321,20 +321,11 @@ func (ss *MediorumServer) logTrackListen(c echo.Context) {
 
 	// fire and forget core play record
 	go func() {
-
-		ctx := context.Background()
 		defer func() {
 			if r := recover(); r != nil {
 				ss.logger.Error("core panic recovered in goroutine", "err", r)
 			}
 		}()
-
-		sdk, err := ss.getCoreSdk()
-		if err != nil || sdk == nil {
-			ss.logger.Info("returning early from core sdk err", "error", err, "sdk", sdk)
-			return
-		}
-
 		// parse out time as proto object from legacy listen sig
 		parsedTime, err := time.Parse(time.RFC3339, signatureData.Timestamp)
 		if err != nil {
@@ -348,50 +339,20 @@ func (ss *MediorumServer) logTrackListen(c echo.Context) {
 			return
 		}
 
-		// construct play data into event
-		play := &core_proto.TrackPlay{
-			UserId:    userId,
-			TrackId:   fmt.Sprint(sig.Data.TrackId),
-			Timestamp: timestamppb.New(parsedTime),
+		trackID := fmt.Sprint(sig.Data.TrackId)
+
+		if err := ss.insertPlayRecord(&PlayEvent{
+			UserID:    userId,
+			TrackID:   trackID,
+			PlayTime:  parsedTime,
 			Signature: signatureData.Signature,
 			City:      geoData.City,
 			Country:   geoData.Country,
 			Region:    geoData.Region,
-		}
-
-		// form actual proto event for signing
-		playsTx := &core_proto.TrackPlays{
-			Plays: []*core_proto.TrackPlay{play},
-		}
-
-		// sign plays event payload with mediorum priv key
-		signedPlaysEvent, err := signature.SignCoreBytes(playsTx, ss.Config.privateKey)
-		if err != nil {
-			ss.logger.Error("core error signing listen proto event", "err", err)
+		}); err != nil {
+			ss.logger.Error("could not insert play record", "error", err)
 			return
 		}
-
-		// construct proto listen signedTx alongside signature of plays signedTx
-		signedTx := &core_proto.SignedTransaction{
-			Signature: signedPlaysEvent,
-			Transaction: &core_proto.SignedTransaction_Plays{
-				Plays: playsTx,
-			},
-		}
-
-		ss.logger.Info("sending", "tx", signedTx)
-
-		// submit to configured core node
-		res, err := sdk.SendTransaction(ctx, &core_proto.SendTransactionRequest{
-			Transaction: signedTx,
-		})
-
-		if err != nil {
-			ss.logger.Error("core error submitting listen event", "err", err)
-			return
-		}
-
-		ss.logger.Info("core listen recorded", "tx", res.Txhash)
 	}()
 
 	buf, err := json.Marshal(body)
