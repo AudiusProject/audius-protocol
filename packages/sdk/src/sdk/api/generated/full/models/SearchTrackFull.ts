@@ -26,6 +26,12 @@ import {
     AccessGateFromJSONTyped,
     AccessGateToJSON,
 } from './AccessGate';
+import type { AlbumBacklink } from './AlbumBacklink';
+import {
+    AlbumBacklinkFromJSON,
+    AlbumBacklinkFromJSONTyped,
+    AlbumBacklinkToJSON,
+} from './AlbumBacklink';
 import type { CoverArt } from './CoverArt';
 import {
     CoverArtFromJSON,
@@ -249,6 +255,12 @@ export interface SearchTrackFull {
      * @memberof SearchTrackFull
      */
     pinnedCommentId?: number;
+    /**
+     * 
+     * @type {AlbumBacklink}
+     * @memberof SearchTrackFull
+     */
+    albumBacklink?: AlbumBacklink;
     /**
      * Describes what access the given user has
      * @type {Access}
@@ -649,6 +661,7 @@ export function SearchTrackFullFromJSONTyped(json: any, ignoreDiscriminator: boo
         'ddexApp': !exists(json, 'ddex_app') ? undefined : json['ddex_app'],
         'playlistsContainingTrack': !exists(json, 'playlists_containing_track') ? undefined : json['playlists_containing_track'],
         'pinnedCommentId': !exists(json, 'pinned_comment_id') ? undefined : json['pinned_comment_id'],
+        'albumBacklink': !exists(json, 'album_backlink') ? undefined : AlbumBacklinkFromJSON(json['album_backlink']),
         'access': AccessFromJSON(json['access']),
         'blocknumber': json['blocknumber'],
         'createDate': !exists(json, 'create_date') ? undefined : json['create_date'],
@@ -740,6 +753,7 @@ export function SearchTrackFullToJSON(value?: SearchTrackFull | null): any {
         'ddex_app': value.ddexApp,
         'playlists_containing_track': value.playlistsContainingTrack,
         'pinned_comment_id': value.pinnedCommentId,
+        'album_backlink': AlbumBacklinkToJSON(value.albumBacklink),
         'access': AccessToJSON(value.access),
         'blocknumber': value.blocknumber,
         'create_date': value.createDate,

@@ -2,7 +2,6 @@ import { Mood } from '@audius/sdk'
 
 import { useGetTrackById } from '~/api/track'
 import { ID } from '~/models'
-import { trpc } from '~/services/trpc'
 import { parseMusicalKey } from '~/utils/musicalKeys'
 import { searchPage } from '~/utils/route'
 
@@ -36,11 +35,6 @@ export const useTrackMetadata = ({
 }: TrackMetadataProps): TrackMetadataInfo[] => {
   const { data: track } = useGetTrackById({ id: trackId })
 
-  const { data: albumInfo } = trpc.tracks.getAlbumBacklink.useQuery(
-    { trackId },
-    { enabled: !!trackId }
-  )
-
   if (!track) return []
 
   const {
@@ -51,7 +45,8 @@ export const useTrackMetadata = ({
     is_unlisted: isUnlisted,
     musical_key,
     bpm,
-    is_custom_bpm: isCustomBpm
+    is_custom_bpm: isCustomBpm,
+    album_backlink
   } = track
 
   const parsedBpm = bpm
@@ -64,8 +59,8 @@ export const useTrackMetadata = ({
     {
       id: TrackMetadataType.ALBUM,
       label: 'Album',
-      value: albumInfo?.playlist_name ?? '',
-      url: albumInfo?.permalink
+      value: album_backlink?.playlist_name ?? '',
+      url: album_backlink?.permalink
     },
     {
       id: TrackMetadataType.GENRE,

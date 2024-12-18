@@ -13,6 +13,7 @@ index.ts
 models/Access.ts
 models/AccessInfoResponse.ts
 models/Activity.ts
+models/AlbumBacklink.ts
 models/AlbumsResponse.ts
 models/AuthorizedApp.ts
 models/AuthorizedApps.ts

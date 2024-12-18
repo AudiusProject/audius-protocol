@@ -83,6 +83,16 @@ access = ns.model(
     },
 )
 
+
+album_backlink = ns.model(
+    "album_backlink",
+    {
+        "playlist_id": fields.Integer(required=True),
+        "playlist_name": fields.String(required=True),
+        "permalink": fields.String(required=True),
+    },
+)
+
 track = ns.model(
     "Track",
     {
@@ -119,6 +129,7 @@ track = ns.model(
         "ddex_app": fields.String(allow_null=True),
         "playlists_containing_track": fields.List(fields.Integer),
         "pinned_comment_id": fields.Integer(allow_null=True),
+        "album_backlink": fields.Nested(album_backlink, allow_null=True),
     },
 )
 
@@ -229,6 +240,7 @@ track_full = ns.clone(
         "stream": fields.Nested(url_with_mirrors, required=True),
         "download": fields.Nested(url_with_mirrors, required=True),
         "preview": fields.Nested(url_with_mirrors, required=True),
+        "album_backlink": fields.Nested(album_backlink, allow_null=True),
     },
 )
 
