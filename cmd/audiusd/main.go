@@ -83,13 +83,6 @@ func main() {
 	}()
 
 	go func() {
-		if err := uptime.Run(ctx, logger); err != nil {
-			logger.Errorf("fatal uptime error: %v", err)
-			cancel()
-		}
-	}()
-
-	go func() {
 		if err := core.Run(ctx, logger); err != nil {
 			logger.Errorf("fatal core error: %v", err)
 			cancel()
@@ -100,6 +93,16 @@ func main() {
 		go func() {
 			if err := mediorum.Run(ctx, logger); err != nil {
 				logger.Errorf("fatal mediorum error: %v", err)
+				cancel()
+			}
+		}()
+	}
+
+	// this is gross, (more expected env var madness) but uptime is being removed soon enough
+	if hostUrl.Hostname() != "localhost" {
+		go func() {
+			if err := uptime.Run(ctx, logger); err != nil {
+				logger.Errorf("fatal uptime error: %v", err)
 				cancel()
 			}
 		}()
@@ -131,27 +134,29 @@ func startEchoProxyWithOptionalTLS(hostUrl *url.URL, logger *common.Logger) erro
 	e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
 
-	urlCore, err := url.Parse("http://localhost:26659")
-	if err != nil {
-		logger.Error("Failed to parse core URL:", err)
-	}
-	urlDAPI, err := url.Parse("http://localhost:1996")
-	if err != nil {
-		logger.Error("Failed to parse dAPI URL:", err)
-	}
-
-	coreProxy := httputil.NewSingleHostReverseProxy(urlCore)
-	dAPIProxy := httputil.NewSingleHostReverseProxy(urlDAPI)
-
 	e.GET("/", func(c echo.Context) error {
 		return c.JSON(http.StatusOK, map[string]string{
 			"status": "ok",
 		})
 	})
 
+	urlCore, err := url.Parse("http://localhost:26659")
+	if err != nil {
+		logger.Error("Failed to parse core URL:", err)
+	}
+	coreProxy := httputil.NewSingleHostReverseProxy(urlCore)
 	e.Any("/console/*", echo.WrapHandler(coreProxy))
 	e.Any("/core/*", echo.WrapHandler(coreProxy))
-	e.Any("/d_api/*", echo.WrapHandler(dAPIProxy))
+
+	// this is gross, (more expected env var madness) but uptime is being removed soon enough
+	if hostUrl.Hostname() != "localhost" {
+		urlDAPI, err := url.Parse("http://localhost:1996")
+		if err != nil {
+			logger.Error("Failed to parse dAPI URL:", err)
+		}
+		dAPIProxy := httputil.NewSingleHostReverseProxy(urlDAPI)
+		e.Any("/d_api/*", echo.WrapHandler(dAPIProxy))
+	}
 
 	if ENABLE_STORAGE {
 		urlMediorum, err := url.Parse("http://localhost:1991")
@@ -162,20 +167,15 @@ func startEchoProxyWithOptionalTLS(hostUrl *url.URL, logger *common.Logger) erro
 		e.Any("/*", echo.WrapHandler(mediorumProxy))
 	}
 
-	shouldHaveAutoTLS := []string{
-		"audius.co",
-		"stuffisup.com",
-		"theblueprint.xyz",
-		"tikilabs.com",
-		"shakespearetech.com",
-		"jollyworld.xyz",
-		"figment.io",
-		"cultur3stake.com",
-		"audiusindex.org",
+	disableAutoTLS := []string{
+		"altego.net",
+		"bdnodes.net",
+		"staked.cloud",
+		"localhost",
 	}
 
 	domain := extractDomain(hostUrl.String())
-	enableTls := isTldAllowed(domain, shouldHaveAutoTLS)
+	enableTls := !domainInTlds(domain, disableAutoTLS) && os.Getenv("DISABLE_TLS") != "true"
 	logger.Infof("domain: %s, enableTls: %v", domain, enableTls)
 
 	if enableTls {
@@ -234,9 +234,8 @@ func extractDomain(fqdn string) string {
 	return fqdn
 }
 
-// isTldAllowed checks if the domain ends with any of the allowed TLDs
-func isTldAllowed(domain string, allowedTlds []string) bool {
-	for _, tld := range allowedTlds {
+func domainInTlds(domain string, tlds []string) bool {
+	for _, tld := range tlds {
 		if strings.HasSuffix(domain, tld) {
 			return true
 		}
