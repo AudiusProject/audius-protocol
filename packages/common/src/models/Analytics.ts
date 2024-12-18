@@ -9,8 +9,7 @@ import {
   StringAudio,
   WalletAddress
 } from '~/models/Wallet'
-import { MintName } from '~/services/index'
-import { Nullable, Prettify } from '~/utils/typeUtils'
+import { Nullable } from '~/utils/typeUtils'
 
 import { Chain } from './Chain'
 import { PlaylistLibraryKind } from './PlaylistLibrary'
@@ -414,21 +413,6 @@ export enum Name {
   BUY_USDC_RECOVERY_SUCCESS = 'Buy USDC: Recovery Success',
   BUY_USDC_RECOVERY_FAILURE = 'Buy USDC: Recovery Failure',
   BUY_USDC_ADD_FUNDS_MANUALLY = 'Buy USDC: Add Funds Manually',
-
-  // Buy Crypto
-  BUY_CRYPTO_STARTED = 'Buy Crypto: Started',
-  BUY_CRYPTO_ON_RAMP_OPENED = 'Buy Crypto: On Ramp Opened',
-  BUY_CRYPTO_ON_RAMP_SUCCESS = 'Buy Crypto: On Ramp Success',
-  BUY_CRYPTO_ON_RAMP_FAILURE = 'Buy Crypto: On Ramp Failure',
-  BUY_CRYPTO_ON_RAMP_CANCELED = 'Buy Crypto: On Ramp Canceled',
-  BUY_CRYPTO_ON_RAMP_CONFIRMED = 'Buy Crypto: On Ramp Confirmed',
-  BUY_CRYPTO_SUCCESS = 'Buy Crypto: Success',
-  BUY_CRYPTO_FAILURE = 'Buy Crypto: Failure',
-
-  // Buy Crypto Recovery
-  BUY_CRYPTO_RECOVERY_STARTED = 'Buy Crypto: Recovery Started',
-  BUY_CRYPTO_RECOVERY_SUCCESS = 'Buy Crypto: Recovery Success',
-  BUY_CRYPTO_RECOVERY_FAILURE = 'Buy Crypto: Recovery Failure',
 
   // Withdraw USDC
   WITHDRAW_USDC_MODAL_OPENED = 'Withdraw USDC: Modal Opened',
@@ -2083,35 +2067,6 @@ type BuyUSDCAddFundsManually = {
   eventName: Name.BUY_USDC_ADD_FUNDS_MANUALLY
 }
 
-// Buy Crypto
-
-type BuyCryptoEvent = {
-  eventName:
-    | Name.BUY_CRYPTO_STARTED
-    | Name.BUY_CRYPTO_ON_RAMP_OPENED
-    | Name.BUY_CRYPTO_ON_RAMP_SUCCESS
-    | Name.BUY_CRYPTO_ON_RAMP_FAILURE
-    | Name.BUY_CRYPTO_ON_RAMP_CANCELED
-    | Name.BUY_CRYPTO_ON_RAMP_CONFIRMED
-    | Name.BUY_CRYPTO_SUCCESS
-    | Name.BUY_CRYPTO_FAILURE
-
-  provider: string
-  requestedAmount: number
-  mint: MintName
-  error?: string
-}
-
-type BuyCryptoRecoveryEvent = Prettify<
-  {
-    eventName:
-      | Name.BUY_CRYPTO_RECOVERY_STARTED
-      | Name.BUY_CRYPTO_RECOVERY_FAILURE
-      | Name.BUY_CRYPTO_RECOVERY_SUCCESS
-    intendedSOL: number
-  } & Omit<BuyCryptoEvent, 'eventName'>
->
-
 // Withdraw USDC
 
 export type WithdrawUSDCEventFields = {
@@ -2972,8 +2927,6 @@ export type AllTrackingEvents =
   | BuyUSDCRecoverySuccess
   | BuyUSDCRecoveryFailure
   | BuyUSDCAddFundsManually
-  | BuyCryptoEvent
-  | BuyCryptoRecoveryEvent
   | WithdrawUSDCModalOpened
   | WithdrawUSDCAddressPasted
   | WithdrawUSDCFormError

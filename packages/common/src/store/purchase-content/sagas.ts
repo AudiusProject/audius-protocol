@@ -33,13 +33,6 @@ import { BNUSDC } from '~/models/Wallet'
 import { FeatureFlags } from '~/services/remote-config/feature-flags'
 import { accountSelectors } from '~/store/account'
 import {
-  buyCryptoCanceled,
-  buyCryptoFailed,
-  buyCryptoSucceeded,
-  buyCryptoViaSol
-} from '~/store/buy-crypto/slice'
-import { BuyCryptoError } from '~/store/buy-crypto/types'
-import {
   buyUSDCFlowFailed,
   buyUSDCFlowSucceeded,
   onrampCanceled,
@@ -58,7 +51,6 @@ import { getContext } from '~/store/effects'
 import { getPreviewing, getTrackId } from '~/store/player/selectors'
 import { stop } from '~/store/player/slice'
 import { saveTrack } from '~/store/social/tracks/actions'
-import { OnRampProvider } from '~/store/ui/buy-audio/types'
 import {
   transactionCanceled,
   transactionFailed,
@@ -97,18 +89,6 @@ import {
 import { getBalanceNeeded } from './utils'
 
 const { getUserId, getAccountUser, getWalletAddresses } = accountSelectors
-
-type RaceStatusResult = {
-  succeeded?:
-    | ReturnType<typeof buyUSDCFlowSucceeded>
-    | ReturnType<typeof buyCryptoSucceeded>
-  failed?:
-    | ReturnType<typeof buyUSDCFlowFailed>
-    | ReturnType<typeof buyCryptoFailed>
-  canceled?:
-    | ReturnType<typeof onrampCanceled>
-    | ReturnType<typeof buyCryptoCanceled>
-}
 
 type GetPurchaseConfigArgs = {
   contentId: ID
@@ -567,44 +547,24 @@ type PurchaseUSDCWithStripeArgs = {
 }
 function* purchaseUSDCWithStripe({ amount }: PurchaseUSDCWithStripeArgs) {
   yield* put(buyUSDC())
-  const getFeatureEnabled = yield* getContext('getFeatureEnabled')
-  const isBuyUSDCViaSolEnabled = yield* call(
-    getFeatureEnabled,
-    FeatureFlags.BUY_USDC_VIA_SOL
-  )
+
   const cents = Math.ceil(amount * 100)
 
-  let result: RaceStatusResult | null = null
-  if (isBuyUSDCViaSolEnabled) {
-    yield* put(
-      buyCryptoViaSol({
-        // expects "friendly" amount, so dollars
-        amount: cents / 100.0,
-        mint: 'USDC',
-        provider: OnRampProvider.STRIPE
-      })
-    )
-    result = yield* race({
-      succeeded: take(buyCryptoSucceeded),
-      failed: take(buyCryptoFailed),
-      canceled: take(buyCryptoCanceled)
+  yield* put(
+    onrampOpened({
+      vendor: PurchaseVendor.STRIPE,
+      purchaseInfo: {
+        desiredAmount: cents
+      }
     })
-  } else {
-    yield* put(
-      onrampOpened({
-        vendor: PurchaseVendor.STRIPE,
-        purchaseInfo: {
-          desiredAmount: cents
-        }
-      })
-    )
+  )
 
-    result = yield* race({
-      succeeded: take(buyUSDCFlowSucceeded),
-      canceled: take(onrampCanceled),
-      failed: take(buyUSDCFlowFailed)
-    })
-  }
+  const result = yield* race({
+    succeeded: take(buyUSDCFlowSucceeded),
+    canceled: take(onrampCanceled),
+    failed: take(buyUSDCFlowFailed)
+  })
+
   // Return early for cancellation
   if (result.canceled) {
     throw new PurchaseContentError(
@@ -922,9 +882,7 @@ function* doStartPurchaseContentFlow({
     // If we get a known error, pipe it through directly. Otherwise make sure we
     // have a properly contstructed error to put into the slice.
     const error =
-      e instanceof PurchaseContentError ||
-      e instanceof BuyUSDCError ||
-      e instanceof BuyCryptoError
+      e instanceof PurchaseContentError || e instanceof BuyUSDCError
         ? e
         : new PurchaseContentError(PurchaseErrorCode.Unknown, `${e}`)
 

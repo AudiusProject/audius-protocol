@@ -22,7 +22,6 @@ import {
   purchaseContentActions
 } from '~/store'
 import { getWalletAddresses } from '~/store/account/selectors'
-import { BuyCryptoError } from '~/store/buy-crypto/types'
 import { getFeePayer } from '~/store/solana/selectors'
 
 type CoinflowAdapter = {
@@ -203,9 +202,7 @@ export const useCoinflowAdapter = ({
             } catch (e) {
               console.error('Caught error in sendTransaction', e)
               const error =
-                e instanceof PurchaseContentError ||
-                e instanceof BuyUSDCError ||
-                e instanceof BuyCryptoError
+                e instanceof PurchaseContentError || e instanceof BuyUSDCError
                   ? e
                   : new PurchaseContentError(PurchaseErrorCode.Unknown, `${e}`)
               dispatch(

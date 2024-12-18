@@ -1,5 +1,4 @@
 import {
-  buyCryptoSagas,
   buyUSDCSagas,
   castSagas,
   chatSagas,
@@ -221,7 +220,6 @@ export default function* rootSaga() {
 
     // Gated content
     gatedContentSagas(),
-    buyCryptoSagas(),
     buyUSDCSagas(),
     purchaseContentSagas(),
     withdrawUSDCSagas(),

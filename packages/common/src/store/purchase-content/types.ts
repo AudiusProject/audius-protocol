@@ -1,5 +1,3 @@
-import { BuyCryptoErrorCode } from '~/store/buy-crypto/types'
-
 import { BuyUSDCErrorCode } from '../buy-usdc'
 
 export enum PurchaseableContentType {
@@ -32,10 +30,7 @@ export enum PurchaseErrorCode {
   Unknown = 'Unknown'
 }
 
-export type PurchaseContentErrorCode =
-  | BuyUSDCErrorCode
-  | BuyCryptoErrorCode
-  | PurchaseErrorCode
+export type PurchaseContentErrorCode = BuyUSDCErrorCode | PurchaseErrorCode
 
 export class PurchaseContentError extends Error {
   constructor(public code: PurchaseContentErrorCode, message: string) {
