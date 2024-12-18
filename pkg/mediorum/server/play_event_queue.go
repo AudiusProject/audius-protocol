@@ -14,7 +14,7 @@ const playBatch = 500
 
 var playQueueInterval = 20 * time.Second
 
-type PlayRecord struct {
+type PlayEvent struct {
 	RowID     int
 	UserID    string
 	TrackID   string
@@ -25,9 +25,9 @@ type PlayRecord struct {
 	Country   string
 }
 
-func (ss *MediorumServer) insertPlayRecord(record *PlayRecord) error {
+func (ss *MediorumServer) insertPlayRecord(record *PlayEvent) error {
 	query := `
-	INSERT INTO plays_event_queue (
+	INSERT INTO play_event_queue (
 		user_id, track_id, play_time, signature, city, region, country
 	) 
 	VALUES ($1, $2, $3, $4, $5, $6, $7);
@@ -41,7 +41,7 @@ func (ss *MediorumServer) insertPlayRecord(record *PlayRecord) error {
 	return err
 }
 
-func (ss *MediorumServer) startPlayQueue() {
+func (ss *MediorumServer) startPlayEventQueue() {
 	ss.logger.Info("plays queue waiting for core sdk")
 	<-ss.coreSdkReady
 	ss.logger.Info("core sdk initialized")
@@ -65,7 +65,7 @@ func (ss *MediorumServer) processPlayRecordBatch() error {
 	query := `
 	WITH batch AS (
 		SELECT rowid, user_id, track_id, play_time, signature, city, region, country
-		FROM plays_event_queue
+		FROM play_event_queue
 		ORDER BY rowid
 		LIMIT $1
 	)
@@ -77,9 +77,9 @@ func (ss *MediorumServer) processPlayRecordBatch() error {
 	}
 	defer rows.Close()
 
-	plays := []PlayRecord{}
+	plays := []PlayEvent{}
 	for rows.Next() {
-		var play PlayRecord
+		var play PlayEvent
 		if err := rows.Scan(&play.RowID, &play.UserID, &play.TrackID, &play.PlayTime, &play.Signature, &play.City, &play.Region, &play.Country); err != nil {
 			return fmt.Errorf("failed to scan row: %v", err)
 		}
@@ -141,10 +141,10 @@ func (ss *MediorumServer) processPlayRecordBatch() error {
 
 	// delete play records once persisted in core tx
 	deleteQuery := `
-		DELETE FROM plays_event_queue
+		DELETE FROM play_event_queue
 		WHERE rowid IN (
 			SELECT rowid FROM (
-				SELECT rowid FROM plays_event_queue
+				SELECT rowid FROM play_event_queue
 				ORDER BY rowid
 				LIMIT $1
 			) AS subquery

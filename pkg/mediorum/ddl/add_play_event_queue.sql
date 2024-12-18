@@ -1,6 +1,6 @@
 begin;
 
-create table if not exists plays_event_queue(
+create table if not exists play_event_queue(
   rowid serial primary key,
   user_id text not null,
   track_id text not null,

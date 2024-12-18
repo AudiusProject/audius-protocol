@@ -513,7 +513,7 @@ func (ss *MediorumServer) MustStart() {
 
 		go ss.startUploadScroller()
 
-		go ss.startPlayQueue()
+		go ss.startPlayEventQueue()
 
 	} else {
 		go func() {

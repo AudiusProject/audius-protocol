@@ -341,7 +341,7 @@ func (ss *MediorumServer) logTrackListen(c echo.Context) {
 
 		trackID := fmt.Sprint(sig.Data.TrackId)
 
-		if err := ss.insertPlayRecord(&PlayRecord{
+		if err := ss.insertPlayRecord(&PlayEvent{
 			UserID:    userId,
 			TrackID:   trackID,
 			PlayTime:  parsedTime,
