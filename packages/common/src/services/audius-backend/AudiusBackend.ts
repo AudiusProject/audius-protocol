@@ -1,6 +1,5 @@
 import { AUDIO, wAUDIO } from '@audius/fixed-decimal'
 import { AudiusSdk, type StorageNodeSelectorService } from '@audius/sdk'
-import { DiscoveryAPI } from '@audius/sdk-legacy/dist/core'
 import { type AudiusLibs as AudiusLibsType } from '@audius/sdk-legacy/dist/libs'
 import type { HedgehogConfig } from '@audius/sdk-legacy/dist/services/hedgehog'
 import type { LocalStorage } from '@audius/sdk-legacy/dist/utils/localStorage'
@@ -252,7 +251,6 @@ export const audiusBackend = ({
   waitForWeb3,
   web3NetworkId,
   web3ProviderUrls,
-  withEagerOption,
   wormholeConfig: {
     ethBridgeAddress,
     ethTokenBridgeAddress,
@@ -513,29 +511,6 @@ export const audiusBackend = ({
     }
   }
 
-  // TODO(C-2719)
-  async function getUserListenCountsMonthly(
-    currentUserId: number,
-    startTime: string,
-    endTime: string
-  ) {
-    try {
-      const userListenCountsMonthly = await withEagerOption(
-        {
-          normal: (libs) => libs.User.getUserListenCountsMonthly,
-          eager: DiscoveryAPI.getUserListenCountsMonthly
-        },
-        Id.parse(currentUserId),
-        startTime,
-        endTime
-      )
-      return userListenCountsMonthly
-    } catch (e) {
-      console.error(getErrorMessage(e))
-      return []
-    }
-  }
-
   async function recordTrackListen({
     userId,
     trackId,
@@ -562,10 +537,6 @@ export const audiusBackend = ({
     } catch (err) {
       console.error(getErrorMessage(err))
     }
-  }
-
-  async function uploadImage(file: File) {
-    return await audiusLibs.creatorNode.uploadTrackCoverArtV2(file, () => {})
   }
 
   /**
@@ -1646,7 +1617,6 @@ export const audiusBackend = ({
     getPushNotificationSettings,
     getSafariBrowserPushEnabled,
     getSignature,
-    getUserListenCountsMonthly,
     getWAudioBalance,
     getWeb3,
     identityServiceUrl,
@@ -1672,7 +1642,6 @@ export const audiusBackend = ({
     updatePushNotificationSettings,
     updateUserEvent,
     updateUserLocationTimezone,
-    uploadImage,
     userNodeUrl,
     waitForLibsInit,
     waitForWeb3
