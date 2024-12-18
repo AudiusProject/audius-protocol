@@ -4,7 +4,12 @@ import { toCsvString } from '../csv'
 import { S3Config, publish } from '../s3'
 import dayjs from 'dayjs'
 import quarterOfYear from 'dayjs/plugin/quarterOfYear'
-import { formatDateISO, getYearMonth, getYearMonthDay, getYearMonthShorthand } from '../date'
+import {
+  formatDateISO,
+  getYearMonth,
+  getYearMonthDay,
+  getYearMonthShorthand
+} from '../date'
 import fetch from 'cross-fetch'
 
 dayjs.extend(quarterOfYear)
@@ -29,16 +34,16 @@ type MrvrAffirmative = {
 }
 
 type MrvrCbs = {
-  'Offering': 'Downloads / Monetized Content' | 'Subscription'
-  'UserType': 'Paid'
+  Offering: 'Downloads / Monetized Content' | 'Subscription'
+  UserType: 'Paid'
   ['Subscriber Count']: 0
   ['Gross Revenue']: number
   ['Gross revenue With Deductions']: number
-  'Territory': string
-  'Has_usage_flag': boolean
+  Territory: string
+  Has_usage_flag: boolean
   'Total Downloads': number
   'Total Streams': number
-  'Currency': 'USD'
+  Currency: 'USD'
 }
 
 const MrvrAffirmativeHeader: (keyof MrvrAffirmative)[] = [
@@ -57,8 +62,7 @@ const MrvrAffirmativeHeader: (keyof MrvrAffirmative)[] = [
   'Subscription - Average Subscription Price',
   'Subscription - Total Subscribers',
   'Subscription - Total Subscribers - USA Only',
-  'Aggregate Transmission Hours - USA Only',
- 
+  'Aggregate Transmission Hours - USA Only'
 ]
 
 const MrvrCbsHeader: (keyof MrvrCbs)[] = [
@@ -71,8 +75,7 @@ const MrvrCbsHeader: (keyof MrvrCbs)[] = [
   'Has_usage_flag',
   'Total Downloads',
   'Total Streams',
-  'Currency',
- 
+  'Currency'
 ]
 
 // gathers data from a month period prior to the provided date.
@@ -84,9 +87,11 @@ export const mrvr = async (
   date: Date
 ): Promise<void> => {
   // Get exchange rate from usd to eur for CBS reporting
-  const usdToEurRate = await fetch('https://api.frankfurter.app/latest?base=USD')
-    .then(response => response.json())
-    .then(data => data.rates.EUR)
+  const usdToEurRate = await fetch(
+    'https://api.frankfurter.app/latest?base=USD'
+  )
+    .then((response) => response.json())
+    .then((data) => data.rates.EUR)
 
   const logger = plogger.child({ date: date.toISOString() })
   logger.info('beginning usage detail report processing')
@@ -177,23 +182,26 @@ export const mrvr = async (
       `,
       { start, end }
     )
-  
-    const mrvrAffirmativeRows: MrvrAffirmative[] = mrvrAffirmativeResult.rows
-    const mrvrAffirmativeCsv = toCsvString(mrvrAffirmativeRows, MrvrAffirmativeHeader)
 
-    const now = new Date();
+    const mrvrAffirmativeRows: MrvrAffirmative[] = mrvrAffirmativeResult.rows
+    const mrvrAffirmativeCsv = toCsvString(
+      mrvrAffirmativeRows,
+      MrvrAffirmativeHeader
+    )
+
+    const now = new Date()
     // Audius_MRVR_aff_YYMM_YYYYMMDD.csv
     // YYMM = Year and Month of usage, YYYYMMDD = time of generation
-    const fileName = `Audius_MRVR_aff_${getYearMonthShorthand(start)}_${getYearMonthDay(now)}`
-  
-    const results = await publish(
-      logger,
-      s3s,
-      mrvrAffirmativeCsv,
-      fileName
-    )
+    const fileName = `Audius_MRVR_aff_${getYearMonthShorthand(
+      start
+    )}_${getYearMonthDay(now)}`
+
+    const results = await publish(logger, s3s, mrvrAffirmativeCsv, fileName)
     results.forEach((objUrl) =>
-      logger.info({ objUrl, records: mrvrAffirmativeCsv.length }, 'mrvr affirmative upload result')
+      logger.info(
+        { objUrl, records: mrvrAffirmativeCsv.length },
+        'mrvr affirmative upload result'
+      )
     )
   }
   // CBS
@@ -241,7 +249,7 @@ export const mrvr = async (
         "UserType",
         "Subscriber Count",
         "Gross Revenue",
-        "Gross revenue With Deductions", 
+        "Gross revenue With Deductions",
         "Territory",
         case when ("Total Downloads" > 0 or "Total Streams" > 0) then true else false end as "Has_usage_flag",
         coalesce("Total Downloads", 0) as "Total Downloads",
@@ -321,19 +329,19 @@ export const mrvr = async (
 
     const mrvrCbsRows: MrvrAffirmative[] = mrvrCbs.rows
     const mrvrCbsCsv = toCsvString(mrvrCbsRows, MrvrCbsHeader)
-    const now = new Date();
+    const now = new Date()
     // YYYYMM_Audius_yyyymmddThhmmss_summary.csv
     // YYMM = Year and Month of usage, YYYYMMDD = time of generation
-    const fileName = `${getYearMonth(start)}_Audius_${formatDateISO(now)}_summary`
+    const fileName = `${getYearMonth(start)}_Audius_${formatDateISO(
+      now
+    )}_summary`
 
-    const results = await publish(
-      logger,
-      s3s,
-      mrvrCbsCsv,
-      fileName
-    )
+    const results = await publish(logger, s3s, mrvrCbsCsv, fileName)
     results.forEach((objUrl) =>
-      logger.info({ objUrl, records: mrvrCbsCsv.length }, 'mrvr cbs upload result')
+      logger.info(
+        { objUrl, records: mrvrCbsCsv.length },
+        'mrvr cbs upload result'
+      )
     )
   }
 
