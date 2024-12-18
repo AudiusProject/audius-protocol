@@ -11,16 +11,13 @@ import {
   getAssociatedTokenAddressSync
 } from '@solana/spl-token'
 import {
-  AddressLookupTableAccount,
   Commitment,
   ComputeBudgetProgram,
   Connection,
   Keypair,
   PublicKey,
   Transaction,
-  TransactionInstruction,
-  TransactionMessage,
-  VersionedTransaction
+  TransactionInstruction
 } from '@solana/web3.js'
 import BN from 'bn.js'
 
@@ -37,7 +34,6 @@ import { AudiusBackend } from './AudiusBackend'
 
 const DEFAULT_RETRY_DELAY = 1000
 const DEFAULT_MAX_RETRY_COUNT = 120
-const PLACEHOLDER_SIGNATURE = new Array(64).fill(0)
 export const RECOVERY_MEMO_STRING = 'Recover Withdrawal'
 export const WITHDRAWAL_MEMO_STRING = 'Withdrawal'
 export const PREPARE_WITHDRAWAL_MEMO_STRING = 'Prepare Withdrawal'
@@ -293,58 +289,6 @@ export const pollForTokenBalanceChange = async (
   throw new Error(`${debugTokenName} balance polling exceeded maximum retries`)
 }
 
-/**
- * Polls the given wallet until its SOL balance is different from initial balance or a timeoout.
- * @throws an error if the balance doesn't change within the timeout.
- */
-export const pollForBalanceChange = async (
-  audiusBackendInstance: AudiusBackend,
-  {
-    wallet,
-    initialBalance,
-    retryDelayMs = DEFAULT_RETRY_DELAY,
-    maxRetryCount = DEFAULT_MAX_RETRY_COUNT,
-    sdk
-  }: {
-    wallet: PublicKey
-    initialBalance?: bigint
-    retryDelayMs?: number
-    maxRetryCount?: number
-    sdk: AudiusSdk
-  }
-) => {
-  console.info(`Polling SOL balance for ${wallet.toBase58()} ...`)
-  let balanceBN = await audiusBackendInstance.getAddressSolBalance({
-    address: wallet.toBase58(),
-    sdk
-  })
-  let balance = BigInt(balanceBN.toString())
-  if (initialBalance === undefined) {
-    initialBalance = balance
-  }
-  let retries = 0
-  while (balance === initialBalance && retries++ < maxRetryCount) {
-    console.debug(
-      `Polling SOL balance (${initialBalance} === ${balance}) [${retries}/${maxRetryCount}]`
-    )
-    await delay(retryDelayMs)
-    balanceBN = await audiusBackendInstance.getAddressSolBalance({
-      address: wallet.toBase58(),
-      sdk
-    })
-    balance = BigInt(balanceBN.toString())
-  }
-  if (balance !== initialBalance) {
-    console.debug(
-      `SOL balance changed by ${
-        balance - initialBalance
-      } (${initialBalance} => ${balance})`
-    )
-    return balance
-  }
-  throw new Error('SOL balance polling exceeded maximum retries')
-}
-
 export const findAssociatedTokenAddress = async (
   audiusBackendInstance: AudiusBackend,
   { solanaAddress, mint }: { solanaAddress: string; mint: MintName }
@@ -593,102 +537,6 @@ export const relayTransaction = async (
     skipPreflight,
     useCoinflowRelay
   })
-}
-
-/**
- * Relays the given versioned transaction using the libs transaction handler
- */
-export const relayVersionedTransaction = async (
-  audiusBackendInstance: AudiusBackend,
-  {
-    transaction,
-    addressLookupTableAccounts,
-    skipPreflight
-  }: {
-    transaction: VersionedTransaction
-    addressLookupTableAccounts: AddressLookupTableAccount[]
-    skipPreflight?: boolean
-  }
-) => {
-  const placeholderSignature = Buffer.from(PLACEHOLDER_SIGNATURE)
-  const libs = await audiusBackendInstance.getAudiusLibsTyped()
-  const decompiledMessage = TransactionMessage.decompile(transaction.message, {
-    addressLookupTableAccounts
-  })
-  const signatures = transaction.message.staticAccountKeys
-    .slice(0, transaction.message.header.numRequiredSignatures)
-    .map((publicKey, index) => ({
-      publicKey: publicKey.toBase58(),
-      signature: Buffer.from(transaction.signatures[index])
-    }))
-    .filter((meta) => !meta.signature.equals(placeholderSignature))
-  return await libs.solanaWeb3Manager!.transactionHandler.handleTransaction({
-    instructions: decompiledMessage.instructions,
-    recentBlockhash: decompiledMessage.recentBlockhash,
-    signatures,
-    feePayerOverride: decompiledMessage.payerKey,
-    lookupTableAddresses: addressLookupTableAccounts.map((lut) =>
-      lut.key.toBase58()
-    ),
-    skipPreflight
-  })
-}
-
-/**
- * Helper that gets the lookup table accounts (that is, the account holding the lookup table,
- * not the accounts _in_ the lookup table) from their addresses.
- */
-export const getLookupTableAccounts = async (
-  audiusBackendInstance: AudiusBackend,
-  { lookupTableAddresses }: { lookupTableAddresses: string[] }
-) => {
-  const libs = await audiusBackendInstance.getAudiusLibsTyped()
-  const connection = libs.solanaWeb3Manager!.getConnection()
-  return await Promise.all(
-    lookupTableAddresses.map(async (address) => {
-      const account = await connection.getAddressLookupTable(
-        new PublicKey(address)
-      )
-      if (account.value == null) {
-        throw new Error(`Couldn't find lookup table ${address}`)
-      }
-      return account.value
-    })
-  )
-}
-
-/**
- * Helper to create a versioned transaction with lookup tables
- */
-export const createVersionedTransaction = async (
-  audiusBackendInstance: AudiusBackend,
-  {
-    instructions,
-    lookupTableAddresses,
-    feePayer,
-    sdk
-  }: {
-    instructions: TransactionInstruction[]
-    lookupTableAddresses: string[]
-    feePayer: PublicKey
-    sdk: AudiusSdk
-  }
-) => {
-  const addressLookupTableAccounts = await getLookupTableAccounts(
-    audiusBackendInstance,
-    { lookupTableAddresses }
-  )
-  const recentBlockhash = await getRecentBlockhash({ sdk })
-
-  const message = new TransactionMessage({
-    payerKey: feePayer,
-    recentBlockhash,
-    instructions
-  }).compileToV0Message(addressLookupTableAccounts)
-  return {
-    transaction: new VersionedTransaction(message),
-    addressLookupTableAccounts
-  }
 }
 
 // NOTE: The above all need to be updated to use SDK. The below is fresh.

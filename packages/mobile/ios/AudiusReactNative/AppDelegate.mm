@@ -47,8 +47,6 @@
   self.initialProps = @{};
   [super application:application didFinishLaunchingWithOptions:launchOptions];
 
-  [RNBootSplash initWithStoryboard:@"BootSplash" rootView:self.window.rootViewController.view]; // <- initialization using the storyboard file name
-
   [[TikTokOpenSDKApplicationDelegate sharedInstance] application:application didFinishLaunchingWithOptions:launchOptions];
   return YES;
 }
@@ -78,4 +76,10 @@
 - (void)application:(UIApplication *)application didReceiveRemoteNotification:(NSDictionary *)userInfo fetchCompletionHandler:(void (^)(UIBackgroundFetchResult result))completionHandler {
   [RNNotifications didReceiveBackgroundNotification:userInfo withCompletionHandler:completionHandler];
 }
+
+- (void)customizeRootView:(RCTRootView *)rootView {
+  [super customizeRootView:rootView];
+  [RNBootSplash initWithStoryboard:@"BootSplash" rootView:rootView]; // ⬅️ initialize the splash screen
+}
+
 @end

@@ -23,7 +23,6 @@ import { NotificationReminder } from 'app/components/notification-reminder/Notif
 import OAuthWebView from 'app/components/oauth/OAuthWebView'
 import { RateCtaReminder } from 'app/components/rate-cta-drawer/RateCtaReminder'
 import { Toasts } from 'app/components/toasts'
-import { env } from 'app/env'
 import { useEnterForeground } from 'app/hooks/useAppState'
 import { incrementSessionCount } from 'app/hooks/useSessionCount'
 import { RootScreen } from 'app/screens/root-screen'
@@ -40,17 +39,9 @@ import { AudiusQueryProvider } from './AudiusQueryProvider'
 import { Drawers } from './Drawers'
 import ErrorBoundary from './ErrorBoundary'
 import { ThemeProvider } from './ThemeProvider'
+import { initSentry, navigationIntegration } from './sentry'
 
-const navigationIntegration = Sentry.reactNavigationIntegration({
-  enableTimeToInitialDisplay: true
-})
-
-Sentry.init({
-  dsn: env.SENTRY_DSN,
-  integrations: [navigationIntegration, Sentry.reactNativeTracingIntegration()],
-  enableUserInteractionTracing: true,
-  tracesSampleRate: 1
-})
+initSentry()
 
 const tanQueryClient = new TanQueryClient()
 

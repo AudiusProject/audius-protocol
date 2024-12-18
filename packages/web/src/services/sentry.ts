@@ -1,8 +1,11 @@
 import { DoubleKeys } from '@audius/common/services'
 import * as Sentry from '@sentry/browser'
 
+import packageJson from '../../package.json'
+
 import { env } from './env'
 import { remoteConfigInstance } from './remote-config/remote-config-instance'
+const { version: appVersion } = packageJson
 
 const analyticsBlacklist = [
   'google-analytics',
@@ -23,9 +26,8 @@ export const initializeSentry = async () => {
     ignoreErrors:
       process.env.VITE_SENTRY_DISABLED === 'true' ? [/.*/] : undefined,
 
-    // Need to give Sentry a version so it can
-    // associate stacktraces with sourcemaps
-    release: process.env.VITE_CURRENT_GIT_SHA,
+    // Use our semantic release version for release tracking
+    release: appVersion,
 
     integrations: [
       // Pull extra fields off error objects
@@ -65,4 +67,7 @@ export const initializeSentry = async () => {
       ) ?? 0
     )
   })
+
+  Sentry.setTag('commit_sha', process.env.VITE_CURRENT_GIT_SHA)
+  Sentry.setTag('platform', 'web')
 }

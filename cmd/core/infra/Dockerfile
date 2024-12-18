@@ -1,5 +1,4 @@
-ARG GO_VERSION=1.22.5
-FROM golang:${GO_VERSION} AS build
+FROM golang:1.23-bullseye AS build
 WORKDIR /src
 
 RUN --mount=type=cache,target=/go/pkg/mod/ \
