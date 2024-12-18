@@ -1473,11 +1473,11 @@ export const audiusBackend = ({
         address,
         sdk
       })
-      return wAUDIO(amount)
+      return wAUDIO(amount).value
     } catch (err) {
       // Non-existent token accounts indicate 0 balance. Other errors fall through
       if (err instanceof TokenAccountNotFoundError) {
-        return wAUDIO(0)
+        return wAUDIO(0).value
       }
       throw err
     }

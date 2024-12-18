@@ -1,4 +1,4 @@
-import { AUDIO } from '@audius/fixed-decimal'
+import { AUDIO, wAUDIO } from '@audius/fixed-decimal'
 import { AudiusSdk } from '@audius/sdk'
 import BN from 'bn.js'
 
@@ -146,7 +146,7 @@ export class WalletClient {
               sdk
             })
           // Convert SPL wAudio -> AUDIO BN
-          return new BN(AUDIO(balance).value.toString()) as BNWei
+          return new BN(AUDIO(wAUDIO(balance)).value.toString()) as BNWei
         })
       ])
 
@@ -206,7 +206,7 @@ export class WalletClient {
           return {
             address: wallet,
             // wAUDIO balances use a different precision, and we want BNWei as output to be consistent
-            balance: new BN(AUDIO(balance).value.toString()) as BNWei
+            balance: new BN(AUDIO(wAUDIO(balance)).value.toString()) as BNWei
           }
         })
       )
