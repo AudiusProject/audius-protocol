@@ -23,25 +23,23 @@ source_env_file() {
     while IFS='=' read -r key value || [ -n "$key" ]; do
         [[ "$key" =~ ^#.*$ ]] && continue
         [[ -z "$key" ]] && continue
-        if [ -z "${!key}" ]; then
-            val="${value%\"}"
-            val="${val#\"}"
-            export "$key"="$val"
-        fi
+        val="${value%\"}"
+        val="${val#\"}"
+        export "$key"="$val"
     done < "$file"
 }
 
 source_env_file "$ENV_FILE"
 source_env_file "$OVERRIDE_ENV_FILE"
 
-# Set database name based on creatorNodeEndpoint
 if [ -n "$creatorNodeEndpoint" ]; then
     POSTGRES_DB="audius_creator_node"
+elif [ -n "$audius_discprov_url" ]; then
+    POSTGRES_DB="audius_discovery"
 else
     POSTGRES_DB="audiusd"
 fi
 
-# Set other defaults
 POSTGRES_USER="postgres"
 POSTGRES_PASSWORD="postgres"
 POSTGRES_DATA_DIR=${POSTGRES_DATA_DIR:-/data/postgres}
