@@ -19,6 +19,6 @@ export const getEntityTitle = (entity: Nullable<EntityType>) => {
   return 'title' in entity
     ? entity?.title
     : 'playlist_name' in entity
-    ? entity?.playlist_name
-    : ''
+      ? entity?.playlist_name
+      : ''
 }

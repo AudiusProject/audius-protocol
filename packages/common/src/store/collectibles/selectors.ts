@@ -52,7 +52,7 @@ export const getSupportedUserCollections = createSelector(
     }
 
     const collectibles = accountUserId
-      ? allUserCollectibles[accountUserId] ?? defaultCollectibles
+      ? (allUserCollectibles[accountUserId] ?? defaultCollectibles)
       : defaultCollectibles
 
     const isLoading =

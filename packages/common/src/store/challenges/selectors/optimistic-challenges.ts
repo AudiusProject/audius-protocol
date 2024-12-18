@@ -166,8 +166,11 @@ export const getOptimisticUserChallenges = (
         isNativeMobile
       )
     )
-    .reduce((map, challenge) => {
-      map[challenge.challenge_id] = challenge
-      return map
-    }, {} as Partial<Record<ChallengeRewardID, OptimisticUserChallenge>>)
+    .reduce(
+      (map, challenge) => {
+        map[challenge.challenge_id] = challenge
+        return map
+      },
+      {} as Partial<Record<ChallengeRewardID, OptimisticUserChallenge>>
+    )
 }

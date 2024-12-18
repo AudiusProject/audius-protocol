@@ -61,10 +61,13 @@ export const getTracks = (
 
 // TODO:
 export const getTracksByUid = (state: CommonState) => {
-  return Object.keys(state.tracks.uids).reduce((entries, uid) => {
-    entries[uid] = getTrack(state, { uid })
-    return entries
-  }, {} as { [uid: string]: Track | null })
+  return Object.keys(state.tracks.uids).reduce(
+    (entries, uid) => {
+      entries[uid] = getTrack(state, { uid })
+      return entries
+    },
+    {} as { [uid: string]: Track | null }
+  )
 }
 
 export const getStatuses = (state: CommonState, props: { ids: ID[] }) => {

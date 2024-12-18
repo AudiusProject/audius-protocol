@@ -1131,9 +1131,10 @@ export const audiusBackend = ({
       if (bustCache) {
         audiusLibs.ethContracts.AudiusTokenClient.bustCache()
       }
-      const balance = await audiusLibs.ethContracts.AudiusTokenClient.balanceOf(
-        checksumWallet
-      )
+      const balance =
+        await audiusLibs.ethContracts.AudiusTokenClient.balanceOf(
+          checksumWallet
+        )
       return balance
     } catch (e) {
       console.error(e)
@@ -1218,9 +1219,10 @@ export const audiusBackend = ({
       if (bustCache) {
         audiusLibs.ethContracts.AudiusTokenClient.bustCache()
       }
-      const balance = await audiusLibs.ethContracts.AudiusTokenClient.balanceOf(
-        checksumWallet
-      )
+      const balance =
+        await audiusLibs.ethContracts.AudiusTokenClient.balanceOf(
+          checksumWallet
+        )
       const delegatedBalance =
         await audiusLibs.ethContracts.DelegateManagerClient.getTotalDelegatorStake(
           checksumWallet
@@ -1441,9 +1443,8 @@ export const audiusBackend = ({
     const transaction = await sdk.services.solanaClient.buildTransaction({
       instructions: [secpTransactionInstruction, transferInstruction]
     })
-    const signature = await sdk.services.claimableTokensClient.sendTransaction(
-      transaction
-    )
+    const signature =
+      await sdk.services.claimableTokensClient.sendTransaction(transaction)
     return signature
   }
 

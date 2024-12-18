@@ -46,8 +46,8 @@ export class DiscoveryNodeSelectorService {
       this.env.ENVIRONMENT === 'development'
         ? developmentConfig
         : this.env.ENVIRONMENT === 'staging'
-        ? stagingConfig
-        : productionConfig
+          ? stagingConfig
+          : productionConfig
 
     const { minVersion } = bootstrapConfig.network
 

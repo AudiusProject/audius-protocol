@@ -73,10 +73,10 @@ export const useChangeEmailFormConfiguration = (onComplete: () => void) => {
     page === ChangeEmailPage.ConfirmPassword
       ? confirmPasswordFormikSchema
       : page === ChangeEmailPage.NewEmail
-      ? EmailSchema
-      : page === ChangeEmailPage.VerifyEmail
-      ? verifyEmailFormikSchema
-      : undefined
+        ? EmailSchema
+        : page === ChangeEmailPage.VerifyEmail
+          ? verifyEmailFormikSchema
+          : undefined
 
   const checkPassword = useCallback(
     async (
