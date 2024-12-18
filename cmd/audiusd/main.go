@@ -75,7 +75,7 @@ func main() {
 	}
 
 	go func() {
-		if err := startEchoProxyWithOptionalTLS(hostUrl, tlsEnabled); err != nil {
+		if err := startEchoProxyWithOptionalTLS(hostUrl, tlsEnabled, logger); err != nil {
 			log.Fatalf("Echo server failed: %v", err)
 			cancel()
 		}
@@ -113,7 +113,7 @@ func main() {
 	logger.Info("Shutdown complete")
 }
 
-func startEchoProxyWithOptionalTLS(hostUrl *url.URL, enableTLS bool) error {
+func startEchoProxyWithOptionalTLS(hostUrl *url.URL, enableTLS bool, logger *common.Logger) error {
 
 	httpPort := os.Getenv("AUDIUSD_HTTP_PORT")
 	if httpPort == "" {
@@ -132,15 +132,15 @@ func startEchoProxyWithOptionalTLS(hostUrl *url.URL, enableTLS bool) error {
 
 	urlCore, err := url.Parse("http://localhost:26659")
 	if err != nil {
-		e.Logger.Fatal(err)
+		logger.Error("Failed to parse core URL:", err)
 	}
 	urlMediorum, err := url.Parse("http://localhost:1991")
 	if err != nil {
-		e.Logger.Fatal(err)
+		logger.Error("Failed to parse mediorum URL:", err)
 	}
 	urlDAPI, err := url.Parse("http://localhost:1996")
 	if err != nil {
-		e.Logger.Fatal(err)
+		logger.Error("Failed to parse dAPI URL:", err)
 	}
 
 	coreProxy := httputil.NewSingleHostReverseProxy(urlCore)
@@ -173,12 +173,14 @@ func startEchoProxyWithOptionalTLS(hostUrl *url.URL, enableTLS bool) error {
 
 	domain := extractDomain(hostUrl.String())
 	enableTls := isTldAllowed(domain, shouldHaveAutoTLS) || os.Getenv("ENABLE_TLS") == "true"
+	logger.Infof("domain: %s, enableTls: %v", domain, enableTls)
 
-	if enableTls {
+	// if enableTls {
+	if true {
 		// Get server's IP addresses
 		addrs, err := net.InterfaceAddrs()
 		if err != nil {
-			e.Logger.Warn("Failed to get interface addresses:", err)
+			logger.Warn("Failed to get interface addresses:", err)
 		}
 
 		// Build whitelist starting with hostname and localhost
@@ -193,20 +195,20 @@ func startEchoProxyWithOptionalTLS(hostUrl *url.URL, enableTLS bool) error {
 			}
 		}
 
-		e.Logger.Info("TLS host whitelist:", whitelist)
+		logger.Info("TLS host whitelist: " + strings.Join(whitelist, ", "))
 		e.AutoTLSManager.HostPolicy = autocert.HostWhitelist(whitelist...)
 		e.AutoTLSManager.Cache = autocert.DirCache(getEnvString("audius_core_root_dir", "/audius-core") + "/echo/cache")
 		e.Pre(middleware.HTTPSRedirect())
 
 		go func() {
 			if err := e.StartAutoTLS(":" + httpsPort); err != nil && err != http.ErrServerClosed {
-				e.Logger.Error("HTTPS server failed")
+				logger.Errorf("HTTPS server failed: %v", err)
 			}
 		}()
 
 		go func() {
 			if err := e.Start(":" + httpPort); err != nil && err != http.ErrServerClosed {
-				e.Logger.Fatal("HTTP server failed")
+				logger.Fatalf("HTTP server failed: %v", err)
 			}
 		}()
 
@@ -264,7 +266,7 @@ func getEnvBool(key string, defaultVal bool) bool {
 func getHostUrl() (*url.URL, error) {
 	ep := os.Getenv("creatorNodeEndpoint")
 	if ep == "" {
-		ep = os.Getenv("audiusd_discprov_url")
+		ep = os.Getenv("audius_discprov_url")
 	}
 	if ep == "" {
 		ep = "localhost"
