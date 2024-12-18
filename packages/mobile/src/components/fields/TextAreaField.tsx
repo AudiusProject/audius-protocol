@@ -23,8 +23,8 @@ export const TextAreaField = (props: TextAreaFieldProps) => {
     ? charCount < maxLength * 0.8
       ? 'neutralLight4'
       : charCount < maxLength * 0.95
-      ? 'warning'
-      : 'error'
+        ? 'warning'
+        : 'error'
     : undefined
 
   return (
