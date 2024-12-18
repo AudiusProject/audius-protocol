@@ -51,25 +51,6 @@ type MrvrCbs = {
   'Tip Revenue': number
 }
 
-const MrvrAffirmativeHeader: (keyof MrvrAffirmative)[] = [
-  'Downloads - Gross Revenues without Permitted Deductions',
-  'Downloads - Gross Revenues with Permitted Deductions',
-  'Downloads - Gross Revenues without Permitted Deductions - USA Only',
-  'Downloads - Gross Revenues with Permitted Deductions - USA Only',
-  'Downloads - Public Performance Fees',
-  'Downloads - Record Label Payments',
-  'Subscription - Gross Revenues without Permitted Deductions',
-  'Subscription - Gross Revenues with Permitted Deductions',
-  'Subscription - Gross Revenues without Permitted Deductions - USA Only',
-  'Subscription - Gross Revenues with Permitted Deductions - USA Only',
-  'Subscription - Public Performance Fees',
-  'Subscription - Record Label Payments',
-  'Subscription - Average Subscription Price',
-  'Subscription - Total Subscribers',
-  'Subscription - Total Subscribers - USA Only',
-  'Aggregate Transmission Hours - USA Only'
-]
-
 const MrvrCbsHeader: (keyof MrvrCbs)[] = [
   'Offering',
   'UserType',
@@ -116,105 +97,6 @@ export const mrvr = async (
     'time range'
   )
 
-  const affirmative = async () => {
-    const mrvrAffirmativeResult = await db.raw(
-      `
-      select
-        revenue."Downloads - Gross Revenues without Permitted Deductions",
-        revenue."Downloads - Gross Revenues with Permitted Deductions",
-        revenue."Downloads - Gross Revenues without Permitted Deductions - USA Only",
-        revenue."Downloads - Gross Revenues with Permitted Deductions - USA Only",
-        revenue."Downloads - Public Performance Fees",
-        revenue."Downloads - Record Label Payments",
-        revenue."Subscription - Gross Revenues without Permitted Deductions",
-        revenue."Subscription - Gross Revenues with Permitted Deductions",
-        revenue."Subscription - Gross Revenues without Permitted Deductions - USA Only",
-        revenue."Subscription - Gross Revenues with Permitted Deductions - USA Only",
-        revenue."Subscription - Public Performance Fees",
-        revenue."Subscription - Record Label Payments",
-        revenue."Subscription - Average Subscription Price",
-        revenue."Subscription - Total Subscribers",
-        revenue."Subscription - Total Subscribers - USA Only",
-        ath."Aggregate Transmission Hours - USA Only"
-      from
-        (
-          select
-            trunc(sum(("amount" + "extra_amount") / 1000000), 2) as "Downloads - Gross Revenues without Permitted Deductions",
-            trunc(sum(("amount" + "extra_amount") / 1000000), 2) as "Downloads - Gross Revenues with Permitted Deductions",
-            trunc(sum(
-              case
-                when "country" = 'United States'
-                then ("amount" + "extra_amount") / 1000000
-                else 0
-              end
-            ), 2) as "Downloads - Gross Revenues without Permitted Deductions - USA Only",
-            trunc(sum(
-              case
-                when "country" = 'United States'
-                then ("amount" + "extra_amount") / 1000000
-                else 0
-              end
-            ), 2) as "Downloads - Gross Revenues with Permitted Deductions - USA Only",
-            trunc(0, 2) as "Downloads - Public Performance Fees",
-            trunc(0, 2) as "Downloads - Record Label Payments",
-            trunc(0, 2) as "Subscription - Gross Revenues without Permitted Deductions",
-            trunc(0, 2) as "Subscription - Gross Revenues with Permitted Deductions",
-            trunc(0, 2) as "Subscription - Gross Revenues without Permitted Deductions - USA Only",
-            trunc(0, 2) as "Subscription - Gross Revenues with Permitted Deductions - USA Only",
-            trunc(0, 2) as "Subscription - Public Performance Fees",
-            trunc(0, 2) as "Subscription - Record Label Payments",
-            trunc(0, 2) as "Subscription - Average Subscription Price",
-            trunc(0, 2) as "Subscription - Total Subscribers",
-            trunc(0, 2) as "Subscription - Total Subscribers - USA Only"
-          from "usdc_purchases"
-          where
-            "created_at" >= :start
-            and "created_at" < :end
-        ) as revenue
-        cross join
-        (
-          select
-            sum(cast("count" * "duration" as float) / 3600.0) as "Aggregate Transmission Hours - USA Only"
-          from (
-            select
-              "tracks"."duration" as "duration",
-              "aggregate_monthly_plays"."count" as "count"
-            from
-              "tracks"
-            join
-              "aggregate_monthly_plays" on "tracks"."track_id" = "aggregate_monthly_plays"."play_item_id"
-            where
-              "aggregate_monthly_plays"."country" = 'United States'
-              and "timestamp" >= :start
-              and "timestamp" < :end
-          ) as ath_data
-        ) as ath;
-      `,
-      { start, end }
-    )
-
-    const mrvrAffirmativeRows: MrvrAffirmative[] = mrvrAffirmativeResult.rows
-    const mrvrAffirmativeCsv = toCsvString(
-      mrvrAffirmativeRows,
-      MrvrAffirmativeHeader
-    )
-
-    const now = new Date()
-    // Audius_MRVR_aff_YYMM_YYYYMMDD.csv
-    // YYMM = Year and Month of usage, YYYYMMDD = time of generation
-    const fileName = `Audius_MRVR_aff_${getYearMonthShorthand(
-      start
-    )}_${getYearMonthDay(now)}`
-
-    const results = await publish(logger, s3s, mrvrAffirmativeCsv, fileName)
-    results.forEach((objUrl) =>
-      logger.info(
-        { objUrl, records: mrvrAffirmativeCsv.length },
-        'mrvr affirmative upload result'
-      )
-    )
-  }
-  // CBS
   const cbs = async () => {
     const mrvrCbs = await db.raw(
       `
@@ -381,6 +263,5 @@ export const mrvr = async (
     )
   }
 
-  // await affirmative()
   await cbs()
 }
