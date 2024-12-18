@@ -29,7 +29,6 @@ import (
 )
 
 func main() {
-	tlsEnabled := getEnvBool("ENABLE_TLS", false)
 	storageEnabled := getEnvBool("ENABLE_STORAGE", false)
 
 	var slogLevel slog.Level
@@ -75,7 +74,7 @@ func main() {
 	}
 
 	go func() {
-		if err := startEchoProxyWithOptionalTLS(hostUrl, tlsEnabled, logger); err != nil {
+		if err := startEchoProxyWithOptionalTLS(hostUrl, logger); err != nil {
 			log.Fatalf("Echo server failed: %v", err)
 			cancel()
 		}
@@ -113,7 +112,7 @@ func main() {
 	logger.Info("Shutdown complete")
 }
 
-func startEchoProxyWithOptionalTLS(hostUrl *url.URL, enableTLS bool, logger *common.Logger) error {
+func startEchoProxyWithOptionalTLS(hostUrl *url.URL, logger *common.Logger) error {
 
 	httpPort := os.Getenv("AUDIUSD_HTTP_PORT")
 	if httpPort == "" {
@@ -172,11 +171,10 @@ func startEchoProxyWithOptionalTLS(hostUrl *url.URL, enableTLS bool, logger *com
 	}
 
 	domain := extractDomain(hostUrl.String())
-	enableTls := isTldAllowed(domain, shouldHaveAutoTLS) || os.Getenv("ENABLE_TLS") == "true"
+	enableTls := isTldAllowed(domain, shouldHaveAutoTLS)
 	logger.Infof("domain: %s, enableTls: %v", domain, enableTls)
 
-	// if enableTls {
-	if true {
+	if enableTls {
 		// Get server's IP addresses
 		addrs, err := net.InterfaceAddrs()
 		if err != nil {
