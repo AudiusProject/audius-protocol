@@ -76,18 +76,6 @@ const createFeedStackState = (route): PartialState<NavigationState> =>
   })
 
 /**
- * Convert query parameters to an object
- */
-const convertQueryParamsToObject = (url: string) => {
-  // This baseUrl is unimportant, we just need to create a URL object
-  const baseUrl = 'https://audius.co'
-
-  const urlObj = new URL(url, baseUrl)
-  const params = new URLSearchParams(urlObj.search)
-  return Object.fromEntries(params)
-}
-
-/**
  * NavigationContainer contains the react-navigation context
  * and configures linking
  */
@@ -301,7 +289,9 @@ const NavigationContainer = (props: NavigationContainerProps) => {
 
       // /search
       if (path.match(`^/search(/|$)`)) {
-        const { query, ...filters } = convertQueryParamsToObject(path)
+        const {
+          query: { query, ...filters }
+        } = queryString.parseUrl(path)
 
         return createFeedStackState({
           name: 'Search',

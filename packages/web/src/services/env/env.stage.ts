@@ -79,7 +79,6 @@ export const env: Env = {
   SUGGESTED_FOLLOW_HANDLES:
     'https://download.staging.audius.co/static-resources/signup-follows.json',
   TIKTOK_APP_ID: 'awa9re2w7ec3xrn6',
-  TRPC_ENDPOINT: 'https://discoveryprovider3.staging.audius.co/trpc/trpc',
   USDC_MINT_ADDRESS: 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v',
   USE_HASH_ROUTING: false,
   USER_NODE: 'https://usermetadata.staging.audius.co',
