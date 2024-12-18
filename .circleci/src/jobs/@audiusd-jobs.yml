@@ -52,7 +52,7 @@ build-audiusd:
             echo "Docker image $DOCKER_IMAGE already exists. Skipping build."
           else
             echo "Docker image $DOCKER_IMAGE not found. Building and pushing..."
-            make build-push-audiusd AD_TAG="$CIRCLE_SHA1"
+            BUILD_ARGS="--build-arg git_sha=${CIRCLE_SHA1}" make build-push-audiusd AD_TAG="$CIRCLE_SHA1"
           fi
     - docker-logout
     - docker-prune
