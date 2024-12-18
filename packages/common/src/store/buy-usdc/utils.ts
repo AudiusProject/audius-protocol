@@ -100,18 +100,12 @@ export function* getBuyUSDCRemoteConfig() {
       IntKeys.BUY_TOKEN_WALLET_POLL_MAX_RETRIES
     ) ?? undefined
 
-  // Only used in the BuyCryptoViaSol flow
-  const slippage =
-    remoteConfigInstance.getRemoteVar(IntKeys.BUY_TOKEN_VIA_SOL_SLIPPAGE_BPS) ??
-    BUY_TOKEN_VIA_SOL_SLIPPAGE_BPS
-
   return {
     minContentPriceCents,
     maxContentPriceCents,
     minUSDCPurchaseAmountCents,
     maxUSDCPurchaseAmountCents,
     maxRetryCount,
-    retryDelayMs,
-    slippage
+    retryDelayMs
   }
 }
