@@ -7,8 +7,7 @@ import {
   MAX_CONTENT_PRICE_CENTS,
   MAX_USDC_PURCHASE_AMOUNT_CENTS,
   MIN_CONTENT_PRICE_CENTS,
-  MIN_USDC_PURCHASE_AMOUNT_CENTS,
-  BUY_TOKEN_VIA_SOL_SLIPPAGE_BPS
+  MIN_USDC_PURCHASE_AMOUNT_CENTS
 } from '~/services/remote-config/defaults'
 
 import { getAccountUser } from '../account/selectors'
