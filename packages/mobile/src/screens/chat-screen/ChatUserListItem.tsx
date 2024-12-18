@@ -1,6 +1,5 @@
 import { useCallback } from 'react'
 
-import { trpc } from '@audius/common/services'
 import {
   accountSelectors,
   cacheUsersSelectors,
@@ -161,15 +160,6 @@ export const ChatUserListItem = ({
   )
   const { onOpen: openInboxUnavailableDrawer } = useInboxUnavailableModal()
 
-  const { data: relationship } = trpc.me.userRelationship.useQuery(
-    {
-      theirId: userId.toString()
-    },
-    {
-      enabled: !!currentUserId
-    }
-  )
-
   const handlePress = useCallback(() => {
     if (user?.user_id) {
       Keyboard.dismiss()
@@ -265,7 +255,7 @@ export const ChatUserListItem = ({
                   </View>
                 )}
               </View>
-              {relationship?.followsMe && canCreateChat ? (
+              {user?.does_follow_current_user && canCreateChat ? (
                 <Text
                   fontSize='xxs'
                   weight='heavy'

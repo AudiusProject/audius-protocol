@@ -245,6 +245,7 @@ def populate_user_metadata(
     current_user_followed_user_ids = {}
     current_user_subscribed_user_ids = {}
     current_user_followee_follow_count_dict = {}
+    queried_user_follows_current_user_dict = {}
     if current_user_id:
         # does current user follow any of requested user ids
         current_user_follow_rows = (
@@ -259,6 +260,20 @@ def populate_user_metadata(
         )
         for [following_id] in current_user_follow_rows:
             current_user_followed_user_ids[following_id] = True
+
+        # does queried user follow current user
+        queried_user_follows_current_user_rows = (
+            session.query(Follow.follower_user_id)
+            .filter(
+                Follow.is_current == True,
+                Follow.is_delete == False,
+                Follow.follower_user_id.in_(user_ids),
+                Follow.followee_user_id == current_user_id,
+            )
+            .all()
+        )
+        for [follower_id] in queried_user_follows_current_user_rows:
+            queried_user_follows_current_user_dict[follower_id] = True
 
         # collect all outgoing subscription edges for current user
         current_user_subscribed_rows = (
@@ -342,8 +357,12 @@ def populate_user_metadata(
             response_name_constants.does_current_user_follow
         ] = current_user_followed_user_ids.get(user_id, False)
         user[
+            response_name_constants.does_follow_current_user
+        ] = queried_user_follows_current_user_dict.get(user_id, False)
+        user[
             response_name_constants.does_current_user_subscribe
         ] = current_user_subscribed_user_ids.get(user_id, False)
+
         user[
             response_name_constants.current_user_followee_follow_count
         ] = current_user_followee_follow_count_dict.get(user_id, 0)
