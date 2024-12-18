@@ -171,7 +171,7 @@ const CollectionPage = ({
       ? smartCollectionIcons[metadata.playlist_name]
       : null
   const typeTitle =
-    metadata?.variant === Variant.SMART ? metadata?.typeTitle ?? type : type
+    metadata?.variant === Variant.SMART ? (metadata?.typeTitle ?? type) : type
   const customEmptyText =
     metadata?.variant === Variant.SMART ? metadata?.customEmptyText : null
 

@@ -211,16 +211,16 @@ export const FinishPage = (props: FinishPageProps) => {
                 {uploadComplete
                   ? '100%'
                   : fullUploadPercent === 100 && !uploadComplete
-                  ? messages.finishingUpload
-                  : `${fullUploadPercent}%`}
+                    ? messages.finishingUpload
+                    : `${fullUploadPercent}%`}
               </Text>
               <ProgressIndicator
                 status={
                   upload.error
                     ? ProgressStatus.ERROR
                     : uploadComplete
-                    ? ProgressStatus.COMPLETE
-                    : ProgressStatus.UPLOADING
+                      ? ProgressStatus.COMPLETE
+                      : ProgressStatus.UPLOADING
                 }
               />
             </div>

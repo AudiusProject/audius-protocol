@@ -90,6 +90,6 @@ export const getResultsLimit = (isMobile: boolean, category: SearchKind) => {
   return isMobile
     ? MOBILE_ALL_CATEGORY_RESULTS_LIMIT
     : category === SearchKind.ALL
-    ? DESKTOP_ALL_CATEGORY_RESULTS_LIMIT
-    : DESKTOP_SINGLE_CATEGORY_RESULTS_LIMIT
+      ? DESKTOP_ALL_CATEGORY_RESULTS_LIMIT
+      : DESKTOP_SINGLE_CATEGORY_RESULTS_LIMIT
 }
