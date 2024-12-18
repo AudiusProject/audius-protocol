@@ -11,7 +11,7 @@ if [ ! -f "$ENV_FILE" ]; then
     exit 1
 fi
 
-# source environment variables without overwriting existing ones
+# Source environment variables and allow overwriting
 source_env_file() {
     local file=$1
     if [ ! -f "$file" ]; then
@@ -46,7 +46,6 @@ POSTGRES_DATA_DIR=${POSTGRES_DATA_DIR:-/data/postgres}
 export dbUrl="postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@localhost:5432/${POSTGRES_DB}?sslmode=disable"
 export uptimeDataDir=${uptimeDataDir:-/data/bolt}
 export audius_core_root_dir=${audius_core_root_dir:-/data/core}
-export creatorNodeEndpoint=${creatorNodeEndpoint:-http://localhost}
 
 setup_postgres() {
     PG_BIN="/usr/lib/postgresql/15/bin"
