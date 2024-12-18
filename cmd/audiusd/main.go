@@ -171,10 +171,7 @@ func startEchoProxyWithOptionalTLS(hostUrl *url.URL, enableTLS bool) error {
 		"audiusindex.org",
 	}
 
-	domain := extractDomain(os.Getenv("creatorNodeEndpoint"))
-	if domain == "" {
-		domain = extractDomain(os.Getenv("audius_discprov_url"))
-	}
+	domain := extractDomain(hostUrl.String())
 	enableTls := isTldAllowed(domain, shouldHaveAutoTLS) || os.Getenv("ENABLE_TLS") == "true"
 
 	if enableTls {
