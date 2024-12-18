@@ -1,3 +1,4 @@
+import { AUDIO } from '@audius/fixed-decimal'
 import { AudiusSdk } from '@audius/sdk'
 import BN from 'bn.js'
 
@@ -138,12 +139,15 @@ export class WalletClient {
             bustCache
           )
         ),
-        ...associatedWallets.sol_wallets.map((wallet) =>
-          this.audiusBackendInstance.getAddressWAudioBalance({
-            address: wallet,
-            sdk
-          })
-        )
+        ...associatedWallets.sol_wallets.map(async (wallet) => {
+          const balance =
+            await this.audiusBackendInstance.getAddressWAudioBalance({
+              address: wallet,
+              sdk
+            })
+          // Convert SPL wAudio -> AUDIO BN
+          return new BN(AUDIO(balance).value.toString()) as BNWei
+        })
       ])
 
       // TODO: Remove once getAddressTotalStakedBalance is throwing for unexpected errors
@@ -201,7 +205,8 @@ export class WalletClient {
             })
           return {
             address: wallet,
-            balance: balance as BNWei
+            // wAUDIO balances use a different precision, and we want BNWei as output to be consistent
+            balance: new BN(AUDIO(balance).value.toString()) as BNWei
           }
         })
       )

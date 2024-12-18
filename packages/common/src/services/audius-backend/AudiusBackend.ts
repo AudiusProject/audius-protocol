@@ -1459,7 +1459,7 @@ export const audiusBackend = ({
   /**
    * Fetches the SPL WAUDIO balance for the user's solana wallet address
    * @param {string} The solana wallet address
-   * @returns {Promise<BN | null>} Returns the balance, 0 for non-existent token accounts
+   * @returns {Promise<wAUDIO | null>} Returns the balance, 0 for non-existent token accounts
    */
   async function getAddressWAudioBalance({
     address,
@@ -1473,11 +1473,11 @@ export const audiusBackend = ({
         address,
         sdk
       })
-      return new BN(amount.toString())
+      return wAUDIO(amount)
     } catch (err) {
       // Non-existent token accounts indicate 0 balance. Other errors fall through
       if (err instanceof TokenAccountNotFoundError) {
-        return new BN(0)
+        return wAUDIO(0)
       }
       throw err
     }
