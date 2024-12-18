@@ -14,13 +14,14 @@ declare global {
   var IMAGE_CACHE: Set<string>
 }
 
-if (global) {
+if (typeof global !== 'undefined') {
   if (!global.IMAGE_CACHE) {
     global.IMAGE_CACHE = new Set<string>()
   }
 }
 
-const IMAGE_CACHE = global.IMAGE_CACHE
+const IMAGE_CACHE =
+  typeof global !== 'undefined' ? global.IMAGE_CACHE : new Set<string>()
 
 // Gets the width from a given image size, e.g. '150x150' => 150
 const getWidth = (size: string) => {

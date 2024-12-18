@@ -56,6 +56,12 @@
 
 .item2:hover .usdcPill,
 .item2:hover .audioPill {
+  color: var(--harmony-static-black);
+  background: var(--harmony-static-static-white);
+}
+
+.item2Dark:hover .usdcPill,
+.item2Dark:hover .audioPill {
   color: var(--harmony-static-white);
   background: var(--harmony-static-static-white);
 }

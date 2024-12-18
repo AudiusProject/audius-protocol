@@ -362,7 +362,7 @@ def populate_user_metadata(
         user[
             response_name_constants.does_current_user_subscribe
         ] = current_user_subscribed_user_ids.get(user_id, False)
-        
+
         user[
             response_name_constants.current_user_followee_follow_count
         ] = current_user_followee_follow_count_dict.get(user_id, 0)

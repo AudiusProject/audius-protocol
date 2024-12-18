@@ -24,6 +24,7 @@ import {
 import type { ID, USDCPurchaseConditions } from '@audius/common/models'
 import {
   Name,
+  PurchaseMethod,
   PurchaseVendor,
   statusIsNotFinalized
 } from '@audius/common/models'
@@ -284,7 +285,7 @@ const RenderForm = ({
     isPolling: true,
     commitment: 'confirmed'
   })
-  const { extraAmount } = usePurchaseSummaryValues({
+  const { extraAmount, amountDue } = usePurchaseSummaryValues({
     price,
     currentBalance: balance
   })
@@ -429,7 +430,12 @@ const RenderForm = ({
           ) : null}
           <Button
             onPress={submitForm}
-            disabled={isUnlocking}
+            disabled={
+              isUnlocking ||
+              (purchaseMethod === PurchaseMethod.CRYPTO &&
+                page === PurchaseContentPage.TRANSFER &&
+                amountDue > 0)
+            }
             variant='primary'
             color='lightGreen'
             isLoading={isUnlocking}
