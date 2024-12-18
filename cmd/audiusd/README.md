@@ -46,10 +46,12 @@ Without port `26656` open, the node can still download blocks and query the bloc
 
 ### TLS
 
-To enable TLS, set `ENABLE_TLS=true` in your environment. This will instruct `audiusd` to automatically obtain a certificate using Let's Encrypt. This process takes roughly 60 seconds and occurs on the first boot only.
+To disable TLS, set `DISABLE_TLS=true` in your environment.
+
+TLS is enabled by default for registered nodes. The `audiusd` binary will automatically obtain a certificate using Let's Encrypt. This process takes roughly 60 seconds and occurs on the first boot only.
 
 For this to function correctly, the following conditions must be met:
-- Your service must be publicly accessible via the URL specified in the `creatorNodeEndpoint` environment variable.
+- Your service must be publicly accessible via the URL specified in the `creatorNodeEndpoint` or `audius_discprov_url` environment variable.
 - Your service must be reachable on both port `:80` and port `:443`
 
 **CLOUDFLARE PROXY**
