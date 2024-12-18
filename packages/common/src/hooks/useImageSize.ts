@@ -4,6 +4,12 @@ import { SquareSizes, WidthSizes } from '~/models'
 import { Maybe } from '~/utils/typeUtils'
 
 declare global {
+  // eslint-disable-next-line @typescript-eslint/no-namespace
+  module NodeJS {
+    interface Global {
+      IMAGE_CACHE: Set<string>
+    }
+  }
   // eslint-disable-next-line no-var
   var IMAGE_CACHE: Set<string>
 }
