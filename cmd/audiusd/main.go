@@ -28,8 +28,10 @@ import (
 	"golang.org/x/crypto/acme/autocert"
 )
 
+var ENABLE_STORAGE bool
+
 func main() {
-	storageEnabled := getEnvBool("ENABLE_STORAGE", false)
+	ENABLE_STORAGE = os.Getenv("creatorNodeEndpoint") != ""
 
 	var slogLevel slog.Level
 	if logLevel := os.Getenv("audiusd_log_level"); logLevel != "" {
@@ -94,7 +96,7 @@ func main() {
 		}
 	}()
 
-	if storageEnabled {
+	if ENABLE_STORAGE {
 		go func() {
 			if err := mediorum.Run(ctx, logger); err != nil {
 				logger.Errorf("fatal mediorum error: %v", err)
@@ -133,17 +135,12 @@ func startEchoProxyWithOptionalTLS(hostUrl *url.URL, logger *common.Logger) erro
 	if err != nil {
 		logger.Error("Failed to parse core URL:", err)
 	}
-	urlMediorum, err := url.Parse("http://localhost:1991")
-	if err != nil {
-		logger.Error("Failed to parse mediorum URL:", err)
-	}
 	urlDAPI, err := url.Parse("http://localhost:1996")
 	if err != nil {
 		logger.Error("Failed to parse dAPI URL:", err)
 	}
 
 	coreProxy := httputil.NewSingleHostReverseProxy(urlCore)
-	mediorumProxy := httputil.NewSingleHostReverseProxy(urlMediorum)
 	dAPIProxy := httputil.NewSingleHostReverseProxy(urlDAPI)
 
 	e.GET("/", func(c echo.Context) error {
@@ -156,7 +153,14 @@ func startEchoProxyWithOptionalTLS(hostUrl *url.URL, logger *common.Logger) erro
 	e.Any("/core/*", echo.WrapHandler(coreProxy))
 	e.Any("/d_api/*", echo.WrapHandler(dAPIProxy))
 
-	e.Any("/*", echo.WrapHandler(mediorumProxy))
+	if ENABLE_STORAGE {
+		urlMediorum, err := url.Parse("http://localhost:1991")
+		if err != nil {
+			logger.Error("Failed to parse mediorum URL:", err)
+		}
+		mediorumProxy := httputil.NewSingleHostReverseProxy(urlMediorum)
+		e.Any("/*", echo.WrapHandler(mediorumProxy))
+	}
 
 	shouldHaveAutoTLS := []string{
 		"audius.co",
