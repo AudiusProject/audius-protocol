@@ -73,7 +73,6 @@ export type Env = {
   SOLANA_WEB3_CLUSTER: string
   SUGGESTED_FOLLOW_HANDLES: string
   TIKTOK_APP_ID: string
-  TRPC_ENDPOINT: string
   USDC_MINT_ADDRESS: string
   USER_NODE: string
   USE_HASH_ROUTING: boolean
