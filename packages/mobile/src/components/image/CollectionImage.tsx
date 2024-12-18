@@ -14,6 +14,7 @@ import imageEmpty from 'app/assets/images/imageBlank2x.png'
 import { getLocalCollectionCoverArtPath } from 'app/services/offline-downloader'
 import { getCollectionDownloadStatus } from 'app/store/offline-downloads/selectors'
 import { OfflineDownloadStatus } from 'app/store/offline-downloads/slice'
+import { useThemeColors } from 'app/utils/theme'
 
 import { primitiveToImageSource } from './primitiveToImageSource'
 
@@ -99,20 +100,23 @@ export const CollectionImage = (props: CollectionImageProps) => {
 
   const localCollectionImageUri = useLocalCollectionImageUri(collectionId)
   const collectionImageSource = useCollectionImage({ collectionId, size })
-  const { color, cornerRadius } = useTheme()
-  const { source, isFallbackImage } = collectionImageSource
+  const { cornerRadius } = useTheme()
+  const { skeleton } = useThemeColors()
+  const { source: loadedSource, isFallbackImage } = collectionImageSource
 
-  if (!source && !localCollectionImageUri) return null
+  const source = loadedSource ?? localCollectionImageUri
 
   return (
     <FastImage
       {...other}
       style={[
         { aspectRatio: 1, borderRadius: cornerRadius.s },
-        isFallbackImage && { backgroundColor: color.background.surface2 },
+        (isFallbackImage || !source) && {
+          backgroundColor: skeleton
+        },
         style
       ]}
-      source={source ?? localCollectionImageUri!}
+      source={source ?? { uri: '' }}
       onLoad={onLoad}
     />
   )
