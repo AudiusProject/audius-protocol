@@ -193,7 +193,25 @@ export const mrvr = async (
           trunc(0, 2) as "Public Performance Fees",
           trunc(0, 2) as "Record Label Payments",
           trunc(0, 2) as "Average Subscription Price",
-          trunc(0, 2) as "Aggregate Transmission Hours", -- todo
+
+          (
+            select
+              sum(cast("count" * "duration" as float) / 3600.0)
+            from (
+              select
+                "tracks"."duration" as "duration",
+                "aggregate_monthly_plays"."count" as "count"
+              from
+                "tracks"
+              join
+                "aggregate_monthly_plays" on "tracks"."track_id" = "aggregate_monthly_plays"."play_item_id"
+              where
+                "aggregate_monthly_plays"."country" = purchases."country"
+                and "timestamp" >= :start
+                and "timestamp" < :end
+            ) as ath_data
+          ) as "Aggregate Transmission Hours",
+
           trunc(
             case when
               is_country_eur("country") then sum("tip_usd") * :usdToEurRate
@@ -232,7 +250,25 @@ export const mrvr = async (
           trunc(0, 2) as "Public Performance Fees",
           trunc(0, 2) as "Record Label Payments",
           trunc(0, 2) as "Average Subscription Price",
-          trunc(0, 2) as "Aggregate Transmission Hours", -- todo
+
+          (
+            select
+              sum(cast("count" * "duration" as float) / 3600.0)
+            from (
+              select
+                "tracks"."duration" as "duration",
+                "aggregate_monthly_plays"."count" as "count"
+              from
+                "tracks"
+              join
+                "aggregate_monthly_plays" on "tracks"."track_id" = "aggregate_monthly_plays"."play_item_id"
+              where
+                "aggregate_monthly_plays"."country" = "country"
+                and "timestamp" >= :start
+                and "timestamp" < :end
+            ) as ath_data
+          ) as "Aggregate Transmission Hours",
+
           trunc(0, 2) as "Tip Revenue"
         from plays
         where
