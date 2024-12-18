@@ -139,7 +139,9 @@ module.exports = {
       files: ['*.mdx'],
       extends: 'plugin:mdx/recommended',
       plugins: ['mdx'],
-      parser: 'eslint-mdx'
+      parser: 'eslint-mdx',
+      indent: 'off',
+      '@typescript-eslint/indent': 'off'
       // TODO: enable after react-native migration [C-3548]
       // rules: {
       //   '@typescript-eslint/consistent-type-exports': 'off'
