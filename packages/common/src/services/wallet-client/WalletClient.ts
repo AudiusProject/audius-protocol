@@ -1,3 +1,4 @@
+import { AUDIO, wAUDIO } from '@audius/fixed-decimal'
 import { AudiusSdk } from '@audius/sdk'
 import BN from 'bn.js'
 
@@ -138,14 +139,19 @@ export class WalletClient {
             bustCache
           )
         ),
-        ...associatedWallets.sol_wallets.map((wallet) =>
-          this.audiusBackendInstance.getAddressWAudioBalance({
-            address: wallet,
-            sdk
-          })
-        )
+        ...associatedWallets.sol_wallets.map(async (wallet) => {
+          const balance =
+            await this.audiusBackendInstance.getAddressWAudioBalance({
+              address: wallet,
+              sdk
+            })
+          // Convert SPL wAudio -> AUDIO BN
+          return new BN(AUDIO(wAUDIO(balance)).value.toString()) as BNWei
+        })
       ])
 
+      // TODO: Remove once getAddressTotalStakedBalance is throwing for unexpected errors
+      // and let the catch below handle things
       if (balances.some((b) => isNullOrUndefined(b))) {
         throw new Error(
           'Unable to fetch balance for one or more associated wallets.'
@@ -192,14 +198,15 @@ export class WalletClient {
       const sdk = await this.audiusSdk()
       const balances: { address: string; balance: BNWei }[] = await Promise.all(
         wallets.map(async (wallet) => {
-          const tokenAccountInfo =
-            await this.audiusBackendInstance.getAssociatedTokenAccountInfo({
+          const balance =
+            await this.audiusBackendInstance.getAddressWAudioBalance({
               address: wallet,
               sdk
             })
           return {
             address: wallet,
-            balance: new BN(tokenAccountInfo?.amount.toString() ?? 0) as BNWei
+            // wAUDIO balances use a different precision, and we want BNWei as output to be consistent
+            balance: new BN(AUDIO(wAUDIO(balance)).value.toString()) as BNWei
           }
         })
       )
