@@ -33,9 +33,9 @@ function renderUserCard(options?: RenderOptions) {
                   name: 'Test User',
                   profile_picture: {
                     [SquareSizes.SIZE_150_BY_150]:
-                      'https://node.com/image-small.jpg',
+                      'https://node.com/image-profile-small.jpg',
                     [SquareSizes.SIZE_480_BY_480]:
-                      'https://node.com/image-medium.jpg',
+                      'https://node.com/image-profile-medium.jpg',
                     mirrors: ['https://node.com']
                   },
                   follower_count: 1
@@ -74,7 +74,7 @@ describe('UserCard', () => {
 
     expect(await screen.getByRole('img', { hidden: true })).toHaveAttribute(
       'src',
-      'https://node.com/image-small.jpg'
+      'https://node.com/image-profile-small.jpg'
     )
   })
 

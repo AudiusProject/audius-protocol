@@ -63,7 +63,5 @@ export const UserImage = (props: UserImageProps) => {
   const { userId, size, ...imageProps } = props
   const { source } = useProfilePicture({ userId, size })
 
-  if (!source) return null
-
-  return <FastImage {...imageProps} source={source} />
+  return <FastImage {...imageProps} source={source ?? { uri: '' }} />
 }

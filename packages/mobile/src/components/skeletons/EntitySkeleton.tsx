@@ -3,8 +3,8 @@ import { useMemo, type ReactNode } from 'react'
 import { times, random } from 'lodash'
 import { View } from 'react-native'
 
-import { Divider } from '@audius/harmony-native'
-import { Tile, Text } from 'app/components/core'
+import { Divider, Text } from '@audius/harmony-native'
+import { Tile } from 'app/components/core'
 import Skeleton, { StaticSkeleton } from 'app/components/skeleton/Skeleton'
 import { makeStyles } from 'app/styles'
 
@@ -23,16 +23,12 @@ const useStyles = makeStyles(({ spacing, palette }) => ({
   heading: {
     alignItems: 'center'
   },
-  headingText: {
-    textAlign: 'center',
-    letterSpacing: 2,
-    marginBottom: spacing(2)
-  },
   trackArtwork: {
     borderWidth: 1,
     borderColor: palette.neutralLight8,
     borderRadius: 4,
-    marginBottom: spacing(4),
+    marginTop: spacing(4),
+    padding: spacing(4),
     height: 224,
     width: 224
   },
@@ -114,11 +110,11 @@ export const EntitySkeleton = (props: EntitySkeletonProps) => {
     <Tile styles={{ root: styles.root, content: styles.content }}>
       <View style={styles.heading}>
         <Text
-          fontSize='small'
-          weight='demiBold'
-          color='neutralLight4'
+          variant='label'
+          size='m'
+          strength='default'
           textTransform='uppercase'
-          style={styles.headingText}
+          color='subdued'
         >
           {entityType ? messages[entityType] : ''}
         </Text>

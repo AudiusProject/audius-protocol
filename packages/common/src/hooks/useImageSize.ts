@@ -3,8 +3,24 @@ import { useState, useEffect, useCallback } from 'react'
 import { SquareSizes, WidthSizes } from '~/models'
 import { Maybe } from '~/utils/typeUtils'
 
-// Global image cache
-const IMAGE_CACHE = new Set<string>()
+declare global {
+  // eslint-disable-next-line @typescript-eslint/no-namespace
+  module NodeJS {
+    interface Global {
+      IMAGE_CACHE: Set<string>
+    }
+  }
+  // eslint-disable-next-line no-var
+  var IMAGE_CACHE: Set<string>
+}
+
+if (global) {
+  if (!global.IMAGE_CACHE) {
+    global.IMAGE_CACHE = new Set<string>()
+  }
+}
+
+const IMAGE_CACHE = global.IMAGE_CACHE
 
 // Gets the width from a given image size, e.g. '150x150' => 150
 const getWidth = (size: string) => {

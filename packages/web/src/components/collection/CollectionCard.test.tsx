@@ -40,9 +40,9 @@ function renderCollectionCard(options?: RenderOptions) {
                   save_count: 5,
                   artwork: {
                     [SquareSizes.SIZE_150_BY_150]:
-                      'https://node.com/image-small.jpg',
+                      'https://node.com/image-collection-small.jpg',
                     [SquareSizes.SIZE_480_BY_480]:
-                      'https://node.com/image-medium.jpg',
+                      'https://node.com/image-collection-medium.jpg',
                     mirrors: ['https://node.com']
                   },
                   access: { stream: true }
@@ -87,7 +87,7 @@ describe('CollectionCard', () => {
     renderCollectionCard()
     expect(await screen.findByTestId('cover-art-1')).toHaveAttribute(
       'src',
-      'https://node.com/image-medium.jpg'
+      'https://node.com/image-collection-medium.jpg'
     )
   })
 
