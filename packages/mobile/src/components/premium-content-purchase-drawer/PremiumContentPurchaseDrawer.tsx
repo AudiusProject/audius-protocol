@@ -39,8 +39,7 @@ import {
   PurchaseableContentType
 } from '@audius/common/store'
 import type { PurchaseContentError } from '@audius/common/store'
-import { formatPrice, USDC_DIVISOR } from '@audius/common/utils'
-import { BN } from 'bn.js'
+import { formatPrice } from '@audius/common/utils'
 import { Formik, useField, useFormikContext } from 'formik'
 import {
   Linking,
