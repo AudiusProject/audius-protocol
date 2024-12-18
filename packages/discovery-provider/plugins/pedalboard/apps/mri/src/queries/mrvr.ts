@@ -44,6 +44,11 @@ type MrvrCbs = {
   'Total Downloads': number
   'Total Streams': number
   Currency: 'USD'
+  'Public Performance Fees': number
+  'Record Label Payments': number
+  'Average Subscription Price': number
+  'Aggregate Transmission Hours': number
+  'Tip Revenue': number
 }
 
 const MrvrAffirmativeHeader: (keyof MrvrAffirmative)[] = [
@@ -75,7 +80,12 @@ const MrvrCbsHeader: (keyof MrvrCbs)[] = [
   'Has_usage_flag',
   'Total Downloads',
   'Total Streams',
-  'Currency'
+  'Currency',
+  'Public Performance Fees',
+  'Record Label Payments',
+  'Average Subscription Price',
+  'Aggregate Transmission Hours',
+  'Tip Revenue'
 ]
 
 // gathers data from a month period prior to the provided date.
@@ -214,7 +224,8 @@ export const mrvr = async (
           content_id,
           country,
           buyer_user_id,
-          ("amount" + "extra_amount") / 1000000 as usd
+          "amount" / 1000000 as revenue_usd,
+          "extra_amount" / 1000000 as tip_usd
         from usdc_purchases
         where content_type = 'track'
           and created_at >= :start
@@ -254,7 +265,13 @@ export const mrvr = async (
         case when ("Total Downloads" > 0 or "Total Streams" > 0) then true else false end as "Has_usage_flag",
         coalesce("Total Downloads", 0) as "Total Downloads",
         coalesce("Total Streams", 0) as "Total Streams",
-        "Currency"
+        "Currency",
+
+        "Public Performance Fees",
+        "Record Label Payments",
+        "Average Subscription Price",
+        "Aggregate Transmission Hours",
+        "Tip Revenue"
       from (
         -- paid portion of MRVR
         select
@@ -263,15 +280,15 @@ export const mrvr = async (
           count(distinct "buyer_user_id") as "Subscriber Count",
           trunc(
             case when
-              is_country_eur("country") then sum("usd") * :usdToEurRate
-              else sum("usd")
+              is_country_eur("country") then sum("revenue_usd") * :usdToEurRate
+              else sum("revenue_usd")
             end,
             2
           ) as "Gross Revenue",
           trunc(
             case when
-              is_country_eur("country") then sum("usd") * :usdToEurRate
-              else sum("usd")
+              is_country_eur("country") then sum("revenue_usd") * :usdToEurRate
+              else sum("revenue_usd")
             end,
             2
           ) as "Gross revenue With Deductions",
@@ -289,7 +306,20 @@ export const mrvr = async (
           case when
             is_country_eur("country") then 'EUR'
             else 'USD'
-          end as "Currency"
+          end as "Currency",
+
+          trunc(0, 2) as "Public Performance Fees",
+          trunc(0, 2) as "Record Label Payments",
+          trunc(0, 2) as "Average Subscription Price",
+          trunc(0, 2) as "Aggregate Transmission Hours", -- todo
+          trunc(
+            case when
+              is_country_eur("country") then sum("tip_usd") * :usdToEurRate
+              else sum("tip_usd")
+            end,
+            2
+          ) as "Tip Revenue"
+
         from purchases
         where "country" is not null
         group by "country"
@@ -315,7 +345,13 @@ export const mrvr = async (
           case when
             is_country_eur("country") then 'EUR'
             else 'USD'
-          end as "Currency"
+          end as "Currency",
+
+          trunc(0, 2) as "Public Performance Fees",
+          trunc(0, 2) as "Record Label Payments",
+          trunc(0, 2) as "Average Subscription Price",
+          trunc(0, 2) as "Aggregate Transmission Hours", -- todo
+          trunc(0, 2) as "Tip Revenue"
         from plays
         where
           created_at >= :start
@@ -345,6 +381,6 @@ export const mrvr = async (
     )
   }
 
-  await affirmative()
+  // await affirmative()
   await cbs()
 }
