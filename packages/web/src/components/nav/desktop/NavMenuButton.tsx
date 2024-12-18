@@ -29,6 +29,7 @@ import { useIsUSDCEnabled } from 'hooks/useIsUSDCEnabled'
 import { useNavigateToPage } from 'hooks/useNavigateToPage'
 import { useRemoteVar } from 'hooks/useRemoteConfig'
 import { useSelector } from 'utils/reducer'
+import { isDarkMode } from 'utils/theme/theme'
 import zIndex from 'utils/zIndex'
 
 import { NavHeaderButton } from './NavHeaderButton'
@@ -58,6 +59,7 @@ export const NavMenuButton = () => {
   const hasClaimableRewards = useAccountHasClaimableRewards(challengeRewardIds)
   const isManagedAccount = useIsManagedAccount()
   const showNotificationBubble = hasUnreadMessages || hasClaimableRewards
+  const isDark = isDarkMode()
 
   const messagesIcon = hasUnreadMessages ? (
     <div>
@@ -90,7 +92,8 @@ export const NavMenuButton = () => {
   const payAndEarnItem = isUSDCEnabled
     ? {
         className: cn(styles.item, {
-          [styles.item2]: isThemeV2Enabled
+          [styles.item2]: isThemeV2Enabled && !isDark,
+          [styles.item2Dark]: isThemeV2Enabled && isDark
         }),
         text: (
           <div className={styles.popupItemText}>
@@ -127,7 +130,8 @@ export const NavMenuButton = () => {
   )
   const rewardsItem = {
     className: cn(styles.item, {
-      [styles.item2]: isThemeV2Enabled
+      [styles.item2]: isThemeV2Enabled && !isDark,
+      [styles.item2Dark]: isThemeV2Enabled && isDark
     }),
     text: (
       <div className={styles.popupItemText}>
