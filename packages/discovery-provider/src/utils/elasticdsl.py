@@ -71,7 +71,9 @@ def populate_user_metadata_es(user, current_user):
     return omit_indexed_fields(user)
 
 
-def populate_track_or_playlist_metadata_es(item, current_user):
+def populate_track_or_playlist_metadata_es(
+    item, current_user, include_playlist_tracks=False
+):
     if current_user:
         my_id = current_user["user_id"]
         item["has_current_user_reposted"] = my_id in item.get("reposted_by", [])
@@ -83,7 +85,7 @@ def populate_track_or_playlist_metadata_es(item, current_user):
     item["followee_reposts"] = item.get("followee_reposts", [])
     item["followee_saves"] = item.get("followee_saves", [])
 
-    if "playlist_id" in item and "tracks" in item:
+    if "playlist_id" in item and "tracks" in item and include_playlist_tracks:
         item["tracks"] = [
             populate_track_or_playlist_metadata_es(track, current_user)
             for track in item["tracks"]
