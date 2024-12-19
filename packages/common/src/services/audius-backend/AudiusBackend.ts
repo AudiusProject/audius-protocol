@@ -1,4 +1,4 @@
-import { AUDIO, wAUDIO } from '@audius/fixed-decimal'
+import { AUDIO, AudioWei, wAUDIO } from '@audius/fixed-decimal'
 import { AudiusSdk, type StorageNodeSelectorService } from '@audius/sdk'
 import { type AudiusLibs as AudiusLibsType } from '@audius/sdk-legacy/dist/libs'
 import type { HedgehogConfig } from '@audius/sdk-legacy/dist/services/hedgehog'
@@ -20,6 +20,7 @@ import {
   VersionedTransaction
 } from '@solana/web3.js'
 import BN from 'bn.js'
+import { getAddress } from 'viem'
 
 import { userMetadataToSdk } from '~/adapters/user'
 import { Env } from '~/services/env'
@@ -1078,33 +1079,25 @@ export const audiusBackend = ({
    * Make a request to fetch the eth AUDIO balance of the the user
    * @params {bool} bustCache
    * @params {string} ethAddress - Optional ETH wallet address. Defaults to hedgehog wallet
-   * @returns {Promise<BN | null>} balance or null if failed to fetch balance
+   * @returns {Promise<AudioWei | null>} balance or null if failed to fetch balance
    */
   async function getBalance({
     ethAddress,
-    bustCache = false
+    sdk
   }: {
-    ethAddress?: string
-    bustCache?: boolean
-  } = {}): Promise<BN | null> {
+    ethAddress: string
+    sdk: AudiusSdk
+  }): Promise<AudioWei | null> {
     await waitForLibsInit()
 
-    const wallet =
-      ethAddress !== undefined
-        ? ethAddress
-        : audiusLibs.web3Manager.getWalletAddress()
-    if (!wallet) return null
+    if (!ethAddress) return null
 
     try {
-      const ethWeb3 = audiusLibs.ethWeb3Manager.getWeb3()
-      const checksumWallet = ethWeb3.utils.toChecksumAddress(wallet)
-      if (bustCache) {
-        audiusLibs.ethContracts.AudiusTokenClient.bustCache()
-      }
-      const balance = await audiusLibs.ethContracts.AudiusTokenClient.balanceOf(
-        checksumWallet
-      )
-      return balance
+      const checksumWallet = getAddress(ethAddress)
+      const balance = await sdk.services.audiusTokenClient.balanceOf({
+        account: checksumWallet
+      })
+      return AUDIO(balance).value
     } catch (e) {
       console.error(e)
       reportError({ error: e as Error })
@@ -1175,32 +1168,25 @@ export const audiusBackend = ({
    * @params {bool} bustCache
    * @returns {Promise<BN | null>} balance or null if error
    */
-  async function getAddressTotalStakedBalance(
-    address: string,
-    bustCache = false
-  ) {
+  async function getAddressTotalStakedBalance(address: string, sdk: AudiusSdk) {
     await waitForLibsInit()
     if (!address) return null
 
     try {
-      const ethWeb3 = audiusLibs.ethWeb3Manager.getWeb3()
-      const checksumWallet = ethWeb3.utils.toChecksumAddress(address)
-      if (bustCache) {
-        audiusLibs.ethContracts.AudiusTokenClient.bustCache()
-      }
-      const balance = await audiusLibs.ethContracts.AudiusTokenClient.balanceOf(
-        checksumWallet
-      )
+      const checksumWallet = getAddress(address)
+      const balance = await sdk.services.audiusTokenClient.balanceOf({
+        account: checksumWallet
+      })
       const delegatedBalance =
-        await audiusLibs.ethContracts.DelegateManagerClient.getTotalDelegatorStake(
-          checksumWallet
+        await sdk.services.delegateManagerClient.contract.getTotalDelegatorStake(
+          { delegatorAddress: checksumWallet }
         )
       const stakedBalance =
-        await audiusLibs.ethContracts.StakingProxyClient.totalStakedFor(
-          checksumWallet
-        )
+        await sdk.services.stakingClient.contract.totalStakedFor({
+          account: checksumWallet
+        })
 
-      return balance.add(delegatedBalance).add(stakedBalance)
+      return AUDIO(balance + delegatedBalance + stakedBalance).value
     } catch (e) {
       reportError({ error: e as Error })
       console.error(e)

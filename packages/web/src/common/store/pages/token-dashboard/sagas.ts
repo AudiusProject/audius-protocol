@@ -27,7 +27,7 @@ const { getUserId } = accountSelectors
 function* fetchEthWalletInfo(wallets: string[]) {
   const walletClient = yield* getContext('walletClient')
   const ethWalletBalances = yield* call(
-    [walletClient, 'getEthWalletBalances'],
+    [walletClient, walletClient.getEthWalletBalances],
     wallets
   )
 
