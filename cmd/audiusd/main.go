@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"encoding/hex"
+	"fmt"
 	"log"
 	"log/slog"
 	"net"
@@ -11,6 +12,7 @@ import (
 	"net/url"
 	"os"
 	"os/signal"
+	"runtime/debug"
 	"strings"
 	"syscall"
 	"time"
@@ -82,25 +84,28 @@ func runWithRecover(name string, ctx context.Context, logger *common.Logger, f f
 		defer func() {
 			if r := recover(); r != nil {
 				logger.Errorf("%s goroutine panicked: %v", name, r)
-
-				if retries >= maxRetries {
-					logger.Errorf("%s exceeded maximum retry attempts (%d). Not restarting.", name, maxRetries)
-					return
-				}
-
-				retries++
-				logger.Infof("%s will restart in %v (attempt %d/%d)", name, backoff, retries, maxRetries)
+				logger.Errorf("%s stack trace: %s", name, string(debug.Stack()))
 
 				select {
 				case <-ctx.Done():
 					logger.Infof("%s shutdown requested, not restarting", name)
 					return
-				case <-time.After(backoff):
+				default:
+					if retries >= maxRetries {
+						logger.Errorf("%s exceeded maximum retry attempts (%d). Not restarting.", name, maxRetries)
+						return
+					}
+
+					retries++
+					logger.Infof("%s will restart in %v (attempt %d/%d)", name, backoff, retries, maxRetries)
+					time.Sleep(backoff)
+
 					// Exponential backoff
 					backoff = time.Duration(float64(backoff) * 2)
 					if backoff > maxBackoff {
 						backoff = maxBackoff
 					}
+
 					// Restart the goroutine
 					go run()
 				}
@@ -109,6 +114,8 @@ func runWithRecover(name string, ctx context.Context, logger *common.Logger, f f
 
 		if err := f(); err != nil {
 			logger.Errorf("%s error: %v", name, err)
+			// Treat errors like panics and restart the service
+			panic(fmt.Sprintf("%s error: %v", name, err))
 		}
 	}
 
