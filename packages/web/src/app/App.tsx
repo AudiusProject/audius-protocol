@@ -24,6 +24,8 @@ const {
 
 const SignOnPage = lazy(() => import('pages/sign-on-page'))
 const OAuthLoginPage = lazy(() => import('pages/oauth-login-page'))
+const DemoTrpcPage = lazy(() => import('pages/demo-trpc/DemoTrpcPage'))
+const TrpcHistoryPage = lazy(() => import('pages/demo-trpc/TrpcHistory'))
 const PrivateKeyExporterPage = lazy(
   () => import('pages/private-key-exporter-page/PrivateKeyExporterPage')
 )
@@ -58,6 +60,12 @@ export const AppInner = () => {
           </Route>
           <Route exact path='/oauth/auth'>
             <OAuthLoginPage />
+          </Route>
+          <Route path='/demo/trpc/history'>
+            <TrpcHistoryPage />
+          </Route>
+          <Route path='/demo/trpc'>
+            <DemoTrpcPage />
           </Route>
           <Route path={PRIVATE_KEY_EXPORTER_SETTINGS_PAGE}>
             <PrivateKeyExporterPage />
