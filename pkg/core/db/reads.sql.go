@@ -12,7 +12,7 @@ import (
 )
 
 const getAllRegisteredNodes = `-- name: GetAllRegisteredNodes :many
-select rowid, pub_key, endpoint, eth_address, comet_address, eth_block, node_type, sp_id
+select rowid, pub_key, endpoint, eth_address, comet_address, eth_block, node_type, sp_id, jailed, jailed_until
 from core_validators
 `
 
@@ -34,6 +34,8 @@ func (q *Queries) GetAllRegisteredNodes(ctx context.Context) ([]CoreValidator, e
 			&i.EthBlock,
 			&i.NodeType,
 			&i.SpID,
+			&i.Jailed,
+			&i.JailedUntil,
 		); err != nil {
 			return nil, err
 		}
@@ -142,6 +144,41 @@ func (q *Queries) GetInProgressRollupReports(ctx context.Context) ([]SlaNodeRepo
 	return items, nil
 }
 
+const getJailedNodes = `-- name: GetJailedNodes :many
+select rowid, pub_key, endpoint, eth_address, comet_address, eth_block, node_type, sp_id, jailed, jailed_until from core_validators where jailed = true
+`
+
+func (q *Queries) GetJailedNodes(ctx context.Context) ([]CoreValidator, error) {
+	rows, err := q.db.Query(ctx, getJailedNodes)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []CoreValidator
+	for rows.Next() {
+		var i CoreValidator
+		if err := rows.Scan(
+			&i.Rowid,
+			&i.PubKey,
+			&i.Endpoint,
+			&i.EthAddress,
+			&i.CometAddress,
+			&i.EthBlock,
+			&i.NodeType,
+			&i.SpID,
+			&i.Jailed,
+			&i.JailedUntil,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getLatestAppState = `-- name: GetLatestAppState :one
 select block_height, app_hash
 from core_app_state
@@ -179,7 +216,7 @@ func (q *Queries) GetLatestSlaRollup(ctx context.Context) (SlaRollup, error) {
 }
 
 const getNodeByEndpoint = `-- name: GetNodeByEndpoint :one
-select rowid, pub_key, endpoint, eth_address, comet_address, eth_block, node_type, sp_id
+select rowid, pub_key, endpoint, eth_address, comet_address, eth_block, node_type, sp_id, jailed, jailed_until
 from core_validators
 where endpoint = $1
 limit 1
@@ -197,6 +234,8 @@ func (q *Queries) GetNodeByEndpoint(ctx context.Context, endpoint string) (CoreV
 		&i.EthBlock,
 		&i.NodeType,
 		&i.SpID,
+		&i.Jailed,
+		&i.JailedUntil,
 	)
 	return i, err
 }
@@ -344,7 +383,7 @@ func (q *Queries) GetRecentTxs(ctx context.Context) ([]CoreTxResult, error) {
 }
 
 const getRegisteredNodeByCometAddress = `-- name: GetRegisteredNodeByCometAddress :one
-select rowid, pub_key, endpoint, eth_address, comet_address, eth_block, node_type, sp_id from core_validators where comet_address = $1
+select rowid, pub_key, endpoint, eth_address, comet_address, eth_block, node_type, sp_id, jailed, jailed_until from core_validators where comet_address = $1
 `
 
 func (q *Queries) GetRegisteredNodeByCometAddress(ctx context.Context, cometAddress string) (CoreValidator, error) {
@@ -359,12 +398,14 @@ func (q *Queries) GetRegisteredNodeByCometAddress(ctx context.Context, cometAddr
 		&i.EthBlock,
 		&i.NodeType,
 		&i.SpID,
+		&i.Jailed,
+		&i.JailedUntil,
 	)
 	return i, err
 }
 
 const getRegisteredNodeByEthAddress = `-- name: GetRegisteredNodeByEthAddress :one
-select rowid, pub_key, endpoint, eth_address, comet_address, eth_block, node_type, sp_id from core_validators where eth_address = $1
+select rowid, pub_key, endpoint, eth_address, comet_address, eth_block, node_type, sp_id, jailed, jailed_until from core_validators where eth_address = $1
 `
 
 func (q *Queries) GetRegisteredNodeByEthAddress(ctx context.Context, ethAddress string) (CoreValidator, error) {
@@ -379,12 +420,14 @@ func (q *Queries) GetRegisteredNodeByEthAddress(ctx context.Context, ethAddress 
 		&i.EthBlock,
 		&i.NodeType,
 		&i.SpID,
+		&i.Jailed,
+		&i.JailedUntil,
 	)
 	return i, err
 }
 
 const getRegisteredNodesByType = `-- name: GetRegisteredNodesByType :many
-select rowid, pub_key, endpoint, eth_address, comet_address, eth_block, node_type, sp_id
+select rowid, pub_key, endpoint, eth_address, comet_address, eth_block, node_type, sp_id, jailed, jailed_until
 from core_validators
 where node_type = $1
 `
@@ -407,6 +450,8 @@ func (q *Queries) GetRegisteredNodesByType(ctx context.Context, nodeType string)
 			&i.EthBlock,
 			&i.NodeType,
 			&i.SpID,
+			&i.Jailed,
+			&i.JailedUntil,
 		); err != nil {
 			return nil, err
 		}
