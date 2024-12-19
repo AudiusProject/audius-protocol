@@ -65,7 +65,6 @@ function* addTrackToPlaylistAsync(action: AddTrackToPlaylistAction) {
   yield* waitForWrite()
   const userId = yield* call(ensureLoggedIn)
   const isNative = yield* getContext('isNativeMobile')
-  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
   const sdk = yield* getSDK()
   const { generatePlaylistArtwork } = yield* getContext('imageUtils')
 
@@ -117,7 +116,6 @@ function* addTrackToPlaylistAsync(action: AddTrackToPlaylistAction) {
     playlistTracks,
     { added: track },
     {
-      audiusBackend: audiusBackendInstance,
       generateImage: generatePlaylistArtwork
     }
   )
