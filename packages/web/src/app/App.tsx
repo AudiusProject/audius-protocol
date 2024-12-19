@@ -1,5 +1,4 @@
 // @refresh reset
-
 import { useEffect, Suspense, lazy } from 'react'
 
 import { route } from '@audius/common/utils'
@@ -15,6 +14,7 @@ import { AppErrorBoundary } from './AppErrorBoundary'
 import { AppProviders } from './AppProviders'
 import { useHistoryContext } from './HistoryProvider'
 import WebPlayer from './web-player/WebPlayer'
+
 const {
   PRIVATE_KEY_EXPORTER_SETTINGS_PAGE,
   SIGN_IN_PAGE,
@@ -24,6 +24,12 @@ const {
 
 const SignOnPage = lazy(() => import('pages/sign-on-page'))
 const OAuthLoginPage = lazy(() => import('pages/oauth-login-page'))
+const ReactQueryTestPage = lazy(
+  () => import('pages/react-query/ReactQueryTestPage')
+)
+const ReactQueryCachePrimePage = lazy(
+  () => import('pages/react-query/ReactQueryCachePrimePage')
+)
 const PrivateKeyExporterPage = lazy(
   () => import('pages/private-key-exporter-page/PrivateKeyExporterPage')
 )
@@ -58,6 +64,12 @@ export const AppInner = () => {
           </Route>
           <Route exact path='/oauth/auth'>
             <OAuthLoginPage />
+          </Route>
+          <Route path='/react-query'>
+            <ReactQueryTestPage />
+          </Route>
+          <Route path='/react-query-cache-prime'>
+            <ReactQueryCachePrimePage />
           </Route>
           <Route path={PRIVATE_KEY_EXPORTER_SETTINGS_PAGE}>
             <PrivateKeyExporterPage />
