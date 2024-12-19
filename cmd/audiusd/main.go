@@ -3,25 +3,22 @@ package main
 import (
 	"context"
 	"encoding/hex"
+	"log"
 	"log/slog"
+	"net"
 	"net/http"
 	"net/http/httputil"
 	"net/url"
 	"os"
 	"os/signal"
-	"strconv"
 	"strings"
 	"syscall"
 	"time"
 
-	"log"
-	"net"
-
 	"github.com/AudiusProject/audius-protocol/pkg/core"
 	"github.com/AudiusProject/audius-protocol/pkg/core/common"
-	"github.com/AudiusProject/audius-protocol/pkg/uptime"
-
 	"github.com/AudiusProject/audius-protocol/pkg/mediorum"
+	"github.com/AudiusProject/audius-protocol/pkg/uptime"
 
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/labstack/echo/v4"
@@ -29,13 +26,52 @@ import (
 	"golang.org/x/crypto/acme/autocert"
 )
 
-var ENABLE_STORAGE bool
-
 const (
 	initialBackoff = 10 * time.Second
 	maxBackoff     = 10 * time.Minute
 	maxRetries     = 10
 )
+
+type proxyConfig struct {
+	path   string
+	target string
+}
+
+func main() {
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	logger := setupLogger()
+	hostUrl := setupHostUrl()
+	setupDelegateKeyPair(logger)
+
+	services := []struct {
+		name    string
+		fn      func() error
+		enabled bool
+	}{
+		{"audiusd-echo-server", func() error { return startEchoProxyWithOptionalTLS(hostUrl, logger) }, true},
+		{"core", func() error { return core.Run(ctx, logger) }, true},
+		{"mediorum", func() error { return mediorum.Run(ctx, logger) }, isStorageEnabled()},
+		{"uptime", func() error { return uptime.Run(ctx, logger) }, hostUrl.Hostname() != "localhost"},
+	}
+
+	for _, svc := range services {
+		if svc.enabled {
+			runWithRecover(svc.name, ctx, logger, svc.fn)
+		}
+	}
+
+	// Wait for shutdown signal
+	sigChan := make(chan os.Signal, 1)
+	signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM)
+	<-sigChan
+
+	logger.Info("Received termination signal, shutting down...")
+	cancel()
+	<-ctx.Done()
+	logger.Info("Shutdown complete")
+}
 
 func runWithRecover(name string, ctx context.Context, logger *common.Logger, f func() error) {
 	backoff := initialBackoff
@@ -60,12 +96,12 @@ func runWithRecover(name string, ctx context.Context, logger *common.Logger, f f
 					logger.Infof("%s shutdown requested, not restarting", name)
 					return
 				case <-time.After(backoff):
-					// exponential backoff
-					// 10 + 20 + 40 + 80 + 160 + 320 + 600 + 600 + 600 + 600 = 3,030 seconds (about 50.5 minutes)
+					// Exponential backoff
 					backoff = time.Duration(float64(backoff) * 2)
 					if backoff > maxBackoff {
 						backoff = maxBackoff
 					}
+					// Restart the goroutine
 					go run()
 				}
 			}
@@ -79,246 +115,142 @@ func runWithRecover(name string, ctx context.Context, logger *common.Logger, f f
 	go run()
 }
 
-func main() {
-	ENABLE_STORAGE = os.Getenv("creatorNodeEndpoint") != ""
-
+func setupLogger() *common.Logger {
 	var slogLevel slog.Level
-	if logLevel := os.Getenv("audiusd_log_level"); logLevel != "" {
-		switch logLevel {
-		case "debug":
-			slogLevel = slog.LevelDebug
-		case "info":
-			slogLevel = slog.LevelInfo
-		case "warn":
-			slogLevel = slog.LevelWarn
-		case "error":
-			slogLevel = slog.LevelError
-		default:
-			slogLevel = slog.LevelWarn
-		}
-	} else {
+	switch os.Getenv("audiusd_log_level") {
+	case "debug":
+		slogLevel = slog.LevelDebug
+	case "info":
+		slogLevel = slog.LevelInfo
+	case "warn":
+		slogLevel = slog.LevelWarn
+	case "error":
+		slogLevel = slog.LevelError
+	default:
 		slogLevel = slog.LevelInfo
 	}
 
-	logger := common.NewLogger(&slog.HandlerOptions{
-		Level: slogLevel,
-	})
+	return common.NewLogger(&slog.HandlerOptions{Level: slogLevel})
+}
 
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-
-	sigChan := make(chan os.Signal, 1)
-	signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM)
-
-	hostUrl, err := getHostUrl()
-	if err != nil {
-		log.Fatalf("Could not get host url: %v", err)
+func setupHostUrl() *url.URL {
+	endpoints := []string{
+		os.Getenv("creatorNodeEndpoint"),
+		os.Getenv("audius_discprov_url"),
+		"http://localhost",
 	}
 
-	// TODO: env var madness, make it work out of the box with no config
-	delegatePrivateKey := os.Getenv("delegatePrivateKey")
-	if delegatePrivateKey == "" {
-		delegatePrivateKey, delegateOwnerWallet := keyGen()
-		os.Setenv("delegatePrivateKey", delegatePrivateKey)
-		os.Setenv("delegateOwnerWallet", delegateOwnerWallet)
-		logger.Infof("Generated and set delegate key pair: %s", delegateOwnerWallet)
+	for _, ep := range endpoints {
+		if ep != "" {
+			if u, err := url.Parse(ep); err == nil {
+				return u
+			}
+		}
 	}
+	return &url.URL{Scheme: "http", Host: "localhost"}
+}
 
-	runWithRecover("echo-server", ctx, logger, func() error {
-		return startEchoProxyWithOptionalTLS(hostUrl, logger)
-	})
-
-	runWithRecover("core", ctx, logger, func() error {
-		return core.Run(ctx, logger)
-	})
-
-	if ENABLE_STORAGE {
-		runWithRecover("mediorum", ctx, logger, func() error {
-			return mediorum.Run(ctx, logger)
-		})
+func setupDelegateKeyPair(logger *common.Logger) {
+	if delegatePrivateKey := os.Getenv("delegatePrivateKey"); delegatePrivateKey == "" {
+		privKey, ownerWallet := keyGen()
+		os.Setenv("delegatePrivateKey", privKey)
+		os.Setenv("delegateOwnerWallet", ownerWallet)
+		logger.Infof("Generated and set delegate key pair: %s", ownerWallet)
 	}
-
-	if hostUrl.Hostname() != "localhost" {
-		runWithRecover("uptime", ctx, logger, func() error {
-			logger.Infof("Starting uptime")
-			return uptime.Run(ctx, logger)
-		})
-	}
-
-	<-sigChan
-	logger.Info("Received termination signal, shutting down...")
-
-	cancel()
-
-	<-ctx.Done() // run forever, no crashloops
-	logger.Info("Shutdown complete")
 }
 
 func startEchoProxyWithOptionalTLS(hostUrl *url.URL, logger *common.Logger) error {
-
-	httpPort := os.Getenv("AUDIUSD_HTTP_PORT")
-	if httpPort == "" {
-		httpPort = "80"
-	}
-
-	httpsPort := os.Getenv("AUDIUSD_HTTPS_PORT")
-	if httpsPort == "" {
-		httpsPort = "443"
-	}
-
 	e := echo.New()
+	e.Use(middleware.Logger(), middleware.Recover())
 
-	e.Use(middleware.Logger())
-	e.Use(middleware.Recover())
-
+	// Minimal health check endpoint
 	e.GET("/", func(c echo.Context) error {
-		return c.JSON(http.StatusOK, map[string]string{
-			"status": "ok",
-		})
+		return c.JSON(http.StatusOK, map[string]string{"status": "ok"})
 	})
 
-	urlCore, err := url.Parse("http://localhost:26659")
-	if err != nil {
-		logger.Error("Failed to parse core URL:", err)
+	// Reverse proxies to what were previously discreet containers
+	proxies := []proxyConfig{
+		{"/console/*", "http://localhost:26659"},
+		{"/core/*", "http://localhost:26659"},
 	}
-	coreProxy := httputil.NewSingleHostReverseProxy(urlCore)
-	e.Any("/console/*", echo.WrapHandler(coreProxy))
-	e.Any("/core/*", echo.WrapHandler(coreProxy))
 
-	// TODO: this is gross, (more expected env var madness) but uptime is being removed soon enough
 	if hostUrl.Hostname() != "localhost" {
-		urlDAPI, err := url.Parse("http://localhost:1996")
+		proxies = append(proxies, proxyConfig{"/d_api/*", "http://localhost:1996"})
+	}
+
+	if isStorageEnabled() {
+		proxies = append(proxies, proxyConfig{"/*", "http://localhost:1991"})
+	}
+
+	for _, proxy := range proxies {
+		target, err := url.Parse(proxy.target)
 		if err != nil {
-			logger.Error("Failed to parse dAPI URL:", err)
+			logger.Error("Failed to parse URL:", err)
+			continue
 		}
-		dAPIProxy := httputil.NewSingleHostReverseProxy(urlDAPI)
-		e.Any("/d_api/*", echo.WrapHandler(dAPIProxy))
+		e.Any(proxy.path, echo.WrapHandler(httputil.NewSingleHostReverseProxy(target)))
 	}
 
-	if ENABLE_STORAGE {
-		urlMediorum, err := url.Parse("http://localhost:1991")
-		if err != nil {
-			logger.Error("Failed to parse mediorum URL:", err)
-		}
-		mediorumProxy := httputil.NewSingleHostReverseProxy(urlMediorum)
-		e.Any("/*", echo.WrapHandler(mediorumProxy))
+	httpPort := getEnvString("AUDIUSD_HTTP_PORT", "80")
+	httpsPort := getEnvString("AUDIUSD_HTTPS_PORT", "443")
+
+	if shouldEnableTLS(hostUrl) {
+		return startWithTLS(e, httpPort, httpsPort, hostUrl, logger)
 	}
-
-	// TODO: this is gross
-	disableAutoTLS := []string{
-		"altego.net",
-		"bdnodes.net",
-		"staked.cloud",
-		"localhost",
-	}
-
-	domain := extractDomain(hostUrl.String())
-	enableTls := !domainInTlds(domain, disableAutoTLS) && os.Getenv("DISABLE_TLS") != "true"
-	logger.Infof("domain: %s, enableTls: %v", domain, enableTls)
-
-	if enableTls {
-		addrs, err := net.InterfaceAddrs()
-		if err != nil {
-			logger.Warn("Failed to get interface addresses:", err)
-		}
-
-		whitelist := []string{hostUrl.Hostname(), "localhost"}
-
-		// Add all non-loopback IPv4 addresses
-		for _, addr := range addrs {
-			if ipnet, ok := addr.(*net.IPNet); ok && !ipnet.IP.IsLoopback() {
-				if ip4 := ipnet.IP.To4(); ip4 != nil {
-					whitelist = append(whitelist, ip4.String())
-				}
-			}
-		}
-
-		logger.Info("TLS host whitelist: " + strings.Join(whitelist, ", "))
-		e.AutoTLSManager.HostPolicy = autocert.HostWhitelist(whitelist...)
-		e.AutoTLSManager.Cache = autocert.DirCache(getEnvString("audius_core_root_dir", "/audius-core") + "/echo/cache")
-		e.Pre(middleware.HTTPSRedirect())
-
-		go func() {
-			if err := e.StartAutoTLS(":" + httpsPort); err != nil && err != http.ErrServerClosed {
-				logger.Errorf("HTTPS server failed: %v", err)
-			}
-		}()
-
-		go func() {
-			if err := e.Start(":" + httpPort); err != nil && err != http.ErrServerClosed {
-				logger.Fatalf("HTTP server failed: %v", err)
-			}
-		}()
-
-		return nil
-	}
-
 	return e.Start(":" + httpPort)
 }
 
-// TODO: use url.URL parsing instead
-func extractDomain(fqdn string) string {
-	// Remove the scheme (e.g., "https://")
-	if strings.Contains(fqdn, "://") {
-		fqdn = strings.Split(fqdn, "://")[1]
-	}
-
-	// Remove the path (anything after '/')
-	if strings.Contains(fqdn, "/") {
-		fqdn = strings.Split(fqdn, "/")[0]
-	}
-
-	return fqdn
+func shouldEnableTLS(hostUrl *url.URL) bool {
+	// TODO: config should be explicitly set
+	disableAutoTLS := []string{"altego.net", "bdnodes.net", "staked.cloud", "localhost"}
+	return !domainInTlds(hostUrl.Hostname(), disableAutoTLS) && os.Getenv("DISABLE_TLS") != "true"
 }
 
-func domainInTlds(domain string, tlds []string) bool {
-	for _, tld := range tlds {
-		if strings.HasSuffix(domain, tld) {
-			return true
+func startWithTLS(e *echo.Echo, httpPort, httpsPort string, hostUrl *url.URL, logger *common.Logger) error {
+	whitelist := []string{hostUrl.Hostname(), "localhost"}
+	addrs, _ := net.InterfaceAddrs()
+	for _, addr := range addrs {
+		if ipnet, ok := addr.(*net.IPNet); ok && !ipnet.IP.IsLoopback() {
+			if ip4 := ipnet.IP.To4(); ip4 != nil {
+				whitelist = append(whitelist, ip4.String())
+			}
 		}
 	}
-	return false
+
+	logger.Info("TLS host whitelist: " + strings.Join(whitelist, ", "))
+	e.AutoTLSManager.HostPolicy = autocert.HostWhitelist(whitelist...)
+	e.AutoTLSManager.Cache = autocert.DirCache(getEnvString("audius_core_root_dir", "/audius-core") + "/echo/cache")
+	e.Pre(middleware.HTTPSRedirect())
+
+	go e.StartAutoTLS(":" + httpsPort)
+	return e.Start(":" + httpPort)
 }
 
-func getEnv[T any](key string, defaultVal T, parse func(string) (T, error)) T {
-	val, ok := os.LookupEnv(key)
-	if !ok {
-		return defaultVal
-	}
-	parsed, err := parse(val)
-	if err != nil {
-		log.Printf("Invalid value for %s: %v, defaulting to %v", key, val, defaultVal)
-		return defaultVal
-	}
-	return parsed
+func isStorageEnabled() bool {
+	return os.Getenv("creatorNodeEndpoint") != ""
 }
 
-func getEnvString(key, defaultVal string) string {
-	return getEnv(key, defaultVal, func(s string) (string, error) { return s, nil })
-}
-
-func getEnvBool(key string, defaultVal bool) bool {
-	return getEnv(key, defaultVal, strconv.ParseBool)
-}
-
-func getHostUrl() (*url.URL, error) {
-	ep := os.Getenv("creatorNodeEndpoint")
-	if ep == "" {
-		ep = os.Getenv("audius_discprov_url")
-	}
-	if ep == "" {
-		ep = "http://localhost"
-	}
-	return url.Parse(ep)
-}
-
-func keyGen() (pKey string, addr string) {
+func keyGen() (string, string) {
 	privateKey, err := crypto.GenerateKey()
 	if err != nil {
 		log.Fatalf("Failed to generate private key: %v", err)
 	}
 	privateKeyBytes := crypto.FromECDSA(privateKey)
-	privateKeyStr := hex.EncodeToString(privateKeyBytes)
-	address := crypto.PubkeyToAddress(privateKey.PublicKey)
-	return privateKeyStr, address.Hex()
+	return hex.EncodeToString(privateKeyBytes), crypto.PubkeyToAddress(privateKey.PublicKey).Hex()
+}
+
+func getEnvString(key, defaultValue string) string {
+	if value := os.Getenv(key); value != "" {
+		return value
+	}
+	return defaultValue
+}
+
+func domainInTlds(domain string, tlds []string) bool {
+	for _, tld := range tlds {
+		if domain == tld {
+			return true
+		}
+	}
+	return false
 }
