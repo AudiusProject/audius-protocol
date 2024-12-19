@@ -1,5 +1,6 @@
 import { useTheme } from '@emotion/react'
 
+import { motion } from '../../foundations/motion'
 import { Flex } from '../layout/Flex'
 import { Text } from '../text/Text'
 
@@ -14,6 +15,7 @@ export const NavItem = ({
   leftIcon: LeftIcon,
   rightIcon: RightIcon,
   isSelected = false,
+  onClick,
   ...props
 }: NavItemProps) => {
   const { color } = useTheme()
@@ -25,7 +27,7 @@ export const NavItem = ({
 
   const textColor = isSelected ? 'staticWhite' : 'default'
 
-  const iconColor = isSelected ? color.static.staticWhite : color.neutral.n800
+  const iconColor = isSelected ? 'staticStaticWhite' : 'default'
 
   return (
     <Flex
@@ -36,9 +38,10 @@ export const NavItem = ({
       css={{
         width: '240px',
         cursor: 'pointer',
-        transition: 'background-color 0.18s ease-in-out'
+        transition: `background-color ${motion.hover}`
       }}
       {...props}
+      onClick={onClick}
     >
       <Flex
         alignItems='center'
@@ -56,34 +59,27 @@ export const NavItem = ({
           }
         }}
       >
-        <Flex alignItems='center' gap='m' flex={1}>
-          {hasLeftIcon && (
-            <LeftIcon
-              height={24}
-              width={24}
-              css={{ path: { fill: iconColor } }}
-            />
-          )}
+        <Flex
+          alignItems='center'
+          gap='m'
+          flex={1}
+          css={{
+            maxWidth: '240px'
+          }}
+        >
+          {hasLeftIcon ? <LeftIcon size='l' color={iconColor} /> : null}
           <Text
             variant='title'
             size='l'
             strength='weak'
             lineHeight='single'
             color={textColor}
-            css={{
-              whiteSpace: 'nowrap'
-            }}
+            ellipses
           >
             {children}
           </Text>
         </Flex>
-        {hasRightIcon && (
-          <RightIcon
-            height={20}
-            width={20}
-            css={{ path: { fill: iconColor } }}
-          />
-        )}
+        {hasRightIcon ? <RightIcon size='m' color={iconColor} /> : null}
       </Flex>
     </Flex>
   )

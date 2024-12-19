@@ -11,4 +11,6 @@ export type NavItemProps = WithCSS<{
   rightIcon?: IconComponent
   /** Whether the navigation item is currently selected. */
   isSelected?: boolean
+  /** The callback function to be called when the navigation item is clicked. */
+  onClick?: () => void
 }>
