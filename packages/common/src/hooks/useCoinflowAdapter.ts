@@ -11,10 +11,7 @@ import { useSelector, useDispatch } from 'react-redux'
 import { useAudiusQueryContext } from '~/audius-query'
 import { useAppContext } from '~/context'
 import { Name } from '~/models/Analytics'
-import {
-  decorateCoinflowWithdrawalTransaction,
-  relayTransaction
-} from '~/services/audius-backend'
+import { decorateCoinflowWithdrawalTransaction } from '~/services/audius-backend'
 import {
   BuyUSDCError,
   PurchaseContentError,
@@ -68,9 +65,6 @@ export const useCoinflowWithdrawalAdapter = () => {
           sendTransaction: async (
             transaction: Transaction | VersionedTransaction
           ) => {
-            if (!feePayerOverride) {
-              throw new Error('Missing fee payer override')
-            }
             if (transaction instanceof VersionedTransaction) {
               throw new Error(
                 'VersionedTransaction not supported in withdrawal adapter'
@@ -79,49 +73,40 @@ export const useCoinflowWithdrawalAdapter = () => {
             if (!currentUser) {
               throw new Error('Missing current user')
             }
-            const feePayer = new PublicKey(feePayerOverride)
             const finalTransaction =
               await decorateCoinflowWithdrawalTransaction(sdk, audiusBackend, {
                 ethAddress: currentUser,
                 transaction,
-                feePayer,
                 wallet
               })
-            finalTransaction.partialSign(wallet)
-            const { res, error, errorCode } = await relayTransaction(
-              audiusBackend,
-              {
-                transaction: finalTransaction,
-                skipPreflight: true
-              }
-            )
-            if (!res) {
+            finalTransaction.sign([wallet])
+            try {
+              const res =
+                await sdk.services.claimableTokensClient.sendTransaction(
+                  finalTransaction,
+                  { skipPreflight: true }
+                )
+              track(
+                make({
+                  eventName: Name.WITHDRAW_USDC_COINFLOW_SEND_TRANSACTION,
+                  signature: res
+                })
+              )
+              return res
+            } catch (error) {
               console.error('Relaying Coinflow transaction failed.', {
                 error,
-                errorCode,
                 finalTransaction
               })
               track(
                 make({
                   eventName:
                     Name.WITHDRAW_USDC_COINFLOW_SEND_TRANSACTION_FAILED,
-                  error: error ?? undefined,
-                  errorCode: errorCode ?? undefined
+                  error: (error as Error).message ?? undefined
                 })
               )
-              throw new Error(
-                `Relaying Coinflow transaction failed: ${
-                  error ?? 'Unknown error'
-                }`
-              )
+              throw error
             }
-            track(
-              make({
-                eventName: Name.WITHDRAW_USDC_COINFLOW_SEND_TRANSACTION,
-                signature: res
-              })
-            )
-            return res
           }
         }
       })
