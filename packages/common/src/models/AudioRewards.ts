@@ -52,7 +52,8 @@ export enum ChallengeName {
   Referred = 'rd',
   FirstTip = 'ft',
   FirstPlaylist = 'fp',
-  ListenStreak = 'l'
+  ListenStreak = 'l',
+  OneShot = 'o'
 }
 
 export type ChallengeRewardID =
@@ -86,6 +87,7 @@ export type ChallengeRewardID =
   | ChallengeName.FirstTip
   | ChallengeName.FirstPlaylist
   | ChallengeName.ListenStreak
+  | ChallengeName.OneShot
 
 export enum FailureReason {
   // The attestation requires the user to fill out a captcha
