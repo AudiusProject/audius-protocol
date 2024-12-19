@@ -1194,18 +1194,6 @@ export const audiusBackend = ({
     }
   }
 
-  /**
-   * Make a request to send
-   */
-  async function sendTokens(address: string, amount: BNWei) {
-    await waitForLibsInit()
-    const receipt = await audiusLibs.Account.permitAndSendTokens(
-      address,
-      amount
-    )
-    return receipt
-  }
-
   /** Gets associated token account info for the passed account. It will
    * first check if `address` ia a token account. If not, it will assume
    * it is a root account and attempt to derive an associated token account from it.
@@ -1608,7 +1596,6 @@ export const audiusBackend = ({
     identityServiceUrl,
     recordTrackListen,
     registerDeviceToken,
-    sendTokens,
     sendWAudioTokens,
     sendWelcomeEmail,
     setup,

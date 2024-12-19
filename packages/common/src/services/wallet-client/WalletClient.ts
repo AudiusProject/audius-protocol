@@ -4,12 +4,7 @@ import BN from 'bn.js'
 
 import { userWalletsFromSDK } from '~/adapters'
 import { ID, Id } from '~/models/Identifiers'
-import {
-  BNWei,
-  SolanaWalletAddress,
-  StringWei,
-  WalletAddress
-} from '~/models/Wallet'
+import { BNWei, SolanaWalletAddress, StringWei } from '~/models/Wallet'
 import { isNullOrUndefined } from '~/utils/typeUtils'
 import { stringWeiToBN } from '~/utils/wallet'
 
@@ -234,18 +229,6 @@ export class WalletClient {
         sdk
       })
       return balance as BNWei
-    } catch (err) {
-      console.error(err)
-      throw err
-    }
-  }
-
-  async sendTokens(address: WalletAddress, amount: BNWei): Promise<void> {
-    if (amount.lt(MIN_TRANSFERRABLE_WEI)) {
-      throw new Error('Insufficient Audio to transfer')
-    }
-    try {
-      await this.audiusBackendInstance.sendTokens(address, amount)
     } catch (err) {
       console.error(err)
       throw err
