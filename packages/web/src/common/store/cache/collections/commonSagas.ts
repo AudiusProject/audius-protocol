@@ -214,7 +214,6 @@ function* confirmEditPlaylist(
         return playlist?.[0] ? userCollectionMetadataFromSDK(playlist[0]) : null
       },
       function* (confirmedPlaylist: Collection) {
-        // Update the cached collection so it no longer contains image upload artifacts
         yield* put(
           cacheActions.update(Kind.COLLECTIONS, [
             {
@@ -222,8 +221,7 @@ function* confirmEditPlaylist(
               metadata: {
                 ...reformatCollection({
                   collection: confirmedPlaylist
-                }),
-                artwork: {}
+                })
               }
             }
           ])
