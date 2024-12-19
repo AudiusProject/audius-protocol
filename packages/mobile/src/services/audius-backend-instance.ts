@@ -1,12 +1,10 @@
 import { audiusBackend } from '@audius/common/services'
-import * as nativeLibs from '@audius/sdk-legacy/dist/native-libs'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 
 import { env } from 'app/env'
 import { track } from 'app/services/analytics'
 import { reportToSentry } from 'app/utils/reportToSentry'
 
-import { createPrivateKey } from './createPrivateKey'
 import { monitoringCallbacks } from './monitoringCallbacks'
 import { getFeatureEnabled } from './remote-config'
 import { remoteConfigInstance } from './remote-config/remote-config-instance'
@@ -30,9 +28,6 @@ export const audiusBackendInstance = audiusBackend({
     return `${env.PUBLIC_PROTOCOL}//${env.PUBLIC_HOSTNAME}`
   },
   getStorageNodeSelector,
-  hedgehogConfig: {
-    createKey: createPrivateKey
-  },
   identityServiceUrl: env.IDENTITY_SERVICE,
   generalAdmissionUrl: env.GENERAL_ADMISSION,
   isElectron: false,
