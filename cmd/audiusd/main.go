@@ -227,7 +227,10 @@ func startWithTLS(e *echo.Echo, httpPort, httpsPort string, hostUrl *url.URL, lo
 }
 
 func isStorageEnabled() bool {
-	return os.Getenv("creatorNodeEndpoint") != ""
+	if os.Getenv("AUDIUSD_STORAGE_ENABLED") == "false" {
+		return false
+	}
+	return os.Getenv("creatorNodeEndpoint") != "" || os.Getenv("AUDIUSD_STORAGE_ENABLED") == "true"
 }
 
 func keyGen() (string, string) {
