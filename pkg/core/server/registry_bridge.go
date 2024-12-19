@@ -306,7 +306,7 @@ func (s *Server) registerSelfOnEth() error {
 	return nil
 }
 
-func (s *Server) validateValidatorRegistrationNotJailed(tx *core_proto.SignedTransaction_ValidatorRegistration) error {
+func (s *Server) validateNotJailed(tx *core_proto.SignedTransaction_ValidatorRegistration) error {
 	db := s.db
 
 	cometAddr := tx.ValidatorRegistration.CometAddress

@@ -7,7 +7,7 @@ import (
 func (s *Server) validateTxGRPC(stx *core_proto.SignedTransaction) error {
 	switch tx := stx.Transaction.(type) {
 	case *core_proto.SignedTransaction_ValidatorRegistration:
-		return s.validateValidatorRegistrationNotJailed(tx)
+		return s.validateNotJailed(tx)
 	}
 	return nil
 }
