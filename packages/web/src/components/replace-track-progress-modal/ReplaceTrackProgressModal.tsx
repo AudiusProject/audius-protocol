@@ -28,7 +28,12 @@ export const ReplaceTrackProgressModal = () => {
   const isUploadComplete = uploadProgress >= 1
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} size='small'>
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      size='small'
+      dismissOnClickOutside={false}
+    >
       <ModalContent>
         {error ? (
           <Flex direction='column' gap='3xl' pt='3xl'>
