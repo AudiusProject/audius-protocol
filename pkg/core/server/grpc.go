@@ -37,7 +37,7 @@ func GetProtoTypeName(msg proto.Message) string {
 }
 
 func (s *Server) SendTransaction(ctx context.Context, req *core_proto.SendTransactionRequest) (*core_proto.TransactionResponse, error) {
-	if err := s.validateTx(req.GetTransaction()); err != nil {
+	if err := s.validateTxGRPC(req.GetTransaction()); err != nil {
 		return nil, fmt.Errorf("validation error: %v", err)
 	}
 
@@ -87,7 +87,7 @@ func (s *Server) SendTransaction(ctx context.Context, req *core_proto.SendTransa
 func (s *Server) ForwardTransaction(ctx context.Context, req *core_proto.ForwardTransactionRequest) (*core_proto.ForwardTransactionResponse, error) {
 	// TODO: check signature from known node
 
-	if err := s.validateTx(req.GetTransaction()); err != nil {
+	if err := s.validateTxGRPC(req.GetTransaction()); err != nil {
 		return nil, fmt.Errorf("validation error: %v", err)
 	}
 
