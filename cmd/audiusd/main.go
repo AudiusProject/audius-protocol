@@ -12,6 +12,7 @@ import (
 	"strconv"
 	"strings"
 	"syscall"
+	"time"
 
 	"log"
 	"net"
@@ -29,6 +30,54 @@ import (
 )
 
 var ENABLE_STORAGE bool
+
+const (
+	initialBackoff = 10 * time.Second
+	maxBackoff     = 10 * time.Minute
+	maxRetries     = 10
+)
+
+func runWithRecover(name string, ctx context.Context, logger *common.Logger, f func() error) {
+	backoff := initialBackoff
+	retries := 0
+
+	var run func()
+	run = func() {
+		defer func() {
+			if r := recover(); r != nil {
+				logger.Errorf("%s goroutine panicked: %v", name, r)
+
+				if retries >= maxRetries {
+					logger.Errorf("%s exceeded maximum retry attempts (%d). Not restarting.", name, maxRetries)
+					return
+				}
+
+				retries++
+				logger.Infof("%s will restart in %v (attempt %d/%d)", name, backoff, retries, maxRetries)
+
+				select {
+				case <-ctx.Done():
+					logger.Infof("%s shutdown requested, not restarting", name)
+					return
+				case <-time.After(backoff):
+					// exponential backoff
+					// 10 + 20 + 40 + 80 + 160 + 320 + 600 + 600 + 600 + 600 = 3,030 seconds (about 50.5 minutes)
+					backoff = time.Duration(float64(backoff) * 2)
+					if backoff > maxBackoff {
+						backoff = maxBackoff
+					}
+					go run()
+				}
+			}
+		}()
+
+		if err := f(); err != nil {
+			logger.Errorf("%s error: %v", name, err)
+		}
+	}
+
+	go run()
+}
 
 func main() {
 	ENABLE_STORAGE = os.Getenv("creatorNodeEndpoint") != ""
@@ -66,7 +115,7 @@ func main() {
 		log.Fatalf("Could not get host url: %v", err)
 	}
 
-	// make it work out of the box with no config
+	// TODO: env var madness, make it work out of the box with no config
 	delegatePrivateKey := os.Getenv("delegatePrivateKey")
 	if delegatePrivateKey == "" {
 		delegatePrivateKey, delegateOwnerWallet := keyGen()
@@ -75,38 +124,25 @@ func main() {
 		logger.Infof("Generated and set delegate key pair: %s", delegateOwnerWallet)
 	}
 
-	go func() {
-		if err := startEchoProxyWithOptionalTLS(hostUrl, logger); err != nil {
-			log.Fatalf("Echo server failed: %v", err)
-			cancel()
-		}
-	}()
+	runWithRecover("echo-server", ctx, logger, func() error {
+		return startEchoProxyWithOptionalTLS(hostUrl, logger)
+	})
 
-	go func() {
-		if err := core.Run(ctx, logger); err != nil {
-			logger.Errorf("fatal core error: %v", err)
-			cancel()
-		}
-	}()
+	runWithRecover("core", ctx, logger, func() error {
+		return core.Run(ctx, logger)
+	})
 
 	if ENABLE_STORAGE {
-		go func() {
-			if err := mediorum.Run(ctx, logger); err != nil {
-				logger.Errorf("fatal mediorum error: %v", err)
-				cancel()
-			}
-		}()
+		runWithRecover("mediorum", ctx, logger, func() error {
+			return mediorum.Run(ctx, logger)
+		})
 	}
 
-	// this is gross, (more expected env var madness) but uptime is being removed soon enough
 	if hostUrl.Hostname() != "localhost" {
-		go func() {
+		runWithRecover("uptime", ctx, logger, func() error {
 			logger.Infof("Starting uptime")
-			if err := uptime.Run(ctx, logger); err != nil {
-				logger.Errorf("fatal uptime error: %v", err)
-				cancel()
-			}
-		}()
+			return uptime.Run(ctx, logger)
+		})
 	}
 
 	<-sigChan
@@ -149,7 +185,7 @@ func startEchoProxyWithOptionalTLS(hostUrl *url.URL, logger *common.Logger) erro
 	e.Any("/console/*", echo.WrapHandler(coreProxy))
 	e.Any("/core/*", echo.WrapHandler(coreProxy))
 
-	// this is gross, (more expected env var madness) but uptime is being removed soon enough
+	// TODO: this is gross, (more expected env var madness) but uptime is being removed soon enough
 	if hostUrl.Hostname() != "localhost" {
 		urlDAPI, err := url.Parse("http://localhost:1996")
 		if err != nil {
@@ -168,6 +204,7 @@ func startEchoProxyWithOptionalTLS(hostUrl *url.URL, logger *common.Logger) erro
 		e.Any("/*", echo.WrapHandler(mediorumProxy))
 	}
 
+	// TODO: this is gross
 	disableAutoTLS := []string{
 		"altego.net",
 		"bdnodes.net",
@@ -180,13 +217,11 @@ func startEchoProxyWithOptionalTLS(hostUrl *url.URL, logger *common.Logger) erro
 	logger.Infof("domain: %s, enableTls: %v", domain, enableTls)
 
 	if enableTls {
-		// Get server's IP addresses
 		addrs, err := net.InterfaceAddrs()
 		if err != nil {
 			logger.Warn("Failed to get interface addresses:", err)
 		}
 
-		// Build whitelist starting with hostname and localhost
 		whitelist := []string{hostUrl.Hostname(), "localhost"}
 
 		// Add all non-loopback IPv4 addresses
@@ -217,8 +252,6 @@ func startEchoProxyWithOptionalTLS(hostUrl *url.URL, logger *common.Logger) erro
 
 		return nil
 	}
-
-	logger.Info("Starting HTTP server with environment variables:", os.Environ())
 
 	return e.Start(":" + httpPort)
 }
