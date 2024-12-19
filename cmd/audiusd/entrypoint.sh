@@ -84,7 +84,7 @@ setup_postgres() {
         su - postgres -c "$PG_BIN/pg_ctl -D $POSTGRES_DATA_DIR stop"
     fi
 
-    # Always start PostgreSQL
+    # Start PostgreSQL
     echo "Starting PostgreSQL service..."
     su - postgres -c "$PG_BIN/pg_ctl -D $POSTGRES_DATA_DIR start"
 
@@ -93,6 +93,46 @@ setup_postgres() {
         echo "Waiting for PostgreSQL to start..."
         sleep 2
     done
+
+    # Check and refresh collation if needed
+    echo "Checking database collation version..."
+    if su - postgres -c "psql -d ${POSTGRES_DB} -tAc \"SELECT TRUE FROM pg_database WHERE datname = '${POSTGRES_DB}' AND datcollversion < (SELECT collversion FROM pg_collation WHERE collname = 'default')\"" | grep -q 't'; then
+        echo "Collation version mismatch detected. Analyzing impact..."
+        
+        # Estimate size of text data that needs processing
+        ESTIMATE=$(su - postgres -c "psql -d ${POSTGRES_DB} -tAc \"
+            SELECT pg_size_pretty(sum(pg_column_size(column_name::text) * estimated_rows))
+            FROM (
+                SELECT 
+                    columns.column_name,
+                    (SELECT reltuples::bigint FROM pg_class WHERE oid = (table_schema || '.' || table_name)::regclass) as estimated_rows
+                FROM information_schema.columns
+                JOIN information_schema.tables ON columns.table_schema = tables.table_schema AND columns.table_name = tables.table_name
+                WHERE columns.data_type IN ('text', 'character varying', 'character')
+                AND tables.table_type = 'BASE TABLE'
+                AND tables.table_schema = 'public'
+            ) subq;
+        \"")
+        
+        echo "WARNING: Database collation version mismatch detected."
+        echo "Estimated text data to process: $ESTIMATE"
+        echo "This operation could take several hours."
+        echo "To perform the refresh, set AUDIUSD_RUN_REFRESH_COLLATION=true"
+        echo "Command to run manually: ALTER DATABASE ${POSTGRES_DB} REFRESH COLLATION VERSION"
+        
+        if [ "${AUDIUSD_RUN_REFRESH_COLLATION}" = "true" ]; then
+            echo "Starting refresh..."
+            timeout 300 su - postgres -c "psql -d ${POSTGRES_DB} -c 'ALTER DATABASE ${POSTGRES_DB} REFRESH COLLATION VERSION'" || {
+                echo "WARNING: Collation refresh timed out after 5 minutes."
+                echo "You may need to manually run: ALTER DATABASE ${POSTGRES_DB} REFRESH COLLATION VERSION"
+                echo "Continuing startup..."
+            }
+        else
+            echo "Skipping collation refresh. Continuing startup..."
+        fi
+    else
+        echo "Collation version is up to date."
+    fi
 }
 
 setup_postgres
