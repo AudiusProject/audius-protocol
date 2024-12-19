@@ -118,10 +118,7 @@ export class WalletClient {
   }
 
   /** Get total balance of external wallets connected to the user's account. Returns null on failure. */
-  async getAssociatedWalletBalance(
-    userID: ID,
-    bustCache = false
-  ): Promise<BNWei | null> {
+  async getAssociatedWalletBalance(userID: ID): Promise<BNWei | null> {
     try {
       const sdk = await this.audiusSdk()
       const { data } = await sdk.users.getConnectedWallets({
@@ -133,12 +130,14 @@ export class WalletClient {
       }
       const associatedWallets = userWalletsFromSDK(data)
       const balances = await Promise.all([
-        ...associatedWallets.wallets.map((wallet) =>
-          this.audiusBackendInstance.getAddressTotalStakedBalance(
-            wallet,
-            bustCache
-          )
-        ),
+        ...associatedWallets.wallets.map(async (wallet) => {
+          const balance =
+            await this.audiusBackendInstance.getAddressTotalStakedBalance(
+              wallet,
+              sdk
+            )
+          return new BN(balance?.toString() ?? 0) as BNWei
+        }),
         ...associatedWallets.sol_wallets.map(async (wallet) => {
           const balance =
             await this.audiusBackendInstance.getAddressWAudioBalance({
@@ -170,18 +169,21 @@ export class WalletClient {
   }
 
   async getEthWalletBalances(
-    wallets: string[],
-    bustCache = false
+    wallets: string[]
   ): Promise<{ address: string; balance: BNWei }[]> {
     try {
+      const sdk = await this.audiusSdk()
       const balances: { address: string; balance: BNWei }[] = await Promise.all(
         wallets.map(async (wallet) => {
           const balance =
             await this.audiusBackendInstance.getAddressTotalStakedBalance(
               wallet,
-              bustCache
+              sdk
             )
-          return { address: wallet, balance: balance as BNWei }
+          return {
+            address: wallet,
+            balance: new BN(balance?.toString() ?? 0) as BNWei
+          }
         })
       )
       return balances

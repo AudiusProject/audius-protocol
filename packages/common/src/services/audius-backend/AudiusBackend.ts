@@ -20,6 +20,7 @@ import {
   VersionedTransaction
 } from '@solana/web3.js'
 import BN from 'bn.js'
+import { getAddress } from 'viem'
 
 import { userMetadataToSdk } from '~/adapters/user'
 import { Env } from '~/services/env'
@@ -1175,32 +1176,29 @@ export const audiusBackend = ({
    * @params {bool} bustCache
    * @returns {Promise<BN | null>} balance or null if error
    */
-  async function getAddressTotalStakedBalance(
-    address: string,
-    bustCache = false
-  ) {
+  async function getAddressTotalStakedBalance(address: string, sdk: AudiusSdk) {
     await waitForLibsInit()
     if (!address) return null
 
     try {
-      const ethWeb3 = audiusLibs.ethWeb3Manager.getWeb3()
-      const checksumWallet = ethWeb3.utils.toChecksumAddress(address)
-      if (bustCache) {
-        audiusLibs.ethContracts.AudiusTokenClient.bustCache()
-      }
-      const balance = await audiusLibs.ethContracts.AudiusTokenClient.balanceOf(
-        checksumWallet
-      )
+      const checksumWallet = getAddress(address)
+      // if (bustCache) {
+      //   audiusLibs.ethContracts.AudiusTokenClient.bustCache()
+      // }
+      // const balance: bigint =
+      //   await audiusLibs.ethContracts.AudiusTokenClient.balanceOf(
+      //     checksumWallet
+      //   )
       const delegatedBalance =
-        await audiusLibs.ethContracts.DelegateManagerClient.getTotalDelegatorStake(
-          checksumWallet
+        await sdk.services.delegateManagerClient.contract.getTotalDelegatorStake(
+          { delegatorAddress: checksumWallet }
         )
       const stakedBalance =
-        await audiusLibs.ethContracts.StakingProxyClient.totalStakedFor(
-          checksumWallet
-        )
+        await sdk.services.stakingClient.contract.totalStakedFor({
+          account: checksumWallet
+        })
 
-      return balance.add(delegatedBalance).add(stakedBalance)
+      return AUDIO(delegatedBalance + stakedBalance).value
     } catch (e) {
       reportError({ error: e as Error })
       console.error(e)
