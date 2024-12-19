@@ -46,11 +46,6 @@ export const MEMO_PROGRAM_ID = new PublicKey(
   'Memo1UhkJRfHyvLMcVucJwxXeuD728EqVDDwQDxFMNo'
 )
 
-const MINT_DECIMALS: Record<MintName, number> = {
-  wAUDIO: 8,
-  USDC: 6
-}
-
 // TODO: Import from libs https://linear.app/audius/issue/PAY-1750/export-mintname-and-default-mint-from-libs
 export type MintName = 'wAUDIO' | 'USDC'
 export const DEFAULT_MINT: MintName = 'wAUDIO'
@@ -414,33 +409,26 @@ export const decorateCoinflowWithdrawalTransaction = async (
 }
 
 export const createTransferToUserBankTransaction = async (
-  audiusBackendInstance: AudiusBackend,
+  sdk: AudiusSdk,
   {
     userBank,
     wallet,
     amount,
     memo,
-    mint = 'wAUDIO',
-    recentBlockhash,
-    feePayer
+    mintPublicKey,
+    mintDecimals
   }: {
     userBank: PublicKey
     wallet: Keypair
     amount: bigint
     memo: string
-    mint?: MintName
-    feePayer?: PublicKey
-    recentBlockhash?: string
+    mintPublicKey: PublicKey
+    mintDecimals: number
   }
 ) => {
-  const libs = await audiusBackendInstance.getAudiusLibsTyped()
-  const mintPublicKey = libs.solanaWeb3Manager!.mints[mint]
-  const associatedTokenAccount = await findAssociatedTokenAddress(
-    audiusBackendInstance,
-    {
-      solanaAddress: wallet.publicKey.toBase58(),
-      mint
-    }
+  const associatedTokenAccount = getAssociatedTokenAddressSync(
+    mintPublicKey,
+    wallet.publicKey
   )
   // See: https://github.com/solana-labs/solana-program-library/blob/d6297495ea4dcc1bd48f3efdd6e3bbdaef25a495/memo/js/src/index.ts#L27
   const memoInstruction = new TransactionInstruction({
@@ -460,11 +448,11 @@ export const createTransferToUserBankTransaction = async (
     userBank, // destination
     wallet.publicKey, // owner
     amount, // amount
-    MINT_DECIMALS[mint] // decimals
+    mintDecimals // decimals
   )
-  const tx = new Transaction({ recentBlockhash, feePayer })
-  tx.add(memoInstruction)
-  tx.add(transferInstruction)
+  const tx = sdk.services.solanaClient.buildTransaction({
+    instructions: [memoInstruction, transferInstruction]
+  })
   return tx
 }
 
