@@ -56,26 +56,6 @@ func main() {
 		{"core", func() error { return core.Run(ctx, logger) }, true},
 		{"mediorum", func() error { return mediorum.Run(ctx, logger) }, isStorageEnabled()},
 		{"uptime", func() error { return uptime.Run(ctx, logger) }, hostUrl.Hostname() != "localhost"},
-		// Test services with proper panic handling
-		{"simple-panic-test", func() error {
-			time.Sleep(5 * time.Second)
-			panic("simple goroutine panic")
-		}, true},
-		{"nested-panic-test", func() error {
-			done := make(chan error)
-			go func() {
-				defer func() {
-					if r := recover(); r != nil {
-						done <- fmt.Errorf("nested panic: %v", r)
-					}
-				}()
-
-				time.Sleep(5 * time.Second)
-				panic("nested goroutine panic")
-			}()
-
-			return <-done
-		}, true},
 	}
 
 	for _, svc := range services {
