@@ -32,10 +32,7 @@ const { setIsConnectingWallet, connectNewWallet: baseConnectNewWallet } =
 const { getUserId } = accountSelectors
 
 export function* convertToChecksumAddress(address: WalletAddress) {
-  const audiusBackend = yield* getContext('audiusBackendInstance')
-  const audiusLibs = yield* call(audiusBackend.getAudiusLibs)
-  const ethWeb3 = audiusLibs.ethWeb3Manager.getWeb3()
-  return ethWeb3.utils.toChecksumAddress(address)
+  throw new Error('Not implemented')
 }
 
 // Connection a new wallet to an Audius account

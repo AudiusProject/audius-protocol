@@ -63,9 +63,9 @@
       getSomeData: {
         fetch: async (
           { id } /* fetch args */,
-          { apiClient, audiusBackend } /* context */
+          { audiusBackend } /* context */
         ) => {
-          return await apiClient.getSomeData({ id })
+          return await getSomeData({ id })
         },
         options: {
           // see below
@@ -147,9 +147,9 @@
       updateSomeData: {
         fetch: async (
           { id } /* fetch args */,
-          { apiClient, audiusBackend } /* context */
+          { audiusBackend } /* context */
         ) => {
-          return await apiClient.updateSomeData({ id })
+          return await updateSomeData({ id })
         },
         options: {
           type: 'mutation', // This turns endpoint into a mutation
@@ -187,13 +187,13 @@ const api = createApi({
   reducerPath: 'someData',
   endpoints: {
     getSomeData: {
-      fetch: async ({ id }, { apiClient }) => {
-        return await apiClient.getSomeData({ id })
+      fetch: async ({ id }, { }) => {
+        return await getSomeData({ id })
       }
     }
     updateSomeData: {
-      fetch: async ( { id } { apiClient }) => {
-        return await apiClient.updateSomeData({ id })
+      fetch: async ( { id } { }) => {
+        return await updateSomeData({ id })
       },
       options: {
         type: 'mutation',
@@ -386,8 +386,8 @@ So for `useGetTrackById({ id: 123 })`
 
 ```typescript
 getTrackById: {
-  fetch: async ({ id /* matches idArgKey */ }, { apiClient }) => {
-    return await apiClient.getTrack({ id })
+  fetch: async ({ id /* matches idArgKey */ }, {  }) => {
+    return await .getTrack({ id })
   },
   options: {
     idArgKey: 'id',

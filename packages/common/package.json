@@ -39,7 +39,6 @@
     "@audius/fetch-nft": "0.2.7",
     "@audius/fixed-decimal": "*",
     "@audius/sdk": "*",
-    "@audius/sdk-legacy": "*",
     "@fingerprintjs/fingerprintjs-pro": "3.5.6",
     "@jup-ag/api": "6.0.6",
     "@metaplex-foundation/mpl-token-metadata": "2.5.2",

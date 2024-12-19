@@ -78,7 +78,6 @@
     "@audius/fixed-decimal": "*",
     "@audius/harmony": "*",
     "@audius/sdk": "*",
-    "@audius/sdk-legacy": "*",
     "@cloudflare/kv-asset-handler": "0.2.0",
     "@coinbase/cbpay-js": "1.2.0",
     "@coinflowlabs/react": "3.1.5",

@@ -1,12 +1,6 @@
 import { audiusBackend } from '@audius/common/services'
-import type { AudiusLibs } from '@audius/sdk-legacy/dist/libs'
 
 import { track } from 'services/analytics'
-import {
-  LIBS_INITTED_EVENT,
-  waitForLibsInit,
-  withEagerOption
-} from 'services/audius-backend/eagerLoadUtils'
 import { discoveryNodeSelectorService } from 'services/audius-sdk/discoveryNodeSelector'
 import { getStorageNodeSelector } from 'services/audius-sdk/storageNodeSelector'
 import { getFeatureEnabled } from 'services/remote-config/featureFlagHelpers'
@@ -16,12 +10,6 @@ import { reportToSentry } from 'store/errors/reportToSentry'
 import { isElectron } from 'utils/clientUtil'
 
 import { env } from '../env'
-
-declare global {
-  interface Window {
-    audiusLibs: AudiusLibs
-  }
-}
 
 /**
  * audiusBackend initialized for a web environment
@@ -36,65 +24,13 @@ export const audiusBackendInstance = audiusBackend({
   ethTokenAddress: env.ETH_TOKEN_ADDRESS,
   getFeatureEnabled,
   getHostUrl: () => window.location.origin,
-  getLibs: () => import('@audius/sdk-legacy/dist/web-libs'),
   discoveryNodeSelectorService,
   getStorageNodeSelector,
-  getWeb3Config: async (
-    libs,
-    registryAddress,
-    entityManagerAddress,
-    web3ProviderUrls,
-    web3NetworkId
-  ) => {
-    const useMetaMaskSerialized = localStorage.getItem('useMetaMask')
-    const useMetaMask = useMetaMaskSerialized
-      ? JSON.parse(useMetaMaskSerialized)
-      : false
-
-    if (useMetaMask && window.ethereum) {
-      try {
-        return {
-          error: false,
-          web3Config: await libs.configExternalWeb3(
-            registryAddress,
-            window.ethereum,
-            web3NetworkId,
-            null,
-            entityManagerAddress
-          )
-        }
-      } catch (e) {
-        return {
-          error: true,
-          web3Config: libs.configInternalWeb3(
-            registryAddress,
-            web3ProviderUrls,
-            null,
-            entityManagerAddress
-          )
-        }
-      }
-    }
-    return {
-      error: false,
-      web3Config: libs.configInternalWeb3(
-        registryAddress,
-        web3ProviderUrls,
-        null,
-        entityManagerAddress
-      )
-    }
-  },
   identityServiceUrl: env.IDENTITY_SERVICE,
   generalAdmissionUrl: env.GENERAL_ADMISSION,
   isElectron: isElectron(),
   monitoringCallbacks,
   nativeMobile: false,
-  onLibsInit: (libs: AudiusLibs) => {
-    window.audiusLibs = libs
-    const event = new CustomEvent(LIBS_INITTED_EVENT)
-    window.dispatchEvent(event)
-  },
   recaptchaSiteKey: env.RECAPTCHA_SITE_KEY,
   recordAnalytics: track,
   reportError: reportToSentry,
@@ -120,7 +56,6 @@ export const audiusBackendInstance = audiusBackend({
   userNodeUrl: env.USER_NODE,
   web3NetworkId: env.WEB3_NETWORK_ID,
   web3ProviderUrls: (env.WEB3_PROVIDER_URL || '').split(','),
-  waitForLibsInit,
   waitForWeb3: async () => {
     if (!window.web3Loaded) {
       await new Promise<void>((resolve) => {
@@ -132,8 +67,6 @@ export const audiusBackendInstance = audiusBackend({
       })
     }
   },
-
-  withEagerOption,
   wormholeConfig: {
     ethBridgeAddress: env.ETH_BRIDGE_ADDRESS ?? undefined,
     ethTokenBridgeAddress: env.ETH_TOKEN_BRIDGE_ADDRESS ?? undefined,

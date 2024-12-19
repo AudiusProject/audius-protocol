@@ -1,5 +1,4 @@
 import { AudiusSdk, sdk, Configuration, SolanaRelay } from '@audius/sdk'
-import { AudiusLibs } from '@audius/sdk-legacy/dist/libs'
 import { createWalletClient, http } from 'viem'
 import { mainnet } from 'viem/chains'
 
@@ -10,7 +9,6 @@ import { audiusWalletClient } from './auth'
 
 declare global {
   interface Window {
-    audiusLibs: AudiusLibs
     audiusSdk: AudiusSdk
   }
 }

@@ -7,13 +7,6 @@ import { track } from 'app/services/analytics'
 import { reportToSentry } from 'app/utils/reportToSentry'
 
 import { createPrivateKey } from './createPrivateKey'
-import { withEagerOption } from './eagerLoadUtils'
-import {
-  libsInitEventEmitter,
-  LIBS_INITTED_EVENT,
-  setLibs,
-  waitForLibsInit
-} from './libs'
 import { monitoringCallbacks } from './monitoringCallbacks'
 import { getFeatureEnabled } from './remote-config'
 import { remoteConfigInstance } from './remote-config/remote-config-instance'
@@ -37,20 +30,6 @@ export const audiusBackendInstance = audiusBackend({
     return `${env.PUBLIC_PROTOCOL}//${env.PUBLIC_HOSTNAME}`
   },
   getStorageNodeSelector,
-  getWeb3Config: async (
-    libs,
-    registryAddress,
-    entityManagerAddress,
-    web3ProviderUrls
-  ) => ({
-    error: false,
-    web3Config: libs.configInternalWeb3(
-      registryAddress,
-      web3ProviderUrls,
-      undefined,
-      entityManagerAddress
-    )
-  }),
   hedgehogConfig: {
     createKey: createPrivateKey
   },
@@ -60,10 +39,6 @@ export const audiusBackendInstance = audiusBackend({
   localStorage: AsyncStorage,
   monitoringCallbacks,
   nativeMobile: true,
-  onLibsInit: (libs) => {
-    setLibs(libs)
-    libsInitEventEmitter.emit(LIBS_INITTED_EVENT)
-  },
   recaptchaSiteKey: env.RECAPTCHA_SITE_KEY,
   recordAnalytics: track,
   reportError: reportToSentry,
@@ -95,8 +70,5 @@ export const audiusBackendInstance = audiusBackend({
     solBridgeAddress: env.SOL_BRIDGE_ADDRESS ?? undefined,
     solTokenBridgeAddress: env.SOL_TOKEN_BRIDGE_ADDRESS ?? undefined,
     wormholeRpcHosts: env.WORMHOLE_RPC_HOSTS ?? undefined
-  },
-  getLibs: async () => nativeLibs,
-  waitForLibsInit,
-  withEagerOption
+  }
 })
