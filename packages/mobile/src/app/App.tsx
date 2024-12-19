@@ -27,7 +27,6 @@ import { useEnterForeground } from 'app/hooks/useAppState'
 import { incrementSessionCount } from 'app/hooks/useSessionCount'
 import { RootScreen } from 'app/screens/root-screen'
 import { WalletConnectProvider } from 'app/screens/wallet-connect'
-import { setLibs } from 'app/services/libs'
 import { persistor, store } from 'app/store'
 import {
   forceRefreshConnectivity,
@@ -65,9 +64,7 @@ const Modals = () => {
 }
 
 const App = () => {
-  // Reset libs so that we get a clean app start
   useEffectOnce(() => {
-    setLibs(null)
     subscribeToNetworkStatusUpdates()
     TrackPlayer.setupPlayer({ autoHandleInterruptions: true })
   })

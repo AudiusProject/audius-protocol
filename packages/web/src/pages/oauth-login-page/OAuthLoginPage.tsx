@@ -190,7 +190,6 @@ export const OAuthLoginPage = () => {
     setIsSubmitting(true)
     let signInResponse: SignInResponse
     try {
-      audiusBackendInstance.waitForLibsInit()
       const fpResponse = await fingerprintClient.identify(emailInput, 'web')
       signInResponse = await authService.signIn(
         emailInput,
