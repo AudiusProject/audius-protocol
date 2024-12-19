@@ -2,8 +2,7 @@ import {
   accountActions,
   reachabilityActions,
   reachabilitySelectors,
-  getContext,
-  accountSelectors
+  getContext
 } from '@audius/common/store'
 import {
   put,
