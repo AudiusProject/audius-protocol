@@ -46,11 +46,6 @@ export const MEMO_PROGRAM_ID = new PublicKey(
   'Memo1UhkJRfHyvLMcVucJwxXeuD728EqVDDwQDxFMNo'
 )
 
-const MINT_DECIMALS: Record<MintName, number> = {
-  wAUDIO: 8,
-  USDC: 6
-}
-
 // TODO: Import from libs https://linear.app/audius/issue/PAY-1750/export-mintname-and-default-mint-from-libs
 export type MintName = 'wAUDIO' | 'USDC'
 export const DEFAULT_MINT: MintName = 'wAUDIO'
