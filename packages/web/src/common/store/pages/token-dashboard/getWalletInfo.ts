@@ -13,7 +13,9 @@ export function* getWalletInfo(walletAddress: string, chain: Chain) {
   const [{ balance }] = yield* call(
     [
       walletClient,
-      chain === Chain.Eth ? 'getEthWalletBalances' : 'getSolWalletBalances'
+      chain === Chain.Eth
+        ? walletClient.getEthWalletBalances
+        : walletClient.getSolWalletBalances
     ],
     [walletAddress]
   )

@@ -45,8 +45,7 @@ const {
   sendFailed,
   decreaseBalance
 } = walletActions
-const { getAccountBalance, getFreezeUntilTime, getLocalBalanceDidChange } =
-  walletSelectors
+const { getAccountBalance, getFreezeUntilTime } = walletSelectors
 const {
   fetchAssociatedWallets,
   transferEthAudioToSolWAudio,
@@ -233,13 +232,9 @@ function* fetchBalanceAsync() {
     const isBalanceFrozen = yield* call(getIsBalanceFrozen)
     if (isBalanceFrozen) return
 
-    const localBalanceChange: ReturnType<typeof getLocalBalanceDidChange> =
-      yield* select(getLocalBalanceDidChange)
-
     const [currentEthAudioWeiBalance, currentSolAudioWeiBalance] = yield* all([
       call([walletClient, walletClient.getCurrentBalance], {
-        ethAddress: account.wallet,
-        bustCache: localBalanceChange
+        ethAddress: account.wallet
       }),
       call([walletClient, walletClient.getCurrentWAudioBalance], {
         ethAddress: account.wallet
@@ -261,8 +256,7 @@ function* fetchBalanceAsync() {
 
     const associatedWalletBalance: BNWei | null = yield* call(
       [walletClient, walletClient.getAssociatedWalletBalance],
-      account.user_id,
-      /* bustCache */ localBalanceChange
+      account.user_id
     )
     if (isNullOrUndefined(associatedWalletBalance)) {
       console.warn(

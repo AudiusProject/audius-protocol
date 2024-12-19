@@ -10,6 +10,12 @@ export type AudiusTokenConfigInternal = {
   address: Hex
 }
 
+export const BalanceOfSchema = z.object({
+  account: EthAddressSchema
+})
+
+export type BalanceOfParams = z.input<typeof BalanceOfSchema>
+
 export const PermitSchema = GasFeeSchema.and(
   z.object({
     args: z.object({
