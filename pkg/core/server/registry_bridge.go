@@ -313,6 +313,9 @@ func (s *Server) validateValidatorRegistration(tx *core_proto.SignedTransaction_
 
 	node, err := db.GetRegisteredNodeByCometAddress(context.Background(), cometAddr)
 	if err != nil {
+		if !errors.Is(err, pgx.ErrNoRows) {
+			return nil
+		}
 		return fmt.Errorf("validation db fail: %v", err)
 	}
 
@@ -326,7 +329,7 @@ func (s *Server) validateValidatorRegistration(tx *core_proto.SignedTransaction_
 
 // checks if the register node tx is valid
 // calls ethereum mainnet and validates signature to confirm node should be a validator
-func (s *Server) isValidRegisterNodeTx(ctx context.Context, tx *core_proto.SignedTransaction) error {
+func (s *Server) isValidRegisterNodeTx(_ctx context.Context, tx *core_proto.SignedTransaction) error {
 	sig := tx.GetSignature()
 	if sig == "" {
 		return fmt.Errorf("no signature provided for registration tx: %v", tx)
