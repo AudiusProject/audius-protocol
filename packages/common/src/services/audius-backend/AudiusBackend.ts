@@ -1183,7 +1183,7 @@ export const audiusBackend = ({
     try {
       const checksumWallet = getAddress(address)
       const balance = await sdk.services.audiusTokenClient.balanceOf({
-        address: checksumWallet
+        account: checksumWallet
       })
       const delegatedBalance =
         await sdk.services.delegateManagerClient.contract.getTotalDelegatorStake(
