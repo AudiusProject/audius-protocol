@@ -57,7 +57,6 @@ function* handleFetchTrackCount() {
 export function* fetchAccountAsync({ isSignUp = false }): SagaIterator {
   const remoteConfigInstance = yield* getContext('remoteConfigInstance')
   const authService = yield* getContext('authService')
-  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
   const localStorage = yield* getContext('localStorage')
   const sdk = yield* getSDK()
   const accountStatus = yield* select(accountSelectors.getAccountStatus)
