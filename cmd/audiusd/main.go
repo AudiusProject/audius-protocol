@@ -101,6 +101,7 @@ func main() {
 	// this is gross, (more expected env var madness) but uptime is being removed soon enough
 	if hostUrl.Hostname() != "localhost" {
 		go func() {
+			logger.Infof("Starting uptime")
 			if err := uptime.Run(ctx, logger); err != nil {
 				logger.Errorf("fatal uptime error: %v", err)
 				cancel()
@@ -217,9 +218,12 @@ func startEchoProxyWithOptionalTLS(hostUrl *url.URL, logger *common.Logger) erro
 		return nil
 	}
 
+	logger.Info("Starting HTTP server with environment variables:", os.Environ())
+
 	return e.Start(":" + httpPort)
 }
 
+// TODO: use url.URL parsing instead
 func extractDomain(fqdn string) string {
 	// Remove the scheme (e.g., "https://")
 	if strings.Contains(fqdn, "://") {
@@ -270,7 +274,7 @@ func getHostUrl() (*url.URL, error) {
 		ep = os.Getenv("audius_discprov_url")
 	}
 	if ep == "" {
-		ep = "localhost"
+		ep = "http://localhost"
 	}
 	return url.Parse(ep)
 }

@@ -229,6 +229,25 @@ func ReadConfig(logger *common.Logger) (*Config, error) {
 
 	enableModules(&cfg)
 
+	logger.Info("Config:", map[string]interface{}{
+		"Environment":          cfg.Environment,
+		"WalletAddress":        cfg.WalletAddress,
+		"CometKey":             cfg.CometKey,
+		"AddrBookStrict":       cfg.AddrBookStrict,
+		"PersistentPeers":      cfg.PersistentPeers,
+		"EthRegistryAddress":   cfg.EthRegistryAddress,
+		"EthRPCUrl":            cfg.EthRPCUrl,
+		"SlaRollupInterval":    cfg.SlaRollupInterval,
+		"ValidatorVotingPower": cfg.ValidatorVotingPower,
+		"ExternalAddress":      cfg.ExternalAddress,
+		"PSQLConn":             cfg.PSQLConn,
+		"CometModule":          cfg.CometModule,
+		"DebugModule":          cfg.DebugModule,
+		"PprofModule":          cfg.PprofModule,
+		"ConsoleModule":        cfg.ConsoleModule,
+		"RunDownMigration":     cfg.RunDownMigration,
+	})
+
 	return &cfg, nil
 }
 
