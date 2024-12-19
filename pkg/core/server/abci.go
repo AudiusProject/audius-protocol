@@ -180,6 +180,18 @@ func (s *Server) FinalizeBlock(ctx context.Context, req *abcitypes.FinalizeBlock
 	var validatorUpdates = abcitypes.ValidatorUpdates{}
 	var validatorUpdatesMap = map[string]bool{}
 
+	// update jailed validators in validator updates map so they get skipped if they try to re-register
+	jailedValidators, err := s.handleDuplicateVoteEvidence(ctx, req)
+	if err != nil {
+		s.logger.Errorf("could not handle duplicate vote evidence: %v", err)
+	} else {
+		validatorUpdates = append(validatorUpdates, jailedValidators...)
+		for _, jailed := range jailedValidators {
+			vrPubKey := ed25519.PubKey(jailed.PubKeyBytes)
+			validatorUpdatesMap[vrPubKey.Address().String()] = true
+		}
+	}
+
 	// open in progres pg transaction
 	s.startInProgressTx(ctx)
 	for i, tx := range req.Txs {
@@ -255,13 +267,6 @@ func (s *Server) FinalizeBlock(ctx context.Context, req *abcitypes.FinalizeBlock
 	hundredthBlock := req.Height%100 == 0
 	if hundredthBlock {
 		go s.mempl.RemoveExpiredTransactions(req.Height)
-	}
-
-	jailedValidators, err := s.handleDuplicateVoteEvidence(ctx, req)
-	if err != nil {
-		s.logger.Errorf("could not handle duplicate vote evidence: %v", err)
-	} else {
-		validatorUpdates = append(validatorUpdates, jailedValidators...)
 	}
 
 	return &abcitypes.FinalizeBlockResponse{
