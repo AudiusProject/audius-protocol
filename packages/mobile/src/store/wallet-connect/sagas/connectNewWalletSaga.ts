@@ -1,4 +1,3 @@
-import type { WalletAddress } from '@audius/common/models'
 import { Name, Chain } from '@audius/common/models'
 import {
   accountSelectors,
@@ -13,6 +12,7 @@ import { getWalletInfo } from 'common/store/pages/token-dashboard/getWalletInfo'
 import { Linking } from 'react-native'
 import nacl from 'tweetnacl'
 import { takeEvery, select, put, call } from 'typed-redux-saga'
+import { getAddress } from 'viem'
 
 import type { JsonMap } from 'app/types/analytics'
 
@@ -30,10 +30,6 @@ import { buildUrl, decryptPayload, encryptPayload } from '../utils'
 const { setIsConnectingWallet, connectNewWallet: baseConnectNewWallet } =
   tokenDashboardPageActions
 const { getUserId } = accountSelectors
-
-export function* convertToChecksumAddress(address: WalletAddress) {
-  throw new Error('Not implemented')
-}
 
 // Connection a new wallet to an Audius account
 function* connectNewWalletAsync(action: ConnectNewWalletAction) {
@@ -143,7 +139,7 @@ function* connectNewWalletAsync(action: ConnectNewWalletAction) {
     }
     case 'wallet-connect': {
       const { publicKey } = action.payload
-      const wallet = yield* call(convertToChecksumAddress, publicKey)
+      const wallet = getAddress(publicKey)
 
       const isNewWallet = yield* checkIsNewWallet(wallet, Chain.Eth)
       if (!isNewWallet) return
