@@ -12,13 +12,22 @@ RUN go build -o audiusd cmd/audiusd/main.go
 # encoding and analysis requires a lot of dynamic links
 FROM audius/cpp:latest
 
+# Add backports to get newer glibc
+RUN echo "deb http://deb.debian.org/debian bullseye-backports main" >> /etc/apt/sources.list && \
+    apt-get update && \
+    apt-get install -y -t bullseye-backports libc6 locales && \
+    rm -rf /var/lib/apt/lists/* && \
+    localedef -i en_US -f UTF-8 en_US.UTF-8
+
 COPY --from=go-builder /app/audiusd /bin/audiusd
 
 RUN mkdir -p /env
 COPY ./cmd/audiusd/env/dev.env ./cmd/audiusd/env/stage.env ./cmd/audiusd/env/prod.env /env/
 
-COPY ./cmd/audiusd/entrypoint.sh /bin/entrypoint.sh
+COPY ./cmd/audiusd/scripts/entrypoint.sh /bin/entrypoint.sh
+COPY ./cmd/audiusd/scripts/refresh-collation.sh /bin/refresh-collation.sh
 RUN chmod +x /bin/entrypoint.sh
+RUN chmod +x /bin/refresh-collation.sh
 
 # Set up data directory structure with proper permissions
 RUN mkdir -p /data && \

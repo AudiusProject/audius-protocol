@@ -84,7 +84,7 @@ setup_postgres() {
         su - postgres -c "$PG_BIN/pg_ctl -D $POSTGRES_DATA_DIR stop"
     fi
 
-    # Always start PostgreSQL
+    # Start PostgreSQL
     echo "Starting PostgreSQL service..."
     su - postgres -c "$PG_BIN/pg_ctl -D $POSTGRES_DATA_DIR start"
 
