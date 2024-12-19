@@ -1,7 +1,8 @@
 import {
   ErrorLevel,
   AdditionalErrorReportInfo,
-  ReportToSentryArgs
+  ReportToSentryArgs,
+  Feature
 } from '@audius/common/models'
 
 export const HANDLE_ERROR = 'ERROR/HANDLE_ERROR'
@@ -24,6 +25,7 @@ export type HandleErrorAction = {
 
   additionalInfo?: AdditionalErrorReportInfo
   level?: ErrorLevel
+  feature?: Feature
   uiErrorCode: UiErrorCode
 }
 

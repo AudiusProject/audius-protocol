@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react'
 import { PureComponent } from 'react'
 
+import { Feature } from '@audius/common/models'
 import * as Sentry from '@sentry/react-native'
 
 type NotificationErrorBoundaryProps = {
@@ -17,6 +18,7 @@ export class NotificationErrorBoundary extends PureComponent<NotificationErrorBo
 
     Sentry.withScope((scope) => {
       scope.setExtras(errorInfo)
+      scope.setTag('feature', Feature.Notifications)
       Sentry.captureException(error)
     })
   }
