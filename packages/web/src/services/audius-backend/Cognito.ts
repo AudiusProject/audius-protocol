@@ -1,11 +1,7 @@
 import { AuthHeaders } from '@audius/common/services'
 
 import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
-import { waitForLibsInit } from 'services/audius-backend/eagerLoadUtils'
 import { audiusSdk } from 'services/audius-sdk'
-
-// @ts-ignore
-const libs = () => window.audiusLibs
 
 type HttpMethod = 'POST' | 'GET' | 'PUT' | 'DELETE' | 'PATCH'
 
@@ -28,11 +24,6 @@ async function _makeRequest<ResponseModel>({
     headers?: { [key in AuthHeadersType[keyof AuthHeadersType]]: string }
   } = { method }
   if (useAuth) {
-    await waitForLibsInit()
-    const account = libs()?.getCurrentUser()
-    if (!account) {
-      throw new Error('Cognito Identity Request Failed: Missing current user')
-    }
     const sdk = await audiusSdk()
     const { data, signature } =
       await audiusBackendInstance.signIdentityServiceRequest({ sdk })
