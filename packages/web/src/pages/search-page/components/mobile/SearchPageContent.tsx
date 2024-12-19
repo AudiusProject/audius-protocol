@@ -212,8 +212,8 @@ const CardSearchPage = ({
     cardType === CardType.ALBUM
       ? albums.map((album) => album.playlist_id)
       : cardType === CardType.PLAYLIST
-      ? playlists.map((playlist) => playlist.playlist_id)
-      : artists.map((artist) => artist.user_id)
+        ? playlists.map((playlist) => playlist.playlist_id)
+        : artists.map((artist) => artist.user_id)
 
   const cards =
     cardType === CardType.USER

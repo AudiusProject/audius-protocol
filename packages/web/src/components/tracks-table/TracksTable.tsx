@@ -460,18 +460,18 @@ export const TracksTable = ({
         Icon = track.is_unlisted
           ? IconVisibilityHidden
           : isContentUSDCPurchaseGated(streamConditions)
-          ? IconCart
-          : isContentCollectibleGated(streamConditions)
-          ? IconCollectible
-          : isContentFollowGated(streamConditions)
-          ? IconSpecialAccess
-          : null
+            ? IconCart
+            : isContentCollectibleGated(streamConditions)
+              ? IconCollectible
+              : isContentFollowGated(streamConditions)
+                ? IconSpecialAccess
+                : null
       } else {
         Icon = !hasStreamAccess
           ? IconLock
           : track.is_unlisted
-          ? IconVisibilityHidden
-          : null
+            ? IconVisibilityHidden
+            : null
       }
       const overflowProps = {
         className: styles.tableActionButton,

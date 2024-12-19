@@ -130,7 +130,9 @@
   display: flex;
   justify-content: center;
   padding: var(--harmony-unit-1) var(--harmony-unit-2);
-  text-shadow: 0px 1.4px 8px rgba(0, 0, 0, 0.2), 0px 6px 15px rgba(0, 0, 0, 0.1);
+  text-shadow:
+    0px 1.4px 8px rgba(0, 0, 0, 0.2),
+    0px 6px 15px rgba(0, 0, 0, 0.1);
 }
 
 .rewardTitle {

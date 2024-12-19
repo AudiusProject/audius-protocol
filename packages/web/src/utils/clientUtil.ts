@@ -103,6 +103,6 @@ export const getClient = () => {
   return isElectron()
     ? Client.ELECTRON
     : isMobile()
-    ? Client.MOBILE
-    : Client.DESKTOP
+      ? Client.MOBILE
+      : Client.DESKTOP
 }

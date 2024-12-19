@@ -68,10 +68,10 @@ export const useChangePasswordFormConfiguration = (onComplete: () => void) => {
     page === ChangePasswordPage.NewPassword
       ? passwordFormikSchema
       : page === ChangePasswordPage.ConfirmPassword
-      ? confirmPasswordFormikSchema
-      : page === ChangePasswordPage.VerifyEmail
-      ? verifyEmailFormikSchema
-      : undefined
+        ? confirmPasswordFormikSchema
+        : page === ChangePasswordPage.VerifyEmail
+          ? verifyEmailFormikSchema
+          : undefined
 
   const confirmCredentials = useCallback(
     async (

@@ -53,7 +53,9 @@ export const useTrackMetadata = ({
     ? parseFloat((bpm ?? 0).toFixed(isCustomBpm ? 2 : 0)).toString()
     : ''
 
-  const parsedMusicalKey = musical_key ? parseMusicalKey(musical_key) ?? '' : ''
+  const parsedMusicalKey = musical_key
+    ? (parseMusicalKey(musical_key) ?? '')
+    : ''
 
   const labels = [
     {

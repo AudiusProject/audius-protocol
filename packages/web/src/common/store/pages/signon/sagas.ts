@@ -997,8 +997,8 @@ function* signIn(action: ReturnType<typeof signOnActions.signIn>) {
   const clientOrigin = isNativeMobile
     ? 'mobile'
     : isElectron
-    ? 'desktop'
-    : 'web'
+      ? 'desktop'
+      : 'web'
 
   yield* call(waitForRead)
   try {

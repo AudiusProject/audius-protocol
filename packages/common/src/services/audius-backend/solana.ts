@@ -725,9 +725,8 @@ export const transferFromUserBank = async ({
       transaction.sign([signer])
     }
 
-    const signature = await sdk.services.claimableTokensClient.sendTransaction(
-      transaction
-    )
+    const signature =
+      await sdk.services.claimableTokensClient.sendTransaction(transaction)
 
     if (isCreatingTokenAccount) {
       await track(

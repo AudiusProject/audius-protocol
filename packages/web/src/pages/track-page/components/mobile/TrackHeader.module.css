@@ -10,7 +10,9 @@
   background: var(--harmony-white);
   border: var(--border-width) solid var(--harmony-n-100);
   border-radius: var(--harmony-unit-2);
-  box-shadow: 0 0 1px 0 var(--tile-shadow-1), 0 1px 0 0 var(--tile-shadow-2),
+  box-shadow:
+    0 0 1px 0 var(--tile-shadow-1),
+    0 1px 0 0 var(--tile-shadow-2),
     0 2px 5px -2px var(--tile-shadow-3);
   text-align: left;
 }

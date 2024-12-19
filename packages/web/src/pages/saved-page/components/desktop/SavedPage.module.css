@@ -20,7 +20,9 @@
   border: 1px solid var(--harmony-n-100) !important;
   box-shadow: 0 2px 5px 0 var(--search-bar-shadow);
   background-color: var(--harmony-n-25);
-  transition: width 0.2s ease-in-out, background 0.04s ease-in-out;
+  transition:
+    width 0.2s ease-in-out,
+    background 0.04s ease-in-out;
   color: var(--harmony-neutral);
   font-size: var(--harmony-font-xs);
   font-weight: var(--harmony-font-medium);

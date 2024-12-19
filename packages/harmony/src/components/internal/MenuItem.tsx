@@ -124,7 +124,7 @@ export const MenuItem = forwardRef(function <Value extends string>(
           size={variant === 'option' ? 'l' : 'm'}
           strength={variant === 'button' ? 'strong' : 'default'}
         >
-          {variant === 'option' ? label ?? props.value : label}
+          {variant === 'option' ? (label ?? props.value) : label}
         </Text>
       ) : (
         label
@@ -139,7 +139,7 @@ export const MenuItem = forwardRef(function <Value extends string>(
           {helperText}
         </Text>
       ) : (
-        helperText ?? null
+        (helperText ?? null)
       )}
     </BaseButton>
   )

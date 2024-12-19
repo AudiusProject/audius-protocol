@@ -9,9 +9,8 @@ const IS_EU_KEY = 'isEU'
 const IS_EU_CACHE_TTL_MS = 7 * 24 * 3600 * 1000
 
 export const getIsInEU = async () => {
-  const cachedIsEU: Nullable<boolean> = await localStorage.getExpiringJSONValue(
-    IS_EU_KEY
-  )
+  const cachedIsEU: Nullable<boolean> =
+    await localStorage.getExpiringJSONValue(IS_EU_KEY)
 
   if (cachedIsEU !== null) {
     return cachedIsEU

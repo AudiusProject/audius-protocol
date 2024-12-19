@@ -70,7 +70,7 @@ export const VisibleCollectibleRow = (props) => {
         <IconHide onClick={onHideClick} />
       </Tooltip>
       <div className={styles.verticalDivider} />
-      {frameUrl ?? gifUrl ? (
+      {(frameUrl ?? gifUrl) ? (
         <div>
           <img
             className={styles.editMedia}
@@ -131,7 +131,7 @@ export const HiddenCollectibleRow = (props: HiddenCollectibleRowProps) => {
         <IconShow onClick={onShowClick} />
       </Tooltip>
       <div className={styles.verticalDivider} />
-      {frameUrl ?? gifUrl ? (
+      {(frameUrl ?? gifUrl) ? (
         <div>
           <img
             className={styles.editMedia}

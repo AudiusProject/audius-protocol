@@ -91,9 +91,8 @@ export function* checkForNewNotificationsSaga() {
     )
 
     if (hasNewNotifications) {
-      const processedNotifications = yield* parseAndProcessNotifications(
-        notifications
-      )
+      const processedNotifications =
+        yield* parseAndProcessNotifications(notifications)
 
       const hasMore = notifications.length >= limit
 

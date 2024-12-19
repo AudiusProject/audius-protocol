@@ -43,10 +43,10 @@ export const CommentBadge = ({
   const badgeType = isArtist
     ? 'artist'
     : isTopSupporter
-    ? 'topSupporter'
-    : isTipSupporter
-    ? 'tipSupporter'
-    : null
+      ? 'topSupporter'
+      : isTipSupporter
+        ? 'tipSupporter'
+        : null
 
   if (badgeType === null) return null
 

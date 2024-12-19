@@ -49,7 +49,9 @@
 }
 
 .titleHeader {
-  transition: opacity var(--harmony-calm), color var(--harmony-quick);
+  transition:
+    opacity var(--harmony-calm),
+    color var(--harmony-quick);
 }
 
 .editableTitle:hover .titleHeader {

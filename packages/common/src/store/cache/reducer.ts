@@ -270,7 +270,11 @@ const actionsMap = {
 export const asCache =
   (
     reducer: {
-      (state: CacheState | undefined, action: any, kind: Kind): {
+      (
+        state: CacheState | undefined,
+        action: any,
+        kind: Kind
+      ): {
         // id => entry
         entries: {}
         // id => status

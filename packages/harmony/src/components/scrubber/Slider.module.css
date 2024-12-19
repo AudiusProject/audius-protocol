@@ -90,9 +90,12 @@
   width: var(--harmony-unit-2);
   border-radius: 50%;
   background: var(--harmony-white);
-  box-shadow: 0 0 2px 0 rgba(133, 129, 153, 0.5),
+  box-shadow:
+    0 0 2px 0 rgba(133, 129, 153, 0.5),
     0 2px 5px -1px rgba(133, 129, 153, 0.5);
-  transition: transform 0.18s ease-in-out, opacity 0.18s ease-in-out;
+  transition:
+    transform 0.18s ease-in-out,
+    opacity 0.18s ease-in-out;
   opacity: 0;
   transform: scale(0);
 }

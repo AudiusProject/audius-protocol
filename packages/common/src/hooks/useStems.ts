@@ -97,10 +97,13 @@ export const useFileSizes = ({
         )
         setSizes((sizes) => ({
           ...sizes,
-          ...sizeResults.reduce((acc, curr) => {
-            acc[curr.trackId] = { ...(acc[curr.trackId] || {}), ...curr.size }
-            return acc
-          }, {} as { trackId: ID; size: { [k in DownloadQuality]: number } })
+          ...sizeResults.reduce(
+            (acc, curr) => {
+              acc[curr.trackId] = { ...(acc[curr.trackId] || {}), ...curr.size }
+              return acc
+            },
+            {} as { trackId: ID; size: { [k in DownloadQuality]: number } }
+          )
         }))
       }
       asyncFn()

@@ -24,7 +24,9 @@
   padding: 16px 24px;
   background: var(--harmony-white);
   border-radius: 8px;
-  box-shadow: 0px 2px 5px var(--tile-shadow-3), 0px 1px 0px var(--tile-shadow-2),
+  box-shadow:
+    0px 2px 5px var(--tile-shadow-3),
+    0px 1px 0px var(--tile-shadow-2),
     0px 0px 1px var(--tile-shadow-1);
 }
 

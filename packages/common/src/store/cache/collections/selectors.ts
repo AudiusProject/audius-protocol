@@ -70,10 +70,13 @@ export const getCollections = (
 }
 
 export const getCollectionsByUid = (state: CommonState) => {
-  return Object.keys(state.collections.uids).reduce((entries, uid) => {
-    entries[uid] = getCollection(state, { uid })
-    return entries
-  }, {} as { [uid: string]: Collection | null })
+  return Object.keys(state.collections.uids).reduce(
+    (entries, uid) => {
+      entries[uid] = getCollection(state, { uid })
+      return entries
+    },
+    {} as { [uid: string]: Collection | null }
+  )
 }
 
 export const getCollectionTracks = (

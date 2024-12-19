@@ -7,8 +7,10 @@
 }
 
 .active:hover {
-  box-shadow: 0px 0px 1px -2px rgba(133, 129, 153, 0.1),
-    0px 1px 0px -2px #e3e3e3, 1px 2px 5px rgba(133, 129, 153, 0.25);
+  box-shadow:
+    0px 0px 1px -2px rgba(133, 129, 153, 0.1),
+    0px 1px 0px -2px #e3e3e3,
+    1px 2px 5px rgba(133, 129, 153, 0.25);
   transform: scale3d(1.015, 1.015, 1.015);
   cursor: pointer;
 }

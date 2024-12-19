@@ -171,7 +171,8 @@
   background: var(--harmony-secondary);
   padding: 12px 12px 4px 12px;
   border-radius: 8px;
-  box-shadow: 0 2px 15px -2px rgba(133, 129, 153, 0.1),
+  box-shadow:
+    0 2px 15px -2px rgba(133, 129, 153, 0.1),
     0 10px 15px -2px rgba(126, 27, 204, 0.1);
 }
 

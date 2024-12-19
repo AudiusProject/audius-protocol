@@ -827,15 +827,15 @@ const BodyContainer = memo(
         return isMobile
           ? {} // use default config for mobile
           : key === activeIndex
-          ? {
-              mass: 1,
-              tension: 380,
-              friction: 40,
-              clamp: true
-            }
-          : {
-              duration: 1
-            }
+            ? {
+                mass: 1,
+                tension: 380,
+                friction: 40,
+                clamp: true
+              }
+            : {
+                duration: 1
+              }
       }
     })
 
@@ -1030,8 +1030,8 @@ const useTabs = ({
   const controlledIndex = isControlled
     ? tabs.findIndex((t) => t.label === selectedTabLabel)
     : initialTab
-    ? tabs.findIndex((t) => t.label === initialTab)
-    : 0
+      ? tabs.findIndex((t) => t.label === initialTab)
+      : 0
   const [activeIndex, setActiveIndex] = useState(controlledIndex)
 
   const onChangeComplete = useCallback(

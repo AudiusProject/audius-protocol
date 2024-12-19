@@ -11,13 +11,12 @@ import {
   useRequiresAccountOnClick
 } from 'hooks/useRequiresAccount'
 
-export type LeftNavLinkProps =
-  | { disabled?: boolean; asChild?: boolean } & (
-      | Omit<NavLinkProps, 'onDrop'>
-      | Omit<ComponentProps<'div'>, 'onDrop'>
-    ) & {
-        restriction?: RestrictionType
-      }
+export type LeftNavLinkProps = { disabled?: boolean; asChild?: boolean } & (
+  | Omit<NavLinkProps, 'onDrop'>
+  | Omit<ComponentProps<'div'>, 'onDrop'>
+) & {
+    restriction?: RestrictionType
+  }
 
 export const LeftNavLink = (props: LeftNavLinkProps) => {
   const { asChild, disabled, children, onClick, restriction, ...other } = props

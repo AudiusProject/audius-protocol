@@ -36,7 +36,7 @@ export const GuestCheckoutPage = (props: GuestCheckoutProps) => {
   const isAlbumPurchase = isPurchaseableAlbum(metadata)
   const stemsPurchaseCount =
     'is_download_gated' in metadata && metadata.is_download_gated
-      ? metadata._stems?.length ?? 0
+      ? (metadata._stems?.length ?? 0)
       : 0
   const downloadPurchaseCount =
     'is_download_gated' in metadata &&

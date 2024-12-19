@@ -29,12 +29,15 @@ import { withdrawUSDCModalReducer } from './withdraw-usdc-modal'
 /**
  * Create a bunch of reducers that do nothing, so that the state is maintained and not lost through the child reducers
  */
-const noOpReducers = Object.keys(initialState).reduce((prev, curr) => {
-  return {
-    ...prev,
-    [curr]: (s: BaseModalState = { isOpen: false }) => s
-  }
-}, {} as Record<Modals, Reducer<BaseModalState>>)
+const noOpReducers = Object.keys(initialState).reduce(
+  (prev, curr) => {
+    return {
+      ...prev,
+      [curr]: (s: BaseModalState = { isOpen: false }) => s
+    }
+  },
+  {} as Record<Modals, Reducer<BaseModalState>>
+)
 
 /**
  * Combine all the child reducers to build the entire parent slice state

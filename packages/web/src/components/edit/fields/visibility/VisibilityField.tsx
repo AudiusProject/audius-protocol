@@ -95,8 +95,8 @@ export const VisibilityField = (props: VisibilityFieldProps) => {
     isScheduledRelease && isHidden
       ? 'scheduled'
       : isHidden
-      ? 'hidden'
-      : 'public'
+        ? 'hidden'
+        : 'public'
 
   const renderValue = useCallback(() => {
     switch (visibilityType) {

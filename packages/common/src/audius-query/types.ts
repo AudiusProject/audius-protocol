@@ -30,18 +30,18 @@ export type Api<EndpointDefinitions extends DefaultEndpointDefinitions> = {
           Awaited<ReturnType<EndpointDefinitions[Property]['fetch']>>
         >
       : EndpointDefinitions[Property]['options']['type'] extends 'paginatedQuery'
-      ? (
-          fetchArgs: Parameters<EndpointDefinitions[Property]['fetch']>[0],
-          options: PaginatedQueryHookOptions
-        ) => PaginatedQueryHookResults<
-          Awaited<ReturnType<EndpointDefinitions[Property]['fetch']>>
-        >
-      : (
-          fetchArgs: Parameters<EndpointDefinitions[Property]['fetch']>[0],
-          options?: QueryHookOptions
-        ) => QueryHookResults<
-          Awaited<ReturnType<EndpointDefinitions[Property]['fetch']>>
-        >
+        ? (
+            fetchArgs: Parameters<EndpointDefinitions[Property]['fetch']>[0],
+            options: PaginatedQueryHookOptions
+          ) => PaginatedQueryHookResults<
+            Awaited<ReturnType<EndpointDefinitions[Property]['fetch']>>
+          >
+        : (
+            fetchArgs: Parameters<EndpointDefinitions[Property]['fetch']>[0],
+            options?: QueryHookOptions
+          ) => QueryHookResults<
+            Awaited<ReturnType<EndpointDefinitions[Property]['fetch']>>
+          >
   }
   util: {
     updateQueryData: <EndpointName extends keyof EndpointDefinitions>(

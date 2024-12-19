@@ -68,8 +68,8 @@ export const CardTitle = ({
         {isRemix
           ? messages.remixTitle
           : isPodcast
-          ? messages.podcastTitle
-          : messages.trackTitle}
+            ? messages.podcastTitle
+            : messages.trackTitle}
       </Text>
     )
   }

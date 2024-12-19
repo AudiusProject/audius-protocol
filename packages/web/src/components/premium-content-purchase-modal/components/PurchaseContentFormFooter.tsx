@@ -75,10 +75,10 @@ const getButtonText = (
   isUnlocking
     ? messages.purchasing
     : amountDue > 0
-    ? isGuest
-      ? `Guest Purchase For $${formatPrice(amountDue)}`
-      : `${messages.buy} $${formatPrice(amountDue)}`
-    : messages.buy
+      ? isGuest
+        ? `Guest Purchase For $${formatPrice(amountDue)}`
+        : `${messages.buy} $${formatPrice(amountDue)}`
+      : messages.buy
 
 type PurchaseContentFormFooterProps = Pick<
   PurchaseContentFormState,

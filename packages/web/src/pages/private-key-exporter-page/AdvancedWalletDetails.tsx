@@ -75,8 +75,8 @@ const Key = ({ label, value, isPrivate }: KeyProps) => {
           {isPrivate
             ? shortenSPLAddress(value, isMobile ? 4 : 18)
             : isMobile
-            ? shortenSPLAddress(value, 4)
-            : value}
+              ? shortenSPLAddress(value, 4)
+              : value}
         </Text>
       </Box>
       <Divider orientation='vertical' />

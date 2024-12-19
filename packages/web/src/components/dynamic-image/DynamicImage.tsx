@@ -83,8 +83,8 @@ const fadeIn = (
     ref.current.style.backgroundImage = image.includes('linear-gradient(')
       ? `${image}`
       : isUrl
-      ? `url(${image})`
-      : image
+        ? `url(${image})`
+        : image
     ref.current.style.transition = `opacity ${
       immediate ? '0.1s' : '0.3s'
     } ease-in-out`

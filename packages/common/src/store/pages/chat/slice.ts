@@ -78,8 +78,8 @@ const chatSortComparator = (a: Chat, b: Chat) => {
       return a.is_blast && !b.is_blast
         ? -1
         : b.is_blast && !a.is_blast
-        ? 1
-        : alphabeticalSort
+          ? 1
+          : alphabeticalSort
     }
     return alphabeticalSort
   }
@@ -546,7 +546,7 @@ const slice = createSlice({
       const optimisticRead = state.optimisticChatRead[chatId]
       const existingUnreadCount = optimisticRead
         ? optimisticRead.unread_message_count
-        : existingChat?.unread_message_count ?? 0
+        : (existingChat?.unread_message_count ?? 0)
       if (!isSelfMessage) {
         // If we're actively reading, this will immediately get marked as read.
         // Ignore the unread bump to prevent flicker

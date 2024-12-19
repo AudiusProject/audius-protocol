@@ -26,7 +26,7 @@ export const useChatBlastAudienceContent = ({ chat }: { chat: ChatBlast }) => {
   } = chat
 
   const decodedContentId = audienceContentId
-    ? decodeHashId(audienceContentId) ?? undefined
+    ? (decodeHashId(audienceContentId) ?? undefined)
     : undefined
 
   const { data: currentUserId } = useGetCurrentUserId({})

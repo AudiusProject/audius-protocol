@@ -222,8 +222,10 @@
   padding: 8px 25px;
   background: #7e1bcc;
   border: 1px solid #f2f2f4;
-  box-shadow: 0px 0px 1px -2px rgba(133, 129, 153, 0.1),
-    0px 1px 0px -2px #e3e3e3, 1px 2px 5px rgba(133, 129, 153, 0.25);
+  box-shadow:
+    0px 0px 1px -2px rgba(133, 129, 153, 0.1),
+    0px 1px 0px -2px #e3e3e3,
+    1px 2px 5px rgba(133, 129, 153, 0.25);
   border-radius: 6px;
 }
 

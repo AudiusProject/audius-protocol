@@ -835,22 +835,22 @@ class ProfilePage extends PureComponent<ProfilePageProps, ProfilePageState> {
       ? updatedTwitterHandle !== null
         ? updatedTwitterHandle
         : twitterVerified && !verifiedHandleWhitelist.has(handle)
-        ? profile.handle
-        : profile.twitter_handle || ''
+          ? profile.handle
+          : profile.twitter_handle || ''
       : ''
     const instagramHandle = profile
       ? updatedInstagramHandle !== null
         ? updatedInstagramHandle
         : instagramVerified
-        ? profile.handle
-        : profile.instagram_handle || ''
+          ? profile.handle
+          : profile.instagram_handle || ''
       : ''
     const tikTokHandle = profile
       ? updatedTikTokHandle !== null
         ? updatedTikTokHandle
         : tikTokVerified
-        ? profile.handle
-        : profile.tiktok_handle || ''
+          ? profile.handle
+          : profile.tiktok_handle || ''
       : ''
     const website = profile
       ? updatedWebsite !== null

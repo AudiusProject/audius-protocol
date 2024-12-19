@@ -61,12 +61,12 @@ export type PickRename<
 export type DeepPartial<T> = T extends any[]
   ? T
   : T extends Set<any>
-  ? T
-  : T extends object
-  ? {
-      [P in keyof T]?: DeepPartial<T[P]>
-    }
-  : T
+    ? T
+    : T extends object
+      ? {
+          [P in keyof T]?: DeepPartial<T[P]>
+        }
+      : T
 
 /**
  * Recurses through an object and removes all keys that match K.

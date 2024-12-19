@@ -159,8 +159,8 @@ export const InProgressPage = () => {
           {buyAudioFlowStage === BuyAudioStage.PURCHASING
             ? providerBasedMessages[buyAudioProvider].purchaseError
             : buyAudioFlowStage === BuyAudioStage.CONFIRMING_PURCHASE
-            ? providerBasedMessages[buyAudioProvider].confirmPurchaseError
-            : messages.swapErrorMessage}
+              ? providerBasedMessages[buyAudioProvider].confirmPurchaseError
+              : messages.swapErrorMessage}
         </div>
       ) : step === 1 ? (
         <div className={styles.callToAction}>

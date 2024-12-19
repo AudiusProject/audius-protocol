@@ -85,8 +85,8 @@ const DeletedPage = g(
         ? messages.albumDeleted
         : messages.playlistDeleted
       : deletedByArtist
-      ? messages.trackDeletedByArtist
-      : messages.trackDeleted
+        ? messages.trackDeletedByArtist
+        : messages.trackDeleted
 
     const renderTile = () => {
       return (

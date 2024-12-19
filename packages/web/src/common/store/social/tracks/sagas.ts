@@ -644,8 +644,8 @@ function* downloadTracks({
       { sdk }
     )
     const nftAccessSignature = original
-      ? nftAccessSignatureMap[parentTrackId]?.original ?? null
-      : nftAccessSignatureMap[parentTrackId]?.mp3 ?? null
+      ? (nftAccessSignatureMap[parentTrackId]?.original ?? null)
+      : (nftAccessSignatureMap[parentTrackId]?.mp3 ?? null)
 
     yield* call(async () => {
       const files = await Promise.all(

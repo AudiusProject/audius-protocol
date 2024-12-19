@@ -83,13 +83,13 @@ const ConnectedTrackListItem = (props: ConnectedTrackListItemProps) => {
       isLocked || isUnlisted
         ? null
         : isReposted
-        ? OverflowAction.UNREPOST
-        : OverflowAction.REPOST,
+          ? OverflowAction.UNREPOST
+          : OverflowAction.REPOST,
       isLocked || isUnlisted
         ? null
         : isSaved
-        ? OverflowAction.UNFAVORITE
-        : OverflowAction.FAVORITE,
+          ? OverflowAction.UNFAVORITE
+          : OverflowAction.FAVORITE,
       user?.user_id === currentUserId && !ddexApp
         ? OverflowAction.ADD_TO_ALBUM
         : null,

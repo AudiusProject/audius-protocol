@@ -36,8 +36,8 @@ export const getId = (state: CommonState) =>
   isQueueIndexValid(state) ? state.queue.order[state.queue.index].id : null
 export const getPlayerBehavior = (state: CommonState) =>
   isQueueIndexValid(state)
-    ? state.queue.order[state.queue.index].playerBehavior ??
-      PlayerBehavior.FULL_OR_PREVIEW
+    ? (state.queue.order[state.queue.index].playerBehavior ??
+      PlayerBehavior.FULL_OR_PREVIEW)
     : PlayerBehavior.FULL_OR_PREVIEW
 export const getCollectible = (state: CommonState) => {
   if (!isQueueIndexValid(state)) return null

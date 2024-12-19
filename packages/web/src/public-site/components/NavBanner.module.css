@@ -120,7 +120,8 @@
   border-radius: 12px;
   border: 1px solid var(--border-border-strong, #e7e6eb);
   background: var(--background-bg-white, #fff);
-  box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.08),
+  box-shadow:
+    0px 8px 16px 0px rgba(0, 0, 0, 0.08),
     0px 0px 4px 0px rgba(0, 0, 0, 0.04);
   min-width: 618px;
   max-width: 618px;
@@ -169,7 +170,8 @@
 .popup {
   border-radius: 12px !important;
   border: 1px solid var(--harmony-n-150) !important;
-  box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.08),
+  box-shadow:
+    0px 8px 16px 0px rgba(0, 0, 0, 0.08),
     0px 0px 4px 0px rgba(0, 0, 0, 0.04) !important;
   padding: 0 !important;
   user-select: none !important;

@@ -94,7 +94,7 @@ export const CollectionsTable = ({
         }}
       >
         <TextLink
-          to={deleted ? '' : collection.permalink ?? ''}
+          to={deleted ? '' : (collection.permalink ?? '')}
           textVariant='title'
           size='s'
           strength='weak'
@@ -131,8 +131,8 @@ export const CollectionsTable = ({
     const Icon = collection.is_private
       ? IconVisibilityHidden
       : collection.is_stream_gated
-      ? IconCart
-      : null
+        ? IconCart
+        : null
     return (
       <>
         {Icon ? (

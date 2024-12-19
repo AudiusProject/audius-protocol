@@ -61,7 +61,9 @@
   font-size: var(--harmony-font-s);
   line-height: 18px;
 
-  transition: transform 0.25s ease-in-out, opacity 0.25s ease-in-out;
+  transition:
+    transform 0.25s ease-in-out,
+    opacity 0.25s ease-in-out;
 
   border-radius: 6px;
   border: none;

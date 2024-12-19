@@ -62,10 +62,10 @@ export const LockedStatusBadge = (props: LockedStatusBadgeProps) => {
           text
             ? undefined
             : variant === 'premium'
-            ? locked
-              ? messages.premiumLocked
-              : messages.premiumUnlocked
-            : undefined
+              ? locked
+                ? messages.premiumLocked
+                : messages.premiumUnlocked
+              : undefined
         }
       />
       {text ? (

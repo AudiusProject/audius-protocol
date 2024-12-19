@@ -102,8 +102,8 @@ export const DownloadRow = ({
             {category
               ? stemCategoryFriendlyNames[category]
               : track?.stem_of?.category
-              ? stemCategoryFriendlyNames[track?.stem_of?.category]
-              : messages.fullTrack}
+                ? stemCategoryFriendlyNames[track?.stem_of?.category]
+                : messages.fullTrack}
           </Text>
           <Text
             variant='body'

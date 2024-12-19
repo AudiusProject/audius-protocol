@@ -66,7 +66,7 @@ const EmptyContent = (props: EmptyContentProps) => {
   return (
     <Flex column p='2xl' alignItems='center' gap='s'>
       <Text variant='title' size='l'>
-        {textProp ?? isOwner
+        {(textProp ?? isOwner)
           ? messages.emptyPage.ownerTitle
           : messages.emptyPage.visitor}
       </Text>
@@ -194,7 +194,7 @@ const CollectionPage = ({
   const imageOverride =
     metadata?.variant === Variant.SMART ? metadata.imageOverride : ''
   const typeTitle =
-    metadata?.variant === Variant.SMART ? metadata?.typeTitle ?? type : type
+    metadata?.variant === Variant.SMART ? (metadata?.typeTitle ?? type) : type
   const customEmptyText =
     metadata?.variant === Variant.SMART ? metadata?.customEmptyText : null
   const access =

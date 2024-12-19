@@ -103,8 +103,8 @@ export const usePurchaseContentFormConfiguration = ({
   const contentId = isAlbum
     ? metadata?.playlist_id
     : isTrack
-    ? metadata?.track_id
-    : undefined
+      ? metadata?.track_id
+      : undefined
 
   const validationSchema = useMemo(
     () =>

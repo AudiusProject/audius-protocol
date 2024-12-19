@@ -183,9 +183,8 @@ function* sendAsync({
     }
 
     // Only decrease store balance if we haven't already changed
-    const newBalance: ReturnType<typeof getAccountBalance> = yield* select(
-      getAccountBalance
-    )
+    const newBalance: ReturnType<typeof getAccountBalance> =
+      yield* select(getAccountBalance)
     if (newBalance?.eq(weiBNBalance)) {
       yield* put(decreaseBalance({ amount: weiAudioAmount }))
     }

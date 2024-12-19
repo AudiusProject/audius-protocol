@@ -87,7 +87,8 @@ html[data-theme='day-v2'] {
   --notification-unread-background: rgba(152, 73, 214, 0.02);
   --notification-unread-border-hover: rgba(126, 27, 204, 0.3);
   --notification-unread-background-hover: rgba(152, 73, 214, 0.02);
-  --notification-unread-background-box-shadow: 0 2px 15px -4px rgba(126, 27, 204, 0.15);
+  --notification-unread-background-box-shadow: 0 2px 15px -4px
+    rgba(126, 27, 204, 0.15);
   --notification-unread-border-active: rgba(126, 27, 204, 0.3);
   --notification-unread-background-active: rgba(152, 73, 214, 0.06);
 
