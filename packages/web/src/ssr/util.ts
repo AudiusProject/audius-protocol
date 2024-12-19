@@ -26,7 +26,9 @@ const nonSsrPaths = [
   CHANGE_PASSWORD_SETTINGS_PAGE,
   CHATS_PAGE,
   CHAT_PAGE,
-  DOWNLOAD_LINK
+  DOWNLOAD_LINK,
+  '/react-query',
+  '/react-query-cache-prime'
 ]
 
 export const makePageRoute =
