@@ -66,7 +66,6 @@ function* addTrackToPlaylistAsync(action: AddTrackToPlaylistAction) {
   const userId = yield* call(ensureLoggedIn)
   const isNative = yield* getContext('isNativeMobile')
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
-  const web3 = yield* call(audiusBackendInstance.getWeb3)
   const { generatePlaylistArtwork } = yield* getContext('imageUtils')
 
   let playlist = yield* select(getCollection, { id: playlistId })
@@ -85,11 +84,8 @@ function* addTrackToPlaylistAsync(action: AddTrackToPlaylistAction) {
     cacheActions.subscribe(Kind.TRACKS, [{ uid: trackUid, id: action.trackId }])
   )
 
-  const currentBlockNumber = yield* call([web3.eth, 'getBlockNumber'])
-  const currentBlock = (yield* call(
-    [web3.eth, 'getBlock'],
-    currentBlockNumber
-  )) as { timestamp: number }
+  // TODO(LIBS): Implement this
+  const currentBlock = { timestamp: 0 }
 
   playlist.playlist_contents = {
     track_ids: playlist.playlist_contents.track_ids.concat({

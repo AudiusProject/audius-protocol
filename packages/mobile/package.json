@@ -59,7 +59,6 @@
     "@audius/fixed-decimal": "*",
     "@audius/harmony": "*",
     "@audius/sdk": "*",
-    "@audius/sdk-legacy": "*",
     "@coinflowlabs/react-native": "3.1.5",
     "@emotion/native": "11.11.0",
     "@emotion/react": "11.11.1",
