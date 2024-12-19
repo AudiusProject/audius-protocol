@@ -1,21 +1,21 @@
 #!/bin/bash
 
 echo "Checking if PostgreSQL is running..."
-pg_isready > /dev/null 2>&1
+su postgres -c "pg_isready" > /dev/null 2>&1
 if [ $? -ne 0 ]; then
     echo "PostgreSQL is not running"
     exit 1
 fi
 
 # Get all databases except templates
-databases=$(psql -t -c "SELECT datname FROM pg_database WHERE datname NOT LIKE 'template%' AND datname != 'postgres';")
+databases=$(su postgres -c "psql -t -c \"SELECT datname FROM pg_database WHERE datname NOT LIKE 'template%' AND datname != 'postgres';\"")
 
 # First check all database versions
 mismatch_found=false
 for db in $databases postgres; do
     echo "Checking database: $db"
-    version_info=$(psql -d "$db" -t -c "SELECT datcollversion FROM pg_database WHERE datname = '$db';")
-    system_version=$(psql -d "$db" -t -c "SHOW server_collation_version;")
+    version_info=$(su postgres -c "psql -d \"$db\" -t -c \"SELECT datcollversion FROM pg_database WHERE datname = '$db';\"")
+    system_version=$(su postgres -c "psql -d \"$db\" -t -c \"SHOW server_collation_version;\"")
     
     echo "Database version: $version_info"
     echo "System version: $system_version"
@@ -46,7 +46,7 @@ if [ "$mismatch_found" = true ]; then
     # Refresh each database
     for db in $databases postgres; do
         echo "Refreshing database: $db"
-        psql -d "$db" -c "ALTER DATABASE $db REFRESH COLLATION VERSION;"
+        su postgres -c "psql -d \"$db\" -c \"ALTER DATABASE $db REFRESH COLLATION VERSION;\""
     done
     
     end_time=$(date +%s)
