@@ -17,8 +17,10 @@ COPY --from=go-builder /app/audiusd /bin/audiusd
 RUN mkdir -p /env
 COPY ./cmd/audiusd/env/dev.env ./cmd/audiusd/env/stage.env ./cmd/audiusd/env/prod.env /env/
 
-COPY ./cmd/audiusd/entrypoint.sh /bin/entrypoint.sh
+COPY ./cmd/audiusd/scripts/entrypoint.sh /bin/entrypoint.sh
+COPY ./cmd/audiusd/scripts/refresh-collation.sh /bin/refresh-collation.sh
 RUN chmod +x /bin/entrypoint.sh
+RUN chmod +x /bin/refresh-collation.sh
 
 # Set up data directory structure with proper permissions
 RUN mkdir -p /data && \
