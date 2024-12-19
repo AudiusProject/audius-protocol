@@ -209,7 +209,8 @@
 }
 :global(.ant-select-dropdown) {
   background-color: var(--harmony-white);
-  box-shadow: 0 0 2px 0 rgba(133, 129, 153, 0.3),
+  box-shadow:
+    0 0 2px 0 rgba(133, 129, 153, 0.3),
     0 2px 5px -2px rgba(133, 129, 153, 0.3);
   animation-duration: 0.18s;
 }
