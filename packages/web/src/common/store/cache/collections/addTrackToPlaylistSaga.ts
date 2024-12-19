@@ -65,8 +65,7 @@ function* addTrackToPlaylistAsync(action: AddTrackToPlaylistAction) {
   yield* waitForWrite()
   const userId = yield* call(ensureLoggedIn)
   const isNative = yield* getContext('isNativeMobile')
-  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
-  const web3 = yield* call(audiusBackendInstance.getWeb3)
+  const sdk = yield* getSDK()
   const { generatePlaylistArtwork } = yield* getContext('imageUtils')
 
   let playlist = yield* select(getCollection, { id: playlistId })
@@ -84,18 +83,21 @@ function* addTrackToPlaylistAsync(action: AddTrackToPlaylistAction) {
   yield* put(
     cacheActions.subscribe(Kind.TRACKS, [{ uid: trackUid, id: action.trackId }])
   )
-
-  const currentBlockNumber = yield* call([web3.eth, 'getBlockNumber'])
-  const currentBlock = (yield* call(
-    [web3.eth, 'getBlock'],
-    currentBlockNumber
-  )) as { timestamp: number }
+  const { timestamp: currentBlockTimestamp } = yield* call([
+    sdk.services.entityManager,
+    sdk.services.entityManager.getCurrentBlock
+  ])
 
   playlist.playlist_contents = {
     track_ids: playlist.playlist_contents.track_ids.concat({
       track: action.trackId,
-      metadata_time: currentBlock?.timestamp as number,
+      // Replaced in indexing with block timestamp
+      // Represents the server time seen when track was added to playlist
       time: 0,
+      // Represents user-facing timestamp when the user added the track to the playlist.
+      // This is needed to disambiguate between tracks added at the same time/potentiall in
+      // the same block.
+      metadata_time: currentBlockTimestamp,
       uid: trackUid
     })
   }
@@ -114,7 +116,6 @@ function* addTrackToPlaylistAsync(action: AddTrackToPlaylistAction) {
     playlistTracks,
     { added: track },
     {
-      audiusBackend: audiusBackendInstance,
       generateImage: generatePlaylistArtwork
     }
   )
