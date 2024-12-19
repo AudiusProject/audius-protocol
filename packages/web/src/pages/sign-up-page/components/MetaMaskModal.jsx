@@ -1,16 +1,10 @@
 import { Component } from 'react'
 
-import { BackendUtils as Utils } from '@audius/common/services'
 import { Button, Flex, Box, Text } from '@audius/harmony'
 import cn from 'classnames'
 import PropTypes from 'prop-types'
 
-import { waitForLibsInit } from 'services/audius-backend/eagerLoadUtils'
-import { env } from 'services/env'
-
 import styles from './MetaMaskModal.module.css'
-
-const WEB3_NETWORK_ID = env.WEB3_NETWORK_ID
 
 const messages = {
   title: '    Are You Sure You Want To Continue With MetaMask?   ',
@@ -47,28 +41,15 @@ class MetaMaskModal extends Component {
   onClickContinue = async () => {
     this.resetState()
     this.setState({ submitting: true })
-    await waitForLibsInit()
     try {
       await window.ethereum?.enable()
     } catch (err) {
       this.setState({ accessError: true })
       return
     }
-    try {
-      const configured = await Utils.configureWeb3(
-        window.web3.currentProvider,
-        WEB3_NETWORK_ID,
-        true
-      )
-      if (configured) {
-        this.props.onClickContinue()
-        this.props.onClickBack()
-      } else {
-        this.setState({ configureError: true })
-      }
-    } catch {
-      this.setState({ configureError: true })
-    }
+    // TODO: Fix MM auth
+    // https://github.com/AudiusProject/audius-protocol/pull/10392
+    this.setState({ configureError: true })
   }
 
   onModalClick = (e) => {
