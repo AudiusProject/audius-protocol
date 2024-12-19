@@ -48,15 +48,24 @@ def rollup_aggregates(
     parent_challenge: Challenge,
     disbursements: List[ChallengeDisbursement],
 ) -> ChallengeResponse:
+    step_count = parent_challenge.step_count
     num_complete = reduce(
         lambda acc, cur: cast(int, acc) + cur.amount if cur.is_complete else acc,
         user_challenges,
         0,
     )
+    amount = parent_challenge.amount
 
     # The parent challenge should have a step count, otherwise, we can just
     # say it's complete.
-    if parent_challenge.step_count:
+    if parent_challenge.id == "o":
+        # one shot is a special aggregate that's different for every user
+        # max steps is unique for user so override the parent challenge step count
+        # each step has a value of 1
+        step_count = sum(challenge.amount for challenge in user_challenges)
+        amount = "1"
+        is_complete = True
+    elif parent_challenge.step_count:
         is_complete = num_complete >= parent_challenge.step_count
     else:
         is_complete = True
@@ -67,11 +76,11 @@ def rollup_aggregates(
         "specifier": "",
         "is_complete": is_complete,
         "current_step_count": num_complete,
-        "max_steps": parent_challenge.step_count,
+        "max_steps": step_count,
         "challenge_type": parent_challenge.type,
         "is_active": parent_challenge.active,
         "is_disbursed": False,  # This doesn't indicate anything for aggregate challenges
-        "amount": parent_challenge.amount,
+        "amount": amount,
         "disbursed_amount": get_disbursed_amount(disbursements),
         "cooldown_days": parent_challenge.cooldown_days or 0,
         "metadata": {},
