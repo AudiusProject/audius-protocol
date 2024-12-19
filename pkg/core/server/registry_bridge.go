@@ -13,6 +13,7 @@ import (
 	"github.com/AudiusProject/audius-protocol/pkg/core/db"
 	"github.com/AudiusProject/audius-protocol/pkg/core/gen/core_proto"
 	"github.com/AudiusProject/audius-protocol/pkg/logger"
+	"github.com/cometbft/cometbft/crypto/ed25519"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/google/uuid"
@@ -305,30 +306,30 @@ func (s *Server) registerSelfOnEth() error {
 	return nil
 }
 
-// checks if the register node event is valid
+// checks if the register node tx is valid
 // calls ethereum mainnet and validates signature to confirm node should be a validator
-func (s *Server) isValidRegisterNodeEvent(ctx context.Context, e *core_proto.SignedTransaction) error {
-	sig := e.GetSignature()
+func (s *Server) isValidRegisterNodeTx(ctx context.Context, tx *core_proto.SignedTransaction) error {
+	sig := tx.GetSignature()
 	if sig == "" {
-		return fmt.Errorf("no signature provided for finalizeRegisterNode: %v", e)
+		return fmt.Errorf("no signature provided for registration tx: %v", tx)
 	}
 
-	event := e.GetValidatorRegistration()
-	if event == nil {
-		return fmt.Errorf("unknown event fell into finalizeRegisterNode: %v", e)
+	vr := tx.GetValidatorRegistration()
+	if vr == nil {
+		return fmt.Errorf("unknown tx fell into isValidRegisterNodeTx: %v", tx)
 	}
 
 	spf, err := s.contracts.GetServiceProviderFactoryContract()
 	if err != nil {
-		return fmt.Errorf("could not get spf contract to validate node event: %v", err)
+		return fmt.Errorf("could not get spf contract to validate node tx: %v", err)
 	}
 
-	spID, err := spf.GetServiceProviderIdFromEndpoint(nil, event.GetEndpoint())
+	spID, err := spf.GetServiceProviderIdFromEndpoint(nil, vr.GetEndpoint())
 	if err != nil {
 		return fmt.Errorf("node attempted to register but not SP: %v", err)
 	}
 
-	serviceType := common.Utf8ToHex(event.GetNodeType())
+	serviceType := common.Utf8ToHex(vr.GetNodeType())
 
 	info, err := spf.GetServiceEndpointInfo(nil, serviceType, spID)
 	if err != nil {
@@ -340,38 +341,45 @@ func (s *Server) isValidRegisterNodeEvent(ctx context.Context, e *core_proto.Sig
 	onChainBlockNumber := info.BlockNumber.String()
 	onChainEndpoint := info.Endpoint
 
-	data, err := proto.Marshal(event)
+	data, err := proto.Marshal(vr)
 	if err != nil {
-		return fmt.Errorf("could not marshal event: %v", err)
+		return fmt.Errorf("could not marshal registration tx: %v", err)
 	}
 
-	_, address, err := common.EthRecover(e.GetSignature(), data)
+	_, address, err := common.EthRecover(tx.GetSignature(), data)
 	if err != nil {
 		return fmt.Errorf("could not recover msg sig: %v", err)
 	}
 
-	eventOwnerWallet := address
-	eventEndpoint := event.GetEndpoint()
-	eventEthBlock := event.GetEthBlock()
+	vrOwnerWallet := address
+	vrEndpoint := vr.GetEndpoint()
+	vrEthBlock := vr.GetEthBlock()
+	vrCometAddress := vr.GetCometAddress()
+	vrPower := int(vr.GetPower())
 
-	if onChainOwnerWallet != eventOwnerWallet {
-		return fmt.Errorf("wallet %s tried to register %s as %s", eventOwnerWallet, onChainOwnerWallet, event.Endpoint)
+	if len(vr.GetPubKey()) == 0 {
+		return fmt.Errorf("Public Key missing from %s registration tx", vrEndpoint)
+	}
+	vrPubKey := ed25519.PubKey(vr.GetPubKey())
+
+	if onChainOwnerWallet != vrOwnerWallet {
+		return fmt.Errorf("wallet %s tried to register %s as %s", vrOwnerWallet, onChainOwnerWallet, vr.Endpoint)
 	}
 
-	if onChainBlockNumber != eventEthBlock {
-		return fmt.Errorf("block number mismatch: %s %s", onChainBlockNumber, eventEthBlock)
+	if onChainBlockNumber != vrEthBlock {
+		return fmt.Errorf("block number mismatch: %s %s", onChainBlockNumber, vrEthBlock)
 	}
 
-	if onChainEndpoint != eventEndpoint {
-		return fmt.Errorf("endpoints don't match: %s %s", onChainEndpoint, eventEndpoint)
+	if onChainEndpoint != vrEndpoint {
+		return fmt.Errorf("endpoints don't match: %s %s", onChainEndpoint, vrEndpoint)
 	}
 
-	qtx := s.getDb()
-	_, err = qtx.GetRegisteredNodeByEthAddress(ctx, eventOwnerWallet)
-	if err == nil {
-		return fmt.Errorf("already registered")
-	} else if !errors.Is(err, pgx.ErrNoRows) {
-		return fmt.Errorf("failed to check db for registration status: %v", err)
+	if vrPubKey.Address().String() != vrCometAddress {
+		return fmt.Errorf("address does not match public key: %s %s", vrPubKey.Address(), vrCometAddress)
+	}
+
+	if vrPower != s.config.ValidatorVotingPower {
+		return fmt.Errorf("Invalid voting power '%d'", vrPower)
 	}
 
 	return nil
@@ -379,8 +387,8 @@ func (s *Server) isValidRegisterNodeEvent(ctx context.Context, e *core_proto.Sig
 
 // persists the register node request should it pass validation
 func (s *Server) finalizeRegisterNode(ctx context.Context, tx *core_proto.SignedTransaction) (*core_proto.ValidatorRegistration, error) {
-	if err := s.isValidRegisterNodeEvent(ctx, tx); err != nil {
-		return nil, fmt.Errorf("invalid register node event: %v", err)
+	if err := s.isValidRegisterNodeTx(ctx, tx); err != nil {
+		return nil, fmt.Errorf("invalid register node tx: %v", err)
 	}
 
 	qtx := s.getDb()
@@ -404,8 +412,8 @@ func (s *Server) finalizeRegisterNode(ctx context.Context, tx *core_proto.Signed
 
 	registerNode := tx.GetValidatorRegistration()
 
-	if _, err = qtx.GetRegisteredNodeByEthAddress(ctx, address); err != nil {
-		// Do not reinsert duplicate registrations
+	// Do not reinsert duplicate registrations
+	if _, err = qtx.GetRegisteredNodeByEthAddress(ctx, address); errors.Is(err, pgx.ErrNoRows) {
 		err = qtx.InsertRegisteredNode(ctx, db.InsertRegisteredNodeParams{
 			PubKey:       serializedPubKey,
 			EthAddress:   address,
@@ -415,7 +423,7 @@ func (s *Server) finalizeRegisterNode(ctx context.Context, tx *core_proto.Signed
 			NodeType:     registerNode.GetNodeType(),
 			SpID:         registerNode.GetSpId(),
 		})
-		if err != nil {
+		if err != nil && !errors.Is(err, pgx.ErrNoRows) {
 			return nil, fmt.Errorf("error inserting registered node: %v", err)
 		}
 	}

@@ -196,14 +196,7 @@ func (s *Server) FinalizeBlock(ctx context.Context, req *abcitypes.FinalizeBlock
 			if err != nil {
 				s.logger.Errorf("error finalizing event: %v", err)
 				txs[i] = &abcitypes.ExecTxResult{Code: 2}
-			}
-
-			if err := s.persistTxStat(ctx, finalizedTx, txhash, req.Height, req.Time); err != nil {
-				// don't halt consensus on this
-				s.logger.Errorf("failed to persist tx stat: %v", err)
-			}
-
-			if vr := signedTx.GetValidatorRegistration(); vr != nil {
+			} else if vr := signedTx.GetValidatorRegistration(); vr != nil {
 				// Avoid error when duplicate validator update txs are in the same block
 				vrPubKey := ed25519.PubKey(vr.GetPubKey())
 				vrAddr := vrPubKey.Address().String()
@@ -218,6 +211,11 @@ func (s *Server) FinalizeBlock(ctx context.Context, req *abcitypes.FinalizeBlock
 					)
 					validatorUpdatesMap[vrAddr] = true
 				}
+			}
+
+			if err := s.persistTxStat(ctx, finalizedTx, txhash, req.Height, req.Time); err != nil {
+				// don't halt consensus on this
+				s.logger.Errorf("failed to persist tx stat: %v", err)
 			}
 
 			// set finalized txs in finalize step to remove from mempool during commit step
@@ -356,24 +354,28 @@ func (s *Server) isValidSignedTransaction(tx []byte) (*core_proto.SignedTransact
 func (s *Server) validateBlockTxs(ctx context.Context, blockTime time.Time, blockHeight int64, txs [][]byte) (bool, error) {
 	alreadyContainsRollup := false
 	for _, tx := range txs {
-		protoEvent, err := s.isValidSignedTransaction(tx)
+		signedTx, err := s.isValidSignedTransaction(tx)
 		if err != nil {
-			s.logger.Error(" **** Invalid block bcz not proto event or KVp")
+			s.logger.Error("Invalid block: unrecognized transaction type")
 			return false, nil
 		}
 
-		switch protoEvent.Transaction.(type) {
+		switch signedTx.Transaction.(type) {
 		case *core_proto.SignedTransaction_Plays:
 		case *core_proto.SignedTransaction_ValidatorRegistration:
+			if err := s.isValidRegisterNodeTx(ctx, signedTx); err != nil {
+				s.logger.Error("Invalid block: invalid register node tx", "error", err)
+				return false, nil
+			}
 		case *core_proto.SignedTransaction_SlaRollup:
 			if alreadyContainsRollup {
-				s.logger.Error(" **** Invalid block already have rollup")
+				s.logger.Error("Invalid block: block already contains rollup")
 				return false, nil
-			} else if valid, err := s.isValidRollup(ctx, blockTime, blockHeight, protoEvent.GetSlaRollup()); err != nil {
-				s.logger.Error(" **** Invalid block bcuz err", "error", err)
+			} else if valid, err := s.isValidRollup(ctx, blockTime, blockHeight, signedTx.GetSlaRollup()); err != nil {
+				s.logger.Error("Invalid block: error validating sla rollup", "error", err)
 				return false, err
 			} else if !valid {
-				s.logger.Error(" **** Invalid block bcuz invalid rollup")
+				s.logger.Error("Invalid block: invalid rollup")
 				return false, nil
 			}
 			alreadyContainsRollup = true
