@@ -45,10 +45,8 @@ function* confirmSendAsync() {
   // Send the txn, update local balance
   const sendData = yield* select(getSendData)
   if (!sendData) return
-  const { recipientWallet, amount, chain } = sendData
-  yield* put(
-    walletSend({ recipientWallet, amount: weiToString(amount), chain })
-  )
+  const { recipientWallet, amount } = sendData
+  yield* put(walletSend({ recipientWallet, amount: weiToString(amount) }))
 
   const { error } = yield* race({
     success: take(sendSucceeded),
@@ -80,8 +78,7 @@ function* confirmSendAsync() {
     flowState: {
       stage: 'CONFIRMED_SEND',
       amount: weiToString(amount),
-      recipientWallet,
-      chain
+      recipientWallet
     }
   }
   yield* put(setModalState({ modalState: sentState }))

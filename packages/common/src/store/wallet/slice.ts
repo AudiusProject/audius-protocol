@@ -3,7 +3,6 @@ import BN from 'bn.js'
 
 import { isNullOrUndefined, Nullable } from '~/utils/typeUtils'
 
-import { Chain } from '../../models/Chain'
 import { StringUSDC, StringWei } from '../../models/Wallet'
 
 type WalletState = {
@@ -118,7 +117,6 @@ const slice = createSlice({
       _action: PayloadAction<{
         recipientWallet: string
         amount: StringWei
-        chain: Chain
       }>
     ) => {},
     sendSucceeded: () => {},
