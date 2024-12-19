@@ -449,42 +449,6 @@ export const createTransferToUserBankTransaction = async (
   return tx
 }
 
-/**
- * A pared down version of {@link purchaseContentWithPaymentRouter}
- * that doesn't add the purchase memo.
- */
-export const createPaymentRouterRouteTransaction = async (
-  audiusBackendInstance: AudiusBackend,
-  {
-    sender,
-    splits
-  }: {
-    sender: PublicKey
-    splits: Record<string, number | BN>
-  }
-) => {
-  const solanaWeb3Manager = (await audiusBackendInstance.getAudiusLibsTyped())
-    .solanaWeb3Manager!
-  const { blockhash } = await solanaWeb3Manager
-    .getConnection()
-    .getLatestBlockhash()
-  const [transfer, route] =
-    // All the memo related parameters are ignored
-    await solanaWeb3Manager.getPurchaseContentWithPaymentRouterInstructions({
-      id: 0, // ignored
-      type: 'track', // ignored
-      blocknumber: 0, // ignored
-      splits,
-      purchaserUserId: 0, // ignored
-      senderAccount: sender,
-      purchaseAccess: PurchaseAccess.STREAM // ignored
-    })
-  return new Transaction({
-    recentBlockhash: blockhash,
-    feePayer: sender
-  }).add(transfer, route)
-}
-
 // NOTE: The above all need to be updated to use SDK. The below is fresh.
 
 /**
