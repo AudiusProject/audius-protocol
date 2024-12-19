@@ -306,19 +306,14 @@ export const decorateCoinflowWithdrawalTransaction = async (
   audiusBackendInstance: AudiusBackend,
   {
     transaction,
-    feePayer,
     ethAddress,
     wallet
   }: {
     transaction: Transaction
-    feePayer: PublicKey
     ethAddress: string
     wallet: Keypair
   }
 ) => {
-  const libs = await audiusBackendInstance.getAudiusLibsTyped()
-  const solanaWeb3Manager = libs.solanaWeb3Manager!
-
   const userBank = await deriveUserBankPubkey(sdk, {
     ethAddress,
     mint: 'USDC'
@@ -364,15 +359,20 @@ export const decorateCoinflowWithdrawalTransaction = async (
     data.decimals
   )
 
-  const transferFromUserBankInstructions =
-    await solanaWeb3Manager.createTransferInstructionsFromCurrentUser({
-      amount: new BN(data.amount.toString()),
-      mint: 'usdc',
-      senderSolanaAddress: userBank,
-      recipientSolanaAddress: keys.destination.pubkey.toBase58(),
-      instructionIndex: transferInstructionIndex + 1,
-      feePayerKey: feePayer
+  const transferFromUserBankInstructions = [
+    await sdk.services.claimableTokensClient.createTransferSecpInstruction({
+      mint: 'USDC',
+      ethWallet: ethAddress,
+      destination: keys.destination.pubkey,
+      amount: data.amount,
+      instructionIndex: transferInstructionIndex + 1
+    }),
+    await sdk.services.claimableTokensClient.createTransferInstruction({
+      mint: 'USDC',
+      ethWallet: ethAddress,
+      destination: keys.destination.pubkey
     })
+  ]
 
   const withdrawalMemoInstruction = new TransactionInstruction({
     keys: [
@@ -395,17 +395,10 @@ export const decorateCoinflowWithdrawalTransaction = async (
     withdrawalMemoInstruction
   )
 
-  const { blockhash, lastValidBlockHeight } = await solanaWeb3Manager
-    .getConnection()
-    .getLatestBlockhash()
-  const modifiedTransaction = new Transaction({
-    blockhash,
-    feePayer,
-    lastValidBlockHeight
+  const tx = await sdk.services.solanaClient.buildTransaction({
+    instructions
   })
-  modifiedTransaction.add(...instructions)
-
-  return modifiedTransaction
+  return tx
 }
 
 export const createTransferToUserBankTransaction = async (
