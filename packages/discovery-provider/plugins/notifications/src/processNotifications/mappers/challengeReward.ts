@@ -66,6 +66,10 @@ export class ChallengeReward extends BaseNotification<ChallengeRewardRow> {
     fp: {
       title: '🎼 Create a Playlist',
       amount: 2
+    },
+    o: {
+      title: 'One shot',
+      amount: 2
     }
   }
 
@@ -83,6 +87,8 @@ export class ChallengeReward extends BaseNotification<ChallengeRewardRow> {
       return `You’ve received ${
         this.challengeInfoMap[this.challengeId].amount
       } $AUDIO for being referred! Invite your friends to join to earn more!`
+    } else if (this.challengeId === 'o') {
+      return `You’ve earned ${this.amount} $AUDIO for completing this challenge!`
     }
     return `You’ve earned ${
       this.challengeInfoMap[this.challengeId].amount

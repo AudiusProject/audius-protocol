@@ -22,6 +22,7 @@ export enum ChallengeId {
   TRENDING_TRACK = 'tt',
   TRENDING_PLAYLIST = 'tp',
   TRENDING_UNDERGROUND_TRACK = 'tut',
+  ONE_SHOT = 'o',
   DEPRECATED_TRACK_UPLOADS = 'track-upload',
   DEPRECATED_REFERRALS = 'referrals',
   DEPRECATED_VERIFIED_REFERRALS = 'ref-v',
