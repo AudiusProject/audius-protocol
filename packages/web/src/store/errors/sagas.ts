@@ -12,7 +12,8 @@ function* handleError(action: errorActions.HandleErrorAction) {
       level: action.level,
       additionalInfo: action.additionalInfo,
       error: new Error(action.message),
-      name: action.name
+      name: action.name,
+      feature: action.feature
     })
   }
 
