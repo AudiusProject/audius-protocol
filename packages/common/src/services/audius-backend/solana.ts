@@ -485,41 +485,6 @@ export const createPaymentRouterRouteTransaction = async (
   }).add(transfer, route)
 }
 
-/**
- * Relays the given transaction using the libs transaction handler
- */
-export const relayTransaction = async (
-  audiusBackendInstance: AudiusBackend,
-  {
-    transaction,
-    skipPreflight,
-    useCoinflowRelay
-  }: {
-    transaction: Transaction
-    skipPreflight?: boolean
-    useCoinflowRelay?: boolean
-  }
-) => {
-  const libs = await audiusBackendInstance.getAudiusLibsTyped()
-  const instructions = transaction.instructions
-  const signatures = transaction.signatures
-    .filter((s) => s.signature !== null)
-    .map((s) => ({
-      signature: s.signature!, // safe from filter
-      publicKey: s.publicKey.toString()
-    }))
-  const feePayerOverride = transaction.feePayer
-  const recentBlockhash = transaction.recentBlockhash
-  return await libs.solanaWeb3Manager!.transactionHandler.handleTransaction({
-    instructions,
-    recentBlockhash,
-    signatures,
-    feePayerOverride,
-    skipPreflight,
-    useCoinflowRelay
-  })
-}
-
 // NOTE: The above all need to be updated to use SDK. The below is fresh.
 
 /**
