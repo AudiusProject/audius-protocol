@@ -111,7 +111,6 @@ function* editPlaylistAsync(
   yield* waitForWrite()
 
   const isNative = yield* getContext('isNativeMobile')
-  const audiusBackend = yield* getContext('audiusBackendInstance')
   const { generatePlaylistArtwork } = yield* getContext('imageUtils')
 
   formFields.description = squashNewLines(formFields.description)
@@ -153,7 +152,7 @@ function* editPlaylistAsync(
     playlist,
     playlistTracks!,
     { updated: updatedTracks },
-    { audiusBackend, generateImage: generatePlaylistArtwork }
+    { generateImage: generatePlaylistArtwork }
   )
 
   // Optimistic update #2 to update the artwork
@@ -257,7 +256,6 @@ function* removeTrackFromPlaylistAsync(
   const { playlistId, trackId, timestamp } = action
   yield* waitForWrite()
   const userId = yield* call(ensureLoggedIn)
-  const audiusBackend = yield* getContext('audiusBackendInstance')
   const { generatePlaylistArtwork } = yield* getContext('imageUtils')
 
   let playlist = yield* select(getCollection, { id: playlistId })
@@ -269,7 +267,7 @@ function* removeTrackFromPlaylistAsync(
     playlist!,
     playlistTracks!,
     { removed: removedTrack! },
-    { audiusBackend, generateImage: generatePlaylistArtwork }
+    { generateImage: generatePlaylistArtwork }
   )
 
   // Find the index of the track based on the track's id and timestamp
@@ -383,7 +381,6 @@ function* orderPlaylistAsync(
   const { playlistId, trackIdsAndTimes } = action
   yield* waitForWrite()
   const userId = yield* call(ensureLoggedIn)
-  const audiusBackend = yield* getContext('audiusBackendInstance')
   const { generatePlaylistArtwork } = yield* getContext('imageUtils')
 
   const playlist = yield* select(getCollection, { id: playlistId })
@@ -400,7 +397,7 @@ function* orderPlaylistAsync(
     playlist!,
     tracks!,
     { reordered: orderedTracks },
-    { audiusBackend, generateImage: generatePlaylistArtwork }
+    { generateImage: generatePlaylistArtwork }
   )
 
   updatedPlaylist.playlist_contents.track_ids = trackIdsAndTimes.map(
