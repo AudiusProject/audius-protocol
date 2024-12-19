@@ -96,8 +96,8 @@ export const Screen = (props: ScreenProps) => {
         headerRight: topbarRight
           ? () => topbarRight
           : isSecondary
-            ? null
-            : topbarRight,
+          ? null
+          : topbarRight,
         title: isSecondary ? undefined : titleProp,
         headerTitle: isSecondary
           ? () => (

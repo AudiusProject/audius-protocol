@@ -54,8 +54,8 @@ export const LockedStatusBadge = (props: LockedStatusBadgeProps) => {
         locked && !coloredWhenLocked
           ? styles.locked
           : variant === 'premium'
-            ? styles.premium
-            : null
+          ? styles.premium
+          : null
       ]}
     >
       <LockComponent

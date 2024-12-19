@@ -53,8 +53,8 @@ export const PasswordCompletionChecklist = () => {
           !password || (!isTouched && error)
             ? 'incomplete'
             : error
-              ? 'error'
-              : 'complete'
+            ? 'error'
+            : 'complete'
 
         return (
           <Flex key={type} direction='row' alignItems='center' gap='m'>

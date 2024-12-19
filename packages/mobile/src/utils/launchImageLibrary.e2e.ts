@@ -17,8 +17,8 @@ export function openPicker(options: Options, callback: Function) {
       testID === 'coverPhoto'
         ? coverPhoto
         : testID === 'profileImage'
-          ? profilePicture
-          : null
+        ? profilePicture
+        : null
     ]
   })
 }

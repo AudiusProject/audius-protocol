@@ -41,10 +41,10 @@ export const ConnectNewWalletButton = () => {
   const title = canConnectNewWallet
     ? messages.connect
     : newWalletStatus
-      ? messages.connecting
-      : removeWalletStatus
-        ? messages.removing
-        : messages.connect
+    ? messages.connecting
+    : removeWalletStatus
+    ? messages.removing
+    : messages.connect
 
   return (
     <View style={styles.root}>

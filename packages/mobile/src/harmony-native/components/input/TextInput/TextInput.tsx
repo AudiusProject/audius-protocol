@@ -162,10 +162,10 @@ export const TextInput = forwardRef(
     const statusColor = disabled
       ? 'subdued'
       : error
-        ? 'danger'
-        : warning || _incorrectError
-          ? 'warning'
-          : undefined
+      ? 'danger'
+      : warning || _incorrectError
+      ? 'warning'
+      : undefined
 
     const handlePressRoot = useCallback(() => {
       if (!isFocused) {
@@ -197,8 +197,8 @@ export const TextInput = forwardRef(
       const staticBorderColor = _isFocused
         ? color.secondary.s400
         : statusColor
-          ? color.text[statusColor]
-          : undefined
+        ? color.text[statusColor]
+        : undefined
 
       return {
         borderColor:

@@ -430,8 +430,8 @@ export const TrackScreenDetailsTile = ({
       isOwner
         ? null
         : user.does_current_user_follow
-          ? OverflowAction.UNFOLLOW_ARTIST
-          : OverflowAction.FOLLOW_ARTIST,
+        ? OverflowAction.UNFOLLOW_ARTIST
+        : OverflowAction.FOLLOW_ARTIST,
       isLongFormContent
         ? playbackPositionInfo?.status === 'COMPLETED'
           ? OverflowAction.MARK_AS_UNPLAYED

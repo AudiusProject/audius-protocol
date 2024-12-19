@@ -118,7 +118,7 @@ export const useScrollEventsHandlers: ScrollEventsHandlersHookType = (
          */
         if (!atSnapPoint || y < 0) {
           const lockPosition = context.shouldLockInitialPosition
-            ? (context.initialContentOffsetY ?? 0)
+            ? context.initialContentOffsetY ?? 0
             : 0
           // @ts-ignore
           scrollTo(scrollableRef, 0, lockPosition, false)
@@ -152,7 +152,7 @@ export const useScrollEventsHandlers: ScrollEventsHandlersHookType = (
          */
         if (y < 0 || !atSnapPoint) {
           const lockPosition = context.shouldLockInitialPosition
-            ? (context.initialContentOffsetY ?? 0)
+            ? context.initialContentOffsetY ?? 0
             : 0
           // @ts-ignore
           scrollTo(scrollableRef, 0, lockPosition, false)

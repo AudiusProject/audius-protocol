@@ -42,7 +42,7 @@ export const SupporterInfo = (props: SupporterInfoProps) => {
   const supportersMap = useSelector(getOptimisticSupporters)
   const supportersId = useSelector(getSupportersId)
   const supportersForUser = supportersId
-    ? (supportersMap[supportersId] ?? null)
+    ? supportersMap[supportersId] ?? null
     : null
   const supporter = supportersForUser?.[props.user.user_id] ?? null
 

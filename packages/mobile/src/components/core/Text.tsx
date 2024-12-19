@@ -63,8 +63,8 @@ export const Text = (props: TextProps) => {
           color === 'error'
             ? palette.accentRed
             : color === 'warning'
-              ? palette.accentOrange
-              : (colorValue ?? palette[color])
+            ? palette.accentOrange
+            : colorValue ?? palette[color]
       },
       weight && {
         fontFamily: typography.fontByWeight[weight],
@@ -75,8 +75,8 @@ export const Text = (props: TextProps) => {
                 fontSize && ['xl', 'large'].includes(fontSize)
                   ? 1
                   : fontSize === 'small'
-                    ? 0.5
-                    : 0
+                  ? 0.5
+                  : 0
               )
             : undefined
       },

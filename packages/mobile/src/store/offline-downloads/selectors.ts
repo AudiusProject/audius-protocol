@@ -14,7 +14,7 @@ export const getOfflineTrackStatus = (state: AppState) =>
 
 export const getTrackOfflineDownloadStatus =
   (trackId?: number) => (state: AppState) =>
-    trackId ? (state.offlineDownloads.trackStatus[trackId] ?? null) : null
+    trackId ? state.offlineDownloads.trackStatus[trackId] ?? null : null
 
 export const getTrackDownloadStatus = (state: AppState, trackId: ID) =>
   state.offlineDownloads.trackStatus[trackId]

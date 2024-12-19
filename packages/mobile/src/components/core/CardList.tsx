@@ -77,7 +77,7 @@ export function CardList<ItemT extends {}>(props: CardListProps<ItemT>) {
         '_loading' in info.item ? (
           <LoadingCardComponent />
         ) : (
-          (renderItem?.(info as ListRenderItemInfo<ItemT>) ?? null)
+          renderItem?.(info as ListRenderItemInfo<ItemT>) ?? null
         )
 
       return <View style={styles.card}>{itemElement}</View>

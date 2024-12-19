@@ -102,8 +102,8 @@ export const TrackDetailsTile = ({
   const type = isUSDCPurchaseGated
     ? GatedContentType.USDC_PURCHASE
     : isCollectibleGated
-      ? GatedContentType.COLLECTIBLE_GATED
-      : GatedContentType.SPECIAL_ACCESS
+    ? GatedContentType.COLLECTIBLE_GATED
+    : GatedContentType.SPECIAL_ACCESS
 
   const headerAttributes: {
     [k in GatedContentType]: {

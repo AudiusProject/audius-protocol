@@ -83,8 +83,8 @@ export const BlockMessagesDrawer = () => {
   const confirm = isReportAbuse
     ? messages.reportUser
     : doesBlockUser
-      ? messages.unblockUser
-      : messages.blockUser
+    ? messages.unblockUser
+    : messages.blockUser
 
   return (
     <ConfirmationDrawer

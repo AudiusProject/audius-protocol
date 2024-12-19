@@ -82,8 +82,8 @@ export const PlainButton = (props: PlainButtonProps) => {
     variant === 'subdued'
       ? subduedStyles
       : variant === 'inverted'
-        ? invertedStyles
-        : defaultVariantStyles
+      ? invertedStyles
+      : defaultVariantStyles
 
   const buttonStyles = {
     ...(isDisabled && { opacity: 0.2 }),

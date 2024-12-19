@@ -71,10 +71,10 @@ export const ChatTextInput = ({
     Platform.OS === 'ios'
       ? spacing(1.5) + extraOffset
       : Platform.OS === 'android'
-        ? extraOffset
-          ? spacing(1.5) + extraOffset
-          : undefined
+      ? extraOffset
+        ? spacing(1.5) + extraOffset
         : undefined
+      : undefined
 
   return (
     <Flex>

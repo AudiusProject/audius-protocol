@@ -42,8 +42,7 @@ export const setLastNavAction = (action: any) => {
  */
 export function useNavigation<
   ParamList extends ParamListBase,
-  NavigationProp extends
-    RNNavigationProp<ParamListBase> = NativeStackNavigationProp<ParamList>
+  NavigationProp extends RNNavigationProp<ParamListBase> = NativeStackNavigationProp<ParamList>
 >(options?: UseNavigationOptions<NavigationProp>): NavigationProp {
   const defaultNavigation = useNativeNavigation<NavigationProp>()
 

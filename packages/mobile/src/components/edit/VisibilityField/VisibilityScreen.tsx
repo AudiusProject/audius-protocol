@@ -41,8 +41,8 @@ export const VisibilityScreen = () => {
     is_scheduled_release && isHidden
       ? 'scheduled'
       : isHidden
-        ? 'hidden'
-        : 'public'
+      ? 'hidden'
+      : 'public'
 
   const [visibilityType, setVisibilityType] = useState<VisibilityType>(
     initialVisibilityType

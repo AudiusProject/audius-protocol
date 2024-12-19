@@ -106,8 +106,8 @@ export const ContextualMenu = (props: ContextualMenuProps) => {
   const hasValue = !value
     ? false
     : typeof value === 'string'
-      ? value
-      : value.length !== 0
+    ? value
+    : value.length !== 0
 
   return (
     <TouchableOpacity onPress={handlePress} style={stylesProp?.root}>

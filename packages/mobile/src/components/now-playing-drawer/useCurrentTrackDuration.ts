@@ -11,6 +11,6 @@ export const useCurrentTrackDuration = () => {
   return !track
     ? 0
     : isPreviewing
-      ? getTrackPreviewDuration(track)
-      : track.duration
+    ? getTrackPreviewDuration(track)
+    : track.duration
 }

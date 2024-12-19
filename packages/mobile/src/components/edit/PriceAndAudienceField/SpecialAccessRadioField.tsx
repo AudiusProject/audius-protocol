@@ -54,7 +54,7 @@ export const SpecialAccessRadioField = (
   const [selectedSpecialAccessGate, setSelectedSpecialAccessGate] = useState(
     isContentFollowGated(previousStreamConditions) ||
       isContentTipGated(previousStreamConditions)
-      ? (previousStreamConditions ?? defaultSpecialAccess)
+      ? previousStreamConditions ?? defaultSpecialAccess
       : defaultSpecialAccess
   )
 

@@ -55,8 +55,8 @@ export const StatusMessage = ({
     status === 'valid'
       ? IconValidationCheck
       : status === 'error'
-        ? IconMultiselectRemove
-        : View
+      ? IconMultiselectRemove
+      : View
 
   return (
     <View style={[styles.root, style, stylesProp.root]}>

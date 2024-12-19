@@ -546,8 +546,8 @@ export const ChatScreen = () => {
         isBlast
           ? () => <ChatBlastHeader chat={chat as ChatBlast} />
           : otherUser
-            ? () => <UserChatHeader user={otherUser} />
-            : () => <Text style={styles.userBadgeTitle}>{messages.title}</Text>
+          ? () => <UserChatHeader user={otherUser} />
+          : () => <Text style={styles.userBadgeTitle}>{messages.title}</Text>
       }
       icon={otherUser ? undefined : IconMessage}
       topbarRight={topBarRight}

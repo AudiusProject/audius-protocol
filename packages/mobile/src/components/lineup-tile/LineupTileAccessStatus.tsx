@@ -116,8 +116,8 @@ export const LineupTileAccessStatus = ({
   const buttonText = isUSDCPurchase
     ? messages.price(formatPrice(streamConditions.usdc_purchase.price))
     : isUnlocking
-      ? messages.unlocking
-      : messages.locked
+    ? messages.unlocking
+    : messages.locked
 
   const showButtonText = !isUSDCPurchase || (!hasStreamAccess && !isUnlocking)
 

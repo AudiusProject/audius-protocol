@@ -252,8 +252,8 @@ export const RemixSettingsScreen = () => {
                     !hasStreamAccess
                       ? messages.remixAccessError
                       : isInvalidParentTrack
-                        ? messages.invalidRemixUrl
-                        : messages.missingRemixUrl
+                      ? messages.invalidRemixUrl
+                      : messages.missingRemixUrl
                   }
                 />
               ) : null}

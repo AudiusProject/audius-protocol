@@ -148,8 +148,8 @@ export const Panel = ({
   const buttonMessage = needsDisbursement
     ? messages.claimReward
     : hasDisbursed
-      ? messages.viewDetails
-      : panelButtonText
+    ? messages.viewDetails
+    : panelButtonText
 
   return (
     <TouchableOpacity
