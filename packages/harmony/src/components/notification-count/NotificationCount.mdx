@@ -1,11 +1,14 @@
-import { Meta, Title, Description, Primary, Controls } from '@storybook/blocks'
+import {
+  Meta,
+  Title,
+  Description,
+  Primary,
+  Controls,
+  Canvas
+} from '@storybook/blocks'
 
-import { IconButton } from 'components/button/IconButton/IconButton'
-import { Flex } from 'components/layout'
-import { IconNotificationOn } from 'icons'
 import { ComponentRules } from 'storybook/components'
 
-import { NotificationCount } from './NotificationCount'
 import * as NotificationCountStories from './NotificationCount.stories'
 
 <Meta of={NotificationCountStories} />
@@ -14,12 +17,15 @@ import * as NotificationCountStories from './NotificationCount.stories'
 
 - [Overview](#overview)
 - [Props](#props)
-- [Use cases and examples](#use-cases-and-examples)
-- [Do's and dont's](#dos-and-donts)
+- [Usage Guidelines](#usage-guidelines)
+- [States](#states)
+- [Do's and Don'ts](#dos-and-donts)
 
 ## Overview
 
 <Description />
+
+The NotificationCount component displays a small badge with a count, typically used to show unread notifications or pending items. It can be used standalone or wrapped around another component.
 
 <Primary />
 
@@ -27,107 +33,57 @@ import * as NotificationCountStories from './NotificationCount.stories'
 
 <Controls />
 
-## Use cases and examples
+## Usage Guidelines
 
-- Use to indicate unread or pending notifications or messages.
-- Commonly placed on top of icons or buttons.
-- Keep counts concise and readable.
-- Can be used without a child element to display a standalone notification count.
-- Supports different sizes for visual hierarchy.
+- Use to indicate unread or pending notifications
+- Wrap the NotificationCount around the target component (usually an icon or button)
+- For counts over 99, it will display as "99+"
+- Use size 's' for less emphasis or in compact layouts
+- The badge appears in the top-right corner by default
+- Supports hover states when parent has the 'parent' className
 
-### Example with an Icon Button
+## States
 
-<Flex position='relative'>
-  <NotificationCount count={3}>
-    <IconButton icon={IconNotificationOn} aria-label='Notifications' />
-  </NotificationCount>
-</Flex>
+### Default
 
-### Example with a different size
+<Canvas of={NotificationCountStories.Default} />
 
-<Flex position='relative'>
-  <NotificationCount count={105} size='s'>
-    <IconButton icon={IconNotificationOn} aria-label='Notifications' />
-  </NotificationCount>
-</Flex>
+### With Icon
 
-### Example without a child
+<Canvas of={NotificationCountStories.WithIcon} />
 
-<NotificationCount count={5} />
+### Small Size
 
-## Do's and don'ts
+<Canvas of={NotificationCountStories.SmallSize} />
+
+### Large Number
+
+<Canvas of={NotificationCountStories.LargeNumber} />
+
+## Do's and Don'ts
 
 <ComponentRules
   rules={[
     {
       positive: {
-        description: 'Place notification count in the top-right corner.',
-        component: (
-          <Flex position='relative'>
-            <NotificationCount count={3}>
-              <IconButton
-                icon={IconNotificationOn}
-                aria-label='Notifications'
-              />
-            </NotificationCount>
-          </Flex>
-        )
+        description: 'Wrap NotificationCount around the target component.',
+        component: NotificationCountStories.WithIcon.render?.()
       },
       negative: {
         description:
-          "Don't place notification count where it might be hidden or unclear.",
-        component: (
-          <Flex position='relative'>
-            <IconButton
-              icon={IconNotificationOn}
-              aria-label='Notifications'
-              // Incorrect usage: NotificationCount should wrap the IconButton
-              css={{
-                '> *': {
-                  position: 'absolute',
-                  top: 'auto',
-                  bottom: 0,
-                  right: 0,
-                  transform: 'none'
-                }
-              }}
-            />
-            <NotificationCount count={3} />
-          </Flex>
-        )
+          "Don't place NotificationCount as a sibling - it should wrap the target component.",
+        component: NotificationCountStories.Default.render?.()
       }
     },
     {
       positive: {
-        description: 'Use for counts over 99 to display "99+".',
-        component: <NotificationCount count={150} />
-      },
-      negative: {
-        description: "Don't use for counts under 0.",
-        component: (
-          // This will render nothing as per component logic
-          <NotificationCount count={-5} />
-        )
-      }
-    },
-    {
-      positive: {
-        description: "Use 's' size for smaller contexts or less emphasis.",
-        component: <NotificationCount count={12} size='s' />
+        description: 'Use size="s" for compact layouts.',
+        component: NotificationCountStories.SmallSize.render?.()
       },
       negative: {
         description:
-          "Don't use 's' size when the count needs to be prominently displayed.",
-        component: (
-          <Flex position='relative'>
-            <NotificationCount count={3} size='s'>
-              <IconButton
-                icon={IconNotificationOn}
-                aria-label='Notifications'
-              />
-            </NotificationCount>
-          </Flex>
-        )
+          "Don't use the small size when the count needs to be prominently displayed.",
+        component: NotificationCountStories.LargeNumber.render?.()
       }
     }
   ]}

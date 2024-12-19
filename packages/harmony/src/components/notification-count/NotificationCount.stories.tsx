@@ -1,15 +1,16 @@
 import type { Meta, StoryObj } from '@storybook/react'
 
 import { IconButton } from 'components/button'
-import { IconAudiusLogo } from 'icons'
-
-import { Flex } from '../layout/Flex'
+import { IconNotificationOn } from 'icons'
 
 import { NotificationCount } from './NotificationCount'
 
 const meta: Meta<typeof NotificationCount> = {
   title: 'Components/NotificationCount',
-  component: NotificationCount
+  component: NotificationCount,
+  parameters: {
+    layout: 'centered'
+  }
 }
 
 export default meta
@@ -24,18 +25,24 @@ export const Default: Story = {
 
 export const WithIcon: Story = {
   render: () => (
-    <Flex>
-      <IconButton icon={IconAudiusLogo} aria-label='Notifications' />
-      <NotificationCount count={3} />
-    </Flex>
+    <NotificationCount count={3}>
+      <IconButton icon={IconNotificationOn} aria-label='Notifications' />
+    </NotificationCount>
+  )
+}
+
+export const SmallSize: Story = {
+  render: () => (
+    <NotificationCount count={3} size='s'>
+      <IconButton icon={IconNotificationOn} aria-label='Notifications' />
+    </NotificationCount>
   )
 }
 
 export const LargeNumber: Story = {
   render: () => (
-    <Flex>
-      <IconButton icon={IconAudiusLogo} aria-label='Notifications' />
-      <NotificationCount count={99} />
-    </Flex>
+    <NotificationCount count={15000}>
+      <IconButton icon={IconNotificationOn} aria-label='Notifications' />
+    </NotificationCount>
   )
 }
