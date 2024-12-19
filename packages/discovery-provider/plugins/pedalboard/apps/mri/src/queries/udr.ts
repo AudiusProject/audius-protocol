@@ -14,17 +14,21 @@ const config = readConfig()
 type UsageDetailReporting = {
   client_catalog_id: number
   Offering: 'Downloads / Monetized Content' | 'Subscription'
+  UserType: string
   Streams: number
   Downloads: number
   Territory: string
+  'Price Point': number
 }
 
 const UsageDetailReportingHeader: (keyof UsageDetailReporting)[] = [
   'client_catalog_id',
   'Offering',
+  'UserType',
   'Streams',
   'Downloads',
-  'Territory'
+  'Territory',
+  'Price Point'
 ]
 
 // gathers data from a month prior to the provided date.

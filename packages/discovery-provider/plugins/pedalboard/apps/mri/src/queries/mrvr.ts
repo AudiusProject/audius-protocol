@@ -251,29 +251,14 @@ export const mrvr = async (
           trunc(0, 2) as "Record Label Payments",
           trunc(0, 2) as "Average Subscription Price",
 
-          (
-            select
-              sum(cast("count" * "duration" as float) / 3600.0)
-            from (
-              select
-                "tracks"."duration" as "duration",
-                "aggregate_monthly_plays"."count" as "count"
-              from
-                "tracks"
-              join
-                "aggregate_monthly_plays" on "tracks"."track_id" = "aggregate_monthly_plays"."play_item_id"
-              where
-                "aggregate_monthly_plays"."country" = "country"
-                and "timestamp" >= :start
-                and "timestamp" < :end
-            ) as ath_data
-          ) as "Aggregate Transmission Hours",
+          sum(duration)::float / 3600 as "Aggregate Transmission Hours",
 
           trunc(0, 2) as "Tip Revenue"
         from plays
+        join tracks on play_item_id = track_id
         where
-          created_at >= :start
-          and created_at < :end
+          plays.created_at >= :start
+          and plays.created_at < :end
           and country is not null
         group by country
       ) subq;
