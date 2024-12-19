@@ -31,7 +31,6 @@ import Input from 'components/data-entry/Input'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import { AccountListContent } from 'components/nav/desktop/AccountSwitcher/AccountListContent'
 import { ProfileInfo } from 'components/profile-info/ProfileInfo'
-import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
 import { audiusSdk, authService } from 'services/audius-sdk'
 import { fingerprintClient } from 'services/fingerprint'
 import { reportToSentry } from 'store/errors/reportToSentry'
@@ -209,11 +208,6 @@ export const OAuthLoginPage = () => {
       if (!account || !account.user.handle || !account.user.name) {
         throw new Error('invalid user')
       }
-
-      await audiusBackendInstance.setup({
-        wallet: signInResponse.walletAddress,
-        userId: account.user.user_id
-      })
 
       await authorize({
         account: account.user
