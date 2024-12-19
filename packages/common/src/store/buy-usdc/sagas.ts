@@ -14,12 +14,10 @@ import {
   createPaymentRouterRouteTransaction,
   createTransferToUserBankTransaction,
   findAssociatedTokenAddress,
-  getRecentBlockhash,
   getTokenAccountInfo,
   getUserbankAccountInfo,
   pollForTokenBalanceChange,
-  recoverUsdcFromRootWallet,
-  relayTransaction
+  recoverUsdcFromRootWallet
 } from '~/services/audius-backend/solana'
 import {
   getAccountUser,
@@ -170,49 +168,32 @@ function* transferStep({
   usePaymentRouter?: boolean
   memo: string
 }) {
-  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
-  const feePayer = yield* select(getFeePayer)
-  if (!feePayer) {
-    throw new Error('Missing feePayer unexpectedly')
-  }
-  const feePayerOverride = new PublicKey(feePayer)
   const sdk = yield* getSDK()
-  const recentBlockhash = yield* call(getRecentBlockhash, { sdk })
+  const { USDC_MINT_ADDRESS } = yield* getContext('env')
+  const mintPublicKey = new PublicKey(USDC_MINT_ADDRESS)
+  const mintDecimals = USDC(0).decimalPlaces
 
   yield* call(
     retry,
     async () => {
+      console.debug(`Starting transfer transaction...`)
       const transferTransaction = await createTransferToUserBankTransaction(
-        audiusBackendInstance,
+        sdk,
         {
           wallet,
           userBank,
-          mint: 'USDC',
+          mintPublicKey,
+          mintDecimals,
           amount,
-          memo,
-          feePayer: feePayerOverride,
-          recentBlockhash
+          memo
         }
       )
-      transferTransaction.partialSign(wallet)
-
-      console.debug(`Starting transfer transaction...`)
-      const { res, error } = await relayTransaction(audiusBackendInstance, {
-        transaction: transferTransaction
-      })
-
-      if (res) {
-        console.debug(`Transfer transaction succeeded: ${res}`)
-        return
-      }
-
-      console.debug(
-        `Transfer transaction stringified: ${JSON.stringify(
-          transferTransaction
-        )}`
+      transferTransaction.sign([wallet])
+      const res = await sdk.services.solanaClient.sendTransaction(
+        transferTransaction
       )
-      // Throw to retry
-      throw new Error(error ?? 'Unknown USDC user bank transfer error')
+
+      console.debug(`Transfer transaction succeeded: ${res}`)
     },
     {
       minTimeout: retryDelayMs,
