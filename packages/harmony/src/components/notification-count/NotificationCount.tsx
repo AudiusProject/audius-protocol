@@ -48,13 +48,11 @@ export const NotificationCount = ({
   children,
   ...props
 }: NotificationCountProps) => {
-  const { spacing, color, cornerRadius } = useTheme()
+  const { spacing, color } = useTheme()
 
   const containerStyles: CSSObject = {
-    position: 'relative',
     display: 'inline-flex',
-    alignItems: 'center',
-    justifyContent: 'center'
+    position: 'relative'
   }
 
   const badgeStyles: CSSObject = {
@@ -62,16 +60,7 @@ export const NotificationCount = ({
     top: 0,
     right: 0,
     transform: 'translate(50%, -50%)',
-    display: 'inline-flex',
-    height: spacing.unit5,
     minWidth: spacing.unit5,
-    padding: `0px ${spacing.xs}px`,
-    flexDirection: 'column',
-    justifyContent: 'center',
-    alignItems: 'center',
-    gap: spacing.s,
-    flexShrink: 0,
-    borderRadius: cornerRadius.circle,
     backgroundColor: color.primary.p300,
     border: 'none',
     '.parent:hover &': {
@@ -81,23 +70,42 @@ export const NotificationCount = ({
       height: spacing.unit3 + spacing.unitHalf,
       minWidth: spacing.unit3 + spacing.unitHalf,
       padding: `0px ${spacing.xs}px`,
-      gap: spacing.s,
-      borderRadius: cornerRadius.circle,
       backgroundColor: color.primary.p300
     })
   }
+
   const textStyles: CSSObject = {
-    color: color.text.staticStaticWhite,
     '.parent:hover &': {
       color: color.neutral.n950
     }
   }
 
   return (
-    <Flex className='parent' css={containerStyles} {...props}>
+    <Flex
+      className='parent'
+      alignItems='center'
+      justifyContent='center'
+      css={containerStyles}
+      {...props}
+    >
       {children}
-      <Flex as='span' css={badgeStyles}>
-        <Text variant='label' size='xs' css={textStyles}>
+      <Flex
+        as='span'
+        h='unit5'
+        ph='xs'
+        direction='column'
+        justifyContent='center'
+        alignItems='center'
+        gap='s'
+        borderRadius='circle'
+        css={badgeStyles}
+      >
+        <Text
+          variant='label'
+          size='xs'
+          css={textStyles}
+          color='staticStaticWhite'
+        >
           {count !== undefined ? formatCount(count) : '0'}
         </Text>
       </Flex>
