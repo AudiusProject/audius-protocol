@@ -1,4 +1,4 @@
-import { AUDIO, wAUDIO } from '@audius/fixed-decimal'
+import { AUDIO, AudioWei, wAUDIO } from '@audius/fixed-decimal'
 import { AudiusSdk, type StorageNodeSelectorService } from '@audius/sdk'
 import { type AudiusLibs as AudiusLibsType } from '@audius/sdk-legacy/dist/libs'
 import type { HedgehogConfig } from '@audius/sdk-legacy/dist/services/hedgehog'
@@ -1079,33 +1079,25 @@ export const audiusBackend = ({
    * Make a request to fetch the eth AUDIO balance of the the user
    * @params {bool} bustCache
    * @params {string} ethAddress - Optional ETH wallet address. Defaults to hedgehog wallet
-   * @returns {Promise<BN | null>} balance or null if failed to fetch balance
+   * @returns {Promise<AudioWei | null>} balance or null if failed to fetch balance
    */
   async function getBalance({
     ethAddress,
-    bustCache = false
+    sdk
   }: {
-    ethAddress?: string
-    bustCache?: boolean
-  } = {}): Promise<BN | null> {
+    ethAddress: string
+    sdk: AudiusSdk
+  }): Promise<AudioWei | null> {
     await waitForLibsInit()
 
-    const wallet =
-      ethAddress !== undefined
-        ? ethAddress
-        : audiusLibs.web3Manager.getWalletAddress()
-    if (!wallet) return null
+    if (!ethAddress) return null
 
     try {
-      const ethWeb3 = audiusLibs.ethWeb3Manager.getWeb3()
-      const checksumWallet = ethWeb3.utils.toChecksumAddress(wallet)
-      if (bustCache) {
-        audiusLibs.ethContracts.AudiusTokenClient.bustCache()
-      }
-      const balance = await audiusLibs.ethContracts.AudiusTokenClient.balanceOf(
-        checksumWallet
-      )
-      return balance
+      const checksumWallet = getAddress(ethAddress)
+      const balance = await sdk.services.audiusTokenClient.balanceOf({
+        account: checksumWallet
+      })
+      return AUDIO(balance).value
     } catch (e) {
       console.error(e)
       reportError({ error: e as Error })
