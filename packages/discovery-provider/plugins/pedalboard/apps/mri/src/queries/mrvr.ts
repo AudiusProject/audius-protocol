@@ -1,16 +1,11 @@
-import { Knex } from 'knex'
-import { logger as plogger } from '../logger'
-import { toCsvString } from '../csv'
-import { S3Config, publish } from '../s3'
+import fetch from 'cross-fetch'
 import dayjs from 'dayjs'
 import quarterOfYear from 'dayjs/plugin/quarterOfYear'
-import {
-  formatDateISO,
-  getYearMonth,
-  getYearMonthDay,
-  getYearMonthShorthand
-} from '../date'
-import fetch from 'cross-fetch'
+import { Knex } from 'knex'
+import { toCsvString } from '../csv'
+import { formatDateISO, getYearMonth } from '../date'
+import { logger as plogger } from '../logger'
+import { S3Config, publish } from '../s3'
 
 dayjs.extend(quarterOfYear)
 
@@ -117,19 +112,27 @@ export const mrvr = async (
 
       -- aggregate downloads by country for purchaseable content
       downloads as (
-        select country, count(*) as download_count
-        from track_downloads
+        select
+          country,
+          count(*) as download_count,
+          sum(duration) as download_ath
+        from track_downloads d
+        join tracks using (track_id)
         where track_id in (select content_id from purchases)
-          and created_at >= :start
-          and created_at < :end
+          and d.created_at >= :start
+          and d.created_at < :end
           and "country" is not null
         group by country
       ),
 
       -- aggregate streams by country for purchaseable content
       streams as (
-        select country, sum(count) as stream_count
+        select
+          country,
+          sum(count) as stream_count,
+          sum(count * duration) as stream_ath
         from aggregate_monthly_plays
+        join tracks on play_item_id = track_id
         where play_item_id in (select content_id from purchases)
           and "timestamp" >= :start
           and "timestamp" < :end
@@ -152,7 +155,7 @@ export const mrvr = async (
         "Public Performance Fees",
         "Record Label Payments",
         "Average Subscription Price",
-        "Aggregate Transmission Hours",
+        trunc("Aggregate Transmission Hours"::numeric, 2) as "Aggregate Transmission Hours",
         "Tip Revenue"
       from (
         -- paid portion of MRVR
@@ -175,16 +178,8 @@ export const mrvr = async (
             2
           ) as "Gross revenue With Deductions",
           country_to_iso_alpha2(coalesce("country", '')) as "Territory",
-          (
-            select coalesce(download_count, 0)
-            from downloads td
-            where td.country = purchases.country
-          ) as "Total Downloads",
-          (
-            select coalesce(stream_count, 0)
-            from streams s
-            where s.country = purchases.country
-          ) as "Total Streams",
+          sum(download_count) as "Total Downloads",
+          sum(stream_count) as "Total Streams",
           case when
             is_country_eur("country") then 'EUR'
             else 'USD'
@@ -194,23 +189,7 @@ export const mrvr = async (
           trunc(0, 2) as "Record Label Payments",
           trunc(0, 2) as "Average Subscription Price",
 
-          (
-            select
-              sum(cast("count" * "duration" as float) / 3600.0)
-            from (
-              select
-                "tracks"."duration" as "duration",
-                "aggregate_monthly_plays"."count" as "count"
-              from
-                "tracks"
-              join
-                "aggregate_monthly_plays" on "tracks"."track_id" = "aggregate_monthly_plays"."play_item_id"
-              where
-                "aggregate_monthly_plays"."country" = purchases."country"
-                and "timestamp" >= :start
-                and "timestamp" < :end
-            ) as ath_data
-          ) as "Aggregate Transmission Hours",
+          sum(coalesce(download_ath, 0) + coalesce(stream_ath, 0))::float / 3600 as "Aggregate Transmission Hours",
 
           trunc(
             case when
@@ -221,6 +200,8 @@ export const mrvr = async (
           ) as "Tip Revenue"
 
         from purchases
+        left join streams using (country)
+        left join downloads using (country)
         where "country" is not null
         group by "country"
 
