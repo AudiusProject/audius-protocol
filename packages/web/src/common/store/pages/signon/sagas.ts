@@ -664,7 +664,6 @@ function* signUp() {
 
     const sdk = yield* getSDK()
     const authService = yield* getContext('authService')
-    const audiusBackendInstance = yield* getContext('audiusBackendInstance')
     const isGuest = yield* select(getIsGuest)
 
     yield* call(waitForWrite)
@@ -677,8 +676,6 @@ function* signUp() {
     const handle = signOn.handle.value
     const alreadyExisted = signOn.accountAlreadyExisted
     const referrer = signOn.referrer
-
-    yield* call(audiusBackendInstance.setUserHandleForRelay, handle)
 
     yield* put(
       confirmerActions.requestConfirmation(
