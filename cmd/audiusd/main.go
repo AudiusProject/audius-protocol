@@ -28,9 +28,10 @@ import (
 	"golang.org/x/crypto/acme/autocert"
 )
 
+var ENABLE_STORAGE bool
+
 func main() {
-	tlsEnabled := getEnvBool("ENABLE_TLS", false)
-	storageEnabled := getEnvBool("ENABLE_STORAGE", false)
+	ENABLE_STORAGE = os.Getenv("creatorNodeEndpoint") != ""
 
 	var slogLevel slog.Level
 	if logLevel := os.Getenv("audiusd_log_level"); logLevel != "" {
@@ -75,15 +76,8 @@ func main() {
 	}
 
 	go func() {
-		if err := startEchoProxyWithOptionalTLS(hostUrl, tlsEnabled); err != nil {
+		if err := startEchoProxyWithOptionalTLS(hostUrl, logger); err != nil {
 			log.Fatalf("Echo server failed: %v", err)
-			cancel()
-		}
-	}()
-
-	go func() {
-		if err := uptime.Run(ctx, logger); err != nil {
-			logger.Errorf("fatal uptime error: %v", err)
 			cancel()
 		}
 	}()
@@ -95,10 +89,20 @@ func main() {
 		}
 	}()
 
-	if storageEnabled {
+	if ENABLE_STORAGE {
 		go func() {
 			if err := mediorum.Run(ctx, logger); err != nil {
 				logger.Errorf("fatal mediorum error: %v", err)
+				cancel()
+			}
+		}()
+	}
+
+	// this is gross, (more expected env var madness) but uptime is being removed soon enough
+	if hostUrl.Hostname() != "localhost" {
+		go func() {
+			if err := uptime.Run(ctx, logger); err != nil {
+				logger.Errorf("fatal uptime error: %v", err)
 				cancel()
 			}
 		}()
@@ -113,7 +117,7 @@ func main() {
 	logger.Info("Shutdown complete")
 }
 
-func startEchoProxyWithOptionalTLS(hostUrl *url.URL, enableTLS bool) error {
+func startEchoProxyWithOptionalTLS(hostUrl *url.URL, logger *common.Logger) error {
 
 	httpPort := os.Getenv("AUDIUSD_HTTP_PORT")
 	if httpPort == "" {
@@ -130,56 +134,55 @@ func startEchoProxyWithOptionalTLS(hostUrl *url.URL, enableTLS bool) error {
 	e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
 
-	urlCore, err := url.Parse("http://localhost:26659")
-	if err != nil {
-		e.Logger.Fatal(err)
-	}
-	urlMediorum, err := url.Parse("http://localhost:1991")
-	if err != nil {
-		e.Logger.Fatal(err)
-	}
-	urlDAPI, err := url.Parse("http://localhost:1996")
-	if err != nil {
-		e.Logger.Fatal(err)
-	}
-
-	coreProxy := httputil.NewSingleHostReverseProxy(urlCore)
-	mediorumProxy := httputil.NewSingleHostReverseProxy(urlMediorum)
-	dAPIProxy := httputil.NewSingleHostReverseProxy(urlDAPI)
-
 	e.GET("/", func(c echo.Context) error {
 		return c.JSON(http.StatusOK, map[string]string{
 			"status": "ok",
 		})
 	})
 
+	urlCore, err := url.Parse("http://localhost:26659")
+	if err != nil {
+		logger.Error("Failed to parse core URL:", err)
+	}
+	coreProxy := httputil.NewSingleHostReverseProxy(urlCore)
 	e.Any("/console/*", echo.WrapHandler(coreProxy))
 	e.Any("/core/*", echo.WrapHandler(coreProxy))
-	e.Any("/d_api/*", echo.WrapHandler(dAPIProxy))
 
-	e.Any("/*", echo.WrapHandler(mediorumProxy))
-
-	shouldHaveAutoTLS := []string{
-		"audius.co",
-		"stuffisup.com",
-		"theblueprint.xyz",
-		"tikilabs.com",
-		"shakespearetech.com",
-		"jollyworld.xyz",
-		"figment.io",
-		"cultur3stake.com",
-		"audiusindex.org",
+	// this is gross, (more expected env var madness) but uptime is being removed soon enough
+	if hostUrl.Hostname() != "localhost" {
+		urlDAPI, err := url.Parse("http://localhost:1996")
+		if err != nil {
+			logger.Error("Failed to parse dAPI URL:", err)
+		}
+		dAPIProxy := httputil.NewSingleHostReverseProxy(urlDAPI)
+		e.Any("/d_api/*", echo.WrapHandler(dAPIProxy))
 	}
 
-	domain := extractDomain(os.Getenv("creatorNodeEndpoint"))
-	enableTls := isTldAllowed(domain, shouldHaveAutoTLS)
+	if ENABLE_STORAGE {
+		urlMediorum, err := url.Parse("http://localhost:1991")
+		if err != nil {
+			logger.Error("Failed to parse mediorum URL:", err)
+		}
+		mediorumProxy := httputil.NewSingleHostReverseProxy(urlMediorum)
+		e.Any("/*", echo.WrapHandler(mediorumProxy))
+	}
 
-	// if enableTLS {
+	disableAutoTLS := []string{
+		"altego.net",
+		"bdnodes.net",
+		"staked.cloud",
+		"localhost",
+	}
+
+	domain := extractDomain(hostUrl.String())
+	enableTls := !domainInTlds(domain, disableAutoTLS) && os.Getenv("DISABLE_TLS") != "true"
+	logger.Infof("domain: %s, enableTls: %v", domain, enableTls)
+
 	if enableTls {
 		// Get server's IP addresses
 		addrs, err := net.InterfaceAddrs()
 		if err != nil {
-			e.Logger.Warn("Failed to get interface addresses:", err)
+			logger.Warn("Failed to get interface addresses:", err)
 		}
 
 		// Build whitelist starting with hostname and localhost
@@ -194,20 +197,20 @@ func startEchoProxyWithOptionalTLS(hostUrl *url.URL, enableTLS bool) error {
 			}
 		}
 
-		e.Logger.Info("TLS host whitelist:", whitelist)
+		logger.Info("TLS host whitelist: " + strings.Join(whitelist, ", "))
 		e.AutoTLSManager.HostPolicy = autocert.HostWhitelist(whitelist...)
 		e.AutoTLSManager.Cache = autocert.DirCache(getEnvString("audius_core_root_dir", "/audius-core") + "/echo/cache")
 		e.Pre(middleware.HTTPSRedirect())
 
 		go func() {
 			if err := e.StartAutoTLS(":" + httpsPort); err != nil && err != http.ErrServerClosed {
-				e.Logger.Error("HTTPS server failed")
+				logger.Errorf("HTTPS server failed: %v", err)
 			}
 		}()
 
 		go func() {
 			if err := e.Start(":" + httpPort); err != nil && err != http.ErrServerClosed {
-				e.Logger.Fatal("HTTP server failed")
+				logger.Fatalf("HTTP server failed: %v", err)
 			}
 		}()
 
@@ -231,9 +234,8 @@ func extractDomain(fqdn string) string {
 	return fqdn
 }
 
-// isTldAllowed checks if the domain ends with any of the allowed TLDs
-func isTldAllowed(domain string, allowedTlds []string) bool {
-	for _, tld := range allowedTlds {
+func domainInTlds(domain string, tlds []string) bool {
+	for _, tld := range tlds {
 		if strings.HasSuffix(domain, tld) {
 			return true
 		}
@@ -265,7 +267,7 @@ func getEnvBool(key string, defaultVal bool) bool {
 func getHostUrl() (*url.URL, error) {
 	ep := os.Getenv("creatorNodeEndpoint")
 	if ep == "" {
-		ep = os.Getenv("audiusd_discprov_url")
+		ep = os.Getenv("audius_discprov_url")
 	}
 	if ep == "" {
 		ep = "localhost"
