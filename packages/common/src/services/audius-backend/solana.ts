@@ -19,16 +19,10 @@ import {
   Transaction,
   TransactionInstruction
 } from '@solana/web3.js'
-import BN from 'bn.js'
 
 import { CommonStoreContext } from '~/store/storeContext'
 
-import {
-  AnalyticsEvent,
-  Name,
-  SolanaWalletAddress,
-  PurchaseAccess
-} from '../../models'
+import { AnalyticsEvent, Name, SolanaWalletAddress } from '../../models'
 
 import { AudiusBackend } from './AudiusBackend'
 
@@ -447,77 +441,6 @@ export const createTransferToUserBankTransaction = async (
     instructions: [memoInstruction, transferInstruction]
   })
   return tx
-}
-
-/**
- * A pared down version of {@link purchaseContentWithPaymentRouter}
- * that doesn't add the purchase memo.
- */
-export const createPaymentRouterRouteTransaction = async (
-  audiusBackendInstance: AudiusBackend,
-  {
-    sender,
-    splits
-  }: {
-    sender: PublicKey
-    splits: Record<string, number | BN>
-  }
-) => {
-  const solanaWeb3Manager = (await audiusBackendInstance.getAudiusLibsTyped())
-    .solanaWeb3Manager!
-  const { blockhash } = await solanaWeb3Manager
-    .getConnection()
-    .getLatestBlockhash()
-  const [transfer, route] =
-    // All the memo related parameters are ignored
-    await solanaWeb3Manager.getPurchaseContentWithPaymentRouterInstructions({
-      id: 0, // ignored
-      type: 'track', // ignored
-      blocknumber: 0, // ignored
-      splits,
-      purchaserUserId: 0, // ignored
-      senderAccount: sender,
-      purchaseAccess: PurchaseAccess.STREAM // ignored
-    })
-  return new Transaction({
-    recentBlockhash: blockhash,
-    feePayer: sender
-  }).add(transfer, route)
-}
-
-/**
- * Relays the given transaction using the libs transaction handler
- */
-export const relayTransaction = async (
-  audiusBackendInstance: AudiusBackend,
-  {
-    transaction,
-    skipPreflight,
-    useCoinflowRelay
-  }: {
-    transaction: Transaction
-    skipPreflight?: boolean
-    useCoinflowRelay?: boolean
-  }
-) => {
-  const libs = await audiusBackendInstance.getAudiusLibsTyped()
-  const instructions = transaction.instructions
-  const signatures = transaction.signatures
-    .filter((s) => s.signature !== null)
-    .map((s) => ({
-      signature: s.signature!, // safe from filter
-      publicKey: s.publicKey.toString()
-    }))
-  const feePayerOverride = transaction.feePayer
-  const recentBlockhash = transaction.recentBlockhash
-  return await libs.solanaWeb3Manager!.transactionHandler.handleTransaction({
-    instructions,
-    recentBlockhash,
-    signatures,
-    feePayerOverride,
-    skipPreflight,
-    useCoinflowRelay
-  })
 }
 
 // NOTE: The above all need to be updated to use SDK. The below is fresh.
