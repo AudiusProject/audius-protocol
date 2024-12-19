@@ -57,7 +57,13 @@ export const NavItem = ({
         }}
       >
         <Flex alignItems='center' gap='m' flex={1}>
-          {hasLeftIcon && <LeftIcon color={iconColor} />}
+          {hasLeftIcon && (
+            <LeftIcon
+              height={24}
+              width={24}
+              css={{ path: { fill: iconColor } }}
+            />
+          )}
           <Text
             variant='title'
             size='l'
@@ -71,7 +77,13 @@ export const NavItem = ({
             {children}
           </Text>
         </Flex>
-        {hasRightIcon && <RightIcon color={iconColor} />}
+        {hasRightIcon && (
+          <RightIcon
+            height={20}
+            width={20}
+            css={{ path: { fill: iconColor } }}
+          />
+        )}
       </Flex>
     </Flex>
   )
