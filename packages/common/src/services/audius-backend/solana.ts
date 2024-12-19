@@ -19,16 +19,10 @@ import {
   Transaction,
   TransactionInstruction
 } from '@solana/web3.js'
-import BN from 'bn.js'
 
 import { CommonStoreContext } from '~/store/storeContext'
 
-import {
-  AnalyticsEvent,
-  Name,
-  SolanaWalletAddress,
-  PurchaseAccess
-} from '../../models'
+import { AnalyticsEvent, Name, SolanaWalletAddress } from '../../models'
 
 import { AudiusBackend } from './AudiusBackend'
 
