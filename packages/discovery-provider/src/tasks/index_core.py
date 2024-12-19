@@ -8,9 +8,10 @@ from src.challenges.challenge_event_bus import ChallengeEventBus
 from src.tasks.celery_app import celery
 from src.tasks.core.core_client import CoreClient, get_core_instance
 from src.tasks.core.gen.protocol_pb2 import BlockResponse
-from src.tasks.index_core_cutovers import get_core_cutover
+from src.tasks.index_core_cutovers import get_core_cutover, get_sol_cutover
 from src.tasks.index_core_manage_entities import index_core_manage_entity
 from src.tasks.index_core_plays import index_core_play
+from src.tasks.index_solana_plays import get_latest_slot
 from src.utils.prometheus_metric import save_duration_metric
 from src.utils.session_manager import SessionManager
 
@@ -24,12 +25,13 @@ def _index_core_txs(
     core: CoreClient,
     challenge_bus: ChallengeEventBus,
     block: BlockResponse,
+    should_index_plays: bool,
 ):
     # TODO: parallelize?
     for tx in block.transactions:
         # Check which type of transaction is currently set
         transaction_type = tx.WhichOneof("transaction")
-        if transaction_type == "plays":
+        if transaction_type == "plays" and should_index_plays:
             index_core_play(
                 session=session,
                 core=core,
@@ -53,6 +55,11 @@ def _index_core_txs(
 
 def _index_core(db: SessionManager) -> Optional[BlockResponse]:
     core = get_core_instance(db)
+    latest_processed_slot = get_latest_slot(db)
+
+    should_index_plays = False
+    if latest_processed_slot > get_sol_cutover():
+        should_index_plays = True
 
     # TODO: cache node info
     node_info = core.get_node_info()
@@ -88,7 +95,11 @@ def _index_core(db: SessionManager) -> Optional[BlockResponse]:
 
         challenge_bus: ChallengeEventBus = index_core.challenge_event_bus
         _index_core_txs(
-            session=session, core=core, challenge_bus=challenge_bus, block=block
+            session=session,
+            core=core,
+            challenge_bus=challenge_bus,
+            block=block,
+            should_index_plays=should_index_plays,
         )
         # if first block there's no parent hash
         parenthash = latest_indexed_block.blockhash if latest_indexed_block else None
