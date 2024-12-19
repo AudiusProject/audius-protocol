@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useCallback, useState } from 'react'
 
 import { Button, Flex, Box, Text } from '@audius/harmony'
 import cn from 'classnames'
@@ -27,12 +27,14 @@ type MetaMaskModalProps = {
   configured?: boolean
   onClickReadConfig: () => void
   onClickBack: () => void
+  onClickContinue: () => void
 }
 
 export const MetaMaskModal = ({
   open,
   onClickReadConfig,
-  onClickBack
+  onClickBack,
+  onClickContinue
 }: MetaMaskModalProps) => {
   const [submitting, setSubmitting] = useState(false)
   const [accessError, setAccessError] = useState(false)
@@ -44,9 +46,10 @@ export const MetaMaskModal = ({
     setConfigureError(false)
   }
 
-  const onClickContinue = async () => {
+  const handleClickContinue = useCallback(async () => {
     resetState()
     setSubmitting(true)
+    onClickContinue()
     try {
       await window.ethereum?.enable()
     } catch (err) {
@@ -56,7 +59,7 @@ export const MetaMaskModal = ({
     // TODO: Fix MM auth
     // https://github.com/AudiusProject/audius-protocol/pull/10392
     setConfigureError(true)
-  }
+  }, [onClickContinue])
 
   const onModalClick = (e: React.MouseEvent<HTMLDivElement>) => {
     e.stopPropagation()
@@ -93,7 +96,7 @@ export const MetaMaskModal = ({
           <Button
             variant='secondary'
             isLoading={submitting}
-            onClick={onClickContinue}
+            onClick={handleClickContinue}
             fullWidth
           >
             {messages.continueOption}
