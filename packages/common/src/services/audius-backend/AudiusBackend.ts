@@ -1182,13 +1182,9 @@ export const audiusBackend = ({
 
     try {
       const checksumWallet = getAddress(address)
-      // if (bustCache) {
-      //   audiusLibs.ethContracts.AudiusTokenClient.bustCache()
-      // }
-      // const balance: bigint =
-      //   await audiusLibs.ethContracts.AudiusTokenClient.balanceOf(
-      //     checksumWallet
-      //   )
+      const balance = await sdk.services.audiusTokenClient.balanceOf({
+        address: checksumWallet
+      })
       const delegatedBalance =
         await sdk.services.delegateManagerClient.contract.getTotalDelegatorStake(
           { delegatorAddress: checksumWallet }
@@ -1198,7 +1194,7 @@ export const audiusBackend = ({
           account: checksumWallet
         })
 
-      return AUDIO(delegatedBalance + stakedBalance).value
+      return AUDIO(balance + delegatedBalance + stakedBalance).value
     } catch (e) {
       reportError({ error: e as Error })
       console.error(e)
