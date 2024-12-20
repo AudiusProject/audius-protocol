@@ -46,15 +46,17 @@ Without port `26656` open, the node can still download blocks and query the bloc
 
 ### TLS
 
-To disable TLS, set `DISABLE_TLS=true` in your environment.
+TLS is enabled by default for registered nodes. To disable TLS, set `AUDIUSD_TLS_DISABLED=true` in your environment.
 
-TLS is enabled by default for registered nodes. The `audiusd` binary will automatically obtain a certificate using Let's Encrypt. This process takes roughly 60 seconds and occurs on the first boot only.
+The `audiusd` binary will automatically obtain a certificate using Let's Encrypt. This process takes roughly 60 seconds and occurs on the first boot only.
 
 For this to function correctly, the following conditions must be met:
 - Your service must be publicly accessible via the URL specified in the `creatorNodeEndpoint` or `audius_discprov_url` environment variable.
 - Your service must be reachable on both port `:80` and port `:443`
 
 **CLOUDFLARE PROXY**
+
+> TODO: Support self signed certs.
 
 If you are using Cloudflare Proxy, and want to use auto TLS, you will need to start with DNS-only mode:
    - Configure Cloudflare in DNS-only mode initially (not proxied)

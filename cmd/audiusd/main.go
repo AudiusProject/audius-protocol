@@ -39,6 +39,13 @@ type proxyConfig struct {
 	target string
 }
 
+type serverConfig struct {
+	httpPort   string
+	httpsPort  string
+	hostname   string
+	tlsEnabled bool
+}
+
 func main() {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
@@ -144,7 +151,6 @@ func setupHostUrl() *url.URL {
 	endpoints := []string{
 		os.Getenv("creatorNodeEndpoint"),
 		os.Getenv("audius_discprov_url"),
-		"http://localhost",
 	}
 
 	for _, ep := range endpoints {
@@ -163,6 +169,32 @@ func setupDelegateKeyPair(logger *common.Logger) {
 		os.Setenv("delegatePrivateKey", privKey)
 		os.Setenv("delegateOwnerWallet", ownerWallet)
 		logger.Infof("Generated and set delegate key pair: %s", ownerWallet)
+	}
+}
+
+func getEchoServerConfig(hostUrl *url.URL) serverConfig {
+	httpPort := getEnvString("AUDIUSD_HTTP_PORT", "80")
+	httpsPort := getEnvString("AUDIUSD_HTTPS_PORT", "443")
+	hostname := hostUrl.Hostname()
+
+	// TODO: Work out of the box for altego.net, but allow override
+	if hostname == "altego.net" && httpPort == "80" && httpsPort == "443" {
+		httpPort = "5000"
+	}
+
+	tlsEnabled := true
+	switch {
+	case os.Getenv("AUDIUSD_TLS_DISABLED") == "true":
+		tlsEnabled = false
+	case hasSuffix(hostname, []string{"localhost", "altego.net", "bdnodes.net", "staked.cloud"}):
+		tlsEnabled = false
+	}
+
+	return serverConfig{
+		httpPort:   httpPort,
+		httpsPort:  httpsPort,
+		hostname:   hostname,
+		tlsEnabled: tlsEnabled,
 	}
 }
 
@@ -198,19 +230,12 @@ func startEchoProxyWithOptionalTLS(hostUrl *url.URL, logger *common.Logger) erro
 		e.Any(proxy.path, echo.WrapHandler(httputil.NewSingleHostReverseProxy(target)))
 	}
 
-	httpPort := getEnvString("AUDIUSD_HTTP_PORT", "80")
-	httpsPort := getEnvString("AUDIUSD_HTTPS_PORT", "443")
+	config := getEchoServerConfig(hostUrl)
 
-	if shouldEnableTLS(hostUrl) {
-		return startWithTLS(e, httpPort, httpsPort, hostUrl, logger)
+	if config.tlsEnabled {
+		return startWithTLS(e, config.httpPort, config.httpsPort, hostUrl, logger)
 	}
-	return e.Start(":" + httpPort)
-}
-
-func shouldEnableTLS(hostUrl *url.URL) bool {
-	// TODO: config should be explicitly set
-	disableAutoTLS := []string{"altego.net", "bdnodes.net", "staked.cloud", "localhost"}
-	return !domainInTlds(hostUrl.Hostname(), disableAutoTLS) && os.Getenv("DISABLE_TLS") != "true"
+	return e.Start(":" + config.httpPort)
 }
 
 func startWithTLS(e *echo.Echo, httpPort, httpsPort string, hostUrl *url.URL, logger *common.Logger) error {
@@ -256,9 +281,9 @@ func getEnvString(key, defaultValue string) string {
 	return defaultValue
 }
 
-func domainInTlds(domain string, tlds []string) bool {
-	for _, tld := range tlds {
-		if domain == tld {
+func hasSuffix(domain string, suffixes []string) bool {
+	for _, suffix := range suffixes {
+		if strings.HasSuffix(domain, suffix) {
 			return true
 		}
 	}
