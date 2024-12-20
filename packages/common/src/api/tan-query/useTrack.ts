@@ -1,28 +1,30 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 
-import { useSdk } from './useSdk'
+import { useAppContext } from '~/context'
+
+import { QUERY_KEYS } from './queryKeys'
 
 type Config = {
   staleTime?: number
 }
 
 export const useTrack = (trackId: string, config?: Config) => {
-  const { data: sdk } = useSdk()
+  const { audiusSdk } = useAppContext()
   const queryClient = useQueryClient()
 
   return useQuery({
-    queryKey: ['track', trackId],
+    queryKey: [QUERY_KEYS.track, trackId],
     queryFn: async () => {
-      const { data } = await sdk!.full.tracks.getTrack({ trackId })
+      const { data } = await audiusSdk!.full.tracks.getTrack({ trackId })
 
       // Prime the user query cache with user data from the track
       if (data?.user) {
-        queryClient.setQueryData(['user', data.user.id], data.user)
+        queryClient.setQueryData([QUERY_KEYS.user, data.user.id], data.user)
       }
 
       return data
     },
     staleTime: config?.staleTime,
-    enabled: !!sdk && !!trackId
+    enabled: !!audiusSdk && !!trackId
   })
 }

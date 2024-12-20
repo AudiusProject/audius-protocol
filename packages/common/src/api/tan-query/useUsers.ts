@@ -1,23 +1,25 @@
 import { useQuery } from '@tanstack/react-query'
 
-import { useSdk } from './useSdk'
+import { useAppContext } from '~/context'
+
+import { QUERY_KEYS } from './queryKeys'
 
 type Config = {
   staleTime?: number
 }
 
 export const useUsers = (userIds: string[], config?: Config) => {
-  const { data: sdk } = useSdk()
+  const { audiusSdk } = useAppContext()
 
   return useQuery({
-    queryKey: ['users', userIds],
+    queryKey: [QUERY_KEYS.users, userIds],
     queryFn: async () => {
-      const { data } = await sdk!.full.users.getBulkUsers({
+      const { data } = await audiusSdk!.full.users.getBulkUsers({
         id: userIds
       })
       return data
     },
     staleTime: config?.staleTime,
-    enabled: !!sdk && userIds.length > 0
+    enabled: !!audiusSdk && userIds.length > 0
   })
 }

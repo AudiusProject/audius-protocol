@@ -1,9 +1,7 @@
 import { useState } from 'react'
 
+import { useTrack, useUpdateTrack } from '@audius/common/api'
 import { Button, Flex, Text, TextInput } from '@audius/harmony'
-
-import { useTrack } from 'hooks/useTrack'
-import { useUpdateTrack } from 'hooks/useUpdateTrack'
 
 type Props = {
   trackId: string
@@ -50,12 +48,8 @@ export const TestTrackUpdate = ({ trackId }: Props) => {
           Update Title
         </Button>
       </Flex>
-      {updateTrack.isError && (
-        <Text variant='error'>Error: {updateTrack.error.message}</Text>
-      )}
-      {updateTrack.isSuccess && (
-        <Text variant='success'>Successfully updated title!</Text>
-      )}
+      {updateTrack.isError && <Text>Error: {updateTrack.error.message}</Text>}
+      {updateTrack.isSuccess && <Text>Successfully updated title!</Text>}
     </Flex>
   )
 }

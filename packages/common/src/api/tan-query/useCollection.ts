@@ -1,19 +1,21 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 
-import { useSdk } from './useSdk'
+import { useAppContext } from '~/context'
+
+import { QUERY_KEYS } from './queryKeys'
 
 type Config = {
   staleTime?: number
 }
 
 export const useCollection = (collectionId: string, config?: Config) => {
-  const { data: sdk } = useSdk()
+  const { audiusSdk } = useAppContext()
   const queryClient = useQueryClient()
 
   return useQuery({
-    queryKey: ['collection', collectionId],
+    queryKey: [QUERY_KEYS.collection, collectionId],
     queryFn: async () => {
-      const { data } = await sdk!.full.playlists.getPlaylist({
+      const { data } = await audiusSdk!.full.playlists.getPlaylist({
         playlistId: collectionId
       })
       const collection = data?.[0]
@@ -22,7 +24,7 @@ export const useCollection = (collectionId: string, config?: Config) => {
         // Prime user data from collection owner
         if (collection.user) {
           queryClient.setQueryData(
-            ['user', collection.user.id],
+            [QUERY_KEYS.user, collection.user.id],
             collection.user
           )
         }
@@ -31,11 +33,14 @@ export const useCollection = (collectionId: string, config?: Config) => {
         collection.tracks?.forEach((track) => {
           if (track.id) {
             // Prime track data
-            queryClient.setQueryData(['track', track.id], track)
+            queryClient.setQueryData([QUERY_KEYS.track, track.id], track)
 
             // Prime user data from track owner
             if (track.user) {
-              queryClient.setQueryData(['user', track.user.id], track.user)
+              queryClient.setQueryData(
+                [QUERY_KEYS.user, track.user.id],
+                track.user
+              )
             }
           }
         })
@@ -44,6 +49,6 @@ export const useCollection = (collectionId: string, config?: Config) => {
       return collection
     },
     staleTime: config?.staleTime,
-    enabled: !!sdk && !!collectionId
+    enabled: !!audiusSdk && !!collectionId
   })
 }

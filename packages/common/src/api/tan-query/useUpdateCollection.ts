@@ -1,41 +1,46 @@
 import { Playlist, UpdatePlaylistRequest } from '@audius/sdk'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 
-import { useSdk } from './useSdk'
+import { useAppContext } from '~/context'
+
+import { QUERY_KEYS } from './queryKeys'
 
 type MutationContext = {
-  previousCollection: Playlist
+  previousCollection?: Playlist
 }
 
 export const useUpdateCollection = () => {
-  const { data: sdk } = useSdk()
+  const { audiusSdk } = useAppContext()
   const queryClient = useQueryClient()
 
   return useMutation({
     mutationFn: async (params: UpdatePlaylistRequest) => {
-      if (!sdk) throw new Error('SDK not initialized')
+      if (!audiusSdk) throw new Error('SDK not initialized')
 
-      const response = await sdk.playlists.updatePlaylist(params)
+      const response = await audiusSdk.playlists.updatePlaylist(params)
 
       return response
     },
     onMutate: async ({ playlistId, metadata }): Promise<MutationContext> => {
       // Cancel any outgoing refetches
       await queryClient.cancelQueries({
-        queryKey: ['collection', playlistId]
+        queryKey: [QUERY_KEYS.collection, playlistId]
       })
 
       // Snapshot the previous values
-      const previousCollection = queryClient.getQueryData([
-        'collection',
+      const previousCollection = queryClient.getQueryData<Playlist>([
+        QUERY_KEYS.collection,
         playlistId
       ])
 
       // Optimistically update collection
-      queryClient.setQueryData(['collection', playlistId], (old: any) => ({
-        ...old,
-        ...metadata
-      }))
+      queryClient.setQueryData(
+        [QUERY_KEYS.collection, playlistId],
+        (old: any) => ({
+          ...old,
+          ...metadata
+        })
+      )
 
       // Return context with the previous collection
       return { previousCollection }
@@ -49,7 +54,7 @@ export const useUpdateCollection = () => {
         )
       }
     },
-    onSettled: (_, __, { playlistId }) => {
+    onSettled: (_, __) => {
       // Always refetch after error or success to ensure cache is in sync with server
       // queryClient.invalidateQueries({ queryKey: ['collection', playlistId] })
     }

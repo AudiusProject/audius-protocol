@@ -1,9 +1,7 @@
 import { useState } from 'react'
 
+import { useCollection, useUpdateCollection } from '@audius/common/api'
 import { Button, Flex, Text, TextInput } from '@audius/harmony'
-
-import { useCollection } from 'hooks/useCollection'
-import { useUpdateCollection } from 'hooks/useUpdateCollection'
 
 type Props = {
   playlistId: string
@@ -53,11 +51,9 @@ export const TestCollectionUpdate = ({ playlistId }: Props) => {
         </Button>
       </Flex>
       {updateCollection.isError && (
-        <Text variant='error'>Error: {updateCollection.error.message}</Text>
+        <Text>Error: {updateCollection.error.message}</Text>
       )}
-      {updateCollection.isSuccess && (
-        <Text variant='success'>Successfully updated title!</Text>
-      )}
+      {updateCollection.isSuccess && <Text>Successfully updated title!</Text>}
     </Flex>
   )
 }

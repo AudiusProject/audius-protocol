@@ -1,6 +1,5 @@
+import { useCollection } from '@audius/common/api'
 import { Flex, Text } from '@audius/harmony'
-
-import { useCollection } from 'hooks/useCollection'
 
 type Props = {
   playlistId: string

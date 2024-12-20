@@ -1,6 +1,9 @@
+import { User } from '@audius/sdk'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 
-import { useSdk } from './useSdk'
+import { useAppContext } from '~/context'
+
+import { QUERY_KEYS } from './queryKeys'
 
 type UpdateUserMetadata = {
   name?: string
@@ -26,7 +29,7 @@ type MutationContext = {
 }
 
 export const useUpdateUser = () => {
-  const { data: sdk } = useSdk()
+  const { audiusSdk } = useAppContext()
   const queryClient = useQueryClient()
 
   return useMutation({
@@ -36,9 +39,9 @@ export const useUpdateUser = () => {
       profilePictureFile,
       coverArtFile
     }: UpdateUserParams) => {
-      if (!sdk) throw new Error('SDK not initialized')
+      if (!audiusSdk) throw new Error('SDK not initialized')
 
-      const response = await sdk.users.updateProfile({
+      const response = await audiusSdk.users.updateProfile({
         userId,
         metadata,
         profilePictureFile,
@@ -49,34 +52,40 @@ export const useUpdateUser = () => {
     },
     onMutate: async ({ userId, metadata }): Promise<MutationContext> => {
       // Cancel any outgoing refetches
-      await queryClient.cancelQueries({ queryKey: ['user', userId] })
-      await queryClient.cancelQueries({ queryKey: ['track'] })
-      await queryClient.cancelQueries({ queryKey: ['collection'] })
+      await queryClient.cancelQueries({ queryKey: [QUERY_KEYS.user, userId] })
+      await queryClient.cancelQueries({ queryKey: [QUERY_KEYS.track] })
+      await queryClient.cancelQueries({ queryKey: [QUERY_KEYS.collection] })
 
       // Snapshot the previous values
-      const previousUser = queryClient.getQueryData(['user', userId])
+      const previousUser = queryClient.getQueryData<User>([
+        QUERY_KEYS.user,
+        userId
+      ])
 
       // Optimistically update user
-      queryClient.setQueryData(['user', userId], (old: any) => ({
+      queryClient.setQueryData([QUERY_KEYS.user, userId], (old: any) => ({
         ...old,
         ...metadata
       }))
 
       // Optimistically update all tracks that contain this user
-      queryClient.setQueriesData({ queryKey: ['track'] }, (oldData: any) => {
-        if (!oldData?.user || oldData.user.id !== userId) return oldData
-        return {
-          ...oldData,
-          user: {
-            ...oldData.user,
-            ...metadata
+      queryClient.setQueriesData(
+        { queryKey: [QUERY_KEYS.track] },
+        (oldData: any) => {
+          if (!oldData?.user || oldData.user.id !== userId) return oldData
+          return {
+            ...oldData,
+            user: {
+              ...oldData.user,
+              ...metadata
+            }
           }
         }
-      })
+      )
 
       // Optimistically update all collections
       queryClient.setQueriesData(
-        { queryKey: ['collection'] },
+        { queryKey: [QUERY_KEYS.collection] },
         (oldData: any) => {
           if (!oldData) return oldData
 
@@ -121,21 +130,27 @@ export const useUpdateUser = () => {
     onError: (_err, { userId }, context?: MutationContext) => {
       // If the mutation fails, roll back user data
       if (context?.previousUser) {
-        queryClient.setQueryData(['user', userId], context.previousUser)
+        queryClient.setQueryData(
+          [QUERY_KEYS.user, userId],
+          context.previousUser
+        )
       }
 
       // Roll back all tracks that contain this user
-      queryClient.setQueriesData({ queryKey: ['track'] }, (oldData: any) => {
-        if (!oldData?.user || oldData.user.id !== userId) return oldData
-        return {
-          ...oldData,
-          user: context?.previousUser
+      queryClient.setQueriesData(
+        { queryKey: [QUERY_KEYS.track] },
+        (oldData: any) => {
+          if (!oldData?.user || oldData.user.id !== userId) return oldData
+          return {
+            ...oldData,
+            user: context?.previousUser
+          }
         }
-      })
+      )
 
       // Roll back all collections
       queryClient.setQueriesData(
-        { queryKey: ['collection'] },
+        { queryKey: [QUERY_KEYS.collection] },
         (oldData: any) => {
           if (!oldData) return oldData
 
@@ -168,7 +183,7 @@ export const useUpdateUser = () => {
         }
       )
     },
-    onSettled: (_, __, { userId }) => {
+    onSettled: (_, __) => {
       // Always refetch after error or success to ensure cache is in sync with server
       // queryClient.invalidateQueries({ queryKey: ['user', userId] })
     }

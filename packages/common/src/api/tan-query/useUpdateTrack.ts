@@ -1,41 +1,46 @@
-import { UpdateTrackRequest } from '@audius/sdk'
+import { Track, UpdateTrackRequest } from '@audius/sdk'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 
-import { useSdk } from './useSdk'
+import { useAppContext } from '~/context'
+
+import { QUERY_KEYS } from './queryKeys'
 
 type MutationContext = {
   previousTrack: any
 }
 
 export const useUpdateTrack = () => {
-  const { data: sdk } = useSdk()
+  const { audiusSdk } = useAppContext()
   const queryClient = useQueryClient()
 
   return useMutation({
     mutationFn: async (params: UpdateTrackRequest) => {
-      if (!sdk) throw new Error('SDK not initialized')
+      if (!audiusSdk) throw new Error('SDK not initialized')
 
-      const response = await sdk.tracks.updateTrack(params)
+      const response = await audiusSdk.tracks.updateTrack(params)
 
       return response
     },
     onMutate: async ({ trackId, metadata }): Promise<MutationContext> => {
       // Cancel any outgoing refetches
-      await queryClient.cancelQueries({ queryKey: ['track', trackId] })
-      await queryClient.cancelQueries({ queryKey: ['collection'] })
+      await queryClient.cancelQueries({ queryKey: [QUERY_KEYS.track, trackId] })
+      await queryClient.cancelQueries({ queryKey: [QUERY_KEYS.collection] })
 
       // Snapshot the previous values
-      const previousTrack = queryClient.getQueryData(['track', trackId])
+      const previousTrack = queryClient.getQueryData<Track>([
+        QUERY_KEYS.track,
+        trackId
+      ])
 
       // Optimistically update track
-      queryClient.setQueryData(['track', trackId], (old: any) => ({
+      queryClient.setQueryData([QUERY_KEYS.track, trackId], (old: any) => ({
         ...old,
         ...metadata
       }))
 
       // Optimistically update all collections that contain this track
       queryClient.setQueriesData(
-        { queryKey: ['collection'] },
+        { queryKey: [QUERY_KEYS.collection] },
         (oldData: any) => {
           if (!oldData?.tracks?.some((track: any) => track.id === trackId)) {
             return oldData
@@ -61,12 +66,15 @@ export const useUpdateTrack = () => {
     onError: (_err, { trackId }, context?: MutationContext) => {
       // If the mutation fails, roll back track data
       if (context?.previousTrack) {
-        queryClient.setQueryData(['track', trackId], context.previousTrack)
+        queryClient.setQueryData(
+          [QUERY_KEYS.track, trackId],
+          context.previousTrack
+        )
       }
 
       // Roll back all collections that contain this track
       queryClient.setQueriesData(
-        { queryKey: ['collection'] },
+        { queryKey: [QUERY_KEYS.collection] },
         (oldData: any) => {
           if (!oldData?.tracks?.some((track: any) => track.id === trackId)) {
             return oldData
@@ -81,7 +89,7 @@ export const useUpdateTrack = () => {
         }
       )
     },
-    onSettled: (_, __, { trackId }) => {
+    onSettled: (_, __) => {
       // Always refetch after error or success to ensure cache is in sync with server
       // queryClient.invalidateQueries({ queryKey: ['track', trackId] })
     }

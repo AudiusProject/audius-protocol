@@ -1,9 +1,7 @@
 import { useState } from 'react'
 
+import { useUpdateUser, useUser } from '@audius/common/api'
 import { Button, Flex, Text, TextInput } from '@audius/harmony'
-
-import { useUpdateUser } from 'hooks/useUpdateUser'
-import { useUser } from 'hooks/useUser'
 
 type Props = {
   userId: string
@@ -49,12 +47,8 @@ export const TestUserUpdate = ({ userId }: Props) => {
           Update Bio
         </Button>
       </Flex>
-      {updateUser.isError && (
-        <Text variant='error'>Error: {updateUser.error.message}</Text>
-      )}
-      {updateUser.isSuccess && (
-        <Text variant='success'>Successfully updated bio!</Text>
-      )}
+      {updateUser.isError && <Text>Error: {updateUser.error.message}</Text>}
+      {updateUser.isSuccess && <Text>Successfully updated bio!</Text>}
     </Flex>
   )
 }

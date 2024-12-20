@@ -1,6 +1,5 @@
+import { useTrack } from '@audius/common/api'
 import { Flex, Text } from '@audius/harmony'
-
-import { useTrack } from 'hooks/useTrack'
 
 type Props = {
   trackId: string

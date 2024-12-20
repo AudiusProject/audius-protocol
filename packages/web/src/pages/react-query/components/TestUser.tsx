@@ -1,6 +1,5 @@
+import { useUser } from '@audius/common/api'
 import { Flex, Text } from '@audius/harmony'
-
-import { useUser } from 'hooks/useUser'
 
 type Props = {
   userId: string

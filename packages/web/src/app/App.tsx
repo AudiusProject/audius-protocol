@@ -65,12 +65,16 @@ export const AppInner = () => {
           <Route exact path='/oauth/auth'>
             <OAuthLoginPage />
           </Route>
-          <Route path='/react-query'>
-            <ReactQueryTestPage />
-          </Route>
-          <Route path='/react-query-cache-prime'>
-            <ReactQueryCachePrimePage />
-          </Route>
+          {!IS_PRODUCTION ? (
+            <>
+              <Route path='/react-query'>
+                <ReactQueryTestPage />
+              </Route>
+              <Route path='/react-query-cache-prime'>
+                <ReactQueryCachePrimePage />
+              </Route>
+            </>
+          ) : null}
           <Route path={PRIVATE_KEY_EXPORTER_SETTINGS_PAGE}>
             <PrivateKeyExporterPage />
             <AppModal
