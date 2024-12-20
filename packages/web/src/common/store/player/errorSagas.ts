@@ -1,3 +1,4 @@
+import { Feature } from '@audius/common/models'
 import { playerActions } from '@audius/common/store'
 
 import { createErrorSagas } from 'utils/errorSagas'
@@ -14,7 +15,8 @@ const errorSagas = createErrorSagas<PlayerErrors>({
     error: action.error,
     trackId: action.trackId,
     info: action.info
-  })
+  }),
+  feature: Feature.Playback
 })
 
 export default errorSagas

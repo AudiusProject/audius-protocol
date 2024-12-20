@@ -129,7 +129,7 @@ function* fetchAudioTransactionsAsync() {
         .filter((tx) => tx !== null)
       yield* call(
         fetchUsers,
-        userIds.filter(removeNullable).map(parseInt),
+        userIds.filter(removeNullable).map((id) => parseInt(id)),
         undefined, // requiredFields
         false // forceRetrieveFromSource
       )

@@ -1,4 +1,8 @@
-import { Kind, type Track } from '@audius/common/models'
+import {
+  Kind,
+  type Track,
+  Feature
+} from '@audius/common/models'
 import { QueryParams } from '@audius/common/services'
 import {
   accountSelectors,
@@ -432,7 +436,14 @@ export function* handleAudioErrors() {
       if (streamObj?.mirrors && streamObj.mirrors.length + 1 > retries) {
         yield* put(play({ trackId, retries: retries + 1 }))
       } else {
-        yield* put(errorAction({ error, trackId, info: data }))
+        yield* put(
+          errorAction({
+            error,
+            trackId,
+            info: data,
+            feature: Feature.Playback
+          })
+        )
       }
     }
   }

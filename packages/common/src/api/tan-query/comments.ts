@@ -26,7 +26,7 @@ import {
   transformAndCleanList
 } from '~/adapters'
 import { useAudiusQueryContext } from '~/audius-query'
-import { Comment, ID, ReplyComment } from '~/models'
+import { Comment, Feature, ID, ReplyComment } from '~/models'
 import {
   incrementTrackCommentCount,
   setPinnedCommentId,
@@ -119,7 +119,8 @@ export const useGetCommentsByTrackId = ({
     onError: (error: Error) => {
       reportToSentry({
         error,
-        name: 'Comments'
+        name: 'Comments',
+        feature: Feature.Comments
       })
       toast({ content: messages.loadError('comments') })
     },
@@ -142,7 +143,8 @@ export const useGetCommentById = (commentId: ID) => {
     onError: (error: Error) => {
       reportToSentry({
         error,
-        name: 'Comments'
+        name: 'Comments',
+        feature: Feature.Comments
       })
       toast({ content: messages.loadError('comments') })
     },
@@ -310,7 +312,8 @@ export const useGetCommentRepliesById = ({
       onError: (error: Error) => {
         reportToSentry({
           error,
-          name: 'Comments'
+          name: 'Comments',
+          feature: Feature.Comments
         })
         toast({ content: messages.loadError('replies') })
       },
@@ -419,7 +422,8 @@ export const usePostComment = () => {
       reportToSentry({
         error,
         additionalInfo: args,
-        name: 'Comments'
+        name: 'Comments',
+        feature: Feature.Comments
       })
       // Undo comment count change
       subtractCommentCount(dispatch, queryClient, trackId)
@@ -488,7 +492,8 @@ export const useReactToComment = () => {
       reportToSentry({
         error,
         additionalInfo: args,
-        name: 'Comments'
+        name: 'Comments',
+        feature: Feature.Comments
       })
       // Toast standard error message
       dispatch(toast({ content: messages.mutationError('reacting to') }))
@@ -567,7 +572,8 @@ export const usePinComment = () => {
       reportToSentry({
         error,
         additionalInfo: args,
-        name: 'Comments'
+        name: 'Comments',
+        feature: Feature.Comments
       })
       // Toast standard error message
       dispatch(toast({ content: messages.mutationError('pinning') }))
@@ -664,7 +670,8 @@ export const useDeleteComment = () => {
       reportToSentry({
         error,
         additionalInfo: args,
-        name: 'Comments'
+        name: 'Comments',
+        feature: Feature.Comments
       })
       // Undo the comment count change
       addCommentCount(dispatch, queryClient, trackId)
@@ -736,7 +743,8 @@ export const useEditComment = () => {
       reportToSentry({
         error,
         additionalInfo: args,
-        name: 'Comments'
+        name: 'Comments',
+        feature: Feature.Comments
       })
       // Toast standard error message
       dispatch(toast({ content: messages.mutationError('editing') }))
@@ -817,7 +825,8 @@ export const useReportComment = () => {
       reportToSentry({
         error,
         additionalInfo: args,
-        name: 'Comments'
+        name: 'Comments',
+        feature: Feature.Comments
       })
       // Generic toast error
       dispatch(toast({ content: messages.mutationError('reporting') }))
@@ -910,7 +919,8 @@ export const useMuteUser = () => {
       reportToSentry({
         error,
         additionalInfo: args,
-        name: 'Comments'
+        name: 'Comments',
+        feature: Feature.Comments
       })
       // Generic toast error
       dispatch(toast({ content: messages.muteUserError }))
@@ -979,7 +989,8 @@ export const useUpdateTrackCommentNotificationSetting = () => {
       reportToSentry({
         error,
         additionalInfo: args,
-        name: 'Comments'
+        name: 'Comments',
+        feature: Feature.Comments
       })
       dispatch(toast({ content: messages.muteUserError }))
 
@@ -1028,7 +1039,8 @@ export const useUpdateCommentNotificationSetting = () => {
       reportToSentry({
         error,
         additionalInfo: args,
-        name: 'Comments'
+        name: 'Comments',
+        feature: Feature.Comments
       })
       dispatch(
         toast({ content: messages.updateCommentNotificationSettingError })
