@@ -15,6 +15,7 @@ import (
 	"github.com/AudiusProject/audius-protocol/pkg/logger"
 	"github.com/cometbft/cometbft/crypto/ed25519"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
+	geth_common "github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
@@ -137,6 +138,30 @@ func (s *Server) isDevEnvironment() bool {
 	return s.config.Environment == "dev" || s.config.Environment == "sandbox"
 }
 
+func (s *Server) getAllNodesForEthAddress() ([]*big.Int, error) {
+	ids := []*big.Int{}
+
+	spf, err := s.contracts.GetServiceProviderFactoryContract()
+	if err != nil {
+		return ids, fmt.Errorf("could not get service provider factory: %v", err)
+	}
+
+	addr := geth_common.HexToAddress(s.config.WalletAddress)
+	discoverySPIDs, err := spf.GetServiceProviderIdsFromAddress(nil, addr, contracts.DiscoveryNode)
+	if err != nil {
+		return ids, fmt.Errorf("could not get sp ids: %v", err)
+	}
+	ids = append(ids, discoverySPIDs...)
+
+	contentSPIDs, err := spf.GetServiceProviderIdsFromAddress(nil, addr, contracts.ContentNode)
+	if err != nil {
+		return ids, fmt.Errorf("could not get sp ids: %v", err)
+	}
+	ids = append(ids, contentSPIDs...)
+
+	return ids, nil
+}
+
 func (s *Server) registerSelfOnComet(ethBlock, spID string) error {
 	for _, invalidNode := range s.config.BlacklistedPeers {
 		if invalidNode == s.config.ProposerAddress {
@@ -164,6 +189,16 @@ func (s *Server) registerSelfOnComet(ethBlock, spID string) error {
 	serviceType, err := contracts.ServiceType(s.config.NodeType)
 	if err != nil {
 		return fmt.Errorf("invalid node type: %v", err)
+	}
+
+	spIDs, err := s.getAllNodesForEthAddress()
+	if err != nil {
+		return fmt.Errorf("could not get all spids: %v", err)
+	}
+
+	if len(spIDs) > 1 {
+		logger.Errorf("more than one node registered for  %s, not registering on comet")
+		return nil
 	}
 
 	registrationTx := &core_proto.ValidatorRegistration{
