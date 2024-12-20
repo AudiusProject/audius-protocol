@@ -14,4 +14,6 @@ export type ExpandableNavItemProps = WithCSS<{
   defaultIsOpen?: boolean
   /** Nested items to render when the folder is open. */
   nestedItems?: ReactNode
+  /** Whether the right icon should persist regardless of the open state. */
+  shouldPersistRightIcon?: boolean
 }>

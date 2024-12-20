@@ -36,6 +36,7 @@ export const ExpandableNavItem = ({
   rightIcon,
   defaultIsOpen = false,
   nestedItems,
+  shouldPersistRightIcon = false,
   ...props
 }: ExpandableNavItemProps) => {
   const [isOpen, setIsOpen] = useState(defaultIsOpen)
@@ -97,7 +98,7 @@ export const ExpandableNavItem = ({
               {label}
             </Text>
           </Flex>
-          {isOpen ? rightIcon : null}
+          {isOpen || shouldPersistRightIcon ? rightIcon : null}
         </Flex>
       </Flex>
       {isOpen && nestedItems ? (
