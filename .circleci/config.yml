@@ -319,7 +319,6 @@ workflows:
           base-revision: main
           config-path: ../workspace/.circleci/continue_config.yml
           mapping: |
-            core/.* run-core-workflow true
             comms/.* run-discovery-workflow true
             packages/identity-service/.* run-identity-workflow true
             packages/identity-service/.* run-integration-workflow true
@@ -363,8 +362,6 @@ workflows:
             cmd/.* run-audiusd-workflow true
             pkg/.* run-creator-workflow true
             cmd/.* run-creator-workflow true
-            pkg/.* run-core-workflow true
-            cmd/.* run-core-workflow true
           requires:
             - generate-config
             - init
@@ -420,8 +417,6 @@ workflows:
             cmd/.* run-audiusd-workflow true
             pkg/.* run-creator-workflow true
             cmd/.* run-creator-workflow true
-            pkg/.* run-core-workflow true
-            cmd/.* run-core-workflow true
           requires:
             - generate-config
             - init

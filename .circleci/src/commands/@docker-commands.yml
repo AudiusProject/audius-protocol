@@ -35,7 +35,6 @@ docker-tag-images:
           'discovery-provider',
           'creator-node',
           'identity-service',
-          'core',
           'all'
         ]
   steps:
@@ -66,9 +65,6 @@ docker-tag-images:
           identity=(
             identity-service
           )
-          core=(
-            core
-          )
 
           case "<< parameters.service >>" in
             discovery-provider)
@@ -80,15 +76,11 @@ docker-tag-images:
             identity-service)
               images=( "${identity[@]}" )
               ;;
-            core)
-              images=( "${core[@]}" )
-              ;;
             all)
               images=(
                 "${discovery[@]}"
                 "${creator[@]}"
                 "${identity[@]}"
-                "${core[@]}"
               )
               ;;
             *)
