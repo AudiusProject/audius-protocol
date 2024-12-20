@@ -1,8 +1,4 @@
-import {
-  Kind,
-  type Track,
-  Feature
-} from '@audius/common/models'
+import { Kind, type Track, Feature } from '@audius/common/models'
 import { QueryParams } from '@audius/common/services'
 import {
   accountSelectors,
