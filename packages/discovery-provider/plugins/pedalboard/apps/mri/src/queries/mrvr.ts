@@ -67,11 +67,7 @@ const MrvrCbsHeader: (keyof MrvrCbs)[] = [
 // gathers data from a month period prior to the provided date.
 // formats it into csv format compatible with the mri spec
 // publishes it to all the provided s3 configs
-export const mrvr = async (
-  db: Knex,
-  s3s: S3Config[],
-  date: Date
-): Promise<void> => {
+export const mrvr = async (db: Knex, date: Date): Promise<void> => {
   // Get exchange rate from usd to eur for CBS reporting
   const usdToEurRate = await fetch(
     'https://api.frankfurter.app/latest?base=USD'
@@ -252,11 +248,11 @@ export const mrvr = async (
     const now = new Date()
     // YYYYMM_Audius_yyyymmddThhmmss_summary.csv
     // YYMM = Year and Month of usage, YYYYMMDD = time of generation
-    const fileName = `${getYearMonth(start)}_Audius_${formatDateISO(
-      now
-    )}_summary`
+    const fileName = `inputs/revenue/${getYearMonth(
+      start
+    )}_Audius_${formatDateISO(now)}_summary.csv`
 
-    const results = await publish(logger, s3s, mrvrCbsCsv, fileName)
+    const results = await publish(logger, mrvrCbsCsv, fileName)
     results.forEach((objUrl) =>
       logger.info(
         { objUrl, records: mrvrCbsCsv.length },

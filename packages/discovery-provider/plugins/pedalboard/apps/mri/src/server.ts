@@ -6,10 +6,7 @@ import { S3Config } from './s3'
 import { udr } from './queries/udr'
 import { mrvr } from './queries/mrvr'
 
-export const webServer = (
-  db: Knex,
-  s3s: { clmS3s: S3Config[]; udrS3s: S3Config[]; mrvrS3s: S3Config[] }
-): Application => {
+export const webServer = (db: Knex): Application => {
   const app = express()
 
   app.get('/health_check', (_, res) => {
@@ -42,7 +39,7 @@ export const webServer = (
         return res.status(400).send('invalid date format')
       }
 
-      await clm(db, s3s.clmS3s, parsedDate)
+      await clm(db, parsedDate)
     } catch (e) {
       logger.error({ e }, 'error in record request')
       return res.status(500).send()
@@ -54,7 +51,7 @@ export const webServer = (
     try {
       const yesterday = new Date()
       yesterday.setDate(yesterday.getDate() - 1)
-      await clm(db, s3s.clmS3s, yesterday)
+      await clm(db, yesterday)
     } catch (e) {
       logger.error({ e }, 'error in record request')
       return res.status(500).send()
@@ -86,7 +83,7 @@ export const webServer = (
         return res.status(400).send('invalid date format')
       }
 
-      await udr(db, s3s.udrS3s, parsedDate)
+      await udr(db, parsedDate)
     } catch (e) {
       logger.error({ e }, 'error in record request')
       return res.status(500).send()
@@ -97,7 +94,7 @@ export const webServer = (
   app.post('/udr/record_now', async (_, res) => {
     try {
       const today = new Date()
-      await udr(db, s3s.udrS3s, today)
+      await udr(db, today)
     } catch (e) {
       logger.error({ e }, 'error in record request')
       return res.status(500).send()
@@ -129,7 +126,7 @@ export const webServer = (
         return res.status(400).send('invalid date format')
       }
 
-      await mrvr(db, s3s.mrvrS3s, parsedDate)
+      await mrvr(db, parsedDate)
     } catch (e) {
       logger.error({ e }, 'error in record request')
       return res.status(500).send()
@@ -140,7 +137,7 @@ export const webServer = (
   app.post('/mrvr/record_now', async (_, res) => {
     try {
       const today = new Date()
-      await mrvr(db, s3s.mrvrS3s, today)
+      await mrvr(db, today)
     } catch (e) {
       logger.error({ e }, 'error in record request')
       return res.status(500).send()
