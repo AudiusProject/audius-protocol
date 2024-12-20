@@ -11,15 +11,12 @@ import { PurchaseVendor } from '~/models/PurchaseContent'
 import { Status } from '~/models/Status'
 import { BNUSDC, StringUSDC } from '~/models/Wallet'
 import {
-  createPaymentRouterRouteTransaction,
   createTransferToUserBankTransaction,
   findAssociatedTokenAddress,
-  getRecentBlockhash,
   getTokenAccountInfo,
   getUserbankAccountInfo,
   pollForTokenBalanceChange,
-  recoverUsdcFromRootWallet,
-  relayTransaction
+  recoverUsdcFromRootWallet
 } from '~/services/audius-backend/solana'
 import {
   getAccountUser,
@@ -27,13 +24,6 @@ import {
   getWalletAddresses
 } from '~/store/account/selectors'
 import { getContext } from '~/store/effects'
-import { getFeePayer } from '~/store/solana/selectors'
-import {
-  transactionCanceled as coinflowTransactionCanceled,
-  transactionFailed as coinflowTransactionFailed,
-  transactionSucceeded as coinflowTransactionSucceeded
-} from '~/store/ui/coinflow-modal/slice'
-import { coinflowOnrampModalActions } from '~/store/ui/modals/coinflow-onramp-modal'
 import { setVisibility } from '~/store/ui/modals/parentSlice'
 import { initializeStripeModal } from '~/store/ui/stripe-modal/slice'
 import { setUSDCBalance } from '~/store/wallet/slice'
@@ -170,49 +160,32 @@ function* transferStep({
   usePaymentRouter?: boolean
   memo: string
 }) {
-  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
-  const feePayer = yield* select(getFeePayer)
-  if (!feePayer) {
-    throw new Error('Missing feePayer unexpectedly')
-  }
-  const feePayerOverride = new PublicKey(feePayer)
   const sdk = yield* getSDK()
-  const recentBlockhash = yield* call(getRecentBlockhash, { sdk })
+  const { USDC_MINT_ADDRESS } = yield* getContext('env')
+  const mintPublicKey = new PublicKey(USDC_MINT_ADDRESS)
+  const mintDecimals = USDC(0).decimalPlaces
 
   yield* call(
     retry,
     async () => {
+      console.debug(`Starting transfer transaction...`)
       const transferTransaction = await createTransferToUserBankTransaction(
-        audiusBackendInstance,
+        sdk,
         {
           wallet,
           userBank,
-          mint: 'USDC',
+          mintPublicKey,
+          mintDecimals,
           amount,
-          memo,
-          feePayer: feePayerOverride,
-          recentBlockhash
+          memo
         }
       )
-      transferTransaction.partialSign(wallet)
-
-      console.debug(`Starting transfer transaction...`)
-      const { res, error } = await relayTransaction(audiusBackendInstance, {
-        transaction: transferTransaction
-      })
-
-      if (res) {
-        console.debug(`Transfer transaction succeeded: ${res}`)
-        return
-      }
-
-      console.debug(
-        `Transfer transaction stringified: ${JSON.stringify(
-          transferTransaction
-        )}`
+      transferTransaction.sign([wallet])
+      const res = await sdk.services.solanaClient.sendTransaction(
+        transferTransaction
       )
-      // Throw to retry
-      throw new Error(error ?? 'Unknown USDC user bank transfer error')
+
+      console.debug(`Transfer transaction succeeded: ${res}`)
     },
     {
       minTimeout: retryDelayMs,
@@ -235,7 +208,6 @@ function* doBuyUSDC({
 }: ReturnType<typeof onrampOpened>) {
   const reportToSentry = yield* getContext('reportToSentry')
   const { track, make } = yield* getContext('analytics')
-  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
   const solanaWalletService = yield* getContext('solanaWalletService')
   const config = yield* call(getBuyUSDCRemoteConfig)
   const sdk = yield* getSDK()
@@ -316,51 +288,6 @@ function* doBuyUSDC({
           memo: 'In-App $USDC Purchase: Link by Stripe',
           amount: newBalance
         })
-        break
-      }
-      case PurchaseVendor.COINFLOW: {
-        const feePayerAddress = yield* select(getFeePayer)
-        if (!feePayerAddress) {
-          throw new Error('Missing feePayer unexpectedly')
-        }
-
-        const amount = desiredAmount / 100.0
-        // Send the USDC through the payment router, sans purchase memo, and
-        // route everything to the user's user bank.
-        // Required as only the payment router program is allowed via coinflow.
-        const coinflowTransaction = yield* call(
-          createPaymentRouterRouteTransaction,
-          audiusBackendInstance,
-          {
-            sender: rootAccount.publicKey,
-            splits: {
-              [userBank.toBase58()]: new BN(USDC(amount).value.toString())
-            }
-          }
-        )
-        const serializedTransaction = coinflowTransaction
-          .serialize({ requireAllSignatures: false, verifySignatures: false })
-          .toString('base64')
-        yield* put(
-          coinflowOnrampModalActions.open({
-            amount,
-            serializedTransaction
-          })
-        )
-
-        const result = yield* race({
-          succeeded: take(coinflowTransactionSucceeded),
-          failed: take(coinflowTransactionFailed),
-          canceled: take(coinflowTransactionCanceled)
-        })
-
-        // Return early for failure or cancellation
-        if (result.canceled) {
-          throw new Error('Canceled Coinflow purchase')
-        }
-        if (result.failed) {
-          throw new Error('Coinflow transaction failed')
-        }
         break
       }
       default:

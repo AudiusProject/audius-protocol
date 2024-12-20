@@ -190,7 +190,10 @@ const TrendingPageContent = (props: TrendingPageContentProps) => {
   }
 
   const trendingLineups = [
-    <div key='weekly-trending-tracks' className={styles.lineupContainer}>
+    <div
+      key={`weekly-trending-tracks-${trendingGenre}`}
+      className={styles.lineupContainer}
+    >
       {trendingGenre === null ? (
         <div className={styles.bannerContainer}>
           <RewardsBanner bannerType='tracks' />
@@ -214,7 +217,10 @@ const TrendingPageContent = (props: TrendingPageContentProps) => {
         {...mainLineupProps}
       />
     </div>,
-    <div key='monthly-trending-tracks' className={styles.lineupContainer}>
+    <div
+      key={`monthly-trending-tracks-${trendingGenre}`}
+      className={styles.lineupContainer}
+    >
       <Lineup
         aria-label='monthly trending tracks'
         ordered
@@ -233,7 +239,10 @@ const TrendingPageContent = (props: TrendingPageContentProps) => {
         {...mainLineupProps}
       />
     </div>,
-    <div key='all-time-trending-tracks' className={styles.lineupContainer}>
+    <div
+      key={`all-time-trending-tracks-${trendingGenre}`}
+      className={styles.lineupContainer}
+    >
       <Lineup
         aria-label='all-time trending tracks'
         ordered

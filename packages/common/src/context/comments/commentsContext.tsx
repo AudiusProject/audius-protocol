@@ -223,7 +223,7 @@ export function CommentSectionProvider<NavigationProp>(
   )
 
   const commentSectionLoading =
-    (status === 'loading' || isFetching) && !isLoadingMorePages
+    (status === 'pending' || isFetching) && !isLoadingMorePages
 
   if (!track) {
     return null

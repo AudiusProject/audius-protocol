@@ -83,7 +83,7 @@ func (s *Server) onPeerTick() error {
 
 			oapiendpoint := parsedURL.Host
 			// don't retry because ticker will handle it
-			sdk, err := sdk.NewSdk(sdk.WithOapiendpoint(oapiendpoint), sdk.WithRetries(0))
+			sdk, err := sdk.NewSdk(sdk.WithOapiendpoint(oapiendpoint), sdk.WithRetries(0), sdk.WithUsehttps(s.config.UseHttpsForSdk))
 			if err != nil {
 				s.logger.Errorf("could not peer with %s", oapiendpoint)
 				return

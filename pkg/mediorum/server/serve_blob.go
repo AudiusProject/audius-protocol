@@ -341,7 +341,7 @@ func (ss *MediorumServer) logTrackListen(c echo.Context) {
 
 		trackID := fmt.Sprint(sig.Data.TrackId)
 
-		if err := ss.insertPlayRecord(&PlayEvent{
+		ss.playEventQueue.pushPlayEvent(&PlayEvent{
 			UserID:    userId,
 			TrackID:   trackID,
 			PlayTime:  parsedTime,
@@ -349,10 +349,7 @@ func (ss *MediorumServer) logTrackListen(c echo.Context) {
 			City:      geoData.City,
 			Country:   geoData.Country,
 			Region:    geoData.Region,
-		}); err != nil {
-			ss.logger.Error("could not insert play record", "error", err)
-			return
-		}
+		})
 	}()
 
 	buf, err := json.Marshal(body)

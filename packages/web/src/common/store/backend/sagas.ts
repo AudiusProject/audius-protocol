@@ -2,8 +2,7 @@ import {
   accountActions,
   reachabilityActions,
   reachabilitySelectors,
-  getContext,
-  accountSelectors
+  getContext
 } from '@audius/common/store'
 import {
   put,
@@ -19,7 +18,6 @@ import {
 import { REACHABILITY_LONG_TIMEOUT } from 'store/reachability/sagas'
 
 import * as backendActions from './actions'
-import { watchBackendErrors } from './errorSagas'
 import { getIsSettingUp, getIsSetup } from './selectors'
 const { getIsReachable } = reachabilitySelectors
 
@@ -73,49 +71,19 @@ export function* setupBackend() {
   }
 
   const fingerprintClient = yield* getContext('fingerprintClient')
-  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
 
   // Fire-and-forget init fp
   fingerprintClient.init()
 
-  // Check for cached local account so we can use it to initialize backend
-  const fetchLocalAccountResult = yield* race({
-    failure: take(accountActions.fetchAccountFailed),
-    success: take(accountActions.fetchAccountSucceeded)
-  })
-
-  let setupArgs = {}
-  if (fetchLocalAccountResult.success) {
-    const localUser = yield* select(accountSelectors.getAccountUser)
-    if (localUser) {
-      setupArgs = {
-        wallet: localUser.wallet,
-        userId: localUser.user_id
-      }
-    }
-  }
-
   // Start remote account fetch while we setup backend
   yield* put(accountActions.fetchAccount())
-
-  const { web3Error, libsError } = yield* call(
-    audiusBackendInstance.setup,
-    setupArgs
-  )
-
-  if (libsError) {
-    yield* put(accountActions.fetchAccountFailed({ reason: 'LIBS_ERROR' }))
-    yield* put(backendActions.setupBackendFailed())
-    yield* put(backendActions.libsError(libsError))
-    return
-  }
 
   const isReachable = yield* select(getIsReachable)
   // Bail out before success if we are now offline
   // This happens when we started the app with the device offline because
   // we optimistically assume the device is connected to optimize for the "happy path"
   if (!isReachable) return
-  yield* put(backendActions.setupBackendSucceeded(web3Error))
+  yield* put(backendActions.setupBackendSucceeded())
 }
 
 function* watchSetupBackend() {
@@ -141,5 +109,5 @@ function* init() {
 }
 
 export default function sagas() {
-  return [init, watchSetupBackend, watchBackendErrors, watchSetReachable]
+  return [init, watchSetupBackend, watchSetReachable]
 }

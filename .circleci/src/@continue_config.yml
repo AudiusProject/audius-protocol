@@ -20,9 +20,6 @@ parameters:
     type: boolean
     default: false
 
-  run-core-workflow:
-    type: boolean
-    default: false
   run-identity-workflow:
     type: boolean
     default: false

@@ -33,7 +33,7 @@ Make sure you save your API Secret somewhere safe — treat it like a password.
 If your project is in a Node.js environment, run this in your terminal:
 
 ```bash
-npm install web3 @audius/sdk
+npm install @audius/sdk
 ```
 
 [@audius/sdk on NPM](https://www.npmjs.com/package/@audius/sdk)
@@ -43,7 +43,6 @@ npm install web3 @audius/sdk
 Otherwise, include the SDK script tag in your web page. The Audius SDK will then be assigned to `window.audiusSdk`.
 
 ```html
-<script src="https://cdn.jsdelivr.net/npm/web3@latest/dist/web3.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@audius/sdk@latest/dist/sdk.min.js"></script>
 ```
 
@@ -136,30 +135,12 @@ Writing data (such as uploading or favoriting a track) is only possible if you p
 
 :::
 
-:::note
-
-If you are using the sdk in a browser environment you will need to do:
-
-```js
-import Web3 from 'web3'
-window.Web3 = Web3
-```
-
-:::
-
-:::note
-
-If your bundler doesn't automatically polyfill node libraries (like when using create-react-app v5) you will need to use the `web3` script tag instead of the `web3` npm package.
-
-:::
-
 ## Full HTML + JS example
 
 ```html title="index.html" showLineNumbers
 <!DOCTYPE html>
 <html>
   <head>
-    <script src="https://cdn.jsdelivr.net/npm/web3@latest/dist/web3.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@audius/sdk@latest/dist/sdk.min.js"></script>
     <script>
       const fn = async () => {

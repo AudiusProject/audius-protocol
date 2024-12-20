@@ -125,6 +125,8 @@ type MediorumServer struct {
 
 	geoIPdb      *maxminddb.Reader
 	geoIPdbReady chan struct{}
+
+	playEventQueue *PlayEventQueue
 }
 
 type PeerHealth struct {
@@ -301,6 +303,8 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 		Config:       config,
 		coreSdkReady: make(chan struct{}),
 		geoIPdbReady: make(chan struct{}),
+
+		playEventQueue: NewPlayEventQueue(),
 	}
 
 	routes := echoServer.Group(apiBasePath)

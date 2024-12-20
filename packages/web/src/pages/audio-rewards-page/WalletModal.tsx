@@ -298,7 +298,7 @@ const WalletModal = () => {
     chain: Chain
   ) => {
     const stringWei = weiToString(amount)
-    dispatch(inputSendData({ amount: stringWei, wallet, chain }))
+    dispatch(inputSendData({ amount: stringWei, wallet }))
   }
 
   const onConfirmSend = () => {

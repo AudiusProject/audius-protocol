@@ -104,6 +104,7 @@ type Config struct {
 	RunDownMigration     bool
 	SlaRollupInterval    int
 	ValidatorVotingPower int
+	UseHttpsForSdk       bool
 
 	/* Derived Config */
 	GenesisFile *types.GenesisDoc
@@ -198,6 +199,7 @@ func ReadConfig(logger *common.Logger) (*Config, error) {
 
 		cfg.SlaRollupInterval = mainnetRollupInterval
 		cfg.ValidatorVotingPower = mainnetValidatorVotingPower
+		cfg.UseHttpsForSdk = true
 
 	case "stage", "staging", "testnet":
 		cfg.PersistentPeers = getEnvWithDefault("persistentPeers", StagePersistentPeers)
@@ -207,6 +209,7 @@ func ReadConfig(logger *common.Logger) (*Config, error) {
 		}
 		cfg.SlaRollupInterval = testnetRollupInterval
 		cfg.ValidatorVotingPower = testnetValidatorVotingPower
+		cfg.UseHttpsForSdk = true
 
 	case "dev", "development", "devnet", "local", "sandbox":
 		cfg.PersistentPeers = getEnvWithDefault("persistentPeers", DevPersistentPeers)
