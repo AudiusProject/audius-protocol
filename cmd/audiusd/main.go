@@ -134,7 +134,7 @@ func runWithRecover(name string, ctx context.Context, logger *common.Logger, f f
 
 func setupLogger() *common.Logger {
 	var slogLevel slog.Level
-	switch os.Getenv("audiusd_log_level") {
+	switch os.Getenv("AUDIUSD_LOG_LEVEL") {
 	case "debug":
 		slogLevel = slog.LevelDebug
 	case "info":
@@ -205,30 +205,30 @@ func startEchoProxyWithOptionalTLS(hostUrl *url.URL, logger *common.Logger) erro
 	e := echo.New()
 	e.Use(middleware.Logger(), middleware.Recover())
 
-	// healthCheckResponse returns the standard health check response data
 	healthCheckResponse := func() map[string]interface{} {
 		return map[string]interface{}{
-			"status":    "ok",
 			"git":       os.Getenv("GIT_SHA"),
 			"hostname":  hostUrl.Hostname(),
-			"uptime":    time.Since(startTime).String(),
+			"status":    "ok",
 			"timestamp": time.Now().UTC(),
+			"uptime":    time.Since(startTime).String(),
 		}
 	}
 
-	// Minimal health check endpoint
 	e.GET("/", func(c echo.Context) error {
 		return c.JSON(http.StatusOK, healthCheckResponse())
 	})
 
-	// TODO: Proxy health check endpoint for core only discovery nodes
 	if os.Getenv("audius_discprov_url") != "" {
 		e.GET("/health_check", func(c echo.Context) error {
 			return c.JSON(http.StatusOK, healthCheckResponse())
 		})
 	}
 
-	// Reverse proxies to what were previously discreet containers
+	e.GET("/console", func(c echo.Context) error {
+		return c.Redirect(http.StatusMovedPermanently, "/console/overview")
+	})
+
 	proxies := []proxyConfig{
 		{"/console/*", "http://localhost:26659"},
 		{"/core/*", "http://localhost:26659"},
