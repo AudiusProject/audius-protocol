@@ -289,3 +289,9 @@ func (ac *AudiusContracts) GetServiceTypeManagerContract() (*gen.ServiceTypeMana
 	ac.ServiceTypeManager = contract
 	return contract, nil
 }
+
+/* Utilities */
+func (ac *AudiusContracts) GetAllRegisteredNodes() (string, error) {
+
+	return "", nil
+}
