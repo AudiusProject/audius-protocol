@@ -71,8 +71,6 @@ type CoreValidator struct {
 	EthBlock     string
 	NodeType     string
 	SpID         string
-	Jailed       pgtype.Bool
-	JailedUntil  pgtype.Int8
 }
 
 type EventAttribute struct {

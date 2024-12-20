@@ -306,30 +306,9 @@ func (s *Server) registerSelfOnEth() error {
 	return nil
 }
 
-func (s *Server) validateNotJailed(tx *core_proto.SignedTransaction_ValidatorRegistration) error {
-	db := s.db
-
-	cometAddr := tx.ValidatorRegistration.CometAddress
-
-	node, err := db.GetRegisteredNodeByCometAddress(context.Background(), cometAddr)
-	if err != nil {
-		if !errors.Is(err, pgx.ErrNoRows) {
-			return nil
-		}
-		return fmt.Errorf("validation db fail: %v", err)
-	}
-
-	jailed := node.Jailed
-	if jailed.Bool {
-		return fmt.Errorf("node %s is jailed and can't be re-registered", cometAddr)
-	}
-
-	return nil
-}
-
 // checks if the register node tx is valid
 // calls ethereum mainnet and validates signature to confirm node should be a validator
-func (s *Server) isValidRegisterNodeTx(_ctx context.Context, tx *core_proto.SignedTransaction) error {
+func (s *Server) isValidRegisterNodeTx(ctx context.Context, tx *core_proto.SignedTransaction) error {
 	sig := tx.GetSignature()
 	if sig == "" {
 		return fmt.Errorf("no signature provided for registration tx: %v", tx)
