@@ -579,7 +579,6 @@ function* sendRecoveryEmail({
       error: err instanceof Error ? err : new Error(err as string),
       name: 'Sign Up: Failed to send recovery email',
       additionalInfo: { handle, email, host },
-      level: ErrorLevel.Fatal,
       feature: Feature.SignUp
     })
   }
@@ -816,7 +815,6 @@ function* signUp() {
             } else {
               reportToSentry({
                 error,
-                level: ErrorLevel.Fatal,
                 name: 'Sign Up: Other Error',
                 additionalInfo: {
                   handle,
@@ -847,7 +845,6 @@ function* signUp() {
             const reportToSentry = yield* getContext('reportToSentry')
             reportToSentry({
               error,
-              level: ErrorLevel.Fatal,
               name: 'Sign Up: Unknown error in signUp saga',
               additionalInfo: { message, timeout },
               feature: Feature.SignUp
@@ -864,7 +861,6 @@ function* signUp() {
   } catch (error) {
     reportToSentry({
       error: error as Error,
-      level: ErrorLevel.Fatal,
       name: 'Sign Up: Unknown error in signUp saga',
       feature: Feature.SignUp
     })
