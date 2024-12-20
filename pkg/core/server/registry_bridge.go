@@ -341,6 +341,10 @@ func (s *Server) isValidRegisterNodeTx(ctx context.Context, tx *core_proto.Signe
 	onChainBlockNumber := info.BlockNumber.String()
 	onChainEndpoint := info.Endpoint
 
+	if err := s.isDuplicateDelegateOwnerWallet(onChainOwnerWallet); err != nil {
+		return err
+	}
+
 	data, err := proto.Marshal(vr)
 	if err != nil {
 		return fmt.Errorf("could not marshal registration tx: %v", err)
@@ -380,6 +384,19 @@ func (s *Server) isValidRegisterNodeTx(ctx context.Context, tx *core_proto.Signe
 
 	if vrPower != s.config.ValidatorVotingPower {
 		return fmt.Errorf("Invalid voting power '%d'", vrPower)
+	}
+
+	return nil
+}
+
+func (s *Server) isDuplicateDelegateOwnerWallet(delegateOwnerWallet string) error {
+	s.ethNodeMU.RLock()
+	defer s.ethNodeMU.RUnlock()
+
+	for _, node := range s.duplicateEthNodes {
+		if node.DelegateOwnerWallet.Hex() == delegateOwnerWallet {
+			return fmt.Errorf("delegateOwnerWallet %s duplicated, invalid registration", delegateOwnerWallet)
+		}
 	}
 
 	return nil

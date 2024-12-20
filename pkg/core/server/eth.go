@@ -2,12 +2,32 @@ package server
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/AudiusProject/audius-protocol/pkg/core/contracts"
 )
 
 func (s *Server) startEthNodeManager() error {
+	// Initial query with retries
+	maxRetries := 10
+	retryDelay := 2 * time.Second
+
+	for i := 0; i < maxRetries; i++ {
+		if err := s.gatherEthNodes(); err != nil {
+			s.logger.Errorf("error gathering eth nodes (attempt %d/%d): %v", i+1, maxRetries, err)
+			time.Sleep(retryDelay)
+			retryDelay *= 2
+		} else {
+			break
+		}
+		if i == maxRetries-1 {
+			return fmt.Errorf("failed to gather eth nodes after %d retries", maxRetries)
+		}
+	}
+
+	close(s.awaitEthNodesReady)
+
 	ticker := time.NewTicker(6 * time.Hour)
 	defer ticker.Stop()
 

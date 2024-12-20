@@ -43,6 +43,7 @@ var _ abcitypes.Application = (*Server)(nil)
 // initializes the cometbft node and the abci application which is the server itself
 // connects the local rpc instance to the abci application once successfully created
 func (s *Server) startABCI() error {
+	<-s.awaitEthNodesReady
 	s.logger.Info("starting abci")
 
 	cometConfig := s.cometbftConfig

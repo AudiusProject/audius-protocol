@@ -53,6 +53,7 @@ type Server struct {
 	awaitHttpServerReady chan struct{}
 	awaitGrpcServerReady chan struct{}
 	awaitRpcReady        chan struct{}
+	awaitEthNodesReady   chan struct{}
 }
 
 func NewServer(config *config.Config, cconfig *cconfig.Config, logger *common.Logger, pool *pgxpool.Pool, eth *ethclient.Client) (*Server, error) {
@@ -98,6 +99,7 @@ func NewServer(config *config.Config, cconfig *cconfig.Config, logger *common.Lo
 		awaitHttpServerReady: make(chan struct{}),
 		awaitGrpcServerReady: make(chan struct{}),
 		awaitRpcReady:        make(chan struct{}),
+		awaitEthNodesReady:   make(chan struct{}),
 	}
 
 	return s, nil
