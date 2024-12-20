@@ -163,13 +163,6 @@ func (s *Server) getAllNodesForEthAddress() ([]*big.Int, error) {
 }
 
 func (s *Server) registerSelfOnComet(ethBlock, spID string) error {
-	for _, invalidNode := range s.config.BlacklistedPeers {
-		if invalidNode == s.config.ProposerAddress {
-			s.logger.Errorf("i am in blacklist, not registering on comet: %s", invalidNode)
-			return nil
-		}
-	}
-
 	genValidators := s.config.GenesisFile.Validators
 	isGenValidator := false
 	for _, validator := range genValidators {
@@ -352,12 +345,6 @@ func (s *Server) validateNotJailed(tx *core_proto.SignedTransaction_ValidatorReg
 	db := s.db
 
 	cometAddr := tx.ValidatorRegistration.CometAddress
-
-	for _, blacklistAddr := range s.config.BlacklistedPeers {
-		if blacklistAddr == cometAddr {
-			return fmt.Errorf("invalid peer: %v", blacklistAddr)
-		}
-	}
 
 	node, err := db.GetRegisteredNodeByCometAddress(context.Background(), cometAddr)
 	if err != nil {
