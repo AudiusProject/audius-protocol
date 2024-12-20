@@ -114,12 +114,6 @@ export class WalletClient {
     ) {
       const balance = BigInt(ercAudioBalance.toString())
 
-      const libs = await this.audiusBackendInstance.getAudiusLibsTyped()
-      libs.wormholeClient?._getTransferTokensToEthWormholeParams(
-        sdk.services.audiusTokenClient.contractAddress,
-        new BN(balance.toString()),
-        account.address.toBase58()
-      )
       const permitTxHash = await sdk.services.audiusTokenClient.permit({
         args: {
           value: balance,

@@ -607,14 +607,6 @@ function* createGuestAccount(
           }
         )
 
-        const { accountWalletAddress: wallet } = yield* call([
-          authService,
-          authService.getWalletAddresses
-        ])
-        // TODO(LIBS):
-        // Figure out where to set owner wallet????
-        console.debug('wallet', wallet)
-
         if (!guestEmail) {
           throw new Error('No email set for guest account')
         }
