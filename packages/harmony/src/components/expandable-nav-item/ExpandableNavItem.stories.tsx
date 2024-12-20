@@ -18,7 +18,7 @@ type Story = StoryObj<typeof ExpandableNavItem>
 
 export const Default: Story = {
   args: {
-    children: 'Folder Name',
+    label: 'Folder Name',
     leftIcon: IconFolder,
     rightIcon: <IconKebabHorizontal color='subdued' />
   }
@@ -26,7 +26,7 @@ export const Default: Story = {
 
 export const WithIcons: Story = {
   args: {
-    children: 'Folder Name',
+    label: 'Folder Name',
     leftIcon: IconFolder,
     rightIcon: <IconKebabHorizontal color='subdued' />
   }
@@ -34,18 +34,14 @@ export const WithIcons: Story = {
 
 export const NestedFolders: Story = {
   args: {
-    children: 'Parent Folder',
+    label: 'Parent Folder',
     leftIcon: IconFolder,
     rightIcon: <IconKebabHorizontal color='subdued' />,
     defaultIsOpen: true,
     nestedItems: (
       <>
-        <ExpandableNavItem leftIcon={IconPlaylists}>
-          Nested Item 1
-        </ExpandableNavItem>
-        <ExpandableNavItem leftIcon={IconPlaylists}>
-          Nested Item 2
-        </ExpandableNavItem>
+        <ExpandableNavItem label='Nested Item 1' leftIcon={IconPlaylists} />
+        <ExpandableNavItem label='Nested Item 2' leftIcon={IconPlaylists} />
       </>
     )
   }
@@ -53,7 +49,7 @@ export const NestedFolders: Story = {
 
 export const Disabled: Story = {
   args: {
-    children: 'Disabled Folder',
+    label: 'Disabled Folder',
     leftIcon: IconFolder,
     rightIcon: <IconKebabHorizontal color='subdued' />,
     css: { opacity: 0.5, pointerEvents: 'none' }

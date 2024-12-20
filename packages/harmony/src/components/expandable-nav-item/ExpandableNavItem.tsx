@@ -31,7 +31,7 @@ const getStyles = (
 }
 
 export const ExpandableNavItem = ({
-  children,
+  label,
   leftIcon: LeftIcon,
   rightIcon,
   defaultIsOpen = false,
@@ -55,38 +55,50 @@ export const ExpandableNavItem = ({
   return (
     <Flex direction='column' {...props}>
       <Flex
-        w={240}
-        borderRadius='m'
-        p='s'
-        ph='l'
-        css={getStyles(theme, isOpen, isHovered)}
-        onMouseEnter={handleMouseEnter}
-        onMouseLeave={handleMouseLeave}
-        onClick={handleClick}
         alignItems='center'
         gap='s'
-        justifyContent='flex-start'
-        flex={1}
+        pl='s'
+        pr='s'
+        css={{
+          width: '240px',
+          cursor: 'pointer',
+          transition: `background-color ${theme.motion.hover}`
+        }}
       >
-        {IconComponent ? (
-          <Flex alignSelf='stretch' mt='auto' mb='auto' w={16}>
-            <IconComponent color='subdued' />
-          </Flex>
-        ) : null}
         <Flex
-          w={240}
-          mt='auto'
-          mb='auto'
           alignItems='center'
-          gap='s'
-          justifyContent='flex-start'
           flex={1}
+          gap='m'
+          p='s'
+          borderRadius='m'
+          css={getStyles(theme, isOpen, isHovered)}
+          onMouseEnter={handleMouseEnter}
+          onMouseLeave={handleMouseLeave}
+          onClick={handleClick}
         >
-          <Text variant='body' size='m' color='default' ellipses maxLines={1}>
-            {children}
-          </Text>
+          <Flex
+            alignItems='center'
+            gap='m'
+            flex={1}
+            css={{
+              maxWidth: '240px'
+            }}
+          >
+            {IconComponent ? <IconComponent color='default' size='m' /> : null}
+            <Text
+              variant='title'
+              size='l'
+              strength='weak'
+              lineHeight='single'
+              color='default'
+              ellipses
+              maxLines={1}
+            >
+              {label}
+            </Text>
+          </Flex>
+          {isOpen ? rightIcon : null}
         </Flex>
-        {isOpen ? rightIcon : null}
       </Flex>
       {isOpen && nestedItems ? (
         <Flex direction='column' pl='2xl'>
