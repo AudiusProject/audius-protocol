@@ -61,7 +61,7 @@ async function getAudioAnalysis(contentNodes: string[], track: Track) {
   // allow up to 5 attempts to get audio analysis for this track
   for (let i = 0; i < 5; i++) {
     // last 2 attempts will always be to the storeall node
-    let contentNode = "https://creatornode2.audius.co"
+    let contentNode = 'https://creatornode2.audius.co'
     let checkStoreAllNodeNext = i == 3
     // except for tracks with >= 3 errors, which attempt to check the storall node first
     if (i < 3 || track.audio_analysis_error_count! >= 3) {
@@ -71,7 +71,7 @@ async function getAudioAnalysis(contentNodes: string[], track: Track) {
     }
     // check storeall node first for any retried errors. allow 3 attempts
     if (track.audio_analysis_error_count! >= 3 && i < 3) {
-      contentNode = "https://creatornode2.audius.co"
+      contentNode = 'https://creatornode2.audius.co'
       checkStoreAllNodeNext = i < 2
     }
     try {
@@ -88,9 +88,7 @@ async function getAudioAnalysis(contentNodes: string[], track: Track) {
         const errorCountKey = isLegacyTrack
           ? 'error_count'
           : 'audio_analysis_error_count'
-        const statusKey = isLegacyTrack
-          ? 'status'
-          : 'audio_analysis_status'
+        const statusKey = isLegacyTrack ? 'status' : 'audio_analysis_status'
         const results = response.data[resultsKey]
         const errorCount = response.data[errorCountKey]
         const analysisStatus = response.data[statusKey]
@@ -265,7 +263,9 @@ export const backfillDiscovery = async (app: App<SharedData>) => {
     return
   }
   if (config.environment != 'prod') {
-    console.log('Discovery audio analysis backfill is only meant to run on prod. Terminating...')
+    console.log(
+      'Discovery audio analysis backfill is only meant to run on prod. Terminating...'
+    )
     return
   }
   const db = app.getDnDb()

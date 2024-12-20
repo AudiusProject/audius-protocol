@@ -142,13 +142,16 @@ export const fetchResources = async (
     .whereIn('user_id', Array.from(ids.users))
     .andWhere('is_current', true)
 
-  const users = userRows.reduce((acc, user) => {
-    acc[user.user_id] = {
-      ...user,
-      imageUrl: getUserProfileUrl(user)
-    }
-    return acc
-  }, {} as { [userId: number]: UserResource & { imageUrl: string } })
+  const users = userRows.reduce(
+    (acc, user) => {
+      acc[user.user_id] = {
+        ...user,
+        imageUrl: getUserProfileUrl(user)
+      }
+      return acc
+    },
+    {} as { [userId: number]: UserResource & { imageUrl: string } }
+  )
 
   const trackRows: TrackResource[] = await dnDb
     .select(
@@ -168,13 +171,16 @@ export const fetchResources = async (
     .andWhere('tracks.is_current', true)
     .andWhere('users.is_current', true)
     .andWhere('track_routes.is_current', true)
-  const tracks = trackRows.reduce((acc, track) => {
-    acc[track.track_id] = {
-      ...track,
-      imageUrl: getTrackCoverArt(track)
-    }
-    return acc
-  }, {} as { [trackId: number]: TrackResource & { imageUrl: string } })
+  const tracks = trackRows.reduce(
+    (acc, track) => {
+      acc[track.track_id] = {
+        ...track,
+        imageUrl: getTrackCoverArt(track)
+      }
+      return acc
+    },
+    {} as { [trackId: number]: TrackResource & { imageUrl: string } }
+  )
 
   const playlistRows: PlaylistResource[] = await dnDb
     .select(
@@ -199,13 +205,16 @@ export const fetchResources = async (
     .andWhere('users.is_current', true)
     .andWhere('playlist_routes.is_current', true)
 
-  const playlists = playlistRows.reduce((acc, playlist) => {
-    acc[playlist.playlist_id] = {
-      ...playlist,
-      imageUrl: getPlaylistImage(playlist)
-    }
-    return acc
-  }, {} as { [playlistId: number]: PlaylistResource & { imageUrl: string } })
+  const playlists = playlistRows.reduce(
+    (acc, playlist) => {
+      acc[playlist.playlist_id] = {
+        ...playlist,
+        imageUrl: getPlaylistImage(playlist)
+      }
+      return acc
+    },
+    {} as { [playlistId: number]: PlaylistResource & { imageUrl: string } }
+  )
 
   return { users, tracks, playlists }
 }
