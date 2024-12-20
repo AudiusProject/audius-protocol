@@ -311,6 +311,12 @@ func (s *Server) validateNotJailed(tx *core_proto.SignedTransaction_ValidatorReg
 
 	cometAddr := tx.ValidatorRegistration.CometAddress
 
+	for _, blacklistAddr := range s.config.BlacklistedPeers {
+		if blacklistAddr == cometAddr {
+			return fmt.Errorf("invalid peer: %v", blacklistAddr)
+		}
+	}
+
 	node, err := db.GetRegisteredNodeByCometAddress(context.Background(), cometAddr)
 	if err != nil {
 		if !errors.Is(err, pgx.ErrNoRows) {

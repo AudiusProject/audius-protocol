@@ -69,6 +69,14 @@ const (
 
 const dbUrlLocalPattern string = `^postgresql:\/\/\w+:\w+@(db|localhost|postgres):.*`
 
+// some nodes have duplicate privkeys which means they can cause peering issues
+// see more here: https://github.com/cometbft/cometbft/issues/4114
+var (
+	ProdPeerBlacklist  = []string{"", ""}
+	StagePeerBlacklist = []string{"2F13439B2EE4C34BAFE643F89575F40B7863A079", "7EDFC48A6A8CD0B088058E53E451E51A01260DD9"}
+	DevPeerBlacklist   = []string{}
+)
+
 var isLocalDbUrlRegex = regexp.MustCompile(dbUrlLocalPattern)
 
 var Version string
@@ -105,6 +113,7 @@ type Config struct {
 	SlaRollupInterval    int
 	ValidatorVotingPower int
 	UseHttpsForSdk       bool
+	BlacklistedPeers     []string
 
 	/* Derived Config */
 	GenesisFile *types.GenesisDoc
@@ -200,6 +209,7 @@ func ReadConfig(logger *common.Logger) (*Config, error) {
 		cfg.SlaRollupInterval = mainnetRollupInterval
 		cfg.ValidatorVotingPower = mainnetValidatorVotingPower
 		cfg.UseHttpsForSdk = true
+		cfg.BlacklistedPeers = ProdPeerBlacklist
 
 	case "stage", "staging", "testnet":
 		cfg.PersistentPeers = getEnvWithDefault("persistentPeers", StagePersistentPeers)
@@ -210,6 +220,7 @@ func ReadConfig(logger *common.Logger) (*Config, error) {
 		cfg.SlaRollupInterval = testnetRollupInterval
 		cfg.ValidatorVotingPower = testnetValidatorVotingPower
 		cfg.UseHttpsForSdk = true
+		cfg.BlacklistedPeers = StagePeerBlacklist
 
 	case "dev", "development", "devnet", "local", "sandbox":
 		cfg.PersistentPeers = getEnvWithDefault("persistentPeers", DevPersistentPeers)
@@ -223,6 +234,7 @@ func ReadConfig(logger *common.Logger) (*Config, error) {
 		}
 		cfg.SlaRollupInterval = devnetRollupInterval
 		cfg.ValidatorVotingPower = devnetValidatorVotingPower
+		cfg.BlacklistedPeers = DevPeerBlacklist
 	}
 
 	// Disable ssl for local postgres db connection
