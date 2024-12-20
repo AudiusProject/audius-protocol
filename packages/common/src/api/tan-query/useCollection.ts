@@ -1,6 +1,6 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 
-import { useAppContext } from '~/context'
+import { useAppContext } from '~/context/appContext'
 
 import { QUERY_KEYS } from './queryKeys'
 
