@@ -1,6 +1,8 @@
 package console
 
 import (
+	"os"
+
 	"github.com/labstack/echo/v4"
 )
 
@@ -12,6 +14,7 @@ type HealthCheckResponse struct {
 	ChainId           string   `json:"chainId"`
 	EthAddress        string   `json:"ethAddress"`
 	CometAddress      string   `json:"cometAddress"`
+	Git               string   `json:"git"`
 }
 
 func (con *Console) getHealth(c echo.Context) error {
@@ -29,6 +32,7 @@ func (con *Console) getHealth(c echo.Context) error {
 		ChainId:           con.state.chainId,
 		EthAddress:        con.state.ethAddress,
 		CometAddress:      con.state.cometAddress,
+		Git:               os.Getenv("GIT_SHA"),
 	}
 	c.Response().Header().Set("Access-Control-Allow-Origin", "*")
 	return c.JSON(200, res)
