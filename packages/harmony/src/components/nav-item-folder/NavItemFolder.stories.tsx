@@ -5,7 +5,7 @@ import { IconFolder, IconKebabHorizontal, IconPlaylists } from '../../icons'
 import { NavItemFolder } from './NavItemFolder'
 
 const meta: Meta<typeof NavItemFolder> = {
-  title: 'Components/Navigation/NavItemFolder',
+  title: 'Navigation/NavItemFolder',
   component: NavItemFolder,
   parameters: {
     layout: 'centered'
