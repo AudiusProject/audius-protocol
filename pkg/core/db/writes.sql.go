@@ -11,6 +11,22 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+const addJailedNode = `-- name: AddJailedNode :exec
+update core_validators
+set jailed = true, jailed_until = $2
+where comet_address = $1
+`
+
+type AddJailedNodeParams struct {
+	CometAddress string
+	JailedUntil  pgtype.Int8
+}
+
+func (q *Queries) AddJailedNode(ctx context.Context, arg AddJailedNodeParams) error {
+	_, err := q.db.Exec(ctx, addJailedNode, arg.CometAddress, arg.JailedUntil)
+	return err
+}
+
 const clearUncommittedSlaNodeReports = `-- name: ClearUncommittedSlaNodeReports :exec
 delete from sla_node_reports
 where sla_rollup_id is null
@@ -110,6 +126,17 @@ func (q *Queries) InsertTxStat(ctx context.Context, arg InsertTxStatParams) erro
 		arg.BlockHeight,
 		arg.CreatedAt,
 	)
+	return err
+}
+
+const unjailNode = `-- name: UnjailNode :exec
+update core_validators
+set jailed = false, jailed_until = 0
+where comet_address = $1
+`
+
+func (q *Queries) UnjailNode(ctx context.Context, cometAddress string) error {
+	_, err := q.db.Exec(ctx, unjailNode, cometAddress)
 	return err
 }
 

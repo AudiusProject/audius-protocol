@@ -117,3 +117,6 @@ select * from core_tx_results where block_id = $1 order by created_at desc;
 
 -- name: GetBlock :one
 select * from core_blocks where height = $1;
+
+-- name: GetJailedNodes :many
+select * from core_validators where jailed = true;
