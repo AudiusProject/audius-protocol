@@ -34,14 +34,3 @@ returning id;
 insert into core_tx_stats (tx_type, tx_hash, block_height, created_at)
 values ($1, $2, $3, $4)
 on conflict (tx_hash) do nothing;
-
--- name: AddJailedNode :exec
-update core_validators
-set jailed = true, jailed_until = $2
-where comet_address = $1;
-
--- name: UnjailNode :exec
-update core_validators
-set jailed = false, jailed_until = 0
-where comet_address = $1;
-
