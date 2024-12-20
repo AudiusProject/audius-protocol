@@ -140,7 +140,8 @@ func (s *Server) isDevEnvironment() bool {
 
 func (s *Server) registerSelfOnComet(ethBlock, spID string) error {
 	if err := s.isDuplicateDelegateOwnerWallet(s.config.WalletAddress); err != nil {
-		return fmt.Errorf("node is a duplicate, not registering on comet: %s", s.config.WalletAddress)
+		s.logger.Errorf("node is a duplicate, not registering on comet: %s", s.config.WalletAddress)
+		return nil
 	}
 
 	genValidators := s.config.GenesisFile.Validators
