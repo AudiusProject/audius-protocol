@@ -3,7 +3,7 @@ import type { ReactNode } from 'react'
 import type { WithCSS } from '../../foundations/theme'
 import type { IconComponent } from '../icon'
 
-export type NavItemFolderProps = WithCSS<{
+export type ExpandableNavItemProps = WithCSS<{
   /** The label text of the navigation item. */
   children: React.ReactNode
   /** The icon component to display on the left side of the label. */

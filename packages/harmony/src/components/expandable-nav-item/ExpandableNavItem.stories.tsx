@@ -2,11 +2,11 @@ import type { Meta, StoryObj } from '@storybook/react'
 
 import { IconFolder, IconKebabHorizontal, IconPlaylists } from '../../icons'
 
-import { NavItemFolder } from './NavItemFolder'
+import { ExpandableNavItem } from './ExpandableNavItem'
 
-const meta: Meta<typeof NavItemFolder> = {
-  title: 'Navigation/NavItemFolder',
-  component: NavItemFolder,
+const meta: Meta<typeof ExpandableNavItem> = {
+  title: 'Navigation/ExpandableNavItem',
+  component: ExpandableNavItem,
   parameters: {
     layout: 'centered'
   }
@@ -14,7 +14,7 @@ const meta: Meta<typeof NavItemFolder> = {
 
 export default meta
 
-type Story = StoryObj<typeof NavItemFolder>
+type Story = StoryObj<typeof ExpandableNavItem>
 
 export const Default: Story = {
   args: {
@@ -40,8 +40,12 @@ export const NestedFolders: Story = {
     defaultIsOpen: true,
     nestedItems: (
       <>
-        <NavItemFolder leftIcon={IconPlaylists}>Nested Item 1</NavItemFolder>
-        <NavItemFolder leftIcon={IconPlaylists}>Nested Item 2</NavItemFolder>
+        <ExpandableNavItem leftIcon={IconPlaylists}>
+          Nested Item 1
+        </ExpandableNavItem>
+        <ExpandableNavItem leftIcon={IconPlaylists}>
+          Nested Item 2
+        </ExpandableNavItem>
       </>
     )
   }

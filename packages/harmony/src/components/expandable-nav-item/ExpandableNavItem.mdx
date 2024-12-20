@@ -2,9 +2,9 @@ import { Canvas, Meta, Title, Primary, Controls } from '@storybook/blocks'
 
 import { Heading } from 'storybook/components'
 
-import * as NavItemFolderStories from './NavItemFolder.stories'
+import * as ExpandableNavItemStories from './ExpandableNavItem.stories'
 
-<Meta of={NavItemFolderStories} />
+<Meta of={ExpandableNavItemStories} />
 
 <Title />
 
@@ -14,9 +14,9 @@ import * as NavItemFolderStories from './NavItemFolder.stories'
 - [Use cases and examples](#use-cases-and-examples)
 
 <Heading>
-  ## Overview The NavItemFolder component is a collapsible navigation item that
-  can contain other items or nested folders. It's commonly used in navigation
-  menus and sidebars to organize content hierarchically.
+  ## Overview The ExpandableNavItem component is a collapsible navigation item
+  that can contain other items or nested folders. It's commonly used in
+  navigation menus and sidebars to organize content hierarchically.
 </Heading>
 
 <Primary />
@@ -29,15 +29,15 @@ import * as NavItemFolderStories from './NavItemFolder.stories'
 
 ### With Icons
 
-<Canvas of={NavItemFolderStories.WithIcons} />
+<Canvas of={ExpandableNavItemStories.WithIcons} />
 
 ### Nested Folders
 
-<Canvas of={NavItemFolderStories.NestedFolders} />
+<Canvas of={ExpandableNavItemStories.NestedFolders} />
 
 ### Disabled State
 
-<Canvas of={NavItemFolderStories.Disabled} />
+<Canvas of={ExpandableNavItemStories.Disabled} />
 
 ## Use cases and examples
 

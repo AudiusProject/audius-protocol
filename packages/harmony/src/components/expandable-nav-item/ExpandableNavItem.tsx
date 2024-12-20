@@ -7,7 +7,7 @@ import { IconCaretDown, IconCaretRight } from '../../icons'
 import { Flex } from '../layout/Flex'
 import { Text } from '../text'
 
-import type { NavItemFolderProps } from './types'
+import type { ExpandableNavItemProps } from './types'
 
 const getStyles = (
   theme: HarmonyTheme,
@@ -30,14 +30,14 @@ const getStyles = (
   }
 }
 
-export const NavItemFolder = ({
+export const ExpandableNavItem = ({
   children,
   leftIcon: LeftIcon,
   rightIcon,
   defaultIsOpen = false,
   nestedItems,
   ...props
-}: NavItemFolderProps) => {
+}: ExpandableNavItemProps) => {
   const [isOpen, setIsOpen] = useState(defaultIsOpen)
   const [isHovered, setIsHovered] = useState(false)
   const theme = useTheme()
