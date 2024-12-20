@@ -22,6 +22,7 @@ import (
 )
 
 func (s *Server) startRegistryBridge() error {
+	<-s.awaitEthNodesReady
 	<-s.awaitRpcReady
 	s.logger.Info("starting registry bridge")
 
@@ -138,6 +139,10 @@ func (s *Server) isDevEnvironment() bool {
 }
 
 func (s *Server) registerSelfOnComet(ethBlock, spID string) error {
+	if err := s.isDuplicateDelegateOwnerWallet(s.config.WalletAddress); err != nil {
+		return fmt.Errorf("node is a duplicate, not registering on comet: %s", s.config.WalletAddress)
+	}
+
 	genValidators := s.config.GenesisFile.Validators
 	isGenValidator := false
 	for _, validator := range genValidators {
