@@ -610,11 +610,10 @@ function* createGuestAccount(
         if (!guestEmail) {
           throw new Error('No email set for guest account')
         }
-        const { blockHash, blockNumber, metadata } = yield* call([
+        const { blockHash, blockNumber } = yield* call([
           sdk.users,
           sdk.users.createGuestAccount
         ])
-        console.debug('metadata', metadata)
         yield* call(confirmTransaction, blockHash, blockNumber)
         yield* call(fetchAccountAsync, { isSignUp: true })
 

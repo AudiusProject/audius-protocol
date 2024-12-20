@@ -1011,20 +1011,6 @@ export const audiusBackend = ({
   }
 
   /**
-   * Transfers the user's ERC20 AUDIO into SPL WAUDIO to their solana user bank account
-   * @param {BN} balance The amount of AUDIO to be transferred
-   * @returns {
-   *   txSignature: string
-   *   phase: string
-   *   error: error | null
-   *   logs: Array<string>
-   * }
-   */
-  async function transferAudioToWAudio(balance: BN) {
-    throw new Error('Not implemented')
-  }
-
-  /**
    * Fetches the SPL WAUDIO balance for the user's solana wallet address
    * @param {string} The solana wallet address
    * @returns {Promise<wAUDIO | null>} Returns the balance, 0 for non-existent token accounts
@@ -1234,7 +1220,6 @@ export const audiusBackend = ({
     signGatedContentRequest,
     signDiscoveryNodeRequest,
     signIdentityServiceRequest,
-    transferAudioToWAudio,
     instagramHandle,
     tiktokHandle,
     updateBrowserNotifications,
