@@ -93,7 +93,7 @@ export const udr = async (db: Knex, date: Date): Promise<void> => {
   const now = new Date()
   // Audius_Usage_YYMM_YYYYMMDDhhmmss.csv
   // YYMM = Year and Month of usage, YYYYMMDDhhmmss = time of generation
-  const fileName = `inputs/udr/Audius_Usage_${getYearMonthShorthand(
+  const fileName = `inputs/usage/Audius_Usage_${getYearMonthShorthand(
     start
   )}_${formatDateISO(now)}.csv`
 
