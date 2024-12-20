@@ -66,12 +66,5 @@ export const audiusBackendInstance = audiusBackend({
         window.addEventListener('WEB3_LOADED', onLoad)
       })
     }
-  },
-  wormholeConfig: {
-    ethBridgeAddress: env.ETH_BRIDGE_ADDRESS ?? undefined,
-    ethTokenBridgeAddress: env.ETH_TOKEN_BRIDGE_ADDRESS ?? undefined,
-    solBridgeAddress: env.SOL_BRIDGE_ADDRESS ?? undefined,
-    solTokenBridgeAddress: env.SOL_TOKEN_BRIDGE_ADDRESS ?? undefined,
-    wormholeRpcHosts: env.WORMHOLE_RPC_HOSTS ?? undefined
   }
 })

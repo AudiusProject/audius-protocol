@@ -122,14 +122,6 @@ type AudiusBackendSolanaConfig = Partial<{
   wormholeAddress: string
 }>
 
-type AudiusBackendWormholeConfig = Partial<{
-  ethBridgeAddress: string
-  ethTokenBridgeAddress: string
-  solBridgeAddress: string
-  solTokenBridgeAddress: string
-  wormholeRpcHosts: string
-}>
-
 type AudiusBackendParams = {
   claimDistributionContractAddress: Maybe<string>
   env: Env
@@ -167,7 +159,6 @@ type AudiusBackendParams = {
   waitForWeb3: () => Promise<void>
   web3NetworkId: Maybe<string>
   web3ProviderUrls: Maybe<string[]>
-  wormholeConfig: AudiusBackendWormholeConfig
 }
 
 export const audiusBackend = ({

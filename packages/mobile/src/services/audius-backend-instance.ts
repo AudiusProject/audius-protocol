@@ -58,12 +58,5 @@ export const audiusBackendInstance = audiusBackend({
   userNodeUrl: env.USER_NODE,
   web3NetworkId: env.WEB3_NETWORK_ID,
   web3ProviderUrls: (env.WEB3_PROVIDER_URL || '').split(','),
-  waitForWeb3: async () => {},
-  wormholeConfig: {
-    ethBridgeAddress: env.ETH_BRIDGE_ADDRESS ?? undefined,
-    ethTokenBridgeAddress: env.ETH_TOKEN_BRIDGE_ADDRESS ?? undefined,
-    solBridgeAddress: env.SOL_BRIDGE_ADDRESS ?? undefined,
-    solTokenBridgeAddress: env.SOL_TOKEN_BRIDGE_ADDRESS ?? undefined,
-    wormholeRpcHosts: env.WORMHOLE_RPC_HOSTS ?? undefined
-  }
+  waitForWeb3: async () => {}
 })
