@@ -33,7 +33,6 @@ const browserInternal = [
   '@noble/hashes/utils',
   'graceful-fs',
   'node-localstorage',
-  'web3',
   'xmlhttprequest'
 ]
 
@@ -121,7 +120,7 @@ export const outputConfigs = {
       }
     ],
     plugins: [
-      ignore(['web3', 'graceful-fs', 'node-localstorage']),
+      ignore(['graceful-fs', 'node-localstorage']),
       resolve({ extensions, preferBuiltins: true }),
       commonjs({ extensions }),
       alias({
@@ -152,7 +151,7 @@ export const outputConfigs = {
       }
     ],
     plugins: [
-      ignore(['web3', 'graceful-fs', 'node-localstorage']),
+      ignore(['graceful-fs', 'node-localstorage']),
       resolve({ extensions, preferBuiltins: false }),
       commonjs({
         extensions,
@@ -191,7 +190,7 @@ export const outputConfigs = {
       }
     ],
     plugins: [
-      ignore(['web3', 'graceful-fs', 'node-localstorage']),
+      ignore(['graceful-fs', 'node-localstorage']),
       resolve({ extensions, preferBuiltins: false }),
       commonjs({
         extensions,
@@ -215,16 +214,13 @@ export const outputConfigs = {
    * SDK Browser Distributable
    * Meant to be used directly in the browser without any module resolver
    * - Includes polyfills for node libraries
-   * - Includes all deps/dev deps except web3
+   * - Includes all deps/dev deps
    */
   sdkBrowserDistConfig: {
     input: 'src/sdk/sdkBrowserDist.ts',
     output: [
       {
         file: 'dist/sdk.min.js',
-        globals: {
-          web3: 'window.Web3'
-        },
         format: 'iife',
         esModule: false,
         sourcemap: true,
@@ -233,7 +229,7 @@ export const outputConfigs = {
       }
     ],
     plugins: [
-      ignore(['web3', 'graceful-fs', 'node-localstorage']),
+      ignore(['graceful-fs', 'node-localstorage']),
       resolve({ extensions, preferBuiltins: false, browser: true }),
       commonjs({
         extensions,
@@ -253,8 +249,7 @@ export const outputConfigs = {
       }),
       json(),
       pluginTypescript
-    ],
-    external: ['web3']
+    ]
   }
 }
 
