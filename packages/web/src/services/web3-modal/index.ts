@@ -43,8 +43,6 @@ export const loadWalletLink = async () => {
 
 export const createSession = async (config: Config): Promise<any> => {
   try {
-    const Web3 = window.Web3
-
     const WalletConnectProvider = await loadWalletConnect()
     const Bitski = await loadBitski()
     const WalletLink = await loadWalletLink()
@@ -120,8 +118,7 @@ export const createSession = async (config: Config): Promise<any> => {
 
     const provider = await web3Modal.connect()
 
-    const web3 = new Web3(provider)
-    return web3
+    return provider
   } catch (error) {
     const errorMessage = getErrorMessage(error)
     if (errorMessage === 'Modal closed by user') {

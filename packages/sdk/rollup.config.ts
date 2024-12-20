@@ -222,9 +222,6 @@ export const outputConfigs = {
     output: [
       {
         file: 'dist/sdk.min.js',
-        globals: {
-          web3: 'window.Web3'
-        },
         format: 'iife',
         esModule: false,
         sourcemap: true,

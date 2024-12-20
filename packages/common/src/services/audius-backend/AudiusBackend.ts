@@ -89,7 +89,6 @@ export interface PhantomProvider {
 }
 declare global {
   interface Window {
-    web3Loaded: boolean
     phantom: any
     solana: PhantomProvider
     Web3: any
@@ -156,7 +155,6 @@ type AudiusBackendParams = {
   setLocalStorageItem: (key: string, value: string) => Promise<void>
   solanaConfig: AudiusBackendSolanaConfig
   userNodeUrl: Maybe<string>
-  waitForWeb3: () => Promise<void>
   web3NetworkId: Maybe<string>
   web3ProviderUrls: Maybe<string[]>
 }
@@ -167,7 +165,6 @@ export const audiusBackend = ({
   nativeMobile,
   reportError,
   userNodeUrl,
-  waitForWeb3,
   env
 }: AudiusBackendParams) => {
   const currentDiscoveryProvider: Nullable<string> = null
@@ -1230,8 +1227,7 @@ export const audiusBackend = ({
     updatePushNotificationSettings,
     updateUserEvent,
     updateUserLocationTimezone,
-    userNodeUrl,
-    waitForWeb3
+    userNodeUrl
   }
 }
 

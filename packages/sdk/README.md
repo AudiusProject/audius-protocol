@@ -136,22 +136,6 @@ Writing data (such as uploading or favoriting a track) is only possible if you p
 
 :::
 
-:::note
-
-If you are using the sdk in a browser environment you will need to do:
-
-```js
-import Web3 from 'web3'
-window.Web3 = Web3
-```
-
-:::
-
-:::note
-
-If your bundler doesn't automatically polyfill node libraries (like when using create-react-app v5) you will need to use the `web3` script tag instead of the `web3` npm package.
-
-:::
 
 ## Full HTML + JS example
 
