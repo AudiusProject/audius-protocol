@@ -16,13 +16,14 @@ import {
   type AudiusWormholeConfig
 } from './types'
 
-const ONE_HOUR_IN_MS = 1000 * 60 * 60
+const ONE_HOUR_IN_S = 60 * 60
 
 export class AudiusWormholeClient {
+  public readonly contractAddress: Hex
+
   private readonly audiusWalletClient: AudiusWalletClient
   private readonly walletClient: WalletClient
   private readonly publicClient: PublicClient
-  private readonly contractAddress: Hex
 
   constructor(config: AudiusWormholeConfig) {
     this.audiusWalletClient = config.audiusWalletClient
@@ -38,7 +39,7 @@ export class AudiusWormholeClient {
         amount,
         recipientChain,
         recipient,
-        deadline = BigInt(Date.now() + ONE_HOUR_IN_MS),
+        deadline = BigInt(Math.round(Date.now() / 1000) + ONE_HOUR_IN_S),
         arbiterFee = BigInt(0)
       },
       ...other
@@ -69,7 +70,7 @@ export class AudiusWormholeClient {
         amount,
         recipientChain,
         recipient,
-        arbiterFee,
+        artbiterFee: arbiterFee,
         deadline,
         nonce
       },

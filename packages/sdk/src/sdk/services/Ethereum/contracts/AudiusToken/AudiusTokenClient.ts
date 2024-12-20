@@ -21,10 +21,11 @@ import {
 const ONE_HOUR_IN_MS = 1000 * 60 * 60
 
 export class AudiusTokenClient {
+  public readonly contractAddress: Hex
+
   private readonly audiusWalletClient: AudiusWalletClient
   private readonly walletClient: WalletClient
   private readonly publicClient: PublicClient
-  private readonly contractAddress: Hex
 
   constructor(config: AudiusTokenConfig) {
     this.audiusWalletClient = config.audiusWalletClient
