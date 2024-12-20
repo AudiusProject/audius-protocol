@@ -24,12 +24,6 @@ const {
 
 const SignOnPage = lazy(() => import('pages/sign-on-page'))
 const OAuthLoginPage = lazy(() => import('pages/oauth-login-page'))
-const ReactQueryTestPage = lazy(
-  () => import('pages/react-query/ReactQueryTestPage')
-)
-const ReactQueryCachePrimePage = lazy(
-  () => import('pages/react-query/ReactQueryCachePrimePage')
-)
 const PrivateKeyExporterPage = lazy(
   () => import('pages/private-key-exporter-page/PrivateKeyExporterPage')
 )
@@ -65,16 +59,6 @@ export const AppInner = () => {
           <Route exact path='/oauth/auth'>
             <OAuthLoginPage />
           </Route>
-          {!IS_PRODUCTION ? (
-            <>
-              <Route path='/react-query'>
-                <ReactQueryTestPage />
-              </Route>
-              <Route path='/react-query-cache-prime'>
-                <ReactQueryCachePrimePage />
-              </Route>
-            </>
-          ) : null}
           <Route path={PRIVATE_KEY_EXPORTER_SETTINGS_PAGE}>
             <PrivateKeyExporterPage />
             <AppModal
