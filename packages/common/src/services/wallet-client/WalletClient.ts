@@ -62,13 +62,12 @@ export class WalletClient {
   }: {
     ethAddress: string
   }): Promise<BNWei | null> {
-    return new BN(0) as BNWei
-    // const sdk = await this.audiusSdk()
-    // const balance = await this.audiusBackendInstance.getWAudioBalance({
-    //   ethAddress,
-    //   sdk
-    // })
-    // return balance as BNWei
+    const sdk = await this.audiusSdk()
+    const balance = await this.audiusBackendInstance.getWAudioBalance({
+      ethAddress,
+      sdk
+    })
+    return balance as BNWei
   }
 
   async getAssociatedTokenAccountInfo({ address }: { address: string }) {
