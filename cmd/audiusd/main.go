@@ -204,7 +204,10 @@ func startEchoProxyWithOptionalTLS(hostUrl *url.URL, logger *common.Logger) erro
 
 	// Minimal health check endpoint
 	e.GET("/", func(c echo.Context) error {
-		return c.JSON(http.StatusOK, map[string]string{"status": "ok"})
+		return c.JSON(http.StatusOK, map[string]interface{}{
+			"status": "ok",
+			"git":    os.Getenv("GIT_SHA"),
+		})
 	})
 
 	// Reverse proxies to what were previously discreet containers
