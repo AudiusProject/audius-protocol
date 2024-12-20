@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 
 import { useTheme, CSSObject } from '@emotion/react'
 
@@ -47,6 +47,11 @@ export const ExpandableNavItem = ({
   const handleMouseLeave = () => setIsHovered(false)
   const handleClick = () => setIsOpen(!isOpen)
 
+  const styles = useMemo(
+    () => getStyles(theme, isOpen, isHovered),
+    [theme, isOpen, isHovered]
+  )
+
   const IconComponent = isHovered
     ? isOpen
       ? IconCaretDown
@@ -72,7 +77,7 @@ export const ExpandableNavItem = ({
           gap='m'
           p='s'
           borderRadius='m'
-          css={getStyles(theme, isOpen, isHovered)}
+          css={styles}
           onMouseEnter={handleMouseEnter}
           onMouseLeave={handleMouseLeave}
           onClick={handleClick}
