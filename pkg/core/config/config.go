@@ -2,7 +2,6 @@ package config
 
 import (
 	"crypto/ecdsa"
-	"flag"
 	"fmt"
 	"log"
 	"os"
@@ -13,7 +12,6 @@ import (
 	"github.com/AudiusProject/audius-protocol/pkg/core/common"
 	"github.com/cometbft/cometbft/crypto/ed25519"
 	"github.com/cometbft/cometbft/types"
-	"github.com/joho/godotenv"
 )
 
 type NodeType = int
@@ -120,19 +118,6 @@ type Config struct {
 }
 
 func ReadConfig(logger *common.Logger) (*Config, error) {
-	// read in dotenv if passed in via flag
-	envFile := flag.String("env-file", "", ".env file to read for config")
-
-	flag.Parse()
-
-	// load dotenv file if passed in
-	if *envFile != "" {
-		logger.Infof("reading env from file %s", *envFile)
-		if err := godotenv.Load(*envFile); err != nil {
-			return nil, fmt.Errorf("dot env provided but couldn't load %v", err)
-		}
-	}
-
 	homeDir, err := os.UserHomeDir()
 	if err != nil {
 		log.Fatalf("Failed to get user home directory: %v", err)

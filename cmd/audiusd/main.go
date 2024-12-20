@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"encoding/hex"
-	"flag"
 	"fmt"
 	"log"
 	"log/slog"
@@ -57,10 +56,6 @@ func main() {
 	logger := setupLogger()
 	hostUrl := setupHostUrl()
 	setupDelegateKeyPair(logger)
-
-	// Clear any existing flags before running core
-	// TODO: we may want to share a flag set between audiusd, core, and mediorum
-	flag.CommandLine = flag.NewFlagSet(os.Args[0], flag.ExitOnError)
 
 	services := []struct {
 		name    string
