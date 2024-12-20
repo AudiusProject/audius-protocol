@@ -129,6 +129,12 @@ const track = await audiusSdk.tracks.favoriteTrack({
 console.log('Track favorited!')
 ```
 
+:::note
+
+Writing data (such as uploading or favoriting a track) is only possible if you provide an apiSecret
+
+:::
+
 ## Full HTML + JS example
 
 ```html title="index.html" showLineNumbers
