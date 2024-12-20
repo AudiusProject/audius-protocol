@@ -107,9 +107,7 @@ export const ExpandableNavItem = ({
         </Flex>
       </Flex>
       {isOpen && nestedItems ? (
-        <Flex direction='column' pl='2xl'>
-          {nestedItems}
-        </Flex>
+        <Flex direction='column'>{nestedItems}</Flex>
       ) : null}
     </Flex>
   )
