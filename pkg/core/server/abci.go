@@ -1,7 +1,6 @@
 package server
 
 import (
-	"bytes"
 	"context"
 	"crypto/sha256"
 	"encoding/hex"
@@ -12,7 +11,6 @@ import (
 	"github.com/AudiusProject/audius-protocol/pkg/core/common"
 	"github.com/AudiusProject/audius-protocol/pkg/core/db"
 	"github.com/AudiusProject/audius-protocol/pkg/core/gen/core_proto"
-	"github.com/cometbft/cometbft/abci/types"
 	abcitypes "github.com/cometbft/cometbft/abci/types"
 	cfg "github.com/cometbft/cometbft/config"
 	"github.com/cometbft/cometbft/crypto/ed25519"
@@ -180,18 +178,6 @@ func (s *Server) FinalizeBlock(ctx context.Context, req *abcitypes.FinalizeBlock
 	var txs = make([]*abcitypes.ExecTxResult, len(req.Txs))
 	var validatorUpdates = abcitypes.ValidatorUpdates{}
 	var validatorUpdatesMap = map[string]bool{}
-
-	// update jailed validators in validator updates map so they get skipped if they try to re-register
-	jailedValidators, err := s.handleDuplicateVoteEvidence(ctx, req)
-	if err != nil {
-		s.logger.Errorf("could not handle duplicate vote evidence: %v", err)
-	} else {
-		validatorUpdates = append(validatorUpdates, jailedValidators...)
-		for _, jailed := range jailedValidators {
-			vrPubKey := ed25519.PubKey(jailed.PubKeyBytes)
-			validatorUpdatesMap[vrPubKey.Address().String()] = true
-		}
-	}
 
 	// open in progres pg transaction
 	s.startInProgressTx(ctx)
@@ -427,53 +413,6 @@ func (s *Server) persistTxStat(ctx context.Context, tx proto.Message, txhash str
 		s.logger.Error("error inserting tx stat", "error", err)
 	}
 	return nil
-}
-
-func (s *Server) handleDuplicateVoteEvidence(ctx context.Context, req *abcitypes.FinalizeBlockRequest) (abcitypes.ValidatorUpdates, error) {
-	jailedValidators := abcitypes.ValidatorUpdates{}
-	jailedValidatorAddrs := []string{}
-
-	page := int(1)
-	amountPerPage := int(500)
-	currentValidators, err := s.rpc.Validators(ctx, &req.Height, &page, &amountPerPage)
-	if err != nil {
-		s.logger.Errorf("could not get validators: %v", err)
-		return jailedValidators, err
-	}
-
-	// if misbehavior found, set power to 0 to remove
-	for _, misbehavior := range req.Misbehavior {
-		if misbehavior.Type == types.MISBEHAVIOR_TYPE_DUPLICATE_VOTE {
-			for _, validator := range currentValidators.Validators {
-				if bytes.Equal(misbehavior.Validator.Address, validator.Address) {
-					jailedValidators = append(
-						jailedValidators,
-						abcitypes.ValidatorUpdate{
-							Power:       0,
-							PubKeyBytes: validator.PubKey.Bytes(),
-							PubKeyType:  "ed25519",
-						},
-					)
-					jailedValidatorAddrs = append(jailedValidatorAddrs, validator.Address.String())
-				}
-			}
-		}
-	}
-
-	qtx := s.getDb()
-	for _, jailedValidatorAddr := range jailedValidatorAddrs {
-		if err := qtx.AddJailedNode(ctx, db.AddJailedNodeParams{
-			CometAddress: jailedValidatorAddr,
-			JailedUntil: pgtype.Int8{
-				Int64: req.Height + 1000,
-				Valid: true,
-			},
-		}); err != nil {
-			return jailedValidators, fmt.Errorf("could not add jailed node: %v", err)
-		}
-	}
-
-	return jailedValidators, nil
 }
 
 func (s *Server) serializeAppState(prevHash []byte, txs [][]byte) []byte {

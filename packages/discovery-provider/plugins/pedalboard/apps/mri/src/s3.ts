@@ -18,134 +18,15 @@ export type S3Config = {
 const config = readConfig()
 const isDev = config.env === 'dev'
 
-// creates s3 instance objects for later use, if in dev it will automatically create buckets
-export const createS3Instances = async (): Promise<{
-  clmS3s: S3Config[]
-  udrS3s: S3Config[]
-  mrvrS3s: S3Config[]
-}> => {
-  try {
-    const clmS3s = await Promise.all(
-      config.s3ClmConfigs.map(
-        async ({
-          bucket,
-          keyPrefix,
-          region,
-          endpoint,
-          accessKeyId,
-          secretAccessKey
-        }) => {
-          const s3 = new S3Client({
-            region,
-            endpoint,
-            credentials: {
-              accessKeyId,
-              secretAccessKey
-            },
-            forcePathStyle: true
-          })
-
-          if (isDev) {
-            const data = await s3.send(
-              new CreateBucketCommand({ Bucket: bucket })
-            )
-            logger.info(`Bucket "${bucket}" created successfully`, data)
-          }
-
-          return {
-            s3,
-            bucket,
-            keyPrefix
-          }
-        }
-      )
-    )
-    const udrS3s = await Promise.all(
-      config.s3UdrConfigs.map(
-        async ({
-          bucket,
-          keyPrefix,
-          region,
-          endpoint,
-          accessKeyId,
-          secretAccessKey
-        }) => {
-          const s3 = new S3Client({
-            region,
-            endpoint,
-            credentials: {
-              accessKeyId,
-              secretAccessKey
-            },
-            forcePathStyle: true
-          })
-
-          if (isDev) {
-            const data = await s3.send(
-              new CreateBucketCommand({ Bucket: bucket })
-            )
-            logger.info(`Bucket "${bucket}" created successfully`, data)
-          }
-
-          return {
-            s3,
-            bucket,
-            keyPrefix
-          }
-        }
-      )
-    )
-    const mrvrS3s = await Promise.all(
-      config.s3MrvrConfigs.map(
-        async ({
-          bucket,
-          keyPrefix,
-          region,
-          endpoint,
-          accessKeyId,
-          secretAccessKey
-        }) => {
-          const s3 = new S3Client({
-            region,
-            endpoint,
-            credentials: {
-              accessKeyId,
-              secretAccessKey
-            },
-            forcePathStyle: true
-          })
-
-          if (isDev) {
-            const data = await s3.send(
-              new CreateBucketCommand({ Bucket: bucket })
-            )
-            logger.info(`Bucket "${bucket}" created successfully`, data)
-          }
-
-          return {
-            s3,
-            bucket,
-            keyPrefix
-          }
-        }
-      )
-    )
-    return { clmS3s, udrS3s, mrvrS3s }
-  } catch (e) {
-    if (isDev) return { clmS3s: [], udrS3s: [], mrvrS3s: [] }
-    throw e
-  }
-}
-
 export const publishToFile = (csv: string, fileName: string) => {
-  const outputDir = path.join(process.cwd(), 'output')
+  const outputPath = path.join(process.cwd(), 'output', fileName)
+  const outputDir = path.dirname(outputPath)
 
   // Create output directory if it doesn't exist
   if (!fs.existsSync(outputDir)) {
     fs.mkdirSync(outputDir, { recursive: true })
   }
 
-  const outputPath = path.join(outputDir, `${fileName}.csv`)
   fs.writeFileSync(outputPath, csv)
   logger.info({ path: outputPath }, 'wrote file to output directory')
   return outputPath
@@ -153,50 +34,80 @@ export const publishToFile = (csv: string, fileName: string) => {
 
 const publishToS3 = async (
   logger: Logger,
-  s3Config: S3Config,
   csv: string,
   fileName: string
-): Promise<string> => {
-  const { s3, keyPrefix, bucket } = s3Config
+): Promise<string[]> => {
+  const results = []
 
-  const key = `${keyPrefix}${fileName}.csv`
-  const contentLength = Buffer.byteLength(csv, 'utf8')
+  for (const prefix of ['mri_s3', 'mri_s3_debug']) {
+    const s3config = dialS3(prefix)
+    if (!s3config) {
+      logger.info(
+        { prefix },
+        'skipping S3 publish: incomplete s3 config for prefix'
+      )
+      continue
+    }
 
-  logger.info({ contentLength, key, bucket }, 'uploading')
+    const { client, bucket } = s3config
 
-  if (contentLength === 0) {
-    logger.info({}, 'no content to publish, no file being uploaded')
-    return ''
+    const key = fileName
+    const contentLength = Buffer.byteLength(csv, 'utf8')
+
+    logger.info({ contentLength, key, bucket }, 'uploading')
+
+    if (contentLength === 0) {
+      logger.info({}, 'no content to publish, no file being uploaded')
+      return ['']
+    }
+
+    const uploadParams = {
+      Bucket: bucket,
+      Key: key,
+      Body: csv,
+      ContentType: 'text/csv',
+      ContentLength: contentLength
+    }
+
+    await client.send(new PutObjectCommand(uploadParams))
+    const objectUrl = `http://localhost:4566/${bucket}/${key}`
+    results.push(objectUrl)
   }
 
-  const uploadParams = {
-    Bucket: bucket,
-    Key: key,
-    Body: csv,
-    ContentType: 'text/csv',
-    ContentLength: contentLength
-  }
-
-  await s3.send(new PutObjectCommand(uploadParams))
-  const objectUrl = `http://localhost:4566/${bucket}/${key}`
-  return objectUrl
+  return results
 }
 
-export const publish = async(
+const dialS3 = (prefix: string) => {
+  const endpoint = process.env[`${prefix}_endpoint`]
+  const region = process.env[`${prefix}_region`]
+  const accessKeyId = process.env[`${prefix}_access_key_id`]
+  const secretAccessKey = process.env[`${prefix}_secret_access_key`]
+  const bucket = process.env[`${prefix}_bucket`]
+  if (!endpoint || !region || !accessKeyId || !secretAccessKey || !bucket) {
+    return
+  }
+  const client = new S3Client({
+    region,
+    endpoint,
+    credentials: {
+      accessKeyId,
+      secretAccessKey
+    },
+    forcePathStyle: true
+  })
+  return { client, bucket }
+}
+
+export const publish = async (
   logger: Logger,
-  s3Configs: S3Config[],
   csv: string,
   fileName: string
-): Promise<PromiseSettledResult<string>[] | string[]> => {
+) => {
   console.log('publishing', typeof config.skipPublish, config.skipPublish)
   if (config.skipPublish) {
     const result = await publishToFile(csv, fileName)
     return [result]
   }
-  const uploads = s3Configs.map((s3config) =>
-    publishToS3(logger, s3config, csv, fileName)
-  )
-  const results = await Promise.allSettled(uploads)
+  const results = await publishToS3(logger, csv, fileName)
   return results
 }
-
