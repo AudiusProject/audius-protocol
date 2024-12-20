@@ -1,1 +1,1 @@
-declare module 'identicon.js';
+declare module 'identicon.js'

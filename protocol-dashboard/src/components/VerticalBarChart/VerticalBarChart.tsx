@@ -130,8 +130,8 @@ const getOptions = (id: string, max: number) => ({
         <div class='${styles.tooltipContainer}'>
           <div class='${styles.tooltipBody}'>
             <div class='${styles.tooltipValue}'>${formatShortNumberWithDecimal(
-        value
-      ).toUpperCase()}</div>
+              value
+            ).toUpperCase()}</div>
           </div>
         </div>`
 

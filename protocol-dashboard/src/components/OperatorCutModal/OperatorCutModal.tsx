@@ -55,9 +55,8 @@ const OperatorCutModal: React.FC<OperatorCutModalProps> = ({
     onClick: onSubmit,
     onClose: onCloseConfirm
   } = useModalControls()
-  const { status, updateOperatorCut, error } = useUpdateOperatorCut(
-    !isConfirmModalOpen
-  )
+  const { status, updateOperatorCut, error } =
+    useUpdateOperatorCut(!isConfirmModalOpen)
 
   const onConfirm = useCallback(() => {
     updateOperatorCut(operatorCutNumber)

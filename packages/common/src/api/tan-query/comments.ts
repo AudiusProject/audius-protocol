@@ -329,7 +329,7 @@ export const useGetCommentRepliesById = ({
           ({
             ...comment,
             replies: [...(comment?.replies ?? []), ...replyList]
-          } as Comment)
+          }) as Comment
       )
       // Put each reply into their individual comment cache
       replyList.forEach((comment) => {

@@ -77,8 +77,8 @@ const UserPage = () => {
   const title = isOwner
     ? messages.owner
     : isServiceProvider
-    ? messages.operator
-    : messages.user
+      ? messages.operator
+      : messages.user
   return (
     <Page icon={IconUser} title={title}>
       <Flex direction='column' gap='l'>
