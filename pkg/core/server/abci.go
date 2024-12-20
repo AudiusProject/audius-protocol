@@ -119,6 +119,7 @@ func (s *Server) CheckTx(_ context.Context, check *abcitypes.CheckTxRequest) (*a
 	if err == nil {
 		return &abcitypes.CheckTxResponse{Code: abcitypes.CodeTypeOK}, nil
 	}
+
 	return &abcitypes.CheckTxResponse{Code: 1}, nil
 }
 
