@@ -34,12 +34,22 @@ const (
 	maxRetries     = 10
 )
 
+var startTime time.Time
+
 type proxyConfig struct {
 	path   string
 	target string
 }
 
+type serverConfig struct {
+	httpPort   string
+	httpsPort  string
+	hostname   string
+	tlsEnabled bool
+}
+
 func main() {
+	startTime = time.Now().UTC()
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
@@ -124,7 +134,7 @@ func runWithRecover(name string, ctx context.Context, logger *common.Logger, f f
 
 func setupLogger() *common.Logger {
 	var slogLevel slog.Level
-	switch os.Getenv("audiusd_log_level") {
+	switch os.Getenv("AUDIUSD_LOG_LEVEL") {
 	case "debug":
 		slogLevel = slog.LevelDebug
 	case "info":
@@ -144,7 +154,6 @@ func setupHostUrl() *url.URL {
 	endpoints := []string{
 		os.Getenv("creatorNodeEndpoint"),
 		os.Getenv("audius_discprov_url"),
-		"http://localhost",
 	}
 
 	for _, ep := range endpoints {
@@ -166,16 +175,60 @@ func setupDelegateKeyPair(logger *common.Logger) {
 	}
 }
 
+func getEchoServerConfig(hostUrl *url.URL) serverConfig {
+	httpPort := getEnvString("AUDIUSD_HTTP_PORT", "80")
+	httpsPort := getEnvString("AUDIUSD_HTTPS_PORT", "443")
+	hostname := hostUrl.Hostname()
+
+	// TODO: Work out of the box for altego.net, but allow override
+	if hostname == "altego.net" && httpPort == "80" && httpsPort == "443" {
+		httpPort = "5000"
+	}
+
+	tlsEnabled := true
+	switch {
+	case os.Getenv("AUDIUSD_TLS_DISABLED") == "true":
+		tlsEnabled = false
+	case hasSuffix(hostname, []string{"localhost", "altego.net", "bdnodes.net", "staked.cloud"}):
+		tlsEnabled = false
+	}
+
+	return serverConfig{
+		httpPort:   httpPort,
+		httpsPort:  httpsPort,
+		hostname:   hostname,
+		tlsEnabled: tlsEnabled,
+	}
+}
+
 func startEchoProxyWithOptionalTLS(hostUrl *url.URL, logger *common.Logger) error {
 	e := echo.New()
 	e.Use(middleware.Logger(), middleware.Recover())
 
-	// Minimal health check endpoint
+	healthCheckResponse := func() map[string]interface{} {
+		return map[string]interface{}{
+			"git":       os.Getenv("GIT_SHA"),
+			"hostname":  hostUrl.Hostname(),
+			"status":    "ok",
+			"timestamp": time.Now().UTC(),
+			"uptime":    time.Since(startTime).String(),
+		}
+	}
+
 	e.GET("/", func(c echo.Context) error {
-		return c.JSON(http.StatusOK, map[string]string{"status": "ok"})
+		return c.JSON(http.StatusOK, healthCheckResponse())
 	})
 
-	// Reverse proxies to what were previously discreet containers
+	if os.Getenv("audius_discprov_url") != "" {
+		e.GET("/health_check", func(c echo.Context) error {
+			return c.JSON(http.StatusOK, healthCheckResponse())
+		})
+	}
+
+	e.GET("/console", func(c echo.Context) error {
+		return c.Redirect(http.StatusMovedPermanently, "/console/overview")
+	})
+
 	proxies := []proxyConfig{
 		{"/console/*", "http://localhost:26659"},
 		{"/core/*", "http://localhost:26659"},
@@ -198,19 +251,12 @@ func startEchoProxyWithOptionalTLS(hostUrl *url.URL, logger *common.Logger) erro
 		e.Any(proxy.path, echo.WrapHandler(httputil.NewSingleHostReverseProxy(target)))
 	}
 
-	httpPort := getEnvString("AUDIUSD_HTTP_PORT", "80")
-	httpsPort := getEnvString("AUDIUSD_HTTPS_PORT", "443")
+	config := getEchoServerConfig(hostUrl)
 
-	if shouldEnableTLS(hostUrl) {
-		return startWithTLS(e, httpPort, httpsPort, hostUrl, logger)
+	if config.tlsEnabled {
+		return startWithTLS(e, config.httpPort, config.httpsPort, hostUrl, logger)
 	}
-	return e.Start(":" + httpPort)
-}
-
-func shouldEnableTLS(hostUrl *url.URL) bool {
-	// TODO: config should be explicitly set
-	disableAutoTLS := []string{"altego.net", "bdnodes.net", "staked.cloud", "localhost"}
-	return !domainInTlds(hostUrl.Hostname(), disableAutoTLS) && os.Getenv("DISABLE_TLS") != "true"
+	return e.Start(":" + config.httpPort)
 }
 
 func startWithTLS(e *echo.Echo, httpPort, httpsPort string, hostUrl *url.URL, logger *common.Logger) error {
@@ -256,9 +302,9 @@ func getEnvString(key, defaultValue string) string {
 	return defaultValue
 }
 
-func domainInTlds(domain string, tlds []string) bool {
-	for _, tld := range tlds {
-		if domain == tld {
+func hasSuffix(domain string, suffixes []string) bool {
+	for _, suffix := range suffixes {
+		if strings.HasSuffix(domain, suffix) {
 			return true
 		}
 	}
