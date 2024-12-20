@@ -75,7 +75,7 @@ export const onDisburse = async (
     const endpoint = await sdk.services.discoveryNodeSelector.getSelectedEndpoint()
     console.log('endpoint = ', endpoint)
     const toDisburse: Challenge[] = []
-    for (const challengeId in TRENDING_REWARD_IDS) {
+    for (const challengeId of TRENDING_REWARD_IDS) {
       // Get all undisbursed challenges for the given challenge id starting from a bit before
       // our last completed block.
       const blockNumber = completedBlock - 1000
@@ -96,6 +96,7 @@ export const onDisburse = async (
       while (attestationRetries > 0) {
         try {
           if (!dryRun) {
+            console.log('Claiming reward for challengeId = ', challengeId, 'specifier = ', challenge.specifier, 'amount = ', challenge.amount)
             res = await sdk.challenges.claimReward({
               challengeId,
               userId: challenge.user_id,
