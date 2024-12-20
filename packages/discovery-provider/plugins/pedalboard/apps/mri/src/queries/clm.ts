@@ -57,7 +57,9 @@ export const clm = async (
     'time range'
   )
 
-  const clmRows: ClientLabelMetadata[] = await db.raw(`
+  const clmRows: ClientLabelMetadata[] = await db
+    .raw(
+      `
     select distinct on ("tracks"."track_id")
       "tracks"."track_id" as "UniqueTrackIdentifier",
       "tracks"."title" as "TrackTitle",
@@ -73,19 +75,17 @@ export const clm = async (
     from "tracks"
     join "users" on "tracks"."owner_id" = "users"."user_id"
     left join "playlist_tracks" on "tracks"."track_id" = "playlist_tracks"."track_id"
-    left join "playlists" on "playlist_tracks"."playlist_id" = "playlists"."playlist_id" 
+    left join "playlists" on "playlist_tracks"."playlist_id" = "playlists"."playlist_id"
       and "playlists"."is_album" = true
     where "tracks"."created_at" >= :start
       and "tracks"."created_at" < :end
-  `, {start, end}).then(result => result.rows)
+  `,
+      { start, end }
+    )
+    .then((result) => result.rows)
 
   const csv = toCsvString(clmRows, ClientLabelMetadataHeader)
-  const results = await publish(
-    logger,
-    s3s,
-    csv,
-    formatDate(date)
-  )
+  const results = await publish(logger, s3s, csv, formatDate(date))
 
   results.forEach((objUrl) =>
     logger.info({ objUrl, records: clmRows.length }, 'upload result')

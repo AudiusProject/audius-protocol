@@ -182,7 +182,7 @@ const publishToS3 = async (
   return objectUrl
 }
 
-export const publish = async(
+export const publish = async (
   logger: Logger,
   s3Configs: S3Config[],
   csv: string,
@@ -199,4 +199,3 @@ export const publish = async(
   const results = await Promise.allSettled(uploads)
   return results
 }
-
