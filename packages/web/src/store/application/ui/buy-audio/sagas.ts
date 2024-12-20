@@ -36,8 +36,6 @@ import {
   convertWeiToWAudio,
   waitForValue
 } from '@audius/common/utils'
-/* eslint-disable new-cap */
-import { TransactionHandler } from '@audius/sdk-legacy/dist/core'
 import { QuoteResponse } from '@jup-ag/api'
 import {
   AddressLookupTableAccount,
@@ -698,7 +696,6 @@ type SwapStepParams = {
   exchangeAmount: bigint
   desiredAudioAmount?: AmountObject
   rootAccount: Keypair
-  transactionHandler: TransactionHandler
   retryDelayMs?: number
   maxRetryCount?: number
 }
@@ -712,7 +709,6 @@ function* swapStep({
   exchangeAmount,
   desiredAudioAmount,
   rootAccount,
-  transactionHandler,
   retryDelayMs,
   maxRetryCount
 }: SwapStepParams) {
@@ -762,10 +758,11 @@ function* swapStep({
     }
   )
 
+  const sdk = yield* getSDK()
   const txId = yield* call(JupiterSingleton.executeExchange, {
     instructions: swapInstructions,
     feePayer: rootAccount.publicKey,
-    transactionHandler,
+    sdk,
     lookupTableAddresses
   })
 
@@ -801,13 +798,11 @@ function* swapStep({
 type TransferStepParams = {
   rootAccount: Keypair
   transferAmount: bigint
-  transactionHandler: TransactionHandler
   provider: OnRampProvider
 }
 function* transferStep({
   rootAccount,
   transferAmount,
-  transactionHandler,
   provider
 }: TransferStepParams) {
   const sdk = yield* getSDK()
@@ -828,14 +823,26 @@ function* transferStep({
   })
 
   console.debug(`Starting transfer transaction...`)
-  const { res: transferTransactionId, error: transferError } = yield* call(
-    [transactionHandler, transactionHandler.handleTransaction],
-    {
-      instructions: transferTransaction.instructions,
-      feePayerOverride: rootAccount.publicKey,
-      skipPreflight: false
-    }
-  )
+  let transferError, signature
+  try {
+    const transaction = yield* call(
+      [sdk.services.solanaClient, sdk.services.solanaClient.buildTransaction],
+      {
+        feePayer: rootAccount.publicKey,
+        instructions: transferTransaction.instructions
+      }
+    )
+    signature = yield* call(
+      [sdk.services.solanaClient, sdk.services.solanaClient.sendTransaction],
+      transaction,
+      {
+        skipPreflight: true
+      }
+    )
+  } catch (e) {
+    transferError = e
+  }
+
   if (transferError) {
     console.debug(
       `Transfer transaction stringified: ${JSON.stringify(transferTransaction)}`
@@ -850,7 +857,7 @@ function* transferStep({
   const [audiusLocalStorage, localStorageState] =
     yield* getLocalStorageStateWithFallback()
   localStorageState.transactionDetailsArgs.transferTransactionId =
-    transferTransactionId ?? undefined
+    signature ?? undefined
   localStorageState.transactionDetailsArgs.purchasedAudioWei =
     audioTransferredWei.toString()
   yield* call(
@@ -867,7 +874,7 @@ function* transferStep({
   )
   yield* put(transferCompleted())
 
-  return { audioTransferredWei, transferTransactionId }
+  return { audioTransferredWei, transferTransactionId: signature }
 }
 
 /**
@@ -915,12 +922,6 @@ function* doBuyAudio({
     }
 
     const connection = yield* call(getSolanaConnection)
-    const transactionHandler = new TransactionHandler({
-      connection,
-      useRelay: false,
-      feePayerKeypairs: [rootAccount],
-      skipPreflight: false
-    })
     userRootWallet = rootAccount.publicKey.toString()
 
     // Get config
@@ -981,7 +982,6 @@ function* doBuyAudio({
       exchangeAmount: BigInt(exchangeAmount),
       desiredAudioAmount,
       rootAccount,
-      transactionHandler,
       retryDelayMs,
       maxRetryCount
     })
@@ -989,7 +989,6 @@ function* doBuyAudio({
     // STEP THREE: Transfer $AUDIO to user bank
     const { audioTransferredWei } = yield* call(transferStep, {
       transferAmount: audioSwappedSpl,
-      transactionHandler,
       rootAccount,
       provider
     })
@@ -1080,12 +1079,6 @@ function* recoverPurchaseIfNecessary() {
     }
 
     const connection = yield* call(getSolanaConnection)
-    const transactionHandler = new TransactionHandler({
-      connection,
-      useRelay: false,
-      feePayerKeypairs: [rootAccount],
-      skipPreflight: false
-    })
     userRootWallet = rootAccount.publicKey.toString()
 
     // Restore local storage state, lightly sanitizing
@@ -1178,14 +1171,12 @@ function* recoverPurchaseIfNecessary() {
           exchangeAmount: exchangableBalance,
           desiredAudioAmount: localStorageState.desiredAudioAmount,
           rootAccount,
-          transactionHandler,
           maxRetryCount,
           retryDelayMs
         })
         const { audioTransferredWei } = yield* call(transferStep, {
           transferAmount: audioSwappedSpl,
           rootAccount,
-          transactionHandler,
           provider: localStorageState.provider ?? OnRampProvider.UNKNOWN
         })
         recoveredAudio = parseFloat(
@@ -1234,7 +1225,6 @@ function* recoverPurchaseIfNecessary() {
           const { audioTransferredWei } = yield* call(transferStep, {
             transferAmount: audioBalance,
             rootAccount,
-            transactionHandler,
             provider: localStorageState.provider ?? OnRampProvider.UNKNOWN
           })
           recoveredAudio = parseFloat(
