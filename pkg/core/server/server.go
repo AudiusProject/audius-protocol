@@ -46,6 +46,10 @@ type Server struct {
 
 	core_proto.UnimplementedProtocolServer
 
+	ethNodes          []*contracts.Node
+	duplicateEthNodes []*contracts.Node
+	ethNodeMU         sync.RWMutex
+
 	awaitHttpServerReady chan struct{}
 	awaitGrpcServerReady chan struct{}
 	awaitRpcReady        chan struct{}
@@ -59,7 +63,7 @@ func NewServer(config *config.Config, cconfig *cconfig.Config, logger *common.Lo
 	txPubsub := NewPubsub[struct{}]()
 
 	// create contracts
-	contracts, err := contracts.NewAudiusContracts(eth, config.EthRegistryAddress)
+	c, err := contracts.NewAudiusContracts(eth, config.EthRegistryAddress)
 	if err != nil {
 		return nil, fmt.Errorf("contracts init error: %v", err)
 	}
@@ -67,13 +71,16 @@ func NewServer(config *config.Config, cconfig *cconfig.Config, logger *common.Lo
 	httpServer := echo.New()
 	grpcServer := grpc.NewServer()
 
+	ethNodes := []*contracts.Node{}
+	duplicateEthNodes := []*contracts.Node{}
+
 	s := &Server{
 		config:         config,
 		cometbftConfig: cconfig,
 		logger:         logger.Child("server"),
 
 		pool:      pool,
-		contracts: contracts,
+		contracts: c,
 
 		db:        db.New(pool),
 		eth:       eth,
@@ -84,6 +91,9 @@ func NewServer(config *config.Config, cconfig *cconfig.Config, logger *common.Lo
 
 		httpServer: httpServer,
 		grpcServer: grpcServer,
+
+		ethNodes:          ethNodes,
+		duplicateEthNodes: duplicateEthNodes,
 
 		awaitHttpServerReady: make(chan struct{}),
 		awaitGrpcServerReady: make(chan struct{}),
@@ -102,6 +112,7 @@ func (s *Server) Start(ctx context.Context) error {
 	g.Go(s.startEchoServer)
 	g.Go(s.startSyncTasks)
 	g.Go(s.startPeerManager)
+	g.Go(s.startEthNodeManager)
 
 	return g.Wait()
 }

@@ -63,7 +63,7 @@ const (
 	testnetValidatorVotingPower = 10
 	devnetValidatorVotingPower  = 25
 	mainnetRollupInterval       = 2048
-	testnetRollupInterval       = 2048
+	testnetRollupInterval       = 512
 	devnetRollupInterval        = 200
 )
 
