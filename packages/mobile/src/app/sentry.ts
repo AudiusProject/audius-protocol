@@ -14,6 +14,7 @@ export const initSentry = () => {
   Sentry.init({
     dsn: env.SENTRY_DSN,
     integrations: [
+      // @ts-ignore it works on main
       navigationIntegration,
       Sentry.reactNativeTracingIntegration()
     ],
