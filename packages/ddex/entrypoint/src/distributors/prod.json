@@ -9,6 +9,11 @@
       "name": "fuga",
       "appKey": "1ba4906aea0d0f5571bdd6e4985c59ad97ab51b2",
       "url": "http://ddex.audius.co"
+    },
+    {
+      "name": "dashgo",
+      "appKey": "a5cce5f3ea25b7dfb2c1a84ed1f58d1ecbc9be5c",
+      "url": "http://ddex.audius.co"
     }
   ]
 }
