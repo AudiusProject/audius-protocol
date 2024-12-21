@@ -61,14 +61,15 @@ export const onDisburse = async (
     const completedBlockRes = await findStartingBlock(db)
     if (completedBlockRes.err) return completedBlockRes
     const [startingBlock, startBlockSpecifier] = completedBlockRes.unwrap()
-    completedBlock = startingBlock
     specifier = startBlockSpecifier
+    completedBlock = startingBlock
   } else {
     const response = await getTrendingChallengesByDate(db, targetSpecifier)
     const challenge = response[0]
-    completedBlock = challenge.completed_blocknumber! - 1
     specifier = challenge.specifier
+    completedBlock = challenge.completed_blocknumber! - 1
   }
+  console.log('completed blockNumber = ', completedBlock, 'specifier = ', specifier)
 
   let endpointRetries = 10
   while (endpointRetries > 0) {
@@ -79,13 +80,14 @@ export const onDisburse = async (
       await sdk.services.discoveryNodeSelector.getSelectedEndpoint()
     console.log('endpoint = ', endpoint)
     const toDisburse: Challenge[] = []
-    for (const challengeId in TRENDING_REWARD_IDS) {
-      // Get all undisbursed challenges for the given challenge id starting from a bit before
-      // our last completed block.
-      const blockNumber = completedBlock - 1000
+    for (const challengeId of TRENDING_REWARD_IDS) {
+      // Get all undisbursed challenges for the given challenge id starting from a known point where
+      // completion is consistent
+      const url = `${endpoint}/v1/challenges/undisbursed?challenge_id=${challengeId}&completed_blocknumber=87183999`
+      console.log('fetching undisbursed challenges from url = ', url)
       // Fetch all undisbursed challenges
       const res = await axios.get(
-        `${endpoint}/v1/challenges/undisbursed?challenge_id=${challengeId}&completed_blocknumber=${blockNumber}`
+        url
       )
       toDisburse.push(...res.data.data)
     }
@@ -102,6 +104,7 @@ export const onDisburse = async (
       while (attestationRetries > 0) {
         try {
           if (!dryRun) {
+            console.log('Claiming reward for challengeId = ', challengeId, 'specifier = ', challenge.specifier, 'amount = ', challenge.amount)
             res = await sdk.challenges.claimReward({
               challengeId,
               userId: challenge.user_id,
