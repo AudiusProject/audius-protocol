@@ -43,6 +43,7 @@ var _ abcitypes.Application = (*Server)(nil)
 // initializes the cometbft node and the abci application which is the server itself
 // connects the local rpc instance to the abci application once successfully created
 func (s *Server) startABCI() error {
+	<-s.awaitEthNodesReady
 	s.logger.Info("starting abci")
 
 	cometConfig := s.cometbftConfig
@@ -364,7 +365,7 @@ func (s *Server) validateBlockTxs(ctx context.Context, blockTime time.Time, bloc
 		switch signedTx.Transaction.(type) {
 		case *core_proto.SignedTransaction_Plays:
 		case *core_proto.SignedTransaction_ValidatorRegistration:
-			if err := s.isValidRegisterNodeTx(ctx, signedTx); err != nil {
+			if err := s.isValidRegisterNodeTx(signedTx); err != nil {
 				s.logger.Error("Invalid block: invalid register node tx", "error", err)
 				return false, nil
 			}
