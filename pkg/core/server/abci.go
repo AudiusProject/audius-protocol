@@ -365,7 +365,7 @@ func (s *Server) validateBlockTxs(ctx context.Context, blockTime time.Time, bloc
 		switch signedTx.Transaction.(type) {
 		case *core_proto.SignedTransaction_Plays:
 		case *core_proto.SignedTransaction_ValidatorRegistration:
-			if err := s.isValidRegisterNodeTx(ctx, signedTx); err != nil {
+			if err := s.isValidRegisterNodeTx(signedTx); err != nil {
 				s.logger.Error("Invalid block: invalid register node tx", "error", err)
 				return false, nil
 			}

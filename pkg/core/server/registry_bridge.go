@@ -312,9 +312,20 @@ func (s *Server) registerSelfOnEth() error {
 	return nil
 }
 
+func (s *Server) getRegisteredNode(endpoint string) (*contracts.Node, error) {
+	s.ethNodeMU.RLock()
+	defer s.ethNodeMU.RUnlock()
+	for _, node := range s.ethNodes {
+		if node.Endpoint == endpoint {
+			return node, nil
+		}
+	}
+	return nil, fmt.Errorf("node not found: %s", endpoint)
+}
+
 // checks if the register node tx is valid
 // calls ethereum mainnet and validates signature to confirm node should be a validator
-func (s *Server) isValidRegisterNodeTx(ctx context.Context, tx *core_proto.SignedTransaction) error {
+func (s *Server) isValidRegisterNodeTx(tx *core_proto.SignedTransaction) error {
 	sig := tx.GetSignature()
 	if sig == "" {
 		return fmt.Errorf("no signature provided for registration tx: %v", tx)
@@ -325,21 +336,9 @@ func (s *Server) isValidRegisterNodeTx(ctx context.Context, tx *core_proto.Signe
 		return fmt.Errorf("unknown tx fell into isValidRegisterNodeTx: %v", tx)
 	}
 
-	spf, err := s.contracts.GetServiceProviderFactoryContract()
+	info, err := s.getRegisteredNode(vr.GetEndpoint())
 	if err != nil {
-		return fmt.Errorf("could not get spf contract to validate node tx: %v", err)
-	}
-
-	spID, err := spf.GetServiceProviderIdFromEndpoint(nil, vr.GetEndpoint())
-	if err != nil {
-		return fmt.Errorf("node attempted to register but not SP: %v", err)
-	}
-
-	serviceType := common.Utf8ToHex(vr.GetNodeType())
-
-	info, err := spf.GetServiceEndpointInfo(nil, serviceType, spID)
-	if err != nil {
-		return fmt.Errorf("node info not available %v: %v", spID, err)
+		return fmt.Errorf("not able to find registered node: %v", err)
 	}
 
 	// compare on chain info to requested comet data
@@ -410,7 +409,7 @@ func (s *Server) isDuplicateDelegateOwnerWallet(delegateOwnerWallet string) erro
 
 // persists the register node request should it pass validation
 func (s *Server) finalizeRegisterNode(ctx context.Context, tx *core_proto.SignedTransaction) (*core_proto.ValidatorRegistration, error) {
-	if err := s.isValidRegisterNodeTx(ctx, tx); err != nil {
+	if err := s.isValidRegisterNodeTx(tx); err != nil {
 		return nil, fmt.Errorf("invalid register node tx: %v", err)
 	}
 

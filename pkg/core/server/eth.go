@@ -58,8 +58,8 @@ func (s *Server) gatherEthNodes() error {
 		}
 	}
 
-	s.ethNodeMU.RLock()
-	defer s.ethNodeMU.RUnlock()
+	s.ethNodeMU.Lock()
+	defer s.ethNodeMU.Unlock()
 
 	s.ethNodes = nodes
 	s.duplicateEthNodes = duplicateEthNodes

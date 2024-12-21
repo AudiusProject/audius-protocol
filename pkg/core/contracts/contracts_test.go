@@ -11,7 +11,7 @@ import (
 
 func TestGetAllRegisteredNodes(t *testing.T) {
 	// not meant to run all the time, skip in ci
-	// t.SkipNow()
+	t.SkipNow()
 
 	ctx := context.Background()
 
