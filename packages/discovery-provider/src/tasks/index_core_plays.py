@@ -66,6 +66,9 @@ def index_core_play(
         track_id = int(tx_play.track_id)
         user_id = user_id
         slot = get_adjusted_core_block(block.height)
+        city = tx_play.city
+        region = tx_play.region
+        country = tx_play.country
 
         plays.append(
             {
@@ -75,10 +78,10 @@ def index_core_play(
                 "slot": slot,
                 "signature": signature,
                 "created_at": timestamp,
-                "source": "",
-                "city": "",
-                "region": "",
-                "country": "",
+                "source": "relay",
+                "city": city,
+                "region": region,
+                "country": country,
             }
         )
 
