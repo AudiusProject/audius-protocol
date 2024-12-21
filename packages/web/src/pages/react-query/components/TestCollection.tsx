@@ -1,8 +1,9 @@
 import { useCollection } from '@audius/common/api'
+import { ID } from '@audius/common/models'
 import { Flex, Text } from '@audius/harmony'
 
 type Props = {
-  playlistId: string
+  playlistId: ID
 }
 
 export const TestCollection = ({ playlistId }: Props) => {

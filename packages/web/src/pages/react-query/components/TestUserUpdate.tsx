@@ -1,10 +1,11 @@
 import { useState } from 'react'
 
 import { useUpdateUser, useUser } from '@audius/common/api'
+import { ID } from '@audius/common/models'
 import { Button, Flex, Text, TextInput } from '@audius/harmony'
 
 type Props = {
-  userId: string
+  userId: ID
 }
 
 export const TestUserUpdate = ({ userId }: Props) => {

@@ -2,11 +2,21 @@ import { Playlist, UpdatePlaylistRequest } from '@audius/sdk'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 
 import { useAppContext } from '~/context/appContext'
+import { ID } from '~/models/Identifiers'
+import { encodeHashId } from '~/utils/hashIds'
 
 import { QUERY_KEYS } from './queryKeys'
 
 type MutationContext = {
-  previousCollection?: Playlist
+  previousCollection: any
+}
+
+type UpdateCollectionParams = Omit<
+  UpdatePlaylistRequest,
+  'playlistId' | 'userId'
+> & {
+  playlistId: ID
+  userId: ID
 }
 
 export const useUpdateCollection = () => {
@@ -14,10 +24,22 @@ export const useUpdateCollection = () => {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: async (params: UpdatePlaylistRequest) => {
+    mutationFn: async ({
+      playlistId,
+      userId,
+      ...params
+    }: UpdateCollectionParams) => {
       if (!audiusSdk) throw new Error('SDK not initialized')
 
-      const response = await audiusSdk.playlists.updatePlaylist(params)
+      const encodedPlaylistId = encodeHashId(playlistId)
+      const encodedUserId = encodeHashId(userId)
+      if (!encodedPlaylistId || !encodedUserId) throw new Error('Invalid ID')
+
+      const response = await audiusSdk.playlists.updatePlaylist({
+        ...params,
+        playlistId: encodedPlaylistId,
+        userId: encodedUserId
+      })
 
       return response
     },

@@ -2,6 +2,8 @@ import { Track, UpdateTrackRequest } from '@audius/sdk'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 
 import { useAppContext } from '~/context/appContext'
+import { ID } from '~/models/Identifiers'
+import { encodeHashId } from '~/utils/hashIds'
 
 import { QUERY_KEYS } from './queryKeys'
 
@@ -9,15 +11,28 @@ type MutationContext = {
   previousTrack: any
 }
 
+type UpdateTrackParams = Omit<UpdateTrackRequest, 'trackId' | 'userId'> & {
+  trackId: ID
+  userId: ID
+}
+
 export const useUpdateTrack = () => {
   const { audiusSdk } = useAppContext()
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: async (params: UpdateTrackRequest) => {
+    mutationFn: async ({ trackId, userId, ...params }: UpdateTrackParams) => {
       if (!audiusSdk) throw new Error('SDK not initialized')
 
-      const response = await audiusSdk.tracks.updateTrack(params)
+      const encodedTrackId = encodeHashId(trackId)
+      const encodedUserId = encodeHashId(userId)
+      if (!encodedTrackId || !encodedUserId) throw new Error('Invalid ID')
+
+      const response = await audiusSdk.tracks.updateTrack({
+        ...params,
+        trackId: encodedTrackId,
+        userId: encodedUserId
+      })
 
       return response
     },

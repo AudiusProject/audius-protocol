@@ -1,10 +1,11 @@
 import { useState } from 'react'
 
 import { useTrack, useUpdateTrack } from '@audius/common/api'
+import { ID } from '@audius/common/models'
 import { Button, Flex, Text, TextInput } from '@audius/harmony'
 
 type Props = {
-  trackId: string
+  trackId: ID
 }
 
 export const TestTrackUpdate = ({ trackId }: Props) => {

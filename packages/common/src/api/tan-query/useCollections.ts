@@ -1,6 +1,8 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 
 import { useAppContext } from '~/context/appContext'
+import { ID } from '~/models/Identifiers'
+import { encodeHashId } from '~/utils/hashIds'
 
 import { QUERY_KEYS } from './queryKeys'
 
@@ -8,15 +10,19 @@ type Config = {
   staleTime?: number
 }
 
-export const useCollections = (collectionIds: string[], config?: Config) => {
+export const useCollections = (collectionIds: ID[], config?: Config) => {
   const { audiusSdk } = useAppContext()
   const queryClient = useQueryClient()
 
   return useQuery({
     queryKey: [QUERY_KEYS.collections, collectionIds],
     queryFn: async () => {
+      const encodedIds = collectionIds
+        .map(encodeHashId)
+        .filter((id): id is string => id !== null)
+      if (encodedIds.length === 0) return []
       const { data } = await audiusSdk!.full.playlists.getBulkPlaylists({
-        id: collectionIds
+        id: encodedIds
       })
 
       data?.forEach((collection) => {

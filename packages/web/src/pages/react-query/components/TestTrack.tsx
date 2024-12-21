@@ -1,8 +1,9 @@
 import { useTrack } from '@audius/common/api'
+import { ID } from '@audius/common/models'
 import { Flex, Text } from '@audius/harmony'
 
 type Props = {
-  trackId: string
+  trackId: ID
 }
 
 export const TestTrack = ({ trackId }: Props) => {

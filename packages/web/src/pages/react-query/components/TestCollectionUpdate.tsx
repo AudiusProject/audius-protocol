@@ -1,10 +1,11 @@
 import { useState } from 'react'
 
 import { useCollection, useUpdateCollection } from '@audius/common/api'
+import { ID } from '@audius/common/models'
 import { Button, Flex, Text, TextInput } from '@audius/harmony'
 
 type Props = {
-  playlistId: string
+  playlistId: ID
 }
 
 export const TestCollectionUpdate = ({ playlistId }: Props) => {
