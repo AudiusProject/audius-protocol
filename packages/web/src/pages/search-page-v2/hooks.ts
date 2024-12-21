@@ -84,7 +84,7 @@ export const useSearchCategory = () => {
   const routeMatch = useRouteMatch<{ category: string }>(SEARCH_PAGE)
   const categoryParam = routeMatch?.params.category as CategoryView
 
-  const category = isMobile ? categoryParam ?? 'profiles' : categoryParam
+  const category = isMobile ? (categoryParam ?? 'profiles') : categoryParam
 
   const { history } = useHistoryContext()
   const { query, genre, mood, isPremium, hasDownloads, isVerified } =

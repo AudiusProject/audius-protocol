@@ -131,7 +131,7 @@ export const CollectibleGatedFields = (props: CollectibleGatedFieldsProps) => {
   // Otherwise, the default value is the nft collection which was previously selected,
   // which also includes the collection image.
   const defaultCollectionName = isContentCollectibleGated(streamConditionsValue)
-    ? streamConditionsValue.nft_collection?.name ?? ''
+    ? (streamConditionsValue.nft_collection?.name ?? '')
     : ''
   const selectedCollection = menuItems.find(
     (item) => item.text === defaultCollectionName

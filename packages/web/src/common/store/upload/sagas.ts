@@ -168,8 +168,8 @@ const makeOnProgress = (
       'audio' in progress
         ? progress.audio
         : 'art' in progress
-        ? progress.art
-        : null
+          ? progress.art
+          : null
     if (p === null) {
       return
     }
@@ -242,7 +242,7 @@ function* uploadWorker(
 
       const coverArtFile =
         track.metadata.artwork && 'file' in track.metadata.artwork
-          ? track.metadata.artwork?.file ?? null
+          ? (track.metadata.artwork?.file ?? null)
           : null
       const metadata = trackMetadataForUploadToSdk(track.metadata)
 
@@ -461,8 +461,8 @@ export function* handleUploads({
         downloadable: isContentFollowGated(track.metadata.download_conditions)
           ? 'follow'
           : track.metadata.is_downloadable
-          ? 'yes'
-          : 'no'
+            ? 'yes'
+            : 'no'
       })
     )
 
@@ -850,7 +850,7 @@ export function* uploadCollection(
           const { artwork } = collectionMetadata
 
           const coverArtFile =
-            artwork && 'file' in artwork ? artwork?.file ?? null : null
+            artwork && 'file' in artwork ? (artwork?.file ?? null) : null
 
           if (isAlbum) {
             // Create album

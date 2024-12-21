@@ -385,10 +385,10 @@ class TrackPageProvider extends Component<
       trackRank.year && trackRank.year <= TRENDING_BADGE_LIMIT
         ? `#${trackRank.year} This Year`
         : trackRank.month && trackRank.month <= TRENDING_BADGE_LIMIT
-        ? `#${trackRank.month} This Month`
-        : trackRank.week && trackRank.week <= TRENDING_BADGE_LIMIT
-        ? `#${trackRank.week} This Week`
-        : null
+          ? `#${trackRank.month} This Month`
+          : trackRank.week && trackRank.week <= TRENDING_BADGE_LIMIT
+            ? `#${trackRank.week} This Week`
+            : null
 
     const desktopProps = {
       // Follow Props

@@ -26,8 +26,11 @@ type Challenge = {
 const TRENDING_ID = 'tt'
 const UNDERGROUND_TRENDING_ID = 'tut'
 const PLAYLIST_TRENDING_ID = 'tp'
-const TRENDING_REWARD_IDS = [TRENDING_ID, PLAYLIST_TRENDING_ID, UNDERGROUND_TRENDING_ID]
-
+const TRENDING_REWARD_IDS = [
+  TRENDING_ID,
+  PLAYLIST_TRENDING_ID,
+  UNDERGROUND_TRENDING_ID
+]
 
 // TODO: move something like this into App so results are commonplace for handlers
 export const disburseTrendingRewards = async (
@@ -72,7 +75,8 @@ export const onDisburse = async (
     let failedAnAttestation = false
 
     // Pick an endpoint and collect all undisbursed challenges from that endpoint
-    const endpoint = await sdk.services.discoveryNodeSelector.getSelectedEndpoint()
+    const endpoint =
+      await sdk.services.discoveryNodeSelector.getSelectedEndpoint()
     console.log('endpoint = ', endpoint)
     const toDisburse: Challenge[] = []
     for (const challengeId in TRENDING_REWARD_IDS) {
@@ -85,10 +89,12 @@ export const onDisburse = async (
       )
       toDisburse.push(...res.data.data)
     }
-  
+
     // Claim all undisbursed challenges
     for (const challenge of toDisburse) {
-      const challengeId = Object.values(ChallengeId).find(id => id === challenge.challenge_id)!
+      const challengeId = Object.values(ChallengeId).find(
+        (id) => id === challenge.challenge_id
+      )!
       console.log('Claimable challengeId = ', challenge)
       const totalAttestationRetries = 10
       let res
@@ -100,16 +106,21 @@ export const onDisburse = async (
               challengeId,
               userId: challenge.user_id,
               specifier: challenge.specifier,
-              amount: parseFloat(challenge.amount),
+              amount: parseFloat(challenge.amount)
             })
             console.log('res = ', res)
             break // Success - exit retry loop
           }
         } catch (e) {
-          console.error(`Error claiming reward, challengeId = ${challengeId}, attempt ${totalAttestationRetries - attestationRetries + 1} of ${totalAttestationRetries}, error = `, e)
+          console.error(
+            `Error claiming reward, challengeId = ${challengeId}, attempt ${totalAttestationRetries - attestationRetries + 1} of ${totalAttestationRetries}, error = `,
+            e
+          )
           attestationRetries -= 1
           if (attestationRetries === 0) {
-            console.error(`Failed to claim reward after ${totalAttestationRetries} attempts for challengeId = ${challengeId}`)
+            console.error(
+              `Failed to claim reward after ${totalAttestationRetries} attempts for challengeId = ${challengeId}`
+            )
             failedAnAttestation = true
           }
         }
@@ -121,10 +132,11 @@ export const onDisburse = async (
       break
     }
     endpointRetries -= 1
-    console.error(`Error finding all attestations, ${endpointRetries} remaining`)
+    console.error(
+      `Error finding all attestations, ${endpointRetries} remaining`
+    )
   }
 
-  
   // Look at database to see if all challenges have been disbursed
   const trimmedSpecifier = specifier.split(':')[0]
   console.log('trimmedSpecifier = ', trimmedSpecifier)

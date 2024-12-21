@@ -198,12 +198,11 @@ export const TipAudioModal = () => {
           leave={transitions.leave}
           unique={true}
         >
-          {(item) => (style) =>
-            (
-              <animated.div style={{ ...style }}>
-                {renderModalContent(item)}
-              </animated.div>
-            )}
+          {(item) => (style) => (
+            <animated.div style={{ ...style }}>
+              {renderModalContent(item)}
+            </animated.div>
+          )}
         </Transition>
       </div>
     </Modal>

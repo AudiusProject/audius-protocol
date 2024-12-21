@@ -178,8 +178,8 @@ const getOptions = (
           <div class='${styles.tooltipBody}'>
             <div class='${styles.tooltipDate}'>${date}</div>
             <div class='${styles.tooltipValue}'>${formatNumber(
-        value
-      )} ${tooltipTitle}</div>
+              value
+            )} ${tooltipTitle}</div>
           </div>
           <div class='${styles.tooltipCaret}'/>
           <div class='${styles.tooltipLine}'/>

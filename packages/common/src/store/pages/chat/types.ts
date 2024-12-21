@@ -27,7 +27,10 @@ export type ChatMessageTileProps = {
 }
 
 export class ChatWebsocketError extends Error {
-  constructor(public code: string = 'UNKNOWN', public url?: string) {
+  constructor(
+    public code: string = 'UNKNOWN',
+    public url?: string
+  ) {
     super(`Chat Websocket Error, code: ${code}`)
   }
 }

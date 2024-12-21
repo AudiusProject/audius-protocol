@@ -181,9 +181,8 @@ function* transferStep({
         }
       )
       transferTransaction.sign([wallet])
-      const res = await sdk.services.solanaClient.sendTransaction(
-        transferTransaction
-      )
+      const res =
+        await sdk.services.solanaClient.sendTransaction(transferTransaction)
 
       console.debug(`Transfer transaction succeeded: ${res}`)
     },

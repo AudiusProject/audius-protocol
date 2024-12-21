@@ -3,7 +3,8 @@
   border-radius: 8px;
   max-width: 722px;
   overflow: hidden;
-  box-shadow: 0 15px 20px -5px var(--profile-completion-shadow-1),
+  box-shadow:
+    0 15px 20px -5px var(--profile-completion-shadow-1),
     0 15px 20px -5px var(--profile-completion-shadow-2);
   position: relative;
   margin: 3px 0px 24px 0px;

@@ -41,9 +41,8 @@ export const sendBrowserNotification = async (
   let numSentNotifs = 0
 
   try {
-    const notificationBrowsers = await settings.getUserNotificationBrowsers(
-      userId
-    )
+    const notificationBrowsers =
+      await settings.getUserNotificationBrowsers(userId)
 
     if (notificationBrowsers.length > 0) {
       logger.info(

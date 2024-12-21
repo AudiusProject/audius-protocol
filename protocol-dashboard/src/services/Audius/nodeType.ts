@@ -48,9 +48,8 @@ export default class NodeType {
 
   async getNumberOfVersions(serviceType: ServiceType): Promise<number> {
     await this.aud.hasPermissions()
-    const numberOfVersions = await this.getContract().getNumberOfVersions(
-      serviceType
-    )
+    const numberOfVersions =
+      await this.getContract().getNumberOfVersions(serviceType)
     return numberOfVersions
   }
 

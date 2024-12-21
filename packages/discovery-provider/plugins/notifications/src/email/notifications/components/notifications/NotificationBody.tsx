@@ -188,8 +188,8 @@ const Body = (props) => {
                     paddingTop: props.title
                       ? '8px'
                       : hasUsers && !hasMultiUser
-                      ? '12px'
-                      : '16px',
+                        ? '12px'
+                        : '16px',
                     width: '100%'
                   }}>
                   {props.message}

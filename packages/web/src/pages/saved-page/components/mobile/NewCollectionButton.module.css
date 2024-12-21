@@ -5,7 +5,9 @@
   width: 256px;
   border: 1px solid var(--harmony-n-100);
   border-radius: 4px;
-  box-shadow: 0 0 1px 0 var(--tile-shadow-1), 0 1px 0 0 var(--tile-shadow-2),
+  box-shadow:
+    0 0 1px 0 var(--tile-shadow-1),
+    0 1px 0 0 var(--tile-shadow-2),
     0 2px 5px -2px var(--tile-shadow-3);
 
   color: var(--harmony-n-600);

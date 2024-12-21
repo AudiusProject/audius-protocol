@@ -33,7 +33,10 @@ export enum PurchaseErrorCode {
 export type PurchaseContentErrorCode = BuyUSDCErrorCode | PurchaseErrorCode
 
 export class PurchaseContentError extends Error {
-  constructor(public code: PurchaseContentErrorCode, message: string) {
+  constructor(
+    public code: PurchaseContentErrorCode,
+    message: string
+  ) {
     super(message)
   }
 }

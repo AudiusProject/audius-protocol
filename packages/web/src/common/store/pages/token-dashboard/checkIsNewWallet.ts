@@ -13,9 +13,8 @@ const { updateWalletError } = tokenDashboardPageActions
 
 export function* checkIsNewWallet(walletAddress: string, chain: Chain) {
   const sdk = yield* getSDK()
-  const { connectedEthWallets, connectedSolWallets } = yield* select(
-    getAssociatedWallets
-  )
+  const { connectedEthWallets, connectedSolWallets } =
+    yield* select(getAssociatedWallets)
 
   const { data } = yield* call([sdk.users, sdk.users.getUserIDFromWallet], {
     associatedWallet: walletAddress

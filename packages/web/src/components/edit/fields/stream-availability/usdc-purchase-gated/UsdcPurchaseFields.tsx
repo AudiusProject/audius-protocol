@@ -181,9 +181,9 @@ const PriceField = (props: PriceFieldProps) => {
     value
       ? decimalIntegerToHumanReadable(value)
       : // Use prefilled value if set
-      prefillValue !== undefined
-      ? decimalIntegerToHumanReadable(prefillValue)
-      : null
+        prefillValue !== undefined
+        ? decimalIntegerToHumanReadable(prefillValue)
+        : null
   )
 
   // This logic is a bit of a hack to set an initial value once in the Formik field (when a prefilled value is desired)

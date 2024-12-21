@@ -185,9 +185,8 @@ export const listenRouteRateLimiter = async (params: {
 
   // consume and check rate limits
   const ipLimit = await listensIpRateLimiter.checkLimit(ip)
-  const ipTrackLimit = await listensIpTrackRateLimiter.checkLimit(
-    ipTrackConcatKey
-  )
+  const ipTrackLimit =
+    await listensIpTrackRateLimiter.checkLimit(ipTrackConcatKey)
 
   // merge limits and check if both allow passage
   const allowed = ipLimit.allowed && ipTrackLimit.allowed

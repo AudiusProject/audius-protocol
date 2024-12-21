@@ -198,8 +198,8 @@ const snippetMap = {
       notification.entityUser.user_id === notification.receiverUserId
         ? 'your'
         : notification.entityUser.user_id === user.user_id
-        ? 'their'
-        : `${notification.entityUser.name}'s`
+          ? 'their'
+          : `${notification.entityUser.name}'s`
     } ${notification.entity.type.toLowerCase()} ${notification.entity.name}`
   },
   ['comment_mention'](notification) {
@@ -208,8 +208,8 @@ const snippetMap = {
       notification.entityUser.user_id === notification.receiverUserId
         ? 'your'
         : notification.entityUser.user_id === user.user_id
-        ? 'their'
-        : `${notification.entityUser.name}'s`
+          ? 'their'
+          : `${notification.entityUser.name}'s`
     } ${notification.entity.type.toLowerCase()} ${notification.entity.name}`
   },
   ['comment_reaction'](notification) {
@@ -218,8 +218,8 @@ const snippetMap = {
       notification.entityUser.user_id === notification.receiverUserId
         ? 'your'
         : notification.entityUser.user_id === user.user_id
-        ? 'their'
-        : `${notification.entityUser.name}'s`
+          ? 'their'
+          : `${notification.entityUser.name}'s`
     } ${notification.entity.type.toLowerCase()} ${notification.entity.name}`
   }
 }

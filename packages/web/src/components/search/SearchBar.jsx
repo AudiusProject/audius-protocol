@@ -316,8 +316,8 @@ class SearchBar extends Component {
                     group.title === 'Profiles'
                       ? Kind.USERS
                       : group.title === 'Tracks'
-                      ? Kind.TRACKS
-                      : Kind.COLLECTIONS
+                        ? Kind.TRACKS
+                        : Kind.COLLECTIONS
                   }
                   id={String(opt.id)}
                   userId={opt.userId}
