@@ -1,7 +1,10 @@
-import { Playlist, UpdatePlaylistRequest } from '@audius/sdk'
+import { Playlist } from '@audius/sdk'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 
+import { playlistMetadataForUpdateWithSDK } from '~/adapters/collection'
+import { fileToSdk } from '~/adapters/track'
 import { useAppContext } from '~/context/appContext'
+import { Collection } from '~/models/Collection'
 import { ID } from '~/models/Identifiers'
 import { encodeHashId } from '~/utils/hashIds'
 
@@ -11,12 +14,11 @@ type MutationContext = {
   previousCollection: any
 }
 
-type UpdateCollectionParams = Omit<
-  UpdatePlaylistRequest,
-  'playlistId' | 'userId'
-> & {
+type UpdateCollectionParams = {
   playlistId: ID
   userId: ID
+  metadata: Collection
+  coverArtFile?: File
 }
 
 export const useUpdateCollection = () => {
@@ -27,7 +29,8 @@ export const useUpdateCollection = () => {
     mutationFn: async ({
       playlistId,
       userId,
-      ...params
+      metadata,
+      coverArtFile
     }: UpdateCollectionParams) => {
       if (!audiusSdk) throw new Error('SDK not initialized')
 
@@ -35,10 +38,15 @@ export const useUpdateCollection = () => {
       const encodedUserId = encodeHashId(userId)
       if (!encodedPlaylistId || !encodedUserId) throw new Error('Invalid ID')
 
+      const sdkMetadata = playlistMetadataForUpdateWithSDK(metadata)
+
       const response = await audiusSdk.playlists.updatePlaylist({
-        ...params,
+        coverArtFile: coverArtFile
+          ? fileToSdk(coverArtFile, 'cover_art')
+          : undefined,
         playlistId: encodedPlaylistId,
-        userId: encodedUserId
+        userId: encodedUserId,
+        metadata: sdkMetadata
       })
 
       return response
