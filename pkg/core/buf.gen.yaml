@@ -19,7 +19,7 @@ plugins:
     out: ../../packages/discovery-provider/src/tasks/core/gen
   - remote: buf.build/community/nipunn1313-mypy:v3.6.0
     out: ../../packages/discovery-provider/src/tasks/core/gen
-  - remote: buf.build/protocolbuffers/python:v29.0
+  - remote: buf.build/protocolbuffers/python:v28.3
     out: ../../packages/discovery-provider/src/tasks/core/gen
 
 inputs:
