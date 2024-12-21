@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
 
+import { userMetadataListFromSDK } from '~/adapters/user'
 import { useAppContext } from '~/context/appContext'
 import { ID } from '~/models/Identifiers'
 import { encodeHashId } from '~/utils/hashIds'
@@ -23,7 +24,7 @@ export const useUsers = (userIds: ID[], config?: Config) => {
       const { data } = await audiusSdk!.full.users.getBulkUsers({
         id: encodedIds
       })
-      return data
+      return userMetadataListFromSDK(data)
     },
     staleTime: config?.staleTime,
     enabled: !!audiusSdk && userIds.length > 0

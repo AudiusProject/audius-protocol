@@ -23,7 +23,7 @@ export const TestTrack = ({ trackId }: Props) => {
         Duration: {Math.floor(track.duration / 60)}:
         {(track.duration % 60).toString().padStart(2, '0')}
       </Text>
-      <Text>Play Count: {track.playCount.toLocaleString()}</Text>
+      <Text>Play Count: {track.play_count.toLocaleString()}</Text>
     </Flex>
   )
 }

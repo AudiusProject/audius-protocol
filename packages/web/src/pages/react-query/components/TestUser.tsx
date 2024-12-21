@@ -18,7 +18,7 @@ export const TestUser = ({ userId }: Props) => {
       <Text variant='heading'>{user.name}</Text>
       <Text>{user.bio || 'No description'}</Text>
       <Text>By: {user.name}</Text>
-      <Text>ID: {user.id}</Text>
+      <Text>ID: {user.user_id}</Text>
     </Flex>
   )
 }

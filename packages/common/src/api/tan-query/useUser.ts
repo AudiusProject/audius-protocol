@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
 
+import { userMetadataListFromSDK } from '~/adapters/user'
 import { useAppContext } from '~/context/appContext'
 import { ID } from '~/models/Identifiers'
 import { encodeHashId } from '~/utils/hashIds'
@@ -19,7 +20,7 @@ export const useUser = (userId: ID, config?: Config) => {
       const encodedId = encodeHashId(userId)
       if (!encodedId) return null
       const { data } = await audiusSdk!.full.users.getUser({ id: encodedId })
-      return data?.[0]
+      return userMetadataListFromSDK(data)[0]
     },
     staleTime: config?.staleTime,
     enabled: !!audiusSdk && !!userId

@@ -20,7 +20,7 @@ export const TestTrackUpdate = ({ trackId }: Props) => {
       metadata: {
         title: newTitle
       },
-      userId: track.userId
+      userId: track.user.user_id
     })
     // Clear input after submitting
     setNewTitle('')

@@ -20,7 +20,7 @@ export const TestCollectionUpdate = ({ playlistId }: Props) => {
       metadata: {
         playlistName: newTitle
       },
-      userId: collection.user.id
+      userId: collection.user.user_id
     })
     // Clear input after submitting
     setNewTitle('')
@@ -31,9 +31,9 @@ export const TestCollectionUpdate = ({ playlistId }: Props) => {
   return (
     <Flex direction='column' gap='m'>
       <Text variant='heading'>
-        Update Collection: {collection.playlistName}
+        Update Collection: {collection.playlist_name}
       </Text>
-      <Text>Current Title: {collection.playlistName}</Text>
+      <Text>Current Title: {collection.playlist_name}</Text>
       <Flex gap='m' alignItems='center'>
         <TextInput
           label='New title'

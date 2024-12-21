@@ -15,13 +15,13 @@ export const TestCollection = ({ playlistId }: Props) => {
 
   return (
     <Flex direction='column' gap='m'>
-      <Text variant='heading'>{collection.playlistName}</Text>
+      <Text variant='heading'>{collection.playlist_name}</Text>
       <Text>{collection.description || 'No description'}</Text>
       <Text>By: {collection.user.name}</Text>
       <Text>Bio: {collection.user.bio}</Text>
-      <Text>Track Count: {collection.playlistContents.length}</Text>
-      <Text>Repost Count: {collection.repostCount}</Text>
-      <Text>Favorite Count: {collection.favoriteCount}</Text>
+      <Text>Track Count: {collection.playlist_contents.length}</Text>
+      <Text>Repost Count: {collection.repost_count}</Text>
+      <Text>Favorite Count: {collection.favorite_count}</Text>
       <Text>Track 1: {collection.tracks?.[0].title}</Text>
       <Text>Track 1 User: {collection.tracks?.[0].user.name}</Text>
       <Text>Track 1 User Bio: {collection.tracks?.[0].user.bio}</Text>

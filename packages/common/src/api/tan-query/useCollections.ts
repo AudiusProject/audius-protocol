@@ -1,5 +1,7 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 
+import { userCollectionMetadataFromSDK } from '~/adapters/collection'
+import { transformAndCleanList } from '~/adapters/utils'
 import { useAppContext } from '~/context/appContext'
 import { ID } from '~/models/Identifiers'
 import { encodeHashId } from '~/utils/hashIds'
@@ -25,25 +27,30 @@ export const useCollections = (collectionIds: ID[], config?: Config) => {
         id: encodedIds
       })
 
-      data?.forEach((collection) => {
+      const collections = transformAndCleanList(
+        data,
+        userCollectionMetadataFromSDK
+      )
+
+      collections?.forEach((collection) => {
         // Prime user data from collection owner
         if (collection.user) {
           queryClient.setQueryData(
-            [QUERY_KEYS.user, collection.user.id],
+            [QUERY_KEYS.user, collection.user.user_id],
             collection.user
           )
         }
 
         // Prime track and user data from tracks in collection
         collection.tracks?.forEach((track) => {
-          if (track.id) {
+          if (track.track_id) {
             // Prime track data
-            queryClient.setQueryData([QUERY_KEYS.track, track.id], track)
+            queryClient.setQueryData([QUERY_KEYS.track, track.track_id], track)
 
             // Prime user data from track owner
             if (track.user) {
               queryClient.setQueryData(
-                [QUERY_KEYS.user, track.user.id],
+                [QUERY_KEYS.user, track.user.user_id],
                 track.user
               )
             }
@@ -51,7 +58,7 @@ export const useCollections = (collectionIds: ID[], config?: Config) => {
         })
       })
 
-      return data
+      return collections
     },
     staleTime: config?.staleTime,
     enabled: !!audiusSdk && collectionIds.length > 0
