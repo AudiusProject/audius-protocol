@@ -246,18 +246,11 @@ func (s *Server) isSelfAlreadyRegistered(ctx context.Context) bool {
 }
 
 func (s *Server) isSelfRegisteredOnEth() (bool, error) {
-	spf, err := s.contracts.GetServiceProviderFactoryContract()
+	_, err := s.getRegisteredNode(s.config.NodeEndpoint)
 	if err != nil {
-		return false, fmt.Errorf("could not get service provider factory: %v", err)
+		return false, err
 	}
-
-	spID, err := spf.GetServiceProviderIdFromEndpoint(nil, s.config.NodeEndpoint)
-	if err != nil {
-		return false, fmt.Errorf("issue getting sp data: %v", err)
-	}
-
-	// contract returns 0 if endpoint not registered
-	return spID.Uint64() != 0, nil
+	return true, nil
 }
 
 func (s *Server) registerSelfOnEth() error {
