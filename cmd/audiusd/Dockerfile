@@ -28,8 +28,8 @@ RUN mkdir -p /data && \
 
 RUN localedef -i en_US -f UTF-8 en_US.UTF-8
 
-ARG git_sha
-ENV GIT_SHA=$git_sha
+ARG GIT_SHA
+ENV GIT_SHA=$GIT_SHA
 
 EXPOSE 80
 EXPOSE 443

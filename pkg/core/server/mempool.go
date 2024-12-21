@@ -178,10 +178,10 @@ func (s *Server) broadcastMempoolTransaction(key string, tx *MempoolTransaction)
 			params.SetTransaction(common.SignedTxProtoIntoSignedTxOapi(tx.Tx))
 			_, err := peer.ProtocolForwardTransaction(params)
 			if err != nil {
-				logger.Errorf("could not broadcast tx: %v", err)
+				logger.Errorf("could not broadcast tx %s: %v", key, err)
 				return
 			}
-			s.logger.Debugf("broadcasted tx %s to peer", key)
+			s.logger.Infof("broadcasted tx %s to peer", key)
 		}(s.logger, peer)
 	}
 }

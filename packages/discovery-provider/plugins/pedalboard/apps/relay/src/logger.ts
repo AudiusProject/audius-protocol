@@ -1,9 +1,9 @@
-import pino, { stdTimeFunctions } from "pino";
+import pino, { stdTimeFunctions } from 'pino'
 
 const formatters = {
-  level (label: string) {
-      // Set level to string format
-      return { level: label.toUpperCase() }
+  level(label: string) {
+    // Set level to string format
+    return { level: label.toUpperCase() }
   }
 }
 
@@ -13,4 +13,4 @@ export const logger = pino({
   base: undefined,
   timestamp: stdTimeFunctions.isoTime,
   formatters
-});
+})

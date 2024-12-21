@@ -3,7 +3,6 @@ import { isEqual } from 'lodash'
 import { Collection } from '~/models/Collection'
 import { SquareSizes } from '~/models/ImageSizes'
 import { Track } from '~/models/Track'
-import { AudiusBackend } from '~/services/audius-backend'
 
 import { Nullable } from './typeUtils'
 
@@ -19,7 +18,6 @@ type ArtworkActions = {
 }
 
 type Context = {
-  audiusBackend: AudiusBackend
   generateImage: (urls: string[]) => Promise<{ url: string; file: File }>
 }
 

@@ -53,9 +53,8 @@ export class LocalStorage {
   }
 
   async getExpiringJSONValue<T>(key: string): Promise<T | null> {
-    const res: Nullable<{ value: T; expiry: number }> = await this.getJSONValue(
-      key
-    )
+    const res: Nullable<{ value: T; expiry: number }> =
+      await this.getJSONValue(key)
     if (!res) {
       return null
     }

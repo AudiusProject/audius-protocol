@@ -174,9 +174,8 @@ export class ChallengesApi extends GeneratedChallengesApi {
             txSoFar.serialize().byteLength
           }), submitting attestations separately...`
         )
-        const submissionSignature = await this.rewardManager.sendTransaction(
-          txSoFar
-        )
+        const submissionSignature =
+          await this.rewardManager.sendTransaction(txSoFar)
         logger.debug('Confirming attestation submissions...')
         await this.solanaClient.confirmAllTransactions([submissionSignature])
         instructions = []

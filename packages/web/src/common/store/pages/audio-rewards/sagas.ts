@@ -8,7 +8,8 @@ import {
   StringWei,
   SpecifierWithAmount,
   Name,
-  Id
+  Id,
+  Feature
 } from '@audius/common/models'
 import {
   IntKeys,
@@ -391,7 +392,8 @@ function* claimSingleChallengeRewardAsync(
             challengeId,
             specifier: res.specifier,
             amount: res.amount
-          }
+          },
+          feature: Feature.Rewards
         })
       }
     }

@@ -22,7 +22,9 @@ export const isInternalAudiusUrl = (url: string) =>
 export const isExternalAudiusUrl = (url: string) =>
   new RegExp(audiusUrlRegex).test(url)
 export const getPathFromAudiusUrl = (url: string) =>
-  url.startsWith('/') ? url : new RegExp(audiusUrlRegex).exec(url)?.[3] ?? null
+  url.startsWith('/')
+    ? url
+    : (new RegExp(audiusUrlRegex).exec(url)?.[3] ?? null)
 
 const collectionUrlRegex =
   // eslint-disable-next-line no-useless-escape

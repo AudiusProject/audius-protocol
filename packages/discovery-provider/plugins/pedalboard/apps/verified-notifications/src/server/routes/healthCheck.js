@@ -1,12 +1,12 @@
-import { Router } from "express";
+import { Router } from 'express'
 
 // Mapped to the /health_check Endpoint
-const router = Router();
+const router = Router()
 
-router.get("/", async (req, res) => {
+router.get('/', async (req, res) => {
   res.json({
-    healthy: true,
-  });
-});
+    healthy: true
+  })
+})
 
-export { router };
+export { router }

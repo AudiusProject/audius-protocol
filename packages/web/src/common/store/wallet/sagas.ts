@@ -1,6 +1,5 @@
 import {
   Name,
-  Chain,
   ErrorLevel,
   BNWei,
   SolanaWalletAddress
@@ -45,8 +44,7 @@ const {
   sendFailed,
   decreaseBalance
 } = walletActions
-const { getAccountBalance, getFreezeUntilTime, getLocalBalanceDidChange } =
-  walletSelectors
+const { getAccountBalance, getFreezeUntilTime } = walletSelectors
 const {
   fetchAssociatedWallets,
   transferEthAudioToSolWAudio,
@@ -75,7 +73,7 @@ function* getIsBalanceFrozen() {
  * @param action.playload.chain 'eth' or 'sol'
  */
 function* sendAsync({
-  payload: { recipientWallet, amount: weiAudioAmount, chain }
+  payload: { recipientWallet, amount: weiAudioAmount }
 }: ReturnType<typeof send>) {
   // WalletClient relies on audiusBackendInstance. Use waitForWrite to ensure it's initialized
   yield* waitForWrite()
@@ -102,17 +100,9 @@ function* sendAsync({
     return
   }
 
-  if (
-    chain === Chain.Eth &&
-    (!weiBNBalance || !weiBNBalance.gte(weiBNAmount))
-  ) {
+  if (weiBNAmount.gt(weiBNBalance)) {
     yield* put(sendFailed({ error: 'Not enough $AUDIO' }))
     return
-  } else if (chain === Chain.Sol) {
-    if (weiBNAmount.gt(weiBNBalance)) {
-      yield* put(sendFailed({ error: 'Not enough $AUDIO' }))
-      return
-    }
   }
 
   try {
@@ -141,51 +131,41 @@ function* sendAsync({
 
     // If transferring spl wrapped audio and there are insufficent funds with only the
     // user bank balance, transfer all eth AUDIO to spl wrapped audio
-    if (chain === Chain.Sol && weiBNAmount.gt(waudioWeiAmount)) {
+    if (weiBNAmount.gt(waudioWeiAmount)) {
       yield* put(transferEthAudioToSolWAudio())
       yield* call([walletClient, walletClient.transferTokensFromEthToSol], {
         sdk,
         ethAddress: currentUser
       })
     }
-
-    if (chain === Chain.Eth) {
-      yield* call(
-        [walletClient, walletClient.sendTokens],
-        recipientWallet,
-        weiBNAmount
-      )
-    } else {
-      try {
-        yield* call([walletClient, walletClient.sendWAudioTokens], {
-          address: recipientWallet as SolanaWalletAddress,
-          amount: weiBNAmount,
-          ethAddress: currentUser
-        })
-      } catch (e) {
-        const errorMessage = getErrorMessage(e)
-        if (errorMessage === 'Missing social proof') {
-          yield* put(sendFailed({ error: 'Missing social proof' }))
-          return
-        }
-        if (
-          errorMessage ===
-          'Recipient has no $AUDIO token account. Please install Phantom-Wallet to create one.'
-        ) {
-          yield* put(sendFailed({ error: errorMessage }))
-          return
-        }
-        yield* put(
-          sendFailed({ error: 'Something has gone wrong, please try again.' })
-        )
+    try {
+      yield* call([walletClient, walletClient.sendWAudioTokens], {
+        address: recipientWallet as SolanaWalletAddress,
+        amount: weiBNAmount,
+        ethAddress: currentUser
+      })
+    } catch (e) {
+      const errorMessage = getErrorMessage(e)
+      if (errorMessage === 'Missing social proof') {
+        yield* put(sendFailed({ error: 'Missing social proof' }))
         return
       }
+      if (
+        errorMessage ===
+        'Recipient has no $AUDIO token account. Please install Phantom-Wallet to create one.'
+      ) {
+        yield* put(sendFailed({ error: errorMessage }))
+        return
+      }
+      yield* put(
+        sendFailed({ error: 'Something has gone wrong, please try again.' })
+      )
+      return
     }
 
     // Only decrease store balance if we haven't already changed
-    const newBalance: ReturnType<typeof getAccountBalance> = yield* select(
-      getAccountBalance
-    )
+    const newBalance: ReturnType<typeof getAccountBalance> =
+      yield* select(getAccountBalance)
     if (newBalance?.eq(weiBNBalance)) {
       yield* put(decreaseBalance({ amount: weiAudioAmount }))
     }
@@ -233,13 +213,9 @@ function* fetchBalanceAsync() {
     const isBalanceFrozen = yield* call(getIsBalanceFrozen)
     if (isBalanceFrozen) return
 
-    const localBalanceChange: ReturnType<typeof getLocalBalanceDidChange> =
-      yield* select(getLocalBalanceDidChange)
-
     const [currentEthAudioWeiBalance, currentSolAudioWeiBalance] = yield* all([
       call([walletClient, walletClient.getCurrentBalance], {
-        ethAddress: account.wallet,
-        bustCache: localBalanceChange
+        ethAddress: account.wallet
       }),
       call([walletClient, walletClient.getCurrentWAudioBalance], {
         ethAddress: account.wallet
@@ -261,8 +237,7 @@ function* fetchBalanceAsync() {
 
     const associatedWalletBalance: BNWei | null = yield* call(
       [walletClient, walletClient.getAssociatedWalletBalance],
-      account.user_id,
-      /* bustCache */ localBalanceChange
+      account.user_id
     )
     if (isNullOrUndefined(associatedWalletBalance)) {
       console.warn(

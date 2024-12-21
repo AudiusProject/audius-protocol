@@ -22,10 +22,7 @@ const slice = createSlice({
   }
 })
 
-export const {
-  toggleVisibility,
-  closeVisualizer,
-  openVisualizer,
-} = slice.actions
+export const { toggleVisibility, closeVisualizer, openVisualizer } =
+  slice.actions
 
 export default slice.reducer

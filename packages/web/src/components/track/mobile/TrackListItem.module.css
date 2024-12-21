@@ -7,7 +7,9 @@
   justify-content: flex-start;
   align-items: center;
   cursor: pointer;
-  transition: background 0.17s ease-in-out, border 0.17s ease-in-out;
+  transition:
+    background 0.17s ease-in-out,
+    border 0.17s ease-in-out;
 }
 
 .trackContainer:active:not(:has(.locked)) {

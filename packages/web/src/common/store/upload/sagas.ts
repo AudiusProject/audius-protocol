@@ -37,7 +37,10 @@ import {
   uploadActions,
   getSDK,
   cacheTracksActions,
-  replaceTrackProgressModalActions
+  replaceTrackProgressModalActions,
+  queueSelectors,
+  queueActions,
+  playerActions
 } from '@audius/common/store'
 import {
   actionChannelDispatcher,
@@ -165,8 +168,8 @@ const makeOnProgress = (
       'audio' in progress
         ? progress.audio
         : 'art' in progress
-        ? progress.art
-        : null
+          ? progress.art
+          : null
     if (p === null) {
       return
     }
@@ -239,7 +242,7 @@ function* uploadWorker(
 
       const coverArtFile =
         track.metadata.artwork && 'file' in track.metadata.artwork
-          ? track.metadata.artwork?.file ?? null
+          ? (track.metadata.artwork?.file ?? null)
           : null
       const metadata = trackMetadataForUploadToSdk(track.metadata)
 
@@ -458,8 +461,8 @@ export function* handleUploads({
         downloadable: isContentFollowGated(track.metadata.download_conditions)
           ? 'follow'
           : track.metadata.is_downloadable
-          ? 'yes'
-          : 'no'
+            ? 'yes'
+            : 'no'
       })
     )
 
@@ -847,7 +850,7 @@ export function* uploadCollection(
           const { artwork } = collectionMetadata
 
           const coverArtFile =
-            artwork && 'file' in artwork ? artwork?.file ?? null : null
+            artwork && 'file' in artwork ? (artwork?.file ?? null) : null
 
           if (isAlbum) {
             // Create album
@@ -1262,17 +1265,17 @@ export function* updateTrackAudioAsync(
     )
 
     const newMetadata = {
-      ...metadata,
-      orig_file_cid: updatedMetadata.origFileCid,
+      ...payload.metadata,
       bpm: metadata.isCustomBpm ? track.bpm : null,
+      duration: updatedMetadata.duration,
       musical_key: metadata.isCustomMusicalKey ? metadata.musicalKey : null,
       audio_analysis_error_count: 0,
       orig_filename: updatedMetadata.origFilename || '',
+      orig_file_cid: updatedMetadata.origFileCid,
       preview_cid: updatedMetadata.previewCid || '',
       preview_start_seconds: updatedMetadata.previewStartSeconds ?? 0,
       track_cid: updatedMetadata.trackCid || '',
-      audio_upload_id: updatedMetadata.audioUploadId,
-      duration: updatedMetadata.duration
+      audio_upload_id: updatedMetadata.audioUploadId
     }
 
     yield* put(
@@ -1281,6 +1284,13 @@ export function* updateTrackAudioAsync(
         newMetadata as TrackMetadataForUpload
       )
     )
+
+    // If the track with replaced audio is in the queue, clear it
+    const queueOrder = yield* select(queueSelectors.getOrder)
+    if (queueOrder.map((item) => item.id).includes(track.track_id)) {
+      yield* put(queueActions.clear({}))
+      yield* put(playerActions.stop({}))
+    }
 
     // Delay to allow the user to see that the track replace upload has finished
     yield* delay(1500)

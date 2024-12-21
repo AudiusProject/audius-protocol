@@ -12,7 +12,6 @@ import {
 } from 'vitest'
 
 import { developmentConfig } from '../../config/development'
-import Web3 from '../../utils/web3'
 import { createAppWalletClient } from '../AudiusWalletClient'
 import { DiscoveryNodeSelector } from '../DiscoveryNodeSelector'
 
@@ -25,27 +24,6 @@ const userWallet = '0xc0ffee254729296a45a3885639AC7E10F9d54979'
 const discoveryNode = 'https://discovery-provider.audius.co'
 
 vitest.mock('../DiscoveryNodeSelector')
-vitest.mock('../../utils/web3', () => {
-  return {
-    default: vitest.fn().mockImplementation(() => {
-      return {
-        eth: {
-          getChainId: () => '',
-          Contract: vitest.fn().mockImplementation(() => ({
-            methods: {
-              manageEntity: () => ({
-                encodeABI: () => ''
-              })
-            }
-          }))
-        }
-      }
-    })
-  }
-})
-;(Web3 as any).providers = {
-  HttpProvider: vitest.fn().mockImplementation(() => {})
-}
 
 vitest
   .spyOn(DiscoveryNodeSelector.prototype, 'getSelectedEndpoint')

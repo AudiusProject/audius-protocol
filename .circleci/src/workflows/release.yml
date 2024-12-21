@@ -1,11 +1,6 @@
 when: << pipeline.parameters.run-release-workflow >>
 jobs:
   - push-docker-image:
-      name: push-core
-      context: [Vercel, dockerhub, slack-secrets]
-      service: core
-      notify_slack_on_failure: true
-  - push-docker-image:
       name: push-identity-service
       context: [Vercel, dockerhub, slack-secrets]
       service: identity-service
@@ -88,7 +83,6 @@ jobs:
   - commit-audius-docker-compose-and-notify:
       context: [slack-secrets, github]
       requires:
-        - push-core
         - push-identity-service
         - push-mediorum
         - push-discovery-provider

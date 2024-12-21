@@ -1,19 +1,10 @@
 import { audiusBackend } from '@audius/common/services'
-import * as nativeLibs from '@audius/sdk-legacy/dist/native-libs'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 
 import { env } from 'app/env'
 import { track } from 'app/services/analytics'
 import { reportToSentry } from 'app/utils/reportToSentry'
 
-import { createPrivateKey } from './createPrivateKey'
-import { withEagerOption } from './eagerLoadUtils'
-import {
-  libsInitEventEmitter,
-  LIBS_INITTED_EVENT,
-  setLibs,
-  waitForLibsInit
-} from './libs'
 import { monitoringCallbacks } from './monitoringCallbacks'
 import { getFeatureEnabled } from './remote-config'
 import { remoteConfigInstance } from './remote-config/remote-config-instance'
@@ -37,33 +28,12 @@ export const audiusBackendInstance = audiusBackend({
     return `${env.PUBLIC_PROTOCOL}//${env.PUBLIC_HOSTNAME}`
   },
   getStorageNodeSelector,
-  getWeb3Config: async (
-    libs,
-    registryAddress,
-    entityManagerAddress,
-    web3ProviderUrls
-  ) => ({
-    error: false,
-    web3Config: libs.configInternalWeb3(
-      registryAddress,
-      web3ProviderUrls,
-      undefined,
-      entityManagerAddress
-    )
-  }),
-  hedgehogConfig: {
-    createKey: createPrivateKey
-  },
   identityServiceUrl: env.IDENTITY_SERVICE,
   generalAdmissionUrl: env.GENERAL_ADMISSION,
   isElectron: false,
   localStorage: AsyncStorage,
   monitoringCallbacks,
   nativeMobile: true,
-  onLibsInit: (libs) => {
-    setLibs(libs)
-    libsInitEventEmitter.emit(LIBS_INITTED_EVENT)
-  },
   recaptchaSiteKey: env.RECAPTCHA_SITE_KEY,
   recordAnalytics: track,
   reportError: reportToSentry,
@@ -88,15 +58,5 @@ export const audiusBackendInstance = audiusBackend({
   userNodeUrl: env.USER_NODE,
   web3NetworkId: env.WEB3_NETWORK_ID,
   web3ProviderUrls: (env.WEB3_PROVIDER_URL || '').split(','),
-  waitForWeb3: async () => {},
-  wormholeConfig: {
-    ethBridgeAddress: env.ETH_BRIDGE_ADDRESS ?? undefined,
-    ethTokenBridgeAddress: env.ETH_TOKEN_BRIDGE_ADDRESS ?? undefined,
-    solBridgeAddress: env.SOL_BRIDGE_ADDRESS ?? undefined,
-    solTokenBridgeAddress: env.SOL_TOKEN_BRIDGE_ADDRESS ?? undefined,
-    wormholeRpcHosts: env.WORMHOLE_RPC_HOSTS ?? undefined
-  },
-  getLibs: async () => nativeLibs,
-  waitForLibsInit,
-  withEagerOption
+  waitForWeb3: async () => {}
 })

@@ -93,8 +93,8 @@ const BpmRangeView = ({ value, handleChange, setIsOpen }: ViewProps) => {
     bpmOptions.find((opt) => opt.value === value)
   )
 
-  const initialMinValue = isValueRangeOption ? '' : minMaxValue?.[0] ?? ''
-  const initialMaxValue = isValueRangeOption ? '' : minMaxValue?.[1] ?? ''
+  const initialMinValue = isValueRangeOption ? '' : (minMaxValue?.[0] ?? '')
+  const initialMaxValue = isValueRangeOption ? '' : (minMaxValue?.[1] ?? '')
 
   const [minBpm, setMinBpm] = useStateDebounced(initialMinValue)
   const [maxBpm, setMaxBpm] = useStateDebounced(initialMaxValue)
@@ -238,8 +238,8 @@ const BpmTargetView = ({ value, handleChange }: ViewProps) => {
     minMaxValue && isValidDiff
       ? String(Number(minMaxValue[0]) + minMaxDiff / 2)
       : minMaxValue // If range is not valid for target view
-      ? ''
-      : value
+        ? ''
+        : value
 
   const { color } = useTheme()
   const [bpmTarget, setBpmTarget] = useStateDebounced(initialTargetValue)

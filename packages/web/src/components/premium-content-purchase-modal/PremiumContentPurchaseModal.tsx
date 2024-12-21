@@ -253,8 +253,8 @@ export const PremiumContentPurchaseModal = () => {
   const purchaseConditions = isValidStreamGated
     ? metadata.stream_conditions
     : isValidDownloadGated
-    ? metadata.download_conditions
-    : null
+      ? metadata.download_conditions
+      : null
 
   const price = purchaseConditions ? purchaseConditions?.usdc_purchase.price : 0
 

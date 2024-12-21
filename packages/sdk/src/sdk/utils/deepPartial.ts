@@ -2,9 +2,9 @@
 export type DeepPartial<T> = T extends any[]
   ? T
   : T extends Set<any>
-  ? T
-  : T extends object
-  ? {
-      [P in keyof T]?: DeepPartial<T[P]>
-    }
-  : T
+    ? T
+    : T extends object
+      ? {
+          [P in keyof T]?: DeepPartial<T[P]>
+        }
+      : T

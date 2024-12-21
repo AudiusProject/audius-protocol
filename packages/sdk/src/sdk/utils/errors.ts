@@ -7,7 +7,10 @@ export class MissingOtpUserAuthError extends Error {
 
 export class AntiAbuseOracleAttestationError extends Error {
   override name = 'AntiAbuseOracleAttestationError'
-  constructor(public code: number, message: string) {
+  constructor(
+    public code: number,
+    message: string
+  ) {
     super(message)
     Object.setPrototypeOf(this, AntiAbuseOracleAttestationError.prototype)
   }

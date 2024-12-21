@@ -16,14 +16,14 @@ export const CHAIN_INFO = {
     chainIdNumber === 1
       ? 'Ethereum Mainnet'
       : chainIdNumber === 11155111
-      ? 'Ethereum Sepolia Testnet'
-      : 'Unknown',
+        ? 'Ethereum Sepolia Testnet'
+        : 'Unknown',
   currency:
     chainIdNumber === 1
       ? 'ETH'
       : chainIdNumber === 11155111
-      ? 'Sepolia ETH'
-      : 'Unknown',
+        ? 'Sepolia ETH'
+        : 'Unknown',
   explorerUrl:
     chainIdNumber === 11155111
       ? 'https://sepolia.etherscan.io/'

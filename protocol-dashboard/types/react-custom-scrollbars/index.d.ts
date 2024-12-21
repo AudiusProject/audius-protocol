@@ -1,1 +1,1 @@
-declare module 'react-custom-scrollbars';
+declare module 'react-custom-scrollbars'

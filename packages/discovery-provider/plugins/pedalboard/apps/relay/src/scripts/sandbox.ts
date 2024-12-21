@@ -2,7 +2,6 @@ import { sdk } from '@audius/sdk'
 import dotenv from 'dotenv'
 import { ethers } from 'ethers'
 
-
 /**
  * File that you can run via `npm run sandbox` to do some manual testing.
  */

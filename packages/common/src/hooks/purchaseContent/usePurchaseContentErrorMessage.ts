@@ -39,6 +39,7 @@ export const usePurchaseContentErrorMessage = (
     case PurchaseErrorCode.NoQuote:
       return messages.noQuote
     case BuyUSDCErrorCode.OnrampError:
+    case BuyUSDCErrorCode.CountryNotSupported:
     case PurchaseErrorCode.Canceled:
     case PurchaseErrorCode.InsufficientBalance:
     case PurchaseErrorCode.Unknown:

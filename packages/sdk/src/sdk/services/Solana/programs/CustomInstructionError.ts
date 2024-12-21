@@ -5,7 +5,10 @@ type CustomInstructionErrorMessage = {
 }
 
 export class CustomInstructionError extends Error {
-  constructor(public instructionIndex: number, public code: number) {
+  constructor(
+    public instructionIndex: number,
+    public code: number
+  ) {
     super(
       JSON.stringify({
         InstructionError: [instructionIndex, { Custom: code }]

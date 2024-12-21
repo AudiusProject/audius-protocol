@@ -11,18 +11,21 @@ import { parseParams } from '../../../../utils/parseParams'
 import type { AudiusWalletClient } from '../../../AudiusWalletClient'
 
 import {
+  BalanceOfSchema,
   PermitSchema,
   type AudiusTokenConfig,
-  type PermitParams
+  type PermitParams,
+  type BalanceOfParams
 } from './types'
 
 const ONE_HOUR_IN_MS = 1000 * 60 * 60
 
 export class AudiusTokenClient {
+  public readonly contractAddress: Hex
+
   private readonly audiusWalletClient: AudiusWalletClient
   private readonly walletClient: WalletClient
   private readonly publicClient: PublicClient
-  private readonly contractAddress: Hex
 
   constructor(config: AudiusTokenConfig) {
     this.audiusWalletClient = config.audiusWalletClient
@@ -74,6 +77,17 @@ export class AudiusTokenClient {
       ...other
     })
     return await this.walletClient.writeContract(request)
+  }
+
+  public async balanceOf(params: BalanceOfParams) {
+    const { account } = await parseParams('balanceOf', BalanceOfSchema)(params)
+    const balance = await this.publicClient.readContract({
+      address: this.contractAddress,
+      abi: AudiusToken.abi,
+      functionName: 'balanceOf',
+      args: [account]
+    })
+    return BigInt(balance)
   }
 
   private async domain(): Promise<

@@ -100,7 +100,7 @@ export const getProfileCollections = createDeepEqualSelector(
         return false
       })
       .map(
-        (collection) => ({ ...collection, user: { handle } } as UserCollection)
+        (collection) => ({ ...collection, user: { handle } }) as UserCollection
       )
     return userCollections
   }

@@ -31,8 +31,8 @@ export const Tooltip = ({
     color === 'primary'
       ? theme.color.secondary.secondary
       : color === 'white'
-      ? theme.color.special.white
-      : theme.color.secondary.secondary
+        ? theme.color.special.white
+        : theme.color.secondary.secondary
 
   // Keep track of whether we are hovering over the tooltip to know when to
   // allow it to become visible again

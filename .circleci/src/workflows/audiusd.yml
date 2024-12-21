@@ -2,8 +2,6 @@ when: << pipeline.parameters.run-audiusd-workflow >>
 jobs:
   - build-audius-ctl:
       context: github
-  - build-audiusd:
-      context: github
   - test-config-subcommands:
       context: github
       requires:
@@ -16,10 +14,37 @@ jobs:
         branches:
           only:
             - main
+
+  - test:
+      name: test-core
+      context: Vercel
+      service: core
+  - test:
+      name: test-mediorum
+      context: Vercel
+      service: mediorum
+  - test:
+      name: test-mediorum-unittests
+      context: Vercel
+      service: mediorum-unittests
+  - build-audiusd:
+      context: github
+  - push-docker-image:
+      name: push-core
+      context: [Vercel, dockerhub]
+      service: core
+      requires:
+        - test-core
+      filters:
+        branches:
+          only: main
   - deploy-audiusd-staging:
       context: [github, dockerhub]
       requires:
         - build-audiusd
+        - push-core
+        - test-mediorum
+        - test-mediorum-unittests
       filters:
         branches:
           only:

@@ -36,7 +36,7 @@ export const TopSupporters = () => {
   const profile = useSelector(getProfileUser)
   const supportersMap = useSelector(getOptimisticSupporters)
   const supportersForProfile = profile?.user_id
-    ? supportersMap[profile.user_id] ?? {}
+    ? (supportersMap[profile.user_id] ?? {})
     : {}
   const rankedSupporters = useSelector<AppState, User[]>((state) => {
     const usersMap = getUsers(state, {

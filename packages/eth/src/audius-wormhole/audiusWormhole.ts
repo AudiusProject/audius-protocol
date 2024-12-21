@@ -26,7 +26,7 @@ export class AudiusWormhole {
       { name: 'amount', type: 'uint256' },
       { name: 'recipientChain', type: 'uint16' },
       { name: 'recipient', type: 'bytes32' },
-      { name: 'arbiterFee', type: 'uint256' },
+      { name: 'artbiterFee', type: 'uint256' },
       { name: 'nonce', type: 'uint32' },
       { name: 'deadline', type: 'uint256' }
     ]

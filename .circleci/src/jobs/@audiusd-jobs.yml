@@ -202,6 +202,7 @@ deploy-audiusd-staging:
 
           # release audiusd image
           crane copy "audius/audiusd:${CIRCLE_SHA1}" "audius/audiusd:prerelease"
+          crane copy "audius/core:${CIRCLE_SHA1}" "audius/core:prerelease"
 
 deploy-audiusd-foundation:
   docker:
@@ -214,6 +215,7 @@ deploy-audiusd-foundation:
         name: Release audiusd to foundation
         command: |
           crane copy "audius/audiusd:${CIRCLE_SHA1}" "audius/audiusd:edge"
+          crane copy "audius/core:${CIRCLE_SHA1}" "audius/core:edge"
 
 deploy-audiusd-sps:
   docker:
@@ -226,3 +228,4 @@ deploy-audiusd-sps:
         name: Release audiusd to foundation
         command: |
           crane copy "audius/audiusd:${CIRCLE_SHA1}" "audius/audiusd:current"
+          crane copy "audius/core:${CIRCLE_SHA1}" "audius/core:current"
