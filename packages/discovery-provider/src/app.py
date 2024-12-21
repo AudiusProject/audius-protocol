@@ -544,5 +544,5 @@ def configure_celery(celery, test_config=None):
     celery.send_task("index_user_bank", queue="index_sol")
     celery.send_task("index_payment_router", queue="index_sol")
 
-    if environment == "dev":
+    if environment == "dev" or environment == "stage":
         celery.send_task("index_core")

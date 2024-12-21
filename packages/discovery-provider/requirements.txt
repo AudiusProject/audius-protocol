@@ -77,6 +77,7 @@ anchorpy==0.17.2
 grpcio==1.67.0
 grpcio-tools==1.67.0
 protobuf==5.28.3
+googleapis-common-protos==1.59.0
 
 # Test
 pytest-mock==3.6.1

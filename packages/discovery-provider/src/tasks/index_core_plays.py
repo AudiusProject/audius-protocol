@@ -10,6 +10,7 @@ from src.challenges.challenge_event_bus import ChallengeEventBus
 from src.models.social.play import Play
 from src.tasks.core.core_client import CoreClient
 from src.tasks.core.gen.protocol_pb2 import BlockResponse, SignedTransaction
+from src.tasks.index_core_cutovers import get_adjusted_core_block
 
 logger = logging.getLogger(__name__)
 
@@ -64,7 +65,10 @@ def index_core_play(
         timestamp = tx_play.timestamp.ToDatetime()
         track_id = int(tx_play.track_id)
         user_id = user_id
-        slot = block.height  # plus last solana slot
+        slot = get_adjusted_core_block(block.height)
+        city = tx_play.city
+        region = tx_play.region
+        country = tx_play.country
 
         plays.append(
             {
@@ -74,10 +78,10 @@ def index_core_play(
                 "slot": slot,
                 "signature": signature,
                 "created_at": timestamp,
-                "source": "",
-                "city": "",
-                "region": "",
-                "country": "",
+                "source": "relay",
+                "city": city,
+                "region": region,
+                "country": country,
             }
         )
 

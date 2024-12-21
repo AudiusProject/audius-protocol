@@ -43,45 +43,9 @@ class SignedTransaction(google.protobuf.message.Message):
         sla_rollup: global___SlaRollup | None = ...,
         manage_entity: global___ManageEntityLegacy | None = ...,
     ) -> None: ...
-    def HasField(
-        self,
-        field_name: typing.Literal[
-            "manage_entity",
-            b"manage_entity",
-            "plays",
-            b"plays",
-            "sla_rollup",
-            b"sla_rollup",
-            "transaction",
-            b"transaction",
-            "validator_registration",
-            b"validator_registration",
-        ],
-    ) -> builtins.bool: ...
-    def ClearField(
-        self,
-        field_name: typing.Literal[
-            "manage_entity",
-            b"manage_entity",
-            "plays",
-            b"plays",
-            "request_id",
-            b"request_id",
-            "signature",
-            b"signature",
-            "sla_rollup",
-            b"sla_rollup",
-            "transaction",
-            b"transaction",
-            "validator_registration",
-            b"validator_registration",
-        ],
-    ) -> None: ...
-    def WhichOneof(
-        self, oneof_group: typing.Literal["transaction", b"transaction"]
-    ) -> typing.Literal[
-        "plays", "validator_registration", "sla_rollup", "manage_entity"
-    ] | None: ...
+    def HasField(self, field_name: typing.Literal["manage_entity", b"manage_entity", "plays", b"plays", "sla_rollup", b"sla_rollup", "transaction", b"transaction", "validator_registration", b"validator_registration"]) -> builtins.bool: ...
+    def ClearField(self, field_name: typing.Literal["manage_entity", b"manage_entity", "plays", b"plays", "request_id", b"request_id", "signature", b"signature", "sla_rollup", b"sla_rollup", "transaction", b"transaction", "validator_registration", b"validator_registration"]) -> None: ...
+    def WhichOneof(self, oneof_group: typing.Literal["transaction", b"transaction"]) -> typing.Literal["plays", "validator_registration", "sla_rollup", "manage_entity"] | None: ...
 
 global___SignedTransaction = SignedTransaction
 
@@ -97,14 +61,30 @@ class SendTransactionRequest(google.protobuf.message.Message):
         *,
         transaction: global___SignedTransaction | None = ...,
     ) -> None: ...
-    def HasField(
-        self, field_name: typing.Literal["transaction", b"transaction"]
-    ) -> builtins.bool: ...
-    def ClearField(
-        self, field_name: typing.Literal["transaction", b"transaction"]
-    ) -> None: ...
+    def HasField(self, field_name: typing.Literal["transaction", b"transaction"]) -> builtins.bool: ...
+    def ClearField(self, field_name: typing.Literal["transaction", b"transaction"]) -> None: ...
 
 global___SendTransactionRequest = SendTransactionRequest
+
+@typing.final
+class ForwardTransactionRequest(google.protobuf.message.Message):
+    DESCRIPTOR: google.protobuf.descriptor.Descriptor
+
+    SIGNATURE_FIELD_NUMBER: builtins.int
+    TRANSACTION_FIELD_NUMBER: builtins.int
+    signature: builtins.str
+    @property
+    def transaction(self) -> global___SignedTransaction: ...
+    def __init__(
+        self,
+        *,
+        signature: builtins.str = ...,
+        transaction: global___SignedTransaction | None = ...,
+    ) -> None: ...
+    def HasField(self, field_name: typing.Literal["transaction", b"transaction"]) -> builtins.bool: ...
+    def ClearField(self, field_name: typing.Literal["signature", b"signature", "transaction", b"transaction"]) -> None: ...
+
+global___ForwardTransactionRequest = ForwardTransactionRequest
 
 @typing.final
 class GetTransactionRequest(google.protobuf.message.Message):
@@ -136,15 +116,20 @@ class TransactionResponse(google.protobuf.message.Message):
         txhash: builtins.str = ...,
         transaction: global___SignedTransaction | None = ...,
     ) -> None: ...
-    def HasField(
-        self, field_name: typing.Literal["transaction", b"transaction"]
-    ) -> builtins.bool: ...
-    def ClearField(
-        self,
-        field_name: typing.Literal["transaction", b"transaction", "txhash", b"txhash"],
-    ) -> None: ...
+    def HasField(self, field_name: typing.Literal["transaction", b"transaction"]) -> builtins.bool: ...
+    def ClearField(self, field_name: typing.Literal["transaction", b"transaction", "txhash", b"txhash"]) -> None: ...
 
 global___TransactionResponse = TransactionResponse
+
+@typing.final
+class ForwardTransactionResponse(google.protobuf.message.Message):
+    DESCRIPTOR: google.protobuf.descriptor.Descriptor
+
+    def __init__(
+        self,
+    ) -> None: ...
+
+global___ForwardTransactionResponse = ForwardTransactionResponse
 
 @typing.final
 class GetBlockRequest(google.protobuf.message.Message):
@@ -175,11 +160,7 @@ class BlockResponse(google.protobuf.message.Message):
     proposer: builtins.str
     height: builtins.int
     @property
-    def transactions(
-        self,
-    ) -> google.protobuf.internal.containers.RepeatedCompositeFieldContainer[
-        global___SignedTransaction
-    ]: ...
+    def transactions(self) -> google.protobuf.internal.containers.RepeatedCompositeFieldContainer[global___SignedTransaction]: ...
     def __init__(
         self,
         *,
@@ -189,21 +170,7 @@ class BlockResponse(google.protobuf.message.Message):
         height: builtins.int = ...,
         transactions: collections.abc.Iterable[global___SignedTransaction] | None = ...,
     ) -> None: ...
-    def ClearField(
-        self,
-        field_name: typing.Literal[
-            "blockhash",
-            b"blockhash",
-            "chainid",
-            b"chainid",
-            "height",
-            b"height",
-            "proposer",
-            b"proposer",
-            "transactions",
-            b"transactions",
-        ],
-    ) -> None: ...
+    def ClearField(self, field_name: typing.Literal["blockhash", b"blockhash", "chainid", b"chainid", "height", b"height", "proposer", b"proposer", "transactions", b"transactions"]) -> None: ...
 
 global___BlockResponse = BlockResponse
 
@@ -240,21 +207,7 @@ class NodeInfoResponse(google.protobuf.message.Message):
         eth_address: builtins.str = ...,
         current_height: builtins.int = ...,
     ) -> None: ...
-    def ClearField(
-        self,
-        field_name: typing.Literal[
-            "chainid",
-            b"chainid",
-            "comet_address",
-            b"comet_address",
-            "current_height",
-            b"current_height",
-            "eth_address",
-            b"eth_address",
-            "synced",
-            b"synced",
-        ],
-    ) -> None: ...
+    def ClearField(self, field_name: typing.Literal["chainid", b"chainid", "comet_address", b"comet_address", "current_height", b"current_height", "eth_address", b"eth_address", "synced", b"synced"]) -> None: ...
 
 global___NodeInfoResponse = NodeInfoResponse
 
@@ -264,11 +217,7 @@ class TrackPlays(google.protobuf.message.Message):
 
     PLAYS_FIELD_NUMBER: builtins.int
     @property
-    def plays(
-        self,
-    ) -> google.protobuf.internal.containers.RepeatedCompositeFieldContainer[
-        global___TrackPlay
-    ]: ...
+    def plays(self) -> google.protobuf.internal.containers.RepeatedCompositeFieldContainer[global___TrackPlay]: ...
     def __init__(
         self,
         *,
@@ -287,11 +236,15 @@ class ValidatorRegistration(google.protobuf.message.Message):
     ETH_BLOCK_FIELD_NUMBER: builtins.int
     NODE_TYPE_FIELD_NUMBER: builtins.int
     SP_ID_FIELD_NUMBER: builtins.int
+    PUB_KEY_FIELD_NUMBER: builtins.int
+    POWER_FIELD_NUMBER: builtins.int
     endpoint: builtins.str
     comet_address: builtins.str
     eth_block: builtins.str
     node_type: builtins.str
     sp_id: builtins.str
+    pub_key: builtins.bytes
+    power: builtins.int
     def __init__(
         self,
         *,
@@ -300,22 +253,10 @@ class ValidatorRegistration(google.protobuf.message.Message):
         eth_block: builtins.str = ...,
         node_type: builtins.str = ...,
         sp_id: builtins.str = ...,
+        pub_key: builtins.bytes = ...,
+        power: builtins.int = ...,
     ) -> None: ...
-    def ClearField(
-        self,
-        field_name: typing.Literal[
-            "comet_address",
-            b"comet_address",
-            "endpoint",
-            b"endpoint",
-            "eth_block",
-            b"eth_block",
-            "node_type",
-            b"node_type",
-            "sp_id",
-            b"sp_id",
-        ],
-    ) -> None: ...
+    def ClearField(self, field_name: typing.Literal["comet_address", b"comet_address", "endpoint", b"endpoint", "eth_block", b"eth_block", "node_type", b"node_type", "power", b"power", "pub_key", b"pub_key", "sp_id", b"sp_id"]) -> None: ...
 
 global___ValidatorRegistration = ValidatorRegistration
 
@@ -327,9 +268,15 @@ class TrackPlay(google.protobuf.message.Message):
     TRACK_ID_FIELD_NUMBER: builtins.int
     TIMESTAMP_FIELD_NUMBER: builtins.int
     SIGNATURE_FIELD_NUMBER: builtins.int
+    CITY_FIELD_NUMBER: builtins.int
+    REGION_FIELD_NUMBER: builtins.int
+    COUNTRY_FIELD_NUMBER: builtins.int
     user_id: builtins.str
     track_id: builtins.str
     signature: builtins.str
+    city: builtins.str
+    region: builtins.str
+    country: builtins.str
     @property
     def timestamp(self) -> google.protobuf.timestamp_pb2.Timestamp: ...
     def __init__(
@@ -339,23 +286,12 @@ class TrackPlay(google.protobuf.message.Message):
         track_id: builtins.str = ...,
         timestamp: google.protobuf.timestamp_pb2.Timestamp | None = ...,
         signature: builtins.str = ...,
+        city: builtins.str = ...,
+        region: builtins.str = ...,
+        country: builtins.str = ...,
     ) -> None: ...
-    def HasField(
-        self, field_name: typing.Literal["timestamp", b"timestamp"]
-    ) -> builtins.bool: ...
-    def ClearField(
-        self,
-        field_name: typing.Literal[
-            "signature",
-            b"signature",
-            "timestamp",
-            b"timestamp",
-            "track_id",
-            b"track_id",
-            "user_id",
-            b"user_id",
-        ],
-    ) -> None: ...
+    def HasField(self, field_name: typing.Literal["timestamp", b"timestamp"]) -> builtins.bool: ...
+    def ClearField(self, field_name: typing.Literal["city", b"city", "country", b"country", "region", b"region", "signature", b"signature", "timestamp", b"timestamp", "track_id", b"track_id", "user_id", b"user_id"]) -> None: ...
 
 global___TrackPlay = TrackPlay
 
@@ -397,11 +333,7 @@ class SlaRollup(google.protobuf.message.Message):
     @property
     def timestamp(self) -> google.protobuf.timestamp_pb2.Timestamp: ...
     @property
-    def reports(
-        self,
-    ) -> google.protobuf.internal.containers.RepeatedCompositeFieldContainer[
-        global___SlaNodeReport
-    ]: ...
+    def reports(self) -> google.protobuf.internal.containers.RepeatedCompositeFieldContainer[global___SlaNodeReport]: ...
     def __init__(
         self,
         *,
@@ -410,22 +342,8 @@ class SlaRollup(google.protobuf.message.Message):
         block_end: builtins.int = ...,
         reports: collections.abc.Iterable[global___SlaNodeReport] | None = ...,
     ) -> None: ...
-    def HasField(
-        self, field_name: typing.Literal["timestamp", b"timestamp"]
-    ) -> builtins.bool: ...
-    def ClearField(
-        self,
-        field_name: typing.Literal[
-            "block_end",
-            b"block_end",
-            "block_start",
-            b"block_start",
-            "reports",
-            b"reports",
-            "timestamp",
-            b"timestamp",
-        ],
-    ) -> None: ...
+    def HasField(self, field_name: typing.Literal["timestamp", b"timestamp"]) -> builtins.bool: ...
+    def ClearField(self, field_name: typing.Literal["block_end", b"block_end", "block_start", b"block_start", "reports", b"reports", "timestamp", b"timestamp"]) -> None: ...
 
 global___SlaRollup = SlaRollup
 
@@ -443,12 +361,7 @@ class SlaNodeReport(google.protobuf.message.Message):
         address: builtins.str = ...,
         num_blocks_proposed: builtins.int = ...,
     ) -> None: ...
-    def ClearField(
-        self,
-        field_name: typing.Literal[
-            "address", b"address", "num_blocks_proposed", b"num_blocks_proposed"
-        ],
-    ) -> None: ...
+    def ClearField(self, field_name: typing.Literal["address", b"address", "num_blocks_proposed", b"num_blocks_proposed"]) -> None: ...
 
 global___SlaNodeReport = SlaNodeReport
 
@@ -478,22 +391,6 @@ class ManageEntityLegacy(google.protobuf.message.Message):
         metadata: builtins.str = ...,
         signature: builtins.str = ...,
     ) -> None: ...
-    def ClearField(
-        self,
-        field_name: typing.Literal[
-            "action",
-            b"action",
-            "entity_id",
-            b"entity_id",
-            "entity_type",
-            b"entity_type",
-            "metadata",
-            b"metadata",
-            "signature",
-            b"signature",
-            "user_id",
-            b"user_id",
-        ],
-    ) -> None: ...
+    def ClearField(self, field_name: typing.Literal["action", b"action", "entity_id", b"entity_id", "entity_type", b"entity_type", "metadata", b"metadata", "signature", b"signature", "user_id", b"user_id"]) -> None: ...
 
 global___ManageEntityLegacy = ManageEntityLegacy
