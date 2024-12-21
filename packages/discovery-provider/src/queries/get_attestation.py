@@ -145,6 +145,7 @@ def get_attestation(
             and_(
                 ChallengeDisbursement.specifier == UserChallenge.specifier,
                 ChallengeDisbursement.challenge_id == UserChallenge.challenge_id,
+                ChallengeDisbursement.user_id == UserChallenge.user_id,
             ),
         )
         .filter(
