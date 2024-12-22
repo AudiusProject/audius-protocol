@@ -38,7 +38,6 @@ export type NavItemConfig = {
   label: string
   leftIcon: IconComponent
   to?: string
-  requiresAccount?: boolean
   isExpandable?: boolean
   rightIcon?: React.ReactNode
   shouldPersistRightIcon?: boolean
