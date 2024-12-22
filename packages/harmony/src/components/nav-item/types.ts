@@ -1,3 +1,5 @@
+import { MouseEvent } from 'react'
+
 import { IconComponent } from 'components/icon'
 
 import type { WithCSS } from '../../foundations/theme'
@@ -12,5 +14,5 @@ export type NavItemProps = WithCSS<{
   /** Whether the navigation item is currently selected. */
   isSelected?: boolean
   /** The callback function to be called when the navigation item is clicked. */
-  onClick?: () => void
+  onClick?: (event?: MouseEvent<Element>) => void
 }>
