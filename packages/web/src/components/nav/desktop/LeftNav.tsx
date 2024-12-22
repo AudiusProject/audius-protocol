@@ -97,6 +97,7 @@ const LeftNav = (props: NavColumnProps) => {
         <LeftNavLink
           key={item.label}
           leftIcon={item.leftIcon}
+          rightIcon={item.rightIcon}
           to={item.to}
           disabled={item.disabled}
           restriction={item.restriction}

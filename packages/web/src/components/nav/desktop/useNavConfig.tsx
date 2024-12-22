@@ -1,6 +1,6 @@
 import { ReactNode, useCallback } from 'react'
 
-import { accountSelectors } from '@audius/common/store'
+import { accountSelectors, chatSelectors } from '@audius/common/store'
 import { route } from '@audius/common/utils'
 import type { IconComponent } from '@audius/harmony'
 import {
@@ -11,7 +11,8 @@ import {
   IconMessages,
   IconPlaylists,
   IconTrending,
-  IconWallet
+  IconWallet,
+  NotificationCount
 } from '@audius/harmony'
 import { useSelector } from 'react-redux'
 
@@ -31,6 +32,7 @@ const {
 } = route
 
 const { getIsAccountComplete, getHasAccount } = accountSelectors
+const { getUnreadMessagesCount } = chatSelectors
 
 export type NavItemConfig = {
   label: string
@@ -47,6 +49,7 @@ export type NavItemConfig = {
 export const useNavConfig = () => {
   const isAccountComplete = useSelector(getIsAccountComplete)
   const hasAccount = useSelector(getHasAccount)
+  const unreadMessagesCount = useSelector(getUnreadMessagesCount)
 
   const getNavItems = useCallback(
     (): NavItemConfig[] => [
@@ -81,7 +84,11 @@ export const useNavConfig = () => {
         leftIcon: IconMessages,
         to: CHATS_PAGE,
         restriction: 'account',
-        disabled: !isAccountComplete
+        disabled: !isAccountComplete,
+        rightIcon:
+          unreadMessagesCount > 0 ? (
+            <NotificationCount count={unreadMessagesCount} />
+          ) : undefined
       },
       {
         label: 'Wallets',
@@ -109,7 +116,7 @@ export const useNavConfig = () => {
         disabled: !isAccountComplete
       }
     ],
-    [isAccountComplete, hasAccount]
+    [isAccountComplete, hasAccount, unreadMessagesCount]
   )
 
   return getNavItems()

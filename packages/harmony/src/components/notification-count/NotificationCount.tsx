@@ -19,16 +19,14 @@ export const NotificationCount = ({
 }: NotificationCountProps) => {
   const { spacing, color } = useTheme()
 
-  const containerStyles: CSSObject = {
-    display: 'inline-flex',
-    position: 'relative'
-  }
+  const containerStyles: CSSObject = children
+    ? {
+        display: 'inline-flex',
+        position: 'relative'
+      }
+    : {}
 
   const badgeStyles: CSSObject = {
-    position: 'absolute',
-    top: 0,
-    right: 0,
-    transform: 'translate(50%, -50%)',
     minWidth: spacing.unit5,
     backgroundColor: color.primary.p300,
     border: 'none',
@@ -40,6 +38,12 @@ export const NotificationCount = ({
       minWidth: spacing.unit3 + spacing.unitHalf,
       padding: `0px ${spacing.xs}px`,
       backgroundColor: color.primary.p300
+    }),
+    ...(children && {
+      position: 'absolute',
+      top: 0,
+      right: 0,
+      transform: 'translate(50%, -50%)'
     })
   }
 
