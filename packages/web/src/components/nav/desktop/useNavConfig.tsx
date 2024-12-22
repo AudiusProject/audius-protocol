@@ -1,4 +1,4 @@
-import { ReactNode, useCallback } from 'react'
+import { ReactNode, useMemo } from 'react'
 
 import { accountSelectors, chatSelectors } from '@audius/common/store'
 import { route } from '@audius/common/utils'
@@ -51,7 +51,7 @@ export const useNavConfig = () => {
   const hasAccount = useSelector(getHasAccount)
   const unreadMessagesCount = useSelector(getUnreadMessagesCount)
 
-  const getNavItems = useCallback(
+  const navItems = useMemo(
     (): NavItemConfig[] => [
       {
         label: 'Feed',
@@ -119,5 +119,5 @@ export const useNavConfig = () => {
     [isAccountComplete, hasAccount, unreadMessagesCount]
   )
 
-  return getNavItems()
+  return navItems
 }
