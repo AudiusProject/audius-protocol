@@ -101,7 +101,7 @@ export const ExpandableNavItem = ({
               maxWidth: '240px'
             }}
           >
-            {IconComponent ? <IconComponent color='default' size='m' /> : null}
+            {IconComponent ? <IconComponent color='default' size='l' /> : null}
             <Text
               variant='title'
               size='l'
@@ -109,7 +109,6 @@ export const ExpandableNavItem = ({
               lineHeight='single'
               color='default'
               ellipses
-              maxLines={1}
             >
               {label}
             </Text>
