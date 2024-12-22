@@ -16,6 +16,7 @@ export const NavItem = ({
   rightIcon: RightIcon,
   isSelected = false,
   onClick,
+  textSize = 'l',
   ...props
 }: NavItemProps) => {
   const { color } = useTheme()
@@ -70,7 +71,7 @@ export const NavItem = ({
           {hasLeftIcon ? <LeftIcon size='l' color={iconColor} /> : null}
           <Text
             variant='title'
-            size='l'
+            size={textSize}
             strength='weak'
             lineHeight='single'
             color={textColor}

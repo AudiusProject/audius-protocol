@@ -44,6 +44,7 @@ export const WalletsNestedContent = () => {
         }
         restriction='account'
         disabled={!isAccountComplete}
+        textSize='m'
       >
         $AUDIO
       </LeftNavLink>
@@ -63,6 +64,7 @@ export const WalletsNestedContent = () => {
           }
           restriction='account'
           disabled={!isAccountComplete}
+          textSize='m'
         >
           USDC
         </LeftNavLink>

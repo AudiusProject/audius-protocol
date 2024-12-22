@@ -1,6 +1,7 @@
 import { MouseEvent, ReactNode } from 'react'
 
 import { IconComponent } from 'components/icon'
+import { TextSize } from 'components/text'
 
 import type { WithCSS } from '../../foundations/theme'
 
@@ -15,4 +16,6 @@ export type NavItemProps = WithCSS<{
   isSelected?: boolean
   /** The callback function to be called when the navigation item is clicked. */
   onClick?: (event?: MouseEvent<Element>) => void
+  /** The size of the text to display. */
+  textSize?: TextSize
 }>
