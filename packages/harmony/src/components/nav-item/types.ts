@@ -1,4 +1,4 @@
-import { MouseEvent } from 'react'
+import { MouseEvent, ReactNode } from 'react'
 
 import { IconComponent } from 'components/icon'
 
@@ -10,7 +10,7 @@ export type NavItemProps = WithCSS<{
   /** The name of the icon to display on the left side of the label. */
   leftIcon?: IconComponent
   /** The name of the icon to display on the right side of the label. */
-  rightIcon?: IconComponent
+  rightIcon?: ReactNode
   /** Whether the navigation item is currently selected. */
   isSelected?: boolean
   /** The callback function to be called when the navigation item is clicked. */

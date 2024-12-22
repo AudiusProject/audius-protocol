@@ -79,7 +79,7 @@ export const NavItem = ({
             {children}
           </Text>
         </Flex>
-        {hasRightIcon ? <RightIcon size='m' color={iconColor} /> : null}
+        {hasRightIcon ? RightIcon : null}
       </Flex>
     </Flex>
   )

@@ -7,7 +7,6 @@ import {
   IconCloudUpload,
   IconExplore,
   IconFeed,
-  IconGift,
   IconLibrary,
   IconMessages,
   IconPlaylists,
@@ -20,6 +19,7 @@ import { RestrictionType } from 'hooks/useRequiresAccount'
 
 import { PlaylistLibrary } from './PlaylistLibrary'
 import { CreatePlaylistLibraryItemButton } from './PlaylistLibrary/CreatePlaylistLibraryItemButton'
+import { WalletsNestedContent } from './WalletsNestedContent'
 
 const {
   EXPLORE_PAGE,
@@ -27,9 +27,7 @@ const {
   LIBRARY_PAGE,
   TRENDING_PAGE,
   CHATS_PAGE,
-  PAYMENTS_PAGE,
-  UPLOAD_PAGE,
-  AUDIO_PAGE
+  UPLOAD_PAGE
 } = route
 
 const { getIsAccountComplete, getHasAccount } = accountSelectors
@@ -88,17 +86,10 @@ export const useNavConfig = () => {
       {
         label: 'Wallets',
         leftIcon: IconWallet,
-        to: PAYMENTS_PAGE,
         isExpandable: true,
         restriction: 'account',
-        disabled: !isAccountComplete
-      },
-      {
-        label: 'Rewards',
-        leftIcon: IconGift,
-        to: AUDIO_PAGE,
-        restriction: 'account',
-        disabled: !isAccountComplete
+        disabled: !isAccountComplete,
+        nestedComponent: WalletsNestedContent
       },
       {
         label: 'Upload',
@@ -113,7 +104,7 @@ export const useNavConfig = () => {
         isExpandable: true,
         rightIcon: <CreatePlaylistLibraryItemButton />,
         shouldPersistRightIcon: true,
-        nestedComponent: () => <PlaylistLibrary />,
+        nestedComponent: PlaylistLibrary,
         restriction: 'account',
         disabled: !isAccountComplete
       }
