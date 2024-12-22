@@ -59,7 +59,7 @@ export const ExpandableNavItem = ({
     : LeftIcon
 
   return (
-    <Flex direction='column' {...props}>
+    <Flex direction='column' role='navigation' {...props}>
       <Flex
         alignItems='center'
         gap='s'
@@ -81,6 +81,10 @@ export const ExpandableNavItem = ({
           onMouseEnter={handleMouseEnter}
           onMouseLeave={handleMouseLeave}
           onClick={handleClick}
+          role='button'
+          aria-expanded={isOpen}
+          aria-controls={`${label}-content`}
+          aria-label={`${label} navigation section`}
         >
           <Flex
             alignItems='center'
@@ -107,7 +111,14 @@ export const ExpandableNavItem = ({
         </Flex>
       </Flex>
       {isOpen && nestedItems ? (
-        <Flex direction='column'>{nestedItems}</Flex>
+        <Flex
+          direction='column'
+          id={`${label}-content`}
+          role='region'
+          aria-label={`${label} content`}
+        >
+          {nestedItems}
+        </Flex>
       ) : null}
     </Flex>
   )
