@@ -1,4 +1,4 @@
-import { useCallback } from 'react'
+import { ReactNode, useCallback } from 'react'
 
 import { accountSelectors } from '@audius/common/store'
 import { route } from '@audius/common/utils'
@@ -39,7 +39,7 @@ export type NavItemConfig = {
   leftIcon: IconComponent
   to?: string
   isExpandable?: boolean
-  rightIcon?: React.ReactNode
+  rightIcon?: ReactNode
   shouldPersistRightIcon?: boolean
   nestedComponent?: React.ComponentType<any>
   disabled?: boolean
