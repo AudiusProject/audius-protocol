@@ -4,6 +4,7 @@ import { useTheme, CSSObject } from '@emotion/react'
 
 import { HarmonyTheme } from '../../foundations/theme'
 import { IconCaretDown, IconCaretRight } from '../../icons'
+import { Box } from '../layout/Box'
 import { Flex } from '../layout/Flex'
 import { Text } from '../text'
 
@@ -114,7 +115,7 @@ export const ExpandableNavItem = ({
             </Text>
           </Flex>
           {shouldShowRightIcon ? (
-            <div onClick={stopRightIconPropagation}>{rightIcon}</div>
+            <Box onClick={stopRightIconPropagation}>{rightIcon}</Box>
           ) : null}
         </Flex>
       </Flex>
