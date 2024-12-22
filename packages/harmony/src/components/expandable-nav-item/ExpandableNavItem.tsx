@@ -58,6 +58,12 @@ export const ExpandableNavItem = ({
       : IconCaretRight
     : LeftIcon
 
+  const shouldShowRightIcon = isOpen || shouldPersistRightIcon
+
+  const stopRightIconPropagation = (e: React.MouseEvent) => {
+    e.stopPropagation()
+  }
+
   return (
     <Flex direction='column' role='navigation' {...props}>
       <Flex
@@ -107,7 +113,9 @@ export const ExpandableNavItem = ({
               {label}
             </Text>
           </Flex>
-          {isOpen || shouldPersistRightIcon ? rightIcon : null}
+          {shouldShowRightIcon ? (
+            <div onClick={stopRightIconPropagation}>{rightIcon}</div>
+          ) : null}
         </Flex>
       </Flex>
       {isOpen && nestedItems ? (
