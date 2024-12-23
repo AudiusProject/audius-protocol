@@ -305,15 +305,11 @@ def get_feed_es(args, limit=10, offset=0):
     # batch populate gated track and collection metadata
     db = get_db_read_replica()
     with db.scoped_session() as session:
-        _populate_gated_content_metadata(
-            session, sorted_feed, current_user["user_id"], include_playlist_tracks=True
-        )
+        _populate_gated_content_metadata(session, sorted_feed, current_user["user_id"])
 
     # populate metadata + remove extra fields from items
     sorted_feed = [
-        populate_track_or_playlist_metadata_es(
-            item, current_user, include_playlist_tracks=True
-        )
+        populate_track_or_playlist_metadata_es(item, current_user)
         for item in sorted_feed
     ]
 
