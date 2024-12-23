@@ -857,8 +857,6 @@ def _populate_gated_content_metadata(session, entities, current_user_id):
         ] = has_download_access
 
     for entity in entities:
-        if "playlist_id" in entity and "tracks" in entity:
-            _populate_gated_content_metadata(session, entity["tracks"], current_user_id)
         content_id = getContentId(entity)
         if content_id not in gated_content_ids:
             entity[response_name_constants.access] = {
@@ -1478,8 +1476,6 @@ def get_users_ids(results):
     for result in results:
         if "playlist_owner_id" in result:
             user_ids.append(int(result["playlist_owner_id"]))
-            for track in result.get("tracks", []):
-                user_ids.append(int(track["owner_id"]))
         elif "owner_id" in result:
             user_ids.append(int(result["owner_id"]))
     # Remove duplicate user ids

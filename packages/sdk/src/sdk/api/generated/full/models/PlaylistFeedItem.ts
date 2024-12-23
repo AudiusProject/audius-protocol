@@ -14,12 +14,12 @@
  */
 
 import { exists, mapValues } from '../runtime';
-import type { PlaylistFull } from './PlaylistFull';
+import type { PlaylistFullWithoutTracks } from './PlaylistFullWithoutTracks';
 import {
-    PlaylistFullFromJSON,
-    PlaylistFullFromJSONTyped,
-    PlaylistFullToJSON,
-} from './PlaylistFull';
+    PlaylistFullWithoutTracksFromJSON,
+    PlaylistFullWithoutTracksFromJSONTyped,
+    PlaylistFullWithoutTracksToJSON,
+} from './PlaylistFullWithoutTracks';
 
 /**
  * 
@@ -35,10 +35,10 @@ export interface PlaylistFeedItem {
     type: string;
     /**
      * 
-     * @type {PlaylistFull}
+     * @type {PlaylistFullWithoutTracks}
      * @memberof PlaylistFeedItem
      */
-    item: PlaylistFull;
+    item: PlaylistFullWithoutTracks;
 }
 
 /**
@@ -63,7 +63,7 @@ export function PlaylistFeedItemFromJSONTyped(json: any, ignoreDiscriminator: bo
     return {
         
         'type': json['type'],
-        'item': PlaylistFullFromJSON(json['item']),
+        'item': PlaylistFullWithoutTracksFromJSON(json['item']),
     };
 }
 
@@ -77,7 +77,7 @@ export function PlaylistFeedItemToJSON(value?: PlaylistFeedItem | null): any {
     return {
         
         'type': value.type,
-        'item': PlaylistFullToJSON(value.item),
+        'item': PlaylistFullWithoutTracksToJSON(value.item),
     };
 }
 
