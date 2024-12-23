@@ -18,7 +18,7 @@ export const TestCollectionUpdate = ({ playlistId }: Props) => {
     updateCollection.mutate({
       playlistId,
       metadata: {
-        playlistName: newTitle
+        playlist_name: newTitle
       },
       userId: collection.user.user_id
     })

@@ -10,13 +10,13 @@ import { encodeHashId } from '~/utils/hashIds'
 import { QUERY_KEYS } from './queryKeys'
 
 type MutationContext = {
-  previousTrack: any
+  previousTrack: Track | undefined
 }
 
 type UpdateTrackParams = {
   trackId: ID
   userId: ID
-  metadata: TrackMetadataForUpload
+  metadata: Partial<TrackMetadataForUpload>
   coverArtFile?: File
 }
 
@@ -37,7 +37,9 @@ export const useUpdateTrack = () => {
       const encodedUserId = encodeHashId(userId)
       if (!encodedTrackId || !encodedUserId) throw new Error('Invalid ID')
 
-      const sdkMetadata = trackMetadataForUploadToSdk(metadata)
+      const sdkMetadata = trackMetadataForUploadToSdk(
+        metadata as TrackMetadataForUpload
+      )
 
       const response = await audiusSdk.tracks.updateTrack({
         coverArtFile: coverArtFile

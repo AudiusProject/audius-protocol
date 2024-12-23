@@ -15,7 +15,7 @@ type MutationContext = {
 
 type UpdateUserParams = {
   userId: ID
-  metadata: UserMetadata
+  metadata: Partial<UserMetadata>
   profilePictureFile?: File
   coverArtFile?: File
 }
@@ -31,7 +31,7 @@ export const useUpdateUser = () => {
       const encodedUserId = encodeHashId(userId)
       if (!encodedUserId) throw new Error('Invalid ID')
 
-      const sdkMetadata = userMetadataToSdk(metadata)
+      const sdkMetadata = userMetadataToSdk(metadata as UserMetadata)
 
       const response = await audiusSdk.users.updateProfile({
         ...params,

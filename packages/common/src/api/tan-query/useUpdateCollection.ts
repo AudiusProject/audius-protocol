@@ -17,7 +17,7 @@ type MutationContext = {
 type UpdateCollectionParams = {
   playlistId: ID
   userId: ID
-  metadata: Collection
+  metadata: Partial<Collection>
   coverArtFile?: File
 }
 
@@ -38,7 +38,9 @@ export const useUpdateCollection = () => {
       const encodedUserId = encodeHashId(userId)
       if (!encodedPlaylistId || !encodedUserId) throw new Error('Invalid ID')
 
-      const sdkMetadata = playlistMetadataForUpdateWithSDK(metadata)
+      const sdkMetadata = playlistMetadataForUpdateWithSDK(
+        metadata as Collection
+      )
 
       const response = await audiusSdk.playlists.updatePlaylist({
         coverArtFile: coverArtFile
