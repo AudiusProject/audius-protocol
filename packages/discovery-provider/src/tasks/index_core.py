@@ -31,6 +31,10 @@ def _index_core_txs(
     for tx in block.transactions:
         # Check which type of transaction is currently set
         transaction_type = tx.WhichOneof("transaction")
+        logger.info(
+            f"index_core.py | block {block.height} tx type {transaction_type} {should_index_plays}"
+        )
+
         if transaction_type == "plays" and should_index_plays:
             index_core_play(
                 session=session,
@@ -57,8 +61,12 @@ def _index_core(db: SessionManager) -> Optional[BlockResponse]:
     core = get_core_instance(db)
     latest_processed_slot = get_latest_slot(db)
 
+    logger.info(
+        f"index_core.py | latest slot {latest_processed_slot} cutover {get_sol_cutover()}"
+    )
+
     should_index_plays = False
-    if latest_processed_slot > get_sol_cutover():
+    if latest_processed_slot >= get_sol_cutover():
         should_index_plays = True
 
     # TODO: cache node info
