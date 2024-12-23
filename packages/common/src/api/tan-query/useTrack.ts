@@ -1,19 +1,25 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { useDispatch } from 'react-redux'
 
 import { userTrackMetadataFromSDK } from '~/adapters/track'
 import { useAppContext } from '~/context/appContext'
 import { ID } from '~/models/Identifiers'
+import { Kind } from '~/models/Kind'
+import { addEntries } from '~/store/cache/actions'
+import { EntryMap } from '~/store/cache/types'
 import { encodeHashId } from '~/utils/hashIds'
 
 import { QUERY_KEYS } from './queryKeys'
 
 type Config = {
   staleTime?: number
+  enabled?: boolean
 }
 
 export const useTrack = (trackId: ID, config?: Config) => {
   const { audiusSdk } = useAppContext()
   const queryClient = useQueryClient()
+  const dispatch = useDispatch()
 
   return useQuery({
     queryKey: [QUERY_KEYS.track, trackId],
@@ -35,9 +41,35 @@ export const useTrack = (trackId: ID, config?: Config) => {
         )
       }
 
+      // Sync both track and user data to Redux cache in a single dispatch
+      if (track) {
+        const entries: Partial<Record<Kind, EntryMap>> = {
+          [Kind.TRACKS]: {
+            [track.track_id]: {
+              id: track.track_id,
+              metadata: track
+            }
+          }
+        }
+
+        if (track.user) {
+          entries[Kind.USERS] = {
+            [track.user.user_id]: {
+              id: track.user.user_id,
+              metadata: track.user
+            }
+          }
+        }
+
+        dispatch(addEntries(entries, undefined, undefined, 'react-query'))
+      }
+
       return track
     },
     staleTime: config?.staleTime,
-    enabled: !!audiusSdk && !!trackId
+    enabled:
+      !!audiusSdk &&
+      !!trackId &&
+      (config && 'enabled' in config ? config.enabled : true)
   })
 }
