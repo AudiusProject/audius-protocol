@@ -11,7 +11,7 @@ import { encodeHashId } from '~/utils/hashIds'
 import { QUERY_KEYS } from './queryKeys'
 
 type MutationContext = {
-  previousCollection: any
+  previousCollection: Playlist | undefined
 }
 
 type UpdateCollectionParams = {

@@ -10,7 +10,7 @@ import { encodeHashId } from '~/utils/hashIds'
 import { QUERY_KEYS } from './queryKeys'
 
 type MutationContext = {
-  previousUser: any
+  previousUser: User | undefined
 }
 
 type UpdateUserParams = {
