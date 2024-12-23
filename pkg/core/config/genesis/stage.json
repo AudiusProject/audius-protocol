@@ -1,6 +1,6 @@
 {
   "genesis_time": "2024-08-09T00:00:00.0000Z",
-  "chain_id": "audius-testnet-16",
+  "chain_id": "audius-testnet-17",
   "initial_height": "0",
   "consensus_params": {
     "block": {
@@ -38,15 +38,6 @@
       },
       "power": "10",
       "name": "foundation-discovery-2"
-    },
-    {
-      "address": "2F13439B2EE4C34BAFE643F89575F40B7863A079",
-      "pub_key": {
-        "type": "tendermint/PubKeyEd25519",
-        "value": "Ubt7ViBm+mG24G+bbG8NgL7NMuwZ/u6uyf9taTwgsEI="
-      },
-      "power": "10",
-      "name": "foundation-discovery-3"
     },
     {
       "address": "C9B1ED3D3040E0C2AC70E3215F0EA9B16B401BCA",
