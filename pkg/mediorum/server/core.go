@@ -13,7 +13,7 @@ func (ss *MediorumServer) getCoreSdk() (*sdk.Sdk, error) {
 }
 
 func (ss *MediorumServer) initCoreSdk() error {
-	coreSdk, err := sdk.NewSdk(sdk.WithGrpcendpoint(ss.Config.CoreGRPCEndpoint), sdk.WithJrpcendpoint(ss.Config.CoreJRPCEndpoint))
+	coreSdk, err := sdk.NewSdk(sdk.WithGrpcendpoint(ss.Config.CoreGRPCEndpoint))
 	if err == nil {
 		ss.coreSdk = coreSdk
 		close(ss.coreSdkReady)
@@ -23,7 +23,7 @@ func (ss *MediorumServer) initCoreSdk() error {
 	for {
 		time.Sleep(5 * time.Second)
 
-		coreSdk, err := sdk.NewSdk(sdk.WithGrpcendpoint(ss.Config.CoreGRPCEndpoint), sdk.WithJrpcendpoint(ss.Config.CoreJRPCEndpoint))
+		coreSdk, err := sdk.NewSdk(sdk.WithGrpcendpoint(ss.Config.CoreGRPCEndpoint))
 		if err != nil {
 			continue
 		}

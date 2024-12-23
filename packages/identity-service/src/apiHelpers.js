@@ -58,7 +58,7 @@ const errorResponse = (module.exports.errorResponse = (
   extra = {}
 ) => {
   return {
-    statusCode: statusCode,
+    statusCode,
     object: { error: message, ...extra }
   }
 })

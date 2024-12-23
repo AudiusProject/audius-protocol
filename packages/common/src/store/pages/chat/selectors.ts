@@ -4,16 +4,14 @@ import { createSelector } from 'reselect'
 import { ID } from '~/models/Identifiers'
 import { Status } from '~/models/Status'
 import { User } from '~/models/User'
-import { accountSelectors } from '~/store/account'
-import { cacheUsersSelectors } from '~/store/cache'
+import { getUserId } from '~/store/account/selectors'
+import { getUsers } from '~/store/cache/users/selectors'
 import { CommonState } from '~/store/reducers'
 import { decodeHashId, encodeHashId } from '~/utils/hashIds'
 import { Maybe, removeNullable } from '~/utils/typeUtils'
 
 import { Chat, chatMessagesAdapter, chatsAdapter } from './slice'
 import { ChatPermissionAction } from './types'
-const { getUserId } = accountSelectors
-const { getUsers } = cacheUsersSelectors
 
 const { selectById: selectChatById, selectAll: selectAllChats } =
   chatsAdapter.getSelectors<CommonState>((state) => state.pages.chat.chats)

@@ -149,9 +149,9 @@ module.exports = function (app) {
           try {
             const txProps = {
               contractRegistryKey: 'EntityManager',
-              contractAddress: contractAddress,
-              encodedABI: encodedABI,
-              senderAddress: senderAddress,
+              contractAddress,
+              encodedABI,
+              senderAddress,
               gasLimit: null
             }
             await txRelay.sendTransaction(

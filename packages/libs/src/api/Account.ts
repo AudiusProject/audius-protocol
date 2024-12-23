@@ -501,9 +501,8 @@ export class Account extends Base {
   async permitAndSendTokens(recipientAddress: string, amount: BN) {
     this.REQUIRES(Services.IDENTITY_SERVICE)
     const myWalletAddress = this.web3Manager.getWalletAddress()
-    const { selectedEthWallet } = await this.identityService.getEthRelayer(
-      myWalletAddress
-    )
+    const { selectedEthWallet } =
+      await this.identityService.getEthRelayer(myWalletAddress)
     await this.permitProxySendTokens(myWalletAddress, selectedEthWallet, amount)
     await this.sendTokens(
       myWalletAddress,
@@ -533,9 +532,8 @@ export class Account extends Base {
     try {
       const myWalletAddress = this.web3Manager.getWalletAddress()
       const wormholeAddress = this.ethContracts.WormholeClient.contractAddress
-      const { selectedEthWallet } = await this.identityService.getEthRelayer(
-        myWalletAddress
-      )
+      const { selectedEthWallet } =
+        await this.identityService.getEthRelayer(myWalletAddress)
       await this.permitProxySendTokens(myWalletAddress, wormholeAddress, amount)
 
       logs.push('Completed permit proxy send tokens')
@@ -584,9 +582,8 @@ export class Account extends Base {
     this.REQUIRES(Services.IDENTITY_SERVICE)
     const myWalletAddress = this.web3Manager.getWalletAddress()
     const wormholeAddress = this.ethContracts.WormholeClient.contractAddress
-    const { selectedEthWallet } = await this.identityService.getEthRelayer(
-      myWalletAddress
-    )
+    const { selectedEthWallet } =
+      await this.identityService.getEthRelayer(myWalletAddress)
     const permitMethod = await this.getPermitProxySendTokensMethod(
       myWalletAddress,
       wormholeAddress,

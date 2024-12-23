@@ -15,8 +15,7 @@
     "lint": "eslint src --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "lint:fix": "eslint --fix src --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "lint:env": "dotenv-linter",
-    "typecheck": "tsc",
-    "verify": "concurrently \"npm:typecheck\" \"npm:lint\" \"npm:lint:env\""
+    "typecheck": "tsc"
   },
   "dependencies": {
     "@audius/harmony": "*",
