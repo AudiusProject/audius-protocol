@@ -35,7 +35,7 @@ const collectionApi = createApi({
           userId: OptionalId.parse(currentUserId)
         })
         return data.length
-          ? userCollectionMetadataFromSDK(data[0]) ?? null
+          ? (userCollectionMetadataFromSDK(data[0]) ?? null)
           : null
       },
       fetchBatch: async (

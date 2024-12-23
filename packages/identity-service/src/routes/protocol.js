@@ -89,7 +89,7 @@ protocolRouter.post(
 
     return successResponse({
       wallet,
-      minimumDelegationAmount: minimumDelegationAmount
+      minimumDelegationAmount
     })
   })
 )
