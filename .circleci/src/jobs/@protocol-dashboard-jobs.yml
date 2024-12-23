@@ -50,12 +50,12 @@ protocol-dashboard-build-staging:
           npm install dotenv@16.3.1
           npm run build:stage
     - run:
-        name: armada bundle
+        name: earthfast bundle
         command: |
           cd protocol-dashboard
           timestamp=$(date +%s)
-          filename="$(npx armada-cli bundle create dist${timestamp} dist)"
-          hash="$(npx armada-cli bundle checksum $filename)"
+          filename="$(npx earthfast-cli bundle create dist${timestamp} dist)"
+          hash="$(npx earthfast-cli bundle checksum $filename)"
           echo "export FILENAME='$filename'" >> tmp.env
           echo "export HASH='$hash'" >> tmp.env
     - persist_to_workspace:
@@ -91,11 +91,11 @@ protocol-dashboard-deploy-staging:
         name: install deps
         command: sudo apt update && sudo apt install -y libsecret-1-0
     - run:
-        name: armada publish
+        name: earthfast publish
         command: |
           cd protocol-dashboard
           source tmp.env
-          npx armada-cli project publish 0x8d1108e10bcb7c27dddfc02ed9d693a074039d026cf4ea4240b40f7d581ac802 https://s3.us-west-1.amazonaws.com/dashboard.staging.audius.org/${FILENAME} ${HASH} --key=${ARMADA_ADMIN_PRIVATE_KEY}
+          npx earthfast-cli project publish 0x8d1108e10bcb7c27dddfc02ed9d693a074039d026cf4ea4240b40f7d581ac802 https://s3.us-west-1.amazonaws.com/dashboard.staging.audius.org/${FILENAME} ${HASH} --key=${earthfast_ADMIN_PRIVATE_KEY}
 
 protocol-dashboard-build-prod:
   working_directory: ~/audius-protocol
