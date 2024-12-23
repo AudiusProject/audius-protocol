@@ -29,7 +29,7 @@ export type AddAction<EntryT extends Metadata = Metadata> =
   }
 
 /**
- * Signals to add an enty to the cache.
+ * Signals to add an entity to the cache.
  */
 export const add = (
   kind: Kind,

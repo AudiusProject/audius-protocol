@@ -1,4 +1,6 @@
-import { takeEvery } from 'typed-redux-saga'
+import { call, takeEvery } from 'typed-redux-saga'
+
+import { FeatureFlags } from '~/services/remote-config/feature-flags'
 
 import { getContext } from '../effects'
 
@@ -11,6 +13,14 @@ function* watchAddSucceeded() {
   yield* takeEvery(
     ADD_SUCCEEDED,
     function* (action: ReturnType<typeof addSucceeded>) {
+      const getFeatureEnabled = yield* getContext('getFeatureEnabled')
+
+      const isReactQuerySyncEnabled = yield* call(
+        getFeatureEnabled,
+        FeatureFlags.REACT_QUERY_SYNC
+      )
+
+      if (!isReactQuerySyncEnabled) return
       // For any entity type, sync to React Query
       syncWithReactQuery(queryClient, {
         [action.kind]: {
@@ -30,6 +40,15 @@ function* watchAddEntries() {
     ADD_ENTRIES,
     function* (action: ReturnType<typeof addEntries>) {
       const { entriesByKind, source } = action
+
+      const getFeatureEnabled = yield* getContext('getFeatureEnabled')
+      const isReactQuerySyncEnabled = yield* call(
+        getFeatureEnabled,
+        FeatureFlags.REACT_QUERY_SYNC
+      )
+
+      if (!isReactQuerySyncEnabled) return
+
       // Skip if the source is react-query to avoid infinite loops
       if (source === 'react-query') return
 
