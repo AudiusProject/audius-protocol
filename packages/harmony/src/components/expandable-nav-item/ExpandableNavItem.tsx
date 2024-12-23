@@ -4,6 +4,7 @@ import { useTheme, CSSObject } from '@emotion/react'
 
 import { HarmonyTheme } from '../../foundations/theme'
 import { IconCaretDown, IconCaretRight } from '../../icons'
+import { Box } from '../layout/Box'
 import { Flex } from '../layout/Flex'
 import { Text } from '../text'
 
@@ -58,6 +59,12 @@ export const ExpandableNavItem = ({
       : IconCaretRight
     : LeftIcon
 
+  const shouldShowRightIcon = isOpen || shouldPersistRightIcon
+
+  const stopRightIconPropagation = (e: React.MouseEvent) => {
+    e.stopPropagation()
+  }
+
   return (
     <Flex direction='column' role='navigation' {...props}>
       <Flex
@@ -94,7 +101,7 @@ export const ExpandableNavItem = ({
               maxWidth: '240px'
             }}
           >
-            {IconComponent ? <IconComponent color='default' size='m' /> : null}
+            {IconComponent ? <IconComponent color='default' size='l' /> : null}
             <Text
               variant='title'
               size='l'
@@ -102,12 +109,13 @@ export const ExpandableNavItem = ({
               lineHeight='single'
               color='default'
               ellipses
-              maxLines={1}
             >
               {label}
             </Text>
           </Flex>
-          {isOpen || shouldPersistRightIcon ? rightIcon : null}
+          {shouldShowRightIcon ? (
+            <Box onClick={stopRightIconPropagation}>{rightIcon}</Box>
+          ) : null}
         </Flex>
       </Flex>
       {isOpen && nestedItems ? (

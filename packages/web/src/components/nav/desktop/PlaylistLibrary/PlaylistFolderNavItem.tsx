@@ -162,7 +162,6 @@ export const PlaylistFolderNavItem = (props: PlaylistFolderNavItemProps) => {
         >
           <Draggable id={id} text={name} kind='playlist-folder'>
             <LeftNavLink
-              asChild
               css={[
                 { display: 'flex', alignItems: 'center' },
                 isDraggingOver && { '& > *': { pointerEvents: 'none' } }

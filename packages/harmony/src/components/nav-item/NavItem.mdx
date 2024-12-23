@@ -10,6 +10,7 @@ import {
 import { RelatedFoundations } from 'storybook/components'
 
 import { ThemeProvider } from '../../foundations/theme'
+import { IconFeed } from '../../icons'
 import { Flex } from '../layout/Flex'
 
 import { NavItem } from './NavItem'
@@ -77,13 +78,13 @@ The `NavItem` component uses the following foundational styles:
 <Unstyled>
   <Flex gap='m' wrap='wrap'>
     <ThemeProvider theme='day'>
-      <NavItem leftIcon='UserFeed'>Label</NavItem>
+      <NavItem leftIcon={IconFeed}>Label</NavItem>
     </ThemeProvider>
     <ThemeProvider theme='dark'>
-      <NavItem leftIcon='UserFeed'>Label</NavItem>
+      <NavItem leftIcon={IconFeed}>Label</NavItem>
     </ThemeProvider>
     <ThemeProvider theme='matrix'>
-      <NavItem leftIcon='UserFeed'>Label</NavItem>
+      <NavItem leftIcon={IconFeed}>Label</NavItem>
     </ThemeProvider>
   </Flex>
 </Unstyled>
@@ -91,5 +92,5 @@ The `NavItem` component uses the following foundational styles:
 ## Related Foundations
 
 <RelatedFoundations
-  foundationNames={['Color', 'Spacing', 'CornerRadius', 'Typography']}
+  foundationNames={['Color', 'Spacing', 'CornerRadius', 'Typography', 'Motion']}
 />

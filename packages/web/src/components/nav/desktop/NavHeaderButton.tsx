@@ -21,7 +21,6 @@ export const NavHeaderButton = forwardRef(
     }
 
     const css = {
-      border: `1px solid ${color.border.default}`,
       backgroundColor: color.background.surface1,
       svg: {
         path: {
@@ -35,7 +34,7 @@ export const NavHeaderButton = forwardRef(
       <IconButton
         ref={ref}
         css={[css, isActive && activeCss]}
-        size='m'
+        size='l'
         {...other}
       />
     )
