@@ -29,47 +29,25 @@ jobs:
         - Vercel
       requires:
         - protocol-dashboard-init
-  - protocol-dashboard-hold-deploy-prod:
-      type: approval
+  # - protocol-dashboard-hold-deploy-prod:
+  #     type: approval
+  #     requires:
+  #       - protocol-dashboard-build-prod
+  #     filters:
+  #       branches:
+  #         only: /(^main|^release.*)$/
+  - protocol-dashboard-pin-prod:
+      context:
+        - Audius Client
       requires:
         - protocol-dashboard-build-prod
-      filters:
-        branches:
-          only: /(^main|^release.*)$/
+      # filters:
+      #   branches:
+      #     only: /^main$/
   - protocol-dashboard-deploy-prod:
       context: Audius Client
       requires:
-        - protocol-dashboard-hold-deploy-prod
-      filters:
-        branches:
-          only: /(^main|^release.*)$/
-  - protocol-dashboard-update-prod-build:
-      context: Pinata
-      requires:
-        - protocol-dashboard-deploy-prod
-      filters:
-        branches:
-          only: /(^main|^release.*)$/
-  - protocol-dashboard-publish-prod-build-cids:
-      context: Audius Client
-      requires:
-        - protocol-dashboard-update-prod-build
-      filters:
-        branches:
-          only: /(^main|^release.*)$/
-  - protocol-dashboard-hold-update-prod-records:
-      type: approval
-      requires:
-        - protocol-dashboard-update-prod-build
-      filters:
-        branches:
-          only: /(^main|^release.*)$/
-  - protocol-dashboard-update-prod-records:
-      context:
-        - Audius Client
-        - Cloudflare API
-      requires:
-        - protocol-dashboard-hold-update-prod-records
-      filters:
-        branches:
-          only: /(^main|^release.*)$/
+        - protocol-dashboard-pin-prod
+      # filters:
+      #   branches:
+      #     only: /(^main|^release.*)$/

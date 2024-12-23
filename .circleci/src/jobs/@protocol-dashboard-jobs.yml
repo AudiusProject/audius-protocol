@@ -95,7 +95,7 @@ protocol-dashboard-deploy-staging:
         command: |
           cd protocol-dashboard
           source tmp.env
-          npx earthfast-cli project publish 0x8d1108e10bcb7c27dddfc02ed9d693a074039d026cf4ea4240b40f7d581ac802 https://s3.us-west-1.amazonaws.com/dashboard.staging.audius.org/${FILENAME} ${HASH} --key=${earthfast_ADMIN_PRIVATE_KEY}
+          npx earthfast-cli project publish 0x8d1108e10bcb7c27dddfc02ed9d693a074039d026cf4ea4240b40f7d581ac802 https://s3.us-west-1.amazonaws.com/dashboard.staging.audius.org/${FILENAME} ${HASH} --key=${ARMADA_ADMIN_PRIVATE_KEY}
 
 protocol-dashboard-build-prod:
   working_directory: ~/audius-protocol
@@ -122,72 +122,36 @@ protocol-dashboard-build-prod:
         paths:
           - protocol-dashboard/*
 
+protocol-dashboard-pin-prod:
+  working_directory: ~/audius-protocol
+  docker:
+    - image: circleci/python:2.7-jessie
+  steps:
+    - run:
+        name: install-awscli
+        command: sudo pip install awscli
+    - attach_workspace:
+        at: ./
+    - run:
+        name: deploy to s3
+        command: |
+          cd protocol-dashboard
+          source tmp.env
+          aws s3 cp ${FILENAME} s3://dashboard.audius.org/${FILENAME} --cache-control max-age=0
+
 protocol-dashboard-deploy-prod:
   working_directory: ~/audius-protocol
   docker:
-    - image: circleci/python:2.7-jessie
-  steps:
-    - run:
-        name: install-awscli
-        command: sudo pip install awscli
-    - attach_workspace:
-        at: ./
-    - run:
-        name: Deploy to S3
-        command: |
-          cd protocol-dashboard
-          aws s3 sync dist s3://dashboard.audius.org --delete --cache-control max-age=604800
-          aws s3 cp s3://dashboard.audius.org/index.html s3://dashboard.audius.org/index.html --cache-control max-age=0,no-cache,no-store,must-revalidate --content-type text/html --metadata-directive REPLACE --acl public-read
-          aws s3 cp dist.zip s3://dashboard.audius.org/dist.zip --cache-control max-age=0
-
-protocol-dashboard-update-prod-build:
-  working_directory: ~/audius-protocol
-  docker:
     - image: cimg/ruby:2.6-node
   steps:
     - attach_workspace:
         at: ./
     - run:
-        name: update pinata pin
+        name: install deps
+        command: sudo apt update && sudo apt install -y libsecret-1-0
+    - run:
+        name: earthfast publish
         command: |
           cd protocol-dashboard
-          npm run update-build:prod
-    - persist_to_workspace:
-        root: ./
-        paths:
-          - protocol-dashboard/build_cid.txt
-
-protocol-dashboard-publish-prod-build-cids:
-  working_directory: ~/audius-protocol
-  docker:
-    - image: circleci/python:2.7-jessie
-  steps:
-    - run:
-        name: install-awscli
-        command: sudo pip install awscli
-    - attach_workspace:
-        at: ./
-    - run:
-        name: Push to S3
-        command: |
-          cd protocol-dashboard
-          aws s3 cp build_cid.txt s3://dashboard.audius.org/build_cid.txt
-
-protocol-dashboard-update-prod-records:
-  working_directory: ~/audius-protocol
-  docker:
-    - image: cimg/ruby:2.6-node
-  steps:
-    - attach_workspace:
-        at: ./
-    - run:
-        name: Update Cloudflare records
-        command: |
-          cd protocol-dashboard
-          DNS_NAME=_dnslink.dashboard.audius.org
-          CID=$(cat ./build_cid.txt)
-          curl -X PUT "https://api.cloudflare.com/client/v4/zones/${CLOUDFLARE_ZONE}/dns_records/${CLOUDFLARE_PROD_DASHBOARD_DNS_ID}" \
-            -H "X-Auth-Email: ${CLOUDFLARE_AUTH_EMAIL}" \
-            -H "Authorization: Bearer ${CLOUDFLARE_AUTH_KEY}" \
-            -H "Content-Type: application/json" \
-            --data '{"type":"TXT","name":"'"$DNS_NAME"'","content":"\"dnslink=/ipfs/'"$CID"'\"","ttl":1,"proxied":false}'
+          source tmp.env
+          npx earthfast-cli project publish 0xcfe2a20ff701a1f3e14f63bd70d6c6bc6fba8172ec6d5a505cdab3927c0a9de6 https://s3.us-west-1.amazonaws.com/dashboard.audius.org/${FILENAME} ${HASH} --key=${ARMADA_ADMIN_PRIVATE_KEY}
