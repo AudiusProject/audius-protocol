@@ -1,5 +1,5 @@
 import { NavItem, NavItemProps } from '@audius/harmony'
-import { useHistory, useLocation } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom'
 
 import {
   RestrictionType,
@@ -14,15 +14,11 @@ export type LeftNavLinkProps = Omit<NavItemProps, 'isSelected'> & {
 
 export const LeftNavLink = (props: LeftNavLinkProps) => {
   const { to, disabled, children, onClick, restriction, ...other } = props
-  const history = useHistory()
   const location = useLocation()
 
   const requiresAccountOnClick = useRequiresAccountOnClick(
     (e) => {
       onClick?.(e)
-      if (to) {
-        history.push(to)
-      }
     },
     [onClick, to, history],
     undefined,
@@ -33,21 +29,28 @@ export const LeftNavLink = (props: LeftNavLinkProps) => {
   const handleClick = (e?: React.MouseEvent<Element>) => {
     if (!disabled && !!e) {
       return requiresAccountOnClick(e)
+    } else {
+      e?.preventDefault()
     }
     return undefined
   }
 
   return (
-    <NavItem
-      {...other}
+    <Link
+      to={to ?? ''}
       onClick={handleClick}
-      isSelected={to ? location.pathname === to : false}
-      css={{
-        opacity: disabled ? 0.6 : 1,
-        cursor: disabled ? 'not-allowed' : 'pointer'
-      }}
+      style={{ pointerEvents: disabled ? 'none' : 'auto' }}
     >
-      {children}
-    </NavItem>
+      <NavItem
+        {...other}
+        isSelected={to ? location.pathname === to : false}
+        css={{
+          opacity: disabled ? 0.6 : 1,
+          cursor: disabled ? 'not-allowed' : 'pointer'
+        }}
+      >
+        {children}
+      </NavItem>
+    </Link>
   )
 }
