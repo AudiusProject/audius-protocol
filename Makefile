@@ -206,7 +206,7 @@ core-dev: gen
 
 .PHONY: core-test
 core-test: gen
-	cd pkg/core && go test -v ./... -timeout 60s
+	cd pkg/core && go test -count=1 -v ./... -timeout 60s
 
 .PHONY: core-sandbox
 core-sandbox: core-build-amd64

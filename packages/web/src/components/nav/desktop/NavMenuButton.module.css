@@ -50,18 +50,12 @@
 
 .item:hover .usdcPill,
 .item:hover .audioPill {
-  color: var(--harmony-secondary);
-  background: var(--harmony-static-white);
-}
-
-.item2:hover .usdcPill,
-.item2:hover .audioPill {
   color: var(--harmony-static-black);
   background: var(--harmony-static-static-white);
 }
 
-.item2Dark:hover .usdcPill,
-.item2Dark:hover .audioPill {
+.itemDark:hover .usdcPill,
+.itemDark:hover .audioPill {
   color: var(--harmony-static-white);
   background: var(--harmony-static-static-white);
 }

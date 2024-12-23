@@ -1,12 +1,23 @@
-import { Track, UpdateTrackRequest } from '@audius/sdk'
+import { Track } from '@audius/sdk'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 
+import { fileToSdk, trackMetadataForUploadToSdk } from '~/adapters/track'
 import { useAppContext } from '~/context/appContext'
+import { ID } from '~/models/Identifiers'
+import { TrackMetadataForUpload } from '~/store/upload'
+import { encodeHashId } from '~/utils/hashIds'
 
 import { QUERY_KEYS } from './queryKeys'
 
 type MutationContext = {
-  previousTrack: any
+  previousTrack: Track | undefined
+}
+
+type UpdateTrackParams = {
+  trackId: ID
+  userId: ID
+  metadata: Partial<TrackMetadataForUpload>
+  coverArtFile?: File
 }
 
 export const useUpdateTrack = () => {
@@ -14,10 +25,30 @@ export const useUpdateTrack = () => {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: async (params: UpdateTrackRequest) => {
+    mutationFn: async ({
+      trackId,
+      userId,
+      metadata,
+      coverArtFile
+    }: UpdateTrackParams) => {
       if (!audiusSdk) throw new Error('SDK not initialized')
 
-      const response = await audiusSdk.tracks.updateTrack(params)
+      const encodedTrackId = encodeHashId(trackId)
+      const encodedUserId = encodeHashId(userId)
+      if (!encodedTrackId || !encodedUserId) throw new Error('Invalid ID')
+
+      const sdkMetadata = trackMetadataForUploadToSdk(
+        metadata as TrackMetadataForUpload
+      )
+
+      const response = await audiusSdk.tracks.updateTrack({
+        coverArtFile: coverArtFile
+          ? fileToSdk(coverArtFile, 'cover_art')
+          : undefined,
+        trackId: encodedTrackId,
+        userId: encodedUserId,
+        metadata: sdkMetadata
+      })
 
       return response
     },

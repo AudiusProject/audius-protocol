@@ -1,10 +1,11 @@
 import { useState } from 'react'
 
 import { useCollection, useUpdateCollection } from '@audius/common/api'
+import { ID } from '@audius/common/models'
 import { Button, Flex, Text, TextInput } from '@audius/harmony'
 
 type Props = {
-  playlistId: string
+  playlistId: ID
 }
 
 export const TestCollectionUpdate = ({ playlistId }: Props) => {
@@ -17,9 +18,9 @@ export const TestCollectionUpdate = ({ playlistId }: Props) => {
     updateCollection.mutate({
       playlistId,
       metadata: {
-        playlistName: newTitle
+        playlist_name: newTitle
       },
-      userId: collection.user.id
+      userId: collection.user.user_id
     })
     // Clear input after submitting
     setNewTitle('')
@@ -30,9 +31,9 @@ export const TestCollectionUpdate = ({ playlistId }: Props) => {
   return (
     <Flex direction='column' gap='m'>
       <Text variant='heading'>
-        Update Collection: {collection.playlistName}
+        Update Collection: {collection.playlist_name}
       </Text>
-      <Text>Current Title: {collection.playlistName}</Text>
+      <Text>Current Title: {collection.playlist_name}</Text>
       <Flex gap='m' alignItems='center'>
         <TextInput
           label='New title'
