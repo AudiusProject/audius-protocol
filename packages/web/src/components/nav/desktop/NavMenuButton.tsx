@@ -1,10 +1,9 @@
 import {
   useAccountHasClaimableRewards,
-  useFeatureFlag,
   useIsManagedAccount
 } from '@audius/common/hooks'
 import { Name } from '@audius/common/models'
-import { FeatureFlags, StringKeys } from '@audius/common/services'
+import { StringKeys } from '@audius/common/services'
 import { SIGN_UP_PAGE } from '@audius/common/src/utils/route'
 import { accountSelectors, chatSelectors } from '@audius/common/store'
 import { removeNullable, route } from '@audius/common/utils'
@@ -54,7 +53,6 @@ export const NavMenuButton = () => {
   const hasUnreadMessages = useSelector(chatSelectors.getHasUnreadMessages)
   const isGuest = useSelector(getIsGuestAccount)
   const isUSDCEnabled = useIsUSDCEnabled()
-  const { isEnabled: isThemeV2Enabled } = useFeatureFlag(FeatureFlags.THEME_V2)
   const challengeRewardIds = useRemoteVar(StringKeys.CHALLENGE_REWARD_IDS)
   const hasClaimableRewards = useAccountHasClaimableRewards(challengeRewardIds)
   const isManagedAccount = useIsManagedAccount()
@@ -92,8 +90,7 @@ export const NavMenuButton = () => {
   const payAndEarnItem = isUSDCEnabled
     ? {
         className: cn(styles.item, {
-          [styles.item2]: isThemeV2Enabled && !isDark,
-          [styles.item2Dark]: isThemeV2Enabled && isDark
+          [styles.itemDark]: isDark
         }),
         text: (
           <div className={styles.popupItemText}>
@@ -130,8 +127,7 @@ export const NavMenuButton = () => {
   )
   const rewardsItem = {
     className: cn(styles.item, {
-      [styles.item2]: isThemeV2Enabled && !isDark,
-      [styles.item2Dark]: isThemeV2Enabled && isDark
+      [styles.itemDark]: isDark
     }),
     text: (
       <div className={styles.popupItemText}>

@@ -105,17 +105,6 @@ func SetupNode(logger *common.Logger) (*Config, *cconfig.Config, error) {
 		logger.Info("Generated genesis file", "path", genFile)
 	}
 
-	// dynamically voting in validators isn't implemented yet
-	// use this to dynamically set connection values
-	isInitialValidator := false
-	validators := genDoc.Validators
-	for _, validator := range validators {
-		if validator.Address.String() == envConfig.CometKey.PubKey().Address().String() {
-			isInitialValidator = true
-			break
-		}
-	}
-
 	// after succesful setup, setup comet config.toml
 
 	// https://docs.cometbft.com/main/references/config/config.toml#log_level
@@ -178,21 +167,12 @@ func SetupNode(logger *common.Logger) (*Config, *cconfig.Config, error) {
 	cometConfig.P2P.MaxNumOutboundPeers = envConfig.MaxOutboundPeers
 	cometConfig.P2P.MaxNumInboundPeers = envConfig.MaxInboundPeers
 	cometConfig.P2P.AllowDuplicateIP = true
-	if isInitialValidator {
-		cometConfig.P2P.FlushThrottleTimeout = 10 * time.Millisecond
-		cometConfig.P2P.SendRate = 5120000
-		cometConfig.P2P.RecvRate = 5120000
-		cometConfig.P2P.HandshakeTimeout = 3 * time.Second
-		cometConfig.P2P.DialTimeout = 5 * time.Second
-		cometConfig.P2P.PersistentPeersMaxDialPeriod = 15 * time.Second
-	} else {
-		cometConfig.P2P.FlushThrottleTimeout = 100 * time.Millisecond
-		cometConfig.P2P.SendRate = 524288
-		cometConfig.P2P.RecvRate = 524288
-		cometConfig.P2P.HandshakeTimeout = 5 * time.Second
-		cometConfig.P2P.DialTimeout = 10 * time.Second
-		cometConfig.P2P.PersistentPeersMaxDialPeriod = 30 * time.Second
-	}
+	cometConfig.P2P.FlushThrottleTimeout = 10 * time.Millisecond
+	cometConfig.P2P.SendRate = 5120000
+	cometConfig.P2P.RecvRate = 5120000
+	cometConfig.P2P.HandshakeTimeout = 3 * time.Second
+	cometConfig.P2P.DialTimeout = 5 * time.Second
+	cometConfig.P2P.PersistentPeersMaxDialPeriod = 15 * time.Second
 
 	// connection settings
 	if envConfig.RPCladdr != "" {

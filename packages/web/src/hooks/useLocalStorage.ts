@@ -15,7 +15,7 @@ const getJSONValue = (key: string) => {
 
 export const setJSONValue = (key: string, value: any) => {
   const string = JSON.stringify(value)
-  window.localStorage.setValue(key, string)
+  window.localStorage.setItem(key, string)
 }
 
 export const useLocalStorage = createUseLocalStorageHook({
