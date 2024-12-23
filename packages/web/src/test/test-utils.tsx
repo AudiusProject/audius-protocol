@@ -26,7 +26,7 @@ const TestProviders =
     const { reduxState } = options ?? {}
     const history = createMemoryHistory()
     return (
-      <ThemeProvider theme='day' version='v1'>
+      <ThemeProvider theme='day'>
         <ReduxProvider initialStoreState={reduxState}>
           <RouterContextProvider>
             <ToastContextProvider>
