@@ -60,7 +60,7 @@
 }
 
 /* Day Theme */
-html[data-theme='day-v2'] {
+html[data-theme='day'] {
   /* Primary Colors */
   --harmony-primary: #cc0fe0ff;
   --harmony-p-100: #d63fe6ff;
@@ -114,7 +114,7 @@ html[data-theme='day-v2'] {
 }
 
 /* Dark Theme */
-html[data-theme='dark-v2'] {
+html[data-theme='dark'] {
   /* Primary Colors */
   --harmony-primary: #d767e1ff;
   --harmony-p-100: #924699ff;
@@ -168,7 +168,7 @@ html[data-theme='dark-v2'] {
 }
 
 /* Matrix Theme */
-html[data-theme='matrix-v2'] {
+html[data-theme='matrix'] {
   /* Primary Colors */
   --harmony-primary: #0bd90bff;
   --harmony-p-100: #08a008ff;
