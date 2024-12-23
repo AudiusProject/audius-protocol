@@ -13,17 +13,17 @@ jobs:
         - Audius Client
       requires:
         - protocol-dashboard-build-staging
-      filters:
-        branches:
-          only: /^main$/
+      # filters:
+      #   branches:
+      #     only: /^main$/
   - protocol-dashboard-deploy-staging:
       context:
         - Armada
       requires:
         - protocol-dashboard-pin-staging
-      filters:
-        branches:
-          only: /^main$/
+      # filters:
+      #   branches:
+      #     only: /^main$/
   - protocol-dashboard-build-prod:
       context:
         - Vercel
