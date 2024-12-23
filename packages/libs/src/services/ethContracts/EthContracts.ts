@@ -273,9 +273,8 @@ export class EthContracts {
 
   async getCurrentVersion(serviceType: string) {
     try {
-      const version = await this.ServiceTypeManagerClient.getCurrentVersion(
-        serviceType
-      )
+      const version =
+        await this.ServiceTypeManagerClient.getCurrentVersion(serviceType)
       return version
     } catch (e) {
       console.info(`Error retrieving version for ${serviceType}`)

@@ -11,7 +11,6 @@
     "start": "tsx watch cli.ts server",
     "lint": "eslint src --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "lint:fix": "eslint --fix src --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
-    "verify": "tsc --noEmit",
     "test": "SQLITE_URL=:memory: vitest run",
     "test:watch": "SQLITE_URL=:memory: vitest"
   },
