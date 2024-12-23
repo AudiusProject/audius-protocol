@@ -328,8 +328,8 @@ export const CollectiblesPlaylistPageProvider = ({
     return currentPlayerItem.uid
       ? currentPlayerItem.uid
       : currentPlayerItem.collectible
-      ? currentPlayerItem.collectible.id
-      : null
+        ? currentPlayerItem.collectible.id
+        : null
   }, [currentPlayerItem])
 
   const formatMetadata = useCallback(

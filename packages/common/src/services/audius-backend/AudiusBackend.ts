@@ -1000,9 +1000,8 @@ export const audiusBackend = ({
     const transaction = await sdk.services.solanaClient.buildTransaction({
       instructions: [secpTransactionInstruction, transferInstruction]
     })
-    const signature = await sdk.services.claimableTokensClient.sendTransaction(
-      transaction
-    )
+    const signature =
+      await sdk.services.claimableTokensClient.sendTransaction(transaction)
     return signature
   }
 

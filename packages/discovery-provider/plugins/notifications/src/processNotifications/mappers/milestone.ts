@@ -83,13 +83,16 @@ export class Milestone extends BaseNotification<MilestoneRow> {
       .from<UserRow>('users')
       .where('is_current', true)
       .whereIn('user_id', [this.receiverUserId])
-    const users = res.reduce((acc, user) => {
-      acc[user.user_id] = {
-        name: user.name,
-        isDeactivated: user.is_deactivated
-      }
-      return acc
-    }, {} as Record<number, { name: string; isDeactivated: boolean }>)
+    const users = res.reduce(
+      (acc, user) => {
+        acc[user.user_id] = {
+          name: user.name,
+          isDeactivated: user.is_deactivated
+        }
+        return acc
+      },
+      {} as Record<number, { name: string; isDeactivated: boolean }>
+    )
 
     if (users?.[this.receiverUserId]?.isDeactivated) {
       return
@@ -114,10 +117,13 @@ export class Milestone extends BaseNotification<MilestoneRow> {
         .from<TrackRow>('tracks')
         .where('is_current', true)
         .whereIn('track_id', [id])
-      const tracks = res.reduce((acc, track) => {
-        acc[track.track_id] = { title: track.title }
-        return acc
-      }, {} as Record<number, { title: string }>)
+      const tracks = res.reduce(
+        (acc, track) => {
+          acc[track.track_id] = { title: track.title }
+          return acc
+        },
+        {} as Record<number, { title: string }>
+      )
 
       entityName = tracks[id]?.title
     } else if (
@@ -134,13 +140,16 @@ export class Milestone extends BaseNotification<MilestoneRow> {
         .from<PlaylistRow>('playlists')
         .where('is_current', true)
         .whereIn('playlist_id', [id])
-      const playlists = res.reduce((acc, playlist) => {
-        acc[playlist.playlist_id] = {
-          playlist_name: playlist.playlist_name,
-          is_album: playlist.is_album
-        }
-        return acc
-      }, {} as Record<number, { playlist_name: string; is_album: boolean }>)
+      const playlists = res.reduce(
+        (acc, playlist) => {
+          acc[playlist.playlist_id] = {
+            playlist_name: playlist.playlist_name,
+            is_album: playlist.is_album
+          }
+          return acc
+        },
+        {} as Record<number, { playlist_name: string; is_album: boolean }>
+      )
       const playlist = playlists[id]
       entityName = playlist?.playlist_name
       isAlbum = playlist?.is_album

@@ -17,33 +17,32 @@ const discoveryDb = initializeDiscoveryDb()
 const getZohoAccessToken = async () => {
   const url = 'https://accounts.zoho.com/oauth/v2/token'
   const params = new URLSearchParams()
-  
+
   params.append('refresh_token', zohoRefreshToken!)
   params.append('client_id', zohoClientId!)
   params.append('client_secret', zohoClientSecret!)
   params.append('grant_type', 'refresh_token')
-  
+
   try {
-      const response = await fetch(url, {
-          method: 'POST',
-          body: params,
-          headers: {
-              'Content-Type': 'application/x-www-form-urlencoded'
-          }
-      })
-      
-      if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`)
+    const response = await fetch(url, {
+      method: 'POST',
+      body: params,
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded'
       }
-      
-      const data = await response.json()
-      return data.access_token
+    })
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`)
+    }
+
+    const data = await response.json()
+    return data.access_token
   } catch (error) {
-      console.error('Failed to refresh access token:', error)
-      return null
+    console.error('Failed to refresh access token:', error)
+    return null
   }
 }
-
 
 const findDealByHandle = async (handle: string): Promise<string | null> => {
   const url = `${zohoBaseUrl}/search?criteria=(Audius_Profile:equals:${encodeURIComponent(`https://audius.co/${handle}`)})`
@@ -68,7 +67,10 @@ const findDealByHandle = async (handle: string): Promise<string | null> => {
   }
 }
 
-const updateDealRevenue = async (dealId: string, revenue: number): Promise<void> => {
+const updateDealRevenue = async (
+  dealId: string,
+  revenue: number
+): Promise<void> => {
   const data = {
     data: [
       {
@@ -99,10 +101,7 @@ const updateDealRevenue = async (dealId: string, revenue: number): Promise<void>
   }
 }
 
-const handler = async (
-  _: SharedData,
-  purchase: UsdcPurchases
-) => {
+const handler = async (_: SharedData, purchase: UsdcPurchases) => {
   console.log(`Found new purchase ${JSON.stringify(purchase, null, 2)}`)
   const { seller_user_id } = purchase
   const totalRes = await discoveryDb<UsdcPurchases>(Table.UsdcPurchases)
@@ -129,14 +128,12 @@ const handler = async (
     await updateDealRevenue(dealId, revenue)
   } else {
     console.error(`No deal found for ${handle}`)
-  } 
+  }
 }
 
 const main = async () => {
   console.log('Starting up')
-  await new App<SharedData>()
-    .listen('usdc_purchases', handler)
-    .run()
+  await new App<SharedData>().listen('usdc_purchases', handler).run()
 }
 
 ;(async () => {

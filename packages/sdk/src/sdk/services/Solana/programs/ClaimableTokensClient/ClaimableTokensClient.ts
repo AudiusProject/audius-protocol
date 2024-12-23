@@ -144,9 +144,8 @@ export class ClaimableTokensClient {
 
     // Create a new lock on the fetch/creation process for this user bank
     this._pendingUserBankCreationPromises[userBank.toBase58()] = (async () => {
-      const userBankAccount = await this.client.connection.getAccountInfo(
-        userBank
-      )
+      const userBankAccount =
+        await this.client.connection.getAccountInfo(userBank)
       if (!userBankAccount) {
         this.logger.debug(`User bank ${userBank} does not exist. Creating...`)
         const createUserBankInstruction =

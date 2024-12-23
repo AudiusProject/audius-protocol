@@ -96,22 +96,21 @@ export const ModalContentPages = ({
         leave={transitions.leave}
         unique={true}
       >
-        {(item) => (style) =>
-          (
-            <animated.div style={{ ...style }} className={styles.pageContainer}>
-              <ModalContent
-                className={cn(styles.modalContent, modalContentClassName)}
-                {...otherModalContentProps}
+        {(item) => (style) => (
+          <animated.div style={{ ...style }} className={styles.pageContainer}>
+            <ModalContent
+              className={cn(styles.modalContent, modalContentClassName)}
+              {...otherModalContentProps}
+            >
+              <div
+                className={cn(styles.nestedModalContent, contentClassName)}
+                ref={contentRef}
               >
-                <div
-                  className={cn(styles.nestedModalContent, contentClassName)}
-                  ref={contentRef}
-                >
-                  {Children.toArray(children)[item]}
-                </div>
-              </ModalContent>
-            </animated.div>
-          )}
+                {Children.toArray(children)[item]}
+              </div>
+            </ModalContent>
+          </animated.div>
+        )}
       </Transition>
     </div>
   )

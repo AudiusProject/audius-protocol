@@ -5,7 +5,7 @@ import { IconFeed, IconVolumeLevel3 } from '../../icons'
 import { NavItem } from './NavItem'
 
 const meta: Meta<typeof NavItem> = {
-  title: 'Components/NavItem',
+  title: 'Navigation/NavItem',
   component: NavItem,
   parameters: {
     design: {

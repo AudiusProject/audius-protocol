@@ -56,7 +56,9 @@
   flex-direction: column;
   align-items: flex-start;
   overflow: hidden;
-  transition: all ease-in-out 0.18s, opacity ease-in-out 0.5s;
+  transition:
+    all ease-in-out 0.18s,
+    opacity ease-in-out 0.5s;
   position: absolute;
   bottom: 0px;
   left: 0px;

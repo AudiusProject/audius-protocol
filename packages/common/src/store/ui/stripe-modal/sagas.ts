@@ -115,9 +115,8 @@ function* toastStripeTakingAWhile() {
 function* handleStripeSessionChanged({
   payload: { session }
 }: ReturnType<typeof stripeSessionStatusChanged>) {
-  const { onrampSucceeded, previousStripeSessionData } = yield* select(
-    getStripeModalState
-  )
+  const { onrampSucceeded, previousStripeSessionData } =
+    yield* select(getStripeModalState)
 
   if (session.status === 'fulfillment_processing') {
     stripeTakingAWhileToastTask = yield* fork(toastStripeTakingAWhile)

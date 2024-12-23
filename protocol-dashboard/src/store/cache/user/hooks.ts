@@ -127,9 +127,8 @@ const getServiceProviderMetadata = async (
   minDelegationAmount: BN
 }> => {
   const totalStakedFor = await aud.Staking.totalStakedFor(wallet)
-  const delegatedTotal = await aud.Delegate.getTotalDelegatedToServiceProvider(
-    wallet
-  )
+  const delegatedTotal =
+    await aud.Delegate.getTotalDelegatedToServiceProvider(wallet)
   const delegators = await getDelegatorAmounts(wallet, aud)
   delegators.sort((a, b) => (b.activeAmount.gt(a.activeAmount) ? 1 : -1))
   const serviceProvider: ServiceProvider =
@@ -149,9 +148,8 @@ const getServiceProviderMetadata = async (
 
   const protocolMinDelegationAmount =
     await aud.Delegate.getMinDelegationAmount()
-  const spMinDelegationAmount = await aud.Delegate.getSPMinDelegationAmount(
-    wallet
-  )
+  const spMinDelegationAmount =
+    await aud.Delegate.getSPMinDelegationAmount(wallet)
   // Prefer service provider min delegation amount if provided and greater than protocol wide amount
   const minDelegationAmount = spMinDelegationAmount.gt(
     protocolMinDelegationAmount
@@ -461,7 +459,7 @@ export const useUserProfile = ({ wallet }: UseUserProfile) => {
 
   const image =
     status !== Status.Loading
-      ? audiusProfile?.profilePicture?._480x480 ?? user.image
+      ? (audiusProfile?.profilePicture?._480x480 ?? user.image)
       : undefined
 
   const dispatch: ThunkDispatch<AppState, Audius, AnyAction> = useDispatch()

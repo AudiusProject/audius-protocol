@@ -71,7 +71,7 @@ export function* addPlaylistsNotInLibrary() {
         ({
           playlist_id: playlist.id,
           type: 'playlist'
-        } as PlaylistIdentifier)
+        }) as PlaylistIdentifier
     )
     const newContents = [...newEntries, ...library.contents]
     yield* put(

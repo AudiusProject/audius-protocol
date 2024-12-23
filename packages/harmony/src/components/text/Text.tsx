@@ -95,7 +95,7 @@ export const Text = forwardRef(
     // @ts-ignore
     const variantTag = variant && variantTagMap[variant]?.[size]
 
-    const Tag: ElementType = asChild ? Slot : tag ?? variantTag ?? 'span'
+    const Tag: ElementType = asChild ? Slot : (tag ?? variantTag ?? 'span')
 
     const textElement = (
       <Tag ref={ref} css={css} {...other}>

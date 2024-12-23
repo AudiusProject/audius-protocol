@@ -347,7 +347,7 @@ const reducer = (
 
   const profileHandle =
     'handle' in action
-      ? action.handle?.toLowerCase() ?? currentUser
+      ? (action.handle?.toLowerCase() ?? currentUser)
       : currentUser
   if (!profileHandle) return state
 

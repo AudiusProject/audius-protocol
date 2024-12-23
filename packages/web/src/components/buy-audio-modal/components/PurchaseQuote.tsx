@@ -77,7 +77,7 @@ export const PurchaseQuote = () => {
               <span className={styles.tokenLabel}>$</span>
               {formatNumberString(
                 !purchaseInfo?.isError
-                  ? purchaseInfo?.estimatedUSD.uiAmountString ?? '0'
+                  ? (purchaseInfo?.estimatedUSD.uiAmountString ?? '0')
                   : '0',
                 {
                   minDecimals: 2,

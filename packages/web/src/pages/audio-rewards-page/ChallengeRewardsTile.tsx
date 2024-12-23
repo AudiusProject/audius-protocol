@@ -148,8 +148,8 @@ const RewardPanel = ({
   const buttonMessage = needsDisbursement
     ? messages.claimReward
     : hasDisbursed
-    ? messages.viewDetails
-    : panelButtonText
+      ? messages.viewDetails
+      : panelButtonText
 
   const buttonVariant = 'secondary'
 

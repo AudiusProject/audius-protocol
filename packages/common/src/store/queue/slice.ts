@@ -169,10 +169,13 @@ const slice = createSlice({
         (uid) => state.order[state.positions[uid]]
       )
 
-      const newPositions = orderedUids.reduce((m, uid, i) => {
-        m[uid] = i
-        return m
-      }, {} as { [uid: string]: number })
+      const newPositions = orderedUids.reduce(
+        (m, uid, i) => {
+          m[uid] = i
+          return m
+        },
+        {} as { [uid: string]: number }
+      )
 
       const newIndex =
         state.index >= 0 ? newPositions[state.order[state.index].uid] : -1
@@ -190,10 +193,13 @@ const slice = createSlice({
       const newOrder = [...state.order]
       newOrder.splice(newIndex, 0, ...entries)
 
-      const addedPositions = entries.reduce((mapping, entry, i) => {
-        mapping[entry.uid ?? entry.id] = newIndex + i
-        return mapping
-      }, {} as { [uid: string]: number })
+      const addedPositions = entries.reduce(
+        (mapping, entry, i) => {
+          mapping[entry.uid ?? entry.id] = newIndex + i
+          return mapping
+        },
+        {} as { [uid: string]: number }
+      )
       const newPositions = Object.keys(state.positions).reduce(
         (updated, uid) => {
           if (state.positions[uid] >= newIndex) {

@@ -58,9 +58,10 @@ export default class Delegate {
     serviceProvider: Address
   ): Promise<BN> {
     await this.aud.hasPermissions()
-    const info = await this.getContract().getTotalDelegatedToServiceProvider(
-      serviceProvider
-    )
+    const info =
+      await this.getContract().getTotalDelegatedToServiceProvider(
+        serviceProvider
+      )
     return info
   }
 

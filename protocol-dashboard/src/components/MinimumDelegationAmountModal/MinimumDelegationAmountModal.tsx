@@ -60,9 +60,8 @@ const MinimumDelegationAmountModal: React.FC<
     onClick: onSubmit,
     onClose: onCloseConfirm
   } = useModalControls()
-  const { status, updateMinimum, error } = useUpdateMinimumDelegationAmount(
-    !isConfirmModalOpen
-  )
+  const { status, updateMinimum, error } =
+    useUpdateMinimumDelegationAmount(!isConfirmModalOpen)
 
   const onConfirm = useCallback(() => {
     updateMinimum(minDelegationBN)

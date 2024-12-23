@@ -78,10 +78,13 @@ const getFileType = async (file: CrossPlatformFile) => {
   }
 }
 
-export const ImageFile = CrossPlatformFileSchema.refine(async (file) => {
-  const fileType = await getFileType(file)
-  return fileType && ALLOWED_IMAGE_MIME_TYPES.includes(fileType.mime)
-}, `Image file has invalid file type. Supported file types are: ${ALLOWED_IMAGE_MIME_TYPES.join(', ')}`)
+export const ImageFile = CrossPlatformFileSchema.refine(
+  async (file) => {
+    const fileType = await getFileType(file)
+    return fileType && ALLOWED_IMAGE_MIME_TYPES.includes(fileType.mime)
+  },
+  `Image file has invalid file type. Supported file types are: ${ALLOWED_IMAGE_MIME_TYPES.join(', ')}`
+)
 
 export const AudioFile = CrossPlatformFileSchema.refine(async (file) => {
   const fileType = await getFileType(file)

@@ -2,13 +2,18 @@
 package contracts
 
 import (
+	"context"
 	"errors"
 	"fmt"
+	"math/big"
+	"sync"
 
 	"github.com/AudiusProject/audius-protocol/pkg/core/common"
 	"github.com/AudiusProject/audius-protocol/pkg/core/contracts/gen"
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	geth "github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/ethclient"
+	"golang.org/x/sync/errgroup"
 )
 
 // valid service types
@@ -288,4 +293,99 @@ func (ac *AudiusContracts) GetServiceTypeManagerContract() (*gen.ServiceTypeMana
 
 	ac.ServiceTypeManager = contract
 	return contract, nil
+}
+
+/* Utilities */
+
+type Node struct {
+	Owner               geth.Address
+	Endpoint            string
+	BlockNumber         *big.Int
+	DelegateOwnerWallet geth.Address
+}
+
+func (ac *AudiusContracts) GetAllRegisteredNodes(ctx context.Context) ([]*Node, error) {
+	nodes := []*Node{}
+
+	g, ctx := errgroup.WithContext(ctx)
+
+	g.Go(func() error {
+		discoveryNodes, err := ac.GetAllRegisteredNodesForType(ctx, DiscoveryNode)
+		if err != nil {
+			return err
+		}
+		nodes = append(nodes, discoveryNodes...)
+		return nil
+	})
+
+	g.Go(func() error {
+		contentNodes, err := ac.GetAllRegisteredNodesForType(ctx, ContentNode)
+		if err != nil {
+			return err
+		}
+		nodes = append(nodes, contentNodes...)
+		return nil
+	})
+
+	if err := g.Wait(); err != nil {
+		return nodes, err
+	}
+
+	return nodes, nil
+}
+
+func (ac *AudiusContracts) GetAllRegisteredNodesForType(ctx context.Context, nodeType [32]byte) ([]*Node, error) {
+	nodes := []*Node{}
+	spf, err := ac.GetServiceProviderFactoryContract()
+	if err != nil {
+		return nodes, err
+	}
+
+	ids, err := spf.GetTotalServiceTypeProviders(&bind.CallOpts{
+		Context: ctx,
+	}, nodeType)
+	if err != nil {
+		return nodes, err
+	}
+
+	var mu sync.Mutex
+	one := big.NewInt(1)
+	g, ctx := errgroup.WithContext(ctx)
+
+	for id := big.NewInt(1); id.Cmp(ids) <= 0; id.Add(id, one) {
+		// Create a copy of the current ID to avoid data races
+		currentID := new(big.Int).Set(id)
+
+		g.Go(func() error {
+			info, err := spf.GetServiceEndpointInfo(&bind.CallOpts{
+				Context: ctx,
+			}, nodeType, currentID)
+			if err != nil {
+				return err
+			}
+
+			// zero address
+			if info.DelegateOwnerWallet == (geth.Address{}) {
+				return nil
+			}
+
+			// Safely append the result to the nodes slice
+			mu.Lock()
+			defer mu.Unlock()
+			nodes = append(nodes, &Node{
+				Owner:               info.Owner,
+				DelegateOwnerWallet: info.DelegateOwnerWallet,
+				BlockNumber:         info.BlockNumber,
+				Endpoint:            info.Endpoint,
+			})
+			return nil
+		})
+	}
+
+	// Wait for all goroutines to complete
+	if err := g.Wait(); err != nil {
+		return nodes, err
+	}
+
+	return nodes, nil
 }

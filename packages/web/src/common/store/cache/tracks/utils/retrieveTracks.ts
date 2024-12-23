@@ -101,10 +101,13 @@ export function* retrieveTrackByHandleAndSlug({
     getEntriesTimestamp: function* (ids: ID[]) {
       const selected = yield* select(
         (state: CommonState, ids: ID[]) =>
-          ids.reduce((acc, id) => {
-            acc[id] = getEntryTimestamp(state, { kind: Kind.TRACKS, id })
-            return acc
-          }, {} as { [id: number]: number | null }),
+          ids.reduce(
+            (acc, id) => {
+              acc[id] = getEntryTimestamp(state, { kind: Kind.TRACKS, id })
+              return acc
+            },
+            {} as { [id: number]: number | null }
+          ),
         ids
       )
       return selected
@@ -177,10 +180,13 @@ export function* retrieveTracks({
     getEntriesTimestamp: function* (ids: ID[]) {
       const selected = yield* select(
         (state: CommonState, ids: ID[]) =>
-          ids.reduce((acc, id) => {
-            acc[id] = getEntryTimestamp(state, { kind: Kind.TRACKS, id })
-            return acc
-          }, {} as { [id: number]: number | null }),
+          ids.reduce(
+            (acc, id) => {
+              acc[id] = getEntryTimestamp(state, { kind: Kind.TRACKS, id })
+              return acc
+            },
+            {} as { [id: number]: number | null }
+          ),
         ids
       )
       return selected

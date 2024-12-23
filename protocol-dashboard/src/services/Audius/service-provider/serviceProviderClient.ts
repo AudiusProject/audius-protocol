@@ -60,9 +60,8 @@ export default class ServiceProviderClient {
 
   async getServiceProviderIdFromEndpoint(endpoint: string): Promise<number> {
     await this.aud.hasPermissions()
-    const spId = await this.getContract().getServiceProviderIdFromEndpoint(
-      endpoint
-    )
+    const spId =
+      await this.getContract().getServiceProviderIdFromEndpoint(endpoint)
     return spId
   }
 
@@ -80,9 +79,8 @@ export default class ServiceProviderClient {
 
   async getServiceProviderInfoFromEndpoint(endpoint: string): Promise<Node> {
     await this.aud.hasPermissions()
-    const info = await this.getContract().getServiceProviderInfoFromEndpoint(
-      endpoint
-    )
+    const info =
+      await this.getContract().getServiceProviderInfoFromEndpoint(endpoint)
     return info
   }
 
@@ -146,17 +144,15 @@ export default class ServiceProviderClient {
     serviceType: ServiceType
   ): Promise<GetServiceProviderListResponse> {
     await this.aud.hasPermissions()
-    const serviceProviderList = await this.getContract().getServiceProviderList(
-      serviceType
-    )
+    const serviceProviderList =
+      await this.getContract().getServiceProviderList(serviceType)
     return serviceProviderList
   }
 
   async getServiceProviderDetails(account: Address): Promise<ServiceProvider> {
     await this.aud.hasPermissions()
-    const serviceProvider = await this.getContract().getServiceProviderDetails(
-      account
-    )
+    const serviceProvider =
+      await this.getContract().getServiceProviderDetails(account)
     return serviceProvider
   }
 
@@ -164,9 +160,8 @@ export default class ServiceProviderClient {
     ownerAddress: Address
   ): Promise<{ newDeployerCut: number; lockupExpiryBlock: number }> {
     await this.aud.hasPermissions()
-    const info = await this.getContract().getPendingUpdateDeployerCutRequest(
-      ownerAddress
-    )
+    const info =
+      await this.getContract().getPendingUpdateDeployerCutRequest(ownerAddress)
     return info
   }
 
@@ -340,9 +335,8 @@ export default class ServiceProviderClient {
 
   async requestDecreaseStake(amount: Amount): Promise<BlockNumber> {
     await this.aud.hasPermissions(Permission.WRITE)
-    const lockupExpiryBlock = await this.getContract().requestDecreaseStake(
-      amount
-    )
+    const lockupExpiryBlock =
+      await this.getContract().requestDecreaseStake(amount)
     return lockupExpiryBlock
   }
 

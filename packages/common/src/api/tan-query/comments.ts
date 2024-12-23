@@ -329,7 +329,7 @@ export const useGetCommentRepliesById = ({
           ({
             ...comment,
             replies: [...(comment?.replies ?? []), ...replyList]
-          } as Comment)
+          }) as Comment
       )
       // Put each reply into their individual comment cache
       replyList.forEach((comment) => {
@@ -429,7 +429,7 @@ export const usePostComment = () => {
               ...comment,
               replyCount: (comment?.replyCount ?? 0) + 1,
               replies: [...(comment?.replies ?? []), newComment]
-            } as Comment)
+            }) as Comment
         )
       } else {
         queryClient.setQueryData<InfiniteData<ID[]>>(
@@ -514,7 +514,7 @@ export const useReactToComment = () => {
               ? isLiked // If the artist is reacting, update the state accordingly
               : prevCommentState?.isArtistReacted, // otherwise, keep the previous state
             isCurrentUserReacted: isLiked
-          } as CommentOrReply)
+          }) as CommentOrReply
       )
       return { prevComment }
     },
@@ -542,7 +542,7 @@ export const useReactToComment = () => {
               reactCount: prevComment?.reactCount,
               isArtistReacted: prevComment?.isArtistReacted,
               isCurrentUserReacted: prevComment?.isCurrentUserReacted
-            } as CommentOrReply)
+            }) as CommentOrReply
         )
       }
     }
@@ -648,7 +648,7 @@ export const useDeleteComment = () => {
                 (reply: ReplyComment) => reply.id !== commentId
               ),
               replyCount: (prev?.replyCount ?? 0) - 1
-            } as Comment)
+            }) as Comment
         )
       } else {
         const existingCommentData = queryClient.getQueryData<
@@ -669,7 +669,7 @@ export const useDeleteComment = () => {
                 userId: undefined,
                 message: '[Removed]'
                 // Intentionally undoing the userId
-              } as Comment & { userId?: undefined })
+              }) as Comment & { userId?: undefined }
           )
         } else {
           // If not a reply & has no replies, remove from the sort list
@@ -761,7 +761,7 @@ export const useEditComment = () => {
             isEdited: true,
             message: newMessage,
             mentions
-          } as CommentOrReply)
+          }) as CommentOrReply
       )
       return { prevComment }
     },
@@ -789,7 +789,7 @@ export const useEditComment = () => {
               isEdited: prevComment?.isEdited,
               message: prevComment?.message,
               mentions: prevComment?.mentions
-            } as CommentOrReply)
+            }) as CommentOrReply
         )
       }
     }
