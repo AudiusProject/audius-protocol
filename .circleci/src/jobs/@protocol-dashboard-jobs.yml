@@ -99,9 +99,9 @@ protocol-dashboard-deploy-staging:
 
 protocol-dashboard-build-prod:
   working_directory: ~/audius-protocol
+  resource_class: xlarge
   docker:
     - image: cimg/node:18.17
-  resource_class: xlarge
   steps:
     - checkout
     - attach_workspace:
@@ -113,10 +113,14 @@ protocol-dashboard-build-prod:
           npm install dotenv@16.3.1
           npm run build:prod
     - run:
-        name: zip dist
+        name: earthfast bundle
         command: |
           cd protocol-dashboard
-          zip -r dist.zip ./dist
+          timestamp=$(date +%s)
+          filename="$(npx earthfast-cli bundle create dist${timestamp} dist)"
+          hash="$(npx earthfast-cli bundle checksum $filename)"
+          echo "export FILENAME='$filename'" >> tmp.env
+          echo "export HASH='$hash'" >> tmp.env
     - persist_to_workspace:
         root: ./
         paths:
