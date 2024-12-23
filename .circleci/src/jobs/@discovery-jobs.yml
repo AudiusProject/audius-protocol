@@ -35,9 +35,10 @@ lint-discovery-provider:
         name: Lint
         command: |
           cd packages/discovery-provider
-          isort --check --diff .
-          flake8 .
-          black --check --diff .
+          isort --check --diff . --skip ./src/tasks/core/gen --skip ./plugins
+          flake8 . --exclude=./src/tasks/core/gen,./plugins
+          black --check --diff . --exclude './src/tasks/core/gen|./plugins'
+
 
     - run:
         name: Typecheck
