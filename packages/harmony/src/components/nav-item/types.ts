@@ -1,6 +1,7 @@
 import { MouseEvent, ReactNode } from 'react'
 
 import { IconComponent } from 'components/icon'
+import { FlexProps } from 'components/layout'
 import { TextSize } from 'components/text'
 
 import type { WithCSS } from '../../foundations/theme'
@@ -18,4 +19,5 @@ export type NavItemProps = WithCSS<{
   onClick?: (event?: MouseEvent<Element>) => void
   /** The size of the text to display. */
   textSize?: TextSize
-}>
+}> &
+  FlexProps

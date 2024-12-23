@@ -185,7 +185,6 @@ export const CollectionNavItem = (props: CollectionNavItemProps) => {
           kind='library-playlist'
         >
           <LeftNavLink
-            asChild
             to={url}
             onClick={onClick}
             disabled={isDisabled}
