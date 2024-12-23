@@ -136,8 +136,8 @@ const LeftNav = (props: NavColumnProps) => {
             dragScrollingDirection === 'up'
               ? 'inset 0px 8px 5px -5px var(--tile-shadow-3)'
               : dragScrollingDirection === 'down'
-              ? 'inset 0px -8px 5px -5px var(--tile-shadow-3)'
-              : undefined,
+                ? 'inset 0px -8px 5px -5px var(--tile-shadow-3)'
+                : undefined,
           overflow: 'hidden',
           transition: 'opacity 0.3s ease-in-out, box-shadow 0.2s ease'
         }}
