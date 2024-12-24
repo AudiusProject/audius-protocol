@@ -162,4 +162,4 @@ def index_core(self):
         elapsed_time = time.time() - start_time
         if elapsed_time < CORE_INDEXER_MINIMUM_TIME_SECS:
             time.sleep(CORE_INDEXER_MINIMUM_TIME_SECS - elapsed_time)
-        celery.send_task("index_core")
+        celery.send_task("index_core", queue="index_sol")
