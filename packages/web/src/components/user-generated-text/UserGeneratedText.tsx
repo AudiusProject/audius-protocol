@@ -11,7 +11,8 @@ import {
 import {
   formatCollectionName,
   formatTrackName,
-  formatUserName
+  formatUserName,
+  squashNewLines
 } from '@audius/common/utils'
 import { Text, TextLinkProps, TextProps } from '@audius/harmony'
 import { ResolveApi } from '@audius/sdk'
@@ -22,7 +23,6 @@ import { useAsync } from 'react-use'
 import { ExternalTextLink } from 'components/link/ExternalTextLink'
 import { TextLink } from 'components/link/TextLink'
 import { audiusSdk } from 'services/audius-sdk'
-import { squashNewLines } from 'utils/stringUtils'
 import { getPathFromAudiusUrl, isAudiusUrl } from 'utils/urlUtils'
 
 const {

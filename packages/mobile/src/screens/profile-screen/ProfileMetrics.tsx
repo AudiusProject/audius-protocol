@@ -4,12 +4,12 @@ import {
   followingUserListActions,
   followersUserListActions
 } from '@audius/common/store'
+import { formatCount } from '@audius/common/utils'
 import { Pressable, Text, View } from 'react-native'
 import { useDispatch } from 'react-redux'
 
 import { useNavigation } from 'app/hooks/useNavigation'
 import { makeStyles } from 'app/styles'
-import { formatCount } from 'app/utils/format'
 
 import { useSelectProfile } from './selectors'
 const { setFollowers } = followersUserListActions

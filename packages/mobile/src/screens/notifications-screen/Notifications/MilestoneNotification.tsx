@@ -8,13 +8,13 @@ import type {
 } from '@audius/common/store'
 import { notificationsSelectors, Achievement } from '@audius/common/store'
 import { isEntityHidden, route, type Nullable } from '@audius/common/utils'
+import { formatCount } from '@audius/common/utils'
 import { useSelector } from 'react-redux'
 
 import { IconTrophy } from '@audius/harmony-native'
 import { env } from 'app/env'
 import { useNotificationNavigation } from 'app/hooks/useNotificationNavigation'
 import { EventNames } from 'app/types/analytics'
-import { formatCount } from 'app/utils/format'
 
 import {
   EntityLink,

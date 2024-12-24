@@ -49,12 +49,3 @@ export const useShouldShowCollectiblesTab = () => {
 
   return false
 }
-
-/**
- * Reduces multiple sequential newlines (> 3) into max `\n\n` and
- * trims both leading and trailing newlines
- * @param {string} str
- */
-export const squashNewLines = (str?: string) => {
-  return str ? str.replace(/\n\s*\n\s*\n/g, '\n\n').trim() : ''
-}
