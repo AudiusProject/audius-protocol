@@ -5,10 +5,9 @@ import (
 	"crypto/sha256"
 	"io"
 	"net/url"
+	"slices"
 	"sort"
 	"strings"
-
-	"golang.org/x/exp/slices"
 )
 
 func (ss *MediorumServer) rendezvousAllHosts(key string) ([]string, bool) {

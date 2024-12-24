@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"slices"
 	"strconv"
 	"strings"
 	"sync"
@@ -18,7 +19,6 @@ import (
 	"github.com/AudiusProject/audius-protocol/pkg/mediorum/ethcontracts"
 	"github.com/AudiusProject/audius-protocol/pkg/mediorum/server"
 	"github.com/AudiusProject/audius-protocol/pkg/registrar"
-	"golang.org/x/exp/slices"
 	"golang.org/x/exp/slog"
 	"golang.org/x/sync/errgroup"
 )

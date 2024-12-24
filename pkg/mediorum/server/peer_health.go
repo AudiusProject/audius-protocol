@@ -2,14 +2,14 @@ package server
 
 import (
 	"encoding/json"
+	"maps"
 	"net/http"
+	"slices"
 	"strconv"
 	"sync"
 	"time"
 
 	"github.com/labstack/echo/v4"
-	"golang.org/x/exp/maps"
-	"golang.org/x/exp/slices"
 )
 
 func (ss *MediorumServer) startHealthPoller() {
