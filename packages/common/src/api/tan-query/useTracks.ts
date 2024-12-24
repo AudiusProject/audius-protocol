@@ -1,9 +1,13 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { useDispatch } from 'react-redux'
 
 import { userTrackMetadataFromSDK } from '~/adapters/track'
 import { transformAndCleanList } from '~/adapters/utils'
 import { useAppContext } from '~/context/appContext'
 import { ID } from '~/models/Identifiers'
+import { Kind } from '~/models/Kind'
+import { addEntries } from '~/store/cache/actions'
+import { EntryMap } from '~/store/cache/types'
 import { encodeHashId } from '~/utils/hashIds'
 
 import { QUERY_KEYS } from './queryKeys'
@@ -15,6 +19,7 @@ type Config = {
 export const useTracks = (trackIds: ID[], config?: Config) => {
   const { audiusSdk } = useAppContext()
   const queryClient = useQueryClient()
+  const dispatch = useDispatch()
 
   return useQuery({
     queryKey: [QUERY_KEYS.tracks, trackIds],
@@ -29,15 +34,36 @@ export const useTracks = (trackIds: ID[], config?: Config) => {
 
       const tracks = transformAndCleanList(data, userTrackMetadataFromSDK)
 
-      // Prime user data from tracks
-      tracks?.forEach((track) => {
-        if (track.user) {
-          queryClient.setQueryData(
-            [QUERY_KEYS.user, track.user.user_id],
-            track.user
-          )
+      if (tracks?.length) {
+        const entries: Partial<Record<Kind, EntryMap>> = {
+          [Kind.TRACKS]: {}
         }
-      })
+
+        tracks.forEach((track) => {
+          // Prime track data
+          queryClient.setQueryData([QUERY_KEYS.track, track.track_id], track)
+          entries[Kind.TRACKS]![track.track_id] = {
+            id: track.track_id,
+            metadata: track
+          }
+
+          // Prime user data from track owner
+          if (track.user) {
+            queryClient.setQueryData(
+              [QUERY_KEYS.user, track.user.user_id],
+              track.user
+            )
+            if (!entries[Kind.USERS]) entries[Kind.USERS] = {}
+            entries[Kind.USERS][track.user.user_id] = {
+              id: track.user.user_id,
+              metadata: track.user
+            }
+          }
+        })
+
+        // Sync all data to Redux in a single dispatch
+        dispatch(addEntries(entries, undefined, undefined, 'react-query'))
+      }
 
       return tracks
     },

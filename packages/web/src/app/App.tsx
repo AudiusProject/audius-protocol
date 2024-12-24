@@ -39,6 +39,14 @@ const ReactQueryCachePrimePage = lazy(
   () => import('pages/react-query/ReactQueryCachePrimePage')
 )
 
+const ReactQueryReduxCacheSyncPage = lazy(
+  () => import('pages/react-query/ReactQueryReduxCacheSyncPage')
+)
+
+const ReactQueryToReduxCacheSyncPage = lazy(
+  () => import('pages/react-query/ReactQueryToReduxCacheSyncPage')
+)
+
 const MERCHANT_ID = env.COINFLOW_MERCHANT_ID
 const IS_PRODUCTION = env.ENVIRONMENT === 'production'
 
@@ -75,6 +83,16 @@ export const AppInner = () => {
           {!IS_PRODUCTION ? (
             <Route path='/react-query-cache-prime'>
               <ReactQueryCachePrimePage />
+            </Route>
+          ) : null}
+          {!IS_PRODUCTION ? (
+            <Route path='/react-query-redux-cache-sync'>
+              <ReactQueryReduxCacheSyncPage />
+            </Route>
+          ) : null}
+          {!IS_PRODUCTION ? (
+            <Route path='/react-query-to-redux-cache-sync'>
+              <ReactQueryToReduxCacheSyncPage />
             </Route>
           ) : null}
           <Route path={PRIVATE_KEY_EXPORTER_SETTINGS_PAGE}>

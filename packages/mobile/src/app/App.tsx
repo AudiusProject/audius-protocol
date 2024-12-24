@@ -1,10 +1,7 @@
 import { BottomSheetModalProvider } from '@gorhom/bottom-sheet'
 import { PortalProvider, PortalHost } from '@gorhom/portal'
 import * as Sentry from '@sentry/react-native'
-import {
-  QueryClientProvider,
-  QueryClient as TanQueryClient
-} from '@tanstack/react-query'
+import { QueryClientProvider } from '@tanstack/react-query'
 import { Platform, UIManager } from 'react-native'
 import { GestureHandlerRootView } from 'react-native-gesture-handler'
 import {
@@ -27,6 +24,7 @@ import { useEnterForeground } from 'app/hooks/useAppState'
 import { incrementSessionCount } from 'app/hooks/useSessionCount'
 import { RootScreen } from 'app/screens/root-screen'
 import { WalletConnectProvider } from 'app/screens/wallet-connect'
+import { queryClient } from 'app/services/query-client'
 import { persistor, store } from 'app/store'
 import {
   forceRefreshConnectivity,
@@ -41,8 +39,6 @@ import { ThemeProvider } from './ThemeProvider'
 import { initSentry, navigationIntegration } from './sentry'
 
 initSentry()
-
-const tanQueryClient = new TanQueryClient()
 
 const Airplay = Platform.select({
   ios: () => require('../components/audio/Airplay').default,
@@ -78,7 +74,7 @@ const App = () => {
       <SafeAreaProvider initialMetrics={initialWindowMetrics}>
         <Provider store={store}>
           <AudiusQueryProvider>
-            <QueryClientProvider client={tanQueryClient}>
+            <QueryClientProvider client={queryClient}>
               <PersistGate loading={null} persistor={persistor}>
                 <ThemeProvider>
                   <WalletConnectProvider>
