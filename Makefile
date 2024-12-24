@@ -159,6 +159,7 @@ $(PROTO_ARTIFACTS): $(PROTO_SRCS)
 	@echo Regenerating protobuf code
 	cd pkg/core && buf generate
 	cd pkg/core/gen/core_proto && swagger generate client -f protocol.swagger.json -t ../ --client-package=core_openapi
+	cd packages/discovery-provider/src/tasks/core && chmod +x fix-proto-imports.sh && ./fix-proto-imports.sh
 
 .PHONY: regen-sql
 regen-sql: $(SQL_ARTIFACTS)
