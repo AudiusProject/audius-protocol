@@ -45,7 +45,8 @@ jobs:
       #   branches:
       #     only: /^main$/
   - protocol-dashboard-deploy-prod:
-      context: Audius Client
+      context:
+        - Armada
       requires:
         - protocol-dashboard-pin-prod
       # filters:
