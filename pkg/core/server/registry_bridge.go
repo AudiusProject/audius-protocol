@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"math/big"
+	"strings"
 	"time"
 
 	"github.com/AudiusProject/audius-protocol/pkg/core/common"
@@ -22,7 +23,9 @@ import (
 )
 
 func (s *Server) startRegistryBridge() error {
-	<-s.awaitEthNodesReady
+	if s.config.Environment != "dev" {
+		<-s.awaitEthNodesReady
+	}
 	<-s.awaitRpcReady
 	s.logger.Info("starting registry bridge")
 
@@ -83,14 +86,8 @@ func (s *Server) RegisterSelf() error {
 	}
 	if !isRegistered {
 		s.logger.Infof("node %s : %s not registered on Ethereum", nodeAddress.Hex(), nodeEndpoint)
-		if s.isDevEnvironment() {
-			if err := s.registerSelfOnEth(); err != nil {
-				return fmt.Errorf("error registering onto eth: %v", err)
-			}
-		} else {
-			logger.Info("continuing unregistered")
-			return nil
-		}
+		logger.Info("continuing unregistered")
+		return nil
 	}
 
 	spf, err := s.contracts.GetServiceProviderFactoryContract()
@@ -256,6 +253,9 @@ func (s *Server) isSelfRegisteredOnEth() (bool, error) {
 func (s *Server) registerSelfOnEth() error {
 	chainID, err := s.contracts.Rpc.ChainID(context.Background())
 	if err != nil {
+		if strings.Contains(err.Error(), "Endpoint already registered") {
+			return nil
+		}
 		return fmt.Errorf("could not get chain id: %v", err)
 	}
 

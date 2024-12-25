@@ -3,11 +3,12 @@ services:
     container_name: core
     build:
       context: ${PROJECT_ROOT}
-      dockerfile: ${PROJECT_ROOT}/cmd/core/infra/Dockerfile
-      target: final
+      dockerfile: ${PROJECT_ROOT}/cmd/audiusd/Dockerfile
       args:
         git_sha: '${GIT_COMMIT}'
     restart: unless-stopped
+    environment:
+      - NETWORK=dev
     profiles:
       - discovery
       - storage
