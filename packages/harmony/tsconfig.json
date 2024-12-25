@@ -17,18 +17,7 @@
     // TODO: enable after react-native migration [C-3548]
     "isolatedModules": false,
     "paths": {
-      "~harmony/foundations": ["src/foundations/index.ts"],
-      "~harmony/foundations/*": ["src/foundations/*"],
-      "~harmony/components": ["src/components/index.ts"],
-      "~harmony/components/*": ["src/components/*"],
-      "~harmony/hooks": ["src/hooks/index.ts"],
-      "~harmony/hooks/*": ["src/hooks/*"],
-      "~harmony/utils": ["src/utils/index.ts"],
-      "~harmony/utils/*": ["src/utils/*"],
-      "~harmony/icons": ["src/icons/index.ts"],
-      "~harmony/icons/*": ["src/icons/*"],
-      "~harmony/assets": ["src/assets/index.ts"],
-      "~harmony/assets/*": ["src/assets/*"],
+      "~harmony/*": ["src/*"],
       "storybook": ["src/storybook/index.ts"],
       "storybook/*": ["src/storybook/*"]
     },

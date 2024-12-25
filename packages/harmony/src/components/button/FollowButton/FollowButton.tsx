@@ -100,7 +100,7 @@ export const FollowButton = forwardRef(
     }, [value, setValueState, onUnfollow, onFollow])
 
     const checkedValue = value
-    let Icon: IconComponent | null = IconUserFollow
+    let Icon: IconComponent = IconUserFollow
     let text = messages.follow
     if (checkedValue && !isHovering) {
       Icon = IconUserFollowing

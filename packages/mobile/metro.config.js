@@ -80,6 +80,7 @@ const config = {
       app: path.resolve(__dirname, 'src'),
       '@audius/harmony-native': path.resolve(__dirname, 'src/harmony-native'),
       '~': path.resolve(__dirname, '../common/src'),
+      '~harmony': path.resolve(__dirname, '../harmony/src'),
 
       // The following imports are needed for @audius/common
       // and @audius/web to compile correctly

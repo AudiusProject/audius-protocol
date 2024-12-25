@@ -1,3 +1,4 @@
+import shadowBackground from 'storybook/assets/shadowBackground.jpeg'
 import {
   Text,
   Box,
@@ -12,7 +13,6 @@ import {
   Avatar
 } from '~harmony/components'
 import { IconCaretRight } from '~harmony/icons'
-import shadowBackground from 'storybook/assets/shadowBackground.jpeg'
 
 import { InformationBox } from './InformationBox'
 

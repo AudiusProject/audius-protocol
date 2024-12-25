@@ -28,7 +28,7 @@ export const SelectablePill = (props: SelectablePillProps) => {
   const { disabled, type } = other
   const isSelected =
     type === 'checkbox' || type === 'radio'
-      ? other.checked ?? isSelectedProp
+      ? (other.checked ?? isSelectedProp)
       : isSelectedProp
 
   const theme = useTheme()

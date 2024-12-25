@@ -163,7 +163,7 @@ export const FilterButton = forwardRef(function FilterButton<
       ? (((props: IconProps) => (
           <IconCloseAlt
             aria-label='cancel'
-            onClick={(e) => {
+            onClick={(e: React.MouseEvent<SVGSVGElement>) => {
               e.stopPropagation()
               if (onClick) {
                 onClick()
@@ -176,7 +176,7 @@ export const FilterButton = forwardRef(function FilterButton<
             {...props}
           />
         )) as IconComponent)
-      : iconRight ?? (hasOptions ? IconCaretDown : null)
+      : (iconRight ?? (hasOptions ? IconCaretDown : null))
   }, [variant, value, iconRight, hasOptions, onClick, onChange, onReset])
 
   useEffect(() => {

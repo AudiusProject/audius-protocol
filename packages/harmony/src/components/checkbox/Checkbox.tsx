@@ -45,8 +45,8 @@ export const Checkbox = forwardRef(
     const Icon = !checked
       ? null
       : indeterminate
-      ? IconIndeterminate
-      : IconSelect
+        ? IconIndeterminate
+        : IconSelect
 
     const hoverCss = {
       backgroundColor: checked ? color.secondary.s200 : color.neutral.n150

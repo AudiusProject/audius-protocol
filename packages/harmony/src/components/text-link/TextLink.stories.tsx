@@ -1,8 +1,8 @@
 import type { Meta, StoryObj } from '@storybook/react'
 
+import darkBackgroundSpace from 'storybook/assets/darkBackgroundSpace.jpg'
 import { Flex, Paper } from '~harmony/components/layout'
 import { Text } from '~harmony/components/text'
-import darkBackgroundSpace from 'storybook/assets/darkBackgroundSpace.jpg'
 
 import { TextLink } from './TextLink'
 
