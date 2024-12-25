@@ -90,7 +90,7 @@ build-push-audiusd:
 	DOCKER_DEFAULT_PLATFORM=linux/amd64 docker build --build-arg GIT_SHA=$(AD_TAG) --push -t audius/audiusd:$(AD_TAG) -f ./cmd/audiusd/Dockerfile ./
 
 build-push-cpp:
-	docker buildx build --platform linux/amd64,linux/arm64 --push -t audius/cpp:latest -f ./cmd/audiusd/Dockerfile.cpp ./
+	docker buildx build --platform linux/amd64,linux/arm64 --push -t audius/cpp:latest -f ./cmd/audiusd/Dockerfile.deps ./
 
 
 .PHONY: force-release-stage force-release-foundation force-release-sps
