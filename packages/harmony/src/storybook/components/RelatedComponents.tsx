@@ -10,8 +10,8 @@ import {
   SelectablePill,
   Paper,
   Avatar
-} from 'components'
-import { IconCaretRight } from 'icons'
+} from '~harmony/components'
+import { IconCaretRight } from '~harmony/icons'
 import shadowBackground from 'storybook/assets/shadowBackground.jpeg'
 
 import { InformationBox } from './InformationBox'

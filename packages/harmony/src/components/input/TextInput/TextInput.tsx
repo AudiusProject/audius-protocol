@@ -2,8 +2,8 @@ import { ReactNode, forwardRef, useId } from 'react'
 
 import cn from 'classnames'
 
-import { Text, TextSize } from 'components/text'
-import type { TextColors } from 'foundations/color/semantic'
+import { Text, TextSize } from '~harmony/components/text'
+import type { TextColors } from '~harmony/foundations/color/semantic'
 
 import { Flex } from '../../layout'
 import { useFocusState } from '../useFocusState'
@@ -86,8 +86,8 @@ export const TextInput = forwardRef<HTMLInputElement, TextInputProps>(
       required && hideLabel
         ? `${placeholder} *`
         : size === TextInputSize.SMALL
-          ? labelText
-          : placeholder
+        ? labelText
+        : placeholder
     const helperTextSize: TextSize = size === TextInputSize.SMALL ? 'xs' : 's'
 
     // Whenever a label isn't visible the placeholder should be visible in it's place (if provided)
@@ -148,7 +148,7 @@ export const TextInput = forwardRef<HTMLInputElement, TextInputProps>(
           maxLength={maxLength}
           disabled={disabled}
           placeholder={shouldShowPlaceholder ? placeholderText : undefined}
-          aria-label={(ariaLabel ?? shouldShowLabel) ? labelText : undefined}
+          aria-label={ariaLabel ?? shouldShowLabel ? labelText : undefined}
           aria-required={required}
           id={id}
           autoComplete='off'

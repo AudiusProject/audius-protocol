@@ -1,5 +1,5 @@
-import { Box, Flex, Text, Paper, Button } from 'components'
-import { IconNote } from 'icons'
+import { Box, Flex, Text, Paper, Button } from '~harmony/components'
+import { IconNote } from '~harmony/icons'
 
 import { InformationBox } from './InformationBox'
 

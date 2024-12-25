@@ -2,7 +2,7 @@ import { ChangeEventHandler, Ref, forwardRef, useCallback } from 'react'
 
 import BN from 'bn.js'
 
-import { useControlled } from 'hooks/useControlled'
+import { useControlled } from '~harmony/hooks/useControlled'
 
 import { TextInput } from '../TextInput'
 

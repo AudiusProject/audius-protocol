@@ -2,8 +2,8 @@ import { forwardRef } from 'react'
 
 import { useToggle } from 'react-use'
 
-import { IconButton } from 'components/button'
-import { IconVisibilityHidden, IconVisibilityPublic } from 'icons'
+import { IconButton } from '~harmony/components/button'
+import { IconVisibilityHidden, IconVisibilityPublic } from '~harmony/icons'
 
 import { TextInput } from '../TextInput'
 

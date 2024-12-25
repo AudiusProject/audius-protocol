@@ -1,7 +1,7 @@
 import { ChangeEvent, forwardRef, Ref, useCallback } from 'react'
 
-import { useTheme } from 'foundations'
-import { useControlled } from 'hooks/useControlled'
+import { useTheme } from '~harmony/foundations'
+import { useControlled } from '~harmony/hooks/useControlled'
 
 import { Flex, Box } from '../layout'
 
@@ -45,8 +45,8 @@ export const Checkbox = forwardRef(
     const Icon = !checked
       ? null
       : indeterminate
-        ? IconIndeterminate
-        : IconSelect
+      ? IconIndeterminate
+      : IconSelect
 
     const hoverCss = {
       backgroundColor: checked ? color.secondary.s200 : color.neutral.n150
