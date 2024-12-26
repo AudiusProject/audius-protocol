@@ -76,6 +76,7 @@ services:
     container_name: core-discovery-1
     ports:
       - '6611:26659' # Http Console
+      - '6612:1991' # Mediorum Server
       - '6613:50051' # Core GRPC Server
     env_file:
       - ${PROJECT_ROOT}/cmd/core/infra/dev_config/discovery-one.docker.env
@@ -88,6 +89,7 @@ services:
     container_name: core-content-1
     ports:
       - '6711:26659'
+      - '6712:1991'
       - '6713:50051'
     env_file:
       - ${PROJECT_ROOT}/cmd/core/infra/dev_config/content-one.docker.env
@@ -100,6 +102,7 @@ services:
     container_name: core-content-2
     ports:
       - '6721:26659'
+      - '6722:1991'
       - '6723:50051'
     env_file:
       - ${PROJECT_ROOT}/cmd/core/infra/dev_config/content-two.docker.env
@@ -112,6 +115,7 @@ services:
     container_name: core-content-3
     ports:
       - '6731:26659'
+      - '6732:1991'
       - '6733:50051'
     env_file:
       - ${PROJECT_ROOT}/cmd/core/infra/dev_config/content-three.docker.env

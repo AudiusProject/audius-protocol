@@ -72,11 +72,41 @@ func startMediorum(mediorumEnv string) {
 	eg := new(errgroup.Group)
 	eg.Go(func() error {
 		peers, err = g.Peers()
-		return err
+		if !isDev {
+			return err
+		}
+
+		for {
+			if len(peers) >= 3 {
+				return nil
+			}
+
+			time.Sleep(3 * time.Second)
+
+			peers, err = g.Peers()
+			if err != nil {
+				return err
+			}
+		}
 	})
 	eg.Go(func() error {
 		signers, err = g.Signers()
-		return err
+		if !isDev {
+			return err
+		}
+
+		for {
+			if len(peers) >= 1 {
+				return nil
+			}
+
+			time.Sleep(3 * time.Second)
+
+			signers, err = g.Signers()
+			if err != nil {
+				return err
+			}
+		}
 	})
 	if err := eg.Wait(); err != nil {
 		panic(err)
