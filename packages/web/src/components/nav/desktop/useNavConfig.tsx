@@ -15,6 +15,7 @@ import {
   NotificationCount
 } from '@audius/harmony'
 import { useSelector } from 'react-redux'
+import { useLocation } from 'react-router-dom'
 
 import { RestrictionType } from 'hooks/useRequiresAccount'
 
@@ -44,12 +45,14 @@ export type NavItemConfig = {
   nestedComponent?: React.ComponentType<any>
   disabled?: boolean
   restriction?: RestrictionType
+  hasNotification?: boolean
 }
 
 export const useNavConfig = () => {
   const isAccountComplete = useSelector(getIsAccountComplete)
   const hasAccount = useSelector(getHasAccount)
   const unreadMessagesCount = useSelector(getUnreadMessagesCount)
+  const location = useLocation()
 
   const navItems = useMemo(
     (): NavItemConfig[] => [
@@ -87,8 +90,12 @@ export const useNavConfig = () => {
         disabled: !isAccountComplete,
         rightIcon:
           unreadMessagesCount > 0 ? (
-            <NotificationCount count={unreadMessagesCount} />
-          ) : undefined
+            <NotificationCount
+              count={unreadMessagesCount}
+              isSelected={location.pathname === CHATS_PAGE}
+            />
+          ) : undefined,
+        hasNotification: unreadMessagesCount > 0
       },
       {
         label: 'Wallets',
@@ -116,7 +123,7 @@ export const useNavConfig = () => {
         disabled: !isAccountComplete
       }
     ],
-    [isAccountComplete, hasAccount, unreadMessagesCount]
+    [isAccountComplete, hasAccount, unreadMessagesCount, location.pathname]
   )
 
   return navItems

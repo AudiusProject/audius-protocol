@@ -1,4 +1,8 @@
+import { useMemo } from 'react'
+
 import { useTheme } from '@emotion/react'
+
+import { NotificationCount } from 'components/notification-count'
 
 import { motion } from '../../foundations/motion'
 import { Flex } from '../layout/Flex'
@@ -17,6 +21,7 @@ export const NavItem = ({
   isSelected = false,
   onClick,
   textSize = 'l',
+  hasNotification = false,
   ...props
 }: NavItemProps) => {
   const { color } = useTheme()
@@ -29,6 +34,19 @@ export const NavItem = ({
   const textColor = isSelected ? 'staticWhite' : 'default'
 
   const iconColor = isSelected ? 'staticStaticWhite' : 'default'
+
+  const leftIconWithNotification = useMemo(() => {
+    const icon = hasLeftIcon ? <LeftIcon size='l' color={iconColor} /> : null
+
+    if (hasNotification && !!icon) {
+      return (
+        <NotificationCount size='s' isSelected={isSelected}>
+          {icon}
+        </NotificationCount>
+      )
+    }
+    return icon
+  }, [hasNotification, hasLeftIcon, LeftIcon, iconColor, isSelected])
 
   return (
     <Flex
@@ -68,7 +86,7 @@ export const NavItem = ({
             maxWidth: '240px'
           }}
         >
-          {hasLeftIcon ? <LeftIcon size='l' color={iconColor} /> : null}
+          {leftIconWithNotification}
           <Text
             variant='title'
             size={textSize}
