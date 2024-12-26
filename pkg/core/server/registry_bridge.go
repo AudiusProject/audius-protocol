@@ -28,6 +28,7 @@ func (s *Server) startRegistryBridge() error {
 		if err := s.registerSelfOnEth(); err != nil {
 			return fmt.Errorf("error registering onto eth: %v", err)
 		}
+		s.gatherEthNodes()
 	}
 
 	<-s.awaitEthNodesReady
