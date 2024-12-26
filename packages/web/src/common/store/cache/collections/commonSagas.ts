@@ -1,4 +1,5 @@
 import {
+  fileToSdk,
   playlistMetadataForUpdateWithSDK,
   userCollectionMetadataFromSDK
 } from '@audius/common/adapters'
@@ -320,10 +321,17 @@ function* confirmRemoveTrackFromPlaylist(
     confirmerActions.requestConfirmation(
       makeKindId(Kind.COLLECTIONS, playlistId),
       function* (confirmedPlaylistId: ID) {
+        const { artwork } = playlist
+        const coverArtFile =
+          artwork && 'file' in artwork ? artwork?.file ?? null : null
+
         yield* call([sdk.playlists, sdk.playlists.updatePlaylist], {
           metadata: playlistMetadataForUpdateWithSDK(playlist),
           userId: Id.parse(userId),
-          playlistId: Id.parse(playlistId)
+          playlistId: Id.parse(playlistId),
+          coverArtFile: coverArtFile
+            ? fileToSdk(coverArtFile, 'cover_art')
+            : undefined
         })
         return confirmedPlaylistId
       },
