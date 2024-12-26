@@ -1,4 +1,7 @@
-import { playlistMetadataForUpdateWithSDK } from '@audius/common/adapters'
+import {
+  fileToSdk,
+  playlistMetadataForUpdateWithSDK
+} from '@audius/common/adapters'
 import {
   Name,
   Kind,
@@ -173,10 +176,17 @@ function* confirmAddTrackToPlaylist(
     confirmerActions.requestConfirmation(
       makeKindId(Kind.COLLECTIONS, playlistId),
       function* () {
+        const { artwork } = playlist
+        const coverArtFile =
+          artwork && 'file' in artwork ? (artwork?.file ?? null) : null
+
         yield* call([sdk.playlists, sdk.playlists.updatePlaylist], {
           metadata: playlistMetadataForUpdateWithSDK(playlist),
           userId: Id.parse(userId),
-          playlistId: Id.parse(playlistId)
+          playlistId: Id.parse(playlistId),
+          coverArtFile: coverArtFile
+            ? fileToSdk(coverArtFile, 'cover_art')
+            : undefined
         })
 
         return playlistId
