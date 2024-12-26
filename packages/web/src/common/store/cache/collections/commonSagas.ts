@@ -323,7 +323,7 @@ function* confirmRemoveTrackFromPlaylist(
       function* (confirmedPlaylistId: ID) {
         const { artwork } = playlist
         const coverArtFile =
-          artwork && 'file' in artwork ? artwork?.file ?? null : null
+          artwork && 'file' in artwork ? (artwork?.file ?? null) : null
 
         yield* call([sdk.playlists, sdk.playlists.updatePlaylist], {
           metadata: playlistMetadataForUpdateWithSDK(playlist),
