@@ -6,7 +6,7 @@ import cn from 'classnames'
 import { mergeRefs } from 'react-merge-refs'
 import useMeasure from 'react-use-measure'
 
-import { Text } from 'components/text'
+import { Text } from '~harmony/components/text'
 
 import styles from './SegmentedControl.module.css'
 import { SegmentedControlProps } from './types'

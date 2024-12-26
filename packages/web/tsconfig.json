@@ -23,7 +23,6 @@
     "ignoreDeprecations": "5.0",
     "types": ["vite/client"],
     "paths": {
-      // "@audius/test": ["./test/test-utils.tsx"],
       "@audius/common/adapters": ["../../common/src/adapters/index.ts"],
       "@audius/common/api": ["../../common/src/api/index.ts"],
       "@audius/common/assets": ["../../common/src/assets/index.ts"],
@@ -38,8 +37,10 @@
       "@audius/common/serverStore": ["../../common/src/serverStore/index.ts"],
       "@audius/common/utils": ["../../common/src/utils/index.ts"],
       "@audius/common/src/*": ["../../common/src/*"],
+      "@audius/harmony": ["../../harmony/src/index.ts"],
       "~/*": ["../../common/src/*"],
+      "~harmony/*": ["../../harmony/src/*"]
     }
   },
-  "include": ["src", "src/**/*.css", "src/test/vitest-setup.ts", "../common/src/context/comments/tanQueryClient.tsx", "../common/src/api/tan-query/useCollection.ts", "../common/src/api/tan-query/useCollections.ts"],
+  "include": ["src", "src/**/*.css", "src/test/vitest-setup.ts", "../common/src/context/comments/tanQueryClient.tsx", "../common/src/api/tan-query/useCollection.ts", "../common/src/api/tan-query/useCollections.ts"]
 }

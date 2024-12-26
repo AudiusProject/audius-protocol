@@ -3,7 +3,7 @@ import { forwardRef } from 'react'
 import { CSSObject, useTheme } from '@emotion/react'
 import { Slot, Slottable } from '@radix-ui/react-slot'
 
-import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
+import LoadingSpinner from '~harmony/components/loading-spinner/LoadingSpinner'
 
 import { useMediaQueryListener } from '../../../hooks/useMediaQueryListener'
 

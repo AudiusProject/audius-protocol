@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react'
 
-import { IconButton } from 'components/button'
-import { IconNotificationOn } from 'icons'
+import { IconButton } from '~harmony/components/button'
+import { IconNotificationOn } from '~harmony/icons'
 
 import { NotificationCount } from './NotificationCount'
 

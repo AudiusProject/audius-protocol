@@ -1,6 +1,6 @@
 import type { MutableRefObject, ReactElement } from 'react'
 
-import { ShadowOptions } from 'foundations'
+import { ShadowOptions } from '~harmony/foundations'
 
 export type Origin = {
   vertical: 'top' | 'center' | 'bottom'

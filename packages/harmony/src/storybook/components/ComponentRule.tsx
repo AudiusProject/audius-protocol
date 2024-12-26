@@ -2,8 +2,8 @@ import type { ReactElement } from 'react'
 
 import { useTheme } from '@emotion/react'
 
-import { Flex, Text } from 'components'
-import { IconValidationCheck, IconValidationX } from 'icons'
+import { Flex, Text } from '~harmony/components'
+import { IconValidationCheck, IconValidationX } from '~harmony/icons'
 
 const messages = {
   do: 'Do',

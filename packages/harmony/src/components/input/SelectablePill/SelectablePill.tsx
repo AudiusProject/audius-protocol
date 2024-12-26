@@ -2,9 +2,9 @@ import { ComponentProps } from 'react'
 
 import { CSSObject, useTheme } from '@emotion/react'
 
-import { HiddenInput } from 'components/common/HiddenInput'
-import { useRadioGroup } from 'components/radio-group/useRadioGroup'
-import { Text } from 'components/text'
+import { HiddenInput } from '~harmony/components/common/HiddenInput'
+import { useRadioGroup } from '~harmony/components/radio-group/useRadioGroup'
+import { Text } from '~harmony/components/text'
 
 import type { SelectablePillProps } from './types'
 

@@ -3,7 +3,7 @@ import { ComponentProps } from 'react'
 import { useTheme } from '@emotion/react'
 import styled from '@emotion/styled'
 
-import { HiddenInput } from 'components/common/HiddenInput'
+import { HiddenInput } from '~harmony/components/common/HiddenInput'
 
 export type SwitchProps = ComponentProps<'input'>
 

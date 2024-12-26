@@ -80,11 +80,17 @@ const config = {
       app: path.resolve(__dirname, 'src'),
       '@audius/harmony-native': path.resolve(__dirname, 'src/harmony-native'),
       '~': path.resolve(__dirname, '../common/src'),
+      '~harmony': path.resolve(__dirname, '../harmony/src'),
 
       // The following imports are needed for @audius/common
       // and @audius/web to compile correctly
       'react-redux': resolveModule('react-redux'),
-      'react-native-svg': resolveModule('react-native-svg'),
+      'react-native-svg': path.resolve(
+        __dirname,
+        './node_modules',
+        'react-native-svg'
+      ),
+
       'react-native': resolveModule('react-native'),
       react: resolveModule('react'),
 

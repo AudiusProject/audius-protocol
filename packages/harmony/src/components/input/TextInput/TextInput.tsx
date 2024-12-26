@@ -2,8 +2,8 @@ import { ReactNode, forwardRef, useId } from 'react'
 
 import cn from 'classnames'
 
-import { Text, TextSize } from 'components/text'
-import type { TextColors } from 'foundations/color/semantic'
+import { Text, TextSize } from '~harmony/components/text'
+import type { TextColors } from '~harmony/foundations/color/semantic'
 
 import { Flex } from '../../layout'
 import { useFocusState } from '../useFocusState'

@@ -3,11 +3,15 @@ import { useState, useCallback, useEffect, forwardRef, Ref } from 'react'
 import { useTheme, type CSSObject } from '@emotion/react'
 import styled from '@emotion/styled'
 
-import type { IconComponent } from 'components/icon'
-import { Flex } from 'components/layout/Flex'
-import { Text } from 'components/text'
-import { useControlled } from 'hooks/useControlled'
-import { IconUserFollowing, IconUserFollow, IconUserUnfollow } from 'icons'
+import type { IconComponent } from '~harmony/components/icon'
+import { Flex } from '~harmony/components/layout/Flex'
+import { Text } from '~harmony/components/text'
+import { useControlled } from '~harmony/hooks/useControlled'
+import {
+  IconUserFollowing,
+  IconUserFollow,
+  IconUserUnfollow
+} from '~harmony/icons'
 
 import type { FollowButtonProps } from './types'
 
@@ -96,7 +100,7 @@ export const FollowButton = forwardRef(
     }, [value, setValueState, onUnfollow, onFollow])
 
     const checkedValue = value
-    let Icon: IconComponent | null = IconUserFollow
+    let Icon: IconComponent = IconUserFollow
     let text = messages.follow
     if (checkedValue && !isHovering) {
       Icon = IconUserFollowing
