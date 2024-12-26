@@ -447,9 +447,8 @@ export class ServiceProviderFactoryClient extends GovernedContractClient {
    * @param account wallet address to fetch for
    */
   async getLockupExpiry(account: string) {
-    const { lockupExpiryBlock } = await this.getPendingDecreaseStakeRequest(
-      account
-    )
+    const { lockupExpiryBlock } =
+      await this.getPendingDecreaseStakeRequest(account)
     return parseInt(lockupExpiryBlock as unknown as string)
   }
 
@@ -538,9 +537,8 @@ export class ServiceProviderFactoryClient extends GovernedContractClient {
     const resp = await axios(axiosRequestObj)
     const serviceType = resp.data.data.service
 
-    const serviceProviderId = await this.getServiceProviderIdFromEndpoint(
-      endpoint
-    )
+    const serviceProviderId =
+      await this.getServiceProviderIdFromEndpoint(endpoint)
     const info = await this.getServiceEndpointInfo(
       serviceType,
       serviceProviderId
@@ -591,9 +589,8 @@ export class ServiceProviderFactoryClient extends GovernedContractClient {
    * Returns array of objects with schema { blockNumber, delegateOwnerWallet, endpoint, owner, spID, type }
    */
   async getServiceProviderList(serviceType: string) {
-    const numberOfProviders = await this.getTotalServiceTypeProviders(
-      serviceType
-    )
+    const numberOfProviders =
+      await this.getTotalServiceTypeProviders(serviceType)
 
     const providerList = await Promise.all(
       range(1, numberOfProviders + 1).map(

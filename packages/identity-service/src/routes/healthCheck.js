@@ -194,7 +194,7 @@ module.exports = function (app) {
         return successResponse({
           above_balance_minimum: true,
           minimum_balance: minimumBalance,
-          balances: balances,
+          balances,
           relayer: {
             wallet: relayerPublicKey,
             balance: relayerBalance,
@@ -205,7 +205,7 @@ module.exports = function (app) {
         return errorResponseServerError({
           above_balance_minimum: false,
           minimum_balance: minimumBalance,
-          balances: balances,
+          balances,
           below_minimum_balance: belowMinimumBalances,
           relayer: {
             wallet: relayerPublicKey,
@@ -248,7 +248,7 @@ module.exports = function (app) {
 
       const balanceResponse = {
         minimum_balance: minimumBalance,
-        balances: balances,
+        balances,
         funder: {
           wallet: funderAddress,
           balance: funderBalance,
@@ -374,7 +374,7 @@ module.exports = function (app) {
       const resp = {
         discProv: body.data,
         identity: highestBlockNumber,
-        notifBlockDiff: notifBlockDiff,
+        notifBlockDiff,
         notificationJobLastSuccess,
         notificationEmailsJobLastSuccess,
         notificationAnnouncementsJobLastSuccess

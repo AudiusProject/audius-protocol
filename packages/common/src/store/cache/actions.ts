@@ -29,7 +29,7 @@ export type AddAction<EntryT extends Metadata = Metadata> =
   }
 
 /**
- * Signals to add an entry to the cache.
+ * Signals to add an entity to the cache.
  */
 export const add = (
   kind: Kind,
@@ -72,6 +72,7 @@ export type AddEntriesAction<EntryT extends Metadata = Metadata> = {
   replace?: boolean
   // persist optionally persists the cache entry to indexdb
   persist?: boolean
+  source?: 'react-query' | 'redux'
 }
 
 /**
@@ -80,12 +81,14 @@ export type AddEntriesAction<EntryT extends Metadata = Metadata> = {
 export const addEntries = (
   entriesByKind: EntriesByKind,
   replace = false,
-  persist = true
+  persist = true,
+  source?: 'react-query' | 'redux'
 ): AddEntriesAction => ({
   type: ADD_ENTRIES,
   entriesByKind,
   replace,
-  persist
+  persist,
+  source
 })
 
 /**

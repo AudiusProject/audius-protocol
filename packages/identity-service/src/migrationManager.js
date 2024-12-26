@@ -8,7 +8,7 @@ function runMigrations() {
     storage: 'sequelize',
 
     storageOptions: {
-      sequelize: sequelize
+      sequelize
     },
 
     migrations: {

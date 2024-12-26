@@ -116,7 +116,6 @@
     "numeral": "2.0.6",
     "path-dirname": "1.0.2",
     "promise": "8.3.0",
-    "proxy-memoize": "1.2.0",
     "query-string": "7.0.1",
     "react": "18.3.1",
     "react-native": "0.75.4",

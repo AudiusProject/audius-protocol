@@ -8,10 +8,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/AudiusProject/audius-protocol/pkg/core/gen/core_proto"
 	"github.com/AudiusProject/audius-protocol/pkg/mediorum/ethcontracts"
 	"github.com/AudiusProject/audius-protocol/pkg/mediorum/server/signature"
-	coretypes "github.com/cometbft/cometbft/rpc/core/types"
 	"github.com/gowebpki/jcs"
 	"github.com/labstack/echo/v4"
 )
@@ -21,13 +19,6 @@ type healthCheckResponse struct {
 	Signer    string                  `json:"signer"`
 	Signature string                  `json:"signature"`
 	Timestamp time.Time               `json:"timestamp"`
-}
-
-type coreHealthResponseData struct {
-	CoreStatus      *coretypes.ResultStatus  `json:"status"`
-	CoreHeatlh      *coretypes.ResultHealth  `json:"health"`
-	CoreNetInfo     *coretypes.ResultNetInfo `json:"net_info"`
-	CoreGRPCHealthy bool                     `json:"grpc_healthy"`
 }
 
 type healthCheckResponseData struct {
@@ -69,7 +60,6 @@ type healthCheckResponseData struct {
 	IsDbLocalhost             bool                       `json:"isDbLocalhost"`
 	DiskHasSpace              bool                       `json:"diskHasSpace"`
 	IsDiscoveryListensEnabled bool                       `json:"isDiscoveryListensEnabled"`
-	CoreHealthResponse        *coreHealthResponseData    `json:"core_health"`
 }
 
 func (ss *MediorumServer) serveHealthCheck(c echo.Context) error {
@@ -133,44 +123,7 @@ func (ss *MediorumServer) serveHealthCheck(c echo.Context) error {
 		IsDbLocalhost:             ss.Config.PostgresDSN == "postgres://postgres:postgres@db:5432/audius_creator_node" || ss.Config.PostgresDSN == "postgresql://postgres:postgres@db:5432/audius_creator_node" || ss.Config.PostgresDSN == "localhost",
 		IsDiscoveryListensEnabled: ss.Config.discoveryListensEnabled(),
 		DiskHasSpace:              ss.diskHasSpace(),
-		CoreHealthResponse:        ss.coreHealth,
 	}
-
-	go func() {
-		defer func() {
-			if r := recover(); r != nil {
-				ss.logger.Error("panic recovered in getting core sdk status", "err", r)
-			}
-		}()
-
-		// only display core status if it doesn't error
-		sdk, err := ss.getCoreSdk()
-
-		ctx := c.Request().Context()
-		coreHealthResponse := &coreHealthResponseData{}
-
-		if err == nil && sdk != nil {
-			status, err := sdk.Status(ctx)
-			if err == nil {
-				coreHealthResponse.CoreStatus = status
-			}
-
-			health, err := sdk.Health(ctx)
-			if err == nil {
-				coreHealthResponse.CoreHeatlh = health
-			}
-
-			netInfo, err := sdk.NetInfo(ctx)
-			if err == nil {
-				coreHealthResponse.CoreNetInfo = netInfo
-			}
-
-			_, err = sdk.Ping(ctx, &core_proto.PingRequest{})
-			coreHealthResponse.CoreGRPCHealthy = err == nil
-		}
-
-		ss.coreHealth = coreHealthResponse
-	}()
 
 	dataBytes, err := json.Marshal(data)
 	if err != nil {

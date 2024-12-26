@@ -69,7 +69,6 @@ type MediorumConfig struct {
 	VersionJson               VersionJson
 	DiscoveryListensEndpoints []string
 	CoreGRPCEndpoint          string
-	CoreJRPCEndpoint          string
 
 	// should have a basedir type of thing
 	// by default will put db + blobs there
@@ -112,8 +111,6 @@ type MediorumServer struct {
 	uploadOrigCidCache    *imcache.Cache[string, string]
 	imageCache            *imcache.Cache[string, []byte]
 	failsPeerReachability bool
-
-	coreHealth *coreHealthResponseData
 
 	StartedAt time.Time
 	Config    MediorumConfig

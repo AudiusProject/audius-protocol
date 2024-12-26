@@ -100,9 +100,9 @@ module.exports = function (app) {
             models.TwitterUser.create({
               twitterProfile: userProfile,
               verified: userProfile.verified,
-              uuid: uuid
+              uuid
             })
-            return successResponse({ profile: userProfile, uuid: uuid })
+            return successResponse({ profile: userProfile, uuid })
           } catch (err) {
             return errorResponseBadRequest(err)
           }
@@ -171,7 +171,7 @@ module.exports = function (app) {
 
       try {
         const twitterObj = await models.TwitterUser.findOne({
-          where: { uuid: uuid }
+          where: { uuid }
         })
         const user = await waitForUser({
           userId,
@@ -205,9 +205,9 @@ module.exports = function (app) {
           try {
             const txProps = {
               contractRegistryKey: 'EntityManager',
-              contractAddress: contractAddress,
-              encodedABI: encodedABI,
-              senderAddress: senderAddress,
+              contractAddress,
+              encodedABI,
+              senderAddress,
               gasLimit: null
             }
             await txRelay.sendTransaction(

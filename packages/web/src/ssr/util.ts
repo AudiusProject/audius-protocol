@@ -28,7 +28,9 @@ const nonSsrPaths = [
   CHAT_PAGE,
   DOWNLOAD_LINK,
   '/react-query',
-  '/react-query-cache-prime'
+  '/react-query-cache-prime',
+  '/react-query-redux-cache-sync',
+  '/react-query-to-redux-cache-sync'
 ]
 
 export const makePageRoute =

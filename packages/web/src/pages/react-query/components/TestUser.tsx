@@ -1,8 +1,9 @@
 import { useUser } from '@audius/common/api'
+import { ID } from '@audius/common/models'
 import { Flex, Text } from '@audius/harmony'
 
 type Props = {
-  userId: string
+  userId: ID
 }
 
 export const TestUser = ({ userId }: Props) => {
@@ -17,7 +18,7 @@ export const TestUser = ({ userId }: Props) => {
       <Text variant='heading'>{user.name}</Text>
       <Text>{user.bio || 'No description'}</Text>
       <Text>By: {user.name}</Text>
-      <Text>By: {user.id}</Text>
+      <Text>ID: {user.user_id}</Text>
     </Flex>
   )
 }

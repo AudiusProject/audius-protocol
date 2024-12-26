@@ -1,9 +1,6 @@
 import { ReactNode } from 'react'
 
-import {
-  QueryClientProvider,
-  QueryClient as TanQueryClient
-} from '@tanstack/react-query'
+import { QueryClientProvider } from '@tanstack/react-query'
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import { ConnectedRouter } from 'connected-react-router'
 import { CompatRouter } from 'react-router-dom-v5-compat'
@@ -14,6 +11,7 @@ import { HeaderContextProvider } from 'components/header/mobile/HeaderContextPro
 import { NavProvider } from 'components/nav/mobile/NavContext'
 import { ScrollProvider } from 'components/scroll-provider/ScrollProvider'
 import { ToastContextProvider } from 'components/toast/ToastContext'
+import { queryClient } from 'services/query-client'
 import { getSystemAppearance, getTheme } from 'utils/theme/theme'
 
 import { MainContentContextProvider } from '../pages/MainContentContext'
@@ -24,8 +22,6 @@ import { useHistoryContext } from './HistoryProvider'
 import { ReduxProvider } from './ReduxProvider'
 import { SvgGradientProvider } from './SvgGradientProvider'
 import { ThemeProvider } from './ThemeProvider'
-
-const tanQueryClient = new TanQueryClient()
 
 type AppContextProps = {
   children: ReactNode
@@ -49,7 +45,7 @@ export const AppProviders = ({ children }: AppContextProps) => {
         <CompatRouter>
           <LastLocationProvider>
             <AudiusQueryProvider>
-              <QueryClientProvider client={tanQueryClient}>
+              <QueryClientProvider client={queryClient}>
                 <ReactQueryDevtools initialIsOpen={false} />
                 <AppContextProvider>
                   <ThemeProvider>

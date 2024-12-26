@@ -696,14 +696,17 @@ export class SolanaWeb3Manager {
     // TODO: PAY-2252 split extra amount amongst all recipients correctly
     const recipientAmounts: Record<string, bigint> = Object.entries(
       splits
-    ).reduce((acc, [key, value]) => {
-      acc[key] =
-        (value instanceof BN ? BigInt(value.toString()) : BigInt(value)) +
-        (extraAmount instanceof BN
-          ? BigInt(extraAmount.toString())
-          : BigInt(extraAmount))
-      return acc
-    }, {} as Record<string, bigint>)
+    ).reduce(
+      (acc, [key, value]) => {
+        acc[key] =
+          (value instanceof BN ? BigInt(value.toString()) : BigInt(value)) +
+          (extraAmount instanceof BN
+            ? BigInt(extraAmount.toString())
+            : BigInt(extraAmount))
+        return acc
+      },
+      {} as Record<string, bigint>
+    )
 
     const [paymentRouterPda, paymentRouterPdaBump] =
       PublicKey.findProgramAddressSync(
