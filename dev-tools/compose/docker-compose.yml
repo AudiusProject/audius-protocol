@@ -69,24 +69,24 @@ services:
 
   # service name intentionally left as "core" despite being core-discovery-1
   # for compatibility with audius-compose CI tooling
-  core:
+  audiusd-1:
     extends:
-      file: docker-compose.core.yml
-      service: core
-    container_name: core-discovery-1
+      file: docker-compose.audiusd.yml
+      service: audiusd
+    container_name: audiusd-1
     ports:
-      - '6611:26659' # Http Console
-      - '6612:1991' # Mediorum Server
-      - '6613:50051' # Core GRPC Server
+      - '6701:26659' # Http Console
+      - '6702:1991' # Mediorum Server
+      - '6703:50051' # Core GRPC Server
     env_file:
       - ${PROJECT_ROOT}/cmd/core/infra/dev_config/discovery-one.docker.env
     <<: *common
 
-  core-content-1:
+  audiusd-2:
     extends:
-      file: docker-compose.core.yml
-      service: core
-    container_name: core-content-1
+      file: docker-compose.audiusd.yml
+      service: audiusd
+    container_name: audiusd-2
     ports:
       - '6711:26659'
       - '6712:1991'
@@ -95,11 +95,11 @@ services:
       - ${PROJECT_ROOT}/cmd/core/infra/dev_config/content-one.docker.env
     <<: *common
 
-  core-content-2:
+  audiusd-3:
     extends:
-      file: docker-compose.core.yml
-      service: core
-    container_name: core-content-2
+      file: docker-compose.audiusd.yml
+      service: audiusd
+    container_name: audiusd-3
     ports:
       - '6721:26659'
       - '6722:1991'
@@ -108,11 +108,11 @@ services:
       - ${PROJECT_ROOT}/cmd/core/infra/dev_config/content-two.docker.env
     <<: *common
 
-  core-content-3:
+  audiusd-4:
     extends:
-      file: docker-compose.core.yml
-      service: core
-    container_name: core-content-3
+      file: docker-compose.audiusd.yml
+      service: audiusd
+    container_name: audiusd-4
     ports:
       - '6731:26659'
       - '6732:1991'

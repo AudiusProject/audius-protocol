@@ -29,6 +29,11 @@ func (s *Server) startEthNodeManager() error {
 	close(s.awaitEthNodesReady)
 
 	ticker := time.NewTicker(6 * time.Hour)
+	if s.isDevEnvironment() {
+		// query eth chain more aggressively on dev
+		ticker = time.NewTicker(5 * time.Second)
+	}
+
 	defer ticker.Stop()
 
 	for range ticker.C {

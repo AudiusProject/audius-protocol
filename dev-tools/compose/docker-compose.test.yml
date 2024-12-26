@@ -105,7 +105,7 @@ services:
 
   # core
 
-  core-discovery-1:
+  audiusd-1:
     build:
       context: ${PROJECT_ROOT}
       dockerfile: ${PROJECT_ROOT}/cmd/audiusd/Dockerfile
@@ -118,7 +118,7 @@ services:
       db:
         condition: service_healthy
 
-  core-content-1:
+  audiusd-2:
     build:
       context: ${PROJECT_ROOT}
       dockerfile: ${PROJECT_ROOT}/cmd/audiusd/Dockerfile
@@ -131,7 +131,7 @@ services:
       db:
         condition: service_healthy
 
-  core-content-2:
+  audiusd-3:
     build:
       context: ${PROJECT_ROOT}
       dockerfile: ${PROJECT_ROOT}/cmd/audiusd/Dockerfile
@@ -144,7 +144,7 @@ services:
       db:
         condition: service_healthy
 
-  core-content-3:
+  audiusd-4:
     build:
       context: ${PROJECT_ROOT}
       dockerfile: ${PROJECT_ROOT}/cmd/audiusd/Dockerfile
@@ -168,13 +168,13 @@ services:
     depends_on:
       ingress:
         condition: service_healthy
-      core-discovery-1:
+      audiusd-1:
         condition: service_started
-      core-content-1:
+      audiusd-2:
         condition: service_started
-      core-content-2:
+      audiusd-3:
         condition: service_started
-      core-content-3:
+      audiusd-4:
         condition: service_started
       eth-ganache:
         condition: service_healthy

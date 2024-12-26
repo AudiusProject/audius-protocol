@@ -1,6 +1,6 @@
 services:
-  core:
-    container_name: core
+  audiusd:
+    container_name: audiusd
     build:
       context: ${PROJECT_ROOT}
       dockerfile: ${PROJECT_ROOT}/cmd/audiusd/Dockerfile

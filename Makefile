@@ -202,7 +202,7 @@ bin/core-amd64: $(BUILD_SRCS)
 
 .PHONY: core-dev
 core-dev: gen
-	audius-compose up core core-content-1 core-content-2 core-content-3 eth-ganache ingress
+	audius-compose up audiusd-1 audiusd-2 audiusd-3 audiusd-4 eth-ganache ingress
 
 .PHONY: core-test
 core-test: gen
