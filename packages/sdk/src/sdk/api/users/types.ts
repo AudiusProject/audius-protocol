@@ -126,12 +126,12 @@ export const UpdateProfileSchema = z
         twitterHandle: z.optional(z.string()),
         instagramHandle: z.optional(z.string()),
         tiktokHandle: z.optional(z.string()),
-        associatedWallets: z.optional(
-          z.union([CreateAssociatedWalletsSchema, z.null()])
-        ),
-        associatedSolWallets: z.optional(
-          z.union([CreateAssociatedWalletsSchema, z.null()])
-        )
+        associatedWallets: z
+          .optional(z.union([CreateAssociatedWalletsSchema, z.null()]))
+          .nullable(),
+        associatedSolWallets: z
+          .optional(z.union([CreateAssociatedWalletsSchema, z.null()]))
+          .nullable()
       })
       .strict()
   })
