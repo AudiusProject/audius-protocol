@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 
 import cn from 'classnames'
 
-import { formatTrackTimestamp } from 'utils'
+import { formatTrackTimestamp } from '~harmony/utils'
 
 import styles from './Scrubber.module.css'
 import { Slider } from './Slider'

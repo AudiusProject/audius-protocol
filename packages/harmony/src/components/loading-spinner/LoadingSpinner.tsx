@@ -1,7 +1,7 @@
 import cn from 'classnames'
 import Lottie from 'react-lottie'
 
-import loadingSpinner from 'assets/animations/loadingSpinner.json'
+import loadingSpinner from '~harmony/assets/animations/loadingSpinner.json'
 
 import styles from './LoadingSpinner.module.css'
 

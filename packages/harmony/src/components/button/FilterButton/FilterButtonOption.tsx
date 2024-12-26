@@ -2,8 +2,8 @@ import { forwardRef, MouseEventHandler, Ref, useCallback } from 'react'
 
 import { CSSObject } from '@emotion/react'
 
-import { Text } from 'components/text/Text'
-import { useTheme } from 'foundations'
+import { Text } from '~harmony/components/text/Text'
+import { useTheme } from '~harmony/foundations'
 
 import { BaseButton } from '../BaseButton/BaseButton'
 

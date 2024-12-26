@@ -1,6 +1,6 @@
-import { IconComponent } from 'components/icon'
+import type { WithCSS } from '~harmony/foundations/theme'
 
-import type { WithCSS } from '../../foundations/theme'
+import { IconComponent } from '../icon'
 
 export type NavItemProps = WithCSS<{
   /** The label text of the navigation item. */

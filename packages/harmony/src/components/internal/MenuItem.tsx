@@ -8,11 +8,11 @@ import {
 
 import { CSSObject } from '@emotion/react'
 
-import { BaseButton } from 'components/button/BaseButton/BaseButton'
-import { BaseButtonProps } from 'components/button/BaseButton/types'
-import { IconComponent } from 'components/icon'
-import { Text } from 'components/text/Text'
-import { useTheme } from 'foundations'
+import { BaseButton } from '~harmony/components/button/BaseButton/BaseButton'
+import { BaseButtonProps } from '~harmony/components/button/BaseButton/types'
+import { IconComponent } from '~harmony/components/icon'
+import { Text } from '~harmony/components/text/Text'
+import { useTheme } from '~harmony/foundations'
 
 export type MenuItemProps<Value extends string> = Omit<
   BaseButtonProps,

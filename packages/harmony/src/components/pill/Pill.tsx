@@ -2,9 +2,9 @@ import { Ref, forwardRef } from 'react'
 
 import { CSSObject, useTheme } from '@emotion/react'
 
-import { BaseButton } from 'components/button/BaseButton/BaseButton'
-import { BaseButtonProps } from 'components/button/BaseButton/types'
-import { Text } from 'components/text'
+import { BaseButton } from '~harmony/components/button/BaseButton/BaseButton'
+import { BaseButtonProps } from '~harmony/components/button/BaseButton/types'
+import { Text } from '~harmony/components/text'
 
 export type PillProps = BaseButtonProps & {
   variant?: 'default' | 'active' | 'custom'

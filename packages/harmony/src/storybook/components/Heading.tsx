@@ -1,4 +1,4 @@
-import { Flex, FlexProps } from 'components'
+import { Flex, FlexProps } from '~harmony/components'
 
 type HeadingProps = FlexProps
 

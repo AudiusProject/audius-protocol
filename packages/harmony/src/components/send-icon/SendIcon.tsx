@@ -1,7 +1,7 @@
 import { useTheme } from '@emotion/react'
 
-import { IconButton } from 'components/button'
-import { IconPaperAirplane } from 'icons'
+import { IconButton } from '~harmony/components/button'
+import { IconPaperAirplane } from '~harmony/icons'
 
 import { SendIconProps } from './types'
 
