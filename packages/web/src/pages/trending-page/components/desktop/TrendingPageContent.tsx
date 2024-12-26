@@ -22,10 +22,10 @@ const { trendingAllTimeActions, trendingMonthActions, trendingWeekActions } =
   trendingPageLineupActions
 
 const messages = {
-  thisWeek: 'THIS WEEK',
-  thisMonth: 'THIS MONTH',
-  allTime: 'ALL TIME',
-  allGenres: 'All Genres',
+  thisWeek: 'this week',
+  thisMonth: 'this month',
+  allTime: 'all time',
+  allGenres: 'all genres',
   endOfLineupDescription: "Looks like you've reached the end of this list...",
   disabledTabTooltip: 'Nothing available'
 }

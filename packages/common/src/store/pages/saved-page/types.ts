@@ -68,9 +68,9 @@ export interface SavedPageState {
 }
 
 export enum SavedPageTabs {
-  TRACKS = 'TRACKS',
-  ALBUMS = 'ALBUMS',
-  PLAYLISTS = 'PLAYLISTS'
+  TRACKS = 'tracks',
+  ALBUMS = 'albums',
+  PLAYLISTS = 'playlists'
 }
 
 export type SavedPageTrack = LineupTrack & { dateSaved: string }

@@ -42,15 +42,18 @@ export const Text = forwardRef(
       position: 'relative',
       boxSizing: 'border-box',
       ...(color &&
-        color === 'heading' && {
-          // inline is necessary to prevent text clipping
-          display: 'inline',
-          color: theme.color.secondary.secondary,
-          WebkitTextFillColor: 'transparent',
-          backgroundClip: 'text',
-          backgroundImage: theme.color.text.heading
-        }),
-      ...(color && color !== 'heading' && { color: theme.color.text[color] }),
+        (color === 'heading'
+          ? {
+              // inline is necessary to prevent text clipping
+              display: 'inline',
+              color: theme.color.secondary.secondary,
+              WebkitTextFillColor: 'transparent',
+              backgroundClip: 'text',
+              backgroundImage: theme.color.text.heading
+            }
+          : color === 'inherit'
+          ? { color: 'inherit' }
+          : { color: theme.color.text[color] })),
       ...(variantConfig && {
         // @ts-ignore
         fontSize: theme.typography.size[variantConfig.fontSize[size]],
@@ -95,7 +98,7 @@ export const Text = forwardRef(
     // @ts-ignore
     const variantTag = variant && variantTagMap[variant]?.[size]
 
-    const Tag: ElementType = asChild ? Slot : (tag ?? variantTag ?? 'span')
+    const Tag: ElementType = asChild ? Slot : tag ?? variantTag ?? 'span'
 
     const textElement = (
       <Tag ref={ref} css={css} {...other}>
