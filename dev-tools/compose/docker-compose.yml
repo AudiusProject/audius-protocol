@@ -77,7 +77,6 @@ services:
     ports:
       - '6611:26659' # Http Console
       - '6613:50051' # Core GRPC Server
-      - '6614:5432' # Postgres
     env_file:
       - ${PROJECT_ROOT}/cmd/core/infra/dev_config/discovery-one.docker.env
     <<: *common
@@ -90,7 +89,6 @@ services:
     ports:
       - '6711:26659'
       - '6713:50051'
-      - '6714:5432'
     env_file:
       - ${PROJECT_ROOT}/cmd/core/infra/dev_config/content-one.docker.env
     <<: *common
@@ -103,7 +101,6 @@ services:
     ports:
       - '6721:26659'
       - '6723:50051'
-      - '6724:5432'
     env_file:
       - ${PROJECT_ROOT}/cmd/core/infra/dev_config/content-two.docker.env
     <<: *common
@@ -116,7 +113,6 @@ services:
     ports:
       - '6731:26659'
       - '6733:50051'
-      - '6734:5432'
     env_file:
       - ${PROJECT_ROOT}/cmd/core/infra/dev_config/content-three.docker.env
     <<: *common

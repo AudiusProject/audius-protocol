@@ -7,8 +7,6 @@ services:
       args:
         git_sha: '${GIT_COMMIT}'
     restart: unless-stopped
-    environment:
-      - NETWORK=dev
     profiles:
       - discovery
       - storage
