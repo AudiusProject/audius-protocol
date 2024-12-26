@@ -58,11 +58,11 @@ export type ProfilePageState = {
 }
 
 export enum ProfilePageTabs {
-  TRACKS = 'TRACKS',
-  ALBUMS = 'ALBUMS',
-  PLAYLISTS = 'PLAYLISTS',
-  REPOSTS = 'REPOSTS',
-  COLLECTIBLES = 'COLLECTIBLES'
+  TRACKS = 'tracks',
+  ALBUMS = 'albums',
+  PLAYLISTS = 'playlists',
+  REPOSTS = 'reposts',
+  COLLECTIBLES = 'collectibles'
 }
 
 export enum ProfilePageTabRoute {

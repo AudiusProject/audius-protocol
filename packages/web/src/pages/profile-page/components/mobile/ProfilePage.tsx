@@ -153,25 +153,25 @@ export const EmptyTab = (props: EmptyTabProps) => {
 const artistTabs: TabHeader[] = [
   {
     icon: <IconNote />,
-    text: 'Tracks',
+    text: 'tracks',
     label: ProfilePageTabs.TRACKS,
     to: 'tracks'
   },
   {
     icon: <IconAlbum />,
-    text: 'Albums',
+    text: 'albums',
     label: ProfilePageTabs.ALBUMS,
     to: 'albums'
   },
   {
     icon: <IconPlaylists />,
-    text: 'Playlists',
+    text: 'playlists',
     label: ProfilePageTabs.PLAYLISTS,
     to: 'playlists'
   },
   {
     icon: <IconReposts className={styles.iconReposts} />,
-    text: 'Reposts',
+    text: 'reposts',
     label: ProfilePageTabs.REPOSTS,
     to: 'reposts'
   }
@@ -180,13 +180,13 @@ const artistTabs: TabHeader[] = [
 const userTabs: TabHeader[] = [
   {
     icon: <IconReposts className={styles.iconReposts} />,
-    text: 'Reposts',
+    text: 'reposts',
     label: ProfilePageTabs.REPOSTS,
     to: 'reposts'
   },
   {
     icon: <IconPlaylists />,
-    text: 'Playlists',
+    text: 'playlists',
     label: ProfilePageTabs.PLAYLISTS,
     to: 'playlists'
   }
@@ -194,7 +194,7 @@ const userTabs: TabHeader[] = [
 
 const collectiblesTab = {
   icon: <IconCollectibles />,
-  text: 'Collectibles',
+  text: 'collectibles',
   label: ProfilePageTabs.COLLECTIBLES,
   to: 'collectibles'
 }

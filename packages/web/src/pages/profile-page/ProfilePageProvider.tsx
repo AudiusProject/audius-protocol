@@ -424,7 +424,7 @@ class ProfilePage extends PureComponent<ProfilePageProps, ProfilePageState> {
 
     // Once the hero card settles into place, then turn the mask off
     setTimeout(() => {
-      const firstTab = this.getIsArtist() ? 'TRACKS' : 'REPOSTS'
+      const firstTab = this.getIsArtist() ? 'tracks' : 'reposts'
       this.setState({
         shouldMaskContent: tab !== firstTab
       })
