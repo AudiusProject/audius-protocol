@@ -23,9 +23,14 @@ import (
 )
 
 func (s *Server) startRegistryBridge() error {
-	if s.config.Environment != "dev" {
-		<-s.awaitEthNodesReady
+	if s.isDevEnvironment() {
+		s.logger.Info("running in dev, registering on ethereum")
+		if err := s.registerSelfOnEth(); err != nil {
+			return fmt.Errorf("error registering onto eth: %v", err)
+		}
 	}
+
+	<-s.awaitEthNodesReady
 	<-s.awaitRpcReady
 	s.logger.Info("starting registry bridge")
 
