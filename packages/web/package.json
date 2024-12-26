@@ -110,7 +110,6 @@
     "@types/react-dates": "21.8.3",
     "@types/react-twitter-auth": "0.0.4",
     "@walletconnect/web3-provider": "1.4.1",
-    "ajv": "7.2.4",
     "antd": "4.20.6",
     "array-pack-2d": "0.1.1",
     "array-range": "1.0.1",
