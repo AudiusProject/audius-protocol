@@ -1,4 +1,4 @@
-import { ChangeEvent, useCallback, useState } from 'react'
+import { ChangeEvent, useCallback, useEffect, useState } from 'react'
 
 import { getCanonicalName } from '@audius/common/utils'
 import { Flex, IconKebabHorizontal, SelectablePill } from '@audius/harmony'
@@ -42,11 +42,19 @@ export const TrendingGenreFilters = (props: TrendingGenreFiltersProps) => {
     isSelectedFromModal(currentGenre) &&
     currentGenre !== lastModalSelectedGenre
   ) {
-    setLastModalSelectedGenre(currentGenre)
     genres.push(currentGenre)
-  } else if (lastModalSelectedGenre !== null) {
+  } else if (lastModalSelectedGenre) {
     genres.push(lastModalSelectedGenre)
   }
+
+  useEffect(() => {
+    if (
+      isSelectedFromModal(currentGenre) &&
+      currentGenre !== lastModalSelectedGenre
+    ) {
+      setLastModalSelectedGenre(currentGenre)
+    }
+  }, [currentGenre, lastModalSelectedGenre])
 
   const handleChange = useCallback(
     (e: ChangeEvent<HTMLInputElement>) => {
@@ -58,6 +66,13 @@ export const TrendingGenreFilters = (props: TrendingGenreFiltersProps) => {
       }
     },
     [didSelectGenre]
+  )
+
+  console.log(
+    'genres',
+    genres,
+    isSelectedFromModal(currentGenre),
+    lastModalSelectedGenre
   )
 
   return (

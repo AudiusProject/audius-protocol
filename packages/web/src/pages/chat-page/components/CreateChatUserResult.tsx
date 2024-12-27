@@ -19,11 +19,11 @@ import {
   IconUser,
   PopupMenu
 } from '@audius/harmony'
-import { push as pushRoute } from 'connected-react-router'
 import { useDispatch } from 'react-redux'
 
 import { useSelector } from 'common/hooks/useSelector'
 import ArtistChip from 'components/artist/ArtistChip'
+import { push } from 'utils/navigation'
 import zIndex from 'utils/zIndex'
 
 import styles from './CreateChatUserResult.module.css'
@@ -125,7 +125,7 @@ export const CreateChatUserResult = (props: UserResultComposeProps) => {
   })
 
   const handleVisitClicked = useCallback(() => {
-    dispatch(pushRoute(profilePage(user.handle)))
+    dispatch(push(profilePage(user.handle)))
     closeParentModal()
   }, [dispatch, user, closeParentModal])
 

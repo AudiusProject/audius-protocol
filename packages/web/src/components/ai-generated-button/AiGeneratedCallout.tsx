@@ -6,9 +6,9 @@ import {
   PlainButton,
   Box
 } from '@audius/harmony'
-import { push as pushRoute } from 'connected-react-router'
 import { useDispatch } from 'react-redux'
 
+import { push } from 'utils/navigation'
 import { profilePageAiAttributedTracks } from 'utils/route'
 
 import styles from './AiGeneratedCallout.module.css'
@@ -23,7 +23,7 @@ export const AiGeneratedCallout = ({ handle }: { handle: string }) => {
   const dispatch = useDispatch()
 
   const handleClick = useCallback(() => {
-    dispatch(pushRoute(profilePageAiAttributedTracks(handle)))
+    dispatch(push(profilePageAiAttributedTracks(handle)))
   }, [dispatch, handle])
 
   return (

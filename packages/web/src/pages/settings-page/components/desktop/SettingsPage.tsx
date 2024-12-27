@@ -44,7 +44,6 @@ import {
   SegmentedControl
 } from '@audius/harmony'
 import cn from 'classnames'
-import { push as pushRoute } from 'connected-react-router'
 import { useDispatch } from 'react-redux'
 import { Link } from 'react-router-dom'
 
@@ -69,6 +68,7 @@ import {
   Permission
 } from 'utils/browserNotifications'
 import { isElectron } from 'utils/clientUtil'
+import { push } from 'utils/navigation'
 import { useSelector } from 'utils/reducer'
 import { THEME_KEY } from 'utils/theme/theme'
 
@@ -272,7 +272,7 @@ export const SettingsPage = () => {
     [dispatch]
   )
   const goToRoute = useCallback(
-    (route: string) => dispatch(pushRoute(route)),
+    (route: string) => dispatch(push(route)),
     [dispatch]
   )
   const record = useRecord()

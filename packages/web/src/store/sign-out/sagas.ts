@@ -6,11 +6,11 @@ import {
   signOutActions,
   getContext
 } from '@audius/common/store'
-import { push as pushRoute } from 'connected-react-router'
 import { takeLatest, put } from 'redux-saga/effects'
 
 import { make } from 'common/store/analytics/actions'
 import { signOut } from 'store/sign-out/signOut'
+import { push } from 'utils/navigation'
 const { resetAccount, unsubscribeBrowserPushNotifications } = accountActions
 const { resetState: resetWalletState } = tokenDashboardPageActions
 const { signOut: signOutAction } = signOutActions
@@ -27,7 +27,7 @@ function* watchSignOut() {
         callback: () => signOut(localStorage, authService)
       })
     )
-    yield put(pushRoute(TRENDING_PAGE))
+    yield put(push(TRENDING_PAGE))
   })
 }
 

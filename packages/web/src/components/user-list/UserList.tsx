@@ -16,7 +16,6 @@ import {
 import { route } from '@audius/common/utils'
 import { FollowButton } from '@audius/harmony'
 import cn from 'classnames'
-import { push as pushRoute } from 'connected-react-router'
 import InfiniteScroll from 'react-infinite-scroller'
 import Lottie from 'react-lottie'
 import { useDispatch, useSelector } from 'react-redux'
@@ -27,6 +26,7 @@ import { MountPlacement } from 'components/types'
 import * as unfollowConfirmationActions from 'components/unfollow-confirmation-modal/store/actions'
 import { useIsMobile } from 'hooks/useIsMobile'
 import { AppState } from 'store/types'
+import { push } from 'utils/navigation'
 
 import styles from './UserList.module.css'
 
@@ -106,7 +106,7 @@ export const UserList = ({
 
   const handleClickArtistName = (handle: string) => {
     beforeClickArtistName?.()
-    dispatch(pushRoute(profilePage(handle)))
+    dispatch(push(profilePage(handle)))
   }
 
   const handleLoadMore = useCallback(

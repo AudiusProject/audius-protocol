@@ -7,13 +7,13 @@ import {
 } from '@audius/common/store'
 import { Button, Flex } from '@audius/harmony'
 import cn from 'classnames'
-import { push as pushRoute } from 'connected-react-router'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { useModalState } from 'common/hooks/useModalState'
 import { make, useRecord } from 'common/store/analytics/actions'
 import LoadingSpinnerFullPage from 'components/loading-spinner-full-page/LoadingSpinnerFullPage'
 import { useIsMobile } from 'hooks/useIsMobile'
+import { push } from 'utils/navigation'
 
 import styles from './DeactivateAccountPage.module.css'
 import { DeactivateAccountPageDesktop } from './components/desktop/DeactivateAccountPage'
@@ -65,7 +65,7 @@ export const DeactivateAcccountPageContents = ({
 }: DeactivateAccountPageContentsProps) => {
   const dispatch = useDispatch()
   const goToSafety = useCallback(() => {
-    dispatch(pushRoute('/'))
+    dispatch(push('/'))
   }, [dispatch])
   return (
     <div className={cn(styles.tile, { [styles.mobile]: isMobile })}>

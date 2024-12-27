@@ -12,13 +12,13 @@ import {
   playerSelectors
 } from '@audius/common/store'
 import { route } from '@audius/common/utils'
-import { push as pushRoute } from 'connected-react-router'
 import { connect } from 'react-redux'
 import { Redirect } from 'react-router'
 import { withRouter } from 'react-router-dom'
 
 import { HistoryContext } from 'app/HistoryProvider'
 import { make } from 'common/store/analytics/actions'
+import { push } from 'utils/navigation'
 import { doesMatchRoute } from 'utils/route'
 
 import * as helpers from './helpers'
@@ -174,7 +174,7 @@ const makeMapStateToProps = (initialState, ownProps) => {
 
 const mapDispatchToProps = (dispatch) => ({
   dispatch,
-  goToRoute: (route) => dispatch(pushRoute(route)),
+  goToRoute: (route) => dispatch(push(route)),
   recordTagSearch: (query) => {
     dispatch(make(Name.SEARCH_TAG_SEARCH, { tag: query }))
   },

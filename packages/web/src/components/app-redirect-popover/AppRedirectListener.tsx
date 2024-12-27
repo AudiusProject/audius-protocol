@@ -2,12 +2,13 @@ import { useEffect } from 'react'
 
 import { MobileOS } from '@audius/common/models'
 import { route } from '@audius/common/utils'
-import { push as pushRoute } from 'connected-react-router'
 import { connect } from 'react-redux'
 import { useHistory } from 'react-router-dom'
 import { Dispatch } from 'redux'
 
 import { getMobileOS } from 'utils/clientUtil'
+import { push } from 'utils/navigation'
+
 const {
   APP_REDIRECT,
   ANDROID_PLAY_STORE_LINK,
@@ -64,7 +65,7 @@ const AppRedirectListener = ({ goToRoute }: AppRedirectListenerProps) => {
 
 function mapDispatchToProps(dispatch: Dispatch) {
   return {
-    goToRoute: (route: string) => dispatch(pushRoute(route))
+    goToRoute: (route: string) => dispatch(push(route))
   }
 }
 

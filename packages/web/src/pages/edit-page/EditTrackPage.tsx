@@ -18,7 +18,6 @@ import {
   useReplaceTrackProgressModal
 } from '@audius/common/store'
 import { removeNullable } from '@audius/common/utils'
-import { push as pushRoute } from 'connected-react-router'
 import { useDispatch } from 'react-redux'
 import { useParams } from 'react-router'
 
@@ -31,6 +30,7 @@ import Page from 'components/page/Page'
 import { useIsUnauthorizedForHandleRedirect } from 'hooks/useManagedAccountNotAllowedRedirect'
 import { useRequiresAccount } from 'hooks/useRequiresAccount'
 import { useTrackCoverArt } from 'hooks/useTrackCoverArt'
+import { push } from 'utils/navigation'
 
 const { editTrack } = cacheTracksActions
 const { getStems } = cacheTracksSelectors
@@ -91,7 +91,7 @@ export const EditTrackPage = (props: EditPageProps) => {
       })
     } else {
       dispatch(editTrack(metadata.track_id, metadata))
-      dispatch(pushRoute(metadata.permalink))
+      dispatch(push(metadata.permalink))
     }
   }
 

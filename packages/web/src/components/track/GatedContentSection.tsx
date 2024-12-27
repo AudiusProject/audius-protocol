@@ -44,7 +44,6 @@ import {
   IconTipping
 } from '@audius/harmony'
 import cn from 'classnames'
-import { push as pushRoute } from 'connected-react-router'
 import { useDispatch, useSelector } from 'react-redux'
 import { useSearchParams } from 'react-router-dom-v5-compat'
 
@@ -57,6 +56,7 @@ import { useRequiresAccountCallback } from 'hooks/useRequiresAccount'
 import { emptyStringGuard } from 'pages/track-page/utils'
 import { make, track } from 'services/analytics'
 import { AppState } from 'store/types'
+import { push } from 'utils/navigation'
 
 import { LockedStatusBadge } from '../locked-status-badge'
 
@@ -705,7 +705,7 @@ export const GatedContentSection = ({
           <h2
             className={styles.gatedContentOwner}
             onClick={() =>
-              dispatch(pushRoute(profilePage(emptyStringGuard(entity.handle))))
+              dispatch(push(profilePage(emptyStringGuard(entity.handle))))
             }
           >
             {entity.name}

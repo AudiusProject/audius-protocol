@@ -14,8 +14,9 @@ import {
   IconError,
   IconKebabHorizontal
 } from '@audius/harmony'
-import { push as pushRoute } from 'connected-react-router'
 import { useDispatch, useSelector } from 'react-redux'
+
+import { push } from 'utils/navigation'
 
 import { BlockUserConfirmationModal } from './BlockUserConfirmationModal'
 import { ChatUser } from './ChatUser'
@@ -68,7 +69,7 @@ export const UserChatHeader = ({ chatId }: { chatId?: string }) => {
   }, [setIsReportAbuse])
 
   const handleVisitClicked = useCallback(() => {
-    dispatch(pushRoute(profilePage(user.handle)))
+    dispatch(push(profilePage(user.handle)))
   }, [dispatch, user])
 
   const handleDeleteClicked = useCallback(() => {

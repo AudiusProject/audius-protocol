@@ -8,7 +8,6 @@ import { Kind, Name, SquareSizes } from '@audius/common/models'
 import { getTierForUser, searchActions } from '@audius/common/store'
 import { route } from '@audius/common/utils'
 import { Box } from '@audius/harmony'
-import { push as pushRoute } from 'connected-react-router'
 import { connect } from 'react-redux'
 import { matchPath } from 'react-router'
 import { generatePath, withRouter } from 'react-router-dom'
@@ -22,6 +21,7 @@ import {
 } from 'common/store/search-bar/actions'
 import { getSearch } from 'common/store/search-bar/selectors'
 import SearchBar from 'components/search/SearchBar'
+import { push } from 'utils/navigation'
 import { getPathname } from 'utils/route'
 
 const { profilePage, collectionPage, SEARCH_PAGE } = route
@@ -321,7 +321,7 @@ const mapDispatchToProps = (dispatch) => ({
   fetchSearch: (value) => dispatch(fetchSearch(value)),
   cancelFetchSearch: () => dispatch(cancelFetchSearch()),
   clearSearch: () => dispatch(clearSearch()),
-  goToRoute: (route) => dispatch(pushRoute(route)),
+  goToRoute: (route) => dispatch(push(route)),
   recordSearchResultClick: ({ term, kind, id, source }) =>
     dispatch(make(Name.SEARCH_RESULT_SELECT, { term, kind, id, source })),
   addRecentSearch: (searchItem) => dispatch(addRecentSearch(searchItem))
