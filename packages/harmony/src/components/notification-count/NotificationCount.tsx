@@ -1,6 +1,6 @@
 import { useTheme, CSSObject } from '@emotion/react'
 
-import { formatCount } from 'utils/formatCount'
+import { formatCount } from '~harmony/utils/formatCount'
 
 import { Flex } from '../layout/Flex'
 import { Text } from '../text/Text'

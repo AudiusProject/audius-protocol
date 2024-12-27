@@ -11,14 +11,14 @@ import {
 import { CSSObject, useTheme } from '@emotion/react'
 import { mergeRefs } from 'react-merge-refs'
 
-import { BaseButton } from 'components/button/BaseButton/BaseButton'
-import { IconComponent, IconProps } from 'components/icon'
-import { TextInput, TextInputSize } from 'components/input/TextInput'
-import { Menu, MenuContent } from 'components/internal/Menu'
-import { Flex, Box } from 'components/layout'
-import { Text } from 'components/text/Text'
-import { useControlled } from 'hooks/useControlled'
-import { IconCaretDown, IconCloseAlt, IconSearch } from 'icons'
+import { BaseButton } from '~harmony/components/button/BaseButton/BaseButton'
+import { IconComponent, IconProps } from '~harmony/components/icon'
+import { TextInput, TextInputSize } from '~harmony/components/input/TextInput'
+import { Menu, MenuContent } from '~harmony/components/internal/Menu'
+import { Flex, Box } from '~harmony/components/layout'
+import { Text } from '~harmony/components/text/Text'
+import { useControlled } from '~harmony/hooks/useControlled'
+import { IconCaretDown, IconCloseAlt, IconSearch } from '~harmony/icons'
 
 import { OptionsList, VirtualizedOptionsList } from './FilterButtonOptionsList'
 import { FilterButtonProps } from './types'
@@ -163,7 +163,7 @@ export const FilterButton = forwardRef(function FilterButton<
       ? (((props: IconProps) => (
           <IconCloseAlt
             aria-label='cancel'
-            onClick={(e) => {
+            onClick={(e: React.MouseEvent<SVGSVGElement>) => {
               e.stopPropagation()
               if (onClick) {
                 onClick()

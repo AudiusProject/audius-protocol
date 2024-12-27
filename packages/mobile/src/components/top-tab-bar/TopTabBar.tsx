@@ -1,7 +1,10 @@
 import { Animated, Dimensions, TouchableOpacity, View } from 'react-native'
 
+import { Text } from '@audius/harmony-native'
 import { makeStyles } from 'app/styles'
 import { useThemeColors } from 'app/utils/theme'
+
+const AnimatedText = Animated.createAnimatedComponent(Text)
 
 // How much the tab indicator should horizontally stretch
 // while it translates for a nice effect.
@@ -33,7 +36,7 @@ const getSinAnimationRanges = (len: number) => {
   }
 }
 
-const useStyles = makeStyles(({ palette, typography, spacing }) => ({
+const useStyles = makeStyles(({ palette, spacing }) => ({
   tabBarContainer: {
     elevation: 3,
     marginBottom: -1 * spacing(1),
@@ -62,14 +65,6 @@ const useStyles = makeStyles(({ palette, typography, spacing }) => ({
     flexDirection: 'column',
     height: spacing(12),
     justifyContent: 'space-evenly'
-  },
-
-  tabText: {
-    ...typography.label,
-    fontSize: 9,
-    letterSpacing: 0.2,
-    color: palette.neutral,
-    textTransform: 'uppercase'
   },
 
   tabIndicator: {
@@ -153,9 +148,9 @@ export const TopTabBar = ({ state, descriptors, navigation, position }) => {
                 testID={options.tabBarTestID}
               >
                 <Animated.View style={{ opacity }}>{icon}</Animated.View>
-                <Animated.Text style={[styles.tabText, { opacity }]}>
+                <AnimatedText size='xs' strength='strong' style={{ opacity }}>
                   {label}
-                </Animated.Text>
+                </AnimatedText>
               </TouchableOpacity>
             </View>
           )

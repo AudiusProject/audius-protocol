@@ -51,12 +51,6 @@ if [[ -z "${SKIP_POD_INSTALL}" ]]; then
         ln -s "$source_path" "$target_path"
       fi
 
-      source_path=../../../node_modules/react-native-svg
-      target_path=react-native-svg
-      if [ ! -e "$target_path" ]; then
-        ln -s "$source_path" "$target_path"
-      fi
-
       cd ../ios
 
       if command -v bundle >/dev/null; then

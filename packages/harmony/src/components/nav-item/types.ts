@@ -1,10 +1,9 @@
 import { MouseEvent, ReactNode } from 'react'
 
-import { IconComponent } from 'components/icon'
-import { FlexProps } from 'components/layout'
-import { TextSize } from 'components/text'
-
-import type { WithCSS } from '../../foundations/theme'
+import { WithCSS } from '../../foundations'
+import { IconComponent } from '../icon'
+import { FlexProps } from '../layout'
+import { TextSize } from '../text'
 
 export type NavItemProps = WithCSS<{
   /** The label text of the navigation item. */

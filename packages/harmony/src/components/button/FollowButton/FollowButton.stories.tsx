@@ -2,7 +2,7 @@ import { useState } from 'react'
 
 import type { Meta } from '@storybook/react'
 
-import { Flex } from 'components/layout'
+import { Flex } from '~harmony/components/layout'
 
 import { FollowButton } from './FollowButton'
 import type { FollowButtonProps } from './types'

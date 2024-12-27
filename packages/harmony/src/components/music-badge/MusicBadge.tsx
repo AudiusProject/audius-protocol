@@ -3,8 +3,8 @@ import { ComponentPropsWithoutRef } from 'react'
 import { useTheme } from '@emotion/react'
 import Color from 'color'
 
-import type { IconComponent } from 'components/icon'
-import { SpecialColors } from 'foundations'
+import type { IconComponent } from '~harmony/components/icon'
+import { SpecialColors } from '~harmony/foundations'
 
 import { Flex } from '../layout/Flex'
 import { Text } from '../text/Text'

@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react'
 
-import IconRobot from 'assets/icons/Robot.svg'
+import IconRobot from '~harmony/assets/icons/Robot.svg'
 
 import { MusicBadge } from './MusicBadge'
 

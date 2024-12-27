@@ -2,10 +2,9 @@ import { useMemo } from 'react'
 
 import { useTheme } from '@emotion/react'
 
-import { NotificationCount } from 'components/notification-count'
-
 import { motion } from '../../foundations/motion'
 import { Flex } from '../layout/Flex'
+import { NotificationCount } from '../notification-count'
 import { Text } from '../text/Text'
 
 import type { NavItemProps } from './types'

@@ -37,9 +37,9 @@ const { trendingAllTimeActions, trendingMonthActions, trendingWeekActions } =
 
 const messages = {
   title: 'Trending',
-  thisWeek: 'THIS WEEK',
-  thisMonth: 'THIS MONTH',
-  allTime: 'ALL TIME',
+  thisWeek: 'This Week',
+  thisMonth: 'This Month',
+  allTime: 'All Time',
   endOfLineupDescription: "Looks like you've reached the end of this list..."
 }
 

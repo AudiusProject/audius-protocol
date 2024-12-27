@@ -7,7 +7,7 @@ import { useAppContext } from '~/context/appContext'
 import { ID } from '~/models/Identifiers'
 import { Kind } from '~/models/Kind'
 import { addEntries } from '~/store/cache/actions'
-import { EntryMap } from '~/store/cache/types'
+import { EntriesByKind } from '~/store/cache/types'
 import { encodeHashId } from '~/utils/hashIds'
 
 import { QUERY_KEYS } from './queryKeys'
@@ -38,7 +38,7 @@ export const useCollections = (collectionIds: ID[], config?: Config) => {
       )
 
       if (collections?.length) {
-        const entries: Partial<Record<Kind, EntryMap>> = {
+        const entries: EntriesByKind = {
           [Kind.COLLECTIONS]: {}
         }
 
@@ -48,10 +48,7 @@ export const useCollections = (collectionIds: ID[], config?: Config) => {
             [QUERY_KEYS.collection, collection.playlist_id],
             collection
           )
-          entries[Kind.COLLECTIONS]![collection.playlist_id] = {
-            id: collection.playlist_id,
-            metadata: collection
-          }
+          entries[Kind.COLLECTIONS]![collection.playlist_id] = collection
 
           // Prime user data from collection owner
           if (collection.user) {
@@ -60,10 +57,7 @@ export const useCollections = (collectionIds: ID[], config?: Config) => {
               collection.user
             )
             if (!entries[Kind.USERS]) entries[Kind.USERS] = {}
-            entries[Kind.USERS][collection.user.user_id] = {
-              id: collection.user.user_id,
-              metadata: collection.user
-            }
+            entries[Kind.USERS][collection.user.user_id] = collection.user
           }
 
           // Prime track and user data from tracks in collection
@@ -75,10 +69,7 @@ export const useCollections = (collectionIds: ID[], config?: Config) => {
                 track
               )
               if (!entries[Kind.TRACKS]) entries[Kind.TRACKS] = {}
-              entries[Kind.TRACKS][track.track_id] = {
-                id: track.track_id,
-                metadata: track
-              }
+              entries[Kind.TRACKS][track.track_id] = track
 
               // Prime user data from track owner
               if (track.user) {
@@ -87,10 +78,7 @@ export const useCollections = (collectionIds: ID[], config?: Config) => {
                   track.user
                 )
                 if (!entries[Kind.USERS]) entries[Kind.USERS] = {}
-                entries[Kind.USERS][track.user.user_id] = {
-                  id: track.user.user_id,
-                  metadata: track.user
-                }
+                entries[Kind.USERS][track.user.user_id] = track.user
               }
             }
           })

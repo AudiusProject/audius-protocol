@@ -14,7 +14,7 @@ export type BaseTextProps<TextComponentType extends ElementType = 'p'> = {
   variant?: TextVariant
   size?: TextSize
   strength?: TextStrength
-  color?: TextColors
+  color?: TextColors | 'inherit'
   shadow?: TextShadow
   asChild?: boolean
   textAlign?: CSSProperties['textAlign']
