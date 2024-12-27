@@ -20,14 +20,14 @@ export const LeftNavLink = (props: LeftNavLinkProps) => {
     (e) => {
       onClick?.(e)
     },
-    [onClick, to, history],
+    [onClick, to],
     undefined,
     undefined,
     restriction
   )
 
   const handleClick = (e?: React.MouseEvent<Element>) => {
-    if (!disabled && !!e) {
+    if (!disabled && !!e && !e.defaultPrevented) {
       return requiresAccountOnClick(e)
     } else {
       e?.preventDefault()
@@ -40,6 +40,7 @@ export const LeftNavLink = (props: LeftNavLinkProps) => {
       to={to ?? ''}
       onClick={handleClick}
       style={{ pointerEvents: disabled ? 'none' : 'auto' }}
+      draggable={false}
     >
       <NavItem
         {...other}

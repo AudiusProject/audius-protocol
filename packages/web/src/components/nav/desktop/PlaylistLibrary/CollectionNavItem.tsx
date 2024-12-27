@@ -14,7 +14,7 @@ import {
   playlistLibraryActions,
   shareModalUIActions
 } from '@audius/common/store'
-import { Flex, PopupMenuItem, Text, useTheme } from '@audius/harmony'
+import { Flex, PopupMenuItem, useTheme } from '@audius/harmony'
 import { useDispatch } from 'react-redux'
 import { useNavigate } from 'react-router-dom-v5-compat'
 import { useToggle } from 'react-use'
@@ -74,7 +74,7 @@ export const CollectionNavItem = (props: CollectionNavItemProps) => {
   const record = useRecord()
   const navigate = useNavigate()
 
-  const { spacing, color } = useTheme()
+  const { spacing } = useTheme()
 
   const collection = useSelector((state) =>
     getCollection(state, { id: typeof id === 'string' ? null : id })
@@ -192,6 +192,7 @@ export const CollectionNavItem = (props: CollectionNavItemProps) => {
             onDragLeave={handleDragLeave}
             onMouseEnter={handleMouseEnter}
             onMouseLeave={handleMouseLeave}
+            textSize='s'
           >
             <Flex
               alignItems='center'
@@ -210,17 +211,7 @@ export const CollectionNavItem = (props: CollectionNavItemProps) => {
                   <PlaylistUpdateDot />
                 </div>
               ) : null}
-              <Text
-                size='s'
-                css={{
-                  '.droppableLinkActive &': {
-                    color: color.text.accent
-                  }
-                }}
-                ellipses
-              >
-                {name}
-              </Text>
+              {name}
               <NavItemKebabButton
                 visible={isOwned && isHovering && !isDraggingOver}
                 aria-label={messages.editPlaylistLabel}
