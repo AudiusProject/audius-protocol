@@ -1,0 +1,19 @@
+.amount {
+  font-weight: 800;
+  font-size: var(--harmony-font-3xl);
+  line-height: 39px;
+
+  background: var(--harmony-gradient);
+  -webkit-text-fill-color: transparent;
+  -webkit-background-clip: text;
+}
+
+.label {
+  font-weight: var(--harmony-font-bold);
+  font-size: var(--harmony-font-3xl);
+  line-height: 39px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--harmony-n-400);
+  margin-left: 8px;
+}

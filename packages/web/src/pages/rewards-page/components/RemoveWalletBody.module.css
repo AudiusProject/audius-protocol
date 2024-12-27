@@ -1,0 +1,22 @@
+.container {
+  display: inline-flex;
+  flex-direction: column;
+  width: 100%;
+  align-items: center;
+  padding: 32px 0px 24px;
+}
+
+.warning {
+  text-align: center;
+  font-weight: 700;
+  font-size: 16px;
+  color: var(--harmony-red);
+  margin-bottom: 32px;
+}
+
+.wallet {
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--harmony-neutral);
+  margin-bottom: 32px;
+}

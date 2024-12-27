@@ -1,0 +1,29 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.title {
+  font-weight: 900;
+  font-size: 28px;
+  margin-bottom: 24px;
+  background: var(--harmony-gradient);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.subtitle {
+  font-weight: 400;
+  line-height: 30px;
+  font-size: 24px;
+  text-align: center;
+  margin-bottom: 48px;
+  max-width: 300px;
+}
+
+.container svg {
+  height: 134px;
+  width: 134px;
+  margin: 32px 0px 24px;
+}
