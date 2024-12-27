@@ -1,8 +1,10 @@
 import type { QueryClient } from '@tanstack/react-query'
 
+import { ID } from '~/models'
+
 import { Kind } from '../../models/Kind'
 
-import type { Entry, EntriesByKind } from './types'
+import type { EntriesByKind, Metadata } from './types'
 
 type EntityUpdater = {
   singleKey: string
@@ -108,9 +110,9 @@ const ENTITY_UPDATERS: Record<Kind, EntityUpdater> = {
 const updateEntity = (
   queryClient: QueryClient,
   kind: Kind,
-  entry: Entry<any>
+  id: ID,
+  metadata: Metadata
 ) => {
-  const { id, metadata } = entry
   const updater = ENTITY_UPDATERS[kind]
   if (!updater) return
 
@@ -140,8 +142,8 @@ export const syncWithReactQuery = (
 ) => {
   Object.entries(entriesByKind).forEach(([kind, entries]) => {
     if (!entries) return
-    Object.values(entries).forEach((entry) => {
-      updateEntity(queryClient, kind as Kind, entry)
+    Object.entries(entries).forEach(([id, entry]) => {
+      updateEntity(queryClient, kind as Kind, parseInt(id, 10), entry)
     })
   })
 }

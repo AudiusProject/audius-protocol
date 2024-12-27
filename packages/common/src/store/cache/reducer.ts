@@ -204,7 +204,12 @@ const actionsMap = {
   [ADD_ENTRIES](state: CacheState, action: AddEntriesAction, kind: Kind) {
     const { entriesByKind, replace } = action
     const matchingEntries = entriesByKind[kind] ?? {}
-    const cacheableEntries: Entry[] = Object.values(matchingEntries)
+    const cacheableEntries: Entry[] = Object.entries(matchingEntries).map(
+      ([id, entry]) => ({
+        id: parseInt(id, 10),
+        metadata: entry
+      })
+    )
     return addEntries(state, cacheableEntries, replace)
   },
   [UPDATE](state: CacheState, action: { entries: any[] }) {

@@ -7,7 +7,7 @@ import { useAppContext } from '~/context/appContext'
 import { ID } from '~/models/Identifiers'
 import { Kind } from '~/models/Kind'
 import { addEntries } from '~/store/cache/actions'
-import { EntryMap } from '~/store/cache/types'
+import { EntriesByKind } from '~/store/cache/types'
 import { encodeHashId } from '~/utils/hashIds'
 
 import { QUERY_KEYS } from './queryKeys'
@@ -35,17 +35,14 @@ export const useTracks = (trackIds: ID[], config?: Config) => {
       const tracks = transformAndCleanList(data, userTrackMetadataFromSDK)
 
       if (tracks?.length) {
-        const entries: Partial<Record<Kind, EntryMap>> = {
+        const entries: EntriesByKind = {
           [Kind.TRACKS]: {}
         }
 
         tracks.forEach((track) => {
           // Prime track data
           queryClient.setQueryData([QUERY_KEYS.track, track.track_id], track)
-          entries[Kind.TRACKS]![track.track_id] = {
-            id: track.track_id,
-            metadata: track
-          }
+          entries[Kind.TRACKS]![track.track_id] = track
 
           // Prime user data from track owner
           if (track.user) {
@@ -54,10 +51,7 @@ export const useTracks = (trackIds: ID[], config?: Config) => {
               track.user
             )
             if (!entries[Kind.USERS]) entries[Kind.USERS] = {}
-            entries[Kind.USERS][track.user.user_id] = {
-              id: track.user.user_id,
-              metadata: track.user
-            }
+            entries[Kind.USERS][track.user.user_id] = track.user
           }
         })
 

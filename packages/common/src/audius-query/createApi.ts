@@ -29,7 +29,7 @@ import { getErrorMessage } from '~/utils/error'
 import { waitForValue } from '~/utils/sagaHelpers'
 import { Nullable, removeNullable } from '~/utils/typeUtils'
 
-import { Track, UserTrackMetadata } from '../models/Track'
+import { Track } from '../models/Track'
 import * as accountSelectors from '../store/account/selectors'
 import * as cacheActions from '../store/cache/actions'
 import * as cacheSelectors from '../store/cache/selectors'
@@ -398,19 +398,7 @@ const fetchData = async <Args, Data>(
       // Format entities before adding to cache
       entities[Kind.USERS] = mapValues(
         entities[Kind.USERS] ?? [],
-        (user: UserMetadata) => {
-          const metadata = reformatUser(user)
-          return { id: metadata.user_id, metadata }
-        }
-      )
-
-      // Format track entities before adding to cache
-      entities[Kind.TRACKS] = mapValues(
-        entities[Kind.TRACKS] ?? [],
-        (track: UserTrackMetadata) => ({
-          id: track.track_id,
-          metadata: track
-        })
+        (user: UserMetadata) => reformatUser(user)
       )
 
       // Hack alert: We can't overwrite the current user, since it contains
@@ -422,14 +410,11 @@ const fetchData = async <Args, Data>(
 
       entities[Kind.COLLECTIONS] = mapValues(
         entities[Kind.COLLECTIONS] ?? [],
-        (collection: CollectionMetadata | UserCollectionMetadata) => {
-          const metadata = reformatCollection({
+        (collection: CollectionMetadata | UserCollectionMetadata) =>
+          reformatCollection({
             collection,
             omitUser: false
           })
-
-          return { id: metadata.playlist_id, metadata }
-        }
       )
       dispatch(addEntries(entities, !!force))
       data = result
