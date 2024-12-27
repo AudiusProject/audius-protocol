@@ -101,6 +101,7 @@ const LeftNav = (props: NavColumnProps) => {
           to={item.to}
           disabled={item.disabled}
           restriction={item.restriction}
+          hasNotification={item.hasNotification}
         >
           {item.label}
         </LeftNavLink>
@@ -175,7 +176,7 @@ const LeftNav = (props: NavColumnProps) => {
           </DragAutoscroller>
         </Scrollbar>
       </Flex>
-      <Flex direction='column' alignItems='center' pt='l' borderTop='default'>
+      <Flex direction='column' alignItems='center' pt='l'>
         <ProfileCompletionPanel />
         <LeftNavCTA />
         <NowPlayingArtworkTile />

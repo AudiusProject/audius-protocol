@@ -10,5 +10,9 @@ export type NotificationCountProps = {
    * @default undefined
    */
   size?: 's'
+  /**
+   * Whether the parent item is selected
+   */
+  isSelected?: boolean
   children?: ReactNode
 } & ComponentPropsWithoutRef<'div'>

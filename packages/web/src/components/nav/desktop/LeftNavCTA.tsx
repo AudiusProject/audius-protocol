@@ -3,7 +3,7 @@ import { useCallback } from 'react'
 import { Name, Status } from '@audius/common/models'
 import { accountSelectors } from '@audius/common/store'
 import { route } from '@audius/common/utils'
-import { Button, IconUserFollow as IconFollow } from '@audius/harmony'
+import { Box, Button, IconArrowRight } from '@audius/harmony'
 import { useSelector } from 'react-redux'
 import { Link } from 'react-router-dom'
 
@@ -48,23 +48,34 @@ export const LeftNavCTA = () => {
       break
     case 'guest':
       button = (
-        <Button variant='primary' size='small' asChild>
-          <SignOnLink signUp>{messages.finishSignUp}</SignOnLink>
-        </Button>
+        <Box p='l' w='100%'>
+          <Button
+            variant='primary'
+            size='small'
+            asChild
+            iconRight={IconArrowRight}
+            fullWidth
+          >
+            <SignOnLink signUp>{messages.finishSignUp}</SignOnLink>
+          </Button>
+        </Box>
       )
       break
     case 'signedOut':
     default:
       button = (
-        <Button
-          variant='primary'
-          size='small'
-          asChild
-          iconLeft={IconFollow}
-          onClick={handleSignup}
-        >
-          <Link to={SIGN_UP_PAGE}>{messages.signUp}</Link>
-        </Button>
+        <Box p='l' w='100%'>
+          <Button
+            variant='primary'
+            size='small'
+            asChild
+            iconRight={IconArrowRight}
+            fullWidth
+            onClick={handleSignup}
+          >
+            <Link to={SIGN_UP_PAGE}>{messages.signUp}</Link>
+          </Button>
+        </Box>
       )
       break
   }

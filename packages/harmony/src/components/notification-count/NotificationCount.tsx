@@ -15,6 +15,7 @@ export const NotificationCount = ({
   count,
   size,
   children,
+  isSelected = false,
   ...props
 }: NotificationCountProps) => {
   const { spacing, color } = useTheme()
@@ -28,16 +29,20 @@ export const NotificationCount = ({
 
   const badgeStyles: CSSObject = {
     minWidth: spacing.unit5,
-    backgroundColor: color.primary.p300,
+    backgroundColor: isSelected
+      ? color.background.surface1
+      : color.primary.p300,
     border: 'none',
     '.parent:hover &': {
       backgroundColor: color.background.surface1
     },
     ...(size === 's' && {
-      height: spacing.unit3 + spacing.unitHalf,
-      minWidth: spacing.unit3 + spacing.unitHalf,
+      height: spacing.unit2,
+      minWidth: spacing.unit2,
       padding: `0px ${spacing.xs}px`,
-      backgroundColor: color.primary.p300
+      backgroundColor: isSelected
+        ? color.background.surface1
+        : color.primary.p300
     }),
     ...(children && {
       position: 'absolute',
@@ -48,6 +53,9 @@ export const NotificationCount = ({
   }
 
   const textStyles: CSSObject = {
+    ...(isSelected && {
+      color: color.neutral.n950
+    }),
     '.parent:hover &': {
       color: color.neutral.n950
     }
@@ -79,7 +87,7 @@ export const NotificationCount = ({
           css={textStyles}
           color='staticStaticWhite'
         >
-          {count !== undefined ? formatCount(count) : '0'}
+          {count !== undefined ? formatCount(count) : ''}
         </Text>
       </Flex>
     </Flex>

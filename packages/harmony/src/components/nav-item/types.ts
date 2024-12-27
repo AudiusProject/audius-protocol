@@ -8,7 +8,7 @@ import type { WithCSS } from '../../foundations/theme'
 
 export type NavItemProps = WithCSS<{
   /** The label text of the navigation item. */
-  children: React.ReactNode
+  children: ReactNode
   /** The name of the icon to display on the left side of the label. */
   leftIcon?: IconComponent
   /** The name of the icon to display on the right side of the label. */
@@ -19,5 +19,7 @@ export type NavItemProps = WithCSS<{
   onClick?: (event?: MouseEvent<Element>) => void
   /** The size of the text to display. */
   textSize?: TextSize
+  /** Whether the navigation item has a notification count. */
+  hasNotification?: boolean
 }> &
   FlexProps
