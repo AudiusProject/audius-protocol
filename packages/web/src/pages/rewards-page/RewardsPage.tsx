@@ -16,28 +16,22 @@ import Page from 'components/page/Page'
 import { useIsMobile } from 'hooks/useIsMobile'
 import { useRemoteVar } from 'hooks/useRemoteConfig'
 import { useRequiresAccount } from 'hooks/useRequiresAccount'
-import { useWithMobileStyle } from 'hooks/useWithMobileStyle'
 import { BASE_URL } from 'utils/route'
 
-import styles from './AudioRewardsPage.module.css'
 import ChallengeRewardsTile from './ChallengeRewardsTile'
+import styles from './RewardsPage.module.css'
 import Tiers from './Tiers'
 import TrendingRewardsTile from './TrendingRewardsTile'
-import WalletModal from './WalletModal'
-import ExplainerTile from './components/ExplainerTile'
-import { WalletManagementTile } from './components/WalletManagementTile'
-const { AUDIO_PAGE, TRENDING_PAGE } = route
+const { REWARDS_PAGE, TRENDING_PAGE } = route
 const { getBalance } = walletActions
 const { preloadWalletProviders } = tokenDashboardPageActions
 
 const messages = {
-  title: '$AUDIO & Rewards',
-  description: 'Complete tasks to earn $AUDIO tokens!'
+  title: 'Rewards & Perks',
+  description: 'Earn $AUDIO by completing simple tasks while using Audius'
 }
 
 const RewardsContent = () => {
-  const wm = useWithMobileStyle(styles.mobile)
-
   const audioFeaturesDegradedText = useRemoteVar(
     StringKeys.AUDIO_FEATURES_DEGRADED_TEXT
   )
@@ -46,7 +40,6 @@ const RewardsContent = () => {
 
   return (
     <>
-      <WalletModal />
       {audioFeaturesDegradedText ? (
         <div className={styles.topBanner}>
           <span className={styles.topBannerText}>
@@ -54,11 +47,9 @@ const RewardsContent = () => {
           </span>
         </div>
       ) : null}
-      <WalletManagementTile />
       <ChallengeRewardsTile className={styles.mobile} />
       <TrendingRewardsTile className={styles.mobile} />
       <Tiers />
-      <ExplainerTile className={wm(styles.explainerTile)} />
     </>
   )
 }
@@ -96,7 +87,7 @@ const MobilePage = ({ children }: { children: ReactNode }) => {
     <MobilePageContainer
       title={messages.title}
       description={messages.description}
-      canonicalUrl={`${BASE_URL}${AUDIO_PAGE}`}
+      canonicalUrl={`${BASE_URL}${REWARDS_PAGE}`}
       hasDefaultHeader
       containerClassName={styles.rewardsMobilePageContainer}
     >
@@ -105,7 +96,7 @@ const MobilePage = ({ children }: { children: ReactNode }) => {
   )
 }
 
-export const AudioRewardsPage = () => {
+export const RewardsPage = () => {
   const dispatch = useDispatch()
   const isMobile = useIsMobile()
   useEffect(() => {

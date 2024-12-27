@@ -15,7 +15,7 @@ import { useRemoteVar } from 'hooks/useRemoteConfig'
 import { useWithMobileStyle } from 'hooks/useWithMobileStyle'
 
 import styles from './RewardsTile.module.css'
-import { Tile } from './components/ExplainerTile'
+import { Tile } from './components/Tile'
 import { getChallengeConfig } from './config'
 const { setTrendingRewardsModalType } = audioRewardsPageActions
 
@@ -75,7 +75,7 @@ const validRewardIds: Set<ChallengeRewardID> = new Set([
 ])
 
 const messages = {
-  title: 'TRENDING COMPETITIONS',
+  title: 'Competition Rewards',
   description1: 'Win contests to earn $AUDIO tokens!'
 }
 

@@ -27,7 +27,6 @@ import {
 import {
   Box,
   Button,
-  Divider,
   Flex,
   IconArrowRight as IconArrow,
   IconCheck,
@@ -49,7 +48,7 @@ import { useWithMobileStyle } from 'hooks/useWithMobileStyle'
 import { make, track } from 'services/analytics'
 
 import styles from './RewardsTile.module.css'
-import { Tile } from './components/ExplainerTile'
+import { Tile } from './components/Tile'
 import { getChallengeConfig } from './config'
 const { getUserChallenges, getUserChallengesLoading } =
   audioRewardsPageSelectors
@@ -63,8 +62,8 @@ type ClaimableSummaryTableItem = SummaryTableItem & {
 }
 
 const messages = {
-  title: 'EARN REWARDS',
-  description1: 'Complete tasks to earn $AUDIO tokens!',
+  title: 'Achievement Rewards',
+  description1: 'Earn $AUDIO by completing simple tasks while using Audius.',
   completeLabel: 'COMPLETE',
   claimReward: 'Claim This Reward',
   claimAllRewards: 'Claim All Rewards',
@@ -72,7 +71,7 @@ const messages = {
   readyToClaim: 'Ready to Claim',
   pendingRewards: 'Pending Reward',
   totalUpcomingRewards: 'Total Upcoming Rewards',
-  totalReadyToClaim: 'Total Ready To Claim',
+  totalReadyToClaim: 'Ready To Claim',
   pending: 'Pending',
   viewDetails: 'View Details',
   new: 'New!',
@@ -234,9 +233,7 @@ const ClaimAllPanel = () => {
   if (isMobile) {
     return (
       <Paper
-        shadow='flat'
         border='strong'
-        p='xl'
         alignItems='center'
         alignSelf='stretch'
         justifyContent='space-between'
@@ -307,13 +304,11 @@ const ClaimAllPanel = () => {
 
   return (
     <Paper
-      shadow='flat'
       border='strong'
       p='xl'
       alignItems='center'
       alignSelf='stretch'
       justifyContent='space-between'
-      m='s'
       css={{ cursor: 'pointer' }}
       onClick={handleClick}
     >
@@ -463,27 +458,24 @@ const RewardsTile = ({ className }: RewardsTileProps) => {
   )
 
   return (
-    <Tile className={wm(styles.rewardsTile, className)}>
-      <span className={wm(styles.title)}>{messages.title}</span>
-      <div className={wm(styles.subtitle)}>
-        <Text variant='body' strength='strong'>
-          {messages.description1}
-        </Text>
-      </div>
-      {userChallengesLoading && !haveChallengesLoaded ? (
-        <LoadingSpinner className={wm(styles.loadingRewardsTile)} />
-      ) : (
-        <>
-          {!shouldHideCumulativeRewards ? (
-            <>
-              <ClaimAllPanel />
-              <Divider className={wm(styles.divider)} />
-            </>
-          ) : null}
-          <div className={styles.rewardsContainer}>{rewardsTiles}</div>
-        </>
-      )}
-    </Tile>
+    <Flex direction='column' gap='l'>
+      {!shouldHideCumulativeRewards ? <ClaimAllPanel /> : null}
+      <Tile className={wm(styles.rewardsTile, className)}>
+        <span className={wm(styles.title)}>{messages.title}</span>
+        <div className={wm(styles.subtitle)}>
+          <Text variant='body' strength='strong'>
+            {messages.description1}
+          </Text>
+        </div>
+        {userChallengesLoading && !haveChallengesLoaded ? (
+          <LoadingSpinner className={wm(styles.loadingRewardsTile)} />
+        ) : (
+          <>
+            <div className={styles.rewardsContainer}>{rewardsTiles}</div>
+          </>
+        )}
+      </Tile>
+    </Flex>
   )
 }
 

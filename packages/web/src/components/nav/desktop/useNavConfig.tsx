@@ -7,6 +7,7 @@ import {
   IconCloudUpload,
   IconExplore,
   IconFeed,
+  IconGift,
   IconLibrary,
   IconMessages,
   IconPlaylists,
@@ -29,7 +30,8 @@ const {
   LIBRARY_PAGE,
   TRENDING_PAGE,
   CHATS_PAGE,
-  UPLOAD_PAGE
+  UPLOAD_PAGE,
+  REWARDS_PAGE
 } = route
 
 const { getIsAccountComplete, getHasAccount } = accountSelectors
@@ -104,6 +106,13 @@ export const useNavConfig = () => {
         restriction: 'account',
         disabled: !isAccountComplete,
         nestedComponent: WalletsNestedContent
+      },
+      {
+        label: 'Rewards',
+        leftIcon: IconGift,
+        to: REWARDS_PAGE,
+        restriction: 'account',
+        disabled: !isAccountComplete
       },
       {
         label: 'Upload',
