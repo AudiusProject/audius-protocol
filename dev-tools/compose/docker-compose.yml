@@ -161,6 +161,12 @@ services:
       service: discovery-provider
     <<: *common
 
+  discovery-provider-base:
+    extends:
+      file: docker-compose.discovery.${DOCKERCOMPOSE_ENV_TYPE:-dev}.yml
+      service: discovery-provider-base
+    <<: *common
+
   discovery-provider-openresty:
     extends:
       file: docker-compose.discovery.${DOCKERCOMPOSE_ENV_TYPE:-dev}.yml
@@ -266,8 +272,6 @@ services:
       service: ddex-web
     container_name: ddex-web
     <<: *common
-    environment:
-      DDEX_CHOREOGRAPHY: ${DDEX_CHOREOGRAPHY}
     depends_on:
       ddex-mongo-init:
         condition: service_completed_successfully
@@ -289,8 +293,6 @@ services:
       service: ddex-publisher
     container_name: ddex-publisher
     <<: *common
-    environment:
-      DDEX_CHOREOGRAPHY: ${DDEX_CHOREOGRAPHY}
     depends_on:
       ddex-mongo-init:
         condition: service_completed_successfully
@@ -305,9 +307,6 @@ services:
       service: ddex-ingester
     container_name: ddex-ingester
     <<: *common
-    environment:
-      DDEX_CHOREOGRAPHY: ${DDEX_CHOREOGRAPHY}
-      IS_DEV: 'true' # Speed up crawling interval for local dev
     depends_on:
       ddex-mongo-init:
         condition: service_completed_successfully

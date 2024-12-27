@@ -186,8 +186,8 @@ services:
       context: ${PROJECT_ROOT}
       dockerfile: ${PROJECT_ROOT}/packages/libs/Dockerfile
       args:
-        TURBO_TEAM: '${TURBO_TEAM}'
-        TURBO_TOKEN: '${TURBO_TOKEN}'
+        TURBO_TEAM: '${TURBO_TEAM:-}'
+        TURBO_TOKEN: '${TURBO_TOKEN:-}'
     # TODO: also run integration test current blocker is that integration tests
     # use config.json which was removed with the addition of audius-compose
     entrypoint: sh -c '[ "$$1" = "test" ] || sleep inf && (shift; npm run test:unit)' -

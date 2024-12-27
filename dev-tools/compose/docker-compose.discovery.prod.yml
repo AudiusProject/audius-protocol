@@ -42,12 +42,13 @@ services:
       - notifications
 
   discovery-provider-openresty:
+    image: audius/discovery-provider-openresty:prerelease
     build:
       context: ${PROJECT_ROOT}/packages/discovery-provider
       dockerfile: Dockerfile.nginx
     restart: unless-stopped
     profiles:
-      - discovery
+      - discovery-openresty
 
   comms:
     build:
@@ -183,3 +184,12 @@ services:
       replicas: '${DISCOVERY_PROVIDER_REPLICAS}'
     profiles:
       - discovery
+
+  discovery-provider-base:
+    image: audius/discovery-provider-base:latest
+    profiles:
+      - build-only
+    # # uncomment if you need to build a new base
+    # build:
+    #   context: ${PROJECT_ROOT}/packages/discovery-provider
+    #   dockerfile: ${PROJECT_ROOT}/packages/discovery-provider/Dockerfile.base

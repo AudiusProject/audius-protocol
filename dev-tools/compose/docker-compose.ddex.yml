@@ -8,8 +8,8 @@ services:
       dockerfile: ${PROJECT_ROOT}/packages/ddex/processor/Dockerfile
       args:
         app_name: ddex-processor
-        TURBO_TEAM: '${TURBO_TEAM}'
-        TURBO_TOKEN: '${TURBO_TOKEN}'
+        TURBO_TEAM: '${TURBO_TEAM:-}'
+        TURBO_TOKEN: '${TURBO_TOKEN:-}'
     env_file: .env
     ports:
       - "8889:8989"
@@ -25,8 +25,8 @@ services:
       dockerfile: ${PROJECT_ROOT}/packages/ddex/webapp/Dockerfile
       args:
         app_name: ddex-web
-        TURBO_TEAM: '${TURBO_TEAM}'
-        TURBO_TOKEN: '${TURBO_TOKEN}'
+        TURBO_TEAM: '${TURBO_TEAM:-}'
+        TURBO_TOKEN: '${TURBO_TOKEN:-}'
     environment:
       - DDEX_PORT=9000
       - DDEX_MONGODB_URL=mongodb://mongo:mongo@ddex-mongo:27017/ddex?authSource=admin&replicaSet=rs0
@@ -45,15 +45,15 @@ services:
       dockerfile: ${PROJECT_ROOT}/packages/ddex/publisher/Dockerfile
       args:
         app_name: ddex-publisher
-        TURBO_TEAM: '${TURBO_TEAM}'
-        TURBO_TOKEN: '${TURBO_TOKEN}'
+        TURBO_TEAM: '${TURBO_TEAM:-}'
+        TURBO_TOKEN: '${TURBO_TOKEN:-}'
     environment:
       - DDEX_MONGODB_URL=mongodb://mongo:mongo@ddex-mongo:27017/ddex?authSource=admin&replicaSet=rs0
     env_file: .env
     ports:
       - "9001:9001"
     healthcheck:
-      test: ["CMD-SHELL", "pgrep node || exit 1"]
+      test: [ "CMD-SHELL", "pgrep node || exit 1" ]
     networks:
       - ddex-network
     profiles:
@@ -159,7 +159,7 @@ services:
       dockerfile: ${PROJECT_ROOT}/packages/ddex/ingester/Dockerfile
     entrypoint: ./ingester
     healthcheck:
-      test: ["CMD-SHELL", "pgrep ./ingester || exit 1"]
+      test: [ "CMD-SHELL", "pgrep ./ingester || exit 1" ]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -179,6 +179,7 @@ services:
 
 networks:
   ddex-network:
+
 
 volumes:
   ddex-mongo-db:

@@ -1,0 +1,70 @@
+# discovery-node base image
+FROM alpine:3.18
+
+WORKDIR /app/packages/discovery-provider
+
+# Add the wait script to the image
+# Script originally from https://github.com/ufoscout/docker-compose-wait/releases/download/2.4.0/wait
+COPY scripts/wait /wait
+
+RUN apk update && \
+  apk add --no-cache \
+  alpine-sdk \
+  bash \
+  curl \
+  docker \
+  libffi-dev \
+  libseccomp-dev \
+  libxml2-dev \
+  libxslt-dev \
+  linux-headers \
+  nodejs \
+  npm \
+  python3~=3.11 \
+  python3-dev~=3.11 \
+  py3-numpy \
+  py3-pip \
+  py3-scipy \
+  py3-wheel \
+  redis \
+  rsyslog \
+  sudo \
+  gcc \
+  musl-dev \
+  gfortran \
+  openblas-dev
+
+RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+ENV PATH="/root/.cargo/bin:${PATH}"
+RUN rustup default 1.79.0
+
+RUN curl -O 'http://openresty.org/package/admin@openresty.com-5ea678a6.rsa.pub' && \
+  mv 'admin@openresty.com-5ea678a6.rsa.pub' /etc/apk/keys/ && \
+  echo "http://openresty.org/package/alpine/v3.15/main" | tee -a /etc/apk/repositories && \
+  apk update && \
+  apk add openresty=1.21.4.3-r0 openresty-opm && \
+  opm get spacewander/lua-resty-rsa && \
+  opm get ledgetech/lua-resty-http && \
+  opm get bsiara/dkjson && \
+  mkdir /usr/local/openresty/conf /usr/local/openresty/logs
+
+RUN echo 'http://dl-cdn.alpinelinux.org/alpine/v3.10/main' >> /etc/apk/repositories && \
+  apk update && \
+  apk add \
+  libpq=11.12-r0 \
+  postgresql-client=11.12-r0 \
+  postgresql-contrib=11.12-r0 \
+  postgresql-dev=11.12-r0 \
+  postgresql-libs=11.12-r0 \
+  postgresql=11.12-r0
+
+RUN python3 -m pip install --upgrade pip
+
+COPY scripts scripts/
+RUN bash scripts/init-db.sh
+
+COPY requirements.txt requirements.txt
+RUN --mount=type=cache,target=/root/.cache \
+  python3 -m pip install -r requirements.txt --no-cache-dir
+
+COPY nginx_conf /usr/local/openresty/conf/

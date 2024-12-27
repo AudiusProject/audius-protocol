@@ -51,3 +51,8 @@ services:
       dockerfile: ${PROJECT_ROOT}/packages/discovery-provider/Dockerfile.dev
     volumes:
       - ${PROJECT_ROOT}:/app
+
+  discovery-provider-base:
+    extends:
+      file: docker-compose.discovery.prod.yml
+      service: discovery-provider-base
