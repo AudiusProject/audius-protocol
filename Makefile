@@ -245,13 +245,6 @@ release-aa-backfill:
 	@DOCKER_DEFAULT_PLATFORM=linux/amd64 docker build -t audius/audio-analysis-backfill:latest -f ./cmd/audio-analysis-backfill/Dockerfile .
 	@docker push audius/audio-analysis-backfill:latest
 
-
-#########################
-## Static Dependencies ##
-#########################
-
-.PHONY: static-deps
-static-deps:
 .PHONY: static-deps
 static-deps:
 	@echo "Building linux/arm64 images"
