@@ -24,17 +24,13 @@ export type OwnProps = {
 
 export type UserMenuProps = OwnProps & ReturnType<typeof mapDispatchToProps>
 
-const Menu = (props: UserMenuProps) => {
+const Menu = ({
+  handle = '',
+  currentUserFollows = false,
+  ...props
+}: UserMenuProps) => {
   const getMenu = () => {
-    const {
-      handle,
-      userId,
-      currentUserFollows,
-      shareUser,
-      unFollowUser,
-      followUser,
-      goToRoute
-    } = props
+    const { userId, shareUser, unFollowUser, followUser, goToRoute } = props
 
     const shareMenuItem = {
       text: 'Share',
@@ -82,12 +78,6 @@ function mapDispatchToProps(dispatch: Dispatch) {
     unFollowUser: (userId: ID) =>
       dispatch(socialActions.unfollowUser(userId, FollowSource.OVERFLOW))
   }
-}
-
-Menu.defaultProps = {
-  handle: '',
-  mount: 'page',
-  currentUserFollows: false
 }
 
 export default connect(null, mapDispatchToProps)(Menu)

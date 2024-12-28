@@ -1,6 +1,6 @@
 import 'react-dates/initialize'
 import 'react-dates/lib/css/_datepicker.css'
-import { Component } from 'react'
+import { useState, useEffect } from 'react'
 
 import { IconCalendarMonth } from '@audius/harmony'
 import cn from 'classnames'
@@ -12,22 +12,17 @@ import styles from './DatePicker.module.css'
 
 const MIN_DATE = moment('1500-01-01')
 
-class DatePicker extends Component {
-  state = {
-    date: this.props.defaultDate ? moment(this.props.defaultDate) : moment(),
-    focused: false,
-    invalid: false
-  }
+const DatePicker = ({
+  id = 'default-unique-id',
+  label = 'Date',
+  defaultDate = '',
+  onDateChange = (date) => {}
+}) => {
+  const [date, setDate] = useState(defaultDate ? moment(defaultDate) : moment())
+  const [focused, setFocused] = useState(false)
+  const [invalid, setInvalid] = useState(false)
 
-  componentDidMount = () => {
-    // Trigger an onDateChange at the beginning so that parents get the
-    // default date.
-    if (this.isValidDate(this.state.date)) {
-      this.props.onDateChange(this.state.date.toString())
-    }
-  }
-
-  isValidDate = (date) => {
+  const isValidDate = (date) => {
     if (!date) return false
     if (!date.isValid()) return false
     if (!isInclusivelyBeforeDay(date, moment())) return false
@@ -35,45 +30,52 @@ class DatePicker extends Component {
     return true
   }
 
-  onDateChange = (date) => {
-    let invalid = false
-    if (!this.isValidDate(date)) {
-      invalid = true
+  useEffect(() => {
+    // Trigger an onDateChange at the beginning so that parents get the
+    // default date.
+    if (isValidDate(date)) {
+      onDateChange(date.toString())
     }
-    this.props.onDateChange(date ? date.toString() : null, invalid)
-    this.setState({ date, invalid })
+  }, [date, onDateChange])
+
+  const handleDateChange = (newDate) => {
+    let isInvalid = false
+    if (!isValidDate(newDate)) {
+      isInvalid = true
+    }
+    onDateChange(newDate ? newDate.toString() : null, isInvalid)
+    setDate(newDate)
+    setInvalid(isInvalid)
   }
 
-  render() {
-    const { id, label } = this.props
-    const style = {
-      [styles.invalid]: this.state.invalid,
-      [styles.focused]: this.state.focused
-    }
-    return (
-      <div>
-        <div className={styles.label}>{label}</div>
-        <div className={cn(styles.datePicker, style)}>
-          <SingleDatePicker
-            id={id}
-            placeholder={moment().format('MM/DD/YYYY')}
-            // Restrict date picker to days before today.
-            isOutsideRange={(day) => !isInclusivelyBeforeDay(day, moment())}
-            date={this.state.date}
-            onDateChange={this.onDateChange}
-            focused={this.state.focused}
-            onFocusChange={({ focused }) => this.setState({ focused })}
-            numberOfMonths={1}
-            hideKeyboardShortcutsPanel
-            customInputIcon={
-              <IconCalendarMonth className={styles.iconCalendar} />
-            }
-            small
-          />
-        </div>
-      </div>
-    )
+  const style = {
+    [styles.invalid]: invalid,
+    [styles.focused]: focused
   }
+
+  return (
+    <div>
+      <div className={styles.label}>{label}</div>
+      <div className={cn(styles.datePicker, style)}>
+        <SingleDatePicker
+          id={id}
+          placeholder={moment().format('MM/DD/YYYY')}
+          // Restrict date picker to days before today.
+          isOutsideRange={(day) => !isInclusivelyBeforeDay(day, moment())}
+          date={date}
+          onDateChange={handleDateChange}
+          focused={focused}
+          onFocusChange={({ focused }) => setFocused(focused)}
+          numberOfMonths={1}
+          hideKeyboardShortcutsPanel
+          customInputIcon={
+            <IconCalendarMonth className={styles.iconCalendar} />
+          }
+          small
+        />
+      </div>
+    </div>
+  )
 }
 
 DatePicker.propTypes = {
@@ -81,13 +83,6 @@ DatePicker.propTypes = {
   label: PropTypes.string,
   defaultDate: PropTypes.string,
   onDateChange: PropTypes.func
-}
-
-DatePicker.defaultProps = {
-  id: 'default-unique-id',
-  label: 'Date',
-  defaultDate: '',
-  onDateChange: (date) => {}
 }
 
 export default DatePicker

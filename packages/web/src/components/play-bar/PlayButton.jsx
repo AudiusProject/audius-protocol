@@ -1,4 +1,4 @@
-import { Component } from 'react'
+import { useState, useEffect, useRef } from 'react'
 
 import cn from 'classnames'
 import PropTypes from 'prop-types'
@@ -17,171 +17,149 @@ const PlayStates = Object.freeze({
   ANIMATE_PLAY_PAUSE: 3
 })
 
-class PlayButton extends Component {
-  state = {
-    playState: PlayStates.PLAY,
-    isPaused: true,
-    icon: pbIconPlay
-  }
+const PlayButton = ({
+  playable = true,
+  status = 'play',
+  onClick = () => {}
+}) => {
+  const [playState, setPlayState] = useState(PlayStates.PLAY)
+  const [isPaused, setIsPaused] = useState(true)
+  const [icon, setIcon] = useState(pbIconPlay)
+  const prevStatus = useRef(status)
 
-  componentDidMount() {
-    if (this.props.status === 'pause') {
-      this.setState({
-        icon: pbIconPause,
-        playState: PlayStates.PAUSE
-      })
+  useEffect(() => {
+    if (status === 'pause') {
+      setIcon(pbIconPause)
+      setPlayState(PlayStates.PAUSE)
     }
-  }
+  }, [status])
 
-  componentDidUpdate(prevProps) {
-    const { status } = this.props
+  useEffect(() => {
+    let newIcon, newIsPaused, newPlayState
 
-    if (status !== prevProps.status) {
-      let icon, isPaused, playState
-
-      if (status === 'play' && this.state.playState !== PlayStates.PLAY) {
-        if (prevProps.status === 'load') {
-          icon = pbIconPlay
-          isPaused = true
-          playState = PlayStates.PLAY
-        } else {
-          icon = pbIconPause
-          isPaused = false
-          playState = PlayStates.ANIMATE_PAUSE_PLAY
-        }
+    if (status === 'play' && playState !== PlayStates.PLAY) {
+      if (prevStatus.current === 'load') {
+        newIcon = pbIconPlay
+        newIsPaused = true
+        newPlayState = PlayStates.PLAY
+      } else {
+        newIcon = pbIconPause
+        newIsPaused = false
+        newPlayState = PlayStates.ANIMATE_PAUSE_PLAY
       }
-      if (status === 'pause' && this.state.playState !== PlayStates.PAUSE) {
-        if (prevProps.status === 'load') {
-          icon = pbIconPause
-          isPaused = true
-          playState = PlayStates.PAUSE
-        } else {
-          icon = pbIconPlay
-          isPaused = false
-          playState = PlayStates.ANIMATE_PLAY_PAUSE
-        }
-      }
-
-      this.setState({ icon, isPaused, playState })
     }
-  }
+    if (status === 'pause' && playState !== PlayStates.PAUSE) {
+      if (prevStatus.current === 'load') {
+        newIcon = pbIconPause
+        newIsPaused = true
+        newPlayState = PlayStates.PAUSE
+      } else {
+        newIcon = pbIconPlay
+        newIsPaused = false
+        newPlayState = PlayStates.ANIMATE_PLAY_PAUSE
+      }
+    }
 
-  handleChange = () => {
-    // Go to the next state.
-    let icon, isPaused
+    if (newIcon) setIcon(newIcon)
+    if (newIsPaused !== undefined) setIsPaused(newIsPaused)
+    if (newPlayState !== undefined) setPlayState(newPlayState)
+    prevStatus.current = status
+  }, [status, playState])
 
-    const playState =
-      (this.state.playState + 1) % Object.keys(PlayStates).length
-    switch (playState) {
+  const handleChange = () => {
+    let newIcon, newIsPaused
+    const newPlayState = (playState + 1) % Object.keys(PlayStates).length
+
+    switch (newPlayState) {
       case PlayStates.PLAY:
-        icon = pbIconPlay
-        isPaused = true
+        newIcon = pbIconPlay
+        newIsPaused = true
         break
       case PlayStates.ANIMATE_PLAY_PAUSE:
-        icon = pbIconPlay
-        isPaused = false
+        newIcon = pbIconPlay
+        newIsPaused = false
         break
       case PlayStates.PAUSE:
-        icon = pbIconPause
-        isPaused = true
+        newIcon = pbIconPause
+        newIsPaused = true
         break
       case PlayStates.ANIMATE_PAUSE_PLAY:
-        icon = pbIconPause
-        isPaused = false
+        newIcon = pbIconPause
+        newIsPaused = false
         break
-      // Should never fire.
       default:
-        icon = pbIconPlay
-        isPaused = true
+        newIcon = pbIconPlay
+        newIsPaused = true
     }
 
-    this.setState({
-      icon,
-      isPaused,
-      playState
-    })
+    setIcon(newIcon)
+    setIsPaused(newIsPaused)
+    setPlayState(newPlayState)
   }
 
-  onClick = () => {
-    if (this.props.playable) {
-      this.handleChange()
-      this.props.onClick()
+  const handleClick = () => {
+    if (playable) {
+      handleChange()
+      onClick()
     }
   }
 
-  render() {
-    const { status } = this.props
-    const { playState } = this.state
-
-    // Listen for completion and bump the state again.
-    const eventListeners = [
-      {
-        eventName: 'complete',
-        callback: () => this.handleChange()
-      }
-    ]
-
-    const isLoading = status === 'load'
-
-    let data, isPaused
-    let loop = false
-    if (isLoading) {
-      data = pbLoadingSpinner
-      isPaused = false
-      loop = true
-    } else {
-      data = this.state.icon
-      isPaused = this.state.isPaused
+  const isLoading = status === 'load'
+  const eventListeners = [
+    {
+      eventName: 'complete',
+      callback: () => handleChange()
     }
-    const animationOptions = {
-      loop,
-      autoplay: false,
-      animationData: data
-    }
+  ]
 
-    const animation = (
+  let data, currentIsPaused
+  let loop = false
+  if (isLoading) {
+    data = pbLoadingSpinner
+    currentIsPaused = false
+    loop = true
+  } else {
+    data = icon
+    currentIsPaused = isPaused
+  }
+
+  const animationOptions = {
+    loop,
+    autoplay: false,
+    animationData: data
+  }
+
+  const ariaLabel = isLoading
+    ? 'track loading'
+    : playState === PlayStates.PLAY
+      ? 'play track'
+      : 'pause track'
+
+  return (
+    <button
+      aria-label={ariaLabel}
+      className={cn(styles.button, styles.playButton)}
+      onClick={handleClick}
+      disabled={isLoading}
+      aria-busy={isLoading}
+    >
       <div className={styles.animation}>
         <Lottie
           ariaRole={null}
           ariaLabel={null}
           options={animationOptions}
           eventListeners={eventListeners}
-          isPaused={isPaused}
+          isPaused={currentIsPaused}
         />
       </div>
-    )
-
-    const ariaLabel = isLoading
-      ? 'track loading'
-      : playState === PlayStates.PLAY
-        ? 'play track'
-        : 'pause track'
-
-    return (
-      <button
-        aria-label={ariaLabel}
-        className={cn(styles.button, styles.playButton)}
-        onClick={this.onClick}
-        disabled={isLoading}
-        aria-busy={isLoading}
-      >
-        {animation}
-      </button>
-    )
-  }
+    </button>
+  )
 }
 
 PlayButton.propTypes = {
-  // Whether or not there is something playable in view
   playable: PropTypes.bool,
   status: PropTypes.oneOf(['play', 'pause', 'load']),
   onClick: PropTypes.func
-}
-
-PlayButton.defaultProps = {
-  playable: true,
-  status: 'play',
-  onClick: () => {}
 }
 
 export default PlayButton
