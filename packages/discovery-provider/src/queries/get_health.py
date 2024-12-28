@@ -540,7 +540,7 @@ def get_elasticsearch_health_info(
     elasticsearch_health: Dict[str, Any] = {"status": None, "health": None}
     try:
         health = esclient.cluster.health()
-        elasticsearch_health["health"] = health.body
+        elasticsearch_health["health"] = health.get("body")
         elasticsearch_health["status"] = health.get("status")
     except Exception as e:
         logger.error(f"Could not obtain elasticsearch cluster health status: {e}")
