@@ -7,7 +7,6 @@ import {
 } from '@audius/common/store'
 import { route } from '@audius/common/utils'
 import { connect } from 'react-redux'
-import { WithRouter, RouteComponentProps } from 'utils/withRouter'
 import { Dispatch } from 'redux'
 
 import {
@@ -19,6 +18,7 @@ import { AppState } from 'store/types'
 import { push } from 'utils/navigation'
 import { getPathname } from 'utils/route'
 import { isDarkMode, isMatrix } from 'utils/theme/theme'
+import { withRouter, RouteComponentProps } from 'utils/withRouter'
 const { FEED_PAGE, TRENDING_PAGE, EXPLORE_PAGE, profilePage, LIBRARY_PAGE } =
   route
 const { setTab } = explorePageActions

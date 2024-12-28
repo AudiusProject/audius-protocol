@@ -6,7 +6,7 @@ import {
   NOTIFICATIONS_USER_LIST_TAG as USER_LIST_TAG
 } from '@audius/common/store'
 import { connect } from 'react-redux'
-import { WithRouter, RouteComponentProps } from 'utils/withRouter'
+import { withRouter, RouteComponentProps } from 'utils/withRouter'
 import { Dispatch } from 'redux'
 
 import MobilePageContainer from 'components/mobile-page-container/MobilePageContainer'

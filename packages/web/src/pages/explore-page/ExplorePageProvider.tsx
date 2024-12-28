@@ -7,7 +7,7 @@ import { Dispatch } from 'redux'
 import { AppState } from 'store/types'
 import { push } from 'utils/navigation'
 import { createSeoDescription } from 'utils/seo'
-import { WithRouter, RouteComponentProps } from 'utils/withRouter'
+import { withRouter, RouteComponentProps } from 'utils/withRouter'
 
 import { ExplorePageProps as DesktopExplorePageProps } from './components/desktop/ExplorePage'
 import { ExplorePageProps as MobileExplorePageProps } from './components/mobile/ExplorePage'

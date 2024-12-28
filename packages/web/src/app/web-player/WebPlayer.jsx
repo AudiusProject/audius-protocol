@@ -15,16 +15,7 @@ import {
 import { route } from '@audius/common/utils'
 import cn from 'classnames'
 import { connect } from 'react-redux'
-
-import { withRouter } from 'utils/withRouter'
-
-import {
-  generatePath,
-  matchPath,
-  Navigate,
-  Routes,
-  Route
-} from 'react-router-dom'
+import { matchPath, Navigate, Routes, Route } from 'react-router-dom'
 import semver from 'semver'
 
 import { make } from 'common/store/analytics/actions'
@@ -51,8 +42,6 @@ import Notice from 'components/notice/Notice'
 import { NotificationPage } from 'components/notification'
 import PlayBarProvider from 'components/play-bar/PlayBarProvider'
 import { RewardClaimedToast } from 'components/reward-claimed-toast/RewardClaimedToast'
-import DesktopRoute from 'components/routes/DesktopRoute'
-import MobileRoute from 'components/routes/MobileRoute'
 import TrendingGenreSelectionPage from 'components/trending-genre-selection/TrendingGenreSelectionPage'
 import { USDCBalanceFetcher } from 'components/usdc-balance-fetcher/USDCBalanceFetcher'
 import { MainContentContext, MAIN_CONTENT_ID } from 'pages/MainContentContext'
@@ -109,6 +98,7 @@ import {
 import { getClient } from 'utils/clientUtil'
 import 'utils/redirect'
 import { getPathname } from 'utils/route'
+import { withRouter } from 'utils/withRouter'
 
 import styles from './WebPlayer.module.css'
 
@@ -236,8 +226,8 @@ class WebPlayer extends Component {
     isUpdating: false,
 
     initialPage: true,
-    entryRoute: getPathname(this.props.history.location),
-    currentRoute: getPathname(this.props.history.location)
+    entryRoute: getPathname(this.props.location),
+    currentRoute: getPathname(this.props.location)
   }
 
   ipc = null
@@ -256,7 +246,7 @@ class WebPlayer extends Component {
         this.scrollToTop()
         this.setState({
           initialPage: false,
-          currentRoute: getPathname(this.props.history.location)
+          currentRoute: getPathname(this.props.location)
         })
       }
     )
@@ -509,47 +499,24 @@ class WebPlayer extends Component {
                 ))}
                 <Route exact path={'/fb/share'} element={<FbSharePage />} />
                 <Route
-                  exact
                   path={FEED_PAGE}
                   element={
-                    <MobileRoute
-                      isMobile={isMobile}
-                      element={
-                        <FeedPage
-                          containerRef={this.props.mainContentRef.current}
-                        />
-                      }
+                    <FeedPage
+                      containerRef={this.props.mainContentRef.current}
                     />
                   }
                 />
                 <Route
-                  exact
                   path={NOTIFICATION_USERS_PAGE}
-                  element={
-                    <MobileRoute
-                      isMobile={isMobile}
-                      element={<NotificationUsersPage />}
-                    />
-                  }
+                  element={<NotificationUsersPage />}
                 />
                 <Route
-                  exact
                   path={NOTIFICATION_PAGE}
-                  element={
-                    <MobileRoute
-                      isMobile={isMobile}
-                      element={<NotificationPage />}
-                    />
-                  }
+                  element={<NotificationPage />}
                 />
                 <Route
                   path={TRENDING_GENRES}
-                  element={
-                    <MobileRoute
-                      isMobile={isMobile}
-                      element={<TrendingGenreSelectionPage />}
-                    />
-                  }
+                  element={<TrendingGenreSelectionPage />}
                 />
                 <Route
                   path={TRENDING_PAGE}
@@ -669,11 +636,9 @@ class WebPlayer extends Component {
                   element={
                     <Navigate
                       to={{
-                        pathname: generatePath(SEARCH_PAGE, {
-                          category: this.props.match.params.category
-                        }),
+                        pathname: SEARCH_BASE_ROUTE,
                         search: new URLSearchParams({
-                          query: this.props.match.params.query
+                          query: this.props.params.query
                         }).toString()
                       }}
                       replace
@@ -683,8 +648,7 @@ class WebPlayer extends Component {
                 <Route
                   path={SEARCH_PAGE}
                   render={(props) => {
-                    const { category } = props.match.params
-
+                    const { category } = props.params
                     return category &&
                       !validSearchCategories.includes(category) ? (
                       <Navigate
@@ -700,19 +664,16 @@ class WebPlayer extends Component {
                     )
                   }}
                 />
-                <DesktopRoute
+                <Route
                   path={UPLOAD_ALBUM_PAGE}
-                  isMobile={isMobile}
                   element={<UploadPage uploadType={UploadType.ALBUM} />}
                 />
-                <DesktopRoute
+                <Route
                   path={UPLOAD_PLAYLIST_PAGE}
-                  isMobile={isMobile}
                   element={<UploadPage uploadType={UploadType.PLAYLIST} />}
                 />
-                <DesktopRoute
+                <Route
                   path={UPLOAD_PAGE}
-                  isMobile={isMobile}
                   element={<UploadPage scrollToTop={this.scrollToTop} />}
                 />
                 <Route
@@ -721,10 +682,9 @@ class WebPlayer extends Component {
                   element={<SavedPage />}
                 />
                 <Route exact path={HISTORY_PAGE} element={<HistoryPage />} />
-                <DesktopRoute
+                <Route
                   exact
                   path={DASHBOARD_PAGE}
-                  isMobile={isMobile}
                   element={<DashboardPage />}
                 />
                 <Route
@@ -761,6 +721,42 @@ class WebPlayer extends Component {
                 />
                 <Route
                   exact
+                  path={TRACK_COMMENTS_PAGE}
+                  element={<TrackCommentsPage />}
+                />
+                <Route
+                  exact
+                  path={REPOSTING_USERS_ROUTE}
+                  element={<RepostsPage />}
+                />
+                <Route
+                  exact
+                  path={FAVORITING_USERS_ROUTE}
+                  element={<FavoritesPage />}
+                />
+                <Route
+                  exact
+                  path={FOLLOWING_USERS_ROUTE}
+                  element={<FollowingPage />}
+                />
+                <Route
+                  exact
+                  path={FOLLOWERS_USERS_ROUTE}
+                  element={<FollowersPage />}
+                />
+                <Route
+                  exact
+                  path={SUPPORTING_USERS_ROUTE}
+                  element={<SupportingPage />}
+                />
+                <Route
+                  exact
+                  path={TOP_SUPPORTERS_USERS_ROUTE}
+                  element={<TopSupportersPage />}
+                />
+                <Route exact path={EMPTY_PAGE} element={<EmptyPage />} />
+                <Route
+                  exact
                   path={[
                     SETTINGS_PAGE,
                     AUTHORIZED_APPS_SETTINGS_PAGE,
@@ -770,32 +766,32 @@ class WebPlayer extends Component {
                   element={<SettingsPage />}
                 />
                 <Route exact path={CHECK_PAGE} element={<CheckPage />} />
-                <MobileRoute
+                <Route
                   exact
                   path={ACCOUNT_SETTINGS_PAGE}
                   element={<SettingsPage subPage={SubPage.ACCOUNT} />}
                 />
-                <MobileRoute
+                <Route
                   exact
                   path={ACCOUNT_VERIFICATION_SETTINGS_PAGE}
                   element={<SettingsPage subPage={SubPage.VERIFICATION} />}
                 />
-                <MobileRoute
+                <Route
                   exact
                   path={CHANGE_PASSWORD_SETTINGS_PAGE}
                   element={<SettingsPage subPage={SubPage.CHANGE_PASSWORD} />}
                 />
-                <MobileRoute
+                <Route
                   exact
                   path={CHANGE_EMAIL_SETTINGS_PAGE}
                   element={<SettingsPage subPage={SubPage.CHANGE_EMAIL} />}
                 />
-                <MobileRoute
+                <Route
                   exact
                   path={NOTIFICATION_SETTINGS_PAGE}
                   element={<SettingsPage subPage={SubPage.NOTIFICATIONS} />}
                 />
-                <MobileRoute
+                <Route
                   exact
                   path={ABOUT_SETTINGS_PAGE}
                   element={<SettingsPage subPage={SubPage.ABOUT} />}
@@ -827,7 +823,6 @@ class WebPlayer extends Component {
                     />
                   }
                 />
-                {/* Hash id routes */}
                 <Route
                   exact
                   path={USER_ID_PAGE}
@@ -844,11 +839,6 @@ class WebPlayer extends Component {
                   path={PLAYLIST_ID_PAGE}
                   element={<CollectionPage />}
                 />
-                {/*
-                Define profile page sub-routes before profile page itself.
-                The rules for sub-routes would lose in a precedence fight with
-                the rule for track page if defined below.
-                */}
                 <Route
                   exact
                   path={[
@@ -872,13 +862,8 @@ class WebPlayer extends Component {
                   element={<AiAttributedTracksPage />}
                 />
                 <Route exact path={TRACK_PAGE} element={<TrackPage />} />
-                <MobileRoute
+                <Route
                   exact
-                  path={TRACK_COMMENTS_PAGE}
-                  element={<TrackCommentsPage />}
-                />
-                <Route exact path={TRACK_PAGE} element={<TrackPage />} />
-                <DesktopRoute
                   path={TRACK_EDIT_PAGE}
                   element={
                     <EditTrackPage
@@ -887,7 +872,6 @@ class WebPlayer extends Component {
                     />
                   }
                 />
-
                 <Route
                   exact
                   path={TRACK_REMIXES_PAGE}
@@ -898,63 +882,9 @@ class WebPlayer extends Component {
                     />
                   }
                 />
-                <MobileRoute
-                  exact
-                  path={REPOSTING_USERS_ROUTE}
-                  element={<RepostsPage />}
-                />
-                <MobileRoute
-                  exact
-                  path={FAVORITING_USERS_ROUTE}
-                  element={<FavoritesPage />}
-                />
-                <MobileRoute
-                  exact
-                  path={FOLLOWING_USERS_ROUTE}
-                  element={<FollowingPage />}
-                />
-                <MobileRoute
-                  exact
-                  path={FOLLOWERS_USERS_ROUTE}
-                  element={<FollowersPage />}
-                />
-                <MobileRoute
-                  exact
-                  path={SUPPORTING_USERS_ROUTE}
-                  element={<SupportingPage />}
-                />
-                <MobileRoute
-                  exact
-                  path={TOP_SUPPORTERS_USERS_ROUTE}
-                  element={<TopSupportersPage />}
-                />
-                <MobileRoute exact path={EMPTY_PAGE} element={<EmptyPage />} />
-                <Route
-                  exact
-                  path={PROFILE_PAGE}
-                  element={
-                    <ProfilePage
-                      {...this.props}
-                      containerRef={this.props.mainContentRef.current}
-                    />
-                  }
-                />
                 <Route
                   path={HOME_PAGE}
-                  element={
-                    <Navigate
-                      to={{
-                        pathname:
-                          getPathname(this.props.history.location) === HOME_PAGE
-                            ? FEED_PAGE
-                            : getPathname(this.props.history.location),
-                        search: includeSearch(this.props.location.search)
-                          ? this.props.location.search
-                          : ''
-                      }}
-                      replace
-                    />
-                  }
+                  element={<Navigate to={FEED_PAGE} replace />}
                 />
               </RoutesComponent>
             </Suspense>

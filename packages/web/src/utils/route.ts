@@ -4,7 +4,7 @@ import { convertGenreLabelToValue, route } from '@audius/common/utils'
 import { Genre } from '@audius/sdk'
 import { Location } from 'history'
 import { stringifyUrl } from 'query-string'
-import { matchPath } from 'react-router'
+import { matchPath } from 'react-router-dom'
 import { push } from 'redux-first-history'
 
 import { env } from 'services/env'
@@ -120,15 +120,8 @@ export const chatPage = (id: string) => {
   return `/messages/${id}`
 }
 
-export const doesMatchRoute = (
-  location: Location,
-  route: string,
-  exact = true
-) => {
-  return matchPath(getPathname(location), {
-    path: route,
-    exact
-  })
+export const doesMatchRoute = (location: Location, route: string) => {
+  return matchPath(route, getPathname(location))
 }
 
 export const stripBaseUrl = (url: string) => url.replace(BASE_URL, '')

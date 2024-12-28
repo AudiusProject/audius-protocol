@@ -389,7 +389,7 @@ export const getHash = (str: string) =>
 /** Given a pathname, finds a matching route */
 export const findRoute = (pathname: string) => {
   for (const route of orderedRoutes) {
-    const match = matchPath(pathname, { path: route, exact: true })
+    const match = matchPath(route, pathname)
     if (match) {
       return route
     }

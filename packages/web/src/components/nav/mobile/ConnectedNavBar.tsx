@@ -8,7 +8,6 @@ import {
 } from '@audius/common/store'
 import { route } from '@audius/common/utils'
 import { connect } from 'react-redux'
-import { WithRouter, RouteComponentProps } from 'utils/withRouter'
 import { Dispatch } from 'redux'
 
 import { make, useRecord } from 'common/store/analytics/actions'
@@ -19,6 +18,7 @@ import {
 import { AppState } from 'store/types'
 import { getIsIOS } from 'utils/browser'
 import { push, goBack } from 'utils/navigation'
+import { withRouter, RouteComponentProps } from 'utils/withRouter'
 
 import NavBar from './NavBar'
 

@@ -72,7 +72,7 @@ import { push, replace } from 'utils/navigation'
 import { getPathname } from 'utils/route'
 import { parseCollectionRoute } from 'utils/route/collectionRouteParser'
 import { getCollectionPageSEOFields } from 'utils/seo'
-import { WithRouter, RouteComponentProps } from 'utils/withRouter'
+import { withRouter, RouteComponentProps } from 'utils/withRouter'
 
 import { CollectionPageProps as DesktopCollectionPageProps } from './components/desktop/CollectionPage'
 import { CollectionPageProps as MobileCollectionPageProps } from './components/mobile/CollectionPage'

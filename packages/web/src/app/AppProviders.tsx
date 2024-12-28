@@ -28,6 +28,7 @@ export const AppProviders = ({ children }: AppProvidersProps) => {
   const { history } = useHistoryContext()
   const isMobile = useIsMobile()
   const { store, history: storeHistory } = configureStore(history, isMobile)
+  console.log('storeHistory', storeHistory)
 
   return (
     <QueryClientProvider client={queryClient}>
