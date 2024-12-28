@@ -65,10 +65,7 @@ services:
       service: audius-cmd
     <<: *common
 
-  # Core
 
-  # service name intentionally left as "core" despite being core-discovery-1
-  # for compatibility with audius-compose CI tooling
   audiusd-1:
     extends:
       file: docker-compose.audiusd.yml
@@ -339,34 +336,10 @@ services:
       service: poa-ganache
     <<: *common
 
-  poa-blockscout-db:
-    extends:
-      file: docker-compose.blockchain.yml
-      service: poa-blockscout-db
-    <<: *common
-
-  poa-blockscout:
-    extends:
-      file: docker-compose.blockchain.yml
-      service: poa-blockscout
-    <<: *common
-
   eth-ganache:
     extends:
       file: docker-compose.blockchain.yml
       service: eth-ganache
-    <<: *common
-
-  eth-blockscout-db:
-    extends:
-      file: docker-compose.blockchain.yml
-      service: eth-blockscout-db
-    <<: *common
-
-  eth-blockscout:
-    extends:
-      file: docker-compose.blockchain.yml
-      service: eth-blockscout
     <<: *common
 
   solana-test-validator:

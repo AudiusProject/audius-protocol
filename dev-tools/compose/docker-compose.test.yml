@@ -10,7 +10,7 @@ services:
   ingress:
     logging: *default-logging
     volumes:
-      - ./nginx_ingress_test.conf:/etc/nginx/conf.d/default.conf
+      - ./nginx_ingress.conf:/etc/nginx/conf.d/default.conf
     extra_hosts:
       - 'audius-protocol-creator-node-1:host-gateway'
       - 'audius-protocol-creator-node-2:host-gateway'

@@ -252,13 +252,33 @@ release-aa-backfill:
 
 .PHONY: static-deps
 static-deps:
-	docker buildx inspect mybuilder > /dev/null 2>&1 || docker buildx create --name mybuilder --use
-	@echo "Building eth-ganache image for amd64..."
-	docker buildx build --platform linux/amd64 -t audius/eth-ganache:latest --push -f ./eth-contracts/Dockerfile ./eth-contracts
-	@echo "Building eth-ganache image for arm64..."
-	docker buildx build --platform linux/arm64 -t audius/eth-ganache:latest --push -f ./eth-contracts/Dockerfile ./eth-contracts
-	@echo "Building poa-ganache image for amd64..."
-	docker buildx build --platform linux/amd64 -t audius/poa-ganache:latest --push -f ./contracts/Dockerfile ./contracts
-	@echo "Building poa-ganache image for arm64..."
-	docker buildx build --platform linux/arm64 -t audius/poa-ganache:latest --push -f ./contracts/Dockerfile ./contracts
-	docker buildx use default
+.PHONY: static-deps
+static-deps:
+	@echo "Building linux/arm64 images"
+	audius-compose build eth-ganache poa-ganache
+	docker tag audius/eth-ganache:latest audius/eth-ganache:latest-arm
+	docker tag audius/poa-ganache:latest audius/poa-ganache:latest-arm
+	docker push audius/eth-ganache:latest-arm
+	docker push audius/poa-ganache:latest-arm
+
+	@echo "Building linux/amd64 images"
+	DOCKER_DEFAULT_PLATFORM=linux/amd64 audius-compose build eth-ganache poa-ganache
+	docker tag audius/eth-ganache:latest audius/eth-ganache:latest-amd
+	docker tag audius/poa-ganache:latest audius/poa-ganache:latest-amd
+	docker push audius/eth-ganache:latest-amd
+	docker push audius/poa-ganache:latest-amd
+
+	@echo "Creating multi-architecture manifest for poa-ganache..."
+	docker manifest create audius/poa-ganache:latest \
+		audius/poa-ganache:latest-amd \
+		audius/poa-ganache:latest-arm
+	docker manifest push audius/poa-ganache:latest
+	@echo "Pushed audius/poa-ganache:latest"
+
+	@echo "Creating multi-architecture manifest for eth-ganache..."
+	docker manifest create audius/eth-ganache:latest \
+		audius/eth-ganache:latest-amd \
+		audius/eth-ganache:latest-arm
+	docker manifest push audius/eth-ganache:latest
+	@echo "Pushed audius/eth-ganache:latest"
+
