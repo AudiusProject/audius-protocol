@@ -39,9 +39,7 @@ services:
       service: discovery-provider-elasticsearch
 
   discovery-provider-openresty:
-    extends:
-      file: docker-compose.discovery.prod.yml
-      service: discovery-provider-openresty
+    image: audius/discovery-provider-openresty:prerelease
 
   discovery-provider:
     extends:

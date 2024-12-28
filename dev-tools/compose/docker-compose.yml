@@ -331,15 +331,6 @@ services:
       - ddex
       - ddex-deps
 
-  # Storage (content node)
-
-  mediorum:
-    extends:
-      file: docker-compose.storage.yml
-      service: storage
-    container_name: audius-protocol-mediorum
-    <<: *common
-
   # Blockchain
 
   poa-ganache:

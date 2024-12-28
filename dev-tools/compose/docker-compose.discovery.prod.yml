@@ -139,7 +139,7 @@ services:
       audius_contracts_entity_manager_address: '${ENTITY_MANAGER_ADDRESS}'
       audius_eth_contracts_registry: '${ETH_REGISTRY_ADDRESS}'
       audius_eth_contracts_token: '${ETH_TOKEN_ADDRESS}'
-      audius_elasticsearch_url: http://discovery-provider-elasticsearch:9200
+      audius_elasticsearch_url: 'http://discovery-provider-elasticsearch:9200'
 
       audius_solana_endpoint: 'http://solana-test-validator:8899'
       audius_solana_track_listen_count_address: '${SOLANA_TRACK_LISTEN_COUNT_PUBLIC_KEY}'
@@ -153,6 +153,14 @@ services:
       audius_solana_anchor_data_program_id: '${SOLANA_AUDIUS_DATA_PUBLIC_KEY}'
       audius_solana_anchor_admin_storage_public_key: '${SOLANA_ADMIN_ACCOUNT_PUBLIC_KEY}'
       audius_solana_staking_bridge_usdc_payout_wallet: '${SOLANA_STAKING_BRIDGE_USDC_PAYOUT_WALLET}'
+
+      audius_db_url: postgresql://postgres:postgres@db:5432/discovery_provider_1
+      audius_db_url_read_replica: postgresql://postgres:postgres@db:5432/discovery_provider_1
+      audius_redis_url: redis://audius-protocol-discovery-provider-redis-1:6379/00
+      audius_enable_rsyslog: 'false'
+      audius_discprov_url: http://audius-protocol-discovery-provider-1
+      audius_delegate_owner_wallet: '0x73EB6d82CFB20bA669e9c178b718d770C49BB52f'
+      audius_delegate_private_key: d09ba371c359f10f22ccda12fd26c598c7921bda3220c9942174562bc6a36fe8
 
       audius_discprov_dev_mode: 'true'
       audius_discprov_loglevel: 'debug'
