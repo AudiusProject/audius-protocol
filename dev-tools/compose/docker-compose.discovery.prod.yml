@@ -102,6 +102,7 @@ services:
     environment:
       discovery.type: single-node
       xpack.security.enabled: false
+      ingest.geoip.downloader.enabled: false
       ES_JAVA_OPTS: -Xms512m -Xmx512m
     depends_on:
       identity-service-redis:

@@ -537,9 +537,11 @@ def get_elasticsearch_health_info(
     latest_indexed_block_num: int,
     verbose: Optional[bool],
 ) -> Dict[str, Any]:
-    elasticsearch_health: Dict[str, Any] = {"status": None}
+    elasticsearch_health: Dict[str, Any] = {"status": None, "health": None}
     try:
-        elasticsearch_health["status"] = esclient.cluster.health().get("status")
+        health = esclient.cluster.health()
+        elasticsearch_health["health"] = health.body
+        elasticsearch_health["status"] = health.get("status")
     except Exception as e:
         logger.error(f"Could not obtain elasticsearch cluster health status: {e}")
 
