@@ -1,5 +1,5 @@
 import qs from 'query-string'
-import { matchPath, generatePath } from 'react-router'
+import { matchPath, generatePath } from 'react-router-dom'
 
 import { SearchCategory, SearchFilters } from '~/api/search'
 import { ID } from '~/models'
@@ -414,7 +414,7 @@ export const searchPage = (searchOptions: SearchOptions) => {
   }
 
   return qs.stringifyUrl({
-    url: generatePath(SEARCH_PAGE, { category }),
+    url: generatePath(SEARCH_PAGE, { category: category || null }),
     query: searchParams
   })
 }

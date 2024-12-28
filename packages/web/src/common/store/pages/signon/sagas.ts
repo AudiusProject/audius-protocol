@@ -52,7 +52,6 @@ import {
   TEMPORARY_PASSWORD
 } from '@audius/common/utils'
 import { CreateUserRequest, UpdateProfileRequest } from '@audius/sdk'
-import { push as pushRoute } from 'utils/navigation'
 import { isEmpty } from 'lodash'
 import {
   all,
@@ -74,6 +73,7 @@ import { fetchUserByHandle, fetchUsers } from 'common/store/cache/users/sagas'
 import { sendRecoveryEmail } from 'common/store/recovery-email/sagas'
 import { UiErrorCode } from 'store/errors/actions'
 import { setHasRequestedBrowserPermission } from 'utils/browserNotifications'
+import { push as pushRoute } from 'utils/navigation'
 import { restrictedHandles } from 'utils/restrictedHandles'
 import { waitForRead, waitForWrite } from 'utils/sagaHelpers'
 

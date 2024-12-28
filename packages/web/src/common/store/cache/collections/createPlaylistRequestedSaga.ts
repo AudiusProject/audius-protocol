@@ -3,8 +3,9 @@ import {
   cacheCollectionsSelectors,
   toastActions
 } from '@audius/common/store'
-import { push } from 'utils/navigation'
 import { put, select, takeEvery } from 'typed-redux-saga'
+
+import { push } from 'utils/navigation'
 
 const { toast } = toastActions
 const { getCollection } = cacheCollectionsSelectors

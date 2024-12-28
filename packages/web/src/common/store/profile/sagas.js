@@ -33,7 +33,6 @@ import {
   isResponseError,
   route
 } from '@audius/common/utils'
-import { push as pushRoute } from 'utils/navigation'
 import { merge } from 'lodash'
 import {
   all,
@@ -56,6 +55,7 @@ import {
   subscribeToUserAsync,
   unsubscribeFromUserAsync
 } from 'common/store/social/users/sagas'
+import { push as pushRoute } from 'utils/navigation'
 import { waitForRead, waitForWrite } from 'utils/sagaHelpers'
 
 import { watchFetchProfileCollections } from './fetchProfileCollectionsSaga'

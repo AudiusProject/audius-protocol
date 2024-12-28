@@ -6,13 +6,13 @@ import {
   NOTIFICATIONS_USER_LIST_TAG as USER_LIST_TAG
 } from '@audius/common/store'
 import { connect } from 'react-redux'
-import { withRouter, RouteComponentProps } from 'utils/withRouter'
 import { Dispatch } from 'redux'
 
 import MobilePageContainer from 'components/mobile-page-container/MobilePageContainer'
 import NavContext, { LeftPreset } from 'components/nav/mobile/NavContext'
 import { UserList } from 'components/user-list/UserList'
 import { AppState } from 'store/types'
+import { withRouter, RouteComponentProps } from 'utils/withRouter'
 const { getPageTitle, getUserList } = notificationsUserListSelectors
 const { loadMore } = userListActions
 

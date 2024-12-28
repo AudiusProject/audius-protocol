@@ -1,74 +1,32 @@
 import { ID } from '@audius/common/models'
-import { ProfilePageTabRoute } from '@audius/common/store'
 import { decodeHashId, route } from '@audius/common/utils'
 import { matchPath } from 'react-router-dom'
 
-const { USER_ID_PAGE, PROFILE_PAGE, staticRoutes } = route
+const { USER_ID_PAGE, PROFILE_PAGE, PROFILE_PAGE_TRACKS } = route
 
-type UserRouteParams =
-  | { handle: string; userId: null; tab: null }
-  | { handle: string; userId: null; tab: ProfilePageTabRoute }
-  | { handle: null; userId: ID; tab: null }
+export type UserRouteParams =
+  | { handle: string; userId: null }
+  | { handle: null; userId: ID }
   | null
 
-/**
- * Parses a user route into handle or id
- * @param route
- */
 export const parseUserRoute = (route: string): UserRouteParams => {
-  if (staticRoutes.has(route)) return null
-
-  const userIdPageMatch = matchPath<{ id: string }>(route, {
-    path: USER_ID_PAGE,
-    exact: true
-  })
+  const userIdPageMatch = matchPath(USER_ID_PAGE, route)
   if (userIdPageMatch) {
-    const userId = decodeHashId(userIdPageMatch.params.id)
+    const userId = decodeHashId(userIdPageMatch.params.id ?? '')
     if (userId === null) return null
-    return { userId, handle: null, tab: null }
+    return { handle: null, userId }
   }
 
-  const profilePageMatch = matchPath<{ handle: string }>(route, {
-    path: PROFILE_PAGE,
-    exact: true
-  })
+  const profilePageMatch = matchPath(PROFILE_PAGE, route)
   if (profilePageMatch) {
-    const { handle } = profilePageMatch.params
-    return { handle, userId: null, tab: null }
+    const { handle = '' } = profilePageMatch.params
+    return { handle, userId: null }
   }
 
-  const profilePageTabMatch = matchPath<{
-    handle: string
-    tab: ProfilePageTabRoute
-  }>(route, {
-    path: `${PROFILE_PAGE}/:tab`,
-    exact: true
-  })
+  const profilePageTabMatch = matchPath(PROFILE_PAGE_TRACKS, route)
   if (profilePageTabMatch) {
-    const { handle, tab } = profilePageTabMatch.params
-    if (
-      tab === 'Tracks' ||
-      tab === 'Albums' ||
-      tab === 'Playlists' ||
-      tab === 'Reposts' ||
-      tab === 'Collectibles'
-    ) {
-      return { handle, userId: null, tab }
-    }
-  }
-
-  const profilePageTabIdMatch = matchPath<{
-    handle: string
-    tab: ProfilePageTabRoute
-  }>(route, {
-    path: `${PROFILE_PAGE}/:tab/:id`,
-    exact: true
-  })
-  if (profilePageTabIdMatch) {
-    const { handle, tab } = profilePageTabIdMatch.params
-    if (tab === 'Collectibles') {
-      return { handle, userId: null, tab }
-    }
+    const { handle = '' } = profilePageTabMatch.params
+    return { handle, userId: null }
   }
 
   return null

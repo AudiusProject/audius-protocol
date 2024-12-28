@@ -38,53 +38,42 @@ type CollectionRouteParams =
  * @param route
  */
 export const parseCollectionRoute = (route: string): CollectionRouteParams => {
-  const playlistByPermalinkMatch = matchPath<{
-    handle: string
-    slug: string
-  }>(route, {
-    path: PLAYLIST_BY_PERMALINK_PAGE,
-    exact: true
-  })
-
+  const playlistByPermalinkMatch = matchPath(PLAYLIST_BY_PERMALINK_PAGE, route)
   if (playlistByPermalinkMatch) {
-    const { handle, slug } = playlistByPermalinkMatch.params
+    const { handle = '', slug = '' } = playlistByPermalinkMatch.params
     const permalink = `/${handle}/playlist/${slug}`
     return {
-      title: null,
       collectionId: null,
-      permalink,
       handle: null,
-      collectionType: 'playlist'
+      collectionType: 'playlist',
+      title: null,
+      permalink
     }
   }
-  const albumByPermalinkMatch = matchPath<{
-    handle: string
-    slug: string
-  }>(route, {
-    path: ALBUM_BY_PERMALINK_PAGE,
-    exact: true
-  })
 
+  const albumByPermalinkMatch = matchPath(ALBUM_BY_PERMALINK_PAGE, route)
   if (albumByPermalinkMatch) {
-    const { handle, slug } = albumByPermalinkMatch.params
+    const { handle = '', slug = '' } = albumByPermalinkMatch.params
     const permalink = `/${handle}/album/${slug}`
     return {
-      title: null,
       collectionId: null,
-      permalink,
       handle: null,
-      collectionType: 'album'
+      collectionType: 'album',
+      title: null,
+      permalink
     }
   }
 
-  const collectionIdPageMatch = matchPath<{ id: string }>(route, {
-    path: PLAYLIST_ID_PAGE,
-    exact: true
-  })
+  const collectionIdPageMatch = matchPath(PLAYLIST_ID_PAGE, route)
   if (collectionIdPageMatch) {
-    const collectionId = decodeHashId(collectionIdPageMatch.params.id)
+    const collectionId = decodeHashId(collectionIdPageMatch.params.id ?? '')
     if (collectionId === null) return null
-    return { collectionId, handle: null, collectionType: null, title: null }
+    return {
+      collectionId,
+      handle: null,
+      collectionType: null,
+      title: null
+    }
   }
 
   return null

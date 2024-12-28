@@ -6,13 +6,13 @@ import {
   reachabilitySelectors
 } from '@audius/common/store'
 import { makeUid, route } from '@audius/common/utils'
-import { push as pushRoute } from 'utils/navigation'
 import { call, put, select, takeLatest, takeEvery } from 'redux-saga/effects'
 
 import {
   retrieveCollections,
   retrieveCollectionByPermalink
 } from 'common/store/cache/collections/utils'
+import { push as pushRoute } from 'utils/navigation'
 
 import tracksSagas from './lineups/sagas'
 

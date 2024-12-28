@@ -14,12 +14,12 @@ import {
 import { route } from '@audius/common/utils'
 import { connect } from 'react-redux'
 import { Redirect } from 'react-router'
-import { withRouter } from 'utils/withRouter'
 
 import { HistoryContext } from 'app/HistoryProvider'
 import { make } from 'common/store/analytics/actions'
 import { push } from 'utils/navigation'
 import { doesMatchRoute } from 'utils/route'
+import { withRouter } from 'utils/withRouter'
 
 import * as helpers from './helpers'
 const { NOT_FOUND_PAGE, SEARCH_PAGE } = route
