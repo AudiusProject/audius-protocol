@@ -5,9 +5,10 @@ import {
 } from '@audius/common/store'
 import { route } from '@audius/common/utils'
 import { PopupMenuItem } from '@audius/harmony'
-import { push as pushRoute } from 'connected-react-router'
 import { connect } from 'react-redux'
 import { Dispatch } from 'redux'
+
+import { push } from 'utils/navigation'
 
 const { profilePage } = route
 
@@ -66,7 +67,7 @@ const Menu = (props: UserMenuProps) => {
 
 function mapDispatchToProps(dispatch: Dispatch) {
   return {
-    goToRoute: (route: string) => dispatch(pushRoute(route)),
+    goToRoute: (route: string) => dispatch(push(route)),
     shareUser: (userId: ID) => {
       dispatch(
         requestOpenShareModal({

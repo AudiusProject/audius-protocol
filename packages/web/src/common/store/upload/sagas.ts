@@ -49,7 +49,6 @@ import {
   waitForAccount
 } from '@audius/common/utils'
 import { ProgressHandler, AudiusSdk } from '@audius/sdk'
-import { push } from 'connected-react-router'
 import { mapValues } from 'lodash'
 import { Channel, Task, buffers, channel } from 'redux-saga'
 import {
@@ -69,6 +68,7 @@ import { prepareStemsForUpload } from 'pages/upload-page/store/utils/stems'
 import * as errorActions from 'store/errors/actions'
 import { reportToSentry } from 'store/errors/reportToSentry'
 import { encodeHashId } from 'utils/hashIds'
+import { push } from 'utils/navigation'
 import { waitForWrite } from 'utils/sagaHelpers'
 
 import { trackNewRemixEvent } from '../cache/tracks/sagas'

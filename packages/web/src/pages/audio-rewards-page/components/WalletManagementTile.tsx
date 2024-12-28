@@ -26,7 +26,6 @@ import {
   Box
 } from '@audius/harmony'
 import BN from 'bn.js'
-import { push as pushRoute } from 'connected-react-router'
 import { useDispatch, useSelector } from 'react-redux'
 import { useAsync } from 'react-use'
 
@@ -41,6 +40,7 @@ import { useIsMobile } from 'hooks/useIsMobile'
 import { useFlag, useRemoteVar } from 'hooks/useRemoteConfig'
 import { getLocation } from 'services/Location'
 import { getClient } from 'utils/clientUtil'
+import { push as pushRoute } from 'utils/navigation'
 import { pushUniqueRoute } from 'utils/route'
 
 import TokenHoverTooltip from './TokenHoverTooltip'

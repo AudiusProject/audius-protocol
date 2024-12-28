@@ -16,7 +16,6 @@ import {
   playerSelectors
 } from '@audius/common/store'
 import cn from 'classnames'
-import { push as pushRoute } from 'connected-react-router'
 import InfiniteScroll from 'react-infinite-scroller'
 import { connect } from 'react-redux'
 // eslint-disable-next-line no-restricted-imports -- TODO: migrate to @react-spring/web
@@ -33,6 +32,7 @@ import {
 } from 'components/track/types'
 import { SsrContext } from 'ssr/SsrContext'
 import { AppState } from 'store/types'
+import { push } from 'utils/navigation'
 
 import styles from './Lineup.module.css'
 import { delineateByTime, delineateByFeatured } from './delineate'
@@ -817,7 +817,7 @@ function mapStateToProps(state: AppState) {
 
 function mapDispatchToProps(dispatch: Dispatch) {
   return {
-    goToRoute: (route: string) => dispatch(pushRoute(route)),
+    goToRoute: (route: string) => dispatch(push(route)),
     setPage: (page: number, setPageAction: (page: number) => any) =>
       dispatch(setPageAction(page)),
     record: (event: TrackEvent) => dispatch(event)

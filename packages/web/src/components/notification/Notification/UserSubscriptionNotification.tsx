@@ -7,10 +7,10 @@ import {
   UserSubscriptionNotification as UserSubscriptionNotificationType
 } from '@audius/common/store'
 import { route } from '@audius/common/utils'
-import { push } from 'connected-react-router'
 import { useDispatch } from 'react-redux'
 
 import { make, useRecord } from 'common/store/analytics/actions'
+import { push } from 'utils/navigation'
 import { useSelector } from 'utils/reducer'
 
 import styles from './UserSubscriptionNotification.module.css'

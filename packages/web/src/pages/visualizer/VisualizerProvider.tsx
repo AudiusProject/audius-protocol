@@ -6,7 +6,7 @@ import {
 import { Nullable, route } from '@audius/common/utils'
 import { Name, SquareSizes, Track } from '@audius/common/models'
 import { useEffect, useState, useCallback } from 'react'
-import { push as pushRoute } from 'connected-react-router'
+import { push } from 'utils/navigation'
 import { AppState } from 'store/types'
 import { Dispatch } from 'redux'
 import { connect } from 'react-redux'
@@ -271,7 +271,7 @@ const mapDispatchToProps = (dispatch: Dispatch) => ({
     const trackEvent: TrackEvent = make(Name.VISUALIZER_CLOSE, {})
     dispatch(trackEvent)
   },
-  goToRoute: (route: string) => dispatch(pushRoute(route))
+  goToRoute: (route: string) => dispatch(push(route))
 })
 
 export default connect(makeMapStateToProps, mapDispatchToProps)(Visualizer)

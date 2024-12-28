@@ -10,7 +10,6 @@ import { cacheUsersSelectors } from '@audius/common/store'
 import { Nullable } from '@audius/common/utils'
 import { IconTrophy } from '@audius/harmony'
 import cn from 'classnames'
-import { push as pushRoute } from 'connected-react-router'
 import { useDispatch, useSelector } from 'react-redux'
 
 import UserBadges from 'components/user-badges/UserBadges'
@@ -18,6 +17,7 @@ import { useCoverPhoto } from 'hooks/useCoverPhoto'
 import { useProfilePicture } from 'hooks/useProfilePicture'
 import { AppState } from 'store/types'
 import { TIPPING_TOP_RANK_THRESHOLD } from 'utils/constants'
+import { push } from 'utils/navigation'
 
 import styles from './SupportingTile.module.css'
 const { getUser } = cacheUsersSelectors
@@ -44,7 +44,7 @@ export const SupportingTile = ({ supporting }: SupportingCardProps) => {
   })
 
   const handleClick = useCallback(() => {
-    dispatch(pushRoute(`/${handle}`))
+    dispatch(push(`/${handle}`))
   }, [dispatch, handle])
 
   return receiver ? (

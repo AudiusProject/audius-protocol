@@ -10,13 +10,13 @@ import {
   playerSelectors
 } from '@audius/common/store'
 import { route } from '@audius/common/utils'
-import { push as pushRoute } from 'connected-react-router'
 import { connect } from 'react-redux'
 import { useParams } from 'react-router'
 import { Dispatch } from 'redux'
 
 import { LineupVariant } from 'components/lineup/types'
 import { AppState } from 'store/types'
+import { push as pushRoute } from 'utils/navigation'
 
 import { RemixesPageProps as DesktopRemixesPageProps } from './components/desktop/RemixesPage'
 import { RemixesPageProps as MobileRemixesPageProps } from './components/mobile/RemixesPage'

@@ -13,10 +13,10 @@ import {
   Nullable,
   route
 } from '@audius/common/utils'
-import { push } from 'connected-react-router'
 import { useDispatch } from 'react-redux'
 
 import { make } from 'common/store/analytics/actions'
+import { push } from 'utils/navigation'
 import { useSelector } from 'utils/reducer'
 import { fullProfilePage } from 'utils/route'
 

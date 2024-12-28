@@ -50,7 +50,7 @@ const ReactQueryToReduxCacheSyncPage = lazy(
 const MERCHANT_ID = env.COINFLOW_MERCHANT_ID
 const IS_PRODUCTION = env.ENVIRONMENT === 'production'
 
-export const AppInner = () => {
+export const App = () => {
   const { history } = useHistoryContext()
 
   useEffect(() => {
@@ -58,7 +58,7 @@ export const AppInner = () => {
   }, [history])
 
   return (
-    <>
+    <AppProviders>
       <SomethingWrong />
       <Suspense fallback={null}>
         <CoinflowPurchaseProtection
@@ -110,14 +110,6 @@ export const AppInner = () => {
           </Route>
         </Switch>
       </Suspense>
-    </>
-  )
-}
-
-export const App = () => {
-  return (
-    <AppProviders>
-      <AppInner />
     </AppProviders>
   )
 }

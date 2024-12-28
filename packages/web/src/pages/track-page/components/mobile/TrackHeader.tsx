@@ -32,7 +32,6 @@ import IconCalendarMonth from '@audius/harmony/src/assets/icons/CalendarMonth.sv
 import IconRobot from '@audius/harmony/src/assets/icons/Robot.svg'
 import IconVisibilityHidden from '@audius/harmony/src/assets/icons/VisibilityHidden.svg'
 import cn from 'classnames'
-import { push as pushRoute } from 'connected-react-router'
 import dayjs from 'dayjs'
 import { shallowEqual, useDispatch, useSelector } from 'react-redux'
 
@@ -49,6 +48,7 @@ import { TrackDogEar } from 'components/track/TrackDogEar'
 import { TrackMetadataList } from 'components/track/TrackMetadataList'
 import { UserGeneratedText } from 'components/user-generated-text'
 import { useTrackCoverArt } from 'hooks/useTrackCoverArt'
+import { push as pushRoute } from 'utils/navigation'
 import { isDarkMode } from 'utils/theme/theme'
 
 import ActionButtonRow from './ActionButtonRow'
