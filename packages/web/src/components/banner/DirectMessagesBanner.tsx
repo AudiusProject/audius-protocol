@@ -3,12 +3,12 @@ import { useCallback, useState } from 'react'
 import { Name } from '@audius/common/models'
 import { accountSelectors } from '@audius/common/store'
 import { route } from '@audius/common/utils'
-import { push as pushRoute } from 'utils/navigation'
 import { useDispatch } from 'react-redux'
 
 import { useSelector } from 'common/hooks/useSelector'
 import { make } from 'common/store/analytics/actions'
 import { useIsMobile } from 'hooks/useIsMobile'
+import { push as pushRoute } from 'utils/navigation'
 
 import { CallToActionBanner } from './CallToActionBanner'
 

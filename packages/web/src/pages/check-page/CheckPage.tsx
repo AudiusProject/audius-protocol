@@ -3,13 +3,13 @@ import { useEffect, useState } from 'react'
 import { Status } from '@audius/common/models'
 import { accountSelectors } from '@audius/common/store'
 import { route } from '@audius/common/utils'
-import { push as pushRoute } from 'utils/navigation'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { useScript } from 'hooks/useScript'
 import { getCognitoSignature } from 'services/audius-backend/Cognito'
 import { env } from 'services/env'
 import { COGNITO_SCRIPT_URL } from 'utils/constants'
+import { push as pushRoute } from 'utils/navigation'
 
 import './CheckPage.module.css'
 

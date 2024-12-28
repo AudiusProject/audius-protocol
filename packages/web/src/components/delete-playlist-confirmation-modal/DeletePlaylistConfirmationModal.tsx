@@ -5,12 +5,12 @@ import {
   deletePlaylistConfirmationModalUISelectors
 } from '@audius/common/store'
 import { route } from '@audius/common/utils'
-import { push } from 'utils/navigation'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { useModalState } from 'common/hooks/useModalState'
 import ActionSheetModal from 'components/action-drawer/ActionDrawer'
 import { RouterContext } from 'components/animated-switch/RouterContextProvider'
+import { push } from 'utils/navigation'
 const { TRENDING_PAGE } = route
 const { getPlaylistId } = deletePlaylistConfirmationModalUISelectors
 const { deletePlaylist } = cacheCollectionsActions

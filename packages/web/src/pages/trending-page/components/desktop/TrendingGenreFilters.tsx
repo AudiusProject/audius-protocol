@@ -68,13 +68,6 @@ export const TrendingGenreFilters = (props: TrendingGenreFiltersProps) => {
     [didSelectGenre]
   )
 
-  console.log(
-    'genres',
-    genres,
-    isSelectedFromModal(currentGenre),
-    lastModalSelectedGenre
-  )
-
   return (
     <Flex gap='s' role='radiogroup' onChange={handleChange}>
       <SelectablePill

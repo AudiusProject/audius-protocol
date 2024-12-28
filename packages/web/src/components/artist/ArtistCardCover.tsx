@@ -3,7 +3,6 @@ import { useCallback } from 'react'
 import { SquareSizes, WidthSizes, User } from '@audius/common/models'
 import { route } from '@audius/common/utils'
 import { IconArtistBadge as BadgeArtist } from '@audius/harmony'
-import { push } from 'utils/navigation'
 import { useDispatch } from 'react-redux'
 
 import DynamicImage from 'components/dynamic-image/DynamicImage'
@@ -11,6 +10,7 @@ import FollowsYouBadge from 'components/user-badges/FollowsYouBadge'
 import UserBadges from 'components/user-badges/UserBadges'
 import { useCoverPhoto } from 'hooks/useCoverPhoto'
 import { useProfilePicture } from 'hooks/useProfilePicture'
+import { push } from 'utils/navigation'
 
 import styles from './ArtistCardCover.module.css'
 
