@@ -39,7 +39,10 @@ services:
       service: discovery-provider-elasticsearch
 
   discovery-provider-openresty:
-    image: audius/discovery-provider-openresty:prerelease
+    image: busybox:1.31.1
+    entrypoint: ["sh", "-c", "exit 0"]
+    profiles:
+      - noop
 
   discovery-provider:
     extends:

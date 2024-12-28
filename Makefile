@@ -245,3 +245,20 @@ release-aa-backfill:
 	@DOCKER_DEFAULT_PLATFORM=linux/amd64 docker build -t audius/audio-analysis-backfill:latest -f ./cmd/audio-analysis-backfill/Dockerfile .
 	@docker push audius/audio-analysis-backfill:latest
 
+
+#########################
+## Static Dependencies ##
+#########################
+
+.PHONY: static-deps
+static-deps:
+	docker buildx inspect mybuilder > /dev/null 2>&1 || docker buildx create --name mybuilder --use
+	@echo "Building eth-ganache image for amd64..."
+	docker buildx build --platform linux/amd64 -t audius/eth-ganache:latest --push -f ./eth-contracts/Dockerfile ./eth-contracts
+	@echo "Building eth-ganache image for arm64..."
+	docker buildx build --platform linux/arm64 -t audius/eth-ganache:latest --push -f ./eth-contracts/Dockerfile ./eth-contracts
+	@echo "Building poa-ganache image for amd64..."
+	docker buildx build --platform linux/amd64 -t audius/poa-ganache:latest --push -f ./contracts/Dockerfile ./contracts
+	@echo "Building poa-ganache image for arm64..."
+	docker buildx build --platform linux/arm64 -t audius/poa-ganache:latest --push -f ./contracts/Dockerfile ./contracts
+	docker buildx use default
