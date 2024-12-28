@@ -132,7 +132,7 @@ export const MobileServerTrackPage = () => {
                 .split(',')
                 .filter((t) => t)
                 .map((tag) => (
-                  <Link key={tag} to={searchResultsPage(`#${tag}`)}>
+                  <Link key={tag} to={searchResultsPage('all', `#${tag}`)}>
                     <Tag>{tag}</Tag>
                   </Link>
                 ))}
