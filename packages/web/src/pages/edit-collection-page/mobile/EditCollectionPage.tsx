@@ -17,10 +17,9 @@ import {
 } from '@audius/common/store'
 import { Nullable } from '@audius/common/utils'
 import { IconCamera } from '@audius/harmony'
-import { replace } from 'utils/navigation'
 import { capitalize } from 'lodash'
 import { connect, useDispatch } from 'react-redux'
-import { useHistory, useParams, useRouteMatch } from 'react-router-dom'
+import { useMatch, useNavigate, useParams } from 'react-router-dom'
 import { Dispatch } from 'redux'
 
 import DynamicImage from 'components/dynamic-image/DynamicImage'
@@ -37,6 +36,7 @@ import UploadStub from 'pages/profile-page/components/mobile/UploadStub'
 import { track } from 'services/analytics'
 import { AppState } from 'store/types'
 import { resizeImage } from 'utils/imageProcessingUtil'
+import { replace } from 'utils/navigation'
 import { withNullGuard } from 'utils/withNullGuard'
 
 import styles from './EditCollectionPage.module.css'
@@ -74,12 +74,12 @@ const g = withNullGuard((props: EditCollectionPageProps) => {
 const EditCollectionPage = g(
   ({ removeTrack, editPlaylist, orderPlaylist, refreshLineup }) => {
     const { handle, slug } = useParams<EditCollectionPageParams>()
-    const isAlbum = Boolean(useRouteMatch('/:handle/album/:slug/edit'))
+    const isAlbum = Boolean(useMatch('/:handle/album/:slug/edit'))
     const permalink = `/${handle}/${isAlbum ? 'album' : 'playlist'}/${slug}`
     const dispatch = useDispatch()
-    const history = useHistory()
+    const navigate = useNavigate()
     useRequiresAccount()
-    useIsUnauthorizedForHandleRedirect(handle)
+    useIsUnauthorizedForHandleRedirect(handle as string)
 
     const { data: currentUserId } = useGetCurrentUserId({})
     const { data: collection } = useGetPlaylistByPermalink(
@@ -334,7 +334,7 @@ const EditCollectionPage = g(
           <TextElement
             text='Cancel'
             type={Type.SECONDARY}
-            onClick={history.goBack}
+            onClick={() => navigate(-1)}
           />
         ),
         center: messages.editPlaylist,
@@ -347,7 +347,7 @@ const EditCollectionPage = g(
           />
         )
       }),
-      [formFields.playlist_name, messages.editPlaylist, history, onSave]
+      [formFields.playlist_name, messages.editPlaylist, navigate, onSave]
     )
 
     useTemporaryNavContext(setters)

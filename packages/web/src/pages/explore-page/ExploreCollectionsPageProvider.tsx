@@ -7,12 +7,10 @@ import {
 } from '@audius/common/store'
 import { route } from '@audius/common/utils'
 import { connect } from 'react-redux'
-import { matchPath } from 'react-router'
-import { useHistory } from 'react-router-dom'
+import { useMatch } from 'react-router-dom'
 import { Dispatch } from 'redux'
 
 import { AppState } from 'store/types'
-import { getPathname } from 'utils/route'
 
 import {
   EXPLORE_COLLECTIONS_MAP,
@@ -45,12 +43,8 @@ const ExploreCollectionsPageProvider = ({
   fetch,
   children: Children
 }: ExploreCollectionsPageProviderProps) => {
-  const { location } = useHistory()
-  const match = matchPath<{
-    mood: string
-  }>(getPathname(location), {
-    path: EXPLORE_MOOD_PLAYLISTS_PAGE
-  })
+  const match = useMatch(`${EXPLORE_MOOD_PLAYLISTS_PAGE}/:mood`)
+  const mood = match?.params.mood
   const [info, setInfo] = useState<
     ExploreCollection | ExploreMoodCollection | null
   >(null)
@@ -58,8 +52,8 @@ const ExploreCollectionsPageProvider = ({
   useEffect(() => {
     if (variant === ExploreCollectionsVariant.MOOD) {
       // Mood playlist
-      if (match?.params.mood) {
-        const collectionInfo = EXPLORE_MOOD_COLLECTIONS_MAP[match.params.mood]
+      if (mood) {
+        const collectionInfo = EXPLORE_MOOD_COLLECTIONS_MAP[mood]
         fetch(variant, collectionInfo.moods)
         setInfo(collectionInfo)
       }

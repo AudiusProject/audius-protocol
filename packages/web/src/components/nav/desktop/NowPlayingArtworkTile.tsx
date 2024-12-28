@@ -15,7 +15,7 @@ import {
 } from '@audius/harmony'
 import { animated, useSpring } from '@react-spring/web'
 import { useDispatch, useSelector } from 'react-redux'
-import { Link, useHistory } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom'
 
 import { Draggable } from 'components/dragndrop'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
@@ -75,8 +75,7 @@ const FadeInUp = (props: FadeInUpProps) => {
 
 export const NowPlayingArtworkTile = () => {
   const dispatch = useDispatch()
-  const { location } = useHistory()
-  const { pathname } = location
+  const { pathname } = useLocation()
   const { color, spacing } = useTheme()
 
   const trackId = useSelector(getTrackId)
