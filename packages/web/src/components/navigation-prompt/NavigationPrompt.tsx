@@ -9,8 +9,7 @@ import {
   Text
 } from '@audius/harmony'
 import cn from 'classnames'
-import { Location } from 'history'
-import { Prompt } from 'react-router-dom'
+import { Location, useBlocker } from 'react-router-dom'
 
 import layoutStyles from 'components/layout/layout.module.css'
 import { useNavigateToPage } from 'hooks/useNavigateToPage'
@@ -19,7 +18,7 @@ import styles from './NavigationPrompt.module.css'
 
 interface Props {
   when?: boolean | undefined
-  shouldBlockNavigation?: (location: Location) => boolean
+  shouldBlockNavigation?: (location: Location<unknown>) => boolean
   messages: {
     title: string
     body: string
@@ -29,75 +28,75 @@ interface Props {
 }
 
 /**
- * Adapted from https://gist.github.com/michchan/0b142324b2a924a108a689066ad17038#file-routeleavingguard-function-ts-ca839f5faf39-tsx
+ * Navigation prompt component that blocks navigation and shows a confirmation modal
  */
 export const NavigationPrompt = (props: Props) => {
-  const { when, shouldBlockNavigation, messages } = props
+  const { when = true, shouldBlockNavigation, messages } = props
   const [modalVisible, setModalVisible] = useState(false)
-  const [lastLocation, setLastLocation] = useState<Location | null>(null)
-  const [confirmedNavigation, setConfirmedNavigation] = useState(false)
+  const [lastLocation, setLastLocation] = useState<Location<unknown> | null>(
+    null
+  )
   const navigate = useNavigateToPage()
 
-  const closeModal = () => {
-    setModalVisible(false)
-  }
+  const blocker = useBlocker(when)
 
-  // Returning false blocks navigation; true allows it
-  const handleBlockedNavigation = (nextLocation: Location): boolean => {
-    if (
-      !confirmedNavigation &&
-      (!shouldBlockNavigation || shouldBlockNavigation(nextLocation))
-    ) {
+  useEffect(() => {
+    if (blocker.state !== 'blocked') return
+
+    const nextLocation = blocker.location as Location<unknown>
+    if (!shouldBlockNavigation || shouldBlockNavigation(nextLocation)) {
       setModalVisible(true)
       setLastLocation(nextLocation)
-      return false
+    } else if (blocker.proceed) {
+      blocker.proceed()
     }
-    return true
-  }
+  }, [blocker, shouldBlockNavigation])
 
   const handleConfirmNavigationClick = () => {
     setModalVisible(false)
-    setConfirmedNavigation(true)
+    if (blocker.state === 'blocked' && blocker.proceed) {
+      blocker.proceed()
+      if (lastLocation) {
+        navigate(lastLocation.pathname)
+      }
+    }
   }
 
-  useEffect(() => {
-    if (confirmedNavigation && lastLocation) {
-      // Navigate to the previous blocked location with your navigate function
-      navigate(lastLocation.pathname)
+  const closeModal = () => {
+    setModalVisible(false)
+    if (blocker.state === 'blocked' && blocker.reset) {
+      blocker.reset()
     }
-  }, [confirmedNavigation, lastLocation, navigate])
+  }
 
   return (
-    <>
-      <Prompt when={when} message={handleBlockedNavigation} />
-      <Modal isOpen={modalVisible} onClose={closeModal} size='small'>
-        <ModalHeader>
-          <ModalTitle title={messages.title} />
-        </ModalHeader>
-        <ModalContent>
-          <div className={cn(layoutStyles.col, layoutStyles.gap6)}>
-            <Text variant='body' size='l' textAlign='center'>
-              {messages.body}
-            </Text>
-            <div className={cn(layoutStyles.row, layoutStyles.gap2)}>
-              <Button
-                className={styles.button}
-                variant='secondary'
-                onClick={closeModal}
-              >
-                {messages.cancel}
-              </Button>
-              <Button
-                className={styles.button}
-                variant='destructive'
-                onClick={handleConfirmNavigationClick}
-              >
-                {messages.proceed}
-              </Button>
-            </div>
+    <Modal isOpen={modalVisible} onClose={closeModal} size='small'>
+      <ModalHeader>
+        <ModalTitle title={messages.title} />
+      </ModalHeader>
+      <ModalContent>
+        <div className={cn(layoutStyles.col, layoutStyles.gap6)}>
+          <Text variant='body' size='l' textAlign='center'>
+            {messages.body}
+          </Text>
+          <div className={cn(layoutStyles.row, layoutStyles.gap2)}>
+            <Button
+              className={styles.button}
+              variant='secondary'
+              onClick={closeModal}
+            >
+              {messages.cancel}
+            </Button>
+            <Button
+              className={styles.button}
+              variant='destructive'
+              onClick={handleConfirmNavigationClick}
+            >
+              {messages.proceed}
+            </Button>
           </div>
-        </ModalContent>
-      </Modal>
-    </>
+        </div>
+      </ModalContent>
+    </Modal>
   )
 }

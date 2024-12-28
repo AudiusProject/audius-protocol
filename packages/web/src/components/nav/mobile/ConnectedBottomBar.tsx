@@ -7,7 +7,7 @@ import {
 } from '@audius/common/store'
 import { route } from '@audius/common/utils'
 import { connect } from 'react-redux'
-import { withRouter, RouteComponentProps } from 'react-router-dom'
+import { WithRouter, RouteComponentProps } from 'utils/withRouter'
 import { Dispatch } from 'redux'
 
 import {

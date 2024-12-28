@@ -1,14 +1,4 @@
 import { lazy, Component, Suspense } from 'react'
-import {
-  generatePath,
-  matchPath,
-  Navigate,
-  Routes,
-  Route,
-  useLocation,
-  useNavigate,
-  useParams
-} from 'react-router-dom'
 
 import {
   Name,
@@ -25,7 +15,16 @@ import {
 import { route } from '@audius/common/utils'
 import cn from 'classnames'
 import { connect } from 'react-redux'
-import { withRouter } from 'react-router'
+
+import { withRouter } from 'utils/withRouter'
+
+import {
+  generatePath,
+  matchPath,
+  Navigate,
+  Routes,
+  Route
+} from 'react-router-dom'
 import semver from 'semver'
 
 import { make } from 'common/store/analytics/actions'
@@ -451,7 +450,7 @@ class WebPlayer extends Component {
         />
       )
 
-    const SwitchComponent = this.context.isMobile ? AnimatedSwitch : Switch
+    const RoutesComponent = this.context.isMobile ? AnimatedSwitch : Routes
     const noScroll = matchPath(this.state.currentRoute, CHAT_PAGE)
 
     return (
@@ -493,7 +492,7 @@ class WebPlayer extends Component {
             {isMobile && <HeaderContextConsumer />}
 
             <Suspense fallback={null}>
-              <SwitchComponent isInitialPage={initialPage} handle={userHandle}>
+              <RoutesComponent isInitialPage={initialPage} handle={userHandle}>
                 {publicSiteRoutes.map((route) => (
                   // Redirect all public site routes to the corresponding pathname.
                   // This is necessary first because otherwise pathnames like
@@ -681,7 +680,26 @@ class WebPlayer extends Component {
                     />
                   }
                 />
-                <Route path={SEARCH_PAGE} element={<SearchPageV2 />} />
+                <Route
+                  path={SEARCH_PAGE}
+                  render={(props) => {
+                    const { category } = props.match.params
+
+                    return category &&
+                      !validSearchCategories.includes(category) ? (
+                      <Navigate
+                        to={{
+                          pathname: SEARCH_BASE_ROUTE,
+                          search: new URLSearchParams({
+                            query: category
+                          }).toString()
+                        }}
+                      />
+                    ) : (
+                      <SearchPageV2 />
+                    )
+                  }}
+                />
                 <DesktopRoute
                   path={UPLOAD_ALBUM_PAGE}
                   isMobile={isMobile}
@@ -938,7 +956,7 @@ class WebPlayer extends Component {
                     />
                   }
                 />
-              </SwitchComponent>
+              </RoutesComponent>
             </Suspense>
           </div>
           <PlayBarProvider />
@@ -989,25 +1007,20 @@ const mapDispatchToProps = (dispatch) => ({
   }
 })
 
-// Create a wrapper component to provide location and navigation
-const WebPlayerWithRouter = (props) => {
-  const location = useLocation()
-  const navigate = useNavigate()
-  const params = useParams()
+const RouterWebPlayer = withRouter(
+  connect(mapStateToProps, mapDispatchToProps)(WebPlayer)
+)
 
+const MainContentRouterWebPlayer = () => {
   return (
-    <WebPlayer
-      {...props}
-      location={location}
-      navigate={navigate}
-      match={{ params }}
-    />
+    <MainContentContext.Consumer>
+      {({ ref, setRef }) => {
+        return (
+          <RouterWebPlayer setMainContentRef={setRef} mainContentRef={ref} />
+        )
+      }}
+    </MainContentContext.Consumer>
   )
 }
 
-const ConnectedWebPlayer = connect(
-  mapStateToProps,
-  mapDispatchToProps
-)(WebPlayerWithRouter)
-
-export default ConnectedWebPlayer
+export default MainContentRouterWebPlayer

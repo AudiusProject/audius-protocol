@@ -31,7 +31,7 @@ import { route } from '@audius/common/utils'
 import { full } from '@audius/sdk'
 import { debounce, isEqual } from 'lodash'
 import { connect } from 'react-redux'
-import { RouteComponentProps, withRouter } from 'react-router-dom'
+import { withRouter, RouteComponentProps } from 'utils/withRouter'
 import { Dispatch } from 'redux'
 
 import { TrackEvent, make } from 'common/store/analytics/actions'

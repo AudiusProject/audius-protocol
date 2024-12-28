@@ -10,7 +10,6 @@ import { route } from '@audius/common/utils'
 import { Box, Flex, Scrollbar } from '@audius/harmony'
 import { ResizeObserver } from '@juggle/resize-observer'
 import { connect } from 'react-redux'
-import { RouteComponentProps, withRouter } from 'react-router-dom'
 import useMeasure from 'react-use-measure'
 import { Dispatch } from 'redux'
 
@@ -19,6 +18,7 @@ import { ProfileCompletionPanel } from 'components/profile-progress/ProfileCompl
 import { selectDraggingKind } from 'store/dragndrop/slice'
 import { AppState } from 'store/types'
 import { useSelector } from 'utils/reducer'
+import { withRouter, RouteComponentProps } from 'utils/withRouter'
 
 import { AccountDetails } from './AccountDetails'
 import { ConnectInstagram } from './ConnectInstagram'

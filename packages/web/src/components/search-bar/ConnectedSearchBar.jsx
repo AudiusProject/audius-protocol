@@ -10,7 +10,7 @@ import { route } from '@audius/common/utils'
 import { Box } from '@audius/harmony'
 import { connect } from 'react-redux'
 import { matchPath } from 'react-router'
-import { generatePath, withRouter } from 'react-router-dom'
+import { generatePath } from 'react-router-dom'
 
 import { HistoryContext } from 'app/HistoryProvider'
 import { make } from 'common/store/analytics/actions'
@@ -23,6 +23,7 @@ import { getSearch } from 'common/store/search-bar/selectors'
 import SearchBar from 'components/search/SearchBar'
 import { push } from 'utils/navigation'
 import { getPathname } from 'utils/route'
+import { withRouter } from 'utils/withRouter'
 
 const { profilePage, collectionPage, SEARCH_PAGE } = route
 const { addItem: addRecentSearch } = searchActions

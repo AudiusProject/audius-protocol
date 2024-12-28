@@ -29,7 +29,7 @@ import {
 import { route } from '@audius/common/utils'
 import { isEqual } from 'lodash'
 import { connect } from 'react-redux'
-import { withRouter, RouteComponentProps } from 'react-router-dom'
+import { WithRouter, RouteComponentProps } from 'utils/withRouter'
 import { Dispatch } from 'redux'
 
 import { useRecord, make } from 'common/store/analytics/actions'

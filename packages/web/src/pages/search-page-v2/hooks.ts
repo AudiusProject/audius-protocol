@@ -10,8 +10,11 @@ import { route } from '@audius/common/utils'
 import { Genre, Mood } from '@audius/sdk'
 import { intersection, isEmpty } from 'lodash'
 import { useSelector } from 'react-redux'
-import { generatePath, useRouteMatch } from 'react-router-dom'
-import { useSearchParams as useParams } from 'react-router-dom'
+import {
+  generatePath,
+  useMatch,
+  useSearchParams as useParams
+} from 'react-router-dom'
 
 import { useHistoryContext } from 'app/HistoryProvider'
 import { RouterContext } from 'components/animated-switch/RouterContextProvider'
@@ -81,8 +84,7 @@ export const useShowSearchResults = () => {
 
 export const useSearchCategory = () => {
   const isMobile = useIsMobile()
-  const routeMatch = useRouteMatch<{ category: string }>(SEARCH_PAGE)
-  const categoryParam = routeMatch?.params.category as CategoryView
+  const categoryParam = useMatch(SEARCH_PAGE)?.params.category as CategoryView
 
   const category = isMobile ? (categoryParam ?? 'profiles') : categoryParam
 

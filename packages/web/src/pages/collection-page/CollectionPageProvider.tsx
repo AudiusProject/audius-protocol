@@ -54,7 +54,6 @@ import {
 import { formatUrlName, Uid, Nullable, route } from '@audius/common/utils'
 import { UnregisterCallback } from 'history'
 import { connect } from 'react-redux'
-import { withRouter, RouteComponentProps } from 'react-router-dom'
 import { Dispatch } from 'redux'
 
 import { TrackEvent, make } from 'common/store/analytics/actions'
@@ -73,6 +72,7 @@ import { push, replace } from 'utils/navigation'
 import { getPathname } from 'utils/route'
 import { parseCollectionRoute } from 'utils/route/collectionRouteParser'
 import { getCollectionPageSEOFields } from 'utils/seo'
+import { WithRouter, RouteComponentProps } from 'utils/withRouter'
 
 import { CollectionPageProps as DesktopCollectionPageProps } from './components/desktop/CollectionPage'
 import { CollectionPageProps as MobileCollectionPageProps } from './components/mobile/CollectionPage'

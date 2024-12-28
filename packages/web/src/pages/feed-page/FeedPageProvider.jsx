@@ -12,7 +12,7 @@ import {
 } from '@audius/common/store'
 import { route } from '@audius/common/utils'
 import { connect } from 'react-redux'
-import { withRouter, matchPath } from 'react-router-dom'
+import { matchPath } from 'react-router-dom'
 
 import { HistoryContext } from 'app/HistoryProvider'
 import { make } from 'common/store/analytics/actions'
@@ -20,6 +20,7 @@ import { openSignOn } from 'common/store/pages/signon/actions'
 import { useIsMobile } from 'hooks/useIsMobile'
 import { push, replace } from 'utils/navigation'
 import { getPathname } from 'utils/route'
+import { withRouter } from 'utils/withRouter'
 const { TRENDING_PAGE } = route
 const { makeGetCurrent } = queueSelectors
 const { getPlaying, getBuffering } = playerSelectors

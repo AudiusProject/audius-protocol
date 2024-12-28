@@ -14,7 +14,7 @@ import {
 import { route } from '@audius/common/utils'
 import { connect } from 'react-redux'
 import { Redirect } from 'react-router'
-import { withRouter } from 'react-router-dom'
+import { withRouter } from 'utils/withRouter'
 
 import { HistoryContext } from 'app/HistoryProvider'
 import { make } from 'common/store/analytics/actions'

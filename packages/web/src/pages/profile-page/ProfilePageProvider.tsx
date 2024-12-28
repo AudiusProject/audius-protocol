@@ -43,7 +43,7 @@ import { UnregisterCallback } from 'history'
 import { uniq } from 'lodash'
 import moment from 'moment'
 import { connect } from 'react-redux'
-import { withRouter, RouteComponentProps } from 'react-router-dom'
+import { WithRouter, RouteComponentProps } from 'utils/withRouter'
 import { Dispatch } from 'redux'
 
 import { make, TrackEvent } from 'common/store/analytics/actions'

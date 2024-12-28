@@ -9,12 +9,10 @@ import {
   cacheCollectionsActions,
   cacheCollectionsSelectors
 } from '@audius/common/store'
-import { replace } from 'utils/navigation'
 import { isEqual } from 'lodash'
 import { useDispatch } from 'react-redux'
 import { useParams } from 'react-router'
-import { useRouteMatch } from 'react-router-dom'
-import { useSearchParams } from 'react-router-dom'
+import { useMatch, useSearchParams } from 'react-router-dom'
 
 import { EditCollectionForm } from 'components/edit-collection/EditCollectionForm'
 import Header from 'components/header/desktop/Header'
@@ -24,6 +22,7 @@ import { useCollectionCoverArt } from 'hooks/useCollectionCoverArt'
 import { useIsUnauthorizedForHandleRedirect } from 'hooks/useManagedAccountNotAllowedRedirect'
 import { useRequiresAccount } from 'hooks/useRequiresAccount'
 import { track } from 'services/analytics'
+import { replace } from 'utils/navigation'
 import { useSelector } from 'utils/reducer'
 
 import { updatePlaylistContents } from '../utils'
@@ -42,7 +41,7 @@ const messages = {
 
 export const EditCollectionPage = () => {
   const { handle, slug } = useParams<EditCollectionPageParams>()
-  const isAlbum = Boolean(useRouteMatch('/:handle/album/:slug/edit'))
+  const isAlbum = !!useMatch('/:handle/album/:slug/edit')
   const [searchParams] = useSearchParams()
   const focus = searchParams.get('focus')
   const permalink = `/${handle}/${isAlbum ? 'album' : 'playlist'}/${slug}`
