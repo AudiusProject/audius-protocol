@@ -87,29 +87,18 @@ export const profilePageAiAttributedTracks = (handle: string) => {
   return `${profilePage(handle)}/ai`
 }
 
-export const searchResultsPage = (query: string) => {
-  return `/search/${query}`
-}
-
-export const fullSearchResultsPage = (query: string) => {
-  return `${BASE_URL}${searchResultsPage(query)}`
-}
-
-export const searchResultsPageV2 = (
-  category: SearchCategory,
-  query: string
-) => {
+export const searchResultsPage = (category: SearchCategory, query: string) => {
   if (category === 'all') {
     return `/search?query=${query}`
   }
   return `/search/${category}/?query=${query}`
 }
 
-export const fullSearchResultsPageV2 = (
+export const fullSearchResultsPage = (
   category: SearchCategory,
   query: string
 ) => {
-  return `${BASE_URL}${searchResultsPageV2(category, query)}`
+  return `${BASE_URL}${searchResultsPage(category, query)}`
 }
 
 export const exploreMoodPlaylistsPage = (mood: string) => {
