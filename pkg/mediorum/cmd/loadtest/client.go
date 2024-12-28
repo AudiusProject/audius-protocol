@@ -51,7 +51,6 @@ func (tc *TestClient) pingPeer(wg *sync.WaitGroup, peer server.Peer) {
 	defer wg.Done()
 
 	client := &http.Client{Timeout: 1000 * time.Millisecond} // fail fast for heath check
-	fmt.Printf("pinging %s%s\n", peer.Host, "/health_check")
 	req, err := http.NewRequest("GET", fmt.Sprintf("%s%s", peer.Host, "/health_check"), nil)
 	if err != nil {
 		fmt.Printf("e")
@@ -60,7 +59,7 @@ func (tc *TestClient) pingPeer(wg *sync.WaitGroup, peer server.Peer) {
 	req.Header.Set("User-Agent", "mediorum-load-test")
 	res, err := client.Do(req)
 	if err != nil {
-		fmt.Printf("e %v\n", err)
+		fmt.Printf("e")
 		return
 	}
 
