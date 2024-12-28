@@ -377,7 +377,7 @@ class CollectionPage extends Component<
 
     const { permalink, collectionId } = params
 
-    // Need typecast as can't set type via connected-react-router, see https://github.com/reach/router/issues/414
+    // Need typecast as can't set type via redux-first-history, see https://github.com/reach/router/issues/414
     const locationState = this.props.location.state as { forceFetch?: boolean }
     const forceFetch = locationState?.forceFetch
 
