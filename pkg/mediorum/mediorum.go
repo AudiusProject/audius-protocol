@@ -141,6 +141,24 @@ func startMediorum(mediorumEnv string) {
 		}()
 	}
 
+	// set dev defaults
+	replicationFactor := 3
+	spOwnerWallet := walletAddress
+	dir := fmt.Sprintf("/tmp/mediorum_dev_%d", spID)
+	blobStoreDSN := ""
+	moveFromBlobStoreDSN := ""
+	coreGRPCEndpoint := "0.0.0.0:50051"
+
+	notDev := isProd || isStage
+	if notDev {
+		replicationFactor = 4 // HashMigration: use R=2 (crc32) + R=2 (sha256)
+		spOwnerWallet = os.Getenv("spOwnerWallet")
+		dir = "/tmp/mediorum"
+		blobStoreDSN = os.Getenv("AUDIUS_STORAGE_DRIVER_URL")
+		moveFromBlobStoreDSN = os.Getenv("AUDIUS_STORAGE_DRIVER_URL_MOVE_FROM")
+		coreGRPCEndpoint = getenvWithDefault("coreGRPCEndpoint", "audiusd:50051")
+	}
+
 	config := server.MediorumConfig{
 		Self: server.Peer{
 			Host:   httputil.RemoveTrailingSlash(strings.ToLower(creatorNodeEndpoint)),
@@ -149,22 +167,22 @@ func startMediorum(mediorumEnv string) {
 		ListenPort:                "1991",
 		Peers:                     peers,
 		Signers:                   signers,
-		ReplicationFactor:         4, // HashMigration: use R=2 (crc32) + R=2 (sha256)
+		ReplicationFactor:         replicationFactor,
 		PrivateKey:                privateKeyHex,
-		Dir:                       "/tmp/mediorum",
+		Dir:                       dir,
 		PostgresDSN:               getenvWithDefault("dbUrl", "postgres://postgres:postgres@db:5432/audius_creator_node"),
-		BlobStoreDSN:              os.Getenv("AUDIUS_STORAGE_DRIVER_URL"),
-		MoveFromBlobStoreDSN:      os.Getenv("AUDIUS_STORAGE_DRIVER_URL_MOVE_FROM"),
+		BlobStoreDSN:              blobStoreDSN,
+		MoveFromBlobStoreDSN:      moveFromBlobStoreDSN,
 		TrustedNotifierID:         trustedNotifierID,
 		SPID:                      spID,
-		SPOwnerWallet:             os.Getenv("spOwnerWallet"),
+		SPOwnerWallet:             spOwnerWallet,
 		GitSHA:                    os.Getenv("GIT_SHA"),
 		AudiusDockerCompose:       os.Getenv("AUDIUS_DOCKER_COMPOSE_GIT_SHA"),
 		AutoUpgradeEnabled:        os.Getenv("autoUpgradeEnabled") == "true",
 		StoreAll:                  os.Getenv("STORE_ALL") == "true",
 		VersionJson:               GetVersionJson(),
 		DiscoveryListensEndpoints: discoveryListensEndpoints(),
-		CoreGRPCEndpoint:          getenvWithDefault("coreGRPCEndpoint", "audiusd:50051"),
+		CoreGRPCEndpoint:          coreGRPCEndpoint,
 	}
 
 	ss, err := server.New(config)
