@@ -25,6 +25,7 @@ services:
       timeout: 10s
       retries: 3
     profiles:
+      - mediorum
       - core-tests
 
   db:
@@ -81,6 +82,7 @@ services:
     deploy:
       mode: global
     profiles:
+      - mediorum
       - core-tests
       - tests
       - chain
@@ -112,7 +114,13 @@ services:
     env_file:
       - ${PROJECT_ROOT}/cmd/core/infra/dev_config/discovery-one.docker.env
     restart: unless-stopped
+    healthcheck:
+      test: [ 'CMD', 'curl', 'http://localhost:26659/console/health_check' ]
+      interval: 10s
+      start_period: 60s
+      timeout: 5s
     profiles:
+      - mediorum
       - core-tests
     depends_on:
       db:
@@ -125,7 +133,13 @@ services:
     env_file:
       - ${PROJECT_ROOT}/cmd/core/infra/dev_config/content-one.docker.env
     restart: unless-stopped
+    healthcheck:
+      test: [ 'CMD', 'curl', 'http://localhost:1991/health_check' ]
+      interval: 10s
+      start_period: 60s
+      timeout: 5s
     profiles:
+      - mediorum
       - core-tests
     depends_on:
       db:
@@ -138,7 +152,13 @@ services:
     env_file:
       - ${PROJECT_ROOT}/cmd/core/infra/dev_config/content-two.docker.env
     restart: unless-stopped
+    healthcheck:
+      test: [ 'CMD', 'curl', 'http://localhost:1991/health_check' ]
+      interval: 10s
+      start_period: 60s
+      timeout: 5s
     profiles:
+      - mediorum
       - core-tests
     depends_on:
       db:
@@ -151,7 +171,13 @@ services:
     env_file:
       - ${PROJECT_ROOT}/cmd/core/infra/dev_config/content-three.docker.env
     restart: unless-stopped
+    healthcheck:
+      test: [ 'CMD', 'curl', 'http://localhost:1991/health_check' ]
+      interval: 10s
+      start_period: 60s
+      timeout: 5s
     profiles:
+      - mediorum
       - core-tests
     depends_on:
       db:
@@ -404,40 +430,27 @@ services:
       - mediorum
       - mediorum-unittests
 
-  mediorum:
-    build:
-      context: ${PROJECT_ROOT}
-      dockerfile: ${PROJECT_ROOT}/cmd/mediorum/Dockerfile
-    restart: unless-stopped
-    environment:
-      dbUrlTemplate: 'postgres://postgres:example@mediorum-db:5432/m%d'
-      devNetworkCount: '5'
-    healthcheck:
-      test: [ 'CMD', 'curl', 'http://localhost:1991/health_check' ]
-      interval: 10s
-      start_period: 60s
-      timeout: 5s
-    logging: *default-logging
-    profiles:
-      - mediorum
-    depends_on:
-      mediorum-db:
-        condition: service_healthy
-
   test-mediorum:
     build:
       context: ${PROJECT_ROOT}
       dockerfile: ${PROJECT_ROOT}/cmd/mediorum/Dockerfile
     entrypoint:
       - '/bin/mediorum-cmd'
-    environment:
-      hostNameTemplate: 'http://mediorum:199%d'
-      devNetworkCount: '5'
     logging: *default-logging
     profiles:
       - mediorum
     depends_on:
-      mediorum:
+      ingress:
+        condition: service_healthy
+      eth-ganache:
+        condition: service_healthy
+      audiusd-1:
+        condition: service_healthy
+      audiusd-2:
+        condition: service_healthy
+      audiusd-3:
+        condition: service_healthy
+      audiusd-4:
         condition: service_healthy
 
   test-mediorum-unittests:

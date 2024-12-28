@@ -13,6 +13,11 @@ RUN go build -o /bin/mediorum-cmd pkg/mediorum/cmd/main.go
 
 FROM audius/cpp:latest
 
+RUN apt-get update && apt-get install -y --no-install-recommends \
+  iputils-ping \
+  curl && \
+  rm -rf /var/lib/apt/lists/*
+
 COPY --from=go-builder /bin/mediorum /bin/mediorum
 COPY --from=go-builder /bin/mediorum-cmd /bin/mediorum-cmd
 
