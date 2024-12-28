@@ -83,14 +83,14 @@ const ${variables.componentName} = forwardRef((${variables.props}, ref) => {
     other.width = width
   }
 
-  const fillColor = other.fill ?? theme.color?.icon[color] ?? 'red'
+  const fill = other.fill ?? theme.color?.icon[color] ?? 'red'
 
   ${native ? nativeStyles : webStyles}
 
   other.role = title ? 'img' : undefined
   other['aria-hidden'] = title ? undefined : true
 
-  props = {...other, ref, fillColor}
+  props = {...other, ref, fill}
 
   ${native ? `const Path = animatedProps ? AnimatedPath : RNSVGPath` : ''}
 
