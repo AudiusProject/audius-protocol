@@ -26,7 +26,7 @@ import {
 } from '@audius/harmony'
 import cn from 'classnames'
 import { useSelector } from 'react-redux'
-import { useNavigate } from 'react-router-dom-v5-compat'
+import { useNavigate } from 'react-router-dom'
 
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import { UserLink } from 'components/link'

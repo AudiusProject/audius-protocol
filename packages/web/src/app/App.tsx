@@ -3,7 +3,7 @@ import { useEffect, Suspense, lazy } from 'react'
 
 import { route } from '@audius/common/utils'
 import { CoinflowPurchaseProtection } from '@coinflowlabs/react'
-import { Redirect, Route, Switch } from 'react-router-dom'
+import { Routes, Route, Navigate } from 'react-router-dom'
 
 import { AppModal } from 'pages/modals/AppModal'
 import { SomethingWrong } from 'pages/something-wrong/SomethingWrong'
@@ -65,50 +65,60 @@ export const App = () => {
           merchantId={MERCHANT_ID || ''}
           coinflowEnv={IS_PRODUCTION ? 'prod' : 'sandbox'}
         />
-        <Switch>
+        <Routes>
           {SIGN_ON_ALIASES.map((a) => (
-            <Redirect key={a} from={a} to={SIGN_IN_PAGE} />
-          ))}
-          <Route path={[SIGN_IN_PAGE, SIGN_UP_PAGE]}>
-            <SignOnPage />
-          </Route>
-          <Route exact path='/oauth/auth'>
-            <OAuthLoginPage />
-          </Route>
-          {!IS_PRODUCTION ? (
-            <Route path='/react-query'>
-              <ReactQueryTestPage />
-            </Route>
-          ) : null}
-          {!IS_PRODUCTION ? (
-            <Route path='/react-query-cache-prime'>
-              <ReactQueryCachePrimePage />
-            </Route>
-          ) : null}
-          {!IS_PRODUCTION ? (
-            <Route path='/react-query-redux-cache-sync'>
-              <ReactQueryReduxCacheSyncPage />
-            </Route>
-          ) : null}
-          {!IS_PRODUCTION ? (
-            <Route path='/react-query-to-redux-cache-sync'>
-              <ReactQueryToReduxCacheSyncPage />
-            </Route>
-          ) : null}
-          <Route path={PRIVATE_KEY_EXPORTER_SETTINGS_PAGE}>
-            <PrivateKeyExporterPage />
-            <AppModal
-              key='PrivateKeyExporter'
-              name='PrivateKeyExporter'
-              modal={PrivateKeyExporterModal}
+            <Route
+              key={a}
+              path={a}
+              element={<Navigate to={SIGN_IN_PAGE} replace />}
             />
-          </Route>
-          <Route path='/'>
-            <AppErrorBoundary>
-              <WebPlayer />
-            </AppErrorBoundary>
-          </Route>
-        </Switch>
+          ))}
+          <Route path={SIGN_IN_PAGE} element={<SignOnPage />} />
+          <Route path={SIGN_UP_PAGE} element={<SignOnPage />} />
+          <Route path='/oauth/auth' element={<OAuthLoginPage />} />
+          {!IS_PRODUCTION && (
+            <Route path='/react-query' element={<ReactQueryTestPage />} />
+          )}
+          {!IS_PRODUCTION && (
+            <Route
+              path='/react-query-cache-prime'
+              element={<ReactQueryCachePrimePage />}
+            />
+          )}
+          {!IS_PRODUCTION && (
+            <Route
+              path='/react-query-redux-cache-sync'
+              element={<ReactQueryReduxCacheSyncPage />}
+            />
+          )}
+          {!IS_PRODUCTION && (
+            <Route
+              path='/react-query-to-redux-cache-sync'
+              element={<ReactQueryToReduxCacheSyncPage />}
+            />
+          )}
+          <Route
+            path={PRIVATE_KEY_EXPORTER_SETTINGS_PAGE}
+            element={
+              <>
+                <PrivateKeyExporterPage />
+                <AppModal
+                  key='PrivateKeyExporter'
+                  name='PrivateKeyExporter'
+                  modal={PrivateKeyExporterModal}
+                />
+              </>
+            }
+          />
+          <Route
+            path='/*'
+            element={
+              <AppErrorBoundary>
+                <WebPlayer />
+              </AppErrorBoundary>
+            }
+          />
+        </Routes>
       </Suspense>
     </AppProviders>
   )

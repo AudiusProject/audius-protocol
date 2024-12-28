@@ -1,4 +1,4 @@
-import { matchPath, useHistory } from 'react-router-dom'
+import { matchPath, useLocation, Params } from 'react-router-dom'
 
 /**
  * Given a route, matches on it
@@ -6,17 +6,18 @@ import { matchPath, useHistory } from 'react-router-dom'
  * @param route
  * @returns an object of <T> with the values filled
  */
-export function useRouteMatch<T extends { [K in keyof T]?: string }>(
-  route: string
-) {
-  const { location } = useHistory()
-  const { pathname } = location
-  const match = matchPath<T>(pathname, {
-    path: route,
-    exact: true
-  })
+export function useRouteMatch<T extends Params>(route: string) {
+  const location = useLocation()
+  const match = matchPath(
+    {
+      path: route,
+      end: true
+    },
+    location.pathname
+  )
+
   if (match) {
-    return match.params
+    return match.params as T
   }
   return null
 }

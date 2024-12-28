@@ -3,7 +3,7 @@ import { ReactElement, ReactNode } from 'react'
 import { ThemeProvider } from '@audius/harmony'
 import { render, RenderOptions } from '@testing-library/react'
 import { createMemoryHistory } from 'history'
-import { CompatRouter } from 'react-router-dom-v5-compat'
+import { CompatRouter } from 'react-router-dom'
 import { HistoryRouter as Router } from 'redux-first-history/rr6'
 import { PartialDeep } from 'type-fest'
 

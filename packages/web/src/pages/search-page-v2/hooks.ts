@@ -11,7 +11,7 @@ import { Genre, Mood } from '@audius/sdk'
 import { intersection, isEmpty } from 'lodash'
 import { useSelector } from 'react-redux'
 import { generatePath, useRouteMatch } from 'react-router-dom'
-import { useSearchParams as useParams } from 'react-router-dom-v5-compat'
+import { useSearchParams as useParams } from 'react-router-dom'
 
 import { useHistoryContext } from 'app/HistoryProvider'
 import { RouterContext } from 'components/animated-switch/RouterContextProvider'

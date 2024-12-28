@@ -1,16 +1,19 @@
 import { route } from '@audius/common/utils'
-import { Redirect, Route, RouteProps } from 'react-router'
+import { Navigate, useLocation } from 'react-router-dom'
 
 const { TRENDING_PAGE } = route
 
-type BaseDesktopRouteProps = RouteProps & { isMobile: boolean }
+type DesktopRouteProps = {
+  isMobile: boolean
+  element: React.ReactNode
+}
 
-const DesktopRoute = <T extends BaseDesktopRouteProps>(props: T) => {
-  const from = Array.isArray(props.path) ? props.path[0] : props.path
-  return props.isMobile ? (
-    <Redirect from={from} to={TRENDING_PAGE} />
+const DesktopRoute = ({ isMobile, element }: DesktopRouteProps) => {
+  const location = useLocation()
+  return isMobile ? (
+    <Navigate replace to={TRENDING_PAGE} state={{ from: location.pathname }} />
   ) : (
-    <Route {...props} />
+    <>{element}</>
   )
 }
 

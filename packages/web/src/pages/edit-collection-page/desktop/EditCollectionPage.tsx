@@ -14,7 +14,7 @@ import { isEqual } from 'lodash'
 import { useDispatch } from 'react-redux'
 import { useParams } from 'react-router'
 import { useRouteMatch } from 'react-router-dom'
-import { useSearchParams } from 'react-router-dom-v5-compat'
+import { useSearchParams } from 'react-router-dom'
 
 import { EditCollectionForm } from 'components/edit-collection/EditCollectionForm'
 import Header from 'components/header/desktop/Header'

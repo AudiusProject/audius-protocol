@@ -1,16 +1,19 @@
 import { route } from '@audius/common/utils'
-import { Redirect, Route, RouteProps } from 'react-router'
+import { Navigate, useLocation } from 'react-router-dom'
 
 const { TRENDING_PAGE } = route
 
-type BaseMobileRouteProps = RouteProps & { isMobile: boolean }
+type MobileRouteProps = {
+  isMobile: boolean
+  element: React.ReactNode
+}
 
-const MobileRoute = <T extends BaseMobileRouteProps>(props: T) => {
-  const from = Array.isArray(props.path) ? props.path[0] : props.path
-  return props.isMobile ? (
-    <Route {...props} />
+const MobileRoute = ({ isMobile, element }: MobileRouteProps) => {
+  const location = useLocation()
+  return isMobile ? (
+    <>{element}</>
   ) : (
-    <Redirect from={from} to={TRENDING_PAGE} />
+    <Navigate replace to={TRENDING_PAGE} state={{ from: location.pathname }} />
   )
 }
 
