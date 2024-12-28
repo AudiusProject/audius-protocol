@@ -33,7 +33,7 @@ import {
 import { route } from '@audius/common/utils'
 import { Text, IconKebabHorizontal } from '@audius/harmony'
 import cn from 'classnames'
-import { push as pushRoute } from 'connected-react-router'
+import { push as pushRoute } from 'utils/navigation'
 import { LocationState } from 'history'
 import { range } from 'lodash'
 import { connect } from 'react-redux'

@@ -11,10 +11,7 @@ import {
   playerSelectors
 } from '@audius/common/store'
 import { GENRES, route } from '@audius/common/utils'
-import {
-  push as pushRoute,
-  replace as replaceRoute
-} from 'connected-react-router'
+import { push as pushRoute, replace as replaceRoute } from 'utils/navigation'
 import { connect } from 'react-redux'
 import { matchPath, withRouter } from 'react-router-dom'
 

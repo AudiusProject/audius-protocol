@@ -3,7 +3,7 @@ import { useCallback } from 'react'
 import { SquareSizes, WidthSizes, User } from '@audius/common/models'
 import { route } from '@audius/common/utils'
 import { IconArtistBadge as BadgeArtist } from '@audius/harmony'
-import { push } from 'connected-react-router'
+import { push } from 'utils/navigation'
 import { useDispatch } from 'react-redux'
 
 import DynamicImage from 'components/dynamic-image/DynamicImage'

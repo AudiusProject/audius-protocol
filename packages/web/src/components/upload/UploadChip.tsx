@@ -15,7 +15,7 @@ import {
   PopupMenuItem
 } from '@audius/harmony'
 import cn from 'classnames'
-import { push as pushRoute } from 'connected-react-router'
+import { push as pushRoute } from 'utils/navigation'
 import { capitalize } from 'lodash'
 import { useDispatch } from 'react-redux'
 

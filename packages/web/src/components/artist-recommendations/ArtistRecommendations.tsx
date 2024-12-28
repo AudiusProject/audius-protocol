@@ -17,7 +17,7 @@ import {
 import { route } from '@audius/common/utils'
 import { FollowButton, IconButton, IconClose } from '@audius/harmony'
 import cn from 'classnames'
-import { push } from 'connected-react-router'
+import { push } from 'utils/navigation'
 import { isEmpty } from 'lodash'
 import { useDispatch, useSelector } from 'react-redux'
 

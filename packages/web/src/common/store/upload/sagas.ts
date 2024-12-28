@@ -49,7 +49,7 @@ import {
   waitForAccount
 } from '@audius/common/utils'
 import { ProgressHandler, AudiusSdk } from '@audius/sdk'
-import { push } from 'connected-react-router'
+import { push } from 'utils/navigation'
 import { mapValues } from 'lodash'
 import { Channel, Task, buffers, channel } from 'redux-saga'
 import {

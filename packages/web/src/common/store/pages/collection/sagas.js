@@ -6,7 +6,7 @@ import {
   reachabilitySelectors
 } from '@audius/common/store'
 import { makeUid, route } from '@audius/common/utils'
-import { push as pushRoute } from 'connected-react-router'
+import { push as pushRoute } from 'utils/navigation'
 import { call, put, select, takeLatest, takeEvery } from 'redux-saga/effects'
 
 import {

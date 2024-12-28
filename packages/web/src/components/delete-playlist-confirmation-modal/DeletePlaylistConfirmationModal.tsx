@@ -5,7 +5,7 @@ import {
   deletePlaylistConfirmationModalUISelectors
 } from '@audius/common/store'
 import { route } from '@audius/common/utils'
-import { push } from 'connected-react-router'
+import { push } from 'utils/navigation'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { useModalState } from 'common/hooks/useModalState'

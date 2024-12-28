@@ -1,6 +1,6 @@
 import { accountSelectors, getContext } from '@audius/common/store'
 import { route, waitForAccount } from '@audius/common/utils'
-import { push as pushRoute } from 'connected-react-router'
+import { push as pushRoute } from 'utils/navigation'
 import { call, put, select } from 'typed-redux-saga'
 
 import {

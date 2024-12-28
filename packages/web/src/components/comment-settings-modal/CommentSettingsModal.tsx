@@ -15,7 +15,7 @@ import {
   Scrollbar,
   Divider
 } from '@audius/harmony'
-import { push as pushRoute } from 'connected-react-router'
+import { push as pushRoute } from 'utils/navigation'
 import { useDispatch } from 'react-redux'
 import { useToggle } from 'react-use'
 

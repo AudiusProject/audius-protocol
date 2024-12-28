@@ -3,7 +3,7 @@ import {
   cacheCollectionsSelectors,
   toastActions
 } from '@audius/common/store'
-import { push } from 'connected-react-router'
+import { push } from 'utils/navigation'
 import { put, select, takeEvery } from 'typed-redux-saga'
 
 const { toast } = toastActions

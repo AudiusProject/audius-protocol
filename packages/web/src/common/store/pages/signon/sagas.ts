@@ -52,7 +52,7 @@ import {
   TEMPORARY_PASSWORD
 } from '@audius/common/utils'
 import { CreateUserRequest, UpdateProfileRequest } from '@audius/sdk'
-import { push as pushRoute } from 'connected-react-router'
+import { push as pushRoute } from 'utils/navigation'
 import { isEmpty } from 'lodash'
 import {
   all,

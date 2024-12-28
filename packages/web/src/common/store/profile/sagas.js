@@ -33,7 +33,7 @@ import {
   isResponseError,
   route
 } from '@audius/common/utils'
-import { push as pushRoute } from 'connected-react-router'
+import { push as pushRoute } from 'utils/navigation'
 import { merge } from 'lodash'
 import {
   all,

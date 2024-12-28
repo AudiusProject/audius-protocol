@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react'
 import { Status } from '@audius/common/models'
 import { accountSelectors } from '@audius/common/store'
 import { route } from '@audius/common/utils'
-import { push as pushRoute } from 'connected-react-router'
+import { push as pushRoute } from 'utils/navigation'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { useScript } from 'hooks/useScript'

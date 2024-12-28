@@ -9,7 +9,7 @@ import {
   cacheCollectionsActions,
   cacheCollectionsSelectors
 } from '@audius/common/store'
-import { replace } from 'connected-react-router'
+import { replace } from 'utils/navigation'
 import { isEqual } from 'lodash'
 import { useDispatch } from 'react-redux'
 import { useParams } from 'react-router'

@@ -7,7 +7,7 @@ import {
   playerSelectors
 } from '@audius/common/store'
 import { route } from '@audius/common/utils'
-import { push as pushRoute } from 'connected-react-router'
+import { push as pushRoute } from 'utils/navigation'
 import { connect } from 'react-redux'
 import { Dispatch } from 'redux'
 

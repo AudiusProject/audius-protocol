@@ -37,7 +37,7 @@ import {
   Paper
 } from '@audius/harmony'
 import cn from 'classnames'
-import { push as pushRoute } from 'connected-react-router'
+import { push as pushRoute } from 'utils/navigation'
 import { useDispatch, useSelector } from 'react-redux'
 
 import QRCode from 'assets/img/imageQR.png'

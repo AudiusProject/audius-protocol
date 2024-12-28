@@ -9,7 +9,7 @@ import {
 } from '@audius/common/store'
 import { formatCount, route, pluralize } from '@audius/common/utils'
 import { IconMessage, Text, Flex, IconRepost, IconHeart } from '@audius/harmony'
-import { push } from 'connected-react-router'
+import { push } from 'utils/navigation'
 import { useDispatch } from 'react-redux'
 
 import { AvatarList } from 'components/avatar'

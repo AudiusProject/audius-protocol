@@ -17,7 +17,7 @@ import {
 } from '@audius/common/store'
 import { Nullable } from '@audius/common/utils'
 import { IconCamera } from '@audius/harmony'
-import { replace } from 'connected-react-router'
+import { replace } from 'utils/navigation'
 import { capitalize } from 'lodash'
 import { connect, useDispatch } from 'react-redux'
 import { useHistory, useParams, useRouteMatch } from 'react-router-dom'
