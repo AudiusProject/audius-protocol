@@ -22,11 +22,13 @@ const discprovWhitelist = [
   ".monophonic.digital",
   ".figment.io",
   ".tikilabs.com",
+  "-1"
 ]
 
 export default function Nodes() {
   const [env, nodeType] = useEnvironmentSelection()
   let { data: sps, error } = useServiceProviders(env, nodeType)
+  console.log({ sps })
 
   const isContent = nodeType == 'content'
   const isDiscovery = nodeType == 'discovery'
