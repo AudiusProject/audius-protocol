@@ -10,15 +10,10 @@ import { Text } from '../text'
 
 import type { ExpandableNavItemProps } from './types'
 
-const getStyles = (
-  theme: HarmonyTheme,
-  isOpen: boolean,
-  isHovered: boolean
-): CSSObject => {
+const getStyles = (theme: HarmonyTheme, isHovered: boolean): CSSObject => {
   const baseStyles: CSSObject = {
     transition: `background-color ${theme.motion.hover}`,
-    cursor: 'pointer',
-    border: `1px solid ${isOpen ? theme.color.border.default : 'transparent'}`
+    cursor: 'pointer'
   }
 
   const hoverStyles: CSSObject = {
@@ -48,10 +43,7 @@ export const ExpandableNavItem = ({
   const handleMouseLeave = () => setIsHovered(false)
   const handleClick = () => setIsOpen(!isOpen)
 
-  const styles = useMemo(
-    () => getStyles(theme, isOpen, isHovered),
-    [theme, isOpen, isHovered]
-  )
+  const styles = useMemo(() => getStyles(theme, isOpen), [theme, isOpen])
 
   const IconComponent = isHovered
     ? isOpen
