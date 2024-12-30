@@ -25,7 +25,6 @@ export function TxViewer() {
     [location.pathname, location.search],
     async ({ queryKey }) => {
       let latestBlock = parseInt(searchParams.get('block') || '')
-      console.log({ latestBlock, isProd, isStage })
       if (!latestBlock) latestBlock = await provider.getBlockNumber()
 
       const logs: any[] = await provider.getLogs({
@@ -38,8 +37,6 @@ export function TxViewer() {
       return { latestBlock, logs }
     }
   )
-
-  console.log({ data, isLoading, isProd, isStage })
 
   if (isLoading || !data) return <div>loading</div>
   const { latestBlock, logs } = data

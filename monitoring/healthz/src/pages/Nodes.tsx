@@ -28,7 +28,6 @@ const discprovWhitelist = [
 export default function Nodes() {
   const [env, nodeType] = useEnvironmentSelection()
   let { data: sps, error } = useServiceProviders(env, nodeType)
-  console.log({ sps })
 
   const isContent = nodeType == 'content'
   const isDiscovery = nodeType == 'discovery'
