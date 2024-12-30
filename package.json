@@ -59,6 +59,7 @@
     "harmony:dev": "npm run storybook -w @audius/harmony",
     "SDK======================================": "",
     "sdk": "turbo run start --filter=@audius/sdk",
+    "sdk:browser:es": "npm run start:sdk:browser:es -w @audius/sdk",
     "PROTOCOL======================================": "",
     "protocol": "turbo run start --filter=@audius/compose --",
     "PEDALBOARD======================================": "",
