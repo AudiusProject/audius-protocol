@@ -37,7 +37,7 @@ jobs:
         - test-core
       filters:
         branches:
-          only: as/fix-audiusd-ci
+          only: main
   - deploy-audiusd-staging:
       context: [github, dockerhub]
       requires:

@@ -6,7 +6,7 @@ jobs:
       service: mediorum
       filters:
         branches:
-          only: as/fix-audiusd-ci
+          only: main
   - test:
       name: test-mediorum
       context: Vercel
