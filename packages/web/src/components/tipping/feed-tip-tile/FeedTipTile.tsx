@@ -14,7 +14,6 @@ import {
   Button
 } from '@audius/harmony'
 import { ResizeObserver } from '@juggle/resize-observer'
-import { push as pushRoute } from 'connected-react-router'
 import { useDispatch, useSelector } from 'react-redux'
 import useMeasure from 'react-use-measure'
 
@@ -35,6 +34,7 @@ import {
 } from 'store/application/ui/userListModal/types'
 import { AppState } from 'store/types'
 import { NUM_FEED_TIPPERS_DISPLAYED } from 'utils/constants'
+import { push } from 'utils/navigation'
 
 import styles from './FeedTipTile.module.css'
 const { beginTip, fetchRecentTips, setShowTip } = tippingActions
@@ -219,7 +219,7 @@ export const FeedTipTile = () => {
 
   const handleClick = useCallback(() => {
     if (tipToDisplay) {
-      dispatch(pushRoute(`/${usersMap[tipToDisplay.receiver_id].handle}`))
+      dispatch(push(`/${usersMap[tipToDisplay.receiver_id].handle}`))
     }
   }, [dispatch, usersMap, tipToDisplay])
 

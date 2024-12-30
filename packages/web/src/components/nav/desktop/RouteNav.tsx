@@ -7,8 +7,9 @@ import {
   IconCaretRight,
   useTheme
 } from '@audius/harmony'
-import { goBack, goForward } from 'connected-react-router'
 import { useDispatch } from 'react-redux'
+
+import { goBack, goForward } from 'utils/navigation'
 
 export const RouteNav = () => {
   const dispatch = useDispatch()

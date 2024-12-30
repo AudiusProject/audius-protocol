@@ -9,7 +9,7 @@ export type Entry<EntryT extends Metadata = Metadata> = {
 }
 
 export type EntryMap<EntryT extends Metadata = Metadata> = {
-  [id: string]: Entry<EntryT>
+  [id: string]: EntryT
 }
 
 export type EntriesByKind<EntryT extends Metadata = Metadata> = {

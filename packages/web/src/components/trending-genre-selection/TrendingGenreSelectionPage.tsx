@@ -10,11 +10,11 @@ import {
   TRENDING_GENRES,
   route
 } from '@audius/common/utils'
-import { push as pushRoute } from 'connected-react-router'
 import { connect } from 'react-redux'
 import { Dispatch } from 'redux'
 
 import { AppState } from 'store/types'
+import { push } from 'utils/navigation'
 
 import TrendingGenreSelectionPage from './components/TrendingGenreSelectionPage'
 const { TRENDING_PAGE } = route
@@ -66,7 +66,7 @@ function mapDispatchToProps(dispatch: Dispatch) {
       dispatch(trendingPageActions.setTrendingGenre(genre)),
     setTrendingTimeRange: (timeRange: TimeRange) =>
       dispatch(trendingPageActions.setTrendingTimeRange(timeRange)),
-    goToTrending: () => dispatch(pushRoute(TRENDING_PAGE)),
+    goToTrending: () => dispatch(push(TRENDING_PAGE)),
     resetAllTrending: () => {
       dispatch(trendingWeekActions.reset())
       dispatch(trendingMonthActions.reset())

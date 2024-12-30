@@ -1,7 +1,7 @@
 import { useTheme } from '@emotion/react'
 
-import { Flex, Text } from 'components'
-import { IconTokenSilver, IconVerified } from 'icons'
+import { Flex, Text } from '~harmony/components'
+import { IconTokenSilver, IconVerified } from '~harmony/icons'
 
 export function BackgroundColorExample() {
   const theme = useTheme()

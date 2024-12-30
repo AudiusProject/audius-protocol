@@ -77,7 +77,7 @@ import RemixesPage from 'pages/remixes-page/RemixesPage'
 import RepostsPage from 'pages/reposts-page/RepostsPage'
 import { RequiresUpdate } from 'pages/requires-update/RequiresUpdate'
 import SavedPage from 'pages/saved-page/SavedPage'
-import { SearchPageV2 } from 'pages/search-page-v2/SearchPageV2'
+import { SearchPage } from 'pages/search-page/SearchPage'
 import SettingsPage from 'pages/settings-page/SettingsPage'
 import { SubPage } from 'pages/settings-page/components/mobile/SettingsPage'
 import SmartCollectionPage from 'pages/smart-collection/SmartCollectionPage'
@@ -691,7 +691,7 @@ class WebPlayer extends Component {
                         }}
                       />
                     ) : (
-                      <SearchPageV2 />
+                      <SearchPage />
                     )
                   }}
                 />

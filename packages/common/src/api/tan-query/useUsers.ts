@@ -6,7 +6,7 @@ import { useAppContext } from '~/context/appContext'
 import { ID } from '~/models/Identifiers'
 import { Kind } from '~/models/Kind'
 import { addEntries } from '~/store/cache/actions'
-import { EntryMap } from '~/store/cache/types'
+import { EntriesByKind } from '~/store/cache/types'
 import { encodeHashId } from '~/utils/hashIds'
 
 import { QUERY_KEYS } from './queryKeys'
@@ -33,15 +33,12 @@ export const useUsers = (userIds: ID[], config?: Config) => {
 
       // Sync users data to Redux
       if (users?.length) {
-        const entries: Partial<Record<Kind, EntryMap>> = {
+        const entries: EntriesByKind = {
           [Kind.USERS]: {}
         }
 
         users.forEach((user) => {
-          entries[Kind.USERS]![user.user_id] = {
-            id: user.user_id,
-            metadata: user
-          }
+          entries[Kind.USERS]![user.user_id] = user
         })
 
         dispatch(addEntries(entries, undefined, undefined, 'react-query'))

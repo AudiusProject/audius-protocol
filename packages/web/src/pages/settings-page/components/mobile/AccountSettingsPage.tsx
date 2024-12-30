@@ -16,7 +16,6 @@ import {
   IconComponent,
   useTheme
 } from '@audius/harmony'
-import { push as pushRoute } from 'connected-react-router'
 import { debounce } from 'lodash'
 import { useDispatch, useSelector } from 'react-redux'
 
@@ -26,6 +25,7 @@ import MobilePageContainer from 'components/mobile-page-container/MobilePageCont
 import { ToastContext } from 'components/toast/ToastContext'
 import { useProfilePicture } from 'hooks/useProfilePicture'
 import SignOutModal from 'pages/settings-page/components/mobile/SignOutModal'
+import { push } from 'utils/navigation'
 
 import styles from './AccountSettingsPage.module.css'
 import settingsPageStyles from './SettingsPage.module.css'
@@ -143,7 +143,7 @@ const AccountSettingsPage = () => {
   const { toast } = useContext(ToastContext)
 
   const goToRoute = useCallback(
-    (route: string) => dispatch(pushRoute(route)),
+    (route: string) => dispatch(push(route)),
     [dispatch]
   )
 

@@ -13,10 +13,10 @@ import {
   formatUSDCWeiToUSDString,
   Nullable
 } from '@audius/common/utils'
-import { push } from 'connected-react-router'
 import { capitalize } from 'lodash'
 import { useDispatch } from 'react-redux'
 
+import { push } from 'utils/navigation'
 import { useSelector } from 'utils/reducer'
 
 import { EntityLink } from './components/EntityLink'

@@ -2,8 +2,9 @@ import { useCallback } from 'react'
 
 import { User } from '@audius/common/models'
 import { Nullable, route } from '@audius/common/utils'
-import { push } from 'connected-react-router'
 import { useDispatch } from 'react-redux'
+
+import { push } from 'utils/navigation'
 
 const { profilePage } = route
 

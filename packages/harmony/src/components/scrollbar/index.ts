@@ -1,2 +1,2 @@
 export { Scrollbar } from './Scrollbar'
-export { ScrollbarProps } from './types'
+export { type ScrollbarProps } from './types'

@@ -2,10 +2,10 @@ import { SearchCategory, SearchFilters } from '@audius/common/api'
 import type { ID } from '@audius/common/models'
 import { convertGenreLabelToValue, route } from '@audius/common/utils'
 import { Genre } from '@audius/sdk'
-import { push as pushRoute } from 'connected-react-router'
 import { Location } from 'history'
 import { stringifyUrl } from 'query-string'
 import { matchPath } from 'react-router'
+import { push } from 'redux-first-history'
 
 import { env } from 'services/env'
 
@@ -87,29 +87,18 @@ export const profilePageAiAttributedTracks = (handle: string) => {
   return `${profilePage(handle)}/ai`
 }
 
-export const searchResultsPage = (query: string) => {
-  return `/search/${query}`
-}
-
-export const fullSearchResultsPage = (query: string) => {
-  return `${BASE_URL}${searchResultsPage(query)}`
-}
-
-export const searchResultsPageV2 = (
-  category: SearchCategory,
-  query: string
-) => {
+export const searchResultsPage = (category: SearchCategory, query: string) => {
   if (category === 'all') {
     return `/search?query=${query}`
   }
   return `/search/${category}/?query=${query}`
 }
 
-export const fullSearchResultsPageV2 = (
+export const fullSearchResultsPage = (
   category: SearchCategory,
   query: string
 ) => {
-  return `${BASE_URL}${searchResultsPageV2(category, query)}`
+  return `${BASE_URL}${searchResultsPage(category, query)}`
 }
 
 export const exploreMoodPlaylistsPage = (mood: string) => {
@@ -181,7 +170,7 @@ export const pushWindowRoute = (route: string) => {
 export const pushUniqueRoute = (location: Location, route: string) => {
   const pathname = getPathname(location)
   if (route !== pathname) {
-    return pushRoute(route)
+    return push(route)
   }
   return { type: '' }
 }

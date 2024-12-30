@@ -1,2 +1,5 @@
 export { TokenAmountInput } from './TokenAmountInput'
-export { TokenAmountInputProps, TokenAmountInputChangeHandler } from './types'
+export {
+  type TokenAmountInputProps,
+  type TokenAmountInputChangeHandler
+} from './types'

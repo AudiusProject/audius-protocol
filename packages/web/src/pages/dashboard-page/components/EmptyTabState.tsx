@@ -3,11 +3,11 @@ import { useCallback } from 'react'
 import { Name } from '@audius/common/models'
 import { route } from '@audius/common/utils'
 import { Button, Flex, IconAlbum, IconNote, Text } from '@audius/harmony'
-import { push as pushRoute } from 'connected-react-router'
 import { useDispatch } from 'react-redux'
 import { Link } from 'react-router-dom'
 
 import { track, make } from 'services/analytics'
+import { push as pushRoute } from 'utils/navigation'
 
 const { UPLOAD_ALBUM_PAGE, UPLOAD_PAGE } = route
 

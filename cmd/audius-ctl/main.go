@@ -45,7 +45,7 @@ func main() {
 
 	rootCmd.Flags().BoolVarP(&displayVersion, "version", "v", false, "Display version info")
 	rootCmd.PersistentFlags().BoolVar(&debugLogging, "debug", false, "Print debug logs in console")
-	rootCmd.AddCommand(configCmd, devnetCmd, downCmd, infraCmd, jumpCmd, registerCmd, restartCmd, sbCmd, statusCmd, upCmd)
+	rootCmd.AddCommand(configCmd, devnetCmd, downCmd, jumpCmd, registerCmd, restartCmd, sbCmd, statusCmd, upCmd)
 	registerCmd.Hidden = true // Hidden as the command is currently only for local devnet registration
 
 	// Handle interrupt/sigterm to mention logfile

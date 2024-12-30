@@ -17,7 +17,7 @@ import ReactDOM from 'react-dom'
 import { animated, useTransition } from 'react-spring'
 import { useEffectOnce } from 'react-use'
 
-import { ModalState } from 'utils/modalState'
+import { ModalState } from '~harmony/utils/modalState'
 
 import { useHotkeys, useScrollLock, useClickOutside } from '../../hooks'
 import { IconClose } from '../../icons'

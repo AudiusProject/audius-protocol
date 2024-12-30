@@ -1,2 +1,2 @@
 export { CompletionCheck } from './CompletionCheck'
-export { CompletionCheckProps } from './types'
+export { type CompletionCheckProps } from './types'

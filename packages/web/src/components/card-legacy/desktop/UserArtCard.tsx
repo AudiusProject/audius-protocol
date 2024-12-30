@@ -5,7 +5,6 @@ import { SquareSizes, ID } from '@audius/common/models'
 import { cacheUsersSelectors } from '@audius/common/store'
 import { formatCount, route } from '@audius/common/utils'
 import cn from 'classnames'
-import { push as pushRoute } from 'connected-react-router'
 import { connect } from 'react-redux'
 import { Dispatch } from 'redux'
 
@@ -22,6 +21,7 @@ import {
   UserListEntityType
 } from 'store/application/ui/userListModal/types'
 import { AppState } from 'store/types'
+import { push } from 'utils/navigation'
 import { withNullGuard } from 'utils/withNullGuard'
 
 import styles from './UserArtCard.module.css'
@@ -127,7 +127,7 @@ function mapDispatchToProps(dispatch: Dispatch) {
         })
       ),
     setModalVisibility: () => dispatch(setVisibility(true)),
-    goToRoute: (route: string) => dispatch(pushRoute(route))
+    goToRoute: (route: string) => dispatch(push(route))
   }
 }
 

@@ -52,7 +52,6 @@ import {
   playerActions
 } from '@audius/common/store'
 import { formatUrlName, Uid, Nullable, route } from '@audius/common/utils'
-import { push as pushRoute, replace } from 'connected-react-router'
 import { UnregisterCallback } from 'history'
 import { connect } from 'react-redux'
 import { withRouter, RouteComponentProps } from 'react-router-dom'
@@ -70,6 +69,7 @@ import {
 } from 'store/application/ui/userListModal/types'
 import { getLocationPathname } from 'store/routing/selectors'
 import { AppState } from 'store/types'
+import { push, replace } from 'utils/navigation'
 import { getPathname } from 'utils/route'
 import { parseCollectionRoute } from 'utils/route/collectionRouteParser'
 import { getCollectionPageSEOFields } from 'utils/seo'
@@ -377,7 +377,7 @@ class CollectionPage extends Component<
 
     const { permalink, collectionId } = params
 
-    // Need typecast as can't set type via connected-react-router, see https://github.com/reach/router/issues/414
+    // Need typecast as can't set type via redux-first-history, see https://github.com/reach/router/issues/414
     const locationState = this.props.location.state as { forceFetch?: boolean }
     const forceFetch = locationState?.forceFetch
 
@@ -892,7 +892,7 @@ function mapDispatchToProps(dispatch: Dispatch) {
       dispatch(tracksActions.fetchLineupMetadatas(0, 200, false, undefined)),
     resetCollection: (collectionUid: string, userUid: string) =>
       dispatch(collectionActions.resetCollection(collectionUid, userUid)),
-    goToRoute: (route: string) => dispatch(pushRoute(route)),
+    goToRoute: (route: string) => dispatch(push(route)),
     replaceRoute: (route: string) => dispatch(replace(route)),
     play: (uid?: string, options: { isPreview?: boolean } = {}) =>
       dispatch(tracksActions.play(uid, options)),

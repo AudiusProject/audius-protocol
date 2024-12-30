@@ -1,6 +1,6 @@
 import type { CSSObject } from '@emotion/react'
 
-import { IconInstagram, IconTikTok, IconTwitter } from 'icons'
+import { IconInstagram, IconTikTok, IconTwitter } from '~harmony/icons'
 
 import { Button } from '../Button/Button'
 import type { ButtonProps } from '../Button/types'

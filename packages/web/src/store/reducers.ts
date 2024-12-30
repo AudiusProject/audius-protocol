@@ -3,10 +3,8 @@ import {
   remoteConfigReducer as remoteConfig,
   reducers as clientStoreReducers
 } from '@audius/common/store'
-import { connectRouter } from 'connected-react-router'
-import { History } from 'history'
 import localForage from 'localforage'
-import { combineReducers } from 'redux'
+import { combineReducers, Reducer } from 'redux'
 
 import backend from 'common/store/backend/reducer'
 import signOnReducer from 'common/store/pages/signon/reducer'
@@ -28,8 +26,8 @@ import userListModal from 'store/application/ui/userListModal/slice'
 import dragndrop from 'store/dragndrop/slice'
 import error from 'store/errors/reducers'
 
-const createRootReducer = (routeHistory: History) => {
-  const commonStoreReducers = clientStoreReducers(localForage, routeHistory)
+const createRootReducer = (routerReducer: Reducer) => {
+  const commonStoreReducers = clientStoreReducers(localForage)
 
   return combineReducers({
     // Common store
@@ -43,7 +41,7 @@ const createRootReducer = (routeHistory: History) => {
     // (End common store)
 
     // Router
-    router: connectRouter(routeHistory),
+    router: routerReducer,
 
     // Account
     passwordReset,

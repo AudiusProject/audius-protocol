@@ -16,7 +16,6 @@ import {
   NotificationUsersPageState,
   RepostsPageState
 } from '@audius/common/store'
-import { RouterState } from 'connected-react-router'
 
 import SignOnPageState from 'common/store/pages/signon/types'
 import { SearchAiBarState } from 'common/store/search-ai-bar/types'
@@ -30,6 +29,7 @@ import DeletedPageReducer from 'pages/deleted-page/store/slice'
 import VisualizerReducer from 'pages/visualizer/store/slice'
 import AppCTAModalReducer from 'store/application/ui/app-cta-modal/slice'
 import { ErrorState } from 'store/errors/reducers'
+import type { RouterState } from 'utils/navigation'
 
 import { BackendState } from '../common/store/backend/types'
 
