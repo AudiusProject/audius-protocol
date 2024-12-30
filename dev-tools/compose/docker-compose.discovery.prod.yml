@@ -196,7 +196,5 @@ services:
     build:
       dockerfile: ${PROJECT_ROOT}/monitoring/healthz/Dockerfile
       context: ${PROJECT_ROOT}/monitoring/healthz
-    ports:
-      - "5173:5173"
     profiles:
-      - discovery
+      - noop
