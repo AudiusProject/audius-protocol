@@ -1,0 +1,8 @@
+.modalBody div:not(.modalHeader) {
+  display: flex;
+  justify-content: center;
+}
+
+.modalBody iframe {
+  margin: 32px 0;
+}

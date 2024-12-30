@@ -76,6 +76,7 @@ import ProfilePage from 'pages/profile-page/ProfilePage'
 import RemixesPage from 'pages/remixes-page/RemixesPage'
 import RepostsPage from 'pages/reposts-page/RepostsPage'
 import { RequiresUpdate } from 'pages/requires-update/RequiresUpdate'
+import { RewardsPage } from 'pages/rewards-page/RewardsPage'
 import SavedPage from 'pages/saved-page/SavedPage'
 import { SearchPageV2 } from 'pages/search-page-v2/SearchPageV2'
 import SettingsPage from 'pages/settings-page/SettingsPage'
@@ -123,6 +124,7 @@ const {
   HISTORY_PAGE,
   DASHBOARD_PAGE,
   AUDIO_PAGE,
+  REWARDS_PAGE,
   AUDIO_TRANSACTIONS_PAGE,
   UPLOAD_PAGE,
   UPLOAD_ALBUM_PAGE,
@@ -765,6 +767,12 @@ class WebPlayer extends Component {
                   path={AUDIO_PAGE}
                   isMobile={isMobile}
                   component={AudioRewardsPage}
+                />
+                <Route
+                  exact
+                  path={REWARDS_PAGE}
+                  isMobile={isMobile}
+                  component={RewardsPage}
                 />
                 <Route
                   exact
