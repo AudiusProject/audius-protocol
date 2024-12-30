@@ -354,6 +354,20 @@ services:
       service: solana-test-validator-build
     <<: *common
 
+  # Legacy
+  mediorum:
+    extends:
+      file: docker-compose.legacy.${DOCKERCOMPOSE_ENV_TYPE:-dev}.yml
+      service: storage
+    container_name: audius-protocol-mediorum
+    <<: *common
+
+  core:
+    extends:
+      file: docker-compose.legacy.${DOCKERCOMPOSE_ENV_TYPE:-dev}.yml
+      service: core
+    <<: *common
+
 networks:
   ddex-network:
 
