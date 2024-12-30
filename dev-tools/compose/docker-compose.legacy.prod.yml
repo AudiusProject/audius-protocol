@@ -34,7 +34,7 @@ services:
       - ${PROJECT_ROOT}/cmd/mediorum:/app
       - ${PROJECT_ROOT}/dev-tools:/tmp/dev-tools
     profiles:
-      - storage
+      - legacy
     depends_on:
       db:
         condition: service_healthy
@@ -60,3 +60,5 @@ services:
       args:
         git_sha: '${GIT_COMMIT}'
     restart: unless-stopped
+    profiles:
+      - legacy
