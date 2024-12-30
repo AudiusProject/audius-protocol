@@ -3,19 +3,31 @@ package pages
 import (
 	"fmt"
     "strings"
-	"github.com/AudiusProject/audius-protocol/pkg/core/db"
+    "time"
 )
 
 type UptimePageView struct {
-	Rollup         db.SlaRollup
-    Quota          int
-    Address        string
-    MyReport       db.SlaNodeReport
-	AllNodeReports []db.SlaNodeReport
-	RecentRollups  []db.GetRecentRollupsForNodeRow
-    ValidatorMap   map[string]db.CoreValidator
-    AvgBlockTimeMs int
-    NodeExempt     bool
+    ActiveNodeUptime NodeUptime
+    ValidatorUptimes []*NodeUptime
+    AvgBlockTimeMs   int
+}
+
+type NodeUptime struct {
+	Endpoint        string
+    Address         string
+    IsValidator     bool
+    ActiveReport    ProofOfWorkReport
+	ReportHistory   []ProofOfWorkReport
+}
+
+type ProofOfWorkReport struct {
+    SlaRollupId    int32
+	TxHash         string
+	BlockStart     int64
+	BlockEnd       int64
+    BlocksProposed int32
+    Quota          int32
+	Time           time.Time
 }
 
 const (
@@ -27,12 +39,11 @@ const (
     slaExempt = "#a9a9a9"
 )
 
-func createUptimeColorForRollup(rollup db.GetRecentRollupsForNodeRow, numValidators int, exempt bool) string {
-    target := int(rollup.BlockEnd.Int64 - rollup.BlockStart.Int64) / numValidators
-    return meetsQuotaColor(target, int(rollup.BlocksProposed.Int32), exempt)
+func createUptimeColorForRollup(report ProofOfWorkReport, exempt bool) string {
+    return meetsQuotaColor(report.Quota, report.BlocksProposed, exempt)
 }
 
-func meetsQuotaColor(quota, proposed int, exempt bool) string {
+func meetsQuotaColor(quota, proposed int32, exempt bool) string {
     if exempt {
         return slaExempt
     }
@@ -46,7 +57,7 @@ func meetsQuotaColor(quota, proposed int, exempt bool) string {
     }
 }
 
-func meetsQuotaText(quota, proposed int) string {
+func meetsQuotaText(quota, proposed int32) string {
     faultRatio := float32(proposed) / float32(quota)
     if faultRatio >= slaMeetsThreshold {
         return "Met"
@@ -63,20 +74,31 @@ func strippedEndpoint(endpoint string) string {
     return res
 }
 
-css uptimeBar(rollup db.GetRecentRollupsForNodeRow, numValidators int, exempt bool) {
+css uptimeBar(report ProofOfWorkReport, exempt bool) {
     width: 16px;
     height: 80px;
     display: inline-block;
     margin: 3px;
     border-radius: 0.5rem;
-    background-color: { templ.SafeCSSProperty(createUptimeColorForRollup(rollup, numValidators, exempt)) };
+    background-color: { templ.SafeCSSProperty(createUptimeColorForRollup(report, exempt)) };
 }
 
-css reportTableRow(blockQuota, blocksProposed int) {
+css uptimeBarMini(report ProofOfWorkReport) {
+    width: 5px;
+    height: 18px;
+    display: inline-block;
+    margin: 1px;
+    border-radius: 0.5rem;
+    background-color: { templ.SafeCSSProperty(createUptimeColorForRollup(report, false)) };
+    vertical-align: middle;
+}
+
+
+css reportTableRow(blockQuota, blocksProposed int32) {
     background-color: { templ.SafeCSSProperty(meetsQuotaColor(blockQuota, blocksProposed, false)) };
 }
 
-css nodeSlaStatusBox(quota, proposed int, exempt bool) {
+css nodeSlaStatusBox(quota, proposed int32, exempt bool) {
     background-color: { templ.SafeCSSProperty(meetsQuotaColor(quota, proposed, exempt)) };
 }
 
@@ -127,30 +149,30 @@ templ (c *Pages) UptimePageHTML(props *UptimePageView) {
 	@c.layout.SiteFrame() {
         @staticStyles()
         <ul class="m-2">
-            for _, r := range props.RecentRollups {
-                <li class={ templ.KV("selectedUptimeBar", props.Rollup.ID == r.ID), uptimeBar(r, len(props.ValidatorMap), props.NodeExempt) }>
-                    <a class="reportLink" href={ templ.URL(fmt.Sprintf("/console/uptime/%d", r.ID)) }></a>
-                    <span class="uptimebarTooltip">{ r.Time.Time.Format("06-01-02 15:04:05 MST") }</span>
+            for _, r := range props.ActiveNodeUptime.ReportHistory {
+                <li class={ templ.KV("selectedUptimeBar", props.ActiveNodeUptime.ActiveReport.SlaRollupId == r.SlaRollupId), uptimeBar(r, !props.ActiveNodeUptime.IsValidator) }>
+                    <a class="reportLink" href={ templ.URL(fmt.Sprintf("/console/uptime/%d", r.SlaRollupId)) }></a>
+                    <span class="uptimebarTooltip">{ r.Time.Format("06-01-02 15:04:05 MST") }</span>
                 </li>
             }
         </ul>
 
-        if props.Rollup.BlockEnd <= int64(0) {
-            <h1 class="text-xl"> No SLA Report with ID { fmt.Sprintf("%d", props.Rollup.ID) }. </h1>
+        if props.ActiveNodeUptime.ActiveReport.BlockEnd <= int64(0) {
+            <h1 class="text-xl"> No SLA Rollup with requested ID. </h1>
         } else {
             <h1 class="text-xl">
-                SLA Rollup #{ fmt.Sprintf("%d", props.Rollup.ID) } For Blocks { fmt.Sprintf("%d - %d", props.Rollup.BlockStart, props.Rollup.BlockEnd) }
+                SLA Rollup #{ fmt.Sprintf("%d", props.ActiveNodeUptime.ActiveReport.SlaRollupId) } For Blocks { fmt.Sprintf("%d - %d", props.ActiveNodeUptime.ActiveReport.BlockStart, props.ActiveNodeUptime.ActiveReport.BlockEnd) }
             </h1>
             <h3 class="text-sm">
-                TX: <a href={ templ.URL(fmt.Sprintf("/console/tx/%s", props.Rollup.TxHash)) }>{ props.Rollup.TxHash }</a>
+                TX: <a href={ templ.URL(fmt.Sprintf("/console/tx/%s", props.ActiveNodeUptime.ActiveReport.TxHash)) }>{ props.ActiveNodeUptime.ActiveReport.TxHash }</a>
             </h3>
 
             <div class="flex flex-row text-center p-8 statsBar">
                 <div class="basis-1/5 rounded-md bg-slate-100 py-8 mx-1">
                     <dt class="text-lg">
-                        { props.Rollup.Time.Time.Format("06-01-02") }
+                        { props.ActiveNodeUptime.ActiveReport.Time.Format("06-01-02") }
                         <br />
-                        { props.Rollup.Time.Time.Format("15:04:05 MST") }
+                        { props.ActiveNodeUptime.ActiveReport.Time.Format("15:04:05 MST") }
                     </dt>
                     <dd class="text-sm">Date Finalized</dd>
                 </div>
@@ -159,19 +181,19 @@ templ (c *Pages) UptimePageHTML(props *UptimePageView) {
                     <dd class="text-sm">Avg Block Time</dd>
                 </div>
                 <div class="basis-1/5 rounded-md bg-slate-100 py-8 mx-1">
-                    <dt class="text-4xl">{ fmt.Sprintf("%d", (props.Rollup.BlockEnd - props.Rollup.BlockStart)) }</dt>
+                    <dt class="text-4xl">{ fmt.Sprintf("%d", (props.ActiveNodeUptime.ActiveReport.BlockEnd - props.ActiveNodeUptime.ActiveReport.BlockStart) + 1) }</dt>
                     <dd class="text-sm">Total Blocks in Rollup</dd>
                 </div>
-                <div class={ "basis-1/5 rounded-md py-8 mx-1", nodeSlaStatusBox(props.Quota, int(props.MyReport.BlocksProposed), props.NodeExempt)}>
-                    if props.NodeExempt {
+                <div class={ "basis-1/5 rounded-md py-8 mx-1", nodeSlaStatusBox(props.ActiveNodeUptime.ActiveReport.Quota, props.ActiveNodeUptime.ActiveReport.BlocksProposed, !props.ActiveNodeUptime.IsValidator)}>
+                    if !props.ActiveNodeUptime.IsValidator {
                         <dt class="text-4xl">N/A</dt>
                     } else {
-                        <dt class="text-4xl">{ fmt.Sprintf("%d", props.MyReport.BlocksProposed) }</dt>
+                        <dt class="text-4xl">{ fmt.Sprintf("%d", props.ActiveNodeUptime.ActiveReport.BlocksProposed) }</dt>
                     }
                     <dd class="text-sm">Blocks Proposed by Me</dd>
                 </div>
                 <div class="basis-1/5 rounded-md bg-slate-100 py-8 mx-1">
-                    <dt class="text-4xl">{ fmt.Sprintf("%d", props.Quota) }</dt>
+                    <dt class="text-4xl">{ fmt.Sprintf("%d", props.ActiveNodeUptime.ActiveReport.Quota) }</dt>
                     <dd class="text-sm">Block Quota</dd>
                 </div>
             </div>
@@ -182,20 +204,32 @@ templ (c *Pages) UptimePageHTML(props *UptimePageView) {
                     <th>Quota</th>
                     <th>Proposed</th>
                     <th>SLA</th>
+                    <th>History</th>
                 </tr>
-                for _, rep := range props.AllNodeReports {
-                    @validatorRowReport(props.Rollup.ID, props.Quota, int(rep.BlocksProposed), props.ValidatorMap[rep.Address])
+                for _, up := range props.ValidatorUptimes {
+                    @validatorRowReport(up)
                 }
             </table>
         }
 	}
 }
 
-templ validatorRowReport(rollupID int32, blockQuota, blocksProposed int, node db.CoreValidator) {
-    <tr class={ reportTableRow(blockQuota, blocksProposed) }>
-        <td><a href={ templ.URL(fmt.Sprintf("%s/console/uptime/%d", node.Endpoint, rollupID)) }>{ strippedEndpoint(node.Endpoint) }</a></td>
-        <td>{ fmt.Sprintf("%d", blockQuota) }</td>
-        <td>{ fmt.Sprintf("%d", blocksProposed) }</td>
-        <td>{ meetsQuotaText(blockQuota, blocksProposed) }</td>
+templ validatorRowReport(up *NodeUptime) {
+    <tr class={ reportTableRow(up.ActiveReport.Quota, up.ActiveReport.BlocksProposed) }>
+        <td><a href={ templ.URL(fmt.Sprintf("%s/console/uptime/%d", up.Endpoint, up.ActiveReport.SlaRollupId)) }>{ strippedEndpoint(up.Endpoint) }</a></td>
+        <td>{ fmt.Sprintf("%d", up.ActiveReport.Quota) }</td>
+        <td>{ fmt.Sprintf("%d", up.ActiveReport.BlocksProposed) }</td>
+        <td>{ meetsQuotaText(up.ActiveReport.Quota, up.ActiveReport.BlocksProposed) }</td>
+        <td class="bg-white">
+            for _, h := range up.ReportHistory {
+                @validatorMiniHistory(h, up.Endpoint)
+            }
+        </td>
     </tr>
+}
+
+templ validatorMiniHistory(report ProofOfWorkReport, endpoint string) {
+    <li class={ uptimeBarMini(report) }>
+        <a class="reportLink" href={ templ.URL(fmt.Sprintf("%s/console/uptime/%d", endpoint, report.SlaRollupId)) }></a>
+    </li>
 }
