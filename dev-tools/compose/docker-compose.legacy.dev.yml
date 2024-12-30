@@ -1,9 +1,5 @@
 version: '3.9'
 
-# Defines "prod" content node. Doesn't use turbo yet, but builds with all dependencies baked in.
-# This is used via audius-compose to build+push the prod image.
-# A different docker-compose.yml definition in audius-docker-compose is used to run the prod image with a different entrypoint.
-
 services:
   storage:
     image: busybox:1.31.1
