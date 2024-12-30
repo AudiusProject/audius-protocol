@@ -6,7 +6,6 @@ import {
   useChangeEmailFormConfiguration
 } from '@audius/common/hooks'
 import { Button, Flex, IconArrowRight, Paper, Text } from '@audius/harmony'
-import { goBack } from 'connected-react-router'
 import { Form, Formik, useFormikContext } from 'formik'
 
 import {
@@ -16,6 +15,7 @@ import {
 } from 'components/change-email/ChangeEmailModal'
 import NavContext, { LeftPreset } from 'components/nav/mobile/NavContext'
 import { ToastContext } from 'components/toast/ToastContext'
+import { goBack } from 'utils/navigation'
 
 import { SlidingPages } from './SlidingPages'
 

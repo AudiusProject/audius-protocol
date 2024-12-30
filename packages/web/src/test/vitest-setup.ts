@@ -24,7 +24,7 @@ vi.mock('@audius/sdk', async (importOriginal) => {
   }
 })
 
-vi.mock('connected-react-router', async (importOriginal) => {
+vi.mock('redux-first-history', async (importOriginal) => {
   const originalImport: any = await importOriginal()
   return { ...originalImport, connectRouter: vi.fn() }
 })

@@ -15,7 +15,6 @@ import {
   Scrollbar,
   Divider
 } from '@audius/harmony'
-import { push as pushRoute } from 'connected-react-router'
 import { useDispatch } from 'react-redux'
 import { useToggle } from 'react-use'
 
@@ -24,6 +23,7 @@ import ArtistChip from 'components/artist/ArtistChip'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import { MountPlacement } from 'components/types'
 import { useIsMobile } from 'hooks/useIsMobile'
+import { push as pushRoute } from 'utils/navigation'
 
 const messages = {
   title: 'Comment Settings',

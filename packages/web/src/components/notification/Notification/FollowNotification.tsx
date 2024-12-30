@@ -5,7 +5,6 @@ import {
   FollowNotification as FollowNotificationType
 } from '@audius/common/store'
 import { route } from '@audius/common/utils'
-import { push } from 'connected-react-router'
 import { useDispatch } from 'react-redux'
 
 import { useIsMobile } from 'hooks/useIsMobile'
@@ -17,6 +16,7 @@ import {
   UserListEntityType,
   UserListType
 } from 'store/application/ui/userListModal/types'
+import { push } from 'utils/navigation'
 import { useSelector } from 'utils/reducer'
 
 import { NotificationBody } from './components/NotificationBody'

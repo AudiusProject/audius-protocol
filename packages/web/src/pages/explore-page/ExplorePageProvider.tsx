@@ -1,12 +1,12 @@
 import { ComponentType, useEffect } from 'react'
 
 import { explorePageSelectors, explorePageActions } from '@audius/common/store'
-import { push as pushRoute } from 'connected-react-router'
 import { connect } from 'react-redux'
 import { withRouter, RouteComponentProps } from 'react-router-dom'
 import { Dispatch } from 'redux'
 
 import { AppState } from 'store/types'
+import { push } from 'utils/navigation'
 import { createSeoDescription } from 'utils/seo'
 
 import { ExplorePageProps as DesktopExplorePageProps } from './components/desktop/ExplorePage'
@@ -74,7 +74,7 @@ function makeMapStateToProps() {
 function mapDispatchToProps(dispatch: Dispatch) {
   return {
     fetchExplore: () => dispatch(fetchExplore()),
-    goToRoute: (route: string) => dispatch(pushRoute(route))
+    goToRoute: (route: string) => dispatch(push(route))
   }
 }
 

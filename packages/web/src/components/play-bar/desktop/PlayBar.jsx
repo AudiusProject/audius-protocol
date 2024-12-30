@@ -22,7 +22,6 @@ import {
 } from '@audius/common/store'
 import { Genre, route } from '@audius/common/utils'
 import { removeHotkeys, setupHotkeys, Scrubber } from '@audius/harmony'
-import { push as pushRoute } from 'connected-react-router'
 import { connect } from 'react-redux'
 
 import { make } from 'common/store/analytics/actions'
@@ -35,6 +34,7 @@ import ShuffleButtonProvider from 'components/play-bar/shuffle-button/ShuffleBut
 import { audioPlayer } from 'services/audio-player'
 import { getLineupSelectorForRoute } from 'store/lineup/lineupForRoute'
 import { getLocation } from 'store/routing/selectors'
+import { push } from 'utils/navigation'
 import { collectibleDetailsPage } from 'utils/route'
 import { isMatrix, shouldShowDark } from 'utils/theme/theme'
 
@@ -531,7 +531,7 @@ const mapDispatchToProps = (dispatch) => ({
   saveTrack: (trackId) => dispatch(saveTrack(trackId, FavoriteSource.PLAYBAR)),
   unsaveTrack: (trackId) =>
     dispatch(unsaveTrack(trackId, FavoriteSource.PLAYBAR)),
-  goToRoute: (route) => dispatch(pushRoute(route)),
+  goToRoute: (route) => dispatch(push(route)),
   record: (event) => dispatch(event)
 })
 

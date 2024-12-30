@@ -37,7 +37,6 @@ import {
   Paper
 } from '@audius/harmony'
 import cn from 'classnames'
-import { push as pushRoute } from 'connected-react-router'
 import { useDispatch, useSelector } from 'react-redux'
 
 import QRCode from 'assets/img/imageQR.png'
@@ -52,6 +51,7 @@ import { useWithMobileStyle } from 'hooks/useWithMobileStyle'
 import { getChallengeConfig } from 'pages/audio-rewards-page/config'
 import { copyToClipboard, getCopyableLink } from 'utils/clipboardUtil'
 import { CLAIM_REWARD_TOAST_TIMEOUT_MILLIS } from 'utils/constants'
+import { push as pushRoute } from 'utils/navigation'
 import { openTwitterLink } from 'utils/tweet'
 
 import ModalDrawer from '../ModalDrawer'

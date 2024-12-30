@@ -20,13 +20,13 @@ import {
   usePremiumContentPurchaseModal,
   cacheTracksSelectors
 } from '@audius/common/store'
-import { push as pushRoute } from 'connected-react-router'
 import { connect, useDispatch } from 'react-redux'
 import { Dispatch } from 'redux'
 
 import { useModalState } from 'common/hooks/useModalState'
 import { useRequiresAccountOnClick } from 'hooks/useRequiresAccount'
 import { AppState } from 'store/types'
+import { push } from 'utils/navigation'
 
 import TrackListItem, {
   TrackItemAction,
@@ -145,7 +145,7 @@ function mapStateToProps(state: AppState, ownProps: OwnProps) {
 
 function mapDispatchToProps(dispatch: Dispatch) {
   return {
-    goToRoute: (route: string) => dispatch(pushRoute(route)),
+    goToRoute: (route: string) => dispatch(push(route)),
     saveTrack: (trackId: ID) =>
       dispatch(saveTrack(trackId, FavoriteSource.TRACK_LIST)),
     unsaveTrack: (trackId: ID) =>

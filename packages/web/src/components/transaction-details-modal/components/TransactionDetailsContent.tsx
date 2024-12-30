@@ -18,7 +18,6 @@ import {
   IconLogoLinkByStripe as LogoStripeLink
 } from '@audius/harmony'
 import cn from 'classnames'
-import { push as pushRoute } from 'connected-react-router'
 import { useSelector, useDispatch } from 'react-redux'
 
 import { useSetVisibility } from 'common/hooks/useModalState'
@@ -28,6 +27,7 @@ import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import UserBadges from 'components/user-badges/UserBadges'
 import { getChallengeConfig } from 'pages/audio-rewards-page/config'
 import { AppState } from 'store/types'
+import { push } from 'utils/navigation'
 
 import { Block, BlockContainer } from './Block'
 import styles from './TransactionDetailsContent.module.css'
@@ -85,7 +85,7 @@ const UserDetails = ({ userId }: UserDetailsProps) => {
           className={styles.name}
           onClick={() => {
             setVisibility('TransactionDetails')(false)
-            dispatch(pushRoute(profilePage(usersMap[userId].handle)))
+            dispatch(push(profilePage(usersMap[userId].handle)))
           }}
         >
           <span>{usersMap[userId].name}</span>

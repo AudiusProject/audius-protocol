@@ -11,13 +11,13 @@ import {
 } from '@audius/common/store'
 import { route } from '@audius/common/utils'
 import { PopupMenuItem } from '@audius/harmony'
-import { push as pushRoute } from 'connected-react-router'
 import { connect } from 'react-redux'
 import { useNavigate } from 'react-router-dom-v5-compat'
 import { Dispatch } from 'redux'
 
 import * as embedModalActions from 'components/embed-modal/store/actions'
 import { AppState } from 'store/types'
+import { push } from 'utils/navigation'
 const { getUser } = cacheUsersSelectors
 const { profilePage, collectionPage } = route
 
@@ -196,7 +196,7 @@ function mapStateToProps(state: AppState, props: OwnProps) {
 
 function mapDispatchToProps(dispatch: Dispatch) {
   return {
-    goToRoute: (route: string) => dispatch(pushRoute(route)),
+    goToRoute: (route: string) => dispatch(push(route)),
     shareCollection: (playlistId: PlaylistId) =>
       dispatch(socialActions.shareCollection(playlistId, ShareSource.OVERFLOW)),
     saveCollection: (playlistId: PlaylistId) =>

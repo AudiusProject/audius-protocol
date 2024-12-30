@@ -6,7 +6,6 @@ import {
   CommentNotification as CommentNotificationType
 } from '@audius/common/store'
 import { IconMessage } from '@audius/harmony'
-import { push } from 'connected-react-router'
 import { useDispatch } from 'react-redux'
 
 import { useIsMobile } from 'hooks/useIsMobile'
@@ -16,6 +15,7 @@ import {
   setVisibility as openUserListModal
 } from 'store/application/ui/userListModal/slice'
 import { UserListType } from 'store/application/ui/userListModal/types'
+import { push } from 'utils/navigation'
 import { useSelector } from 'utils/reducer'
 
 import { EntityLink, useGoToEntity } from './components/EntityLink'

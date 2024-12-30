@@ -23,13 +23,13 @@ import {
 } from '@audius/common/store'
 import { Genre, Nullable, route } from '@audius/common/utils'
 import { PopupMenuItem } from '@audius/harmony'
-import { push as pushRoute } from 'connected-react-router'
 import { connect, useDispatch, useSelector } from 'react-redux'
 import { Dispatch } from 'redux'
 
 import * as embedModalActions from 'components/embed-modal/store/actions'
 import { ToastContext } from 'components/toast/ToastContext'
 import { AppState } from 'store/types'
+import { push } from 'utils/navigation'
 import { albumPage } from 'utils/route'
 
 const { profilePage } = route
@@ -363,7 +363,7 @@ function mapStateToProps(state: AppState) {
 
 function mapDispatchToProps(dispatch: Dispatch) {
   return {
-    goToRoute: (route: string) => dispatch(pushRoute(route)),
+    goToRoute: (route: string) => dispatch(push(route)),
     addTrackToPlaylist: (trackId: ID, playlistId: ID) =>
       dispatch(addTrackToPlaylist(trackId, playlistId)),
     shareTrack: (trackId: ID) =>

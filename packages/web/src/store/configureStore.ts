@@ -2,9 +2,9 @@ import { Name, ErrorLevel } from '@audius/common/models'
 import { chatMiddleware } from '@audius/common/store'
 import { composeWithDevToolsLogOnlyInProduction } from '@redux-devtools/extension'
 import { configureScope, addBreadcrumb } from '@sentry/browser'
-import { routerMiddleware } from 'connected-react-router'
 import { History } from 'history'
 import { createStore, applyMiddleware, Action, Store } from 'redux'
+import { createReduxHistoryContext } from 'redux-first-history'
 import createSagaMiddleware from 'redux-saga'
 import createSentryMiddleware from 'redux-sentry-middleware'
 import thunk from 'redux-thunk'
@@ -26,7 +26,7 @@ declare global {
   }
 }
 
-export type StoreType = ReturnType<typeof configureStore>
+export type StoreType = ReturnType<typeof configureStore>['store']
 type RootState = ReturnType<StoreType['getState']>
 
 // Can't send up the entire Redux state b/c it's too fat
@@ -98,6 +98,9 @@ export const configureStore = (
   isMobile: boolean,
   initialStoreState?: PartialDeep<AppState>
 ) => {
+  const { createReduxHistory, routerMiddleware, routerReducer } =
+    createReduxHistoryContext({ history })
+
   const onSagaError = (
     error: Error,
     errorInfo: {
@@ -135,7 +138,7 @@ export const configureStore = (
 
   const middlewares = applyMiddleware(
     chatMiddleware(audiusSdk),
-    routerMiddleware(history),
+    routerMiddleware,
     // Don't run sagas serverside
     ...(typeof window !== 'undefined' ? [sagaMiddleware] : []),
     sentryMiddleware,
@@ -149,7 +152,7 @@ export const configureStore = (
   })
 
   const store = createStore(
-    createRootReducer(history),
+    createRootReducer(routerReducer),
     // @ts-ignore - Initial state is just for test mocking purposes
     initialStoreState,
     composeEnhancers(middlewares)
@@ -159,5 +162,8 @@ export const configureStore = (
   if (typeof window !== 'undefined') {
     sagaMiddleware.run(rootSaga)
   }
-  return store
+
+  const reduxHistory = createReduxHistory(store)
+
+  return { store, history: reduxHistory }
 }

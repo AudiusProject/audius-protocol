@@ -11,10 +11,6 @@ import {
   playerSelectors
 } from '@audius/common/store'
 import { route } from '@audius/common/utils'
-import {
-  push as pushRoute,
-  replace as replaceRoute
-} from 'connected-react-router'
 import { connect } from 'react-redux'
 import { withRouter, matchPath } from 'react-router-dom'
 
@@ -22,6 +18,7 @@ import { HistoryContext } from 'app/HistoryProvider'
 import { make } from 'common/store/analytics/actions'
 import { openSignOn } from 'common/store/pages/signon/actions'
 import { useIsMobile } from 'hooks/useIsMobile'
+import { push, replace } from 'utils/navigation'
 import { getPathname } from 'utils/route'
 const { TRENDING_PAGE } = route
 const { makeGetCurrent } = queueSelectors
@@ -133,8 +130,8 @@ const mapDispatchToProps = (dispatch) => ({
   dispatch,
   openSignOn: (signIn) => dispatch(openSignOn(signIn)),
   resetFeedLineup: () => dispatch(feedActions.reset()),
-  goToRoute: (route) => dispatch(pushRoute(route)),
-  replaceRoute: (route) => dispatch(replaceRoute(route)),
+  goToRoute: (route) => dispatch(push(route)),
+  replaceRoute: (route) => dispatch(replace(route)),
   setFeedFilter: (filter) => dispatch(discoverPageAction.setFeedFilter(filter)),
 
   // Feed Lineup Actions

@@ -17,13 +17,13 @@ import {
   Skeleton,
   Text
 } from '@audius/harmony'
-import { push as pushRoute } from 'connected-react-router'
 import { useDispatch, useSelector } from 'react-redux'
 import { Link } from 'react-router-dom'
 import { useSearchParams } from 'react-router-dom-v5-compat'
 import { tracksActions } from '~/store/pages/track/lineup/actions'
 
 import { useHistoryContext } from 'app/HistoryProvider'
+import { push as pushRoute } from 'utils/navigation'
 
 import { CommentBlock } from './CommentBlock'
 import { CommentForm } from './CommentForm'
