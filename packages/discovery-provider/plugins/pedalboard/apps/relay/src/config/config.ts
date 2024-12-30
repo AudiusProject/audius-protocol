@@ -39,7 +39,7 @@ const readDotEnv = () => {
 }
 
 const defaultCoreEndpoint = (env: string): string => {
-  if (env === 'dev') return 'core-discovery-1:50051'
+  if (env === 'dev') return 'audiusd-1:50051'
   return 'core:50051'
 }
 

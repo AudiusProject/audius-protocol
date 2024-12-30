@@ -3,7 +3,7 @@ FROM golang:1.23-bullseye AS go-builder
 WORKDIR /app
 
 COPY go.mod go.sum ./
-RUN go mod graph | awk '{if ($1 !~ "@") print $2}' | xargs go get
+RUN go mod download
 
 COPY ./pkg ./pkg
 COPY ./cmd/audiusd/main.go ./cmd/audiusd/main.go

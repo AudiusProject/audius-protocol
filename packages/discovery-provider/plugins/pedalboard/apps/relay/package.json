@@ -3,9 +3,8 @@
   "version": "0.1.30",
   "private": true,
   "scripts": {
-    "build": "tsc && npm run build:copy-js",
-    "build:copy-js": "copyfiles -u 2 './src/core-sdk/**/*.js' './dist/core-sdk'",
-    "build:watch": "tsc --watch",
+    "build": "tsc && copyfiles -u 2 './src/core-sdk/**/*.js' './dist/core-sdk'",
+    "build:watch": "tsc --watch --preserveWatchOutput && copyfiles -u 2 './src/core-sdk/**/*.js' './dist/core-sdk'",
     "clean": "rm -rf dist",
     "dev": "concurrently \"npm:build:watch\" \"nodemon ./dist/index.js\"",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",

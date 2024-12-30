@@ -90,7 +90,7 @@ build-push-audiusd:
 	DOCKER_DEFAULT_PLATFORM=linux/amd64 docker build --build-arg GIT_SHA=$(AD_TAG) --push -t audius/audiusd:$(AD_TAG) -f ./cmd/audiusd/Dockerfile ./
 
 build-push-cpp:
-	docker buildx build --platform linux/amd64,linux/arm64 --push -t audius/cpp:latest -f ./cmd/audiusd/Dockerfile.cpp ./
+	docker buildx build --platform linux/amd64,linux/arm64 --push -t audius/cpp:latest -f ./cmd/audiusd/Dockerfile.deps ./
 
 
 .PHONY: force-release-stage force-release-foundation force-release-sps
@@ -202,7 +202,7 @@ bin/core-amd64: $(BUILD_SRCS)
 
 .PHONY: core-dev
 core-dev: gen
-	audius-compose up db core core-content-1 core-content-2 core-content-3 eth-ganache ingress
+	audius-compose up audiusd-1 audiusd-2 audiusd-3 audiusd-4 eth-ganache ingress
 
 .PHONY: core-test
 core-test: gen
@@ -244,4 +244,34 @@ core-livereload:
 release-aa-backfill:
 	@DOCKER_DEFAULT_PLATFORM=linux/amd64 docker build -t audius/audio-analysis-backfill:latest -f ./cmd/audio-analysis-backfill/Dockerfile .
 	@docker push audius/audio-analysis-backfill:latest
+
+.PHONY: static-deps
+static-deps:
+	@echo "Building linux/arm64 images"
+	audius-compose build eth-ganache poa-ganache
+	docker tag audius/eth-ganache:latest audius/eth-ganache:latest-arm
+	docker tag audius/poa-ganache:latest audius/poa-ganache:latest-arm
+	docker push audius/eth-ganache:latest-arm
+	docker push audius/poa-ganache:latest-arm
+
+	@echo "Building linux/amd64 images"
+	DOCKER_DEFAULT_PLATFORM=linux/amd64 audius-compose build eth-ganache poa-ganache
+	docker tag audius/eth-ganache:latest audius/eth-ganache:latest-amd
+	docker tag audius/poa-ganache:latest audius/poa-ganache:latest-amd
+	docker push audius/eth-ganache:latest-amd
+	docker push audius/poa-ganache:latest-amd
+
+	@echo "Creating multi-architecture manifest for poa-ganache..."
+	docker manifest create audius/poa-ganache:latest \
+		audius/poa-ganache:latest-amd \
+		audius/poa-ganache:latest-arm
+	docker manifest push audius/poa-ganache:latest
+	@echo "Pushed audius/poa-ganache:latest"
+
+	@echo "Creating multi-architecture manifest for eth-ganache..."
+	docker manifest create audius/eth-ganache:latest \
+		audius/eth-ganache:latest-amd \
+		audius/eth-ganache:latest-arm
+	docker manifest push audius/eth-ganache:latest
+	@echo "Pushed audius/eth-ganache:latest"
 

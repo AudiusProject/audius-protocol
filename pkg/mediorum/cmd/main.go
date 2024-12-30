@@ -40,12 +40,12 @@ func initClient() *loadtest.TestClient {
 			panic(err)
 		}
 	default:
-		hostNameTemplate := getenvWithDefault("hostNameTemplate", "http://localhost:199%d")
+		hostNameTemplate := getenvWithDefault("hostNameTemplate", "http://audiusd-%d:1991")
 		devNetworkCount, _ := strconv.Atoi(getenvWithDefault("devNetworkCount", "3"))
 		registeredPeers = []server.Peer{}
 
 		for i := 1; i <= devNetworkCount; i++ {
-			registeredPeers = append(registeredPeers, server.Peer{Host: fmt.Sprintf(hostNameTemplate, i)})
+			registeredPeers = append(registeredPeers, server.Peer{Host: fmt.Sprintf(hostNameTemplate, i + 1)})
 		}
 
 	}
