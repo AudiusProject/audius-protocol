@@ -79,8 +79,9 @@ const ${variables.componentName} = forwardRef((${variables.props}, ref) => {
   }
 
   const width = widthProp ?? theme.iconSizes?.[sizeW ?? size]
+
   if (width) {
-    other.width = width
+    other.width = isNaN(width) ? "100%" : width
   }
 
   const fillColor = other.fill ?? theme.color?.icon[color] ?? 'red'

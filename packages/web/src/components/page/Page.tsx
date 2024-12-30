@@ -7,9 +7,8 @@ import {
   MutableRefObject
 } from 'react'
 
+import { animated, useSpring } from '@react-spring/web'
 import cn from 'classnames'
-// eslint-disable-next-line no-restricted-imports -- TODO: migrate to @react-spring/web
-import { animated, useSpring } from 'react-spring'
 
 import { MetaTags, MetaTagsProps } from 'components/meta-tags/MetaTags'
 import SearchBar from 'components/search-bar/ConnectedSearchBar'
@@ -27,6 +26,7 @@ const HeaderContainer = (props: HeaderContainerProps) => {
   // Only Safari & Chrome support the CSS
   // frosted glasss effect.
   const [isChromeOrSafari, setIsChromeOrSafari] = useState(false)
+
   useEffect(() => {
     const chromeOrSafari = () => {
       const userAgent = navigator.userAgent.toLowerCase()

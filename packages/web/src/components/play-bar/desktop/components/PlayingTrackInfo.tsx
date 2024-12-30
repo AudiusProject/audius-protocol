@@ -9,8 +9,6 @@ import {
 } from '@audius/common/store'
 import cn from 'classnames'
 import { useSelector } from 'react-redux'
-// eslint-disable-next-line no-restricted-imports -- TODO: migrate to @react-spring/web
-import { animated, useSpring } from 'react-spring'
 
 import { Draggable } from 'components/dragndrop'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
@@ -76,7 +74,6 @@ const PlayingTrackInfo = ({
       'usdc_purchase' in track.stream_conditions &&
       !hasStreamAccess)
 
-  const spring = useSpring(springProps)
   const profileImage = useProfilePicture({
     userId: artistUserId ?? null,
     size: SquareSizes.SIZE_150_BY_150
@@ -91,7 +88,7 @@ const PlayingTrackInfo = ({
 
   const renderTrackTitle = () => {
     return (
-      <animated.div style={spring} className={styles.trackTitleContainer}>
+      <div className={styles.trackTitleContainer}>
         <div
           className={cn(styles.trackTitle, {
             [styles.textShadow]: hasShadow
@@ -109,7 +106,7 @@ const PlayingTrackInfo = ({
             text={messages.preview}
           />
         ) : null}
-      </animated.div>
+      </div>
     )
   }
 
@@ -141,7 +138,7 @@ const PlayingTrackInfo = ({
             {renderTrackTitle()}
           </Draggable>
         )}
-        <animated.div style={spring} className={styles.artistNameWrapper}>
+        <div className={styles.artistNameWrapper}>
           <div
             className={cn(styles.artistName, {
               [styles.textShadow]: hasShadow
@@ -155,7 +152,7 @@ const PlayingTrackInfo = ({
             badgeSize={12}
             className={styles.iconVerified}
           />
-        </animated.div>
+        </div>
       </div>
     </div>
   )
