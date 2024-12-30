@@ -52,3 +52,18 @@ services:
       dockerfile: ${PROJECT_ROOT}/packages/discovery-provider/Dockerfile.dev
     volumes:
       - ${PROJECT_ROOT}:/app
+  
+  healthz:
+    extends:
+      file: docker-compose.discovery.prod.yml
+      service: healthz
+    build:
+      dockerfile: ${PROJECT_ROOT}/monitoring/healthz/Dockerfile
+      context: ${PROJECT_ROOT}/monitoring/healthz
+    ports:
+      - "5173:5173"
+    profiles:
+      - discovery
+    volumes:
+      - ${PROJECT_ROOT}/monitoring/healthz:/app
+      - /app/node_modules

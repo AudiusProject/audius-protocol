@@ -191,3 +191,10 @@ services:
       replicas: '${DISCOVERY_PROVIDER_REPLICAS}'
     profiles:
       - discovery
+
+  healthz:
+    build:
+      dockerfile: ${PROJECT_ROOT}/monitoring/healthz/Dockerfile
+      context: ${PROJECT_ROOT}/monitoring/healthz
+    profiles:
+      - noop

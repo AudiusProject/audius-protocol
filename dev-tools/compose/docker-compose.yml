@@ -185,6 +185,12 @@ services:
       service: es-indexer
     <<: *common
 
+  healthz:
+    extends:
+      file: docker-compose.discovery.${DOCKERCOMPOSE_ENV_TYPE:-dev}.yml
+      service: healthz
+    <<: *common
+
   # Pedalboard (plugins)
   trending-challenge-rewards:
     extends:
