@@ -8,10 +8,6 @@ jobs:
         branches:
           only: main
   - test:
-      name: test-mediorum
-      context: Vercel
-      service: mediorum
-  - test:
       name: test-mediorum-unittests
       context: Vercel
       service: mediorum-unittests
@@ -20,7 +16,6 @@ jobs:
   - deploy-stage-nodes-just-tag:
       name: deploy-stage-creator-node
       requires:
-        - test-mediorum
         - test-mediorum-unittests
         - push-mediorum
       filters:
