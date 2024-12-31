@@ -40,7 +40,8 @@ export const TrendingGenreFilters = (props: TrendingGenreFiltersProps) => {
   // even if it's not selected.
   if (
     isSelectedFromModal(currentGenre) &&
-    currentGenre !== lastModalSelectedGenre
+    currentGenre !== lastModalSelectedGenre &&
+    currentGenre
   ) {
     genres.push(currentGenre)
   } else if (lastModalSelectedGenre) {

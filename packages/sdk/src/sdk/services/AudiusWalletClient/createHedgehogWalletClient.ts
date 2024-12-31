@@ -31,9 +31,9 @@ export function createHedgehogWalletClient(
   let account_: AudiusAccount | undefined
   const getAccount = async () => {
     await hedgehog.waitUntilReady()
-    const wallet = hedgehog.getWallet()
+    let wallet = hedgehog.getWallet()
     if (!wallet) {
-      throw new Error('Hedgehog wallet not found. Is the user logged in?')
+      wallet = await hedgehog.createWalletObj(Date.now().toString())
     }
 
     if (!account_ || account_.address !== wallet.getAddressString()) {
