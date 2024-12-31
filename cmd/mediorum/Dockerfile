@@ -9,7 +9,6 @@ COPY ./pkg ./pkg
 COPY ./cmd/mediorum ./cmd/mediorum
 
 RUN go build -o /bin/mediorum cmd/mediorum/main.go
-RUN go build -o /bin/mediorum-cmd pkg/mediorum/cmd/main.go
 
 FROM audius/cpp:latest
 
@@ -19,7 +18,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
   rm -rf /var/lib/apt/lists/*
 
 COPY --from=go-builder /bin/mediorum /bin/mediorum
-COPY --from=go-builder /bin/mediorum-cmd /bin/mediorum-cmd
 
 ARG git_sha
 ENV GIT_SHA=$git_sha
