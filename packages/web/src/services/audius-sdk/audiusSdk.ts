@@ -43,7 +43,12 @@ const initSdk = async () => {
   const discoveryNodeSelector = await discoveryNodeSelectorService.getInstance()
 
   const message = `signature:${new Date().getTime()}`
-  const signature = await audiusWalletClient.signMessage({ message })
+  const signature = await audiusWalletClient
+    .signMessage({ message })
+    .catch((e) => {
+      console.warn(e)
+      return ''
+    })
   const ethWalletClient = createWalletClient({
     account: '0x0000000000000000000000000000000000000000', // dummy replaced by relay
     chain: mainnet,
