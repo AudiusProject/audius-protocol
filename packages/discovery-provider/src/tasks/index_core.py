@@ -34,6 +34,7 @@ class CoreIndexer:
     redis: Redis
     challenge_bus: ChallengeEventBus
     core: CoreClient
+    logger: logging.Logger
     stop_event: threading.Event
 
     indexer_initialized: bool
@@ -56,9 +57,18 @@ class CoreIndexer:
         self.challenge_bus = challenge_bus
         self.core = get_core_instance(db=db)
         self.stop_event = threading.Event()
+        self.indexer_initialized = False
+        self.indexer_caught_up = False
+        self.logger = logging.LoggerAdapter(
+            logger=root_logger,
+            extra={
+                "indexer": "core",
+            },
+        )
 
     # checks all the connections and gathers base values so the indexer can proceed
     def initialize(self):
+        self.logger.info("initializing core indexer")
         # set up cutover data
         self.sol_plays_cutover_end = get_sol_cutover()
         self.core_plays_cutover_start = get_core_cutover()
@@ -82,8 +92,8 @@ class CoreIndexer:
             if latest_indexed_block:
                 self.latest_indexed_block_height = latest_indexed_block.height
 
-        self.indexer_caught_up
         self.indexer_initialized = True
+        self.logger.info("initialized core indexer")
 
     # starts indexer in it's own thread to avoid blocking main
     def start(self):
@@ -107,15 +117,29 @@ class CoreIndexer:
 
     def index_core(self):
         while not self.stop_event.is_set():
+            have_lock = False
+            update_lock = self.redis.lock("index_core_lock")
             start_time = time.time()
             try:
+                have_lock = update_lock.acquire(blocking=False)
+                if not have_lock:
+                    self.logger.info("failed to aquire lock")
+                    continue
+
                 initialized = self.indexer_initialized
                 if not initialized:
                     self.initialize()
 
+                indexed_block = self.index_core_block()
+                if not indexed_block:
+                    continue
+
+                self.latest_indexed_block_height = indexed_block.height
             except Exception as e:
-                root_logger.error(f"core indexer error {e}")
+                self.logger.error(f"error {e}")
             finally:
+                if have_lock:
+                    update_lock.release()
                 elapsed_time = time.time() - start_time
                 should_wait = (
                     self.indexer_caught_up
@@ -124,142 +148,101 @@ class CoreIndexer:
                 if should_wait:
                     time.sleep(CORE_INDEXER_MINIMUM_TIME_SECS - elapsed_time)
 
-    def index_core_block(self):
+    def index_core_block(self) -> Optional[BlockResponse]:
+        # TODO: return current_height with get_block grpc so we don't
+        # need to make two calls for this
         node_info = self.core.get_node_info()
+        if node_info:
+            self.latest_chain_block_height = node_info.current_height
 
+        # replace inner logger with contextual data
+        next_block = self.latest_indexed_block_height + 1
 
-def start_core_indexer(db: SessionManager, redis: Redis, core: CoreClient):
-    thread = threading.Thread(target=index_core, args=(db, redis, core), daemon=True)
-    thread.start()
-    root_logger.info("core indexer thread started")
-
-
-def _index_core_txs(
-    session: Session,
-    core: CoreClient,
-    challenge_bus: ChallengeEventBus,
-    block: BlockResponse,
-    should_index_plays: bool,
-):
-    # TODO: parallelize?
-    for tx in block.transactions:
-        # Check which type of transaction is currently set
-        transaction_type = tx.WhichOneof("transaction")
-        root_logger.info(
-            f"index_core.py | block {block.height} tx type {transaction_type} {should_index_plays}"
-        )
-
-        if transaction_type == "plays" and should_index_plays:
-            index_core_play(
-                session=session,
-                core=core,
-                challenge_bus=challenge_bus,
-                block=block,
-                tx=tx,
-            )
-            continue
-        elif transaction_type == "manage_entity":
-            index_core_manage_entity(session=session, core=core, tx=tx)
-            continue
-        elif transaction_type == "validator_registration":
-            continue
-        elif transaction_type == "sla_rollup":
-            continue
-        else:
-            root_logger.warning(
-                f"index_core.py | unhandled tx type found {transaction_type}"
-            )
-
-
-def _index_core_block(
-    logger: logging.Logger, db: SessionManager, redis: Redis, core: CoreClient
-) -> Optional[BlockResponse]:
-    core = get_core_instance(db)
-    latest_processed_slot = get_latest_slot(db)
-
-    logger.info(
-        f"index_core.py | latest slot {latest_processed_slot} cutover {get_sol_cutover()}"
-    )
-
-    should_index_plays = False
-    if latest_processed_slot >= get_sol_cutover():
-        should_index_plays = True
-
-    # TODO: cache node info
-    node_info = core.get_node_info()
-    if not node_info:
-        return None
-
-    chainid = node_info.chainid
-    current_block = node_info.current_height
-    if current_block < get_core_cutover():
-        return None
-
-    with db.scoped_session() as session:
-        latest_indexed_block = core.latest_indexed_block(
-            session=session, chain_id=chainid
-        )
-
-        # if no blocks indexed on this chain id, start at 1
-        next_block = 1
-        if latest_indexed_block:
-            next_block = latest_indexed_block.height + 1
-
-        block, indexed_block = core.get_block(session=session, height=next_block)
-        if not block:
-            logger.error(f"index_core.py | could not get block {next_block} {chainid}")
+        if next_block > self.latest_chain_block_height:
             return None
 
-        if indexed_block:
-            return None
-
-        # core returns -1 for block that doesn't exist
-        if block.height < 0:
-            return None
-
-        challenge_bus: ChallengeEventBus = index_core.challenge_event_bus
-        _index_core_txs(
-            session=session,
-            core=core,
-            challenge_bus=challenge_bus,
-            block=block,
-            should_index_plays=should_index_plays,
-        )
-        # if first block there's no parent hash
-        parenthash = latest_indexed_block.blockhash if latest_indexed_block else None
-
-        # commit block after indexing
-        if core.commit_indexed_block(
-            session=session,
-            chain_id=chainid,
-            height=block.height,
-            blockhash=block.blockhash,
-            parenthash=parenthash,
-        ):
-            return block
-        return None
-
-
-# TODO: make this into a class so all the args become methods
-def index_core(db: SessionManager, redis: Redis, core: CoreClient):
-    try:
-        node_info = core.get_node_info()
-        if not node_info:
-            return
-
-        block_logger = logging.LoggerAdapter(
+        self.logger = logging.LoggerAdapter(
             logger=root_logger,
             extra={
-                "height": node_info.current_height,
-                "chain_id": node_info.chainid,
+                "indexer": "core",
+                "chain_id": self.chain_id,
+                "latest_indexed_block": self.latest_indexed_block_height,
+                "next_indexed_block": next_block,
+                "latest_chain_block": self.latest_chain_block_height,
             },
         )
-        indexed_block = _index_core_block(block_logger, db=db, redis=redis, core=core)
-        if indexed_block:
-            root_logger.debug(f"index_core.py | indexed block {indexed_block.height}")
-    except Exception as e:
-        root_logger.error(
-            "index_core.py | Fatal error in main loop of index_core: %s",
-            e,
-            exc_info=True,
-        )
+        self.core.set_logger(self.logger)
+
+        with self.db.scoped_session() as session:
+            _, previous_indexed_block = self.core.get_block(
+                session=session, height=next_block - 1
+            )
+
+            block, indexed_block = self.core.get_block(
+                session=session, height=next_block
+            )
+            if not block:
+                self.logger.info("could not get block")
+                return None
+
+            if indexed_block:
+                self.logger.info("block already indexed")
+                return None
+
+            if block.height < 0:
+                return None
+
+            self.logger.info("indexing block")
+
+            self._index_core_txs(
+                session=session,
+                block=block,
+            )
+
+            # if first block there's no parent hash
+            parenthash = (
+                previous_indexed_block.blockhash if previous_indexed_block else None
+            )
+
+            # commit block after indexing
+            if self.core.commit_indexed_block(
+                session=session,
+                chain_id=self.chain_id,
+                height=block.height,
+                blockhash=block.blockhash,
+                parenthash=parenthash,
+            ):
+                return block
+            return None
+
+    def _index_core_txs(
+        self,
+        session: Session,
+        block: BlockResponse,
+    ):
+        # TODO: parallelize?
+        for tx in block.transactions:
+            # Check which type of transaction is currently set
+            transaction_type = tx.WhichOneof("transaction")
+            self.logger
+
+            if transaction_type == "plays" and self.should_index_plays():
+                index_core_play(
+                    session=session,
+                    core=self.core,
+                    challenge_bus=self.challenge_bus,
+                    block=block,
+                    tx=tx,
+                )
+                continue
+            elif transaction_type == "manage_entity":
+                index_core_manage_entity(session=session, core=self.core, tx=tx)
+                continue
+            elif transaction_type == "validator_registration":
+                continue
+            elif transaction_type == "sla_rollup":
+                continue
+            else:
+                root_logger.warning(
+                    f"index_core.py | unhandled tx type found {transaction_type}"
+                )

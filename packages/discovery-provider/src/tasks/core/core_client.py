@@ -31,10 +31,16 @@ class CoreClient:
 
     chain_id: Optional[str]
 
+    logger: logging.Logger
+
     def __init__(self, db: SessionManager):
         self.endpoint = self.get_core_endpoint()
         self.channel = grpc.insecure_channel(self.endpoint)
         self.rpc = ProtocolStub(channel=self.channel)
+        self.logger = logger
+
+    def set_logger(self, l: logging.Logger):
+        self.logger = l
 
     def get_core_endpoint(self) -> str:
         if environment == "prod" or environment == "stage":
@@ -45,14 +51,14 @@ class CoreClient:
         try:
             return self.rpc.Ping(PingRequest())
         except Exception as e:
-            logger.error(f"core_client.py | ping {e}")
+            self.logger.error(f"core_client.py | ping {e}")
             return None
 
     def get_node_info(self) -> Optional[NodeInfoResponse]:
         try:
             return self.rpc.GetNodeInfo(GetNodeInfoRequest())
         except Exception as e:
-            logger.error(f"core_client.py | node info {e}")
+            self.logger.error(f"core_client.py | node info {e}")
             return None
 
     def latest_indexed_block(
@@ -67,7 +73,9 @@ class CoreClient:
                 .first()
             )
         except Exception as e:
-            logger.error(f"core_client.py | error getting latest indexed block {e}")
+            self.logger.error(
+                f"core_client.py | error getting latest indexed block {e}"
+            )
             return None
 
     def get_indexed_block(self, session: Session, height: int):
@@ -77,7 +85,9 @@ class CoreClient:
                 session.query(CoreIndexedBlocks).filter_by(height=height).one_or_none()
             )
         except Exception as e:
-            logger.error(f"core_client.py | error getting block at height {height} {e}")
+            self.logger.error(
+                f"core_client.py | error getting block at height {height} {e}"
+            )
             return None
 
     def get_block(
@@ -89,7 +99,7 @@ class CoreClient:
                 GetBlockRequest(height=height)
             ), self.get_indexed_block(session=session, height=height)
         except Exception as e:
-            logger.error(f"core_client.py | error getting block {height} {e}")
+            self.logger.error(f"core_client.py | error getting block {height} {e}")
             return None, None
 
     def commit_indexed_block(
@@ -110,7 +120,7 @@ class CoreClient:
             session.add(new_block)
             return True
         except Exception as e:
-            logger.error(f"core_client.py | Error committing block {height} {e}")
+            self.logger.error(f"core_client.py | Error committing block {height} {e}")
             return False
 
 
