@@ -15,8 +15,9 @@ import { useMainContentRef } from 'pages/MainContentContext'
 import zIndex from 'utils/zIndex'
 
 import styles from './ImageSelectionPopup.module.css'
-import { ImageSelectionProps, ImageSelectionDefaults } from './PropTypes'
-const getAccountUser = accountSelectors.getAccountUser
+import { ImageSelectionProps } from './PropTypes'
+
+const { getAccountUser } = accountSelectors
 
 const COLLECTIBLES_PER_PAGE = 15
 const POPULAR_TERMS = ['neon', 'space', 'beach', 'nature', 'abstract']
@@ -215,13 +216,10 @@ const CollectionPage = ({ onSelect, source }) => {
   )
 }
 
-/**
- * A popup that lets a user upload artwork or select a random image.
- */
 const ImageSelectionPopup = ({
   anchorRef,
   className,
-  isVisible,
+  isVisible = true,
   error,
   onClose,
   onAfterClose,
@@ -311,11 +309,6 @@ ImageSelectionPopup.propTypes = {
   className: PropTypes.string,
   isVisible: PropTypes.bool.isRequired,
   ...ImageSelectionProps
-}
-
-ImageSelectionPopup.defaultProps = {
-  isVisible: true,
-  ...ImageSelectionDefaults
 }
 
 export default ImageSelectionPopup
