@@ -230,9 +230,11 @@ def search_es_full(args: dict):
 
     if do_albums:
         response["albums"] = pluck_hits(mfound["responses"].pop(0))
+
     finalize_response(
         response, limit, current_user_id, is_auto_complete=is_auto_complete
     )
+
     return response
 
 

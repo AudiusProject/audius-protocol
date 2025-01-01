@@ -326,7 +326,6 @@ workflows:
             protocol-dashboard/.* run-protocol-dashboard-workflow true
             contracts/.* run-contracts-workflow true
             .circleci/.* run-discovery-workflow true
-            .circleci/.* run-creator-workflow true
             .circleci/.* run-identity-workflow true
             .circleci/.* run-eth-contracts-workflow true
             .circleci/.* run-protocol-dashboard-workflow true
@@ -360,8 +359,6 @@ workflows:
             packages/spl/.* run-identity-workflow true
             pkg/.* run-audiusd-workflow true
             cmd/.* run-audiusd-workflow true
-            pkg/.* run-creator-workflow true
-            cmd/.* run-creator-workflow true
           requires:
             - generate-config
             - init
@@ -382,7 +379,6 @@ workflows:
             protocol-dashboard/.* run-protocol-dashboard-workflow true
             contracts/.* run-contracts-workflow true
             .circleci/.* run-discovery-workflow true
-            .circleci/.* run-creator-workflow true
             .circleci/.* run-identity-workflow true
             .circleci/.* run-eth-contracts-workflow true
             .circleci/.* run-protocol-dashboard-workflow true
@@ -415,8 +411,6 @@ workflows:
             packages/spl/.* run-identity-workflow true
             pkg/.* run-audiusd-workflow true
             cmd/.* run-audiusd-workflow true
-            pkg/.* run-creator-workflow true
-            cmd/.* run-creator-workflow true
           requires:
             - generate-config
             - init

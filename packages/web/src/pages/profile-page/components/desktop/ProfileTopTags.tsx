@@ -5,7 +5,7 @@ import { profilePageActions, profilePageSelectors } from '@audius/common/store'
 import { Flex, Paper, IconTrending } from '@audius/harmony'
 import { useDispatch, useSelector } from 'react-redux'
 
-import { SearchTag } from 'components/search/SearchTag'
+import { SearchTag } from 'components/search-bar/SearchTag'
 import { useProfileParams } from 'pages/profile-page/useProfileParams'
 import { AppState } from 'store/types'
 

@@ -12,7 +12,7 @@ import cn from 'classnames'
 import { animated, useSpring } from 'react-spring'
 
 import { MetaTags, MetaTagsProps } from 'components/meta-tags/MetaTags'
-import SearchBar from 'components/search-bar/ConnectedSearchBar'
+import DesktopSearchBar from 'components/search-bar/DesktopSearchBar'
 
 import styles from './Page.module.css'
 
@@ -56,7 +56,7 @@ const HeaderContainer = (props: HeaderContainerProps) => {
         {cloneElement(header as any, {
           isChromeOrSafari,
           headerContainerRef,
-          topLeftElement: showSearch ? <SearchBar /> : null
+          topLeftElement: showSearch ? <DesktopSearchBar /> : null
         })}
       </div>
       {/* We attach the box shadow as a separate element to
@@ -160,7 +160,7 @@ export const Page = (props: PageProps) => {
 
         {scrollableSearch && (
           <div className={styles.searchWrapper}>
-            <SearchBar />
+            <DesktopSearchBar />
           </div>
         )}
       </animated.div>

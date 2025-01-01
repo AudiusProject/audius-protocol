@@ -443,7 +443,7 @@ export const OAuthLoginPage = () => {
                     type='email'
                     name='email'
                     id='email-input'
-                    required
+                    isRequired
                     autoComplete='username'
                     value={emailInput}
                     onChange={handleEmailInputChange}
@@ -454,7 +454,7 @@ export const OAuthLoginPage = () => {
                     size='medium'
                     name='password'
                     id='password-input'
-                    required
+                    isRequired
                     autoComplete='current-password'
                     value={passwordInput}
                     type='password'

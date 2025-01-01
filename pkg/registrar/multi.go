@@ -28,6 +28,14 @@ func NewMultiProd() PeerProvider {
 	}
 }
 
+func NewMultiDev() PeerProvider {
+	return multiProvider{
+		providers: []PeerProvider{
+			NewEthChainProvider(),
+		},
+	}
+}
+
 type multiProvider struct {
 	providers []PeerProvider
 }

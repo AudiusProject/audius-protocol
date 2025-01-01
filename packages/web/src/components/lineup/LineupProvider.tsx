@@ -133,9 +133,9 @@ export interface LineupProviderProps {
   playing: boolean
   playTrack: (uid: UID, trackId?: ID) => void
   pauseTrack: () => void
-  variant: LineupVariant
+  variant?: LineupVariant
   loadMore?: (offset: number, limit: number, overwrite: boolean) => void
-  selfLoad: boolean
+  selfLoad?: boolean
   scrollParent?: HTMLElement | null
   endOfLineup?: JSX.Element
 
@@ -246,14 +246,14 @@ class LineupProvider extends PureComponent<CombinedProps, LineupProviderState> {
       MINIMUM_INITIAL_LOAD_TRACKS_MULTIPLIER
     )
     const initialTrackLoadCount = getLoadMoreTrackCount(
-      this.props.variant,
+      this.props.variant ?? LineupVariant.MAIN,
       () =>
         this.props.variant === LineupVariant.PLAYLIST
           ? INITIAL_PLAYLISTS_MULTIPLER
           : INITIAL_LOAD_TRACKS_MULTIPLIER
     )
     const trackLoadMoreCount = getLoadMoreTrackCount(
-      this.props.variant,
+      this.props.variant ?? LineupVariant.MAIN,
       TRACKS_AHEAD_MULTIPLIER
     )
     const page = getInitPage(
@@ -358,7 +358,7 @@ class LineupProvider extends PureComponent<CombinedProps, LineupProviderState> {
       this.setState({
         scrollParent,
         trackLoadMoreCount: getLoadMoreTrackCount(
-          this.props.variant,
+          this.props.variant ?? LineupVariant.MAIN,
           TRACKS_AHEAD_MULTIPLIER
         )
       })

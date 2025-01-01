@@ -15,20 +15,25 @@ func (s *Server) startEthNodeManager() error {
 
 	for i := 0; i < maxRetries; i++ {
 		if err := s.gatherEthNodes(); err != nil {
-			s.logger.Errorf("error gathering eth nodes (attempt %d/%d): %v", i+1, maxRetries, err)
+			s.logger.Errorf("error gathering registered eth nodes (attempt %d/%d): %v", i+1, maxRetries, err)
 			time.Sleep(retryDelay)
 			retryDelay *= 2
 		} else {
 			break
 		}
 		if i == maxRetries-1 {
-			return fmt.Errorf("failed to gather eth nodes after %d retries", maxRetries)
+			return fmt.Errorf("failed to gather registered eth nodes after %d retries", maxRetries)
 		}
 	}
 
 	close(s.awaitEthNodesReady)
 
 	ticker := time.NewTicker(6 * time.Hour)
+	if s.isDevEnvironment() {
+		// query eth chain more aggressively on dev
+		ticker = time.NewTicker(5 * time.Second)
+	}
+
 	defer ticker.Stop()
 
 	for range ticker.C {
@@ -45,6 +50,10 @@ func (s *Server) gatherEthNodes() error {
 	nodes, err := s.contracts.GetAllRegisteredNodes(context.Background())
 	if err != nil {
 		return err
+	}
+
+	if len(nodes) == 0 {
+		return fmt.Errorf("got 0 registered nodes: %v", nodes)
 	}
 
 	ethNodeMap := make(map[string]int)

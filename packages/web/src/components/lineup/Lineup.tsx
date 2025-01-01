@@ -14,11 +14,35 @@ export type LineupProps = Omit<
   'trackTile' | 'skeletonTile' | 'playlistTile'
 >
 
+const defaultLineup = {
+  entries: [] as any[],
+  order: {},
+  total: 0,
+  deleted: 0,
+  nullCount: 0,
+  status: Status.LOADING,
+  hasMore: true,
+  inView: true,
+  prefix: '',
+  page: 0,
+  isMetadataLoading: false
+}
+
 /** A lineup renders a LineupProvider, injecting different tiles
  * depending on the client state.
  */
-const Lineup = (props: LineupProps) => {
-  const { variant } = props
+const Lineup = ({
+  lineup = defaultLineup,
+  start = 0,
+  playing = false,
+  variant = LineupVariant.MAIN,
+  selfLoad = true,
+  delineate = false,
+  loadMore = () => {},
+  ordered = false,
+  setInView,
+  ...otherProps
+}: LineupProps) => {
   const isMobile = useIsMobile()
   const trackTile =
     isMobile || variant === LineupVariant.SECTION
@@ -26,38 +50,22 @@ const Lineup = (props: LineupProps) => {
       : DesktopTrackTile
   const playlistTile = isMobile ? MobilePlaylistTile : DesktopPlaylistTile
 
-  return (
-    <LineupProvider
-      {...props}
-      trackTile={trackTile}
-      playlistTile={playlistTile}
-    />
-  )
-}
+  const providerProps = {
+    lineup,
+    start,
+    playing,
+    variant,
+    selfLoad,
+    delineate,
+    loadMore,
+    ordered,
+    setInView,
+    trackTile,
+    playlistTile,
+    ...otherProps
+  }
 
-Lineup.defaultProps = {
-  lineup: {
-    entries: [] as any[],
-    order: {},
-    total: 0,
-    deleted: 0,
-    nullCount: 0,
-    status: Status.LOADING,
-    hasMore: true,
-    inView: true,
-    prefix: '',
-    page: 0,
-    isMetadataLoading: false
-  },
-  start: 0,
-  playingUid: '',
-  playing: false,
-  variant: LineupVariant.MAIN,
-  selfLoad: true,
-  delineate: false,
-  loadMore: () => {},
-  ordered: false,
-  setInView: undefined
+  return <LineupProvider {...providerProps} />
 }
 
 export default Lineup

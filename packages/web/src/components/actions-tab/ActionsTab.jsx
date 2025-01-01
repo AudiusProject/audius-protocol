@@ -1,5 +1,3 @@
-import { PureComponent } from 'react'
-
 import { ShareSource, RepostSource } from '@audius/common/models'
 import {
   accountSelectors,
@@ -143,18 +141,35 @@ const ExpandedActionsTab = (props) => {
   )
 }
 
-export class ActionsTab extends PureComponent {
-  onToggleRepost = () => {
-    const {
-      repostTrack,
-      undoRepostTrack,
-      repostCollection,
-      undoRepostCollection,
-      currentUserReposted,
-      variant,
-      trackId,
-      playlistId
-    } = this.props
+const ActionsTab = ({
+  isHidden = false,
+  minimized = false,
+  standalone = false,
+  isDisabled = false,
+  direction,
+  variant,
+  containerStyles,
+  handle,
+  userHandle,
+  playlistId,
+  playlistName,
+  ddexApp,
+  permalink,
+  trackId,
+  trackTitle,
+  currentUserSaved,
+  currentUserReposted,
+  isArtistPick,
+  isPublic,
+  includeEdit,
+  repostTrack,
+  undoRepostTrack,
+  repostCollection,
+  undoRepostCollection,
+  shareTrack,
+  shareCollection
+}) => {
+  const onToggleRepost = () => {
     if (variant === 'track') {
       currentUserReposted ? undoRepostTrack(trackId) : repostTrack(trackId)
     } else if (variant === 'playlist' || variant === 'album') {
@@ -164,9 +179,7 @@ export class ActionsTab extends PureComponent {
     }
   }
 
-  onShare = () => {
-    const { trackId, variant, playlistId, shareTrack, shareCollection } =
-      this.props
+  const onShare = () => {
     if (variant === 'track') {
       shareTrack(trackId)
     } else if (variant === 'playlist' || variant === 'album') {
@@ -174,82 +187,65 @@ export class ActionsTab extends PureComponent {
     }
   }
 
-  render() {
-    const {
-      minimized,
-      standalone,
-      isHidden,
-      isDisabled,
-      direction,
-      variant,
-      containerStyles,
+  const overflowMenu = {
+    menu: {
       handle,
-      userHandle,
-      playlistId,
-      playlistName,
-      ddexApp,
-      permalink,
-      trackId,
-      trackTitle,
-      currentUserSaved,
-      currentUserReposted,
+      isFavorited: currentUserSaved,
+      isReposted: currentUserReposted,
+      mount: 'page',
+      isOwner: handle === userHandle,
       isArtistPick,
-      isPublic,
-      includeEdit
-    } = this.props
-
-    const overflowMenu = {
-      menu: {
-        handle,
-        isFavorited: currentUserSaved,
-        isReposted: currentUserReposted,
-        mount: 'page',
-        isOwner: handle === userHandle,
-        isArtistPick,
-        ddexApp
-      }
+      ddexApp
     }
-    if (variant === 'track') {
-      overflowMenu.menu.type = 'track'
-      overflowMenu.menu.trackId = trackId
-      overflowMenu.menu.trackTitle = trackTitle
-      overflowMenu.menu.isArtistPick = isArtistPick
-    } else if (variant === 'playlist' || variant === 'album') {
-      overflowMenu.menu.type = variant === 'playlist' ? 'playlist' : 'album'
-      overflowMenu.menu.playlistId = playlistId
-      overflowMenu.menu.playlistName = playlistName
-      overflowMenu.menu.includeAddToCollection = false
-      overflowMenu.menu.isPublic = isPublic
-      overflowMenu.menu.includeEdit = includeEdit
-      overflowMenu.menu.permalink = permalink
-    }
-
-    return (
-      <div
-        className={cn(styles.actionsSection, {
-          [styles.show]: !isHidden,
-          [styles.hide]: isHidden,
-          [styles.horizontal]: direction === 'horizontal',
-          [styles.vertical]: direction === 'vertical',
-          [styles.disabled]: isDisabled,
-          [styles.standalone]: standalone,
-          [containerStyles]: !!containerStyles
-        })}
-      >
-        {minimized ? (
-          <MinimizedActionsTab {...this.props} overflowMenu={overflowMenu} />
-        ) : (
-          <ExpandedActionsTab
-            {...this.props}
-            isOwner={handle === userHandle}
-            overflowMenu={overflowMenu}
-            onToggleRepost={this.onToggleRepost}
-            onShare={this.onShare}
-          />
-        )}
-      </div>
-    )
   }
+
+  if (variant === 'track') {
+    overflowMenu.menu.type = 'track'
+    overflowMenu.menu.trackId = trackId
+    overflowMenu.menu.trackTitle = trackTitle
+    overflowMenu.menu.isArtistPick = isArtistPick
+  } else if (variant === 'playlist' || variant === 'album') {
+    overflowMenu.menu.type = variant === 'playlist' ? 'playlist' : 'album'
+    overflowMenu.menu.playlistId = playlistId
+    overflowMenu.menu.playlistName = playlistName
+    overflowMenu.menu.includeAddToCollection = false
+    overflowMenu.menu.isPublic = isPublic
+    overflowMenu.menu.includeEdit = includeEdit
+    overflowMenu.menu.permalink = permalink
+  }
+
+  return (
+    <div
+      className={cn(styles.actionsSection, {
+        [styles.show]: !isHidden,
+        [styles.hide]: isHidden,
+        [styles.horizontal]: direction === 'horizontal',
+        [styles.vertical]: direction === 'vertical',
+        [styles.disabled]: isDisabled,
+        [styles.standalone]: standalone,
+        [containerStyles]: !!containerStyles
+      })}
+    >
+      {minimized ? (
+        <MinimizedActionsTab
+          isHidden={isHidden}
+          isDisabled={isDisabled}
+          overflowMenu={overflowMenu}
+        />
+      ) : (
+        <ExpandedActionsTab
+          isHidden={isHidden}
+          isDisabled={isDisabled}
+          direction={direction}
+          currentUserReposted={currentUserReposted}
+          isOwner={handle === userHandle}
+          onToggleRepost={onToggleRepost}
+          onShare={onShare}
+          overflowMenu={overflowMenu}
+        />
+      )}
+    </div>
+  )
 }
 
 ActionsTab.propTypes = {
@@ -271,16 +267,6 @@ ActionsTab.propTypes = {
   ddexApp: PropTypes.oneOfType([PropTypes.string, PropTypes.oneOf([null])]),
   playlistId: PropTypes.number,
   permalink: PropTypes.string
-}
-
-ActionsTab.defaultProps = {
-  isHidden: false,
-  minimized: false,
-  standalone: false,
-  isDisabled: false,
-  direction: 'vertical',
-  variant: 'track',
-  handle: 'handle'
 }
 
 const mapStateToProps = (state) => ({
