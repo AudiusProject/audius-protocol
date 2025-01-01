@@ -38,6 +38,7 @@ from src.queries import (
 )
 from src.solana.solana_client_manager import SolanaClientManager
 from src.tasks import celery_app
+from src.tasks.index_core import CoreIndexer
 from src.tasks.repair_audio_analyses import REPAIR_AUDIO_ANALYSES_LOCK
 from src.tasks.update_delist_statuses import UPDATE_DELIST_STATUSES_LOCK
 from src.utils import helpers, web3_provider
@@ -326,7 +327,6 @@ def configure_celery(celery, test_config=None):
             "src.tasks.update_delist_statuses",
             "src.tasks.repair_audio_analyses",
             "src.tasks.cache_current_nodes",
-            "src.tasks.index_core",
             "src.tasks.update_aggregates",
             "src.tasks.cache_entity_counts",
             "src.tasks.publish_scheduled_releases",
@@ -507,6 +507,8 @@ def configure_celery(celery, test_config=None):
         abi=entity_manager_contract_abi,
     )
 
+    challenge_bus = (setup_challenge_bus(),)
+
     # Initialize custom task context with database object
     class WrappedDatabaseTask(DatabaseTask):
         def __init__(self, *args, **kwargs):
@@ -522,7 +524,7 @@ def configure_celery(celery, test_config=None):
                 eth_web3_provider=eth_web3,
                 trusted_notifier_manager=trusted_notifier_manager,
                 solana_client_manager=solana_client_manager,
-                challenge_event_bus=setup_challenge_bus(),
+                challenge_event_bus=challenge_bus,
                 eth_manager=eth_manager,
                 entity_manager_contract=entity_manager_contract,
             )
@@ -545,4 +547,5 @@ def configure_celery(celery, test_config=None):
     celery.send_task("index_payment_router", queue="index_sol")
 
     if environment == "dev" or environment == "stage":
-        celery.send_task("index_core", queue="index_sol")
+        core_indexer = CoreIndexer(db=db, redis=redis_inst, challenge_bus=challenge_bus)
+        core_indexer.start()
