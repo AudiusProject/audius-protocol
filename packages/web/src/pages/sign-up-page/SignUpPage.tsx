@@ -1,6 +1,6 @@
 import { route } from '@audius/common/utils'
 import { Helmet } from 'react-helmet'
-import { Redirect, Route, RouteProps, Switch } from 'react-router-dom'
+import { Navigate, Route, Routes } from 'react-router-dom'
 
 import { useDetermineAllowedRoute } from 'pages/sign-up-page/utils/useDetermineAllowedRoutes'
 
@@ -39,78 +39,85 @@ const messages = {
   metaDescription: 'Create an account on Audius'
 }
 
-/**
- * <Route> wrapper that handles redirecting through the sign up page flow
- */
-export function SignUpRoute({ children, ...rest }: RouteProps) {
+export const SignUpPage = () => {
   const determineAllowedRoute = useDetermineAllowedRoute()
 
-  return (
-    <Route
-      {...rest}
-      render={({ location }) => {
-        // Check if the route is allowed, if not we redirect accordingly
-        const { isAllowedRoute, correctedRoute } = determineAllowedRoute(
-          location.pathname
-        )
+  const getElement = (Component?: React.ComponentType, path?: string) => {
+    const { isAllowedRoute, correctedRoute } = determineAllowedRoute(
+      path ?? SIGN_UP_PAGE
+    )
 
-        return isAllowedRoute ? (
-          <>{children}</>
-        ) : (
-          <Redirect to={correctedRoute} />
-        )
-      }}
-    />
-  )
-}
+    if (!isAllowedRoute) {
+      return <Navigate to={correctedRoute} />
+    }
 
-export const SignUpPage = () => {
+    return Component ? <Component /> : null
+  }
+
   return (
     <RouteContextProvider>
       <Helmet>
         <title>{messages.metaTitle}</title>
         <meta name='description' content={messages.metaDescription} />
       </Helmet>
-      <Switch>
-        <SignUpRoute exact path={SIGN_UP_PAGE} />
-        <SignUpRoute exact path={SIGN_UP_EMAIL_PAGE}>
-          <CreateEmailPage />
-        </SignUpRoute>
-        <SignUpRoute exact path={SIGN_UP_PASSWORD_PAGE}>
-          <CreatePasswordPage />
-        </SignUpRoute>
-        <SignUpRoute exact path={SIGN_UP_CREATE_LOGIN_DETAILS}>
-          <CreateLoginDetailsPage />
-        </SignUpRoute>
-        <SignUpRoute exact path={SIGN_UP_HANDLE_PAGE}>
-          <PickHandlePage />
-        </SignUpRoute>
-        <SignUpRoute exact path={SIGN_UP_REVIEW_HANDLE_PAGE}>
-          <ReviewHandlePage />
-        </SignUpRoute>
-        <SignUpRoute exact path={SIGN_UP_FINISH_PROFILE_PAGE}>
-          <FinishProfilePage />
-        </SignUpRoute>
-        <SignUpRoute exact path={SIGN_UP_GENRES_PAGE}>
-          <SelectGenresPage />
-        </SignUpRoute>
-        <SignUpRoute exact path={SIGN_UP_ARTISTS_PAGE}>
-          <SelectArtistsPage />
-        </SignUpRoute>
-        <SignUpRoute exact path={SIGN_UP_APP_CTA_PAGE}>
-          <MobileAppCtaPage />
-        </SignUpRoute>
-        <SignUpRoute exact path={SIGN_UP_LOADING_PAGE}>
-          <LoadingAccountPage />
-        </SignUpRoute>
-        <SignUpRoute exact path={SIGN_UP_COMPLETED_REDIRECT}>
-          <Redirect to={FEED_PAGE} />
-        </SignUpRoute>
-        <SignUpRoute exact path={SIGN_UP_REFERRER_COMPLETED_REDIRECT}>
-          <Redirect to={TRENDING_PAGE} />
-        </SignUpRoute>
-        <SignUpRoute path='*' />
-      </Switch>
+      <Routes>
+        <Route
+          path={SIGN_UP_PAGE}
+          element={getElement(undefined, SIGN_UP_PAGE)}
+        />
+        <Route
+          path={SIGN_UP_EMAIL_PAGE}
+          element={getElement(CreateEmailPage, SIGN_UP_EMAIL_PAGE)}
+        />
+        <Route
+          path={SIGN_UP_PASSWORD_PAGE}
+          element={getElement(CreatePasswordPage, SIGN_UP_PASSWORD_PAGE)}
+        />
+        <Route
+          path={SIGN_UP_CREATE_LOGIN_DETAILS}
+          element={getElement(
+            CreateLoginDetailsPage,
+            SIGN_UP_CREATE_LOGIN_DETAILS
+          )}
+        />
+        <Route
+          path={SIGN_UP_HANDLE_PAGE}
+          element={getElement(PickHandlePage, SIGN_UP_HANDLE_PAGE)}
+        />
+        <Route
+          path={SIGN_UP_REVIEW_HANDLE_PAGE}
+          element={getElement(ReviewHandlePage, SIGN_UP_REVIEW_HANDLE_PAGE)}
+        />
+        <Route
+          path={SIGN_UP_FINISH_PROFILE_PAGE}
+          element={getElement(FinishProfilePage, SIGN_UP_FINISH_PROFILE_PAGE)}
+        />
+        <Route
+          path={SIGN_UP_GENRES_PAGE}
+          element={getElement(SelectGenresPage, SIGN_UP_GENRES_PAGE)}
+        />
+        <Route
+          path={SIGN_UP_ARTISTS_PAGE}
+          element={getElement(SelectArtistsPage, SIGN_UP_ARTISTS_PAGE)}
+        />
+        <Route
+          path={SIGN_UP_APP_CTA_PAGE}
+          element={getElement(MobileAppCtaPage, SIGN_UP_APP_CTA_PAGE)}
+        />
+        <Route
+          path={SIGN_UP_LOADING_PAGE}
+          element={getElement(LoadingAccountPage, SIGN_UP_LOADING_PAGE)}
+        />
+        <Route
+          path={SIGN_UP_COMPLETED_REDIRECT}
+          element={<Navigate to={FEED_PAGE} />}
+        />
+        <Route
+          path={SIGN_UP_REFERRER_COMPLETED_REDIRECT}
+          element={<Navigate to={TRENDING_PAGE} />}
+        />
+        <Route path='*' element={getElement(undefined, SIGN_UP_PAGE)} />
+      </Routes>
     </RouteContextProvider>
   )
 }

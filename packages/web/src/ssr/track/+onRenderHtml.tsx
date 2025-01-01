@@ -27,7 +27,7 @@ type TrackPageContext = PageContextServer & {
 }
 
 export default function render(pageContext: TrackPageContext) {
-  const { pageProps, userAgent } = pageContext
+  const { pageProps, userAgent, urlOriginal } = pageContext
   const { track, user } = pageProps
   const { track_id, title, permalink, release_date, created_at } = track
   const { user_id, name: userName } = user
@@ -44,6 +44,7 @@ export default function render(pageContext: TrackPageContext) {
   const pageHtml = renderToString(
     <ServerWebPlayer
       isMobile={isMobile}
+      urlOriginal={urlOriginal}
       initialState={{
         tracks: { entries: { [track_id]: { metadata: track } } },
         users: { entries: { [user_id]: { metadata: user } } },

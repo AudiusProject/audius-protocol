@@ -129,8 +129,7 @@ export const useSearchCategory = () => {
         pathname,
         search: !isEmpty(commonFilterParams)
           ? new URLSearchParams(commonFilterParams).toString()
-          : undefined,
-        state: {}
+          : undefined
       })
     },
     [

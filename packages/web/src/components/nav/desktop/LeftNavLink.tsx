@@ -1,4 +1,4 @@
-import { ComponentProps, useMemo } from 'react'
+import { ComponentProps, ReactNode, useMemo } from 'react'
 
 import { Text, TextProps, useTheme } from '@audius/harmony'
 import { CSSInterpolation } from '@emotion/css'
@@ -12,9 +12,10 @@ import {
 } from 'hooks/useRequiresAccount'
 
 export type LeftNavLinkProps = { disabled?: boolean; asChild?: boolean } & (
-  | Omit<NavLinkProps, 'onDrop'>
+  | Omit<NavLinkProps, 'onDrop' | 'children'>
   | Omit<ComponentProps<'div'>, 'onDrop'>
 ) & {
+    children: ReactNode
     restriction?: RestrictionType
   }
 
@@ -113,7 +114,7 @@ export const LeftNavLink = (props: LeftNavLinkProps) => {
       <NavLink
         {...other}
         onClick={handleClick}
-        activeClassName='active'
+        className={({ isActive }) => (isActive ? 'active' : '')}
         css={css}
       >
         <TextComp {...textProps}>{children}</TextComp>

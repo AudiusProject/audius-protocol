@@ -29,7 +29,7 @@ const { getHasAccount, getAccountStatus } = accountSelectors
 
 type ConnectedNavBarProps = ReturnType<typeof mapStateToProps> &
   ReturnType<typeof mapDispatchToProps> &
-  RouteComponentProps<any>
+  RouteComponentProps
 
 const ConnectedNavBar = ({
   goToRoute,
@@ -45,8 +45,7 @@ const ConnectedNavBar = ({
   const search = (query: string) => {
     history.push({
       pathname: history.location.pathname,
-      search: query ? new URLSearchParams({ query }).toString() : undefined,
-      state: {}
+      search: query ? new URLSearchParams({ query }).toString() : undefined
     })
   }
 

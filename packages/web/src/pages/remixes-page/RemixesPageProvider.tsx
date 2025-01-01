@@ -64,8 +64,11 @@ const RemixesPageProvider = ({
   resetTracks
 }: RemixesPageProviderProps) => {
   const { handle, slug } = useParams<{ handle: string; slug: string }>()
+
   useEffect(() => {
-    fetchTrack(handle, slug)
+    if (handle && slug) {
+      fetchTrack(handle, slug)
+    }
   }, [handle, slug, fetchTrack])
 
   useEffect(() => {

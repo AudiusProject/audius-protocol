@@ -21,7 +21,7 @@ export type OwnProps = {}
 type NotificationUsersPageProps = OwnProps &
   ReturnType<typeof mapDispatchToProps> &
   ReturnType<typeof mapStateToProps> &
-  RouteComponentProps<{ notificationId: string }>
+  RouteComponentProps
 
 const NotificationUsersPage = ({ pageTitle }: NotificationUsersPageProps) => {
   // Set the Nav Header

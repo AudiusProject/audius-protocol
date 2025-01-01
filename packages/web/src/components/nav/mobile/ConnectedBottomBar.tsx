@@ -26,7 +26,7 @@ const { getUserHandle } = accountSelectors
 
 type ConnectedBottomBarProps = ReturnType<typeof mapStateToProps> &
   ReturnType<typeof mapDispatchToProps> &
-  RouteComponentProps<any>
+  RouteComponentProps
 
 const ConnectedBottomBar = ({
   goToRoute,

@@ -1,30 +1,37 @@
 import React from 'react'
 
-import type { History, Location } from 'history'
-import { useLocation, useNavigate, useParams } from 'react-router-dom'
+import type { History } from 'history'
+import { useLocation, useNavigate, useParams, Location } from 'react-router-dom'
 
 import { useHistoryContext } from 'app/HistoryProvider'
 
-export type RouteComponentProps = {
-  location: Location
+export type RouteComponentProps<
+  Params extends object = {},
+  State extends object | undefined = undefined
+> = {
+  location: Location<State>
   navigate: (to: string) => void
-  params: Record<string, string>
+  params: Params
   history: History
 }
 
 // Creates a withRouter HOC that provides location, navigate, and params
-export function withRouter<P extends object>(
-  Component: React.ComponentType<P>
-): React.FC<Omit<P, keyof RouteComponentProps>> {
+export function withRouter<
+  Props extends object,
+  Params extends object,
+  State extends object | undefined
+>(
+  Component: React.ComponentType<Props>
+): React.FC<Omit<Props, keyof RouteComponentProps<Params, State>>> {
   return function WithRouterWrapper(props) {
-    const location = useLocation()
+    const location = useLocation() as Location<State>
     const navigate = useNavigate()
     const { history } = useHistoryContext()
     const params = useParams()
 
     return (
       <Component
-        {...(props as P)}
+        {...(props as Props)}
         location={location}
         navigate={navigate}
         history={history}

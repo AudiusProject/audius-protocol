@@ -157,7 +157,7 @@ const LeftNav = (props: NavColumnProps) => {
                 <LeftNavLink to={TRENDING_PAGE} restriction='none'>
                   Trending
                 </LeftNavLink>
-                <LeftNavLink to={EXPLORE_PAGE} exact restriction='none'>
+                <LeftNavLink to={EXPLORE_PAGE} restriction='none'>
                   Explore
                 </LeftNavLink>
               </Box>

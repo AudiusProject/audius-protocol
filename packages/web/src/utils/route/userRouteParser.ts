@@ -29,7 +29,7 @@ export const parseUserRoute = (route: string): UserRouteParams => {
   const profilePageMatch = matchPath(PROFILE_PAGE, route)
   if (profilePageMatch) {
     const { handle = '' } = profilePageMatch.params
-    return { handle, userId: null }
+    return { handle, userId: null, tab: ProfilePageTabRoute.TRACKS }
   }
 
   const profilePageTracksMatch = matchPath(PROFILE_PAGE_TRACKS, route)

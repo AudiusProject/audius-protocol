@@ -237,7 +237,6 @@
     "@types/react-infinite-scroller": "1.2.1",
     "@types/react-lottie": "1.2.3",
     "@types/react-native-push-notification": "3.0.8",
-    "@types/react-router-dom": "5.3.3",
     "@types/react-table": "7.7.12",
     "@types/react-virtualized": "9.21.21",
     "@types/redux-sentry-middleware": "0.2.1",

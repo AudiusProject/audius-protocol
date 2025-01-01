@@ -1,4 +1,4 @@
-import React, { lazy, Component, Suspense } from 'react'
+import { lazy, Component, Suspense } from 'react'
 
 import {
   Name,
@@ -15,7 +15,7 @@ import {
 import { route } from '@audius/common/utils'
 import cn from 'classnames'
 import { connect } from 'react-redux'
-import { matchPath, Navigate, Routes, Route, Link } from 'react-router-dom'
+import { matchPath, Navigate, Routes, Route } from 'react-router-dom'
 import semver from 'semver'
 
 import { make } from 'common/store/analytics/actions'
@@ -344,11 +344,7 @@ class WebPlayer extends Component {
       !this.props.hasAccount &&
       this.props.accountStatus !== Status.LOADING &&
       authenticatedRoutes.some((route) => {
-        const match = matchPath(getPathname(this.props.location), {
-          path: route,
-          exact: true
-        })
-        return !!match
+        return !!matchPath(route, getPathname(this.props.location))
       })
     ) {
       if (prevProps.accountStatus === Status.LOADING) {
@@ -497,7 +493,7 @@ class WebPlayer extends Component {
                     }
                   />
                 ))}
-                <Route exact path={'/fb/share'} element={<FbSharePage />} />
+                <Route path={'/fb/share'} element={<FbSharePage />} />
 
                 <Route
                   path={FEED_PAGE}
@@ -648,7 +644,6 @@ class WebPlayer extends Component {
                   }
                 />
 
-                {/*  TODO need to figure out how to do this is v6 land
                 <Route
                   path={SEARCH_PAGE}
                   element={({ params }) => {
@@ -667,9 +662,7 @@ class WebPlayer extends Component {
                       <SearchPageV2 />
                     )
                   }}
-                /> */}
-
-                <Route path={SEARCH_PAGE} element={<SearchPageV2 />} />
+                />
 
                 <Route
                   path={UPLOAD_ALBUM_PAGE}
@@ -684,84 +677,61 @@ class WebPlayer extends Component {
                   element={<UploadPage scrollToTop={this.scrollToTop} />}
                 />
 
-                <Route exact path={SAVED_PAGE} element={<SavedPage />} />
+                <Route path={SAVED_PAGE} element={<SavedPage />} />
 
-                <Route exact path={LIBRARY_PAGE} element={<SavedPage />} />
-                <Route exact path={HISTORY_PAGE} element={<HistoryPage />} />
+                <Route path={LIBRARY_PAGE} element={<SavedPage />} />
+                <Route path={HISTORY_PAGE} element={<HistoryPage />} />
+                <Route path={DASHBOARD_PAGE} element={<DashboardPage />} />
                 <Route
-                  exact
-                  path={DASHBOARD_PAGE}
-                  element={<DashboardPage />}
-                />
-                <Route
-                  exact
                   path={WITHDRAWALS_PAGE}
                   element={<PayAndEarnPage tableView={TableType.WITHDRAWALS} />}
                 />
                 <Route
-                  exact
                   path={PURCHASES_PAGE}
                   element={<PayAndEarnPage tableView={TableType.PURCHASES} />}
                 />
                 <Route
-                  exact
                   path={SALES_PAGE}
                   element={<PayAndEarnPage tableView={TableType.SALES} />}
                 />
 
+                <Route path={PAYMENTS_PAGE} element={<PayAndEarnPage />} />
+                <Route path={AUDIO_PAGE} element={<AudioRewardsPage />} />
                 <Route
-                  exact
-                  path={PAYMENTS_PAGE}
-                  element={<PayAndEarnPage />}
-                />
-                <Route exact path={AUDIO_PAGE} element={<AudioRewardsPage />} />
-                <Route
-                  exact
                   path={AUDIO_TRANSACTIONS_PAGE}
                   element={<AudioTransactionsPage />}
                 />
-                <Route exact path={CHAT_PAGE} element={<ChatPageProvider />} />
+                <Route path={CHAT_PAGE} element={<ChatPageProvider />} />
                 <Route
-                  exact
                   path={DEACTIVATE_PAGE}
                   element={<DeactivateAccountPage />}
                 />
                 <Route
-                  exact
                   path={TRACK_COMMENTS_PAGE}
                   element={<TrackCommentsPage />}
                 />
+                <Route path={REPOSTING_USERS_ROUTE} element={<RepostsPage />} />
                 <Route
-                  exact
-                  path={REPOSTING_USERS_ROUTE}
-                  element={<RepostsPage />}
-                />
-                <Route
-                  exact
                   path={FAVORITING_USERS_ROUTE}
                   element={<FavoritesPage />}
                 />
                 <Route
-                  exact
                   path={FOLLOWING_USERS_ROUTE}
                   element={<FollowingPage />}
                 />
                 <Route
-                  exact
                   path={FOLLOWERS_USERS_ROUTE}
                   element={<FollowersPage />}
                 />
                 <Route
-                  exact
                   path={SUPPORTING_USERS_ROUTE}
                   element={<SupportingPage />}
                 />
                 <Route
-                  exact
                   path={TOP_SUPPORTERS_USERS_ROUTE}
                   element={<TopSupportersPage />}
                 />
-                <Route exact path={EMPTY_PAGE} element={<EmptyPage />} />
+                <Route path={EMPTY_PAGE} element={<EmptyPage />} />
                 <Route path={SETTINGS_PAGE} element={<SettingsPage />} />
                 <Route
                   path={AUTHORIZED_APPS_SETTINGS_PAGE}
@@ -775,41 +745,34 @@ class WebPlayer extends Component {
                   path={ACCOUNTS_MANAGING_YOU_SETTINGS_PAGE}
                   element={<SettingsPage />}
                 />
-                <Route exact path={CHECK_PAGE} element={<CheckPage />} />
+                <Route path={CHECK_PAGE} element={<CheckPage />} />
                 <Route
-                  exact
                   path={ACCOUNT_SETTINGS_PAGE}
                   element={<SettingsPage subPage={SubPage.ACCOUNT} />}
                 />
                 <Route
-                  exact
                   path={ACCOUNT_VERIFICATION_SETTINGS_PAGE}
                   element={<SettingsPage subPage={SubPage.VERIFICATION} />}
                 />
                 <Route
-                  exact
                   path={CHANGE_PASSWORD_SETTINGS_PAGE}
                   element={<SettingsPage subPage={SubPage.CHANGE_PASSWORD} />}
                 />
                 <Route
-                  exact
                   path={CHANGE_EMAIL_SETTINGS_PAGE}
                   element={<SettingsPage subPage={SubPage.CHANGE_EMAIL} />}
                 />
                 <Route
-                  exact
                   path={NOTIFICATION_SETTINGS_PAGE}
                   element={<SettingsPage subPage={SubPage.NOTIFICATIONS} />}
                 />
                 <Route
-                  exact
                   path={ABOUT_SETTINGS_PAGE}
                   element={<SettingsPage subPage={SubPage.ABOUT} />}
                 />
                 <Route path={APP_REDIRECT} element={<AppRedirectListener />} />
-                <Route exact path={NOT_FOUND_PAGE} element={<NotFoundPage />} />
+                <Route path={NOT_FOUND_PAGE} element={<NotFoundPage />} />
                 <Route
-                  exact
                   path={PLAYLIST_PAGE}
                   element={
                     <CollectionPage
@@ -819,17 +782,14 @@ class WebPlayer extends Component {
                   }
                 />
                 <Route
-                  exact
                   path={EDIT_PLAYLIST_PAGE}
                   element={<EditCollectionPage />}
                 />
                 <Route
-                  exact
                   path={EDIT_ALBUM_PAGE}
                   element={<EditCollectionPage />}
                 />
                 <Route
-                  exact
                   path={ALBUM_PAGE}
                   element={
                     <CollectionPage
@@ -839,7 +799,6 @@ class WebPlayer extends Component {
                   }
                 />
                 <Route
-                  exact
                   path={USER_ID_PAGE}
                   element={
                     <ProfilePage
@@ -848,12 +807,8 @@ class WebPlayer extends Component {
                     />
                   }
                 />
-                <Route exact path={TRACK_ID_PAGE} element={<TrackPage />} />
-                <Route
-                  exact
-                  path={PLAYLIST_ID_PAGE}
-                  element={<CollectionPage />}
-                />
+                <Route path={TRACK_ID_PAGE} element={<TrackPage />} />
+                <Route path={PLAYLIST_ID_PAGE} element={<CollectionPage />} />
                 <Route
                   path={PROFILE_PAGE}
                   element={
@@ -918,13 +873,11 @@ class WebPlayer extends Component {
                   }
                 />
                 <Route
-                  exact
                   path={PROFILE_PAGE_AI_ATTRIBUTED_TRACKS}
                   element={<AiAttributedTracksPage />}
                 />
-                <Route exact path={TRACK_PAGE} element={<TrackPage />} />
+                <Route path={TRACK_PAGE} element={<TrackPage />} />
                 <Route
-                  exact
                   path={TRACK_EDIT_PAGE}
                   element={
                     <EditTrackPage
@@ -934,7 +887,6 @@ class WebPlayer extends Component {
                   }
                 />
                 <Route
-                  exact
                   path={TRACK_REMIXES_PAGE}
                   element={
                     <RemixesPage

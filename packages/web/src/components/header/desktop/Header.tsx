@@ -1,8 +1,8 @@
 import { ReactNode } from 'react'
 
 import cn from 'classnames'
+import { useNavigate } from 'react-router-dom'
 
-import { useHistoryContext } from 'app/HistoryProvider'
 import { BackButton } from 'components/back-button/BackButton'
 import { HeaderGutter } from 'components/header/desktop/HeaderGutter'
 
@@ -45,7 +45,7 @@ const Header = (props: HeaderProps) => {
     headerContainerRef
   } = props
 
-  const { history } = useHistoryContext()
+  const navigate = useNavigate()
 
   const variantStyle = {
     [styles.main]: variant === 'main',
@@ -80,7 +80,7 @@ const Header = (props: HeaderProps) => {
           >
             <div className={cn(styles.headerWrapper, wrapperClassName)}>
               {showBackButton ? (
-                <BackButton onClick={onClickBack ?? history.goBack} />
+                <BackButton onClick={onClickBack ?? (() => navigate(-1))} />
               ) : null}
               <h1 className={cn(styles.header, variantStyle)}>{primary}</h1>
               <h2 className={styles.secondary}>{secondary}</h2>

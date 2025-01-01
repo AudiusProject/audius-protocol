@@ -293,6 +293,7 @@ class ConnectedSearchBar extends Component {
     )
 
     const { status, searchText } = this.props.search
+
     return (
       <Box ml='unit10' mt='l'>
         <SearchBar

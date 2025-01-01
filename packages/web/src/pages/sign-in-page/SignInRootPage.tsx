@@ -2,7 +2,7 @@ import { signInPageMessages } from '@audius/common/messages'
 import { route } from '@audius/common/utils'
 import { Helmet } from 'react-helmet'
 import { useSelector } from 'react-redux'
-import { Redirect, Route, Switch } from 'react-router-dom'
+import { Navigate, Route, Routes } from 'react-router-dom'
 import { useFirstMountState } from 'react-use'
 
 import { getIsGuest } from 'common/store/pages/signon/selectors'
@@ -23,22 +23,25 @@ export const SignInRootPage = () => {
         <title>{signInPageMessages.metaTitle}</title>
         <meta name='description' content={signInPageMessages.metaDescription} />
       </Helmet>
-      <Switch>
-        <Route exact path={SIGN_IN_PAGE}>
-          <SignInPage />
-        </Route>
+      <Routes>
+        <Route path={SIGN_IN_PAGE} element={<SignInPage />} />
         {isGuest ? (
-          <Route exact path={SIGN_IN_CONFIRM_EMAIL_PAGE}>
-            <ConfirmEmailPage />
-          </Route>
+          <Route
+            path={SIGN_IN_CONFIRM_EMAIL_PAGE}
+            element={<ConfirmEmailPage />}
+          />
         ) : isFirstMount ? (
-          <Redirect to={SIGN_IN_PAGE} />
+          <Route
+            path={SIGN_IN_CONFIRM_EMAIL_PAGE}
+            element={<Navigate to={SIGN_IN_PAGE} />}
+          />
         ) : (
-          <Route exact path={SIGN_IN_CONFIRM_EMAIL_PAGE}>
-            <ConfirmEmailPage />
-          </Route>
+          <Route
+            path={SIGN_IN_CONFIRM_EMAIL_PAGE}
+            element={<ConfirmEmailPage />}
+          />
         )}
-      </Switch>
+      </Routes>
     </>
   )
 }

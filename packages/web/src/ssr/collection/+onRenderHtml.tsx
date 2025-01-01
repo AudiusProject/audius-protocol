@@ -28,7 +28,7 @@ type TrackPageContext = PageContextServer & {
 }
 
 export default function render(pageContext: TrackPageContext) {
-  const { pageProps, userAgent } = pageContext
+  const { pageProps, userAgent, urlOriginal } = pageContext
   const { collection, user, tracks } = pageProps
   const { playlist_id, playlist_name, permalink, is_album } = collection
   const { user_id, name: userName, handle: userHandle } = user
@@ -47,6 +47,7 @@ export default function render(pageContext: TrackPageContext) {
   const pageHtml = renderToString(
     <ServerWebPlayer
       isMobile={isMobile}
+      urlOriginal={urlOriginal}
       initialState={{
         collections: {
           entries: { [playlist_id]: { metadata: collection } },

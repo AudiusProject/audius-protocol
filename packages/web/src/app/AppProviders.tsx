@@ -28,10 +28,10 @@ export const AppProviders = ({ children }: AppProvidersProps) => {
   const { history } = useHistoryContext()
   const isMobile = useIsMobile()
 
-  const { store, history: storeHistory } = useMemo(() => {
-    console.log('running configure store')
-    return configureStore(history, isMobile)
-  }, [history, isMobile])
+  const { store, history: storeHistory } = useMemo(
+    () => configureStore(history, isMobile),
+    [history, isMobile]
+  )
 
   return (
     <QueryClientProvider client={queryClient}>

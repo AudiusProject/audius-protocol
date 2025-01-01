@@ -33,7 +33,6 @@ import {
 import { route } from '@audius/common/utils'
 import { Text, IconKebabHorizontal } from '@audius/harmony'
 import cn from 'classnames'
-import { LocationState } from 'history'
 import { range } from 'lodash'
 import { connect } from 'react-redux'
 import { Dispatch } from 'redux'
@@ -499,7 +498,7 @@ function mapStateToProps(state: AppState, ownProps: OwnProps) {
 
 function mapDispatchToProps(dispatch: Dispatch) {
   return {
-    goToRoute: (route: string, state?: LocationState) =>
+    goToRoute: (route: string, state?: any) =>
       dispatch(pushRoute(route, state)),
     record: (event: TrackEvent) => dispatch(event),
     shareCollection: (id: ID) =>

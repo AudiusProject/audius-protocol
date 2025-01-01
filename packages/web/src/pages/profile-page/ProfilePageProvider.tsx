@@ -39,7 +39,6 @@ import {
   playerSelectors
 } from '@audius/common/store'
 import { getErrorMessage, Nullable, route } from '@audius/common/utils'
-import { UnregisterCallback } from 'history'
 import { uniq } from 'lodash'
 import moment from 'moment'
 import { connect } from 'react-redux'
@@ -149,7 +148,7 @@ class ProfilePage extends PureComponent<ProfilePageProps, ProfilePageState> {
     ...INITIAL_UPDATE_FIELDS
   }
 
-  unlisten!: UnregisterCallback
+  unlisten!: () => void
 
   componentDidMount() {
     // If routing from a previous profile page
@@ -157,7 +156,7 @@ class ProfilePage extends PureComponent<ProfilePageProps, ProfilePageState> {
     this.fetchProfile(getPathname(this.props.location))
 
     // Switching from profile page => profile page
-    this.unlisten = this.props.history.listen((location, action) => {
+    this.unlisten = this.props.history.listen(({ location, action }) => {
       // If changing pages or "POP" on router (with goBack, the pathnames are equal)
       if (
         getPathname(this.props.location) !== getPathname(location) ||

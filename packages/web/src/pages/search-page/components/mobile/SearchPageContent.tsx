@@ -337,9 +337,7 @@ const SearchPageContent = (props: SearchPageContentProps) => {
   const { setHeader } = useContext(HeaderContext)
   const pathname = useSelector(getLocationPathname)
   useEffect(() => {
-    const isSearchPage = matchPath(pathname, {
-      path: SEARCH_PAGE
-    })
+    const isSearchPage = matchPath(SEARCH_PAGE, pathname)
     if (!isSearchPage) return
     setHeader(
       <>

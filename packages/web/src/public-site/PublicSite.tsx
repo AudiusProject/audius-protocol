@@ -2,9 +2,8 @@ import { lazy, Suspense, useState, useCallback, useEffect } from 'react'
 
 import { route } from '@audius/common/utils'
 import { ThemeProvider } from '@audius/harmony'
-import { Router, Route } from 'react-router-dom'
+import { Route, BrowserRouter } from 'react-router-dom'
 
-import { useHistoryContext } from 'app/HistoryProvider'
 import LoadingSpinnerFullPage from 'components/loading-spinner-full-page/LoadingSpinnerFullPage'
 import NavScreen from 'public-site/components/NavOverlay'
 
@@ -43,7 +42,6 @@ type PublicSiteProps = {
 export const PublicSite = (props: PublicSiteProps) => {
   const { isMobile, setRenderPublicSite } = props
   const [isMobileOrNarrow, setIsMobileOrNarrow] = useState(isMobile)
-  const { history } = useHistoryContext()
   const handleMobileMediaQuery = useCallback(() => {
     if (MOBILE_WIDTH_MEDIA_QUERY.matches) setIsMobileOrNarrow(true)
     else setIsMobileOrNarrow(isMobile)
@@ -96,70 +94,61 @@ export const PublicSite = (props: PublicSiteProps) => {
       <Suspense fallback={<div style={{ width: '100vw', height: '100vh' }} />}>
         <ThemeProvider theme='day'>
           <AppContextProvider>
-            <Router history={history}>
+            <BrowserRouter>
               <NavScreen
                 closeNavScreen={closeNavScreen}
                 isOpen={isNavScreenOpen}
                 setRenderPublicSite={setRenderPublicSite}
               />
               <Route
-                exact
                 path={'/legal/terms-of-use'}
-                render={() => (
+                element={
                   <TermsOfUsePage
                     isMobile={isMobileOrNarrow}
                     openNavScreen={openNavScreen}
                     setRenderPublicSite={setRenderPublicSite}
                   />
-                )}
+                }
               />
               <Route
-                exact
                 path={'/legal/privacy-policy'}
-                render={() => (
+                element={
                   <PrivacyPolicyPage
                     isMobile={isMobileOrNarrow}
                     openNavScreen={openNavScreen}
                     setRenderPublicSite={setRenderPublicSite}
                   />
-                )}
+                }
               />
               <Route
-                exact
                 path={'/press'}
-                render={() => {
-                  window.location.href = AUDIUS_PRESS_LINK
-                  return null
-                }}
+                element={<a href={AUDIUS_PRESS_LINK}>Press</a>}
               />
               <Route
-                exact
                 path={'/download'}
-                render={() => (
+                element={
                   <DownloadPage
                     isMobile={isMobileOrNarrow}
                     openNavScreen={openNavScreen}
                     setRenderPublicSite={setRenderPublicSite}
                   />
-                )}
+                }
               />
               <Route
-                exact
                 path={'/'}
-                render={() => (
+                element={
                   <LandingPage
                     isMobile={isMobileOrNarrow}
                     openNavScreen={openNavScreen}
                     setRenderPublicSite={setRenderPublicSite}
                   />
-                )}
+                }
               />
               <Route
-                exact
                 path={'/auth-redirect'}
-                render={() => <LoadingSpinnerFullPage />}
+                element={<LoadingSpinnerFullPage />}
               />
-            </Router>
+            </BrowserRouter>
           </AppContextProvider>
         </ThemeProvider>
       </Suspense>

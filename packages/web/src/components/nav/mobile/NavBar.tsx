@@ -46,7 +46,7 @@ interface NavBarProps {
   goToAudioPage: () => void
   search: (term: string) => void
   goBack: () => void
-  history: History<any>
+  history: History
 }
 
 const messages = {

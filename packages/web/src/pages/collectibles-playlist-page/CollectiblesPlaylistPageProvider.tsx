@@ -99,17 +99,10 @@ export const CollectiblesPlaylistPageProvider = ({
 
   // Getting user data
   const pathname = useSelector(getLocationPathname)
-  const routeMatch = useMemo(
-    () =>
-      matchPath<{ handle: string }>(pathname, {
-        path: AUDIO_NFT_PLAYLIST_PAGE,
-        exact: true
-      }),
-    [pathname]
-  )
+  const handle = matchPath(AUDIO_NFT_PLAYLIST_PAGE, pathname)?.params.handle
 
   const user = useSelector<AppState, User | null>((state) =>
-    getUser(state, { handle: routeMatch?.params.handle ?? null })
+    getUser(state, { handle: handle ?? null })
   )
 
   const [audioCollectibles, setAudioCollectibles] = useState<Collectible[]>([])
@@ -240,12 +233,10 @@ export const CollectiblesPlaylistPageProvider = ({
     : SmartCollectionVariant.AUDIO_NFT_PLAYLIST
 
   useEffect(() => {
-    if (routeMatch?.params.handle) {
-      dispatch(
-        fetchProfile(routeMatch.params.handle, null, false, false, false, true)
-      )
+    if (handle) {
+      dispatch(fetchProfile(handle, null, false, false, false, true))
     }
-  }, [dispatch, routeMatch])
+  }, [dispatch, handle])
 
   const tracksLoading = !hasFetchedAllCollectibles
 

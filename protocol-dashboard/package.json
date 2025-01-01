@@ -109,7 +109,6 @@
     "@types/react-helmet": "5.0.16",
     "@types/react-lottie": "1.2.5",
     "@types/react-redux": "7.1.28",
-    "@types/react-router-dom": "5.3.3",
     "@types/react-tooltip": "3.11.0",
     "@types/react-virtualized": "9.21.10",
     "@types/semver": "6.2.1",

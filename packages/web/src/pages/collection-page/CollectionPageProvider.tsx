@@ -52,7 +52,6 @@ import {
   playerActions
 } from '@audius/common/store'
 import { formatUrlName, Uid, Nullable, route } from '@audius/common/utils'
-import { UnregisterCallback } from 'history'
 import { connect } from 'react-redux'
 import { Dispatch } from 'redux'
 
@@ -127,7 +126,7 @@ type OwnProps = {
 type CollectionPageProps = OwnProps &
   ReturnType<ReturnType<typeof makeMapStateToProps>> &
   ReturnType<typeof mapDispatchToProps> &
-  RouteComponentProps
+  RouteComponentProps<{}, { forceFetch?: boolean }>
 
 type CollectionPageState = {
   filterText: string
@@ -159,11 +158,11 @@ class CollectionPage extends Component<
     updatingRoute: false
   }
 
-  unlisten!: UnregisterCallback
+  unlisten!: () => void
 
   componentDidMount() {
     this.fetchCollection(getPathname(this.props.location), true)
-    this.unlisten = this.props.history.listen((location, action) => {
+    this.unlisten = this.props.history.listen(({ location, action }) => {
       if (
         action !== 'REPLACE' &&
         getPathname(this.props.location) !== getPathname(location)
@@ -377,8 +376,7 @@ class CollectionPage extends Component<
 
     const { permalink, collectionId } = params
 
-    // Need typecast as can't set type via redux-first-history, see https://github.com/reach/router/issues/414
-    const locationState = this.props.location.state as { forceFetch?: boolean }
+    const locationState = this.props.location.state
     const forceFetch = locationState?.forceFetch
 
     if (forceFetch || permalink || collectionId !== this.state.playlistId) {

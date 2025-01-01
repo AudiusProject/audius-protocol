@@ -1,8 +1,8 @@
 import {
-  BrowserHistoryBuildOptions,
+  BrowserHistoryOptions,
   createBrowserHistory,
   createHashHistory,
-  HashHistoryBuildOptions
+  HashHistoryOptions
 } from 'history'
 
 import { env } from 'services/env'
@@ -12,13 +12,13 @@ const basename = env.BASENAME
 
 export const createHistory = () => {
   if (USE_HASH_ROUTING) {
-    const config: HashHistoryBuildOptions = {}
+    const config: HashHistoryOptions = {}
     if (basename) {
       config.basename = basename
     }
     return createHashHistory(config)
   } else {
-    const config: BrowserHistoryBuildOptions = {}
+    const config: BrowserHistoryOptions = {}
     if (basename) {
       config.basename = basename
     }

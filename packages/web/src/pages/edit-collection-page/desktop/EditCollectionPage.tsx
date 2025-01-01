@@ -47,7 +47,7 @@ export const EditCollectionPage = () => {
   const permalink = `/${handle}/${isAlbum ? 'album' : 'playlist'}/${slug}`
   const dispatch = useDispatch()
   useRequiresAccount()
-  useIsUnauthorizedForHandleRedirect(handle)
+  useIsUnauthorizedForHandleRedirect(handle!)
 
   const { data: currentUserId } = useGetCurrentUserId({})
   const { data: apiCollection, status } = useGetPlaylistByPermalink(
