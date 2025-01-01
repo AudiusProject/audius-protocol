@@ -89,9 +89,10 @@ class ConnectedSearchBar extends Component {
     }
 
     let newPath = pathname
-    const searchMatch = matchPath(getPathname(this.props.history.location), {
-      path: SEARCH_PAGE
-    })
+    const searchMatch = matchPath(
+      SEARCH_PAGE,
+      getPathname(this.props.history.location)
+    )
 
     if (searchMatch) {
       newPath = generatePath(SEARCH_PAGE, {
@@ -168,9 +169,10 @@ class ConnectedSearchBar extends Component {
 
     let newPath = '/search'
 
-    const searchMatch = matchPath(getPathname(this.props.history.location), {
-      path: SEARCH_PAGE
-    })
+    const searchMatch = matchPath(
+      SEARCH_PAGE,
+      getPathname(this.props.history.location)
+    )
 
     if (searchMatch) {
       newPath = generatePath(SEARCH_PAGE, {
@@ -189,6 +191,7 @@ class ConnectedSearchBar extends Component {
     if (!this.props.search.tracks) {
       this.props.search.tracks = []
     }
+
     const dataSource = {
       sections: [
         {
@@ -288,6 +291,7 @@ class ConnectedSearchBar extends Component {
       (count, section) => count + section.children.length,
       0
     )
+
     const { status, searchText } = this.props.search
     return (
       <Box ml='unit10' mt='l'>
@@ -314,9 +318,7 @@ class ConnectedSearchBar extends Component {
 
 const mapStateToProps = (state, props) => ({
   search: getSearch(state, props),
-  isViewingSearchPage: !!matchPath(state.router.location.pathname, {
-    path: SEARCH_PAGE
-  })
+  isViewingSearchPage: !!matchPath(SEARCH_PAGE, state.router.location.pathname)
 })
 const mapDispatchToProps = (dispatch) => ({
   fetchSearch: (value) => dispatch(fetchSearch(value)),

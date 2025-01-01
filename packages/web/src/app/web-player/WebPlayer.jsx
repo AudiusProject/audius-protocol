@@ -1,4 +1,4 @@
-import { lazy, Component, Suspense } from 'react'
+import React, { lazy, Component, Suspense } from 'react'
 
 import {
   Name,
@@ -15,7 +15,7 @@ import {
 import { route } from '@audius/common/utils'
 import cn from 'classnames'
 import { connect } from 'react-redux'
-import { matchPath, Navigate, Routes, Route } from 'react-router-dom'
+import { matchPath, Navigate, Routes, Route, Link } from 'react-router-dom'
 import semver from 'semver'
 
 import { make } from 'common/store/analytics/actions'
@@ -498,6 +498,7 @@ class WebPlayer extends Component {
                   />
                 ))}
                 <Route exact path={'/fb/share'} element={<FbSharePage />} />
+
                 <Route
                   path={FEED_PAGE}
                   element={
@@ -555,6 +556,7 @@ class WebPlayer extends Component {
                   }
                 />
                 <Route path={EXPLORE_PAGE} element={<ExplorePage />} />
+
                 <Route
                   path={AUDIO_NFT_PLAYLIST_PAGE}
                   element={<CollectiblesPlaylistPage />}
@@ -645,10 +647,12 @@ class WebPlayer extends Component {
                     />
                   }
                 />
+
+                {/*  TODO need to figure out how to do this is v6 land
                 <Route
                   path={SEARCH_PAGE}
-                  render={(props) => {
-                    const { category } = props.params
+                  element={({ params }) => {
+                    const { category } = params
                     return category &&
                       !validSearchCategories.includes(category) ? (
                       <Navigate
@@ -663,7 +667,10 @@ class WebPlayer extends Component {
                       <SearchPageV2 />
                     )
                   }}
-                />
+                /> */}
+
+                <Route path={SEARCH_PAGE} element={<SearchPageV2 />} />
+
                 <Route
                   path={UPLOAD_ALBUM_PAGE}
                   element={<UploadPage uploadType={UploadType.ALBUM} />}
@@ -676,11 +683,10 @@ class WebPlayer extends Component {
                   path={UPLOAD_PAGE}
                   element={<UploadPage scrollToTop={this.scrollToTop} />}
                 />
-                <Route
-                  exact
-                  path={[SAVED_PAGE, LIBRARY_PAGE]}
-                  element={<SavedPage />}
-                />
+
+                <Route exact path={SAVED_PAGE} element={<SavedPage />} />
+
+                <Route exact path={LIBRARY_PAGE} element={<SavedPage />} />
                 <Route exact path={HISTORY_PAGE} element={<HistoryPage />} />
                 <Route
                   exact
@@ -702,6 +708,7 @@ class WebPlayer extends Component {
                   path={SALES_PAGE}
                   element={<PayAndEarnPage tableView={TableType.SALES} />}
                 />
+
                 <Route
                   exact
                   path={PAYMENTS_PAGE}
@@ -755,14 +762,17 @@ class WebPlayer extends Component {
                   element={<TopSupportersPage />}
                 />
                 <Route exact path={EMPTY_PAGE} element={<EmptyPage />} />
+                <Route path={SETTINGS_PAGE} element={<SettingsPage />} />
                 <Route
-                  exact
-                  path={[
-                    SETTINGS_PAGE,
-                    AUTHORIZED_APPS_SETTINGS_PAGE,
-                    ACCOUNTS_YOU_MANAGE_SETTINGS_PAGE,
-                    ACCOUNTS_MANAGING_YOU_SETTINGS_PAGE
-                  ]}
+                  path={AUTHORIZED_APPS_SETTINGS_PAGE}
+                  element={<SettingsPage />}
+                />
+                <Route
+                  path={ACCOUNTS_YOU_MANAGE_SETTINGS_PAGE}
+                  element={<SettingsPage />}
+                />
+                <Route
+                  path={ACCOUNTS_MANAGING_YOU_SETTINGS_PAGE}
                   element={<SettingsPage />}
                 />
                 <Route exact path={CHECK_PAGE} element={<CheckPage />} />
@@ -810,7 +820,12 @@ class WebPlayer extends Component {
                 />
                 <Route
                   exact
-                  path={[EDIT_PLAYLIST_PAGE, EDIT_ALBUM_PAGE]}
+                  path={EDIT_PLAYLIST_PAGE}
+                  element={<EditCollectionPage />}
+                />
+                <Route
+                  exact
+                  path={EDIT_ALBUM_PAGE}
                   element={<EditCollectionPage />}
                 />
                 <Route
@@ -840,15 +855,61 @@ class WebPlayer extends Component {
                   element={<CollectionPage />}
                 />
                 <Route
-                  exact
-                  path={[
-                    PROFILE_PAGE_TRACKS,
-                    PROFILE_PAGE_ALBUMS,
-                    PROFILE_PAGE_PLAYLISTS,
-                    PROFILE_PAGE_REPOSTS,
-                    PROFILE_PAGE_COLLECTIBLE_DETAILS,
-                    PROFILE_PAGE_COLLECTIBLES
-                  ]}
+                  path={PROFILE_PAGE}
+                  element={
+                    <ProfilePage
+                      {...this.props}
+                      containerRef={this.props.mainContentRef.current}
+                    />
+                  }
+                />
+                <Route
+                  path={PROFILE_PAGE_TRACKS}
+                  element={
+                    <ProfilePage
+                      {...this.props}
+                      containerRef={this.props.mainContentRef.current}
+                    />
+                  }
+                />
+                <Route
+                  path={PROFILE_PAGE_ALBUMS}
+                  element={
+                    <ProfilePage
+                      {...this.props}
+                      containerRef={this.props.mainContentRef.current}
+                    />
+                  }
+                />
+                <Route
+                  path={PROFILE_PAGE_PLAYLISTS}
+                  element={
+                    <ProfilePage
+                      {...this.props}
+                      containerRef={this.props.mainContentRef.current}
+                    />
+                  }
+                />
+                <Route
+                  path={PROFILE_PAGE_REPOSTS}
+                  element={
+                    <ProfilePage
+                      {...this.props}
+                      containerRef={this.props.mainContentRef.current}
+                    />
+                  }
+                />
+                <Route
+                  path={PROFILE_PAGE_COLLECTIBLE_DETAILS}
+                  element={
+                    <ProfilePage
+                      {...this.props}
+                      containerRef={this.props.mainContentRef.current}
+                    />
+                  }
+                />
+                <Route
+                  path={PROFILE_PAGE_COLLECTIBLES}
                   element={
                     <ProfilePage
                       {...this.props}

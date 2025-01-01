@@ -312,7 +312,7 @@ class ProfilePage extends PureComponent<ProfilePageProps, ProfilePageState> {
         forceUpdate,
         shouldSetLoading
       )
-      if (params.tab) {
+      if ('tab' in params) {
         this.setState({ activeTab: getTabForRoute(params.tab) })
       }
     } else {

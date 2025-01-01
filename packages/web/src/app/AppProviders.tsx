@@ -1,9 +1,9 @@
-import { ReactNode } from 'react'
+import { ReactNode, useMemo } from 'react'
 
 import { QueryClientProvider } from '@tanstack/react-query'
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import { Provider as ReduxProvider } from 'react-redux'
-import { HistoryRouter } from 'redux-first-history/rr6'
+import { HistoryRouter as Router } from 'redux-first-history/rr6'
 
 import { RouterContextProvider } from 'components/animated-switch/RouterContextProvider'
 import { HeaderContextProvider } from 'components/header/mobile/HeaderContextProvider'
@@ -27,13 +27,16 @@ type AppProvidersProps = {
 export const AppProviders = ({ children }: AppProvidersProps) => {
   const { history } = useHistoryContext()
   const isMobile = useIsMobile()
-  const { store, history: storeHistory } = configureStore(history, isMobile)
-  console.log('storeHistory', storeHistory)
+
+  const { store, history: storeHistory } = useMemo(() => {
+    console.log('running configure store')
+    return configureStore(history, isMobile)
+  }, [history, isMobile])
 
   return (
     <QueryClientProvider client={queryClient}>
       <ReduxProvider store={store}>
-        <HistoryRouter history={storeHistory}>
+        <Router history={storeHistory}>
           <RouterContextProvider>
             <HeaderContextProvider>
               <NavProvider>
@@ -51,7 +54,7 @@ export const AppProviders = ({ children }: AppProvidersProps) => {
               </NavProvider>
             </HeaderContextProvider>
           </RouterContextProvider>
-        </HistoryRouter>
+        </Router>
       </ReduxProvider>
       <ReactQueryDevtools />
     </QueryClientProvider>
