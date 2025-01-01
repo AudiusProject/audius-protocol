@@ -1,0 +1,15 @@
+services:
+  audiusd:
+    container_name: audiusd
+    build:
+      context: ${PROJECT_ROOT}
+      dockerfile: ${PROJECT_ROOT}/cmd/audiusd/Dockerfile
+      args:
+        git_sha: '${GIT_COMMIT}'
+    restart: unless-stopped
+    profiles:
+      - discovery
+      - storage
+    depends_on:
+      db:
+        condition: service_healthy

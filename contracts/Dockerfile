@@ -1,5 +1,5 @@
 # Uses separate stage for nodejs deps despite caching to avoid installing build tools
-FROM node:18.16 as builder
+FROM node:18.16 AS builder
 COPY package*.json ./
 RUN npm ci
 
