@@ -20,6 +20,11 @@ limit 1;
 select *
 from core_validators;
 
+-- name: GetAllRegisteredNodesSorted :many
+select *
+from core_validators
+order by comet_address;
+
 -- name: GetNodeByEndpoint :one
 select *
 from core_validators
@@ -43,17 +48,37 @@ with recent_rollups as (
 )
 select
     rr.id,
-    sr.tx_hash,
-    sr.block_start,
-    sr.block_end,
-    sr.time,
+    rr.tx_hash,
+    rr.block_start,
+    rr.block_end,
+    rr.time,
     nr.address,
     nr.blocks_proposed
 from recent_rollups rr
 left join sla_node_reports nr
 on rr.id = nr.sla_rollup_id and nr.address = $1
-left join sla_rollups sr
-on rr.id = sr.id;
+order by rr.time;
+
+-- name: GetRecentRollupsForAllNodes :many
+with recent_rollups as (
+    select *
+    from sla_rollups
+    where sla_rollups.id <= $1
+    order by time desc
+    limit $2
+)
+select
+    rr.id,
+    rr.tx_hash,
+    rr.block_start,
+    rr.block_end,
+    rr.time,
+    nr.address,
+    nr.blocks_proposed
+from recent_rollups rr
+left join sla_node_reports nr
+on rr.id = nr.sla_rollup_id
+order by rr.time;
 
 -- name: GetSlaRollupWithId :one
 select * from sla_rollups where id = $1;

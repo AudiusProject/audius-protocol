@@ -213,7 +213,8 @@ def _update_aggregate_tips(session: Session, redis: Redis):
     )
     ranks_after = _get_ranks(session, prev_slot, max_slot)
     index_rank_ups(session, ranks_before, ranks_after, max_slot)
-    redis.set(redis_keys.solana.aggregate_tips.last_tx, last_tip_signature)
+    if last_tip_signature:
+        redis.set(redis_keys.solana.aggregate_tips.last_tx, last_tip_signature)
     redis.set(
         redis_keys.solana.aggregate_tips.last_completed_at,
         datetime.now(timezone.utc).timestamp(),

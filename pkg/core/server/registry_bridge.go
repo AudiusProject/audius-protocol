@@ -15,6 +15,7 @@ import (
 	"github.com/AudiusProject/audius-protocol/pkg/logger"
 	"github.com/cometbft/cometbft/crypto/ed25519"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
+	geth "github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
@@ -22,6 +23,14 @@ import (
 )
 
 func (s *Server) startRegistryBridge() error {
+	if s.isDevEnvironment() {
+		s.logger.Info("running in dev, registering on ethereum")
+		if err := s.registerSelfOnEth(); err != nil {
+			return fmt.Errorf("error registering onto eth: %v", err)
+		}
+		s.gatherEthNodes()
+	}
+
 	<-s.awaitEthNodesReady
 	<-s.awaitRpcReady
 	s.logger.Info("starting registry bridge")
@@ -83,14 +92,8 @@ func (s *Server) RegisterSelf() error {
 	}
 	if !isRegistered {
 		s.logger.Infof("node %s : %s not registered on Ethereum", nodeAddress.Hex(), nodeEndpoint)
-		if s.isDevEnvironment() {
-			if err := s.registerSelfOnEth(); err != nil {
-				return fmt.Errorf("error registering onto eth: %v", err)
-			}
-		} else {
-			logger.Info("continuing unregistered")
-			return nil
-		}
+		logger.Info("continuing unregistered")
+		return nil
 	}
 
 	spf, err := s.contracts.GetServiceProviderFactoryContract()
@@ -272,6 +275,23 @@ func (s *Server) registerSelfOnEth() error {
 	spf, err := s.contracts.GetServiceProviderFactoryContract()
 	if err != nil {
 		return fmt.Errorf("could not get service provider factory contract: %v", err)
+	}
+
+	alreadyRegistered := false
+	addr := geth.HexToAddress(s.config.WalletAddress)
+	sp, err := spf.GetServiceProviderIdsFromAddress(nil, addr, contracts.ContentNode)
+	if err == nil && len(sp) > 0 {
+		alreadyRegistered = true
+	}
+
+	sp, err = spf.GetServiceProviderIdsFromAddress(nil, addr, contracts.DiscoveryNode)
+	if err == nil && len(sp) > 0 {
+		alreadyRegistered = true
+	}
+
+	if alreadyRegistered {
+		s.logger.Info("node already registered on eth!")
+		return nil
 	}
 
 	stakingAddress, err := spf.GetStakingAddress(nil)

@@ -49,8 +49,7 @@ services:
       test: ['CMD', 'curl', '-f', 'http://127.0.0.1:6001/relay/health']
       interval: 1s
       timeout: 1s
-      retries: 60
-      start_period: 5s
+      retries: 120
     depends_on:
       db:
         condition: service_healthy
@@ -84,8 +83,7 @@ services:
       test: ['CMD', 'curl', '-f', 'http://127.0.0.1:6002/solana/health_check']
       interval: 1s
       timeout: 1s
-      retries: 60
-      start_period: 5s
+      retries: 120
     depends_on:
       db:
         condition: service_healthy

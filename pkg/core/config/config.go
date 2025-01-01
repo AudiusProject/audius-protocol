@@ -53,7 +53,7 @@ const (
 const (
 	ProdPersistentPeers  = "53a2506dcf34b267c3e04bb63e0ee4f563c7850d@34.67.133.214:26656,f0d79ce5eb91847db0a1b9ad4c8a15824710f9c3@34.121.217.14:26656,edf0b62f900c6319fdb482b0379b91b8a3c0d773@35.223.56.100:26656,35207ecb279b19ab53e0172f0e3ae47ac930d147@35.193.73.250:26656,bc6662eb1cff8c214fdd2147cef52ce6abc0b441@35.162.219.88:26656,2c47b1aba8e89caee91ac00c856b551a3035acad@34.208.174.151:26656,3afb27bab2cc0cea09fc65a9c33ffa8592a2eaf1@149.28.155.8:26656,d494895a1af5760d68566e4febf6d98de62cd575@207.246.72.205:26656"
 	StagePersistentPeers = "0f4be2aaa70e9570eee3485d8fa54502cf1a9fc0@34.67.210.7:26656,2f13439b2ee4c34bafe643f89575f40b7863a079@34.136.137.33:26656,c9b1ed3d3040e0c2ac70e3215f0ea9b16b401bca@34.68.24.207:26656,1eec5742f64fb243d22594e4143e14e77a38f232@34.71.167.168:26656,2da43f6e1b5614ea8fc8b7e89909863033ca6a27@35.208.173.168:26656"
-	DevPersistentPeers   = "ffad25668e060a357bbe534c8b7e5b4e1274368b@core-discovery-1:26656"
+	DevPersistentPeers   = "ffad25668e060a357bbe534c8b7e5b4e1274368b@audiusd-1:26656"
 )
 
 const (
@@ -125,13 +125,13 @@ func ReadConfig(logger *common.Logger) (*Config, error) {
 
 	var cfg Config
 	// comet config
-	cfg.LogLevel = getEnvWithDefault("audius_core_log_level", "main:info,state:info,statesync:info,p2p:none,mempool:none,*:error")
-	cfg.RootDir = getEnvWithDefault("audius_core_root_dir", homeDir+"/.audiusd")
-	cfg.RPCladdr = getEnvWithDefault("rpcLaddr", "tcp://0.0.0.0:26657")
-	cfg.P2PLaddr = getEnvWithDefault("p2pLaddr", "tcp://0.0.0.0:26656")
+	cfg.LogLevel = GetEnvWithDefault("audius_core_log_level", "main:info,state:info,statesync:info,p2p:none,mempool:none,*:error")
+	cfg.RootDir = GetEnvWithDefault("audius_core_root_dir", homeDir+"/.audiusd")
+	cfg.RPCladdr = GetEnvWithDefault("rpcLaddr", "tcp://0.0.0.0:26657")
+	cfg.P2PLaddr = GetEnvWithDefault("p2pLaddr", "tcp://0.0.0.0:26656")
 
-	cfg.GRPCladdr = getEnvWithDefault("grpcLaddr", "0.0.0.0:50051")
-	cfg.CoreServerAddr = getEnvWithDefault("coreServerAddr", "0.0.0.0:26659")
+	cfg.GRPCladdr = GetEnvWithDefault("grpcLaddr", "0.0.0.0:50051")
+	cfg.CoreServerAddr = GetEnvWithDefault("coreServerAddr", "0.0.0.0:26659")
 
 	cfg.MaxInboundPeers = getEnvIntWithDefault("maxInboundPeers", 200)
 	cfg.MaxOutboundPeers = getEnvIntWithDefault("maxOutboundPeers", 200)
@@ -143,14 +143,14 @@ func ReadConfig(logger *common.Logger) (*Config, error) {
 		cfg.NodeType = Discovery
 		cfg.Environment = os.Getenv("audius_discprov_env")
 		delegatePrivateKey = os.Getenv("audius_delegate_private_key")
-		cfg.PSQLConn = getEnvWithDefault("audius_db_url", "postgresql://postgres:postgres@db:5432/audius_discovery")
+		cfg.PSQLConn = GetEnvWithDefault("audius_db_url", "postgresql://postgres:postgres@db:5432/audius_discovery")
 		cfg.EthRPCUrl = os.Getenv("audius_web3_eth_provider_url")
 		cfg.NodeEndpoint = os.Getenv("audius_discprov_url")
 	} else {
 		cfg.NodeType = Content
 		cfg.Environment = os.Getenv("MEDIORUM_ENV")
 		delegatePrivateKey = os.Getenv("delegatePrivateKey")
-		cfg.PSQLConn = getEnvWithDefault("dbUrl", "postgresql://postgres:postgres@postgres:5432/audius_creator_node")
+		cfg.PSQLConn = GetEnvWithDefault("dbUrl", "postgresql://postgres:postgres@postgres:5432/audius_creator_node")
 		cfg.EthRPCUrl = os.Getenv("ethProviderUrl")
 		cfg.NodeEndpoint = os.Getenv("creatorNodeEndpoint")
 	}
@@ -176,7 +176,7 @@ func ReadConfig(logger *common.Logger) (*Config, error) {
 	cfg.AddrBookStrict = true
 	switch cfg.Environment {
 	case "prod", "production", "mainnet":
-		cfg.PersistentPeers = getEnvWithDefault("persistentPeers", ProdPersistentPeers)
+		cfg.PersistentPeers = GetEnvWithDefault("persistentPeers", ProdPersistentPeers)
 		cfg.EthRegistryAddress = ProdRegistryAddress
 		if cfg.EthRPCUrl == "" {
 			cfg.EthRPCUrl = ProdEthRpc
@@ -187,7 +187,7 @@ func ReadConfig(logger *common.Logger) (*Config, error) {
 		cfg.UseHttpsForSdk = true
 
 	case "stage", "staging", "testnet":
-		cfg.PersistentPeers = getEnvWithDefault("persistentPeers", StagePersistentPeers)
+		cfg.PersistentPeers = GetEnvWithDefault("persistentPeers", StagePersistentPeers)
 		cfg.EthRegistryAddress = StageRegistryAddress
 		if cfg.EthRPCUrl == "" {
 			cfg.EthRPCUrl = StageEthRpc
@@ -197,7 +197,7 @@ func ReadConfig(logger *common.Logger) (*Config, error) {
 		cfg.UseHttpsForSdk = true
 
 	case "dev", "development", "devnet", "local", "sandbox":
-		cfg.PersistentPeers = getEnvWithDefault("persistentPeers", DevPersistentPeers)
+		cfg.PersistentPeers = GetEnvWithDefault("persistentPeers", DevPersistentPeers)
 		cfg.ExternalAddress = os.Getenv("externalAddress")
 		cfg.AddrBookStrict = false
 		if cfg.EthRPCUrl == "" {
@@ -237,7 +237,7 @@ func enableModules(config *Config) {
 	}
 }
 
-func getEnvWithDefault(key, defaultValue string) string {
+func GetEnvWithDefault(key, defaultValue string) string {
 	if value, exists := os.LookupEnv(key); exists {
 		return value
 	}
@@ -253,6 +253,34 @@ func getEnvIntWithDefault(key string, defaultValue int) int {
 		return defaultValue
 	}
 	return defaultValue
+}
+
+func DefaultEthRPC() string {
+	env := os.Getenv("MEDIORUM_ENV")
+	switch env {
+	case "prod":
+		return ProdEthRpc
+	case "stage":
+		return StageEthRpc
+	case "dev":
+		return DevEthRpc
+	default:
+		return ""
+	}
+}
+
+func DefaultRegistryAddress() string {
+	env := os.Getenv("MEDIORUM_ENV")
+	switch env {
+	case "prod":
+		return ProdRegistryAddress
+	case "stage":
+		return StageRegistryAddress
+	case "dev":
+		return DevRegistryAddress
+	default:
+		return ""
+	}
 }
 
 func (c *Config) RunDownMigrations() bool {

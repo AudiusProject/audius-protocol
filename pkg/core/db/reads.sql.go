@@ -45,6 +45,41 @@ func (q *Queries) GetAllRegisteredNodes(ctx context.Context) ([]CoreValidator, e
 	return items, nil
 }
 
+const getAllRegisteredNodesSorted = `-- name: GetAllRegisteredNodesSorted :many
+select rowid, pub_key, endpoint, eth_address, comet_address, eth_block, node_type, sp_id
+from core_validators
+order by comet_address
+`
+
+func (q *Queries) GetAllRegisteredNodesSorted(ctx context.Context) ([]CoreValidator, error) {
+	rows, err := q.db.Query(ctx, getAllRegisteredNodesSorted)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []CoreValidator
+	for rows.Next() {
+		var i CoreValidator
+		if err := rows.Scan(
+			&i.Rowid,
+			&i.PubKey,
+			&i.Endpoint,
+			&i.EthAddress,
+			&i.CometAddress,
+			&i.EthBlock,
+			&i.NodeType,
+			&i.SpID,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getAppStateAtHeight = `-- name: GetAppStateAtHeight :one
 select block_height, app_hash
 from core_app_state
@@ -252,6 +287,71 @@ func (q *Queries) GetRecentBlocks(ctx context.Context) ([]CoreBlock, error) {
 	return items, nil
 }
 
+const getRecentRollupsForAllNodes = `-- name: GetRecentRollupsForAllNodes :many
+with recent_rollups as (
+    select id, tx_hash, block_start, block_end, time
+    from sla_rollups
+    where sla_rollups.id <= $1
+    order by time desc
+    limit $2
+)
+select
+    rr.id,
+    rr.tx_hash,
+    rr.block_start,
+    rr.block_end,
+    rr.time,
+    nr.address,
+    nr.blocks_proposed
+from recent_rollups rr
+left join sla_node_reports nr
+on rr.id = nr.sla_rollup_id
+order by rr.time
+`
+
+type GetRecentRollupsForAllNodesParams struct {
+	ID    int32
+	Limit int32
+}
+
+type GetRecentRollupsForAllNodesRow struct {
+	ID             int32
+	TxHash         string
+	BlockStart     int64
+	BlockEnd       int64
+	Time           pgtype.Timestamp
+	Address        pgtype.Text
+	BlocksProposed pgtype.Int4
+}
+
+func (q *Queries) GetRecentRollupsForAllNodes(ctx context.Context, arg GetRecentRollupsForAllNodesParams) ([]GetRecentRollupsForAllNodesRow, error) {
+	rows, err := q.db.Query(ctx, getRecentRollupsForAllNodes, arg.ID, arg.Limit)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetRecentRollupsForAllNodesRow
+	for rows.Next() {
+		var i GetRecentRollupsForAllNodesRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.TxHash,
+			&i.BlockStart,
+			&i.BlockEnd,
+			&i.Time,
+			&i.Address,
+			&i.BlocksProposed,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getRecentRollupsForNode = `-- name: GetRecentRollupsForNode :many
 with recent_rollups as (
     select id, tx_hash, block_start, block_end, time
@@ -261,24 +361,23 @@ with recent_rollups as (
 )
 select
     rr.id,
-    sr.tx_hash,
-    sr.block_start,
-    sr.block_end,
-    sr.time,
+    rr.tx_hash,
+    rr.block_start,
+    rr.block_end,
+    rr.time,
     nr.address,
     nr.blocks_proposed
 from recent_rollups rr
 left join sla_node_reports nr
 on rr.id = nr.sla_rollup_id and nr.address = $1
-left join sla_rollups sr
-on rr.id = sr.id
+order by rr.time
 `
 
 type GetRecentRollupsForNodeRow struct {
 	ID             int32
-	TxHash         pgtype.Text
-	BlockStart     pgtype.Int8
-	BlockEnd       pgtype.Int8
+	TxHash         string
+	BlockStart     int64
+	BlockEnd       int64
 	Time           pgtype.Timestamp
 	Address        pgtype.Text
 	BlocksProposed pgtype.Int4

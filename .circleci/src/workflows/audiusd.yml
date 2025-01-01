@@ -20,10 +20,6 @@ jobs:
       context: Vercel
       service: core
   - test:
-      name: test-mediorum
-      context: Vercel
-      service: mediorum
-  - test:
       name: test-mediorum-unittests
       context: Vercel
       service: mediorum-unittests
@@ -43,7 +39,6 @@ jobs:
       requires:
         - build-audiusd
         - push-core
-        - test-mediorum
         - test-mediorum-unittests
       filters:
         branches:
