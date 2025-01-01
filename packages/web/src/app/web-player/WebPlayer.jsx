@@ -200,14 +200,6 @@ const includeSearch = (search) => {
   return search.includes('oauth_token') || search.includes('code')
 }
 
-const validSearchCategories = [
-  'all',
-  'tracks',
-  'profiles',
-  'albums',
-  'playlists'
-]
-
 initializeSentry()
 
 class WebPlayer extends Component {
@@ -644,25 +636,7 @@ class WebPlayer extends Component {
                   }
                 />
 
-                <Route
-                  path={SEARCH_PAGE}
-                  element={({ params }) => {
-                    const { category } = params
-                    return category &&
-                      !validSearchCategories.includes(category) ? (
-                      <Navigate
-                        to={{
-                          pathname: SEARCH_BASE_ROUTE,
-                          search: new URLSearchParams({
-                            query: category
-                          }).toString()
-                        }}
-                      />
-                    ) : (
-                      <SearchPageV2 />
-                    )
-                  }}
-                />
+                <Route path={SEARCH_PAGE} element={<SearchPageV2 />} />
 
                 <Route
                   path={UPLOAD_ALBUM_PAGE}

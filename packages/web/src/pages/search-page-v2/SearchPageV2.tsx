@@ -20,6 +20,15 @@ import { SearchHeader } from './SearchHeader'
 import { SearchResults } from './SearchResults'
 import { useSearchCategory, useShowSearchResults } from './hooks'
 
+// TODO: figure this out
+const validSearchCategories = [
+  'all',
+  'tracks',
+  'profiles',
+  'albums',
+  'playlists'
+]
+
 export const SearchPageV2 = () => {
   const isMobile = useIsMobile()
   const [category] = useSearchCategory()
