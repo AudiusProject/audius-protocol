@@ -3,9 +3,7 @@ import { useContext } from 'react'
 import { route } from '@audius/common/utils'
 import { Button, Flex, IconError, Text } from '@audius/harmony'
 import { useFormikContext } from 'formik'
-
-import { useHistoryContext } from 'app/HistoryProvider'
-import { useNavigateToPage } from 'hooks/useNavigateToPage'
+import { useNavigate } from 'react-router-dom'
 
 import { EditFormScrollContext } from '../../pages/edit-page/EditTrackPage'
 
@@ -22,8 +20,7 @@ export const AnchoredSubmitRowEdit = () => {
   const scrollToTop = useContext(EditFormScrollContext)
   const { isValid } = useFormikContext()
 
-  const { history } = useHistoryContext()
-  const navigate = useNavigateToPage()
+  const navigate = useNavigate()
 
   return (
     <>
@@ -33,7 +30,7 @@ export const AnchoredSubmitRowEdit = () => {
             variant='secondary'
             size='default'
             onClick={() =>
-              history.length > 0 ? history.goBack() : navigate(FEED_PAGE)
+              window.history.length > 0 ? navigate(-1) : navigate(FEED_PAGE)
             }
           >
             {messages.cancel}

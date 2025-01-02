@@ -2,12 +2,12 @@ import { ComponentType, useEffect } from 'react'
 
 import { explorePageSelectors, explorePageActions } from '@audius/common/store'
 import { connect } from 'react-redux'
-import { withRouter, RouteComponentProps } from 'react-router-dom'
 import { Dispatch } from 'redux'
 
 import { AppState } from 'store/types'
 import { push } from 'utils/navigation'
 import { createSeoDescription } from 'utils/seo'
+import { withRouter, RouteComponentProps } from 'utils/withRouter'
 
 import { ExplorePageProps as DesktopExplorePageProps } from './components/desktop/ExplorePage'
 import { ExplorePageProps as MobileExplorePageProps } from './components/mobile/ExplorePage'

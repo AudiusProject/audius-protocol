@@ -29,13 +29,13 @@ import {
 import { route } from '@audius/common/utils'
 import { isEqual } from 'lodash'
 import { connect } from 'react-redux'
-import { withRouter, RouteComponentProps } from 'react-router-dom'
 import { Dispatch } from 'redux'
 
 import { useRecord, make } from 'common/store/analytics/actions'
 import { AppState } from 'store/types'
 import { push } from 'utils/navigation'
 import { withNullGuard } from 'utils/withNullGuard'
+import { withRouter, RouteComponentProps } from 'utils/withRouter'
 
 import { HistoryPageProps as DesktopHistoryPageProps } from './components/desktop/HistoryPage'
 import { HistoryPageProps as MobileHistoryPageProps } from './components/mobile/HistoryPage'

@@ -42,7 +42,7 @@ import {
   IconRemix
 } from '@audius/harmony'
 import { ChatBlastAudience } from '@audius/sdk'
-import { useRouteMatch } from 'react-router-dom'
+import { useMatch } from 'react-router-dom'
 
 import { useSelector } from 'common/hooks/useSelector'
 import { UserList } from 'components/user-list/UserList'
@@ -109,9 +109,7 @@ const UserListModal = ({
   )
   const { data: currentUserId } = useGetCurrentUserId({})
 
-  const match = useRouteMatch<{ audience_type: string }>(
-    '/messages/:audience_type'
-  )
+  const match = useMatch('/messages/:audience_type')
   const isChatBlastPath =
     match?.params.audience_type &&
     Object.values(ChatBlastAudience).includes(

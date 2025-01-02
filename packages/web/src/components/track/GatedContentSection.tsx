@@ -45,7 +45,7 @@ import {
 } from '@audius/harmony'
 import cn from 'classnames'
 import { useDispatch, useSelector } from 'react-redux'
-import { useSearchParams } from 'react-router-dom-v5-compat'
+import { useSearchParams } from 'react-router-dom'
 
 import { useModalState } from 'common/hooks/useModalState'
 import { ArtistPopover } from 'components/artist/ArtistPopover'

@@ -21,7 +21,7 @@ import {
   Box
 } from '@audius/harmony'
 import { useDispatch, useSelector } from 'react-redux'
-import { Link } from 'react-router-dom-v5-compat'
+import { Link } from 'react-router-dom'
 
 import Lineup from 'components/lineup/Lineup'
 import { LineupVariant } from 'components/lineup/types'

@@ -4,7 +4,7 @@ import { ID, SquareSizes } from '@audius/common/models'
 import { cacheUsersSelectors } from '@audius/common/store'
 import { formatCount, route } from '@audius/common/utils'
 import { Box, Skeleton, Text } from '@audius/harmony'
-import { useLinkClickHandler } from 'react-router-dom-v5-compat'
+import { useLinkClickHandler } from 'react-router-dom'
 
 import { Avatar } from 'components/avatar'
 import { Card, CardProps, CardFooter, CardContent } from 'components/card'

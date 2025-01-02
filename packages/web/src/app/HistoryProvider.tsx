@@ -2,10 +2,8 @@ import { createContext, memo, useContext, useMemo } from 'react'
 
 import {
   History,
-  BrowserHistoryBuildOptions,
   createBrowserHistory,
   createHashHistory,
-  HashHistoryBuildOptions,
   createMemoryHistory
 } from 'history'
 
@@ -24,7 +22,6 @@ export const HistoryContext = createContext<HistoryContextType>({
 })
 
 const USE_HASH_ROUTING = env.USE_HASH_ROUTING
-const basename = env.BASENAME
 
 export const HistoryContextProvider = memo(
   (props: { children: JSX.Element }) => {
@@ -32,17 +29,9 @@ export const HistoryContextProvider = memo(
       if (process.env.NODE_ENV === 'test') {
         return createMemoryHistory()
       } else if (USE_HASH_ROUTING) {
-        const config: HashHistoryBuildOptions = {}
-        if (basename) {
-          config.basename = basename
-        }
-        return createHashHistory(config)
+        return createHashHistory()
       } else {
-        const config: BrowserHistoryBuildOptions = {}
-        if (basename) {
-          config.basename = basename
-        }
-        return createBrowserHistory(config)
+        return createBrowserHistory()
       }
     }, [])
 

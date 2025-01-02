@@ -12,8 +12,14 @@ import {
   useTheme
 } from '@audius/harmony'
 import { useDispatch, useSelector } from 'react-redux'
-import { Link, Redirect, Route, Switch, useRouteMatch } from 'react-router-dom'
-import { useSearchParams } from 'react-router-dom-v5-compat'
+import {
+  Link,
+  Navigate,
+  Route,
+  Routes,
+  useMatch,
+  useSearchParams
+} from 'react-router-dom'
 import { useEffectOnce, useLocalStorage, useMeasure } from 'react-use'
 
 import djBackground from 'assets/img/2-DJ-4-3.jpg'
@@ -65,29 +71,33 @@ const DesktopSignOnRoot = (props: RootProps) => {
 
   const routeOnExit = useSelector(getRouteOnExit)
 
-  const hideCloseButton = useRouteMatch({
-    path: [
-      SIGN_UP_GENRES_PAGE,
-      SIGN_UP_ARTISTS_PAGE,
-      SIGN_UP_APP_CTA_PAGE,
-      SIGN_UP_LOADING_PAGE
-    ],
-    exact: true
-  })
+  const matchGenres = useMatch(SIGN_UP_GENRES_PAGE)
+  const matchArtists = useMatch(SIGN_UP_ARTISTS_PAGE)
+  const matchAppCta = useMatch(SIGN_UP_APP_CTA_PAGE)
+  const matchLoading = useMatch(SIGN_UP_LOADING_PAGE)
+  const hideCloseButton = Boolean(
+    matchGenres || matchArtists || matchAppCta || matchLoading
+  )
 
-  const collapsedDesktopPageMatch = useRouteMatch({
-    path: [
-      SIGN_IN_PAGE,
-      SIGN_IN_CONFIRM_EMAIL_PAGE,
-      SIGN_UP_PAGE,
-      SIGN_UP_EMAIL_PAGE,
-      SIGN_UP_PASSWORD_PAGE,
-      SIGN_UP_REVIEW_HANDLE_PAGE,
-      SIGN_UP_CREATE_LOGIN_DETAILS,
-      SIGN_UP_APP_CTA_PAGE
-    ],
-    exact: true
-  })
+  const matchSignIn = useMatch(SIGN_IN_PAGE)
+  const matchConfirmEmail = useMatch(SIGN_IN_CONFIRM_EMAIL_PAGE)
+  const matchSignUp = useMatch(SIGN_UP_PAGE)
+  const matchEmail = useMatch(SIGN_UP_EMAIL_PAGE)
+  const matchPassword = useMatch(SIGN_UP_PASSWORD_PAGE)
+  const matchReviewHandle = useMatch(SIGN_UP_REVIEW_HANDLE_PAGE)
+  const matchCreateLogin = useMatch(SIGN_UP_CREATE_LOGIN_DETAILS)
+  const matchAppCtaCollapsed = useMatch(SIGN_UP_APP_CTA_PAGE)
+
+  const collapsedDesktopPageMatch = Boolean(
+    matchSignIn ||
+      matchConfirmEmail ||
+      matchSignUp ||
+      matchEmail ||
+      matchPassword ||
+      matchReviewHandle ||
+      matchCreateLogin ||
+      matchAppCtaCollapsed
+  )
 
   const isExpanded = !collapsedDesktopPageMatch
 
@@ -150,15 +160,23 @@ const DesktopSignOnRoot = (props: RootProps) => {
             backgroundPosition: 'center'
           }}
         >
-          <Switch>
-            <Route exact path={SIGN_UP_APP_CTA_PAGE}>
-              {/* @ts-ignore box type incorrect */}
-              <Box as='img' w='100%' src={imagePhone} />
-            </Route>
-            <Route path={[SIGN_IN_PAGE, SIGN_UP_PAGE]}>
-              {isExpanded ? null : <AudiusValues />}
-            </Route>
-          </Switch>
+          <Routes>
+            <Route
+              path={SIGN_UP_APP_CTA_PAGE}
+              element={
+                /* @ts-ignore box type incorrect */
+                <Box as='img' w='100%' src={imagePhone} />
+              }
+            />
+            <Route
+              path={SIGN_IN_PAGE}
+              element={isExpanded ? null : <AudiusValues />}
+            />
+            <Route
+              path={SIGN_UP_PAGE}
+              element={isExpanded ? null : <AudiusValues />}
+            />
+          </Routes>
         </Flex>
       </Paper>
     </Flex>
@@ -178,10 +196,13 @@ const MobileSignOnRoot = (props: MobileSignOnRootProps) => {
   const [ref, { height: panelHeight }] = useMeasure<HTMLDivElement>()
   const collapsedPanelHeight = useRef(panelHeight)
 
-  const collapsedMobilePageMatch = useRouteMatch({
-    path: [SIGN_IN_PAGE, SIGN_UP_PAGE, SIGN_UP_EMAIL_PAGE],
-    exact: true
-  })
+  const matchSignIn = useMatch(SIGN_IN_PAGE)
+  const matchSignUp = useMatch(SIGN_UP_PAGE)
+  const matchEmail = useMatch(SIGN_UP_EMAIL_PAGE)
+
+  const collapsedMobilePageMatch = Boolean(
+    matchSignIn || matchSignUp || matchEmail
+  )
 
   const shouldPageExpand = !collapsedMobilePageMatch
 
@@ -250,34 +271,40 @@ const MobileSignOnRoot = (props: MobileSignOnRootProps) => {
           backgroundPosition: 'bottom'
         }}
       >
-        <Switch>
-          <Route path={SIGN_UP_PAGE}>
-            <AudiusValues
-              css={{
-                margin: 'auto',
-                opacity: isLoaded ? 1 : 0,
-                transition: `opacity ${motion.expressive} 1s`
-              }}
-            />
-          </Route>
-          <Route path={SIGN_IN_PAGE}>
-            <Text
-              variant='title'
-              strength='weak'
-              color='staticWhite'
-              css={{
-                marginTop: 'auto',
-                opacity: isLoaded ? 1 : 0,
-                transition: `opacity ${motion.expressive} 1s`
-              }}
-            >
-              {messages.newToAudius}{' '}
-              <TextLink variant='inverted' showUnderline asChild>
-                <Link to={SIGN_UP_PAGE}>{messages.createAccount}</Link>
-              </TextLink>
-            </Text>
-          </Route>
-        </Switch>
+        <Routes>
+          <Route
+            path={SIGN_UP_PAGE}
+            element={
+              <AudiusValues
+                css={{
+                  margin: 'auto',
+                  opacity: isLoaded ? 1 : 0,
+                  transition: `opacity ${motion.expressive} 1s`
+                }}
+              />
+            }
+          />
+          <Route
+            path={SIGN_IN_PAGE}
+            element={
+              <Text
+                variant='title'
+                strength='weak'
+                color='staticWhite'
+                css={{
+                  marginTop: 'auto',
+                  opacity: isLoaded ? 1 : 0,
+                  transition: `opacity ${motion.expressive} 1s`
+                }}
+              >
+                {messages.newToAudius}{' '}
+                <TextLink variant='inverted' showUnderline asChild>
+                  <Link to={SIGN_UP_PAGE}>{messages.createAccount}</Link>
+                </TextLink>
+              </Text>
+            }
+          />
+        </Routes>
       </Flex>
     </Flex>
   )
@@ -345,20 +372,16 @@ export const SignOnPage = () => {
   })
 
   if (hasCompletedAccount) {
-    return <Redirect to={FEED_PAGE} />
+    return <Navigate to={FEED_PAGE} replace />
   }
 
   return (
     <SignOnRoot isLoaded={isLoaded}>
       <NavHeader />
-      <Switch>
-        <Route path={SIGN_IN_PAGE}>
-          <SignInPage />
-        </Route>
-        <Route path={SIGN_UP_PAGE}>
-          <SignUpPage />
-        </Route>
-      </Switch>
+      <Routes>
+        <Route path={SIGN_IN_PAGE} element={<SignInPage />} />
+        <Route path={SIGN_UP_PAGE} element={<SignUpPage />} />
+      </Routes>
     </SignOnRoot>
   )
 }

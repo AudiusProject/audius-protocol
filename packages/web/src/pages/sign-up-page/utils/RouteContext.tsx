@@ -1,6 +1,6 @@
 import { ReactNode, createContext, useEffect, useState } from 'react'
 
-import { useHistory } from 'react-router-dom'
+import { useNavigationType } from 'react-router-dom'
 
 export const RouteContext = createContext({
   isGoBack: false
@@ -13,20 +13,16 @@ type RouteContextProviderProps = {
 export const RouteContextProvider = (props: RouteContextProviderProps) => {
   const { children } = props
 
-  const history = useHistory()
+  const navigationType = useNavigationType()
   const [isGoBack, setIsGoBack] = useState(false)
 
   useEffect(() => {
-    const unlisten = history.listen((_location, action) => {
-      if (action === 'POP') {
-        setIsGoBack(true)
-      } else {
-        setIsGoBack(false)
-      }
-    })
-
-    return unlisten
-  }, [history])
+    if (navigationType === 'POP') {
+      setIsGoBack(true)
+    } else {
+      setIsGoBack(false)
+    }
+  }, [navigationType])
 
   return (
     <RouteContext.Provider value={{ isGoBack }}>

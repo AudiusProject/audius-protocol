@@ -11,7 +11,7 @@ import { route } from '@audius/common/utils'
 import { Flex, Paper, PlainButton, Text, useTheme } from '@audius/harmony'
 import { Formik, Form, useField, useFormikContext } from 'formik'
 import { useDispatch, useSelector } from 'react-redux'
-import { useHistory } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 
 import { make } from 'common/store/analytics/actions'
@@ -32,7 +32,6 @@ import {
 } from 'common/store/pages/signon/selectors'
 import { HarmonyTextField } from 'components/form-fields/HarmonyTextField'
 import { useMedia } from 'hooks/useMedia'
-import { useNavigateToPage } from 'hooks/useNavigateToPage'
 
 import { AccountHeader } from '../components/AccountHeader'
 import { ImageFieldValue } from '../components/ImageField'
@@ -82,9 +81,8 @@ const ImageUploadErrorText = () => {
 
 export const FinishProfilePage = () => {
   const { isMobile } = useMedia()
-  const history = useHistory()
+  const navigate = useNavigate()
   const dispatch = useDispatch()
-  const navigate = useNavigateToPage()
   const displayNameInputRef = useRef<HTMLInputElement>(null)
 
   const { value: savedDisplayName } = useSelector(getNameField)
@@ -205,7 +203,7 @@ export const FinishProfilePage = () => {
             }
             postfix={
               isMobile || isSocialConnected ? null : (
-                <PlainButton variant='subdued' onClick={history.goBack}>
+                <PlainButton variant='subdued' onClick={() => navigate(-1)}>
                   {finishProfilePageMessages.goBack}
                 </PlainButton>
               )

@@ -1,7 +1,7 @@
 import { SquareSizes } from '@audius/common/models'
 import { Text } from '@audius/harmony'
 import { merge } from 'lodash'
-import { Routes, Route } from 'react-router-dom-v5-compat'
+import { Routes, Route } from 'react-router-dom'
 import { describe, it, expect, vi } from 'vitest'
 
 import { RenderOptions, render, screen } from 'test/test-utils'

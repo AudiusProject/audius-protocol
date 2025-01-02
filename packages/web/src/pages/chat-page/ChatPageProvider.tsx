@@ -1,34 +1,32 @@
 import { useEffect } from 'react'
 
-import { RouteComponentProps } from 'react-router-dom'
+import { useNavigate, useParams, useLocation, Location } from 'react-router-dom'
 
-import { useHistoryContext } from 'app/HistoryProvider'
 import { useIsMobile } from 'hooks/useIsMobile'
 import { useManagedAccountNotAllowedRedirect } from 'hooks/useManagedAccountNotAllowedRedirect'
 
 import { ChatPage as DesktopChatPage } from './ChatPage'
 import { SkeletonChatPage as MobileChatPage } from './components/mobile/SkeletonChatPage'
 
-export const ChatPageProvider = ({
-  match,
-  location
-}: RouteComponentProps<
-  { id?: string },
-  any,
-  { presetMessage?: string } | undefined
->) => {
+export const ChatPageProvider = () => {
   useManagedAccountNotAllowedRedirect()
-  const currentChatId = match.params.id
+  const params = useParams<{ id?: string }>()
+  const location = useLocation() as Location<{ presetMessage?: string }>
+  const navigate = useNavigate()
+  const { id: currentChatId } = params
   const presetMessage = location.state?.presetMessage
+
   const isMobile = useIsMobile()
-  const { history } = useHistoryContext()
 
   // Replace the preset message in browser history after the first navigation
   useEffect(() => {
     if (presetMessage) {
-      history.replace({ state: { presetMessage: undefined } })
+      navigate(location.pathname, {
+        replace: true,
+        state: { presetMessage: undefined }
+      })
     }
-  }, [history, presetMessage])
+  }, [navigate, location.pathname, presetMessage])
 
   if (isMobile) {
     return <MobileChatPage />

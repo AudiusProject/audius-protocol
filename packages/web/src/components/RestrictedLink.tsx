@@ -1,4 +1,4 @@
-import { Link as RouterLink, LinkProps } from 'react-router-dom-v5-compat'
+import { Link, LinkProps } from 'react-router-dom'
 
 import {
   RestrictionType,
@@ -25,8 +25,8 @@ export const RestrictedLink = ({
   )
 
   return (
-    <RouterLink onClick={handleClick} {...props}>
+    <Link onClick={handleClick} {...props}>
       {children}
-    </RouterLink>
+    </Link>
   )
 }

@@ -27,9 +27,10 @@ import { useTransition, animated } from '@react-spring/web'
 import AutoComplete from 'antd/lib/auto-complete'
 import Input from 'antd/lib/input'
 import cn from 'classnames'
+import queryString from 'query-string'
 import Lottie from 'react-lottie'
 import { useDispatch, useSelector } from 'react-redux'
-import { matchPath, useHistory, useLocation } from 'react-router-dom'
+import { useLocation, matchPath, useNavigate } from 'react-router-dom'
 
 import loadingSpinner from 'assets/animations/loadingSpinner.json'
 import { make } from 'common/store/analytics/actions'
@@ -40,7 +41,6 @@ import {
 } from 'common/store/search-bar/actions'
 import { getSearch } from 'common/store/search-bar/selectors'
 import SearchBarResult from 'components/search-bar/SearchBarResult'
-import { push } from 'utils/navigation'
 import { getPathname } from 'utils/route'
 
 import styles from './DesktopSearchBar.module.css'
@@ -122,8 +122,8 @@ const DesktopSearchBar = ({ isViewingSearchPage = false }: SearchBarProps) => {
   const searchBarRef = useRef<HTMLDivElement>(null)
 
   const dispatch = useDispatch()
-  const history = useHistory()
   const location = useLocation()
+  const navigate = useNavigate()
   const search = useSelector(getSearch)
 
   useEffect(() => {
@@ -142,32 +142,17 @@ const DesktopSearchBar = ({ isViewingSearchPage = false }: SearchBarProps) => {
 
   const handleSubmit = useCallback(
     (value: string) => {
-      const pathname = '/search'
-      const locationSearchParams = new URLSearchParams(location.search)
-
-      if (value) {
-        locationSearchParams.set('query', value)
-      } else {
-        locationSearchParams.delete('query')
-      }
-
-      let newPath = pathname
-      const searchMatch = matchPath(getPathname(location), {
-        path: SEARCH_PAGE
-      })
-
-      if (searchMatch) {
-        newPath = searchMatch.url
-      }
-
-      value = encodeURIComponent(value)
-      history.push({
-        pathname: newPath,
-        search: locationSearchParams.toString(),
-        state: {}
-      })
+      const searchMatch = matchPath(SEARCH_PAGE, getPathname(location))
+      navigate(
+        queryString.stringifyUrl({
+          url: searchMatch?.pathname ?? '/search',
+          query: value
+            ? { ...queryString.parse(location.search), query: value }
+            : {}
+        })
+      )
     },
-    [history, location]
+    [navigate, location]
   )
 
   const handleSearch = useCallback(
@@ -346,7 +331,7 @@ const DesktopSearchBar = ({ isViewingSearchPage = false }: SearchBarProps) => {
             })
           )
         }
-        dispatch(push(selectedValue))
+        navigate(selectedValue)
         dispatch(
           make(Name.SEARCH_RESULT_SELECT, {
             term: search.searchText,
@@ -371,7 +356,8 @@ const DesktopSearchBar = ({ isViewingSearchPage = false }: SearchBarProps) => {
       search.playlists,
       search.albums,
       search.searchText,
-      dispatch
+      dispatch,
+      navigate
     ]
   )
 
@@ -411,24 +397,14 @@ const DesktopSearchBar = ({ isViewingSearchPage = false }: SearchBarProps) => {
     dispatch(clearSearch())
     setValue('')
 
-    const locationSearchParams = new URLSearchParams(location.search)
-    locationSearchParams.delete('query')
-
-    let newPath = '/search'
-    const searchMatch = matchPath(getPathname(location), {
-      path: SEARCH_PAGE
-    })
-
-    if (searchMatch) {
-      newPath = searchMatch.url
-    }
-
-    history.push({
-      pathname: newPath,
-      search: locationSearchParams.toString(),
-      state: {}
-    })
-  }, [dispatch, history, location])
+    const searchMatch = matchPath(SEARCH_PAGE, getPathname(location))
+    navigate(
+      queryString.stringifyUrl({
+        url: searchMatch?.pathname ?? '/search',
+        query: {}
+      })
+    )
+  }, [dispatch, navigate, location])
 
   const renderTitle = (title: string) => (
     <span className={styles.searchResultHeading}>

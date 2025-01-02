@@ -39,11 +39,9 @@ import {
   playerSelectors
 } from '@audius/common/store'
 import { getErrorMessage, Nullable, route } from '@audius/common/utils'
-import { UnregisterCallback } from 'history'
 import { uniq } from 'lodash'
 import moment from 'moment'
 import { connect } from 'react-redux'
-import { withRouter, RouteComponentProps } from 'react-router-dom'
 import { Dispatch } from 'redux'
 
 import { make, TrackEvent } from 'common/store/analytics/actions'
@@ -61,6 +59,7 @@ import { resizeImage } from 'utils/imageProcessingUtil'
 import { push, replace } from 'utils/navigation'
 import { getPathname } from 'utils/route'
 import { parseUserRoute } from 'utils/route/userRouteParser'
+import { withRouter, RouteComponentProps } from 'utils/withRouter'
 
 import { ProfilePageProps as DesktopProfilePageProps } from './components/desktop/ProfilePage'
 import { ProfilePageProps as MobileProfilePageProps } from './components/mobile/ProfilePage'
@@ -147,7 +146,7 @@ class ProfilePage extends PureComponent<ProfilePageProps, ProfilePageState> {
     ...INITIAL_UPDATE_FIELDS
   }
 
-  unlisten!: UnregisterCallback
+  unlisten!: () => void
 
   componentDidMount() {
     // If routing from a previous profile page
@@ -155,7 +154,7 @@ class ProfilePage extends PureComponent<ProfilePageProps, ProfilePageState> {
     this.fetchProfile(getPathname(this.props.location))
 
     // Switching from profile page => profile page
-    this.unlisten = this.props.history.listen((location, action) => {
+    this.unlisten = this.props.history.listen(({ location, action }) => {
       // If changing pages or "POP" on router (with goBack, the pathnames are equal)
       if (
         getPathname(this.props.location) !== getPathname(location) ||
@@ -310,7 +309,7 @@ class ProfilePage extends PureComponent<ProfilePageProps, ProfilePageState> {
         forceUpdate,
         shouldSetLoading
       )
-      if (params.tab) {
+      if ('tab' in params) {
         this.setState({ activeTab: getTabForRoute(params.tab) })
       }
     } else {

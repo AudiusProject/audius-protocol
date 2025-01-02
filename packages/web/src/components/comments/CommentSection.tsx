@@ -11,7 +11,7 @@ import { trackPageSelectors } from '@audius/common/store'
 import { Divider, Flex, LoadingSpinner, Paper } from '@audius/harmony'
 import InfiniteScroll from 'react-infinite-scroller'
 import { useSelector } from 'react-redux'
-import { useSearchParams } from 'react-router-dom-v5-compat'
+import { useSearchParams } from 'react-router-dom'
 import { tracksActions } from '~/store/pages/track/lineup/actions'
 
 import { useHistoryContext } from 'app/HistoryProvider'

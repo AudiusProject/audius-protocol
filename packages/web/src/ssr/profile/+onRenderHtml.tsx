@@ -23,10 +23,11 @@ type TrackPageContext = PageContextServer & {
     user: User
   }
   userAgent: string
+  urlOriginal: string
 }
 
 export default function render(pageContext: TrackPageContext) {
-  const { pageProps, userAgent } = pageContext
+  const { pageProps, userAgent, urlOriginal } = pageContext
   const { user } = pageProps
   const { user_id, handle, name, bio } = user
 
@@ -41,6 +42,7 @@ export default function render(pageContext: TrackPageContext) {
   const pageHtml = renderToString(
     <ServerWebPlayer
       isMobile={isMobile}
+      urlOriginal={urlOriginal}
       initialState={{
         users: {
           handles: { [handle]: user_id },

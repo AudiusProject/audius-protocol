@@ -13,7 +13,7 @@ import { formatCount, formatReleaseDate } from '@audius/common/utils'
 import { Flex, Skeleton, Text } from '@audius/harmony'
 import IconHeart from '@audius/harmony/src/assets/icons/Heart.svg'
 import IconRepost from '@audius/harmony/src/assets/icons/Repost.svg'
-import { useLinkClickHandler } from 'react-router-dom-v5-compat'
+import { useLinkClickHandler } from 'react-router-dom'
 
 import { Card, CardProps, CardFooter, CardContent } from 'components/card'
 import { TextLink, UserLink } from 'components/link'

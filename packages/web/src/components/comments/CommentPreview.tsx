@@ -18,8 +18,7 @@ import {
   Text
 } from '@audius/harmony'
 import { useDispatch, useSelector } from 'react-redux'
-import { Link } from 'react-router-dom'
-import { useSearchParams } from 'react-router-dom-v5-compat'
+import { Link, useSearchParams } from 'react-router-dom'
 import { tracksActions } from '~/store/pages/track/lineup/actions'
 
 import { useHistoryContext } from 'app/HistoryProvider'

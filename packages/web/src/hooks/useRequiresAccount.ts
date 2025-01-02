@@ -3,7 +3,7 @@ import { useEffect, MouseEvent as ReactMouseEvent, useCallback } from 'react'
 import { Status } from '@audius/common/models'
 import { accountSelectors } from '@audius/common/store'
 import { useDispatch } from 'react-redux'
-import { useLocation } from 'react-router-dom-v5-compat'
+import { useLocation } from 'react-router-dom'
 
 import {
   openSignOn,

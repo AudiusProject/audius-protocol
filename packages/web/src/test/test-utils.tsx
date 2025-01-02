@@ -2,8 +2,7 @@ import { ReactElement, ReactNode } from 'react'
 
 import { ThemeProvider } from '@audius/harmony'
 import { render, RenderOptions } from '@testing-library/react'
-import { Router } from 'react-router-dom'
-import { CompatRouter } from 'react-router-dom-v5-compat'
+import { HistoryRouter as Router } from 'redux-first-history/rr6'
 import { PartialDeep } from 'type-fest'
 
 import { HistoryContext, HistoryContextProvider } from 'app/HistoryProvider'
@@ -32,9 +31,7 @@ const TestProviders =
               <ToastContextProvider>
                 <HistoryContext.Consumer>
                   {({ history }) => (
-                    <Router history={history}>
-                      <CompatRouter>{children}</CompatRouter>
-                    </Router>
+                    <Router history={history}>{children}</Router>
                   )}
                 </HistoryContext.Consumer>
               </ToastContextProvider>

@@ -10,6 +10,7 @@ import { useSessionStorage } from 'react-use'
 import { useHistoryContext } from 'app/HistoryProvider'
 import AppIcon from 'assets/img/appIcon240.png'
 import { useIsMobile } from 'hooks/useIsMobile'
+import { isElectron } from 'utils/clientUtil'
 import { getPathname } from 'utils/route'
 
 import styles from './AppRedirectPopover.module.css'
@@ -109,10 +110,12 @@ export const AppRedirectPopover = (props: AppRedirectPopoverProps) => {
   }, [])
 
   const shouldShow =
-    !matchPath(history.location.pathname, { path: '/', exact: true }) &&
+    !isElectron() &&
+    !isMobile &&
+    !matchPath('/', history.location.pathname) &&
+    !matchPath(SIGN_UP_PAGE, window.location.pathname) &&
     animDelay &&
-    !isDismissed &&
-    isMobile
+    !isDismissed
 
   useEffect(() => {
     shouldShow && incrementScroll()
@@ -139,7 +142,7 @@ export const AppRedirectPopover = (props: AppRedirectPopoverProps) => {
     // The app can then read the URL on load, persisting through install, to associate referrals
     if (
       window.isSecureContext &&
-      matchPath(window.location.pathname, { path: SIGN_UP_PAGE, exact: true })
+      matchPath(SIGN_UP_PAGE, window.location.pathname)
     ) {
       navigator.clipboard.writeText(window.location.href)
     }

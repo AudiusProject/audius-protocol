@@ -1,11 +1,9 @@
-import { ReactNode } from 'react'
+import { ReactNode, useMemo } from 'react'
 
 import { QueryClientProvider } from '@tanstack/react-query'
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import { Provider as ReduxProvider } from 'react-redux'
-import { Router } from 'react-router-dom'
-import { CompatRouter } from 'react-router-dom-v5-compat'
-import { LastLocationProvider } from 'react-router-last-location'
+import { HistoryRouter as Router } from 'redux-first-history/rr6'
 
 import { RouterContextProvider } from 'components/animated-switch/RouterContextProvider'
 import { HeaderContextProvider } from 'components/header/mobile/HeaderContextProvider'
@@ -29,35 +27,33 @@ type AppProvidersProps = {
 export const AppProviders = ({ children }: AppProvidersProps) => {
   const { history } = useHistoryContext()
   const isMobile = useIsMobile()
-  const { store, history: storeHistory } = configureStore(history, isMobile)
+
+  const { store, history: storeHistory } = useMemo(
+    () => configureStore(history, isMobile),
+    [history, isMobile]
+  )
 
   return (
     <QueryClientProvider client={queryClient}>
       <ReduxProvider store={store}>
         <Router history={storeHistory}>
-          <CompatRouter>
-            <LastLocationProvider>
-              <RouterContextProvider>
-                <HeaderContextProvider>
-                  <NavProvider>
-                    <ScrollProvider>
-                      <ToastContextProvider>
-                        <AppContextProvider>
-                          <AudiusQueryProvider>
-                            <ThemeProvider>
-                              <SvgGradientProvider>
-                                {children}
-                              </SvgGradientProvider>
-                            </ThemeProvider>
-                          </AudiusQueryProvider>
-                        </AppContextProvider>
-                      </ToastContextProvider>
-                    </ScrollProvider>
-                  </NavProvider>
-                </HeaderContextProvider>
-              </RouterContextProvider>
-            </LastLocationProvider>
-          </CompatRouter>
+          <RouterContextProvider>
+            <HeaderContextProvider>
+              <NavProvider>
+                <ScrollProvider>
+                  <ToastContextProvider>
+                    <AppContextProvider>
+                      <AudiusQueryProvider>
+                        <ThemeProvider>
+                          <SvgGradientProvider>{children}</SvgGradientProvider>
+                        </ThemeProvider>
+                      </AudiusQueryProvider>
+                    </AppContextProvider>
+                  </ToastContextProvider>
+                </ScrollProvider>
+              </NavProvider>
+            </HeaderContextProvider>
+          </RouterContextProvider>
         </Router>
       </ReduxProvider>
       <ReactQueryDevtools />

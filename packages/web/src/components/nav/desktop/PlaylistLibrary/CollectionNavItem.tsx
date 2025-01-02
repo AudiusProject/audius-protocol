@@ -16,7 +16,7 @@ import {
 } from '@audius/common/store'
 import { Flex, PopupMenuItem, Text, useTheme } from '@audius/harmony'
 import { useDispatch } from 'react-redux'
-import { useNavigate } from 'react-router-dom-v5-compat'
+import { useNavigate } from 'react-router-dom'
 import { useToggle } from 'react-use'
 
 import { make, useRecord } from 'common/store/analytics/actions'

@@ -5,7 +5,7 @@ import {
   IconUser,
   IconUserFollow
 } from '@audius/harmony'
-import { useRouteMatch } from 'react-router-dom'
+import { useMatch } from 'react-router-dom'
 
 import { SteppedProgress } from 'components/stepped-progress/SteppedProgress'
 
@@ -35,22 +35,20 @@ const STEPS: {
 ]
 
 export const ProgressHeader = () => {
-  const match = useRouteMatch()
-  let activeStep: ProgressHeaderStep
+  const matchHandle = useMatch(SIGN_UP_HANDLE_PAGE)
+  const matchFinishProfile = useMatch(SIGN_UP_FINISH_PROFILE_PAGE)
+  const matchGenres = useMatch(SIGN_UP_GENRES_PAGE)
+  const matchArtists = useMatch(SIGN_UP_ARTISTS_PAGE)
 
-  switch (match.path) {
-    case SIGN_UP_HANDLE_PAGE:
-    case SIGN_UP_FINISH_PROFILE_PAGE:
-      activeStep = 'customize'
-      break
-    case SIGN_UP_GENRES_PAGE:
-      activeStep = 'genres'
-      break
-    case SIGN_UP_ARTISTS_PAGE:
-      activeStep = 'artists'
-      break
-    default:
-      activeStep = 'customize'
+  let activeStep: ProgressHeaderStep
+  if (matchHandle || matchFinishProfile) {
+    activeStep = 'customize'
+  } else if (matchGenres) {
+    activeStep = 'genres'
+  } else if (matchArtists) {
+    activeStep = 'artists'
+  } else {
+    activeStep = 'customize'
   }
 
   return <SteppedProgress steps={STEPS} activeStep={activeStep} />

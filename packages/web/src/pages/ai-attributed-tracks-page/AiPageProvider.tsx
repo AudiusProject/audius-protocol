@@ -63,7 +63,9 @@ const AiPageProvider = ({
   const { handle } = useParams<{ handle: string }>()
 
   useEffect(() => {
-    fetchAiUser(handle)
+    if (handle) {
+      fetchAiUser(handle)
+    }
   }, [fetchAiUser, handle])
 
   useEffect(() => {
