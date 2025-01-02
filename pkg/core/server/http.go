@@ -18,6 +18,7 @@ func (s *Server) startEchoServer() error {
 	httpServer := s.httpServer
 	httpServer.Pre(middleware.RemoveTrailingSlash())
 	httpServer.Use(middleware.Recover())
+	httpServer.Use(middleware.CORS())
 	httpServer.HideBanner = true
 
 	// wait for grpc server to start first since the http

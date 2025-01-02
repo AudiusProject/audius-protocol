@@ -256,3 +256,15 @@ export { default as IconPhantomPlain } from '@audius/harmony/src/assets/icons/Lo
 
 export { default as Soundwave } from '@audius/harmony/src/assets/animations/Soundwave.json'
 export { default as SoundwaveCircle } from '@audius/harmony/src/assets/animations/SoundwaveCircle.json'
+
+// Playback Rate Icons
+export { default as IconPlaybackRate0_5x } from '@audius/harmony/src/assets/icons/iconPlaybackRate0_5x.svg'
+export { default as IconPlaybackRate0_8x } from '@audius/harmony/src/assets/icons/iconPlaybackRate0_8x.svg'
+export { default as IconPlaybackRate0_9x } from '@audius/harmony/src/assets/icons/iconPlaybackRate0_9x.svg'
+export { default as IconPlaybackRate1x } from '@audius/harmony/src/assets/icons/iconPlaybackRate1x.svg'
+export { default as IconPlaybackRate1_1x } from '@audius/harmony/src/assets/icons/iconPlaybackRate1_1x.svg'
+export { default as IconPlaybackRate1_2x } from '@audius/harmony/src/assets/icons/iconPlaybackRate1_2x.svg'
+export { default as IconPlaybackRate1_5x } from '@audius/harmony/src/assets/icons/iconPlaybackRate1_5x.svg'
+export { default as IconPlaybackRate2x } from '@audius/harmony/src/assets/icons/iconPlaybackRate2x.svg'
+export { default as IconPlaybackRate2_5x } from '@audius/harmony/src/assets/icons/iconPlaybackRate2_5x.svg'
+export { default as IconPlaybackRate3x } from '@audius/harmony/src/assets/icons/iconPlaybackRate3x.svg'

@@ -5,8 +5,8 @@ import (
 	"errors"
 	"fmt"
 	"math/big"
-	"os"
 
+	"github.com/AudiusProject/audius-protocol/pkg/core/config"
 	"github.com/AudiusProject/audius-protocol/pkg/httputil"
 
 	"github.com/ethereum/go-ethereum"
@@ -30,12 +30,12 @@ type NotifierInfo struct {
 }
 
 func GetNotifierForID(ID string, delegateOwnerWallet string) (NotifierInfo, error) {
-	client, err := ethclient.Dial(os.Getenv("ethProviderUrl"))
+	client, err := ethclient.Dial(config.GetEnvWithDefault("ethProviderUrl", config.DefaultEthRPC()))
 	if err != nil {
 		return NotifierInfo{}, fmt.Errorf("failed to connect to Ethereum node: %v", err)
 	}
 
-	ethRegistryAddress := os.Getenv("ethRegistryAddress")
+	ethRegistryAddress := config.GetEnvWithDefault("ethRegistryAddress", config.DefaultRegistryAddress())
 	notifierContractAddress, err := GetContractAddr(client, common.HexToAddress(ethRegistryAddress), "TrustedNotifierManagerProxy")
 	if err != nil {
 		return NotifierInfo{}, fmt.Errorf("failed to get contract address: %v", err)
@@ -77,12 +77,12 @@ func GetNotifierForID(ID string, delegateOwnerWallet string) (NotifierInfo, erro
 }
 
 func GetServiceProviderIdFromEndpoint(endpoint string, delegateOwnerWallet string) (int, error) {
-	client, err := ethclient.Dial(os.Getenv("ethProviderUrl"))
+	client, err := ethclient.Dial(config.GetEnvWithDefault("ethProviderUrl", config.DefaultEthRPC()))
 	if err != nil {
 		return 0, fmt.Errorf("failed to connect to Ethereum node: %v", err)
 	}
 
-	ethRegistryAddress := os.Getenv("ethRegistryAddress")
+	ethRegistryAddress := config.GetEnvWithDefault("ethRegistryAddress", config.DefaultRegistryAddress())
 	serviceProviderFactoryAddress, err := GetContractAddr(client, common.HexToAddress(ethRegistryAddress), "ServiceProviderFactory")
 	if err != nil {
 		return 0, fmt.Errorf("failed to get contract address: %v", err)
@@ -114,12 +114,12 @@ func GetServiceProviderIdFromEndpoint(endpoint string, delegateOwnerWallet strin
 }
 
 func GetServiceProviderList(serviceType string) ([]ServiceProvider, error) {
-	client, err := ethclient.Dial(os.Getenv("ethProviderUrl"))
+	client, err := ethclient.Dial(config.GetEnvWithDefault("ethProviderUrl", config.DefaultEthRPC()))
 	if err != nil {
 		return nil, fmt.Errorf("failed to connect to Ethereum node: %v", err)
 	}
 
-	serviceProviderFactoryAddress, err := GetContractAddr(client, common.HexToAddress(os.Getenv("ethRegistryAddress")), "ServiceProviderFactory")
+	serviceProviderFactoryAddress, err := GetContractAddr(client, common.HexToAddress(config.GetEnvWithDefault("ethRegistryAddress", config.DefaultRegistryAddress())), "ServiceProviderFactory")
 	if err != nil {
 		return nil, fmt.Errorf("failed to get contract address: %v", err)
 	}

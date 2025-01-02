@@ -1,8 +1,13 @@
-import { createContext, memo, useContext } from 'react'
+import { createContext, memo, useContext, useMemo } from 'react'
 
-import { History } from 'history'
+import {
+  History,
+  createBrowserHistory,
+  createHashHistory,
+  createMemoryHistory
+} from 'history'
 
-import { createHistory } from 'utils/history'
+import { env } from 'services/env'
 
 export type HistoryContextType = {
   history: History
@@ -16,11 +21,20 @@ export const HistoryContext = createContext<HistoryContextType>({
   history: null as any
 })
 
-const history = createHistory()
+const USE_HASH_ROUTING = env.USE_HASH_ROUTING
 
-// TODO: could put getPathname in here
 export const HistoryContextProvider = memo(
   (props: { children: JSX.Element }) => {
+    const history = useMemo(() => {
+      if (process.env.NODE_ENV === 'test') {
+        return createMemoryHistory()
+      } else if (USE_HASH_ROUTING) {
+        return createHashHistory()
+      } else {
+        return createBrowserHistory()
+      }
+    }, [])
+
     return (
       <HistoryContext.Provider value={{ history }}>
         {props.children}

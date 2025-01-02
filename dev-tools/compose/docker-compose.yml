@@ -65,57 +65,54 @@ services:
       service: audius-cmd
     <<: *common
 
-  # Core
 
-  # service name intentionally left as "core" despite being core-discovery-1
-  # for compatibility with audius-compose CI tooling
-  core:
+  audiusd-1:
     extends:
-      file: docker-compose.core.yml
-      service: core
-    container_name: core-discovery-1
+      file: docker-compose.audiusd.yml
+      service: audiusd
+    container_name: audiusd-1
     ports:
-      - '6611:26659' # Http Console
-      - '6612:26657' # CometBFT RPC Server
-      - '6613:50051' # Core GRPC Server
+      - '6701:26659' # Http Console
+      - '6702:1991' # Mediorum Server
+      - '6703:50051' # Core GRPC Server
     env_file:
       - ${PROJECT_ROOT}/cmd/core/infra/dev_config/discovery-one.docker.env
     <<: *common
 
-  core-content-1:
+  audiusd-2:
     extends:
-      file: docker-compose.core.yml
-      service: core
-    container_name: core-content-1
+      file: docker-compose.audiusd.yml
+      service: audiusd
+    container_name: audiusd-2
     ports:
       - '6711:26659'
-      - '6712:26657'
+      - '6712:1991'
       - '6713:50051'
     env_file:
       - ${PROJECT_ROOT}/cmd/core/infra/dev_config/content-one.docker.env
     <<: *common
 
-  core-content-2:
+  audiusd-3:
     extends:
-      file: docker-compose.core.yml
-      service: core
-    container_name: core-content-2
+      file: docker-compose.audiusd.yml
+      service: audiusd
+    container_name: audiusd-3
     ports:
       - '6721:26659'
-      - '6722:26657'
+      - '6722:1991'
       - '6723:50051'
     env_file:
       - ${PROJECT_ROOT}/cmd/core/infra/dev_config/content-two.docker.env
     <<: *common
 
-  core-content-3:
+  audiusd-4:
     extends:
-      file: docker-compose.core.yml
-      service: core
-    container_name: core-content-3
+      file: docker-compose.audiusd.yml
+      service: audiusd
+    container_name: audiusd-4
     ports:
       - '6731:26659'
-      - '6732:26657'
+      - '6732:1991'
       - '6733:50051'
     env_file:
       - ${PROJECT_ROOT}/cmd/core/infra/dev_config/content-three.docker.env
@@ -186,6 +183,12 @@ services:
     extends:
       file: docker-compose.discovery.${DOCKERCOMPOSE_ENV_TYPE:-dev}.yml
       service: es-indexer
+    <<: *common
+
+  healthz:
+    extends:
+      file: docker-compose.discovery.${DOCKERCOMPOSE_ENV_TYPE:-dev}.yml
+      service: healthz
     <<: *common
 
   # Pedalboard (plugins)
@@ -331,15 +334,6 @@ services:
       - ddex
       - ddex-deps
 
-  # Storage (content node)
-
-  mediorum:
-    extends:
-      file: docker-compose.storage.yml
-      service: storage
-    container_name: audius-protocol-mediorum
-    <<: *common
-
   # Blockchain
 
   poa-ganache:
@@ -348,34 +342,10 @@ services:
       service: poa-ganache
     <<: *common
 
-  poa-blockscout-db:
-    extends:
-      file: docker-compose.blockchain.yml
-      service: poa-blockscout-db
-    <<: *common
-
-  poa-blockscout:
-    extends:
-      file: docker-compose.blockchain.yml
-      service: poa-blockscout
-    <<: *common
-
   eth-ganache:
     extends:
       file: docker-compose.blockchain.yml
       service: eth-ganache
-    <<: *common
-
-  eth-blockscout-db:
-    extends:
-      file: docker-compose.blockchain.yml
-      service: eth-blockscout-db
-    <<: *common
-
-  eth-blockscout:
-    extends:
-      file: docker-compose.blockchain.yml
-      service: eth-blockscout
     <<: *common
 
   solana-test-validator:
@@ -388,6 +358,20 @@ services:
     extends:
       file: docker-compose.blockchain.yml
       service: solana-test-validator-build
+    <<: *common
+
+  # Legacy
+  mediorum:
+    extends:
+      file: docker-compose.legacy.${DOCKERCOMPOSE_ENV_TYPE:-dev}.yml
+      service: storage
+    container_name: audius-protocol-mediorum
+    <<: *common
+
+  core:
+    extends:
+      file: docker-compose.legacy.${DOCKERCOMPOSE_ENV_TYPE:-dev}.yml
+      service: core
     <<: *common
 
 networks:

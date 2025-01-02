@@ -6,12 +6,12 @@ import styles from './Delineator.module.css'
 
 const Delineator = ({
   className,
-  alignment,
-  size,
+  alignment = 'center',
+  size = 'small',
   padTop,
   text,
   isMobile,
-  showCarets
+  showCarets = false
 }) => {
   return (
     <div
@@ -43,12 +43,6 @@ Delineator.propTypes = {
   size: PropTypes.oneOf(['small', 'large']),
   padTop: PropTypes.bool,
   isMobile: PropTypes.bool
-}
-
-Delineator.defaultProps = {
-  showCarets: false,
-  alignment: 'center',
-  size: 'small'
 }
 
 export default Delineator

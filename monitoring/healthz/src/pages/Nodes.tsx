@@ -22,6 +22,7 @@ const discprovWhitelist = [
   ".monophonic.digital",
   ".figment.io",
   ".tikilabs.com",
+  "-1"
 ]
 
 export default function Nodes() {

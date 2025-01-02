@@ -29,7 +29,7 @@ const { getHasAccount, getAccountStatus } = accountSelectors
 
 type ConnectedNavBarProps = ReturnType<typeof mapStateToProps> &
   ReturnType<typeof mapDispatchToProps> &
-  RouteComponentProps
+  RouteComponentProps<any>
 
 const ConnectedNavBar = ({
   goToRoute,

@@ -41,6 +41,18 @@ func (s *Server) createRollup(ctx context.Context, timestamp time.Time, height i
 
 	reports, err := s.db.GetInProgressRollupReports(ctx)
 	if err != nil && !errors.Is(err, pgx.ErrNoRows) {
+		s.logger.Error("Error retrieving current rollup reports", "error", err)
+		return rollup, err
+	}
+	reportMap := make(map[string]db.SlaNodeReport, len(reports))
+	for _, r := range reports {
+		reportMap[r.Address] = r
+	}
+
+	// deterministic ordering keeps validation as simple as reflect.DeepEqual
+	validators, err := s.db.GetAllRegisteredNodesSorted(ctx)
+	if err != nil {
+		s.logger.Error("Error retrieving validators", "error", err)
 		return rollup, err
 	}
 
@@ -48,12 +60,21 @@ func (s *Server) createRollup(ctx context.Context, timestamp time.Time, height i
 		Timestamp:  timestamppb.New(timestamp),
 		BlockStart: start,
 		BlockEnd:   height - 1, // exclude current block
-		Reports:    make([]*core_proto.SlaNodeReport, 0, len(reports)),
+		Reports:    make([]*core_proto.SlaNodeReport, 0, len(validators)),
 	}
-	for _, r := range reports {
-		proto_rep := core_proto.SlaNodeReport{
-			Address:           r.Address,
-			NumBlocksProposed: r.BlocksProposed,
+
+	for _, v := range validators {
+		var proto_rep core_proto.SlaNodeReport
+		if r, ok := reportMap[v.CometAddress]; ok {
+			proto_rep = core_proto.SlaNodeReport{
+				Address:           r.Address,
+				NumBlocksProposed: r.BlocksProposed,
+			}
+		} else {
+			proto_rep = core_proto.SlaNodeReport{
+				Address:           v.CometAddress,
+				NumBlocksProposed: 0,
+			}
 		}
 		rollup.Reports = append(rollup.Reports, &proto_rep)
 	}

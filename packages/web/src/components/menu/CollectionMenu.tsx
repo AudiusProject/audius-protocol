@@ -56,25 +56,27 @@ const messages = {
   embed: 'Embed'
 }
 
-const CollectionMenu = (props: CollectionMenuProps) => {
+const CollectionMenu = ({
+  handle = '',
+  isFavorited = false,
+  isReposted = false,
+  includeFavorite = true,
+  isArtist = false,
+  includeVisitPage = true,
+  ...props
+}: CollectionMenuProps) => {
   const {
     type,
-    handle,
     playlistName,
     ddexApp,
     playlistId,
     isOwner,
-    isFavorited,
-    isReposted,
     includeEdit,
     includeShare,
     includeRepost,
-    includeFavorite,
     includeEmbed,
-    includeVisitPage,
     includeVisitArtistPage = true,
     isPublic,
-    isArtist,
     onShare,
     goToRoute,
     openEmbedModal,
@@ -218,18 +220,6 @@ function mapDispatchToProps(dispatch: Dispatch) {
     openEmbedModal: (playlistId: ID, kind: PlayableType) =>
       dispatch(embedModalActions.open(playlistId, kind))
   }
-}
-
-CollectionMenu.defaultProps = {
-  handle: '',
-  mount: 'page',
-  isFavorited: false,
-  isReposted: false,
-  includeFavorite: true,
-  isArtist: false,
-  includeVisitPage: true,
-  includeEmbed: true,
-  extraMenuItems: []
 }
 
 export default connect(mapStateToProps, mapDispatchToProps)(CollectionMenu)

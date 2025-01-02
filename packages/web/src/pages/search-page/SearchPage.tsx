@@ -1,37 +1,76 @@
-import { ReactNode } from 'react'
+import { useContext, useEffect } from 'react'
 
-import { connect } from 'react-redux'
+import { SearchCategory } from '@audius/common/src/api/search'
+import { Flex, useTheme } from '@audius/harmony'
+import { useSearchParams } from 'react-router-dom'
 
+import MobilePageContainer from 'components/mobile-page-container/MobilePageContainer'
+import NavContext, {
+  CenterPreset,
+  LeftPreset,
+  RightPreset
+} from 'components/nav/mobile/NavContext'
+import Page from 'components/page/Page'
 import { useIsMobile } from 'hooks/useIsMobile'
-import SearchPageProvider from 'pages/search-page/SearchPageProvider'
-import DesktopSearchPageContent from 'pages/search-page/components/desktop/SearchPageContent'
-import MobileSearchPageContent from 'pages/search-page/components/mobile/SearchPageContent'
-import { AppState } from 'store/types'
+import { fullSearchResultsPage } from 'utils/route'
 
-type ownProps = {
-  scrollToTop: () => void
-  containerRef: ReactNode
-}
+import { RecentSearches } from './RecentSearches'
+import { SearchCatalogTile } from './SearchCatalogTile'
+import { SearchHeader } from './SearchHeader'
+import { SearchResults } from './SearchResults'
+import { useSearchCategory, useShowSearchResults } from './hooks'
 
-type SearchPageProps = ownProps & ReturnType<typeof mapStateToProps>
-
-const SearchPage = ({ scrollToTop, containerRef }: SearchPageProps) => {
+export const SearchPage = () => {
   const isMobile = useIsMobile()
-  const content = isMobile ? MobileSearchPageContent : DesktopSearchPageContent
+  const [category] = useSearchCategory()
+  const [urlSearchParams] = useSearchParams()
+  const query = urlSearchParams.get('query')
+  const showSearchResults = useShowSearchResults()
+  const { color } = useTheme()
+
+  // Set nav header
+  const { setLeft, setCenter, setRight } = useContext(NavContext)!
+  useEffect(() => {
+    setLeft(LeftPreset.BACK)
+    setCenter(CenterPreset.LOGO)
+    setRight(RightPreset.SEARCH)
+  }, [setLeft, setCenter, setRight])
+
+  const header = <SearchHeader />
+
+  const PageComponent = isMobile ? MobilePageContainer : Page
 
   return (
-    <SearchPageProvider
-      scrollToTop={scrollToTop}
-      containerRef={containerRef}
-      isMobile={isMobile}
+    <PageComponent
+      title={query ?? 'Search'}
+      description={`Search results for ${query}`}
+      canonicalUrl={fullSearchResultsPage(
+        category as SearchCategory,
+        query ?? ''
+      )}
+      header={header}
+      fullHeight
     >
-      {content}
-    </SearchPageProvider>
+      <Flex
+        direction='column'
+        w='100%'
+        h='100%'
+        style={isMobile ? { backgroundColor: color.background.white } : {}}
+      >
+        {isMobile ? header : null}
+        {!showSearchResults ? (
+          <Flex
+            direction='column'
+            alignItems='center'
+            gap={isMobile ? 'xl' : 'l'}
+          >
+            <SearchCatalogTile />
+            <RecentSearches />
+          </Flex>
+        ) : (
+          <SearchResults />
+        )}
+      </Flex>
+    </PageComponent>
   )
 }
-
-function mapStateToProps(state: AppState) {
-  return {}
-}
-
-export default connect(mapStateToProps)(SearchPage)

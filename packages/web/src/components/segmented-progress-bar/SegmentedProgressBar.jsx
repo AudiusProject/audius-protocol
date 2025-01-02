@@ -7,11 +7,12 @@ import styles from './SegmentedProgressBar.module.css'
 /**
  * `SegmentedProgressBar` displays a configurable amount of progress segments
  * indicating progress through some task.
- *
- * @param {Object} { numSteps, stepsComplete, isCompact }
- * @returns
  */
-const SegmentedProgressBar = ({ numSteps, stepsComplete, isCompact }) => {
+const SegmentedProgressBar = ({
+  numSteps,
+  stepsComplete,
+  isCompact = false
+}) => {
   /**  Div hierarchy explanation:
    *
    * - Outermost div .container provides the grey border
@@ -60,10 +61,6 @@ SegmentedProgressBar.propTypes = {
   numSteps: PropTypes.number.isRequired,
   stepsComplete: PropTypes.number.isRequired,
   isCompact: PropTypes.bool // controls at what size the bar renders
-}
-
-SegmentedProgressBar.defaultProps = {
-  isCompact: false
 }
 
 export default SegmentedProgressBar
