@@ -60,8 +60,15 @@ export const statusComponents = {
 }
 
 /** @deprecated Use CompletionChecklistItem instead. */
-export const StatusMessage = (props: StatusMessageProps) => {
-  const transitions = useTransition(props.status, {
+export const StatusMessage = ({
+  status,
+  containerClassName,
+  label,
+  labelClassName,
+  containerStyle,
+  onClick
+}: StatusMessageProps) => {
+  const transitions = useTransition(status, {
     from: { x: 0 },
     enter: { x: 1 },
     leave: { x: 0 }
@@ -69,11 +76,11 @@ export const StatusMessage = (props: StatusMessageProps) => {
 
   return (
     <div
-      style={props.containerStyle}
-      className={cn(styles.statusContainer, props.containerClassName, {
-        [styles.clickable]: props.onClick != null
+      style={containerStyle}
+      className={cn(styles.statusContainer, containerClassName, {
+        [styles.clickable]: onClick != null
       })}
-      onClick={props.onClick}
+      onClick={onClick}
     >
       <StatusDefault className={styles.defaultStatusIcon} />
       {transitions((style, status) => {
@@ -98,14 +105,12 @@ export const StatusMessage = (props: StatusMessageProps) => {
         return null
       })}
       <div
-        className={cn(styles.label, props.labelClassName, {
-          [styles.errorLabel]: props.status === 'error'
+        className={cn(styles.label, labelClassName, {
+          [styles.errorLabel]: status === 'error'
         })}
       >
-        {props.label}
-        {props.onClick == null ? null : (
-          <IconArrow className={styles.iconArrow} />
-        )}
+        {label}
+        {onClick == null ? null : <IconArrow className={styles.iconArrow} />}
       </div>
     </div>
   )

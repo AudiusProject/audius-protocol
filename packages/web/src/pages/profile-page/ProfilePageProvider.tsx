@@ -134,8 +134,6 @@ type ProfilePageState = {
 }
 
 class ProfilePage extends PureComponent<ProfilePageProps, ProfilePageState> {
-  static defaultProps = {}
-
   state: ProfilePageState = {
     activeTab: null,
     editMode: false,
