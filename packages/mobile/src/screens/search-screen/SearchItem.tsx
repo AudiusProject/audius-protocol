@@ -2,7 +2,6 @@ import { useCollection, useGetTrackById, useUser } from '@audius/common/api'
 import { recentSearchMessages as messages } from '@audius/common/messages'
 import { Kind, SquareSizes, Status } from '@audius/common/models'
 import type { SearchItem as SearchItemType } from '@audius/common/store'
-import { isPending } from '@reduxjs/toolkit'
 import { TouchableOpacity } from 'react-native-gesture-handler'
 
 import type { IconComponent } from '@audius/harmony-native'
