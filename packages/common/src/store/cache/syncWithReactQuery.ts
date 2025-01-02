@@ -114,7 +114,16 @@ const ENTITY_UPDATERS: Record<Kind, EntityUpdater> = {
   [Kind.COLLECTIONS]: {
     singleKey: QUERY_KEYS.collection,
     listKey: QUERY_KEYS.collections,
-    idField: 'playlist_id'
+    idField: 'playlist_id',
+    updateRelations: (queryClient, id, metadata) => {
+      // Update collectionByPermalink cache if we have a permalink
+      if (metadata.permalink) {
+        queryClient.setQueryData(
+          [QUERY_KEYS.collectionByPermalink, metadata.permalink],
+          metadata
+        )
+      }
+    }
   },
   [Kind.TRACK_ROUTES]: {
     singleKey: 'track_route',
