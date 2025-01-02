@@ -170,7 +170,7 @@ export const useThemeVariant = (): keyof typeof themeColorsByThemeVariant => {
   const theme = useSelector(getTheme)
   const systemAppearance = useSelector(getSystemAppearance)
   const systemTheme = systemAppearance === 'dark' ? Theme.DARK : Theme.DEFAULT
-  return theme === Theme.AUTO ? systemTheme : theme ?? Theme.DEFAULT
+  return theme === Theme.AUTO ? systemTheme : (theme ?? Theme.DEFAULT)
 }
 
 export const useThemeColors = () => {
