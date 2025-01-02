@@ -1,18 +1,8 @@
 import { useCallback, useMemo, useEffect } from 'react'
 
-import {
-  useGetTracksByIds,
-  useGetPlaylistByPermalink
-} from '@audius/common/api'
+import { useGetTracksByIds, useCollectionByPermalink } from '@audius/common/api'
 import { usePlayTrack, usePauseTrack } from '@audius/common/hooks'
-import {
-  Name,
-  SquareSizes,
-  Kind,
-  Status,
-  ID,
-  ModalSource
-} from '@audius/common/models'
+import { Name, SquareSizes, Kind, ID, ModalSource } from '@audius/common/models'
 import {
   accountSelectors,
   cacheCollectionsActions,
@@ -43,14 +33,8 @@ export const ChatMessagePlaylist = ({
   const currentUserId = useSelector(getUserId)
   const playingTrackId = useSelector(getTrackId)
 
-  const permalink = getPathFromPlaylistUrl(link) ?? ''
-  const { data: playlist, status } = useGetPlaylistByPermalink(
-    {
-      permalink,
-      currentUserId: currentUserId!
-    },
-    { disabled: !permalink || !currentUserId }
-  )
+  const permalink = getPathFromPlaylistUrl(link)
+  const { data: playlist, status } = useCollectionByPermalink(permalink)
 
   const collectionId = playlist?.playlist_id
   const collection = useSelector((state: CommonState) =>
@@ -138,7 +122,7 @@ export const ChatMessagePlaylist = ({
       playTrack={playTrack}
       pauseTrack={pauseTrack}
       hasLoaded={() => {}}
-      isLoading={status === Status.LOADING || status === Status.IDLE}
+      isLoading={status === 'pending'}
       isTrending={false}
       numLoadingSkeletonRows={tracksWithUids.length}
       togglePlay={() => {}}

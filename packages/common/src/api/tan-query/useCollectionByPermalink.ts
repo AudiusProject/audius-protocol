@@ -27,7 +27,7 @@ type Config = {
 }
 
 export const useCollectionByPermalink = (
-  permalink: string | undefined,
+  permalink: string | undefined | null,
   config?: Config
 ) => {
   const { audiusSdk } = useAppContext()

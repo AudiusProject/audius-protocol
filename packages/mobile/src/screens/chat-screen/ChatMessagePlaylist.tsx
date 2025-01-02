@@ -1,9 +1,6 @@
 import { useCallback, useMemo, useEffect } from 'react'
 
-import {
-  useGetTracksByIds,
-  useGetPlaylistByPermalink
-} from '@audius/common/api'
+import { useGetTracksByIds, useCollectionByPermalink } from '@audius/common/api'
 import { usePlayTrack, usePauseTrack } from '@audius/common/hooks'
 import type { TrackPlayback } from '@audius/common/hooks'
 import { Name, PlaybackSource, Kind } from '@audius/common/models'
@@ -35,14 +32,8 @@ export const ChatMessagePlaylist = ({
   const playingTrackId = useSelector(getTrackId)
   const playingUid = useSelector(getUid)
 
-  const permalink = getPathFromPlaylistUrl(link) ?? ''
-  const { data: collection } = useGetPlaylistByPermalink(
-    {
-      permalink,
-      currentUserId: currentUserId!
-    },
-    { disabled: !permalink || !currentUserId }
-  )
+  const permalink = getPathFromPlaylistUrl(link)
+  const { data: collection } = useCollectionByPermalink(permalink)
 
   const trackIds =
     collection?.playlist_contents?.track_ids?.map((t) => t.track) ?? []
