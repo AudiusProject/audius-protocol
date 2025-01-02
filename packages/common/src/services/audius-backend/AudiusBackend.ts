@@ -264,8 +264,8 @@ export const audiusBackend = ({
       const userId = newMetadata.user_id
       const { blockHash, blockNumber } = await sdk.users.updateProfile({
         userId: Id.parse(userId),
-        profilePictureFile: newMetadata.updatedProfilePicture?.file,
-        coverArtFile: newMetadata.updatedCoverPhoto?.file,
+        profilePictureFile: metadata.updatedProfilePicture?.file,
+        coverArtFile: metadata.updatedCoverPhoto?.file,
         metadata: userMetadataToSdk(newMetadata)
       })
       return { blockHash, blockNumber, userId }
