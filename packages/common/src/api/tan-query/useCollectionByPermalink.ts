@@ -16,7 +16,8 @@ export const playlistPermalinkToHandleAndSlug = (permalink: string) => {
       'Permalink formatted incorrectly. Should follow /<handle>/playlist/<slug> format.'
     )
   }
-  const [, handle, , slug] = splitPermalink
+  const handle = splitPermalink[1]
+  const slug = splitPermalink[3]
   return { handle, slug }
 }
 
