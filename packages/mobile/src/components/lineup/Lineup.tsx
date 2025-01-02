@@ -450,7 +450,7 @@ export const Lineup = ({
     }
 
     const skeletonItems = range(getSkeletonCount()).map(
-      () => ({ _loading: true } as LoadingLineupItem)
+      () => ({ _loading: true }) as LoadingLineupItem
     )
 
     if (delineate) {

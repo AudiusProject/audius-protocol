@@ -17,7 +17,7 @@ export const SupportingInfo = (props: SupportingInfoProps) => {
   const supportingMap = useSelector(getOptimisticSupporting)
   const supportingId = useSelector(getSupportingId)
   const supportingForUser = supportingId
-    ? supportingMap[supportingId] ?? null
+    ? (supportingMap[supportingId] ?? null)
     : null
   const supporting = supportingForUser?.[props.user.user_id] ?? null
 
