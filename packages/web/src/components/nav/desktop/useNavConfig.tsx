@@ -1,6 +1,10 @@
 import { ReactNode, useMemo } from 'react'
 
-import { accountSelectors, chatSelectors } from '@audius/common/store'
+import {
+  accountSelectors,
+  chatSelectors,
+  audioRewardsPageSelectors
+} from '@audius/common/store'
 import { route } from '@audius/common/utils'
 import type { IconComponent } from '@audius/harmony'
 import {
@@ -36,6 +40,7 @@ const {
 
 const { getIsAccountComplete, getHasAccount } = accountSelectors
 const { getUnreadMessagesCount } = chatSelectors
+const { getUndisbursedUserChallenges } = audioRewardsPageSelectors
 
 export type NavItemConfig = {
   label: string
@@ -54,6 +59,7 @@ export const useNavConfig = () => {
   const isAccountComplete = useSelector(getIsAccountComplete)
   const hasAccount = useSelector(getHasAccount)
   const unreadMessagesCount = useSelector(getUnreadMessagesCount)
+  const undisbursedChallenges = useSelector(getUndisbursedUserChallenges)
   const location = useLocation()
 
   const navItems = useMemo(
@@ -112,7 +118,15 @@ export const useNavConfig = () => {
         leftIcon: IconGift,
         to: REWARDS_PAGE,
         restriction: 'account',
-        disabled: !isAccountComplete
+        disabled: !isAccountComplete,
+        rightIcon:
+          undisbursedChallenges.length > 0 ? (
+            <NotificationCount
+              count={undisbursedChallenges.length}
+              isSelected={location.pathname === REWARDS_PAGE}
+            />
+          ) : undefined,
+        hasNotification: undisbursedChallenges.length > 0
       },
       {
         label: 'Upload',
@@ -132,7 +146,13 @@ export const useNavConfig = () => {
         disabled: !isAccountComplete
       }
     ],
-    [isAccountComplete, hasAccount, unreadMessagesCount, location.pathname]
+    [
+      isAccountComplete,
+      hasAccount,
+      unreadMessagesCount,
+      undisbursedChallenges.length,
+      location.pathname
+    ]
   )
 
   return navItems
