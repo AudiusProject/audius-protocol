@@ -2,7 +2,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { userCollectionMetadataFromSDK } from '~/adapters/collection'
-import { useAppContext } from '~/context'
+import { useAppContext } from '~/context/appContext'
 import { OptionalId } from '~/models'
 import { getUserId } from '~/store/account/selectors'
 
