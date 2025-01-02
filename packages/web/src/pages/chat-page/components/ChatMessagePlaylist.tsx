@@ -34,7 +34,7 @@ export const ChatMessagePlaylist = ({
   const playingTrackId = useSelector(getTrackId)
 
   const permalink = getPathFromPlaylistUrl(link)
-  const { data: playlist, status } = useCollectionByPermalink(permalink)
+  const { data: playlist, isPending } = useCollectionByPermalink(permalink)
 
   const collectionId = playlist?.playlist_id
   const collection = useSelector((state: CommonState) =>
@@ -122,7 +122,7 @@ export const ChatMessagePlaylist = ({
       playTrack={playTrack}
       pauseTrack={pauseTrack}
       hasLoaded={() => {}}
-      isLoading={status === 'pending'}
+      isLoading={isPending}
       isTrending={false}
       numLoadingSkeletonRows={tracksWithUids.length}
       togglePlay={() => {}}

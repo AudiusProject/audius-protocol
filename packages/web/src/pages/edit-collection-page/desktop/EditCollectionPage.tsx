@@ -47,13 +47,17 @@ export const EditCollectionPage = () => {
   useRequiresAccount()
   useIsUnauthorizedForHandleRedirect(handle)
 
-  const { data: apiCollection, status } = useCollectionByPermalink(permalink)
+  const {
+    data: apiCollection,
+    isError,
+    isPending
+  } = useCollectionByPermalink(permalink)
 
   const localCollection = useSelector((state) =>
     getCollection(state, { permalink })
   )
 
-  const collection = status === 'error' ? localCollection : apiCollection
+  const collection = isError ? localCollection : apiCollection
 
   const { playlist_id, tracks, description } = collection ?? {}
 
@@ -109,7 +113,7 @@ export const EditCollectionPage = () => {
 
   return (
     <Page header={<Header primary={messages.title(isAlbum)} showBackButton />}>
-      {status === 'pending' || !artworkUrl ? (
+      {isPending || !artworkUrl ? (
         <LoadingSpinnerFullPage />
       ) : (
         <EditCollectionForm

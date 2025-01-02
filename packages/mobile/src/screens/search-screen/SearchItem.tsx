@@ -2,6 +2,7 @@ import { useCollection, useGetTrackById, useUser } from '@audius/common/api'
 import { recentSearchMessages as messages } from '@audius/common/messages'
 import { Kind, SquareSizes, Status } from '@audius/common/models'
 import type { SearchItem as SearchItemType } from '@audius/common/store'
+import { isPending } from '@reduxjs/toolkit'
 import { TouchableOpacity } from 'react-native-gesture-handler'
 
 import type { IconComponent } from '@audius/harmony-native'
@@ -138,12 +139,12 @@ export const SearchItemTrack = (props: SearchItemProps) => {
 export const SearchItemCollection = (props: SearchItemProps) => {
   const { searchItem, onPress } = props
   const { id } = searchItem
-  const { data: playlist, status } = useCollection(id)
+  const { data: playlist, isPending } = useCollection(id)
   const navigation = useNavigation()
 
   const { data: playlistUser } = useUser(playlist?.playlist_owner_id)
 
-  if (status === 'pending') return <SearchItemSkeleton />
+  if (isPending) return <SearchItemSkeleton />
 
   if (!playlist) return null
   const { is_album, playlist_name } = playlist
@@ -191,10 +192,10 @@ export const SearchItemCollection = (props: SearchItemProps) => {
 const SearchItemUser = (props: SearchItemProps) => {
   const { searchItem, onPress } = props
   const { id } = searchItem
-  const { data: user, status } = useUser(id)
+  const { data: user, isPending } = useUser(id)
   const navigation = useNavigation()
 
-  if (status === 'pending') return <SearchItemSkeleton />
+  if (isPending) return <SearchItemSkeleton />
 
   if (!user) return null
   const { handle } = user
