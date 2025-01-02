@@ -1,4 +1,4 @@
-import { useGetTrackById } from '@audius/common/api'
+import { useTrack } from '@audius/common/api'
 import { SquareSizes, statusIsNotFinalized, ID } from '@audius/common/models'
 import cn from 'classnames'
 
@@ -28,7 +28,7 @@ export const DynamicTrackArtwork = ({
   className,
   size = DynamicTrackArtworkSize.DEFAULT
 }: DynamicTrackArtworkProps) => {
-  const { status, data: track } = useGetTrackById({ id })
+  const { status, data: track } = useTrack(id)
   const image = useTrackCoverArt({
     trackId: id,
     size: SquareSizes.SIZE_150_BY_150

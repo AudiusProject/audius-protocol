@@ -1,6 +1,6 @@
 import { MouseEvent, ReactNode, useCallback } from 'react'
 
-import { useGetPlaylistById, useGetTrackById } from '@audius/common/api'
+import { useGetPlaylistById, useTrack } from '@audius/common/api'
 import { AccessConditions, ID } from '@audius/common/models'
 import { gatedContentSelectors } from '@audius/common/store'
 import { Nullable } from '@audius/common/utils'
@@ -49,7 +49,7 @@ type EntityDetails = {
 }
 
 const useTrackEntityDetails = (id: ID): EntityDetails => {
-  const { data: track } = useGetTrackById({ id }, { disabled: id === -1 })
+  const { data: track } = useTrack(id, { enabled: id !== -1 })
 
   const {
     stream_conditions: streamConditions,

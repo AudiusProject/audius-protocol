@@ -3,7 +3,7 @@ import { useCallback, type ReactNode, useEffect } from 'react'
 import {
   useGetCurrentUserId,
   useGetPlaylistById,
-  useGetTrackById,
+  useTrack,
   useGetUserById
 } from '@audius/common/api'
 import type { PurchaseableContentMetadata } from '@audius/common/hooks'
@@ -22,12 +22,7 @@ import {
   PURCHASE_METHOD_MINT_ADDRESS
 } from '@audius/common/hooks'
 import type { ID, USDCPurchaseConditions } from '@audius/common/models'
-import {
-  Name,
-  PurchaseMethod,
-  PurchaseVendor,
-  statusIsNotFinalized
-} from '@audius/common/models'
+import { Name, PurchaseMethod, PurchaseVendor } from '@audius/common/models'
 import { IntKeys, FeatureFlags } from '@audius/common/services'
 import {
   usePremiumContentPurchaseModal,
@@ -219,8 +214,8 @@ const getButtonText = (isUnlocking: boolean, amountDue: number) =>
   isUnlocking
     ? messages.purchasing
     : amountDue > 0
-    ? `${messages.buy} $${formatPrice(amountDue)}`
-    : messages.buy
+      ? `${messages.buy} $${formatPrice(amountDue)}`
+      : messages.buy
 
 // The bulk of the form rendering is in a nested component because we want access
 // to the FormikContext, which can only be used in a component which is a descendant
@@ -336,7 +331,7 @@ const RenderForm = ({
   }, [setPurchaseVendor, showCoinflow, purchaseVendor])
 
   const stemsPurchaseCount = isContentDownloadGated(content)
-    ? content._stems?.length ?? 0
+    ? (content._stems?.length ?? 0)
     : 0
   const downloadPurchaseCount =
     isContentDownloadGated(content) && content.is_downloadable ? 1 : 0
@@ -462,10 +457,9 @@ export const PremiumContentPurchaseDrawer = () => {
   } = usePremiumContentPurchaseModal()
   const isAlbum = contentType === PurchaseableContentType.ALBUM
   const { data: currentUserId } = useGetCurrentUserId({})
-  const { data: track, status: trackStatus } = useGetTrackById(
-    { id: contentId },
-    { disabled: !contentId }
-  )
+  const { data: track, isLoading } = useTrack(contentId, {
+    enabled: !!contentId
+  })
   const { data: album } = useGetPlaylistById(
     { playlistId: contentId!, currentUserId },
     { disabled: !isAlbum || !contentId }
@@ -486,8 +480,6 @@ export const PremiumContentPurchaseDrawer = () => {
   const error = useSelector(getPurchaseContentError)
   const isUnlocking = !error && isContentPurchaseInProgress(stage)
 
-  const isLoading = statusIsNotFinalized(trackStatus)
-
   const isValidStreamGatedTrack = !!metadata && isStreamPurchaseable(metadata)
   const isValidDownloadGatedTrack =
     !!metadata && isTrackDownloadPurchaseable(metadata)
@@ -495,8 +487,8 @@ export const PremiumContentPurchaseDrawer = () => {
   const purchaseConditions = isValidStreamGatedTrack
     ? metadata.stream_conditions
     : isValidDownloadGatedTrack
-    ? metadata.download_conditions
-    : null
+      ? metadata.download_conditions
+      : null
 
   const price = purchaseConditions ? purchaseConditions?.usdc_purchase.price : 0
 

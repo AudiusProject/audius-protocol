@@ -8,7 +8,7 @@ import {
   useState
 } from 'react'
 
-import { useGetTrackById } from '@audius/common/api'
+import { useTrack } from '@audius/common/api'
 import { useAudiusLinkResolver } from '@audius/common/hooks'
 import type { ID, UserMetadata } from '@audius/common/models'
 import {
@@ -133,7 +133,7 @@ export const ComposerInput = forwardRef(function ComposerInput(
   const latestValueRef = useRef(value)
   const messageIdRef = useRef(messageId)
   const lastKeyPressMsRef = useRef<number | null>(null)
-  const { data: track } = useGetTrackById({ id: entityId ?? -1 })
+  const { data: track } = useTrack(entityId ?? -1)
 
   useEffect(() => {
     setUserMentions(

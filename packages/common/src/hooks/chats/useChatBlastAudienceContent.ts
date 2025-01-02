@@ -8,7 +8,7 @@ import {
   useGetPlaylistById,
   useGetPurchasersCount,
   useGetRemixersCount,
-  useGetTrackById
+  useTrack
 } from '~/api'
 import {
   decodeHashId,
@@ -31,12 +31,9 @@ export const useChatBlastAudienceContent = ({ chat }: { chat: ChatBlast }) => {
 
   const { data: currentUserId } = useGetCurrentUserId({})
   const { data: user } = useGetCurrentUser({})
-  const { data: track } = useGetTrackById(
-    {
-      id: decodedContentId!
-    },
-    { disabled: !decodedContentId || audienceContentType !== 'track' }
-  )
+  const { data: track } = useTrack(decodedContentId!, {
+    enabled: !!decodedContentId && audienceContentType === 'track'
+  })
   const { data: album } = useGetPlaylistById(
     {
       playlistId: decodedContentId!

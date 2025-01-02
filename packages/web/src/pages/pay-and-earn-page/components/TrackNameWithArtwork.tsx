@@ -1,7 +1,7 @@
 import {
   useGetCurrentUserId,
   useGetPlaylistById,
-  useGetTrackById
+  useTrack
 } from '@audius/common/api'
 import {
   SquareSizes,
@@ -24,10 +24,7 @@ export const TrackNameWithArtwork = ({
   contentType: USDCContentPurchaseType
 }) => {
   const isTrack = contentType === USDCContentPurchaseType.TRACK
-  const { status: trackStatus, data: track } = useGetTrackById(
-    { id },
-    { disabled: !isTrack }
-  )
+  const { status: trackStatus, data: track } = useTrack(id)
   const { data: currentUserId } = useGetCurrentUserId({})
   const { status: albumStatus, data: album } = useGetPlaylistById(
     { playlistId: id, currentUserId },

@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react'
 
-import { useGetPlaylistById, useGetTrackById } from '@audius/common/api'
+import { useGetPlaylistById, useTrack } from '@audius/common/api'
 import type { ID, UserMetadata } from '@audius/common/models'
 import { SquareSizes } from '@audius/common/models'
 
@@ -57,7 +57,7 @@ type ComposerTrackInfoProps = {
 export const ComposerTrackInfo = (props: ComposerTrackInfoProps) => {
   const { trackId } = props
 
-  const { data: track } = useGetTrackById({ id: trackId }, { force: true })
+  const { data: track } = useTrack(trackId, { enabled: !!trackId })
 
   if (!track) return null
 

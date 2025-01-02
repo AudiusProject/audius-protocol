@@ -1,6 +1,6 @@
 import {
   useGetPlaylistById,
-  useGetTrackById,
+  useTrack,
   useGetUserById
 } from '@audius/common/api'
 import { recentSearchMessages as messages } from '@audius/common/messages'
@@ -81,12 +81,12 @@ export const SearchItemSkeleton = () => (
 export const SearchItemTrack = (props: SearchItemProps) => {
   const { searchItem, onPress } = props
   const { id } = searchItem
-  const { data: track, status } = useGetTrackById({ id })
+  const { data: track, isLoading } = useTrack(id)
   const { data: user } = useGetUserById({ id: track?.owner_id ?? 0 })
   const { spacing } = useTheme()
   const navigation = useNavigation()
 
-  if (status === Status.LOADING) return <SearchItemSkeleton />
+  if (isLoading) return <SearchItemSkeleton />
 
   if (!track) return null
   const { title } = track

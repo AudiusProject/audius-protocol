@@ -1,6 +1,6 @@
 import { MouseEventHandler, ReactNode, useCallback } from 'react'
 
-import { useGetPlaylistById, useGetTrackById } from '@audius/common/api'
+import { useGetPlaylistById, useTrack } from '@audius/common/api'
 import { ID } from '@audius/common/models'
 import {
   usePublishConfirmationModal,
@@ -58,7 +58,7 @@ const TrackOwnerActionButtons = ({
   contentId,
   ...rest
 }: OwnerActionButtonProps) => {
-  const { data: track } = useGetTrackById({ id: contentId })
+  const { data: track } = useTrack(contentId)
   return (
     <BaseOwnerActionButtons
       isUnlisted={track?.is_unlisted ?? false}
