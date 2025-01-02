@@ -1,6 +1,6 @@
 import { memo, useCallback } from 'react'
 
-import { useGetCurrentUserId, useGetPlaylistById } from '@audius/common/api'
+import { useCurrentUserId, useGetPlaylistById } from '@audius/common/api'
 import {
   useGatedContentAccessMap,
   useGatedContentAccess
@@ -110,7 +110,7 @@ const CollectionHeader = ({
 }: MobileCollectionHeaderProps) => {
   const navigate = useNavigate()
 
-  const { data: currentUserId } = useGetCurrentUserId({})
+  const { data: currentUserId } = useCurrentUserId()
   const { data: collection } = useGetPlaylistById({
     playlistId: collectionId,
     currentUserId

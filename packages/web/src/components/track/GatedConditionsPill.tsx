@@ -51,6 +51,7 @@ export const GatedConditionsPill = ({
       className={className}
       size={buttonSize}
       onClick={(e) => {
+        e.stopPropagation()
         track(
           make({
             eventName: Name.PURCHASE_CONTENT_BUY_CLICKED,

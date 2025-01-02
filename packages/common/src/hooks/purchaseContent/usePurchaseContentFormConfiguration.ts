@@ -5,7 +5,7 @@ import BN from 'bn.js'
 import { useDispatch, useSelector } from 'react-redux'
 import { z } from 'zod'
 
-import { useGetCurrentUser } from '~/api'
+import { useCurrentUser } from '~/api'
 import { useAudiusQueryContext } from '~/audius-query/AudiusQueryContext'
 import { UserCollectionMetadata } from '~/models'
 import { PurchaseMethod, PurchaseVendor } from '~/models/PurchaseContent'
@@ -71,7 +71,7 @@ export const usePurchaseContentFormConfiguration = ({
   const { data: balanceBN } = useUSDCBalance()
   const balance = USDC(balanceBN ?? new BN(0)).value
   const guestEmail = useSelector(getGuestEmail)
-  const { data: currentUser } = useGetCurrentUser({})
+  const { data: currentUser } = useCurrentUser()
   const { isEnabled: guestCheckoutEnabled } = useFeatureFlag(
     FeatureFlags.GUEST_CHECKOUT
   )

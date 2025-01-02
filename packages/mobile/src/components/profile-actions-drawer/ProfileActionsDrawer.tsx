@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo } from 'react'
 
-import { useGetCurrentUserId, useGetMutedUsers } from '@audius/common/api'
+import { useCurrentUserId, useGetMutedUsers } from '@audius/common/api'
 import { useFeatureFlag } from '@audius/common/hooks'
 import { commentsMessages } from '@audius/common/messages'
 import { ShareSource } from '@audius/common/models'
@@ -39,7 +39,7 @@ export const ProfileActionsDrawer = () => {
     FeatureFlags.COMMENT_POSTING_ENABLED
   )
 
-  const { data: currentUserId } = useGetCurrentUserId({})
+  const { data: currentUserId } = useCurrentUserId()
   const { data: mutedUsers } = useGetMutedUsers(
     {
       userId: currentUserId!

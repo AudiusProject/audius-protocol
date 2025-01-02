@@ -246,6 +246,7 @@ export const Table = ({
   }, [sortValue])
 
   const renderTableHeader = useCallback((column: any, endHeader?: boolean) => {
+    const { key, colSpan, role, style } = column.getHeaderProps()
     return (
       <th
         className={cn(styles.tableHeader, {
@@ -255,8 +256,10 @@ export const Table = ({
           [styles.rightAlign]: column.align === 'right',
           [styles.cellSectionEnd]: endHeader
         })}
-        {...column.getHeaderProps()}
-        key={column.id}
+        colSpan={colSpan}
+        role={role}
+        style={style}
+        key={key}
       >
         {/* Sorting Container */}
         <div {...column.getSortByToggleProps()} title=''>

@@ -274,7 +274,7 @@ export const EditTrackForm = (props: EditTrackFormProps) => {
                     />
                   </Flex>
                 ) : null}
-                <PickArtworkField name='artwork' />
+                <PickArtworkField name='artwork' isUpload={isUpload} />
                 <TextField name='title' label={messages.trackName} required />
                 <SubmenuList>
                   <SelectGenreField />

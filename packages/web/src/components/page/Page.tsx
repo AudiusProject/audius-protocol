@@ -7,12 +7,11 @@ import {
   MutableRefObject
 } from 'react'
 
+import { animated, useSpring } from '@react-spring/web'
 import cn from 'classnames'
-// eslint-disable-next-line no-restricted-imports -- TODO: migrate to @react-spring/web
-import { animated, useSpring } from 'react-spring'
 
 import { MetaTags, MetaTagsProps } from 'components/meta-tags/MetaTags'
-import SearchBar from 'components/search-bar/ConnectedSearchBar'
+import DesktopSearchBar from 'components/search-bar/DesktopSearchBar'
 
 import styles from './Page.module.css'
 
@@ -27,6 +26,7 @@ const HeaderContainer = (props: HeaderContainerProps) => {
   // Only Safari & Chrome support the CSS
   // frosted glasss effect.
   const [isChromeOrSafari, setIsChromeOrSafari] = useState(false)
+
   useEffect(() => {
     const chromeOrSafari = () => {
       const userAgent = navigator.userAgent.toLowerCase()
@@ -56,7 +56,7 @@ const HeaderContainer = (props: HeaderContainerProps) => {
         {cloneElement(header as any, {
           isChromeOrSafari,
           headerContainerRef,
-          topLeftElement: showSearch ? <SearchBar /> : null
+          topLeftElement: showSearch ? <DesktopSearchBar /> : null
         })}
       </div>
       {/* We attach the box shadow as a separate element to
@@ -160,7 +160,7 @@ export const Page = (props: PageProps) => {
 
         {scrollableSearch && (
           <div className={styles.searchWrapper}>
-            <SearchBar />
+            <DesktopSearchBar />
           </div>
         )}
       </animated.div>

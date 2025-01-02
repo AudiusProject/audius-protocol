@@ -19,6 +19,12 @@ import { localTransport } from './localTransport'
 import { privateKeyToAudiusAccount } from './privateKeyToAudiusAccount'
 import type { AudiusAccount, AudiusWalletClient } from './types'
 
+export class HedgehogWalletNotFoundError extends Error {
+  constructor() {
+    super('Hedgehog wallet not found. Is the user logged in?')
+  }
+}
+
 /**
  * Creates a Viem client that uses a local Hedgehog instance to do all the wallet methods.
  */
@@ -33,7 +39,7 @@ export function createHedgehogWalletClient(
     await hedgehog.waitUntilReady()
     const wallet = hedgehog.getWallet()
     if (!wallet) {
-      throw new Error('Hedgehog wallet not found. Is the user logged in?')
+      throw new HedgehogWalletNotFoundError()
     }
 
     if (!account_ || account_.address !== wallet.getAddressString()) {
@@ -54,9 +60,13 @@ export function createHedgehogWalletClient(
     .then((account) => {
       client.account = account
     })
-    .catch(() => {
-      // Do nothing - to be expected if the user is not logged in yet.
-      // Throw only if they actually try to do something without a wallet.
+    .catch((e) => {
+      if (e instanceof HedgehogWalletNotFoundError) {
+        // Do nothing - to be expected if the user is not logged in yet.
+        // Throw only if they actually try to do something without a wallet.
+        return
+      }
+      throw e
     })
 
   // Custom implements each action to inject the account asynchronously, since

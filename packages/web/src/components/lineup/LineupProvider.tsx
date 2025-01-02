@@ -133,9 +133,9 @@ export interface LineupProviderProps {
   playing: boolean
   playTrack: (uid: UID, trackId?: ID) => void
   pauseTrack: () => void
-  variant: LineupVariant
+  variant?: LineupVariant
   loadMore?: (offset: number, limit: number, overwrite: boolean) => void
-  selfLoad: boolean
+  selfLoad?: boolean
   scrollParent?: HTMLElement | null
   endOfLineup?: JSX.Element
 
@@ -246,14 +246,14 @@ class LineupProvider extends PureComponent<CombinedProps, LineupProviderState> {
       MINIMUM_INITIAL_LOAD_TRACKS_MULTIPLIER
     )
     const initialTrackLoadCount = getLoadMoreTrackCount(
-      this.props.variant,
+      this.props.variant ?? LineupVariant.MAIN,
       () =>
         this.props.variant === LineupVariant.PLAYLIST
           ? INITIAL_PLAYLISTS_MULTIPLER
           : INITIAL_LOAD_TRACKS_MULTIPLIER
     )
     const trackLoadMoreCount = getLoadMoreTrackCount(
-      this.props.variant,
+      this.props.variant ?? LineupVariant.MAIN,
       TRACKS_AHEAD_MULTIPLIER
     )
     const page = getInitPage(
@@ -358,7 +358,7 @@ class LineupProvider extends PureComponent<CombinedProps, LineupProviderState> {
       this.setState({
         scrollParent,
         trackLoadMoreCount: getLoadMoreTrackCount(
-          this.props.variant,
+          this.props.variant ?? LineupVariant.MAIN,
           TRACKS_AHEAD_MULTIPLIER
         )
       })
@@ -526,7 +526,6 @@ class LineupProvider extends PureComponent<CombinedProps, LineupProviderState> {
           if (entry._marked_deleted) return null
           let trackProps: TrackTileProps = {
             ...entry,
-            key: index,
             index,
             ordered,
             togglePlay: this.togglePlay,
@@ -550,7 +549,6 @@ class LineupProvider extends PureComponent<CombinedProps, LineupProviderState> {
 
           const playlistProps: PlaylistTileProps = {
             ...entry,
-            key: index,
             index,
             uid: entry.uid,
             size: tileSize,
@@ -597,7 +595,6 @@ class LineupProvider extends PureComponent<CombinedProps, LineupProviderState> {
         ...Array(loadingSkeletonCount)
       ].map((_, index) => {
         const skeletonTileProps = {
-          key: tiles.length + index,
           index: tiles.length + index,
           size: tileSize,
           ordered: this.props.ordered,
@@ -633,8 +630,9 @@ class LineupProvider extends PureComponent<CombinedProps, LineupProviderState> {
               >
                 <div className={styles.featuredContent}>
                   <SkeletonTileElement
-                    {...{ ...skeletonTileProps, ...leadingElementTileProps }}
-                    key={index}
+                    {...skeletonTileProps}
+                    {...leadingElementTileProps}
+                    key={tiles.length + index}
                   />
                 </div>
               </div>
@@ -702,108 +700,112 @@ class LineupProvider extends PureComponent<CombinedProps, LineupProviderState> {
 
     const endLineup =
       !lineup.hasMore && !count && endOfLineup ? endOfLineup : null
-    return [
-      <div
-        className={cn(lineupStyle, {
-          [lineupContainerStyles!]: !!lineupContainerStyles
-        })}
-        style={{ position: 'relative' }}
-        key='lineup'
-      >
-        <Transition
-          items={featuredTrackUid}
-          from={{ opacity: 0, marginBottom: 0, maxHeight: 0 }}
-          // Set the `initial` value to the same as `enter` signifying that component mounts
-          // of the lineup do not trigger an animation, rather  updates to the featuredTrackUid do.
-          initial={{
-            opacity: 1,
-            marginBottom: 12,
-            maxHeight: 174
-          }}
-          enter={{
-            opacity: 1,
-            marginBottom: 12,
-            maxHeight: 174
-          }}
-          leave={{ opacity: 0, marginBottom: 0, maxHeight: 0 }}
-          config={{ duration: 175 }}
-          immediate={isMobile || !animateLeadingElement}
+    return (
+      <>
+        <div
+          className={cn(lineupStyle, {
+            [lineupContainerStyles!]: !!lineupContainerStyles
+          })}
+          style={{ position: 'relative' }}
         >
-          {(featuredId: ID | null) =>
-            featuredId
-              ? (props) => (
-                  <div
-                    className={cn(
-                      styles.featuredContainer,
-                      leadingElementClassName
-                    )}
-                    style={{
-                      height: '100%',
-                      maxHeight: props.maxHeight,
-                      marginBottom: props.marginBottom
-                    }}
-                  >
+          <Transition
+            items={featuredTrackUid}
+            from={{ opacity: 0, marginBottom: 0, maxHeight: 0 }}
+            // Set the `initial` value to the same as `enter` signifying that component mounts
+            // of the lineup do not trigger an animation, rather  updates to the featuredTrackUid do.
+            initial={{
+              opacity: 1,
+              marginBottom: 12,
+              maxHeight: 174
+            }}
+            enter={{
+              opacity: 1,
+              marginBottom: 12,
+              maxHeight: 174
+            }}
+            leave={{ opacity: 0, marginBottom: 0, maxHeight: 0 }}
+            config={{ duration: 175 }}
+            immediate={isMobile || !animateLeadingElement}
+          >
+            {(featuredId: ID | null) =>
+              featuredId
+                ? (props) => (
                     <div
-                      className={styles.featuredContent}
+                      className={cn(
+                        styles.featuredContainer,
+                        leadingElementClassName
+                      )}
                       style={{
                         height: '100%',
-                        opacity: props.opacity,
-                        maxHeight: props.maxHeight
+                        maxHeight: props.maxHeight,
+                        marginBottom: props.marginBottom
                       }}
                     >
-                      {allTracks[featuredId]}
+                      <div
+                        className={styles.featuredContent}
+                        style={{
+                          height: '100%',
+                          opacity: props.opacity,
+                          maxHeight: props.maxHeight
+                        }}
+                      >
+                        {allTracks[featuredId]}
+                      </div>
                     </div>
-                  </div>
-                )
-              : () => null
-          }
-        </Transition>
-        <div
-          ref={this.scrollContainer}
-          style={{
-            display: 'flex',
-            flexDirection: 'column'
-          }}
-          className={cn({
-            [laggingContainerClassName!]: !!laggingContainerClassName
-          })}
-        >
-          {tiles.length === 0 && status === Status.SUCCESS ? (
-            this.props.emptyElement
-          ) : (
-            <InfiniteScroll
-              aria-label={this.props['aria-label']}
-              pageStart={0}
-              className={cn({
-                [tileContainerStyles!]: !!tileContainerStyles
-              })}
-              loadMore={lineup.hasMore ? this.loadMore : () => {}}
-              hasMore={lineup.hasMore && canLoadMore}
-              // If we're on mobile, we scroll the entire page so we should use the window
-              // to calculate scroll position.
-              useWindow={isMobile}
-              initialLoad={false}
-              getScrollParent={() => {
-                if (scrollParent?.id === 'mainContent') {
-                  return document.getElementById('mainContent')
-                }
-                return scrollParent
-              }}
-              threshold={loadMoreThreshold}
-              element='ol'
-            >
-              {showFeedTipTile ? <FeedTipTile /> : null}
-              {tiles.map((tile, index) => (
-                <li key={index} className={cn({ [tileStyles!]: !!tileStyles })}>
-                  {tile}
-                </li>
-              ))}
-            </InfiniteScroll>
-          )}
+                  )
+                : () => null
+            }
+          </Transition>
+          <div
+            ref={this.scrollContainer}
+            style={{
+              display: 'flex',
+              flexDirection: 'column'
+            }}
+            className={cn({
+              [laggingContainerClassName!]: !!laggingContainerClassName
+            })}
+          >
+            {tiles.length === 0 && status === Status.SUCCESS ? (
+              this.props.emptyElement
+            ) : (
+              <InfiniteScroll
+                aria-label={this.props['aria-label']}
+                pageStart={0}
+                className={cn({
+                  [tileContainerStyles!]: !!tileContainerStyles
+                })}
+                loadMore={lineup.hasMore ? this.loadMore : () => {}}
+                hasMore={lineup.hasMore && canLoadMore}
+                // If we're on mobile, we scroll the entire page so we should use the window
+                // to calculate scroll position.
+                useWindow={isMobile}
+                initialLoad={false}
+                getScrollParent={() => {
+                  if (scrollParent?.id === 'mainContent') {
+                    return document.getElementById('mainContent')
+                  }
+                  return scrollParent
+                }}
+                threshold={loadMoreThreshold}
+                element='ol'
+              >
+                {showFeedTipTile ? <FeedTipTile /> : null}
+                {tiles.map((tile, index) => (
+                  <li
+                    key={index}
+                    className={cn({ [tileStyles!]: !!tileStyles })}
+                  >
+                    {tile}
+                  </li>
+                ))}
+              </InfiniteScroll>
+            )}
+          </div>
         </div>
-      </div>,
-      endLineup
-    ]
+        {endLineup}
+      </>
+    )
   }
 }
 

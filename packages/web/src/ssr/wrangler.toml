@@ -17,9 +17,18 @@ name = "audius-web-ssr-release-candidate"
 
 [env.production]
 name = "audius-web-ssr"
-vars = { SENTRY_DSN = "https://4db9c77b0bd7ae6a935f8bd58c06dad3@o260428.ingest.sentry.io/4506623015124992" }
+vars = { SENTRY_DSN = "https://4db9c77b0bd7ae6a935f8bd58c06dad3@o260428.ingest.sentry.io/4506623015124992", DISCOVERY_NODE_ALLOWLIST = [
+    "https://discoveryprovider.audius.co",
+    "https://discoveryprovider2.audius.co",
+    "https://discoveryprovider3.audius.co",
+] }
 
 # Test environment, replace `test` with subdomain
 # Invoke with npx wrangler dev --env test
 [env.test]
 name = "test-audius-web-ssr"
+vars = { DISCOVERY_NODE_ALLOWLIST = [
+    "https://discoveryprovider.audius.co",
+    "https://discoveryprovider2.audius.co",
+    "https://discoveryprovider3.audius.co",
+] }

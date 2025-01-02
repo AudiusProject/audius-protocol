@@ -141,7 +141,6 @@ export const TrackResults = (props: TrackResultsProps) => {
       count={count}
       loadMore={loadMore}
       scrollParent={mainContentRef.current}
-      key='searchTracks'
       lineup={lineup}
       playingSource={currentQueueItem.source}
       playingUid={currentQueueItem.uid}
