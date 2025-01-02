@@ -1,30 +1,33 @@
 import { useQuery } from '@tanstack/react-query'
-import { useDispatch } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 
 import { userMetadataListFromSDK } from '~/adapters/user'
 import { useAppContext } from '~/context/appContext'
-import { ID } from '~/models/Identifiers'
+import { Id, ID, OptionalId } from '~/models/Identifiers'
 import { Kind } from '~/models/Kind'
+import { accountSelectors } from '~/store/account'
 import { addEntries } from '~/store/cache/actions'
 import { EntriesByKind } from '~/store/cache/types'
-import { encodeHashId } from '~/utils/hashIds'
 
 import { QUERY_KEYS } from './queryKeys'
 
 type Config = {
   staleTime?: number
+  enabled?: boolean
 }
 
-export const useUser = (userId: ID, config?: Config) => {
+export const useUser = (userId: ID | undefined, config?: Config) => {
   const { audiusSdk } = useAppContext()
   const dispatch = useDispatch()
+  const currentUserId = useSelector(accountSelectors.getUserId)
 
   return useQuery({
     queryKey: [QUERY_KEYS.user, userId],
     queryFn: async () => {
-      const encodedId = encodeHashId(userId)
-      if (!encodedId) return null
-      const { data } = await audiusSdk!.full.users.getUser({ id: encodedId })
+      const { data } = await audiusSdk!.full.users.getUser({
+        id: Id.parse(userId),
+        userId: OptionalId.parse(currentUserId)
+      })
       const user = userMetadataListFromSDK(data)[0]
 
       // Sync user data to Redux
@@ -41,6 +44,6 @@ export const useUser = (userId: ID, config?: Config) => {
       return user
     },
     staleTime: config?.staleTime,
-    enabled: !!audiusSdk && !!userId
+    enabled: config?.enabled !== false && !!audiusSdk && !!userId
   })
 }

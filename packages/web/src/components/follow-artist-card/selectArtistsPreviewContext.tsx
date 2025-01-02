@@ -1,6 +1,6 @@
 import { createContext, useCallback, useEffect, useState } from 'react'
 
-import { useGetUserTracksByHandle, useGetUserById } from '@audius/common/api'
+import { useGetUserTracksByHandle, useUser } from '@audius/common/api'
 import { ID, UserTrackMetadata } from '@audius/common/models'
 import { PlayerBehavior, playerActions } from '@audius/common/store'
 import { useDispatch } from 'react-redux'
@@ -32,12 +32,8 @@ export const SelectArtistsPreviewContextProvider = (props: {
   const [track, setTrack] = useState<UserTrackMetadata | null>(null)
   const dispatch = useDispatch()
 
-  const { data: artist } = useGetUserById(
-    {
-      id: nowPlayingArtistId,
-      currentUserId: null
-    },
-    { disabled: nowPlayingArtistId === -1 }
+  const { data: artist } = useUser(
+    nowPlayingArtistId === -1 ? undefined : nowPlayingArtistId
   )
   const { data: artistTracks } = useGetUserTracksByHandle(
     {

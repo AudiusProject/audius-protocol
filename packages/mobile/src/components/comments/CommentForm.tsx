@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 
-import { useGetUserById } from '@audius/common/api'
+import { useUser } from '@audius/common/api'
 import { useCurrentCommentSection } from '@audius/common/context'
 import { commentsMessages as messages } from '@audius/common/messages'
 import { Name } from '@audius/common/models'
@@ -103,12 +103,7 @@ export const CommentForm = (props: CommentFormProps) => {
   const adjustedCursorPosition = useRef(false)
 
   const replyingToUserId = Number(replyingToComment?.userId)
-  const { data: replyingToUser } = useGetUserById(
-    {
-      id: replyingToUserId
-    },
-    { disabled: !replyingToComment }
-  )
+  const { data: replyingToUser } = useUser(replyingToUserId)
 
   const handleSubmit = useCallback(
     (message: string, mentions?: CommentMention[]) => {
