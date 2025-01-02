@@ -13,6 +13,7 @@ import { encodeHashId } from '~/utils/hashIds'
 import { QUERY_KEYS } from './queryKeys'
 
 type Config = {
+  enabled?: boolean
   staleTime?: number
 }
 
@@ -62,6 +63,7 @@ export const useTracks = (trackIds: ID[], config?: Config) => {
       return tracks
     },
     staleTime: config?.staleTime,
-    enabled: !!audiusSdk && trackIds.length > 0
+    enabled:
+      !!audiusSdk && (config && 'enabled' in config ? config.enabled : true)
   })
 }

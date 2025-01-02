@@ -7,7 +7,7 @@ import {
   useGetPlaylistsByIds,
   useGetPurchasersCount,
   useGetSalesAggegrate,
-  useGetTracksByIds
+  useTracks
 } from '~/api'
 import { ID } from '~/models'
 import { removeNullable } from '~/utils'
@@ -32,10 +32,9 @@ export const usePurchasersAudience = ({
     (sale) => sale.contentType === 'album'
   )
 
-  const { data: tracks } = useGetTracksByIds({
-    ids: trackAggregates?.map((sale) => parseInt(sale.contentId)) ?? [],
-    currentUserId
-  })
+  const { data: tracks = [] } = useTracks(
+    trackAggregates?.map((sale) => parseInt(sale.contentId)) ?? []
+  )
   const { data: albums } = useGetPlaylistsByIds({
     ids: albumAggregates?.map((sale) => parseInt(sale.contentId)) ?? [],
     currentUserId

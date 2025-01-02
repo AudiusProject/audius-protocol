@@ -1,9 +1,6 @@
 import { useCallback, useMemo, useEffect } from 'react'
 
-import {
-  useGetTracksByIds,
-  useGetPlaylistByPermalink
-} from '@audius/common/api'
+import { useGetPlaylistByPermalink, useTracks } from '@audius/common/api'
 import { usePlayTrack, usePauseTrack } from '@audius/common/hooks'
 import type { TrackPlayback } from '@audius/common/hooks'
 import { Name, PlaybackSource, Kind } from '@audius/common/models'
@@ -46,13 +43,9 @@ export const ChatMessagePlaylist = ({
 
   const trackIds =
     collection?.playlist_contents?.track_ids?.map((t) => t.track) ?? []
-  const { data: tracks } = useGetTracksByIds(
-    {
-      ids: trackIds,
-      currentUserId
-    },
-    { disabled: !trackIds.length }
-  )
+  const { data: tracks = [] } = useTracks(trackIds, {
+    enabled: !!trackIds.length
+  })
 
   const collectionId = collection?.playlist_id
 
@@ -74,7 +67,7 @@ export const ChatMessagePlaylist = ({
    * Also include the other properties to conform with the component.
    */
   const tracksWithUids = useMemo(() => {
-    return (tracks || []).map((track) => ({
+    return tracks.map((track) => ({
       ...track,
       user: track.user,
       id: track.track_id,
