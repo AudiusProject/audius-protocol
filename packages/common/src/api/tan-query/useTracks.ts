@@ -15,7 +15,6 @@ import { QUERY_KEYS } from './queryKeys'
 type Config = {
   enabled?: boolean
   staleTime?: number
-  enabled?: boolean
 }
 
 export const useTracks = (trackIds: ID[], config?: Config) => {
