@@ -6,8 +6,7 @@ import {
   Name,
   type Comment,
   type ID,
-  type ReplyComment,
-  Status
+  type ReplyComment
 } from '@audius/common/models'
 import { dayjs } from '@audius/common/utils'
 import { css } from '@emotion/native'

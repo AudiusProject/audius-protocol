@@ -88,26 +88,6 @@ const userApi = createApi({
         schemaKey: 'accountUser'
       }
     },
-    getUserByHandle: {
-      fetch: async (
-        {
-          handle,
-          currentUserId
-        }: { handle: string; currentUserId: Nullable<ID> },
-        { audiusSdk }
-      ) => {
-        const sdk = await audiusSdk()
-        const { data: users = [] } = await sdk.full.users.getUserByHandle({
-          handle,
-          userId: OptionalId.parse(currentUserId)
-        })
-        return userMetadataListFromSDK(users)[0]
-      },
-      options: {
-        kind: Kind.USERS,
-        schemaKey: 'user'
-      }
-    },
     getUsersByIds: {
       fetch: async (
         args: { ids: ID[]; currentUserId?: Nullable<ID> },
@@ -374,7 +354,6 @@ const userApi = createApi({
 export const {
   useGetUserAccount,
   useGetUsersByIds,
-  useGetUserByHandle,
   useGetTracksByUser,
   useGetUSDCTransactions,
   useGetUSDCTransactionsCount,

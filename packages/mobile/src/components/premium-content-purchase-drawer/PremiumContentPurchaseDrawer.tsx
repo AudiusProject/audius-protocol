@@ -462,7 +462,7 @@ export const PremiumContentPurchaseDrawer = () => {
   } = usePremiumContentPurchaseModal()
   const isAlbum = contentType === PurchaseableContentType.ALBUM
   const { data: currentUserId } = useGetCurrentUserId({})
-  const { data: track } = useGetTrackById(
+  const { data: track, status: trackStatus } = useGetTrackById(
     { id: contentId! },
     { disabled: !contentId }
   )
@@ -480,7 +480,7 @@ export const PremiumContentPurchaseDrawer = () => {
   const error = useSelector(getPurchaseContentError)
   const isUnlocking = !error && isContentPurchaseInProgress(stage)
 
-  const isLoading = statusIsNotFinalized(track?.status)
+  const isLoading = statusIsNotFinalized(trackStatus)
 
   const isValidStreamGatedTrack = !!metadata && isStreamPurchaseable(metadata)
   const isValidDownloadGatedTrack =

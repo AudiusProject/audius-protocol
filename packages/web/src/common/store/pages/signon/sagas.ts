@@ -730,13 +730,13 @@ function* signUp() {
               yield* fork(sendPostSignInRecoveryEmail, { handle, email })
 
               yield* call(confirmTransaction, blockHash, blockNumber)
-              const user = yield* call(
-                userApiFetchSaga.getUserById,
-                {
-                  id: userId
-                },
-                true // force refresh to get updated user w handle
+              const { entries } = yield* call(
+                fetchUsers,
+                [userId],
+                undefined,
+                true
               )
+              const user = entries[userId]
               if (!user) {
                 throw new Error('Failed to index guest account creation')
               }
