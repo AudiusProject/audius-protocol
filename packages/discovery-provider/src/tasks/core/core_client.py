@@ -28,16 +28,10 @@ class CoreClient:
 
     chain_id: Optional[str]
 
-    logger: logging.Logger
-
     def __init__(self):
         self.endpoint = self.get_core_endpoint()
         self.channel = grpc.insecure_channel(self.endpoint)
         self.rpc = ProtocolStub(channel=self.channel)
-        self.logger = logger
-
-    def set_logger(self, l: logging.Logger):
-        self.logger = l
 
     def get_core_endpoint(self) -> str:
         if environment == "prod" or environment == "stage":

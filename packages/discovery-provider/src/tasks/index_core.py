@@ -1,21 +1,26 @@
 import logging
 import threading
 import time
-from typing import Optional
+from datetime import datetime
+from logging import Logger, LoggerAdapter
+from typing import List, Optional, TypedDict
 
 from redis import Redis
+from sqlalchemy import desc
+from sqlalchemy.orm.session import Session
 
+from src.challenges.challenge_event import ChallengeEvent
 from src.challenges.challenge_event_bus import ChallengeEventBus
 from src.models.core.core_indexed_blocks import CoreIndexedBlocks
+from src.models.social.play import Play
 from src.tasks.core.core_client import CoreClient, get_core_instance
-from src.tasks.core.gen.protocol_pb2 import BlockResponse
+from src.tasks.core.gen.protocol_pb2 import BlockResponse, SignedTransaction
 from src.tasks.index_core_cutovers import (
     get_adjusted_core_block,
     get_core_cutover,
     get_core_cutover_chain_id,
     get_sol_cutover,
 )
-from src.tasks.index_core_plays import index_core_play
 from src.tasks.index_solana_plays import get_latest_slot
 from src.utils.session_manager import SessionManager
 
@@ -29,12 +34,31 @@ core_plays_health_check_cache_key = "core:indexer:health:plays"
 core_em_health_check_cache_key = "core:indexer:health:em"
 
 
+class PlayInfo(TypedDict):
+    user_id: int | None
+    play_item_id: int
+    created_at: datetime
+    updated_at: datetime
+    source: str
+    city: str
+    region: str
+    country: str
+    slot: int
+    signature: str
+
+
+class PlayChallengeInfo(TypedDict):
+    user_id: int
+    created_at: datetime
+    slot: int
+
+
 class CoreIndexer:
     db: SessionManager
     redis: Redis
     challenge_bus: ChallengeEventBus
     core: CoreClient
-    logger: logging.Logger
+    logger: LoggerAdapter[Logger]
     stop_event: threading.Event
 
     indexer_initialized: bool
@@ -179,7 +203,6 @@ class CoreIndexer:
                 "latest_chain_block": self.latest_chain_block_height,
             },
         )
-        self.core.set_logger(self.logger)
 
         # create scoped session for indexing
         # if error is raised a rollback occurs
@@ -193,14 +216,7 @@ class CoreIndexer:
                 transaction_type = tx.WhichOneof("transaction")
 
                 if transaction_type == "plays" and self.should_index_plays():
-                    index_core_play(
-                        logger=self.logger,
-                        session=session,
-                        core=self.core,
-                        challenge_bus=self.challenge_bus,
-                        block=chain_block,
-                        tx=tx,
-                    )
+                    self.index_core_plays(session=session, block=chain_block, tx=tx)
                     continue
                 elif transaction_type == "manage_entity":
                     continue
@@ -237,3 +253,91 @@ class CoreIndexer:
 
             return chain_block
         return None
+
+    def index_core_plays(
+        self, session: Session, block: BlockResponse, tx: SignedTransaction
+    ):
+        latest_slot = self.sol_plays_cutover_end
+        latest_slot_record = (
+            session.query(Play)
+            .filter(Play.slot != None)
+            .filter(Play.signature != None)
+            .order_by(desc(Play.slot))
+            .one_or_none()
+        )
+        if latest_slot_record:
+            latest_slot = latest_slot_record.slot
+        # TODO: make association table?
+        # next slot just increments from previous since we're on core now
+        next_slot = latest_slot + 1
+
+        plays: List[PlayInfo] = []
+        challenge_bus_events: List[PlayChallengeInfo] = []
+
+        tx_plays = tx.plays
+
+        for tx_play in tx_plays.plays:
+            user_id = None
+            try:
+                user_id = int(tx_play.user_id)
+            except ValueError:
+                log = ("Recording anonymous listen {!r}".format(tx_play.user_id),)
+                self.logger.debug(
+                    log,
+                    exc_info=False,
+                )
+
+            signature = tx_play.signature
+            timestamp = tx_play.timestamp.ToDatetime()
+            track_id = int(tx_play.track_id)
+            user_id = user_id
+            slot = next_slot
+            city = tx_play.city
+            region = tx_play.region
+            country = tx_play.country
+
+            plays.append(
+                {
+                    "user_id": user_id,
+                    "play_item_id": track_id,
+                    "updated_at": datetime.now(),
+                    "slot": slot,
+                    "signature": signature,
+                    "created_at": timestamp,
+                    "source": "relay",
+                    "city": city,
+                    "region": region,
+                    "country": country,
+                }
+            )
+
+            # Only enqueue a challenge event if it's *not*
+            # an anonymous listen
+            if user_id is not None:
+                challenge_bus_events.append(
+                    {
+                        "slot": slot,
+                        "user_id": user_id,
+                        "created_at": timestamp,
+                    }
+                )
+
+        if not plays:
+            return
+
+        session.execute(Play.__table__.insert().values(plays))
+        self.logger.debug("index_core_plays.py | Dispatching listen events")
+        listen_dispatch_start = time.time()
+        for event in challenge_bus_events:
+            self.challenge_bus.dispatch(
+                ChallengeEvent.track_listen,
+                event["slot"],
+                event["created_at"],
+                event["user_id"],
+                {"created_at": event.get("created_at")},
+            )
+        listen_dispatch_end = time.time()
+        listen_dispatch_diff = listen_dispatch_end - listen_dispatch_start
+        self.logger.debug(
+            f"index_core_plays.py | Dispatched listen events in {listen_dispatch_diff}"
+        )
