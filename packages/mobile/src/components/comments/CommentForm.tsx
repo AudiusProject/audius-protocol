@@ -103,7 +103,9 @@ export const CommentForm = (props: CommentFormProps) => {
   const adjustedCursorPosition = useRef(false)
 
   const replyingToUserId = Number(replyingToComment?.userId)
-  const { data: replyingToUser } = useUser(replyingToUserId)
+  const { data: replyingToUser } = useUser(replyingToUserId, {
+    enabled: !!replyingToComment
+  })
 
   const handleSubmit = useCallback(
     (message: string, mentions?: CommentMention[]) => {
