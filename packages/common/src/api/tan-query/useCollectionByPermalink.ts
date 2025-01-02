@@ -37,10 +37,10 @@ export const useCollectionByPermalink = (
   return useQuery({
     queryKey: [QUERY_KEYS.collectionByPermalink, permalink],
     queryFn: async () => {
-      if (!permalink) return null
+      if (!permalink || !audiusSdk) return null
       const { handle, slug } = playlistPermalinkToHandleAndSlug(permalink)
       const { data = [] } =
-        await audiusSdk!.full.playlists.getPlaylistByHandleAndSlug({
+        await audiusSdk.full.playlists.getPlaylistByHandleAndSlug({
           handle,
           slug,
           userId: OptionalId.parse(currentUserId)
