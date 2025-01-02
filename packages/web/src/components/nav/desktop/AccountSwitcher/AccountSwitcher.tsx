@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import {
-  useGetCurrentUserId,
+  useCurrentUserId,
   useGetCurrentWeb3User,
   useGetManagedAccounts
 } from '@audius/common/api'
@@ -22,10 +22,7 @@ export const AccountSwitcher = () => {
     {},
     { disabled: !isAccountComplete }
   )
-  const { data: currentUserId } = useGetCurrentUserId(
-    {},
-    { disabled: !isAccountComplete }
-  )
+  const { data: currentUserId } = useCurrentUserId()
 
   const { switchAccount, switchToWeb3User } = useAccountSwitcher()
 

@@ -1,6 +1,6 @@
 import { useEffect } from 'react'
 
-import { useGetCurrentUserId } from '@audius/common/api'
+import { useCurrentUserId } from '@audius/common/api'
 import { User } from '@audius/common/models'
 import { formatCount } from '@audius/common/utils'
 import cn from 'classnames'
@@ -60,7 +60,7 @@ export const UserProfilePictureList = ({
 }: UserProfileListProps) => {
   const dispatch = useDispatch()
   const showUserListModal = totalUserCount > limit
-  const { data: currentUserId } = useGetCurrentUserId({})
+  const { data: currentUserId } = useCurrentUserId()
   /**
    * We add a +1 because the remaining users count includes
    * the tile that has the +N itself.

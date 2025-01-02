@@ -1,6 +1,6 @@
 import { useSelector } from 'react-redux'
 
-import { useGetCurrentUserId } from '~/api/account'
+import { useCurrentUserId } from '~/api'
 import { useGetPlaylistById } from '~/api/collection'
 import { ID } from '~/models/Identifiers'
 import { getCollectionDuration } from '~/store/cache/collections/selectors'
@@ -32,7 +32,7 @@ type CollectionMetadataProps = {
 export const useCollectionMetadata = ({
   collectionId
 }: CollectionMetadataProps): CollectionMetadataInfo[] => {
-  const { data: currentUserId } = useGetCurrentUserId({})
+  const { data: currentUserId } = useCurrentUserId()
   const { data: collection } = useGetPlaylistById({
     playlistId: collectionId,
     currentUserId

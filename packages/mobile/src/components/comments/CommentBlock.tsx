@@ -1,13 +1,12 @@
 import { useCallback } from 'react'
 
-import { useGetCommentById, useGetUserById } from '@audius/common/api'
+import { useGetCommentById, useUser } from '@audius/common/api'
 import { useCurrentCommentSection } from '@audius/common/context'
 import {
   Name,
   type Comment,
   type ID,
-  type ReplyComment,
-  Status
+  type ReplyComment
 } from '@audius/common/models'
 import { dayjs } from '@audius/common/utils'
 import { css } from '@emotion/native'
@@ -56,8 +55,8 @@ export const CommentBlockInternal = (
   const isTombstone = 'isTombstone' in comment ? !!comment.isTombstone : false
   const isPinned = track.pinned_comment_id === commentId
 
-  const { status } = useGetUserById({ id: userId })
-  const isLoadingUser = status === Status.LOADING
+  const { status } = useUser(userId ?? 0)
+  const isLoadingUser = status === 'pending'
   const { onPress: onPressProfilePic, ...profilePicLinkProps } = useLinkProps({
     to: {
       screen: 'Profile',

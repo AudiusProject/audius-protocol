@@ -1,10 +1,10 @@
 import { useCallback, type ReactNode, useEffect } from 'react'
 
 import {
-  useGetCurrentUserId,
+  useCurrentUserId,
   useGetPlaylistById,
   useGetTrackById,
-  useGetUserById
+  useUser
 } from '@audius/common/api'
 import type { PurchaseableContentMetadata } from '@audius/common/hooks'
 import {
@@ -461,22 +461,16 @@ export const PremiumContentPurchaseDrawer = () => {
     onClosed
   } = usePremiumContentPurchaseModal()
   const isAlbum = contentType === PurchaseableContentType.ALBUM
-  const { data: currentUserId } = useGetCurrentUserId({})
+  const { data: currentUserId } = useCurrentUserId()
   const { data: track, status: trackStatus } = useGetTrackById(
-    { id: contentId },
+    { id: contentId! },
     { disabled: !contentId }
   )
   const { data: album } = useGetPlaylistById(
     { playlistId: contentId!, currentUserId },
     { disabled: !isAlbum || !contentId }
   )
-  const { data: user } = useGetUserById(
-    {
-      id: track?.owner_id ?? album?.playlist_owner_id ?? 0,
-      currentUserId
-    },
-    { disabled: !(track?.owner_id ?? album?.playlist_owner_id) }
-  )
+  const { data: user } = useUser(track?.owner_id ?? album?.playlist_owner_id)
   const metadata = {
     ...(isAlbum ? album : track),
     user

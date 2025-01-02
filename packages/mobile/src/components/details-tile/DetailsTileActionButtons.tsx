@@ -1,4 +1,4 @@
-import { useGetPlaylistById, useGetCurrentUserId } from '@audius/common/api'
+import { useGetPlaylistById, useCurrentUserId } from '@audius/common/api'
 import type { ID } from '@audius/common/models'
 import { cacheCollectionsSelectors } from '@audius/common/store'
 import type { CommonState } from '@audius/common/store'
@@ -83,7 +83,7 @@ export const DetailsTileActionButtons = ({
   const isCollectionEmpty = useSelector((state: CommonState) =>
     getIsCollectionEmpty(state, { id: collectionId })
   )
-  const { data: currentUserId } = useGetCurrentUserId({})
+  const { data: currentUserId } = useCurrentUserId()
   const { data: collection } = useGetPlaylistById(
     {
       playlistId: collectionId!,
