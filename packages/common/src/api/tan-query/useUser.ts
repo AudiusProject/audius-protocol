@@ -5,21 +5,21 @@ import { userMetadataListFromSDK } from '~/adapters/user'
 import { useAppContext } from '~/context/appContext'
 import { Id, ID, OptionalId } from '~/models/Identifiers'
 import { Kind } from '~/models/Kind'
-import { accountSelectors } from '~/store/account'
+import { getUserId } from '~/store/account/selectors'
 import { addEntries } from '~/store/cache/actions'
 import { EntriesByKind } from '~/store/cache/types'
 
 import { QUERY_KEYS } from './queryKeys'
 
-type Config = {
+export type Config = {
   staleTime?: number
   enabled?: boolean
 }
 
-export const useUser = (userId: ID | undefined, config?: Config) => {
+export const useUser = (userId: ID | undefined | null, config?: Config) => {
   const { audiusSdk } = useAppContext()
   const dispatch = useDispatch()
-  const currentUserId = useSelector(accountSelectors.getUserId)
+  const currentUserId = useSelector(getUserId)
 
   return useQuery({
     queryKey: [QUERY_KEYS.user, userId],

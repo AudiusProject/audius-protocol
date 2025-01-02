@@ -1,11 +1,11 @@
 import { useCallback, useEffect } from 'react'
 
 import {
-  useGetCurrentUser,
-  useGetCurrentUserId,
   useGetPlaylistById,
   useGetTrackById,
-  useUser
+  useUser,
+  useCurrentUser,
+  useCurrentUserId
 } from '@audius/common/api'
 import {
   useFeatureFlag,
@@ -214,8 +214,8 @@ export const PremiumContentPurchaseModal = () => {
   const error = useSelector(getPurchaseContentError)
   const isUnlocking = !error && isContentPurchaseInProgress(stage)
   const presetValues = usePayExtraPresets()
-  const { data: currentUserId } = useGetCurrentUserId({})
-  const { data: currentUser } = useGetCurrentUser({})
+  const { data: currentUserId } = useCurrentUserId()
+  const { data: currentUser } = useCurrentUser()
   const { isEnabled: guestCheckoutEnabled } = useFeatureFlag(
     FeatureFlags.GUEST_CHECKOUT
   )

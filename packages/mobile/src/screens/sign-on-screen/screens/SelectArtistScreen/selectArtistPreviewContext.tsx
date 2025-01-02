@@ -4,7 +4,7 @@ import {
   useGetUserTracksByHandle,
   useUser,
   Id,
-  useGetCurrentUserId
+  useCurrentUserId
 } from '@audius/common/api'
 import { OptionalId, type ID } from '@audius/common/models'
 import { Formik } from 'formik'
@@ -37,7 +37,7 @@ export const SelectArtistsPreviewContextProvider = (props: {
   const [isPlaying, setIsPlaying] = useState(false)
   const [nowPlayingArtistId, setNowPlayingArtistId] = useState(-1)
   const [trackUrl, setTrackUrl] = useState<string | null>(null)
-  const { data: currentUserId } = useGetCurrentUserId({})
+  const { data: currentUserId } = useCurrentUserId()
 
   useEffectOnce(() => {
     TrackPlayer.setRepeatMode(RepeatMode.Track)
