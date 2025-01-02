@@ -1,0 +1,54 @@
+---
+id: pyaudius
+title: pyaudius
+pagination_label: pyaudius
+sidebar_label: pyaudius
+description: Audius Protocol Documentation
+---
+
+import useBaseUrl from '@docusaurus/useBaseUrl'
+
+:::info Built with Audius
+
+This Audius Python Package was built by the community!
+
+---
+
+**Useful Links**
+
+- Check out the [Code on GitHub](https://github.com/samgutentag/pyaudius) for the latest
+  information.
+- Download from [PyPi](https://pypi.org/project/pyaudius/) with `pip install pyaudius`
+
+:::
+
+---
+
+## Usage
+
+### Install the Package
+
+```bash
+pip install pyaudius
+```
+
+### Example Code
+
+> Get User Favorites
+
+```python
+import pyaudius
+from pprint import pprint
+
+api_client = pyaudius.ApiClient()
+api_instance = pyaudius.UsersApi(api_client)
+
+id = "eJ57D"  # str | A User ID
+
+try:
+    api_response = api_instance.get_favorites(id)
+    print("The response of UsersApi->get_favorites:\n")
+    pprint(api_response.to_dict())
+except Exception as e:
+    print("Exception when calling UsersApi->get_favorites: %s\n" % e)
+```
