@@ -1,4 +1,5 @@
 export const QUERY_KEYS = {
+  accountUser: 'accountUser',
   trackCommentList: 'trackCommentList',
   comment: 'comment',
   commentReplies: 'commentReplies',

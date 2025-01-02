@@ -1,17 +1,47 @@
+import { useQuery } from '@tanstack/react-query'
 import { useSelector } from 'react-redux'
 
-import { getUserId } from '~/store/account/selectors'
+import { accountFromSDK } from '~/adapters/user'
+import { useAppContext } from '~/context/appContext'
+import { SolanaWalletAddress } from '~/models/Wallet'
+import { getWalletAddresses } from '~/store/account/selectors'
 
-import { useUser } from './useUser'
+import { QUERY_KEYS } from './queryKeys'
 import type { Config } from './useUser'
 
 /**
  * Hook to get the currently logged in user's data
  */
 export const useCurrentUser = (config?: Config) => {
-  const currentUserId = useSelector(getUserId)
-  return useUser(currentUserId, {
-    ...config,
-    enabled: config?.enabled !== false && !!currentUserId
+  const { audiusSdk } = useAppContext()
+  const { currentUser } = useSelector(getWalletAddresses)
+
+  return useQuery({
+    queryKey: [QUERY_KEYS.accountUser, currentUser],
+    queryFn: async () => {
+      const { data } = await audiusSdk!.full.users.getUserAccount({
+        wallet: currentUser!
+      })
+
+      if (!data) {
+        console.warn('Missing user from account response')
+        return null
+      }
+
+      const account = accountFromSDK(data)
+      // If we got a valid account, populate user bank since that's
+      // expected to exist on "account" users
+      if (account) {
+        const userBank =
+          await audiusSdk!.services.claimableTokensClient.deriveUserBank({
+            ethWallet: currentUser!,
+            mint: 'wAUDIO'
+          })
+        account.user.userBank = userBank.toString() as SolanaWalletAddress
+      }
+      return account?.user
+    },
+    staleTime: config?.staleTime,
+    enabled: config?.enabled !== false && !!audiusSdk && !!currentUser
   })
 }
