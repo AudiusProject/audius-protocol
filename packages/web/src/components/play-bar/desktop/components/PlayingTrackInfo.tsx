@@ -7,10 +7,9 @@ import {
   playerSelectors,
   CommonState
 } from '@audius/common/store'
+import { animated, useSpring } from '@react-spring/web'
 import cn from 'classnames'
 import { useSelector } from 'react-redux'
-// eslint-disable-next-line no-restricted-imports -- TODO: migrate to @react-spring/web
-import { animated, useSpring } from 'react-spring'
 
 import { Draggable } from 'components/dragndrop'
 import DynamicImage from 'components/dynamic-image/DynamicImage'

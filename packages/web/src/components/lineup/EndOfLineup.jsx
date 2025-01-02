@@ -10,7 +10,7 @@ export const EndOfLineup = ({
   description = "Looks like you've reached the end of your feed..."
 }) => {
   return (
-    <div className={styles.endOfLineup} key='endOfLineup'>
+    <div className={styles.endOfLineup}>
       <IconAudiusLogo color='subdued' size='2xl' />
       <div className={styles.endTitle}>{title}</div>
       <div className={styles.endDescriptionContainer}>
