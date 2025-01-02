@@ -265,7 +265,7 @@ class CoreIndexer:
             .order_by(desc(Play.slot))
             .one_or_none()
         )
-        if latest_slot_record:
+        if latest_slot_record and latest_slot_record.slot:
             latest_slot = latest_slot_record.slot
         # TODO: make association table?
         # next slot just increments from previous since we're on core now
