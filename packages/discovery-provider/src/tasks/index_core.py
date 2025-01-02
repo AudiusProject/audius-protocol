@@ -15,7 +15,6 @@ from src.tasks.index_core_cutovers import (
     get_core_cutover_chain_id,
     get_sol_cutover,
 )
-from src.tasks.index_core_manage_entities import index_core_manage_entity
 from src.tasks.index_core_plays import index_core_play
 from src.tasks.index_solana_plays import get_latest_slot
 from src.utils.session_manager import SessionManager
@@ -224,10 +223,10 @@ class CoreIndexer:
         for tx in block.transactions:
             # Check which type of transaction is currently set
             transaction_type = tx.WhichOneof("transaction")
-            self.logger
 
             if transaction_type == "plays" and self.should_index_plays():
                 index_core_play(
+                    logger=self.logger,
                     session=session,
                     core=self.core,
                     challenge_bus=self.challenge_bus,
@@ -236,13 +235,12 @@ class CoreIndexer:
                 )
                 continue
             elif transaction_type == "manage_entity":
-                index_core_manage_entity(session=session, core=self.core, tx=tx)
                 continue
             elif transaction_type == "validator_registration":
                 continue
             elif transaction_type == "sla_rollup":
                 continue
             else:
-                root_logger.warning(
+                self.logger.warning(
                     f"index_core.py | unhandled tx type found {transaction_type}"
                 )

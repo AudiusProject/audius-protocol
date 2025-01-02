@@ -507,7 +507,7 @@ def configure_celery(celery, test_config=None):
         abi=entity_manager_contract_abi,
     )
 
-    challenge_bus = (setup_challenge_bus(),)
+    challenge_bus = setup_challenge_bus()
 
     # Initialize custom task context with database object
     class WrappedDatabaseTask(DatabaseTask):

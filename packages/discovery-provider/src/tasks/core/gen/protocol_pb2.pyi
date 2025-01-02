@@ -155,10 +155,12 @@ class BlockResponse(google.protobuf.message.Message):
     PROPOSER_FIELD_NUMBER: builtins.int
     HEIGHT_FIELD_NUMBER: builtins.int
     TRANSACTIONS_FIELD_NUMBER: builtins.int
+    CURRENT_HEIGHT_FIELD_NUMBER: builtins.int
     blockhash: builtins.str
     chainid: builtins.str
     proposer: builtins.str
     height: builtins.int
+    current_height: builtins.int
     @property
     def transactions(self) -> google.protobuf.internal.containers.RepeatedCompositeFieldContainer[global___SignedTransaction]: ...
     def __init__(
@@ -169,8 +171,9 @@ class BlockResponse(google.protobuf.message.Message):
         proposer: builtins.str = ...,
         height: builtins.int = ...,
         transactions: collections.abc.Iterable[global___SignedTransaction] | None = ...,
+        current_height: builtins.int = ...,
     ) -> None: ...
-    def ClearField(self, field_name: typing.Literal["blockhash", b"blockhash", "chainid", b"chainid", "height", b"height", "proposer", b"proposer", "transactions", b"transactions"]) -> None: ...
+    def ClearField(self, field_name: typing.Literal["blockhash", b"blockhash", "chainid", b"chainid", "current_height", b"current_height", "height", b"height", "proposer", b"proposer", "transactions", b"transactions"]) -> None: ...
 
 global___BlockResponse = BlockResponse
 

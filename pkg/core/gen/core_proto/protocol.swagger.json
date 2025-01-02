@@ -224,6 +224,10 @@
             "type": "object",
             "$ref": "#/definitions/protocolSignedTransaction"
           }
+        },
+        "currentHeight": {
+          "type": "string",
+          "format": "int64"
         }
       }
     },

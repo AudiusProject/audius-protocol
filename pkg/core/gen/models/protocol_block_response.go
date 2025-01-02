@@ -25,6 +25,9 @@ type ProtocolBlockResponse struct {
 	// chainid
 	Chainid string `json:"chainid,omitempty"`
 
+	// current height
+	CurrentHeight string `json:"currentHeight,omitempty"`
+
 	// height
 	Height string `json:"height,omitempty"`
 

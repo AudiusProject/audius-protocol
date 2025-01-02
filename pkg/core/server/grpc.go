@@ -8,6 +8,7 @@ import (
 	"net"
 	"reflect"
 	"strings"
+	"sync/atomic"
 	"time"
 
 	"github.com/AudiusProject/audius-protocol/pkg/core/common"
@@ -144,6 +145,15 @@ func (s *Server) GetTransaction(ctx context.Context, req *core_proto.GetTransact
 }
 
 func (s *Server) GetBlock(ctx context.Context, req *core_proto.GetBlockRequest) (*core_proto.BlockResponse, error) {
+	currentHeight := atomic.LoadInt64(&s.cache.currentHeight)
+	if req.Height > currentHeight {
+		return &core_proto.BlockResponse{
+			Chainid: s.config.GenesisFile.ChainID,
+			Height:  -1,
+			CurrentHeight: currentHeight,
+		}, nil
+	}
+
 	block, err := s.rpc.Block(ctx, &req.Height)
 	if err != nil {
 		blockInFutureMsg := "must be less than or equal to the current blockchain height"
@@ -152,6 +162,7 @@ func (s *Server) GetBlock(ctx context.Context, req *core_proto.GetBlockRequest) 
 			return &core_proto.BlockResponse{
 				Chainid: s.config.GenesisFile.ChainID,
 				Height:  -1,
+				CurrentHeight: currentHeight,
 			}, nil
 		}
 		s.logger.Errorf("error getting block: %v", err)
@@ -174,10 +185,12 @@ func (s *Server) GetBlock(ctx context.Context, req *core_proto.GetBlockRequest) 
 		Proposer:     block.Block.ProposerAddress.String(),
 		Height:       block.Block.Height,
 		Transactions: txs,
+		CurrentHeight: currentHeight,
 	}
 
 	return res, nil
 }
+
 func (s *Server) GetNodeInfo(ctx context.Context, req *core_proto.GetNodeInfoRequest) (*core_proto.NodeInfoResponse, error) {
 	status, err := s.rpc.Status(ctx)
 	if err != nil {

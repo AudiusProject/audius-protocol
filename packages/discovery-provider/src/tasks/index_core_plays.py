@@ -12,8 +12,6 @@ from src.tasks.core.core_client import CoreClient
 from src.tasks.core.gen.protocol_pb2 import BlockResponse, SignedTransaction
 from src.tasks.index_core_cutovers import get_adjusted_core_block
 
-logger = logging.getLogger(__name__)
-
 
 class PlayInfo(TypedDict):
     user_id: int | None
@@ -35,6 +33,7 @@ class PlayChallengeInfo(TypedDict):
 
 
 def index_core_play(
+    logger: logging.Logger,
     session: Session,
     core: CoreClient,
     challenge_bus: ChallengeEventBus,
