@@ -167,7 +167,6 @@ export const PlaylistFolderNavItem = (props: PlaylistFolderNavItemProps) => {
                 isDraggingOver && { '& > *': { pointerEvents: 'none' } }
               ]}
               // NavLink requires as to param to allow for onClick, but it is not used
-              to={{}}
               onClick={toggleIsExpanded}
               onDragEnter={handleDragEnter}
               onDragLeave={handleDragLeave}
