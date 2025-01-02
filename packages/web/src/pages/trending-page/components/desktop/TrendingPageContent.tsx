@@ -209,10 +209,7 @@ const TrendingPageContent = (props: TrendingPageContentProps) => {
         pauseTrack={makePauseTrack(TimeRange.WEEK)}
         actions={trendingWeekActions}
         endOfLineup={
-          <EndOfLineup
-            key='endOfLineup'
-            description={messages.endOfLineupDescription}
-          />
+          <EndOfLineup description={messages.endOfLineupDescription} />
         }
         {...mainLineupProps}
       />
@@ -230,10 +227,7 @@ const TrendingPageContent = (props: TrendingPageContentProps) => {
         playTrack={makePlayTrack(TimeRange.MONTH)}
         pauseTrack={makePauseTrack(TimeRange.MONTH)}
         endOfLineup={
-          <EndOfLineup
-            key='endOfLineup'
-            description={messages.endOfLineupDescription}
-          />
+          <EndOfLineup description={messages.endOfLineupDescription} />
         }
         actions={trendingMonthActions}
         {...mainLineupProps}
@@ -253,10 +247,7 @@ const TrendingPageContent = (props: TrendingPageContentProps) => {
         pauseTrack={makePauseTrack(TimeRange.ALL_TIME)}
         actions={trendingAllTimeActions}
         endOfLineup={
-          <EndOfLineup
-            key='endOfLineup'
-            description={messages.endOfLineupDescription}
-          />
+          <EndOfLineup description={messages.endOfLineupDescription} />
         }
         {...mainLineupProps}
       />

@@ -54,8 +54,13 @@ type ScrubberProps = {
 /**
  * Scrubber component to control track playback & seek.
  */
-export const Scrubber = (props: ScrubberProps) => {
-  const { mediaKey, isPlaying, duration, onPressIn, onPressOut } = props
+export const Scrubber = ({
+  mediaKey,
+  isPlaying,
+  duration,
+  onPressIn,
+  onPressOut
+}: ScrubberProps) => {
   const styles = useStyles()
   const dispatch = useDispatch()
   const [isInteracting, setIsInteracting] = useState(false)

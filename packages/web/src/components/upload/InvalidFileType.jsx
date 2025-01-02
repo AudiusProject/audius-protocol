@@ -14,7 +14,7 @@ const messages = {
   size: `File Too Large (Max ${ALLOWED_MAX_AUDIO_SIZE_BYTES / 1000000}MB)`
 }
 
-const InvalidFileType = (props) => {
+const InvalidFileType = ({ className = '', reason, ...props }) => {
   return (
     <Spring
       from={{ opacity: 0.6 }}
@@ -26,7 +26,7 @@ const InvalidFileType = (props) => {
         <div
           style={animProps}
           className={cn(styles.invalidFileType, {
-            [props.className]: !!props.className
+            [className]: !!className
           })}
         >
           <Text
@@ -36,7 +36,7 @@ const InvalidFileType = (props) => {
             strength='strong'
             color='staticWhite'
           >
-            {messages[props.reason]}
+            {messages[reason]}
           </Text>
         </div>
       )}
@@ -47,10 +47,6 @@ const InvalidFileType = (props) => {
 InvalidFileType.propTypes = {
   className: PropTypes.string,
   reason: PropTypes.oneOf(['type', 'size'])
-}
-
-InvalidFileType.defaultProps = {
-  reason: 'type'
 }
 
 export default InvalidFileType

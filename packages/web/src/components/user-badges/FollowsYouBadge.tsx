@@ -1,7 +1,5 @@
-import { useGetUserById } from '@audius/common/api'
+import { useUser } from '@audius/common/api'
 import { ID } from '@audius/common/models'
-import { accountSelectors } from '@audius/common/store'
-import { useSelector } from 'react-redux'
 
 import { useWithMobileStyle } from 'hooks/useWithMobileStyle'
 
@@ -24,11 +22,7 @@ const FollowsYouBadge = ({
   variant = 'standard'
 }: FollowsYouBadgeProps) => {
   const wm = useWithMobileStyle(styles.mobile)
-  const currentUserId = useSelector(accountSelectors.getUserId)
-  const { data: user } = useGetUserById(
-    { id: userId },
-    { disabled: !currentUserId }
-  )
+  const { data: user } = useUser(userId)
 
   if (!user?.does_follow_current_user) return null
 

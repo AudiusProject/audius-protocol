@@ -103,7 +103,25 @@ export type TrackMenuProps = OwnProps &
   ReturnType<typeof mapDispatchToProps> &
   ReturnType<typeof mapStateToProps>
 
-const TrackMenu = (props: TrackMenuProps) => {
+const TrackMenu = ({
+  includeDelete = true,
+  includeAddToAlbum = true,
+  includeAddToPlaylist = true,
+  includeArtistPick = true,
+  includeEdit = true,
+  includeEmbed = true,
+  includeFavorite = true,
+  includeAlbumPage = true,
+  includeTrackPage = true,
+  isArtistPick,
+  isDeleted,
+  isOwner,
+  isOwnerDeactivated,
+  isUnlisted,
+  extraMenuItems = [],
+  ddexApp = null,
+  ...props
+}: TrackMenuProps) => {
   const { trackPermalink, goToRoute } = props
   const { toast } = useContext(ToastContext)
   const dispatch = useDispatch()
@@ -134,28 +152,12 @@ const TrackMenu = (props: TrackMenuProps) => {
 
   const getMenu = () => {
     const {
-      extraMenuItems,
       goToRoute,
       handle,
-      includeAddToAlbum,
-      includeAddToPlaylist,
-      includeArtistPick,
-      includeDelete,
-      includeEdit,
-      ddexApp,
-      includeEmbed,
-      includeFavorite,
       includeRepost,
       includeShare,
-      includeAlbumPage,
-      includeTrackPage,
-      isArtistPick,
-      isDeleted,
       isFavorited,
-      isOwner,
-      isOwnerDeactivated,
       isReposted,
-      isUnlisted,
       openAddToCollectionModal,
       openEmbedModal,
       repostTrack,
@@ -390,23 +392,6 @@ function mapDispatchToProps(dispatch: Dispatch) {
     openEmbedModal: (trackId: ID) =>
       dispatch(embedModalActions.open(trackId, PlayableType.TRACK))
   }
-}
-
-TrackMenu.defaultProps = {
-  includeShare: false,
-  includeRepost: false,
-  isFavorited: false,
-  isReposted: false,
-  includeDelete: true,
-  includeEdit: true,
-  includeEmbed: true,
-  includeFavorite: true,
-  includeAlbumPage: true,
-  includeTrackPage: true,
-  includeAddToAlbum: true,
-  includeAddToPlaylist: true,
-  includeArtistPick: true,
-  extraMenuItems: []
 }
 
 export default connect(mapStateToProps, mapDispatchToProps)(TrackMenu)

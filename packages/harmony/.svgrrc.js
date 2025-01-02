@@ -3,7 +3,7 @@ module.exports = {
   titleProp: true,
   descProp: true,
   replaceAttrValues: {
-    red: '{props.fillColor}',
-    '#FF0000': '{props.fillColor}'
+    red: '{props.fill}',
+    '#FF0000': '{props.fill}'
   }
 }

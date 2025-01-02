@@ -108,10 +108,7 @@ const TrendingPageMobileContent = ({
           variant={LineupVariant.MAIN}
           isTrending
           endOfLineup={
-            <EndOfLineup
-              key='endOfLineup'
-              description={messages.endOfLineupDescription}
-            />
+            <EndOfLineup description={messages.endOfLineupDescription} />
           }
         />
       </>,
@@ -126,10 +123,7 @@ const TrendingPageMobileContent = ({
         variant={LineupVariant.MAIN}
         isTrending
         endOfLineup={
-          <EndOfLineup
-            key='endOfLineup'
-            description={messages.endOfLineupDescription}
-          />
+          <EndOfLineup description={messages.endOfLineupDescription} />
         }
       />,
       <Lineup
@@ -143,10 +137,7 @@ const TrendingPageMobileContent = ({
         variant={LineupVariant.MAIN}
         isTrending
         endOfLineup={
-          <EndOfLineup
-            key='endOfLineup'
-            description={messages.endOfLineupDescription}
-          />
+          <EndOfLineup description={messages.endOfLineupDescription} />
         }
       />
     ]

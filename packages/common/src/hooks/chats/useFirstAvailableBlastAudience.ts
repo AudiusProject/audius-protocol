@@ -3,15 +3,15 @@ import { useMemo } from 'react'
 import { ChatBlastAudience } from '@audius/sdk'
 
 import {
-  useGetCurrentUser,
-  useGetCurrentUserId,
   useGetPurchasersCount,
-  useGetRemixersCount
+  useGetRemixersCount,
+  useCurrentUser,
+  useCurrentUserId
 } from '~/api'
 
 export const useFirstAvailableBlastAudience = () => {
-  const { data: currentUserId } = useGetCurrentUserId({})
-  const { data: user } = useGetCurrentUser({})
+  const { data: currentUserId } = useCurrentUserId()
+  const { data: user } = useCurrentUser()
 
   const { data: purchasersCount } = useGetPurchasersCount(
     {

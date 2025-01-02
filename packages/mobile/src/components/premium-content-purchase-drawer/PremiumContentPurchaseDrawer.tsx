@@ -1,10 +1,10 @@
 import { useCallback, type ReactNode, useEffect } from 'react'
 
 import {
-  useGetCurrentUserId,
+  useCurrentUserId,
   useGetPlaylistById,
   useGetTrackById,
-  useGetUserById
+  useUser
 } from '@audius/common/api'
 import type { PurchaseableContentMetadata } from '@audius/common/hooks'
 import {
@@ -219,8 +219,8 @@ const getButtonText = (isUnlocking: boolean, amountDue: number) =>
   isUnlocking
     ? messages.purchasing
     : amountDue > 0
-    ? `${messages.buy} $${formatPrice(amountDue)}`
-    : messages.buy
+      ? `${messages.buy} $${formatPrice(amountDue)}`
+      : messages.buy
 
 // The bulk of the form rendering is in a nested component because we want access
 // to the FormikContext, which can only be used in a component which is a descendant
@@ -336,7 +336,7 @@ const RenderForm = ({
   }, [setPurchaseVendor, showCoinflow, purchaseVendor])
 
   const stemsPurchaseCount = isContentDownloadGated(content)
-    ? content._stems?.length ?? 0
+    ? (content._stems?.length ?? 0)
     : 0
   const downloadPurchaseCount =
     isContentDownloadGated(content) && content.is_downloadable ? 1 : 0
@@ -461,22 +461,16 @@ export const PremiumContentPurchaseDrawer = () => {
     onClosed
   } = usePremiumContentPurchaseModal()
   const isAlbum = contentType === PurchaseableContentType.ALBUM
-  const { data: currentUserId } = useGetCurrentUserId({})
+  const { data: currentUserId } = useCurrentUserId()
   const { data: track, status: trackStatus } = useGetTrackById(
-    { id: contentId },
+    { id: contentId! },
     { disabled: !contentId }
   )
   const { data: album } = useGetPlaylistById(
     { playlistId: contentId!, currentUserId },
     { disabled: !isAlbum || !contentId }
   )
-  const { data: user } = useGetUserById(
-    {
-      id: track?.owner_id ?? album?.playlist_owner_id ?? 0,
-      currentUserId
-    },
-    { disabled: !(track?.owner_id ?? album?.playlist_owner_id) }
-  )
+  const { data: user } = useUser(track?.owner_id ?? album?.playlist_owner_id)
   const metadata = {
     ...(isAlbum ? album : track),
     user
@@ -495,8 +489,8 @@ export const PremiumContentPurchaseDrawer = () => {
   const purchaseConditions = isValidStreamGatedTrack
     ? metadata.stream_conditions
     : isValidDownloadGatedTrack
-    ? metadata.download_conditions
-    : null
+      ? metadata.download_conditions
+      : null
 
   const price = purchaseConditions ? purchaseConditions?.usdc_purchase.price : 0
 

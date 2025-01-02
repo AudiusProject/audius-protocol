@@ -17,17 +17,17 @@ const messages = {
 }
 
 const ProfilePicture = ({
-  editMode,
+  editMode = true,
   userId,
   profilePictureSizes,
   updatedProfilePicture,
   onDrop,
-  showEdit,
-  isMobile,
-  loading,
+  showEdit = false,
+  isMobile = false,
+  loading = false,
   url,
   error,
-  includePopup,
+  includePopup = true,
   hasProfilePicture
 }) => {
   const image = useProfilePicture({
@@ -124,14 +124,6 @@ ProfilePicture.propTypes = {
   loading: PropTypes.bool.isRequired,
   url: PropTypes.string,
   onDrop: PropTypes.func.isRequired
-}
-
-ProfilePicture.defaultProps = {
-  isMobile: false,
-  showEdit: false,
-  includePopup: true,
-  editMode: true,
-  loading: false
 }
 
 export default memo(ProfilePicture)

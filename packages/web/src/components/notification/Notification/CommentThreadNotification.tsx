@@ -1,6 +1,6 @@
 import { MouseEventHandler, useCallback } from 'react'
 
-import { useGetCurrentUserId } from '@audius/common/api'
+import { useCurrentUserId } from '@audius/common/api'
 import { Name } from '@audius/common/models'
 import {
   notificationsSelectors,
@@ -56,7 +56,7 @@ export const CommentThreadNotification = (
     getNotificationEntity(state, notification)
   )
 
-  const { data: currentUserId } = useGetCurrentUserId({})
+  const { data: currentUserId } = useCurrentUserId()
   const isOwner = entity?.user?.user_id === currentUserId
   const isOwnerReply =
     entity?.user?.user_id === firstUser?.user_id && !isMultiUser

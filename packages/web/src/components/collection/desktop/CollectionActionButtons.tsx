@@ -1,4 +1,4 @@
-import { useGetCurrentUserId, useGetPlaylistById } from '@audius/common/api'
+import { useCurrentUserId, useGetPlaylistById } from '@audius/common/api'
 import {
   useGatedContentAccess,
   useGatedContentAccessMap
@@ -53,7 +53,7 @@ export const CollectionActionButtons = (props: CollectionActionButtonProps) => {
     isPremium
   } = props
 
-  const { data: currentUserId } = useGetCurrentUserId({})
+  const { data: currentUserId } = useCurrentUserId()
   const { data: collection } = useGetPlaylistById(
     {
       playlistId: typeof collectionId === 'number' ? collectionId : null,

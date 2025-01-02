@@ -1,6 +1,6 @@
 import { useRef } from 'react'
 
-import { useGetCurrentUserId } from '@audius/common/api'
+import { useCurrentUserId } from '@audius/common/api'
 import { useFeatureFlag, useIsManagedAccount } from '@audius/common/hooks'
 import { ID, statusIsNotFinalized } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
@@ -193,7 +193,7 @@ export const StatBanner = (props: StatsBannerProps) => {
   const followButtonRef = useRef<HTMLButtonElement>(null)
   const isManagedAccount = useIsManagedAccount()
   const chatPermissionStatus = useSelector(getChatPermissionsStatus)
-  const { data: currentUserId } = useGetCurrentUserId({})
+  const { data: currentUserId } = useCurrentUserId()
 
   const shareButton = (
     <Button

@@ -2,11 +2,11 @@ import { ReactElement, ReactNode } from 'react'
 
 import { ThemeProvider } from '@audius/harmony'
 import { render, RenderOptions } from '@testing-library/react'
-import { createMemoryHistory } from 'history'
+import { Router } from 'react-router-dom'
 import { CompatRouter } from 'react-router-dom-v5-compat'
-import { HistoryRouter as Router } from 'redux-first-history/rr6'
 import { PartialDeep } from 'type-fest'
 
+import { HistoryContext, HistoryContextProvider } from 'app/HistoryProvider'
 import { ReduxProvider } from 'app/ReduxProvider'
 import { RouterContextProvider } from 'components/animated-switch/RouterContextProvider'
 import { ToastContextProvider } from 'components/toast/ToastContext'
@@ -24,19 +24,24 @@ const TestProviders =
   (options?: TestOptions) => (props: TestProvidersProps) => {
     const { children } = props
     const { reduxState } = options ?? {}
-    const history = createMemoryHistory()
     return (
-      <ThemeProvider theme='day'>
-        <ReduxProvider initialStoreState={reduxState}>
-          <RouterContextProvider>
-            <ToastContextProvider>
-              <Router history={history}>
-                <CompatRouter>{children}</CompatRouter>
-              </Router>
-            </ToastContextProvider>
-          </RouterContextProvider>
-        </ReduxProvider>
-      </ThemeProvider>
+      <HistoryContextProvider>
+        <ThemeProvider theme='day'>
+          <ReduxProvider initialStoreState={reduxState}>
+            <RouterContextProvider>
+              <ToastContextProvider>
+                <HistoryContext.Consumer>
+                  {({ history }) => (
+                    <Router history={history}>
+                      <CompatRouter>{children}</CompatRouter>
+                    </Router>
+                  )}
+                </HistoryContext.Consumer>
+              </ToastContextProvider>
+            </RouterContextProvider>
+          </ReduxProvider>
+        </ThemeProvider>
+      </HistoryContextProvider>
     )
   }
 

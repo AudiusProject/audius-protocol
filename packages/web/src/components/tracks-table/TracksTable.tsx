@@ -223,7 +223,7 @@ export const TracksTable = ({
               variant='title'
               size='s'
               strength='weak'
-              css={{ display: 'block', 'line-height': '125%' }}
+              css={{ display: 'block', lineHeight: '125%' }}
               ellipses
             >{`${track.name} [Deleted By Artist]`}</Text>
           ) : (
@@ -233,7 +233,7 @@ export const TracksTable = ({
               textVariant='title'
               size='s'
               strength='weak'
-              css={{ display: 'block', 'line-height': '125%' }}
+              css={{ display: 'block', lineHeight: '125%' }}
               ellipses
             >
               {track.name}

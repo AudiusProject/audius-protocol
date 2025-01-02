@@ -53,7 +53,7 @@ const SearchBarResult = memo((props) => {
     secondary,
     artwork,
     size,
-    defaultImage,
+    defaultImage = placeholderArt,
     isVerifiedUser,
     tier,
     allowAiAttribution,
@@ -149,10 +149,6 @@ SearchBarResult.propTypes = {
   size: PropTypes.string,
   defaultImage: PropTypes.string,
   isVerifiedUser: PropTypes.bool
-}
-
-SearchBarResult.defaultProps = {
-  imageUrl: placeholderArt
 }
 
 export default SearchBarResult
