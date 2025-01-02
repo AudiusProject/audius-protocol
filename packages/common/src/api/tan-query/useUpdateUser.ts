@@ -1,4 +1,3 @@
-import { User } from '@audius/sdk'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 
 import { userMetadataToSdk } from '~/adapters/user'
@@ -10,7 +9,8 @@ import { encodeHashId } from '~/utils/hashIds'
 import { QUERY_KEYS } from './queryKeys'
 
 type MutationContext = {
-  previousUser: User | undefined
+  previousUser: UserMetadata | undefined
+  previousAccountUser: UserMetadata | undefined
 }
 
 type UpdateUserParams = {
@@ -45,14 +45,22 @@ export const useUpdateUser = () => {
       // Cancel any outgoing refetches
       await queryClient.cancelQueries({ queryKey: [QUERY_KEYS.user, userId] })
       await queryClient.cancelQueries({ queryKey: [QUERY_KEYS.userByHandle] })
+      await queryClient.cancelQueries({ queryKey: [QUERY_KEYS.accountUser] })
       await queryClient.cancelQueries({ queryKey: [QUERY_KEYS.track] })
       await queryClient.cancelQueries({ queryKey: [QUERY_KEYS.collection] })
 
       // Snapshot the previous values
-      const previousUser = queryClient.getQueryData<User>([
+      const previousUser = queryClient.getQueryData<UserMetadata>([
         QUERY_KEYS.user,
         userId
       ])
+
+      // Snapshot the previous account user if it matches
+      const previousAccountUser = queryClient
+        .getQueriesData<UserMetadata>({
+          queryKey: [QUERY_KEYS.accountUser]
+        })
+        .find(([_, data]) => data?.user_id === userId)?.[1]
 
       // Optimistically update user
       queryClient.setQueryData([QUERY_KEYS.user, userId], (old: any) => ({
@@ -61,9 +69,18 @@ export const useUpdateUser = () => {
       }))
 
       // Optimistically update userByHandle queries if they match the user
-      queryClient.setQueriesData(
-        { queryKey: [QUERY_KEYS.userByHandle, metadata.handle] },
+      queryClient.setQueryData(
+        [QUERY_KEYS.userByHandle, metadata.handle],
         (old: any) => ({ ...old, ...metadata })
+      )
+
+      // Optimistically update accountUser queries if they match the user
+      queryClient.setQueriesData(
+        { queryKey: [QUERY_KEYS.accountUser] },
+        (oldData: any) => {
+          if (!oldData?.user_id || oldData.user_id !== userId) return oldData
+          return { ...oldData, ...metadata }
+        }
       )
 
       // Optimistically update all tracks that contain this user
@@ -123,7 +140,7 @@ export const useUpdateUser = () => {
       )
 
       // Return context with the previous user
-      return { previousUser }
+      return { previousUser, previousAccountUser }
     },
     onError: (_err, { userId }, context?: MutationContext) => {
       // If the mutation fails, roll back user data
@@ -134,11 +151,19 @@ export const useUpdateUser = () => {
         )
 
         // Roll back userByHandle queries
+        queryClient.setQueryData(
+          [QUERY_KEYS.userByHandle, context.previousUser?.handle],
+          context.previousUser
+        )
+      }
+
+      // Roll back accountUser queries if we have the previous state
+      if (context?.previousAccountUser) {
         queryClient.setQueriesData(
-          { queryKey: [QUERY_KEYS.userByHandle] },
+          { queryKey: [QUERY_KEYS.accountUser] },
           (oldData: any) => {
             if (!oldData?.user_id || oldData.user_id !== userId) return oldData
-            return context.previousUser
+            return context.previousAccountUser
           }
         )
       }

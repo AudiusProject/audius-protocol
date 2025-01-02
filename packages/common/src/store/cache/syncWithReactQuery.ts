@@ -1,6 +1,8 @@
 import type { QueryClient } from '@tanstack/react-query'
 
+import { QUERY_KEYS } from '~/api/tan-query/queryKeys'
 import { ID } from '~/models'
+import { User } from '~/models/User'
 
 import { Kind } from '../../models/Kind'
 
@@ -19,27 +21,44 @@ type EntityUpdater = {
 
 const ENTITY_UPDATERS: Record<Kind, EntityUpdater> = {
   [Kind.USERS]: {
-    singleKey: 'user',
-    listKey: 'users',
+    singleKey: QUERY_KEYS.user,
+    listKey: QUERY_KEYS.users,
     idField: 'user_id',
     updateRelations: (queryClient, id, metadata) => {
       // Update userByHandle cache
       if (metadata.handle) {
-        queryClient.setQueryData(['userByHandle', metadata.handle], metadata)
+        queryClient.setQueryData(
+          [QUERY_KEYS.userByHandle, metadata.handle],
+          metadata
+        )
       }
 
-      // Update any tracks that might contain this user
-      queryClient.setQueriesData({ queryKey: ['track'] }, (oldData: any) => {
-        if (!oldData?.user || oldData.user.user_id !== id) return oldData
-        return {
-          ...oldData,
-          user: metadata
+      // Find and update accountUser cache if it matches the user
+      const accountUserQueries = queryClient.getQueriesData<User>({
+        queryKey: [QUERY_KEYS.accountUser]
+      })
+
+      accountUserQueries.forEach(([queryKey, data]) => {
+        if (data?.user_id === id) {
+          queryClient.setQueryData(queryKey, metadata)
         }
       })
 
+      // Update any tracks that might contain this user
+      queryClient.setQueriesData(
+        { queryKey: [QUERY_KEYS.track] },
+        (oldData: any) => {
+          if (!oldData?.user || oldData.user.user_id !== id) return oldData
+          return {
+            ...oldData,
+            user: metadata
+          }
+        }
+      )
+
       // Update any collections that might contain this user
       queryClient.setQueriesData(
-        { queryKey: ['collection'] },
+        { queryKey: [QUERY_KEYS.collection] },
         (oldData: any) => {
           if (!oldData) return oldData
 
@@ -76,13 +95,13 @@ const ENTITY_UPDATERS: Record<Kind, EntityUpdater> = {
     }
   },
   [Kind.TRACKS]: {
-    singleKey: 'track',
-    listKey: 'tracks',
+    singleKey: QUERY_KEYS.track,
+    listKey: QUERY_KEYS.tracks,
     idField: 'track_id',
     updateRelations: (queryClient, id, metadata) => {
       // Update any collections that might contain this track
       queryClient.setQueriesData(
-        { queryKey: ['collection'] },
+        { queryKey: [QUERY_KEYS.collection] },
         (oldData: any) => {
           if (!oldData?.tracks) return oldData
           return {
@@ -96,8 +115,8 @@ const ENTITY_UPDATERS: Record<Kind, EntityUpdater> = {
     }
   },
   [Kind.COLLECTIONS]: {
-    singleKey: 'collection',
-    listKey: 'collections',
+    singleKey: QUERY_KEYS.collection,
+    listKey: QUERY_KEYS.collections,
     idField: 'playlist_id'
   },
   [Kind.TRACK_ROUTES]: {
