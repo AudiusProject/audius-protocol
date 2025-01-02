@@ -1,5 +1,5 @@
 import {
-  useGetCurrentUserId,
+  useCurrentUserId,
   useGetPlaylistById,
   useTrack
 } from '@audius/common/api'
@@ -25,7 +25,7 @@ export const TrackNameWithArtwork = ({
 }) => {
   const isTrack = contentType === USDCContentPurchaseType.TRACK
   const { status: trackStatus, data: track } = useTrack(id)
-  const { data: currentUserId } = useGetCurrentUserId({})
+  const { data: currentUserId } = useCurrentUserId()
   const { status: albumStatus, data: album } = useGetPlaylistById(
     { playlistId: id, currentUserId },
     { disabled: isTrack }

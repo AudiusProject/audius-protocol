@@ -1,10 +1,6 @@
 import { MouseEventHandler, useCallback, useMemo } from 'react'
 
-import {
-  useGetPlaylistById,
-  useGetUserById,
-  useTrack
-} from '@audius/common/api'
+import { useGetPlaylistById, useUser, useTrack } from '@audius/common/api'
 import { recentSearchMessages as messages } from '@audius/common/messages'
 import { Kind, SquareSizes, Status } from '@audius/common/models'
 import {
@@ -221,9 +217,9 @@ const RecentSearchCollection = (props: { searchItem: SearchItem }) => {
 const RecentSearchUser = (props: { searchItem: SearchItem }) => {
   const { searchItem } = props
   const { id } = searchItem
-  const { data: user, status } = useGetUserById({ id })
+  const { data: user, status } = useUser(id)
 
-  if (status === Status.LOADING) return <RecentSearchSkeleton />
+  if (status === 'pending') return <RecentSearchSkeleton />
 
   if (!user) return null
   const { handle, name } = user

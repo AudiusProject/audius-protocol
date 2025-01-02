@@ -1,5 +1,3 @@
-import { useMemo } from 'react'
-
 import dayjs from 'dayjs'
 import { useSelector } from 'react-redux'
 
@@ -227,18 +225,6 @@ const accountApi = createApi({
   }
 })
 
-export const useGetCurrentUser = (
-  _fetchArgs: {},
-  options?: QueryHookOptions
-) => {
-  const wallets = useSelector(accountSelectors.getWalletAddresses)
-  const result = useGetUserAccount(
-    { wallet: wallets.currentUser! },
-    { ...options, disabled: !wallets.currentUser }
-  )
-  return { ...result, data: result.data ? result.data.user : null }
-}
-
 export const useGetCurrentWeb3User = (
   _fetchArgs: {},
   options?: QueryHookOptions
@@ -250,15 +236,6 @@ export const useGetCurrentWeb3User = (
   )
 
   return { ...result, data: result.data ? result.data.user : null }
-}
-
-export const useGetCurrentUserId = (
-  ...args: Parameters<typeof useGetCurrentUser>
-) => {
-  const result = useGetCurrentUser(...args)
-  return useMemo(() => {
-    return { ...result, data: result.data ? result.data.user_id : null }
-  }, [result])
 }
 
 export const {

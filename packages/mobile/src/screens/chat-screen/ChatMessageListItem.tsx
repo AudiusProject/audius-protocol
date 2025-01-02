@@ -139,8 +139,8 @@ const useGetTailColor = (
       ? styles.pressedIsAuthor.backgroundColor
       : styles.pressed.backgroundColor
     : isAuthor && !hideMessage
-    ? styles.messageContainerAuthor.backgroundColor
-    : styles.messageContainer.backgroundColor
+      ? styles.messageContainerAuthor.backgroundColor
+      : styles.messageContainer.backgroundColor
 }
 
 type ChatReactionProps = {

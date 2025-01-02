@@ -1,8 +1,4 @@
-import {
-  useGetPlaylistById,
-  useTrack,
-  useGetUserById
-} from '@audius/common/api'
+import { useGetPlaylistById, useTrack, useUser } from '@audius/common/api'
 import { recentSearchMessages as messages } from '@audius/common/messages'
 import { Kind, SquareSizes, Status } from '@audius/common/models'
 import type { SearchItem as SearchItemType } from '@audius/common/store'
@@ -81,17 +77,17 @@ export const SearchItemSkeleton = () => (
 export const SearchItemTrack = (props: SearchItemProps) => {
   const { searchItem, onPress } = props
   const { id } = searchItem
-  const { data: track, isLoading } = useTrack(id)
-  const { data: user } = useGetUserById({ id: track?.owner_id ?? 0 })
+  const { data: track, isLoading: trackIsLoading } = useTrack(id)
+  const { data: trackUser } = useUser(track?.owner_id)
   const { spacing } = useTheme()
   const navigation = useNavigation()
 
-  if (isLoading) return <SearchItemSkeleton />
+  if (trackIsLoading) return <SearchItemSkeleton />
 
   if (!track) return null
   const { title } = track
 
-  if (!user) return null
+  if (!trackUser) return null
 
   const handlePress = () => {
     onPress?.()
@@ -129,7 +125,7 @@ export const SearchItemTrack = (props: SearchItemProps) => {
           </Text>
           <UserLink
             size='xs'
-            userId={user.user_id}
+            userId={trackUser.user_id}
             variant='subdued'
             badgeSize='2xs'
           />
@@ -147,16 +143,14 @@ export const SearchItemCollection = (props: SearchItemProps) => {
   })
   const navigation = useNavigation()
 
-  const { data: user } = useGetUserById({
-    id: playlist?.playlist_owner_id ?? 0
-  })
+  const { data: playlistUser } = useUser(playlist?.playlist_owner_id)
 
   if (status === Status.LOADING) return <SearchItemSkeleton />
 
   if (!playlist) return null
   const { is_album, playlist_name } = playlist
 
-  if (!user) return null
+  if (!playlistUser) return null
 
   const handlePress = () => {
     onPress?.()
@@ -185,7 +179,7 @@ export const SearchItemCollection = (props: SearchItemProps) => {
             {' | '}
           </Text>
           <UserLink
-            userId={user.user_id}
+            userId={playlistUser.user_id}
             size='xs'
             variant='subdued'
             badgeSize='2xs'
@@ -199,10 +193,10 @@ export const SearchItemCollection = (props: SearchItemProps) => {
 const SearchItemUser = (props: SearchItemProps) => {
   const { searchItem, onPress } = props
   const { id } = searchItem
-  const { data: user, status } = useGetUserById({ id })
+  const { data: user, status } = useUser(id)
   const navigation = useNavigation()
 
-  if (status === Status.LOADING) return <SearchItemSkeleton />
+  if (status === 'pending') return <SearchItemSkeleton />
 
   if (!user) return null
   const { handle } = user

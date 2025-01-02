@@ -8,10 +8,9 @@ import {
   MouseEvent
 } from 'react'
 
-import { useGetUserByHandle, useGetUsersByIds } from '@audius/common/api'
+import { useUsers, useUserByHandle } from '@audius/common/api'
 import { ID } from '@audius/common/models'
 import { profilePage } from '@audius/common/src/utils/route'
-import { accountSelectors } from '@audius/common/store'
 import {
   formatTrackName,
   formatCollectionName,
@@ -23,7 +22,6 @@ import {
 import { Text, TextProps } from '@audius/harmony'
 import { CommentMention, ResolveApi, Track, User, Playlist } from '@audius/sdk'
 import { omit } from 'lodash'
-import { useSelector } from 'react-redux'
 import { useAsync } from 'react-use'
 
 import { ArtistPopover } from 'components/artist/ArtistPopover'
@@ -37,8 +35,6 @@ const {
   instanceOfPlaylistResponse,
   instanceOfUserResponse
 } = ResolveApi
-
-const { getUserId } = accountSelectors
 
 type Matcher = {
   pattern: RegExp
@@ -159,11 +155,7 @@ const HandleLink = ({
 }: Omit<TextLinkProps, 'to'> & {
   handle: string
 }) => {
-  const currentUserId = useSelector(getUserId)
-  const { data: user } = useGetUserByHandle({
-    handle: handle.replace('@', ''),
-    currentUserId
-  })
+  const { data: user } = useUserByHandle(handle.replace('@', ''))
 
   const handleClick = useCallback(
     (e: MouseEvent<HTMLAnchorElement>) => {
@@ -230,9 +222,7 @@ export const UserGeneratedTextV2 = forwardRef(function (
   } = props
 
   // Fetch the users for artists popovers for mentions
-  useGetUsersByIds({
-    ids: mentions ? mentions.map((mention) => mention.userId) : []
-  })
+  useUsers(mentions?.map((mention) => mention.userId) ?? [])
 
   const mentionRegex = useMemo(() => {
     const nullRegex = /(?!)/

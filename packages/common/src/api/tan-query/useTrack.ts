@@ -61,9 +61,6 @@ export const useTrack = (trackId: ID, config?: Config) => {
       return track
     },
     staleTime: config?.staleTime,
-    enabled:
-      !!audiusSdk &&
-      !!trackId &&
-      (config && 'enabled' in config ? config.enabled : true)
+    enabled: config?.enabled !== false && !!audiusSdk && !!trackId
   })
 }

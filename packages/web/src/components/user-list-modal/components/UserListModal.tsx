@@ -1,6 +1,6 @@
 import { ReactElement, useRef } from 'react'
 
-import { useGetCurrentUserId } from '@audius/common/api'
+import { useCurrentUserId } from '@audius/common/api'
 import { ID } from '@audius/common/models'
 import {
   cacheUsersSelectors,
@@ -107,7 +107,7 @@ const UserListModal = ({
   const supportersUser = useSelector((state) =>
     getUser(state, { id: supportersId })
   )
-  const { data: currentUserId } = useGetCurrentUserId({})
+  const { data: currentUserId } = useCurrentUserId()
 
   const match = useRouteMatch<{ audience_type: string }>(
     '/messages/:audience_type'

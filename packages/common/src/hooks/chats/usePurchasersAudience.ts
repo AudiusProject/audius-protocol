@@ -3,7 +3,7 @@ import { useMemo } from 'react'
 import { keyBy } from 'lodash'
 
 import {
-  useGetCurrentUserId,
+  useCurrentUserId,
   useGetPlaylistsByIds,
   useGetPurchasersCount,
   useGetSalesAggegrate,
@@ -19,7 +19,7 @@ export const usePurchasersAudience = ({
   contentId?: ID
   contentType?: 'track' | 'album'
 }) => {
-  const { data: currentUserId } = useGetCurrentUserId({})
+  const { data: currentUserId } = useCurrentUserId()
   const { data: salesAggregate } = useGetSalesAggegrate({
     userId: currentUserId!
   })

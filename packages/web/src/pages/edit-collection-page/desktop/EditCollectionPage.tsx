@@ -1,7 +1,4 @@
-import {
-  useGetCurrentUserId,
-  useGetPlaylistByPermalink
-} from '@audius/common/api'
+import { useCurrentUserId, useGetPlaylistByPermalink } from '@audius/common/api'
 import { Name, SquareSizes, Status } from '@audius/common/models'
 import { CollectionValues } from '@audius/common/schemas'
 import {
@@ -50,7 +47,7 @@ export const EditCollectionPage = () => {
   useRequiresAccount()
   useIsUnauthorizedForHandleRedirect(handle)
 
-  const { data: currentUserId } = useGetCurrentUserId({})
+  const { data: currentUserId } = useCurrentUserId()
   const { data: apiCollection, status } = useGetPlaylistByPermalink(
     {
       permalink,

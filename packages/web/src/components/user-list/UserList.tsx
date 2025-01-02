@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from 'react'
 
-import { useGetCurrentUserId } from '@audius/common/api'
+import { useCurrentUserId } from '@audius/common/api'
 import { ID, FollowSource } from '@audius/common/models'
 import {
   TOP_SUPPORTERS_USER_LIST_TAG,
@@ -72,7 +72,7 @@ export const UserList = ({
 
   const { hasMore, loading, userIds } = useSelector(stateSelector)
   const loggedIn = useSelector(getHasAccount)
-  const { data: userId } = useGetCurrentUserId({})
+  const { data: userId } = useCurrentUserId()
   const otherUserId = useSelector(
     (state: AppState) => userIdSelector?.(state) ?? undefined
   )

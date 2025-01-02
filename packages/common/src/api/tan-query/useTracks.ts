@@ -15,6 +15,7 @@ import { QUERY_KEYS } from './queryKeys'
 type Config = {
   enabled?: boolean
   staleTime?: number
+  enabled?: boolean
 }
 
 export const useTracks = (trackIds: ID[], config?: Config) => {
@@ -63,7 +64,6 @@ export const useTracks = (trackIds: ID[], config?: Config) => {
       return tracks
     },
     staleTime: config?.staleTime,
-    enabled:
-      !!audiusSdk && (config && 'enabled' in config ? config.enabled : true)
+    enabled: config?.enabled !== false && !!audiusSdk && trackIds.length > 0
   })
 }

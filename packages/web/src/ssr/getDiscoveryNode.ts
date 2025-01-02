@@ -1,12 +1,6 @@
-import {
-  sdk,
-  DiscoveryNodeSelector,
-  productionConfig,
-  stagingConfig,
-  developmentConfig
-} from '@audius/sdk'
-
-import { env } from 'services/env'
+import { developmentConfig } from '@audius/sdk/src/sdk/config/development'
+import { productionConfig } from '@audius/sdk/src/sdk/config/production'
+import { stagingConfig } from '@audius/sdk/src/sdk/config/staging'
 
 import { discoveryNodeAllowlist } from './constants'
 
@@ -27,13 +21,5 @@ if (discoveryNodeAllowlist.length > 0) {
   )
 }
 
-const discoveryNodeSelector = new DiscoveryNodeSelector({
-  bootstrapServices: discoveryNodes
-})
-
-export const audiusSdk = sdk({
-  appName: env.APP_NAME,
-  services: {
-    discoveryNodeSelector
-  }
-})
+export const getDiscoveryNode = () =>
+  discoveryNodes[Math.floor(Math.random() * discoveryNodes.length)]
