@@ -1,6 +1,6 @@
 import { MouseEventHandler, ReactNode, useCallback } from 'react'
 
-import { useGetPlaylistById, useGetTrackById } from '@audius/common/api'
+import { useGetTrackById, useCollection } from '@audius/common/api'
 import { ID } from '@audius/common/models'
 import {
   usePublishConfirmationModal,
@@ -73,7 +73,7 @@ const CollectionOwnerActionButtons = ({
   contentId,
   ...rest
 }: OwnerActionButtonProps) => {
-  const { data: collection } = useGetPlaylistById({ playlistId: contentId })
+  const { data: collection } = useCollection(contentId)
   return (
     <BaseOwnerActionButtons
       isUnlisted={collection?.is_private ?? false}

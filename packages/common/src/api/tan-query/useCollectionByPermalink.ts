@@ -2,36 +2,51 @@ import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { userCollectionMetadataFromSDK } from '~/adapters/collection'
-import { useAppContext } from '~/context/appContext'
-import { Id, ID, OptionalId } from '~/models/Identifiers'
-import { Kind } from '~/models/Kind'
+import { useAppContext } from '~/context'
+import { Kind, OptionalId } from '~/models'
 import { getUserId } from '~/store/account/selectors'
 import { addEntries } from '~/store/cache/actions'
 import { EntriesByKind } from '~/store/cache/types'
-import { encodeHashId } from '~/utils/hashIds'
 
 import { QUERY_KEYS } from './queryKeys'
+
+export const playlistPermalinkToHandleAndSlug = (permalink: string) => {
+  const splitPermalink = permalink.split('/')
+  if (splitPermalink.length !== 4) {
+    throw Error(
+      'Permalink formatted incorrectly. Should follow /<handle>/playlist/<slug> format.'
+    )
+  }
+  const [, handle, , slug] = splitPermalink
+  return { handle, slug }
+}
 
 type Config = {
   staleTime?: number
   enabled?: boolean
 }
 
-export const useCollection = (collectionId: ID, config?: Config) => {
+export const useCollectionByPermalink = (
+  permalink: string | undefined,
+  config?: Config
+) => {
   const { audiusSdk } = useAppContext()
   const queryClient = useQueryClient()
   const dispatch = useDispatch()
   const currentUserId = useSelector(getUserId)
 
   return useQuery({
-    queryKey: [QUERY_KEYS.collection, collectionId],
+    queryKey: [QUERY_KEYS.collectionByPermalink, permalink],
     queryFn: async () => {
-      const { data } = await audiusSdk!.full.playlists.getPlaylist({
-        playlistId: Id.parse(collectionId),
-        userId: OptionalId.parse(currentUserId)
-      })
+      if (!permalink) return null
+      const { handle, slug } = playlistPermalinkToHandleAndSlug(permalink)
+      const { data = [] } =
+        await audiusSdk!.full.playlists.getPlaylistByHandleAndSlug({
+          handle,
+          slug,
+          userId: OptionalId.parse(currentUserId)
+        })
 
-      if (!data?.[0]) return null
       const collection = userCollectionMetadataFromSDK(data[0])
 
       if (collection) {
@@ -82,6 +97,6 @@ export const useCollection = (collectionId: ID, config?: Config) => {
       return collection
     },
     staleTime: config?.staleTime,
-    enabled: config?.enabled !== false && !!audiusSdk && !!collectionId
+    enabled: config?.enabled !== false && !!audiusSdk && !!permalink
   })
 }

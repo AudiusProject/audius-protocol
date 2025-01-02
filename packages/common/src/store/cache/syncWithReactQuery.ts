@@ -2,7 +2,6 @@ import type { QueryClient } from '@tanstack/react-query'
 
 import { QUERY_KEYS } from '~/api/tan-query/queryKeys'
 import { ID } from '~/models'
-import { User } from '~/models/User'
 
 import { Kind } from '../../models/Kind'
 
@@ -33,16 +32,14 @@ const ENTITY_UPDATERS: Record<Kind, EntityUpdater> = {
         )
       }
 
-      // Find and update accountUser cache if it matches the user
-      const accountUserQueries = queryClient.getQueriesData<User>({
-        queryKey: [QUERY_KEYS.accountUser]
-      })
-
-      accountUserQueries.forEach(([queryKey, data]) => {
-        if (data?.user_id === id) {
-          queryClient.setQueryData(queryKey, metadata)
+      // Update accountUser cache if it matches the user
+      queryClient.setQueriesData(
+        { queryKey: [QUERY_KEYS.accountUser] },
+        (oldData: any) => {
+          if (!oldData?.user_id || oldData.user_id !== id) return oldData
+          return metadata
         }
-      })
+      )
 
       // Update any tracks that might contain this user
       queryClient.setQueriesData(
