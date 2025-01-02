@@ -1,10 +1,6 @@
 import { MouseEventHandler, useCallback, useMemo } from 'react'
 
-import {
-  useGetPlaylistById,
-  useGetTrackById,
-  useUser
-} from '@audius/common/api'
+import { useCollection, useGetTrackById, useUser } from '@audius/common/api'
 import { recentSearchMessages as messages } from '@audius/common/messages'
 import { Kind, SquareSizes, Status } from '@audius/common/models'
 import {
@@ -163,16 +159,14 @@ const RecentSearchTrack = (props: { searchItem: SearchItem }) => {
 const RecentSearchCollection = (props: { searchItem: SearchItem }) => {
   const { searchItem } = props
   const { id } = searchItem
-  const { data: playlist, status } = useGetPlaylistById({
-    playlistId: id
-  })
+  const { data: playlist, status } = useCollection(id)
 
   const image = useCollectionCoverArt({
     collectionId: playlist?.playlist_id,
     size: SquareSizes.SIZE_150_BY_150
   })
 
-  if (status === Status.LOADING) return <RecentSearchSkeleton />
+  if (status === 'pending') return <RecentSearchSkeleton />
 
   if (!playlist) return null
   const { is_album, playlist_name, permalink, user } = playlist

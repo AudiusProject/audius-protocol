@@ -3,13 +3,13 @@ import { useMemo } from 'react'
 import { ChatBlast, ChatBlastAudience } from '@audius/sdk'
 
 import {
-  useGetPlaylistById,
+  useCollection,
   useGetPurchasersCount,
   useGetRemixersCount,
   useGetTrackById,
   useCurrentUser,
   useCurrentUserId
-} from '~/api'
+} from '@audius/common/api'
 import {
   decodeHashId,
   getChatBlastAudienceDescription,
@@ -37,12 +37,9 @@ export const useChatBlastAudienceContent = ({ chat }: { chat: ChatBlast }) => {
     },
     { disabled: !decodedContentId || audienceContentType !== 'track' }
   )
-  const { data: album } = useGetPlaylistById(
-    {
-      playlistId: decodedContentId!
-    },
-    { disabled: !decodedContentId || audienceContentType !== 'album' }
-  )
+  const { data: album } = useCollection(decodedContentId, {
+    enabled: audienceContentType === 'album'
+  })
 
   const { data: purchasersCount } = useGetPurchasersCount(
     {
