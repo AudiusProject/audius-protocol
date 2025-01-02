@@ -1,8 +1,8 @@
-import { lazy, Component, Suspense } from 'react'
+import { Component, lazy, Suspense } from 'react'
 
 import {
-  Name,
   Client,
+  Name,
   SmartCollectionVariant,
   Status
 } from '@audius/common/models'
@@ -16,7 +16,7 @@ import { route } from '@audius/common/utils'
 import cn from 'classnames'
 import { connect } from 'react-redux'
 import { generatePath, matchPath } from 'react-router'
-import { Switch, Route, Redirect, withRouter } from 'react-router-dom'
+import { Redirect, Route, Switch, withRouter } from 'react-router-dom'
 import semver from 'semver'
 
 import { make } from 'common/store/analytics/actions'
@@ -47,10 +47,9 @@ import DesktopRoute from 'components/routes/DesktopRoute'
 import MobileRoute from 'components/routes/MobileRoute'
 import TrendingGenreSelectionPage from 'components/trending-genre-selection/TrendingGenreSelectionPage'
 import { USDCBalanceFetcher } from 'components/usdc-balance-fetcher/USDCBalanceFetcher'
-import { MainContentContext, MAIN_CONTENT_ID } from 'pages/MainContentContext'
+import { MAIN_CONTENT_ID, MainContentContext } from 'pages/MainContentContext'
 import { AiAttributedTracksPage } from 'pages/ai-attributed-tracks-page'
 import { AudioRewardsPage } from 'pages/audio-rewards-page/AudioRewardsPage'
-import { AudioTransactionsPage } from 'pages/audio-transactions-page'
 import { ChatPageProvider } from 'pages/chat-page/ChatPageProvider'
 import CheckPage from 'pages/check-page/CheckPage'
 import { CollectiblesPlaylistPage } from 'pages/collectibles-playlist-page'
@@ -96,8 +95,8 @@ import { SsrContext } from 'ssr/SsrContext'
 import { setVisibility as setAppModalCTAVisibility } from 'store/application/ui/app-cta-modal/slice'
 import { getShowCookieBanner } from 'store/application/ui/cookieBanner/selectors'
 import {
-  incrementScrollCount as incrementScrollCountAction,
-  decrementScrollCount as decrementScrollCountAction
+  decrementScrollCount as decrementScrollCountAction,
+  incrementScrollCount as incrementScrollCountAction
 } from 'store/application/ui/scrollLock/actions'
 import { getClient } from 'utils/clientUtil'
 import 'utils/redirect'
@@ -125,7 +124,6 @@ const {
   DASHBOARD_PAGE,
   AUDIO_PAGE,
   REWARDS_PAGE,
-  AUDIO_TRANSACTIONS_PAGE,
   UPLOAD_PAGE,
   UPLOAD_ALBUM_PAGE,
   UPLOAD_PLAYLIST_PAGE,
@@ -774,12 +772,7 @@ class WebPlayer extends Component {
                   isMobile={isMobile}
                   component={RewardsPage}
                 />
-                <Route
-                  exact
-                  path={AUDIO_TRANSACTIONS_PAGE}
-                  isMobile={isMobile}
-                  component={AudioTransactionsPage}
-                />
+
                 <Route
                   exact
                   path={CHAT_PAGE}

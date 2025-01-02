@@ -34,9 +34,8 @@ const { pressDiscord } = vipDiscordModalActions
 const { getUserId } = accountSelectors
 
 const messages = {
-  title: '$AUDIO VIP TIERS',
-  subtitle:
-    'Hold $AUDIO in your wallet to unlock VIP Tiers and earn access to exclusive features and more!',
+  title: 'Reward Perks',
+  subtitle: 'Keep $AUDIO in your wallet to enjoy perks and exclusive features.',
   noTier: 'No tier',
   currentTier: 'CURRENT TIER',
   tierLevel: (amount: string) => `${Number(amount).toLocaleString()}+`,

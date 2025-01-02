@@ -60,7 +60,7 @@ const messages = {
   receiveLabel: 'Receive',
   sendLabel: 'Send',
   transactionsLabel: 'View Transactions',
-  audio: '$AUDIO',
+  audio: 'Total $AUDIO',
   connectedWallets: 'Connected Wallets',
   buyAudio: 'Buy $AUDIO Tokens',
   buyAudioNotSupported: 'Buy $AUDIO is not yet supported in your region',
