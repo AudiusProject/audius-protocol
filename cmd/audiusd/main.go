@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"encoding/hex"
+	"encoding/json"
 	"fmt"
 	"log"
 	"log/slog"
@@ -19,7 +20,9 @@ import (
 
 	"github.com/AudiusProject/audius-protocol/pkg/core"
 	"github.com/AudiusProject/audius-protocol/pkg/core/common"
+	"github.com/AudiusProject/audius-protocol/pkg/core/console"
 	"github.com/AudiusProject/audius-protocol/pkg/mediorum"
+	"github.com/AudiusProject/audius-protocol/pkg/mediorum/server"
 	"github.com/AudiusProject/audius-protocol/pkg/uptime"
 
 	"github.com/ethereum/go-ethereum/crypto"
@@ -62,10 +65,27 @@ func main() {
 		fn      func() error
 		enabled bool
 	}{
-		{"audiusd-echo-server", func() error { return startEchoProxyWithOptionalTLS(hostUrl, logger) }, true},
-		{"core", func() error { return core.Run(ctx, logger) }, true},
-		{"mediorum", func() error { return mediorum.Run(ctx, logger) }, isStorageEnabled()},
-		{"uptime", func() error { return uptime.Run(ctx, logger) }, hostUrl.Hostname() != "localhost"},
+		{
+			"audiusd-echo-server",
+			func() error { return startEchoProxy(hostUrl, logger) },
+			true,
+		},
+		{
+			"core",
+			func() error { return core.Run(ctx, logger) },
+			true,
+		},
+		{
+			"mediorum",
+			func() error { return mediorum.Run(ctx, logger) },
+			isStorageEnabled(),
+		},
+		{
+			// TODO: this basically translates to "for all registered nodes in the current landscape"
+			"uptime",
+			func() error { return uptime.Run(ctx, logger) },
+			!isCoreOnly() && hostUrl.Hostname() != "localhost",
+		},
 	}
 
 	for _, svc := range services {
@@ -185,6 +205,9 @@ func getEchoServerConfig(hostUrl *url.URL) serverConfig {
 		httpPort = "5000"
 	}
 
+	// TODO: this is perhaps back to front,
+	// but the far greater majority of current nodes use auto-tls
+	// and we desired minimal default configuration
 	tlsEnabled := true
 	switch {
 	case os.Getenv("AUDIUSD_TLS_DISABLED") == "true":
@@ -201,27 +224,21 @@ func getEchoServerConfig(hostUrl *url.URL) serverConfig {
 	}
 }
 
-func startEchoProxyWithOptionalTLS(hostUrl *url.URL, logger *common.Logger) error {
+func startEchoProxy(hostUrl *url.URL, logger *common.Logger) error {
 	e := echo.New()
 	e.Use(middleware.Logger(), middleware.Recover())
 
-	healthCheckResponse := func() map[string]interface{} {
-		return map[string]interface{}{
-			"git":       os.Getenv("GIT_SHA"),
-			"hostname":  hostUrl.Hostname(),
-			"status":    "ok",
-			"timestamp": time.Now().UTC(),
-			"uptime":    time.Since(startTime).String(),
-		}
-	}
-
 	e.GET("/", func(c echo.Context) error {
-		return c.JSON(http.StatusOK, healthCheckResponse())
+		return c.JSON(http.StatusOK, map[string]string{"a": "440"})
+	})
+
+	e.GET("/health-check", func(c echo.Context) error {
+		return c.JSON(http.StatusOK, getHealthCheckResponse(hostUrl))
 	})
 
 	if os.Getenv("audius_discprov_url") != "" {
 		e.GET("/health_check", func(c echo.Context) error {
-			return c.JSON(http.StatusOK, healthCheckResponse())
+			return c.JSON(http.StatusOK, getHealthCheckResponse(hostUrl))
 		})
 	}
 
@@ -279,11 +296,17 @@ func startWithTLS(e *echo.Echo, httpPort, httpsPort string, hostUrl *url.URL, lo
 	return e.Start(":" + httpPort)
 }
 
+// TODO: I don't love this, but it is kinof the only way to make this work rn
+func isCoreOnly() bool {
+	return os.Getenv("AUDIUSD_CORE_ONLY") == "true"
+}
+
+// TODO: I don't love this, but it works for now
 func isStorageEnabled() bool {
-	if os.Getenv("AUDIUSD_STORAGE_ENABLED") == "false" {
-		return false
+	if os.Getenv("AUDIUSD_STORAGE_ENABLED") == "true" {
+		return true
 	}
-	return os.Getenv("creatorNodeEndpoint") != "" || os.Getenv("AUDIUSD_STORAGE_ENABLED") == "true"
+	return os.Getenv("creatorNodeEndpoint") != ""
 }
 
 func keyGen() (string, string) {
@@ -309,4 +332,63 @@ func hasSuffix(domain string, suffixes []string) bool {
 		}
 	}
 	return false
+}
+
+func getHealthCheckResponse(hostUrl *url.URL) map[string]interface{} {
+	response := map[string]interface{}{
+		"git":       os.Getenv("GIT_SHA"),
+		"hostname":  hostUrl.Hostname(),
+		"timestamp": time.Now().UTC(),
+		"uptime":    time.Since(startTime).String(),
+	}
+
+	storageResponse := map[string]interface{}{
+		"enabled": isStorageEnabled(),
+	}
+
+	if isStorageEnabled() {
+		resp, err := http.Get("http://localhost:1991/health_check")
+		if err == nil {
+			defer resp.Body.Close()
+			var storageHealth server.HealthCheckResponse
+			if err := json.NewDecoder(resp.Body).Decode(&storageHealth); err == nil {
+				healthBytes, _ := json.Marshal(storageHealth)
+				var tempResponse map[string]interface{}
+				json.Unmarshal(healthBytes, &tempResponse)
+
+				// TODO: remove cruft as we favor comet status for peering
+				if data, ok := tempResponse["data"].(map[string]interface{}); ok {
+					for k, v := range data {
+						if k != "signers" && k != "unreachablePeers" {
+							storageResponse[k] = v
+						}
+					}
+					delete(tempResponse, "data")
+				}
+
+				for k, v := range tempResponse {
+					storageResponse[k] = v
+				}
+
+				storageResponse["enabled"] = true
+			}
+		}
+	}
+	response["storage"] = storageResponse
+
+	resp, err := http.Get("http://localhost:26659/console/health_check")
+	if err == nil {
+		defer resp.Body.Close()
+		var coreHealth console.HealthCheckResponse
+		if err := json.NewDecoder(resp.Body).Decode(&coreHealth); err == nil {
+			// TODO: remove cruft
+			healthBytes, _ := json.Marshal(coreHealth)
+			var coreMap map[string]interface{}
+			json.Unmarshal(healthBytes, &coreMap)
+			delete(coreMap, "git")
+			response["core"] = coreMap
+		}
+	}
+
+	return response
 }
