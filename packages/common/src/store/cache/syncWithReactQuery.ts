@@ -23,6 +23,11 @@ const ENTITY_UPDATERS: Record<Kind, EntityUpdater> = {
     listKey: 'users',
     idField: 'user_id',
     updateRelations: (queryClient, id, metadata) => {
+      // Update userByHandle cache
+      if (metadata.handle) {
+        queryClient.setQueryData(['userByHandle', metadata.handle], metadata)
+      }
+
       // Update any tracks that might contain this user
       queryClient.setQueriesData({ queryKey: ['track'] }, (oldData: any) => {
         if (!oldData?.user || oldData.user.user_id !== id) return oldData

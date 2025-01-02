@@ -44,6 +44,7 @@ export const useUpdateUser = () => {
     onMutate: async ({ userId, metadata }): Promise<MutationContext> => {
       // Cancel any outgoing refetches
       await queryClient.cancelQueries({ queryKey: [QUERY_KEYS.user, userId] })
+      await queryClient.cancelQueries({ queryKey: [QUERY_KEYS.userByHandle] })
       await queryClient.cancelQueries({ queryKey: [QUERY_KEYS.track] })
       await queryClient.cancelQueries({ queryKey: [QUERY_KEYS.collection] })
 
@@ -58,6 +59,12 @@ export const useUpdateUser = () => {
         ...old,
         ...metadata
       }))
+
+      // Optimistically update userByHandle queries if they match the user
+      queryClient.setQueriesData(
+        { queryKey: [QUERY_KEYS.userByHandle, metadata.handle] },
+        (old: any) => ({ ...old, ...metadata })
+      )
 
       // Optimistically update all tracks that contain this user
       queryClient.setQueriesData(
@@ -124,6 +131,15 @@ export const useUpdateUser = () => {
         queryClient.setQueryData(
           [QUERY_KEYS.user, userId],
           context.previousUser
+        )
+
+        // Roll back userByHandle queries
+        queryClient.setQueriesData(
+          { queryKey: [QUERY_KEYS.userByHandle] },
+          (oldData: any) => {
+            if (!oldData?.user_id || oldData.user_id !== userId) return oldData
+            return context.previousUser
+          }
         )
       }
 

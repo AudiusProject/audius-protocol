@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { userMetadataListFromSDK } from '~/adapters/user'
@@ -19,6 +19,7 @@ export type Config = {
 export const useUser = (userId: ID | undefined | null, config?: Config) => {
   const { audiusSdk } = useAppContext()
   const dispatch = useDispatch()
+  const queryClient = useQueryClient()
   const currentUserId = useSelector(getUserId)
 
   return useQuery({
@@ -30,8 +31,11 @@ export const useUser = (userId: ID | undefined | null, config?: Config) => {
       })
       const user = userMetadataListFromSDK(data)[0]
 
-      // Sync user data to Redux
+      // Prime both user and userByHandle caches
       if (user) {
+        queryClient.setQueryData([QUERY_KEYS.userByHandle, user.handle], user)
+
+        // Sync user data to Redux
         const entries: EntriesByKind = {
           [Kind.USERS]: {
             [user.user_id]: user
