@@ -1,4 +1,10 @@
-import { AudiusSdk, sdk, Configuration, SolanaRelay } from '@audius/sdk'
+import {
+  AudiusSdk,
+  sdk,
+  Configuration,
+  SolanaRelay,
+  HedgehogWalletNotFoundError
+} from '@audius/sdk'
 import { createWalletClient, http } from 'viem'
 import { mainnet } from 'viem/chains'
 
@@ -42,25 +48,31 @@ const initSdk = async () => {
   // Overrides some DN configuration from optimizely
   const discoveryNodeSelector = await discoveryNodeSelectorService.getInstance()
 
-  const message = `signature:${new Date().getTime()}`
-  const signature = await audiusWalletClient
-    .signMessage({ message })
-    .catch((e) => {
-      console.warn(e)
-      return ''
-    })
-  const ethWalletClient = createWalletClient({
-    account: '0x0000000000000000000000000000000000000000', // dummy replaced by relay
-    chain: mainnet,
-    transport: http(`${env.IDENTITY_SERVICE}/ethereum/rpc`, {
-      fetchOptions: {
-        headers: {
-          'Encoded-Data-Message': message,
-          'Encoded-Data-Signature': signature
+  let ethWalletClient
+  try {
+    const message = `signature:${new Date().getTime()}`
+    const signature = await audiusWalletClient.signMessage({ message })
+    ethWalletClient = createWalletClient({
+      chain: mainnet,
+      transport: http(`${env.IDENTITY_SERVICE}/ethereum/rpc`, {
+        fetchOptions: {
+          headers: {
+            'Encoded-Data-Message': message,
+            'Encoded-Data-Signature': signature
+          }
         }
-      }
+      })
     })
-  })
+  } catch (e) {
+    if (e instanceof HedgehogWalletNotFoundError) {
+      ethWalletClient = createWalletClient({
+        chain: mainnet,
+        transport: http(`${env.IDENTITY_SERVICE}/ethereum/rpc`, {})
+      })
+    } else {
+      throw e
+    }
+  }
 
   const audiusSdk = sdk({
     appName: env.APP_NAME,
