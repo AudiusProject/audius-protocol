@@ -7,6 +7,7 @@ import {
   playerSelectors,
   CommonState
 } from '@audius/common/store'
+import { animated, useSpring } from '@react-spring/web'
 import cn from 'classnames'
 import { useSelector } from 'react-redux'
 
@@ -74,6 +75,7 @@ const PlayingTrackInfo = ({
       'usdc_purchase' in track.stream_conditions &&
       !hasStreamAccess)
 
+  const spring = useSpring(springProps)
   const profileImage = useProfilePicture({
     userId: artistUserId ?? null,
     size: SquareSizes.SIZE_150_BY_150
@@ -88,7 +90,7 @@ const PlayingTrackInfo = ({
 
   const renderTrackTitle = () => {
     return (
-      <div className={styles.trackTitleContainer}>
+      <animated.div style={spring} className={styles.trackTitleContainer}>
         <div
           className={cn(styles.trackTitle, {
             [styles.textShadow]: hasShadow
@@ -106,7 +108,7 @@ const PlayingTrackInfo = ({
             text={messages.preview}
           />
         ) : null}
-      </div>
+      </animated.div>
     )
   }
 
@@ -138,7 +140,7 @@ const PlayingTrackInfo = ({
             {renderTrackTitle()}
           </Draggable>
         )}
-        <div className={styles.artistNameWrapper}>
+        <animated.div style={spring} className={styles.artistNameWrapper}>
           <div
             className={cn(styles.artistName, {
               [styles.textShadow]: hasShadow
@@ -152,7 +154,7 @@ const PlayingTrackInfo = ({
             badgeSize={12}
             className={styles.iconVerified}
           />
-        </div>
+        </animated.div>
       </div>
     </div>
   )
