@@ -74,6 +74,14 @@ export const useUpdateCollection = () => {
         })
       )
 
+      queryClient.setQueryData(
+        [QUERY_KEYS.collectionByPermalink, metadata.permalink],
+        (old: any) => ({
+          ...old,
+          ...metadata
+        })
+      )
+
       // Return context with the previous collection
       return { previousCollection }
     },
@@ -82,6 +90,10 @@ export const useUpdateCollection = () => {
       if (context?.previousCollection) {
         queryClient.setQueryData(
           ['collection', playlistId],
+          context.previousCollection
+        )
+        queryClient.setQueryData(
+          ['collectionByPermalink', context.previousCollection.permalink],
           context.previousCollection
         )
       }
