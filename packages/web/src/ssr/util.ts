@@ -11,8 +11,7 @@ const {
   CHANGE_PASSWORD_SETTINGS_PAGE,
   CHATS_PAGE,
   CHAT_PAGE,
-  DOWNLOAD_LINK,
-  REWARDS_PAGE
+  DOWNLOAD_LINK
 } = route
 
 const assetPaths = new Set(['src', 'assets', 'scripts', 'fonts', 'favicons'])
@@ -28,7 +27,6 @@ const nonSsrPaths = [
   CHATS_PAGE,
   CHAT_PAGE,
   DOWNLOAD_LINK,
-  REWARDS_PAGE,
   '/react-query',
   '/react-query-cache-prime',
   '/react-query-redux-cache-sync',
