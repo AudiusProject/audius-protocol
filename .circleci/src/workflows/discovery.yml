@@ -29,6 +29,13 @@ jobs:
         branches:
           only: main
   - push-docker-image:
+      name: push-pedalboard-staking
+      context: [Vercel, dockerhub]
+      service: staking
+      filters:
+        branches:
+          only: main
+  - push-docker-image:
       name: push-pedalboard-relay
       context: [Vercel, dockerhub]
       service: relay
@@ -126,6 +133,7 @@ jobs:
         - push-discovery-provider-openresty
         - push-discovery-provider-notifications
         - push-pedalboard-trending-challenge-rewards
+        - push-pedalboard-staking
         - push-pedalboard-relay
         - push-pedalboard-solana-relay
         - push-pedalboard-sla-auditor
