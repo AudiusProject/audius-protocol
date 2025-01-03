@@ -25,21 +25,13 @@ jobs:
       service: mediorum-unittests
   - build-audiusd:
       context: github
-  - push-docker-image:
-      name: push-core
-      context: [Vercel, dockerhub]
-      service: core
       requires:
         - test-core
-      filters:
-        branches:
-          only: main
+        - test-mediorum-unittests
   - deploy-audiusd-staging:
       context: [github, dockerhub]
       requires:
         - build-audiusd
-        - push-core
-        - test-mediorum-unittests
       filters:
         branches:
           only:
