@@ -96,7 +96,7 @@ export const CommentSettingsModal = () => {
   )
 }
 
-export const MutedUser = (props: { user: any }) => {
+const MutedUser = (props: { user: any }) => {
   const [, setIsVisible] = useModalState('CommentSettings')
   const { user } = props
   const isMobile = useIsMobile()

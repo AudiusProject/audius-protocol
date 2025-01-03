@@ -451,7 +451,6 @@ class WebPlayer extends Component {
           <DownloadAppBanner />
 
           {/* Product Announcement Banners */}
-          {/* <DirectMessagesBanner /> */}
           {/* <TermsOfServiceUpdateBanner /> */}
 
           <Web3ErrorBanner />

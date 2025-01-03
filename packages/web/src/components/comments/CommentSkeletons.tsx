@@ -47,20 +47,3 @@ export const SortBarSkeletons = () => (
     <Skeleton w='110px' h='26px' css={{ borderRadius: 100 }} />
   </Flex>
 )
-
-export const CommentSkeletons = () => (
-  <Flex
-    gap='xl'
-    direction='column'
-    w='100%'
-    h='100%'
-    alignItems='flex-start'
-    mt='s'
-  >
-    <CommentBlockSkeleton />
-    <CommentBlockSkeleton />
-    <CommentBlockSkeleton />
-    <CommentBlockSkeleton />
-    <CommentBlockSkeleton />
-  </Flex>
-)

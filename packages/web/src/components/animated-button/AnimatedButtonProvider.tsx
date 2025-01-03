@@ -15,7 +15,7 @@ import { SeoLink } from 'components/link'
 
 import styles from './AnimatedButtonProvider.module.css'
 
-export type BaseAnimatedButtonProps = {
+type BaseAnimatedButtonProps = {
   href?: string
   onClick: ((e: MouseEvent) => void) | (() => void)
   uniqueKey: string
