@@ -135,8 +135,8 @@ const PlayButton = ({
   const ariaLabel = isLoading
     ? 'track loading'
     : playState === PlayStates.PLAY
-    ? 'play track'
-    : 'pause track'
+      ? 'play track'
+      : 'pause track'
 
   return (
     <button

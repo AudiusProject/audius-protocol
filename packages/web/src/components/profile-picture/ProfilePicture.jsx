@@ -2,8 +2,8 @@ import { memo, useState, useEffect } from 'react'
 
 import { SquareSizes } from '@audius/common/models'
 import cn from 'classnames'
-import PropTypes from 'prop-types'
 import Lottie from 'lottie-react'
+import PropTypes from 'prop-types'
 
 import loadingSpinner from 'assets/animations/loadingSpinner.json'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
