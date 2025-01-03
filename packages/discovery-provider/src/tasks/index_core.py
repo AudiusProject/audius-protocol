@@ -21,7 +21,6 @@ from src.tasks.index_core_cutovers import (
     get_core_cutover_chain_id,
     get_sol_cutover,
 )
-from src.tasks.index_solana_plays import get_latest_slot
 from src.utils.session_manager import SessionManager
 
 root_logger = logging.getLogger(__name__)
@@ -150,12 +149,6 @@ class CoreIndexer:
         )
 
     def should_index_plays(self) -> bool:
-        latest_processed_slot = get_latest_slot(self.db)
-        if latest_processed_slot:
-            self.sol_latest_processed_slot = latest_processed_slot
-        self.logger.info(
-            f"plays {self.sol_latest_processed_slot} {self.sol_plays_cutover_end}"
-        )
         return self.sol_latest_processed_slot >= self.sol_plays_cutover_end
 
     def index_core(self):
@@ -363,3 +356,9 @@ class CoreIndexer:
         self.logger.debug(
             f"index_core_plays.py | Dispatched listen events in {listen_dispatch_diff}"
         )
+
+    def update_core_listens_health(self):
+        pass
+
+    def update_core_health(self):
+        pass
