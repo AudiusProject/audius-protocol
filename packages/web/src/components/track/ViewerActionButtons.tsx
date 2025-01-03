@@ -49,7 +49,7 @@ type EntityDetails = {
 }
 
 const useTrackEntityDetails = (id: ID): EntityDetails => {
-  const { data: track } = useTrack(id, { enabled: id !== -1 })
+  const { data: track } = useTrack(id)
 
   const {
     stream_conditions: streamConditions,
@@ -67,7 +67,7 @@ const useTrackEntityDetails = (id: ID): EntityDetails => {
 }
 
 const useCollectionEntityDetails = (id: ID): EntityDetails => {
-  const { data: collection } = useCollection(id, { enabled: id !== -1 })
+  const { data: collection } = useCollection(id)
 
   const {
     stream_conditions: streamConditions,

@@ -133,7 +133,7 @@ export const ComposerInput = forwardRef(function ComposerInput(
   const latestValueRef = useRef(value)
   const messageIdRef = useRef(messageId)
   const lastKeyPressMsRef = useRef<number | null>(null)
-  const { data: track } = useTrack(entityId ?? -1)
+  const { data: track } = useTrack(entityId)
 
   useEffect(() => {
     setUserMentions(

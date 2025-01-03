@@ -451,12 +451,8 @@ export const PremiumContentPurchaseDrawer = () => {
     onClosed
   } = usePremiumContentPurchaseModal()
   const isAlbum = contentType === PurchaseableContentType.ALBUM
-  const { data: track, isLoading } = useTrack(contentId!, {
-    enabled: !!contentId
-  })
-  const { data: album } = useCollection(contentId!, {
-    enabled: isAlbum && !!contentId
-  })
+  const { data: track, isLoading } = useTrack(contentId)
+  const { data: album } = useCollection(contentId)
   const { data: user } = useUser(track?.owner_id ?? album?.playlist_owner_id)
   const metadata = {
     ...(isAlbum ? album : track),

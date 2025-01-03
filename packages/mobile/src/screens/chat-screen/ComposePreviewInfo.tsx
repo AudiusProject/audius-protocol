@@ -57,7 +57,7 @@ type ComposerTrackInfoProps = {
 export const ComposerTrackInfo = (props: ComposerTrackInfoProps) => {
   const { trackId } = props
 
-  const { data: track } = useTrack(trackId, { enabled: !!trackId })
+  const { data: track } = useTrack(trackId)
 
   if (!track) return null
 
@@ -80,7 +80,7 @@ type ComposerCollectionInfoProps = {
 export const ComposerCollectionInfo = (props: ComposerCollectionInfoProps) => {
   const { collectionId } = props
 
-  const { data: collection } = useCollection(collectionId, { enabled: true })
+  const { data: collection } = useCollection(collectionId)
 
   if (!collection) return null
 
