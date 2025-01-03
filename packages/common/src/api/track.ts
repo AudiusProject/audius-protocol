@@ -10,42 +10,7 @@ import { SDKRequest } from './types'
 const trackApi = createApi({
   reducerPath: 'trackApi',
   endpoints: {
-    getTrackById: {
-      fetch: async (
-        {
-          id,
-          currentUserId
-        }: { id: ID | null | undefined; currentUserId?: Nullable<ID> },
-        { audiusSdk }
-      ) => {
-        if (!id || id === -1) return null
-        const sdk = await audiusSdk()
-        const { data } = await sdk.full.tracks.getTrack({
-          trackId: Id.parse(id),
-          userId: OptionalId.parse(currentUserId)
-        })
-        return data ? userTrackMetadataFromSDK(data) : null
-      },
-      fetchBatch: async (
-        { ids, currentUserId }: { ids: ID[]; currentUserId?: Nullable<ID> },
-        { audiusSdk }
-      ) => {
-        const id = ids.filter((id) => id && id !== -1).map((id) => Id.parse(id))
-        if (id.length === 0) return []
-
-        const sdk = await audiusSdk()
-        const { data = [] } = await sdk.full.tracks.getBulkTracks({
-          id,
-          userId: OptionalId.parse(currentUserId)
-        })
-        return transformAndCleanList(data, userTrackMetadataFromSDK)
-      },
-      options: {
-        idArgKey: 'id',
-        kind: Kind.TRACKS,
-        schemaKey: 'track'
-      }
-    },
+    // Safe to remove when purchases api is migrated to react-query
     getTracksByIds: {
       fetch: async (
         { ids, currentUserId }: { ids: ID[]; currentUserId: Nullable<ID> },
@@ -96,8 +61,7 @@ const trackApi = createApi({
   }
 })
 
-export const { useGetTrackById, useGetTracksByIds, useGetUserTracksByHandle } =
-  trackApi.hooks
+export const { useGetTracksByIds, useGetUserTracksByHandle } = trackApi.hooks
 export const trackApiFetch = trackApi.fetch
 export const trackApiReducer = trackApi.reducer
 export const trackApiActions = trackApi.actions

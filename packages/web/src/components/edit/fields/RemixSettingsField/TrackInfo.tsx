@@ -1,4 +1,4 @@
-import { useGetTrackById } from '@audius/common/api'
+import { useTrack } from '@audius/common/api'
 import { SquareSizes, ID } from '@audius/common/models'
 import { Text } from '@audius/harmony'
 
@@ -24,7 +24,7 @@ export const TrackInfo = (props: TrackInfoProps) => {
     size: SquareSizes.SIZE_150_BY_150
   })
 
-  const { data: track } = useGetTrackById({ id: trackId })
+  const { data: track } = useTrack(trackId)
 
   if (!track) return null
 
