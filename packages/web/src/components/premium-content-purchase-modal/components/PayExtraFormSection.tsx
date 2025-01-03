@@ -20,7 +20,7 @@ const messages = {
 
 const formatPillAmount = (val: number) => `$${Math.floor(val / 100)}`
 
-export type PayExtraFormSectionProps = {
+type PayExtraFormSectionProps = {
   amountPresets: PayExtraAmountPresetValues
   disabled?: boolean
 }
