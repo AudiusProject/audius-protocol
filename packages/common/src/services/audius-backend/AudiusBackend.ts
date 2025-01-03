@@ -759,8 +759,8 @@ export const audiusBackend = ({
       const userId = newMetadata.user_id
       const { blockHash, blockNumber } = await sdk.users.updateProfile({
         userId: Id.parse(userId),
-        profilePictureFile: newMetadata.updatedProfilePicture?.file,
-        coverArtFile: newMetadata.updatedCoverPhoto?.file,
+        profilePictureFile: metadata.updatedProfilePicture?.file,
+        coverArtFile: metadata.updatedCoverPhoto?.file,
         metadata: userMetadataToSdk(newMetadata)
       })
       return { blockHash, blockNumber, userId }
@@ -877,9 +877,8 @@ export const audiusBackend = ({
 
   async function deletePlaylist(playlistId: ID) {
     try {
-      const txReceipt = await audiusLibs.EntityManager.deletePlaylist(
-        playlistId
-      )
+      const txReceipt =
+        await audiusLibs.EntityManager.deletePlaylist(playlistId)
       return {
         blockHash: txReceipt.blockHash,
         blockNumber: txReceipt.blockNumber
@@ -1026,9 +1025,8 @@ export const audiusBackend = ({
   async function twitterHandle(handle: string) {
     await waitForLibsInit()
     try {
-      const user: TwitterUser = await audiusLibs.Account.lookupTwitterHandle(
-        handle
-      )
+      const user: TwitterUser =
+        await audiusLibs.Account.lookupTwitterHandle(handle)
       return { success: true, user }
     } catch (error) {
       return { success: false, error }
@@ -1590,9 +1588,10 @@ export const audiusBackend = ({
       if (bustCache) {
         audiusLibs.ethContracts.AudiusTokenClient.bustCache()
       }
-      const balance = await audiusLibs.ethContracts.AudiusTokenClient.balanceOf(
-        checksumWallet
-      )
+      const balance =
+        await audiusLibs.ethContracts.AudiusTokenClient.balanceOf(
+          checksumWallet
+        )
       return balance
     } catch (e) {
       console.error(e)
@@ -1677,9 +1676,10 @@ export const audiusBackend = ({
       if (bustCache) {
         audiusLibs.ethContracts.AudiusTokenClient.bustCache()
       }
-      const balance = await audiusLibs.ethContracts.AudiusTokenClient.balanceOf(
-        checksumWallet
-      )
+      const balance =
+        await audiusLibs.ethContracts.AudiusTokenClient.balanceOf(
+          checksumWallet
+        )
       const delegatedBalance =
         await audiusLibs.ethContracts.DelegateManagerClient.getTotalDelegatorStake(
           checksumWallet
@@ -1797,9 +1797,8 @@ export const audiusBackend = ({
    */
   async function getAddressWAudioBalance(address: string) {
     await waitForLibsInit()
-    const waudioBalance = await audiusLibs.solanaWeb3Manager.getWAudioBalance(
-      address
-    )
+    const waudioBalance =
+      await audiusLibs.solanaWeb3Manager.getWAudioBalance(address)
     if (isNullOrUndefined(waudioBalance)) {
       console.warn(`Failed to get waudio balance for address: ${address}`)
       reportError({
