@@ -9,7 +9,7 @@ import { QUERY_KEYS } from './queryKeys'
 import { useCurrentUserId } from './useCurrentUserId'
 
 type UseSupportersArgs = {
-  userId?: number
+  userId?: number | null
   limit?: number
 }
 

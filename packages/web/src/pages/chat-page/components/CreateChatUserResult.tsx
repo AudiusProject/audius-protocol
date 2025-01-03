@@ -112,7 +112,6 @@ export const CreateChatUserResult = (props: UserResultComposeProps) => {
 
   const { data: supporters = [] } = useSupporters({
     userId: user.user_id,
-    currentUserId: currentUserId ?? undefined,
     limit: 1
   })
 

@@ -1,18 +1,14 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useState } from 'react'
 
-import { useSupporters } from '@audius/common/api'
-import { useGetFirstOrTopSupporter } from '@audius/common/hooks'
-import type { StringWei, BNWei } from '@audius/common/models'
+import type { StringWei } from '@audius/common/models'
 import {
-  accountSelectors,
   tippingSelectors,
   tippingActions,
   walletSelectors,
   walletActions
 } from '@audius/common/store'
-import { stringWeiToBN } from '@audius/common/utils'
+import { parseAudioInputToWei, stringWeiToBN } from '@audius/common/utils'
 import { useFocusEffect } from '@react-navigation/native'
-import BN from 'bn.js'
 import { Platform } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 
@@ -24,20 +20,17 @@ import { makeStyles } from 'app/styles'
 import { TopBarIconButton } from '../app-screen'
 
 import { AvailableAudio } from './AvailableAudio'
-import { BecomeFirstSupporter } from './BecomeFirstSupporter'
-import { BecomeTopSupporter } from './BecomeTopSupporter'
 import { DegradationNotice } from './DegradationNotice'
 import { ReceiverDetails } from './ReceiverDetails'
+import { SupporterPrompt } from './SupporterPrompt'
 import { TipInput } from './TipInput'
 import { TipScreen } from './TipScreen'
 import type { TipArtistNavigationParamList } from './navigation'
+
 const { getBalance } = walletActions
 const { getAccountBalance } = walletSelectors
-const { sendTip, fetchUserSupporter, refreshSupport } = tippingActions
-const { getOptimisticSupporters, getOptimisticSupporting, getSendUser } =
-  tippingSelectors
-
-const { getUserId } = accountSelectors
+const { sendTip } = tippingActions
+const { getSendUser } = tippingSelectors
 
 const messages = {
   sendTip: 'Send Tip',
@@ -57,46 +50,11 @@ const zeroWei = stringWeiToBN('0' as StringWei)
 export const SendTipScreen = () => {
   const styles = useStyles()
   const [tipAmount, setTipAmount] = useState('')
-  const accountBalance = (useSelector(getAccountBalance) ??
-    new BN('0')) as BNWei
+  const accountBalance = useSelector(getAccountBalance) ?? zeroWei
   const navigation = useNavigation<TipArtistNavigationParamList>()
   const dispatch = useDispatch()
 
-  const accountUserId = useSelector(getUserId)
-  const supportersMap = useSelector(getOptimisticSupporters)
-  const supportingMap = useSelector(getOptimisticSupporting)
   const receiver = useSelector(getSendUser)
-
-  const { data: topSupporters } = useSupporters(receiver?.user_id)
-  const topSupporter = topSupporters?.[0]
-
-  const {
-    amountToTipToBecomeTopSupporter,
-    shouldFetchUserSupporter,
-    shouldFetchSupportersForReceiver,
-    isFirstSupporter,
-    tipAmountWei,
-    hasInsufficientBalance
-  } = useGetFirstOrTopSupporter({
-    tipAmount,
-    accountBalance,
-    accountUserId,
-    receiver,
-    supportingMap,
-    supportersMap
-  })
-
-  useEffect(() => {
-    if (shouldFetchUserSupporter && accountUserId && receiver) {
-      dispatch(
-        fetchUserSupporter({
-          currentUserId: accountUserId,
-          userId: receiver.user_id,
-          supporterUserId: accountUserId
-        })
-      )
-    }
-  }, [shouldFetchUserSupporter, accountUserId, receiver, dispatch])
 
   const handleBack = useCallback(() => {
     navigation.goBack()
@@ -113,6 +71,9 @@ export const SendTipScreen = () => {
     }, [dispatch])
   )
 
+  const tipAmountWei = parseAudioInputToWei(tipAmount)
+  const hasInsufficientBalance = tipAmountWei?.gt(accountBalance)
+
   return (
     <TipScreen
       title={Platform.OS === 'ios' ? messages.sendAudio : messages.sendTip}
@@ -120,14 +81,7 @@ export const SendTipScreen = () => {
     >
       <DegradationNotice />
       <ReceiverDetails />
-      {!hasInsufficientBalance && isFirstSupporter ? (
-        <BecomeFirstSupporter />
-      ) : null}
-      {!hasInsufficientBalance && amountToTipToBecomeTopSupporter ? (
-        <BecomeTopSupporter
-          amountToTipToBecomeTopSupporter={amountToTipToBecomeTopSupporter}
-        />
-      ) : null}
+      <SupporterPrompt receiverId={receiver?.user_id} />
       <TipInput value={tipAmount} onChangeText={setTipAmount} />
       <AvailableAudio />
       <Button
@@ -136,7 +90,7 @@ export const SendTipScreen = () => {
         iconRight={IconArrowRight}
         fullWidth
         disabled={
-          !tipAmount || tipAmountWei.lte(zeroWei) || hasInsufficientBalance
+          !tipAmount || tipAmountWei?.lte(zeroWei) || hasInsufficientBalance
         }
         style={styles.sendButton}
       >

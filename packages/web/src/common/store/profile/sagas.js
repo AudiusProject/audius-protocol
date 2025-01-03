@@ -13,7 +13,6 @@ import {
   FollowType,
   chatActions,
   reachabilitySelectors,
-  tippingActions,
   relatedArtistsUIActions as relatedArtistsActions,
   collectiblesActions,
   confirmerActions,
@@ -27,9 +26,6 @@ import {
   makeKindId,
   waitForAccount,
   dataURLtoFile,
-  MAX_PROFILE_TOP_SUPPORTERS,
-  MAX_PROFILE_SUPPORTING_TILES,
-  SUPPORTING_PAGINATION_SIZE,
   isResponseError,
   route
 } from '@audius/common/utils'
@@ -62,12 +58,11 @@ import { watchFetchProfileCollections } from './fetchProfileCollectionsSaga'
 import { watchFetchTopTags } from './fetchTopTagsSaga'
 
 const { NOT_FOUND_PAGE } = route
-const { refreshSupport } = tippingActions
 const { getIsReachable } = reachabilitySelectors
 const { getProfileUserId, getProfileFollowers, getProfileUser } =
   profilePageSelectors
 
-const { getUserId, getAccountUser } = accountSelectors
+const { getUserId } = accountSelectors
 
 const {
   updateUserEthCollectibles,

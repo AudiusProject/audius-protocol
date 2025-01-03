@@ -13,8 +13,7 @@ import {
   Id,
   OptionalId,
   supportedUserMetadataListFromSDK,
-  supporterMetadataListFromSDK,
-  supporterMetadataFromSDK
+  supporterMetadataListFromSDK
 } from '@audius/common/models'
 import { LocalStorage } from '@audius/common/services'
 import {
@@ -72,16 +71,10 @@ const {
   setShowTip,
   setSupportingOverridesForUser,
   setSupportersOverridesForUser,
-  fetchUserSupporter,
   refreshTipGatedTracks
 } = tippingActions
-const {
-  getOptimisticSupporters,
-  getOptimisticSupporting,
-  getSendTipData,
-  getSupporters,
-  getSupporting
-} = tippingSelectors
+const { getOptimisticSupporters, getOptimisticSupporting, getSendTipData } =
+  tippingSelectors
 
 const { update } = cacheActions
 const { getAccountUser, getUserId, getWalletAddresses } = accountSelectors
@@ -588,67 +581,6 @@ function* fetchRecentTipsAsync() {
   ])
 }
 
-function* fetchUserSupporterAsync(
-  action: ReturnType<typeof fetchUserSupporter>
-) {
-  const { currentUserId, userId, supporterUserId } = action.payload
-  const sdk = yield* getSDK()
-  try {
-    const { data } = yield* call(
-      [sdk.full.users, sdk.full.users.getSupporter],
-      {
-        id: Id.parse(userId),
-        supporterUserId: Id.parse(supporterUserId),
-        userId: OptionalId.parse(currentUserId)
-      }
-    )
-
-    if (!data) {
-      return
-    }
-
-    const supporter = supporterMetadataFromSDK(data)
-
-    if (supporter) {
-      const supportingMap = yield* select(getSupporting)
-      yield put(
-        setSupportingForUser({
-          id: supporterUserId,
-          supportingForUser: {
-            ...supportingMap[supporterUserId],
-            [userId]: {
-              receiver_id: userId,
-              amount: supporter.amount,
-              rank: supporter.rank
-            }
-          }
-        })
-      )
-
-      const supportersMap = yield* select(getSupporters)
-      yield put(
-        setSupportersForUser({
-          id: userId,
-          supportersForUser: {
-            ...supportersMap[userId],
-            [supporterUserId]: {
-              sender_id: supporterUserId,
-              amount: supporter.amount,
-              rank: supporter.rank
-            }
-          }
-        })
-      )
-    }
-  } catch (e) {
-    console.error(
-      `Could not fetch user supporter for user id ${userId}, supporter user id ${supporterUserId}, and current user id ${currentUserId}: ${
-        (e as Error).message
-      }`
-    )
-  }
-}
-
 function* watchRefreshSupport() {
   yield* takeEvery(refreshSupport.type, refreshSupportAsync)
 }
@@ -661,17 +593,8 @@ function* watchFetchRecentTips() {
   yield* takeEvery(fetchRecentTips.type, fetchRecentTipsAsync)
 }
 
-function* watchFetchUserSupporter() {
-  yield takeEvery(fetchUserSupporter.type, fetchUserSupporterAsync)
-}
-
 const sagas = () => {
-  return [
-    watchRefreshSupport,
-    watchConfirmSendTip,
-    watchFetchRecentTips,
-    watchFetchUserSupporter
-  ]
+  return [watchRefreshSupport, watchConfirmSendTip, watchFetchRecentTips]
 }
 
 export default sagas
