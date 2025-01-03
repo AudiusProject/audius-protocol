@@ -357,7 +357,6 @@ export const {
   useGetTracksByUser,
   useGetUSDCTransactions,
   useGetUSDCTransactionsCount,
-  useGetFollowers,
   useGetSupporters,
   useGetRemixers,
   useGetRemixersCount,

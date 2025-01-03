@@ -2,8 +2,8 @@ import { useEffect, useRef, useState, useCallback, useMemo } from 'react'
 
 import {
   SearchCategory,
-  useGetFollowers,
-  useGetSearchResults
+  useGetSearchResults,
+  useFollowers
 } from '@audius/common/api'
 import { Status, UserMetadata } from '@audius/common/models'
 import { accountSelectors } from '@audius/common/store'
@@ -43,8 +43,7 @@ export const UserMentionAutocompleteText = (
   const searchText = text.slice(1)
   const accountStatus = useSelector(getAccountStatus)
   const currentUserId = useSelector(getUserId)
-  const { data: followersData, status: followerStatus } = useGetFollowers({
-    userId: currentUserId,
+  const { data: followersData, status: followerStatus } = useFollowers({
     limit: 6
   })
   const optionRefs = useRef<HTMLButtonElement[]>([])
