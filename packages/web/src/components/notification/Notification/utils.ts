@@ -22,13 +22,6 @@ export const getEntityLink = (entity: EntityType, fullRoute = false) => {
   return ''
 }
 
-export const getRankSuffix = (rank: number) => {
-  if (rank === 1) return 'st'
-  if (rank === 2) return 'nd'
-  if (rank === 3) return 'rd'
-  return 'th'
-}
-
 export const USER_LENGTH_LIMIT = 9
 
 export const entityToUserListEntity = {

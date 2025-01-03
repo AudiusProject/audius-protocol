@@ -2,8 +2,6 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 
 import { initOnRamp } from '@coinbase/cbpay-js'
 
-export const allowedCoinbasePayTokens = ['SOL']
-
 type ResetParams = {
   destinationWalletAddress?: string
   presetCryptoAmount?: number

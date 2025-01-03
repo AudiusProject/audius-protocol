@@ -15,7 +15,7 @@ import { call, put, select } from 'typed-redux-saga'
 
 import { watchRelatedArtistsError } from './errorSagas'
 
-export const MAX_RELATED_ARTISTS = 50
+const MAX_RELATED_ARTISTS = 50
 
 const { getRelatedArtistsError } = relatedArtistsUserListActions
 const { getId, getUserList } = relatedArtistsUserListSelectors

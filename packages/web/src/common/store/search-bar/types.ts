@@ -5,13 +5,11 @@ import {
   SearchPlaylist
 } from '@audius/common/models'
 
-type NewType = SearchPlaylist
-
 export type SearchResults = {
   users: SearchUser[]
   tracks: SearchTrack[]
   playlists: SearchPlaylist[]
-  albums: NewType[]
+  albums: SearchPlaylist[]
 }
 
 export type SearchBarState = SearchResults & {

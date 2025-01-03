@@ -214,7 +214,7 @@ export function* retrieveCollectionByPermalink(
   return { collections: entries, uids }
 }
 
-export type RetrieveCollectionsConfig = {
+type RetrieveCollectionsConfig = {
   // whether or not to fetch the tracks inside eachn collection
   fetchTracks?: boolean
   // optional owner of collections to fetch (TODO: to be removed)
