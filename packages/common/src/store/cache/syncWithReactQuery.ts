@@ -146,9 +146,8 @@ const updateEntity = (
   const updater = ENTITY_UPDATERS[kind]
   if (!updater) return
 
-  const metadataToSet = 'metadata' in metadata ? metadata.metadata : metadata
   // Update single entity
-  queryClient.setQueryData([updater.singleKey, id], metadataToSet)
+  queryClient.setQueryData([updater.singleKey, id], metadata)
 
   // Update entity in lists
   queryClient.setQueriesData(
@@ -156,14 +155,14 @@ const updateEntity = (
     (oldData: any) => {
       if (!Array.isArray(oldData)) return oldData
       return oldData.map((item) =>
-        item[updater.idField] === id ? metadataToSet : item
+        item[updater.idField] === id ? metadata : item
       )
     }
   )
 
   // Update related entities
   if (updater.updateRelations) {
-    updater.updateRelations(queryClient, id, metadataToSet)
+    updater.updateRelations(queryClient, id, metadata)
   }
 }
 
