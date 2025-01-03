@@ -1,11 +1,9 @@
 import { useEffect } from 'react'
 
-import { useGetTrackByPermalink } from '@audius/common/api'
+import { useTrackByPermalink } from '@audius/common/api'
 import { useGatedContentAccess } from '@audius/common/hooks'
-import { accountSelectors } from '@audius/common/store'
 import { getPathFromTrackUrl } from '@audius/common/utils'
 import { useField } from 'formik'
-import { useSelector } from 'react-redux'
 import { useThrottle } from 'react-use'
 
 import { Divider } from 'components/divider'
@@ -16,7 +14,6 @@ import { SwitchRowField } from '../SwitchRowField'
 import styles from './RemixSettingsField.module.css'
 import { TrackInfo } from './TrackInfo'
 import { CAN_REMIX_PARENT, IS_REMIX, REMIX_LINK, SHOW_REMIXES } from './types'
-const { getUserId } = accountSelectors
 
 const messages = {
   hideRemix: {
@@ -36,12 +33,10 @@ export const RemixSettingsMenuFields = () => {
   const [{ value: trackUrl }] = useField(REMIX_LINK)
   const [, , { setValue: setCanRemixParent }] = useField(CAN_REMIX_PARENT)
   const permalink = useThrottle(getPathFromTrackUrl(trackUrl), 1000)
-  const currentUserId = useSelector(getUserId)
 
-  const { data: track } = useGetTrackByPermalink(
-    { permalink, currentUserId },
-    { disabled: !permalink }
-  )
+  const { data: track } = useTrackByPermalink(permalink, {
+    enabled: !!permalink
+  })
 
   const trackId = track?.track_id
   const { hasStreamAccess: canRemixParent } = useGatedContentAccess(

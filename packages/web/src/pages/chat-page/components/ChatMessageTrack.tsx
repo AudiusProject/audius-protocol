@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo } from 'react'
 
-import { useGetTrackByPermalink } from '@audius/common/api'
+import { useTrackByPermalink } from '@audius/common/api'
 import {
   TrackPlayback,
   useGatedContentAccess,
@@ -10,22 +10,15 @@ import {
   Name,
   PlaybackSource,
   Kind,
-  Status,
   ID,
   ModalSource
 } from '@audius/common/models'
-import {
-  accountSelectors,
-  QueueSource,
-  ChatMessageTileProps
-} from '@audius/common/store'
+import { QueueSource, ChatMessageTileProps } from '@audius/common/store'
 import { getPathFromTrackUrl, makeUid } from '@audius/common/utils'
-import { useDispatch, useSelector } from 'react-redux'
+import { useDispatch } from 'react-redux'
 
 import { make } from 'common/store/analytics/actions'
 import MobileTrackTile from 'components/track/mobile/ConnectedTrackTile'
-
-const { getUserId } = accountSelectors
 
 export const ChatMessageTrack = ({
   link,
@@ -34,16 +27,11 @@ export const ChatMessageTrack = ({
   className
 }: ChatMessageTileProps) => {
   const dispatch = useDispatch()
-  const currentUserId = useSelector(getUserId)
   const permalink = getPathFromTrackUrl(link)
 
-  const { data: track, status } = useGetTrackByPermalink(
-    {
-      permalink: permalink!,
-      currentUserId: currentUserId!
-    },
-    { disabled: !permalink || !currentUserId }
-  )
+  const { data: track, isPending } = useTrackByPermalink(permalink, {
+    enabled: !!permalink
+  })
 
   const { hasStreamAccess } = useGatedContentAccess(track ?? null)
   const isPreview =
@@ -93,7 +81,7 @@ export const ChatMessageTrack = ({
       index={0}
       togglePlay={togglePlay}
       uid={uid}
-      isLoading={status === Status.LOADING || status === Status.IDLE}
+      isLoading={isPending || isPending === undefined}
       hasLoaded={() => {}}
       isTrending={false}
       isActive={isTrackPlaying}

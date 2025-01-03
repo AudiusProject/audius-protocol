@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo } from 'react'
 
-import { useGetTrackByPermalink } from '@audius/common/api'
+import { useTrackByPermalink } from '@audius/common/api'
 import { useGatedContentAccess, useToggleTrack } from '@audius/common/hooks'
 import type { TrackPlayback } from '@audius/common/hooks'
 import { Name, PlaybackSource, Kind } from '@audius/common/models'
@@ -25,13 +25,7 @@ export const ChatMessageTrack = ({
   const currentUserId = useSelector(getUserId)
 
   const permalink = getPathFromTrackUrl(link)
-  const { data: track } = useGetTrackByPermalink(
-    {
-      permalink,
-      currentUserId
-    },
-    { disabled: !permalink }
-  )
+  const { data: track } = useTrackByPermalink(permalink)
   const { hasStreamAccess } = useGatedContentAccess(track ?? null)
   const isPreview =
     !!track?.is_stream_gated && !!track?.preview_cid && !hasStreamAccess

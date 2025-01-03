@@ -1,6 +1,6 @@
 import { useContext, useEffect } from 'react'
 
-import { useCurrentUserId, useGetTrackByPermalink } from '@audius/common/api'
+import { useTrackByPermalink } from '@audius/common/api'
 import { CommentSectionProvider } from '@audius/common/context'
 import { commentsMessages as messages } from '@audius/common/messages'
 import { Flex, Text } from '@audius/harmony'
@@ -17,11 +17,7 @@ type TrackCommentsParams = {
 
 export const TrackCommentsPage = () => {
   const { slug, handle } = useParams<TrackCommentsParams>()
-  const { data: currentUserId } = useCurrentUserId()
-  const { data: track } = useGetTrackByPermalink({
-    permalink: `/${handle}/${slug}`,
-    currentUserId
-  })
+  const { data: track } = useTrackByPermalink(`/${handle}/${slug}`)
 
   const { setLeft, setCenter, setRight } = useContext(NavContext)
 
