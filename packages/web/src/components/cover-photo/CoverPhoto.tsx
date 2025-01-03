@@ -4,8 +4,8 @@ import { imageCoverPhotoBlank } from '@audius/common/assets'
 import { WidthSizes } from '@audius/common/models'
 import { Nullable } from '@audius/common/utils'
 import cn from 'classnames'
+import Lottie from 'lottie-react'
 import { FileWithPreview } from 'react-dropzone'
-import Lottie from 'react-lottie'
 
 import loadingSpinner from 'assets/animations/loadingSpinner.json'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
@@ -95,13 +95,7 @@ const CoverPhoto = ({
 
   const loadingElement = (
     <div className={cn(styles.overlay, { [styles.processing]: processing })}>
-      <Lottie
-        options={{
-          loop: true,
-          autoplay: true,
-          animationData: loadingSpinner
-        }}
-      />
+      <Lottie loop autoplay animationData={loadingSpinner} />
     </div>
   )
 

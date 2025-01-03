@@ -17,7 +17,7 @@ import { track as trackEvent, make } from 'services/analytics'
 
 import { TimestampLink } from './TimestampLink'
 
-export type CommentTextProps = {
+type CommentTextProps = {
   children: string
   mentions: CommentMention[]
   isEdited?: boolean

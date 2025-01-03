@@ -11,7 +11,7 @@ import {
 
 import { env } from 'services/env'
 
-export type HistoryContextType = {
+type HistoryContextType = {
   history: History
 }
 

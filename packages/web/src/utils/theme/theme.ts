@@ -3,7 +3,7 @@ import { SystemAppearance, Theme } from '@audius/common/models'
 export const THEME_KEY = 'theme'
 export const PREFERS_DARK_MEDIA_QUERY = '(prefers-color-scheme: dark)'
 
-export const doesPreferDarkMode = () => {
+const doesPreferDarkMode = () => {
   return (
     typeof window !== 'undefined' &&
     window.matchMedia &&

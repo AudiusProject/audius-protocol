@@ -40,7 +40,7 @@ type CommentSectionInnerProps = {
  * - Mapping through the root comments array
  * - Infinite scrolling pagination
  */
-export const CommentSectionInner = (props: CommentSectionInnerProps) => {
+const CommentSectionInner = (props: CommentSectionInnerProps) => {
   const { commentSectionRef } = props
   const {
     currentUserId,

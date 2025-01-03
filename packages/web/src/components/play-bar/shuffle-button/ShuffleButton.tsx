@@ -1,27 +1,36 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 
 import cn from 'classnames'
-import PropTypes from 'prop-types'
-import Lottie from 'react-lottie'
+import Lottie, { LottieRefCurrentProps } from 'lottie-react'
 
 import styles from '../PlayBarButton.module.css'
 
-const ShuffleStates = Object.freeze({
-  OFF: 0,
-  ANIMATE_OFF_ON: 1,
-  ON: 2,
-  ANIMATE_ON_OFF: 3
-})
+enum ShuffleStates {
+  OFF = 0,
+  ANIMATE_OFF_ON = 1,
+  ON = 2,
+  ANIMATE_ON_OFF = 3
+}
 
 const SHUFFLE_STATE_LS_KEY = 'shuffleState'
-const getShuffleState = (defaultState) => {
+const getShuffleState = (defaultState: ShuffleStates) => {
   const localStorageShuffleState =
     window.localStorage.getItem(SHUFFLE_STATE_LS_KEY)
   if (localStorageShuffleState === null) {
-    window.localStorage.setItem(SHUFFLE_STATE_LS_KEY, defaultState)
+    window.localStorage.setItem(SHUFFLE_STATE_LS_KEY, defaultState.toString())
     return defaultState
   } else {
     return parseInt(localStorageShuffleState)
+  }
+}
+
+type ShuffleButtonProps = {
+  shuffleOff: () => void
+  shuffleOn: () => void
+  isMobile: boolean
+  animations: {
+    pbIconShuffleOff: object
+    pbIconShuffleOn: object
   }
 }
 
@@ -30,7 +39,7 @@ const ShuffleButton = ({
   shuffleOn = () => {},
   isMobile = false,
   animations
-}) => {
+}: ShuffleButtonProps) => {
   const [state, setState] = useState({
     shuffleState: getShuffleState(ShuffleStates.OFF),
     isPaused: true,
@@ -38,7 +47,7 @@ const ShuffleButton = ({
   })
 
   const handleChange = useCallback(
-    (shuffleState) => {
+    (shuffleState: ShuffleStates) => {
       const { pbIconShuffleOff, pbIconShuffleOn } = animations
       // Go to the next state.
       let icon, isPaused
@@ -65,7 +74,7 @@ const ShuffleButton = ({
           icon = pbIconShuffleOn
           isPaused = true
       }
-      window.localStorage.setItem(SHUFFLE_STATE_LS_KEY, shuffleState)
+      window.localStorage.setItem(SHUFFLE_STATE_LS_KEY, shuffleState.toString())
       setState({
         icon,
         isPaused,
@@ -89,17 +98,16 @@ const ShuffleButton = ({
     handleChange(shuffleState)
   }
 
-  const eventListeners = [
-    {
-      eventName: 'complete',
-      callback: () => nextState()
+  const lottieRef = useRef<LottieRefCurrentProps>(null)
+  useEffect(() => {
+    if (lottieRef.current) {
+      if (state.isPaused) {
+        lottieRef.current.pause()
+      } else {
+        lottieRef.current.play()
+      }
     }
-  ]
-  const animationOptions = {
-    loop: false,
-    autoplay: false,
-    animationData: state.icon
-  }
+  }, [lottieRef, state.isPaused])
 
   return (
     <button
@@ -110,19 +118,14 @@ const ShuffleButton = ({
       onClick={nextState}
     >
       <Lottie
-        options={animationOptions}
-        eventListeners={eventListeners}
-        isPaused={state.isPaused}
+        lottieRef={lottieRef}
+        loop={false}
+        autoplay={false}
+        animationData={state.icon}
+        onComplete={nextState}
       />
     </button>
   )
-}
-
-ShuffleButton.propTypes = {
-  shuffleOff: PropTypes.func,
-  shuffleOn: PropTypes.func,
-  isMobile: PropTypes.bool,
-  animations: PropTypes.object
 }
 
 export default ShuffleButton

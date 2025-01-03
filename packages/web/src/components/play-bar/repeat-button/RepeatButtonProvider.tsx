@@ -12,9 +12,9 @@ type RepeatButtonProviderProps = {
 }
 
 type AnimationStates = {
-  pbIconRepeatAll: string
-  pbIconRepeatSingle: string
-  pbIconRepeatOff: string
+  pbIconRepeatAll: object
+  pbIconRepeatSingle: object
+  pbIconRepeatOff: object
 }
 
 const RepeatButtonProvider = ({

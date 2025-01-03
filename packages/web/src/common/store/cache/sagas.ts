@@ -251,7 +251,7 @@ function* retrieveFromSourceThenCache<T>({
   }
 }
 
-export function* add(
+function* add(
   kind: Kind,
   entries: Entry[],
   replace?: boolean,

@@ -10,14 +10,12 @@ import CollectionMenu, {
 import TrackMenu, { OwnProps as TrackMenuProps } from './TrackMenu'
 import UserMenu, { OwnProps as UserMenuProps } from './UserMenu'
 
-export type MenuOptionType =
+type MenuOptionType =
   | Omit<UserMenuProps, 'children'>
   | Omit<CollectionMenuProps, 'children'>
   | Omit<TrackMenuProps, 'children'>
 
-export type MenuType = MenuOptionType['type']
-
-export type MenuProps = {
+type MenuProps = {
   children: PopupMenuProps['renderTrigger']
   menu: MenuOptionType
 } & Omit<PopupMenuProps, 'renderTrigger' | 'items'>

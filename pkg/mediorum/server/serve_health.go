@@ -14,14 +14,14 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-type healthCheckResponse struct {
-	Data      healthCheckResponseData `json:"data"`
+type HealthCheckResponse struct {
+	Data      HealthCheckResponseData `json:"data"`
 	Signer    string                  `json:"signer"`
 	Signature string                  `json:"signature"`
 	Timestamp time.Time               `json:"timestamp"`
 }
 
-type healthCheckResponseData struct {
+type HealthCheckResponseData struct {
 	Healthy                   bool                       `json:"healthy"`
 	Version                   string                     `json:"version"`
 	Service                   string                     `json:"service"` // used by registerWithDelegate()
@@ -84,7 +84,7 @@ func (ss *MediorumServer) serveHealthCheck(c echo.Context) error {
 	ss.peerHealthsMutex.RLock()
 	defer ss.peerHealthsMutex.RUnlock()
 
-	data := healthCheckResponseData{
+	data := HealthCheckResponseData{
 		Healthy:                   healthy,
 		Version:                   ss.Config.VersionJson.Version,
 		Service:                   ss.Config.VersionJson.Service,
@@ -151,7 +151,7 @@ func (ss *MediorumServer) serveHealthCheck(c echo.Context) error {
 		}
 	}
 
-	return c.JSON(status, healthCheckResponse{
+	return c.JSON(status, HealthCheckResponse{
 		Data:      data,
 		Signer:    ss.Config.Self.Wallet,
 		Signature: signatureHex,

@@ -1,5 +1,3 @@
-import { ComponentType } from 'react'
-
 /**
  * `withNullGuard` wraps a component that takes a 'wide' set of props (W) with nullable
  *  values, and returns a component that accepts a 'narrow' set of props (N) that renders
@@ -35,16 +33,6 @@ export function withNullGuard<W, N>(
   propMapper: (wide: W) => N | undefined | null | false
 ) {
   return (Component: (narrow: N) => JSX.Element | null) => (wideProps: W) => {
-    const narrowProps = propMapper(wideProps)
-    if (!narrowProps) return null
-    return <Component {...narrowProps} />
-  }
-}
-
-export function withClassNullGuard<W, N>(
-  propMapper: (wide: W) => N | undefined | null | false
-) {
-  return (Component: ComponentType<N>) => (wideProps: W) => {
     const narrowProps = propMapper(wideProps)
     if (!narrowProps) return null
     return <Component {...narrowProps} />

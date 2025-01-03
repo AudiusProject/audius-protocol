@@ -5,9 +5,7 @@ import { audiusSdk } from 'services/audius-sdk'
 
 type HttpMethod = 'POST' | 'GET' | 'PUT' | 'DELETE' | 'PATCH'
 
-export type CognitoSignatureResponse = { signature: string }
-export type CognitoFlowResponse = { shareable_url: string }
-type CognitoFlowExistsResponse = { exists: boolean }
+type CognitoSignatureResponse = { signature: string }
 type AuthHeadersType = typeof AuthHeaders
 
 async function _makeRequest<ResponseModel>({
@@ -45,13 +43,3 @@ async function _makeRequest<ResponseModel>({
 
 export const getCognitoSignature = () =>
   _makeRequest<CognitoSignatureResponse>({ path: '/cognito_signature' })
-
-export const getCognitoFlow = () =>
-  _makeRequest<CognitoFlowResponse>({ path: '/cognito_flow', method: 'POST' })
-
-export const getCognitoExists = (handle: string) =>
-  _makeRequest<CognitoFlowExistsResponse>({
-    path: `/cognito_recent_exists/${handle}`,
-    method: 'GET',
-    useAuth: false
-  })

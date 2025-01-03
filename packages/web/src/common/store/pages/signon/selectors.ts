@@ -1,8 +1,7 @@
-import { accountSelectors, cacheUsersSelectors } from '@audius/common/store'
+import { accountSelectors } from '@audius/common/store'
 import { createSelector } from 'reselect'
 
 import { AppState } from 'store/types'
-const { getUsers } = cacheUsersSelectors
 
 // Sign On selectors
 export const getSignOn = (state: AppState) => state.signOn
@@ -16,11 +15,6 @@ export const getRequiresOtp = (state: AppState) => {
   const { error } = passwordField
   return error && error.includes('403')
 }
-export const getCanShowOtp = (state: AppState) => {
-  const { value: email } = getEmailField(state)
-  const { value: password, error } = getPasswordField(state)
-  return email && password && error
-}
 export const getFinishedPhase1 = (state: AppState) =>
   state.signOn.finishedPhase1
 export const getHandleField = (state: AppState) => state.signOn.handle
@@ -29,8 +23,6 @@ export const getCoverPhotoField = (state: AppState) => state.signOn.coverPhoto
 export const getProfileImageField = (state: AppState) =>
   state.signOn.profileImage
 export const getGenres = (state: AppState) => state.signOn.genres
-export const getIsMobileSignOnVisible = (state: AppState) =>
-  state.signOn.isMobileSignOnVisible
 export const getStatus = (state: AppState) => state.signOn.status
 export const getPage = (state: AppState) => state.signOn.page
 export const getRouteOnCompletion = (state: AppState) =>
@@ -53,7 +45,6 @@ export const getReferrer = (state: AppState) => state.signOn.referrer
 
 export const getHidePreviewHint = (state: AppState) =>
   state.signOn.hidePreviewHint
-export const getFollowArtists = (state: AppState) => state.signOn.followArtists
 export const getFollowIds = (state: AppState) =>
   state.signOn.followArtists.selectedUserIds
 
@@ -78,13 +69,3 @@ export const getHasCompletedAccount = createSelector(
 
 export const getWelcomeModalShown = (state: AppState) =>
   state.signOn.welcomeModalShown
-
-/**
- * Each lineup that invokes this selector should pass its own selector as an argument, e.g.
- *   const getLineupMetadatas = makeGetLineupMetadatas(ownProps.lineupSelector)
- *   const mapStateToProps = (state, props) => ({ lineup: getLineupMetadatas(state) })
- */
-export const makeGetFollowArtists = () =>
-  createSelector([getSuggestedFollowIds, getUsers], (artistIds, users) =>
-    artistIds.map((aId) => users[aId]).filter(Boolean)
-  )

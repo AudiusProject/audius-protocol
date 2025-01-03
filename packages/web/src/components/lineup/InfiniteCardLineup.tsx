@@ -14,7 +14,7 @@ type InfiniteLoadingProps = {
   isLoadingMore?: boolean
 }
 
-export type InfiniteCardLineupProps = CardLineupProps & InfiniteLoadingProps
+type InfiniteCardLineupProps = CardLineupProps & InfiniteLoadingProps
 
 export const InfiniteCardLineup = (props: InfiniteCardLineupProps) => {
   const { hasMore, loadMore, isLoadingMore, ...lineupProps } = props
