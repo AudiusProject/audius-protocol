@@ -57,6 +57,5 @@ export const audiusBackendInstance = audiusBackend({
   },
   userNodeUrl: env.USER_NODE,
   web3NetworkId: env.WEB3_NETWORK_ID,
-  web3ProviderUrls: (env.WEB3_PROVIDER_URL || '').split(','),
-  waitForWeb3: async () => {}
+  web3ProviderUrls: (env.WEB3_PROVIDER_URL || '').split(',')
 })

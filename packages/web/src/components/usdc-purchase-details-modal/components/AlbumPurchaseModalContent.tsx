@@ -1,4 +1,4 @@
-import { useCurrentUserId, useGetPlaylistById } from '@audius/common/api'
+import { useCollection } from '@audius/common/api'
 import { SquareSizes, USDCPurchaseDetails } from '@audius/common/models'
 
 import { useCollectionCoverArt } from 'hooks/useCollectionCoverArt'
@@ -17,11 +17,7 @@ export const AlbumPurchaseModalContent = ({
   onClose: () => void
 }) => {
   const { contentId } = purchaseDetails
-  const { data: currentUserId } = useCurrentUserId()
-  const { data: album } = useGetPlaylistById({
-    playlistId: contentId,
-    currentUserId
-  })
+  const { data: album } = useCollection(contentId)
   const albumArtwork = useCollectionCoverArt({
     collectionId: contentId,
     size: SquareSizes.SIZE_150_BY_150

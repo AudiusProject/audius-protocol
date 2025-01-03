@@ -1,7 +1,6 @@
 import { useSelector } from 'react-redux'
 
-import { useCurrentUserId } from '~/api'
-import { useGetPlaylistById } from '~/api/collection'
+import { useCollection } from '@audius/common/api'
 import { ID } from '~/models/Identifiers'
 import { getCollectionDuration } from '~/store/cache/collections/selectors'
 import { CommonState } from '~/store/commonStore'
@@ -32,11 +31,7 @@ type CollectionMetadataProps = {
 export const useCollectionMetadata = ({
   collectionId
 }: CollectionMetadataProps): CollectionMetadataInfo[] => {
-  const { data: currentUserId } = useCurrentUserId()
-  const { data: collection } = useGetPlaylistById({
-    playlistId: collectionId,
-    currentUserId
-  })
+  const { data: collection } = useCollection(collectionId)
   const duration = useSelector((state: CommonState) =>
     getCollectionDuration(state, { id: collectionId })
   )

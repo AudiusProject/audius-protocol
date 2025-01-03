@@ -180,10 +180,7 @@ export const useGetSuggestedPlaylistTracks = (collectionId: ID) => {
         ): suggestedTrack is { isLoading: true; id: ID; key: ID } =>
           'id' in suggestedTrack && suggestedTrack.isLoading
       )
-      .map((suggestedTrack) => suggestedTrack.id),
-    {
-      enabled: !!currentUserId && suggestedTrackIds.length > 0
-    }
+      .map((suggestedTrack) => suggestedTrack.id)
   )
 
   const handleAddTrack = useCallback(

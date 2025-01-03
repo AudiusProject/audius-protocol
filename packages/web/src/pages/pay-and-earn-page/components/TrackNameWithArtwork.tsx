@@ -1,8 +1,4 @@
-import {
-  useCurrentUserId,
-  useGetPlaylistById,
-  useTrack
-} from '@audius/common/api'
+import { useCollection, useCurrentUserId, useTrack } from '@audius/common/api'
 import {
   SquareSizes,
   Status,
@@ -24,12 +20,10 @@ export const TrackNameWithArtwork = ({
   contentType: USDCContentPurchaseType
 }) => {
   const isTrack = contentType === USDCContentPurchaseType.TRACK
-  const { status: trackStatus, data: track } = useTrack(id)
-  const { data: currentUserId } = useCurrentUserId()
-  const { status: albumStatus, data: album } = useGetPlaylistById(
-    { playlistId: id, currentUserId },
-    { disabled: isTrack }
-  )
+  const { isPending: isTrackPending, data: track } = useTrack(id)
+  const { isPending: isAlbumPending, data: album } = useCollection(id, {
+    enabled: !isTrack
+  })
   const trackArtwork = useTrackCoverArt({
     trackId: id,
     size: SquareSizes.SIZE_150_BY_150
@@ -40,7 +34,7 @@ export const TrackNameWithArtwork = ({
   })
   const title = isTrack ? track?.title : album?.playlist_name
   const image = isTrack ? trackArtwork : albumArtwork
-  const loading = ![trackStatus, albumStatus].includes(Status.SUCCESS)
+  const loading = isTrackPending || isAlbumPending
 
   return loading ? null : (
     <div className={styles.container}>
