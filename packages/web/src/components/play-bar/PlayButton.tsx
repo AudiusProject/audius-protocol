@@ -1,8 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 
 import cn from 'classnames'
-import PropTypes from 'prop-types'
-import Lottie from 'react-lottie'
+import Lottie, { LottieRefCurrentProps } from 'lottie-react'
 
 import pbIconPause from 'assets/animations/pbIconPause.json'
 import pbIconPlay from 'assets/animations/pbIconPlay.json'
@@ -10,18 +9,24 @@ import pbLoadingSpinner from 'assets/animations/pbLoadingSpinner.json'
 
 import styles from './PlayBarButton.module.css'
 
-const PlayStates = Object.freeze({
-  PAUSE: 0,
-  ANIMATE_PAUSE_PLAY: 1,
-  PLAY: 2,
-  ANIMATE_PLAY_PAUSE: 3
-})
+enum PlayStates {
+  PAUSE = 0,
+  ANIMATE_PAUSE_PLAY = 1,
+  PLAY = 2,
+  ANIMATE_PLAY_PAUSE = 3
+}
+
+type PlayButtonProps = {
+  playable: boolean
+  status: 'play' | 'pause' | 'load'
+  onClick: () => void
+}
 
 const PlayButton = ({
   playable = true,
   status = 'play',
   onClick = () => {}
-}) => {
+}: PlayButtonProps) => {
   const [playState, setPlayState] = useState(PlayStates.PLAY)
   const [isPaused, setIsPaused] = useState(true)
   const [icon, setIcon] = useState(pbIconPlay)
@@ -105,13 +110,6 @@ const PlayButton = ({
   }
 
   const isLoading = status === 'load'
-  const eventListeners = [
-    {
-      eventName: 'complete',
-      callback: () => handleChange()
-    }
-  ]
-
   let data, currentIsPaused
   let loop = false
   if (isLoading) {
@@ -123,17 +121,22 @@ const PlayButton = ({
     currentIsPaused = isPaused
   }
 
-  const animationOptions = {
-    loop,
-    autoplay: false,
-    animationData: data
-  }
+  const lottieRef = useRef<LottieRefCurrentProps>(null)
+  useEffect(() => {
+    if (lottieRef.current) {
+      if (currentIsPaused) {
+        lottieRef.current.pause()
+      } else {
+        lottieRef.current.play()
+      }
+    }
+  }, [lottieRef, currentIsPaused])
 
   const ariaLabel = isLoading
     ? 'track loading'
     : playState === PlayStates.PLAY
-      ? 'play track'
-      : 'pause track'
+    ? 'play track'
+    : 'pause track'
 
   return (
     <button
@@ -145,21 +148,15 @@ const PlayButton = ({
     >
       <div className={styles.animation}>
         <Lottie
-          ariaRole={null}
-          ariaLabel={null}
-          options={animationOptions}
-          eventListeners={eventListeners}
-          isPaused={currentIsPaused}
+          lottieRef={lottieRef}
+          loop={loop}
+          autoplay={false}
+          animationData={data}
+          onComplete={handleChange}
         />
       </div>
     </button>
   )
-}
-
-PlayButton.propTypes = {
-  playable: PropTypes.bool,
-  status: PropTypes.oneOf(['play', 'pause', 'load']),
-  onClick: PropTypes.func
 }
 
 export default PlayButton

@@ -3,7 +3,7 @@ import { memo, useState, useEffect } from 'react'
 import { SquareSizes } from '@audius/common/models'
 import cn from 'classnames'
 import PropTypes from 'prop-types'
-import Lottie from 'react-lottie'
+import Lottie from 'lottie-react'
 
 import loadingSpinner from 'assets/animations/loadingSpinner.json'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
@@ -83,13 +83,7 @@ const ProfilePicture = ({
                 [styles.processing]: processing
               })}
             >
-              <Lottie
-                options={{
-                  loop: true,
-                  autoplay: true,
-                  animationData: loadingSpinner
-                }}
-              />
+              <Lottie loop autoplay animationData={loadingSpinner} />
             </div>
           )}
         </DynamicImage>

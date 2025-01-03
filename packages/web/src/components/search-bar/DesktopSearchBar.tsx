@@ -27,7 +27,7 @@ import { useTransition, animated } from '@react-spring/web'
 import AutoComplete from 'antd/lib/auto-complete'
 import Input from 'antd/lib/input'
 import cn from 'classnames'
-import Lottie from 'react-lottie'
+import Lottie from 'lottie-react'
 import { useDispatch, useSelector } from 'react-redux'
 import { matchPath, useHistory, useLocation } from 'react-router-dom'
 
@@ -256,7 +256,7 @@ const DesktopSearchBar = ({ isViewingSearchPage = false }: SearchBarProps) => {
                 isVerifiedUser: user.is_verified,
                 tier: getTierForUser(user as unknown as User),
                 kind: Kind.USERS
-              }) as SearchResultItem
+              } as SearchResultItem)
           )
           .concat(
             search.tracks.map(
@@ -275,7 +275,7 @@ const DesktopSearchBar = ({ isViewingSearchPage = false }: SearchBarProps) => {
                   isVerifiedUser: track.user.is_verified,
                   tier: getTierForUser(track.user as unknown as User),
                   kind: Kind.TRACKS
-                }) as SearchResultItem
+                } as SearchResultItem)
             )
           )
           .concat(
@@ -303,7 +303,7 @@ const DesktopSearchBar = ({ isViewingSearchPage = false }: SearchBarProps) => {
                   isVerifiedUser: playlist.user.is_verified,
                   tier: getTierForUser(playlist.user as unknown as User),
                   kind: Kind.COLLECTIONS
-                }) as SearchResultItem
+                } as SearchResultItem)
             )
           )
           .concat(
@@ -331,7 +331,7 @@ const DesktopSearchBar = ({ isViewingSearchPage = false }: SearchBarProps) => {
                   isVerifiedUser: album.user.is_verified,
                   tier: getTierForUser(album.user as unknown as User),
                   kind: Kind.COLLECTIONS
-                }) as SearchResultItem
+                } as SearchResultItem)
             )
           )
 
@@ -455,7 +455,7 @@ const DesktopSearchBar = ({ isViewingSearchPage = false }: SearchBarProps) => {
             isVerifiedUser: user.is_verified,
             tier: getTierForUser(user as unknown as User),
             kind: Kind.USERS
-          }) as SearchResultItem
+          } as SearchResultItem)
       )
     },
     {
@@ -474,7 +474,7 @@ const DesktopSearchBar = ({ isViewingSearchPage = false }: SearchBarProps) => {
             isVerifiedUser: track.user.is_verified,
             tier: getTierForUser(track.user as unknown as User),
             kind: Kind.TRACKS
-          }) as SearchResultItem
+          } as SearchResultItem)
       )
     },
     {
@@ -501,7 +501,7 @@ const DesktopSearchBar = ({ isViewingSearchPage = false }: SearchBarProps) => {
             isVerifiedUser: playlist.user.is_verified,
             tier: getTierForUser(playlist.user as unknown as User),
             kind: Kind.COLLECTIONS
-          }) as SearchResultItem
+          } as SearchResultItem)
       )
     },
     {
@@ -528,7 +528,7 @@ const DesktopSearchBar = ({ isViewingSearchPage = false }: SearchBarProps) => {
             isVerifiedUser: album.user.is_verified,
             tier: getTierForUser(album.user as unknown as User),
             kind: Kind.COLLECTIONS
-          }) as SearchResultItem
+          } as SearchResultItem)
       )
     }
   ]
@@ -600,19 +600,19 @@ const DesktopSearchBar = ({ isViewingSearchPage = false }: SearchBarProps) => {
           }
         ]
       : search.status === Status.LOADING && search.searchText !== ''
-        ? [
-            {
-              label: (
-                <div key={NO_RESULTS_OPTION} className={styles.noResultsOption}>
-                  <div className={styles.noResults}>
-                    <span>No Results</span>
-                  </div>
+      ? [
+          {
+            label: (
+              <div key={NO_RESULTS_OPTION} className={styles.noResultsOption}>
+                <div className={styles.noResults}>
+                  <span>No Results</span>
                 </div>
-              ),
-              value: NO_RESULTS_OPTION
-            }
-          ]
-        : []
+              </div>
+            ),
+            value: NO_RESULTS_OPTION
+          }
+        ]
+      : []
 
   const showAutocomplete = !isTagSearch() && open && !isViewingSearchPage
   const showTagPopup = isTagSearch() && open && !shouldDismissTagPopup
@@ -638,13 +638,7 @@ const DesktopSearchBar = ({ isViewingSearchPage = false }: SearchBarProps) => {
             [styles.show]: showSpinner
           })}
         >
-          <Lottie
-            options={{
-              loop: true,
-              autoplay: true,
-              animationData: loadingSpinner
-            }}
-          />
+          <Lottie loop autoplay animationData={loadingSpinner} />
         </div>
       )
     }
