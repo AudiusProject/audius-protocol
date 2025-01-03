@@ -123,7 +123,7 @@ export function* fetchEthereumCollectiblesForWallets(wallets) {
   return yield call([nftClient, nftClient.getEthereumCollectibles], wallets)
 }
 
-export function* fetchEthereumCollectiblesWithCollections(collectibles) {
+function* fetchEthereumCollectiblesWithCollections(collectibles) {
   const nftClient = yield getContext('nftClient')
   return yield call(
     [nftClient, nftClient.getEthereumCollectionMetadatasForCollectibles],
