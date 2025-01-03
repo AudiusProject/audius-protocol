@@ -1,12 +1,12 @@
-import { useCallback, useEffect, useState, useLayoutEffect } from 'react'
+import { useCallback, useEffect, useLayoutEffect, useState } from 'react'
 
 import { statusIsNotFinalized } from '@audius/common/models'
 import {
-  audioTransactionsPageSelectors,
   audioTransactionsPageActions,
+  audioTransactionsPageSelectors,
+  TransactionDetails,
   transactionDetailsActions,
-  TransactionType,
-  TransactionDetails
+  TransactionType
 } from '@audius/common/store'
 import { IconCaretRight } from '@audius/harmony'
 import { full } from '@audius/sdk'
@@ -14,13 +14,11 @@ import { useDispatch } from 'react-redux'
 
 import { useSetVisibility } from 'common/hooks/useModalState'
 import { AudioTransactionsTable } from 'components/audio-transactions-table'
-import Header from 'components/header/desktop/Header'
-import Page from 'components/page/Page'
 import EmptyTable from 'components/tracks-table/EmptyTable'
 import { useMainContentRef } from 'pages/MainContentContext'
 import { useSelector } from 'utils/reducer'
 
-import styles from './AudioTransactionsPage.module.css'
+import styles from './AudioWalletTransactions.module.css'
 const {
   fetchAudioTransactions,
   fetchAudioTransactionMetadata,
@@ -63,7 +61,7 @@ const Disclaimer = () => {
   )
 }
 
-export const AudioTransactionsPage = () => {
+export const AudioWalletTransactions = () => {
   const [offset, setOffset] = useState(0)
   const [limit, setLimit] = useState(AUDIO_TRANSACTIONS_BATCH_SIZE)
   const [sortMethod, setSortMethod] =
@@ -148,33 +146,27 @@ export const AudioTransactionsPage = () => {
   const isEmpty = audioTransactions.length === 0
 
   return (
-    <Page
-      title={messages.pageTitle}
-      description={messages.pageDescription}
-      header={<Header primary={messages.headerText} />}
-    >
-      <div className={styles.bodyWrapper}>
-        <Disclaimer />
-        {isEmpty && !tableLoading ? (
-          <EmptyTable
-            primaryText={messages.emptyTableText}
-            secondaryText={messages.emptyTableSecondaryText}
-          />
-        ) : (
-          <AudioTransactionsTable
-            key='audioTransactions'
-            data={audioTransactions}
-            loading={tableLoading}
-            onSort={onSort}
-            onClickRow={onClickRow}
-            fetchMore={fetchMore}
-            isVirtualized={true}
-            totalRowCount={audioTransactionsCount}
-            scrollRef={mainContentRef}
-            fetchBatchSize={AUDIO_TRANSACTIONS_BATCH_SIZE}
-          />
-        )}
-      </div>
-    </Page>
+    <div className={styles.bodyWrapper}>
+      <Disclaimer />
+      {isEmpty && !tableLoading ? (
+        <EmptyTable
+          primaryText={messages.emptyTableText}
+          secondaryText={messages.emptyTableSecondaryText}
+        />
+      ) : (
+        <AudioTransactionsTable
+          key='audioTransactions'
+          data={audioTransactions}
+          loading={tableLoading}
+          onSort={onSort}
+          onClickRow={onClickRow}
+          fetchMore={fetchMore}
+          isVirtualized={false}
+          totalRowCount={audioTransactionsCount}
+          scrollRef={mainContentRef}
+          fetchBatchSize={AUDIO_TRANSACTIONS_BATCH_SIZE}
+        />
+      )}
+    </div>
   )
 }

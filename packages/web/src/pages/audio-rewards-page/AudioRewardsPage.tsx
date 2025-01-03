@@ -17,12 +17,10 @@ import { useIsMobile } from 'hooks/useIsMobile'
 import { useRemoteVar } from 'hooks/useRemoteConfig'
 import { useRequiresAccount } from 'hooks/useRequiresAccount'
 import { useWithMobileStyle } from 'hooks/useWithMobileStyle'
+import { AudioWalletTransactions } from 'pages/audio-transactions-page'
 import { BASE_URL } from 'utils/route'
 
 import styles from './AudioRewardsPage.module.css'
-import ChallengeRewardsTile from './ChallengeRewardsTile'
-import Tiers from './Tiers'
-import TrendingRewardsTile from './TrendingRewardsTile'
 import WalletModal from './WalletModal'
 import ExplainerTile from './components/ExplainerTile'
 import { WalletManagementTile } from './components/WalletManagementTile'
@@ -31,7 +29,7 @@ const { getBalance } = walletActions
 const { preloadWalletProviders } = tokenDashboardPageActions
 
 const messages = {
-  title: '$AUDIO & Rewards',
+  title: '$AUDIO Wallet',
   description: 'Complete tasks to earn $AUDIO tokens!'
 }
 
@@ -55,9 +53,7 @@ const RewardsContent = () => {
         </div>
       ) : null}
       <WalletManagementTile />
-      <ChallengeRewardsTile className={styles.mobile} />
-      <TrendingRewardsTile className={styles.mobile} />
-      <Tiers />
+      <AudioWalletTransactions />
       <ExplainerTile className={wm(styles.explainerTile)} />
     </>
   )

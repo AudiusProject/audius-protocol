@@ -30,7 +30,7 @@ const { PURCHASES_PAGE, SALES_PAGE, WITHDRAWALS_PAGE } = route
 const { getAccountHasTracks, getIsGuestAccount } = accountSelectors
 
 export const messages = {
-  title: 'Pay & Earn',
+  title: 'USDC Wallet',
   description: 'Pay & earn with Audius',
   sales: 'Sales',
   purchases: 'Your Purchases',
