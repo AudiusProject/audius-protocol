@@ -34,9 +34,7 @@ export const RemixSettingsMenuFields = () => {
   const [, , { setValue: setCanRemixParent }] = useField(CAN_REMIX_PARENT)
   const permalink = useThrottle(getPathFromTrackUrl(trackUrl), 1000)
 
-  const { data: track } = useTrackByPermalink(permalink, {
-    enabled: !!permalink
-  })
+  const { data: track } = useTrackByPermalink(permalink)
 
   const trackId = track?.track_id
   const { hasStreamAccess: canRemixParent } = useGatedContentAccess(

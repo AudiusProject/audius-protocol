@@ -29,9 +29,7 @@ export const ChatMessageTrack = ({
   const dispatch = useDispatch()
   const permalink = getPathFromTrackUrl(link)
 
-  const { data: track, isPending } = useTrackByPermalink(permalink, {
-    enabled: !!permalink
-  })
+  const { data: track, isPending } = useTrackByPermalink(permalink)
 
   const { hasStreamAccess } = useGatedContentAccess(track ?? null)
   const isPreview =
