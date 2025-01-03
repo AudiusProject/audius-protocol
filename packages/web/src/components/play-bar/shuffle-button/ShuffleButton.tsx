@@ -47,7 +47,7 @@ const ShuffleButton = ({
   })
 
   const handleChange = useCallback(
-    (shuffleState) => {
+    (shuffleState: ShuffleStates) => {
       const { pbIconShuffleOff, pbIconShuffleOn } = animations
       // Go to the next state.
       let icon, isPaused
@@ -74,7 +74,7 @@ const ShuffleButton = ({
           icon = pbIconShuffleOn
           isPaused = true
       }
-      window.localStorage.setItem(SHUFFLE_STATE_LS_KEY, shuffleState)
+      window.localStorage.setItem(SHUFFLE_STATE_LS_KEY, shuffleState.toString())
       setState({
         icon,
         isPaused,

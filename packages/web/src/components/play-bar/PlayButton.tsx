@@ -110,7 +110,8 @@ const PlayButton = ({
   }
 
   const isLoading = status === 'load'
-  let data, currentIsPaused
+  let data: object
+  let currentIsPaused: boolean
   let loop = false
   if (isLoading) {
     data = pbLoadingSpinner
