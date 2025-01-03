@@ -83,8 +83,8 @@ export const DetailsTileActionButtons = ({
   const isCollectionEmpty = useSelector((state: CommonState) =>
     getIsCollectionEmpty(state, { id: collectionId })
   )
-  const { data: collection } = useCollection(collectionId, {
-    enabled: !!isCollection
+  const { data: collection } = useCollection(collectionId!, {
+    enabled: !!collectionId && !!isCollection
   })
   const collectionHasHiddenTracks = useSelector((state: CommonState) =>
     getCollectionHasHiddenTracks(state, { id: collectionId })

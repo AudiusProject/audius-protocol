@@ -1,5 +1,9 @@
-import { useCollection, useTrack } from '@audius/common/api'
-import { SquareSizes, USDCContentPurchaseType } from '@audius/common/models'
+import { useCollection, useGetTrackById } from '@audius/common/api'
+import {
+  SquareSizes,
+  Status,
+  USDCContentPurchaseType
+} from '@audius/common/models'
 import { Text } from '@audius/harmony'
 
 import DynamicImage from 'components/dynamic-image/DynamicImage'
@@ -16,8 +20,11 @@ export const TrackNameWithArtwork = ({
   contentType: USDCContentPurchaseType
 }) => {
   const isTrack = contentType === USDCContentPurchaseType.TRACK
-  const { isPending: isTrackPending, data: track } = useTrack(id)
-  const { isPending: isAlbumPending, data: album } = useCollection(id, {
+  const { status: trackStatus, data: track } = useGetTrackById(
+    { id },
+    { disabled: !isTrack }
+  )
+  const { status: albumStatus, data: album } = useCollection(id, {
     enabled: !isTrack
   })
   const trackArtwork = useTrackCoverArt({
@@ -30,7 +37,7 @@ export const TrackNameWithArtwork = ({
   })
   const title = isTrack ? track?.title : album?.playlist_name
   const image = isTrack ? trackArtwork : albumArtwork
-  const loading = isTrackPending || isAlbumPending
+  const loading = ![trackStatus, albumStatus].includes(Status.SUCCESS)
 
   return loading ? null : (
     <div className={styles.container}>

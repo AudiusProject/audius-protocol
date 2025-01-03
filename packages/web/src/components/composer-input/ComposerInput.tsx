@@ -7,7 +7,7 @@ import {
   useState
 } from 'react'
 
-import { useTrack } from '@audius/common/api'
+import { useGetTrackById } from '@audius/common/api'
 import { useAudiusLinkResolver } from '@audius/common/hooks'
 import { ID, UserMetadata } from '@audius/common/models'
 import {
@@ -89,8 +89,8 @@ export const ComposerInput = (props: ComposerInputProps) => {
     ...other
   } = props
   const ref = useRef<HTMLTextAreaElement>(null)
-  const { data: track } = useTrack(entityId, {
-    enabled: entityType === EntityType.TRACK
+  const { data: track } = useGetTrackById({
+    id: entityType === EntityType.TRACK && entityId ? entityId : -1
   })
 
   const [value, setValue] = useState(presetMessage ?? '')
@@ -104,13 +104,10 @@ export const ComposerInput = (props: ComposerInputProps) => {
     presetUserMentions.map((mention) => `@${mention.handle}`)
   )
   const [userIdMap, setUserIdMap] = useState<Record<string, ID>>(
-    presetUserMentions.reduce(
-      (acc, mention) => {
-        acc[`@${mention.handle}`] = mention.userId
-        return acc
-      },
-      {} as Record<string, ID>
-    )
+    presetUserMentions.reduce((acc, mention) => {
+      acc[`@${mention.handle}`] = mention.userId
+      return acc
+    }, {})
   )
   const { color } = useTheme()
   const messageIdRef = useRef(messageId)

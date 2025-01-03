@@ -1,6 +1,6 @@
 import { Mood } from '@audius/sdk'
 
-import { useTrack } from '~/api'
+import { useGetTrackById } from '~/api/track'
 import { ID } from '~/models'
 import { parseMusicalKey } from '~/utils/musicalKeys'
 import { searchPage } from '~/utils/route'
@@ -33,7 +33,7 @@ export type TrackMetadataInfo = {
 export const useTrackMetadata = ({
   trackId
 }: TrackMetadataProps): TrackMetadataInfo[] => {
-  const { data: track } = useTrack(trackId)
+  const { data: track } = useGetTrackById({ id: trackId })
 
   if (!track) return []
 

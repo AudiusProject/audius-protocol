@@ -1,6 +1,6 @@
-import { useCollection, useTrack, useUser } from '@audius/common/api'
+import { useCollection, useGetTrackById, useUser } from '@audius/common/api'
 import { recentSearchMessages as messages } from '@audius/common/messages'
-import { Kind, SquareSizes } from '@audius/common/models'
+import { Kind, SquareSizes, Status } from '@audius/common/models'
 import type { SearchItem as SearchItemType } from '@audius/common/store'
 import { TouchableOpacity } from 'react-native-gesture-handler'
 
@@ -77,12 +77,12 @@ export const SearchItemSkeleton = () => (
 export const SearchItemTrack = (props: SearchItemProps) => {
   const { searchItem, onPress } = props
   const { id } = searchItem
-  const { data: track, isLoading: trackIsLoading } = useTrack(id)
+  const { data: track, status: trackStatus } = useGetTrackById({ id })
   const { data: trackUser } = useUser(track?.owner_id)
   const { spacing } = useTheme()
   const navigation = useNavigation()
 
-  if (trackIsLoading) return <SearchItemSkeleton />
+  if (trackStatus === Status.LOADING) return <SearchItemSkeleton />
 
   if (!track) return null
   const { title } = track

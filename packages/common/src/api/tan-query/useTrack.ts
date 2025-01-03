@@ -16,7 +16,7 @@ type Config = {
   enabled?: boolean
 }
 
-export const useTrack = (trackId: ID | null | undefined, config?: Config) => {
+export const useTrack = (trackId: ID, config?: Config) => {
   const { audiusSdk } = useAppContext()
   const queryClient = useQueryClient()
   const dispatch = useDispatch()
@@ -24,8 +24,8 @@ export const useTrack = (trackId: ID | null | undefined, config?: Config) => {
   return useQuery({
     queryKey: [QUERY_KEYS.track, trackId],
     queryFn: async () => {
-      if (!trackId) return null
       const encodedId = encodeHashId(trackId)
+      if (!encodedId) return null
       const { data } = await audiusSdk!.full.tracks.getTrack({
         trackId: encodedId
       })

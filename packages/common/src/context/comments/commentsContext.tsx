@@ -15,11 +15,11 @@ import { useQueryClient } from '@tanstack/react-query'
 import { useDispatch, useSelector } from 'react-redux'
 
 import {
+  useGetTrackById,
   useGetCommentsByTrackId,
   QUERY_KEYS,
   useTrackCommentCount,
-  resetPreviousCommentCount,
-  useTrack
+  resetPreviousCommentCount
 } from '~/api'
 import { useGatedContentAccess } from '~/hooks'
 import {
@@ -106,7 +106,7 @@ export function CommentSectionProvider<NavigationProp>(
     uid: lineupUid,
     lineupActions
   } = props
-  const { data: track } = useTrack(entityId)
+  const { data: track } = useGetTrackById({ id: entityId })
   const {
     analytics: { make, track: trackEvent }
   } = useAppContext()

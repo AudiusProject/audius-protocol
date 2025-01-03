@@ -1,4 +1,4 @@
-import { useTrack } from '@audius/common/api'
+import { useGetTrackById } from '@audius/common/api'
 import { SquareSizes, USDCPurchaseDetails } from '@audius/common/models'
 
 import { useTrackCoverArt } from 'hooks/useTrackCoverArt'
@@ -17,7 +17,7 @@ export const TrackPurchaseModalContent = ({
   onClose: () => void
 }) => {
   const { contentId } = purchaseDetails
-  const { data: track } = useTrack(contentId)
+  const { data: track } = useGetTrackById({ id: contentId })
   const trackArtwork = useTrackCoverArt({
     trackId: contentId,
     size: SquareSizes.SIZE_150_BY_150

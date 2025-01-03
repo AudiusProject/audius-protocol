@@ -26,7 +26,8 @@ export const useCollection = (
   return useQuery({
     queryKey: [QUERY_KEYS.collection, collectionId],
     queryFn: async () => {
-      const { data } = await audiusSdk!.full.playlists.getPlaylist({
+      if (!collectionId || !audiusSdk) return null
+      const { data } = await audiusSdk.full.playlists.getPlaylist({
         playlistId: Id.parse(collectionId),
         userId: OptionalId.parse(currentUserId)
       })
