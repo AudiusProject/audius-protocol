@@ -37,8 +37,8 @@ export const useChatBlastAudienceContent = ({ chat }: { chat: ChatBlast }) => {
     },
     { disabled: !decodedContentId || audienceContentType !== 'track' }
   )
-  const { data: album } = useCollection(decodedContentId!, {
-    enabled: !(!decodedContentId || audienceContentType !== 'album')
+  const { data: album } = useCollection(decodedContentId, {
+    enabled: audienceContentType === 'album'
   })
 
   const { data: purchasersCount } = useGetPurchasersCount(

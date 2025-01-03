@@ -14,7 +14,10 @@ type Config = {
   enabled?: boolean
 }
 
-export const useCollection = (collectionId: ID, config?: Config) => {
+export const useCollection = (
+  collectionId: ID | null | undefined,
+  config?: Config
+) => {
   const { audiusSdk } = useAppContext()
   const queryClient = useQueryClient()
   const dispatch = useDispatch()
@@ -23,7 +26,8 @@ export const useCollection = (collectionId: ID, config?: Config) => {
   return useQuery({
     queryKey: [QUERY_KEYS.collection, collectionId],
     queryFn: async () => {
-      const { data } = await audiusSdk!.full.playlists.getPlaylist({
+      if (!collectionId || !audiusSdk) return null
+      const { data } = await audiusSdk.full.playlists.getPlaylist({
         playlistId: Id.parse(collectionId),
         userId: OptionalId.parse(currentUserId)
       })
