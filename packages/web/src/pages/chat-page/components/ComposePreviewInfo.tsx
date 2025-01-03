@@ -1,4 +1,4 @@
-import { useGetTrackById, useCollection } from '@audius/common/api'
+import { useTrack, useCollection } from '@audius/common/api'
 import { SquareSizes, ID } from '@audius/common/models'
 import { Flex, Text } from '@audius/harmony'
 
@@ -52,7 +52,7 @@ export const ComposerTrackInfo = (props: ComposerTrackInfoProps) => {
     size: SquareSizes.SIZE_150_BY_150
   })
 
-  const { data: track } = useGetTrackById({ id: trackId }, { force: true })
+  const { data: track } = useTrack(trackId)
 
   if (!track) return null
 
@@ -77,7 +77,7 @@ export const ComposerCollectionInfo = (props: ComposerCollectionInfoProps) => {
     size: SquareSizes.SIZE_150_BY_150
   })
 
-  const { data: collection } = useCollection(collectionId, { enabled: true })
+  const { data: collection } = useCollection(collectionId)
 
   if (!collection) return null
 

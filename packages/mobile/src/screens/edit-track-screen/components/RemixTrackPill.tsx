@@ -1,4 +1,4 @@
-import { useGetTrackById } from '@audius/common/api'
+import { useTrack } from '@audius/common/api'
 import type { ID } from '@audius/common/models'
 import { SquareSizes } from '@audius/common/models'
 import type { StyleProp, ViewStyle } from 'react-native'
@@ -44,7 +44,7 @@ const useStyles = makeStyles(({ spacing, palette, typography }) => ({
 
 export const RemixTrackPill = (props: RemixTrackPillProps) => {
   const { trackId, style } = props
-  const { data: track } = useGetTrackById({ id: trackId })
+  const { data: track } = useTrack(trackId)
   const styles = useStyles()
 
   if (!track) return null

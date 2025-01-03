@@ -17,7 +17,10 @@ type Config = {
   enabled?: boolean
 }
 
-export const useCollections = (collectionIds: ID[], config?: Config) => {
+export const useCollections = (
+  collectionIds: ID[] | null | undefined,
+  config?: Config
+) => {
   const { audiusSdk } = useAppContext()
   const queryClient = useQueryClient()
   const dispatch = useDispatch()
@@ -25,7 +28,7 @@ export const useCollections = (collectionIds: ID[], config?: Config) => {
   return useQuery({
     queryKey: [QUERY_KEYS.collections, collectionIds],
     queryFn: async () => {
-      const encodedIds = collectionIds
+      const encodedIds = collectionIds!
         .map(encodeHashId)
         .filter((id): id is string => id !== null)
       if (encodedIds.length === 0) return []
@@ -93,6 +96,9 @@ export const useCollections = (collectionIds: ID[], config?: Config) => {
     },
     staleTime: config?.staleTime,
     enabled:
-      config?.enabled !== false && !!audiusSdk && collectionIds.length > 0
+      config?.enabled !== false &&
+      !!audiusSdk &&
+      collectionIds !== null &&
+      collectionIds !== undefined
   })
 }

@@ -7,7 +7,7 @@ import {
   useCollections,
   useGetPurchasersCount,
   useGetSalesAggegrate,
-  useGetTracksByIds
+  useTracks
 } from '~/api'
 import { ID } from '~/models'
 import { removeNullable } from '~/utils'
@@ -32,13 +32,11 @@ export const usePurchasersAudience = ({
     (sale) => sale.contentType === 'album'
   )
 
-  const { data: tracks } = useGetTracksByIds({
-    ids: trackAggregates?.map((sale) => parseInt(sale.contentId)) ?? [],
-    currentUserId
-  })
+  const { data: tracks } = useTracks(
+    trackAggregates?.map((sale) => parseInt(sale.contentId))
+  )
   const { data: albums } = useCollections(
-    albumAggregates?.map((sale) => parseInt(sale.contentId)) ?? [],
-    { enabled: !!currentUserId }
+    albumAggregates?.map((sale) => parseInt(sale.contentId))
   )
   const tracksById = useMemo(() => keyBy(tracks, 'track_id'), [tracks])
   const albumsById = useMemo(() => keyBy(albums, 'playlist_id'), [albums])

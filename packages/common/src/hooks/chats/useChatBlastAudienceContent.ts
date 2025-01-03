@@ -6,10 +6,10 @@ import {
   useCollection,
   useGetPurchasersCount,
   useGetRemixersCount,
-  useGetTrackById,
+  useTrack,
   useCurrentUser,
   useCurrentUserId
-} from '@audius/common/api'
+} from '~/api'
 import {
   decodeHashId,
   getChatBlastAudienceDescription,
@@ -31,12 +31,9 @@ export const useChatBlastAudienceContent = ({ chat }: { chat: ChatBlast }) => {
 
   const { data: currentUserId } = useCurrentUserId()
   const { data: user } = useCurrentUser()
-  const { data: track } = useGetTrackById(
-    {
-      id: decodedContentId!
-    },
-    { disabled: !decodedContentId || audienceContentType !== 'track' }
-  )
+  const { data: track } = useTrack(decodedContentId, {
+    enabled: audienceContentType === 'track'
+  })
   const { data: album } = useCollection(decodedContentId, {
     enabled: audienceContentType === 'album'
   })
