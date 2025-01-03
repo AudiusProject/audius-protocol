@@ -7,7 +7,7 @@ export enum AccountsManagingYouPages {
   CONFIRM_REMOVE_MANAGER = 'confirm_remove_manager'
 }
 
-t type AccountsManagingYouPagesParams = {
+type AccountsManagingYouPagesParams = {
   user?: User
   query?: string
   managerUserId?: number
@@ -40,7 +40,7 @@ export enum AccountsYouManagePages {
   STOP_MANAGING = 'stop_managing'
 }
 
- type AccountsYouManagePagesParams = {
+type AccountsYouManagePagesParams = {
   user_id?: number
 }
 
