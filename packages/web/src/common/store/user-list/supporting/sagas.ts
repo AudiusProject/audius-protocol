@@ -8,13 +8,11 @@ import {
 } from '@audius/common/models'
 import {
   cacheUsersSelectors,
-  tippingActions,
   UserListSagaFactory,
   supportingUserListActions,
   supportingUserListSelectors,
   SUPPORTING_USER_LIST_TAG,
-  getSDK,
-  tippingUtils
+  getSDK
 } from '@audius/common/store'
 import { stringWeiToBN } from '@audius/common/utils'
 import { call, put, select } from 'typed-redux-saga'
@@ -23,7 +21,6 @@ import { watchSupportingError } from 'common/store/user-list/supporting/errorSag
 import { createUserListProvider } from 'common/store/user-list/utils'
 const { getId, getUserList, getUserIds } = supportingUserListSelectors
 const { getSupportingError } = supportingUserListActions
-const { setSupportingForUser } = tippingActions
 const { getUser } = cacheUsersSelectors
 
 type SupportingProcessExtraType = {
@@ -72,15 +69,7 @@ const provider = createUserListProvider<User, SupportingProcessExtraType>({
    * in the store. So we use this function, which is optional
    * in the interface, to update the store.
    */
-  processExtra: function* ({ userId, supportingList }) {
-    const supportingMap = tippingUtils.makeSupportingMapForUser(supportingList)
-    yield put(
-      setSupportingForUser({
-        id: userId,
-        supportingForUser: supportingMap
-      })
-    )
-  }
+  processExtra: function* ({ userId, supportingList }) {}
 })
 
 function* errorDispatcher(error: Error) {
