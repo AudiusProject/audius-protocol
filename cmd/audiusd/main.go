@@ -81,10 +81,9 @@ func main() {
 			isStorageEnabled(),
 		},
 		{
-			// TODO: this basically translates to "for all registered nodes in the current landscape"
 			"uptime",
 			func() error { return uptime.Run(ctx, logger) },
-			!isCoreOnly() && hostUrl.Hostname() != "localhost",
+			isUpTimeEnabled(hostUrl),
 		},
 	}
 
@@ -187,12 +186,29 @@ func setupHostUrl() *url.URL {
 }
 
 func setupDelegateKeyPair(logger *common.Logger) {
-	if delegatePrivateKey := os.Getenv("delegatePrivateKey"); delegatePrivateKey == "" {
-		privKey, ownerWallet := keyGen()
-		os.Setenv("delegatePrivateKey", privKey)
-		os.Setenv("delegateOwnerWallet", ownerWallet)
-		logger.Infof("Generated and set delegate key pair: %s", ownerWallet)
+	// Various applications across the protocol stack switch on these env var semantics
+	// Check both discovery and content env vars
+	// If neither discovery nor content node, (i.e. an audiusd rpc)
+	// generate new keys and set as an implied "content node"
+	audius_delegate_private_key := os.Getenv("audius_delegate_private_key")
+	audius_delegate_owner_wallet := os.Getenv("audius_delegate_owner_wallet")
+	delegatePrivateKey := os.Getenv("delegatePrivateKey")
+	delegateOwnerWallet := os.Getenv("delegateOwnerWallet")
+
+	if audius_delegate_private_key != "" || audius_delegate_owner_wallet != "" {
+		logger.Infof("setupDelegateKeyPair: Node is discovery type")
+		return
 	}
+
+	if delegatePrivateKey != "" || delegateOwnerWallet != "" {
+		logger.Infof("setupDelegateKeyPair: Node is content type")
+		return
+	}
+
+	privKey, ownerWallet := keyGen()
+	os.Setenv("delegatePrivateKey", privKey)
+	os.Setenv("delegateOwnerWallet", ownerWallet)
+	logger.Infof("Generated and set delegate key pair for implied content node: %s", ownerWallet)
 }
 
 func getEchoServerConfig(hostUrl *url.URL) serverConfig {
@@ -236,7 +252,7 @@ func startEchoProxy(hostUrl *url.URL, logger *common.Logger) error {
 		return c.JSON(http.StatusOK, getHealthCheckResponse(hostUrl))
 	})
 
-	if os.Getenv("audius_discprov_url") != "" {
+	if os.Getenv("audius_discprov_url") != "" && !isCoreOnly() {
 		e.GET("/health_check", func(c echo.Context) error {
 			return c.JSON(http.StatusOK, getHealthCheckResponse(hostUrl))
 		})
@@ -251,7 +267,7 @@ func startEchoProxy(hostUrl *url.URL, logger *common.Logger) error {
 		{"/core/*", "http://localhost:26659"},
 	}
 
-	if hostUrl.Hostname() != "localhost" {
+	if isUpTimeEnabled(hostUrl) {
 		proxies = append(proxies, proxyConfig{"/d_api/*", "http://localhost:1996"})
 	}
 
@@ -299,6 +315,10 @@ func startWithTLS(e *echo.Echo, httpPort, httpsPort string, hostUrl *url.URL, lo
 // TODO: I don't love this, but it is kinof the only way to make this work rn
 func isCoreOnly() bool {
 	return os.Getenv("AUDIUSD_CORE_ONLY") == "true"
+}
+
+func isUpTimeEnabled(hostUrl *url.URL) bool {
+	return hostUrl.Hostname() != "localhost"
 }
 
 // TODO: I don't love this, but it works safely for now
