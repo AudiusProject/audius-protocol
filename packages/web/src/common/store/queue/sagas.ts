@@ -152,7 +152,7 @@ function* handleQueueAutoplay({
  * 3. If the queue is indexed onto a different uid than the player, play the queue's uid
  * 4. Resume whatever was playing on the player
  */
-export function* watchPlay() {
+function* watchPlay() {
   yield* takeLatest(play.type, function* (action: ReturnType<typeof play>) {
     const { uid, trackId, collectible, playerBehavior } = action.payload
 
@@ -320,13 +320,13 @@ function* fetchLineupTracks(currentTrack: Track) {
   }
 }
 
-export function* watchPause() {
+function* watchPause() {
   yield* takeEvery(pause.type, function* (action: ReturnType<typeof pause>) {
     yield* put(playerActions.pause({}))
   })
 }
 
-export function* watchNext() {
+function* watchNext() {
   yield* takeEvery(next.type, function* (action: ReturnType<typeof next>) {
     const skip = action.payload?.skip
 
@@ -415,7 +415,7 @@ export function* watchNext() {
   })
 }
 
-export function* watchQueueAutoplay() {
+function* watchQueueAutoplay() {
   yield* takeEvery(
     queueAutoplay.type,
     function* (action: ReturnType<typeof queueAutoplay>) {
@@ -438,7 +438,7 @@ export function* watchQueueAutoplay() {
   )
 }
 
-export function* watchPrevious() {
+function* watchPrevious() {
   yield* takeEvery(
     previous.type,
     function* (action: ReturnType<typeof previous>) {
@@ -509,7 +509,7 @@ export function* watchPrevious() {
   )
 }
 
-export function* watchAdd() {
+function* watchAdd() {
   yield* takeEvery(add.type, function* (action: ReturnType<typeof add>) {
     const { entries } = action.payload
 

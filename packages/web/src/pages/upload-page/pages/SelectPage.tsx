@@ -24,7 +24,7 @@ type SelectPageProps = {
   onContinue: (formState: UploadFormState) => void
 }
 
-export const SelectPage = (props: SelectPageProps) => {
+const SelectPage = (props: SelectPageProps) => {
   const { formState, onContinue } = props
 
   const [tracks, setTracks] = useState(formState.tracks ?? [])

@@ -1,6 +1,6 @@
 export const FETCH_ACCOUNT_COLLECTIONS = 'SAVED_COLLECTIONS/FETCH_COLLECTIONS'
 
-export type FetchAccountCollectionsAction = {
+type FetchAccountCollectionsAction = {
   type: typeof FETCH_ACCOUNT_COLLECTIONS
 }
 

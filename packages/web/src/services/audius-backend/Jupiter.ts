@@ -22,7 +22,7 @@ const initJupiter = () => {
   }
 }
 
-export type JupiterSwapMode = 'ExactIn' | 'ExactOut'
+type JupiterSwapMode = 'ExactIn' | 'ExactOut'
 
 /**
  * Gets a quote from Jupiter for an exchange from inputTokenSymbol => outputTokenSymbol
@@ -145,18 +145,6 @@ const getSwapInstructions = async ({
     response,
     lookupTableAddresses: addressLookupTableAddresses
   }
-}
-
-export const parseInstruction = (instruction: Instruction) => {
-  return new TransactionInstruction({
-    programId: new PublicKey(instruction.programId),
-    keys: instruction.accounts.map((a) => ({
-      pubkey: new PublicKey(a.pubkey),
-      isSigner: a.isSigner,
-      isWritable: a.isWritable
-    })),
-    data: Buffer.from(instruction.data, 'base64')
-  })
 }
 
 async function _sendTransaction({

@@ -42,7 +42,7 @@ const messages = {
 /**
  * <Route> wrapper that handles redirecting through the sign up page flow
  */
-export function SignUpRoute({ children, ...rest }: RouteProps) {
+function SignUpRoute({ children, ...rest }: RouteProps) {
   const determineAllowedRoute = useDetermineAllowedRoute()
 
   return (
