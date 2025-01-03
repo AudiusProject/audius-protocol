@@ -1,4 +1,4 @@
-import { useCollection } from '@audius/common/api'
+import { useCurrentUserId, useGetPlaylistById } from '@audius/common/api'
 import { IconPencil, IconButton, IconButtonProps } from '@audius/harmony'
 import { Link } from 'react-router-dom'
 
@@ -14,7 +14,11 @@ type EditButtonProps = Partial<IconButtonProps> & {
 
 export const EditButton = (props: EditButtonProps) => {
   const { collectionId, ...other } = props
-  const { data: collection } = useCollection(collectionId)
+  const { data: currentUserId } = useCurrentUserId()
+  const { data: collection } = useGetPlaylistById({
+    playlistId: collectionId,
+    currentUserId
+  })
 
   if (!collection) return null
 

@@ -1,11 +1,11 @@
 import { useCallback, useEffect } from 'react'
 
 import {
-  useCollection,
+  useGetPlaylistById,
   useGetTrackById,
   useUser,
-  useCurrentUser
-  // Removing currentUserId import as it's no longer needed
+  useCurrentUser,
+  useCurrentUserId
 } from '@audius/common/api'
 import {
   useFeatureFlag,
@@ -214,6 +214,7 @@ export const PremiumContentPurchaseModal = () => {
   const error = useSelector(getPurchaseContentError)
   const isUnlocking = !error && isContentPurchaseInProgress(stage)
   const presetValues = usePayExtraPresets()
+  const { data: currentUserId } = useCurrentUserId()
   const { data: currentUser } = useCurrentUser()
   const { isEnabled: guestCheckoutEnabled } = useFeatureFlag(
     FeatureFlags.GUEST_CHECKOUT
@@ -227,10 +228,15 @@ export const PremiumContentPurchaseModal = () => {
     { id: contentId! },
     { disabled: isAlbum || !contentId }
   )
-  const { data: album } = useCollection(contentId!, {
-    enabled: isAlbum && !!contentId
-  })
-  const { data: user } = useUser(track?.owner_id ?? album?.playlist_owner_id)
+
+  const { data: album } = useGetPlaylistById(
+    { playlistId: contentId!, currentUserId },
+    { disabled: !isAlbum || !contentId }
+  )
+
+  const { data: user } = useUser(
+    track?.owner_id ?? album?.playlist_owner_id ?? 0
+  )
   const metadata = {
     ...(isAlbum ? album : track),
     user

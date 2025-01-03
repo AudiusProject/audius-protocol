@@ -9,7 +9,7 @@ import {
 import { useSelector, useDispatch } from 'react-redux'
 
 import { useAudiusQueryContext } from '~/audius-query'
-import { useAppContext } from '~/context/appContext'
+import { useAppContext } from '~/context'
 import { Name } from '~/models/Analytics'
 import { decorateCoinflowWithdrawalTransaction } from '~/services/audius-backend'
 import {

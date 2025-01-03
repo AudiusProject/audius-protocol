@@ -1,4 +1,8 @@
-import { useCollection, useGetTrackById } from '@audius/common/api'
+import {
+  useCurrentUserId,
+  useGetPlaylistById,
+  useGetTrackById
+} from '@audius/common/api'
 import {
   SquareSizes,
   Status,
@@ -24,9 +28,11 @@ export const TrackNameWithArtwork = ({
     { id },
     { disabled: !isTrack }
   )
-  const { status: albumStatus, data: album } = useCollection(id, {
-    enabled: !isTrack
-  })
+  const { data: currentUserId } = useCurrentUserId()
+  const { status: albumStatus, data: album } = useGetPlaylistById(
+    { playlistId: id, currentUserId },
+    { disabled: isTrack }
+  )
   const trackArtwork = useTrackCoverArt({
     trackId: id,
     size: SquareSizes.SIZE_150_BY_150

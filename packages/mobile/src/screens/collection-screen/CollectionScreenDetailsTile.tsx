@@ -1,6 +1,6 @@
 import { useCallback, useEffect } from 'react'
 
-import { useCollection } from '@audius/common/api'
+import { useCurrentUserId, useGetPlaylistById } from '@audius/common/api'
 import {
   Name,
   PlaybackSource,
@@ -9,9 +9,9 @@ import {
 } from '@audius/common/models'
 import type {
   SmartCollectionVariant,
+  ID,
   UID,
-  AccessConditions,
-  ID
+  AccessConditions
 } from '@audius/common/models'
 import type { CommonState } from '@audius/common/store'
 import {
@@ -225,9 +225,17 @@ export const CollectionScreenDetailsTile = ({
 
   const isReachable = useSelector(getIsReachable)
 
-  const { data: collection } = useCollection(collectionId as ID, {
-    enabled: typeof collectionId === 'number'
-  })
+  const { data: currentUserId } = useCurrentUserId()
+  // Since we're supporting SmartCollections, need to explicitly check that
+  // collectionId is a number before fetching the playlist. -1 is a placeholder,
+  // the request should not go out as the hook is disabled in that case.
+  const { data: collection } = useGetPlaylistById(
+    {
+      playlistId: typeof collectionId === 'number' ? collectionId : -1,
+      currentUserId
+    },
+    { disabled: typeof collectionId !== 'number' }
+  )
   const {
     is_stream_gated: isStreamGated,
     is_scheduled_release: isScheduledRelease,
