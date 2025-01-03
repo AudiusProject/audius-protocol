@@ -14,7 +14,7 @@ import { HelperText } from './HelperText'
 import styles from './TextAreaV2.module.css'
 import { useFocusState } from './useFocusState'
 
-export enum TextAreaSize {
+enum TextAreaSize {
   MEDIUM,
   SMALL
 }

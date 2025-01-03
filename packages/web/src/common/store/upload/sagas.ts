@@ -1123,7 +1123,7 @@ export function* uploadMultipleTracks(
   yield* put(cacheActions.setExpired(Kind.USERS, account!.user_id))
 }
 
-export function* uploadTracksAsync(
+function* uploadTracksAsync(
   action: ReturnType<typeof uploadActions.uploadTracks>
 ) {
   yield* call(waitForWrite)
@@ -1203,7 +1203,7 @@ export function* uploadTracksAsync(
   }
 }
 
-export function* updateTrackAudioAsync(
+function* updateTrackAudioAsync(
   action: ReturnType<typeof uploadActions.updateTrackAudio>
 ) {
   yield* call(waitForWrite)

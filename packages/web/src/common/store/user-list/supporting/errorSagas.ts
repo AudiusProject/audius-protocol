@@ -6,7 +6,7 @@ const { GET_SUPPORTING_ERROR, getSupportingError } = supportingUserListActions
 
 type ErrorActions = ReturnType<typeof getSupportingError>
 
-export function* handleSupportingError(action: ErrorActions) {
+function* handleSupportingError(action: ErrorActions) {
   yield put(
     errorActions.handleError({
       message: action.type,

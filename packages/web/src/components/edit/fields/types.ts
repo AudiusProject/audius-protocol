@@ -7,19 +7,12 @@ import {
 } from '@audius/common/models'
 import { Nullable } from '@audius/common/utils'
 
-export type FieldProps = {
-  name: string
-  label: string
-  required?: boolean
-  errorMessage?: string
-}
-
 export enum SpecialAccessType {
   TIP = 'tip',
   FOLLOW = 'follow'
 }
 
-export type GateKeeperField = 'accessAndSale' | 'stemsAndDownloads'
+type GateKeeperField = 'accessAndSale' | 'stemsAndDownloads'
 export type GateKeeper = {
   access: GateKeeperField // who last changed the access gates
   downloadable: GateKeeperField // who last changed the downloadability

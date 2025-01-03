@@ -49,7 +49,7 @@ const MAX_COUNT_LOADING_TILES = 18
 // The inital multiplier for number of tracks to fetch on lineup load
 // multiplied by the number of tracks that fit the browser height
 export const INITIAL_LOAD_TRACKS_MULTIPLIER = 1.75
-export const INITIAL_PLAYLISTS_MULTIPLER = 1
+const INITIAL_PLAYLISTS_MULTIPLER = 1
 
 // A multiplier for the number of tiles to fill a page to be
 // loaded in on each call (after the intial call)

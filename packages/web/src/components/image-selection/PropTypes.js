@@ -11,11 +11,3 @@ export const ImageSelectionProps = {
   // Source of the image selection (ProfilePicture, CoverPhoto, etc.)
   source: PropTypes.oneOf(['ProfilePicture', 'CoverPhoto', 'UploadArtwork'])
 }
-
-export const ImageSelectionDefaults = {
-  error: false,
-  onClose: () => {},
-  onAfterClose: () => {},
-  onSelect: () => {},
-  source: null
-}

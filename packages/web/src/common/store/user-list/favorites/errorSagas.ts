@@ -13,7 +13,7 @@ type ErrorActions =
   | ReturnType<typeof trackFavoriteError>
   | ReturnType<typeof playlistFavoriteError>
 
-export function* handleFavoriteError(action: ErrorActions) {
+function* handleFavoriteError(action: ErrorActions) {
   yield put(
     errorActions.handleError({
       message: action.type,

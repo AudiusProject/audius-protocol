@@ -6,7 +6,7 @@ import { useMainContentRef } from 'pages/MainContentContext'
 import styles from './HeaderGutter.module.css'
 
 const BACKGROUND_ELEMENT_HEIGHT_PX = 161
-export const BACKGROUND_ELEMENT_ID = 'headerPadding'
+const BACKGROUND_ELEMENT_ID = 'headerPadding'
 
 type HeaderGutterProps = {
   isChromeOrSafari?: boolean

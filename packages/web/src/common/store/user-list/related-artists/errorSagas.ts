@@ -7,7 +7,7 @@ const { GET_RELATED_ARTISTS_ERROR, getRelatedArtistsError } =
 
 type HandleRelatedArtistsError = ReturnType<typeof getRelatedArtistsError>
 
-export function* handleRelatedArtistsError(action: HandleRelatedArtistsError) {
+function* handleRelatedArtistsError(action: HandleRelatedArtistsError) {
   yield put(
     errorActions.handleError({
       message: action.type,
