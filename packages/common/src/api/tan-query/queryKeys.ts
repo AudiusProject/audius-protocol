@@ -8,6 +8,7 @@ export const QUERY_KEYS = {
   user: 'user',
   users: 'users',
   userByHandle: 'userByHandle',
+  userTracksByHandle: 'userTracksByHandle',
   collection: 'collection',
   collections: 'collections',
   collectionByPermalink: 'collectionByPermalink',

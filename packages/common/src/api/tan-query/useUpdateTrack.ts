@@ -56,6 +56,9 @@ export const useUpdateTrack = () => {
       // Cancel any outgoing refetches
       await queryClient.cancelQueries({ queryKey: [QUERY_KEYS.track, trackId] })
       await queryClient.cancelQueries({ queryKey: [QUERY_KEYS.collection] })
+      await queryClient.cancelQueries({
+        queryKey: [QUERY_KEYS.userTracksByHandle]
+      })
 
       // Snapshot the previous values
       const previousTrack = queryClient.getQueryData<Track>([
@@ -76,6 +79,21 @@ export const useUpdateTrack = () => {
           ...old,
           ...metadata
         })
+      )
+
+      // Optimistically update userTracksByHandle queries that contain this track
+      queryClient.setQueriesData(
+        { queryKey: [QUERY_KEYS.userTracksByHandle] },
+        (oldData: any) => {
+          return oldData.map((track: any) =>
+            track.track_id === trackId
+              ? {
+                  ...track,
+                  ...metadata
+                }
+              : track
+          )
+        }
       )
 
       // Optimistically update all collections that contain this track
@@ -113,6 +131,16 @@ export const useUpdateTrack = () => {
         queryClient.setQueryData(
           [QUERY_KEYS.trackByPermalink, context.previousTrack.permalink],
           context.previousTrack
+        )
+
+        // Roll back userTracksByHandle queries
+        queryClient.setQueriesData(
+          { queryKey: [QUERY_KEYS.userTracksByHandle] },
+          (oldData: any) => {
+            return oldData.map((track: any) =>
+              track.track_id === trackId ? context.previousTrack : track
+            )
+          }
         )
       }
 
