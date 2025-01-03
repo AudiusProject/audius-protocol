@@ -8,20 +8,21 @@ import { useSelector } from 'common/hooks/useSelector'
 import { AiGeneratedCallout } from 'components/ai-generated-button/AiGeneratedCallout'
 import Input from 'components/data-entry/Input'
 import TextArea from 'components/data-entry/TextArea'
-import { RelatedArtists } from 'components/related-artists/RelatedArtists'
-import { SupportingList } from 'components/tipping/support/SupportingList'
-import { TopSupporters } from 'components/tipping/support/TopSupporters'
 import { TipAudioButton } from 'components/tipping/tip-audio/TipAudioButton'
 import { OpacityTransition } from 'components/transition-container/OpacityTransition'
 import UploadChip from 'components/upload/UploadChip'
 import ProfilePageBadge from 'components/user-badges/ProfilePageBadge'
 import { Type } from 'pages/profile-page/components/SocialLink'
-import SocialLinkInput from 'pages/profile-page/components/SocialLinkInput'
 import { ProfileTopTags } from 'pages/profile-page/components/desktop/ProfileTopTags'
+
+import SocialLinkInput from '../SocialLinkInput'
 
 import { ProfileBio } from './ProfileBio'
 import { ProfileMutuals } from './ProfileMutuals'
 import styles from './ProfilePage.module.css'
+import { RelatedArtists } from './RelatedArtists'
+import { SupportingList } from './SupportingList'
+import { TopSupporters } from './TopSupporters'
 const { getUserId } = accountSelectors
 
 const messages = {

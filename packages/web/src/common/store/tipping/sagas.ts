@@ -63,7 +63,6 @@ const {
   confirmSendTip,
   convert,
   fetchRecentTips,
-  fetchSupportingForUser,
   refreshSupport,
   sendTipFailed,
   sendTipSucceeded,
@@ -508,56 +507,6 @@ function* refreshSupportAsync({
   )
 }
 
-function* fetchSupportingForUserAsync({
-  payload: { userId }
-}: {
-  payload: { userId: ID }
-  type: string
-}) {
-  yield* waitForRead()
-  const sdk = yield* getSDK()
-  const currentUserId = yield* select(getUserId)
-
-  /**
-   * If the user id is that of the logged in user, then
-   * get all its supporting data so that when the logged in
-   * user is trying to tip an artist, we'll know whether or
-   * not that artist is already being supported by the logged in
-   * user and thus correctly calculate how much more audio to tip
-   * to become the top supporter.
-   */
-  const account = yield* select(getAccountUser)
-  const limit =
-    account?.user_id === userId
-      ? account.supporting_count
-      : SUPPORTING_PAGINATION_SIZE
-
-  const { data = [] } = yield* call(
-    [sdk.full.users, sdk.full.users.getSupportedUsers],
-    {
-      id: Id.parse(userId),
-      limit,
-      userId: OptionalId.parse(currentUserId)
-    }
-  )
-  const supportingList = supportedUserMetadataListFromSDK(data)
-
-  const userIds = supportingList.map(
-    (supporting) => supporting.receiver.user_id
-  )
-
-  yield call(fetchUsers, userIds)
-
-  const map = tippingUtils.makeSupportingMapForUser(supportingList)
-
-  yield put(
-    setSupportingForUser({
-      id: userId,
-      supportingForUser: map
-    })
-  )
-}
-
 // Display logic is a bit nuanced here -
 // there are 3 cases: 1 tip not dismissed, show tip,  2 tip dismissed, but show new tip, 3 tip dismissed, don't show any tip
 // the trick is to start with an empty state, NOT a loading state:
@@ -700,10 +649,6 @@ function* fetchUserSupporterAsync(
   }
 }
 
-function* watchFetchSupportingForUser() {
-  yield* takeEvery(fetchSupportingForUser.type, fetchSupportingForUserAsync)
-}
-
 function* watchRefreshSupport() {
   yield* takeEvery(refreshSupport.type, refreshSupportAsync)
 }
@@ -722,7 +667,6 @@ function* watchFetchUserSupporter() {
 
 const sagas = () => {
   return [
-    watchFetchSupportingForUser,
     watchRefreshSupport,
     watchConfirmSendTip,
     watchFetchRecentTips,

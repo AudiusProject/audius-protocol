@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 
+import { useSupporters } from '@audius/common/api'
 import { useGetFirstOrTopSupporter } from '@audius/common/hooks'
 import type { StringWei, BNWei } from '@audius/common/models'
 import {
@@ -66,6 +67,9 @@ export const SendTipScreen = () => {
   const supportingMap = useSelector(getOptimisticSupporting)
   const receiver = useSelector(getSendUser)
 
+  const { data: topSupporters } = useSupporters(receiver?.user_id)
+  const topSupporter = topSupporters?.[0]
+
   const {
     amountToTipToBecomeTopSupporter,
     shouldFetchUserSupporter,
@@ -93,17 +97,6 @@ export const SendTipScreen = () => {
       )
     }
   }, [shouldFetchUserSupporter, accountUserId, receiver, dispatch])
-
-  useEffect(() => {
-    if (shouldFetchSupportersForReceiver && accountUserId && receiver) {
-      dispatch(
-        refreshSupport({
-          senderUserId: accountUserId,
-          receiverUserId: receiver.user_id
-        })
-      )
-    }
-  }, [shouldFetchSupportersForReceiver, accountUserId, receiver, dispatch])
 
   const handleBack = useCallback(() => {
     navigation.goBack()

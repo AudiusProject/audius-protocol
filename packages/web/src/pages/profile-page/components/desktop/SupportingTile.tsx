@@ -3,35 +3,26 @@ import { useCallback } from 'react'
 import {
   SquareSizes,
   WidthSizes,
-  Supporting,
-  User
+  SupportedUserMetadata
 } from '@audius/common/models'
-import { cacheUsersSelectors } from '@audius/common/store'
-import { Nullable } from '@audius/common/utils'
 import { IconTrophy } from '@audius/harmony'
 import cn from 'classnames'
-import { useDispatch, useSelector } from 'react-redux'
+import { useDispatch } from 'react-redux'
 
 import UserBadges from 'components/user-badges/UserBadges'
 import { useCoverPhoto } from 'hooks/useCoverPhoto'
 import { useProfilePicture } from 'hooks/useProfilePicture'
-import { AppState } from 'store/types'
 import { TIPPING_TOP_RANK_THRESHOLD } from 'utils/constants'
 import { push } from 'utils/navigation'
 
 import styles from './SupportingTile.module.css'
-const { getUser } = cacheUsersSelectors
 
 type SupportingCardProps = {
-  supporting: Supporting
+  supporting: SupportedUserMetadata
 }
 export const SupportingTile = ({ supporting }: SupportingCardProps) => {
-  const receiver = useSelector<AppState, Nullable<User>>((state) =>
-    getUser(state, { id: supporting.receiver_id })
-  )
-
+  const { receiver, rank } = supporting
   const dispatch = useDispatch()
-  const { rank } = supporting
   const handle = receiver?.handle
   const isTopRank = rank >= 1 && rank <= TIPPING_TOP_RANK_THRESHOLD
   const profileImage = useProfilePicture({

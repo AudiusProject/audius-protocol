@@ -2,13 +2,13 @@ import { useQuery, useQueryClient } from '@tanstack/react-query'
 
 import { useAppContext } from '~/context/appContext'
 import { Id, OptionalId } from '~/models/Identifiers'
-import { supporterMetadataListFromSDK } from '~/models/Tipping'
-import { MAX_PROFILE_TOP_SUPPORTERS } from '~/utils/constants'
+import { supportedUserMetadataListFromSDK } from '~/models/Tipping'
+import { SUPPORTING_PAGINATION_SIZE } from '~/utils/constants'
 
 import { QUERY_KEYS } from './queryKeys'
 import { useCurrentUserId } from './useCurrentUserId'
 
-type UseSupportersArgs = {
+type UseSupportedUsersArgs = {
   userId?: number
   limit?: number
 }
@@ -18,8 +18,8 @@ type Config = {
   enabled?: boolean
 }
 
-export const useSupporters = (
-  { userId, limit = MAX_PROFILE_TOP_SUPPORTERS + 1 }: UseSupportersArgs,
+export const useSupportedUsers = (
+  { userId, limit = SUPPORTING_PAGINATION_SIZE }: UseSupportedUsersArgs,
   config?: Config
 ) => {
   const { audiusSdk } = useAppContext()
@@ -27,28 +27,28 @@ export const useSupporters = (
   const { data: currentUserId } = useCurrentUserId()
 
   return useQuery({
-    queryKey: [QUERY_KEYS.supporters, userId, limit],
+    queryKey: [QUERY_KEYS.supportedUsers, userId],
     queryFn: async () => {
       if (!audiusSdk || !userId) return []
-      const { data = [] } = await audiusSdk.full.users.getSupporters({
+      const { data = [] } = await audiusSdk.full.users.getSupportedUsers({
         id: Id.parse(userId),
         limit,
         userId: OptionalId.parse(currentUserId)
       })
 
-      const supporters = supporterMetadataListFromSDK(data)
+      const supporting = supportedUserMetadataListFromSDK(data)
 
-      // Cache user data for each supporter
-      supporters.forEach((supporter) => {
-        if (supporter.sender) {
+      // Cache user data for each supported user
+      supporting.forEach((supportedUser) => {
+        if (supportedUser.receiver) {
           queryClient.setQueryData(
-            [QUERY_KEYS.user, supporter.sender.user_id],
-            supporter.sender
+            [QUERY_KEYS.user, supportedUser.receiver.user_id],
+            supportedUser.receiver
           )
         }
       })
 
-      return supporters
+      return supporting
     },
     staleTime: config?.staleTime,
     enabled: config?.enabled !== false && !!userId && !!audiusSdk

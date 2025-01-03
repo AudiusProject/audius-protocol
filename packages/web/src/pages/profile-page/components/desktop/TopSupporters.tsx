@@ -6,8 +6,6 @@ import { MAX_PROFILE_TOP_SUPPORTERS } from '@audius/common/utils'
 import { IconTrophy } from '@audius/harmony'
 import { useDispatch, useSelector } from 'react-redux'
 
-import { ProfilePageNavSectionTitle } from 'components/profile-page-nav-section-title/ProfilePageNavSectionTitle'
-import { ProfilePictureListTile } from 'components/profile-picture-list-tile/ProfilePictureListTile'
 import {
   setUsers,
   setVisibility
@@ -17,6 +15,8 @@ import {
   UserListType
 } from 'store/application/ui/userListModal/types'
 
+import { ProfilePageNavSectionTitle } from './ProfilePageNavSectionTitle'
+import { ProfilePictureListTile } from './ProfilePictureListTile'
 import styles from './TopSupporters.module.css'
 const { getProfileUser } = profilePageSelectors
 

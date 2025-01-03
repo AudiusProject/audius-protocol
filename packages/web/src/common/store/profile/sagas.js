@@ -314,34 +314,6 @@ export function* fetchSolanaCollectibles(user) {
   }
 }
 
-function* fetchSupportersAndSupporting(userId) {
-  const { waitForRemoteConfig } = yield getContext('remoteConfigInstance')
-  yield call(waitForRemoteConfig)
-  yield waitForAccount()
-
-  /**
-   * If the profile is that of the logged in user, then
-   * get all its supporting data so that when the logged in
-   * user is trying to tip an artist, we'll know whether or
-   * not that artist is already being supported by the logged in
-   * user and thus correctly calculate how much more audio to tip
-   * to become the top supporter.
-   */
-  const account = yield select(getAccountUser)
-  const supportingLimit =
-    account?.user_id === userId
-      ? account.supporting_count
-      : Math.max(MAX_PROFILE_SUPPORTING_TILES, SUPPORTING_PAGINATION_SIZE) + 1
-  yield put(
-    refreshSupport({
-      senderUserId: userId,
-      receiverUserId: userId,
-      supportingLimit,
-      supportersLimit: MAX_PROFILE_TOP_SUPPORTERS + 1
-    })
-  )
-}
-
 function* fetchProfileAsync(action) {
   const isNativeMobile = yield getContext('isNativeMobile')
   const { getRemoteVar } = yield getContext('remoteConfigInstance')
@@ -388,7 +360,6 @@ function* fetchProfileAsync(action) {
       yield fork(fetchUserSocials, action)
       // Note that mobile dispatches this action at the component level
       yield put(profilePageActions.fetchCollections(user.handle))
-      yield fork(fetchSupportersAndSupporting, user.user_id)
     }
 
     // Get chat permissions

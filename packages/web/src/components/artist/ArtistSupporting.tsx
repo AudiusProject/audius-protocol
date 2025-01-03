@@ -1,21 +1,15 @@
-import { useCallback, useEffect } from 'react'
+import { useCallback } from 'react'
 
-import { ID, User } from '@audius/common/models'
+import { useSupportedUsers } from '@audius/common/api'
+import { User } from '@audius/common/models'
 import {
-  cacheUsersSelectors,
-  tippingSelectors,
-  tippingActions,
   userListActions,
   SUPPORTING_USER_LIST_TAG as SUPPORTING_TAG
 } from '@audius/common/store'
-import {
-  stringWeiToBN,
-  MAX_ARTIST_HOVER_TOP_SUPPORTING
-} from '@audius/common/utils'
+import { MAX_ARTIST_HOVER_TOP_SUPPORTING } from '@audius/common/utils'
 import { IconTipping as IconTip } from '@audius/harmony'
 import { useDispatch } from 'react-redux'
 
-import { useSelector } from 'common/hooks/useSelector'
 import { UserProfilePictureList } from 'components/notification/Notification/components/UserProfilePictureList'
 import {
   setUsers,
@@ -28,9 +22,6 @@ import {
 
 import styles from './ArtistSupporting.module.css'
 const { loadMore, reset } = userListActions
-const { getUsers } = cacheUsersSelectors
-const { getOptimisticSupporting } = tippingSelectors
-const { fetchSupportingForUser } = tippingActions
 
 const messages = {
   supporting: 'Supporting'
@@ -45,40 +36,10 @@ export const ArtistSupporting = (props: ArtistSupportingProps) => {
   const { user_id, supporting_count } = artist
   const dispatch = useDispatch()
 
-  const supportingMap = useSelector(getOptimisticSupporting)
-  const hasNotPreviouslyFetchedSupportingForArtist =
-    supportingMap[user_id] === undefined
-  const supportingForArtist = supportingMap[user_id] ?? {}
-  const supportingForArtistIds = Object.keys(
-    supportingForArtist
-  ) as unknown as ID[]
-  const rankedSupportingList = supportingForArtistIds
-    .sort((k1, k2) => {
-      const amount1BN = stringWeiToBN(supportingForArtist[k1].amount)
-      const amount2BN = stringWeiToBN(supportingForArtist[k2].amount)
-      return amount1BN.gte(amount2BN) ? -1 : 1
-    })
-    .map((k) => supportingForArtist[k])
-
-  const rankedSupporting = useSelector((state) => {
-    const usersMap = getUsers(state, {
-      ids: rankedSupportingList.map((supporting) => supporting.receiver_id)
-    })
-    return rankedSupportingList
-      .sort((s1, s2) => s1.rank - s2.rank)
-      .map((s) => usersMap[s.receiver_id])
-      .filter(Boolean)
+  const { data: supportedUsers = [] } = useSupportedUsers({
+    userId: user_id,
+    limit: MAX_ARTIST_HOVER_TOP_SUPPORTING
   })
-
-  /**
-   * It's possible that we don't have the data for which artists
-   * this artist is supporting. Thus, we fetch in this case.
-   */
-  useEffect(() => {
-    if (hasNotPreviouslyFetchedSupportingForArtist) {
-      dispatch(fetchSupportingForUser({ userId: user_id }))
-    }
-  }, [dispatch, hasNotPreviouslyFetchedSupportingForArtist, user_id])
 
   const handleClick = useCallback(() => {
     /**
@@ -111,7 +72,7 @@ export const ArtistSupporting = (props: ArtistSupportingProps) => {
     }
   }, [dispatch, user_id, onNavigateAway])
 
-  return rankedSupportingList.length > 0 ? (
+  return supportedUsers.length > 0 ? (
     <div className={styles.supportingContainer} onClick={handleClick}>
       <div className={styles.supportingTitleContainer}>
         <IconTip className={styles.supportingIcon} />
@@ -120,7 +81,7 @@ export const ArtistSupporting = (props: ArtistSupportingProps) => {
       <div className={styles.line} />
       <UserProfilePictureList
         limit={MAX_ARTIST_HOVER_TOP_SUPPORTING}
-        users={rankedSupporting}
+        users={supportedUsers.map((supportedUser) => supportedUser.receiver)}
         totalUserCount={supporting_count}
         disableProfileClick
         disablePopover
