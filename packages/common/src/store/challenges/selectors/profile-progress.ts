@@ -43,15 +43,16 @@ export const getHandleExists = (state: CommonState) => {
   return !!curUser.handle
 }
 
+const validProfilePictureSizes = [
+  SquareSizes.SIZE_150_BY_150,
+  SquareSizes.SIZE_480_BY_480,
+  SquareSizes.SIZE_1000_BY_1000
+] as const
 const isValidProfilePicture = (input: User['profile_picture']) => {
   if (!input) return false
-  const validSizes = [
-    SquareSizes.SIZE_150_BY_150,
-    SquareSizes.SIZE_480_BY_480,
-    SquareSizes.SIZE_1000_BY_1000
-  ] as const
+
   return Object.keys(input).some((size) =>
-    validSizes.includes(size as SquareSizes)
+    validProfilePictureSizes.includes(size as SquareSizes)
   )
 }
 
@@ -69,11 +70,16 @@ export const getProfilePictureExists = (state: CommonState) => {
   )
 }
 
+const validCoverPhotoSizes = [
+  WidthSizes.SIZE_640,
+  WidthSizes.SIZE_2000
+] as const
+
 const isValidCoverPhoto = (input: User['cover_photo']) => {
   if (!input) return false
-  const validSizes = [WidthSizes.SIZE_640, WidthSizes.SIZE_2000] as const
+
   return Object.keys(input).some((size) =>
-    validSizes.includes(size as WidthSizes)
+    validCoverPhotoSizes.includes(size as WidthSizes)
   )
 }
 
