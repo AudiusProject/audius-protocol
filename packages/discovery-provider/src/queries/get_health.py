@@ -263,11 +263,14 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
         latest_indexed_block_hash = db_block_state["blockhash"]
 
     core_health = get_core_health(redis=redis)
-    core_listens_health = get_core_listens_health(redis=redis)
-
+    core_listens_health = get_core_listens_health(
+        redis=redis, plays_count_max_drift=plays_count_max_drift
+    )
     indexing_plays_with_core = core_health.get("indexing_plays")
 
     play_health_info = get_play_health_info(redis, plays_count_max_drift)
+    if indexing_plays_with_core:
+        play_health_info = core_listens_health
 
     user_bank_health_info = get_solana_indexer_status(
         redis, redis_keys.solana.user_bank, user_bank_max_drift
@@ -367,7 +370,7 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
         "index_eth_age_sec": index_eth_age_sec,
         "number_of_cpus": number_of_cpus,
         **sys_info,
-        "plays": core_listens_health if indexing_plays_with_core else play_health_info,
+        "plays": play_health_info,
         "solana_indexers": {
             "spl_token": spl_token_health_info,
             "payment_router": payment_router_health_info,
@@ -708,11 +711,18 @@ def get_play_health_info(
     }
 
 
-def get_core_listens_health(redis: Redis):
+def get_core_listens_health(redis: Redis, plays_count_max_drift: Optional[int]):
     try:
         core_health = redis.get(core_listens_health_check_cache_key)
         if core_health:
-            return json.loads(core_health)
+            res = json.loads(core_health)
+
+            is_unhealthy_sol_plays = bool(
+                plays_count_max_drift and plays_count_max_drift < res["time_diff"]
+            )
+
+            res["is_unhealthy"] = is_unhealthy_sol_plays
+            return res
         return None
     except Exception as e:
         logger.error(f"get_health.py | could not get core listens health {e}")
