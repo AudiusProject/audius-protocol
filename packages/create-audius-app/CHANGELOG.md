@@ -1,5 +1,11 @@
 # create-audius-app
 
+## 1.0.9
+
+### Patch Changes
+
+- 3d378d3: fix missing dependency
+
 ## 1.0.8
 
 ### Patch Changes
