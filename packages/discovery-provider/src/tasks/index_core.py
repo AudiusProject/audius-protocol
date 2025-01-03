@@ -10,7 +10,7 @@ from logging import Logger, LoggerAdapter
 from typing import List, Optional, TypedDict
 
 from redis import Redis
-from sqlalchemy import desc, insert
+from sqlalchemy import desc
 from sqlalchemy.orm.session import Session
 
 from src.challenges.challenge_event import ChallengeEvent
@@ -51,9 +51,21 @@ class CoreListensTxInfoHealth(TypedDict):
 
 
 class CoreListensHealth(TypedDict):
+    latest_chain_slot: int
+    latest_indexed_slot: int
     slot_diff: int
     time_diff: float
+    sol_slot_cutover: int
+    core_block_cutover: int
     tx_info: CoreListensTxInfoHealth
+
+
+class CoreHealth(TypedDict):
+    indexing_plays: bool
+    indexing_entity_manager: bool
+    latest_chain_block: int
+    latest_indexed_block: int
+    chain_id: str
 
 
 class PlayInfo(TypedDict):
@@ -216,6 +228,7 @@ class CoreIndexer:
 
                 self.latest_indexed_block_height = indexed_block.height
                 self.update_core_listens_health(indexed_block)
+                self.update_core_health()
 
             except Exception as e:
                 was_error = True
@@ -307,12 +320,12 @@ class CoreIndexer:
                 if parent_block:
                     parenthash = parent_block.blockhash
 
-            new_block = {
-                "chain_id": self.chain_id,
-                "height": chain_block.height,
-                "blockhash": chain_block.blockhash,
-                "parenthash": parenthash,
-            }
+            new_block = CoreIndexedBlocks(
+                chain_id=self.chain_id,
+                height=chain_block.height,
+                blockhash=chain_block.blockhash,
+                parenthash=parenthash,
+            )
 
             exists = (
                 session.query(CoreIndexedBlocks)
@@ -321,8 +334,7 @@ class CoreIndexer:
                 .one_or_none()
             )
             if not exists:
-                stmt = insert(CoreIndexedBlocks).values(new_block)
-                session.execute(stmt)
+                session.add(new_block)
             if exists:
                 self.logger.warning(f"block {chain_block.height} already indexed")
 
@@ -428,10 +440,34 @@ class CoreIndexer:
         latest_chain_slot = self.latest_chain_block_height
 
         slot_diff = latest_chain_slot - latest_indexed_slot
-        time_diff = (datetime.utcnow() - latest_indexed_block.timestamp).total_seconds()
+        time_diff = (
+            datetime.utcnow() - latest_indexed_block.timestamp.ToDatetime()
+        ).total_seconds()
 
-        health: CoreListensHealth = {"slot_diff": slot_diff, "time_diff": time_diff}
+        health: CoreListensHealth = {
+            "slot_diff": slot_diff,
+            "time_diff": time_diff,
+            "latest_chain_slot": self.latest_chain_block_height,
+            "latest_indexed_slot": self.latest_indexed_block_height,
+            "tx_info": {
+                "chain_tx": None,
+                "db_tx": {
+                    "signature": "",
+                    "slot": self.latest_indexed_block_height,
+                    "timestamp": latest_indexed_block.timestamp.ToSeconds(),
+                },
+            },
+            "core_block_cutover": self.core_plays_cutover_start,
+            "sol_slot_cutover": self.sol_plays_cutover_end,
+        }
         self.redis.set(core_listens_health_check_cache_key, json.dumps(health))
 
     def update_core_health(self):
-        pass
+        health: CoreHealth = {
+            "chain_id": self.chain_id,
+            "indexing_entity_manager": False,
+            "indexing_plays": self.should_index_plays(),
+            "latest_chain_block": self.latest_chain_block_height,
+            "latest_indexed_block": self.latest_indexed_block_height,
+        }
+        self.redis.set(core_health_check_cache_key, json.dumps(health))
