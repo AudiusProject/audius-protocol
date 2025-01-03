@@ -7,6 +7,7 @@ import (
 	"mime/multipart"
 	"net/http"
 	"os"
+	"slices"
 	"strconv"
 	"strings"
 	"time"
@@ -16,7 +17,6 @@ import (
 
 	"github.com/labstack/echo/v4"
 	"github.com/oklog/ulid/v2"
-	"golang.org/x/exp/slices"
 	"golang.org/x/sync/errgroup"
 )
 
