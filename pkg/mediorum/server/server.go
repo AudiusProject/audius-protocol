@@ -355,6 +355,9 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 	routes.GET("/delist_status/user/:userId", ss.serveUserDelistStatus)
 	routes.POST("/delist_status/insert", ss.serveInsertDelistStatus, ss.requireBodySignedByOwner)
 
+	// serve Proof of Storage
+	routes.GET("/pos/:cid/:nonce", ss.serveProofOfBlobStorage, ss.requireHealthy) //, ss.requireRegisteredPoSSignature)
+
 	// -------------------
 	// healthz
 	healthz := routes.Group("/healthz")

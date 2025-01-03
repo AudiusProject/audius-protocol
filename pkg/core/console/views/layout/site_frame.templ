@@ -29,7 +29,7 @@ templ (l *Layout) SiteFrame() {
 							<h1 class="text-2xl font-bold tracking-tight">Console</h1>
 						</a>
 						<div class="space-y-4">
-							<ul class="uk-tab-alt max-w-96">
+							<ul class="uk-tab-alt max-w-192">
 								<li>
 									@l.components.Link("/overview") {
 										<div>Overview</div>
@@ -53,6 +53,11 @@ templ (l *Layout) SiteFrame() {
 								<li>
 									@l.components.Link("/uptime") {
 										<div>Uptime</div>
+									}
+								</li>
+								<li>
+									@l.components.Link("/storage_proof") {
+										<div>Storage Proof</div>
 									}
 								</li>
 							</ul>

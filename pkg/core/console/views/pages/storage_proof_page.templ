@@ -1,0 +1,44 @@
+package pages
+
+type StorageProofPageView struct {}
+
+templ (c *Pages) StorageProofPageHTML(props *StorageProofPageView) {
+	@c.layout.SiteFrame() {
+        <form id="proofRequest">
+            <label for="cid">CID:</label>
+            <input class="border-slate-200 border-2" type="text" id="cid" name="cid" required>
+
+            <label for="nonce">Nonce:</label>
+            <input class="border-slate-200 border-2" type="text" id="nonce" name="nonce" required>
+
+            <button class="bg-slate-200 p-2" type="submit">Submit</button>
+        </form>
+
+        <div id="result"></div>
+
+        <script>
+            document.getElementById('proofRequest').addEventListener('submit', async function(event) {
+                event.preventDefault(); // Prevent the form from navigating
+
+                const cidValue = document.getElementById('cid').value;
+                const nonceValue = document.getElementById('nonce').value;
+
+                const dynamicUrl = `/pos/${encodeURIComponent(cidValue)}/${encodeURIComponent(nonceValue)}`;
+
+                try {
+                    // Fetch the data from the server
+                    const response = await fetch(dynamicUrl, { method: 'GET' });
+
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! Status: ${response.status}`);
+                    }
+                    const data = await response.text(); // Assuming the server responds with text
+                    document.getElementById('result').innerText = data; // Display the data
+                } catch (error) {
+                    console.error('Error fetching data:', error);
+                    document.getElementById('result').innerText = 'Error fetching data.';
+                }
+            });
+        </script>
+	}
+}
