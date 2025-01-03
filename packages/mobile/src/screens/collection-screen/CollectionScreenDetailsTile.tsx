@@ -225,10 +225,9 @@ export const CollectionScreenDetailsTile = ({
 
   const isReachable = useSelector(getIsReachable)
 
-  const { data: collection } = useCollection(
-    typeof collectionId === 'number' ? collectionId : -1,
-    { enabled: typeof collectionId === 'number' }
-  )
+  const { data: collection } = useCollection(collectionId as ID, {
+    enabled: typeof collectionId === 'number'
+  })
   const {
     is_stream_gated: isStreamGated,
     is_scheduled_release: isScheduledRelease,

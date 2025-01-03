@@ -16,7 +16,8 @@ export const playlistPermalinkToHandleAndSlug = (permalink: string) => {
       'Permalink formatted incorrectly. Should follow /<handle>/playlist/<slug> format.'
     )
   }
-  const [, handle, , slug] = splitPermalink
+  const handle = splitPermalink[1]
+  const slug = splitPermalink[3]
   return { handle, slug }
 }
 
@@ -37,10 +38,10 @@ export const useCollectionByPermalink = (
   return useQuery({
     queryKey: [QUERY_KEYS.collectionByPermalink, permalink],
     queryFn: async () => {
-      if (!permalink) return null
+      if (!permalink || !audiusSdk) return null
       const { handle, slug } = playlistPermalinkToHandleAndSlug(permalink)
       const { data = [] } =
-        await audiusSdk!.full.playlists.getPlaylistByHandleAndSlug({
+        await audiusSdk.full.playlists.getPlaylistByHandleAndSlug({
           handle,
           slug,
           userId: OptionalId.parse(currentUserId)
