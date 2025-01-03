@@ -228,6 +228,10 @@
         "currentHeight": {
           "type": "string",
           "format": "int64"
+        },
+        "timestamp": {
+          "type": "string",
+          "format": "date-time"
         }
       }
     },

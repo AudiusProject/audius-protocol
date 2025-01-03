@@ -494,7 +494,6 @@ def configure_celery(celery, test_config=None):
     redis_inst.delete("update_aggregates_lock")
     redis_inst.delete("publish_scheduled_releases_lock")
     redis_inst.delete("create_engagement_notifications")
-    redis_inst.delete("index_core_lock")
     # delete cached final_poa_block in case it has changed
     redis_inst.delete(final_poa_block_redis_key)
 
@@ -506,8 +505,6 @@ def configure_celery(celery, test_config=None):
         address=contract_addresses[ENTITY_MANAGER],
         abi=entity_manager_contract_abi,
     )
-
-    challenge_bus = setup_challenge_bus()
 
     # Initialize custom task context with database object
     class WrappedDatabaseTask(DatabaseTask):
@@ -524,7 +521,7 @@ def configure_celery(celery, test_config=None):
                 eth_web3_provider=eth_web3,
                 trusted_notifier_manager=trusted_notifier_manager,
                 solana_client_manager=solana_client_manager,
-                challenge_event_bus=challenge_bus,
+                challenge_event_bus=setup_challenge_bus(),
                 eth_manager=eth_manager,
                 entity_manager_contract=entity_manager_contract,
             )
@@ -547,5 +544,5 @@ def configure_celery(celery, test_config=None):
     celery.send_task("index_payment_router", queue="index_sol")
 
     if environment == "dev" or environment == "stage":
-        core_indexer = CoreIndexer(db=db, redis=redis_inst, challenge_bus=challenge_bus)
+        core_indexer = CoreIndexer()
         core_indexer.start()

@@ -156,6 +156,7 @@ class BlockResponse(google.protobuf.message.Message):
     HEIGHT_FIELD_NUMBER: builtins.int
     TRANSACTIONS_FIELD_NUMBER: builtins.int
     CURRENT_HEIGHT_FIELD_NUMBER: builtins.int
+    TIMESTAMP_FIELD_NUMBER: builtins.int
     blockhash: builtins.str
     chainid: builtins.str
     proposer: builtins.str
@@ -163,6 +164,8 @@ class BlockResponse(google.protobuf.message.Message):
     current_height: builtins.int
     @property
     def transactions(self) -> google.protobuf.internal.containers.RepeatedCompositeFieldContainer[global___SignedTransaction]: ...
+    @property
+    def timestamp(self) -> google.protobuf.timestamp_pb2.Timestamp: ...
     def __init__(
         self,
         *,
@@ -172,8 +175,10 @@ class BlockResponse(google.protobuf.message.Message):
         height: builtins.int = ...,
         transactions: collections.abc.Iterable[global___SignedTransaction] | None = ...,
         current_height: builtins.int = ...,
+        timestamp: google.protobuf.timestamp_pb2.Timestamp | None = ...,
     ) -> None: ...
-    def ClearField(self, field_name: typing.Literal["blockhash", b"blockhash", "chainid", b"chainid", "current_height", b"current_height", "height", b"height", "proposer", b"proposer", "transactions", b"transactions"]) -> None: ...
+    def HasField(self, field_name: typing.Literal["timestamp", b"timestamp"]) -> builtins.bool: ...
+    def ClearField(self, field_name: typing.Literal["blockhash", b"blockhash", "chainid", b"chainid", "current_height", b"current_height", "height", b"height", "proposer", b"proposer", "timestamp", b"timestamp", "transactions", b"transactions"]) -> None: ...
 
 global___BlockResponse = BlockResponse
 

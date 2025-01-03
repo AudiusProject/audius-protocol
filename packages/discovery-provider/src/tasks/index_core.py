@@ -1,4 +1,8 @@
+import ast
+import json
 import logging
+import os
+import signal
 import threading
 import time
 from datetime import datetime
@@ -6,11 +10,11 @@ from logging import Logger, LoggerAdapter
 from typing import List, Optional, TypedDict
 
 from redis import Redis
-from sqlalchemy import desc
+from sqlalchemy import desc, insert
 from sqlalchemy.orm.session import Session
 
 from src.challenges.challenge_event import ChallengeEvent
-from src.challenges.challenge_event_bus import ChallengeEventBus
+from src.challenges.challenge_event_bus import ChallengeEventBus, setup_challenge_bus
 from src.models.core.core_indexed_blocks import CoreIndexedBlocks
 from src.models.social.play import Play
 from src.tasks.core.core_client import CoreClient, get_core_instance
@@ -21,6 +25,8 @@ from src.tasks.index_core_cutovers import (
     get_core_cutover_chain_id,
     get_sol_cutover,
 )
+from src.utils.config import shared_config
+from src.utils.redis_connection import get_redis
 from src.utils.session_manager import SessionManager
 
 root_logger = logging.getLogger(__name__)
@@ -29,8 +35,25 @@ CORE_INDEXER_MINIMUM_TIME_SECS = 1
 CORE_INDEXER_ERROR_SLEEP_SECS = 5
 
 core_health_check_cache_key = "core:indexer:health"
-core_plays_health_check_cache_key = "core:indexer:health:plays"
+core_listens_health_check_cache_key = "core:indexer:health:listens"
 core_em_health_check_cache_key = "core:indexer:health:em"
+
+
+class CoreListensTxInfo(TypedDict):
+    signature: str
+    slot: int
+    timestamp: int
+
+
+class CoreListensTxInfoHealth(TypedDict):
+    chain_tx: CoreListensTxInfo | None
+    db_tx: CoreListensTxInfo
+
+
+class CoreListensHealth(TypedDict):
+    slot_diff: int
+    time_diff: float
+    tx_info: CoreListensTxInfoHealth
 
 
 class PlayInfo(TypedDict):
@@ -72,14 +95,17 @@ class CoreIndexer:
     latest_indexed_block_height: int
     latest_chain_block_height: int
 
-    def __init__(
-        self, db: SessionManager, redis: Redis, challenge_bus: ChallengeEventBus
-    ):
-        self.db = db
-        self.redis = redis
-        self.challenge_bus = challenge_bus
+    def __init__(self):
+        database_url = shared_config["db"]["url"]
+        self.db = SessionManager(
+            database_url, ast.literal_eval(shared_config["db"]["engine_args_literal"])
+        )
+        self.redis = get_redis()
+        self.challenge_bus = setup_challenge_bus()
         self.core = get_core_instance()
+
         self.stop_event = threading.Event()
+
         self.indexer_initialized = False
         self.indexer_caught_up = False
         self.logger = logging.LoggerAdapter(
@@ -88,6 +114,9 @@ class CoreIndexer:
                 "indexer": "core",
             },
         )
+
+        signal.signal(signal.SIGTERM, self.signal_handler)
+        signal.signal(signal.SIGINT, self.signal_handler)
 
     # checks all the connections and gathers base values so the indexer can proceed
     def initialize(self):
@@ -125,19 +154,40 @@ class CoreIndexer:
                 .filter(Play.slot != None)
                 .filter(Play.signature != None)
                 .order_by(desc(Play.slot))
-                .one_or_none()
+                .first()
             )
             if latest_slot_record and latest_slot_record.slot:
                 self.sol_latest_processed_slot = latest_slot_record.slot
 
+        self.redis.delete("index_core_lock")
+
         self.indexer_initialized = True
         self.logger.info("initialized core indexer")
 
-    # starts indexer in it's own thread to avoid blocking main
+    def signal_handler(self, signal_received, frame):
+        """Handles termination signals and sets the stop event."""
+        self.logger.info(
+            f"Signal {signal_received} received. Shutting down CoreIndexer..."
+        )
+        self.stop_event.set()
+
+    # starts indexer in it's own thread to avoid blocking main and getting caught up in celery
     def start(self):
+        # start core indexer alongside beat service, there's only one instance of beat
+        audius_service = os.getenv("audius_service")
+        root_logger.warning(
+            f"core indexer starting with audius_service {audius_service}"
+        )
+        if not audius_service or audius_service != "beat":
+            return
+
         thread = threading.Thread(target=self.index_core, daemon=True)
         thread.start()
-        root_logger.info("core indexer thread started")
+        root_logger.warning("core indexer thread started")
+
+    def stop(self):
+        self.logger.warning("Stopping Core Indexer...")
+        self.stop_event.set()
 
     def latest_indexed_adjusted_sol_block_height(self) -> int:
         return get_adjusted_core_block(self.latest_indexed_block_height)
@@ -153,15 +203,9 @@ class CoreIndexer:
 
     def index_core(self):
         while not self.stop_event.is_set():
-            have_lock = False
             was_error = False
-            update_lock = self.redis.lock("index_core_lock")
             start_time = time.time()
             try:
-                have_lock = update_lock.acquire(blocking=False)
-                if not have_lock:
-                    raise Exception("failed to aquire lock")
-
                 initialized = self.indexer_initialized
                 if not initialized:
                     self.initialize()
@@ -170,12 +214,23 @@ class CoreIndexer:
                 if not indexed_block:
                     continue
 
+                self.latest_indexed_block_height = indexed_block.height
+                self.update_core_listens_health(indexed_block)
+
             except Exception as e:
                 was_error = True
                 self.logger.error(f"error {e}")
             finally:
-                if have_lock:
-                    update_lock.release()
+                # shutdown if stop event sent
+                if self.stop_event.is_set():
+                    self.logger.info("Shutdown signal received. Stopping indexing")
+                    break
+
+                # sleep for the rest of the minimum time threshold
+                # will not sleep if indexer considers itself not caught up
+                # will sleep for longer if an error was found to allow
+                # async processes to recover
+                # TODO: add circuit breaker pattern for errors
                 elapsed_time = time.time() - start_time
                 should_wait = (
                     self.indexer_caught_up
@@ -216,7 +271,7 @@ class CoreIndexer:
         # if error is raised a rollback occurs
         # tranasction gets committed when scope is exited
         with self.db.scoped_session() as session:
-            self.logger.info("indexing block")
+            self.logger.warn("indexing block")
 
             # TODO: parallelize?
             for tx in chain_block.transactions:
@@ -245,21 +300,31 @@ class CoreIndexer:
             if previous_height > 0:
                 parent_block = (
                     session.query(CoreIndexedBlocks)
-                    .filter_by(height=previous_height)
+                    .filter(CoreIndexedBlocks.chain_id == self.chain_id)
+                    .filter(CoreIndexedBlocks.height == previous_height)
                     .one_or_none()
                 )
                 if parent_block:
                     parenthash = parent_block.blockhash
 
-            new_block = CoreIndexedBlocks(
-                chain_id=self.chain_id,
-                height=chain_block.height,
-                blockhash=chain_block.blockhash,
-                parenthash=parenthash,
-            )
-            session.add(new_block)
+            new_block = {
+                "chain_id": self.chain_id,
+                "height": chain_block.height,
+                "blockhash": chain_block.blockhash,
+                "parenthash": parenthash,
+            }
 
-            self.latest_indexed_block_height = next_block
+            exists = (
+                session.query(CoreIndexedBlocks)
+                .filter(CoreIndexedBlocks.chain_id == self.chain_id)
+                .filter(CoreIndexedBlocks.height == chain_block.height)
+                .one_or_none()
+            )
+            if not exists:
+                stmt = insert(CoreIndexedBlocks).values(new_block)
+                session.execute(stmt)
+            if exists:
+                self.logger.warning(f"block {chain_block.height} already indexed")
 
             return chain_block
         return None
@@ -278,7 +343,7 @@ class CoreIndexer:
             .filter(Play.slot != None)
             .filter(Play.signature != None)
             .order_by(desc(Play.slot))
-            .one_or_none()
+            .first()
         )
         if latest_slot_record and latest_slot_record.slot:
             latest_slot = latest_slot_record.slot
@@ -357,8 +422,16 @@ class CoreIndexer:
             f"index_core_plays.py | Dispatched listen events in {listen_dispatch_diff}"
         )
 
-    def update_core_listens_health(self):
-        pass
+    # dresses up the core health to look like the solana plays endpoint
+    def update_core_listens_health(self, latest_indexed_block: BlockResponse):
+        latest_indexed_slot = self.latest_indexed_block_height
+        latest_chain_slot = self.latest_chain_block_height
+
+        slot_diff = latest_chain_slot - latest_indexed_slot
+        time_diff = (datetime.utcnow() - latest_indexed_block.timestamp).total_seconds()
+
+        health: CoreListensHealth = {"slot_diff": slot_diff, "time_diff": time_diff}
+        self.redis.set(core_listens_health_check_cache_key, json.dumps(health))
 
     def update_core_health(self):
         pass

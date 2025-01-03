@@ -17,6 +17,7 @@ import (
 	gogo "github.com/cosmos/gogoproto/proto"
 	"github.com/iancoleman/strcase"
 	"google.golang.org/protobuf/proto"
+	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 var (
@@ -148,8 +149,8 @@ func (s *Server) GetBlock(ctx context.Context, req *core_proto.GetBlockRequest) 
 	currentHeight := atomic.LoadInt64(&s.cache.currentHeight)
 	if req.Height > currentHeight {
 		return &core_proto.BlockResponse{
-			Chainid: s.config.GenesisFile.ChainID,
-			Height:  -1,
+			Chainid:       s.config.GenesisFile.ChainID,
+			Height:        -1,
 			CurrentHeight: currentHeight,
 		}, nil
 	}
@@ -160,8 +161,8 @@ func (s *Server) GetBlock(ctx context.Context, req *core_proto.GetBlockRequest) 
 		if strings.Contains(err.Error(), blockInFutureMsg) {
 			// return block with -1 to indicate it doesn't exist yet
 			return &core_proto.BlockResponse{
-				Chainid: s.config.GenesisFile.ChainID,
-				Height:  -1,
+				Chainid:       s.config.GenesisFile.ChainID,
+				Height:        -1,
 				CurrentHeight: currentHeight,
 			}, nil
 		}
@@ -180,12 +181,13 @@ func (s *Server) GetBlock(ctx context.Context, req *core_proto.GetBlockRequest) 
 	}
 
 	res := &core_proto.BlockResponse{
-		Blockhash:    block.BlockID.Hash.String(),
-		Chainid:      s.config.GenesisFile.ChainID,
-		Proposer:     block.Block.ProposerAddress.String(),
-		Height:       block.Block.Height,
-		Transactions: txs,
+		Blockhash:     block.BlockID.Hash.String(),
+		Chainid:       s.config.GenesisFile.ChainID,
+		Proposer:      block.Block.ProposerAddress.String(),
+		Height:        block.Block.Height,
+		Transactions:  txs,
 		CurrentHeight: currentHeight,
+		Timestamp:     timestamppb.New(block.Block.Time),
 	}
 
 	return res, nil
