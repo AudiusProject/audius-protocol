@@ -16,7 +16,7 @@ type Config = {
 }
 
 type GetTracksByUserHandleArgs = {
-  handle: string
+  handle: string | null | undefined
   currentUserId?: ID | null
   filterTracks?: 'public' | 'unlisted' | 'all'
   sort?: 'date' | 'plays'
@@ -45,10 +45,8 @@ export const useUserTracksByHandle = (
       offset
     ],
     queryFn: async () => {
-      if (!handle) return []
-
       const { data = [] } = await audiusSdk!.full.users.getTracksByUserHandle({
-        handle,
+        handle: handle!,
         userId: OptionalId.parse(currentUserId),
         filterTracks,
         sort,
