@@ -4,7 +4,6 @@ import { useCollectionByPermalink, useTracks } from '@audius/common/api'
 import { usePlayTrack, usePauseTrack } from '@audius/common/hooks'
 import { Name, SquareSizes, Kind, ID, ModalSource } from '@audius/common/models'
 import {
-  accountSelectors,
   cacheCollectionsActions,
   cacheCollectionsSelectors,
   QueueSource,
@@ -18,7 +17,6 @@ import { useDispatch, useSelector } from 'react-redux'
 import { make } from 'common/store/analytics/actions'
 import MobilePlaylistTile from 'components/track/mobile/ConnectedPlaylistTile'
 
-const { getUserId } = accountSelectors
 const { getTrackId } = playerSelectors
 const { getCollection } = cacheCollectionsSelectors
 const { fetchCoverArt } = cacheCollectionsActions
@@ -30,7 +28,6 @@ export const ChatMessagePlaylist = ({
   className
 }: ChatMessageTileProps) => {
   const dispatch = useDispatch()
-  const currentUserId = useSelector(getUserId)
   const playingTrackId = useSelector(getTrackId)
 
   const permalink = getPathFromPlaylistUrl(link)

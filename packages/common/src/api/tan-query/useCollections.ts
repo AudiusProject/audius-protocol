@@ -28,8 +28,7 @@ export const useCollections = (
   return useQuery({
     queryKey: [QUERY_KEYS.collections, collectionIds],
     queryFn: async () => {
-      if (collectionIds === null || collectionIds === undefined) return null
-      const encodedIds = collectionIds
+      const encodedIds = collectionIds!
         .map(encodeHashId)
         .filter((id): id is string => id !== null)
       if (encodedIds.length === 0) return []

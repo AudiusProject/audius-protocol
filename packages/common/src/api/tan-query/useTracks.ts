@@ -28,8 +28,7 @@ export const useTracks = (
   return useQuery({
     queryKey: [QUERY_KEYS.tracks, trackIds],
     queryFn: async () => {
-      if (trackIds === null || trackIds === undefined) return null
-      const encodedIds = trackIds
+      const encodedIds = trackIds!
         .map(encodeHashId)
         .filter((id): id is string => id !== null)
       if (encodedIds.length === 0) return []

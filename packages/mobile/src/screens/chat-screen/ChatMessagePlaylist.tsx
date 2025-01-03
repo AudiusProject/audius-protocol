@@ -5,11 +5,7 @@ import { usePlayTrack, usePauseTrack } from '@audius/common/hooks'
 import type { TrackPlayback } from '@audius/common/hooks'
 import { Name, PlaybackSource, Kind } from '@audius/common/models'
 import type { ID } from '@audius/common/models'
-import {
-  accountSelectors,
-  QueueSource,
-  playerSelectors
-} from '@audius/common/store'
+import { QueueSource, playerSelectors } from '@audius/common/store'
 import type { ChatMessageTileProps } from '@audius/common/store'
 import { getPathFromPlaylistUrl, makeUid } from '@audius/common/utils'
 import { useSelector } from 'react-redux'
@@ -18,7 +14,6 @@ import { CollectionTile } from 'app/components/lineup-tile'
 import { LineupTileSource } from 'app/components/lineup-tile/types'
 import { make, track as trackEvent } from 'app/services/analytics'
 
-const { getUserId } = accountSelectors
 const { getUid, getPlaying, getTrackId } = playerSelectors
 
 export const ChatMessagePlaylist = ({
@@ -27,7 +22,6 @@ export const ChatMessagePlaylist = ({
   onSuccess,
   styles
 }: ChatMessageTileProps) => {
-  const currentUserId = useSelector(getUserId)
   const isPlaying = useSelector(getPlaying)
   const playingTrackId = useSelector(getTrackId)
   const playingUid = useSelector(getUid)
@@ -37,9 +31,7 @@ export const ChatMessagePlaylist = ({
 
   const trackIds =
     collection?.playlist_contents?.track_ids?.map((t) => t.track) ?? []
-  const { data: tracks = [] } = useTracks(trackIds, {
-    enabled: !!trackIds.length
-  })
+  const { data: tracks = [] } = useTracks(trackIds)
 
   const collectionId = collection?.playlist_id
 
