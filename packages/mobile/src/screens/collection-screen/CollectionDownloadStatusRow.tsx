@@ -1,9 +1,9 @@
 import { useLayoutEffect, useState } from 'react'
 
-import { useCollection, useCurrentUserId } from '@audius/common/api'
+import { useGetPlaylistById } from '@audius/common/api'
 import { useThrottledCallback } from '@audius/common/hooks'
 import type { ID } from '@audius/common/models'
-import { reachabilitySelectors } from '@audius/common/store'
+import { accountSelectors, reachabilitySelectors } from '@audius/common/store'
 import { useSelector, useDispatch } from 'react-redux'
 
 import { getCollectionDownloadStatus } from 'app/components/offline-downloads/CollectionDownloadStatusIndicator'
@@ -18,6 +18,7 @@ import {
 
 import { DownloadStatusRowDisplay } from './DownloadStatusRowDisplay'
 const { getIsReachable } = reachabilitySelectors
+const { getUserId } = accountSelectors
 
 const TOGGLE_COOLDOWN_MS = 800
 
@@ -30,9 +31,12 @@ export const CollectionDownloadStatusRow = (
 ) => {
   const { collectionId } = props
   const dispatch = useDispatch()
+  const currentUserId = useSelector(getUserId)
 
-  const { data: currentUserId } = useCurrentUserId()
-  const { data: collection } = useCollection(collectionId)
+  const { data: collection } = useGetPlaylistById({
+    playlistId: collectionId,
+    currentUserId
+  })
 
   const isMarkedForDownload = useSelector((state) =>
     Boolean(getCollectionDownloadStatus(state, collectionId))

@@ -1,6 +1,6 @@
 import { memo, MouseEvent, useRef } from 'react'
 
-import { useCurrentUserId } from '@audius/common/api'
+import { useGetCurrentUserId } from '@audius/common/api'
 import { useGatedContentAccess } from '@audius/common/hooks'
 import {
   ID,
@@ -61,7 +61,7 @@ const TrackListItem = ({
   forceSkeleton = false
 }: TrackListItemProps) => {
   const menuRef = useRef<HTMLDivElement>(null)
-  const { data: currentUserId } = useCurrentUserId()
+  const { data: currentUserId } = useGetCurrentUserId({})
   const isOwner = track?.owner_id === currentUserId
   const isPrivate = track?.is_unlisted
   const isPremium = isContentUSDCPurchaseGated(track?.stream_conditions)

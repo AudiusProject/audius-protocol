@@ -1,6 +1,6 @@
 import { useCallback, useRef } from 'react'
 
-import { useCurrentUserId, useGetMutedUsers } from '@audius/common/api'
+import { useGetCurrentUserId, useGetMutedUsers } from '@audius/common/api'
 import { useMuteUser } from '@audius/common/context'
 import { Status } from '@audius/common/models'
 import { profilePage } from '@audius/common/src/utils/route'
@@ -40,7 +40,7 @@ const CommentSettingsModal = () => {
   const [isVisible, setIsVisible] = useModalState('CommentSettings')
   const handleClose = useCallback(() => setIsVisible(false), [setIsVisible])
   const scrollParentRef = useRef<HTMLElement>()
-  const { data: currentUserId } = useCurrentUserId()
+  const { data: currentUserId } = useGetCurrentUserId({})
 
   const { data: mutedUsers, status } = useGetMutedUsers(
     {

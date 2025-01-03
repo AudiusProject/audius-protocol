@@ -1,6 +1,6 @@
 import { useCallback, useEffect } from 'react'
 
-import { useTrack } from '@audius/common/api'
+import { useGetTrackById } from '@audius/common/api'
 import { useFeatureFlag } from '@audius/common/hooks'
 import type { ID, Track } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
@@ -57,7 +57,7 @@ export const TrackRemixes = (props: TrackRemixesProrps) => {
   const currentQueueItem = useSelector(getCurrentQueueItem)
   const isPlaying = useSelector(getPlaying)
   const isBuffering = useSelector(getBuffering)
-  const { data: track } = useTrack(trackId)
+  const { data: track } = useGetTrackById({ id: trackId })
   const { isEnabled: commentsFlagEnabled } = useFeatureFlag(
     FeatureFlags.COMMENTS_ENABLED
   )

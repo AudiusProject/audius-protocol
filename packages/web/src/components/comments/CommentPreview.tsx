@@ -1,6 +1,6 @@
 import { useCallback, useEffect } from 'react'
 
-import { useTrack } from '@audius/common/api'
+import { useGetTrackById } from '@audius/common/api'
 import {
   CommentSectionProvider,
   useCurrentCommentSection
@@ -37,7 +37,7 @@ const CommentPreviewHeader = () => {
     commentCount
   } = useCurrentCommentSection()
 
-  const { data: track } = useTrack(entityId)
+  const { data: track } = useGetTrackById({ id: entityId })
 
   const isShowingComments = !isLoading && commentIds?.length
 
@@ -75,7 +75,7 @@ const CommentPreviewContent = () => {
   } = useCurrentCommentSection()
   const dispatch = useDispatch()
 
-  const { data: track } = useTrack(entityId)
+  const { data: track } = useGetTrackById({ id: entityId })
 
   const handleClick = useCallback(() => {
     dispatch(pushRoute(`${track?.permalink}/comments`))
@@ -122,7 +122,7 @@ type CommentPreviewProps = {
 export const CommentPreview = (props: CommentPreviewProps) => {
   const { entityId } = props
   const dispatch = useDispatch()
-  const { data: track } = useTrack(entityId)
+  const { data: track } = useGetTrackById({ id: entityId })
   const [searchParams] = useSearchParams()
   const showComments = searchParams.get('showComments')
   const { history } = useHistoryContext()

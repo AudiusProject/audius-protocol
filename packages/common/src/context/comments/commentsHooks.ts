@@ -18,7 +18,7 @@ import {
   useUpdateTrackCommentNotificationSetting as useTqUpdateTrackCommentNotificationSetting,
   useUpdateCommentNotificationSetting as useTqUpdateCommentNotificationSetting,
   useGetTrackCommentNotificationSetting as useTqGetTrackCommentNotificationSetting,
-  useCurrentUserId
+  useGetCurrentUserId
 } from '../../api'
 import { useAppContext } from '../appContext'
 
@@ -193,7 +193,7 @@ export const useReportComment = () => {
 }
 
 export const useMuteUser = () => {
-  const { data: currentUserId } = useCurrentUserId()
+  const { data: currentUserId } = useGetCurrentUserId({})
   const { mutate: muteUser, ...rest } = useTqMuteUser()
   const {
     analytics: { track, make }
@@ -259,7 +259,7 @@ export const useDeleteComment = () => {
 }
 
 export const useGetTrackCommentNotificationSetting = (trackId: ID) => {
-  const { data: currentUserId } = useCurrentUserId()
+  const { data: currentUserId } = useGetCurrentUserId({})
   const { data: isMutedData } = useTqGetTrackCommentNotificationSetting(
     trackId,
     currentUserId
@@ -268,7 +268,7 @@ export const useGetTrackCommentNotificationSetting = (trackId: ID) => {
 }
 
 export const useUpdateTrackCommentNotificationSetting = (trackId: ID) => {
-  const { data: currentUserId } = useCurrentUserId()
+  const { data: currentUserId } = useGetCurrentUserId({})
   const { mutate: updateSetting, ...rest } =
     useTqUpdateTrackCommentNotificationSetting()
 
@@ -302,7 +302,7 @@ export const useUpdateTrackCommentNotificationSetting = (trackId: ID) => {
 }
 
 export const useUpdateCommentNotificationSetting = (commentId: ID) => {
-  const { data: currentUserId } = useCurrentUserId()
+  const { data: currentUserId } = useGetCurrentUserId({})
   const { mutate: updateSetting, ...rest } =
     useTqUpdateCommentNotificationSetting()
   const {

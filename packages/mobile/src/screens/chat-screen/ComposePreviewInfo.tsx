@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react'
 
-import { useCollection, useTrack } from '@audius/common/api'
+import { useGetPlaylistById, useGetTrackById } from '@audius/common/api'
 import type { ID, UserMetadata } from '@audius/common/models'
 import { SquareSizes } from '@audius/common/models'
 
@@ -57,7 +57,7 @@ type ComposerTrackInfoProps = {
 export const ComposerTrackInfo = (props: ComposerTrackInfoProps) => {
   const { trackId } = props
 
-  const { data: track } = useTrack(trackId)
+  const { data: track } = useGetTrackById({ id: trackId }, { force: true })
 
   if (!track) return null
 
@@ -80,7 +80,10 @@ type ComposerCollectionInfoProps = {
 export const ComposerCollectionInfo = (props: ComposerCollectionInfoProps) => {
   const { collectionId } = props
 
-  const { data: collection } = useCollection(collectionId)
+  const { data: collection } = useGetPlaylistById(
+    { playlistId: collectionId },
+    { force: true }
+  )
 
   if (!collection) return null
 

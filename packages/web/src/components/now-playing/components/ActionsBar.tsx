@@ -1,6 +1,6 @@
 import { memo, MouseEvent } from 'react'
 
-import { useCurrentUserId, useTrack } from '@audius/common/api'
+import { useGetCurrentUserId, useGetTrackById } from '@audius/common/api'
 import { useGatedContentAccess } from '@audius/common/hooks'
 import { ID } from '@audius/common/models'
 import {
@@ -36,8 +36,8 @@ const ActionsBar = ({
   isDarkMode,
   isMatrixMode
 }: ActionsBarProps) => {
-  const { data: track } = useTrack(trackId)
-  const { data: currentUserId } = useCurrentUserId()
+  const { data: track } = useGetTrackById({ id: trackId })
+  const { data: currentUserId } = useGetCurrentUserId({})
   const {
     is_unlisted: isUnlisted,
     owner_id: ownerId,

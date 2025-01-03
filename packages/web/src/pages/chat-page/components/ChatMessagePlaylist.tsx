@@ -1,9 +1,20 @@
 import { useCallback, useMemo, useEffect } from 'react'
 
-import { useCollectionByPermalink, useTracks } from '@audius/common/api'
-import { usePlayTrack, usePauseTrack } from '@audius/common/hooks'
-import { Name, SquareSizes, Kind, ID, ModalSource } from '@audius/common/models'
 import {
+  useGetTracksByIds,
+  useGetPlaylistByPermalink
+} from '@audius/common/api'
+import { usePlayTrack, usePauseTrack } from '@audius/common/hooks'
+import {
+  Name,
+  SquareSizes,
+  Kind,
+  Status,
+  ID,
+  ModalSource
+} from '@audius/common/models'
+import {
+  accountSelectors,
   cacheCollectionsActions,
   cacheCollectionsSelectors,
   QueueSource,
@@ -17,6 +28,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import { make } from 'common/store/analytics/actions'
 import MobilePlaylistTile from 'components/track/mobile/ConnectedPlaylistTile'
 
+const { getUserId } = accountSelectors
 const { getTrackId } = playerSelectors
 const { getCollection } = cacheCollectionsSelectors
 const { fetchCoverArt } = cacheCollectionsActions
@@ -28,10 +40,17 @@ export const ChatMessagePlaylist = ({
   className
 }: ChatMessageTileProps) => {
   const dispatch = useDispatch()
+  const currentUserId = useSelector(getUserId)
   const playingTrackId = useSelector(getTrackId)
 
-  const permalink = getPathFromPlaylistUrl(link)
-  const { data: playlist, isPending } = useCollectionByPermalink(permalink)
+  const permalink = getPathFromPlaylistUrl(link) ?? ''
+  const { data: playlist, status } = useGetPlaylistByPermalink(
+    {
+      permalink,
+      currentUserId: currentUserId!
+    },
+    { disabled: !permalink || !currentUserId }
+  )
 
   const collectionId = playlist?.playlist_id
   const collection = useSelector((state: CommonState) =>
@@ -50,7 +69,13 @@ export const ChatMessagePlaylist = ({
 
   const trackIds =
     playlist?.playlist_contents?.track_ids?.map((t) => t.track) ?? []
-  const { data: tracks = [] } = useTracks(trackIds)
+  const { data: tracks } = useGetTracksByIds(
+    {
+      ids: trackIds,
+      currentUserId: currentUserId!
+    },
+    { disabled: !trackIds.length || !currentUserId }
+  )
 
   const uidMap = useMemo(() => {
     return trackIds.reduce((result: { [id: ID]: string }, id) => {
@@ -66,7 +91,7 @@ export const ChatMessagePlaylist = ({
    * Also include the other properties to conform with the component.
    */
   const tracksWithUids = useMemo(() => {
-    return tracks.map((track) => ({
+    return (tracks || []).map((track) => ({
       ...track,
       user: track.user,
       id: track.track_id,
@@ -75,7 +100,7 @@ export const ChatMessagePlaylist = ({
   }, [tracks, uidMap])
 
   const entries = useMemo(() => {
-    return tracks.map((track) => ({
+    return (tracks || []).map((track) => ({
       id: track.track_id,
       uid: uidMap[track.track_id],
       source: QueueSource.CHAT_PLAYLIST_TRACKS
@@ -113,7 +138,7 @@ export const ChatMessagePlaylist = ({
       playTrack={playTrack}
       pauseTrack={pauseTrack}
       hasLoaded={() => {}}
-      isLoading={isPending}
+      isLoading={status === Status.LOADING || status === Status.IDLE}
       isTrending={false}
       numLoadingSkeletonRows={tracksWithUids.length}
       togglePlay={() => {}}

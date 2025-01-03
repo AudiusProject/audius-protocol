@@ -1,12 +1,12 @@
 import { useContext, useMemo, useState } from 'react'
 
-import { useGetCommentById, useUser } from '@audius/common/api'
+import { useGetCommentById, useGetUserById } from '@audius/common/api'
 import {
   useCurrentCommentSection,
   useDeleteComment
 } from '@audius/common/context'
 import { commentsMessages as messages } from '@audius/common/messages'
-import { Comment, ID, ReplyComment } from '@audius/common/models'
+import { Comment, ID, ReplyComment, Status } from '@audius/common/models'
 import { cacheUsersSelectors } from '@audius/common/store'
 import { dayjs } from '@audius/common/utils'
 import {
@@ -84,8 +84,8 @@ const CommentBlockInternal = (
   const { toast } = useContext(ToastContext)
 
   // triggers a fetch to get user profile info
-  const { status } = useUser(userId)
-  const isLoadingUser = status === 'pending'
+  const { status } = useGetUserById({ id: userId })
+  const isLoadingUser = status === Status.LOADING
 
   const [showEditInput, setShowEditInput] = useState(false)
   const [showReplyInput, setShowReplyInput] = useState(false)

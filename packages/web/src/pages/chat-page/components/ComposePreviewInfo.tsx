@@ -1,4 +1,4 @@
-import { useTrack, useCollection } from '@audius/common/api'
+import { useGetPlaylistById, useGetTrackById } from '@audius/common/api'
 import { SquareSizes, ID } from '@audius/common/models'
 import { Flex, Text } from '@audius/harmony'
 
@@ -52,7 +52,7 @@ export const ComposerTrackInfo = (props: ComposerTrackInfoProps) => {
     size: SquareSizes.SIZE_150_BY_150
   })
 
-  const { data: track } = useTrack(trackId)
+  const { data: track } = useGetTrackById({ id: trackId }, { force: true })
 
   if (!track) return null
 
@@ -77,7 +77,10 @@ export const ComposerCollectionInfo = (props: ComposerCollectionInfoProps) => {
     size: SquareSizes.SIZE_150_BY_150
   })
 
-  const { data: collection } = useCollection(collectionId)
+  const { data: collection } = useGetPlaylistById(
+    { playlistId: collectionId },
+    { force: true }
+  )
 
   if (!collection) return null
 

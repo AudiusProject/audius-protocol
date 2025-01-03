@@ -1,6 +1,6 @@
 import { useCallback } from 'react'
 
-import { useCurrentUserId } from '@audius/common/api'
+import { useGetCurrentUserId } from '@audius/common/api'
 import {
   followersUserListActions,
   followersUserListSelectors
@@ -26,7 +26,7 @@ const messages = {
 export const FollowersScreen = () => {
   const { params } = useProfileRoute<'Followers'>()
   const { userId } = params
-  const { data: currentUserId } = useCurrentUserId()
+  const { data: currentUserId } = useGetCurrentUserId({})
   const dispatch = useDispatch()
 
   const handleSetFollowers = useCallback(() => {

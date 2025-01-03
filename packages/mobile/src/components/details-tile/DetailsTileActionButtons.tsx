@@ -1,4 +1,4 @@
-import { useCollection } from '@audius/common/api'
+import { useGetPlaylistById, useGetCurrentUserId } from '@audius/common/api'
 import type { ID } from '@audius/common/models'
 import { cacheCollectionsSelectors } from '@audius/common/store'
 import type { CommonState } from '@audius/common/store'
@@ -83,9 +83,14 @@ export const DetailsTileActionButtons = ({
   const isCollectionEmpty = useSelector((state: CommonState) =>
     getIsCollectionEmpty(state, { id: collectionId })
   )
-  const { data: collection } = useCollection(collectionId, {
-    enabled: !!isCollection
-  })
+  const { data: currentUserId } = useGetCurrentUserId({})
+  const { data: collection } = useGetPlaylistById(
+    {
+      playlistId: collectionId!,
+      currentUserId
+    },
+    { disabled: !collectionId || !isCollection }
+  )
   const collectionHasHiddenTracks = useSelector((state: CommonState) =>
     getCollectionHasHiddenTracks(state, { id: collectionId })
   )

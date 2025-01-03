@@ -4,7 +4,7 @@ import { Commitment } from '@solana/web3.js'
 import BN from 'bn.js'
 import { useDispatch, useSelector } from 'react-redux'
 
-import { useCurrentUser } from '~/api'
+import { useGetCurrentUser } from '~/api'
 import { useAudiusQueryContext } from '~/audius-query'
 import { Status } from '~/models/Status'
 import { BNUSDC, StringUSDC } from '~/models/Wallet'
@@ -33,7 +33,7 @@ export const useUSDCBalance = ({
   commitment?: Commitment
 } = {}) => {
   const { audiusSdk } = useAudiusQueryContext()
-  const { data: user } = useCurrentUser()
+  const { data: user } = useGetCurrentUser({})
   const ethAddress = user?.wallet ?? null
   const dispatch = useDispatch()
 
