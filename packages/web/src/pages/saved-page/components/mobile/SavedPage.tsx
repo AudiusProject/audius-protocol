@@ -63,7 +63,7 @@ type EmptyTabProps = {
   onClick: () => void
 }
 
-export const EmptyTab = (props: EmptyTabProps) => {
+const EmptyTab = (props: EmptyTabProps) => {
   const { message, onClick } = props
   return (
     <div className={styles.emptyTab}>

@@ -17,7 +17,7 @@ const messages = {
   managedAccounts: 'Managed Accounts'
 }
 
-export type AccountListContentProps = {
+type AccountListContentProps = {
   accounts: ManagedUserMetadata[]
   managerAccount: UserMetadata
   currentUserId: ID

@@ -55,16 +55,10 @@ type TierProps = {
   isActive?: boolean
   tier: AudioTiers
   isCompact?: boolean
-  onClickDiscord?: () => void
 }
 
 /** Shows info about a tier - badge, level, tier # */
-export const Tier = ({
-  tier,
-  isActive = false,
-  isCompact = false,
-  onClickDiscord = () => {}
-}: TierProps) => {
+const Tier = ({ tier, isActive = false, isCompact = false }: TierProps) => {
   const badgeImage = audioTierMapSvg[tier]
 
   return (
