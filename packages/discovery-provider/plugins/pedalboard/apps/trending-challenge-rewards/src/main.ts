@@ -23,7 +23,7 @@ export const main = async () => {
     .run()
 }
 
-// Friday at 12:10 pm PST, extra five minutes for trending to calculate
+// Friday at 12:10 pm PST, extra minutes for trending to calculate
 cron.schedule(
   '10 12 * * 5',
   () => {
