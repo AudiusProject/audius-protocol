@@ -12,6 +12,7 @@ import (
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
+	"github.com/go-openapi/validate"
 )
 
 // ProtocolBlockResponse protocol block response
@@ -25,11 +26,18 @@ type ProtocolBlockResponse struct {
 	// chainid
 	Chainid string `json:"chainid,omitempty"`
 
+	// current height
+	CurrentHeight string `json:"currentHeight,omitempty"`
+
 	// height
 	Height string `json:"height,omitempty"`
 
 	// proposer
 	Proposer string `json:"proposer,omitempty"`
+
+	// timestamp
+	// Format: date-time
+	Timestamp strfmt.DateTime `json:"timestamp,omitempty"`
 
 	// transactions
 	Transactions []*ProtocolSignedTransaction `json:"transactions"`
@@ -39,6 +47,10 @@ type ProtocolBlockResponse struct {
 func (m *ProtocolBlockResponse) Validate(formats strfmt.Registry) error {
 	var res []error
 
+	if err := m.validateTimestamp(formats); err != nil {
+		res = append(res, err)
+	}
+
 	if err := m.validateTransactions(formats); err != nil {
 		res = append(res, err)
 	}
@@ -46,6 +58,18 @@ func (m *ProtocolBlockResponse) Validate(formats strfmt.Registry) error {
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
+	return nil
+}
+
+func (m *ProtocolBlockResponse) validateTimestamp(formats strfmt.Registry) error {
+	if swag.IsZero(m.Timestamp) { // not required
+		return nil
+	}
+
+	if err := validate.FormatOf("timestamp", "body", "date-time", m.Timestamp.String(), formats); err != nil {
+		return err
+	}
+
 	return nil
 }
 

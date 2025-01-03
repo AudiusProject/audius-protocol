@@ -38,6 +38,7 @@ from src.queries import (
 )
 from src.solana.solana_client_manager import SolanaClientManager
 from src.tasks import celery_app
+from src.tasks.index_core import CoreIndexer
 from src.tasks.repair_audio_analyses import REPAIR_AUDIO_ANALYSES_LOCK
 from src.tasks.update_delist_statuses import UPDATE_DELIST_STATUSES_LOCK
 from src.utils import helpers, web3_provider
@@ -326,7 +327,6 @@ def configure_celery(celery, test_config=None):
             "src.tasks.update_delist_statuses",
             "src.tasks.repair_audio_analyses",
             "src.tasks.cache_current_nodes",
-            "src.tasks.index_core",
             "src.tasks.update_aggregates",
             "src.tasks.cache_entity_counts",
             "src.tasks.publish_scheduled_releases",
@@ -494,7 +494,6 @@ def configure_celery(celery, test_config=None):
     redis_inst.delete("update_aggregates_lock")
     redis_inst.delete("publish_scheduled_releases_lock")
     redis_inst.delete("create_engagement_notifications")
-    redis_inst.delete("index_core_lock")
     # delete cached final_poa_block in case it has changed
     redis_inst.delete(final_poa_block_redis_key)
 
@@ -545,4 +544,5 @@ def configure_celery(celery, test_config=None):
     celery.send_task("index_payment_router", queue="index_sol")
 
     if environment == "dev" or environment == "stage":
-        celery.send_task("index_core", queue="index_sol")
+        core_indexer = CoreIndexer()
+        core_indexer.start()

@@ -42,6 +42,7 @@ type Server struct {
 
 	txPubsub *TransactionHashPubsub
 
+	cache *Cache
 	abciState *ABCIState
 
 	core_proto.UnimplementedProtocolServer
@@ -88,6 +89,7 @@ func NewServer(config *config.Config, cconfig *cconfig.Config, logger *common.Lo
 		mempl:     mempl,
 		peers:     make(map[string]*sdk.Sdk),
 		txPubsub:  txPubsub,
+		cache: NewCache(),
 		abciState: NewABCIState(),
 
 		httpServer: httpServer,
@@ -115,6 +117,7 @@ func (s *Server) Start(ctx context.Context) error {
 	g.Go(s.startSyncTasks)
 	g.Go(s.startPeerManager)
 	g.Go(s.startEthNodeManager)
+	g.Go(s.startCache)
 
 	return g.Wait()
 }

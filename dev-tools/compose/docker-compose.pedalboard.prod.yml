@@ -47,7 +47,7 @@ services:
       - discovery
     healthcheck:
       test: ['CMD', 'curl', '-f', 'http://127.0.0.1:6001/relay/health']
-      interval: 1s
+      interval: 5s
       timeout: 1s
       retries: 120
     depends_on:
@@ -81,7 +81,7 @@ services:
       replicas: '${DISCOVERY_PROVIDER_REPLICAS}'
     healthcheck:
       test: ['CMD', 'curl', '-f', 'http://127.0.0.1:6002/solana/health_check']
-      interval: 1s
+      interval: 5s
       timeout: 1s
       retries: 120
     depends_on:
