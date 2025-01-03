@@ -44,7 +44,7 @@ export type MoodInfo = {
   icon: JSX.Element
 }
 
-export type SearchResultsApiType = ReturnType<typeof useGetSearchResultsApi>
+type SearchResultsApiType = ReturnType<typeof useGetSearchResultsApi>
 
 export type SearchResultsType<C extends SearchCategory> = {
   status: SearchResultsApiType['status']

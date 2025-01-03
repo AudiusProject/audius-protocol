@@ -37,7 +37,7 @@ const messages = {
   earn: (amount: string) => `Earn ${amount} $AUDIO for this purchase!`
 }
 
-export type LockedContentDetailsTileProps = {
+type LockedContentDetailsTileProps = {
   metadata: PurchaseableContentMetadata | Track | Collection
   owner: UserMetadata
   showLabel?: boolean

@@ -68,7 +68,7 @@ type AudioTiers = Exclude<BadgeTier, 'none'>
 const tiers: AudioTiers[] = ['bronze', 'silver', 'gold', 'platinum']
 
 // Mapping for large icons
-export const audioTierMapSvg: {
+const audioTierMapSvg: {
   [tier in AudioTiers]: Nullable<ReactElement>
 } = {
   bronze: <IconTokenBronze width={BADGE_SIZE} height={BADGE_SIZE} />,
@@ -79,7 +79,7 @@ export const audioTierMapSvg: {
 
 const BADGE_LOCAL_STORAGE_KEY = 'last_badge_tier'
 
-export const LEARN_MORE_URL = 'http://blog.audius.co/posts/community-meet-audio'
+const LEARN_MORE_URL = 'http://blog.audius.co/posts/community-meet-audio'
 
 const useShowConfetti = (tier: BadgeTier) => {
   // No tier or no local storage, never show confetti

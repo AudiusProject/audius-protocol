@@ -19,14 +19,13 @@ import IconSilverBadge from 'assets/img/tokenBadgeSilver48@2x.webp'
 
 import styles from './UserBadges.module.css'
 
-export const audioTierMapSVG: { [tier in BadgeTier]: Nullable<ReactElement> } =
-  {
-    none: null,
-    bronze: <IconBronzeBadgeSVG />,
-    silver: <IconSilverBadgeSVG />,
-    gold: <IconGoldBadgeSVG />,
-    platinum: <IconPlatinumBadgeSVG />
-  }
+const audioTierMapSVG: { [tier in BadgeTier]: Nullable<ReactElement> } = {
+  none: null,
+  bronze: <IconBronzeBadgeSVG />,
+  silver: <IconSilverBadgeSVG />,
+  gold: <IconGoldBadgeSVG />,
+  platinum: <IconPlatinumBadgeSVG />
+}
 
 export const audioTierMapPng: {
   [tier in BadgeTier]: Nullable<ReactElement>
