@@ -13,7 +13,7 @@ type ErrorActions =
   | ReturnType<typeof trackRepostError>
   | ReturnType<typeof playlistRepostError>
 
-export function* handleRepostError(action: ErrorActions) {
+function* handleRepostError(action: ErrorActions) {
   yield put(
     errorActions.handleError({
       message: action.type,
