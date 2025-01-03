@@ -1,51 +1,22 @@
-import {
-  transformAndCleanList,
-  userTipWithUsersFromSDK
-} from '@audius/common/adapters'
-import {
-  Name,
-  Kind,
-  ID,
-  LastDismissedTip,
-  User,
-  StringWei,
-  BNWei,
-  Id,
-  OptionalId,
-  supportedUserMetadataListFromSDK,
-  supporterMetadataListFromSDK
-} from '@audius/common/models'
+import { QUERY_KEYS } from '@audius/common/api'
+import { Name, ID, BNWei } from '@audius/common/models'
 import { LocalStorage } from '@audius/common/services'
 import {
   accountSelectors,
-  cacheActions,
-  processAndCacheUsers,
   chatActions,
   tippingSelectors,
   tippingActions,
   walletActions,
   getContext,
-  RefreshSupportPayloadAction,
-  getSDK,
-  tippingUtils
+  getSDK
 } from '@audius/common/store'
-import {
-  isNullOrUndefined,
-  stringWeiToBN,
-  weiToString,
-  waitForValue,
-  MAX_PROFILE_TOP_SUPPORTERS,
-  SUPPORTING_PAGINATION_SIZE,
-  removeNullable,
-  encodeHashId
-} from '@audius/common/utils'
+import { isNullOrUndefined, encodeHashId } from '@audius/common/utils'
 import { AUDIO } from '@audius/fixed-decimal'
 import BN from 'bn.js'
 import {
   call,
   delay,
   put,
-  all,
   select,
   takeEvery,
   fork,
@@ -53,31 +24,19 @@ import {
 } from 'typed-redux-saga'
 
 import { make } from 'common/store/analytics/actions'
-import { fetchUsers } from 'common/store/cache/users/sagas'
 import { reportToSentry } from 'store/errors/reportToSentry'
-import { waitForRead } from 'utils/sagaHelpers'
 
 const { getBalance } = walletActions
 const {
   confirmSendTip,
   convert,
-  fetchRecentTips,
-  refreshSupport,
   sendTipFailed,
   sendTipSucceeded,
-  setTipToDisplay,
-  setSupportersForUser,
-  setSupportingForUser,
-  setShowTip,
-  setSupportingOverridesForUser,
-  setSupportersOverridesForUser,
   refreshTipGatedTracks
 } = tippingActions
-const { getOptimisticSupporters, getOptimisticSupporting, getSendTipData } =
-  tippingSelectors
+const { getSendTipData } = tippingSelectors
 
-const { update } = cacheActions
-const { getAccountUser, getUserId, getWalletAddresses } = accountSelectors
+const { getAccountUser, getWalletAddresses } = accountSelectors
 const { fetchPermissions } = chatActions
 
 const FEED_TIP_DISMISSAL_TIME_LIMIT_SEC = 30 * 24 * 60 * 60 // 30 days
@@ -91,124 +50,6 @@ export const storeDismissedTipInfo = async (
     DISMISSED_TIP_KEY,
     { receiver_id: receiverId },
     FEED_TIP_DISMISSAL_TIME_LIMIT_SEC
-  )
-}
-
-function* overrideSupportingForUser({
-  amountBN,
-  sender,
-  receiver
-}: {
-  amountBN: BNWei
-  sender: User
-  receiver: User
-}) {
-  /**
-   * Get supporting map for sender.
-   */
-  const supportingMap = yield* select(getOptimisticSupporting)
-  const supportingForSender = supportingMap[sender.user_id] ?? {}
-
-  /**
-   * If sender was not previously supporting receiver, then
-   * optimistically increment the sender's supporting_count
-   */
-  const wasNotPreviouslySupporting =
-    !supportingForSender[receiver.user_id]?.amount
-  if (wasNotPreviouslySupporting) {
-    yield put(
-      update(Kind.USERS, [
-        {
-          id: sender.user_id,
-          metadata: { supporting_count: sender.supporting_count + 1 }
-        }
-      ])
-    )
-  }
-
-  /**
-   * Get and update the new amount the sender
-   * is supporting to the receiver.
-   */
-  const previousSupportAmount =
-    supportingForSender[receiver.user_id]?.amount ?? ('0' as StringWei)
-  const newSupportAmountBN = stringWeiToBN(previousSupportAmount).add(
-    amountBN
-  ) as BNWei
-
-  /**
-   * Store the optimistic value.
-   */
-  yield put(
-    setSupportingOverridesForUser({
-      id: sender.user_id,
-      supportingOverridesForUser: {
-        [receiver.user_id]: {
-          receiver_id: receiver.user_id,
-          amount: weiToString(newSupportAmountBN),
-          rank: -1
-        }
-      }
-    })
-  )
-}
-
-function* overrideSupportersForUser({
-  amountBN,
-  sender,
-  receiver
-}: {
-  amountBN: BNWei
-  sender: User
-  receiver: User
-}) {
-  /**
-   * Get supporting map for sender.
-   */
-  const supportersMap = yield* select(getOptimisticSupporters)
-  const supportersForReceiver = supportersMap[receiver.user_id] ?? {}
-
-  /**
-   * If receiver was not previously supported by sender, then
-   * optimistically increment the receiver's supporter_count
-   */
-  const wasNotPreviouslySupported =
-    !supportersForReceiver[sender.user_id]?.amount
-  if (wasNotPreviouslySupported) {
-    yield put(
-      update(Kind.USERS, [
-        {
-          id: receiver.user_id,
-          metadata: { supporter_count: receiver.supporter_count + 1 }
-        }
-      ])
-    )
-  }
-
-  /**
-   * Get and update the new amount the sender
-   * is supporting to the receiver.
-   */
-  const previousSupportAmount =
-    supportersForReceiver[sender.user_id]?.amount ?? ('0' as StringWei)
-  const newSupportAmountBN = stringWeiToBN(previousSupportAmount).add(
-    amountBN
-  ) as BNWei
-
-  /**
-   * Store the optimistic value.
-   */
-  yield put(
-    setSupportersOverridesForUser({
-      id: receiver.user_id,
-      supportersOverridesForUser: {
-        [sender.user_id]: {
-          sender_id: sender.user_id,
-          amount: weiToString(newSupportAmountBN),
-          rank: -1
-        }
-      }
-    })
   )
 }
 
@@ -379,25 +220,24 @@ function* sendTipAsync() {
       }
     })
 
-    // Store optimistically updated supporting value for sender
-    // and supporter value for receiver.
-    const amountBN = new BN(AUDIO(amount).value.toString()) as BNWei
-    try {
-      yield call(overrideSupportingForUser, {
-        amountBN,
-        sender,
-        receiver
-      })
-      yield call(overrideSupportersForUser, {
-        amountBN,
-        sender,
-        receiver
-      })
-    } catch (e) {
-      console.error(
-        `Could not optimistically update support: ${(e as Error).message}`
-      )
-    }
+    // Invalidate all the entities that are affected by this tip
+    const queryClient = yield* getContext('queryClient')
+
+    queryClient.invalidateQueries({
+      queryKey: [QUERY_KEYS.user, receiverUserId]
+    })
+    queryClient.invalidateQueries({
+      queryKey: [QUERY_KEYS.user, senderUserId]
+    })
+    queryClient.invalidateQueries({
+      queryKey: [QUERY_KEYS.supporters, receiverUserId]
+    })
+    queryClient.invalidateQueries({
+      queryKey: [QUERY_KEYS.supporters, receiverUserId, senderUserId]
+    })
+    queryClient.invalidateQueries({
+      queryKey: [QUERY_KEYS.supportedUsers, senderUserId]
+    })
   } catch (error) {
     const e = error instanceof Error ? error : new Error(String(error))
     console.error(`Send tip failed`, error)
@@ -426,175 +266,12 @@ function* sendTipAsync() {
   }
 }
 
-function* refreshSupportAsync({
-  payload: {
-    senderUserId,
-    receiverUserId,
-    supportingLimit: supportingLimitArg,
-    supportersLimit
-  }
-}: {
-  payload: RefreshSupportPayloadAction
-  type: string
-}) {
-  yield* waitForRead()
-  const sdk = yield* getSDK()
-  const currentUserId = yield* select(getUserId)
-
-  let supportingLimit = supportingLimitArg
-
-  if (!supportingLimit) {
-    const account = yield* select(getAccountUser)
-    supportingLimit =
-      account?.user_id === senderUserId
-        ? account?.supporting_count
-        : SUPPORTING_PAGINATION_SIZE
-  }
-
-  const { data: supportingData = [] } = yield* call(
-    [sdk.full.users, sdk.full.users.getSupportedUsers],
-    {
-      id: Id.parse(senderUserId),
-      userId: OptionalId.parse(currentUserId),
-      limit: supportingLimit
-    }
-  )
-  const supportingForSenderList =
-    supportedUserMetadataListFromSDK(supportingData)
-
-  const { data: supporterData = [] } = yield* call(
-    [sdk.full.users, sdk.full.users.getSupporters],
-    {
-      id: Id.parse(receiverUserId),
-      limit: supportersLimit,
-      userId: OptionalId.parse(currentUserId)
-    }
-  )
-  const supportersForReceiverList = supporterMetadataListFromSDK(supporterData)
-
-  const userIds = [
-    ...supportingForSenderList.map((supporting) => supporting.receiver.user_id),
-    ...supportersForReceiverList.map((supporter) => supporter.sender.user_id)
-  ].filter(removeNullable)
-
-  yield call(fetchUsers, userIds)
-
-  const supportingForSenderMap = tippingUtils.makeSupportingMapForUser(
-    supportingForSenderList
-  )
-  const supportersForReceiverMap = tippingUtils.makeSupportersMapForUser(
-    supportersForReceiverList
-  )
-
-  yield put(
-    setSupportingForUser({
-      id: senderUserId,
-      supportingForUser: supportingForSenderMap
-    })
-  )
-  yield put(
-    setSupportersForUser({
-      id: receiverUserId,
-      supportersForUser: supportersForReceiverMap
-    })
-  )
-}
-
-// Display logic is a bit nuanced here -
-// there are 3 cases: 1 tip not dismissed, show tip,  2 tip dismissed, but show new tip, 3 tip dismissed, don't show any tip
-// the trick is to start with an empty state, NOT a loading state:
-// in case 1, we detect no/expired local storage and show loading state
-// in case 2, we initally show nothing and then directly snap to the tip tile, with no loading state, to avoid 3 states.
-// in case 3, we never show anything
-function* fetchRecentTipsAsync() {
-  const sdk = yield* getSDK()
-  const localStorage = yield* getContext('localStorage')
-
-  const account: User = yield* call(waitForValue, getAccountUser)
-
-  // Get dismissal info
-  const lastDismissedTip = yield* call(() =>
-    localStorage.getExpiringJSONValue<LastDismissedTip>(DISMISSED_TIP_KEY)
-  )
-  // If no dismissal, show loading state
-  if (!lastDismissedTip) {
-    yield put(setShowTip({ show: true }))
-  }
-
-  const { data = [] } = yield* call([sdk.full.tips, sdk.full.tips.getTips], {
-    userId: Id.parse(account.user_id),
-    limit: 1,
-    currentUserFollows: 'receiver',
-    uniqueBy: 'receiver'
-  })
-
-  const userTips = transformAndCleanList(data, userTipWithUsersFromSDK)
-
-  if (!(userTips && userTips.length)) {
-    yield put(setShowTip({ show: false }))
-    return
-  }
-
-  const recentTip = {
-    ...userTips[0],
-    sender_id: userTips[0].sender.user_id,
-    receiver_id: userTips[0].receiver.user_id
-  }
-
-  // If there exists a non-expired tip dismissal
-  // and the receiver is same as current receiver, don't show the same tip
-  if (lastDismissedTip?.receiver_id === recentTip.receiver_id) {
-    yield put(setShowTip({ show: false }))
-    return
-  }
-
-  // Otherwise, we're going to show a tip so clear out any dismissed tip state
-  yield* call(() => localStorage.removeItem(DISMISSED_TIP_KEY))
-
-  yield call(processAndCacheUsers, [recentTip.sender, recentTip.receiver])
-
-  // Hack: no longer showing followee supporters, too slow
-  // const userIds = [...new Set([...recentTip.followee_supporter_ids])]
-  // yield call(fetchUsers, userIds)
-
-  /**
-   * We need to get supporting data for logged in user and
-   * supporters data for followee that logged in user may
-   * send a tip to.
-   * This is so that we know if and how much the logged in
-   * user has already tipped the followee, and also whether or
-   * not the logged in user is the top supporter for the
-   * followee.
-   */
-  yield put(
-    refreshSupport({
-      senderUserId: account.user_id,
-      receiverUserId: recentTip.receiver_id,
-      supportingLimit: account.supporting_count,
-      supportersLimit: MAX_PROFILE_TOP_SUPPORTERS + 1
-    })
-  )
-
-  yield all([
-    put(setShowTip({ show: true })),
-    put(setTipToDisplay({ tipToDisplay: recentTip }))
-  ])
-}
-
-function* watchRefreshSupport() {
-  yield* takeEvery(refreshSupport.type, refreshSupportAsync)
-}
-
 function* watchConfirmSendTip() {
   yield* takeEvery(confirmSendTip.type, sendTipAsync)
 }
 
-function* watchFetchRecentTips() {
-  yield* takeEvery(fetchRecentTips.type, fetchRecentTipsAsync)
-}
-
 const sagas = () => {
-  return [watchRefreshSupport, watchConfirmSendTip, watchFetchRecentTips]
+  return [watchConfirmSendTip]
 }
 
 export default sagas
