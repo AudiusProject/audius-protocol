@@ -5,16 +5,13 @@ import { useGatedContentAccess, useToggleTrack } from '@audius/common/hooks'
 import type { TrackPlayback } from '@audius/common/hooks'
 import { Name, PlaybackSource, Kind } from '@audius/common/models'
 import type { ID } from '@audius/common/models'
-import { accountSelectors, QueueSource } from '@audius/common/store'
+import { QueueSource } from '@audius/common/store'
 import type { ChatMessageTileProps } from '@audius/common/store'
 import { getPathFromTrackUrl, makeUid } from '@audius/common/utils'
-import { useSelector } from 'react-redux'
 
 import { TrackTile } from 'app/components/lineup-tile'
 import { LineupTileSource } from 'app/components/lineup-tile/types'
 import { make, track as trackEvent } from 'app/services/analytics'
-
-const { getUserId } = accountSelectors
 
 export const ChatMessageTrack = ({
   link,
@@ -22,8 +19,6 @@ export const ChatMessageTrack = ({
   onSuccess,
   styles
 }: ChatMessageTileProps) => {
-  const currentUserId = useSelector(getUserId)
-
   const permalink = getPathFromTrackUrl(link)
   const { data: track } = useTrackByPermalink(permalink)
   const { hasStreamAccess } = useGatedContentAccess(track ?? null)

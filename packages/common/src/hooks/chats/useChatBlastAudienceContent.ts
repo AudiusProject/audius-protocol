@@ -9,7 +9,7 @@ import {
   useGetTrackById,
   useCurrentUser,
   useCurrentUserId
-} from '@audius/common/api'
+} from '~/api'
 import {
   decodeHashId,
   getChatBlastAudienceDescription,
