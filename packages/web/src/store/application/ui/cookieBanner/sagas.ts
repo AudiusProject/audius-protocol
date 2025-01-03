@@ -4,14 +4,14 @@ import { shouldShowCookieBanner, dismissCookieBanner } from 'utils/gdpr'
 
 import { showCookieBanner, DISMISS_COOKIE_BANNER } from './actions'
 
-export function* checkCookieBanner() {
+function* checkCookieBanner() {
   const show = yield* call(shouldShowCookieBanner)
   if (show) {
     yield put(showCookieBanner())
   }
 }
 
-export function* watchDismiss() {
+function* watchDismiss() {
   yield takeEvery(DISMISS_COOKIE_BANNER, () => {
     dismissCookieBanner()
   })

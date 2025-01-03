@@ -42,7 +42,7 @@ import { useFastReferral } from '../hooks/useFastReferral'
 
 const { SIGN_UP_GENRES_PAGE, SIGN_UP_LOADING_PAGE } = route
 
-export type FinishProfileValues = {
+type FinishProfileValues = {
   profileImage?: ImageFieldValue
   coverPhoto?: ImageFieldValue
   displayName: string

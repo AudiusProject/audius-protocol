@@ -24,7 +24,7 @@ const initialValues = {
   confirmPassword: ''
 }
 
-export type CreatePasswordValues = {
+type CreatePasswordValues = {
   password: string
   confirmPassword: string
 }
