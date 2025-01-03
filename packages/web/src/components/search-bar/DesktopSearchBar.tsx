@@ -27,7 +27,7 @@ import { useTransition, animated } from '@react-spring/web'
 import AutoComplete from 'antd/lib/auto-complete'
 import Input from 'antd/lib/input'
 import cn from 'classnames'
-import Lottie from 'react-lottie'
+import Lottie from 'lottie-react'
 import { useDispatch, useSelector } from 'react-redux'
 import { matchPath, useHistory, useLocation } from 'react-router-dom'
 
@@ -638,13 +638,7 @@ const DesktopSearchBar = ({ isViewingSearchPage = false }: SearchBarProps) => {
             [styles.show]: showSpinner
           })}
         >
-          <Lottie
-            options={{
-              loop: true,
-              autoplay: true,
-              animationData: loadingSpinner
-            }}
-          />
+          <Lottie loop autoplay animationData={loadingSpinner} />
         </div>
       )
     }

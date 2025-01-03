@@ -2,18 +2,18 @@ import {
   MouseEventHandler,
   useCallback,
   useEffect,
-  useMemo,
+  useRef,
   useState
 } from 'react'
 
 import cn from 'classnames'
-import Lottie, { LottieProps } from 'react-lottie'
+import Lottie, { LottieOptions, LottieRefCurrentProps } from 'lottie-react'
 
 import styles from './Reaction.module.css'
 
 export type ReactionProps = {
   className?: string
-  animationData: Promise<LottieProps['options']['animationData']>
+  animationData: Promise<{ default: LottieOptions['animationData'] }>
   isActive?: boolean
   isResponsive?: boolean
   onClick?: MouseEventHandler
@@ -37,8 +37,7 @@ export const Reaction = (props: ReactionProps) => {
   } = props
   const [isInteracting, setInteracting] = useState(false)
   const [isClicked, setIsClicked] = useState(false)
-  const [animation, setAnimation] =
-    useState<LottieProps['options']['animationData']>()
+  const [animation, setAnimation] = useState<LottieOptions['animationData']>()
 
   useEffect(() => {
     const loadAnimation = async () => {
@@ -47,15 +46,6 @@ export const Reaction = (props: ReactionProps) => {
     }
     loadAnimation()
   }, [animationData])
-
-  const lottieOptions = useMemo<LottieProps['options']>(
-    () => ({
-      autoplay: true,
-      loop: true,
-      animationData: animation
-    }),
-    [animation]
-  )
 
   const handleClick: MouseEventHandler = useCallback(
     (event) => {
@@ -85,6 +75,17 @@ export const Reaction = (props: ReactionProps) => {
     }
   }, [isClicked])
 
+  const lottieRef = useRef<LottieRefCurrentProps>(null)
+  useEffect(() => {
+    if (lottieRef.current) {
+      if (isActive === false && !isInteracting) {
+        lottieRef.current.stop()
+      } else {
+        lottieRef.current.play()
+      }
+    }
+  }, [lottieRef, isActive, isInteracting])
+
   return (
     <div
       className={cn(styles.root, className, {
@@ -98,12 +99,13 @@ export const Reaction = (props: ReactionProps) => {
       onMouseLeave={handleMouseLeave}
     >
       <Lottie
+        lottieRef={lottieRef}
         title={title}
         height={width}
         width={height}
-        options={lottieOptions}
-        isStopped={isActive === false && !isInteracting}
-        isClickToPauseDisabled
+        autoplay
+        loop
+        animationData={animation}
       />
     </div>
   )

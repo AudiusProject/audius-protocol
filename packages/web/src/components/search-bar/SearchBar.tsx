@@ -3,7 +3,7 @@ import { ChangeEvent, KeyboardEvent } from 'react'
 import { Status } from '@audius/common/models'
 import { IconSearch } from '@audius/harmony'
 import cn from 'classnames'
-import Lottie from 'react-lottie'
+import Lottie from 'lottie-react'
 
 import loadingSpinner from 'assets/animations/loadingSpinner.json'
 import Tooltip from 'components/tooltip/Tooltip'
@@ -37,9 +37,7 @@ const DetailIcon = ({
 }) => {
   return isLoading ? (
     <div className={styles.spinnerContainer}>
-      <Lottie
-        options={{ loop: true, autoplay: true, animationData: loadingSpinner }}
-      />
+      <Lottie loop autoplay animationData={loadingSpinner} />
     </div>
   ) : (
     <Tooltip text={tooltipText || ''}>

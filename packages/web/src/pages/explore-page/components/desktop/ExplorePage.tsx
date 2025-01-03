@@ -9,7 +9,7 @@ import {
 } from '@audius/common/models'
 import { ExploreCollectionsVariant } from '@audius/common/store'
 import { route } from '@audius/common/utils'
-import Lottie from 'react-lottie'
+import Lottie from 'lottie-react'
 
 import loadingSpinner from 'assets/animations/loadingSpinner.json'
 import {
@@ -198,13 +198,7 @@ const ExplorePage = ({
       >
         {status === Status.LOADING ? (
           <div className={styles.loadingSpinner}>
-            <Lottie
-              options={{
-                loop: true,
-                autoplay: true,
-                animationData: loadingSpinner
-              }}
-            />
+            <Lottie loop autoplay animationData={loadingSpinner} />
           </div>
         ) : (
           playlists.map((playlist: UserCollection, i: number) => {
@@ -228,13 +222,7 @@ const ExplorePage = ({
       >
         {status === Status.LOADING ? (
           <div className={styles.loadingSpinner}>
-            <Lottie
-              options={{
-                loop: true,
-                autoplay: true,
-                animationData: loadingSpinner
-              }}
-            />
+            <Lottie loop autoplay animationData={loadingSpinner} />
           </div>
         ) : (
           profiles.map((profile: User, i: number) => {
