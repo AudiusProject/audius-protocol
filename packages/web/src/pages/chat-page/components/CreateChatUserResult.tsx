@@ -1,13 +1,12 @@
 import { useCallback, useEffect } from 'react'
 
+import { useSupporters } from '@audius/common/api'
 import { User } from '@audius/common/models'
 import {
   ChatPermissionAction,
   accountSelectors,
   chatActions,
-  chatSelectors,
-  tippingActions,
-  tippingSelectors
+  chatSelectors
 } from '@audius/common/store'
 import { removeNullable, route } from '@audius/common/utils'
 import {
@@ -50,12 +49,8 @@ type UserResultComposeProps = {
   presetMessage?: string
 }
 
-const { getUserId } = accountSelectors
-const { getOptimisticSupporters, getOptimisticSupporting } = tippingSelectors
-
-const { fetchSupportersForUser } = tippingActions
-const { blockUser, unblockUser, fetchPermissions } = chatActions
-const { getBlockees, getCanCreateChat } = chatSelectors
+const { blockUser, unblockUser } = chatActions
+const { getCanCreateChat } = chatSelectors
 
 const renderTrigger = (
   anchorRef: React.MutableRefObject<any>,
@@ -107,15 +102,19 @@ export const CreateChatUserResult = (props: UserResultComposeProps) => {
   const dispatch = useDispatch()
   const { user, closeParentModal, openInboxUnavailableModal, presetMessage } =
     props
-  const currentUserId = useSelector(getUserId)
-  const supportingMap = useSelector(getOptimisticSupporting)
-  const supportersMap = useSelector(getOptimisticSupporters)
-  const blockeeList = useSelector(getBlockees)
+  const currentUserId = useSelector(accountSelectors.getUserId)
+  const blockeeList = useSelector(chatSelectors.getBlockees)
   const isBlockee = blockeeList.includes(user.user_id)
 
   const { canCreateChat, callToAction } = useSelector((state) =>
     getCanCreateChat(state, { userId: user.user_id })
   )
+
+  const { data: supporters = [] } = useSupporters({
+    userId: user.user_id,
+    currentUserId: currentUserId ?? undefined,
+    limit: 1
+  })
 
   const handleComposeClicked = useComposeChat({
     user,
@@ -162,16 +161,11 @@ export const CreateChatUserResult = (props: UserResultComposeProps) => {
   useEffect(() => {
     if (
       currentUserId &&
-      supportingMap[currentUserId]?.[user.user_id] &&
-      !supportersMap[user.user_id]
+      supporters.some((s) => s.sender.user_id === currentUserId)
     ) {
-      dispatch(fetchSupportersForUser({ userId: user.user_id }))
+      // No need to fetch supporters if we're already a supporter
     }
-  }, [dispatch, currentUserId, supportingMap, supportersMap, user])
-
-  useEffect(() => {
-    dispatch(fetchPermissions({ userIds: [user.user_id] }))
-  }, [dispatch, user])
+  }, [currentUserId, supporters])
 
   if (currentUserId === user.user_id) {
     return null

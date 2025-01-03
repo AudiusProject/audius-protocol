@@ -1,11 +1,7 @@
 import { useCallback } from 'react'
 
-import { ID, User } from '@audius/common/models'
-import {
-  cacheUsersSelectors,
-  profilePageSelectors,
-  tippingSelectors
-} from '@audius/common/store'
+import { useSupporters } from '@audius/common/api'
+import { profilePageSelectors } from '@audius/common/store'
 import { MAX_PROFILE_TOP_SUPPORTERS } from '@audius/common/utils'
 import { IconTrophy } from '@audius/harmony'
 import { useDispatch, useSelector } from 'react-redux'
@@ -20,11 +16,8 @@ import {
   UserListEntityType,
   UserListType
 } from 'store/application/ui/userListModal/types'
-import { AppState } from 'store/types'
 
 import styles from './TopSupporters.module.css'
-const { getOptimisticSupporters } = tippingSelectors
-const { getUsers } = cacheUsersSelectors
 const { getProfileUser } = profilePageSelectors
 
 const messages = {
@@ -34,23 +27,9 @@ const messages = {
 export const TopSupporters = () => {
   const dispatch = useDispatch()
   const profile = useSelector(getProfileUser)
-  const supportersMap = useSelector(getOptimisticSupporters)
-  const supportersForProfile = profile?.user_id
-    ? (supportersMap[profile.user_id] ?? {})
-    : {}
-  const rankedSupporters = useSelector<AppState, User[]>((state) => {
-    const usersMap = getUsers(state, {
-      ids: Object.keys(supportersForProfile) as unknown as ID[]
-    })
-    return Object.keys(supportersForProfile)
-      .sort((k1, k2) => {
-        return (
-          supportersForProfile[k1 as unknown as ID].rank -
-          supportersForProfile[k2 as unknown as ID].rank
-        )
-      })
-      .map((k) => usersMap[k as unknown as ID])
-      .filter(Boolean)
+  const { data: supporters = [] } = useSupporters({
+    userId: profile?.user_id,
+    limit: MAX_PROFILE_TOP_SUPPORTERS
   })
 
   const handleClick = useCallback(() => {
@@ -66,7 +45,7 @@ export const TopSupporters = () => {
     }
   }, [profile, dispatch])
 
-  if (!profile || rankedSupporters.length === 0) {
+  if (!profile || supporters.length === 0) {
     return null
   }
 
@@ -78,7 +57,7 @@ export const TopSupporters = () => {
       />
       <ProfilePictureListTile
         onClick={handleClick}
-        users={rankedSupporters}
+        users={supporters.map((supporter) => supporter.sender)}
         totalUserCount={profile.supporter_count}
         limit={MAX_PROFILE_TOP_SUPPORTERS}
         disableProfileClick

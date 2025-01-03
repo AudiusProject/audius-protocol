@@ -94,10 +94,6 @@ const slice = createSlice({
       _state,
       _action: PayloadAction<{ userId: ID }>
     ) => {},
-    fetchSupportersForUser: (
-      _state,
-      _action: PayloadAction<{ userId: ID }>
-    ) => {},
     beginTip: (
       state,
       action: PayloadAction<{
@@ -180,24 +176,20 @@ const slice = createSlice({
 })
 
 export const {
-  setSupportingForUser,
-  setSupportingOverridesForUser,
-  setSupportersForUser,
-  setSupportersOverridesForUser,
-  refreshSupport,
-  fetchSupportingForUser,
-  fetchSupportersForUser,
-  beginTip,
-  sendTip,
   confirmSendTip,
   convert,
-  sendTipSucceeded,
-  sendTipFailed,
-  resetSend,
   fetchRecentTips,
-  fetchUserSupporter,
+  fetchSupportingForUser,
+  refreshSupport,
+  sendTipFailed,
+  sendTipSucceeded,
   setTipToDisplay,
+  setSupportingForUser,
+  setSupportersForUser,
   setShowTip,
+  setSupportingOverridesForUser,
+  setSupportersOverridesForUser,
+  fetchUserSupporter,
   refreshTipGatedTracks
 } = slice.actions
 

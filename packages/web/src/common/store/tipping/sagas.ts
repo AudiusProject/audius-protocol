@@ -41,7 +41,6 @@ import {
   encodeHashId
 } from '@audius/common/utils'
 import { AUDIO } from '@audius/fixed-decimal'
-import { PayloadAction } from '@reduxjs/toolkit'
 import BN from 'bn.js'
 import {
   call,
@@ -65,7 +64,6 @@ const {
   convert,
   fetchRecentTips,
   fetchSupportingForUser,
-  fetchSupportersForUser,
   refreshSupport,
   sendTipFailed,
   sendTipSucceeded,
@@ -510,44 +508,6 @@ function* refreshSupportAsync({
   )
 }
 
-type FetchSupportingAction = PayloadAction<{ userId: ID }>
-
-function* fetchSupportersForUserAsync(action: FetchSupportingAction) {
-  const {
-    payload: { userId }
-  } = action
-  yield* waitForRead()
-  const sdk = yield* getSDK()
-  const currentUserId = yield* select(getUserId)
-
-  const { data = [] } = yield* call(
-    [sdk.full.users, sdk.full.users.getSupporters],
-    {
-      id: Id.parse(userId),
-      limit: MAX_PROFILE_TOP_SUPPORTERS + 1,
-      userId: OptionalId.parse(currentUserId)
-    }
-  )
-  const supportersForReceiverList = supporterMetadataListFromSDK(data)
-
-  const userIds = supportersForReceiverList.map(
-    (supporter) => supporter.sender.user_id
-  )
-  if (!userIds) return
-  yield call(fetchUsers, userIds)
-
-  const supportersForReceiverMap = tippingUtils.makeSupportersMapForUser(
-    supportersForReceiverList
-  )
-
-  yield put(
-    setSupportersForUser({
-      id: userId,
-      supportersForUser: supportersForReceiverMap
-    })
-  )
-}
-
 function* fetchSupportingForUserAsync({
   payload: { userId }
 }: {
@@ -744,10 +704,6 @@ function* watchFetchSupportingForUser() {
   yield* takeEvery(fetchSupportingForUser.type, fetchSupportingForUserAsync)
 }
 
-function* watchFetchSupportersForUser() {
-  yield takeEvery(fetchSupportersForUser.type, fetchSupportersForUserAsync)
-}
-
 function* watchRefreshSupport() {
   yield* takeEvery(refreshSupport.type, refreshSupportAsync)
 }
@@ -767,7 +723,6 @@ function* watchFetchUserSupporter() {
 const sagas = () => {
   return [
     watchFetchSupportingForUser,
-    watchFetchSupportersForUser,
     watchRefreshSupport,
     watchConfirmSendTip,
     watchFetchRecentTips,
