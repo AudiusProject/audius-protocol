@@ -89,8 +89,8 @@ export const ComposerInput = (props: ComposerInputProps) => {
     ...other
   } = props
   const ref = useRef<HTMLTextAreaElement>(null)
-  const { data: track } = useTrack(entityId!, {
-    enabled: entityType === EntityType.TRACK && !!entityId
+  const { data: track } = useTrack(entityId, {
+    enabled: entityType === EntityType.TRACK
   })
 
   const [value, setValue] = useState(presetMessage ?? '')

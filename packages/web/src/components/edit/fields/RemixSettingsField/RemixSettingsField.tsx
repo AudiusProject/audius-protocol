@@ -67,9 +67,7 @@ export const RemixSettingsField = (props: RemixSettingsFieldProps) => {
     )
 
   const parentTrackId = remixOf?.tracks[0].parent_track_id
-  const { data: remixOfTrack } = useTrack(parentTrackId!, {
-    enabled: !!parentTrackId
-  })
+  const { data: remixOfTrack } = useTrack(parentTrackId)
 
   const remixLink = remixOfTrack?.permalink
     ? fullTrackPage(remixOfTrack?.permalink)

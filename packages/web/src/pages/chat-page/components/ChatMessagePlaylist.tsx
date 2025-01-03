@@ -50,9 +50,7 @@ export const ChatMessagePlaylist = ({
 
   const trackIds =
     playlist?.playlist_contents?.track_ids?.map((t) => t.track) ?? []
-  const { data: tracks = [] } = useTracks(trackIds, {
-    enabled: !!trackIds.length
-  })
+  const { data: tracks = [] } = useTracks(trackIds)
 
   const uidMap = useMemo(() => {
     return trackIds.reduce((result: { [id: ID]: string }, id) => {
@@ -68,7 +66,7 @@ export const ChatMessagePlaylist = ({
    * Also include the other properties to conform with the component.
    */
   const tracksWithUids = useMemo(() => {
-    return (tracks || []).map((track) => ({
+    return tracks.map((track) => ({
       ...track,
       user: track.user,
       id: track.track_id,
@@ -77,7 +75,7 @@ export const ChatMessagePlaylist = ({
   }, [tracks, uidMap])
 
   const entries = useMemo(() => {
-    return (tracks || []).map((track) => ({
+    return tracks.map((track) => ({
       id: track.track_id,
       uid: uidMap[track.track_id],
       source: QueueSource.CHAT_PLAYLIST_TRACKS
