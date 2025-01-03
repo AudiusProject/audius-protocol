@@ -93,14 +93,17 @@ const CommentDrawerAutocompleteContent = ({
     params,
     { debounce: 500 }
   )
-  const { data: followersData, status: followersStatus } = useFollowers({
+  const { data: followersData, isPending: followerDataPending } = useFollowers({
     limit: 6
   })
   const userList = query !== '' ? searchData?.users : followersData
-  const userListStatus = query !== '' ? searchStatus : followersStatus
+  const isUserListPending =
+    query !== ''
+      ? searchStatus === Status.LOADING || searchStatus === Status.IDLE
+      : followerDataPending
 
   // Loading state
-  if (userListStatus === Status.LOADING || userListStatus === Status.IDLE) {
+  if (isUserListPending) {
     return (
       <Flex p='l' alignItems='center'>
         <LoadingSpinner style={{ height: 24 }} />

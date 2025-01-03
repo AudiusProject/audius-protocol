@@ -43,7 +43,11 @@ export const UserMentionAutocompleteText = (
   const searchText = text.slice(1)
   const accountStatus = useSelector(getAccountStatus)
   const currentUserId = useSelector(getUserId)
-  const { data: followersData, status: followerStatus } = useFollowers({
+  const {
+    data: followersData,
+    isPending: followerDataPending,
+    isSuccess: followersDataSuccess
+  } = useFollowers({
     limit: 6
   })
   const optionRefs = useRef<HTMLButtonElement[]>([])
@@ -68,7 +72,12 @@ export const UserMentionAutocompleteText = (
   )
 
   const userList = searchText !== '' ? searchUserData?.users : followersData
-  const userListStatus = searchText !== '' ? searchStatus : followerStatus
+  const userListLoadSuccess =
+    searchText !== '' ? searchStatus === Status.SUCCESS : followersDataSuccess
+  const isUserListPending =
+    searchText !== ''
+      ? searchStatus === Status.LOADING || searchStatus === Status.IDLE
+      : followerDataPending
 
   const options = useMemo(
     () => userList?.map((user) => ({ value: String(user.user_id) })) ?? [],
@@ -76,10 +85,16 @@ export const UserMentionAutocompleteText = (
   )
 
   useEffect(() => {
-    if (userList && userListStatus === Status.SUCCESS) {
+    if (userList && userListLoadSuccess) {
       onResultsLoaded?.(userList)
     }
-  }, [userList, onResultsLoaded, userListStatus, searchText, followerStatus])
+  }, [
+    userList,
+    onResultsLoaded,
+    searchText,
+    followersData,
+    userListLoadSuccess
+  ])
 
   const handleClose = useCallback(() => {
     setIsOpen(false)
@@ -96,7 +111,7 @@ export const UserMentionAutocompleteText = (
   )
 
   const renderContent = () => {
-    if (userListStatus === Status.IDLE || userListStatus === Status.LOADING) {
+    if (isUserListPending) {
       return (
         <Flex justifyContent='center' alignItems='center' p='m' w='100%'>
           <LoadingSpinner css={{ height: 32 }} />

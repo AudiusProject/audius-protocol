@@ -1,15 +1,12 @@
 import { useQuery } from '@tanstack/react-query'
-import { useSelector } from 'react-redux'
 
 import { userMetadataListFromSDK } from '~/adapters/user'
 import { useAppContext } from '~/context/appContext'
 import { ID, Id } from '~/models/Identifiers'
-import { accountSelectors } from '~/store'
 import { Nullable } from '~/utils/typeUtils'
 
 import { QUERY_KEYS } from './queryKeys'
-
-const { getUserId } = accountSelectors
+import { useCurrentUserId } from './useCurrentUserId'
 
 type GetFollowersArgs = {
   userId?: Nullable<ID>
@@ -19,6 +16,7 @@ type GetFollowersArgs = {
 
 /**
  * Hook to fetch followers for a user with pagination support.
+ * NOTE: this is not an infinite query, it only gives you data by your requested limit/offset args
  * If no userId is provided, it will use the current user's ID from the store.
  */
 export const useFollowers = ({
@@ -27,7 +25,7 @@ export const useFollowers = ({
   offset = 0
 }: GetFollowersArgs) => {
   const { audiusSdk } = useAppContext()
-  const currentUserId = useSelector(getUserId)
+  const { data: currentUserId } = useCurrentUserId()
   const userId = providedUserId ?? currentUserId
 
   return useQuery({
