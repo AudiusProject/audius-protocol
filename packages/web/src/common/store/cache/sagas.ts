@@ -1,14 +1,13 @@
 import { Status } from '@audius/common/models'
 import type { ID, Kind } from '@audius/common/models'
 import { IntKeys } from '@audius/common/services'
-import type { Metadata, Entry, SubscriberInfo } from '@audius/common/store'
 import {
   cacheActions,
   cacheSelectors,
   confirmerSelectors,
-  getContext,
-  cacheSagas
+  getContext
 } from '@audius/common/store'
+import type { Metadata, Entry, SubscriberInfo } from '@audius/common/store'
 import { makeUids, getIdFromKindId } from '@audius/common/utils'
 import { pick } from 'lodash'
 import { SelectEffect } from 'redux-saga/effects'
@@ -318,7 +317,7 @@ function* initializeCacheType() {
 }
 
 const sagas = () => {
-  return [initializeCacheType, watchAdd, ...cacheSagas()]
+  return [initializeCacheType, watchAdd]
 }
 
 export default sagas
