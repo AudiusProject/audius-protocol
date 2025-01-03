@@ -498,13 +498,13 @@ export function* pollGatedContent({
     const currentlyHasStreamAccess = !!apiEntity.access.stream
     const currentlyHasDownloadAccess = !!apiEntity.access.download
 
+    // Update the cache with the new metadata so that the UI
+    // can update and the content can be streamed or downloaded properly.
     yield* put(
       cacheActions.update(isAlbum ? Kind.COLLECTIONS : Kind.TRACKS, [
         {
           id: contentId,
-          metadata: {
-            access: apiEntity.access
-          }
+          metadata: apiEntity
         }
       ])
     )
