@@ -301,8 +301,11 @@ func isCoreOnly() bool {
 	return os.Getenv("AUDIUSD_CORE_ONLY") == "true"
 }
 
-// TODO: I don't love this, but it works for now
+// TODO: I don't love this, but it works safely for now
 func isStorageEnabled() bool {
+	if isCoreOnly() {
+		return false
+	}
 	if os.Getenv("AUDIUSD_STORAGE_ENABLED") == "true" {
 		return true
 	}

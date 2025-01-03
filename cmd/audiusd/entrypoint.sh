@@ -95,7 +95,12 @@ setup_postgres() {
     done
 }
 
-setup_postgres
+# Add this check before setup_postgres call
+if [ "${AUDIUSD_CORE_ONLY:-false}" = "true" ]; then
+    echo "Running in core only mode, skipping PostgreSQL setup..."
+else
+    setup_postgres
+fi
 
 echo "Starting audiusd..."
 exec /bin/audiusd "$@"
