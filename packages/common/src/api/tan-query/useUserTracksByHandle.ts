@@ -4,7 +4,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import { userTrackMetadataFromSDK } from '~/adapters/track'
 import { transformAndCleanList } from '~/adapters/utils'
 import { useAppContext } from '~/context/appContext'
-import { ID, OptionalId } from '~/models'
+import { OptionalId } from '~/models'
 import { getUserId } from '~/store/account/selectors'
 
 import { QUERY_KEYS } from './queryKeys'
@@ -17,7 +17,6 @@ type Config = {
 
 type GetTracksByUserHandleArgs = {
   handle: string | null | undefined
-  currentUserId?: ID | null
   filterTracks?: 'public' | 'unlisted' | 'all'
   sort?: 'date' | 'plays'
   limit?: number

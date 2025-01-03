@@ -48,8 +48,7 @@ export const SelectArtistsPreviewContextProvider = (props: {
   })
 
   const { data: artistTracks } = useUserTracksByHandle({
-    handle: artist?.handle,
-    currentUserId: null
+    handle: artist?.handle
   })
   useEffect(() => {
     if (!nowPlayingArtistId || !currentUserId || !artistTracks) return
