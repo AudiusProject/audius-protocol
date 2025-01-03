@@ -44,6 +44,9 @@ type Crudr struct {
 
 	mu        sync.Mutex
 	callbacks []func(op *Op, records interface{})
+
+	peerClientsMutex sync.RWMutex
+	peerClientsMap   map[string]*PeerClient
 }
 
 // create ops table if it does not exist
@@ -324,4 +327,14 @@ func (c *Crudr) GetPercentNodesSeeded() float64 {
 	}
 
 	return (float64(nCaughtUp) / float64(nPeers)) * 100
+}
+
+func (c *Crudr) StopAllPeerClients() {
+	c.peerClientsMutex.Lock()
+	defer c.peerClientsMutex.Unlock()
+
+	for _, client := range c.peerClientsMap {
+		client.Stop()
+	}
+	c.peerClientsMap = make(map[string]*PeerClient)
 }

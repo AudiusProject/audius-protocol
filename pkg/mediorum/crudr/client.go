@@ -5,8 +5,10 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"math/rand"
 	"net/http"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/AudiusProject/audius-protocol/pkg/httputil"
@@ -25,6 +27,15 @@ type PeerClient struct {
 	crudr    *Crudr
 	logger   *slog.Logger
 	selfHost string
+
+	// Add control fields
+	mu        sync.Mutex
+	started   bool
+	startOnce sync.Once
+	stopOnce  sync.Once
+	stopChan  chan struct{}
+	wg        sync.WaitGroup
+	sweepTick *time.Ticker
 }
 
 func NewPeerClient(host string, crudr *Crudr, selfHost string) *PeerClient {
@@ -32,20 +43,44 @@ func NewPeerClient(host string, crudr *Crudr, selfHost string) *PeerClient {
 	// if full, Send will drop outgoing message
 	// which is okay because of sweep
 	outboxBufferSize := 8
-
 	return &PeerClient{
-		Host:     httputil.RemoveTrailingSlash(strings.ToLower(host)),
-		outbox:   make(chan []byte, outboxBufferSize),
-		crudr:    crudr,
-		logger:   slog.With("crudr_client", httputil.RemoveTrailingSlash(strings.ToLower(host))),
-		selfHost: selfHost,
+		Host:      httputil.RemoveTrailingSlash(strings.ToLower(host)),
+		outbox:    make(chan []byte, outboxBufferSize),
+		crudr:     crudr,
+		logger:    slog.With("crudr_client", httputil.RemoveTrailingSlash(strings.ToLower(host))),
+		selfHost:  selfHost,
+		stopChan:  make(chan struct{}),
+		sweepTick: time.NewTicker(10 * time.Minute),
 	}
 }
 
 func (p *PeerClient) Start() {
-	// todo: should be able to stop these
-	go p.startSender()
-	go p.startSweeper()
+	p.startOnce.Do(func() {
+		p.mu.Lock()
+		p.started = true
+		p.mu.Unlock()
+
+		p.wg.Add(2) // for sender and sweeper
+		go p.startSender()
+		go p.startSweeper()
+	})
+}
+
+func (p *PeerClient) Stop() {
+	p.stopOnce.Do(func() {
+		p.mu.Lock()
+		if !p.started {
+			p.mu.Unlock()
+			return
+		}
+		p.started = false
+		p.mu.Unlock()
+
+		p.sweepTick.Stop()
+		close(p.stopChan)
+		p.wg.Wait()
+		close(p.outbox)
+	})
 }
 
 func (p *PeerClient) Send(data []byte) bool {
@@ -91,12 +126,20 @@ func (p *PeerClient) startSender() {
 }
 
 func (p *PeerClient) startSweeper() {
+	defer p.wg.Done()
+
+	// Initial delay to stagger sweeps across nodes
+	time.Sleep(time.Duration(rand.Int63n(int64(time.Minute))))
+
 	for {
-		err := p.doSweep()
-		if err != nil {
-			p.logger.Warn("sweep failed", "err", err)
+		select {
+		case <-p.stopChan:
+			return
+		case <-p.sweepTick.C:
+			if err := p.doSweep(); err != nil {
+				p.logger.Warn("sweep failed", "err", err)
+			}
 		}
-		time.Sleep(time.Minute * 10)
 	}
 }
 

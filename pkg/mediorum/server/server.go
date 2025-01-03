@@ -542,6 +542,9 @@ func (ss *MediorumServer) Stop() {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
 	defer cancel()
 
+	// Stop CRUD clients first
+	ss.crud.StopAllPeerClients()
+
 	if err := ss.echo.Shutdown(ctx); err != nil {
 		ss.logger.Error("echo shutdown", "err", err)
 	}
@@ -552,10 +555,7 @@ func (ss *MediorumServer) Stop() {
 		}
 	}
 
-	// todo: stop transcode worker + repairer too
-
 	ss.logger.Info("bye")
-
 }
 
 func (ss *MediorumServer) pollForSeedingCompletion() {
