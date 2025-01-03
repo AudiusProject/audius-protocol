@@ -1,14 +1,7 @@
 import { makeUser } from '@audius/common/src/services/audius-api-client/ResponseAdapter'
-import { developmentConfig } from '@audius/sdk/src/sdk/config/development'
-import { productionConfig } from '@audius/sdk/src/sdk/config/production'
-import { stagingConfig } from '@audius/sdk/src/sdk/config/staging'
 import type { PageContextServer } from 'vike/types'
 
-const sdkConfigs = {
-  production: productionConfig,
-  staging: stagingConfig,
-  development: developmentConfig
-}
+import { getDiscoveryNode } from '../getDiscoveryNode'
 
 export async function onBeforeRender(pageContext: PageContextServer) {
   const { handle } = pageContext.routeParams
@@ -16,13 +9,7 @@ export async function onBeforeRender(pageContext: PageContextServer) {
   try {
     // Fetching directly from discovery node rather than using the sdk because
     // including the sdk increases bundle size and creates substantial cold start times
-    const discoveryNodes = (
-      sdkConfigs[process.env.VITE_ENVIRONMENT as keyof typeof sdkConfigs] ??
-      productionConfig
-    ).network.discoveryNodes
-
-    const discoveryNode =
-      discoveryNodes[Math.floor(Math.random() * discoveryNodes.length)]
+    const discoveryNode = getDiscoveryNode()
 
     const discoveryRequestPath = `v1/full/users/handle/${handle}`
     const discoveryRequestUrl = `${discoveryNode.endpoint}/${discoveryRequestPath}`
