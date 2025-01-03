@@ -10,11 +10,7 @@ import {
   Lineup,
   ModalSource
 } from '@audius/common/models'
-import {
-  LineupBaseActions,
-  tippingSelectors,
-  playerSelectors
-} from '@audius/common/store'
+import { LineupBaseActions, playerSelectors } from '@audius/common/store'
 import cn from 'classnames'
 import InfiniteScroll from 'react-infinite-scroller'
 import { connect } from 'react-redux'
@@ -36,7 +32,6 @@ import { push } from 'utils/navigation'
 import styles from './Lineup.module.css'
 import { delineateByTime, delineateByFeatured } from './delineate'
 import { LineupVariant } from './types'
-const { getShowTip } = tippingSelectors
 const { getPlaying, getUid } = playerSelectors
 
 // The max number of tiles to load
@@ -803,7 +798,6 @@ class LineupProvider extends PureComponent<CombinedProps, LineupProviderState> {
 
 function mapStateToProps(state: AppState) {
   return {
-    showTip: getShowTip(state),
     playing: getPlaying(state),
     playingUid: getUid(state)
   }

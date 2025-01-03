@@ -1,10 +1,5 @@
 import type { User } from '@audius/common/models'
-import {
-  tippingSelectors,
-  topSupportersUserListSelectors
-} from '@audius/common/store'
 import { View } from 'react-native'
-import { useSelector } from 'react-redux'
 
 import { IconTrending, IconTrophy } from '@audius/harmony-native'
 import { Text } from 'app/components/core'
@@ -12,8 +7,6 @@ import { makeStyles } from 'app/styles'
 import { useThemeColors } from 'app/utils/theme'
 
 import { Tip } from './Tip'
-const { getId: getSupportersId } = topSupportersUserListSelectors
-const { getOptimisticSupporters } = tippingSelectors
 
 const useStyles = makeStyles(({ spacing, typography }) => ({
   root: {
@@ -39,13 +32,10 @@ type SupporterInfoProps = {
 export const SupporterInfo = (props: SupporterInfoProps) => {
   const styles = useStyles()
   const { secondary, neutralLight4 } = useThemeColors()
-  const supportersMap = useSelector(getOptimisticSupporters)
-  const supportersId = useSelector(getSupportersId)
-  const supportersForUser = supportersId
-    ? (supportersMap[supportersId] ?? null)
-    : null
-  const supporter = supportersForUser?.[props.user.user_id] ?? null
+  // TODO: implement when we have user-list hooks
+  const supporter = null
 
+  // ts-expect-error
   if (!supporter) return null
 
   const { rank, amount } = supporter
