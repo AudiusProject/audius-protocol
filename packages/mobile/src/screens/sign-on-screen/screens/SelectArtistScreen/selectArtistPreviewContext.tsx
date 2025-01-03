@@ -1,7 +1,7 @@
 import { createContext, useCallback, useEffect, useMemo, useState } from 'react'
 
 import {
-  useGetUserTracksByHandle,
+  useUserTracksByHandle,
   useUser,
   Id,
   useCurrentUserId
@@ -47,13 +47,9 @@ export const SelectArtistsPreviewContextProvider = (props: {
     enabled: nowPlayingArtistId !== -1
   })
 
-  const { data: artistTracks } = useGetUserTracksByHandle(
-    {
-      handle: artist?.handle ?? '',
-      currentUserId: null
-    },
-    { disabled: !artist?.handle }
-  )
+  const { data: artistTracks } = useUserTracksByHandle({
+    handle: artist?.handle
+  })
   useEffect(() => {
     if (!nowPlayingArtistId || !currentUserId || !artistTracks) return
 

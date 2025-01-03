@@ -1,6 +1,6 @@
 import { createContext, useCallback, useEffect, useState } from 'react'
 
-import { useGetUserTracksByHandle, useUser } from '@audius/common/api'
+import { useUserTracksByHandle, useUser } from '@audius/common/api'
 import { ID, UserTrackMetadata } from '@audius/common/models'
 import { PlayerBehavior, playerActions } from '@audius/common/store'
 import { useDispatch } from 'react-redux'
@@ -35,15 +35,11 @@ export const SelectArtistsPreviewContextProvider = (props: {
   const { data: artist } = useUser(nowPlayingArtistId, {
     enabled: nowPlayingArtistId !== -1
   })
-  const { data: artistTracks } = useGetUserTracksByHandle(
-    {
-      handle: artist?.handle || '',
-      currentUserId: null,
-      // Unlikely we cant play an artist's first 3 tracks.
-      limit: 3
-    },
-    { disabled: !artist?.handle }
-  )
+  const { data: artistTracks } = useUserTracksByHandle({
+    handle: artist?.handle,
+    // Unlikely we cant play an artist's first 3 tracks.
+    limit: 3
+  })
 
   useEffect(() => {
     const track = artistTracks?.find((track) => track.is_available)
