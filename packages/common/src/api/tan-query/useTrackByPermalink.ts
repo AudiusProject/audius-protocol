@@ -26,9 +26,8 @@ export const useTrackByPermalink = (
   return useQuery({
     queryKey: [QUERY_KEYS.trackByPermalink, permalink],
     queryFn: async () => {
-      if (!permalink) return null
       const { data = [] } = await audiusSdk!.full.tracks.getBulkTracks({
-        permalink: [permalink],
+        permalink: [permalink!],
         userId: OptionalId.parse(currentUserId)
       })
 

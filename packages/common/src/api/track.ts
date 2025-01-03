@@ -6,33 +6,6 @@ import { Nullable } from '~/utils/typeUtils'
 const trackApi = createApi({
   reducerPath: 'trackApi',
   endpoints: {
-    getTrackByPermalink: {
-      fetch: async (
-        {
-          permalink,
-          currentUserId
-        }: { permalink: Nullable<string>; currentUserId: Nullable<ID> },
-        { audiusSdk }
-      ) => {
-        if (!permalink) {
-          console.error('Attempting to get track but permalink is null...')
-          return
-        }
-        const sdk = await audiusSdk()
-        const { data } = await sdk.full.tracks.getBulkTracks({
-          permalink: [permalink],
-          userId: OptionalId.parse(currentUserId)
-        })
-        return data && data.length > 0
-          ? userTrackMetadataFromSDK(data[0])
-          : null
-      },
-      options: {
-        permalinkArgKey: 'permalink',
-        kind: Kind.TRACKS,
-        schemaKey: 'track'
-      }
-    },
     // Safe to remove when purchases api is migrated to react-query
     getTracksByIds: {
       fetch: async (
@@ -59,7 +32,7 @@ const trackApi = createApi({
   }
 })
 
-export const { useGetTrackByPermalink, useGetTracksByIds } = trackApi.hooks
+export const { useGetTracksByIds } = trackApi.hooks
 export const trackApiFetch = trackApi.fetch
 export const trackApiReducer = trackApi.reducer
 export const trackApiActions = trackApi.actions
