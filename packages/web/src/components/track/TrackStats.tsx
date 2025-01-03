@@ -1,4 +1,4 @@
-import { useCurrentUserId, useGetTrackById } from '@audius/common/api'
+import { useGetCurrentUserId, useGetTrackById } from '@audius/common/api'
 import { useFeatureFlag } from '@audius/common/hooks'
 import { ID, Name } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
@@ -35,7 +35,7 @@ type TrackStatsProps = {
 export const TrackStats = (props: TrackStatsProps) => {
   const { trackId, scrollToCommentSection } = props
   const { data: track } = useGetTrackById({ id: trackId })
-  const { data: currentUserId } = useCurrentUserId()
+  const { data: currentUserId } = useGetCurrentUserId({})
   const dispatch = useDispatch()
   const { isEnabled: isCommentsEnabled } = useFeatureFlag(
     FeatureFlags.COMMENTS_ENABLED

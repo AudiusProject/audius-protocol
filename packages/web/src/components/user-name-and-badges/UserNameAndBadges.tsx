@@ -1,9 +1,11 @@
 import { MouseEventHandler, useCallback } from 'react'
 
-import { useUser } from '@audius/common/api'
+import { useGetUserById } from '@audius/common/api'
 import { UserMetadata } from '@audius/common/models'
+import { accountSelectors } from '@audius/common/store'
 import { route } from '@audius/common/utils'
 import cn from 'classnames'
+import { useSelector } from 'react-redux'
 
 import { ArtistPopover } from 'components/artist/ArtistPopover'
 import UserBadges from 'components/user-badges/UserBadges'
@@ -12,6 +14,7 @@ import { useNavigateToPage } from 'hooks/useNavigateToPage'
 import styles from './UserNameAndBadges.module.css'
 
 const { profilePage } = route
+const { getUserId } = accountSelectors
 
 type BaseUserNameAndBadgesProps = {
   onNavigateAway?: () => void
@@ -64,7 +67,8 @@ const UserNameAndBadgesImpl = (props: UserNameAndBadgesImplProps) => {
 }
 
 const LoadUserAndRender = (props: UserNameAndBadgesWithIdProps) => {
-  const { data: user } = useUser(props.userId)
+  const currentUserId: number = useSelector(getUserId)!
+  const { data: user } = useGetUserById({ id: props.userId, currentUserId })
   if (!user) return null
   return <UserNameAndBadgesImpl {...props} user={user} />
 }

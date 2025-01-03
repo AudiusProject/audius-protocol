@@ -1,6 +1,6 @@
 import { useCallback } from 'react'
 
-import { useCurrentUserId, useGetPlaylistById } from '@audius/common/api'
+import { useGetCurrentUserId, useGetPlaylistById } from '@audius/common/api'
 import { Collection } from '@audius/common/models'
 import {
   cacheCollectionsActions,
@@ -32,7 +32,7 @@ export const PublishButton = (props: PublishButtonProps) => {
   const { _is_publishing, is_scheduled_release, is_album } = useSelector(
     (state: CommonState) => getCollection(state, { id: collectionId })
   ) as Collection
-  const { data: currentUserId } = useCurrentUserId()
+  const { data: currentUserId } = useGetCurrentUserId({})
   const { data: collection } = useGetPlaylistById({
     playlistId: collectionId,
     currentUserId

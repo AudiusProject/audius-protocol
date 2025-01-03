@@ -3,7 +3,7 @@ import { useCallback, useMemo, useRef, useState } from 'react'
 import EventEmitter from 'events'
 import path from 'path'
 
-import { useCurrentUserId } from '@audius/common/api'
+import { useGetCurrentUserId } from '@audius/common/api'
 import { ErrorLevel, OptionalId, Id, SquareSizes } from '@audius/common/models'
 import type { Color } from '@audius/common/models'
 import { modalsActions } from '@audius/common/store'
@@ -129,7 +129,7 @@ export const useShareToStory = ({
   const { toast } = useToast()
   const dispatch = useDispatch()
   const cancelRef = useRef(false)
-  const { data: userId } = useCurrentUserId()
+  const { data: userId } = useGetCurrentUserId({})
   const [selectedPlatform, setSelectedPlatform] =
     useState<ShareToStoryPlatform | null>(null)
   const trackTitle =

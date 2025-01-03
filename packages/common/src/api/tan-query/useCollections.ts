@@ -14,7 +14,6 @@ import { QUERY_KEYS } from './queryKeys'
 
 type Config = {
   staleTime?: number
-  enabled?: boolean
 }
 
 export const useCollections = (collectionIds: ID[], config?: Config) => {
@@ -92,7 +91,6 @@ export const useCollections = (collectionIds: ID[], config?: Config) => {
       return collections
     },
     staleTime: config?.staleTime,
-    enabled:
-      config?.enabled !== false && !!audiusSdk && collectionIds.length > 0
+    enabled: !!audiusSdk && collectionIds.length > 0
   })
 }

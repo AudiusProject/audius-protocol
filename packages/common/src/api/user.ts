@@ -88,6 +88,59 @@ const userApi = createApi({
         schemaKey: 'accountUser'
       }
     },
+    getUserById: {
+      fetch: async (
+        {
+          id,
+          currentUserId
+        }: { id: ID | undefined; currentUserId?: Nullable<ID> },
+        { audiusSdk }
+      ) => {
+        if (!id || id === -1) return null
+        const sdk = await audiusSdk()
+        const { data: users = [] } = await sdk.full.users.getUser({
+          id: Id.parse(id),
+          userId: OptionalId.parse(currentUserId)
+        })
+        return userMetadataListFromSDK(users)[0]
+      },
+      fetchBatch: async (
+        { ids, currentUserId }: { ids: ID[]; currentUserId?: Nullable<ID> },
+        { audiusSdk }
+      ) => {
+        const sdk = await audiusSdk()
+        const { data: users = [] } = await sdk.full.users.getBulkUsers({
+          id: ids.filter((id) => id && id !== -1).map((id) => Id.parse(id)),
+          userId: OptionalId.parse(currentUserId)
+        })
+        return userMetadataListFromSDK(users)
+      },
+      options: {
+        idArgKey: 'id',
+        kind: Kind.USERS,
+        schemaKey: 'user'
+      }
+    },
+    getUserByHandle: {
+      fetch: async (
+        {
+          handle,
+          currentUserId
+        }: { handle: string; currentUserId: Nullable<ID> },
+        { audiusSdk }
+      ) => {
+        const sdk = await audiusSdk()
+        const { data: users = [] } = await sdk.full.users.getUserByHandle({
+          handle,
+          userId: OptionalId.parse(currentUserId)
+        })
+        return userMetadataListFromSDK(users)[0]
+      },
+      options: {
+        kind: Kind.USERS,
+        schemaKey: 'user'
+      }
+    },
     getUsersByIds: {
       fetch: async (
         args: { ids: ID[]; currentUserId?: Nullable<ID> },
@@ -353,7 +406,9 @@ const userApi = createApi({
 
 export const {
   useGetUserAccount,
+  useGetUserById,
   useGetUsersByIds,
+  useGetUserByHandle,
   useGetTracksByUser,
   useGetUSDCTransactions,
   useGetUSDCTransactionsCount,

@@ -1,6 +1,9 @@
 import { useEffect, useState, useCallback } from 'react'
 
-import { useCurrentUserId, useGetPlaylistByPermalink } from '@audius/common/api'
+import {
+  useGetCurrentUserId,
+  useGetPlaylistByPermalink
+} from '@audius/common/api'
 import { imageBlank as placeholderCoverArt } from '@audius/common/assets'
 import { useGatedContentAccessMap } from '@audius/common/hooks'
 import { SquareSizes, Collection, ID, Name } from '@audius/common/models'
@@ -78,7 +81,7 @@ const EditCollectionPage = g(
     useRequiresAccount()
     useIsUnauthorizedForHandleRedirect(handle)
 
-    const { data: currentUserId } = useCurrentUserId()
+    const { data: currentUserId } = useGetCurrentUserId({})
     const { data: collection } = useGetPlaylistByPermalink(
       {
         permalink,

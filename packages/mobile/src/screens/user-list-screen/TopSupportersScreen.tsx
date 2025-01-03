@@ -1,6 +1,6 @@
 import { useCallback } from 'react'
 
-import { useCurrentUserId } from '@audius/common/api'
+import { useGetCurrentUserId } from '@audius/common/api'
 import {
   cacheUsersSelectors,
   topSupportersUserListActions,
@@ -43,7 +43,7 @@ export const TopSupportersScreen = () => {
   const styles = useStyles()
   const { params } = useRoute<'TopSupporters'>()
   const { userId, source } = params
-  const { data: currentUserId } = useCurrentUserId()
+  const { data: currentUserId } = useGetCurrentUserId({})
   const supportersId = useSelector(getSupportersId)
   const supportersUser = useSelector((state) =>
     getUser(state, { id: supportersId })

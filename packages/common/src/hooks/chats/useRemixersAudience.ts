@@ -1,7 +1,7 @@
 import { useMemo } from 'react'
 
 import {
-  useCurrentUserId,
+  useGetCurrentUserId,
   useGetRemixedTracks,
   useGetRemixersCount
 } from '~/api'
@@ -12,7 +12,7 @@ export const useRemixersAudience = ({
 }: {
   remixedTrackId?: ID
 }) => {
-  const { data: currentUserId } = useCurrentUserId()
+  const { data: currentUserId } = useGetCurrentUserId({})
   const { data: remixersCount } = useGetRemixersCount({
     userId: currentUserId!,
     trackId: remixedTrackId

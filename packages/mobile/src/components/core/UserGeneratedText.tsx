@@ -1,7 +1,8 @@
 import type { ReactNode } from 'react'
 import { useMemo, useCallback, useEffect, useRef, useState } from 'react'
 
-import { useUserByHandle } from '@audius/common/api'
+import { useGetUserByHandle } from '@audius/common/api'
+import { accountSelectors } from '@audius/common/store'
 import {
   decodeHashId,
   formatCollectionName,
@@ -26,6 +27,7 @@ import type {
 } from 'react-native'
 import type { AutolinkProps } from 'react-native-autolink'
 import Autolink from 'react-native-autolink'
+import { useSelector } from 'react-redux'
 import { useAsync } from 'react-use'
 
 import { Text } from '@audius/harmony-native'
@@ -33,6 +35,8 @@ import type { TextLinkProps, TextProps } from '@audius/harmony-native'
 import { TextLink } from 'app/harmony-native/components/TextLink/TextLink'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { audiusSdk } from 'app/services/sdk/audius-sdk'
+
+const { getUserId } = accountSelectors
 
 const {
   instanceOfTrackResponse,
@@ -136,7 +140,12 @@ const HandleLink = ({
   onPress,
   ...other
 }: Omit<TextLinkProps, 'to'> & { handle: string }) => {
-  const { data: user } = useUserByHandle(handle.replace('@', ''))
+  const currentUserId = useSelector(getUserId)
+
+  const { data: user } = useGetUserByHandle({
+    handle: handle.replace('@', ''),
+    currentUserId
+  })
 
   const handlePress = useCallback(
     (e: GestureResponderEvent) => {

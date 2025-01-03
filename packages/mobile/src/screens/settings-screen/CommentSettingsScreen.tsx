@@ -1,6 +1,6 @@
 import React, { useCallback } from 'react'
 
-import { useCurrentUserId, useGetMutedUsers } from '@audius/common/api'
+import { useGetCurrentUserId, useGetMutedUsers } from '@audius/common/api'
 import { useMuteUser } from '@audius/common/context'
 import { useSelectTierInfo } from '@audius/common/hooks'
 import { commentsMessages as messages } from '@audius/common/messages'
@@ -42,7 +42,7 @@ const useStyles = makeStyles(({ spacing, palette }) => ({
 
 export const CommentSettingsScreen = () => {
   const styles = useStyles()
-  const { data: currentUserId } = useCurrentUserId()
+  const { data: currentUserId } = useGetCurrentUserId({})
   const { data: mutedUsers, status } = useGetMutedUsers(
     {
       userId: currentUserId!
