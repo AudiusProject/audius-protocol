@@ -51,6 +51,10 @@ func (v *Views) RenderUptimeView(c echo.Context, data *pages.UptimePageView) err
 	return v.pages.UptimePageHTML(data).Render(c.Request().Context(), c.Response().Writer)
 }
 
+func (v *Views) RenderStorageProofView(c echo.Context, data *pages.StorageProofPageView) error {
+	return v.pages.StorageProofPageHTML(data).Render(c.Request().Context(), c.Response().Writer)
+}
+
 func (v *Views) RenderErrorView(c echo.Context, errorID string) error {
 	return v.pages.ErrorPageHTML(errorID).Render(c.Request().Context(), c.Response().Writer)
 }

@@ -105,6 +105,7 @@ const (
 const (
 	StreamTrack string = "stream_track"
 	ServeImage  string = "serve_image"
+	ServeProof  string = "serve_proof"
 )
 
 type DailyMetrics struct {
