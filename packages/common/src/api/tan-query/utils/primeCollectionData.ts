@@ -1,14 +1,16 @@
 import { QueryClient } from '@tanstack/react-query'
-import { AnyAction, Dispatch } from 'redux'
+import { Dispatch } from 'redux'
 
-import { Kind } from '~/models'
 import { UserCollectionMetadata } from '~/models/Collection'
+import { Kind } from '~/models/Kind'
 import { addEntries } from '~/store/cache/actions'
 import { EntriesByKind } from '~/store/cache/types'
 
-import { primeTrackDataInternal } from './primeTrackData'
-import { primeUserDataInternal } from './primeUserData'
+import { QUERY_KEYS } from '../queryKeys'
 
+/**
+ * Primes the React Query cache and Redux store with collection-related entities (users, tracks)
+ */
 export const primeCollectionData = ({
   collection,
   queryClient,
@@ -16,64 +18,64 @@ export const primeCollectionData = ({
 }: {
   collection: UserCollectionMetadata
   queryClient: QueryClient
-  dispatch: Dispatch<AnyAction>
+  dispatch: Dispatch
 }) => {
-  const entries = primeCollectionDataInternal({ collection, queryClient })
+  // Prime user data from collection owner
+  if (collection.user) {
+    // Prime user by ID
+    queryClient.setQueryData(
+      [QUERY_KEYS.user, collection.user.user_id],
+      collection.user
+    )
+    // Prime user by handle
+    if (collection.user.handle) {
+      queryClient.setQueryData(
+        [QUERY_KEYS.userByHandle, collection.user.handle],
+        collection.user
+      )
+    }
+  }
 
-  dispatch(addEntries(entries, undefined, undefined, 'react-query'))
-}
-
-export const primeCollectionDataInternal = ({
-  collection,
-  queryClient
-}: {
-  collection: UserCollectionMetadata
-  queryClient: QueryClient
-}): EntriesByKind => {
   // Set up entries for Redux
   const entries: EntriesByKind = {
     [Kind.COLLECTIONS]: {
       [collection.playlist_id]: collection
-    },
-    [Kind.TRACKS]: {},
-    [Kind.USERS]: {}
+    }
   }
 
-  // Prime user data from collection owner
   if (collection.user) {
-    const userEntries = primeUserDataInternal({
-      user: collection.user,
-      queryClient
-    })
-
-    // Merge user entries
-    entries[Kind.USERS] = userEntries[Kind.USERS]
+    if (!entries[Kind.USERS]) entries[Kind.USERS] = {}
+    entries[Kind.USERS][collection.user.user_id] = collection.user
   }
 
   // Track and user data from tracks in collection
   collection.tracks?.forEach((track) => {
     if (track.track_id) {
-      // Use primeTrackData to handle track and its user data
-      const trackEntries = primeTrackDataInternal({
-        track,
-        queryClient
-      })
+      // Prime track data
+      queryClient.setQueryData([QUERY_KEYS.track, track.track_id], track)
+      if (!entries[Kind.TRACKS]) entries[Kind.TRACKS] = {}
+      entries[Kind.TRACKS][track.track_id] = track
 
-      // Set track entry
-      entries[Kind.TRACKS] = {
-        ...entries[Kind.TRACKS],
-        ...trackEntries[Kind.TRACKS]
-      }
-
-      // Merge user entries
-      if (trackEntries[Kind.USERS]) {
-        entries[Kind.USERS] = {
-          ...entries[Kind.USERS],
-          ...trackEntries[Kind.USERS]
+      // Prime user data from track owner
+      if (track.user) {
+        // Prime user by ID
+        queryClient.setQueryData(
+          [QUERY_KEYS.user, track.user.user_id],
+          track.user
+        )
+        // Prime user by handle
+        if (track.user.handle) {
+          queryClient.setQueryData(
+            [QUERY_KEYS.userByHandle, track.user.handle],
+            track.user
+          )
         }
+        if (!entries[Kind.USERS]) entries[Kind.USERS] = {}
+        entries[Kind.USERS][track.user.user_id] = track.user
       }
     }
   })
 
-  return entries
+  // Sync all data to Redux in a single dispatch
+  dispatch(addEntries(entries, undefined, undefined, 'react-query'))
 }
