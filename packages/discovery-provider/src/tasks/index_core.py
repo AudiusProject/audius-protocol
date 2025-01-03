@@ -107,6 +107,9 @@ class CoreIndexer:
         self.chain_id = node_info.chainid
         self.latest_chain_block_height = node_info.current_height
 
+        self.sol_latest_processed_slot = 0
+        self.latest_indexed_block_height = 0
+
         # gather indexer state
         with self.db.scoped_session() as session:
             latest_indexed_block = (
@@ -115,9 +118,18 @@ class CoreIndexer:
                 .order_by(CoreIndexedBlocks.height.desc())
                 .first()
             )
-            self.latest_indexed_block_height = 0
             if latest_indexed_block:
                 self.latest_indexed_block_height = latest_indexed_block.height
+
+            latest_slot_record = (
+                session.query(Play)
+                .filter(Play.slot != None)
+                .filter(Play.signature != None)
+                .order_by(desc(Play.slot))
+                .one_or_none()
+            )
+            if latest_slot_record and latest_slot_record.slot:
+                self.sol_latest_processed_slot = latest_slot_record.slot
 
         self.indexer_initialized = True
         self.logger.info("initialized core indexer")
@@ -139,7 +151,11 @@ class CoreIndexer:
 
     def should_index_plays(self) -> bool:
         latest_processed_slot = get_latest_slot(self.db)
-        self.sol_latest_processed_slot = latest_processed_slot
+        if latest_processed_slot:
+            self.sol_latest_processed_slot = latest_processed_slot
+        self.logger.info(
+            f"plays {self.sol_latest_processed_slot} {self.sol_plays_cutover_end}"
+        )
         return self.sol_latest_processed_slot >= self.sol_plays_cutover_end
 
     def index_core(self):
@@ -161,7 +177,6 @@ class CoreIndexer:
                 if not indexed_block:
                     continue
 
-                self.latest_indexed_block_height = indexed_block.height
             except Exception as e:
                 was_error = True
                 self.logger.error(f"error {e}")
@@ -215,7 +230,7 @@ class CoreIndexer:
                 # Check which type of transaction is currently set
                 transaction_type = tx.WhichOneof("transaction")
 
-                if transaction_type == "plays" and self.should_index_plays():
+                if transaction_type == "plays":
                     self.index_core_plays(session=session, block=chain_block, tx=tx)
                     continue
                 elif transaction_type == "manage_entity":
@@ -251,12 +266,19 @@ class CoreIndexer:
             )
             session.add(new_block)
 
+            self.latest_indexed_block_height = next_block
+
             return chain_block
         return None
 
     def index_core_plays(
         self, session: Session, block: BlockResponse, tx: SignedTransaction
     ):
+        self.logger.info("indexing play")
+
+        if not self.should_index_plays():
+            return
+
         latest_slot = self.sol_plays_cutover_end
         latest_slot_record = (
             session.query(Play)

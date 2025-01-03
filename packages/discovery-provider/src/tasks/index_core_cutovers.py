@@ -3,7 +3,7 @@ from src.utils.config import shared_config
 env = shared_config["discprov"]["env"]
 
 # dev plays
-DEV_PLAYS_SOL_CUTOVER = 1
+DEV_PLAYS_SOL_CUTOVER = 0
 DEV_PLAYS_CORE_CUTOVER = 1
 DEV_PLAYS_CORE_CUTOVER_CHAIN_ID = "audius-devnet"
 
