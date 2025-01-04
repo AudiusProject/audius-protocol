@@ -3,7 +3,6 @@ import {
   userWalletsFromSDK
 } from '@audius/common/adapters'
 import { Kind, Id, OptionalId } from '@audius/common/models'
-import { DoubleKeys } from '@audius/common/services'
 import {
   accountSelectors,
   cacheActions,
@@ -13,7 +12,6 @@ import {
   FollowType,
   chatActions,
   reachabilitySelectors,
-  relatedArtistsUIActions as relatedArtistsActions,
   collectiblesActions,
   confirmerActions,
   confirmTransaction,
@@ -311,7 +309,6 @@ export function* fetchSolanaCollectibles(user) {
 
 function* fetchProfileAsync(action) {
   const isNativeMobile = yield getContext('isNativeMobile')
-  const { getRemoteVar } = yield getContext('remoteConfigInstance')
 
   try {
     let user
@@ -375,18 +372,6 @@ function* fetchProfileAsync(action) {
         user.handle
       )
     )
-
-    if (!isNativeMobile) {
-      const showArtistRecommendationsPercent =
-        getRemoteVar(DoubleKeys.SHOW_ARTIST_RECOMMENDATIONS_PERCENT) || 0
-      if (Math.random() < showArtistRecommendationsPercent) {
-        yield put(
-          relatedArtistsActions.fetchRelatedArtists({
-            artistId: user.user_id
-          })
-        )
-      }
-    }
 
     if (!isNativeMobile) {
       yield put(
