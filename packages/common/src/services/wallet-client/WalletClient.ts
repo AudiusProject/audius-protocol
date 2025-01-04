@@ -1,9 +1,5 @@
 import { AUDIO, wAUDIO } from '@audius/fixed-decimal'
 import { AudiusSdk } from '@audius/sdk'
-import { wormhole } from '@wormhole-foundation/sdk'
-import evm from '@wormhole-foundation/sdk/evm'
-import solana from '@wormhole-foundation/sdk/solana'
-import { SolanaAddress } from '@wormhole-foundation/sdk-solana'
 import BN from 'bn.js'
 
 import { userWalletsFromSDK } from '~/adapters'
@@ -17,6 +13,7 @@ import {
   getUserbankAccountInfo,
   pollForTokenBalanceChange
 } from '../audius-backend'
+import type { Env } from '../env'
 
 // 0.001 Audio
 export const MIN_TRANSFERRABLE_WEI = stringWeiToBN(
@@ -26,15 +23,18 @@ export const MIN_TRANSFERRABLE_WEI = stringWeiToBN(
 type WalletClientConfig = {
   audiusBackendInstance: AudiusBackend
   audiusSdk: () => Promise<AudiusSdk>
+  env: Env
 }
 
 export class WalletClient {
   audiusBackendInstance: AudiusBackend
   audiusSdk: () => Promise<AudiusSdk>
+  env: Env
 
   constructor(config: WalletClientConfig) {
     this.audiusBackendInstance = config.audiusBackendInstance
     this.audiusSdk = config.audiusSdk
+    this.env = config.env
   }
 
   /** Get user's current ETH Audio balance. Returns null on failure. */
@@ -86,12 +86,11 @@ export class WalletClient {
   }
 
   async transferTokensFromEthToSol({
-    sdk,
     ethAddress
   }: {
-    sdk: AudiusSdk
     ethAddress: string
   }): Promise<void> {
+    const sdk = await this.audiusSdk()
     const account = await getUserbankAccountInfo(sdk, {
       ethAddress,
       mint: 'wAUDIO'
@@ -113,13 +112,6 @@ export class WalletClient {
       ercAudioBalance.gt(new BN('0'))
     ) {
       const balance = BigInt(ercAudioBalance.toString())
-
-      const libs = await this.audiusBackendInstance.getAudiusLibsTyped()
-      libs.wormholeClient?._getTransferTokensToEthWormholeParams(
-        sdk.services.audiusTokenClient.contractAddress,
-        new BN(balance.toString()),
-        account.address.toBase58()
-      )
       const permitTxHash = await sdk.services.audiusTokenClient.permit({
         args: {
           value: balance,
@@ -144,45 +136,15 @@ export class WalletClient {
       )
 
       // Note: At this point, the funds are sitting in Wormhole.
-      // If the following code to redeem the funds on Solana fails,
-      // the funds can also get redeemed either via our background script on the
-      // recurring-jobs box or manually via the Wormhole Portal UI
-
-      // Initialize Wormhole TokenBridge client for redemption on Solana...
-      const wh = await wormhole('Mainnet', [evm, solana])
-      const sendChain = wh.getChain('Ethereum')
-      const receiveChain = wh.getChain('Solana')
-      const tokenBridge = await receiveChain.getTokenBridge()
-
-      const [whm] = await sendChain.parseTransaction(transferTxHash)
-      const vaa = await wh.getVaa(whm, 'TokenBridge:Transfer', 60_000)
-      if (!vaa) {
-        throw new Error('Could not get VAA from Wormhole to complete transfer.')
-      }
-
-      // Iterate through async generator of each Wormhole redemption tx and relay
-      const redeemTxs = tokenBridge.redeem(
-        new SolanaAddress(
-          (await sdk.services.solanaClient.getFeePayer()).toBase58()
-        ),
-        vaa
-      )
-      let wormholeTxIterator = await redeemTxs.next()
-      while (!wormholeTxIterator.done) {
-        console.debug('Sending redemption transaction...')
-        const tx = wormholeTxIterator.value.transaction
-        // TODO: Add priority fees
-        const signature = await sdk.services.solanaClient.sendTransaction(tx)
-        console.debug('Transaction sent successfully.', { signature })
-        wormholeTxIterator = await redeemTxs.next()
-      }
+      // The recurring jobs box will index the AudiusWormhole contract and
+      // auto-redeem the transfer.
 
       await pollForTokenBalanceChange(sdk, {
         tokenAccount: account?.address,
         initialBalance: account?.amount,
         mint: 'wAUDIO',
-        retryDelayMs: 5000,
-        maxRetryCount: 720 /* one hour */
+        retryDelayMs: 10000,
+        maxRetryCount: 360 /* 60 minutes */
       })
     }
   }
