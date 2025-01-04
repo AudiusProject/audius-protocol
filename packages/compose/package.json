@@ -13,6 +13,7 @@
     "@pedalboard/solana-relay": "*",
     "@pedalboard/crm": "*",
     "@pedalboard/trending-challenge-rewards": "*",
+    "@pedalboard/staking": "*",
     "@pedalboard/backfill-audio-analyses": "*"
   },
   "license": "ISC"
