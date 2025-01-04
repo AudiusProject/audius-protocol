@@ -89,19 +89,6 @@ const ENTITY_UPDATERS: Record<Kind, EntityUpdater> = {
           return updatedData
         }
       )
-
-      // Update any supporters lists that might contain this user
-      queryClient.setQueriesData(
-        { queryKey: [QUERY_KEYS.supporters] },
-        (oldData: any) => {
-          if (!Array.isArray(oldData)) return oldData
-          return oldData.map((supporter: any) =>
-            supporter.sender.user_id === id
-              ? { ...supporter, sender: metadata }
-              : supporter
-          )
-        }
-      )
     }
   },
   [Kind.TRACKS]: {

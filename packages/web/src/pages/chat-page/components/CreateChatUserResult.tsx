@@ -1,6 +1,5 @@
-import { useCallback, useEffect } from 'react'
+import { useCallback } from 'react'
 
-import { useSupporters } from '@audius/common/api'
 import { User } from '@audius/common/models'
 import {
   ChatPermissionAction,
@@ -110,11 +109,6 @@ export const CreateChatUserResult = (props: UserResultComposeProps) => {
     getCanCreateChat(state, { userId: user.user_id })
   )
 
-  const { data: supporters = [] } = useSupporters({
-    userId: user.user_id,
-    limit: 1
-  })
-
   const handleComposeClicked = useComposeChat({
     user,
     onOpenChat: closeParentModal,
@@ -156,15 +150,6 @@ export const CreateChatUserResult = (props: UserResultComposeProps) => {
           onClick: handleBlockClicked
         }
   ].filter(removeNullable)
-
-  useEffect(() => {
-    if (
-      currentUserId &&
-      supporters.some((s) => s.sender.user_id === currentUserId)
-    ) {
-      // No need to fetch supporters if we're already a supporter
-    }
-  }, [currentUserId, supporters])
 
   if (currentUserId === user.user_id) {
     return null

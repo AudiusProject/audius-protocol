@@ -1,4 +1,5 @@
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { useDispatch } from 'react-redux'
 
 import { useAppContext } from '~/context/appContext'
 import { Id, OptionalId } from '~/models/Identifiers'
@@ -6,6 +7,7 @@ import { supporterMetadataFromSDK } from '~/models/Tipping'
 
 import { QUERY_KEYS } from './queryKeys'
 import { useCurrentUserId } from './useCurrentUserId'
+import { primeUserData } from './utils/primeUserData'
 
 type UseSupporterArgs = {
   userId?: number | null
@@ -23,6 +25,8 @@ export const useSupporter = (
 ) => {
   const { audiusSdk } = useAppContext()
   const { data: currentUserId } = useCurrentUserId()
+  const queryClient = useQueryClient()
+  const dispatch = useDispatch()
 
   return useQuery({
     queryKey: [QUERY_KEYS.supporters, userId, supporterUserId],
@@ -36,7 +40,11 @@ export const useSupporter = (
 
       if (!data) return null
 
-      return supporterMetadataFromSDK(data)
+      const supporter = supporterMetadataFromSDK(data)
+      if (supporter?.sender) {
+        primeUserData({ users: [supporter.sender], queryClient, dispatch })
+      }
+      return supporter
     },
     staleTime: config?.staleTime,
     enabled:

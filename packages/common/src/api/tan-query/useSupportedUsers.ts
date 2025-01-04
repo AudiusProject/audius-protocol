@@ -1,4 +1,5 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { useDispatch } from 'react-redux'
 
 import { useAppContext } from '~/context/appContext'
 import { Id, OptionalId } from '~/models/Identifiers'
@@ -7,6 +8,7 @@ import { SUPPORTING_PAGINATION_SIZE } from '~/utils/constants'
 
 import { QUERY_KEYS } from './queryKeys'
 import { useCurrentUserId } from './useCurrentUserId'
+import { primeUserData } from './utils/primeUserData'
 
 type UseSupportedUsersArgs = {
   userId?: number
@@ -25,6 +27,7 @@ export const useSupportedUsers = (
   const { audiusSdk } = useAppContext()
   const queryClient = useQueryClient()
   const { data: currentUserId } = useCurrentUserId()
+  const dispatch = useDispatch()
 
   return useQuery({
     queryKey: [QUERY_KEYS.supportedUsers, userId],
@@ -39,13 +42,10 @@ export const useSupportedUsers = (
       const supporting = supportedUserMetadataListFromSDK(data)
 
       // Cache user data for each supported user
-      supporting.forEach((supportedUser) => {
-        if (supportedUser.receiver) {
-          queryClient.setQueryData(
-            [QUERY_KEYS.user, supportedUser.receiver.user_id],
-            supportedUser.receiver
-          )
-        }
+      primeUserData({
+        users: supporting.map((supportedUser) => supportedUser.receiver),
+        queryClient,
+        dispatch
       })
 
       return supporting

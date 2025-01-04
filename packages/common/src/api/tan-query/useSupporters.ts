@@ -1,4 +1,5 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { useDispatch } from 'react-redux'
 
 import { useAppContext } from '~/context/appContext'
 import { Id, OptionalId } from '~/models/Identifiers'
@@ -7,6 +8,7 @@ import { MAX_PROFILE_TOP_SUPPORTERS } from '~/utils/constants'
 
 import { QUERY_KEYS } from './queryKeys'
 import { useCurrentUserId } from './useCurrentUserId'
+import { primeUserData } from './utils/primeUserData'
 
 type UseSupportersArgs = {
   userId?: number | null
@@ -25,6 +27,7 @@ export const useSupporters = (
   const { audiusSdk } = useAppContext()
   const queryClient = useQueryClient()
   const { data: currentUserId } = useCurrentUserId()
+  const dispatch = useDispatch()
 
   return useQuery({
     queryKey: [QUERY_KEYS.supporters, userId, limit],
@@ -39,13 +42,10 @@ export const useSupporters = (
       const supporters = supporterMetadataListFromSDK(data)
 
       // Cache user data for each supporter
-      supporters.forEach((supporter) => {
-        if (supporter.sender) {
-          queryClient.setQueryData(
-            [QUERY_KEYS.user, supporter.sender.user_id],
-            supporter.sender
-          )
-        }
+      primeUserData({
+        users: supporters.map((supporter) => supporter.sender),
+        queryClient,
+        dispatch
       })
 
       return supporters

@@ -11,6 +11,7 @@ import { EntriesByKind } from '~/store/cache/types'
 import { removeNullable } from '~/utils/typeUtils'
 
 import { QUERY_KEYS } from './queryKeys'
+import { primeUserData } from './utils/primeUserData'
 
 type Config = {
   staleTime?: number
@@ -34,6 +35,7 @@ export const useUsers = (userIds: ID[], config?: Config) => {
 
       // Sync users data to Redux and prime userByHandle cache
       if (users.length) {
+        primeUserData({ users, queryClient, dispatch })
         const entries: EntriesByKind = {
           [Kind.USERS]: users.reduce(
             (acc, user) => {
