@@ -13,7 +13,6 @@ import {
   getUserbankAccountInfo,
   pollForTokenBalanceChange
 } from '../audius-backend'
-import type { Env } from '../env'
 
 // 0.001 Audio
 export const MIN_TRANSFERRABLE_WEI = stringWeiToBN(
@@ -23,18 +22,15 @@ export const MIN_TRANSFERRABLE_WEI = stringWeiToBN(
 type WalletClientConfig = {
   audiusBackendInstance: AudiusBackend
   audiusSdk: () => Promise<AudiusSdk>
-  env: Env
 }
 
 export class WalletClient {
   audiusBackendInstance: AudiusBackend
   audiusSdk: () => Promise<AudiusSdk>
-  env: Env
 
   constructor(config: WalletClientConfig) {
     this.audiusBackendInstance = config.audiusBackendInstance
     this.audiusSdk = config.audiusSdk
-    this.env = config.env
   }
 
   /** Get user's current ETH Audio balance. Returns null on failure. */
