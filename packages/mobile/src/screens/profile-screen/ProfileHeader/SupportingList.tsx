@@ -1,11 +1,12 @@
-import { useEffect, useMemo } from 'react'
+import { useMemo } from 'react'
 
-import { useRankedSupportingForUser } from '@audius/common/hooks'
-import type { Supporting } from '@audius/common/models'
-import { tippingActions } from '@audius/common/store'
-import { MAX_PROFILE_SUPPORTING_TILES } from '@audius/common/utils'
+import { useSupportedUsers } from '@audius/common/api'
+import type { SupportedUserMetadata } from '@audius/common/models'
+import {
+  MAX_PROFILE_SUPPORTING_TILES,
+  SUPPORTING_PAGINATION_SIZE
+} from '@audius/common/utils'
 import { FlatList } from 'react-native'
-import { useDispatch, useSelector } from 'react-redux'
 
 import { makeStyles } from 'app/styles'
 
@@ -15,9 +16,7 @@ import { SupportingTile } from './SupportingTile'
 import { SupportingTileSkeleton } from './SupportingTileSkeleton'
 import { ViewAllSupportingTile } from './ViewAllSupportingTile'
 
-const { fetchSupportingForUser } = tippingActions
-
-type ViewAllData = { viewAll: true; supporting: Supporting[] }
+type ViewAllData = { viewAll: true; supportedUsers: SupportedUserMetadata[] }
 
 type SkeletonData = { loading: true }
 const skeletonData: SkeletonData[] = [{ loading: true }, { loading: true }]
@@ -37,58 +36,46 @@ export const SupportingList = () => {
     'supporting_count'
   ])
 
-  const dispatch = useDispatch()
-
-  const shouldFetchSupporting = useSelector((state) => {
-    return (
-      !state.tipping.supporting[user_id] &&
-      !state.tipping.supportersOverrides[user_id]
-    )
+  const { data: supportedUsers = [] } = useSupportedUsers({
+    userId: user_id,
+    limit: SUPPORTING_PAGINATION_SIZE
   })
 
-  useEffect(() => {
-    if (supporting_count > 0 && shouldFetchSupporting) {
-      dispatch(fetchSupportingForUser({ userId: user_id }))
-    }
-  }, [supporting_count, shouldFetchSupporting, dispatch, user_id])
-
-  const supportingSorted = useRankedSupportingForUser(user_id)
-
   const supportingListData = useMemo(() => {
-    if (supportingSorted.length === 0) {
+    if (supportedUsers.length === 0) {
       return skeletonData
     }
-    if (supportingSorted.length > MAX_PROFILE_SUPPORTING_TILES) {
+    if (supportedUsers.length > MAX_PROFILE_SUPPORTING_TILES) {
       const viewAllData: ViewAllData = {
         viewAll: true,
-        supporting: supportingSorted.slice(
+        supportedUsers: supportedUsers.slice(
           MAX_PROFILE_SUPPORTING_TILES,
-          supportingSorted.length
+          supportedUsers.length
         )
       }
       return [
-        ...supportingSorted.slice(0, MAX_PROFILE_SUPPORTING_TILES),
+        ...supportedUsers.slice(0, MAX_PROFILE_SUPPORTING_TILES),
         viewAllData
       ]
     }
-    return supportingSorted
-  }, [supportingSorted])
+    return supportedUsers
+  }, [supportedUsers])
 
   if (supporting_count === 1) {
-    if (supportingSorted.length === 0) {
+    if (supportedUsers.length === 0) {
       return <SupportingTileSkeleton style={styles.singleSupporterTile} />
     }
     return (
       <SupportingTile
         style={styles.singleSupporterTile}
-        supporting={supportingSorted[0]}
+        supportedUser={supportedUsers[0]}
         scaleTo={0.985}
       />
     )
   }
 
   return (
-    <FlatList<Supporting | SkeletonData | ViewAllData>
+    <FlatList<SupportedUserMetadata | SkeletonData | ViewAllData>
       style={styles.list}
       contentContainerStyle={styles.listContentContainer}
       horizontal
@@ -96,8 +83,11 @@ export const SupportingList = () => {
       data={supportingListData}
       renderItem={({ item }) => {
         if ('loading' in item) return <SupportingTileSkeleton />
-        if ('viewAll' in item) return <ViewAllSupportingTile />
-        return <SupportingTile key={item.receiver_id} supporting={item} />
+        if ('viewAll' in item)
+          return <ViewAllSupportingTile supportedUsers={item.supportedUsers} />
+        return (
+          <SupportingTile key={item.receiver.user_id} supportedUser={item} />
+        )
       }}
     />
   )

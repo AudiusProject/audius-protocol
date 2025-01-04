@@ -14,5 +14,7 @@ export const QUERY_KEYS = {
   collectionByPermalink: 'collectionByPermalink',
   track: 'track',
   tracks: 'tracks',
-  trackByPermalink: 'trackByPermalink'
+  trackByPermalink: 'trackByPermalink',
+  supporters: 'supporters',
+  supportedUsers: 'supportedUsers'
 } as const

@@ -1,12 +1,8 @@
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
-import type { ID, User } from '@audius/common/models'
+import type { User } from '@audius/common/models'
 import type { CommonState, UserListStoreState } from '@audius/common/store'
-import {
-  cacheUsersSelectors,
-  userListActions,
-  userListSelectors
-} from '@audius/common/store'
+import { cacheUsersSelectors, userListActions } from '@audius/common/store'
 import { useFocusEffect, useIsFocused } from '@react-navigation/native'
 import { range } from 'lodash'
 import { View } from 'react-native'
@@ -20,7 +16,6 @@ import { makeStyles } from 'app/styles'
 
 import { UserListItem } from './UserListItem'
 import { UserListItemSkeleton } from './UserListItemSkeleton'
-const { makeGetOptimisticUserIdsIfNeeded } = userListSelectors
 const { loadMore, reset, setLoading } = userListActions
 const { getUsers } = cacheUsersSelectors
 
@@ -78,20 +73,13 @@ export const UserList = (props: UserListProps) => {
   const dispatch = useDispatch()
   const [isRefreshing, setIsRefreshing] = useState(true)
   const { hasMore, userIds, loading } = useSelector(userSelector)
-  const getOptimisticUserIds = makeGetOptimisticUserIdsIfNeeded({
-    userIds,
-    tag
-  })
-  const optimisticUserIds: ID[] = useSelector(getOptimisticUserIds)
-  const usersMap = useSelector((state) =>
-    getUsers(state, { ids: optimisticUserIds })
-  )
+  const usersMap = useSelector((state) => getUsers(state, { ids: userIds }))
   const users: User[] = useMemo(
     () =>
-      optimisticUserIds
+      userIds
         .map((id) => usersMap[id])
         .filter((user) => user && !user.is_deactivated),
-    [usersMap, optimisticUserIds]
+    [usersMap, userIds]
   )
 
   useFocusEffect(
