@@ -16,5 +16,6 @@ export const QUERY_KEYS = {
   tracks: 'tracks',
   trackByPermalink: 'trackByPermalink',
   supporters: 'supporters',
-  supportedUsers: 'supportedUsers'
+  supportedUsers: 'supportedUsers',
+  relatedArtists: 'relatedArtists'
 } as const

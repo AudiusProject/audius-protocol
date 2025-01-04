@@ -16,7 +16,6 @@ import { OnlineOnly } from 'app/components/offline-placeholder/OnlineOnly'
 import { useAppTabScreen } from 'app/hooks/useAppTabScreen'
 import { make, track } from 'app/services/analytics'
 
-import { EmptyFeedSuggestedFollows } from './EmptyFeedSuggestedFollows'
 import { FeedFilterButton } from './FeedFilterButton'
 const { getDiscoverFeedLineup } = feedPageSelectors
 const { makeGetLineupMetadatas } = lineupSelectors
@@ -57,7 +56,6 @@ export const FeedScreen = () => {
           ListFooterComponent={
             <EndOfLineupNotice description={messages.endOfFeed} />
           }
-          LineupEmptyComponent={<EmptyFeedSuggestedFollows />}
           actions={feedActions}
           lineupSelector={getFeedLineup}
           loadMore={loadMore}

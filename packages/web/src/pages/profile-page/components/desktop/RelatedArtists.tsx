@@ -1,6 +1,6 @@
 import { useCallback } from 'react'
 
-import { useCurrentUserId, useGetRelatedArtists } from '@audius/common/api'
+import { useRelatedArtists } from '@audius/common/api'
 import { User } from '@audius/common/models'
 import { profilePageSelectors } from '@audius/common/store'
 import { MAX_PROFILE_RELATED_ARTISTS } from '@audius/common/utils'
@@ -28,14 +28,12 @@ const messages = {
 export const RelatedArtists = () => {
   const dispatch = useDispatch()
   const profile = useSelector(getProfileUser)
-  const { data: currentUserId } = useCurrentUserId()
 
   const artistId = profile?.user_id
 
-  const { data: relatedArtists } = useGetRelatedArtists(
-    { artistId: artistId!, currentUserId },
-    { disabled: !artistId }
-  )
+  const { data: relatedArtists } = useRelatedArtists(artistId, {
+    limit: MAX_PROFILE_RELATED_ARTISTS
+  })
 
   const handleClick = useCallback(() => {
     if (profile) {

@@ -7,8 +7,6 @@ import {
   SET_TWITTER_PROFILE,
   SET_INSTAGRAM_PROFILE,
   SET_TIKTOK_PROFILE,
-  FETCH_FOLLOW_ARTISTS_SUCCEEDED,
-  SET_FOLLOW_ARTIST_CATEGORY,
   VALIDATE_EMAIL,
   VALIDATE_EMAIL_SUCCEEDED,
   VALIDATE_EMAIL_FAILED,
@@ -416,27 +414,6 @@ const actionsMap = {
     return {
       ...state,
       routeOnCompletion: action.route
-    }
-  },
-  [FETCH_FOLLOW_ARTISTS_SUCCEEDED](state, action) {
-    return {
-      ...state,
-      followArtists: {
-        ...state.followArtists,
-        categories: {
-          ...state.followArtists.categories,
-          [action.category]: action.userIds
-        }
-      }
-    }
-  },
-  [SET_FOLLOW_ARTIST_CATEGORY](state, action) {
-    return {
-      ...state,
-      followArtists: {
-        ...state.followArtists,
-        selectedCategory: action.category
-      }
     }
   },
   [COMPLETE_FOLLOW_ARTISTS](state, action) {

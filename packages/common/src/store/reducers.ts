@@ -106,8 +106,6 @@ import { MobileOverflowModalState } from './ui/mobile-overflow-menu/types'
 import { modalsReducer, ModalsState } from './ui/modals'
 import nowPlayingReducer, { NowPlayingState } from './ui/now-playing/slice'
 import reactionsReducer, { ReactionsState } from './ui/reactions/slice'
-import relatedArtistsReducer from './ui/related-artists/slice'
-import { RelatedArtistsState } from './ui/related-artists/types'
 import shareModalReducer from './ui/share-modal/slice'
 import { ShareModalState } from './ui/share-modal/types'
 import stripeModalReducer from './ui/stripe-modal/slice'
@@ -185,7 +183,6 @@ export const reducers = (storage: Storage, history?: History) => ({
     addToCollection: addToCollectionReducer,
     buyAudio: buyAudioReducer,
 
-    relatedArtists: relatedArtistsReducer,
     changePassword: changePasswordReducer,
     collectibleDetails: collectibleDetailsReducer,
     deletePlaylistConfirmationModal: deletePlaylistConfirmationReducer,
@@ -322,7 +319,6 @@ export type CommonState = {
     musicConfetti: MusicConfettiState
     nowPlaying: NowPlayingState
     reactions: ReactionsState
-    relatedArtists: RelatedArtistsState
     remixSettings: RemixSettingsState
     searchUsersModal: SearchUsersModalState
     shareModal: ShareModalState

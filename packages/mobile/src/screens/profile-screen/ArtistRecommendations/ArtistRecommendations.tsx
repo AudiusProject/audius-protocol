@@ -1,13 +1,9 @@
 import { Fragment, useCallback, useEffect, useState } from 'react'
 
+import { useRelatedArtists } from '@audius/common/api'
 import { FollowSource } from '@audius/common/models'
 import type { ID, User } from '@audius/common/models'
-import {
-  cacheUsersSelectors,
-  usersSocialActions,
-  relatedArtistsUISelectors,
-  relatedArtistsUIActions
-} from '@audius/common/store'
+import { cacheUsersSelectors, usersSocialActions } from '@audius/common/store'
 import type { CommonState } from '@audius/common/store'
 import { css } from '@emotion/native'
 import { isEmpty } from 'lodash'
@@ -33,8 +29,6 @@ import { useSelectProfile } from '../selectors'
 
 import { ArtistLink } from './ArtistLink'
 const { getUsers } = cacheUsersSelectors
-const { selectSuggestedFollowsUsers } = relatedArtistsUISelectors
-const { fetchRelatedArtists } = relatedArtistsUIActions
 const { followUser, unfollowUser } = usersSocialActions
 
 const messages = {
@@ -88,8 +82,6 @@ export const ArtistRecommendations = (props: ArtistRecommendationsProps) => {
   const dispatch = useDispatch()
 
   useEffectOnce(() => {
-    dispatch(fetchRelatedArtists({ artistId: user_id }))
-
     track(
       make({
         eventName: EventNames.PROFILE_PAGE_SHOWN_ARTIST_RECOMMENDATIONS,
@@ -102,12 +94,12 @@ export const ArtistRecommendations = (props: ArtistRecommendationsProps) => {
   const artistsToFollow = useSelector<CommonState, User[]>((state) =>
     Object.values(getUsers(state, { ids: idsToFollow || [] }))
   )
-  const suggestedArtists = useSelector((state) =>
-    selectSuggestedFollowsUsers(state, { id: user_id })
-  )
+
+  const { data: suggestedArtists } = useRelatedArtists(user_id)
+
   useEffect(() => {
-    if (!isEmpty(suggestedArtists)) {
-      setIdsToFollow(suggestedArtists.map((user) => user.user_id).slice(0, 5))
+    if (suggestedArtists && !isEmpty(suggestedArtists)) {
+      setIdsToFollow(suggestedArtists.map((user) => user.user_id))
     }
   }, [suggestedArtists])
 

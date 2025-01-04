@@ -1,5 +1,4 @@
 import {
-  ID,
   FeedFilter,
   TimeRange,
   LineupState,
@@ -9,7 +8,6 @@ import {
 } from '../../../models'
 
 export type FeedPageState = {
-  suggestedFollows: ID[]
   feed: LineupState<LineupTrack>
   trendingWeek: LineupState<Track | Collection>
   trendingMonth: LineupState<Track | Collection>
