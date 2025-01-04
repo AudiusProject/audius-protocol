@@ -4,12 +4,10 @@ import {
   BNWei,
   SolanaWalletAddress
 } from '@audius/common/models'
-import { createUserBankIfNeeded } from '@audius/common/services'
 import {
   accountActions,
   accountSelectors,
   tokenDashboardPageActions,
-  solanaSelectors,
   walletSelectors,
   walletActions,
   getContext,
@@ -30,7 +28,6 @@ import { SETUP_BACKEND_SUCCEEDED } from 'common/store/backend/actions'
 import { reportToSentry } from 'store/errors/reportToSentry'
 import { waitForWrite } from 'utils/sagaHelpers'
 
-const { getFeePayer } = solanaSelectors
 const { getWalletAddresses } = accountSelectors
 
 const ATA_SIZE = 165 // Size allocated for an associated token account
@@ -78,8 +75,6 @@ function* sendAsync({
   // WalletClient relies on audiusBackendInstance. Use waitForWrite to ensure it's initialized
   yield* waitForWrite()
   const walletClient = yield* getContext('walletClient')
-  const { track } = yield* getContext('analytics')
-  const sdk = yield* getSDK()
 
   const account = yield* select(getAccountUser)
   const weiBNAmount = stringWeiToBN(weiAudioAmount)
@@ -113,28 +108,16 @@ function* sendAsync({
       })
     )
 
-    // Ensure user has userbank
-    const feePayerOverride = yield* select(getFeePayer)
-    if (!feePayerOverride) {
-      console.error(`sendAsync: unexpectedly no fee payer`)
-      return
-    }
     const { currentUser } = yield* select(getWalletAddresses)
     if (!currentUser) {
       throw new Error('Failed to get current user wallet address')
     }
-    yield* call(createUserBankIfNeeded, sdk, {
-      recordAnalytics: track,
-      ethAddress: currentUser,
-      mint: 'wAUDIO'
-    })
 
     // If transferring spl wrapped audio and there are insufficent funds with only the
     // user bank balance, transfer all eth AUDIO to spl wrapped audio
     if (weiBNAmount.gt(waudioWeiAmount)) {
       yield* put(transferEthAudioToSolWAudio())
       yield* call([walletClient, walletClient.transferTokensFromEthToSol], {
-        sdk,
         ethAddress: currentUser
       })
     }

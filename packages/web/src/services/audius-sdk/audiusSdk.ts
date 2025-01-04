@@ -53,6 +53,7 @@ const initSdk = async () => {
     const message = `signature:${new Date().getTime()}`
     const signature = await audiusWalletClient.signMessage({ message })
     ethWalletClient = createWalletClient({
+      account: '0x0000000000000000000000000000000000000000', // dummy replaced by relay DO NOT REMOVE
       chain: mainnet,
       transport: http(`${env.IDENTITY_SERVICE}/ethereum/rpc`, {
         fetchOptions: {
@@ -66,6 +67,7 @@ const initSdk = async () => {
   } catch (e) {
     if (e instanceof HedgehogWalletNotFoundError) {
       ethWalletClient = createWalletClient({
+        account: '0x0000000000000000000000000000000000000000', // dummy replaced by relay DO NOT REMOVE
         chain: mainnet,
         transport: http(`${env.IDENTITY_SERVICE}/ethereum/rpc`, {})
       })
