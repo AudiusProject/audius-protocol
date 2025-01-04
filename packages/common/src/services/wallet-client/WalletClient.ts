@@ -136,6 +136,7 @@ export class WalletClient {
       // auto-redeem the transfer.
 
       await pollForTokenBalanceChange(sdk, {
+        commitment: 'finalized',
         tokenAccount: account?.address,
         initialBalance: account?.amount,
         mint: 'wAUDIO',

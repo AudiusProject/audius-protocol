@@ -226,19 +226,22 @@ export const pollForTokenBalanceChange = async (
     initialBalance,
     mint = DEFAULT_MINT,
     retryDelayMs = DEFAULT_RETRY_DELAY,
-    maxRetryCount = DEFAULT_MAX_RETRY_COUNT
+    maxRetryCount = DEFAULT_MAX_RETRY_COUNT,
+    commitment = 'finalized'
   }: {
     tokenAccount: PublicKey
     initialBalance?: bigint
     mint?: MintName
     retryDelayMs?: number
     maxRetryCount?: number
+    commitment?: Commitment
   }
 ) => {
   const debugTokenName = mint.toUpperCase()
   let retries = 0
   let tokenAccountInfo = await getTokenAccountInfo(sdk, {
-    tokenAccount
+    tokenAccount,
+    commitment
   })
   while (
     (!tokenAccountInfo ||
@@ -259,7 +262,8 @@ export const pollForTokenBalanceChange = async (
     }
     await delay(retryDelayMs)
     tokenAccountInfo = await getTokenAccountInfo(sdk, {
-      tokenAccount
+      tokenAccount,
+      commitment
     })
   }
   if (

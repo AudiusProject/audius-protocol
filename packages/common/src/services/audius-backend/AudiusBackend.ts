@@ -999,8 +999,7 @@ export const audiusBackend = ({
       instructions: [secpTransactionInstruction, transferInstruction]
     })
     const signature = await sdk.services.claimableTokensClient.sendTransaction(
-      transaction,
-      { skipPreflight: true }
+      transaction
     )
     return signature
   }
