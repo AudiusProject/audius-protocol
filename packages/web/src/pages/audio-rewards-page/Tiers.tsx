@@ -68,7 +68,7 @@ type AudioTiers = Exclude<BadgeTier, 'none'>
 const tiers: AudioTiers[] = ['bronze', 'silver', 'gold', 'platinum']
 
 // Mapping for large icons
-export const audioTierMapSvg: {
+const audioTierMapSvg: {
   [tier in AudioTiers]: Nullable<ReactElement>
 } = {
   bronze: <IconTokenBronze width={BADGE_SIZE} height={BADGE_SIZE} />,
@@ -79,7 +79,7 @@ export const audioTierMapSvg: {
 
 const BADGE_LOCAL_STORAGE_KEY = 'last_badge_tier'
 
-export const LEARN_MORE_URL = 'http://blog.audius.co/posts/community-meet-audio'
+const LEARN_MORE_URL = 'http://blog.audius.co/posts/community-meet-audio'
 
 const useShowConfetti = (tier: BadgeTier) => {
   // No tier or no local storage, never show confetti
@@ -146,12 +146,12 @@ const TierBox = ({ tier, message }: { tier: BadgeTier; message?: string }) => {
               tier === 'bronze'
                 ? 'linear-gradient(to right, rgba(141, 48, 8, 0.5), rgb(182, 97, 11))'
                 : tier === 'silver'
-                ? 'linear-gradient(to right, rgba(179, 182, 185, 0.5), rgb(189, 189, 189))'
-                : tier === 'gold'
-                ? 'linear-gradient(to right, rgb(236, 173, 11), rgb(236, 173, 11))'
-                : tier === 'platinum'
-                ? 'linear-gradient(to right, rgb(179, 236, 249), rgb(87, 194, 215))'
-                : 'inherit'
+                  ? 'linear-gradient(to right, rgba(179, 182, 185, 0.5), rgb(189, 189, 189))'
+                  : tier === 'gold'
+                    ? 'linear-gradient(to right, rgb(236, 173, 11), rgb(236, 173, 11))'
+                    : tier === 'platinum'
+                      ? 'linear-gradient(to right, rgb(179, 236, 249), rgb(87, 194, 215))'
+                      : 'inherit'
           })
         }}
       >

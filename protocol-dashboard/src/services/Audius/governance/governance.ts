@@ -36,9 +36,8 @@ export default class Governance {
 
   async getProposalById(proposalId: ProposalId) {
     await this.aud.hasPermissions()
-    const proposal: RawProposal = await this.getContract().getProposalById(
-      proposalId
-    )
+    const proposal: RawProposal =
+      await this.getContract().getProposalById(proposalId)
     return formatProposal(proposal)
   }
 
@@ -230,9 +229,8 @@ export default class Governance {
 
   async getProposalQuorum(proposalId: number): Promise<BN> {
     await this.aud.hasPermissions()
-    const quorumAmount: BN = await this.getContract().calculateQuorum(
-      proposalId
-    )
+    const quorumAmount: BN =
+      await this.getContract().calculateQuorum(proposalId)
     return quorumAmount
   }
 

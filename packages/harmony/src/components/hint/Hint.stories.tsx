@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react'
 
-import { IconError } from 'icons'
+import { IconError } from '~harmony/icons'
 
 import { Hint } from './Hint'
 

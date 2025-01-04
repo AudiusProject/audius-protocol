@@ -1,10 +1,10 @@
 import type { Meta, StoryObj } from '@storybook/react'
 
-import { Box } from 'components/layout/Box'
-import { Flex } from 'components/layout/Flex'
-import { Paper } from 'components/layout/Paper'
-import { IconCamera } from 'icons'
 import shadowBackground from 'storybook/assets/shadowBackground.jpeg'
+import { Box } from '~harmony/components/layout/Box'
+import { Flex } from '~harmony/components/layout/Flex'
+import { Paper } from '~harmony/components/layout/Paper'
+import { IconCamera } from '~harmony/icons'
 
 import { Avatar } from './Avatar'
 

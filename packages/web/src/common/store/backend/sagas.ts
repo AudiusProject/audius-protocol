@@ -2,8 +2,7 @@ import {
   accountActions,
   reachabilityActions,
   reachabilitySelectors,
-  getContext,
-  accountSelectors
+  getContext
 } from '@audius/common/store'
 import {
   put,
@@ -19,7 +18,6 @@ import {
 import { REACHABILITY_LONG_TIMEOUT } from 'store/reachability/sagas'
 
 import * as backendActions from './actions'
-import { watchBackendErrors } from './errorSagas'
 import { getIsSettingUp, getIsSetup } from './selectors'
 const { getIsReachable } = reachabilitySelectors
 
@@ -47,7 +45,7 @@ export function* waitForBackendSetup() {
 }
 
 // This is specific to setupBackend. See utils in reachability sagas for general use
-export function* awaitReachability() {
+function* awaitReachability() {
   const isNativeMobile = yield* getContext('isNativeMobile')
   const isReachable = yield* select(getIsReachable)
   if (isReachable || !isNativeMobile) return true
@@ -58,7 +56,7 @@ export function* awaitReachability() {
   return !!action
 }
 
-export function* setupBackend() {
+function* setupBackend() {
   // Optimistically fetch account, then do it again later when we're sure we're connected
   // This ensures we always get the cached account when starting offline if available
   yield* put(accountActions.fetchLocalAccount())
@@ -73,49 +71,19 @@ export function* setupBackend() {
   }
 
   const fingerprintClient = yield* getContext('fingerprintClient')
-  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
 
   // Fire-and-forget init fp
   fingerprintClient.init()
 
-  // Check for cached local account so we can use it to initialize backend
-  const fetchLocalAccountResult = yield* race({
-    failure: take(accountActions.fetchAccountFailed),
-    success: take(accountActions.fetchAccountSucceeded)
-  })
-
-  let setupArgs = {}
-  if (fetchLocalAccountResult.success) {
-    const localUser = yield* select(accountSelectors.getAccountUser)
-    if (localUser) {
-      setupArgs = {
-        wallet: localUser.wallet,
-        userId: localUser.user_id
-      }
-    }
-  }
-
   // Start remote account fetch while we setup backend
   yield* put(accountActions.fetchAccount())
-
-  const { web3Error, libsError } = yield* call(
-    audiusBackendInstance.setup,
-    setupArgs
-  )
-
-  if (libsError) {
-    yield* put(accountActions.fetchAccountFailed({ reason: 'LIBS_ERROR' }))
-    yield* put(backendActions.setupBackendFailed())
-    yield* put(backendActions.libsError(libsError))
-    return
-  }
 
   const isReachable = yield* select(getIsReachable)
   // Bail out before success if we are now offline
   // This happens when we started the app with the device offline because
   // we optimistically assume the device is connected to optimize for the "happy path"
   if (!isReachable) return
-  yield* put(backendActions.setupBackendSucceeded(web3Error))
+  yield* put(backendActions.setupBackendSucceeded())
 }
 
 function* watchSetupBackend() {
@@ -123,7 +91,7 @@ function* watchSetupBackend() {
 }
 
 // If not fully set up, re set-up the backend
-export function* setupBackendIfNotSetUp() {
+function* setupBackendIfNotSetUp() {
   const isSetup = yield* select(getIsSetup)
   const isSettingUp = yield* select(getIsSettingUp)
   if (!isSetup && !isSettingUp) {
@@ -141,5 +109,5 @@ function* init() {
 }
 
 export default function sagas() {
-  return [init, watchSetupBackend, watchBackendErrors, watchSetReachable]
+  return [init, watchSetupBackend, watchSetReachable]
 }

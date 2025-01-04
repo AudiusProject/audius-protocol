@@ -276,9 +276,8 @@ export class Users extends Base {
   ) {
     let didMetadataUpdate = false
     if (profilePictureFile) {
-      const resp = await this.creatorNode.uploadProfilePictureV2(
-        profilePictureFile
-      )
+      const resp =
+        await this.creatorNode.uploadProfilePictureV2(profilePictureFile)
       metadata.profile_picture_sizes = resp.id
       didMetadataUpdate = true
     }
@@ -322,9 +321,8 @@ export class Users extends Base {
 
       // Upload images
       if (profilePictureFile) {
-        const resp = await this.creatorNode.uploadProfilePictureV2(
-          profilePictureFile
-        )
+        const resp =
+          await this.creatorNode.uploadProfilePictureV2(profilePictureFile)
         newMetadata.profile_picture_sizes = resp.id
       }
       if (coverPhotoFile) {

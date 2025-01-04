@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"encoding/hex"
+	"encoding/json"
 	"fmt"
 	"log"
 	"log/slog"
@@ -19,7 +20,9 @@ import (
 
 	"github.com/AudiusProject/audius-protocol/pkg/core"
 	"github.com/AudiusProject/audius-protocol/pkg/core/common"
+	"github.com/AudiusProject/audius-protocol/pkg/core/console"
 	"github.com/AudiusProject/audius-protocol/pkg/mediorum"
+	"github.com/AudiusProject/audius-protocol/pkg/mediorum/server"
 	"github.com/AudiusProject/audius-protocol/pkg/uptime"
 
 	"github.com/ethereum/go-ethereum/crypto"
@@ -34,12 +37,22 @@ const (
 	maxRetries     = 10
 )
 
+var startTime time.Time
+
 type proxyConfig struct {
 	path   string
 	target string
 }
 
+type serverConfig struct {
+	httpPort   string
+	httpsPort  string
+	hostname   string
+	tlsEnabled bool
+}
+
 func main() {
+	startTime = time.Now().UTC()
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
@@ -52,10 +65,26 @@ func main() {
 		fn      func() error
 		enabled bool
 	}{
-		{"audiusd-echo-server", func() error { return startEchoProxyWithOptionalTLS(hostUrl, logger) }, true},
-		{"core", func() error { return core.Run(ctx, logger) }, true},
-		{"mediorum", func() error { return mediorum.Run(ctx, logger) }, isStorageEnabled()},
-		{"uptime", func() error { return uptime.Run(ctx, logger) }, hostUrl.Hostname() != "localhost"},
+		{
+			"audiusd-echo-server",
+			func() error { return startEchoProxy(hostUrl, logger) },
+			true,
+		},
+		{
+			"core",
+			func() error { return core.Run(ctx, logger) },
+			true,
+		},
+		{
+			"mediorum",
+			func() error { return mediorum.Run(ctx, logger) },
+			isStorageEnabled(),
+		},
+		{
+			"uptime",
+			func() error { return uptime.Run(ctx, logger) },
+			isUpTimeEnabled(hostUrl),
+		},
 	}
 
 	for _, svc := range services {
@@ -124,7 +153,7 @@ func runWithRecover(name string, ctx context.Context, logger *common.Logger, f f
 
 func setupLogger() *common.Logger {
 	var slogLevel slog.Level
-	switch os.Getenv("audiusd_log_level") {
+	switch os.Getenv("AUDIUSD_LOG_LEVEL") {
 	case "debug":
 		slogLevel = slog.LevelDebug
 	case "info":
@@ -144,7 +173,6 @@ func setupHostUrl() *url.URL {
 	endpoints := []string{
 		os.Getenv("creatorNodeEndpoint"),
 		os.Getenv("audius_discprov_url"),
-		"http://localhost",
 	}
 
 	for _, ep := range endpoints {
@@ -158,30 +186,88 @@ func setupHostUrl() *url.URL {
 }
 
 func setupDelegateKeyPair(logger *common.Logger) {
-	if delegatePrivateKey := os.Getenv("delegatePrivateKey"); delegatePrivateKey == "" {
-		privKey, ownerWallet := keyGen()
-		os.Setenv("delegatePrivateKey", privKey)
-		os.Setenv("delegateOwnerWallet", ownerWallet)
-		logger.Infof("Generated and set delegate key pair: %s", ownerWallet)
+	// Various applications across the protocol stack switch on these env var semantics
+	// Check both discovery and content env vars
+	// If neither discovery nor content node, (i.e. an audiusd rpc)
+	// generate new keys and set as an implied "content node"
+	audius_delegate_private_key := os.Getenv("audius_delegate_private_key")
+	audius_delegate_owner_wallet := os.Getenv("audius_delegate_owner_wallet")
+	delegatePrivateKey := os.Getenv("delegatePrivateKey")
+	delegateOwnerWallet := os.Getenv("delegateOwnerWallet")
+
+	if audius_delegate_private_key != "" || audius_delegate_owner_wallet != "" {
+		logger.Infof("setupDelegateKeyPair: Node is discovery type")
+		return
+	}
+
+	if delegatePrivateKey != "" || delegateOwnerWallet != "" {
+		logger.Infof("setupDelegateKeyPair: Node is content type")
+		return
+	}
+
+	privKey, ownerWallet := keyGen()
+	os.Setenv("delegatePrivateKey", privKey)
+	os.Setenv("delegateOwnerWallet", ownerWallet)
+	logger.Infof("Generated and set delegate key pair for implied content node: %s", ownerWallet)
+}
+
+func getEchoServerConfig(hostUrl *url.URL) serverConfig {
+	httpPort := getEnvString("AUDIUSD_HTTP_PORT", "80")
+	httpsPort := getEnvString("AUDIUSD_HTTPS_PORT", "443")
+	hostname := hostUrl.Hostname()
+
+	// TODO: Work out of the box for altego.net, but allow override
+	if hostname == "altego.net" && httpPort == "80" && httpsPort == "443" {
+		httpPort = "5000"
+	}
+
+	// TODO: this is perhaps back to front,
+	// but the far greater majority of current nodes use auto-tls
+	// and we desired minimal default configuration
+	tlsEnabled := true
+	switch {
+	case os.Getenv("AUDIUSD_TLS_DISABLED") == "true":
+		tlsEnabled = false
+	case hasSuffix(hostname, []string{"localhost", "altego.net", "bdnodes.net", "staked.cloud"}):
+		tlsEnabled = false
+	}
+
+	return serverConfig{
+		httpPort:   httpPort,
+		httpsPort:  httpsPort,
+		hostname:   hostname,
+		tlsEnabled: tlsEnabled,
 	}
 }
 
-func startEchoProxyWithOptionalTLS(hostUrl *url.URL, logger *common.Logger) error {
+func startEchoProxy(hostUrl *url.URL, logger *common.Logger) error {
 	e := echo.New()
 	e.Use(middleware.Logger(), middleware.Recover())
 
-	// Minimal health check endpoint
 	e.GET("/", func(c echo.Context) error {
-		return c.JSON(http.StatusOK, map[string]string{"status": "ok"})
+		return c.JSON(http.StatusOK, map[string]string{"a": "440"})
 	})
 
-	// Reverse proxies to what were previously discreet containers
+	e.GET("/health-check", func(c echo.Context) error {
+		return c.JSON(http.StatusOK, getHealthCheckResponse(hostUrl))
+	})
+
+	if os.Getenv("audius_discprov_url") != "" && !isCoreOnly() {
+		e.GET("/health_check", func(c echo.Context) error {
+			return c.JSON(http.StatusOK, getHealthCheckResponse(hostUrl))
+		})
+	}
+
+	e.GET("/console", func(c echo.Context) error {
+		return c.Redirect(http.StatusMovedPermanently, "/console/overview")
+	})
+
 	proxies := []proxyConfig{
 		{"/console/*", "http://localhost:26659"},
 		{"/core/*", "http://localhost:26659"},
 	}
 
-	if hostUrl.Hostname() != "localhost" {
+	if isUpTimeEnabled(hostUrl) {
 		proxies = append(proxies, proxyConfig{"/d_api/*", "http://localhost:1996"})
 	}
 
@@ -198,19 +284,12 @@ func startEchoProxyWithOptionalTLS(hostUrl *url.URL, logger *common.Logger) erro
 		e.Any(proxy.path, echo.WrapHandler(httputil.NewSingleHostReverseProxy(target)))
 	}
 
-	httpPort := getEnvString("AUDIUSD_HTTP_PORT", "80")
-	httpsPort := getEnvString("AUDIUSD_HTTPS_PORT", "443")
+	config := getEchoServerConfig(hostUrl)
 
-	if shouldEnableTLS(hostUrl) {
-		return startWithTLS(e, httpPort, httpsPort, hostUrl, logger)
+	if config.tlsEnabled {
+		return startWithTLS(e, config.httpPort, config.httpsPort, hostUrl, logger)
 	}
-	return e.Start(":" + httpPort)
-}
-
-func shouldEnableTLS(hostUrl *url.URL) bool {
-	// TODO: config should be explicitly set
-	disableAutoTLS := []string{"altego.net", "bdnodes.net", "staked.cloud", "localhost"}
-	return !domainInTlds(hostUrl.Hostname(), disableAutoTLS) && os.Getenv("DISABLE_TLS") != "true"
+	return e.Start(":" + config.httpPort)
 }
 
 func startWithTLS(e *echo.Echo, httpPort, httpsPort string, hostUrl *url.URL, logger *common.Logger) error {
@@ -233,11 +312,24 @@ func startWithTLS(e *echo.Echo, httpPort, httpsPort string, hostUrl *url.URL, lo
 	return e.Start(":" + httpPort)
 }
 
+// TODO: I don't love this, but it is kinof the only way to make this work rn
+func isCoreOnly() bool {
+	return os.Getenv("AUDIUSD_CORE_ONLY") == "true"
+}
+
+func isUpTimeEnabled(hostUrl *url.URL) bool {
+	return hostUrl.Hostname() != "localhost"
+}
+
+// TODO: I don't love this, but it works safely for now
 func isStorageEnabled() bool {
-	if os.Getenv("AUDIUSD_STORAGE_ENABLED") == "false" {
+	if isCoreOnly() {
 		return false
 	}
-	return os.Getenv("creatorNodeEndpoint") != "" || os.Getenv("AUDIUSD_STORAGE_ENABLED") == "true"
+	if os.Getenv("AUDIUSD_STORAGE_ENABLED") == "true" {
+		return true
+	}
+	return os.Getenv("creatorNodeEndpoint") != ""
 }
 
 func keyGen() (string, string) {
@@ -256,11 +348,70 @@ func getEnvString(key, defaultValue string) string {
 	return defaultValue
 }
 
-func domainInTlds(domain string, tlds []string) bool {
-	for _, tld := range tlds {
-		if domain == tld {
+func hasSuffix(domain string, suffixes []string) bool {
+	for _, suffix := range suffixes {
+		if strings.HasSuffix(domain, suffix) {
 			return true
 		}
 	}
 	return false
+}
+
+func getHealthCheckResponse(hostUrl *url.URL) map[string]interface{} {
+	response := map[string]interface{}{
+		"git":       os.Getenv("GIT_SHA"),
+		"hostname":  hostUrl.Hostname(),
+		"timestamp": time.Now().UTC(),
+		"uptime":    time.Since(startTime).String(),
+	}
+
+	storageResponse := map[string]interface{}{
+		"enabled": isStorageEnabled(),
+	}
+
+	if isStorageEnabled() {
+		resp, err := http.Get("http://localhost:1991/health_check")
+		if err == nil {
+			defer resp.Body.Close()
+			var storageHealth server.HealthCheckResponse
+			if err := json.NewDecoder(resp.Body).Decode(&storageHealth); err == nil {
+				healthBytes, _ := json.Marshal(storageHealth)
+				var tempResponse map[string]interface{}
+				json.Unmarshal(healthBytes, &tempResponse)
+
+				// TODO: remove cruft as we favor comet status for peering
+				if data, ok := tempResponse["data"].(map[string]interface{}); ok {
+					for k, v := range data {
+						if k != "signers" && k != "unreachablePeers" {
+							storageResponse[k] = v
+						}
+					}
+					delete(tempResponse, "data")
+				}
+
+				for k, v := range tempResponse {
+					storageResponse[k] = v
+				}
+
+				storageResponse["enabled"] = true
+			}
+		}
+	}
+	response["storage"] = storageResponse
+
+	resp, err := http.Get("http://localhost:26659/console/health_check")
+	if err == nil {
+		defer resp.Body.Close()
+		var coreHealth console.HealthCheckResponse
+		if err := json.NewDecoder(resp.Body).Decode(&coreHealth); err == nil {
+			// TODO: remove cruft
+			healthBytes, _ := json.Marshal(coreHealth)
+			var coreMap map[string]interface{}
+			json.Unmarshal(healthBytes, &coreMap)
+			delete(coreMap, "git")
+			response["core"] = coreMap
+		}
+	}
+
+	return response
 }

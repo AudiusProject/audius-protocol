@@ -1,12 +1,12 @@
 import { accountSelectors, getContext } from '@audius/common/store'
 import { route, waitForAccount } from '@audius/common/utils'
-import { push as pushRoute } from 'connected-react-router'
 import { call, put, select } from 'typed-redux-saga'
 
 import {
   updateRouteOnExit,
   showRequiresAccountToast
 } from 'common/store/pages/signon/actions'
+import { push as pushRoute } from 'utils/navigation'
 
 const { SIGN_UP_PAGE } = route
 

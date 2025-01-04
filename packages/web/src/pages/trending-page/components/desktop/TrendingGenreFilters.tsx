@@ -1,6 +1,6 @@
-import { ChangeEvent, useCallback, useState } from 'react'
+import { ChangeEvent, useCallback, useEffect, useState } from 'react'
 
-import { getCanonicalName } from '@audius/common/utils'
+import { getCanonicalName, removeNullable } from '@audius/common/utils'
 import { Flex, IconKebabHorizontal, SelectablePill } from '@audius/harmony'
 
 const messages = {
@@ -42,11 +42,19 @@ export const TrendingGenreFilters = (props: TrendingGenreFiltersProps) => {
     isSelectedFromModal(currentGenre) &&
     currentGenre !== lastModalSelectedGenre
   ) {
-    setLastModalSelectedGenre(currentGenre)
     genres.push(currentGenre)
-  } else if (lastModalSelectedGenre !== null) {
+  } else if (lastModalSelectedGenre) {
     genres.push(lastModalSelectedGenre)
   }
+
+  useEffect(() => {
+    if (
+      isSelectedFromModal(currentGenre) &&
+      currentGenre !== lastModalSelectedGenre
+    ) {
+      setLastModalSelectedGenre(currentGenre)
+    }
+  }, [currentGenre, lastModalSelectedGenre])
 
   const handleChange = useCallback(
     (e: ChangeEvent<HTMLInputElement>) => {
@@ -70,7 +78,7 @@ export const TrendingGenreFilters = (props: TrendingGenreFiltersProps) => {
         size='large'
         isSelected={currentGenre === null}
       />
-      {genres.map((genre) => (
+      {genres.filter(removeNullable).map((genre) => (
         <SelectablePill
           key={genre}
           name='trending-genre-filter'

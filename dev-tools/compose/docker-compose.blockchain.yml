@@ -2,13 +2,7 @@ version: '3.9'
 
 services:
   poa-ganache:
-    build:
-      context: ${PROJECT_ROOT}/contracts
-      dockerfile: Dockerfile
-      args:
-        bootstrapSPIds: ${BOOTSTRAP_SP_IDS}
-        bootstrapSPDelegateWallets: ${BOOTSTRAP_SP_DELEGATE_WALLETS}
-        bootstrapSPOwnerWallets: ${BOOTSTRAP_SP_OWNER_WALLETS}
+    image: audius/poa-ganache:latest
     command: bash /tmp/dev-tools/startup/poa-ganache.sh
     volumes:
       - poa-contracts-abis:/usr/src/app/build/contracts
@@ -20,51 +14,8 @@ services:
     profiles:
       - chain
 
-  poa-blockscout-db:
-    image: postgres:13.6
-    environment:
-      POSTGRES_PASSWORD: 'postgres'
-      POSTGRES_USER: 'postgres'
-    healthcheck:
-      test: ['CMD', 'pg_isready']
-      interval: 10s
-      timeout: 5s
-    deploy:
-      mode: global
-    profiles:
-      - block-explorer
-
-  poa-blockscout:
-    image: blockscout/blockscout:4.1.3
-    command: 'mix do ecto.create, ecto.migrate, phx.server'
-    environment:
-      ETHEREUM_JSONRPC_VARIANT: 'ganache'
-      ETHEREUM_JSONRPC_HTTP_URL: 'http://poa-ganache:8545'
-      ETHEREUM_JSONRPC_WS_URL: 'ws://poa-ganache:8545'
-      INDEXER_DISABLE_PENDING_TRANSACTIONS_FETCHER: 'true'
-      DATABASE_URL: 'postgresql://postgres:postgres@poa-blockscout-db:5432/postgres?ssl=false'
-      ECTO_USE_SSL: false
-    ports:
-      - '9545:4000'
-    depends_on:
-      poa-blockscout-db:
-        condition: service_healthy
-      poa-ganache:
-        condition: service_healthy
-    deploy:
-      mode: global
-    profiles:
-      - block-explorer
-
-  # eth-contracts
-
   eth-ganache:
-    build:
-      context: ${PROJECT_ROOT}/eth-contracts
-      args:
-        CONTENT_NODE_VERSION: ${CONTENT_NODE_VERSION}
-        DISCOVERY_NODE_VERSION: ${DISCOVERY_NODE_VERSION}
-        antiAbuseOracleAddresses: '${AAO_WALLET_ADDRESSES}'
+    image: audius/eth-ganache:latest
     command: bash /tmp/dev-tools/startup/eth-ganache.sh
     volumes:
       - eth-contracts-abis:/usr/src/app/build/contracts
@@ -75,42 +26,6 @@ services:
       mode: global
     profiles:
       - chain
-
-  eth-blockscout-db:
-    image: postgres:13.6
-    environment:
-      POSTGRES_PASSWORD: 'postgres'
-      POSTGRES_USER: 'postgres'
-    healthcheck:
-      test: ['CMD', 'pg_isready']
-      interval: 10s
-      timeout: 5s
-    deploy:
-      mode: global
-    profiles:
-      - block-explorer
-
-  eth-blockscout:
-    image: blockscout/blockscout:4.1.3
-    command: 'mix do ecto.create, ecto.migrate, phx.server'
-    environment:
-      ETHEREUM_JSONRPC_VARIANT: 'ganache'
-      ETHEREUM_JSONRPC_HTTP_URL: 'http://eth-ganache:8545'
-      ETHEREUM_JSONRPC_WS_URL: 'ws://eth-ganache:8545'
-      INDEXER_DISABLE_PENDING_TRANSACTIONS_FETCHER: 'true'
-      DATABASE_URL: 'postgresql://postgres:postgres@eth-blockscout-db:5432/postgres?ssl=false'
-      ECTO_USE_SSL: false
-    ports:
-      - '9546:4000'
-    depends_on:
-      eth-blockscout-db:
-        condition: service_healthy
-      eth-ganache:
-        condition: service_healthy
-    deploy:
-      mode: global
-    profiles:
-      - block-explorer
 
   # Building Solana Programs in container is long and cumbersome (30min+).
   # Use saved image instead.

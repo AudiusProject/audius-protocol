@@ -2,8 +2,8 @@ import { expect } from '@storybook/jest'
 import type { Meta, StoryObj } from '@storybook/react'
 import { within, userEvent } from '@storybook/testing-library'
 
-import { Flex } from 'components/layout'
-import { IconSearch, IconVisibilityHidden, IconFilter } from 'icons'
+import { Flex } from '~harmony/components/layout'
+import { IconSearch, IconVisibilityHidden, IconFilter } from '~harmony/icons'
 
 import { TextInput } from './TextInput'
 import { TextInputSize } from './types'

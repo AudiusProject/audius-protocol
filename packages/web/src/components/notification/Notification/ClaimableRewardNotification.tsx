@@ -3,8 +3,9 @@ import { useCallback } from 'react'
 import { ClaimableRewardNotification as ClaimableRewardNotificationType } from '@audius/common/store'
 import { route } from '@audius/common/utils'
 import { Button, Flex, IconTokenGold } from '@audius/harmony'
-import { push } from 'connected-react-router'
 import { useDispatch } from 'react-redux'
+
+import { push } from 'utils/navigation'
 
 import { NotificationBody } from './components/NotificationBody'
 import { NotificationFooter } from './components/NotificationFooter'

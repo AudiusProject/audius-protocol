@@ -1,5 +1,4 @@
 // @refresh reset
-
 import { useEffect, Suspense, lazy } from 'react'
 
 import { route } from '@audius/common/utils'
@@ -15,6 +14,7 @@ import { AppErrorBoundary } from './AppErrorBoundary'
 import { AppProviders } from './AppProviders'
 import { useHistoryContext } from './HistoryProvider'
 import WebPlayer from './web-player/WebPlayer'
+
 const {
   PRIVATE_KEY_EXPORTER_SETTINGS_PAGE,
   SIGN_IN_PAGE,
@@ -31,10 +31,26 @@ const PrivateKeyExporterModal = lazy(
   () => import('pages/private-key-exporter-page/PrivateKeyExporterModal')
 )
 
+const ReactQueryTestPage = lazy(
+  () => import('pages/react-query/ReactQueryTestPage')
+)
+
+const ReactQueryCachePrimePage = lazy(
+  () => import('pages/react-query/ReactQueryCachePrimePage')
+)
+
+const ReactQueryReduxCacheSyncPage = lazy(
+  () => import('pages/react-query/ReactQueryReduxCacheSyncPage')
+)
+
+const ReactQueryToReduxCacheSyncPage = lazy(
+  () => import('pages/react-query/ReactQueryToReduxCacheSyncPage')
+)
+
 const MERCHANT_ID = env.COINFLOW_MERCHANT_ID
 const IS_PRODUCTION = env.ENVIRONMENT === 'production'
 
-export const AppInner = () => {
+export const App = () => {
   const { history } = useHistoryContext()
 
   useEffect(() => {
@@ -42,7 +58,7 @@ export const AppInner = () => {
   }, [history])
 
   return (
-    <>
+    <AppProviders>
       <SomethingWrong />
       <Suspense fallback={null}>
         <CoinflowPurchaseProtection
@@ -59,6 +75,26 @@ export const AppInner = () => {
           <Route exact path='/oauth/auth'>
             <OAuthLoginPage />
           </Route>
+          {!IS_PRODUCTION ? (
+            <Route path='/react-query'>
+              <ReactQueryTestPage />
+            </Route>
+          ) : null}
+          {!IS_PRODUCTION ? (
+            <Route path='/react-query-cache-prime'>
+              <ReactQueryCachePrimePage />
+            </Route>
+          ) : null}
+          {!IS_PRODUCTION ? (
+            <Route path='/react-query-redux-cache-sync'>
+              <ReactQueryReduxCacheSyncPage />
+            </Route>
+          ) : null}
+          {!IS_PRODUCTION ? (
+            <Route path='/react-query-to-redux-cache-sync'>
+              <ReactQueryToReduxCacheSyncPage />
+            </Route>
+          ) : null}
           <Route path={PRIVATE_KEY_EXPORTER_SETTINGS_PAGE}>
             <PrivateKeyExporterPage />
             <AppModal
@@ -74,14 +110,6 @@ export const AppInner = () => {
           </Route>
         </Switch>
       </Suspense>
-    </>
-  )
-}
-
-export const App = () => {
-  return (
-    <AppProviders>
-      <AppInner />
     </AppProviders>
   )
 }

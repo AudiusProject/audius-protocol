@@ -22,9 +22,9 @@ const { trendingAllTimeActions, trendingMonthActions, trendingWeekActions } =
   trendingPageLineupActions
 
 const messages = {
-  thisWeek: 'THIS WEEK',
-  thisMonth: 'THIS MONTH',
-  allTime: 'ALL TIME',
+  thisWeek: 'This Week',
+  thisMonth: 'This Month',
+  allTime: 'All Time',
   allGenres: 'All Genres',
   endOfLineupDescription: "Looks like you've reached the end of this list...",
   disabledTabTooltip: 'Nothing available'
@@ -209,10 +209,7 @@ const TrendingPageContent = (props: TrendingPageContentProps) => {
         pauseTrack={makePauseTrack(TimeRange.WEEK)}
         actions={trendingWeekActions}
         endOfLineup={
-          <EndOfLineup
-            key='endOfLineup'
-            description={messages.endOfLineupDescription}
-          />
+          <EndOfLineup description={messages.endOfLineupDescription} />
         }
         {...mainLineupProps}
       />
@@ -230,10 +227,7 @@ const TrendingPageContent = (props: TrendingPageContentProps) => {
         playTrack={makePlayTrack(TimeRange.MONTH)}
         pauseTrack={makePauseTrack(TimeRange.MONTH)}
         endOfLineup={
-          <EndOfLineup
-            key='endOfLineup'
-            description={messages.endOfLineupDescription}
-          />
+          <EndOfLineup description={messages.endOfLineupDescription} />
         }
         actions={trendingMonthActions}
         {...mainLineupProps}
@@ -253,10 +247,7 @@ const TrendingPageContent = (props: TrendingPageContentProps) => {
         pauseTrack={makePauseTrack(TimeRange.ALL_TIME)}
         actions={trendingAllTimeActions}
         endOfLineup={
-          <EndOfLineup
-            key='endOfLineup'
-            description={messages.endOfLineupDescription}
-          />
+          <EndOfLineup description={messages.endOfLineupDescription} />
         }
         {...mainLineupProps}
       />

@@ -41,7 +41,7 @@ const setBrowerPushPermissionConfirmationModal = setVisibility({
 /**
  * Determine if the push notification modal should appear
  */
-export function* showPushNotificationConfirmation() {
+function* showPushNotificationConfirmation() {
   const isMobile = yield* getContext('isMobile')
   const isGuest = yield* select(getIsGuestAccount)
 
@@ -81,7 +81,7 @@ export function* showPushNotificationConfirmation() {
   }
 }
 
-export function* fetchBrowserPushNotificationStatus() {
+function* fetchBrowserPushNotificationStatus() {
   const isMobile = yield* getContext('isMobile')
   if (isElectron() || isMobile) return
   if (isPushManagerAvailable) {
@@ -93,7 +93,7 @@ export function* fetchBrowserPushNotificationStatus() {
   }
 }
 
-export function* subscribeBrowserPushNotifications() {
+function* subscribeBrowserPushNotifications() {
   const sdk = yield* getSDK()
   if (isPushManagerAvailable) {
     const pushManagerSubscription = yield* call(
@@ -143,7 +143,7 @@ export function* subscribeBrowserPushNotifications() {
   }
 }
 
-export function* unsubscribeBrowserPushNotifications() {
+function* unsubscribeBrowserPushNotifications() {
   const sdk = yield* getSDK()
   removeHasRequestedBrowserPermission()
   const browserPushSubscriptionStatus = yield* call(

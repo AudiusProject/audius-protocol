@@ -58,19 +58,19 @@ export type ProfilePageState = {
 }
 
 export enum ProfilePageTabs {
-  TRACKS = 'TRACKS',
-  ALBUMS = 'ALBUMS',
-  PLAYLISTS = 'PLAYLISTS',
-  REPOSTS = 'REPOSTS',
-  COLLECTIBLES = 'COLLECTIBLES'
+  TRACKS = 'Tracks',
+  ALBUMS = 'Albums',
+  PLAYLISTS = 'Playlists',
+  REPOSTS = 'Reposts',
+  COLLECTIBLES = 'Collectibles'
 }
 
 export enum ProfilePageTabRoute {
-  TRACKS = 'tracks',
-  ALBUMS = 'albums',
-  PLAYLISTS = 'playlists',
-  REPOSTS = 'reposts',
-  COLLECTIBLES = 'collectibles'
+  TRACKS = 'Tracks',
+  ALBUMS = 'Albums',
+  PLAYLISTS = 'Playlists',
+  REPOSTS = 'Reposts',
+  COLLECTIBLES = 'Collectibles'
 }
 
 export const getTabForRoute = (tabRoute: ProfilePageTabRoute) => {

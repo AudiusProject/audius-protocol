@@ -35,7 +35,7 @@ const transactionMethodLabelMap: Record<TransactionMethod, string | null> = {
 type TransactionCell = Cell<TransactionDetails>
 type TransactionRow = Row<TransactionDetails>
 
-export type AudioTransactionsTableColumn =
+type AudioTransactionsTableColumn =
   | 'balance'
   | 'change'
   | 'date'

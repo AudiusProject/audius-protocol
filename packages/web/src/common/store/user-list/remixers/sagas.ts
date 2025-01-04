@@ -15,7 +15,7 @@ import { call, put, select } from 'typed-redux-saga'
 
 import { watchRemixersError } from './errorSagas'
 
-export const MAX_REMIXERS = 50
+const MAX_REMIXERS = 50
 
 const { getRemixersError } = remixersUserListActions
 const { getId, getUserList, getTrackId } = remixersUserListSelectors

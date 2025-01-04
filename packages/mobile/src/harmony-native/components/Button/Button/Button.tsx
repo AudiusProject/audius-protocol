@@ -189,10 +189,10 @@ export const Button = (props: ButtonProps) => {
     variant === 'secondary'
       ? secondaryDynamicStyles
       : variant === 'tertiary'
-      ? tertiaryDynamicStyles
-      : variant === 'destructive'
-      ? destructiveDynamicStyles
-      : primaryDynamicStyles
+        ? tertiaryDynamicStyles
+        : variant === 'destructive'
+          ? destructiveDynamicStyles
+          : primaryDynamicStyles
 
   const buttonStyles: ViewStyle = {
     borderWidth: 0,
@@ -204,10 +204,10 @@ export const Button = (props: ButtonProps) => {
     ...(variant === 'secondary'
       ? secondaryStyles
       : variant === 'tertiary'
-      ? tertiaryStyles
-      : variant === 'destructive'
-      ? destructiveStyles
-      : primaryStyles),
+        ? tertiaryStyles
+        : variant === 'destructive'
+          ? destructiveStyles
+          : primaryStyles),
 
     ...(isSmallOrXs ? smallStyles : defaultStyles),
 
@@ -264,8 +264,8 @@ export const Button = (props: ButtonProps) => {
     (variant === 'secondary' && !isDisabled) || variant === 'tertiary'
       ? 'default'
       : variant === 'destructive'
-      ? 'danger'
-      : 'staticWhite'
+        ? 'danger'
+        : 'staticWhite'
 
   const iconSize: IconProps['size'] = isSmallOrXs ? 's' : 'm'
 

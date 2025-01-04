@@ -36,7 +36,7 @@ type HeroProps = {
 
 const iOSDownloadLink = getIOSAppLink()
 
-export const Hero = (props: HeroProps) => {
+const Hero = (props: HeroProps) => {
   const parallaxController = useParallaxController()
   const { history } = useHistoryContext()
   const { onImageLoad, isMobile } = props

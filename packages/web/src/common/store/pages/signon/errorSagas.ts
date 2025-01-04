@@ -40,7 +40,8 @@ function* handleSignOnError(
     }
   })()
 
-  const message = 'message' in action ? action.message ?? errorType : errorType
+  const message =
+    'message' in action ? (action.message ?? errorType) : errorType
 
   yield put(
     errorActions.handleError({

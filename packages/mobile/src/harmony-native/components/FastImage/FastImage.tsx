@@ -25,10 +25,10 @@ export const FastImage = (props: FastImageProps) => {
   const imageSource = !source
     ? source
     : typeof source === 'number'
-    ? source
-    : Array.isArray(source)
-    ? { uri: source[0].uri, priority }
-    : { uri: source.uri, priority }
+      ? source
+      : Array.isArray(source)
+        ? { uri: source[0].uri, priority }
+        : { uri: source.uri, priority }
 
   return <RNFastImage source={imageSource} {...other} />
 }

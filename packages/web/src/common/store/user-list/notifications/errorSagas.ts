@@ -7,7 +7,7 @@ const { GET_NOTIFICATION_ERROR, getNotificationError } =
 
 type ErrorActions = ReturnType<typeof getNotificationError>
 
-export function* handleRepostError(action: ErrorActions) {
+function* handleRepostError(action: ErrorActions) {
   yield put(
     errorActions.handleError({
       message: action.type,

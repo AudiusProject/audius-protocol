@@ -9,7 +9,6 @@ import {
   cacheCollectionsActions,
   cacheCollectionsSelectors
 } from '@audius/common/store'
-import { replace } from 'connected-react-router'
 import { isEqual } from 'lodash'
 import { useDispatch } from 'react-redux'
 import { useParams } from 'react-router'
@@ -24,6 +23,7 @@ import { useCollectionCoverArt } from 'hooks/useCollectionCoverArt'
 import { useIsUnauthorizedForHandleRedirect } from 'hooks/useManagedAccountNotAllowedRedirect'
 import { useRequiresAccount } from 'hooks/useRequiresAccount'
 import { track } from 'services/analytics'
+import { replace } from 'utils/navigation'
 import { useSelector } from 'utils/reducer'
 
 import { updatePlaylistContents } from '../utils'

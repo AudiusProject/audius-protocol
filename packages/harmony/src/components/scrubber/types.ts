@@ -98,12 +98,3 @@ export type TimeData = {
   elapsedSeconds: number
   totalSeconds: number
 }
-
-export const defaultScrubberProps = {
-  isPlaying: false,
-  isDisabled: false,
-  isMobile: false,
-  includeTimestamps: true,
-  onScrub: () => {},
-  onScrubRelease: () => {}
-}

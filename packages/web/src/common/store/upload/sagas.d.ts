@@ -1,3 +1,4 @@
+// eslint-disable-next-line
 export declare function* handleUploads(config: {
   tracks: any[]
   isCollection: boolean

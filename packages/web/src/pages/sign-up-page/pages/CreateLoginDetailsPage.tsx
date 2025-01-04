@@ -27,7 +27,7 @@ import { loginDetailsSchema } from '../utils/loginDetailsSchema'
 
 const { SIGN_UP_FINISH_PROFILE_PAGE } = route
 
-export type CreateLoginDetailsValues = {
+type CreateLoginDetailsValues = {
   email: string
   password: string
   confirmPassword: string

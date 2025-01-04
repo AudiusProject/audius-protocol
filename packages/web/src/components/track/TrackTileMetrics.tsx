@@ -7,9 +7,8 @@ import {
   repostsUserListActions,
   RepostType
 } from '@audius/common/store'
-import { formatCount, route } from '@audius/common/utils'
+import { formatCount, route, pluralize } from '@audius/common/utils'
 import { IconMessage, Text, Flex, IconRepost, IconHeart } from '@audius/harmony'
-import { push } from 'connected-react-router'
 import { useDispatch } from 'react-redux'
 
 import { AvatarList } from 'components/avatar'
@@ -25,8 +24,8 @@ import {
   UserListEntityType,
   UserListType
 } from 'store/application/ui/userListModal/types'
+import { push } from 'utils/navigation'
 import { useSelector } from 'utils/reducer'
-import { pluralize } from 'utils/stringUtils'
 
 const { REPOSTING_USERS_ROUTE, FAVORITING_USERS_ROUTE } = route
 

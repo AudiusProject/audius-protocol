@@ -90,7 +90,7 @@ def populate_track_or_playlist_metadata_es(
             populate_track_or_playlist_metadata_es(track, current_user)
             for track in item["tracks"]
         ]
-    return omit_indexed_fields(item)
+    return omit_indexed_fields(item, include_playlist_tracks)
 
 
 omit_keys = [
@@ -106,7 +106,7 @@ omit_keys = [
 ]
 
 
-def omit_indexed_fields(doc):
+def omit_indexed_fields(doc, include_playlist_tracks=False):
     doc = copy.copy(doc)
 
     # track
@@ -119,5 +119,8 @@ def omit_indexed_fields(doc):
     for key in omit_keys:
         if key in doc:
             del doc[key]
+
+    if not include_playlist_tracks and "tracks" in doc:
+        del doc["tracks"]
 
     return doc

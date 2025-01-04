@@ -203,6 +203,20 @@ func runNode(
 	if err != nil {
 		return logger.Error("Failed to create container:", err)
 	}
+
+	// Set restart policy to unless-stopped
+	if _, err := dockerClient.ContainerUpdate(
+		context.Background(),
+		createResponse.ID,
+		container.UpdateConfig{
+			RestartPolicy: container.RestartPolicy{
+				Name: "unless-stopped",
+			},
+		},
+	); err != nil {
+		return logger.Error("Failed to set restart policy:", err)
+	}
+
 	if err := dockerClient.ContainerStart(
 		context.Background(),
 		createResponse.ID,

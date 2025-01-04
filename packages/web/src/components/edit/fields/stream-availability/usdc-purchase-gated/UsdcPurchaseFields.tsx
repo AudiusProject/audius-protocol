@@ -66,19 +66,14 @@ const messages = {
     'Setting your track to Premium will remove the availability settings you set on your premium downloads. Don’t worry, your stems are still saved!'
 }
 
-export enum UsdcPurchaseType {
-  TIP = 'tip',
-  FOLLOW = 'follow'
-}
-
-export type TrackAvailabilityFieldsProps = {
+type TrackAvailabilityFieldsProps = {
   disabled?: boolean
   isAlbum?: boolean
   isUpload?: boolean
 }
 
 type PriceMessages = typeof messages.price
-export type PriceFieldProps = TrackAvailabilityFieldsProps & {
+type PriceFieldProps = TrackAvailabilityFieldsProps & {
   messaging: PriceMessages[keyof PriceMessages]
   fieldName: typeof PRICE | typeof ALBUM_TRACK_PRICE
   prefillValue?: number
@@ -181,9 +176,9 @@ const PriceField = (props: PriceFieldProps) => {
     value
       ? decimalIntegerToHumanReadable(value)
       : // Use prefilled value if set
-      prefillValue !== undefined
-      ? decimalIntegerToHumanReadable(prefillValue)
-      : null
+        prefillValue !== undefined
+        ? decimalIntegerToHumanReadable(prefillValue)
+        : null
   )
 
   // This logic is a bit of a hack to set an initial value once in the Formik field (when a prefilled value is desired)

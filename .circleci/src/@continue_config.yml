@@ -20,9 +20,6 @@ parameters:
     type: boolean
     default: false
 
-  run-core-workflow:
-    type: boolean
-    default: false
   run-identity-workflow:
     type: boolean
     default: false
@@ -33,9 +30,6 @@ parameters:
     type: boolean
     default: false
   run-discovery-workflow:
-    type: boolean
-    default: false
-  run-creator-workflow:
     type: boolean
     default: false
   run-sdk-workflow:

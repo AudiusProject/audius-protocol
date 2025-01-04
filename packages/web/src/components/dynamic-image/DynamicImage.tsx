@@ -83,8 +83,8 @@ const fadeIn = (
     ref.current.style.backgroundImage = image.includes('linear-gradient(')
       ? `${image}`
       : isUrl
-      ? `url(${image})`
-      : image
+        ? `url(${image})`
+        : image
     ref.current.style.transition = `opacity ${
       immediate ? '0.1s' : '0.3s'
     } ease-in-out`
@@ -95,22 +95,21 @@ const fadeIn = (
 /**
  * A dynamic image that transitions between changes to the `image` prop.
  */
-const DynamicImage = (props: DynamicImageProps) => {
-  const {
-    image,
-    isUrl,
-    wrapperClassName,
-    className,
-    skeletonClassName,
-    imageStyle,
-    immediate,
-    children,
-    onClick,
-    usePlaceholder = true,
-    useSkeleton = true,
-    useBlur = false,
-    ...other
-  } = props
+const DynamicImage = ({
+  image,
+  isUrl = true,
+  wrapperClassName,
+  className,
+  skeletonClassName,
+  imageStyle,
+  immediate = false,
+  children,
+  onClick,
+  usePlaceholder = true,
+  useSkeleton = true,
+  useBlur = false,
+  ...other
+}: DynamicImageProps) => {
   const first = useRef<HTMLDivElement>(null)
   const second = useRef<HTMLDivElement>(null)
   const [getIsFirstActive, setIsFirstActive] = useInstanceVar(true)
@@ -201,11 +200,6 @@ const DynamicImage = (props: DynamicImageProps) => {
       {children && <div className={styles.children}>{children}</div>}
     </Box>
   )
-}
-
-DynamicImage.defaultProps = {
-  isUrl: true,
-  immediate: false
 }
 
 export default memo(DynamicImage)

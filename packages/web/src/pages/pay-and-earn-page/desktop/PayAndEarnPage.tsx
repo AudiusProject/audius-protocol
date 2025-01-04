@@ -11,12 +11,12 @@ import {
   Paper,
   SelectablePill
 } from '@audius/harmony'
-import { replace } from 'connected-react-router'
 import { useDispatch, useSelector } from 'react-redux'
 
 import Header from 'components/header/desktop/Header'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import Page from 'components/page/Page'
+import { replace } from 'utils/navigation'
 
 import styles from '../PayAndEarnPage.module.css'
 import { PayoutWalletCard } from '../components/PayoutWalletCard'
@@ -29,7 +29,7 @@ import { PayAndEarnPageProps, TableType } from '../types'
 const { PURCHASES_PAGE, SALES_PAGE, WITHDRAWALS_PAGE } = route
 const { getAccountHasTracks, getIsGuestAccount } = accountSelectors
 
-export const messages = {
+const messages = {
   title: 'Pay & Earn',
   description: 'Pay & earn with Audius',
   sales: 'Sales',

@@ -95,8 +95,8 @@ export const PublishButton = (props: PublishButtonProps) => {
             !track_count || track_count === 0
               ? messages.emptyPlaylistTooltipText
               : !cover_art_sizes
-              ? messages.missingArtworkTooltipText
-              : null
+                ? messages.missingArtworkTooltipText
+                : null
           }
         >
           <span>{publishButtonElement}</span>

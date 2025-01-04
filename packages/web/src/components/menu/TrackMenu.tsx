@@ -23,13 +23,13 @@ import {
 } from '@audius/common/store'
 import { Genre, Nullable, route } from '@audius/common/utils'
 import { PopupMenuItem } from '@audius/harmony'
-import { push as pushRoute } from 'connected-react-router'
 import { connect, useDispatch, useSelector } from 'react-redux'
 import { Dispatch } from 'redux'
 
 import * as embedModalActions from 'components/embed-modal/store/actions'
 import { ToastContext } from 'components/toast/ToastContext'
 import { AppState } from 'store/types'
+import { push } from 'utils/navigation'
 import { albumPage } from 'utils/route'
 
 const { profilePage } = route
@@ -99,11 +99,29 @@ export type OwnProps = {
   type: 'track'
 }
 
-export type TrackMenuProps = OwnProps &
+type TrackMenuProps = OwnProps &
   ReturnType<typeof mapDispatchToProps> &
   ReturnType<typeof mapStateToProps>
 
-const TrackMenu = (props: TrackMenuProps) => {
+const TrackMenu = ({
+  includeDelete = true,
+  includeAddToAlbum = true,
+  includeAddToPlaylist = true,
+  includeArtistPick = true,
+  includeEdit = true,
+  includeEmbed = true,
+  includeFavorite = true,
+  includeAlbumPage = true,
+  includeTrackPage = true,
+  isArtistPick,
+  isDeleted,
+  isOwner,
+  isOwnerDeactivated,
+  isUnlisted,
+  extraMenuItems = [],
+  ddexApp = null,
+  ...props
+}: TrackMenuProps) => {
   const { trackPermalink, goToRoute } = props
   const { toast } = useContext(ToastContext)
   const dispatch = useDispatch()
@@ -134,28 +152,12 @@ const TrackMenu = (props: TrackMenuProps) => {
 
   const getMenu = () => {
     const {
-      extraMenuItems,
       goToRoute,
       handle,
-      includeAddToAlbum,
-      includeAddToPlaylist,
-      includeArtistPick,
-      includeDelete,
-      includeEdit,
-      ddexApp,
-      includeEmbed,
-      includeFavorite,
       includeRepost,
       includeShare,
-      includeAlbumPage,
-      includeTrackPage,
-      isArtistPick,
-      isDeleted,
       isFavorited,
-      isOwner,
-      isOwnerDeactivated,
       isReposted,
-      isUnlisted,
       openAddToCollectionModal,
       openEmbedModal,
       repostTrack,
@@ -363,7 +365,7 @@ function mapStateToProps(state: AppState) {
 
 function mapDispatchToProps(dispatch: Dispatch) {
   return {
-    goToRoute: (route: string) => dispatch(pushRoute(route)),
+    goToRoute: (route: string) => dispatch(push(route)),
     addTrackToPlaylist: (trackId: ID, playlistId: ID) =>
       dispatch(addTrackToPlaylist(trackId, playlistId)),
     shareTrack: (trackId: ID) =>
@@ -390,23 +392,6 @@ function mapDispatchToProps(dispatch: Dispatch) {
     openEmbedModal: (trackId: ID) =>
       dispatch(embedModalActions.open(trackId, PlayableType.TRACK))
   }
-}
-
-TrackMenu.defaultProps = {
-  includeShare: false,
-  includeRepost: false,
-  isFavorited: false,
-  isReposted: false,
-  includeDelete: true,
-  includeEdit: true,
-  includeEmbed: true,
-  includeFavorite: true,
-  includeAlbumPage: true,
-  includeTrackPage: true,
-  includeAddToAlbum: true,
-  includeAddToPlaylist: true,
-  includeArtistPick: true,
-  extraMenuItems: []
 }
 
 export default connect(mapStateToProps, mapDispatchToProps)(TrackMenu)

@@ -39,7 +39,6 @@ import {
   playerSelectors
 } from '@audius/common/store'
 import { getErrorMessage, Nullable, route } from '@audius/common/utils'
-import { push as pushRoute, replace } from 'connected-react-router'
 import { UnregisterCallback } from 'history'
 import { uniq } from 'lodash'
 import moment from 'moment'
@@ -59,6 +58,7 @@ import { getLocationPathname } from 'store/routing/selectors'
 import { AppState } from 'store/types'
 import { verifiedHandleWhitelist } from 'utils/handleWhitelist'
 import { resizeImage } from 'utils/imageProcessingUtil'
+import { push, replace } from 'utils/navigation'
 import { getPathname } from 'utils/route'
 import { parseUserRoute } from 'utils/route/userRouteParser'
 
@@ -134,8 +134,6 @@ type ProfilePageState = {
 }
 
 class ProfilePage extends PureComponent<ProfilePageProps, ProfilePageState> {
-  static defaultProps = {}
-
   state: ProfilePageState = {
     activeTab: null,
     editMode: false,
@@ -424,7 +422,7 @@ class ProfilePage extends PureComponent<ProfilePageProps, ProfilePageState> {
 
     // Once the hero card settles into place, then turn the mask off
     setTimeout(() => {
-      const firstTab = this.getIsArtist() ? 'TRACKS' : 'REPOSTS'
+      const firstTab = this.getIsArtist() ? 'Tracks' : 'Reposts'
       this.setState({
         shouldMaskContent: tab !== firstTab
       })
@@ -835,22 +833,22 @@ class ProfilePage extends PureComponent<ProfilePageProps, ProfilePageState> {
       ? updatedTwitterHandle !== null
         ? updatedTwitterHandle
         : twitterVerified && !verifiedHandleWhitelist.has(handle)
-        ? profile.handle
-        : profile.twitter_handle || ''
+          ? profile.handle
+          : profile.twitter_handle || ''
       : ''
     const instagramHandle = profile
       ? updatedInstagramHandle !== null
         ? updatedInstagramHandle
         : instagramVerified
-        ? profile.handle
-        : profile.instagram_handle || ''
+          ? profile.handle
+          : profile.instagram_handle || ''
       : ''
     const tikTokHandle = profile
       ? updatedTikTokHandle !== null
         ? updatedTikTokHandle
         : tikTokVerified
-        ? profile.handle
-        : profile.tiktok_handle || ''
+          ? profile.handle
+          : profile.tiktok_handle || ''
       : ''
     const website = profile
       ? updatedWebsite !== null
@@ -1088,7 +1086,7 @@ function mapDispatchToProps(dispatch: Dispatch, props: RouteComponentProps) {
     },
     updateProfile: (metadata: any) =>
       dispatch(profileActions.updateProfile(metadata)),
-    goToRoute: (route: string) => dispatch(pushRoute(route)),
+    goToRoute: (route: string) => dispatch(push(route)),
     replaceRoute: (route: string) => dispatch(replace(route)),
     updateCollectionOrder: (mode: CollectionSortMode) =>
       dispatch(profileActions.updateCollectionSortMode(mode, handleLower)),

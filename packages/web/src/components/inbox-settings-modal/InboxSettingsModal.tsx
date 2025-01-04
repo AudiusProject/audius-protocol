@@ -74,7 +74,7 @@ const Spinner = () => (
   </Flex>
 )
 
-export const InboxSettingsModal = () => {
+const InboxSettingsModal = () => {
   const [isVisible, setIsVisible] = useModalState('InboxSettings')
   const handleClose = useCallback(() => setIsVisible(false), [setIsVisible])
 

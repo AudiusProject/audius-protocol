@@ -90,7 +90,7 @@ const { update } = cacheActions
 const { getAccountUser, getUserId, getWalletAddresses } = accountSelectors
 const { fetchPermissions } = chatActions
 
-export const FEED_TIP_DISMISSAL_TIME_LIMIT_SEC = 30 * 24 * 60 * 60 // 30 days
+const FEED_TIP_DISMISSAL_TIME_LIMIT_SEC = 30 * 24 * 60 * 60 // 30 days
 const DISMISSED_TIP_KEY = 'dismissed-tips'
 
 export const storeDismissedTipInfo = async (

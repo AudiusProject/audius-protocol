@@ -7,6 +7,7 @@ import typescript from '@rollup/plugin-typescript'
 import ignore from 'rollup-plugin-ignore'
 import nodePolyfills from 'rollup-plugin-polyfill-node'
 import { terser } from 'rollup-plugin-terser'
+import { visualizer } from 'rollup-plugin-visualizer'
 
 import pkg from './package.json'
 
@@ -33,7 +34,6 @@ const browserInternal = [
   '@noble/hashes/utils',
   'graceful-fs',
   'node-localstorage',
-  'web3',
   'xmlhttprequest'
 ]
 
@@ -81,10 +81,8 @@ export const outputConfigs = {
   },
 
   /**
-   * SDK (and Libs) Node Package (ES Module)
+   * SDK Node Package (ES Module)
    * Used by third parties using ES Modules
-   * Could be used by Audius Content Node and Identity Service after moving those services to ES module
-   * - Includes libs
    */
   sdkConfigEs: {
     input: 'src/index.ts',
@@ -121,7 +119,7 @@ export const outputConfigs = {
       }
     ],
     plugins: [
-      ignore(['web3', 'graceful-fs', 'node-localstorage']),
+      ignore(['graceful-fs', 'node-localstorage']),
       resolve({ extensions, preferBuiltins: true }),
       commonjs({ extensions }),
       alias({
@@ -152,7 +150,7 @@ export const outputConfigs = {
       }
     ],
     plugins: [
-      ignore(['web3', 'graceful-fs', 'node-localstorage']),
+      ignore(['graceful-fs', 'node-localstorage']),
       resolve({ extensions, preferBuiltins: false }),
       commonjs({
         extensions,
@@ -191,7 +189,7 @@ export const outputConfigs = {
       }
     ],
     plugins: [
-      ignore(['web3', 'graceful-fs', 'node-localstorage']),
+      ignore(['graceful-fs', 'node-localstorage']),
       resolve({ extensions, preferBuiltins: false }),
       commonjs({
         extensions,
@@ -206,7 +204,11 @@ export const outputConfigs = {
       nodePolyfills(),
       babel({ babelHelpers: 'bundled', extensions }),
       json(),
-      pluginTypescript
+      pluginTypescript,
+      visualizer({
+        filename: 'dist/sdk.browser.esm.html',
+        template: 'sunburst'
+      })
     ],
     external: external.filter((dep) => !browserInternal.includes(dep))
   },
@@ -215,16 +217,13 @@ export const outputConfigs = {
    * SDK Browser Distributable
    * Meant to be used directly in the browser without any module resolver
    * - Includes polyfills for node libraries
-   * - Includes all deps/dev deps except web3
+   * - Includes all deps/dev deps
    */
   sdkBrowserDistConfig: {
     input: 'src/sdk/sdkBrowserDist.ts',
     output: [
       {
         file: 'dist/sdk.min.js',
-        globals: {
-          web3: 'window.Web3'
-        },
         format: 'iife',
         esModule: false,
         sourcemap: true,
@@ -233,7 +232,7 @@ export const outputConfigs = {
       }
     ],
     plugins: [
-      ignore(['web3', 'graceful-fs', 'node-localstorage']),
+      ignore(['graceful-fs', 'node-localstorage']),
       resolve({ extensions, preferBuiltins: false, browser: true }),
       commonjs({
         extensions,
@@ -253,8 +252,7 @@ export const outputConfigs = {
       }),
       json(),
       pluginTypescript
-    ],
-    external: ['web3']
+    ]
   }
 }
 

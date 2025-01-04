@@ -7,8 +7,8 @@ import {
   Notification as Notifications
 } from '@audius/common/store'
 import { Flex } from '@audius/harmony'
+import Lottie from 'lottie-react'
 import InfiniteScroll from 'react-infinite-scroller'
-import Lottie from 'react-lottie'
 import { useDispatch, useSelector } from 'react-redux'
 
 import loadingSpinner from 'assets/animations/loadingSpinner.json'
@@ -99,13 +99,7 @@ export const NotificationPage = () => {
             })}
           {status === Status.LOADING && (
             <Flex alignItems='center' justifyContent='center' pt='l'>
-              <Lottie
-                options={{
-                  loop: true,
-                  autoplay: true,
-                  animationData: loadingSpinner
-                }}
-              />
+              <Lottie loop autoplay animationData={loadingSpinner} />
             </Flex>
           )}
         </Flex>

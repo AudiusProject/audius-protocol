@@ -34,5 +34,5 @@ export const ScreenPrimaryContent = (props: ScreenPrimaryContentProps) => {
 
   // Note: not animating on Android because shadows are rendered natively behind the
   // animated view and thus don't follow the animation.
-  return <>{isScreenReady ? screenContent : skeleton ?? null}</>
+  return <>{isScreenReady ? screenContent : (skeleton ?? null)}</>
 }

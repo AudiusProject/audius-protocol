@@ -3,7 +3,7 @@ import { forwardRef } from 'react'
 import { CSSObject, useTheme } from '@emotion/react'
 import { Slot, Slottable } from '@radix-ui/react-slot'
 
-import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
+import LoadingSpinner from '~harmony/components/loading-spinner/LoadingSpinner'
 
 import { useMediaQueryListener } from '../../../hooks/useMediaQueryListener'
 
@@ -63,7 +63,6 @@ export const BaseButton = forwardRef<HTMLButtonElement, BaseButtonProps>(
       userSelect: 'none',
       whiteSpace: 'nowrap',
       paddingInline: 0,
-      '-webkit-padding': 0,
       transition: `
         transform ${motion.hover},
         border-color ${motion.hover},

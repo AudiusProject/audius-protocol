@@ -1,6 +1,6 @@
 import { RefObject, useState, ReactNode, useEffect } from 'react'
 
-import { IconComponent } from 'components/icon'
+import { IconComponent } from '~harmony/components/icon'
 
 type OptionType<Value extends string> = {
   value: Value

@@ -49,7 +49,6 @@ import {
   waitForAccount
 } from '@audius/common/utils'
 import { ProgressHandler, AudiusSdk } from '@audius/sdk'
-import { push } from 'connected-react-router'
 import { mapValues } from 'lodash'
 import { Channel, Task, buffers, channel } from 'redux-saga'
 import {
@@ -69,6 +68,7 @@ import { prepareStemsForUpload } from 'pages/upload-page/store/utils/stems'
 import * as errorActions from 'store/errors/actions'
 import { reportToSentry } from 'store/errors/reportToSentry'
 import { encodeHashId } from 'utils/hashIds'
+import { push } from 'utils/navigation'
 import { waitForWrite } from 'utils/sagaHelpers'
 
 import { trackNewRemixEvent } from '../cache/tracks/sagas'
@@ -168,8 +168,8 @@ const makeOnProgress = (
       'audio' in progress
         ? progress.audio
         : 'art' in progress
-        ? progress.art
-        : null
+          ? progress.art
+          : null
     if (p === null) {
       return
     }
@@ -242,7 +242,7 @@ function* uploadWorker(
 
       const coverArtFile =
         track.metadata.artwork && 'file' in track.metadata.artwork
-          ? track.metadata.artwork?.file ?? null
+          ? (track.metadata.artwork?.file ?? null)
           : null
       const metadata = trackMetadataForUploadToSdk(track.metadata)
 
@@ -461,8 +461,8 @@ export function* handleUploads({
         downloadable: isContentFollowGated(track.metadata.download_conditions)
           ? 'follow'
           : track.metadata.is_downloadable
-          ? 'yes'
-          : 'no'
+            ? 'yes'
+            : 'no'
       })
     )
 
@@ -850,7 +850,7 @@ export function* uploadCollection(
           const { artwork } = collectionMetadata
 
           const coverArtFile =
-            artwork && 'file' in artwork ? artwork?.file ?? null : null
+            artwork && 'file' in artwork ? (artwork?.file ?? null) : null
 
           if (isAlbum) {
             // Create album
@@ -1123,7 +1123,7 @@ export function* uploadMultipleTracks(
   yield* put(cacheActions.setExpired(Kind.USERS, account!.user_id))
 }
 
-export function* uploadTracksAsync(
+function* uploadTracksAsync(
   action: ReturnType<typeof uploadActions.uploadTracks>
 ) {
   yield* call(waitForWrite)
@@ -1203,7 +1203,7 @@ export function* uploadTracksAsync(
   }
 }
 
-export function* updateTrackAudioAsync(
+function* updateTrackAudioAsync(
   action: ReturnType<typeof uploadActions.updateTrackAudio>
 ) {
   yield* call(waitForWrite)

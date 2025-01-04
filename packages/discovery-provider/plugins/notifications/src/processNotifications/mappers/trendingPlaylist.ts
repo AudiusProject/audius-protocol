@@ -57,13 +57,16 @@ export class TrendingPlaylist extends BaseNotification<TrendingPlaylistNotificat
       .from<UserRow>('users')
       .where('is_current', true)
       .whereIn('user_id', [this.receiverUserId])
-    const users = res.reduce((acc, user) => {
-      acc[user.user_id] = {
-        name: user.name,
-        isDeactivated: user.is_deactivated
-      }
-      return acc
-    }, {} as Record<number, { name: string; isDeactivated: boolean }>)
+    const users = res.reduce(
+      (acc, user) => {
+        acc[user.user_id] = {
+          name: user.name,
+          isDeactivated: user.is_deactivated
+        }
+        return acc
+      },
+      {} as Record<number, { name: string; isDeactivated: boolean }>
+    )
 
     if (users?.[this.receiverUserId]?.isDeactivated) {
       return
@@ -76,11 +79,14 @@ export class TrendingPlaylist extends BaseNotification<TrendingPlaylistNotificat
         .where('is_current', true)
         .whereIn('playlist_id', [this.playlistId])
 
-    const playlists = playlistRes.reduce((acc, playlist) => {
-      const { playlist_id, playlist_name } = playlist
-      acc[playlist_id] = { playlist_name }
-      return acc
-    }, {} as Record<number, { playlist_name: string }>)
+    const playlists = playlistRes.reduce(
+      (acc, playlist) => {
+        const { playlist_id, playlist_name } = playlist
+        acc[playlist_id] = { playlist_name }
+        return acc
+      },
+      {} as Record<number, { playlist_name: string }>
+    )
 
     // Get the user's notification setting from identity service
     const userNotificationSettings = await buildUserNotificationSettings(

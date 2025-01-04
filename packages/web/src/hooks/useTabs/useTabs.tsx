@@ -14,6 +14,7 @@ import {
 } from 'react'
 
 import { useInstanceVar } from '@audius/common/hooks'
+import { Text } from '@audius/harmony'
 import { disableBodyScroll, clearAllBodyScrollLocks } from 'body-scroll-lock'
 import cn from 'classnames'
 import { throttle } from 'lodash'
@@ -62,7 +63,15 @@ const Tab = forwardRef(
       ref={ref}
     >
       {icon && <div className={styles.icon}>{icon}</div>}
-      <div className={styles.text}>{text}</div>
+      {isMobile ? (
+        <Text variant='body' size='xs' strength='strong' color='inherit'>
+          {text}
+        </Text>
+      ) : (
+        <Text variant='title' color='inherit'>
+          {text}
+        </Text>
+      )}
     </div>
   )
 )
@@ -827,15 +836,15 @@ const BodyContainer = memo(
         return isMobile
           ? {} // use default config for mobile
           : key === activeIndex
-          ? {
-              mass: 1,
-              tension: 380,
-              friction: 40,
-              clamp: true
-            }
-          : {
-              duration: 1
-            }
+            ? {
+                mass: 1,
+                tension: 380,
+                friction: 40,
+                clamp: true
+              }
+            : {
+                duration: 1
+              }
       }
     })
 
@@ -1030,8 +1039,8 @@ const useTabs = ({
   const controlledIndex = isControlled
     ? tabs.findIndex((t) => t.label === selectedTabLabel)
     : initialTab
-    ? tabs.findIndex((t) => t.label === initialTab)
-    : 0
+      ? tabs.findIndex((t) => t.label === initialTab)
+      : 0
   const [activeIndex, setActiveIndex] = useState(controlledIndex)
 
   const onChangeComplete = useCallback(

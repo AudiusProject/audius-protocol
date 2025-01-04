@@ -19,7 +19,7 @@ const messages = {
   learnMore: 'Learn More'
 }
 
-export const LEARN_MORE_URL = 'http://blog.audius.co/posts/community-meet-audio'
+const LEARN_MORE_URL = 'http://blog.audius.co/posts/community-meet-audio'
 
 type TileProps = {
   className?: string
@@ -37,7 +37,7 @@ export const Tile = ({ className, children }: TileProps) => {
  * Has a spinny badge animation that should animate in a loop in a few times
  * on mount, and then again on mouse over.
  */
-export const ExplainerTile = ({ className }: { className?: string }) => {
+const ExplainerTile = ({ className }: { className?: string }) => {
   const onClickLearnMore = () => window.open(LEARN_MORE_URL, '_blank')
   const [mouseOver, setMouseOver] = useState(false)
   const videoRef = useRef<HTMLVideoElement>(null)

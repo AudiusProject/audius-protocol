@@ -54,23 +54,29 @@ export class Remix extends BaseNotification<RemixNotificationRow> {
       .from<UserRow>('users')
       .where('is_current', true)
       .whereIn('user_id', [this.remixUserId, this.parentTrackUserId])
-    const users = res.reduce((acc, user) => {
-      acc[user.user_id] = {
-        name: user.name,
-        isDeactivated: user.is_deactivated
-      }
-      return acc
-    }, {} as Record<number, { name: string; isDeactivated: boolean }>)
+    const users = res.reduce(
+      (acc, user) => {
+        acc[user.user_id] = {
+          name: user.name,
+          isDeactivated: user.is_deactivated
+        }
+        return acc
+      },
+      {} as Record<number, { name: string; isDeactivated: boolean }>
+    )
 
     const trackRes: Array<{ track_id: number; title: string }> = await this.dnDB
       .select('track_id', 'title')
       .from<TrackRow>('tracks')
       .where('is_current', true)
       .whereIn('track_id', [this.trackId, this.parentTrackId])
-    const tracks = trackRes.reduce((acc, track) => {
-      acc[track.track_id] = { title: track.title }
-      return acc
-    }, {} as Record<number, { title: string }>)
+    const tracks = trackRes.reduce(
+      (acc, track) => {
+        acc[track.track_id] = { title: track.title }
+        return acc
+      },
+      {} as Record<number, { title: string }>
+    )
 
     if (users?.[this.parentTrackUserId]?.isDeactivated) {
       return

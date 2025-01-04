@@ -1,9 +1,9 @@
 import { useCallback, useEffect, useState } from 'react'
 
-import { goBack } from 'connected-react-router'
 import { useDispatch } from 'react-redux'
 
 import { DownloadMobileAppDrawer } from 'components/download-mobile-app-drawer/DownloadMobileAppDrawer'
+import { goBack } from 'utils/navigation'
 
 import { SkeletonChatListItem } from '../SkeletonChatListItem'
 

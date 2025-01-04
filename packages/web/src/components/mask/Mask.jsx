@@ -3,14 +3,14 @@ import PropTypes from 'prop-types'
 
 import styles from './Mask.module.css'
 
-const Mask = (props) => {
+const Mask = ({ show = false, zIndex = 1, children }) => {
   return (
     <div className={styles.wrapper}>
       <div
-        className={cn(styles.mask, { [styles.show]: props.show })}
-        style={{ zIndex: props.zIndex }}
+        className={cn(styles.mask, { [styles.show]: show })}
+        style={{ zIndex }}
       />
-      {props.children}
+      {children}
     </div>
   )
 }
@@ -19,11 +19,6 @@ Mask.propTypes = {
   children: PropTypes.node,
   show: PropTypes.bool,
   zIndex: PropTypes.number
-}
-
-Mask.defaultProps = {
-  show: false,
-  zIndex: 1
 }
 
 export default Mask

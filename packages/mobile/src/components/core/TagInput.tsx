@@ -70,7 +70,7 @@ export const TagInput = (props: TagInputProps) => {
   const { staticWhite } = useThemeColors()
   const styles = useStyles()
 
-  const tags = value === '' ? emptyTags : value?.split(',') ?? emptyTags
+  const tags = value === '' ? emptyTags : (value?.split(',') ?? emptyTags)
 
   const tagElements = tags?.map((tag, index) => (
     <View key={`${tag}-${index}`} style={styles.tag}>
@@ -98,8 +98,8 @@ export const TagInput = (props: TagInputProps) => {
     tagCount < nearLimit
       ? 'neutralLight4'
       : tagCount < maxTags
-      ? 'warning'
-      : 'error'
+        ? 'warning'
+        : 'error'
 
   const endAdornment = (
     <Text variant='body' color={tagCountColor}>

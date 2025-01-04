@@ -146,8 +146,8 @@ export const PriceAndAudienceField = (props: PriceAndAudienceFieldProps) => {
     'stream_conditions' in parentFormInitialValues
       ? (parentFormInitialValues.stream_conditions as AccessConditions)
       : 'trackMetadatas' in parentFormInitialValues
-      ? parentFormInitialValues.trackMetadatas[index].stream_conditions
-      : undefined
+        ? parentFormInitialValues.trackMetadatas[index].stream_conditions
+        : undefined
 
   // Fields from the outer form
   const [{ value: isUnlisted }, , { setValue: setIsUnlistedValue }] =

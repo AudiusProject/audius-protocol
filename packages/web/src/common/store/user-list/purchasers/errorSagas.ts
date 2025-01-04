@@ -6,7 +6,7 @@ const { GET_PURCHASERS_ERROR, getPurchasersError } = purchasersUserListActions
 
 type HandlePurchasersError = ReturnType<typeof getPurchasersError>
 
-export function* handlePurchasersError(action: HandlePurchasersError) {
+function* handlePurchasersError(action: HandlePurchasersError) {
   yield put(
     errorActions.handleError({
       message: action.type,

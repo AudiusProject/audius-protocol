@@ -1,11 +1,27 @@
 import { ElementType, ForwardedRef, forwardRef, useContext } from 'react'
 
-import { useTheme } from '@emotion/react'
+import { Theme, useTheme } from '@emotion/react'
 import { Slot } from '@radix-ui/react-slot'
 
 import { bodyLineHeightMap, variantStylesMap, variantTagMap } from './constants'
 import { TextContext } from './textContext'
 import type { TextProps } from './types'
+
+const getColorCss = (color: TextProps['color'], theme: Theme) => {
+  if (!color) return {}
+  if (color === 'heading') {
+    return {
+      color: theme.color.secondary.secondary,
+      WebkitTextFillColor: 'transparent',
+      backgroundClip: 'text',
+      backgroundImage: theme.color.text.heading
+    }
+  }
+  if (color === 'inherit') {
+    return { color: 'inherit' }
+  }
+  return { color: theme.color.text[color] }
+}
 
 export const Text = forwardRef(
   <TextComponentType extends ElementType = 'p'>(
@@ -37,20 +53,12 @@ export const Text = forwardRef(
     const size = sizeProp ?? (parentVariant ? undefined : 'm')
 
     const variantConfig = variant && variantStylesMap[variant]
+
     const css = {
       fontFamily: theme.typography.font,
       position: 'relative',
       boxSizing: 'border-box',
-      ...(color &&
-        color === 'heading' && {
-          // inline is necessary to prevent text clipping
-          display: 'inline',
-          color: theme.color.secondary.secondary,
-          WebkitTextFillColor: 'transparent',
-          backgroundClip: 'text',
-          backgroundImage: theme.color.text.heading
-        }),
-      ...(color && color !== 'heading' && { color: theme.color.text[color] }),
+      ...getColorCss(color, theme),
       ...(variantConfig && {
         // @ts-ignore
         fontSize: theme.typography.size[variantConfig.fontSize[size]],
@@ -95,7 +103,7 @@ export const Text = forwardRef(
     // @ts-ignore
     const variantTag = variant && variantTagMap[variant]?.[size]
 
-    const Tag: ElementType = asChild ? Slot : tag ?? variantTag ?? 'span'
+    const Tag: ElementType = asChild ? Slot : (tag ?? variantTag ?? 'span')
 
     const textElement = (
       <Tag ref={ref} css={css} {...other}>

@@ -8,11 +8,11 @@ import {
 
 import { CSSObject } from '@emotion/react'
 
-import { BaseButton } from 'components/button/BaseButton/BaseButton'
-import { BaseButtonProps } from 'components/button/BaseButton/types'
-import { IconComponent } from 'components/icon'
-import { Text } from 'components/text/Text'
-import { useTheme } from 'foundations'
+import { BaseButton } from '~harmony/components/button/BaseButton/BaseButton'
+import { BaseButtonProps } from '~harmony/components/button/BaseButton/types'
+import { IconComponent } from '~harmony/components/icon'
+import { Text } from '~harmony/components/text/Text'
+import { useTheme } from '~harmony/foundations'
 
 export type MenuItemProps<Value extends string> = Omit<
   BaseButtonProps,
@@ -124,7 +124,7 @@ export const MenuItem = forwardRef(function <Value extends string>(
           size={variant === 'option' ? 'l' : 'm'}
           strength={variant === 'button' ? 'strong' : 'default'}
         >
-          {variant === 'option' ? label ?? props.value : label}
+          {variant === 'option' ? (label ?? props.value) : label}
         </Text>
       ) : (
         label
@@ -139,7 +139,7 @@ export const MenuItem = forwardRef(function <Value extends string>(
           {helperText}
         </Text>
       ) : (
-        helperText ?? null
+        (helperText ?? null)
       )}
     </BaseButton>
   )

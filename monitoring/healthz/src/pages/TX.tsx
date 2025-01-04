@@ -6,10 +6,10 @@ import {
   useSearchParams,
 } from 'react-router-dom'
 import {
-  EM_ADDRESS,
   decodeEmLog,
   useEthersProvider,
   useSomeDiscoveryEndpoint,
+  emAddress
 } from '../utils/acdc-client'
 
 export function TxViewer() {
@@ -19,6 +19,7 @@ export function TxViewer() {
   const discoveryEndpoint = useSomeDiscoveryEndpoint()
   const provider = useEthersProvider()
   const isProd = useLocation().pathname.indexOf('/prod') == 0
+  const isStage = useLocation().pathname.indexOf('/stage') == 0
 
   const { data, isLoading } = useQuery(
     [location.pathname, location.search],
@@ -27,9 +28,9 @@ export function TxViewer() {
       if (!latestBlock) latestBlock = await provider.getBlockNumber()
 
       const logs: any[] = await provider.getLogs({
-        fromBlock: latestBlock - (isProd ? 1000 : 10000),
+        fromBlock: Math.max(0, latestBlock - (isProd ? 1000 : 10000)),
         toBlock: latestBlock,
-        address: EM_ADDRESS,
+        address: emAddress(isProd, isStage),
       })
 
       logs.reverse()

@@ -129,15 +129,18 @@ export const getAccountWithCollections = createSelector(
  * Gets the account's playlist nav bar info
  */
 export const getAccountNavigationPlaylists = (state: CommonState) => {
-  return Object.keys(state.account.collections).reduce((acc, cur) => {
-    const collection = state.account.collections[cur as unknown as number]
-    if (collection.is_album) return acc
-    if (getUser(state, { id: collection.user.id })?.is_deactivated) return acc
-    return {
-      ...acc,
-      [cur]: collection
-    }
-  }, {} as { [id: number]: AccountCollection })
+  return Object.keys(state.account.collections).reduce(
+    (acc, cur) => {
+      const collection = state.account.collections[cur as unknown as number]
+      if (collection.is_album) return acc
+      if (getUser(state, { id: collection.user.id })?.is_deactivated) return acc
+      return {
+        ...acc,
+        [cur]: collection
+      }
+    },
+    {} as { [id: number]: AccountCollection }
+  )
 }
 
 /**
@@ -158,15 +161,18 @@ export const getUserPlaylists = createSelector(
 export const getAccountCollections = createSelector(
   [internalGetAccountCollections, getCollections],
   (accountCollections, collections) => {
-    return Object.keys(accountCollections).reduce((acc, cur) => {
-      const track = accountCollections[cur as unknown as number]
-      if (!collections[track.id] || collections[track.id]._marked_deleted)
-        return acc
-      return {
-        ...acc,
-        [track.id]: track
-      }
-    }, {} as { [id: number]: AccountCollection })
+    return Object.keys(accountCollections).reduce(
+      (acc, cur) => {
+        const track = accountCollections[cur as unknown as number]
+        if (!collections[track.id] || collections[track.id]._marked_deleted)
+          return acc
+        return {
+          ...acc,
+          [track.id]: track
+        }
+      },
+      {} as { [id: number]: AccountCollection }
+    )
   }
 )
 

@@ -26,7 +26,7 @@ const getTxProps = (senderAddress, method) => {
     txProps: {
       contractAddress: method.contractAddress,
       encodedABI: method.encodedABI,
-      senderAddress: senderAddress,
+      senderAddress,
       gasLimit: method.gasLimit || null
     }
   }

@@ -2,7 +2,7 @@ import { PureComponent, ReactNode } from 'react'
 
 import { captureException, captureMessage } from '@sentry/browser'
 
-export type ErrorWrapperProps = {
+type ErrorWrapperProps = {
   children: ReactNode
   errorMessage?: string
 }

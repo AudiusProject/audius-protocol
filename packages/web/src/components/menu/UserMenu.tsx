@@ -5,9 +5,10 @@ import {
 } from '@audius/common/store'
 import { route } from '@audius/common/utils'
 import { PopupMenuItem } from '@audius/harmony'
-import { push as pushRoute } from 'connected-react-router'
 import { connect } from 'react-redux'
 import { Dispatch } from 'redux'
+
+import { push } from 'utils/navigation'
 
 const { profilePage } = route
 
@@ -21,19 +22,15 @@ export type OwnProps = {
   userId: ID
 }
 
-export type UserMenuProps = OwnProps & ReturnType<typeof mapDispatchToProps>
+type UserMenuProps = OwnProps & ReturnType<typeof mapDispatchToProps>
 
-const Menu = (props: UserMenuProps) => {
+const Menu = ({
+  handle = '',
+  currentUserFollows = false,
+  ...props
+}: UserMenuProps) => {
   const getMenu = () => {
-    const {
-      handle,
-      userId,
-      currentUserFollows,
-      shareUser,
-      unFollowUser,
-      followUser,
-      goToRoute
-    } = props
+    const { userId, shareUser, unFollowUser, followUser, goToRoute } = props
 
     const shareMenuItem = {
       text: 'Share',
@@ -66,7 +63,7 @@ const Menu = (props: UserMenuProps) => {
 
 function mapDispatchToProps(dispatch: Dispatch) {
   return {
-    goToRoute: (route: string) => dispatch(pushRoute(route)),
+    goToRoute: (route: string) => dispatch(push(route)),
     shareUser: (userId: ID) => {
       dispatch(
         requestOpenShareModal({
@@ -81,12 +78,6 @@ function mapDispatchToProps(dispatch: Dispatch) {
     unFollowUser: (userId: ID) =>
       dispatch(socialActions.unfollowUser(userId, FollowSource.OVERFLOW))
   }
-}
-
-Menu.defaultProps = {
-  handle: '',
-  mount: 'page',
-  currentUserFollows: false
 }
 
 export default connect(null, mapDispatchToProps)(Menu)

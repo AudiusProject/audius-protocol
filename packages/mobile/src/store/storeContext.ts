@@ -10,6 +10,7 @@ import { audiusBackendInstance } from 'app/services/audius-backend-instance'
 import { explore } from 'app/services/explore'
 import { fingerprintClient } from 'app/services/fingerprint'
 import { localStorage } from 'app/services/local-storage'
+import { queryClient } from 'app/services/query-client'
 import {
   getFeatureEnabled,
   remoteConfigInstance
@@ -73,6 +74,7 @@ export const storeContext: CommonStoreContext = {
     generatePlaylistArtwork
   },
   isMobile: true,
+  queryClient,
   mobileWalletActions: {
     connect,
     signAndSendTransaction

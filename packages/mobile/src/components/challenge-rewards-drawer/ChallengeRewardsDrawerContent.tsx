@@ -121,12 +121,12 @@ export const ChallengeRewardsDrawerContent = ({
   const statusText = hasCompleted
     ? messages.complete
     : isInProgress
-    ? fillString(
-        progressLabel,
-        formatNumberCommas(currentStep),
-        formatNumberCommas(stepCount)
-      )
-    : messages.incomplete
+      ? fillString(
+          progressLabel,
+          formatNumberCommas(currentStep),
+          formatNumberCommas(stepCount)
+        )
+      : messages.incomplete
 
   const renderCooldownSummaryTable = () => {
     if (isCooldownChallenge && !isCooldownChallengesEmpty) {
@@ -196,8 +196,8 @@ export const ChallengeRewardsDrawerContent = ({
                 hasCompleted
                   ? 'staticWhite'
                   : isInProgress
-                  ? 'accent'
-                  : 'default'
+                    ? 'accent'
+                    : 'default'
               }
             >
               {statusText}

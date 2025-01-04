@@ -1,16 +1,25 @@
 import { useSearchParams } from 'react-router-dom'
 
 const isStageParam = 'isStaging'
+const isDevParam = 'isDev'
 const nodeTypeParam = 'nodeType'
 
 export function useEnvironmentSelection(): [
-  'staging' | 'prod',
+  'staging' | 'prod' | 'dev',
   'content' | 'discovery' | 'core'
 ] {
   let [searchParams] = useSearchParams()
 
   const isStage = !!searchParams.get(isStageParam)
+  const isDev = !!searchParams.get(isDevParam)
   const nodeType = (searchParams.get(nodeTypeParam) as 'content' | 'discovery' | 'core') || 'discovery'
+
+  if (isDev) {
+    return [
+      'dev',
+      nodeType
+    ]
+  }
 
   return [
     isStage ? 'staging' : 'prod',
@@ -22,6 +31,7 @@ export function EnvironmentSelector() {
   let [searchParams, setSearchParams] = useSearchParams()
 
   const isStage = !!searchParams.get(isStageParam)
+  const isDev = !!searchParams.get(isDevParam)
   const nodeType = searchParams.get(nodeTypeParam) || 'discovery'
 
   function toggleParam(name: string, value: '0' | '1') {
@@ -45,15 +55,31 @@ export function EnvironmentSelector() {
       <div className="flex">
         <button
           className={`px-4 py-2 ${isStage ? 'bg-purple-300 text-white' : 'bg-gray-200 text-black'}`}
-          onClick={() => toggleParam(isStageParam, '1')}
+          onClick={() => {
+            toggleParam(isStageParam, '1')
+            toggleParam(isDevParam, '0')
+          }}
         >
           Stage
         </button>
         <button
-          className={`px-4 py-2 ${isStage ? 'bg-gray-200 text-black' : 'bg-purple-300 text-white'}`}
-          onClick={() => toggleParam(isStageParam, '0')}
+          className={`px-4 py-2 ${isStage || isDev ? 'bg-gray-200 text-black' : 'bg-purple-300 text-white'}`}
+          onClick={() => {
+            toggleParam(isStageParam, '0')
+            toggleParam(isDevParam, '0')
+          }}
         >
           Prod
+        </button>
+        <button
+          className={`px-4 py-2 ${isDev ? 'bg-purple-300 text-white' : 'bg-gray-200 text-black'}`}
+          onClick={() => {
+            toggleParam(isStageParam, '0')
+            toggleParam(isDevParam, '1')
+          }
+          }
+        >
+          Dev
         </button>
       </div>
       <div className="flex">

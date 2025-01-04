@@ -27,13 +27,13 @@ import {
   usePremiumContentPurchaseModal
 } from '@audius/common/store'
 import { route } from '@audius/common/utils'
-import { push as pushRoute } from 'connected-react-router'
 import { connect } from 'react-redux'
 import { useNavigate } from 'react-router-dom-v5-compat'
 import { Dispatch } from 'redux'
 
 import { useRequiresAccountCallback } from 'hooks/useRequiresAccount'
 import { AppState } from 'store/types'
+import { push } from 'utils/navigation'
 import { collectibleDetailsPage } from 'utils/route'
 
 import MobileOverflowModal from './components/MobileOverflowModal'
@@ -383,11 +383,10 @@ const mapDispatchToProps = (dispatch: Dispatch) => {
       trackId: ID,
       title: string
     ) => dispatch(openAddToCollection(collectionType, trackId, title)),
-    visitTrackPage: (permalink: string) => dispatch(pushRoute(permalink)),
-    visitArtistPage: (handle: string) =>
-      dispatch(pushRoute(profilePage(handle))),
+    visitTrackPage: (permalink: string) => dispatch(push(permalink)),
+    visitArtistPage: (handle: string) => dispatch(push(profilePage(handle))),
     visitCollectiblePage: (handle: string, id: string) => {
-      dispatch(pushRoute(collectibleDetailsPage(handle, id)))
+      dispatch(push(collectibleDetailsPage(handle, id)))
     },
     visitPlaylistPage: (
       playlistId: ID,
@@ -397,7 +396,7 @@ const mapDispatchToProps = (dispatch: Dispatch) => {
       isAlbum: boolean
     ) =>
       dispatch(
-        pushRoute(
+        push(
           collectionPage(handle, playlistTitle, playlistId, permalink, isAlbum)
         )
       )

@@ -90,19 +90,25 @@ export const getUserTimestamps = (
   }
 ) => {
   if (ids) {
-    const entryTimestamps = ids.reduce((acc, id) => {
-      acc[id] = getEntryTimestamp(state, { kind: Kind.USERS, id })
-      return acc
-    }, {} as { [id: number]: number | null })
+    const entryTimestamps = ids.reduce(
+      (acc, id) => {
+        acc[id] = getEntryTimestamp(state, { kind: Kind.USERS, id })
+        return acc
+      },
+      {} as { [id: number]: number | null }
+    )
     return entryTimestamps
   } else if (handles) {
-    return handles.reduce((acc, handle) => {
-      const id = getUserByHandle(state, { handle: handle.toLowerCase() })
-      if (!id) return acc
-      const timestamp = getEntryTimestamp(state, { kind: Kind.USERS, id })
-      if (timestamp) acc[handle] = timestamp
-      return acc
-    }, {} as { [handle: string]: number })
+    return handles.reduce(
+      (acc, handle) => {
+        const id = getUserByHandle(state, { handle: handle.toLowerCase() })
+        if (!id) return acc
+        const timestamp = getEntryTimestamp(state, { kind: Kind.USERS, id })
+        if (timestamp) acc[handle] = timestamp
+        return acc
+      },
+      {} as { [handle: string]: number }
+    )
   }
   return {}
 }

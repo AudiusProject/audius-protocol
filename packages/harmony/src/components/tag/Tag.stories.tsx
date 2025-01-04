@@ -1,7 +1,7 @@
 import { Meta, StoryObj } from '@storybook/react'
 
-import { Flex } from 'components/layout'
-import { Text } from 'components/text'
+import { Flex } from '~harmony/components/layout'
+import { Text } from '~harmony/components/text'
 
 import { Tag } from './Tag'
 

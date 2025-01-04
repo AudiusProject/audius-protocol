@@ -48,9 +48,8 @@ const NewProposalModal: React.FC<NewProposalModalProps> = ({
 
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false)
   const onCloseConfirm = useCallback(() => setIsConfirmModalOpen(false), [])
-  const { status, error, createProposal } = useCreateProposal(
-    !isConfirmModalOpen
-  )
+  const { status, error, createProposal } =
+    useCreateProposal(!isConfirmModalOpen)
 
   // Handle success scenario
   useEffect(() => {

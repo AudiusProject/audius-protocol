@@ -153,13 +153,13 @@ const CollectionHeader = ({
       isOwner || !isPublished || !hasStreamAccess
         ? null
         : isReposted
-        ? OverflowAction.UNREPOST
-        : OverflowAction.REPOST,
+          ? OverflowAction.UNREPOST
+          : OverflowAction.REPOST,
       isOwner || !isPublished || !hasStreamAccess
         ? null
         : isSaved
-        ? OverflowAction.UNFAVORITE
-        : OverflowAction.FAVORITE,
+          ? OverflowAction.UNFAVORITE
+          : OverflowAction.FAVORITE,
       isOwner && !isPublished ? OverflowAction.PUBLISH_PLAYLIST : null,
       isOwner && !ddexApp
         ? isAlbum

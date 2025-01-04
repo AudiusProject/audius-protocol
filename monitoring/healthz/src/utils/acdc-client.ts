@@ -3,15 +3,28 @@ import { useEnvironmentSelection } from '../components/EnvironmentSelector'
 import { useMemo } from 'react'
 import { useLocation } from 'react-router-dom'
 
-// todo: env config
-export const EM_ADDRESS = '0x1cd8a543596d499b9b6e7a6ec15ecd2b7857fd64'
+export function emAddress(isProd: boolean, isStage: boolean) {
+  if (isProd) {
+    return '0x1cd8a543596d499b9b6e7a6ec15ecd2b7857fd64'
+  }
+  if (isStage) {
+    return '0x1cd8a543596D499B9b6E7a6eC15ECd2B7857Fd64'
+  }
+  return '0x254dffcd3277C0b1660F6d42EFbB754edaBAbC2B'
+}
 
 export function useEthersProvider() {
-  const [env] = useEnvironmentSelection()
-  const isProd = useLocation().pathname.indexOf('/prod') == 0
-  const rpcEndpoint = isProd
-    ? 'https://acdc-gateway.audius.co'
-    : 'https://acdc-gateway.staging.audius.co'
+  const isStage = useLocation().pathname.indexOf('/stage') == 0
+  const isDev = useLocation().pathname.indexOf('/dev') == 0
+
+
+  let rpcEndpoint = 'https://acdc-gateway.audius.co'
+  if (isStage) {
+    rpcEndpoint = 'https://acdc-gateway.staging.audius.co'
+  }
+  if (isDev) {
+    rpcEndpoint = 'http://audius-protocol-discovery-provider-1/chain'
+  }
 
   return useMemo(() => {
     return new ethers.JsonRpcProvider(rpcEndpoint, undefined, {
@@ -23,16 +36,28 @@ export function useEthersProvider() {
 
 export function useSomeDiscoveryEndpoint() {
   const isProd = useLocation().pathname.indexOf('/prod') == 0
-  return isProd
-    ? 'https://discoveryprovider.audius.co'
-    : 'https://discoveryprovider.staging.audius.co'
+  const isStage = useLocation().pathname.indexOf('/stage') == 0
+
+  if (isProd) {
+    return 'https://discoveryprovider.audius.co'
+  }
+  if (isStage) {
+    'https://discoveryprovider.staging.audius.co'
+  }
+  return 'http://audius-protocol-discovery-provider-1'
 }
 
 export function useSomeContentEndpoint() {
   const isProd = useLocation().pathname.indexOf('/prod') == 0
-  return isProd
-    ? 'https://creatornode2.audius.co'
-    : 'https://creatornode12.staging.audius.co'
+  const isStage = useLocation().pathname.indexOf('/stage') == 0
+
+  if (isProd) {
+    return 'https://creatornode2.audius.co'
+  }
+  if (isStage) {
+    return 'https://creatornode12.staging.audius.co'
+  }
+  return 'http://audius-protocol-creator-node-1'
 }
 
 const iface = new Interface([

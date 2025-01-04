@@ -39,7 +39,7 @@ class CoreClient:
     def get_core_endpoint(self) -> str:
         if environment == "prod" or environment == "stage":
             return "core:50051"
-        return "core-discovery-1:50051"
+        return "audiusd-1:50051"
 
     def ping(self) -> Optional[PingResponse]:
         try:

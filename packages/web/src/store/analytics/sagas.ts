@@ -1,9 +1,9 @@
 import { Name } from '@audius/common/models'
 import { getContext } from '@audius/common/store'
-import { LOCATION_CHANGE } from 'connected-react-router'
 import { take } from 'redux-saga/effects'
 
 import { env } from 'services/env'
+import { LOCATION_CHANGE } from 'utils/navigation'
 
 let prevPathname = ''
 
@@ -37,6 +37,9 @@ function* trackLocation() {
   }
 }
 
-export default function sagas() {
-  return [trackLocation]
+const sagas = () => {
+  const sagas = [trackLocation]
+  return sagas
 }
+
+export default sagas

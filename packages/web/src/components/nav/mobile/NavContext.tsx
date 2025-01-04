@@ -40,7 +40,7 @@ type LeftElement = LeftPreset | ReactNode | null
 type CenterElement = CenterPreset | string | null
 type RightElement = RightPreset | ReactNode | null
 
-export const NavContext = createContext<NavContextProps>({
+const NavContext = createContext<NavContextProps>({
   setLeft: () => {},
   setCenter: () => {},
   setRight: () => {},
@@ -49,7 +49,7 @@ export const NavContext = createContext<NavContextProps>({
   rightElement: RightPreset.SEARCH
 })
 
-export const useNavContext = () => {
+const useNavContext = () => {
   const [leftElement, setLeft] = useState<LeftElement>(LeftPreset.NOTIFICATION)
   const [centerElement, setCenter] = useState<CenterElement>(CenterPreset.LOGO)
   const [rightElement, setRight] = useState<RightElement>(RightPreset.SEARCH)

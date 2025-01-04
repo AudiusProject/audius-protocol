@@ -7,10 +7,10 @@ import {
   TastemakerNotification as TastemakerNotificationType
 } from '@audius/common/store'
 import { Nullable } from '@audius/common/utils'
-import { push } from 'connected-react-router'
 import { useDispatch } from 'react-redux'
 
 import { make } from 'common/store/analytics/actions'
+import { push } from 'utils/navigation'
 import { useSelector } from 'utils/reducer'
 
 import { EntityLink } from './components/EntityLink'

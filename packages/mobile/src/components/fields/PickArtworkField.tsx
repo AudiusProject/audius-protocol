@@ -59,10 +59,19 @@ type PickArtworkFieldProps = {
   onPress?: () => void
   onImageLoad?: () => void
   isLoading?: boolean
+  isUpload?: boolean
 }
 
 export const PickArtworkField = (props: PickArtworkFieldProps) => {
-  const { name, onChange, buttonTitle, onPress, onImageLoad, isLoading } = props
+  const {
+    name,
+    onChange,
+    buttonTitle,
+    onPress,
+    onImageLoad,
+    isLoading,
+    isUpload
+  } = props
   const styles = useStyles()
   const { neutralLight8 } = useThemeColors()
   const [{ value }, { error, touched }, { setValue: setArtwork }] = useField<{
@@ -93,7 +102,7 @@ export const PickArtworkField = (props: PickArtworkFieldProps) => {
 
   return (
     <View style={styles.root}>
-      {source?.uri ? (
+      {isUpload || source?.uri ? (
         <DynamicImage
           source={source}
           onLoad={handleImageLoad}

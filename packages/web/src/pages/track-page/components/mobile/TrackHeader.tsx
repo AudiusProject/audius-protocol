@@ -32,7 +32,6 @@ import IconCalendarMonth from '@audius/harmony/src/assets/icons/CalendarMonth.sv
 import IconRobot from '@audius/harmony/src/assets/icons/Robot.svg'
 import IconVisibilityHidden from '@audius/harmony/src/assets/icons/VisibilityHidden.svg'
 import cn from 'classnames'
-import { push as pushRoute } from 'connected-react-router'
 import dayjs from 'dayjs'
 import { shallowEqual, useDispatch, useSelector } from 'react-redux'
 
@@ -41,7 +40,7 @@ import HoverInfo from 'components/co-sign/HoverInfo'
 import { Size } from 'components/co-sign/types'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import { UserLink } from 'components/link'
-import { SearchTag } from 'components/search/SearchTag'
+import { SearchTag } from 'components/search-bar/SearchTag'
 import { AiTrackSection } from 'components/track/AiTrackSection'
 import { DownloadSection } from 'components/track/DownloadSection'
 import { GatedContentSection } from 'components/track/GatedContentSection'
@@ -49,6 +48,7 @@ import { TrackDogEar } from 'components/track/TrackDogEar'
 import { TrackMetadataList } from 'components/track/TrackMetadataList'
 import { UserGeneratedText } from 'components/user-generated-text'
 import { useTrackCoverArt } from 'hooks/useTrackCoverArt'
+import { push as pushRoute } from 'utils/navigation'
 import { isDarkMode } from 'utils/theme/theme'
 
 import ActionButtonRow from './ActionButtonRow'
@@ -221,13 +221,13 @@ const TrackHeader = ({
       isOwner || !showSocials
         ? null
         : isReposted
-        ? OverflowAction.UNREPOST
-        : OverflowAction.REPOST,
+          ? OverflowAction.UNREPOST
+          : OverflowAction.REPOST,
       isOwner || !showSocials
         ? null
         : isSaved
-        ? OverflowAction.UNFAVORITE
-        : OverflowAction.FAVORITE,
+          ? OverflowAction.UNFAVORITE
+          : OverflowAction.FAVORITE,
       isOwner && !track?.ddex_app ? OverflowAction.ADD_TO_ALBUM : null,
       isOwner || !isUnlisted ? OverflowAction.ADD_TO_PLAYLIST : null,
       albumInfo ? OverflowAction.VIEW_ALBUM_PAGE : null,

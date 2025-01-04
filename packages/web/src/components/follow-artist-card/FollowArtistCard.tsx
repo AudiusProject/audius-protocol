@@ -18,7 +18,7 @@ import {
   useTheme
 } from '@audius/harmony'
 import { useField } from 'formik'
-import Lottie from 'react-lottie'
+import Lottie from 'lottie-react'
 import { useDispatch } from 'react-redux'
 import { useHover } from 'react-use'
 
@@ -121,7 +121,7 @@ export const FollowArtistCard = (props: FollowArtistTileProps) => {
               zIndex: 1
             }}
           >
-            <Lottie options={{ animationData: SoundwaveCircle }} />
+            <Lottie loop autoplay animationData={SoundwaveCircle} />
           </Box>
         ) : null}
         {avatar}

@@ -1,17 +1,11 @@
 import { AuthHeaders } from '@audius/common/services'
 
 import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
-import { waitForLibsInit } from 'services/audius-backend/eagerLoadUtils'
 import { audiusSdk } from 'services/audius-sdk'
-
-// @ts-ignore
-const libs = () => window.audiusLibs
 
 type HttpMethod = 'POST' | 'GET' | 'PUT' | 'DELETE' | 'PATCH'
 
-export type CognitoSignatureResponse = { signature: string }
-export type CognitoFlowResponse = { shareable_url: string }
-type CognitoFlowExistsResponse = { exists: boolean }
+type CognitoSignatureResponse = { signature: string }
 type AuthHeadersType = typeof AuthHeaders
 
 async function _makeRequest<ResponseModel>({
@@ -28,11 +22,6 @@ async function _makeRequest<ResponseModel>({
     headers?: { [key in AuthHeadersType[keyof AuthHeadersType]]: string }
   } = { method }
   if (useAuth) {
-    await waitForLibsInit()
-    const account = libs()?.getCurrentUser()
-    if (!account) {
-      throw new Error('Cognito Identity Request Failed: Missing current user')
-    }
     const sdk = await audiusSdk()
     const { data, signature } =
       await audiusBackendInstance.signIdentityServiceRequest({ sdk })
@@ -54,13 +43,3 @@ async function _makeRequest<ResponseModel>({
 
 export const getCognitoSignature = () =>
   _makeRequest<CognitoSignatureResponse>({ path: '/cognito_signature' })
-
-export const getCognitoFlow = () =>
-  _makeRequest<CognitoFlowResponse>({ path: '/cognito_flow', method: 'POST' })
-
-export const getCognitoExists = (handle: string) =>
-  _makeRequest<CognitoFlowExistsResponse>({
-    path: `/cognito_recent_exists/${handle}`,
-    method: 'GET',
-    useAuth: false
-  })

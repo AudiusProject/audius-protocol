@@ -40,7 +40,6 @@ export const MEMO_PROGRAM_ID = new PublicKey(
   'Memo1UhkJRfHyvLMcVucJwxXeuD728EqVDDwQDxFMNo'
 )
 
-// TODO: Import from libs https://linear.app/audius/issue/PAY-1750/export-mintname-and-default-mint-from-libs
 export type MintName = 'wAUDIO' | 'USDC'
 export const DEFAULT_MINT: MintName = 'wAUDIO'
 
@@ -55,7 +54,7 @@ const delay = (ms: number) =>
   })
 
 /**
- * Gets the latest blockhash using the libs connection
+ * Gets the latest blockhash using the sdk connection
  */
 export const getRecentBlockhash = async ({ sdk }: { sdk: AudiusSdk }) => {
   const connection = sdk.services.solanaClient.connection
@@ -629,9 +628,8 @@ export const transferFromUserBank = async ({
       transaction.sign([signer])
     }
 
-    const signature = await sdk.services.claimableTokensClient.sendTransaction(
-      transaction
-    )
+    const signature =
+      await sdk.services.claimableTokensClient.sendTransaction(transaction)
 
     if (isCreatingTokenAccount) {
       await track(

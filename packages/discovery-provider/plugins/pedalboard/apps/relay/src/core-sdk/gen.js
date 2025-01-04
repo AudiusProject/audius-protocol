@@ -1,9 +1,9 @@
-const { execSync } = require("child_process");
-const path = require("path");
+const { execSync } = require('child_process')
+const path = require('path')
 
 function generateProtobuf() {
-  const protoDir = path.resolve(__dirname, "../../../../../../../../core");
-  const outDir = path.resolve(__dirname, ""); // Set output directory for generated code
+  const protoDir = path.resolve(__dirname, '../../../../../../../../core')
+  const outDir = path.resolve(__dirname, '') // Set output directory for generated code
 
   const command = `
     grpc_tools_node_protoc \
@@ -13,16 +13,18 @@ function generateProtobuf() {
       --ts_out=${outDir} \
       --proto_path=${protoDir} \
       ${protoDir}/protocol.proto
-  `;
+  `
 
   try {
-    console.log("Generating JavaScript and TypeScript definitions from protobuf...");
-    execSync(command, { stdio: "inherit" });
-    console.log("Protobuf generation complete.");
+    console.log(
+      'Generating JavaScript and TypeScript definitions from protobuf...'
+    )
+    execSync(command, { stdio: 'inherit' })
+    console.log('Protobuf generation complete.')
   } catch (error) {
-    console.error("Error generating files from protobuf:", error.message);
-    process.exit(1);
+    console.error('Error generating files from protobuf:', error.message)
+    process.exit(1)
   }
 }
 
-generateProtobuf();
+generateProtobuf()

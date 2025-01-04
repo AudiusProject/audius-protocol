@@ -33,7 +33,7 @@ const getMinMaxFromBpm = (bpm?: string) => {
   return [bpmMin, bpmMax]
 }
 
-export function* getTagSearchResults(
+function* getTagSearchResults(
   tag: string,
   kind: SearchKind,
   limit: number,
@@ -91,7 +91,7 @@ export function* getTagSearchResults(
   return { users, tracks, albums, playlists }
 }
 
-export function* fetchSearchPageTags(
+function* fetchSearchPageTags(
   action: searchPageActions.FetchSearchPageTagsAction
 ) {
   yield* call(waitForRead)
@@ -163,7 +163,7 @@ type GetSearchResultsArgs = {
   sortMethod?: SearchSortMethod
 }
 
-export function* getSearchResults({
+function* getSearchResults({
   searchText,
   kind,
   limit,

@@ -209,7 +209,7 @@ export class DiscoveryNodeSelector implements DiscoveryNodeSelectorService {
             ? (data.latest_chain_block ?? 0) - (data.latest_indexed_block ?? 0)
             : 0
           const version = isFullFlaskResponse(data)
-            ? data.version?.version ?? ''
+            ? (data.version?.version ?? '')
             : ''
           await this.reselectIfNecessary({
             endpoint,

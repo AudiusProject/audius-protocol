@@ -7,7 +7,7 @@ import { waitForRead } from 'utils/sagaHelpers'
 
 const { getAccountUser, getUserId } = accountSelectors
 
-export type UserListProviderArgs<T, U = void> = {
+type UserListProviderArgs<T, U = void> = {
   // Gets the track or playlist we're referencing.
   getExistingEntity: (state: AppState, props: { id: ID }) => T | null
 
