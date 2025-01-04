@@ -14,8 +14,7 @@ import {
 import {
   profilePageFeedLineupActions as feedActions,
   profilePageTracksLineupActions as tracksActions,
-  ProfilePageTabs,
-  ProfileUser
+  ProfilePageTabs
 } from '@audius/common/store'
 import { route } from '@audius/common/utils'
 import {
@@ -94,7 +93,7 @@ export type ProfilePageProps = {
   stats: Array<{ number: number; title: string; key: string }>
   trackIsActive: boolean
 
-  profile: ProfileUser | null
+  profile: User | null
   albums: Collection[] | null
   playlists: Collection[] | null
   status: Status
@@ -117,7 +116,6 @@ export type ProfilePageProps = {
   getLineupProps: (lineup: any) => any
   loadMoreArtistTracks: (offset: number, limit: number) => void
   loadMoreUserFeed: (offset: number, limit: number) => void
-  fetchFollowers: () => void
   onFollow: (id: ID) => void
   onConfirmUnfollow: (id: ID) => void
   updateName: (name: string) => void

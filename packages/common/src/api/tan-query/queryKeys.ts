@@ -18,5 +18,6 @@ export const QUERY_KEYS = {
   favoritedTracks: 'favoritedTracks',
   supporters: 'supporters',
   supportedUsers: 'supportedUsers',
-  relatedArtists: 'relatedArtists'
+  relatedArtists: 'relatedArtists',
+  mutualFollowers: 'mutualFollowers'
 } as const

@@ -1,14 +1,10 @@
 import { useCallback } from 'react'
 
-import {
-  accountSelectors,
-  cacheUsersSelectors,
-  profilePageSelectors
-} from '@audius/common/store'
-import { removeNullable } from '@audius/common/utils'
+import { useMutualFollowers } from '@audius/common/api'
+import { User } from '@audius/common/models'
+import { accountSelectors, profilePageSelectors } from '@audius/common/store'
 import { IconUserFollowing } from '@audius/harmony'
 import { useDispatch, useSelector } from 'react-redux'
-import { createSelector } from 'reselect'
 
 import {
   setUsers,
@@ -22,10 +18,9 @@ import {
 import styles from './ProfileMutuals.module.css'
 import { ProfilePageNavSectionTitle } from './ProfilePageNavSectionTitle'
 import { ProfilePictureListTile } from './ProfilePictureListTile'
-const { getFolloweeFollows, getProfileUser, getProfileUserId } =
-  profilePageSelectors
-const { getUsers } = cacheUsersSelectors
-const getUserId = accountSelectors.getUserId
+
+const { getProfileUser, getProfileUserId } = profilePageSelectors
+const { getUserId } = accountSelectors
 
 const messages = {
   mutuals: 'Mutuals'
@@ -33,23 +28,14 @@ const messages = {
 
 const MAX_MUTUALS = 5
 
-const selectMutuals = createSelector(
-  [getFolloweeFollows, getUsers],
-  (followeeFollows, users) => {
-    return (
-      followeeFollows?.userIds
-        .map(({ id }) => users[id])
-        .filter(removeNullable) ?? []
-    )
-  }
-)
-
 export const ProfileMutuals = () => {
   const userId = useSelector(getProfileUserId)
   const accountId = useSelector(getUserId)
-  const profile = useSelector(getProfileUser)
-
-  const mutuals = useSelector(selectMutuals)
+  const profile = useSelector(getProfileUser) as User | null
+  const { data: mutuals } = useMutualFollowers({
+    userId,
+    limit: MAX_MUTUALS
+  })
   const dispatch = useDispatch()
 
   const handleClick = useCallback(() => {
@@ -64,7 +50,7 @@ export const ProfileMutuals = () => {
     dispatch(setVisibility(true))
   }, [dispatch, userId])
 
-  if (!profile || userId === accountId || mutuals.length === 0) {
+  if (!profile || userId === accountId || !mutuals) {
     return null
   }
 
