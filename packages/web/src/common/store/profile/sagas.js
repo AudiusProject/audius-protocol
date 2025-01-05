@@ -37,11 +37,7 @@ import {
   takeEvery
 } from 'redux-saga/effects'
 
-import {
-  fetchUsers,
-  fetchUserByHandle,
-  fetchUserSocials
-} from 'common/store/cache/users/sagas'
+import { fetchUsers, fetchUserByHandle } from 'common/store/cache/users/sagas'
 import feedSagas from 'common/store/pages/profile/lineups/feed/sagas.js'
 import tracksSagas from 'common/store/pages/profile/lineups/tracks/sagas.js'
 import {
@@ -346,8 +342,6 @@ function* fetchProfileAsync(action) {
     )
 
     if (!isNativeMobile) {
-      // Fetch user socials and collections after fetching the user itself
-      yield fork(fetchUserSocials, action)
       // Note that mobile dispatches this action at the component level
       yield put(profilePageActions.fetchCollections(user.handle))
     }

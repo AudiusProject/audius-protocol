@@ -19,8 +19,6 @@ export const useTwitterButtonStatus = (
   const additionalUserName = additionalUser?.name
   const additionalTwitterHandle = additionalUser?.twitter_handle
 
-  // Initially twitter handle is undefined; after fetch it's
-  // set to either null or a value in `fetchUserSocials` sagas
   const twitterHandleFetched =
     twitterHandle !== undefined &&
     (additionalUser ? additionalTwitterHandle !== undefined : true)
