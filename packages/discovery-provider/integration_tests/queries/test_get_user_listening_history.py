@@ -331,3 +331,51 @@ def test_track_top_listeners(app):
         assert len(top_listeners) == 1
         assert top_listeners[0]["user"]["user_id"] == 1
         assert top_listeners[0]["count"] == 2
+
+
+def test_get_user_listening_history_filter_deleted_owners(app):
+    """Tests that tracks with deactivated owners are filtered out of listening history"""
+    with app.app_context():
+        db = get_db()
+
+    test_entities_with_deleted = {
+        "user_listening_history": [
+            {
+                "user_id": 1,
+                "listening_history": [
+                    {"timestamp": str(TIMESTAMP), "track_id": 1},
+                    {"timestamp": str(TIMESTAMP), "track_id": 2},
+                ],
+            }
+        ],
+        "tracks": [
+            {"track_id": 1, "title": "track 1", "owner_id": 1},
+            {"track_id": 2, "title": "track 2", "owner_id": 2},
+        ],
+        "users": [
+            {"user_id": 1, "handle": "user-1", "is_deactivated": False},
+            {"user_id": 2, "handle": "user-2", "is_deactivated": True},  # Deactivated user
+        ],
+    }
+
+    populate_mock_db(db, test_entities_with_deleted)
+
+    with db.scoped_session() as session:
+        _index_user_listening_history(session)
+
+        track_history = _get_user_listening_history(
+            session,
+            GetUserListeningHistoryArgs(
+                user_id=1,
+                limit=10,
+                offset=0,
+                query=None,
+                sort_method=None,
+                sort_direction=None,
+            ),
+        )
+
+    # Should only return track 1 since track 2's owner is deactivated
+    assert len(track_history) == 1
+    assert track_history[0][response_name_constants.track_id] == 1
+    assert track_history[0][response_name_constants.activity_timestamp] == str(TIMESTAMP)
