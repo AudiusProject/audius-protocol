@@ -8,6 +8,12 @@ import type {
 } from '../../../models'
 import type { Nullable } from '../../../utils/typeUtils'
 
+export enum FollowType {
+  FOLLOWERS = 'followers',
+  FOLLOWEES = 'followees',
+  FOLLOWEE_FOLLOWS = 'followeeFollows'
+}
+
 export enum CollectionSortMode {
   TIMESTAMP = 0,
   SAVE_COUNT = 1

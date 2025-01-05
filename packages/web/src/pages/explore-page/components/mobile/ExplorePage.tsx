@@ -1,16 +1,14 @@
-import { useContext, useEffect, useMemo, ReactNode, useCallback } from 'react'
+import { useContext, useEffect, ReactNode, useCallback, useState } from 'react'
 
+import { useFeaturedPlaylists, useFeaturedProfiles } from '@audius/common/api'
 import {
   Variant as CollectionVariant,
-  Status,
   UserCollection,
   SmartCollection,
   User,
   Variant
 } from '@audius/common/models'
 import {
-  explorePageSelectors,
-  explorePageActions,
   ExplorePageTabs as ExploreTabs,
   ExploreCollectionsVariant
 } from '@audius/common/store'
@@ -22,7 +20,7 @@ import {
   IconUser
 } from '@audius/harmony'
 import cn from 'classnames'
-import { useDispatch, useSelector } from 'react-redux'
+import { useNavigate } from 'react-router-dom-v5-compat'
 
 import { CollectionCard } from 'components/collection'
 import Header from 'components/header/mobile/Header'
@@ -51,9 +49,8 @@ import { justForYou } from '../desktop/ExplorePage'
 
 import ColorTile from './ColorTile'
 import styles from './ExplorePage.module.css'
+
 const { EXPLORE_PAGE } = route
-const { getTab } = explorePageSelectors
-const { setTab } = explorePageActions
 
 const messages = {
   pageName: 'Explore',
@@ -115,21 +112,13 @@ export type ExplorePageProps = {
   title: string
   pageTitle: string
   description: string
-  playlists: UserCollection[]
-  profiles: User[]
-  status: Status
-  goToRoute: (route: string) => void
 }
 
-const ExplorePage = ({
-  pageTitle,
-  description,
-  playlists,
-  profiles,
-  status,
-  goToRoute
-}: ExplorePageProps) => {
+const ExplorePage = ({ pageTitle, description }: ExplorePageProps) => {
   useMainPageHeader()
+  const [currentTab, setCurrentTab] = useState<ExploreTabs>(ExploreTabs.FOR_YOU)
+
+  const navigate = useNavigate()
 
   const isUSDCPurchasesEnabled = useIsUSDCEnabled()
   const justForYouTiles = justForYou
@@ -142,7 +131,9 @@ const ExplorePage = ({
       }
       const Icon =
         t.variant === Variant.SMART
-          ? smartCollectionIcons[t.playlist_name]
+          ? smartCollectionIcons[
+              t.playlist_name as keyof typeof smartCollectionIcons
+            ]
           : t.icon
       if (t.variant === CollectionVariant.SMART) {
         return (
@@ -154,7 +145,7 @@ const ExplorePage = ({
             gradient={t.gradient}
             shadow={t.shadow}
             icon={<Icon color='staticWhite' width={200} height={200} />}
-            goToRoute={goToRoute}
+            goToRoute={navigate}
           />
         )
       } else {
@@ -167,7 +158,7 @@ const ExplorePage = ({
             gradient={t.gradient}
             shadow={t.shadow}
             icon={<Icon color='staticWhite' width={200} height={200} />}
-            goToRoute={goToRoute}
+            goToRoute={navigate}
             isIncentivized={t.incentivized}
           />
         )
@@ -187,89 +178,86 @@ const ExplorePage = ({
         emoji={
           t.variant === ExploreCollectionsVariant.MOOD ? t.emoji : undefined
         }
-        goToRoute={goToRoute}
+        goToRoute={navigate}
       />
     )
   })
 
-  let playlistCards: JSX.Element[]
-  let profileCards: JSX.Element[]
-  if (status === Status.LOADING) {
-    playlistCards = []
-    profileCards = []
-  } else {
-    playlistCards = playlists.map((playlist: UserCollection) => {
-      return (
-        <CollectionCard
-          key={playlist.playlist_id}
-          id={playlist.playlist_id}
-          size='xs'
+  const { data: playlists = [], isLoading: isLoadingPlaylists } =
+    useFeaturedPlaylists()
+  const { data: profiles = [], isLoading: isLoadingProfiles } =
+    useFeaturedProfiles()
+
+  const elements = [
+    <TabBodyHeader
+      key='justForYou'
+      title={messages.justForYou}
+      description={messages.justForYouDescription}
+    >
+      <div
+        className={cn(styles.section, styles.quadrupleHeaderSectionElevenTile)}
+      >
+        {justForYouTiles}
+      </div>
+    </TabBodyHeader>,
+    <TabBodyHeader
+      key='moodPlaylists'
+      title={messages.moodPlaylists}
+      description={messages.moodPlaylistsDescription}
+    >
+      <div className={styles.section}>{lifestyleTiles}</div>
+    </TabBodyHeader>,
+    <TabBodyHeader key='featuredPlaylists' title={messages.featuredPlaylists}>
+      {isLoadingPlaylists ? (
+        <LoadingSpinner className={styles.spinner} />
+      ) : (
+        <CardLineup
+          containerClassName={styles.lineupContainer}
+          cards={
+            !isLoadingPlaylists
+              ? playlists.map((playlist: UserCollection) => (
+                  <CollectionCard
+                    key={playlist.playlist_id}
+                    id={playlist.playlist_id}
+                    size='xs'
+                  />
+                ))
+              : []
+          }
         />
-      )
-    })
-    profileCards = profiles.map((profile: User) => {
-      return <UserCard key={profile.user_id} id={profile.user_id} size='xs' />
-    })
-  }
+      )}
+    </TabBodyHeader>,
 
-  const memoizedElements = useMemo(() => {
-    return [
-      <TabBodyHeader
-        key='justForYou'
-        title={messages.justForYou}
-        description={messages.justForYouDescription}
-      >
-        <div
-          className={cn(
-            styles.section,
-            styles.quadrupleHeaderSectionElevenTile
-          )}
-        >
-          {justForYouTiles}
-        </div>
-      </TabBodyHeader>,
-      <TabBodyHeader
-        key='moodPlaylists'
-        title={messages.moodPlaylists}
-        description={messages.moodPlaylistsDescription}
-      >
-        <div className={styles.section}>{lifestyleTiles}</div>
-      </TabBodyHeader>,
-      <TabBodyHeader key='featuredPlaylists' title={messages.featuredPlaylists}>
-        {status === Status.LOADING ? (
-          <LoadingSpinner className={styles.spinner} />
-        ) : (
-          <CardLineup
-            containerClassName={styles.lineupContainer}
-            cards={playlistCards}
-          />
-        )}
-      </TabBodyHeader>,
-      <TabBodyHeader key='featuredArtists' title={messages.featuredArtists}>
-        {status === Status.LOADING ? (
-          <LoadingSpinner className={styles.spinner} />
-        ) : (
-          <CardLineup
-            containerClassName={styles.lineupContainer}
-            cards={profileCards}
-          />
-        )}
-      </TabBodyHeader>
-    ]
-  }, [playlistCards, profileCards, justForYouTiles, lifestyleTiles, status])
+    <TabBodyHeader key='featuredArtists' title={messages.featuredArtists}>
+      {isLoadingProfiles ? (
+        <LoadingSpinner className={styles.spinner} />
+      ) : (
+        <CardLineup
+          containerClassName={styles.lineupContainer}
+          cards={
+            !isLoadingProfiles
+              ? profiles.map((profile: User) => (
+                  <UserCard
+                    key={profile.user_id}
+                    id={profile.user_id}
+                    size='xs'
+                  />
+                ))
+              : []
+          }
+        />
+      )}
+    </TabBodyHeader>
+  ]
 
-  const initialTab = useSelector(getTab)
-  const dispatch = useDispatch()
-  const didSwitchTabs = useCallback(
-    (_: string, to: string) => {
-      dispatch(setTab({ tab: to as ExploreTabs }))
-    },
-    [dispatch]
-  )
+  const didSwitchTabs = useCallback((_: string, to: string) => {
+    setCurrentTab(to as ExploreTabs)
+  }, [])
+
   const { tabs, body } = useTabs({
     tabs: tabHeaders,
-    elements: memoizedElements,
-    initialTab,
+    elements,
+    initialTab: currentTab,
     didChangeTabsFrom: didSwitchTabs
   })
 

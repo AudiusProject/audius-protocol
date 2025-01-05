@@ -1,4 +1,4 @@
-import ExploreScreen from 'app/screens/explore-screen'
+import { ExploreScreen } from 'app/screens/explore-screen'
 import {
   CHILL_PLAYLISTS,
   INTENSE_PLAYLISTS,

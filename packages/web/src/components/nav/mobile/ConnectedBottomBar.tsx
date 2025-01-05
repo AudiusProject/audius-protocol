@@ -1,10 +1,6 @@
 import { useCallback, useState } from 'react'
 
-import {
-  accountSelectors,
-  explorePageActions,
-  ExplorePageTabs
-} from '@audius/common/store'
+import { accountSelectors } from '@audius/common/store'
 import { route } from '@audius/common/utils'
 import { connect } from 'react-redux'
 import { withRouter, RouteComponentProps } from 'react-router-dom'
@@ -21,7 +17,6 @@ import { getPathname } from 'utils/route'
 import { isDarkMode, isMatrix } from 'utils/theme/theme'
 const { FEED_PAGE, TRENDING_PAGE, EXPLORE_PAGE, profilePage, LIBRARY_PAGE } =
   route
-const { setTab } = explorePageActions
 const { getUserHandle } = accountSelectors
 
 type ConnectedBottomBarProps = ReturnType<typeof mapStateToProps> &
@@ -32,8 +27,7 @@ const ConnectedBottomBar = ({
   goToRoute,
   handle,
   history,
-  openSignOn,
-  resetExploreTab
+  openSignOn
 }: ConnectedBottomBarProps) => {
   const userProfilePage = handle ? profilePage(handle) : null
   const navRoutes = new Set([
@@ -56,41 +50,36 @@ const ConnectedBottomBar = ({
   }
 
   const goToFeed = useCallback(() => {
-    resetExploreTab()
     if (!handle) {
       openSignOn()
     } else {
       goToRoute(FEED_PAGE)
     }
-  }, [goToRoute, handle, openSignOn, resetExploreTab])
+  }, [goToRoute, handle, openSignOn])
 
   const goToTrending = useCallback(() => {
-    resetExploreTab()
     goToRoute(TRENDING_PAGE)
-  }, [goToRoute, resetExploreTab])
+  }, [goToRoute])
 
   const goToExplore = useCallback(() => {
-    resetExploreTab()
     goToRoute(EXPLORE_PAGE)
-  }, [goToRoute, resetExploreTab])
+  }, [goToRoute])
 
   const goToLibrary = useCallback(() => {
-    resetExploreTab()
     if (!handle) {
       openSignOn()
     } else {
       goToRoute(LIBRARY_PAGE)
     }
-  }, [goToRoute, handle, openSignOn, resetExploreTab])
+  }, [goToRoute, handle, openSignOn])
 
   const goToProfile = useCallback(() => {
-    resetExploreTab()
     if (!handle) {
       openSignOn()
     } else {
       goToRoute(profilePage(handle))
     }
-  }, [goToRoute, handle, openSignOn, resetExploreTab])
+  }, [goToRoute, handle, openSignOn])
 
   return (
     <BottomBar
@@ -119,9 +108,6 @@ function mapDispatchToProps(dispatch: Dispatch) {
     openSignOn: () => {
       dispatch(openSignOn(false))
       dispatch(showRequiresAccountToast())
-    },
-    resetExploreTab: () => {
-      dispatch(setTab({ tab: ExplorePageTabs.FOR_YOU }))
     }
   }
 }

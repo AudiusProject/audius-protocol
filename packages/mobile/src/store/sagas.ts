@@ -32,7 +32,6 @@ import rewardsPageSagas from 'common/store/pages/audio-rewards/sagas'
 import collectionPageSagas from 'common/store/pages/collection/sagas'
 import deactivateAccountSagas from 'common/store/pages/deactivate-account/sagas'
 import exploreCollectionsPageSagas from 'common/store/pages/explore/exploreCollections/sagas'
-import explorePageSagas from 'common/store/pages/explore/sagas'
 import feedPageSagas from 'common/store/pages/feed/sagas'
 import historySagas from 'common/store/pages/history/sagas'
 import premiumTracksSagas from 'common/store/pages/premium-tracks/sagas'
@@ -146,7 +145,6 @@ export default function* rootSaga() {
     ...collectionPageSagas(),
     ...feedPageSagas(),
     ...exploreCollectionsPageSagas(),
-    ...explorePageSagas(),
     ...trendingPageSagas(),
     ...trendingPlaylistSagas(),
     ...trendingUndergroundSagas(),

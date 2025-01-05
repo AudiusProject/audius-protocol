@@ -1,8 +1,8 @@
 import { useCallback } from 'react'
 
+import { useFeaturedPlaylists, useFeaturedProfiles } from '@audius/common/api'
 import {
   Variant as CollectionVariant,
-  Status,
   UserCollection,
   User,
   Variant
@@ -10,6 +10,7 @@ import {
 import { ExploreCollectionsVariant } from '@audius/common/store'
 import { route } from '@audius/common/utils'
 import Lottie from 'lottie-react'
+import { useNavigate } from 'react-router-dom-v5-compat'
 
 import loadingSpinner from 'assets/animations/loadingSpinner.json'
 import {
@@ -88,21 +89,9 @@ export type ExplorePageProps = {
   title: string
   pageTitle: string
   description: string
-  playlists: UserCollection[]
-  profiles: User[]
-  status: Status
-  goToRoute: (route: string) => void
 }
 
-const ExplorePage = ({
-  title,
-  pageTitle,
-  description,
-  playlists,
-  profiles,
-  status,
-  goToRoute
-}: ExplorePageProps) => {
+const ExplorePage = ({ title, pageTitle, description }: ExplorePageProps) => {
   const isUSDCPurchasesEnabled = useIsUSDCEnabled()
   const justForYouTiles = justForYou.filter((tile) => {
     const isPremiumTracksTile =
@@ -110,24 +99,31 @@ const ExplorePage = ({
       tile.title === PREMIUM_TRACKS.title
     return !isPremiumTracksTile || isUSDCPurchasesEnabled
   })
-  const { isLoading: isLoadingPlaylist, setDidLoad: setDidLoadPlaylist } =
-    useOrderedLoad(playlists.length)
-  const { isLoading: isLoadingProfiles, setDidLoad: setDidLoadProfile } =
-    useOrderedLoad(profiles.length)
+
+  const { data: playlists, isLoading: isLoadingPlaylists } =
+    useFeaturedPlaylists()
+  const { data: profiles, isLoading: isLoadingProfiles } = useFeaturedProfiles()
+
+  const { isLoading: isLoadingPlaylistCards, setDidLoad: setDidLoadPlaylist } =
+    useOrderedLoad(playlists?.length ?? 0)
+  const { isLoading: isLoadingProfileCards, setDidLoad: setDidLoadProfile } =
+    useOrderedLoad(profiles?.length ?? 0)
+
+  const navigate = useNavigate()
 
   const header = <Header primary={title} containerStyles={styles.header} />
   const onClickCard = useCallback(
     (url: string) => {
       if (url.startsWith(BASE_URL)) {
-        goToRoute(stripBaseUrl(url))
+        navigate(stripBaseUrl(url))
       } else if (url.startsWith('http')) {
         const win = window.open(url, '_blank')
         if (win) win.focus()
       } else {
-        goToRoute(url)
+        navigate(url)
       }
     },
-    [goToRoute]
+    [navigate]
   )
 
   return (
@@ -150,7 +146,9 @@ const ExplorePage = ({
             i.variant === CollectionVariant.SMART ? i.description : i.subtitle
           const Icon =
             i.variant === Variant.SMART
-              ? smartCollectionIcons[i.playlist_name]
+              ? smartCollectionIcons[
+                  i.playlist_name as keyof typeof smartCollectionIcons
+                ]
               : i.icon
           return (
             <PerspectiveCard
@@ -184,7 +182,7 @@ const ExplorePage = ({
             key={i.title}
             backgroundGradient={i.gradient}
             shadowColor={i.shadow}
-            onClick={() => goToRoute(i.link)}
+            onClick={() => navigate(i.link)}
           >
             <EmojiInterior title={i.title} emoji={i.emoji} />
           </PerspectiveCard>
@@ -196,18 +194,18 @@ const ExplorePage = ({
         expandable
         expandText={messages.exploreMorePlaylists}
       >
-        {status === Status.LOADING ? (
+        {isLoadingPlaylists ? (
           <div className={styles.loadingSpinner}>
             <Lottie loop autoplay animationData={loadingSpinner} />
           </div>
         ) : (
-          playlists.map((playlist: UserCollection, i: number) => {
+          playlists?.map((playlist: UserCollection, i: number) => {
             return (
               <CollectionArtCard
                 key={playlist.playlist_id}
                 id={playlist.playlist_id}
                 index={i}
-                isLoading={isLoadingPlaylist(i)}
+                isLoading={isLoadingPlaylistCards(i)}
                 setDidLoad={setDidLoadPlaylist}
               />
             )
@@ -220,18 +218,18 @@ const ExplorePage = ({
         expandable
         expandText={messages.exploreMoreProfiles}
       >
-        {status === Status.LOADING ? (
+        {isLoadingProfiles ? (
           <div className={styles.loadingSpinner}>
             <Lottie loop autoplay animationData={loadingSpinner} />
           </div>
         ) : (
-          profiles.map((profile: User, i: number) => {
+          profiles?.map((profile: User, i: number) => {
             return (
               <UserArtCard
                 key={profile.user_id}
                 id={profile.user_id}
                 index={i}
-                isLoading={isLoadingProfiles(i)}
+                isLoading={isLoadingProfileCards(i)}
                 setDidLoad={setDidLoadProfile}
               />
             )

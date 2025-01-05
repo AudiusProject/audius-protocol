@@ -1,38 +1,19 @@
-import { useEffect } from 'react'
-
-import { useProxySelector } from '@audius/common/hooks'
-import { Status } from '@audius/common/models'
-import { explorePageSelectors, explorePageActions } from '@audius/common/store'
-import { useSelector, useDispatch } from 'react-redux'
+import { useFeaturedPlaylists } from '@audius/common/api'
 
 import { CollectionList } from 'app/components/collection-list'
 
 import { TabInfo } from '../components/TabInfo'
-const { getExplorePlaylists, getExploreStatus, getPlaylistsStatus } =
-  explorePageSelectors
-const { fetchPlaylists } = explorePageActions
 
 const messages = {
   infoHeader: 'Featured Playlists'
 }
 
-export const PlaylistsTab = () => {
-  const playlists = useProxySelector(getExplorePlaylists, [])
-  const exploreStatus = useSelector(getExploreStatus)
-  const playlistsStatus = useSelector(getPlaylistsStatus)
-  const dispatch = useDispatch()
-
-  useEffect(() => {
-    if (exploreStatus === Status.SUCCESS) {
-      dispatch(fetchPlaylists())
-    }
-  }, [exploreStatus, dispatch])
+export const FeaturedPlaylistsTab = () => {
+  const { data: playlists = [], isLoading } = useFeaturedPlaylists()
 
   return (
     <CollectionList
-      isLoading={
-        exploreStatus === Status.LOADING || playlistsStatus !== Status.SUCCESS
-      }
+      isLoading={isLoading}
       ListHeaderComponent={<TabInfo header={messages.infoHeader} />}
       collection={playlists}
     />
