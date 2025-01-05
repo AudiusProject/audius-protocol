@@ -1,7 +1,7 @@
-import { useCallback, useEffect } from 'react'
+import { useCallback } from 'react'
 
+import { useUser } from '@audius/common/api'
 import { ID, User } from '@audius/common/models'
-import { cacheUsersActions, cacheUsersSelectors } from '@audius/common/store'
 import { route } from '@audius/common/utils'
 import {
   IconArrowRight as IconArrow,
@@ -11,7 +11,6 @@ import {
 import cn from 'classnames'
 import { useDispatch } from 'react-redux'
 
-import { useSelector } from 'common/hooks/useSelector'
 import { ArtistPopover } from 'components/artist/ArtistPopover'
 import UserBadges from 'components/user-badges/UserBadges'
 import { emptyStringGuard } from 'pages/track-page/utils'
@@ -20,8 +19,6 @@ import { profilePageAiAttributedTracks } from 'utils/route'
 
 import styles from './AiTrackSection.module.css'
 const { profilePage } = route
-const { getUser } = cacheUsersSelectors
-const { fetchUsers } = cacheUsersActions
 
 const messages = {
   title: 'Generated With AI',
@@ -41,13 +38,7 @@ export const AiTrackSection = ({
   descriptionClassName
 }: AiTrackSectionProps) => {
   const dispatch = useDispatch()
-  const user = useSelector((state) => getUser(state, { id: attributedUserId }))
-
-  useEffect(() => {
-    if (!user) {
-      dispatch(fetchUsers({ userIds: [attributedUserId] }))
-    }
-  }, [dispatch, user, attributedUserId])
+  const { data: user } = useUser(attributedUserId)
 
   const renderArtist = useCallback(
     (entity: User) => (
