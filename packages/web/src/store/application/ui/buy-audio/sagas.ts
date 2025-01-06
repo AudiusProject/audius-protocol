@@ -759,12 +759,26 @@ function* swapStep({
   )
 
   const sdk = yield* getSDK()
-  const txId = yield* call(JupiterSingleton.executeExchange, {
-    instructions: swapInstructions,
-    feePayer: rootAccount.publicKey,
-    sdk,
-    lookupTableAddresses
-  })
+
+  const transaction = yield* call(
+    [sdk.services.solanaClient, sdk.services.solanaClient.buildTransaction],
+    {
+      instructions: swapInstructions,
+      feePayer: rootAccount.publicKey,
+      addressLookupTables: lookupTableAddresses.map(
+        (address) => new PublicKey(address)
+      ),
+      priorityFee: null // already has compute budget instructions from Jupiter
+    }
+  )
+  transaction.sign([rootAccount])
+  const txId = yield* call(
+    [sdk.services.solanaClient, sdk.services.solanaClient.sendTransaction],
+    transaction,
+    {
+      skipPreflight: true
+    }
+  )
 
   // Write transaction details to local storage
   const [audiusLocalStorage, localStorageState] =
@@ -832,6 +846,7 @@ function* transferStep({
         instructions: transferTransaction.instructions
       }
     )
+    transaction.sign([rootAccount])
     signature = yield* call(
       [sdk.services.solanaClient, sdk.services.solanaClient.sendTransaction],
       transaction,

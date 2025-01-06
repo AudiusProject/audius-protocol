@@ -27,15 +27,48 @@ export const PrioritySchema = z.enum([
   'UNSAFE_MAX'
 ])
 
+// Note: Don't just use a custom object w/ `instanceof TransactionInstruction`
+// as mismatching versions of @solana/web3.js would fail the instanceof check.
+const TransactionInstructionSchema = z
+  .object({
+    data: z.custom<Buffer>(),
+    keys: z.array(
+      z.object({
+        pubkey: PublicKeySchema,
+        isSigner: z.boolean(),
+        isWritable: z.boolean()
+      })
+    ),
+    programId: PublicKeySchema
+  })
+  .transform<TransactionInstruction>((arg) =>
+    arg instanceof TransactionInstruction
+      ? arg
+      : new TransactionInstruction(arg)
+  )
+
+// Note: Don't just use a custom object w/ `instanceof AddressLookupTableAccount`
+// as mismatching versions of @solana/web3.js would fail the instanceof check.
+const AddressLookupTableAccountSchema = z
+  .object({
+    key: PublicKeySchema,
+    state: z.object({
+      addresses: z.array(PublicKeySchema),
+      authority: z.optional(PublicKeySchema),
+      deactivationSlot: z.bigint(),
+      lastExtendedSlot: z.number(),
+      lastExtendedSlotStartIndex: z.number()
+    })
+  })
+  .transform<AddressLookupTableAccount>((arg) =>
+    arg instanceof AddressLookupTableAccount
+      ? arg
+      : new AddressLookupTableAccount(arg)
+  )
+
 export const BuildTransactionSchema = z
   .object({
-    instructions: z
-      .array(
-        z.custom<TransactionInstruction>(
-          (instr) => instr instanceof TransactionInstruction
-        )
-      )
-      .min(1),
+    instructions: z.array(TransactionInstructionSchema).min(1),
     recentBlockhash: z.string().optional(),
     feePayer: PublicKeySchema.optional(),
     /**
@@ -44,13 +77,7 @@ export const BuildTransactionSchema = z
     addressLookupTables: z
       .union([
         z.array(PublicKeySchema).default([]),
-        z
-          .array(
-            z.custom<AddressLookupTableAccount>(
-              (arg) => arg instanceof AddressLookupTableAccount
-            )
-          )
-          .default([])
+        z.array(AddressLookupTableAccountSchema).default([])
       ])
       .optional(),
     /**
@@ -76,7 +103,12 @@ export const BuildTransactionSchema = z
            * The minimum microLamports to use as the priority fee per compute
            * unit, regardless of the percentiles.
            */
-          minimumMicroLamports: z.number().min(0).optional()
+          minimumMicroLamports: z.number().min(0).optional(),
+          /**
+           * The maximum microLamports to use as the priority fee per compute
+           * unit, regardless of the percentiles.
+           */
+          maximumMicroLamports: z.number().min(0).optional()
         }),
         z.object({
           /**
@@ -88,7 +120,12 @@ export const BuildTransactionSchema = z
            * The minimum microLamports to use as the priority fee per compute
            * unit, regardless of the percentiles.
            */
-          minimumMicroLamports: z.number().min(0).optional()
+          minimumMicroLamports: z.number().min(0).optional(),
+          /**
+           * The maximum microLamports to use as the priority fee per compute
+           * unit, regardless of the percentiles.
+           */
+          maximumMicroLamports: z.number().min(0).optional()
         })
       ])
       .nullable()

@@ -1,6 +1,5 @@
 import { TOKEN_LISTING_MAP, JupiterTokenSymbol } from '@audius/common/store'
 import { convertBigIntToAmountObject } from '@audius/common/utils'
-import { AudiusSdk } from '@audius/sdk'
 import { createJupiterApiClient, Instruction, QuoteResponse } from '@jup-ag/api'
 import { PublicKey, TransactionInstruction } from '@solana/web3.js'
 
@@ -147,79 +146,7 @@ const getSwapInstructions = async ({
   }
 }
 
-async function _sendTransaction({
-  sdk,
-  name,
-  instructions,
-  feePayer,
-  lookupTableAddresses,
-  signatures,
-  recentBlockhash
-}: {
-  sdk: AudiusSdk
-  name: string
-  instructions: TransactionInstruction[]
-  feePayer: PublicKey
-  lookupTableAddresses: string[]
-  signatures?: { publicKey: string; signature: Buffer }[]
-  recentBlockhash?: string
-}) {
-  console.debug(`Exchange: starting ${name} transaction...`)
-  try {
-    const transaction = await sdk.services.solanaClient.buildTransaction({
-      feePayer,
-      instructions,
-      addressLookupTables: lookupTableAddresses.map((a) => new PublicKey(a))
-    })
-    signatures?.forEach(({ publicKey, signature }) => {
-      transaction.addSignature(new PublicKey(publicKey), signature)
-    })
-    const result = await sdk.services.solanaRelay.relay({
-      transaction,
-      sendOptions: {
-        skipPreflight: true
-      }
-    })
-    console.debug(`Exchange: ${name} transaction... success: ${result}`)
-
-    return result
-  } catch (e) {
-    // 1: Error code for when the swap fails due to insufficient funds in the wallet
-    // 6000: Error code for when the swap fails due to specified slippage being exceeded
-    console.debug(
-      `Exchange: ${name} instructions stringified:`,
-      JSON.stringify(instructions)
-    )
-    throw new Error(`${name} transaction failed: ${e}`)
-  }
-}
-
-const executeExchange = async ({
-  sdk,
-  instructions,
-  feePayer,
-  lookupTableAddresses = [],
-  signatures
-}: {
-  sdk: AudiusSdk
-  instructions: TransactionInstruction[]
-  feePayer: PublicKey
-  lookupTableAddresses?: string[]
-  signatures?: { publicKey: string; signature: Buffer }[]
-}) => {
-  const { signature } = await _sendTransaction({
-    sdk,
-    name: 'Swap',
-    instructions,
-    feePayer,
-    lookupTableAddresses,
-    signatures
-  })
-  return signature
-}
-
 export const JupiterSingleton = {
   getQuote,
-  getSwapInstructions,
-  executeExchange
+  getSwapInstructions
 }
