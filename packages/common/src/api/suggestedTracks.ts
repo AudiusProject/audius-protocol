@@ -14,7 +14,7 @@ import { getCollection } from '~/store/cache/collections/selectors'
 import { getTrack } from '~/store/cache/tracks/selectors'
 import { CommonState } from '~/store/index'
 
-import { useGetFavoritedTrackList } from './favorites'
+import { useFavoritedTracks } from './tan-query/useFavoritedTracks'
 import { useTracks } from './tan-query/useTracks'
 import { useGetTrending } from './trending'
 
@@ -109,11 +109,11 @@ export const useGetSuggestedPlaylistTracks = (collectionId: ID) => {
     selectCollectionTrackIds(state, collectionId)
   )
 
-  const { data: favoritedTracks, status: favoritedStatus } =
-    useGetFavoritedTrackList({ currentUserId }, { disabled: !currentUserId })
+  const { data: favoritedTracks, isPending: isFavoritedPending } =
+    useFavoritedTracks(currentUserId)
 
   useEffect(() => {
-    if (favoritedStatus === Status.SUCCESS) {
+    if (!isFavoritedPending) {
       const suggestedTrackIds = difference(
         shuffle(favoritedTracks).map((track) => track.save_item_id),
         collectionTrackIds
@@ -122,7 +122,7 @@ export const useGetSuggestedPlaylistTracks = (collectionId: ID) => {
       setSuggestedTrackIds(suggestedTrackIds)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [favoritedStatus])
+  }, [isFavoritedPending])
 
   const {
     data: trendingTracks,
@@ -137,7 +137,7 @@ export const useGetSuggestedPlaylistTracks = (collectionId: ID) => {
     },
     {
       pageSize: 10,
-      disabled: favoritedStatus !== Status.SUCCESS
+      disabled: !isFavoritedPending
     }
   )
 
