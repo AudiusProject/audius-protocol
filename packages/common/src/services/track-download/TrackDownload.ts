@@ -1,4 +1,5 @@
 import { Dispatch } from 'redux'
+
 import { AudiusBackend } from '~/services/audius-backend'
 
 export type TrackDownloadConfig = {
