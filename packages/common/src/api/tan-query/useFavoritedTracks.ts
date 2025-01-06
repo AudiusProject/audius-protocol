@@ -26,10 +26,6 @@ export const useFavoritedTracks = (userId: Nullable<ID>, config?: Config) => {
       return transformAndCleanList(data, favoriteFromSDK)
     },
     staleTime: config?.staleTime,
-    enabled:
-      config?.enabled !== false &&
-      !!audiusSdk &&
-      userId !== null &&
-      userId !== undefined
+    enabled: config?.enabled !== false && !!audiusSdk && !!userId
   })
 }
