@@ -20,7 +20,7 @@ import { replace } from 'utils/navigation'
 
 import styles from '../PayAndEarnPage.module.css'
 import { PayoutWalletCard } from '../components/PayoutWalletCard'
-import { PurchasesTab, usePurchases } from '../components/PurchasesTab'
+import { PurchasesTab, usePurchasesData } from '../components/PurchasesTab'
 import { SalesTab, useSales } from '../components/SalesTab'
 import { USDCCard } from '../components/USDCCard'
 import { WithdrawalsTab, useWithdrawals } from '../components/WithdrawalsTab'
@@ -84,7 +84,7 @@ export const PayAndEarnPage = ({ tableView }: PayAndEarnPageProps) => {
     isEmpty: isPurchasesEmpty,
     isLoading: isPurchasesLoading,
     downloadCSV: downloadPurchasesCSV
-  } = usePurchases()
+  } = usePurchasesData()
   const {
     count: withdrawalsCount,
     data: withdrawals,

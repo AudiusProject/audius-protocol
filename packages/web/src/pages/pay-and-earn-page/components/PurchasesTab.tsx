@@ -1,13 +1,7 @@
 import { useCallback, useState } from 'react'
 
-import { useGetPurchases, useGetPurchasesCount, Id } from '@audius/common/api'
-import { useAllPaginatedQuery } from '@audius/common/audius-query'
-import {
-  Status,
-  statusIsNotFinalized,
-  combineStatuses,
-  USDCPurchaseDetails
-} from '@audius/common/models'
+import { usePurchases, usePurchasesCount } from '@audius/common/api'
+import { Id, USDCPurchaseDetails } from '@audius/common/models'
 import {
   accountSelectors,
   useUSDCPurchaseDetailsModal
@@ -16,7 +10,7 @@ import { route } from '@audius/common/utils'
 import { full } from '@audius/sdk'
 import { useDispatch } from 'react-redux'
 
-import { useErrorPageOnFailedStatus } from 'hooks/useErrorPageOnFailedStatus'
+import { useErrorPage } from 'hooks/useErrorPage'
 import { useIsMobile } from 'hooks/useIsMobile'
 import { useMainContentRef } from 'pages/MainContentContext'
 import { audiusSdk } from 'services/audius-sdk'
@@ -83,7 +77,7 @@ const NoPurchases = () => {
   )
 }
 
-export const usePurchases = () => {
+export const usePurchasesData = () => {
   const userId = useSelector(getUserId)
   // Defaults: sort method = date, sort direction = desc
   const [sortMethod, setSortMethod] =
@@ -94,23 +88,18 @@ export const usePurchases = () => {
   const { onOpen: openDetailsModal } = useUSDCPurchaseDetailsModal()
 
   const {
-    status: dataStatus,
     data: purchases,
+    loadMore,
     hasMore,
-    loadMore
-  } = useAllPaginatedQuery(
-    useGetPurchases,
+    isPending: isPurchasesPending
+  } = usePurchases(
     { userId, sortMethod, sortDirection },
-    { disabled: !userId, pageSize: TRANSACTIONS_BATCH_SIZE, force: true }
-  )
-  const { status: countStatus, data: count } = useGetPurchasesCount(
-    {
-      userId
-    },
-    { disabled: !userId, force: true }
+    { pageSize: TRANSACTIONS_BATCH_SIZE }
   )
 
-  const status = combineStatuses([dataStatus, countStatus])
+  const { data: count, isPending: isCountPending } = usePurchasesCount(userId)
+
+  const isPending = isPurchasesPending || isCountPending
 
   // TODO: Should fetch users before rendering the table
 
@@ -131,7 +120,7 @@ export const usePurchases = () => {
     }
   }, [hasMore, loadMore])
 
-  useErrorPageOnFailedStatus({ status })
+  useErrorPage({ showErrorPage: isPending })
 
   const onClickRow = useCallback(
     (purchaseDetails: USDCPurchaseDetails) => {
@@ -140,10 +129,7 @@ export const usePurchases = () => {
     [openDetailsModal]
   )
 
-  const isEmpty =
-    status === Status.ERROR ||
-    (status === Status.SUCCESS && purchases.length === 0)
-  const isLoading = statusIsNotFinalized(status)
+  const isEmpty = !isPending && purchases?.length === 0
 
   const downloadCSV = useCallback(async () => {
     const sdk = await audiusSdk()
@@ -165,7 +151,7 @@ export const usePurchases = () => {
     onSort,
     onClickRow,
     isEmpty,
-    isLoading,
+    isLoading: isPending,
     downloadCSV
   }
 }
@@ -181,7 +167,7 @@ export const PurchasesTab = ({
   onSort,
   onClickRow,
   fetchMore
-}: Omit<ReturnType<typeof usePurchases>, 'downloadCSV'>) => {
+}: Omit<ReturnType<typeof usePurchasesData>, 'downloadCSV'>) => {
   const mainContentRef = useMainContentRef()
   const isMobile = useIsMobile()
 
