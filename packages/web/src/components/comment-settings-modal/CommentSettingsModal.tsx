@@ -1,6 +1,6 @@
 import { useCallback, useRef } from 'react'
 
-import { useCurrentUserId, useGetMutedUsers } from '@audius/common/api'
+import { useGetCurrentUserId, useGetMutedUsers } from '@audius/common/api'
 import { useMuteUser } from '@audius/common/context'
 import { Status } from '@audius/common/models'
 import { profilePage } from '@audius/common/src/utils/route'
@@ -36,11 +36,11 @@ const messages = {
     'You haven’t muted any users. Once you do, they will appear here.'
 }
 
-export const CommentSettingsModal = () => {
+const CommentSettingsModal = () => {
   const [isVisible, setIsVisible] = useModalState('CommentSettings')
   const handleClose = useCallback(() => setIsVisible(false), [setIsVisible])
   const scrollParentRef = useRef<HTMLElement>()
-  const { data: currentUserId } = useCurrentUserId()
+  const { data: currentUserId } = useGetCurrentUserId({})
 
   const { data: mutedUsers, status } = useGetMutedUsers(
     {
@@ -96,7 +96,7 @@ export const CommentSettingsModal = () => {
   )
 }
 
-export const MutedUser = (props: { user: any }) => {
+const MutedUser = (props: { user: any }) => {
   const [, setIsVisible] = useModalState('CommentSettings')
   const { user } = props
   const isMobile = useIsMobile()

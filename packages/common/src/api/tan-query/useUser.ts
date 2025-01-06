@@ -1,41 +1,34 @@
-import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { useDispatch, useSelector } from 'react-redux'
+import { useQuery } from '@tanstack/react-query'
+import { useDispatch } from 'react-redux'
 
 import { userMetadataListFromSDK } from '~/adapters/user'
 import { useAppContext } from '~/context/appContext'
-import { Id, ID, OptionalId } from '~/models/Identifiers'
+import { ID } from '~/models/Identifiers'
 import { Kind } from '~/models/Kind'
-import { getUserId } from '~/store/account/selectors'
 import { addEntries } from '~/store/cache/actions'
 import { EntriesByKind } from '~/store/cache/types'
+import { encodeHashId } from '~/utils/hashIds'
 
 import { QUERY_KEYS } from './queryKeys'
 
-export type Config = {
+type Config = {
   staleTime?: number
-  enabled?: boolean
 }
 
-export const useUser = (userId: ID | undefined | null, config?: Config) => {
+export const useUser = (userId: ID, config?: Config) => {
   const { audiusSdk } = useAppContext()
   const dispatch = useDispatch()
-  const queryClient = useQueryClient()
-  const currentUserId = useSelector(getUserId)
 
   return useQuery({
     queryKey: [QUERY_KEYS.user, userId],
     queryFn: async () => {
-      const { data } = await audiusSdk!.full.users.getUser({
-        id: Id.parse(userId),
-        userId: OptionalId.parse(currentUserId)
-      })
+      const encodedId = encodeHashId(userId)
+      if (!encodedId) return null
+      const { data } = await audiusSdk!.full.users.getUser({ id: encodedId })
       const user = userMetadataListFromSDK(data)[0]
 
-      // Prime both user and userByHandle caches
+      // Sync user data to Redux
       if (user) {
-        queryClient.setQueryData([QUERY_KEYS.userByHandle, user.handle], user)
-
-        // Sync user data to Redux
         const entries: EntriesByKind = {
           [Kind.USERS]: {
             [user.user_id]: user
@@ -48,6 +41,6 @@ export const useUser = (userId: ID | undefined | null, config?: Config) => {
       return user
     },
     staleTime: config?.staleTime,
-    enabled: config?.enabled !== false && !!audiusSdk && !!userId
+    enabled: !!audiusSdk && !!userId
   })
 }

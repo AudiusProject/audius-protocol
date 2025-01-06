@@ -1,6 +1,6 @@
 import { createContext } from 'react'
 
-import { useCurrentUserId, useGetTrackByPermalink } from '@audius/common/api'
+import { useGetCurrentUserId, useGetTrackByPermalink } from '@audius/common/api'
 import {
   SquareSizes,
   Status,
@@ -56,7 +56,7 @@ export const EditTrackPage = (props: EditPageProps) => {
     useReplaceTrackConfirmationModal()
   const { onOpen: openReplaceTrackProgress } = useReplaceTrackProgressModal()
 
-  const { data: currentUserId } = useCurrentUserId()
+  const { data: currentUserId } = useGetCurrentUserId({})
   const permalink = `/${handle}/${slug}`
   const { data: track, status: trackStatus } = useGetTrackByPermalink({
     permalink,

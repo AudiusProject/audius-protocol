@@ -1,6 +1,6 @@
 import { useCallback, memo, ReactNode, useEffect, useState } from 'react'
 
-import { useCurrentUserId, useGetMutedUsers } from '@audius/common/api'
+import { useGetCurrentUserId, useGetMutedUsers } from '@audius/common/api'
 import { useMuteUser } from '@audius/common/context'
 import { commentsMessages } from '@audius/common/messages'
 import {
@@ -631,7 +631,7 @@ const ProfilePage = ({
   ) as ReactNode
 
   const [muteUser] = useMuteUser()
-  const { data: currentUserId } = useCurrentUserId()
+  const { data: currentUserId } = useGetCurrentUserId({})
 
   const { data: mutedUsers } = useGetMutedUsers({
     userId: currentUserId!

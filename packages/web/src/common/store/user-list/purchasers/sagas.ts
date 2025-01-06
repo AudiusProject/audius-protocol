@@ -16,7 +16,7 @@ import { call, put, select } from 'typed-redux-saga'
 
 import { watchPurchasersError } from './errorSagas'
 
-export const MAX_PURCHASERS = 50
+const MAX_PURCHASERS = 50
 
 const { getPurchasersError } = purchasersUserListActions
 const { getId, getUserList, getContentId, getContentType } =

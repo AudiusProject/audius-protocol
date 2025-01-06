@@ -78,7 +78,7 @@ export const isValidApiKey = (key: string | string[]) => {
   return hexadecimalRegex.test(key)
 }
 
-export const getFormattedAppAddress = ({
+const getFormattedAppAddress = ({
   apiKey,
   includePrefix
 }: {
@@ -230,11 +230,11 @@ export type WriteOnceTx =
   | 'connect_dashboard_wallet'
   | 'disconnect_dashboard_wallet'
 
-export type ConnectDashboardWalletParams = {
+type ConnectDashboardWalletParams = {
   wallet: string
 }
 
-export type DisconnectDashboardWalletParams = {
+type DisconnectDashboardWalletParams = {
   wallet: string
 }
 

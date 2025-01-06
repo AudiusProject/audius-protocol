@@ -1,6 +1,6 @@
 import { useCallback, useEffect } from 'react'
 
-import { useCurrentUserId, useGetPlaylistById } from '@audius/common/api'
+import { useGetCurrentUserId, useGetPlaylistById } from '@audius/common/api'
 import {
   Name,
   PlaybackSource,
@@ -225,7 +225,7 @@ export const CollectionScreenDetailsTile = ({
 
   const isReachable = useSelector(getIsReachable)
 
-  const { data: currentUserId } = useCurrentUserId()
+  const { data: currentUserId } = useGetCurrentUserId({})
   // Since we're supporting SmartCollections, need to explicitly check that
   // collectionId is a number before fetching the playlist. -1 is a placeholder,
   // the request should not go out as the hook is disabled in that case.

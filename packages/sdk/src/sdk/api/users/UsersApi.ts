@@ -124,9 +124,14 @@ export class UsersApi extends GeneratedUsersApi {
       ...metadata,
       userId,
       ...(profilePictureResp
-        ? { profilePictureSizes: profilePictureResp?.id }
+        ? {
+            profilePicture: profilePictureResp?.id,
+            profilePictureSizes: profilePictureResp?.id
+          }
         : {}),
-      ...(coverArtResp ? { coverPhotoSizes: coverArtResp?.id } : {})
+      ...(coverArtResp
+        ? { coverPhoto: coverArtResp?.id, coverPhotoSizes: coverArtResp?.id }
+        : {})
     }
 
     const entityMetadata = snakecaseKeys(updatedMetadata)
@@ -225,7 +230,9 @@ export class UsersApi extends GeneratedUsersApi {
             profilePictureSizes: profilePictureResp?.id
           }
         : {}),
-      ...(coverArtResp ? { coverPhoto: coverArtResp?.id } : {})
+      ...(coverArtResp
+        ? { coverPhoto: coverArtResp?.id, coverPhotoSizes: coverArtResp?.id }
+        : {})
     }
 
     const cid = (await generateMetadataCidV1(updatedMetadata)).toString()

@@ -6,6 +6,8 @@ import { IntKeys } from '~/services/remote-config/types'
 import { parseHandleReservedStatusFromSocial } from '~/utils/handleReservedStatus'
 import { promiseWithTimeout } from '~/utils/promiseWithTimeout'
 
+import { userApiFetch } from './user'
+
 const DEFAULT_HANDLE_VERIFICATION_TIMEOUT_MILLIS = 5_000
 
 const signUpApi = createApi({
@@ -18,12 +20,15 @@ const signUpApi = createApi({
       options: {}
     },
     isHandleInUse: {
-      fetch: async ({ handle }: { handle: string }, { audiusSdk }) => {
-        const sdk = await audiusSdk()
-        const { data: users = [] } = await sdk.full.users.getUserByHandle({
-          handle
-        })
-        return !isEmpty(users[0])
+      fetch: async ({ handle }: { handle: string }, context) => {
+        const user = await userApiFetch.getUserByHandle(
+          {
+            handle,
+            currentUserId: null
+          },
+          context
+        )
+        return !isEmpty(user)
       },
       options: {}
     },

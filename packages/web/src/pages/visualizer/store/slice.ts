@@ -1,9 +1,5 @@
 import { createSlice } from '@reduxjs/toolkit'
 
-export type VisualizerState = {
-  isVisible: boolean
-}
-
 const initialState = { isVisible: false }
 
 const slice = createSlice({

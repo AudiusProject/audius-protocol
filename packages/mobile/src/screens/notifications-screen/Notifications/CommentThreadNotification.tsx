@@ -1,6 +1,6 @@
 import { useCallback } from 'react'
 
-import { useCurrentUserId } from '@audius/common/api'
+import { useGetCurrentUserId } from '@audius/common/api'
 import { useProxySelector } from '@audius/common/hooks'
 import { Name } from '@audius/common/models'
 import type { CommentThreadNotification as CommentThreadNotificationType } from '@audius/common/store'
@@ -55,7 +55,7 @@ export const CommentThreadNotification = (
     [notification]
   )
 
-  const { data: currentUserId } = useCurrentUserId()
+  const { data: currentUserId } = useGetCurrentUserId({})
   const isOwner = entity?.user?.user_id === currentUserId
   const isOwnerReply =
     entity?.user?.user_id === firstUser?.user_id && otherUsersCount === 0

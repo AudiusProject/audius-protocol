@@ -55,7 +55,7 @@ type ChangeEmailModalProps = {
   onClose: () => void
 }
 
-export const ResendCodeLink = () => {
+const ResendCodeLink = () => {
   const [{ value: email }] = useField('email')
 
   const [isSending, setIsSending] = useState(false)

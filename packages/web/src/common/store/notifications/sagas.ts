@@ -17,10 +17,6 @@ import { watchNotificationError } from './errorSagas'
 import { watchFetchNotifications } from './fetchNotificationsSaga'
 import { watchRefreshNotifications } from './refreshNotificationsSaga'
 
-// The initial user count to load in for each notification
-// NOTE: the rest are loading in in the user list modal
-export const USER_INITIAL_LOAD_COUNT = 9
-
 // Gets the polling interval from remoteconfig
 export const getPollingIntervalMs = (
   remoteConfigInstance: RemoteConfigInstance
@@ -41,7 +37,7 @@ function* watchMarkAllNotificationsViewed() {
   )
 }
 
-export function* markAllNotificationsViewed() {
+function* markAllNotificationsViewed() {
   const sdk = yield* getSDK()
   const userId = yield* select(accountSelectors.getUserId)
   if (!userId) return

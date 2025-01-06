@@ -2,9 +2,9 @@ import { createContext, useCallback, useEffect, useMemo, useState } from 'react'
 
 import {
   useGetUserTracksByHandle,
-  useUser,
+  useGetUserById,
   Id,
-  useCurrentUserId
+  useGetCurrentUserId
 } from '@audius/common/api'
 import { OptionalId, type ID } from '@audius/common/models'
 import { Formik } from 'formik'
@@ -37,15 +37,19 @@ export const SelectArtistsPreviewContextProvider = (props: {
   const [isPlaying, setIsPlaying] = useState(false)
   const [nowPlayingArtistId, setNowPlayingArtistId] = useState(-1)
   const [trackUrl, setTrackUrl] = useState<string | null>(null)
-  const { data: currentUserId } = useCurrentUserId()
+  const { data: currentUserId } = useGetCurrentUserId({})
 
   useEffectOnce(() => {
     TrackPlayer.setRepeatMode(RepeatMode.Track)
   })
 
-  const { data: artist } = useUser(nowPlayingArtistId, {
-    enabled: nowPlayingArtistId !== -1
-  })
+  const { data: artist } = useGetUserById(
+    {
+      id: nowPlayingArtistId,
+      currentUserId: null
+    },
+    { disabled: nowPlayingArtistId === -1 }
+  )
 
   const { data: artistTracks } = useGetUserTracksByHandle(
     {

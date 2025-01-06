@@ -21,7 +21,7 @@ interface ToastProps {
   isOpen?: boolean
 }
 
-export const Toast = (props: ToastProps) => {
+const Toast = (props: ToastProps) => {
   const {
     children,
     content: contentProp,

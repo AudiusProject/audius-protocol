@@ -14,7 +14,7 @@ import { AccountsManagingYouPageProps, AccountsManagingYouPages } from './types'
 
 const { getUserId } = accountSelectors
 
-export const messages = {
+const messages = {
   accountManagers: 'Account Managers',
   noManagers: 'You haven’t added any managers to your account.',
   inviteButton: 'Invite'

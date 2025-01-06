@@ -146,7 +146,7 @@ type EmptyTabProps = {
   message: ReactNode
 }
 
-export const EmptyTab = (props: EmptyTabProps) => {
+const EmptyTab = (props: EmptyTabProps) => {
   return <div className={styles.emptyTab}>{props.message}</div>
 }
 

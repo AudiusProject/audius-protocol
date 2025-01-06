@@ -1,4 +1,4 @@
-import { useCurrentUserId } from '@audius/common/api'
+import { useGetCurrentUserId } from '@audius/common/api'
 import { Collection } from '@audius/common/models'
 import { collectionPageSelectors, CommonState } from '@audius/common/store'
 import { Flex, IconKebabHorizontal } from '@audius/harmony'
@@ -17,7 +17,7 @@ export const CollectionsTableOverflowMenuButton = (
   props: OverflowMenuButtonProps
 ) => {
   const { collectionId } = props
-  const { data: currentUserId } = useCurrentUserId()
+  const { data: currentUserId } = useGetCurrentUserId({})
   const {
     is_album: isAlbum,
     playlist_owner_id: playlistOwnerId,

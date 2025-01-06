@@ -120,7 +120,7 @@ function* getDefautFollowUserIds() {
   return defaultFollowUserIds
 }
 
-export function* fetchSuggestedFollowUserIds() {
+function* fetchSuggestedFollowUserIds() {
   const env = yield* getContext('env')
   const res = yield* call(fetch, env.SUGGESTED_FOLLOW_HANDLES)
   const json = yield* call([res, res.json])
@@ -730,13 +730,13 @@ function* signUp() {
               yield* fork(sendPostSignInRecoveryEmail, { handle, email })
 
               yield* call(confirmTransaction, blockHash, blockNumber)
-              const { entries } = yield* call(
-                fetchUsers,
-                [userId],
-                undefined,
-                true
+              const user = yield* call(
+                userApiFetchSaga.getUserById,
+                {
+                  id: userId
+                },
+                true // force refresh to get updated user w handle
               )
-              const user = entries[userId]
               if (!user) {
                 throw new Error('Failed to index guest account creation')
               }
@@ -1144,7 +1144,7 @@ function* followCollections(
 }
 
 /* This saga makes sure that artists chosen in sign up get followed accordingly */
-export function* completeFollowArtists(
+function* completeFollowArtists(
   _action: ReturnType<typeof signOnActions.completeFollowArtists>
 ) {
   const isAccountComplete = yield* select(accountSelectors.getIsAccountComplete)
@@ -1254,7 +1254,7 @@ function* configureMetaMask() {
   }
 }
 
-export function* watchCompleteFollowArtists() {
+function* watchCompleteFollowArtists() {
   yield* takeEvery(signOnActions.COMPLETE_FOLLOW_ARTISTS, completeFollowArtists)
 }
 

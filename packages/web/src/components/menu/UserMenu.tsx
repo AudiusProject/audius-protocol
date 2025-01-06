@@ -22,7 +22,7 @@ export type OwnProps = {
   userId: ID
 }
 
-export type UserMenuProps = OwnProps & ReturnType<typeof mapDispatchToProps>
+type UserMenuProps = OwnProps & ReturnType<typeof mapDispatchToProps>
 
 const Menu = ({
   handle = '',

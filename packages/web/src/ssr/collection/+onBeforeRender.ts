@@ -9,8 +9,6 @@ import type { PageContextServer } from 'vike/types'
 
 import { getDiscoveryNode } from '../getDiscoveryNode'
 
-export type CollectionPageProps = {}
-
 export async function onBeforeRender(pageContext: PageContextServer) {
   const { handle, slug } = pageContext.routeParams
 

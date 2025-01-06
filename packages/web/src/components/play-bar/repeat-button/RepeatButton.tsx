@@ -1,30 +1,41 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 
 import cn from 'classnames'
-import PropTypes from 'prop-types'
-import Lottie from 'react-lottie'
+import Lottie, { LottieRefCurrentProps } from 'lottie-react'
 
 import styles from '../PlayBarButton.module.css'
 
-const RepeatStates = Object.freeze({
-  OFF: 0,
-  ANIMATE_OFF_ALL: 1,
-  ALL: 2,
-  ANIMATE_ALL_SINGLE: 3,
-  SINGLE: 4,
-  ANIMATE_SINGLE_OFF: 5
-})
+enum RepeatStates {
+  OFF = 0,
+  ANIMATE_OFF_ALL = 1,
+  ALL = 2,
+  ANIMATE_ALL_SINGLE = 3,
+  SINGLE = 4,
+  ANIMATE_SINGLE_OFF = 5
+}
 
 const REPEAT_STATE_LS_KEY = 'repeatState'
-const getRepeatState = (defaultState) => {
+const getRepeatState = (defaultState: RepeatStates) => {
   const localStorageRepeatState =
     window.localStorage.getItem(REPEAT_STATE_LS_KEY)
   if (localStorageRepeatState === null) {
-    window.localStorage.setItem(REPEAT_STATE_LS_KEY, defaultState)
+    window.localStorage.setItem(REPEAT_STATE_LS_KEY, defaultState.toString())
     return defaultState
   } else {
     return parseInt(localStorageRepeatState)
   }
+}
+
+type RepeatButtonProps = {
+  animations: {
+    pbIconRepeatAll: object
+    pbIconRepeatSingle: object
+    pbIconRepeatOff: object
+  }
+  repeatOff: () => void
+  repeatSingle: () => void
+  repeatAll: () => void
+  isMobile: boolean
 }
 
 const RepeatButton = ({
@@ -33,7 +44,7 @@ const RepeatButton = ({
   repeatSingle = () => {},
   repeatAll = () => {},
   isMobile = false
-}) => {
+}: RepeatButtonProps) => {
   const [state, setState] = useState({
     repeatState: getRepeatState(RepeatStates.OFF),
     isPaused: true,
@@ -41,7 +52,7 @@ const RepeatButton = ({
   })
 
   const handleChange = useCallback(
-    (repeatState) => {
+    (repeatState: RepeatStates) => {
       const { pbIconRepeatAll, pbIconRepeatSingle, pbIconRepeatOff } =
         animations
       // Go to the next state.
@@ -78,7 +89,7 @@ const RepeatButton = ({
           icon = pbIconRepeatAll
           isPaused = true
       }
-      window.localStorage.setItem(REPEAT_STATE_LS_KEY, repeatState)
+      window.localStorage.setItem(REPEAT_STATE_LS_KEY, repeatState.toString())
       setState({
         icon,
         isPaused,
@@ -102,17 +113,16 @@ const RepeatButton = ({
     handleChange(repeatState)
   }
 
-  const eventListeners = [
-    {
-      eventName: 'complete',
-      callback: () => nextState()
+  const lottieRef = useRef<LottieRefCurrentProps>(null)
+  useEffect(() => {
+    if (lottieRef.current) {
+      if (state.isPaused) {
+        lottieRef.current.pause()
+      } else {
+        lottieRef.current.play()
+      }
     }
-  ]
-  const animationOptions = {
-    loop: false,
-    autoplay: false,
-    animationData: state.icon
-  }
+  }, [lottieRef, state.isPaused])
 
   return (
     <button
@@ -123,20 +133,14 @@ const RepeatButton = ({
       onClick={nextState}
     >
       <Lottie
-        options={animationOptions}
-        eventListeners={eventListeners}
-        isPaused={state.isPaused}
+        lottieRef={lottieRef}
+        loop={false}
+        autoplay={false}
+        animationData={state.icon}
+        onComplete={nextState}
       />
     </button>
   )
-}
-
-RepeatButton.propTypes = {
-  animations: PropTypes.object,
-  repeatOff: PropTypes.func,
-  repeatSingle: PropTypes.func,
-  repeatAll: PropTypes.func,
-  isMobile: PropTypes.bool
 }
 
 export default RepeatButton

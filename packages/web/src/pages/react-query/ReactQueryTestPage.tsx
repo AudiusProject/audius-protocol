@@ -7,7 +7,7 @@ import { TestTrackUpdate } from './components/TestTrackUpdate'
 import { TestUser } from './components/TestUser'
 import { TestUserUpdate } from './components/TestUserUpdate'
 
-export const ReactQueryTestPage = () => {
+const ReactQueryTestPage = () => {
   // D809W -> 1234
   // 51Aq2 -> 1647
   // G0oJXEw -> 11845

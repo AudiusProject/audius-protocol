@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from 'react'
 
-import { useCurrentUserId } from '@audius/common/api'
+import { useGetCurrentUserId } from '@audius/common/api'
 import { ID, FollowSource } from '@audius/common/models'
 import {
   TOP_SUPPORTERS_USER_LIST_TAG,
@@ -16,8 +16,8 @@ import {
 import { route } from '@audius/common/utils'
 import { FollowButton } from '@audius/harmony'
 import cn from 'classnames'
+import Lottie from 'lottie-react'
 import InfiniteScroll from 'react-infinite-scroller'
-import Lottie from 'react-lottie'
 import { useDispatch, useSelector } from 'react-redux'
 
 import loadingSpinner from 'assets/animations/loadingSpinner.json'
@@ -72,7 +72,7 @@ export const UserList = ({
 
   const { hasMore, loading, userIds } = useSelector(stateSelector)
   const loggedIn = useSelector(getHasAccount)
-  const { data: userId } = useCurrentUserId()
+  const { data: userId } = useGetCurrentUserId({})
   const otherUserId = useSelector(
     (state: AppState) => userIdSelector?.(state) ?? undefined
   )
@@ -188,13 +188,7 @@ export const UserList = ({
             [styles.show]: loading
           })}
         >
-          <Lottie
-            options={{
-              loop: true,
-              autoplay: true,
-              animationData: loadingSpinner
-            }}
-          />
+          <Lottie loop autoplay animationData={loadingSpinner} />
         </div>
       </InfiniteScroll>
     </div>

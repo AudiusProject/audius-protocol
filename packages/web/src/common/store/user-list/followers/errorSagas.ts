@@ -6,7 +6,7 @@ const { GET_FOLLOWERS_ERROR, getFollowersError } = followersUserListActions
 
 type ErrorActions = ReturnType<typeof getFollowersError>
 
-export function* handleFollowersError(action: ErrorActions) {
+function* handleFollowersError(action: ErrorActions) {
   yield put(
     errorActions.handleError({
       message: action.type,

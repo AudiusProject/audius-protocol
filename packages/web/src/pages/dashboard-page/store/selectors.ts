@@ -8,9 +8,9 @@ const getAccountUser = accountSelectors.getAccountUser
 export const getDashboardTracksStatus = (state: AppState) =>
   state.dashboard.tracksStatus
 export const getDashboardStatus = (state: AppState) => state.dashboard.status
-export const getDashboardTracks = (state: AppState) => state.dashboard.tracks
 export const getDashboardListenData = (state: AppState) =>
   state.dashboard.listenData
+const getDashboardTracks = (state: AppState) => state.dashboard.tracks
 
 export const makeGetDashboard = () => {
   return createSelector(
