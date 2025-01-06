@@ -155,17 +155,9 @@ const useEditTrackSchema = () => {
               stream_conditions: streamConditions,
               preview_start_seconds: previewStartSeconds
             } = values
+
             // We only care about preview if track is usdc gated
-            if (
-              previewStartSeconds === null &&
-              !isContentUSDCPurchaseGated(streamConditions)
-            )
-              return true
-            if (
-              previewStartSeconds !== null &&
-              !isContentUSDCPurchaseGated(streamConditions)
-            )
-              return false
+            if (!isContentUSDCPurchaseGated(streamConditions)) return true
 
             // If preview is falsy and track is usdc gated (because we got to this line),
             // validation passes because we will simply set it to 0
