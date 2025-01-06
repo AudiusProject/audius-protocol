@@ -15,6 +15,7 @@ import { ToastContextProvider } from 'components/toast/ToastContext'
 import { useIsMobile } from 'hooks/useIsMobile'
 import { queryClient } from 'services/query-client'
 import { configureStore } from 'store/configureStore'
+import { getSystemAppearance, getTheme } from 'utils/theme/theme'
 
 import { AppContextProvider } from './AppContextProvider'
 import { AudiusQueryProvider } from './AudiusQueryProvider'
@@ -29,7 +30,21 @@ type AppProvidersProps = {
 export const AppProviders = ({ children }: AppProvidersProps) => {
   const { history } = useHistoryContext()
   const isMobile = useIsMobile()
-  const { store, history: storeHistory } = configureStore(history, isMobile)
+
+  const initialStoreState = {
+    ui: {
+      theme: {
+        theme: getTheme(),
+        systemAppearance: getSystemAppearance()
+      }
+    }
+  }
+
+  const { store, history: storeHistory } = configureStore(
+    history,
+    isMobile,
+    initialStoreState
+  )
 
   return (
     <QueryClientProvider client={queryClient}>
