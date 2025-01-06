@@ -22,7 +22,7 @@ type GetFollowersArgs = {
  */
 export const useFollowers = (
   { userId, limit = 10, offset = 0 }: GetFollowersArgs,
-  options: QueryOptions
+  options?: QueryOptions
 ) => {
   const { audiusSdk } = useAppContext()
   const { data: currentUserId } = useCurrentUserId()
