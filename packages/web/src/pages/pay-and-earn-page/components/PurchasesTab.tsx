@@ -91,13 +91,18 @@ export const usePurchasesData = () => {
     data: purchases,
     loadMore,
     hasMore,
-    isPending: isPurchasesPending
+    isPending: isPurchasesPending,
+    isError: isPurchasesError
   } = usePurchases(
     { userId, sortMethod, sortDirection },
     { pageSize: TRANSACTIONS_BATCH_SIZE }
   )
 
-  const { data: count, isPending: isCountPending } = usePurchasesCount(userId)
+  const {
+    data: count,
+    isPending: isCountPending,
+    isError: isCountError
+  } = usePurchasesCount(userId)
 
   const isPending = isPurchasesPending || isCountPending
 
@@ -120,7 +125,7 @@ export const usePurchasesData = () => {
     }
   }, [hasMore, loadMore])
 
-  useErrorPage({ showErrorPage: isPending })
+  useErrorPage({ showErrorPage: isPurchasesError || isCountError })
 
   const onClickRow = useCallback(
     (purchaseDetails: USDCPurchaseDetails) => {
