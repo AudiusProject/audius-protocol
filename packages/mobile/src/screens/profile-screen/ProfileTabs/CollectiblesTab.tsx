@@ -149,6 +149,8 @@ export const CollectiblesTab = () => {
     return visible
   }, [collectibleList, profileCollectibles?.order, solanaCollectibleList])
 
+  if (!user_id) return null
+
   return (
     <FlatList
       ref={ref}
