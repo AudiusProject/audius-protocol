@@ -79,7 +79,7 @@ export const ChatMessageTrack = ({
       index={0}
       togglePlay={togglePlay}
       uid={uid}
-      isLoading={isPending || isPending === undefined}
+      isLoading={isPending}
       hasLoaded={() => {}}
       isTrending={false}
       isActive={isTrackPlaying}
