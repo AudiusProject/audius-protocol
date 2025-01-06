@@ -1,6 +1,4 @@
-import { useFeatureFlag } from '@audius/common/hooks'
 import { Name, FeedFilter } from '@audius/common/models'
-import { FeatureFlags } from '@audius/common/services'
 import { feedPageLineupActions as feedActions } from '@audius/common/store'
 
 import { make, useRecord } from 'common/store/analytics/actions'
@@ -36,10 +34,6 @@ const FeedPageContent = ({
   setFeedFilter,
   resetFeedLineup
 }: FeedPageContentProps) => {
-  const { isEnabled: isUSDCEnabled } = useFeatureFlag(
-    FeatureFlags.USDC_PURCHASES
-  )
-
   const mainLineupProps = {
     variant: LineupVariant.MAIN
   }
@@ -93,7 +87,6 @@ const FeedPageContent = ({
       <Lineup
         emptyElement={<EmptyFeed />}
         endOfLineup={<EndOfLineup />}
-        showFeedTipTile={!isUSDCEnabled}
         {...feedLineupProps}
         {...mainLineupProps}
       />

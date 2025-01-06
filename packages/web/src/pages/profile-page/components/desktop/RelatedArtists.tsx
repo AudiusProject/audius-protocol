@@ -1,14 +1,12 @@
 import { useCallback } from 'react'
 
-import { useCurrentUserId, useGetRelatedArtists } from '@audius/common/api'
+import { useRelatedArtists } from '@audius/common/api'
 import { User } from '@audius/common/models'
 import { profilePageSelectors } from '@audius/common/store'
 import { MAX_PROFILE_RELATED_ARTISTS } from '@audius/common/utils'
 import { IconUserGroup } from '@audius/harmony'
 import { useDispatch, useSelector } from 'react-redux'
 
-import { ProfilePageNavSectionTitle } from 'components/profile-page-nav-section-title/ProfilePageNavSectionTitle'
-import { ProfilePictureListTile } from 'components/profile-picture-list-tile/ProfilePictureListTile'
 import {
   setUsers,
   setVisibility
@@ -18,6 +16,8 @@ import {
   UserListType
 } from 'store/application/ui/userListModal/types'
 
+import { ProfilePageNavSectionTitle } from './ProfilePageNavSectionTitle'
+import { ProfilePictureListTile } from './ProfilePictureListTile'
 import styles from './RelatedArtists.module.css'
 const { getProfileUser } = profilePageSelectors
 
@@ -28,14 +28,12 @@ const messages = {
 export const RelatedArtists = () => {
   const dispatch = useDispatch()
   const profile = useSelector(getProfileUser)
-  const { data: currentUserId } = useCurrentUserId()
 
   const artistId = profile?.user_id
 
-  const { data: relatedArtists } = useGetRelatedArtists(
-    { artistId: artistId!, currentUserId },
-    { disabled: !artistId }
-  )
+  const { data: relatedArtists } = useRelatedArtists(artistId, {
+    limit: MAX_PROFILE_RELATED_ARTISTS
+  })
 
   const handleClick = useCallback(() => {
     if (profile) {

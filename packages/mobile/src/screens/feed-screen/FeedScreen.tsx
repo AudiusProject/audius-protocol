@@ -1,8 +1,6 @@
 import { useCallback } from 'react'
 
-import { useFeatureFlag } from '@audius/common/hooks'
 import { Name } from '@audius/common/models'
-import { FeatureFlags } from '@audius/common/services'
 import {
   lineupSelectors,
   feedPageLineupActions as feedActions,
@@ -12,14 +10,12 @@ import { useDispatch } from 'react-redux'
 
 import { IconFeed } from '@audius/harmony-native'
 import { Screen, ScreenContent, ScreenHeader } from 'app/components/core'
-import { FeedTipTile } from 'app/components/feed-tip-tile'
 import { Lineup } from 'app/components/lineup'
 import { EndOfLineupNotice } from 'app/components/lineup/EndOfLineupNotice'
 import { OnlineOnly } from 'app/components/offline-placeholder/OnlineOnly'
 import { useAppTabScreen } from 'app/hooks/useAppTabScreen'
 import { make, track } from 'app/services/analytics'
 
-import { EmptyFeedSuggestedFollows } from './EmptyFeedSuggestedFollows'
 import { FeedFilterButton } from './FeedFilterButton'
 const { getDiscoverFeedLineup } = feedPageSelectors
 const { makeGetLineupMetadatas } = lineupSelectors
@@ -33,9 +29,6 @@ const messages = {
 
 export const FeedScreen = () => {
   useAppTabScreen()
-  const { isEnabled: isUsdcEnabled } = useFeatureFlag(
-    FeatureFlags.USDC_PURCHASES
-  )
 
   const dispatch = useDispatch()
 
@@ -59,12 +52,10 @@ export const FeedScreen = () => {
           pullToRefresh
           delineate
           selfLoad
-          header={isUsdcEnabled ? null : <FeedTipTile />}
           hideHeaderOnEmpty
           ListFooterComponent={
             <EndOfLineupNotice description={messages.endOfFeed} />
           }
-          LineupEmptyComponent={<EmptyFeedSuggestedFollows />}
           actions={feedActions}
           lineupSelector={getFeedLineup}
           loadMore={loadMore}

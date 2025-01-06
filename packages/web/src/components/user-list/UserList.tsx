@@ -10,7 +10,6 @@ import {
   profilePageActions,
   usersSocialActions as socialActions,
   userListActions,
-  userListSelectors,
   UserListStoreState
 } from '@audius/common/store'
 import { route } from '@audius/common/utils'
@@ -31,7 +30,6 @@ import { push } from 'utils/navigation'
 import styles from './UserList.module.css'
 
 const { profilePage } = route
-const { makeGetOptimisticUserIdsIfNeeded } = userListSelectors
 const { loadMore, reset } = userListActions
 const { getUsers } = cacheUsersSelectors
 const { setNotificationSubscription } = profilePageActions
@@ -76,15 +74,10 @@ export const UserList = ({
   const otherUserId = useSelector(
     (state: AppState) => userIdSelector?.(state) ?? undefined
   )
-  const getOptimisticUserIds = makeGetOptimisticUserIdsIfNeeded({
-    userIds,
-    tag
-  })
-  const optimisticUserIds = useSelector(getOptimisticUserIds)
   const usersMap = useSelector((state: AppState) =>
-    getUsers(state, { ids: optimisticUserIds })
+    getUsers(state, { ids: userIds })
   )
-  const users = optimisticUserIds
+  const users = userIds
     .map((id) => usersMap[id])
     .filter(Boolean)
     .filter((u) => !u.is_deactivated)

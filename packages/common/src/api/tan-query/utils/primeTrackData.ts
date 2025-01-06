@@ -46,7 +46,7 @@ export const primeTrackDataInternal = ({
   if ('user' in track) {
     const user = (track as { user: User }).user
     const userEntries = primeUserDataInternal({
-      user,
+      users: [user],
       queryClient
     })
 

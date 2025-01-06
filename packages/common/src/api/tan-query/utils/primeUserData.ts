@@ -1,5 +1,6 @@
 import { QueryClient } from '@tanstack/react-query'
 import { AnyAction, Dispatch } from 'redux'
+import { SetRequired } from 'type-fest'
 
 import { Kind } from '~/models'
 import { User } from '~/models/User'
@@ -9,37 +10,39 @@ import { EntriesByKind } from '~/store/cache/types'
 import { QUERY_KEYS } from '../queryKeys'
 
 export const primeUserData = ({
-  user,
+  users,
   queryClient,
   dispatch
 }: {
-  user: User
+  users: User[]
   queryClient: QueryClient
   dispatch: Dispatch<AnyAction>
 }) => {
-  const entries = primeUserDataInternal({ user, queryClient })
-
+  const entries = primeUserDataInternal({ users, queryClient })
   dispatch(addEntries(entries, undefined, undefined, 'react-query'))
 }
 
 export const primeUserDataInternal = ({
-  user,
+  users,
   queryClient
 }: {
-  user: User
+  users: User[]
   queryClient: QueryClient
 }): EntriesByKind => {
-  // Prime user by ID
-  queryClient.setQueryData([QUERY_KEYS.user, user.user_id], user)
-  // Prime user by handle
-  if (user.handle) {
-    queryClient.setQueryData([QUERY_KEYS.userByHandle, user.handle], user)
+  const entries: SetRequired<EntriesByKind, Kind.USERS> = {
+    [Kind.USERS]: {}
   }
 
-  // Return entries for Redux
-  return {
-    [Kind.USERS]: {
-      [user.user_id]: user
+  users.forEach((user) => {
+    // Prime user by ID
+    queryClient.setQueryData([QUERY_KEYS.user, user.user_id], user)
+    // Prime user by handle
+    if (user.handle) {
+      queryClient.setQueryData([QUERY_KEYS.userByHandle, user.handle], user)
     }
-  }
+
+    entries[Kind.USERS][user.user_id] = user
+  })
+
+  return entries
 }

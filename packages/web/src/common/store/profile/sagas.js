@@ -3,7 +3,6 @@ import {
   userWalletsFromSDK
 } from '@audius/common/adapters'
 import { Kind, Id, OptionalId } from '@audius/common/models'
-import { DoubleKeys } from '@audius/common/services'
 import {
   accountSelectors,
   cacheActions,
@@ -13,8 +12,6 @@ import {
   FollowType,
   chatActions,
   reachabilitySelectors,
-  tippingActions,
-  relatedArtistsUIActions as relatedArtistsActions,
   collectiblesActions,
   confirmerActions,
   confirmTransaction,
@@ -27,9 +24,6 @@ import {
   makeKindId,
   waitForAccount,
   dataURLtoFile,
-  MAX_PROFILE_TOP_SUPPORTERS,
-  MAX_PROFILE_SUPPORTING_TILES,
-  SUPPORTING_PAGINATION_SIZE,
   isResponseError,
   route
 } from '@audius/common/utils'
@@ -62,12 +56,11 @@ import { watchFetchProfileCollections } from './fetchProfileCollectionsSaga'
 import { watchFetchTopTags } from './fetchTopTagsSaga'
 
 const { NOT_FOUND_PAGE } = route
-const { refreshSupport } = tippingActions
 const { getIsReachable } = reachabilitySelectors
 const { getProfileUserId, getProfileFollowers, getProfileUser } =
   profilePageSelectors
 
-const { getUserId, getAccountUser } = accountSelectors
+const { getUserId } = accountSelectors
 
 const {
   updateUserEthCollectibles,
@@ -314,37 +307,8 @@ export function* fetchSolanaCollectibles(user) {
   }
 }
 
-function* fetchSupportersAndSupporting(userId) {
-  const { waitForRemoteConfig } = yield getContext('remoteConfigInstance')
-  yield call(waitForRemoteConfig)
-  yield waitForAccount()
-
-  /**
-   * If the profile is that of the logged in user, then
-   * get all its supporting data so that when the logged in
-   * user is trying to tip an artist, we'll know whether or
-   * not that artist is already being supported by the logged in
-   * user and thus correctly calculate how much more audio to tip
-   * to become the top supporter.
-   */
-  const account = yield select(getAccountUser)
-  const supportingLimit =
-    account?.user_id === userId
-      ? account.supporting_count
-      : Math.max(MAX_PROFILE_SUPPORTING_TILES, SUPPORTING_PAGINATION_SIZE) + 1
-  yield put(
-    refreshSupport({
-      senderUserId: userId,
-      receiverUserId: userId,
-      supportingLimit,
-      supportersLimit: MAX_PROFILE_TOP_SUPPORTERS + 1
-    })
-  )
-}
-
 function* fetchProfileAsync(action) {
   const isNativeMobile = yield getContext('isNativeMobile')
-  const { getRemoteVar } = yield getContext('remoteConfigInstance')
 
   try {
     let user
@@ -388,7 +352,6 @@ function* fetchProfileAsync(action) {
       yield fork(fetchUserSocials, action)
       // Note that mobile dispatches this action at the component level
       yield put(profilePageActions.fetchCollections(user.handle))
-      yield fork(fetchSupportersAndSupporting, user.user_id)
     }
 
     // Get chat permissions
@@ -409,18 +372,6 @@ function* fetchProfileAsync(action) {
         user.handle
       )
     )
-
-    if (!isNativeMobile) {
-      const showArtistRecommendationsPercent =
-        getRemoteVar(DoubleKeys.SHOW_ARTIST_RECOMMENDATIONS_PERCENT) || 0
-      if (Math.random() < showArtistRecommendationsPercent) {
-        yield put(
-          relatedArtistsActions.fetchRelatedArtists({
-            artistId: user.user_id
-          })
-        )
-      }
-    }
 
     if (!isNativeMobile) {
       yield put(

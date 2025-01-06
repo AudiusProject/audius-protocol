@@ -1,8 +1,6 @@
-import { useEffect, useState } from 'react'
-
-import { ID, StringWei } from '@audius/common/models'
-import { tippingSelectors } from '@audius/common/store'
-import { stringWeiToBN, formatWei, Nullable } from '@audius/common/utils'
+import { useSupporter } from '@audius/common/api'
+import { ID } from '@audius/common/models'
+import { stringWeiToBN, formatWei } from '@audius/common/utils'
 import {
   IconTipping as IconTip,
   IconTrophy,
@@ -10,11 +8,9 @@ import {
 } from '@audius/harmony'
 import cn from 'classnames'
 
-import { useSelector } from 'common/hooks/useSelector'
 import { TIPPING_TOP_RANK_THRESHOLD } from 'utils/constants'
 
 import styles from './ArtistChip.module.css'
-const { getOptimisticSupporters, getOptimisticSupporting } = tippingSelectors
 
 const messages = {
   audio: '$AUDIO',
@@ -30,19 +26,13 @@ export const ArtistChipSupportFor = ({
   artistId,
   userId
 }: ArtistChipTipsProps) => {
-  const supportingMap = useSelector(getOptimisticSupporting)
-  const supportersMap = useSelector(getOptimisticSupporters)
-  const [amount, setAmount] = useState<Nullable<StringWei>>(null)
-  const [rank, setRank] = useState<Nullable<number>>(null)
+  const { data: supportFor } = useSupporter({
+    supporterUserId: artistId,
+    userId
+  })
 
-  useEffect(() => {
-    if (artistId && userId) {
-      const userSupportersMap = supportersMap[userId] ?? {}
-      const artistSupporter = userSupportersMap[artistId] ?? {}
-      setRank(artistSupporter.rank ?? null)
-      setAmount(artistSupporter.amount ?? null)
-    }
-  }, [artistId, supportingMap, supportersMap, userId])
+  const rank = supportFor?.rank
+  const amount = supportFor?.amount
 
   return (
     <div className={styles.tipContainer}>
