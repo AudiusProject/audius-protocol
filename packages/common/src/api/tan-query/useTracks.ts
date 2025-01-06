@@ -13,7 +13,10 @@ import { encodeHashId } from '~/utils/hashIds'
 import { QUERY_KEYS } from './queryKeys'
 import { QueryOptions } from './types'
 
-export const useTracks = (trackIds: ID[], options?: QueryOptions) => {
+export const useTracks = (
+  trackIds: ID[] | null | undefined,
+  options?: QueryOptions
+) => {
   const { audiusSdk } = useAppContext()
   const queryClient = useQueryClient()
   const dispatch = useDispatch()
