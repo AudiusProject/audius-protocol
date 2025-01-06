@@ -13,7 +13,8 @@ export const useAudienceUsers = (chat: ChatBlast, limit?: number) => {
   const { data: currentUserId } = useCurrentUserId()
 
   const { data: followers } = useFollowers({
-    limit
+    limit,
+    userId: currentUserId
   })
   const { data: supporters } = useGetSupporters({
     userId: currentUserId!,
