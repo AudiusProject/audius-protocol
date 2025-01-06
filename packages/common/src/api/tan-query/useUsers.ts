@@ -1,17 +1,17 @@
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useDispatch } from 'react-redux'
 
 import { userMetadataListFromSDK } from '~/adapters/user'
 import { useAppContext } from '~/context/appContext'
-import { ID } from '~/models/Identifiers'
+import { Id, ID } from '~/models/Identifiers'
 import { Kind } from '~/models/Kind'
 import { User } from '~/models/User'
 import { addEntries } from '~/store/cache/actions'
 import { EntriesByKind } from '~/store/cache/types'
-import { encodeHashId } from '~/utils/hashIds'
 import { removeNullable } from '~/utils/typeUtils'
 
 import { QUERY_KEYS } from './queryKeys'
+import { primeUserData } from './utils/primeUserData'
 
 type Config = {
   staleTime?: number
@@ -21,23 +21,30 @@ type Config = {
 export const useUsers = (userIds: ID[], config?: Config) => {
   const { audiusSdk } = useAppContext()
   const dispatch = useDispatch()
+  const queryClient = useQueryClient()
+  const encodedIds = userIds.map((id) => Id.parse(id)).filter(removeNullable)
 
   return useQuery({
     queryKey: [QUERY_KEYS.users, userIds],
     queryFn: async () => {
-      const encodedIds = userIds.map(encodeHashId).filter(removeNullable)
-      if (!encodedIds.length) return []
       const { data } = await audiusSdk!.full.users.getBulkUsers({
         id: encodedIds
       })
+
       const users = userMetadataListFromSDK(data)
 
-      // Sync users data to Redux
+      // Sync users data to Redux and prime userByHandle cache
       if (users.length) {
+        primeUserData({ users, queryClient, dispatch })
         const entries: EntriesByKind = {
           [Kind.USERS]: users.reduce(
             (acc, user) => {
               acc[user.user_id] = user
+              // Prime userByHandle cache for each user
+              queryClient.setQueryData(
+                [QUERY_KEYS.userByHandle, user.handle],
+                user
+              )
               return acc
             },
             {} as Record<ID, User>
@@ -50,6 +57,6 @@ export const useUsers = (userIds: ID[], config?: Config) => {
       return users
     },
     staleTime: config?.staleTime,
-    enabled: config?.enabled !== false && !!audiusSdk && userIds.length > 0
+    enabled: config?.enabled !== false && !!audiusSdk && encodedIds.length > 0
   })
 }

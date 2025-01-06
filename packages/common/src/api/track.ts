@@ -1,11 +1,7 @@
-import { full } from '@audius/sdk'
-
 import { transformAndCleanList, userTrackMetadataFromSDK } from '~/adapters'
 import { createApi } from '~/audius-query'
 import { ID, Id, Kind, OptionalId } from '~/models'
 import { Nullable } from '~/utils/typeUtils'
-
-import { SDKRequest } from './types'
 
 const trackApi = createApi({
   reducerPath: 'trackApi',
@@ -59,37 +55,11 @@ const trackApi = createApi({
         kind: Kind.TRACKS,
         schemaKey: 'tracks'
       }
-    },
-    getUserTracksByHandle: {
-      fetch: async (
-        {
-          currentUserId,
-          filterTracks = 'public',
-          sort = 'date',
-          ...params
-        }: SDKRequest<full.GetTracksByUserHandleRequest>,
-        { audiusSdk }
-      ) => {
-        const sdk = await audiusSdk()
-        const { data = [] } = await sdk.full.users.getTracksByUserHandle({
-          ...params,
-          userId: OptionalId.parse(currentUserId),
-          sort,
-          filterTracks
-        })
-        return transformAndCleanList(data, userTrackMetadataFromSDK)
-      },
-      options: {
-        idListArgKey: 'ids',
-        kind: Kind.TRACKS,
-        schemaKey: 'tracks'
-      }
     }
   }
 })
 
-export const { useGetTrackByPermalink, useGetUserTracksByHandle } =
-  trackApi.hooks
+export const { useGetTrackByPermalink, useGetTracksByIds } = trackApi.hooks
 export const trackApiFetch = trackApi.fetch
 export const trackApiReducer = trackApi.reducer
 export const trackApiActions = trackApi.actions

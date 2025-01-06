@@ -1,11 +1,7 @@
 import { useCallback } from 'react'
 
-import {
-  useRankedSupportingForUser,
-  useProxySelector
-} from '@audius/common/hooks'
-import { cacheUsersSelectors } from '@audius/common/store'
-import { formatCount, MAX_PROFILE_SUPPORTING_TILES } from '@audius/common/utils'
+import type { SupportedUserMetadata } from '@audius/common/models'
+import { formatCount } from '@audius/common/utils'
 
 import { IconArrowRight, PlainButton } from '@audius/harmony-native'
 import { Tile } from 'app/components/core'
@@ -14,7 +10,6 @@ import { ProfilePictureList } from 'app/screens/notifications-screen/Notificatio
 import { makeStyles } from 'app/styles'
 
 import { useSelectProfile } from '../selectors'
-const { getUsers } = cacheUsersSelectors
 
 const MAX_PROFILE_SUPPORTING_VIEW_ALL_USERS = 6
 
@@ -44,7 +39,13 @@ const formatViewAllMessage = (count: number) => {
   return `${messages.viewAll} ${formatCount(count)}`
 }
 
-export const ViewAllSupportingTile = () => {
+type ViewAllSupportingTileProps = {
+  supportedUsers: SupportedUserMetadata[]
+}
+
+export const ViewAllSupportingTile = ({
+  supportedUsers
+}: ViewAllSupportingTileProps) => {
   const styles = useStyles()
   const navigation = useNavigation()
 
@@ -52,19 +53,6 @@ export const ViewAllSupportingTile = () => {
     'user_id',
     'supporting_count'
   ])
-
-  const rankedSupportingList = useRankedSupportingForUser(user_id)
-
-  const rankedSupportingUsers = useProxySelector(
-    (state) => {
-      const rankedIds = rankedSupportingList.map((s) => s.receiver_id)
-      const usersMap = getUsers(state, {
-        ids: rankedIds
-      })
-      return rankedIds.map((id) => usersMap[id]).filter(Boolean)
-    },
-    [rankedSupportingList]
-  )
 
   const handlePress = useCallback(() => {
     navigation.push('SupportingUsers', { userId: user_id })
@@ -81,7 +69,7 @@ export const ViewAllSupportingTile = () => {
       onPress={handlePress}
     >
       <ProfilePictureList
-        users={rankedSupportingUsers.slice(MAX_PROFILE_SUPPORTING_TILES)}
+        users={supportedUsers.map((user) => user.receiver)}
         limit={MAX_PROFILE_SUPPORTING_VIEW_ALL_USERS}
         style={styles.profilePictureList}
         navigationType='push'
