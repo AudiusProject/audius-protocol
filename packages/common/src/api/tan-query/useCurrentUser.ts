@@ -7,12 +7,12 @@ import { SolanaWalletAddress } from '~/models/Wallet'
 import { getWalletAddresses } from '~/store/account/selectors'
 
 import { QUERY_KEYS } from './queryKeys'
-import type { Config } from './useUser'
+import { QueryOptions } from './types'
 
 /**
  * Hook to get the currently logged in user's data
  */
-export const useCurrentUser = (config?: Config) => {
+export const useCurrentUser = (options?: QueryOptions) => {
   const { audiusSdk } = useAppContext()
   const { currentUser } = useSelector(getWalletAddresses)
 
@@ -41,7 +41,7 @@ export const useCurrentUser = (config?: Config) => {
       }
       return account?.user
     },
-    staleTime: config?.staleTime,
-    enabled: config?.enabled !== false && !!audiusSdk && !!currentUser
+    staleTime: options?.staleTime,
+    enabled: options?.enabled !== false && !!audiusSdk && !!currentUser
   })
 }

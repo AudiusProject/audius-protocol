@@ -12,13 +12,9 @@ import { encodeHashId } from '~/utils/hashIds'
 import { removeNullable } from '~/utils/typeUtils'
 
 import { QUERY_KEYS } from './queryKeys'
+import { QueryOptions } from './types'
 
-type Config = {
-  staleTime?: number
-  enabled?: boolean
-}
-
-export const useUsers = (userIds: ID[], config?: Config) => {
+export const useUsers = (userIds: ID[], options?: QueryOptions) => {
   const { audiusSdk } = useAppContext()
   const dispatch = useDispatch()
 
@@ -49,7 +45,7 @@ export const useUsers = (userIds: ID[], config?: Config) => {
 
       return users
     },
-    staleTime: config?.staleTime,
-    enabled: config?.enabled !== false && !!audiusSdk && userIds.length > 0
+    staleTime: options?.staleTime,
+    enabled: options?.enabled !== false && !!audiusSdk && userIds.length > 0
   })
 }

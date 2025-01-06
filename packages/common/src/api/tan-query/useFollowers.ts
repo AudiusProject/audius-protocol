@@ -6,6 +6,7 @@ import { ID, Id, OptionalId } from '~/models/Identifiers'
 import { Nullable } from '~/utils/typeUtils'
 
 import { QUERY_KEYS } from './queryKeys'
+import { QueryOptions } from './types'
 import { useCurrentUserId } from './useCurrentUserId'
 
 type GetFollowersArgs = {
@@ -19,17 +20,16 @@ type GetFollowersArgs = {
  * NOTE: this is not an infinite query, it only gives you data by your requested limit/offset args
  * If no userId is provided, it will use the current user's ID from the store.
  */
-export const useFollowers = ({
-  userId,
-  limit = 10,
-  offset = 0
-}: GetFollowersArgs) => {
+export const useFollowers = (
+  { userId, limit = 10, offset = 0 }: GetFollowersArgs,
+  options: QueryOptions
+) => {
   const { audiusSdk } = useAppContext()
   const { data: currentUserId } = useCurrentUserId()
 
   return useQuery({
     queryKey: [QUERY_KEYS.followers, userId, { limit, offset }],
-    enabled: !!userId && !!audiusSdk,
+    enabled: options?.enabled !== false && !!userId && !!audiusSdk,
     queryFn: async () => {
       const { data = [] } = await audiusSdk!.full.users.getFollowers({
         id: Id.parse(userId),

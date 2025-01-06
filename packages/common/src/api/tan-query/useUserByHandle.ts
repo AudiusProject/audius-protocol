@@ -10,15 +10,11 @@ import { addEntries } from '~/store/cache/actions'
 import { EntriesByKind } from '~/store/cache/types'
 
 import { QUERY_KEYS } from './queryKeys'
-
-type Config = {
-  staleTime?: number
-  enabled?: boolean
-}
+import { QueryOptions } from './types'
 
 export const useUserByHandle = (
   handle: string | undefined,
-  config?: Config
+  options?: QueryOptions
 ) => {
   const { audiusSdk } = useAppContext()
   const dispatch = useDispatch()
@@ -51,7 +47,7 @@ export const useUserByHandle = (
 
       return user
     },
-    staleTime: config?.staleTime,
-    enabled: config?.enabled !== false && !!audiusSdk && !!handle
+    staleTime: options?.staleTime,
+    enabled: options?.enabled !== false && !!audiusSdk && !!handle
   })
 }
