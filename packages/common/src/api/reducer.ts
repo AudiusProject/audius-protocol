@@ -5,7 +5,6 @@ import { authorizedAppsApiReducer } from './authorizedApps'
 import { developerAppsApiReducer } from './developerApps'
 import { libraryApiReducer } from './library'
 import { purchasesApiReducer } from './purchases'
-import { relatedArtistsApiReducer } from './relatedArtists'
 import { searchApiReducer } from './search'
 import { signUpReducer } from './signUp'
 import { topArtistsApiReducer } from './topArtists'
@@ -19,7 +18,6 @@ export default combineReducers({
   developerAppsApi: developerAppsApiReducer,
   libraryApi: libraryApiReducer,
   purchasesApi: purchasesApiReducer,
-  relatedArtistsApi: relatedArtistsApiReducer,
   searchApi: searchApiReducer,
   signUpApi: signUpReducer,
   topArtistsApi: topArtistsApiReducer,

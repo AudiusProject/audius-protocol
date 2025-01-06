@@ -1,5 +1,6 @@
 import { forwardRef, ReactNode, useCallback, useEffect, useState } from 'react'
 
+import { useRelatedArtists } from '@audius/common/api'
 import {
   Name,
   FollowSource,
@@ -10,8 +11,6 @@ import {
 import {
   cacheUsersSelectors,
   usersSocialActions as socialActions,
-  relatedArtistsUISelectors,
-  relatedArtistsUIActions,
   CommonState
 } from '@audius/common/store'
 import { route } from '@audius/common/utils'
@@ -33,8 +32,6 @@ import { push } from 'utils/navigation'
 import styles from './ArtistRecommendations.module.css'
 
 const { profilePage } = route
-const { selectSuggestedFollowsUsers } = relatedArtistsUISelectors
-const { fetchRelatedArtists } = relatedArtistsUIActions
 const { getUsers } = cacheUsersSelectors
 
 export type ArtistRecommendationsProps = {
@@ -141,20 +138,12 @@ export const ArtistRecommendations = forwardRef<
     Object.values(getUsers(state, { ids: idsToFollow ?? [] }))
   )
 
-  // Start fetching the related artists
-  useEffect(() => {
-    dispatch(
-      fetchRelatedArtists({
-        artistId
-      })
-    )
-  }, [dispatch, artistId])
+  const { data: suggestedArtists } = useRelatedArtists(artistId, {
+    filterFollowed: true
+  })
 
-  const suggestedArtists = useSelector<CommonState, User[]>((state) =>
-    selectSuggestedFollowsUsers(state, { id: artistId })
-  )
   useEffect(() => {
-    if (!isEmpty(suggestedArtists)) {
+    if (suggestedArtists && !isEmpty(suggestedArtists)) {
       setIdsToFollow(suggestedArtists.map((user) => user.user_id))
     }
   }, [suggestedArtists])
