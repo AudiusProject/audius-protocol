@@ -12,8 +12,7 @@ import {
   collectiblesActions,
   confirmerActions,
   confirmTransaction,
-  getSDK,
-  profilePageActions
+  getSDK
 } from '@audius/common/store'
 import {
   squashNewLines,
@@ -44,7 +43,6 @@ import {
 import { push as pushRoute } from 'utils/navigation'
 import { waitForWrite } from 'utils/sagaHelpers'
 
-import { watchFetchProfileCollections } from './fetchProfileCollectionsSaga'
 import { watchFetchTopTags } from './fetchTopTagsSaga'
 
 const { NOT_FOUND_PAGE } = route
@@ -298,8 +296,6 @@ export function* fetchSolanaCollectibles(user) {
 }
 
 function* fetchProfileAsync(action) {
-  const isNativeMobile = yield getContext('isNativeMobile')
-
   try {
     let user
     if (action.handle) {
@@ -337,10 +333,17 @@ function* fetchProfileAsync(action) {
       )
     )
 
+<<<<<<< HEAD
     if (!isNativeMobile) {
       // Note that mobile dispatches this action at the component level
       yield put(profilePageActions.fetchCollections(user.handle))
     }
+=======
+    // if (!isNativeMobile) {
+    //   // Note that mobile dispatches this action at the component level
+    //   yield put(profilePageActions.fetchCollections(user.handle))
+    // }
+>>>>>>> 5da0cf1802 (Profile collections to tan-query)
 
     // Get chat permissions
     yield put(fetchPermissions({ userIds: [user.user_id] }))
@@ -530,7 +533,6 @@ export default function sagas() {
     watchFetchProfile,
     watchUpdateProfile,
     watchSetNotificationSubscription,
-    watchFetchProfileCollections,
     watchFetchTopTags
   ]
 }

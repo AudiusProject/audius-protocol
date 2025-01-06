@@ -51,10 +51,7 @@ export const useUserTracksByHandle = (
       })
 
       const tracks = transformAndCleanList(data, userTrackMetadataFromSDK)
-
-      tracks.forEach((track) => {
-        primeTrackData({ track, queryClient, dispatch })
-      })
+      primeTrackData({ tracks, queryClient, dispatch })
 
       return tracks
     },

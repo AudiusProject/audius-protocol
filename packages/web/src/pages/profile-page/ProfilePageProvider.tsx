@@ -38,7 +38,6 @@ import {
 } from '@audius/common/store'
 import { getErrorMessage, Nullable, route } from '@audius/common/utils'
 import { UnregisterCallback } from 'history'
-import { uniq } from 'lodash'
 import moment from 'moment'
 import { connect } from 'react-redux'
 import { withRouter, RouteComponentProps } from 'react-router-dom'
@@ -72,12 +71,8 @@ const { open } = mobileOverflowMenuUIActions
 const { fetchHasTracks } = accountActions
 const { createPlaylist } = cacheCollectionsActions
 
-const {
-  makeGetProfile,
-  getCollectionsStatus,
-  getProfileFeedLineup,
-  getProfileTracksLineup
-} = profilePageSelectors
+const { makeGetProfile, getProfileFeedLineup, getProfileTracksLineup } =
+  profilePageSelectors
 const { getUserId, getAccountHasTracks } = accountSelectors
 const { createChat, blockUser, unblockUser } = chatActions
 const { getBlockees, getBlockers, getCanCreateChat } = chatSelectors
@@ -719,14 +714,7 @@ class ProfilePage extends PureComponent<ProfilePageProps, ProfilePageState> {
 
   render() {
     const {
-      profile: {
-        profile,
-        status: profileLoadingStatus,
-        albums,
-        playlists,
-        isSubscribed
-      },
-      collectionStatus,
+      profile: { profile, status: profileLoadingStatus, isSubscribed },
       // Tracks
       artistTracks,
       playArtistTrack,
@@ -856,9 +844,6 @@ class ProfilePage extends PureComponent<ProfilePageProps, ProfilePageState> {
 
       profile,
       status: profileLoadingStatus,
-      albums: uniq(albums),
-      playlists: uniq(playlists),
-      collectionStatus,
       artistTracks,
       playArtistTrack,
       pauseArtistTrack,
@@ -974,7 +959,7 @@ function makeMapStateToProps() {
     const params = parseUserRoute(pathname)
     const handleLower = params?.handle?.toLowerCase() as string
 
-    const profile = getProfile(state, handleLower)
+    const profile = getProfile(state)
     const accountUserId = getUserId(state)
     const accountHasTracks =
       accountUserId === profile.profile?.user_id
@@ -982,8 +967,7 @@ function makeMapStateToProps() {
         : null
     return {
       accountUserId,
-      profile: getProfile(state, handleLower),
-      collectionStatus: getCollectionsStatus(state, handleLower),
+      profile,
       artistTracks: getProfileTracksLineup(state, handleLower),
       userFeed: getProfileFeedLineup(state, handleLower),
       currentQueueItem: getCurrentQueueItem(state),

@@ -33,7 +33,11 @@ export const useCollection = (
 
       if (collection) {
         // Prime related entities
-        primeCollectionData({ collection, queryClient, dispatch })
+        primeCollectionData({
+          collections: [collection],
+          queryClient,
+          dispatch
+        })
 
         // Prime collectionByPermalink cache if we have a permalink
         if (collection.permalink) {
