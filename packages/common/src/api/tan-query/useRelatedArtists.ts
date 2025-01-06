@@ -15,6 +15,7 @@ type Config = {
   limit?: number
   staleTime?: number
   enabled?: boolean
+  filterFollowed?: boolean
 }
 
 export const useRelatedArtists = (artistId?: ID | null, config?: Config) => {
@@ -32,7 +33,8 @@ export const useRelatedArtists = (artistId?: ID | null, config?: Config) => {
       const { data } = await audiusSdk.full.users.getRelatedUsers({
         id: Id.parse(artistId),
         limit: config?.limit ?? MAX_PROFILE_RELATED_ARTISTS,
-        userId: OptionalId.parse(currentUserId)
+        userId: OptionalId.parse(currentUserId),
+        filterFollowed: config?.filterFollowed
       })
 
       const users = transformAndCleanList(data, userMetadataFromSDK)

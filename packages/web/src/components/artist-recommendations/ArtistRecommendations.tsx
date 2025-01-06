@@ -138,7 +138,9 @@ export const ArtistRecommendations = forwardRef<
     Object.values(getUsers(state, { ids: idsToFollow ?? [] }))
   )
 
-  const { data: suggestedArtists } = useRelatedArtists(artistId)
+  const { data: suggestedArtists } = useRelatedArtists(artistId, {
+    filterFollowed: true
+  })
 
   useEffect(() => {
     if (suggestedArtists && !isEmpty(suggestedArtists)) {

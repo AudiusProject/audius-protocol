@@ -273,6 +273,7 @@ export interface GetRelatedUsersRequest {
     offset?: number;
     limit?: number;
     userId?: string;
+    filterFollowed?: boolean;
 }
 
 export interface GetRemixersRequest {
@@ -1424,6 +1425,10 @@ export class UsersApi extends runtime.BaseAPI {
 
         if (params.userId !== undefined) {
             queryParameters['user_id'] = params.userId;
+        }
+
+        if (params.filterFollowed !== undefined) {
+            queryParameters['filter_followed'] = params.filterFollowed;
         }
 
         const headerParameters: runtime.HTTPHeaders = {};
