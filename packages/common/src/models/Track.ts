@@ -18,12 +18,6 @@ export interface TrackSegment {
   multihash: CID
 }
 
-export interface Followee extends User {
-  is_delete: boolean
-  repost_item_id: string
-  repost_type: string
-}
-
 export type FieldVisibility = {
   genre: boolean
   mood: boolean
@@ -320,7 +314,6 @@ export type Stem = {
 export type ComputedTrackProperties = {
   // All below, added clientside
   _first_segment?: string
-  _followees?: Followee[]
   _marked_deleted?: boolean
   _is_publishing?: boolean
   _stems?: Stem[]

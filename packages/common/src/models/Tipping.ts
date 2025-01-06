@@ -7,18 +7,6 @@ import { removeNullable } from '~/utils/typeUtils'
 import { UserMetadata } from './User'
 import { StringWei } from './Wallet'
 
-export type Supporter = {
-  sender_id: ID
-  amount: StringWei
-  rank: number
-}
-
-export type Supporting = {
-  receiver_id: ID
-  amount: StringWei
-  rank: number
-}
-
 export type UserTip = {
   amount: StringWei
   sender_id: ID
@@ -33,10 +21,6 @@ export type UserTipWithUsers = UserTip & {
   sender: UserMetadata
   receiver: UserMetadata
   followee_supporters: { user_id: string }[]
-}
-
-export type LastDismissedTip = {
-  receiver_id: ID
 }
 
 export type SupporterMetadata = {

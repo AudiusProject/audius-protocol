@@ -1,12 +1,8 @@
 .modalBody {
   width: 488px;
-  height: 492px;
+  height: 548px;
   max-height: 95vh;
 }
-.modalBody.biggerModalBody {
-  height: 548px;
-}
-
 .modalContentContainer {
   position: relative;
   height: 100%;

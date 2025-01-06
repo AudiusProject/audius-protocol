@@ -42,7 +42,7 @@ export const primeCollectionDataInternal = ({
   // Prime user data from collection owner
   if (collection.user) {
     const userEntries = primeUserDataInternal({
-      user: collection.user,
+      users: [collection.user],
       queryClient
     })
 
