@@ -1,3 +1,4 @@
+import { Dispatch } from 'redux'
 import { AudiusBackend } from '~/services/audius-backend'
 
 export type TrackDownloadConfig = {
@@ -10,7 +11,7 @@ export type DownloadTrackArgs = {
   files: DownloadFile[]
   rootDirectoryName?: string
   abortSignal?: AbortSignal
-  dispatch: Function
+  dispatch: Dispatch
 }
 
 export class TrackDownload {
