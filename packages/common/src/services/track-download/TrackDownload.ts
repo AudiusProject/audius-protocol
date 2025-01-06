@@ -10,6 +10,7 @@ export type DownloadTrackArgs = {
   files: DownloadFile[]
   rootDirectoryName?: string
   abortSignal?: AbortSignal
+  dispatch: Function
 }
 
 export class TrackDownload {
