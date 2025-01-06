@@ -1,9 +1,8 @@
 import { createContext } from 'react'
 
-import { useCurrentUserId, useGetTrackByPermalink } from '@audius/common/api'
+import { useTrackByPermalink } from '@audius/common/api'
 import {
   SquareSizes,
-  Status,
   Stem,
   StemUpload,
   Track,
@@ -56,12 +55,9 @@ export const EditTrackPage = (props: EditPageProps) => {
     useReplaceTrackConfirmationModal()
   const { onOpen: openReplaceTrackProgress } = useReplaceTrackProgressModal()
 
-  const { data: currentUserId } = useCurrentUserId()
   const permalink = `/${handle}/${slug}`
-  const { data: track, status: trackStatus } = useGetTrackByPermalink({
-    permalink,
-    currentUserId
-  })
+  const { data: track, isPending: isLoadingTrack } =
+    useTrackByPermalink(permalink)
 
   const onSubmit = (formValues: TrackEditFormValues) => {
     const metadata = { ...formValues.trackMetadatas[0] }
@@ -146,7 +142,7 @@ export const EditTrackPage = (props: EditPageProps) => {
       title={messages.title}
       header={<Header primary={messages.title} showBackButton />}
     >
-      {trackStatus !== Status.SUCCESS || !coverArtUrl ? (
+      {isLoadingTrack ? (
         <LoadingSpinnerFullPage />
       ) : (
         <EditFormScrollContext.Provider value={scrollToTop}>
