@@ -30,11 +30,10 @@ export const usePurchases = (
   args: GetPurchaseListArgs,
   options: { pageSize: number; enabled?: boolean }
 ) => {
-  const context = useAudiusQueryContext()
+  const { audiusSdk } = useAudiusQueryContext()
   const { pageSize, enabled } = options
   const queryClient = useQueryClient()
   const dispatch = useDispatch()
-  const { audiusSdk } = context
   const queryResult = useInfiniteQuery({
     queryKey: [QUERY_KEYS.purchases, args],
     enabled: enabled !== false && !!args.userId,
@@ -65,7 +64,11 @@ export const usePurchases = (
         )
         .map(({ contentId }) => contentId)
       if (trackIdsToFetch.length > 0) {
-        await makeTracksQueryFn(queryClient, dispatch, sdk)(trackIdsToFetch)
+        await makeTracksQueryFn(
+          queryClient,
+          dispatch,
+          audiusSdk()
+        )(trackIdsToFetch)
       }
       // TODO: [PAY-2548] Purchaseable Albums - fetch metadata for albums
       return purchases

@@ -5,7 +5,7 @@ import { AnyAction, Dispatch } from 'redux'
 
 import { userTrackMetadataFromSDK } from '~/adapters/track'
 import { transformAndCleanList } from '~/adapters/utils'
-import { useAppContext } from '~/context/appContext'
+import { useAudiusQueryContext } from '~/audius-query'
 import { ID } from '~/models/Identifiers'
 import { Kind } from '~/models/Kind'
 import { addEntries } from '~/store/cache/actions'
@@ -23,14 +23,14 @@ export const useTracks = (
   trackIds: ID[] | null | undefined,
   config?: Config
 ) => {
-  const { audiusSdk } = useAppContext()
+  const { audiusSdk } = useAudiusQueryContext()
   const queryClient = useQueryClient()
   const dispatch = useDispatch()
 
   return useQuery({
     queryKey: [QUERY_KEYS.tracks, trackIds],
     queryFn: () =>
-      makeTracksQueryFn(queryClient, dispatch, audiusSdk!)(trackIds!),
+      makeTracksQueryFn(queryClient, dispatch, audiusSdk())(trackIds!),
     staleTime: config?.staleTime,
     enabled:
       config?.enabled !== false &&
@@ -43,14 +43,15 @@ export const useTracks = (
 export const makeTracksQueryFn = (
   queryClient: QueryClient,
   dispatch: Dispatch<AnyAction>,
-  audiusSdk: AudiusSdk
+  audiusSdk: Promise<AudiusSdk>
 ) => {
   return async (trackIds: ID[]) => {
+    const sdk = await audiusSdk
     const encodedIds = trackIds
       .map(encodeHashId)
       .filter((id): id is string => id !== null)
     if (encodedIds.length === 0) return []
-    const { data } = await audiusSdk.full.tracks.getBulkTracks({
+    const { data } = await sdk.full.tracks.getBulkTracks({
       id: encodedIds
     })
 
