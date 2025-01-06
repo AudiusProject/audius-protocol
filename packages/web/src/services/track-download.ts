@@ -48,7 +48,6 @@ class TrackDownload extends TrackDownloadBase {
     dispatch
   }: DownloadTrackArgs) {
     if (files.length === 0) return
-    console.log({ files, rootDirectoryName, store: window.store })
 
     dispatch(beginDownload())
 
