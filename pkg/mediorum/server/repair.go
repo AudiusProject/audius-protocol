@@ -219,10 +219,6 @@ func (ss *MediorumServer) runRepair(tracker *RepairTracker) error {
 		}
 		for _, cid := range cidBatch {
 			tracker.CursorQmCID = cid
-			// skip image variants since they'll be dynamically resized
-			if strings.HasSuffix(cid, ".jpg") && !strings.HasSuffix(cid, "original.jpg") {
-				continue
-			}
 			ss.repairCid(cid, nil, tracker)
 		}
 
@@ -305,6 +301,20 @@ func (ss *MediorumServer) repairCid(cid string, placementHosts []string, tracker
 			logger.Error("failed to read blob", "err", errRead)
 			return errRead
 		}
+	}
+
+	// delete derived image variants since they'll be dynamically resized
+	if strings.HasSuffix(cid, ".jpg") && !strings.HasSuffix(cid, "original.jpg") {
+		if tracker.CleanupMode && alreadyHave {
+			err := ss.dropFromMyBucket(cid)
+			if err != nil {
+				logger.Error("delete_resized_image_failed", "err", err)
+				tracker.Counters["delete_resized_image_failed"]++
+			} else {
+				tracker.Counters["delete_resized_image_ok"]++
+			}
+		}
+		return nil
 	}
 
 	if alreadyHave {
