@@ -28,7 +28,8 @@ export const PrioritySchema = z.enum([
 ])
 
 // Note: Don't just use a custom object w/ `instanceof TransactionInstruction`
-// as mismatching versions of @solana/web3.js would fail the instanceof check.
+// as separate instances of @solana/web3.js would fail the instanceof check.
+// See: https://stackoverflow.com/questions/75976618/why-does-the-instanceof-operator-return-false-on-instance-passed-to-library/75977756#75977756
 const TransactionInstructionSchema = z
   .object({
     data: z.custom<Buffer>(),
@@ -48,7 +49,8 @@ const TransactionInstructionSchema = z
   )
 
 // Note: Don't just use a custom object w/ `instanceof AddressLookupTableAccount`
-// as mismatching versions of @solana/web3.js would fail the instanceof check.
+// as separate instances of @solana/web3.js would fail the instanceof check.
+// See: https://stackoverflow.com/questions/75976618/why-does-the-instanceof-operator-return-false-on-instance-passed-to-library/75977756#75977756
 const AddressLookupTableAccountSchema = z
   .object({
     key: PublicKeySchema,
