@@ -1,7 +1,7 @@
 import { useCallback, useContext, useEffect, useState } from 'react'
 
 import { useFeatureFlag } from '@audius/common/hooks'
-import { DownloadQuality } from '@audius/common/models'
+import { DownloadQuality, Name } from '@audius/common/models'
 import { TrackMetadataFormSchema } from '@audius/common/schemas'
 import { FeatureFlags } from '@audius/common/services'
 import {
@@ -42,6 +42,7 @@ import layoutStyles from 'components/layout/layout.module.css'
 import { NavigationPrompt } from 'components/navigation-prompt/NavigationPrompt'
 import { EditFormScrollContext } from 'pages/edit-page/EditTrackPage'
 import { processFiles } from 'pages/upload-page/store/utils/processFiles'
+import { make, track as trackEvent } from 'services/analytics'
 import { removeNullable } from 'utils/typeUtils'
 
 import styles from './EditTrackForm.module.css'
@@ -207,6 +208,17 @@ const TrackEditForm = (
 
   const handleTogglePreview = useCallback(() => {
     togglePreview(track.preview, trackIdx)
+
+    if (!isPreviewPlaying) {
+      // Track Preview event
+      trackEvent(
+        make({
+          eventName: Name.TRACK_REPLACE_PREVIEW,
+          trackId: initialTrackValues.track_id,
+          source: isUpload ? 'upload' : 'edit'
+        })
+      )
+    }
   }, [togglePreview, trackIdx, track])
 
   const getArtworkUrl = (artwork: typeof updatedArtwork) => {
@@ -247,6 +259,15 @@ const TrackEditForm = (
         }
         setTrackValue(newFile)
         setOrigFilename(newFile.metadata.orig_filename)
+
+        // Track replace event
+        trackEvent(
+          make({
+            eventName: Name.TRACK_REPLACE_REPLACE,
+            trackId: initialTrackValues.track_id,
+            source: isUpload ? 'upload' : 'edit'
+          })
+        )
       }
     },
     [
@@ -256,7 +277,8 @@ const TrackEditForm = (
       setArtworkValue,
       setOrigFilename,
       setTitle,
-      setTrackValue
+      setTrackValue,
+      initialTrackValues
     ]
   )
 
@@ -267,6 +289,14 @@ const TrackEditForm = (
       trackIds: [initialTrackValues.track_id],
       quality: DownloadQuality.ORIGINAL
     })
+
+    // Track Download event
+    trackEvent(
+      make({
+        eventName: Name.TRACK_REPLACE_DOWNLOAD,
+        trackId: initialTrackValues.track_id
+      })
+    )
   }, [openWaitforDownload, initialTrackValues.track_id])
 
   return (

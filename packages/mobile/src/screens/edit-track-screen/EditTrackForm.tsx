@@ -1,7 +1,7 @@
 import { useCallback, useContext, useEffect, useRef, useState } from 'react'
 
 import { useFeatureFlag } from '@audius/common/hooks'
-import { DownloadQuality } from '@audius/common/models'
+import { DownloadQuality, Name } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
 import type { TrackForUpload } from '@audius/common/store'
 import {
@@ -31,6 +31,7 @@ import { VisibilityField } from 'app/components/edit/VisibilityField'
 import { PickArtworkField, TextField } from 'app/components/fields'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { FormScreen } from 'app/screens/form-screen'
+import { make, track as trackEvent } from 'app/services/analytics'
 import { setVisibility } from 'app/store/drawers/slice'
 import { makeStyles } from 'app/styles'
 
@@ -130,11 +131,32 @@ export const EditTrackForm = (props: EditTrackFormProps) => {
   const { onOpen: openPublishConfirmation } = usePublishConfirmationModal()
   const { onOpen: openWaitForDownload } = useWaitForDownloadModal()
 
+  const handleReplace = useCallback(() => {
+    selectFile()
+
+    // Track Replace event
+    trackEvent(
+      make({
+        eventName: Name.TRACK_REPLACE_REPLACE,
+        trackId: values.track_id,
+        source: isUpload ? 'upload' : 'edit'
+      })
+    )
+  }, [selectFile, isUpload, values.track_id])
+
   const handleDownload = useCallback(() => {
     openWaitForDownload({
       trackIds: [initialValues.track_id],
       quality: DownloadQuality.ORIGINAL
     })
+
+    // Track Download event
+    trackEvent(
+      make({
+        eventName: Name.TRACK_REPLACE_DOWNLOAD,
+        trackId: initialValues.track_id
+      })
+    )
   }, [openWaitForDownload, initialValues.track_id])
 
   const handlePressBack = useCallback(() => {
@@ -270,6 +292,8 @@ export const EditTrackForm = (props: EditTrackFormProps) => {
                       }
                       // @ts-ignore
                       filePath={track?.file.uri || streamUrl || ''}
+                      trackId={values.track_id}
+                      isUpload={isUpload}
                       onMenuButtonPress={handleOverflowMenuOpen}
                     />
                   </Flex>
@@ -297,7 +321,7 @@ export const EditTrackForm = (props: EditTrackFormProps) => {
       <EditTrackFormOverflowMenuDrawer
         isOpen={isOverflowMenuOpen}
         onClose={handleOverflowMenuClose}
-        onReplace={selectFile}
+        onReplace={handleReplace}
         onDownload={isUpload ? undefined : handleDownload}
       />
     </>
