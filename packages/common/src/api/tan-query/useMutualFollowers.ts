@@ -1,5 +1,5 @@
-import { useQuery } from '@tanstack/react-query'
-import { useSelector } from 'react-redux'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { useDispatch, useSelector } from 'react-redux'
 
 import { userMetadataListFromSDK } from '~/adapters/user'
 import { useAudiusQueryContext } from '~/audius-query'
@@ -8,6 +8,7 @@ import { Id } from '~/models/Identifiers'
 import { getUserId } from '~/store/account/selectors'
 
 import { QUERY_KEYS } from './queryKeys'
+import { primeUserData } from './utils/primeUserData'
 
 type Config = {
   staleTime?: number
@@ -32,6 +33,8 @@ export const useMutualFollowers = ({
 }: MutualFollowersParams) => {
   const { audiusSdk } = useAudiusQueryContext()
   const currentUserId = useSelector(getUserId)
+  const queryClient = useQueryClient()
+  const dispatch = useDispatch()
 
   return useQuery({
     queryKey: [QUERY_KEYS.mutualFollowers, userId, limit, offset],
@@ -45,7 +48,9 @@ export const useMutualFollowers = ({
         offset
       })
 
-      return data ? userMetadataListFromSDK(data) : []
+      const users = userMetadataListFromSDK(data)
+      primeUserData({ users, queryClient, dispatch })
+      return users
     },
     staleTime: config?.staleTime,
     enabled:
