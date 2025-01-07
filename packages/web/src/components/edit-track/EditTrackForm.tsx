@@ -18,7 +18,7 @@ import {
   PlainButton
 } from '@audius/harmony'
 import cn from 'classnames'
-import { Form, Formik, FormikProps, useField } from 'formik'
+import { Form, Formik, FormikProps, useField, useFormikContext } from 'formik'
 import { useUnmount } from 'react-use'
 import { z } from 'zod'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
@@ -174,6 +174,7 @@ const TrackEditForm = (
   const isMultiTrack = values.trackMetadatas.length > 1
   const isUpload = values.trackMetadatas[0].track_id === undefined
   const trackIdx = values.trackMetadatasIndex
+  const { values: formValues } = useFormikContext<TrackEditFormValues>()
   const [, , { setValue: setIndex }] = useField('trackMetadatasIndex')
   useUnmount(() => {
     setIndex(0)
@@ -262,10 +263,10 @@ const TrackEditForm = (
 
   const onClickDownload = useCallback(() => {
     openWaitforDownload({
-      trackIds: [track.metadata.track_id],
+      trackIds: [formValues.trackMetadatas[trackIdx].track_id],
       quality: DownloadQuality.ORIGINAL
     })
-  }, [openWaitforDownload, track])
+  }, [openWaitforDownload, formValues, trackIdx])
 
   return (
     <Form id={formId}>
