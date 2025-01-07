@@ -2,7 +2,6 @@ import { Name, ErrorLevel, BNWei } from '@audius/common/models'
 import {
   IntKeys,
   FeatureFlags,
-  deriveUserBankPubkey,
   createUserBankIfNeeded,
   LocalStorage,
   MEMO_PROGRAM_ID
@@ -784,9 +783,16 @@ function* getTransferTransaction({
   if (!currentUser) {
     throw new Error('Failed to get current user wallet address')
   }
-  const userBank = yield* call(deriveUserBankPubkey, sdk, {
-    ethAddress: currentUser
-  })
+  const userBank = yield* call(
+    [
+      sdk.services.claimableTokensClient,
+      sdk.services.claimableTokensClient.deriveUserBank
+    ],
+    {
+      ethWallet: currentUser,
+      mint: 'wAUDIO'
+    }
+  )
   const mintPublicKey = new PublicKey(env.WAUDIO_MINT_ADDRESS)
   // See: https://github.com/solana-labs/solana-program-library/blob/d6297495ea4dcc1bd48f3efdd6e3bbdaef25a495/memo/js/src/index.ts#L27
   const memoInstruction = new TransactionInstruction({

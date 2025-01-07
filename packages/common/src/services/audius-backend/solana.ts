@@ -73,22 +73,12 @@ export const getTokenAccountInfo = async (
   )
 }
 
-export const deriveUserBankPubkey = async (
-  sdk: AudiusSdk,
-  { ethAddress, mint = DEFAULT_MINT }: UserBankConfig
-) => {
-  return await sdk.services.claimableTokensClient.deriveUserBank({
-    ethWallet: ethAddress,
-    mint
-  })
-}
-
 export const deriveUserBankAddress = async (
   sdk: AudiusSdk,
   { ethAddress, mint = DEFAULT_MINT }: UserBankConfig
 ) => {
-  const pubkey = await deriveUserBankPubkey(sdk, {
-    ethAddress,
+  const pubkey = await sdk.services.claimableTokensClient.deriveUserBank({
+    ethWallet: ethAddress,
     mint
   })
   return pubkey.toString() as SolanaWalletAddress
@@ -142,8 +132,8 @@ export const getUserbankAccountInfo = async (
     )
   }
 
-  const tokenAccount = await deriveUserBankPubkey(sdk, {
-    ethAddress,
+  const tokenAccount = await sdk.services.claimableTokensClient.deriveUserBank({
+    ethWallet: ethAddress,
     mint
   })
 
@@ -303,8 +293,8 @@ export const decorateCoinflowWithdrawalTransaction = async (
     wallet: Keypair
   }
 ) => {
-  const userBank = await deriveUserBankPubkey(sdk, {
-    ethAddress,
+  const userBank = await sdk.services.claimableTokensClient.deriveUserBank({
+    ethWallet: ethAddress,
     mint: 'USDC'
   })
   const walletUSDCTokenAccount =
