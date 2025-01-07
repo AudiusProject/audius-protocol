@@ -2,11 +2,10 @@ import {
   userMetadataListFromSDK,
   userWalletsFromSDK
 } from '@audius/common/adapters'
-import { Kind, Id, OptionalId } from '@audius/common/models'
+import { Kind, Id } from '@audius/common/models'
 import {
   accountSelectors,
   cacheActions,
-  processAndCacheUsers,
   profilePageActions as profileActions,
   profilePageSelectors,
   FollowType,
@@ -50,15 +49,14 @@ import {
   unsubscribeFromUserAsync
 } from 'common/store/social/users/sagas'
 import { push as pushRoute } from 'utils/navigation'
-import { waitForRead, waitForWrite } from 'utils/sagaHelpers'
+import { waitForWrite } from 'utils/sagaHelpers'
 
 import { watchFetchProfileCollections } from './fetchProfileCollectionsSaga'
 import { watchFetchTopTags } from './fetchTopTagsSaga'
 
 const { NOT_FOUND_PAGE } = route
 const { getIsReachable } = reachabilitySelectors
-const { getProfileUserId, getProfileFollowers, getProfileUser } =
-  profilePageSelectors
+const { getProfileFollowers, getProfileUser } = profilePageSelectors
 
 const { getUserId } = accountSelectors
 
@@ -372,17 +370,6 @@ function* fetchProfileAsync(action) {
         user.handle
       )
     )
-
-    if (!isNativeMobile) {
-      yield put(
-        profileActions.fetchFollowUsers(
-          FollowType.FOLLOWEE_FOLLOWS,
-          undefined,
-          undefined,
-          action.handle
-        )
-      )
-    }
   } catch (err) {
     console.error(`Fetch users error: ${err}`)
     const isReachable = yield select(getIsReachable)
@@ -393,58 +380,6 @@ function* fetchProfileAsync(action) {
     if (!isReachable) return
     throw err
   }
-}
-
-function* watchFetchFollowUsers(action) {
-  yield takeEvery(profileActions.FETCH_FOLLOW_USERS, function* (action) {
-    yield call(waitForRead)
-    switch (action.followerGroup) {
-      case FollowType.FOLLOWEE_FOLLOWS:
-        yield call(fetchFolloweeFollows, action)
-        break
-      default:
-    }
-  })
-}
-
-function* fetchFolloweeFollows(action) {
-  const { handle, limit, offset } = action
-  if (!handle) return
-  const audiusSdk = yield getContext('audiusSdk')
-  const sdk = yield call(audiusSdk)
-  const profileUserId = yield select((state) => getProfileUserId(state, handle))
-  const currentUserId = yield select(getUserId)
-  if (!profileUserId) return
-  const response = yield call([sdk.users, sdk.users.getMutualFollowers], {
-    userId: OptionalId.parse(currentUserId),
-    id: Id.parse(profileUserId),
-    limit,
-    offset
-  })
-  if (!response.data) return
-
-  const users = userMetadataListFromSDK(response.data)
-  const followerIds = yield call(cacheUsers, users)
-
-  yield put(
-    profileActions.fetchFollowUsersSucceeded(
-      FollowType.FOLLOWEE_FOLLOWS,
-      followerIds,
-      limit,
-      offset,
-      handle
-    )
-  )
-}
-
-function* cacheUsers(users) {
-  yield waitForAccount()
-  const currentUserId = yield select(getUserId)
-  // Filter out the current user from the list to cache
-  yield processAndCacheUsers(
-    users.filter((user) => user.user_id !== currentUserId)
-  )
-  return users.map((f) => ({ id: f.user_id }))
 }
 
 function* watchUpdateProfile() {
@@ -636,7 +571,6 @@ export default function sagas() {
   return [
     ...feedSagas(),
     ...tracksSagas(),
-    watchFetchFollowUsers,
     watchFetchProfile,
     watchUpdateProfile,
     watchUpdateCurrentUserFollows,

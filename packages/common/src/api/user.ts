@@ -174,31 +174,6 @@ const userApi = createApi({
       },
       options: { retry: true }
     },
-    getFollowers: {
-      fetch: async (
-        {
-          userId,
-          limit = 10,
-          offset = 0
-        }: { userId: ID | null | undefined; offset?: number; limit?: number },
-        { audiusSdk }
-      ) => {
-        if (!userId) {
-          return []
-        }
-        const sdk = await audiusSdk()
-        const { data = [] } = await sdk.full.users.getFollowers({
-          id: Id.parse(userId),
-          limit,
-          offset
-        })
-        return userMetadataListFromSDK(data)
-      },
-      options: {
-        kind: Kind.USERS,
-        schemaKey: 'users'
-      }
-    },
     getRemixers: {
       fetch: async (
         {
@@ -335,7 +310,6 @@ export const {
   useGetTracksByUser,
   useGetUSDCTransactions,
   useGetUSDCTransactionsCount,
-  useGetFollowers,
   useGetRemixers,
   useGetRemixersCount,
   useGetPurchasers,

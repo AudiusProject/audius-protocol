@@ -8,12 +8,8 @@ import { OptionalId } from '~/models'
 import { getUserId } from '~/store/account/selectors'
 
 import { QUERY_KEYS } from './queryKeys'
+import { QueryOptions } from './types'
 import { primeTrackData } from './utils/primeTrackData'
-
-type Config = {
-  staleTime?: number
-  enabled?: boolean
-}
 
 type GetTracksByUserHandleArgs = {
   handle: string | null | undefined
@@ -25,7 +21,7 @@ type GetTracksByUserHandleArgs = {
 
 export const useUserTracksByHandle = (
   args: GetTracksByUserHandleArgs,
-  config?: Config
+  options?: QueryOptions
 ) => {
   const { audiusSdk } = useAudiusQueryContext()
   const queryClient = useQueryClient()
@@ -62,7 +58,7 @@ export const useUserTracksByHandle = (
 
       return tracks
     },
-    staleTime: config?.staleTime,
-    enabled: config?.enabled !== false && !!handle
+    staleTime: options?.staleTime,
+    enabled: options?.enabled !== false && !!audiusSdk && !!handle
   })
 }

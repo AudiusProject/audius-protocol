@@ -7,6 +7,7 @@ import { OptionalId } from '~/models'
 import { getUserId } from '~/store/account/selectors'
 
 import { QUERY_KEYS } from './queryKeys'
+import { QueryOptions } from './types'
 import { primeCollectionData } from './utils/primeCollectionData'
 
 export const playlistPermalinkToHandleAndSlug = (permalink: string) => {
@@ -21,14 +22,9 @@ export const playlistPermalinkToHandleAndSlug = (permalink: string) => {
   return { handle, slug }
 }
 
-type Config = {
-  staleTime?: number
-  enabled?: boolean
-}
-
 export const useCollectionByPermalink = (
   permalink: string | undefined | null,
-  config?: Config
+  options?: QueryOptions
 ) => {
   const { audiusSdk } = useAudiusQueryContext()
   const queryClient = useQueryClient()
@@ -63,7 +59,7 @@ export const useCollectionByPermalink = (
 
       return collection
     },
-    staleTime: config?.staleTime,
-    enabled: config?.enabled !== false && !!permalink
+    staleTime: options?.staleTime,
+    enabled: options?.enabled !== false && !!audiusSdk && !!permalink
   })
 }

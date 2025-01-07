@@ -7,16 +7,12 @@ import { Id, ID, OptionalId } from '~/models/Identifiers'
 import { getUserId } from '~/store/account/selectors'
 
 import { QUERY_KEYS } from './queryKeys'
+import { QueryOptions } from './types'
 import { primeCollectionData } from './utils/primeCollectionData'
-
-type Config = {
-  staleTime?: number
-  enabled?: boolean
-}
 
 export const useCollection = (
   collectionId: ID | null | undefined,
-  config?: Config
+  options?: QueryOptions
 ) => {
   const { audiusSdk } = useAudiusQueryContext()
   const queryClient = useQueryClient()
@@ -50,7 +46,7 @@ export const useCollection = (
 
       return collection
     },
-    staleTime: config?.staleTime,
-    enabled: config?.enabled !== false && !!collectionId
+    staleTime: options?.staleTime,
+    enabled: options?.enabled !== false && !!collectionId
   })
 }

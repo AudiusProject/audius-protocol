@@ -11,15 +11,11 @@ import { EntriesByKind } from '~/store/cache/types'
 import { encodeHashId } from '~/utils/hashIds'
 
 import { QUERY_KEYS } from './queryKeys'
-
-type Config = {
-  enabled?: boolean
-  staleTime?: number
-}
+import { QueryOptions } from './types'
 
 export const useTracks = (
   trackIds: ID[] | null | undefined,
-  config?: Config
+  options?: QueryOptions
 ) => {
   const { audiusSdk } = useAudiusQueryContext()
   const queryClient = useQueryClient()
@@ -66,8 +62,11 @@ export const useTracks = (
 
       return tracks
     },
-    staleTime: config?.staleTime,
+    staleTime: options?.staleTime,
     enabled:
-      config?.enabled !== false && trackIds !== null && trackIds !== undefined
+      options?.enabled !== false &&
+      !!audiusSdk &&
+      trackIds !== null &&
+      trackIds !== undefined
   })
 }
