@@ -102,7 +102,7 @@ const AiPageProvider = ({
 
   const childProps = {
     title: messages.title,
-    user,
+    user: user ?? null,
     goToArtistPage,
     getLineupProps
   }
