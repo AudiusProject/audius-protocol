@@ -132,10 +132,10 @@ export const EditTrackForm = (props: EditTrackFormProps) => {
 
   const handleDownload = useCallback(() => {
     openWaitForDownload({
-      trackIds: [values.track_id],
+      trackIds: [initialValues.track_id],
       quality: DownloadQuality.ORIGINAL
     })
-  }, [openWaitForDownload, values])
+  }, [openWaitForDownload, initialValues.track_id])
 
   const handlePressBack = useCallback(() => {
     if (!dirty) {
