@@ -6,6 +6,7 @@ import {
   chatActions,
   playerActions
 } from '@audius/common/store'
+import { route } from '@audius/common/utils'
 import { PortalHost } from '@gorhom/portal'
 import { useLinkTo } from '@react-navigation/native'
 import { createNativeStackNavigator } from '@react-navigation/native-stack'
@@ -40,6 +41,7 @@ const { getAccountStatus } = accountSelectors
 const { fetchMoreChats, fetchUnreadMessagesCount, connect, disconnect } =
   chatActions
 const { reset } = playerActions
+const { FEED_PAGE } = route
 
 const Stack = createNativeStackNavigator()
 
@@ -114,7 +116,7 @@ export const RootScreen = () => {
         navigate('HomeStack')
       }
       // Route to the original deep link after user signs up
-      if (routeOnCompletion && routeOnCompletion !== '/feed') {
+      if (routeOnCompletion && routeOnCompletion !== FEED_PAGE) {
         linkTo(routeOnCompletion)
       }
     }
