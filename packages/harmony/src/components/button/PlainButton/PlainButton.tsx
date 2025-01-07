@@ -16,6 +16,7 @@ export const PlainButton = forwardRef<HTMLButtonElement, PlainButtonProps>(
       variant = 'default',
       size = 'default',
       disabled,
+      children,
       ...baseProps
     } = props
     const isDisabled = disabled || baseProps.isLoading
@@ -93,7 +94,11 @@ export const PlainButton = forwardRef<HTMLButtonElement, PlainButtonProps>(
           icon: iconCss
         }}
         {...baseProps}
-      />
+      >
+        <span css={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>
+          {children}
+        </span>
+      </BaseButton>
     )
   }
 )
