@@ -333,18 +333,6 @@ function* fetchProfileAsync(action) {
       )
     )
 
-<<<<<<< HEAD
-    if (!isNativeMobile) {
-      // Note that mobile dispatches this action at the component level
-      yield put(profilePageActions.fetchCollections(user.handle))
-    }
-=======
-    // if (!isNativeMobile) {
-    //   // Note that mobile dispatches this action at the component level
-    //   yield put(profilePageActions.fetchCollections(user.handle))
-    // }
->>>>>>> 5da0cf1802 (Profile collections to tan-query)
-
     // Get chat permissions
     yield put(fetchPermissions({ userIds: [user.user_id] }))
 
