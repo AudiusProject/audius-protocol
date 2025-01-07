@@ -208,8 +208,6 @@ const TrackEditForm = (
   )
 
   const handleTogglePreview = useCallback(() => {
-    togglePreview(track.preview, trackIdx)
-
     if (!isPreviewPlaying) {
       // Track Preview event
       trackEvent(
@@ -220,6 +218,8 @@ const TrackEditForm = (
         })
       )
     }
+
+    togglePreview(track.preview, trackIdx)
   }, [
     togglePreview,
     track.preview,
