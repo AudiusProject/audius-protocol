@@ -12,7 +12,7 @@ import Animated, {
   withTiming
 } from 'react-native-reanimated'
 
-import { DEFAULT_HIT_SLOP } from 'app/harmony-native/constants'
+import { DEFAULT_HIT_SLOP } from '@audius/harmony-native'
 
 import { useTheme } from '../../../foundations/theme'
 import { Text } from '../../Text/Text'
