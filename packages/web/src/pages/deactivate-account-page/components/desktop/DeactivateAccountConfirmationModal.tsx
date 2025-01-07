@@ -1,10 +1,8 @@
-import { Button, Modal } from '@audius/harmony'
+import { Button, Flex, Modal, Text } from '@audius/harmony'
 
 import LoadingSpinnerFullPage from 'components/loading-spinner-full-page/LoadingSpinnerFullPage'
 
 import { messages } from '../../DeactivateAccountPage'
-
-import styles from './DeactivateAccountConfirmationModal.module.css'
 
 type DeactivateAccountModalProps = {
   isLoading: boolean
@@ -28,25 +26,33 @@ export const DeactivateAccountConfirmationModal = ({
       showTitleHeader
       title={messages.confirmTitle}
     >
-      <div className={styles.container}>
+      <Flex direction='column' pv='2xl' ph='4xl' gap='xl'>
         {isLoading ? (
           <LoadingSpinnerFullPage />
         ) : (
-          <div className={styles.confirmText}>{messages.confirm}</div>
+          <Text variant='body' strength='strong' color='danger'>
+            {messages.confirm}
+          </Text>
         )}
-        <div className={styles.buttons}>
+        <Flex direction='row' gap='xl'>
           <Button
             variant='destructive'
-            isLoading={isLoading}
+            disabled={isLoading}
             onClick={onConfirm}
+            fullWidth
           >
             {messages.buttonDeactivate}
           </Button>
-          <Button isLoading={isLoading} onClick={onClose}>
+          <Button
+            variant='secondary'
+            disabled={isLoading}
+            onClick={onClose}
+            fullWidth
+          >
             {messages.buttonGoBack}
           </Button>
-        </div>
-      </div>
+        </Flex>
+      </Flex>
     </Modal>
   )
 }
