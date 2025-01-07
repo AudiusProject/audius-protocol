@@ -247,7 +247,11 @@ export const Modal = forwardRef<HTMLDivElement, ModalProps>(function Modal(
       // Closing when we're not open can cause a race condition when opened
       // via a click since this handler exists prior to visibility,
       // causing the modal to open and close immediately
-      if (!isOpen || modalContentClickedRef?.current) {
+      if (
+        !isOpen ||
+        modalContentClickedRef?.current ||
+        !dismissOnClickOutside
+      ) {
         modalContentClickedRef.current = false
         return true
       }
