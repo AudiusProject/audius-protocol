@@ -6,8 +6,6 @@ import { useAudiusQueryContext } from '~/audius-query'
 import { AnalyticsEvent } from '~/models/Analytics'
 import { createUserBankIfNeeded } from '~/services/audius-backend'
 import { getWalletAddresses } from '~/store/account/selectors'
-import { solanaSelectors } from '~/store/solana'
-const { getFeePayer } = solanaSelectors
 
 export const useCreateUserbankIfNeeded = ({
   recordAnalytics,
@@ -16,14 +14,13 @@ export const useCreateUserbankIfNeeded = ({
   recordAnalytics: (event: AnalyticsEvent) => void
   mint: 'USDC' | 'wAUDIO'
 }) => {
-  const feePayerOverride = useSelector(getFeePayer)
   const { currentUser } = useSelector(getWalletAddresses)
   const { audiusSdk } = useAudiusQueryContext()
 
   useEffect(() => {
     const initUserBank = async () => {
       const sdk = await audiusSdk()
-      if (!feePayerOverride || !currentUser) return
+      if (!currentUser) return
       createUserBankIfNeeded(sdk, {
         recordAnalytics,
         mint,
@@ -31,5 +28,5 @@ export const useCreateUserbankIfNeeded = ({
       })
     }
     initUserBank()
-  }, [currentUser, feePayerOverride, mint, recordAnalytics, audiusSdk])
+  }, [currentUser, mint, recordAnalytics, audiusSdk])
 }

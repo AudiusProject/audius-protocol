@@ -2,7 +2,6 @@ import { Name, ErrorLevel, BNWei } from '@audius/common/models'
 import {
   IntKeys,
   FeatureFlags,
-  deriveUserBankPubkey,
   createUserBankIfNeeded,
   LocalStorage,
   MEMO_PROGRAM_ID
@@ -67,8 +66,7 @@ import { JupiterSingleton } from 'services/audius-backend/Jupiter'
 import {
   TRANSACTION_FEE_FALLBACK,
   getRootAccountRentExemptionMinimum,
-  getSolanaConnection,
-  getTransferTransactionFee
+  getSolanaConnection
 } from 'services/solana/solana'
 import { reportToSentry } from 'store/errors/reportToSentry'
 import { waitForWrite } from 'utils/sagaHelpers'
@@ -785,9 +783,16 @@ function* getTransferTransaction({
   if (!currentUser) {
     throw new Error('Failed to get current user wallet address')
   }
-  const userBank = yield* call(deriveUserBankPubkey, sdk, {
-    ethAddress: currentUser
-  })
+  const userBank = yield* call(
+    [
+      sdk.services.claimableTokensClient,
+      sdk.services.claimableTokensClient.deriveUserBank
+    ],
+    {
+      ethWallet: currentUser,
+      mint: 'wAUDIO'
+    }
+  )
   const mintPublicKey = new PublicKey(env.WAUDIO_MINT_ADDRESS)
   // See: https://github.com/solana-labs/solana-program-library/blob/d6297495ea4dcc1bd48f3efdd6e3bbdaef25a495/memo/js/src/index.ts#L27
   const memoInstruction = new TransactionInstruction({
@@ -1200,12 +1205,18 @@ function* recoverPurchaseIfNecessary() {
 
       // If the user's root wallet has $AUDIO, that usually indicates a failed transfer
       if (audioBalance > BigInt(0)) {
+        const transferTx = yield* call(getTransferTransaction, {
+          source: rootAccount.publicKey,
+          transferAmount: BigInt(0),
+          provider: OnRampProvider.COINBASE
+        })
         const transferFee = yield* call(
-          getTransferTransactionFee,
-          rootAccount.publicKey
+          [connection, connection.getFeeForMessage],
+          transferTx.message
         )
         const neededSolBalance =
-          (yield* call(getRootAccountRentExemptionMinimum)) + transferFee
+          (yield* call(getRootAccountRentExemptionMinimum)) +
+          (transferFee.value ?? TRANSACTION_FEE_FALLBACK)
 
         // Check we can afford to transfer
         if (existingBalance - neededSolBalance > 0) {

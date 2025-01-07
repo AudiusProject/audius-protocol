@@ -4,7 +4,6 @@ import {
   chatSagas,
   reachabilitySagas as commonReachabilitySagas,
   remoteConfigSagas,
-  solanaSagas,
   relatedArtistsSagas,
   deletePlaylistConfirmationModalUISagas as deletePlaylistConfirmationModalSagas,
   duplicateAddConfirmationModalUISagas as duplicateAddConfirmationModalSagas,
@@ -211,12 +210,8 @@ export default function* rootSaga() {
     // Remote config
     remoteConfigSagas(),
 
-    // Solana
-    solanaSagas(),
-
     // Tipping
     tippingSagas(),
-    solanaSagas(),
 
     // Gated content
     gatedContentSagas(),
