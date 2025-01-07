@@ -49,7 +49,7 @@ export const PurchaseQuote = () => {
           <>
             <IconSOL />
             {formatNumberString(purchaseInfo?.estimatedSOL.uiAmountString, {
-              maxDecimals: 2
+              maxDecimals: 3
             })}
             <span className={styles.tokenLabel}>{messages.sol}</span>
             <IconCaretDown className={styles.caret} />

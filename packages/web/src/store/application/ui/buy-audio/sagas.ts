@@ -4,11 +4,11 @@ import {
   FeatureFlags,
   deriveUserBankPubkey,
   createUserBankIfNeeded,
-  LocalStorage
+  LocalStorage,
+  MEMO_PROGRAM_ID
 } from '@audius/common/services'
 import { getWalletAddresses } from '@audius/common/src/store/account/selectors'
 import {
-  solanaSelectors,
   walletSelectors,
   walletActions,
   buyAudioActions,
@@ -38,12 +38,15 @@ import {
 } from '@audius/common/utils'
 import { QuoteResponse } from '@jup-ag/api'
 import {
-  AddressLookupTableAccount,
+  createTransferCheckedInstruction,
+  getAssociatedTokenAddressSync
+} from '@solana/spl-token'
+import {
   Connection,
   Keypair,
   LAMPORTS_PER_SOL,
   PublicKey,
-  TransactionMessage
+  TransactionInstruction
 } from '@solana/web3.js'
 import BN from 'bn.js'
 import { takeLatest, takeLeading } from 'redux-saga/effects'
@@ -52,7 +55,6 @@ import { call, select, put, take, race, fork } from 'typed-redux-saga'
 import { make } from 'common/store/analytics/actions'
 import { track } from 'services/analytics'
 import {
-  createTransferToUserBankTransaction,
   getAssociatedTokenRentExemptionMinimum,
   getAudioAccount,
   getAudioAccountInfo,
@@ -70,8 +72,6 @@ import {
 } from 'services/solana/solana'
 import { reportToSentry } from 'store/errors/reportToSentry'
 import { waitForWrite } from 'utils/sagaHelpers'
-
-const { getFeePayer } = solanaSelectors
 
 const {
   calculateAudioPurchaseInfo,
@@ -189,6 +189,7 @@ function* getAssociatedAccountCreationFees({
         rootAccount,
         mintKey: new PublicKey(mintKey)
       })
+      console.debug()
       yield* put(
         cacheAssociatedTokenAccount({
           account: mintKey.toString(),
@@ -216,76 +217,33 @@ function* getTransactionFees({
   rootAccount: PublicKey
   feesCache: ReturnType<typeof getFeesCache>
 }) {
-  const sdk = yield* getSDK()
   let transactionFees = feesCache?.transactionFees ?? 0
   if (!transactionFees) {
-    const { instructions: swapInstructions, lookupTableAddresses } =
-      yield* call(JupiterSingleton.getSwapInstructions, {
-        quote,
-        userPublicKey: rootAccount
-      })
-    const { currentUser } = yield* select(getWalletAddresses)
-    if (!currentUser) {
-      throw new Error('Failed to get current user wallet address')
-    }
-    const userBank = yield* call(deriveUserBankPubkey, sdk, {
-      ethAddress: currentUser
+    const transferTransaction = yield* call(getTransferTransaction, {
+      source: rootAccount,
+      provider: OnRampProvider.COINBASE,
+      transferAmount: BigInt(0)
     })
-    const transferTransaction = yield* call(
-      createTransferToUserBankTransaction,
-      {
-        userBank,
-        fromAccount: rootAccount,
-        // eslint-disable-next-line new-cap
-        amount: BigInt(quote.outAmount),
-        // The provider here doesn't matter, we're not sending this transaction
-        memo: MEMO_MESSAGES[OnRampProvider.COINBASE]
-      }
-    )
     const connection = yield* call(getSolanaConnection)
-
-    // Calculate fees for transfer transaction (legacy transaction)
-    const latestBlockhashResult = yield* call(
-      [connection, connection.getLatestBlockhash],
-      'finalized'
+    const transferFee = yield* call(
+      [connection, connection.getFeeForMessage],
+      transferTransaction.message
     )
-    if (!transferTransaction.recentBlockhash) {
-      transferTransaction.recentBlockhash = latestBlockhashResult.blockhash
-    }
-    if (!transferTransaction.feePayer) {
-      transferTransaction.feePayer = rootAccount
-    }
+    // Pad by a multiple in case of failure so that transfer retries can succeed
     transactionFees +=
-      (yield* call(
-        [transferTransaction, transferTransaction.getEstimatedFee],
-        connection
-      )) ?? TRANSACTION_FEE_FALLBACK
+      (transferFee.value ?? TRANSACTION_FEE_FALLBACK) *
+      NUM_TRANSFER_TRANSACTIONS
 
     // Calculate fees for swap transaction (v0 transaction)
-    const lookupTableAccounts: AddressLookupTableAccount[] = []
-    // Need to use for loop instead of forEach to properly await async calls
-    for (const address of lookupTableAddresses) {
-      if (address === undefined) continue
-      const lookupTableAccount = yield* call(
-        [connection, connection.getAddressLookupTable],
-        new PublicKey(address)
-      )
-      if (lookupTableAccount.value !== null) {
-        lookupTableAccounts.push(lookupTableAccount.value)
-      } else {
-        // Abort if a lookup table account is missing because the resulting transaction
-        // might be too large
-        throw new Error(`Missing lookup table account for ${address}`)
-      }
-    }
-    const message = new TransactionMessage({
-      payerKey: rootAccount,
-      recentBlockhash: latestBlockhashResult.blockhash,
-      instructions: swapInstructions
-    }).compileToV0Message(lookupTableAccounts)
-    transactionFees +=
-      (yield* call([connection, connection.getFeeForMessage], message)).value ??
-      TRANSACTION_FEE_FALLBACK
+    const swapTransaction = yield* call(getSwapTransaction, {
+      quote,
+      source: rootAccount
+    })
+    const swapFees = yield* call(
+      [connection, connection.getFeeForMessage],
+      swapTransaction.message
+    )
+    transactionFees += swapFees.value ?? TRANSACTION_FEE_FALLBACK
 
     yield* put(cacheTransactionFees({ transactionFees }))
   }
@@ -308,20 +266,11 @@ function* getSwapFees({ quote }: { quote: QuoteResponse }) {
     throw new Error('Missing solana root wallet')
   }
 
-  const transferFee = yield* call(
-    getTransferTransactionFee,
-    rootAccount.publicKey
-  )
-  // Allows for 3 transaction fees
-  const rootAccountMinBalance =
-    (yield* call(getRootAccountRentExemptionMinimum)) +
-    transferFee * NUM_TRANSFER_TRANSACTIONS
-
+  const rootAccountMinBalance = yield* call(getRootAccountRentExemptionMinimum)
   const associatedAccountCreationFees = yield* call(
     getAssociatedAccountCreationFees,
     { rootAccount: rootAccount.publicKey, quote, feesCache }
   )
-
   const transactionFees = yield* call(getTransactionFees, {
     rootAccount: rootAccount.publicKey,
     quote,
@@ -409,11 +358,6 @@ function* getAudioPurchaseInfo({
     }
 
     // Ensure userbank is created
-    const feePayerOverride = yield* select(getFeePayer)
-    if (!feePayerOverride) {
-      console.error(`getAudioPurchaseInfo: unexpectedly no fee payer override`)
-      return
-    }
     const { currentUser } = yield* select(getWalletAddresses)
     if (!currentUser) {
       throw new Error('Failed to get current user wallet address')
@@ -469,11 +413,14 @@ function* getAudioPurchaseInfo({
       'finalized'
     )
 
+    // The amount needed to purchase is the SOL required to produce the output
+    // AUDIO plus all SOL necessary to facilitate the transaction less the SOL
+    // the user already has in their root wallet.
     const estimatedLamports = Math.max(
       inSol +
         associatedAccountCreationFees +
         transactionFees +
-        rootAccountMinBalance +
+        rootAccountMinBalance -
         existingBalance,
       0
     )
@@ -692,6 +639,35 @@ function* purchaseStep({
   return { purchasedLamports, purchaseTransactionId, newBalance }
 }
 
+function* getSwapTransaction({
+  quote,
+  source
+}: {
+  quote: QuoteResponse
+  source: PublicKey
+}) {
+  const sdk = yield* getSDK()
+  const { instructions: swapInstructions, lookupTableAddresses } = yield* call(
+    JupiterSingleton.getSwapInstructions,
+    {
+      quote,
+      userPublicKey: source
+    }
+  )
+  const transaction = yield* call(
+    [sdk.services.solanaClient, sdk.services.solanaClient.buildTransaction],
+    {
+      instructions: swapInstructions,
+      feePayer: source,
+      addressLookupTables: lookupTableAddresses.map(
+        (address) => new PublicKey(address)
+      ),
+      priorityFee: null // already has compute budget instructions from Jupiter
+    }
+  )
+  return transaction
+}
+
 type SwapStepParams = {
   exchangeAmount: bigint
   desiredAudioAmount?: AmountObject
@@ -750,28 +726,12 @@ function* swapStep({
 
   // Swap the SOL for AUDIO
   yield* put(swapStarted())
-  const { instructions: swapInstructions, lookupTableAddresses } = yield* call(
-    JupiterSingleton.getSwapInstructions,
-    {
-      quote: quote.quote,
-      userPublicKey: rootAccount.publicKey
-    }
-  )
-
-  const sdk = yield* getSDK()
-
-  const transaction = yield* call(
-    [sdk.services.solanaClient, sdk.services.solanaClient.buildTransaction],
-    {
-      instructions: swapInstructions,
-      feePayer: rootAccount.publicKey,
-      addressLookupTables: lookupTableAddresses.map(
-        (address) => new PublicKey(address)
-      ),
-      priorityFee: null // already has compute budget instructions from Jupiter
-    }
-  )
+  const transaction = yield* call(getSwapTransaction, {
+    quote: quote.quote,
+    source: rootAccount.publicKey
+  })
   transaction.sign([rootAccount])
+  const sdk = yield* getSDK()
   const txId = yield* call(
     [sdk.services.solanaClient, sdk.services.solanaClient.sendTransaction],
     transaction,
@@ -809,6 +769,56 @@ function* swapStep({
   }
 }
 
+type TransferTransactionParams = {
+  source: PublicKey
+  transferAmount: bigint
+  provider: OnRampProvider
+}
+function* getTransferTransaction({
+  source,
+  provider,
+  transferAmount
+}: TransferTransactionParams) {
+  const sdk = yield* getSDK()
+  const env = yield* getContext('env')
+  const { currentUser } = yield* select(getWalletAddresses)
+  if (!currentUser) {
+    throw new Error('Failed to get current user wallet address')
+  }
+  const userBank = yield* call(deriveUserBankPubkey, sdk, {
+    ethAddress: currentUser
+  })
+  const mintPublicKey = new PublicKey(env.WAUDIO_MINT_ADDRESS)
+  // See: https://github.com/solana-labs/solana-program-library/blob/d6297495ea4dcc1bd48f3efdd6e3bbdaef25a495/memo/js/src/index.ts#L27
+  const memoInstruction = new TransactionInstruction({
+    keys: [
+      {
+        pubkey: source,
+        isSigner: true,
+        isWritable: true
+      }
+    ],
+    programId: MEMO_PROGRAM_ID,
+    data: Buffer.from(MEMO_MESSAGES[provider])
+  })
+  const transferInstruction = createTransferCheckedInstruction(
+    getAssociatedTokenAddressSync(mintPublicKey, source),
+    mintPublicKey,
+    userBank,
+    source,
+    transferAmount,
+    8
+  )
+  const transaction = yield* call(
+    [sdk.services.solanaClient, sdk.services.solanaClient.buildTransaction],
+    {
+      feePayer: source,
+      instructions: [memoInstruction, transferInstruction]
+    }
+  )
+  return transaction
+}
+
 type TransferStepParams = {
   rootAccount: Keypair
   transferAmount: bigint
@@ -822,31 +832,15 @@ function* transferStep({
   const sdk = yield* getSDK()
   yield* put(transferStarted())
 
-  const { currentUser } = yield* select(getWalletAddresses)
-  if (!currentUser) {
-    throw new Error('Failed to get current user wallet address')
-  }
-  const userBank = yield* call(deriveUserBankPubkey, sdk, {
-    ethAddress: currentUser
-  })
-  const transferTransaction = yield* call(createTransferToUserBankTransaction, {
-    userBank,
-    fromAccount: rootAccount.publicKey,
-    amount: transferAmount,
-    memo: MEMO_MESSAGES[provider]
-  })
-
   console.debug(`Starting transfer transaction...`)
   let transferError, signature
+  const transaction = yield* call(getTransferTransaction, {
+    source: rootAccount.publicKey,
+    provider,
+    transferAmount
+  })
+  transaction.sign([rootAccount])
   try {
-    const transaction = yield* call(
-      [sdk.services.solanaClient, sdk.services.solanaClient.buildTransaction],
-      {
-        feePayer: rootAccount.publicKey,
-        instructions: transferTransaction.instructions
-      }
-    )
-    transaction.sign([rootAccount])
     signature = yield* call(
       [sdk.services.solanaClient, sdk.services.solanaClient.sendTransaction],
       transaction,
@@ -860,7 +854,7 @@ function* transferStep({
 
   if (transferError) {
     console.debug(
-      `Transfer transaction stringified: ${JSON.stringify(transferTransaction)}`
+      `Transfer transaction stringified: ${JSON.stringify(transaction)}`
     )
     throw new Error(`Transfer transaction failed: ${transferError}`)
   }
@@ -945,11 +939,6 @@ function* doBuyAudio({
     )
 
     // Ensure userbank is created
-    const feePayerOverride = yield* select(getFeePayer)
-    if (!feePayerOverride) {
-      console.error('doBuyAudio: unexpectedly no fee payer override')
-      return
-    }
     const { currentUser } = yield* select(getWalletAddresses)
     if (!currentUser) {
       throw new Error('Failed to get current user wallet address')

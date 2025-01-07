@@ -1,18 +1,10 @@
-import { MEMO_PROGRAM_ID } from '@audius/common/services'
 import {
   TokenAccountNotFoundError,
-  createTransferCheckedInstruction,
   getAccount,
   getAssociatedTokenAddress
 } from '@solana/spl-token'
-import {
-  LAMPORTS_PER_SOL,
-  PublicKey,
-  Transaction,
-  TransactionInstruction
-} from '@solana/web3.js'
+import { LAMPORTS_PER_SOL, PublicKey } from '@solana/web3.js'
 
-import { env } from 'services/env'
 import { getSolanaConnection } from 'services/solana/solana'
 
 import { audiusBackendInstance } from './audius-backend-instance'
@@ -196,45 +188,4 @@ export const pollForNewTransaction = async ({
     return transaction
   }
   throw new Error('Transaction polling exceeded maximum retries')
-}
-
-export const createTransferToUserBankTransaction = async ({
-  userBank,
-  fromAccount,
-  amount,
-  memo
-}: {
-  userBank: PublicKey
-  fromAccount: PublicKey
-  amount: bigint
-  memo: string
-}) => {
-  const mintPublicKey = new PublicKey(env.WAUDIO_MINT_ADDRESS)
-  const associatedTokenAccount = await getAudioAccount({
-    rootAccount: fromAccount
-  })
-  // See: https://github.com/solana-labs/solana-program-library/blob/d6297495ea4dcc1bd48f3efdd6e3bbdaef25a495/memo/js/src/index.ts#L27
-  const memoInstruction = new TransactionInstruction({
-    keys: [
-      {
-        pubkey: fromAccount,
-        isSigner: true,
-        isWritable: true
-      }
-    ],
-    programId: MEMO_PROGRAM_ID,
-    data: Buffer.from(memo)
-  })
-  const transferInstruction = createTransferCheckedInstruction(
-    associatedTokenAccount,
-    mintPublicKey,
-    userBank,
-    fromAccount,
-    amount,
-    8
-  )
-  const tx = new Transaction()
-  tx.add(memoInstruction)
-  tx.add(transferInstruction)
-  return tx
 }
