@@ -6,11 +6,7 @@ version: '3.9'
 
 services:
   storage:
-    build:
-      context: ${PROJECT_ROOT}
-      dockerfile: ${PROJECT_ROOT}/cmd/mediorum/Dockerfile
-      args:
-        git_sha: '${GIT_COMMIT}'
+    image: audius/mediorum:prerelease
     restart: unless-stopped
     environment:
       - dirTemplate=/data/mediorum_dev_%d
@@ -31,7 +27,6 @@ services:
     volumes:
       - mediorum:/data
       - legacy_creator_file_storage:/file_storage
-      - ${PROJECT_ROOT}/cmd/mediorum:/app
       - ${PROJECT_ROOT}/dev-tools:/tmp/dev-tools
     profiles:
       - legacy
@@ -41,11 +36,7 @@ services:
       eth-ganache:
         condition: service_healthy
     healthcheck:
-      test:
-        [
-          'CMD-SHELL',
-          'curl --fail http://localhost:1991/health_check || exit 1'
-        ]
+      test: [ 'CMD-SHELL', 'curl --fail http://localhost:1991/health_check || exit 1' ]
       interval: 10s
       start_period: 60s
       timeout: 5s
@@ -53,12 +44,7 @@ services:
 
   core:
     container_name: core
-    build:
-      context: ${PROJECT_ROOT}
-      dockerfile: ${PROJECT_ROOT}/cmd/core/infra/Dockerfile
-      target: final
-      args:
-        git_sha: '${GIT_COMMIT}'
+    image: audius/core:prerelease
     restart: unless-stopped
     profiles:
       - legacy

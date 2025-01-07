@@ -1,0 +1,23 @@
+FROM golang:alpine
+
+WORKDIR /app
+
+ENV discoveryOneGRPC=audiusd-1:50051
+ENV discoveryOneJRPC=http://audiusd-1:26657
+ENV discoveryOneOAPI=audiusd-1:26659
+
+ENV contentOneGRPC=audiusd-2:50051
+ENV contentOneJRPC=http://audiusd-2:26657
+ENV contentOneOAPI=audiusd-2:26659
+
+ENV contentTwoGRPC=audiusd-3:50051
+ENV contentTwoJRPC=http://audiusd-3:26657
+ENV contentTwoOAPI=audiusd-3:26659
+
+ENV contentThreeGRPC=audiusd-4:50051
+ENV contentThreeJRPC=http://audiusd-4:26657
+ENV contentThreeOAPI=audiusd-4:26659
+
+COPY . .
+
+CMD go test ./pkg/core/... -count 1 -timeout 60s
