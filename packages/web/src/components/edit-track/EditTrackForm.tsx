@@ -262,10 +262,10 @@ const TrackEditForm = (
 
   const onClickDownload = useCallback(() => {
     openWaitforDownload({
-      trackIds: [track.metadata.track_id],
+      trackIds: [initialTrackValues.track_id],
       quality: DownloadQuality.ORIGINAL
     })
-  }, [openWaitforDownload, track])
+  }, [openWaitforDownload, initialTrackValues.track_id])
 
   return (
     <Form id={formId}>
