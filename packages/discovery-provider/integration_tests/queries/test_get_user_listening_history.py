@@ -354,7 +354,11 @@ def test_get_user_listening_history_filter_deleted_owners(app):
         ],
         "users": [
             {"user_id": 1, "handle": "user-1", "is_deactivated": False},
-            {"user_id": 2, "handle": "user-2", "is_deactivated": True},  # Deactivated user
+            {
+                "user_id": 2,
+                "handle": "user-2",
+                "is_deactivated": True,
+            },  # Deactivated user
         ],
     }
 
@@ -378,4 +382,6 @@ def test_get_user_listening_history_filter_deleted_owners(app):
     # Should only return track 1 since track 2's owner is deactivated
     assert len(track_history) == 1
     assert track_history[0][response_name_constants.track_id] == 1
-    assert track_history[0][response_name_constants.activity_timestamp] == str(TIMESTAMP)
+    assert track_history[0][response_name_constants.activity_timestamp] == str(
+        TIMESTAMP
+    )
