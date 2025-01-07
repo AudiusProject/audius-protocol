@@ -1,5 +1,8 @@
 import { useCallback, useContext } from 'react'
 
+import type { ID } from '@audius/common/models'
+import { Name } from '@audius/common/models'
+
 import {
   Flex,
   IconButton,
@@ -9,7 +12,6 @@ import {
   PlainButton
 } from '@audius/harmony-native'
 import { EditTrackFormPreviewContext } from 'app/screens/edit-track-screen/EditTrackFormPreviewContext'
-import { ID, Name } from '@audius/common/models'
 import { make, track as trackEvent } from 'app/services/analytics'
 
 type FileReplaceContainerProps = {
@@ -47,7 +49,7 @@ export const FileReplaceContainer = ({
         })
       )
     }
-  }, [filePath, isPlaying, playPreview, stopPreview])
+  }, [filePath, isPlaying, isUpload, playPreview, stopPreview, trackId])
 
   return (
     <Flex

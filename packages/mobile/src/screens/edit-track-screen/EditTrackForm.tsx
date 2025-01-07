@@ -142,7 +142,7 @@ export const EditTrackForm = (props: EditTrackFormProps) => {
         source: isUpload ? 'upload' : 'edit'
       })
     )
-  }, [selectFile])
+  }, [selectFile, isUpload, values.track_id])
 
   const handleDownload = useCallback(() => {
     openWaitForDownload({
