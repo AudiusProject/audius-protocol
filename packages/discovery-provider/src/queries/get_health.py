@@ -70,6 +70,7 @@ default_indexing_interval_seconds = int(
     shared_config["discprov"]["block_processing_interval_sec"]
 )
 infra_setup = shared_config["discprov"]["infra_setup"]
+environment = shared_config["discprov"]["env"]
 
 # min system requirement values
 min_number_of_cpus: int = 8  # 8 cpu
@@ -266,7 +267,9 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
     core_listens_health = get_core_listens_health(
         redis=redis, plays_count_max_drift=plays_count_max_drift
     )
-    indexing_plays_with_core = core_health.get("indexing_plays")
+    indexing_plays_with_core = (
+        core_health and core_health.get("indexing_plays") and environment != "prod"
+    )
 
     play_health_info = get_play_health_info(redis, plays_count_max_drift)
     if indexing_plays_with_core:
