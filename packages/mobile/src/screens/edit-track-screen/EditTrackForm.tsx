@@ -1,12 +1,11 @@
 import { useCallback, useContext, useEffect, useRef, useState } from 'react'
 
 import { useFeatureFlag } from '@audius/common/hooks'
-// import { DownloadQuality, Name } from '@audius/common/models'
-import { Name } from '@audius/common/models'
+import { DownloadQuality, Name } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
 import type { TrackForUpload } from '@audius/common/store'
 import {
-  // useWaitForDownloadModal,
+  useWaitForDownloadModal,
   uploadActions,
   useReplaceTrackConfirmationModal,
   useReplaceTrackProgressModal,
@@ -104,6 +103,9 @@ export const EditTrackForm = (props: EditTrackFormProps) => {
   const { isEnabled: isTrackReplaceEnabled } = useFeatureFlag(
     FeatureFlags.TRACK_AUDIO_REPLACE
   )
+  const { isEnabled: isTrackReplaceDownloadsEnabled } = useFeatureFlag(
+    FeatureFlags.TRACK_REPLACE_DOWNLOADS
+  )
   const initiallyHidden = initialValues.is_unlisted
   const isInitiallyScheduled = initialValues.is_scheduled_release
   const usersMayLoseAccess = !isUpload && !initiallyHidden && values.is_unlisted
@@ -130,7 +132,7 @@ export const EditTrackForm = (props: EditTrackFormProps) => {
   const { onOpen: openEarlyReleaseConfirmation } =
     useEarlyReleaseConfirmationModal()
   const { onOpen: openPublishConfirmation } = usePublishConfirmationModal()
-  // const { onOpen: openWaitForDownload } = useWaitForDownloadModal()
+  const { onOpen: openWaitForDownload } = useWaitForDownloadModal()
 
   const handleReplace = useCallback(() => {
     selectFile()
@@ -145,20 +147,20 @@ export const EditTrackForm = (props: EditTrackFormProps) => {
     )
   }, [selectFile, isUpload, values.track_id])
 
-  // const handleDownload = useCallback(() => {
-  //   openWaitForDownload({
-  //     trackIds: [initialValues.track_id],
-  //     quality: DownloadQuality.ORIGINAL
-  //   })
+  const handleDownload = useCallback(() => {
+    openWaitForDownload({
+      trackIds: [initialValues.track_id],
+      quality: DownloadQuality.ORIGINAL
+    })
 
-  //   // Track Download event
-  //   trackEvent(
-  //     make({
-  //       eventName: Name.TRACK_REPLACE_DOWNLOAD,
-  //       trackId: initialValues.track_id
-  //     })
-  //   )
-  // }, [openWaitForDownload, initialValues.track_id])
+    // Track Download event
+    trackEvent(
+      make({
+        eventName: Name.TRACK_REPLACE_DOWNLOAD,
+        trackId: initialValues.track_id
+      })
+    )
+  }, [openWaitForDownload, initialValues.track_id])
 
   const handlePressBack = useCallback(() => {
     if (!dirty) {
@@ -323,9 +325,11 @@ export const EditTrackForm = (props: EditTrackFormProps) => {
         isOpen={isOverflowMenuOpen}
         onClose={handleOverflowMenuClose}
         onReplace={handleReplace}
-        onDownload={undefined}
-        // KJ - TODO: Reenable download once the DN code goes out
-        // onDownload={isUpload ? undefined : handleDownload}
+        onDownload={
+          !isUpload && isTrackReplaceDownloadsEnabled
+            ? handleDownload
+            : undefined
+        }
       />
     </>
   )

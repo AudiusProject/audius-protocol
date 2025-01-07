@@ -194,6 +194,9 @@ const TrackEditForm = (
   const { isEnabled: isTrackAudioReplaceEnabled } = useFeatureFlag(
     FeatureFlags.TRACK_AUDIO_REPLACE
   )
+  const { isEnabled: isTrackReplaceDownloadsEnabled } = useFeatureFlag(
+    FeatureFlags.TRACK_REPLACE_DOWNLOADS
+  )
 
   const [{ value: track }, , { setValue: setTrackValue }] = useField(
     `tracks.${trackIdx}`
@@ -208,8 +211,6 @@ const TrackEditForm = (
   )
 
   const handleTogglePreview = useCallback(() => {
-    togglePreview(track.preview, trackIdx)
-
     if (!isPreviewPlaying) {
       // Track Preview event
       trackEvent(
@@ -220,6 +221,8 @@ const TrackEditForm = (
         })
       )
     }
+
+    togglePreview(track.preview, trackIdx)
   }, [
     togglePreview,
     track.preview,
@@ -343,9 +346,7 @@ const TrackEditForm = (
                 isPlaying={isPreviewPlaying}
                 onClickReplace={onClickReplace}
                 onClickDownload={onClickDownload}
-                downloadEnabled={false}
-                // KJ - TODO: Reenable download once the DN code goes out
-                // downloadEnabled={!isUpload}
+                downloadEnabled={!isUpload && isTrackReplaceDownloadsEnabled}
               />
             ) : null}
             <TrackMetadataFields />
