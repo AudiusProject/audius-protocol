@@ -7,7 +7,6 @@ import {
   Name,
   Kind,
   Track,
-  Collection,
   ID,
   Remix,
   StemUploadWithFile,
@@ -15,7 +14,6 @@ import {
   OptionalId
 } from '@audius/common/models'
 import {
-  Entry,
   getContext,
   accountSelectors,
   cacheTracksSelectors,
@@ -39,7 +37,6 @@ import {
 import { call, fork, put, select, takeEvery } from 'typed-redux-saga'
 
 import { make } from 'common/store/analytics/actions'
-import { fetchUsers } from 'common/store/cache/users/sagas'
 import * as signOnActions from 'common/store/pages/signon/actions'
 import { updateProfileAsync } from 'common/store/profile/sagas'
 import { addPremiumMetadata } from 'common/store/upload/sagaHelpers'
@@ -52,37 +49,6 @@ const { getCurrentUploads } = stemsUploadSelectors
 const { getUser } = cacheUsersSelectors
 const { getTrack } = cacheTracksSelectors
 const { getAccountUser, getUserId, getUserHandle } = accountSelectors
-
-function* fetchRepostInfo(entries: Entry<Collection>[]) {
-  const userIds: ID[] = []
-  entries.forEach((entry) => {
-    if (entry.metadata.followee_reposts) {
-      entry.metadata.followee_reposts.forEach((repost) =>
-        userIds.push(repost.user_id)
-      )
-    }
-  })
-
-  if (userIds.length) {
-    yield* call(fetchUsers, userIds)
-  }
-}
-
-function* watchAdd() {
-  yield* takeEvery(
-    cacheActions.ADD_SUCCEEDED,
-    function* (action: ReturnType<typeof cacheActions.addSucceeded>) {
-      // This code only applies to tracks
-      if (action.kind !== Kind.TRACKS) return
-
-      // Fetch repost data
-      const isNativeMobile = yield* getContext('isNativeMobile')
-      if (!isNativeMobile) {
-        yield* fork(fetchRepostInfo, action.entries as Entry<Collection>[])
-      }
-    }
-  )
-}
 
 type TrackWithRemix = Pick<Track, 'track_id' | 'title'> & {
   remix_of: { tracks: Pick<Remix, 'parent_track_id'>[] } | null
@@ -405,7 +371,7 @@ function* watchDeleteTrack() {
 }
 
 const sagas = () => {
-  return [watchAdd, watchEditTrack, watchDeleteTrack]
+  return [watchEditTrack, watchDeleteTrack]
 }
 
 export default sagas

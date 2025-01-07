@@ -1,4 +1,4 @@
-import { User } from '@audius/common/models'
+import { UserMetadata } from '@audius/common/models'
 import { IconRobot } from '@audius/harmony'
 import cn from 'classnames'
 
@@ -23,7 +23,7 @@ const messages = {
 
 export type AiPageProps = {
   title: string
-  user: User | null
+  user: UserMetadata | null
   getLineupProps: () => LineupProps
   goToArtistPage: () => void
 }

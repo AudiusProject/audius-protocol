@@ -2,7 +2,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useDispatch } from 'react-redux'
 
 import { userMetadataListFromSDK } from '~/adapters/user'
-import { useAppContext } from '~/context/appContext'
+import { useAudiusQueryContext } from '~/audius-query'
 import { Id, ID } from '~/models/Identifiers'
 import { Kind } from '~/models/Kind'
 import { User } from '~/models/User'
@@ -15,7 +15,7 @@ import { QueryOptions } from './types'
 import { primeUserData } from './utils/primeUserData'
 
 export const useUsers = (userIds: ID[], options?: QueryOptions) => {
-  const { audiusSdk } = useAppContext()
+  const { audiusSdk } = useAudiusQueryContext()
   const dispatch = useDispatch()
   const queryClient = useQueryClient()
   const encodedIds = userIds.map((id) => Id.parse(id)).filter(removeNullable)
@@ -23,7 +23,8 @@ export const useUsers = (userIds: ID[], options?: QueryOptions) => {
   return useQuery({
     queryKey: [QUERY_KEYS.users, userIds],
     queryFn: async () => {
-      const { data } = await audiusSdk!.full.users.getBulkUsers({
+      const sdk = await audiusSdk()
+      const { data } = await sdk.full.users.getBulkUsers({
         id: encodedIds
       })
 
@@ -53,6 +54,6 @@ export const useUsers = (userIds: ID[], options?: QueryOptions) => {
       return users
     },
     staleTime: options?.staleTime,
-    enabled: options?.enabled !== false && !!audiusSdk && encodedIds.length > 0
+    enabled: options?.enabled !== false && encodedIds.length > 0
   })
 }

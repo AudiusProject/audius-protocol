@@ -1,9 +1,9 @@
 import { useCallback, useEffect } from 'react'
 
+import { useUser } from '@audius/common/api'
 import {
   lineupSelectors,
   aiPageLineupActions as tracksActions,
-  aiPageActions,
   aiPageSelectors
 } from '@audius/common/store'
 import { TouchableOpacity, View } from 'react-native'
@@ -21,8 +21,7 @@ import { spacing } from 'app/styles/spacing'
 import { ShareAiTracksTile } from './ShareAiTracksTile'
 
 const { makeGetLineupMetadatas } = lineupSelectors
-const { getAiUser, getLineup } = aiPageSelectors
-const { fetchAiUser, reset } = aiPageActions
+const { getLineup } = aiPageSelectors
 
 const getAiTracksLineup = makeGetLineupMetadatas(getLineup)
 
@@ -60,15 +59,13 @@ export const AiGeneratedTracksScreen = () => {
   const { userId } = params
   const dispatch = useDispatch()
   const lineup = useSelector(getAiTracksLineup)
-  const user = useSelector(getAiUser)
+  const { data: user } = useUser(userId)
 
   useEffect(() => {
-    dispatch(fetchAiUser({ userId }))
     return function cleanup() {
-      dispatch(reset())
       dispatch(tracksActions.reset())
     }
-  }, [dispatch, userId])
+  }, [dispatch])
 
   useEffect(() => {
     if (user?.handle) {

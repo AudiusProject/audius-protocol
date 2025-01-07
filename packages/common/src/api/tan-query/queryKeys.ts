@@ -23,5 +23,6 @@ export const QUERY_KEYS = {
   purchases: 'purchases',
   purchasesCount: 'purchasesCount',
   sales: 'sales',
-  salesCount: 'salesCount'
+  salesCount: 'salesCount',
+  mutualFollowers: 'mutualFollowers'
 } as const

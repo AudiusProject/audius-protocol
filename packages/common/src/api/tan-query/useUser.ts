@@ -2,7 +2,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { userMetadataListFromSDK } from '~/adapters/user'
-import { useAppContext } from '~/context/appContext'
+import { useAudiusQueryContext } from '~/audius-query'
 import { Id, ID, OptionalId } from '~/models/Identifiers'
 import { Kind } from '~/models/Kind'
 import { getUserId } from '~/store/account/selectors'
@@ -16,7 +16,7 @@ export const useUser = (
   userId: ID | null | undefined,
   options?: QueryOptions
 ) => {
-  const { audiusSdk } = useAppContext()
+  const { audiusSdk } = useAudiusQueryContext()
   const dispatch = useDispatch()
   const queryClient = useQueryClient()
   const currentUserId = useSelector(getUserId)
@@ -24,7 +24,8 @@ export const useUser = (
   return useQuery({
     queryKey: [QUERY_KEYS.user, userId],
     queryFn: async () => {
-      const { data } = await audiusSdk!.full.users.getUser({
+      const sdk = await audiusSdk()
+      const { data } = await sdk.full.users.getUser({
         id: Id.parse(userId),
         userId: OptionalId.parse(currentUserId)
       })
@@ -47,6 +48,6 @@ export const useUser = (
       return user
     },
     staleTime: options?.staleTime,
-    enabled: options?.enabled !== false && !!audiusSdk && !!userId
+    enabled: options?.enabled !== false && !!userId
   })
 }

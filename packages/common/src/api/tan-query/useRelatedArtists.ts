@@ -3,7 +3,7 @@ import { useDispatch } from 'react-redux'
 
 import { userMetadataFromSDK } from '~/adapters'
 import { transformAndCleanList } from '~/adapters/utils'
-import { useAppContext } from '~/context/appContext'
+import { useAudiusQueryContext } from '~/audius-query'
 import { ID, Id, OptionalId } from '~/models/Identifiers'
 import { MAX_PROFILE_RELATED_ARTISTS } from '~/utils'
 
@@ -19,7 +19,7 @@ type Config = {
 }
 
 export const useRelatedArtists = (artistId?: ID | null, config?: Config) => {
-  const { audiusSdk } = useAppContext()
+  const { audiusSdk } = useAudiusQueryContext()
   const dispatch = useDispatch()
   const { data: currentUserId } = useCurrentUserId()
   const queryClient = useQueryClient()
@@ -27,10 +27,11 @@ export const useRelatedArtists = (artistId?: ID | null, config?: Config) => {
   return useQuery({
     queryKey: [QUERY_KEYS.relatedArtists, artistId],
     queryFn: async () => {
-      if (!artistId || !audiusSdk) {
+      if (!artistId) {
         return []
       }
-      const { data } = await audiusSdk.full.users.getRelatedUsers({
+      const sdk = await audiusSdk()
+      const { data } = await sdk.full.users.getRelatedUsers({
         id: Id.parse(artistId),
         limit: config?.limit ?? MAX_PROFILE_RELATED_ARTISTS,
         userId: OptionalId.parse(currentUserId),
@@ -47,6 +48,6 @@ export const useRelatedArtists = (artistId?: ID | null, config?: Config) => {
       return users
     },
     staleTime: config?.staleTime,
-    enabled: config?.enabled !== false && !!audiusSdk && !!artistId
+    enabled: config?.enabled !== false && !!artistId
   })
 }

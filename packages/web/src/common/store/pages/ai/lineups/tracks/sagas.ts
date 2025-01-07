@@ -16,7 +16,7 @@ import { call, put, select } from 'typed-redux-saga'
 import { processAndCacheTracks } from 'common/store/cache/tracks/utils'
 import { LineupSagas } from 'common/store/lineup/sagas'
 import { waitForRead } from 'utils/sagaHelpers'
-const { getAiUserId, getLineup } = aiPageSelectors
+const { getLineup, getAiUserHandle } = aiPageSelectors
 const { setCount } = aiPageActions
 const getUserId = accountSelectors.getUserId
 
@@ -58,7 +58,7 @@ function* getTracks({
 }
 
 const sourceSelector = (state: CommonState) =>
-  `${tracksActions.prefix}:${getAiUserId(state)}`
+  `${tracksActions.prefix}:${getAiUserHandle(state)}`
 
 class TracksSagas extends LineupSagas<Track> {
   constructor() {

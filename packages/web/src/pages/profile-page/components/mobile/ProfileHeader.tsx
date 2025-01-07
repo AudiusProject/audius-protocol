@@ -10,9 +10,9 @@ import {
   WidthSizes,
   ID,
   ProfilePictureSizes,
-  CoverPhotoSizes
+  CoverPhotoSizes,
+  User
 } from '@audius/common/models'
-import { ProfileUser } from '@audius/common/store'
 import { formatCount, route } from '@audius/common/utils'
 import {
   IconArtistBadge as BadgeArtist,
@@ -84,7 +84,7 @@ const LoadingProfileHeader = () => {
 
 type ProfileHeaderProps = {
   isDeactivated: boolean
-  profile: ProfileUser
+  profile: User
   name: string
   handle: string
   isArtist: boolean

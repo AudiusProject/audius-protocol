@@ -29,7 +29,7 @@ export const useFollowers = (
 
   return useQuery({
     queryKey: [QUERY_KEYS.followers, userId, { limit, offset }],
-    enabled: options?.enabled !== false && !!userId && !!audiusSdk,
+    enabled: options?.enabled !== false && !!userId,
     queryFn: async () => {
       const { data = [] } = await audiusSdk!.full.users.getFollowers({
         id: Id.parse(userId),

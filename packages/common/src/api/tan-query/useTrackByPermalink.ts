@@ -2,7 +2,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { userTrackMetadataFromSDK } from '~/adapters/track'
-import { useAppContext } from '~/context/appContext'
+import { useAudiusQueryContext } from '~/audius-query'
 import { OptionalId } from '~/models'
 import { getUserId } from '~/store/account/selectors'
 
@@ -14,7 +14,7 @@ export const useTrackByPermalink = (
   permalink: string | undefined | null,
   options?: QueryOptions
 ) => {
-  const { audiusSdk } = useAppContext()
+  const { audiusSdk } = useAudiusQueryContext()
   const queryClient = useQueryClient()
   const dispatch = useDispatch()
   const currentUserId = useSelector(getUserId)
@@ -22,7 +22,8 @@ export const useTrackByPermalink = (
   return useQuery({
     queryKey: [QUERY_KEYS.trackByPermalink, permalink],
     queryFn: async () => {
-      const { data = [] } = await audiusSdk!.full.tracks.getBulkTracks({
+      const sdk = await audiusSdk()
+      const { data = [] } = await sdk.full.tracks.getBulkTracks({
         permalink: [permalink!],
         userId: OptionalId.parse(currentUserId)
       })
@@ -40,6 +41,6 @@ export const useTrackByPermalink = (
       return track
     },
     staleTime: options?.staleTime,
-    enabled: options?.enabled !== false && !!audiusSdk && !!permalink
+    enabled: options?.enabled !== false && !!permalink
   })
 }

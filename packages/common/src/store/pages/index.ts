@@ -81,7 +81,6 @@ export {
 } from './ai/lineup/reducer'
 export { tracksActions as aiPageLineupActions } from './ai/lineup/actions'
 export { default as aiPageReducer, actions as aiPageActions } from './ai/slice'
-export type { FetchAiUserAction } from './ai/slice'
 export * as aiPageSelectors from './ai/selectors'
 
 export { default as profilePageFeedLineupReducer } from './profile/lineups/feed/reducer'
