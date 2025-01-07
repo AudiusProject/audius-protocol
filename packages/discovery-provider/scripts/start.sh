@@ -58,13 +58,12 @@ else
         [ -e /var/celerybeat.pid ] && rm /var/celerybeat.pid
         audius_service=beat celery -A src.worker.celery beat --schedule=/var/celerybeat-schedule --pidfile=/var/celerybeat.pid --loglevel WARNING 2>&1 | tee >(logger -t beat) &
 
-        # start worker dedicated to indexing ACDC with task-prefetch-multiplier=1
+        # start worker dedicated to indexing ACDC
         audius_service=worker celery -A src.worker.celery worker -Q index_nethermind \
             --loglevel "$audius_discprov_loglevel" \
             --hostname=index_nethermind \
             --concurrency 1 \
             --prefetch-multiplier 1 \
-            --max-tasks-per-child 1 \
             2>&1 | tee >(logger -t index_nethermind_worker) &
 
         # start worker dedicated to indexing user bank and payment router
@@ -73,7 +72,6 @@ else
             --hostname=index_sol \
             --concurrency 1 \
             --prefetch-multiplier 1 \
-            --max-tasks-per-child 1 \
             2>&1 | tee >(logger -t index_sol_worker) &
 
         # start other workers with remaining CPUs
