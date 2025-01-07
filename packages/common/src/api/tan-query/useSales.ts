@@ -3,6 +3,7 @@ import { useMemo } from 'react'
 import { full } from '@audius/sdk'
 import { useInfiniteQuery } from '@tanstack/react-query'
 
+import { purchaseFromSDK } from '~/adapters/purchase'
 import { Id } from '~/api/utils'
 import { useAudiusQueryContext } from '~/audius-query'
 import { ID } from '~/models'
@@ -16,7 +17,6 @@ import { QUERY_KEYS } from './queryKeys'
 import { useCollections } from './useCollections'
 import { useTracks } from './useTracks'
 import { useUsers } from './useUsers'
-import { parsePurchase } from './utils/parsePurchase'
 
 export type GetSalesListArgs = {
   userId: Nullable<ID>
@@ -33,7 +33,12 @@ export const useSales = (
   const { pageSize, enabled } = options
 
   const queryResult = useInfiniteQuery({
-    queryKey: [QUERY_KEYS.sales, args],
+    queryKey: [
+      QUERY_KEYS.sales,
+      args.userId,
+      args.sortMethod,
+      args.sortDirection
+    ],
     enabled: enabled !== false && !!args.userId,
     initialPageParam: 0,
     getNextPageParam: (
@@ -53,39 +58,31 @@ export const useSales = (
         id: Id.parse(args.userId!),
         userId: Id.parse(args.userId!)
       })
-      return data.map(parsePurchase)
+      return data.map(purchaseFromSDK)
     }
   })
 
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage, ...rest } =
     queryResult
 
-  // Flatten pages into a single array
-  const flatData = useMemo(() => data?.pages.flat() ?? [], [data?.pages])
-
-  // Pre-fetch purchased content metadata
-  const userIdsToFetch = useMemo(
-    () => flatData.map(({ buyerUserId }) => buyerUserId),
-    [flatData]
-  )
-  const trackIdsToFetch = useMemo(
-    () =>
-      flatData
-        .filter(
-          ({ contentType }) => contentType === USDCContentPurchaseType.TRACK
-        )
-        .map(({ contentId }) => contentId),
-    [flatData]
-  )
-  const collectionIdsToFetch = useMemo(
-    () =>
-      flatData
-        .filter(
-          ({ contentType }) => contentType === USDCContentPurchaseType.ALBUM
-        )
-        .map(({ contentId }) => contentId),
-    [flatData]
-  )
+  const { flatData, userIdsToFetch, trackIdsToFetch, collectionIdsToFetch } =
+    useMemo(() => {
+      const flatData = data?.pages.flat() ?? []
+      return {
+        flatData,
+        userIdsToFetch: flatData.map(({ buyerUserId }) => buyerUserId),
+        trackIdsToFetch: flatData
+          .filter(
+            ({ contentType }) => contentType === USDCContentPurchaseType.TRACK
+          )
+          .map(({ contentId }) => contentId),
+        collectionIdsToFetch: flatData
+          .filter(
+            ({ contentType }) => contentType === USDCContentPurchaseType.ALBUM
+          )
+          .map(({ contentId }) => contentId)
+      }
+    }, [data?.pages])
   // Call the hooks dropping results to pre-fetch the data
   useUsers(userIdsToFetch)
   useTracks(trackIdsToFetch)

@@ -20,13 +20,12 @@ export const usePurchasesCount = (userId: Nullable<ID>, config?: Config) => {
   return useQuery({
     queryKey: [QUERY_KEYS.purchasesCount, userId],
     queryFn: async () => {
-      if (!userId) return 0
       const sdk = await audiusSdk()
-      const { data } = await sdk.full.users.getPurchasesCount({
+      const { data = 0 } = await sdk.full.users.getPurchasesCount({
         id: Id.parse(userId),
         userId: Id.parse(userId)
       })
-      return data ?? 0
+      return data
     },
     staleTime: config?.staleTime,
     enabled: config?.enabled !== false && !!audiusSdk && !!userId
