@@ -7,8 +7,6 @@ import {
   accountSelectors,
   cacheActions,
   profilePageActions as profileActions,
-  profilePageSelectors,
-  FollowType,
   chatActions,
   reachabilitySelectors,
   collectiblesActions,
@@ -19,7 +17,6 @@ import {
 } from '@audius/common/store'
 import {
   squashNewLines,
-  makeUid,
   makeKindId,
   waitForAccount,
   dataURLtoFile,
@@ -52,7 +49,6 @@ import { watchFetchTopTags } from './fetchTopTagsSaga'
 
 const { NOT_FOUND_PAGE } = route
 const { getIsReachable } = reachabilitySelectors
-const { getProfileFollowers, getProfileUser } = profilePageSelectors
 
 const { getUserId } = accountSelectors
 
@@ -504,40 +500,6 @@ function* confirmUpdateProfile(userId, metadata) {
   )
 }
 
-function* watchUpdateCurrentUserFollows() {
-  yield takeEvery(
-    profileActions.UPDATE_CURRENT_USER_FOLLOWS,
-    updateCurrentUserFollows
-  )
-}
-
-function* updateCurrentUserFollows(action) {
-  yield waitForAccount()
-  const { handle } = action
-  const userId = yield select(getUserId)
-  const stuff = yield select((state) => getProfileFollowers(state, handle))
-  const { userIds, status } = stuff
-  let updatedUserIds = userIds
-  if (action.follow) {
-    const uid = makeUid(Kind.USERS, userId)
-    const profileUser = yield select((state) =>
-      getProfileUser(state, { handle })
-    )
-    if (profileUser.follower_count - 1 === userIds.length) {
-      updatedUserIds = userIds.concat({ id: userId, uid })
-    }
-  } else {
-    updatedUserIds = userIds.filter((f) => f.id !== userId)
-  }
-  yield put(
-    profileActions.setProfileField(
-      FollowType.FOLLOWERS,
-      { status, userIds: updatedUserIds },
-      handle
-    )
-  )
-}
-
 function* watchSetNotificationSubscription() {
   yield takeEvery(
     profileActions.SET_NOTIFICATION_SUBSCRIPTION,
@@ -567,7 +529,6 @@ export default function sagas() {
     ...tracksSagas(),
     watchFetchProfile,
     watchUpdateProfile,
-    watchUpdateCurrentUserFollows,
     watchSetNotificationSubscription,
     watchFetchProfileCollections,
     watchFetchTopTags

@@ -252,9 +252,6 @@ class ProfilePage extends PureComponent<ProfilePageProps, ProfilePageState> {
     } = this.props
     if (!profile) return
     this.props.onFollow(profile.user_id)
-    if (this.props.accountUserId) {
-      this.props.updateCurrentUserFollows(true)
-    }
     this.setState({ areArtistRecommendationsVisible: true })
   }
 
@@ -265,10 +262,6 @@ class ProfilePage extends PureComponent<ProfilePageProps, ProfilePageState> {
     if (!profile) return
     const userId = profile.user_id
     this.props.onUnfollow(userId)
-
-    if (this.props.accountUserId) {
-      this.props.updateCurrentUserFollows(false)
-    }
   }
 
   onCloseArtistRecommendations = () => {
@@ -1054,8 +1047,6 @@ function mapDispatchToProps(dispatch: Dispatch, props: RouteComponentProps) {
       ),
     onConfirmUnfollow: (userId: ID) =>
       dispatch(unfollowConfirmationActions.setOpen(userId)),
-    updateCurrentUserFollows: (follow: any) =>
-      dispatch(profileActions.updateCurrentUserFollows(follow, handleLower)),
 
     // Artist Tracks
     loadMoreArtistTracks: (
