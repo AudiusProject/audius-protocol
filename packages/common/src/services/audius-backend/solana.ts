@@ -22,7 +22,7 @@ import {
 
 import { CommonStoreContext } from '~/store/storeContext'
 
-import { AnalyticsEvent, Name, SolanaWalletAddress } from '../../models'
+import { AnalyticsEvent, Name } from '../../models'
 
 import { AudiusBackend } from './AudiusBackend'
 
@@ -52,55 +52,6 @@ const delay = (ms: number) =>
   new Promise((resolve) => {
     setTimeout(resolve, ms)
   })
-
-/**
- * Gets the latest blockhash using the sdk connection
- */
-export const getRecentBlockhash = async ({ sdk }: { sdk: AudiusSdk }) => {
-  const connection = sdk.services.solanaClient.connection
-  return (await connection.getLatestBlockhash()).blockhash
-}
-
-/**
- * Gets the token account information for a given address and Audius-relevant mint
- */
-export const getTokenAccountInfo = async (
-  sdk: AudiusSdk,
-  {
-    tokenAccount,
-    commitment = 'processed'
-  }: {
-    tokenAccount: PublicKey
-    commitment?: Commitment
-  }
-): Promise<Account | null> => {
-  return await getAccount(
-    sdk.services.solanaClient.connection,
-    tokenAccount,
-    commitment
-  )
-}
-
-export const deriveUserBankPubkey = async (
-  sdk: AudiusSdk,
-  { ethAddress, mint = DEFAULT_MINT }: UserBankConfig
-) => {
-  return await sdk.services.claimableTokensClient.deriveUserBank({
-    ethWallet: ethAddress,
-    mint
-  })
-}
-
-export const deriveUserBankAddress = async (
-  sdk: AudiusSdk,
-  { ethAddress, mint = DEFAULT_MINT }: UserBankConfig
-) => {
-  const pubkey = await deriveUserBankPubkey(sdk, {
-    ethAddress,
-    mint
-  })
-  return pubkey.toString() as SolanaWalletAddress
-}
 
 export const isTransferCheckedInstruction = (
   instruction: TransactionInstruction
@@ -150,15 +101,16 @@ export const getUserbankAccountInfo = async (
     )
   }
 
-  const tokenAccount = await deriveUserBankPubkey(sdk, {
-    ethAddress,
+  const tokenAccount = await sdk.services.claimableTokensClient.deriveUserBank({
+    ethWallet: ethAddress,
     mint
   })
 
-  return getTokenAccountInfo(sdk, {
+  return await getAccount(
+    sdk.services.solanaClient.connection,
     tokenAccount,
     commitment
-  })
+  )
 }
 
 /**
@@ -239,10 +191,11 @@ export const pollForTokenBalanceChange = async (
 ) => {
   const debugTokenName = mint.toUpperCase()
   let retries = 0
-  let tokenAccountInfo = await getTokenAccountInfo(sdk, {
+  let tokenAccountInfo = await getAccount(
+    sdk.services.solanaClient.connection,
     tokenAccount,
     commitment
-  })
+  )
   while (
     (!tokenAccountInfo ||
       initialBalance === undefined ||
@@ -261,10 +214,11 @@ export const pollForTokenBalanceChange = async (
       )
     }
     await delay(retryDelayMs)
-    tokenAccountInfo = await getTokenAccountInfo(sdk, {
+    tokenAccountInfo = await getAccount(
+      sdk.services.solanaClient.connection,
       tokenAccount,
       commitment
-    })
+    )
   }
   if (
     tokenAccountInfo &&
@@ -311,8 +265,8 @@ export const decorateCoinflowWithdrawalTransaction = async (
     wallet: Keypair
   }
 ) => {
-  const userBank = await deriveUserBankPubkey(sdk, {
-    ethAddress,
+  const userBank = await sdk.services.claimableTokensClient.deriveUserBank({
+    ethWallet: ethAddress,
     mint: 'USDC'
   })
   const walletUSDCTokenAccount =
@@ -397,56 +351,6 @@ export const decorateCoinflowWithdrawalTransaction = async (
   })
   return tx
 }
-
-export const createTransferToUserBankTransaction = async (
-  sdk: AudiusSdk,
-  {
-    userBank,
-    wallet,
-    amount,
-    memo,
-    mintPublicKey,
-    mintDecimals
-  }: {
-    userBank: PublicKey
-    wallet: Keypair
-    amount: bigint
-    memo: string
-    mintPublicKey: PublicKey
-    mintDecimals: number
-  }
-) => {
-  const associatedTokenAccount = getAssociatedTokenAddressSync(
-    mintPublicKey,
-    wallet.publicKey
-  )
-  // See: https://github.com/solana-labs/solana-program-library/blob/d6297495ea4dcc1bd48f3efdd6e3bbdaef25a495/memo/js/src/index.ts#L27
-  const memoInstruction = new TransactionInstruction({
-    keys: [
-      {
-        pubkey: wallet.publicKey,
-        isSigner: true,
-        isWritable: true
-      }
-    ],
-    programId: MEMO_PROGRAM_ID,
-    data: Buffer.from(memo)
-  })
-  const transferInstruction = createTransferCheckedInstruction(
-    associatedTokenAccount, // source
-    mintPublicKey, // mint
-    userBank, // destination
-    wallet.publicKey, // owner
-    amount, // amount
-    mintDecimals // decimals
-  )
-  const tx = sdk.services.solanaClient.buildTransaction({
-    instructions: [memoInstruction, transferInstruction]
-  })
-  return tx
-}
-
-// NOTE: The above all need to be updated to use SDK. The below is fresh.
 
 /**
  * In the case of a failed Coinflow withdrawal, transfers the USDC back out of
