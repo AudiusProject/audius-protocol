@@ -6,8 +6,7 @@ import { TouchableOpacity } from 'react-native'
 import { useSelector } from 'react-redux'
 
 import type { IconComponent } from '@audius/harmony-native'
-import { Flex, Text } from '@audius/harmony-native'
-import { DEFAULT_HIT_SLOP } from 'app/harmony-native/constants'
+import { DEFAULT_HIT_SLOP, Flex, Text } from '@audius/harmony-native'
 
 const { getUser } = cacheUsersSelectors
 
