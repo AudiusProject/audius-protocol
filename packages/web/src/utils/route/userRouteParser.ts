@@ -47,11 +47,11 @@ export const parseUserRoute = (route: string): UserRouteParams => {
   if (profilePageTabMatch) {
     const { handle, tab } = profilePageTabMatch.params
     if (
-      tab === 'Tracks' ||
-      tab === 'Albums' ||
-      tab === 'Playlists' ||
-      tab === 'Reposts' ||
-      tab === 'Collectibles'
+      tab === 'tracks' ||
+      tab === 'albums' ||
+      tab === 'playlists' ||
+      tab === 'reposts' ||
+      tab === 'collectibles'
     ) {
       return { handle, userId: null, tab }
     }
@@ -66,7 +66,7 @@ export const parseUserRoute = (route: string): UserRouteParams => {
   })
   if (profilePageTabIdMatch) {
     const { handle, tab } = profilePageTabIdMatch.params
-    if (tab === 'Collectibles') {
+    if (tab === 'collectibles') {
       return { handle, userId: null, tab }
     }
   }
