@@ -257,6 +257,8 @@ const TrackEditForm = (
 
       const files = processedFiles.filter(removeNullable)
       if (files.length > 0) {
+        if (isPreviewPlaying) handleTogglePreview()
+
         const newFile = files[0]
 
         if (isUpload && !isTitleDirty) {
@@ -279,6 +281,8 @@ const TrackEditForm = (
       }
     },
     [
+      isPreviewPlaying,
+      handleTogglePreview,
       isUpload,
       isTitleDirty,
       isArtworkDirty,
