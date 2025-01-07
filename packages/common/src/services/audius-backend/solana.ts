@@ -54,14 +54,6 @@ const delay = (ms: number) =>
   })
 
 /**
- * Gets the latest blockhash using the sdk connection
- */
-export const getRecentBlockhash = async ({ sdk }: { sdk: AudiusSdk }) => {
-  const connection = sdk.services.solanaClient.connection
-  return (await connection.getLatestBlockhash()).blockhash
-}
-
-/**
  * Gets the token account information for a given address and Audius-relevant mint
  */
 export const getTokenAccountInfo = async (
