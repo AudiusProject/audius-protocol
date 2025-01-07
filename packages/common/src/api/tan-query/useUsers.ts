@@ -10,7 +10,7 @@ import { QUERY_KEYS } from './queryKeys'
 import { QueryOptions } from './types'
 import { primeUserData } from './utils/primeUserData'
 
-export const useUsers = (userIds: ID[], options?: QueryOptions) => {
+export const useUsers = (userIds?: ID[], options?: QueryOptions) => {
   const { audiusSdk } = useAudiusQueryContext()
   const dispatch = useDispatch()
   const queryClient = useQueryClient()
@@ -30,6 +30,6 @@ export const useUsers = (userIds: ID[], options?: QueryOptions) => {
       return users
     },
     staleTime: options?.staleTime,
-    enabled: options?.enabled !== false && encodedIds.length > 0
+    enabled: options?.enabled !== false && encodedIds && encodedIds.length > 0
   })
 }
