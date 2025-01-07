@@ -22,7 +22,7 @@ import {
 
 import { CommonStoreContext } from '~/store/storeContext'
 
-import { AnalyticsEvent, Name, SolanaWalletAddress } from '../../models'
+import { AnalyticsEvent, Name } from '../../models'
 
 import { AudiusBackend } from './AudiusBackend'
 
@@ -71,17 +71,6 @@ export const getTokenAccountInfo = async (
     tokenAccount,
     commitment
   )
-}
-
-export const deriveUserBankAddress = async (
-  sdk: AudiusSdk,
-  { ethAddress, mint = DEFAULT_MINT }: UserBankConfig
-) => {
-  const pubkey = await sdk.services.claimableTokensClient.deriveUserBank({
-    ethWallet: ethAddress,
-    mint
-  })
-  return pubkey.toString() as SolanaWalletAddress
 }
 
 export const isTransferCheckedInstruction = (
@@ -379,56 +368,6 @@ export const decorateCoinflowWithdrawalTransaction = async (
   })
   return tx
 }
-
-export const createTransferToUserBankTransaction = async (
-  sdk: AudiusSdk,
-  {
-    userBank,
-    wallet,
-    amount,
-    memo,
-    mintPublicKey,
-    mintDecimals
-  }: {
-    userBank: PublicKey
-    wallet: Keypair
-    amount: bigint
-    memo: string
-    mintPublicKey: PublicKey
-    mintDecimals: number
-  }
-) => {
-  const associatedTokenAccount = getAssociatedTokenAddressSync(
-    mintPublicKey,
-    wallet.publicKey
-  )
-  // See: https://github.com/solana-labs/solana-program-library/blob/d6297495ea4dcc1bd48f3efdd6e3bbdaef25a495/memo/js/src/index.ts#L27
-  const memoInstruction = new TransactionInstruction({
-    keys: [
-      {
-        pubkey: wallet.publicKey,
-        isSigner: true,
-        isWritable: true
-      }
-    ],
-    programId: MEMO_PROGRAM_ID,
-    data: Buffer.from(memo)
-  })
-  const transferInstruction = createTransferCheckedInstruction(
-    associatedTokenAccount, // source
-    mintPublicKey, // mint
-    userBank, // destination
-    wallet.publicKey, // owner
-    amount, // amount
-    mintDecimals // decimals
-  )
-  const tx = sdk.services.solanaClient.buildTransaction({
-    instructions: [memoInstruction, transferInstruction]
-  })
-  return tx
-}
-
-// NOTE: The above all need to be updated to use SDK. The below is fresh.
 
 /**
  * In the case of a failed Coinflow withdrawal, transfers the USDC back out of

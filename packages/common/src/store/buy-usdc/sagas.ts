@@ -1,5 +1,9 @@
 import { USDC } from '@audius/fixed-decimal'
-import { Keypair, PublicKey } from '@solana/web3.js'
+import {
+  createTransferCheckedInstruction,
+  getAssociatedTokenAddressSync
+} from '@solana/spl-token'
+import { Keypair, PublicKey, TransactionInstruction } from '@solana/web3.js'
 import retry from 'async-retry'
 import BN from 'bn.js'
 import { takeLatest } from 'redux-saga/effects'
@@ -11,10 +15,10 @@ import { PurchaseVendor } from '~/models/PurchaseContent'
 import { Status } from '~/models/Status'
 import { BNUSDC, StringUSDC } from '~/models/Wallet'
 import {
-  createTransferToUserBankTransaction,
   findAssociatedTokenAddress,
   getTokenAccountInfo,
   getUserbankAccountInfo,
+  MEMO_PROGRAM_ID,
   pollForTokenBalanceChange,
   recoverUsdcFromRootWallet
 } from '~/services/audius-backend/solana'
@@ -149,37 +153,46 @@ function* transferStep({
   userBank,
   amount,
   maxRetryCount = TRANSACTION_RETRY_COUNT,
-  retryDelayMs = TRANSACTION_RETRY_DELAY_MS,
-  memo
+  retryDelayMs = TRANSACTION_RETRY_DELAY_MS
 }: {
   wallet: Keypair
   userBank: PublicKey
   amount: bigint
   maxRetryCount?: number
   retryDelayMs?: number
-  usePaymentRouter?: boolean
-  memo: string
 }) {
   const sdk = yield* getSDK()
   const { USDC_MINT_ADDRESS } = yield* getContext('env')
   const mintPublicKey = new PublicKey(USDC_MINT_ADDRESS)
   const mintDecimals = USDC(0).decimalPlaces
+  const memoInstruction = new TransactionInstruction({
+    keys: [
+      {
+        pubkey: wallet.publicKey,
+        isSigner: true,
+        isWritable: true
+      }
+    ],
+    programId: MEMO_PROGRAM_ID,
+    data: Buffer.from('In-App $USDC Purchase: Link by Stripe')
+  })
+  const transferInstruction = createTransferCheckedInstruction(
+    getAssociatedTokenAddressSync(mintPublicKey, wallet.publicKey), // source
+    mintPublicKey, // mint
+    userBank, // destination
+    wallet.publicKey, // owner
+    amount, // amount
+    mintDecimals // decimals
+  )
 
   yield* call(
     retry,
     async () => {
       console.debug(`Starting transfer transaction...`)
-      const transferTransaction = await createTransferToUserBankTransaction(
-        sdk,
-        {
-          wallet,
-          userBank,
-          mintPublicKey,
-          mintDecimals,
-          amount,
-          memo
-        }
-      )
+      const transferTransaction =
+        await sdk.services.solanaClient.buildTransaction({
+          instructions: [memoInstruction, transferInstruction]
+        })
       transferTransaction.sign([wallet])
       const res =
         await sdk.services.solanaClient.sendTransaction(transferTransaction)
@@ -284,7 +297,6 @@ function* doBuyUSDC({
         yield* call(transferStep, {
           wallet: rootAccount,
           userBank,
-          memo: 'In-App $USDC Purchase: Link by Stripe',
           amount: newBalance
         })
         break
