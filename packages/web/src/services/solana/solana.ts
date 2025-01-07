@@ -1,6 +1,6 @@
 import { SolanaWalletAddress } from '@audius/common/models'
 import { getAccount } from '@solana/spl-token'
-import { PublicKey, Transaction } from '@solana/web3.js'
+import { PublicKey } from '@solana/web3.js'
 
 import { audiusSdk } from 'services/audius-sdk'
 
@@ -36,28 +36,6 @@ export const getRootAccountRentExemptionMinimum = async () => {
     ROOT_ACCOUNT_SIZE,
     'processed'
   )
-}
-
-/**
- * Gets the recent blockhash.
- */
-const getRecentBlockhash = async () => {
-  const connection = await getSolanaConnection()
-  return (await connection.getLatestBlockhash()).blockhash
-}
-
-/**
- * Gets the fee for a transfer transaction.
- */
-export const getTransferTransactionFee = async (
-  destinationPubkey: PublicKey
-) => {
-  const connection = await getSolanaConnection()
-  const recentBlockhash = await getRecentBlockhash()
-  const tx = new Transaction()
-  tx.recentBlockhash = recentBlockhash
-  tx.feePayer = destinationPubkey
-  return (await tx.getEstimatedFee(connection)) ?? TRANSACTION_FEE_FALLBACK
 }
 
 /**

@@ -67,8 +67,7 @@ import { JupiterSingleton } from 'services/audius-backend/Jupiter'
 import {
   TRANSACTION_FEE_FALLBACK,
   getRootAccountRentExemptionMinimum,
-  getSolanaConnection,
-  getTransferTransactionFee
+  getSolanaConnection
 } from 'services/solana/solana'
 import { reportToSentry } from 'store/errors/reportToSentry'
 import { waitForWrite } from 'utils/sagaHelpers'
@@ -1200,12 +1199,18 @@ function* recoverPurchaseIfNecessary() {
 
       // If the user's root wallet has $AUDIO, that usually indicates a failed transfer
       if (audioBalance > BigInt(0)) {
+        const transferTx = yield* call(getTransferTransaction, {
+          source: rootAccount.publicKey,
+          transferAmount: BigInt(0),
+          provider: OnRampProvider.COINBASE
+        })
         const transferFee = yield* call(
-          getTransferTransactionFee,
-          rootAccount.publicKey
+          [connection, connection.getFeeForMessage],
+          transferTx.message
         )
         const neededSolBalance =
-          (yield* call(getRootAccountRentExemptionMinimum)) + transferFee
+          (yield* call(getRootAccountRentExemptionMinimum)) +
+          (transferFee.value ?? TRANSACTION_FEE_FALLBACK)
 
         // Check we can afford to transfer
         if (existingBalance - neededSolBalance > 0) {
