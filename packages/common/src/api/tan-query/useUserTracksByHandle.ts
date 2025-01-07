@@ -59,6 +59,6 @@ export const useUserTracksByHandle = (
       return tracks
     },
     staleTime: options?.staleTime,
-    enabled: options?.enabled !== false && !!audiusSdk && !!handle
+    enabled: options?.enabled !== false && !!handle
   })
 }

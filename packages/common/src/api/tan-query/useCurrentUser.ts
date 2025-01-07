@@ -43,6 +43,6 @@ export const useCurrentUser = (options?: QueryOptions) => {
       return account?.user
     },
     staleTime: options?.staleTime,
-    enabled: options?.enabled !== false && !!audiusSdk && !!currentUser
+    enabled: options?.enabled !== false && !!currentUser
   })
 }

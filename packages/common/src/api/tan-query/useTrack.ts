@@ -61,6 +61,6 @@ export const useTrack = (
       return track
     },
     staleTime: options?.staleTime,
-    enabled: options?.enabled !== false && !!audiusSdk && !!trackId
+    enabled: options?.enabled !== false && !!trackId
   })
 }

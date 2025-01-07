@@ -94,7 +94,6 @@ export const useCollections = (
     staleTime: options?.staleTime,
     enabled:
       options?.enabled !== false &&
-      !!audiusSdk &&
       collectionIds !== null &&
       collectionIds !== undefined
   })

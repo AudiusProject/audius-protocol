@@ -54,6 +54,6 @@ export const useUsers = (userIds: ID[], options?: QueryOptions) => {
       return users
     },
     staleTime: options?.staleTime,
-    enabled: options?.enabled !== false && !!audiusSdk && encodedIds.length > 0
+    enabled: options?.enabled !== false && encodedIds.length > 0
   })
 }

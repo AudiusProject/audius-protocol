@@ -41,6 +41,6 @@ export const useTrackByPermalink = (
       return track
     },
     staleTime: options?.staleTime,
-    enabled: options?.enabled !== false && !!audiusSdk && !!permalink
+    enabled: options?.enabled !== false && !!permalink
   })
 }

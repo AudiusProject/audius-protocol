@@ -60,6 +60,6 @@ export const useCollectionByPermalink = (
       return collection
     },
     staleTime: options?.staleTime,
-    enabled: options?.enabled !== false && !!audiusSdk && !!permalink
+    enabled: options?.enabled !== false && !!permalink
   })
 }
