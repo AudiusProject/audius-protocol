@@ -343,7 +343,9 @@ const TrackEditForm = (
                 isPlaying={isPreviewPlaying}
                 onClickReplace={onClickReplace}
                 onClickDownload={onClickDownload}
-                downloadEnabled={!isUpload}
+                downloadEnabled={false}
+                // KJ - TODO: Reenable download once the DN code goes out
+                // downloadEnabled={!isUpload}
               />
             ) : null}
             <TrackMetadataFields />

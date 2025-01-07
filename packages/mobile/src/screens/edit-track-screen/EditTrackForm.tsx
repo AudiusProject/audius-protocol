@@ -322,7 +322,9 @@ export const EditTrackForm = (props: EditTrackFormProps) => {
         isOpen={isOverflowMenuOpen}
         onClose={handleOverflowMenuClose}
         onReplace={handleReplace}
-        onDownload={isUpload ? undefined : handleDownload}
+        onDownload={undefined}
+        // KJ - TODO: Reenable download once the DN code goes out
+        // onDownload={isUpload ? undefined : handleDownload}
       />
     </>
   )
