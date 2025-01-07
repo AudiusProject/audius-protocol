@@ -15,6 +15,7 @@ import { Nullable } from '~/utils/typeUtils'
 import { QUERY_KEYS } from './queryKeys'
 import { useCollections } from './useCollections'
 import { useTracks } from './useTracks'
+import { useUsers } from './useUsers'
 import { parsePurchase } from './utils/parsePurchase'
 
 export type GetPurchaseListArgs = {
@@ -67,6 +68,10 @@ export const usePurchases = (
   const flatData = useMemo(() => data?.pages.flat() ?? [], [data?.pages])
 
   // Pre-fetch purchased content metadata
+  const userIdsToFetch = useMemo(
+    () => flatData.map(({ buyerUserId }) => buyerUserId),
+    [flatData]
+  )
   const trackIdsToFetch = useMemo(
     () =>
       flatData
@@ -86,9 +91,9 @@ export const usePurchases = (
     [flatData]
   )
   // Call the hooks dropping results to pre-fetch the data
+  useUsers(userIdsToFetch)
   useTracks(trackIdsToFetch)
   useCollections(collectionIdsToFetch)
-
   return {
     data: flatData,
     loadMore: fetchNextPage,
