@@ -2,7 +2,7 @@ import type { RefObject } from 'react'
 import React, { useCallback, useRef, useState } from 'react'
 
 import type { SearchCategory } from '@audius/common/api'
-import { useGetSearchResults, useGetFollowers } from '@audius/common/api'
+import { useGetSearchResults, useFollowers } from '@audius/common/api'
 import type { ReplyingAndEditingState } from '@audius/common/context'
 import {
   CommentSectionProvider,
@@ -93,15 +93,18 @@ const CommentDrawerAutocompleteContent = ({
     params,
     { debounce: 500 }
   )
-  const { data: followersData, status: followersStatus } = useGetFollowers({
-    userId: currentUserId,
-    limit: 6
+  const { data: followersData, isPending: followerDataPending } = useFollowers({
+    limit: 6,
+    userId: currentUserId
   })
   const userList = query !== '' ? searchData?.users : followersData
-  const userListStatus = query !== '' ? searchStatus : followersStatus
+  const isUserListPending =
+    query !== ''
+      ? searchStatus === Status.LOADING || searchStatus === Status.IDLE
+      : followerDataPending
 
   // Loading state
-  if (userListStatus === Status.LOADING || userListStatus === Status.IDLE) {
+  if (isUserListPending) {
     return (
       <Flex p='l' alignItems='center'>
         <LoadingSpinner style={{ height: 24 }} />

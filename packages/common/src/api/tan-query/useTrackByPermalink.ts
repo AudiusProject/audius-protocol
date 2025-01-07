@@ -7,16 +7,12 @@ import { OptionalId } from '~/models'
 import { getUserId } from '~/store/account/selectors'
 
 import { QUERY_KEYS } from './queryKeys'
+import { QueryOptions } from './types'
 import { primeTrackData } from './utils/primeTrackData'
-
-type Config = {
-  staleTime?: number
-  enabled?: boolean
-}
 
 export const useTrackByPermalink = (
   permalink: string | undefined | null,
-  config?: Config
+  options?: QueryOptions
 ) => {
   const { audiusSdk } = useAppContext()
   const queryClient = useQueryClient()
@@ -43,7 +39,7 @@ export const useTrackByPermalink = (
 
       return track
     },
-    staleTime: config?.staleTime,
-    enabled: config?.enabled !== false && !!audiusSdk && !!permalink
+    staleTime: options?.staleTime,
+    enabled: options?.enabled !== false && !!audiusSdk && !!permalink
   })
 }
