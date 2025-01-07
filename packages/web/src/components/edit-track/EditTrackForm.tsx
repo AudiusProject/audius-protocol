@@ -169,12 +169,14 @@ const TrackEditForm = (
     isSubmitting,
     disableNavigationPrompt = false,
     hideContainer = false,
-    updatedArtwork
+    updatedArtwork,
+    initialValues
   } = props
   const isMultiTrack = values.trackMetadatas.length > 1
   const isUpload = values.trackMetadatas[0].track_id === undefined
   const trackIdx = values.trackMetadatasIndex
   const [, , { setValue: setIndex }] = useField('trackMetadatasIndex')
+  const initialTrackValues = initialValues.trackMetadatas[trackIdx] ?? {}
   useUnmount(() => {
     setIndex(0)
   })
