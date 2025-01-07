@@ -2,7 +2,7 @@ import { Track } from '@audius/sdk'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 
 import { fileToSdk, trackMetadataForUploadToSdk } from '~/adapters/track'
-import { useAppContext } from '~/context/appContext'
+import { useAudiusQueryContext } from '~/audius-query'
 import { ID } from '~/models/Identifiers'
 import { TrackMetadataForUpload } from '~/store/upload'
 import { encodeHashId } from '~/utils/hashIds'
@@ -21,7 +21,7 @@ type UpdateTrackParams = {
 }
 
 export const useUpdateTrack = () => {
-  const { audiusSdk } = useAppContext()
+  const { audiusSdk } = useAudiusQueryContext()
   const queryClient = useQueryClient()
 
   return useMutation({
@@ -31,7 +31,7 @@ export const useUpdateTrack = () => {
       metadata,
       coverArtFile
     }: UpdateTrackParams) => {
-      if (!audiusSdk) throw new Error('SDK not initialized')
+      const sdk = await audiusSdk()
 
       const encodedTrackId = encodeHashId(trackId)
       const encodedUserId = encodeHashId(userId)
@@ -41,7 +41,7 @@ export const useUpdateTrack = () => {
         metadata as TrackMetadataForUpload
       )
 
-      const response = await audiusSdk.tracks.updateTrack({
+      const response = await sdk.tracks.updateTrack({
         coverArtFile: coverArtFile
           ? fileToSdk(coverArtFile, 'cover_art')
           : undefined,

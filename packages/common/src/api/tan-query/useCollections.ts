@@ -3,7 +3,7 @@ import { useDispatch } from 'react-redux'
 
 import { userCollectionMetadataFromSDK } from '~/adapters/collection'
 import { transformAndCleanList } from '~/adapters/utils'
-import { useAppContext } from '~/context/appContext'
+import { useAudiusQueryContext } from '~/audius-query'
 import { ID } from '~/models/Identifiers'
 import { Kind } from '~/models/Kind'
 import { addEntries } from '~/store/cache/actions'
@@ -21,7 +21,7 @@ export const useCollections = (
   collectionIds: ID[] | null | undefined,
   config?: Config
 ) => {
-  const { audiusSdk } = useAppContext()
+  const { audiusSdk } = useAudiusQueryContext()
   const queryClient = useQueryClient()
   const dispatch = useDispatch()
 
@@ -32,7 +32,8 @@ export const useCollections = (
         .map(encodeHashId)
         .filter((id): id is string => id !== null)
       if (encodedIds.length === 0) return []
-      const { data } = await audiusSdk!.full.playlists.getBulkPlaylists({
+      const sdk = await audiusSdk()
+      const { data } = await sdk.full.playlists.getBulkPlaylists({
         id: encodedIds
       })
 
@@ -97,7 +98,6 @@ export const useCollections = (
     staleTime: config?.staleTime,
     enabled:
       config?.enabled !== false &&
-      !!audiusSdk &&
       collectionIds !== null &&
       collectionIds !== undefined
   })

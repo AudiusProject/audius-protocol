@@ -1,7 +1,7 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useDispatch } from 'react-redux'
 
-import { useAppContext } from '~/context/appContext'
+import { useAudiusQueryContext } from '~/audius-query'
 import { Id, OptionalId } from '~/models/Identifiers'
 import { supporterMetadataListFromSDK } from '~/models/Tipping'
 import { MAX_PROFILE_TOP_SUPPORTERS } from '~/utils/constants'
@@ -24,7 +24,7 @@ export const useSupporters = (
   { userId, limit = MAX_PROFILE_TOP_SUPPORTERS + 1 }: UseSupportersArgs,
   config?: Config
 ) => {
-  const { audiusSdk } = useAppContext()
+  const { audiusSdk } = useAudiusQueryContext()
   const queryClient = useQueryClient()
   const { data: currentUserId } = useCurrentUserId()
   const dispatch = useDispatch()
@@ -32,8 +32,9 @@ export const useSupporters = (
   return useQuery({
     queryKey: [QUERY_KEYS.supporters, userId, limit],
     queryFn: async () => {
-      if (!audiusSdk || !userId) return []
-      const { data = [] } = await audiusSdk.full.users.getSupporters({
+      if (!userId) return []
+      const sdk = await audiusSdk()
+      const { data = [] } = await sdk.full.users.getSupporters({
         id: Id.parse(userId),
         limit,
         userId: OptionalId.parse(currentUserId)
@@ -51,6 +52,6 @@ export const useSupporters = (
       return supporters
     },
     staleTime: config?.staleTime,
-    enabled: config?.enabled !== false && !!userId && !!audiusSdk
+    enabled: config?.enabled !== false && !!userId
   })
 }

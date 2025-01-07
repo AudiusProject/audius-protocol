@@ -3,7 +3,7 @@ import { useDispatch, useSelector } from 'react-redux'
 
 import { userTrackMetadataFromSDK } from '~/adapters/track'
 import { transformAndCleanList } from '~/adapters/utils'
-import { useAppContext } from '~/context/appContext'
+import { useAudiusQueryContext } from '~/audius-query'
 import { OptionalId } from '~/models'
 import { getUserId } from '~/store/account/selectors'
 
@@ -27,7 +27,7 @@ export const useUserTracksByHandle = (
   args: GetTracksByUserHandleArgs,
   config?: Config
 ) => {
-  const { audiusSdk } = useAppContext()
+  const { audiusSdk } = useAudiusQueryContext()
   const queryClient = useQueryClient()
   const dispatch = useDispatch()
   const currentUserId = useSelector(getUserId)
@@ -44,7 +44,8 @@ export const useUserTracksByHandle = (
       offset
     ],
     queryFn: async () => {
-      const { data = [] } = await audiusSdk!.full.users.getTracksByUserHandle({
+      const sdk = await audiusSdk()
+      const { data = [] } = await sdk.full.users.getTracksByUserHandle({
         handle: handle!,
         userId: OptionalId.parse(currentUserId),
         filterTracks,
@@ -62,6 +63,6 @@ export const useUserTracksByHandle = (
       return tracks
     },
     staleTime: config?.staleTime,
-    enabled: config?.enabled !== false && !!audiusSdk && !!handle
+    enabled: config?.enabled !== false && !!handle
   })
 }

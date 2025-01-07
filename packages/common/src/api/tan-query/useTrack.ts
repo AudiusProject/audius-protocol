@@ -2,7 +2,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useDispatch } from 'react-redux'
 
 import { userTrackMetadataFromSDK } from '~/adapters/track'
-import { useAppContext } from '~/context/appContext'
+import { useAudiusQueryContext } from '~/audius-query'
 import { ID } from '~/models/Identifiers'
 import { Kind } from '~/models/Kind'
 import { addEntries } from '~/store/cache/actions'
@@ -17,7 +17,7 @@ type Config = {
 }
 
 export const useTrack = (trackId: ID | null | undefined, config?: Config) => {
-  const { audiusSdk } = useAppContext()
+  const { audiusSdk } = useAudiusQueryContext()
   const queryClient = useQueryClient()
   const dispatch = useDispatch()
 
@@ -26,7 +26,8 @@ export const useTrack = (trackId: ID | null | undefined, config?: Config) => {
     queryFn: async () => {
       if (!trackId) return null
       const encodedId = encodeHashId(trackId)
-      const { data } = await audiusSdk!.full.tracks.getTrack({
+      const sdk = await audiusSdk()
+      const { data } = await sdk.full.tracks.getTrack({
         trackId: encodedId
       })
 
@@ -61,6 +62,6 @@ export const useTrack = (trackId: ID | null | undefined, config?: Config) => {
       return track
     },
     staleTime: config?.staleTime,
-    enabled: config?.enabled !== false && !!audiusSdk && !!trackId
+    enabled: config?.enabled !== false && !!trackId
   })
 }

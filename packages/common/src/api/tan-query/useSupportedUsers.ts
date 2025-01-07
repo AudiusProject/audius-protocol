@@ -1,7 +1,7 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useDispatch } from 'react-redux'
 
-import { useAppContext } from '~/context/appContext'
+import { useAudiusQueryContext } from '~/audius-query'
 import { Id, OptionalId } from '~/models/Identifiers'
 import { supportedUserMetadataListFromSDK } from '~/models/Tipping'
 import { SUPPORTING_PAGINATION_SIZE } from '~/utils/constants'
@@ -24,7 +24,7 @@ export const useSupportedUsers = (
   { userId, limit = SUPPORTING_PAGINATION_SIZE }: UseSupportedUsersArgs,
   config?: Config
 ) => {
-  const { audiusSdk } = useAppContext()
+  const { audiusSdk } = useAudiusQueryContext()
   const queryClient = useQueryClient()
   const { data: currentUserId } = useCurrentUserId()
   const dispatch = useDispatch()
@@ -32,8 +32,9 @@ export const useSupportedUsers = (
   return useQuery({
     queryKey: [QUERY_KEYS.supportedUsers, userId],
     queryFn: async () => {
-      if (!audiusSdk || !userId) return []
-      const { data = [] } = await audiusSdk.full.users.getSupportedUsers({
+      if (!userId) return []
+      const sdk = await audiusSdk()
+      const { data = [] } = await sdk.full.users.getSupportedUsers({
         id: Id.parse(userId),
         limit,
         userId: OptionalId.parse(currentUserId)
@@ -51,6 +52,6 @@ export const useSupportedUsers = (
       return supporting
     },
     staleTime: config?.staleTime,
-    enabled: config?.enabled !== false && !!userId && !!audiusSdk
+    enabled: config?.enabled !== false && !!userId
   })
 }
