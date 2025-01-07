@@ -3,7 +3,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 
 import { playlistMetadataForUpdateWithSDK } from '~/adapters/collection'
 import { fileToSdk } from '~/adapters/track'
-import { useAppContext } from '~/context/appContext'
+import { useAudiusQueryContext } from '~/audius-query'
 import { Collection } from '~/models/Collection'
 import { ID } from '~/models/Identifiers'
 import { encodeHashId } from '~/utils/hashIds'
@@ -22,7 +22,7 @@ type UpdateCollectionParams = {
 }
 
 export const useUpdateCollection = () => {
-  const { audiusSdk } = useAppContext()
+  const { audiusSdk } = useAudiusQueryContext()
   const queryClient = useQueryClient()
 
   return useMutation({
@@ -32,7 +32,7 @@ export const useUpdateCollection = () => {
       metadata,
       coverArtFile
     }: UpdateCollectionParams) => {
-      if (!audiusSdk) throw new Error('SDK not initialized')
+      const sdk = await audiusSdk()
 
       const encodedPlaylistId = encodeHashId(playlistId)
       const encodedUserId = encodeHashId(userId)
@@ -42,7 +42,7 @@ export const useUpdateCollection = () => {
         metadata as Collection
       )
 
-      const response = await audiusSdk.playlists.updatePlaylist({
+      const response = await sdk.playlists.updatePlaylist({
         coverArtFile: coverArtFile
           ? fileToSdk(coverArtFile, 'cover_art')
           : undefined,
@@ -74,6 +74,7 @@ export const useUpdateCollection = () => {
         })
       )
 
+      // Optimistically update collectionByPermalink
       queryClient.setQueryData(
         [QUERY_KEYS.collectionByPermalink, metadata.permalink],
         (old: any) => ({
@@ -89,11 +90,14 @@ export const useUpdateCollection = () => {
       // If the mutation fails, roll back collection data
       if (context?.previousCollection) {
         queryClient.setQueryData(
-          ['collection', playlistId],
+          [QUERY_KEYS.collection, playlistId],
           context.previousCollection
         )
         queryClient.setQueryData(
-          ['collectionByPermalink', context.previousCollection.permalink],
+          [
+            QUERY_KEYS.collectionByPermalink,
+            context.previousCollection.permalink
+          ],
           context.previousCollection
         )
       }

@@ -2,7 +2,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { userCollectionMetadataFromSDK } from '~/adapters/collection'
-import { useAppContext } from '~/context/appContext'
+import { useAudiusQueryContext } from '~/audius-query'
 import { OptionalId } from '~/models'
 import { getUserId } from '~/store/account/selectors'
 
@@ -26,7 +26,7 @@ export const useCollectionByPermalink = (
   permalink: string | undefined | null,
   options?: QueryOptions
 ) => {
-  const { audiusSdk } = useAppContext()
+  const { audiusSdk } = useAudiusQueryContext()
   const queryClient = useQueryClient()
   const dispatch = useDispatch()
   const currentUserId = useSelector(getUserId)
@@ -35,12 +35,14 @@ export const useCollectionByPermalink = (
     queryKey: [QUERY_KEYS.collectionByPermalink, permalink],
     queryFn: async () => {
       const { handle, slug } = playlistPermalinkToHandleAndSlug(permalink!)
-      const { data = [] } =
-        await audiusSdk!.full.playlists.getPlaylistByHandleAndSlug({
+      const sdk = await audiusSdk()
+      const { data = [] } = await sdk.full.playlists.getPlaylistByHandleAndSlug(
+        {
           handle,
           slug,
           userId: OptionalId.parse(currentUserId)
-        })
+        }
+      )
 
       const collection = userCollectionMetadataFromSDK(data[0])
 
@@ -58,6 +60,6 @@ export const useCollectionByPermalink = (
       return collection
     },
     staleTime: options?.staleTime,
-    enabled: options?.enabled !== false && !!audiusSdk && !!permalink
+    enabled: options?.enabled !== false && !!permalink
   })
 }

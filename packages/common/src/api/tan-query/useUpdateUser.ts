@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 
 import { userMetadataToSdk } from '~/adapters/user'
-import { useAppContext } from '~/context/appContext'
+import { useAudiusQueryContext } from '~/audius-query'
 import { ID } from '~/models/Identifiers'
 import { UserMetadata } from '~/models/User'
 import { encodeHashId } from '~/utils/hashIds'
@@ -21,20 +21,26 @@ type UpdateUserParams = {
 }
 
 export const useUpdateUser = () => {
-  const { audiusSdk } = useAppContext()
+  const { audiusSdk } = useAudiusQueryContext()
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: async ({ userId, metadata, ...params }: UpdateUserParams) => {
-      if (!audiusSdk) throw new Error('SDK not initialized')
+    mutationFn: async ({
+      userId,
+      metadata,
+      coverArtFile,
+      profilePictureFile
+    }: UpdateUserParams) => {
+      const sdk = await audiusSdk()
 
       const encodedUserId = encodeHashId(userId)
       if (!encodedUserId) throw new Error('Invalid ID')
 
       const sdkMetadata = userMetadataToSdk(metadata as UserMetadata)
 
-      const response = await audiusSdk.users.updateProfile({
-        ...params,
+      const response = await sdk.users.updateProfile({
+        coverArtFile,
+        profilePictureFile,
         userId: encodedUserId,
         metadata: sdkMetadata
       })

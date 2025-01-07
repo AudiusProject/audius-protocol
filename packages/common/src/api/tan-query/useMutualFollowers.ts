@@ -53,7 +53,6 @@ export const useMutualFollowers = ({
       return users
     },
     staleTime: config?.staleTime,
-    enabled:
-      config?.enabled !== false && !!audiusSdk && !!userId && !!currentUserId
+    enabled: config?.enabled !== false && !!userId && !!currentUserId
   })
 }
