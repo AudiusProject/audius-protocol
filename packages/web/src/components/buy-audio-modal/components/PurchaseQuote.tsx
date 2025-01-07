@@ -49,6 +49,7 @@ export const PurchaseQuote = () => {
           <>
             <IconSOL />
             {formatNumberString(purchaseInfo?.estimatedSOL.uiAmountString, {
+              // Show enough decimals so that it doesn't look like 0 SOL
               maxDecimals: 3
             })}
             <span className={styles.tokenLabel}>{messages.sol}</span>
