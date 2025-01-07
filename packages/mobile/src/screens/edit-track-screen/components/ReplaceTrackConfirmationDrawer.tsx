@@ -7,7 +7,7 @@ const messages = {
   header: 'Are You Sure?',
   description: 'Are you sure you want to replace the file for this track?',
   hintText:
-    'This change may impact accuracy of comment timestamps. Social metrics such as reposts won’t be affected.',
+    "This change may impact accuracy of comment timestamps. Social metrics such as reposts won't be affected.",
   confirm: 'Confirm & Upload',
   cancel: 'Cancel'
 }
