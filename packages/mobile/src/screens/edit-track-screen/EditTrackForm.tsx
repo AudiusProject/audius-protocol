@@ -103,6 +103,9 @@ export const EditTrackForm = (props: EditTrackFormProps) => {
   const { isEnabled: isTrackReplaceEnabled } = useFeatureFlag(
     FeatureFlags.TRACK_AUDIO_REPLACE
   )
+  const { isEnabled: isTrackReplaceDownloadsEnabled } = useFeatureFlag(
+    FeatureFlags.TRACK_REPLACE_DOWNLOADS
+  )
   const initiallyHidden = initialValues.is_unlisted
   const isInitiallyScheduled = initialValues.is_scheduled_release
   const usersMayLoseAccess = !isUpload && !initiallyHidden && values.is_unlisted
@@ -322,7 +325,11 @@ export const EditTrackForm = (props: EditTrackFormProps) => {
         isOpen={isOverflowMenuOpen}
         onClose={handleOverflowMenuClose}
         onReplace={handleReplace}
-        onDownload={isUpload ? undefined : handleDownload}
+        onDownload={
+          !isUpload && isTrackReplaceDownloadsEnabled
+            ? handleDownload
+            : undefined
+        }
       />
     </>
   )
