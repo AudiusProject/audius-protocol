@@ -1,6 +1,7 @@
 import { USDC } from '@audius/fixed-decimal'
 import {
   createTransferCheckedInstruction,
+  getAccount,
   getAssociatedTokenAddressSync
 } from '@solana/spl-token'
 import { Keypair, PublicKey, TransactionInstruction } from '@solana/web3.js'
@@ -16,7 +17,6 @@ import { Status } from '~/models/Status'
 import { BNUSDC, StringUSDC } from '~/models/Wallet'
 import {
   findAssociatedTokenAddress,
-  getTokenAccountInfo,
   getUserbankAccountInfo,
   MEMO_PROGRAM_ID,
   pollForTokenBalanceChange,
@@ -81,9 +81,11 @@ function* purchaseStep({
     { solanaAddress: wallet.toString(), mint: 'USDC' }
   )
 
-  const initialAccountInfo = yield* call(getTokenAccountInfo, sdk, {
+  const initialAccountInfo = yield* call(
+    getAccount,
+    sdk.services.solanaClient.connection,
     tokenAccount
-  })
+  )
   const initialBalance = initialAccountInfo?.amount ?? BigInt(0)
 
   yield* put(purchaseStarted())
@@ -382,9 +384,11 @@ function* recoverPurchaseIfNecessary() {
         mint: 'USDC'
       }
     )
-    const accountInfo = yield* call(getTokenAccountInfo, sdk, {
-      tokenAccount: usdcTokenAccount
-    })
+    const accountInfo = yield* call(
+      getAccount,
+      sdk.services.solanaClient.connection,
+      usdcTokenAccount
+    )
     const amount = accountInfo?.amount ?? BigInt(0)
     if (amount === BigInt(0)) {
       return

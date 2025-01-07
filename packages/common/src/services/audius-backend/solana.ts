@@ -53,26 +53,6 @@ const delay = (ms: number) =>
     setTimeout(resolve, ms)
   })
 
-/**
- * Gets the token account information for a given address and Audius-relevant mint
- */
-export const getTokenAccountInfo = async (
-  sdk: AudiusSdk,
-  {
-    tokenAccount,
-    commitment = 'processed'
-  }: {
-    tokenAccount: PublicKey
-    commitment?: Commitment
-  }
-): Promise<Account | null> => {
-  return await getAccount(
-    sdk.services.solanaClient.connection,
-    tokenAccount,
-    commitment
-  )
-}
-
 export const isTransferCheckedInstruction = (
   instruction: TransactionInstruction
 ) => {
@@ -126,10 +106,11 @@ export const getUserbankAccountInfo = async (
     mint
   })
 
-  return getTokenAccountInfo(sdk, {
+  return await getAccount(
+    sdk.services.solanaClient.connection,
     tokenAccount,
     commitment
-  })
+  )
 }
 
 /**
@@ -210,10 +191,11 @@ export const pollForTokenBalanceChange = async (
 ) => {
   const debugTokenName = mint.toUpperCase()
   let retries = 0
-  let tokenAccountInfo = await getTokenAccountInfo(sdk, {
+  let tokenAccountInfo = await getAccount(
+    sdk.services.solanaClient.connection,
     tokenAccount,
     commitment
-  })
+  )
   while (
     (!tokenAccountInfo ||
       initialBalance === undefined ||
@@ -232,10 +214,11 @@ export const pollForTokenBalanceChange = async (
       )
     }
     await delay(retryDelayMs)
-    tokenAccountInfo = await getTokenAccountInfo(sdk, {
+    tokenAccountInfo = await getAccount(
+      sdk.services.solanaClient.connection,
       tokenAccount,
       commitment
-    })
+    )
   }
   if (
     tokenAccountInfo &&
