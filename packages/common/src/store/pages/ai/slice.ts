@@ -19,11 +19,6 @@ export type AiPageState = {
   tracks: typeof initialLineupState
 }
 
-export type FetchAiUserAction = PayloadAction<{
-  handle?: string
-  userId?: ID
-}>
-
 const initialState: AiPageState = {
   userId: null,
   handle: null,
@@ -38,24 +33,8 @@ const slice = createSlice({
   reducers: {
     reset: (state) => {
       state.userId = null
-    },
-    fetchAiUser: (state, action: FetchAiUserAction) => {
-      const { handle, userId } = action.payload
-      state.status = Status.LOADING
-      if (handle) {
-        state.handle = handle
-      }
-      if (userId) {
-        state.userId = userId
-      }
-    },
-    fetchAiUserSucceeded: (state, action: PayloadAction<{ userId: ID }>) => {
-      const { userId } = action.payload
-      state.userId = userId
-      state.status = Status.SUCCESS
-    },
-    fetchAiUserFailed: (state) => {
-      state.status = Status.ERROR
+      state.handle = null
+      state.status = Status.IDLE
     },
     setCount: (state, action: PayloadAction<{ count: number }>) => {
       const { count } = action.payload
@@ -66,8 +45,7 @@ const slice = createSlice({
 
 const aiLineupReducer = asLineup(aiTracksPrefix, aiTracksReducer)
 
-export const { reset, setCount, fetchAiUser, fetchAiUserSucceeded } =
-  slice.actions
+export const { reset, setCount } = slice.actions
 
 export default combineReducers({
   page: slice.reducer,

@@ -1,6 +1,6 @@
 import { useEffect, useCallback, ComponentType, RefObject } from 'react'
 
-import { ID } from '@audius/common/models'
+import { useUserByHandle } from '@audius/common/api'
 import {
   lineupSelectors,
   aiPageLineupActions as tracksActions,
@@ -18,14 +18,14 @@ import { LineupVariant } from 'components/lineup/types'
 import { AppState } from 'store/types'
 import { push as pushRoute } from 'utils/navigation'
 
-import { AiPageProps as DesktopRemixesPageProps } from './components/desktop/AiPage'
-import { AiPageProps as MobileRemixesPageProps } from './components/mobile/AiPage'
+import { AiPageProps as DesktopAiPageProps } from './components/desktop/AiPage'
+import { AiPageProps as MobileAiPageProps } from './components/mobile/AiPage'
 const { profilePage } = route
 
 const { makeGetCurrent } = queueSelectors
 const { getPlaying, getBuffering } = playerSelectors
-const { getAiUser, getLineup } = aiPageSelectors
-const { fetchAiUser, reset } = aiPageActions
+const { getLineup } = aiPageSelectors
+const { reset } = aiPageActions
 const { makeGetLineupMetadatas } = lineupSelectors
 
 const messages = {
@@ -34,9 +34,7 @@ const messages = {
 
 type OwnProps = {
   containerRef: RefObject<HTMLDivElement>
-  children:
-    | ComponentType<DesktopRemixesPageProps>
-    | ComponentType<MobileRemixesPageProps>
+  children: ComponentType<DesktopAiPageProps> | ComponentType<MobileAiPageProps>
 }
 
 type mapStateProps = ReturnType<typeof makeMapStateToProps>
@@ -47,9 +45,7 @@ type AiPageProviderProps = OwnProps &
 const AiPageProvider = ({
   containerRef,
   children: Children,
-  user,
   tracks,
-  fetchAiUser,
   currentQueueItem,
   isPlaying,
   isBuffering,
@@ -62,9 +58,7 @@ const AiPageProvider = ({
 }: AiPageProviderProps) => {
   const { handle } = useParams<{ handle: string }>()
 
-  useEffect(() => {
-    fetchAiUser(handle)
-  }, [fetchAiUser, handle])
+  const { data: user } = useUserByHandle(handle)
 
   useEffect(() => {
     return function cleanup() {
@@ -108,7 +102,7 @@ const AiPageProvider = ({
 
   const childProps = {
     title: messages.title,
-    user,
+    user: user ?? null,
     goToArtistPage,
     getLineupProps
   }
@@ -122,7 +116,6 @@ function makeMapStateToProps() {
 
   const mapStateToProps = (state: AppState) => {
     return {
-      user: getAiUser(state),
       tracks: getRemixesTracksLineup(state),
       currentQueueItem: getCurrentQueueItem(state),
       isPlaying: getPlaying(state),
@@ -135,8 +128,6 @@ function makeMapStateToProps() {
 function mapDispatchToProps(dispatch: Dispatch) {
   return {
     goToRoute: (route: string) => dispatch(pushRoute(route)),
-    fetchAiUser: (handle: string, userId?: ID) =>
-      dispatch(fetchAiUser({ handle, userId })),
     loadMore: (
       offset: number,
       limit: number,
