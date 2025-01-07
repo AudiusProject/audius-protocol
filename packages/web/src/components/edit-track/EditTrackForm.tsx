@@ -18,7 +18,7 @@ import {
   PlainButton
 } from '@audius/harmony'
 import cn from 'classnames'
-import { Form, Formik, FormikProps, useField, useFormikContext } from 'formik'
+import { Form, Formik, FormikProps, useField } from 'formik'
 import { useUnmount } from 'react-use'
 import { z } from 'zod'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
