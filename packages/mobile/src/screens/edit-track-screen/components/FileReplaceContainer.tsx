@@ -6,7 +6,9 @@ import {
   IconKebabHorizontal,
   IconPause,
   IconPlay,
-  PlainButton
+  PlainButton,
+  Text,
+  useTheme
 } from '@audius/harmony-native'
 import { EditTrackFormPreviewContext } from 'app/screens/edit-track-screen/EditTrackFormPreviewContext'
 
@@ -22,6 +24,7 @@ export const FileReplaceContainer = ({
   filePath,
   onMenuButtonPress
 }: FileReplaceContainerProps) => {
+  const { spacing } = useTheme()
   const { isPlaying, playPreview, stopPreview } = useContext(
     EditTrackFormPreviewContext
   )
@@ -42,16 +45,20 @@ export const FileReplaceContainer = ({
       gap='l'
     >
       <PlainButton
+        fullWidth
         size='default'
-        style={{ flexShrink: 1, paddingRight: 8 }}
+        // These styles help ensure long file names are ellipsized
+        style={{ paddingRight: spacing.m, justifyContent: 'flex-start' }}
         iconLeft={isPlaying ? IconPause : IconPlay}
         onPress={handleTogglePlay}
       >
         {fileName}
       </PlainButton>
-      <Flex>
-        <IconButton icon={IconKebabHorizontal} onPress={onMenuButtonPress} />
-      </Flex>
+      <IconButton
+        icon={IconKebabHorizontal}
+        onPress={onMenuButtonPress}
+        color='subdued'
+      />
     </Flex>
   )
 }
