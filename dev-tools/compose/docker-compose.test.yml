@@ -325,7 +325,7 @@ services:
     extends:
       file: docker-compose.yml
       service: discovery-provider
-    entrypoint: sh -c '[ ! "$$1" = "test" ] && sleep inf || (shift; pytest "$$@")' -
+    entrypoint: sh -c '[ ! "$$1" = "test" ] && sleep inf || (shift; pytest "$$@" && pytest --xkill)' -
     command: ''
     environment:
       audius_db_url: 'postgresql+psycopg2://postgres:postgres@discovery-provider-db:5432/discovery_provider'

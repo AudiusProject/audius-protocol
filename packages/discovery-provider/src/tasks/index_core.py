@@ -97,7 +97,7 @@ class CoreIndexer:
     challenge_bus: ChallengeEventBus
     core: CoreClient
     logger: LoggerAdapter[Logger]
-    stop_event: threading.Event
+    stop_event: bool
 
     indexer_initialized: bool
     indexer_caught_up: bool
@@ -120,7 +120,7 @@ class CoreIndexer:
         self.challenge_bus = setup_challenge_bus()
         self.core = get_core_instance()
 
-        self.stop_event = threading.Event()
+        self.stop_event = False
 
         self.indexer_initialized = False
         self.indexer_caught_up = False
@@ -182,10 +182,8 @@ class CoreIndexer:
 
     def signal_handler(self, signal_received, frame):
         """Handles termination signals and sets the stop event."""
-        self.logger.info(
-            f"Signal {signal_received} received. Shutting down CoreIndexer..."
-        )
-        self.stop_event.set()
+        self.logger.info(f"Signal {signal_received} received.")
+        self.stop()
 
     # starts indexer in it's own thread to avoid blocking main and getting caught up in celery
     def start(self):
@@ -203,7 +201,7 @@ class CoreIndexer:
 
     def stop(self):
         self.logger.warning("Stopping Core Indexer...")
-        self.stop_event.set()
+        self.stop_event = True
 
     def latest_indexed_adjusted_sol_block_height(self) -> int:
         return get_adjusted_core_block(self.latest_indexed_block_height)
@@ -218,7 +216,7 @@ class CoreIndexer:
         return self.sol_latest_processed_slot >= self.sol_plays_cutover_end
 
     def index_core(self):
-        while not self.stop_event.is_set():
+        while not self.stop_event:
             was_error = False
             start_time = time.time()
             try:
@@ -239,7 +237,7 @@ class CoreIndexer:
                 self.logger.error(f"error {e}")
             finally:
                 # shutdown if stop event sent
-                if self.stop_event.is_set():
+                if self.stop_event:
                     self.logger.info("Shutdown signal received. Stopping indexing")
                     break
 
@@ -257,6 +255,7 @@ class CoreIndexer:
                     time.sleep(CORE_INDEXER_MINIMUM_TIME_SECS - elapsed_time)
                 if was_error:
                     time.sleep(CORE_INDEXER_ERROR_SLEEP_SECS)
+        self.logger.info("Core indexer successfully shut down")
 
     # indexes a core block
     # raises an exception in the case of an error
