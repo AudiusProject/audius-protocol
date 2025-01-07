@@ -66,11 +66,11 @@ export enum ProfilePageTabs {
 }
 
 export enum ProfilePageTabRoute {
-  TRACKS = 'Tracks',
-  ALBUMS = 'Albums',
-  PLAYLISTS = 'Playlists',
-  REPOSTS = 'Reposts',
-  COLLECTIBLES = 'Collectibles'
+  TRACKS = 'tracks',
+  ALBUMS = 'albums',
+  PLAYLISTS = 'playlists',
+  REPOSTS = 'reposts',
+  COLLECTIBLES = 'collectibles'
 }
 
 export const getTabForRoute = (tabRoute: ProfilePageTabRoute) => {
