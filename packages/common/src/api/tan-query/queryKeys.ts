@@ -20,5 +20,9 @@ export const QUERY_KEYS = {
   supporters: 'supporters',
   supportedUsers: 'supportedUsers',
   relatedArtists: 'relatedArtists',
+  purchases: 'purchases',
+  purchasesCount: 'purchasesCount',
+  sales: 'sales',
+  salesCount: 'salesCount',
   mutualFollowers: 'mutualFollowers'
 } as const

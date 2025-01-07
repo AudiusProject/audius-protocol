@@ -13,8 +13,8 @@ import { useSubPageHeader } from 'components/nav/mobile/NavContext'
 import { replace } from 'utils/navigation'
 
 import styles from '../PayAndEarnPage.module.css'
-import { PurchasesTab, usePurchases } from '../components/PurchasesTab'
-import { SalesTab, useSales } from '../components/SalesTab'
+import { PurchasesTab, usePurchasesData } from '../components/PurchasesTab'
+import { SalesTab, useSalesData } from '../components/SalesTab'
 import { USDCCard } from '../components/USDCCard'
 import { WithdrawalsTab, useWithdrawals } from '../components/WithdrawalsTab'
 import { PayAndEarnPageProps, TableType } from '../types'
@@ -61,7 +61,7 @@ export const PayAndEarnPage = ({ tableView }: PayAndEarnPageProps) => {
     isEmpty: isSalesEmpty,
     isLoading: isSalesLoading,
     downloadCSV: downloadSalesCSV
-  } = useSales()
+  } = useSalesData()
   const {
     count: purchasesCount,
     data: purchases,
@@ -71,7 +71,7 @@ export const PayAndEarnPage = ({ tableView }: PayAndEarnPageProps) => {
     isEmpty: isPurchasesEmpty,
     isLoading: isPurchasesLoading,
     downloadCSV: downloadPurchasesCSV
-  } = usePurchases()
+  } = usePurchasesData()
   const {
     count: withdrawalsCount,
     data: withdrawals,
