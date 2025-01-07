@@ -178,6 +178,7 @@ const TrackEditForm = (
   const trackIdx = values.trackMetadatasIndex
   const [, , { setValue: setIndex }] = useField('trackMetadatasIndex')
   const initialTrackValues = initialValues.trackMetadatas[trackIdx] ?? {}
+  const initialTrackId = initialTrackValues.track_id
   useUnmount(() => {
     setIndex(0)
   })
@@ -214,12 +215,19 @@ const TrackEditForm = (
       trackEvent(
         make({
           eventName: Name.TRACK_REPLACE_PREVIEW,
-          trackId: initialTrackValues.track_id,
+          trackId: initialTrackId,
           source: isUpload ? 'upload' : 'edit'
         })
       )
     }
-  }, [togglePreview, trackIdx, track])
+  }, [
+    togglePreview,
+    track.preview,
+    trackIdx,
+    isPreviewPlaying,
+    initialTrackId,
+    isUpload
+  ])
 
   const getArtworkUrl = (artwork: typeof updatedArtwork) => {
     if (!artwork) return undefined
@@ -264,21 +272,21 @@ const TrackEditForm = (
         trackEvent(
           make({
             eventName: Name.TRACK_REPLACE_REPLACE,
-            trackId: initialTrackValues.track_id,
+            trackId: initialTrackId,
             source: isUpload ? 'upload' : 'edit'
           })
         )
       }
     },
     [
-      isArtworkDirty,
-      isTitleDirty,
       isUpload,
-      setArtworkValue,
-      setOrigFilename,
-      setTitle,
+      isTitleDirty,
+      isArtworkDirty,
       setTrackValue,
-      initialTrackValues
+      setOrigFilename,
+      initialTrackId,
+      setTitle,
+      setArtworkValue
     ]
   )
 
