@@ -12,6 +12,7 @@ class CoreIndexedBlocks(Base):
     parenthash = Column(String)
     chain_id = Column(Text, nullable=False)
     height = Column(Integer, nullable=False)
+    plays_slot = Column(Integer)
 
     # Set composite primary key
     __table_args__ = (

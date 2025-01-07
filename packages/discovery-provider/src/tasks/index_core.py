@@ -87,6 +87,10 @@ class PlayChallengeInfo(TypedDict):
     slot: int
 
 
+class IndexingResult(TypedDict):
+    indexed_sol_plays_slot: Optional[int]
+
+
 class CoreIndexer:
     db: SessionManager
     redis: Redis
@@ -285,6 +289,7 @@ class CoreIndexer:
         # tranasction gets committed when scope is exited
         with self.db.scoped_session() as session:
             self.logger.warn("indexing block")
+            indexed_slot = None
 
             # TODO: parallelize?
             for tx in chain_block.transactions:
@@ -292,7 +297,9 @@ class CoreIndexer:
                 transaction_type = tx.WhichOneof("transaction")
 
                 if transaction_type == "plays":
-                    self.index_core_plays(session=session, block=chain_block, tx=tx)
+                    indexed_slot = self.index_core_plays(
+                        session=session, block=chain_block, tx=tx
+                    )
                     continue
                 elif transaction_type == "manage_entity":
                     continue
@@ -325,6 +332,7 @@ class CoreIndexer:
                 height=chain_block.height,
                 blockhash=chain_block.blockhash,
                 parenthash=parenthash,
+                plays_slot=indexed_slot,
             )
 
             exists = (
@@ -343,11 +351,11 @@ class CoreIndexer:
 
     def index_core_plays(
         self, session: Session, block: BlockResponse, tx: SignedTransaction
-    ):
+    ) -> Optional[int]:
         self.logger.info("indexing play")
 
         if not self.should_index_plays():
-            return
+            return None
 
         latest_slot = self.sol_plays_cutover_end
         latest_slot_record = (
@@ -415,7 +423,7 @@ class CoreIndexer:
                 )
 
         if not plays:
-            return
+            return None
 
         session.execute(Play.__table__.insert().values(plays))
         self.logger.debug("index_core_plays.py | Dispatching listen events")
@@ -433,6 +441,8 @@ class CoreIndexer:
         self.logger.debug(
             f"index_core_plays.py | Dispatched listen events in {listen_dispatch_diff}"
         )
+
+        return slot
 
     # dresses up the core health to look like the solana plays endpoint
     def update_core_listens_health(self, latest_indexed_block: BlockResponse):
