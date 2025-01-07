@@ -7,7 +7,6 @@ import {
   IconPause,
   IconPlay,
   PlainButton,
-  Text,
   useTheme
 } from '@audius/harmony-native'
 import { EditTrackFormPreviewContext } from 'app/screens/edit-track-screen/EditTrackFormPreviewContext'
