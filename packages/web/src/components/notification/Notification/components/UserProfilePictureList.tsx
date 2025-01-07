@@ -1,7 +1,7 @@
 import { useEffect } from 'react'
 
 import { useCurrentUserId } from '@audius/common/api'
-import { User } from '@audius/common/models'
+import { UserMetadata } from '@audius/common/models'
 import { formatCount } from '@audius/common/utils'
 import cn from 'classnames'
 import { useDispatch } from 'react-redux'
@@ -36,7 +36,7 @@ export type UserProfileListProps = {
    * e.g. for followers and supporters, we have follower_count and supporter_count.
    * When this is the case, we use this totalUserCount prop to inform how many total users there are.
    */
-  users: Array<User>
+  users: Array<UserMetadata>
   totalUserCount: number
   limit?: number
   disableProfileClick?: boolean
