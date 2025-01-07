@@ -1,8 +1,8 @@
-import { full } from '@audius/sdk'
-import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query'
-import { useDispatch } from 'react-redux'
+import { useMemo } from 'react'
 
-import { userApiFetch } from '~/api/user'
+import { full } from '@audius/sdk'
+import { useInfiniteQuery } from '@tanstack/react-query'
+
 import { Id } from '~/api/utils'
 import { useAudiusQueryContext } from '~/audius-query'
 import { ID } from '~/models'
@@ -13,7 +13,9 @@ import {
 import { Nullable } from '~/utils/typeUtils'
 
 import { QUERY_KEYS } from './queryKeys'
-import { makeTracksQueryFn } from './useTracks'
+import { useCollections } from './useCollections'
+import { useTracks } from './useTracks'
+import { useUsers } from './useUsers'
 import { parsePurchase } from './utils/parsePurchase'
 
 export type GetSalesListArgs = {
@@ -27,9 +29,8 @@ export const useSales = (
   options: { pageSize: number; enabled?: boolean }
 ) => {
   const context = useAudiusQueryContext()
+  const { audiusSdk } = context
   const { pageSize, enabled } = options
-  const queryClient = useQueryClient()
-  const dispatch = useDispatch()
 
   const queryResult = useInfiniteQuery({
     queryKey: [QUERY_KEYS.sales, args],
@@ -43,7 +44,7 @@ export const useSales = (
       return allPages.length * pageSize
     },
     queryFn: async ({ pageParam }) => {
-      const sdk = await context.audiusSdk()
+      const sdk = await audiusSdk()
       const { data = [] } = await sdk.full.users.getSales({
         limit: pageSize,
         offset: pageParam,
@@ -52,30 +53,7 @@ export const useSales = (
         id: Id.parse(args.userId!),
         userId: Id.parse(args.userId!)
       })
-      const purchases = data.map(parsePurchase)
-
-      // Pre-fetch track metadata
-      const trackIdsToFetch = purchases
-        .filter(
-          ({ contentType }) => contentType === USDCContentPurchaseType.TRACK
-        )
-        .map(({ contentId }) => contentId)
-      if (trackIdsToFetch.length > 0) {
-        await makeTracksQueryFn(
-          queryClient,
-          dispatch,
-          context.audiusSdk()
-        )(trackIdsToFetch)
-      }
-
-      // fetch buyer metadata
-      const userIdsToFetch = purchases.map(({ buyerUserId }) => buyerUserId)
-      if (userIdsToFetch.length > 0) {
-        await userApiFetch.getUsersByIds({ ids: userIdsToFetch }, context)
-      }
-
-      // TODO: [PAY-2548] Purchaseable Albums - fetch metadata for albums
-      return purchases
+      return data.map(parsePurchase)
     }
   })
 
@@ -83,7 +61,35 @@ export const useSales = (
     queryResult
 
   // Flatten pages into a single array
-  const flatData = data?.pages.flat() ?? []
+  const flatData = useMemo(() => data?.pages.flat() ?? [], [data?.pages])
+
+  // Pre-fetch purchased content metadata
+  const userIdsToFetch = useMemo(
+    () => flatData.map(({ buyerUserId }) => buyerUserId),
+    [flatData]
+  )
+  const trackIdsToFetch = useMemo(
+    () =>
+      flatData
+        .filter(
+          ({ contentType }) => contentType === USDCContentPurchaseType.TRACK
+        )
+        .map(({ contentId }) => contentId),
+    [flatData]
+  )
+  const collectionIdsToFetch = useMemo(
+    () =>
+      flatData
+        .filter(
+          ({ contentType }) => contentType === USDCContentPurchaseType.ALBUM
+        )
+        .map(({ contentId }) => contentId),
+    [flatData]
+  )
+  // Call the hooks dropping results to pre-fetch the data
+  useUsers(userIdsToFetch)
+  useTracks(trackIdsToFetch)
+  useCollections(collectionIdsToFetch)
 
   return {
     data: flatData,

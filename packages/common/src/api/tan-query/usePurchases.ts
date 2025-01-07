@@ -1,6 +1,7 @@
+import { useMemo } from 'react'
+
 import { full } from '@audius/sdk'
-import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query'
-import { useDispatch } from 'react-redux'
+import { useInfiniteQuery } from '@tanstack/react-query'
 
 import { Id } from '~/api/utils'
 import { useAudiusQueryContext } from '~/audius-query'
@@ -12,7 +13,8 @@ import {
 import { Nullable } from '~/utils/typeUtils'
 
 import { QUERY_KEYS } from './queryKeys'
-import { makeTracksQueryFn } from './useTracks'
+import { useCollections } from './useCollections'
+import { useTracks } from './useTracks'
 import { parsePurchase } from './utils/parsePurchase'
 
 export type GetPurchaseListArgs = {
@@ -32,8 +34,6 @@ export const usePurchases = (
 ) => {
   const { audiusSdk } = useAudiusQueryContext()
   const { pageSize, enabled } = options
-  const queryClient = useQueryClient()
-  const dispatch = useDispatch()
   const queryResult = useInfiniteQuery({
     queryKey: [QUERY_KEYS.purchases, args],
     enabled: enabled !== false && !!args.userId,
@@ -55,23 +55,8 @@ export const usePurchases = (
         id: Id.parse(args.userId!),
         userId: Id.parse(args.userId!)
       })
-      const purchases = data.map(parsePurchase)
 
-      // Pre-fetch track metadata
-      const trackIdsToFetch = purchases
-        .filter(
-          ({ contentType }) => contentType === USDCContentPurchaseType.TRACK
-        )
-        .map(({ contentId }) => contentId)
-      if (trackIdsToFetch.length > 0) {
-        await makeTracksQueryFn(
-          queryClient,
-          dispatch,
-          audiusSdk()
-        )(trackIdsToFetch)
-      }
-      // TODO: [PAY-2548] Purchaseable Albums - fetch metadata for albums
-      return purchases
+      return data.map(parsePurchase)
     }
   })
 
@@ -79,7 +64,30 @@ export const usePurchases = (
     queryResult
 
   // Flatten pages into a single array
-  const flatData = data?.pages.flat() ?? []
+  const flatData = useMemo(() => data?.pages.flat() ?? [], [data?.pages])
+
+  // Pre-fetch purchased content metadata
+  const trackIdsToFetch = useMemo(
+    () =>
+      flatData
+        .filter(
+          ({ contentType }) => contentType === USDCContentPurchaseType.TRACK
+        )
+        .map(({ contentId }) => contentId),
+    [flatData]
+  )
+  const collectionIdsToFetch = useMemo(
+    () =>
+      flatData
+        .filter(
+          ({ contentType }) => contentType === USDCContentPurchaseType.ALBUM
+        )
+        .map(({ contentId }) => contentId),
+    [flatData]
+  )
+  // Call the hooks dropping results to pre-fetch the data
+  useTracks(trackIdsToFetch)
+  useCollections(collectionIdsToFetch)
 
   return {
     data: flatData,
