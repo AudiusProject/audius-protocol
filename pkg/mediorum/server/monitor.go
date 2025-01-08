@@ -12,7 +12,6 @@ import (
 	"github.com/AudiusProject/audius-protocol/pkg/mediorum/crudr"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/labstack/echo/v4"
-	"golang.org/x/exp/slices"
 	"golang.org/x/exp/slog"
 	"gorm.io/gorm"
 )

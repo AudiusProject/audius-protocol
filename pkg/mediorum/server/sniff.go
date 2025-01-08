@@ -1,10 +1,10 @@
 package server
 
 import (
+	"slices"
 	"sync"
 
 	"gocloud.dev/blob"
-	"golang.org/x/exp/slices"
 )
 
 type HostAttrSniff struct {
