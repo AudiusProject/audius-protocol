@@ -182,7 +182,7 @@ const PlaylistTab = ({
   profile: User
   userId: ID | null
 }) => {
-  const { data: playlists, status: playlistsStatus } = useUserPlaylists({
+  const { data: playlists, isPending } = useUserPlaylists({
     userId: userId ?? null
   })
 
@@ -207,7 +207,7 @@ const PlaylistTab = ({
     )
   }
 
-  if (playlistsStatus === 'pending') {
+  if (isPending) {
     return (
       <Flex justifyContent='center' mt='2xl'>
         <Box w={24}>
@@ -239,7 +239,7 @@ const AlbumTab = ({
   profile: User
   userId: ID | null
 }) => {
-  const { data: albums, status: albumsStatus } = useUserAlbums({
+  const { data: albums, isPending } = useUserAlbums({
     userId: userId ?? null
   })
 
@@ -260,7 +260,7 @@ const AlbumTab = ({
     )
   }
 
-  if (albumsStatus === 'pending') {
+  if (isPending) {
     return (
       <Flex justifyContent='center' mt='2xl'>
         <Box w={24}>

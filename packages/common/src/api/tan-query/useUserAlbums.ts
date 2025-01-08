@@ -7,6 +7,7 @@ import { useAudiusQueryContext } from '~/audius-query'
 import { Id, OptionalId } from '~/models/Identifiers'
 
 import { QUERY_KEYS } from './queryKeys'
+import { Config } from './types'
 import { useCurrentUserId } from './useCurrentUserId'
 import { primeCollectionData } from './utils/primeCollectionData'
 
@@ -14,11 +15,6 @@ type GetAlbumsOptions = {
   userId: number | null
   limit?: number
   offset?: number
-}
-
-type Config = {
-  staleTime?: number
-  enabled?: boolean
 }
 
 export const useUserAlbums = (options: GetAlbumsOptions, config?: Config) => {

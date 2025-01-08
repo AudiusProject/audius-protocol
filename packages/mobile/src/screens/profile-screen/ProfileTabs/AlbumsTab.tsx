@@ -19,7 +19,7 @@ export const AlbumsTab = () => {
   const isOwner = useSelector((state) => getIsOwner(state, handle ?? ''))
   const isFocused = useIsFocused()
 
-  const { data: albums, isLoading } = useUserAlbums(
+  const { data: albums, isPending } = useUserAlbums(
     { userId: user_id },
     { enabled: isFocused }
   )
@@ -34,7 +34,7 @@ export const AlbumsTab = () => {
       disableTopTabScroll
       showsVerticalScrollIndicator={false}
       totalCount={album_count}
-      isLoading={isLoading}
+      isLoading={isPending}
     />
   )
 }

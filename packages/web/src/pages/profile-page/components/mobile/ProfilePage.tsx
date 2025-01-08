@@ -227,7 +227,7 @@ const g = withNullGuard((props: ProfilePageProps) => {
   }
 })
 
-const PlaylistTab = ({
+const PlaylistsTab = ({
   isOwner,
   profile,
   userId
@@ -277,7 +277,7 @@ const PlaylistTab = ({
   return <CardLineup cardsClassName={styles.cardLineup} cards={playlistCards} />
 }
 
-const AlbumTab = ({
+const AlbumsTab = ({
   isOwner,
   profile,
   userId
@@ -510,10 +510,10 @@ const ProfilePage = g(
             )}
           </div>,
           <div className={styles.cardLineupContainer} key='artistAlbums'>
-            <AlbumTab isOwner={isOwner} profile={profile} userId={userId} />
+            <AlbumsTab isOwner={isOwner} profile={profile} userId={userId} />
           </div>,
           <div className={styles.cardLineupContainer} key='artistPlaylists'>
-            <PlaylistTab isOwner={isOwner} profile={profile} userId={userId} />
+            <PlaylistsTab isOwner={isOwner} profile={profile} userId={userId} />
           </div>,
           <div className={styles.tracksLineupContainer} key='artistUsers'>
             {profile.repost_count === 0 ? (
@@ -566,7 +566,7 @@ const ProfilePage = g(
             )}
           </div>,
           <div className={styles.cardLineupContainer} key='playlists'>
-            <PlaylistTab isOwner={isOwner} profile={profile} userId={userId} />
+            <PlaylistsTab isOwner={isOwner} profile={profile} userId={userId} />
           </div>
         ]
       }
