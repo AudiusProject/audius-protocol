@@ -9,11 +9,11 @@ const messages = {
 }
 
 export const FeaturedProfilesTab = () => {
-  const { data: profiles = [], isLoading } = useFeaturedProfiles()
+  const { data: profiles = [], isPending } = useFeaturedProfiles()
 
   return (
     <UserList
-      isLoading={isLoading}
+      isLoading={isPending}
       ListHeaderComponent={<TabInfo header={messages.infoHeader} />}
       profiles={profiles}
     />

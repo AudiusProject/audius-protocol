@@ -4,6 +4,7 @@ import { useAudiusQueryContext } from '~/audius-query'
 import { ID } from '~/models'
 
 import { QUERY_KEYS } from './queryKeys'
+import { Config } from './types'
 
 const STATIC_EXPLORE_CONTENT_URL =
   'https://download.audius.co/static-resources/explore-content.json'
@@ -11,11 +12,6 @@ const STATIC_EXPLORE_CONTENT_URL =
 type ExploreContentResponse = {
   featuredPlaylists: string[]
   featuredProfiles: string[]
-}
-
-type Config = {
-  staleTime?: number
-  enabled?: boolean
 }
 
 export const useExploreContent = (config?: Config) => {

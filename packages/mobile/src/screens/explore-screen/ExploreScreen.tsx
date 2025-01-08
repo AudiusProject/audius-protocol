@@ -10,10 +10,10 @@ import { Screen } from 'app/components/core'
 import { TopTabNavigator } from 'app/components/top-tab-bar'
 import { useAppTabScreen } from 'app/hooks/useAppTabScreen'
 
-import { FeaturedProfilesTab } from './tabs/ArtistsTab'
+import { FeaturedPlaylistsTab } from './tabs/FeaturedPlaylistsTab'
+import { FeaturedProfilesTab } from './tabs/FeaturedProfilesTab'
 import { ForYouTab } from './tabs/ForYouTab'
 import { MoodsTab } from './tabs/MoodsTab'
-import { FeaturedPlaylistsTab } from './tabs/PlaylistsTab'
 
 const messages = {
   title: 'Explore',

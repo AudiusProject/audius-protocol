@@ -1,14 +1,15 @@
+import { Config } from './types'
 import { useExploreContent } from './useExploreContent'
 import { useUsers } from './useUsers'
 
-type Config = {
-  staleTime?: number
-  enabled?: boolean
+type Args = {
+  limit?: number
 }
 
-export const useFeaturedProfiles = (config?: Config) => {
+export const useFeaturedProfiles = (args?: Args, config?: Config) => {
   const { data: exploreContent } = useExploreContent(config)
-  return useUsers(exploreContent?.featuredProfiles, {
+  const { limit } = args ?? {}
+  return useUsers(exploreContent?.featuredProfiles.slice(0, limit), {
     ...config,
     enabled:
       config?.enabled !== false && !!exploreContent?.featuredProfiles?.length

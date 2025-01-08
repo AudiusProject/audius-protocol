@@ -10,7 +10,7 @@ import { QUERY_KEYS } from './queryKeys'
 import { Config } from './types'
 import { primeUserData } from './utils/primeUserData'
 
-export const useUsers = (userIds?: ID[], config?: Config) => {
+export const useUsers = (userIds: ID[] | null | undefined, config?: Config) => {
   const { audiusSdk } = useAudiusQueryContext()
   const dispatch = useDispatch()
   const queryClient = useQueryClient()

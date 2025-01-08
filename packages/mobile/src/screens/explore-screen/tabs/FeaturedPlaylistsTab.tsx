@@ -9,11 +9,11 @@ const messages = {
 }
 
 export const FeaturedPlaylistsTab = () => {
-  const { data: playlists = [], isLoading } = useFeaturedPlaylists()
+  const { data: playlists = [], isPending } = useFeaturedPlaylists()
 
   return (
     <CollectionList
-      isLoading={isLoading}
+      isLoading={isPending}
       ListHeaderComponent={<TabInfo header={messages.infoHeader} />}
       collection={playlists}
     />

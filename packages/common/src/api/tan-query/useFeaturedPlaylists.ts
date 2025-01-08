@@ -1,20 +1,18 @@
+import { Config } from './types'
 import { useCollections } from './useCollections'
 import { useExploreContent } from './useExploreContent'
 
-type Config = {
-  staleTime?: number
-  enabled?: boolean
+type Args = {
   limit?: number
 }
 
-export const useFeaturedPlaylists = (config?: Config) => {
+export const useFeaturedPlaylists = (args?: Args, config?: Config) => {
   const { data: exploreContent } = useExploreContent(config)
-  const { limit, ...restConfig } = config ?? {}
+  const { limit } = args ?? {}
 
   return useCollections(exploreContent?.featuredPlaylists.slice(0, limit), {
-    ...restConfig,
+    ...config,
     enabled:
-      restConfig?.enabled !== false &&
-      !!exploreContent?.featuredPlaylists?.length
+      config?.enabled !== false && !!exploreContent?.featuredPlaylists?.length
   })
 }
