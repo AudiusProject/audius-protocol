@@ -10,12 +10,9 @@ import { addEntries } from '~/store/cache/actions'
 import { EntriesByKind } from '~/store/cache/types'
 
 import { QUERY_KEYS } from './queryKeys'
-import { QueryOptions } from './types'
+import { Config } from './types'
 
-export const useUser = (
-  userId: ID | null | undefined,
-  options?: QueryOptions
-) => {
+export const useUser = (userId: ID | null | undefined, options?: Config) => {
   const { audiusSdk } = useAudiusQueryContext()
   const dispatch = useDispatch()
   const queryClient = useQueryClient()

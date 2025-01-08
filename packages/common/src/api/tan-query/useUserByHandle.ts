@@ -10,11 +10,11 @@ import { addEntries } from '~/store/cache/actions'
 import { EntriesByKind } from '~/store/cache/types'
 
 import { QUERY_KEYS } from './queryKeys'
-import { QueryOptions } from './types'
+import { Config } from './types'
 
 export const useUserByHandle = (
-  handle: string | undefined,
-  options?: QueryOptions
+  handle: string | null | undefined,
+  options?: Config
 ) => {
   const { audiusSdk } = useAudiusQueryContext()
   const dispatch = useDispatch()

@@ -11,10 +11,10 @@ import { EntriesByKind } from '~/store/cache/types'
 import { removeNullable } from '~/utils/typeUtils'
 
 import { QUERY_KEYS } from './queryKeys'
-import { QueryOptions } from './types'
+import { Config } from './types'
 import { primeUserData } from './utils/primeUserData'
 
-export const useUsers = (userIds: ID[], options?: QueryOptions) => {
+export const useUsers = (userIds: ID[], config?: Config) => {
   const { audiusSdk } = useAudiusQueryContext()
   const dispatch = useDispatch()
   const queryClient = useQueryClient()
@@ -53,7 +53,7 @@ export const useUsers = (userIds: ID[], options?: QueryOptions) => {
 
       return users
     },
-    staleTime: options?.staleTime,
-    enabled: options?.enabled !== false && encodedIds.length > 0
+    staleTime: config?.staleTime,
+    enabled: config?.enabled !== false && encodedIds.length > 0
   })
 }

@@ -11,11 +11,11 @@ import { EntriesByKind } from '~/store/cache/types'
 import { encodeHashId } from '~/utils/hashIds'
 
 import { QUERY_KEYS } from './queryKeys'
-import { QueryOptions } from './types'
+import { Config } from './types'
 
 export const useCollections = (
   collectionIds: ID[] | null | undefined,
-  options?: QueryOptions
+  options?: Config
 ) => {
   const { audiusSdk } = useAudiusQueryContext()
   const queryClient = useQueryClient()
