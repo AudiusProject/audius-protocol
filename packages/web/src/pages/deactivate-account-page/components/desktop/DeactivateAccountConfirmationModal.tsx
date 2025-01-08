@@ -19,7 +19,6 @@ export const DeactivateAccountConfirmationModal = ({
 }: DeactivateAccountModalProps) => {
   return (
     <Modal
-      bodyClassName={styles.confirmModal}
       isOpen={isVisible}
       onClose={onClose}
       showDismissButton
