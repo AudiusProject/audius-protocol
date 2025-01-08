@@ -24,5 +24,8 @@ export const QUERY_KEYS = {
   purchasesCount: 'purchasesCount',
   sales: 'sales',
   salesCount: 'salesCount',
-  mutualFollowers: 'mutualFollowers'
+  mutualFollowers: 'mutualFollowers',
+  emailInUse: 'emailInUse',
+  handleInUse: 'handleInUse',
+  handleReservedStatus: 'handleReservedStatus'
 } as const
