@@ -99,18 +99,14 @@ function* setSentryUser(
   })
 }
 
-// Tasks to be run on account successfully fetched, e.g.
-// recording metrics, setting user data
 function* initializeMetricsForUser({
   accountUser
 }: {
   accountUser: UserMetadata
 }) {
-  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
   const authService = yield* getContext('authService')
   const solanaWalletService = yield* getContext('solanaWalletService')
   const analytics = yield* getContext('analytics')
-  const sdk = yield* getSDK()
 
   if (accountUser && accountUser.handle) {
     const { web3WalletAddress } = yield* call([
@@ -157,26 +153,10 @@ function* initializeMetricsForUser({
     yield* call([analytics, analytics.identify], accountUser.handle, traits)
     yield* call(setSentryUser, accountUser, traits)
   }
-
-  yield* put(showPushNotificationConfirmation())
-
-  yield* fork(audiusBackendInstance.updateUserLocationTimezone, { sdk })
-
-  // Fetch the profile so we get everything we need to populate
-  // the left nav / other site-wide metadata.
-  yield* put(
-    fetchProfile(
-      accountUser.handle,
-      accountUser.user_id,
-      false,
-      false,
-      false,
-      true
-    )
-  )
 }
 
 export function* fetchAccountAsync() {
+  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
   const remoteConfigInstance = yield* getContext('remoteConfigInstance')
   const authService = yield* getContext('authService')
   const localStorage = yield* getContext('localStorage')
@@ -273,11 +253,19 @@ export function* fetchAccountAsync() {
   )
 
   try {
-    console.log('FARTS')
     yield* call(initializeMetricsForUser, { accountUser: user })
   } catch (e) {
     console.error('Failed to initialize metrics for user', e)
   }
+
+  yield* put(showPushNotificationConfirmation())
+
+  yield* fork(audiusBackendInstance.updateUserLocationTimezone, { sdk })
+
+  // Fetch the profile so we get everything we need to populate
+  // the left nav / other site-wide metadata.
+  yield* put(fetchProfile(user.handle, user.user_id, false, false, false, true))
+
   yield* put(signedIn({ account: user }))
 }
 
