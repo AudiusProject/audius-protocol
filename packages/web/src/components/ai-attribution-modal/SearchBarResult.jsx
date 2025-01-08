@@ -1,13 +1,11 @@
-import { useEffect, memo, useCallback } from 'react'
+import { memo, useCallback } from 'react'
 
 import { imageBlank as placeholderArt } from '@audius/common/assets'
 import { useImageSize } from '@audius/common/hooks'
 import { Kind } from '@audius/common/models'
-import { cacheUsersActions } from '@audius/common/store'
 import { Tag } from '@audius/harmony'
 import cn from 'classnames'
 import PropTypes from 'prop-types'
-import { useDispatch } from 'react-redux'
 
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import { TwitterShareButton } from 'components/notification/Notification/components/TwitterShareButton'
@@ -61,12 +59,6 @@ const SearchBarResult = memo((props) => {
     handle
   } = props
   const isUser = kind === Kind.USERS
-  const { fetchUserSocials } = cacheUsersActions
-  const dispatch = useDispatch()
-
-  useEffect(() => {
-    dispatch(fetchUserSocials(handle))
-  }, [dispatch, fetchUserSocials, handle])
 
   const handleTwitterShare = useCallback((handle) => {
     const shareText = messages.tweet(handle)

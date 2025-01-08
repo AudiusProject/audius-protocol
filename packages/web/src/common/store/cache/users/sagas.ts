@@ -11,7 +11,7 @@ import {
   reformatUser,
   getSDK
 } from '@audius/common/store'
-import { waitForAccount, waitForValue } from '@audius/common/utils'
+import { waitForAccount } from '@audius/common/utils'
 import { mergeWith } from 'lodash'
 import { call, put, select, takeEvery } from 'typed-redux-saga'
 
@@ -19,7 +19,7 @@ import { retrieve } from 'common/store/cache/sagas'
 import { waitForRead } from 'utils/sagaHelpers'
 
 const { mergeCustomizer } = cacheReducer
-const { getUser, getUsers, getUserTimestamps } = cacheUsersSelectors
+const { getUsers, getUserTimestamps } = cacheUsersSelectors
 const { getUserId } = accountSelectors
 
 /**
@@ -170,36 +170,6 @@ export function* adjustUserField({
   )
 }
 
-export function* fetchUserSocials({
-  handle
-}: ReturnType<typeof userActions.fetchUserSocials>) {
-  let user = yield* select(getUser, { handle })
-  if (!user && handle) {
-    yield* call(fetchUserByHandle, handle, new Set())
-  }
-  user = yield* call(waitForValue, getUser, { handle })
-  if (!user) return
-
-  yield* put(
-    cacheActions.update(Kind.USERS, [
-      {
-        id: user.user_id,
-        metadata: {
-          twitter_handle: user.twitter_handle || null,
-          instagram_handle: user.instagram_handle || null,
-          tiktok_handle: user.tiktok_handle || null,
-          website: user.website || null,
-          donation: user.donation || null
-        }
-      }
-    ])
-  )
-}
-
-function* watchFetchUserSocials() {
-  yield* takeEvery(userActions.FETCH_USER_SOCIALS, fetchUserSocials)
-}
-
 function* watchFetchUsers() {
   yield* takeEvery(
     userActions.FETCH_USERS,
@@ -212,7 +182,7 @@ function* watchFetchUsers() {
 }
 
 const sagas = () => {
-  return [watchSyncLocalStorageUser, watchFetchUserSocials, watchFetchUsers]
+  return [watchSyncLocalStorageUser, watchFetchUsers]
 }
 
 export default sagas

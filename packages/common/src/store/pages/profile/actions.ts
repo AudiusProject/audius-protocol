@@ -16,7 +16,6 @@ export const UPDATE_PROFILE_FAILED = 'PROFILE/UPDATE_PROFILE_FAILED'
 
 export const UPDATE_COLLECTION_SORT_MODE = 'PROFILE/UPDATE_COLLECTION_SORT_MODE'
 export const SET_PROFILE_FIELD = 'PROFILE/SET_PROFILE_FIELD'
-export const UPDATE_CURRENT_USER_FOLLOWS = 'PROFILE/UPDATE_CURRENT_USER_FOLLOWS'
 
 export const DISMISS_PROFILE_METER = 'PROFILE/DISMISS_PROFILE_METER'
 
@@ -85,12 +84,6 @@ export type SetProfileFieldAction = {
   handle: string
 }
 
-export type UpdateCurrentUserFollowsAction = {
-  type: typeof UPDATE_CURRENT_USER_FOLLOWS
-  follow?: boolean
-  handle: string
-}
-
 export type DismissProfileMeterAction = {
   type: typeof DISMISS_PROFILE_METER
 }
@@ -145,7 +138,6 @@ export type ProfilePageAction =
   | UpdateProfileFailedAction
   | UpdateCollectionSortModeAction
   | SetProfileFieldAction
-  | UpdateCurrentUserFollowsAction
   | DismissProfileMeterAction
   | FetchTopTagsAction
   | FetchTopTagsSucceededAction
@@ -219,13 +211,6 @@ export function setProfileField(
   handle: string
 ): SetProfileFieldAction {
   return { type: SET_PROFILE_FIELD, field, value, handle }
-}
-
-export function updateCurrentUserFollows(
-  follow = false,
-  handle: string
-): UpdateCurrentUserFollowsAction {
-  return { type: UPDATE_CURRENT_USER_FOLLOWS, follow, handle }
 }
 
 export function profileMeterDismissed(): DismissProfileMeterAction {
