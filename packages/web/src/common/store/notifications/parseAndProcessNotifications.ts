@@ -20,7 +20,7 @@ const { getUserId } = accountSelectors
 
 // The initial user count to load in for each notification
 // NOTE: the rest are loading in in the user list modal
-export const USER_INITIAL_LOAD_COUNT = 9
+const USER_INITIAL_LOAD_COUNT = 9
 
 const getTimeAgo = (now: moment.Moment, date: number) => {
   const notifDate = moment.unix(date)

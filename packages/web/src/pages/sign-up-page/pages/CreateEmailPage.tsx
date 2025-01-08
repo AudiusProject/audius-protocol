@@ -53,7 +53,7 @@ const {
 
 const smallDesktopWindowHeight = 900
 
-export type SignUpEmailValues = {
+type SignUpEmailValues = {
   email: string
   withMetaMask?: boolean
 }

@@ -34,7 +34,7 @@ import { Timestamp } from './Timestamp'
 import { TimestampLink } from './TimestampLink'
 const { getUser } = cacheUsersSelectors
 
-export type CommentBlockProps = {
+type CommentBlockProps = {
   commentId: ID
   parentCommentId?: ID
   isPreview?: boolean

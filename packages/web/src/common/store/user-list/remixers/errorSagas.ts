@@ -6,7 +6,7 @@ const { GET_REMIXERS_ERROR, getRemixersError } = remixersUserListActions
 
 type HandleRemixersError = ReturnType<typeof getRemixersError>
 
-export function* handleRemixersError(action: HandleRemixersError) {
+function* handleRemixersError(action: HandleRemixersError) {
   yield put(
     errorActions.handleError({
       message: action.type,

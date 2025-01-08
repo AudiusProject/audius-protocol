@@ -237,8 +237,6 @@ def build(
             "--profile=libs",
             "--profile=solana",
             "--profile=block-explorer",
-            "--profile=ddex",
-            "--profile=ddex-build-only",
             "build",
             *args,
             *services,

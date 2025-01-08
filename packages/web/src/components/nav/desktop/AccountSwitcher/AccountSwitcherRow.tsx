@@ -9,7 +9,7 @@ import { backgroundOverlay } from 'utils/styleUtils'
 
 import styles from './AccountSwitcherRow.module.css'
 
-export type AccountSwitcherRowProps = {
+type AccountSwitcherRowProps = {
   user: UserMetadata
   isSelected?: boolean
 }

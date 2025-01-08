@@ -45,7 +45,7 @@ export function* waitForBackendSetup() {
 }
 
 // This is specific to setupBackend. See utils in reachability sagas for general use
-export function* awaitReachability() {
+function* awaitReachability() {
   const isNativeMobile = yield* getContext('isNativeMobile')
   const isReachable = yield* select(getIsReachable)
   if (isReachable || !isNativeMobile) return true
@@ -56,7 +56,7 @@ export function* awaitReachability() {
   return !!action
 }
 
-export function* setupBackend() {
+function* setupBackend() {
   // Optimistically fetch account, then do it again later when we're sure we're connected
   // This ensures we always get the cached account when starting offline if available
   yield* put(accountActions.fetchLocalAccount())
@@ -91,7 +91,7 @@ function* watchSetupBackend() {
 }
 
 // If not fully set up, re set-up the backend
-export function* setupBackendIfNotSetUp() {
+function* setupBackendIfNotSetUp() {
   const isSetup = yield* select(getIsSetup)
   const isSettingUp = yield* select(getIsSettingUp)
   if (!isSetup && !isSettingUp) {

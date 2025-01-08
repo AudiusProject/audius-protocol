@@ -1,3 +1,4 @@
+import { SquareSizes, User, WidthSizes } from '~/models'
 import { getAccountUser } from '~/store/account/selectors'
 import { getProfileUserHandle } from '~/store/pages/profile/selectors'
 
@@ -42,6 +43,19 @@ export const getHandleExists = (state: CommonState) => {
   return !!curUser.handle
 }
 
+const validProfilePictureSizes = [
+  SquareSizes.SIZE_150_BY_150,
+  SquareSizes.SIZE_480_BY_480,
+  SquareSizes.SIZE_1000_BY_1000
+] as const
+const isValidProfilePicture = (input: User['profile_picture']) => {
+  if (!input) return false
+
+  return Object.keys(input).some((size) =>
+    validProfilePictureSizes.includes(size as SquareSizes)
+  )
+}
+
 export const getProfilePictureExists = (state: CommonState) => {
   const curUser = getAccountUser(state)
   if (!curUser) return false
@@ -51,8 +65,21 @@ export const getProfilePictureExists = (state: CommonState) => {
   // if the profile_picture field is non-null.
   return (
     !!curUser.updatedProfilePicture ||
-    !!curUser.profile_picture ||
+    isValidProfilePicture(curUser.profile_picture) ||
     !!curUser.profile_picture_sizes
+  )
+}
+
+const validCoverPhotoSizes = [
+  WidthSizes.SIZE_640,
+  WidthSizes.SIZE_2000
+] as const
+
+const isValidCoverPhoto = (input: User['cover_photo']) => {
+  if (!input) return false
+
+  return Object.keys(input).some((size) =>
+    validCoverPhotoSizes.includes(size as WidthSizes)
   )
 }
 
@@ -63,7 +90,7 @@ export const getCoverPhotoExists = (state: CommonState) => {
   // Same logic as getProfilePictureExists
   return (
     !!curUser.updatedCoverPhoto ||
-    !!curUser.cover_photo ||
+    isValidCoverPhoto(curUser.cover_photo) ||
     !!curUser.cover_photo_sizes
   )
 }

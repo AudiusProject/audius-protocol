@@ -5,11 +5,12 @@ import PropTypes from 'prop-types'
 
 import styles from './EndOfLineup.module.css'
 
-export const EndOfLineup = (props) => {
-  const { title, description } = props
-
+export const EndOfLineup = ({
+  title = 'End of the line',
+  description = "Looks like you've reached the end of your feed..."
+}) => {
   return (
-    <div className={styles.endOfLineup} key='endOfLineup'>
+    <div className={styles.endOfLineup}>
       <IconAudiusLogo color='subdued' size='2xl' />
       <div className={styles.endTitle}>{title}</div>
       <div className={styles.endDescriptionContainer}>
@@ -24,11 +25,6 @@ export const EndOfLineup = (props) => {
 EndOfLineup.propTypes = {
   title: PropTypes.string,
   description: PropTypes.string
-}
-
-EndOfLineup.defaultProps = {
-  title: 'End of the line',
-  description: 'Looks like you’ve reached the end of your feed...'
 }
 
 export default memo(EndOfLineup)

@@ -15,7 +15,7 @@ const REQUEST_TOKEN_URL =
 const LOGIN_URL =
   `${audiusBackendInstance.identityServiceUrl}/twitter/callback` as const
 
-export type TwitterAuthButtonProps = {
+type TwitterAuthButtonProps = {
   className?: string
   credentials?: 'omit' | 'same-origin' | 'include'
   customHeaders?: Record<string, any>

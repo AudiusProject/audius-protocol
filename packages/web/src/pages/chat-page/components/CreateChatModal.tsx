@@ -33,7 +33,7 @@ const { getUserList: getFollowersUserList } = followersUserListSelectors
 const { getUserList: getChatsUserList } = chatSelectors
 const { fetchBlockers, fetchMoreChats } = chatActions
 
-export const CreateChatModal = () => {
+const CreateChatModal = () => {
   const dispatch = useDispatch()
   const currentUserId = useSelector(getUserId)
   const { isOpen, onClose, onClosed, data } = useCreateChatModal()

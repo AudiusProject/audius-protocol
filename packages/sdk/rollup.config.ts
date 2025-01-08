@@ -7,6 +7,7 @@ import typescript from '@rollup/plugin-typescript'
 import ignore from 'rollup-plugin-ignore'
 import nodePolyfills from 'rollup-plugin-polyfill-node'
 import { terser } from 'rollup-plugin-terser'
+import { visualizer } from 'rollup-plugin-visualizer'
 
 import pkg from './package.json'
 
@@ -80,10 +81,8 @@ export const outputConfigs = {
   },
 
   /**
-   * SDK (and Libs) Node Package (ES Module)
+   * SDK Node Package (ES Module)
    * Used by third parties using ES Modules
-   * Could be used by Audius Content Node and Identity Service after moving those services to ES module
-   * - Includes libs
    */
   sdkConfigEs: {
     input: 'src/index.ts',
@@ -205,7 +204,11 @@ export const outputConfigs = {
       nodePolyfills(),
       babel({ babelHelpers: 'bundled', extensions }),
       json(),
-      pluginTypescript
+      pluginTypescript,
+      visualizer({
+        filename: 'dist/sdk.browser.esm.html',
+        template: 'sunburst'
+      })
     ],
     external: external.filter((dep) => !browserInternal.includes(dep))
   },

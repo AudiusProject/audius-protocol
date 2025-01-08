@@ -1,15 +1,11 @@
 {
   "name": "root",
-  "version": "1.5.115",
+  "version": "1.5.116",
   "workspaces": [
     "packages/*",
     "packages/discovery-provider/plugins/pedalboard/apps/*",
     "packages/discovery-provider/plugins/pedalboard/packages/*",
     "protocol-dashboard",
-    "packages/ddex/webapp/server",
-    "packages/ddex/webapp/client",
-    "packages/ddex/publisher",
-    "packages/ddex/processor",
     "packages/ddex/entrypoint",
     "packages/es-indexer"
   ],
@@ -59,6 +55,7 @@
     "harmony:dev": "npm run storybook -w @audius/harmony",
     "SDK======================================": "",
     "sdk": "turbo run start --filter=@audius/sdk",
+    "sdk:browser:es": "npm run start:sdk:browser:es -w @audius/sdk",
     "PROTOCOL======================================": "",
     "protocol": "turbo run start --filter=@audius/compose --",
     "PEDALBOARD======================================": "",

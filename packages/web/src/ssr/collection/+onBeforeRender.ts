@@ -4,31 +4,17 @@ import {
   userTrackMetadataFromSDK
 } from '@audius/common/adapters'
 import type { full } from '@audius/sdk'
-import { developmentConfig } from '@audius/sdk/src/sdk/config/development'
-import { productionConfig } from '@audius/sdk/src/sdk/config/production'
-import { stagingConfig } from '@audius/sdk/src/sdk/config/staging'
+import { FullPlaylistResponseFromJSON } from '@audius/sdk/src/sdk/api/generated/full/models/FullPlaylistResponse'
 import type { PageContextServer } from 'vike/types'
 
-const sdkConfigs = {
-  production: productionConfig,
-  staging: stagingConfig,
-  development: developmentConfig
-}
-
-export type CollectionPageProps = {}
+import { getDiscoveryNode } from '../getDiscoveryNode'
 
 export async function onBeforeRender(pageContext: PageContextServer) {
   const { handle, slug } = pageContext.routeParams
 
   // Fetching directly from discovery node rather than using the sdk because
   // including the sdk increases bundle size and creates substantial cold start times
-  const discoveryNodes = (
-    sdkConfigs[process.env.VITE_ENVIRONMENT as keyof typeof sdkConfigs] ??
-    productionConfig
-  ).network.discoveryNodes
-
-  const discoveryNode =
-    discoveryNodes[Math.floor(Math.random() * discoveryNodes.length)]
+  const discoveryNode = getDiscoveryNode()
 
   const discoveryRequestPath = `v1/full/playlists/by_permalink/${handle}/${slug}`
   const discoveryRequestUrl = `${discoveryNode.endpoint}/${discoveryRequestPath}`
@@ -38,7 +24,12 @@ export async function onBeforeRender(pageContext: PageContextServer) {
     throw new Error(discoveryRequestUrl)
   }
 
-  const { data } = await res.json()
+  const { data } = FullPlaylistResponseFromJSON(await res.json())
+  if (!data || data.length === 0) {
+    throw new Error(
+      `Parsed SDK response returned no playlists for ${discoveryRequestUrl}`
+    )
+  }
   const [apiCollection] = data
   const collection = {
     ...userCollectionMetadataFromSDK(apiCollection),
@@ -48,14 +39,16 @@ export async function onBeforeRender(pageContext: PageContextServer) {
   const { user: apiUser } = apiCollection
   const user = {
     ...userMetadataFromSDK(apiUser),
-    cover_photo: apiUser.cover_photo?._2000x,
-    profile_picture: apiUser.profile_picture?._1000x1000
+    cover_photo: apiUser.coverPhoto?._2000x,
+    profile_picture: apiUser.profilePicture?._1000x1000
   }
 
-  const tracks = apiCollection.tracks.map((apiTrack: full.TrackFull) => ({
-    ...userTrackMetadataFromSDK(apiTrack),
-    cover_art: apiTrack.artwork?._150x150
-  }))
+  const tracks = (apiCollection.tracks ?? []).map(
+    (apiTrack: full.TrackFull) => ({
+      ...userTrackMetadataFromSDK(apiTrack),
+      cover_art: apiTrack.artwork?._150x150
+    })
+  )
 
   try {
     return {

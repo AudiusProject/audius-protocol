@@ -16,10 +16,7 @@ import { AppState } from 'store/types'
 const { getPageTitle, getUserList } = notificationsUserListSelectors
 const { loadMore } = userListActions
 
-export type OwnProps = {}
-
-type NotificationUsersPageProps = OwnProps &
-  ReturnType<typeof mapDispatchToProps> &
+type NotificationUsersPageProps = ReturnType<typeof mapDispatchToProps> &
   ReturnType<typeof mapStateToProps> &
   RouteComponentProps<{ notificationId: string }>
 

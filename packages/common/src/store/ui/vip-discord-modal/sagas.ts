@@ -17,7 +17,6 @@ function* fetchDiscordCode() {
     const audiusBackendInstance = yield* getContext('audiusBackendInstance')
     const audiusSdk = yield* getContext('audiusSdk')
     const sdk = yield* call(audiusSdk)
-    yield* call(audiusBackendInstance.waitForWeb3)
     const data = getSignableData()
     const { signature } = yield* call(audiusBackendInstance.getSignature, {
       data,

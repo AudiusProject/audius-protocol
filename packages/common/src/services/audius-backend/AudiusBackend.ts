@@ -156,7 +156,6 @@ type AudiusBackendParams = {
   setLocalStorageItem: (key: string, value: string) => Promise<void>
   solanaConfig: AudiusBackendSolanaConfig
   userNodeUrl: Maybe<string>
-  waitForWeb3: () => Promise<void>
   web3NetworkId: Maybe<string>
   web3ProviderUrls: Maybe<string[]>
 }
@@ -167,7 +166,6 @@ export const audiusBackend = ({
   nativeMobile,
   reportError,
   userNodeUrl,
-  waitForWeb3,
   env
 }: AudiusBackendParams) => {
   const currentDiscoveryProvider: Nullable<string> = null
@@ -264,8 +262,8 @@ export const audiusBackend = ({
       const userId = newMetadata.user_id
       const { blockHash, blockNumber } = await sdk.users.updateProfile({
         userId: Id.parse(userId),
-        profilePictureFile: newMetadata.updatedProfilePicture?.file,
-        coverArtFile: newMetadata.updatedCoverPhoto?.file,
+        profilePictureFile: metadata.updatedProfilePicture?.file,
+        coverArtFile: metadata.updatedCoverPhoto?.file,
         metadata: userMetadataToSdk(newMetadata)
       })
       return { blockHash, blockNumber, userId }
@@ -1229,8 +1227,7 @@ export const audiusBackend = ({
     updatePushNotificationSettings,
     updateUserEvent,
     updateUserLocationTimezone,
-    userNodeUrl,
-    waitForWeb3
+    userNodeUrl
   }
 }
 

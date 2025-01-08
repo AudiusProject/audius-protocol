@@ -219,8 +219,8 @@ const getButtonText = (isUnlocking: boolean, amountDue: number) =>
   isUnlocking
     ? messages.purchasing
     : amountDue > 0
-    ? `${messages.buy} $${formatPrice(amountDue)}`
-    : messages.buy
+      ? `${messages.buy} $${formatPrice(amountDue)}`
+      : messages.buy
 
 // The bulk of the form rendering is in a nested component because we want access
 // to the FormikContext, which can only be used in a component which is a descendant
@@ -336,7 +336,7 @@ const RenderForm = ({
   }, [setPurchaseVendor, showCoinflow, purchaseVendor])
 
   const stemsPurchaseCount = isContentDownloadGated(content)
-    ? content._stems?.length ?? 0
+    ? (content._stems?.length ?? 0)
     : 0
   const downloadPurchaseCount =
     isContentDownloadGated(content) && content.is_downloadable ? 1 : 0
@@ -495,8 +495,8 @@ export const PremiumContentPurchaseDrawer = () => {
   const purchaseConditions = isValidStreamGatedTrack
     ? metadata.stream_conditions
     : isValidDownloadGatedTrack
-    ? metadata.download_conditions
-    : null
+      ? metadata.download_conditions
+      : null
 
   const price = purchaseConditions ? purchaseConditions?.usdc_purchase.price : 0
 

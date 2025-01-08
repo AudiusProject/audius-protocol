@@ -38,7 +38,7 @@ import { shallowEqual, useSelector } from 'react-redux'
 
 import { UserLink } from 'components/link'
 import Menu from 'components/menu/Menu'
-import { SearchTag } from 'components/search/SearchTag'
+import { SearchTag } from 'components/search-bar/SearchTag'
 import Skeleton from 'components/skeleton/Skeleton'
 import Toast from 'components/toast/Toast'
 import Tooltip from 'components/tooltip/Tooltip'
@@ -89,7 +89,7 @@ const messages = {
     `Releases ${formatReleaseDate({ date: releaseDate, withHour: true })}`
 }
 
-export type GiantTrackTileProps = {
+type GiantTrackTileProps = {
   aiAttributionUserId: Nullable<number>
   artistHandle: string
   trendingBadgeLabel: Nullable<string>

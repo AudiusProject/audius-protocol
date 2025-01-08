@@ -120,7 +120,7 @@ function* onSignedIn({ payload: { account } }) {
   yield fork(addPlaylistsNotInLibrary)
 }
 
-export function* fetchLocalAccountAsync() {
+function* fetchLocalAccountAsync() {
   const localStorage = yield getContext('localStorage')
 
   yield put(accountActions.fetchAccountRequested())

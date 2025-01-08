@@ -15,9 +15,6 @@ export const getNotificationPanelIsOpen = (state: AppState) =>
 export const getNotificationModalIsOpen = (state: AppState) =>
   getBaseState(state).modalIsOpen
 
-export const getNotificationModalId = (state: AppState) =>
-  getBaseState(state).modalNotificationId
-
 export const getModalNotification = (state: AppState) => {
   const notificationId = getBaseState(state).modalNotificationId
   if (!notificationId) return null

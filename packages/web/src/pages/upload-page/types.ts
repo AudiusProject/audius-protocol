@@ -1,7 +1,7 @@
 import { CollectionValues } from '@audius/common/schemas'
 import { UploadType, TrackForUpload } from '@audius/common/store'
 
-export type InitialFormState = {
+type InitialFormState = {
   uploadType: undefined
   tracks: undefined
   metadata: undefined

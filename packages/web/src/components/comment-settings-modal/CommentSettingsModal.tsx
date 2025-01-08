@@ -36,7 +36,7 @@ const messages = {
     'You haven’t muted any users. Once you do, they will appear here.'
 }
 
-export const CommentSettingsModal = () => {
+const CommentSettingsModal = () => {
   const [isVisible, setIsVisible] = useModalState('CommentSettings')
   const handleClose = useCallback(() => setIsVisible(false), [setIsVisible])
   const scrollParentRef = useRef<HTMLElement>()
@@ -96,7 +96,7 @@ export const CommentSettingsModal = () => {
   )
 }
 
-export const MutedUser = (props: { user: any }) => {
+const MutedUser = (props: { user: any }) => {
   const [, setIsVisible] = useModalState('CommentSettings')
   const { user } = props
   const isMobile = useIsMobile()

@@ -135,7 +135,7 @@ export const FilterButton = <Value extends string>(
             <IconCloseAlt aria-label='cancel' {...props} />
           </Pressable>
         )
-      : iconRight ?? undefined
+      : (iconRight ?? undefined)
   }, [variant, value, iconRight, onPress, onChange, onReset])
 
   return (

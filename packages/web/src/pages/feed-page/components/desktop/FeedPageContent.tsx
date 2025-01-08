@@ -92,8 +92,7 @@ const FeedPageContent = ({
     >
       <Lineup
         emptyElement={<EmptyFeed />}
-        endOfLineup={<EndOfLineup key='endOfLineup' />}
-        key='feed'
+        endOfLineup={<EndOfLineup />}
         showFeedTipTile={!isUSDCEnabled}
         {...feedLineupProps}
         {...mainLineupProps}

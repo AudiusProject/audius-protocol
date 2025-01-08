@@ -14,7 +14,7 @@ import { getSearch } from './selectors'
 
 const getUserId = accountSelectors.getUserId
 
-export function* getSearchResults(searchText: string) {
+function* getSearchResults(searchText: string) {
   yield* waitForRead()
 
   const sdk = yield* getSDK()

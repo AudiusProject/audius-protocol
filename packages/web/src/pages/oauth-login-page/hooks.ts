@@ -37,7 +37,7 @@ import {
 
 const { getAccountStatus, getUserId } = accountSelectors
 
-export const useParsedQueryParams = () => {
+const useParsedQueryParams = () => {
   const { search } = useLocation()
 
   const {

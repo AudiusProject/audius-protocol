@@ -3,7 +3,7 @@ import { IconHeart, IconPin, IconText } from '@audius/harmony'
 const pinIcon = { icon: IconPin }
 const heartIcon = { icon: IconHeart, color: 'active' }
 
-export type ArtistPickProps = {
+type ArtistPickProps = {
   isPinned?: boolean
   isLiked?: boolean
 }

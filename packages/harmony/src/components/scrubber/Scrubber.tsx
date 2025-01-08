@@ -6,7 +6,7 @@ import { formatTrackTimestamp } from '~harmony/utils'
 
 import styles from './Scrubber.module.css'
 import { Slider } from './Slider'
-import { ScrubberProps, defaultScrubberProps } from './types'
+import { ScrubberProps } from './types'
 
 /** Timeout applied when releasing the drag-handle before timestamps reset. */
 const SCRUB_RELEASE_TIMEOUT_MS = 200
@@ -20,7 +20,7 @@ export const Scrubber = ({
   isPlaying,
   isDisabled,
   isMobile,
-  includeTimestamps,
+  includeTimestamps = true,
   elapsedSeconds,
   totalSeconds,
   playbackRate,
@@ -96,5 +96,3 @@ export const Scrubber = ({
     </div>
   )
 }
-
-Scrubber.defaultProps = defaultScrubberProps

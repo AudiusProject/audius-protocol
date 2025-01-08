@@ -26,7 +26,7 @@ declare global {
   }
 }
 
-export type StoreType = ReturnType<typeof configureStore>['store']
+type StoreType = ReturnType<typeof configureStore>['store']
 type RootState = ReturnType<StoreType['getState']>
 
 // Can't send up the entire Redux state b/c it's too fat

@@ -72,5 +72,3 @@ export const SomethingWrong = () => {
     </div>
   ) : null
 }
-
-export default SomethingWrong
