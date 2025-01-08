@@ -197,7 +197,7 @@ def index_core(self):
                 },
             )
 
-            logger.info("indexing block")
+            logger.debug("indexing block")
 
             block = core.get_block(next_block)
             if not block:

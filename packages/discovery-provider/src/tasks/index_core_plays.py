@@ -37,7 +37,7 @@ def index_core_plays(
     latest_indexed_slot: int,
     tx: SignedTransaction,
 ) -> Optional[int]:
-    logger.info("indexing play")
+    logger.info("indexing plays")
 
     next_slot = latest_indexed_slot + 1
 
@@ -108,8 +108,6 @@ def index_core_plays(
         )
     listen_dispatch_end = time.time()
     listen_dispatch_diff = listen_dispatch_end - listen_dispatch_start
-    logger.debug(
-        f"index_core_plays.py | Dispatched listen events in {listen_dispatch_diff}"
-    )
+    logger.debug(f"dispatched listen events in {listen_dispatch_diff}")
 
     return slot
