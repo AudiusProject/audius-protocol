@@ -34,5 +34,6 @@ export const QUERY_KEYS = {
   mutualFollowers: 'mutualFollowers',
   emailInUse: 'emailInUse',
   handleInUse: 'handleInUse',
-  handleReservedStatus: 'handleReservedStatus'
+  handleReservedStatus: 'handleReservedStatus',
+  audioTransactions: 'audioTransactions'
 } as const
