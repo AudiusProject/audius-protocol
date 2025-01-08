@@ -325,7 +325,7 @@ services:
     extends:
       file: docker-compose.yml
       service: discovery-provider
-    entrypoint: sh -c '[ ! "$$1" = "test" ] && sleep inf || (shift; pytest "$$@" && pytest --xkill)' -
+    entrypoint: sh -c '[ ! "$$1" = "test" ] && sleep inf || (shift; pytest "$$@")' -
     command: ''
     environment:
       audius_db_url: 'postgresql+psycopg2://postgres:postgres@discovery-provider-db:5432/discovery_provider'
@@ -419,29 +419,6 @@ services:
     profiles:
       - mediorum
       - mediorum-unittests
-
-  test-mediorum:
-    build:
-      context: ${PROJECT_ROOT}
-      dockerfile: ${PROJECT_ROOT}/cmd/mediorum/Dockerfile
-    entrypoint:
-      - '/bin/mediorum-cmd'
-    logging: *default-logging
-    profiles:
-      - mediorum
-    depends_on:
-      ingress:
-        condition: service_healthy
-      eth-ganache:
-        condition: service_healthy
-      audiusd-1:
-        condition: service_healthy
-      audiusd-2:
-        condition: service_healthy
-      audiusd-3:
-        condition: service_healthy
-      audiusd-4:
-        condition: service_healthy
 
   test-mediorum-unittests:
     build:
