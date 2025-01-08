@@ -99,10 +99,9 @@ export const Reaction = (props: ReactionProps) => {
       onMouseLeave={handleMouseLeave}
     >
       <Lottie
+        style={{ height, width }}
         lottieRef={lottieRef}
         title={title}
-        height={width}
-        width={height}
         autoplay
         loop
         animationData={animation}
