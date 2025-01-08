@@ -91,8 +91,16 @@ export const mrvr = async (db: Knex, date: Date): Promise<void> => {
   const cbs = async () => {
     const mrvrCbs = await db.raw(
       `
+      with
+
+      countries as (
+        select distinct country as "country"
+        from usdc_purchases
+        where "country" is not null
+      ),
+
       -- granular purchase data
-      with purchases as (
+      purchases as (
         select
           content_id,
           country,
@@ -159,20 +167,20 @@ export const mrvr = async (db: Knex, date: Date): Promise<void> => {
           'Downloads / Monetized Content' as "Offering",
           'Paid' as "UserType",
           count(distinct "buyer_user_id") as "Subscriber Count",
-          trunc(
+          coalesce(trunc(
             case when
               is_country_eur("country") then sum("revenue_usd") * :usdToEurRate
               else sum("revenue_usd")
             end,
             2
-          ) as "Gross Revenue",
-          trunc(
+          ), 0) as "Gross Revenue",
+          coalesce(trunc(
             case when
               is_country_eur("country") then sum("revenue_usd") * :usdToEurRate
               else sum("revenue_usd")
             end,
             2
-          ) as "Gross revenue With Deductions",
+          ), 0) as "Gross revenue With Deductions",
           country_to_iso_alpha2(coalesce("country", '')) as "Territory",
           sum(download_count) as "Total Downloads",
           sum(stream_count) as "Total Streams",
@@ -187,15 +195,16 @@ export const mrvr = async (db: Knex, date: Date): Promise<void> => {
 
           sum(coalesce(download_ath, 0) + coalesce(stream_ath, 0))::float / 3600 as "Aggregate Transmission Hours",
 
-          trunc(
+          coalesce(trunc(
             case when
               is_country_eur("country") then sum("tip_usd") * :usdToEurRate
               else sum("tip_usd")
             end,
             2
-          ) as "Tip Revenue"
+          ), 0) as "Tip Revenue"
 
-        from purchases
+        from countries
+        left join purchases using (country)
         left join streams using (country)
         left join downloads using (country)
         where "country" is not null
