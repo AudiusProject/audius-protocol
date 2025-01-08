@@ -1,6 +1,6 @@
 import { z } from 'zod'
 
-import { signUpFetch } from '~/api'
+import { fetchEmailInUse } from '~/api/tan-query/useEmailInUse'
 import { AudiusQueryContextType } from '~/audius-query'
 
 export const messages = {
@@ -19,10 +19,7 @@ export const signInSchema = (queryContext: AudiusQueryContextType) =>
       })
       .email(messages.email)
       .superRefine(async (email, ctx) => {
-        const { isGuest } = await signUpFetch.isEmailInUse(
-          { email },
-          queryContext
-        )
+        const { isGuest } = await fetchEmailInUse(email, queryContext)
         if (isGuest) {
           ctx.addIssue({
             code: z.ZodIssueCode.custom,

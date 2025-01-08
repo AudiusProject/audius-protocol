@@ -1,6 +1,6 @@
 import { z } from 'zod'
 
-import { signUpFetch } from '~/api'
+import { fetchHandleInUse, fetchHandleReservedStatus } from '~/api'
 import { AudiusQueryContextType } from '~/audius-query'
 import { MAX_HANDLE_LENGTH } from '~/services/oauth'
 import { restrictedHandles as commonRestrictedHandles } from '~/utils/restrictedHandles'
@@ -41,8 +41,8 @@ export const pickHandleSchema = ({
       )
       .superRefine(async (handle, context) => {
         try {
-          const isHandleInUse = await signUpFetch.isHandleInUse(
-            { handle },
+          const isHandleInUse = await fetchHandleInUse(
+            handle,
             audiusQueryContext
           )
 
@@ -66,11 +66,10 @@ export const pickHandleSchema = ({
       .superRefine(async (handle, context) => {
         if (skipReservedHandleCheck) return
         try {
-          const handleReservedStatus =
-            await signUpFetch.getHandleReservedStatus(
-              { handle },
-              audiusQueryContext
-            )
+          const handleReservedStatus = await fetchHandleReservedStatus(
+            handle,
+            audiusQueryContext
+          )
 
           if (handleReservedStatus === 'twitterReserved') {
             context.addIssue({

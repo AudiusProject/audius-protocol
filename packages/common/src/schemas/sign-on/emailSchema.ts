@@ -1,6 +1,6 @@
 import { z } from 'zod'
 
-import { signUpFetch } from '~/api'
+import { fetchEmailInUse } from '~/api'
 import { AudiusQueryContextType } from '~/audius-query'
 import { EMAIL_REGEX } from '~/utils/email'
 
@@ -18,8 +18,10 @@ export const emailSchema = (queryContext: AudiusQueryContextType) =>
       .string({ required_error: emailSchemaMessages.emailRequired })
       .regex(EMAIL_REGEX, { message: emailSchemaMessages.invalidEmail })
       .superRefine(async (email, ctx) => {
-        const { exists: isEmailInUse, isGuest } =
-          await signUpFetch.isEmailInUse({ email }, queryContext)
+        const { exists: isEmailInUse, isGuest } = await fetchEmailInUse(
+          email,
+          queryContext
+        )
         if (isEmailInUse === undefined) {
           ctx.addIssue({
             code: z.ZodIssueCode.custom,
