@@ -18,7 +18,7 @@ import {
   PlainButton
 } from '@audius/harmony'
 import cn from 'classnames'
-import { Form, Formik, FormikProps, useField } from 'formik'
+import { Form, Formik, FormikProps, useField, useFormikContext } from 'formik'
 import { useUnmount } from 'react-use'
 import { z } from 'zod'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
@@ -179,6 +179,9 @@ const TrackEditForm = (
   const [, , { setValue: setIndex }] = useField('trackMetadatasIndex')
   const initialTrackValues = initialValues.trackMetadatas[trackIdx] ?? {}
   const initialTrackId = initialTrackValues.track_id
+  const formContext = useFormikContext()
+  const formValues = formContext.values as TrackEditFormValues
+
   useUnmount(() => {
     setIndex(0)
   })
@@ -204,8 +207,9 @@ const TrackEditForm = (
   const [, { touched: isTitleDirty }, { setValue: setTitle }] = useField(
     getTrackFieldName(trackIdx, 'title')
   )
-  const [, { touched: isArtworkDirty }, { setValue: setArtworkValue }] =
-    useField(getTrackFieldName(0, 'artwork'))
+  const [, , { setValue: setArtworkValue }] = useField(
+    getTrackFieldName(0, 'artwork')
+  )
   const [, , { setValue: setOrigFilename }] = useField(
     getTrackFieldName(trackIdx, 'orig_filename')
   )
@@ -267,7 +271,9 @@ const TrackEditForm = (
         if (isUpload && !isTitleDirty) {
           setTitle(newFile.metadata.title.split('.').shift())
         }
-        if (isUpload && !isArtworkDirty && newFile.metadata.artwork.file) {
+        const isArtworkSet =
+          'source' in formValues.trackMetadatas[trackIdx].artwork!
+        if (isUpload && !isArtworkSet && newFile.metadata.artwork.file) {
           setArtworkValue(newFile.metadata.artwork)
         }
         setTrackValue(newFile)
@@ -288,7 +294,8 @@ const TrackEditForm = (
       handleTogglePreview,
       isUpload,
       isTitleDirty,
-      isArtworkDirty,
+      formValues.trackMetadatas,
+      trackIdx,
       setTrackValue,
       setOrigFilename,
       initialTrackId,
