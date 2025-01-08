@@ -8,29 +8,22 @@ import { Id } from '~/models/Identifiers'
 import { getUserId } from '~/store/account/selectors'
 
 import { QUERY_KEYS } from './queryKeys'
+import { Config } from './types'
 import { primeUserData } from './utils/primeUserData'
-
-type Config = {
-  staleTime?: number
-  enabled?: boolean
-}
 
 type MutualFollowersParams = {
   userId: ID | null | undefined
   limit?: number
   offset?: number
-  config?: Config
 }
 
 /**
  * Hook to get mutual followers between the current user and another user
  */
-export const useMutualFollowers = ({
-  userId,
-  limit,
-  offset,
-  config
-}: MutualFollowersParams) => {
+export const useMutualFollowers = (
+  { userId, limit, offset }: MutualFollowersParams,
+  config?: Config
+) => {
   const { audiusSdk } = useAudiusQueryContext()
   const currentUserId = useSelector(getUserId)
   const queryClient = useQueryClient()
@@ -39,7 +32,6 @@ export const useMutualFollowers = ({
   return useQuery({
     queryKey: [QUERY_KEYS.mutualFollowers, userId, limit, offset],
     queryFn: async () => {
-      if (!userId) return null
       const sdk = await audiusSdk()
       const { data } = await sdk.full.users.getMutualFollowers({
         userId: OptionalId.parse(currentUserId),

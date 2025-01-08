@@ -7,12 +7,12 @@ import { OptionalId } from '~/models'
 import { getUserId } from '~/store/account/selectors'
 
 import { QUERY_KEYS } from './queryKeys'
-import { QueryOptions } from './types'
+import { Config } from './types'
 import { primeTrackData } from './utils/primeTrackData'
 
 export const useTrackByPermalink = (
   permalink: string | undefined | null,
-  options?: QueryOptions
+  options?: Config
 ) => {
   const { audiusSdk } = useAudiusQueryContext()
   const queryClient = useQueryClient()
@@ -32,7 +32,7 @@ export const useTrackByPermalink = (
 
       if (track) {
         // Prime related entities
-        primeTrackData({ track, queryClient, dispatch })
+        primeTrackData({ tracks: [track], queryClient, dispatch })
 
         // Prime track cache
         queryClient.setQueryData([QUERY_KEYS.track, track.track_id], track)

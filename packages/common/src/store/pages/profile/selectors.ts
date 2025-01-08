@@ -3,17 +3,14 @@ import { uniq } from 'lodash'
 import { getCollections } from '~/store/cache/collections/selectors'
 import { getUser, getUsers } from '~/store/cache/users/selectors'
 import type { CommonState } from '~/store/commonStore'
-import dayjs from '~/utils/dayjs'
 import { createDeepEqualSelector } from '~/utils/selectorHelpers'
-import { removeNullable } from '~/utils/typeUtils'
 
 import { Status } from '../../../models'
-import type { Collection, ID, User, UserCollection } from '../../../models'
+import type { ID, User, UserCollection } from '../../../models'
 
 import { initialState as initialFeedState } from './lineups/feed/reducer'
 import { PREFIX as TRACKS_PREFIX } from './lineups/tracks/actions'
 import { initialState as initialTracksState } from './lineups/tracks/reducer'
-import { CollectionSortMode } from './types'
 
 const getProfile = (state: CommonState, handle?: string) => {
   const profileHandle = handle?.toLowerCase() ?? state.pages.profile.currentUser
@@ -44,8 +41,6 @@ export const getProfileCollectionSortMode = (
   state: CommonState,
   handle: string
 ) => getProfile(state, handle)?.collectionSortMode
-export const getCollectionsStatus = (state: CommonState, handle?: string) =>
-  getProfile(state, handle)?.collectionStatus as Status
 export const getIsSubscribed = (state: CommonState, handle?: string) =>
   getProfile(state, handle)?.isNotificationSubscribed
 export const getProfileUser = (
@@ -108,12 +103,6 @@ export const getProfilePlaylists = createDeepEqualSelector(
   (collections) => uniq(collections?.filter(({ is_album }) => !is_album))
 )
 
-const sortByDateDesc = (a: Collection, b: Collection) =>
-  dayjs(b.created_at).diff(dayjs(a.created_at))
-
-const sortBySaveCountDesc = (a: Collection, b: Collection) =>
-  b.save_count - a.save_count
-
 export const makeGetProfile = () => {
   return createDeepEqualSelector(
     [
@@ -121,12 +110,10 @@ export const makeGetProfile = () => {
       getProfileError,
       getProfileUserId,
       getIsSubscribed,
-      getProfileCollectionSortMode,
       // External
-      getUsers,
-      getCollections
+      getUsers
     ],
-    (status, error, userId, isSubscribed, sortMode, users, collections) => {
+    (status, error, userId, isSubscribed, users) => {
       const emptyState = {
         profile: null,
         playlists: null,
@@ -138,34 +125,9 @@ export const makeGetProfile = () => {
       if (!userId) return emptyState
       if (!(userId in users)) return emptyState
 
-      // Get playlists & albums.
-      const c = (users[userId]._collectionIds || [])
-        .map((id) =>
-          id in collections ? collections[id as unknown as number] : null
-        )
-        .filter(removeNullable)
-
-      // Filter out anything marked deleted on backend (is_delete) or locally (_marked_deleted)
-      // Or locally moved playlists (_moved)
-      let playlists = c.filter(
-        (c) => !c.is_album && !(c.is_delete || c._marked_deleted) && !c._moved
-      )
-      let albums = c.filter(
-        (c) => c.is_album && !(c.is_delete || c._marked_deleted) && !c._moved
-      )
-
-      if (sortMode === CollectionSortMode.SAVE_COUNT) {
-        playlists = playlists.sort(sortBySaveCountDesc)
-        albums = albums.sort(sortBySaveCountDesc)
-      } else {
-        playlists = playlists.sort(sortByDateDesc)
-        albums = albums.sort(sortByDateDesc)
-      }
       const user = users[userId]
       return {
         profile: user,
-        playlists,
-        albums,
         status,
         isSubscribed
       }

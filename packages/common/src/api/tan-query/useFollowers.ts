@@ -3,14 +3,13 @@ import { useQuery } from '@tanstack/react-query'
 import { userMetadataListFromSDK } from '~/adapters/user'
 import { useAppContext } from '~/context/appContext'
 import { ID, Id, OptionalId } from '~/models/Identifiers'
-import { Nullable } from '~/utils/typeUtils'
 
 import { QUERY_KEYS } from './queryKeys'
-import { QueryOptions } from './types'
+import { Config } from './types'
 import { useCurrentUserId } from './useCurrentUserId'
 
 type GetFollowersArgs = {
-  userId: Nullable<ID>
+  userId: ID | null | undefined
   limit?: number
   offset?: number
 }
@@ -22,7 +21,7 @@ type GetFollowersArgs = {
  */
 export const useFollowers = (
   { userId, limit = 10, offset = 0 }: GetFollowersArgs,
-  options?: QueryOptions
+  options?: Config
 ) => {
   const { audiusSdk } = useAppContext()
   const { data: currentUserId } = useCurrentUserId()

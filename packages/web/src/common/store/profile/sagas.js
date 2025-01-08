@@ -7,19 +7,15 @@ import {
   accountSelectors,
   cacheActions,
   profilePageActions as profileActions,
-  profilePageSelectors,
-  FollowType,
   chatActions,
   reachabilitySelectors,
   collectiblesActions,
   confirmerActions,
   confirmTransaction,
-  getSDK,
-  profilePageActions
+  getSDK
 } from '@audius/common/store'
 import {
   squashNewLines,
-  makeUid,
   makeKindId,
   waitForAccount,
   dataURLtoFile,
@@ -37,11 +33,7 @@ import {
   takeEvery
 } from 'redux-saga/effects'
 
-import {
-  fetchUsers,
-  fetchUserByHandle,
-  fetchUserSocials
-} from 'common/store/cache/users/sagas'
+import { fetchUsers, fetchUserByHandle } from 'common/store/cache/users/sagas'
 import feedSagas from 'common/store/pages/profile/lineups/feed/sagas.js'
 import tracksSagas from 'common/store/pages/profile/lineups/tracks/sagas.js'
 import {
@@ -51,12 +43,10 @@ import {
 import { push as pushRoute } from 'utils/navigation'
 import { waitForWrite } from 'utils/sagaHelpers'
 
-import { watchFetchProfileCollections } from './fetchProfileCollectionsSaga'
 import { watchFetchTopTags } from './fetchTopTagsSaga'
 
 const { NOT_FOUND_PAGE } = route
 const { getIsReachable } = reachabilitySelectors
-const { getProfileFollowers, getProfileUser } = profilePageSelectors
 
 const { getUserId } = accountSelectors
 
@@ -306,8 +296,6 @@ export function* fetchSolanaCollectibles(user) {
 }
 
 function* fetchProfileAsync(action) {
-  const isNativeMobile = yield getContext('isNativeMobile')
-
   try {
     let user
     if (action.handle) {
@@ -344,13 +332,6 @@ function* fetchProfileAsync(action) {
         action.fetchOnly
       )
     )
-
-    if (!isNativeMobile) {
-      // Fetch user socials and collections after fetching the user itself
-      yield fork(fetchUserSocials, action)
-      // Note that mobile dispatches this action at the component level
-      yield put(profilePageActions.fetchCollections(user.handle))
-    }
 
     // Get chat permissions
     yield put(fetchPermissions({ userIds: [user.user_id] }))
@@ -510,40 +491,6 @@ function* confirmUpdateProfile(userId, metadata) {
   )
 }
 
-function* watchUpdateCurrentUserFollows() {
-  yield takeEvery(
-    profileActions.UPDATE_CURRENT_USER_FOLLOWS,
-    updateCurrentUserFollows
-  )
-}
-
-function* updateCurrentUserFollows(action) {
-  yield waitForAccount()
-  const { handle } = action
-  const userId = yield select(getUserId)
-  const stuff = yield select((state) => getProfileFollowers(state, handle))
-  const { userIds, status } = stuff
-  let updatedUserIds = userIds
-  if (action.follow) {
-    const uid = makeUid(Kind.USERS, userId)
-    const profileUser = yield select((state) =>
-      getProfileUser(state, { handle })
-    )
-    if (profileUser.follower_count - 1 === userIds.length) {
-      updatedUserIds = userIds.concat({ id: userId, uid })
-    }
-  } else {
-    updatedUserIds = userIds.filter((f) => f.id !== userId)
-  }
-  yield put(
-    profileActions.setProfileField(
-      FollowType.FOLLOWERS,
-      { status, userIds: updatedUserIds },
-      handle
-    )
-  )
-}
-
 function* watchSetNotificationSubscription() {
   yield takeEvery(
     profileActions.SET_NOTIFICATION_SUBSCRIPTION,
@@ -573,9 +520,7 @@ export default function sagas() {
     ...tracksSagas(),
     watchFetchProfile,
     watchUpdateProfile,
-    watchUpdateCurrentUserFollows,
     watchSetNotificationSubscription,
-    watchFetchProfileCollections,
     watchFetchTopTags
   ]
 }

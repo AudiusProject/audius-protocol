@@ -31,8 +31,8 @@ export const RelatedArtists = () => {
 
   const artistId = profile?.user_id
 
-  const { data: relatedArtists } = useRelatedArtists(artistId, {
-    limit: MAX_PROFILE_RELATED_ARTISTS
+  const { data: relatedArtists } = useRelatedArtists({
+    artistId
   })
 
   const handleClick = useCallback(() => {

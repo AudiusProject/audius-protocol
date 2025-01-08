@@ -3,17 +3,11 @@ import { useCallback, useState } from 'react'
 import {
   Id,
   useGetCurrentWeb3User,
-  useGetSales,
-  useGetSalesCount
+  useSales,
+  useSalesCount
 } from '@audius/common/api'
-import { useAllPaginatedQuery } from '@audius/common/audius-query'
 import { useFeatureFlag, useIsManagedAccount } from '@audius/common/hooks'
-import {
-  combineStatuses,
-  Status,
-  statusIsNotFinalized,
-  USDCPurchaseDetails
-} from '@audius/common/models'
+import { USDCPurchaseDetails } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
 import {
   accountSelectors,
@@ -21,11 +15,11 @@ import {
 } from '@audius/common/store'
 import { route } from '@audius/common/utils'
 import { Flex, IconMoneyBracket, Text, useTheme } from '@audius/harmony'
-import { full } from '@audius/sdk'
+import { full, SaleJson } from '@audius/sdk'
 import { useDispatch } from 'react-redux'
 
 import { ExternalTextLink } from 'components/link'
-import { useErrorPageOnFailedStatus } from 'hooks/useErrorPageOnFailedStatus'
+import { useErrorPage } from 'hooks/useErrorPage'
 import { useIsMobile } from 'hooks/useIsMobile'
 import { useMainContentRef } from 'pages/MainContentContext'
 import { audiusSdk } from 'services/audius-sdk'
@@ -94,7 +88,7 @@ const NoSales = () => {
   )
 }
 
-export const useSales = () => {
+export const useSalesData = () => {
   const userId = useSelector(getUserId)
   const isManagerMode = useIsManagedAccount()
   const { data: currentWeb3User } = useGetCurrentWeb3User({})
@@ -108,24 +102,25 @@ export const useSales = () => {
   const { onOpen: openDetailsModal } = useUSDCPurchaseDetailsModal()
 
   const {
-    status: dataStatus,
     data: sales,
+    loadMore,
     hasMore,
-    loadMore
-  } = useAllPaginatedQuery(
-    useGetSales,
+    isPending: isSalesPending,
+    isError: isSalesError
+  } = useSales(
     { userId, sortMethod, sortDirection },
-    { disabled: !userId, pageSize: TRANSACTIONS_BATCH_SIZE, force: true }
+    { pageSize: TRANSACTIONS_BATCH_SIZE }
   )
 
-  const { status: countStatus, data: count } = useGetSalesCount(
-    { userId },
-    { disabled: !userId, force: true }
-  )
+  const {
+    data: count,
+    isPending: isCountPending,
+    isError: isCountError
+  } = useSalesCount(userId)
 
-  const status = combineStatuses([dataStatus, countStatus])
+  const isPending = isSalesPending || isCountPending
 
-  useErrorPageOnFailedStatus({ status })
+  useErrorPage({ showErrorPage: isSalesError || isCountError })
 
   // TODO: Should fetch users before rendering the table
 
@@ -150,8 +145,7 @@ export const useSales = () => {
     [openDetailsModal]
   )
 
-  const isEmpty = status === Status.SUCCESS && sales.length === 0
-  const isLoading = statusIsNotFinalized(status)
+  const isEmpty = !isPending && sales?.length === 0
 
   const downloadSalesAsCSVFromJSON = async () => {
     let link = null
@@ -166,9 +160,9 @@ export const useSales = () => {
           : undefined
       })
 
-      const sales = salesAsJSON.data?.sales
+      const salesData = salesAsJSON.data?.sales
 
-      if (!sales || sales.length === 0) {
+      if (!salesData || salesData.length === 0) {
         return
       }
 
@@ -187,12 +181,12 @@ export const useSales = () => {
       ]
 
       const rows = await Promise.all(
-        sales.map(async (sale) => {
+        salesData.map(async (sale: SaleJson) => {
           try {
             const symmetricKey =
               await sdk.services.emailEncryptionService.decryptSymmetricKey(
                 sale.encryptedKey ?? '',
-                Id.parse(sale.buyerUserId)
+                Id.parse(sale.buyerUserId!)
               )
 
             const decryptedEmail = sale.encryptedEmail
@@ -267,11 +261,12 @@ export const useSales = () => {
     onSort,
     onClickRow,
     isEmpty,
-    isLoading,
+    isLoading: isPending,
     downloadCSV,
     downloadSalesAsCSVFromJSON
   }
 }
+
 /**
  * Fetches and renders a table of Sales for the currently logged in user
  * */
@@ -284,7 +279,7 @@ export const SalesTab = ({
   isEmpty,
   isLoading
 }: Omit<
-  ReturnType<typeof useSales>,
+  ReturnType<typeof useSalesData>,
   'downloadCSV' | 'downloadSalesAsCSVFromJSON'
 >) => {
   const isMobile = useIsMobile()

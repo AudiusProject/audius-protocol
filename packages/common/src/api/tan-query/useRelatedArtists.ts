@@ -5,20 +5,27 @@ import { userMetadataFromSDK } from '~/adapters'
 import { transformAndCleanList } from '~/adapters/utils'
 import { useAudiusQueryContext } from '~/audius-query'
 import { ID, Id, OptionalId } from '~/models/Identifiers'
-import { MAX_PROFILE_RELATED_ARTISTS } from '~/utils'
+import { MAX_PROFILE_RELATED_ARTISTS } from '~/utils/constants'
 
 import { QUERY_KEYS } from './queryKeys'
+import { Config } from './types'
 import { useCurrentUserId } from './useCurrentUserId'
 import { primeUserData } from './utils/primeUserData'
 
-type Config = {
+type UseRelatedArtistsArgs = {
+  artistId: ID | null | undefined
   limit?: number
-  staleTime?: number
-  enabled?: boolean
   filterFollowed?: boolean
 }
 
-export const useRelatedArtists = (artistId?: ID | null, config?: Config) => {
+export const useRelatedArtists = (
+  {
+    artistId,
+    limit = MAX_PROFILE_RELATED_ARTISTS,
+    filterFollowed
+  }: UseRelatedArtistsArgs,
+  config?: Config
+) => {
   const { audiusSdk } = useAudiusQueryContext()
   const dispatch = useDispatch()
   const { data: currentUserId } = useCurrentUserId()
@@ -27,15 +34,12 @@ export const useRelatedArtists = (artistId?: ID | null, config?: Config) => {
   return useQuery({
     queryKey: [QUERY_KEYS.relatedArtists, artistId],
     queryFn: async () => {
-      if (!artistId) {
-        return []
-      }
       const sdk = await audiusSdk()
       const { data } = await sdk.full.users.getRelatedUsers({
         id: Id.parse(artistId),
-        limit: config?.limit ?? MAX_PROFILE_RELATED_ARTISTS,
+        limit,
         userId: OptionalId.parse(currentUserId),
-        filterFollowed: config?.filterFollowed
+        filterFollowed
       })
 
       const users = transformAndCleanList(data, userMetadataFromSDK)

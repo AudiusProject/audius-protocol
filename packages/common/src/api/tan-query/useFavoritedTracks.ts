@@ -4,16 +4,14 @@ import { transformAndCleanList } from '~/adapters'
 import { favoriteFromSDK } from '~/adapters/favorite'
 import { useAudiusQueryContext } from '~/audius-query'
 import { ID, Id } from '~/models/Identifiers'
-import { Nullable } from '~/utils/typeUtils'
 
 import { QUERY_KEYS } from './queryKeys'
+import { Config } from './types'
 
-type Config = {
-  enabled?: boolean
-  staleTime?: number
-}
-
-export const useFavoritedTracks = (userId: Nullable<ID>, config?: Config) => {
+export const useFavoritedTracks = (
+  userId: ID | null | undefined,
+  config?: Config
+) => {
   const { audiusSdk } = useAudiusQueryContext()
 
   return useQuery({

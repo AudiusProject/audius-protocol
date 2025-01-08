@@ -37,8 +37,7 @@ import { getIsOwner, useSelectProfileRoot } from './selectors'
 const { requestOpen: requestOpenShareModal } = shareModalUIActions
 const {
   fetchProfile: fetchProfileAction,
-  setCurrentUser: setCurrentUserAction,
-  fetchCollections
+  setCurrentUser: setCurrentUserAction
 } = profilePageActions
 const { getProfileStatus } = profilePageSelectors
 const { getIsReachable } = reachabilitySelectors
@@ -126,10 +125,6 @@ export const ProfileScreen = () => {
               { handle: handleLower }
             )
           )
-          break
-        case ProfilePageTabs.PLAYLISTS:
-        case ProfilePageTabs.ALBUMS:
-          dispatch(fetchCollections(handleLower))
           break
         case ProfilePageTabs.REPOSTS:
           dispatch(

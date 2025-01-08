@@ -1,6 +1,11 @@
 import { useCallback, memo, ReactNode, useEffect, useState } from 'react'
 
-import { useCurrentUserId, useGetMutedUsers } from '@audius/common/api'
+import {
+  useCurrentUserId,
+  useGetMutedUsers,
+  useUserPlaylists,
+  useUserAlbums
+} from '@audius/common/api'
 import { useMuteUser } from '@audius/common/context'
 import { commentsMessages } from '@audius/common/messages'
 import {
@@ -106,10 +111,7 @@ export type ProfilePageProps = {
   showUnmuteUserConfirmationModal: boolean
 
   profile: User | null
-  albums: Collection[] | null
-  playlists: Collection[] | null
   status: Status
-  collectionStatus: Status
   goToRoute: (route: string) => void
   artistTracks: LineupState<Track>
   playArtistTrack: (uid: UID) => void
@@ -171,19 +173,125 @@ export type ProfilePageProps = {
   onCloseUnmuteUserConfirmationModal: () => void
 }
 
+const PlaylistTab = ({
+  isOwner,
+  profile,
+  userId
+}: {
+  isOwner: boolean
+  profile: User
+  userId: ID | null
+}) => {
+  const { data: playlists, isPending } = useUserPlaylists({
+    userId: userId ?? null
+  })
+
+  const playlistCards =
+    playlists?.map((playlist) => (
+      <CollectionCard
+        key={playlist.playlist_id}
+        id={playlist.playlist_id}
+        size='m'
+      />
+    )) || []
+
+  if (isOwner) {
+    playlistCards.unshift(
+      <UploadChip
+        key='upload-chip'
+        type='playlist'
+        variant='card'
+        isFirst={playlistCards.length === 0}
+        source={CreatePlaylistSource.PROFILE_PAGE}
+      />
+    )
+  }
+
+  if (isPending) {
+    return (
+      <Flex justifyContent='center' mt='2xl'>
+        <Box w={24}>
+          <LoadingSpinner />
+        </Box>
+      </Flex>
+    )
+  }
+
+  if (!playlists?.length && !isOwner) {
+    return (
+      <EmptyTab
+        isOwner={isOwner}
+        name={profile.name}
+        text={'created any playlists'}
+      />
+    )
+  }
+
+  return <CardLineup cardsClassName={styles.cardLineup} cards={playlistCards} />
+}
+
+const AlbumTab = ({
+  isOwner,
+  profile,
+  userId
+}: {
+  isOwner: boolean
+  profile: User
+  userId: ID | null
+}) => {
+  const { data: albums, isPending } = useUserAlbums({
+    userId: userId ?? null
+  })
+
+  const albumCards =
+    albums?.map((album) => (
+      <CollectionCard key={album.playlist_id} id={album.playlist_id} size='m' />
+    )) || []
+
+  if (isOwner) {
+    albumCards.unshift(
+      <UploadChip
+        key='upload-chip'
+        type='album'
+        variant='card'
+        isFirst={albumCards.length === 0}
+        source={CreatePlaylistSource.PROFILE_PAGE}
+      />
+    )
+  }
+
+  if (isPending) {
+    return (
+      <Flex justifyContent='center' mt='2xl'>
+        <Box w={24}>
+          <LoadingSpinner />
+        </Box>
+      </Flex>
+    )
+  }
+
+  if (!albums?.length && !isOwner) {
+    return (
+      <EmptyTab
+        isOwner={isOwner}
+        name={profile.name}
+        text={'created any albums'}
+      />
+    )
+  }
+
+  return <CardLineup cardsClassName={styles.cardLineup} cards={albumCards} />
+}
+
 const ProfilePage = ({
   isOwner,
   profile,
-  albums,
-  playlists,
   status,
   goToRoute,
-  // Tracks
   artistTracks,
   playArtistTrack,
   pauseArtistTrack,
   getLineupProps,
-  // Feed
   userFeed,
   playUserFeedTrack,
   pauseUserFeedTrack,
@@ -191,7 +299,6 @@ const ProfilePage = ({
   loadMoreUserFeed,
   loadMoreArtistTracks,
   updateProfile,
-
   onFollow,
   onUnfollow,
   updateName,
@@ -214,8 +321,6 @@ const ProfilePage = ({
   onSortByRecent,
   onSortByPopular,
   isArtist,
-  status: profileLoadingStatus,
-  collectionStatus,
   activeTab,
   shouldMaskContent,
   editMode,
@@ -227,7 +332,6 @@ const ProfilePage = ({
   onUnblock,
   onMute,
   isBlocked,
-  // Chat modals
   showBlockUserConfirmationModal,
   onCloseBlockUserConfirmationModal,
   showUnblockUserConfirmationModal,
@@ -286,40 +390,7 @@ const ProfilePage = ({
   }, [tabRecalculator])
 
   const getArtistProfileContent = () => {
-    if (!profile || !albums || !playlists) return { headers: [], elements: [] }
-    const albumCards = albums.map((album) => (
-      <CollectionCard key={album.playlist_id} id={album.playlist_id} size='m' />
-    ))
-    if (isOwner) {
-      albumCards.unshift(
-        <UploadChip
-          key='upload-chip'
-          type='album'
-          variant='card'
-          isFirst={albumCards.length === 0}
-          source={CreatePlaylistSource.PROFILE_PAGE}
-        />
-      )
-    }
-
-    const playlistCards = playlists.map((playlist) => (
-      <CollectionCard
-        key={playlist.playlist_id}
-        id={playlist.playlist_id}
-        size='m'
-      />
-    ))
-    if (isOwner) {
-      playlistCards.unshift(
-        <UploadChip
-          key='upload-chip'
-          type='playlist'
-          variant='card'
-          isFirst={playlistCards.length === 0}
-          source={CreatePlaylistSource.PROFILE_PAGE}
-        />
-      )
-    }
+    if (!profile) return { headers: [], elements: [] }
 
     const trackUploadChip = isOwner ? (
       <UploadChip
@@ -383,43 +454,10 @@ const ProfilePage = ({
         ) : null}
       </div>,
       <div key={ProfilePageTabs.ALBUMS} className={styles.cards}>
-        {collectionStatus !== Status.SUCCESS &&
-        collectionStatus !== Status.ERROR ? (
-          <Flex justifyContent='center' mt='2xl'>
-            <Box w={24}>
-              <LoadingSpinner />
-            </Box>
-          </Flex>
-        ) : albums.length === 0 && !isOwner ? (
-          <EmptyTab
-            isOwner={isOwner}
-            name={profile.name}
-            text={'created any albums'}
-          />
-        ) : (
-          <CardLineup cardsClassName={styles.cardLineup} cards={albumCards} />
-        )}
+        <AlbumTab isOwner={isOwner} profile={profile} userId={userId} />
       </div>,
       <div key={ProfilePageTabs.PLAYLISTS} className={styles.cards}>
-        {collectionStatus !== Status.SUCCESS &&
-        collectionStatus !== Status.ERROR ? (
-          <Flex justifyContent='center' mt='2xl'>
-            <Box w={24}>
-              <LoadingSpinner />
-            </Box>
-          </Flex>
-        ) : playlists.length === 0 && !isOwner ? (
-          <EmptyTab
-            isOwner={isOwner}
-            name={profile.name}
-            text={'created any playlists'}
-          />
-        ) : (
-          <CardLineup
-            cardsClassName={styles.cardLineup}
-            cards={playlistCards}
-          />
-        )}
+        <PlaylistTab isOwner={isOwner} profile={profile} userId={userId} />
       </div>,
       <div key={ProfilePageTabs.REPOSTS} className={styles.tiles}>
         {status === Status.SUCCESS ? (
@@ -483,22 +521,7 @@ const ProfilePage = ({
   }
 
   const getUserProfileContent = () => {
-    if (!profile || !playlists) return { headers: [], elements: [] }
-    const playlistCards = playlists.map((playlist) => (
-      <CollectionCard
-        key={playlist.playlist_id}
-        id={playlist.playlist_id}
-        size='m'
-      />
-    ))
-    playlistCards.unshift(
-      <UploadChip
-        type='playlist'
-        variant='card'
-        source={CreatePlaylistSource.PROFILE_PAGE}
-        isFirst={playlistCards.length === 0}
-      />
-    )
+    if (!profile) return { headers: [], elements: [] }
 
     const headers: TabHeader[] = [
       {
@@ -537,18 +560,7 @@ const ProfilePage = ({
         )}
       </div>,
       <div key={ProfilePageTabs.PLAYLISTS} className={styles.cards}>
-        {playlists.length === 0 && !isOwner ? (
-          <EmptyTab
-            isOwner={isOwner}
-            name={profile.name}
-            text={'created any playlists'}
-          />
-        ) : (
-          <CardLineup
-            cardsClassName={styles.cardLineup}
-            cards={playlistCards}
-          />
-        )}
+        <PlaylistTab isOwner={isOwner} profile={profile} userId={userId} />
       </div>
     ]
 
@@ -697,7 +709,7 @@ const ProfilePage = ({
           userId={userId}
           updatedCoverPhoto={updatedCoverPhoto ? updatedCoverPhoto.url : ''}
           error={updatedCoverPhoto ? updatedCoverPhoto.error : false}
-          loading={profileLoadingStatus === Status.LOADING}
+          loading={status === Status.LOADING}
           onDrop={updateCoverPhoto}
           edit={editMode}
           darken={editMode}

@@ -1,6 +1,6 @@
 import { z } from 'zod'
 
-import { signUpFetch } from '~/api'
+import { fetchEmailInUse } from '~/api'
 import { AudiusQueryContextType } from '~/audius-query/AudiusQueryContext'
 import { PurchaseMethod, PurchaseVendor } from '~/models/PurchaseContent'
 import { PurchaseContentPage } from '~/store'
@@ -84,8 +84,8 @@ export const createPurchaseContentSchema = (
         return
       }
 
-      const { exists: isEmailInUse, isGuest } = await signUpFetch.isEmailInUse(
-        { email: guestEmail },
+      const { exists: isEmailInUse, isGuest } = await fetchEmailInUse(
+        guestEmail,
         queryContext
       )
 

@@ -95,7 +95,8 @@ export const ArtistRecommendations = (props: ArtistRecommendationsProps) => {
     Object.values(getUsers(state, { ids: idsToFollow || [] }))
   )
 
-  const { data: suggestedArtists } = useRelatedArtists(user_id, {
+  const { data: suggestedArtists } = useRelatedArtists({
+    artistId: user_id,
     filterFollowed: true
   })
 

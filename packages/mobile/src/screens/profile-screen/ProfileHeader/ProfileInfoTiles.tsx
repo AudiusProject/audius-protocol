@@ -150,7 +150,10 @@ export const ProfileInfoTiles = () => {
   const hasMutuals =
     user_id !== accountId && current_user_followee_follow_count > 0
 
-  const { data: relatedArtists } = useRelatedArtists(user_id, { limit: 1 })
+  const { data: relatedArtists } = useRelatedArtists({
+    artistId: user_id,
+    limit: 1
+  })
   const hasRelatedArtists = relatedArtists && relatedArtists?.length > 0
 
   const hasAllThreeTiles = hasAiAttribution && hasMutuals && hasRelatedArtists

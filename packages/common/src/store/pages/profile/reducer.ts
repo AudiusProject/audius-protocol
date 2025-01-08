@@ -20,9 +20,6 @@ import {
   DISMISS_PROFILE_METER,
   SET_NOTIFICATION_SUBSCRIPTION,
   SET_CURRENT_USER,
-  FETCH_COLLECTIONS,
-  FETCH_COLLECTIONS_SUCCEEDED,
-  FETCH_COLLECTIONS_FAILED,
   FETCH_TOP_TAGS,
   FETCH_TOP_TAGS_SUCCEEDED,
   FETCH_TOP_TAGS_FAILED,
@@ -34,9 +31,6 @@ import {
   UpdateProfileAction,
   UpdateProfileSucceededAction,
   UpdateProfileFailedAction,
-  FetchCollectionsAction,
-  FetchCollectionsSucceededAction,
-  FetchCollectionsFailedAction,
   UpdateCollectionSortModeAction,
   DismissProfileMeterAction,
   SetNotificationSubscriptionAction,
@@ -60,8 +54,6 @@ const initialProfileState = {
   updateError: false,
   topTagsStatus: Status.IDLE,
   topTags: [],
-  collectionIds: [],
-  collectionStatus: Status.IDLE,
 
   collectionSortMode: CollectionSortMode.TIMESTAMP,
 
@@ -204,21 +196,6 @@ const actionsMap = {
     return updateProfile(state, action, {
       isNotificationSubscribed: isSubscribed
     })
-  },
-  [FETCH_COLLECTIONS](state: ProfilePageState, action: FetchCollectionsAction) {
-    return updateProfile(state, action, { collectionStatus: Status.LOADING })
-  },
-  [FETCH_COLLECTIONS_SUCCEEDED](
-    state: ProfilePageState,
-    action: FetchCollectionsSucceededAction
-  ) {
-    return updateProfile(state, action, { collectionStatus: Status.SUCCESS })
-  },
-  [FETCH_COLLECTIONS_FAILED](
-    state: ProfilePageState,
-    action: FetchCollectionsFailedAction
-  ) {
-    return updateProfile(state, action, { collectionStatus: Status.ERROR })
   },
   [FETCH_TOP_TAGS](state: ProfilePageState, action: FetchTopTagsAction) {
     return updateProfile(state, action, { topTagsStatus: Status.LOADING })

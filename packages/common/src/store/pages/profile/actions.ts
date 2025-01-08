@@ -16,7 +16,6 @@ export const UPDATE_PROFILE_FAILED = 'PROFILE/UPDATE_PROFILE_FAILED'
 
 export const UPDATE_COLLECTION_SORT_MODE = 'PROFILE/UPDATE_COLLECTION_SORT_MODE'
 export const SET_PROFILE_FIELD = 'PROFILE/SET_PROFILE_FIELD'
-export const UPDATE_CURRENT_USER_FOLLOWS = 'PROFILE/UPDATE_CURRENT_USER_FOLLOWS'
 
 export const DISMISS_PROFILE_METER = 'PROFILE/DISMISS_PROFILE_METER'
 
@@ -26,10 +25,6 @@ export const FETCH_TOP_TAGS_FAILED = 'PROFILE/FETCH_TOP_TAGS_FAILED'
 
 export const SET_NOTIFICATION_SUBSCRIPTION =
   'PROFILE/SET_NOTIFICATION_SUBSCRIPTION'
-
-export const FETCH_COLLECTIONS = 'PROFILE/FETCH_COLLECTIONS'
-export const FETCH_COLLECTIONS_SUCCEEDED = 'PROFILE/FETCH_COLLECTIONS_SUCCEEDED'
-export const FETCH_COLLECTIONS_FAILED = 'PROFILE/FETCH_COLLECTIONS_FAILED'
 
 export type FetchProfileAction = {
   type: typeof FETCH_PROFILE
@@ -85,12 +80,6 @@ export type SetProfileFieldAction = {
   handle: string
 }
 
-export type UpdateCurrentUserFollowsAction = {
-  type: typeof UPDATE_CURRENT_USER_FOLLOWS
-  follow?: boolean
-  handle: string
-}
-
 export type DismissProfileMeterAction = {
   type: typeof DISMISS_PROFILE_METER
 }
@@ -120,21 +109,6 @@ export type SetNotificationSubscriptionAction = {
   handle?: string
 }
 
-export type FetchCollectionsAction = {
-  type: typeof FETCH_COLLECTIONS
-  handle: string
-}
-
-export type FetchCollectionsSucceededAction = {
-  type: typeof FETCH_COLLECTIONS_SUCCEEDED
-  handle: string
-}
-
-export type FetchCollectionsFailedAction = {
-  type: typeof FETCH_COLLECTIONS_FAILED
-  handle: string
-}
-
 export type ProfilePageAction =
   | FetchProfileAction
   | FetchProfileSucceededAction
@@ -145,15 +119,11 @@ export type ProfilePageAction =
   | UpdateProfileFailedAction
   | UpdateCollectionSortModeAction
   | SetProfileFieldAction
-  | UpdateCurrentUserFollowsAction
   | DismissProfileMeterAction
   | FetchTopTagsAction
   | FetchTopTagsSucceededAction
   | FetchTopTagsFailedAction
   | SetNotificationSubscriptionAction
-  | FetchCollectionsAction
-  | FetchCollectionsSucceededAction
-  | FetchCollectionsFailedAction
 
 // Either handle or userId is required
 // TODO: Move this to redux toolkit
@@ -221,13 +191,6 @@ export function setProfileField(
   return { type: SET_PROFILE_FIELD, field, value, handle }
 }
 
-export function updateCurrentUserFollows(
-  follow = false,
-  handle: string
-): UpdateCurrentUserFollowsAction {
-  return { type: UPDATE_CURRENT_USER_FOLLOWS, follow, handle }
-}
-
 export function profileMeterDismissed(): DismissProfileMeterAction {
   return { type: DISMISS_PROFILE_METER }
 }
@@ -243,31 +206,6 @@ export function setNotificationSubscription(
     userId,
     isSubscribed,
     update,
-    handle
-  }
-}
-
-export function fetchCollections(handle: string): FetchCollectionsAction {
-  return {
-    type: FETCH_COLLECTIONS,
-    handle
-  }
-}
-
-export function fetchCollectionsSucceded(
-  handle: string
-): FetchCollectionsSucceededAction {
-  return {
-    type: FETCH_COLLECTIONS_SUCCEEDED,
-    handle
-  }
-}
-
-export function fetchCollectionsFailed(
-  handle: string
-): FetchCollectionsFailedAction {
-  return {
-    type: FETCH_COLLECTIONS_FAILED,
     handle
   }
 }

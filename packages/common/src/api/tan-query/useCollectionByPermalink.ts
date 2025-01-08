@@ -7,7 +7,7 @@ import { OptionalId } from '~/models'
 import { getUserId } from '~/store/account/selectors'
 
 import { QUERY_KEYS } from './queryKeys'
-import { QueryOptions } from './types'
+import { Config } from './types'
 import { primeCollectionData } from './utils/primeCollectionData'
 
 export const playlistPermalinkToHandleAndSlug = (permalink: string) => {
@@ -24,7 +24,7 @@ export const playlistPermalinkToHandleAndSlug = (permalink: string) => {
 
 export const useCollectionByPermalink = (
   permalink: string | undefined | null,
-  options?: QueryOptions
+  options?: Config
 ) => {
   const { audiusSdk } = useAudiusQueryContext()
   const queryClient = useQueryClient()
@@ -48,7 +48,11 @@ export const useCollectionByPermalink = (
 
       if (collection) {
         // Prime related entities
-        primeCollectionData({ collection, queryClient, dispatch })
+        primeCollectionData({
+          collections: [collection],
+          queryClient,
+          dispatch
+        })
 
         // Prime collection cache
         queryClient.setQueryData(
