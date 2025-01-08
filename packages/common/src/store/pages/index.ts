@@ -110,12 +110,7 @@ export {
   default as explorePageCollectionsReducer,
   actions as explorePageCollectionsActions
 } from './explore/exploreCollections/slice'
-export * as explorePageSelectors from './explore/selectors'
 export * from './explore/types'
-export {
-  default as explorePageReducer,
-  actions as explorePageActions
-} from './explore/slice'
 
 export { default as collectionPageLineupReducer } from './collection/lineup/reducer'
 export { tracksActions as collectionPageLineupActions } from './collection/lineup/actions'

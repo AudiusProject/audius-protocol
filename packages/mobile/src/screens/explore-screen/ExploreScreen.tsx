@@ -1,83 +1,61 @@
-import { explorePageActions } from '@audius/common/store'
-import { useDispatch } from 'react-redux'
-import { useEffectOnce } from 'react-use'
+import { ExplorePageTabs } from '@audius/common/store'
 
 import {
-  IconExplore,
-  IconStars,
-  IconMood,
-  IconPlaylists,
+  IconStars as IconForYou,
+  IconMood as IconMoods,
+  IconNote,
   IconUser
 } from '@audius/harmony-native'
-import { Screen, ScreenContent, ScreenHeader } from 'app/components/core'
-import { ScreenPrimaryContent } from 'app/components/core/Screen/ScreenPrimaryContent'
-import { ScreenSecondaryContent } from 'app/components/core/Screen/ScreenSecondaryContent'
+import { Screen } from 'app/components/core'
 import { TopTabNavigator } from 'app/components/top-tab-bar'
 import { useAppTabScreen } from 'app/hooks/useAppTabScreen'
 
-import { ArtistsTab } from './tabs/ArtistsTab'
+import { FeaturedPlaylistsTab } from './tabs/FeaturedPlaylistsTab'
+import { FeaturedProfilesTab } from './tabs/FeaturedProfilesTab'
 import { ForYouTab } from './tabs/ForYouTab'
 import { MoodsTab } from './tabs/MoodsTab'
-import { PlaylistsTab } from './tabs/PlaylistsTab'
-
-const { fetchExplore } = explorePageActions
 
 const messages = {
-  header: 'Explore',
-  forYou: 'For You'
+  title: 'Explore',
+  forYou: 'For You',
+  moods: 'Moods',
+  playlists: 'Playlists',
+  artists: 'Artists'
 }
 
-const exploreScreens = [
+const screens = [
   {
-    name: 'forYou',
+    name: ExplorePageTabs.FOR_YOU,
     label: messages.forYou,
-    Icon: IconStars,
+    Icon: IconForYou,
     component: ForYouTab
   },
   {
-    name: 'moods',
-    Icon: IconMood,
+    name: ExplorePageTabs.MOODS,
+    label: messages.moods,
+    Icon: IconMoods,
     component: MoodsTab
   },
   {
-    name: 'playlists',
-    Icon: IconPlaylists,
-    component: PlaylistsTab
+    name: ExplorePageTabs.PLAYLISTS,
+    label: messages.playlists,
+    Icon: IconNote,
+    component: FeaturedPlaylistsTab
   },
   {
-    name: 'artists',
+    name: ExplorePageTabs.PROFILES,
+    label: messages.artists,
     Icon: IconUser,
-    component: ArtistsTab
+    component: FeaturedProfilesTab
   }
 ]
 
-const ExploreScreen = () => {
-  const dispatch = useDispatch()
+export const ExploreScreen = () => {
   useAppTabScreen()
-
-  useEffectOnce(() => {
-    dispatch(fetchExplore())
-  })
 
   return (
     <Screen>
-      <ScreenPrimaryContent>
-        <ScreenHeader
-          text={messages.header}
-          icon={IconExplore}
-          iconProps={{ height: 30 }}
-        />
-      </ScreenPrimaryContent>
-      <ScreenContent>
-        <ScreenSecondaryContent>
-          <TopTabNavigator
-            screens={exploreScreens}
-            screenOptions={{ lazy: true }}
-          />
-        </ScreenSecondaryContent>
-      </ScreenContent>
+      <TopTabNavigator screens={screens} screenOptions={{ lazy: true }} />
     </Screen>
   )
 }
-
-export default ExploreScreen
