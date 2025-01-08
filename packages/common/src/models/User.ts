@@ -107,6 +107,12 @@ export type ComputedUserProperties = {
 
 export type User = UserMetadata & ComputedUserProperties
 
+export type CachedAccount = {
+  userId: ID
+  collections: AccountCollection[]
+  guestEmail: string | null
+}
+
 export type UserImage = Pick<
   User,
   | 'cover_photo'
