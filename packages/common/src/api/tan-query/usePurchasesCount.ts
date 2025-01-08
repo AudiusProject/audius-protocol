@@ -2,18 +2,15 @@ import { useQuery } from '@tanstack/react-query'
 
 import { useAudiusQueryContext } from '~/audius-query'
 import { ID } from '~/models'
-import { Nullable } from '~/utils/typeUtils'
-
-import { Id } from '../utils'
+import { Id } from '~/models/Identifiers'
 
 import { QUERY_KEYS } from './queryKeys'
+import { Config } from './types'
 
-type Config = {
-  staleTime?: number
-  enabled?: boolean
-}
-
-export const usePurchasesCount = (userId: Nullable<ID>, config?: Config) => {
+export const usePurchasesCount = (
+  userId: ID | null | undefined,
+  config?: Config
+) => {
   const context = useAudiusQueryContext()
   const audiusSdk = context.audiusSdk
 
