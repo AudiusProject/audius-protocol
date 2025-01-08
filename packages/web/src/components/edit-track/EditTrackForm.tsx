@@ -18,7 +18,14 @@ import {
   PlainButton
 } from '@audius/harmony'
 import cn from 'classnames'
-import { Form, Formik, FormikProps, useField, useFormikContext } from 'formik'
+import {
+  Form,
+  Formik,
+  FormikContextType,
+  FormikProps,
+  useField,
+  useFormikContext
+} from 'formik'
 import { useUnmount } from 'react-use'
 import { z } from 'zod'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
@@ -179,8 +186,8 @@ const TrackEditForm = (
   const [, , { setValue: setIndex }] = useField('trackMetadatasIndex')
   const initialTrackValues = initialValues.trackMetadatas[trackIdx] ?? {}
   const initialTrackId = initialTrackValues.track_id
-  const formContext = useFormikContext()
-  const formValues = formContext.values as TrackEditFormValues
+  const { values: formValues } =
+    useFormikContext() as FormikContextType<TrackEditFormValues>
 
   useUnmount(() => {
     setIndex(0)
@@ -253,6 +260,8 @@ const TrackEditForm = (
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [getArtworkUrl(updatedArtwork), setArtworkValue])
 
+  const isArtworkSet = 'source' in formValues.trackMetadatas[trackIdx].artwork!
+
   const onClickReplace = useCallback(
     async (file: File) => {
       const processedFiles = await Promise.all(
@@ -271,8 +280,6 @@ const TrackEditForm = (
         if (isUpload && !isTitleDirty) {
           setTitle(newFile.metadata.title.split('.').shift())
         }
-        const isArtworkSet =
-          'source' in formValues.trackMetadatas[trackIdx].artwork!
         if (isUpload && !isArtworkSet && newFile.metadata.artwork.file) {
           setArtworkValue(newFile.metadata.artwork)
         }
@@ -294,8 +301,7 @@ const TrackEditForm = (
       handleTogglePreview,
       isUpload,
       isTitleDirty,
-      formValues.trackMetadatas,
-      trackIdx,
+      isArtworkSet,
       setTrackValue,
       setOrigFilename,
       initialTrackId,
