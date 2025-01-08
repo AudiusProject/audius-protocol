@@ -1,5 +1,6 @@
 import { useEffect, useContext, ReactNode } from 'react'
 
+import { useUserPlaylists, useUserAlbums } from '@audius/common/api'
 import {
   Status,
   Collection,
@@ -94,8 +95,6 @@ export type ProfilePageProps = {
   trackIsActive: boolean
 
   profile: User | null
-  albums: Collection[] | null
-  playlists: Collection[] | null
   status: Status
   collectionStatus: Status
   goToRoute: (route: string) => void
@@ -222,11 +221,111 @@ const getMessages = ({
 })
 
 const g = withNullGuard((props: ProfilePageProps) => {
-  const { profile, albums, playlists } = props
-  if (profile && albums && playlists) {
-    return { ...props, profile, albums, playlists }
+  const { profile } = props
+  if (profile) {
+    return { ...props, profile }
   }
 })
+
+const PlaylistsTab = ({
+  isOwner,
+  profile,
+  userId
+}: {
+  isOwner: boolean
+  profile: User
+  userId: ID | null
+}) => {
+  const { data: playlists, status: playlistsStatus } = useUserPlaylists({
+    userId: userId ?? null
+  })
+
+  const playlistCards =
+    playlists?.map((playlist) => (
+      <CollectionCard
+        key={playlist.playlist_id}
+        id={playlist.playlist_id}
+        size='xs'
+      />
+    )) || []
+
+  if (playlistsStatus === 'pending') {
+    return (
+      <Flex justifyContent='center' mt='l'>
+        <Box w={24}>
+          <LoadingSpinner />
+        </Box>
+      </Flex>
+    )
+  }
+
+  if (!playlists?.length && !isOwner) {
+    return (
+      <EmptyTab
+        message={
+          <>
+            {isOwner
+              ? "You haven't created any playlists yet"
+              : `${profile.name} hasn't created any playlists yet`}
+            <i className={cn('emoji', 'face-with-monocle', styles.emoji)} />
+          </>
+        }
+      />
+    )
+  }
+
+  return <CardLineup cardsClassName={styles.cardLineup} cards={playlistCards} />
+}
+
+const AlbumsTab = ({
+  isOwner,
+  profile,
+  userId
+}: {
+  isOwner: boolean
+  profile: User
+  userId: ID | null
+}) => {
+  const { data: albums, status: albumsStatus } = useUserAlbums({
+    userId: userId ?? null
+  })
+
+  const albumCards =
+    albums?.map((album) => (
+      <CollectionCard
+        key={album.playlist_id}
+        id={album.playlist_id}
+        size='xs'
+      />
+    )) || []
+
+  if (albumsStatus === 'pending') {
+    return (
+      <Flex justifyContent='center' mt='l'>
+        <Box w={24}>
+          <LoadingSpinner />
+        </Box>
+      </Flex>
+    )
+  }
+
+  if (!albums?.length && !isOwner) {
+    return (
+      <EmptyTab
+        message={
+          <>
+            {isOwner
+              ? "You haven't created any albums yet"
+              : `${profile.name} hasn't created any albums yet`}
+            <i className={cn('emoji', 'face-with-monocle', styles.emoji)} />
+          </>
+        }
+      />
+    )
+  }
+
+  return <CardLineup cardsClassName={styles.cardLineup} cards={albumCards} />
+}
 
 const ProfilePage = g(
   ({
@@ -254,8 +353,6 @@ const ProfilePage = g(
     tikTokVerified,
     website,
     donation,
-    albums,
-    playlists,
     artistTracks,
     userFeed,
     getLineupProps,
@@ -385,22 +482,7 @@ const ProfilePage = g(
         />
       )
     } else {
-      const playlistCards = (playlists || []).map((playlist) => (
-        <CollectionCard
-          key={playlist.playlist_id}
-          id={playlist.playlist_id}
-          size='xs'
-        />
-      ))
       if (isArtist) {
-        const albumCards = (albums || []).map((album) => (
-          <CollectionCard
-            key={album.playlist_id}
-            id={album.playlist_id}
-            size='xs'
-          />
-        ))
-
         profileTabs = artistTabs
         profileElements = [
           <div className={styles.tracksLineupContainer} key='artistTracks'>
@@ -428,56 +510,10 @@ const ProfilePage = g(
             )}
           </div>,
           <div className={styles.cardLineupContainer} key='artistAlbums'>
-            {collectionStatus !== Status.SUCCESS &&
-            collectionStatus !== Status.ERROR ? (
-              <Flex justifyContent='center' mt='l'>
-                <Box w={24}>
-                  <LoadingSpinner />
-                </Box>
-              </Flex>
-            ) : (albums || []).length === 0 ? (
-              <EmptyTab
-                message={
-                  <>
-                    {messages.emptyAlbums}
-                    <i
-                      className={cn('emoji', 'face-with-monocle', styles.emoji)}
-                    />
-                  </>
-                }
-              />
-            ) : (
-              <CardLineup
-                cardsClassName={styles.cardLineup}
-                cards={albumCards}
-              />
-            )}
+            <AlbumsTab isOwner={isOwner} profile={profile} userId={userId} />
           </div>,
           <div className={styles.cardLineupContainer} key='artistPlaylists'>
-            {collectionStatus !== Status.SUCCESS &&
-            collectionStatus !== Status.ERROR ? (
-              <Flex justifyContent='center' mt='l'>
-                <Box w={24}>
-                  <LoadingSpinner />
-                </Box>
-              </Flex>
-            ) : (playlists || []).length === 0 ? (
-              <EmptyTab
-                message={
-                  <>
-                    {messages.emptyPlaylists}
-                    <i
-                      className={cn('emoji', 'face-with-monocle', styles.emoji)}
-                    />
-                  </>
-                }
-              />
-            ) : (
-              <CardLineup
-                cardsClassName={styles.cardLineup}
-                cards={playlistCards}
-              />
-            )}
+            <PlaylistsTab isOwner={isOwner} profile={profile} userId={userId} />
           </div>,
           <div className={styles.tracksLineupContainer} key='artistUsers'>
             {profile.repost_count === 0 ? (
@@ -530,23 +566,7 @@ const ProfilePage = g(
             )}
           </div>,
           <div className={styles.cardLineupContainer} key='playlists'>
-            {(playlists || []).length === 0 ? (
-              <EmptyTab
-                message={
-                  <>
-                    {messages.emptyPlaylists}
-                    <i
-                      className={cn('emoji', 'face-with-monocle', styles.emoji)}
-                    />
-                  </>
-                }
-              />
-            ) : (
-              <CardLineup
-                cardsClassName={styles.cardLineup}
-                cards={playlistCards}
-              />
-            )}
+            <PlaylistsTab isOwner={isOwner} profile={profile} userId={userId} />
           </div>
         ]
       }

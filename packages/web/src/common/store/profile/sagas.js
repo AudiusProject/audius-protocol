@@ -12,8 +12,7 @@ import {
   collectiblesActions,
   confirmerActions,
   confirmTransaction,
-  getSDK,
-  profilePageActions
+  getSDK
 } from '@audius/common/store'
 import {
   squashNewLines,
@@ -35,11 +34,7 @@ import {
   takeEvery
 } from 'redux-saga/effects'
 
-import {
-  fetchUsers,
-  fetchUserByHandle,
-  fetchUserSocials
-} from 'common/store/cache/users/sagas'
+import { fetchUsers, fetchUserByHandle } from 'common/store/cache/users/sagas'
 import feedSagas from 'common/store/pages/profile/lineups/feed/sagas.js'
 import tracksSagas from 'common/store/pages/profile/lineups/tracks/sagas.js'
 import {
@@ -48,8 +43,6 @@ import {
 } from 'common/store/social/users/sagas'
 import { push as pushRoute } from 'utils/navigation'
 import { waitForWrite } from 'utils/sagaHelpers'
-
-import { watchFetchProfileCollections } from './fetchProfileCollectionsSaga'
 
 const { NOT_FOUND_PAGE } = route
 const { getIsReachable } = reachabilitySelectors
@@ -302,8 +295,6 @@ export function* fetchSolanaCollectibles(user) {
 }
 
 function* fetchProfileAsync(action) {
-  const isNativeMobile = yield getContext('isNativeMobile')
-
   try {
     let user
     if (action.handle) {
@@ -340,13 +331,6 @@ function* fetchProfileAsync(action) {
         action.fetchOnly
       )
     )
-
-    if (!isNativeMobile) {
-      // Fetch user socials and collections after fetching the user itself
-      yield fork(fetchUserSocials, action)
-      // Note that mobile dispatches this action at the component level
-      yield put(profilePageActions.fetchCollections(user.handle))
-    }
 
     // Get chat permissions
     yield put(fetchPermissions({ userIds: [user.user_id] }))
@@ -535,7 +519,6 @@ export default function sagas() {
     ...tracksSagas(),
     watchFetchProfile,
     watchUpdateProfile,
-    watchSetNotificationSubscription,
-    watchFetchProfileCollections
+    watchSetNotificationSubscription
   ]
 }
