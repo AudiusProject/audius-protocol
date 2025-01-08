@@ -58,10 +58,6 @@ const { setTab } = explorePageActions
 const messages = {
   pageName: 'Explore',
   pageDescription: 'Explore featured content on Audius',
-  forYou: 'For You',
-  moods: 'Moods',
-  playlists: 'Playlists',
-  artists: 'Artists',
   featuredPlaylists: 'Featured Playlists',
   featuredArtists: 'Featured Artists',
   justForYou: 'Just For You',
@@ -101,14 +97,22 @@ const TabBodyHeader = ({
 }
 
 const tabHeaders = [
-  { icon: <IconForYou />, text: messages.forYou, label: ExploreTabs.FOR_YOU },
-  { icon: <IconMoods />, text: messages.moods, label: ExploreTabs.MOODS },
+  {
+    icon: <IconForYou />,
+    text: ExploreTabs.FOR_YOU,
+    label: ExploreTabs.FOR_YOU
+  },
+  { icon: <IconMoods />, text: ExploreTabs.MOODS, label: ExploreTabs.MOODS },
   {
     icon: <IconNote />,
-    text: messages.playlists,
+    text: ExploreTabs.PLAYLISTS,
     label: ExploreTabs.PLAYLISTS
   },
-  { icon: <IconUser />, text: messages.artists, label: ExploreTabs.PROFILES }
+  {
+    icon: <IconUser />,
+    text: ExploreTabs.PROFILES,
+    label: ExploreTabs.PROFILES
+  }
 ]
 
 export type ExplorePageProps = {

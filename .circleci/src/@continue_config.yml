@@ -58,6 +58,3 @@ parameters:
   run-create-audius-app-workflow:
     type: boolean
     default: false
-  run-audiusd-workflow:
-    type: boolean
-    default: false

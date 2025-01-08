@@ -51,7 +51,7 @@ export class DeveloperAppsApi extends GeneratedDeveloperAppsApi {
     const unixTs = Math.round(new Date().getTime() / 1000) // current unix timestamp (sec)
     const message = `Creating Audius developer app at ${unixTs}`
 
-    const signature = await wallet.sign({ message })
+    const signature = await wallet.signMessage({ message })
     const response = await this.entityManager.manageEntity({
       userId,
       entityType: EntityType.DEVELOPER_APP,

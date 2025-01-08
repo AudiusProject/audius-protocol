@@ -65,7 +65,6 @@ services:
       service: audius-cmd
     <<: *common
 
-
   audiusd-1:
     extends:
       file: docker-compose.audiusd.yml
@@ -196,6 +195,12 @@ services:
     extends:
       file: docker-compose.pedalboard.${DOCKERCOMPOSE_ENV_TYPE:-dev}.yml
       service: trending-challenge-rewards
+    <<: *common
+
+  staking:
+    extends:
+      file: docker-compose.pedalboard.${DOCKERCOMPOSE_ENV_TYPE:-dev}.yml
+      service: staking
     <<: *common
 
   relay:

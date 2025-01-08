@@ -1,7 +1,6 @@
 import { useCallback } from 'react'
 
-import { Name } from '@audius/common/models'
-import { deriveUserBankAddress } from '@audius/common/services'
+import { Name, type SolanaWalletAddress } from '@audius/common/models'
 import { accountSelectors, tippingSelectors } from '@audius/common/store'
 import { formatNumberCommas } from '@audius/common/utils'
 import { IconTwitter, IconCheck, Button } from '@audius/harmony'
@@ -51,18 +50,20 @@ export const TipSent = () => {
       openTwitterLink(`${env.AUDIUS_URL}/${recipient.handle}`, message)
 
       const [senderWallet, recipientWallet] = await Promise.all([
-        deriveUserBankAddress(sdk, {
-          ethAddress: accountErcWallet
+        sdk.services.claimableTokensClient.deriveUserBank({
+          ethWallet: accountErcWallet,
+          mint: 'wAUDIO'
         }),
-        deriveUserBankAddress(sdk, {
-          ethAddress: recipient.erc_wallet
+        sdk.services.claimableTokensClient.deriveUserBank({
+          ethWallet: recipient.erc_wallet,
+          mint: 'wAUDIO'
         })
       ])
 
       record(
         make(Name.TIP_AUDIO_TWITTER_SHARE, {
-          senderWallet,
-          recipientWallet,
+          senderWallet: senderWallet.toBase58() as SolanaWalletAddress,
+          recipientWallet: recipientWallet.toBase58() as SolanaWalletAddress,
           senderHandle: accountHandle ?? '',
           recipientHandle: recipient.handle,
           amount: sendAmount,

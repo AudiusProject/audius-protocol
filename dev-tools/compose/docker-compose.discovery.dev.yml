@@ -48,6 +48,7 @@ services:
     extends:
       file: docker-compose.discovery.prod.yml
       service: discovery-provider
+    command: bash -c ". /tmp/dev-tools/startup/startup.sh && scripts/start.sh"
     build:
       dockerfile: ${PROJECT_ROOT}/packages/discovery-provider/Dockerfile.dev
     volumes:

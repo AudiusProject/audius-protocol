@@ -631,9 +631,11 @@ function* downloadTracks({
   userId?: ID
 }) {
   const { trackId: parentTrackId } = tracks[0]
+
   try {
     const audiusSdk = yield* getContext('audiusSdk')
     const sdk = yield* call(audiusSdk)
+    const dispatch = yield* getContext('dispatch')
     const audiusBackend = yield* getContext('audiusBackendInstance')
     const trackDownload = yield* getContext('trackDownload')
 
@@ -666,10 +668,12 @@ function* downloadTracks({
           }
         })
       )
+
       await trackDownload.downloadTracks({
         files,
         rootDirectoryName,
-        abortSignal
+        abortSignal,
+        dispatch
       })
     })
 

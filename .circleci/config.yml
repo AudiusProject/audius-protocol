@@ -357,8 +357,6 @@ workflows:
             packages/fixed-decimal/.* run-common-workflow true
             packages/spl/.* run-sdk-workflow true
             packages/spl/.* run-identity-workflow true
-            pkg/.* run-audiusd-workflow true
-            cmd/.* run-audiusd-workflow true
           requires:
             - generate-config
             - init
@@ -409,8 +407,6 @@ workflows:
             packages/fixed-decimal/.* run-common-workflow true
             packages/spl/.* run-sdk-workflow true
             packages/spl/.* run-identity-workflow true
-            pkg/.* run-audiusd-workflow true
-            cmd/.* run-audiusd-workflow true
           requires:
             - generate-config
             - init
