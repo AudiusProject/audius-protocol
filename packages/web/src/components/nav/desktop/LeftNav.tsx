@@ -89,6 +89,7 @@ const LeftNav = (props: NavColumnProps) => {
                 <NestedComponent scrollbarRef={scrollbarRef} />
               ) : null
             }
+            canUnfurl={item.canUnfurl}
           />
         )
       }

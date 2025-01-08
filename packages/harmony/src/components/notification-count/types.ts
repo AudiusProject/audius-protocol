@@ -9,10 +9,15 @@ export type NotificationCountProps = {
    * The size of the notification count.
    * @default undefined
    */
-  size?: 's'
+  size?: 's' | 'm'
   /**
    * Whether the parent item is selected
    */
   isSelected?: boolean
+  /**
+   * Whether to display a border around the notification dot
+   * @default false
+   */
+  hasBorder?: boolean
   children?: ReactNode
 } & ComponentPropsWithoutRef<'div'>

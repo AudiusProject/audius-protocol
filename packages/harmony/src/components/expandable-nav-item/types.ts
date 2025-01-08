@@ -16,4 +16,6 @@ export type ExpandableNavItemProps = WithCSS<{
   nestedItems?: ReactNode
   /** Whether the right icon should persist regardless of the open state. */
   shouldPersistRightIcon?: boolean
+  /** Whether the nav item can be unfurled. */
+  canUnfurl?: boolean
 }>
