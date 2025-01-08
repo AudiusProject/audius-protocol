@@ -26,7 +26,7 @@ const main = async () => {
       chain: mainnet,
       transport: http(process.env.eth_rpc_endpoint!)
     }),
-    port: process.env.port ? parseInt(process.env.port) : 6004
+    port: process.env.port ? parseInt(process.env.port) : 6000
   }
   await new App<SharedData>({ appData: sharedData })
     .task(async (app: App<SharedData>) => {
