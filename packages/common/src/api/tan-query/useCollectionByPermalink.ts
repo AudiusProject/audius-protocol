@@ -48,7 +48,11 @@ export const useCollectionByPermalink = (
 
       if (collection) {
         // Prime related entities
-        primeCollectionData({ collection, queryClient, dispatch })
+        primeCollectionData({
+          collections: [collection],
+          queryClient,
+          dispatch
+        })
 
         // Prime collection cache
         queryClient.setQueryData(

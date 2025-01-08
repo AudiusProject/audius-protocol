@@ -18,7 +18,7 @@ import { makeStyles } from 'app/styles'
 import { getCollectiblesRoute } from 'app/utils/routes'
 
 import { CollectiblesCard } from '../CollectiblesCard'
-import { getProfile, useSelectProfile } from '../selectors'
+import { getProfile } from '../selectors'
 const getUserId = accountSelectors.getUserId
 
 const messages = {
@@ -75,11 +75,7 @@ const useStyles = makeStyles(({ typography, palette, spacing }) => ({
 
 export const CollectiblesTab = () => {
   const styles = useStyles()
-  const { handle } = useSelectProfile(['handle'])
-  const { profile } = useProxySelector(
-    (state) => getProfile(state, handle),
-    [handle]
-  )
+  const { profile } = useProxySelector((state) => getProfile(state), [])
   const accountId = useSelector(getUserId)
   const isOwner = profile?.user_id === accountId
   const { toast } = useToast()

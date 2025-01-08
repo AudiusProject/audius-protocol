@@ -1,9 +1,7 @@
-import { useEffect } from 'react'
-
-import { CreatePlaylistSource, Status } from '@audius/common/models'
-import { profilePageActions, profilePageSelectors } from '@audius/common/store'
+import { useUserPlaylists } from '@audius/common/api'
+import { CreatePlaylistSource } from '@audius/common/models'
 import { useIsFocused } from '@react-navigation/native'
-import { useDispatch, useSelector } from 'react-redux'
+import { useSelector } from 'react-redux'
 
 import { CollectionList } from 'app/components/collection-list'
 import { spacing } from 'app/styles/spacing'
@@ -11,35 +9,21 @@ import { spacing } from 'app/styles/spacing'
 import { EmptyProfileTile } from '../EmptyProfileTile'
 import { getIsOwner, useSelectProfile } from '../selectors'
 
-const { getProfilePlaylists, getCollectionsStatus } = profilePageSelectors
-const { fetchCollections } = profilePageActions
-
 const emptyPlaylists = []
 
 export const PlaylistsTab = () => {
-  const { handle, playlist_count } = useSelectProfile([
+  const { handle, playlist_count, user_id } = useSelectProfile([
     'handle',
-    'playlist_count'
+    'playlist_count',
+    'user_id'
   ])
-  const playlists = useSelector((state) => getProfilePlaylists(state, handle))
-  const collectionsStatus = useSelector((state) =>
-    getCollectionsStatus(state, handle)
-  )
   const isOwner = useSelector((state) => getIsOwner(state, handle ?? ''))
   const isFocused = useIsFocused()
-  const dispatch = useDispatch()
-  const isLoading = collectionsStatus === Status.LOADING
 
-  const shouldFetchPlaylists =
-    isFocused &&
-    (playlist_count > 0 || isOwner) &&
-    collectionsStatus === Status.IDLE
-
-  useEffect(() => {
-    if (shouldFetchPlaylists) {
-      dispatch(fetchCollections(handle))
-    }
-  }, [shouldFetchPlaylists, dispatch, handle])
+  const { data: playlists, isPending } = useUserPlaylists(
+    { userId: user_id },
+    { enabled: isFocused }
+  )
 
   return (
     <CollectionList
@@ -53,7 +37,7 @@ export const PlaylistsTab = () => {
       totalCount={playlist_count}
       showCreateCollectionTile={isOwner}
       createPlaylistSource={CreatePlaylistSource.PROFILE_PAGE}
-      isLoading={isLoading}
+      isLoading={isPending}
     />
   )
 }

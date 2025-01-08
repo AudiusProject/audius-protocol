@@ -32,7 +32,7 @@ export const useTrackByPermalink = (
 
       if (track) {
         // Prime related entities
-        primeTrackData({ track, queryClient, dispatch })
+        primeTrackData({ tracks: [track], queryClient, dispatch })
 
         // Prime track cache
         queryClient.setQueryData([QUERY_KEYS.track, track.track_id], track)

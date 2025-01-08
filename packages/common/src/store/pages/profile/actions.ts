@@ -26,10 +26,6 @@ export const FETCH_TOP_TAGS_FAILED = 'PROFILE/FETCH_TOP_TAGS_FAILED'
 export const SET_NOTIFICATION_SUBSCRIPTION =
   'PROFILE/SET_NOTIFICATION_SUBSCRIPTION'
 
-export const FETCH_COLLECTIONS = 'PROFILE/FETCH_COLLECTIONS'
-export const FETCH_COLLECTIONS_SUCCEEDED = 'PROFILE/FETCH_COLLECTIONS_SUCCEEDED'
-export const FETCH_COLLECTIONS_FAILED = 'PROFILE/FETCH_COLLECTIONS_FAILED'
-
 export type FetchProfileAction = {
   type: typeof FETCH_PROFILE
   handle: string | null
@@ -113,21 +109,6 @@ export type SetNotificationSubscriptionAction = {
   handle?: string
 }
 
-export type FetchCollectionsAction = {
-  type: typeof FETCH_COLLECTIONS
-  handle: string
-}
-
-export type FetchCollectionsSucceededAction = {
-  type: typeof FETCH_COLLECTIONS_SUCCEEDED
-  handle: string
-}
-
-export type FetchCollectionsFailedAction = {
-  type: typeof FETCH_COLLECTIONS_FAILED
-  handle: string
-}
-
 export type ProfilePageAction =
   | FetchProfileAction
   | FetchProfileSucceededAction
@@ -143,9 +124,6 @@ export type ProfilePageAction =
   | FetchTopTagsSucceededAction
   | FetchTopTagsFailedAction
   | SetNotificationSubscriptionAction
-  | FetchCollectionsAction
-  | FetchCollectionsSucceededAction
-  | FetchCollectionsFailedAction
 
 // Either handle or userId is required
 // TODO: Move this to redux toolkit
@@ -228,31 +206,6 @@ export function setNotificationSubscription(
     userId,
     isSubscribed,
     update,
-    handle
-  }
-}
-
-export function fetchCollections(handle: string): FetchCollectionsAction {
-  return {
-    type: FETCH_COLLECTIONS,
-    handle
-  }
-}
-
-export function fetchCollectionsSucceded(
-  handle: string
-): FetchCollectionsSucceededAction {
-  return {
-    type: FETCH_COLLECTIONS_SUCCEEDED,
-    handle
-  }
-}
-
-export function fetchCollectionsFailed(
-  handle: string
-): FetchCollectionsFailedAction {
-  return {
-    type: FETCH_COLLECTIONS_FAILED,
     handle
   }
 }

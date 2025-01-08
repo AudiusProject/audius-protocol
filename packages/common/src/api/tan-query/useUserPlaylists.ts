@@ -4,31 +4,41 @@ import { useDispatch } from 'react-redux'
 import { userCollectionMetadataFromSDK } from '~/adapters/collection'
 import { transformAndCleanList } from '~/adapters/utils'
 import { useAudiusQueryContext } from '~/audius-query'
-import { ID } from '~/models/Identifiers'
-import { encodeHashId } from '~/utils/hashIds'
+import { Id, OptionalId } from '~/models/Identifiers'
 
 import { QUERY_KEYS } from './queryKeys'
 import { Config } from './types'
+import { useCurrentUserId } from './useCurrentUserId'
 import { primeCollectionData } from './utils/primeCollectionData'
 
-export const useCollections = (
-  collectionIds: ID[] | null | undefined,
-  options?: Config
+type GetPlaylistsOptions = {
+  userId: number | null
+  limit?: number
+  offset?: number
+}
+
+export const useUserPlaylists = (
+  options: GetPlaylistsOptions,
+  config?: Config
 ) => {
   const { audiusSdk } = useAudiusQueryContext()
+  const { data: currentUserId } = useCurrentUserId()
+  const { userId, limit, offset } = options
   const queryClient = useQueryClient()
   const dispatch = useDispatch()
 
   return useQuery({
-    queryKey: [QUERY_KEYS.collections, collectionIds],
+    queryKey: [QUERY_KEYS.userPlaylists, userId, limit, offset],
     queryFn: async () => {
-      const encodedIds = collectionIds!
-        .map(encodeHashId)
-        .filter((id): id is string => id !== null)
-      if (encodedIds.length === 0) return []
+      if (!userId) return []
+
       const sdk = await audiusSdk()
-      const { data } = await sdk.full.playlists.getBulkPlaylists({
-        id: encodedIds
+
+      const { data } = await sdk.full.users.getPlaylistsByUser({
+        id: Id.parse(userId),
+        userId: OptionalId.parse(currentUserId),
+        limit,
+        offset
       })
 
       const collections = transformAndCleanList(
@@ -40,10 +50,7 @@ export const useCollections = (
 
       return collections
     },
-    staleTime: options?.staleTime,
-    enabled:
-      options?.enabled !== false &&
-      collectionIds !== null &&
-      collectionIds !== undefined
+    staleTime: config?.staleTime,
+    enabled: config?.enabled !== false && !!userId
   })
 }
