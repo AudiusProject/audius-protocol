@@ -19,7 +19,7 @@ import { useWindowSize } from 'react-use'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 
 import audiusLogoColored from 'assets/img/audiusLogoColored.png'
-import { setValueField, signIn } from 'common/store/pages/signon/actions'
+import { setValueField } from 'common/store/pages/signon/actions'
 import {
   getEmailField,
   getPasswordField,

@@ -8,7 +8,7 @@ import { useField, useFormikContext } from 'formik'
 import { useDispatch } from 'react-redux'
 import { usePrevious } from 'react-use'
 
-import { signIn, setValueField } from 'common/store/pages/signon/actions'
+import { setValueField } from 'common/store/pages/signon/actions'
 import { TextLink } from 'components/link'
 
 const { SIGN_IN_CONFIRM_EMAIL_PAGE } = route

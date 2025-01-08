@@ -59,7 +59,6 @@ export const useRequiresAccountCallback = <T extends (...args: any) => any>(
         dispatch(updateRouteOnExit(returnRoute))
         dispatch(updateRouteOnCompletion(returnRoute))
         dispatch(openSignOn(/** signIn */ false))
-        console.log('asdf requires account toast')
         dispatch(showRequiresAccountToast(hasAccount && !isAccountComplete))
         onOpenAuthModal?.()
       } else {
@@ -87,7 +86,6 @@ export const useRequiresAccountOnClick = <
 ) => {
   return useRequiresAccountCallback(
     (e: ReactMouseEvent<Element, MouseEvent>) => {
-      console.log('asdf e', e)
       e.stopPropagation()
       return callback(e)
     },
