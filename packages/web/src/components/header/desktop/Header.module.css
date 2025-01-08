@@ -1,26 +1,13 @@
 .container {
+  position: relative;
   display: inline-flex;
   justify-content: space-between;
   align-items: baseline;
   width: 100%;
-  min-width: 780px;
-  height: 136px;
+  min-width: 720px;
   display: flex;
   flex-direction: column;
   align-items: center;
-}
-
-.containerWithBar {
-  height: 129px;
-}
-
-.container.section {
-  margin-bottom: 16px;
-}
-
-.headerWrapper {
-  display: inline-flex;
-  align-items: baseline;
 }
 
 .bottomBarContainer {
@@ -33,91 +20,8 @@
 .bottomBar {
   max-width: 1080px;
   flex: 1;
-  margin: 0px 56px;
-}
-
-.header.main {
-  color: var(--harmony-secondary);
-  font-weight: var(--harmony-font-heavy);
-  font-size: var(--harmony-font-5xl);
-
-  user-select: none;
-  background-image: var(--harmony-gradient);
-
-  -webkit-text-fill-color: transparent;
-  -webkit-background-clip: text;
-  text-shadow: var(--page-header-text-shadow);
-  line-height: 46px;
-}
-
-/** Safari doesn't do a good job persisting the title font styles to nested content */
-.header.main > *,
-.header.main > * > * {
-  background-image: var(--harmony-gradient);
-
-  -webkit-text-fill-color: transparent;
-  -webkit-background-clip: text;
-  text-shadow: var(--page-header-text-shadow);
-}
-
-.header.mini {
-  /* Padding top to align baseline with main. */
-  padding-top: 12px;
-  color: var(--harmony-n-400);
-  font-size: var(--harmony-font-2xl);
-  font-weight: var(--harmony-font-heavy);
-  user-select: none;
-}
-
-.header.section {
-  display: inline-block;
-  color: var(--harmony-neutral);
-  font-size: var(--harmony-font-2xl);
-  font-weight: var(--harmony-font-bold);
-  text-shadow: 0 2px 6px 0 var(--harmony-neutral);
-}
-
-.header.page {
-  display: inline-block;
-  color: var(--harmony-neutral);
-  font-size: var(--harmony-font-2xl);
-  font-weight: var(--harmony-font-bold);
-  text-shadow: 0 2px 6px 0 var(--harmony-neutral);
-  background-image: var(--harmony-gradient);
-}
-
-.middleRow {
-  display: flex;
-  width: 100%;
-  margin: 0px 56px;
-  max-width: 1080px;
-  align-items: center;
-  column-gap: var(--harmony-unit-10);
 }
 
 .rightDecorator {
   margin: 0px 0px 3px auto;
-}
-
-.maxWidthWrapper {
-  margin: auto 0px 12px;
-  width: 100%;
-  display: flex;
-  justify-content: center;
-}
-
-.maxWithWrapperWithBar {
-  /* Need to scoot header down in case of bottom bar */
-  margin: auto 0px 8px;
-}
-
-.secondary {
-  margin: auto 0px;
-}
-
-.topLeftWrapper {
-  position: absolute;
-  top: 0px;
-  left: 0px;
-  z-index: 11;
 }

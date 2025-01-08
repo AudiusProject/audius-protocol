@@ -5,7 +5,7 @@ import { tokenDashboardPageActions, walletActions } from '@audius/common/store'
 import { route } from '@audius/common/utils'
 import { useDispatch } from 'react-redux'
 
-import Header from 'components/header/desktop/Header'
+import { Header } from 'components/header/desktop/Header'
 import { useMobileHeader } from 'components/header/mobile/hooks'
 import MobilePageContainer from 'components/mobile-page-container/MobilePageContainer'
 import NavContext, {

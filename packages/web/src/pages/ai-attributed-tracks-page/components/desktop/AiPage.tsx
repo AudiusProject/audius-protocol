@@ -1,13 +1,11 @@
 import { User } from '@audius/common/models'
 import { IconRobot } from '@audius/harmony'
-import cn from 'classnames'
 
-import Header from 'components/header/desktop/Header'
+import { Header } from 'components/header/desktop/Header'
 import Lineup, { LineupProps } from 'components/lineup/Lineup'
 import Page from 'components/page/Page'
 import UserBadges from 'components/user-badges/UserBadges'
 import { fullAiPage } from 'utils/route'
-import { isMatrix } from 'utils/theme/theme'
 import { withNullGuard } from 'utils/withNullGuard'
 
 import styles from './AiPage.module.css'
@@ -33,15 +31,8 @@ const g = withNullGuard(({ user, ...p }: AiPageProps) => user && { ...p, user })
 const AiPage = g(({ title, user, getLineupProps, goToArtistPage }) => {
   const renderHeader = () => (
     <Header
-      wrapperClassName={styles.header}
-      primary={
-        <div className={styles.headerPrimary}>
-          <IconRobot
-            className={cn(styles.iconRobot, { [styles.matrix]: isMatrix() })}
-          />
-          <span>{title}</span>
-        </div>
-      }
+      icon={IconRobot}
+      primary={title}
       secondary={
         <div className={styles.headerSecondary}>
           {messages.aiAttributed} {messages.by}

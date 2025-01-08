@@ -13,7 +13,7 @@ import {
 } from '@audius/harmony'
 import { useDispatch, useSelector } from 'react-redux'
 
-import Header from 'components/header/desktop/Header'
+import { Header } from 'components/header/desktop/Header'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import Page from 'components/page/Page'
 import { replace } from 'utils/navigation'

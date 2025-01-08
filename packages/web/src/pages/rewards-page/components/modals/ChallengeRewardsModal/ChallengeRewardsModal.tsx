@@ -38,7 +38,6 @@ import {
 } from '@audius/harmony'
 import cn from 'classnames'
 import { useDispatch, useSelector } from 'react-redux'
-import { push as pushRoute } from 'redux-first-history'
 
 import QRCode from 'assets/img/imageQR.png'
 import { useModalState } from 'common/hooks/useModalState'

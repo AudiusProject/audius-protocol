@@ -49,8 +49,8 @@ const HeaderContainer = (props: HeaderContainerProps) => {
           // browsers that don't support the
           // backdrop-filter frosted glass effect.
           background: isChromeOrSafari
-            ? 'linear-gradient(180deg, var(--page-header-gradient-1) 0%, var(--page-header-gradient-1) 20%, var(--page-header-gradient-2) 65%)'
-            : 'linear-gradient(180deg, var(--page-header-gradient-1) 0%, var(--page-header-gradient-1) 40%, var(--page-header-gradient-2-alt) 85%)'
+            ? 'linear-gradient(180deg, var(--harmony-n-25) 0%, var(--harmony-n-25) 20%, var(--page-header-gradient-2) 65%)'
+            : 'linear-gradient(180deg, var(--harmony-n-25) 0%, var(--page-n-25) 40%, var(--page-header-gradient-2-alt) 85%)'
         }}
       >
         {cloneElement(header as any, {

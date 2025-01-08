@@ -3,9 +3,10 @@ import { ReactNode, useContext, useEffect } from 'react'
 import { StringKeys } from '@audius/common/services'
 import { tokenDashboardPageActions, walletActions } from '@audius/common/store'
 import { route } from '@audius/common/utils'
+import { IconGift } from '@audius/harmony'
 import { useDispatch } from 'react-redux'
 
-import Header from 'components/header/desktop/Header'
+import { Header } from 'components/header/desktop/Header'
 import { useMobileHeader } from 'components/header/mobile/hooks'
 import MobilePageContainer from 'components/mobile-page-container/MobilePageContainer'
 import NavContext, {
@@ -59,7 +60,7 @@ const DesktopPage = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     dispatch(preloadWalletProviders())
   }, [dispatch])
-  const header = <Header primary={messages.title} />
+  const header = <Header icon={IconGift} primary={messages.title} />
   return (
     <Page
       title={messages.title}
