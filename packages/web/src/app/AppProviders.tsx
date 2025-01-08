@@ -1,4 +1,4 @@
-import { ReactNode, useEffect } from 'react'
+import { ReactNode, useState } from 'react'
 
 import { QueryClientProvider } from '@tanstack/react-query'
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
@@ -32,27 +32,27 @@ export const AppProviders = ({ children }: AppProvidersProps) => {
   const { history } = useHistoryContext()
   const isMobile = useIsMobile()
 
-  const initialStoreState = {
-    ui: {
-      theme: {
-        theme: getTheme(),
-        systemAppearance: getSystemAppearance()
+  const [{ store, storeHistory }] = useState(() => {
+    const initialStoreState = {
+      ui: {
+        theme: {
+          theme: getTheme(),
+          systemAppearance: getSystemAppearance()
+        }
       }
     }
-  }
 
-  const { store, history: storeHistory } = configureStore(
-    history,
-    isMobile,
-    initialStoreState
-  )
-
-  useEffect(() => {
+    const { store, history: storeHistory } = configureStore(
+      history,
+      isMobile,
+      initialStoreState
+    )
     // Mount store to window for easy access
     if (typeof window !== 'undefined' && !window.store) {
       window.store = store
     }
-  }, [store])
+    return { store, storeHistory }
+  })
 
   return (
     <QueryClientProvider client={queryClient}>
