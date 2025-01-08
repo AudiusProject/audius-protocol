@@ -92,7 +92,7 @@ describe('TracksApi', () => {
   let tracks: TracksApi
 
   // eslint-disable-next-line mocha/no-setup-in-describe
-  const audiusWalletClient = createAppWalletClient('0x')
+  const audiusWalletClient = createAppWalletClient({ apiKey: '' })
   const logger = new Logger()
   const discoveryNodeSelector = new DiscoveryNodeSelector()
   const storageNodeSelector = new StorageNodeSelector({

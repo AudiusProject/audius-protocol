@@ -31,7 +31,7 @@ const userWallet = '0xc0ffee254729296a45a3885639AC7E10F9d54979'
 
 const discoveryNode = 'https://discovery-provider.audius.co'
 
-const audiusWalletClient = createAppWalletClient(userWallet)
+const audiusWalletClient = createAppWalletClient({ apiKey: userWallet })
 const logger = new Logger()
 const discoveryNodeSelector = new DiscoveryNodeSelector({
   initialSelectedNode: discoveryNode
