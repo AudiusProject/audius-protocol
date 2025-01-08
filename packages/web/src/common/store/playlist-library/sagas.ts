@@ -6,7 +6,6 @@ import {
 } from '@audius/common/models'
 import {
   accountSelectors,
-  accountActions,
   cacheActions,
   playlistLibraryActions,
   playlistLibraryHelpers
