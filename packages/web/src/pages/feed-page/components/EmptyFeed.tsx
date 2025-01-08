@@ -6,7 +6,6 @@ import { useSelector } from 'utils/reducer'
 import FollowArtists from './FollowUsers'
 
 const EmptyFeed = () => {
-  console.log('asdf empty feed')
   const hasAccount = useSelector(accountSelectors.getHasAccount)
   useRequiresAccount()
 

@@ -345,7 +345,6 @@ export const SignOnPage = () => {
   })
 
   if (hasCompletedAccount) {
-    console.log('asdf redirecting to feed')
     return <Redirect to={FEED_PAGE} />
   }
 

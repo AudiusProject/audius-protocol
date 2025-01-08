@@ -79,7 +79,6 @@ def get_users(args):
 
         # bundle peripheral info into user results
         users = populate_user_metadata(session, user_ids, users, current_user_id)
-        logger.info(f"asdf populated users {users}")
 
         # Debugging flag for checking user solana bank existence
         # used by createSolanaUserBank script to confirm banks are created successfully

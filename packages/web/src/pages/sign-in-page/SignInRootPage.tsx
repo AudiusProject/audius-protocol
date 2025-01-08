@@ -6,9 +6,7 @@ import { useSelector } from 'react-redux'
 import { Redirect, Route, Switch } from 'react-router-dom'
 import { useFirstMountState } from 'react-use'
 
-import { SIGN_UP } from 'common/store/pages/signon/actions'
 import { getEmailField, getIsGuest } from 'common/store/pages/signon/selectors'
-import { CreatePasswordPage } from 'pages/sign-up-page/pages/CreatePasswordPage'
 
 import { ConfirmEmailPage } from './ConfirmEmailPage'
 import { SignInPage } from './SignInPage'
@@ -24,10 +22,7 @@ export const SignInRootPage = () => {
   const currentAccountEmail = useSelector(getGuestEmail)
   const { value: emailFromSignOn } = useSelector(getEmailField)
   const isGuest = useSelector(getIsGuest)
-  console.log(
-    'asdf isguest',
-    isGuest && currentAccountEmail === emailFromSignOn
-  )
+
   return (
     <>
       <Helmet>

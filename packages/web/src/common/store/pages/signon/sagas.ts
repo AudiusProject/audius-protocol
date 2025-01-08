@@ -975,7 +975,7 @@ function* signIn(action: ReturnType<typeof signOnActions.signIn>) {
     const isGuest = select(getIsGuest)
 
     const fpResponse = isGuest
-      ? undefined
+      ? undefined // guest account should not use fingerprint
       : yield* call(
           [fingerprintClient, fingerprintClient.identify],
           email ?? signOn.email.value,

@@ -11,7 +11,6 @@ export function* ensureLoggedIn(source?: CreateAccountOpen['source']) {
   const userId = yield* select(getUserId)
   if (!userId) {
     yield* put(signOnActions.openSignOn(false))
-    console.log('asdf ensure logged in')
     yield* put(signOnActions.showRequiresAccountToast())
     yield* put(make(Name.CREATE_ACCOUNT_OPEN, { source }))
     yield* cancel()
