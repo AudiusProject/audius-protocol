@@ -44,11 +44,10 @@ class TrackDownload extends TrackDownloadBase {
   async downloadTracks({
     files,
     rootDirectoryName,
-    abortSignal
+    abortSignal,
+    dispatch
   }: DownloadTrackArgs) {
     if (files.length === 0) return
-
-    const dispatch = window.store.dispatch
 
     dispatch(beginDownload())
 
