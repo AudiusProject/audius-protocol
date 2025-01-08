@@ -1,7 +1,7 @@
 services:
   audiusd:
     container_name: audiusd
-    image: audius/audiusd:prerelease
+    image: audius/audiusd:local
     restart: unless-stopped
     profiles:
       - discovery
