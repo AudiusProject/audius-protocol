@@ -174,7 +174,7 @@ services:
           'pgrep pg_migrate || curl -f http://localhost:5000/health_check || exit 1'
         ]
       interval: 5s
-      timeout: 1s
+      timeout: 10s
       retries: 180
     depends_on:
       db:
