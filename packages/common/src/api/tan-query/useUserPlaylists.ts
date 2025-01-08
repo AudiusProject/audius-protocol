@@ -3,7 +3,7 @@ import { useDispatch } from 'react-redux'
 
 import { userCollectionMetadataFromSDK } from '~/adapters/collection'
 import { transformAndCleanList } from '~/adapters/utils'
-import { useAppContext } from '~/context/appContext'
+import { useAudiusQueryContext } from '~/audius-query'
 import { Id, OptionalId } from '~/models/Identifiers'
 
 import { QUERY_KEYS } from './queryKeys'
@@ -25,7 +25,7 @@ export const useUserPlaylists = (
   options: GetPlaylistsOptions,
   config?: Config
 ) => {
-  const { audiusSdk } = useAppContext()
+  const { audiusSdk } = useAudiusQueryContext()
   const { data: currentUserId } = useCurrentUserId()
   const { userId, limit, offset } = options
   const queryClient = useQueryClient()
@@ -34,9 +34,11 @@ export const useUserPlaylists = (
   return useQuery({
     queryKey: [QUERY_KEYS.userPlaylists, userId, limit, offset],
     queryFn: async () => {
-      if (!userId || !audiusSdk) return []
+      if (!userId) return []
 
-      const { data } = await audiusSdk.full.users.getPlaylistsByUser({
+      const sdk = await audiusSdk()
+
+      const { data } = await sdk.full.users.getPlaylistsByUser({
         id: Id.parse(userId),
         userId: OptionalId.parse(currentUserId),
         limit,
@@ -53,6 +55,6 @@ export const useUserPlaylists = (
       return collections
     },
     staleTime: config?.staleTime,
-    enabled: config?.enabled !== false && !!audiusSdk && !!userId
+    enabled: config?.enabled !== false && !!userId
   })
 }

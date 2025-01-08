@@ -3,7 +3,7 @@ import { useDispatch } from 'react-redux'
 
 import { userCollectionMetadataFromSDK } from '~/adapters/collection'
 import { transformAndCleanList } from '~/adapters/utils'
-import { useAppContext } from '~/context/appContext'
+import { useAudiusQueryContext } from '~/audius-query'
 import { Id, OptionalId } from '~/models/Identifiers'
 
 import { QUERY_KEYS } from './queryKeys'
@@ -22,7 +22,7 @@ type Config = {
 }
 
 export const useUserAlbums = (options: GetAlbumsOptions, config?: Config) => {
-  const { audiusSdk } = useAppContext()
+  const { audiusSdk } = useAudiusQueryContext()
   const { data: currentUserId } = useCurrentUserId()
   const { userId, limit, offset } = options
   const queryClient = useQueryClient()
@@ -31,9 +31,11 @@ export const useUserAlbums = (options: GetAlbumsOptions, config?: Config) => {
   return useQuery({
     queryKey: [QUERY_KEYS.userAlbums, userId, limit, offset],
     queryFn: async () => {
-      if (!userId || !audiusSdk) return []
+      if (!userId) return []
 
-      const { data } = await audiusSdk.full.users.getAlbumsByUser({
+      const sdk = await audiusSdk()
+
+      const { data } = await sdk.full.users.getAlbumsByUser({
         id: Id.parse(userId),
         userId: OptionalId.parse(currentUserId),
         limit,
@@ -50,6 +52,6 @@ export const useUserAlbums = (options: GetAlbumsOptions, config?: Config) => {
       return collections
     },
     staleTime: config?.staleTime,
-    enabled: config?.enabled !== false && !!audiusSdk && !!userId
+    enabled: config?.enabled !== false && !!userId
   })
 }
