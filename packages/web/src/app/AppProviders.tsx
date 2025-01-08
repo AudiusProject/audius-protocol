@@ -13,6 +13,7 @@ import { NavProvider } from 'components/nav/mobile/NavContext'
 import { ScrollProvider } from 'components/scroll-provider/ScrollProvider'
 import { ToastContextProvider } from 'components/toast/ToastContext'
 import { useIsMobile } from 'hooks/useIsMobile'
+import { MainContentContextProvider } from 'pages/MainContentContext'
 import { queryClient } from 'services/query-client'
 import { configureStore } from 'store/configureStore'
 import { getSystemAppearance, getTheme } from 'utils/theme/theme'
@@ -66,11 +67,13 @@ export const AppProviders = ({ children }: AppProvidersProps) => {
                       <ToastContextProvider>
                         <AppContextProvider>
                           <AudiusQueryProvider>
-                            <ThemeProvider>
-                              <SvgGradientProvider>
-                                {children}
-                              </SvgGradientProvider>
-                            </ThemeProvider>
+                            <MainContentContextProvider>
+                              <ThemeProvider>
+                                <SvgGradientProvider>
+                                  {children}
+                                </SvgGradientProvider>
+                              </ThemeProvider>
+                            </MainContentContextProvider>
                           </AudiusQueryProvider>
                         </AppContextProvider>
                       </ToastContextProvider>
