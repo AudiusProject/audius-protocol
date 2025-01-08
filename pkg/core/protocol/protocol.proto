@@ -75,6 +75,8 @@ message BlockResponse {
   string proposer = 3;
   int64 height = 4;
   repeated SignedTransaction transactions = 5;
+  int64 current_height = 6;
+  google.protobuf.Timestamp timestamp = 7;
 }
 
 message GetNodeInfoRequest {}
