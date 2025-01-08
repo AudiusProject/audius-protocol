@@ -106,8 +106,8 @@ def update_core_health(
         "chain_id": latest_indexed_block.chainid,
         "indexing_entity_manager": False,
         "indexing_plays": indexing_plays,
-        "latest_chain_block": latest_indexed_block.height,
-        "latest_indexed_block": latest_indexed_block.current_height,
+        "latest_chain_block": latest_indexed_block.current_height,
+        "latest_indexed_block": latest_indexed_block.height,
     }
     redis.set(core_health_check_cache_key, json.dumps(health))
 
