@@ -220,7 +220,7 @@ export function* fetchAccountAsync() {
   }
 
   const guestEmailFromLocalStorage = yield* call(
-    [localStorage, 'getItem'],
+    [localStorage, localStorage.getItem],
     'guestEmail'
   )
   const guestEmail = guestEmailFromLocalStorage
@@ -322,14 +322,17 @@ function* recordIPIfNotRecent(handle: string): SagaIterator {
   const timeBetweenRefresh = 24 * 60 * 60 * 1000
   const now = Date.now()
   const minAge = now - timeBetweenRefresh
-  const storedIPStr = yield* call([localStorage, 'getItem'], IP_STORAGE_KEY)
+  const storedIPStr = yield* call(
+    [localStorage, localStorage.getItem],
+    IP_STORAGE_KEY
+  )
   const storedIP = storedIPStr && JSON.parse(storedIPStr)
   if (!storedIP || !storedIP[handle] || storedIP[handle].timestamp < minAge) {
     const result = yield* call([identityService, identityService.recordIP])
     if ('userIP' in result) {
       const { userIP } = result
       yield* call(
-        [localStorage, 'setItem'],
+        [localStorage, localStorage.setItem],
         IP_STORAGE_KEY,
         JSON.stringify({ ...storedIP, [handle]: { userIP, timestamp: now } })
       )
