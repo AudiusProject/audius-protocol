@@ -1,10 +1,7 @@
 import { ReactNode, useMemo } from 'react'
 
-import {
-  accountSelectors,
-  chatSelectors,
-  audioRewardsPageSelectors
-} from '@audius/common/store'
+import { useChallengeCooldownSchedule } from '@audius/common/hooks'
+import { accountSelectors, chatSelectors } from '@audius/common/store'
 import { route } from '@audius/common/utils'
 import type { IconComponent } from '@audius/harmony'
 import {
@@ -38,9 +35,8 @@ const {
   REWARDS_PAGE
 } = route
 
-const { getIsAccountComplete, getHasAccount } = accountSelectors
 const { getUnreadMessagesCount } = chatSelectors
-const { getUndisbursedUserChallenges } = audioRewardsPageSelectors
+const { getIsAccountComplete } = accountSelectors
 
 export type NavItemConfig = {
   label: string
@@ -53,13 +49,15 @@ export type NavItemConfig = {
   disabled?: boolean
   restriction?: RestrictionType
   hasNotification?: boolean
+  canUnfurl?: boolean
 }
 
 export const useNavConfig = () => {
   const isAccountComplete = useSelector(getIsAccountComplete)
-  const hasAccount = useSelector(getHasAccount)
   const unreadMessagesCount = useSelector(getUnreadMessagesCount)
-  const undisbursedChallenges = useSelector(getUndisbursedUserChallenges)
+  const { claimableAmount } = useChallengeCooldownSchedule({
+    multiple: true
+  })
   const location = useLocation()
 
   const navItems = useMemo(
@@ -68,8 +66,7 @@ export const useNavConfig = () => {
         label: 'Feed',
         leftIcon: IconFeed,
         to: FEED_PAGE,
-        restriction: 'account',
-        disabled: !isAccountComplete
+        restriction: 'account'
       },
       {
         label: 'Trending',
@@ -87,15 +84,13 @@ export const useNavConfig = () => {
         label: 'Library',
         leftIcon: IconLibrary,
         to: LIBRARY_PAGE,
-        restriction: 'guest',
-        disabled: !hasAccount
+        restriction: 'guest'
       },
       {
         label: 'Messages',
         leftIcon: IconMessages,
         to: CHATS_PAGE,
         restriction: 'account',
-        disabled: !isAccountComplete,
         rightIcon:
           unreadMessagesCount > 0 ? (
             <NotificationCount
@@ -110,30 +105,28 @@ export const useNavConfig = () => {
         leftIcon: IconWallet,
         isExpandable: true,
         restriction: 'account',
-        disabled: !isAccountComplete,
-        nestedComponent: WalletsNestedContent
+        nestedComponent: WalletsNestedContent,
+        canUnfurl: isAccountComplete
       },
       {
         label: 'Rewards',
         leftIcon: IconGift,
         to: REWARDS_PAGE,
         restriction: 'account',
-        disabled: !isAccountComplete,
         rightIcon:
-          undisbursedChallenges.length > 0 ? (
+          claimableAmount > 0 ? (
             <NotificationCount
-              count={undisbursedChallenges.length}
+              count={claimableAmount}
               isSelected={location.pathname === REWARDS_PAGE}
             />
           ) : undefined,
-        hasNotification: undisbursedChallenges.length > 0
+        hasNotification: claimableAmount > 0
       },
       {
         label: 'Upload',
         leftIcon: IconCloudUpload,
         to: UPLOAD_PAGE,
-        restriction: 'account',
-        disabled: !isAccountComplete
+        restriction: 'account'
       },
       {
         label: 'Playlists',
@@ -143,16 +136,10 @@ export const useNavConfig = () => {
         shouldPersistRightIcon: true,
         nestedComponent: PlaylistLibrary,
         restriction: 'account',
-        disabled: !isAccountComplete
+        canUnfurl: isAccountComplete
       }
     ],
-    [
-      isAccountComplete,
-      hasAccount,
-      unreadMessagesCount,
-      undisbursedChallenges.length,
-      location.pathname
-    ]
+    [unreadMessagesCount, location.pathname, isAccountComplete, claimableAmount]
   )
 
   return navItems

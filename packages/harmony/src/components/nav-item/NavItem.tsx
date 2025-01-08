@@ -69,11 +69,10 @@ export const NavItem = ({
         borderRadius='m'
         css={{
           backgroundColor,
-          borderWidth: '1px',
-
+          border: '1px solid transparent',
           '&:hover': {
             backgroundColor: isSelected ? undefined : color.background.surface2,
-            borderColor: color.border.default
+            borderColor: isSelected ? undefined : color.border.default
           }
         }}
       >

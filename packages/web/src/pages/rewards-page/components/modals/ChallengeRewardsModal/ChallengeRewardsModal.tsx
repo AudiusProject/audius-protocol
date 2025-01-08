@@ -52,7 +52,6 @@ import { useWithMobileStyle } from 'hooks/useWithMobileStyle'
 import { getChallengeConfig } from 'pages/audio-rewards-page/config'
 import { copyToClipboard, getCopyableLink } from 'utils/clipboardUtil'
 import { CLAIM_REWARD_TOAST_TIMEOUT_MILLIS } from 'utils/constants'
-import { push as pushRoute } from 'utils/navigation'
 import { openTwitterLink } from 'utils/tweet'
 
 import ModalDrawer from '../ModalDrawer'
