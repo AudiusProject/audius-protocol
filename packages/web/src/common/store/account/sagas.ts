@@ -11,8 +11,6 @@ const { getAccountSavedPlaylistIds, getAccountOwnedPlaylistIds } =
 
 const { signedIn, fetchSavedPlaylists } = accountActions
 
-// Tasks to be run on account successfully fetched, e.g.
-// recording metrics, setting user data
 function* onSignedIn() {
   // Add playlists that might not have made it into the user's library.
   // This could happen if the user creates a new playlist and then leaves their session.
