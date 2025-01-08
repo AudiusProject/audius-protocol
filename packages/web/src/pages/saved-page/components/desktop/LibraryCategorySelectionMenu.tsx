@@ -1,4 +1,4 @@
-import { ChangeEvent, useCallback } from 'react'
+import { ChangeEvent, useCallback, useEffect } from 'react'
 
 import {
   savedPageActions,
@@ -6,7 +6,8 @@ import {
   LibraryCategory,
   SavedPageTabs,
   LibraryCategoryType,
-  CommonState
+  CommonState,
+  accountSelectors
 } from '@audius/common/store'
 import {
   SelectablePill,
@@ -20,6 +21,7 @@ import styles from './LibraryCategorySelectionMenu.module.css'
 
 const { getCategory } = savedPageSelectors
 const { setSelectedCategory } = savedPageActions
+const { getIsGuestAccount } = accountSelectors
 
 const ALL_CATEGORIES = [
   {
@@ -58,6 +60,19 @@ export const LibraryCategorySelectionMenu = (
   const selectedCategory = useSelector((state: CommonState) =>
     getCategory(state, { currentTab })
   )
+  const isGuestAccount = useSelector(getIsGuestAccount)
+  useEffect(() => {
+    if (isGuestAccount) {
+      // should show guest checkout purchases
+      dispatch(
+        setSelectedCategory({
+          currentTab,
+          category: LibraryCategory.All
+        })
+      )
+    }
+  }, [currentTab, dispatch, isGuestAccount])
+
   const handleChange = useCallback(
     (e: ChangeEvent<HTMLInputElement>) => {
       dispatch(

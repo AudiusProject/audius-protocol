@@ -35,8 +35,13 @@ const { EXPLORE_PAGE, FEED_PAGE, HISTORY_PAGE, LIBRARY_PAGE, TRENDING_PAGE } =
   route
 const { saveTrack } = tracksSocialActions
 const { saveCollection } = collectionsSocialActions
-const { getAccountStatus, getUserId, getUserHandle, getIsAccountComplete } =
-  accountSelectors
+const {
+  getAccountStatus,
+  getUserId,
+  getUserHandle,
+  getIsAccountComplete,
+  getIsGuestAccount
+} = accountSelectors
 
 export const LEFT_NAV_WIDTH = 240
 
@@ -64,6 +69,8 @@ const LeftNav = (props: NavColumnProps) => {
     saveCollection
   } = props
   const isAccountComplete = useSelector(getIsAccountComplete)
+  const isGuestAccount = useSelector(getIsGuestAccount)
+
   const [navBodyContainerMeasureRef, navBodyContainerBoundaries] = useMeasure({
     polyfill: ResizeObserver
   })
@@ -169,7 +176,11 @@ const LeftNav = (props: NavColumnProps) => {
                   acceptOwner={false}
                   onDrop={draggingKind === 'album' ? saveCollection : saveTrack}
                 >
-                  <LeftNavLink to={LIBRARY_PAGE} restriction='guest'>
+                  <LeftNavLink
+                    to={LIBRARY_PAGE}
+                    restriction='guest'
+                    disabled={!isAccountComplete && !isGuestAccount}
+                  >
                     Library
                   </LeftNavLink>
                 </LeftNavDroppable>
