@@ -8,7 +8,7 @@ import { each } from 'lodash'
 import moment, { Moment } from 'moment'
 import { useDispatch, useSelector } from 'react-redux'
 
-import Header from 'components/header/desktop/Header'
+import { Header } from 'components/header/desktop/Header'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import Page from 'components/page/Page'
 import lazyWithPreload from 'utils/lazyWithPreload'

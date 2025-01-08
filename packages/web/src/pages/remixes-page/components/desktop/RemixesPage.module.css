@@ -1,31 +1,3 @@
-.header {
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-end;
-  height: 161px;
-}
-
-.header h2 {
-  margin: unset;
-}
-
-.headerPrimary {
-  display: flex;
-  align-items: center;
-}
-
-.headerPrimary .iconRemix {
-  margin-right: 12px;
-}
-
-.iconRemix path {
-  fill: url(#linearGradient-1);
-}
-
-.iconRemix.matrix path {
-  fill: url(#matrixHeaderGradient);
-}
-
 .headerSecondary {
   display: inline-flex;
   align-items: center;

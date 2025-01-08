@@ -1,10 +1,15 @@
 import { ChangeEvent, memo, useMemo } from 'react'
 
 import { ID } from '@audius/common/models'
-import { Button, IconPause, IconPlay } from '@audius/harmony'
+import {
+  Button,
+  IconListeningHistory,
+  IconPause,
+  IconPlay
+} from '@audius/harmony'
 
 import FilterInput from 'components/filter-input/FilterInput'
-import Header from 'components/header/desktop/Header'
+import { Header } from 'components/header/desktop/Header'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import Page from 'components/page/Page'
 import { dateSorter } from 'components/table'
@@ -90,6 +95,7 @@ const HistoryPage = ({
 
   const header = (
     <Header
+      icon={IconListeningHistory}
       primary='History'
       secondary={isEmpty ? null : playAllButton}
       containerStyles={styles.historyPageHeader}
