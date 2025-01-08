@@ -35,5 +35,6 @@ export const QUERY_KEYS = {
   emailInUse: 'emailInUse',
   handleInUse: 'handleInUse',
   handleReservedStatus: 'handleReservedStatus',
-  audioTransactions: 'audioTransactions'
+  audioTransactions: 'audioTransactions',
+  audioTransactionsCount: 'audioTransactionsCount'
 } as const

@@ -2,6 +2,7 @@ import { full } from '@audius/sdk'
 import { useQuery } from '@tanstack/react-query'
 
 import { useAudiusQueryContext } from '~/audius-query'
+import { Id } from '~/models/Identifiers'
 import {
   TransactionDetails,
   TransactionType,
@@ -103,7 +104,7 @@ export const useAudioTransactions = (
 
       const sdk = await audiusSdk()
       const response = await sdk.full.users.getAudioTransactions({
-        id: userId.toString(),
+        id: Id.parse(userId),
         offset,
         limit,
         sortMethod,
