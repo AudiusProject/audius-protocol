@@ -32,6 +32,7 @@ export function requiresAccount<TArgs extends any[], TReturn>(
         if (route) {
           yield* put(updateRouteOnExit(route))
         }
+        console.log('asdf requires account')
         yield* put(pushRoute(SIGN_UP_PAGE))
         yield* put(showRequiresAccountToast())
       }

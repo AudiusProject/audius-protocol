@@ -39,7 +39,7 @@ def get_users(args):
             # Don't return the user if they have no wallet or handle (user creation did not finish properly on chain)
             if "include_incomplete" not in args or not args["include_incomplete"]:
                 base_query = base_query.filter(
-                    User.is_current == True, User.wallet != None, User.handle_lc != None
+                    User.is_current == True, User.wallet != None
                 )
 
             # Process filters
@@ -79,6 +79,7 @@ def get_users(args):
 
         # bundle peripheral info into user results
         users = populate_user_metadata(session, user_ids, users, current_user_id)
+        logger.info(f"asdf populated users {users}")
 
         # Debugging flag for checking user solana bank existence
         # used by createSolanaUserBank script to confirm banks are created successfully

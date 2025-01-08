@@ -1,23 +1,34 @@
+import { useCallback } from 'react'
+
 import { GUEST_EMAIL } from '@audius/common/src/hooks/purchaseContent/constants'
 import { PurchaseableContentMetadata } from '@audius/common/src/hooks/purchaseContent/types'
 import { isPurchaseableAlbum } from '@audius/common/src/hooks/purchaseContent/utils'
-import { SIGN_IN_PAGE } from '@audius/common/src/utils/route'
+import { messages as validationMessages } from '@audius/common/src/hooks/purchaseContent/validation'
+import {
+  SIGN_IN_CONFIRM_EMAIL_PAGE,
+  SIGN_IN_PAGE,
+  SIGN_UP_PAGE
+} from '@audius/common/src/utils/route'
+import { TEMPORARY_PASSWORD } from '@audius/common/utils'
 import { USDC } from '@audius/fixed-decimal'
 import { Button, Flex, Hint, Text } from '@audius/harmony'
 import { useField } from 'formik'
+import { useDispatch } from 'react-redux'
 
+import { signIn, setValueField } from 'common/store/pages/signon/actions'
+import { SignOnLink } from 'components/SignOnLink'
 import { TextLink } from 'components/link'
 import { PurchaseSummaryTable } from 'components/premium-content-purchase-modal/components/PurchaseSummaryTable'
 import { usePurchaseContentFormState } from 'components/premium-content-purchase-modal/hooks/usePurchaseContentFormState'
 import { LockedContentDetailsTile } from 'components/track/LockedContentDetailsTile'
 import { useIsMobile } from 'hooks/useIsMobile'
 import { EmailField } from 'pages/sign-up-page/components/EmailField'
-
 const messages = {
   continueAsGuest: 'Continue as Guest',
   signIn: 'Sign in.',
   alreadyHaveAnAccount: 'Already have an account?',
-  orContinueGuest: 'Or, continue as a guest.'
+  orContinueGuest: 'Or, continue as a guest.',
+  finishSigningUp: 'Finish Signing Up'
 }
 
 type GuestCheckoutProps = {
@@ -28,11 +39,13 @@ type GuestCheckoutProps = {
 
 export const GuestCheckoutPage = (props: GuestCheckoutProps) => {
   const { metadata, price, onClickSignIn } = props
+  const dispatch = useDispatch()
+
   const { purchaseSummaryValues } = usePurchaseContentFormState({
     price
   })
   const isMobile = useIsMobile()
-  const [, { error }] = useField(GUEST_EMAIL)
+  const [{ value: email }, { error }] = useField(GUEST_EMAIL)
   const isAlbumPurchase = isPurchaseableAlbum(metadata)
   const stemsPurchaseCount =
     'is_download_gated' in metadata && metadata.is_download_gated
@@ -45,6 +58,9 @@ export const GuestCheckoutPage = (props: GuestCheckoutProps) => {
       ? 1
       : 0
   const streamPurchaseCount = metadata.is_stream_gated ? 1 : 0
+  const handleClickConfirmEmail = useCallback(() => {
+    dispatch(setValueField('email', email))
+  }, [dispatch, email])
 
   return (
     <Flex
@@ -90,7 +106,21 @@ export const GuestCheckoutPage = (props: GuestCheckoutProps) => {
           </Text>
 
           <EmailField name={GUEST_EMAIL} helperText={''} />
-          {error ? <Hint>{error}</Hint> : null}
+          {error ? (
+            <Hint>
+              {error}{' '}
+              {error === validationMessages.guestAccountExists ? (
+                <TextLink
+                  to={SIGN_UP_PAGE}
+                  variant='visible'
+                  asChild
+                  onClick={handleClickConfirmEmail}
+                >
+                  {messages.finishSigningUp}
+                </TextLink>
+              ) : null}
+            </Hint>
+          ) : null}
         </Flex>
       </Flex>
     </Flex>

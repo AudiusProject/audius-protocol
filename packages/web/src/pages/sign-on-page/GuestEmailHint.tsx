@@ -22,7 +22,6 @@ export const GuestEmailHint = () => {
   const handleClickConfirmEmail = useCallback(() => {
     dispatch(setValueField('email', email))
     dispatch(setValueField('password', TEMPORARY_PASSWORD))
-    dispatch(signIn(email, TEMPORARY_PASSWORD))
   }, [dispatch, email])
 
   const showGuestError =

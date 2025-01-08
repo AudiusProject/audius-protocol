@@ -85,7 +85,7 @@ export const SignInPage = () => {
       const { email, password } = values
       dispatch(setValueField('email', email))
       dispatch(setValueField('password', password))
-      dispatch(signIn(email, password))
+      // dispatch(signIn(email, password))
     },
     [dispatch]
   )

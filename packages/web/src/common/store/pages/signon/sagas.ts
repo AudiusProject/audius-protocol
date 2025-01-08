@@ -568,6 +568,7 @@ function* createGuestAccount(
   const getFeatureEnabled = yield* getContext('getFeatureEnabled')
   const reportToSentry = yield* getContext('reportToSentry')
   const localStorage = yield* getContext('localStorage')
+  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
 
   const sdk = yield* getSDK()
 
@@ -621,6 +622,10 @@ function* createGuestAccount(
         if (!userBank) {
           throw new Error('Failed to create user bank')
         }
+
+        // associates user record with blockchain user ID and creates notification settings
+        // necessary for sending purchase emails
+        yield* call(audiusBackendInstance.updateUserLocationTimezone, { sdk })
       },
       () => {},
       function* ({ error: err }: { error: Error }) {
@@ -967,11 +972,15 @@ function* signIn(action: ReturnType<typeof signOnActions.signIn>) {
   yield* call(waitForRead)
   try {
     const signOn = yield* select(getSignOn)
-    const fpResponse = yield* call(
-      [fingerprintClient, fingerprintClient.identify],
-      email ?? signOn.email.value,
-      clientOrigin
-    )
+    const isGuest = select(getIsGuest)
+
+    const fpResponse = isGuest
+      ? undefined
+      : yield* call(
+          [fingerprintClient, fingerprintClient.identify],
+          email ?? signOn.email.value,
+          clientOrigin
+        )
 
     let signInResponse: SignInResponse
     try {
@@ -1014,7 +1023,6 @@ function* signIn(action: ReturnType<typeof signOnActions.signIn>) {
 
     // Loging succeeded and we found a user, but it's missing name, likely
     // due to incomplete signup
-    const isGuest = select(getIsGuest)
 
     if (!user.name) {
       if (isGuest) {

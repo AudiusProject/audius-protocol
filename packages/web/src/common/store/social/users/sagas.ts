@@ -36,8 +36,7 @@ export function* followUser(
 ) {
   yield* call(waitForWrite)
   const accountId = yield* select(getUserId)
-  const isGuest = yield* select(getIsGuestAccount)
-  if (!accountId || isGuest) {
+  if (!accountId) {
     yield* put(signOnActions.openSignOn(false))
     yield* put(signOnActions.showRequiresAccountToast())
     yield* put(make(Name.CREATE_ACCOUNT_OPEN, { source: 'social action' }))

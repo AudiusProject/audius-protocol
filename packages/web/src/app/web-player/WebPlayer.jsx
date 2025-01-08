@@ -187,8 +187,13 @@ const {
   EDIT_ALBUM_PAGE
 } = route
 
-const { getHasAccount, getAccountStatus, getUserId, getUserHandle } =
-  accountSelectors
+const {
+  getHasAccount,
+  getAccountStatus,
+  getUserId,
+  getUserHandle,
+  getIsGuestAccount
+} = accountSelectors
 
 // TODO: do we need to lazy load edit?
 const EditTrackPage = lazy(() => import('pages/edit-page'))
@@ -990,7 +995,9 @@ class WebPlayer extends Component {
                     // just trigger a react router push to the current pathname
                     pathname:
                       getPathname(this.props.history.location) === HOME_PAGE
-                        ? FEED_PAGE
+                        ? this.props.isGuestAccount
+                          ? LIBRARY_PAGE
+                          : FEED_PAGE
                         : getPathname(this.props.history.location),
                     search: includeSearch(this.props.location.search)
                       ? this.props.location.search
@@ -1030,7 +1037,8 @@ const mapStateToProps = (state) => ({
   userHandle: getUserHandle(state),
   accountStatus: getAccountStatus(state),
   signOnStatus: getSignOnStatus(state),
-  showCookieBanner: getShowCookieBanner(state)
+  showCookieBanner: getShowCookieBanner(state),
+  isGuestAccount: getIsGuestAccount(state)
 })
 
 const mapDispatchToProps = (dispatch) => ({

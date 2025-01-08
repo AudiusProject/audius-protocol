@@ -20,11 +20,14 @@ export type LeftNavLinkProps = { disabled?: boolean; asChild?: boolean } & (
 
 export const LeftNavLink = (props: LeftNavLinkProps) => {
   const { asChild, disabled, children, onClick, restriction, ...other } = props
-
   const theme = useTheme()
 
   const handleClick = useRequiresAccountOnClick(
-    (e) => onClick?.(e as any),
+    (e) => {
+      console.log('asdf onClick', onClick)
+
+      onClick?.(e as any)
+    },
     [onClick],
     undefined,
     undefined,
@@ -112,7 +115,7 @@ export const LeftNavLink = (props: LeftNavLinkProps) => {
     return (
       <NavLink
         {...other}
-        onClick={handleClick}
+        // onClick={handleClick}
         activeClassName='active'
         css={css}
       >
