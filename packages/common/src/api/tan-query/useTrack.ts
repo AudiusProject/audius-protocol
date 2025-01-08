@@ -3,19 +3,15 @@ import { useDispatch } from 'react-redux'
 
 import { userTrackMetadataFromSDK } from '~/adapters/track'
 import { useAudiusQueryContext } from '~/audius-query'
-import { ID } from '~/models/Identifiers'
+import { Id, ID } from '~/models/Identifiers'
 import { Kind } from '~/models/Kind'
 import { addEntries } from '~/store/cache/actions'
 import { EntriesByKind } from '~/store/cache/types'
-import { encodeHashId } from '~/utils/hashIds'
 
 import { QUERY_KEYS } from './queryKeys'
-import { QueryOptions } from './types'
+import { Config } from './types'
 
-export const useTrack = (
-  trackId: ID | null | undefined,
-  options?: QueryOptions
-) => {
+export const useTrack = (trackId: ID | null | undefined, options?: Config) => {
   const { audiusSdk } = useAudiusQueryContext()
   const queryClient = useQueryClient()
   const dispatch = useDispatch()
@@ -23,11 +19,9 @@ export const useTrack = (
   return useQuery({
     queryKey: [QUERY_KEYS.track, trackId],
     queryFn: async () => {
-      if (!trackId) return null
-      const encodedId = encodeHashId(trackId)
       const sdk = await audiusSdk()
       const { data } = await sdk.full.tracks.getTrack({
-        trackId: encodedId
+        trackId: Id.parse(trackId)
       })
 
       if (!data) return null

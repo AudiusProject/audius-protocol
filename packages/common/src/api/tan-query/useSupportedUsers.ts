@@ -2,22 +2,18 @@ import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useDispatch } from 'react-redux'
 
 import { useAudiusQueryContext } from '~/audius-query'
-import { Id, OptionalId } from '~/models/Identifiers'
+import { ID, Id, OptionalId } from '~/models/Identifiers'
 import { supportedUserMetadataListFromSDK } from '~/models/Tipping'
 import { SUPPORTING_PAGINATION_SIZE } from '~/utils/constants'
 
 import { QUERY_KEYS } from './queryKeys'
+import { Config } from './types'
 import { useCurrentUserId } from './useCurrentUserId'
 import { primeUserData } from './utils/primeUserData'
 
 type UseSupportedUsersArgs = {
-  userId?: number
+  userId: ID | null | undefined
   limit?: number
-}
-
-type Config = {
-  staleTime?: number
-  enabled?: boolean
 }
 
 export const useSupportedUsers = (
@@ -32,7 +28,6 @@ export const useSupportedUsers = (
   return useQuery({
     queryKey: [QUERY_KEYS.supportedUsers, userId],
     queryFn: async () => {
-      if (!userId) return []
       const sdk = await audiusSdk()
       const { data = [] } = await sdk.full.users.getSupportedUsers({
         id: Id.parse(userId),
