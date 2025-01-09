@@ -36,7 +36,7 @@ describe('addRequestSignatureMiddleware', () => {
       audiusWalletClient: createAppWalletClient({
         apiKey: '',
         apiSecret:
-          '0x4ac8b3eff248bfbf20b324b575c1b333d42c6db3dbe19fd587c3d1e11323a25a'
+          '4ac8b3eff248bfbf20b324b575c1b333d42c6db3dbe19fd587c3d1e11323a25a'
       }),
       logger: new Logger()
     }
