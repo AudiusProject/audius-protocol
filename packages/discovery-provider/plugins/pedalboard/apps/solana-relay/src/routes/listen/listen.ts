@@ -210,7 +210,7 @@ export const listen = async (
     // if not prod, just return 200
     if (config.environment !== 'prod') {
       logger.info('not prod, skipping listen')
-      res.send(200).json({
+      res.status(200).json({
         solTxSignature: null
       })
       next()
