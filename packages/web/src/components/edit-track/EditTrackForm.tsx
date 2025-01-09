@@ -260,7 +260,9 @@ const TrackEditForm = (
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [getArtworkUrl(updatedArtwork), setArtworkValue])
 
-  const isArtworkSet = 'source' in formValues.trackMetadatas[trackIdx].artwork!
+  const isArtworkSet =
+    formValues.trackMetadatas[trackIdx]?.artwork &&
+    'source' in formValues.trackMetadatas[trackIdx].artwork!
 
   const onClickReplace = useCallback(
     async (file: File) => {
