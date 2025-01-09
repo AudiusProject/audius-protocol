@@ -33,7 +33,6 @@ docker-tag-images:
       enum:
         [
           'discovery-provider',
-          'creator-node',
           'identity-service',
           'all'
         ]
@@ -60,8 +59,6 @@ docker-tag-images:
             backfill-audio-analyses
             verified-notifications
           )
-          creator=(
-          )
           identity=(
             identity-service
           )
@@ -70,16 +67,12 @@ docker-tag-images:
             discovery-provider)
               images=( "${discovery[@]}" )
               ;;
-            creator-node)
-              images=( "${creator[@]}" )
-              ;;
             identity-service)
               images=( "${identity[@]}" )
               ;;
             all)
               images=(
                 "${discovery[@]}"
-                "${creator[@]}"
                 "${identity[@]}"
               )
               ;;
