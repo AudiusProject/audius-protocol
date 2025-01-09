@@ -48,6 +48,7 @@
     "write-sha": "./scripts/writeSHA.sh",
     "pw-ui": "npx playwright test --ui",
     "pw": "npx playwright test",
+    "sentry-cli": "sentry-cli",
     "ELECTRON========================================": "",
     "dist-publish-production": "npm run dist -- --mac --win --linux --publish always --env production",
     "dist-publish": "npm run dist -- --mac --win --linux --publish always",

@@ -63,11 +63,6 @@ mobile-prepare-ios:
         paths:
           - packages/mobile/ios/pods
     - run:
-        name: Install Sentry CLI
-        command: |
-          curl -sL https://sentry.io/get-cli/ | bash
-          echo export SENTRY_BINARY=/usr/local/bin/sentry-cli >> "$BASH_ENV"
-    - run:
         name: Build dependencies
         command: npx turbo run build --filter=@audius/mobile
     - run:

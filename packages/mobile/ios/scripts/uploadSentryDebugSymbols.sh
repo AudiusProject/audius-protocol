@@ -1,4 +1,4 @@
 export NODE_BINARY=node
 export SENTRY_PROPERTIES=sentry.properties
 
-sentry-cli upload-dsym
+npm --prefix ../ run sentry-cli upload-dsym

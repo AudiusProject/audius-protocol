@@ -50,7 +50,8 @@
     "typecheck": "tsc",
     "upgrade": "react-native upgrade",
     "upload:ios": "xcrun altool --upload-app -type ios --file build/AudiusReactNative.ipa --username $APPLE_ID --password $APPLE_ID_PASSWORD",
-    "verify": "concurrently \"npm:typecheck\" \"npm:lint\" \"npm:lint:env\""
+    "verify": "concurrently \"npm:typecheck\" \"npm:lint\" \"npm:lint:env\"",
+    "sentry-cli": "sentry-cli"
   },
   "dependencies": {
     "@amplitude/react-native": "2.17.2",
@@ -200,6 +201,7 @@
     "@react-native/metro-config": "0.75.4",
     "@react-native/typescript-config": "0.75.4",
     "@redux-devtools/cli": "4.0.0",
+    "@sentry/cli": "2.38.2",
     "@storybook/addon-actions": "6.5.16",
     "@storybook/addon-controls": "6.5.16",
     "@storybook/addon-ondevice-actions": "6.5.7",
