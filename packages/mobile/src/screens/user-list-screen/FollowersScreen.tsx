@@ -1,23 +1,14 @@
-import { useCallback } from 'react'
-
-import { useCurrentUserId } from '@audius/common/api'
-import {
-  followersUserListActions,
-  followersUserListSelectors
-} from '@audius/common/store'
+import { useCurrentUserId, useFollowers } from '@audius/common/api'
 import { ChatBlastAudience } from '@audius/sdk'
 import { css } from '@emotion/native'
-import { useDispatch } from 'react-redux'
 
 import { Box, IconUserFollowers } from '@audius/harmony-native'
 import { useProfileRoute } from 'app/hooks/useRoute'
 
 import { ChatBlastWithAudienceCTA } from '../chat-screen/ChatBlastWithAudienceCTA'
 
-import { UserList } from './UserList'
 import { UserListScreen } from './UserListScreen'
-const { setFollowers } = followersUserListActions
-const { getUserList } = followersUserListSelectors
+import { UserListV2 } from './UserListV2'
 
 const messages = {
   title: 'Followers'
@@ -27,19 +18,22 @@ export const FollowersScreen = () => {
   const { params } = useProfileRoute<'Followers'>()
   const { userId } = params
   const { data: currentUserId } = useCurrentUserId()
-  const dispatch = useDispatch()
 
-  const handleSetFollowers = useCallback(() => {
-    dispatch(setFollowers(userId))
-  }, [dispatch, userId])
+  const { data, hasMore, isLoadingMore, loadMore, isLoading } = useFollowers({
+    userId,
+    limit: 15
+  })
 
   return (
     <UserListScreen title={messages.title} titleIcon={IconUserFollowers}>
       <>
-        <UserList
-          userSelector={getUserList}
+        <UserListV2
+          data={data}
+          hasMore={hasMore}
+          isLoadingMore={isLoadingMore}
+          isLoading={isLoading}
+          loadMore={loadMore}
           tag='FOLLOWERS'
-          setUserList={handleSetFollowers}
         />
         {currentUserId === userId ? (
           <Box
