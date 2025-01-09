@@ -19,7 +19,7 @@ import { useWindowSize } from 'react-use'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 
 import audiusLogoColored from 'assets/img/audiusLogoColored.png'
-import { setValueField } from 'common/store/pages/signon/actions'
+import { setValueField, signIn } from 'common/store/pages/signon/actions'
 import {
   getEmailField,
   getPasswordField,
@@ -72,7 +72,7 @@ export const SignInPage = () => {
       dispatch(setValueField('password', existingPassword))
     }
   }, [navigate, requiresOtp, existingPassword, dispatch])
-
+  console.log('asdf existingemail', existingEmail)
   const initialValues = {
     email: existingEmail ?? '',
     password: existingPassword ?? ''
@@ -85,6 +85,7 @@ export const SignInPage = () => {
       const { email, password } = values
       dispatch(setValueField('email', email))
       dispatch(setValueField('password', password))
+      dispatch(signIn(email, password))
     },
     [dispatch]
   )

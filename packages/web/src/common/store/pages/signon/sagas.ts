@@ -49,7 +49,8 @@ import {
   route,
   isResponseError,
   encodeHashId,
-  TEMPORARY_PASSWORD
+  TEMPORARY_PASSWORD,
+  waitForValue
 } from '@audius/common/utils'
 import { CreateUserRequest, UpdateProfileRequest } from '@audius/sdk'
 import { isEmpty } from 'lodash'
@@ -79,7 +80,12 @@ import { waitForRead, waitForWrite } from 'utils/sagaHelpers'
 
 import * as signOnActions from './actions'
 import { watchSignOnError } from './errorSagas'
-import { getIsGuest, getRouteOnCompletion, getSignOn } from './selectors'
+import {
+  getIsGuest,
+  getRouteOnCompletion,
+  getSignOn,
+  getStatus
+} from './selectors'
 import { FollowArtistsCategory, Pages } from './types'
 
 const { FEED_PAGE, SIGN_IN_PAGE, SIGN_UP_PAGE, SIGN_UP_PASSWORD_PAGE } = route
@@ -735,16 +741,6 @@ function* signUp() {
               yield* fork(sendPostSignInRecoveryEmail, { handle, email })
 
               yield* call(confirmTransaction, blockHash, blockNumber)
-              const user = yield* call(
-                userApiFetchSaga.getUserById,
-                {
-                  id: userId
-                },
-                true // force refresh to get updated user w handle
-              )
-              if (!user) {
-                throw new Error('Failed to index guest account creation')
-              }
 
               return userId
             } else {
@@ -908,7 +904,6 @@ function* signUp() {
         function* () {
           yield* put(signOnActions.sendWelcomeEmail(name))
           yield* call(fetchAccountAsync, { isSignUp: true })
-          yield* put(signOnActions.followArtists())
           yield* put(make(Name.CREATE_ACCOUNT_COMPLETE_CREATING, { handle }))
           yield* put(signOnActions.signUpSucceeded())
         },
@@ -1155,6 +1150,10 @@ function* followCollections(
 function* completeFollowArtists(
   _action: ReturnType<typeof signOnActions.completeFollowArtists>
 ) {
+  // wait for successful sign up
+  yield* call(waitForValue, getStatus, (value: string) => {
+    return value === 'success'
+  })
   const isAccountComplete = yield* select(accountSelectors.getIsAccountComplete)
   if (isAccountComplete) {
     // If account creation has finished we need to make sure followArtists gets called
