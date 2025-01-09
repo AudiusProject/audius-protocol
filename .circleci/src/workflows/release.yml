@@ -6,11 +6,6 @@ jobs:
       service: identity-service
       notify_slack_on_failure: true
   - push-docker-image:
-      name: push-mediorum
-      context: [Vercel, dockerhub, slack-secrets]
-      service: mediorum
-      notify_slack_on_failure: true
-  - push-docker-image:
       name: push-discovery-provider
       context: [Vercel, dockerhub, slack-secrets]
       service: discovery-provider
@@ -84,7 +79,6 @@ jobs:
       context: [slack-secrets, github]
       requires:
         - push-identity-service
-        - push-mediorum
         - push-discovery-provider
         - push-discovery-provider-openresty
         - push-discovery-provider-notifications
