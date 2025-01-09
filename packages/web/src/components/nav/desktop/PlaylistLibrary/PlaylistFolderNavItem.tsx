@@ -11,7 +11,12 @@ import {
   modalsActions,
   playlistUpdatesSelectors
 } from '@audius/common/store'
-import { IconFolder, PopupMenuItem, ExpandableNavItem } from '@audius/harmony'
+import {
+  IconFolder,
+  PopupMenuItem,
+  ExpandableNavItem,
+  Box
+} from '@audius/harmony'
 import { ClassNames } from '@emotion/react'
 import { useDispatch } from 'react-redux'
 import { useToggle } from 'react-use'
@@ -22,6 +27,7 @@ import { setFolderId as setEditFolderModalFolderId } from 'store/application/ui/
 import { DragDropKind, selectDraggingKind } from 'store/dragndrop/slice'
 import { useSelector } from 'utils/reducer'
 
+import { DeleteFolderConfirmationModal } from './DeleteFolderConfirmationModal'
 import { NavItemKebabButton } from './NavItemKebabButton'
 import { PlaylistLibraryNavItem, keyExtractor } from './PlaylistLibraryNavItem'
 
@@ -59,7 +65,8 @@ export const PlaylistFolderNavItem = (props: PlaylistFolderNavItemProps) => {
   const [isHovering, setIsHovering] = useState(false)
   const dispatch = useDispatch()
   const record = useRecord()
-  const [, toggleDeleteConfirmationOpen] = useToggle(false)
+  const [isDeleteConfirmationOpen, toggleDeleteConfirmationOpen] =
+    useToggle(false)
 
   const isDisabled = draggingKind && !acceptedKinds.includes(draggingKind)
 
@@ -176,7 +183,7 @@ export const PlaylistFolderNavItem = (props: PlaylistFolderNavItemProps) => {
           disabled={isDisabled}
         >
           <Draggable id={id} text={name} kind='playlist-folder'>
-            <div
+            <Box
               onMouseEnter={handleMouseEnter}
               onMouseLeave={handleMouseLeave}
               onDragEnter={handleDragEnter}
@@ -193,7 +200,12 @@ export const PlaylistFolderNavItem = (props: PlaylistFolderNavItemProps) => {
                 nestedItems={nestedItems}
                 variant='compact'
               />
-            </div>
+              <DeleteFolderConfirmationModal
+                folderId={id}
+                visible={isDeleteConfirmationOpen}
+                onCancel={toggleDeleteConfirmationOpen}
+              />
+            </Box>
           </Draggable>
         </Droppable>
       )}
