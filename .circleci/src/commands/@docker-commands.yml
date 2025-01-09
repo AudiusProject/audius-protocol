@@ -61,7 +61,6 @@ docker-tag-images:
             verified-notifications
           )
           creator=(
-            mediorum
           )
           identity=(
             identity-service
