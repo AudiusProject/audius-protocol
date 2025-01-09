@@ -8,6 +8,7 @@ import {
   takeLatest
 } from 'typed-redux-saga'
 
+import { QUERY_KEYS, fetchAccount as fetchAccountQueryFn } from '~/api'
 import { userApiFetchSaga } from '~/api/user'
 import {
   AccountUserMetadata,
@@ -160,6 +161,7 @@ function* initializeMetricsForUser({
 
 export function* fetchAccountAsync() {
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
+  const queryClient = yield* getContext('queryClient')
   const remoteConfigInstance = yield* getContext('remoteConfigInstance')
   const authService = yield* getContext('authService')
   const localStorage = yield* getContext('localStorage')
@@ -182,12 +184,12 @@ export function* fetchAccountAsync() {
     )
     return
   }
-  const accountData: AccountUserMetadata | undefined = yield* call(
-    userApiFetchSaga.getUserAccount,
-    {
-      wallet
-    },
-    true // force refresh to get updated user w handle
+  const accountData = yield* call(async () =>
+    queryClient.fetchQuery({
+      queryKey: [QUERY_KEYS.accountUser, wallet],
+      queryFn: () => fetchAccountQueryFn({ wallet }, { sdk }),
+      staleTime: 0 // force fetch
+    })
   )
 
   if (!accountData) {
