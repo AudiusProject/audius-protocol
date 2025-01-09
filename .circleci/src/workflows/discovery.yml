@@ -50,23 +50,9 @@ jobs:
         branches:
           only: main
   - push-docker-image:
-      name: push-pedalboard-sla-auditor
-      context: [Vercel, dockerhub]
-      service: sla-auditor
-      filters:
-        branches:
-          only: main
-  - push-docker-image:
       name: push-pedalboard-crm
       context: [Vercel, dockerhub]
       service: crm
-      filters:
-        branches:
-          only: main
-  - push-docker-image:
-      name: push-pedalboard-backfill-audio-analyses
-      context: [Vercel, dockerhub]
-      service: backfill-audio-analyses
       filters:
         branches:
           only: main
@@ -136,9 +122,7 @@ jobs:
         - push-pedalboard-staking
         - push-pedalboard-relay
         - push-pedalboard-solana-relay
-        - push-pedalboard-sla-auditor
         - push-pedalboard-crm
-        - push-pedalboard-backfill-audio-analyses
         - push-pedalboard-mri
         - push-comms
         - push-trpc
