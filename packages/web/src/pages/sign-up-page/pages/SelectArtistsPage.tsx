@@ -85,7 +85,6 @@ export const SelectArtistsPage = () => {
       const { selectedArtists } = values
       const artistsIDArray = [...selectedArtists].map((a) => Number(a))
       dispatch(addFollowArtists(artistsIDArray))
-      dispatch(completeFollowArtists())
       if (isMobile) {
         navigate(SIGN_UP_COMPLETED_REDIRECT)
       } else {
