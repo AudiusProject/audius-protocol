@@ -103,12 +103,12 @@ export const RewardPanel = ({
             pl='unit4'
           >
             <Box>
-              <Text variant='heading' size='s' textAlign='left'>
+              <Text variant='heading' size='s'>
                 {title}
               </Text>
             </Box>
-            <Box>
-              <Text variant='body' size='m' strength='default' textAlign='left'>
+            <Box css={{ textAlign: 'left' }}>
+              <Text variant='body' size='m' strength='default'>
                 {description(challenge)}
               </Text>
             </Box>
