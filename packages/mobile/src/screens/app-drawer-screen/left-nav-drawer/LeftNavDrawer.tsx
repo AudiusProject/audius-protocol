@@ -30,15 +30,15 @@ import {
   IconGift,
   IconAudiusLogo,
   Flex,
-  Text
+  Text,
+  BalancePill,
+  useTheme
 } from '@audius/harmony-native'
 import LogoUSDC from 'app/assets/images/logoUSDC.svg'
 import { IconAudioBadge } from 'app/components/audio-rewards'
-import { BalancePill } from 'app/components/balance-pill/BalancePill'
 import { env } from 'app/env'
 import { useFeatureFlag, useRemoteVar } from 'app/hooks/useRemoteConfig'
 import { make, track } from 'app/services/analytics'
-import { spacing } from 'app/styles/spacing'
 
 import { AppDrawerContextProvider } from '../AppDrawerContext'
 
@@ -80,6 +80,7 @@ export const LeftNavDrawer = (props: AccountDrawerProps) => {
 }
 
 const WrappedLeftNavDrawer = () => {
+  const { spacing } = useTheme()
   const { isEnabled: isFeatureFlagAccessEnabled } = useFeatureFlag(
     FeatureFlags.FEATURE_FLAG_ACCESS
   )
@@ -97,8 +98,8 @@ const WrappedLeftNavDrawer = () => {
     <IconAudioBadge
       tier={tier}
       showNoTier
-      height={spacing(5)}
-      width={spacing(5)}
+      height={spacing.unit5}
+      width={spacing.unit5}
     />
   )
   const { data: usdcBalance, status: usdcBalanceStatus } = useUSDCBalance()
@@ -161,7 +162,7 @@ const WrappedLeftNavDrawer = () => {
       >
         <BalancePill
           balance={messages.usdcDollarSign(usdcBalanceFormatted)}
-          icon={<LogoUSDC height={spacing(5)} width={spacing(5)} />}
+          icon={<LogoUSDC height={spacing.unit5} width={spacing.unit5} />}
           isLoading={isUSDCBalanceLoading}
         />
       </LeftNavLink>

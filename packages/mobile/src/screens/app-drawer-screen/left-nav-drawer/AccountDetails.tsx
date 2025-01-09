@@ -46,8 +46,8 @@ export const AccountDetails = () => {
       <Flex gap='m' ph='xl'>
         <ProfilePicture
           userId={accountUser.user_id}
-          h={77}
-          w={77}
+          h='unit20'
+          w='unit20'
           borderWidth='thin'
         />
         <Flex gap='unitHalf'>
