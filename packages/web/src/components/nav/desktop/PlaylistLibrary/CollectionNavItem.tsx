@@ -187,7 +187,6 @@ export const CollectionNavItem = (props: CollectionNavItemProps) => {
         acceptedKinds={acceptedKinds}
         onDrop={handleDrop}
         disabled={isDisabled}
-        data-testid='collection-nav-droppable'
       >
         <Draggable
           id={id}
@@ -195,7 +194,6 @@ export const CollectionNavItem = (props: CollectionNavItemProps) => {
           // Draggables require full URL
           link={`${BASE_URL}${url}`}
           kind='library-playlist'
-          data-testid='collection-nav-item'
         >
           <LeftNavLink
             to={url}
@@ -214,7 +212,6 @@ export const CollectionNavItem = (props: CollectionNavItemProps) => {
                 />
               ) : null
             }
-            data-testid='collection-nav-item'
           >
             <Flex
               alignItems='center'
@@ -222,7 +219,6 @@ export const CollectionNavItem = (props: CollectionNavItemProps) => {
               pl={indentAmount}
               gap='xs'
               css={{ position: 'relative' }}
-              data-testid='collection-nav-item-inner'
               justifyContent='space-between'
             >
               {hasUpdate ? (
@@ -248,7 +244,6 @@ export const CollectionNavItem = (props: CollectionNavItemProps) => {
                 aria-label={messages.editPlaylistLabel}
                 items={kebabItems}
                 isSelected={isSelected}
-                data-testid='collection-nav-item-kebab'
               />
             </Flex>
           </LeftNavLink>
