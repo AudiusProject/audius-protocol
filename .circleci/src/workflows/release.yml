@@ -56,6 +56,11 @@ jobs:
       service: mri
       notify_slack_on_failure: true
   - push-docker-image:
+      name: push-pedalboard-staking
+      context: [Vercel, dockerhub, slack-secrets]
+      service: staking
+      notify_slack_on_failure: true
+  - push-docker-image:
       name: push-pedalboard-verified-notifications
       context: [Vercel, dockerhub, slack-secrets]
       service: verified-notifications
