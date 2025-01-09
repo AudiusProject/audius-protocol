@@ -1,5 +1,5 @@
 import { NavItem, NavItemProps } from '@audius/harmony'
-import { Link, useLocation } from 'react-router-dom'
+import { NavLink, useLocation } from 'react-router-dom'
 
 import {
   RestrictionType,
@@ -36,7 +36,7 @@ export const LeftNavLink = (props: LeftNavLinkProps) => {
   }
 
   return (
-    <Link
+    <NavLink
       to={to ?? ''}
       onClick={handleClick}
       style={{ pointerEvents: disabled ? 'none' : 'auto' }}
@@ -52,6 +52,6 @@ export const LeftNavLink = (props: LeftNavLinkProps) => {
       >
         {children}
       </NavItem>
-    </Link>
+    </NavLink>
   )
 }
