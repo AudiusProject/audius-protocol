@@ -550,10 +550,21 @@ function* doMarkChatAsRead(action: ReturnType<typeof markChatAsRead>) {
     // Use non-optimistic chat here so that the calculation of whether to mark
     // the chat as read or not are consistent with values in backend
     const chat = yield* select((state) => getNonOptimisticChat(state, chatId))
-    if (chat?.is_blast) return
-
-    yield* call([sdk.chats, sdk.chats.read], { chatId })
-    yield* put(markChatAsReadSucceeded({ chatId }))
+    if (chat?.is_blast) {
+      return
+    }
+    if (
+      !chat ||
+      !chat?.last_read_at ||
+      dayjs(chat?.last_read_at).isBefore(chat?.last_message_at)
+    ) {
+      yield* call([sdk.chats, sdk.chats.read], { chatId })
+      yield* put(markChatAsReadSucceeded({ chatId }))
+    } else {
+      // Mark the write as 'failed' in this case (just means we already marked this as read somehow)
+      // to delete the optimistic read status
+      yield* put(markChatAsReadFailed({ chatId }))
+    }
   } catch (e) {
     yield* put(markChatAsReadFailed({ chatId }))
     const reportToSentry = yield* getContext('reportToSentry')
