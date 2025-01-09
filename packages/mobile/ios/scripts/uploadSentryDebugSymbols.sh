@@ -1,4 +1,5 @@
-export NODE_BINARY=node
+source "${PROJECT_DIR}/.xcode.env"
+
 export SENTRY_PROPERTIES=sentry.properties
 
-npm --prefix ../ run sentry-cli -- upload-dsym
+"$NPM_BINARY" --prefix ../ run sentry-cli -- upload-dsym
