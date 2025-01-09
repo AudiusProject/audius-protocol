@@ -162,13 +162,11 @@ export const PlaylistFolderNavItem = (props: PlaylistFolderNavItemProps) => {
         >
           <Draggable id={id} text={name} kind='playlist-folder'>
             <LeftNavLink
-              asChild
               css={[
                 { display: 'flex', alignItems: 'center' },
                 isDraggingOver && { '& > *': { pointerEvents: 'none' } }
               ]}
               // NavLink requires as to param to allow for onClick, but it is not used
-              to={{}}
               onClick={toggleIsExpanded}
               onDragEnter={handleDragEnter}
               onDragLeave={handleDragLeave}

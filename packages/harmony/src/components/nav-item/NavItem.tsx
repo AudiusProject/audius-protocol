@@ -1,7 +1,10 @@
+import { useMemo } from 'react'
+
 import { useTheme } from '@emotion/react'
 
 import { motion } from '../../foundations/motion'
 import { Flex } from '../layout/Flex'
+import { NotificationCount } from '../notification-count'
 import { Text } from '../text/Text'
 
 import type { NavItemProps } from './types'
@@ -16,6 +19,8 @@ export const NavItem = ({
   rightIcon: RightIcon,
   isSelected = false,
   onClick,
+  textSize = 'l',
+  hasNotification = false,
   ...props
 }: NavItemProps) => {
   const { color } = useTheme()
@@ -28,6 +33,19 @@ export const NavItem = ({
   const textColor = isSelected ? 'staticWhite' : 'default'
 
   const iconColor = isSelected ? 'staticStaticWhite' : 'default'
+
+  const leftIconWithNotification = useMemo(() => {
+    const icon = hasLeftIcon ? <LeftIcon size='l' color={iconColor} /> : null
+
+    if (hasNotification && !!icon) {
+      return (
+        <NotificationCount size='s' isSelected={isSelected}>
+          {icon}
+        </NotificationCount>
+      )
+    }
+    return icon
+  }, [hasNotification, hasLeftIcon, LeftIcon, iconColor, isSelected])
 
   return (
     <Flex
@@ -51,11 +69,10 @@ export const NavItem = ({
         borderRadius='m'
         css={{
           backgroundColor,
-          borderWidth: '1px',
-
+          border: '1px solid transparent',
           '&:hover': {
             backgroundColor: isSelected ? undefined : color.background.surface2,
-            borderColor: color.border.default
+            borderColor: isSelected ? undefined : color.border.default
           }
         }}
       >
@@ -67,10 +84,10 @@ export const NavItem = ({
             maxWidth: '240px'
           }}
         >
-          {hasLeftIcon ? <LeftIcon size='l' color={iconColor} /> : null}
+          {leftIconWithNotification}
           <Text
             variant='title'
-            size='l'
+            size={textSize}
             strength='weak'
             lineHeight='single'
             color={textColor}
@@ -79,7 +96,7 @@ export const NavItem = ({
             {children}
           </Text>
         </Flex>
-        {hasRightIcon ? <RightIcon size='m' color={iconColor} /> : null}
+        {hasRightIcon ? RightIcon : null}
       </Flex>
     </Flex>
   )

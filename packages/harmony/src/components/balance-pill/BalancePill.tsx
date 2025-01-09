@@ -38,13 +38,7 @@ export const BalancePill = ({
       >
         {balance}
       </Text>
-      <Flex
-        w='unit6'
-        h='unit6'
-        p='unitHalf'
-        justifyContent='center'
-        alignItems='center'
-      >
+      <Flex h='unit6' p='unitHalf' justifyContent='center' alignItems='center'>
         {children}
       </Flex>
     </Flex>

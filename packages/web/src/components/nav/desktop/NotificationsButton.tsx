@@ -1,16 +1,8 @@
-import { useCallback, useRef } from 'react'
+import { useCallback, useMemo, useRef } from 'react'
 
 import { Name } from '@audius/common/models'
 import { notificationsSelectors } from '@audius/common/store'
-import { formatCount } from '@audius/common/utils'
-import {
-  Text,
-  IconNotificationOn,
-  TextProps,
-  useTheme,
-  Flex
-} from '@audius/harmony'
-import { CSSObject } from '@emotion/styled'
+import { IconNotificationOn, NotificationCount } from '@audius/harmony'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { useRecord, make } from 'common/store/analytics/actions'
@@ -27,37 +19,6 @@ const { getNotificationUnviewedCount } = notificationsSelectors
 
 const messages = {
   label: (count: number) => `${count} unread notifications`
-}
-
-const NotificationCount = (props: TextProps) => {
-  const { color, cornerRadius } = useTheme()
-  const backgroundCss: CSSObject = {
-    position: 'absolute',
-    top: 2,
-    right: 2,
-    transform: 'translate(50%, -50%)',
-    borderRadius: cornerRadius.m,
-    backgroundColor: color.special.red,
-    minWidth: '14px',
-    minHeight: '14px'
-  }
-  const textCss: CSSObject = {
-    color: color.text.staticWhite,
-    fontSize: '11px',
-    lineHeight: '14px',
-    fontWeight: 700
-  }
-
-  return (
-    <Flex
-      ph='2xs'
-      justifyContent='center'
-      alignItems='center'
-      css={backgroundCss}
-    >
-      <Text variant='label' css={textCss} {...props} />
-    </Flex>
-  )
 }
 
 export const NotificationsButton = () => {
@@ -77,21 +38,35 @@ export const NotificationsButton = () => {
     }
   }, [notificationPanelIsOpen, dispatch, record])
 
-  return (
-    <>
+  const shouldShowCount = notificationCount > 0 && !notificationPanelIsOpen
+  const notificationButton = useMemo(() => {
+    const button = (
       <NavHeaderButton
         ref={buttonRef}
         icon={IconNotificationOn}
         aria-label={messages.label(notificationCount)}
         onClick={handleToggleNotificationPanel}
         isActive={notificationPanelIsOpen}
-      >
-        {notificationCount > 0 && !notificationPanelIsOpen ? (
-          <NotificationCount>
-            {formatCount(notificationCount)}
-          </NotificationCount>
-        ) : null}
-      </NavHeaderButton>
+      />
+    )
+    if (shouldShowCount) {
+      return (
+        <NotificationCount count={notificationCount}>
+          {button}
+        </NotificationCount>
+      )
+    }
+    return button
+  }, [
+    notificationCount,
+    handleToggleNotificationPanel,
+    notificationPanelIsOpen,
+    shouldShowCount
+  ])
+
+  return (
+    <>
+      {notificationButton}
       <NotificationPanel anchorRef={buttonRef} />
     </>
   )
