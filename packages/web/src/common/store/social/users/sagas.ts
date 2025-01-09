@@ -14,7 +14,7 @@ import { Action } from '@reduxjs/toolkit'
 import { call, select, takeEvery, put } from 'typed-redux-saga'
 
 import { make } from 'common/store/analytics/actions'
-import { adjustUserField, fetchUsers } from 'common/store/cache/users/sagas'
+import { adjustUserField } from 'common/store/cache/users/sagas'
 import * as signOnActions from 'common/store/pages/signon/actions'
 import { waitForWrite } from 'utils/sagaHelpers'
 
@@ -48,18 +48,8 @@ export function* followUser(
   }
 
   const users = yield* select(getUsers, { ids: [action.userId, accountId] })
-  let followedUser: UserMetadata = users[action.userId]
+  const followedUser: UserMetadata = users[action.userId]
   const currentUser = users[accountId]
-
-  if (!followedUser) {
-    try {
-      // If we haven't cached the followed user, need to fetch and cache it first to ensure that we have the correct `does_current_user_follow` on the user value before the follow gets indexed.
-      const { entries } = yield* call(fetchUsers, [action.userId])
-      followedUser = entries[action.userId]
-    } catch (e) {
-      console.error('Failed to fetch the followed user', action.userId)
-    }
-  }
 
   if (followedUser) {
     // Increment the followed user's follower count

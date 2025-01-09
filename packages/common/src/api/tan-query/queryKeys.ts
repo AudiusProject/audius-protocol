@@ -34,5 +34,7 @@ export const QUERY_KEYS = {
   mutualFollowers: 'mutualFollowers',
   emailInUse: 'emailInUse',
   handleInUse: 'handleInUse',
-  handleReservedStatus: 'handleReservedStatus'
+  handleReservedStatus: 'handleReservedStatus',
+  suggestedArtists: 'suggestedArtists',
+  topArtistsInGenre: 'topArtistsInGenre'
 } as const

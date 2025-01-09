@@ -1,6 +1,6 @@
 import { useCallback } from 'react'
 
-import { useGetFeaturedArtists } from '@audius/common/api'
+import { useSuggestedArtists } from '@audius/common/api'
 import { feedPageActions } from '@audius/common/store'
 import { Button, Flex, IconUserFollow, Text } from '@audius/harmony'
 import { Form, Formik } from 'formik'
@@ -25,7 +25,7 @@ const initialValues: FollowUsersValues = {
 const FollowUsers = () => {
   const dispatch = useDispatch()
 
-  const { data: featuredArtists } = useGetFeaturedArtists(undefined)
+  const { data: featuredArtists } = useSuggestedArtists()
 
   const handleSubmit = useCallback(
     (values: FollowUsersValues) => {
