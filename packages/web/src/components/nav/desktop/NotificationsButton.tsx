@@ -51,7 +51,7 @@ export const NotificationsButton = () => {
     )
     if (shouldShowCount) {
       return (
-        <NotificationCount count={notificationCount}>
+        <NotificationCount size='m' count={notificationCount}>
           {button}
         </NotificationCount>
       )

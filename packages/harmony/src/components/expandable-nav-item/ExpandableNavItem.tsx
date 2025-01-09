@@ -8,7 +8,24 @@ import { Box } from '../layout/Box'
 import { Flex } from '../layout/Flex'
 import { Text } from '../text'
 
-import type { ExpandableNavItemProps } from './types'
+import type { ExpandableNavItemProps, VariantConfigs } from './types'
+
+const variants: VariantConfigs = {
+  default: {
+    textVariant: 'title',
+    textSize: 'l',
+    textStrength: 'weak',
+    iconSize: 'l',
+    gap: 'm'
+  },
+  compact: {
+    textVariant: 'body',
+    textSize: 's',
+    textStrength: undefined,
+    iconSize: 's',
+    gap: 'xs'
+  }
+}
 
 const getStyles = (theme: HarmonyTheme, isHovered: boolean): CSSObject => {
   const baseStyles: CSSObject = {
@@ -36,6 +53,7 @@ export const ExpandableNavItem = ({
   nestedItems,
   shouldPersistRightIcon = false,
   canUnfurl = true,
+  variant = 'default',
   ...props
 }: ExpandableNavItemProps) => {
   const [isOpen, setIsOpen] = useState(defaultIsOpen)
@@ -63,11 +81,11 @@ export const ExpandableNavItem = ({
     }
 
     if (LeftIcon) {
-      return <LeftIcon size='l' color='default' />
+      return <LeftIcon size={variants[variant].iconSize} color='default' />
     }
 
     return null
-  }, [isHovered, isOpen, LeftIcon, canUnfurl])
+  }, [isHovered, canUnfurl, LeftIcon, isOpen, variant])
 
   const leftIcon = useMemo(() => {
     if (!getIcon) return null
@@ -115,7 +133,7 @@ export const ExpandableNavItem = ({
         >
           <Flex
             alignItems='center'
-            gap='m'
+            gap={variants[variant].gap}
             flex={1}
             css={{
               maxWidth: '240px'
@@ -123,9 +141,9 @@ export const ExpandableNavItem = ({
           >
             {leftIcon}
             <Text
-              variant='title'
-              size='l'
-              strength='weak'
+              variant={variants[variant].textVariant}
+              size={variants[variant].textSize}
+              strength={variants[variant].textStrength}
               lineHeight='single'
               color='default'
               ellipses

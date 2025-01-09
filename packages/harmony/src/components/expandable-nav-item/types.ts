@@ -3,6 +3,18 @@ import type { ReactNode } from 'react'
 import type { WithCSS } from '../../foundations/theme'
 import type { IconComponent } from '../icon'
 
+export type ExpandableNavItemVariant = 'default' | 'compact'
+
+export type VariantConfig = {
+  textVariant: 'title' | 'body'
+  textSize: 'l' | 's'
+  textStrength: 'weak' | undefined
+  iconSize: 'l' | 's'
+  gap: 'm' | 'xs'
+}
+
+export type VariantConfigs = Record<ExpandableNavItemVariant, VariantConfig>
+
 export type ExpandableNavItemProps = WithCSS<{
   /** The label text of the navigation item. */
   label: string
@@ -18,4 +30,6 @@ export type ExpandableNavItemProps = WithCSS<{
   shouldPersistRightIcon?: boolean
   /** Whether the nav item can be unfurled. */
   canUnfurl?: boolean
+  /** The variant of the nav item. */
+  variant?: ExpandableNavItemVariant
 }>

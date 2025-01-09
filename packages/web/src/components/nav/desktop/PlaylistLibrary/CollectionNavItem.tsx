@@ -1,11 +1,11 @@
 import { useCallback, useState } from 'react'
 
 import {
-  Name,
-  ShareSource,
   ID,
+  Name,
   PlaylistLibraryID,
-  PlaylistLibraryKind
+  PlaylistLibraryKind,
+  ShareSource
 } from '@audius/common/models'
 import {
   cacheCollectionsActions,
@@ -14,9 +14,15 @@ import {
   playlistLibraryActions,
   shareModalUIActions
 } from '@audius/common/store'
-import { Flex, PopupMenuItem, useTheme } from '@audius/harmony'
+import {
+  Flex,
+  IconSpeaker,
+  PopupMenuItem,
+  Text,
+  useTheme
+} from '@audius/harmony'
 import { useDispatch } from 'react-redux'
-import { useNavigate } from 'react-router-dom-v5-compat'
+import { useLocation, useNavigate } from 'react-router-dom-v5-compat'
 import { useToggle } from 'react-use'
 
 import { make, useRecord } from 'common/store/analytics/actions'
@@ -24,8 +30,8 @@ import { Draggable } from 'components/dragndrop'
 import { DeleteCollectionConfirmationModal } from 'components/edit-collection/DeleteCollectionConfirmationModal'
 import {
   DragDropKind,
-  selectDraggingKind,
-  selectDraggingId
+  selectDraggingId,
+  selectDraggingKind
 } from 'store/dragndrop/slice'
 import { useSelector } from 'utils/reducer'
 import { BASE_URL } from 'utils/route'
@@ -35,10 +41,11 @@ import { LeftNavLink } from '../LeftNavLink'
 
 import { NavItemKebabButton } from './NavItemKebabButton'
 import { PlaylistUpdateDot } from './PlaylistUpdateDot'
+import { usePlaylistPlayingStatus } from './usePlaylistPlayingStatus'
 
-const { getTrack } = cacheTracksSelectors
 const { addTrackToPlaylist } = cacheCollectionsActions
 const { getCollection } = cacheCollectionsSelectors
+const { getTrack } = cacheTracksSelectors
 const { reorder } = playlistLibraryActions
 const { requestOpen } = shareModalUIActions
 
@@ -70,6 +77,8 @@ export const CollectionNavItem = (props: CollectionNavItemProps) => {
   const { id, name, url, isOwned, level, hasUpdate, onClick } = props
   const [isDraggingOver, setIsDraggingOver] = useState(false)
   const [isHovering, setIsHovering] = useState(false)
+  const location = useLocation()
+  const isSelected = location.pathname === url
   const dispatch = useDispatch()
   const record = useRecord()
   const navigate = useNavigate()
@@ -166,6 +175,8 @@ export const CollectionNavItem = (props: CollectionNavItemProps) => {
     (draggingKind === 'playlist-folder' && level > 0) ||
     hiddenTrackCheck
 
+  const isPlayingFromThisPlaylist = usePlaylistPlayingStatus(id)
+
   if (!name || !url) return null
 
   const indentAmount = level * spacing.l
@@ -176,6 +187,7 @@ export const CollectionNavItem = (props: CollectionNavItemProps) => {
         acceptedKinds={acceptedKinds}
         onDrop={handleDrop}
         disabled={isDisabled}
+        data-testid='collection-nav-droppable'
       >
         <Draggable
           id={id}
@@ -183,6 +195,7 @@ export const CollectionNavItem = (props: CollectionNavItemProps) => {
           // Draggables require full URL
           link={`${BASE_URL}${url}`}
           kind='library-playlist'
+          data-testid='collection-nav-item'
         >
           <LeftNavLink
             to={url}
@@ -193,6 +206,15 @@ export const CollectionNavItem = (props: CollectionNavItemProps) => {
             onMouseEnter={handleMouseEnter}
             onMouseLeave={handleMouseLeave}
             textSize='s'
+            rightIcon={
+              isPlayingFromThisPlaylist ? (
+                <IconSpeaker
+                  size='s'
+                  color={isSelected ? 'staticWhite' : 'accent'}
+                />
+              ) : null
+            }
+            data-testid='collection-nav-item'
           >
             <Flex
               alignItems='center'
@@ -200,6 +222,8 @@ export const CollectionNavItem = (props: CollectionNavItemProps) => {
               pl={indentAmount}
               gap='xs'
               css={{ position: 'relative' }}
+              data-testid='collection-nav-item-inner'
+              justifyContent='space-between'
             >
               {hasUpdate ? (
                 <div
@@ -211,11 +235,20 @@ export const CollectionNavItem = (props: CollectionNavItemProps) => {
                   <PlaylistUpdateDot />
                 </div>
               ) : null}
-              {name}
+              <Text
+                variant='body'
+                size='s'
+                css={{ maxWidth: '160px' }}
+                ellipses
+              >
+                {name}
+              </Text>
               <NavItemKebabButton
                 visible={isOwned && isHovering && !isDraggingOver}
                 aria-label={messages.editPlaylistLabel}
                 items={kebabItems}
+                isSelected={isSelected}
+                data-testid='collection-nav-item-kebab'
               />
             </Flex>
           </LeftNavLink>

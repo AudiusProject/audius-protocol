@@ -11,10 +11,11 @@ import {
 type EditNavItemButtonProps = Omit<IconButtonProps, 'icon'> & {
   visible: boolean
   items: PopupMenuProps['items']
+  isSelected?: boolean
 }
 
 export const NavItemKebabButton = (props: EditNavItemButtonProps) => {
-  const { visible, items, ...other } = props
+  const { visible, items, isSelected, ...other } = props
 
   return (
     <PopupMenu
@@ -38,11 +39,15 @@ export const NavItemKebabButton = (props: EditNavItemButtonProps) => {
               flexShrink: 0,
               pointerEvents: visible ? 'all' : 'none',
               '& path': {
-                fill: 'var(--harmony-n-700)'
+                fill: isSelected
+                  ? 'var(--harmony-static-static-white)'
+                  : 'var(--harmony-n-700)'
               },
               ':hover,:active,:focus,:hover path, :active path, :focus path': {
                 color: 'var(--harmony-neutral)',
-                fill: 'var(--harmony-n-950)'
+                fill: isSelected
+                  ? 'var(--harmony-static-static-white)'
+                  : 'var(--harmony-n-950)'
               }
             }}
             icon={IconKebabHorizontal}

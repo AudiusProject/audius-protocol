@@ -92,6 +92,7 @@ export const NavItem = ({
             lineHeight='single'
             color={textColor}
             ellipses
+            css={{ flex: 1 }}
           >
             {children}
           </Text>
