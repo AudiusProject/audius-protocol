@@ -37,7 +37,7 @@ const useStyles = makeStyles(({ spacing, palette }) => ({
 type LeftNavLinkProps<Screen extends keyof AppTabScreenParamList> = {
   icon: IconComponent
   to: Screen
-  params: AppTabScreenParamList[Screen] extends undefined
+  params?: AppTabScreenParamList[Screen] extends undefined
     ? ContextualParams | null
     : AppTabScreenParamList[Screen] & ContextualParams
   label: string
