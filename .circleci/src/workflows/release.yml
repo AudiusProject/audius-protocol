@@ -36,19 +36,9 @@ jobs:
       service: solana-relay
       notify_slack_on_failure: true
   - push-docker-image:
-      name: push-pedalboard-sla-auditor
-      context: [Vercel, dockerhub, slack-secrets]
-      service: sla-auditor
-      notify_slack_on_failure: true
-  - push-docker-image:
       name: push-pedalboard-crm
       context: [Vercel, dockerhub, slack-secrets]
       service: crm
-      notify_slack_on_failure: true
-  - push-docker-image:
-      name: push-pedalboard-backfill-audio-analyses
-      context: [Vercel, dockerhub, slack-secrets]
-      service: backfill-audio-analyses
       notify_slack_on_failure: true
   - push-docker-image:
       name: push-pedalboard-mri
@@ -90,10 +80,8 @@ jobs:
         - push-pedalboard-trending-challenge-rewards
         - push-pedalboard-relay
         - push-pedalboard-solana-relay
-        - push-pedalboard-sla-auditor
         - push-pedalboard-staking
         - push-pedalboard-crm
-        - push-pedalboard-backfill-audio-analyses
         - push-pedalboard-mri
         - push-comms
         - push-trpc
