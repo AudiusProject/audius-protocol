@@ -208,6 +208,7 @@
     "@pinata/sdk": "1.1.13",
     "@playwright/test": "1.42.1",
     "@redux-devtools/extension": "3.2.4",
+    "@sentry/cli": "2.38.2",
     "@testing-library/jest-dom": "6.4.2",
     "@testing-library/react": "14.2.2",
     "@types/amplitude-js": "8.0.2",
