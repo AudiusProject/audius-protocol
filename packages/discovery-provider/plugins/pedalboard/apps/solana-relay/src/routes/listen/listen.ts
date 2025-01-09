@@ -205,8 +205,19 @@ export const listen = async (
 ) => {
   let logger
   try {
-    // validation
     logger = res.locals.logger
+
+    // if not prod, just return 200
+    if (config.environment !== 'prod') {
+      logger.info('not prod, skipping listen')
+      res.status(200).json({
+        solTxSignature: null
+      })
+      next()
+      return
+    }
+
+    // validation
     const { userId, timestamp, signature } = recordListenBodySchema.parse(
       req.body
     )
