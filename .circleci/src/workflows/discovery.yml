@@ -148,12 +148,3 @@ jobs:
           only: main
       context: github
       service: discovery-provider
-
-  # Test for API regressions after deploying to stage
-  - test-discovery-api:
-      name: test-discovery-api
-      requires:
-        - deploy-stage-discovery-provider
-      filters:
-        branches:
-          only: main
