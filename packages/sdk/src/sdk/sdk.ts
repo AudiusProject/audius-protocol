@@ -1,4 +1,4 @@
-import { createPublicClient, createWalletClient, http, type Hex } from 'viem'
+import { createPublicClient, createWalletClient, http } from 'viem'
 import { mainnet } from 'viem/chains'
 
 import { ResolveApi } from './api/ResolveApi'
@@ -152,7 +152,10 @@ const initializeServices = (config: SdkConfig) => {
   }
   const audiusWalletClient =
     config.services?.audiusWalletClient ??
-    createAppWalletClient(config.apiKey as Hex, config.apiSecret as Hex)
+    createAppWalletClient({
+      apiKey: config.apiKey!,
+      apiSecret: config.apiSecret
+    })
 
   const ethPublicClient =
     config.services?.ethPublicClient ??
