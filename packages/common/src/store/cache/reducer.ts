@@ -85,12 +85,6 @@ export const mergeCustomizer = (objValue: any, srcValue: any, key: string) => {
     return srcValue || objValue
   }
 
-  // Not every user request provides playlist_library,
-  // so always prefer it's existence, starting with latest
-  if (key === 'playlist_library') {
-    return srcValue || objValue
-  }
-
   // Delete is unidirectional (after marked deleted, future updates are not reflected)
   if (key === 'is_delete' && objValue === true && srcValue === false) {
     return objValue
