@@ -106,7 +106,6 @@ export const PurchaseContentFormFooter = ({
     'track_id' in metadata ? metadata.track_id : metadata.playlist_id
   const title = 'title' in metadata ? metadata.title : metadata.playlist_name
   const isAlbum = isPurchaseableAlbum(metadata)
-  const isHidden = isAlbum ? metadata.is_private : metadata.is_unlisted
   const dispatch = useDispatch()
   const isPurchased = stage === PurchaseContentStage.FINISH
   const { totalPrice } = purchaseSummaryValues
@@ -146,61 +145,59 @@ export const PurchaseContentFormFooter = ({
   if (isPurchased) {
     return (
       <Flex direction='column' gap='xl' alignSelf='stretch'>
-        {isHidden ? null : (
-          <Flex gap='l'>
-            {isGuestCheckout ? (
-              <Flex direction='column'>
-                <Divider />
-                <Flex mv='xl' direction='column'>
-                  <Text variant='title'>
-                    {messages.finishSettingUpYourAccount}
-                  </Text>
-                  <Text>{messages.finishSigningUpDescription}</Text>
-                </Flex>
-                <Flex gap='s'>
-                  <Button fullWidth asChild>
-                    <SignOnLink signUp onClick={onClose}>
-                      {messages.finishSigningUp}
-                    </SignOnLink>
-                  </Button>
-                  <Button
-                    fullWidth
-                    variant='secondary'
-                    onClick={onViewTrackClicked}
-                  >
-                    {messages.viewContent(isAlbum ? 'album' : 'track')}
-                  </Button>
-                </Flex>
+        <Flex gap='l'>
+          {isGuestCheckout ? (
+            <Flex direction='column'>
+              <Divider />
+              <Flex mv='xl' direction='column'>
+                <Text variant='title'>
+                  {messages.finishSettingUpYourAccount}
+                </Text>
+                <Text>{messages.finishSigningUpDescription}</Text>
               </Flex>
-            ) : (
-              <>
-                <Button
-                  type='button'
-                  variant={isReposted ? 'primary' : 'secondary'}
-                  fullWidth
-                  iconLeft={IconRepost}
-                  onClick={onRepost}
-                  role='log'
-                >
-                  {isReposted ? messages.reposted : messages.repost}
+              <Flex gap='s'>
+                <Button fullWidth asChild>
+                  <SignOnLink signUp onClick={onClose}>
+                    {messages.finishSigningUp}
+                  </SignOnLink>
                 </Button>
-                {permalink ? (
-                  <TwitterShareButton
-                    fullWidth
-                    type='dynamic'
-                    url={
-                      isAlbum
-                        ? fullCollectionPage(handle, null, null, permalink)
-                        : fullTrackPage(permalink)
-                    }
-                    shareData={handleTwitterShare}
-                    handle={handle}
-                  />
-                ) : null}
-              </>
-            )}
-          </Flex>
-        )}
+                <Button
+                  fullWidth
+                  variant='secondary'
+                  onClick={onViewTrackClicked}
+                >
+                  {messages.viewContent(isAlbum ? 'album' : 'track')}
+                </Button>
+              </Flex>
+            </Flex>
+          ) : (
+            <>
+              <Button
+                type='button'
+                variant={isReposted ? 'primary' : 'secondary'}
+                fullWidth
+                iconLeft={IconRepost}
+                onClick={onRepost}
+                role='log'
+              >
+                {isReposted ? messages.reposted : messages.repost}
+              </Button>
+              {permalink ? (
+                <TwitterShareButton
+                  fullWidth
+                  type='dynamic'
+                  url={
+                    isAlbum
+                      ? fullCollectionPage(handle, null, null, permalink)
+                      : fullTrackPage(permalink)
+                  }
+                  shareData={handleTwitterShare}
+                  handle={handle}
+                />
+              ) : null}
+            </>
+          )}
+        </Flex>
         {isGuestCheckout ? null : (
           <PlainButton
             onClick={onViewTrackClicked}
