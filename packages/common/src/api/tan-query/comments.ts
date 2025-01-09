@@ -92,7 +92,7 @@ export const useGetCommentsByTrackId = ({
       if (lastPage?.length < pageSize) return undefined
       return (pages.length ?? 0) * pageSize
     },
-    queryKey: [QUERY_KEYS.trackCommentList, trackId, sortMethod],
+    queryKey: [QUERY_KEYS.trackCommentList, trackId, sortMethod, pageSize],
     queryFn: async ({ pageParam }): Promise<ID[]> => {
       const sdk = await audiusSdk()
       const commentsRes = await sdk.tracks.trackComments({
@@ -303,7 +303,12 @@ export const useGetCommentRepliesById = ({
   const startingLimit = pageSize // comments will load in with 3 already so we don't start pagination at 0
 
   const queryRes = useInfiniteQuery({
-    queryKey: [QUERY_KEYS.comment, commentId, QUERY_KEYS.commentReplies],
+    queryKey: [
+      QUERY_KEYS.comment,
+      commentId,
+      QUERY_KEYS.commentReplies,
+      pageSize
+    ],
     enabled: !!enabled,
     initialPageParam: startingLimit,
     getNextPageParam: (lastPage: ReplyComment[], pages) => {

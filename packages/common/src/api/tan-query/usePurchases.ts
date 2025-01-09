@@ -35,7 +35,8 @@ export const usePurchases = (
       QUERY_KEYS.purchases,
       args.userId,
       args.sortMethod,
-      args.sortDirection
+      args.sortDirection,
+      pageSize
     ],
     enabled: enabled !== false && !!args.userId,
     initialPageParam: 0,

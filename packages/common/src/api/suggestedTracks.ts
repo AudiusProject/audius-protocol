@@ -3,7 +3,6 @@ import { useCallback, useEffect, useState } from 'react'
 import { difference, isEqual, shuffle } from 'lodash'
 import { useSelector, useDispatch } from 'react-redux'
 
-import { usePaginatedQuery } from '~/audius-query'
 import { ID } from '~/models/Identifiers'
 import { Status } from '~/models/Status'
 import { TimeRange } from '~/models/TimeRange'
@@ -16,7 +15,7 @@ import { CommonState } from '~/store/index'
 
 import { useFavoritedTracks } from './tan-query/useFavoritedTracks'
 import { useTracks } from './tan-query/useTracks'
-import { useGetTrending } from './trending'
+import { useTrending } from './tan-query/useTrending'
 
 const suggestedTrackCount = 5
 
@@ -109,11 +108,11 @@ export const useGetSuggestedPlaylistTracks = (collectionId: ID) => {
     selectCollectionTrackIds(state, collectionId)
   )
 
-  const { data: favoritedTracks, isPending: isFavoritedPending } =
+  const { data: favoritedTracks, isSuccess: isFavoritedSuccess } =
     useFavoritedTracks(currentUserId)
 
   useEffect(() => {
-    if (!isFavoritedPending) {
+    if (isFavoritedSuccess) {
       const suggestedTrackIds = difference(
         shuffle(favoritedTracks).map((track) => track.save_item_id),
         collectionTrackIds
@@ -122,30 +121,23 @@ export const useGetSuggestedPlaylistTracks = (collectionId: ID) => {
       setSuggestedTrackIds(suggestedTrackIds)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isFavoritedPending])
+  }, [isFavoritedSuccess])
 
   const {
     data: trendingTracks,
-    status: trendingStatus,
+    isSuccess: isTrendingSuccess,
     loadMore
-  } = usePaginatedQuery(
-    useGetTrending,
+  } = useTrending(
     {
-      timeRange: TimeRange.WEEK,
-      currentUserId,
-      genre: null
+      timeRange: TimeRange.WEEK
     },
     {
-      pageSize: 10,
-      disabled: !isFavoritedPending
+      enabled: isFavoritedSuccess
     }
   )
 
   useEffect(() => {
-    if (
-      trendingStatus === Status.SUCCESS &&
-      suggestedTrackStatus === Status.SUCCESS
-    ) {
+    if (isTrendingSuccess && suggestedTrackStatus === Status.SUCCESS) {
       const trendingTrackIds = difference(
         trendingTracks.filter(isValidTrack).map((track) => track.track_id),
         collectionTrackIds
@@ -153,7 +145,7 @@ export const useGetSuggestedPlaylistTracks = (collectionId: ID) => {
       setSuggestedTrackIds([...suggestedTrackIds, ...trendingTrackIds])
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [trendingStatus, suggestedTrackStatus])
+  }, [isTrendingSuccess, suggestedTrackStatus])
 
   useEffect(() => {
     if (suggestedTrackIds.length < suggestedTrackCount) {

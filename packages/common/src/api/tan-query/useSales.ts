@@ -37,7 +37,8 @@ export const useSales = (
       QUERY_KEYS.sales,
       args.userId,
       args.sortMethod,
-      args.sortDirection
+      args.sortDirection,
+      pageSize
     ],
     enabled: enabled !== false && !!args.userId,
     initialPageParam: 0,
