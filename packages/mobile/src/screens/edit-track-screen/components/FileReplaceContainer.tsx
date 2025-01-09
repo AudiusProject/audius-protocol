@@ -1,18 +1,25 @@
 import { useCallback, useContext } from 'react'
 
+import type { ID } from '@audius/common/models'
+import { Name } from '@audius/common/models'
+
 import {
   Flex,
   IconButton,
   IconKebabHorizontal,
   IconPause,
   IconPlay,
-  PlainButton
+  PlainButton,
+  useTheme
 } from '@audius/harmony-native'
 import { EditTrackFormPreviewContext } from 'app/screens/edit-track-screen/EditTrackFormPreviewContext'
+import { make, track as trackEvent } from 'app/services/analytics'
 
 type FileReplaceContainerProps = {
   fileName: string
   filePath: string
+  trackId: ID
+  isUpload?: boolean
   downloadEnabled?: boolean
   onMenuButtonPress?: () => void
 }
@@ -20,8 +27,11 @@ type FileReplaceContainerProps = {
 export const FileReplaceContainer = ({
   fileName,
   filePath,
+  trackId,
+  isUpload = false,
   onMenuButtonPress
 }: FileReplaceContainerProps) => {
+  const { spacing } = useTheme()
   const { isPlaying, playPreview, stopPreview } = useContext(
     EditTrackFormPreviewContext
   )
@@ -31,8 +41,17 @@ export const FileReplaceContainer = ({
       stopPreview()
     } else {
       playPreview(filePath)
+
+      // Track Preview event
+      trackEvent(
+        make({
+          eventName: Name.TRACK_REPLACE_PREVIEW,
+          trackId,
+          source: isUpload ? 'upload' : 'edit'
+        })
+      )
     }
-  }, [filePath, isPlaying, playPreview, stopPreview])
+  }, [filePath, isPlaying, isUpload, playPreview, stopPreview, trackId])
 
   return (
     <Flex
@@ -42,16 +61,20 @@ export const FileReplaceContainer = ({
       gap='l'
     >
       <PlainButton
+        fullWidth
         size='default'
-        style={{ flexShrink: 1, paddingRight: 8 }}
+        // These styles help ensure long file names are ellipsized
+        style={{ paddingRight: spacing.m, justifyContent: 'flex-start' }}
         iconLeft={isPlaying ? IconPause : IconPlay}
         onPress={handleTogglePlay}
       >
         {fileName}
       </PlainButton>
-      <Flex>
-        <IconButton icon={IconKebabHorizontal} onPress={onMenuButtonPress} />
-      </Flex>
+      <IconButton
+        icon={IconKebabHorizontal}
+        onPress={onMenuButtonPress}
+        color='subdued'
+      />
     </Flex>
   )
 }

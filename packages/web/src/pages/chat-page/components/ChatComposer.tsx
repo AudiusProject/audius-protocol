@@ -18,7 +18,7 @@ const messages = {
   sendMessagePlaceholder: 'Start typing...'
 }
 
-export type ChatComposerProps = ComponentPropsWithoutRef<'div'> & {
+type ChatComposerProps = ComponentPropsWithoutRef<'div'> & {
   chatId?: string
   presetMessage?: string
   onMessageSent: () => void

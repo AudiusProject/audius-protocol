@@ -143,32 +143,32 @@ type EmptyTabProps = {
   message: ReactNode
 }
 
-export const EmptyTab = (props: EmptyTabProps) => {
+const EmptyTab = (props: EmptyTabProps) => {
   return <div className={styles.emptyTab}>{props.message}</div>
 }
 
 const artistTabs: TabHeader[] = [
   {
     icon: <IconNote />,
-    text: 'Tracks',
+    text: ProfilePageTabs.TRACKS,
     label: ProfilePageTabs.TRACKS,
     to: 'tracks'
   },
   {
     icon: <IconAlbum />,
-    text: 'Albums',
+    text: ProfilePageTabs.ALBUMS,
     label: ProfilePageTabs.ALBUMS,
     to: 'albums'
   },
   {
     icon: <IconPlaylists />,
-    text: 'Playlists',
+    text: ProfilePageTabs.PLAYLISTS,
     label: ProfilePageTabs.PLAYLISTS,
     to: 'playlists'
   },
   {
     icon: <IconReposts className={styles.iconReposts} />,
-    text: 'Reposts',
+    text: ProfilePageTabs.REPOSTS,
     label: ProfilePageTabs.REPOSTS,
     to: 'reposts'
   }
@@ -177,13 +177,13 @@ const artistTabs: TabHeader[] = [
 const userTabs: TabHeader[] = [
   {
     icon: <IconReposts className={styles.iconReposts} />,
-    text: 'Reposts',
+    text: ProfilePageTabs.REPOSTS,
     label: ProfilePageTabs.REPOSTS,
     to: 'reposts'
   },
   {
     icon: <IconPlaylists />,
-    text: 'Playlists',
+    text: ProfilePageTabs.PLAYLISTS,
     label: ProfilePageTabs.PLAYLISTS,
     to: 'playlists'
   }
@@ -191,7 +191,7 @@ const userTabs: TabHeader[] = [
 
 const collectiblesTab = {
   icon: <IconCollectibles />,
-  text: 'Collectibles',
+  text: ProfilePageTabs.COLLECTIBLES,
   label: ProfilePageTabs.COLLECTIBLES,
   to: 'collectibles'
 }

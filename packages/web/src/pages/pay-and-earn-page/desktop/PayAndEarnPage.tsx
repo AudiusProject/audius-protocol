@@ -29,7 +29,7 @@ import { PayAndEarnPageProps, TableType } from '../types'
 const { PURCHASES_PAGE, SALES_PAGE, WITHDRAWALS_PAGE } = route
 const { getAccountHasTracks, getIsGuestAccount } = accountSelectors
 
-export const messages = {
+const messages = {
   title: 'Pay & Earn',
   description: 'Pay & earn with Audius',
   sales: 'Sales',

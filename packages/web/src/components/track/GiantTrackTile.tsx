@@ -89,7 +89,7 @@ const messages = {
     `Releases ${formatReleaseDate({ date: releaseDate, withHour: true })}`
 }
 
-export type GiantTrackTileProps = {
+type GiantTrackTileProps = {
   aiAttributionUserId: Nullable<number>
   artistHandle: string
   trendingBadgeLabel: Nullable<string>

@@ -1,7 +1,7 @@
 import { useCallback, useContext, useEffect, useRef, useState } from 'react'
 
 import { useFeatureFlag } from '@audius/common/hooks'
-import { DownloadQuality } from '@audius/common/models'
+import { DownloadQuality, Name } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
 import type { TrackForUpload } from '@audius/common/store'
 import {
@@ -31,6 +31,7 @@ import { VisibilityField } from 'app/components/edit/VisibilityField'
 import { PickArtworkField, TextField } from 'app/components/fields'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { FormScreen } from 'app/screens/form-screen'
+import { make, track as trackEvent } from 'app/services/analytics'
 import { setVisibility } from 'app/store/drawers/slice'
 import { makeStyles } from 'app/styles'
 
@@ -102,6 +103,9 @@ export const EditTrackForm = (props: EditTrackFormProps) => {
   const { isEnabled: isTrackReplaceEnabled } = useFeatureFlag(
     FeatureFlags.TRACK_AUDIO_REPLACE
   )
+  const { isEnabled: isTrackReplaceDownloadsEnabled } = useFeatureFlag(
+    FeatureFlags.TRACK_REPLACE_DOWNLOADS
+  )
   const initiallyHidden = initialValues.is_unlisted
   const isInitiallyScheduled = initialValues.is_scheduled_release
   const usersMayLoseAccess = !isUpload && !initiallyHidden && values.is_unlisted
@@ -130,12 +134,33 @@ export const EditTrackForm = (props: EditTrackFormProps) => {
   const { onOpen: openPublishConfirmation } = usePublishConfirmationModal()
   const { onOpen: openWaitForDownload } = useWaitForDownloadModal()
 
+  const handleReplace = useCallback(() => {
+    selectFile()
+
+    // Track Replace event
+    trackEvent(
+      make({
+        eventName: Name.TRACK_REPLACE_REPLACE,
+        trackId: values.track_id,
+        source: isUpload ? 'upload' : 'edit'
+      })
+    )
+  }, [selectFile, isUpload, values.track_id])
+
   const handleDownload = useCallback(() => {
     openWaitForDownload({
-      trackIds: [values.track_id],
+      trackIds: [initialValues.track_id],
       quality: DownloadQuality.ORIGINAL
     })
-  }, [openWaitForDownload, values])
+
+    // Track Download event
+    trackEvent(
+      make({
+        eventName: Name.TRACK_REPLACE_DOWNLOAD,
+        trackId: initialValues.track_id
+      })
+    )
+  }, [openWaitForDownload, initialValues.track_id])
 
   const handlePressBack = useCallback(() => {
     if (!dirty) {
@@ -270,6 +295,8 @@ export const EditTrackForm = (props: EditTrackFormProps) => {
                       }
                       // @ts-ignore
                       filePath={track?.file.uri || streamUrl || ''}
+                      trackId={values.track_id}
+                      isUpload={isUpload}
                       onMenuButtonPress={handleOverflowMenuOpen}
                     />
                   </Flex>
@@ -297,8 +324,12 @@ export const EditTrackForm = (props: EditTrackFormProps) => {
       <EditTrackFormOverflowMenuDrawer
         isOpen={isOverflowMenuOpen}
         onClose={handleOverflowMenuClose}
-        onReplace={selectFile}
-        onDownload={isUpload ? undefined : handleDownload}
+        onReplace={handleReplace}
+        onDownload={
+          !isUpload && isTrackReplaceDownloadsEnabled
+            ? handleDownload
+            : undefined
+        }
       />
     </>
   )

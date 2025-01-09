@@ -23,7 +23,8 @@ export enum FeatureFlags {
   TRACK_AUDIO_REPLACE = 'track_audio_replace',
   OWN_YOUR_FANS = 'own_your_fans',
   FAST_REFERRAL = 'fast_referral',
-  REACT_QUERY_SYNC = 'react_query_sync'
+  REACT_QUERY_SYNC = 'react_query_sync',
+  TRACK_REPLACE_DOWNLOADS = 'track_replace_downloads'
 }
 
 type FlagDefaults = Record<FeatureFlags, boolean>
@@ -62,5 +63,6 @@ export const flagDefaults: FlagDefaults = {
   [FeatureFlags.TRACK_AUDIO_REPLACE]: false,
   [FeatureFlags.OWN_YOUR_FANS]: false,
   [FeatureFlags.FAST_REFERRAL]: false,
-  [FeatureFlags.REACT_QUERY_SYNC]: false
+  [FeatureFlags.REACT_QUERY_SYNC]: false,
+  [FeatureFlags.TRACK_REPLACE_DOWNLOADS]: false
 }

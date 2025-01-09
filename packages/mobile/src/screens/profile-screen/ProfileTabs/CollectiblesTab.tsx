@@ -1,6 +1,5 @@
 import { useCallback, useMemo, useRef } from 'react'
 
-import { useProxySelector } from '@audius/common/hooks'
 import type { Collectible } from '@audius/common/models'
 import { accountSelectors } from '@audius/common/store'
 import Clipboard from '@react-native-clipboard/clipboard'
@@ -11,14 +10,14 @@ import { useSelector } from 'react-redux'
 import { IconShare, Button } from '@audius/harmony-native'
 import { Tile, GradientText, FlatList } from 'app/components/core'
 import LoadingSpinner from 'app/components/loading-spinner'
-import UserBadges from 'app/components/user-badges'
+import { UserBadgesV2 } from 'app/components/user-badges/UserBadgesV2'
 import { useScrollToTop } from 'app/hooks/useScrollToTop'
 import { useToast } from 'app/hooks/useToast'
 import { makeStyles } from 'app/styles'
 import { getCollectiblesRoute } from 'app/utils/routes'
 
 import { CollectiblesCard } from '../CollectiblesCard'
-import { getProfile } from '../selectors'
+import { useSelectProfile } from '../selectors'
 const getUserId = accountSelectors.getUserId
 
 const messages = {
@@ -75,9 +74,23 @@ const useStyles = makeStyles(({ typography, palette, spacing }) => ({
 
 export const CollectiblesTab = () => {
   const styles = useStyles()
-  const { profile } = useProxySelector((state) => getProfile(state), [])
+  const {
+    user_id,
+    handle,
+    name,
+    collectibles: profileCollectibles,
+    collectibleList,
+    solanaCollectibleList
+  } = useSelectProfile([
+    'user_id',
+    'handle',
+    'name',
+    'collectibles',
+    'collectibleList',
+    'solanaCollectibleList'
+  ])
   const accountId = useSelector(getUserId)
-  const isOwner = profile?.user_id === accountId
+  const isOwner = user_id === accountId
   const { toast } = useToast()
   const ref = useRef<RNFlatList>(null)
 
@@ -89,34 +102,34 @@ export const CollectiblesTab = () => {
   }, true)
 
   const handlePressShare = useCallback(() => {
-    if (profile) {
-      const { handle, name } = profile
+    if (handle && name) {
       Clipboard.setString(getCollectiblesRoute(handle, undefined, true))
       toast({ content: messages.copyToast(name), type: 'info' })
     }
-  }, [profile, toast])
+  }, [handle, name, toast])
 
   const collectibles = useMemo(() => {
-    if (!profile) return []
+    const allCollectibles = [
+      ...(collectibleList ?? []),
+      ...(solanaCollectibleList ?? [])
+    ]
 
-    const { collectibleList = [], solanaCollectibleList = [] } = profile
-    const allCollectibles = [...collectibleList, ...solanaCollectibleList]
-
-    if (!profile?.collectibles?.order) {
+    if (profileCollectibles?.order) {
       return allCollectibles
     }
 
     // Saved collectible ids in user profile metadata
-    const savedProfileCollectibles = profile.collectibles ?? {}
+    const savedProfileCollectibles = collectibles ?? {}
     const savedProfileCollectibleKeySet = new Set(
       Object.keys(savedProfileCollectibles)
     )
     // Saved collectibles order in user profile metadata
-    const order = profile.collectibles.order
+    const order = profileCollectibles?.order
     const orderSet = new Set(order)
     // Put the collectibles in the order specified by the profile
     // and then put the rest of the collectibles at the end
     const sortedCollectibles = allCollectibles.sort((a, b) => {
+      if (!order) return 0
       const aIndex = order.indexOf(a.id)
       const bIndex = order.indexOf(b.id)
       if (bIndex === -1) return -1
@@ -134,9 +147,9 @@ export const CollectiblesTab = () => {
       }
     }
     return visible
-  }, [profile])
+  }, [collectibleList, profileCollectibles?.order, solanaCollectibleList])
 
-  if (!profile) return null
+  if (!user_id) return null
 
   return (
     <FlatList
@@ -148,8 +161,8 @@ export const CollectiblesTab = () => {
             {messages.title}
           </GradientText>
           <Text style={styles.subtitle}>
-            {messages.subtitle} {isOwner ? messages.you : profile.name}
-            <UserBadges user={profile} hideName />
+            {messages.subtitle} {isOwner ? messages.you : name}{' '}
+            {isOwner ? null : <UserBadgesV2 userId={user_id} />}
           </Text>
           <Button
             fullWidth
@@ -171,7 +184,7 @@ export const CollectiblesTab = () => {
       renderItem={({ item }) => (
         <CollectiblesCard
           collectible={item}
-          ownerId={profile.user_id}
+          ownerId={user_id}
           style={styles.collectibleListItem}
         />
       )}

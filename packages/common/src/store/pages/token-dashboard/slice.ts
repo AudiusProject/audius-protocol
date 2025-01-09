@@ -201,6 +201,9 @@ const slice = createSlice({
       state.associatedWallets.confirmingWallet.collectibleCount =
         collectibleCount
     },
+    connectingWalletSignatureFailed: (state) => {
+      state.associatedWallets.confirmingWallet = initialConfirmingWallet
+    },
     setWalletAddedConfirmed: (
       state,
       action: PayloadAction<
@@ -298,6 +301,7 @@ const slice = createSlice({
     },
     preloadWalletProviders: (_state) => {},
     resetStatus: (state) => {
+      state.associatedWallets.confirmingWallet = initialConfirmingWallet
       state.associatedWallets.status = null
     },
     resetRemovedStatus: (state) => {

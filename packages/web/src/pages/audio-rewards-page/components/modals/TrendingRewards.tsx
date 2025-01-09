@@ -225,7 +225,7 @@ const TrendingRewardsBody = ({
   )
 }
 
-export const TrendingRewardsModal = () => {
+const TrendingRewardsModal = () => {
   const [isOpen, setOpen] = useModalState('TrendingRewardsExplainer')
   const [modalType] = useRewardsType()
 

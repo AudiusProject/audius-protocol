@@ -7,5 +7,5 @@
 }
 
 .popup {
-  border-radius: '50%';
+  border-radius: var(--harmony-unit-16);
 }

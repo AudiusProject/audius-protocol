@@ -38,5 +38,3 @@ export const RequiresUpdate = (props: RequiresUpdateProps) => {
     </div>
   )
 }
-
-export default RequiresUpdate

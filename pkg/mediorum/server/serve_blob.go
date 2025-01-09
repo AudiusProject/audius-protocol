@@ -264,14 +264,17 @@ func (ss *MediorumServer) findAndPullBlob(_ context.Context, key string) (string
 }
 
 func (ss *MediorumServer) logTrackListen(c echo.Context) {
+	ss.logger.Info("logging plays")
 	skipPlayCountQuery, _ := strconv.ParseBool(c.QueryParam("skip_play_count"))
 
-	identityConfigured := os.Getenv("identityService") == ""
+	identityConfigured := os.Getenv("identityService") == "" && ss.Config.Env != "dev"
 	rangePresent := !rangeIsFirstByte(c.Request().Header.Get("Range"))
 	methodNotGET := c.Request().Method != "GET"
 	refererMatches := strings.Contains(c.Request().Header.Get("Referer"), c.Request().URL.String())
 
 	skipPlayCount := skipPlayCountQuery || identityConfigured || rangePresent || methodNotGET || refererMatches
+	ss.logger.Info("skip plays", "skipPlayCountQuery", skipPlayCountQuery, "identity", identityConfigured, "range", rangePresent, "methodNotGet", methodNotGET, "referrer", refererMatches)
+
 	if skipPlayCount {
 		// todo: skip count for trusted notifier requests should be inferred
 		// by the requesting entity and not some query param
@@ -304,7 +307,7 @@ func (ss *MediorumServer) logTrackListen(c echo.Context) {
 
 	endpoint := fmt.Sprintf("%s/tracks/%d/listen", solanaRelayService, sig.Data.TrackId)
 
-	ss.logger.Debug("logging listen", "endpoint", endpoint)
+	ss.logger.Info("logging plays", "endpoint", endpoint)
 
 	signatureData, err := signature.GenerateListenTimestampAndSignature(ss.Config.privateKey)
 	if err != nil {
@@ -335,7 +338,7 @@ func (ss *MediorumServer) logTrackListen(c echo.Context) {
 
 		geoData, err := ss.getGeoFromIP(c.RealIP())
 		if err != nil {
-			ss.logger.Error("core listens bad ip: %v", err)
+			ss.logger.Error("core plays bad ip: %v", err)
 			return
 		}
 
@@ -350,6 +353,7 @@ func (ss *MediorumServer) logTrackListen(c echo.Context) {
 			Country:   geoData.Country,
 			Region:    geoData.Region,
 		})
+		ss.logger.Info("pushed plays to queue")
 	}()
 
 	buf, err := json.Marshal(body)
