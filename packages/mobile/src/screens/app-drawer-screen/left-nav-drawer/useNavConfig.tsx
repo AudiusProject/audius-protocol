@@ -22,8 +22,6 @@ import { useSelector } from 'react-redux'
 
 import type { IconComponent } from '@audius/harmony-native'
 import {
-  Flex,
-  Text,
   BalancePill,
   IconCrown,
   IconDonate,
