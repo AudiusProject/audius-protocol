@@ -33,9 +33,8 @@ export const usePlaylistPlayingStatus = (id: PlaylistLibraryID) => {
 
   return useMemo(() => {
     const hasTracks = collection?.playlist_contents?.track_ids
-    const hasCurrentTrack = currentTrackId
 
-    if (!hasTracks || !hasCurrentTrack || !isPlaying) return false
+    if (!hasTracks || !currentTrackId || !isPlaying) return false
 
     const hasTrack = collection.playlist_contents.track_ids.some(
       (trackItem) => trackItem.track === currentTrackId

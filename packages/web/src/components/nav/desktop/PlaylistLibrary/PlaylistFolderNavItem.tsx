@@ -1,4 +1,4 @@
-import { useCallback, useState, MouseEvent, useEffect, useMemo } from 'react'
+import { useCallback, useState, MouseEvent, useMemo } from 'react'
 
 import {
   Name,
@@ -39,8 +39,6 @@ type PlaylistFolderNavItemProps = {
   folder: PlaylistLibraryFolder
   level: number
 }
-
-const longDragTimeoutMs = 1000
 
 const acceptedKinds: DragDropKind[] = ['playlist', 'library-playlist']
 
@@ -120,13 +118,6 @@ export const PlaylistFolderNavItem = (props: PlaylistFolderNavItemProps) => {
     ],
     [handleClickEdit, toggleDeleteConfirmationOpen]
   )
-
-  useEffect(() => {
-    if (isDraggingOver) {
-      const longDragTimeout = setTimeout(() => {}, longDragTimeoutMs)
-      return () => clearTimeout(longDragTimeout)
-    }
-  }, [isDraggingOver])
 
   const rightIcon = useMemo(() => {
     return isHovering && !isDraggingOver ? (
