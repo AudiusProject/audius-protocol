@@ -1066,6 +1066,7 @@ function* recoverPurchaseIfNecessary() {
     yield* call(
       waitForValue,
       getWalletAddresses,
+      {},
       (arg: ReturnType<typeof getWalletAddresses>) => arg.currentUser !== null
     )
 

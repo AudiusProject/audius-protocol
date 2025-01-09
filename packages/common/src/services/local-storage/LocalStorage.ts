@@ -1,4 +1,4 @@
-import { User, UserMetadata } from '~/models/User'
+import { CachedAccount, User, UserMetadata } from '~/models/User'
 import { PLAYBACK_RATE_LS_KEY } from '~/store/index'
 
 import { Nullable } from '../../utils'
@@ -93,7 +93,9 @@ export class LocalStorage {
     await this.localStorage.removeItem(key)
   }
 
-  getAudiusAccount = async () => this.getJSONValue(AUDIUS_ACCOUNT_KEY)
+  getAudiusAccount = async (): Promise<CachedAccount | null> =>
+    this.getJSONValue(AUDIUS_ACCOUNT_KEY)
+
   setAudiusAccount = async (value: object) => {
     await this.setJSONValue(AUDIUS_ACCOUNT_KEY, value)
   }
