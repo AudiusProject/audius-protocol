@@ -15,6 +15,7 @@ export const internalGetAccountUser = (state: CommonState) =>
   getUser(state, { id: getUserId(state) })
 const hasTracksInternal = (state: CommonState) => state.account.hasTracks
 
+export const getAccount = (state: CommonState) => state.account
 export const getHasAccount = (state: CommonState) => !!state.account.userId
 export const getIsAccountComplete = (state: CommonState) => {
   const { userId } = state.account
@@ -43,10 +44,6 @@ export const getUserId = (state: CommonState) => state.account.userId
 export const getAccountStatus = (state: CommonState) => state.account.status
 export const getNeedsAccountRecovery = (state: CommonState) =>
   state.account.needsAccountRecovery
-export const getAccountToCache = (state: CommonState) => ({
-  userId: state.account.userId,
-  collections: state.account.collections
-})
 
 export const getWalletAddresses = (state: CommonState) =>
   state.account.walletAddresses
@@ -84,7 +81,7 @@ export const getAccountCollectibles = createSelector(
   ]
 )
 export const getPlaylistLibrary = (state: CommonState) => {
-  return getAccountUser(state)?.playlist_library ?? null
+  return state.account.playlistLibrary
 }
 export const getAccountERCWallet = createSelector(
   [internalGetAccountUser],

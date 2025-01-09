@@ -1,7 +1,12 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { keyBy } from 'lodash'
 
-import { AccountCollection, CachedAccount, User } from '~/models'
+import {
+  AccountCollection,
+  CachedAccount,
+  PlaylistLibrary,
+  User
+} from '~/models'
 import { Nullable } from '~/utils/typeUtils'
 
 import { ID } from '../../models/Identifiers'
@@ -29,6 +34,7 @@ const initialState = {
     currentUser: string | null
     web3User: string | null
   },
+  playlistLibrary: null as Nullable<PlaylistLibrary>,
   guestEmail: null as string | null
 }
 
@@ -54,6 +60,7 @@ const slice = createSlice({
       const { userId, collections, guestEmail } = action.payload
       state.userId = userId
       state.collections = keyBy(collections, 'id')
+      state.playlistLibrary = action.payload.playlistLibrary ?? null
       state.status = Status.SUCCESS
       state.reason = null
       state.guestEmail = state.guestEmail ?? guestEmail
@@ -137,6 +144,9 @@ const slice = createSlice({
       }>
     ) => {
       state.guestEmail = action.payload.guestEmail
+    },
+    updatePlaylistLibrary: (state, action: PayloadAction<PlaylistLibrary>) => {
+      state.playlistLibrary = action.payload
     }
   }
 })
@@ -166,7 +176,8 @@ export const {
   subscribeBrowserPushNotifications,
   tikTokLogin,
   twitterLogin,
-  unsubscribeBrowserPushNotifications
+  unsubscribeBrowserPushNotifications,
+  updatePlaylistLibrary
 } = slice.actions
 
 export const actions = slice.actions
