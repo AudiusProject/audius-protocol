@@ -741,16 +741,6 @@ function* signUp() {
               yield* fork(sendPostSignInRecoveryEmail, { handle, email })
 
               yield* call(confirmTransaction, blockHash, blockNumber)
-              const user = yield* call(
-                userApiFetchSaga.getUserById,
-                {
-                  id: userId
-                },
-                true // force refresh to get updated user w handle
-              )
-              if (!user) {
-                throw new Error('Failed to index guest account creation')
-              }
 
               return userId
             } else {
@@ -913,21 +903,14 @@ function* signUp() {
         },
         function* () {
           yield* put(signOnActions.sendWelcomeEmail(name))
-          yield* call(fetchAccountAsync, { isSignUp: true })
+          yield* call(fetchAccountAsync)
           yield* call(
             waitForValue,
             getFollowIds,
             null,
             (value: ID[]) => value.length > 0
           )
-
-          yield* call(
-            waitForValue,
-            accountSelectors.getIsGuestAccount,
-            null,
-            (value: boolean) => !value
-          )
-
+          yield* call(waitForValue, accountSelectors.getIsAccountComplete)
           yield* put(signOnActions.followArtists())
           yield* put(make(Name.CREATE_ACCOUNT_COMPLETE_CREATING, { handle }))
           yield* put(signOnActions.signUpSucceeded())
