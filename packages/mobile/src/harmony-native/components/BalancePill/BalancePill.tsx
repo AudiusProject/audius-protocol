@@ -31,7 +31,7 @@ export const BalancePill = (props: BalancePillProps) => {
           <Skeleton />
         </Flex>
       ) : (
-        // TODO: Fix this 1 pixel padding bug
+        // TODO: Fix this 1 pixel padding bug PAY-3780
         <Flex pt={1}>
           <Text variant='label' color='inverse'>
             {balance}
