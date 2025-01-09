@@ -22,6 +22,8 @@ export type UserMetadata = {
   album_count: number
   allow_ai_attribution?: boolean
   artist_pick_track_id: Nullable<number>
+  associated_wallets_balance?: Nullable<StringWei>
+  balance?: Nullable<StringWei>
   bio: Nullable<string>
   blocknumber: number
   collectibleList?: Collectible[]
@@ -64,20 +66,16 @@ export type UserMetadata = {
   spl_usdc_payout_wallet?: Nullable<SolanaWalletAddress>
   supporter_count: number
   supporting_count: number
+  total_balance?: Nullable<StringWei>
   track_count: number
+  user_id: number
+  wallet?: string
 
   // Only present on the "current" account
   track_save_count?: number
-  user_id: number
-  wallet?: string
-  balance?: Nullable<StringWei>
-  total_balance?: Nullable<StringWei>
-  associated_wallets?: Nullable<string[]>
   associated_sol_wallets?: Nullable<string[]>
-  associated_wallets_balance?: Nullable<StringWei>
-  playlist_library?: Nullable<PlaylistLibrary>
+  associated_wallets?: Nullable<string[]>
   userBank?: SolanaWalletAddress
-  local?: boolean
   events?: UserEvent
 } & Timestamped
 
@@ -110,6 +108,7 @@ export type User = UserMetadata & ComputedUserProperties
 export type CachedAccount = {
   userId: ID
   collections: AccountCollection[]
+  playlistLibrary?: Nullable<PlaylistLibrary>
   guestEmail: string | null
 }
 
