@@ -1,9 +1,13 @@
-import type { full, UpdateProfileRequest } from '@audius/sdk'
+import {
+  HashId,
+  OptionalId,
+  type full,
+  type UpdateProfileRequest
+} from '@audius/sdk'
 import camelcaseKeys from 'camelcase-keys'
 import { omit, pick } from 'lodash'
 import snakecaseKeys from 'snakecase-keys'
 
-import { OptionalId } from '~/models/Identifiers'
 import {
   AccountUserMetadata,
   ManagedUserMetadata,
@@ -11,7 +15,6 @@ import {
   UserMetadata
 } from '~/models/User'
 import { SolanaWalletAddress, StringWei } from '~/models/Wallet'
-import { decodeHashId } from '~/utils/hashIds'
 import { removeNullable } from '~/utils/typeUtils'
 
 import { accountCollectionFromSDK } from './collection'
@@ -27,7 +30,7 @@ import { transformAndCleanList } from './utils'
 export const userMetadataFromSDK = (
   input: full.UserFull
 ): UserMetadata | undefined => {
-  const decodedUserId = decodeHashId(input.id)
+  const decodedUserId = HashId.parse(input.id)
   if (!decodedUserId) {
     return undefined
   }
@@ -42,7 +45,7 @@ export const userMetadataFromSDK = (
 
     // Conversions
     artist_pick_track_id: input.artistPickTrackId
-      ? decodeHashId(input.artistPickTrackId)
+      ? HashId.parse(input.artistPickTrackId)
       : null,
 
     // Nested Types
