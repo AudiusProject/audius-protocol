@@ -9,7 +9,7 @@ import {
   vipDiscordModalActions,
   musicConfettiActions
 } from '@audius/common/store'
-import { Nullable } from '@audius/common/utils'
+import { formatNumberCommas, Nullable } from '@audius/common/utils'
 import {
   IconTokenBronze,
   IconTokenGold,
@@ -283,40 +283,59 @@ const TierColumn = ({
       />
       {(
         Object.keys(messages.features) as Array<keyof typeof messages.features>
-      ).map((feature) => (
-        <Flex key={feature} pv='m' borderTop='default' justifyContent='center'>
-          <Text>
-            {tierFeatures[feature] ? (
-              <Flex h={24} direction='row' alignItems='center' gap='m'>
-                <IconValidationCheck />
-                {feature === 'customDiscordRole' && current ? (
-                  <Tooltip text='Refresh Discord role'>
-                    <Button
-                      size='small'
-                      variant='secondary'
-                      iconLeft={IconRefresh}
-                      onClick={onClickDiscord}
-                    />
-                  </Tooltip>
-                ) : null}
-              </Flex>
-            ) : (
-              <Flex h={24} w={24} alignItems='center' justifyContent='center'>
-                <Flex
-                  h={16}
-                  w={16}
-                  borderRadius='circle'
-                  border='strong'
-                  css={{
-                    borderWidth: 2,
-                    borderColor: 'var(--harmony-neutral)'
-                  }}
-                />
-              </Flex>
-            )}
-          </Text>
-        </Flex>
-      ))}
+      ).map((feature) => {
+        const minAudio =
+          badgeTiers.find((b) => b.tier === tier)?.minAudio.toString() ?? '0'
+
+        return (
+          <Flex
+            key={feature}
+            pv='m'
+            borderTop='default'
+            justifyContent='center'
+          >
+            <Text>
+              {feature === 'balance' ? (
+                <Flex h={24} alignItems='center' justifyContent='center'>
+                  {minAudio !== '0' ? (
+                    <Text
+                      variant='label'
+                      size='s'
+                    >{`${formatNumberCommas(minAudio)}+`}</Text>
+                  ) : null}
+                </Flex>
+              ) : tierFeatures[feature] ? (
+                <Flex h={24} direction='row' alignItems='center' gap='m'>
+                  <IconValidationCheck />
+                  {feature === 'customDiscordRole' && current ? (
+                    <Tooltip text='Refresh Discord role'>
+                      <Button
+                        size='small'
+                        variant='secondary'
+                        iconLeft={IconRefresh}
+                        onClick={onClickDiscord}
+                      />
+                    </Tooltip>
+                  ) : null}
+                </Flex>
+              ) : (
+                <Flex h={24} w={24} alignItems='center' justifyContent='center'>
+                  <Flex
+                    h={16}
+                    w={16}
+                    borderRadius='circle'
+                    border='strong'
+                    css={{
+                      borderWidth: 2,
+                      borderColor: 'var(--harmony-neutral)'
+                    }}
+                  />
+                </Flex>
+              )}
+            </Text>
+          </Flex>
+        )
+      })}
     </Flex>
   )
 }
