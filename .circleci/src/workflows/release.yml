@@ -86,6 +86,7 @@ jobs:
         - push-pedalboard-relay
         - push-pedalboard-solana-relay
         - push-pedalboard-sla-auditor
+        - push-pedalboard-staking
         - push-pedalboard-crm
         - push-pedalboard-backfill-audio-analyses
         - push-pedalboard-mri
