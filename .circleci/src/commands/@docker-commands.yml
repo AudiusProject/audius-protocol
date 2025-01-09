@@ -49,14 +49,12 @@ docker-tag-images:
             discovery-provider-openresty
             es-indexer
             relay
-            sla-auditor
             solana-relay
             trending-challenge-rewards
             staking
             crm
             mri
             trpc
-            backfill-audio-analyses
             verified-notifications
           )
           identity=(
