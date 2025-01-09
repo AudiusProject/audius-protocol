@@ -1,6 +1,6 @@
 import { useCallback, useMemo } from 'react'
 
-import { useGetCurrentUser } from '@audius/common/api'
+import { useCurrentUser } from '@audius/common/api'
 import { tracksSocialActions, useArtistPickModal } from '@audius/common/store'
 import { useDispatch } from 'react-redux'
 
@@ -32,7 +32,7 @@ const { setArtistPick, unsetArtistPick } = tracksSocialActions
 export const ArtistPickConfirmationDrawer = () => {
   const { data } = useArtistPickModal()
   const { trackId } = data
-  const { data: user } = useGetCurrentUser({})
+  const { data: user } = useCurrentUser()
 
   const dispatch = useDispatch()
 

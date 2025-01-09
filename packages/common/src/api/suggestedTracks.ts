@@ -15,7 +15,7 @@ import { getTrack } from '~/store/cache/tracks/selectors'
 import { CommonState } from '~/store/index'
 
 import { useGetFavoritedTrackList } from './favorites'
-import { useGetTracksByIds } from './track'
+import { useTracks } from './tan-query/useTracks'
 import { useGetTrending } from './trending'
 
 const suggestedTrackCount = 5
@@ -172,21 +172,15 @@ export const useGetSuggestedPlaylistTracks = (collectionId: ID) => {
     isEqual
   )
 
-  useGetTracksByIds(
-    {
-      currentUserId,
-      ids: suggestedTracks
-        .filter(
-          (
-            suggestedTrack
-          ): suggestedTrack is { isLoading: true; id: ID; key: ID } =>
-            'id' in suggestedTrack && suggestedTrack.isLoading
-        )
-        .map((suggestedTrack) => suggestedTrack.id)
-    },
-    {
-      disabled: !currentUserId || suggestedTrackIds.length === 0
-    }
+  useTracks(
+    suggestedTracks
+      .filter(
+        (
+          suggestedTrack
+        ): suggestedTrack is { isLoading: true; id: ID; key: ID } =>
+          'id' in suggestedTrack && suggestedTrack.isLoading
+      )
+      .map((suggestedTrack) => suggestedTrack.id)
   )
 
   const handleAddTrack = useCallback(

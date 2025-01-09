@@ -1,4 +1,4 @@
-import { useGetUserById } from '@audius/common/api'
+import { useUser } from '@audius/common/api'
 import type { ID } from '@audius/common/models'
 
 import { MusicBadge } from '@audius/harmony-native'
@@ -13,7 +13,7 @@ type FollowsYouBadgeProps = {
 
 export const FollowsYouBadge = (props: FollowsYouBadgeProps) => {
   const { userId } = props
-  const { data: user } = useGetUserById({ id: userId })
+  const { data: user } = useUser(userId)
   if (!user?.does_follow_current_user) return null
 
   return <MusicBadge size='s'>{messages.followsYou}</MusicBadge>

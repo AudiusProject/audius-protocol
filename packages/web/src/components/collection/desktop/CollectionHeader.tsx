@@ -1,6 +1,6 @@
 import { ChangeEvent, useCallback, useState } from 'react'
 
-import { useGetCurrentUserId, useGetPlaylistById } from '@audius/common/api'
+import { useCollection, useCurrentUserId } from '@audius/common/api'
 import {
   AccessConditions,
   AccessPermissions,
@@ -122,11 +122,8 @@ export const CollectionHeader = (props: CollectionHeaderProps) => {
   } = props
 
   const { spacing } = useTheme()
-  const { data: currentUserId } = useGetCurrentUserId({})
-  const { data: collection } = useGetPlaylistById({
-    playlistId: collectionId,
-    currentUserId
-  })
+  const { data: currentUserId } = useCurrentUserId()
+  const { data: collection } = useCollection(collectionId)
   const {
     is_scheduled_release: isScheduledRelease,
     release_date: releaseDate,

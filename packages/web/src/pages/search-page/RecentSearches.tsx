@@ -1,12 +1,8 @@
 import { MouseEventHandler, useCallback, useMemo } from 'react'
 
-import {
-  useGetPlaylistById,
-  useGetTrackById,
-  useGetUserById
-} from '@audius/common/api'
+import { useCollection, useTrack, useUser } from '@audius/common/api'
 import { recentSearchMessages as messages } from '@audius/common/messages'
-import { Kind, SquareSizes, Status } from '@audius/common/models'
+import { Kind, SquareSizes } from '@audius/common/models'
 import {
   SearchItem,
   isSearchItem,
@@ -111,14 +107,14 @@ const RecentSearch = (props: RecentSearchProps) => {
 const RecentSearchTrack = (props: { searchItem: SearchItem }) => {
   const { searchItem } = props
   const { id } = searchItem
-  const { data: track, status } = useGetTrackById({ id })
+  const { data: track, isLoading } = useTrack(id)
 
   const image = useTrackCoverArt({
     trackId: track?.track_id,
     size: SquareSizes.SIZE_150_BY_150
   })
 
-  if (status === Status.LOADING) return <RecentSearchSkeleton />
+  if (isLoading) return <RecentSearchSkeleton />
 
   if (!track) return null
   const { permalink, title, user } = track
@@ -163,16 +159,14 @@ const RecentSearchTrack = (props: { searchItem: SearchItem }) => {
 const RecentSearchCollection = (props: { searchItem: SearchItem }) => {
   const { searchItem } = props
   const { id } = searchItem
-  const { data: playlist, status } = useGetPlaylistById({
-    playlistId: id
-  })
+  const { data: playlist, status } = useCollection(id)
 
   const image = useCollectionCoverArt({
     collectionId: playlist?.playlist_id,
     size: SquareSizes.SIZE_150_BY_150
   })
 
-  if (status === Status.LOADING) return <RecentSearchSkeleton />
+  if (status === 'pending') return <RecentSearchSkeleton />
 
   if (!playlist) return null
   const { is_album, playlist_name, permalink, user } = playlist
@@ -221,9 +215,9 @@ const RecentSearchCollection = (props: { searchItem: SearchItem }) => {
 const RecentSearchUser = (props: { searchItem: SearchItem }) => {
   const { searchItem } = props
   const { id } = searchItem
-  const { data: user, status } = useGetUserById({ id })
+  const { data: user, status } = useUser(id)
 
-  if (status === Status.LOADING) return <RecentSearchSkeleton />
+  if (status === 'pending') return <RecentSearchSkeleton />
 
   if (!user) return null
   const { handle, name } = user

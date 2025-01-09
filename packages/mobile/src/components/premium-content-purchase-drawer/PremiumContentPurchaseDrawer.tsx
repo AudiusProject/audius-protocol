@@ -1,11 +1,6 @@
 import { useCallback, type ReactNode, useEffect } from 'react'
 
-import {
-  useGetCurrentUserId,
-  useGetPlaylistById,
-  useGetTrackById,
-  useGetUserById
-} from '@audius/common/api'
+import { useCollection, useTrack, useUser } from '@audius/common/api'
 import type { PurchaseableContentMetadata } from '@audius/common/hooks'
 import {
   useRemoteVar,
@@ -22,12 +17,7 @@ import {
   PURCHASE_METHOD_MINT_ADDRESS
 } from '@audius/common/hooks'
 import type { ID, USDCPurchaseConditions } from '@audius/common/models'
-import {
-  Name,
-  PurchaseMethod,
-  PurchaseVendor,
-  statusIsNotFinalized
-} from '@audius/common/models'
+import { Name, PurchaseMethod, PurchaseVendor } from '@audius/common/models'
 import { IntKeys, FeatureFlags } from '@audius/common/services'
 import {
   usePremiumContentPurchaseModal,
@@ -461,22 +451,9 @@ export const PremiumContentPurchaseDrawer = () => {
     onClosed
   } = usePremiumContentPurchaseModal()
   const isAlbum = contentType === PurchaseableContentType.ALBUM
-  const { data: currentUserId } = useGetCurrentUserId({})
-  const { data: track, status: trackStatus } = useGetTrackById(
-    { id: contentId },
-    { disabled: !contentId }
-  )
-  const { data: album } = useGetPlaylistById(
-    { playlistId: contentId!, currentUserId },
-    { disabled: !isAlbum || !contentId }
-  )
-  const { data: user } = useGetUserById(
-    {
-      id: track?.owner_id ?? album?.playlist_owner_id ?? 0,
-      currentUserId
-    },
-    { disabled: !(track?.owner_id ?? album?.playlist_owner_id) }
-  )
+  const { data: track, isLoading } = useTrack(contentId)
+  const { data: album } = useCollection(contentId)
+  const { data: user } = useUser(track?.owner_id ?? album?.playlist_owner_id)
   const metadata = {
     ...(isAlbum ? album : track),
     user
@@ -485,8 +462,6 @@ export const PremiumContentPurchaseDrawer = () => {
   const stage = useSelector(getPurchaseContentFlowStage)
   const error = useSelector(getPurchaseContentError)
   const isUnlocking = !error && isContentPurchaseInProgress(stage)
-
-  const isLoading = statusIsNotFinalized(trackStatus)
 
   const isValidStreamGatedTrack = !!metadata && isStreamPurchaseable(metadata)
   const isValidDownloadGatedTrack =

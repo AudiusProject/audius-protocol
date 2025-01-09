@@ -1,6 +1,6 @@
 import { useContext } from 'react'
 
-import { useGetTrackById } from '@audius/common/api'
+import { useTrack } from '@audius/common/api'
 import {
   ShareSource,
   RepostSource,
@@ -129,7 +129,7 @@ const TrackMenu = ({
   const { onOpen: openDeleteTrackConfirmation } =
     useDeleteTrackConfirmationModal()
 
-  const { data: track } = useGetTrackById({ id: props.trackId })
+  const { data: track } = useTrack(props.trackId)
 
   const onDeleteTrack = (trackId: Nullable<number>) => {
     if (!trackId) return

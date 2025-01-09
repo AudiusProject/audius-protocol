@@ -1,4 +1,4 @@
-import { useGetCurrentUserId, useGetPlaylistById } from '@audius/common/api'
+import { useCollection } from '@audius/common/api'
 import {
   useGatedContentAccess,
   useGatedContentAccessMap
@@ -53,15 +53,10 @@ export const CollectionActionButtons = (props: CollectionActionButtonProps) => {
     isPremium
   } = props
 
-  const { data: currentUserId } = useGetCurrentUserId({})
-  const { data: collection } = useGetPlaylistById(
-    {
-      playlistId: typeof collectionId === 'number' ? collectionId : null,
-      currentUserId
-    },
-    { disabled: typeof collectionId !== 'number' }
-  )
-  const { hasStreamAccess } = useGatedContentAccess(collection)
+  const { data: collection } = useCollection(collectionId as ID, {
+    enabled: typeof collectionId === 'number'
+  })
+  const { hasStreamAccess } = useGatedContentAccess(collection!)
   // Dirty hack to get around the possibility that collectionId is a SmartCollectionVariant
   const tracks = useSelector((state: CommonState) =>
     getCollectionTracks(state, {

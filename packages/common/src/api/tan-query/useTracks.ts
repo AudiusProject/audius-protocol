@@ -13,10 +13,14 @@ import { encodeHashId } from '~/utils/hashIds'
 import { QUERY_KEYS } from './queryKeys'
 
 type Config = {
+  enabled?: boolean
   staleTime?: number
 }
 
-export const useTracks = (trackIds: ID[], config?: Config) => {
+export const useTracks = (
+  trackIds: ID[] | null | undefined,
+  config?: Config
+) => {
   const { audiusSdk } = useAppContext()
   const queryClient = useQueryClient()
   const dispatch = useDispatch()
@@ -24,7 +28,7 @@ export const useTracks = (trackIds: ID[], config?: Config) => {
   return useQuery({
     queryKey: [QUERY_KEYS.tracks, trackIds],
     queryFn: async () => {
-      const encodedIds = trackIds
+      const encodedIds = trackIds!
         .map(encodeHashId)
         .filter((id): id is string => id !== null)
       if (encodedIds.length === 0) return []
@@ -62,6 +66,10 @@ export const useTracks = (trackIds: ID[], config?: Config) => {
       return tracks
     },
     staleTime: config?.staleTime,
-    enabled: !!audiusSdk && trackIds.length > 0
+    enabled:
+      config?.enabled !== false &&
+      !!audiusSdk &&
+      trackIds !== null &&
+      trackIds !== undefined
   })
 }

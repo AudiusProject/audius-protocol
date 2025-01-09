@@ -1,8 +1,5 @@
-import {
-  useGetCurrentUserId,
-  useGetPlaylistByPermalink
-} from '@audius/common/api'
-import { Name, SquareSizes, Status } from '@audius/common/models'
+import { useCollectionByPermalink } from '@audius/common/api'
+import { Name, SquareSizes } from '@audius/common/models'
 import { CollectionValues } from '@audius/common/schemas'
 import {
   EditCollectionValues,
@@ -50,20 +47,17 @@ export const EditCollectionPage = () => {
   useRequiresAccount()
   useIsUnauthorizedForHandleRedirect(handle)
 
-  const { data: currentUserId } = useGetCurrentUserId({})
-  const { data: apiCollection, status } = useGetPlaylistByPermalink(
-    {
-      permalink,
-      currentUserId
-    },
-    { disabled: !currentUserId, force: true }
-  )
+  const {
+    data: apiCollection,
+    isError,
+    isPending
+  } = useCollectionByPermalink(permalink)
 
   const localCollection = useSelector((state) =>
     getCollection(state, { permalink })
   )
 
-  const collection = status === Status.ERROR ? localCollection : apiCollection
+  const collection = isError ? localCollection : apiCollection
 
   const { playlist_id, tracks, description } = collection ?? {}
 
@@ -119,7 +113,7 @@ export const EditCollectionPage = () => {
 
   return (
     <Page header={<Header primary={messages.title(isAlbum)} showBackButton />}>
-      {status === Status.IDLE || status === Status.LOADING || !artworkUrl ? (
+      {isPending || !artworkUrl ? (
         <LoadingSpinnerFullPage />
       ) : (
         <EditCollectionForm

@@ -1,7 +1,7 @@
 import { ChatBlast, ChatBlastAudience } from '@audius/sdk'
 
 import {
-  useGetCurrentUserId,
+  useCurrentUserId,
   useGetFollowers,
   useGetPurchasers,
   useGetRemixers,
@@ -10,7 +10,7 @@ import {
 import { UserMetadata } from '~/models'
 
 export const useAudienceUsers = (chat: ChatBlast, limit?: number) => {
-  const { data: currentUserId } = useGetCurrentUserId({})
+  const { data: currentUserId } = useCurrentUserId()
 
   const { data: followers } = useGetFollowers({
     userId: currentUserId!,

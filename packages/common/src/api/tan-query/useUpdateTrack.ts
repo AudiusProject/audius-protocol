@@ -69,6 +69,15 @@ export const useUpdateTrack = () => {
         ...metadata
       }))
 
+      // Optimistically update trackByPermalink
+      queryClient.setQueryData(
+        [QUERY_KEYS.trackByPermalink, metadata.permalink],
+        (old: any) => ({
+          ...old,
+          ...metadata
+        })
+      )
+
       // Optimistically update all collections that contain this track
       queryClient.setQueriesData(
         { queryKey: [QUERY_KEYS.collection] },
@@ -99,6 +108,10 @@ export const useUpdateTrack = () => {
       if (context?.previousTrack) {
         queryClient.setQueryData(
           [QUERY_KEYS.track, trackId],
+          context.previousTrack
+        )
+        queryClient.setQueryData(
+          [QUERY_KEYS.trackByPermalink, context.previousTrack.permalink],
           context.previousTrack
         )
       }
