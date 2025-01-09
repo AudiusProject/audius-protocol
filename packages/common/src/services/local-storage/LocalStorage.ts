@@ -95,6 +95,7 @@ export class LocalStorage {
 
   getAudiusAccount = async (): Promise<CachedAccount | null> =>
     this.getJSONValue(AUDIUS_ACCOUNT_KEY)
+
   setAudiusAccount = async (value: object) => {
     await this.setJSONValue(AUDIUS_ACCOUNT_KEY, value)
   }
