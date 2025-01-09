@@ -106,11 +106,12 @@ export const PurchaseContentFormFooter = ({
     'track_id' in metadata ? metadata.track_id : metadata.playlist_id
   const title = 'title' in metadata ? metadata.title : metadata.playlist_name
   const isAlbum = isPurchaseableAlbum(metadata)
+  const isHidden = isAlbum ? metadata.is_private : metadata.is_unlisted
   const dispatch = useDispatch()
   const isPurchased = stage === PurchaseContentStage.FINISH
   const { totalPrice } = purchaseSummaryValues
   const [{ value: isGuestCheckout }] = useField(GUEST_CHECKOUT)
-
+  console.log('asdf stage', stage)
   const handleTwitterShare = useCallback(
     (handle: string) => {
       const shareText = messages.shareTwitterText(
@@ -182,7 +183,7 @@ export const PurchaseContentFormFooter = ({
               >
                 {isReposted ? messages.reposted : messages.repost}
               </Button>
-              {permalink ? (
+              {!isHidden && permalink ? (
                 <TwitterShareButton
                   fullWidth
                   type='dynamic'
