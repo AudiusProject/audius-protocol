@@ -2,11 +2,12 @@ import { useCallback, useContext } from 'react'
 
 import type { User } from '@audius/common/models'
 import { accountSelectors } from '@audius/common/store'
-import { TouchableOpacity, View } from 'react-native'
+import { TouchableOpacity } from 'react-native'
 import { useSelector } from 'react-redux'
 
-import { Text, ProfilePicture } from 'app/components/core'
-import UserBadges from 'app/components/user-badges'
+import { Flex, Text } from '@audius/harmony-native'
+import { ProfilePicture } from 'app/components/core'
+import { UserBadges } from 'app/components/user-badges'
 import { makeStyles } from 'app/styles'
 
 import { AppDrawerContext } from '../AppDrawerContext'
@@ -21,20 +22,9 @@ const useStyles = makeStyles(({ spacing }) => ({
     alignItems: 'flex-start',
     justifyContent: 'space-between'
   },
-  accountName: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    paddingRight: spacing(2)
-  },
-  name: {
-    flexShrink: 1
-  },
   accountBadges: {
     flexGrow: 1,
     alignSelf: 'center'
-  },
-  handle: {
-    paddingRight: spacing(3)
   }
 }))
 
@@ -52,34 +42,30 @@ export const AccountDetails = () => {
   }, [navigation, drawerHelpers])
 
   return (
-    <View style={styles.root}>
-      <TouchableOpacity onPress={handlePressAccount}>
+    <TouchableOpacity onPress={handlePressAccount}>
+      <Flex gap='m' ph='xl'>
         <ProfilePicture
           userId={accountUser.user_id}
-          h={50}
-          w={50}
-          mb='l'
+          h={77}
+          w={77}
           borderWidth='thin'
         />
-        <View style={styles.accountName}>
-          <Text numberOfLines={1} style={styles.name} variant='h1' noGutter>
-            {name}
+        <Flex gap='unitHalf'>
+          <Flex row justifyContent='space-around'>
+            <Text numberOfLines={1} variant='body' size='l' strength='strong'>
+              {name}
+            </Text>
+            <UserBadges
+              user={accountUser}
+              hideName
+              style={styles.accountBadges}
+            />
+          </Flex>
+          <Text numberOfLines={1} variant='body' size='s'>
+            @{handle}
           </Text>
-          <UserBadges
-            user={accountUser}
-            hideName
-            style={styles.accountBadges}
-          />
-        </View>
-        <Text
-          style={styles.handle}
-          numberOfLines={1}
-          weight='medium'
-          fontSize='medium'
-        >
-          @{handle}
-        </Text>
-      </TouchableOpacity>
-    </View>
+        </Flex>
+      </Flex>
+    </TouchableOpacity>
   )
 }
