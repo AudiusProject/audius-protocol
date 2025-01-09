@@ -71,6 +71,9 @@ export type UserMetadata = {
   user_id: number
   wallet?: string
 
+  // Used by redux cache
+  local?: boolean
+
   // Only present on the "current" account
   track_save_count?: number
   associated_sol_wallets?: Nullable<string[]>
