@@ -297,6 +297,6 @@ def index_core(self):
         if have_lock:
             update_lock.release()
         if not block_indexed:
-            celery.send_task("index_core", countdown=0.5, queue="index_sol")
+            celery.send_task("index_core", countdown=0.5, queue="index_core")
         else:
-            celery.send_task("index_core", queue="index_sol")
+            celery.send_task("index_core", queue="index_core")
