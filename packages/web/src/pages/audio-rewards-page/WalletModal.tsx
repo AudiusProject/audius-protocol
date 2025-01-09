@@ -317,7 +317,14 @@ const WalletModal = () => {
 
   if (modalState?.stage === 'CONNECT_WALLETS') {
     return (
-      <Modal size='small' isOpen={modalVisible} onClose={onClose}>
+      <Modal
+        size='small'
+        isOpen={modalVisible}
+        // Disable because web3Modal mounts outside of this component
+        // and selecting a provider will close this modal
+        dismissOnClickOutside={false}
+        onClose={onClose}
+      >
         <ModalHeader onClose={onClose}>
           <ModalTitle title={getTitle(modalState)} icon={<IconWallet />} />
         </ModalHeader>

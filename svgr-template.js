@@ -84,7 +84,7 @@ const ${variables.componentName} = forwardRef((${variables.props}, ref) => {
     other.width = isNaN(width) ? "100%" : width
   }
 
-  const fill = other.fill ?? theme.color?.icon[color] ?? 'red'
+  const fill = other.fill ?? theme.color?.icon[color]
 
   ${native ? nativeStyles : webStyles}
 

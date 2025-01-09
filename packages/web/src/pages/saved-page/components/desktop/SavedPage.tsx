@@ -15,12 +15,13 @@ import {
   IconPlaylists,
   IconPause,
   IconPlay,
-  Button
+  Button,
+  IconLibrary
 } from '@audius/harmony'
 import { useSelector } from 'react-redux'
 
 import FilterInput from 'components/filter-input/FilterInput'
-import Header from 'components/header/desktop/Header'
+import { Header } from 'components/header/desktop/Header'
 import Page from 'components/page/Page'
 import { dateSorter } from 'components/table'
 import { TracksTable, TracksTableColumn } from 'components/tracks-table'
@@ -264,6 +265,7 @@ const SavedPage = ({
 
   const header = (
     <Header
+      icon={IconLibrary}
       primary={messages.libraryHeader}
       secondary={isEmpty ? null : playAllButton}
       rightDecorator={<LibraryCategorySelectionMenu currentTab={currentTab} />}

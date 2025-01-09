@@ -30,7 +30,7 @@ describe('NotificationsApi', () => {
       new Configuration(),
       new EntityManagerClient({
         discoveryNodeSelector: new DiscoveryNodeSelector(),
-        audiusWalletClient: createAppWalletClient('0x')
+        audiusWalletClient: createAppWalletClient({ apiKey: '' })
       })
     )
     vitest.spyOn(console, 'warn').mockImplementation(() => {})

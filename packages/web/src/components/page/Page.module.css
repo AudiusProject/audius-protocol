@@ -4,13 +4,7 @@
 }
 
 .pageContainer .inset {
-  padding: 0px 56px 56px;
-}
-
-@media screen and (max-width: 1100px) {
-  .pageContainer .inset {
-    padding: 0px 16px 16px;
-  }
+  padding: 0px var(--harmony-unit-15) var(--harmony-unit-15);
 }
 
 .pageContainer .flush {
@@ -27,7 +21,7 @@
   max-width: 1080px;
 }
 .inset.large > .pageContent {
-  min-width: 600px;
+  min-width: 720px;
   max-width: 1080px;
 }
 
@@ -43,7 +37,7 @@
   backdrop-filter: blur(10px);
   position: relative;
   z-index: 10;
-  padding-inline: 20px;
+  padding-inline: var(--harmony-unit-15);
 }
 
 .headerBoxShadow {
@@ -56,6 +50,6 @@
 
 .searchWrapper {
   position: absolute;
-  top: 0px;
-  left: 0px;
+  top: var(--harmony-unit-8);
+  left: var(--harmony-unit-15);
 }

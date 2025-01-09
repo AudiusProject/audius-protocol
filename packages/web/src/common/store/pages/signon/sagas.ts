@@ -622,7 +622,7 @@ function* createGuestAccount(
           sdk.users.createGuestAccount
         ])
         yield* call(confirmTransaction, blockHash, blockNumber)
-        yield* call(fetchAccountAsync, { isSignUp: true })
+        yield* call(fetchAccountAsync)
 
         const userBank = yield* call(getOrCreateUSDCUserBank)
         if (!userBank) {

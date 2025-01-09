@@ -50,7 +50,7 @@ export const ReplaceTrackProgressModal = () => {
           <Flex direction='column' gap='3xl'>
             <Flex alignItems='center' direction='column' gap='xl'>
               <IconAudiusLogo height={48} width={48} color='subdued' />
-              <Text variant='body' size='l'>
+              <Text variant='body' size='l' textAlign='center'>
                 {messages.description}
               </Text>
             </Flex>
