@@ -4,14 +4,8 @@ import { createContext, useCallback, useContext } from 'react'
 import {
   useSearchResults,
   type SearchCategory,
-  type SearchFilter,
   type SearchFilters
 } from '@audius/common/api'
-import type {
-  UserCollectionMetadata,
-  UserMetadata,
-  UserTrackMetadata
-} from '@audius/common/models'
 import { accountSelectors } from '@audius/common/store'
 import { isEmpty } from 'lodash'
 import { useSelector } from 'react-redux'
@@ -80,7 +74,9 @@ export const useSearchFilters = () => {
   return [filters, setFilters] as const
 }
 
-export const useSearchFilter = <F extends SearchFilter>(filterKey: F) => {
+export const useSearchFilter = <F extends keyof SearchFilters>(
+  filterKey: F
+) => {
   const { filters, setFilters } = useContext(SearchContext)
 
   const filter = filters[filterKey]
@@ -99,29 +95,10 @@ export const useSearchFilter = <F extends SearchFilter>(filterKey: F) => {
   return [filter, setFilter, clearFilter] as const
 }
 
-type SearchData = {
-  tracks: UserTrackMetadata[]
-  users: UserMetadata[]
-  albums: UserCollectionMetadata[]
-  playlists: UserCollectionMetadata[]
-}
-
-type SearchResultsType<C extends SearchCategory> = {
-  isLoading: boolean
-  isSuccess: boolean
-  data: C extends 'all'
-    ? SearchData
-    : C extends keyof SearchData
-      ? SearchData[C]
-      : never
-}
-
-export const useGetSearchResults = <C extends SearchCategory>(
-  category: C
-): SearchResultsType<C> => {
+export const useGetSearchResults = (category: SearchCategory) => {
   const { filters, query } = useContext(SearchContext)
   const currentUserId = useSelector(getUserId)
-  const { data, isLoading, isSuccess } = useSearchResults({
+  const { data, ...queryState } = useSearchResults({
     query,
     ...filters,
     category,
@@ -132,15 +109,13 @@ export const useGetSearchResults = <C extends SearchCategory>(
 
   if (category === 'all') {
     return {
-      data: data as SearchData,
-      isLoading,
-      isSuccess
-    } as SearchResultsType<C>
+      data,
+      ...queryState
+    }
   } else {
     return {
-      data: (data as SearchData)?.[category as keyof SearchData],
-      isLoading,
-      isSuccess
-    } as SearchResultsType<C>
+      data: data?.[category],
+      ...queryState
+    }
   }
 }

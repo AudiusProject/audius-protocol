@@ -1,7 +1,7 @@
 import qs from 'query-string'
 import { matchPath, generatePath } from 'react-router'
 
-import { SearchCategory, SearchFilters } from '~/api/search'
+import { SearchCategory, SearchFilters } from '~/api/tan-query/useSearchResults'
 import { ID } from '~/models'
 
 import { encodeUrlName } from './formatUtil'

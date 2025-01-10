@@ -29,7 +29,9 @@ export type SearchFilters = {
   isPremium?: boolean
 }
 
-type SearchArgs = {
+export type SearchFilter = keyof SearchFilters
+
+export type SearchArgs = {
   currentUserId: ID | null
   query: string
   category?: SearchCategory

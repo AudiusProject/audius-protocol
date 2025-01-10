@@ -9,9 +9,9 @@ import { FeatureFlags } from '~/services'
 import { SearchKind, SearchSortMethod } from '~/store'
 import { Genre, formatMusicalKey } from '~/utils'
 
-export type SearchCategory = 'all' | 'tracks' | 'albums' | 'playlists' | 'users'
+type SearchCategory = 'all' | 'tracks' | 'albums' | 'playlists' | 'users'
 
-export type SearchFilters = {
+type SearchFilters = {
   genre?: Genre
   mood?: Mood
   bpm?: string
@@ -20,8 +20,6 @@ export type SearchFilters = {
   hasDownloads?: boolean
   isPremium?: boolean
 }
-
-export type SearchFilter = keyof SearchFilters
 
 type GetSearchArgs = {
   currentUserId: ID | null

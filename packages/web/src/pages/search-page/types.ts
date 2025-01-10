@@ -1,8 +1,5 @@
-import { SearchCategory } from '@audius/common/api'
-import { ID } from '@audius/common/models'
 import { IconComponent } from '@audius/harmony'
 import { Mood } from '@audius/sdk'
-import { QueryStatus } from '@tanstack/react-query'
 
 import { categories } from './categories'
 
@@ -40,19 +37,6 @@ export type MoodInfo = {
   label: Mood
   value: Mood
   icon: JSX.Element
-}
-
-export type SearchResultsType<C extends SearchCategory> = {
-  status: QueryStatus
-  isLoading: boolean
-  data: C extends 'all'
-    ? {
-        users: ID[]
-        tracks: ID[]
-        playlists: ID[]
-        albums: ID[]
-      }
-    : ID[]
 }
 
 export type CategoryKey = keyof typeof categories
