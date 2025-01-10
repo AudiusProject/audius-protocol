@@ -1,4 +1,5 @@
-import { useInfiniteQuery } from '@tanstack/react-query'
+import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query'
+import { useDispatch } from 'react-redux'
 
 import { userMetadataListFromSDK } from '~/adapters/user'
 import { useAudiusQueryContext } from '~/audius-query'
@@ -8,6 +9,7 @@ import { User } from '~/models/User'
 import { QUERY_KEYS } from './queryKeys'
 import { Config } from './types'
 import { useCurrentUserId } from './useCurrentUserId'
+import { primeUserData } from './utils/primeUserData'
 
 const LIMIT = 15
 
@@ -22,10 +24,12 @@ type UseFollowersArgs = {
  */
 export const useFollowers = (
   { userId, limit = LIMIT }: UseFollowersArgs,
-  options?: Config
+  config?: Config
 ) => {
   const { audiusSdk } = useAudiusQueryContext()
   const { data: currentUserId } = useCurrentUserId()
+  const queryClient = useQueryClient()
+  const dispatch = useDispatch()
 
   const {
     data,
@@ -35,8 +39,7 @@ export const useFollowers = (
     isLoading,
     ...rest
   } = useInfiniteQuery({
-    queryKey: [QUERY_KEYS.followers, userId, { limit }],
-    enabled: options?.enabled !== false && !!userId && !!audiusSdk,
+    queryKey: [QUERY_KEYS.followers, userId, limit],
     initialPageParam: 0,
     getNextPageParam: (lastPage: User[], allPages) => {
       if (lastPage.length < limit) return undefined
@@ -50,9 +53,12 @@ export const useFollowers = (
         offset: pageParam,
         userId: OptionalId.parse(currentUserId)
       })
-      return userMetadataListFromSDK(data)
+      const users = userMetadataListFromSDK(data)
+      primeUserData({ users, queryClient, dispatch })
+      return users
     },
-    staleTime: options?.staleTime
+    staleTime: config?.staleTime,
+    enabled: config?.enabled !== false && !!userId
   })
 
   const flatData = data?.pages.flat() ?? []

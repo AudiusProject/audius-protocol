@@ -19,22 +19,12 @@ export const FollowersScreen = () => {
   const { userId } = params
   const { data: currentUserId } = useCurrentUserId()
 
-  const { data, hasMore, isLoadingMore, loadMore, isLoading } = useFollowers({
-    userId,
-    limit: 15
-  })
+  const query = useFollowers({ userId })
 
   return (
     <UserListScreen title={messages.title} titleIcon={IconUserFollowers}>
       <>
-        <UserListV2
-          data={data}
-          hasMore={hasMore}
-          isLoadingMore={isLoadingMore}
-          isLoading={isLoading}
-          loadMore={loadMore}
-          tag='FOLLOWERS'
-        />
+        <UserListV2 {...query} tag='FOLLOWERS' />
         {currentUserId === userId ? (
           <Box
             style={css({

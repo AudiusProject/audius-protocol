@@ -55,10 +55,6 @@ type UserListV2Props = {
    */
   data: User[]
   /**
-   * Whether there are more users to load
-   */
-  hasMore: boolean
-  /**
    * Whether we're loading more users
    */
   isLoadingMore: boolean
@@ -77,13 +73,12 @@ type UserListV2Props = {
 }
 
 export const UserListV2 = (props: UserListV2Props) => {
-  const { data, hasMore, isLoadingMore, isLoading, loadMore, tag } = props
+  const { data, isLoadingMore, isLoading, loadMore, tag } = props
   const styles = useStyles()
 
   const isEmpty = data.length === 0
-  const showSkeletons = hasMore || isLoading
 
-  const displayData = [...data, ...(showSkeletons ? skeletonData : [])]
+  const displayData = [...data, ...(isLoading ? skeletonData : [])]
 
   const renderItem: ListRenderItem<User | SkeletonItem> = ({ item }) =>
     '_loading' in item ? (
