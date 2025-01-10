@@ -15,41 +15,35 @@ class ProtocolStub(object):
             channel: A grpc.Channel.
         """
         self.SendTransaction = channel.unary_unary(
-            "/protocol.Protocol/SendTransaction",
-            request_serializer=protocol__pb2.SendTransactionRequest.SerializeToString,
-            response_deserializer=protocol__pb2.TransactionResponse.FromString,
-            _registered_method=True,
-        )
+                '/protocol.Protocol/SendTransaction',
+                request_serializer=protocol__pb2.SendTransactionRequest.SerializeToString,
+                response_deserializer=protocol__pb2.TransactionResponse.FromString,
+                _registered_method=True)
         self.ForwardTransaction = channel.unary_unary(
-            "/protocol.Protocol/ForwardTransaction",
-            request_serializer=protocol__pb2.ForwardTransactionRequest.SerializeToString,
-            response_deserializer=protocol__pb2.ForwardTransactionResponse.FromString,
-            _registered_method=True,
-        )
+                '/protocol.Protocol/ForwardTransaction',
+                request_serializer=protocol__pb2.ForwardTransactionRequest.SerializeToString,
+                response_deserializer=protocol__pb2.ForwardTransactionResponse.FromString,
+                _registered_method=True)
         self.GetTransaction = channel.unary_unary(
-            "/protocol.Protocol/GetTransaction",
-            request_serializer=protocol__pb2.GetTransactionRequest.SerializeToString,
-            response_deserializer=protocol__pb2.TransactionResponse.FromString,
-            _registered_method=True,
-        )
+                '/protocol.Protocol/GetTransaction',
+                request_serializer=protocol__pb2.GetTransactionRequest.SerializeToString,
+                response_deserializer=protocol__pb2.TransactionResponse.FromString,
+                _registered_method=True)
         self.GetBlock = channel.unary_unary(
-            "/protocol.Protocol/GetBlock",
-            request_serializer=protocol__pb2.GetBlockRequest.SerializeToString,
-            response_deserializer=protocol__pb2.BlockResponse.FromString,
-            _registered_method=True,
-        )
+                '/protocol.Protocol/GetBlock',
+                request_serializer=protocol__pb2.GetBlockRequest.SerializeToString,
+                response_deserializer=protocol__pb2.BlockResponse.FromString,
+                _registered_method=True)
         self.GetNodeInfo = channel.unary_unary(
-            "/protocol.Protocol/GetNodeInfo",
-            request_serializer=protocol__pb2.GetNodeInfoRequest.SerializeToString,
-            response_deserializer=protocol__pb2.NodeInfoResponse.FromString,
-            _registered_method=True,
-        )
+                '/protocol.Protocol/GetNodeInfo',
+                request_serializer=protocol__pb2.GetNodeInfoRequest.SerializeToString,
+                response_deserializer=protocol__pb2.NodeInfoResponse.FromString,
+                _registered_method=True)
         self.Ping = channel.unary_unary(
-            "/protocol.Protocol/Ping",
-            request_serializer=protocol__pb2.PingRequest.SerializeToString,
-            response_deserializer=protocol__pb2.PingResponse.FromString,
-            _registered_method=True,
-        )
+                '/protocol.Protocol/Ping',
+                request_serializer=protocol__pb2.PingRequest.SerializeToString,
+                response_deserializer=protocol__pb2.PingResponse.FromString,
+                _registered_method=True)
 
 
 class ProtocolServicer(object):
@@ -58,101 +52,98 @@ class ProtocolServicer(object):
     def SendTransaction(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-        context.set_details("Method not implemented!")
-        raise NotImplementedError("Method not implemented!")
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
 
     def ForwardTransaction(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-        context.set_details("Method not implemented!")
-        raise NotImplementedError("Method not implemented!")
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
 
     def GetTransaction(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-        context.set_details("Method not implemented!")
-        raise NotImplementedError("Method not implemented!")
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
 
     def GetBlock(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-        context.set_details("Method not implemented!")
-        raise NotImplementedError("Method not implemented!")
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
 
     def GetNodeInfo(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-        context.set_details("Method not implemented!")
-        raise NotImplementedError("Method not implemented!")
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
 
     def Ping(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-        context.set_details("Method not implemented!")
-        raise NotImplementedError("Method not implemented!")
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
 
 
 def add_ProtocolServicer_to_server(servicer, server):
     rpc_method_handlers = {
-        "SendTransaction": grpc.unary_unary_rpc_method_handler(
-            servicer.SendTransaction,
-            request_deserializer=protocol__pb2.SendTransactionRequest.FromString,
-            response_serializer=protocol__pb2.TransactionResponse.SerializeToString,
-        ),
-        "ForwardTransaction": grpc.unary_unary_rpc_method_handler(
-            servicer.ForwardTransaction,
-            request_deserializer=protocol__pb2.ForwardTransactionRequest.FromString,
-            response_serializer=protocol__pb2.ForwardTransactionResponse.SerializeToString,
-        ),
-        "GetTransaction": grpc.unary_unary_rpc_method_handler(
-            servicer.GetTransaction,
-            request_deserializer=protocol__pb2.GetTransactionRequest.FromString,
-            response_serializer=protocol__pb2.TransactionResponse.SerializeToString,
-        ),
-        "GetBlock": grpc.unary_unary_rpc_method_handler(
-            servicer.GetBlock,
-            request_deserializer=protocol__pb2.GetBlockRequest.FromString,
-            response_serializer=protocol__pb2.BlockResponse.SerializeToString,
-        ),
-        "GetNodeInfo": grpc.unary_unary_rpc_method_handler(
-            servicer.GetNodeInfo,
-            request_deserializer=protocol__pb2.GetNodeInfoRequest.FromString,
-            response_serializer=protocol__pb2.NodeInfoResponse.SerializeToString,
-        ),
-        "Ping": grpc.unary_unary_rpc_method_handler(
-            servicer.Ping,
-            request_deserializer=protocol__pb2.PingRequest.FromString,
-            response_serializer=protocol__pb2.PingResponse.SerializeToString,
-        ),
+            'SendTransaction': grpc.unary_unary_rpc_method_handler(
+                    servicer.SendTransaction,
+                    request_deserializer=protocol__pb2.SendTransactionRequest.FromString,
+                    response_serializer=protocol__pb2.TransactionResponse.SerializeToString,
+            ),
+            'ForwardTransaction': grpc.unary_unary_rpc_method_handler(
+                    servicer.ForwardTransaction,
+                    request_deserializer=protocol__pb2.ForwardTransactionRequest.FromString,
+                    response_serializer=protocol__pb2.ForwardTransactionResponse.SerializeToString,
+            ),
+            'GetTransaction': grpc.unary_unary_rpc_method_handler(
+                    servicer.GetTransaction,
+                    request_deserializer=protocol__pb2.GetTransactionRequest.FromString,
+                    response_serializer=protocol__pb2.TransactionResponse.SerializeToString,
+            ),
+            'GetBlock': grpc.unary_unary_rpc_method_handler(
+                    servicer.GetBlock,
+                    request_deserializer=protocol__pb2.GetBlockRequest.FromString,
+                    response_serializer=protocol__pb2.BlockResponse.SerializeToString,
+            ),
+            'GetNodeInfo': grpc.unary_unary_rpc_method_handler(
+                    servicer.GetNodeInfo,
+                    request_deserializer=protocol__pb2.GetNodeInfoRequest.FromString,
+                    response_serializer=protocol__pb2.NodeInfoResponse.SerializeToString,
+            ),
+            'Ping': grpc.unary_unary_rpc_method_handler(
+                    servicer.Ping,
+                    request_deserializer=protocol__pb2.PingRequest.FromString,
+                    response_serializer=protocol__pb2.PingResponse.SerializeToString,
+            ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
-        "protocol.Protocol", rpc_method_handlers
-    )
+            'protocol.Protocol', rpc_method_handlers)
     server.add_generic_rpc_handlers((generic_handler,))
-    server.add_registered_method_handlers("protocol.Protocol", rpc_method_handlers)
+    server.add_registered_method_handlers('protocol.Protocol', rpc_method_handlers)
 
 
-# This class is part of an EXPERIMENTAL API.
+ # This class is part of an EXPERIMENTAL API.
 class Protocol(object):
     """Missing associated documentation comment in .proto file."""
 
     @staticmethod
-    def SendTransaction(
-        request,
-        target,
-        options=(),
-        channel_credentials=None,
-        call_credentials=None,
-        insecure=False,
-        compression=None,
-        wait_for_ready=None,
-        timeout=None,
-        metadata=None,
-    ):
+    def SendTransaction(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
         return grpc.experimental.unary_unary(
             request,
             target,
-            "/protocol.Protocol/SendTransaction",
+            '/protocol.Protocol/SendTransaction',
             protocol__pb2.SendTransactionRequest.SerializeToString,
             protocol__pb2.TransactionResponse.FromString,
             options,
@@ -163,26 +154,23 @@ class Protocol(object):
             wait_for_ready,
             timeout,
             metadata,
-            _registered_method=True,
-        )
+            _registered_method=True)
 
     @staticmethod
-    def ForwardTransaction(
-        request,
-        target,
-        options=(),
-        channel_credentials=None,
-        call_credentials=None,
-        insecure=False,
-        compression=None,
-        wait_for_ready=None,
-        timeout=None,
-        metadata=None,
-    ):
+    def ForwardTransaction(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
         return grpc.experimental.unary_unary(
             request,
             target,
-            "/protocol.Protocol/ForwardTransaction",
+            '/protocol.Protocol/ForwardTransaction',
             protocol__pb2.ForwardTransactionRequest.SerializeToString,
             protocol__pb2.ForwardTransactionResponse.FromString,
             options,
@@ -193,26 +181,23 @@ class Protocol(object):
             wait_for_ready,
             timeout,
             metadata,
-            _registered_method=True,
-        )
+            _registered_method=True)
 
     @staticmethod
-    def GetTransaction(
-        request,
-        target,
-        options=(),
-        channel_credentials=None,
-        call_credentials=None,
-        insecure=False,
-        compression=None,
-        wait_for_ready=None,
-        timeout=None,
-        metadata=None,
-    ):
+    def GetTransaction(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
         return grpc.experimental.unary_unary(
             request,
             target,
-            "/protocol.Protocol/GetTransaction",
+            '/protocol.Protocol/GetTransaction',
             protocol__pb2.GetTransactionRequest.SerializeToString,
             protocol__pb2.TransactionResponse.FromString,
             options,
@@ -223,26 +208,23 @@ class Protocol(object):
             wait_for_ready,
             timeout,
             metadata,
-            _registered_method=True,
-        )
+            _registered_method=True)
 
     @staticmethod
-    def GetBlock(
-        request,
-        target,
-        options=(),
-        channel_credentials=None,
-        call_credentials=None,
-        insecure=False,
-        compression=None,
-        wait_for_ready=None,
-        timeout=None,
-        metadata=None,
-    ):
+    def GetBlock(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
         return grpc.experimental.unary_unary(
             request,
             target,
-            "/protocol.Protocol/GetBlock",
+            '/protocol.Protocol/GetBlock',
             protocol__pb2.GetBlockRequest.SerializeToString,
             protocol__pb2.BlockResponse.FromString,
             options,
@@ -253,26 +235,23 @@ class Protocol(object):
             wait_for_ready,
             timeout,
             metadata,
-            _registered_method=True,
-        )
+            _registered_method=True)
 
     @staticmethod
-    def GetNodeInfo(
-        request,
-        target,
-        options=(),
-        channel_credentials=None,
-        call_credentials=None,
-        insecure=False,
-        compression=None,
-        wait_for_ready=None,
-        timeout=None,
-        metadata=None,
-    ):
+    def GetNodeInfo(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
         return grpc.experimental.unary_unary(
             request,
             target,
-            "/protocol.Protocol/GetNodeInfo",
+            '/protocol.Protocol/GetNodeInfo',
             protocol__pb2.GetNodeInfoRequest.SerializeToString,
             protocol__pb2.NodeInfoResponse.FromString,
             options,
@@ -283,26 +262,23 @@ class Protocol(object):
             wait_for_ready,
             timeout,
             metadata,
-            _registered_method=True,
-        )
+            _registered_method=True)
 
     @staticmethod
-    def Ping(
-        request,
-        target,
-        options=(),
-        channel_credentials=None,
-        call_credentials=None,
-        insecure=False,
-        compression=None,
-        wait_for_ready=None,
-        timeout=None,
-        metadata=None,
-    ):
+    def Ping(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
         return grpc.experimental.unary_unary(
             request,
             target,
-            "/protocol.Protocol/Ping",
+            '/protocol.Protocol/Ping',
             protocol__pb2.PingRequest.SerializeToString,
             protocol__pb2.PingResponse.FromString,
             options,
@@ -313,5 +289,4 @@ class Protocol(object):
             wait_for_ready,
             timeout,
             metadata,
-            _registered_method=True,
-        )
+            _registered_method=True)
