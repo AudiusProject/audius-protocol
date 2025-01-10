@@ -11,7 +11,6 @@ import {
   USDCContentPurchaseType,
   USDCPurchaseDetails
 } from '~/models/USDCTransactions'
-import { Nullable } from '~/utils/typeUtils'
 
 import { QUERY_KEYS } from './queryKeys'
 import { Config } from './types'
@@ -22,19 +21,17 @@ import { useUsers } from './useUsers'
 const PAGE_SIZE = 10
 
 export type GetPurchaseListArgs = {
-  userId: Nullable<ID>
+  userId: ID | null | undefined
   sortMethod?: full.GetPurchasesSortMethodEnum
   sortDirection?: full.GetPurchasesSortDirectionEnum
   pageSize?: number
 }
 
-export const usePurchases = (args: GetPurchaseListArgs, options: Config) => {
+export const usePurchases = (args: GetPurchaseListArgs, options?: Config) => {
   const { userId, sortMethod, sortDirection, pageSize = PAGE_SIZE } = args
   const { audiusSdk } = useAudiusQueryContext()
-  const { enabled } = options
   const queryResult = useInfiniteQuery({
     queryKey: [QUERY_KEYS.purchases, args],
-    enabled: enabled !== false && !!userId,
     initialPageParam: 0,
     getNextPageParam: (
       lastPage: USDCPurchaseDetails[],
@@ -56,7 +53,9 @@ export const usePurchases = (args: GetPurchaseListArgs, options: Config) => {
 
       return data.map(purchaseFromSDK)
     },
-    select: (data) => data.pages.flat()
+    select: (data) => data.pages.flat(),
+    ...options,
+    enabled: options?.enabled !== false && !!userId
   })
 
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage, ...rest } =

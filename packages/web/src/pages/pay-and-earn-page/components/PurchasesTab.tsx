@@ -93,10 +93,12 @@ export const usePurchasesData = () => {
     hasMore,
     isPending: isPurchasesPending,
     isError: isPurchasesError
-  } = usePurchases(
-    { userId, sortMethod, sortDirection },
-    { pageSize: TRANSACTIONS_BATCH_SIZE }
-  )
+  } = usePurchases({
+    userId,
+    sortMethod,
+    sortDirection,
+    pageSize: TRANSACTIONS_BATCH_SIZE
+  })
 
   const {
     data: count,
@@ -182,7 +184,7 @@ export const PurchasesTab = ({
 
   return (
     <div className={styles.container}>
-      {isEmpty ? (
+      {isEmpty || !data ? (
         <NoPurchases />
       ) : (
         <PurchasesTable
