@@ -4,24 +4,39 @@ import { useTheme, CSSObject } from '@emotion/react'
 
 import { HarmonyTheme } from '../../foundations/theme'
 import { IconCaretDown, IconCaretRight } from '../../icons'
+import { Box } from '../layout/Box'
 import { Flex } from '../layout/Flex'
 import { Text } from '../text'
 
-import type { ExpandableNavItemProps } from './types'
+import type { ExpandableNavItemProps, VariantConfigs } from './types'
 
-const getStyles = (
-  theme: HarmonyTheme,
-  isOpen: boolean,
-  isHovered: boolean
-): CSSObject => {
+const variants: VariantConfigs = {
+  default: {
+    textVariant: 'title',
+    textSize: 'l',
+    textStrength: 'weak',
+    iconSize: 'l',
+    gap: 'm'
+  },
+  compact: {
+    textVariant: 'body',
+    textSize: 's',
+    textStrength: undefined,
+    iconSize: 's',
+    gap: 'xs'
+  }
+}
+
+const getStyles = (theme: HarmonyTheme, isHovered: boolean): CSSObject => {
   const baseStyles: CSSObject = {
     transition: `background-color ${theme.motion.hover}`,
     cursor: 'pointer',
-    border: `1px solid ${isOpen ? theme.color.border.default : 'transparent'}`
+    border: `1px solid transparent`
   }
 
   const hoverStyles: CSSObject = {
-    backgroundColor: theme.color.background.surface2
+    backgroundColor: theme.color.background.surface2,
+    border: `1px solid ${theme.color.border.default}`
   }
 
   return {
@@ -37,6 +52,8 @@ export const ExpandableNavItem = ({
   defaultIsOpen = false,
   nestedItems,
   shouldPersistRightIcon = false,
+  canUnfurl = true,
+  variant = 'default',
   ...props
 }: ExpandableNavItemProps) => {
   const [isOpen, setIsOpen] = useState(defaultIsOpen)
@@ -45,18 +62,46 @@ export const ExpandableNavItem = ({
 
   const handleMouseEnter = () => setIsHovered(true)
   const handleMouseLeave = () => setIsHovered(false)
-  const handleClick = () => setIsOpen(!isOpen)
+  const handleClick = () => {
+    if (canUnfurl) {
+      setIsOpen(!isOpen)
+    }
+  }
 
-  const styles = useMemo(
-    () => getStyles(theme, isOpen, isHovered),
-    [theme, isOpen, isHovered]
-  )
+  const styles = useMemo(() => getStyles(theme, isHovered), [theme, isHovered])
 
-  const IconComponent = isHovered
-    ? isOpen
-      ? IconCaretDown
-      : IconCaretRight
-    : LeftIcon
+  const getIcon = useMemo(() => {
+    const shouldShowCaret = isHovered && canUnfurl
+    if (shouldShowCaret) {
+      return isOpen ? (
+        <IconCaretDown size='s' color='default' />
+      ) : (
+        <IconCaretRight size='s' color='default' />
+      )
+    }
+
+    if (LeftIcon) {
+      return <LeftIcon size={variants[variant].iconSize} color='default' />
+    }
+
+    return null
+  }, [isHovered, canUnfurl, LeftIcon, isOpen, variant])
+
+  const leftIcon = useMemo(() => {
+    if (!getIcon) return null
+
+    return (
+      <Flex alignItems='center' justifyContent='center' h='unit6' w='unit6'>
+        {getIcon}
+      </Flex>
+    )
+  }, [getIcon])
+
+  const shouldShowRightIcon = isOpen || shouldPersistRightIcon
+
+  const stopRightIconPropagation = (e: React.MouseEvent) => {
+    e.stopPropagation()
+  }
 
   return (
     <Flex direction='column' role='navigation' {...props}>
@@ -88,26 +133,27 @@ export const ExpandableNavItem = ({
         >
           <Flex
             alignItems='center'
-            gap='m'
+            gap={variants[variant].gap}
             flex={1}
             css={{
               maxWidth: '240px'
             }}
           >
-            {IconComponent ? <IconComponent color='default' size='m' /> : null}
+            {leftIcon}
             <Text
-              variant='title'
-              size='l'
-              strength='weak'
+              variant={variants[variant].textVariant}
+              size={variants[variant].textSize}
+              strength={variants[variant].textStrength}
               lineHeight='single'
               color='default'
               ellipses
-              maxLines={1}
             >
               {label}
             </Text>
           </Flex>
-          {isOpen || shouldPersistRightIcon ? rightIcon : null}
+          {shouldShowRightIcon ? (
+            <Box onClick={stopRightIconPropagation}>{rightIcon}</Box>
+          ) : null}
         </Flex>
       </Flex>
       {isOpen && nestedItems ? (

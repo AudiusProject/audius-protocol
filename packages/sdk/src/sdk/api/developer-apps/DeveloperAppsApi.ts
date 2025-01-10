@@ -46,7 +46,10 @@ export class DeveloperAppsApi extends GeneratedDeveloperAppsApi {
 
     const privateKey = generatePrivateKey()
     const address = privateKeyToAddress(privateKey)
-    const wallet = createAppWalletClient(address, privateKey)
+    const wallet = createAppWalletClient({
+      apiKey: address,
+      apiSecret: privateKey
+    })
 
     const unixTs = Math.round(new Date().getTime() / 1000) // current unix timestamp (sec)
     const message = `Creating Audius developer app at ${unixTs}`

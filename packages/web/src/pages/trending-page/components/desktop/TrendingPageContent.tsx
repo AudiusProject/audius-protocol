@@ -3,9 +3,10 @@ import { useCallback, useRef, useState } from 'react'
 import { Name, Status, TimeRange } from '@audius/common/models'
 import { trendingPageLineupActions } from '@audius/common/store'
 import { ELECTRONIC_PREFIX, TRENDING_GENRES } from '@audius/common/utils'
+import { IconTrending } from '@audius/harmony'
 
 import { make, useRecord } from 'common/store/analytics/actions'
-import Header from 'components/header/desktop/Header'
+import { Header } from 'components/header/desktop/Header'
 import EndOfLineup from 'components/lineup/EndOfLineup'
 import Lineup from 'components/lineup/Lineup'
 import { LineupVariant } from 'components/lineup/types'
@@ -324,8 +325,8 @@ const TrendingPageContent = (props: TrendingPageContentProps) => {
   // Setup Header
   const header = (
     <Header
+      icon={IconTrending}
       primary={trendingTitle}
-      variant={'main'}
       bottomBar={tabs}
       rightDecorator={
         <TrendingGenreFilters

@@ -1,1 +1,1 @@
-export { AudioTransactionsPage } from './AudioTransactionsPage'
+export { AudioWalletTransactions } from './AudioWalletTransactions'

@@ -1,11 +1,11 @@
 import type { ReactNode } from 'react'
 import { useContext, useCallback } from 'react'
 
-import { TouchableOpacity, View } from 'react-native'
+import { TouchableOpacity } from 'react-native'
 
+import { Flex, Text } from '@audius/harmony-native'
 import type { IconComponent } from '@audius/harmony-native'
 import type { TextProps } from 'app/components/core'
-import { Text } from 'app/components/core'
 import type { ContextualParams } from 'app/hooks/useNavigation'
 import type { AppTabScreenParamList } from 'app/screens/app-screen'
 import { makeStyles } from 'app/styles'
@@ -18,18 +18,8 @@ const useStyles = makeStyles(({ spacing, palette }) => ({
   accountListItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingLeft: spacing(6),
+    paddingHorizontal: spacing(6),
     paddingVertical: spacing(4)
-  },
-  accountListItemIconRoot: {
-    width: spacing(10)
-  },
-  accountListItemIcon: {
-    marginRight: spacing(2),
-    paddingVertical: spacing(1)
-  },
-  label: {
-    marginTop: spacing(1)
   },
   notificationBubble: {
     position: 'absolute',
@@ -40,14 +30,14 @@ const useStyles = makeStyles(({ spacing, palette }) => ({
     borderRadius: spacing(3),
     borderWidth: spacing(0.5),
     borderColor: palette.white,
-    backgroundColor: palette.secondary
+    backgroundColor: palette.primary
   }
 }))
 
 type LeftNavLinkProps<Screen extends keyof AppTabScreenParamList> = {
   icon: IconComponent
   to: Screen
-  params: AppTabScreenParamList[Screen] extends undefined
+  params?: AppTabScreenParamList[Screen] extends undefined
     ? ContextualParams | null
     : AppTabScreenParamList[Screen] & ContextualParams
   label: string
@@ -65,7 +55,6 @@ export const LeftNavLink = <Screen extends keyof AppTabScreenParamList>(
     to,
     params,
     label,
-    labelProps,
     children,
     onPress,
     showNotificationBubble
@@ -84,21 +73,20 @@ export const LeftNavLink = <Screen extends keyof AppTabScreenParamList>(
 
   return (
     <TouchableOpacity style={styles.accountListItem} onPress={handlePress}>
-      <View style={styles.accountListItemIconRoot}>
-        <Icon fill={neutral} size='xl' style={styles.accountListItemIcon} />
-        {showNotificationBubble ? (
-          <View style={styles.notificationBubble} />
-        ) : null}
-      </View>
-      <Text
-        fontSize='large'
-        weight='demiBold'
-        {...labelProps}
-        style={[styles.label, labelProps?.style]}
-      >
-        {label}
-      </Text>
-      {children}
+      <Flex row justifyContent='space-between' alignItems='center' w='100%'>
+        <Flex row alignItems='center'>
+          <Flex w='unit10'>
+            <Icon fill={neutral} size='l' />
+            {showNotificationBubble ? (
+              <Flex style={styles.notificationBubble} />
+            ) : null}
+          </Flex>
+          <Text variant='title' size='l' strength='weak'>
+            {label}
+          </Text>
+        </Flex>
+        {children}
+      </Flex>
     </TouchableOpacity>
   )
 }

@@ -13,7 +13,7 @@ import { useRouteMatch } from 'react-router-dom'
 import { useSearchParams } from 'react-router-dom-v5-compat'
 
 import { EditCollectionForm } from 'components/edit-collection/EditCollectionForm'
-import Header from 'components/header/desktop/Header'
+import { Header } from 'components/header/desktop/Header'
 import LoadingSpinnerFullPage from 'components/loading-spinner-full-page/LoadingSpinnerFullPage'
 import Page from 'components/page/Page'
 import { useCollectionCoverArt } from 'hooks/useCollectionCoverArt'

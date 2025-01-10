@@ -7,7 +7,7 @@ import {
 import { route } from '@audius/common/utils'
 import { useDispatch } from 'react-redux'
 
-import DesktopHeader from 'components/header/desktop/Header'
+import { Header as DesktopHeader } from 'components/header/desktop/Header'
 import { useMobileHeader } from 'components/header/mobile/hooks'
 import Lineup from 'components/lineup/Lineup'
 import { useLineupProps } from 'components/lineup/hooks'
@@ -51,9 +51,7 @@ const DesktopTrendingPlaylistPage = ({
 }: TrendingPlaylistPageProps) => {
   const lineupProps = useTrendingPlaylistLineup(containerRef)
 
-  const header = (
-    <DesktopHeader primary={messages.trendingPlaylistTile} variant='main' />
-  )
+  const header = <DesktopHeader primary={messages.trendingPlaylistTile} />
 
   return (
     <Page

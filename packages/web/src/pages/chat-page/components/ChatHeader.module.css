@@ -8,24 +8,8 @@
 
 .left .options {
   margin-left: auto;
-  padding-bottom: 5px; /* fix for line-height on header causing vertical misalignment */
   display: flex;
   gap: var(--harmony-unit-6);
-}
-
-.header {
-  text-align: left;
-  color: var(--harmony-secondary);
-  font-weight: var(--harmony-font-heavy);
-  font-size: var(--harmony-font-5xl);
-
-  user-select: none;
-  background-image: var(--harmony-gradient);
-
-  -webkit-text-fill-color: transparent;
-  -webkit-background-clip: text;
-  text-shadow: var(--page-header-text-shadow);
-  line-height: 46px;
 }
 
 .gutterOverride {
