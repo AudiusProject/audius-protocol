@@ -151,7 +151,6 @@ const searchApi = createApi({
   }
 })
 
-export const { useGetSearchResults } = searchApi.hooks
 export const searchApiFetch = searchApi.fetch
 export const searchApiFetchSaga = searchApi.fetchSaga
 export const searchApiReducer = searchApi.reducer

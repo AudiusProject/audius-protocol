@@ -74,7 +74,6 @@ export const useSearchResults = (
   return useQuery({
     queryKey: [QUERY_KEYS.search, query, queryArgs],
     queryFn: async () => {
-      console.log('doing the query thing')
       const isUSDCEnabled = await getFeatureEnabled(FeatureFlags.USDC_PURCHASES)
 
       const kind = category as SearchKind

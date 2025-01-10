@@ -18,15 +18,13 @@ import { RouterContext } from 'components/animated-switch/RouterContextProvider'
 import { useIsMobile } from 'hooks/useIsMobile'
 
 import { categories } from './categories'
-import { CategoryKey, CategoryView, SearchResultsType } from './types'
+import { CategoryKey, CategoryView } from './types'
 import { ALL_RESULTS_LIMIT, urlSearchParamsToObject } from './utils'
 
 const { SEARCH_BASE_ROUTE, SEARCH_PAGE } = route
 const { getAccountStatus, getUserId } = accountSelectors
 
-export const useGetSearchResults = <C extends SearchCategory>(
-  category: C
-): SearchResultsType<C> => {
+export const useGetSearchResults = (category: SearchCategory) => {
   const { query, ...filters } = useSearchParams()
 
   const accountStatus = useSelector(getAccountStatus)
@@ -46,15 +44,23 @@ export const useGetSearchResults = <C extends SearchCategory>(
     // or if the user is not logged in
     enabled: accountStatus !== Status.LOADING && accountStatus !== Status.IDLE
   })
-  console.log({ data })
+  const dataMappedToIds = useMemo(() => {
+    if (!data) return data
+    return {
+      tracks: data.tracks?.map((track) => track.track_id),
+      users: data.users?.map((user) => user.user_id),
+      albums: data.albums?.map((album) => album.playlist_id),
+      playlists: data.playlists?.map((playlist) => playlist.playlist_id)
+    }
+  }, [data])
 
   if (category === 'all') {
-    return { data: data as any, ...queryState } as SearchResultsType<C>
+    return { data: dataMappedToIds as any, ...queryState }
   } else {
     return {
-      data: data?.[category as Exclude<C, 'all'>] as any,
+      data: dataMappedToIds?.[category],
       ...queryState
-    } as SearchResultsType<C>
+    }
   }
 }
 

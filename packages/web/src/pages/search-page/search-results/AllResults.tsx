@@ -25,7 +25,7 @@ export const AllResults = () => {
   const containerRef = useRef<HTMLDivElement>(null)
 
   const { data, isLoading } = useGetSearchResults('all')
-  console.log({ data, isLoading })
+
   const isResultsEmpty =
     data &&
     data.albums?.length === 0 &&
@@ -43,8 +43,6 @@ export const AllResults = () => {
     playlists: playlistIds,
     albums: albumIds
   } = data ?? {}
-
-  console.log({ userIds, trackIds, playlistIds, albumIds })
 
   return (
     <Flex

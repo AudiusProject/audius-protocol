@@ -2,11 +2,16 @@ import type { Dispatch, SetStateAction } from 'react'
 import { createContext, useCallback, useContext } from 'react'
 
 import {
-  useGetSearchResults as useGetSearchResultsApi,
+  useSearchResults,
   type SearchCategory,
   type SearchFilter,
   type SearchFilters
 } from '@audius/common/api'
+import type {
+  UserCollectionMetadata,
+  UserMetadata,
+  UserTrackMetadata
+} from '@audius/common/models'
 import { accountSelectors } from '@audius/common/store'
 import { isEmpty } from 'lodash'
 import { useSelector } from 'react-redux'
@@ -94,13 +99,21 @@ export const useSearchFilter = <F extends SearchFilter>(filterKey: F) => {
   return [filter, setFilter, clearFilter] as const
 }
 
-type SearchResultsApiType = ReturnType<typeof useGetSearchResultsApi>
+type SearchData = {
+  tracks: UserTrackMetadata[]
+  users: UserMetadata[]
+  albums: UserCollectionMetadata[]
+  playlists: UserCollectionMetadata[]
+}
 
 type SearchResultsType<C extends SearchCategory> = {
-  status: SearchResultsApiType['status']
+  isLoading: boolean
+  isSuccess: boolean
   data: C extends 'all'
-    ? SearchResultsApiType['data']
-    : SearchResultsApiType['data'][Exclude<C, 'all'>]
+    ? SearchData
+    : C extends keyof SearchData
+      ? SearchData[C]
+      : never
 }
 
 export const useGetSearchResults = <C extends SearchCategory>(
@@ -108,24 +121,26 @@ export const useGetSearchResults = <C extends SearchCategory>(
 ): SearchResultsType<C> => {
   const { filters, query } = useContext(SearchContext)
   const currentUserId = useSelector(getUserId)
-  const { data, status } = useGetSearchResultsApi(
-    {
-      query,
-      ...filters,
-      category,
-      currentUserId,
-      limit: category === 'all' ? ALL_RESULTS_LIMIT : undefined,
-      offset: 0
-    },
-    { debounce: 500 }
-  )
+  const { data, isLoading, isSuccess } = useSearchResults({
+    query,
+    ...filters,
+    category,
+    currentUserId,
+    limit: category === 'all' ? ALL_RESULTS_LIMIT : undefined,
+    offset: 0
+  })
 
   if (category === 'all') {
-    return { data, status } as SearchResultsType<C>
+    return {
+      data: data as SearchData,
+      isLoading,
+      isSuccess
+    } as SearchResultsType<C>
   } else {
     return {
-      data: data?.[category as Exclude<C, 'all'>],
-      status
+      data: (data as SearchData)?.[category as keyof SearchData],
+      isLoading,
+      isSuccess
     } as SearchResultsType<C>
   }
 }
