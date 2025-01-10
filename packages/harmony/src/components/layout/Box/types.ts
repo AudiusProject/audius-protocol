@@ -42,7 +42,7 @@ export type BaseBoxProps = {
   /** Margin Bottom */
   mb?: SpacingOptions | CSSProperties['marginBottom']
   /** Background Color */
-  backgroundColor?: BackgroundColors
+  backgroundColor?: BackgroundColors | 'none'
   /** Border */
   border?: BorderColors
   /** Border Top */
