@@ -6,9 +6,9 @@ import { call } from 'typed-redux-saga'
 import { accountFromSDK } from '~/adapters/user'
 import { useAudiusQueryContext } from '~/audius-query'
 import { SolanaWalletAddress } from '~/models/Wallet'
-import { getSDK } from '~/store'
 import { getWalletAddresses } from '~/store/account/selectors'
 import { getContext } from '~/store/effects'
+import { getSDK } from '~/store/sdkUtils'
 import { isResponseError } from '~/utils/error'
 
 import { QUERY_KEYS } from './queryKeys'
@@ -55,9 +55,10 @@ export function* fetchAccountSaga(
   const result: Awaited<ReturnType<typeof fetchAccount>> = yield* call(
     async () =>
       queryClient.fetchQuery({
-        queryKey: [QUERY_KEYS.accountUser, args],
+        queryKey: [QUERY_KEYS.accountUser, args.wallet],
         queryFn: async () => fetchAccount(args, { sdk }),
-        staleTime: options?.staleTime
+        // Don't refetch on new mounts by default
+        staleTime: options?.staleTime ?? Infinity
       })
   )
   return result
@@ -71,7 +72,8 @@ export const useAccount = (config?: Config) => {
     queryKey: [QUERY_KEYS.accountUser, currentUser],
     queryFn: async () =>
       fetchAccount({ wallet: currentUser! }, { sdk: await audiusSdk() }),
-    staleTime: config?.staleTime,
+    // Don't refetch on new mounts by default
+    staleTime: config?.staleTime ?? Infinity,
     enabled: config?.enabled !== false && !!currentUser
   })
 }
@@ -88,14 +90,12 @@ export const useCurrentUser = (config?: Config) => {
     queryFn: async () =>
       fetchAccount({ wallet: currentUser! }, { sdk: await audiusSdk() }),
     // Don't refetch on new mounts by default
-    staleTime: config?.staleTime,
+    staleTime: config?.staleTime ?? Infinity,
     enabled: config?.enabled !== false && !!currentUser,
     select: (data) => data?.user ?? null
   })
 }
 
-// TODO-NOW: These still trigger fetches even though the account fetch has been done?
-// Thought staleTime was per query key...
 export const usePlaylistLibrary = (config?: Config) => {
   const { audiusSdk } = useAudiusQueryContext()
   const { currentUser } = useSelector(getWalletAddresses)
@@ -109,4 +109,20 @@ export const usePlaylistLibrary = (config?: Config) => {
     enabled: config?.enabled !== false && !!currentUser,
     select: (data) => data?.playlist_library ?? null
   })
+}
+
+export const useGetCurrentWeb3User = (options?: Config) => {
+  const { audiusSdk } = useAudiusQueryContext()
+  const { web3User } = useSelector(getWalletAddresses)
+
+  const result = useQuery({
+    queryKey: [QUERY_KEYS.accountUser, web3User],
+    queryFn: async () =>
+      fetchAccount({ wallet: web3User! }, { sdk: await audiusSdk() }),
+    // Don't refetch on new mounts by default
+    staleTime: options?.staleTime ?? Infinity,
+    enabled: options?.enabled !== false && !!web3User
+  })
+
+  return { ...result, data: result.data ? result.data.user : null }
 }

@@ -18,10 +18,9 @@ export const AccountSwitcher = () => {
   const isAccountComplete = useSelector(accountSelectors.getIsAccountComplete)
   const [checkedAccess, setCheckedAccess] = useState(false)
 
-  const { data: currentWeb3User } = useGetCurrentWeb3User(
-    {},
-    { disabled: !isAccountComplete }
-  )
+  const { data: currentWeb3User } = useGetCurrentWeb3User({
+    enabled: isAccountComplete
+  })
   const { data: currentUserId } = useCurrentUserId()
 
   const { switchAccount, switchToWeb3User } = useAccountSwitcher()

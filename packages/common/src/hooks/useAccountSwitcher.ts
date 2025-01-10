@@ -7,7 +7,7 @@ import { UserMetadata } from '~/models/User'
 
 export const useAccountSwitcher = () => {
   const { localStorage } = useAppContext()
-  const { data: currentWeb3User } = useGetCurrentWeb3User({})
+  const { data: currentWeb3User } = useGetCurrentWeb3User()
   const {
     analytics: { make, track }
   } = useAppContext()
@@ -54,7 +54,7 @@ export const useAccountSwitcher = () => {
 
 /** Determines if we are in Manager Mode, i.e. the current user is not the logged-in user */
 export const useIsManagedAccount = () => {
-  const { data: currentWeb3User } = useGetCurrentWeb3User({})
+  const { data: currentWeb3User } = useGetCurrentWeb3User()
   const { data: currentUserId } = useCurrentUserId()
   return (
     !!currentWeb3User &&
