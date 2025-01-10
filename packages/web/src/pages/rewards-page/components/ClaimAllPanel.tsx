@@ -4,7 +4,7 @@ import {
   formatCooldownChallenges,
   useChallengeCooldownSchedule
 } from '@audius/common/hooks'
-import { Flex, IconTokenGold, Paper, Text } from '@audius/harmony'
+import { Flex, IconTokenGold, Paper, Text, useTheme } from '@audius/harmony'
 
 import { useModalState } from 'common/hooks/useModalState'
 import { useIsMobile } from 'hooks/useIsMobile'
@@ -12,17 +12,21 @@ import { useIsMobile } from 'hooks/useIsMobile'
 import { messages } from '../messages'
 
 export const ClaimAllPanel = () => {
+  const { iconSizes } = useTheme()
   const isMobile = useIsMobile() || window.innerWidth < 1080
   const { cooldownChallenges, cooldownAmount, claimableAmount } =
     useChallengeCooldownSchedule({ multiple: true })
   const claimable = claimableAmount > 0
   const [, setClaimAllRewardsVisibility] = useModalState('ClaimAllRewards')
+
   const onClickClaimAllRewards = useCallback(() => {
     setClaimAllRewardsVisibility(true)
   }, [setClaimAllRewardsVisibility])
+
   const onClickMoreInfo = useCallback(() => {
     setClaimAllRewardsVisibility(true)
   }, [setClaimAllRewardsVisibility])
+
   const handleClick = useCallback(() => {
     if (claimable) {
       onClickClaimAllRewards()
@@ -78,8 +82,8 @@ export const ClaimAllPanel = () => {
       <Flex gap='s' alignItems='center'>
         {claimable ? (
           <IconTokenGold
-            height={24}
-            width={24}
+            height={iconSizes.l}
+            width={iconSizes.l}
             aria-label={messages.goldAudioToken}
           />
         ) : null}

@@ -74,11 +74,11 @@ export const RewardPanel = ({
   return (
     <Paper
       onClick={openRewardModal}
-      ph='unit2'
+      ph='s'
       h={200}
       flex={`0 0 calc(50% - ${spacing.unit4}px)`}
       direction='column'
-      m='unit2'
+      m='s'
       shadow='flat'
       border='strong'
       css={{
@@ -87,20 +87,20 @@ export const RewardPanel = ({
       }}
     >
       <Flex direction='column' h='100%'>
-        <Flex justifyContent='flex-end' mt='unit1' w='100%'>
+        <Flex justifyContent='flex-end' mt='xs' w='100%'>
           <StatusPill
             shouldShowClaimPill={!!needsDisbursement}
             shouldShowNewChallengePill={shouldShowNewChallengePill}
           />
         </Flex>
-        <Flex direction='column' justifyContent='center' h='100%' gap='unit6'>
+        <Flex direction='column' justifyContent='center' h='100%' gap='xl'>
           <Flex
             direction='column'
             alignItems='flex-start'
             justifyContent='space-between'
             w='100%'
-            gap='unit6'
-            pl='unit4'
+            gap='xl'
+            pl='l'
           >
             <Box>
               <Text variant='heading' size='s'>
@@ -118,10 +118,10 @@ export const RewardPanel = ({
               <IconCheck
                 size='s'
                 color='subdued'
-                css={{ marginRight: spacing.unit2 }}
+                css={{ marginRight: spacing.s }}
               />
             )}
-            <Box mr='unit4'>
+            <Box mr='l'>
               <Text variant='label' size='s' color='subdued'>
                 {formattedProgressLabel}
               </Text>

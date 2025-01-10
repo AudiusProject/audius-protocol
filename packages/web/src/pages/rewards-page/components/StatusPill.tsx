@@ -1,4 +1,4 @@
-import { TextProps, useTheme, Text } from '@audius/harmony'
+import { Flex, Text, TextProps, useTheme } from '@audius/harmony'
 
 import { messages } from '../messages'
 
@@ -15,21 +15,22 @@ const BasePill = ({
   backgroundColor,
   borderColor
 }: BasePillProps) => {
-  const { spacing } = useTheme()
   return (
-    <Text
-      variant='label'
-      size='s'
-      color={color}
+    <Flex
+      alignItems='center'
+      justifyContent='center'
+      pv='xs'
+      ph='s'
+      borderRadius='m'
       css={{
-        padding: `${spacing.unit1}px ${spacing.unit2}px`,
-        borderRadius: spacing.unit3,
         backgroundColor,
         border: borderColor ? `1px solid ${borderColor}` : undefined
       }}
     >
-      {children}
-    </Text>
+      <Text variant='label' size='s' color={color}>
+        {children}
+      </Text>
+    </Flex>
   )
 }
 
