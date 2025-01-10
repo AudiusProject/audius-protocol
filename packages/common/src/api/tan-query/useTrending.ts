@@ -1,5 +1,3 @@
-import { useMemo } from 'react'
-
 import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query'
 import { useDispatch } from 'react-redux'
 
@@ -25,17 +23,15 @@ type GetTrendingArgs = {
   pageSize?: number
 }
 
-export const useTrending = (
-  { timeRange, genre, pageSize = PAGE_SIZE }: GetTrendingArgs,
-  config: Config
-) => {
+export const useTrending = (args: GetTrendingArgs, options: Config) => {
+  const { timeRange, genre, pageSize = PAGE_SIZE } = args
   const { audiusSdk, remoteConfigInstance } = useAudiusQueryContext()
   const queryClient = useQueryClient()
   const currentUserId = useCurrentUserId()
   const dispatch = useDispatch()
 
   const queryResult = useInfiniteQuery({
-    queryKey: [QUERY_KEYS.trending, timeRange, genre, pageSize],
+    queryKey: [QUERY_KEYS.trending, args],
     initialPageParam: 0,
     getNextPageParam: (lastPage: Track[], allPages: Track[][]) => {
       if (lastPage.length < pageSize) return undefined
@@ -48,13 +44,13 @@ export const useTrending = (
       )
 
       const args = {
-        limit: pageSize,
-        offset: pageParam,
         time: timeRange,
         genre: genre ?? undefined,
-        userId: OptionalId.parse(currentUserId)
+        userId: OptionalId.parse(currentUserId),
+        limit: pageSize,
+        offset: pageParam,
+        version
       }
-
       const { data = [] } = version
         ? await sdk.full.tracks.getTrendingTracksWithVersion({
             ...args,
@@ -68,16 +64,15 @@ export const useTrending = (
 
       return tracks
     },
-    ...config
+    select: (data) => data.pages.flat(),
+    ...options
   })
 
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage, ...rest } =
     queryResult
 
-  const flatData = useMemo(() => data?.pages.flat() ?? [], [data?.pages])
-
   return {
-    data: flatData,
+    data,
     loadMore: fetchNextPage,
     hasMore: hasNextPage,
     isLoadingMore: isFetchingNextPage,
