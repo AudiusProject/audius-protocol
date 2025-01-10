@@ -12,12 +12,12 @@ import { useGetTrackById } from '@audius/common/api'
 import { useAudiusLinkResolver } from '@audius/common/hooks'
 import type { ID, UserMetadata } from '@audius/common/models'
 import {
-  decodeHashId,
   getDurationFromTimestampMatch,
   parseCommentTrackTimestamp,
   splitOnNewline,
   timestampRegex
 } from '@audius/common/utils'
+import { HashId } from '@audius/sdk'
 import { isEqual } from 'lodash'
 import type { TextInput as RnTextInput } from 'react-native'
 import { Platform, TouchableOpacity } from 'react-native'
@@ -504,7 +504,7 @@ export const ComposerInput = forwardRef(function ComposerInput(
   useEffect(() => {
     if (linkEntities.length && !isEqual(linkEntities, prevLinkEntities)) {
       const { type, data } = linkEntities[linkEntities.length - 1]
-      const id = decodeHashId(data.id)
+      const id = HashId.parse(data.id)
       if (id) {
         onAddLink?.(id, type)
       }

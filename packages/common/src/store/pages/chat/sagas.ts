@@ -1,5 +1,9 @@
 import {
   ChatBlast,
+  HashId,
+  Id,
+  OptionalHashId,
+  OptionalId,
   type ChatMessage,
   type TypedCommsResponse,
   type UserChat,
@@ -23,12 +27,7 @@ import { getHasAccount, getUserId } from '~/store/account/selectors'
 import * as toastActions from '~/store/ui/toast/slice'
 import dayjs from '~/utils/dayjs'
 
-import {
-  decodeHashId,
-  encodeHashId,
-  makeBlastChatId,
-  removeNullable
-} from '../../../utils'
+import { makeBlastChatId, removeNullable } from '../../../utils'
 import { cacheUsersActions } from '../../cache'
 import { getContext } from '../../effects'
 
@@ -102,7 +101,7 @@ function* fetchUsersForChats(chats: UserChat[]) {
   const userIds = new Set<number>([])
   for (const chat of chats) {
     for (const member of chat.chat_members) {
-      userIds.add(decodeHashId(member.user_id)!)
+      userIds.add(HashId.parse(member.user_id))
     }
   }
   yield* put(
@@ -149,7 +148,7 @@ function* doFetchLatestChats() {
     }
     while (hasMoreChats) {
       const response = yield* call([sdk.chats, sdk.chats.getAll], {
-        userId: encodeHashId(currentUserId)!,
+        userId: Id.parse(currentUserId),
         before,
         after: summary?.next_cursor,
         limit: CHAT_PAGE_SIZE
@@ -190,7 +189,7 @@ function* doFetchMoreChats() {
       throw new Error('User not found')
     }
     const response = yield* call([sdk.chats, sdk.chats.getAll], {
-      userId: encodeHashId(currentUserId)!,
+      userId: Id.parse(currentUserId),
       before,
       limit: CHAT_PAGE_SIZE
     })
@@ -353,7 +352,7 @@ function* doSetMessageReaction(action: ReturnType<typeof setMessageReaction>) {
       reaction
     })
     const reactionResponse = {
-      user_id: encodeHashId(userId)!,
+      user_id: Id.parse(userId),
       reaction,
       created_at: dayjs().toISOString()
     }
@@ -421,8 +420,8 @@ function* doCreateChat(action: ReturnType<typeof createChat>) {
     if (!existingChat) {
       // Create new chat
       yield* call([sdk.chats, sdk.chats.create], {
-        userId: encodeHashId(currentUserId),
-        invitedUserIds: userIds.map((id) => encodeHashId(id))
+        userId: Id.parse(currentUserId),
+        invitedUserIds: userIds.map((id) => Id.parse(id))
       })
 
       const res = yield* call([sdk.chats, sdk.chats.get], { chatId })
@@ -470,9 +469,7 @@ function* doCreateChatBlast(action: ReturnType<typeof createChatBlast>) {
       throw new Error('User not found')
     }
 
-    const encodedContentId = audienceContentId
-      ? encodeHashId(audienceContentId)
-      : undefined
+    const encodedContentId = OptionalId.parse(audienceContentId)
     const chatId = makeBlastChatId({
       audience,
       audienceContentId: encodedContentId,
@@ -588,7 +585,7 @@ function* doSendMessage(action: ReturnType<typeof sendMessage>) {
   try {
     const audiusSdk = yield* getContext('audiusSdk')
     const sdk = yield* call(audiusSdk)
-    const currentUserId = encodeHashId(userId)
+    const currentUserId = OptionalId.parse(userId)
     if (!currentUserId) {
       return
     }
@@ -624,7 +621,8 @@ function* doSendMessage(action: ReturnType<typeof sendMessage>) {
           eventName: Name.CHAT_BLAST_MESSAGE_SENT,
           audience: chat.audience,
           audienceContentType: chat.audience_content_type,
-          audienceContentId: decodeHashId(chat.audience_content_id) ?? undefined
+          audienceContentId:
+            OptionalHashId.parse(chat.audience_content_id) ?? undefined
         })
       )
     } else {
@@ -694,7 +692,7 @@ function* doFetchBlockees() {
     yield* put(
       fetchBlockeesSucceeded({
         blockees: data
-          .map((encodedId) => decodeHashId(encodedId))
+          .map((encodedId) => HashId.parse(encodedId))
           .filter(removeNullable)
       })
     )
@@ -716,7 +714,7 @@ function* doFetchBlockers() {
     yield* put(
       fetchBlockersSucceeded({
         blockers: data
-          .map((encodedId) => decodeHashId(encodedId))
+          .map((encodedId) => HashId.parse(encodedId))
           .filter(removeNullable)
       })
     )
@@ -737,7 +735,7 @@ function* doBlockUser(action: ReturnType<typeof blockUser>) {
     const audiusSdk = yield* getContext('audiusSdk')
     const sdk = yield* call(audiusSdk)
     yield* call([sdk.chats, sdk.chats.block], {
-      userId: encodeHashId(userId)
+      userId: Id.parse(userId)
     })
     yield* put(fetchBlockees())
     yield* call(
@@ -763,7 +761,7 @@ function* doUnblockUser(action: ReturnType<typeof unblockUser>) {
     const audiusSdk = yield* getContext('audiusSdk')
     const sdk = yield* call(audiusSdk)
     yield* call([sdk.chats, sdk.chats.unblock], {
-      userId: encodeHashId(action.payload.userId)
+      userId: Id.parse(action.payload.userId)
     })
     yield* put(fetchBlockees())
   } catch (e) {
@@ -785,14 +783,14 @@ function* doFetchPermissions(action: ReturnType<typeof fetchPermissions>) {
     const audiusSdk = yield* getContext('audiusSdk')
     const sdk = yield* call(audiusSdk)
     const { data } = yield* call([sdk.chats, sdk.chats.getPermissions], {
-      userIds: action.payload.userIds.map((id) => encodeHashId(id))
+      userIds: action.payload.userIds.map((id) => Id.parse(id))
     })
     yield* put(
       fetchPermissionsSucceeded({
         permissions: data.reduce(
           (acc, p) => ({
             ...acc,
-            [decodeHashId(p.user_id)!]: p
+            [HashId.parse(p.user_id)]: p
           }),
           {} as Record<ID, ValidatedChatPermissions>
         )

@@ -7,9 +7,7 @@ import {
   ID,
   TrackMetadata,
   Track,
-  UserTrackMetadata,
-  Id,
-  OptionalId
+  UserTrackMetadata
 } from '@audius/common/models'
 import {
   accountSelectors,
@@ -19,6 +17,7 @@ import {
   CommonState,
   getSDK
 } from '@audius/common/store'
+import { Id, OptionalId } from '@audius/sdk'
 import { call, put, select, spawn } from 'typed-redux-saga'
 
 import { retrieve } from 'common/store/cache/sagas'

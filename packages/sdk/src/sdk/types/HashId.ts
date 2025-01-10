@@ -2,6 +2,14 @@ import { z } from 'zod'
 
 import { decodeHashId, encodeHashId } from '../utils/hashId'
 
+export const OptionalHashId = z
+  .string()
+  .nullable()
+  .optional()
+  .transform<number | undefined>((data: string | null | undefined) =>
+    data ? (decodeHashId(data) ?? undefined) : undefined
+  )
+
 export const HashId = z.string().transform<number>((data: string, context) => {
   const id = decodeHashId(data)
   if (id === null) {

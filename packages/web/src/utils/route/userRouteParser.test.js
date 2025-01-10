@@ -1,4 +1,4 @@
-import { decodeHashId } from '@audius/common/utils'
+import { OptionalHashId } from '@audius/sdk'
 import { describe, it, expect, vitest } from 'vitest'
 
 import { parseUserRoute } from './userRouteParser'
@@ -12,7 +12,7 @@ describe('parseUserRoute', () => {
   })
 
   it('can decode a hashed user id route', () => {
-    vitest.fn(decodeHashId).mockReturnValue(11845)
+    vitest.fn(OptionalHashId.parse).mockReturnValue(11845)
 
     const route = '/users/eP9k7'
     const { userId, handle } = parseUserRoute(route)
@@ -27,7 +27,7 @@ describe('parseUserRoute', () => {
   })
 
   it('returns null for an invalid hash id', () => {
-    vitest.fn(decodeHashId).mockReturnValue(null)
+    vitest.fn(OptionalHashId.parse).mockReturnValue(null)
 
     const route = '/users/asdf'
     const params = parseUserRoute(route)

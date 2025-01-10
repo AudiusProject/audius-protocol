@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
 
-import { ChatBlast, ChatBlastAudience } from '@audius/sdk'
+import { ChatBlast, ChatBlastAudience, OptionalHashId } from '@audius/sdk'
 
 import {
   useGetCurrentUser,
@@ -11,7 +11,6 @@ import {
   useGetTrackById
 } from '~/api'
 import {
-  decodeHashId,
   getChatBlastAudienceDescription,
   getChatBlastCTA,
   getChatBlastSecondaryTitle,
@@ -26,7 +25,7 @@ export const useChatBlastAudienceContent = ({ chat }: { chat: ChatBlast }) => {
   } = chat
 
   const decodedContentId = audienceContentId
-    ? (decodeHashId(audienceContentId) ?? undefined)
+    ? OptionalHashId.parse(audienceContentId)
     : undefined
 
   const { data: currentUserId } = useGetCurrentUserId({})

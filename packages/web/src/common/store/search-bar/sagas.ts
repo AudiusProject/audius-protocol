@@ -2,9 +2,10 @@ import {
   limitAutocompleteResults,
   searchResultsFromSDK
 } from '@audius/common/adapters'
-import { Name, OptionalId } from '@audius/common/models'
+import { Name } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
 import { accountSelectors, getContext, getSDK } from '@audius/common/store'
+import { OptionalId } from '@audius/sdk'
 import { call, cancel, fork, put, race, select, take } from 'typed-redux-saga'
 
 import { make } from 'common/store/analytics/actions'

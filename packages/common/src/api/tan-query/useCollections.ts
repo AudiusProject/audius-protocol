@@ -1,3 +1,4 @@
+import { Id } from '@audius/sdk'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useDispatch } from 'react-redux'
 
@@ -8,7 +9,6 @@ import { ID } from '~/models/Identifiers'
 import { Kind } from '~/models/Kind'
 import { addEntries } from '~/store/cache/actions'
 import { EntriesByKind } from '~/store/cache/types'
-import { encodeHashId } from '~/utils/hashIds'
 
 import { QUERY_KEYS } from './queryKeys'
 
@@ -25,7 +25,7 @@ export const useCollections = (collectionIds: ID[], config?: Config) => {
     queryKey: [QUERY_KEYS.collections, collectionIds],
     queryFn: async () => {
       const encodedIds = collectionIds
-        .map(encodeHashId)
+        .map((id) => Id.parse(id))
         .filter((id): id is string => id !== null)
       if (encodedIds.length === 0) return []
       const { data } = await audiusSdk!.full.playlists.getBulkPlaylists({

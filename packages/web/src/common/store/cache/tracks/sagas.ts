@@ -10,9 +10,7 @@ import {
   Collection,
   ID,
   Remix,
-  StemUploadWithFile,
-  Id,
-  OptionalId
+  StemUploadWithFile
 } from '@audius/common/models'
 import {
   Entry,
@@ -36,6 +34,7 @@ import {
   waitForAccount,
   waitForValue
 } from '@audius/common/utils'
+import { Id, OptionalId } from '@audius/sdk'
 import { call, fork, put, select, takeEvery } from 'typed-redux-saga'
 
 import { make } from 'common/store/analytics/actions'
