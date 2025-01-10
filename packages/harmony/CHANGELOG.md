@@ -1,5 +1,11 @@
 # @audius/harmony
 
+## 0.3.2
+
+### Patch Changes
+
+- fde8a65: fix Modal ignoring dismissOnClickOutside flag
+
 ## 0.3.1
 
 ### Patch Changes
