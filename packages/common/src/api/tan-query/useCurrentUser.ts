@@ -14,7 +14,7 @@ import { isResponseError } from '~/utils/error'
 import { QUERY_KEYS } from './queryKeys'
 import { Config } from './types'
 
-export const fetchAccount = async (
+const fetchAccount = async (
   args: full.GetUserAccountRequest,
   { sdk }: { sdk: AudiusSdk }
 ) => {
@@ -45,6 +45,9 @@ export const fetchAccount = async (
   }
 }
 
+/**
+ * Saga-compatible version of fetching an account by wallet.
+ */
 export function* fetchAccountSaga(
   args: full.GetUserAccountRequest,
   options?: Config
@@ -64,7 +67,10 @@ export function* fetchAccountSaga(
   return result
 }
 
-export const useAccount = (config?: Config) => {
+/**
+ * Hook to get the full account info for the current user
+ */
+export const useAccount = (options?: Config) => {
   const { audiusSdk } = useAudiusQueryContext()
   const { currentUser } = useSelector(getWalletAddresses)
 
@@ -73,15 +79,15 @@ export const useAccount = (config?: Config) => {
     queryFn: async () =>
       fetchAccount({ wallet: currentUser! }, { sdk: await audiusSdk() }),
     // Don't refetch on new mounts by default
-    staleTime: config?.staleTime ?? Infinity,
-    enabled: config?.enabled !== false && !!currentUser
+    staleTime: options?.staleTime ?? Infinity,
+    enabled: options?.enabled !== false && !!currentUser
   })
 }
 
 /**
- * Hook to get the currently logged in user's data
+ * Hook to get the current user's metadata
  */
-export const useCurrentUser = (config?: Config) => {
+export const useCurrentUser = (options?: Config) => {
   const { audiusSdk } = useAudiusQueryContext()
   const { currentUser } = useSelector(getWalletAddresses)
 
@@ -90,13 +96,16 @@ export const useCurrentUser = (config?: Config) => {
     queryFn: async () =>
       fetchAccount({ wallet: currentUser! }, { sdk: await audiusSdk() }),
     // Don't refetch on new mounts by default
-    staleTime: config?.staleTime ?? Infinity,
-    enabled: config?.enabled !== false && !!currentUser,
+    staleTime: options?.staleTime ?? Infinity,
+    enabled: options?.enabled !== false && !!currentUser,
     select: (data) => data?.user ?? null
   })
 }
 
-export const usePlaylistLibrary = (config?: Config) => {
+/**
+ * Hook to get the current user's playlist library
+ */
+export const usePlaylistLibrary = (options?: Config) => {
   const { audiusSdk } = useAudiusQueryContext()
   const { currentUser } = useSelector(getWalletAddresses)
 
@@ -105,12 +114,16 @@ export const usePlaylistLibrary = (config?: Config) => {
     queryFn: async () =>
       fetchAccount({ wallet: currentUser! }, { sdk: await audiusSdk() }),
     // Don't refetch on new mounts by default
-    staleTime: config?.staleTime ?? Infinity,
-    enabled: config?.enabled !== false && !!currentUser,
+    staleTime: options?.staleTime ?? Infinity,
+    enabled: options?.enabled !== false && !!currentUser,
     select: (data) => data?.playlist_library ?? null
   })
 }
 
+/**
+ * Hook to get the current web3User (logged in user), which may be different from
+ * the current acting user if we're in manager mode.
+ */
 export const useGetCurrentWeb3User = (options?: Config) => {
   const { audiusSdk } = useAudiusQueryContext()
   const { web3User } = useSelector(getWalletAddresses)
