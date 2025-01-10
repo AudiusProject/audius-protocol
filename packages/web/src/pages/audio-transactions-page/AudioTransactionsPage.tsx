@@ -53,8 +53,6 @@ const Disclaimer = () => {
 }
 
 export const AudioTransactionsPage = () => {
-  const [offset, setOffset] = useState(0)
-  const [limit, setLimit] = useState(AUDIO_TRANSACTIONS_BATCH_SIZE)
   const [sortMethod, setSortMethod] =
     useState<full.GetAudioTransactionsSortMethodEnum>(
       full.GetAudioTransactionsSortMethodEnum.Date
@@ -67,13 +65,17 @@ export const AudioTransactionsPage = () => {
   const dispatch = useDispatch()
   const setVisibility = useSetVisibility()
 
-  const { data: audioTransactions = [], isPending: isTransactionsLoading } =
-    useAudioTransactions({
-      offset,
-      limit,
-      sortMethod,
-      sortDirection
-    })
+  const {
+    data: audioTransactionsData,
+    fetchNextPage,
+    isPending: isTransactionsLoading
+  } = useAudioTransactions({
+    limit: AUDIO_TRANSACTIONS_BATCH_SIZE,
+    sortMethod,
+    sortDirection
+  })
+
+  const audioTransactions = audioTransactionsData ?? []
 
   const { data: audioTransactionsCount = 0, isPending: isCountLoading } =
     useAudioTransactionsCount()
@@ -91,17 +93,8 @@ export const AudioTransactionsPage = () => {
           ? full.GetAudioTransactionsSortDirectionEnum.Asc
           : full.GetAudioTransactionsSortDirectionEnum.Desc
       setSortDirection(sortDirectionRes)
-      setOffset(0)
     },
     [setSortMethod, setSortDirection]
-  )
-
-  const fetchMore = useCallback(
-    (offset: number, limit: number) => {
-      setOffset(offset)
-      setLimit(limit)
-    },
-    [setOffset, setLimit]
   )
 
   const onClickRow = useCallback(
@@ -140,7 +133,7 @@ export const AudioTransactionsPage = () => {
             loading={tableLoading}
             onSort={onSort}
             onClickRow={onClickRow}
-            fetchMore={fetchMore}
+            fetchMore={() => fetchNextPage()}
             isVirtualized={true}
             totalRowCount={audioTransactionsCount}
             scrollRef={mainContentRef}
