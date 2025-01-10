@@ -1,6 +1,6 @@
 import { StyleSheet, View } from 'react-native'
 
-import { IconTokenGold } from '@audius/harmony-native'
+import { IconTokenGold, useTheme } from '@audius/harmony-native'
 import { GradientText } from 'app/components/core'
 import { AppDrawer } from 'app/components/drawer'
 import Text from 'app/components/text'
@@ -40,10 +40,11 @@ const messages = {
 }
 
 export const TransferAudioMobileDrawer = () => {
+  const { spacing } = useTheme()
   return (
     <AppDrawer modalName={TRANSFER_AUDIO_MODAL_NAME}>
       <View style={styles.drawer}>
-        <IconTokenGold style={styles.badge} height={134} width={134} />
+        <IconTokenGold style={styles.badge} size={spacing.unit13} />
         <GradientText style={styles.title}>{messages.title}</GradientText>
         <Text style={styles.subtitle}>{messages.subtitle}</Text>
       </View>

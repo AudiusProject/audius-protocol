@@ -110,7 +110,7 @@ const UserListItem = (props) => {
                       fillSecondary={palette.staticWhite}
                     />
                   ) : null}
-                  <IconAudioBadge tier={tier} height={14} width={14} />
+                  <IconAudioBadge tier={tier} size='m' />
                 </Flex>
                 <Text size='s'>@{user.handle}</Text>
               </Flex>
