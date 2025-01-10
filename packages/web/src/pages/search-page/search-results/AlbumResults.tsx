@@ -1,6 +1,6 @@
 import { useCallback } from 'react'
 
-import { ID, Kind, Name, Status } from '@audius/common/models'
+import { ID, Kind, Name } from '@audius/common/models'
 import { searchActions } from '@audius/common/store'
 import { Box, Flex, Text, useTheme } from '@audius/harmony'
 import { range } from 'lodash'
