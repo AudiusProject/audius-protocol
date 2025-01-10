@@ -79,7 +79,7 @@ export const useSearchResults = (
       const isUSDCEnabled = await getFeatureEnabled(FeatureFlags.USDC_PURCHASES)
 
       const kind = category as SearchKind
-      // TODO: should this be enabled flag instead? Need to decide if this is worth returning still
+
       if (!query && isEmpty(filters)) {
         return {
           tracks: [],
@@ -190,7 +190,6 @@ export const useSearchResults = (
         // Sync all data to Redux in a single dispatch
         dispatch(addEntries(entries, undefined, undefined, 'react-query'))
       }
-      // TODO: why is this necessary? Seems like jank
       const formattedTracks = tracks.map((track) => ({
         ...track,
         user: {
