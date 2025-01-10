@@ -20,7 +20,8 @@ import {
   Text,
   Flex,
   IconValidationCheck,
-  IconRefresh
+  IconRefresh,
+  useTheme
 } from '@audius/harmony'
 import { useDispatch } from 'react-redux'
 
@@ -57,6 +58,7 @@ const messages = {
   },
   learnMore: 'Learn more',
   launchDiscord: 'Launch the VIP Discord',
+  refreshDiscordRole: 'Refresh Discord role',
   tierNumber: (tier: number) => `TIER ${tier}`
 }
 
@@ -244,6 +246,7 @@ const TierColumn = ({
   tier: BadgeTier
   current?: boolean
 }) => {
+  const { color } = useTheme()
   const dispatch = useDispatch()
   const onClickDiscord = useCallback(() => dispatch(pressDiscord()), [dispatch])
 
@@ -308,7 +311,7 @@ const TierColumn = ({
                 <Flex h={24} direction='row' alignItems='center' gap='m'>
                   <IconValidationCheck />
                   {feature === 'customDiscordRole' && current ? (
-                    <Tooltip text='Refresh Discord role'>
+                    <Tooltip text={messages.refreshDiscordRole}>
                       <Button
                         size='small'
                         variant='secondary'
@@ -327,7 +330,7 @@ const TierColumn = ({
                     border='strong'
                     css={{
                       borderWidth: 2,
-                      borderColor: 'var(--harmony-neutral)'
+                      borderColor: color.border.default
                     }}
                   />
                 </Flex>
