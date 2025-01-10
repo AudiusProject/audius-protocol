@@ -1,6 +1,5 @@
 import { useRef } from 'react'
 
-import { Status } from '@audius/common/models'
 import { SearchKind } from '@audius/common/store'
 import { Flex, Text } from '@audius/harmony'
 
@@ -25,9 +24,8 @@ export const AllResults = () => {
   const isMobile = useIsMobile()
   const containerRef = useRef<HTMLDivElement>(null)
 
-  const { data, status } = useGetSearchResults('all')
-  const isLoading = status === Status.LOADING
-
+  const { data, isLoading } = useGetSearchResults('all')
+  console.log({ data, isLoading })
   const isResultsEmpty =
     data &&
     data.albums?.length === 0 &&
@@ -45,6 +43,8 @@ export const AllResults = () => {
     playlists: playlistIds,
     albums: albumIds
   } = data ?? {}
+
+  console.log({ userIds, trackIds, playlistIds, albumIds })
 
   return (
     <Flex

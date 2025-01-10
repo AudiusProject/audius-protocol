@@ -2,7 +2,7 @@ import { useCallback, useContext, useMemo } from 'react'
 
 import {
   SearchCategory,
-  useGetSearchResults as useGetSearchResultsApi
+  useSearchResults as useGetSearchResultsApi
 } from '@audius/common/api'
 import { Status } from '@audius/common/models'
 import { SearchSortMethod, accountSelectors } from '@audius/common/store'
@@ -41,24 +41,19 @@ export const useGetSearchResults = <C extends SearchCategory>(
     offset: 0
   }
 
-  // TODO: Properly type data when `shallow` is true
-  const { data, status } = useGetSearchResultsApi(params, {
-    // We pass shallow here because the top level search results don't care
-    // about the actual entities, just the ids. The nested componets pull
-    // the entities from the cache. This prevents unnecessary re-renders at the top
-    shallow: true,
-    debounce: 500,
+  const { data, ...queryState } = useGetSearchResultsApi(params, {
     // Only search when the account has finished loading,
     // or if the user is not logged in
-    disabled: accountStatus === Status.LOADING || accountStatus === Status.IDLE
+    enabled: accountStatus !== Status.LOADING && accountStatus !== Status.IDLE
   })
+  console.log({ data })
 
   if (category === 'all') {
-    return { data: data as any, status } as SearchResultsType<C>
+    return { data: data as any, ...queryState } as SearchResultsType<C>
   } else {
     return {
       data: data?.[category as Exclude<C, 'all'>] as any,
-      status
+      ...queryState
     } as SearchResultsType<C>
   }
 }

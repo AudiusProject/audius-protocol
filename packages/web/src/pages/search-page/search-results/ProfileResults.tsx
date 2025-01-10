@@ -100,8 +100,7 @@ export const ProfileResultsPage = () => {
   const isMobile = useIsMobile()
   const { color } = useTheme()
 
-  const { data: ids, status } = useGetSearchResults('users')
-  const isLoading = status === Status.LOADING
+  const { data: ids, isLoading } = useGetSearchResults('users')
 
   const isResultsEmpty = ids?.length === 0
   const showNoResultsTile = !isLoading && isResultsEmpty
