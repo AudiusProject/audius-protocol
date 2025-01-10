@@ -1,0 +1,146 @@
+import { ReactNode, useMemo } from 'react'
+
+import { useChallengeCooldownSchedule } from '@audius/common/hooks'
+import { accountSelectors, chatSelectors } from '@audius/common/store'
+import { route } from '@audius/common/utils'
+import type { IconComponent } from '@audius/harmony'
+import {
+  IconCloudUpload,
+  IconExplore,
+  IconFeed,
+  IconGift,
+  IconLibrary,
+  IconMessages,
+  IconPlaylists,
+  IconTrending,
+  IconWallet,
+  NotificationCount
+} from '@audius/harmony'
+import { useSelector } from 'react-redux'
+import { useLocation } from 'react-router-dom'
+
+import { RestrictionType } from 'hooks/useRequiresAccount'
+
+import { PlaylistLibrary } from './PlaylistLibrary'
+import { CreatePlaylistLibraryItemButton } from './PlaylistLibrary/CreatePlaylistLibraryItemButton'
+import { WalletsNestedContent } from './WalletsNestedContent'
+
+const {
+  EXPLORE_PAGE,
+  FEED_PAGE,
+  LIBRARY_PAGE,
+  TRENDING_PAGE,
+  CHATS_PAGE,
+  UPLOAD_PAGE,
+  REWARDS_PAGE
+} = route
+
+const { getUnreadMessagesCount } = chatSelectors
+const { getIsAccountComplete } = accountSelectors
+
+export type NavItemConfig = {
+  label: string
+  leftIcon: IconComponent
+  to?: string
+  isExpandable?: boolean
+  rightIcon?: ReactNode
+  shouldPersistRightIcon?: boolean
+  nestedComponent?: React.ComponentType<any>
+  disabled?: boolean
+  restriction?: RestrictionType
+  hasNotification?: boolean
+  canUnfurl?: boolean
+}
+
+export const useNavConfig = () => {
+  const isAccountComplete = useSelector(getIsAccountComplete)
+  const unreadMessagesCount = useSelector(getUnreadMessagesCount)
+  const { claimableAmount } = useChallengeCooldownSchedule({
+    multiple: true
+  })
+  const location = useLocation()
+
+  const navItems = useMemo(
+    (): NavItemConfig[] => [
+      {
+        label: 'Feed',
+        leftIcon: IconFeed,
+        to: FEED_PAGE,
+        restriction: 'account'
+      },
+      {
+        label: 'Trending',
+        leftIcon: IconTrending,
+        to: TRENDING_PAGE,
+        restriction: 'none'
+      },
+      {
+        label: 'Explore',
+        leftIcon: IconExplore,
+        to: EXPLORE_PAGE,
+        restriction: 'none'
+      },
+      {
+        label: 'Library',
+        leftIcon: IconLibrary,
+        to: LIBRARY_PAGE,
+        restriction: 'guest'
+      },
+      {
+        label: 'Messages',
+        leftIcon: IconMessages,
+        to: CHATS_PAGE,
+        restriction: 'account',
+        rightIcon:
+          unreadMessagesCount > 0 ? (
+            <NotificationCount
+              count={unreadMessagesCount}
+              isSelected={location.pathname === CHATS_PAGE}
+            />
+          ) : undefined,
+        hasNotification: unreadMessagesCount > 0
+      },
+      {
+        label: 'Wallets',
+        leftIcon: IconWallet,
+        isExpandable: true,
+        restriction: 'account',
+        nestedComponent: WalletsNestedContent,
+        canUnfurl: isAccountComplete
+      },
+      {
+        label: 'Rewards',
+        leftIcon: IconGift,
+        to: REWARDS_PAGE,
+        restriction: 'account',
+        rightIcon:
+          claimableAmount > 0 ? (
+            <NotificationCount
+              count={claimableAmount}
+              isSelected={location.pathname === REWARDS_PAGE}
+            />
+          ) : undefined,
+        hasNotification: claimableAmount > 0
+      },
+      {
+        label: 'Upload',
+        leftIcon: IconCloudUpload,
+        to: UPLOAD_PAGE,
+        restriction: 'account'
+      },
+      {
+        label: 'Playlists',
+        leftIcon: IconPlaylists,
+        isExpandable: true,
+        rightIcon: <CreatePlaylistLibraryItemButton />,
+        shouldPersistRightIcon: true,
+        nestedComponent: PlaylistLibrary,
+        restriction: 'account',
+        canUnfurl: isAccountComplete
+      }
+    ],
+    [unreadMessagesCount, location.pathname, isAccountComplete, claimableAmount]
+  )
+
+  return navItems
+}

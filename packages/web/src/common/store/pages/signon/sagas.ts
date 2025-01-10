@@ -512,7 +512,7 @@ function* createGuestAccount(
           sdk.users.createGuestAccount
         ])
         yield* call(confirmTransaction, blockHash, blockNumber)
-        yield* call(fetchAccountAsync, { isSignUp: true })
+        yield* call(fetchAccountAsync)
 
         const userBank = yield* call(getOrCreateUSDCUserBank)
         if (!userBank) {
@@ -799,7 +799,7 @@ function* signUp() {
         },
         function* () {
           yield* put(signOnActions.sendWelcomeEmail(name))
-          yield* call(fetchAccountAsync, { isSignUp: true })
+          yield* call(fetchAccountAsync)
           yield* put(signOnActions.followArtists())
           yield* put(make(Name.CREATE_ACCOUNT_COMPLETE_CREATING, { handle }))
           yield* put(signOnActions.signUpSucceeded())

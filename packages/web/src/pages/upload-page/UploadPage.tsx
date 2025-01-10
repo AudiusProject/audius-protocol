@@ -6,9 +6,10 @@ import {
   UploadType,
   useUploadConfirmationModal
 } from '@audius/common/store'
+import { IconCloudUpload } from '@audius/harmony'
 import { useDispatch, useSelector } from 'react-redux'
 
-import Header from 'components/header/desktop/Header'
+import { Header } from 'components/header/desktop/Header'
 import Page from 'components/page/Page'
 import { EditFormScrollContext } from 'pages/edit-page/EditTrackPage'
 
@@ -166,6 +167,7 @@ export const UploadPage = (props: UploadPageProps) => {
       contentClassName={styles.upload}
       header={
         <Header
+          icon={IconCloudUpload}
           primary={pageTitle}
           showBackButton={phase === Phase.EDIT}
           onClickBack={() => {

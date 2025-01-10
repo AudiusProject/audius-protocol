@@ -1,4 +1,3 @@
-import type { ComponentType } from 'react'
 import { useCallback, useContext } from 'react'
 
 import type { User } from '@audius/common/models'
@@ -8,22 +7,12 @@ import {
   followersUserListActions
 } from '@audius/common/store'
 import { formatCount } from '@audius/common/utils'
-import { View } from 'react-native'
 import { TouchableOpacity } from 'react-native-gesture-handler'
-import type { SvgProps } from 'react-native-svg'
 import { useDispatch, useSelector } from 'react-redux'
 
-import {
-  IconNote,
-  IconPlaylists,
-  IconUserFollowers,
-  IconUserList,
-  Divider
-} from '@audius/harmony-native'
-import { Text } from 'app/components/core'
+import { Divider, Flex, Text } from '@audius/harmony-native'
 import { makeStyles } from 'app/styles'
 import { spacing } from 'app/styles/spacing'
-import { useThemeColors } from 'app/utils/theme'
 
 import { AppDrawerContext } from '../AppDrawerContext'
 import { useAppDrawerNavigation } from '../useAppDrawerNavigation'
@@ -31,6 +20,11 @@ import { useAppDrawerNavigation } from '../useAppDrawerNavigation'
 const { getAccountUser } = accountSelectors
 const { setFollowers } = followersUserListActions
 const { setFollowing } = followingUserListActions
+
+const messages = {
+  followers: 'Followers',
+  following: 'Following'
+}
 
 const vanityMetricHitSlop = {
   top: spacing(2),
@@ -42,26 +36,19 @@ const vanityMetricHitSlop = {
 const useVanityMetricStyles = makeStyles(({ spacing }) => ({
   vanityMetric: {
     flexDirection: 'row',
-    alignItems: 'center',
-    marginHorizontal: spacing(4)
-  },
-  vanityMetricIcon: {
-    marginRight: spacing(1)
+    alignItems: 'center'
   }
 }))
 
 type VanityMetricProps = {
   onPress: () => void
-  icon: ComponentType<SvgProps>
-  iconProps?: SvgProps
   metric: number
+  label: string
 }
 
 const VanityMetric = (props: VanityMetricProps) => {
-  const { onPress, icon: Icon, iconProps, metric } = props
+  const { onPress, metric, label } = props
   const styles = useVanityMetricStyles()
-  const { neutralLight4 } = useThemeColors()
-  const iconStyle = iconProps?.style
 
   return (
     <TouchableOpacity
@@ -69,55 +56,25 @@ const VanityMetric = (props: VanityMetricProps) => {
       onPress={onPress}
       hitSlop={vanityMetricHitSlop}
     >
-      <Icon
-        {...iconProps}
-        fill={neutralLight4}
-        style={[styles.vanityMetricIcon, iconStyle]}
-        height={22}
-        width={22}
-      />
-      <View>
-        <Text fontSize='large' weight='heavy'>
+      <Flex gap='xs' row>
+        <Text variant='body' size='s'>
           {formatCount(metric)}
         </Text>
-      </View>
+        <Text variant='body' size='s' color='subdued'>
+          {label}
+        </Text>
+      </Flex>
     </TouchableOpacity>
   )
 }
 
-const useStyles = makeStyles(({ spacing }) => ({
-  divider: {
-    marginVertical: spacing(4)
-  },
-  verticalDivider: {
-    marginHorizontal: spacing(2)
-  },
-  vanityMetrics: {
-    flexDirection: 'row',
-    justifyContent: 'space-evenly',
-    paddingHorizontal: spacing(4)
-  }
-}))
-
 export const VanityMetrics = () => {
-  const styles = useStyles()
   const accountUser = useSelector(getAccountUser) as User
-  const {
-    user_id,
-    track_count,
-    playlist_count,
-    followee_count,
-    follower_count
-  } = accountUser
+  const { user_id, followee_count, follower_count } = accountUser
 
   const dispatch = useDispatch()
   const navigation = useAppDrawerNavigation()
   const { drawerHelpers } = useContext(AppDrawerContext)
-
-  const handlePressAccount = useCallback(() => {
-    navigation.push('Profile', { handle: 'accountUser' })
-    drawerHelpers.closeDrawer()
-  }, [navigation, drawerHelpers])
 
   const handlePressFollowing = useCallback(() => {
     dispatch(setFollowing(user_id))
@@ -133,35 +90,19 @@ export const VanityMetrics = () => {
 
   return (
     <>
-      <Divider style={styles.divider} />
-      <View style={styles.vanityMetrics}>
-        {track_count === 0 ? (
-          <VanityMetric
-            metric={playlist_count}
-            onPress={handlePressAccount}
-            icon={IconPlaylists}
-          />
-        ) : (
-          <VanityMetric
-            metric={track_count}
-            onPress={handlePressAccount}
-            icon={IconNote}
-          />
-        )}
-        <Divider orientation='vertical' style={styles.verticalDivider} />
-        <VanityMetric
-          metric={followee_count}
-          onPress={handlePressFollowing}
-          icon={IconUserList}
-        />
-        <Divider orientation='vertical' style={styles.verticalDivider} />
+      <Flex row ph='xl' pt='s' pb='l' gap='xl'>
         <VanityMetric
           metric={follower_count}
           onPress={handlePressFollowers}
-          icon={IconUserFollowers}
+          label={messages.followers}
         />
-      </View>
-      <Divider style={styles.divider} />
+        <VanityMetric
+          metric={followee_count}
+          onPress={handlePressFollowing}
+          label={messages.following}
+        />
+      </Flex>
+      <Divider />
     </>
   )
 }

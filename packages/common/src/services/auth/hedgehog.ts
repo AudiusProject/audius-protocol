@@ -31,7 +31,6 @@ export type ConfirmCredentialsArgs = {
 
 export type HedgehogInstance = Hedgehog & {
   generateRecoveryInfo: () => Promise<{ login: string; host: string }>
-  refreshWallet: () => Promise<void>
   confirmCredentials: (args: ConfirmCredentialsArgs) => Promise<boolean>
 }
 
@@ -161,16 +160,6 @@ export const createHedgehog = ({
       password,
       hedgehog.createKey
     )
-  }
-
-  // @ts-expect-error -- adding our own custom method to hedgehog
-  hedgehog.refreshWallet = async () => {
-    // Important, set ready to false to block any new requests while we async update
-    // the wallet from entropy
-    hedgehog.ready = false
-    hedgehog.restoreLocalWallet().finally(() => {
-      hedgehog.ready = true
-    })
   }
 
   // Wrap the original login method to handle ready state

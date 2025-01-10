@@ -1,14 +1,12 @@
 import { Track, User } from '@audius/common/models'
 import { pluralize } from '@audius/common/utils'
-import { IconRemix as IconRemixes } from '@audius/harmony'
-import cn from 'classnames'
+import { IconRemix } from '@audius/harmony'
 
-import Header from 'components/header/desktop/Header'
+import { Header } from 'components/header/desktop/Header'
 import Lineup, { LineupProps } from 'components/lineup/Lineup'
 import Page from 'components/page/Page'
 import UserBadges from 'components/user-badges/UserBadges'
 import { fullTrackRemixesPage } from 'utils/route'
-import { isMatrix } from 'utils/theme/theme'
 import { withNullGuard } from 'utils/withNullGuard'
 
 import styles from './RemixesPage.module.css'
@@ -48,15 +46,8 @@ const RemixesPage = g(
   }) => {
     const renderHeader = () => (
       <Header
-        wrapperClassName={styles.header}
-        primary={
-          <div className={styles.headerPrimary}>
-            <IconRemixes
-              className={cn(styles.iconRemix, { [styles.matrix]: isMatrix() })}
-            />
-            <span>{title}</span>
-          </div>
-        }
+        icon={IconRemix}
+        primary={title}
         secondary={
           <div className={styles.headerSecondary}>
             {`${count || ''} ${pluralize(
