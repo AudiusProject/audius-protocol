@@ -18,7 +18,14 @@ import {
   PlainButton
 } from '@audius/harmony'
 import cn from 'classnames'
-import { Form, Formik, FormikProps, useField } from 'formik'
+import {
+  Form,
+  Formik,
+  FormikContextType,
+  FormikProps,
+  useField,
+  useFormikContext
+} from 'formik'
 import { useUnmount } from 'react-use'
 import { z } from 'zod'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
@@ -178,6 +185,10 @@ const TrackEditForm = (
   const trackIdx = values.trackMetadatasIndex
   const [, , { setValue: setIndex }] = useField('trackMetadatasIndex')
   const initialTrackValues = initialValues.trackMetadatas[trackIdx] ?? {}
+  const initialTrackId = initialTrackValues.track_id
+  const { values: formValues } =
+    useFormikContext() as FormikContextType<TrackEditFormValues>
+
   useUnmount(() => {
     setIndex(0)
   })
@@ -193,6 +204,9 @@ const TrackEditForm = (
   const { isEnabled: isTrackAudioReplaceEnabled } = useFeatureFlag(
     FeatureFlags.TRACK_AUDIO_REPLACE
   )
+  const { isEnabled: isTrackReplaceDownloadsEnabled } = useFeatureFlag(
+    FeatureFlags.TRACK_REPLACE_DOWNLOADS
+  )
 
   const [{ value: track }, , { setValue: setTrackValue }] = useField(
     `tracks.${trackIdx}`
@@ -200,26 +214,34 @@ const TrackEditForm = (
   const [, { touched: isTitleDirty }, { setValue: setTitle }] = useField(
     getTrackFieldName(trackIdx, 'title')
   )
-  const [, { touched: isArtworkDirty }, { setValue: setArtworkValue }] =
-    useField(getTrackFieldName(0, 'artwork'))
+  const [, , { setValue: setArtworkValue }] = useField(
+    getTrackFieldName(0, 'artwork')
+  )
   const [, , { setValue: setOrigFilename }] = useField(
     getTrackFieldName(trackIdx, 'orig_filename')
   )
 
   const handleTogglePreview = useCallback(() => {
-    togglePreview(track.preview, trackIdx)
-
     if (!isPreviewPlaying) {
       // Track Preview event
       trackEvent(
         make({
           eventName: Name.TRACK_REPLACE_PREVIEW,
-          trackId: initialTrackValues.track_id,
+          trackId: initialTrackId,
           source: isUpload ? 'upload' : 'edit'
         })
       )
     }
-  }, [togglePreview, trackIdx, track])
+
+    togglePreview(track.preview, trackIdx)
+  }, [
+    togglePreview,
+    track.preview,
+    trackIdx,
+    isPreviewPlaying,
+    initialTrackId,
+    isUpload
+  ])
 
   const getArtworkUrl = (artwork: typeof updatedArtwork) => {
     if (!artwork) return undefined
@@ -238,6 +260,10 @@ const TrackEditForm = (
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [getArtworkUrl(updatedArtwork), setArtworkValue])
 
+  const isArtworkSet =
+    formValues.trackMetadatas[trackIdx]?.artwork &&
+    'source' in formValues.trackMetadatas[trackIdx].artwork!
+
   const onClickReplace = useCallback(
     async (file: File) => {
       const processedFiles = await Promise.all(
@@ -249,12 +275,14 @@ const TrackEditForm = (
 
       const files = processedFiles.filter(removeNullable)
       if (files.length > 0) {
+        if (isPreviewPlaying) handleTogglePreview()
+
         const newFile = files[0]
 
         if (isUpload && !isTitleDirty) {
           setTitle(newFile.metadata.title.split('.').shift())
         }
-        if (isUpload && !isArtworkDirty && newFile.metadata.artwork.file) {
+        if (isUpload && !isArtworkSet && newFile.metadata.artwork.file) {
           setArtworkValue(newFile.metadata.artwork)
         }
         setTrackValue(newFile)
@@ -264,21 +292,23 @@ const TrackEditForm = (
         trackEvent(
           make({
             eventName: Name.TRACK_REPLACE_REPLACE,
-            trackId: initialTrackValues.track_id,
+            trackId: initialTrackId,
             source: isUpload ? 'upload' : 'edit'
           })
         )
       }
     },
     [
-      isArtworkDirty,
-      isTitleDirty,
+      isPreviewPlaying,
+      handleTogglePreview,
       isUpload,
-      setArtworkValue,
-      setOrigFilename,
-      setTitle,
+      isTitleDirty,
+      isArtworkSet,
       setTrackValue,
-      initialTrackValues
+      setOrigFilename,
+      initialTrackId,
+      setTitle,
+      setArtworkValue
     ]
   )
 
@@ -331,7 +361,7 @@ const TrackEditForm = (
                 isPlaying={isPreviewPlaying}
                 onClickReplace={onClickReplace}
                 onClickDownload={onClickDownload}
-                downloadEnabled={!isUpload}
+                downloadEnabled={!isUpload && isTrackReplaceDownloadsEnabled}
               />
             ) : null}
             <TrackMetadataFields />

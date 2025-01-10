@@ -1,18 +1,14 @@
-import logging
 import time
 from datetime import datetime
-from typing import List, TypedDict
+from logging import LoggerAdapter
+from typing import List, Optional, TypedDict
 
 from sqlalchemy.orm.session import Session
 
 from src.challenges.challenge_event import ChallengeEvent
 from src.challenges.challenge_event_bus import ChallengeEventBus
 from src.models.social.play import Play
-from src.tasks.core.core_client import CoreClient
-from src.tasks.core.gen.protocol_pb2 import BlockResponse, SignedTransaction
-from src.tasks.index_core_cutovers import get_adjusted_core_block
-
-logger = logging.getLogger(__name__)
+from src.tasks.core.gen.protocol_pb2 import SignedTransaction
 
 
 class PlayInfo(TypedDict):
@@ -34,17 +30,15 @@ class PlayChallengeInfo(TypedDict):
     slot: int
 
 
-def index_core_play(
+def index_core_plays(
+    logger: LoggerAdapter,
     session: Session,
-    core: CoreClient,
     challenge_bus: ChallengeEventBus,
-    block: BlockResponse,
+    latest_indexed_slot: int,
     tx: SignedTransaction,
-):
-    """Indexes a core play."""
-    # TODO: validate signature
+) -> Optional[int]:
+    next_slot = latest_indexed_slot + 1
 
-    logger.debug("index_core_plays.py | got play")
     plays: List[PlayInfo] = []
     challenge_bus_events: List[PlayChallengeInfo] = []
 
@@ -65,7 +59,7 @@ def index_core_play(
         timestamp = tx_play.timestamp.ToDatetime()
         track_id = int(tx_play.track_id)
         user_id = user_id
-        slot = get_adjusted_core_block(block.height)
+        slot = next_slot
         city = tx_play.city
         region = tx_play.region
         country = tx_play.country
@@ -97,7 +91,7 @@ def index_core_play(
             )
 
     if not plays:
-        return
+        return None
 
     session.execute(Play.__table__.insert().values(plays))
     logger.debug("index_core_plays.py | Dispatching listen events")
@@ -112,6 +106,6 @@ def index_core_play(
         )
     listen_dispatch_end = time.time()
     listen_dispatch_diff = listen_dispatch_end - listen_dispatch_start
-    logger.debug(
-        f"index_core_plays.py | Dispatched listen events in {listen_dispatch_diff}"
-    )
+    logger.debug(f"dispatched listen events in {listen_dispatch_diff}")
+
+    return next_slot

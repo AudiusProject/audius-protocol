@@ -43,7 +43,7 @@ export const WithLeftIcon: Story = {
 export const WithRightIcon: Story = {
   args: {
     children: 'Label',
-    rightIcon: IconVolumeLevel3
+    rightIcon: <IconVolumeLevel3 size='m' color='subdued' />
   }
 }
 
@@ -51,6 +51,6 @@ export const WithBothIcons: Story = {
   args: {
     children: 'Label',
     leftIcon: IconFeed,
-    rightIcon: IconVolumeLevel3
+    rightIcon: <IconVolumeLevel3 size='m' color='subdued' />
   }
 }

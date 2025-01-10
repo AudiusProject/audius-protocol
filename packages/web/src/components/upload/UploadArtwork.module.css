@@ -45,6 +45,9 @@
   top: 0;
   background-color: rgba(25, 29, 45, 0.5);
   transition: all 0.25s ease-in-out;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .overlay > div {

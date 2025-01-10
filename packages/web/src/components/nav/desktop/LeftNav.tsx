@@ -6,8 +6,13 @@ import {
   collectionsSocialActions,
   tracksSocialActions
 } from '@audius/common/store'
-import { route } from '@audius/common/utils'
-import { Box, Flex, Scrollbar } from '@audius/harmony'
+import {
+  Box,
+  Divider,
+  ExpandableNavItem,
+  Flex,
+  Scrollbar
+} from '@audius/harmony'
 import { ResizeObserver } from '@juggle/resize-observer'
 import { connect } from 'react-redux'
 import { RouteComponentProps, withRouter } from 'react-router-dom'
@@ -18,32 +23,20 @@ import { DragAutoscroller } from 'components/drag-autoscroller/DragAutoscroller'
 import { ProfileCompletionPanel } from 'components/profile-progress/ProfileCompletionPanel'
 import { selectDraggingKind } from 'store/dragndrop/slice'
 import { AppState } from 'store/types'
-import { useSelector } from 'utils/reducer'
 
 import { AccountDetails } from './AccountDetails'
-import { ConnectInstagram } from './ConnectInstagram'
-import { GroupHeader } from './GroupHeader'
 import { LeftNavCTA } from './LeftNavCTA'
-import { LeftNavDroppable } from './LeftNavDroppable'
 import { LeftNavLink } from './LeftNavLink'
 import { NavHeader } from './NavHeader'
 import { NowPlayingArtworkTile } from './NowPlayingArtworkTile'
-import { PlaylistLibrary } from './PlaylistLibrary'
 import { RouteNav } from './RouteNav'
+import { NavItemConfig, useNavConfig } from './useNavConfig'
 
-const { EXPLORE_PAGE, FEED_PAGE, HISTORY_PAGE, LIBRARY_PAGE, TRENDING_PAGE } =
-  route
 const { saveTrack } = tracksSocialActions
 const { saveCollection } = collectionsSocialActions
-const { getAccountStatus, getUserId, getUserHandle, getIsAccountComplete } =
-  accountSelectors
+const { getAccountStatus, getUserId, getUserHandle } = accountSelectors
 
 export const LEFT_NAV_WIDTH = 240
-
-const messages = {
-  discover: 'Discover',
-  library: 'Your Music'
-}
 
 type OwnProps = {
   isElectron: boolean
@@ -55,15 +48,7 @@ type NavColumnProps = OwnProps &
   RouteComponentProps
 
 const LeftNav = (props: NavColumnProps) => {
-  const {
-    accountUserId,
-    accountHandle,
-    isElectron,
-    draggingKind,
-    saveTrack,
-    saveCollection
-  } = props
-  const isAccountComplete = useSelector(getIsAccountComplete)
+  const { isElectron } = props
   const [navBodyContainerMeasureRef, navBodyContainerBoundaries] = useMeasure({
     polyfill: ResizeObserver
   })
@@ -71,6 +56,9 @@ const LeftNav = (props: NavColumnProps) => {
   const [dragScrollingDirection, setDragScrollingDirection] = useState<
     'up' | 'down' | undefined
   >(undefined)
+
+  const navConfig = useNavConfig()
+
   const handleChangeDragScrollingDirection = useCallback(
     (newDirection: 'up' | 'down' | undefined) => {
       setDragScrollingDirection(newDirection)
@@ -84,6 +72,44 @@ const LeftNav = (props: NavColumnProps) => {
         scrollbarRef.current.scrollTop + difference
     }
   }, [])
+
+  const renderNavItem = useCallback(
+    (item: NavItemConfig) => {
+      if (item.isExpandable) {
+        const NestedComponent = item.nestedComponent
+        return (
+          <ExpandableNavItem
+            key={item.label}
+            label={item.label}
+            leftIcon={item.leftIcon}
+            rightIcon={item.rightIcon}
+            shouldPersistRightIcon={item.shouldPersistRightIcon}
+            nestedItems={
+              NestedComponent ? (
+                <NestedComponent scrollbarRef={scrollbarRef} />
+              ) : null
+            }
+            canUnfurl={item.canUnfurl}
+          />
+        )
+      }
+
+      return (
+        <LeftNavLink
+          key={item.label}
+          leftIcon={item.leftIcon}
+          rightIcon={item.rightIcon}
+          to={item.to}
+          disabled={item.disabled}
+          restriction={item.restriction}
+          hasNotification={item.hasNotification}
+        >
+          {item.label}
+        </LeftNavLink>
+      )
+    },
+    [scrollbarRef]
+  )
 
   return (
     <Flex
@@ -131,64 +157,27 @@ const LeftNav = (props: NavColumnProps) => {
             <AccountDetails />
             <Flex
               direction='column'
-              gap='unit5'
               flex='1 1 auto'
               css={{ overflow: 'hidden' }}
             >
-              {accountHandle === 'fbtest' ? (
-                <Box>
-                  <LeftNavLink to={'/fb/share'}>
-                    Share Profile to Facebook
-                  </LeftNavLink>
-                  <LeftNavLink>
-                    <ConnectInstagram />
-                  </LeftNavLink>
-                </Box>
-              ) : null}
-              <Box>
-                <GroupHeader>{messages.discover}</GroupHeader>
-                <LeftNavLink
-                  to={FEED_PAGE}
-                  disabled={!isAccountComplete}
-                  restriction='account'
-                >
-                  Feed
-                </LeftNavLink>
-                <LeftNavLink to={TRENDING_PAGE} restriction='none'>
-                  Trending
-                </LeftNavLink>
-                <LeftNavLink to={EXPLORE_PAGE} exact restriction='none'>
-                  Explore
-                </LeftNavLink>
-              </Box>
-              <Box>
-                <GroupHeader>{messages.library}</GroupHeader>
-                <LeftNavDroppable
-                  disabled={!accountUserId}
-                  acceptedKinds={['track', 'album']}
-                  acceptOwner={false}
-                  onDrop={draggingKind === 'album' ? saveCollection : saveTrack}
-                >
-                  <LeftNavLink to={LIBRARY_PAGE} restriction='guest'>
-                    Library
-                  </LeftNavLink>
-                </LeftNavDroppable>
-                <LeftNavLink
-                  to={HISTORY_PAGE}
-                  disabled={!isAccountComplete}
-                  restriction='account'
-                >
-                  History
-                </LeftNavLink>
-              </Box>
-              <Box>
-                <PlaylistLibrary scrollbarRef={scrollbarRef} />
-              </Box>
+              {navConfig.map((item, index) => {
+                const isLastMainItem = index === navConfig.length - 2
+                return (
+                  <>
+                    {renderNavItem(item)}
+                    {isLastMainItem ? (
+                      <Box mv='s'>
+                        <Divider />
+                      </Box>
+                    ) : null}
+                  </>
+                )
+              })}
             </Flex>
           </DragAutoscroller>
         </Scrollbar>
       </Flex>
-      <Flex direction='column' alignItems='center' pt='l' borderTop='default'>
+      <Flex direction='column' alignItems='center' pt='l'>
         <ProfileCompletionPanel />
         <LeftNavCTA />
         <NowPlayingArtworkTile />

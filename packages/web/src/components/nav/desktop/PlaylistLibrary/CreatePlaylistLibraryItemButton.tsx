@@ -1,4 +1,4 @@
-import { MutableRefObject, useCallback, useMemo } from 'react'
+import { useCallback, useMemo } from 'react'
 
 import { CreatePlaylistSource } from '@audius/common/models'
 import {
@@ -8,17 +8,16 @@ import {
   playlistLibraryHelpers
 } from '@audius/common/store'
 import {
+  IconButton,
   IconFolder,
   IconPlaylists,
-  IconSave,
-  Pill,
+  IconPlus,
   PopupMenu,
   PopupMenuItem
 } from '@audius/harmony'
 import { useDispatch } from 'react-redux'
 
 import { useSelector } from 'common/hooks/useSelector'
-import { Tooltip } from 'components/tooltip'
 import { useRequiresAccountCallback } from 'hooks/useRequiresAccount'
 
 const { createPlaylist } = cacheCollectionsActions
@@ -35,20 +34,10 @@ const messages = {
   newFolderName: 'New Folder'
 }
 
-type Props = {
-  scrollbarRef: MutableRefObject<HTMLElement | null>
-}
-
 // Allows user to create a playlist or playlist-folder
-export const CreatePlaylistLibraryItemButton = (props: Props) => {
-  const { scrollbarRef } = props
+export const CreatePlaylistLibraryItemButton = () => {
   const dispatch = useDispatch()
   const library = useSelector(getPlaylistLibrary)
-
-  const getTooltipPopupContainer = useCallback(
-    () => scrollbarRef.current?.parentNode,
-    [scrollbarRef]
-  )
 
   const handleSubmitPlaylist = useCallback(() => {
     dispatch(
@@ -97,20 +86,16 @@ export const CreatePlaylistLibraryItemButton = (props: Props) => {
       items={items}
       anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
       renderTrigger={(anchorRef, onClick, triggerProps) => (
-        <Tooltip
-          text={messages.newPlaylistOrFolderTooltip}
-          getPopupContainer={getTooltipPopupContainer}
-        >
-          <Pill
-            ref={anchorRef}
-            iconLeft={IconSave}
-            onClick={() => handleClickPill(onClick)}
-            css={{ height: 18 }}
-            {...triggerProps}
-          >
-            {messages.new}
-          </Pill>
-        </Tooltip>
+        <IconButton
+          ref={anchorRef}
+          icon={IconPlus}
+          onClick={() => handleClickPill(onClick)}
+          aria-label='Create Playlist'
+          size='m'
+          color='subdued'
+          // Without this, there is a type error on the color prop
+          {...(triggerProps as Omit<typeof triggerProps, 'color'>)}
+        />
       )}
     />
   )

@@ -2,9 +2,10 @@ import { useFeatureFlag } from '@audius/common/hooks'
 import { Name, FeedFilter } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
 import { feedPageLineupActions as feedActions } from '@audius/common/store'
+import { IconFeed } from '@audius/harmony'
 
 import { make, useRecord } from 'common/store/analytics/actions'
-import Header from 'components/header/desktop/Header'
+import { Header } from 'components/header/desktop/Header'
 import EndOfLineup from 'components/lineup/EndOfLineup'
 import Lineup from 'components/lineup/Lineup'
 import {
@@ -72,8 +73,8 @@ const FeedPageContent = ({
 
   const header = (
     <Header
+      icon={IconFeed}
       primary={messages.feedHeaderTitle}
-      variant='main'
       rightDecorator={
         <FeedFilters
           currentFilter={feedFilter}
