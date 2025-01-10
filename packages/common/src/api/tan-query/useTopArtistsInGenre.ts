@@ -1,4 +1,4 @@
-import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query'
 import { useDispatch } from 'react-redux'
 
 import { userMetadataFromSDK } from '~/adapters'
@@ -14,7 +14,6 @@ const ARTISTS_PER_GENRE_LIMIT = 15
 type UseTopArtistsInGenreArgs = {
   genre: string
   limit?: number
-  offset?: number
 }
 
 export const useTopArtistsInGenre = (
@@ -24,22 +23,31 @@ export const useTopArtistsInGenre = (
   const { audiusSdk } = useAudiusQueryContext()
   const queryClient = useQueryClient()
   const dispatch = useDispatch()
-  const { genre, limit = ARTISTS_PER_GENRE_LIMIT, offset } = args
+  const { genre, limit = ARTISTS_PER_GENRE_LIMIT } = args
 
-  return useQuery({
-    queryKey: [QUERY_KEYS.topArtistsInGenre, genre, limit, offset],
-    queryFn: async () => {
+  const query = useInfiniteQuery({
+    queryKey: [QUERY_KEYS.topArtistsInGenre, genre, limit],
+    queryFn: async ({ pageParam }) => {
       const sdk = await audiusSdk()
       const { data } = await sdk.full.users.getTopUsersInGenre({
         genre: [genre],
         limit,
-        offset
+        offset: (pageParam as number) * limit
       })
       const users = transformAndCleanList(data, userMetadataFromSDK)
       primeUserData({ users, queryClient, dispatch })
       return users
     },
-    staleTime: config?.staleTime,
-    enabled: config?.enabled !== false
+    initialPageParam: 0,
+    getNextPageParam: (lastPage, allPages) => {
+      if (lastPage.length < limit) return undefined
+      return allPages.length
+    },
+    ...config
   })
+
+  return {
+    ...query,
+    data: query.data?.pages.flatMap((page) => page)
+  }
 }

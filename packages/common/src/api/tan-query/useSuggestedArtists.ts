@@ -13,9 +13,9 @@ export const useSuggestedArtists = (config?: Config) => {
     queryKey: [QUERY_KEYS.suggestedArtists, 'ids'],
     queryFn: async () => {
       const response = await fetch(env.SUGGESTED_FOLLOW_HANDLES!)
-      const featuredArtists = await response.json()
+      const suggestedArtists = await response.json()
       // dedupe the artists just in case the team accidentally adds the same artist twice
-      return [...new Set(featuredArtists as number[])]
+      return [...new Set(suggestedArtists as number[])]
     },
     staleTime: config?.staleTime,
     enabled: config?.enabled !== false
@@ -23,6 +23,6 @@ export const useSuggestedArtists = (config?: Config) => {
 
   return useUsers(suggestedIds, {
     ...config,
-    enabled: config?.enabled !== false && !!suggestedIds?.length
+    enabled: config?.enabled !== false
   })
 }

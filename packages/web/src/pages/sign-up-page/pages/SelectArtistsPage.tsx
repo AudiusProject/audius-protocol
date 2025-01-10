@@ -90,8 +90,7 @@ export const SelectArtistsPage = () => {
     [dispatch, isMobile, navigate]
   )
 
-  const { data: artists, status } = useTopArtists(currentGenre)
-  const isLoading = status === 'pending'
+  const { data: artists, isPending } = useTopArtists(currentGenre)
 
   // Note: this doesn't catch when running `web:prod`
   const isDevEnvironment =
@@ -222,13 +221,13 @@ export const SelectArtistsPage = () => {
                     {selectArtistsPageMessages.pickArtists(currentGenre)}
                   </HiddenLegend>
 
-                  {isLoading || !isMobile ? null : <PreviewArtistHint />}
+                  {isPending || !isMobile ? null : <PreviewArtistHint />}
                   <Flex
                     gap={isMobile ? 's' : 'm'}
                     wrap='wrap'
                     justifyContent='center'
                   >
-                    {isLoading
+                    {isPending
                       ? range(9).map((index) => (
                           <FollowArtistTileSkeleton key={index} />
                         ))
