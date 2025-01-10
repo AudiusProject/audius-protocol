@@ -81,13 +81,7 @@ export const RewardsClaimTile = () => {
 
   const openClaimAllModal = useCallback(() => {
     dispatch(setVisibility({ modal: 'ClaimAllRewards', visible: true }))
-    track(
-      make({
-        eventName: Name.REWARDS_CLAIM_ALL_REQUEST,
-        count: claimableAmount
-      })
-    )
-  }, [claimableAmount, dispatch])
+  }, [dispatch])
 
   if (isEmpty) return null
 
