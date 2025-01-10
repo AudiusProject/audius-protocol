@@ -24,10 +24,9 @@ const messages = {
 
 const useStyles = makeStyles(({ spacing, palette, typography }) => ({
   root: {
-    marginBottom: spacing(2),
     borderRadius: spacing(2),
     borderColor: palette.neutralLight7,
-    borderWidth: 2,
+    borderWidth: 1,
     paddingBottom: spacing(8)
   },
   disbursed: {
