@@ -1,9 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
 
-import {
-  formatCooldownChallenges,
-  useChallengeCooldownSchedule
-} from '@audius/common/hooks'
 import { Name, ChallengeName } from '@audius/common/models'
 import type { ChallengeRewardID } from '@audius/common/models'
 import { StringKeys } from '@audius/common/services'
@@ -23,18 +19,10 @@ import {
   makeOptimisticChallengeSortComparator
 } from '@audius/common/utils'
 import { useFocusEffect } from '@react-navigation/native'
-import { View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 
-import {
-  Flex,
-  Text,
-  Button,
-  IconTokenGold,
-  Paper,
-  Divider,
-  IconArrowRight
-} from '@audius/harmony-native'
+import { Flex, Text, Paper } from '@audius/harmony-native'
+import { GradientText } from 'app/components/core'
 import LoadingSpinner from 'app/components/loading-spinner'
 import type { SummaryTableItem } from 'app/components/summary-table/SummaryTable'
 import { useRemoteVar } from 'app/hooks/useRemoteConfig'
@@ -81,12 +69,13 @@ type ClaimableSummaryTableItem = SummaryTableItem & {
 }
 
 const messages = {
+  title: 'Achievement Rewards',
+  subheader: 'Earn $AUDIO by completing simple tasks while using Audius.',
   pending: 'Pending',
   claimAllRewards: 'Claim All Rewards',
   moreInfo: 'More Info',
   available: '$AUDIO available',
   now: 'now!',
-  totalReadyToClaim: 'Total Ready to Claim',
   availableMessage: (summaryItems: ClaimableSummaryTableItem[]) => {
     const filteredSummaryItems = summaryItems.filter(removeNullable)
     const summaryItem = filteredSummaryItems.pop()
@@ -117,42 +106,19 @@ const useRewardIds = (
 }
 
 const useStyles = makeStyles(({ spacing, typography, palette }) => ({
-  root: {
-    width: '100%',
-    alignItems: 'stretch'
+  title: {
+    fontSize: typography.fontSize.xxl,
+    textAlign: 'center',
+    fontFamily: typography.fontByWeight.bold
   },
   loading: {
     marginVertical: spacing(2)
-  },
-  pillContainer: {
-    height: spacing(6),
-    display: 'flex',
-    flexDirection: 'row',
-    justifyContent: 'flex-start',
-    alignItems: 'flex-start'
-  },
-  pillMessage: {
-    paddingVertical: spacing(1),
-    paddingHorizontal: spacing(2),
-    fontSize: typography.fontSize.small,
-    fontFamily: typography.fontByWeight.demiBold,
-    lineHeight: spacing(4),
-    color: palette.secondary,
-    borderWidth: 1,
-    borderRadius: 12,
-    borderColor: palette.backgroundSecondary,
-    overflow: 'hidden'
-  },
-  readyToClaimPill: {
-    backgroundColor: palette.background
   }
 }))
 
-export const ChallengeRewards = () => {
+export const ChallengeRewardsTile = () => {
   const styles = useStyles()
   const dispatch = useDispatch()
-  const { cooldownChallenges, cooldownAmount, claimableAmount, isEmpty } =
-    useChallengeCooldownSchedule({ multiple: true })
   const userChallengesLoading = useSelector(getUserChallengesLoading)
   const userChallenges = useSelector(getUserChallenges)
   const optimisticUserChallenges = useSelector((state: CommonState) =>
@@ -185,10 +151,6 @@ export const ChallengeRewards = () => {
     )
   }
 
-  const openClaimAllModal = () => {
-    dispatch(setVisibility({ modal: 'ClaimAllRewards', visible: true }))
-  }
-
   const rewardsPanels = rewardIds
     // Filter out challenges that DN didn't return
     .map((id) => userChallenges[id]?.challenge_id)
@@ -216,59 +178,18 @@ export const ChallengeRewards = () => {
     })
 
   return (
-    <View style={styles.root}>
-      {userChallengesLoading && !haveChallengesLoaded ? (
-        <LoadingSpinner style={styles.loading} />
-      ) : (
-        <Flex gap='2xl'>
-          {!isEmpty ? (
-            <Paper shadow='flat' border='strong' p='l' gap='m'>
-              <Flex direction='row' justifyContent='flex-start' gap='s'>
-                {claimableAmount > 0 ? (
-                  <IconTokenGold height={24} width={24} />
-                ) : null}
-                <Text variant='heading' color='accent' size='s'>
-                  {messages.totalReadyToClaim}
-                </Text>
-              </Flex>
-              {cooldownAmount > 0 ? (
-                <View style={styles.pillContainer}>
-                  <Text style={[styles.pillMessage, styles.readyToClaimPill]}>
-                    {cooldownAmount} {messages.pending}
-                  </Text>
-                </View>
-              ) : null}
-              <Text size='s' variant='body'>
-                {claimableAmount > 0
-                  ? `${claimableAmount} ${messages.available} ${messages.now}`
-                  : messages.availableMessage(
-                      formatCooldownChallenges(cooldownChallenges)
-                    )}
-              </Text>
-              {claimableAmount > 0 ? (
-                <Button
-                  onPress={openClaimAllModal}
-                  iconRight={IconArrowRight}
-                  size='small'
-                >
-                  {messages.claimAllRewards}
-                </Button>
-              ) : cooldownAmount > 0 ? (
-                <Button
-                  variant='secondary'
-                  onPress={openClaimAllModal}
-                  iconRight={IconArrowRight}
-                  size='small'
-                >
-                  {messages.moreInfo}
-                </Button>
-              ) : null}
-            </Paper>
-          ) : null}
-          <Divider orientation='horizontal' />
-          <Flex>{rewardsPanels}</Flex>
+    <Paper shadow='near' border='strong' p='s' pt='l'>
+      <Flex gap='unit10'>
+        <Flex gap='s'>
+          <GradientText style={styles.title}>{messages.title}</GradientText>
+          <Text textAlign='center'>{messages.subheader}</Text>
         </Flex>
-      )}
-    </View>
+        {userChallengesLoading && !haveChallengesLoaded ? (
+          <LoadingSpinner style={styles.loading} />
+        ) : (
+          <Flex gap='s'>{rewardsPanels}</Flex>
+        )}
+      </Flex>
+    </Paper>
   )
 }

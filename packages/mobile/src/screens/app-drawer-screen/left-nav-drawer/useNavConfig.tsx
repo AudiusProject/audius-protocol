@@ -146,7 +146,7 @@ export const useNavConfig = () => {
       {
         icon: IconGift,
         label: messages.rewards,
-        to: 'AudioScreen',
+        to: 'RewardsScreen',
         showNotificationBubble: hasClaimableRewards,
         rightIcon: hasClaimableRewards ? (
           <NotificationCount count={claimableAmount} />
