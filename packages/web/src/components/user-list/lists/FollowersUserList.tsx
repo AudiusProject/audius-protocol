@@ -6,23 +6,7 @@ import { UserListV2 } from 'components/user-list/UserListV2'
 
 export const FollowersUserList = () => {
   const userId = useSelector(followersUserListSelectors.getId)
-  const {
-    data = [],
-    hasNextPage,
-    isFetchingNextPage,
-    fetchNextPage,
-    isPending
-  } = useFollowers({
-    userId
-  })
+  const query = useFollowers({ userId })
 
-  return (
-    <UserListV2
-      data={data}
-      hasMore={hasNextPage}
-      isLoadingMore={isFetchingNextPage}
-      isLoading={isPending}
-      loadMore={fetchNextPage}
-    />
-  )
+  return <UserListV2 {...query} />
 }

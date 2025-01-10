@@ -7,7 +7,10 @@ import {
   IconTrophy,
   IconUserFollowing as IconFollowing,
   IconCart,
-  IconRemix
+  IconRemix,
+  ModalHeader,
+  ModalTitle,
+  ModalContent
 } from '@audius/harmony'
 import { ChatBlastAudience } from '@audius/sdk'
 import { useDispatch, useSelector } from 'react-redux'
@@ -21,18 +24,19 @@ import {
 import { setVisibility } from 'store/application/ui/userListModal/slice'
 import { UserListType } from 'store/application/ui/userListModal/types'
 
+import { FavoritesUserList } from '../../user-list/lists/FavoritesUserList'
+import { FollowersUserList } from '../../user-list/lists/FollowersUserList'
+import { FollowingUserList } from '../../user-list/lists/FollowingUserList'
+import { MutualsUserList } from '../../user-list/lists/MutualsUserList'
+import { NotificationUserList } from '../../user-list/lists/NotificationUserList'
+import { PurchasersUserList } from '../../user-list/lists/PurchasersUserList'
+import { RelatedArtistsUserList } from '../../user-list/lists/RelatedArtistsUserList'
+import { RemixersUserList } from '../../user-list/lists/RemixersUserList'
+import { RepostsUserList } from '../../user-list/lists/RepostsUserList'
+import { SupportingUserList } from '../../user-list/lists/SupportingUserList'
+import { TopSupportersUserList } from '../../user-list/lists/TopSupportersUserList'
+
 import styles from './UserListModal.module.css'
-import { FavoritesUserList } from './lists/FavoritesUserList'
-import { FollowersUserList } from './lists/FollowersUserList'
-import { FollowingUserList } from './lists/FollowingUserList'
-import { MutualsUserList } from './lists/MutualsUserList'
-import { NotificationUserList } from './lists/NotificationUserList'
-import { PurchasersUserList } from './lists/PurchasersUserList'
-import { RelatedArtistsUserList } from './lists/RelatedArtistsUserList'
-import { RemixersUserList } from './lists/RemixersUserList'
-import { RepostsUserList } from './lists/RepostsUserList'
-import { SupportingUserList } from './lists/SupportingUserList'
-import { TopSupportersUserList } from './lists/TopSupportersUserList'
 
 const messages = {
   reposts: 'Reposts',
@@ -66,27 +70,23 @@ const UserListModalV2 = () => {
     switch (userListType) {
       case UserListType.FAVORITE:
         return {
-          component: <FavoritesUserList onClose={onClose} />,
+          component: <FavoritesUserList />,
           title: messages.favorites
         }
       case UserListType.REPOST:
         return {
-          component: <RepostsUserList onClose={onClose} />,
+          component: <RepostsUserList />,
           title: messages.reposts
         }
       case UserListType.FOLLOWER:
         return {
-          component: <FollowersUserList onClose={onClose} />,
-          title: (
-            <div className={styles.titleContainer}>
-              <IconUser className={styles.icon} />
-              <span>{messages.followers}</span>
-            </div>
-          )
+          component: <FollowersUserList />,
+          icon: IconUser,
+          title: messages.followers
         }
       case UserListType.FOLLOWING:
         return {
-          component: <FollowingUserList onClose={onClose} />,
+          component: <FollowingUserList />,
           title: (
             <div className={styles.titleContainer}>
               <IconUser className={styles.icon} />
@@ -96,7 +96,7 @@ const UserListModalV2 = () => {
         }
       case UserListType.NOTIFICATION:
         return {
-          component: <NotificationUserList onClose={onClose} />,
+          component: <NotificationUserList />,
           title: (
             <div className={styles.titleContainer}>
               <IconUser className={styles.icon} />
@@ -106,7 +106,7 @@ const UserListModalV2 = () => {
         }
       case UserListType.SUPPORTER:
         return {
-          component: <TopSupportersUserList onClose={onClose} />,
+          component: <TopSupportersUserList />,
           title: (
             <div className={styles.titleContainer}>
               <IconTrophy className={styles.icon} />
@@ -116,7 +116,7 @@ const UserListModalV2 = () => {
         }
       case UserListType.SUPPORTING:
         return {
-          component: <SupportingUserList onClose={onClose} />,
+          component: <SupportingUserList />,
           title: (
             <div className={styles.titleContainer}>
               <IconTip className={styles.icon} />
@@ -126,7 +126,7 @@ const UserListModalV2 = () => {
         }
       case UserListType.MUTUAL_FOLLOWER:
         return {
-          component: <MutualsUserList onClose={onClose} />,
+          component: <MutualsUserList />,
           title: (
             <div className={styles.titleContainer}>
               <IconFollowing className={styles.icon} />
@@ -136,7 +136,7 @@ const UserListModalV2 = () => {
         }
       case UserListType.RELATED_ARTISTS:
         return {
-          component: <RelatedArtistsUserList onClose={onClose} />,
+          component: <RelatedArtistsUserList />,
           title: (
             <div className={styles.titleContainer}>
               <IconUserGroup className={styles.icon} />
@@ -146,7 +146,7 @@ const UserListModalV2 = () => {
         }
       case UserListType.PURCHASER:
         return {
-          component: <PurchasersUserList onClose={onClose} />,
+          component: <PurchasersUserList />,
           title: (
             <div className={styles.titleContainer}>
               <IconCart className={styles.icon} />
@@ -156,7 +156,7 @@ const UserListModalV2 = () => {
         }
       case UserListType.REMIXER:
         return {
-          component: <RemixersUserList onClose={onClose} />,
+          component: <RemixersUserList />,
           title: (
             <div className={styles.titleContainer}>
               <IconRemix className={styles.icon} />
@@ -172,32 +172,35 @@ const UserListModalV2 = () => {
     }
   }
 
-  const { component, title } = getUserList()
+  const { component, title, icon: Icon } = getUserList()
 
   return (
     <Modal
-      title={title}
       isOpen={isOpen}
-      onClose={onClose}
-      showTitleHeader
       bodyClassName={styles.modalBody}
       titleClassName={styles.modalTitle}
       headerContainerClassName={styles.modalHeader}
       showDismissButton
+      onClose={onClose}
     >
-      <Scrollbar className={styles.scrollable}>{component}</Scrollbar>
-      {!isChatBlastPath &&
-      (userListType === UserListType.FOLLOWER ||
-        userListType === UserListType.SUPPORTER) ? (
-        <ChatBlastWithAudienceCTA
-          audience={
-            userListType === UserListType.FOLLOWER
-              ? ChatBlastAudience.FOLLOWERS
-              : ChatBlastAudience.TIPPERS
-          }
-          onClick={onClose}
-        />
-      ) : null}
+      <ModalHeader>
+        <ModalTitle icon={<Icon />} title={title} />
+      </ModalHeader>
+      <ModalContent>
+        {component}
+        {!isChatBlastPath &&
+        (userListType === UserListType.FOLLOWER ||
+          userListType === UserListType.SUPPORTER) ? (
+          <ChatBlastWithAudienceCTA
+            audience={
+              userListType === UserListType.FOLLOWER
+                ? ChatBlastAudience.FOLLOWERS
+                : ChatBlastAudience.TIPPERS
+            }
+            onClick={onClose}
+          />
+        ) : null}
+      </ModalContent>
     </Modal>
   )
 }

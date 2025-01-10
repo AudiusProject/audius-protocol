@@ -1,10 +1,11 @@
-import { useCallback } from 'react'
+import { useCallback, useRef } from 'react'
 
 import { useCurrentUserId } from '@audius/common/api'
 import { ID, User, FollowSource } from '@audius/common/models'
 import { profilePageActions, usersSocialActions } from '@audius/common/store'
 import { route } from '@audius/common/utils'
-import { FollowButton } from '@audius/harmony'
+import { FollowButton, Scrollbar } from '@audius/harmony'
+import { css } from '@emotion/react'
 import cn from 'classnames'
 import { range } from 'lodash'
 import InfiniteScroll from 'react-infinite-scroller'
@@ -15,6 +16,7 @@ import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import { MountPlacement } from 'components/types'
 import * as unfollowConfirmationActions from 'components/unfollow-confirmation-modal/store/actions'
 import { useIsMobile } from 'hooks/useIsMobile'
+import { setVisibility } from 'store/application/ui/userListModal/slice'
 import { push } from 'utils/navigation'
 
 import styles from './UserListV2.module.css'
@@ -22,7 +24,7 @@ import styles from './UserListV2.module.css'
 const { profilePage } = route
 const { setNotificationSubscription } = profilePageActions
 
-const SCROLL_THRESHOLD = 400
+const SCROLL_THRESHOLD = 100
 
 type SkeletonItem = {
   _loading: true
@@ -56,26 +58,6 @@ type UserListV2Props = {
    */
   loadMore: () => void
   /**
-   * Callback when a user navigates away
-   */
-  onNavigateAway?: () => void
-  /**
-   * Callback after following a user
-   */
-  afterFollow?: () => void
-  /**
-   * Callback after unfollowing a user
-   */
-  afterUnfollow?: () => void
-  /**
-   * Optional callback before clicking artist name
-   */
-  beforeClickArtistName?: () => void
-  /**
-   * Optional function to get scroll parent element
-   */
-  getScrollParent?: () => HTMLElement | null
-  /**
    * Optional user ID to show support for (used in top supporters list)
    */
   showSupportFor?: ID
@@ -91,10 +73,6 @@ export const UserListV2 = ({
   isLoadingMore,
   isLoading,
   loadMore,
-  onNavigateAway,
-  afterFollow,
-  afterUnfollow,
-  beforeClickArtistName,
   getScrollParent,
   showSupportFor,
   showSupportFrom
@@ -103,17 +81,24 @@ export const UserListV2 = ({
   const isMobile = useIsMobile()
   const { data: currentUserId } = useCurrentUserId()
 
+  const handleClose = useCallback(() => dispatch(setVisibility(false)), [])
+
   const handleFollow = useCallback(
     (userId: ID) => {
-      dispatch(usersSocialActions.followUser(userId, FollowSource.USER_LIST))
-      afterFollow?.()
+      if (!currentUserId) {
+        handleClose()
+      } else {
+        dispatch(usersSocialActions.followUser(userId, FollowSource.USER_LIST))
+      }
     },
-    [dispatch, afterFollow]
+    [currentUserId, dispatch, handleClose]
   )
 
   const handleUnfollow = useCallback(
     (userId: ID) => {
-      if (isMobile) {
+      if (!currentUserId) {
+        handleClose()
+      } else if (isMobile) {
         dispatch(unfollowConfirmationActions.setOpen(userId))
       } else {
         dispatch(
@@ -121,75 +106,88 @@ export const UserListV2 = ({
         )
         dispatch(setNotificationSubscription(userId, false, false))
       }
-      afterUnfollow?.()
     },
-    [dispatch, isMobile, afterUnfollow]
+    [currentUserId, isMobile, handleClose, dispatch]
   )
 
   const handleClickArtistName = useCallback(
     (handle: string) => {
-      beforeClickArtistName?.()
       dispatch(push(profilePage(handle)))
+      handleClose()
     },
-    [dispatch, beforeClickArtistName]
+    [dispatch, handleClose]
   )
 
-  const showSkeletons = hasMore || isLoading
-  const displayData = [...data, ...(showSkeletons ? skeletonData : [])]
+  const displayData = [...data, ...(isLoading ? skeletonData : [])]
+
+  const scrollParentRef = useRef<HTMLElement | null>(null)
 
   return (
-    <div className={styles.content}>
-      <InfiniteScroll
-        pageStart={0}
-        loadMore={loadMore}
-        hasMore={hasMore}
-        useWindow={!getScrollParent}
-        initialLoad={false}
-        threshold={SCROLL_THRESHOLD}
-        getScrollParent={getScrollParent}
-      >
-        {displayData.map((user, index) =>
-          '_loading' in user ? (
-            <div key={user.user_id} className={styles.userContainer}>
-              <span>Loading...</span>
-            </div>
-          ) : (
-            <div
-              key={user.user_id}
-              className={cn(styles.userContainer, {
-                [styles.notLastUser]: index !== data.length - 1
-              })}
-            >
-              <ArtistChip
-                user={user}
-                onClickArtistName={() => handleClickArtistName(user.handle)}
-                onNavigateAway={onNavigateAway}
-                showPopover={!isMobile}
-                popoverMount={MountPlacement.BODY}
-                showSupportFor={showSupportFor}
-                showSupportFrom={showSupportFrom}
-              />
-              {user.user_id !== currentUserId && (
-                <FollowButton
-                  size='small'
-                  isFollowing={user.does_current_user_follow}
-                  onFollow={() => handleFollow(user.user_id)}
-                  onUnfollow={() => handleUnfollow(user.user_id)}
-                  fullWidth={false}
-                />
-              )}
-            </div>
-          )
-        )}
-        {!getScrollParent && isLoadingMore && <div className={styles.spacer} />}
-        <div
-          className={cn(styles.loadingAnimation, {
-            [styles.show]: isLoadingMore
-          })}
+    <Scrollbar
+      css={css`
+        min-height: 0;
+        max-height: 690px;
+        height: 100%;
+        overflow-y: auto;
+        overflow-x: hidden;
+      `}
+      containerRef={(containerRef) => {
+        scrollParentRef.current = containerRef
+      }}
+    >
+      <div className={styles.content}>
+        <InfiniteScroll
+          pageStart={0}
+          loadMore={loadMore}
+          hasMore={hasMore}
+          useWindow={false}
+          initialLoad={false}
+          threshold={SCROLL_THRESHOLD}
+          getScrollParent={() => scrollParentRef.current}
         >
-          <LoadingSpinner className={styles.spinner} />
-        </div>
-      </InfiniteScroll>
-    </div>
+          {displayData.map((user, index) =>
+            '_loading' in user ? (
+              <div key={user.user_id} className={styles.userContainer}>
+                <span>Loading...</span>
+              </div>
+            ) : (
+              <div
+                key={user.user_id}
+                className={cn(styles.userContainer, {
+                  [styles.notLastUser]: index !== data.length - 1
+                })}
+              >
+                <ArtistChip
+                  user={user}
+                  onClickArtistName={() => handleClickArtistName(user.handle)}
+                  onNavigateAway={handleClose}
+                  showPopover={!isMobile}
+                  popoverMount={MountPlacement.BODY}
+                  showSupportFor={showSupportFor}
+                  showSupportFrom={showSupportFrom}
+                />
+                {user.user_id !== currentUserId && (
+                  <FollowButton
+                    size='small'
+                    isFollowing={user.does_current_user_follow}
+                    onFollow={() => handleFollow(user.user_id)}
+                    onUnfollow={() => handleUnfollow(user.user_id)}
+                    fullWidth={false}
+                  />
+                )}
+              </div>
+            )
+          )}
+          {isLoadingMore && <div className={styles.spacer} />}
+          <div
+            className={cn(styles.loadingAnimation, {
+              [styles.show]: isLoadingMore
+            })}
+          >
+            <LoadingSpinner className={styles.spinner} />
+          </div>
+        </InfiniteScroll>
+      </div>
+    </Scrollbar>
   )
 }
