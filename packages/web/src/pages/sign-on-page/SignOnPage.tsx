@@ -353,9 +353,6 @@ export const SignOnPage = () => {
   useEffectOnce(() => {
     setIsLoaded(true)
   })
-  const location = useLocation()
-
-  console.log('asdf path:', location.pathname)
 
   if (signOnStatus === EditingStatus.SUCCESS) {
     return <Redirect to={FEED_PAGE} />
