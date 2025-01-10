@@ -91,8 +91,16 @@ export const mrvr = async (db: Knex, date: Date): Promise<void> => {
   const cbs = async () => {
     const mrvrCbs = await db.raw(
       `
+      with
+
+      countries as (
+        select distinct country as "country"
+        from usdc_purchases
+        where "country" is not null
+      ),
+
       -- granular purchase data
-      with purchases as (
+      purchases as (
         select
           content_id,
           country,
@@ -159,20 +167,20 @@ export const mrvr = async (db: Knex, date: Date): Promise<void> => {
           'Downloads / Monetized Content' as "Offering",
           'Paid' as "UserType",
           count(distinct "buyer_user_id") as "Subscriber Count",
-          trunc(
+          coalesce(trunc(
             case when
               is_country_eur("country") then sum("revenue_usd") * :usdToEurRate
               else sum("revenue_usd")
             end,
             2
-          ) as "Gross Revenue",
-          trunc(
+          ), 0) as "Gross Revenue",
+          coalesce(trunc(
             case when
               is_country_eur("country") then sum("revenue_usd") * :usdToEurRate
               else sum("revenue_usd")
             end,
             2
-          ) as "Gross revenue With Deductions",
+          ), 0) as "Gross revenue With Deductions",
           country_to_iso_alpha2(coalesce("country", '')) as "Territory",
           sum(download_count) as "Total Downloads",
           sum(stream_count) as "Total Streams",
@@ -187,15 +195,16 @@ export const mrvr = async (db: Knex, date: Date): Promise<void> => {
 
           sum(coalesce(download_ath, 0) + coalesce(stream_ath, 0))::float / 3600 as "Aggregate Transmission Hours",
 
-          trunc(
+          coalesce(trunc(
             case when
               is_country_eur("country") then sum("tip_usd") * :usdToEurRate
               else sum("tip_usd")
             end,
             2
-          ) as "Tip Revenue"
+          ), 0) as "Tip Revenue"
 
-        from purchases
+        from countries
+        left join purchases using (country)
         left join streams using (country)
         left join downloads using (country)
         where "country" is not null
@@ -207,20 +216,20 @@ export const mrvr = async (db: Knex, date: Date): Promise<void> => {
         select
           'Downloads / Monetized Content' as "Offering",
           'Free Trial (no payment details)' as "UserType",
-          count(distinct user_id) as "Subscriber Count",
+          coalesce(count(distinct user_id), 0) as "Subscriber Count",
           trunc(0, 2) as "Gross Revenue",
           trunc(0, 2) as "Gross revenue With Deductions",
-          country_to_iso_alpha2(coalesce(plays."country", '')) as "Territory",
+          country_to_iso_alpha2(countries."country") as "Territory",
           (
               select count(*)
               from track_downloads td
               where td.created_at >= :start
               and td.created_at < :end
-              and td.country = plays."country"
+              and td.country = countries."country"
           ) as "Total Downloads",
-          count(*) as "Total Streams",
+          coalesce(count(*), 0) as "Total Streams",
           case when
-            is_country_eur("country") then 'EUR'
+            is_country_eur(countries."country") then 'EUR'
             else 'USD'
           end as "Currency",
 
@@ -228,16 +237,13 @@ export const mrvr = async (db: Knex, date: Date): Promise<void> => {
           trunc(0, 2) as "Record Label Payments",
           trunc(0, 2) as "Average Subscription Price",
 
-          sum(duration)::float / 3600 as "Aggregate Transmission Hours",
+          coalesce(sum(duration)::float / 3600, 0) as "Aggregate Transmission Hours",
 
           trunc(0, 2) as "Tip Revenue"
-        from plays
-        join tracks on play_item_id = track_id
-        where
-          plays.created_at >= :start
-          and plays.created_at < :end
-          and country is not null
-        group by country
+        from countries
+        left join plays on plays.country = countries.country AND plays.created_at >= :start AND plays.created_at < :end
+        left join tracks on play_item_id = track_id
+        group by countries.country
       ) subq;
       `,
       { start, end, usdToEurRate }
