@@ -139,7 +139,9 @@ export const useGetSuggestedPlaylistTracks = (collectionId: ID) => {
   useEffect(() => {
     if (isTrendingSuccess && suggestedTrackStatus === Status.SUCCESS) {
       const trendingTrackIds = difference(
-        trendingTracks.filter(isValidTrack).map((track) => track.track_id),
+        (trendingTracks?.filter(isValidTrack) ?? []).map(
+          (track) => track.track_id
+        ),
         collectionTrackIds
       )
       setSuggestedTrackIds([...suggestedTrackIds, ...trendingTrackIds])
