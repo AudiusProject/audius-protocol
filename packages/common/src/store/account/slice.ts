@@ -1,7 +1,7 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { keyBy } from 'lodash'
 
-import { AccountCollection, User } from '~/models'
+import { AccountCollection, CachedAccount, User } from '~/models'
 import { Nullable } from '~/utils/typeUtils'
 
 import { ID } from '../../models/Identifiers'
@@ -32,12 +32,6 @@ const initialState = {
   guestEmail: null as string | null
 }
 
-type FetchAccountSucceededPayload = {
-  userId: ID
-  collections: AccountCollection[]
-  guestEmail: string | null
-}
-
 type FetchAccountFailedPayload = {
   reason: FailureReason
 }
@@ -56,10 +50,7 @@ const slice = createSlice({
     fetchAccountRequested: (state) => {
       state.status = Status.LOADING
     },
-    fetchAccountSucceeded: (
-      state,
-      action: PayloadAction<FetchAccountSucceededPayload>
-    ) => {
+    fetchAccountSucceeded: (state, action: PayloadAction<CachedAccount>) => {
       const { userId, collections, guestEmail } = action.payload
       state.userId = userId
       state.collections = keyBy(collections, 'id')
@@ -129,10 +120,7 @@ const slice = createSlice({
     resetAccount: () => {
       return initialState
     },
-    signedIn: (
-      _state,
-      _action: PayloadAction<{ account: User; isSignUp: boolean }>
-    ) => {},
+    signedIn: (_state, _action: PayloadAction<{ account: User }>) => {},
     setWalletAddresses: (
       state,
       action: PayloadAction<{

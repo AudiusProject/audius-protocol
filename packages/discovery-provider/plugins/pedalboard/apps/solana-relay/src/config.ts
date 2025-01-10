@@ -28,6 +28,7 @@ type FeePayerWallet = {
 }
 
 type Config = {
+  environment: string
   endpoint: string
   discoveryDbConnectionString: string
   redisUrl: string
@@ -64,6 +65,9 @@ const readConfig = (): Config => {
 
   // validate env
   const env = cleanEnv(process.env, {
+    audius_discprov_env: str({
+      default: 'dev'
+    }),
     audius_discprov_url: str({
       default: 'http://audius-protocol-discovery-provider-1'
     }),
@@ -150,6 +154,7 @@ const readConfig = (): Config => {
     : Buffer.from([])
 
   cachedConfig = {
+    environment: env.audius_discprov_env,
     endpoint: env.audius_discprov_url,
     discoveryDbConnectionString: env.audius_db_url,
     redisUrl: env.audius_redis_url,

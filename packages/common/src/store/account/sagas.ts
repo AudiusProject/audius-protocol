@@ -1,8 +1,22 @@
 import { SagaIterator } from 'redux-saga'
-import { call, put, select, takeEvery, takeLatest } from 'typed-redux-saga'
+import {
+  call,
+  fork,
+  put,
+  select,
+  takeEvery,
+  takeLatest
+} from 'typed-redux-saga'
 
 import { userApiFetchSaga } from '~/api/user'
-import { AccountUserMetadata, Id, Kind, Status } from '~/models'
+import {
+  AccountUserMetadata,
+  ErrorLevel,
+  Id,
+  Kind,
+  Status,
+  UserMetadata
+} from '~/models'
 import { accountActions, accountSelectors } from '~/store/account'
 import {
   getUserId,
@@ -14,18 +28,23 @@ import { chatActions } from '~/store/pages/chat'
 import { UPLOAD_TRACKS_SUCCEEDED } from '~/store/upload/actions'
 
 import { cacheActions } from '../cache'
+import { fetchProfile } from '../pages/profile/actions'
 import { getSDK } from '../sdkUtils'
 
 import {
+  fetchAccount,
   fetchAccountFailed,
   fetchAccountSucceeded,
   fetchHasTracks,
+  fetchLocalAccount,
+  instagramLogin,
+  resetAccount,
   setHasTracks,
   setWalletAddresses,
-  twitterLogin,
-  instagramLogin,
+  showPushNotificationConfirmation,
+  signedIn,
   tikTokLogin,
-  signedIn
+  twitterLogin
 } from './slice'
 
 const { fetchBlockees, fetchBlockers } = chatActions
@@ -54,7 +73,90 @@ function* handleFetchTrackCount() {
   }
 }
 
-export function* fetchAccountAsync({ isSignUp = false }): SagaIterator {
+function* handleUploadTrack() {
+  yield* put(setHasTracks(true))
+}
+
+/**
+ * Sets the sentry user so that alerts are tied to a user
+ */
+function* setSentryUser(
+  user: Pick<UserMetadata, 'user_id' | 'handle'>,
+  traits: Record<string, unknown>
+) {
+  const sentry = yield* getContext('sentry')
+  if (traits.isVerified) {
+    sentry.setTag('isVerified', `${traits.isVerified}`)
+  }
+  if (traits.managerUserId) {
+    sentry.setTag('isManagerMode', 'true')
+  }
+  const scope = sentry.getCurrentScope()
+  scope.setUser({
+    id: `${user.user_id}`,
+    username: user.handle,
+    ...traits
+  })
+}
+
+function* initializeMetricsForUser({
+  accountUser
+}: {
+  accountUser: UserMetadata
+}) {
+  const authService = yield* getContext('authService')
+  const solanaWalletService = yield* getContext('solanaWalletService')
+  const analytics = yield* getContext('analytics')
+
+  if (accountUser && accountUser.handle) {
+    const { web3WalletAddress } = yield* call([
+      authService,
+      authService.getWalletAddresses
+    ])
+    const { user: web3User } = yield* call(userApiFetchSaga.getUserAccount, {
+      wallet: web3WalletAddress
+    })
+
+    let solanaWallet
+    let managerUserId
+    let managerHandle
+
+    // If operating as a managed account, identify the manager user id
+    if (web3User && web3User.user_id !== accountUser.user_id) {
+      managerUserId = web3User.user_id
+      managerHandle = web3User.handle
+    } else {
+      // If not a managed account, identify the Solana wallet associated with
+      // the hedgehog wallet
+      try {
+        const keypair = yield* call([
+          solanaWalletService,
+          solanaWalletService.getKeypair
+        ])
+        if (!keypair) {
+          throw new Error('No keypair found')
+        }
+        solanaWallet = keypair.publicKey.toBase58()
+      } catch (e) {
+        console.error('Failed to fetch Solana root wallet during identify()', e)
+      }
+    }
+
+    const traits = {
+      isVerified: accountUser.is_verified,
+      trackCount: accountUser.track_count,
+      managerHandle,
+      managerUserId,
+      solanaWallet
+    }
+
+    yield* call([analytics, analytics.identify], accountUser.handle, traits)
+    yield* call(setSentryUser, accountUser, traits)
+  }
+}
+
+export function* fetchAccountAsync() {
+  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
   const remoteConfigInstance = yield* getContext('remoteConfigInstance')
   const authService = yield* getContext('authService')
   const localStorage = yield* getContext('localStorage')
@@ -64,10 +166,6 @@ export function* fetchAccountAsync({ isSignUp = false }): SagaIterator {
   if (accountStatus !== Status.SUCCESS) {
     yield* put(accountActions.fetchAccountRequested())
   }
-  yield* call([
-    authService.hedgehogInstance,
-    authService.hedgehogInstance.refreshWallet
-  ])
 
   const { accountWalletAddress: wallet, web3WalletAddress } = yield* call([
     authService,
@@ -79,8 +177,9 @@ export function* fetchAccountAsync({ isSignUp = false }): SagaIterator {
         reason: 'ACCOUNT_NOT_FOUND'
       })
     )
+    return
   }
-  const accountData = yield* call(
+  const accountData: AccountUserMetadata | undefined = yield* call(
     userApiFetchSaga.getUserAccount,
     {
       wallet
@@ -88,7 +187,7 @@ export function* fetchAccountAsync({ isSignUp = false }): SagaIterator {
     true // force refresh to get updated user w handle
   )
 
-  if (!accountData || !accountData?.user) {
+  if (!accountData) {
     yield* put(
       fetchAccountFailed({
         reason: 'ACCOUNT_NOT_FOUND'
@@ -113,6 +212,7 @@ export function* fetchAccountAsync({ isSignUp = false }): SagaIterator {
         metadataId: accountData?.user?.metadata_multihash
       }
     )
+    // @ts-expect-error type of accountCidData is opaque
     accountData.user = {
       ...accountData.user,
       ...(accountCidData?.data ?? {})
@@ -120,10 +220,10 @@ export function* fetchAccountAsync({ isSignUp = false }): SagaIterator {
   }
 
   const guestEmailFromLocalStorage = yield* call(
-    [localStorage, 'getItem'],
+    [localStorage, localStorage.getItem],
     'guestEmail'
   )
-  accountData.guestEmail = guestEmailFromLocalStorage
+  const guestEmail = guestEmailFromLocalStorage
     ? JSON.parse(guestEmailFromLocalStorage)
     : null
 
@@ -140,7 +240,7 @@ export function* fetchAccountAsync({ isSignUp = false }): SagaIterator {
   const formattedAccount = {
     userId: user.user_id,
     collections: accountData.playlists,
-    guestEmail: accountData.guestEmail
+    guestEmail
   }
   yield* put(fetchAccountSucceeded(formattedAccount))
 
@@ -152,11 +252,56 @@ export function* fetchAccountAsync({ isSignUp = false }): SagaIterator {
     setWalletAddresses({ currentUser: wallet, web3User: web3WalletAddress })
   )
 
-  yield* put(signedIn({ account: user, isSignUp }))
+  try {
+    yield* call(initializeMetricsForUser, { accountUser: user })
+  } catch (e) {
+    console.error('Failed to initialize metrics for user', e)
+  }
+
+  yield* put(showPushNotificationConfirmation())
+
+  yield* fork(audiusBackendInstance.updateUserLocationTimezone, { sdk })
+
+  // Fetch the profile so we get everything we need to populate
+  // the left nav / other site-wide metadata.
+  yield* put(fetchProfile(user.handle, user.user_id, false, false, false, true))
+
+  yield* put(signedIn({ account: user }))
+}
+
+function* fetchLocalAccountAsync() {
+  const localStorage = yield* getContext('localStorage')
+
+  yield* put(accountActions.fetchAccountRequested())
+
+  const cachedAccount = yield* call([
+    localStorage,
+    localStorage.getAudiusAccount
+  ])
+  const cachedAccountUser = yield* call([
+    localStorage,
+    localStorage.getAudiusAccountUser
+  ])
+
+  if (cachedAccount && cachedAccountUser && !cachedAccountUser.is_deactivated) {
+    yield* put(
+      cacheActions.add(Kind.USERS, [
+        {
+          id: cachedAccountUser.user_id,
+          uid: 'USER_ACCOUNT',
+          metadata: cachedAccountUser
+        }
+      ])
+    )
+
+    yield* put(fetchAccountSucceeded(cachedAccount))
+  } else {
+    yield* put(fetchAccountFailed({ reason: 'ACCOUNT_NOT_FOUND_LOCAL' }))
+  }
 }
 
 export function* cacheAccount(
-  account: AccountUserMetadata & { guestEmail: string }
+  account: AccountUserMetadata & { guestEmail?: string | null }
 ) {
   const { user: accountUser, playlists: collections, guestEmail } = account
   const localStorage = yield* getContext('localStorage')
@@ -167,8 +312,8 @@ export function* cacheAccount(
     guestEmail
   }
 
-  yield* call([localStorage, 'setAudiusAccount'], formattedAccount)
-  yield* call([localStorage, 'setAudiusAccountUser'], accountUser)
+  yield* call([localStorage, localStorage.setAudiusAccount], formattedAccount)
+  yield* call([localStorage, localStorage.setAudiusAccountUser], accountUser)
 }
 
 function* recordIPIfNotRecent(handle: string): SagaIterator {
@@ -177,14 +322,17 @@ function* recordIPIfNotRecent(handle: string): SagaIterator {
   const timeBetweenRefresh = 24 * 60 * 60 * 1000
   const now = Date.now()
   const minAge = now - timeBetweenRefresh
-  const storedIPStr = yield* call([localStorage, 'getItem'], IP_STORAGE_KEY)
+  const storedIPStr = yield* call(
+    [localStorage, localStorage.getItem],
+    IP_STORAGE_KEY
+  )
   const storedIP = storedIPStr && JSON.parse(storedIPStr)
   if (!storedIP || !storedIP[handle] || storedIP[handle].timestamp < minAge) {
     const result = yield* call([identityService, identityService.recordIP])
     if ('userIP' in result) {
       const { userIP } = result
       yield* call(
-        [localStorage, 'setItem'],
+        [localStorage, localStorage.setItem],
         IP_STORAGE_KEY,
         JSON.stringify({ ...storedIP, [handle]: { userIP, timestamp: now } })
       )
@@ -212,7 +360,7 @@ function* associateTwitterAccount(action: ReturnType<typeof twitterLogin>) {
   }
 
   try {
-    yield call(
+    yield* call(
       [identityService, identityService.associateTwitterUser],
       twitterId,
       userId,
@@ -222,7 +370,7 @@ function* associateTwitterAccount(action: ReturnType<typeof twitterLogin>) {
     const account = yield* select(getAccountUser)
     const { verified } = profile
     if (account && !account.is_verified && verified) {
-      yield put(
+      yield* put(
         cacheActions.update(Kind.USERS, [
           { id: userId, metadata: { is_verified: true } }
         ])
@@ -262,7 +410,7 @@ function* associateInstagramAccount(action: ReturnType<typeof instagramLogin>) {
   }
 
   try {
-    yield call(
+    yield* call(
       [identityService, identityService.associateInstagramUser],
       instagramId,
       userId,
@@ -272,7 +420,7 @@ function* associateInstagramAccount(action: ReturnType<typeof instagramLogin>) {
     const account = yield* select(getAccountUser)
     const { is_verified: verified } = profile
     if (account && !account.is_verified && verified) {
-      yield put(
+      yield* put(
         cacheActions.update(Kind.USERS, [
           { id: userId, metadata: { is_verified: true } }
         ])
@@ -312,7 +460,7 @@ function* associateTikTokAccount(action: ReturnType<typeof tikTokLogin>) {
   }
 
   try {
-    yield call(
+    yield* call(
       [identityService, identityService.associateTikTokUser],
       tikTokId,
       userId,
@@ -322,7 +470,7 @@ function* associateTikTokAccount(action: ReturnType<typeof tikTokLogin>) {
     const account = yield* select(getAccountUser)
     const { is_verified: verified } = profile
     if (account && !account.is_verified && verified) {
-      yield put(
+      yield* put(
         cacheActions.update(Kind.USERS, [
           { id: userId, metadata: { is_verified: true } }
         ])
@@ -342,32 +490,61 @@ function* associateTikTokAccount(action: ReturnType<typeof tikTokLogin>) {
   }
 }
 
-function* handleFetchAccount() {
+function* handleFetchAccountSucceeded() {
   yield* put(fetchHasTracks())
 }
 
-function* handleUploadTrack() {
-  yield* put(setHasTracks(true))
+function* watchFetchAccount() {
+  yield* takeEvery(fetchAccount.type, fetchAccountAsync)
+}
+
+function* watchFetchAccountFailed() {
+  yield* takeEvery(
+    accountActions.fetchAccountFailed.type,
+    function* (action: ReturnType<typeof accountActions.fetchAccountFailed>) {
+      const userId = yield* select(getUserId)
+      const reportToSentry = yield* getContext('reportToSentry')
+      if (userId) {
+        yield* call(reportToSentry, {
+          level: ErrorLevel.Error,
+          error: new Error(`Fetch account failed: ${action.payload.reason}`),
+          additionalInfo: { userId }
+        })
+      }
+    }
+  )
+}
+
+function* watchFetchLocalAccount() {
+  yield* takeEvery(fetchLocalAccount.type, fetchLocalAccountAsync)
+}
+
+function* watchResetAccount() {
+  yield* takeEvery(resetAccount.type, function* () {
+    const localStorage = yield* getContext('localStorage')
+    yield* call([localStorage, localStorage.clearAudiusAccount])
+    yield* call([localStorage, localStorage.clearAudiusAccountUser])
+  })
 }
 
 function* watchTwitterLogin() {
-  yield takeEvery(twitterLogin.type, associateTwitterAccount)
+  yield* takeEvery(twitterLogin.type, associateTwitterAccount)
 }
 
 function* watchInstagramLogin() {
-  yield takeEvery(instagramLogin.type, associateInstagramAccount)
+  yield* takeEvery(instagramLogin.type, associateInstagramAccount)
 }
 
 function* watchTikTokLogin() {
-  yield takeEvery(tikTokLogin.type, associateTikTokAccount)
+  yield* takeEvery(tikTokLogin.type, associateTikTokAccount)
 }
 
 export function* watchFetchTrackCount() {
   yield* takeLatest(fetchHasTracks, handleFetchTrackCount)
 }
 
-export function* watchFetchAccount() {
-  yield* takeLatest(fetchAccountSucceeded, handleFetchAccount)
+export function* watchFetchAccountSucceeded() {
+  yield* takeLatest(fetchAccountSucceeded, handleFetchAccountSucceeded)
 }
 
 export function* watchUploadTrack() {
@@ -376,11 +553,15 @@ export function* watchUploadTrack() {
 
 export default function sagas() {
   return [
-    watchFetchTrackCount,
     watchFetchAccount,
-    watchUploadTrack,
-    watchTwitterLogin,
+    watchFetchAccountFailed,
+    watchFetchAccountSucceeded,
+    watchFetchLocalAccount,
+    watchFetchTrackCount,
     watchInstagramLogin,
-    watchTikTokLogin
+    watchResetAccount,
+    watchTikTokLogin,
+    watchTwitterLogin,
+    watchUploadTrack
   ]
 }

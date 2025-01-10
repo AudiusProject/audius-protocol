@@ -98,7 +98,7 @@ services:
   # core
 
   audiusd-1:
-    image: audius/audiusd:local
+    image: audius/audiusd:prerelease
     env_file:
       - ${PROJECT_ROOT}/cmd/core/infra/dev_config/discovery-one.docker.env
     restart: unless-stopped
@@ -115,7 +115,7 @@ services:
         condition: service_healthy
 
   audiusd-2:
-    image: audius/audiusd:local
+    image: audius/audiusd:prerelease
     env_file:
       - ${PROJECT_ROOT}/cmd/core/infra/dev_config/content-one.docker.env
     restart: unless-stopped
@@ -132,7 +132,7 @@ services:
         condition: service_healthy
 
   audiusd-3:
-    image: audius/audiusd:local
+    image: audius/audiusd:prerelease
     env_file:
       - ${PROJECT_ROOT}/cmd/core/infra/dev_config/content-two.docker.env
     restart: unless-stopped
@@ -149,7 +149,7 @@ services:
         condition: service_healthy
 
   audiusd-4:
-    image: audius/audiusd:local
+    image: audius/audiusd:prerelease
     env_file:
       - ${PROJECT_ROOT}/cmd/core/infra/dev_config/content-three.docker.env
     restart: unless-stopped

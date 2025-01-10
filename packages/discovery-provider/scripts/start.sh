@@ -58,6 +58,15 @@ else
         [ -e /var/celerybeat.pid ] && rm /var/celerybeat.pid
         audius_service=beat celery -A src.worker.celery beat --schedule=/var/celerybeat-schedule --pidfile=/var/celerybeat.pid --loglevel WARNING 2>&1 | tee >(logger -t beat) &
 
+        # start worker dedicated to indexing core
+        if [[ "$audius_discprov_env" == "stage" ]] || [[ "$audius_discprov_env" == "dev" ]]; then
+            audius_service=worker celery -A src.worker.celery worker -Q index_core \
+                --loglevel "$audius_discprov_loglevel" \
+                --hostname=index_core \
+                --concurrency 1 \
+                --prefetch-multiplier 1 \
+                2>&1 | tee >(logger -t index_core_worker) &
+        fi
         # start worker dedicated to indexing ACDC
         audius_service=worker celery -A src.worker.celery worker -Q index_nethermind \
             --loglevel "$audius_discprov_loglevel" \
