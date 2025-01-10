@@ -35,8 +35,12 @@ export const QUERY_KEYS = {
   emailInUse: 'emailInUse',
   handleInUse: 'handleInUse',
   handleReservedStatus: 'handleReservedStatus',
+<<<<<<< Updated upstream
   suggestedArtists: 'suggestedArtists',
   topArtistsInGenre: 'topArtistsInGenre',
   audioTransactions: 'audioTransactions',
   audioTransactionsCount: 'audioTransactionsCount'
+=======
+  libraryCollections: 'libraryCollections'
+>>>>>>> Stashed changes
 } as const

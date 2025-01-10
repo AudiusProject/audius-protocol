@@ -1,28 +1,16 @@
 import { useMemo } from 'react'
 
-import { useGetLibraryAlbums, useGetLibraryPlaylists } from '@audius/common/api'
-import { useAllPaginatedQuery } from '@audius/common/audius-query'
-import {
-  accountSelectors,
-  cacheCollectionsSelectors,
-  savedPageSelectors,
-  CommonState
-} from '@audius/common/store'
+import { useLibraryCollections } from '@audius/common/api'
+import { savedPageSelectors, CollectionType } from '@audius/common/store'
 import { uniqBy } from 'lodash'
 import { useSelector } from 'react-redux'
 
-const { getUserId } = accountSelectors
-const {
-  getCollectionsCategory,
-  getSelectedCategoryLocalAlbumAdds,
-  getSelectedCategoryLocalAlbumRemovals,
-  getSelectedCategoryLocalPlaylistAdds,
-  getSelectedCategoryLocalPlaylistRemovals
-} = savedPageSelectors
-const { getCollections } = cacheCollectionsSelectors
+import { useLocalCollections } from './useLocalCollections'
+
+const { getCollectionsCategory } = savedPageSelectors
 
 type CollectionsDataParams = {
-  collectionType: 'album' | 'playlist'
+  collectionType: CollectionType
   filterValue?: string
 }
 
@@ -30,58 +18,32 @@ export const useCollectionsData = ({
   collectionType,
   filterValue
 }: CollectionsDataParams) => {
-  const currentUserId = useSelector(getUserId)
   const selectedCategory = useSelector(getCollectionsCategory)
+  const { locallyAddedCollections, locallyRemovedIds } =
+    useLocalCollections(collectionType)
 
-  const locallyAddedCollections = useSelector((state: CommonState) => {
-    const ids =
-      collectionType === 'album'
-        ? getSelectedCategoryLocalAlbumAdds(state)
-        : getSelectedCategoryLocalPlaylistAdds(state)
-    const collectionsMap = getCollections(state, {
-      ids
+  const { data, status, hasMore, loadMore, isLoadingMore, isPending } =
+    useLibraryCollections({
+      collectionType,
+      category: selectedCategory,
+      query: filterValue
     })
-    return ids.map((id) => collectionsMap[id])
-  })
 
-  const locallyRemovedCollections = useSelector((state: CommonState) => {
-    const ids =
-      collectionType === 'album'
-        ? getSelectedCategoryLocalAlbumRemovals(state)
-        : getSelectedCategoryLocalPlaylistRemovals(state)
-    return new Set(ids)
-  })
-
-  const {
-    data: fetchedCollections,
-    status,
-    hasMore,
-    loadMore: fetchMore
-  } = useAllPaginatedQuery(
-    collectionType === 'album' ? useGetLibraryAlbums : useGetLibraryPlaylists,
-    {
-      userId: currentUserId!,
-      query: filterValue,
-      category: selectedCategory
-    },
-    {
-      pageSize: 20,
-      disabled: currentUserId == null
-    }
-  )
   const collections = useMemo(() => {
     return uniqBy(
-      [...locallyAddedCollections, ...(fetchedCollections || [])].filter(
-        (a) => !locallyRemovedCollections.has(a.playlist_id)
+      [...locallyAddedCollections, ...(data ?? [])].filter(
+        (a) => !locallyRemovedIds.has(a.playlist_id)
       ),
       'playlist_id'
     )
-  }, [locallyAddedCollections, fetchedCollections, locallyRemovedCollections])
+  }, [locallyAddedCollections, data, locallyRemovedIds])
 
   return {
     status,
     hasMore,
-    fetchMore,
+    isPending,
+    loadMore,
+    isLoadingMore,
     collections
   }
 }

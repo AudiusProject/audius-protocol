@@ -1,9 +1,7 @@
-import { useGetLibraryAlbums, useGetLibraryPlaylists } from '@audius/common/api'
-import { useAllPaginatedQuery } from '@audius/common/audius-query'
+import { useLibraryCollections } from '@audius/common/api'
 import { useProxySelector } from '@audius/common/hooks'
 import { Status } from '@audius/common/models'
 import {
-  accountSelectors,
   cacheCollectionsSelectors,
   savedPageSelectors,
   SavedPageTabs,
@@ -27,7 +25,6 @@ import {
 import { OfflineDownloadStatus } from 'app/store/offline-downloads/slice'
 
 const { getIsReachable } = reachabilitySelectors
-const { getUserId } = accountSelectors
 const { getCollection, getCollectionWithUser } = cacheCollectionsSelectors
 const {
   getCategory,
@@ -40,6 +37,19 @@ const {
 type UseCollectionsScreenDataConfig = {
   filterValue?: string
   collectionType: CollectionType
+}
+
+const mapStatus = (status: string): Status => {
+  switch (status) {
+    case 'pending':
+      return Status.LOADING
+    case 'error':
+      return Status.ERROR
+    case 'success':
+      return Status.SUCCESS
+    default:
+      return Status.LOADING
+  }
 }
 
 export const useCollectionsScreenData = ({
@@ -56,7 +66,6 @@ export const useCollectionsScreenData = ({
           : SavedPageTabs.PLAYLISTS
     })
   )
-  const currentUserId = useSelector(getUserId)
   const offlineTracksStatus = useOfflineTracksStatus({ skipIfOnline: true })
 
   const locallyAddedCollections = useSelector((state: CommonState) => {
@@ -76,26 +85,23 @@ export const useCollectionsScreenData = ({
   })
 
   const {
-    data: collectionsData,
+    data,
     status: fetchedStatus,
-    hasMore,
-    isLoadingMore,
-    loadMore: fetchMore
-  } = useAllPaginatedQuery(
-    collectionType === 'albums' ? useGetLibraryAlbums : useGetLibraryPlaylists,
+    hasNextPage: hasMore,
+    fetchNextPage: fetchMore,
+    isFetchingNextPage: isLoadingMore
+  } = useLibraryCollections(
     {
+      collectionType,
       category: selectedCategory,
-      query: filterValue,
-      userId: currentUserId!
+      query: filterValue
     },
     {
-      pageSize: 20,
-      disabled: currentUserId == null || !isReachable
+      enabled: !!isReachable
     }
   )
-  const fetchedCollectionIds = collectionsData?.map((c) => c.playlist_id)
 
-  // TODO: Filter collections using `filterCollections` from Common if all loaded, or by changing fetch args if not all loaded
+  const fetchedCollectionIds = (data ?? []).map((c) => c.playlist_id)
 
   const availableCollectionIds = useProxySelector(
     (state: AppState) => {
@@ -166,7 +172,8 @@ export const useCollectionsScreenData = ({
 
   let status: Status
   if (isReachable) {
-    status = hasMore || isLoadingMore ? Status.LOADING : fetchedStatus
+    status =
+      hasMore || isLoadingMore ? Status.LOADING : mapStatus(fetchedStatus)
   } else {
     status = isDoneLoadingFromDisk ? Status.SUCCESS : Status.LOADING
   }

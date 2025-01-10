@@ -1,9 +1,6 @@
 import { useCallback, useMemo } from 'react'
 
-import {
-  CreatePlaylistSource,
-  statusIsNotFinalized
-} from '@audius/common/models'
+import { CreatePlaylistSource } from '@audius/common/models'
 import {
   cacheCollectionsActions,
   savedPageSelectors,
@@ -36,9 +33,10 @@ const messages = {
 
 export const PlaylistsTabPage = () => {
   const dispatch = useDispatch()
-  const { status, hasMore, fetchMore, collections } = useCollectionsData({
-    collectionType: 'playlist'
-  })
+  const { collections, loadMore, hasMore, isPending, isLoadingMore } =
+    useCollectionsData({
+      collectionType: 'playlists'
+    })
   const emptyPlaylistsHeader = useSelector((state: CommonState) => {
     const selectedCategory = getCategory(state, {
       currentTab: SavedPageTabs.PLAYLISTS
@@ -52,9 +50,7 @@ export const PlaylistsTabPage = () => {
     }
   })
 
-  const noResults = !statusIsNotFinalized(status) && collections?.length === 0
-  const isLoadingInitial =
-    statusIsNotFinalized(status) && collections?.length === 0
+  const noResults = !isPending && collections?.length === 0
 
   const handleCreatePlaylist = useCallback(() => {
     dispatch(
@@ -81,7 +77,7 @@ export const PlaylistsTabPage = () => {
     ]
   }, [collections])
 
-  if (isLoadingInitial) {
+  if (isPending) {
     return <LoadingSpinner className={styles.spinner} />
   }
 
@@ -101,10 +97,10 @@ export const PlaylistsTabPage = () => {
   return (
     <InfiniteCardLineup
       hasMore={hasMore}
-      loadMore={fetchMore}
+      loadMore={loadMore}
       cards={cards}
       cardsClassName={styles.cardsContainer}
-      isLoadingMore={statusIsNotFinalized(status)}
+      isLoadingMore={isLoadingMore}
     />
   )
 }
