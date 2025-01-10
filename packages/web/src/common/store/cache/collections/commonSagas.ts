@@ -185,7 +185,15 @@ function* confirmEditPlaylist(
     confirmerActions.requestConfirmation(
       makeKindId(Kind.COLLECTIONS, playlistId),
       function* (_confirmedPlaylistId: ID) {
+        const coverArtFile =
+          formFields.artwork && 'file' in formFields.artwork
+            ? formFields.artwork.file
+            : undefined
+
         yield* call([sdk.playlists, sdk.playlists.updatePlaylist], {
+          coverArtFile: coverArtFile
+            ? fileToSdk(coverArtFile, 'cover_art')
+            : undefined,
           metadata: playlistMetadataForUpdateWithSDK(formFields),
           userId: Id.parse(userId),
           playlistId: Id.parse(playlistId)

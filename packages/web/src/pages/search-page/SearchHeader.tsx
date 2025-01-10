@@ -4,7 +4,7 @@ import { Flex, RadioGroup, SelectablePill, Text } from '@audius/harmony'
 import { CSSObject, useTheme } from '@emotion/react'
 import { capitalize } from 'lodash'
 
-import Header, { HeaderProps } from 'components/header/desktop/Header'
+import { Header, HeaderProps } from 'components/header/desktop/Header'
 import { useIsMobile } from 'hooks/useIsMobile'
 
 import { filters } from './SearchFilters'
@@ -94,7 +94,6 @@ export const SearchHeader = (props: Partial<HeaderProps>) => {
         </Flex>
       }
       rightDecorator={categoryRadioGroup}
-      variant='main'
     />
   )
 }

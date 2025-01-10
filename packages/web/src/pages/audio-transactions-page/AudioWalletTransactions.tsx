@@ -14,13 +14,10 @@ import { useDispatch } from 'react-redux'
 
 import { useSetVisibility } from 'common/hooks/useModalState'
 import { AudioTransactionsTable } from 'components/audio-transactions-table'
-import Header from 'components/header/desktop/Header'
-import Page from 'components/page/Page'
 import EmptyTable from 'components/tracks-table/EmptyTable'
 import { useMainContentRef } from 'pages/MainContentContext'
 
-import styles from './AudioTransactionsPage.module.css'
-
+import styles from './AudioWalletTransactions.module.css'
 const { fetchTransactionDetailsSucceeded } = transactionDetailsActions
 
 const messages = {
@@ -52,7 +49,7 @@ const Disclaimer = () => {
   )
 }
 
-export const AudioTransactionsPage = () => {
+export const AudioWalletTransactions = () => {
   const [sortMethod, setSortMethod] =
     useState<full.GetAudioTransactionsSortMethodEnum>(
       full.GetAudioTransactionsSortMethodEnum.Date
@@ -114,33 +111,27 @@ export const AudioTransactionsPage = () => {
   const isEmpty = audioTransactions.length === 0
 
   return (
-    <Page
-      title={messages.pageTitle}
-      description={messages.pageDescription}
-      header={<Header primary={messages.headerText} />}
-    >
-      <div className={styles.bodyWrapper}>
-        <Disclaimer />
-        {isEmpty && !tableLoading ? (
-          <EmptyTable
-            primaryText={messages.emptyTableText}
-            secondaryText={messages.emptyTableSecondaryText}
-          />
-        ) : (
-          <AudioTransactionsTable
-            key='audioTransactions'
-            data={audioTransactions}
-            loading={tableLoading}
-            onSort={onSort}
-            onClickRow={onClickRow}
-            fetchMore={() => fetchNextPage()}
-            isVirtualized={true}
-            totalRowCount={audioTransactionsCount}
-            scrollRef={mainContentRef}
-            fetchBatchSize={AUDIO_TRANSACTIONS_BATCH_SIZE}
-          />
-        )}
-      </div>
-    </Page>
+    <div className={styles.bodyWrapper}>
+      <Disclaimer />
+      {isEmpty && !tableLoading ? (
+        <EmptyTable
+          primaryText={messages.emptyTableText}
+          secondaryText={messages.emptyTableSecondaryText}
+        />
+      ) : (
+        <AudioTransactionsTable
+          key='audioTransactions'
+          data={audioTransactions}
+          loading={tableLoading}
+          onSort={onSort}
+          onClickRow={onClickRow}
+          fetchMore={() => fetchNextPage()}
+          isVirtualized={false}
+          totalRowCount={audioTransactionsCount}
+          scrollRef={mainContentRef}
+          fetchBatchSize={AUDIO_TRANSACTIONS_BATCH_SIZE}
+        />
+      )}
+    </div>
   )
 }

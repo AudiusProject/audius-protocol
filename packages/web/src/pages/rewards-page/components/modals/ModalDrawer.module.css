@@ -1,0 +1,46 @@
+.modalHeader {
+  background: var(--harmony-gradient);
+}
+
+.modalTitle {
+  color: var(--harmony-static-white);
+  font-size: 24px;
+}
+
+.modalBody {
+  width: 720px;
+  max-height: 95vh;
+}
+
+.modalBody.gradientHeader path {
+  fill: var(--harmony-static-white);
+}
+
+.drawer {
+  padding: 32px 12px;
+  width: 100%;
+  max-height: 95vh;
+}
+
+.titleContainer {
+  margin-bottom: 16px;
+  display: flex;
+  justify-content: center;
+}
+
+.drawerTitle {
+  font-weight: var(--harmony-font-bold);
+  font-size: var(--harmony-font-l);
+  line-height: 22px;
+  text-align: center;
+  color: var(--harmony-neutral);
+}
+
+.drawerGradientTitle {
+  font-weight: 900;
+  font-size: 28px;
+  line-height: 49px;
+  background: var(--harmony-gradient);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}

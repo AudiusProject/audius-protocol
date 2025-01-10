@@ -60,6 +60,7 @@ export { default as IconLockUnlocked } from '@audius/harmony/src/assets/icons/Lo
 export { default as IconSpecialAccess } from '@audius/harmony/src/assets/icons/SpecialAccess.svg'
 export { default as IconCart } from '@audius/harmony/src/assets/icons/Cart.svg'
 export { default as IconMessage } from '@audius/harmony/src/assets/icons/Message.svg'
+export { default as IconMessages } from '@audius/harmony/src/assets/icons/Messages.svg'
 export { default as IconMerch } from '@audius/harmony/src/assets/icons/Merch.svg'
 export { default as IconStar } from '@audius/harmony/src/assets/icons/Star.svg'
 export { default as IconCastAirplay } from '@audius/harmony/src/assets/icons/CastAirplay.svg'

@@ -13,7 +13,7 @@ import {
 } from '@audius/harmony'
 import { useDispatch, useSelector } from 'react-redux'
 
-import Header from 'components/header/desktop/Header'
+import { Header } from 'components/header/desktop/Header'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import Page from 'components/page/Page'
 import { replace } from 'utils/navigation'
@@ -29,8 +29,8 @@ import { PayAndEarnPageProps, TableType } from '../types'
 const { PURCHASES_PAGE, SALES_PAGE, WITHDRAWALS_PAGE } = route
 const { getAccountHasTracks, getIsGuestAccount } = accountSelectors
 
-const messages = {
-  title: 'Pay & Earn',
+export const messages = {
+  title: 'USDC Wallet',
   description: 'Pay & earn with Audius',
   sales: 'Sales',
   purchases: 'Your Purchases',
