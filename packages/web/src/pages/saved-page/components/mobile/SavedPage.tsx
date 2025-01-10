@@ -216,7 +216,6 @@ const TracksLineup = ({
     const selectedCategory = getCategory(state, {
       currentTab: SavedPageTabs.TRACKS
     })
-
     if (selectedCategory === LibraryCategory.All) {
       return emptyStateMessages.emptyTrackAllHeader
     } else if (selectedCategory === LibraryCategory.Favorite) {
@@ -237,6 +236,7 @@ const TracksLineup = ({
 
   const isLoadingInitial = statusIsNotFinalized(tracks.status)
   const shouldHideFilterInput = isLoadingInitial && !filterText
+  console.log('asdf trackList', trackList, tracks.status)
 
   if (trackList.length === 0 && !statusIsNotFinalized(tracks.status)) {
     return (

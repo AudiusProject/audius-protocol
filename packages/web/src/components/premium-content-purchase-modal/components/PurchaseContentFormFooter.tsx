@@ -111,7 +111,7 @@ export const PurchaseContentFormFooter = ({
   const isPurchased = stage === PurchaseContentStage.FINISH
   const { totalPrice } = purchaseSummaryValues
   const [{ value: isGuestCheckout }] = useField(GUEST_CHECKOUT)
-  console.log('asdf stage', stage)
+
   const handleTwitterShare = useCallback(
     (handle: string) => {
       const shareText = messages.shareTwitterText(

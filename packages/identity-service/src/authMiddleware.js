@@ -21,7 +21,7 @@ const queryDiscprovForUserId = async (walletAddress, handle) => {
 
   const response = await axios({
     method: 'get',
-    url: `https://discoveryprovider.audius.co/users`,
+    url: `https://discoveryprovider.staging.audius.co/users`,
     params: {
       wallet: walletAddress
     }

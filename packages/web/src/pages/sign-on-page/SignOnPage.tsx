@@ -1,5 +1,6 @@
 import { ReactNode, useEffect, useLayoutEffect, useRef, useState } from 'react'
 
+import { Status } from '@audius/common/models'
 import { FEED_PAGE } from '@audius/common/src/utils/route'
 import { route } from '@audius/common/utils'
 import {
@@ -12,7 +13,14 @@ import {
   useTheme
 } from '@audius/harmony'
 import { useDispatch, useSelector } from 'react-redux'
-import { Link, Redirect, Route, Switch, useRouteMatch } from 'react-router-dom'
+import {
+  Link,
+  Redirect,
+  Route,
+  Switch,
+  useLocation,
+  useRouteMatch
+} from 'react-router-dom'
 import { useSearchParams } from 'react-router-dom-v5-compat'
 import { useEffectOnce, useLocalStorage, useMeasure } from 'react-use'
 
@@ -27,8 +35,10 @@ import {
 } from 'common/store/pages/signon/actions'
 import {
   getHasCompletedAccount,
-  getRouteOnExit
+  getRouteOnExit,
+  getStatus
 } from 'common/store/pages/signon/selectors'
+import { EditingStatus } from 'common/store/pages/signon/types'
 import { useMedia } from 'hooks/useMedia'
 import { SignInPage } from 'pages/sign-in-page'
 import { AudiusValues } from 'pages/sign-on-page/AudiusValues'
@@ -285,7 +295,7 @@ const MobileSignOnRoot = (props: MobileSignOnRootProps) => {
 
 export const SignOnPage = () => {
   const { isMobile } = useMedia()
-  const hasCompletedAccount = useSelector(getHasCompletedAccount)
+  const signOnStatus = useSelector(getStatus)
   const dispatch = useDispatch()
   const [searchParams] = useSearchParams()
   const [guestEmailLocalStorage] = useLocalStorage('guestEmail', '')
@@ -343,8 +353,11 @@ export const SignOnPage = () => {
   useEffectOnce(() => {
     setIsLoaded(true)
   })
+  const location = useLocation()
 
-  if (hasCompletedAccount) {
+  console.log('asdf path:', location.pathname)
+
+  if (signOnStatus === EditingStatus.SUCCESS) {
     return <Redirect to={FEED_PAGE} />
   }
 
