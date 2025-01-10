@@ -1,4 +1,4 @@
-import { userApiFetchSaga } from '@audius/common/api'
+import { fetchAccountSaga } from '@audius/common/api'
 import { GUEST_EMAIL } from '@audius/common/hooks'
 import {
   Name,
@@ -9,7 +9,6 @@ import {
   InstagramUser,
   TikTokUser,
   Feature,
-  AccountUserMetadata,
   OptionalId
 } from '@audius/common/models'
 import {
@@ -591,10 +590,11 @@ function* signUp() {
               )
               yield* call([localStorage, localStorage.removeItem], GUEST_EMAIL)
 
-              const account: AccountUserMetadata | null = yield* call(
-                userApiFetchSaga.getUserAccount,
+              const account = yield* call(
+                fetchAccountSaga,
+                { wallet },
                 {
-                  wallet
+                  staleTime: 0 // force
                 }
               )
               if (!account) {
@@ -889,10 +889,11 @@ function* signIn(action: ReturnType<typeof signOnActions.signIn>) {
       return
     }
 
-    const account: AccountUserMetadata | null = yield* call(
-      userApiFetchSaga.getUserAccount,
+    const account = yield* call(
+      fetchAccountSaga,
+      { wallet: signInResponse.walletAddress },
       {
-        wallet: signInResponse.walletAddress
+        staleTime: 0 // force
       }
     )
 

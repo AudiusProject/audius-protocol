@@ -8,8 +8,7 @@ import {
   takeLatest
 } from 'typed-redux-saga'
 
-import { QUERY_KEYS, fetchAccount as fetchAccountQueryFn } from '~/api'
-import { userApiFetchSaga } from '~/api/user'
+import { fetchAccountSaga } from '~/api'
 import {
   AccountUserMetadata,
   ErrorLevel,
@@ -113,13 +112,19 @@ function* initializeMetricsForUser({
   const analytics = yield* getContext('analytics')
 
   if (accountUser && accountUser.handle) {
-    const { web3WalletAddress } = yield* call([
+    const { web3WalletAddress: wallet } = yield* call([
       authService,
       authService.getWalletAddresses
     ])
-    const { user: web3User } = yield* call(userApiFetchSaga.getUserAccount, {
-      wallet: web3WalletAddress
-    })
+
+    const web3Account = yield* call(
+      fetchAccountSaga,
+      { wallet },
+      {
+        staleTime: Infinity // Read from cache if available
+      }
+    )
+    const web3User = web3Account?.user
 
     let solanaWallet
     let managerUserId
@@ -161,7 +166,6 @@ function* initializeMetricsForUser({
 
 export function* fetchAccountAsync() {
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
-  const queryClient = yield* getContext('queryClient')
   const remoteConfigInstance = yield* getContext('remoteConfigInstance')
   const authService = yield* getContext('authService')
   const localStorage = yield* getContext('localStorage')
@@ -184,12 +188,12 @@ export function* fetchAccountAsync() {
     )
     return
   }
-  const accountData = yield* call(async () =>
-    queryClient.fetchQuery({
-      queryKey: [QUERY_KEYS.accountUser, wallet],
-      queryFn: () => fetchAccountQueryFn({ wallet }, { sdk }),
-      staleTime: 0 // force fetch
-    })
+  const accountData = yield* call(
+    fetchAccountSaga,
+    { wallet },
+    {
+      staleTime: 0 // always force fetch
+    }
   )
 
   if (!accountData) {

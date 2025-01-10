@@ -1,11 +1,14 @@
 import type { AudiusSdk, full } from '@audius/sdk'
 import { useQuery } from '@tanstack/react-query'
 import { useSelector } from 'react-redux'
+import { call } from 'typed-redux-saga'
 
 import { accountFromSDK } from '~/adapters/user'
 import { useAudiusQueryContext } from '~/audius-query'
 import { SolanaWalletAddress } from '~/models/Wallet'
+import { getSDK } from '~/store'
 import { getWalletAddresses } from '~/store/account/selectors'
+import { getContext } from '~/store/effects'
 import { isResponseError } from '~/utils/error'
 
 import { QUERY_KEYS } from './queryKeys'
@@ -40,6 +43,24 @@ export const fetchAccount = async (
     }
     throw e
   }
+}
+
+export function* fetchAccountSaga(
+  args: full.GetUserAccountRequest,
+  options?: Config
+) {
+  const queryClient = yield* getContext('queryClient')
+  const sdk = yield* getSDK()
+
+  const result: Awaited<ReturnType<typeof fetchAccount>> = yield* call(
+    async () =>
+      queryClient.fetchQuery({
+        queryKey: [QUERY_KEYS.accountUser, args],
+        queryFn: async () => fetchAccount(args, { sdk }),
+        staleTime: options?.staleTime
+      })
+  )
+  return result
 }
 
 export const useAccount = (config?: Config) => {
