@@ -66,12 +66,15 @@ export const useCurrentUser = (config?: Config) => {
     queryKey: [QUERY_KEYS.accountUser, currentUser],
     queryFn: async () =>
       fetchAccount({ wallet: currentUser! }, { sdk: await audiusSdk() }),
+    // Don't refetch on new mounts by default
     staleTime: config?.staleTime,
     enabled: config?.enabled !== false && !!currentUser,
     select: (data) => data?.user ?? null
   })
 }
 
+// TODO-NOW: These still trigger fetches even though the account fetch has been done?
+// Thought staleTime was per query key...
 export const usePlaylistLibrary = (config?: Config) => {
   const { audiusSdk } = useAudiusQueryContext()
   const { currentUser } = useSelector(getWalletAddresses)
