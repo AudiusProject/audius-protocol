@@ -4,7 +4,6 @@ import {
   formatCooldownChallenges,
   useChallengeCooldownSchedule
 } from '@audius/common/hooks'
-import { Name } from '@audius/common/models'
 import { modalsActions } from '@audius/common/store'
 import { Image, View } from 'react-native'
 import { useDispatch } from 'react-redux'
@@ -17,7 +16,6 @@ import {
   IconArrowRight
 } from '@audius/harmony-native'
 import TokenStill from 'app/assets/images/tokenSpinStill.png'
-import { make, track } from 'app/services/analytics'
 import { makeStyles } from 'app/styles'
 
 const { setVisibility } = modalsActions

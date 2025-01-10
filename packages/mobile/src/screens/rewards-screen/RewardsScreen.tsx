@@ -45,37 +45,10 @@ const useStyles = makeStyles(({ spacing, palette, typography }) => ({
     margin: spacing(3),
     padding: spacing(3)
   },
-  tile: {
-    borderTopLeftRadius: 6,
-    borderTopRightRadius: 6,
-    borderBottomLeftRadius: 0,
-    borderBottomRightRadius: 0,
-    paddingVertical: spacing(8),
-    paddingHorizontal: spacing(4),
-    minHeight: 200
-  },
   tileContent: {
     justifyContent: 'center',
     alignItems: 'center',
     height: 200
-  },
-  content: {
-    justifyContent: 'center',
-    alignItems: 'center'
-  },
-  tileHeader: {
-    fontFamily: typography.fontByWeight.heavy,
-    fontSize: typography.fontSize.xxxxl,
-    textTransform: 'uppercase',
-    textAlign: 'center',
-    marginBottom: 16
-  },
-  tileSubheader: {
-    fontFamily: typography.fontByWeight.demiBold,
-    fontSize: typography.fontSize.medium,
-    lineHeight: spacing(5),
-    textAlign: 'center',
-    marginBottom: spacing(6)
   },
   noticeTile: {
     padding: spacing(2)

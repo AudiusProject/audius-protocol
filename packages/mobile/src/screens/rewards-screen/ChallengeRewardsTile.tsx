@@ -113,28 +113,6 @@ const useStyles = makeStyles(({ spacing, typography, palette }) => ({
   },
   loading: {
     marginVertical: spacing(2)
-  },
-  pillContainer: {
-    height: spacing(6),
-    display: 'flex',
-    flexDirection: 'row',
-    justifyContent: 'flex-start',
-    alignItems: 'flex-start'
-  },
-  pillMessage: {
-    paddingVertical: spacing(1),
-    paddingHorizontal: spacing(2),
-    fontSize: typography.fontSize.small,
-    fontFamily: typography.fontByWeight.demiBold,
-    lineHeight: spacing(4),
-    color: palette.secondary,
-    borderWidth: 1,
-    borderRadius: 12,
-    borderColor: palette.backgroundSecondary,
-    overflow: 'hidden'
-  },
-  readyToClaimPill: {
-    backgroundColor: palette.background
   }
 }))
 

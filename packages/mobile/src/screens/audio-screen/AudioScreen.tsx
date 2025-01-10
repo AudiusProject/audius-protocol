@@ -63,14 +63,6 @@ const messages = {
 }
 
 const useStyles = makeStyles(({ spacing, palette, typography }) => ({
-  tiles: {
-    margin: spacing(3),
-    height: '100%'
-  },
-  tileRoot: {
-    margin: spacing(3),
-    padding: spacing(3)
-  },
   tile: {
     borderTopLeftRadius: 6,
     borderTopRightRadius: 6,
@@ -87,30 +79,11 @@ const useStyles = makeStyles(({ spacing, palette, typography }) => ({
     fontFamily: typography.fontByWeight.bold,
     fontSize: typography.fontSize.xxxxl
   },
-  tileSubheader: {
-    fontFamily: typography.fontByWeight.demiBold,
-    fontSize: typography.fontSize.medium,
-    lineHeight: spacing(5),
-    textAlign: 'center',
-    marginBottom: spacing(6)
-  },
   tileLink: {
     fontFamily: typography.fontByWeight.bold,
     fontSize: typography.fontSize.xl,
     color: palette.secondary,
     marginVertical: spacing(4)
-  },
-  audioAmount: {
-    color: palette.staticStaticWhite,
-    fontSize: typography.fontSize.xxxxxl,
-    fontFamily: typography.fontByWeight.heavy,
-    textShadowColor: 'rgba(0,0,0,0.1)',
-    textShadowOffset: { width: 0, height: 4 },
-    textShadowRadius: 15
-  },
-  audioAmountContainer: {
-    marginTop: spacing(4),
-    marginBottom: spacing(2)
   },
   spinner: {
     width: spacing(16),
@@ -133,12 +106,6 @@ const useStyles = makeStyles(({ spacing, palette, typography }) => ({
     height: 200,
     marginBottom: spacing(6),
     alignSelf: 'center'
-  },
-  noticeTile: {
-    padding: spacing(2)
-  },
-  noticeTileText: {
-    color: palette.staticStaticWhite
   }
 }))
 
