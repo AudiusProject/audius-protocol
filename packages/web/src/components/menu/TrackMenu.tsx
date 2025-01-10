@@ -99,7 +99,7 @@ export type OwnProps = {
   type: 'track'
 }
 
-export type TrackMenuProps = OwnProps &
+type TrackMenuProps = OwnProps &
   ReturnType<typeof mapDispatchToProps> &
   ReturnType<typeof mapStateToProps>
 

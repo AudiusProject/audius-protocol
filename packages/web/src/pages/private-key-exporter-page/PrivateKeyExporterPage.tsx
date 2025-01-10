@@ -340,7 +340,7 @@ const AgreeAndContinue = () => {
   )
 }
 
-export const PrivateKeyExporterPage = () => {
+const PrivateKeyExporterPage = () => {
   useRequiresAccount()
   const record = useRecord()
   const accountUserId = useSelector(getUserId)

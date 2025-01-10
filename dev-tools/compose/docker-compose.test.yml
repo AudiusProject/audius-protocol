@@ -98,9 +98,7 @@ services:
   # core
 
   audiusd-1:
-    build:
-      context: ${PROJECT_ROOT}
-      dockerfile: ${PROJECT_ROOT}/cmd/audiusd/Dockerfile
+    image: audius/audiusd:local
     env_file:
       - ${PROJECT_ROOT}/cmd/core/infra/dev_config/discovery-one.docker.env
     restart: unless-stopped
@@ -117,9 +115,7 @@ services:
         condition: service_healthy
 
   audiusd-2:
-    build:
-      context: ${PROJECT_ROOT}
-      dockerfile: ${PROJECT_ROOT}/cmd/audiusd/Dockerfile
+    image: audius/audiusd:local
     env_file:
       - ${PROJECT_ROOT}/cmd/core/infra/dev_config/content-one.docker.env
     restart: unless-stopped
@@ -136,9 +132,7 @@ services:
         condition: service_healthy
 
   audiusd-3:
-    build:
-      context: ${PROJECT_ROOT}
-      dockerfile: ${PROJECT_ROOT}/cmd/audiusd/Dockerfile
+    image: audius/audiusd:local
     env_file:
       - ${PROJECT_ROOT}/cmd/core/infra/dev_config/content-two.docker.env
     restart: unless-stopped
@@ -155,9 +149,7 @@ services:
         condition: service_healthy
 
   audiusd-4:
-    build:
-      context: ${PROJECT_ROOT}
-      dockerfile: ${PROJECT_ROOT}/cmd/audiusd/Dockerfile
+    image: audius/audiusd:local
     env_file:
       - ${PROJECT_ROOT}/cmd/core/infra/dev_config/content-three.docker.env
     restart: unless-stopped
@@ -400,40 +392,6 @@ services:
     profiles:
       - tests
       - notifications
-
-  # mediorum
-
-  mediorum-db:
-    image: postgres:11.4
-    shm_size: 5g
-    command: postgres -c shared_buffers=5GB
-    environment:
-      POSTGRES_PASSWORD: example
-    healthcheck:
-      test: [ 'CMD', 'pg_isready' ]
-      interval: 3s
-      timeout: 3s
-    logging: *default-logging
-    volumes:
-      - ${PROJECT_ROOT}/cmd/mediorum/.initdb:/docker-entrypoint-initdb.d
-    profiles:
-      - mediorum
-      - mediorum-unittests
-
-  test-mediorum-unittests:
-    build:
-      context: ${PROJECT_ROOT}
-      dockerfile: ${PROJECT_ROOT}/cmd/mediorum/Dockerfile.unittests
-    logging: *default-logging
-    entrypoint: sh -c '[ ! "$$1" = "test" ] && sleep inf || (shift; go test ./pkg/mediorum/... -count 1 -timeout 60s "$$@")' -
-    environment:
-      dbUrlTemplate: 'postgres://postgres:example@mediorum-db:5432/m%d'
-      dbUrl: 'postgres://postgres:example@mediorum-db:5432/mediorum_test'
-    profiles:
-      - mediorum-unittests
-    depends_on:
-      mediorum-db:
-        condition: service_healthy
 
   # identity-service
 

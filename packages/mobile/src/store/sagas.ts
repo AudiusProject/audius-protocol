@@ -4,7 +4,6 @@ import {
   chatSagas,
   reachabilitySagas,
   remoteConfigSagas,
-  solanaSagas,
   deletePlaylistConfirmationModalUISagas as deletePlaylistConfirmationModalSagas,
   duplicateAddConfirmationModalUISagas as duplicateAddConfirmationModalSagas,
   mobileOverflowMenuUISagas as overflowMenuSagas,
@@ -122,7 +121,6 @@ export default function* rootSaga() {
 
     // Tipping
     ...tippingSagas(),
-    ...solanaSagas(),
 
     // Premium content
     ...gatedContentSagas(),

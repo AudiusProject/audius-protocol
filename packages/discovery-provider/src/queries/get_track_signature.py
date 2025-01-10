@@ -172,11 +172,28 @@ def get_track_download_signature(args: GetTrackDownloadSignature):
     user_signature = args.get("user_signature")
     nft_access_signature = args.get("nft_access_signature")
     cid = track.get("orig_file_cid") if is_original else track.get("track_cid")
-    if not cid or not track.get("is_downloadable", False):
+    if not cid:
         return None
 
     cid = cid.strip()
     authed_user = get_authed_or_managed_user(user_data, user_signature, user_id)
+
+    # Check if user is the track owner
+    if authed_user and authed_user["user_id"] == track["owner_id"]:
+        signature = get_gated_content_signature(
+            {
+                "track_id": track["track_id"],
+                "cid": cid,
+                "type": "track",
+                "user_id": authed_user["user_id"],
+                "is_gated": False,
+            }
+        )
+        return {"signature": signature, "cid": cid, "filename": filename}
+
+    # For non-owners, check if track is downloadable
+    if not track.get("is_downloadable", False):
+        return None
 
     # all non-download-gated downloadable tracks should be publicly available
     if not is_download_gated:

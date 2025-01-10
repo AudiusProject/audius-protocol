@@ -550,7 +550,12 @@ export enum Name {
   COMMENTS_OPEN_COMMENT_DRAWER = 'Comments: Open Comment Drawer',
   COMMENTS_CLOSE_COMMENT_DRAWER = 'Comments: Close Comment Drawer',
   COMMENTS_OPEN_AUTH_MODAL = 'Comments: Open Auth Modal',
-  COMMENTS_OPEN_INSTALL_APP_MODAL = 'Comments: Open Install App Modal'
+  COMMENTS_OPEN_INSTALL_APP_MODAL = 'Comments: Open Install App Modal',
+
+  // Track Replace
+  TRACK_REPLACE_DOWNLOAD = 'Track Replace: Download',
+  TRACK_REPLACE_PREVIEW = 'Track Replace: Preview',
+  TRACK_REPLACE_REPLACE = 'Track Replace: Replace'
 }
 
 type PageView = {
@@ -2687,6 +2692,23 @@ export type CommentsOpenInstallAppModal = {
   trackId: ID
 }
 
+export type TrackReplaceDownload = {
+  eventName: Name.TRACK_REPLACE_DOWNLOAD
+  trackId: ID
+}
+
+export type TrackReplaceReplace = {
+  eventName: Name.TRACK_REPLACE_REPLACE
+  trackId: ID
+  source: 'upload' | 'edit'
+}
+
+export type TrackReplacePreview = {
+  eventName: Name.TRACK_REPLACE_PREVIEW
+  trackId: ID
+  source: 'upload' | 'edit'
+}
+
 export type BaseAnalyticsEvent = { type: typeof ANALYTICS_TRACK_EVENT }
 
 export type AllTrackingEvents =
@@ -3050,3 +3072,6 @@ export type AllTrackingEvents =
   | CommentsCloseCommentDrawer
   | CommentsOpenAuthModal
   | CommentsOpenInstallAppModal
+  | TrackReplaceDownload
+  | TrackReplacePreview
+  | TrackReplaceReplace

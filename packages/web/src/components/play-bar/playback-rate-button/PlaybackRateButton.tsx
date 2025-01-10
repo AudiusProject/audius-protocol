@@ -28,7 +28,7 @@ import styles from '../PlayBarButton.module.css'
 const { setPlaybackRate } = playerActions
 const { getPlaybackRate } = playerSelectors
 
-export type PlaybackRateButtonProps = {
+type PlaybackRateButtonProps = {
   isMobile: boolean
 }
 

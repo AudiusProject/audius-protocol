@@ -19,7 +19,6 @@ import {
   purchaseContentActions
 } from '~/store'
 import { getWalletAddresses } from '~/store/account/selectors'
-import { getFeePayer } from '~/store/solana/selectors'
 
 type CoinflowAdapter = {
   wallet: {
@@ -41,7 +40,6 @@ export const useCoinflowWithdrawalAdapter = () => {
     analytics: { make, track }
   } = useAppContext()
   const [adapter, setAdapter] = useState<CoinflowAdapter | null>(null)
-  const feePayerOverride = useSelector(getFeePayer)
   const { currentUser } = useSelector(getWalletAddresses)
   const { audiusSdk, solanaWalletService } = useAudiusQueryContext()
 
@@ -112,15 +110,7 @@ export const useCoinflowWithdrawalAdapter = () => {
       })
     }
     initWallet()
-  }, [
-    audiusBackend,
-    feePayerOverride,
-    currentUser,
-    solanaWalletService,
-    make,
-    track,
-    audiusSdk
-  ])
+  }, [audiusBackend, currentUser, solanaWalletService, make, track, audiusSdk])
 
   return adapter
 }

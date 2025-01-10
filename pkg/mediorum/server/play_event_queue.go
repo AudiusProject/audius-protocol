@@ -78,6 +78,7 @@ func (ss *MediorumServer) processPlayRecordBatch() error {
 	defer cancel()
 
 	plays := ss.playEventQueue.popPlayEventBatch()
+	ss.logger.Info("popped plays off event queue: %v", plays)
 	if len(plays) == 0 {
 		return nil
 	}
@@ -105,7 +106,7 @@ func (ss *MediorumServer) processPlayRecordBatch() error {
 	// sign plays event payload with mediorum priv key
 	signedPlaysEvent, err := signature.SignCoreBytes(playsTx, ss.Config.privateKey)
 	if err != nil {
-		ss.logger.Error("core error signing listen proto event", "err", err)
+		ss.logger.Error("core error signing plays proto event", "err", err)
 		return err
 	}
 
@@ -123,10 +124,10 @@ func (ss *MediorumServer) processPlayRecordBatch() error {
 	})
 
 	if err != nil {
-		ss.logger.Error("core error submitting listen event", "err", err)
+		ss.logger.Error("core error submitting plays event", "err", err)
 		return err
 	}
 
-	ss.logger.Info("core %d listens recorded", "tx", len(corePlays), res.Txhash)
+	ss.logger.Info("core %d plays recorded", "tx", len(corePlays), res.Txhash)
 	return nil
 }

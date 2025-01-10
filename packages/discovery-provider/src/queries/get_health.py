@@ -1,4 +1,5 @@
 import asyncio
+import json
 import logging
 import os
 import time
@@ -20,6 +21,10 @@ from src.queries.get_latest_play import get_latest_play
 from src.queries.get_oldest_unarchived_play import get_oldest_unarchived_play
 from src.queries.get_sol_plays import get_sol_play_health_info
 from src.queries.get_trusted_notifier_discrepancies import get_delist_statuses_ok
+from src.tasks.index_core import (
+    core_health_check_cache_key,
+    core_listens_health_check_cache_key,
+)
 from src.utils import (
     db_session,
     elasticdsl,
@@ -65,6 +70,7 @@ default_indexing_interval_seconds = int(
     shared_config["discprov"]["block_processing_interval_sec"]
 )
 infra_setup = shared_config["discprov"]["infra_setup"]
+environment = shared_config["discprov"]["env"]
 
 # min system requirement values
 min_number_of_cpus: int = 8  # 8 cpu
@@ -257,7 +263,17 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
         latest_indexed_block_num = db_block_state["number"] or 0
         latest_indexed_block_hash = db_block_state["blockhash"]
 
+    core_health = get_core_health(redis=redis)
+    core_listens_health = get_core_listens_health(
+        redis=redis, plays_count_max_drift=plays_count_max_drift
+    )
+    indexing_plays_with_core = (
+        core_health and core_health.get("indexing_plays") and environment != "prod"
+    )
+
     play_health_info = get_play_health_info(redis, plays_count_max_drift)
+    if indexing_plays_with_core:
+        play_health_info = core_listens_health
 
     user_bank_health_info = get_solana_indexer_status(
         redis, redis_keys.solana.user_bank, user_bank_max_drift
@@ -379,6 +395,7 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
             ),
             "content_nodes": content_nodes,
         },
+        "core": {"health": core_health, "listens": core_listens_health},
     }
 
     if os.getenv("AUDIUS_D_GENERATED"):
@@ -695,6 +712,35 @@ def get_play_health_info(
         "tx_info": sol_play_info,
         "oldest_unarchived_play_created_at": str(oldest_unarchived_play),
     }
+
+
+def get_core_listens_health(redis: Redis, plays_count_max_drift: Optional[int]):
+    try:
+        core_health = redis.get(core_listens_health_check_cache_key)
+        if core_health:
+            res = json.loads(core_health)
+
+            is_unhealthy_sol_plays = bool(
+                plays_count_max_drift and plays_count_max_drift < res["time_diff"]
+            )
+
+            res["is_unhealthy"] = is_unhealthy_sol_plays
+            return res
+        return None
+    except Exception as e:
+        logger.error(f"get_health.py | could not get core listens health {e}")
+        return None
+
+
+def get_core_health(redis: Redis):
+    try:
+        core_health = redis.get(core_health_check_cache_key)
+        if core_health:
+            return json.loads(core_health)
+        return None
+    except Exception as e:
+        logger.error(f"get_health.py | could not get core health {e}")
+        return None
 
 
 def get_latest_chain_block_set_if_nx(redis=None, web3=None):

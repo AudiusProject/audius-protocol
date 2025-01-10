@@ -1,7 +1,7 @@
+import { getAccount } from '@solana/spl-token'
 import { PublicKey } from '@solana/web3.js'
 import { call, delay, select } from 'typed-redux-saga'
 
-import { getTokenAccountInfo } from '~/services/audius-backend/solana'
 import { IntKeys } from '~/services/remote-config'
 import {
   MAX_CONTENT_PRICE_CENTS,
@@ -51,7 +51,7 @@ export function* getOrCreateUSDCUserBank(ethAddress?: string) {
 export function* pollForTokenAccountInfo({
   retryDelayMs = POLL_ACCOUNT_INFO_DELAY_MS,
   maxRetryCount = POLL_ACCOUNT_INFO_RETRIES,
-  ...getTokenAccountInfoArgs
+  tokenAccount
 }: {
   tokenAccount: PublicKey
   retryDelayMs?: number
@@ -62,13 +62,17 @@ export function* pollForTokenAccountInfo({
   let retries = 0
   let result
   while (retries < maxRetryCount && !result) {
-    result = yield* call(getTokenAccountInfo, sdk, getTokenAccountInfoArgs)
+    result = yield* call(
+      getAccount,
+      sdk.services.solanaClient.connection,
+      tokenAccount
+    )
     retries += 1
     yield* delay(retryDelayMs)
   }
   if (!result) {
     throw new Error(
-      `Failed to fetch USDC user bank token account info for ${getTokenAccountInfoArgs.tokenAccount.toString()}`
+      `Failed to fetch USDC user bank token account info for ${tokenAccount.toString()}`
     )
   }
   return result

@@ -24,6 +24,15 @@ services:
     volumes:
       - ${PROJECT_ROOT}:/app
 
+  staking:
+    extends:
+      file: docker-compose.pedalboard.prod.yml
+      service: staking
+    build:
+      dockerfile: ${PROJECT_ROOT}/packages/discovery-provider/plugins/pedalboard/docker/Dockerfile.dev
+    volumes:
+      - ${PROJECT_ROOT}:/app
+
   sla-auditor:
     extends:
       file: docker-compose.pedalboard.prod.yml
@@ -59,7 +68,7 @@ services:
       dockerfile: ${PROJECT_ROOT}/packages/discovery-provider/plugins/pedalboard/docker/Dockerfile.dev
     volumes:
       - ${PROJECT_ROOT}:/app
-  
+
   mri:
     extends:
       file: docker-compose.pedalboard.prod.yml

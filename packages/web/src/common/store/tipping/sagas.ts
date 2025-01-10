@@ -95,7 +95,6 @@ function* confirmTipIndexed({
 
 function* wormholeAudioIfNecessary({ amount }: { amount: number }) {
   const walletClient = yield* getContext('walletClient')
-  const sdk = yield* getSDK()
   const { currentUser } = yield* select(getWalletAddresses)
   if (!currentUser) {
     throw new Error('Failed to retrieve current user wallet address')
@@ -124,7 +123,6 @@ function* wormholeAudioIfNecessary({ amount }: { amount: number }) {
       yield put(convert())
     })
     yield call([walletClient, walletClient.transferTokensFromEthToSol], {
-      sdk,
       ethAddress: currentUser
     })
     // Cancel showing the notice if the conversion was magically super quick

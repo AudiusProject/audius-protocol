@@ -1,165 +1,302 @@
+import json
 import logging
-import time
-from typing import Optional
+from datetime import datetime
+from typing import Optional, TypedDict, cast
 
-from sqlalchemy.orm.session import Session
+from redis import Redis
+from sqlalchemy import desc
 
 from src.challenges.challenge_event_bus import ChallengeEventBus
+from src.models.core.core_indexed_blocks import CoreIndexedBlocks
+from src.models.social.play import Play
 from src.tasks.celery_app import celery
 from src.tasks.core.core_client import CoreClient, get_core_instance
 from src.tasks.core.gen.protocol_pb2 import BlockResponse
-from src.tasks.index_core_cutovers import get_core_cutover, get_sol_cutover
-from src.tasks.index_core_manage_entities import index_core_manage_entity
-from src.tasks.index_core_plays import index_core_play
-from src.tasks.index_solana_plays import get_latest_slot
-from src.utils.prometheus_metric import save_duration_metric
+from src.tasks.index_core_cutovers import (
+    get_core_cutover,
+    get_core_cutover_chain_id,
+    get_sol_cutover,
+)
+from src.tasks.index_core_plays import index_core_plays
 from src.utils.session_manager import SessionManager
 
-logger = logging.getLogger(__name__)
+root_logger = logging.getLogger(__name__)
+
+index_core_lock_key = "index_core_lock"
 
 CORE_INDEXER_MINIMUM_TIME_SECS = 1
+CORE_INDEXER_ERROR_SLEEP_SECS = 5
+
+core_health_check_cache_key = "core:indexer:health"
+core_listens_health_check_cache_key = "core:indexer:health:listens"
+core_em_health_check_cache_key = "core:indexer:health:em"
 
 
-def _index_core_txs(
-    session: Session,
-    core: CoreClient,
-    challenge_bus: ChallengeEventBus,
-    block: BlockResponse,
-    should_index_plays: bool,
+class CoreListensTxInfo(TypedDict):
+    signature: str
+    slot: int
+    timestamp: int
+
+
+class CoreListensTxInfoHealth(TypedDict):
+    chain_tx: CoreListensTxInfo | None
+    db_tx: CoreListensTxInfo
+
+
+class CoreListensHealth(TypedDict):
+    latest_chain_slot: int
+    latest_indexed_slot: int
+    slot_diff: int
+    time_diff: float
+    sol_slot_cutover: int
+    core_block_cutover: int
+    tx_info: CoreListensTxInfoHealth
+
+
+class CoreHealth(TypedDict):
+    indexing_plays: bool
+    indexing_entity_manager: bool
+    latest_chain_block: int
+    latest_indexed_block: int
+    chain_id: str
+
+
+class IndexingResult(TypedDict):
+    indexed_sol_plays_slot: Optional[int]
+
+
+# dresses up the core health to look like the solana plays endpoint
+def update_core_listens_health(
+    redis: Redis,
+    latest_indexed_block: BlockResponse,
+    core_plays_cutover: int,
+    sol_plays_cutover: int,
 ):
-    # TODO: parallelize?
-    for tx in block.transactions:
-        # Check which type of transaction is currently set
-        transaction_type = tx.WhichOneof("transaction")
-        logger.info(
-            f"index_core.py | block {block.height} tx type {transaction_type} {should_index_plays}"
-        )
+    latest_indexed_slot = latest_indexed_block.height
+    latest_chain_slot = latest_indexed_block.current_height
 
-        if transaction_type == "plays" and should_index_plays:
-            index_core_play(
-                session=session,
-                core=core,
-                challenge_bus=challenge_bus,
-                block=block,
-                tx=tx,
-            )
-            continue
-        elif transaction_type == "manage_entity":
-            index_core_manage_entity(session=session, core=core, tx=tx)
-            continue
-        elif transaction_type == "validator_registration":
-            continue
-        elif transaction_type == "sla_rollup":
-            continue
-        else:
-            logger.warning(
-                f"index_core.py | unhandled tx type found {transaction_type}"
-            )
+    slot_diff = latest_chain_slot - latest_indexed_slot
+    time_diff = (
+        datetime.utcnow() - latest_indexed_block.timestamp.ToDatetime()
+    ).total_seconds()
+
+    health: CoreListensHealth = {
+        "slot_diff": slot_diff,
+        "time_diff": time_diff,
+        "latest_chain_slot": latest_chain_slot,
+        "latest_indexed_slot": latest_indexed_slot,
+        "tx_info": {
+            "chain_tx": None,
+            "db_tx": {
+                "signature": "",
+                "slot": latest_indexed_slot,
+                "timestamp": latest_indexed_block.timestamp.ToSeconds(),
+            },
+        },
+        "core_block_cutover": core_plays_cutover,
+        "sol_slot_cutover": sol_plays_cutover,
+    }
+    redis.set(core_listens_health_check_cache_key, json.dumps(health))
 
 
-def _index_core(db: SessionManager) -> Optional[BlockResponse]:
-    core = get_core_instance(db)
-    latest_processed_slot = get_latest_slot(db)
-
-    logger.info(
-        f"index_core.py | latest slot {latest_processed_slot} cutover {get_sol_cutover()}"
-    )
-
-    should_index_plays = False
-    if latest_processed_slot >= get_sol_cutover():
-        should_index_plays = True
-
-    # TODO: cache node info
-    node_info = core.get_node_info()
-    if not node_info:
-        return None
-
-    chainid = node_info.chainid
-    current_block = node_info.current_height
-    if current_block < get_core_cutover():
-        return None
-
-    with db.scoped_session() as session:
-        latest_indexed_block = core.latest_indexed_block(
-            session=session, chain_id=chainid
-        )
-
-        # if no blocks indexed on this chain id, start at 1
-        next_block = 1
-        if latest_indexed_block:
-            next_block = latest_indexed_block.height + 1
-
-        block, indexed_block = core.get_block(session=session, height=next_block)
-        if not block:
-            logger.error(f"index_core.py | could not get block {next_block} {chainid}")
-            return None
-
-        if indexed_block:
-            return None
-
-        # core returns -1 for block that doesn't exist
-        if block.height < 0:
-            return None
-
-        challenge_bus: ChallengeEventBus = index_core.challenge_event_bus
-        _index_core_txs(
-            session=session,
-            core=core,
-            challenge_bus=challenge_bus,
-            block=block,
-            should_index_plays=should_index_plays,
-        )
-        # if first block there's no parent hash
-        parenthash = latest_indexed_block.blockhash if latest_indexed_block else None
-
-        # commit block after indexing
-        if core.commit_indexed_block(
-            session=session,
-            chain_id=chainid,
-            height=block.height,
-            blockhash=block.blockhash,
-            parenthash=parenthash,
-        ):
-            return block
-        return None
+def update_core_health(
+    redis: Redis, latest_indexed_block: BlockResponse, indexing_plays: bool
+):
+    health: CoreHealth = {
+        "chain_id": latest_indexed_block.chainid,
+        "indexing_entity_manager": False,
+        "indexing_plays": indexing_plays,
+        "latest_chain_block": latest_indexed_block.current_height,
+        "latest_indexed_block": latest_indexed_block.height,
+    }
+    redis.set(core_health_check_cache_key, json.dumps(health))
 
 
 @celery.task(name="index_core", bind=True)
-@save_duration_metric(metric_group="celery_task")
 def index_core(self):
-    db = index_core.db
-    redis = index_core.redis
+    redis: Redis = index_core.redis
+    db: SessionManager = index_core.db
+    challenge_bus: ChallengeEventBus = index_core.challenge_event_bus
 
-    # Define lock acquired boolean
+    update_lock = redis.lock(index_core_lock_key, blocking_timeout=25, timeout=600)
     have_lock = False
 
-    # Define redis lock object
-    update_lock = redis.lock("index_core_lock")
-
-    start_time = time.time()
     try:
-        # Attempt to acquire lock
         have_lock = update_lock.acquire(blocking=False)
-        if have_lock:
-            indexed_block = _index_core(db)
-            if indexed_block:
-                logger.debug(f"index_core.py | indexed block {indexed_block.height}")
-        else:
-            logger.error(
-                f"index_core.py | {self.request.id} | \
-                    Failed to acquire index_core_lock"
+
+        if not have_lock:
+            return
+
+        core: CoreClient = get_core_instance()
+
+        # state that gets populated as indexing job goes on
+        # used for updating health check and other things
+        indexing_plays = False
+        core_plays_cutover = 0
+        sol_plays_cutover = 0
+        block_indexed: Optional[BlockResponse] = None
+
+        # execute all of indexing in one db session
+        with db.scoped_session() as session:
+            # gather initialization data for indexer
+            # TODO: cache this across celery messages
+            sol_plays_cutover = get_sol_cutover()
+            core_plays_cutover = get_core_cutover()
+            core_plays_cutover_chain_id = get_core_cutover_chain_id()
+
+            core_node_info = core.get_node_info()
+
+            latest_core_block_height = core_node_info.current_height
+            core_chain_id = core_node_info.chainid
+
+            latest_indexed_block: Optional[CoreIndexedBlocks] = (
+                session.query(CoreIndexedBlocks)
+                .filter(CoreIndexedBlocks.chain_id == core_chain_id)
+                .order_by(CoreIndexedBlocks.height.desc())
+                .first()
             )
+
+            latest_indexed_block_height: int = 0
+            if latest_indexed_block and latest_indexed_block.height:
+                latest_indexed_block_height = cast(int, latest_indexed_block.height)
+
+            latest_slot_record: Play = (
+                session.query(Play)
+                .filter(Play.slot != None)
+                .filter(Play.signature != None)
+                .order_by(desc(Play.slot))
+                .first()
+            )
+
+            latest_indexed_slot = 0
+            if latest_slot_record and latest_slot_record.slot:
+                latest_indexed_slot = cast(int, latest_slot_record.slot)
+
+            # do some checks to see if we should be indexing or not
+            on_cutover_chain = core_plays_cutover_chain_id == core_chain_id
+            past_core_plays_cutover = latest_core_block_height >= core_plays_cutover
+            if on_cutover_chain and not past_core_plays_cutover:
+                return
+
+            past_sol_plays_cutover = sol_plays_cutover <= latest_indexed_slot
+            if not past_sol_plays_cutover:
+                return
+
+            indexing_plays = past_sol_plays_cutover and past_core_plays_cutover
+
+            next_block = latest_indexed_block_height + 1
+
+            logger = logging.LoggerAdapter(
+                logger=root_logger,
+                extra={
+                    "indexer": "core",
+                    "chain_id": core_chain_id,
+                    "latest_indexed_block": latest_indexed_block_height,
+                    "next_indexed_block": next_block,
+                    "latest_chain_block": latest_core_block_height,
+                },
+            )
+
+            logger.debug("indexing block")
+
+            block = core.get_block(next_block)
+            if not block:
+                return
+
+            if block.height < 0:
+                return
+
+            if block.chainid != core_chain_id:
+                logger.warning(
+                    f"mismatched chain id {block.chainid} given for block but indexing chain {core_chain_id}"
+                )
+                return
+
+            indexed_slot: Optional[int] = None
+
+            for tx in block.transactions:
+                transaction_type = tx.WhichOneof("transaction")
+                if transaction_type == "plays":
+                    if indexing_plays:
+                        indexed_slot = index_core_plays(
+                            logger=logger,
+                            session=session,
+                            challenge_bus=challenge_bus,
+                            latest_indexed_slot=latest_indexed_slot,
+                            tx=tx,
+                        )
+                    continue
+                elif transaction_type == "manage_entity":
+                    continue
+                elif transaction_type == "validator_registration":
+                    continue
+                elif transaction_type == "sla_rollup":
+                    continue
+                else:
+                    logger.warning(
+                        f"index_core.py | unhandled tx type found {transaction_type}"
+                    )
+
+            # get block parenthash, in none case also use None
+            # this would be the case in solana cutover where the previous
+            # block to the cutover isn't indexed either
+            parenthash: Optional[str] = None
+            previous_height = block.height - 1
+            if previous_height > 0:
+                parent_block = (
+                    session.query(CoreIndexedBlocks)
+                    .filter(CoreIndexedBlocks.chain_id == core_chain_id)
+                    .filter(CoreIndexedBlocks.height == previous_height)
+                    .one_or_none()
+                )
+                if parent_block:
+                    parenthash = parent_block.blockhash
+
+            new_block = CoreIndexedBlocks(
+                chain_id=core_chain_id,
+                height=block.height,
+                blockhash=block.blockhash,
+                parenthash=parenthash,
+                plays_slot=indexed_slot,
+            )
+
+            exists = (
+                session.query(CoreIndexedBlocks)
+                .filter(CoreIndexedBlocks.chain_id == core_chain_id)
+                .filter(CoreIndexedBlocks.height == block.height)
+                .one_or_none()
+            )
+            if not exists:
+                session.add(new_block)
+            if exists:
+                logger.warning(f"block {block.height} already indexed")
+
+            block_indexed = block
+
+        # after session has been committed, update health checks and other things
+        if block_indexed:
+            update_core_health(
+                redis=redis,
+                latest_indexed_block=block_indexed,
+                indexing_plays=indexing_plays,
+            )
+            update_core_listens_health(
+                redis=redis,
+                latest_indexed_block=block_indexed,
+                core_plays_cutover=core_plays_cutover,
+                sol_plays_cutover=sol_plays_cutover,
+            )
+
     except Exception as e:
-        logger.error(
-            "index_core.py | Fatal error in main loop of index_core: %s",
-            e,
-            exc_info=True,
-        )
-        raise e
+        root_logger.error(f"Error in indexing core blocks {e}", exc_info=True)
     finally:
+        # don't queue up new message or release lock if never had lock
+        if not have_lock:
+            return
+
         if have_lock:
             update_lock.release()
-        elapsed_time = time.time() - start_time
-        if elapsed_time < CORE_INDEXER_MINIMUM_TIME_SECS:
-            time.sleep(CORE_INDEXER_MINIMUM_TIME_SECS - elapsed_time)
-        celery.send_task("index_core", queue="index_sol")
+        if not block_indexed:
+            celery.send_task("index_core", countdown=0.5, queue="index_sol")
+        else:
+            celery.send_task("index_core", queue="index_sol")

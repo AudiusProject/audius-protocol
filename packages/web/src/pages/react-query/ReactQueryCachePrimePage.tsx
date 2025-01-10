@@ -5,7 +5,7 @@ import { Button, Flex } from '@audius/harmony'
 import { TestTrack } from './components/TestTrack'
 import { TestUser } from './components/TestUser'
 
-export const ReactQueryCachePrimePage = () => {
+const ReactQueryCachePrimePage = () => {
   const [showUser, setShowUser] = useState(false)
 
   // G0oJXEw -> 11845

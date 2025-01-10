@@ -28,9 +28,7 @@ interface CompletionStage {
   title: string
 }
 
-export const getStepsCompleted = (
-  completionStages: CompletionStage[]
-): number =>
+const getStepsCompleted = (completionStages: CompletionStage[]): number =>
   completionStages.reduce((acc, cur) => (cur.isCompleted ? acc + 1 : acc), 0)
 
 export const getPercentageComplete = (

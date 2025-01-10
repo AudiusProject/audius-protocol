@@ -57,7 +57,7 @@ type DeactivateAccountPageContentsProps = {
   openConfirmation: () => void
 }
 
-export const DeactivateAcccountPageContents = ({
+const DeactivateAcccountPageContents = ({
   isError,
   isLoading,
   isMobile,

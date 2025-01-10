@@ -77,7 +77,6 @@ import remixSettingsReducer, {
 import savedCollectionsReducer from './saved-collections/slice'
 import searchReducer from './search/slice'
 import { SearchState } from './search/types'
-import solanaReducer from './solana/slice'
 import stemsUpload from './stems-upload/slice'
 import tippingReducer from './tipping/slice'
 import {
@@ -239,10 +238,6 @@ export const reducers = (storage: Storage, history?: History) => ({
     premiumTracks
   }),
   search: searchReducer(storage),
-
-  // Solana
-  solana: solanaReducer,
-
   stemsUpload,
 
   // Tipping
@@ -363,7 +358,6 @@ export type CommonState = {
     premiumTracks: ReturnType<typeof premiumTracks>
   }
   search: SearchState
-  solana: ReturnType<typeof solanaReducer>
 
   stemsUpload: ReturnType<typeof stemsUpload>
 
