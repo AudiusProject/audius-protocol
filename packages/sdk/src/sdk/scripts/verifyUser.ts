@@ -1,8 +1,11 @@
 import { program } from 'commander'
 
-import { sdk as audiusSdk, EntityType, HashId } from '@audius/sdk'
-
-import { Action } from '../services/EntityManager/types'
+import {
+  sdk as audiusSdk,
+  EntityType,
+  EntityManagerAction,
+  HashId
+} from '@audius/sdk'
 
 program
   .command('verify')
@@ -64,7 +67,7 @@ program
           userId,
           entityType: EntityType.USER,
           entityId: userId,
-          action: Action.VERIFY,
+          action: EntityManagerAction.VERIFY,
           metadata: JSON.stringify({
             cid: '',
             data: config
