@@ -9,7 +9,9 @@ import {
   IconRemix,
   ModalHeader,
   ModalTitle,
-  ModalContent
+  ModalContent,
+  IconRepost,
+  IconHeart
 } from '@audius/harmony'
 import { ChatBlastAudience } from '@audius/sdk'
 import { useDispatch, useSelector } from 'react-redux'
@@ -70,11 +72,13 @@ const UserListModalV2 = () => {
       case UserListType.FAVORITE:
         return {
           component: <FavoritesUserList />,
+          icon: IconHeart,
           title: messages.favorites
         }
       case UserListType.REPOST:
         return {
           component: <RepostsUserList />,
+          icon: IconRepost,
           title: messages.reposts
         }
       case UserListType.FOLLOWER:
@@ -86,83 +90,75 @@ const UserListModalV2 = () => {
       case UserListType.FOLLOWING:
         return {
           component: <FollowingUserList />,
-          title: (
-            <div className={styles.titleContainer}>
-              <IconUser className={styles.icon} />
-              <span>{messages.following}</span>
-            </div>
-          )
+          icon: IconUser,
+          title: messages.following
         }
-      case UserListType.NOTIFICATION:
-        return {
-          component: <NotificationUserList />,
-          title: (
-            <div className={styles.titleContainer}>
-              <IconUser className={styles.icon} />
-              <span>Notifications</span>
-            </div>
-          )
-        }
+      // case UserListType.NOTIFICATION:
+      //   return {
+      //     component: <NotificationUserList />,
+      //     title: (
+      //       <div className={styles.titleContainer}>
+      //         <IconUser className={styles.icon} />
+      //         <span>Notifications</span>
+      //       </div>
+      //     )
+      //   }
       case UserListType.SUPPORTER:
         return {
           component: <TopSupportersUserList />,
-          title: (
-            <div className={styles.titleContainer}>
-              <IconTrophy className={styles.icon} />
-              <span>{messages.topSupporters}</span>
-            </div>
-          )
+          icon: IconTrophy,
+          title: messages.topSupporters
         }
-      case UserListType.SUPPORTING:
-        return {
-          component: <SupportingUserList />,
-          title: (
-            <div className={styles.titleContainer}>
-              <IconTip className={styles.icon} />
-              <span>{messages.supporting}</span>
-            </div>
-          )
-        }
-      case UserListType.MUTUAL_FOLLOWER:
-        return {
-          component: <MutualsUserList />,
-          title: (
-            <div className={styles.titleContainer}>
-              <IconFollowing className={styles.icon} />
-              <span>{messages.mutuals}</span>
-            </div>
-          )
-        }
-      case UserListType.RELATED_ARTISTS:
-        return {
-          component: <RelatedArtistsUserList />,
-          title: (
-            <div className={styles.titleContainer}>
-              <IconUserGroup className={styles.icon} />
-              <span>{messages.relatedArtists}</span>
-            </div>
-          )
-        }
-      case UserListType.PURCHASER:
-        return {
-          component: <PurchasersUserList />,
-          title: (
-            <div className={styles.titleContainer}>
-              <IconCart className={styles.icon} />
-              <span>{messages.purchasers}</span>
-            </div>
-          )
-        }
-      case UserListType.REMIXER:
-        return {
-          component: <RemixersUserList />,
-          title: (
-            <div className={styles.titleContainer}>
-              <IconRemix className={styles.icon} />
-              <span>{messages.remixers}</span>
-            </div>
-          )
-        }
+      // case UserListType.SUPPORTING:
+      //   return {
+      //     component: <SupportingUserList />,
+      //     title: (
+      //       <div className={styles.titleContainer}>
+      //         <IconTip className={styles.icon} />
+      //         <span>{messages.supporting}</span>
+      //       </div>
+      //     )
+      //   }
+      // case UserListType.MUTUAL_FOLLOWER:
+      //   return {
+      //     component: <MutualsUserList />,
+      //     title: (
+      //       <div className={styles.titleContainer}>
+      //         <IconFollowing className={styles.icon} />
+      //         <span>{messages.mutuals}</span>
+      //       </div>
+      //     )
+      //   }
+      // case UserListType.RELATED_ARTISTS:
+      //   return {
+      //     component: <RelatedArtistsUserList />,
+      //     title: (
+      //       <div className={styles.titleContainer}>
+      //         <IconUserGroup className={styles.icon} />
+      //         <span>{messages.relatedArtists}</span>
+      //       </div>
+      //     )
+      //   }
+      // case UserListType.PURCHASER:
+      //   return {
+      //     component: <PurchasersUserList />,
+      //     title: (
+      //       <div className={styles.titleContainer}>
+      //         <IconCart className={styles.icon} />
+      //         <span>{messages.purchasers}</span>
+      //       </div>
+      //     )
+      //   }
+      // case UserListType.REMIXER:
+      //   return {
+      //     component: <RemixersUserList />,
+      //     title: (
+      //       <div className={styles.titleContainer}>
+      //         <IconRemix className={styles.icon} />
+      //         <span>{messages.remixers}</span>
+      //       </div>
+      //     )
+      //   }
       default:
         return {
           component: null,

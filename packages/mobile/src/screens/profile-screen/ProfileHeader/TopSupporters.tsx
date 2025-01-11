@@ -63,7 +63,7 @@ export const TopSupporters = () => {
 
   const { data: supporters = [], isSuccess } = useSupporters({
     userId: user_id,
-    limit: MAX_PROFILE_TOP_SUPPORTERS
+    pageSize: MAX_PROFILE_TOP_SUPPORTERS
   })
 
   const handlePress = useCallback(() => {
@@ -75,7 +75,7 @@ export const TopSupporters = () => {
       <TouchableOpacity style={styles.touchableRoot} onPress={handlePress}>
         {isSuccess && supporters.length > 0 ? (
           <ProfilePictureList
-            users={supporters.map((supporter) => supporter.sender)}
+            users={supporters}
             totalUserCount={supporter_count}
             limit={MAX_PROFILE_TOP_SUPPORTERS}
             style={styles.profilePictureList}

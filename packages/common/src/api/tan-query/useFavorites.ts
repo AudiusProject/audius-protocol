@@ -11,19 +11,15 @@ import { Config } from './types'
 import { useCurrentUserId } from './useCurrentUserId'
 import { primeUserData } from './utils/primeUserData'
 
-const DEFAULT_PAGE_SIZE = 15
+const DEFAULT_PAGE_SIZE = 20
 
-type UseFollowersArgs = {
-  userId: ID | null | undefined
+type UseFavoritesArgs = {
+  trackId: ID | null | undefined
   pageSize?: number
 }
 
-/**
- * Hook to fetch followers for a user with infinite query support.
- * This version supports infinite scrolling and maintains the full list of followers.
- */
-export const useFollowers = (
-  { userId, pageSize = DEFAULT_PAGE_SIZE }: UseFollowersArgs,
+export const useFavorites = (
+  { trackId, pageSize = DEFAULT_PAGE_SIZE }: UseFavoritesArgs,
   config?: Config
 ) => {
   const { audiusSdk } = useAudiusQueryContext()
@@ -32,7 +28,7 @@ export const useFollowers = (
   const dispatch = useDispatch()
 
   return useInfiniteQuery({
-    queryKey: [QUERY_KEYS.followers, userId, pageSize],
+    queryKey: [QUERY_KEYS.favorites, trackId, pageSize],
     initialPageParam: 0,
     getNextPageParam: (lastPage: User[], allPages) => {
       if (lastPage.length < pageSize) return undefined
@@ -40,8 +36,8 @@ export const useFollowers = (
     },
     queryFn: async ({ pageParam }) => {
       const sdk = await audiusSdk()
-      const { data } = await sdk.full.users.getFollowers({
-        id: Id.parse(userId),
+      const { data } = await sdk.full.tracks.getUsersFromFavorites({
+        trackId: Id.parse(trackId),
         limit: pageSize,
         offset: pageParam,
         userId: OptionalId.parse(currentUserId)
@@ -52,6 +48,6 @@ export const useFollowers = (
     },
     select: (data) => data.pages.flat(),
     staleTime: config?.staleTime,
-    enabled: config?.enabled !== false && !!userId
+    enabled: config?.enabled !== false && !!trackId
   })
 }

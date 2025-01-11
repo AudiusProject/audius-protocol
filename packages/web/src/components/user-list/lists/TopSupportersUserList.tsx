@@ -1,10 +1,14 @@
-type TopSupportersUserListProps = {
-  onClose: () => void
-}
+import { useSupporters } from '@audius/common/api'
+import { topSupportersUserListSelectors } from '@audius/common/store'
+import { useSelector } from 'react-redux'
 
-export const TopSupportersUserList = ({
-  onClose
-}: TopSupportersUserListProps) => {
-  // TODO: Implement with useTopSupporters hook
-  return null
+import { UserListV2 } from 'components/user-list/UserListV2'
+
+export const TopSupportersUserList = () => {
+  const userId = useSelector(topSupportersUserListSelectors.getId)
+  const query = useSupporters({ userId })
+
+  if (!userId) return null
+
+  return <UserListV2 {...query} showSupportFor={userId} />
 }

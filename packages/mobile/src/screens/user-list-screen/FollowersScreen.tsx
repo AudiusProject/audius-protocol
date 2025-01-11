@@ -1,6 +1,5 @@
 import { useCurrentUserId, useFollowers } from '@audius/common/api'
 import { ChatBlastAudience } from '@audius/sdk'
-import { css } from '@emotion/native'
 
 import { Box, IconUserFollowers } from '@audius/harmony-native'
 import { useProfileRoute } from 'app/hooks/useRoute'
@@ -26,13 +25,7 @@ export const FollowersScreen = () => {
       <>
         <UserListV2 {...query} tag='FOLLOWERS' />
         {currentUserId === userId ? (
-          <Box
-            style={css({
-              position: 'absolute',
-              bottom: 0,
-              width: '100%'
-            })}
-          >
+          <Box w='100%' style={{ position: 'absolute', bottom: 0 }}>
             <ChatBlastWithAudienceCTA audience={ChatBlastAudience.FOLLOWERS} />
           </Box>
         ) : null}

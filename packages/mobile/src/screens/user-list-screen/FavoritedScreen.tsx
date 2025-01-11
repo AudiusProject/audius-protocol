@@ -1,18 +1,11 @@
-import { useCallback } from 'react'
-
-import {
-  favoritesUserListActions,
-  favoritesUserListSelectors
-} from '@audius/common/store'
-import { useDispatch } from 'react-redux'
+import { useFavorites } from '@audius/common/api'
+import { FavoriteType } from '@audius/common/models'
 
 import { IconHeart } from '@audius/harmony-native'
 import { useRoute } from 'app/hooks/useRoute'
 
-import { UserList } from './UserList'
 import { UserListScreen } from './UserListScreen'
-const { getUserList } = favoritesUserListSelectors
-const { setFavorite } = favoritesUserListActions
+import { UserListV2 } from './UserListV2'
 
 const messages = {
   title: 'Favorites'
@@ -21,19 +14,15 @@ const messages = {
 export const FavoritedScreen = () => {
   const { params } = useRoute<'Favorited'>()
   const { id, favoriteType } = params
-  const dispatch = useDispatch()
 
-  const handleSetFavorited = useCallback(() => {
-    dispatch(setFavorite(id, favoriteType))
-  }, [dispatch, id, favoriteType])
+  const query = useFavorites(
+    { trackId: id },
+    { enabled: favoriteType === FavoriteType.TRACK }
+  )
 
   return (
     <UserListScreen title={messages.title} titleIcon={IconHeart}>
-      <UserList
-        userSelector={getUserList}
-        tag='FAVORITES'
-        setUserList={handleSetFavorited}
-      />
+      <UserListV2 {...query} tag='FAVORITES' />
     </UserListScreen>
   )
 }

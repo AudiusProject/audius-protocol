@@ -1,18 +1,11 @@
-import { useCallback } from 'react'
-
-import {
-  repostsUserListActions,
-  repostsUserListSelectors
-} from '@audius/common/store'
-import { useDispatch } from 'react-redux'
+import { useReposts } from '@audius/common/api'
+import { RepostType } from '@audius/common/store'
 
 import { IconRepost } from '@audius/harmony-native'
 import { useRoute } from 'app/hooks/useRoute'
 
-import { UserList } from './UserList'
 import { UserListScreen } from './UserListScreen'
-const { setRepost } = repostsUserListActions
-const { getUserList } = repostsUserListSelectors
+import { UserListV2 } from './UserListV2'
 
 const messages = {
   title: 'Reposts'
@@ -21,19 +14,15 @@ const messages = {
 export const RepostsScreen = () => {
   const { params } = useRoute<'Reposts'>()
   const { id, repostType } = params
-  const dispatch = useDispatch()
 
-  const handleSetRepost = useCallback(() => {
-    dispatch(setRepost(id, repostType))
-  }, [dispatch, id, repostType])
+  const query = useReposts(
+    { trackId: id },
+    { enabled: repostType === RepostType.TRACK }
+  )
 
   return (
     <UserListScreen title={messages.title} titleIcon={IconRepost}>
-      <UserList
-        userSelector={getUserList}
-        tag='REPOSTS'
-        setUserList={handleSetRepost}
-      />
+      <UserListV2 {...query} tag='REPOSTS' />
     </UserListScreen>
   )
 }

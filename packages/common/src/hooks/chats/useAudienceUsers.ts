@@ -17,10 +17,7 @@ export const useAudienceUsers = (chat: ChatBlast, limit?: number) => {
     pageSize: limit
   })
   const { data: supporters } = useSupporters(
-    {
-      userId: currentUserId!,
-      limit
-    },
+    { userId: currentUserId!, pageSize: limit },
     { enabled: chat.audience === ChatBlastAudience.TIPPERS }
   )
   const { data: purchasers } = useGetPurchasers({
@@ -43,7 +40,7 @@ export const useAudienceUsers = (chat: ChatBlast, limit?: number) => {
       users = followers ?? []
       break
     case ChatBlastAudience.TIPPERS:
-      users = supporters?.map((supporter) => supporter.sender) ?? []
+      users = supporters ?? []
       break
     case ChatBlastAudience.CUSTOMERS:
       users = purchasers ?? []

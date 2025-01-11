@@ -1,16 +1,10 @@
-import {
-  InfiniteData,
-  useInfiniteQuery,
-  useQueryClient
-} from '@tanstack/react-query'
+import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query'
 import { useDispatch } from 'react-redux'
 
+import { userMetadataListFromSDK } from '~/adapters/user'
 import { useAudiusQueryContext } from '~/audius-query'
 import { ID, Id, OptionalId } from '~/models/Identifiers'
-import {
-  SupporterMetadata,
-  supporterMetadataListFromSDK
-} from '~/models/Tipping'
+import { User } from '~/models/User'
 
 import { QUERY_KEYS } from './queryKeys'
 import { Config } from './types'
@@ -19,13 +13,17 @@ import { primeUserData } from './utils/primeUserData'
 
 const DEFAULT_PAGE_SIZE = 20
 
-type UseSupportersArgs = {
+type UseFollowingArgs = {
   userId: ID | null | undefined
   pageSize?: number
 }
 
-export const useSupporters = (
-  { userId, pageSize = DEFAULT_PAGE_SIZE }: UseSupportersArgs,
+/**
+ * Hook to fetch following for a user with infinite query support.
+ * This version supports infinite scrolling and maintains the full list of following.
+ */
+export const useFollowing = (
+  { userId, pageSize = DEFAULT_PAGE_SIZE }: UseFollowingArgs,
   config?: Config
 ) => {
   const { audiusSdk } = useAudiusQueryContext()
@@ -34,40 +32,25 @@ export const useSupporters = (
   const dispatch = useDispatch()
 
   return useInfiniteQuery({
-    queryKey: [QUERY_KEYS.supporters, userId, pageSize],
+    queryKey: [QUERY_KEYS.following, userId, pageSize],
     initialPageParam: 0,
-    getNextPageParam: (lastPage, allPages) => {
+    getNextPageParam: (lastPage: User[], allPages) => {
       if (lastPage.length < pageSize) return undefined
       return allPages.length * pageSize
     },
     queryFn: async ({ pageParam }) => {
       const sdk = await audiusSdk()
-      const { data } = await sdk.full.users.getSupporters({
+      const { data = [] } = await sdk.full.users.getFollowing({
         id: Id.parse(userId),
         limit: pageSize,
         offset: pageParam,
         userId: OptionalId.parse(currentUserId)
       })
-      const supporters = supporterMetadataListFromSDK(data)
-
-      // Prime the cache for each supporter
-      supporters.forEach((supporter) => {
-        queryClient.setQueryData(
-          [QUERY_KEYS.supporter, userId, supporter.sender.user_id],
-          supporter
-        )
-      })
-
-      // Cache user data for each supporter
-      primeUserData({
-        users: supporters.map((supporter) => supporter.sender),
-        queryClient,
-        dispatch
-      })
-      return supporters
+      const users = userMetadataListFromSDK(data)
+      primeUserData({ users, queryClient, dispatch })
+      return users
     },
-    select: (data: InfiniteData<SupporterMetadata[]>) =>
-      data.pages.flat().map((supporter) => supporter.sender),
+    select: (data) => data.pages.flat(),
     staleTime: config?.staleTime,
     enabled: config?.enabled !== false && !!userId
   })
