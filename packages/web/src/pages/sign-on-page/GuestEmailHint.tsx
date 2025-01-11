@@ -8,7 +8,11 @@ import { useField, useFormikContext } from 'formik'
 import { useDispatch } from 'react-redux'
 import { usePrevious } from 'react-use'
 
-import { setValueField, signIn } from 'common/store/pages/signon/actions'
+import {
+  setField,
+  setValueField,
+  signIn
+} from 'common/store/pages/signon/actions'
 import { TextLink } from 'components/link'
 
 const { SIGN_IN_CONFIRM_EMAIL_PAGE } = route
@@ -20,6 +24,7 @@ export const GuestEmailHint = () => {
   const lastShownError = usePrevious(error)
 
   const handleClickConfirmEmail = useCallback(() => {
+    dispatch(setField('isGuest', true))
     dispatch(setValueField('email', email))
     dispatch(setValueField('password', TEMPORARY_PASSWORD))
     dispatch(signIn(email, TEMPORARY_PASSWORD))

@@ -30,6 +30,7 @@ export const NewEmailField = () => {
   const lastShownError = usePrevious(error)
 
   useEffect(() => {
+    console.log('asdf setting isGuest', isGuest)
     dispatch(setField('isGuest', isGuest))
   }, [dispatch, isGuest])
 
