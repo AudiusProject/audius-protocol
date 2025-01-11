@@ -42,7 +42,7 @@ program
     try {
       const user = await sdk.users.getUserByHandle({ handle: args.handle })
       const userId = HashId.parse(user.data?.id)
-      console.log('Verifying user', userId)
+      console.info('Verifying user', userId)
 
       const config: {
         is_verified: boolean
@@ -60,8 +60,8 @@ program
         config.tiktok_handle = args.socialHandle
       }
 
-      console.log('With config', config)
-      console.log('Sending tx...')
+      console.info('With config', config)
+      console.info('Sending tx...')
       const { blockHash, blockNumber } =
         await sdk.services.entityManager.manageEntity({
           userId,
@@ -73,8 +73,8 @@ program
             data: config
           })
         })
-      console.log('Block hash', blockHash)
-      console.log('Block number', blockNumber)
+      console.info('Block hash', blockHash)
+      console.info('Block number', blockNumber)
       process.exit(0)
     } catch (error) {
       console.error('Verification failed:', error)
