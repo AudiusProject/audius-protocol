@@ -293,12 +293,13 @@ const AlbumCardLineup = () => {
 
   const [filterText, setFilterText] = useState('')
   const {
-    status,
     hasMore,
-    fetchMore,
+    loadMore,
+    isPending,
+    isLoadingMore,
     collections: albums
   } = useCollectionsData({
-    collectionType: 'album',
+    collectionType: 'albums',
     filterValue: filterText || undefined
   })
   const albumIds = albums?.map((a) => a.playlist_id)
@@ -339,11 +340,9 @@ const AlbumCardLineup = () => {
     return <CollectionCard key={id} id={id} size='xs' />
   })
 
-  const noSavedAlbums =
-    !statusIsNotFinalized(status) && albumIds?.length === 0 && !filterText
+  const noSavedAlbums = !isPending && albumIds?.length === 0 && !filterText
 
-  const isLoadingInitial =
-    statusIsNotFinalized(status) && albumIds?.length === 0
+  const isLoadingInitial = isPending && albumIds?.length === 0
 
   const shouldHideFilterInput = isLoadingInitial && !filterText
 
@@ -386,10 +385,10 @@ const AlbumCardLineup = () => {
             <div className={styles.cardsContainer}>
               <InfiniteCardLineup
                 hasMore={hasMore}
-                loadMore={fetchMore}
+                loadMore={loadMore}
                 cardsClassName={styles.cardLineup}
                 cards={albumCards}
-                isLoadingMore={statusIsNotFinalized(status)}
+                isLoadingMore={isLoadingMore}
               />
             </div>
           ) : null}
@@ -412,12 +411,13 @@ const PlaylistCardLineup = ({
   const [filterText, setFilterText] = useState('')
 
   const {
-    status,
+    isPending,
     hasMore,
-    fetchMore,
+    loadMore,
+    isLoadingMore,
     collections: playlists
   } = useCollectionsData({
-    collectionType: 'playlist',
+    collectionType: 'playlists',
     filterValue: filterText || undefined
   })
 
@@ -451,10 +451,9 @@ const PlaylistCardLineup = ({
     }
   })
   const noSavedPlaylists =
-    !statusIsNotFinalized(status) && playlistIds?.length === 0 && !filterText
+    !isPending && playlistIds?.length === 0 && !filterText
 
-  const isLoadingInitial =
-    statusIsNotFinalized(status) && playlistIds?.length === 0
+  const isLoadingInitial = isPending && playlistIds?.length === 0
 
   const shouldHideFilterInput = isLoadingInitial && !filterText
 
@@ -512,10 +511,10 @@ const PlaylistCardLineup = ({
             <div className={styles.cardsContainer}>
               <InfiniteCardLineup
                 hasMore={hasMore}
-                loadMore={fetchMore}
+                loadMore={loadMore}
                 cardsClassName={styles.cardLineup}
                 cards={playlistCards}
-                isLoadingMore={statusIsNotFinalized(status)}
+                isLoadingMore={isLoadingMore}
               />
             </div>
           ) : null}
