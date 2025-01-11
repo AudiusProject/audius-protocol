@@ -8,13 +8,5 @@ export const RelatedArtistsUserList = () => {
   const userId = useSelector(relatedArtistsUserListSelectors.getId)
   const query = useRelatedArtists({ artistId: userId })
 
-  const transformedQuery = {
-    ...query,
-    data: query.data?.pages.flatMap((page) => page.users),
-    hasMore: query.hasNextPage,
-    isLoadingMore: query.isFetchingNextPage,
-    loadMore: () => query.fetchNextPage()
-  }
-
-  return <UserListV2 {...transformedQuery} />
+  return <UserListV2 {...query} />
 }

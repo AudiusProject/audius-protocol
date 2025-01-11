@@ -115,35 +115,23 @@ const UserListModalV2 = () => {
           icon: IconTip,
           title: messages.supporting
         }
-      // case UserListType.MUTUAL_FOLLOWER:
-      //   return {
-      //     component: <MutualsUserList />,
-      //     title: (
-      //       <div className={styles.titleContainer}>
-      //         <IconFollowing className={styles.icon} />
-      //         <span>{messages.mutuals}</span>
-      //       </div>
-      //     )
-      //   }
-      // case UserListType.RELATED_ARTISTS:
-      //   return {
-      //     component: <RelatedArtistsUserList />,
-      //     title: (
-      //       <div className={styles.titleContainer}>
-      //         <IconUserGroup className={styles.icon} />
-      //         <span>{messages.relatedArtists}</span>
-      //       </div>
-      //     )
-      //   }
+      case UserListType.MUTUAL_FOLLOWER:
+        return {
+          component: <MutualsUserList />,
+          icon: IconFollowing,
+          title: messages.mutuals
+        }
+      case UserListType.RELATED_ARTISTS:
+        return {
+          component: <RelatedArtistsUserList />,
+          icon: IconUserGroup,
+          title: messages.relatedArtists
+        }
       // case UserListType.PURCHASER:
       //   return {
       //     component: <PurchasersUserList />,
-      //     title: (
-      //       <div className={styles.titleContainer}>
-      //         <IconCart className={styles.icon} />
-      //         <span>{messages.purchasers}</span>
-      //       </div>
-      //     )
+      //     icon: IconCart,
+      //     title: messages.purchasers
       //   }
       // case UserListType.REMIXER:
       //   return {
