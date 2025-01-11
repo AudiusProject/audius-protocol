@@ -1,6 +1,5 @@
 import { useMemo } from 'react'
 
-import { statusIsNotFinalized } from '@audius/common/models'
 import {
   savedPageSelectors,
   LibraryCategory,
@@ -32,11 +31,14 @@ const messages = {
 export const AlbumsTabPage = () => {
   const navigate = useNavigateToPage()
   const {
-    status,
+    collections: albums,
+    loadMore,
     hasMore,
-    fetchMore,
-    collections: albums
-  } = useCollectionsData({ collectionType: 'album' })
+    isPending,
+    isLoadingMore
+  } = useCollectionsData({
+    collectionType: 'albums'
+  })
 
   const emptyAlbumsHeader = useSelector((state: CommonState) => {
     const selectedCategory = getCategory(state, {
@@ -53,9 +55,7 @@ export const AlbumsTabPage = () => {
     }
   })
 
-  const noResults = !statusIsNotFinalized(status) && albums?.length === 0
-
-  const isLoadingInitial = statusIsNotFinalized(status) && albums?.length === 0
+  const noResults = !isPending && albums?.length === 0
 
   const cards = useMemo(() => {
     return albums?.map(({ playlist_id }) => {
@@ -63,12 +63,12 @@ export const AlbumsTabPage = () => {
     })
   }, [albums])
 
-  if (isLoadingInitial) {
+  if (isPending) {
     return <LoadingSpinner className={styles.spinner} />
   }
 
   // TODO(nkang) - Add separate error state
-  if (noResults || !albums) {
+  if (noResults) {
     return (
       <EmptyTable
         primaryText={emptyAlbumsHeader}
@@ -82,10 +82,10 @@ export const AlbumsTabPage = () => {
   return (
     <InfiniteCardLineup
       hasMore={hasMore}
-      loadMore={fetchMore}
+      loadMore={loadMore}
       cards={cards}
       cardsClassName={styles.cardsContainer}
-      isLoadingMore={statusIsNotFinalized(status)}
+      isLoadingMore={isLoadingMore}
     />
   )
 }

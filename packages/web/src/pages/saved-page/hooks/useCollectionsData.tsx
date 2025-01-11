@@ -39,11 +39,11 @@ export const useCollectionsData = ({
   }, [locallyAddedCollections, data, locallyRemovedIds])
 
   return {
+    collections,
     status,
     hasMore,
     isPending,
     loadMore,
-    isLoadingMore,
-    collections
+    isLoadingMore
   }
 }

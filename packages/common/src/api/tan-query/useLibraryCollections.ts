@@ -77,10 +77,19 @@ export const useLibraryCollections = (
           ? await sdk.full.users.getUserLibraryAlbums(requestParams)
           : await sdk.full.users.getUserLibraryPlaylists(requestParams)
 
-      return transformAndCleanList(activities, ({ item }) =>
+      const collections = transformAndCleanList(activities, ({ item }) =>
         userCollectionMetadataFromSDK(item)
       )
+
+      primeCollectionData({
+        collections,
+        queryClient,
+        dispatch
+      })
+
+      return collections
     },
+    select: (data) => data.pages.flat(),
     staleTime: config?.staleTime,
     enabled:
       config?.enabled !== false &&
@@ -88,19 +97,11 @@ export const useLibraryCollections = (
       currentUserId !== undefined
   })
 
-  const flatData = result.data?.pages.flat() ?? []
-
-  primeCollectionData({
-    collections: flatData,
-    queryClient,
-    dispatch
-  })
-
   return {
     ...result,
     loadMore: result.fetchNextPage,
     hasMore: result.hasNextPage,
     isLoadingMore: result.isFetchingNextPage,
-    data: flatData
+    data: result.data ?? []
   }
 }

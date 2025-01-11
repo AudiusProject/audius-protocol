@@ -41,12 +41,9 @@ export * from './tan-query/useUserPlaylists'
 export * from './tan-query/useUserAlbums'
 export * from './tan-query/useFeaturedPlaylists'
 export * from './tan-query/useFeaturedProfiles'
-<<<<<<< Updated upstream
 export * from './tan-query/useSuggestedArtists'
 export * from './tan-query/useTopArtistsInGenre'
 export * from './tan-query/useTopArtists'
 export * from './tan-query/useAudioTransactions'
 export * from './tan-query/useAudioTransactionsCount'
-=======
 export * from './tan-query/useLibraryCollections'
->>>>>>> Stashed changes

@@ -82,7 +82,7 @@ export const PlaylistsTabPage = () => {
   }
 
   // TODO(nkang) - Add separate error state
-  if (noResults || !collections) {
+  if (noResults) {
     return (
       <EmptyTable
         primaryText={emptyPlaylistsHeader}
