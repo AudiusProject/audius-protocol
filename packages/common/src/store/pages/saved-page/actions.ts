@@ -15,11 +15,6 @@ export const FETCH_MORE_SAVES_FAILED = 'SAVED/FETCH_MORE_SAVES_FAILED'
 // Usually when filtering
 export const END_FETCHING = 'SAVED/END_FETCHING'
 
-export const ADD_LOCAL_TRACK = 'SAVED/ADD_LOCAL_TRACK'
-export const REMOVE_LOCAL_TRACK = 'SAVED/REMOVE_LOCAL_TRACK'
-export const ADD_LOCAL_COLLECTION = 'SAVED/ADD_LOCAL_COLLECTION'
-export const REMOVE_LOCAL_COLLECTION = 'SAVED/REMOVE_LOCAL_COLLECTION'
-
 export const SET_SELECTED_CATEGORY = 'SAVED/SET_SELECTED_CATEGORY'
 
 export const fetchSaves = (
@@ -92,63 +87,6 @@ export const fetchMoreSavesFailed = () => ({
 export const endFetching = (endIndex: number) => ({
   type: END_FETCHING,
   endIndex
-})
-
-export const addLocalTrack = ({
-  trackId,
-  uid,
-  category
-}: {
-  trackId: number
-  uid: string
-  category: LibraryCategoryType
-}) => ({
-  type: ADD_LOCAL_TRACK,
-  trackId,
-  uid,
-  category
-})
-
-export const removeLocalTrack = ({
-  trackId,
-  category
-}: {
-  trackId: number
-  category: LibraryCategoryType
-}) => ({
-  type: REMOVE_LOCAL_TRACK,
-  trackId,
-  category
-})
-
-export const addLocalCollection = ({
-  collectionId,
-  isAlbum,
-  category
-}: {
-  collectionId: number
-  isAlbum: boolean
-  category: LibraryCategoryType
-}) => ({
-  type: ADD_LOCAL_COLLECTION,
-  collectionId,
-  isAlbum,
-  category
-})
-
-export const removeLocalCollection = ({
-  collectionId,
-  isAlbum,
-  category
-}: {
-  collectionId: number
-  isAlbum: boolean
-  category: LibraryCategoryType
-}) => ({
-  type: REMOVE_LOCAL_COLLECTION,
-  collectionId,
-  isAlbum,
-  category
 })
 
 export const setSelectedCategory = ({
