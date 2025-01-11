@@ -21,7 +21,7 @@ const queryDiscprovForUserId = async (walletAddress, handle) => {
 
   const response = await axios({
     method: 'get',
-    url: `${discoveryProvider.discoveryProviderEndpoint}/users`,
+    url: `https://discoveryprovider.staging.audius.co/users`,
     params: {
       wallet: walletAddress
     }
@@ -150,7 +150,7 @@ async function authMiddleware(req, res, next) {
         user = await user.update({
           blockchainUserId: discprovUser.user_id,
           handle: discprovUser.handle,
-          isGuest: false
+          isGuest: !discprovUser.handle
         })
       }
       req.user = user

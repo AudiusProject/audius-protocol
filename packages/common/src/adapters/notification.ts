@@ -474,6 +474,7 @@ export const notificationFromSDK = (
           return HashId.parse(data.buyerUserId)
         })
         .filter(removeNullable)
+      console.log('asdf userIds', userIds)
       return {
         type: NotificationType.USDCPurchaseSeller,
         userIds,
