@@ -61,12 +61,14 @@ export const NavHeader = () => {
             <NavHeaderButton
               icon={IconDashboard}
               aria-label={messages.dashboardLabel}
+              isActive={location.pathname === DASHBOARD_PAGE}
             />
           </Link>
           <Link to={SETTINGS_PAGE}>
             <NavHeaderButton
               icon={IconSettings}
               aria-label={messages.settingsLabel}
+              isActive={location.pathname === SETTINGS_PAGE}
             />
           </Link>
           <NotificationsButton />
