@@ -4,8 +4,8 @@ import { RepostType } from '@audius/common/store'
 import { IconRepost } from '@audius/harmony-native'
 import { useRoute } from 'app/hooks/useRoute'
 
+import { UserList } from './UserList'
 import { UserListScreen } from './UserListScreen'
-import { UserListV2 } from './UserListV2'
 
 const messages = {
   title: 'Reposts'
@@ -22,7 +22,7 @@ export const RepostsScreen = () => {
 
   return (
     <UserListScreen title={messages.title} titleIcon={IconRepost}>
-      <UserListV2 {...query} tag='REPOSTS' />
+      <UserList {...query} tag='REPOSTS' />
     </UserListScreen>
   )
 }

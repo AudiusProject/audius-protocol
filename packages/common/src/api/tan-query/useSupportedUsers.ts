@@ -1,16 +1,9 @@
-import {
-  InfiniteData,
-  useInfiniteQuery,
-  useQueryClient
-} from '@tanstack/react-query'
+import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query'
 import { useDispatch } from 'react-redux'
 
 import { useAudiusQueryContext } from '~/audius-query'
 import { ID, Id, OptionalId } from '~/models/Identifiers'
-import {
-  SupportedUserMetadata,
-  supportedUserMetadataListFromSDK
-} from '~/models/Tipping'
+import { supportedUserMetadataListFromSDK } from '~/models/Tipping'
 import { SUPPORTING_PAGINATION_SIZE } from '~/utils/constants'
 
 import { QUERY_KEYS } from './queryKeys'
@@ -64,7 +57,7 @@ export const useSupportedUsers = (
       })
       return supporting
     },
-    select: (data: InfiniteData<SupportedUserMetadata[]>) => data.pages.flat(),
+    select: (data) => data.pages.flat(),
     staleTime: config?.staleTime,
     enabled: config?.enabled !== false && !!userId
   })

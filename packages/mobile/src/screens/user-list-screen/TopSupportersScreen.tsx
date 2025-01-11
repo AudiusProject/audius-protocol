@@ -7,8 +7,8 @@ import { useRoute } from 'app/hooks/useRoute'
 
 import { ChatBlastWithAudienceCTA } from '../chat-screen/ChatBlastWithAudienceCTA'
 
+import { UserList } from './UserList'
 import { UserListScreen } from './UserListScreen'
-import { UserListV2 } from './UserListV2'
 
 const messages = {
   title: 'Top Supporters'
@@ -23,7 +23,7 @@ export const TopSupportersScreen = () => {
   return (
     <UserListScreen title={messages.title} titleIcon={IconTrophy}>
       <>
-        <UserListV2
+        <UserList
           {...query}
           data={query.data?.map((supporter) => supporter.sender)}
           tag='TOP SUPPORTERS'

@@ -2,11 +2,11 @@ import { useFavorites } from '@audius/common/api'
 import { favoritesUserListSelectors } from '@audius/common/store'
 import { useSelector } from 'react-redux'
 
-import { UserListV2 } from 'components/user-list/UserListV2'
+import { UserList } from 'components/user-list/UserList'
 
 export const FavoritesUserList = () => {
-  const userId = useSelector(favoritesUserListSelectors.getId)
-  const query = useFavorites({ userId })
+  const trackId = useSelector(favoritesUserListSelectors.getId)
+  const query = useFavorites({ trackId })
 
-  return <UserListV2 {...query} />
+  return <UserList {...query} />
 }

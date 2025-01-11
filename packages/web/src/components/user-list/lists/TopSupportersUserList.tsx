@@ -2,7 +2,7 @@ import { useSupporters } from '@audius/common/api'
 import { topSupportersUserListSelectors } from '@audius/common/store'
 import { useSelector } from 'react-redux'
 
-import { UserListV2 } from 'components/user-list/UserListV2'
+import { UserList } from 'components/user-list/UserList'
 
 export const TopSupportersUserList = () => {
   const userId = useSelector(topSupportersUserListSelectors.getId)
@@ -11,7 +11,7 @@ export const TopSupportersUserList = () => {
   if (!userId) return null
 
   return (
-    <UserListV2
+    <UserList
       {...query}
       data={query.data?.map((supporter) => supporter.sender)}
       showSupportFor={userId}

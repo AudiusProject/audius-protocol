@@ -4,8 +4,8 @@ import { MUTUALS_USER_LIST_TAG } from '@audius/common/store'
 import { IconUserFollowing } from '@audius/harmony-native'
 import { useProfileRoute } from 'app/hooks/useRoute'
 
+import { UserList } from './UserList'
 import { UserListScreen } from './UserListScreen'
-import { UserListV2 } from './UserListV2'
 
 const messages = {
   title: 'Mutuals'
@@ -18,7 +18,7 @@ export const MutualsScreen = () => {
 
   return (
     <UserListScreen title={messages.title} titleIcon={IconUserFollowing}>
-      <UserListV2 {...query} tag={MUTUALS_USER_LIST_TAG} />
+      <UserList {...query} tag={MUTUALS_USER_LIST_TAG} />
     </UserListScreen>
   )
 }
