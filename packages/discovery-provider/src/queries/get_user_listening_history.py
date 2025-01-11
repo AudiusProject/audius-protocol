@@ -91,10 +91,12 @@ def _get_user_listening_history(session: Session, args: GetUserListeningHistoryA
         session.query(TrackWithAggregates)
         .filter(TrackWithAggregates.track_id.in_(track_ids))
         .filter(TrackWithAggregates.is_current == True)
+        .join(TrackWithAggregates.user)
+        .filter(User.is_deactivated == False)
     )
 
     if query is not None:
-        base_query = base_query.join(TrackWithAggregates.user).filter(
+        base_query = base_query.filter(
             or_(
                 TrackWithAggregates.title.ilike(f"%{query.lower()}%"),
                 User.name.ilike(f"%{query.lower()}%"),

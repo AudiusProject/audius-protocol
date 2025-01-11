@@ -153,7 +153,8 @@ const initializeServices = (config: SdkConfig) => {
   const audiusWalletClient =
     config.services?.audiusWalletClient ??
     createAppWalletClient({
-      apiKey: config.apiKey!,
+      // Allow undefined apiKey for now, use dummy wallet
+      apiKey: config.apiKey ?? '0x0000000000000000000000000000000000000000',
       apiSecret: config.apiSecret
     })
 

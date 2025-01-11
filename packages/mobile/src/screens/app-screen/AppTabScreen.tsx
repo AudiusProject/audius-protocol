@@ -29,6 +29,7 @@ import { CollectionScreen } from 'app/screens/collection-screen/CollectionScreen
 import { EditProfileScreen } from 'app/screens/edit-profile-screen'
 import { PayAndEarnScreen } from 'app/screens/pay-and-earn-screen'
 import { ProfileScreen } from 'app/screens/profile-screen'
+import { RewardsScreen } from 'app/screens/rewards-screen'
 import type { SearchParams } from 'app/screens/search-screen'
 import { SearchScreenStack } from 'app/screens/search-screen'
 import {
@@ -108,6 +109,7 @@ export type AppTabScreenParamList = {
   NotificationSettingsScreen: undefined
   PayAndEarnScreen: undefined
   AudioScreen: undefined
+  RewardsScreen: undefined
   Upload: undefined
   FeatureFlagOverride: undefined
   CreateChatBlast: undefined
@@ -223,6 +225,7 @@ export const AppTabScreen = ({ baseScreen, Stack }: AppTabScreenProps) => {
       <Stack.Screen name='SupportingUsers' component={SupportingUsersScreen} />
       <Stack.Screen name='PayAndEarnScreen' component={PayAndEarnScreen} />
       <Stack.Screen name='AudioScreen' component={AudioScreen} />
+      <Stack.Screen name='RewardsScreen' component={RewardsScreen} />
 
       <Stack.Group>
         <Stack.Screen name='EditProfile' component={EditProfileScreen} />
