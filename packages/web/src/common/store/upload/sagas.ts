@@ -22,7 +22,6 @@ import {
 import { CollectionValues } from '@audius/common/schemas'
 import {
   TrackMetadataForUpload,
-  LibraryCategory,
   ProgressStatus,
   TrackForUpload,
   UploadType,
@@ -33,7 +32,6 @@ import {
   confirmerActions,
   getContext,
   reformatCollection,
-  savedPageActions,
   uploadActions,
   getSDK,
   cacheTracksActions,
@@ -971,13 +969,7 @@ export function* uploadCollection(
             }
           })
         )
-        yield* put(
-          savedPageActions.addLocalCollection({
-            collectionId: confirmedPlaylist.playlist_id,
-            isAlbum: confirmedPlaylist.is_album,
-            category: LibraryCategory.Favorite
-          })
-        )
+
         yield* put(cacheActions.setExpired(Kind.USERS, userId))
 
         // Finally, add to the library

@@ -2,24 +2,12 @@ import { useMemo } from 'react'
 
 import { useGetLibraryAlbums, useGetLibraryPlaylists } from '@audius/common/api'
 import { useAllPaginatedQuery } from '@audius/common/audius-query'
-import {
-  accountSelectors,
-  cacheCollectionsSelectors,
-  savedPageSelectors,
-  CommonState
-} from '@audius/common/store'
+import { accountSelectors, savedPageSelectors } from '@audius/common/store'
 import { uniqBy } from 'lodash'
 import { useSelector } from 'react-redux'
 
 const { getUserId } = accountSelectors
-const {
-  getCollectionsCategory,
-  getSelectedCategoryLocalAlbumAdds,
-  getSelectedCategoryLocalAlbumRemovals,
-  getSelectedCategoryLocalPlaylistAdds,
-  getSelectedCategoryLocalPlaylistRemovals
-} = savedPageSelectors
-const { getCollections } = cacheCollectionsSelectors
+const { getCollectionsCategory } = savedPageSelectors
 
 type CollectionsDataParams = {
   collectionType: 'album' | 'playlist'
@@ -32,25 +20,6 @@ export const useCollectionsData = ({
 }: CollectionsDataParams) => {
   const currentUserId = useSelector(getUserId)
   const selectedCategory = useSelector(getCollectionsCategory)
-
-  const locallyAddedCollections = useSelector((state: CommonState) => {
-    const ids =
-      collectionType === 'album'
-        ? getSelectedCategoryLocalAlbumAdds(state)
-        : getSelectedCategoryLocalPlaylistAdds(state)
-    const collectionsMap = getCollections(state, {
-      ids
-    })
-    return ids.map((id) => collectionsMap[id])
-  })
-
-  const locallyRemovedCollections = useSelector((state: CommonState) => {
-    const ids =
-      collectionType === 'album'
-        ? getSelectedCategoryLocalAlbumRemovals(state)
-        : getSelectedCategoryLocalPlaylistRemovals(state)
-    return new Set(ids)
-  })
 
   const {
     data: fetchedCollections,
@@ -70,13 +39,8 @@ export const useCollectionsData = ({
     }
   )
   const collections = useMemo(() => {
-    return uniqBy(
-      [...locallyAddedCollections, ...(fetchedCollections || [])].filter(
-        (a) => !locallyRemovedCollections.has(a.playlist_id)
-      ),
-      'playlist_id'
-    )
-  }, [locallyAddedCollections, fetchedCollections, locallyRemovedCollections])
+    return uniqBy([...(fetchedCollections || [])], 'playlist_id')
+  }, [fetchedCollections])
 
   return {
     status,

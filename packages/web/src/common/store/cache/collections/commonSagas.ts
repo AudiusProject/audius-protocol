@@ -25,8 +25,6 @@ import {
   PlaylistOperations,
   reformatCollection,
   cacheUsersSelectors,
-  savedPageActions,
-  LibraryCategory,
   toastActions,
   getContext,
   confirmerActions,
@@ -44,10 +42,6 @@ import { all, call, put, select, takeEvery, takeLatest } from 'typed-redux-saga'
 import { make } from 'common/store/analytics/actions'
 import watchTrackErrors from 'common/store/cache/collections/errorSagas'
 import * as signOnActions from 'common/store/pages/signon/actions'
-import {
-  addPlaylistsNotInLibrary,
-  removePlaylistFromLibrary
-} from 'common/store/playlist-library/sagas'
 import { getUSDCMetadata } from 'common/store/upload/sagaHelpers'
 import { ensureLoggedIn } from 'common/utils/ensureLoggedIn'
 import { waitForWrite } from 'utils/sagaHelpers'
@@ -638,13 +632,6 @@ function* confirmDeleteAlbum(playlistId: ID, userId: ID) {
           ),
           put(
             accountActions.removeAccountPlaylist({ collectionId: playlistId })
-          ),
-          put(
-            savedPageActions.removeLocalCollection({
-              collectionId: playlistId,
-              isAlbum: true,
-              category: LibraryCategory.Favorite
-            })
           )
         ])
 
@@ -680,13 +667,6 @@ function* confirmDeleteAlbum(playlistId: ID, userId: ID) {
               is_album: playlist.is_album,
               user: { id: user.user_id, handle: user.handle },
               permalink: playlist.permalink
-            })
-          ),
-          put(
-            savedPageActions.addLocalCollection({
-              collectionId: playlist.playlist_id,
-              isAlbum: playlist.is_album,
-              category: LibraryCategory.Favorite
             })
           )
         ])
@@ -725,17 +705,8 @@ function* confirmDeletePlaylist(userId: ID, playlistId: ID) {
           ),
           put(
             accountActions.removeAccountPlaylist({ collectionId: playlistId })
-          ),
-          put(
-            savedPageActions.removeLocalCollection({
-              collectionId: playlistId,
-              isAlbum: false,
-              category: LibraryCategory.Favorite
-            })
           )
         ])
-
-        yield* call(removePlaylistFromLibrary, playlistId)
 
         yield* call([sdk.playlists, sdk.playlists.deletePlaylist], {
           userId: Id.parse(userId),
@@ -769,16 +740,8 @@ function* confirmDeletePlaylist(userId: ID, playlistId: ID) {
               user: { id: user.user_id, handle: user.handle },
               permalink: playlist.permalink
             })
-          ),
-          put(
-            savedPageActions.addLocalCollection({
-              collectionId: playlist.playlist_id,
-              isAlbum: playlist.is_album,
-              category: LibraryCategory.Favorite
-            })
           )
         ])
-        yield* call(addPlaylistsNotInLibrary)
         yield* put(
           collectionActions.deletePlaylistFailed(
             error,
