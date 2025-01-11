@@ -10,5 +10,11 @@ export const TopSupportersUserList = () => {
 
   if (!userId) return null
 
-  return <UserListV2 {...query} showSupportFor={userId} />
+  return (
+    <UserListV2
+      {...query}
+      data={query.data?.map((supporter) => supporter.sender)}
+      showSupportFor={userId}
+    />
+  )
 }

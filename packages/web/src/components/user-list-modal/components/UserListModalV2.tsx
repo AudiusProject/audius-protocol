@@ -109,16 +109,12 @@ const UserListModalV2 = () => {
           icon: IconTrophy,
           title: messages.topSupporters
         }
-      // case UserListType.SUPPORTING:
-      //   return {
-      //     component: <SupportingUserList />,
-      //     title: (
-      //       <div className={styles.titleContainer}>
-      //         <IconTip className={styles.icon} />
-      //         <span>{messages.supporting}</span>
-      //       </div>
-      //     )
-      //   }
+      case UserListType.SUPPORTING:
+        return {
+          component: <SupportingUserList />,
+          icon: IconTip,
+          title: messages.supporting
+        }
       // case UserListType.MUTUAL_FOLLOWER:
       //   return {
       //     component: <MutualsUserList />,

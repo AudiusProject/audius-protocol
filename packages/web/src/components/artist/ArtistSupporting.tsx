@@ -38,7 +38,7 @@ export const ArtistSupporting = (props: ArtistSupportingProps) => {
 
   const { data: supportedUsers = [] } = useSupportedUsers({
     userId: user_id,
-    limit: MAX_ARTIST_HOVER_TOP_SUPPORTING
+    pageSize: MAX_ARTIST_HOVER_TOP_SUPPORTING
   })
 
   const handleClick = useCallback(() => {

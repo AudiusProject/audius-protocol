@@ -23,7 +23,11 @@ export const TopSupportersScreen = () => {
   return (
     <UserListScreen title={messages.title} titleIcon={IconTrophy}>
       <>
-        <UserListV2 {...query} tag='TOP SUPPORTERS' />
+        <UserListV2
+          {...query}
+          data={query.data?.map((supporter) => supporter.sender)}
+          tag='TOP SUPPORTERS'
+        />
         {currentUserId === userId ? (
           <Box
             style={css({

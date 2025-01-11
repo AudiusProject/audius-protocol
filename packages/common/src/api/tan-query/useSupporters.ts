@@ -58,7 +58,6 @@ export const useSupporters = (
         )
       })
 
-      // Cache user data for each supporter
       primeUserData({
         users: supporters.map((supporter) => supporter.sender),
         queryClient,
@@ -66,8 +65,7 @@ export const useSupporters = (
       })
       return supporters
     },
-    select: (data: InfiniteData<SupporterMetadata[]>) =>
-      data.pages.flat().map((supporter) => supporter.sender),
+    select: (data: InfiniteData<SupporterMetadata[]>) => data.pages.flat(),
     staleTime: config?.staleTime,
     enabled: config?.enabled !== false && !!userId
   })

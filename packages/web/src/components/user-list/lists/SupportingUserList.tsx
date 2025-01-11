@@ -8,5 +8,10 @@ export const SupportingUserList = () => {
   const userId = useSelector(supportingUserListSelectors.getId)
   const query = useSupportedUsers({ userId })
 
-  return <UserListV2 {...query} />
+  return (
+    <UserListV2
+      {...query}
+      data={query.data?.map((supporter) => supporter.receiver)}
+    />
+  )
 }

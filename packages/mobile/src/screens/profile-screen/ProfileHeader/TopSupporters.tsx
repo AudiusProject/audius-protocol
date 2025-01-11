@@ -75,7 +75,7 @@ export const TopSupporters = () => {
       <TouchableOpacity style={styles.touchableRoot} onPress={handlePress}>
         {isSuccess && supporters.length > 0 ? (
           <ProfilePictureList
-            users={supporters}
+            users={supporters.map((supporter) => supporter.sender)}
             totalUserCount={supporter_count}
             limit={MAX_PROFILE_TOP_SUPPORTERS}
             style={styles.profilePictureList}

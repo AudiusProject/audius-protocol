@@ -38,7 +38,7 @@ export const SupportingList = () => {
 
   const { data: supportedUsers = [] } = useSupportedUsers({
     userId: user_id,
-    limit: SUPPORTING_PAGINATION_SIZE
+    pageSize: SUPPORTING_PAGINATION_SIZE
   })
 
   const supportingListData = useMemo(() => {

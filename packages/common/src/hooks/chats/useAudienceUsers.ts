@@ -40,7 +40,7 @@ export const useAudienceUsers = (chat: ChatBlast, limit?: number) => {
       users = followers ?? []
       break
     case ChatBlastAudience.TIPPERS:
-      users = supporters ?? []
+      users = supporters?.map((supporter) => supporter.sender) ?? []
       break
     case ChatBlastAudience.CUSTOMERS:
       users = purchasers ?? []
