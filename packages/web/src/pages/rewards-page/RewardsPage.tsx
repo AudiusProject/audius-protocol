@@ -19,10 +19,10 @@ import { useRemoteVar } from 'hooks/useRemoteConfig'
 import { useRequiresAccount } from 'hooks/useRequiresAccount'
 import { BASE_URL } from 'utils/route'
 
-import ChallengeRewardsTile from './ChallengeRewardsTile'
 import styles from './RewardsPage.module.css'
 import Tiers from './Tiers'
-import TrendingRewardsTile from './TrendingRewardsTile'
+import { ChallengeRewardsTile } from './components/ChallengeRewards/ChallengeRewardsTile'
+import { TrendingRewardsTile } from './components/TrendingRewards/TrendingRewardsTile'
 const { REWARDS_PAGE, TRENDING_PAGE } = route
 const { getBalance } = walletActions
 const { preloadWalletProviders } = tokenDashboardPageActions

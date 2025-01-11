@@ -11,20 +11,21 @@ import {
   makeOptimisticChallengeSortComparator,
   removeNullable
 } from '@audius/common/utils'
-import { Flex, Text } from '@audius/harmony'
+import { Box, Flex, Text } from '@audius/harmony'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { useSetVisibility } from 'common/hooks/useModalState'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import { useWithMobileStyle } from 'hooks/useWithMobileStyle'
+import { getChallengeConfig } from 'pages/rewards-page/config'
 
-import styles from './RewardsTile.module.css'
-import { ClaimAllPanel } from './components/ClaimAllPanel'
-import { RewardPanel } from './components/RewardPanel'
-import { Tile } from './components/Tile'
-import { getChallengeConfig } from './config'
+import styles from '../../RewardsTile.module.css'
+import { messages } from '../../messages'
+import { ClaimAllPanel } from '../ClaimAllPanel'
+import { Tile } from '../Tile'
+
+import { RewardPanel } from './RewardPanel'
 import { useRewardIds } from './hooks/useRewardIds'
-import { messages } from './messages'
 
 const { getUserChallenges, getUserChallengesLoading } =
   audioRewardsPageSelectors
@@ -32,11 +33,13 @@ const { fetchUserChallenges, setChallengeRewardsModalType } =
   audioRewardsPageActions
 const { getOptimisticUserChallenges } = challengesSelectors
 
-type RewardsTileProps = {
+type ChallengeRewardsTileProps = {
   className?: string
 }
 
-const RewardsTile = ({ className }: RewardsTileProps) => {
+export const ChallengeRewardsTile = ({
+  className
+}: ChallengeRewardsTileProps) => {
   const setVisibility = useSetVisibility()
   const dispatch = useDispatch()
   const userChallengesLoading = useSelector(getUserChallengesLoading)
@@ -93,12 +96,14 @@ const RewardsTile = ({ className }: RewardsTileProps) => {
     <Flex direction='column' gap='l'>
       {!shouldHideCumulativeRewards ? <ClaimAllPanel /> : null}
       <Tile className={wm(styles.rewardsTile, className)}>
-        <span className={wm(styles.title)}>{messages.title}</span>
-        <div className={wm(styles.subtitle)}>
-          <Text variant='body' strength='strong'>
+        <Text variant='display' size='s' className={wm(styles.title)}>
+          {messages.title}
+        </Text>
+        <Box mb='3xl'>
+          <Text variant='body' strength='strong' size='l'>
             {messages.description1}
           </Text>
-        </div>
+        </Box>
         {userChallengesLoading && !haveChallengesLoaded ? (
           <LoadingSpinner className={wm(styles.loadingRewardsTile)} />
         ) : (
@@ -110,5 +115,3 @@ const RewardsTile = ({ className }: RewardsTileProps) => {
     </Flex>
   )
 }
-
-export default RewardsTile
