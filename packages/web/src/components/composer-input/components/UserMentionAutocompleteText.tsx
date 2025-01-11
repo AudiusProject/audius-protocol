@@ -47,10 +47,7 @@ export const UserMentionAutocompleteText = (
     data: followersData,
     isPending: followerDataPending,
     isSuccess: followersDataSuccess
-  } = useFollowers({
-    userId: currentUserId,
-    pageSize: 6
-  })
+  } = useFollowers({ pageSize: 6, userId: currentUserId })
   const optionRefs = useRef<HTMLButtonElement[]>([])
   const scrollRef = useRef<HTMLDivElement>(null)
 

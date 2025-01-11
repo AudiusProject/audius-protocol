@@ -11,7 +11,7 @@ import { Config } from './types'
 import { useCurrentUserId } from './useCurrentUserId'
 import { primeUserData } from './utils/primeUserData'
 
-const PAGE_SIZE = 15
+const DEFAULT_PAGE_SIZE = 15
 
 type UseFollowersArgs = {
   userId: ID | null | undefined
@@ -23,7 +23,7 @@ type UseFollowersArgs = {
  * This version supports infinite scrolling and maintains the full list of followers.
  */
 export const useFollowers = (
-  { userId, pageSize = PAGE_SIZE }: UseFollowersArgs,
+  { userId, pageSize = DEFAULT_PAGE_SIZE }: UseFollowersArgs,
   config?: Config
 ) => {
   const { audiusSdk } = useAudiusQueryContext()

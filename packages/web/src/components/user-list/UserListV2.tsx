@@ -37,43 +37,19 @@ const skeletonData: SkeletonItem[] = range(6).map((index) => ({
 }))
 
 type UserListV2Props = {
-  /**
-   * The list of users to display
-   */
-  data: User[]
-  /**
-   * Whether there are more users to load
-   */
-  hasMore: boolean
-  /**
-   * Whether we're loading more users
-   */
-  isLoadingMore: boolean
-  /**
-   * Whether we're loading the initial data
-   */
+  data: User[] | undefined
+  hasNextPage: boolean
   isLoading: boolean
-  /**
-   * Function to load more users
-   */
-  loadMore: () => void
-  /**
-   * Optional user ID to show support for (used in top supporters list)
-   */
+  fetchNextPage: () => void
   showSupportFor?: ID
-  /**
-   * Optional user ID to show support from (used in supporting list)
-   */
   showSupportFrom?: ID
 }
 
 export const UserListV2 = ({
   data,
-  hasMore,
-  isLoadingMore,
+  hasNextPage,
   isLoading,
-  loadMore,
-  getScrollParent,
+  fetchNextPage,
   showSupportFor,
   showSupportFrom
 }: UserListV2Props) => {
@@ -81,7 +57,10 @@ export const UserListV2 = ({
   const isMobile = useIsMobile()
   const { data: currentUserId } = useCurrentUserId()
 
-  const handleClose = useCallback(() => dispatch(setVisibility(false)), [])
+  const handleClose = useCallback(
+    () => dispatch(setVisibility(false)),
+    [dispatch]
+  )
 
   const handleFollow = useCallback(
     (userId: ID) => {
@@ -118,7 +97,7 @@ export const UserListV2 = ({
     [dispatch, handleClose]
   )
 
-  const displayData = [...data, ...(isLoading ? skeletonData : [])]
+  const displayData = [...(data ?? []), ...(isLoading ? skeletonData : [])]
 
   const scrollParentRef = useRef<HTMLElement | null>(null)
 
@@ -138,8 +117,8 @@ export const UserListV2 = ({
       <div className={styles.content}>
         <InfiniteScroll
           pageStart={0}
-          loadMore={loadMore}
-          hasMore={hasMore}
+          loadMore={fetchNextPage}
+          hasMore={hasNextPage}
           useWindow={false}
           initialLoad={false}
           threshold={SCROLL_THRESHOLD}
@@ -148,13 +127,13 @@ export const UserListV2 = ({
           {displayData.map((user, index) =>
             '_loading' in user ? (
               <div key={user.user_id} className={styles.userContainer}>
-                <span>Loading...</span>
+                Loading...
               </div>
             ) : (
               <div
                 key={user.user_id}
                 className={cn(styles.userContainer, {
-                  [styles.notLastUser]: index !== data.length - 1
+                  [styles.notLastUser]: data && index !== data.length - 1
                 })}
               >
                 <ArtistChip
@@ -178,10 +157,10 @@ export const UserListV2 = ({
               </div>
             )
           )}
-          {isLoadingMore && <div className={styles.spacer} />}
+          {isLoading && <div className={styles.spacer} />}
           <div
             className={cn(styles.loadingAnimation, {
-              [styles.show]: isLoadingMore
+              [styles.show]: isLoading
             })}
           >
             <LoadingSpinner className={styles.spinner} />

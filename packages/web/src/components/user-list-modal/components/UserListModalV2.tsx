@@ -1,6 +1,5 @@
 import {
   Modal,
-  Scrollbar,
   IconTipping as IconTip,
   IconUser,
   IconUserGroup,
