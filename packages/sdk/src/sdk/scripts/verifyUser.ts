@@ -1,6 +1,8 @@
 import { program } from 'commander'
 
-import { sdk as audiusSdk } from '../sdk'
+import { sdk as audiusSdk, EntityType, HashId } from '@audius/sdk'
+
+import { Action } from '../services/EntityManager/types'
 
 program
   .command('verify')
@@ -34,29 +36,43 @@ program
       apiSecret: args.privateKey
     })
 
-    const user = await sdk.users.getUserByHandle(args.handle)
-    // const [encodedABI, contractAddress] = await audiusLibs.User.updateSocialVerification(
-    //     userId, verifierPrivKey, config
-    // )
-    // console.log({contractAddress})
-    // console.log({encodedABI})
-    // await audiusLibs.discoveryProvider.relay({
-    //     contractRegistryKey: 'EntityManager',
-    //     contractAddress,
-    //     senderAddress: verifierPubKey,
-    //     encodedABI,
-    //     nethermindContractAddress: contractAddress,
-    //     nethermindEncodedAbi: encodedABI
-    // })
-
-    console.log(user)
     try {
-      // const result = await sdk.users.verifyUser(
-      //   args.handle,
-      //   args.socialHandle,
-      //   args.platform
-      // )
-      // console.log('User verification successful:', result)
+      const user = await sdk.users.getUserByHandle({ handle: args.handle })
+      const userId = HashId.parse(user.data?.id)
+      console.log('Verifying user', userId)
+
+      const config: {
+        is_verified: boolean
+        twitter_handle?: string
+        instagram_handle?: string
+        tiktok_handle?: string
+      } = {
+        is_verified: true
+      }
+      if (args.platform === 'twitter') {
+        config.twitter_handle = args.socialHandle
+      } else if (args.platform === 'instagram') {
+        config.instagram_handle = args.socialHandle
+      } else if (args.platform === 'tiktok') {
+        config.tiktok_handle = args.socialHandle
+      }
+
+      console.log('With config', config)
+      console.log('Sending tx...')
+      const { blockHash, blockNumber } =
+        await sdk.services.entityManager.manageEntity({
+          userId,
+          entityType: EntityType.USER,
+          entityId: userId,
+          action: Action.VERIFY,
+          metadata: JSON.stringify({
+            cid: '',
+            data: config
+          })
+        })
+      console.log('Block hash', blockHash)
+      console.log('Block number', blockNumber)
+      process.exit(0)
     } catch (error) {
       console.error('Verification failed:', error)
       process.exit(1)
