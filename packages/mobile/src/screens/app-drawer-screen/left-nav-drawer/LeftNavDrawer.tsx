@@ -34,7 +34,7 @@ const WrappedLeftNavDrawer = () => {
   const { navItems } = useNavConfig()
 
   return (
-    <Flex h='95%' pt='unit16' justifyContent='space-between'>
+    <Flex h='100%' pv='unit16' justifyContent='space-between'>
       <Flex>
         <AccountDetails />
         <VanityMetrics />
