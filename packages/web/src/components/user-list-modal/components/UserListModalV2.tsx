@@ -29,8 +29,6 @@ import { FavoritesUserList } from '../../user-list/lists/FavoritesUserList'
 import { FollowersUserList } from '../../user-list/lists/FollowersUserList'
 import { FollowingUserList } from '../../user-list/lists/FollowingUserList'
 import { MutualsUserList } from '../../user-list/lists/MutualsUserList'
-import { NotificationUserList } from '../../user-list/lists/NotificationUserList'
-import { PurchasersUserList } from '../../user-list/lists/PurchasersUserList'
 import { RelatedArtistsUserList } from '../../user-list/lists/RelatedArtistsUserList'
 import { RemixersUserList } from '../../user-list/lists/RemixersUserList'
 import { RepostsUserList } from '../../user-list/lists/RepostsUserList'
@@ -133,16 +131,12 @@ const UserListModalV2 = () => {
       //     icon: IconCart,
       //     title: messages.purchasers
       //   }
-      // case UserListType.REMIXER:
-      //   return {
-      //     component: <RemixersUserList />,
-      //     title: (
-      //       <div className={styles.titleContainer}>
-      //         <IconRemix className={styles.icon} />
-      //         <span>{messages.remixers}</span>
-      //       </div>
-      //     )
-      //   }
+      case UserListType.REMIXER:
+        return {
+          component: <RemixersUserList />,
+          icon: IconRemix,
+          title: messages.remixers
+        }
       default:
         return {
           component: null,
