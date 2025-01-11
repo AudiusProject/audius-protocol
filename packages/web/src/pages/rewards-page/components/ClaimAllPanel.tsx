@@ -12,7 +12,8 @@ import {
   IconTokenGold,
   Paper,
   PlainButton,
-  Text
+  Text,
+  useTheme
 } from '@audius/harmony'
 
 import { useModalState } from 'common/hooks/useModalState'
@@ -29,12 +30,16 @@ export const ClaimAllPanel = () => {
     useChallengeCooldownSchedule({ multiple: true })
   const claimable = claimableAmount > 0
   const [, setClaimAllRewardsVisibility] = useModalState('ClaimAllRewards')
+  const { iconSizes } = useTheme()
+
   const onClickClaimAllRewards = useCallback(() => {
     setClaimAllRewardsVisibility(true)
   }, [setClaimAllRewardsVisibility])
+
   const onClickMoreInfo = useCallback(() => {
     setClaimAllRewardsVisibility(true)
   }, [setClaimAllRewardsVisibility])
+
   const handleClick = useCallback(() => {
     if (claimable) {
       onClickClaimAllRewards()
@@ -57,8 +62,8 @@ export const ClaimAllPanel = () => {
           <Flex gap='s' alignItems='center'>
             {claimable ? (
               <IconTokenGold
-                height={24}
-                width={24}
+                height={iconSizes.l}
+                width={iconSizes.l}
                 aria-label={messages.goldAudioToken}
               />
             ) : null}
@@ -128,8 +133,8 @@ export const ClaimAllPanel = () => {
       <Flex gap='l' alignItems='center'>
         {claimableAmount > 0 ? (
           <IconTokenGold
-            height={48}
-            width={48}
+            height={iconSizes['3xl']}
+            width={iconSizes['3xl']}
             aria-label={messages.goldAudioToken}
           />
         ) : null}
