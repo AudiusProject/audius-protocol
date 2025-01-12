@@ -13,13 +13,13 @@ import { primeUserData } from './utils/primeUserData'
 
 const DEFAULT_PAGE_SIZE = 20
 
-type UseRepostsArgs = {
+type UseFavoritesArgs = {
   trackId: ID | null | undefined
   pageSize?: number
 }
 
-export const useReposts = (
-  { trackId, pageSize = DEFAULT_PAGE_SIZE }: UseRepostsArgs,
+export const useTrackFavorites = (
+  { trackId, pageSize = DEFAULT_PAGE_SIZE }: UseFavoritesArgs,
   config?: Config
 ) => {
   const { audiusSdk } = useAudiusQueryContext()
@@ -28,7 +28,7 @@ export const useReposts = (
   const dispatch = useDispatch()
 
   return useInfiniteQuery({
-    queryKey: [QUERY_KEYS.reposts, trackId, pageSize],
+    queryKey: [QUERY_KEYS.favorites, trackId, pageSize],
     initialPageParam: 0,
     getNextPageParam: (lastPage: User[], allPages) => {
       if (lastPage.length < pageSize) return undefined
@@ -36,7 +36,7 @@ export const useReposts = (
     },
     queryFn: async ({ pageParam }) => {
       const sdk = await audiusSdk()
-      const { data } = await sdk.full.tracks.getUsersFromReposts({
+      const { data } = await sdk.full.tracks.getUsersFromFavorites({
         trackId: Id.parse(trackId),
         limit: pageSize,
         offset: pageParam,

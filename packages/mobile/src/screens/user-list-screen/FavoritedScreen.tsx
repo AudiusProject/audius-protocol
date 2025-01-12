@@ -1,4 +1,4 @@
-import { useFavorites } from '@audius/common/api'
+import { useTrackFavorites, useCollectionFavorites } from '@audius/common/api'
 import { FavoriteType } from '@audius/common/models'
 
 import { IconHeart } from '@audius/harmony-native'
@@ -15,10 +15,18 @@ export const FavoritedScreen = () => {
   const { params } = useRoute<'Favorited'>()
   const { id, favoriteType } = params
 
-  const query = useFavorites(
+  const trackQuery = useTrackFavorites(
     { trackId: id },
     { enabled: favoriteType === FavoriteType.TRACK }
   )
+
+  const collectionQuery = useCollectionFavorites(
+    { collectionId: id },
+    { enabled: favoriteType === FavoriteType.PLAYLIST }
+  )
+
+  const query =
+    favoriteType === FavoriteType.TRACK ? trackQuery : collectionQuery
 
   return (
     <UserListScreen title={messages.title} titleIcon={IconHeart}>
