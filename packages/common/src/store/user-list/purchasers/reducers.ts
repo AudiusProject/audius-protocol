@@ -6,9 +6,7 @@ import { PurchasersPageState } from './types'
 type PurchasersActions = ActionType<typeof actions>
 
 const initialState = {
-  id: null,
-  contentType: undefined,
-  contentId: undefined
+  id: null
 }
 
 const purchasersReducer = createReducer<PurchasersPageState, PurchasersActions>(
@@ -17,9 +15,7 @@ const purchasersReducer = createReducer<PurchasersPageState, PurchasersActions>(
     [actions.SET_PURCHASERS](state, action) {
       return {
         ...state,
-        id: action.id,
-        contentType: action.contentType,
-        contentId: action.contentId
+        id: action.id
       }
     }
   }

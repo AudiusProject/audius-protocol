@@ -4,14 +4,12 @@ import { User } from '@audius/common/models'
 import {
   accountSelectors,
   chatActions,
-  chatSelectors,
   searchUsersModalActions,
   useCreateChatModal,
   createChatModalActions,
   useInboxUnavailableModal,
   userListActions,
   followersUserListActions,
-  followersUserListSelectors,
   FOLLOWERS_USER_LIST_TAG
 } from '@audius/common/store'
 import { IconCompose } from '@audius/harmony'
@@ -29,8 +27,6 @@ const messages = {
 }
 
 const { getUserId } = accountSelectors
-const { getUserList: getFollowersUserList } = followersUserListSelectors
-const { getUserList: getChatsUserList } = chatSelectors
 const { fetchBlockers, fetchMoreChats } = chatActions
 
 const CreateChatModal = () => {
@@ -39,11 +35,6 @@ const CreateChatModal = () => {
   const { isOpen, onClose, onClosed, data } = useCreateChatModal()
   const { onOpen: openInboxUnavailableModal } = useInboxUnavailableModal()
   const { onCancelAction, presetMessage, defaultUserList } = data
-
-  const followersUserList = useSelector(getFollowersUserList)
-  const chatsUserList = useSelector(getChatsUserList)
-  const { userIds, hasMore, loading } =
-    defaultUserList === 'chats' ? chatsUserList : followersUserList
 
   const handleCancel = useCallback(() => {
     if (onCancelAction) {
@@ -89,12 +80,6 @@ const CreateChatModal = () => {
     <>
       <SearchUsersModal
         titleProps={{ title: messages.title, icon: <IconCompose /> }}
-        defaultUserList={{
-          userIds,
-          loadMore,
-          loading,
-          hasMore
-        }}
         renderUser={(user, closeParentModal) => (
           <CreateChatUserResult
             key={user.user_id}

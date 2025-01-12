@@ -6,8 +6,7 @@ import { RemixersPageState } from './types'
 type RemixersActions = ActionType<typeof actions>
 
 const initialState = {
-  id: null,
-  trackId: undefined
+  id: null
 }
 
 const remixersReducer = createReducer<RemixersPageState, RemixersActions>(
@@ -16,8 +15,7 @@ const remixersReducer = createReducer<RemixersPageState, RemixersActions>(
     [actions.SET_REMIXERS](state, action) {
       return {
         ...state,
-        id: action.id,
-        trackId: action.trackId
+        id: action.id
       }
     }
   }

@@ -1,5 +1,4 @@
-import { ID } from '~/models/Identifiers'
 import { CommonState } from '~/store/commonStore'
 
-export const getId = (state: CommonState): ID | null =>
+export const getId = (state: CommonState): string | null =>
   state.ui.userList.notifications.id

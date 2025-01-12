@@ -3,6 +3,3 @@ import { CommonState } from '~/store/commonStore'
 
 export const getId = (state: CommonState): ID | null =>
   state.ui.userList.remixers.id
-
-export const getTrackId = (state: CommonState): ID | undefined =>
-  state.ui.userList.remixers.trackId

@@ -4,10 +4,6 @@ import { ID } from '~/models/Identifiers'
 
 export const SET_REMIXERS = 'REMIXERS_USER_PAGE/SET_REMIXERS'
 
-export const setRemixers = createCustomAction(
-  SET_REMIXERS,
-  (id: ID, trackId: ID) => ({
-    id,
-    trackId
-  })
-)
+export const setRemixers = createCustomAction(SET_REMIXERS, (id: ID) => ({
+  id
+}))
