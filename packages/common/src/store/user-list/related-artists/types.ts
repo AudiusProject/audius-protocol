@@ -1,14 +1,7 @@
-import { UserListStoreState } from '~/store/user-list/types'
-
-import { ID } from '../../../models'
-
-export type RelatedArtistsOwnState = {
-  id: ID | null
-}
+import { ID } from '~/models/Identifiers'
 
 export type RelatedArtistsPageState = {
-  relatedArtistsPage: RelatedArtistsOwnState
-  userList: UserListStoreState
+  id: ID | null
 }
 
 export const RELATED_ARTISTS_USER_LIST_TAG = 'RELATED ARTISTS'

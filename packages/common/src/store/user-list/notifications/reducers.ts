@@ -1,27 +1,16 @@
-import { combineReducers } from 'redux'
 import { createReducer, ActionType } from 'typesafe-actions'
 
-import { UserListReducerFactory } from '~/store/user-list/reducer'
-
 import * as actions from './actions'
-import {
-  NotificationUsersPageOwnState,
-  NOTIFICATIONS_USER_LIST_TAG
-} from './types'
+import { NotificationUsersPageState } from './types'
 
 type NotificationUsersActions = ActionType<typeof actions>
-
-const userListReducer = UserListReducerFactory.createReducer({
-  tag: NOTIFICATIONS_USER_LIST_TAG,
-  pageSize: 15
-})
 
 const initialState = {
   id: null
 }
 
-const notificationUsersPageReducer = createReducer<
-  NotificationUsersPageOwnState,
+const notificationUsersReducer = createReducer<
+  NotificationUsersPageState,
   NotificationUsersActions
 >(initialState, {
   [actions.SET_NOTIFICATION_ID](state, action) {
@@ -32,7 +21,4 @@ const notificationUsersPageReducer = createReducer<
   }
 })
 
-export default combineReducers({
-  notificationUsersPage: notificationUsersPageReducer,
-  userList: userListReducer
-})
+export default notificationUsersReducer

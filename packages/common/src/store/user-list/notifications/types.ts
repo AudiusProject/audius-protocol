@@ -1,12 +1,7 @@
-import { UserListStoreState } from '~/store/user-list/types'
-
-export const NOTIFICATIONS_USER_LIST_TAG = 'NOTIFICATION'
-
-export type NotificationUsersPageOwnState = {
-  id: string | null
-}
+import { ID } from '~/models/Identifiers'
 
 export type NotificationUsersPageState = {
-  notificationUsersPage: NotificationUsersPageOwnState
-  userList: UserListStoreState
+  id: ID | null
 }
+
+export const NOTIFICATIONS_USER_LIST_TAG = 'NOTIFICATION'
