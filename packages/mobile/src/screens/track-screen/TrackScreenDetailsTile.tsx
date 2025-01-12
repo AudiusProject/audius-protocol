@@ -1,5 +1,6 @@
 import React, { useCallback } from 'react'
 
+import { useTrackRank } from '@audius/common/api'
 import { useGatedContentAccess } from '@audius/common/hooks'
 import {
   Name,
@@ -56,6 +57,7 @@ import {
   IconPlay,
   IconRepeatOff,
   IconVisibilityHidden,
+  IconTrending,
   MusicBadge,
   Paper,
   Text,
@@ -265,9 +267,16 @@ export const TrackScreenDetailsTile = ({
       ? IconRepeatOff
       : IconPlay
 
+  const trendingRank = useTrackRank(trackId)
+
   const badges = [
     aiAttributionUserId ? (
       <DetailsTileAiAttribution userId={aiAttributionUserId} />
+    ) : null,
+    trendingRank ? (
+      <MusicBadge color='blue' icon={IconTrending}>
+        {trendingRank}
+      </MusicBadge>
     ) : null,
     shouldShowScheduledRelease ? (
       <MusicBadge variant='accent' icon={IconCalendarMonth}>
