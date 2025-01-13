@@ -1,4 +1,4 @@
-import { ReactNode } from 'react'
+import { ReactNode, MouseEvent } from 'react'
 
 import { Theme } from '@audius/common/models'
 import { themeSelectors, accountSelectors } from '@audius/common/store'
@@ -53,7 +53,7 @@ const RestrictedLink = ({
   const hasAccount = useSelector(getHasAccount)
   const isAccountComplete = useSelector(getIsAccountComplete)
 
-  const handleClick = (e: React.MouseEvent) => {
+  const handleClick = (e: MouseEvent) => {
     if (restriction === 'none') return
 
     const canAccessRoute = canAccess(restriction, hasAccount, isAccountComplete)
