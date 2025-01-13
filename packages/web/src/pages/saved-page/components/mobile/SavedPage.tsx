@@ -7,6 +7,7 @@ import {
   useState
 } from 'react'
 
+import { useLibraryCollections } from '@audius/common/api'
 import {
   useGatedContentAccessMap,
   useDebouncedCallback
@@ -42,7 +43,6 @@ import TrackList from 'components/track/mobile/TrackList'
 import { TrackItemAction } from 'components/track/mobile/TrackListItem'
 import { useNavigateToPage } from 'hooks/useNavigateToPage'
 import useTabs from 'hooks/useTabs/useTabs'
-import { useCollectionsData } from 'pages/saved-page/hooks/useCollectionsData'
 
 import { LibraryCategorySelectionMenu } from '../desktop/LibraryCategorySelectionMenu'
 import { emptyStateMessages } from '../emptyStateMessages'
@@ -289,19 +289,24 @@ const TracksLineup = ({
 }
 
 const AlbumCardLineup = () => {
+  const selectedCategory = useSelector((state: CommonState) =>
+    getCategory(state, { currentTab: SavedPageTabs.ALBUMS })
+  )
+
+  const {
+    data: albums = [],
+    fetchNextPage,
+    hasNextPage,
+    isPending,
+    isFetchingNextPage
+  } = useLibraryCollections({
+    collectionType: 'albums',
+    category: selectedCategory
+  })
+
   const navigate = useNavigateToPage()
 
   const [filterText, setFilterText] = useState('')
-  const {
-    status,
-    hasMore,
-    fetchMore,
-    collections: albums
-  } = useCollectionsData({
-    collectionType: 'album',
-    filterValue: filterText || undefined
-  })
-  const albumIds = albums?.map((a) => a.playlist_id)
 
   const emptyAlbumsHeader = useSelector((state: CommonState) => {
     const selectedCategory = getCategory(state, {
@@ -335,20 +340,18 @@ const AlbumCardLineup = () => {
     debouncedSetFilter(value)
   }
 
-  const albumCards = albumIds?.map((id) => {
-    return <CollectionCard key={id} id={id} size='xs' />
+  const albumCards = albums?.map((a) => {
+    return <CollectionCard key={a.playlist_id} id={a.playlist_id} size='xs' />
   })
 
-  const noSavedAlbums =
-    !statusIsNotFinalized(status) && albumIds?.length === 0 && !filterText
+  const noSavedAlbums = !isPending && albums?.length === 0 && !filterText
 
-  const isLoadingInitial =
-    statusIsNotFinalized(status) && albumIds?.length === 0
+  const isLoadingInitial = isPending && albums?.length === 0
 
   const shouldHideFilterInput = isLoadingInitial && !filterText
 
   const containerRef = useTabContainerRef({
-    resultsLength: albumIds?.length,
+    resultsLength: albums?.length,
     hasNoResults: noSavedAlbums,
     currentTab: SavedPageTabs.ALBUMS,
     isFilterActive: Boolean(filterText)
@@ -382,14 +385,14 @@ const AlbumCardLineup = () => {
           {isLoadingInitial ? (
             <LoadingSpinner className={styles.spinner} />
           ) : null}
-          {albumIds?.length > 0 ? (
+          {albums?.length > 0 ? (
             <div className={styles.cardsContainer}>
               <InfiniteCardLineup
-                hasMore={hasMore}
-                loadMore={fetchMore}
+                hasMore={hasNextPage}
+                loadMore={fetchNextPage}
                 cardsClassName={styles.cardLineup}
                 cards={albumCards}
-                isLoadingMore={statusIsNotFinalized(status)}
+                isLoadingMore={isFetchingNextPage}
               />
             </div>
           ) : null}
@@ -409,33 +412,22 @@ const PlaylistCardLineup = ({
   playlistUpdates: number[]
   updatePlaylistLastViewedAt: (playlistId: number) => void
 }) => {
-  const [filterText, setFilterText] = useState('')
-
-  const {
-    status,
-    hasMore,
-    fetchMore,
-    collections: playlists
-  } = useCollectionsData({
-    collectionType: 'playlist',
-    filterValue: filterText || undefined
-  })
-
-  const debouncedSetFilter = useDebouncedCallback(
-    (value: string) => {
-      setFilterText(value)
-    },
-    [setFilterText],
-    300
+  const selectedCategory = useSelector((state: CommonState) =>
+    getCategory(state, { currentTab: SavedPageTabs.PLAYLISTS })
   )
 
-  const handleFilterChange = ({
-    target: { value }
-  }: React.ChangeEvent<HTMLInputElement>) => {
-    debouncedSetFilter(value)
-  }
+  const {
+    data: collections = [],
+    fetchNextPage,
+    hasNextPage,
+    isPending,
+    isFetchingNextPage
+  } = useLibraryCollections({
+    collectionType: 'playlists',
+    category: selectedCategory
+  })
 
-  const playlistIds = playlists?.map((p) => p.playlist_id)
+  const [filterText, setFilterText] = useState('')
 
   const emptyPlaylistsHeader = useSelector((state: CommonState) => {
     const selectedCategory = getCategory(state, {
@@ -451,30 +443,43 @@ const PlaylistCardLineup = ({
     }
   })
   const noSavedPlaylists =
-    !statusIsNotFinalized(status) && playlistIds?.length === 0 && !filterText
+    !isPending && collections?.length === 0 && !filterText
 
-  const isLoadingInitial =
-    statusIsNotFinalized(status) && playlistIds?.length === 0
+  const isLoadingInitial = isPending && collections?.length === 0
 
   const shouldHideFilterInput = isLoadingInitial && !filterText
 
-  const playlistCards = playlistIds?.map((id) => {
+  const playlistCards = collections?.map((p) => {
     return (
       <CollectionCard
-        key={id}
-        id={id}
-        onClick={() => updatePlaylistLastViewedAt(id)}
+        key={p.playlist_id}
+        id={p.playlist_id}
+        onClick={() => updatePlaylistLastViewedAt(p.playlist_id)}
         size='xs'
       />
     )
   })
 
   const containerRef = useTabContainerRef({
-    resultsLength: playlistIds?.length,
+    resultsLength: collections?.length,
     hasNoResults: noSavedPlaylists,
     currentTab: SavedPageTabs.PLAYLISTS,
     isFilterActive: Boolean(filterText)
   })
+
+  const debouncedSetFilter = useDebouncedCallback(
+    (value: string) => {
+      setFilterText(value)
+    },
+    [setFilterText],
+    300
+  )
+
+  const handleFilterChange = ({
+    target: { value }
+  }: React.ChangeEvent<HTMLInputElement>) => {
+    debouncedSetFilter(value)
+  }
 
   return (
     <div className={styles.cardLineupContainer}>
@@ -508,14 +513,14 @@ const PlaylistCardLineup = ({
           {isLoadingInitial ? (
             <LoadingSpinner className={styles.spinner} />
           ) : null}
-          {playlistIds?.length > 0 ? (
+          {collections?.length > 0 ? (
             <div className={styles.cardsContainer}>
               <InfiniteCardLineup
-                hasMore={hasMore}
-                loadMore={fetchMore}
+                hasMore={hasNextPage}
+                loadMore={fetchNextPage}
                 cardsClassName={styles.cardLineup}
                 cards={playlistCards}
-                isLoadingMore={statusIsNotFinalized(status)}
+                isLoadingMore={isFetchingNextPage}
               />
             </div>
           ) : null}

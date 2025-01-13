@@ -39,5 +39,6 @@ export const QUERY_KEYS = {
   suggestedArtists: 'suggestedArtists',
   topArtistsInGenre: 'topArtistsInGenre',
   audioTransactions: 'audioTransactions',
-  audioTransactionsCount: 'audioTransactionsCount'
+  audioTransactionsCount: 'audioTransactionsCount',
+  libraryCollections: 'libraryCollections'
 } as const
