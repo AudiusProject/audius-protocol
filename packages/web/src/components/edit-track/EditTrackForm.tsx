@@ -1,10 +1,11 @@
-import { useCallback, useContext, useEffect, useState } from 'react'
+import { useCallback, useContext, useEffect, useMemo, useState } from 'react'
 
 import { useFeatureFlag } from '@audius/common/hooks'
 import { DownloadQuality, Name } from '@audius/common/models'
 import { TrackMetadataFormSchema } from '@audius/common/schemas'
 import { FeatureFlags } from '@audius/common/services'
 import {
+  TrackForUpload,
   TrackMetadataForUpload,
   useEarlyReleaseConfirmationModal,
   useHideContentConfirmationModal,
@@ -198,9 +199,7 @@ const TrackEditForm = (
     FeatureFlags.TRACK_REPLACE_DOWNLOADS
   )
 
-  const [{ value: track }, , { setValue: setTrackValue }] = useField(
-    `tracks.${trackIdx}`
-  )
+  const [, , { setValue: setTrackValue }] = useField(`tracks.${trackIdx}`)
   const [, { touched: isTitleDirty }, { setValue: setTitle }] = useField(
     getTrackFieldName(trackIdx, 'title')
   )
@@ -209,6 +208,15 @@ const TrackEditForm = (
   const [, , { setValue: setOrigFilename }] = useField(
     getTrackFieldName(trackIdx, 'orig_filename')
   )
+
+  const trackPreviewUrl =
+    formValues.trackMetadatas[trackIdx]?.download?.url ??
+    formValues.trackMetadatas[trackIdx]?.stream?.url ??
+    ''
+
+  const preview = useMemo(() => {
+    return new Audio(trackPreviewUrl)
+  }, [trackPreviewUrl])
 
   const handleTogglePreview = useCallback(() => {
     if (!isPreviewPlaying) {
@@ -222,11 +230,15 @@ const TrackEditForm = (
       )
     }
 
-    togglePreview(track.preview, trackIdx)
+    const currentPreview =
+      (formValues.tracks[trackIdx] as TrackForUpload)?.preview ?? preview
+
+    togglePreview(currentPreview, trackIdx)
   }, [
     togglePreview,
-    track.preview,
+    formValues,
     trackIdx,
+    preview,
     isPreviewPlaying,
     initialTrackId,
     isUpload
