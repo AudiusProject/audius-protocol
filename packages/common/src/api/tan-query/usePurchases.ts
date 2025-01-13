@@ -1,5 +1,3 @@
-import { useMemo } from 'react'
-
 import { full } from '@audius/sdk'
 import { useInfiniteQuery } from '@tanstack/react-query'
 
@@ -53,46 +51,24 @@ export const usePurchases = (args: GetPurchaseListArgs, options?: Config) => {
 
       return data.map(purchaseFromSDK)
     },
-    select: (data) => data.pages.flat(),
     ...options,
     enabled: options?.enabled !== false && !!userId
   })
 
-  const { data, fetchNextPage, hasNextPage, isFetchingNextPage, ...rest } =
-    queryResult
-
-  const { userIdsToFetch, trackIdsToFetch, collectionIdsToFetch } =
-    useMemo(() => {
-      if (!data)
-        return {
-          userIdsToFetch: [],
-          trackIdsToFetch: [],
-          collectionIdsToFetch: []
-        }
-      return {
-        userIdsToFetch: data.map(({ buyerUserId }) => buyerUserId),
-        trackIdsToFetch: data
-          .filter(
-            ({ contentType }) => contentType === USDCContentPurchaseType.TRACK
-          )
-          .map(({ contentId }) => contentId),
-        collectionIdsToFetch: data
-          .filter(
-            ({ contentType }) => contentType === USDCContentPurchaseType.ALBUM
-          )
-          .map(({ contentId }) => contentId)
-      }
-    }, [data])
+  const pages = queryResult.data?.pages
+  const lastPage = pages?.[pages.length - 1]
+  const userIdsToFetch = lastPage?.map(({ buyerUserId }) => buyerUserId)
+  const trackIdsToFetch = lastPage
+    ?.filter(({ contentType }) => contentType === USDCContentPurchaseType.TRACK)
+    .map(({ contentId }) => contentId)
+  const collectionIdsToFetch = lastPage
+    ?.filter(({ contentType }) => contentType === USDCContentPurchaseType.ALBUM)
+    .map(({ contentId }) => contentId)
 
   // Call the hooks dropping results to pre-fetch the data
   useUsers(userIdsToFetch)
   useTracks(trackIdsToFetch)
   useCollections(collectionIdsToFetch)
-  return {
-    data,
-    loadMore: fetchNextPage,
-    hasMore: hasNextPage,
-    isLoadingMore: isFetchingNextPage,
-    ...rest
-  }
+
+  return { ...queryResult, data: queryResult.data?.pages.flat() }
 }

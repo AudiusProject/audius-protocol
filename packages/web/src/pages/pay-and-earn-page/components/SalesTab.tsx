@@ -103,10 +103,11 @@ export const useSalesData = () => {
 
   const {
     data: sales,
-    loadMore,
-    hasMore,
+    fetchNextPage,
+    hasNextPage,
     isPending: isSalesPending,
-    isError: isSalesError
+    isError: isSalesError,
+    isFetchingNextPage
   } = useSales({
     userId,
     sortMethod,
@@ -115,12 +116,14 @@ export const useSalesData = () => {
   })
 
   const {
-    data: count,
+    data: count = 0,
     isPending: isCountPending,
     isError: isCountError
   } = useSalesCount(userId)
 
-  const isPending = isSalesPending || isCountPending
+  const isLoading = isSalesPending || isCountPending
+  const isError = isSalesError || isCountError
+  const isEmpty = !isLoading && !isError && sales?.length === 0
 
   useErrorPage({ showErrorPage: isSalesError || isCountError })
 
@@ -134,20 +137,12 @@ export const useSalesData = () => {
     []
   )
 
-  const fetchMore = useCallback(() => {
-    if (hasMore) {
-      loadMore()
-    }
-  }, [hasMore, loadMore])
-
   const onClickRow = useCallback(
     (purchaseDetails: USDCPurchaseDetails) => {
       openDetailsModal({ variant: 'sale', purchaseDetails })
     },
     [openDetailsModal]
   )
-
-  const isEmpty = !isPending && sales?.length === 0
 
   const downloadSalesAsCSVFromJSON = async () => {
     let link = null
@@ -257,13 +252,16 @@ export const useSalesData = () => {
   }, [userId])
 
   return {
-    count,
     data: sales,
-    fetchMore,
+    count,
+    isEmpty,
+    isLoading,
+    isError,
     onSort,
     onClickRow,
-    isEmpty,
-    isLoading: isPending,
+    fetchNextPage: () => fetchNextPage(),
+    hasNextPage,
+    isFetchingNextPage,
     downloadCSV,
     downloadSalesAsCSVFromJSON
   }
@@ -275,7 +273,7 @@ export const useSalesData = () => {
 export const SalesTab = ({
   count,
   data: sales,
-  fetchMore,
+  fetchNextPage,
   onSort,
   onClickRow,
   isEmpty,
@@ -321,7 +319,7 @@ export const SalesTab = ({
           loading={isLoading}
           onSort={onSort}
           onClickRow={onClickRow}
-          fetchMore={fetchMore}
+          fetchMore={fetchNextPage}
           totalRowCount={count}
           isVirtualized={true}
           scrollRef={mainContentRef}

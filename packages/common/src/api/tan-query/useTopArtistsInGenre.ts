@@ -9,11 +9,11 @@ import { QUERY_KEYS } from './queryKeys'
 import { Config } from './types'
 import { primeUserData } from './utils/primeUserData'
 
-const ARTISTS_PER_GENRE_LIMIT = 15
+const ARTISTS_PER_GENRE_PAGE_SIZE = 15
 
 type UseTopArtistsInGenreArgs = {
   genre: string
-  limit?: number
+  pageSize?: number
 }
 
 export const useTopArtistsInGenre = (
@@ -23,16 +23,16 @@ export const useTopArtistsInGenre = (
   const { audiusSdk } = useAudiusQueryContext()
   const queryClient = useQueryClient()
   const dispatch = useDispatch()
-  const { genre, limit = ARTISTS_PER_GENRE_LIMIT } = args
+  const { genre, pageSize = ARTISTS_PER_GENRE_PAGE_SIZE } = args
 
-  const query = useInfiniteQuery({
-    queryKey: [QUERY_KEYS.topArtistsInGenre, genre, limit],
+  return useInfiniteQuery({
+    queryKey: [QUERY_KEYS.topArtistsInGenre, genre, pageSize],
     queryFn: async ({ pageParam }) => {
       const sdk = await audiusSdk()
       const { data } = await sdk.full.users.getTopUsersInGenre({
         genre: [genre],
-        limit,
-        offset: (pageParam as number) * limit
+        limit: pageSize,
+        offset: (pageParam as number) * pageSize
       })
       const users = transformAndCleanList(data, userMetadataFromSDK)
       primeUserData({ users, queryClient, dispatch })
@@ -40,14 +40,10 @@ export const useTopArtistsInGenre = (
     },
     initialPageParam: 0,
     getNextPageParam: (lastPage, allPages) => {
-      if (lastPage.length < limit) return undefined
-      return allPages.length
+      if (lastPage.length < pageSize) return undefined
+      return allPages.length * pageSize
     },
+    select: (data) => data.pages.flat(),
     ...config
   })
-
-  return {
-    ...query,
-    data: query.data?.pages.flatMap((page) => page)
-  }
 }

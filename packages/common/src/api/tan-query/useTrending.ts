@@ -30,7 +30,7 @@ export const useTrending = (args: GetTrendingArgs, options: Config) => {
   const currentUserId = useCurrentUserId()
   const dispatch = useDispatch()
 
-  const queryResult = useInfiniteQuery({
+  return useInfiniteQuery({
     queryKey: [QUERY_KEYS.trending, args],
     initialPageParam: 0,
     getNextPageParam: (lastPage: Track[], allPages: Track[][]) => {
@@ -67,15 +67,4 @@ export const useTrending = (args: GetTrendingArgs, options: Config) => {
     select: (data) => data.pages.flat(),
     ...options
   })
-
-  const { data, fetchNextPage, hasNextPage, isFetchingNextPage, ...rest } =
-    queryResult
-
-  return {
-    data,
-    loadMore: fetchNextPage,
-    hasMore: hasNextPage,
-    isLoadingMore: isFetchingNextPage,
-    ...rest
-  }
 }

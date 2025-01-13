@@ -11,11 +11,11 @@ import { Config } from './types'
 import { useCurrentUserId } from './useCurrentUserId'
 import { primeUserData } from './utils/primeUserData'
 
-const LIMIT = 15
+const PAGE_SIZE = 15
 
 type UseFollowersArgs = {
   userId: ID | null | undefined
-  limit?: number
+  pageSize?: number
 }
 
 /**
@@ -23,7 +23,7 @@ type UseFollowersArgs = {
  * This version supports infinite scrolling and maintains the full list of followers.
  */
 export const useFollowers = (
-  { userId, limit = LIMIT }: UseFollowersArgs,
+  { userId, pageSize = PAGE_SIZE }: UseFollowersArgs,
   config?: Config
 ) => {
   const { audiusSdk } = useAudiusQueryContext()
@@ -31,25 +31,18 @@ export const useFollowers = (
   const queryClient = useQueryClient()
   const dispatch = useDispatch()
 
-  const {
-    data,
-    hasNextPage,
-    isFetchingNextPage,
-    fetchNextPage,
-    isLoading,
-    ...rest
-  } = useInfiniteQuery({
-    queryKey: [QUERY_KEYS.followers, userId, limit],
+  return useInfiniteQuery({
+    queryKey: [QUERY_KEYS.followers, userId, pageSize],
     initialPageParam: 0,
     getNextPageParam: (lastPage: User[], allPages) => {
-      if (lastPage.length < limit) return undefined
-      return allPages.length * limit
+      if (lastPage.length < pageSize) return undefined
+      return allPages.length * pageSize
     },
     queryFn: async ({ pageParam }) => {
       const sdk = await audiusSdk()
       const { data = [] } = await sdk.full.users.getFollowers({
         id: Id.parse(userId),
-        limit,
+        limit: pageSize,
         offset: pageParam,
         userId: OptionalId.parse(currentUserId)
       })
@@ -57,18 +50,8 @@ export const useFollowers = (
       primeUserData({ users, queryClient, dispatch })
       return users
     },
+    select: (data) => data.pages.flat(),
     staleTime: config?.staleTime,
     enabled: config?.enabled !== false && !!userId
   })
-
-  const flatData = data?.pages.flat() ?? []
-
-  return {
-    data: flatData,
-    hasMore: hasNextPage,
-    isLoadingMore: isFetchingNextPage,
-    loadMore: fetchNextPage,
-    isLoading,
-    ...rest
-  }
 }

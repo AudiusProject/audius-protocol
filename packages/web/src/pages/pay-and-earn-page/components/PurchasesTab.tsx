@@ -89,8 +89,7 @@ export const usePurchasesData = () => {
 
   const {
     data: purchases,
-    loadMore,
-    hasMore,
+    fetchNextPage,
     isPending: isPurchasesPending,
     isError: isPurchasesError
   } = usePurchases({
@@ -101,14 +100,14 @@ export const usePurchasesData = () => {
   })
 
   const {
-    data: count,
+    data: count = 0,
     isPending: isCountPending,
     isError: isCountError
   } = usePurchasesCount(userId)
 
-  const isPending = isPurchasesPending || isCountPending
-
-  // TODO: Should fetch users before rendering the table
+  const isLoading = isPurchasesPending || isCountPending
+  const isError = isPurchasesError || isCountError
+  const isEmpty = !isLoading && !isError && purchases?.length === 0
 
   const onSort = useCallback(
     (
@@ -121,12 +120,6 @@ export const usePurchasesData = () => {
     []
   )
 
-  const fetchMore = useCallback(() => {
-    if (hasMore) {
-      loadMore()
-    }
-  }, [hasMore, loadMore])
-
   useErrorPage({ showErrorPage: isPurchasesError || isCountError })
 
   const onClickRow = useCallback(
@@ -135,8 +128,6 @@ export const usePurchasesData = () => {
     },
     [openDetailsModal]
   )
-
-  const isEmpty = !isPending && purchases?.length === 0
 
   const downloadCSV = useCallback(async () => {
     const sdk = await audiusSdk()
@@ -152,13 +143,14 @@ export const usePurchasesData = () => {
   }, [userId])
 
   return {
-    count,
     data: purchases,
-    fetchMore,
+    count,
+    isEmpty,
+    isLoading,
+    isError,
     onSort,
     onClickRow,
-    isEmpty,
-    isLoading: isPending,
+    fetchNextPage: () => fetchNextPage(),
     downloadCSV
   }
 }
@@ -173,7 +165,7 @@ export const PurchasesTab = ({
   isLoading,
   onSort,
   onClickRow,
-  fetchMore
+  fetchNextPage
 }: Omit<ReturnType<typeof usePurchasesData>, 'downloadCSV'>) => {
   const mainContentRef = useMainContentRef()
   const isMobile = useIsMobile()
@@ -194,7 +186,7 @@ export const PurchasesTab = ({
           loading={isLoading}
           onSort={onSort}
           onClickRow={onClickRow}
-          fetchMore={fetchMore}
+          fetchMore={fetchNextPage}
           totalRowCount={count}
           scrollRef={mainContentRef}
           fetchBatchSize={TRANSACTIONS_BATCH_SIZE}

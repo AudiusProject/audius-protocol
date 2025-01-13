@@ -1,6 +1,7 @@
 import { memo } from 'react'
 
 import type { User } from '@audius/common/models'
+import type { UseInfiniteQueryResult } from '@tanstack/react-query'
 import { range } from 'lodash'
 import type { ListRenderItem } from 'react-native'
 import { View } from 'react-native'
@@ -49,23 +50,7 @@ const useStyles = makeStyles(({ spacing }) => ({
   }
 }))
 
-type UserListV2Props = {
-  /**
-   * The list of users to display
-   */
-  data: User[]
-  /**
-   * Whether we're loading more users
-   */
-  isLoadingMore: boolean
-  /**
-   * Whether we're loading the initial data
-   */
-  isLoading: boolean
-  /**
-   * Function to load more users
-   */
-  loadMore: () => void
+type UserListV2Props = UseInfiniteQueryResult<User[], Error> & {
   /**
    * Tag for the UserListItem component
    */
@@ -73,12 +58,12 @@ type UserListV2Props = {
 }
 
 export const UserListV2 = (props: UserListV2Props) => {
-  const { data, isLoadingMore, isLoading, loadMore, tag } = props
+  const { data = [], isFetchingNextPage, isPending, fetchNextPage, tag } = props
   const styles = useStyles()
 
   const isEmpty = data.length === 0
 
-  const displayData = [...data, ...(isLoading ? skeletonData : [])]
+  const displayData = [...data, ...(isPending ? skeletonData : [])]
 
   const renderItem: ListRenderItem<User | SkeletonItem> = ({ item }) =>
     '_loading' in item ? (
@@ -100,9 +85,11 @@ export const UserListV2 = (props: UserListV2Props) => {
       renderItem={renderItem}
       keyExtractor={keyExtractor}
       ItemSeparatorComponent={Divider}
-      onEndReached={loadMore}
+      onEndReached={() => fetchNextPage()}
       onEndReachedThreshold={3}
-      ListFooterComponent={isLoadingMore || isLoading ? loadingSpinner : footer}
+      ListFooterComponent={
+        isFetchingNextPage || isPending ? loadingSpinner : footer
+      }
     />
   )
 }

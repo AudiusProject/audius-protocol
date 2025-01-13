@@ -67,7 +67,7 @@ export const AudioWalletTransactions = () => {
     fetchNextPage,
     isPending: isTransactionsLoading
   } = useAudioTransactions({
-    limit: AUDIO_TRANSACTIONS_BATCH_SIZE,
+    pageSize: AUDIO_TRANSACTIONS_BATCH_SIZE,
     sortMethod,
     sortDirection
   })
