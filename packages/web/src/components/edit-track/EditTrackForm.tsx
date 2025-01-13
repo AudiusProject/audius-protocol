@@ -209,9 +209,7 @@ const TrackEditForm = (
     FeatureFlags.TRACK_REPLACE_DOWNLOADS
   )
 
-  const [{ value: track }, , { setValue: setTrackValue }] = useField(
-    `tracks.${trackIdx}`
-  )
+  const [, , { setValue: setTrackValue }] = useField(`tracks.${trackIdx}`)
   const [, { touched: isTitleDirty }, { setValue: setTitle }] = useField(
     getTrackFieldName(trackIdx, 'title')
   )
@@ -252,7 +250,6 @@ const TrackEditForm = (
     formValues,
     trackIdx,
     preview,
-    trackIdx,
     isPreviewPlaying,
     initialTrackId,
     isUpload
