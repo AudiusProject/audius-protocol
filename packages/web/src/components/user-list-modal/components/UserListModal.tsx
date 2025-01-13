@@ -47,7 +47,7 @@ const messages = {
   remixers: 'Remixers'
 }
 
-const UserListModal = () => {
+export const UserListModal = () => {
   const dispatch = useDispatch()
   const userListType = useSelector(getUserListType)
   const isOpen = useSelector(getIsOpen)
@@ -167,5 +167,3 @@ const UserListModal = () => {
     </Modal>
   )
 }
-
-export default UserListModal

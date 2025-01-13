@@ -49,14 +49,14 @@ const useStyles = makeStyles(({ spacing }) => ({
   }
 }))
 
-type UserListV2Props = {
+type UserListProps = {
   data: User[] | undefined
   isLoading: boolean
   fetchNextPage: () => void
   tag: string
 }
 
-export const UserList = (props: UserListV2Props) => {
+export const UserList = (props: UserListProps) => {
   const { data, isLoading, fetchNextPage, tag } = props
   const styles = useStyles()
 

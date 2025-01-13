@@ -24,7 +24,7 @@ import styles from './UserList.module.css'
 const { profilePage } = route
 const { setNotificationSubscription } = profilePageActions
 
-const SCROLL_THRESHOLD = 100
+const SCROLL_THRESHOLD = 400
 
 type SkeletonItem = {
   _loading: true

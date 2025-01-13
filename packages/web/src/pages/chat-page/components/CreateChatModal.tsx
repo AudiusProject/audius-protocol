@@ -76,6 +76,8 @@ const CreateChatModal = () => {
     }
   }, [dispatch, isOpen])
 
+  // feature-tan-query TODO fix user lists
+
   return (
     <>
       <SearchUsersModal
