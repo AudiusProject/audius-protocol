@@ -40,7 +40,7 @@ export const Panel = ({
   remainingLabel,
   challenge
 }: PanelProps) => {
-  const { spacing, color } = useTheme()
+  const { spacing } = useTheme()
   const { neutralLight4 } = useThemeColors()
 
   const maxStepCount = challenge?.max_steps ?? 0
