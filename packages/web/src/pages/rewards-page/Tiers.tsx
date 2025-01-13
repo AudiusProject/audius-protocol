@@ -35,9 +35,8 @@ const { pressDiscord } = vipDiscordModalActions
 const { getUserId } = accountSelectors
 
 const messages = {
-  title: '$AUDIO VIP TIERS',
-  subtitle:
-    'Hold $AUDIO in your wallet to unlock VIP Tiers and earn access to exclusive features and more!',
+  title: 'Reward Perks',
+  subtitle: 'Keep $AUDIO in your wallet to enjoy perks and exclusive features.',
   noTier: 'No tier',
   currentTier: 'CURRENT TIER',
   tierLevel: (amount: string) => `${Number(amount).toLocaleString()}+`,
@@ -142,8 +141,8 @@ const TierBox = ({ tier, message }: { tier: BadgeTier; message?: string }) => {
         css={{
           minHeight: '1.5em',
           ...(tier !== 'none' && {
-            '-webkit-text-fill-color': 'transparent',
-            '-webkit-background-clip': 'text',
+            WebkitTextFillColor: 'transparent',
+            WebkitBackgroundClip: 'text',
             backgroundImage:
               tier === 'bronze'
                 ? 'linear-gradient(to right, rgba(141, 48, 8, 0.5), rgb(182, 97, 11))'
@@ -397,9 +396,10 @@ const Tiers = () => {
   return (
     <div className={styles.container}>
       <div className={wm(styles.titleContainer)}>
-        <div className={wm(styles.title)}>{messages.title}</div>
-        <div className={wm(styles.subtitle)}></div>
-        <Text variant='body' size='l' color='default'>
+        <Text variant='display' size='s' className={wm(styles.title)}>
+          {messages.title}
+        </Text>
+        <Text variant='body' strength='strong' size='l'>
           {messages.subtitle}
         </Text>
       </div>

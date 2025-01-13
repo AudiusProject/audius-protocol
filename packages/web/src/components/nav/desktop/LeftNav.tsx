@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from 'react'
+import { useCallback, useRef, useState, Fragment } from 'react'
 
 import { FavoriteSource } from '@audius/common/models'
 import {
@@ -163,14 +163,14 @@ const LeftNav = (props: NavColumnProps) => {
               {navConfig.map((item, index) => {
                 const isLastMainItem = index === navConfig.length - 2
                 return (
-                  <>
+                  <Fragment key={item.label}>
                     {renderNavItem(item)}
                     {isLastMainItem ? (
                       <Box mv='s'>
                         <Divider />
                       </Box>
                     ) : null}
-                  </>
+                  </Fragment>
                 )
               })}
             </Flex>
