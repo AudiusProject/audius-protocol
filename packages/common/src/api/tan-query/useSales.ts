@@ -11,7 +11,7 @@ import {
 } from '~/models/USDCTransactions'
 
 import { QUERY_KEYS } from './queryKeys'
-import { Config } from './types'
+import { QueryOptions } from './types'
 import { useCollections } from './useCollections'
 import { useTracks } from './useTracks'
 import { useUsers } from './useUsers'
@@ -25,7 +25,7 @@ export type GetSalesListArgs = {
   pageSize?: number
 }
 
-export const useSales = (args: GetSalesListArgs, options?: Config) => {
+export const useSales = (args: GetSalesListArgs, options?: QueryOptions) => {
   const { userId, sortMethod, sortDirection, pageSize = PAGE_SIZE } = args
   const context = useAudiusQueryContext()
   const { audiusSdk } = context

@@ -6,7 +6,7 @@ import { ID, Id, OptionalId } from '~/models/Identifiers'
 import { supporterMetadataFromSDK } from '~/models/Tipping'
 
 import { QUERY_KEYS } from './queryKeys'
-import { Config } from './types'
+import { QueryOptions } from './types'
 import { useCurrentUserId } from './useCurrentUserId'
 import { primeUserData } from './utils/primeUserData'
 
@@ -17,7 +17,7 @@ type UseSupporterArgs = {
 
 export const useSupporter = (
   { userId, supporterUserId }: UseSupporterArgs,
-  config?: Config
+  options?: QueryOptions
 ) => {
   const { audiusSdk } = useAudiusQueryContext()
   const { data: currentUserId } = useCurrentUserId()
@@ -42,7 +42,7 @@ export const useSupporter = (
       }
       return supporter
     },
-    staleTime: config?.staleTime,
-    enabled: config?.enabled !== false && !!userId && !!supporterUserId
+    staleTime: options?.staleTime,
+    enabled: options?.enabled !== false && !!userId && !!supporterUserId
   })
 }

@@ -7,7 +7,7 @@ import { useAudiusQueryContext } from '~/audius-query'
 import { Id, OptionalId } from '~/models/Identifiers'
 
 import { QUERY_KEYS } from './queryKeys'
-import { Config } from './types'
+import { QueryOptions } from './types'
 import { useCurrentUserId } from './useCurrentUserId'
 import { primeCollectionData } from './utils/primeCollectionData'
 
@@ -17,10 +17,13 @@ type GetAlbumsOptions = {
   offset?: number
 }
 
-export const useUserAlbums = (options: GetAlbumsOptions, config?: Config) => {
+export const useUserAlbums = (
+  albumOptions: GetAlbumsOptions,
+  queryOptions?: QueryOptions
+) => {
   const { audiusSdk } = useAudiusQueryContext()
   const { data: currentUserId } = useCurrentUserId()
-  const { userId, limit, offset } = options
+  const { userId, limit, offset } = albumOptions
   const queryClient = useQueryClient()
   const dispatch = useDispatch()
 
@@ -47,7 +50,7 @@ export const useUserAlbums = (options: GetAlbumsOptions, config?: Config) => {
 
       return collections
     },
-    staleTime: config?.staleTime,
-    enabled: config?.enabled !== false && !!userId
+    staleTime: queryOptions?.staleTime,
+    enabled: queryOptions?.enabled !== false && !!userId
   })
 }

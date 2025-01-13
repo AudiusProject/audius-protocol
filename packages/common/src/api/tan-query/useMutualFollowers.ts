@@ -8,7 +8,7 @@ import { Id } from '~/models/Identifiers'
 import { getUserId } from '~/store/account/selectors'
 
 import { QUERY_KEYS } from './queryKeys'
-import { Config } from './types'
+import { QueryOptions } from './types'
 import { primeUserData } from './utils/primeUserData'
 
 type MutualFollowersParams = {
@@ -22,7 +22,7 @@ type MutualFollowersParams = {
  */
 export const useMutualFollowers = (
   { userId, limit, offset }: MutualFollowersParams,
-  config?: Config
+  options?: QueryOptions
 ) => {
   const { audiusSdk } = useAudiusQueryContext()
   const currentUserId = useSelector(getUserId)
@@ -44,7 +44,7 @@ export const useMutualFollowers = (
       primeUserData({ users, queryClient, dispatch })
       return users
     },
-    staleTime: config?.staleTime,
-    enabled: config?.enabled !== false && !!userId && !!currentUserId
+    staleTime: options?.staleTime,
+    enabled: options?.enabled !== false && !!userId && !!currentUserId
   })
 }

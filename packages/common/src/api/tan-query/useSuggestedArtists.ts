@@ -3,10 +3,10 @@ import { useQuery } from '@tanstack/react-query'
 import { useAudiusQueryContext } from '~/audius-query'
 
 import { QUERY_KEYS } from './queryKeys'
-import { Config } from './types'
+import { QueryOptions } from './types'
 import { useUsers } from './useUsers'
 
-export const useSuggestedArtists = (config?: Config) => {
+export const useSuggestedArtists = (options?: QueryOptions) => {
   const { env, fetch } = useAudiusQueryContext()
 
   const { data: suggestedIds } = useQuery<number[]>({
@@ -17,12 +17,12 @@ export const useSuggestedArtists = (config?: Config) => {
       // dedupe the artists just in case the team accidentally adds the same artist twice
       return [...new Set(suggestedArtists as number[])]
     },
-    staleTime: config?.staleTime,
-    enabled: config?.enabled !== false
+    staleTime: options?.staleTime,
+    enabled: options?.enabled !== false
   })
 
   return useUsers(suggestedIds, {
-    ...config,
-    enabled: config?.enabled !== false
+    ...options,
+    enabled: options?.enabled !== false
   })
 }

@@ -10,7 +10,7 @@ import { Id } from '~/models/Identifiers'
 import { CollectionType } from '~/store/saved-collections/types'
 
 import { QUERY_KEYS } from './queryKeys'
-import { Config } from './types'
+import { QueryOptions } from './types'
 import { useCurrentUserId } from './useCurrentUserId'
 import { primeCollectionData } from './utils/primeCollectionData'
 
@@ -34,7 +34,7 @@ export const useLibraryCollections = (
     sortDirection = 'desc',
     pageSize = PAGE_SIZE
   }: UseLibraryCollectionsArgs,
-  config?: Config
+  options?: QueryOptions
 ) => {
   const { audiusSdk } = useAudiusQueryContext()
   const { data: currentUserId } = useCurrentUserId()
@@ -44,7 +44,7 @@ export const useLibraryCollections = (
   return useInfiniteQuery({
     queryKey: [
       QUERY_KEYS.libraryCollections,
-      currentUserId,
+      currentUserId?.toString(),
       collectionType,
       category,
       query,
@@ -90,7 +90,7 @@ export const useLibraryCollections = (
       return collections
     },
     select: (data) => data.pages.flat(),
-    staleTime: config?.staleTime,
-    enabled: config?.enabled !== false && !!currentUserId
+    staleTime: options?.staleTime,
+    enabled: options?.enabled !== false && !!currentUserId
   })
 }

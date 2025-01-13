@@ -11,7 +11,7 @@ import {
 import { removeNullable } from '~/utils/typeUtils'
 
 import { QUERY_KEYS } from './queryKeys'
-import { Config } from './types'
+import { QueryOptions } from './types'
 import { useCurrentUserId } from './useCurrentUserId'
 import { useUsers } from './useUsers'
 
@@ -25,7 +25,7 @@ const AUDIO_TRANSACTIONS_BATCH_SIZE = 50
 
 export const useAudioTransactions = (
   args: GetAudioTransactionsArgs,
-  config?: Config
+  options?: QueryOptions
 ) => {
   const { audiusSdk } = useAudiusQueryContext()
   const { data: userId } = useCurrentUserId()
@@ -59,8 +59,8 @@ export const useAudioTransactions = (
       if (lastPage?.length < pageSize) return undefined
       return allPages.length * pageSize
     },
-    staleTime: config?.staleTime,
-    enabled: config?.enabled !== false && !!userId
+    staleTime: options?.staleTime,
+    enabled: options?.enabled !== false && !!userId
   })
 
   const pages = query.data?.pages

@@ -11,7 +11,7 @@ import { StringKeys } from '~/services/remote-config'
 import { Genre } from '~/utils/genres'
 
 import { QUERY_KEYS } from './queryKeys'
-import { Config } from './types'
+import { QueryOptions } from './types'
 import { useCurrentUserId } from './useCurrentUserId'
 import { primeTrackData } from './utils/primeTrackData'
 
@@ -23,7 +23,7 @@ type GetTrendingArgs = {
   pageSize?: number
 }
 
-export const useTrending = (args: GetTrendingArgs, options: Config) => {
+export const useTrending = (args: GetTrendingArgs, options: QueryOptions) => {
   const { timeRange, genre, pageSize = PAGE_SIZE } = args
   const { audiusSdk, remoteConfigInstance } = useAudiusQueryContext()
   const queryClient = useQueryClient()

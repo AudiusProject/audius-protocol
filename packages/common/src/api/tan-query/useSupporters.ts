@@ -7,7 +7,7 @@ import { ID, Id, OptionalId } from '~/models/Identifiers'
 import { MAX_PROFILE_TOP_SUPPORTERS } from '~/utils/constants'
 
 import { QUERY_KEYS } from './queryKeys'
-import { Config } from './types'
+import { QueryOptions } from './types'
 import { useCurrentUserId } from './useCurrentUserId'
 import { primeUserData } from './utils/primeUserData'
 
@@ -18,7 +18,7 @@ type UseSupportersArgs = {
 
 export const useSupporters = (
   { userId, limit = MAX_PROFILE_TOP_SUPPORTERS + 1 }: UseSupportersArgs,
-  config?: Config
+  options?: QueryOptions
 ) => {
   const { audiusSdk } = useAudiusQueryContext()
   const queryClient = useQueryClient()
@@ -46,7 +46,7 @@ export const useSupporters = (
 
       return supporters
     },
-    staleTime: config?.staleTime,
-    enabled: config?.enabled !== false && !!userId
+    staleTime: options?.staleTime,
+    enabled: options?.enabled !== false && !!userId
   })
 }

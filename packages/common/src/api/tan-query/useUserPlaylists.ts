@@ -7,7 +7,7 @@ import { useAudiusQueryContext } from '~/audius-query'
 import { Id, OptionalId } from '~/models/Identifiers'
 
 import { QUERY_KEYS } from './queryKeys'
-import { Config } from './types'
+import { QueryOptions } from './types'
 import { useCurrentUserId } from './useCurrentUserId'
 import { primeCollectionData } from './utils/primeCollectionData'
 
@@ -19,7 +19,7 @@ type GetPlaylistsOptions = {
 
 export const useUserPlaylists = (
   options: GetPlaylistsOptions,
-  config?: Config
+  options?: QueryOptions
 ) => {
   const { audiusSdk } = useAudiusQueryContext()
   const { data: currentUserId } = useCurrentUserId()
@@ -50,7 +50,7 @@ export const useUserPlaylists = (
 
       return collections
     },
-    staleTime: config?.staleTime,
-    enabled: config?.enabled !== false && !!userId
+    staleTime: options?.staleTime,
+    enabled: options?.enabled !== false && !!userId
   })
 }
