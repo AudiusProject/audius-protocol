@@ -5,7 +5,7 @@ import { useSelector } from 'react-redux'
 import {
   Flex,
   IconAudiusLogoHorizontalNew,
-  useTheme,
+  useTheme
 } from '@audius/harmony-native'
 
 import { AppDrawerContextProvider } from '../AppDrawerContext'
