@@ -1,4 +1,4 @@
-import { createContext, memo, useContext } from 'react'
+import { createContext, memo, useContext, useState } from 'react'
 
 import {
   History,
@@ -44,10 +44,9 @@ const getHistoryForEnvironment = () => {
   }
 }
 
-const history = getHistoryForEnvironment()
-
 export const HistoryContextProvider = memo(
   (props: { children: JSX.Element }) => {
+    const [history] = useState(() => getHistoryForEnvironment())
     return (
       <HistoryContext.Provider value={{ history }}>
         {props.children}
