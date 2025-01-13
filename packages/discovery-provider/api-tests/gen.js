@@ -2,7 +2,7 @@ const { execSync } = require('child_process')
 const path = require('path')
 
 function generateProtobuf() {
-  const protoDir = path.resolve(__dirname, '../../../../../../../../core')
+  const protoDir = path.resolve(__dirname, '../../../../../../../../../audiusd/pkg/core/protocol')
   const outDir = path.resolve(__dirname, '') // Set output directory for generated code
 
   const command = `

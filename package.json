@@ -26,6 +26,8 @@
     "turbo-link": "turbo login && turbo link",
     "validate-ci-config": "circleci config pack .circleci/src > .circleci/continue_config.yml && circleci config validate .circleci/continue_config.yml",
     "verify": "turbo run verify",
+    "buf:generate": "buf generate buf.build/alecsavvy/audiusd --include-imports && npm run buf:generate:postinstall",
+    "buf:generate:postinstall": "cd packages/discovery-provider/src/tasks/core && ./fix-proto-imports.sh",
     "WEB========================================": "",
     "web:dev": "npm run start:dev -w @audius/web",
     "web:prod": "npm run start:prod -w @audius/web",

@@ -383,12 +383,16 @@ class ManageEntityLegacy(google.protobuf.message.Message):
     ACTION_FIELD_NUMBER: builtins.int
     METADATA_FIELD_NUMBER: builtins.int
     SIGNATURE_FIELD_NUMBER: builtins.int
+    SIGNER_FIELD_NUMBER: builtins.int
+    NONCE_FIELD_NUMBER: builtins.int
     user_id: builtins.int
     entity_type: builtins.str
     entity_id: builtins.int
     action: builtins.str
     metadata: builtins.str
     signature: builtins.str
+    signer: builtins.str
+    nonce: builtins.int
     def __init__(
         self,
         *,
@@ -398,7 +402,9 @@ class ManageEntityLegacy(google.protobuf.message.Message):
         action: builtins.str = ...,
         metadata: builtins.str = ...,
         signature: builtins.str = ...,
+        signer: builtins.str = ...,
+        nonce: builtins.int = ...,
     ) -> None: ...
-    def ClearField(self, field_name: typing.Literal["action", b"action", "entity_id", b"entity_id", "entity_type", b"entity_type", "metadata", b"metadata", "signature", b"signature", "user_id", b"user_id"]) -> None: ...
+    def ClearField(self, field_name: typing.Literal["action", b"action", "entity_id", b"entity_id", "entity_type", b"entity_type", "metadata", b"metadata", "nonce", b"nonce", "signature", b"signature", "signer", b"signer", "user_id", b"user_id"]) -> None: ...
 
 global___ManageEntityLegacy = ManageEntityLegacy
