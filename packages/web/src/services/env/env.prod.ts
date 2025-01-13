@@ -4,7 +4,6 @@ export const env: Env = {
   AAO_ENDPOINT: 'https://antiabuseoracle.audius.co',
   AMPLITUDE_API_KEY: '86760558b8bb1b3aae61656efd4ddacb',
   AMPLITUDE_PROXY: 'https://gain2.audius.co/2/httpapi',
-  AMPLITUDE_WRITE_KEY: null,
   API_KEY: '8acf5eb7436ea403ee536a7334faa5e9ada4b50f',
   APP_NAME: 'audius-client',
   AUDIUS_URL: 'https://audius.co',
