@@ -72,7 +72,7 @@ export const SignInPage = () => {
       dispatch(setValueField('password', existingPassword))
     }
   }, [navigate, requiresOtp, existingPassword, dispatch])
-  console.log('asdf existingemail', existingEmail)
+
   const initialValues = {
     email: existingEmail ?? '',
     password: existingPassword ?? ''

@@ -21,7 +21,6 @@ export const GuestEmailHint = () => {
   const lastShownError = usePrevious(error)
 
   const handleClickConfirmEmail = useCallback(() => {
-    console.log('asdf setting true')
     dispatch(setField('isGuest', true))
     dispatch(setValueField('email', email))
     dispatch(setValueField('password', TEMPORARY_PASSWORD))

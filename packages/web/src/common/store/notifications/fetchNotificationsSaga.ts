@@ -52,7 +52,6 @@ function* fetchNotificationsSaga(action: FetchNotificationsAction) {
     parseAndProcessNotifications,
     notificationItems
   )
-  console.log('asdf notifications', notifications)
   const hasMore = notifications.length >= pageSize
   yield* put(addNotifications({ notifications, totalUnviewed, hasMore }))
 }

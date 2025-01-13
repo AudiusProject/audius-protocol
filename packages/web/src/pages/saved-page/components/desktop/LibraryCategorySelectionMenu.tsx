@@ -60,18 +60,6 @@ export const LibraryCategorySelectionMenu = (
   const selectedCategory = useSelector((state: CommonState) =>
     getCategory(state, { currentTab })
   )
-  const isGuestAccount = useSelector(getIsGuestAccount)
-  useEffect(() => {
-    if (isGuestAccount) {
-      // should show guest checkout purchases
-      dispatch(
-        setSelectedCategory({
-          currentTab,
-          category: LibraryCategory.All
-        })
-      )
-    }
-  }, [currentTab, dispatch, isGuestAccount])
 
   const handleChange = useCallback(
     (e: ChangeEvent<HTMLInputElement>) => {

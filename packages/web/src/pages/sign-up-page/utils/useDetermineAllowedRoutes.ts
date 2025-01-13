@@ -133,7 +133,7 @@ export const useDetermineAllowedRoute = () => {
     if (correctedPath === SignUpPath.completedRedirect) {
       setIsWelcomeModalOpen(true)
     }
-    console.log('asdf allowedRoutes', allowedRoutes, correctedPath)
+
     return {
       allowedRoutes,
       isAllowedRoute,

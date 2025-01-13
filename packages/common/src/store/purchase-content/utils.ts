@@ -94,7 +94,6 @@ export function getBalanceNeeded(
   existingBalance: BNUSDC,
   minPurchaseAmountCents: number
 ) {
-  console.log('asdf existingBalance', existingBalance)
   const diff = totalAmountDue.sub(existingBalance)
   const minPurchaseAmountBN = new BN(minPurchaseAmountCents).mul(
     BN_USDC_CENT_WEI

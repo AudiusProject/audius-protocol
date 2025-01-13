@@ -47,10 +47,6 @@ export const ConfirmEmailPage = () => {
   const isGuest = useSelector(getIsGuest)
   const isSubmitting = !!otp
 
-  // useEffect(() => {
-  //   dispatch(signIn(email, password))
-  // }, [dispatch, email, password])
-
   const handleSubmit = useCallback(
     (values: ConfirmEmailValues) => {
       const { otp } = values

@@ -186,7 +186,6 @@ export function* fetchAccountAsync() {
     },
     true // force refresh to get updated user w handle
   )
-  console.log('asdf accountData', wallet, accountData)
 
   if (!accountData) {
     yield* put(
