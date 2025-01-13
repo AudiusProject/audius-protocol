@@ -12,9 +12,11 @@ import { Nullable } from '../../../utils/typeUtils'
 export const getBaseState = (state: CommonState) => state.pages.track
 
 export const getTrackId = (state: CommonState) => getBaseState(state).trackId
+
 export const getTrackPermalink = (state: CommonState) =>
   getBaseState(state).trackPermalink
-export const getTrack = (state: CommonState, params?: { id?: ID }) => {
+
+const getTrack = (state: CommonState, params?: { id?: ID }) => {
   if (params?.id) {
     return getCachedTrack(state, { id: params.id })
   }

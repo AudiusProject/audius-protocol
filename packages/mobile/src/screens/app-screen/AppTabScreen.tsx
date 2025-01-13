@@ -61,13 +61,10 @@ import { useAppScreenOptions } from './useAppScreenOptions'
 
 export type AppTabScreenParamList = {
   Track: {
-    id?: ID
     searchTrack?: SearchTrack
     canBeUnlisted?: boolean
-    handle?: string
-    slug?: string
     showComments?: boolean
-  }
+  } & ({ handle: string; slug: string } | { id: ID })
   TrackRemixes: { id: ID } | { handle: string; slug: string }
   Profile: { handle: string; id?: ID } | { handle?: string; id: ID }
   Collection: {
