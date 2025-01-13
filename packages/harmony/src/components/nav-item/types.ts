@@ -10,6 +10,8 @@ export type NavItemProps = WithCSS<{
   children: ReactNode
   /** The name of the icon to display on the left side of the label. */
   leftIcon?: IconComponent
+  /** Override the left icon with a custom component. */
+  leftOverride?: ReactNode
   /** The name of the icon to display on the right side of the label. */
   rightIcon?: ReactNode
   /** Whether the navigation item is currently selected. */
