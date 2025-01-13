@@ -231,6 +231,7 @@ export { default as IconCcZero } from '@audius/harmony/src/assets/icons/ccZero.s
 export { default as IconAudiusLogo } from '@audius/harmony/src/assets/icons/AudiusLogo.svg'
 export { default as IconAudiusLogoColor } from '@audius/harmony/src/assets/icons/AudiusLogoColor.svg'
 export { default as IconAudiusLogoHorizontal } from '@audius/harmony/src/assets/icons/AudiusLogoHorizontal.svg'
+export { default as IconAudiusLogoHorizontalNew } from '@audius/harmony/src/assets/icons/AudiusLogoHorizontalNew.svg'
 export { default as IconAudiusLogoHorizontalColor } from '@audius/harmony/src/assets/icons/AudiusLogoHorizontalColor.svg'
 export { default as IconAudiusLogoVertical } from '@audius/harmony/src/assets/icons/AudiusLogoVertical.svg'
 export { default as IconLogoCoinbase } from '@audius/harmony/src/assets/icons/Coinbase.svg'
