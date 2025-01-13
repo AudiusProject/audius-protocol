@@ -40,13 +40,13 @@ export const NavItemKebabButton = (props: EditNavItemButtonProps) => {
               pointerEvents: visible ? 'all' : 'none',
               '& path': {
                 fill: isSelected
-                  ? 'var(--harmony-static-static-white)'
+                  ? 'var(--harmony-static-white)'
                   : 'var(--harmony-n-700)'
               },
               ':hover,:active,:focus,:hover path, :active path, :focus path': {
                 color: 'var(--harmony-neutral)',
                 fill: isSelected
-                  ? 'var(--harmony-static-static-white)'
+                  ? 'var(--harmony-static-white)'
                   : 'var(--harmony-n-950)'
               }
             }}

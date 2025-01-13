@@ -6,13 +6,7 @@ import {
   collectionsSocialActions,
   tracksSocialActions
 } from '@audius/common/store'
-import {
-  Box,
-  Divider,
-  ExpandableNavItem,
-  Flex,
-  Scrollbar
-} from '@audius/harmony'
+import { Box, Divider, Flex, Scrollbar } from '@audius/harmony'
 import { ResizeObserver } from '@juggle/resize-observer'
 import { connect } from 'react-redux'
 import { RouteComponentProps, withRouter } from 'react-router-dom'
@@ -29,6 +23,7 @@ import { LeftNavCTA } from './LeftNavCTA'
 import { LeftNavLink } from './LeftNavLink'
 import { NavHeader } from './NavHeader'
 import { NowPlayingArtworkTile } from './NowPlayingArtworkTile'
+import { RestrictedExpandableNavItem } from './RestrictedExpandableNavItem'
 import { RouteNav } from './RouteNav'
 import { NavItemConfig, useNavConfig } from './useNavConfig'
 
@@ -78,7 +73,7 @@ const LeftNav = (props: NavColumnProps) => {
       if (item.isExpandable) {
         const NestedComponent = item.nestedComponent
         return (
-          <ExpandableNavItem
+          <RestrictedExpandableNavItem
             key={item.label}
             label={item.label}
             leftIcon={item.leftIcon}
@@ -90,6 +85,7 @@ const LeftNav = (props: NavColumnProps) => {
               ) : null
             }
             canUnfurl={item.canUnfurl}
+            restriction={item.restriction}
           />
         )
       }
@@ -177,7 +173,7 @@ const LeftNav = (props: NavColumnProps) => {
           </DragAutoscroller>
         </Scrollbar>
       </Flex>
-      <Flex direction='column' alignItems='center' pt='l'>
+      <Flex direction='column' alignItems='center'>
         <ProfileCompletionPanel />
         <LeftNavCTA />
         <NowPlayingArtworkTile />

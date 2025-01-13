@@ -16,7 +16,7 @@ const { getUserHandle, getUserId, getIsAccountComplete, getGuestEmail } =
 const messages = {
   haveAccount: 'Have an Account?',
   managedAccount: 'Managed Account',
-  signIn: 'Sign in',
+  signIn: 'Sign In',
   finishSignUp: 'Finish Signing Up'
 }
 
