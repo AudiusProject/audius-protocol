@@ -57,10 +57,10 @@ const VanityMetric = (props: VanityMetricProps) => {
       hitSlop={vanityMetricHitSlop}
     >
       <Flex gap='xs' row>
-        <Text variant='title' size='s'>
+        <Text variant='body' size='s'>
           {formatCount(metric)}
         </Text>
-        <Text variant='title' size='s' color='subdued'>
+        <Text variant='body' size='s' color='subdued'>
           {label}
         </Text>
       </Flex>
