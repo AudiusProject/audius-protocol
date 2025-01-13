@@ -29,7 +29,7 @@ export const TopSupporters = () => {
   const profile = useSelector(getProfileUser)
   const { data: supporters = [] } = useSupporters({
     userId: profile?.user_id,
-    limit: MAX_PROFILE_TOP_SUPPORTERS
+    pageSize: MAX_PROFILE_TOP_SUPPORTERS
   })
 
   const handleClick = useCallback(() => {

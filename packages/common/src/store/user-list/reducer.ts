@@ -8,7 +8,7 @@ type UserListActions = ActionType<typeof actions>
 export const UserListReducerFactory = {
   createReducer: ({
     tag,
-    pageSize = 15
+    pageSize = 5
   }: {
     tag: string
     pageSize?: number

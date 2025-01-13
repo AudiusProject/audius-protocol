@@ -34,7 +34,7 @@ const SupportingListForProfile = ({ profile }: { profile: User }) => {
   const dispatch = useDispatch()
   const { data: supportedUsers, isSuccess } = useSupportedUsers({
     userId: profile.user_id,
-    limit: MAX_PROFILE_SUPPORTING_TILES
+    pageSize: MAX_PROFILE_SUPPORTING_TILES
   })
 
   const handleClickSeeMore = useCallback(() => {

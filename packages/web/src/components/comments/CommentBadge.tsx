@@ -1,4 +1,4 @@
-import { useSupporters } from '@audius/common/api'
+import { useSupporter } from '@audius/common/api'
 import { useCurrentCommentSection } from '@audius/common/context'
 import { ID } from '@audius/common/models'
 import {
@@ -33,17 +33,16 @@ export const CommentBadge = ({
   isArtist
 }: CommentBadgeProps) => {
   const { artistId } = useCurrentCommentSection()
-  const { data: supporters } = useSupporters({ userId: artistId })
-  const tipSupporterData = supporters?.find(
-    (supporter) => supporter.sender?.user_id === commentUserId
-  )
-  const isTipSupporter = !!tipSupporterData
-  const isTopSupporter = tipSupporterData?.rank === 1
+  const { data: supporter } = useSupporter({
+    userId: artistId,
+    supporterUserId: commentUserId
+  })
+
   const badgeType = isArtist
     ? 'artist'
-    : isTopSupporter
+    : supporter?.rank === 1
       ? 'topSupporter'
-      : isTipSupporter
+      : supporter
         ? 'tipSupporter'
         : null
 

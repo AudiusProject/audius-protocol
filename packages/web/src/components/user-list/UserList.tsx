@@ -1,189 +1,172 @@
-import { useEffect, useState, useCallback } from 'react'
+import { useCallback, useRef } from 'react'
 
 import { useCurrentUserId } from '@audius/common/api'
-import { ID, FollowSource } from '@audius/common/models'
-import {
-  TOP_SUPPORTERS_USER_LIST_TAG,
-  SUPPORTING_USER_LIST_TAG,
-  accountSelectors,
-  cacheUsersSelectors,
-  profilePageActions,
-  usersSocialActions as socialActions,
-  userListActions,
-  UserListStoreState
-} from '@audius/common/store'
+import { ID, User, FollowSource } from '@audius/common/models'
+import { profilePageActions, usersSocialActions } from '@audius/common/store'
 import { route } from '@audius/common/utils'
-import { FollowButton } from '@audius/harmony'
+import { FollowButton, Scrollbar } from '@audius/harmony'
+import { css } from '@emotion/react'
 import cn from 'classnames'
-import Lottie from 'lottie-react'
+import { range } from 'lodash'
 import InfiniteScroll from 'react-infinite-scroller'
-import { useDispatch, useSelector } from 'react-redux'
+import { useDispatch } from 'react-redux'
 
-import loadingSpinner from 'assets/animations/loadingSpinner.json'
 import ArtistChip from 'components/artist/ArtistChip'
+import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import { MountPlacement } from 'components/types'
 import * as unfollowConfirmationActions from 'components/unfollow-confirmation-modal/store/actions'
 import { useIsMobile } from 'hooks/useIsMobile'
-import { AppState } from 'store/types'
+import { setVisibility } from 'store/application/ui/userListModal/slice'
 import { push } from 'utils/navigation'
 
 import styles from './UserList.module.css'
 
 const { profilePage } = route
-const { loadMore, reset } = userListActions
-const { getUsers } = cacheUsersSelectors
 const { setNotificationSubscription } = profilePageActions
-const { getHasAccount } = accountSelectors
 
 const SCROLL_THRESHOLD = 400
 
+type SkeletonItem = {
+  _loading: true
+  user_id: string
+}
+
+const skeletonData: SkeletonItem[] = range(6).map((index) => ({
+  _loading: true,
+  user_id: `skeleton ${index}`
+}))
+
 type UserListProps = {
-  // A tag uniquely identifying this particular instance of a UserList in the store.
-  // Because multiple lists may exist, all listening to the same actions,
-  // the tag is required to forward actions to a particular UserList.
-  tag: string
-  // Selector pointing to this particular instance of the UserList in the global store.
-  stateSelector: (state: AppState) => UserListStoreState
-  // Selector pointing to relevant userId in the context of this modal
-  userIdSelector?: (state: AppState) => ID | null
-  // Optional sideeffects on/before performing actions
-  afterFollow?: () => void
-  afterUnfollow?: () => void
-  beforeClickArtistName?: () => void
-  getScrollParent?: () => HTMLElement | null
-  onNavigateAway?: () => void
+  data: User[] | undefined
+  hasNextPage: boolean
+  isLoading: boolean
+  fetchNextPage: () => void
+  showSupportFor?: ID
+  showSupportFrom?: ID
 }
 
 export const UserList = ({
-  tag,
-  stateSelector,
-  userIdSelector,
-  afterFollow,
-  afterUnfollow,
-  beforeClickArtistName,
-  getScrollParent,
-  onNavigateAway
+  data,
+  hasNextPage,
+  isLoading,
+  fetchNextPage,
+  showSupportFor,
+  showSupportFrom
 }: UserListProps) => {
   const dispatch = useDispatch()
   const isMobile = useIsMobile()
-  const [hasLoaded, setHasLoaded] = useState(false)
+  const { data: currentUserId } = useCurrentUserId()
 
-  const { hasMore, loading, userIds } = useSelector(stateSelector)
-  const loggedIn = useSelector(getHasAccount)
-  const { data: userId } = useCurrentUserId()
-  const otherUserId = useSelector(
-    (state: AppState) => userIdSelector?.(state) ?? undefined
+  const handleClose = useCallback(
+    () => dispatch(setVisibility(false)),
+    [dispatch]
   )
-  const usersMap = useSelector((state: AppState) =>
-    getUsers(state, { ids: userIds })
+
+  const handleFollow = useCallback(
+    (userId: ID) => {
+      if (!currentUserId) {
+        handleClose()
+      } else {
+        dispatch(usersSocialActions.followUser(userId, FollowSource.USER_LIST))
+      }
+    },
+    [currentUserId, dispatch, handleClose]
   )
-  const users = userIds
-    .map((id) => usersMap[id])
-    .filter(Boolean)
-    .filter((u) => !u.is_deactivated)
 
-  const handleFollow = (userId: ID) => {
-    dispatch(socialActions.followUser(userId, FollowSource.USER_LIST))
-    if (!loggedIn && afterFollow) afterFollow()
-  }
-
-  const handleUnfollow = (userId: ID) => {
-    if (isMobile) {
-      dispatch(unfollowConfirmationActions.setOpen(userId))
-    } else {
-      dispatch(socialActions.unfollowUser(userId, FollowSource.USER_LIST))
-      dispatch(setNotificationSubscription(userId, false, false))
-    }
-    if (!loggedIn && afterUnfollow) afterUnfollow()
-  }
-
-  const handleClickArtistName = (handle: string) => {
-    beforeClickArtistName?.()
-    dispatch(push(profilePage(handle)))
-  }
-
-  const handleLoadMore = useCallback(
-    () => dispatch(loadMore(tag)),
-    [dispatch, tag]
+  const handleUnfollow = useCallback(
+    (userId: ID) => {
+      if (!currentUserId) {
+        handleClose()
+      } else if (isMobile) {
+        dispatch(unfollowConfirmationActions.setOpen(userId))
+      } else {
+        dispatch(
+          usersSocialActions.unfollowUser(userId, FollowSource.USER_LIST)
+        )
+        dispatch(setNotificationSubscription(userId, false, false))
+      }
+    },
+    [currentUserId, isMobile, handleClose, dispatch]
   )
-  const handleReset = useCallback(() => dispatch(reset(tag)), [dispatch, tag])
 
-  useEffect(() => {
-    if (!hasLoaded) {
-      /**
-       * Reset on initial load in case the list modal for the
-       * given tag was already open before for another user.
-       * If we do no reset on initial load (or on exiting the modal),
-       * then the list modal will be confused and may not refresh
-       * for the current user, or it may refresh but not have the
-       * correct total count which messes up the logic for loading
-       * more users as we scroll down the modal.
-       * The reason why we reset on initial load rather than on
-       * exiting the modal is because it's possible that one modal
-       * opens another (e.g. clicking artist hover tile supporting section),
-       * and resetting on modal exit in that case may reset the data for the
-       * incoming modal after it loads and end up showing an empty modal.
-       */
-      handleReset()
-      handleLoadMore()
-      setHasLoaded(true)
-    }
-  }, [handleLoadMore, handleReset, hasLoaded])
+  const handleClickArtistName = useCallback(
+    (handle: string) => {
+      dispatch(push(profilePage(handle)))
+      handleClose()
+    },
+    [dispatch, handleClose]
+  )
+
+  const displayData = [...(data ?? []), ...(isLoading ? skeletonData : [])]
+
+  const scrollParentRef = useRef<HTMLElement | null>(null)
 
   return (
-    <div className={styles.content}>
-      <InfiniteScroll
-        pageStart={0}
-        loadMore={handleLoadMore}
-        hasMore={hasMore}
-        useWindow={!getScrollParent}
-        initialLoad={false}
-        threshold={SCROLL_THRESHOLD}
-        getScrollParent={getScrollParent}
-      >
-        {users.map((user, index) => (
+    <Scrollbar
+      css={css`
+        min-height: 0;
+        max-height: 690px;
+        height: 100%;
+        overflow-y: auto;
+        overflow-x: hidden;
+      `}
+      containerRef={(containerRef) => {
+        scrollParentRef.current = containerRef
+      }}
+    >
+      <div className={styles.content}>
+        <InfiniteScroll
+          pageStart={0}
+          loadMore={fetchNextPage}
+          hasMore={hasNextPage}
+          useWindow={false}
+          initialLoad={false}
+          threshold={SCROLL_THRESHOLD}
+          getScrollParent={() => scrollParentRef.current}
+        >
+          {displayData.map((user, index) =>
+            '_loading' in user ? (
+              <div key={user.user_id} className={styles.userContainer}>
+                Add loading skeleton
+              </div>
+            ) : (
+              <div
+                key={user.user_id}
+                className={cn(styles.userContainer, {
+                  [styles.notLastUser]: data && index !== data.length - 1
+                })}
+              >
+                <ArtistChip
+                  user={user}
+                  onClickArtistName={() => handleClickArtistName(user.handle)}
+                  onNavigateAway={handleClose}
+                  showPopover={!isMobile}
+                  popoverMount={MountPlacement.BODY}
+                  showSupportFor={showSupportFor}
+                  showSupportFrom={showSupportFrom}
+                />
+                {user.user_id !== currentUserId && (
+                  <FollowButton
+                    size='small'
+                    isFollowing={user.does_current_user_follow}
+                    onFollow={() => handleFollow(user.user_id)}
+                    onUnfollow={() => handleUnfollow(user.user_id)}
+                    fullWidth={false}
+                  />
+                )}
+              </div>
+            )
+          )}
+          {isLoading && <div className={styles.spacer} />}
           <div
-            key={user.user_id}
-            className={cn(styles.user, {
-              [styles.notLastUser]: index !== users.length - 1
+            className={cn(styles.loadingAnimation, {
+              [styles.show]: isLoading
             })}
           >
-            <ArtistChip
-              user={user}
-              onClickArtistName={() => {
-                handleClickArtistName(user.handle)
-              }}
-              onNavigateAway={onNavigateAway}
-              showPopover={!isMobile}
-              popoverMount={MountPlacement.BODY}
-              showSupportFor={
-                tag === TOP_SUPPORTERS_USER_LIST_TAG ? otherUserId : undefined
-              }
-              showSupportFrom={
-                tag === SUPPORTING_USER_LIST_TAG ? otherUserId : undefined
-              }
-            />
-            {user.user_id !== userId ? (
-              <FollowButton
-                size='small'
-                isFollowing={user.does_current_user_follow}
-                onFollow={() => handleFollow(user.user_id)}
-                onUnfollow={() => handleUnfollow(user.user_id)}
-                fullWidth={false}
-              />
-            ) : null}
+            <LoadingSpinner className={styles.spinner} />
           </div>
-        ))}
-        {/* Only show the spacer if we're in fullscreen mode (no getScrollParent) */}
-        {loading && !getScrollParent && <div className={styles.spacer} />}
-        <div
-          className={cn(styles.loadingAnimation, {
-            [styles.show]: loading
-          })}
-        >
-          <Lottie loop autoplay animationData={loadingSpinner} />
-        </div>
-      </InfiniteScroll>
-    </div>
+        </InfiniteScroll>
+      </div>
+    </Scrollbar>
   )
 }

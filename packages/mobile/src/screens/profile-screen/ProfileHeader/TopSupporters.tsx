@@ -63,7 +63,7 @@ export const TopSupporters = () => {
 
   const { data: supporters = [], isSuccess } = useSupporters({
     userId: user_id,
-    limit: MAX_PROFILE_TOP_SUPPORTERS
+    pageSize: MAX_PROFILE_TOP_SUPPORTERS
   })
 
   const handlePress = useCallback(() => {

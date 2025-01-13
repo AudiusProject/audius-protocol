@@ -152,7 +152,7 @@ export const ProfileInfoTiles = () => {
 
   const { data: relatedArtists } = useRelatedArtists({
     artistId: user_id,
-    limit: 1
+    pageSize: 1
   })
   const hasRelatedArtists = relatedArtists && relatedArtists?.length > 0
 

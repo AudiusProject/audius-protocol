@@ -25,6 +25,8 @@ export const QUERY_KEYS = {
   followers: 'followers',
   favoritedTracks: 'favoritedTracks',
   supporters: 'supporters',
+  supporter: 'supporter',
+  topSupporter: 'topSupporter',
   supportedUsers: 'supportedUsers',
   relatedArtists: 'relatedArtists',
   purchases: 'purchases',
@@ -40,5 +42,10 @@ export const QUERY_KEYS = {
   topArtistsInGenre: 'topArtistsInGenre',
   audioTransactions: 'audioTransactions',
   audioTransactionsCount: 'audioTransactionsCount',
-  libraryCollections: 'libraryCollections'
+  libraryCollections: 'libraryCollections',
+  favorites: 'favorites',
+  following: 'following',
+  notifications: 'notifications',
+  reposts: 'reposts',
+  remixers: 'remixers'
 } as const

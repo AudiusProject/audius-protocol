@@ -2,7 +2,7 @@ import { useMemo } from 'react'
 
 import { useSelector } from 'react-redux'
 
-import { useSupporter, useSupporters } from '~/api'
+import { useSupporter, useTopSupporter } from '~/api'
 import { BNWei, StringWei } from '~/models'
 import { accountSelectors } from '~/store'
 import { Nullable } from '~/utils/typeUtils'
@@ -15,12 +15,8 @@ export const useSupporterPrompt = (receiverId?: Nullable<number>) => {
   const accountUserId = useSelector(getUserId)
 
   // Get the top supporter
-  const { data: supporters = [], isPending: isSupportersPending } =
-    useSupporters({
-      userId: receiverId,
-      limit: 1
-    })
-  const topSupporter = supporters[0]
+  const { data: topSupporter, isPending: isTopSupporterPending } =
+    useTopSupporter(receiverId)
 
   // Get the current user's support amount
   const {
@@ -58,7 +54,7 @@ export const useSupporterPrompt = (receiverId?: Nullable<number>) => {
   }, [accountUserId, receiverId, topSupporter, currentUserSupporter])
 
   return {
-    isPending: isSupportersPending || isCurrentUserSupporterPending,
+    isPending: isTopSupporterPending || isCurrentUserSupporterPending,
     amountToDethrone,
     isFirstSupporter
   }

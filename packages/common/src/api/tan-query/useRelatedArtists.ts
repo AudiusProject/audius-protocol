@@ -1,56 +1,58 @@
-import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query'
 import { useDispatch } from 'react-redux'
 
-import { userMetadataFromSDK } from '~/adapters'
-import { transformAndCleanList } from '~/adapters/utils'
+import { userMetadataListFromSDK } from '~/adapters/user'
 import { useAudiusQueryContext } from '~/audius-query'
 import { ID, Id, OptionalId } from '~/models/Identifiers'
-import { MAX_PROFILE_RELATED_ARTISTS } from '~/utils/constants'
+import { User } from '~/models/User'
 
 import { QUERY_KEYS } from './queryKeys'
 import { Config } from './types'
 import { useCurrentUserId } from './useCurrentUserId'
 import { primeUserData } from './utils/primeUserData'
 
+const DEFAULT_PAGE_SIZE = 20
+
 type UseRelatedArtistsArgs = {
   artistId: ID | null | undefined
-  limit?: number
+  pageSize?: number
   filterFollowed?: boolean
 }
 
 export const useRelatedArtists = (
   {
     artistId,
-    limit = MAX_PROFILE_RELATED_ARTISTS,
+    pageSize = DEFAULT_PAGE_SIZE,
     filterFollowed
   }: UseRelatedArtistsArgs,
   config?: Config
 ) => {
   const { audiusSdk } = useAudiusQueryContext()
-  const dispatch = useDispatch()
   const { data: currentUserId } = useCurrentUserId()
   const queryClient = useQueryClient()
+  const dispatch = useDispatch()
 
-  return useQuery({
-    queryKey: [QUERY_KEYS.relatedArtists, artistId],
-    queryFn: async () => {
+  return useInfiniteQuery({
+    queryKey: [QUERY_KEYS.relatedArtists, artistId, pageSize, filterFollowed],
+    initialPageParam: 0,
+    getNextPageParam: (lastPage: User[], allPages) => {
+      if (lastPage.length < pageSize) return undefined
+      return allPages.length * pageSize
+    },
+    queryFn: async ({ pageParam }) => {
       const sdk = await audiusSdk()
-      const { data } = await sdk.full.users.getRelatedUsers({
+      const { data = [] } = await sdk.full.users.getRelatedUsers({
         id: Id.parse(artistId),
-        limit,
+        limit: pageSize,
+        offset: pageParam,
         userId: OptionalId.parse(currentUserId),
         filterFollowed
       })
-
-      const users = transformAndCleanList(data, userMetadataFromSDK)
-
-      // Prime the users data in both React Query and Redux
-      if (users.length) {
-        primeUserData({ users, queryClient, dispatch })
-      }
-
+      const users = userMetadataListFromSDK(data)
+      primeUserData({ users, queryClient, dispatch })
       return users
     },
+    select: (data) => data.pages.flat(),
     staleTime: config?.staleTime,
     enabled: config?.enabled !== false && !!artistId
   })

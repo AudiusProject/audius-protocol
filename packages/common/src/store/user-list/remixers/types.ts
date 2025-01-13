@@ -1,15 +1,7 @@
-import { UserListStoreState } from '~/store/user-list/types'
-
-import { ID } from '../../../models'
-
-export type RemixersOwnState = {
-  id: ID | null
-  trackId?: ID
-}
+import { ID } from '~/models/Identifiers'
 
 export type RemixersPageState = {
-  remixersPage: RemixersOwnState
-  userList: UserListStoreState
+  id: ID | null
 }
 
 export const REMIXERS_USER_LIST_TAG = 'REMIXERS'

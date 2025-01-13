@@ -1,5 +1,3 @@
-import { UserListStoreState } from '~/store/user-list/types'
-
 import { ID } from '../../../models'
 
 export enum RepostType {
@@ -7,14 +5,9 @@ export enum RepostType {
   COLLECTION = 'COLLECTION'
 }
 
-export type RepostsOwnState = {
+export type RepostsPageState = {
   id: ID | null
   repostType: RepostType
-}
-
-export type RepostsPageState = {
-  repostsPage: RepostsOwnState
-  userList: UserListStoreState
 }
 
 export const REPOSTS_USER_LIST_TAG = 'REPOSTS'

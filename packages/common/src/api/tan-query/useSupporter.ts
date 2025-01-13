@@ -3,7 +3,10 @@ import { useDispatch } from 'react-redux'
 
 import { useAudiusQueryContext } from '~/audius-query'
 import { ID, Id, OptionalId } from '~/models/Identifiers'
-import { supporterMetadataFromSDK } from '~/models/Tipping'
+import {
+  supporterMetadataFromSDK,
+  supporterMetadataListFromSDK
+} from '~/models/Tipping'
 
 import { QUERY_KEYS } from './queryKeys'
 import { Config } from './types'
@@ -15,6 +18,8 @@ type UseSupporterArgs = {
   supporterUserId: ID | null | undefined
 }
 
+const DEFAULT_STALE_TIME = 1000 * 30
+
 export const useSupporter = (
   { userId, supporterUserId }: UseSupporterArgs,
   config?: Config
@@ -25,7 +30,7 @@ export const useSupporter = (
   const dispatch = useDispatch()
 
   return useQuery({
-    queryKey: [QUERY_KEYS.supporters, userId, supporterUserId],
+    queryKey: [QUERY_KEYS.supporter, userId, supporterUserId],
     queryFn: async () => {
       const sdk = await audiusSdk()
       const { data } = await sdk.full.users.getSupporter({
@@ -42,7 +47,37 @@ export const useSupporter = (
       }
       return supporter
     },
-    staleTime: config?.staleTime,
+    staleTime: config?.staleTime ?? DEFAULT_STALE_TIME,
     enabled: config?.enabled !== false && !!userId && !!supporterUserId
+  })
+}
+
+export const useTopSupporter = (userId: ID | null | undefined) => {
+  const { audiusSdk } = useAudiusQueryContext()
+  const { data: currentUserId } = useCurrentUserId()
+  const queryClient = useQueryClient()
+  const dispatch = useDispatch()
+
+  return useQuery({
+    queryKey: [QUERY_KEYS.topSupporter, userId],
+    queryFn: async () => {
+      const sdk = await audiusSdk()
+      const { data } = await sdk.full.users.getSupporters({
+        id: Id.parse(userId),
+        userId: OptionalId.parse(currentUserId),
+        limit: 1
+      })
+
+      if (!data) return null
+
+      const [supporter] = supporterMetadataListFromSDK(data)
+
+      // Prime the cache for each supporter
+      if (supporter?.sender) {
+        primeUserData({ users: [supporter.sender], queryClient, dispatch })
+      }
+
+      return supporter
+    }
   })
 }

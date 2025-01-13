@@ -1,24 +1,16 @@
-import { combineReducers } from 'redux'
 import { createReducer, ActionType } from 'typesafe-actions'
 
-import { UserListReducerFactory } from '../reducer'
-
 import * as actions from './actions'
-import { TopSupportersOwnState, TOP_SUPPORTERS_USER_LIST_TAG } from './types'
+import { TopSupportersPageState } from './types'
 
 type TopSupportersActions = ActionType<typeof actions>
-
-const userListReducer = UserListReducerFactory.createReducer({
-  tag: TOP_SUPPORTERS_USER_LIST_TAG,
-  pageSize: 15
-})
 
 const initialState = {
   id: null
 }
 
-const topSupportersPageReducer = createReducer<
-  TopSupportersOwnState,
+const topSupportersReducer = createReducer<
+  TopSupportersPageState,
   TopSupportersActions
 >(initialState, {
   [actions.SET_TOP_SUPPORTERS](state, action) {
@@ -29,7 +21,4 @@ const topSupportersPageReducer = createReducer<
   }
 })
 
-export default combineReducers({
-  topSupportersPage: topSupportersPageReducer,
-  userList: userListReducer
-})
+export default topSupportersReducer
