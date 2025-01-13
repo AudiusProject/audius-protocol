@@ -18,9 +18,15 @@ import { EmailField } from './EmailField'
 
 const { SIGN_IN_PAGE } = route
 
-export const NewEmailField = () => {
+type NewEmailFieldProps = {
+  isGuestCheckout?: boolean
+}
+
+export const NewEmailField = (props: NewEmailFieldProps) => {
+  const { isGuestCheckout } = props
   const dispatch = useDispatch()
-  const [, { error }] = useField('email')
+  const emailFieldName = isGuestCheckout ? 'guestEmail' : 'email'
+  const [, { error }] = useField(emailFieldName)
   const { isValidating } = useFormikContext()
   const emailInUse = error === emailSchemaMessages.emailInUse
   const isGuest = error === emailSchemaMessages.guestAccountExists
@@ -42,16 +48,18 @@ export const NewEmailField = () => {
   const showGuestError =
     isGuest ||
     (isValidating && lastShownError === emailSchemaMessages.guestAccountExists)
-
   const showEmailInUseError =
     emailInUse ||
     (isValidating && lastShownError === emailSchemaMessages.emailInUse)
 
   return (
     <>
-      <EmailField helperText={hasError ? '' : undefined} />
+      <EmailField
+        name={emailFieldName}
+        helperText={hasError ? '' : undefined}
+      />
       {showGuestError ? (
-        <GuestEmailHint />
+        <GuestEmailHint isGuestCheckout={isGuestCheckout} />
       ) : showEmailInUseError ? (
         <Hint icon={IconError}>
           {error} {signInLink}
