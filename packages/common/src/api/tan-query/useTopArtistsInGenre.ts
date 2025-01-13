@@ -25,7 +25,7 @@ export const useTopArtistsInGenre = (
   const dispatch = useDispatch()
   const { genre, limit = ARTISTS_PER_GENRE_LIMIT } = args
 
-  const query = useInfiniteQuery({
+  return useInfiniteQuery({
     queryKey: [QUERY_KEYS.topArtistsInGenre, genre, limit],
     queryFn: async ({ pageParam }) => {
       const sdk = await audiusSdk()
@@ -43,11 +43,7 @@ export const useTopArtistsInGenre = (
       if (lastPage.length < limit) return undefined
       return allPages.length
     },
+    select: (data) => data.pages.flat(),
     ...config
   })
-
-  return {
-    ...query,
-    data: query.data?.pages.flatMap((page) => page)
-  }
 }

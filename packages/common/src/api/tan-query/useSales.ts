@@ -59,8 +59,7 @@ export const useSales = (args: GetSalesListArgs, options?: Config) => {
     enabled: options?.enabled !== false && !!args.userId
   })
 
-  const { data, fetchNextPage, hasNextPage, isFetchingNextPage, ...rest } =
-    queryResult
+  const { data } = queryResult
 
   const { userIdsToFetch, trackIdsToFetch, collectionIdsToFetch } =
     useMemo(() => {
@@ -89,11 +88,5 @@ export const useSales = (args: GetSalesListArgs, options?: Config) => {
   useTracks(trackIdsToFetch)
   useCollections(collectionIdsToFetch)
 
-  return {
-    data,
-    loadMore: fetchNextPage,
-    hasMore: hasNextPage,
-    isLoadingMore: isFetchingNextPage,
-    ...rest
-  }
+  return queryResult
 }

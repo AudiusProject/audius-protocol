@@ -31,14 +31,7 @@ export const useFollowers = (
   const queryClient = useQueryClient()
   const dispatch = useDispatch()
 
-  const {
-    data,
-    hasNextPage,
-    isFetchingNextPage,
-    fetchNextPage,
-    isLoading,
-    ...rest
-  } = useInfiniteQuery({
+  return useInfiniteQuery({
     queryKey: [QUERY_KEYS.followers, userId, limit],
     initialPageParam: 0,
     getNextPageParam: (lastPage: User[], allPages) => {
@@ -57,18 +50,8 @@ export const useFollowers = (
       primeUserData({ users, queryClient, dispatch })
       return users
     },
+    select: (data) => data.pages.flat(),
     staleTime: config?.staleTime,
     enabled: config?.enabled !== false && !!userId
   })
-
-  const flatData = data?.pages.flat() ?? []
-
-  return {
-    data: flatData,
-    hasMore: hasNextPage,
-    isLoadingMore: isFetchingNextPage,
-    loadMore: fetchNextPage,
-    isLoading,
-    ...rest
-  }
 }

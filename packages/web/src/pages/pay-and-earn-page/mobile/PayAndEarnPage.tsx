@@ -55,21 +55,25 @@ export const PayAndEarnPage = ({ tableView }: PayAndEarnPageProps) => {
   const {
     count: salesCount,
     data: sales,
-    fetchMore: fetchMoreSales,
+    fetchNextPage: fetchMoreSales,
     onSort: onSalesSort,
     onClickRow: onSalesClickRow,
     isEmpty: isSalesEmpty,
     isLoading: isSalesLoading,
-    downloadCSV: downloadSalesCSV
+    isError: isSalesError,
+    downloadCSV: downloadSalesCSV,
+    hasNextPage: hasMoreSales,
+    isFetchingNextPage: isFetchingNextSalesPage
   } = useSalesData()
   const {
     count: purchasesCount,
     data: purchases,
-    fetchMore: fetchMorePurchases,
+    fetchNextPage: fetchMorePurchases,
     onSort: onPurchasesSort,
     onClickRow: onPurchasesClickRow,
     isEmpty: isPurchasesEmpty,
     isLoading: isPurchasesLoading,
+    isError: isPurchasesError,
     downloadCSV: downloadPurchasesCSV
   } = usePurchasesData()
   const {
@@ -177,7 +181,8 @@ export const PayAndEarnPage = ({ tableView }: PayAndEarnPageProps) => {
                   isLoading={isPurchasesLoading}
                   onSort={onPurchasesSort}
                   onClickRow={onPurchasesClickRow}
-                  fetchMore={fetchMorePurchases}
+                  fetchNextPage={fetchMorePurchases}
+                  isError={isPurchasesError}
                 />
               ) : (
                 <SalesTab
@@ -187,7 +192,10 @@ export const PayAndEarnPage = ({ tableView }: PayAndEarnPageProps) => {
                   isLoading={isSalesLoading}
                   onSort={onSalesSort}
                   onClickRow={onSalesClickRow}
-                  fetchMore={fetchMoreSales}
+                  fetchNextPage={fetchMoreSales}
+                  isError={isSalesError}
+                  hasNextPage={hasMoreSales}
+                  isFetchingNextPage={isFetchingNextSalesPage}
                 />
               )}
             </Flex>

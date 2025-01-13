@@ -126,7 +126,7 @@ export const useGetSuggestedPlaylistTracks = (collectionId: ID) => {
   const {
     data: trendingTracks,
     isSuccess: isTrendingSuccess,
-    loadMore
+    fetchNextPage
   } = useTrending(
     {
       timeRange: TimeRange.WEEK
@@ -151,7 +151,7 @@ export const useGetSuggestedPlaylistTracks = (collectionId: ID) => {
 
   useEffect(() => {
     if (suggestedTrackIds.length < suggestedTrackCount) {
-      loadMore()
+      fetchNextPage()
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [suggestedTrackIds.length])

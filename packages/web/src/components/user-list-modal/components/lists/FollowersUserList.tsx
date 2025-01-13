@@ -10,17 +10,23 @@ type FollowersUserListProps = {
 
 export const FollowersUserList = ({ onClose }: FollowersUserListProps) => {
   const userId = useSelector(followersUserListSelectors.getId)
-  const { data, hasMore, isLoadingMore, loadMore, isLoading } = useFollowers({
+  const {
+    data = [],
+    hasNextPage,
+    isFetchingNextPage,
+    fetchNextPage,
+    isPending
+  } = useFollowers({
     userId
   })
 
   return (
     <UserListV2
       data={data}
-      hasMore={hasMore}
-      isLoadingMore={isLoadingMore}
-      isLoading={isLoading}
-      loadMore={loadMore}
+      hasMore={hasNextPage}
+      isLoadingMore={isFetchingNextPage}
+      isLoading={isPending}
+      loadMore={fetchNextPage}
       onNavigateAway={onClose}
       afterFollow={onClose}
       afterUnfollow={onClose}

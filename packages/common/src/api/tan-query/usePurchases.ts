@@ -58,9 +58,7 @@ export const usePurchases = (args: GetPurchaseListArgs, options?: Config) => {
     enabled: options?.enabled !== false && !!userId
   })
 
-  const { data, fetchNextPage, hasNextPage, isFetchingNextPage, ...rest } =
-    queryResult
-
+  const { data } = queryResult
   const { userIdsToFetch, trackIdsToFetch, collectionIdsToFetch } =
     useMemo(() => {
       if (!data)
@@ -88,11 +86,6 @@ export const usePurchases = (args: GetPurchaseListArgs, options?: Config) => {
   useUsers(userIdsToFetch)
   useTracks(trackIdsToFetch)
   useCollections(collectionIdsToFetch)
-  return {
-    data,
-    loadMore: fetchNextPage,
-    hasMore: hasNextPage,
-    isLoadingMore: isFetchingNextPage,
-    ...rest
-  }
+
+  return queryResult
 }
