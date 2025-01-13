@@ -33,31 +33,31 @@ const messages = {
 
 const tierInfoMap = {
   none: {
-    icon: IconTokenBronze,
+    icon: (props) => <IconTokenBronze size='xl' {...props} />,
     label: 'None',
     amount: 0,
     twitterIcon: ''
   },
   bronze: {
-    icon: IconTokenBronze,
+    icon: (props) => <IconTokenBronze size='xl' {...props} />,
     label: 'Bronze',
     amount: 10,
     twitterIcon: '🥉'
   },
   silver: {
-    icon: IconTokenSilver,
+    icon: (props) => <IconTokenSilver size='xl' {...props} />,
     label: 'Silver',
     amount: 100,
     twitterIcon: '🥈'
   },
   gold: {
-    icon: IconTokenGold,
+    icon: (props) => <IconTokenGold size='xl' {...props} />,
     label: 'Gold',
     amount: 1000,
     twitterIcon: '🥇'
   },
   platinum: {
-    icon: IconTokenPlatinum,
+    icon: (props) => <IconTokenPlatinum size='xl' {...props} />,
     label: 'Platinum',
     amount: 10000,
     twitterIcon: '🥇'

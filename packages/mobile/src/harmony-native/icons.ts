@@ -170,11 +170,10 @@ export { default as IconPlaybackPlay } from '@audius/harmony/src/assets/icons/Pl
 export { default as IconVerified } from '@audius/harmony/src/assets/icons/Verified.svg'
 
 // VIP Tier Badges
-export { default as IconTokenBronze } from '@audius/harmony/src/assets/icons/TokenBronze.svg'
-export { default as IconTokenGold } from '@audius/harmony/src/assets/icons/TokenGold.svg'
-export { default as IconTokenPlatinum } from '@audius/harmony/src/assets/icons/TokenPlatinum.svg'
-export { default as IconTokenSilver } from '@audius/harmony/src/assets/icons/TokenSilver.svg'
-// The TokenNoTier svg doesnt work on mobile, so we use a png component instead
+export { IconTokenBronze } from './components/IconTokenBronze'
+export { IconTokenPlatinum } from './components/IconTokenPlatinum'
+export { IconTokenSilver } from './components/IconTokenSilver'
+export { IconTokenGold } from './components/IconTokenGold'
 export { IconTokenNoTier } from './components/IconTokenNoTier'
 
 // File Types
