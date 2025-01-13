@@ -178,7 +178,7 @@ export const ChallengeRewardsTile = () => {
     })
 
   return (
-    <Paper shadow='near' border='strong' p='s' pt='l'>
+    <Paper shadow='near' border='strong' ph='s' pv='xl'>
       <Flex gap='unit10'>
         <Flex gap='s'>
           <GradientText style={styles.title}>{messages.title}</GradientText>

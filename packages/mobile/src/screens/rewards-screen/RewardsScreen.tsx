@@ -24,7 +24,7 @@ import { makeStyles } from 'app/styles'
 import { useThemeColors } from 'app/utils/theme'
 
 import { ChallengeRewardsTile } from './ChallengeRewardsTile'
-import { RewardsClaimTile } from './RewardsClaimTile'
+import { ClaimAllRewardsTile } from './ClaimAllRewardsTile'
 
 const { getBalance } = walletActions
 const { getTotalBalanceLoadDidFail } = walletSelectors
@@ -114,7 +114,7 @@ export const RewardsScreen = () => {
         <ScrollView style={styles.tiles}>
           <Flex gap='xl'>
             {audioFeaturesDegradedText ? renderNoticeTile() : null}
-            <RewardsClaimTile />
+            <ClaimAllRewardsTile />
             <ChallengeRewardsTile />
           </Flex>
         </ScrollView>

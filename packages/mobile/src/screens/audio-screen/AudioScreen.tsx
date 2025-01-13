@@ -39,7 +39,7 @@ import { useToast } from 'app/hooks/useToast'
 import { makeStyles } from 'app/styles'
 import { useThemeColors } from 'app/utils/theme'
 
-import { RewardsClaimTile } from '../rewards-screen/RewardsClaimTile'
+import { ClaimAllRewardsTile } from '../rewards-screen/ClaimAllRewardsTile'
 
 const { setVisibility } = modalsActions
 const { getBalance } = walletActions
@@ -265,7 +265,7 @@ export const AudioScreen = () => {
           <ScrollView>
             <Flex gap='l' mv='2xl' mh='m'>
               {renderAudioTile()}
-              <RewardsClaimTile />
+              <ClaimAllRewardsTile />
               <ScreenSecondaryContent>
                 {renderWhatTile()}
               </ScreenSecondaryContent>

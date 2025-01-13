@@ -71,7 +71,7 @@ const useStyles = makeStyles(({ spacing, typography }) => ({
   }
 }))
 
-export const RewardsClaimTile = () => {
+export const ClaimAllRewardsTile = () => {
   const styles = useStyles()
   const dispatch = useDispatch()
   const { cooldownChallenges, cooldownAmount, claimableAmount, isEmpty } =
