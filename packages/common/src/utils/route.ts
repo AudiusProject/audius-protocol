@@ -222,6 +222,14 @@ export const authenticatedRoutes = [
   WITHDRAWALS_PAGE
 ]
 
+export const guestRoutes = [
+  SAVED_PAGE,
+  LIBRARY_PAGE,
+  PURCHASES_PAGE,
+  SALES_PAGE,
+  PAYMENTS_PAGE
+]
+
 export const publicSiteRoutes = [
   PRESS_PAGE,
   TERMS_OF_SERVICE,

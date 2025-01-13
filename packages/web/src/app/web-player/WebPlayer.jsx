@@ -7,6 +7,7 @@ import {
   Status
 } from '@audius/common/models'
 import { StringKeys } from '@audius/common/services'
+import { guestRoutes } from '@audius/common/src/utils/route'
 import {
   accountSelectors,
   ExploreCollectionsVariant,
@@ -192,7 +193,8 @@ const {
   getAccountStatus,
   getUserId,
   getUserHandle,
-  getIsGuestAccount
+  getIsGuestAccount,
+  getIsAccountComplete
 } = accountSelectors
 
 // TODO: do we need to lazy load edit?
@@ -347,10 +349,13 @@ class WebPlayer extends Component {
   }
 
   componentDidUpdate(prevProps) {
+    const allowedRoutes = this.props.isGuestAccount
+      ? guestRoutes
+      : authenticatedRoutes
     if (
       !this.props.hasAccount &&
       this.props.accountStatus !== Status.LOADING &&
-      authenticatedRoutes.some((route) => {
+      allowedRoutes.some((route) => {
         const match = matchPath(getPathname(this.props.location), {
           path: route,
           exact: true
@@ -1039,7 +1044,8 @@ const mapStateToProps = (state) => ({
   accountStatus: getAccountStatus(state),
   signOnStatus: getSignOnStatus(state),
   showCookieBanner: getShowCookieBanner(state),
-  isGuestAccount: getIsGuestAccount(state)
+  isGuestAccount: getIsGuestAccount(state),
+  isAccountComplete: getIsAccountComplete(state)
 })
 
 const mapDispatchToProps = (dispatch) => ({

@@ -16,7 +16,7 @@ import { NavHeaderButton } from './NavHeaderButton'
 import { NotificationsButton } from './NotificationsButton'
 
 const { HOME_PAGE, SETTINGS_PAGE, DASHBOARD_PAGE } = route
-const { getHasAccount } = accountSelectors
+const { getIsAccountComplete } = accountSelectors
 const { getTheme } = themeSelectors
 
 const messages = {
@@ -27,7 +27,7 @@ const messages = {
 
 export const NavHeader = () => {
   const { spacing } = useTheme()
-  const hasAccount = useSelector(getHasAccount)
+  const isAccountComplete = useSelector(getIsAccountComplete)
 
   const isMatrix = useSelector((state) => getTheme(state) === Theme.MATRIX)
 
@@ -55,7 +55,7 @@ export const NavHeader = () => {
           ]}
         />
       </Link>
-      {hasAccount ? (
+      {isAccountComplete ? (
         <Flex justifyContent='center' alignItems='center' gap='s'>
           <Link to={DASHBOARD_PAGE}>
             <NavHeaderButton
