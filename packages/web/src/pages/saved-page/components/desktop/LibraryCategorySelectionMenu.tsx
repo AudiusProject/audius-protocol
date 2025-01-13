@@ -1,4 +1,4 @@
-import { ChangeEvent, useCallback, useEffect } from 'react'
+import { ChangeEvent, useCallback } from 'react'
 
 import {
   savedPageActions,
@@ -6,8 +6,7 @@ import {
   LibraryCategory,
   SavedPageTabs,
   LibraryCategoryType,
-  CommonState,
-  accountSelectors
+  CommonState
 } from '@audius/common/store'
 import {
   SelectablePill,
@@ -21,7 +20,6 @@ import styles from './LibraryCategorySelectionMenu.module.css'
 
 const { getCategory } = savedPageSelectors
 const { setSelectedCategory } = savedPageActions
-const { getIsGuestAccount } = accountSelectors
 
 const ALL_CATEGORIES = [
   {

@@ -1,6 +1,5 @@
 import { ReactNode, useEffect, useLayoutEffect, useRef, useState } from 'react'
 
-import { Status } from '@audius/common/models'
 import { FEED_PAGE } from '@audius/common/src/utils/route'
 import { route } from '@audius/common/utils'
 import {
@@ -13,14 +12,7 @@ import {
   useTheme
 } from '@audius/harmony'
 import { useDispatch, useSelector } from 'react-redux'
-import {
-  Link,
-  Redirect,
-  Route,
-  Switch,
-  useLocation,
-  useRouteMatch
-} from 'react-router-dom'
+import { Link, Redirect, Route, Switch, useRouteMatch } from 'react-router-dom'
 import { useSearchParams } from 'react-router-dom-v5-compat'
 import { useEffectOnce, useLocalStorage, useMeasure } from 'react-use'
 
@@ -33,11 +25,7 @@ import {
   setValueField,
   updateRouteOnCompletion
 } from 'common/store/pages/signon/actions'
-import {
-  getHasCompletedAccount,
-  getRouteOnExit,
-  getStatus
-} from 'common/store/pages/signon/selectors'
+import { getRouteOnExit, getStatus } from 'common/store/pages/signon/selectors'
 import { EditingStatus } from 'common/store/pages/signon/types'
 import { useMedia } from 'hooks/useMedia'
 import { SignInPage } from 'pages/sign-in-page'

@@ -16,10 +16,7 @@ import { range } from 'lodash'
 import { useDispatch } from 'react-redux'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 
-import {
-  addFollowArtists,
-  completeFollowArtists
-} from 'common/store/pages/signon/actions'
+import { addFollowArtists } from 'common/store/pages/signon/actions'
 import { getGenres } from 'common/store/pages/signon/selectors'
 import {
   FollowArtistCard,

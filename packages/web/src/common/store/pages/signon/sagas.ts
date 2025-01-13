@@ -581,7 +581,10 @@ function* createGuestAccount(
   const authService = yield* getContext('authService')
 
   // get user & user bank
-  const isGuestCheckoutEnabled = true
+  const isGuestCheckoutEnabled = yield* call(
+    getFeatureEnabled,
+    FeatureFlags.GUEST_CHECKOUT
+  )
 
   if (!isGuestCheckoutEnabled) {
     return
