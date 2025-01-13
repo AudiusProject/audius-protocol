@@ -91,7 +91,7 @@ const NoSales = () => {
 export const useSalesData = () => {
   const userId = useSelector(getUserId)
   const isManagerMode = useIsManagedAccount()
-  const { data: currentWeb3User } = useGetCurrentWeb3User({})
+  const { data: currentWeb3User } = useGetCurrentWeb3User()
 
   // Defaults: sort method = date, sort direction = desc
   const [sortMethod, setSortMethod] =

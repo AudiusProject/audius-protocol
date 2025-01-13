@@ -1,12 +1,9 @@
 import dayjs from 'dayjs'
-import { useSelector } from 'react-redux'
 
 import { managedUserListFromSDK, userManagerListFromSDK } from '~/adapters/user'
-import { QueryHookOptions, createApi } from '~/audius-query'
+import { createApi } from '~/audius-query'
 import { ID, User, UserMetadata } from '~/models'
-import { accountSelectors } from '~/store/account'
 
-import { useGetUserAccount } from './user'
 import { Id } from './utils'
 
 type ResetPasswordArgs = {
@@ -224,19 +221,6 @@ const accountApi = createApi({
     }
   }
 })
-
-export const useGetCurrentWeb3User = (
-  _fetchArgs: {},
-  options?: QueryHookOptions
-) => {
-  const wallets = useSelector(accountSelectors.getWalletAddresses)
-  const result = useGetUserAccount(
-    { wallet: wallets.web3User! },
-    { ...options, disabled: !wallets.web3User }
-  )
-
-  return { ...result, data: result.data ? result.data.user : null }
-}
 
 export const {
   useResetPassword,

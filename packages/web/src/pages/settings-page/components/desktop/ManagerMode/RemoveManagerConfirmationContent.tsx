@@ -34,7 +34,7 @@ export const RemoveManagerConfirmationContent = ({
   onCancel
 }: RemoveManagerConfirmationContentProps) => {
   const [removeManager, result] = useRemoveManager()
-  const { data: currentWeb3User } = useGetCurrentWeb3User({})
+  const { data: currentWeb3User } = useGetCurrentWeb3User()
   const currentUserId = useSelector(accountSelectors.getUserId)
   const managerIsCurrentWeb3User = currentWeb3User?.user_id === managerUserId
   const { switchToWeb3User } = useAccountSwitcher()

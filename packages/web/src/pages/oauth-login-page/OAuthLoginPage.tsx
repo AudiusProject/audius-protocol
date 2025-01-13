@@ -261,7 +261,7 @@ export const OAuthLoginPage = () => {
     dispatch(signOut())
   }
 
-  const { data: currentWeb3User } = useGetCurrentWeb3User({})
+  const { data: currentWeb3User } = useGetCurrentWeb3User()
   const { data: currentUserId } = useCurrentUserId()
   const { switchAccount } = useAccountSwitcher()
 
