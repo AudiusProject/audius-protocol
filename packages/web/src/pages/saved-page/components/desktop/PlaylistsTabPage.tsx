@@ -1,5 +1,6 @@
 import { useCallback, useMemo } from 'react'
 
+import { useLibraryCollections } from '@audius/common/api'
 import { CreatePlaylistSource } from '@audius/common/models'
 import {
   cacheCollectionsActions,
@@ -16,7 +17,6 @@ import { InfiniteCardLineup } from 'components/lineup/InfiniteCardLineup'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import EmptyTable from 'components/tracks-table/EmptyTable'
 import UploadChip from 'components/upload/UploadChip'
-import { useCollectionsData } from 'pages/saved-page/hooks/useCollectionsData'
 
 import { emptyStateMessages } from '../emptyStateMessages'
 
@@ -33,14 +33,22 @@ const messages = {
 
 export const PlaylistsTabPage = () => {
   const dispatch = useDispatch()
-  const { collections, loadMore, hasMore, isPending, isLoadingMore } =
-    useCollectionsData({
-      collectionType: 'playlists'
-    })
-  const emptyPlaylistsHeader = useSelector((state: CommonState) => {
-    const selectedCategory = getCategory(state, {
-      currentTab: SavedPageTabs.PLAYLISTS
-    })
+  const selectedCategory = useSelector((state: CommonState) =>
+    getCategory(state, { currentTab: SavedPageTabs.PLAYLISTS })
+  )
+
+  const {
+    data: collections = [],
+    fetchNextPage,
+    hasNextPage,
+    isPending,
+    isFetchingNextPage
+  } = useLibraryCollections({
+    collectionType: 'playlists',
+    category: selectedCategory
+  })
+
+  const emptyPlaylistsHeader = useMemo(() => {
     if (selectedCategory === LibraryCategory.All) {
       return emptyStateMessages.emptyPlaylistAllHeader
     } else if (selectedCategory === LibraryCategory.Favorite) {
@@ -48,7 +56,7 @@ export const PlaylistsTabPage = () => {
     } else {
       return emptyStateMessages.emptyPlaylistRepostsHeader
     }
-  })
+  }, [selectedCategory])
 
   const noResults = !isPending && collections?.length === 0
 
@@ -96,11 +104,11 @@ export const PlaylistsTabPage = () => {
 
   return (
     <InfiniteCardLineup
-      hasMore={hasMore}
-      loadMore={loadMore}
+      hasMore={hasNextPage}
+      loadMore={fetchNextPage}
       cards={cards}
       cardsClassName={styles.cardsContainer}
-      isLoadingMore={isLoadingMore}
+      isLoadingMore={isFetchingNextPage}
     />
   )
 }

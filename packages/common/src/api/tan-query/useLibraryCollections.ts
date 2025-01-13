@@ -6,8 +6,8 @@ import { userCollectionMetadataFromSDK } from '~/adapters/collection'
 import { transformAndCleanList } from '~/adapters/utils'
 import { useAudiusQueryContext } from '~/audius-query'
 import { CollectionMetadata } from '~/models/Collection'
+import { Id } from '~/models/Identifiers'
 import { CollectionType } from '~/store/saved-collections/types'
-import { encodeHashId } from '~/utils/hashIds'
 
 import { QUERY_KEYS } from './queryKeys'
 import { Config } from './types'
@@ -41,7 +41,7 @@ export const useLibraryCollections = (
   const queryClient = useQueryClient()
   const dispatch = useDispatch()
 
-  const result = useInfiniteQuery({
+  return useInfiniteQuery({
     queryKey: [
       QUERY_KEYS.libraryCollections,
       currentUserId,
@@ -62,8 +62,8 @@ export const useLibraryCollections = (
     queryFn: async ({ pageParam = 0 }) => {
       const sdk = await audiusSdk()
       const requestParams = {
-        id: encodeHashId(currentUserId!),
-        userId: encodeHashId(currentUserId!),
+        id: Id.parse(currentUserId),
+        userId: Id.parse(currentUserId),
         offset: pageParam,
         limit: pageSize,
         query,
@@ -91,17 +91,6 @@ export const useLibraryCollections = (
     },
     select: (data) => data.pages.flat(),
     staleTime: config?.staleTime,
-    enabled:
-      config?.enabled !== false &&
-      currentUserId !== null &&
-      currentUserId !== undefined
+    enabled: config?.enabled !== false && !!currentUserId
   })
-
-  return {
-    ...result,
-    loadMore: result.fetchNextPage,
-    hasMore: result.hasNextPage,
-    isLoadingMore: result.isFetchingNextPage,
-    data: result.data ?? []
-  }
 }

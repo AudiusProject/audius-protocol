@@ -74,12 +74,10 @@ export const useCollectionsScreenData = ({
     }
   )
 
-  const fetchedCollectionIds = (data ?? []).map((c) => c.playlist_id)
-
   const availableCollectionIds = useProxySelector(
     (state: AppState) => {
       if (isReachable) {
-        return fetchedCollectionIds ?? []
+        return data?.map((c) => c.playlist_id) ?? []
       }
 
       if (!isDoneLoadingFromDisk) {
@@ -123,12 +121,7 @@ export const useCollectionsScreenData = ({
           )
         })
     },
-    [
-      fetchedCollectionIds,
-      isReachable,
-      isDoneLoadingFromDisk,
-      offlineTracksStatus
-    ],
+    [isReachable, isDoneLoadingFromDisk, offlineTracksStatus],
     shallowCompare
   )
 
