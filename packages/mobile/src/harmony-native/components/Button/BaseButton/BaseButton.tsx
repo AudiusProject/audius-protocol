@@ -110,6 +110,7 @@ export const BaseButton = (props: BaseButtonProps) => {
             {...innerProps?.icon}
             style={styles?.icon}
             color={isStaticIcon ? 'default' : innerProps?.icon?.color}
+            size={innerProps?.icon?.size}
           />
         ) : null}
         {childElement}

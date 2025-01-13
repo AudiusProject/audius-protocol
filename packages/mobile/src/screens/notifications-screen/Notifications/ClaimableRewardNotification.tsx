@@ -34,7 +34,7 @@ export const ClaimableRewardNotification = (
 
   return (
     <NotificationTile notification={notification}>
-      <NotificationHeader icon={IconTokenGold}>
+      <NotificationHeader icon={() => <IconTokenGold size='xl' />}>
         <NotificationTitle>{messages.title}</NotificationTitle>
       </NotificationHeader>
       <NotificationText>{messages.claimableReward}</NotificationText>

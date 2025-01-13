@@ -32,13 +32,13 @@ type IconBadgeProps = IconProps & {
   )
 
 export const IconAudioBadge = (props: IconBadgeProps) => {
-  const { tier, showNoTier, height, width, style: styleProp, ...other } = props
+  const { tier, showNoTier, size, style: styleProp, ...other } = props
 
-  const style = [styleProp as ImageStyle, { height, width }]
+  const style = [styleProp as ImageStyle]
 
   if (tier === 'none' && !showNoTier) return null
 
   const AudioBadge = audioTierMap[tier]
 
-  return <AudioBadge height={height} width={width} style={style} {...other} />
+  return <AudioBadge size={size} style={style} {...other} />
 }

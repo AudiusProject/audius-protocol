@@ -51,7 +51,8 @@ export const iconSizes = {
   l: 24,
   xl: 30,
   '2xl': 32,
-  '3xl': 40
+  '3xl': 40,
+  '4xl': 48
 }
 
 export type Spacing = typeof spacing

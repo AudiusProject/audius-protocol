@@ -76,7 +76,7 @@ export const TiersExplainerDrawer = () => {
   return (
     <AppDrawer modalName={MODAL_NAME}>
       <View style={styles.top}>
-        <IconAudioBadge tier={tier} height={108} width={108} />
+        <IconAudioBadge tier={tier} size='4xl' />
         <View style={styles.tierTextGroup}>
           <Text style={styles.tierRank}>
             {messages.tier} {tierNumber}

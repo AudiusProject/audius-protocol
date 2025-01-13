@@ -1,4 +1,4 @@
-import IconTokenNoTierPng from '@audius/harmony/src/assets/icons/TokenNoTier.png'
+import IconTokenPlatinumPng from '@audius/harmony/src/assets/icons/TokenPlatinum.png'
 import type { ImageProps } from 'react-native'
 import { Image } from 'react-native'
 
@@ -8,9 +8,9 @@ type Props = Omit<ImageProps, 'source'> & {
   size?: IconSize
 }
 
-export const IconTokenNoTier = ({ size = 'm', style, ...props }: Props) => (
+export const IconTokenPlatinum = ({ size = 'm', style, ...props }: Props) => (
   <Image
-    source={IconTokenNoTierPng}
+    source={IconTokenPlatinumPng}
     style={[
       {
         width: iconSizes[size],

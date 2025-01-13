@@ -69,7 +69,7 @@ export const ProfileTierTile = (props: ProfileTierTileProps) => {
 
   const content = (
     <>
-      <IconAudioBadge tier={tier} height={32} width={32} style={styles.badge} />
+      <IconAudioBadge tier={tier} size='2xl' style={styles.badge} />
       <View>
         <Text variant='h3' noGutter style={styles.tierNumber}>
           {messages.tier} {tierNumber}
