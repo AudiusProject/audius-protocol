@@ -127,7 +127,7 @@ export const UserList = ({
           {displayData.map((user, index) =>
             '_loading' in user ? (
               <div key={user.user_id} className={styles.userContainer}>
-                Loading...
+                Add loading skeleton
               </div>
             ) : (
               <div
