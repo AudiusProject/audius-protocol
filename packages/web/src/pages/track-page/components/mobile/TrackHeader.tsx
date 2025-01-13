@@ -21,7 +21,7 @@ import {
   IconCollectible,
   IconPause,
   IconPlay,
-  IconSpecialAccess,
+  IconSparkles,
   IconCart,
   Box,
   Button,
@@ -293,7 +293,7 @@ const TrackHeader = ({
 
   const renderHeaderText = () => {
     if (isStreamGated) {
-      let IconComponent = IconSpecialAccess
+      let IconComponent = IconSparkles
       let titleMessage = messages.specialAccess
       if (isContentCollectibleGated(streamConditions)) {
         IconComponent = IconCollectible

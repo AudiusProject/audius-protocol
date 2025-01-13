@@ -30,7 +30,7 @@ import {
   IconExternalLink,
   IconCart,
   IconCollectible,
-  IconSpecialAccess,
+  IconSparkles,
   IconLogoCircleETH,
   IconLogoCircleSOL,
   useTheme,
@@ -559,7 +559,7 @@ const UnlockedGatedContentSection = ({
     return null
   }
 
-  let IconComponent = IconSpecialAccess
+  let IconComponent = IconSparkles
   let gatedConditionTitle = messages.specialAccess
 
   if (isContentCollectibleGated(streamConditions)) {

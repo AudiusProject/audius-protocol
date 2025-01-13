@@ -14,7 +14,7 @@ import {
   IconCart,
   IconCollectible,
   IconComponent,
-  IconSpecialAccess,
+  IconSparkles,
   useTheme
 } from '@audius/harmony'
 import cn from 'classnames'
@@ -86,7 +86,7 @@ export const LockedContentDetailsTile = ({
     IconComponent = null
     message = null
   } else {
-    IconComponent = IconSpecialAccess
+    IconComponent = IconSparkles
     message = messages.specialAccess
   }
 
