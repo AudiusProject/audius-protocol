@@ -26,7 +26,7 @@ def get_unpopulated_users(session, user_ids):
 
     users = (
         session.query(User)
-        .filter(User.is_current == True, User.wallet != None, User.handle != None)
+        .filter(User.is_current == True, User.wallet != None)
         .filter(User.user_id.in_(user_ids))
         .all()
     )
