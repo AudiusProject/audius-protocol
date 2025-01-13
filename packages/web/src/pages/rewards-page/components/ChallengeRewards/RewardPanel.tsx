@@ -26,6 +26,9 @@ import { StatusPill } from './StatusPill'
 
 const { getOptimisticUserChallenges } = challengesSelectors
 
+const PANEL_HEIGHT = 200
+const PANEL_WIDTH = 336
+
 type RewardPanelProps = {
   title: string
   description: (challenge?: OptimisticUserChallenge) => string
@@ -75,14 +78,14 @@ export const RewardPanel = ({
     <Paper
       onClick={openRewardModal}
       ph='s'
-      h={200}
+      h={PANEL_HEIGHT}
       flex={`0 0 calc(50% - ${spacing.unit4}px)`}
       direction='column'
       m='s'
       shadow='flat'
       border='strong'
       css={{
-        minWidth: '336px',
+        minWidth: PANEL_WIDTH,
         backgroundColor: hasDisbursed ? color.neutral.n25 : undefined
       }}
     >
@@ -113,14 +116,8 @@ export const RewardPanel = ({
               </Text>
             </Box>
           </Flex>
-          <Flex alignItems='center' pl='unit4'>
-            {needsDisbursement && (
-              <IconCheck
-                size='s'
-                color='subdued'
-                css={{ marginRight: spacing.s }}
-              />
-            )}
+          <Flex alignItems='center' pl='unit4' gap='s'>
+            {needsDisbursement && <IconCheck size='s' color='subdued' />}
             <Box mr='l'>
               <Text variant='label' size='s' color='subdued'>
                 {formattedProgressLabel}

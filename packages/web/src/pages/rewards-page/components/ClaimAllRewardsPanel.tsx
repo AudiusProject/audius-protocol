@@ -23,7 +23,7 @@ import { useWithMobileStyle } from 'hooks/useWithMobileStyle'
 import styles from '../RewardsTile.module.css'
 import { messages } from '../messages'
 
-export const ClaimAllPanel = () => {
+export const ClaimAllRewardsPanel = () => {
   const isMobile = useIsMobile() || window.innerWidth < 1080
   const wm = useWithMobileStyle(styles.mobile)
   const { cooldownChallenges, cooldownAmount, claimableAmount, isEmpty } =
@@ -84,14 +84,14 @@ export const ClaimAllPanel = () => {
               borderRadius='l'
             >
               <Text color='accent' variant='body' size='s' strength='strong'>
-                {cooldownAmount} {messages.pending}
+                {messages.formatCooldownAmount(cooldownAmount)}
               </Text>
             </Box>
           ) : null}
           <Box mt='l' mb='xl'>
             <Text variant='body' textAlign='left' size='s'>
               {claimable
-                ? `${claimableAmount} ${messages.available} ${messages.now}`
+                ? messages.formatClaimableAmount(claimableAmount)
                 : messages.availableMessage(
                     formatCooldownChallenges(cooldownChallenges)
                   )}
@@ -150,14 +150,14 @@ export const ClaimAllPanel = () => {
             {cooldownAmount > 0 ? (
               <div className={wm(styles.pendingPillContainer)}>
                 <span className={styles.pillMessage}>
-                  {cooldownAmount} {messages.pending}
+                  {messages.formatCooldownAmount(cooldownAmount)}
                 </span>
               </div>
             ) : null}
           </Flex>
           <Text variant='body' textAlign='left'>
             {claimableAmount > 0
-              ? `${claimableAmount} ${messages.available} ${messages.now}`
+              ? messages.formatClaimableAmount(claimableAmount)
               : messages.availableMessage(
                   formatCooldownChallenges(cooldownChallenges)
                 )}

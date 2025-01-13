@@ -25,6 +25,9 @@ export const messages = {
   goldAudioToken: 'Gold $AUDIO token',
   available: '$AUDIO available',
   now: 'now!',
+  formatCooldownAmount: (amount: number) => `${amount} ${messages.pending}`,
+  formatClaimableAmount: (amount: number) =>
+    `${amount} ${messages.available} ${messages.now}`,
   availableMessage: (summaryItems: ClaimableSummaryTableItem[]) => {
     const filteredSummaryItems = summaryItems.filter(removeNullable)
     const summaryItem = filteredSummaryItems.pop()

@@ -21,7 +21,7 @@ import { getChallengeConfig } from 'pages/rewards-page/config'
 
 import styles from '../../RewardsTile.module.css'
 import { messages } from '../../messages'
-import { ClaimAllPanel } from '../ClaimAllPanel'
+import { ClaimAllRewardsPanel } from '../ClaimAllRewardsPanel'
 import { Tile } from '../Tile'
 
 import { RewardPanel } from './RewardPanel'
@@ -94,7 +94,7 @@ export const ChallengeRewardsTile = ({
 
   return (
     <Flex direction='column' gap='l'>
-      {!shouldHideCumulativeRewards ? <ClaimAllPanel /> : null}
+      {!shouldHideCumulativeRewards ? <ClaimAllRewardsPanel /> : null}
       <Tile className={wm(styles.rewardsTile, className)}>
         <Text variant='display' size='s' className={wm(styles.title)}>
           {messages.title}
