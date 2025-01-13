@@ -25,7 +25,7 @@ import {
   IconCollectible,
   IconVisibilityHidden as IconHidden,
   IconNote,
-  IconSpecialAccess,
+  IconSparkles,
   Text
 } from '@audius/harmony'
 import { useField, useFormikContext } from 'formik'
@@ -443,7 +443,7 @@ export const PriceAndAudienceField = (props: PriceAndAudienceFieldProps) => {
 
     const specialAccessValue = {
       label: messages.specialAccess,
-      icon: IconSpecialAccess
+      icon: IconSparkles
     }
 
     if (isContentUSDCPurchaseGated(savedStreamConditions)) {

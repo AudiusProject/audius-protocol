@@ -20,7 +20,7 @@ import {
   IconVisibilityHidden,
   IconLock,
   Flex,
-  IconSpecialAccess,
+  IconSparkles,
   IconCollectible,
   IconCart,
   Text
@@ -464,7 +464,7 @@ export const TracksTable = ({
             : isContentCollectibleGated(streamConditions)
               ? IconCollectible
               : isContentFollowGated(streamConditions)
-                ? IconSpecialAccess
+                ? IconSparkles
                 : null
       } else {
         Icon = !hasStreamAccess

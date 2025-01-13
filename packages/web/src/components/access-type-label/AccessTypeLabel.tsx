@@ -1,7 +1,7 @@
 import { AccessType } from '@audius/common/models'
 import { formatReleaseDate } from '@audius/common/utils'
 import {
-  IconSpecialAccess,
+  IconSparkles,
   IconCart,
   IconCollectible,
   IconReceive,
@@ -19,7 +19,7 @@ type AccessTypeLabelProps = {
 }
 
 type AccessTypeConfig = {
-  icon: typeof IconSpecialAccess
+  icon: typeof IconSparkles
   label: string | ((date?: string) => string)
   color: IconColors
 }
@@ -50,7 +50,7 @@ const ACCESS_TYPE_CONFIG: Record<AccessType, AccessTypeConfig> = {
     color: 'premium'
   },
   [AccessType.SPECIAL_ACCESS]: {
-    icon: IconSpecialAccess,
+    icon: IconSparkles,
     label: 'Special Access',
     color: 'special'
   },
