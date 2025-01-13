@@ -7,6 +7,7 @@ import {
   Status
 } from '@audius/common/models'
 import { StringKeys } from '@audius/common/services'
+import { guestRoutes } from '@audius/common/src/utils/route'
 import {
   accountSelectors,
   ExploreCollectionsVariant,
@@ -187,8 +188,14 @@ const {
   EDIT_ALBUM_PAGE
 } = route
 
-const { getHasAccount, getAccountStatus, getUserId, getUserHandle } =
-  accountSelectors
+const {
+  getHasAccount,
+  getAccountStatus,
+  getUserId,
+  getUserHandle,
+  getIsGuestAccount,
+  getIsAccountComplete
+} = accountSelectors
 
 // TODO: do we need to lazy load edit?
 const EditTrackPage = lazy(() => import('pages/edit-page'))
@@ -342,10 +349,13 @@ class WebPlayer extends Component {
   }
 
   componentDidUpdate(prevProps) {
+    const allowedRoutes = this.props.isGuestAccount
+      ? guestRoutes
+      : authenticatedRoutes
     if (
       !this.props.hasAccount &&
       this.props.accountStatus !== Status.LOADING &&
-      authenticatedRoutes.some((route) => {
+      allowedRoutes.some((route) => {
         const match = matchPath(getPathname(this.props.location), {
           path: route,
           exact: true
@@ -991,7 +1001,9 @@ class WebPlayer extends Component {
                     // just trigger a react router push to the current pathname
                     pathname:
                       getPathname(this.props.history.location) === HOME_PAGE
-                        ? FEED_PAGE
+                        ? this.props.isGuestAccount
+                          ? LIBRARY_PAGE
+                          : FEED_PAGE
                         : getPathname(this.props.history.location),
                     search: includeSearch(this.props.location.search)
                       ? this.props.location.search
@@ -1031,7 +1043,9 @@ const mapStateToProps = (state) => ({
   userHandle: getUserHandle(state),
   accountStatus: getAccountStatus(state),
   signOnStatus: getSignOnStatus(state),
-  showCookieBanner: getShowCookieBanner(state)
+  showCookieBanner: getShowCookieBanner(state),
+  isGuestAccount: getIsGuestAccount(state),
+  isAccountComplete: getIsAccountComplete(state)
 })
 
 const mapDispatchToProps = (dispatch) => ({
