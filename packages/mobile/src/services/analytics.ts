@@ -27,7 +27,8 @@ export const init = async () => {
   try {
     if (AmplitudeWriteKey && AmplitudeProxy) {
       await amplitudeInit(AmplitudeWriteKey, undefined, {
-        serverUrl: AmplitudeProxy
+        serverUrl: AmplitudeProxy,
+        appVersion: clientVersion
       })
       analyticsSetupStatus = 'ready'
     } else {
