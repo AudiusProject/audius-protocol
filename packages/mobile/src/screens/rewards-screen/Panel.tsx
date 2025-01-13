@@ -62,17 +62,7 @@ export const Panel = ({
   })
 
   return (
-    <TouchableOpacity
-      style={[
-        hasDisbursed
-          ? {
-              backgroundColor: color.background.surface1
-            }
-          : null
-      ]}
-      onPress={onPress}
-      activeOpacity={0.7}
-    >
+    <TouchableOpacity onPress={onPress} activeOpacity={0.7}>
       <Flex border='default' borderRadius='l' pb='unit10'>
         <Flex row justifyContent='flex-end' m='s' h={spacing.unit6}>
           {needsDisbursement ? (
