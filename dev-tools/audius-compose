@@ -524,22 +524,6 @@ def test_build(protocol_dir):
     )
 
 
-def generate_ddex_mongo_key(protocol_dir):
-    keyfile_path = protocol_dir / "packages/ddex/mongo-keyfile"
-    if not keyfile_path.exists():
-        result = subprocess.run(
-            ["openssl", "rand", "-base64", "756"], capture_output=True, text=True
-        )
-        key_content = result.stdout
-
-        with open(keyfile_path, "w") as keyfile:
-            keyfile.write(key_content)
-
-        subprocess.run(
-            ["chmod", "400", "packages/ddex/mongo-keyfile"],
-        )
-
-
 @test.command(name="run", default_command=True)
 @click.argument("service")
 @click.argument("args", nargs=-1, type=click.UNPROCESSED)
@@ -556,7 +540,6 @@ def test_run(protocol_dir, service, args):
         env["DDEX_CHOREOGRAPHY"] = (
             "ERNReleaseByRelease" if service.endswith("release") else "ERNBatched"
         )
-        generate_ddex_mongo_key(protocol_dir)
 
     result = subprocess.run(
         [
