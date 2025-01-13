@@ -27,7 +27,7 @@ import {
   getTrackPreviewDuration,
   Nullable
 } from '@audius/common/utils'
-import { eventChannel } from 'redux-saga'
+import { EventChannel, eventChannel } from 'redux-saga'
 import {
   select,
   take,
@@ -152,61 +152,70 @@ export function* watchPlay() {
         shouldPreview,
         retries ?? 0
       )
-      const { data, signature } = yield* call(
-        audiusBackendInstance.signGatedContentRequest,
-        { sdk }
-      )
 
-      const discoveryNodeStreamUrl = yield* call(
-        [sdk.tracks, sdk.tracks.getTrackStreamUrl],
-        {
-          trackId: Id.parse(trackId),
-          userId: OptionalId.parse(currentUserId),
-          nftAccessSignature: nftAccessSignature
-            ? JSON.stringify(nftAccessSignature)
-            : undefined,
-          userSignature: signature,
-          userData: data,
-          preview: shouldPreview ? true : undefined
-        }
-      )
+      const createEndChannel = async (url: string) => {
+        const endChannel = eventChannel((emitter) => {
+          audioPlayer.load(
+            trackDuration ||
+              track.track_segments.reduce(
+                (duration, segment) => duration + parseFloat(segment.duration),
+                0
+              ),
+            () => {
+              if (onEnd) {
+                emitter(onEnd({}))
+              }
+              if (isLongFormContent) {
+                emitter(
+                  setTrackPosition({
+                    userId: currentUserId,
+                    trackId,
+                    positionInfo: {
+                      status: 'COMPLETED',
+                      playbackPosition: 0
+                    }
+                  })
+                )
+              }
+            },
+            url
+          )
+          return () => {}
+        })
+        return endChannel
+      }
 
+      let endChannel: EventChannel<any>
       // If we have a stream URL from Discovery already for content node, use that.
       // If not, we might need the NFT gated signature, so fallback to the DN stream endpoint.
-      const url = contentNodeStreamUrl ?? discoveryNodeStreamUrl
+      if (contentNodeStreamUrl) {
+        endChannel = yield* call(createEndChannel, contentNodeStreamUrl)
+      } else {
+        const { data, signature } = yield* call(
+          audiusBackendInstance.signGatedContentRequest,
+          { sdk }
+        )
+        const discoveryNodeStreamUrl = yield* call(
+          [sdk.tracks, sdk.tracks.getTrackStreamUrl],
+          {
+            trackId: Id.parse(trackId),
+            userId: OptionalId.parse(currentUserId),
+            nftAccessSignature: nftAccessSignature
+              ? JSON.stringify(nftAccessSignature)
+              : undefined,
+            userSignature: signature,
+            userData: data,
+            preview: shouldPreview ? true : undefined
+          }
+        )
+        endChannel = yield* call(createEndChannel, discoveryNodeStreamUrl)
+      }
 
       const isLongFormContent =
         track.genre === Genre.PODCASTS || track.genre === Genre.AUDIOBOOKS
 
-      const endChannel = eventChannel((emitter) => {
-        audioPlayer.load(
-          trackDuration ||
-            track.track_segments.reduce(
-              (duration, segment) => duration + parseFloat(segment.duration),
-              0
-            ),
-          () => {
-            if (onEnd) {
-              emitter(onEnd({}))
-            }
-            if (isLongFormContent) {
-              emitter(
-                setTrackPosition({
-                  userId: currentUserId,
-                  trackId,
-                  positionInfo: {
-                    status: 'COMPLETED',
-                    playbackPosition: 0
-                  }
-                })
-              )
-            }
-          },
-          url
-        )
-        return () => {}
-      })
       yield* spawn(actionChannelDispatcher, endChannel)
+
       yield* put(
         cacheActions.subscribe(Kind.TRACKS, [
           { uid: PLAYER_SUBSCRIBER_NAME, id: trackId }
