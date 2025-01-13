@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useRef } from 'react'
+import { useCallback, useMemo, useRef, MouseEvent } from 'react'
 
 import { Name } from '@audius/common/models'
 import { notificationsSelectors, accountSelectors } from '@audius/common/store'
@@ -36,7 +36,7 @@ export const NotificationsButton = () => {
   const { requiresAccount } = useRequiresAccountFn(undefined, 'account')
 
   const handleToggleNotificationPanel = useCallback(
-    (e: React.MouseEvent) => {
+    (e: MouseEvent) => {
       if (notificationPanelIsOpen) {
         dispatch(closeNotificationPanel())
         return
