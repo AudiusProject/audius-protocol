@@ -36,7 +36,7 @@ const BasePill = ({
       }}
     >
       {isSimpleText ? (
-        <Text variant='label' size='s' color={color}>
+        <Text variant='body' size='m' strength='strong' color={color}>
           {children}
         </Text>
       ) : (
@@ -78,7 +78,7 @@ export const StatusPill = ({
       >
         <Flex alignItems='center' justifyContent='center' gap='xs'>
           <IconSpecialAccess size='s' color='staticWhite' />
-          <Text variant='label' size='s' color='staticWhite'>
+          <Text variant='body' size='m' strength='strong' color='staticWhite'>
             {messages.new}
           </Text>
         </Flex>
