@@ -115,7 +115,7 @@ export const Panel = ({
                 {hasDisbursed ? (
                   <IconCheck fill={neutralLight4} size='s' />
                 ) : null}
-                <Flex row alignItems='center' backgroundColor='red'>
+                <Flex row alignItems='center'>
                   <Text variant='label' size='l' color='subdued'>
                     {formattedProgressLabel}
                   </Text>
@@ -129,19 +129,6 @@ export const Panel = ({
               />
             ) : null}
           </Flex>
-
-          {/* {
-          <Button
-            fullWidth
-            variant='secondary'
-            iconRight={hasDisbursed ? undefined : IconArrowRight}
-            onPress={onPress}
-            style={styles.button}
-            size='small'
-          >
-            {buttonMessage}
-          </Button>
-        } */}
         </Flex>
       </Flex>
     </TouchableOpacity>
