@@ -1,10 +1,7 @@
 import { Storage, persistReducer } from 'redux-persist'
 
-import { ID } from '~/models/Identifiers'
 import { asLineup } from '~/store/lineup/reducer'
 import {
-  ADD_LOCAL_COLLECTION,
-  ADD_LOCAL_TRACK,
   END_FETCHING,
   FETCH_MORE_SAVES,
   FETCH_MORE_SAVES_FAILED,
@@ -13,8 +10,6 @@ import {
   FETCH_SAVES_FAILED,
   FETCH_SAVES_REQUESTED,
   FETCH_SAVES_SUCCEEDED,
-  REMOVE_LOCAL_COLLECTION,
-  REMOVE_LOCAL_TRACK,
   SET_SELECTED_CATEGORY
 } from '~/store/pages/saved-page/actions'
 import tracksReducer, {
@@ -24,7 +19,7 @@ import { signOut } from '~/store/sign-out/slice'
 import { ActionsMap } from '~/utils/reducer'
 
 import { PREFIX as tracksPrefix } from './lineups/tracks/actions'
-import { LibraryCategory, LibraryCategoryType, SavedPageState } from './types'
+import { LibraryCategory, SavedPageState } from './types'
 import { calculateNewLibraryCategories } from './utils'
 
 const initialState = {
@@ -34,61 +29,8 @@ const initialState = {
   fetchingMore: false,
   tracks: initialLineupState,
   tracksCategory: LibraryCategory.Favorite,
-  collectionsCategory: LibraryCategory.Favorite,
-  local: {
-    track: {
-      favorites: {
-        added: {},
-        removed: {}
-      },
-      reposts: {
-        added: {},
-        removed: {}
-      },
-      purchased: {
-        added: {}
-      }
-    },
-    album: {
-      favorites: {
-        added: [],
-        removed: []
-      },
-      reposts: {
-        added: [],
-        removed: []
-      },
-      purchased: {
-        added: []
-      }
-    },
-    playlist: {
-      favorites: {
-        added: [],
-        removed: []
-      },
-      reposts: {
-        added: [],
-        removed: []
-      }
-    }
-  }
+  collectionsCategory: LibraryCategory.Favorite
 } as SavedPageState
-
-const getCategoryLocalStateKey = (
-  category: Omit<LibraryCategoryType, 'all'>
-) => {
-  switch (category) {
-    case LibraryCategory.Favorite:
-      return 'favorites'
-    case LibraryCategory.Purchase:
-      return 'purchased'
-    case LibraryCategory.Repost:
-      return 'reposts'
-    default:
-      return 'favorites'
-  }
-}
 
 const actionsMap: ActionsMap<SavedPageState> = {
   [FETCH_SAVES](state) {
@@ -143,53 +85,6 @@ const actionsMap: ActionsMap<SavedPageState> = {
       trackSaves: savesCopy,
       hasReachedEnd: true
     }
-  },
-  [ADD_LOCAL_TRACK](state, action) {
-    const categoryKey = getCategoryLocalStateKey(action.category)
-    const newState = { ...state }
-    newState.local.track[categoryKey].added = {
-      ...newState.local.track[categoryKey].added,
-      [action.trackId]: action.uid
-    }
-    return newState
-  },
-  [REMOVE_LOCAL_TRACK](state, action) {
-    const categoryKey = getCategoryLocalStateKey(action.category)
-    const newState = { ...state }
-    delete newState.local.track[categoryKey].added[action.trackId]
-
-    newState.trackSaves = newState.trackSaves.filter(
-      ({ save_item_id: id }) => id !== action.trackId
-    )
-    return newState
-  },
-  [ADD_LOCAL_COLLECTION](state, action) {
-    const kindKey = action.isAlbum ? 'album' : 'playlist'
-    const categoryKey = getCategoryLocalStateKey(action.category)
-    const newState = { ...state }
-    newState.local[kindKey][categoryKey].added = [
-      action.collectionId,
-      ...newState.local[kindKey][categoryKey].added
-    ]
-    newState.local[kindKey][categoryKey].removed = newState.local[kindKey][
-      categoryKey
-    ].removed.filter((id: ID) => id !== action.collectionId)
-
-    return newState
-  },
-  [REMOVE_LOCAL_COLLECTION](state, action) {
-    const kindKey = action.isAlbum ? 'album' : 'playlist'
-    const categoryKey = getCategoryLocalStateKey(action.category)
-    const newState = { ...state }
-    newState.local[kindKey][categoryKey].removed = [
-      action.collectionId,
-      ...newState.local[kindKey][categoryKey].removed
-    ]
-    newState.local[kindKey][categoryKey].added = newState.local[kindKey][
-      categoryKey
-    ].added.filter((id: ID) => id !== action.collectionId)
-
-    return newState
   },
   [SET_SELECTED_CATEGORY](state, action) {
     return {

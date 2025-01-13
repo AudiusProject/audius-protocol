@@ -35,6 +35,7 @@ export const QUERY_KEYS = {
   emailInUse: 'emailInUse',
   handleInUse: 'handleInUse',
   handleReservedStatus: 'handleReservedStatus',
+  trending: 'trending',
   suggestedArtists: 'suggestedArtists',
   topArtistsInGenre: 'topArtistsInGenre',
   audioTransactions: 'audioTransactions',

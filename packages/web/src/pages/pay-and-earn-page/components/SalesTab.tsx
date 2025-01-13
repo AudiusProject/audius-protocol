@@ -107,10 +107,12 @@ export const useSalesData = () => {
     hasMore,
     isPending: isSalesPending,
     isError: isSalesError
-  } = useSales(
-    { userId, sortMethod, sortDirection },
-    { pageSize: TRANSACTIONS_BATCH_SIZE }
-  )
+  } = useSales({
+    userId,
+    sortMethod,
+    sortDirection,
+    pageSize: TRANSACTIONS_BATCH_SIZE
+  })
 
   const {
     data: count,
@@ -309,7 +311,7 @@ export const SalesTab = ({
           </Text>
         </Flex>
       ) : null}
-      {isEmpty ? (
+      {isEmpty || !sales ? (
         <NoSales />
       ) : (
         <SalesTable

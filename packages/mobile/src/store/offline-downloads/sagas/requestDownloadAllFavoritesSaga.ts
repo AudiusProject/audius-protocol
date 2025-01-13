@@ -1,12 +1,7 @@
 import { transformAndCleanList, favoriteFromSDK } from '@audius/common/adapters'
 import { Id } from '@audius/common/models'
-import {
-  accountSelectors,
-  savedPageSelectors,
-  getSDK
-} from '@audius/common/store'
+import { accountSelectors, getSDK } from '@audius/common/store'
 import { fetchAllAccountCollections } from 'common/store/saved-collections/sagas'
-import moment from 'moment'
 import { takeEvery, select, call, put } from 'typed-redux-saga'
 
 import { getAccountCollections } from 'app/screens/favorites-screen/selectors'
@@ -18,8 +13,6 @@ import type { OfflineEntry } from '../slice'
 import { addOfflineEntries, requestDownloadAllFavorites } from '../slice'
 
 const { getUserId } = accountSelectors
-
-const { getLocalTrackFavorites } = savedPageSelectors
 
 export function* requestDownloadAllFavoritesSaga() {
   yield* takeEvery(requestDownloadAllFavorites.type, downloadAllFavorites)
@@ -42,21 +35,7 @@ function* downloadAllFavorites() {
     { is_from_favorites: true, collection_id: DOWNLOAD_REASON_FAVORITES }
   ]
 
-  // Add local saves
-  const favorite_created_at = moment().format('YYYY-MM-DD HH:mm:ss')
-  const localSaves = yield* select(getLocalTrackFavorites)
-  const localSavesToAdd: OfflineEntry[] = Object.keys(localSaves)
-    .map((id) => parseInt(id, 10))
-    .map((id) => ({
-      type: 'track',
-      id,
-      metadata: {
-        favorite_created_at,
-        reasons_for_download: trackReasonsForDownload
-      }
-    }))
-
-  offlineItemsToAdd.push(...localSavesToAdd)
+  // Note: Local saves support was removed, to be added back later
 
   // Add favorited tracks from api
   const sdk = yield* getSDK()

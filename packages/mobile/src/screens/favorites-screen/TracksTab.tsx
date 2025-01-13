@@ -36,7 +36,6 @@ const {
   getTrackSaves,
   getSavedTracksStatus,
   getInitialFetchStatus,
-  getSelectedCategoryLocalTrackAdds,
   getIsFetchingMore,
   getCategory
 } = savedPageSelectors
@@ -93,12 +92,8 @@ export const TracksTab = () => {
   const initialFetch = useSelector(getInitialFetchStatus)
   const isFetchingMore = useSelector(getIsFetchingMore)
   const saves = useSelector(getTrackSaves)
-  const localAdditions = useSelector(getSelectedCategoryLocalTrackAdds)
 
-  const saveCount = useMemo(
-    () => saves.length + Object.keys(localAdditions).length,
-    [saves, localAdditions]
-  )
+  const saveCount = saves.length
 
   const isLoading = savedTracksStatus !== Status.SUCCESS
 
