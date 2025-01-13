@@ -2,13 +2,14 @@ import {
   stemTrackMetadataFromSDK,
   transformAndCleanList
 } from '@audius/common/adapters'
-import { Kind, StemCategory, ID, Stem, Id } from '@audius/common/models'
+import { Kind, StemCategory, ID, Stem } from '@audius/common/models'
 import {
   cacheTracksSelectors,
   cacheActions,
   getSDK
 } from '@audius/common/store'
 import { waitForValue } from '@audius/common/utils'
+import { Id } from '@audius/sdk'
 import { call, put } from 'typed-redux-saga'
 
 import { waitForRead } from 'utils/sagaHelpers'

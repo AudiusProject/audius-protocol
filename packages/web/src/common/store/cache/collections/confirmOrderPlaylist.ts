@@ -1,5 +1,5 @@
 import { playlistMetadataForUpdateWithSDK } from '@audius/common/adapters'
-import { Kind, Collection, ID, Id } from '@audius/common/models'
+import { Kind, Collection, ID } from '@audius/common/models'
 import {
   cacheCollectionsActions as collectionActions,
   cacheActions,
@@ -8,6 +8,7 @@ import {
   getSDK
 } from '@audius/common/store'
 import { makeKindId } from '@audius/common/utils'
+import { Id } from '@audius/sdk'
 import { call, put } from 'typed-redux-saga'
 
 import { retrieveCollection } from './utils/retrieveCollections'

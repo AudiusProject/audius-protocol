@@ -1,5 +1,6 @@
 import { useMemo } from 'react'
 
+import { Id } from '@audius/sdk'
 import dayjs from 'dayjs'
 import { useSelector } from 'react-redux'
 
@@ -9,7 +10,6 @@ import { ID, User, UserMetadata } from '~/models'
 import { accountSelectors } from '~/store/account'
 
 import { useGetUserAccount } from './user'
-import { Id } from './utils'
 
 type ResetPasswordArgs = {
   email: string

@@ -2,11 +2,10 @@ import {
   notificationFromSDK,
   transformAndCleanList
 } from '@audius/common/adapters'
-import { Id } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
 import { accountSelectors, getContext, getSDK } from '@audius/common/store'
 import { removeNullable } from '@audius/common/utils'
-import { GetNotificationsValidTypesEnum as ValidTypes } from '@audius/sdk'
+import { Id, GetNotificationsValidTypesEnum as ValidTypes } from '@audius/sdk'
 import { call, select } from 'typed-redux-saga'
 
 type FetchNotificationsParams = {

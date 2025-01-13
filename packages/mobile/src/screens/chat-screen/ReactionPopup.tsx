@@ -3,8 +3,8 @@ import { useCallback, useRef } from 'react'
 import type { ChatMessageWithExtras } from '@audius/common/models'
 import type { ReactionTypes } from '@audius/common/store'
 import { accountSelectors, chatActions } from '@audius/common/store'
-import { encodeHashId } from '@audius/common/utils'
 import type { Nullable } from '@audius/common/utils'
+import { OptionalId } from '@audius/sdk'
 import Clipboard from '@react-native-clipboard/clipboard'
 import { Dimensions, Pressable, Animated } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
@@ -109,7 +109,7 @@ export const ReactionPopup = ({
   const { toast } = useToast()
 
   const newReaction = useRef<string>()
-  const userIdEncoded = encodeHashId(userId)
+  const userIdEncoded = OptionalId.parse(userId)
   const selectedReaction = message.reactions?.find(
     (r) => r.user_id === userIdEncoded
   )?.reaction

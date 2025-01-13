@@ -14,9 +14,7 @@ import {
   UserFollowees,
   FolloweeRepost,
   UID,
-  isContentUSDCPurchaseGated,
-  Id,
-  OptionalId
+  isContentUSDCPurchaseGated
 } from '@audius/common/models'
 import {
   accountActions,
@@ -43,6 +41,7 @@ import {
   makeKindId,
   updatePlaylistArtwork
 } from '@audius/common/utils'
+import { Id, OptionalId } from '@audius/sdk'
 import {
   all,
   call,

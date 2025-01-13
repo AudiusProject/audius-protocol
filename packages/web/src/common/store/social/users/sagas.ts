@@ -9,7 +9,8 @@ import {
   confirmerActions,
   confirmTransaction
 } from '@audius/common/store'
-import { encodeHashId, makeKindId, route } from '@audius/common/utils'
+import { makeKindId, route } from '@audius/common/utils'
+import { Id } from '@audius/sdk'
 import { Action } from '@reduxjs/toolkit'
 import { call, select, takeEvery, put } from 'typed-redux-saga'
 
@@ -114,8 +115,8 @@ export function* confirmFollowUser(
         const { blockHash, blockNumber } = yield* call(
           [sdk.users, sdk.users.followUser],
           {
-            userId: encodeHashId(accountId),
-            followeeUserId: encodeHashId(userId)
+            userId: Id.parse(accountId),
+            followeeUserId: Id.parse(userId)
           }
         )
         const confirmed = yield* call(
@@ -255,8 +256,8 @@ export function* confirmUnfollowUser(userId: ID, accountId: ID) {
         const { blockHash, blockNumber } = yield* call(
           [sdk.users, sdk.users.unfollowUser],
           {
-            userId: encodeHashId(accountId),
-            followeeUserId: encodeHashId(userId)
+            userId: Id.parse(accountId),
+            followeeUserId: Id.parse(userId)
           }
         )
         const confirmed = yield* call(
@@ -343,8 +344,8 @@ export function* confirmSubscribeToUser(userId: ID, accountId: ID) {
         const { blockHash, blockNumber } = yield* call(
           [sdk.users, sdk.users.subscribeToUser],
           {
-            subscribeeUserId: encodeHashId(userId),
-            userId: encodeHashId(accountId)
+            subscribeeUserId: Id.parse(userId),
+            userId: Id.parse(accountId)
           }
         )
         const confirmed = yield* call(
@@ -413,8 +414,8 @@ export function* confirmUnsubscribeFromUser(userId: ID, accountId: ID) {
         const { blockHash, blockNumber } = yield* call(
           [sdk.users, sdk.users.unsubscribeFromUser],
           {
-            subscribeeUserId: encodeHashId(userId),
-            userId: encodeHashId(accountId)
+            subscribeeUserId: Id.parse(userId),
+            userId: Id.parse(accountId)
           }
         )
         const confirmed = yield* call(

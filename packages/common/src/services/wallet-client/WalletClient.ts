@@ -1,9 +1,9 @@
 import { AUDIO, wAUDIO } from '@audius/fixed-decimal'
-import { AudiusSdk } from '@audius/sdk'
+import { AudiusSdk, Id } from '@audius/sdk'
 import BN from 'bn.js'
 
 import { userWalletsFromSDK } from '~/adapters'
-import { ID, Id } from '~/models/Identifiers'
+import { ID } from '~/models/Identifiers'
 import { BNWei, SolanaWalletAddress, StringWei } from '~/models/Wallet'
 import { isNullOrUndefined } from '~/utils/typeUtils'
 import { stringWeiToBN } from '~/utils/wallet'

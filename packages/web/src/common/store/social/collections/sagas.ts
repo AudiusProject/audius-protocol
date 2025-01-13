@@ -4,8 +4,7 @@ import {
   SmartCollectionVariant,
   ID,
   PlaylistLibrary,
-  User,
-  Id
+  User
 } from '@audius/common/models'
 import {
   accountActions,
@@ -29,6 +28,7 @@ import {
   makeKindId,
   route
 } from '@audius/common/utils'
+import { Id } from '@audius/sdk'
 import { call, select, takeEvery, put } from 'typed-redux-saga'
 
 import { make } from 'common/store/analytics/actions'

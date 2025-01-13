@@ -2,12 +2,13 @@ import {
   transformAndCleanList,
   userCollectionMetadataFromSDK
 } from '@audius/common/adapters'
-import { FavoriteSource, Id, OptionalId } from '@audius/common/models'
+import { FavoriteSource } from '@audius/common/models'
 import {
   accountSelectors,
   collectionsSocialActions,
   getSDK
 } from '@audius/common/store'
+import { Id, OptionalId } from '@audius/sdk'
 import { takeEvery, select, put, call } from 'typed-redux-saga'
 
 import { make, track } from 'app/services/analytics'

@@ -1,4 +1,5 @@
 import type { full } from '@audius/sdk'
+import { HashId, Id } from '@audius/sdk'
 
 import { createApi } from '~/audius-query'
 import { ID, PurchaseAccess } from '~/models'
@@ -11,7 +12,6 @@ import { Nullable } from '~/utils/typeUtils'
 
 import { trackApiFetch } from './track'
 import { userApiFetch } from './user'
-import { HashId, Id } from './utils'
 
 type GetPurchaseListArgs = {
   userId: Nullable<ID>

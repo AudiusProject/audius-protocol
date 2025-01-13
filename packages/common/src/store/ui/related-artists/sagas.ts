@@ -1,11 +1,11 @@
+import { Id, OptionalId } from '@audius/sdk'
 import { PayloadAction } from '@reduxjs/toolkit'
 import { shuffle } from 'lodash'
 import { call, put, select, takeEvery } from 'typed-redux-saga'
 
 import { userMetadataFromSDK, userMetadataListFromSDK } from '~/adapters/user'
 import { transformAndCleanList } from '~/adapters/utils'
-import { Id } from '~/api'
-import { ID, OptionalId, UserMetadata } from '~/models'
+import { ID, UserMetadata } from '~/models'
 import { DoubleKeys } from '~/services/remote-config'
 import { accountSelectors } from '~/store/account'
 import { processAndCacheUsers } from '~/store/cache'

@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useState } from 'react'
 
 import { StemCategory, StemUploadWithFile } from '@audius/common/models'
-import { encodeHashId } from '@audius/common/utils'
 import { Box, Flex, Text } from '@audius/harmony'
+import { Id } from '@audius/sdk'
 import cn from 'classnames'
 
 import { Dropzone } from 'components/upload/Dropzone'
@@ -46,7 +46,7 @@ const useStemFileInfos = (stems: StemUploadWithFile[]) => {
             return {
               i,
               res: await sdk.tracks.inspectTrack({
-                trackId: encodeHashId(trackId),
+                trackId: Id.parse(trackId),
                 original: true
               })
             }

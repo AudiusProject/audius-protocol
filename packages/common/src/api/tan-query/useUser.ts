@@ -1,3 +1,4 @@
+import { Id } from '@audius/sdk'
 import { useQuery } from '@tanstack/react-query'
 import { useDispatch } from 'react-redux'
 
@@ -7,7 +8,6 @@ import { ID } from '~/models/Identifiers'
 import { Kind } from '~/models/Kind'
 import { addEntries } from '~/store/cache/actions'
 import { EntriesByKind } from '~/store/cache/types'
-import { encodeHashId } from '~/utils/hashIds'
 
 import { QUERY_KEYS } from './queryKeys'
 
@@ -22,7 +22,7 @@ export const useUser = (userId: ID, config?: Config) => {
   return useQuery({
     queryKey: [QUERY_KEYS.user, userId],
     queryFn: async () => {
-      const encodedId = encodeHashId(userId)
+      const encodedId = Id.parse(userId)
       if (!encodedId) return null
       const { data } = await audiusSdk!.full.users.getUser({ id: encodedId })
       const user = userMetadataListFromSDK(data)[0]

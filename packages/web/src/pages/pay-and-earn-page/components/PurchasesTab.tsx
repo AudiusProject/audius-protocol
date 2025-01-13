@@ -1,6 +1,6 @@
 import { useCallback, useState } from 'react'
 
-import { useGetPurchases, useGetPurchasesCount, Id } from '@audius/common/api'
+import { useGetPurchases, useGetPurchasesCount } from '@audius/common/api'
 import { useAllPaginatedQuery } from '@audius/common/audius-query'
 import {
   Status,
@@ -13,7 +13,7 @@ import {
   useUSDCPurchaseDetailsModal
 } from '@audius/common/store'
 import { route } from '@audius/common/utils'
-import { full } from '@audius/sdk'
+import { Id, full } from '@audius/sdk'
 import { useDispatch } from 'react-redux'
 
 import { useErrorPageOnFailedStatus } from 'hooks/useErrorPageOnFailedStatus'

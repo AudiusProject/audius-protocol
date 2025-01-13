@@ -1,5 +1,4 @@
 import { searchResultsFromSDK } from '@audius/common/adapters'
-import { OptionalId } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
 import {
   accountSelectors,
@@ -16,7 +15,7 @@ import {
   formatMusicalKey,
   trimToAlphaNumeric
 } from '@audius/common/utils'
-import { Mood } from '@audius/sdk'
+import { OptionalId, Mood } from '@audius/sdk'
 import { select, call, takeLatest, put } from 'typed-redux-saga'
 
 import { processAndCacheCollections } from 'common/store/cache/collections/utils'

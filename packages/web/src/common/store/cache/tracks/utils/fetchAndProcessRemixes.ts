@@ -2,7 +2,7 @@ import {
   transformAndCleanList,
   userTrackMetadataFromSDK
 } from '@audius/common/adapters'
-import { Kind, ID, Id, OptionalId } from '@audius/common/models'
+import { Kind, ID } from '@audius/common/models'
 import {
   accountSelectors,
   cacheTracksSelectors,
@@ -10,6 +10,7 @@ import {
   getSDK
 } from '@audius/common/store'
 import { waitForValue } from '@audius/common/utils'
+import { Id, OptionalId } from '@audius/sdk'
 import { select, call, put } from 'typed-redux-saga'
 
 import { waitForRead } from 'utils/sagaHelpers'

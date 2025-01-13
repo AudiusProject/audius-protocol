@@ -2,7 +2,7 @@ import {
   transformAndCleanList,
   userTrackMetadataFromSDK
 } from '@audius/common/adapters'
-import { OptionalId, Track } from '@audius/common/models'
+import { Track } from '@audius/common/models'
 import { StringKeys } from '@audius/common/services'
 import {
   accountSelectors,
@@ -11,6 +11,7 @@ import {
   getContext,
   getSDK
 } from '@audius/common/store'
+import { OptionalId } from '@audius/sdk'
 import { keccak_256 } from 'js-sha3'
 import { call, select } from 'typed-redux-saga'
 

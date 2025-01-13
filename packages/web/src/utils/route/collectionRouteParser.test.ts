@@ -1,4 +1,4 @@
-import { decodeHashId } from '@audius/common/utils'
+import { OptionalHashId } from '@audius/sdk'
 import { describe, it, expect, vitest } from 'vitest'
 
 import { parseCollectionRoute } from './collectionRouteParser'
@@ -19,7 +19,7 @@ describe('parseCollectionRoute', () => {
   })
 
   it('can decode a hashed collection id route', async () => {
-    vitest.fn(decodeHashId).mockReturnValue(11845)
+    vitest.fn(OptionalHashId.parse).mockReturnValue(11845)
 
     const route = '/playlists/eP9k7'
     const { title, collectionId, handle, collectionType } =
@@ -31,7 +31,7 @@ describe('parseCollectionRoute', () => {
   })
 
   it('returns null for invalid id in hashed collection id route', () => {
-    vitest.fn(decodeHashId).mockReturnValue(null)
+    vitest.fn(OptionalHashId.parse).mockReturnValue(undefined)
 
     const route = '/playlists/asdf'
     const params = parseCollectionRoute(route)

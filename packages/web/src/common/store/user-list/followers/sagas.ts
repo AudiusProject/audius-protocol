@@ -1,5 +1,5 @@
 import { userMetadataListFromSDK } from '@audius/common/adapters'
-import { ID, Id, OptionalId, User } from '@audius/common/models'
+import { ID, User } from '@audius/common/models'
 import {
   cacheUsersSelectors,
   UserListSagaFactory,
@@ -8,6 +8,7 @@ import {
   FOLLOWERS_USER_LIST_TAG as USER_LIST_TAG,
   getSDK
 } from '@audius/common/store'
+import { Id, OptionalId } from '@audius/sdk'
 import { call, put, select } from 'typed-redux-saga'
 
 import { watchFollowersError } from 'common/store/user-list/followers/errorSagas'

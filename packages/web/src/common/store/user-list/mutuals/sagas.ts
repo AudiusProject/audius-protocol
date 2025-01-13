@@ -1,5 +1,5 @@
 import { userMetadataListFromSDK } from '@audius/common/adapters'
-import { Id, ID, User } from '@audius/common/models'
+import { ID, User } from '@audius/common/models'
 import {
   cacheUsersSelectors,
   UserListSagaFactory,
@@ -9,6 +9,7 @@ import {
   getContext,
   accountSelectors
 } from '@audius/common/store'
+import { Id } from '@audius/sdk'
 import { call, put, select } from 'typed-redux-saga'
 
 import { watchMutualsError } from 'common/store/user-list/mutuals/errorSagas'

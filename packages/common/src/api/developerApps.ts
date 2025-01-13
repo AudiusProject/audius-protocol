@@ -1,8 +1,8 @@
+import { Id } from '@audius/sdk'
 import { z } from 'zod'
 
 import { createApi } from '~/audius-query'
 import { ID } from '~/models/Identifiers'
-import { encodeHashId } from '~/utils/hashIds'
 
 export const DEVELOPER_APP_DESCRIPTION_MAX_LENGTH = 128
 export const DEVELOPER_APP_NAME_MAX_LENGTH = 50
@@ -66,7 +66,7 @@ const developerAppsApi = createApi({
   endpoints: {
     getDeveloperApps: {
       async fetch({ id }: { id: ID }, { audiusSdk }) {
-        const encodedUserId = encodeHashId(id) as string
+        const encodedUserId = Id.parse(id)
         const sdk = await audiusSdk()
         const { data = [] } = await sdk.users.getDeveloperApps({
           id: encodedUserId
@@ -89,7 +89,7 @@ const developerAppsApi = createApi({
     addDeveloperApp: {
       async fetch(newApp: NewAppPayload, { audiusSdk }) {
         const { name, description, imageUrl, userId } = newApp
-        const encodedUserId = encodeHashId(userId) as string
+        const encodedUserId = Id.parse(userId)
         const sdk = await audiusSdk()
 
         const { apiKey, apiSecret } =
@@ -132,7 +132,7 @@ const developerAppsApi = createApi({
     editDeveloperApp: {
       async fetch(editApp: EditAppPayload, { audiusSdk }) {
         const { name, description, imageUrl, userId, apiKey } = editApp
-        const encodedUserId = encodeHashId(userId) as string
+        const encodedUserId = Id.parse(userId)
         const sdk = await audiusSdk()
 
         await sdk.developerApps.updateDeveloperApp({
@@ -172,7 +172,7 @@ const developerAppsApi = createApi({
     deleteDeveloperApp: {
       async fetch(args: DeleteDeveloperAppArgs, { audiusSdk }) {
         const { userId, apiKey } = args
-        const encodedUserId = encodeHashId(userId) as string
+        const encodedUserId = Id.parse(userId)
         const sdk = await audiusSdk()
 
         await sdk.developerApps.deleteDeveloperApp({

@@ -1,5 +1,5 @@
 import { USDC } from '@audius/fixed-decimal'
-import { type AudiusSdk } from '@audius/sdk'
+import { Id, OptionalId, type AudiusSdk } from '@audius/sdk'
 import type { createJupiterApiClient, QuoteResponse } from '@jup-ag/api'
 import { getAccount, getAssociatedTokenAddressSync } from '@solana/spl-token'
 import {
@@ -21,7 +21,7 @@ import { isPurchaseableAlbum, PurchaseableContentMetadata } from '~/hooks'
 import { Collection, Kind } from '~/models'
 import { FavoriteSource, Name } from '~/models/Analytics'
 import { ErrorLevel, Feature } from '~/models/ErrorReporting'
-import { ID, Id, OptionalId } from '~/models/Identifiers'
+import { ID } from '~/models/Identifiers'
 import {
   PurchaseAccess,
   PurchaseMethod,
@@ -61,7 +61,6 @@ import {
   CoinflowPurchaseMetadata
 } from '~/store/ui/modals/coinflow-onramp-modal'
 import { waitForValue } from '~/utils'
-import { encodeHashId } from '~/utils/hashIds'
 import { BN_USDC_CENT_WEI } from '~/utils/wallet'
 
 import { cacheActions } from '../cache'
@@ -361,8 +360,8 @@ function* purchaseTrackWithCoinflow(args: {
   const params = {
     price: args.price,
     extraAmount: args.extraAmount,
-    trackId: encodeHashId(trackId),
-    userId: encodeHashId(userId),
+    trackId: Id.parse(trackId),
+    userId: Id.parse(userId),
     includeNetworkCut
   }
   const mint = 'USDC'
@@ -468,8 +467,8 @@ function* purchaseAlbumWithCoinflow(args: {
   const params = {
     price: args.price,
     extraAmount: args.extraAmount,
-    albumId: encodeHashId(albumId),
-    userId: encodeHashId(userId),
+    albumId: Id.parse(albumId),
+    userId: Id.parse(userId),
     includeNetworkCut
   }
 
@@ -731,16 +730,16 @@ function* doStartPurchaseContentFlow({
         // No balance needed, perform the purchase right away
         if (contentType === PurchaseableContentType.TRACK) {
           yield* call([sdk.tracks, sdk.tracks.purchaseTrack], {
-            userId: encodeHashId(purchaserUserId),
-            trackId: encodeHashId(contentId),
+            userId: Id.parse(purchaserUserId),
+            trackId: Id.parse(contentId),
             price: price / 100.0,
             extraAmount: extraAmount ? extraAmount / 100.0 : undefined,
             includeNetworkCut: isNetworkCutEnabled
           })
         } else {
           yield* call([sdk.albums, sdk.albums.purchaseAlbum], {
-            userId: encodeHashId(purchaserUserId),
-            albumId: encodeHashId(contentId),
+            userId: Id.parse(purchaserUserId),
+            albumId: Id.parse(contentId),
             price: price / 100.0,
             extraAmount: extraAmount ? extraAmount / 100.0 : undefined,
             includeNetworkCut: isNetworkCutEnabled
@@ -797,16 +796,16 @@ function* doStartPurchaseContentFlow({
             yield* call(purchaseUSDCWithStripe, { amount: purchaseAmount })
             if (contentType === PurchaseableContentType.TRACK) {
               yield* call([sdk.tracks, sdk.tracks.purchaseTrack], {
-                userId: encodeHashId(purchaserUserId),
-                trackId: encodeHashId(contentId),
+                userId: Id.parse(purchaserUserId),
+                trackId: Id.parse(contentId),
                 price: price / 100.0,
                 extraAmount: extraAmount ? extraAmount / 100.0 : undefined,
                 includeNetworkCut: isNetworkCutEnabled
               })
             } else {
               yield* call([sdk.albums, sdk.albums.purchaseAlbum], {
-                userId: encodeHashId(purchaserUserId),
-                albumId: encodeHashId(contentId),
+                userId: Id.parse(purchaserUserId),
+                albumId: Id.parse(contentId),
                 price: price / 100.0,
                 extraAmount: extraAmount ? extraAmount / 100.0 : undefined,
                 includeNetworkCut: isNetworkCutEnabled
@@ -1124,8 +1123,8 @@ function* purchaseWithAnything({
           locationMemoInstruction
         }
       } = yield* call([sdk.tracks, sdk.tracks.getPurchaseTrackInstructions], {
-        userId: encodeHashId(purchaserUserId),
-        trackId: encodeHashId(contentId),
+        userId: Id.parse(purchaserUserId),
+        trackId: Id.parse(contentId),
         price: price / 100.0,
         extraAmount: extraAmount ? extraAmount / 100.0 : undefined,
         includeNetworkCut: isNetworkCutEnabled
@@ -1142,8 +1141,8 @@ function* purchaseWithAnything({
           locationMemoInstruction
         }
       } = yield* call([sdk.albums, sdk.albums.getPurchaseAlbumInstructions], {
-        userId: encodeHashId(purchaserUserId),
-        albumId: encodeHashId(contentId),
+        userId: Id.parse(purchaserUserId),
+        albumId: Id.parse(contentId),
         price: price / 100.0,
         extraAmount: extraAmount ? extraAmount / 100.0 : undefined,
         includeNetworkCut: isNetworkCutEnabled

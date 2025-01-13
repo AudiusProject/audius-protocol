@@ -11,7 +11,6 @@ import { useGetTrackById } from '@audius/common/api'
 import { useAudiusLinkResolver } from '@audius/common/hooks'
 import { ID, UserMetadata } from '@audius/common/models'
 import {
-  decodeHashId,
   getDurationFromTimestampMatch,
   parseCommentTrackTimestamp,
   splitOnNewline,
@@ -24,7 +23,7 @@ import {
   TextProps,
   useTheme
 } from '@audius/harmony'
-import { EntityType } from '@audius/sdk'
+import { EntityType, HashId } from '@audius/sdk'
 import { isEqual } from 'lodash'
 import { usePrevious } from 'react-use'
 
@@ -487,7 +486,7 @@ export const ComposerInput = (props: ComposerInputProps) => {
   useEffect(() => {
     if (linkEntities.length && !isEqual(linkEntities, prevLinkEntities)) {
       const { type, data } = linkEntities[linkEntities.length - 1]
-      const id = decodeHashId(data.id)
+      const id = HashId.parse(data.id)
       if (id) {
         onAddLink?.(id, type)
       }

@@ -1,7 +1,9 @@
+import { Id, OptionalId } from '@audius/sdk'
+
 import { userMetadataFromSDK } from '~/adapters'
 import { transformAndCleanList } from '~/adapters/utils'
 import { createApi } from '~/audius-query'
-import { ID, Id, OptionalId } from '~/models/Identifiers'
+import { ID } from '~/models/Identifiers'
 import { Nullable } from '~/utils'
 
 const relatedArtistsApi = createApi({

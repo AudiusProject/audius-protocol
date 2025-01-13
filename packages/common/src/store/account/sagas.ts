@@ -1,3 +1,4 @@
+import { Id } from '@audius/sdk'
 import { SagaIterator } from 'redux-saga'
 import {
   call,
@@ -12,7 +13,6 @@ import { userApiFetchSaga } from '~/api/user'
 import {
   AccountUserMetadata,
   ErrorLevel,
-  Id,
   Kind,
   Status,
   UserMetadata

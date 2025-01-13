@@ -1,11 +1,11 @@
 import { userTrackMetadataFromSDK } from '@audius/common/adapters'
 import type { ID } from '@audius/common/models'
-import { Id, OptionalId } from '@audius/common/models'
 import {
   accountSelectors,
   cacheTracksSelectors,
   getSDK
 } from '@audius/common/store'
+import { Id, OptionalId } from '@audius/sdk'
 import moment from 'moment'
 import { put, select, call, take, race } from 'typed-redux-saga'
 

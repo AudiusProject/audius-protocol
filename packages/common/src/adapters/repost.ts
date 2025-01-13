@@ -1,12 +1,11 @@
-import { full } from '@audius/sdk'
+import { full, HashId } from '@audius/sdk'
 import snakecaseKeys from 'snakecase-keys'
 
 import { Repost } from '~/models/Repost'
-import { decodeHashId } from '~/utils/hashIds'
 
 export const repostFromSDK = (input: full.Repost): Repost | undefined => {
-  const decodedRepostItemId = decodeHashId(input.repostItemId)
-  const decodedUserId = decodeHashId(input.userId)
+  const decodedRepostItemId = HashId.parse(input.repostItemId)
+  const decodedUserId = HashId.parse(input.userId)
   if (!decodedRepostItemId || !decodedUserId) {
     return undefined
   }

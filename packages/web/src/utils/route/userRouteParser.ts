@@ -1,6 +1,7 @@
 import { ID } from '@audius/common/models'
 import { ProfilePageTabRoute } from '@audius/common/store'
-import { decodeHashId, route } from '@audius/common/utils'
+import { route } from '@audius/common/utils'
+import { OptionalHashId } from '@audius/sdk'
 import { matchPath } from 'react-router-dom'
 
 const { USER_ID_PAGE, PROFILE_PAGE, staticRoutes } = route
@@ -23,8 +24,8 @@ export const parseUserRoute = (route: string): UserRouteParams => {
     exact: true
   })
   if (userIdPageMatch) {
-    const userId = decodeHashId(userIdPageMatch.params.id)
-    if (userId === null) return null
+    const userId = OptionalHashId.parse(userIdPageMatch.params.id)
+    if (!userId) return null
     return { userId, handle: null, tab: null }
   }
 

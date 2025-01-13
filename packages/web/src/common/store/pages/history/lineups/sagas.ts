@@ -2,14 +2,13 @@ import {
   trackActivityFromSDK,
   transformAndCleanList
 } from '@audius/common/adapters'
-import { Id, Kind, LineupEntry, Track } from '@audius/common/models'
+import { Kind, LineupEntry, Track } from '@audius/common/models'
 import {
   accountSelectors,
   getContext,
   historyPageTracksLineupActions as tracksActions
 } from '@audius/common/store'
-import { decodeHashId } from '@audius/common/utils'
-import { full } from '@audius/sdk'
+import { full, HashId, Id } from '@audius/sdk'
 import { keyBy } from 'lodash'
 import { call, select } from 'typed-redux-saga'
 
@@ -50,7 +49,7 @@ function* getHistoryTracks() {
     const lineupTracks: Track[] = []
     activityData.forEach((activity) => {
       const trackMetadata = activity.item
-        ? processedTracksMap[decodeHashId(activity.item.id)!]
+        ? processedTracksMap[HashId.parse(activity.item.id)!]
         : null
       // Prevent history for invalid tracks from getting into the lineup.
       if (trackMetadata && !trackMetadata.is_unlisted) {

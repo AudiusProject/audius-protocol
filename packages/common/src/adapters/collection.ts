@@ -2,13 +2,14 @@ import {
   CreateAlbumMetadata,
   CreatePlaylistMetadata,
   full,
+  HashId,
+  Id,
   UpdatePlaylistRequest
 } from '@audius/sdk'
 import dayjs from 'dayjs'
 import { omit } from 'lodash'
 import snakecaseKeys from 'snakecase-keys'
 
-import { Id } from '~/models'
 import {
   AccountCollection,
   Collection,
@@ -17,7 +18,6 @@ import {
   Variant
 } from '~/models/Collection'
 import { Copyright } from '~/models/Track'
-import { decodeHashId } from '~/utils/hashIds'
 
 import { accessConditionsFromSDK } from './accessConditionsFromSDK'
 import { resourceContributorFromSDK } from './attribution'
@@ -33,7 +33,7 @@ const addedTimestampToPlaylistTrackId = ({
   trackId,
   metadataTimestamp
 }: full.PlaylistAddedTimestamp): PlaylistTrackId | null => {
-  const decoded = decodeHashId(trackId)
+  const decoded = HashId.parse(trackId)
   if (decoded) {
     return {
       track: decoded,
@@ -50,8 +50,8 @@ export const userCollectionMetadataFromSDK = (
     | full.SearchPlaylistFull
     | full.PlaylistFull
 ): UserCollectionMetadata | undefined => {
-  const decodedPlaylistId = decodeHashId(input.id)
-  const decodedOwnerId = decodeHashId(input.userId ?? input.user.id)
+  const decodedPlaylistId = HashId.parse(input.id)
+  const decodedOwnerId = HashId.parse(input.userId ?? input.user.id)
   const user = userMetadataFromSDK(input.user)
   if (!decodedPlaylistId || !decodedOwnerId || !user) {
     return undefined
@@ -132,8 +132,8 @@ export const userCollectionMetadataFromSDK = (
 export const accountCollectionFromSDK = (
   input: full.AccountCollection
 ): AccountCollection | undefined => {
-  const playlistId = decodeHashId(input.id)
-  const userId = decodeHashId(input.user.id)
+  const playlistId = HashId.parse(input.id)
+  const userId = HashId.parse(input.user.id)
   if (!playlistId || !userId) {
     return undefined
   }

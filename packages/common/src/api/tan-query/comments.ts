@@ -4,7 +4,8 @@ import {
   CommentMention,
   TrackCommentsSortMethodEnum as CommentSortMethod,
   EntityManagerAction,
-  EntityType
+  EntityType,
+  Id
 } from '@audius/sdk'
 import {
   InfiniteData,
@@ -33,7 +34,7 @@ import {
   setTrackCommentCount
 } from '~/store/cache/tracks/actions'
 import { toast } from '~/store/ui/toast/slice'
-import { encodeHashId, Nullable } from '~/utils'
+import { Nullable } from '~/utils'
 
 import { QUERY_KEYS } from './queryKeys'
 
@@ -96,7 +97,7 @@ export const useGetCommentsByTrackId = ({
     queryFn: async ({ pageParam }): Promise<ID[]> => {
       const sdk = await audiusSdk()
       const commentsRes = await sdk.tracks.trackComments({
-        trackId: encodeHashId(trackId),
+        trackId: Id.parse(trackId),
         offset: pageParam,
         limit: pageSize,
         sortMethod,
@@ -247,7 +248,7 @@ export const useTrackCommentCount = (
     queryFn: async () => {
       const sdk = await audiusSdk()
       const res = await sdk.tracks.trackCommentCount({
-        trackId: encodeHashId(trackId as ID), // Its safe to cast to ID because we only enable the query with !!trackId above
+        trackId: Id.parse(trackId as ID), // Its safe to cast to ID because we only enable the query with !!trackId above
         userId: userId?.toString() ?? undefined // userId can be undefined if not logged in
       })
       const previousData = queryClient.getQueryData<TrackCommentCount>([
@@ -313,7 +314,7 @@ export const useGetCommentRepliesById = ({
     queryFn: async ({ pageParam }): Promise<ReplyComment[]> => {
       const sdk = await audiusSdk()
       const commentsRes = await sdk.comments.getCommentReplies({
-        commentId: encodeHashId(commentId),
+        commentId: Id.parse(commentId),
         userId: currentUserId?.toString(),
         limit: pageSize,
         offset: pageParam
@@ -982,8 +983,8 @@ export const useGetTrackCommentNotificationSetting = (
       if (!currentUserId) return
       const sdk = await audiusSdk()
       return await sdk.tracks.trackCommentNotificationSetting({
-        trackId: encodeHashId(trackId),
-        userId: encodeHashId(currentUserId)
+        trackId: Id.parse(trackId),
+        userId: Id.parse(currentUserId)
       })
     }
   })

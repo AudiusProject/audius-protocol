@@ -1,5 +1,5 @@
-import { Id } from '@audius/common/models'
 import { profilePageActions, getSDK } from '@audius/common/store'
+import { Id } from '@audius/sdk'
 import { takeLatest, call, put } from 'typed-redux-saga'
 const {
   FETCH_TOP_TAGS,

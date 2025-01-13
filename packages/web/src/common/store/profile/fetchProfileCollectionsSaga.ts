@@ -2,7 +2,7 @@ import {
   userCollectionMetadataFromSDK,
   transformAndCleanList
 } from '@audius/common/adapters'
-import { Id, Kind, OptionalId } from '@audius/common/models'
+import { Kind } from '@audius/common/models'
 import {
   cacheActions,
   profilePageActions,
@@ -10,6 +10,7 @@ import {
   getSDK,
   accountSelectors
 } from '@audius/common/store'
+import { Id, OptionalId } from '@audius/sdk'
 import { isEqual } from 'lodash'
 import { put, select, takeEvery, call, all } from 'typed-redux-saga'
 

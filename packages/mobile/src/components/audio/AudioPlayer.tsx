@@ -1,6 +1,6 @@
 import { useRef, useEffect, useCallback, useState } from 'react'
 
-import { Id, Name, OptionalId, SquareSizes } from '@audius/common/models'
+import { Name, SquareSizes } from '@audius/common/models'
 import type { Track } from '@audius/common/models'
 import {
   accountSelectors,
@@ -29,6 +29,7 @@ import {
   getTrackPreviewDuration
 } from '@audius/common/utils'
 import type { Nullable } from '@audius/common/utils'
+import { Id, OptionalId } from '@audius/sdk'
 import { getMirrorStreamUrl } from '@audius/web/src/common/store/player/sagas'
 import { isEqual } from 'lodash'
 import TrackPlayer, {

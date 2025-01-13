@@ -1,8 +1,8 @@
-import { full } from '@audius/sdk'
+import { full, Id, OptionalId } from '@audius/sdk'
 
 import { transformAndCleanList, userTrackMetadataFromSDK } from '~/adapters'
 import { createApi } from '~/audius-query'
-import { ID, Id, Kind, OptionalId } from '~/models'
+import { ID, Kind } from '~/models'
 import { Nullable } from '~/utils/typeUtils'
 
 import { SDKRequest } from './types'

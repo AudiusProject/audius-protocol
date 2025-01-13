@@ -1,11 +1,10 @@
-import { Track } from '@audius/sdk'
+import { Id, Track } from '@audius/sdk'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 
 import { fileToSdk, trackMetadataForUploadToSdk } from '~/adapters/track'
 import { useAppContext } from '~/context/appContext'
 import { ID } from '~/models/Identifiers'
 import { TrackMetadataForUpload } from '~/store/upload'
-import { encodeHashId } from '~/utils/hashIds'
 
 import { QUERY_KEYS } from './queryKeys'
 
@@ -33,8 +32,8 @@ export const useUpdateTrack = () => {
     }: UpdateTrackParams) => {
       if (!audiusSdk) throw new Error('SDK not initialized')
 
-      const encodedTrackId = encodeHashId(trackId)
-      const encodedUserId = encodeHashId(userId)
+      const encodedTrackId = Id.parse(trackId)
+      const encodedUserId = Id.parse(userId)
       if (!encodedTrackId || !encodedUserId) throw new Error('Invalid ID')
 
       const sdkMetadata = trackMetadataForUploadToSdk(
