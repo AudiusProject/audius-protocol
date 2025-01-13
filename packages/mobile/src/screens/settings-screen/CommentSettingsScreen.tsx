@@ -1,8 +1,7 @@
-import React, { useCallback } from 'react'
+import { useCallback } from 'react'
 
 import { useGetCurrentUserId, useGetMutedUsers } from '@audius/common/api'
 import { useMuteUser } from '@audius/common/context'
-import { useSelectTierInfo } from '@audius/common/hooks'
 import { commentsMessages as messages } from '@audius/common/messages'
 import { Status } from '@audius/common/models'
 import { formatCount } from '@audius/common/utils'
@@ -16,15 +15,13 @@ import {
   Button,
   Divider,
   IconMessageBlock,
-  IconUser,
-  IconVerified
+  IconUser
 } from '@audius/harmony-native'
-import { IconAudioBadge } from 'app/components/audio-rewards'
 import { Screen, ScreenContent, ProfilePicture } from 'app/components/core'
+import { UserBadgesV2 } from 'app/components/user-badges/UserBadgesV2'
 import { LoadingSpinner } from 'app/harmony-native/components/LoadingSpinner/LoadingSpinner'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { makeStyles } from 'app/styles'
-import { useThemePalette } from 'app/utils/theme'
 
 const useStyles = makeStyles(({ spacing, palette }) => ({
   description: {
@@ -82,8 +79,6 @@ export const CommentSettingsScreen = () => {
 
 const UserListItem = (props) => {
   const { user } = props
-  const palette = useThemePalette()
-  const { tier } = useSelectTierInfo(user.user_id)
   const { navigate } = useNavigation()
   const [muteUser] = useMuteUser()
   const [isMuted, toggleMuted] = useToggle(true)
@@ -102,15 +97,7 @@ const UserListItem = (props) => {
               <Flex direction='column' gap='2xs'>
                 <Flex direction='row' gap='xs' alignItems='center'>
                   <Text size='s'>{user.name}</Text>
-                  {user.is_verified ? (
-                    <IconVerified
-                      height={14}
-                      width={14}
-                      fill={palette.staticPrimary}
-                      fillSecondary={palette.staticWhite}
-                    />
-                  ) : null}
-                  <IconAudioBadge tier={tier} size='m' />
+                  <UserBadgesV2 userId={user.user_id} badgeSize='xs' />
                 </Flex>
                 <Text size='s'>@{user.handle}</Text>
               </Flex>
