@@ -30,13 +30,12 @@ const variants: VariantConfigs = {
 const getStyles = (theme: HarmonyTheme, isHovered: boolean): CSSObject => {
   const baseStyles: CSSObject = {
     transition: `background-color ${theme.motion.hover}`,
-    cursor: 'pointer',
-    border: `1px solid transparent`
+    cursor: 'pointer'
   }
 
   const hoverStyles: CSSObject = {
     backgroundColor: theme.color.background.surface2,
-    border: `1px solid ${theme.color.border.default}`
+    boxShadow: `inset 0 0 0 1px ${theme.color.border.default}`
   }
 
   return {
@@ -54,6 +53,7 @@ export const ExpandableNavItem = ({
   shouldPersistRightIcon = false,
   canUnfurl = true,
   variant = 'default',
+  onClick,
   ...props
 }: ExpandableNavItemProps) => {
   const [isOpen, setIsOpen] = useState(defaultIsOpen)
@@ -66,6 +66,7 @@ export const ExpandableNavItem = ({
     if (canUnfurl) {
       setIsOpen(!isOpen)
     }
+    onClick?.()
   }
 
   const styles = useMemo(() => getStyles(theme, isHovered), [theme, isHovered])
