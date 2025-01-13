@@ -9,7 +9,7 @@ import {
   IconVisibilityHidden,
   IconCart,
   IconReceive,
-  IconSpecialAccess,
+  IconSparkles,
   IconCollectible
 } from '@audius/harmony-native'
 
@@ -51,7 +51,7 @@ const ACCESS_TYPE_CONFIG: Record<AccessType, AccessTypeConfig> = {
     color: 'premium'
   },
   [AccessType.SPECIAL_ACCESS]: {
-    icon: IconSpecialAccess,
+    icon: IconSparkles,
     label: 'Special Access',
     color: 'special'
   },
