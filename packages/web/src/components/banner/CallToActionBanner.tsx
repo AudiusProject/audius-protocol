@@ -58,7 +58,12 @@ export const CallToActionBanner = (props: CallToActionBannerProps) => {
         <div className={styles.content}>
           {pill && pillPosition === 'left' ? pillElement : null}
           <div className={styles.contentSelection}>
-            {emoji ? <i className={cn('emoji', emoji)} /> : null}
+            {emoji ? (
+              <i
+                className={cn('emoji', emoji)}
+                css={{ minWidth: 24, minHeight: 24 }}
+              />
+            ) : null}
             <div
               className={cn(styles.text, {
                 [styles.small]: size === 'small'
