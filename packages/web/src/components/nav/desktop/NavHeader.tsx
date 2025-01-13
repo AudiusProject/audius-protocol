@@ -1,3 +1,5 @@
+import { ReactNode } from 'react'
+
 import { Theme } from '@audius/common/models'
 import { themeSelectors, accountSelectors } from '@audius/common/store'
 import { route } from '@audius/common/utils'
@@ -29,7 +31,7 @@ const messages = {
 type RestrictedLinkProps = {
   to: string
   restriction?: RestrictionType
-  children: React.ReactNode
+  children: ReactNode
 }
 
 export const canAccess = (
