@@ -47,7 +47,7 @@ export const ProfileScreen = () => {
   const styles = useStyles()
   const { params } = useRoute<'Profile'>()
   const { handle: userHandle, id } = params
-  const { data: profile, status } = useUserByParams({
+  const { data: profile, isSuccess } = useUserByParams({
     handle: userHandle ?? '',
     userId: id
   })
@@ -117,10 +117,10 @@ export const ProfileScreen = () => {
   }, [profile, currentTab, dispatch, handleLower])
 
   useEffect(() => {
-    if (status === 'success') {
+    if (isSuccess) {
       setIsRefreshing(false)
     }
-  }, [status])
+  }, [isSuccess])
 
   const handlePressTopRight = useCallback(() => {
     if (profile) {
