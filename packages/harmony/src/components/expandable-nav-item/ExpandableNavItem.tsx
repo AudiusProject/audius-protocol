@@ -36,23 +36,9 @@ const getStyles = (
   isHovered: boolean,
   disabled?: boolean
 ): CSSObject => {
-  const baseStyles: CSSObject = {
-    transition: `background-color ${theme.motion.hover}`,
-    opacity: disabled ? 0.5 : 1
-  }
-
-  const hoverStyles: CSSObject = {
-    backgroundColor: theme.color.background.surface2,
-    boxShadow: `inset 0 0 0 1px ${theme.color.border.default}`
-  }
-
   return {
-    ...baseStyles,
-    ...(!disabled && isHovered && hoverStyles),
-    '&:active': {
-      opacity: disabled ? 0.4 : 0.8,
-      transition: `opacity ${theme.motion.quick}`
-    }
+    transition: `opacity ${theme.motion.quick}`,
+    opacity: disabled ? 0.5 : 1
   }
 }
 
@@ -72,6 +58,7 @@ export const ExpandableNavItem = ({
 }: ExpandableNavItemProps) => {
   const [isOpen, setIsOpen] = useState(defaultIsOpen)
   const [isHovered, setIsHovered] = useState(false)
+  const [isMainActive, setIsMainActive] = useState(false)
   const theme = useTheme()
 
   const [ref, bounds] = useMeasure({
@@ -79,7 +66,14 @@ export const ExpandableNavItem = ({
   })
 
   const handleMouseEnter = () => setIsHovered(true)
-  const handleMouseLeave = () => setIsHovered(false)
+  const handleMouseLeave = () => {
+    setIsHovered(false)
+    setIsMainActive(false)
+  }
+
+  const handleMainMouseDown = () => setIsMainActive(true)
+  const handleMainMouseUp = () => setIsMainActive(false)
+
   const handleClick = () => {
     if (canUnfurl) {
       setIsOpen(!isOpen)
@@ -88,8 +82,37 @@ export const ExpandableNavItem = ({
   }
 
   const styles = useMemo(
-    () => getStyles(theme, isHovered, disabled),
-    [theme, isHovered, disabled]
+    () => ({
+      ...getStyles(theme, isHovered, disabled),
+      opacity: isMainActive ? 0.8 : 1,
+      transition: `opacity ${theme.motion.quick}, background-color ${theme.motion.hover}`,
+      pointerEvents: disabled ? ('none' as const) : ('auto' as const)
+    }),
+    [theme, isHovered, disabled, isMainActive]
+  )
+
+  const containerStyles = useMemo(
+    () => ({
+      width: '100%',
+      cursor: 'pointer',
+      transition: `background-color ${theme.motion.hover}`,
+      padding: `0 ${theme.spacing.s}px`,
+      '& > div:first-of-type': {
+        display: 'flex',
+        alignItems: 'center',
+        gap: theme.spacing.s,
+        padding: theme.spacing.s,
+        backgroundColor: isHovered
+          ? theme.color.background.surface2
+          : undefined,
+        boxShadow: isHovered
+          ? `inset 0 0 0 1px ${theme.color.border.default}`
+          : undefined,
+        borderRadius: theme.cornerRadius.m,
+        width: '100%'
+      }
+    }),
+    [theme, isHovered]
   )
 
   const getIcon = useMemo(() => {
@@ -143,61 +166,59 @@ export const ExpandableNavItem = ({
 
   const shouldShowRightIcon = isOpen || shouldPersistRightIcon
 
-  const stopRightIconPropagation = (e: React.MouseEvent) => {
-    e.stopPropagation()
-  }
-
   return (
-    <Flex direction='column' role='navigation' {...props}>
+    <Flex direction='column' role='navigation' w='100%' {...props}>
       <Flex
-        alignItems='center'
-        gap='s'
-        pl='s'
-        pr='s'
-        css={{
-          width: ITEM_DEFAULT_WIDTH,
-          cursor: 'pointer',
-          transition: `background-color ${theme.motion.hover}`
-        }}
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
+        css={containerStyles}
       >
-        <Flex
-          alignItems='center'
-          flex={1}
-          gap='m'
-          p='s'
-          borderRadius='m'
-          css={styles}
-          onMouseEnter={handleMouseEnter}
-          onMouseLeave={handleMouseLeave}
-          onClick={handleClick}
-          role='button'
-          aria-expanded={isOpen}
-          aria-controls={`${label}-content`}
-          aria-label={`${label} navigation section`}
-        >
+        <Flex w='100%'>
           <Flex
             alignItems='center'
-            gap={variants[variant].gap}
             flex={1}
-            css={{
-              maxWidth: ITEM_DEFAULT_WIDTH,
-              transition: `opacity ${theme.motion.expressive}`
-            }}
+            gap='m'
+            css={styles}
+            onMouseDown={handleMainMouseDown}
+            onMouseUp={handleMainMouseUp}
+            onClick={handleClick}
+            role='button'
+            aria-expanded={isOpen}
+            aria-controls={`${label}-content`}
+            aria-label={`${label} navigation section`}
           >
-            {leftIcon}
-            <Text
-              variant={variants[variant].textVariant}
-              size={variants[variant].textSize}
-              strength={variants[variant].textStrength}
-              lineHeight='single'
-              color='default'
-              ellipses
+            <Flex
+              alignItems='center'
+              gap={variants[variant].gap}
+              flex={1}
+              css={{
+                maxWidth: ITEM_DEFAULT_WIDTH,
+                transition: `opacity ${theme.motion.expressive}`
+              }}
             >
-              {label}
-            </Text>
+              {leftIcon}
+              <Text
+                variant={variants[variant].textVariant}
+                size={variants[variant].textSize}
+                strength={variants[variant].textStrength}
+                lineHeight='single'
+                color='default'
+                ellipses
+              >
+                {label}
+              </Text>
+            </Flex>
           </Flex>
           {shouldShowRightIcon ? (
-            <Box onClick={stopRightIconPropagation}>{rightIcon}</Box>
+            <Box
+              onClick={(e) => e.stopPropagation()}
+              css={{
+                pointerEvents: 'auto' as const,
+                cursor: 'pointer'
+              }}
+            >
+              {rightIcon}
+            </Box>
           ) : null}
         </Flex>
       </Flex>
