@@ -86,6 +86,7 @@ const LeftNav = (props: NavColumnProps) => {
             }
             canUnfurl={item.canUnfurl}
             restriction={item.restriction}
+            disabled={item.disabled}
           />
         )
       }

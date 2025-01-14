@@ -11,9 +11,8 @@
 .scrollbar :global(.ps__rail-y) {
   margin-top: var(--harmony-unit-1);
   margin-bottom: var(--harmony-unit-1);
-  transition:
-    background-color 0.2s ease-in-out,
-    opacity 0.2s ease-in-out;
+  transition: background-color 0.2s ease-in-out, opacity 0.2s ease-in-out;
+  background-color: transparent !important;
 }
 
 /* Cancel the default of perfect scroll, which always shows the scrollbar when hovering over container. Our desired behavior is to
@@ -21,6 +20,7 @@ only show the scrollbar for ~1s, then fade away if not scrolling. */
 :global(.ps:hover).scrollbar > :global(.ps__rail-y),
 :global(.ps:hover).scrollbar > :global(.ps__rail-x) {
   opacity: 0;
+  background-color: transparent !important;
 }
 
 :global(.scrollbar--hovered-visible).scrollbar:not(:global(.ps--scrolling-y))
@@ -28,6 +28,7 @@ only show the scrollbar for ~1s, then fade away if not scrolling. */
 :global(.scrollbar--hovered-visible).scrollbar:not(:global(.ps--scrolling-x))
   > :global(.ps__rail-x) {
   opacity: 0.6;
+  background-color: transparent !important;
 }
 
 :global(.ps--focus).scrollbar > :global(.ps__rail-x),
@@ -35,9 +36,11 @@ only show the scrollbar for ~1s, then fade away if not scrolling. */
 :global(.ps--scrolling-x).scrollbar > :global(.ps__rail-x),
 :global(.ps--scrolling-y).scrollbar > :global(.ps__rail-y) {
   opacity: 0.6 !important;
+  background-color: transparent !important;
 }
 
 .scrollbar > :global(.ps__rail-y):hover,
 .scrollbar > :global(.ps__rail-x):hover {
   opacity: 0.9 !important;
+  background-color: transparent !important;
 }

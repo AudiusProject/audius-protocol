@@ -73,9 +73,14 @@ export const NavItem = ({
         borderRadius='m'
         css={{
           backgroundColor,
+          transition: `opacity ${motion.quick}`,
           '&:hover': {
             backgroundColor: isSelected ? undefined : color.background.surface2,
             boxShadow: insetBorderColor
+          },
+          '&:active': {
+            opacity: !isSelected ? 0.8 : undefined,
+            transition: `opacity ${motion.quick}`
           }
         }}
       >

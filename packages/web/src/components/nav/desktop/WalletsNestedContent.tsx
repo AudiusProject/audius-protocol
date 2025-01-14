@@ -8,7 +8,8 @@ import { accountSelectors } from '@audius/common/store'
 import {
   formatWei,
   formatUSDCWeiToFloorCentsNumber,
-  route
+  route,
+  formatCount
 } from '@audius/common/utils'
 import {
   BalancePill,
@@ -37,6 +38,8 @@ export const WalletsNestedContent = () => {
   const audioBalance = useTotalBalanceWithFallback()
   const userId = useSelector(getUserId)
   const { tier } = useSelectTierInfo(userId ?? 0)
+  const usdcCentBalance =
+    formatUSDCWeiToFloorCentsNumber((usdcBalance ?? new BN(0)) as BNUSDC) / 100
 
   const TierIcon = {
     none: IconTokenNoTier,
@@ -46,14 +49,18 @@ export const WalletsNestedContent = () => {
     platinum: IconTokenPlatinum
   }[tier]
 
+  const audioBalanceFormatted = audioBalance
+    ? formatCount(parseFloat(formatWei(audioBalance, true, 0)))
+    : '0'
+
+  const usdcBalanceFormatted = usdcBalance ? formatCount(usdcCentBalance) : '0'
+
   return (
     <Flex direction='column'>
       <LeftNavLink
         to={AUDIO_PAGE}
         rightIcon={
-          <BalancePill
-            balance={audioBalance ? formatWei(audioBalance, true, 0) : '0'}
-          >
+          <BalancePill balance={audioBalanceFormatted}>
             <TierIcon size='l' />
           </BalancePill>
         }
@@ -67,13 +74,7 @@ export const WalletsNestedContent = () => {
         <LeftNavLink
           to={PAYMENTS_PAGE}
           rightIcon={
-            <BalancePill
-              balance={
-                formatUSDCWeiToFloorCentsNumber(
-                  (usdcBalance ?? new BN(0)) as BNUSDC
-                ) / 100
-              }
-            >
+            <BalancePill balance={usdcBalanceFormatted}>
               <IconLogoCircleUSDC />
             </BalancePill>
           }

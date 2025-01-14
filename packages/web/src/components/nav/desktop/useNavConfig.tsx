@@ -42,7 +42,7 @@ const {
 } = route
 
 const { getUnreadMessagesCount } = chatSelectors
-const { getIsAccountComplete } = accountSelectors
+const { getIsAccountComplete, getHasAccount } = accountSelectors
 const { getIsUploading } = uploadSelectors
 
 export type NavItemConfig = {
@@ -60,6 +60,7 @@ export type NavItemConfig = {
 }
 
 export const useNavConfig = () => {
+  const hasAccount = useSelector(getHasAccount)
   const isAccountComplete = useSelector(getIsAccountComplete)
   const unreadMessagesCount = useSelector(getUnreadMessagesCount)
   const isUploading = useSelector(getIsUploading)
@@ -75,7 +76,8 @@ export const useNavConfig = () => {
         label: 'Feed',
         leftIcon: IconFeed,
         to: FEED_PAGE,
-        restriction: 'account'
+        restriction: 'account',
+        disabled: !hasAccount
       },
       {
         label: 'Trending',
@@ -93,7 +95,8 @@ export const useNavConfig = () => {
         label: 'Library',
         leftIcon: IconLibrary,
         to: LIBRARY_PAGE,
-        restriction: 'guest'
+        restriction: 'guest',
+        disabled: !hasAccount
       },
       {
         label: 'Messages',
@@ -107,7 +110,8 @@ export const useNavConfig = () => {
               isSelected={location.pathname === CHATS_PAGE}
             />
           ) : undefined,
-        hasNotification: unreadMessagesCount > 0
+        hasNotification: unreadMessagesCount > 0,
+        disabled: !hasAccount
       },
       {
         label: 'Wallets',
@@ -115,7 +119,8 @@ export const useNavConfig = () => {
         isExpandable: true,
         restriction: 'account',
         nestedComponent: WalletsNestedContent,
-        canUnfurl: isAccountComplete
+        canUnfurl: isAccountComplete,
+        disabled: !hasAccount
       },
       {
         label: 'Rewards',
@@ -129,7 +134,8 @@ export const useNavConfig = () => {
               isSelected={location.pathname === REWARDS_PAGE}
             />
           ) : undefined,
-        hasNotification: claimableAmount > 0
+        hasNotification: claimableAmount > 0,
+        disabled: !hasAccount
       },
       {
         label: 'Upload',
@@ -148,7 +154,8 @@ export const useNavConfig = () => {
           />
         ) : undefined,
         shouldPersistRightIcon: true,
-        restriction: 'account'
+        restriction: 'account',
+        disabled: !hasAccount
       },
       {
         label: 'Playlists',
@@ -158,10 +165,12 @@ export const useNavConfig = () => {
         shouldPersistRightIcon: true,
         nestedComponent: PlaylistLibrary,
         restriction: 'account',
-        canUnfurl: isAccountComplete
+        canUnfurl: isAccountComplete,
+        disabled: !hasAccount
       }
     ],
     [
+      hasAccount,
       unreadMessagesCount,
       location.pathname,
       isAccountComplete,

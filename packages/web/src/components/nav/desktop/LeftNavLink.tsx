@@ -27,7 +27,7 @@ export const LeftNavLink = (props: LeftNavLinkProps) => {
   )
 
   const handleClick = (e?: React.MouseEvent<Element>) => {
-    if (!disabled && !!e && !e.defaultPrevented) {
+    if (!!e && !e.defaultPrevented) {
       return requiresAccountOnClick(e)
     } else {
       e?.preventDefault()
@@ -36,18 +36,13 @@ export const LeftNavLink = (props: LeftNavLinkProps) => {
   }
 
   return (
-    <NavLink
-      to={to ?? ''}
-      onClick={handleClick}
-      style={{ pointerEvents: disabled ? 'none' : 'auto' }}
-      draggable={false}
-    >
+    <NavLink to={to ?? ''} onClick={handleClick} draggable={false}>
       <NavItem
         {...other}
         isSelected={to ? location.pathname === to : false}
         css={{
-          opacity: disabled ? 0.6 : 1,
-          cursor: disabled ? 'not-allowed' : 'pointer'
+          opacity: disabled ? 0.5 : 1,
+          cursor: 'pointer'
         }}
       >
         {children}
