@@ -3,7 +3,6 @@ import {
   track as amplitudeTrack,
   setUserId,
   identify as amplitudeIdentify,
-  flush,
   Identify
 } from '@amplitude/analytics-react-native'
 import VersionNumber from 'react-native-version-number'
@@ -27,7 +26,7 @@ export const init = async () => {
   try {
     if (AmplitudeWriteKey && AmplitudeProxy) {
       await amplitudeInit(AmplitudeWriteKey, undefined, {
-        serverUrl: AmplitudeProxy, // Use a proxy server primarily to avoid ad-blockers (A bit unnecessary for mobile, but we use it for consistency)
+        serverUrl: AmplitudeProxy,
         appVersion: clientVersion // Identifies our app version to Amplitude
       })
       analyticsSetupStatus = 'ready'
