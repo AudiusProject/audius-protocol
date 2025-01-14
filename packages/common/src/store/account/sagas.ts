@@ -244,6 +244,7 @@ export function* fetchAccountAsync() {
     userId: user.user_id,
     collections: accountData.playlists,
     playlistLibrary: accountData.playlist_library,
+    trackSaveCount: accountData.track_save_count,
     guestEmail
   }
   yield* put(fetchAccountSucceeded(formattedAccount))
