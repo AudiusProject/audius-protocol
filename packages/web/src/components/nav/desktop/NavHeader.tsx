@@ -1,7 +1,7 @@
-import { ReactNode, MouseEvent } from 'react'
+import { MouseEvent, ReactNode } from 'react'
 
 import { Theme } from '@audius/common/models'
-import { themeSelectors, accountSelectors } from '@audius/common/store'
+import { accountSelectors, themeSelectors } from '@audius/common/store'
 import { route } from '@audius/common/utils'
 import {
   Flex,
@@ -11,7 +11,7 @@ import {
 } from '@audius/harmony'
 import { Link } from 'react-router-dom'
 
-import { useRequiresAccountFn, RestrictionType } from 'hooks/useRequiresAccount'
+import { RestrictionType, useRequiresAccountFn } from 'hooks/useRequiresAccount'
 import { useSelector } from 'utils/reducer'
 
 import { NavHeaderButton } from './NavHeaderButton'

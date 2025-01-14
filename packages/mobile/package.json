@@ -53,7 +53,7 @@
     "verify": "concurrently \"npm:typecheck\" \"npm:lint\" \"npm:lint:env\""
   },
   "dependencies": {
-    "@amplitude/react-native": "2.17.2",
+    "@amplitude/analytics-react-native": "1.4.11",
     "@audius/common": "*",
     "@audius/fetch-nft": "0.2.8",
     "@audius/fixed-decimal": "*",

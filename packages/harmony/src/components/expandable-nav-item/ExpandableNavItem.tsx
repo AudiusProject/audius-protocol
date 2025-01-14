@@ -1,14 +1,18 @@
 import { useMemo, useState } from 'react'
 
 import { useTheme, CSSObject } from '@emotion/react'
+import { ResizeObserver } from '@juggle/resize-observer'
+import useMeasure from 'react-use-measure'
 
 import { HarmonyTheme } from '../../foundations/theme'
-import { IconCaretDown, IconCaretRight } from '../../icons'
+import { IconCaretRight } from '../../icons'
 import { Box } from '../layout/Box'
 import { Flex } from '../layout/Flex'
 import { Text } from '../text'
 
 import type { ExpandableNavItemProps, VariantConfigs } from './types'
+
+const ITEM_DEFAULT_WIDTH = '240px'
 
 const variants: VariantConfigs = {
   default: {
@@ -27,10 +31,14 @@ const variants: VariantConfigs = {
   }
 }
 
-const getStyles = (theme: HarmonyTheme, isHovered: boolean): CSSObject => {
+const getStyles = (
+  theme: HarmonyTheme,
+  isHovered: boolean,
+  disabled?: boolean
+): CSSObject => {
   const baseStyles: CSSObject = {
     transition: `background-color ${theme.motion.hover}`,
-    cursor: 'pointer'
+    opacity: disabled ? 0.5 : 1
   }
 
   const hoverStyles: CSSObject = {
@@ -40,7 +48,11 @@ const getStyles = (theme: HarmonyTheme, isHovered: boolean): CSSObject => {
 
   return {
     ...baseStyles,
-    ...(isHovered && hoverStyles)
+    ...(!disabled && isHovered && hoverStyles),
+    '&:active': {
+      opacity: disabled ? 0.4 : 0.8,
+      transition: `opacity ${theme.motion.quick}`
+    }
   }
 }
 
@@ -51,14 +63,20 @@ export const ExpandableNavItem = ({
   defaultIsOpen = false,
   nestedItems,
   shouldPersistRightIcon = false,
+  shouldPersistDownArrow = false,
   canUnfurl = true,
   variant = 'default',
   onClick,
+  disabled,
   ...props
 }: ExpandableNavItemProps) => {
   const [isOpen, setIsOpen] = useState(defaultIsOpen)
   const [isHovered, setIsHovered] = useState(false)
   const theme = useTheme()
+
+  const [ref, bounds] = useMeasure({
+    polyfill: ResizeObserver
+  })
 
   const handleMouseEnter = () => setIsHovered(true)
   const handleMouseLeave = () => setIsHovered(false)
@@ -69,34 +87,59 @@ export const ExpandableNavItem = ({
     onClick?.()
   }
 
-  const styles = useMemo(() => getStyles(theme, isHovered), [theme, isHovered])
+  const styles = useMemo(
+    () => getStyles(theme, isHovered, disabled),
+    [theme, isHovered, disabled]
+  )
 
   const getIcon = useMemo(() => {
-    const shouldShowCaret = isHovered && canUnfurl
-    if (shouldShowCaret) {
-      return isOpen ? (
-        <IconCaretDown size='s' color='default' />
-      ) : (
-        <IconCaretRight size='s' color='default' />
-      )
-    }
-
-    if (LeftIcon) {
-      return <LeftIcon size={variants[variant].iconSize} color='default' />
-    }
-
-    return null
-  }, [isHovered, canUnfurl, LeftIcon, isOpen, variant])
+    const isCaretVisibleWhenHovered = isHovered && canUnfurl
+    const isDownArrowPersistent = shouldPersistDownArrow && isOpen
+    const shouldShowCaret = isCaretVisibleWhenHovered || isDownArrowPersistent
+    return (
+      <>
+        {LeftIcon ? (
+          <LeftIcon
+            size={variants[variant].iconSize}
+            color='default'
+            css={{
+              transition: `opacity ${theme.motion.quick}`,
+              opacity: shouldShowCaret ? 0 : 1,
+              position: 'absolute'
+            }}
+          />
+        ) : null}
+        <IconCaretRight
+          size='s'
+          color='default'
+          css={{
+            transition: `transform ${theme.motion.expressive}, opacity ${theme.motion.quick}`,
+            transform: isOpen ? `rotate(90deg)` : undefined,
+            opacity: shouldShowCaret ? 1 : 0
+          }}
+        />
+      </>
+    )
+  }, [
+    isHovered,
+    canUnfurl,
+    shouldPersistDownArrow,
+    LeftIcon,
+    variant,
+    theme.motion.quick,
+    theme.motion.expressive,
+    isOpen
+  ])
 
   const leftIcon = useMemo(() => {
-    if (!getIcon) return null
+    if (!getIcon && !LeftIcon) return null
 
     return (
-      <Flex alignItems='center' justifyContent='center' h='unit6' w='unit6'>
+      <Flex alignItems='center' justifyContent='center' h='xl' w='xl'>
         {getIcon}
       </Flex>
     )
-  }, [getIcon])
+  }, [getIcon, LeftIcon])
 
   const shouldShowRightIcon = isOpen || shouldPersistRightIcon
 
@@ -112,7 +155,7 @@ export const ExpandableNavItem = ({
         pl='s'
         pr='s'
         css={{
-          width: '240px',
+          width: ITEM_DEFAULT_WIDTH,
           cursor: 'pointer',
           transition: `background-color ${theme.motion.hover}`
         }}
@@ -137,7 +180,8 @@ export const ExpandableNavItem = ({
             gap={variants[variant].gap}
             flex={1}
             css={{
-              maxWidth: '240px'
+              maxWidth: ITEM_DEFAULT_WIDTH,
+              transition: `opacity ${theme.motion.expressive}`
             }}
           >
             {leftIcon}
@@ -157,14 +201,25 @@ export const ExpandableNavItem = ({
           ) : null}
         </Flex>
       </Flex>
-      {isOpen && nestedItems ? (
+      {nestedItems ? (
         <Flex
           direction='column'
-          id={`${label}-content`}
-          role='region'
-          aria-label={`${label} content`}
+          css={{
+            transition: `height ${theme.motion.expressive}, opacity ${theme.motion.quick}`,
+            overflow: 'hidden',
+            opacity: isOpen ? 1 : 0
+          }}
+          style={{ height: isOpen ? bounds.height : 0 }}
         >
-          {nestedItems}
+          <Flex
+            direction='column'
+            ref={ref}
+            id={`${label}-content`}
+            role='region'
+            aria-label={`${label} content`}
+          >
+            {nestedItems}
+          </Flex>
         </Flex>
       ) : null}
     </Flex>

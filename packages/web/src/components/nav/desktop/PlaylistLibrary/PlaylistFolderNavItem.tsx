@@ -15,7 +15,8 @@ import {
   IconFolder,
   PopupMenuItem,
   ExpandableNavItem,
-  Box
+  Box,
+  Flex
 } from '@audius/harmony'
 import { ClassNames } from '@emotion/react'
 import { useDispatch } from 'react-redux'
@@ -61,6 +62,7 @@ export const PlaylistFolderNavItem = (props: PlaylistFolderNavItemProps) => {
   const draggingKind = useSelector(selectDraggingKind)
   const [isDraggingOver, setIsDraggingOver] = useState(false)
   const [isHovering, setIsHovering] = useState(false)
+  const [isHoveringNested, setIsHoveringNested] = useState(false)
   const dispatch = useDispatch()
   const record = useRecord()
   const [isDeleteConfirmationOpen, toggleDeleteConfirmationOpen] =
@@ -96,8 +98,15 @@ export const PlaylistFolderNavItem = (props: PlaylistFolderNavItemProps) => {
   }, [])
 
   const handleMouseLeave = useCallback(() => {
-    setIsDraggingOver(false)
     setIsHovering(false)
+  }, [])
+
+  const handleNestedMouseEnter = useCallback(() => {
+    setIsHoveringNested(true)
+  }, [])
+
+  const handleNestedMouseLeave = useCallback(() => {
+    setIsHoveringNested(false)
   }, [])
 
   const handleClickEdit = useCallback(
@@ -120,7 +129,7 @@ export const PlaylistFolderNavItem = (props: PlaylistFolderNavItemProps) => {
   )
 
   const rightIcon = useMemo(() => {
-    return isHovering && !isDraggingOver ? (
+    return isHovering && !isDraggingOver && !isHoveringNested ? (
       <NavItemKebabButton
         visible
         aria-label={messages.editFolderLabel}
@@ -128,17 +137,31 @@ export const PlaylistFolderNavItem = (props: PlaylistFolderNavItemProps) => {
         items={kebabItems}
       />
     ) : null
-  }, [isHovering, isDraggingOver, handleClickEdit, kebabItems])
+  }, [
+    isHovering,
+    isDraggingOver,
+    isHoveringNested,
+    handleClickEdit,
+    kebabItems
+  ])
 
   const nestedItems = useMemo(() => {
-    return contents.map((content) => (
-      <PlaylistLibraryNavItem
-        key={keyExtractor(content)}
-        item={content}
-        level={level + 1}
-      />
-    ))
-  }, [contents, level])
+    return (
+      <Flex
+        direction='column'
+        onMouseEnter={handleNestedMouseEnter}
+        onMouseLeave={handleNestedMouseLeave}
+      >
+        {contents.map((content) => (
+          <PlaylistLibraryNavItem
+            key={keyExtractor(content)}
+            item={content}
+            level={level + 1}
+          />
+        ))}
+      </Flex>
+    )
+  }, [contents, level, handleNestedMouseEnter, handleNestedMouseLeave])
 
   const FolderIcon = useCallback(
     (props: any) => (
@@ -175,10 +198,10 @@ export const PlaylistFolderNavItem = (props: PlaylistFolderNavItemProps) => {
         >
           <Draggable id={id} text={name} kind='playlist-folder'>
             <Box
-              onMouseEnter={handleMouseEnter}
-              onMouseLeave={handleMouseLeave}
               onDragEnter={handleDragEnter}
               onDragLeave={handleDragLeave}
+              onMouseEnter={handleMouseEnter}
+              onMouseLeave={handleMouseLeave}
               css={[
                 { display: 'flex', alignItems: 'center' },
                 isDraggingOver && { '& > *': { pointerEvents: 'none' } }
@@ -190,6 +213,7 @@ export const PlaylistFolderNavItem = (props: PlaylistFolderNavItemProps) => {
                 rightIcon={rightIcon}
                 nestedItems={nestedItems}
                 variant='compact'
+                shouldPersistDownArrow
               />
               <DeleteFolderConfirmationModal
                 folderId={id}
