@@ -8,8 +8,7 @@ import { FeatureFlags } from '@audius/common/services'
 import {
   trackPageLineupActions,
   trackPageSelectors,
-  reachabilitySelectors,
-  trackPageActions
+  reachabilitySelectors
 } from '@audius/common/store'
 import { useDispatch, useSelector } from 'react-redux'
 
@@ -51,7 +50,6 @@ export const TrackScreen = () => {
   const { searchTrack, ...restParams } = params ?? {}
   const { data: fetchedTrack } = useTrackByParams(restParams)
   const track = fetchedTrack ?? searchTrack
-  const trackId = track?.track_id
   const user = track?.user
 
   const lineup = useSelector(getLineup)
@@ -62,12 +60,6 @@ export const TrackScreen = () => {
   )
 
   const isScreenReady = useIsScreenReady()
-
-  useEffect(() => {
-    if (trackId) {
-      dispatch(trackPageActions.fetchTrackSucceeded(trackId))
-    }
-  }, [trackId, dispatch])
 
   useEffect(() => {
     if (isScreenReady) {

@@ -1,4 +1,4 @@
-import { Component, ComponentType, useEffect } from 'react'
+import { Component, ComponentType } from 'react'
 
 import { useTrackByParams } from '@audius/common/api'
 import {
@@ -35,7 +35,7 @@ import {
   playerActions
 } from '@audius/common/store'
 import { formatDate, route, Uid } from '@audius/common/utils'
-import { connect, useDispatch } from 'react-redux'
+import { connect } from 'react-redux'
 import { Dispatch } from 'redux'
 
 import { TrackEvent, make } from 'common/store/analytics/actions'
@@ -100,28 +100,10 @@ type TrackPageProviderState = {
   source: string | undefined
 }
 
-// Create a functional wrapper component that uses the hook
 const TrackPageProviderWrapper = (props: TrackPageProviderProps) => {
-  const dispatch = useDispatch()
   const params = parseTrackRoute(props.pathname)
-  const { data: track } = useTrackByParams(
-    params?.trackId
-      ? { id: params.trackId }
-      : {
-          handle: params?.handle ?? '',
-          slug: params?.slug ?? ''
-        }
-  )
+  const { data: track } = useTrackByParams(params!)
 
-  const trackId = track?.track_id
-
-  useEffect(() => {
-    if (trackId) {
-      dispatch(trackPageActions.fetchTrackSucceeded(trackId))
-    }
-  }, [trackId, dispatch])
-
-  // Pass the fetched track data to the class component
   return <TrackPageProviderClass {...props} track={track as Track | null} />
 }
 

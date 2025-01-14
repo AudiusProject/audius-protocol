@@ -64,8 +64,8 @@ export type AppTabScreenParamList = {
     searchTrack?: SearchTrack
     canBeUnlisted?: boolean
     showComments?: boolean
-  } & ({ handle: string; slug: string } | { id: ID })
-  TrackRemixes: { id: ID } | { handle: string; slug: string }
+  } & ({ handle: string; slug: string } | { trackId: ID })
+  TrackRemixes: { trackId: ID } | { handle: string; slug: string }
   Profile: { handle: string; id?: ID } | { handle?: string; id: ID }
   Collection: {
     id?: ID
