@@ -1,5 +1,6 @@
 import { ComponentType, PureComponent, RefObject } from 'react'
 
+import { useUserByParams } from '@audius/common/api'
 import {
   Name,
   ShareSource,
@@ -7,7 +8,8 @@ import {
   CreatePlaylistSource,
   Status,
   ID,
-  UID
+  UID,
+  UserMetadata
 } from '@audius/common/models'
 import { newUserMetadata } from '@audius/common/schemas'
 import {
@@ -36,7 +38,7 @@ import {
   followersUserListActions,
   playerSelectors
 } from '@audius/common/store'
-import { getErrorMessage, Nullable, route } from '@audius/common/utils'
+import { getErrorMessage, route } from '@audius/common/utils'
 import { UnregisterCallback } from 'history'
 import moment from 'moment'
 import { connect } from 'react-redux'
@@ -90,6 +92,13 @@ const INITIAL_UPDATE_FIELDS = {
   updatedDonation: null
 }
 
+const ProfilePageProviderWrapper = (props: ProfilePageProps) => {
+  const params = parseUserRoute(props.pathname)
+  const { data: user } = useUserByParams(params)
+
+  return <ProfilePage {...props} user={user} />
+}
+
 type OwnProps = {
   containerRef: RefObject<HTMLDivElement>
   children:
@@ -124,7 +133,14 @@ type ProfilePageState = {
   showUnmuteUserConfirmationModal: boolean
 }
 
-class ProfilePage extends PureComponent<ProfilePageProps, ProfilePageState> {
+type ProfilePageProvideProps = ProfilePageProps & {
+  user: UserMetadata | null | undefined
+}
+
+class ProfilePage extends PureComponent<
+  ProfilePageProvideProps,
+  ProfilePageState
+> {
   state: ProfilePageState = {
     activeTab: null,
     editMode: false,
@@ -141,10 +157,12 @@ class ProfilePage extends PureComponent<ProfilePageProps, ProfilePageState> {
   unlisten!: UnregisterCallback
 
   componentDidMount() {
-    // If routing from a previous profile page
-    // the lineups must be reset to refetch & update for new user
-    this.fetchProfile(getPathname(this.props.location))
-
+    const params = parseUserRoute(this.props.pathname)
+    if (params?.tab) {
+      this.setState({
+        activeTab: getTabForRoute(params.tab)
+      })
+    }
     // Switching from profile page => profile page
     this.unlisten = this.props.history.listen((location, action) => {
       // If changing pages or "POP" on router (with goBack, the pathnames are equal)
@@ -152,11 +170,6 @@ class ProfilePage extends PureComponent<ProfilePageProps, ProfilePageState> {
         getPathname(this.props.location) !== getPathname(location) ||
         action === 'POP'
       ) {
-        const params = parseUserRoute(getPathname(location))
-        if (params) {
-          // Fetch profile if this is a new profile page
-          this.fetchProfile(getPathname(location))
-        }
         this.setState({
           activeTab: null,
           ...INITIAL_UPDATE_FIELDS
@@ -174,14 +187,18 @@ class ProfilePage extends PureComponent<ProfilePageProps, ProfilePageState> {
     }
   }
 
-  componentDidUpdate(prevProps: ProfilePageProps, prevState: ProfilePageState) {
+  componentDidUpdate(
+    prevProps: ProfilePageProvideProps,
+    prevState: ProfilePageState
+  ) {
     const {
       pathname,
       profile,
       artistTracks,
       goToRoute,
       accountUserId,
-      accountHasTracks
+      accountHasTracks,
+      user
     } = this.props
     const { editMode, activeTab } = this.state
 
@@ -193,16 +210,15 @@ class ProfilePage extends PureComponent<ProfilePageProps, ProfilePageState> {
       goToRoute(NOT_FOUND_PAGE)
     }
 
-    const isOwnProfile = accountUserId === profile.profile?.user_id
+    const isOwnProfile = accountUserId === user?.user_id
     const hasTracks =
-      (profile.profile && profile.profile.track_count > 0) ||
-      (isOwnProfile && accountHasTracks)
+      (user && user.track_count > 0) || (isOwnProfile && accountHasTracks)
 
     if (!isOwnProfile || accountHasTracks !== null) {
       if (
         !activeTab &&
         profile &&
-        profile.profile &&
+        user &&
         artistTracks!.status === Status.SUCCESS
       ) {
         if (hasTracks) {
@@ -214,7 +230,7 @@ class ProfilePage extends PureComponent<ProfilePageProps, ProfilePageState> {
             activeTab: ProfilePageTabs.REPOSTS
           })
         }
-      } else if (!activeTab && profile && profile.profile && !hasTracks) {
+      } else if (!activeTab && profile && user && !hasTracks) {
         this.setState({
           activeTab: ProfilePageTabs.REPOSTS
         })
@@ -222,18 +238,18 @@ class ProfilePage extends PureComponent<ProfilePageProps, ProfilePageState> {
     }
 
     // Replace the URL with the properly formatted /handle route
-    if (profile && profile.profile && profile.status === Status.SUCCESS) {
+    if (profile && user && profile.status === Status.SUCCESS) {
       const params = parseUserRoute(pathname)
       if (params) {
         const { handle } = params
         if (handle === null) {
-          const newPath = profilePage(profile.profile.handle)
+          const newPath = profilePage(user.handle)
           this.props.replaceRoute(newPath)
         }
       }
     }
 
-    if (prevProps.profile?.profile?.handle !== profile?.profile?.handle) {
+    if (prevProps.user?.handle !== user?.handle) {
       // If editing profile and route to another user profile, exit edit mode
       if (editMode) this.setState({ editMode: false })
       // Close artist recommendations when the profile changes
@@ -242,20 +258,16 @@ class ProfilePage extends PureComponent<ProfilePageProps, ProfilePageState> {
   }
 
   onFollow = () => {
-    const {
-      profile: { profile }
-    } = this.props
-    if (!profile) return
-    this.props.onFollow(profile.user_id)
+    const { user } = this.props
+    if (!user) return
+    this.props.onFollow(user.user_id)
     this.setState({ areArtistRecommendationsVisible: true })
   }
 
   onUnfollow = () => {
-    const {
-      profile: { profile }
-    } = this.props
-    if (!profile) return
-    const userId = profile.user_id
+    const { user } = this.props
+    if (!user) return
+    const userId = user.user_id
     this.props.onUnfollow(userId)
   }
 
@@ -277,31 +289,6 @@ class ProfilePage extends PureComponent<ProfilePageProps, ProfilePageState> {
 
   onCloseUnmuteUserConfirmationModal = () => {
     this.setState({ showUnmuteUserConfirmationModal: false })
-  }
-
-  fetchProfile = (
-    pathname: string,
-    forceUpdate = false,
-    shouldSetLoading = true
-  ) => {
-    const params = parseUserRoute(pathname)
-    if (params) {
-      this.props.fetchProfile(
-        params?.handle?.toLowerCase() ?? null,
-        params.userId,
-        forceUpdate,
-        shouldSetLoading
-      )
-      if (params.tab) {
-        this.setState({ activeTab: getTabForRoute(params.tab) })
-      }
-    } else {
-      this.props.goToRoute(NOT_FOUND_PAGE)
-    }
-  }
-
-  refreshProfile = () => {
-    this.fetchProfile(getPathname(this.props.location), true, false)
   }
 
   updateName = (name: string) => {
@@ -447,11 +434,8 @@ class ProfilePage extends PureComponent<ProfilePageProps, ProfilePageState> {
   }
 
   onSave = () => {
-    const {
-      profile: { profile },
-      recordUpdateCoverPhoto,
-      recordUpdateProfilePicture
-    } = this.props
+    const { user, recordUpdateCoverPhoto, recordUpdateProfilePicture } =
+      this.props
     const {
       updatedCoverPhoto,
       updatedProfilePicture,
@@ -465,7 +449,7 @@ class ProfilePage extends PureComponent<ProfilePageProps, ProfilePageState> {
       updatedDonation
     } = this.state
 
-    const updatedMetadata = newUserMetadata({ ...profile })
+    const updatedMetadata = newUserMetadata({ ...user })
     if (updatedCoverPhoto && updatedCoverPhoto.file) {
       updatedMetadata.updatedCoverPhoto = updatedCoverPhoto
       recordUpdateCoverPhoto(updatedCoverPhoto.source)
@@ -505,11 +489,9 @@ class ProfilePage extends PureComponent<ProfilePageProps, ProfilePageState> {
   }
 
   onShare = () => {
-    const {
-      profile: { profile }
-    } = this.props
-    if (!profile) return
-    this.props.onShare(profile.user_id)
+    const { user } = this.props
+    if (!user) return
+    this.props.onShare(user.user_id)
   }
 
   onCancel = () => {
@@ -524,20 +506,18 @@ class ProfilePage extends PureComponent<ProfilePageProps, ProfilePageState> {
   }
 
   getStats = (isArtist: boolean): StatProps[] => {
-    const {
-      profile: { profile }
-    } = this.props
+    const { user } = this.props
 
     let trackCount = 0
     let playlistCount = 0
     let followerCount = 0
     let followingCount = 0
 
-    if (profile) {
-      trackCount = profile.track_count
-      playlistCount = profile.playlist_count
-      followerCount = profile.follower_count
-      followingCount = profile.followee_count
+    if (user) {
+      trackCount = user.track_count
+      playlistCount = user.playlist_count
+      followerCount = user.follower_count
+      followingCount = user.followee_count
     }
 
     return isArtist
@@ -570,37 +550,29 @@ class ProfilePage extends PureComponent<ProfilePageProps, ProfilePageState> {
   }
 
   onSortByRecent = () => {
-    const {
-      artistTracks,
-      updateCollectionOrder,
-      profile: { profile },
-      trackUpdateSort
-    } = this.props
-    if (!profile) return
+    const { artistTracks, updateCollectionOrder, user, trackUpdateSort } =
+      this.props
+    if (!user) return
     this.setState({ tracksLineupOrder: TracksSortMode.RECENT })
     updateCollectionOrder(CollectionSortMode.TIMESTAMP)
     trackUpdateSort('recent')
     this.props.loadMoreArtistTracks(
       0,
       artistTracks!.entries.length,
-      profile.user_id,
+      user.user_id,
       TracksSortMode.RECENT
     )
   }
 
   onSortByPopular = () => {
-    const {
-      artistTracks,
-      updateCollectionOrder,
-      profile: { profile },
-      trackUpdateSort
-    } = this.props
-    if (!profile) return
+    const { artistTracks, updateCollectionOrder, user, trackUpdateSort } =
+      this.props
+    if (!user) return
     this.setState({ tracksLineupOrder: TracksSortMode.POPULAR })
     this.props.loadMoreArtistTracks(
       0,
       artistTracks!.entries.length,
-      profile.user_id,
+      user.user_id,
       TracksSortMode.POPULAR
     )
     updateCollectionOrder(CollectionSortMode.SAVE_COUNT)
@@ -608,28 +580,22 @@ class ProfilePage extends PureComponent<ProfilePageProps, ProfilePageState> {
   }
 
   loadMoreArtistTracks = (offset: number, limit: number) => {
-    const {
-      profile: { profile }
-    } = this.props
-    if (!profile) return
+    const { user } = this.props
+    if (!user) return
     this.props.loadMoreArtistTracks(
       offset,
       limit,
-      profile.user_id,
+      user.user_id,
       this.state.tracksLineupOrder
     )
   }
 
   didChangeTabsFrom = (prevLabel: string, currLabel: string) => {
-    const {
-      didChangeTabsFrom,
-      profile: { profile },
-      accountHasTracks
-    } = this.props
-    if (profile) {
+    const { didChangeTabsFrom, user, accountHasTracks } = this.props
+    if (user) {
       let tab = `/${currLabel.toLowerCase()}`
       const isOwner = this.getIsOwner()
-      if (profile.track_count > 0 || (isOwner && accountHasTracks)) {
+      if (user.track_count > 0 || (isOwner && accountHasTracks)) {
         // An artist, default route is tracks
         if (currLabel === ProfilePageTabs.TRACKS) {
           tab = ''
@@ -643,7 +609,7 @@ class ProfilePage extends PureComponent<ProfilePageProps, ProfilePageState> {
       window.history.replaceState(
         {},
         '', // title -- unused, overriden by helmet
-        `/${profile.handle}${tab}`
+        `/${user.handle}${tab}`
       )
     }
     didChangeTabsFrom(prevLabel, currLabel)
@@ -651,37 +617,24 @@ class ProfilePage extends PureComponent<ProfilePageProps, ProfilePageState> {
   }
 
   loadMoreUserFeed = (offset: number, limit: number) => {
-    const {
-      profile: { profile }
-    } = this.props
-    if (!profile) return
-    this.props.loadMoreUserFeed(offset, limit, profile.user_id)
+    const { user } = this.props
+    if (!user) return
+    this.props.loadMoreUserFeed(offset, limit, user.user_id)
   }
 
   getIsArtist = () => {
-    const {
-      profile: { profile },
-      accountHasTracks
-    } = this.props
+    const { user, accountHasTracks } = this.props
     const isOwner = this.getIsOwner()
-    return !!(
-      (profile && profile.track_count > 0) ||
-      (isOwner && accountHasTracks)
-    )
+    return !!((user && user.track_count > 0) || (isOwner && accountHasTracks))
   }
 
-  getIsOwner = (overrideProps?: ProfilePageProps) => {
-    const {
-      profile: { profile },
-      accountUserId
-    } = overrideProps || this.props
-    return profile && accountUserId ? profile.user_id === accountUserId : false
+  getIsOwner = (overrideProps?: ProfilePageProvideProps) => {
+    const { user, accountUserId } = overrideProps || this.props
+    return user && accountUserId ? user.user_id === accountUserId : false
   }
 
   onMessage = () => {
-    const {
-      profile: { profile }
-    } = this.props
+    const { user } = this.props
     // Handle logged-out case, redirect to signup
     if (
       this.props.chatPermissions.callToAction === ChatPermissionAction.SIGN_UP
@@ -690,9 +643,9 @@ class ProfilePage extends PureComponent<ProfilePageProps, ProfilePageState> {
     }
 
     if (this.props.chatPermissions?.canCreateChat) {
-      return this.props.onMessage(profile!.user_id)
-    } else if (profile) {
-      this.props.onShowInboxUnavailableModal(profile.user_id)
+      return this.props.onMessage(user!.user_id)
+    } else if (user) {
+      this.props.onShowInboxUnavailableModal(user.user_id)
     }
   }
 
@@ -714,7 +667,8 @@ class ProfilePage extends PureComponent<ProfilePageProps, ProfilePageState> {
 
   render() {
     const {
-      profile: { profile, status: profileLoadingStatus, isSubscribed },
+      user,
+      profile: { status: profileLoadingStatus, isSubscribed },
       // Tracks
       artistTracks,
       playArtistTrack,
@@ -753,68 +707,64 @@ class ProfilePage extends PureComponent<ProfilePageProps, ProfilePageState> {
     const mode = this.getMode(isOwner)
     const stats = this.getStats(isArtist)
 
-    const userId = profile ? profile.user_id : null
-    const handle = profile ? `@${profile.handle}` : ''
-    const verified = profile ? profile.is_verified : false
-    const twitterVerified = !!profile?.verified_with_twitter
-    const instagramVerified = !!profile?.verified_with_instagram
-    const tikTokVerified = !!profile?.verified_with_tiktok
-    const created = profile
-      ? moment(profile.created_at).format('YYYY')
+    const userId = user ? user.user_id : null
+    const handle = user ? `@${user.handle}` : ''
+    const verified = user ? user.is_verified : false
+    const twitterVerified = !!user?.verified_with_twitter
+    const instagramVerified = !!user?.verified_with_instagram
+    const tikTokVerified = !!user?.verified_with_tiktok
+    const created = user
+      ? moment(user.created_at).format('YYYY')
       : moment().format('YYYY')
 
-    const name = profile ? updatedName || profile.name || '' : ''
-    const bio = profile
-      ? updatedBio !== null
-        ? updatedBio
-        : profile.bio || ''
-      : ''
-    const location = profile
+    const name = user ? updatedName || user.name || '' : ''
+    const bio = user ? (updatedBio !== null ? updatedBio : user.bio || '') : ''
+    const location = user
       ? updatedLocation !== null
         ? updatedLocation
-        : profile.location || ''
+        : user.location || ''
       : ''
-    const twitterHandle = profile
+    const twitterHandle = user
       ? updatedTwitterHandle !== null
         ? updatedTwitterHandle
         : twitterVerified && !verifiedHandleWhitelist.has(handle)
-          ? profile.handle
-          : profile.twitter_handle || ''
+          ? user.handle
+          : user.twitter_handle || ''
       : ''
-    const instagramHandle = profile
+    const instagramHandle = user
       ? updatedInstagramHandle !== null
         ? updatedInstagramHandle
         : instagramVerified
-          ? profile.handle
-          : profile.instagram_handle || ''
+          ? user.handle
+          : user.instagram_handle || ''
       : ''
-    const tikTokHandle = profile
+    const tikTokHandle = user
       ? updatedTikTokHandle !== null
         ? updatedTikTokHandle
         : tikTokVerified
-          ? profile.handle
-          : profile.tiktok_handle || ''
+          ? user.handle
+          : user.tiktok_handle || ''
       : ''
-    const website = profile
+    const website = user
       ? updatedWebsite !== null
         ? updatedWebsite
-        : profile.website || ''
+        : user.website || ''
       : ''
-    const donation = profile
+    const donation = user
       ? updatedDonation !== null
         ? updatedDonation
-        : profile.donation || ''
+        : user.donation || ''
       : ''
-    const hasProfilePicture = profile
-      ? !!profile.profile_picture ||
-        !!profile.profile_picture_sizes ||
+    const hasProfilePicture = user
+      ? !!user.profile_picture ||
+        !!user.profile_picture_sizes ||
         updatedProfilePicture
       : false
 
     const dropdownDisabled =
       activeTab === ProfilePageTabs.REPOSTS ||
       activeTab === ProfilePageTabs.COLLECTIBLES
-    const following = !!profile && profile.does_current_user_follow
+    const following = !!user && user.does_current_user_follow
 
     const childProps = {
       // Computed
@@ -842,7 +792,7 @@ class ProfilePage extends PureComponent<ProfilePageProps, ProfilePageState> {
       instagramVerified,
       tikTokVerified,
 
-      profile,
+      profile: user,
       status: profileLoadingStatus,
       artistTracks,
       playArtistTrack,
@@ -856,7 +806,6 @@ class ProfilePage extends PureComponent<ProfilePageProps, ProfilePageState> {
       onSortByPopular: this.onSortByPopular,
       loadMoreArtistTracks: this.loadMoreArtistTracks,
       loadMoreUserFeed: this.loadMoreUserFeed,
-      refreshProfile: this.refreshProfile,
       setFollowingUserId,
       setFollowersUserId,
       onFollow: this.onFollow,
@@ -919,8 +868,8 @@ class ProfilePage extends PureComponent<ProfilePageProps, ProfilePageState> {
       createPlaylist,
 
       updateProfile: this.props.updateProfile,
-      isBlocked: this.props.profile.profile
-        ? this.props.blockeeList.includes(this.props.profile.profile.user_id)
+      isBlocked: this.props.user
+        ? this.props.blockeeList.includes(this.props.user.user_id)
         : false,
       canCreateChat:
         // In the signed out case, we show the chat button (but redirect to signup)
@@ -953,8 +902,11 @@ function makeMapStateToProps() {
   const getProfile = makeGetProfile()
   const getCurrentQueueItem = makeGetCurrent()
 
-  const mapStateToProps = (state: AppState, props: RouteComponentProps) => {
-    const { location } = props
+  const mapStateToProps = (
+    state: AppState,
+    props: RouteComponentProps & { user?: UserMetadata }
+  ) => {
+    const { location, user } = props
     const pathname = getPathname(location)
     const params = parseUserRoute(pathname)
     const handleLower = params?.handle?.toLowerCase() as string
@@ -962,9 +914,7 @@ function makeMapStateToProps() {
     const profile = getProfile(state)
     const accountUserId = getUserId(state)
     const accountHasTracks =
-      accountUserId === profile.profile?.user_id
-        ? getAccountHasTracks(state)
-        : null
+      accountUserId === user?.user_id ? getAccountHasTracks(state) : null
     return {
       accountUserId,
       profile,
@@ -975,7 +925,7 @@ function makeMapStateToProps() {
       buffering: getBuffering(state),
       pathname: getLocationPathname(state),
       chatPermissions: getCanCreateChat(state, {
-        userId: profile.profile?.user_id
+        userId: user?.user_id
       }),
       blockeeList: getBlockees(state),
       blockerList: getBlockers(state),
@@ -992,22 +942,6 @@ function mapDispatchToProps(dispatch: Dispatch, props: RouteComponentProps) {
   const handleLower = params?.handle?.toLowerCase() as string
 
   return {
-    fetchProfile: (
-      handle: Nullable<string>,
-      userId: ID | null,
-      forceUpdate: boolean,
-      shouldSetLoading: boolean,
-      deleteExistingEntry: boolean = false
-    ) =>
-      dispatch(
-        profileActions.fetchProfile(
-          handle,
-          userId,
-          forceUpdate,
-          shouldSetLoading,
-          deleteExistingEntry
-        )
-      ),
     fetchAccountHasTracks: () => {
       dispatch(fetchHasTracks())
     },
@@ -1148,5 +1082,5 @@ function mapDispatchToProps(dispatch: Dispatch, props: RouteComponentProps) {
 }
 
 export default withRouter(
-  connect(makeMapStateToProps, mapDispatchToProps)(ProfilePage)
+  connect(makeMapStateToProps, mapDispatchToProps)(ProfilePageProviderWrapper)
 )

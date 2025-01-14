@@ -9,9 +9,6 @@ import tracksReducer, {
 import { Collection, Status, Track } from '../../../models'
 
 import {
-  FETCH_PROFILE,
-  FETCH_PROFILE_SUCCEEDED,
-  FETCH_PROFILE_FAILED,
   UPDATE_PROFILE,
   UPDATE_PROFILE_SUCCEEDED,
   UPDATE_PROFILE_FAILED,
@@ -23,11 +20,8 @@ import {
   FETCH_TOP_TAGS,
   FETCH_TOP_TAGS_SUCCEEDED,
   FETCH_TOP_TAGS_FAILED,
-  FetchProfileAction,
-  FetchProfileSucceededAction,
   SetCurrentUserAction,
   SetProfileFieldAction,
-  FetchProfileFailedAction,
   UpdateProfileAction,
   UpdateProfileSucceededAction,
   UpdateProfileFailedAction,
@@ -94,48 +88,6 @@ const initialState = {
 }
 
 const actionsMap = {
-  [FETCH_PROFILE](state: ProfilePageState, action: FetchProfileAction) {
-    const { fetchOnly, shouldSetLoading, handle, userId } = action
-    if (fetchOnly) return state
-    const lowerHandle = handle?.toLowerCase()
-
-    const newState: Partial<ProfileState> = {}
-
-    if (shouldSetLoading) {
-      newState.status = Status.LOADING
-    }
-    if (handle) {
-      newState.handle = lowerHandle
-    }
-    if (userId) {
-      newState.userId = userId
-    }
-    return {
-      ...updateProfile(state, action, newState),
-      currentUser: lowerHandle
-    }
-  },
-  [FETCH_PROFILE_SUCCEEDED](
-    state: ProfilePageState,
-    action: FetchProfileSucceededAction
-  ) {
-    const { currentUser } = state
-    const { fetchOnly, userId, handle } = action
-    const profileHandle = handle?.toLowerCase() ?? currentUser
-    if (fetchOnly) return state
-
-    return updateProfile(state, action, {
-      status: Status.SUCCESS,
-      userId,
-      handle: profileHandle
-    })
-  },
-  [FETCH_PROFILE_FAILED](
-    state: ProfilePageState,
-    action: FetchProfileFailedAction
-  ) {
-    return updateProfile(state, action, { status: Status.ERROR })
-  },
   [SET_CURRENT_USER](state: ProfilePageState, action: SetCurrentUserAction) {
     const { handle } = action
     const lowerHandle = handle.toLowerCase()
