@@ -5,22 +5,18 @@ import {
   trackPageLineupActions,
   trackPageActions,
   trackPageSelectors,
-  reachabilitySelectors
+  cacheUsersSelectors
 } from '@audius/common/store'
-import { makeUid, route } from '@audius/common/utils'
+import { makeUid } from '@audius/common/utils'
 import moment from 'moment'
 import { call, fork, put, select, takeEvery } from 'typed-redux-saga'
 
-import { retrieveTracks } from 'common/store/cache/tracks/utils'
-import { retrieveTrackByHandleAndSlug } from 'common/store/cache/tracks/utils/retrieveTracks'
-import { push as pushRoute } from 'utils/navigation'
+import trackLineupSagas from './lineups/sagas'
 
-import tracksSagas from './lineups/sagas'
-const { getIsReachable } = reachabilitySelectors
 const { tracksActions } = trackPageLineupActions
-const { getSourceSelector, getTrack, getUser } = trackPageSelectors
-const { getTrack: getCachedTrack } = cacheTracksSelectors
-const { NOT_FOUND_PAGE } = route
+const { getTrackId, getSourceSelector } = trackPageSelectors
+const { getTrack } = cacheTracksSelectors
+const { getUser } = cacheUsersSelectors
 
 function* addTrackToLineup(track: Track) {
   const source = yield* select(getSourceSelector)
@@ -44,77 +40,36 @@ function* getRestOfLineup(permalink: string, ownerHandle: string) {
   )
 }
 
-function* watchFetchTrack() {
+function* watchFetchTrackSucceeded() {
   yield* takeEvery(
-    trackPageActions.FETCH_TRACK,
-    function* (action: ReturnType<typeof trackPageActions.fetchTrack>) {
-      const {
-        trackId,
-        handle,
-        slug,
-        canBeUnlisted,
-        forceRetrieveFromSource,
-        withRemixes = true
-      } = action
-      try {
-        let track
-        if (!trackId) {
-          if (!(handle && slug)) return
-          track = yield* call(retrieveTrackByHandleAndSlug, {
-            handle,
-            slug,
-            withStems: true,
-            withRemixes,
-            withRemixParents: true,
-            forceRetrieveFromSource
-          })
-        } else {
-          const ids = canBeUnlisted
-            ? [{ id: trackId, url_title: slug, handle }]
-            : [trackId]
+    trackPageActions.FETCH_TRACK_SUCCEEDED,
+    function* (action: trackPageActions.FetchTrackSucceededAction) {
+      const { trackId } = action
 
-          const tracks: Track[] = yield* call(retrieveTracks, {
-            trackIds: ids,
-            canBeUnlisted,
-            withStems: true,
-            withRemixes,
-            withRemixParents: true
-          })
-          track = tracks && tracks.length === 1 ? tracks[0] : null
-        }
-        const isReachable = yield* select(getIsReachable)
-        if (!track) {
-          if (isReachable) {
-            yield* put(pushRoute(NOT_FOUND_PAGE))
-          }
-        } else {
-          yield* put(trackPageActions.setTrackId(track.track_id))
-          // Add hero track to lineup early so that we can play it ASAP
-          // (instead of waiting for the entire lineup to load)
-          yield* call(addTrackToLineup, track)
-          if (isReachable) {
-            yield* fork(
-              getRestOfLineup,
-              track.permalink,
-              handle || track.permalink.split('/')?.[1]
-            )
-          }
-          yield* put(trackPageActions.fetchTrackSucceeded(track.track_id))
-        }
-      } catch (e) {
-        console.error(e)
-        yield* put(
-          trackPageActions.fetchTrackFailed(trackId ?? `/${handle}/${slug}`)
-        )
-      }
+      const track = yield* select(getTrack, { id: trackId })
+      if (!track) return
+      const { permalink, owner_id } = track
+
+      const owner = yield* select(getUser, { id: owner_id })
+      if (!owner) return
+
+      yield* put(trackPageActions.setTrackId(trackId))
+      yield* put(trackPageActions.setTrackPermalink(permalink))
+
+      // Add hero track to lineup early so that we can play it ASAP
+      // (instead of waiting for the entire lineup to load)
+      yield* call(addTrackToLineup, track)
+      yield* fork(getRestOfLineup, track.permalink, owner?.handle)
     }
   )
 }
 
 function* watchRefetchLineup() {
   yield* takeEvery(trackPageActions.REFETCH_LINEUP, function* (action) {
-    const track = yield* select(getTrack)
-    const user = yield* select(getUser)
+    const trackId = yield* select(getTrackId)
+    const track = yield* select(getTrack, { id: trackId })
+    const user = yield* select(getUser, { id: track?.owner_id })
+
     yield* put(tracksActions.reset())
     yield* put(
       tracksActions.fetchLineupMetadatas(0, 6, false, {
@@ -130,7 +85,7 @@ function* watchTrackPageMakePublic() {
     trackPageActions.MAKE_TRACK_PUBLIC,
     function* (action: ReturnType<typeof trackPageActions.makeTrackPublic>) {
       const { trackId } = action
-      let track: Track | null = yield* select(getCachedTrack, { id: trackId })
+      let track: Track | null = yield* select(getTrack, { id: trackId })
 
       if (!track) return
       track = {
@@ -155,8 +110,8 @@ function* watchTrackPageMakePublic() {
 
 export default function sagas() {
   return [
-    ...tracksSagas(),
-    watchFetchTrack,
+    ...trackLineupSagas(),
+    watchFetchTrackSucceeded,
     watchRefetchLineup,
     watchTrackPageMakePublic
   ]

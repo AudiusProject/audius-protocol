@@ -54,7 +54,11 @@ export default function render(pageContext: TrackPageContext) {
     >
       <>
         <MetaTags {...seoMetadata} />
-        {isMobile ? <MobileServerTrackPage /> : <DesktopServerTrackPage />}
+        {isMobile ? (
+          <MobileServerTrackPage track={track} user={user} />
+        ) : (
+          <DesktopServerTrackPage track={track} user={user} />
+        )}
       </>
     </ServerWebPlayer>
   )

@@ -39,10 +39,6 @@ const ReactQueryCachePrimePage = lazy(
   () => import('pages/react-query/ReactQueryCachePrimePage')
 )
 
-const ReactQueryReduxCacheSyncPage = lazy(
-  () => import('pages/react-query/ReactQueryReduxCacheSyncPage')
-)
-
 const ReactQueryToReduxCacheSyncPage = lazy(
   () => import('pages/react-query/ReactQueryToReduxCacheSyncPage')
 )
@@ -83,11 +79,6 @@ export const App = () => {
           {!IS_PRODUCTION ? (
             <Route path='/react-query-cache-prime'>
               <ReactQueryCachePrimePage />
-            </Route>
-          ) : null}
-          {!IS_PRODUCTION ? (
-            <Route path='/react-query-redux-cache-sync'>
-              <ReactQueryReduxCacheSyncPage />
             </Route>
           ) : null}
           {!IS_PRODUCTION ? (
