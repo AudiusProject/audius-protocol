@@ -1,7 +1,11 @@
 import { ReactNode, useMemo } from 'react'
 
 import { useChallengeCooldownSchedule } from '@audius/common/hooks'
-import { accountSelectors, chatSelectors } from '@audius/common/store'
+import {
+  accountSelectors,
+  chatSelectors,
+  uploadSelectors
+} from '@audius/common/store'
 import { route } from '@audius/common/utils'
 import type { IconComponent } from '@audius/harmony'
 import {
@@ -14,7 +18,9 @@ import {
   IconPlaylists,
   IconTrending,
   IconWallet,
-  NotificationCount
+  LoadingSpinner,
+  NotificationCount,
+  useTheme
 } from '@audius/harmony'
 import { useSelector } from 'react-redux'
 import { useLocation } from 'react-router-dom'
@@ -37,6 +43,7 @@ const {
 
 const { getUnreadMessagesCount } = chatSelectors
 const { getIsAccountComplete, getHasAccount } = accountSelectors
+const { getIsUploading } = uploadSelectors
 
 export type NavItemConfig = {
   label: string
@@ -56,6 +63,8 @@ export const useNavConfig = () => {
   const hasAccount = useSelector(getHasAccount)
   const isAccountComplete = useSelector(getIsAccountComplete)
   const unreadMessagesCount = useSelector(getUnreadMessagesCount)
+  const isUploading = useSelector(getIsUploading)
+  const { color, spacing } = useTheme()
   const { claimableAmount } = useChallengeCooldownSchedule({
     multiple: true
   })
@@ -132,6 +141,19 @@ export const useNavConfig = () => {
         label: 'Upload',
         leftIcon: IconCloudUpload,
         to: UPLOAD_PAGE,
+        rightIcon: isUploading ? (
+          <LoadingSpinner
+            css={{
+              width: spacing.unit6,
+              height: spacing.unit6,
+              color:
+                location.pathname === UPLOAD_PAGE
+                  ? color.static.white
+                  : color.neutral.n800
+            }}
+          />
+        ) : undefined,
+        shouldPersistRightIcon: true,
         restriction: 'account',
         disabled: !hasAccount
       },
@@ -148,11 +170,13 @@ export const useNavConfig = () => {
       }
     ],
     [
-      hasAccount,
       unreadMessagesCount,
       location.pathname,
       isAccountComplete,
-      claimableAmount
+      claimableAmount,
+      isUploading,
+      color,
+      spacing
     ]
   )
 

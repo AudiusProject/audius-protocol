@@ -21,6 +21,7 @@ export const NavItem = ({
   onClick,
   textSize = 'l',
   hasNotification = false,
+  leftOverride,
   ...props
 }: NavItemProps) => {
   const { color } = useTheme()
@@ -91,7 +92,7 @@ export const NavItem = ({
             maxWidth: '240px'
           }}
         >
-          {leftIconWithNotification}
+          {leftOverride || leftIconWithNotification}
           <Text
             variant='title'
             size={textSize}

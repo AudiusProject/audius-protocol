@@ -96,13 +96,13 @@ const Page = () => {
           <Nav />
           <Flex flex={1} direction='column' alignItems='center' p='unit14'>
             <Flex
-              w='640px'
+              w='660px'
               gap='xl'
               direction='column'
               justifyContent='center'
               alignItems='center'
             >
-              <Paper direction='column' p='2xl' gap='2xl' w='640px'>
+              <Paper direction='column' p='2xl' gap='2xl' w='660px'>
                 <Flex justifyContent='center'>
                   <IconAudiusLogoHorizontalColor />
                 </Flex>
@@ -120,7 +120,7 @@ const Page = () => {
 
 export const App = () => {
   return (
-    <HarmonyThemeProvider theme='day' version='v2'>
+    <HarmonyThemeProvider theme='day'>
       <QueryClientProvider client={queryClient}>
         <AuthProvider>
           <Page />

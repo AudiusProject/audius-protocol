@@ -58,7 +58,7 @@
     "@project-serum/anchor": "0.24.1",
     "@scure/base": "1.1.1",
     "@solana/spl-token": "0.3.8",
-    "@solana/web3.js": "1.93.4",
+    "@solana/web3.js": "1.98.0",
     "abi-decoder": "2.4.0",
     "ajv": "6.12.2",
     "assert": "2.0.0",

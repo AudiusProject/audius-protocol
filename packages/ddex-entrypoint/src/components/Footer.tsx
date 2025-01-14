@@ -1,4 +1,4 @@
-import { Flex, IconAudiusLogoHorizontal, Text, TextLink } from "@audius/harmony"
+import { Flex, IconAudiusLogoHorizontal, Text, TextLink } from '@audius/harmony'
 
 const messages = {
   privacy: 'Privacy',
@@ -6,7 +6,6 @@ const messages = {
   developers: 'Developers',
   audius: 'Audius'
 }
-
 
 const links = {
   privacy: 'https://audius.co/legal/privacy-policy',
@@ -28,12 +27,10 @@ export const Footer = () => (
     >
       <Flex alignItems='center' columnGap='2xl' wrap='wrap'>
         <Flex alignItems='center' gap='s'>
-          <IconAudiusLogoHorizontal width={'80px'} height={'20px'} color='subdued' />
-          <Text
-            variant='body'
-            size='s'
-            color='subdued'
-          >
+          <Flex>
+            <IconAudiusLogoHorizontal sizeH='l' width='auto' color='subdued' />
+          </Flex>
+          <Text variant='body' size='s' color='subdued'>
             &copy; {new Date().getFullYear()}
           </Text>
         </Flex>
@@ -42,13 +39,17 @@ export const Footer = () => (
           textVariant='body'
           size='s'
           href={links.privacy}
-        >{messages.privacy}</TextLink>
+        >
+          {messages.privacy}
+        </TextLink>
         <TextLink
           variant='subdued'
           textVariant='body'
           size='s'
           href={links.terms}
-        >{messages.terms}</TextLink>
+        >
+          {messages.terms}
+        </TextLink>
       </Flex>
       <Flex alignItems='center' gap='2xl'>
         <TextLink
@@ -56,13 +57,17 @@ export const Footer = () => (
           textVariant='body'
           size='s'
           href={links.developers}
-        >{messages.developers}</TextLink>
+        >
+          {messages.developers}
+        </TextLink>
         <TextLink
           variant='subdued'
           textVariant='body'
           size='s'
           href={links.audius}
-        >{messages.audius}</TextLink>
+        >
+          {messages.audius}
+        </TextLink>
       </Flex>
     </Flex>
   </footer>

@@ -10,8 +10,7 @@ const useStyles = makeStyles(({ spacing, palette }) => ({
   root: {
     backgroundColor: palette.neutralLight9,
     borderRadius: 22,
-    height: spacing(6),
-    marginVertical: 14,
+    height: spacing(4),
     overflow: 'hidden'
   },
   progressBar: {

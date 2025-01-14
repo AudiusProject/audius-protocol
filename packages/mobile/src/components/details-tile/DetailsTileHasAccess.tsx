@@ -17,7 +17,7 @@ import {
   Flex,
   IconCart,
   IconCollectible,
-  IconSpecialAccess
+  IconSparkles
 } from '@audius/harmony-native'
 import { LockedStatusBadge, Text, useLink } from 'app/components/core'
 import UserBadges from 'app/components/user-badges'
@@ -143,7 +143,7 @@ const DetailsTileOwnerSection = ({
         borderRadius='m'
       >
         <View style={[styles.titleContainer, styles.ownerTitleContainer]}>
-          <IconSpecialAccess fill={neutral} width={16} height={16} />
+          <IconSparkles fill={neutral} width={16} height={16} />
           <Text style={styles.title}>{messages.specialAccess}</Text>
         </View>
         <View style={styles.descriptionContainer}>

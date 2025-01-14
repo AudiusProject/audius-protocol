@@ -1,10 +1,4 @@
-import {
-  Flex,
-  IconSpecialAccess,
-  Text,
-  TextProps,
-  useTheme
-} from '@audius/harmony'
+import { Flex, IconSparkles, Text, TextProps, useTheme } from '@audius/harmony'
 
 import { messages } from '../../messages'
 
@@ -77,7 +71,7 @@ export const StatusPill = ({
         borderColor={color.primary.p400}
       >
         <Flex alignItems='center' justifyContent='center' gap='xs'>
-          <IconSpecialAccess size='s' color='staticWhite' />
+          <IconSparkles size='s' color='staticWhite' />
           <Text variant='body' size='m' strength='strong' color='staticWhite'>
             {messages.new}
           </Text>
