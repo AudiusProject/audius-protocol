@@ -20,34 +20,24 @@ type UserParams = { userId?: ID } | { handle?: string }
  * @param options Optional configuration for the query
  * @returns The user data or null if not found
  */
-export const useUserByParams = (
-  params: UserParams | null | undefined,
-  options?: Config
-) => {
+export const useUserByParams = (params: UserParams, options?: Config) => {
+  const userId = 'userId' in params ? params.userId : null
+  const handle = 'handle' in params ? params.handle : null
   const dispatch = useDispatch()
 
-  const idQuery = useUser(params && 'userId' in params ? params.userId : null, {
-    ...options,
-    enabled: options?.enabled !== false && !!params && 'userId' in params
-  })
+  const idQuery = useUser(userId, options)
+  const handleQuery = useUserByHandle(handle, options)
 
-  const handleQuery = useUserByHandle(
-    params && 'handle' in params ? params.handle : null,
-    {
-      ...options,
-      enabled: options?.enabled !== false && !!params && 'handle' in params
-    }
-  )
+  const query = userId ? idQuery : handleQuery
 
-  const query = 'userId' in (params ?? {}) ? idQuery : handleQuery
   const { isSuccess, data } = query
-  const userId = data?.user_id
+  const userIdResult = data?.user_id
 
   useEffect(() => {
-    if (isSuccess && userId) {
-      dispatch(fetchProfileSucceeded(userId))
+    if (isSuccess && userIdResult) {
+      dispatch(fetchProfileSucceeded(userIdResult))
     }
-  }, [isSuccess, userId, dispatch])
+  }, [isSuccess, userIdResult, dispatch])
 
   return query
 }
