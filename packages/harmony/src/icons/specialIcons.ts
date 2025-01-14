@@ -11,6 +11,7 @@ import TokenGoldPng from '../assets/icons/TokenGold.png'
 import TokenNoTierPng from '../assets/icons/TokenNoTier.png'
 import TokenPlatinumPng from '../assets/icons/TokenPlatinum.png'
 import TokenSilverPng from '../assets/icons/TokenSilver.png'
+import IconVerifiedSVG from '../assets/icons/Verified.svg'
 // File Types
 import IconCcBySVG from '../assets/icons/ccBy.svg'
 import IconCcCCSVG from '../assets/icons/ccCC.svg'
@@ -79,6 +80,7 @@ export const IconMultiselectAdd = IconMultiselectAddSVG as IconComponent
 export const IconMultiselectRemove = IconMultiselectRemoveSVG as IconComponent
 
 // Token Tier Badge Components
+export const IconVerified = IconVerifiedSVG as IconComponent
 export const IconTokenNoTier = createIcon(TokenNoTierPng)
 export const IconTokenBronze = createIcon(TokenBronzePng)
 export const IconTokenGold = createIcon(TokenGoldPng)
