@@ -36,7 +36,7 @@
     "url": "https://github.com/AudiusProject/audius-protocol/issues"
   },
   "dependencies": {
-    "@audius/fetch-nft": "0.2.7",
+    "@audius/fetch-nft": "0.2.8",
     "@audius/fixed-decimal": "*",
     "@audius/sdk": "*",
     "@fingerprintjs/fingerprintjs-pro": "3.5.6",
