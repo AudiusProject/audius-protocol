@@ -4,6 +4,7 @@ import { useDispatch, useStore } from 'react-redux'
 
 import { fileToSdk, trackMetadataForUploadToSdk } from '~/adapters/track'
 import { useAudiusQueryContext } from '~/audius-query'
+import { Feature } from '~/models/ErrorReporting'
 import { Id, ID } from '~/models/Identifiers'
 import { CommonState } from '~/store/commonStore'
 import { stemsUploadSelectors } from '~/store/stems-upload'
@@ -17,6 +18,7 @@ const { getCurrentUploads } = stemsUploadSelectors
 
 type MutationContext = {
   previousTrack: Track | undefined
+  processedMetadata: Partial<TrackMetadataForUpload>
 }
 
 type UpdateTrackParams = {
@@ -27,7 +29,7 @@ type UpdateTrackParams = {
 }
 
 export const useUpdateTrack = () => {
-  const { audiusSdk } = useAudiusQueryContext()
+  const { audiusSdk, reportToSentry } = useAudiusQueryContext()
   const queryClient = useQueryClient()
   const dispatch = useDispatch()
   const store = useStore()
@@ -77,6 +79,8 @@ export const useUpdateTrack = () => {
         )
       }
 
+      // TODO: remixOf event tracking, see trackNewRemixEvent saga
+
       return response
     },
     onMutate: async ({ trackId, metadata }): Promise<MutationContext> => {
@@ -90,10 +94,12 @@ export const useUpdateTrack = () => {
         trackId
       ])
 
+      const processedMetadata = prepareTrackForUpload(metadata)
+
       // Optimistically update track
       queryClient.setQueryData([QUERY_KEYS.track, trackId], (old: any) => ({
         ...old,
-        ...metadata
+        ...processedMetadata
       }))
 
       // Optimistically update trackByPermalink
@@ -101,7 +107,7 @@ export const useUpdateTrack = () => {
         [QUERY_KEYS.trackByPermalink, metadata.permalink],
         (old: any) => ({
           ...old,
-          ...metadata
+          ...processedMetadata
         })
       )
 
@@ -119,7 +125,7 @@ export const useUpdateTrack = () => {
               track.id === trackId
                 ? {
                     ...track,
-                    ...metadata
+                    ...processedMetadata
                   }
                 : track
             )
@@ -127,10 +133,10 @@ export const useUpdateTrack = () => {
         }
       )
 
-      // Return context with the previous track
-      return { previousTrack }
+      // Return context with the previous track and metadata
+      return { previousTrack, processedMetadata }
     },
-    onError: (_err, { trackId }, context?: MutationContext) => {
+    onError: (error, { trackId, userId }, context?: MutationContext) => {
       // If the mutation fails, roll back track data
       if (context?.previousTrack) {
         queryClient.setQueryData(
@@ -159,10 +165,21 @@ export const useUpdateTrack = () => {
           }
         }
       )
+
+      reportToSentry({
+        error,
+        additionalInfo: {
+          trackId,
+          userId,
+          metadata: context?.processedMetadata
+        },
+        feature: Feature.Edit,
+        name: 'Edit Track'
+      })
     },
-    onSettled: (_, __) => {
+    onSettled: (_, __, { trackId }) => {
       // Always refetch after error or success to ensure cache is in sync with server
-      // queryClient.invalidateQueries({ queryKey: ['track', trackId] })
+      queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.track, trackId] })
     }
   })
 }
