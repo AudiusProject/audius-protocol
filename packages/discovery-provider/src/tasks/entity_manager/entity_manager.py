@@ -114,9 +114,12 @@ from src.tasks.entity_manager.utils import (
     save_cid_metadata,
 )
 from src.utils import helpers
+from src.utils.config import shared_config
 from src.utils.indexing_errors import IndexingError
 from src.utils.prometheus_metric import PrometheusMetric, PrometheusMetricNames
 from src.utils.structured_logger import StructuredLogger
+
+environment = shared_config["discprov"]["env"]
 
 logger = StructuredLogger(__name__)
 
@@ -215,6 +218,7 @@ def entity_manager_update(
         # process in tx order and populate records_to_save
         for tx_receipt in entity_manager_txs:
             txhash = update_task.web3.to_hex(tx_receipt["transactionHash"])
+            # TODO: bypass this for core
             entity_manager_event_tx = get_entity_manager_events_tx(
                 update_task, tx_receipt
             )
@@ -592,6 +596,7 @@ def collect_entities_to_fetch(update_task, entity_manager_txs):
     entities_to_fetch: Dict[EntityType, Set] = defaultdict(set)
 
     for tx_receipt in entity_manager_txs:
+        # TODO: bypass this for core
         entity_manager_event_tx = get_entity_manager_events_tx(update_task, tx_receipt)
         for event in entity_manager_event_tx:
             entity_id = helpers.get_tx_arg(event, "_entityId")
@@ -1520,6 +1525,9 @@ def fetch_existing_entities(session: Session, entities_to_fetch: EntitiesToFetch
 
 
 def get_entity_manager_events_tx(update_task, tx_receipt: TxReceipt):
+    # core structures args like this already
+    if environment == "dev":
+        return [tx_receipt]
     return getattr(
         update_task.entity_manager_contract.events, MANAGE_ENTITY_EVENT_TYPE
     )().process_receipt(tx_receipt)

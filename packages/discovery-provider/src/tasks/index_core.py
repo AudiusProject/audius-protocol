@@ -11,6 +11,7 @@ from web3.types import TxReceipt
 
 from src.challenges.challenge_event_bus import ChallengeEventBus
 from src.models.core.core_indexed_blocks import CoreIndexedBlocks
+from src.models.indexing.block import Block
 from src.models.social.play import Play
 from src.tasks.celery_app import celery
 from src.tasks.core.core_client import CoreClient, get_core_instance
@@ -189,7 +190,7 @@ def index_core(self):
 
             indexing_plays = past_sol_plays_cutover and past_core_plays_cutover
 
-            next_block = latest_indexed_block_height + 1
+            next_em_block = latest_indexed_block_height + 1
 
             logger = logging.LoggerAdapter(
                 logger=root_logger,
@@ -197,14 +198,14 @@ def index_core(self):
                     "indexer": "core",
                     "chain_id": core_chain_id,
                     "latest_indexed_block": latest_indexed_block_height,
-                    "next_indexed_block": next_block,
+                    "next_indexed_block": next_em_block,
                     "latest_chain_block": latest_core_block_height,
                 },
             )
 
             logger.debug("indexing block")
 
-            block = core.get_block(next_block)
+            block = core.get_block(next_em_block)
             if not block:
                 return
 
@@ -246,6 +247,10 @@ def index_core(self):
                                 "_subjectSig": manage_entity_tx.signature,
                             }
                         ),
+                        # TODO: get from block response
+                        "transactionHash": web3.to_bytes(
+                            hexstr=manage_entity_tx.signature
+                        ),
                     }
                     tx_receipts.append(txReceipt)
                     continue
@@ -258,18 +263,28 @@ def index_core(self):
                         f"index_core.py | unhandled tx type found {transaction_type}"
                     )
 
-            entity_manager_txs = [
-                AttributeDict({"transactionHash": web3.to_bytes(text=block.blockhash)})
-                for tx_receipt in tx_receipts
-            ]
-
             try:
-                db_block = block.height
+                latest_indexed_block_record = (
+                    session.query(Block).filter(Block.is_current == True).first()
+                )
+                if not latest_indexed_block_record:
+                    raise Exception("latest_indexed_block not found")
+
+                next_em_block = latest_indexed_block_record.number + 1
+                next_em_block_model = Block(
+                    blockhash=block.blockhash,
+                    parenthash=latest_indexed_block_record.blockhash,
+                    number=next_em_block,
+                    is_current=True,
+                )
+
+                latest_indexed_block_record.is_current = False
+                session.add(next_em_block_model)
                 entity_manager_update(
                     self,
                     session,
-                    entity_manager_txs,
-                    block_number=db_block,
+                    tx_receipts,
+                    block_number=next_em_block,
                     block_timestamp=block.timestamp.ToSeconds(),
                     block_hash=block.blockhash,
                 )
