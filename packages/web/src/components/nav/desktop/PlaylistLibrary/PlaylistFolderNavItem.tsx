@@ -190,6 +190,7 @@ export const PlaylistFolderNavItem = (props: PlaylistFolderNavItemProps) => {
                 rightIcon={rightIcon}
                 nestedItems={nestedItems}
                 variant='compact'
+                shouldPersistDownArrow
               />
               <DeleteFolderConfirmationModal
                 folderId={id}

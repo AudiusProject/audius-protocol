@@ -1,18 +1,17 @@
-import { ReactNode, MouseEvent } from 'react'
+import { MouseEvent, ReactNode } from 'react'
 
 import { Theme } from '@audius/common/models'
-import { themeSelectors, accountSelectors } from '@audius/common/store'
+import { accountSelectors, themeSelectors } from '@audius/common/store'
 import { route } from '@audius/common/utils'
 import {
   Flex,
   IconAudiusLogoHorizontalNew,
   IconDashboard,
-  IconSettings,
-  useTheme
+  IconSettings
 } from '@audius/harmony'
 import { Link } from 'react-router-dom'
 
-import { useRequiresAccountFn, RestrictionType } from 'hooks/useRequiresAccount'
+import { RestrictionType, useRequiresAccountFn } from 'hooks/useRequiresAccount'
 import { useSelector } from 'utils/reducer'
 
 import { NavHeaderButton } from './NavHeaderButton'
@@ -71,8 +70,6 @@ const RestrictedLink = ({
 }
 
 export const NavHeader = () => {
-  const { spacing } = useTheme()
-
   const isMatrix = useSelector((state) => getTheme(state) === Theme.MATRIX)
 
   return (
@@ -80,7 +77,7 @@ export const NavHeader = () => {
       alignItems='center'
       backgroundColor='surface1'
       justifyContent='space-between'
-      p={spacing.l}
+      p='m'
       flex={0}
       css={{ minHeight: 58 }}
     >

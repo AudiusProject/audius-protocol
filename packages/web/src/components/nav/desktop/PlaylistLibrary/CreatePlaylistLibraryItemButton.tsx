@@ -84,7 +84,8 @@ export const CreatePlaylistLibraryItemButton = () => {
   return (
     <PopupMenu
       items={items}
-      anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+      transformOrigin={{ vertical: 'top', horizontal: 'left' }}
       renderTrigger={(anchorRef, onClick, triggerProps) => (
         <IconButton
           ref={anchorRef}

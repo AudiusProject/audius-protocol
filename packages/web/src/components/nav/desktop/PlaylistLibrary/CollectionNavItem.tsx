@@ -204,6 +204,12 @@ export const CollectionNavItem = (props: CollectionNavItemProps) => {
             onMouseEnter={handleMouseEnter}
             onMouseLeave={handleMouseLeave}
             textSize='s'
+            css={{
+              '& > div': {
+                padding: `6.5px ${spacing.s}px`,
+                marginLeft: indentAmount
+              }
+            }}
             rightIcon={
               isPlayingFromThisPlaylist ? (
                 <IconSpeaker
