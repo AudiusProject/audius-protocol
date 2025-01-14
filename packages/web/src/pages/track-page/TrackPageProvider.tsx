@@ -38,7 +38,6 @@ import { connect } from 'react-redux'
 import { Dispatch } from 'redux'
 
 import { TrackEvent, make } from 'common/store/analytics/actions'
-import { TRENDING_BADGE_LIMIT } from 'common/store/pages/track/sagas'
 import * as unfollowConfirmationActions from 'components/unfollow-confirmation-modal/store/actions'
 import DeletedPage from 'pages/deleted-page/DeletedPage'
 import { SsrContext } from 'ssr/SsrContext'
@@ -70,7 +69,6 @@ const { tracksActions } = trackPageLineupActions
 const {
   getUser,
   getLineup,
-  getTrackRank,
   getTrack,
   getRemixParentTrack,
   getStatus,
@@ -367,7 +365,6 @@ class TrackPageProvider extends Component<
       track,
       remixParentTrack,
       user,
-      trackRank,
       moreByArtist,
       currentQueueItem,
       playing,
@@ -381,14 +378,6 @@ class TrackPageProvider extends Component<
       !!track &&
       !!currentQueueItem.track &&
       currentQueueItem.track.track_id === track.track_id
-    const trendingBadgeLabel =
-      trackRank.year && trackRank.year <= TRENDING_BADGE_LIMIT
-        ? `#${trackRank.year} This Year`
-        : trackRank.month && trackRank.month <= TRENDING_BADGE_LIMIT
-          ? `#${trackRank.month} This Month`
-          : trackRank.week && trackRank.week <= TRENDING_BADGE_LIMIT
-            ? `#${trackRank.week} This Week`
-            : null
 
     const desktopProps = {
       // Follow Props
@@ -444,7 +433,6 @@ class TrackPageProvider extends Component<
       user,
       heroPlaying,
       userId,
-      trendingBadgeLabel,
       previewing,
       onHeroPlay: this.onHeroPlay,
       goToAllRemixesPage: this.goToAllRemixesPage,
@@ -502,7 +490,6 @@ function makeMapStateToProps() {
       playing: getPlaying(state),
       previewing: getPreviewing(state),
       buffering: getBuffering(state),
-      trackRank: getTrackRank(state),
       pathname: getLocationPathname(state)
     }
   }

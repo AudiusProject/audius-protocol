@@ -1,129 +1,26 @@
-import { trendingIdsFromSDK } from '@audius/common/adapters'
-import { ID, Kind, LineupEntry, Track } from '@audius/common/models'
-import { StringKeys } from '@audius/common/services'
+import { Kind, LineupEntry, Track } from '@audius/common/models'
 import {
   cacheTracksActions as trackCacheActions,
   cacheTracksSelectors,
   trackPageLineupActions,
   trackPageActions,
-  getContext,
   trackPageSelectors,
-  reachabilitySelectors,
-  TrackPageState,
-  getSDK
+  reachabilitySelectors
 } from '@audius/common/store'
 import { makeUid, route } from '@audius/common/utils'
-import { keccak_256 } from 'js-sha3'
 import moment from 'moment'
 import { call, fork, put, select, takeEvery } from 'typed-redux-saga'
 
 import { retrieveTracks } from 'common/store/cache/tracks/utils'
 import { retrieveTrackByHandleAndSlug } from 'common/store/cache/tracks/utils/retrieveTracks'
 import { push as pushRoute } from 'utils/navigation'
-import { waitForRead } from 'utils/sagaHelpers'
 
 import tracksSagas from './lineups/sagas'
 const { getIsReachable } = reachabilitySelectors
 const { tracksActions } = trackPageLineupActions
-const { getSourceSelector, getTrack, getTrendingTrackRanks, getUser } =
-  trackPageSelectors
+const { getSourceSelector, getTrack, getUser } = trackPageSelectors
 const { getTrack: getCachedTrack } = cacheTracksSelectors
 const { NOT_FOUND_PAGE } = route
-
-export const TRENDING_BADGE_LIMIT = 10
-
-function* watchFetchTrackBadge() {
-  const sdk = yield* getSDK()
-  const remoteConfigInstance = yield* getContext('remoteConfigInstance')
-
-  yield* takeEvery(
-    trackPageActions.GET_TRACK_RANKS,
-    function* (action: ReturnType<typeof trackPageActions.getTrackRanks>) {
-      try {
-        yield* call(waitForRead)
-        yield* call(remoteConfigInstance.waitForRemoteConfig)
-        const TF = new Set(
-          remoteConfigInstance.getRemoteVar(StringKeys.TF)?.split(',') ?? []
-        )
-        const version = remoteConfigInstance.getRemoteVar(
-          StringKeys.TRENDING_EXPERIMENT
-        )
-        let trendingTrackRanks: TrackPageState['trendingTrackRanks'] | null =
-          yield* select(getTrendingTrackRanks)
-        if (!trendingTrackRanks) {
-          const { data } = version
-            ? yield* call(
-                [
-                  sdk.full.tracks,
-                  sdk.full.tracks.getTrendingTracksIDsWithVersion
-                ],
-                { version }
-              )
-            : yield* call(
-                [sdk.full.tracks, sdk.full.tracks.getTrendingTrackIDs],
-                {}
-              )
-          const trendingRanks = trendingIdsFromSDK(data)
-          if (TF.size > 0) {
-            trendingRanks.week = trendingRanks.week.filter((i) => {
-              const shaId = keccak_256(i.toString())
-              return !TF.has(shaId)
-            })
-            trendingRanks.month = trendingRanks.month.filter((i) => {
-              const shaId = keccak_256(i.toString())
-              return !TF.has(shaId)
-            })
-            trendingRanks.year = trendingRanks.year.filter((i) => {
-              const shaId = keccak_256(i.toString())
-              return !TF.has(shaId)
-            })
-          }
-
-          yield* put(trackPageActions.setTrackTrendingRanks(trendingRanks))
-          trendingTrackRanks = yield* select(getTrendingTrackRanks)
-        }
-
-        const weeklyTrackIndex =
-          trendingTrackRanks?.week?.findIndex(
-            (trackId) => trackId === action.trackId
-          ) ?? -1
-        const monthlyTrackIndex =
-          trendingTrackRanks?.month?.findIndex(
-            (trackId) => trackId === action.trackId
-          ) ?? -1
-        const yearlyTrackIndex =
-          trendingTrackRanks?.year?.findIndex(
-            (trackId) => trackId === action.trackId
-          ) ?? -1
-
-        yield* put(
-          trackPageActions.setTrackRank(
-            'week',
-            weeklyTrackIndex !== -1 ? weeklyTrackIndex + 1 : null
-          )
-        )
-        yield* put(
-          trackPageActions.setTrackRank(
-            'month',
-            monthlyTrackIndex !== -1 ? monthlyTrackIndex + 1 : null
-          )
-        )
-        yield* put(
-          trackPageActions.setTrackRank(
-            'year',
-            yearlyTrackIndex !== -1 ? yearlyTrackIndex + 1 : null
-          )
-        )
-      } catch (error: any) {
-        console.error(`Unable to fetch track badge: ${error.message}`)
-      }
-    }
-  )
-}
-
-function* getTrackRanks(trackId: ID) {
-  yield* put(trackPageActions.getTrackRanks(trackId))
-}
 
 function* addTrackToLineup(track: Track) {
   const source = yield* select(getSourceSelector)
@@ -201,7 +98,6 @@ function* watchFetchTrack() {
               track.permalink,
               handle || track.permalink.split('/')?.[1]
             )
-            yield* fork(getTrackRanks, track.track_id)
           }
           yield* put(trackPageActions.fetchTrackSucceeded(track.track_id))
         }
@@ -262,7 +158,6 @@ export default function sagas() {
     ...tracksSagas(),
     watchFetchTrack,
     watchRefetchLineup,
-    watchFetchTrackBadge,
     watchTrackPageMakePublic
   ]
 }
