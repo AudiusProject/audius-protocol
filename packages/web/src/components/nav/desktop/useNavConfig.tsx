@@ -19,7 +19,8 @@ import {
   IconTrending,
   IconWallet,
   LoadingSpinner,
-  NotificationCount
+  NotificationCount,
+  useTheme
 } from '@audius/harmony'
 import { useSelector } from 'react-redux'
 import { useLocation } from 'react-router-dom'
@@ -62,6 +63,7 @@ export const useNavConfig = () => {
   const isAccountComplete = useSelector(getIsAccountComplete)
   const unreadMessagesCount = useSelector(getUnreadMessagesCount)
   const isUploading = useSelector(getIsUploading)
+  const { color, spacing } = useTheme()
   const { claimableAmount } = useChallengeCooldownSchedule({
     multiple: true
   })
@@ -136,12 +138,12 @@ export const useNavConfig = () => {
         rightIcon: isUploading ? (
           <LoadingSpinner
             css={{
-              width: 24,
-              height: 24,
+              width: spacing.unit6,
+              height: spacing.unit6,
               color:
                 location.pathname === UPLOAD_PAGE
-                  ? 'var(--harmony-static-white)'
-                  : 'var(--harmony-n-800)'
+                  ? color.static.white
+                  : color.neutral.n800
             }}
           />
         ) : undefined,
@@ -164,7 +166,9 @@ export const useNavConfig = () => {
       location.pathname,
       isAccountComplete,
       claimableAmount,
-      isUploading
+      isUploading,
+      color,
+      spacing
     ]
   )
 
