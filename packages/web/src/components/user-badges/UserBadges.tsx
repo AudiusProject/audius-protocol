@@ -3,13 +3,7 @@ import { cloneElement, ReactElement } from 'react'
 import { useSelectTierInfo } from '@audius/common/hooks'
 import { BadgeTier, ID } from '@audius/common/models'
 import { Nullable } from '@audius/common/utils'
-import {
-  IconTokenBronze as IconBronzeBadgeSVG,
-  IconTokenGold as IconGoldBadgeSVG,
-  IconTokenPlatinum as IconPlatinumBadgeSVG,
-  IconTokenSilver as IconSilverBadgeSVG,
-  IconVerified
-} from '@audius/harmony'
+import { IconVerified } from '@audius/harmony'
 import cn from 'classnames'
 
 import IconBronzeBadge from 'assets/img/tokenBadgeBronze48@2x.webp'
@@ -18,14 +12,6 @@ import IconPlatinumBadge from 'assets/img/tokenBadgePlatinum48@2x.webp'
 import IconSilverBadge from 'assets/img/tokenBadgeSilver48@2x.webp'
 
 import styles from './UserBadges.module.css'
-
-const audioTierMapSVG: { [tier in BadgeTier]: Nullable<ReactElement> } = {
-  none: null,
-  bronze: <IconBronzeBadgeSVG />,
-  silver: <IconSilverBadgeSVG />,
-  gold: <IconGoldBadgeSVG />,
-  platinum: <IconPlatinumBadgeSVG />
-}
 
 export const audioTierMapPng: {
   [tier in BadgeTier]: Nullable<ReactElement>
