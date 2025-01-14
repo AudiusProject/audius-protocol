@@ -1,7 +1,11 @@
 import { ReactNode, useMemo } from 'react'
 
 import { useChallengeCooldownSchedule } from '@audius/common/hooks'
-import { accountSelectors, chatSelectors } from '@audius/common/store'
+import {
+  accountSelectors,
+  chatSelectors,
+  uploadSelectors
+} from '@audius/common/store'
 import { route } from '@audius/common/utils'
 import type { IconComponent } from '@audius/harmony'
 import {
@@ -14,6 +18,7 @@ import {
   IconPlaylists,
   IconTrending,
   IconWallet,
+  LoadingSpinner,
   NotificationCount
 } from '@audius/harmony'
 import { useSelector } from 'react-redux'
@@ -37,6 +42,7 @@ const {
 
 const { getUnreadMessagesCount } = chatSelectors
 const { getIsAccountComplete } = accountSelectors
+const { getIsUploading } = uploadSelectors
 
 export type NavItemConfig = {
   label: string
@@ -55,6 +61,7 @@ export type NavItemConfig = {
 export const useNavConfig = () => {
   const isAccountComplete = useSelector(getIsAccountComplete)
   const unreadMessagesCount = useSelector(getUnreadMessagesCount)
+  const isUploading = useSelector(getIsUploading)
   const { claimableAmount } = useChallengeCooldownSchedule({
     multiple: true
   })
@@ -126,6 +133,19 @@ export const useNavConfig = () => {
         label: 'Upload',
         leftIcon: IconCloudUpload,
         to: UPLOAD_PAGE,
+        rightIcon: isUploading ? (
+          <LoadingSpinner
+            css={{
+              width: 24,
+              height: 24,
+              color:
+                location.pathname === UPLOAD_PAGE
+                  ? 'var(--harmony-static-white)'
+                  : 'var(--harmony-n-800)'
+            }}
+          />
+        ) : undefined,
+        shouldPersistRightIcon: true,
         restriction: 'account'
       },
       {
@@ -139,7 +159,13 @@ export const useNavConfig = () => {
         canUnfurl: isAccountComplete
       }
     ],
-    [unreadMessagesCount, location.pathname, isAccountComplete, claimableAmount]
+    [
+      unreadMessagesCount,
+      location.pathname,
+      isAccountComplete,
+      claimableAmount,
+      isUploading
+    ]
   )
 
   return navItems
