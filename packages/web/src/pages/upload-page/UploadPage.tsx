@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 
 import {
   uploadActions,
+  UploadFormState,
   uploadSelectors,
   UploadType,
   useUploadConfirmationModal
@@ -17,10 +18,10 @@ import styles from './UploadPage.module.css'
 import { EditPage } from './pages/EditPage'
 import { FinishPage } from './pages/FinishPage'
 import SelectPage from './pages/SelectPage'
-import { UploadFormState } from './types'
 
-const { uploadTracks, undoResetState } = uploadActions
-const { getShouldReset } = uploadSelectors
+const { uploadTracks, updateFormState, reset } = uploadActions
+const { getFormState, getUploadSuccess, getUploadError, getIsUploading } =
+  uploadSelectors
 
 const messages = {
   selectPageTitle: 'Upload Your Music',
@@ -41,7 +42,7 @@ const uploadTypeStringMap: Record<UploadType, string> = {
   [UploadType.PLAYLIST]: 'Playlist'
 }
 
-const initialFormState = {
+const initialFormState: UploadFormState = {
   uploadType: undefined,
   metadata: undefined,
   tracks: undefined
@@ -54,9 +55,27 @@ type UploadPageProps = {
 export const UploadPage = (props: UploadPageProps) => {
   const { scrollToTop } = props
   const dispatch = useDispatch()
-  const [phase, setPhase] = useState(Phase.SELECT)
-  const [formState, setFormState] = useState<UploadFormState>(initialFormState)
-  const shouldResetState = useSelector(getShouldReset)
+  const formStateFromStore = useSelector(getFormState)
+  const uploadSuccess = useSelector(getUploadSuccess)
+  const uploadError = useSelector(getUploadError)
+  const isUploading = useSelector(getIsUploading)
+  const [formState, setFormState] = useState<UploadFormState>(
+    formStateFromStore ?? initialFormState
+  )
+  // Start the user on the finish page if they have a form state
+  const [phase, setPhase] = useState(
+    formStateFromStore ? Phase.FINISH : Phase.SELECT
+  )
+
+  // Clean up the store on unmount only if the upload succeeded or failed
+  // Allow users to resume in progress uploads otherwise.
+  useEffect(() => {
+    return () => {
+      if (uploadSuccess || uploadError) {
+        dispatch(reset())
+      }
+    }
+  }, [uploadSuccess, uploadError, dispatch])
 
   const { tracks, uploadType } = formState
 
@@ -113,6 +132,7 @@ export const UploadPage = (props: UploadPageProps) => {
             formState={formState}
             onContinue={(formState: UploadFormState) => {
               setFormState(formState)
+              dispatch(updateFormState(formState))
               const isPrivateCollection =
                 'metadata' in formState && formState.metadata?.is_private
               const hasPublicTracks =
@@ -137,19 +157,12 @@ export const UploadPage = (props: UploadPageProps) => {
                 metadata: undefined
               })
               setPhase(Phase.SELECT)
+              dispatch(reset())
             }}
           />
         )
       }
   }
-
-  useEffect(() => {
-    if (shouldResetState) {
-      setFormState(initialFormState)
-      setPhase(Phase.SELECT)
-      dispatch(undoResetState())
-    }
-  }, [dispatch, shouldResetState])
 
   const handleUpload = useCallback(() => {
     if (!formState.tracks) return
@@ -157,8 +170,13 @@ export const UploadPage = (props: UploadPageProps) => {
   }, [dispatch, formState])
 
   useEffect(() => {
-    if (phase === Phase.FINISH) handleUpload()
-  }, [handleUpload, phase])
+    // Actually trigger the upload when the user is on the finish page
+    // and there is not already existing upload progress
+    const isUploadPending = !isUploading && !uploadSuccess && !uploadError
+    if (phase === Phase.FINISH && isUploadPending) {
+      handleUpload()
+    }
+  }, [handleUpload, phase, isUploading, uploadSuccess, uploadError])
 
   return (
     <Page
