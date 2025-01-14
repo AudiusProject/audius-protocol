@@ -36,4 +36,6 @@ export type ExpandableNavItemProps = WithCSS<{
   variant?: ExpandableNavItemVariant
   /** The onClick handler for the nav item. */
   onClick?: () => void
+  /** Whether the nav item is disabled. */
+  disabled?: boolean
 }>

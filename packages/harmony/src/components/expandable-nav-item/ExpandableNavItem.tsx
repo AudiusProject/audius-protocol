@@ -31,10 +31,14 @@ const variants: VariantConfigs = {
   }
 }
 
-const getStyles = (theme: HarmonyTheme, isHovered: boolean): CSSObject => {
+const getStyles = (
+  theme: HarmonyTheme,
+  isHovered: boolean,
+  disabled?: boolean
+): CSSObject => {
   const baseStyles: CSSObject = {
     transition: `background-color ${theme.motion.hover}`,
-    cursor: 'pointer'
+    opacity: disabled ? 0.5 : 1
   }
 
   const hoverStyles: CSSObject = {
@@ -44,7 +48,7 @@ const getStyles = (theme: HarmonyTheme, isHovered: boolean): CSSObject => {
 
   return {
     ...baseStyles,
-    ...(isHovered && hoverStyles)
+    ...(!disabled && isHovered && hoverStyles)
   }
 }
 
@@ -59,6 +63,7 @@ export const ExpandableNavItem = ({
   canUnfurl = true,
   variant = 'default',
   onClick,
+  disabled,
   ...props
 }: ExpandableNavItemProps) => {
   const [isOpen, setIsOpen] = useState(defaultIsOpen)
@@ -78,7 +83,10 @@ export const ExpandableNavItem = ({
     onClick?.()
   }
 
-  const styles = useMemo(() => getStyles(theme, isHovered), [theme, isHovered])
+  const styles = useMemo(
+    () => getStyles(theme, isHovered, disabled),
+    [theme, isHovered, disabled]
+  )
 
   const getIcon = useMemo(() => {
     const isCaretVisibleWhenHovered = isHovered && canUnfurl
@@ -193,8 +201,9 @@ export const ExpandableNavItem = ({
         <Flex
           direction='column'
           css={{
-            transition: `height 0.36s ease-in-out`,
-            overflow: 'hidden'
+            transition: `height ${theme.motion.expressive}, opacity ${theme.motion.quick}`,
+            overflow: 'hidden',
+            opacity: isOpen ? 1 : 0
           }}
           style={{ height: isOpen ? bounds.height : 0 }}
         >

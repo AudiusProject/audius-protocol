@@ -10,6 +10,7 @@ type Props = Omit<ExpandableNavItemProps, 'onClick'> & {
 
 export const RestrictedExpandableNavItem = ({
   restriction = 'none',
+  disabled,
   ...props
 }: Props) => {
   const { requiresAccount } = useRequiresAccountFn(undefined, restriction)
@@ -20,5 +21,7 @@ export const RestrictedExpandableNavItem = ({
     }
   }, [requiresAccount, restriction])
 
-  return <ExpandableNavItem onClick={handleClick} {...props} />
+  return (
+    <ExpandableNavItem onClick={handleClick} disabled={disabled} {...props} />
+  )
 }
