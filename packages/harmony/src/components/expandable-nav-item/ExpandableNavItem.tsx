@@ -193,7 +193,7 @@ export const ExpandableNavItem = ({
         <Flex
           direction='column'
           css={{
-            transition: `height ${theme.motion.expressive}`,
+            transition: `height 0.36s ease-in-out`,
             overflow: 'hidden'
           }}
           style={{ height: isOpen ? bounds.height : 0 }}
