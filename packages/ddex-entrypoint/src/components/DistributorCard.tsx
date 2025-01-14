@@ -1,8 +1,6 @@
-import {
-  useQuery,
-} from '@tanstack/react-query'
+import { useQuery } from '@tanstack/react-query'
 import { DeveloperApp, sdk } from '@audius/sdk'
-import { Flex, IconEmbed, Text } from "@audius/harmony"
+import { Flex, IconEmbed, Text } from '@audius/harmony'
 import { useSdk } from '../hooks/useSdk'
 import { useCallback } from 'react'
 import { Status } from '../contexts/types'
@@ -21,14 +19,14 @@ export const DistributorCard = ({
   url,
   initialData
 }: DistributorCardProps) => {
-  const {sdk: audiusSdk } = useSdk()
+  const { sdk: audiusSdk } = useSdk()
 
   const { data: fetchedData } = useQuery({
     queryKey: ['apps', appKey],
     queryFn: () =>
-      audiusSdk
-        ?.developerApps.getDeveloperApp({ address: appKey })
-        .then(res => res.data),
+      audiusSdk?.developerApps
+        .getDeveloperApp({ address: appKey })
+        .then((res) => res.data),
     enabled: !initialData && status !== Status.IDLE && status !== Status.LOADING
   })
   const data = initialData ?? fetchedData
@@ -66,48 +64,43 @@ export const DistributorCard = ({
       css={{
         transition: 'all var(--harmony-quick)',
         cursor: url ? 'pointer' : 'default',
-        '&:hover': url ? { 'box-shadow': 'var(--harmony-shadow-mid)' } : undefined,
-        '&:active':  url ? { 'background': 'var(--harmony-bg-surface-1)' } : undefined
+        '&:hover': url
+          ? { 'box-shadow': 'var(--harmony-shadow-mid)' }
+          : undefined,
+        '&:active': url
+          ? { background: 'var(--harmony-bg-surface-1)' }
+          : undefined
       }}
     >
-      {
-        data ?
-          <>
-            <Flex
-              borderRadius='s'
-              css={{
-                overflow: 'hidden'
-              }}
-              h='56px'
-              w='56px'
-            >
-              {data?.imageUrl
-                ? <PreloadImage src={data.imageUrl} />
-                : <Flex
-                    w='100%'
-                    justifyContent='center'
-                    alignItems='center'
-                    borderRadius='l'
-                    css={{ backgroundColor: 'var(--harmony-n-200)' }}
-                  >
-                    <IconEmbed
-                      color='subdued'
-                      css={{ width: '32px', height: '32px' }}
-                    />
-                  </Flex>
-              }
-            </Flex>
-            <Text
-              variant='body'
-              size='s'
-              color='default'
-              textAlign='center'
-            >
-              {data?.name ?? ''}
-            </Text>
-          </>
-          : null
-        }
+      {data ? (
+        <>
+          <Flex
+            borderRadius='s'
+            css={{
+              overflow: 'hidden'
+            }}
+            h='56px'
+            w='56px'
+          >
+            {data?.imageUrl ? (
+              <PreloadImage src={data.imageUrl} />
+            ) : (
+              <Flex
+                w='100%'
+                justifyContent='center'
+                alignItems='center'
+                borderRadius='l'
+                css={{ backgroundColor: 'var(--harmony-n-200)' }}
+              >
+                <IconEmbed color='subdued' size='3xl' />
+              </Flex>
+            )}
+          </Flex>
+          <Text variant='body' size='s' color='default' textAlign='center'>
+            {data?.name ?? ''}
+          </Text>
+        </>
+      ) : null}
     </Flex>
   )
 }

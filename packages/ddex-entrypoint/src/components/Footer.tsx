@@ -27,7 +27,9 @@ export const Footer = () => (
     >
       <Flex alignItems='center' columnGap='2xl' wrap='wrap'>
         <Flex alignItems='center' gap='s'>
-          <IconAudiusLogoHorizontal width={80} height={20} color='subdued' />
+          <Flex>
+            <IconAudiusLogoHorizontal sizeH='l' width='auto' color='subdued' />
+          </Flex>
           <Text variant='body' size='s' color='subdued'>
             &copy; {new Date().getFullYear()}
           </Text>

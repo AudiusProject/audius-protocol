@@ -120,7 +120,7 @@ const Page = () => {
 
 export const App = () => {
   return (
-    <HarmonyThemeProvider theme='day' version='v2'>
+    <HarmonyThemeProvider theme='day'>
       <QueryClientProvider client={queryClient}>
         <AuthProvider>
           <Page />
