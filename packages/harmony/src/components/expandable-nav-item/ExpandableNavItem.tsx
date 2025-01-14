@@ -48,7 +48,11 @@ const getStyles = (
 
   return {
     ...baseStyles,
-    ...(!disabled && isHovered && hoverStyles)
+    ...(!disabled && isHovered && hoverStyles),
+    '&:active': {
+      opacity: disabled ? 0.4 : 0.8,
+      transition: `opacity ${theme.motion.quick}`
+    }
   }
 }
 
