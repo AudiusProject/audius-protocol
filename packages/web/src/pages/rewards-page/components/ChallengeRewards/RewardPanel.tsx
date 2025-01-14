@@ -90,7 +90,7 @@ export const RewardPanel = ({
       }}
     >
       <Flex direction='column' h='100%'>
-        <Flex justifyContent='flex-end' mt='xs' w='100%'>
+        <Flex justifyContent='flex-end' mt='s' w='100%'>
           <StatusPill
             shouldShowClaimPill={!!needsDisbursement}
             shouldShowNewChallengePill={shouldShowNewChallengePill}
