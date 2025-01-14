@@ -1,13 +1,19 @@
 import { Track } from '@audius/sdk'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { useDispatch, useStore } from 'react-redux'
 
 import { fileToSdk, trackMetadataForUploadToSdk } from '~/adapters/track'
 import { useAudiusQueryContext } from '~/audius-query'
-import { ID } from '~/models/Identifiers'
+import { Id, ID } from '~/models/Identifiers'
+import { CommonState } from '~/store/commonStore'
+import { stemsUploadSelectors } from '~/store/stems-upload'
 import { TrackMetadataForUpload } from '~/store/upload'
-import { encodeHashId } from '~/utils/hashIds'
 
 import { QUERY_KEYS } from './queryKeys'
+import { handleStemUpdates } from './utils/handleStemUpdates'
+import { prepareTrackForUpload } from './utils/prepareTrackForUpload'
+
+const { getCurrentUploads } = stemsUploadSelectors
 
 type MutationContext = {
   previousTrack: Track | undefined
@@ -23,6 +29,8 @@ type UpdateTrackParams = {
 export const useUpdateTrack = () => {
   const { audiusSdk } = useAudiusQueryContext()
   const queryClient = useQueryClient()
+  const dispatch = useDispatch()
+  const store = useStore()
 
   return useMutation({
     mutationFn: async ({
@@ -33,12 +41,17 @@ export const useUpdateTrack = () => {
     }: UpdateTrackParams) => {
       const sdk = await audiusSdk()
 
-      const encodedTrackId = encodeHashId(trackId)
-      const encodedUserId = encodeHashId(userId)
+      const encodedTrackId = Id.parse(trackId)
+      const encodedUserId = Id.parse(userId)
       if (!encodedTrackId || !encodedUserId) throw new Error('Invalid ID')
 
+      const previousMetadata = queryClient.getQueryData<Track>([
+        QUERY_KEYS.track,
+        trackId
+      ])
+      const processedMetadata = prepareTrackForUpload(metadata)
       const sdkMetadata = trackMetadataForUploadToSdk(
-        metadata as TrackMetadataForUpload
+        processedMetadata as TrackMetadataForUpload
       )
 
       const response = await sdk.tracks.updateTrack({
@@ -49,6 +62,20 @@ export const useUpdateTrack = () => {
         userId: encodedUserId,
         metadata: sdkMetadata
       })
+
+      // TODO: migrate stem uploads to use tan-query
+      const inProgressStemUploads = getCurrentUploads(
+        store.getState() as CommonState,
+        trackId
+      )
+      if (previousMetadata) {
+        handleStemUpdates(
+          processedMetadata,
+          previousMetadata as any,
+          inProgressStemUploads,
+          dispatch
+        )
+      }
 
       return response
     },

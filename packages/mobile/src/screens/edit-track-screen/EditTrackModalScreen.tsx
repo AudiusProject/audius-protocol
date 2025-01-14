@@ -1,9 +1,10 @@
 import { useCallback } from 'react'
 
+import { useUpdateTrack } from '@audius/common/api'
 import { SquareSizes } from '@audius/common/models'
 import type { TrackMetadataForUpload } from '@audius/common/store'
-import { cacheTracksActions, cacheTracksSelectors } from '@audius/common/store'
-import { useDispatch, useSelector } from 'react-redux'
+import { cacheTracksSelectors } from '@audius/common/store'
+import { useSelector } from 'react-redux'
 
 import { ModalScreen } from 'app/components/core'
 import { useTrackImage } from 'app/components/image/TrackImage'
@@ -16,7 +17,6 @@ import { UploadFileContextProvider } from '../upload-screen/screens/UploadFileCo
 import { EditTrackScreen } from './EditTrackScreen'
 
 const { getTrack } = cacheTracksSelectors
-const { editTrack } = cacheTracksActions
 
 const messages = {
   title: 'Edit Track',
@@ -26,8 +26,8 @@ const messages = {
 export const EditTrackModalScreen = () => {
   const { params } = useRoute<'EditTrack'>()
   const { id } = params
-  const dispatch = useDispatch()
   const navigation = useNavigation()
+  const updateTrackMutation = useUpdateTrack()
 
   const track = useSelector((state) => getTrack(state, { id }))
 
@@ -38,10 +38,25 @@ export const EditTrackModalScreen = () => {
 
   const handleSubmit = useCallback(
     (metadata: TrackMetadataForUpload) => {
-      dispatch(editTrack(id, metadata))
-      navigation.navigate('Track', { id })
+      if (!track) return
+      updateTrackMutation.mutate(
+        {
+          trackId: id,
+          userId: track.owner_id,
+          metadata,
+          coverArtFile:
+            metadata.artwork && 'file' in metadata.artwork
+              ? (metadata.artwork.file as File)
+              : undefined
+        },
+        {
+          onSuccess: () => {
+            navigation.navigate('Track', { id })
+          }
+        }
+      )
     },
-    [dispatch, id, navigation]
+    [id, navigation, track, updateTrackMutation]
   )
 
   if (!track) return null
