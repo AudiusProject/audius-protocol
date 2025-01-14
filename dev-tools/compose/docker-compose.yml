@@ -245,100 +245,6 @@ services:
       service: verified-notifications
     <<: *common
 
-  # DDEX
-
-  ddex-mongo:
-    extends:
-      file: docker-compose.ddex.yml
-      service: ddex-mongo
-    <<: *common
-    profiles:
-      - ddex
-      - ddex-deps
-
-  ddex-mongo-init:
-    extends:
-      file: docker-compose.ddex.yml
-      service: ddex-mongo-init
-    <<: *common
-    depends_on:
-      ddex-mongo:
-        condition: service_healthy
-    profiles:
-      - ddex
-      - ddex-deps
-
-  ddex-web:
-    extends:
-      file: docker-compose.ddex.yml
-      service: ddex-web
-    container_name: ddex-web
-    <<: *common
-    environment:
-      DDEX_CHOREOGRAPHY: ${DDEX_CHOREOGRAPHY}
-    depends_on:
-      ddex-mongo-init:
-        condition: service_completed_successfully
-    profiles:
-      - ddex
-
-  ddex-processor:
-    extends:
-      file: docker-compose.ddex.yml
-      service: ddex-processor
-    container_name: ddex-processor
-    <<: *common
-    profiles:
-      - ddex
-
-  ddex-publisher:
-    extends:
-      file: docker-compose.ddex.yml
-      service: ddex-publisher
-    container_name: ddex-publisher
-    <<: *common
-    environment:
-      DDEX_CHOREOGRAPHY: ${DDEX_CHOREOGRAPHY}
-    depends_on:
-      ddex-mongo-init:
-        condition: service_completed_successfully
-      ddex-s3:
-        condition: service_healthy
-    profiles:
-      - ddex
-
-  ddex-ingester:
-    extends:
-      file: docker-compose.ddex.yml
-      service: ddex-ingester
-    container_name: ddex-ingester
-    <<: *common
-    environment:
-      DDEX_CHOREOGRAPHY: ${DDEX_CHOREOGRAPHY}
-      IS_DEV: 'true' # Speed up crawling interval for local dev
-    depends_on:
-      ddex-mongo-init:
-        condition: service_completed_successfully
-      ddex-s3:
-        condition: service_healthy
-    profiles:
-      - ddex
-
-  ddex-s3:
-    extends:
-      file: docker-compose.ddex.yml
-      service: ddex-s3
-    container_name: ddex-s3
-    <<: *common
-    ports:
-      - '127.0.0.1:4566:4566'
-    volumes:
-      - 'ddex-s3:/var/lib/localstack'
-      - '/var/run/docker.sock:/var/run/docker.sock'
-    profiles:
-      - ddex
-      - ddex-deps
-
   # Blockchain
 
   poa-ganache:
@@ -379,10 +285,6 @@ services:
       service: core
     <<: *common
 
-networks:
-  ddex-network:
-
-
 volumes:
   poa-contracts-abis:
   eth-contracts-abis:
@@ -391,5 +293,3 @@ volumes:
   postgresdata:
   mediorum:
   legacy_creator_file_storage:
-  ddex-mongo-db:
-  ddex-s3:
