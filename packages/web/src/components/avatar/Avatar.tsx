@@ -56,7 +56,7 @@ export const Avatar = (props: AvatarProps) => {
   const label = `${messages.goTo} ${userName} ${messages.profile}`
 
   if (ariaHidden) {
-    return null
+    return <HarmonyAvatar src={image} {...other} />
   }
 
   if (onClick) {

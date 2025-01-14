@@ -176,9 +176,8 @@ export const useNavConfig = () => {
       isAccountComplete,
       claimableAmount,
       isUploading,
-      spacing.unit6,
-      color.static.white,
-      color.neutral.n800
+      color,
+      spacing
     ]
   )
 
