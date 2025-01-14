@@ -1,19 +1,16 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 
+import { useTrackByPermalink } from '@audius/common/api'
 import { useGatedContentAccess } from '@audius/common/hooks'
-import { Status, isContentUSDCPurchaseGated } from '@audius/common/models'
+import { isContentUSDCPurchaseGated } from '@audius/common/models'
 import type { AccessConditions } from '@audius/common/models'
 import { createRemixOfMetadata } from '@audius/common/schemas'
-import {
-  remixSettingsSelectors,
-  remixSettingsActions
-} from '@audius/common/store'
 import type { Nullable } from '@audius/common/utils'
+import { getPathFromTrackUrl } from '@audius/common/utils'
 import { useFocusEffect } from '@react-navigation/native'
 import { useField } from 'formik'
-import { debounce } from 'lodash'
 import { View } from 'react-native'
-import { useDispatch, useSelector } from 'react-redux'
+import { useThrottle } from 'react-use'
 
 import {
   IconCaretLeft,
@@ -33,11 +30,6 @@ import { getTrackRoute } from 'app/utils/routes'
 import { RemixTrackPill } from '../components'
 import type { RemixOfField } from '../types'
 
-const { getTrack, getUser, getStatus } = remixSettingsSelectors
-const { fetchTrack, fetchTrackSucceeded, reset } = remixSettingsActions
-
-const remixLinkInputDebounceMs = 1000
-
 const messages = {
   screenTitle: 'Remix Settings',
   markRemix: 'Mark This Track as a Remix',
@@ -52,7 +44,7 @@ const messages = {
   enterLink: 'Enter an Audius Link'
 }
 
-const useStyles = makeStyles(({ palette, spacing, typography }) => ({
+const useStyles = makeStyles(({ spacing, typography }) => ({
   backButton: {
     marginLeft: -6
   },
@@ -107,11 +99,10 @@ export const RemixSettingsScreen = () => {
   const [isRemixUrlMissing, setIsRemixUrlMissing] = useState(false)
   const [isTouched, setIsTouched] = useState(false)
   const navigation = useNavigation()
-  const dispatch = useDispatch()
-  const parentTrack = useSelector(getTrack)
-  const parentTrackArtist = useSelector(getUser)
-  const parentTrackStatus = useSelector(getStatus)
-  const isInvalidParentTrack = parentTrackStatus === Status.ERROR
+
+  const permalink = useThrottle(getPathFromTrackUrl(remixOfInput), 1000)
+  const { data: parentTrack } = useTrackByPermalink(permalink)
+  const { hasStreamAccess } = useGatedContentAccess(parentTrack ?? null)
 
   useEffect(() => {
     if (isStreamGated) {
@@ -122,43 +113,21 @@ export const RemixSettingsScreen = () => {
     } else {
       setRemixesVisible(true)
     }
-    // adding the useField setters cause infinite rendering
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isStreamGated, isUsdcGated])
-
-  const handleFetchParentTrack = useMemo(
-    () =>
-      debounce(
-        (url: string) => {
-          dispatch(fetchTrack({ url: decodeURI(url) }))
-        },
-        remixLinkInputDebounceMs,
-        { leading: true, trailing: false }
-      ),
-    [dispatch]
-  )
+  }, [isStreamGated, isUsdcGated, setRemixOf, setRemixesVisible])
 
   const handleFocusScreen = useCallback(() => {
     const initialParentTrackId = parentTrackId
-    if (initialParentTrackId) {
-      dispatch(fetchTrackSucceeded({ trackId: initialParentTrackId }))
+    if (initialParentTrackId && parentTrack) {
+      setRemixOfInput(getTrackRoute(parentTrack, true))
     }
-    return () => {
-      dispatch(reset())
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [handleFetchParentTrack, dispatch])
+  }, [parentTrackId, parentTrack])
 
   useFocusEffect(handleFocusScreen)
 
-  const handleChangeLink = useCallback(
-    (value: string) => {
-      setRemixOfInput(value)
-      handleFetchParentTrack(value)
-      setIsRemixUrlMissing(false)
-    },
-    [handleFetchParentTrack]
-  )
+  const handleChangeLink = useCallback((value: string) => {
+    setRemixOfInput(value)
+    setIsRemixUrlMissing(false)
+  }, [])
 
   const handleChangeIsRemix = useCallback((isRemix: boolean) => {
     setIsTrackRemix(isRemix)
@@ -172,9 +141,8 @@ export const RemixSettingsScreen = () => {
       setIsRemixUrlMissing(true)
     } else {
       navigation.goBack()
-      dispatch(reset())
     }
-  }, [navigation, dispatch, isTrackRemix, remixOf])
+  }, [navigation, isTrackRemix, remixOf])
 
   useEffect(() => {
     if (isTrackRemix && parentTrack && parentTrack.track_id !== parentTrackId) {
@@ -182,8 +150,7 @@ export const RemixSettingsScreen = () => {
     } else if (!isTrackRemix) {
       setRemixOf(null)
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [parentTrack, isTrackRemix])
+  }, [parentTrack, isTrackRemix, parentTrackId, setRemixOf])
 
   const handleFocus = useCallback(() => {
     setIsTouched(true)
@@ -195,7 +162,7 @@ export const RemixSettingsScreen = () => {
     }
   }, [remixOfInput, isTouched, parentTrack])
 
-  const { hasStreamAccess } = useGatedContentAccess(parentTrack)
+  const isInvalidParentTrack = !parentTrack && remixOfInput !== ''
   const hasErrors = Boolean(
     isTrackRemix &&
       (isInvalidParentTrack || isRemixUrlMissing || !hasStreamAccess)
@@ -243,7 +210,7 @@ export const RemixSettingsScreen = () => {
                 onFocus={handleFocus}
                 returnKeyType='done'
               />
-              {parentTrack && parentTrackArtist && !isInvalidParentTrack ? (
+              {parentTrack && !isInvalidParentTrack ? (
                 <RemixTrackPill trackId={parentTrackId} />
               ) : null}
               {hasErrors ? (

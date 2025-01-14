@@ -52,7 +52,6 @@ import playlistUpdatesSagas from 'common/store/playlist-updates/sagas'
 import profileSagas from 'common/store/profile/sagas'
 import queueSagas from 'common/store/queue/sagas'
 import recoveryEmailSagas from 'common/store/recovery-email/sagas'
-import remixSettingsSagas from 'common/store/remix-settings/sagas'
 import savedCollectionsSagas from 'common/store/saved-collections/sagas'
 import searchAiBarSagas from 'common/store/search-ai-bar/sagas'
 import searchBarSagas from 'common/store/search-bar/sagas'
@@ -163,7 +162,6 @@ export default function* rootSaga() {
     duplicateAddConfirmationModalSagas(),
     firstUploadModalSagas(),
     remixesSagas(),
-    remixSettingsSagas(),
     scrollLockSagas(),
     shareModalSagas(),
     stripeModalSagas(),

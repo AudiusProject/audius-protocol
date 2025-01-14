@@ -1,5 +1,6 @@
 import { useCallback, useEffect } from 'react'
 
+import { useTrack, useTrackByPermalink } from '@audius/common/api'
 import {
   lineupSelectors,
   remixesPageLineupActions as tracksActions,
@@ -9,7 +10,6 @@ import {
 import { pluralize } from '@audius/common/utils'
 import { Text, View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
-import { useEffectOnce } from 'react-use'
 
 import { IconRemix } from '@audius/harmony-native'
 import { Screen, ScreenContent, ScreenHeader } from 'app/components/core'
@@ -19,8 +19,8 @@ import { useNavigation } from 'app/hooks/useNavigation'
 import { useRoute } from 'app/hooks/useRoute'
 import { flexRowCentered, makeStyles } from 'app/styles'
 
-const { getTrack, getUser, getLineup, getCount } = remixesPageSelectors
-const { fetchTrack, reset } = remixesPageActions
+const { getLineup, getCount } = remixesPageSelectors
+const { fetchTrackSucceeded } = remixesPageActions
 const { makeGetLineupMetadatas } = lineupSelectors
 
 const getRemixesTracksLineup = makeGetLineupMetadatas(getLineup)
@@ -56,20 +56,29 @@ export const TrackRemixesScreen = () => {
   const navigation = useNavigation()
   const lineup = useSelector(getRemixesTracksLineup)
   const count = useSelector(getCount)
-  const track = useSelector(getTrack)
-  const user = useSelector(getUser)
   const dispatch = useDispatch()
-  const trackId = track?.track_id
-
   const styles = useStyles()
   const { params } = useRoute<'TrackRemixes'>()
 
-  useEffectOnce(() => {
-    dispatch(fetchTrack(params))
+  const hasId = 'id' in params
+  const hasPermalink = 'handle' in params && 'slug' in params
+
+  const { data: trackById } = useTrack(hasId ? params.id : null, {
+    enabled: hasId
   })
+
+  const { data: trackByPermalink } = useTrackByPermalink(
+    hasPermalink ? `/${params.handle}/${params.slug}` : null,
+    { enabled: hasPermalink }
+  )
+
+  const track = trackById ?? trackByPermalink
+  const trackId = track?.track_id
+  const user = track?.user
 
   useEffect(() => {
     if (trackId) {
+      dispatch(fetchTrackSucceeded({ trackId }))
       dispatch(
         tracksActions.fetchLineupMetadatas(0, 10, false, {
           trackId
@@ -77,7 +86,6 @@ export const TrackRemixesScreen = () => {
       )
 
       return function cleanup() {
-        dispatch(reset())
         dispatch(tracksActions.reset())
       }
     }
@@ -87,7 +95,7 @@ export const TrackRemixesScreen = () => {
     if (!track) {
       return
     }
-    navigation.push('Track', { id: trackId })
+    navigation.push('Track', { id: track.track_id })
   }
 
   const handlePressArtistName = () => {
@@ -100,15 +108,15 @@ export const TrackRemixesScreen = () => {
 
   const loadMore = useCallback(
     (offset: number, limit: number, overwrite: boolean) => {
-      if (trackId) {
+      if (track?.track_id) {
         dispatch(
           tracksActions.fetchLineupMetadatas(offset, limit, overwrite, {
-            trackId
+            trackId: track.track_id
           })
         )
       }
     },
-    [dispatch, trackId]
+    [dispatch, track?.track_id]
   )
 
   const remixesText = pluralize(messages.remix, count, 'es', !count)

@@ -1,5 +1,6 @@
 import { useEffect, useCallback, ComponentType, RefObject } from 'react'
 
+import { useTrackByPermalink } from '@audius/common/api'
 import { ID } from '@audius/common/models'
 import {
   lineupSelectors,
@@ -10,7 +11,7 @@ import {
   playerSelectors
 } from '@audius/common/store'
 import { route } from '@audius/common/utils'
-import { connect } from 'react-redux'
+import { connect, useDispatch } from 'react-redux'
 import { useParams } from 'react-router'
 import { Dispatch } from 'redux'
 
@@ -24,8 +25,8 @@ import { RemixesPageProps as MobileRemixesPageProps } from './components/mobile/
 const { profilePage } = route
 const { makeGetCurrent } = queueSelectors
 const { getPlaying, getBuffering } = playerSelectors
-const { getTrack, getUser, getLineup, getCount } = remixesPageSelectors
-const { fetchTrack, reset } = remixesPageActions
+const { getUser, getLineup, getCount } = remixesPageSelectors
+const { fetchTrackSucceeded, reset } = remixesPageActions
 const { makeGetLineupMetadatas } = lineupSelectors
 
 const messages = {
@@ -49,10 +50,8 @@ const RemixesPageProvider = ({
   containerRef,
   children: Children,
   count,
-  originalTrack,
   user,
   tracks,
-  fetchTrack,
   currentQueueItem,
   isPlaying,
   isBuffering,
@@ -64,9 +63,17 @@ const RemixesPageProvider = ({
   resetTracks
 }: RemixesPageProviderProps) => {
   const { handle, slug } = useParams<{ handle: string; slug: string }>()
+  const { data: originalTrack } = useTrackByPermalink(
+    handle && slug ? `/${handle}/${slug}` : null
+  )
+  const dispatch = useDispatch()
+  const trackId = originalTrack?.track_id
+
   useEffect(() => {
-    fetchTrack(handle, slug)
-  }, [handle, slug, fetchTrack])
+    if (trackId) {
+      dispatch(fetchTrackSucceeded({ trackId }))
+    }
+  }, [dispatch, trackId])
 
   useEffect(() => {
     return function cleanup() {
@@ -111,7 +118,7 @@ const RemixesPageProvider = ({
   const childProps = {
     title: messages.title,
     count,
-    originalTrack,
+    originalTrack: originalTrack ?? null,
     user,
     goToTrackPage,
     goToArtistPage,
@@ -128,7 +135,6 @@ function makeMapStateToProps() {
   const mapStateToProps = (state: AppState) => {
     return {
       user: getUser(state),
-      originalTrack: getTrack(state),
       count: getCount(state),
       tracks: getRemixesTracksLineup(state),
       currentQueueItem: getCurrentQueueItem(state),
@@ -142,8 +148,6 @@ function makeMapStateToProps() {
 function mapDispatchToProps(dispatch: Dispatch) {
   return {
     goToRoute: (route: string) => dispatch(pushRoute(route)),
-    fetchTrack: (handle: string, slug: string) =>
-      dispatch(fetchTrack({ handle, slug })),
     loadMore: (
       offset: number,
       limit: number,
