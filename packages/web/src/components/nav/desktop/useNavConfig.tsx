@@ -16,6 +16,7 @@ import {
   IconLibrary,
   IconMessages,
   IconPlaylists,
+  IconSpeaker,
   IconTrending,
   IconWallet,
   LoadingSpinner,
@@ -30,6 +31,7 @@ import { RestrictionType } from 'hooks/useRequiresAccount'
 import { PlaylistLibrary } from './PlaylistLibrary'
 import { CreatePlaylistLibraryItemButton } from './PlaylistLibrary/CreatePlaylistLibraryItemButton'
 import { WalletsNestedContent } from './WalletsNestedContent'
+import { useNavSourcePlayingStatus } from './useNavSourcePlayingStatus'
 
 const {
   EXPLORE_PAGE,
@@ -59,6 +61,16 @@ export type NavItemConfig = {
   canUnfurl?: boolean
 }
 
+const matchesRoute = ({
+  current,
+  target
+}: {
+  current: string | null
+  target: string
+}) => {
+  return current?.startsWith(target) ?? false
+}
+
 export const useNavConfig = () => {
   const hasAccount = useSelector(getHasAccount)
   const isAccountComplete = useSelector(getIsAccountComplete)
@@ -68,6 +80,7 @@ export const useNavConfig = () => {
   const { claimableAmount } = useChallengeCooldownSchedule({
     multiple: true
   })
+  const playingFromRoute = useNavSourcePlayingStatus()
   const location = useLocation()
 
   const navItems = useMemo(
@@ -77,26 +90,90 @@ export const useNavConfig = () => {
         leftIcon: IconFeed,
         to: FEED_PAGE,
         restriction: 'account',
-        disabled: !hasAccount
+        disabled: !hasAccount,
+        rightIcon: matchesRoute({
+          current: playingFromRoute,
+          target: FEED_PAGE
+        }) ? (
+          <IconSpeaker
+            size='s'
+            color={
+              matchesRoute({
+                current: location.pathname,
+                target: FEED_PAGE
+              })
+                ? 'staticWhite'
+                : 'accent'
+            }
+          />
+        ) : undefined
       },
       {
         label: 'Trending',
         leftIcon: IconTrending,
         to: TRENDING_PAGE,
-        restriction: 'none'
+        restriction: 'none',
+        rightIcon: matchesRoute({
+          current: playingFromRoute,
+          target: TRENDING_PAGE
+        }) ? (
+          <IconSpeaker
+            size='s'
+            color={
+              matchesRoute({
+                current: location.pathname,
+                target: TRENDING_PAGE
+              })
+                ? 'staticWhite'
+                : 'accent'
+            }
+          />
+        ) : undefined
       },
       {
         label: 'Explore',
         leftIcon: IconExplore,
         to: EXPLORE_PAGE,
-        restriction: 'none'
+        restriction: 'none',
+        rightIcon: matchesRoute({
+          current: playingFromRoute,
+          target: EXPLORE_PAGE
+        }) ? (
+          <IconSpeaker
+            size='s'
+            color={
+              matchesRoute({
+                current: location.pathname,
+                target: EXPLORE_PAGE
+              })
+                ? 'staticWhite'
+                : 'accent'
+            }
+          />
+        ) : undefined
       },
       {
         label: 'Library',
         leftIcon: IconLibrary,
         to: LIBRARY_PAGE,
         restriction: 'guest',
-        disabled: !hasAccount
+        disabled: !hasAccount,
+        rightIcon: matchesRoute({
+          current: playingFromRoute,
+          target: LIBRARY_PAGE
+        }) ? (
+          <IconSpeaker
+            size='s'
+            color={
+              matchesRoute({
+                current: location.pathname,
+                target: LIBRARY_PAGE
+              })
+                ? 'staticWhite'
+                : 'accent'
+            }
+          />
+        ) : undefined
       },
       {
         label: 'Messages',
@@ -107,7 +184,10 @@ export const useNavConfig = () => {
           unreadMessagesCount > 0 ? (
             <NotificationCount
               count={unreadMessagesCount}
-              isSelected={location.pathname === CHATS_PAGE}
+              isSelected={matchesRoute({
+                current: location.pathname,
+                target: CHATS_PAGE
+              })}
             />
           ) : undefined,
         hasNotification: unreadMessagesCount > 0,
@@ -131,7 +211,10 @@ export const useNavConfig = () => {
           claimableAmount > 0 ? (
             <NotificationCount
               count={claimableAmount}
-              isSelected={location.pathname === REWARDS_PAGE}
+              isSelected={matchesRoute({
+                current: location.pathname,
+                target: REWARDS_PAGE
+              })}
             />
           ) : undefined,
         hasNotification: claimableAmount > 0,
@@ -146,10 +229,12 @@ export const useNavConfig = () => {
             css={{
               width: spacing.unit6,
               height: spacing.unit6,
-              color:
-                location.pathname === UPLOAD_PAGE
-                  ? color.static.white
-                  : color.neutral.n800
+              color: matchesRoute({
+                current: location.pathname,
+                target: UPLOAD_PAGE
+              })
+                ? color.static.white
+                : color.neutral.n800
             }}
           />
         ) : undefined,
@@ -176,6 +261,7 @@ export const useNavConfig = () => {
       isAccountComplete,
       claimableAmount,
       isUploading,
+      playingFromRoute,
       color,
       spacing
     ]
