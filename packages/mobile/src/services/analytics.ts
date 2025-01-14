@@ -27,7 +27,7 @@ export const init = async () => {
   try {
     if (AmplitudeWriteKey && AmplitudeProxy) {
       await amplitudeInit(AmplitudeWriteKey, undefined, {
-        serverUrl: AmplitudeProxy, // A bit unnecessary for mobile, but we use a proxy server primarily to avoid ad-blockers
+        serverUrl: AmplitudeProxy, // Use a proxy server primarily to avoid ad-blockers (A bit unnecessary for mobile, but we use it for consistency)
         appVersion: clientVersion // Identifies our app version to Amplitude
       })
       analyticsSetupStatus = 'ready'
@@ -107,11 +107,4 @@ export const screen = async ({ route, properties = {} }: Screen) => {
   const isSetup = await isAudiusSetup()
   if (!isSetup) return
   await amplitudeTrack(EventNames.PAGE_VIEW, { route, ...properties })
-}
-
-// Force upload events
-export const uploadEvents = async () => {
-  const isSetup = await isAudiusSetup()
-  if (!isSetup) return
-  await flush()
 }
