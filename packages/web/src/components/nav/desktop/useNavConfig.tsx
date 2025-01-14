@@ -170,13 +170,15 @@ export const useNavConfig = () => {
       }
     ],
     [
+      hasAccount,
       unreadMessagesCount,
       location.pathname,
       isAccountComplete,
       claimableAmount,
       isUploading,
-      color,
-      spacing
+      spacing.unit6,
+      color.static.white,
+      color.neutral.n800
     ]
   )
 
