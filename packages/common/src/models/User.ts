@@ -77,7 +77,6 @@ export type UserMetadata = {
   // Only present on the "current" account
   associated_sol_wallets?: Nullable<string[]>
   associated_wallets?: Nullable<string[]>
-  userBank?: SolanaWalletAddress
   events?: UserEvent
 } & Timestamped
 

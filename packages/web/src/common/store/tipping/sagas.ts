@@ -14,7 +14,8 @@ import {
   OptionalId,
   supportedUserMetadataListFromSDK,
   supporterMetadataListFromSDK,
-  supporterMetadataFromSDK
+  supporterMetadataFromSDK,
+  SolanaWalletAddress
 } from '@audius/common/models'
 import { LocalStorage } from '@audius/common/services'
 import {
@@ -321,13 +322,39 @@ function* sendTipAsync() {
 
   const senderUserId = encodeHashId(sender.user_id)
   const receiverUserId = encodeHashId(receiver.user_id)
+
   const amount = Number(stringAudioAmount)
+
+  let senderWallet = '' as SolanaWalletAddress
+  let recipientWallet = '' as SolanaWalletAddress
+
+  // Using `deriveUserBank` here because we just need the addresses for
+  // analytics. The SDK call to send the tip will create them if needed.
+  try {
+    senderWallet = (yield* call(
+      [
+        sdk.services.claimableTokensClient,
+        sdk.services.claimableTokensClient.deriveUserBank
+      ],
+      { ethWallet: sender.erc_wallet, mint: 'wAUDIO' }
+    )).toString() as SolanaWalletAddress
+    recipientWallet = (yield* call(
+      [
+        sdk.services.claimableTokensClient,
+        sdk.services.claimableTokensClient.deriveUserBank
+      ],
+      { ethWallet: receiver.erc_wallet, mint: 'wAUDIO' }
+    )).toString() as SolanaWalletAddress
+  } catch (e) {
+    // Don't want these to fail the saga as it's just used for analytics
+    console.warn('Failed to derive user bank address for tip analytics', e)
+  }
 
   try {
     yield put(
       make(Name.TIP_AUDIO_REQUEST, {
-        senderWallet: sender.userBank,
-        recipientWallet: receiver.userBank,
+        senderWallet,
+        recipientWallet,
         senderHandle: sender.handle,
         recipientHandle: receiver.handle,
         amount,
@@ -412,8 +439,8 @@ function* sendTipAsync() {
     yield* put(sendTipFailed({ error: e.message }))
     yield* put(
       make(Name.TIP_AUDIO_FAILURE, {
-        senderWallet: sender.userBank,
-        recipientWallet: receiver.userBank,
+        senderWallet,
+        recipientWallet,
         senderHandle: sender.handle,
         recipientHandle: receiver.handle,
         amount,

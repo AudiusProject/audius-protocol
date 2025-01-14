@@ -3,14 +3,7 @@ import { full } from '@audius/sdk'
 import { transformAndCleanList, userTrackMetadataFromSDK } from '~/adapters'
 import { accountFromSDK, userMetadataListFromSDK } from '~/adapters/user'
 import { createApi } from '~/audius-query'
-import {
-  HashId,
-  ID,
-  Kind,
-  OptionalId,
-  SolanaWalletAddress,
-  StringUSDC
-} from '~/models'
+import { HashId, ID, Kind, OptionalId, StringUSDC } from '~/models'
 import {
   USDCTransactionDetails,
   USDCTransactionMethod,
@@ -64,18 +57,7 @@ const userApi = createApi({
             return null
           }
 
-          const account = accountFromSDK(data)
-          // If we got a valid account, populate user bank since that's
-          // expected to exist on "account" users
-          if (account) {
-            const userBank =
-              await sdk.services.claimableTokensClient.deriveUserBank({
-                ethWallet: wallet,
-                mint: 'wAUDIO'
-              })
-            account.user.userBank = userBank.toString() as SolanaWalletAddress
-          }
-          return account
+          return accountFromSDK(data)
         } catch (e) {
           // Account doesn't exist, don't bubble up an error, just return null
           if (isResponseError(e) && [401, 404].includes(e.response.status)) {
