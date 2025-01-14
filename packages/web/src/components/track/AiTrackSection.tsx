@@ -67,7 +67,6 @@ export const AiTrackSection = ({
             userId={entity.user_id}
             className={styles.badgeIcon}
             badgeSize={14}
-            useSVGTiers
           />
         </h2>
       </ArtistPopover>
