@@ -1,6 +1,6 @@
 import { useCallback, useEffect } from 'react'
 
-import { useTrack, useTrackByPermalink } from '@audius/common/api'
+import { useTrackByParams } from '@audius/common/api'
 import {
   lineupSelectors,
   remixesPageLineupActions as tracksActions,
@@ -60,19 +60,8 @@ export const TrackRemixesScreen = () => {
   const styles = useStyles()
   const { params } = useRoute<'TrackRemixes'>()
 
-  const hasId = 'id' in params
-  const hasPermalink = 'handle' in params && 'slug' in params
+  const { data: track } = useTrackByParams(params)
 
-  const { data: trackById } = useTrack(hasId ? params.id : null, {
-    enabled: hasId
-  })
-
-  const { data: trackByPermalink } = useTrackByPermalink(
-    hasPermalink ? `/${params.handle}/${params.slug}` : null,
-    { enabled: hasPermalink }
-  )
-
-  const track = trackById ?? trackByPermalink
   const trackId = track?.track_id
   const user = track?.user
 
