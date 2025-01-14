@@ -417,6 +417,7 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
     # Get core block difference from core health if available
     if (
         core_health
+        and environment == "dev"
         and "latest_chain_block" in core_health
         and "latest_indexed_block" in core_health
     ):
