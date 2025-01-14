@@ -285,10 +285,6 @@ services:
       service: core
     <<: *common
 
-networks:
-  ddex-network:
-
-
 volumes:
   poa-contracts-abis:
   eth-contracts-abis:
@@ -297,5 +293,3 @@ volumes:
   postgresdata:
   mediorum:
   legacy_creator_file_storage:
-  ddex-mongo-db:
-  ddex-s3:

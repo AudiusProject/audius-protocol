@@ -25,7 +25,6 @@ audius-protocol-poa-ganache-1 \
 audius-protocol-pedalboard \
 audius-protocol-anti-abuse-oracle-1 \
 audius-protocol-discovery-provider-redis-1 \
-ddex-mongo
 """
 
 
@@ -357,21 +356,6 @@ def load_env(protocol_dir, service, environment):
     is_flag=True,
     help="Bring up the pedalboard containers",
 )
-@click.option(
-    "--ddex-deps",
-    is_flag=True,
-    help="Bring up only ddex dependency containers (Mongo and S3)",
-)
-@click.option(
-    "--ddex-release-by-release",
-    is_flag=True,
-    help="Bring up only ddex containers (release-by-release choreography)",
-)
-@click.option(
-    "--ddex-batched",
-    is_flag=True,
-    help="Bring up only ddex containers (batch choreography)",
-)
 @click.option("-a", "--args", type=str, multiple=True)
 @click.option(
     "--prod",
@@ -390,9 +374,6 @@ def up(
     anti_abuse_oracle,
     notifs,
     pedalboard,
-    ddex_deps,
-    ddex_release_by_release,
-    ddex_batched,
     args,
     prod,
     services,
@@ -401,40 +382,28 @@ def up(
         protocol_dir, discovery_provider_replicas, elasticsearch_replicas, prod
     )
 
-    if ddex_deps or ddex_release_by_release or ddex_batched:
-        generate_ddex_mongo_key(protocol_dir)
-        profiles = [
-            "--profile=ddex-deps",
-            *(["--profile=ddex"] if not ddex_deps else []),
-        ]
-        os.environ["DDEX_CHOREOGRAPHY"] = (
-            "ERNReleaseByRelease" if ddex_release_by_release else "ERNBatched"
-        )
-    else:
-        AAO_DIR = pathlib.Path(
-            os.getenv("AAO_DIR", protocol_dir / "../anti-abuse-oracle")
-        )
-        os.environ["MEDIORUM_ENV_TYPE"] = (
-            "dev"  # Mediorum's Dockerfile.prod doesn't support multiple mediorum instances, so always use dev
-        )
-        profiles = (
-            *(["--profile=block-explorer"] if block_explorer else []),
-            *(["--profile=elasticsearch"] if elasticsearch_replicas else []),
-            *(["--profile=notifications"] if notifs else []),
-            *(["--profile=pedalboard"] if pedalboard else []),
-            "--profile=storage",
-            "--profile=libs",
-            "--profile=solana",
-            "--profile=identity",
-            "--profile=discovery",
-            "--profile=comms",
-            "--profile=chain",
-            *(
-                ["--file=" + str(AAO_DIR / "audius-compose.yml")]
-                if anti_abuse_oracle
-                else []
-            ),
-        )
+    AAO_DIR = pathlib.Path(os.getenv("AAO_DIR", protocol_dir / "../anti-abuse-oracle"))
+    os.environ["MEDIORUM_ENV_TYPE"] = (
+        "dev"  # Mediorum's Dockerfile.prod doesn't support multiple mediorum instances, so always use dev
+    )
+    profiles = (
+        *(["--profile=block-explorer"] if block_explorer else []),
+        *(["--profile=elasticsearch"] if elasticsearch_replicas else []),
+        *(["--profile=notifications"] if notifs else []),
+        *(["--profile=pedalboard"] if pedalboard else []),
+        "--profile=storage",
+        "--profile=libs",
+        "--profile=solana",
+        "--profile=identity",
+        "--profile=discovery",
+        "--profile=comms",
+        "--profile=chain",
+        *(
+            ["--file=" + str(AAO_DIR / "audius-compose.yml")]
+            if anti_abuse_oracle
+            else []
+        ),
+    )
 
     ctx.invoke(pull)
     sys.exit(
@@ -535,12 +504,6 @@ def test_run(protocol_dir, service, args):
     generate_env(protocol_dir, 0, 0)
     env = os.environ.copy()
 
-    if service.startswith("ddex"):
-        env["COMPOSE_PROFILES"] = "ddex"
-        env["DDEX_CHOREOGRAPHY"] = (
-            "ERNReleaseByRelease" if service.endswith("release") else "ERNBatched"
-        )
-
     result = subprocess.run(
         [
             "docker",
@@ -557,20 +520,6 @@ def test_run(protocol_dir, service, args):
         ],
         env=env,
     )
-
-    if result.returncode != 0 and service.startswith("ddex"):
-        logs_result = subprocess.run(
-            f"docker logs ddex-ingester",
-            shell=True,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-        )
-        if logs_result.returncode == 0:
-            print(f"\nLogs for ddex-ingester':\n")
-            print(logs_result.stdout.decode("utf-8"))
-        else:
-            print(f"\nFailed to retrieve logs for ddex-ingester\n")
-            print(logs_result.stderr.decode("utf-8"))
 
     sys.exit(result.returncode)
 

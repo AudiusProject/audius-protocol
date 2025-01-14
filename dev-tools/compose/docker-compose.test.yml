@@ -460,69 +460,6 @@ services:
       - tests
       - identity
 
-  # ddex
-
-  ddex-ingester:
-    extends:
-      file: docker-compose.yml
-      service: ddex-ingester
-    container_name: ddex-ingester
-    logging: *default-logging
-    environment:
-      AWS_ENDPOINT: 'http://ddex-s3:4566'
-      DDEX_CHOREOGRAPHY: ${DDEX_CHOREOGRAPHY}
-      TEST_MODE: 'true'
-    depends_on:
-      ddex-mongo-init:
-        condition: service_completed_successfully
-      ddex-s3:
-        condition: service_healthy
-
-  ddex-publisher:
-    extends:
-      file: docker-compose.yml
-      service: ddex-publisher
-    container_name: ddex-publisher
-    logging: *default-logging
-    environment:
-      AWS_ENDPOINT: 'http://ddex-s3:4566'
-      DDEX_CHOREOGRAPHY: ${DDEX_CHOREOGRAPHY}
-    depends_on:
-      ddex-mongo-init:
-        condition: service_completed_successfully
-      ddex-s3:
-        condition: service_healthy
-
-  ddex-s3:
-    container_name: ddex-s3
-    image: localstack/localstack:s3-latest
-    ports:
-      - '127.0.0.1:4566:4566'
-    networks:
-      - ddex-network
-    volumes:
-      - 'ddex-s3:/var/lib/localstack'
-      - '/var/run/docker.sock:/var/run/docker.sock'
-
-  ddex-mongo:
-    extends:
-      file: docker-compose.yml
-      service: ddex-mongo
-    logging: *default-logging
-
-  ddex-mongo-init:
-    extends:
-      file: docker-compose.yml
-      service: ddex-mongo-init
-    logging: *default-logging
-    depends_on:
-      ddex-mongo:
-        condition: service_healthy
-
-networks:
-  ddex-network:
-
-
 volumes:
   poa-contracts-abis:
   eth-contracts-abis:
@@ -530,5 +467,3 @@ volumes:
   postgresdata:
   mediorum:
   legacy_creator_file_storage:
-  ddex-mongo-db:
-  ddex-s3:
