@@ -170,10 +170,15 @@ export const UploadPage = (props: UploadPageProps) => {
   }, [dispatch, formState])
 
   useEffect(() => {
-    if (phase === Phase.FINISH && !isUploading) {
+    if (
+      phase === Phase.FINISH &&
+      !isUploading &&
+      !uploadSuccess &&
+      !uploadError
+    ) {
       handleUpload()
     }
-  }, [handleUpload, phase, isUploading])
+  }, [handleUpload, phase, isUploading, uploadSuccess, uploadError])
 
   return (
     <Page
