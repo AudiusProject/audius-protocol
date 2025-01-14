@@ -27,6 +27,9 @@ export const getIsAccountComplete = (state: CommonState) => {
   return Boolean(handle && name)
 }
 
+export const getTrackSaveCount = (state: CommonState) =>
+  state.account.trackSaveCount ?? 0
+
 export const getGuestEmail = (state: CommonState) => {
   return state.account.guestEmail ?? null
 }

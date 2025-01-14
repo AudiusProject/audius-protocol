@@ -7,44 +7,31 @@ import {
   PlaylistLibrary,
   User
 } from '~/models'
-import { Nullable } from '~/utils/typeUtils'
 
 import { ID } from '../../models/Identifiers'
 import { Status } from '../../models/Status'
 
 import {
+  AccountState,
+  FetchAccountFailedPayload,
   InstagramAccountPayload,
+  RenameAccountPlaylistPayload,
   TikTokAccountPayload,
   TwitterAccountPayload
 } from './types'
-type FailureReason =
-  | 'ACCOUNT_DEACTIVATED'
-  | 'ACCOUNT_NOT_FOUND'
-  | 'ACCOUNT_NOT_FOUND_LOCAL'
 
-const initialState = {
-  collections: {} as { [id: number]: AccountCollection },
-  userId: null as number | null,
-  hasTracks: null as boolean | null,
+const initialState: AccountState = {
+  collections: {},
+  userId: null,
+  hasTracks: null,
   status: Status.IDLE,
-  reason: null as Nullable<FailureReason>,
+  reason: null,
   connectivityFailure: false, // Did we fail from no internet connectivity?
   needsAccountRecovery: false,
-  walletAddresses: { currentUser: null, web3User: null } as {
-    currentUser: string | null
-    web3User: string | null
-  },
-  playlistLibrary: null as Nullable<PlaylistLibrary>,
-  guestEmail: null as string | null
-}
-
-type FetchAccountFailedPayload = {
-  reason: FailureReason
-}
-
-type RenameAccountPlaylistPayload = {
-  collectionId: ID
-  name: string
+  walletAddresses: { currentUser: null, web3User: null },
+  playlistLibrary: null,
+  trackSaveCount: null,
+  guestEmail: null
 }
 
 const slice = createSlice({
@@ -61,6 +48,7 @@ const slice = createSlice({
       state.userId = userId
       state.collections = keyBy(collections, 'id')
       state.playlistLibrary = action.payload.playlistLibrary ?? null
+      state.trackSaveCount = action.payload.trackSaveCount ?? null
       state.status = Status.SUCCESS
       state.reason = null
       state.guestEmail = state.guestEmail ?? guestEmail
@@ -147,6 +135,15 @@ const slice = createSlice({
     },
     updatePlaylistLibrary: (state, action: PayloadAction<PlaylistLibrary>) => {
       state.playlistLibrary = action.payload
+    },
+    incrementTrackSaveCount: (state) => {
+      state.trackSaveCount = (state.trackSaveCount ?? 0) + 1
+    },
+    decrementTrackSaveCount: (state) => {
+      state.trackSaveCount =
+        state.trackSaveCount && state.trackSaveCount > 0
+          ? state.trackSaveCount - 1
+          : 0
     }
   }
 })
@@ -177,7 +174,9 @@ export const {
   tikTokLogin,
   twitterLogin,
   unsubscribeBrowserPushNotifications,
-  updatePlaylistLibrary
+  updatePlaylistLibrary,
+  incrementTrackSaveCount,
+  decrementTrackSaveCount
 } = slice.actions
 
 export const actions = slice.actions

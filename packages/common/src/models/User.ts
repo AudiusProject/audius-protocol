@@ -75,7 +75,6 @@ export type UserMetadata = {
   local?: boolean
 
   // Only present on the "current" account
-  track_save_count?: number
   associated_sol_wallets?: Nullable<string[]>
   associated_wallets?: Nullable<string[]>
   userBank?: SolanaWalletAddress
@@ -112,6 +111,7 @@ export type CachedAccount = {
   userId: ID
   collections: AccountCollection[]
   playlistLibrary?: Nullable<PlaylistLibrary>
+  trackSaveCount: number
   guestEmail: string | null
 }
 

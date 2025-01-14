@@ -143,8 +143,7 @@ export const accountFromSDK = (
     // Account users included extended information, so we'll merge that in here.
     user: {
       ...user,
-      playlists: accountMetadata.playlists,
-      track_save_count: accountMetadata.track_save_count
+      playlists: accountMetadata.playlists
     },
     // These values are included outside the user as well to facilitate separate caching
     ...accountMetadata
