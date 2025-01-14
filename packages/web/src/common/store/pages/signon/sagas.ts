@@ -41,7 +41,8 @@ import {
   route,
   isResponseError,
   encodeHashId,
-  TEMPORARY_PASSWORD
+  TEMPORARY_PASSWORD,
+  waitForValue
 } from '@audius/common/utils'
 import { CreateUserRequest, UpdateProfileRequest } from '@audius/sdk'
 import { isEmpty } from 'lodash'
@@ -71,7 +72,12 @@ import { waitForRead, waitForWrite } from 'utils/sagaHelpers'
 
 import * as signOnActions from './actions'
 import { watchSignOnError } from './errorSagas'
-import { getIsGuest, getRouteOnCompletion, getSignOn } from './selectors'
+import {
+  getIsGuest,
+  getRouteOnCompletion,
+  getSignOn,
+  getFollowIds
+} from './selectors'
 import { Pages } from './types'
 
 const { FEED_PAGE, SIGN_IN_PAGE, SIGN_UP_PAGE, SIGN_UP_PASSWORD_PAGE } = route
@@ -465,6 +471,7 @@ function* createGuestAccount(
   const getFeatureEnabled = yield* getContext('getFeatureEnabled')
   const reportToSentry = yield* getContext('reportToSentry')
   const localStorage = yield* getContext('localStorage')
+  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
 
   const sdk = yield* getSDK()
 
@@ -518,6 +525,10 @@ function* createGuestAccount(
         if (!userBank) {
           throw new Error('Failed to create user bank')
         }
+
+        // associates user record with blockchain user ID and creates notification settings
+        // necessary for sending purchase emails
+        yield* call(audiusBackendInstance.updateUserLocationTimezone, { sdk })
       },
       () => {},
       function* ({ error: err }: { error: Error }) {
@@ -627,16 +638,6 @@ function* signUp() {
               yield* fork(sendPostSignInRecoveryEmail, { handle, email })
 
               yield* call(confirmTransaction, blockHash, blockNumber)
-              const { entries } = yield* call(
-                fetchUsers,
-                [userId],
-                undefined,
-                true
-              )
-              const user = entries[userId]
-              if (!user) {
-                throw new Error('Failed to index guest account creation')
-              }
 
               return userId
             } else {
@@ -800,6 +801,13 @@ function* signUp() {
         function* () {
           yield* put(signOnActions.sendWelcomeEmail(name))
           yield* call(fetchAccountAsync)
+          yield* call(
+            waitForValue,
+            getFollowIds,
+            null,
+            (value: ID[]) => value.length > 0
+          )
+          yield* call(waitForValue, accountSelectors.getIsAccountComplete)
           yield* put(signOnActions.followArtists())
           yield* put(make(Name.CREATE_ACCOUNT_COMPLETE_CREATING, { handle }))
           yield* put(signOnActions.signUpSucceeded())
@@ -864,11 +872,15 @@ function* signIn(action: ReturnType<typeof signOnActions.signIn>) {
   yield* call(waitForRead)
   try {
     const signOn = yield* select(getSignOn)
-    const fpResponse = yield* call(
-      [fingerprintClient, fingerprintClient.identify],
-      email ?? signOn.email.value,
-      clientOrigin
-    )
+    const isGuest = select(getIsGuest)
+
+    const fpResponse = isGuest
+      ? undefined // guest account should not use fingerprint
+      : yield* call(
+          [fingerprintClient, fingerprintClient.identify],
+          email ?? signOn.email.value,
+          clientOrigin
+        )
 
     let signInResponse: SignInResponse
     try {
@@ -911,7 +923,6 @@ function* signIn(action: ReturnType<typeof signOnActions.signIn>) {
 
     // Loging succeeded and we found a user, but it's missing name, likely
     // due to incomplete signup
-    const isGuest = select(getIsGuest)
 
     if (!user.name) {
       if (isGuest) {

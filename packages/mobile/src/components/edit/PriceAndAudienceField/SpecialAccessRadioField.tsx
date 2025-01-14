@@ -15,7 +15,7 @@ import {
   Flex,
   IconButton,
   IconInfo,
-  IconSpecialAccess,
+  IconSparkles,
   Paper,
   Radio,
   RadioGroup,
@@ -95,7 +95,7 @@ export const SpecialAccessRadioField = (
     <ExpandableRadio
       value={StreamTrackAvailabilityType.SPECIAL_ACCESS}
       label={messages.title}
-      icon={IconSpecialAccess}
+      icon={IconSparkles}
       description={messages.description}
       disabled={disabled}
       checkedContent={

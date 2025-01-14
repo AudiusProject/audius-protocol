@@ -3,7 +3,7 @@ import { ChangeEvent } from 'react'
 import { createEmailPageMessages } from '@audius/common/messages'
 import { useDispatch } from 'react-redux'
 
-import { setField } from 'common/store/pages/signon/actions'
+import { setValueField } from 'common/store/pages/signon/actions'
 import {
   HarmonyTextField,
   HarmonyTextFieldProps
@@ -14,7 +14,7 @@ export const EmailField = (props: Partial<HarmonyTextFieldProps>) => {
   // We use email inputs in multiple places and want to keep values up to date whenever swapping between them
   // So we keep the value in redux constantly up to date
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
-    dispatch(setField('email', e.target.value))
+    dispatch(setValueField('email', e.target.value))
   }
 
   return (

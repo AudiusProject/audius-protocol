@@ -77,6 +77,7 @@ import packageInfo from '../../../../../package.json'
 
 import { AuthorizedAppsSettingsCard } from './AuthorizedApps'
 import { DeveloperAppsSettingsCard } from './DeveloperApps'
+import { ListeningHistorySettingsCard } from './ListeningHistory'
 import { AccountsManagingYouSettingsCard } from './ManagerMode/AccountsManagingYouSettingsCard'
 import { AccountsYouManageSettingsCard } from './ManagerMode/AccountsYouManageSettingsCard'
 import NotificationSettings from './NotificationSettings'
@@ -546,6 +547,7 @@ export const SettingsPage = () => {
 
         <AuthorizedAppsSettingsCard />
         <DeveloperAppsSettingsCard />
+        <ListeningHistorySettingsCard />
         <PayoutWalletSettingsCard />
       </div>
       <div className={styles.version}>

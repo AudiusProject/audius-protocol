@@ -1,6 +1,7 @@
 export { default as IconAudiusLogo } from '../assets/icons/AudiusLogo.svg'
 export { default as IconAudiusLogoColor } from '../assets/icons/AudiusLogoColor.svg'
 export { default as IconAudiusLogoHorizontal } from '../assets/icons/AudiusLogoHorizontal.svg'
+export { default as IconAudiusLogoHorizontalNew } from '../assets/icons/AudiusLogoHorizontalNew.svg'
 export { default as IconAudiusLogoHorizontalColor } from '../assets/icons/AudiusLogoHorizontalColor.svg'
 export { default as IconAudiusLogoVertical } from '../assets/icons/AudiusLogoVertical.svg'
 export { default as IconLogoCoinbase } from '../assets/icons/Coinbase.svg'

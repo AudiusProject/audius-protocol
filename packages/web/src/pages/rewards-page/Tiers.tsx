@@ -9,7 +9,7 @@ import {
   vipDiscordModalActions,
   musicConfettiActions
 } from '@audius/common/store'
-import { Nullable } from '@audius/common/utils'
+import { formatNumberCommas, Nullable } from '@audius/common/utils'
 import {
   IconTokenBronze,
   IconTokenGold,
@@ -20,7 +20,8 @@ import {
   Text,
   Flex,
   IconValidationCheck,
-  IconRefresh
+  IconRefresh,
+  useTheme
 } from '@audius/harmony'
 import { useDispatch } from 'react-redux'
 
@@ -56,6 +57,7 @@ const messages = {
   },
   learnMore: 'Learn more',
   launchDiscord: 'Launch the VIP Discord',
+  refreshDiscordRole: 'Refresh Discord role',
   tierNumber: (tier: number) => `TIER ${tier}`
 }
 
@@ -67,7 +69,7 @@ type AudioTiers = Exclude<BadgeTier, 'none'>
 const tiers: AudioTiers[] = ['bronze', 'silver', 'gold', 'platinum']
 
 // Mapping for large icons
-export const audioTierMapSvg: {
+const audioTierMapSvg: {
   [tier in AudioTiers]: Nullable<ReactElement>
 } = {
   bronze: <IconTokenBronze width={BADGE_SIZE} height={BADGE_SIZE} />,
@@ -78,7 +80,7 @@ export const audioTierMapSvg: {
 
 const BADGE_LOCAL_STORAGE_KEY = 'last_badge_tier'
 
-export const LEARN_MORE_URL = 'http://blog.audius.co/posts/community-meet-audio'
+const LEARN_MORE_URL = 'http://blog.audius.co/posts/community-meet-audio'
 
 const useShowConfetti = (tier: BadgeTier) => {
   // No tier or no local storage, never show confetti
@@ -139,8 +141,8 @@ const TierBox = ({ tier, message }: { tier: BadgeTier; message?: string }) => {
         css={{
           minHeight: '1.5em',
           ...(tier !== 'none' && {
-            '-webkit-text-fill-color': 'transparent',
-            '-webkit-background-clip': 'text',
+            WebkitTextFillColor: 'transparent',
+            WebkitBackgroundClip: 'text',
             backgroundImage:
               tier === 'bronze'
                 ? 'linear-gradient(to right, rgba(141, 48, 8, 0.5), rgb(182, 97, 11))'
@@ -243,6 +245,7 @@ const TierColumn = ({
   tier: BadgeTier
   current?: boolean
 }) => {
+  const { color } = useTheme()
   const dispatch = useDispatch()
   const onClickDiscord = useCallback(() => dispatch(pressDiscord()), [dispatch])
 
@@ -282,40 +285,59 @@ const TierColumn = ({
       />
       {(
         Object.keys(messages.features) as Array<keyof typeof messages.features>
-      ).map((feature) => (
-        <Flex key={feature} pv='m' borderTop='default' justifyContent='center'>
-          <Text>
-            {tierFeatures[feature] ? (
-              <Flex h={24} direction='row' alignItems='center' gap='m'>
-                <IconValidationCheck />
-                {feature === 'customDiscordRole' && current ? (
-                  <Tooltip text='Refresh Discord role'>
-                    <Button
-                      size='small'
-                      variant='secondary'
-                      iconLeft={IconRefresh}
-                      onClick={onClickDiscord}
-                    />
-                  </Tooltip>
-                ) : null}
-              </Flex>
-            ) : (
-              <Flex h={24} w={24} alignItems='center' justifyContent='center'>
-                <Flex
-                  h={16}
-                  w={16}
-                  borderRadius='circle'
-                  border='strong'
-                  css={{
-                    borderWidth: 2,
-                    borderColor: 'var(--harmony-neutral)'
-                  }}
-                />
-              </Flex>
-            )}
-          </Text>
-        </Flex>
-      ))}
+      ).map((feature) => {
+        const minAudio =
+          badgeTiers.find((b) => b.tier === tier)?.minAudio.toString() ?? '0'
+
+        return (
+          <Flex
+            key={feature}
+            pv='m'
+            borderTop='default'
+            justifyContent='center'
+          >
+            <Text>
+              {feature === 'balance' ? (
+                <Flex h={24} alignItems='center' justifyContent='center'>
+                  {minAudio !== '0' ? (
+                    <Text
+                      variant='label'
+                      size='s'
+                    >{`${formatNumberCommas(minAudio)}+`}</Text>
+                  ) : null}
+                </Flex>
+              ) : tierFeatures[feature] ? (
+                <Flex h={24} direction='row' alignItems='center' gap='m'>
+                  <IconValidationCheck />
+                  {feature === 'customDiscordRole' && current ? (
+                    <Tooltip text={messages.refreshDiscordRole}>
+                      <Button
+                        size='small'
+                        variant='secondary'
+                        iconLeft={IconRefresh}
+                        onClick={onClickDiscord}
+                      />
+                    </Tooltip>
+                  ) : null}
+                </Flex>
+              ) : (
+                <Flex h={24} w={24} alignItems='center' justifyContent='center'>
+                  <Flex
+                    h={16}
+                    w={16}
+                    borderRadius='circle'
+                    border='strong'
+                    css={{
+                      borderWidth: 2,
+                      borderColor: color.border.default
+                    }}
+                  />
+                </Flex>
+              )}
+            </Text>
+          </Flex>
+        )
+      })}
     </Flex>
   )
 }
@@ -374,9 +396,10 @@ const Tiers = () => {
   return (
     <div className={styles.container}>
       <div className={wm(styles.titleContainer)}>
-        <div className={wm(styles.title)}>{messages.title}</div>
-        <div className={wm(styles.subtitle)}></div>
-        <Text variant='body' size='l' color='default'>
+        <Text variant='display' size='s' className={wm(styles.title)}>
+          {messages.title}
+        </Text>
+        <Text variant='body' strength='strong' size='l'>
           {messages.subtitle}
         </Text>
       </div>

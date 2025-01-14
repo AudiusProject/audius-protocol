@@ -133,7 +133,9 @@ export const collapsibleTabScreen = (config: TabScreenConfig) => {
       name={name}
       options={{
         tabBarLabel: label ?? name,
-        tabBarIcon: ({ color }) => <Icon fill={color} />
+        tabBarIcon: ({ color }) => (
+          <Icon style={{ marginTop: 6 }} fill={color} />
+        )
       }}
       initialParams={initialParams}
     >

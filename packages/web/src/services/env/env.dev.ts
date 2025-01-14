@@ -4,7 +4,6 @@ export const env: Env = {
   AAO_ENDPOINT: 'http://audius-protocol-anti-abuse-oracle-1',
   AMPLITUDE_API_KEY: null,
   AMPLITUDE_PROXY: null,
-  AMPLITUDE_WRITE_KEY: null,
   API_KEY: '2dc52ec9a4c31790cab6653de0c637f680faa993',
   APP_NAME: 'audius-client',
   AUDIUS_URL: 'https://staging.audius.co',

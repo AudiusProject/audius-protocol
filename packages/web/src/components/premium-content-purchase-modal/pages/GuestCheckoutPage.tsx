@@ -1,18 +1,15 @@
-import { GUEST_EMAIL } from '@audius/common/src/hooks/purchaseContent/constants'
 import { PurchaseableContentMetadata } from '@audius/common/src/hooks/purchaseContent/types'
 import { isPurchaseableAlbum } from '@audius/common/src/hooks/purchaseContent/utils'
 import { SIGN_IN_PAGE } from '@audius/common/src/utils/route'
 import { USDC } from '@audius/fixed-decimal'
-import { Button, Flex, Hint, Text } from '@audius/harmony'
-import { useField } from 'formik'
+import { Button, Flex, Text } from '@audius/harmony'
 
 import { TextLink } from 'components/link'
 import { PurchaseSummaryTable } from 'components/premium-content-purchase-modal/components/PurchaseSummaryTable'
 import { usePurchaseContentFormState } from 'components/premium-content-purchase-modal/hooks/usePurchaseContentFormState'
 import { LockedContentDetailsTile } from 'components/track/LockedContentDetailsTile'
 import { useIsMobile } from 'hooks/useIsMobile'
-import { EmailField } from 'pages/sign-up-page/components/EmailField'
-
+import { NewEmailField } from 'pages/sign-up-page/components/NewEmailField'
 const messages = {
   continueAsGuest: 'Continue as Guest',
   signIn: 'Sign in.',
@@ -28,11 +25,11 @@ type GuestCheckoutProps = {
 
 export const GuestCheckoutPage = (props: GuestCheckoutProps) => {
   const { metadata, price, onClickSignIn } = props
+
   const { purchaseSummaryValues } = usePurchaseContentFormState({
     price
   })
   const isMobile = useIsMobile()
-  const [, { error }] = useField(GUEST_EMAIL)
   const isAlbumPurchase = isPurchaseableAlbum(metadata)
   const stemsPurchaseCount =
     'is_download_gated' in metadata && metadata.is_download_gated
@@ -89,8 +86,7 @@ export const GuestCheckoutPage = (props: GuestCheckoutProps) => {
             {messages.orContinueGuest}
           </Text>
 
-          <EmailField name={GUEST_EMAIL} helperText={''} />
-          {error ? <Hint>{error}</Hint> : null}
+          <NewEmailField isGuestCheckout={true} />
         </Flex>
       </Flex>
     </Flex>
