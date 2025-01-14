@@ -1,6 +1,6 @@
 import { useEffect } from 'react'
 
-import { useRemixes } from '@audius/common/api'
+import { useRemixes, useTrackByParams, useUser } from '@audius/common/api'
 import {
   remixesPageLineupActions as tracksActions,
   remixesPageActions,
@@ -9,7 +9,6 @@ import {
 import { pluralize } from '@audius/common/utils'
 import { Text, View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
-import { useEffectOnce } from 'react-use'
 
 import { IconRemix } from '@audius/harmony-native'
 import { Screen, ScreenContent, ScreenHeader } from 'app/components/core'
@@ -19,8 +18,8 @@ import { useNavigation } from 'app/hooks/useNavigation'
 import { useRoute } from 'app/hooks/useRoute'
 import { flexRowCentered, makeStyles } from 'app/styles'
 
-const { getTrack, getUser, getCount } = remixesPageSelectors
-const { fetchTrack, reset } = remixesPageActions
+const { getCount } = remixesPageSelectors
+const { fetchTrackSucceeded } = remixesPageActions
 
 const messages = {
   remix: 'Remix',
@@ -50,27 +49,21 @@ const useStyles = makeStyles(({ spacing, palette, typography }) => ({
 }))
 
 export const TrackRemixesScreen = () => {
-  const navigation = useNavigation()
-
-  const count = useSelector(getCount)
-  const track = useSelector(getTrack)
-  const user = useSelector(getUser)
-  const dispatch = useDispatch()
-  const trackId = track?.track_id
-
-  const { lineup, loadNextPage } = useRemixes({
-    trackId
-  })
-
   const styles = useStyles()
   const { params } = useRoute<'TrackRemixes'>()
 
-  useEffectOnce(() => {
-    dispatch(fetchTrack(params))
-  })
+  const navigation = useNavigation()
+  const count = useSelector(getCount)
+  const dispatch = useDispatch()
+
+  const { data: track } = useTrackByParams(params)
+  const trackId = track?.track_id
+  const { data: user } = useUser(track?.owner_id)
+  const { lineup, loadNextPage } = useRemixes({ trackId })
 
   useEffect(() => {
     if (trackId) {
+      dispatch(fetchTrackSucceeded({ trackId }))
       dispatch(
         tracksActions.fetchLineupMetadatas(0, 10, false, {
           trackId
@@ -78,7 +71,6 @@ export const TrackRemixesScreen = () => {
       )
 
       return function cleanup() {
-        dispatch(reset())
         dispatch(tracksActions.reset())
       }
     }
@@ -88,7 +80,7 @@ export const TrackRemixesScreen = () => {
     if (!track) {
       return
     }
-    navigation.push('Track', { id: trackId })
+    navigation.push('Track', { id: track.track_id })
   }
 
   const handlePressArtistName = () => {
