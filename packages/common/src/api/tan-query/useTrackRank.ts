@@ -19,7 +19,7 @@ const messages = {
 /**
  * Hook that returns trending track IDs for all time periods
  */
-export const useGetTrendingIds = (args: GetTrendingIdsArgs = {}) => {
+export const useGetTrendingIds = (args?: GetTrendingIdsArgs) => {
   const { audiusSdk } = useAudiusQueryContext()
   return useQuery({
     queryKey: [TRENDING_IDS_QUERY_KEY, args],
