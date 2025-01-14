@@ -4,7 +4,7 @@ import { FeatureFlags } from '@audius/common/services'
 import { pluralize } from '@audius/common/utils'
 import {
   RadioGroup,
-  IconSpecialAccess,
+  IconSparkles,
   Text,
   IconQuestionCircle,
   Hint
@@ -120,7 +120,7 @@ export const PriceAndAudienceMenuFields = (
 
         {!isAlbum ? (
           <ModalRadioItem
-            icon={<IconSpecialAccess />}
+            icon={<IconSparkles />}
             label={messages.specialAccess}
             description={messages.specialAccessSubtitle}
             value={StreamTrackAvailabilityType.SPECIAL_ACCESS}

@@ -58,6 +58,7 @@ export const LibraryCategorySelectionMenu = (
   const selectedCategory = useSelector((state: CommonState) =>
     getCategory(state, { currentTab })
   )
+
   const handleChange = useCallback(
     (e: ChangeEvent<HTMLInputElement>) => {
       dispatch(

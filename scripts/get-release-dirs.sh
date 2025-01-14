@@ -17,7 +17,6 @@ PROTOCOL_DIRS="pkg \
     dev-tools \
     packages/discovery-provider \
     packages/identity-service \
-    packages/ddex* \
     comms \
     monitoring/healthz \
     monitoring/uptime \

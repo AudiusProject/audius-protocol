@@ -164,7 +164,10 @@ export const useFeatureFlag = (
 
   return {
     isLoaded: configLoaded && hasFetchedLocalStorage,
-    isEnabled: isLocallyEnabled ?? isEnabled,
+    isEnabled:
+      flag === FeatureFlags.GUEST_CHECKOUT
+        ? true
+        : (isLocallyEnabled ?? isEnabled),
     setOverride
   }
 }

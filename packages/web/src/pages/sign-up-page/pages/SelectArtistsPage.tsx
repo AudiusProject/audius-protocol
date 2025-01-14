@@ -16,10 +16,7 @@ import { range } from 'lodash'
 import { useDispatch } from 'react-redux'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 
-import {
-  addFollowArtists,
-  completeFollowArtists
-} from 'common/store/pages/signon/actions'
+import { addFollowArtists } from 'common/store/pages/signon/actions'
 import { getGenres } from 'common/store/pages/signon/selectors'
 import {
   FollowArtistCard,
@@ -85,7 +82,6 @@ export const SelectArtistsPage = () => {
       const { selectedArtists } = values
       const artistsIDArray = [...selectedArtists].map((a) => Number(a))
       dispatch(addFollowArtists(artistsIDArray))
-      dispatch(completeFollowArtists())
       if (isMobile) {
         navigate(SIGN_UP_COMPLETED_REDIRECT)
       } else {

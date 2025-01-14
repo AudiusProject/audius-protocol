@@ -21,6 +21,7 @@ export const NavItem = ({
   onClick,
   textSize = 'l',
   hasNotification = false,
+  leftOverride,
   ...props
 }: NavItemProps) => {
   const { color } = useTheme()
@@ -30,12 +31,15 @@ export const NavItem = ({
 
   const backgroundColor = isSelected ? color.secondary.s400 : undefined
 
-  const textColor = isSelected ? 'staticWhite' : 'default'
-
-  const iconColor = isSelected ? 'staticStaticWhite' : 'default'
+  const textAndIconColor = isSelected ? 'staticWhite' : 'default'
+  const insetBorderColor = isSelected
+    ? 'none'
+    : `inset 0 0 0 1px ${color.border.default}`
 
   const leftIconWithNotification = useMemo(() => {
-    const icon = hasLeftIcon ? <LeftIcon size='l' color={iconColor} /> : null
+    const icon = hasLeftIcon ? (
+      <LeftIcon size='l' color={textAndIconColor} />
+    ) : null
 
     if (hasNotification && !!icon) {
       return (
@@ -45,7 +49,7 @@ export const NavItem = ({
       )
     }
     return icon
-  }, [hasNotification, hasLeftIcon, LeftIcon, iconColor, isSelected])
+  }, [hasNotification, hasLeftIcon, LeftIcon, textAndIconColor, isSelected])
 
   return (
     <Flex
@@ -53,8 +57,8 @@ export const NavItem = ({
       gap='s'
       pl='s'
       pr='s'
+      w='240px'
       css={{
-        width: '240px',
         cursor: 'pointer',
         transition: `background-color ${motion.hover}`
       }}
@@ -69,10 +73,9 @@ export const NavItem = ({
         borderRadius='m'
         css={{
           backgroundColor,
-          border: '1px solid transparent',
           '&:hover': {
             backgroundColor: isSelected ? undefined : color.background.surface2,
-            borderColor: isSelected ? undefined : color.border.default
+            boxShadow: insetBorderColor
           }
         }}
       >
@@ -84,13 +87,13 @@ export const NavItem = ({
             maxWidth: '240px'
           }}
         >
-          {leftIconWithNotification}
+          {leftOverride || leftIconWithNotification}
           <Text
             variant='title'
             size={textSize}
             strength='weak'
             lineHeight='single'
-            color={textColor}
+            color={textAndIconColor}
             ellipses
             css={{ flex: 1 }}
           >

@@ -129,6 +129,7 @@ export const CreateEmailPage = () => {
       initialValues={initialValues}
       onSubmit={handleSubmit}
       validationSchema={EmailSchema}
+      validateOnMount={!!existingEmailValue}
       validateOnChange={false}
     >
       {({ isSubmitting, setFieldValue, submitForm }) => (

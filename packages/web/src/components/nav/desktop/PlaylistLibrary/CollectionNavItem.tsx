@@ -212,6 +212,7 @@ export const CollectionNavItem = (props: CollectionNavItemProps) => {
                 />
               ) : null
             }
+            leftOverride={hasUpdate ? <PlaylistUpdateDot /> : null}
           >
             <Flex
               alignItems='center'
@@ -221,16 +222,6 @@ export const CollectionNavItem = (props: CollectionNavItemProps) => {
               css={{ position: 'relative' }}
               justifyContent='space-between'
             >
-              {hasUpdate ? (
-                <div
-                  css={{
-                    position: 'absolute',
-                    left: -spacing.m + indentAmount
-                  }}
-                >
-                  <PlaylistUpdateDot />
-                </div>
-              ) : null}
               <Text
                 variant='body'
                 size='s'

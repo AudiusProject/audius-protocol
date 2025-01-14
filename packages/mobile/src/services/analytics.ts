@@ -1,4 +1,10 @@
-import { Amplitude } from '@amplitude/react-native'
+import {
+  init as amplitudeInit,
+  track as amplitudeTrack,
+  setUserId,
+  identify as amplitudeIdentify,
+  Identify
+} from '@amplitude/analytics-react-native'
 import VersionNumber from 'react-native-version-number'
 
 import { env } from 'app/env'
@@ -12,16 +18,17 @@ const { version: clientVersion } = packageInfo
 
 let analyticsSetupStatus: 'ready' | 'pending' | 'error' = 'pending'
 
-const AmplitudeWriteKey = env.AMPLITUDE_WRITE_KEY
+const AmplitudeWriteKey = env.AMPLITUDE_API_KEY
 const AmplitudeProxy = env.AMPLITUDE_PROXY
-const amplitudeInstance = Amplitude.getInstance()
 const IS_PRODUCTION_BUILD = process.env.NODE_ENV === 'production'
 
 export const init = async () => {
   try {
     if (AmplitudeWriteKey && AmplitudeProxy) {
-      await amplitudeInstance.setServerUrl(AmplitudeProxy)
-      await amplitudeInstance.init(AmplitudeWriteKey)
+      await amplitudeInit(AmplitudeWriteKey, undefined, {
+        serverUrl: AmplitudeProxy,
+        appVersion: clientVersion // Identifies our app version to Amplitude
+      })
       analyticsSetupStatus = 'ready'
     } else {
       analyticsSetupStatus = 'error'
@@ -61,19 +68,22 @@ export const make = (event: AllEvents) => {
 }
 
 // Identify User
-// Docs: https://segment.com/docs/connections/spec/identify
 export const identify = async (
   handle: string,
   traits: Record<string, any> = {}
 ) => {
   const isSetup = await isAudiusSetup()
   if (!isSetup) return
-  amplitudeInstance.setUserId(handle)
-  amplitudeInstance.setUserProperties(traits)
+
+  setUserId(handle)
+  const identifyObj = new Identify()
+  Object.entries(traits).forEach(([key, value]) => {
+    identifyObj.set(key, value)
+  })
+  await amplitudeIdentify(identifyObj)
 }
 
 // Track Event
-// Docs: https://segment.com/docs/connections/spec/track/
 export const track = async ({ eventName, properties }: Track) => {
   const isSetup = await isAudiusSetup()
   if (!isSetup) return
@@ -88,13 +98,12 @@ export const track = async ({ eventName, properties }: Track) => {
   if (!IS_PRODUCTION_BUILD) {
     console.info('Amplitude | track', eventName, properties)
   }
-  await amplitudeInstance.logEvent(eventName, propertiesWithContext)
+  await amplitudeTrack(eventName, propertiesWithContext)
 }
 
 // Screen Event
-// Docs: https://segment.com/docs/connections/sources/catalog/libraries/mobile/react-native/#screen
 export const screen = async ({ route, properties = {} }: Screen) => {
   const isSetup = await isAudiusSetup()
   if (!isSetup) return
-  amplitudeInstance.logEvent(EventNames.PAGE_VIEW, { route, ...properties })
+  await amplitudeTrack(EventNames.PAGE_VIEW, { route, ...properties })
 }

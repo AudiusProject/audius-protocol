@@ -5,6 +5,7 @@
   cursor: pointer;
   display: flex;
   justify-content: center;
+  padding: 0 var(--harmony-unit-4);
 }
 
 .ctaBanner .content {

@@ -67,7 +67,7 @@ export const useRequiresAccountCallback = <T extends (...args: any) => any>(
       }
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [isAccountComplete, dispatch, restriction, ...deps]
+    [hasAccount, isAccountComplete, dispatch, restriction, ...deps]
   )
 }
 

@@ -1,6 +1,6 @@
 {
   "name": "@audius/mobile",
-  "version": "1.5.116",
+  "version": "1.5.117",
   "private": true,
   "scripts": {
     "android:dev": "ENVFILE=.env.dev turbo run android -- --mode=prodDebug",
@@ -53,13 +53,13 @@
     "verify": "concurrently \"npm:typecheck\" \"npm:lint\" \"npm:lint:env\""
   },
   "dependencies": {
-    "@amplitude/react-native": "2.17.2",
+    "@amplitude/analytics-react-native": "1.4.11",
     "@audius/common": "*",
-    "@audius/fetch-nft": "0.2.7",
+    "@audius/fetch-nft": "0.2.8",
     "@audius/fixed-decimal": "*",
     "@audius/harmony": "*",
     "@audius/sdk": "*",
-    "@coinflowlabs/react-native": "3.1.5",
+    "@coinflowlabs/react-native": "4.0.0",
     "@emotion/native": "11.11.0",
     "@emotion/react": "11.11.1",
     "@fingerprintjs/fingerprintjs-pro-react-native": "2.6.0",
@@ -92,6 +92,7 @@
     "@snapchat/snap-kit-react-native": "0.4.0",
     "@solana-mobile/mobile-wallet-adapter-protocol": "0.9.9",
     "@solana-mobile/mobile-wallet-adapter-protocol-web3js": "0.9.9",
+    "@solana/web3.js": "1.98.0",
     "@stripe/crypto": "0.0.4",
     "@stripe/stripe-js": "1.54.1",
     "@tanstack/react-query": "5.62.7",

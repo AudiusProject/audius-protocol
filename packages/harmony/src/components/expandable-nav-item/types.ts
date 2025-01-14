@@ -32,4 +32,6 @@ export type ExpandableNavItemProps = WithCSS<{
   canUnfurl?: boolean
   /** The variant of the nav item. */
   variant?: ExpandableNavItemVariant
+  /** The onClick handler for the nav item. */
+  onClick?: () => void
 }>

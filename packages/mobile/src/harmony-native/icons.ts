@@ -57,7 +57,7 @@ export { default as IconLock } from '@audius/harmony/src/assets/icons/Lock.svg'
 export { default as IconSpeaker } from '@audius/harmony/src/assets/icons/Speaker.svg'
 export { default as IconCaretUp } from '@audius/harmony/src/assets/icons/CaretUp.svg'
 export { default as IconLockUnlocked } from '@audius/harmony/src/assets/icons/LockUnlocked.svg'
-export { default as IconSpecialAccess } from '@audius/harmony/src/assets/icons/SpecialAccess.svg'
+export { default as IconSparkles } from '@audius/harmony/src/assets/icons/Sparkles.svg'
 export { default as IconCart } from '@audius/harmony/src/assets/icons/Cart.svg'
 export { default as IconMessage } from '@audius/harmony/src/assets/icons/Message.svg'
 export { default as IconMessages } from '@audius/harmony/src/assets/icons/Messages.svg'
@@ -170,11 +170,10 @@ export { default as IconPlaybackPlay } from '@audius/harmony/src/assets/icons/Pl
 export { default as IconVerified } from '@audius/harmony/src/assets/icons/Verified.svg'
 
 // VIP Tier Badges
-export { default as IconTokenBronze } from '@audius/harmony/src/assets/icons/TokenBronze.svg'
-export { default as IconTokenGold } from '@audius/harmony/src/assets/icons/TokenGold.svg'
-export { default as IconTokenPlatinum } from '@audius/harmony/src/assets/icons/TokenPlatinum.svg'
-export { default as IconTokenSilver } from '@audius/harmony/src/assets/icons/TokenSilver.svg'
-// The TokenNoTier svg doesnt work on mobile, so we use a png component instead
+export { IconTokenBronze } from './components/IconTokenBronze'
+export { IconTokenPlatinum } from './components/IconTokenPlatinum'
+export { IconTokenSilver } from './components/IconTokenSilver'
+export { IconTokenGold } from './components/IconTokenGold'
 export { IconTokenNoTier } from './components/IconTokenNoTier'
 
 // File Types
@@ -231,6 +230,7 @@ export { default as IconCcZero } from '@audius/harmony/src/assets/icons/ccZero.s
 export { default as IconAudiusLogo } from '@audius/harmony/src/assets/icons/AudiusLogo.svg'
 export { default as IconAudiusLogoColor } from '@audius/harmony/src/assets/icons/AudiusLogoColor.svg'
 export { default as IconAudiusLogoHorizontal } from '@audius/harmony/src/assets/icons/AudiusLogoHorizontal.svg'
+export { default as IconAudiusLogoHorizontalNew } from '@audius/harmony/src/assets/icons/AudiusLogoHorizontalNew.svg'
 export { default as IconAudiusLogoHorizontalColor } from '@audius/harmony/src/assets/icons/AudiusLogoHorizontalColor.svg'
 export { default as IconAudiusLogoVertical } from '@audius/harmony/src/assets/icons/AudiusLogoVertical.svg'
 export { default as IconLogoCoinbase } from '@audius/harmony/src/assets/icons/Coinbase.svg'
