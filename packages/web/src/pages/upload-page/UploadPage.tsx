@@ -170,12 +170,10 @@ export const UploadPage = (props: UploadPageProps) => {
   }, [dispatch, formState])
 
   useEffect(() => {
-    if (
-      phase === Phase.FINISH &&
-      !isUploading &&
-      !uploadSuccess &&
-      !uploadError
-    ) {
+    // Actually trigger the upload when the user is on the finish page
+    // and there is not already existing upload progress
+    const isUploadPending = !isUploading && !uploadSuccess && !uploadError
+    if (phase === Phase.FINISH && isUploadPending) {
       handleUpload()
     }
   }, [handleUpload, phase, isUploading, uploadSuccess, uploadError])
