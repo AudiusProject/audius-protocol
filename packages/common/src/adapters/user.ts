@@ -160,9 +160,7 @@ export const userMetadataToSdk = (
       'metadata_multihash',
       'is_deactivated',
       'allow_ai_attribution',
-      'collectibles_order_unset',
-      'associated_wallets',
-      'associated_sol_wallets'
+      'collectibles_order_unset'
     ])
   ),
   bio: input.bio ?? undefined,

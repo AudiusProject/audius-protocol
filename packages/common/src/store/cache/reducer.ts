@@ -67,8 +67,6 @@ const forceUpdateKeys = new Set([
   'field_visibility',
   'followee_reposts',
   'followee_saves',
-  'associated_wallets',
-  'associated_sol_wallets',
   'stream_conditions',
   'download_conditions'
 ])

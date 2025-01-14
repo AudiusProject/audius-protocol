@@ -75,10 +75,13 @@ export type UserMetadata = {
   local?: boolean
 
   // Only present on the "current" account
-  associated_sol_wallets?: Nullable<string[]>
-  associated_wallets?: Nullable<string[]>
   events?: UserEvent
 } & Timestamped
+
+export type WriteableUserMetadata = UserMetadata & {
+  associated_sol_wallets?: Nullable<Record<string, { signature: string }>>
+  associated_wallets?: Nullable<Record<string, { signature: string }>>
+}
 
 export type AccountUserMetadata = {
   user: UserMetadata & { playlists: AccountCollection[] }
