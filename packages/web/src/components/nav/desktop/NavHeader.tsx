@@ -7,8 +7,7 @@ import {
   Flex,
   IconAudiusLogoHorizontalNew,
   IconDashboard,
-  IconSettings,
-  useTheme
+  IconSettings
 } from '@audius/harmony'
 import { Link } from 'react-router-dom'
 
@@ -71,8 +70,6 @@ const RestrictedLink = ({
 }
 
 export const NavHeader = () => {
-  const { spacing } = useTheme()
-
   const isMatrix = useSelector((state) => getTheme(state) === Theme.MATRIX)
 
   return (
@@ -80,7 +77,8 @@ export const NavHeader = () => {
       alignItems='center'
       backgroundColor='surface1'
       justifyContent='space-between'
-      p={spacing.l}
+      pv='l'
+      ph='m'
       flex={0}
       css={{ minHeight: 58 }}
     >
