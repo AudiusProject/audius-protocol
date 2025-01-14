@@ -1,6 +1,7 @@
 import { Suspense, lazy, useCallback, useState } from 'react'
 
 import {
+  useTrackRank,
   useRemixContest,
   useToggleFavoriteTrack,
   useTrack
@@ -109,7 +110,6 @@ const messages = {
 type GiantTrackTileProps = {
   aiAttributionUserId: Nullable<number>
   artistHandle: string
-  trendingBadgeLabel: Nullable<string>
   coSign: Nullable<Remix>
   credits: string
   currentUserId: Nullable<ID>
@@ -158,7 +158,6 @@ type GiantTrackTileProps = {
 export const GiantTrackTile = ({
   aiAttributionUserId,
   artistHandle,
-  trendingBadgeLabel,
   coSign,
   description,
   hasStreamAccess,
@@ -505,6 +504,8 @@ export const GiantTrackTile = ({
     [styles.hide]: isLoading
   }
 
+  const trendingRank = useTrackRank(trackId)
+
   return (
     <Paper
       column
@@ -625,9 +626,9 @@ export const GiantTrackTile = ({
               {messages.generatedWithAi}
             </MusicBadge>
           ) : null}
-          {trendingBadgeLabel ? (
+          {trendingRank ? (
             <MusicBadge color='blue' icon={IconTrending}>
-              {trendingBadgeLabel}
+              {trendingRank}
             </MusicBadge>
           ) : null}
           {shouldShowScheduledRelease ? (

@@ -51,7 +51,6 @@ export type OwnProps = {
   heroPlaying: boolean
   previewing: boolean
   userId: ID | null
-  trendingBadgeLabel: string | null
   onHeroPlay: ({
     isPlaying,
     isPreview
@@ -87,7 +86,6 @@ const TrackPage = ({
   heroPlaying,
   previewing,
   userId,
-  trendingBadgeLabel,
   onHeroPlay,
   goToAllRemixesPage,
   onHeroShare,
@@ -176,7 +174,6 @@ const TrackPage = ({
       }
       ddexApp={heroTrack?.ddex_app}
       isSaved={isSaved}
-      trendingBadgeLabel={trendingBadgeLabel}
       isUnlisted={defaults.isUnlisted}
       isScheduledRelease={defaults.isScheduledRelease}
       isStreamGated={defaults.isStreamGated}

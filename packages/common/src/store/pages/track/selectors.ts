@@ -52,11 +52,5 @@ export const getStatus = (state: CommonState) =>
   getCachedTrackStatus(state, { id: getTrackId(state) as ID })
 
 export const getLineup = (state: CommonState) => getBaseState(state).tracks
-export const getTrackRank = (state: CommonState) => getBaseState(state).rank
-export const getTrendingTrackRanks = (state: CommonState) => {
-  const ranks = getBaseState(state).trendingTrackRanks
-  if (!ranks.week && !ranks.month && !ranks.year) return null
-  return ranks
-}
 export const getSourceSelector = (state: CommonState) =>
   `${PREFIX}:${getTrackId(state)}`
