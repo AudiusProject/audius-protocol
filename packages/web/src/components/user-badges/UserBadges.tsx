@@ -73,7 +73,6 @@ type UserBadgesProps = {
   userId: ID
   badgeSize: number
   className?: string
-  useSVGTiers?: boolean
   inline?: boolean
 
   // Normally, user badges is not a controlled component and selects
@@ -87,14 +86,13 @@ const UserBadges = ({
   userId,
   badgeSize,
   className,
-  useSVGTiers = false,
   inline = false,
   isVerifiedOverride,
   overrideTier
 }: UserBadgesProps) => {
   const { tier: currentTier, isVerified } = useSelectTierInfo(userId)
   const tier = overrideTier || currentTier
-  const tierMap = useSVGTiers ? audioTierMapSVG : audioTierMapPng
+  const tierMap = audioTierMapPng
   const audioBadge = tierMap[tier as BadgeTier]
   const hasContent = (isVerifiedOverride ?? isVerified) || audioBadge
 

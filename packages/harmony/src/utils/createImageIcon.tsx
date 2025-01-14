@@ -10,7 +10,7 @@ export type IconProps = {
   style?: CSSProperties
 }
 
-export const createIcon = (src: string) => {
+export const createImageIcon = (src: string) => {
   const Icon: FC<IconProps> = ({
     width,
     height,

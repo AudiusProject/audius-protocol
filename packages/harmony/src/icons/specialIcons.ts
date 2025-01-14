@@ -71,7 +71,7 @@ import IconPlaybackRate1xSVG from '../assets/icons/iconPlaybackRate1x.svg'
 import IconPlaybackRate2_5xSVG from '../assets/icons/iconPlaybackRate2_5x.svg'
 import IconPlaybackRate2xSVG from '../assets/icons/iconPlaybackRate2x.svg'
 import IconPlaybackRate3xSVG from '../assets/icons/iconPlaybackRate3x.svg'
-import { createIcon } from '../utils/createIcon'
+import { createImageIcon } from '../utils/createImageIcon'
 
 // Two Tone / Special Styling
 export const IconArtistBadge = IconArtistBadgeSVG as IconComponent
@@ -81,11 +81,11 @@ export const IconMultiselectRemove = IconMultiselectRemoveSVG as IconComponent
 
 // Token Tier Badge Components
 export const IconVerified = IconVerifiedSVG as IconComponent
-export const IconTokenNoTier = createIcon(TokenNoTierPng)
-export const IconTokenBronze = createIcon(TokenBronzePng)
-export const IconTokenGold = createIcon(TokenGoldPng)
-export const IconTokenPlatinum = createIcon(TokenPlatinumPng)
-export const IconTokenSilver = createIcon(TokenSilverPng)
+export const IconTokenNoTier = createImageIcon(TokenNoTierPng)
+export const IconTokenBronze = createImageIcon(TokenBronzePng)
+export const IconTokenGold = createImageIcon(TokenGoldPng)
+export const IconTokenPlatinum = createImageIcon(TokenPlatinumPng)
+export const IconTokenSilver = createImageIcon(TokenSilverPng)
 
 // File Types
 export const IconFile3GA = IconFile3GASVG as IconComponent

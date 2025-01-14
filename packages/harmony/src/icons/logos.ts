@@ -28,7 +28,7 @@ import IconSnapChatSVG from '../assets/icons/SnapChat.svg'
 import IconTelegramSVG from '../assets/icons/Telegram.svg'
 import IconTikTokSVG from '../assets/icons/TikTok.svg'
 import IconTwitterSVG from '../assets/icons/Twitter.svg'
-import { createIcon } from '../utils/createIcon'
+import { createImageIcon } from '../utils/createImageIcon'
 
 export const IconAudiusLogo = IconAudiusLogoSVG as IconComponent
 export const IconAudiusLogoColor = IconAudiusLogoColorSVG as IconComponent
@@ -52,7 +52,7 @@ export const IconLogoCircleSOL = IconLogoCircleSOLSVG as IconComponent
 export const IconLogoCircleSTR = IconLogoCircleSTRSVG as IconComponent
 export const IconLogoCircleUSD = IconLogoCircleUSDSVG as IconComponent
 export const IconLogoCircleUSDC = IconLogoCircleUSDCSVG as IconComponent
-export const IconLogoCircleUSDCPng = createIcon(LogoCircleUSDCPng)
+export const IconLogoCircleUSDCPng = createImageIcon(LogoCircleUSDCPng)
 export const IconPhantom = IconPhantomSVG as IconComponent
 export const IconPhantomPlain = IconPhantomPlainSVG as IconComponent
 export const IconSolana = IconSolanaSVG as IconComponent
