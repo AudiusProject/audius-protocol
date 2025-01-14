@@ -190,7 +190,7 @@ def index_core(self):
 
             indexing_plays = past_sol_plays_cutover and past_core_plays_cutover
 
-            next_em_block = latest_indexed_block_height + 1
+            next_block = latest_indexed_block_height + 1
 
             logger = logging.LoggerAdapter(
                 logger=root_logger,
@@ -198,14 +198,14 @@ def index_core(self):
                     "indexer": "core",
                     "chain_id": core_chain_id,
                     "latest_indexed_block": latest_indexed_block_height,
-                    "next_indexed_block": next_em_block,
+                    "next_indexed_block": next_block,
                     "latest_chain_block": latest_core_block_height,
                 },
             )
 
             logger.debug("indexing block")
 
-            block = core.get_block(next_em_block)
+            block = core.get_block(next_block)
             if not block:
                 return
 
