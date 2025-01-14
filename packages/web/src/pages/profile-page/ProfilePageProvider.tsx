@@ -94,7 +94,7 @@ const INITIAL_UPDATE_FIELDS = {
 
 const ProfilePageProviderWrapper = (props: ProfilePageProps) => {
   const params = parseUserRoute(props.pathname)
-  const { data: user } = useUserByParams(params)
+  const { data: user } = useUserByParams(params!)
 
   return <ProfilePage {...props} user={user} />
 }
