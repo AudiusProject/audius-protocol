@@ -1,7 +1,7 @@
 import json
 import logging
 from datetime import datetime
-from typing import List, Optional, Tuple, TypedDict, cast
+from typing import List, Optional, TypedDict, cast
 
 from redis import Redis
 from sqlalchemy import desc

@@ -414,6 +414,16 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
         # we set the difference to be an unhealthy amount
         block_difference = default_healthy_block_diff + 1
 
+    # Get core block difference from core health if available
+    if (
+        core_health
+        and "latest_chain_block" in core_health
+        and "latest_indexed_block" in core_health
+    ):
+        block_difference = abs(
+            core_health["latest_chain_block"] - core_health["latest_indexed_block"]
+        )
+
     health_results["block_difference"] = block_difference
     health_results["maximum_healthy_block_difference"] = default_healthy_block_diff
     health_results.update(disc_prov_version)
