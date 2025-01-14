@@ -16,6 +16,7 @@ const extensions = ['.js', '.ts']
 const external = [
   ...Object.keys(pkg.dependencies),
   ...Object.keys(pkg.devDependencies),
+  ...Object.keys(pkg.peerDependencies),
   'hashids/cjs',
   'readable-stream',
   '@noble/hashes/utils',
