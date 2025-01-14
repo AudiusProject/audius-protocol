@@ -7,6 +7,7 @@ import {
   ComponentType
 } from 'react'
 
+import { useUserByParams } from '@audius/common/api'
 import {
   ShareSource,
   Chain,
@@ -19,7 +20,6 @@ import {
 } from '@audius/common/models'
 import {
   cacheUsersSelectors,
-  profilePageActions,
   queueActions,
   QueueSource,
   collectibleDetailsUIActions,
@@ -50,7 +50,6 @@ const { getPlaying, makeGetCurrent } = playerSelectors
 const { requestOpen: requestOpenShareModal } = shareModalUIActions
 const { setCollectible } = collectibleDetailsUIActions
 const { add, clear, pause, play } = queueActions
-const { fetchProfile } = profilePageActions
 const { getUser } = cacheUsersSelectors
 
 declare global {
@@ -239,13 +238,7 @@ export const CollectiblesPlaylistPageProvider = ({
     ? `${user?.name} ${SmartCollectionVariant.AUDIO_NFT_PLAYLIST}`
     : SmartCollectionVariant.AUDIO_NFT_PLAYLIST
 
-  useEffect(() => {
-    if (routeMatch?.params.handle) {
-      dispatch(
-        fetchProfile(routeMatch.params.handle, null, false, false, false, true)
-      )
-    }
-  }, [dispatch, routeMatch])
+  useUserByParams({ handle: routeMatch?.params.handle })
 
   const tracksLoading = !hasFetchedAllCollectibles
 

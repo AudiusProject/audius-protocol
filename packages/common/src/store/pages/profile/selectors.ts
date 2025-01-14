@@ -105,29 +105,16 @@ export const getProfilePlaylists = createDeepEqualSelector(
 
 export const makeGetProfile = () => {
   return createDeepEqualSelector(
-    [
-      getProfileStatus,
-      getProfileError,
-      getProfileUserId,
-      getIsSubscribed,
-      // External
-      getUsers
-    ],
-    (status, error, userId, isSubscribed, users) => {
+    [getProfileStatus, getProfileError, getProfileUserId, getIsSubscribed],
+    (status, error, userId, isSubscribed) => {
       const emptyState = {
-        profile: null,
-        playlists: null,
-        albums: null,
         isSubscribed: false,
         status
       }
       if (error) return { ...emptyState, error: true }
       if (!userId) return emptyState
-      if (!(userId in users)) return emptyState
 
-      const user = users[userId]
       return {
-        profile: user,
         status,
         isSubscribed
       }

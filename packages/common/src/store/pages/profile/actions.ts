@@ -1,12 +1,8 @@
-import { Nullable } from '~/utils'
-
 import { ID, UserMetadata } from '../../../models'
 
 import { CollectionSortMode } from './types'
 
-export const FETCH_PROFILE = 'PROFILE/FETCH_PROFILE'
 export const FETCH_PROFILE_SUCCEEDED = 'PROFILE/FETCH_PROFILE_SUCCEEDED'
-export const FETCH_PROFILE_FAILED = 'PROFILE/FETCH_PROFILE_FAILED'
 
 export const SET_CURRENT_USER = 'PROFILE/SET_CURRENT_USER'
 
@@ -26,26 +22,9 @@ export const FETCH_TOP_TAGS_FAILED = 'PROFILE/FETCH_TOP_TAGS_FAILED'
 export const SET_NOTIFICATION_SUBSCRIPTION =
   'PROFILE/SET_NOTIFICATION_SUBSCRIPTION'
 
-export type FetchProfileAction = {
-  type: typeof FETCH_PROFILE
-  handle: string | null
-  userId: ID | null
-  forceUpdate: boolean
-  shouldSetLoading: boolean
-  deleteExistingEntry: boolean
-  fetchOnly?: boolean
-}
-
 export type FetchProfileSucceededAction = {
   type: typeof FETCH_PROFILE_SUCCEEDED
-  handle: string
   userId: ID
-  fetchOnly: boolean
-}
-
-export type FetchProfileFailedAction = {
-  type: typeof FETCH_PROFILE_FAILED
-  handle: string
 }
 
 export type SetCurrentUserAction = {
@@ -110,9 +89,7 @@ export type SetNotificationSubscriptionAction = {
 }
 
 export type ProfilePageAction =
-  | FetchProfileAction
   | FetchProfileSucceededAction
-  | FetchProfileFailedAction
   | SetCurrentUserAction
   | UpdateProfileAction
   | UpdateProfileSucceededAction
@@ -125,37 +102,8 @@ export type ProfilePageAction =
   | FetchTopTagsFailedAction
   | SetNotificationSubscriptionAction
 
-// Either handle or userId is required
-// TODO: Move this to redux toolkit
-export function fetchProfile(
-  handle: Nullable<string>,
-  userId: Nullable<ID>,
-  forceUpdate: boolean,
-  shouldSetLoading: boolean,
-  deleteExistingEntry: boolean,
-  fetchOnly = false
-): FetchProfileAction {
-  return {
-    type: FETCH_PROFILE,
-    handle,
-    userId,
-    forceUpdate,
-    shouldSetLoading,
-    deleteExistingEntry,
-    fetchOnly
-  }
-}
-
-export function fetchProfileSucceeded(
-  handle: string,
-  userId: ID,
-  fetchOnly: boolean
-): FetchProfileSucceededAction {
-  return { type: FETCH_PROFILE_SUCCEEDED, handle, userId, fetchOnly }
-}
-
-export function fetchProfileFailed(handle: string): FetchProfileFailedAction {
-  return { type: FETCH_PROFILE_FAILED, handle }
+export function fetchProfileSucceeded(userId: ID): FetchProfileSucceededAction {
+  return { type: FETCH_PROFILE_SUCCEEDED, userId }
 }
 
 export function setCurrentUser(handle: string): SetCurrentUserAction {

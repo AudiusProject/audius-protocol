@@ -28,7 +28,6 @@ import { chatActions } from '~/store/pages/chat'
 import { UPLOAD_TRACKS_SUCCEEDED } from '~/store/upload/actions'
 
 import { cacheActions } from '../cache'
-import { fetchProfile } from '../pages/profile/actions'
 import { getSDK } from '../sdkUtils'
 
 import {
@@ -261,10 +260,6 @@ export function* fetchAccountAsync() {
   yield* put(showPushNotificationConfirmation())
 
   yield* fork(audiusBackendInstance.updateUserLocationTimezone, { sdk })
-
-  // Fetch the profile so we get everything we need to populate
-  // the left nav / other site-wide metadata.
-  yield* put(fetchProfile(user.handle, user.user_id, false, false, false, true))
 
   yield* put(signedIn({ account: user }))
 }

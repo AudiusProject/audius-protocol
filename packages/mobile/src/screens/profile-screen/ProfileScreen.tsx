@@ -1,9 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 
-import { ShareSource, Status } from '@audius/common/models'
+import { useUserByParams } from '@audius/common/api'
+import { ShareSource } from '@audius/common/models'
 import {
-  profilePageActions,
-  profilePageSelectors,
   reachabilitySelectors,
   shareModalUIActions,
   modalsActions,
@@ -13,7 +12,7 @@ import {
 } from '@audius/common/store'
 import { encodeUrlName } from '@audius/common/utils'
 import { PortalHost } from '@gorhom/portal'
-import { useFocusEffect, useNavigationState } from '@react-navigation/native'
+import { useNavigationState } from '@react-navigation/native'
 import { Animated, View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 
@@ -25,7 +24,6 @@ import {
 import { Screen, ScreenContent } from 'app/components/core'
 import { ScreenPrimaryContent } from 'app/components/core/Screen/ScreenPrimaryContent'
 import { ScreenSecondaryContent } from 'app/components/core/Screen/ScreenSecondaryContent'
-import { useIsScreenReady } from 'app/components/core/Screen/hooks/useIsScreenReady'
 import { OfflinePlaceholder } from 'app/components/offline-placeholder'
 import { useRoute } from 'app/hooks/useRoute'
 import { makeStyles } from 'app/styles'
@@ -33,13 +31,9 @@ import { makeStyles } from 'app/styles'
 import { ProfileHeader } from './ProfileHeader'
 import { ProfileScreenSkeleton } from './ProfileScreenSkeleton'
 import { ProfileTabNavigator } from './ProfileTabs/ProfileTabNavigator'
-import { getIsOwner, useSelectProfileRoot } from './selectors'
+import { getIsOwner } from './selectors'
+
 const { requestOpen: requestOpenShareModal } = shareModalUIActions
-const {
-  fetchProfile: fetchProfileAction,
-  setCurrentUser: setCurrentUserAction
-} = profilePageActions
-const { getProfileStatus } = profilePageSelectors
 const { getIsReachable } = reachabilitySelectors
 const { setVisibility } = modalsActions
 
@@ -53,25 +47,19 @@ export const ProfileScreen = () => {
   const styles = useStyles()
   const { params } = useRoute<'Profile'>()
   const { handle: userHandle, id } = params
-  const profile = useSelectProfileRoot([
-    'user_id',
-    'handle',
-    'track_count',
-    'does_current_user_follow'
-  ])
+  const { data: profile, isSuccess } = useUserByParams({
+    handle: userHandle ?? '',
+    userId: id
+  })
+
   const handle =
     userHandle && userHandle !== 'accountUser' ? userHandle : profile?.handle
   const handleLower = handle?.toLowerCase() ?? ''
   const isOwner = useSelector((state) => getIsOwner(state, handle ?? ''))
   const dispatch = useDispatch()
-  const status = useSelector((state) => getProfileStatus(state, handleLower))
+
   const [isRefreshing, setIsRefreshing] = useState(false)
   const isNotReachable = useSelector(getIsReachable) === false
-  const isScreenReady = useIsScreenReady()
-
-  const setCurrentUser = useCallback(() => {
-    dispatch(setCurrentUserAction(handleLower))
-  }, [dispatch, handleLower])
 
   const currentTab = useNavigationState((state) => {
     const tabIndex = state.routes[1].state?.index
@@ -99,22 +87,10 @@ export const ProfileScreen = () => {
     }
   }) as ProfilePageTabs
 
-  const fetchProfile = useCallback(() => {
-    if (!isScreenReady) return
-    dispatch(fetchProfileAction(handleLower, id ?? null, true, true, false))
-  }, [dispatch, handleLower, id, isScreenReady])
-
-  useFocusEffect(setCurrentUser)
-
-  useEffect(() => {
-    fetchProfile()
-  }, [fetchProfile])
-
   const handleRefresh = useCallback(() => {
     // TODO: Investigate why this function over-fires when you pull to refresh
     if (profile) {
       setIsRefreshing(true)
-      fetchProfile()
       switch (currentTab) {
         case ProfilePageTabs.TRACKS:
           dispatch(
@@ -138,13 +114,13 @@ export const ProfileScreen = () => {
           break
       }
     }
-  }, [profile, fetchProfile, currentTab, dispatch, handleLower])
+  }, [profile, currentTab, dispatch, handleLower])
 
   useEffect(() => {
-    if (status === Status.SUCCESS) {
+    if (isSuccess) {
       setIsRefreshing(false)
     }
-  }, [status])
+  }, [isSuccess])
 
   const handlePressTopRight = useCallback(() => {
     if (profile) {
