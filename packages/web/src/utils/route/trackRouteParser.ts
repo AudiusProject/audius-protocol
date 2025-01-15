@@ -5,7 +5,7 @@ import { matchPath } from 'react-router-dom'
 const { TRACK_ID_PAGE, TRACK_PAGE } = route
 
 export type TrackRouteParams =
-  | { slug: string; trackId: null; handle: string }
+  | { slug: string; handle: string }
   | { slug: null; trackId: ID; handle: null }
   | null
 
@@ -31,7 +31,7 @@ export const parseTrackRoute = (route: string): TrackRouteParams => {
   })
   if (trackPageMatch) {
     const { handle, slug } = trackPageMatch.params
-    return { slug, trackId: null, handle }
+    return { slug, handle }
   }
 
   return null
