@@ -139,8 +139,8 @@ export const PlaylistFolderNavItem = (props: PlaylistFolderNavItemProps) => {
   )
 
   const rightIcon = useMemo(() => {
-    const isKebabVisible =
-      isOpen || (isHovering && !isDraggingOver && !isHoveringNested)
+    const isVisibleOnHover = isHovering && !isDraggingOver && !isHoveringNested
+    const isKebabVisible = isOpen || isVisibleOnHover
     return isKebabVisible ? (
       <NavItemKebabButton
         visible

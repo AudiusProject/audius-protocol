@@ -229,7 +229,9 @@ export const ExpandableNavItem = ({
             <Box
               onClick={(e) => e.stopPropagation()}
               css={{
-                cursor: 'pointer'
+                cursor: 'pointer',
+                opacity: disabled ? 0.5 : 1,
+                transition: `opacity ${theme.motion.quick}`
               }}
             >
               {rightIcon}
