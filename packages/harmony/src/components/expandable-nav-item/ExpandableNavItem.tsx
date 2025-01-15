@@ -32,9 +32,17 @@ const variants: VariantConfigs = {
 }
 
 const getStyles = (theme: HarmonyTheme, disabled?: boolean): CSSObject => {
-  return {
-    transition: `opacity ${theme.motion.quick}`,
+  const baseStyles: CSSObject = {
+    transition: `background-color ${theme.motion.hover}`,
     opacity: disabled ? 0.5 : 1
+  }
+
+  return {
+    ...baseStyles,
+    '&:active': {
+      opacity: disabled ? 0.4 : 0.8,
+      transition: `opacity ${theme.motion.quick}`
+    }
   }
 }
 
@@ -80,9 +88,8 @@ export const ExpandableNavItem = ({
   const styles = useMemo(
     () => ({
       ...getStyles(theme, disabled),
-      opacity: isMainActive ? 0.8 : 1,
-      transition: `opacity ${theme.motion.quick}, background-color ${theme.motion.hover}`,
-      pointerEvents: disabled ? ('none' as const) : ('auto' as const)
+      opacity: isMainActive ? 0.8 : disabled ? 0.5 : 1,
+      transition: `opacity ${theme.motion.quick}, background-color ${theme.motion.hover}`
     }),
     [theme, disabled, isMainActive]
   )
@@ -98,17 +105,17 @@ export const ExpandableNavItem = ({
         alignItems: 'center',
         gap: theme.spacing.s,
         padding: theme.spacing.s,
-        backgroundColor: isHovered
-          ? theme.color.background.surface2
-          : undefined,
-        boxShadow: isHovered
-          ? `inset 0 0 0 1px ${theme.color.border.default}`
-          : undefined,
+        backgroundColor:
+          isHovered && !disabled ? theme.color.background.surface2 : undefined,
+        boxShadow:
+          isHovered && !disabled
+            ? `inset 0 0 0 1px ${theme.color.border.default}`
+            : undefined,
         borderRadius: theme.cornerRadius.m,
         width: '100%'
       }
     }),
-    [theme, isHovered]
+    [theme, isHovered, disabled]
   )
 
   const getIcon = useMemo(() => {

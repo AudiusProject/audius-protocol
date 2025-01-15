@@ -21,7 +21,9 @@ export const RestrictedExpandableNavItem = ({
     }
   }, [requiresAccount, restriction])
 
+  const isDisabled = restriction !== 'none' || !!disabled
+
   return (
-    <ExpandableNavItem onClick={handleClick} disabled={disabled} {...props} />
+    <ExpandableNavItem onClick={handleClick} disabled={isDisabled} {...props} />
   )
 }
