@@ -653,7 +653,6 @@ def get_stream_url_with_mirrors(
 
 
 def get_preview_url_with_mirrors(track: dict, user_id: int | None) -> UrlWithMirrors:
-    logger.error(f"preview_cid={track.get('preview_cid')}")
     if track.get("preview_cid"):
         preview_signature = get_gated_content_signature(
             {
@@ -770,11 +769,17 @@ def _populate_gated_content_metadata(
                     ] = get_download_url_with_mirrors(
                         entity, current_user_id, is_authorized_as_user=False
                     )
+                    entity[
+                        response_name_constants.preview
+                    ] = get_preview_url_with_mirrors(entity, current_user_id)
             elif stream_conditions:
                 entity[response_name_constants.access] = {
                     "stream": False,
                     "download": False,
                 }
+                entity[response_name_constants.preview] = get_preview_url_with_mirrors(
+                    entity, current_user_id
+                )
             elif download_conditions:
                 entity[response_name_constants.access] = {
                     "stream": True,
@@ -786,6 +791,9 @@ def _populate_gated_content_metadata(
                     ] = get_stream_url_with_mirrors(
                         entity, current_user_id, is_authorized_as_user=False
                     )
+                    entity[
+                        response_name_constants.preview
+                    ] = get_preview_url_with_mirrors(entity, current_user_id)
         return
 
     current_user_wallet = (
