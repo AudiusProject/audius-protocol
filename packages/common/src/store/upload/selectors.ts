@@ -11,7 +11,7 @@ export const getUploadSuccess = (state: CommonState) => state.upload.success
 export const getUploadError = (state: CommonState) => state.upload.error
 export const getTracks = (state: CommonState) => state.upload.tracks
 export const getIsUploading = (state: CommonState) => state.upload.uploading
-export const getShouldReset = (state: CommonState) => state.upload.shouldReset
+export const getFormState = (state: CommonState) => state.upload.formState
 
 // Should sum to 1
 const UPLOAD_WEIGHT = 0.5

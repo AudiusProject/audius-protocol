@@ -66,7 +66,6 @@ export const EditableName = (props: EditableNameProps) => {
             badgeSize={24}
             className={styles.iconVerified}
             isVerifiedOverride={verified}
-            useSVGTiers
           />
         </>
       )}

@@ -184,6 +184,10 @@ export type Copyright = {
   text: string
 }
 
+type CoverArtSizesWithMirror = CoverArtSizes & {
+  mirrors?: string[] | undefined
+}
+
 export type TrackMetadata = {
   ai_attribution_user_id?: Nullable<number>
   allowed_api_keys?: Nullable<string[]>
@@ -213,7 +217,7 @@ export type TrackMetadata = {
   tags: Nullable<string>
   title: string
   track_segments: TrackSegment[]
-  artwork: CoverArtSizes & { mirrors?: string[] | undefined }
+  artwork: CoverArtSizesWithMirror
   cover_art: Nullable<CID>
   cover_art_sizes: Nullable<CID>
   cover_art_cids?: Nullable<CoverArtSizesCids>
@@ -291,6 +295,10 @@ export type TrackMetadata = {
     permalink: string
   }
 } & Timestamped
+
+export type WriteableTrackMetadata = TrackMetadata & {
+  artwork: CoverArtSizesWithMirror & { file?: File | null; url: '' }
+}
 
 export type DownloadReason = {
   is_from_favorites?: boolean

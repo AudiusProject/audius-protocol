@@ -97,6 +97,28 @@ export type ProgressState = {
   stems: ProgressState[]
 }
 
+type InitialFormState = {
+  uploadType: undefined
+  tracks: undefined
+  metadata: undefined
+}
+
+export type TrackFormState = {
+  uploadType: UploadType.INDIVIDUAL_TRACK | UploadType.INDIVIDUAL_TRACKS
+  tracks: TrackForUpload[]
+}
+
+export type CollectionFormState = {
+  uploadType: UploadType.ALBUM | UploadType.PLAYLIST
+  tracks: TrackForUpload[]
+  metadata: CollectionValues
+}
+
+export type UploadFormState =
+  | TrackFormState
+  | CollectionFormState
+  | InitialFormState
+
 type UploadStateBase = {
   openMultiTrackNotification: boolean
   tracks: Nullable<TrackForUpload[]>
@@ -105,10 +127,10 @@ type UploadStateBase = {
   uploadProgress: Nullable<ProgressState[]>
   success: boolean
   error: boolean
-  shouldReset: boolean
   completionId: Nullable<number>
   stems: StemUpload[][]
   failedTrackIndices: number[]
+  formState: Nullable<UploadFormState>
 }
 
 type UploadStateForTracks = UploadStateBase & {

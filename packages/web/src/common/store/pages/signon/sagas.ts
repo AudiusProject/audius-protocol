@@ -137,29 +137,12 @@ function* fetchReferrer(
   action: ReturnType<typeof signOnActions.fetchReferrer>
 ) {
   yield* waitForRead()
-  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
-  const sdk = yield* getSDK()
   const { handle } = action
   if (handle) {
     try {
       const user = yield* call(fetchUserByHandle, handle)
       if (!user) return
       yield* put(signOnActions.setReferrer(user.user_id))
-
-      // Check if the user is already signed in
-      // If so, apply retroactive referrals
-
-      const currentUser = yield* select(getAccountUser)
-      if (
-        currentUser &&
-        !currentUser.events?.referrer &&
-        currentUser.user_id !== user.user_id
-      ) {
-        yield* call(audiusBackendInstance.updateCreator, {
-          metadata: { ...currentUser, events: { referrer: user.user_id } },
-          sdk
-        })
-      }
     } catch (e: any) {
       const reportToSentry = yield* getContext('reportToSentry')
       reportToSentry({
@@ -988,7 +971,7 @@ function* signIn(action: ReturnType<typeof signOnActions.signIn>) {
     }
 
     // Apply retroactive referral
-    if (!user.events?.referrer && signOn.referrer) {
+    if (signOn.referrer) {
       yield* fork(audiusBackendInstance.updateCreator, {
         metadata: { ...user, events: { referrer: signOn.referrer } },
         sdk

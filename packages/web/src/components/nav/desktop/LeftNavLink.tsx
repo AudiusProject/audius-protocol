@@ -1,6 +1,9 @@
+import { Name } from '@audius/common/models'
 import { NavItem, NavItemProps } from '@audius/harmony'
+import { useDispatch } from 'react-redux'
 import { NavLink, useLocation } from 'react-router-dom'
 
+import { make } from 'common/store/analytics/actions'
 import {
   RestrictionType,
   useRequiresAccountOnClick
@@ -15,6 +18,7 @@ export type LeftNavLinkProps = Omit<NavItemProps, 'isSelected'> & {
 export const LeftNavLink = (props: LeftNavLinkProps) => {
   const { to, disabled, children, onClick, restriction, ...other } = props
   const location = useLocation()
+  const dispatch = useDispatch()
 
   const requiresAccountOnClick = useRequiresAccountOnClick(
     (e) => {
@@ -27,7 +31,15 @@ export const LeftNavLink = (props: LeftNavLinkProps) => {
   )
 
   const handleClick = (e?: React.MouseEvent<Element>) => {
-    if (!disabled && !!e && !e.defaultPrevented) {
+    if (!!e && !e.defaultPrevented) {
+      if (to) {
+        dispatch(
+          make(Name.LINK_CLICKING, {
+            url: to,
+            source: 'left nav'
+          })
+        )
+      }
       return requiresAccountOnClick(e)
     } else {
       e?.preventDefault()
@@ -36,18 +48,13 @@ export const LeftNavLink = (props: LeftNavLinkProps) => {
   }
 
   return (
-    <NavLink
-      to={to ?? ''}
-      onClick={handleClick}
-      style={{ pointerEvents: disabled ? 'none' : 'auto' }}
-      draggable={false}
-    >
+    <NavLink to={to ?? ''} onClick={handleClick} draggable={false}>
       <NavItem
         {...other}
-        isSelected={to ? location.pathname === to : false}
+        isSelected={to ? location.pathname.startsWith(to) : false}
         css={{
-          opacity: disabled ? 0.6 : 1,
-          cursor: disabled ? 'not-allowed' : 'pointer'
+          opacity: disabled ? 0.5 : 1,
+          cursor: 'pointer'
         }}
       >
         {children}

@@ -9,6 +9,7 @@ import {
 } from '@audius/common/models'
 import {
   accountSelectors,
+  accountActions,
   cacheTracksSelectors,
   cacheActions,
   cacheUsersSelectors,
@@ -49,6 +50,7 @@ const { getUser } = cacheUsersSelectors
 const { getTrack, getTracks } = cacheTracksSelectors
 const { getUserId, getUserHandle, getIsGuestAccount } = accountSelectors
 const { getNftAccessSignatureMap } = gatedContentSelectors
+const { incrementTrackSaveCount, decrementTrackSaveCount } = accountActions
 const { setVisibility } = modalsActions
 
 /* REPOST TRACK */
@@ -337,11 +339,7 @@ export function* saveTrackAsync(
     return
   }
 
-  yield* call(adjustUserField, {
-    user,
-    fieldName: 'track_save_count',
-    delta: 1
-  })
+  yield* put(incrementTrackSaveCount())
 
   const event = make(Name.FAVORITE, {
     kind: 'track',
@@ -438,11 +436,7 @@ export function* confirmSaveTrack(
       // @ts-ignore: remove when confirmer is typed
       function* ({ timeout, message }: { timeout: boolean; message: string }) {
         // Revert the incremented save count
-        yield* call(adjustUserField, {
-          user,
-          fieldName: 'track_save_count',
-          delta: -1
-        })
+        yield* put(decrementTrackSaveCount())
 
         yield* put(
           socialActions.saveTrackFailed(trackId, timeout ? 'Timeout' : message)
@@ -473,11 +467,7 @@ export function* unsaveTrackAsync(
   const user = yield* select(getUser, { id: userId })
   if (!user) return
 
-  yield* call(adjustUserField, {
-    user,
-    fieldName: 'track_save_count',
-    delta: -1
-  })
+  yield* put(decrementTrackSaveCount())
 
   const event = make(Name.UNFAVORITE, {
     kind: 'track',
@@ -547,11 +537,7 @@ export function* confirmUnsaveTrack(trackId: ID, user: User) {
       // @ts-ignore: remove when confirmer is typed
       function* ({ timeout, message }: { timeout: boolean; message: string }) {
         // revert the decremented save count
-        yield* call(adjustUserField, {
-          user,
-          fieldName: 'track_save_count',
-          delta: 1
-        })
+        yield* put(incrementTrackSaveCount())
         yield* put(
           socialActions.unsaveTrackFailed(
             trackId,

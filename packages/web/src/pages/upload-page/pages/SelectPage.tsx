@@ -2,7 +2,7 @@ import { useCallback, useState } from 'react'
 
 import { ErrorLevel, Feature } from '@audius/common/models'
 import { newCollectionMetadata } from '@audius/common/schemas'
-import { UploadType } from '@audius/common/store'
+import { UploadFormState, UploadType } from '@audius/common/store'
 import { removeNullable, Nullable } from '@audius/common/utils'
 import cn from 'classnames'
 
@@ -13,7 +13,6 @@ import { reportToSentry } from 'store/errors/reportToSentry'
 
 import { TracksPreview } from '../components/TracksPreview'
 import { processFiles } from '../store/utils/processFiles'
-import { UploadFormState } from '../types'
 
 import styles from './SelectPage.module.css'
 

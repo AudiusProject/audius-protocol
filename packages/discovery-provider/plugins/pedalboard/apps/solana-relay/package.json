@@ -17,7 +17,7 @@
     "@pedalboard/basekit": "*",
     "@pedalboard/logger": "*",
     "@pedalboard/storage": "*",
-    "@solana/web3.js": "1.93.4",
+    "@solana/web3.js": "1.98.0",
     "axios": "1.6.8",
     "body-parser": "1.19.0",
     "borsh": "0.3.1",

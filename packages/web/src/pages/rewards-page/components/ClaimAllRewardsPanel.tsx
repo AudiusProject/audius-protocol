@@ -57,8 +57,9 @@ export const ClaimAllRewardsPanel = () => {
         justifyContent='space-between'
         css={{ cursor: 'pointer' }}
         onClick={handleClick}
+        mt='l'
       >
-        <Flex direction='column' alignItems='start' w='100%'>
+        <Flex direction='column' alignItems='start' w='100%' p='l'>
           <Flex gap='s' alignItems='center'>
             {claimable ? (
               <IconTokenGold

@@ -14,6 +14,11 @@
       "name": "dashgo",
       "appKey": "a5cce5f3ea25b7dfb2c1a84ed1f58d1ecbc9be5c",
       "url": "http://ddex.audius.co"
+    },
+    {
+      "name": "revelator",
+      "appKey": "2ee33a0d99972fbe344c694cbd89e9f2553f7ac4",
+      "url": "http://ddex.audius.co"
     }
   ]
 }
