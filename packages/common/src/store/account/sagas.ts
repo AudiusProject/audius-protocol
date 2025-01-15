@@ -249,11 +249,7 @@ export function* fetchAccountAsync() {
 
   if (user.handle) {
     // guest account don't have handles
-    try {
-      yield* call(recordIPIfNotRecent, user.handle)
-    } catch (e) {
-      console.error(e)
-    }
+    yield* call(recordIPIfNotRecent, user.handle)
   }
 
   // Cache the account and put the signedIn action. We're done.
