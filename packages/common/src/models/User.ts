@@ -73,12 +73,10 @@ export type UserMetadata = {
 
   // Used by redux cache
   local?: boolean
-
-  // Only present on the "current" account
-  events?: UserEvent
 } & Timestamped
 
 export type WriteableUserMetadata = UserMetadata & {
+  events?: UserEvent
   associated_sol_wallets?: Nullable<Record<string, { signature: string }>>
   associated_wallets?: Nullable<Record<string, { signature: string }>>
 }

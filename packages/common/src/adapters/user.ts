@@ -8,7 +8,8 @@ import {
   AccountUserMetadata,
   ManagedUserMetadata,
   UserManagerMetadata,
-  UserMetadata
+  UserMetadata,
+  WriteableUserMetadata
 } from '~/models/User'
 import { SolanaWalletAddress, StringWei } from '~/models/Wallet'
 import { decodeHashId } from '~/utils/hashIds'
@@ -151,7 +152,7 @@ export const accountFromSDK = (
 }
 
 export const userMetadataToSdk = (
-  input: UserMetadata & Pick<AccountUserMetadata, 'playlist_library'>
+  input: WriteableUserMetadata & Pick<AccountUserMetadata, 'playlist_library'>
 ): UpdateProfileRequest['metadata'] => ({
   ...camelcaseKeys(
     pick(input, [
