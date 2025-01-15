@@ -325,8 +325,8 @@ function* sendTipAsync() {
 
   const amount = Number(stringAudioAmount)
 
-  let senderWallet = '' as SolanaWalletAddress
-  let recipientWallet = '' as SolanaWalletAddress
+  let senderWallet: SolanaWalletAddress | undefined
+  let recipientWallet: SolanaWalletAddress | undefined
 
   // Using `deriveUserBank` here because we just need the addresses for
   // analytics. The SDK call to send the tip will create them if needed.
