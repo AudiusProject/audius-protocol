@@ -134,12 +134,19 @@ export const ExpandableNavItem = ({
   const leftIcon = useMemo(() => {
     if (!getIcon && !LeftIcon) return null
 
+    const dimensions = variant === 'compact' ? 'unit5' : 'unit6'
+
     return (
-      <Flex alignItems='center' justifyContent='center' h='xl' w='xl'>
+      <Flex
+        alignItems='center'
+        justifyContent='center'
+        h={dimensions}
+        w={dimensions}
+      >
         {getIcon}
       </Flex>
     )
-  }, [getIcon, LeftIcon])
+  }, [getIcon, LeftIcon, variant])
 
   const shouldShowRightIcon = isOpen || shouldPersistRightIcon
 
