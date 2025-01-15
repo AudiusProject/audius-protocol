@@ -11,7 +11,7 @@ import { mainnet } from 'viem/chains'
 import { discoveryNodeSelectorService } from 'services/audius-sdk/discoveryNodeSelector'
 import { env } from 'services/env'
 
-import { audiusWalletClient } from './auth'
+import { getAudiusWalletClient } from './auth'
 
 declare global {
   interface Window {
@@ -22,7 +22,7 @@ declare global {
 let inProgress = false
 const SDK_LOADED_EVENT_NAME = 'AUDIUS_SDK_LOADED'
 
-const initSdk = async () => {
+export const initSdk = async () => {
   inProgress = true
 
   // For now, the only solana relay we want to use is on DN 1, so hardcode
@@ -47,6 +47,7 @@ const initSdk = async () => {
 
   // Overrides some DN configuration from optimizely
   const discoveryNodeSelector = await discoveryNodeSelectorService.getInstance()
+  const audiusWalletClient = await getAudiusWalletClient()
 
   let ethWalletClient
   try {

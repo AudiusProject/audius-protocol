@@ -1,3 +1,4 @@
+import { HedgehogWalletNotFoundError } from '@audius/sdk'
 import { SagaIterator } from 'redux-saga'
 import {
   call,
@@ -104,14 +105,14 @@ function* initializeMetricsForUser({
 }: {
   accountUser: UserMetadata
 }) {
-  const authService = yield* getContext('authService')
   const solanaWalletService = yield* getContext('solanaWalletService')
   const analytics = yield* getContext('analytics')
+  const sdk = yield* getSDK()
 
   if (accountUser && accountUser.handle) {
-    const { web3WalletAddress } = yield* call([
-      authService,
-      authService.getWalletAddresses
+    const [web3WalletAddress] = yield* call([
+      sdk.services.audiusWalletClient,
+      sdk.services.audiusWalletClient.getAddresses
     ])
     const { user: web3User } = yield* call(userApiFetchSaga.getUserAccount, {
       wallet: web3WalletAddress
@@ -158,7 +159,6 @@ function* initializeMetricsForUser({
 export function* fetchAccountAsync() {
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
   const remoteConfigInstance = yield* getContext('remoteConfigInstance')
-  const authService = yield* getContext('authService')
   const localStorage = yield* getContext('localStorage')
   const sdk = yield* getSDK()
   const accountStatus = yield* select(accountSelectors.getAccountStatus)
@@ -167,11 +167,24 @@ export function* fetchAccountAsync() {
     yield* put(accountActions.fetchAccountRequested())
   }
 
-  const { accountWalletAddress: wallet, web3WalletAddress } = yield* call([
-    authService,
-    authService.getWalletAddresses
-  ])
-  if (!wallet) {
+  let wallet, web3WalletAddress
+  try {
+    const connectedWallets = yield* call([
+      sdk.services.audiusWalletClient,
+      sdk.services.audiusWalletClient.getAddresses
+    ])
+    const accountWalletAddressOverride = yield* call([
+      localStorage,
+      localStorage.getAudiusUserWalletOverride
+    ])
+    web3WalletAddress = connectedWallets[0]
+    wallet = accountWalletAddressOverride ?? web3WalletAddress
+  } catch (e) {
+    if (!(e instanceof HedgehogWalletNotFoundError)) {
+      console.error(e)
+    }
+  }
+  if (!wallet || !web3WalletAddress) {
     yield* put(
       fetchAccountFailed({
         reason: 'ACCOUNT_NOT_FOUND'
@@ -232,7 +245,11 @@ export function* fetchAccountAsync() {
 
   if (user.handle) {
     // guest account don't have handles
-    yield* call(recordIPIfNotRecent, user.handle)
+    try {
+      yield* call(recordIPIfNotRecent, user.handle)
+    } catch (e) {
+      console.error(e)
+    }
   }
 
   // Cache the account and put the signedIn action. We're done.
