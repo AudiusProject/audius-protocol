@@ -31,11 +31,7 @@ const variants: VariantConfigs = {
   }
 }
 
-const getStyles = (
-  theme: HarmonyTheme,
-  isHovered: boolean,
-  disabled?: boolean
-): CSSObject => {
+const getStyles = (theme: HarmonyTheme, disabled?: boolean): CSSObject => {
   return {
     transition: `opacity ${theme.motion.quick}`,
     opacity: disabled ? 0.5 : 1
@@ -83,12 +79,12 @@ export const ExpandableNavItem = ({
 
   const styles = useMemo(
     () => ({
-      ...getStyles(theme, isHovered, disabled),
+      ...getStyles(theme, disabled),
       opacity: isMainActive ? 0.8 : 1,
       transition: `opacity ${theme.motion.quick}, background-color ${theme.motion.hover}`,
       pointerEvents: disabled ? ('none' as const) : ('auto' as const)
     }),
-    [theme, isHovered, disabled, isMainActive]
+    [theme, disabled, isMainActive]
   )
 
   const containerStyles = useMemo(
