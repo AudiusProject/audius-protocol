@@ -92,13 +92,6 @@ const INITIAL_UPDATE_FIELDS = {
   updatedDonation: null
 }
 
-const ProfilePageProviderWrapper = (props: ProfilePageProps) => {
-  const params = parseUserRoute(props.pathname)
-  const { data: user } = useUserByParams(params!)
-
-  return <ProfilePage {...props} user={user} />
-}
-
 type OwnProps = {
   containerRef: RefObject<HTMLDivElement>
   children:
@@ -106,10 +99,17 @@ type OwnProps = {
     | ComponentType<DesktopProfilePageProps>
 }
 
-type ProfilePageProps = OwnProps &
+type ProfilePageProviderProps = OwnProps &
   ReturnType<ReturnType<typeof makeMapStateToProps>> &
   ReturnType<typeof mapDispatchToProps> &
   RouteComponentProps
+
+const ProfilePageProvider = (props: ProfilePageProviderProps) => {
+  const params = parseUserRoute(props.pathname)
+  const { data: user } = useUserByParams(params!)
+
+  return <ProfilePage {...props} user={user} />
+}
 
 type ProfilePageState = {
   activeTab: ProfilePageTabs | null
@@ -133,14 +133,11 @@ type ProfilePageState = {
   showUnmuteUserConfirmationModal: boolean
 }
 
-type ProfilePageProvideProps = ProfilePageProps & {
+type ProfilePageProps = ProfilePageProviderProps & {
   user: UserMetadata | null | undefined
 }
 
-class ProfilePage extends PureComponent<
-  ProfilePageProvideProps,
-  ProfilePageState
-> {
+class ProfilePage extends PureComponent<ProfilePageProps, ProfilePageState> {
   state: ProfilePageState = {
     activeTab: null,
     editMode: false,
@@ -187,10 +184,7 @@ class ProfilePage extends PureComponent<
     }
   }
 
-  componentDidUpdate(
-    prevProps: ProfilePageProvideProps,
-    prevState: ProfilePageState
-  ) {
+  componentDidUpdate(prevProps: ProfilePageProps, prevState: ProfilePageState) {
     const {
       pathname,
       profile,
@@ -628,7 +622,7 @@ class ProfilePage extends PureComponent<
     return !!((user && user.track_count > 0) || (isOwner && accountHasTracks))
   }
 
-  getIsOwner = (overrideProps?: ProfilePageProvideProps) => {
+  getIsOwner = (overrideProps?: ProfilePageProps) => {
     const { user, accountUserId } = overrideProps || this.props
     return user && accountUserId ? user.user_id === accountUserId : false
   }
@@ -1082,5 +1076,5 @@ function mapDispatchToProps(dispatch: Dispatch, props: RouteComponentProps) {
 }
 
 export default withRouter(
-  connect(makeMapStateToProps, mapDispatchToProps)(ProfilePageProviderWrapper)
+  connect(makeMapStateToProps, mapDispatchToProps)(ProfilePageProvider)
 )

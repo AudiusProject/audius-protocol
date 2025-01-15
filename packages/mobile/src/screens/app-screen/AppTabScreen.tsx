@@ -4,8 +4,7 @@ import type {
   FavoriteType,
   TipSource,
   ID,
-  SearchTrack,
-  SearchPlaylist
+  SearchTrack
 } from '@audius/common/models'
 import type {
   NotificationType,
@@ -68,9 +67,8 @@ export type AppTabScreenParamList = {
   TrackRemixes: { trackId: ID } | { handle: string; slug: string }
   Profile: { handle: string; id?: ID } | { handle?: string; id: ID }
   Collection: {
-    id?: ID
+    collectionId?: ID
     slug?: string
-    searchCollection?: SearchPlaylist
     collectionType?: 'playlist' | 'album'
     handle?: string
   }

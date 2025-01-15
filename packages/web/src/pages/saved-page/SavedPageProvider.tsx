@@ -139,9 +139,6 @@ class SavedPage extends PureComponent<SavedPageProps, SavedPageState> {
       this.state.sortMethod,
       this.state.sortDirection
     )
-    if (this.context.isMobile) {
-      this.props.fetchSavedPlaylists()
-    }
   }
 
   componentWillUnmount() {

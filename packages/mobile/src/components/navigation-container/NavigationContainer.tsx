@@ -256,34 +256,22 @@ const NavigationContainer = (props: NavigationContainerProps) => {
       // Opaque ID routes
       // /tracks/Nz9yBb4
       if (path.match(/^\/tracks\//)) {
-        const id = decodeHashId(pathPart(path)(2))
-        return createFeedStackState({
-          name: 'Track',
-          params: {
-            id
-          }
-        })
+        const trackId = decodeHashId(pathPart(path)(2))
+        return createFeedStackState({ name: 'Track', params: { trackId } })
       }
 
       // /users/Nz9yBb4
       if (path.match(/^\/users\//)) {
         const id = decodeHashId(pathPart(path)(2))
-        return createFeedStackState({
-          name: 'Profile',
-          params: {
-            id
-          }
-        })
+        return createFeedStackState({ name: 'Profile', params: { id } })
       }
 
       // /playlists/Nz9yBb4
       if (path.match(/^\/playlists\//)) {
-        const id = decodeHashId(pathPart(path)(2))
+        const collectionId = decodeHashId(pathPart(path)(2))
         return createFeedStackState({
-          name: 'Profile',
-          params: {
-            id
-          }
+          name: 'Collection',
+          params: { collectionId }
         })
       }
 

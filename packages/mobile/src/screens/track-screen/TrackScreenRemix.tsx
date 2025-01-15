@@ -95,7 +95,7 @@ const TrackScreenRemixComponent = ({
   const navigation = useNavigation()
 
   const handlePressTrack = useCallback(() => {
-    navigation.push('Track', { id: track_id })
+    navigation.push('Track', { trackId: track_id })
   }, [navigation, track_id])
 
   const handlePressArtist = useCallback(() => {
