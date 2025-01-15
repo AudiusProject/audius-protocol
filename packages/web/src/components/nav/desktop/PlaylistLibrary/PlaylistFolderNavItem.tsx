@@ -16,7 +16,8 @@ import {
   PopupMenuItem,
   ExpandableNavItem,
   Box,
-  Flex
+  Flex,
+  useTheme
 } from '@audius/harmony'
 import { ClassNames } from '@emotion/react'
 import { useDispatch } from 'react-redux'
@@ -50,6 +51,7 @@ const messages = {
 }
 
 export const PlaylistFolderNavItem = (props: PlaylistFolderNavItemProps) => {
+  const { spacing } = useTheme()
   const { folder, level } = props
   const { name, contents, id } = folder
   const folderHasUpdate = useSelector((state) => {
@@ -145,15 +147,17 @@ export const PlaylistFolderNavItem = (props: PlaylistFolderNavItemProps) => {
         aria-label={messages.editFolderLabel}
         onClick={handleClickEdit}
         items={kebabItems}
+        css={{ height: spacing.unit5 }}
       />
     ) : null
   }, [
+    isOpen,
     isHovering,
     isDraggingOver,
     isHoveringNested,
     handleClickEdit,
     kebabItems,
-    isOpen
+    spacing
   ])
 
   const nestedItems = useMemo(() => {

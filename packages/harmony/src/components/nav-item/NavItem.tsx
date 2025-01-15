@@ -22,6 +22,8 @@ export const NavItem = ({
   textSize = 'l',
   hasNotification = false,
   leftOverride,
+  variant = 'default',
+  isChild = false,
   ...props
 }: NavItemProps) => {
   const { color } = useTheme()
@@ -88,22 +90,28 @@ export const NavItem = ({
           alignItems='center'
           gap='m'
           flex={1}
+          h={variant === 'compact' ? 'unit5' : 'unit6'}
+          pv='s'
           css={{
             maxWidth: '240px'
           }}
         >
           {leftOverride || leftIconWithNotification}
-          <Text
-            variant='title'
-            size={textSize}
-            strength='weak'
-            lineHeight='single'
-            color={textAndIconColor}
-            ellipses
-            css={{ flex: 1 }}
-          >
-            {children}
-          </Text>
+          <Flex ml={isChild ? 'm' : undefined}>
+            <Text
+              variant='title'
+              size={textSize}
+              strength='weak'
+              lineHeight='single'
+              color={textAndIconColor}
+              ellipses
+              css={{
+                flex: 1
+              }}
+            >
+              {children}
+            </Text>
+          </Flex>
         </Flex>
         {hasRightIcon ? RightIcon : null}
       </Flex>
