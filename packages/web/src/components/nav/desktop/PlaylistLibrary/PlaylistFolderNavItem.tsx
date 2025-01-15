@@ -63,6 +63,14 @@ export const PlaylistFolderNavItem = (props: PlaylistFolderNavItemProps) => {
   const [isDraggingOver, setIsDraggingOver] = useState(false)
   const [isHovering, setIsHovering] = useState(false)
   const [isHoveringNested, setIsHoveringNested] = useState(false)
+  const [isOpen, setIsOpen] = useState(false)
+  const handleClick = useCallback(
+    (isOpen: boolean) => {
+      setIsOpen(isOpen)
+    },
+    [setIsOpen]
+  )
+
   const dispatch = useDispatch()
   const record = useRecord()
   const [isDeleteConfirmationOpen, toggleDeleteConfirmationOpen] =
@@ -129,7 +137,7 @@ export const PlaylistFolderNavItem = (props: PlaylistFolderNavItemProps) => {
   )
 
   const rightIcon = useMemo(() => {
-    return isHovering && !isDraggingOver && !isHoveringNested ? (
+    return isOpen || (isHovering && !isDraggingOver && !isHoveringNested) ? (
       <NavItemKebabButton
         visible
         aria-label={messages.editFolderLabel}
@@ -142,7 +150,8 @@ export const PlaylistFolderNavItem = (props: PlaylistFolderNavItemProps) => {
     isDraggingOver,
     isHoveringNested,
     handleClickEdit,
-    kebabItems
+    kebabItems,
+    isOpen
   ])
 
   const nestedItems = useMemo(() => {
@@ -214,6 +223,8 @@ export const PlaylistFolderNavItem = (props: PlaylistFolderNavItemProps) => {
                 nestedItems={nestedItems}
                 variant='compact'
                 shouldPersistDownArrow
+                shouldPersistRightIcon
+                onClick={handleClick}
               />
               <DeleteFolderConfirmationModal
                 folderId={id}
