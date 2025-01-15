@@ -75,12 +75,6 @@ export type UserMetadata = {
   local?: boolean
 } & Timestamped
 
-export type WriteableUserMetadata = UserMetadata & {
-  events?: UserEvent
-  associated_sol_wallets?: Nullable<Record<string, { signature: string }>>
-  associated_wallets?: Nullable<Record<string, { signature: string }>>
-}
-
 export type AccountUserMetadata = {
   user: UserMetadata & { playlists: AccountCollection[] }
   playlists: AccountCollection[]
@@ -106,6 +100,12 @@ export type ComputedUserProperties = {
 }
 
 export type User = UserMetadata & ComputedUserProperties
+
+export type WriteableUserMetadata = User & {
+  events?: UserEvent
+  associated_sol_wallets?: Nullable<Record<string, { signature: string }>>
+  associated_wallets?: Nullable<Record<string, { signature: string }>>
+}
 
 export type CachedAccount = {
   userId: ID

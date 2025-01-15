@@ -1,6 +1,6 @@
 import { pick } from 'lodash'
 
-import { TrackMetadata, WriteableUserMetadata } from '~/models'
+import { WriteableTrackMetadata, WriteableUserMetadata } from '~/models'
 
 const trackMetadataSchema = {
   track_cid: null,
@@ -79,7 +79,7 @@ const trackMetadataSchema = {
 export const newTrackMetadata = (
   fields?: any,
   validate = false
-): TrackMetadata => {
+): WriteableTrackMetadata => {
   const validFields = validate
     ? pick(fields, Object.keys(trackMetadataSchema).concat(['track_id']))
     : fields
