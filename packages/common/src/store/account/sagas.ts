@@ -160,6 +160,7 @@ export function* fetchAccountAsync() {
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
   const remoteConfigInstance = yield* getContext('remoteConfigInstance')
   const localStorage = yield* getContext('localStorage')
+  const reportToSentry = yield* getContext('reportToSentry')
   const sdk = yield* getSDK()
   const accountStatus = yield* select(accountSelectors.getAccountStatus)
   // Don't revert successful local account fetch
@@ -181,7 +182,10 @@ export function* fetchAccountAsync() {
     wallet = accountWalletAddressOverride ?? web3WalletAddress
   } catch (e) {
     if (!(e instanceof HedgehogWalletNotFoundError)) {
-      console.error(e)
+      yield* call(reportToSentry, {
+        name: 'AccountNotFound',
+        error: e as Error
+      })
     }
   }
   if (!wallet || !web3WalletAddress) {
