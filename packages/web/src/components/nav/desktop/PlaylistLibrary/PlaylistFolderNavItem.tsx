@@ -137,7 +137,9 @@ export const PlaylistFolderNavItem = (props: PlaylistFolderNavItemProps) => {
   )
 
   const rightIcon = useMemo(() => {
-    return isOpen || (isHovering && !isDraggingOver && !isHoveringNested) ? (
+    const isKebabVisible =
+      isOpen || (isHovering && !isDraggingOver && !isHoveringNested)
+    return isKebabVisible ? (
       <NavItemKebabButton
         visible
         aria-label={messages.editFolderLabel}
