@@ -97,21 +97,20 @@ export const NavItem = ({
           }}
         >
           {leftOverride || leftIconWithNotification}
-          <Flex ml={isChild ? 'm' : undefined}>
-            <Text
-              variant='title'
-              size={textSize}
-              strength='weak'
-              lineHeight='single'
-              color={textAndIconColor}
-              ellipses
-              css={{
-                flex: 1
-              }}
-            >
-              {children}
-            </Text>
-          </Flex>
+          <Text
+            variant='title'
+            size={textSize}
+            strength='weak'
+            lineHeight='single'
+            color={textAndIconColor}
+            ellipses
+            css={{
+              flex: 1,
+              marginLeft: isChild ? 'm' : undefined
+            }}
+          >
+            {children}
+          </Text>
         </Flex>
         {hasRightIcon ? RightIcon : null}
       </Flex>
