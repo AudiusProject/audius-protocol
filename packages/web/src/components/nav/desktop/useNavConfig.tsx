@@ -16,7 +16,6 @@ import {
   IconLibrary,
   IconMessages,
   IconPlaylists,
-  IconSpeaker,
   IconTrending,
   IconWallet,
   LoadingSpinner,
@@ -27,7 +26,9 @@ import { useSelector } from 'react-redux'
 import { useLocation } from 'react-router-dom'
 
 import { RestrictionType } from 'hooks/useRequiresAccount'
+import { matchesRoute } from 'utils/route'
 
+import { NavSpeakerIcon } from './NavSpeakerIcon'
 import { PlaylistLibrary } from './PlaylistLibrary'
 import { CreatePlaylistLibraryItemButton } from './PlaylistLibrary/CreatePlaylistLibraryItemButton'
 import { WalletsNestedContent } from './WalletsNestedContent'
@@ -61,15 +62,23 @@ export type NavItemConfig = {
   canUnfurl?: boolean
 }
 
-const matchesRoute = ({
-  current,
-  target
+const createNavItemWithSpeaker = ({
+  targetRoute,
+  playingFromRoute,
+  ...props
 }: {
-  current: string | null
-  target: string
-}) => {
-  return current?.startsWith(target) ?? false
-}
+  targetRoute: string
+  playingFromRoute: string | null
+} & Omit<NavItemConfig, 'rightIcon' | 'to'>): NavItemConfig => ({
+  ...props,
+  to: targetRoute,
+  rightIcon: (
+    <NavSpeakerIcon
+      playingFromRoute={playingFromRoute}
+      targetRoute={targetRoute}
+    />
+  )
+})
 
 export const useNavConfig = () => {
   const hasAccount = useSelector(getHasAccount)
@@ -85,96 +94,34 @@ export const useNavConfig = () => {
 
   const navItems = useMemo(
     (): NavItemConfig[] => [
-      {
+      createNavItemWithSpeaker({
         label: 'Feed',
         leftIcon: IconFeed,
-        to: FEED_PAGE,
+        targetRoute: FEED_PAGE,
         restriction: 'account',
         disabled: !hasAccount,
-        rightIcon: matchesRoute({
-          current: playingFromRoute,
-          target: FEED_PAGE
-        }) ? (
-          <IconSpeaker
-            size='s'
-            color={
-              matchesRoute({
-                current: location.pathname,
-                target: FEED_PAGE
-              })
-                ? 'staticWhite'
-                : 'accent'
-            }
-          />
-        ) : undefined
-      },
-      {
+        playingFromRoute
+      }),
+      createNavItemWithSpeaker({
         label: 'Trending',
         leftIcon: IconTrending,
-        to: TRENDING_PAGE,
-        restriction: 'none',
-        rightIcon: matchesRoute({
-          current: playingFromRoute,
-          target: TRENDING_PAGE
-        }) ? (
-          <IconSpeaker
-            size='s'
-            color={
-              matchesRoute({
-                current: location.pathname,
-                target: TRENDING_PAGE
-              })
-                ? 'staticWhite'
-                : 'accent'
-            }
-          />
-        ) : undefined
-      },
-      {
+        targetRoute: TRENDING_PAGE,
+        playingFromRoute
+      }),
+      createNavItemWithSpeaker({
         label: 'Explore',
         leftIcon: IconExplore,
-        to: EXPLORE_PAGE,
-        restriction: 'none',
-        rightIcon: matchesRoute({
-          current: playingFromRoute,
-          target: EXPLORE_PAGE
-        }) ? (
-          <IconSpeaker
-            size='s'
-            color={
-              matchesRoute({
-                current: location.pathname,
-                target: EXPLORE_PAGE
-              })
-                ? 'staticWhite'
-                : 'accent'
-            }
-          />
-        ) : undefined
-      },
-      {
+        targetRoute: EXPLORE_PAGE,
+        playingFromRoute
+      }),
+      createNavItemWithSpeaker({
         label: 'Library',
         leftIcon: IconLibrary,
-        to: LIBRARY_PAGE,
+        targetRoute: LIBRARY_PAGE,
         restriction: 'guest',
         disabled: !hasAccount,
-        rightIcon: matchesRoute({
-          current: playingFromRoute,
-          target: LIBRARY_PAGE
-        }) ? (
-          <IconSpeaker
-            size='s'
-            color={
-              matchesRoute({
-                current: location.pathname,
-                target: LIBRARY_PAGE
-              })
-                ? 'staticWhite'
-                : 'accent'
-            }
-          />
-        ) : undefined
-      },
+        playingFromRoute
+      }),
       {
         label: 'Messages',
         leftIcon: IconMessages,
