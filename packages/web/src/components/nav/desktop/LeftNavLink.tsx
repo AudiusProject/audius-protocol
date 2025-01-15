@@ -39,7 +39,7 @@ export const LeftNavLink = (props: LeftNavLinkProps) => {
     <NavLink to={to ?? ''} onClick={handleClick} draggable={false}>
       <NavItem
         {...other}
-        isSelected={to ? location.pathname === to : false}
+        isSelected={to ? location.pathname.startsWith(to) : false}
         css={{
           opacity: disabled ? 0.5 : 1,
           cursor: 'pointer'
