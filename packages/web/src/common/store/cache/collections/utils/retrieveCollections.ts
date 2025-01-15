@@ -14,7 +14,6 @@ import {
 } from '@audius/common/models'
 import {
   accountSelectors,
-  cacheCollectionsActions,
   cacheCollectionsSelectors,
   cacheSelectors,
   reformatCollection,
@@ -24,7 +23,7 @@ import {
 } from '@audius/common/store'
 import { makeUid, Nullable } from '@audius/common/utils'
 import { chunk } from 'lodash'
-import { all, call, select, put } from 'typed-redux-saga'
+import { all, call, select } from 'typed-redux-saga'
 
 import { retrieve } from 'common/store/cache/sagas'
 import { retrieveTracks } from 'common/store/cache/tracks/utils'
@@ -35,7 +34,6 @@ import { addUsersFromCollections } from './addUsersFromCollections'
 
 const { getEntryTimestamp } = cacheSelectors
 const { getCollections } = cacheCollectionsSelectors
-const { setPermalink } = cacheCollectionsActions
 const getUserId = accountSelectors.getUserId
 
 const TRACKS_BATCH_LIMIT = 200
@@ -153,65 +151,6 @@ function* selectEntriesTimestamp(ids: (ID | string)[]) {
     )
   const selectedEntries = yield* select(entriesTimestamps, ids)
   return selectedEntries
-}
-
-export function* retrieveCollectionByPermalink(
-  permalink: string,
-  config?: RetrieveCollectionsConfig
-) {
-  const {
-    fetchTracks = false,
-    forceRetrieveFromSource = false,
-    deleteExistingEntry
-  } = config ?? {}
-  // @ts-ignore retrieve should be refactored to ts first
-  const { entries, uids } = yield* call(retrieve, {
-    ids: [permalink],
-    selectFromCache: function* (permalinks: string[]) {
-      return yield* select(cacheCollectionsSelectors.getCollections, {
-        permalinks
-      })
-    },
-    getEntriesTimestamp: selectEntriesTimestamp,
-    retrieveFromSource: function* (permalinks: string[]) {
-      const metadatas = yield* call(retrieveCollection, {
-        permalink: permalinks[0]
-      })
-
-      // Process any local deletions on the client
-      const metadatasWithDeleted = yield* call(markCollectionDeleted, metadatas)
-
-      return metadatasWithDeleted
-    },
-    onBeforeAddToCache: function* (collections: UserCollectionMetadata[]) {
-      yield* addUsersFromCollections(collections)
-      yield* addTracksFromCollections(collections)
-
-      const [collection] = collections
-
-      const isLegacyPermalink = permalink !== collection.permalink
-      if (isLegacyPermalink) {
-        yield* put(setPermalink(permalink, collection.playlist_id))
-      }
-
-      if (fetchTracks) {
-        yield* call(retrieveTracksForCollections, collections, new Set())
-      }
-
-      const reformattedCollections = collections.map((c) =>
-        reformatCollection({ collection: c })
-      )
-
-      return reformattedCollections
-    },
-    kind: Kind.COLLECTIONS,
-    idField: 'playlist_id',
-    forceRetrieveFromSource,
-    shouldSetLoading: true,
-    deleteExistingEntry
-  })
-
-  return { collections: entries, uids }
 }
 
 type RetrieveCollectionsConfig = {

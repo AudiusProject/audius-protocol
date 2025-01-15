@@ -5,7 +5,8 @@ import { useDispatch } from 'react-redux'
 import { ID } from '~/models/Identifiers'
 import {
   collectionPageActions,
-  collectionPageLineupActions
+  collectionPageLineupActions,
+  CollectionsPageType
 } from '~/store/pages'
 
 import { Config } from './types'
@@ -14,7 +15,7 @@ import { useCollectionByPermalink } from './useCollectionByPermalink'
 
 type CollectionParams =
   | { collectionId?: ID }
-  | { handle?: string; slug?: string; collectionType?: 'album' | 'playlist' }
+  | { handle?: string; slug?: string; collectionType?: CollectionsPageType }
   | { permalink?: string }
 
 // feature-tan-query TODO: smart collections
@@ -57,7 +58,8 @@ export const useCollectionByParams = (
       dispatch(
         collectionPageLineupActions.fetchLineupMetadatas(
           0,
-          200,
+          // TODO: lineups should be paginated
+          100,
           false,
           undefined
         )

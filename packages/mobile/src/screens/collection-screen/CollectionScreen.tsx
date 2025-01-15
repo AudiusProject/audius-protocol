@@ -1,6 +1,6 @@
 import { useCallback, useMemo } from 'react'
 
-import { useCollectionByParams, useUser } from '@audius/common/api'
+import { useCollectionByParams } from '@audius/common/api'
 import { useGatedContentAccess } from '@audius/common/hooks'
 import {
   ShareSource,
@@ -74,13 +74,14 @@ const useStyles = makeStyles(({ spacing }) => ({
 export const CollectionScreen = () => {
   const { params } = useRoute<'Collection'>()
   const { data: collection } = useCollectionByParams(params)
-  const { data: user } = useUser(collection?.playlist_owner_id)
 
-  if (!collection || !user) {
+  if (!collection) {
     return <CollectionScreenSkeleton collectionType={params?.collectionType} />
   }
 
-  return <CollectionScreenComponent collection={collection} user={user} />
+  return (
+    <CollectionScreenComponent collection={collection} user={collection.user} />
+  )
 }
 
 type CollectionScreenComponentProps = {
