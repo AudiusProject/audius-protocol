@@ -6,10 +6,10 @@ import {
 import { BNUSDC } from '@audius/common/models'
 import { accountSelectors } from '@audius/common/store'
 import {
-  formatWei,
   formatUSDCWeiToFloorCentsNumber,
   route,
-  formatCount
+  formatCount,
+  WEI_DIVISOR
 } from '@audius/common/utils'
 import {
   BalancePill,
@@ -56,7 +56,7 @@ export const WalletsNestedContent = () => {
   }[tier]
 
   const audioBalanceFormatted = audioBalance
-    ? formatCount(parseFloat(formatWei(audioBalance, true, 0)))
+    ? formatCount(audioBalance.div(WEI_DIVISOR).toNumber())
     : '0'
 
   const usdcBalanceFormatted = usdcBalance ? formatCount(usdcCentBalance) : '0'
