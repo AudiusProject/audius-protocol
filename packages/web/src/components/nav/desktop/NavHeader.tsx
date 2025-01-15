@@ -77,7 +77,8 @@ export const NavHeader = () => {
       alignItems='center'
       backgroundColor='surface1'
       justifyContent='space-between'
-      p='m'
+      pv='l'
+      ph='m'
       flex={0}
       css={{ minHeight: 58 }}
     >

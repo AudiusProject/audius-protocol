@@ -18,6 +18,7 @@ import IconLogoCircleETHSVG from '../assets/icons/LogoCircleETH.svg'
 import IconLogoCircleSOLSVG from '../assets/icons/LogoCircleSOL.svg'
 import IconLogoCircleSTRSVG from '../assets/icons/LogoCircleSTR.svg'
 import IconLogoCircleUSDSVG from '../assets/icons/LogoCircleUSD.svg'
+import LogoCircleUSDCPng from '../assets/icons/LogoCircleUSDC.png'
 import IconLogoCircleUSDCSVG from '../assets/icons/LogoCircleUSDC.svg'
 import IconPhantomSVG from '../assets/icons/LogoPhantom.svg'
 import IconPhantomPlainSVG from '../assets/icons/LogoPhantomPlain.svg'
@@ -27,6 +28,7 @@ import IconSnapChatSVG from '../assets/icons/SnapChat.svg'
 import IconTelegramSVG from '../assets/icons/Telegram.svg'
 import IconTikTokSVG from '../assets/icons/TikTok.svg'
 import IconTwitterSVG from '../assets/icons/Twitter.svg'
+import { createImageIcon } from '../utils/createImageIcon'
 
 export const IconAudiusLogo = IconAudiusLogoSVG as IconComponent
 export const IconAudiusLogoColor = IconAudiusLogoColorSVG as IconComponent
@@ -50,6 +52,7 @@ export const IconLogoCircleSOL = IconLogoCircleSOLSVG as IconComponent
 export const IconLogoCircleSTR = IconLogoCircleSTRSVG as IconComponent
 export const IconLogoCircleUSD = IconLogoCircleUSDSVG as IconComponent
 export const IconLogoCircleUSDC = IconLogoCircleUSDCSVG as IconComponent
+export const IconLogoCircleUSDCPng = createImageIcon(LogoCircleUSDCPng)
 export const IconPhantom = IconPhantomSVG as IconComponent
 export const IconPhantomPlain = IconPhantomPlainSVG as IconComponent
 export const IconSolana = IconSolanaSVG as IconComponent

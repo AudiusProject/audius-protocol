@@ -14,7 +14,8 @@ import {
 import {
   BalancePill,
   Flex,
-  IconLogoCircleUSDC,
+  Text,
+  IconLogoCircleUSDCPng,
   IconTokenBronze,
   IconTokenSilver,
   IconTokenGold,
@@ -30,6 +31,11 @@ import { LeftNavLink } from './LeftNavLink'
 
 const { AUDIO_PAGE, PAYMENTS_PAGE } = route
 const { getIsAccountComplete, getUserId } = accountSelectors
+
+const messages = {
+  audio: '$AUDIO',
+  usdc: 'USDC'
+}
 
 export const WalletsNestedContent = () => {
   const isAccountComplete = useSelector(getIsAccountComplete)
@@ -68,21 +74,25 @@ export const WalletsNestedContent = () => {
         disabled={!isAccountComplete}
         textSize='m'
       >
-        $AUDIO
+        <Flex pl='s'>
+          <Text>{messages.audio}</Text>
+        </Flex>
       </LeftNavLink>
       {isUSDCEnabled ? (
         <LeftNavLink
           to={PAYMENTS_PAGE}
           rightIcon={
             <BalancePill balance={usdcBalanceFormatted}>
-              <IconLogoCircleUSDC />
+              <IconLogoCircleUSDCPng />
             </BalancePill>
           }
           restriction='account'
           disabled={!isAccountComplete}
           textSize='m'
         >
-          USDC
+          <Flex pl='s'>
+            <Text>{messages.usdc}</Text>
+          </Flex>
         </LeftNavLink>
       ) : null}
     </Flex>
