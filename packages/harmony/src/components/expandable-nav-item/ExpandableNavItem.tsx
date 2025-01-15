@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 
 import { useTheme, CSSObject } from '@emotion/react'
 import { ResizeObserver } from '@juggle/resize-observer'
@@ -69,21 +69,21 @@ export const ExpandableNavItem = ({
     polyfill: ResizeObserver
   })
 
-  const handleMouseEnter = () => setIsHovered(true)
-  const handleMouseLeave = () => {
+  const handleMouseEnter = useCallback(() => setIsHovered(true), [])
+  const handleMouseLeave = useCallback(() => {
     setIsHovered(false)
     setIsMainActive(false)
-  }
+  }, [])
 
-  const handleMainMouseDown = () => setIsMainActive(true)
-  const handleMainMouseUp = () => setIsMainActive(false)
+  const handleMainMouseDown = useCallback(() => setIsMainActive(true), [])
+  const handleMainMouseUp = useCallback(() => setIsMainActive(false), [])
 
-  const handleClick = () => {
+  const handleClick = useCallback(() => {
     if (canUnfurl) {
       setIsOpen(!isOpen)
     }
     onClick?.()
-  }
+  }, [canUnfurl, isOpen, onClick])
 
   const styles = useMemo(
     () => ({
@@ -216,7 +216,6 @@ export const ExpandableNavItem = ({
             <Box
               onClick={(e) => e.stopPropagation()}
               css={{
-                pointerEvents: 'auto' as const,
                 cursor: 'pointer'
               }}
             >
