@@ -309,6 +309,8 @@ function* fetchLineupTracks(currentTrack: Track) {
     id: currentTrack.owner_id
   })
 
+  // NOTE: This is a bandaid fix. On the profile page when on the reposts lineup,
+  // we need to select the lineup using the handle of the profile page user, not the handle of the track owner
   const handleToUse =
     source === QueueSource.PROFILE_FEED
       ? (currentProfileUserHandle ?? undefined)
