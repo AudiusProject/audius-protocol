@@ -9,6 +9,7 @@ import { audiusBackendInstance } from 'services/audius-backend/audius-backend-in
 import {
   audiusSdk,
   authService,
+  initSdk,
   solanaWalletService
 } from 'services/audius-sdk'
 import { identityService } from 'services/audius-sdk/identity'
@@ -77,6 +78,7 @@ export const buildStoreContext = ({
   instagramRedirectUrl: env.INSTAGRAM_REDIRECT_URL,
   share: getShare(isMobile),
   audiusSdk,
+  reinitializeSdk: initSdk,
   solanaWalletService,
   authService,
   identityService,

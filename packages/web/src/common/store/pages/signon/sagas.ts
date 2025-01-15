@@ -654,26 +654,24 @@ function* signUp() {
     const signOn = yield* select(getSignOn)
     const email = signOn.email.value
     const password = signOn.password.value
-    const useMetamask = yield* call(
+    const previouslyUsedMetaMask = yield* call(
       [localStorage, localStorage.getItem],
       'useMetaMask'
     )
 
-    if (email && password && useMetamask) {
+    if (email && password && previouslyUsedMetaMask) {
       yield* call([localStorage, localStorage.removeItem], 'useMetaMask')
       yield* put(backendActions.setupBackend())
     }
+    const { useMetaMask } = signOn
 
-    const sdk = yield* getSDK()
-    const authService = yield* getContext('authService')
     const isGuest = yield* select(getIsGuest)
 
     yield* call(waitForWrite)
+    const sdk = yield* getSDK()
 
     const location = yield* call(getCityAndRegion)
     const name = signOn.name.value.trim()
-    const wallet = (yield* call([authService, authService.getWalletAddresses]))
-      .web3WalletAddress
 
     const handle = signOn.handle.value
     const alreadyExisted = signOn.accountAlreadyExisted
@@ -705,6 +703,10 @@ function* signUp() {
               )
               yield* call([localStorage, localStorage.removeItem], GUEST_EMAIL)
 
+              const [wallet] = yield* call([
+                sdk.services.audiusWalletClient,
+                sdk.services.audiusWalletClient.getAddresses
+              ])
               const account: AccountUserMetadata | null = yield* call(
                 userApiFetchSaga.getUserAccount,
                 {
@@ -744,24 +746,34 @@ function* signUp() {
 
               return userId
             } else {
+              const authService = yield* getContext('authService')
+              const hedgehog = authService.hedgehogInstance
               if (!alreadyExisted) {
-                yield* call(
-                  [
-                    authService.hedgehogInstance,
-                    authService.hedgehogInstance.signUp
-                  ],
-                  {
+                if (!useMetaMask) {
+                  // Sign up via Hedgehog
+                  yield* call([hedgehog, hedgehog.signUp], {
                     username: email,
                     password
-                  }
-                )
-
-                yield* fork(sendPostSignInRecoveryEmail, { handle, email })
+                  })
+                  yield* fork(sendPostSignInRecoveryEmail, { handle, email })
+                } else {
+                  // Still save user data to Identity if using 3p wallet
+                  // so that users can manage their notifications settings etc.
+                  const [wallet] = yield* call([
+                    sdk.services.audiusWalletClient,
+                    sdk.services.audiusWalletClient.getAddresses
+                  ])
+                  yield* call([hedgehog, hedgehog.setUserFn], {
+                    walletAddress: wallet,
+                    username: email
+                  })
+                }
               }
-              const wallet = (yield* call([
-                authService,
-                authService.getWalletAddresses
-              ])).web3WalletAddress
+
+              const [wallet] = yield* call([
+                sdk.services.audiusWalletClient,
+                sdk.services.audiusWalletClient.getAddresses
+              ])
 
               const events: CreateUserRequest['metadata']['events'] = {}
               if (referrer) {
@@ -788,7 +800,7 @@ function* signUp() {
                 createUserMetadata
               )
               userId = metadata.userId
-              const { twitterId, instagramId, tikTokId, useMetaMask } = signOn
+              const { twitterId, instagramId, tikTokId } = signOn
 
               if (!useMetaMask && (twitterId || instagramId || tikTokId)) {
                 yield* fork(associateSocialAccounts, {
@@ -1255,6 +1267,8 @@ function* followArtists(
 function* configureMetaMask() {
   try {
     window.localStorage.setItem('useMetaMask', JSON.stringify(true))
+    const reinitializeSdk = yield* getContext('reinitializeSdk')
+    yield* call(reinitializeSdk)
   } catch (err: any) {
     const reportToSentry = yield* getContext('reportToSentry')
     reportToSentry({
