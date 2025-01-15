@@ -1,5 +1,6 @@
 import { Track } from '@audius/sdk'
 import { Dispatch } from 'redux'
+import { StemUploadWithFile } from '~/models/Stems'
 
 import { Stem } from '~/models/Track'
 import { deleteTrack } from '~/store/cache/tracks/actions'
@@ -38,7 +39,9 @@ export const handleStemUpdates = (
     })
   })
 
-  const addedStemsWithFiles = addedStems.filter((stem) => 'file' in stem)
+  const addedStemsWithFiles = addedStems.filter(
+    (stem) => 'file' in stem
+  ) as StemUploadWithFile[]
 
   // Calculate stems to remove
   const removedStems = existingStems
