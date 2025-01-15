@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 
 import { CreatePlaylistSource } from '@audius/common/models'
 import {
@@ -38,6 +38,8 @@ const messages = {
 export const CreatePlaylistLibraryItemButton = () => {
   const dispatch = useDispatch()
   const library = useSelector(getPlaylistLibrary)
+  const [isActive, setIsActive] = useState(false)
+  const [isHovered, setIsHovered] = useState(false)
 
   const handleSubmitPlaylist = useCallback(() => {
     dispatch(
@@ -91,10 +93,16 @@ export const CreatePlaylistLibraryItemButton = () => {
           ref={anchorRef}
           icon={IconPlus}
           onClick={() => handleClickPill(onClick)}
-          aria-label='Create Playlist'
+          onMouseDown={() => setIsActive(true)}
+          onMouseUp={() => setIsActive(false)}
+          onMouseLeave={() => {
+            setIsActive(false)
+            setIsHovered(false)
+          }}
+          onMouseEnter={() => setIsHovered(true)}
+          aria-label={messages.newPlaylistOrFolderTooltip}
           size='m'
-          color='subdued'
-          // Without this, there is a type error on the color prop
+          color={isActive || isHovered ? 'default' : 'subdued'}
           {...(triggerProps as Omit<typeof triggerProps, 'color'>)}
         />
       )}
