@@ -39,7 +39,7 @@ export const EditTrackModalScreen = () => {
   const handleSubmit = useCallback(
     (metadata: TrackMetadataForUpload) => {
       dispatch(editTrack(id, metadata))
-      navigation.navigate('Track', { id })
+      navigation.navigate('Track', { trackId: id })
     },
     [dispatch, id, navigation]
   )

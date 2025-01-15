@@ -166,7 +166,7 @@ const CollectionTileComponent = ({
   }, [currentTrack, togglePlay, tracks])
 
   const handlePressTitle = useCallback(() => {
-    navigation.push('Collection', { id: playlist_id })
+    navigation.push('Collection', { collectionId: playlist_id })
   }, [playlist_id, navigation])
 
   const duration = useMemo(() => {

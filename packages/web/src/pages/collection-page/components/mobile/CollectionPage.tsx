@@ -5,10 +5,10 @@ import {
   Variant,
   SmartCollectionVariant,
   Status,
-  Collection,
   SmartCollection,
   ID,
-  User
+  User,
+  UserCollectionMetadata
 } from '@audius/common/models'
 import {
   OverflowAction,
@@ -64,8 +64,8 @@ export type CollectionPageProps = {
   getPlayingUid: () => string | null
   type: CollectionsPageType
   collection: {
-    status: string
-    metadata: Collection | SmartCollection | null
+    status: 'pending' | 'success' | 'error'
+    metadata: UserCollectionMetadata | SmartCollection | null
     user: User | null
   }
   tracks: {
@@ -118,10 +118,7 @@ const CollectionPage = ({
   useEffect(() => {
     if (metadata) {
       // If the collection is deleted, don't update the nav
-      if (
-        metadata.variant !== Variant.SMART &&
-        (metadata.is_delete || metadata._marked_deleted)
-      ) {
+      if (metadata.variant !== Variant.SMART && metadata.is_delete) {
         return
       }
       setLeft(LeftPreset.BACK)
@@ -136,7 +133,7 @@ const CollectionPage = ({
   }, [setHeader])
 
   // TODO: Consider dynamic lineups, esp. for caching improvement.
-  const collectionLoading = status === Status.LOADING
+  const collectionLoading = status === 'pending'
   const queuedAndPlaying = playing && isQueued()
   const queuedAndPreviewing = previewing && isQueued()
   const tracksLoading = tracks.status === Status.LOADING
@@ -154,10 +151,8 @@ const CollectionPage = ({
 
   const isSaved =
     metadata?.has_current_user_saved || playlistId in (userPlaylists ?? {})
-  const isPublishing =
-    metadata && metadata?.variant !== Variant.SMART
-      ? metadata._is_publishing
-      : false
+  // tan-query TODO: move isPublishing to state variable
+  const isPublishing = false
   const access =
     metadata !== null && 'access' in metadata ? metadata?.access : null
 
@@ -168,7 +163,9 @@ const CollectionPage = ({
     metadata && metadata.variant === Variant.SMART ? metadata.imageOverride : ''
   const icon =
     metadata && metadata.variant === Variant.SMART
-      ? smartCollectionIcons[metadata.playlist_name]
+      ? smartCollectionIcons[
+          metadata.playlist_name as keyof typeof smartCollectionIcons
+        ]
       : null
   const typeTitle =
     metadata?.variant === Variant.SMART ? (metadata?.typeTitle ?? type) : type

@@ -92,10 +92,10 @@ const CollectionOverflowMenuDrawer = ({ render }: Props) => {
     [OverflowAction.SHARE]: () =>
       dispatch(shareCollection(id, ShareSource.OVERFLOW)),
     [OverflowAction.VIEW_ALBUM_PAGE]: () => {
-      navigation?.push('Collection', { id })
+      navigation?.push('Collection', { collectionId: id })
     },
     [OverflowAction.VIEW_PLAYLIST_PAGE]: () => {
-      navigation?.push('Collection', { id })
+      navigation?.push('Collection', { collectionId: id })
     },
     [OverflowAction.VIEW_ARTIST_PAGE]: () => {
       navigation?.push('Profile', { handle })

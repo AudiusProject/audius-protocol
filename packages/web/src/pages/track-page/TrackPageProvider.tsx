@@ -88,6 +88,7 @@ type OwnProps = {
 }
 
 type mapStateProps = ReturnType<typeof makeMapStateToProps>
+
 type TrackPageProviderProps = OwnProps &
   ReturnType<mapStateProps> &
   ReturnType<typeof mapDispatchToProps>
@@ -100,17 +101,16 @@ type TrackPageProviderState = {
   source: string | undefined
 }
 
-const TrackPageProviderWrapper = (props: TrackPageProviderProps) => {
+const TrackPageProvider = (props: TrackPageProviderProps) => {
   const params = parseTrackRoute(props.pathname)
   const { data: track } = useTrackByParams(params!)
 
-  return <TrackPageProviderClass {...props} track={track as Track | null} />
+  return <TrackPage {...props} track={track as Track | null} />
 }
 
-class TrackPageProviderClass extends Component<
-  TrackPageProviderProps & { track: Track | null },
-  TrackPageProviderState
-> {
+type TrackPageProps = TrackPageProviderProps & { track: Track | null }
+
+class TrackPage extends Component<TrackPageProps, TrackPageProviderState> {
   static contextType = SsrContext
   declare context: React.ContextType<typeof SsrContext>
   state: TrackPageProviderState = {
@@ -595,4 +595,4 @@ function mapDispatchToProps(dispatch: Dispatch) {
 export default connect(
   makeMapStateToProps,
   mapDispatchToProps
-)(TrackPageProviderWrapper)
+)(TrackPageProvider)

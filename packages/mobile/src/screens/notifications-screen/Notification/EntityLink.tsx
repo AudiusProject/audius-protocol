@@ -16,12 +16,12 @@ export const EntityLink = (props: EntityLinkProps) => {
   const onPress = useCallback(() => {
     if ('track_id' in entity) {
       navigation.navigate('Track', {
-        id: entity.track_id,
+        trackId: entity.track_id,
         fromNotifications: true
       })
     } else if ('playlist_id' in entity) {
       navigation.navigate('Collection', {
-        id: entity.playlist_id,
+        collectionId: entity.playlist_id,
         fromNotifications: true
       })
     }
