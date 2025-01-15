@@ -2,7 +2,8 @@ import { ID } from '@audius/common/models'
 import {
   explorePageSelectors,
   explorePageActions,
-  getContext
+  getContext,
+  accountSelectors
 } from '@audius/common/store'
 import { call, put, takeEvery, select } from 'typed-redux-saga'
 
@@ -20,6 +21,7 @@ const {
   fetchProfilesSucceded
 } = explorePageActions
 const { getPlaylistIds, getProfileIds } = explorePageSelectors
+const { getUserId } = accountSelectors
 
 type ExploreContent = {
   featuredPlaylists: ID[]
@@ -48,7 +50,10 @@ function* watchFetchExplore() {
         EXPLORE_CONTENT_URL ?? STATIC_EXPLORE_CONTENT_URL
       )
       if (!isNativeMobile) {
-        yield* call(retrieveCollections, exploreContent.featuredPlaylists)
+        const userId = yield* select(getUserId)
+        yield* call(retrieveCollections, exploreContent.featuredPlaylists, {
+          userId
+        })
         yield* call(fetchUsers, exploreContent.featuredProfiles)
       }
 
@@ -62,8 +67,9 @@ function* watchFetchExplore() {
 
 function* watchFetchPlaylists() {
   yield* takeEvery(fetchPlaylists.type, function* fetchPlaylistsAsync() {
+    const userId = yield* select(getUserId)
     const featuredPlaylistIds = yield* select(getPlaylistIds)
-    yield* call(retrieveCollections, featuredPlaylistIds)
+    yield* call(retrieveCollections, featuredPlaylistIds, { userId })
     yield* put(fetchPlaylistsSucceded())
   })
 }
