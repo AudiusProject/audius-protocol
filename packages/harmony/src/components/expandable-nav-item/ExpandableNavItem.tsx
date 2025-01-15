@@ -82,7 +82,7 @@ export const ExpandableNavItem = ({
     if (canUnfurl) {
       setIsOpen(!isOpen)
     }
-    onClick?.()
+    onClick?.(!isOpen)
   }, [canUnfurl, isOpen, onClick])
 
   const styles = useMemo(
