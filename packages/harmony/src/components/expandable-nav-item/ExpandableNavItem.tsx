@@ -75,8 +75,14 @@ export const ExpandableNavItem = ({
     setIsMainActive(false)
   }, [])
 
-  const handleMainMouseDown = useCallback(() => setIsMainActive(true), [])
-  const handleMainMouseUp = useCallback(() => setIsMainActive(false), [])
+  const handleMainContainerMouseDown = useCallback(
+    () => setIsMainActive(true),
+    []
+  )
+  const handleMainContainerMouseUp = useCallback(
+    () => setIsMainActive(false),
+    []
+  )
 
   const handleClick = useCallback(() => {
     if (canUnfurl) {
@@ -182,8 +188,8 @@ export const ExpandableNavItem = ({
             flex={1}
             gap='m'
             css={styles}
-            onMouseDown={handleMainMouseDown}
-            onMouseUp={handleMainMouseUp}
+            onMouseDown={handleMainContainerMouseDown}
+            onMouseUp={handleMainContainerMouseUp}
             onClick={handleClick}
             role='button'
             aria-expanded={isOpen}
