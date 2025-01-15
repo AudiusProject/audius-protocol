@@ -22,7 +22,7 @@ import { isDarkMode, isMatrix } from 'utils/theme/theme'
 const { FEED_PAGE, TRENDING_PAGE, EXPLORE_PAGE, profilePage, LIBRARY_PAGE } =
   route
 const { setTab } = explorePageActions
-const { getUserHandle } = accountSelectors
+const { getUserHandle, getIsGuestAccount } = accountSelectors
 
 type ConnectedBottomBarProps = ReturnType<typeof mapStateToProps> &
   ReturnType<typeof mapDispatchToProps> &
@@ -31,6 +31,7 @@ type ConnectedBottomBarProps = ReturnType<typeof mapStateToProps> &
 const ConnectedBottomBar = ({
   goToRoute,
   handle,
+  isGuestAccount,
   history,
   openSignOn,
   resetExploreTab
@@ -76,12 +77,12 @@ const ConnectedBottomBar = ({
 
   const goToLibrary = useCallback(() => {
     resetExploreTab()
-    if (!handle) {
+    if (!handle && !isGuestAccount) {
       openSignOn()
     } else {
       goToRoute(LIBRARY_PAGE)
     }
-  }, [goToRoute, handle, openSignOn, resetExploreTab])
+  }, [goToRoute, handle, isGuestAccount, openSignOn, resetExploreTab])
 
   const goToProfile = useCallback(() => {
     resetExploreTab()
@@ -109,7 +110,8 @@ const ConnectedBottomBar = ({
 
 function mapStateToProps(state: AppState) {
   return {
-    handle: getUserHandle(state)
+    handle: getUserHandle(state),
+    isGuestAccount: getIsGuestAccount(state)
   }
 }
 

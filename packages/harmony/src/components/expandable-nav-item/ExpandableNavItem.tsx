@@ -1,14 +1,18 @@
-import { useMemo, useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 
 import { useTheme, CSSObject } from '@emotion/react'
+import { ResizeObserver } from '@juggle/resize-observer'
+import useMeasure from 'react-use-measure'
 
 import { HarmonyTheme } from '../../foundations/theme'
-import { IconCaretDown, IconCaretRight } from '../../icons'
+import { IconCaretRight } from '../../icons'
 import { Box } from '../layout/Box'
 import { Flex } from '../layout/Flex'
 import { Text } from '../text'
 
 import type { ExpandableNavItemProps, VariantConfigs } from './types'
+
+const ITEM_DEFAULT_WIDTH = '240px'
 
 const variants: VariantConfigs = {
   default: {
@@ -27,21 +31,18 @@ const variants: VariantConfigs = {
   }
 }
 
-const getStyles = (theme: HarmonyTheme, isHovered: boolean): CSSObject => {
+const getStyles = (theme: HarmonyTheme, disabled?: boolean): CSSObject => {
   const baseStyles: CSSObject = {
     transition: `background-color ${theme.motion.hover}`,
-    cursor: 'pointer',
-    border: `1px solid transparent`
-  }
-
-  const hoverStyles: CSSObject = {
-    backgroundColor: theme.color.background.surface2,
-    border: `1px solid ${theme.color.border.default}`
+    opacity: disabled ? 0.5 : 1
   }
 
   return {
     ...baseStyles,
-    ...(isHovered && hoverStyles)
+    '&:active': {
+      opacity: disabled ? 0.4 : 0.8,
+      transition: `opacity ${theme.motion.quick}`
+    }
   }
 }
 
@@ -52,118 +53,211 @@ export const ExpandableNavItem = ({
   defaultIsOpen = false,
   nestedItems,
   shouldPersistRightIcon = false,
+  shouldPersistDownArrow = false,
   canUnfurl = true,
   variant = 'default',
+  onClick,
+  disabled,
   ...props
 }: ExpandableNavItemProps) => {
   const [isOpen, setIsOpen] = useState(defaultIsOpen)
   const [isHovered, setIsHovered] = useState(false)
+  const [isMainActive, setIsMainActive] = useState(false)
   const theme = useTheme()
 
-  const handleMouseEnter = () => setIsHovered(true)
-  const handleMouseLeave = () => setIsHovered(false)
-  const handleClick = () => {
+  const [ref, bounds] = useMeasure({
+    polyfill: ResizeObserver
+  })
+
+  const handleMouseEnter = useCallback(() => setIsHovered(true), [])
+  const handleMouseLeave = useCallback(() => {
+    setIsHovered(false)
+    setIsMainActive(false)
+  }, [])
+
+  const handleMainContainerMouseDown = useCallback(
+    () => setIsMainActive(true),
+    []
+  )
+  const handleMainContainerMouseUp = useCallback(
+    () => setIsMainActive(false),
+    []
+  )
+
+  const handleClick = useCallback(() => {
     if (canUnfurl) {
       setIsOpen(!isOpen)
     }
-  }
+    onClick?.(!isOpen)
+  }, [canUnfurl, isOpen, onClick])
 
-  const styles = useMemo(() => getStyles(theme, isHovered), [theme, isHovered])
+  const styles = useMemo(
+    () => ({
+      ...getStyles(theme, disabled),
+      opacity: isMainActive ? 0.8 : disabled ? 0.5 : 1,
+      transition: `opacity ${theme.motion.quick}, background-color ${theme.motion.hover}`
+    }),
+    [theme, disabled, isMainActive]
+  )
+
+  const containerStyles = useMemo(
+    () => ({
+      width: '100%',
+      cursor: 'pointer',
+      transition: `background-color ${theme.motion.hover}`,
+      padding: `0 ${theme.spacing.s}px`,
+      '& > div:first-of-type': {
+        display: 'flex',
+        alignItems: 'center',
+        gap: theme.spacing.s,
+        padding: theme.spacing.s,
+        backgroundColor:
+          isHovered && !disabled ? theme.color.background.surface2 : undefined,
+        boxShadow:
+          isHovered && !disabled
+            ? `inset 0 0 0 1px ${theme.color.border.default}`
+            : undefined,
+        borderRadius: theme.cornerRadius.m,
+        width: '100%'
+      }
+    }),
+    [theme, isHovered, disabled]
+  )
 
   const getIcon = useMemo(() => {
-    const shouldShowCaret = isHovered && canUnfurl
-    if (shouldShowCaret) {
-      return isOpen ? (
-        <IconCaretDown size='s' color='default' />
-      ) : (
-        <IconCaretRight size='s' color='default' />
-      )
-    }
-
-    if (LeftIcon) {
-      return <LeftIcon size={variants[variant].iconSize} color='default' />
-    }
-
-    return null
-  }, [isHovered, canUnfurl, LeftIcon, isOpen, variant])
+    const isCaretVisibleWhenHovered = isHovered && canUnfurl
+    const isDownArrowPersistent = shouldPersistDownArrow && isOpen
+    const shouldShowCaret = isCaretVisibleWhenHovered || isDownArrowPersistent
+    return (
+      <>
+        {LeftIcon ? (
+          <LeftIcon
+            size={variants[variant].iconSize}
+            color='default'
+            css={{
+              transition: `opacity ${theme.motion.quick}`,
+              opacity: shouldShowCaret ? 0 : 1,
+              position: 'absolute'
+            }}
+          />
+        ) : null}
+        <IconCaretRight
+          size='s'
+          color='default'
+          css={{
+            transition: `transform ${theme.motion.expressive}, opacity ${theme.motion.quick}`,
+            transform: isOpen ? `rotate(90deg)` : undefined,
+            opacity: shouldShowCaret ? 1 : 0
+          }}
+        />
+      </>
+    )
+  }, [
+    isHovered,
+    canUnfurl,
+    shouldPersistDownArrow,
+    LeftIcon,
+    variant,
+    theme.motion.quick,
+    theme.motion.expressive,
+    isOpen
+  ])
 
   const leftIcon = useMemo(() => {
-    if (!getIcon) return null
+    if (!getIcon && !LeftIcon) return null
+
+    const dimensions = variant === 'compact' ? 'unit5' : 'unit6'
 
     return (
-      <Flex alignItems='center' justifyContent='center' h='unit6' w='unit6'>
+      <Flex
+        alignItems='center'
+        justifyContent='center'
+        h={dimensions}
+        w={dimensions}
+      >
         {getIcon}
       </Flex>
     )
-  }, [getIcon])
+  }, [getIcon, LeftIcon, variant])
 
   const shouldShowRightIcon = isOpen || shouldPersistRightIcon
 
-  const stopRightIconPropagation = (e: React.MouseEvent) => {
-    e.stopPropagation()
-  }
-
   return (
-    <Flex direction='column' role='navigation' {...props}>
+    <Flex direction='column' role='navigation' w='100%' {...props}>
       <Flex
-        alignItems='center'
-        gap='s'
-        pl='s'
-        pr='s'
-        css={{
-          width: '240px',
-          cursor: 'pointer',
-          transition: `background-color ${theme.motion.hover}`
-        }}
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
+        css={containerStyles}
       >
-        <Flex
-          alignItems='center'
-          flex={1}
-          gap='m'
-          p='s'
-          borderRadius='m'
-          css={styles}
-          onMouseEnter={handleMouseEnter}
-          onMouseLeave={handleMouseLeave}
-          onClick={handleClick}
-          role='button'
-          aria-expanded={isOpen}
-          aria-controls={`${label}-content`}
-          aria-label={`${label} navigation section`}
-        >
+        <Flex w='100%'>
           <Flex
             alignItems='center'
-            gap={variants[variant].gap}
             flex={1}
-            css={{
-              maxWidth: '240px'
-            }}
+            gap='m'
+            css={styles}
+            onMouseDown={handleMainContainerMouseDown}
+            onMouseUp={handleMainContainerMouseUp}
+            onClick={handleClick}
+            role='button'
+            aria-expanded={isOpen}
+            aria-controls={`${label}-content`}
+            aria-label={`${label} navigation section`}
           >
-            {leftIcon}
-            <Text
-              variant={variants[variant].textVariant}
-              size={variants[variant].textSize}
-              strength={variants[variant].textStrength}
-              lineHeight='single'
-              color='default'
-              ellipses
+            <Flex
+              alignItems='center'
+              gap={variants[variant].gap}
+              flex={1}
+              css={{
+                maxWidth: ITEM_DEFAULT_WIDTH,
+                transition: `opacity ${theme.motion.expressive}`
+              }}
             >
-              {label}
-            </Text>
+              {leftIcon}
+              <Text
+                variant={variants[variant].textVariant}
+                size={variants[variant].textSize}
+                strength={variants[variant].textStrength}
+                lineHeight='single'
+                color='default'
+                ellipses
+              >
+                {label}
+              </Text>
+            </Flex>
           </Flex>
           {shouldShowRightIcon ? (
-            <Box onClick={stopRightIconPropagation}>{rightIcon}</Box>
+            <Box
+              onClick={(e) => e.stopPropagation()}
+              css={{
+                cursor: 'pointer',
+                opacity: disabled ? 0.5 : 1,
+                transition: `opacity ${theme.motion.quick}`
+              }}
+            >
+              {rightIcon}
+            </Box>
           ) : null}
         </Flex>
       </Flex>
-      {isOpen && nestedItems ? (
+      {nestedItems ? (
         <Flex
           direction='column'
-          id={`${label}-content`}
-          role='region'
-          aria-label={`${label} content`}
+          css={{
+            transition: `height ${theme.motion.expressive}, opacity ${theme.motion.quick}`,
+            overflow: 'hidden',
+            opacity: isOpen ? 1 : 0
+          }}
+          style={{ height: isOpen ? bounds.height : 0 }}
         >
-          {nestedItems}
+          <Flex
+            direction='column'
+            ref={ref}
+            id={`${label}-content`}
+            role='region'
+            aria-label={`${label} content`}
+          >
+            {nestedItems}
+          </Flex>
         </Flex>
       ) : null}
     </Flex>

@@ -25,10 +25,8 @@ import {
   setValueField,
   updateRouteOnCompletion
 } from 'common/store/pages/signon/actions'
-import {
-  getHasCompletedAccount,
-  getRouteOnExit
-} from 'common/store/pages/signon/selectors'
+import { getRouteOnExit, getStatus } from 'common/store/pages/signon/selectors'
+import { EditingStatus } from 'common/store/pages/signon/types'
 import { useMedia } from 'hooks/useMedia'
 import { SignInPage } from 'pages/sign-in-page'
 import { AudiusValues } from 'pages/sign-on-page/AudiusValues'
@@ -285,7 +283,7 @@ const MobileSignOnRoot = (props: MobileSignOnRootProps) => {
 
 export const SignOnPage = () => {
   const { isMobile } = useMedia()
-  const hasCompletedAccount = useSelector(getHasCompletedAccount)
+  const signOnStatus = useSelector(getStatus)
   const dispatch = useDispatch()
   const [searchParams] = useSearchParams()
   const [guestEmailLocalStorage] = useLocalStorage('guestEmail', '')
@@ -344,7 +342,7 @@ export const SignOnPage = () => {
     setIsLoaded(true)
   })
 
-  if (hasCompletedAccount) {
+  if (signOnStatus === EditingStatus.SUCCESS) {
     return <Redirect to={FEED_PAGE} />
   }
 

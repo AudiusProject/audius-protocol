@@ -10,7 +10,8 @@ import {
   IconMessage,
   IconNotificationOn,
   IconSettings,
-  IconUserUnfollow
+  IconUserUnfollow,
+  IconListeningHistory
 } from '@audius/harmony-native'
 import audiusLogoHorizontal from 'app/assets/images/Horizontal-Logo-Full-Color.png'
 import { Screen, ScreenContent, ScrollView } from 'app/components/core'
@@ -40,6 +41,7 @@ const messages = {
   commentDescription: 'Prevent certain users from commenting on your tracks.',
   notificationsDescription: 'Review your notification preferences.',
   downloads: 'Download Settings',
+  history: 'Listening History',
   about: 'About'
 }
 
@@ -83,6 +85,10 @@ export const SettingsScreen = () => {
 
   const handlePressAbout = useCallback(() => {
     navigation.push('AboutScreen')
+  }, [navigation])
+
+  const handlePressHistory = useCallback(() => {
+    navigation.push('ListeningHistoryScreen')
   }, [navigation])
 
   return (
@@ -131,6 +137,12 @@ export const SettingsScreen = () => {
             <SettingsRowLabel
               label={messages.downloads}
               icon={IconCloudDownload}
+            />
+          </SettingsRow>
+          <SettingsRow onPress={handlePressHistory}>
+            <SettingsRowLabel
+              label={messages.history}
+              icon={IconListeningHistory}
             />
           </SettingsRow>
           <SettingsDivider />

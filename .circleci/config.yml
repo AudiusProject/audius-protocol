@@ -84,7 +84,7 @@ jobs:
             - ./packages/sdk/node_modules
             - ./packages/identity-service/node_modules
             - ./packages/es-indexer/node_modules
-            - ./packages/ddex/node_modules
+            - ./packages/ddex-entrypoint/node_modules
             - ./packages/trpc-server/node_modules
             - ./packages/create-audius-app/node_modules
             - ./packages/dotenv-linter/bin

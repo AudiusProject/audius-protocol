@@ -6,7 +6,7 @@ import {
   IconCart,
   IconCollectible,
   IconReceive,
-  IconSpecialAccess
+  IconSparkles
 } from '@audius/harmony-native'
 import DogEarRectangle from 'app/assets/images/dogEarRectangle.svg'
 import { makeStyles } from 'app/styles'
@@ -69,7 +69,7 @@ export const DogEar = (props: DogEarProps) => {
       colors: [accentBlue, accentBlue]
     },
     [DogEarType.SPECIAL_ACCESS]: {
-      icon: IconSpecialAccess,
+      icon: IconSparkles,
       colors: [accentBlue, accentBlue]
     },
     [DogEarType.USDC_PURCHASE]: {

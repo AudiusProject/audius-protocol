@@ -72,7 +72,6 @@ export const ArtistCardCover = (props: ArtistCoverProps) => {
               userId={user_id}
               badgeSize={14}
               className={styles.iconVerified}
-              useSVGTiers
             />
           </div>
           <div className={styles.artistHandleWrapper}>

@@ -1,6 +1,6 @@
 import { DogEarType } from '@audius/common/models'
 import {
-  IconSpecialAccess,
+  IconSparkles,
   IconCart,
   IconCollectible,
   IconLock,
@@ -31,7 +31,7 @@ const getIcon = (type: DogEarType) => {
       return IconReceive
     case DogEarType.SPECIAL_ACCESS:
     default:
-      return IconSpecialAccess
+      return IconSparkles
   }
 }
 

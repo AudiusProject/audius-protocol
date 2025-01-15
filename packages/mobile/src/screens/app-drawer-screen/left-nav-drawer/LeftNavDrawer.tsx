@@ -1,9 +1,12 @@
 import { accountSelectors } from '@audius/common/store'
 import type { DrawerContentComponentProps } from '@react-navigation/drawer'
-import { DrawerContentScrollView } from '@react-navigation/drawer'
 import { useSelector } from 'react-redux'
 
-import { IconAudiusLogo, Flex } from '@audius/harmony-native'
+import {
+  Flex,
+  IconAudiusLogoHorizontalNew,
+  useTheme
+} from '@audius/harmony-native'
 
 import { AppDrawerContextProvider } from '../AppDrawerContext'
 
@@ -32,28 +35,35 @@ export const LeftNavDrawer = (props: AccountDrawerProps) => {
 }
 
 const WrappedLeftNavDrawer = () => {
+  const { spacing } = useTheme()
   const { navItems } = useNavConfig()
 
   return (
-    <DrawerContentScrollView>
-      <AccountDetails />
-      <VanityMetrics />
-      {navItems.map((item) => (
-        <LeftNavLink
-          key={item.label}
-          icon={item.icon}
-          label={item.label}
-          to={item.to}
-          params={item.params}
-          onPress={item.onPress}
-          showNotificationBubble={item.showNotificationBubble}
-        >
-          {item.rightIcon}
-        </LeftNavLink>
-      ))}
-      <Flex pt='5xl' ph='l'>
-        <IconAudiusLogo color='subdued' />
+    <Flex h='100%' pv='unit16' justifyContent='space-between'>
+      <Flex>
+        <AccountDetails />
+        <VanityMetrics />
+        {navItems.map((item) => (
+          <LeftNavLink
+            key={item.label}
+            icon={item.icon}
+            label={item.label}
+            to={item.to}
+            params={item.params}
+            onPress={item.onPress}
+            showNotificationBubble={item.showNotificationBubble}
+          >
+            {item.rightIcon}
+          </LeftNavLink>
+        ))}
       </Flex>
-    </DrawerContentScrollView>
+      <Flex ph='xl'>
+        <IconAudiusLogoHorizontalNew
+          color='subdued'
+          height={spacing.unit6}
+          width={spacing['5xl']}
+        />
+      </Flex>
+    </Flex>
   )
 }

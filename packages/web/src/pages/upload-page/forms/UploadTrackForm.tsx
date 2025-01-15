@@ -1,12 +1,10 @@
 import { useCallback, useMemo } from 'react'
 
-import { TrackForUpload } from '@audius/common/store'
+import { TrackFormState, TrackForUpload } from '@audius/common/store'
 import moment from 'moment'
 
 import { EditTrackForm } from 'components/edit-track/EditTrackForm'
 import { TrackEditFormValues } from 'components/edit-track/types'
-
-import { TrackFormState } from '../types'
 
 type UploadTrackFormProps = {
   formState: TrackFormState

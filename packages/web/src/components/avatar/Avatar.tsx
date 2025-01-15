@@ -1,4 +1,4 @@
-import { imageProfilePicEmpty } from '@audius/common/assets'
+import { imageProfilePicEmptyNew } from '@audius/common/assets'
 import { SquareSizes, ID } from '@audius/common/models'
 import { accountSelectors, cacheUsersSelectors } from '@audius/common/store'
 import { Maybe, Nullable } from '@audius/common/utils'
@@ -45,7 +45,7 @@ export const Avatar = (props: AvatarProps) => {
     size: imageSize
   })
 
-  const image = userId ? profileImage : imageProfilePicEmpty
+  const image = userId ? profileImage : imageProfilePicEmptyNew
 
   const userName = useSelector((state) => {
     const user = getUser(state, { id: userId })

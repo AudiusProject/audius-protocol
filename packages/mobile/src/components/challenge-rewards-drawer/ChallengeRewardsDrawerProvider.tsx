@@ -200,7 +200,6 @@ export const ChallengeRewardsDrawerProvider = () => {
       isFullscreen
       isGestureSupported={false}
       title={config.title}
-      titleImage={config.icon}
     >
       {isAudioMatchingChallenge(modalType) ? (
         <AudioMatchingChallengeDrawerContent
