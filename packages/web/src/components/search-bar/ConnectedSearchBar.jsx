@@ -290,7 +290,7 @@ class ConnectedSearchBar extends Component {
     )
     const { status, searchText } = this.props.search
     return (
-      <Box ml='unit10' mt='l'>
+      <Box>
         <SearchBar
           value={this.state.value}
           isTagSearch={this.isTagSearch()}
