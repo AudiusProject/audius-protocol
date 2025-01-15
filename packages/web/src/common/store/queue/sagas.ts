@@ -26,7 +26,8 @@ import {
   getContext,
   playerActions,
   playerSelectors,
-  PlayerBehavior
+  PlayerBehavior,
+  profilePageSelectors
 } from '@audius/common/store'
 import { Uid, makeUid, waitForAccount, Nullable } from '@audius/common/utils'
 import { all, call, put, select, takeEvery, takeLatest } from 'typed-redux-saga'
@@ -47,6 +48,8 @@ const {
   getUid,
   getUndershot
 } = queueSelectors
+
+const { getProfileUserHandle } = profilePageSelectors
 
 const {
   getTrackId: getPlayerTrackId,
@@ -300,11 +303,18 @@ function* fetchLineupTracks(currentTrack: Track) {
   const lineupEntry = lineupRegistry[source]
   if (!lineupEntry) return
 
+  const currentProfileUserHandle = yield* select(getProfileUserHandle)
+
   const currentTrackOwner = yield* select(getUser, {
     id: currentTrack.owner_id
   })
 
-  const lineup = yield* select(lineupEntry.selector, currentTrackOwner?.handle)
+  const handleToUse =
+    source === QueueSource.PROFILE_FEED
+      ? (currentProfileUserHandle ?? undefined)
+      : currentTrackOwner?.handle
+
+  const lineup = yield* select(lineupEntry.selector, handleToUse)
 
   if (lineup.hasMore) {
     const offset = lineup.entries.length + lineup.deleted + lineup.nullCount
