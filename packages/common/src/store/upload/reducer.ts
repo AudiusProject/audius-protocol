@@ -9,11 +9,11 @@ import {
   UPLOAD_TRACKS_FAILED,
   UPDATE_PROGRESS,
   RESET,
-  RESET_STATE,
-  UNDO_RESET_STATE,
   uploadTracksRequested,
   uploadTracksSucceeded,
-  updateProgress
+  updateProgress,
+  updateFormState,
+  UPDATE_FORM_STATE
 } from './actions'
 import {
   ProgressState,
@@ -31,8 +31,8 @@ const initialState: UploadState = {
   stems: [],
   uploading: false,
   uploadProgress: null,
+  formState: null,
   success: false,
-  shouldReset: false,
 
   // For multitrack upload, we allow some tracks to
   // fail without aborting the whole thing
@@ -174,22 +174,19 @@ const actionsMap = {
     }
     return newState
   },
+  [UPDATE_FORM_STATE](
+    state: UploadState,
+    action: ReturnType<typeof updateFormState>
+  ) {
+    return {
+      ...state,
+      formState: action.payload
+    }
+  },
   [RESET](state: UploadState) {
     return {
       ...initialState,
       openMultiTrackNotification: state.openMultiTrackNotification
-    }
-  },
-  [RESET_STATE](state: UploadState) {
-    return {
-      ...state,
-      shouldReset: true
-    }
-  },
-  [UNDO_RESET_STATE](state: UploadState) {
-    return {
-      ...state,
-      shouldReset: false
     }
   }
 }

@@ -99,7 +99,7 @@ export const UploadCompleteScreen = () => {
 
   const handlePressTrack = useCallback(() => {
     handleClose()
-    navigation.push('Track', { id: uploadedTrack?.track_id })
+    navigation.push('Track', { trackId: uploadedTrack?.track_id })
   }, [handleClose, navigation, uploadedTrack])
 
   const handleDone = useCallback(() => {

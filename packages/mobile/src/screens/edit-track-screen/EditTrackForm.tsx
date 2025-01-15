@@ -202,7 +202,7 @@ export const EditTrackForm = (props: EditTrackFormProps) => {
       })
     )
     openReplaceTrackProgress()
-    navigation.navigate('Track', { id: values.track_id })
+    navigation.navigate('Track', { trackId: values.track_id })
   }, [
     dispatch,
     initialValues,

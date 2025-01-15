@@ -51,7 +51,7 @@ export const EditTrackModalScreen = () => {
         },
         {
           onSuccess: () => {
-            navigation.navigate('Track', { id })
+            navigation.navigate('Track', { trackId: id })
           }
         }
       )

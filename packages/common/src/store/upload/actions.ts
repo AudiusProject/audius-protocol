@@ -8,6 +8,7 @@ import {
   Progress,
   TrackForUpload,
   TrackMetadataForUpload,
+  UploadFormState,
   UploadType
 } from './types'
 
@@ -23,10 +24,9 @@ export const UPDATE_PERCENT = 'UPLOAD/UPDATE_PERCENT'
 export const INCREMENT_PERCENT = 'UPLOAD/INCREMENT_PERCENT'
 export const UPDATE_PROGRESS = 'UPLOAD/UPDATE_PROGRESS'
 export const RESET = 'UPLOAD/RESET'
-export const RESET_STATE = 'UPLOAD/RESET_STATE'
-export const UNDO_RESET_STATE = 'UPLOAD/UNDO_RESET_STATE'
 export const TOGGLE_MULTI_TRACK_NOTIFICATION =
   'UPLOAD/TOGGLE_MULTI_TRACK_NOTIFICATION'
+export const UPDATE_FORM_STATE = 'UPLOAD/UPDATE_FORM_STATE'
 
 type UploadPayload =
   | {
@@ -99,17 +99,16 @@ export const updateTrackAudio = (payload: {
   }
 }
 
+// Persists the form state in the store for resuming upload
+// upon navigating back to the upload page
+export const updateFormState = (payload: UploadFormState) => {
+  return { type: UPDATE_FORM_STATE, payload }
+}
+
 // Actions used to reset the react state and then the store state of upload from external container
 
 export const reset = () => {
   return { type: RESET }
-}
-
-export const resetState = () => {
-  return { type: RESET_STATE }
-}
-export const undoResetState = () => {
-  return { type: UNDO_RESET_STATE }
 }
 
 export const toggleMultiTrackNotification = (open = false) => {

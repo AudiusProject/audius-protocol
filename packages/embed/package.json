@@ -33,7 +33,7 @@
     "webpack-cli": "4.5.0"
   },
   "dependencies": {
-    "@audius/fetch-nft": "0.2.7",
+    "@audius/fetch-nft": "0.2.8",
     "@audius/fixed-decimal": "*",
     "@audius/harmony": "*",
     "@audius/sdk": "*",

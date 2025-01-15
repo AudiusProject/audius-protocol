@@ -181,7 +181,8 @@ const TrackOverflowMenuDrawer = ({ render }: Props) => {
       navigation?.push('Track', { trackId: id })
     },
     [OverflowAction.VIEW_ALBUM_PAGE]: () => {
-      albumInfo && navigation?.push('Collection', { id: albumInfo.playlist_id })
+      albumInfo &&
+        navigation?.push('Collection', { collectionId: albumInfo.playlist_id })
     },
     [OverflowAction.VIEW_ARTIST_PAGE]: () => {
       closeNowPlayingDrawer()

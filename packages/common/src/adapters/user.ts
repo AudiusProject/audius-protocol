@@ -8,7 +8,8 @@ import {
   AccountUserMetadata,
   ManagedUserMetadata,
   UserManagerMetadata,
-  UserMetadata
+  UserMetadata,
+  WriteableUserMetadata
 } from '~/models/User'
 import { SolanaWalletAddress, StringWei } from '~/models/Wallet'
 import { decodeHashId } from '~/utils/hashIds'
@@ -46,7 +47,6 @@ export const userMetadataFromSDK = (
       : null,
 
     // Nested Types
-    playlist_library: playlistLibraryFromSDK(input.playlistLibrary) ?? null,
     cover_photo_cids: input.coverPhotoCids
       ? coverPhotoSizesCIDsFromSDK(input.coverPhotoCids)
       : null,
@@ -144,7 +144,7 @@ export const accountFromSDK = (
     // Account users included extended information, so we'll merge that in here.
     user: {
       ...user,
-      ...accountMetadata
+      playlists: accountMetadata.playlists
     },
     // These values are included outside the user as well to facilitate separate caching
     ...accountMetadata
@@ -152,7 +152,7 @@ export const accountFromSDK = (
 }
 
 export const userMetadataToSdk = (
-  input: UserMetadata
+  input: WriteableUserMetadata & Pick<AccountUserMetadata, 'playlist_library'>
 ): UpdateProfileRequest['metadata'] => ({
   ...camelcaseKeys(
     pick(input, [
@@ -161,10 +161,7 @@ export const userMetadataToSdk = (
       'metadata_multihash',
       'is_deactivated',
       'allow_ai_attribution',
-      'playlist_library',
-      'collectibles_order_unset',
-      'associated_wallets',
-      'associated_sol_wallets'
+      'collectibles_order_unset'
     ])
   ),
   bio: input.bio ?? undefined,
@@ -179,5 +176,6 @@ export const userMetadataToSdk = (
   collectibles: input.collectibles ?? undefined,
   twitterHandle: input.twitter_handle ?? undefined,
   instagramHandle: input.instagram_handle ?? undefined,
+  playlistLibrary: input.playlist_library ?? undefined,
   tiktokHandle: input.tiktok_handle ?? undefined
 })

@@ -5,7 +5,7 @@ import {
   coinflowModalUIActions,
   useCoinflowOnrampModal
 } from '@audius/common/store'
-import { CoinflowPurchase } from '@coinflowlabs/react-native'
+import { CoinflowPurchase, Currency } from '@coinflowlabs/react-native'
 import { VersionedTransaction } from '@solana/web3.js'
 import { TouchableOpacity, View } from 'react-native'
 import { useDispatch } from 'react-redux'
@@ -127,7 +127,7 @@ export const CoinflowOnrampDrawer = () => {
           disableGooglePay={false}
           disableApplePay={false}
           blockchain='solana'
-          amount={amount}
+          subtotal={{ cents: amount * 100, currency: Currency.USD }}
         />
       ) : null}
     </AppDrawer>

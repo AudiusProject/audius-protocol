@@ -84,7 +84,7 @@ export const TrackRemixesScreen = () => {
     if (!track) {
       return
     }
-    navigation.push('Track', { id: track.track_id })
+    navigation.push('Track', { trackId: track.track_id })
   }
 
   const handlePressArtistName = () => {

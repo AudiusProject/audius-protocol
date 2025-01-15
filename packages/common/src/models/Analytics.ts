@@ -1462,7 +1462,7 @@ type BufferSpinnerShown = {
 type LinkClicking = {
   eventName: Name.LINK_CLICKING
   url: string
-  source: 'profile page' | 'track page' | 'collection page'
+  source: 'profile page' | 'track page' | 'collection page' | 'left nav'
 }
 type TagClicking = {
   eventName: Name.TAG_CLICKING

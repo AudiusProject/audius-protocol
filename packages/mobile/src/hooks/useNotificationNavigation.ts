@@ -135,7 +135,7 @@ export const useNotificationNavigation = () => {
       const { entityType, entityId, type } = notification
       if (entityType === Entity.Track) {
         navigation.navigate('Track', {
-          id: entityId,
+          trackId: entityId,
           canBeUnlisted: false,
           showComments: type.startsWith('Comment')
         })
@@ -143,7 +143,7 @@ export const useNotificationNavigation = () => {
         entityType === Entity.Album ||
         entityType === Entity.Playlist
       ) {
-        navigation.navigate('Collection', { id: entityId })
+        navigation.navigate('Collection', { collectionId: entityId })
       }
     },
     [navigation]
@@ -170,12 +170,17 @@ export const useNotificationNavigation = () => {
       } else if (notification.type === PushNotificationType.MilestoneFollow) {
         navigation.navigate('Profile', { id: notification.initiator })
       } else {
-        navigation.navigate(
-          notification.actions[0].actionEntityType === Entity.Track
-            ? 'Track'
-            : 'Collection',
-          { id: notification.entityId, canBeUnlisted: false }
-        )
+        if (notification.actions[0].actionEntityType === Entity.Track) {
+          navigation.navigate('Track', {
+            trackId: notification.entityId,
+            canBeUnlisted: false
+          })
+        } else {
+          navigation.navigate('Collection', {
+            collectionId: notification.entityId,
+            canBeUnlisted: false
+          })
+        }
       }
     },
     [navigation]
@@ -224,7 +229,7 @@ export const useNotificationNavigation = () => {
           | AddTrackToPlaylistPushNotification
       ) => {
         navigation.navigate('Collection', {
-          id:
+          collectionId:
             'playlistId' in notification
               ? notification.playlistId
               : notification.metadata.playlistId
@@ -256,7 +261,7 @@ export const useNotificationNavigation = () => {
         notification: RemixCosignNotification | RemixCosignPushNotification
       ) => {
         navigation.navigate('Track', {
-          id:
+          trackId:
             'childTrackId' in notification
               ? notification.childTrackId
               : notification.entityId,
@@ -267,7 +272,7 @@ export const useNotificationNavigation = () => {
         notification: RemixCreateNotification | RemixCreatePushNotification
       ) => {
         navigation.navigate('Track', {
-          id:
+          trackId:
             'childTrackId' in notification
               ? notification.childTrackId
               : notification.entityId,
@@ -305,7 +310,7 @@ export const useNotificationNavigation = () => {
         notification: TrendingTrackNotification
       ) => {
         navigation.navigate('Track', {
-          id: notification.entityId,
+          trackId: notification.entityId,
           canBeUnlisted: false
         })
       },
@@ -318,10 +323,17 @@ export const useNotificationNavigation = () => {
         if (notification.entityType === Entity.Track && multiUpload) {
           navigation.navigate('Profile', { id: notification.userId })
         } else {
-          navigation.navigate(
-            notification.entityType === Entity.Track ? 'Track' : 'Collection',
-            { id: notification.entityIds[0], canBeUnlisted: false }
-          )
+          if (notification.entityType === Entity.Track) {
+            navigation.navigate('Track', {
+              trackId: notification.entityIds[0],
+              canBeUnlisted: false
+            })
+          } else {
+            navigation.navigate('Collection', {
+              collectionId: notification.entityIds[0],
+              canBeUnlisted: false
+            })
+          }
         }
       },
       [NotificationType.Tastemaker]: entityHandler,
@@ -331,7 +343,7 @@ export const useNotificationNavigation = () => {
         notification: AddTrackToPlaylistNotification
       ) => {
         navigation.navigate('Collection', {
-          id: notification.playlistId,
+          collectionId: notification.playlistId,
           canBeUnlisted: false
         })
       },
