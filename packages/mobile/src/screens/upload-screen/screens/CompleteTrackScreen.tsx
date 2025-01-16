@@ -36,12 +36,15 @@ export const CompleteTrackScreen = () => {
     [navigation, track, uploadAttempt]
   )
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const metadata = useMemo(() => track?.metadata, [])
+
   if (!track) return null
-  const metadata = useMemo(() => track.metadata, [])
 
   return (
     <EditTrackScreen
-      initialValues={{ ...metadata, isUpload: true }}
+      // ! is fine here bc we render null if track is undefined
+      initialValues={{ ...metadata!, isUpload: true }}
       onSubmit={handleSubmit}
       title={messages.title}
       url='/complete-track'
