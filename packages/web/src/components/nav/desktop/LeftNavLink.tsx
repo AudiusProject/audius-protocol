@@ -22,16 +22,7 @@ export const LeftNavLink = (props: LeftNavLinkProps) => {
 
   const requiresAccountOnClick = useRequiresAccountOnClick(
     (e) => {
-      onClick?.(e)
-    },
-    [onClick, to],
-    undefined,
-    undefined,
-    restriction
-  )
-
-  const handleClick = (e?: React.MouseEvent<Element>) => {
-    if (!!e && !e.defaultPrevented) {
+      // Only dispatch analytics if we're actually navigating
       if (to) {
         dispatch(
           make(Name.LINK_CLICKING, {
@@ -40,15 +31,16 @@ export const LeftNavLink = (props: LeftNavLinkProps) => {
           })
         )
       }
-      return requiresAccountOnClick(e)
-    } else {
-      e?.preventDefault()
-    }
-    return undefined
-  }
+      onClick?.(e)
+    },
+    [onClick, to, dispatch],
+    undefined,
+    undefined,
+    restriction
+  )
 
   return (
-    <NavLink to={to ?? ''} onClick={handleClick} draggable={false}>
+    <NavLink to={to ?? ''} onClick={requiresAccountOnClick} draggable={false}>
       <NavItem
         {...other}
         isSelected={to ? location.pathname.startsWith(to) : false}

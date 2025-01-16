@@ -1,4 +1,4 @@
-import { useEffect, MouseEvent as ReactMouseEvent, useCallback } from 'react'
+import { MouseEvent as ReactMouseEvent, useCallback, useEffect } from 'react'
 
 import { Status } from '@audius/common/models'
 import { accountSelectors } from '@audius/common/store'
@@ -15,6 +15,7 @@ import { useSelector } from 'utils/reducer'
 
 const { getAccountStatus, getIsAccountComplete, getHasAccount } =
   accountSelectors
+// const { fetchAccount } = accountActions
 
 export type RestrictionType = 'none' | 'guest' | 'account'
 
@@ -48,26 +49,50 @@ export const useRequiresAccountCallback = <T extends (...args: any) => any>(
 
   return useCallback(
     (...args: Parameters<T>) => {
-      if (
-        accountStatus !== Status.LOADING &&
-        !canAccess(restriction, hasAccount, isAccountComplete)
-      ) {
-        // Prevent the default event from occuring
+      // Wait for account status to be loaded before proceeding
+      if (accountStatus === Status.LOADING || accountStatus === Status.IDLE) {
         if (args[0]?.preventDefault) {
           args[0].preventDefault()
         }
+        return
+      }
+
+      const canAccessRoute = canAccess(
+        restriction,
+        hasAccount,
+        isAccountComplete
+      )
+
+      if (!canAccessRoute) {
+        // Prevent the default event from occurring
+        if (args[0]?.preventDefault) {
+          args[0].preventDefault()
+        }
+
+        // Set up return route before opening sign on
         dispatch(updateRouteOnExit(returnRoute))
         dispatch(updateRouteOnCompletion(returnRoute))
         dispatch(openSignOn(/** signIn */ false))
         dispatch(showRequiresAccountToast(hasAccount && !isAccountComplete))
         onOpenAuthModal?.()
-      } else {
-        // eslint-disable-next-line n/no-callback-literal
-        return callback(...args)
+        return
       }
+
+      // eslint-disable-next-line n/no-callback-literal
+      return callback(...args)
     },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [hasAccount, isAccountComplete, dispatch, restriction, ...deps]
+    [
+      accountStatus,
+      restriction,
+      hasAccount,
+      isAccountComplete,
+      callback,
+      dispatch,
+      returnRoute,
+      onOpenAuthModal,
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+      ...deps
+    ]
   )
 }
 
