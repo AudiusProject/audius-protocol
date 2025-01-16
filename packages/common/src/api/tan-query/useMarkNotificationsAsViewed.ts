@@ -27,7 +27,10 @@ export const useMarkNotificationsAsViewed = () => {
     },
     onMutate: () => {
       // Optimistically set unread count to 0
-      queryClient.setQueryData([QUERY_KEYS.notifications, currentUserId], 0)
+      queryClient.setQueryData(
+        [QUERY_KEYS.notificationUnreadCount, currentUserId],
+        0
+      )
     }
   })
 }

@@ -11,12 +11,9 @@ import { getBalance } from '~/store/wallet/slice'
 import { Id } from '../../models/Identifiers'
 import { IntKeys } from '../../services/remote-config'
 
+import { QUERY_KEYS } from './queryKeys'
 import { useCurrentUserId } from './useCurrentUserId'
 import { useNotificationValidTypes } from './useNotificationValidTypes'
-
-const QUERY_KEYS = {
-  NOTIFICATION_UNREAD_COUNT: 'NOTIFICATION_UNREAD_COUNT'
-} as const
 
 /**
  * Hook that returns the number of unread notifications for the current user.
@@ -31,7 +28,7 @@ export const useNotificationUnreadCount = () => {
   const validTypes = useNotificationValidTypes()
 
   const query = useQuery({
-    queryKey: [QUERY_KEYS.NOTIFICATION_UNREAD_COUNT, currentUserId],
+    queryKey: [QUERY_KEYS.notificationUnreadCount, currentUserId],
     queryFn: async () => {
       const sdk = await audiusSdk()
       const { data } = await sdk.full.notifications.getNotifications({

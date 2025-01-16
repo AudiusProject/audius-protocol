@@ -9,16 +9,13 @@ import {
   Notification
 } from '~/store/notifications/types'
 
+import { QUERY_KEYS } from './queryKeys'
 import { Config } from './types'
 import { useCollections } from './useCollections'
 import { useCurrentUserId } from './useCurrentUserId'
 import { useNotificationValidTypes } from './useNotificationValidTypes'
 import { useTracks } from './useTracks'
 import { useUsers } from './useUsers'
-
-const QUERY_KEYS = {
-  NOTIFICATIONS: 'NOTIFICATIONS'
-} as const
 
 const DEFAULT_LIMIT = 20
 const USER_INITIAL_LOAD_COUNT = 9
@@ -164,7 +161,7 @@ export const useNotifications = (options?: Config) => {
   const { data: currentUserId } = useCurrentUserId()
   const validTypes = useNotificationValidTypes()
   const query = useInfiniteQuery({
-    queryKey: [QUERY_KEYS.NOTIFICATIONS, currentUserId],
+    queryKey: [QUERY_KEYS.notifications, currentUserId],
     initialPageParam: null as PageParam,
     queryFn: async ({ pageParam = null }) => {
       const sdk = await audiusSdk()
