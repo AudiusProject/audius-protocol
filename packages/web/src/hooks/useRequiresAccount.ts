@@ -1,4 +1,4 @@
-import { useEffect, MouseEvent as ReactMouseEvent, useCallback } from 'react'
+import { MouseEvent as ReactMouseEvent, useCallback, useEffect } from 'react'
 
 import { Status } from '@audius/common/models'
 import { accountSelectors } from '@audius/common/store'
@@ -13,8 +13,7 @@ import {
 } from 'common/store/pages/signon/actions'
 import { useSelector } from 'utils/reducer'
 
-const { getAccountStatus, getIsAccountComplete, getHasAccount } =
-  accountSelectors
+const { getAccountStatus, getIsAccountComplete } = accountSelectors
 
 export type RestrictionType = 'none' | 'guest' | 'account'
 
@@ -39,7 +38,6 @@ export const useRequiresAccountCallback = <T extends (...args: any) => any>(
   returnRouteOverride?: string,
   restriction: RestrictionType = 'account'
 ) => {
-  const hasAccount = useSelector(getHasAccount)
   const isAccountComplete = useSelector(getIsAccountComplete)
   const accountStatus = useSelector(getAccountStatus)
   const dispatch = useDispatch()
@@ -48,26 +46,53 @@ export const useRequiresAccountCallback = <T extends (...args: any) => any>(
 
   return useCallback(
     (...args: Parameters<T>) => {
-      if (
-        accountStatus !== Status.LOADING &&
-        !canAccess(restriction, hasAccount, isAccountComplete)
-      ) {
-        // Prevent the default event from occuring
+      // Wait for account status to be loaded before proceeding
+      if (accountStatus === Status.LOADING || accountStatus === Status.IDLE) {
         if (args[0]?.preventDefault) {
           args[0].preventDefault()
         }
+        return
+      }
+
+      const canAccessRoute = canAccess(
+        restriction,
+        accountStatus === Status.SUCCESS,
+        isAccountComplete
+      )
+
+      if (!canAccessRoute) {
+        // Prevent the default event from occurring
+        if (args[0]?.preventDefault) {
+          args[0].preventDefault()
+        }
+
+        // Set up return route before opening sign on
         dispatch(updateRouteOnExit(returnRoute))
         dispatch(updateRouteOnCompletion(returnRoute))
         dispatch(openSignOn(/** signIn */ false))
-        dispatch(showRequiresAccountToast(hasAccount && !isAccountComplete))
+        dispatch(
+          showRequiresAccountToast(
+            accountStatus === Status.SUCCESS && !isAccountComplete
+          )
+        )
         onOpenAuthModal?.()
-      } else {
-        // eslint-disable-next-line n/no-callback-literal
-        return callback(...args)
+        return
       }
+
+      // eslint-disable-next-line n/no-callback-literal
+      return callback(...args)
     },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [hasAccount, isAccountComplete, dispatch, restriction, ...deps]
+    [
+      accountStatus,
+      restriction,
+      isAccountComplete,
+      callback,
+      dispatch,
+      returnRoute,
+      onOpenAuthModal,
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+      ...deps
+    ]
   )
 }
 
