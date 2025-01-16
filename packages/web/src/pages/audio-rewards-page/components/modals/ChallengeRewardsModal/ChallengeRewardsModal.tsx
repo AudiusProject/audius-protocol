@@ -37,7 +37,6 @@ import {
   Paper
 } from '@audius/harmony'
 import cn from 'classnames'
-import { push as pushRoute } from 'connected-react-router'
 import { useDispatch, useSelector } from 'react-redux'
 
 import QRCode from 'assets/img/imageQR.png'
@@ -52,6 +51,7 @@ import { useWithMobileStyle } from 'hooks/useWithMobileStyle'
 import { getChallengeConfig } from 'pages/audio-rewards-page/config'
 import { copyToClipboard, getCopyableLink } from 'utils/clipboardUtil'
 import { CLAIM_REWARD_TOAST_TIMEOUT_MILLIS } from 'utils/constants'
+import { push as pushRoute } from 'utils/navigation'
 import { openTwitterLink } from 'utils/tweet'
 
 import ModalDrawer from '../ModalDrawer'
@@ -281,6 +281,7 @@ const ChallengeRewardsBody = ({ dismissModal }: BodyProps) => {
   const isMobile = useIsMobile()
   const userChallenges = useSelector(getOptimisticUserChallenges)
   const challenge = userChallenges[modalType]
+  console.log('asdf challenge: ', modalType, challenge)
   const isCooldownChallenge = challenge && challenge.cooldown_days > 0
   const currentStepCount = challenge?.current_step_count || 0
   const {
@@ -301,6 +302,8 @@ const ChallengeRewardsBody = ({ dismissModal }: BodyProps) => {
   // Note that we can't handle aggregate challenges optimistically
   let audioToClaim = 0
   let audioClaimedSoFar = 0
+  console.log('asdf challenge', challenge)
+
   if (challenge?.challenge_type === 'aggregate') {
     audioToClaim = challenge.claimableAmount
     audioClaimedSoFar = challenge.disbursed_amount
@@ -310,6 +313,10 @@ const ChallengeRewardsBody = ({ dismissModal }: BodyProps) => {
     audioToClaim = challenge.totalAmount
   } else if (challenge?.state === 'disbursed') {
     audioClaimedSoFar = challenge.totalAmount
+  }
+  let progressRewardAmount = challenge?.totalAmount
+  if (challenge?.challenge_id === 'o') {
+    progressRewardAmount = audioToClaim
   }
 
   let linkType: 'complete' | 'inProgress' | 'incomplete'
@@ -620,7 +627,7 @@ const ChallengeRewardsBody = ({ dismissModal }: BodyProps) => {
                   description={progressDescription}
                 />
                 <ProgressReward
-                  amount={formatNumberCommas(challenge?.totalAmount ?? '')}
+                  amount={formatNumberCommas(progressRewardAmount ?? '')}
                   subtext={messages.audio}
                 />
               </Flex>
