@@ -18,7 +18,7 @@ import { localStorage } from '../local-storage'
 const audiusChain = {
   id: 1056801,
   name: 'Audius',
-  nativeCurrency: { name: '-', symbol: '-', decimals: 0 },
+  nativeCurrency: { name: '-', symbol: '-', decimals: 18 },
   rpcUrls: {
     default: { http: ['https://discoveryprovider.staging.audius.co/chain'] }
   }
@@ -39,6 +39,8 @@ export const getAudiusWalletClient = async (): Promise<AudiusWalletClient> => {
     })
     await connect(config, { chainId: audiusChain.id, connector: metaMask() })
     const client = await getWalletClient(config)
+    await client.addChain({ chain: audiusChain })
+    await client.switchChain({ id: audiusChain.id })
     return client as unknown as AudiusWalletClient
   }
   return createHedgehogWalletClient(authService.hedgehogInstance)
