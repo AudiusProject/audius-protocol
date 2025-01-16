@@ -9,7 +9,7 @@ import { Config } from './types'
 import { useTrack } from './useTrack'
 import { useTrackByPermalink } from './useTrackByPermalink'
 
-type TrackParams = { trackId: ID } | { handle: string; slug: string }
+type TrackParams = { handle?: string; slug?: string; trackId?: ID }
 
 /**
  * Hook that returns track data given either a track ID or a handle + slug.
@@ -18,15 +18,14 @@ type TrackParams = { trackId: ID } | { handle: string; slug: string }
  * @returns The track data or null if not found
  */
 export const useTrackByParams = (params: TrackParams, options?: Config) => {
-  const permalink =
-    'handle' in params ? `/${params.handle}/${params.slug}` : null
-  const trackId = 'trackId' in params ? params.trackId : null
+  const { handle, slug, trackId: id } = params
+  const permalink = handle ? `/${handle}/${slug}` : null
 
   const dispatch = useDispatch()
-  const trackQuery = useTrack(trackId, options)
+  const trackQuery = useTrack(id, options)
   const permalinkQuery = useTrackByPermalink(permalink, options)
 
-  const query = 'trackId' in params ? trackQuery : permalinkQuery
+  const query = id ? trackQuery : permalinkQuery
 
   const { isSuccess } = query
   const trackIdResult = query.data?.track_id

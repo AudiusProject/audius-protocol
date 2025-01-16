@@ -26,7 +26,6 @@ import gatedContent from './gated-content/slice'
 import musicConfettiReducer, {
   MusicConfettiState
 } from './music-confetti/slice'
-import { NotificationsState, notificationsReducer } from './notifications'
 import { HistoryPageState, SavedPageState } from './pages'
 import ai from './pages/ai/slice'
 import audioRewardsSlice from './pages/audio-rewards/slice'
@@ -169,8 +168,6 @@ export const reducers = (storage: Storage, history?: History) => ({
   playlistLibrary: playlistLibraryReducer,
   playlistUpdates: playlistUpdatesReducer,
 
-  notifications: notificationsReducer,
-
   // UI
   ui: combineReducers({
     averageColor: averageColorReducer,
@@ -290,8 +287,6 @@ export type CommonState = {
   // Playlist library
   playlistLibrary: PlaylistLibraryState
   playlistUpdates: PlaylistUpdateState
-
-  notifications: NotificationsState
 
   ui: {
     averageColor: ReturnType<typeof averageColorReducer>

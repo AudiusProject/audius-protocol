@@ -8,9 +8,8 @@ import { getUser, getUsers } from '~/store/cache/users/selectors'
 import { CommonState } from '~/store/commonStore'
 import { Nullable } from '~/utils'
 
-import { Collection, ID, Status, Track } from '../../models'
+import { Collection, ID, Track } from '../../models'
 
-import { notificationsAdapter } from './slice'
 import {
   Entity,
   Notification,
@@ -22,36 +21,6 @@ import {
   TrackEntity,
   TrackAddedToPurchasedAlbumNotification
 } from './types'
-
-const getBaseState = (state: CommonState) => state.notifications
-
-export const {
-  selectById: selectNotificationById,
-  selectIds: selectNotificationIds,
-  selectEntities: selectNotificationEntities,
-  selectAll: selectAllNotifications,
-  selectTotal: selectTotalNotification
-} = notificationsAdapter.getSelectors<CommonState>(
-  (state) => state.notifications
-)
-
-export const getAllNotifications = selectAllNotifications
-export const getNotificationUnviewedCount = (state: CommonState) =>
-  getBaseState(state).totalUnviewed
-export const getNotificationStatus = (state: CommonState) =>
-  getBaseState(state).status
-export const getNotificationHasMore = (state: CommonState) =>
-  getBaseState(state).hasMore
-export const getNotificationHasLoaded = (state: CommonState) =>
-  getBaseState(state).status !== Status.IDLE
-
-export const getLastNotification = (state: CommonState) => {
-  const notificationIds = selectNotificationIds(state)
-  const lastNotificationId = notificationIds[notificationIds.length - 1]
-  return selectNotificationById(state, lastNotificationId)
-}
-
-export const getNotificationById = selectNotificationById
 
 export const getNotificationUser = (
   state: CommonState,

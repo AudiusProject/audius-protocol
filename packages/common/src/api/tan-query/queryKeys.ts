@@ -46,6 +46,7 @@ export const QUERY_KEYS = {
   favorites: 'favorites',
   following: 'following',
   notifications: 'notifications',
+  notificationUnreadCount: 'notificationUnreadCount',
   reposts: 'reposts',
   remixers: 'remixers'
 } as const
