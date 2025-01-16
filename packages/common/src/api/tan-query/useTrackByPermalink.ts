@@ -10,6 +10,9 @@ import { QUERY_KEYS } from './queryKeys'
 import { Config } from './types'
 import { primeTrackData } from './utils/primeTrackData'
 
+// If the user edits a stale track, the optimistic update fails
+const STALE_TIME = Infinity
+
 export const useTrackByPermalink = (
   permalink: string | undefined | null,
   options?: Config
@@ -18,6 +21,10 @@ export const useTrackByPermalink = (
   const queryClient = useQueryClient()
   const dispatch = useDispatch()
   const currentUserId = useSelector(getUserId)
+
+  const isMutating = queryClient.isMutating({
+    mutationKey: [QUERY_KEYS.trackByPermalink, permalink]
+  })
 
   return useQuery({
     queryKey: [QUERY_KEYS.trackByPermalink, permalink],
@@ -40,7 +47,7 @@ export const useTrackByPermalink = (
 
       return track
     },
-    staleTime: options?.staleTime,
-    enabled: options?.enabled !== false && !!permalink
+    staleTime: options?.staleTime ?? STALE_TIME,
+    enabled: options?.enabled !== false && !!permalink && !isMutating
   })
 }

@@ -36,6 +36,7 @@ export enum Feature {
   SignUp = 'sign-up',
   SignIn = 'sign-in',
   Upload = 'upload',
+  Edit = 'edit',
   Playback = 'playback',
   Purchase = 'purchase',
   Comments = 'comments',

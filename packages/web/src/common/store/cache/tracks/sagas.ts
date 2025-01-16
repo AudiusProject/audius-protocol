@@ -77,6 +77,10 @@ export function* trackNewRemixEvent(track: TrackWithRemix) {
   )
 }
 
+/**
+ * @deprecated Use useUpdateTrack instead
+ * Still used for replacing track audio
+ */
 function* editTrackAsync(action: ReturnType<typeof trackActions.editTrack>) {
   yield* call(waitForWrite)
   action.formFields.description = squashNewLines(action.formFields.description)

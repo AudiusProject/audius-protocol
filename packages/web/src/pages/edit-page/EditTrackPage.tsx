@@ -1,6 +1,6 @@
 import { createContext } from 'react'
 
-import { useTrackByPermalink } from '@audius/common/api'
+import { useTrackByPermalink, useUpdateTrack } from '@audius/common/api'
 import {
   SquareSizes,
   Stem,
@@ -10,7 +10,6 @@ import {
 } from '@audius/common/models'
 import {
   TrackMetadataForUpload,
-  cacheTracksActions,
   cacheTracksSelectors,
   uploadActions,
   useReplaceTrackConfirmationModal,
@@ -30,8 +29,8 @@ import { useIsUnauthorizedForHandleRedirect } from 'hooks/useManagedAccountNotAl
 import { useRequiresAccount } from 'hooks/useRequiresAccount'
 import { useTrackCoverArt } from 'hooks/useTrackCoverArt'
 import { push } from 'utils/navigation'
+import { getTrackPermalink } from '@audius/common/src/store/pages/track/selectors'
 
-const { editTrack } = cacheTracksActions
 const { getStems } = cacheTracksSelectors
 const { updateTrackAudio } = uploadActions
 
@@ -54,6 +53,7 @@ export const EditTrackPage = (props: EditPageProps) => {
   const { onOpen: openReplaceTrackConfirmation } =
     useReplaceTrackConfirmationModal()
   const { onOpen: openReplaceTrackProgress } = useReplaceTrackProgressModal()
+  const { mutate: updateTrack } = useUpdateTrack()
 
   const permalink = `/${handle}/${slug}`
   const { data: track, isPending: isLoadingTrack } =
@@ -63,14 +63,6 @@ export const EditTrackPage = (props: EditPageProps) => {
     const metadata = { ...formValues.trackMetadatas[0] }
     const replaceFile =
       'file' in formValues.tracks[0] ? formValues.tracks[0].file : null
-
-    if (
-      metadata.artwork &&
-      'file' in metadata.artwork &&
-      !metadata.artwork?.file
-    ) {
-      metadata.artwork = null
-    }
 
     if (replaceFile) {
       openReplaceTrackConfirmation({
@@ -86,7 +78,16 @@ export const EditTrackPage = (props: EditPageProps) => {
         }
       })
     } else {
-      dispatch(editTrack(metadata.track_id, metadata))
+      if (!track) return
+      updateTrack({
+        trackId: metadata.track_id,
+        userId: track.owner_id,
+        metadata,
+        coverArtFile:
+          metadata.artwork && 'file' in metadata.artwork
+            ? (metadata.artwork.file as File)
+            : undefined
+      })
       dispatch(push(metadata.permalink))
     }
   }

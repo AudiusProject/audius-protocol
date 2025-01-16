@@ -11,6 +11,8 @@ import { EntriesByKind } from '~/store/cache/types'
 import { QUERY_KEYS } from './queryKeys'
 import { Config } from './types'
 
+const STALE_TIME = Infinity
+
 export const useTrack = (trackId: ID | null | undefined, options?: Config) => {
   const { audiusSdk } = useAudiusQueryContext()
   const queryClient = useQueryClient()
@@ -54,7 +56,7 @@ export const useTrack = (trackId: ID | null | undefined, options?: Config) => {
 
       return track
     },
-    staleTime: options?.staleTime,
+    staleTime: options?.staleTime ?? STALE_TIME,
     enabled: options?.enabled !== false && !!trackId
   })
 }
