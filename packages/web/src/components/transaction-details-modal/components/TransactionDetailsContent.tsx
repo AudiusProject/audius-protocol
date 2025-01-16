@@ -9,6 +9,7 @@ import {
   formatAudio,
   formatCapitalizeString,
   isNullOrUndefined,
+  makeSolanaAccountLink,
   makeSolanaTransactionLink,
   route
 } from '@audius/common/utils'
@@ -163,7 +164,11 @@ const dateAndMetadataBlocks = (transactionDetails: TransactionDetails) => {
             header={
               <a
                 className={styles.link}
-                href={makeSolanaTransactionLink(transactionDetails.metadata)}
+                href={
+                  transactionDetails.method === TransactionMethod.SEND
+                    ? makeSolanaTransactionLink(transactionDetails.metadata)
+                    : makeSolanaAccountLink(transactionDetails.metadata)
+                }
                 target='_blank'
                 title={transactionDetails.metadata}
                 rel='noreferrer'
