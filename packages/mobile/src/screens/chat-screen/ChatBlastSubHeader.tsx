@@ -1,7 +1,6 @@
 import { useChatBlastAudienceContent } from '@audius/common/hooks'
 import { SquareSizes } from '@audius/common/models'
-import { decodeHashId } from '@audius/common/utils'
-import type { ChatBlast } from '@audius/sdk'
+import { OptionalHashId, type ChatBlast } from '@audius/sdk'
 import { css } from '@emotion/native'
 
 import { Flex, Text } from '@audius/harmony-native'
@@ -16,7 +15,7 @@ export const ChatBlastSubHeader = ({ chat }: { chat: ChatBlast }) => {
   } = chat
   const { chatBlastAudienceDescription, contentTitle } =
     useChatBlastAudienceContent({ chat })
-  const decodedId = decodeHashId(audienceContentId) ?? undefined
+  const decodedId = OptionalHashId.parse(audienceContentId)
   return (
     <Flex
       row

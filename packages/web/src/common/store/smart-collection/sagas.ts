@@ -15,8 +15,8 @@ import {
   collectionPageActions,
   getContext
 } from '@audius/common/store'
-import { encodeHashId, route } from '@audius/common/utils'
-import { full } from '@audius/sdk'
+import { route } from '@audius/common/utils'
+import { full, Id } from '@audius/sdk'
 import { GetBestNewReleasesWindowEnum } from '@audius/sdk/src/sdk/api/generated/full'
 import { takeEvery, put, call, select } from 'typed-redux-saga'
 
@@ -53,7 +53,7 @@ function* fetchHeavyRotation() {
   const activity = yield* call(
     [sdk.full.users, sdk.full.users.getUsersTrackHistory],
     {
-      id: encodeHashId(currentUserId),
+      id: Id.parse(currentUserId),
       sortMethod: 'most_listens_by_user',
       limit: 20
     }

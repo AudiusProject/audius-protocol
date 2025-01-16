@@ -10,8 +10,6 @@ import {
   User,
   StringWei,
   BNWei,
-  Id,
-  OptionalId,
   supportedUserMetadataListFromSDK,
   supporterMetadataListFromSDK,
   supporterMetadataFromSDK,
@@ -38,10 +36,10 @@ import {
   waitForValue,
   MAX_PROFILE_TOP_SUPPORTERS,
   SUPPORTING_PAGINATION_SIZE,
-  removeNullable,
-  encodeHashId
+  removeNullable
 } from '@audius/common/utils'
 import { AUDIO } from '@audius/fixed-decimal'
+import { Id, OptionalId } from '@audius/sdk'
 import { PayloadAction } from '@reduxjs/toolkit'
 import BN from 'bn.js'
 import {
@@ -320,9 +318,8 @@ function* sendTipAsync() {
 
   const device = isNativeMobile ? 'mobile' : 'web'
 
-  const senderUserId = encodeHashId(sender.user_id)
-  const receiverUserId = encodeHashId(receiver.user_id)
-
+  const senderUserId = Id.parse(sender.user_id)
+  const receiverUserId = Id.parse(receiver.user_id)
   const amount = Number(stringAudioAmount)
 
   let senderWallet: SolanaWalletAddress | undefined

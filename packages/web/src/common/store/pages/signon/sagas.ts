@@ -13,8 +13,7 @@ import {
   InstagramUser,
   TikTokUser,
   Feature,
-  AccountUserMetadata,
-  OptionalId
+  AccountUserMetadata
 } from '@audius/common/models'
 import {
   IntKeys,
@@ -48,11 +47,15 @@ import {
   isValidEmailString,
   route,
   isResponseError,
-  encodeHashId,
   TEMPORARY_PASSWORD,
   waitForValue
 } from '@audius/common/utils'
-import { CreateUserRequest, UpdateProfileRequest } from '@audius/sdk'
+import {
+  OptionalId,
+  CreateUserRequest,
+  Id,
+  UpdateProfileRequest
+} from '@audius/sdk'
 import { isEmpty } from 'lodash'
 import {
   all,
@@ -699,7 +702,7 @@ function* signUp() {
               }
               userId = account.user.user_id
               const completeProfileMetadataRequest: UpdateProfileRequest = {
-                userId: encodeHashId(userId),
+                userId: Id.parse(userId),
                 profilePictureFile: signOn.profileImage?.file as File,
                 metadata: {
                   location: location ?? undefined,

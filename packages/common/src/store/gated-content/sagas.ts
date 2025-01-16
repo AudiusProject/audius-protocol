@@ -1,3 +1,4 @@
+import { Id, OptionalId } from '@audius/sdk'
 import {
   takeEvery,
   select,
@@ -25,9 +26,7 @@ import {
   isContentTipGated,
   isContentUSDCPurchaseGated,
   NFTAccessSignature,
-  GatedContentStatus,
-  Id,
-  OptionalId
+  GatedContentStatus
 } from '~/models'
 import { User } from '~/models/User'
 import { IntKeys } from '~/services/remote-config'

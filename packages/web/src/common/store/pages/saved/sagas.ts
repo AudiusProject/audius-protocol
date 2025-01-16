@@ -11,13 +11,8 @@ import {
   getContext,
   LibraryCategoryType
 } from '@audius/common/store'
-import {
-  decodeHashId,
-  encodeHashId,
-  waitForValue,
-  Nullable
-} from '@audius/common/utils'
-import { full } from '@audius/sdk'
+import { waitForValue, Nullable } from '@audius/common/utils'
+import { full, HashId, Id } from '@audius/sdk'
 import { call, fork, put, select, takeLatest } from 'typed-redux-saga'
 
 import { processAndCacheTracks } from 'common/store/cache/tracks/utils'
@@ -65,8 +60,8 @@ function* sendLibraryRequest({
   const savedTracksResponse = yield* call(
     [sdk.full.users, sdk.full.users.getUserLibraryTracks],
     {
-      id: encodeHashId(userId),
-      userId: encodeHashId(userId),
+      id: Id.parse(userId),
+      userId: Id.parse(userId),
       offset,
       limit,
       query,
@@ -91,7 +86,7 @@ function* sendLibraryRequest({
     .filter((save) => Boolean(save.timestamp && save.item))
     .map((save) => ({
       created_at: save.timestamp!,
-      save_item_id: decodeHashId(save.item!.id!),
+      save_item_id: HashId.parse(save.item!.id!),
       save_type: FavoriteType.TRACK,
       user_id: userId
     })) as Favorite[]

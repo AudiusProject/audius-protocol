@@ -1,6 +1,7 @@
 import { AUDIO, AudioWei, wAUDIO } from '@audius/fixed-decimal'
 import type { LocalStorage } from '@audius/hedgehog'
 import { AudiusSdk, type StorageNodeSelectorService } from '@audius/sdk'
+import { Id } from '@audius/sdk'
 import {
   ASSOCIATED_TOKEN_PROGRAM_ID,
   getAccount,
@@ -31,7 +32,6 @@ import {
   TikTokUser,
   UserMetadata,
   ComputedUserProperties,
-  Id,
   WriteableUserMetadata
 } from '../../models'
 import { AnalyticsEvent } from '../../models/Analytics'

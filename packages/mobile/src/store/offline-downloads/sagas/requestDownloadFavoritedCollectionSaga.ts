@@ -2,8 +2,8 @@ import {
   transformAndCleanList,
   userCollectionMetadataFromSDK
 } from '@audius/common/adapters'
-import { Id, OptionalId } from '@audius/common/models'
 import { accountSelectors, getSDK } from '@audius/common/store'
+import { Id, OptionalId } from '@audius/sdk'
 import { takeEvery, select, put, call } from 'typed-redux-saga'
 
 import type { CollectionAction, OfflineEntry } from '../slice'
