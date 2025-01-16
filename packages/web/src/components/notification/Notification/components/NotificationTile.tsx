@@ -5,11 +5,8 @@ import {
   useCallback
 } from 'react'
 
-import { Notification } from '@audius/common/store'
+import { Notification, useNotificationModal } from '@audius/common/store'
 import cn from 'classnames'
-import { useDispatch } from 'react-redux'
-
-import { closeNotificationPanel } from 'store/application/ui/notifications/notificationsUISlice'
 
 import styles from './NotificationTile.module.css'
 
@@ -26,16 +23,16 @@ type NotificationTileProps = {
 export const NotificationTile = (props: NotificationTileProps) => {
   const { notification, onClick, children, disabled, disableClosePanel } = props
   const { isViewed } = notification
-  const dispatch = useDispatch()
+  const { onClose } = useNotificationModal()
 
   const handleClick: MouseEventHandler = useCallback(
     (event) => {
       onClick?.(event)
       if (!disableClosePanel) {
-        dispatch(closeNotificationPanel())
+        onClose()
       }
     },
-    [onClick, disableClosePanel, dispatch]
+    [onClick, disableClosePanel, onClose]
   )
 
   return (

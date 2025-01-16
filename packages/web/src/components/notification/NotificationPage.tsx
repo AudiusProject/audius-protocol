@@ -1,15 +1,13 @@
-import { useEffect, useCallback, useContext } from 'react'
+import { useEffect, useContext } from 'react'
 
-import { Status } from '@audius/common/models'
 import {
-  notificationsActions,
-  notificationsSelectors,
-  Notification as Notifications
-} from '@audius/common/store'
+  useNotifications,
+  useMarkNotificationsAsViewed
+} from '@audius/common/api'
+import { Notification as Notifications } from '@audius/common/store'
 import { Flex } from '@audius/harmony'
 import Lottie from 'lottie-react'
 import InfiniteScroll from 'react-infinite-scroller'
-import { useDispatch, useSelector } from 'react-redux'
 
 import loadingSpinner from 'assets/animations/loadingSpinner.json'
 import MobilePageContainer from 'components/mobile-page-container/MobilePageContainer'
@@ -17,13 +15,6 @@ import NavContext, { LeftPreset } from 'components/nav/mobile/NavContext'
 
 import { EmptyNotifications } from './EmptyNotifications'
 import { Notification } from './Notification'
-const { fetchNotifications, markAllAsViewed } = notificationsActions
-const {
-  getNotificationHasMore,
-  getNotificationStatus,
-  selectAllNotifications,
-  getNotificationUnviewedCount
-} = notificationsSelectors
 
 const messages = {
   documentTitle: 'Notifications',
@@ -39,16 +30,9 @@ const SCROLL_THRESHOLD = 300
  * summary of each notification and a link to open the full
  * notification in a modal  */
 export const NotificationPage = () => {
-  const notifications = useSelector(selectAllNotifications)
-  const hasMore = useSelector(getNotificationHasMore)
-  const status = useSelector(getNotificationStatus)
-  const notificationUnviewedCount = useSelector(getNotificationUnviewedCount)
-  const dispatch = useDispatch()
-
-  const loadMore = useCallback(() => {
-    if (!hasMore || status === Status.LOADING || status === Status.ERROR) return
-    dispatch(fetchNotifications())
-  }, [hasMore, status, dispatch])
+  const { notifications, isPending, hasNextPage, fetchNextPage } =
+    useNotifications()
+  const { mutate: markAsViewed } = useMarkNotificationsAsViewed()
 
   const { setLeft, setCenter, setRight } = useContext(NavContext)!
 
@@ -59,10 +43,8 @@ export const NotificationPage = () => {
   }, [setLeft, setCenter, setRight])
 
   useEffect(() => {
-    if (notificationUnviewedCount > 0) {
-      dispatch(markAllAsViewed())
-    }
-  }, [dispatch, notificationUnviewedCount])
+    markAsViewed()
+  }, [markAsViewed])
 
   return (
     <MobilePageContainer
@@ -70,7 +52,9 @@ export const NotificationPage = () => {
       description={messages.description}
       fullHeight
     >
-      {notifications.length > 0 ? (
+      {!isPending && notifications.length === 0 ? (
+        <EmptyNotifications />
+      ) : (
         <Flex
           as={InfiniteScroll}
           direction='column'
@@ -79,8 +63,8 @@ export const NotificationPage = () => {
           gap='s'
           // @ts-ignore
           pageStart={0}
-          loadMore={loadMore}
-          hasMore={true}
+          loadMore={() => fetchNextPage()}
+          hasMore={hasNextPage}
           useWindow={true}
           initialLoad={false}
           threshold={SCROLL_THRESHOLD}
@@ -97,14 +81,8 @@ export const NotificationPage = () => {
                 />
               )
             })}
-          {status === Status.LOADING && (
-            <Flex alignItems='center' justifyContent='center' pt='l'>
-              <Lottie loop autoplay animationData={loadingSpinner} />
-            </Flex>
-          )}
+          {isPending && <Lottie loop autoplay animationData={loadingSpinner} />}
         </Flex>
-      ) : (
-        <EmptyNotifications />
       )}
     </MobilePageContainer>
   )

@@ -77,7 +77,7 @@ type CollectionHeaderProps = {
   duration: number
   variant: Nullable<Variant>
   gradient?: string
-  icon: IconComponent
+  icon: IconComponent | null
   imageOverride?: string
   userId: Nullable<ID>
   reposts: number

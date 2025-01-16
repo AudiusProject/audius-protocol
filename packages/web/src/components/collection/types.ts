@@ -33,7 +33,7 @@ export type CollectionHeaderProps = {
   duration: number
   variant: Variant | null
   gradient?: string
-  icon: IconComponent
+  icon: IconComponent | null
   imageOverride?: string
   userId: ID | null
   reposts: number
