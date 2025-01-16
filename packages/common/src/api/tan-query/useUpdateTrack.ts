@@ -12,13 +12,11 @@ import { TrackMetadataForUpload } from '~/store/upload'
 
 import { QUERY_KEYS } from './queryKeys'
 import { handleStemUpdates } from './utils/handleStemUpdates'
-import { prepareTrackForUpload } from './utils/prepareTrackForUpload'
 
 const { getCurrentUploads } = stemsUploadSelectors
 
 type MutationContext = {
   previousTrack: Track | undefined
-  processedMetadata: Partial<TrackMetadataForUpload>
 }
 
 type UpdateTrackParams = {
@@ -43,25 +41,20 @@ export const useUpdateTrack = () => {
     }: UpdateTrackParams) => {
       const sdk = await audiusSdk()
 
-      const encodedTrackId = Id.parse(trackId)
-      const encodedUserId = Id.parse(userId)
-      if (!encodedTrackId || !encodedUserId) throw new Error('Invalid ID')
-
       const previousMetadata = queryClient.getQueryData<Track>([
         QUERY_KEYS.track,
         trackId
       ])
-      const processedMetadata = prepareTrackForUpload(metadata)
       const sdkMetadata = trackMetadataForUploadToSdk(
-        processedMetadata as TrackMetadataForUpload
+        metadata as TrackMetadataForUpload
       )
 
       const response = await sdk.tracks.updateTrack({
         coverArtFile: coverArtFile
           ? fileToSdk(coverArtFile, 'cover_art')
           : undefined,
-        trackId: encodedTrackId,
-        userId: encodedUserId,
+        trackId: Id.parse(trackId),
+        userId: Id.parse(userId),
         metadata: sdkMetadata
       })
 
@@ -72,7 +65,7 @@ export const useUpdateTrack = () => {
       )
       if (previousMetadata) {
         handleStemUpdates(
-          processedMetadata,
+          metadata,
           previousMetadata as any,
           inProgressStemUploads,
           dispatch
@@ -94,22 +87,31 @@ export const useUpdateTrack = () => {
         trackId
       ])
 
-      const processedMetadata = prepareTrackForUpload(metadata)
-
       // Optimistically update track
       queryClient.setQueryData([QUERY_KEYS.track, trackId], (old: any) => ({
         ...old,
-        ...processedMetadata
+        ...metadata
       }))
 
       // Optimistically update trackByPermalink
-      queryClient.setQueryData(
-        [QUERY_KEYS.trackByPermalink, metadata.permalink],
-        (old: any) => ({
-          ...old,
-          ...processedMetadata
-        })
-      )
+      if (previousTrack) {
+        queryClient.setQueryData(
+          [QUERY_KEYS.trackByPermalink, previousTrack.permalink],
+          (old: any) => ({
+            ...old,
+            ...metadata
+            // TODO: add optimistic update for artwork
+          })
+        )
+        queryClient.setQueryData(
+          [QUERY_KEYS.trackByPermalink, metadata.permalink],
+          (old: any) => ({
+            ...previousTrack,
+            ...old,
+            ...metadata
+          })
+        )
+      }
 
       // Optimistically update all collections that contain this track
       queryClient.setQueriesData(
@@ -125,7 +127,7 @@ export const useUpdateTrack = () => {
               track.id === trackId
                 ? {
                     ...track,
-                    ...processedMetadata
+                    ...metadata
                   }
                 : track
             )
@@ -134,9 +136,13 @@ export const useUpdateTrack = () => {
       )
 
       // Return context with the previous track and metadata
-      return { previousTrack, processedMetadata }
+      return { previousTrack }
     },
-    onError: (error, { trackId, userId }, context?: MutationContext) => {
+    onError: (
+      error,
+      { trackId, userId, metadata },
+      context?: MutationContext
+    ) => {
       // If the mutation fails, roll back track data
       if (context?.previousTrack) {
         queryClient.setQueryData(
@@ -171,7 +177,7 @@ export const useUpdateTrack = () => {
         additionalInfo: {
           trackId,
           userId,
-          metadata: context?.processedMetadata
+          metadata
         },
         feature: Feature.Edit,
         name: 'Edit Track'
@@ -179,7 +185,7 @@ export const useUpdateTrack = () => {
     },
     onSettled: (_, __, { trackId }) => {
       // Always refetch after error or success to ensure cache is in sync with server
-      queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.track, trackId] })
+      // queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.track, trackId] })
     }
   })
 }

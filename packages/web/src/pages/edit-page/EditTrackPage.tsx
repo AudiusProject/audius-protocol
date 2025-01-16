@@ -29,6 +29,7 @@ import { useIsUnauthorizedForHandleRedirect } from 'hooks/useManagedAccountNotAl
 import { useRequiresAccount } from 'hooks/useRequiresAccount'
 import { useTrackCoverArt } from 'hooks/useTrackCoverArt'
 import { push } from 'utils/navigation'
+import { getTrackPermalink } from '@audius/common/src/store/pages/track/selectors'
 
 const { getStems } = cacheTracksSelectors
 const { updateTrackAudio } = uploadActions
@@ -78,22 +79,16 @@ export const EditTrackPage = (props: EditPageProps) => {
       })
     } else {
       if (!track) return
-      updateTrack(
-        {
-          trackId: metadata.track_id,
-          userId: track.owner_id,
-          metadata,
-          coverArtFile:
-            metadata.artwork && 'file' in metadata.artwork
-              ? (metadata.artwork.file as File)
-              : undefined
-        },
-        {
-          onSuccess: () => {
-            dispatch(push(metadata.permalink))
-          }
-        }
-      )
+      updateTrack({
+        trackId: metadata.track_id,
+        userId: track.owner_id,
+        metadata,
+        coverArtFile:
+          metadata.artwork && 'file' in metadata.artwork
+            ? (metadata.artwork.file as File)
+            : undefined
+      })
+      dispatch(push(metadata.permalink))
     }
   }
 
