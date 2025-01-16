@@ -16,11 +16,12 @@ import { toFormikValidationSchema } from 'zod-formik-adapter'
 import { TRACK_PREVIEW } from 'app/components/edit/PriceAndAudienceField/PremiumRadioField/TrackPreviewField'
 import { TRACK_PRICE } from 'app/components/edit/PriceAndAudienceField/PremiumRadioField/TrackPriceField'
 
+import { UploadFileContext } from '../upload-screen/screens/UploadFileContext'
+
 import { EditTrackNavigator } from './EditTrackNavigator'
 import { BPM } from './screens/KeyBpmScreen'
 import type { FormValues, EditTrackScreenProps } from './types'
 import { getUploadMetadataFromFormValues } from './util'
-import { UploadFileContext } from '../upload-screen/screens/UploadFileContext'
 
 const { computeLicenseVariables, ALL_RIGHTS_RESERVED_TYPE } = creativeCommons
 
