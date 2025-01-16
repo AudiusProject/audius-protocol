@@ -1,11 +1,6 @@
 import { useRef, useCallback, useEffect, RefObject } from 'react'
 
-import { Status } from '@audius/common/models'
-import {
-  notificationsActions,
-  notificationsSelectors,
-  Notification as Notifications
-} from '@audius/common/store'
+import { useNotifications } from '@audius/common/api'
 import { Nullable } from '@audius/common/utils'
 import {
   Scrollbar,
@@ -36,15 +31,6 @@ import { EmptyNotifications } from './EmptyNotifications'
 import { Notification } from './Notification'
 import { NotificationModal } from './NotificationModal'
 import styles from './NotificationPanel.module.css'
-const { fetchNotifications } = notificationsActions
-const {
-  getNotificationHasMore,
-  getNotificationStatus,
-  selectAllNotifications
-} = notificationsSelectors
-
-const { getNotificationUnviewedCount } = notificationsSelectors
-const { markAllAsViewed } = notificationsActions
 
 const scrollbarId = 'notificationsPanelScroll'
 
@@ -70,13 +56,11 @@ const SCROLL_THRESHOLD = 1000
  * notification in a modal  */
 export const NotificationPanel = ({ anchorRef }: NotificationPanelProps) => {
   const panelIsOpen = useSelector(getNotificationPanelIsOpen)
-  const notifications = useSelector(selectAllNotifications)
-  const hasMore = useSelector(getNotificationHasMore)
-  const status = useSelector(getNotificationStatus)
+  const { notifications, fetchNextPage, hasNextPage, isLoading, isError } =
+    useNotifications({ enabled: panelIsOpen })
   const isNotificationModalOpen = useSelector(getNotificationModalIsOpen)
   const modalNotification = useSelector(getModalNotification)
   const isUserListOpen = useSelector(getIsUserListOpen)
-  const unviewedNotificationCount = useSelector(getNotificationUnviewedCount)
 
   const panelRef = useRef<Nullable<HTMLDivElement>>(null)
 
@@ -86,11 +70,6 @@ export const NotificationPanel = ({ anchorRef }: NotificationPanelProps) => {
   const handleCloseNotificationModal = useCallback(() => {
     dispatch(closeNotificationModal())
   }, [dispatch])
-
-  const handleLoadMore = useCallback(() => {
-    if (!hasMore || status === Status.LOADING || status === Status.ERROR) return
-    dispatch(fetchNotifications())
-  }, [hasMore, status, dispatch])
 
   const handleCloseNotificationPanel = useCallback(() => {
     dispatch(closeNotificationPanel())
@@ -113,17 +92,8 @@ export const NotificationPanel = ({ anchorRef }: NotificationPanelProps) => {
     }
   }, [openNotifications, dispatch])
 
-  useEffect(() => {
-    if (panelIsOpen && unviewedNotificationCount > 0) {
-      return () => {
-        dispatch(markAllAsViewed())
-      }
-    }
-  }, [panelIsOpen, unviewedNotificationCount, dispatch])
-
   const userHasNoNotifications =
-    (status === Status.SUCCESS || status === Status.ERROR) &&
-    notifications.length === 0
+    (!isLoading || isError) && notifications.length === 0
 
   return (
     <>
@@ -167,9 +137,9 @@ export const NotificationPanel = ({ anchorRef }: NotificationPanelProps) => {
           </Flex>
           <Scrollbar className={styles.scrollContent} id={scrollbarId}>
             <InfiniteScroll
-              loadMore={handleLoadMore}
-              hasMore={hasMore}
-              initialLoad={status === Status.IDLE}
+              loadMore={() => fetchNextPage()}
+              hasMore={hasNextPage}
+              initialLoad={!notifications.length}
               useWindow={false}
               threshold={SCROLL_THRESHOLD}
               loader={
@@ -185,7 +155,7 @@ export const NotificationPanel = ({ anchorRef }: NotificationPanelProps) => {
               {userHasNoNotifications ? (
                 <EmptyNotifications />
               ) : (
-                notifications.map((notification: Notifications) => {
+                notifications.map((notification) => {
                   return (
                     <Notification
                       key={notification.id}

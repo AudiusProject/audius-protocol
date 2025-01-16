@@ -166,7 +166,9 @@ const ExplorePage = ({ title, pageTitle, description }: ExplorePageProps) => {
                 i.variant !== ExploreCollectionsVariant.DIRECT_LINK
               }
               backgroundIcon={
-                <Icon height={512} width={512} color='staticStaticWhite' />
+                Icon ? (
+                  <Icon height={512} width={512} color='staticStaticWhite' />
+                ) : undefined
               }
               backgroundIconClassName={
                 title === PREMIUM_TRACKS.title

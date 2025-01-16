@@ -13,10 +13,6 @@ import { call, takeEvery, select } from 'typed-redux-saga'
 
 import { waitForWrite } from 'utils/sagaHelpers'
 
-import { watchNotificationError } from './errorSagas'
-import { watchFetchNotifications } from './fetchNotificationsSaga'
-import { watchRefreshNotifications } from './refreshNotificationsSaga'
-
 // Gets the polling interval from remoteconfig
 export const getPollingIntervalMs = (
   remoteConfigInstance: RemoteConfigInstance
@@ -52,10 +48,5 @@ function* markAllNotificationsViewed() {
 }
 
 export default function sagas() {
-  return [
-    watchFetchNotifications,
-    watchRefreshNotifications,
-    watchMarkAllNotificationsViewed,
-    watchNotificationError
-  ]
+  return [watchMarkAllNotificationsViewed]
 }

@@ -82,8 +82,6 @@ import routingSagas from 'store/routing/sagas'
 import signOutSagas from 'store/sign-out/sagas'
 import tokenDashboardSagas from 'store/token-dashboard/sagas'
 
-import notificationSagasWeb from './notifications/sagas'
-
 export default function* rootSaga() {
   const sagas = ([] as (() => Generator<any, void, any>)[]).concat(
     // Config
@@ -113,7 +111,6 @@ export default function* rootSaga() {
     feedPageSagas(),
     historySagas(),
     notificationSagas(),
-    notificationSagasWeb(),
     passwordResetSagas(),
     profileSagas(),
     reactionSagas(),

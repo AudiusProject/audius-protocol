@@ -1,7 +1,8 @@
 import { useCallback, useMemo, useRef, MouseEvent } from 'react'
 
+import { useNotificationUnreadCount } from '@audius/common/api'
 import { Name } from '@audius/common/models'
-import { notificationsSelectors, accountSelectors } from '@audius/common/store'
+import { accountSelectors } from '@audius/common/store'
 import { IconNotificationOn, NotificationCount } from '@audius/harmony'
 import { useDispatch, useSelector } from 'react-redux'
 
@@ -17,7 +18,6 @@ import {
 import { canAccess } from './NavHeader'
 import { NavHeaderButton } from './NavHeaderButton'
 
-const { getNotificationUnviewedCount } = notificationsSelectors
 const { getHasAccount, getIsAccountComplete } = accountSelectors
 
 const messages = {
@@ -25,7 +25,7 @@ const messages = {
 }
 
 export const NotificationsButton = () => {
-  const notificationCount = useSelector(getNotificationUnviewedCount)
+  const { data: notificationCount = 0 } = useNotificationUnreadCount()
   const notificationPanelIsOpen = useSelector(getNotificationPanelIsOpen)
   const hasAccount = useSelector(getHasAccount)
   const isAccountComplete = useSelector(getIsAccountComplete)

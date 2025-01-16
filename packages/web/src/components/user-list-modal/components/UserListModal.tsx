@@ -147,7 +147,7 @@ export const UserListModal = () => {
   return (
     <Modal isOpen={isOpen} onClose={onClose}>
       <ModalHeader>
-        <ModalTitle icon={<Icon />} title={title} />
+        <ModalTitle icon={Icon ? <Icon /> : null} title={title} />
       </ModalHeader>
       <ModalContent>
         {component}

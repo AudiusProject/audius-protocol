@@ -1,15 +1,10 @@
-import { useCallback, useContext, useEffect, useState } from 'react'
+import { useCallback, useContext, useState } from 'react'
 
-import { Status } from '@audius/common/models'
+import { useNotifications } from '@audius/common/api'
 import type { Notification } from '@audius/common/store'
-import {
-  notificationsActions,
-  notificationsSelectors
-} from '@audius/common/store'
 import { useIsFocused } from '@react-navigation/native'
 import type { ViewToken } from 'react-native'
 import { View } from 'react-native'
-import { useDispatch, useSelector } from 'react-redux'
 
 import { FlatList } from 'app/components/core'
 import LoadingSpinner from 'app/components/loading-spinner'
@@ -19,14 +14,6 @@ import { AppDrawerContext } from '../app-drawer-screen'
 
 import { EmptyNotifications } from './EmptyNotifications'
 import { NotificationListItem } from './NotificationListItem'
-const { fetchNotifications, refreshNotifications } = notificationsActions
-const {
-  getNotificationHasMore,
-  getNotificationStatus,
-  selectAllNotifications
-} = notificationsSelectors
-
-const NOTIFICATION_PAGE_SIZE = 10
 
 const useStyles = makeStyles(({ spacing, palette }) => ({
   container: {
@@ -104,30 +91,28 @@ const useIsViewable = () => {
 
 export const NotificationList = () => {
   const styles = useStyles()
-  const dispatch = useDispatch()
-  const notifications = useSelector(selectAllNotifications)
-  const status = useSelector(getNotificationStatus)
-  const hasMore = useSelector(getNotificationHasMore)
   const [isRefreshing, setIsRefreshing] = useState(false)
-
   const { gesturesDisabled } = useContext(AppDrawerContext)
+
+  const {
+    notifications,
+    isLoading,
+    isError,
+    hasNextPage,
+    fetchNextPage,
+    refetch
+  } = useNotifications()
 
   const handleRefresh = useCallback(() => {
     setIsRefreshing(true)
-    dispatch(refreshNotifications())
-  }, [dispatch])
-
-  useEffect(() => {
-    if (status !== Status.LOADING) {
-      setIsRefreshing(false)
-    }
-  }, [status])
+    refetch().finally(() => setIsRefreshing(false))
+  }, [refetch])
 
   const handleEndReached = useCallback(() => {
-    if (status !== Status.LOADING && hasMore) {
-      dispatch(fetchNotifications({ pageSize: NOTIFICATION_PAGE_SIZE }))
+    if (!isLoading && hasNextPage) {
+      fetchNextPage()
     }
-  }, [status, dispatch, hasMore])
+  }, [isLoading, hasNextPage, fetchNextPage])
 
   const [isVisible, visibilityCallback] = useIsViewable()
 
@@ -138,7 +123,7 @@ export const NotificationList = () => {
     [isVisible]
   )
 
-  if (status === Status.SUCCESS && notifications.length === 0) {
+  if (!isLoading && !isError && notifications.length === 0) {
     return <EmptyNotifications />
   }
 
@@ -152,7 +137,7 @@ export const NotificationList = () => {
       keyExtractor={(item: Notification) => item.id}
       renderItem={renderItem}
       ListFooterComponent={
-        status === Status.LOADING && !isRefreshing ? (
+        isLoading && !isRefreshing ? (
           <View style={styles.footer}>
             <LoadingSpinner fill={styles.spinner.color} />
           </View>

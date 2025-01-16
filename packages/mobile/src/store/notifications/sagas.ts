@@ -4,13 +4,9 @@ import {
   getContext,
   getSDK
 } from '@audius/common/store'
-import commonNotificationsSagas, {
-  getPollingIntervalMs
-} from '@audius/web/src/common/store/notifications/sagas'
-import { waitForRead, waitForWrite } from '@audius/web/src/utils/sagaHelpers'
-import { checkForNewNotificationsSaga } from 'common/store/notifications/checkForNewNotificationsSaga'
-import { AppState } from 'react-native'
-import { call, delay, select, takeEvery } from 'typed-redux-saga'
+import commonNotificationsSagas from '@audius/web/src/common/store/notifications/sagas'
+import { waitForWrite } from '@audius/web/src/utils/sagaHelpers'
+import { call, select, takeEvery } from 'typed-redux-saga'
 
 import PushNotifications from 'app/notifications'
 
@@ -37,23 +33,6 @@ export function* markedAllNotificationsViewed() {
   PushNotifications.setBadgeCount(0)
 }
 
-function* notificationPollingDaemon() {
-  const remoteConfigInstance = yield* getContext('remoteConfigInstance')
-  yield* call(waitForRead)
-
-  yield* takeEvery(ENTER_FOREGROUND, checkForNewNotificationsSaga)
-
-  // Set up daemon that will poll for notifications every 10s if the app is
-  // in the foreground
-
-  while (true) {
-    if (AppState.currentState === 'active') {
-      yield* call(checkForNewNotificationsSaga)
-    }
-    yield* delay(getPollingIntervalMs(remoteConfigInstance))
-  }
-}
-
 // On enter foreground, clear the notification badges
 function* watchResetNotificationBadgeCount() {
   yield* call(waitForWrite)
@@ -72,7 +51,6 @@ export default function sagas() {
   return [
     ...commonNotificationsSagas(),
     watchMarkedAllNotificationsViewed,
-    watchResetNotificationBadgeCount,
-    notificationPollingDaemon
+    watchResetNotificationBadgeCount
   ]
 }
