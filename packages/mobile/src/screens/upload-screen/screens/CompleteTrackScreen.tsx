@@ -37,7 +37,7 @@ export const CompleteTrackScreen = () => {
   )
 
   if (!track) return null
-  const metadata = track.metadata
+  const { metadata } = track
 
   return (
     <EditTrackScreen
