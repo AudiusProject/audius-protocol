@@ -27,7 +27,7 @@ export const init = async () => {
   try {
     if (AmplitudeWriteKey && AmplitudeProxy) {
       await amplitudeInit(AmplitudeWriteKey, undefined, {
-        // serverUrl: AmplitudeProxy,
+        serverUrl: AmplitudeProxy,
         appVersion: clientVersion, // Identifies our app version to Amplitude
         logLevel: AmplitudeTypes.LogLevel.Error,
         // Events queued in memory will flush when number of events exceed upload threshold
