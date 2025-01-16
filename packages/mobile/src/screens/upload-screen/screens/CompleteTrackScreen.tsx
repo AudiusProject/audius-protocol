@@ -1,4 +1,4 @@
-import { useCallback, useContext, useMemo, useState } from 'react'
+import { useCallback, useContext, useState } from 'react'
 
 import type { TrackMetadataForUpload } from '@audius/common/store'
 
@@ -36,15 +36,12 @@ export const CompleteTrackScreen = () => {
     [navigation, track, uploadAttempt]
   )
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  const metadata = useMemo(() => track?.metadata, [])
-
   if (!track) return null
+  const metadata = track.metadata
 
   return (
     <EditTrackScreen
-      // ! is fine here bc we render null if track is undefined
-      initialValues={{ ...metadata!, isUpload: true }}
+      initialValues={{ ...metadata, isUpload: true }}
       onSubmit={handleSubmit}
       title={messages.title}
       url='/complete-track'

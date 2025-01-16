@@ -1,4 +1,4 @@
-import { useCallback, useContext, useMemo } from 'react'
+import { useCallback, useMemo } from 'react'
 
 import { useUSDCPurchaseConfig } from '@audius/common/hooks'
 import { isContentUSDCPurchaseGated } from '@audius/common/models'
@@ -15,8 +15,6 @@ import { toFormikValidationSchema } from 'zod-formik-adapter'
 
 import { TRACK_PREVIEW } from 'app/components/edit/PriceAndAudienceField/PremiumRadioField/TrackPreviewField'
 import { TRACK_PRICE } from 'app/components/edit/PriceAndAudienceField/PremiumRadioField/TrackPriceField'
-
-import { UploadFileContext } from '../upload-screen/screens/UploadFileContext'
 
 import { EditTrackNavigator } from './EditTrackNavigator'
 import { BPM } from './screens/KeyBpmScreen'
@@ -229,42 +227,33 @@ const getInitialBpm = (bpm: number | null | undefined) => {
 
 export const EditTrackScreen = (props: EditTrackScreenProps) => {
   const editTrackSchema = toFormikValidationSchema(useEditTrackSchema())
-  const { track } = useContext(UploadFileContext)
 
   const { initialValues: initialValuesProp, onSubmit, ...screenProps } = props
 
-  const initialValues: FormValues = useMemo(() => {
-    const commonProps = {
-      licenseType: computeLicenseVariables(
-        initialValuesProp.license || ALL_RIGHTS_RESERVED_TYPE
-      ),
-      musical_key: initialValuesProp.musical_key
-        ? parseMusicalKey(initialValuesProp.musical_key)
-        : undefined,
-      bpm: getInitialBpm(initialValuesProp.bpm)
-    }
-
-    if (initialValuesProp.isUpload && track) {
-      return {
-        ...track.metadata,
-        isUpload: initialValuesProp.isUpload,
-        entityType: 'track',
-        ...commonProps
-      }
-    } else {
-      return { ...initialValuesProp, entityType: 'track', ...commonProps }
-    }
-  }, [initialValuesProp, track])
+  const initialValues: FormValues = {
+    ...initialValuesProp,
+    entityType: 'track',
+    licenseType: computeLicenseVariables(
+      initialValuesProp.license || ALL_RIGHTS_RESERVED_TYPE
+    ),
+    musical_key: initialValuesProp.musical_key
+      ? parseMusicalKey(initialValuesProp.musical_key)
+      : undefined,
+    bpm: getInitialBpm(initialValuesProp.bpm)
+  }
 
   const handleSubmit = useCallback(
     (values: FormValues, { setSubmitting }) => {
-      const metadata = getUploadMetadataFromFormValues(values, initialValues)
+      const metadata = getUploadMetadataFromFormValues(
+        values,
+        initialValuesProp
+      )
 
       // submit the metadata
       onSubmit(metadata)
       setSubmitting(false)
     },
-    [initialValues, onSubmit]
+    [initialValuesProp, onSubmit]
   )
 
   return (
