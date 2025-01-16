@@ -4,8 +4,7 @@ import Config from 'react-native-config'
 export const env: Env = {
   AAO_ENDPOINT: 'https://antiabuseoracle.audius.co',
   AMPLITUDE_API_KEY: '86760558b8bb1b3aae61656efd4ddacb',
-  AMPLITUDE_PROXY: 'https://gain2.audius.co/2/httpapi',
-  AMPLITUDE_WRITE_KEY: Config.AMPLITUDE_WRITE_KEY as string,
+  AMPLITUDE_PROXY: 'https://gain.audius.co',
   API_KEY: '8acf5eb7436ea403ee536a7334faa5e9ada4b50f',
   APP_NAME: 'audius-client',
   AUDIUS_URL: 'https://audius.co',
@@ -78,7 +77,6 @@ export const env: Env = {
   SUGGESTED_FOLLOW_HANDLES:
     'https://download.audius.co/static-resources/signup-follows.json',
   TIKTOK_APP_ID: Config.TIKTOK_APP_ID!,
-  TRPC_ENDPOINT: 'https://discoveryprovider3.audius.co/trpc/trpc',
   USDC_MINT_ADDRESS: 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v',
   USER_NODE: 'https://usermetadata.audius.co',
   USE_HASH_ROUTING: false,

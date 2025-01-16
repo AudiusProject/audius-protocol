@@ -21,6 +21,7 @@ from src.models.social.play import Play
 from src.solana.constants import FETCH_TX_SIGNATURES_BATCH_SIZE
 from src.solana.solana_client_manager import SolanaClientManager
 from src.tasks.celery_app import celery
+from src.tasks.index_core_cutovers import get_sol_cutover
 from src.utils.cache_solana_program import (
     CachedProgramTxInfo,
     cache_sol_db_tx,
@@ -581,6 +582,9 @@ def process_solana_plays(solana_client_manager: SolanaClientManager, redis: Redi
     # Highest currently processed slot in the DB
     latest_processed_slot = get_latest_slot(db)
     logger.debug(f"index_solana_plays.py | latest used slot: {latest_processed_slot}")
+
+    if latest_processed_slot > get_sol_cutover() and environment != "prod":
+        return
 
     # Utilize the cached tx to offset
     cached_offset_tx = fetch_traversed_tx_from_cache(redis, latest_processed_slot)

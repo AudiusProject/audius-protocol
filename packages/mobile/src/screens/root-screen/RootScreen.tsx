@@ -6,10 +6,13 @@ import {
   chatActions,
   playerActions
 } from '@audius/common/store'
+import { route } from '@audius/common/utils'
 import { PortalHost } from '@gorhom/portal'
+import { useLinkTo } from '@react-navigation/native'
 import { createNativeStackNavigator } from '@react-navigation/native-stack'
 import {
   getHasCompletedAccount,
+  getRouteOnCompletion,
   getStartedSignUpProcess,
   getWelcomeModalShown
 } from 'common/store/pages/signon/selectors'
@@ -38,6 +41,7 @@ const { getAccountStatus } = accountSelectors
 const { fetchMoreChats, fetchUnreadMessagesCount, connect, disconnect } =
   chatActions
 const { reset } = playerActions
+const { FEED_PAGE } = route
 
 const Stack = createNativeStackNavigator()
 
@@ -68,6 +72,8 @@ export const RootScreen = () => {
   const [isSplashScreenDismissed, setIsSplashScreenDismissed] = useState(false)
   const { navigate } = useNavigation()
   const { onOpen: openWelcomeDrawer } = useDrawer('Welcome')
+  const routeOnCompletion = useSelector(getRouteOnCompletion)
+  const linkTo = useLinkTo()
 
   useAppState(
     () => dispatch(enterForeground()),
@@ -109,6 +115,10 @@ export const RootScreen = () => {
       if (isAndroid && navigate) {
         navigate('HomeStack')
       }
+      // Route to the original deep link after user signs up
+      if (routeOnCompletion && routeOnCompletion !== FEED_PAGE) {
+        linkTo(routeOnCompletion)
+      }
     }
   }, [
     openWelcomeDrawer,
@@ -116,7 +126,9 @@ export const RootScreen = () => {
     startedSignUp,
     welcomeModalShown,
     navigate,
-    isAndroid
+    isAndroid,
+    routeOnCompletion,
+    linkTo
   ])
 
   return (

@@ -1,0 +1,82 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background-color: var(--harmony-white);
+  flex: 1;
+  justify-content: flex-start;
+  border-radius: 12px;
+  box-shadow: 0px 16px 20px var(--table-shadow);
+  min-height: 210px;
+  margin-bottom: 32px;
+}
+
+.title {
+  background: var(--harmony-gradient);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin-top: 48px;
+  margin-bottom: 16px;
+  text-align: center;
+}
+
+.title.mobile {
+  font-size: 30px;
+}
+
+.subtitle {
+  font-size: 20px;
+  line-height: 35.2px;
+  font-weight: 600;
+  text-align: center;
+}
+
+.subtitle.mobile {
+  font-size: var(--harmony-font-xs);
+  line-height: 19px;
+  padding: 0px 10px;
+}
+
+.titleContainer {
+  margin-bottom: 70px;
+  max-width: 840px;
+  padding: 0 28px;
+}
+
+.titleContainer.mobile {
+  margin-bottom: 48px;
+}
+
+.tierNumberText {
+  color: var(--harmony-n-200);
+  font-weight: 700;
+  font-size: 16px;
+  line-height: 17.6px;
+  letter-spacing: 0.15em;
+}
+
+.buttonContainer {
+  display: flex;
+  margin: 48px 0px;
+}
+
+.buttonContainer.mobile {
+  flex-direction: column;
+  margin-top: 24px;
+}
+
+.buttonContainer:not(.mobile) > *:first-child {
+  margin-right: 16px;
+}
+
+.buttonContainer.mobile > *:first-child {
+  margin-bottom: 16px;
+}
+
+.tierLevel {
+  color: var(--harmony-secondary);
+  font-weight: 700;
+  font-size: 14px;
+  line-height: 17px;
+}

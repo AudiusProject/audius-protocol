@@ -32,8 +32,8 @@ const makeStorageNodeSelector = async (config: StorageNodeSelectorConfig) => {
       env.ENVIRONMENT === 'development'
         ? developmentConfig
         : env.ENVIRONMENT === 'staging'
-        ? stagingConfig
-        : productionConfig
+          ? stagingConfig
+          : productionConfig
     ),
     audiusWalletClient,
     discoveryNodeSelector

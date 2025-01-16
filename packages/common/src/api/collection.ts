@@ -1,9 +1,11 @@
+import { Id, OptionalId } from '@audius/sdk'
+
 import {
   transformAndCleanList,
   userCollectionMetadataFromSDK
 } from '~/adapters'
 import { createApi } from '~/audius-query'
-import { ID, Id, Kind, OptionalId } from '~/models'
+import { ID, Kind } from '~/models'
 import { Nullable } from '~/utils'
 
 export const playlistPermalinkToHandleAndSlug = (permalink: string) => {
@@ -35,7 +37,7 @@ const collectionApi = createApi({
           userId: OptionalId.parse(currentUserId)
         })
         return data.length
-          ? userCollectionMetadataFromSDK(data[0]) ?? null
+          ? (userCollectionMetadataFromSDK(data[0]) ?? null)
           : null
       },
       fetchBatch: async (

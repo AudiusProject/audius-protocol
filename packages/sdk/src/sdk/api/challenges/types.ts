@@ -22,17 +22,7 @@ export enum ChallengeId {
   TRENDING_TRACK = 'tt',
   TRENDING_PLAYLIST = 'tp',
   TRENDING_UNDERGROUND_TRACK = 'tut',
-  ONE_SHOT = 'o',
-  DEPRECATED_TRACK_UPLOADS = 'track-upload',
-  DEPRECATED_REFERRALS = 'referrals',
-  DEPRECATED_VERIFIED_REFERRALS = 'ref-v',
-  DEPRECATED_REFERRED = 'referred',
-  DEPRECATED_MOBILE_INSTALL = 'mobile-install',
-  DEPRECATED_CONNECT_VERIFIED_ACCOUNT = 'connect-verified',
-  DEPRECATED_LISTEN_STREAK = 'listen-streak',
-  DEPRECATED_COMPLETE_PROFILE = 'profile-completion',
-  DEPRECATED_SEND_FIRST_TIP = 'send-first-tip',
-  DEPRECATED_CREATE_FIRST_PLAYLIST = 'first-playlist'
+  ONE_SHOT = 'o'
 }
 
 const DefaultSpecifier = z.object({

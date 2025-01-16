@@ -1,4 +1,4 @@
-import { AudiusSdk, full } from '@audius/sdk'
+import { AudiusSdk, full, Id, OptionalId } from '@audius/sdk'
 import {
   FullPlaylistWithScoreResponse,
   GetBestNewReleasesWindowEnum,
@@ -15,13 +15,10 @@ import {
 
 import {
   ID,
-  Id,
-  OptionalId,
   UserCollectionMetadata,
   UserTrack,
   UserTrackMetadata
 } from '../../models'
-import { encodeHashId } from '../../utils'
 import { AudiusBackend } from '../audius-backend'
 
 const scoreComparator = <T extends { score: number }>(a: T, b: T) =>
@@ -87,7 +84,7 @@ export class Explore {
         (lineupItem): lineupItem is UserTrack => 'track_id' in lineupItem
       )
       const history = await sdk.full.users.getUsersTrackHistory({
-        id: encodeHashId(currentUserId),
+        id: Id.parse(currentUserId),
         limit: 100
       })
       const listenedToTracks = transformAndCleanList(

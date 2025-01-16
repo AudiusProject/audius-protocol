@@ -12,7 +12,6 @@ import {
 import { route } from '@audius/common/utils'
 import { IconValidationX, IconNote, Button } from '@audius/harmony'
 import cn from 'classnames'
-import { push as pushRoute } from 'connected-react-router'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { useRecord, make, TrackEvent } from 'common/store/analytics/actions'
@@ -25,6 +24,7 @@ import { TwitterAuthButton } from 'components/twitter-auth/TwitterAuthButton'
 import UserBadges from 'components/user-badges/UserBadges'
 import { useProfilePicture } from 'hooks/useProfilePicture'
 import { useRemoteVar } from 'hooks/useRemoteConfig'
+import { push } from 'utils/navigation'
 
 import settingsPageStyles from './SettingsPage.module.css'
 import styles from './VerificationPage.module.css'
@@ -220,7 +220,7 @@ const VerificationPage = () => {
     setStatus(Status.ERROR)
   }, [setError, setStatus])
   const goToRoute = useCallback(
-    (route: string) => dispatch(pushRoute(route)),
+    (route: string) => dispatch(push(route)),
     [dispatch]
   )
 

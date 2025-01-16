@@ -64,7 +64,7 @@ const slice = createSlice({
     },
     inputSendData: (
       state,
-      { payload: { amount, wallet, chain } }: InputSendDataAction
+      { payload: { amount, wallet } }: InputSendDataAction
     ) => {
       const newState: TokenDashboardPageModalState = {
         stage: 'SEND' as const,
@@ -72,7 +72,6 @@ const slice = createSlice({
           stage: 'AWAITING_CONFIRMATION',
           amount,
           recipientWallet: wallet,
-          chain,
           canRecipientReceiveWAudio: 'loading'
         }
       }
@@ -106,8 +105,7 @@ const slice = createSlice({
       state.modalState.flowState = {
         stage: 'AWAITING_CONVERTING_ETH_AUDIO_TO_SOL',
         recipientWallet: state.modalState.flowState.recipientWallet,
-        amount: state.modalState.flowState.amount,
-        chain: state.modalState.flowState.chain
+        amount: state.modalState.flowState.amount
       }
     },
     confirmSend: (state) => {
@@ -122,8 +120,7 @@ const slice = createSlice({
       state.modalState.flowState = {
         stage: 'SENDING',
         recipientWallet: state.modalState.flowState.recipientWallet,
-        amount: state.modalState.flowState.amount,
-        chain: state.modalState.flowState.chain
+        amount: state.modalState.flowState.amount
       }
     },
     pressReceive: (state) => {
@@ -203,6 +200,9 @@ const slice = createSlice({
       state.associatedWallets.confirmingWallet.balance = balance
       state.associatedWallets.confirmingWallet.collectibleCount =
         collectibleCount
+    },
+    connectingWalletSignatureFailed: (state) => {
+      state.associatedWallets.confirmingWallet = initialConfirmingWallet
     },
     setWalletAddedConfirmed: (
       state,
@@ -301,6 +301,7 @@ const slice = createSlice({
     },
     preloadWalletProviders: (_state) => {},
     resetStatus: (state) => {
+      state.associatedWallets.confirmingWallet = initialConfirmingWallet
       state.associatedWallets.status = null
     },
     resetRemovedStatus: (state) => {

@@ -22,6 +22,7 @@ const discprovWhitelist = [
   ".monophonic.digital",
   ".figment.io",
   ".tikilabs.com",
+  "-1"
 ]
 
 export default function Nodes() {
@@ -92,25 +93,24 @@ export default function Nodes() {
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50 dark:bg-gray-700">
               <tr>
-                <th scope="col" className="px-4 py-2 text-left text-sm font-medium text-gray-700 dark:text-gray-200">
-                  Host
-                </th>
+                <th scope="col" className="px-4 py-2 text-left text-sm font-medium text-gray-700 dark:text-gray-200">Host</th>
+                <th scope="col" className="px-4 py-2 text-left text-sm font-medium text-gray-700 dark:text-gray-200">Git</th>
                 <th scope="col" className="px-4 py-2 text-left text-sm font-medium text-gray-700 dark:text-gray-200">Node Health</th>
                 <th scope="col" className="px-4 py-2 text-left text-sm font-medium text-gray-700 dark:text-gray-200">Chain ID</th>
                 <th scope="col" className="px-4 py-2 text-left text-sm font-medium text-gray-700 dark:text-gray-200">Blocks</th>
                 <th scope="col" className="px-4 py-2 text-left text-sm font-medium text-gray-700 dark:text-gray-200">Transactions</th>
                 <th scope="col" className="px-4 py-2 text-left text-sm font-medium text-gray-700 dark:text-gray-200">Eth Address</th>
                 <th scope="col" className="px-4 py-2 text-left text-sm font-medium text-gray-700 dark:text-gray-200">Comet Address</th>
-              </tr >
-            </thead >
+              </tr>
+            </thead>
             <tbody className="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-700">
               {sps.map((sp) => (
                 <CoreHealthRow key={sp.endpoint} sp={sp} isStaging={env === 'staging'} />
               ))}
             </tbody>
-          </table >
-        </div >
-      </div >
+          </table>
+        </div>
+      </div>
     )
   }
 }
@@ -291,7 +291,7 @@ function HealthRow({ isContent, sp, isStaging }: { isContent: boolean; sp: SP, i
           </span>
           <span className="w-px" /><span className="w-px" />
           <a
-            href={`https://github.com/AudiusProject/audius-protocol/commits/${health.git}`}
+            href={`https://github.com/AudiusProject/${isContent ? 'audiusd' : 'audius-protocol'}/commits/${health.git}`}
             target="_blank"
             className="text-gray-900 dark:text-gray-200 hover:text-blue-500 dark:hover:text-blue-400"
           >
@@ -401,69 +401,47 @@ function HealthRow({ isContent, sp, isStaging }: { isContent: boolean; sp: SP, i
 function CoreHealthRow({ sp, isStaging }: { sp: SP, isStaging: boolean }) {
   const path = '/console/health_check'
   const { data, error: dataError } = useSWR(sp.endpoint + path, fetcher)
-  if (sp.endpoint === "https://discoveryprovider2.staging.audius.co") {
-    console.log("yoyo")
-    console.log(data)
-    console.log(dataError)
-  }
 
-  // API response doesn't include isRegistered
-  if (sp.isRegistered !== false) {
-    sp.isRegistered = true
+  let healthStatus = 'loading'
+  let healthStatusClass = ''
+
+  if (dataError) {
+    healthStatus = 'error'
+    healthStatusClass = 'is-unhealthy'
+  } else if (!data) {
+    healthStatus = 'loading'
+    healthStatusClass = ''
+  } else {
+    healthStatus = data.healthy ? 'Healthy' : 'Unhealthy'
+    healthStatusClass = data.healthy ? '' : 'is-unhealthy'
   }
 
   if (!data) {
-    let healthStatus = 'loading'
-    let healthStatusClass = ''
-    if (!sp.isRegistered) {
-      healthStatus = 'Unregistered'
-      healthStatusClass = 'is-unregistered'
-    } else if (dataError) {
-      healthStatus = 'error'
-      healthStatusClass = 'is-unhealthy'
-    }
     return (
-      <tr className={healthStatusClass}>
-        <td className="whitespace-nowrap py-5 pl-4 pr-3 text-sm">
-          <a href={sp.endpoint + path} target="_blank">
-            {sp.endpoint.replace('https://', '')}
-          </a>
-        </td>
-        <td className="whitespace-nowrap px-3 py-5 text-sm">{healthStatus}</td> {/* Node Health */}
-        <td className="whitespace-nowrap px-3 py-5 text-sm">{dataError ? 'error' : 'loading'}</td> {/* Chain id */}
-        <td className="whitespace-nowrap px-3 py-5 text-sm">{dataError ? 'error' : 'loading'}</td> {/* Blocks */}
-        <td className="whitespace-nowrap px-3 py-5 text-sm">{dataError ? 'error' : 'loading'}</td> {/* Transactions */}
-        <td className="whitespace-nowrap px-3 py-5 text-sm">{dataError ? 'error' : 'loading'}</td> {/* Eth Address */}
-        <td className="whitespace-nowrap px-3 py-5 text-sm">{dataError ? 'error' : 'loading'}</td> {/* Comet Address */}
-      </tr>
+      <tr className={healthStatusClass}><td className="whitespace-nowrap py-5 pl-4 pr-3 text-sm">
+        <a href={sp.endpoint + path} target="_blank">
+          {sp.endpoint.replace('https://', '')}
+        </a>
+      </td><td className="whitespace-nowrap px-3 py-5 text-sm">{dataError ? 'error' : 'loading'}</td><td className="whitespace-nowrap px-3 py-5 text-sm">{healthStatus}</td><td className="whitespace-nowrap px-3 py-5 text-sm">{dataError ? 'error' : 'loading'}</td><td className="whitespace-nowrap px-3 py-5 text-sm">{dataError ? 'error' : 'loading'}</td><td className="whitespace-nowrap px-3 py-5 text-sm">{dataError ? 'error' : 'loading'}</td><td className="whitespace-nowrap px-3 py-5 text-sm">{dataError ? 'error' : 'loading'}</td><td className="whitespace-nowrap px-3 py-5 text-sm">{dataError ? 'error' : 'loading'}</td></tr>
     )
   }
 
-  let healthStatus = 'Healthy'
-  let healthStatusClass = ''
-  if (!sp.isRegistered) {
-    healthStatus = 'Unregistered'
-    healthStatusClass = 'is-unregistered'
-  }
-  if (!data.healthy) {
-    healthStatus = 'Unhealthy'
-    healthStatusClass = 'is-unhealthy'
-  }
-
   return (
-    <tr className={healthStatusClass}>
-      <td className="whitespace-nowrap py-5 pl-4 pr-3 text-sm">
-        <a href={sp.endpoint + path} target="_blank" className="text-gray-900 dark:text-gray-200 hover:text-blue-500 dark:hover:text-blue-400">
-          {sp.endpoint.replace('https://', '')}
-        </a>
-      </td>
-      <td className="whitespace-nowrap px-3 py-5 text-sm">{`${healthStatus}${healthStatus === 'Unhealthy' ? ': ' + data.errors : ''}`}</td>
-      <td className="whitespace-nowrap px-3 py-5 text-sm">{data.chainId}</td>
-      <td className="whitespace-nowrap px-3 py-5 text-sm">{data.totalBlocks}</td>
-      <td className="whitespace-nowrap px-3 py-5 text-sm">{data.totalTransactions}</td>
-      <td className="whitespace-nowrap px-3 py-5 text-sm">{data.ethAddress}</td>
-      <td className="whitespace-nowrap px-3 py-5 text-sm">{data.cometAddress}</td>
-    </tr>
+    <tr className={healthStatusClass}><td className="whitespace-nowrap py-5 pl-4 pr-3 text-sm">
+      <a href={sp.endpoint + path} target="_blank" className="text-gray-900 dark:text-gray-200 hover:text-blue-500 dark:hover:text-blue-400">
+        {sp.endpoint.replace('https://', '')}
+      </a>
+    </td><td className="whitespace-nowrap px-3 py-5 text-sm">
+        {data.git && (
+          <a
+            href={`https://github.com/AudiusProject/audiusd/commits/${data.git}`}
+            target="_blank"
+            className="text-gray-900 dark:text-gray-200 hover:text-blue-500 dark:hover:text-blue-400"
+          >
+            {data.git.substring(0, 7)}
+          </a>
+        )}
+      </td><td className="whitespace-nowrap px-3 py-5 text-sm">{`${healthStatus}${healthStatus === 'Unhealthy' ? ': ' + data.errors : ''}`}</td><td className="whitespace-nowrap px-3 py-5 text-sm">{data.chainId}</td><td className="whitespace-nowrap px-3 py-5 text-sm">{data.totalBlocks}</td><td className="whitespace-nowrap px-3 py-5 text-sm">{data.totalTransactions}</td><td className="whitespace-nowrap px-3 py-5 text-sm">{data.ethAddress}</td><td className="whitespace-nowrap px-3 py-5 text-sm">{data.cometAddress}</td></tr>
   )
 }
 

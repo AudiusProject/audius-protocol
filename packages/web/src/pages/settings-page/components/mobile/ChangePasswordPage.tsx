@@ -13,7 +13,6 @@ import {
   Paper,
   Text
 } from '@audius/harmony'
-import { goBack } from 'connected-react-router'
 import { Form, Formik, useFormikContext } from 'formik'
 
 import {
@@ -23,6 +22,7 @@ import {
 import { NewPasswordPage } from 'components/change-password/ChangePasswordModal'
 import NavContext, { LeftPreset } from 'components/nav/mobile/NavContext'
 import { ToastContext } from 'components/toast/ToastContext'
+import { goBack } from 'utils/navigation'
 
 import { SlidingPages } from './SlidingPages'
 

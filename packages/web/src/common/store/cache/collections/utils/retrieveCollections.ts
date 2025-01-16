@@ -8,9 +8,7 @@ import {
   CollectionMetadata,
   Collection,
   UserCollectionMetadata,
-  ID,
-  Id,
-  OptionalId
+  ID
 } from '@audius/common/models'
 import {
   accountSelectors,
@@ -23,6 +21,7 @@ import {
   getSDK
 } from '@audius/common/store'
 import { makeUid, Nullable } from '@audius/common/utils'
+import { Id, OptionalId } from '@audius/sdk'
 import { chunk } from 'lodash'
 import { all, call, select, put } from 'typed-redux-saga'
 
@@ -214,7 +213,7 @@ export function* retrieveCollectionByPermalink(
   return { collections: entries, uids }
 }
 
-export type RetrieveCollectionsConfig = {
+type RetrieveCollectionsConfig = {
   // whether or not to fetch the tracks inside eachn collection
   fetchTracks?: boolean
   // optional owner of collections to fetch (TODO: to be removed)

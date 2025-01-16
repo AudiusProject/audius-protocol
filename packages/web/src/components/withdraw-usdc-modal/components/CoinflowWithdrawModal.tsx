@@ -6,7 +6,7 @@ import {
   withdrawUSDCActions,
   withdrawUSDCSelectors
 } from '@audius/common/store'
-import { CoinflowWithdraw } from '@coinflowlabs/react'
+import { CoinflowWithdraw, OnSuccessMethod } from '@coinflowlabs/react'
 import { useDispatch, useSelector } from 'react-redux'
 
 import ModalDrawer from 'pages/audio-rewards-page/components/modals/ModalDrawer'
@@ -46,9 +46,13 @@ export const CoinflowWithdrawModal = () => {
     onClose()
   }, [dispatch, onClose])
 
-  const handleSuccess = useCallback(
-    (params: string) => {
-      const transaction = parseTransactionFromSuccessParams(params)
+  const handleSuccess = useCallback<OnSuccessMethod>(
+    (args) => {
+      const transaction =
+        typeof args === 'object'
+          ? (args.hash ?? '')
+          : parseTransactionFromSuccessParams(args)
+
       dispatch(coinflowWithdrawalSucceeded({ transaction }))
       onClose()
     },

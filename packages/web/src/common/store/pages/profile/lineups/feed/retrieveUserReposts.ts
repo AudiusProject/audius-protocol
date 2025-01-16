@@ -6,11 +6,10 @@ import {
   ID,
   Track,
   UserTrackMetadata,
-  OptionalId,
   UserCollectionMetadata
 } from '@audius/common/models'
 import { getSDK } from '@audius/common/store'
-import { full } from '@audius/sdk'
+import { OptionalId, full } from '@audius/sdk'
 import { all } from 'redux-saga/effects'
 
 import { processAndCacheCollections } from 'common/store/cache/collections/utils'

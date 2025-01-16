@@ -1,6 +1,13 @@
 import { ReactNode, useCallback } from 'react'
 
-import { Chain, StringWei, BNWei, WalletAddress } from '@audius/common/models'
+import { useAudiusQueryContext } from '@audius/common/audius-query'
+import {
+  Chain,
+  StringWei,
+  BNWei,
+  WalletAddress,
+  SolanaWalletAddress
+} from '@audius/common/models'
 import {
   accountSelectors,
   tokenDashboardPageSelectors,
@@ -19,6 +26,7 @@ import {
 } from '@audius/harmony'
 import cn from 'classnames'
 import { useDispatch } from 'react-redux'
+import { useAsync } from 'react-use'
 
 import SocialProof from 'components/social-proof/SocialProof'
 import { useWithMobileStyle } from 'hooks/useWithMobileStyle'
@@ -166,16 +174,23 @@ const ModalContent = ({
     useSelector(getAccountBalance) ?? stringWeiToBN('0' as StringWei)
   const account = useSelector(getAccountUser)
   const amountPendingTransfer = useSelector(getSendData)
+  const { audiusSdk } = useAudiusQueryContext()
 
-  if (!modalState || !account || !account.userBank) {
+  const { value: solWallet } = useAsync(async () => {
+    if (!account?.erc_wallet) return null
+    const sdk = await audiusSdk()
+    const userBank = await sdk.services.claimableTokensClient.deriveUserBank({
+      ethWallet: account.erc_wallet,
+      mint: 'wAUDIO'
+    })
+    return userBank.toString() as SolanaWalletAddress
+  }, [account?.erc_wallet])
+
+  if (!modalState || !account || !solWallet) {
     return null
   }
 
-  // @ts-ignore
-  // TODO: user models need to have wallets
-  const wallet = account.wallet as WalletAddress
-
-  const solWallet = account.userBank!
+  const wallet = account.erc_wallet as WalletAddress
 
   // This silly `ret` dance is to satisfy
   // TS's no-fallthrough rule...
@@ -298,7 +313,7 @@ const WalletModal = () => {
     chain: Chain
   ) => {
     const stringWei = weiToString(amount)
-    dispatch(inputSendData({ amount: stringWei, wallet, chain }))
+    dispatch(inputSendData({ amount: stringWei, wallet }))
   }
 
   const onConfirmSend = () => {
@@ -317,7 +332,14 @@ const WalletModal = () => {
 
   if (modalState?.stage === 'CONNECT_WALLETS') {
     return (
-      <Modal size='small' isOpen={modalVisible} onClose={onClose}>
+      <Modal
+        size='small'
+        isOpen={modalVisible}
+        // Disable because web3Modal mounts outside of this component
+        // and selecting a provider will close this modal
+        dismissOnClickOutside={false}
+        onClose={onClose}
+      >
         <ModalHeader onClose={onClose}>
           <ModalTitle title={getTitle(modalState)} icon={<IconWallet />} />
         </ModalHeader>

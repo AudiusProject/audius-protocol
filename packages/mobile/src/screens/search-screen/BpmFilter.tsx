@@ -223,8 +223,8 @@ const BpmTargetView = ({ value, setValue }: ViewProps) => {
     isValidDiff && minMaxValue
       ? String(Number(minMaxValue[0]) + minMaxDiff / 2)
       : minMaxValue // If range is not valid for target view
-      ? ''
-      : value
+        ? ''
+        : value
   )
   const [bpmTargetType, setBpmTargetType] = useState<BpmTargetType>(
     minMaxDiff === 20 ? 'range10' : minMaxDiff === 10 ? 'range5' : 'exact'

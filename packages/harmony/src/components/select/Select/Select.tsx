@@ -11,14 +11,15 @@ import {
 
 import { mergeRefs } from 'react-merge-refs'
 
-import { TextInput } from 'components/input'
-import { Menu, MenuContent, MenuProps } from 'components/internal/Menu'
-import { MenuItem } from 'components/internal/MenuItem'
-import { OptionKeyHandler } from 'components/internal/OptionKeyHandler'
-import { Flex } from 'components/layout'
-import { Text } from 'components/text'
-import { useControlled } from 'hooks/useControlled'
-import { IconCaretDown, IconCloseAlt } from 'icons'
+import { TextInput } from '~harmony/components/input'
+
+import { useControlled } from '../../../hooks/useControlled'
+import { IconCaretDown, IconCloseAlt } from '../../../icons'
+import { Menu, MenuContent, MenuProps } from '../../internal/Menu'
+import { MenuItem } from '../../internal/MenuItem'
+import { OptionKeyHandler } from '../../internal/OptionKeyHandler'
+import { Flex } from '../../layout'
+import { Text } from '../../text'
 
 import { SelectProps } from './types'
 

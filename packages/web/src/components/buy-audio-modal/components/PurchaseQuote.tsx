@@ -49,7 +49,8 @@ export const PurchaseQuote = () => {
           <>
             <IconSOL />
             {formatNumberString(purchaseInfo?.estimatedSOL.uiAmountString, {
-              maxDecimals: 2
+              // Show enough decimals so that it doesn't look like 0 SOL
+              maxDecimals: 3
             })}
             <span className={styles.tokenLabel}>{messages.sol}</span>
             <IconCaretDown className={styles.caret} />
@@ -77,7 +78,7 @@ export const PurchaseQuote = () => {
               <span className={styles.tokenLabel}>$</span>
               {formatNumberString(
                 !purchaseInfo?.isError
-                  ? purchaseInfo?.estimatedUSD.uiAmountString ?? '0'
+                  ? (purchaseInfo?.estimatedUSD.uiAmountString ?? '0')
                   : '0',
                 {
                   minDecimals: 2,

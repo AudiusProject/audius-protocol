@@ -4,8 +4,7 @@ import dotenv from 'dotenv'
 import { getPreviousState } from './utils.js'
 
 dotenv.config()
-const { USERS_SLACK_CHANNEL } =
-  process.env
+const { USERS_SLACK_CHANNEL } = process.env
 
 // TODO: send blocknumber through pg trigger
 export default async ({ user_id, blocknumber }) => {
@@ -59,8 +58,9 @@ export default async ({ user_id, blocknumber }) => {
       source = 'manual'
     }
 
-    const header = `User *${handle}* ${is_verified ? 'is now' : 'is no longer'
-      } verified via ${source}!`
+    const header = `User *${handle}* ${
+      is_verified ? 'is now' : 'is no longer'
+    } verified via ${source}!`
 
     const body = {
       userId: user_id,

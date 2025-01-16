@@ -3,9 +3,10 @@ import { useCallback, useRef, useState } from 'react'
 import { Name, Status, TimeRange } from '@audius/common/models'
 import { trendingPageLineupActions } from '@audius/common/store'
 import { ELECTRONIC_PREFIX, TRENDING_GENRES } from '@audius/common/utils'
+import { IconTrending } from '@audius/harmony'
 
 import { make, useRecord } from 'common/store/analytics/actions'
-import Header from 'components/header/desktop/Header'
+import { Header } from 'components/header/desktop/Header'
 import EndOfLineup from 'components/lineup/EndOfLineup'
 import Lineup from 'components/lineup/Lineup'
 import { LineupVariant } from 'components/lineup/types'
@@ -22,9 +23,9 @@ const { trendingAllTimeActions, trendingMonthActions, trendingWeekActions } =
   trendingPageLineupActions
 
 const messages = {
-  thisWeek: 'THIS WEEK',
-  thisMonth: 'THIS MONTH',
-  allTime: 'ALL TIME',
+  thisWeek: 'This Week',
+  thisMonth: 'This Month',
+  allTime: 'All Time',
   allGenres: 'All Genres',
   endOfLineupDescription: "Looks like you've reached the end of this list...",
   disabledTabTooltip: 'Nothing available'
@@ -190,7 +191,10 @@ const TrendingPageContent = (props: TrendingPageContentProps) => {
   }
 
   const trendingLineups = [
-    <div key='weekly-trending-tracks' className={styles.lineupContainer}>
+    <div
+      key={`weekly-trending-tracks-${trendingGenre}`}
+      className={styles.lineupContainer}
+    >
       {trendingGenre === null ? (
         <div className={styles.bannerContainer}>
           <RewardsBanner bannerType='tracks' />
@@ -206,15 +210,15 @@ const TrendingPageContent = (props: TrendingPageContentProps) => {
         pauseTrack={makePauseTrack(TimeRange.WEEK)}
         actions={trendingWeekActions}
         endOfLineup={
-          <EndOfLineup
-            key='endOfLineup'
-            description={messages.endOfLineupDescription}
-          />
+          <EndOfLineup description={messages.endOfLineupDescription} />
         }
         {...mainLineupProps}
       />
     </div>,
-    <div key='monthly-trending-tracks' className={styles.lineupContainer}>
+    <div
+      key={`monthly-trending-tracks-${trendingGenre}`}
+      className={styles.lineupContainer}
+    >
       <Lineup
         aria-label='monthly trending tracks'
         ordered
@@ -224,16 +228,16 @@ const TrendingPageContent = (props: TrendingPageContentProps) => {
         playTrack={makePlayTrack(TimeRange.MONTH)}
         pauseTrack={makePauseTrack(TimeRange.MONTH)}
         endOfLineup={
-          <EndOfLineup
-            key='endOfLineup'
-            description={messages.endOfLineupDescription}
-          />
+          <EndOfLineup description={messages.endOfLineupDescription} />
         }
         actions={trendingMonthActions}
         {...mainLineupProps}
       />
     </div>,
-    <div key='all-time-trending-tracks' className={styles.lineupContainer}>
+    <div
+      key={`all-time-trending-tracks-${trendingGenre}`}
+      className={styles.lineupContainer}
+    >
       <Lineup
         aria-label='all-time trending tracks'
         ordered
@@ -244,10 +248,7 @@ const TrendingPageContent = (props: TrendingPageContentProps) => {
         pauseTrack={makePauseTrack(TimeRange.ALL_TIME)}
         actions={trendingAllTimeActions}
         endOfLineup={
-          <EndOfLineup
-            key='endOfLineup'
-            description={messages.endOfLineupDescription}
-          />
+          <EndOfLineup description={messages.endOfLineupDescription} />
         }
         {...mainLineupProps}
       />
@@ -324,8 +325,8 @@ const TrendingPageContent = (props: TrendingPageContentProps) => {
   // Setup Header
   const header = (
     <Header
+      icon={IconTrending}
       primary={trendingTitle}
-      variant={'main'}
       bottomBar={tabs}
       rightDecorator={
         <TrendingGenreFilters

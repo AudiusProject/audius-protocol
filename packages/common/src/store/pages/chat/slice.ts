@@ -1,13 +1,14 @@
-import type {
-  TypedCommsResponse,
-  UserChat,
-  ChatMessage,
-  ChatMessageReaction,
-  ChatMessageNullableReaction,
-  UnfurlResponse,
-  ValidatedChatPermissions,
-  ChatBlastAudience,
-  ChatBlast
+import {
+  type TypedCommsResponse,
+  type UserChat,
+  type ChatMessage,
+  type ChatMessageReaction,
+  type ChatMessageNullableReaction,
+  type UnfurlResponse,
+  type ValidatedChatPermissions,
+  type ChatBlastAudience,
+  type ChatBlast,
+  Id
 } from '@audius/sdk'
 import {
   Action,
@@ -21,7 +22,6 @@ import { ID, Status, ChatMessageWithExtras } from '~/models'
 import { signOut } from '~/store/sign-out/slice'
 import { hasTail } from '~/utils/chatUtils'
 import dayjs from '~/utils/dayjs'
-import { encodeHashId } from '~/utils/hashIds'
 
 import { ChatWebsocketError } from './types'
 
@@ -78,8 +78,8 @@ const chatSortComparator = (a: Chat, b: Chat) => {
       return a.is_blast && !b.is_blast
         ? -1
         : b.is_blast && !a.is_blast
-        ? 1
-        : alphabeticalSort
+          ? 1
+          : alphabeticalSort
     }
     return alphabeticalSort
   }
@@ -340,7 +340,7 @@ const slice = createSlice({
       // triggers saga
       // Optimistically set reaction
       const { userId, messageId, reaction } = action.payload
-      const encodedUserId = encodeHashId(userId)
+      const encodedUserId = Id.parse(userId)
       if (reaction) {
         state.optimisticReactions[messageId] = {
           user_id: encodedUserId,
@@ -546,7 +546,7 @@ const slice = createSlice({
       const optimisticRead = state.optimisticChatRead[chatId]
       const existingUnreadCount = optimisticRead
         ? optimisticRead.unread_message_count
-        : existingChat?.unread_message_count ?? 0
+        : (existingChat?.unread_message_count ?? 0)
       if (!isSelfMessage) {
         // If we're actively reading, this will immediately get marked as read.
         // Ignore the unread bump to prevent flicker

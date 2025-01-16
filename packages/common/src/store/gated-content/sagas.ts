@@ -1,3 +1,4 @@
+import { Id, OptionalId } from '@audius/sdk'
 import {
   takeEvery,
   select,
@@ -25,9 +26,7 @@ import {
   isContentTipGated,
   isContentUSDCPurchaseGated,
   NFTAccessSignature,
-  GatedContentStatus,
-  Id,
-  OptionalId
+  GatedContentStatus
 } from '~/models'
 import { User } from '~/models/User'
 import { IntKeys } from '~/services/remote-config'
@@ -498,13 +497,13 @@ export function* pollGatedContent({
     const currentlyHasStreamAccess = !!apiEntity.access.stream
     const currentlyHasDownloadAccess = !!apiEntity.access.download
 
+    // Update the cache with the new metadata so that the UI
+    // can update and the content can be streamed or downloaded properly.
     yield* put(
       cacheActions.update(isAlbum ? Kind.COLLECTIONS : Kind.TRACKS, [
         {
           id: contentId,
-          metadata: {
-            access: apiEntity.access
-          }
+          metadata: apiEntity
         }
       ])
     )
@@ -567,8 +566,8 @@ export function* pollGatedContent({
         (isContentUSDCPurchaseGated(apiEntity.download_conditions)
           ? Name.USDC_PURCHASE_GATED_DOWNLOAD_TRACK_UNLOCKED
           : isContentFollowGated(apiEntity.download_conditions)
-          ? Name.FOLLOW_GATED_DOWNLOAD_TRACK_UNLOCKED
-          : null)
+            ? Name.FOLLOW_GATED_DOWNLOAD_TRACK_UNLOCKED
+            : null)
       if (eventName) {
         analytics.track({
           eventName,

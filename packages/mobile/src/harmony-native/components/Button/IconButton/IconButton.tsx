@@ -7,6 +7,7 @@ import {
   useSharedValue
 } from 'react-native-reanimated'
 
+import { DEFAULT_HIT_SLOP } from 'app/harmony-native/constants'
 import { useTheme } from 'app/harmony-native/foundations/theme'
 import type { IconComponent, IconProps } from 'app/harmony-native/icons'
 import { useToast } from 'app/hooks/useToast'
@@ -81,6 +82,7 @@ export const IconButton = (props: IconButtonProps) => {
       onPress={handlePress}
       disabled={disabled && !disabledHint}
       pressScale={0.9}
+      hitSlop={DEFAULT_HIT_SLOP}
     >
       <Icon
         color={disabled ? 'disabled' : iconColor}

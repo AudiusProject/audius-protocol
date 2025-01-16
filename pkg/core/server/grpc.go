@@ -8,6 +8,7 @@ import (
 	"net"
 	"reflect"
 	"strings"
+	"sync/atomic"
 	"time"
 
 	"github.com/AudiusProject/audius-protocol/pkg/core/common"
@@ -16,6 +17,7 @@ import (
 	gogo "github.com/cosmos/gogoproto/proto"
 	"github.com/iancoleman/strcase"
 	"google.golang.org/protobuf/proto"
+	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 var (
@@ -91,7 +93,7 @@ func (s *Server) ForwardTransaction(ctx context.Context, req *core_proto.Forward
 		return nil, fmt.Errorf("could not get tx hash of signed tx: %v", err)
 	}
 
-	s.logger.Debugf("received forwarded tx: %v", req.Transaction)
+	s.logger.Infof("received forwarded tx: %v", req.Transaction)
 
 	// TODO: intake block deadline from request
 	status, err := s.rpc.Status(ctx)
@@ -144,14 +146,24 @@ func (s *Server) GetTransaction(ctx context.Context, req *core_proto.GetTransact
 }
 
 func (s *Server) GetBlock(ctx context.Context, req *core_proto.GetBlockRequest) (*core_proto.BlockResponse, error) {
+	currentHeight := atomic.LoadInt64(&s.cache.currentHeight)
+	if req.Height > currentHeight {
+		return &core_proto.BlockResponse{
+			Chainid:       s.config.GenesisFile.ChainID,
+			Height:        -1,
+			CurrentHeight: currentHeight,
+		}, nil
+	}
+
 	block, err := s.rpc.Block(ctx, &req.Height)
 	if err != nil {
 		blockInFutureMsg := "must be less than or equal to the current blockchain height"
 		if strings.Contains(err.Error(), blockInFutureMsg) {
 			// return block with -1 to indicate it doesn't exist yet
 			return &core_proto.BlockResponse{
-				Chainid: s.config.GenesisFile.ChainID,
-				Height:  -1,
+				Chainid:       s.config.GenesisFile.ChainID,
+				Height:        -1,
+				CurrentHeight: currentHeight,
 			}, nil
 		}
 		s.logger.Errorf("error getting block: %v", err)
@@ -169,15 +181,18 @@ func (s *Server) GetBlock(ctx context.Context, req *core_proto.GetBlockRequest) 
 	}
 
 	res := &core_proto.BlockResponse{
-		Blockhash:    block.BlockID.Hash.String(),
-		Chainid:      s.config.GenesisFile.ChainID,
-		Proposer:     block.Block.ProposerAddress.String(),
-		Height:       block.Block.Height,
-		Transactions: txs,
+		Blockhash:     block.BlockID.Hash.String(),
+		Chainid:       s.config.GenesisFile.ChainID,
+		Proposer:      block.Block.ProposerAddress.String(),
+		Height:        block.Block.Height,
+		Transactions:  txs,
+		CurrentHeight: currentHeight,
+		Timestamp:     timestamppb.New(block.Block.Time),
 	}
 
 	return res, nil
 }
+
 func (s *Server) GetNodeInfo(ctx context.Context, req *core_proto.GetNodeInfoRequest) (*core_proto.NodeInfoResponse, error) {
 	status, err := s.rpc.Status(ctx)
 	if err != nil {

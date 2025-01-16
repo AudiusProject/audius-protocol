@@ -1,6 +1,6 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 
-import { UID, ID, Collectible } from '../../models'
+import { UID, ID, Collectible, Feature } from '../../models'
 import { Maybe, Nullable } from '../../utils'
 
 import { PlaybackRate, PlayerBehavior } from './types'
@@ -114,6 +114,7 @@ type ErrorPayload = {
   error: string
   trackId: ID
   info: string
+  feature?: Feature
 }
 
 type ResetPayload = {

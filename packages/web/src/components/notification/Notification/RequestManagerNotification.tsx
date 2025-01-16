@@ -6,9 +6,9 @@ import {
 } from '@audius/common/store'
 import { route } from '@audius/common/utils'
 import { IconUserArrowRotate } from '@audius/harmony'
-import { push } from 'connected-react-router'
 import { useDispatch } from 'react-redux'
 
+import { push } from 'utils/navigation'
 import { useSelector } from 'utils/reducer'
 
 import { NotificationBody } from './components/NotificationBody'

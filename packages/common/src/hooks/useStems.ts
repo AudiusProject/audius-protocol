@@ -1,13 +1,12 @@
 import { useEffect, useState } from 'react'
 
-import type { AudiusSdk } from '@audius/sdk'
+import { Id, type AudiusSdk } from '@audius/sdk'
 import { isEqual } from 'lodash'
 import { shallowEqual, useSelector } from 'react-redux'
 import { usePrevious } from 'react-use'
 
 import { DownloadQuality } from '~/models'
 import dayjs from '~/utils/dayjs'
-import { encodeHashId } from '~/utils/hashIds'
 
 import { ID } from '../models/Identifiers'
 import { Track, StemTrack } from '../models/Track'
@@ -81,7 +80,7 @@ export const useFileSizes = ({
             }
             try {
               const res = await sdk.tracks.inspectTrack({
-                trackId: encodeHashId(trackId),
+                trackId: Id.parse(trackId),
                 original: downloadQuality === DownloadQuality.ORIGINAL
               })
               const size = res?.data?.size ?? null
@@ -97,10 +96,13 @@ export const useFileSizes = ({
         )
         setSizes((sizes) => ({
           ...sizes,
-          ...sizeResults.reduce((acc, curr) => {
-            acc[curr.trackId] = { ...(acc[curr.trackId] || {}), ...curr.size }
-            return acc
-          }, {} as { trackId: ID; size: { [k in DownloadQuality]: number } })
+          ...sizeResults.reduce(
+            (acc, curr) => {
+              acc[curr.trackId] = { ...(acc[curr.trackId] || {}), ...curr.size }
+              return acc
+            },
+            {} as { trackId: ID; size: { [k in DownloadQuality]: number } }
+          )
         }))
       }
       asyncFn()

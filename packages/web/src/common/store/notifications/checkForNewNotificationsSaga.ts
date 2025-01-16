@@ -56,7 +56,7 @@ const AUDIO_TRANSFER_NOTIFICATION_TYPES = new Set([
   NotificationType.TipSend,
   NotificationType.TipReceive
 ])
-export function* handleNewNotifications(notifications: Notification[]) {
+function* handleNewNotifications(notifications: Notification[]) {
   const hasAudioTransferNotification = notifications.some((notification) =>
     AUDIO_TRANSFER_NOTIFICATION_TYPES.has(notification.type)
   )
@@ -91,9 +91,8 @@ export function* checkForNewNotificationsSaga() {
     )
 
     if (hasNewNotifications) {
-      const processedNotifications = yield* parseAndProcessNotifications(
-        notifications
-      )
+      const processedNotifications =
+        yield* parseAndProcessNotifications(notifications)
 
       const hasMore = notifications.length >= limit
 

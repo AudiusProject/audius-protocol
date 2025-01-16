@@ -53,7 +53,7 @@ const {
 
 const smallDesktopWindowHeight = 900
 
-export type SignUpEmailValues = {
+type SignUpEmailValues = {
   email: string
   withMetaMask?: boolean
 }
@@ -129,6 +129,7 @@ export const CreateEmailPage = () => {
       initialValues={initialValues}
       onSubmit={handleSubmit}
       validationSchema={EmailSchema}
+      validateOnMount={!!existingEmailValue}
       validateOnChange={false}
     >
       {({ isSubmitting, setFieldValue, submitForm }) => (

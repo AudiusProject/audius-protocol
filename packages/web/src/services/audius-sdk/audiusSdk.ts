@@ -1,5 +1,10 @@
-import { AudiusSdk, sdk, Configuration, SolanaRelay } from '@audius/sdk'
-import { AudiusLibs } from '@audius/sdk-legacy/dist/libs'
+import {
+  AudiusSdk,
+  sdk,
+  Configuration,
+  SolanaRelay,
+  HedgehogWalletNotFoundError
+} from '@audius/sdk'
 import { createWalletClient, http } from 'viem'
 import { mainnet } from 'viem/chains'
 
@@ -10,7 +15,6 @@ import { audiusWalletClient } from './auth'
 
 declare global {
   interface Window {
-    audiusLibs: AudiusLibs
     audiusSdk: AudiusSdk
   }
 }
@@ -44,6 +48,34 @@ const initSdk = async () => {
   // Overrides some DN configuration from optimizely
   const discoveryNodeSelector = await discoveryNodeSelectorService.getInstance()
 
+  let ethWalletClient
+  try {
+    const message = `signature:${new Date().getTime()}`
+    const signature = await audiusWalletClient.signMessage({ message })
+    ethWalletClient = createWalletClient({
+      account: '0x0000000000000000000000000000000000000000', // dummy replaced by relay DO NOT REMOVE
+      chain: mainnet,
+      transport: http(`${env.IDENTITY_SERVICE}/ethereum/rpc`, {
+        fetchOptions: {
+          headers: {
+            'Encoded-Data-Message': message,
+            'Encoded-Data-Signature': signature
+          }
+        }
+      })
+    })
+  } catch (e) {
+    if (e instanceof HedgehogWalletNotFoundError) {
+      ethWalletClient = createWalletClient({
+        account: '0x0000000000000000000000000000000000000000', // dummy replaced by relay DO NOT REMOVE
+        chain: mainnet,
+        transport: http(`${env.IDENTITY_SERVICE}/ethereum/rpc`, {})
+      })
+    } else {
+      throw e
+    }
+  }
+
   const audiusSdk = sdk({
     appName: env.APP_NAME,
     apiKey: env.API_KEY,
@@ -52,11 +84,7 @@ const initSdk = async () => {
       discoveryNodeSelector,
       solanaRelay,
       audiusWalletClient,
-      ethWalletClient: createWalletClient({
-        account: '0x0', // dummy replaced by relay
-        chain: mainnet,
-        transport: http(`${env.IDENTITY_SERVICE}/ethereum/rpc`)
-      })
+      ethWalletClient
     }
   })
   console.debug('[audiusSdk] SDK initted.')

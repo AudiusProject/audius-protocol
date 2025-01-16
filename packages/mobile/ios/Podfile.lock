@@ -1,10 +1,6 @@
 PODS:
-  - Amplitude (8.16.3):
-    - AnalyticsConnector (~> 1.0.0)
-  - amplitude-react-native (2.17.2):
-    - Amplitude (= 8.16.3)
+  - amplitude-react-native (1.4.11):
     - React-Core
-  - AnalyticsConnector (1.0.3)
   - Base64 (1.1.2)
   - boost (1.84.0)
   - BVLinearGradient (2.8.3):
@@ -1882,7 +1878,7 @@ PODS:
     - Yoga
   - RNShare (10.0.2):
     - React-Core
-  - RNSVG (15.7.1):
+  - RNSVG (15.10.1):
     - React-Core
   - RNZipArchive (7.0.1):
     - React-Core
@@ -1914,7 +1910,7 @@ PODS:
   - Yoga (0.0.0)
 
 DEPENDENCIES:
-  - "amplitude-react-native (from `../../../node_modules/@amplitude/react-native`)"
+  - "amplitude-react-native (from `../../../node_modules/@amplitude/analytics-react-native`)"
   - boost (from `../node_modules/react-native/third-party-podspecs/boost.podspec`)
   - BVLinearGradient (from `../node_modules/react-native-linear-gradient`)
   - CodePush (from `../node_modules/react-native-code-push`)
@@ -2032,8 +2028,6 @@ DEPENDENCIES:
 
 SPEC REPOS:
   trunk:
-    - Amplitude
-    - AnalyticsConnector
     - Base64
     - ffmpeg-kit-ios-https-gpl
     - FingerprintPro
@@ -2055,7 +2049,7 @@ SPEC REPOS:
 
 EXTERNAL SOURCES:
   amplitude-react-native:
-    :path: "../../../node_modules/@amplitude/react-native"
+    :path: "../../../node_modules/@amplitude/analytics-react-native"
   boost:
     :podspec: "../node_modules/react-native/third-party-podspecs/boost.podspec"
   BVLinearGradient:
@@ -2281,9 +2275,7 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native/ReactCommon/yoga"
 
 SPEC CHECKSUMS:
-  Amplitude: 10f20d4436fdcd38ddd5be1da7033fcc21f4143e
-  amplitude-react-native: 6e5b9e38c53e11a86f62f874a42cf176e2b82c86
-  AnalyticsConnector: a53214d38ae22734c6266106c0492b37832633a9
+  amplitude-react-native: 9d57e1bcc4175039e36283390aa3daeaea9441a5
   Base64: cecfb41a004124895a7bcee567a89bae5a89d49b
   boost: 4cb898d0bf20404aab1850c656dcea009429d6c1
   BVLinearGradient: 880f91a7854faff2df62518f0281afb1c60d49a3
@@ -2399,7 +2391,7 @@ SPEC CHECKSUMS:
   RNScreens: c7ceced6a8384cb9be5e7a5e88e9e714401fd958
   RNSentry: 6747516b98b64d55d115ade591143803dbbf9851
   RNShare: 859ff710211285676b0bcedd156c12437ea1d564
-  RNSVG: 4590aa95758149fa27c5c83e54a6a466349a1688
+  RNSVG: 7ff26379b2d1871b8571e6f9bc9630de6baf9bdf
   RNZipArchive: 7bb4c70d6aa2dd235212c0a4a3de0a4e237e2569
   SDWebImage: a7f831e1a65eb5e285e3fb046a23fcfbf08e696d
   SDWebImageWebPCoder: 908b83b6adda48effe7667cd2b7f78c897e5111d

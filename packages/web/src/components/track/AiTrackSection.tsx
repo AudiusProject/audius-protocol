@@ -9,13 +9,13 @@ import {
   PlainButton
 } from '@audius/harmony'
 import cn from 'classnames'
-import { push as pushRoute } from 'connected-react-router'
 import { useDispatch } from 'react-redux'
 
 import { useSelector } from 'common/hooks/useSelector'
 import { ArtistPopover } from 'components/artist/ArtistPopover'
 import UserBadges from 'components/user-badges/UserBadges'
 import { emptyStringGuard } from 'pages/track-page/utils'
+import { push } from 'utils/navigation'
 import { profilePageAiAttributedTracks } from 'utils/route'
 
 import styles from './AiTrackSection.module.css'
@@ -59,7 +59,7 @@ export const AiTrackSection = ({
         <h2
           className={styles.attributedUser}
           onClick={() =>
-            dispatch(pushRoute(profilePage(emptyStringGuard(entity.handle))))
+            dispatch(push(profilePage(emptyStringGuard(entity.handle))))
           }
         >
           {entity.name}
@@ -67,7 +67,6 @@ export const AiTrackSection = ({
             userId={entity.user_id}
             className={styles.badgeIcon}
             badgeSize={14}
-            useSVGTiers
           />
         </h2>
       </ArtistPopover>
@@ -76,7 +75,7 @@ export const AiTrackSection = ({
   )
   const handleClickViewMore = useCallback(() => {
     dispatch(
-      pushRoute(profilePageAiAttributedTracks(emptyStringGuard(user?.handle)))
+      push(profilePageAiAttributedTracks(emptyStringGuard(user?.handle)))
     )
   }, [dispatch, user])
 

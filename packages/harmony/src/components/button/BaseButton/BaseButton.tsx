@@ -3,7 +3,7 @@ import { forwardRef } from 'react'
 import { CSSObject, useTheme } from '@emotion/react'
 import { Slot, Slottable } from '@radix-ui/react-slot'
 
-import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
+import LoadingSpinner from '~harmony/components/loading-spinner/LoadingSpinner'
 
 import { useMediaQueryListener } from '../../../hooks/useMediaQueryListener'
 
@@ -62,8 +62,9 @@ export const BaseButton = forwardRef<HTMLButtonElement, BaseButtonProps>(
       textAlign: 'center',
       userSelect: 'none',
       whiteSpace: 'nowrap',
+      textOverflow: 'ellipsis',
+      minWidth: minWidth && !isTextHidden ? `${minWidth}px` : 0,
       paddingInline: 0,
-      '-webkit-padding': 0,
       transition: `
         transform ${motion.hover},
         border-color ${motion.hover},
@@ -94,8 +95,7 @@ export const BaseButton = forwardRef<HTMLButtonElement, BaseButtonProps>(
       }),
       ...(_isPressed && {
         transform: fullWidth ? 'scale(1.00)' : 'scale(0.98)'
-      }),
-      minWidth: minWidth && !isTextHidden ? `${minWidth}px` : 'unset'
+      })
     }
 
     const iconCss = !isStaticIcon && {

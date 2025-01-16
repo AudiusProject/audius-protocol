@@ -485,18 +485,18 @@ const ManageService = (props: ManageServiceProps) => {
   const cantUndelegateReason = pendingClaim.hasClaim
     ? messages.cantUndelegatePendingClaim
     : currentUserHasPendingUndelegateRequest
-    ? messages.cantUndelegateMultiple
-    : null
+      ? messages.cantUndelegateMultiple
+      : null
   const isDelegatorLimitReached =
     maxDelegators !== undefined &&
     (serviceUser as Operator)?.delegators?.length >= maxDelegators
   const cantDelegateReason = isDelegatorLimitReached
     ? messages.delegatorLimitReached
     : pendingClaim.hasClaim
-    ? messages.cantDelegatePendingClaim
-    : !isTotalStakeInBounds
-    ? messages.cantDelegateTotalStakeOutOfBounds
-    : null
+      ? messages.cantDelegatePendingClaim
+      : !isTotalStakeInBounds
+        ? messages.cantDelegateTotalStakeOutOfBounds
+        : null
 
   const isClaimDisabled = !isTotalStakeInBounds
 

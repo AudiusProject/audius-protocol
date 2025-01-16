@@ -1,5 +1,4 @@
 import { searchResultsFromSDK } from '@audius/common/adapters'
-import { OptionalId } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
 import {
   accountSelectors,
@@ -16,7 +15,7 @@ import {
   formatMusicalKey,
   trimToAlphaNumeric
 } from '@audius/common/utils'
-import { Mood } from '@audius/sdk'
+import { OptionalId, Mood } from '@audius/sdk'
 import { select, call, takeLatest, put } from 'typed-redux-saga'
 
 import { processAndCacheCollections } from 'common/store/cache/collections/utils'
@@ -33,7 +32,7 @@ const getMinMaxFromBpm = (bpm?: string) => {
   return [bpmMin, bpmMax]
 }
 
-export function* getTagSearchResults(
+function* getTagSearchResults(
   tag: string,
   kind: SearchKind,
   limit: number,
@@ -91,7 +90,7 @@ export function* getTagSearchResults(
   return { users, tracks, albums, playlists }
 }
 
-export function* fetchSearchPageTags(
+function* fetchSearchPageTags(
   action: searchPageActions.FetchSearchPageTagsAction
 ) {
   yield* call(waitForRead)
@@ -163,7 +162,7 @@ type GetSearchResultsArgs = {
   sortMethod?: SearchSortMethod
 }
 
-export function* getSearchResults({
+function* getSearchResults({
   searchText,
   kind,
   limit,

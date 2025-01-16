@@ -77,11 +77,9 @@ const messages = {
   matrixMode: 'Matrix'
 }
 
-type OwnProps = {
+type SettingsPageProps = {
   subPage?: SubPage
 }
-
-export type SettingsPageProps = OwnProps
 
 const SubPages = {
   [SubPage.ACCOUNT]: AccountSettingsPage as FC<SettingsPageProps>,

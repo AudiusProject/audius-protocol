@@ -38,6 +38,7 @@ from src.queries import (
 )
 from src.solana.solana_client_manager import SolanaClientManager
 from src.tasks import celery_app
+from src.tasks.index_core import index_core_lock_key
 from src.tasks.repair_audio_analyses import REPAIR_AUDIO_ANALYSES_LOCK
 from src.tasks.update_delist_statuses import UPDATE_DELIST_STATUSES_LOCK
 from src.utils import helpers, web3_provider
@@ -326,11 +327,11 @@ def configure_celery(celery, test_config=None):
             "src.tasks.update_delist_statuses",
             "src.tasks.repair_audio_analyses",
             "src.tasks.cache_current_nodes",
-            "src.tasks.index_core",
             "src.tasks.update_aggregates",
             "src.tasks.cache_entity_counts",
             "src.tasks.publish_scheduled_releases",
             "src.tasks.create_engagement_notifications",
+            "src.tasks.index_core",
         ],
         beat_schedule={
             "aggregate_metrics": {
@@ -369,10 +370,18 @@ def configure_celery(celery, test_config=None):
                 "task": "cache_trending_playlists",
                 "schedule": timedelta(minutes=30),
             },
-            "index_solana_plays": {
-                "task": "index_solana_plays",
-                "schedule": timedelta(seconds=audius_solana_plays_indexing_interval_s),
-            },
+            **(
+                {
+                    "index_solana_plays": {
+                        "task": "index_solana_plays",
+                        "schedule": timedelta(
+                            seconds=audius_solana_plays_indexing_interval_s
+                        ),
+                    }
+                }
+                if environment == "prod"
+                else {}
+            ),
             "index_challenges": {
                 "task": "index_challenges",
                 "schedule": timedelta(seconds=5),
@@ -494,7 +503,7 @@ def configure_celery(celery, test_config=None):
     redis_inst.delete("update_aggregates_lock")
     redis_inst.delete("publish_scheduled_releases_lock")
     redis_inst.delete("create_engagement_notifications")
-    redis_inst.delete("index_core_lock")
+    redis_inst.delete(index_core_lock_key)
     # delete cached final_poa_block in case it has changed
     redis_inst.delete(final_poa_block_redis_key)
 
@@ -544,5 +553,5 @@ def configure_celery(celery, test_config=None):
     celery.send_task("index_user_bank", queue="index_sol")
     celery.send_task("index_payment_router", queue="index_sol")
 
-    if environment == "dev":
-        celery.send_task("index_core")
+    if environment == "dev" or environment == "stage":
+        celery.send_task("index_core", queue="index_core")

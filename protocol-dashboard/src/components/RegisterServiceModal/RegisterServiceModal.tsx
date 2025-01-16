@@ -191,9 +191,8 @@ const RegisterServiceModal = ({
     onOpenConfirm()
   }, [onOpenConfirm])
 
-  const { status, registerService, error } = useRegisterService(
-    !isConfirmModalOpen
-  )
+  const { status, registerService, error } =
+    useRegisterService(!isConfirmModalOpen)
 
   const onConfirm = useCallback(() => {
     registerService(selectedTab, endpoint, stakingBN, delegateOwnerWallet)

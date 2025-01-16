@@ -18,8 +18,14 @@ export const SvgGradientProvider = (props: SvgGradientProviderProps) => {
             y2='8.9070096%'
             id='linearGradient-1'
           >
-            <stop stopColor='#832AE7' offset='0%'></stop>
-            <stop stopColor='#922CE9' offset='100%'></stop>
+            <stop
+              stopColor='var(--harmony-gradient-color-1)'
+              offset='0%'
+            ></stop>
+            <stop
+              stopColor='var(--harmony-gradient-color-2)'
+              offset='100%'
+            ></stop>
           </linearGradient>
           <linearGradient
             id='matrixHeaderGradient'

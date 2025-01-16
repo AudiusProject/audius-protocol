@@ -13,8 +13,7 @@ import {
   InstagramUser,
   TikTokUser,
   Feature,
-  AccountUserMetadata,
-  OptionalId
+  AccountUserMetadata
 } from '@audius/common/models'
 import {
   IntKeys,
@@ -48,11 +47,15 @@ import {
   isValidEmailString,
   route,
   isResponseError,
-  encodeHashId,
-  TEMPORARY_PASSWORD
+  TEMPORARY_PASSWORD,
+  waitForValue
 } from '@audius/common/utils'
-import { CreateUserRequest, UpdateProfileRequest } from '@audius/sdk'
-import { push as pushRoute } from 'connected-react-router'
+import {
+  OptionalId,
+  CreateUserRequest,
+  Id,
+  UpdateProfileRequest
+} from '@audius/sdk'
 import { isEmpty } from 'lodash'
 import {
   all,
@@ -74,12 +77,18 @@ import { fetchUserByHandle, fetchUsers } from 'common/store/cache/users/sagas'
 import { sendRecoveryEmail } from 'common/store/recovery-email/sagas'
 import { UiErrorCode } from 'store/errors/actions'
 import { setHasRequestedBrowserPermission } from 'utils/browserNotifications'
+import { push as pushRoute } from 'utils/navigation'
 import { restrictedHandles } from 'utils/restrictedHandles'
 import { waitForRead, waitForWrite } from 'utils/sagaHelpers'
 
 import * as signOnActions from './actions'
 import { watchSignOnError } from './errorSagas'
-import { getIsGuest, getRouteOnCompletion, getSignOn } from './selectors'
+import {
+  getIsGuest,
+  getRouteOnCompletion,
+  getSignOn,
+  getFollowIds
+} from './selectors'
 import { FollowArtistsCategory, Pages } from './types'
 
 const { FEED_PAGE, SIGN_IN_PAGE, SIGN_UP_PAGE, SIGN_UP_PASSWORD_PAGE } = route
@@ -120,7 +129,7 @@ function* getDefautFollowUserIds() {
   return defaultFollowUserIds
 }
 
-export function* fetchSuggestedFollowUserIds() {
+function* fetchSuggestedFollowUserIds() {
   const env = yield* getContext('env')
   const res = yield* call(fetch, env.SUGGESTED_FOLLOW_HANDLES)
   const json = yield* call([res, res.json])
@@ -234,29 +243,12 @@ function* fetchReferrer(
   action: ReturnType<typeof signOnActions.fetchReferrer>
 ) {
   yield* waitForRead()
-  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
-  const sdk = yield* getSDK()
   const { handle } = action
   if (handle) {
     try {
       const user = yield* call(fetchUserByHandle, handle)
       if (!user) return
       yield* put(signOnActions.setReferrer(user.user_id))
-
-      // Check if the user is already signed in
-      // If so, apply retroactive referrals
-
-      const currentUser = yield* select(getAccountUser)
-      if (
-        currentUser &&
-        !currentUser.events?.referrer &&
-        currentUser.user_id !== user.user_id
-      ) {
-        yield* call(audiusBackendInstance.updateCreator, {
-          metadata: { ...currentUser, events: { referrer: user.user_id } },
-          sdk
-        })
-      }
     } catch (e: any) {
       const reportToSentry = yield* getContext('reportToSentry')
       reportToSentry({
@@ -565,16 +557,12 @@ function* createGuestAccount(
   action: ReturnType<typeof signOnActions.createGuestAccount>
 ) {
   const { guestEmail } = action
-  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
   const getFeatureEnabled = yield* getContext('getFeatureEnabled')
   const reportToSentry = yield* getContext('reportToSentry')
   const localStorage = yield* getContext('localStorage')
+  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
 
   const sdk = yield* getSDK()
-  const audiusLibs = yield* call([
-    audiusBackendInstance,
-    audiusBackendInstance.getAudiusLibs
-  ])
 
   const authService = yield* getContext('authService')
 
@@ -592,7 +580,6 @@ function* createGuestAccount(
       guestEmail,
       function* () {
         // clear existing user state
-        yield* call([audiusLibs, 'clearCurrentUser'])
         yield* call([localStorage, 'clearAudiusAccount'])
         yield* call([localStorage, 'clearAudiusAccountUser'])
         yield* call([authService, authService.signOut])
@@ -613,37 +600,24 @@ function* createGuestAccount(
           }
         )
 
-        const { accountWalletAddress: wallet } = yield* call([
-          authService,
-          authService.getWalletAddresses
-        ])
-
-        audiusLibs.web3Manager.setOwnerWallet(wallet)
         if (!guestEmail) {
           throw new Error('No email set for guest account')
         }
-        const { blockHash, blockNumber, metadata } = yield* call([
+        const { blockHash, blockNumber } = yield* call([
           sdk.users,
           sdk.users.createGuestAccount
         ])
-        const userId = metadata.userId
         yield* call(confirmTransaction, blockHash, blockNumber)
-        yield* call(fetchAccountAsync, { isSignUp: true })
+        yield* call(fetchAccountAsync)
 
         const userBank = yield* call(getOrCreateUSDCUserBank)
         if (!userBank) {
           throw new Error('Failed to create user bank')
         }
-        const { web3Error, libsError } = yield* call(
-          audiusBackendInstance.setup,
-          {
-            wallet,
-            userId
-          }
-        )
-        if (web3Error || libsError) {
-          throw new Error('Failed to setup backend')
-        }
+
+        // associates user record with blockchain user ID and creates notification settings
+        // necessary for sending purchase emails
+        yield* call(audiusBackendInstance.updateUserLocationTimezone, { sdk })
       },
       () => {},
       function* ({ error: err }: { error: Error }) {
@@ -678,7 +652,6 @@ function* signUp() {
 
     const sdk = yield* getSDK()
     const authService = yield* getContext('authService')
-    const audiusBackendInstance = yield* getContext('audiusBackendInstance')
     const isGuest = yield* select(getIsGuest)
 
     yield* call(waitForWrite)
@@ -691,8 +664,6 @@ function* signUp() {
     const handle = signOn.handle.value
     const alreadyExisted = signOn.accountAlreadyExisted
     const referrer = signOn.referrer
-
-    yield* call(audiusBackendInstance.setUserHandleForRelay, handle)
 
     yield* put(
       confirmerActions.requestConfirmation(
@@ -731,7 +702,7 @@ function* signUp() {
               }
               userId = account.user.user_id
               const completeProfileMetadataRequest: UpdateProfileRequest = {
-                userId: encodeHashId(userId),
+                userId: Id.parse(userId),
                 profilePictureFile: signOn.profileImage?.file as File,
                 metadata: {
                   location: location ?? undefined,
@@ -756,16 +727,6 @@ function* signUp() {
               yield* fork(sendPostSignInRecoveryEmail, { handle, email })
 
               yield* call(confirmTransaction, blockHash, blockNumber)
-              const user = yield* call(
-                userApiFetchSaga.getUserById,
-                {
-                  id: userId
-                },
-                true // force refresh to get updated user w handle
-              )
-              if (!user) {
-                throw new Error('Failed to index guest account creation')
-              }
 
               return userId
             } else {
@@ -825,16 +786,6 @@ function* signUp() {
                   tikTokId
                 })
               }
-            }
-            const { web3Error, libsError } = yield* call(
-              audiusBackendInstance.setup,
-              {
-                wallet,
-                userId
-              }
-            )
-            if (web3Error || libsError) {
-              throw new Error('Failed to setup backend')
             }
 
             yield* put(
@@ -938,7 +889,14 @@ function* signUp() {
         },
         function* () {
           yield* put(signOnActions.sendWelcomeEmail(name))
-          yield* call(fetchAccountAsync, { isSignUp: true })
+          yield* call(fetchAccountAsync)
+          yield* call(
+            waitForValue,
+            getFollowIds,
+            null,
+            (value: ID[]) => value.length > 0
+          )
+          yield* call(waitForValue, accountSelectors.getIsAccountComplete)
           yield* put(signOnActions.followArtists())
           yield* put(make(Name.CREATE_ACCOUNT_COMPLETE_CREATING, { handle }))
           yield* put(signOnActions.signUpSucceeded())
@@ -997,17 +955,21 @@ function* signIn(action: ReturnType<typeof signOnActions.signIn>) {
   const clientOrigin = isNativeMobile
     ? 'mobile'
     : isElectron
-    ? 'desktop'
-    : 'web'
+      ? 'desktop'
+      : 'web'
 
   yield* call(waitForRead)
   try {
     const signOn = yield* select(getSignOn)
-    const fpResponse = yield* call(
-      [fingerprintClient, fingerprintClient.identify],
-      email ?? signOn.email.value,
-      clientOrigin
-    )
+    const isGuest = select(getIsGuest)
+
+    const fpResponse = isGuest
+      ? undefined // guest account should not use fingerprint
+      : yield* call(
+          [fingerprintClient, fingerprintClient.identify],
+          email ?? signOn.email.value,
+          clientOrigin
+        )
 
     let signInResponse: SignInResponse
     try {
@@ -1050,7 +1012,6 @@ function* signIn(action: ReturnType<typeof signOnActions.signIn>) {
 
     // Loging succeeded and we found a user, but it's missing name, likely
     // due to incomplete signup
-    const isGuest = select(getIsGuest)
 
     if (!user.name) {
       if (isGuest) {
@@ -1065,22 +1026,6 @@ function* signIn(action: ReturnType<typeof signOnActions.signIn>) {
         )
         if (!isNativeMobile) {
           yield* put(pushRoute(SIGN_UP_PASSWORD_PAGE))
-        }
-        const { web3Error, libsError } = yield* call(
-          audiusBackendInstance.setup,
-          {
-            wallet: signInResponse.walletAddress,
-            userId: user.user_id
-          }
-        )
-        if (web3Error || libsError) {
-          yield* put(
-            signOnActions.signInFailed(
-              'Failed to setup AudiusBackend for guest profile completion',
-              'SETUP',
-              true
-            )
-          )
         }
       } else {
         yield* put(
@@ -1107,23 +1052,6 @@ function* signIn(action: ReturnType<typeof signOnActions.signIn>) {
     // Now that we have verified the user is valid, run the account fetch flow,
     // which will pull cached account data from call above.
     yield* put(accountActions.fetchAccount())
-
-    // Re-setup backend to make sure libs has the correct hedgehog wallet and userId
-    const { web3Error, libsError } = yield* call(audiusBackendInstance.setup, {
-      wallet: signInResponse.walletAddress,
-      userId: user.user_id
-    })
-
-    if (web3Error || libsError) {
-      yield* put(
-        signOnActions.signInFailed(
-          'Failed to setup AudiusBackend',
-          'SETUP',
-          true
-        )
-      )
-      return
-    }
     yield* put(signOnActions.signInSucceeded())
     const route = yield* select(getRouteOnCompletion)
 
@@ -1149,7 +1077,7 @@ function* signIn(action: ReturnType<typeof signOnActions.signIn>) {
     }
 
     // Apply retroactive referral
-    if (!user.events?.referrer && signOn.referrer) {
+    if (signOn.referrer) {
       yield* fork(audiusBackendInstance.updateCreator, {
         metadata: { ...user, events: { referrer: signOn.referrer } },
         sdk
@@ -1213,7 +1141,7 @@ function* followCollections(
 }
 
 /* This saga makes sure that artists chosen in sign up get followed accordingly */
-export function* completeFollowArtists(
+function* completeFollowArtists(
   _action: ReturnType<typeof signOnActions.completeFollowArtists>
 ) {
   const isAccountComplete = yield* select(accountSelectors.getIsAccountComplete)
@@ -1313,7 +1241,6 @@ function* followArtists(
 function* configureMetaMask() {
   try {
     window.localStorage.setItem('useMetaMask', JSON.stringify(true))
-    yield* put(backendActions.setupBackend())
   } catch (err: any) {
     const reportToSentry = yield* getContext('reportToSentry')
     reportToSentry({
@@ -1324,7 +1251,7 @@ function* configureMetaMask() {
   }
 }
 
-export function* watchCompleteFollowArtists() {
+function* watchCompleteFollowArtists() {
   yield* takeEvery(signOnActions.COMPLETE_FOLLOW_ARTISTS, completeFollowArtists)
 }
 

@@ -1,4 +1,5 @@
 import {
+  fileToSdk,
   playlistMetadataForUpdateWithSDK,
   userCollectionMetadataFromSDK
 } from '@audius/common/adapters'
@@ -13,9 +14,7 @@ import {
   UserFollowees,
   FolloweeRepost,
   UID,
-  isContentUSDCPurchaseGated,
-  Id,
-  OptionalId
+  isContentUSDCPurchaseGated
 } from '@audius/common/models'
 import {
   accountActions,
@@ -42,6 +41,7 @@ import {
   makeKindId,
   updatePlaylistArtwork
 } from '@audius/common/utils'
+import { Id, OptionalId } from '@audius/sdk'
 import {
   all,
   call,
@@ -111,7 +111,6 @@ function* editPlaylistAsync(
   yield* waitForWrite()
 
   const isNative = yield* getContext('isNativeMobile')
-  const audiusBackend = yield* getContext('audiusBackendInstance')
   const { generatePlaylistArtwork } = yield* getContext('imageUtils')
 
   formFields.description = squashNewLines(formFields.description)
@@ -153,7 +152,7 @@ function* editPlaylistAsync(
     playlist,
     playlistTracks!,
     { updated: updatedTracks },
-    { audiusBackend, generateImage: generatePlaylistArtwork }
+    { generateImage: generatePlaylistArtwork }
   )
 
   // Optimistic update #2 to update the artwork
@@ -198,7 +197,15 @@ function* confirmEditPlaylist(
     confirmerActions.requestConfirmation(
       makeKindId(Kind.COLLECTIONS, playlistId),
       function* (_confirmedPlaylistId: ID) {
+        const coverArtFile =
+          formFields.artwork && 'file' in formFields.artwork
+            ? formFields.artwork.file
+            : undefined
+
         yield* call([sdk.playlists, sdk.playlists.updatePlaylist], {
+          coverArtFile: coverArtFile
+            ? fileToSdk(coverArtFile, 'cover_art')
+            : undefined,
           metadata: playlistMetadataForUpdateWithSDK(formFields),
           userId: Id.parse(userId),
           playlistId: Id.parse(playlistId)
@@ -214,7 +221,6 @@ function* confirmEditPlaylist(
         return playlist?.[0] ? userCollectionMetadataFromSDK(playlist[0]) : null
       },
       function* (confirmedPlaylist: Collection) {
-        // Update the cached collection so it no longer contains image upload artifacts
         yield* put(
           cacheActions.update(Kind.COLLECTIONS, [
             {
@@ -222,8 +228,7 @@ function* confirmEditPlaylist(
               metadata: {
                 ...reformatCollection({
                   collection: confirmedPlaylist
-                }),
-                artwork: {}
+                })
               }
             }
           ])
@@ -259,7 +264,6 @@ function* removeTrackFromPlaylistAsync(
   const { playlistId, trackId, timestamp } = action
   yield* waitForWrite()
   const userId = yield* call(ensureLoggedIn)
-  const audiusBackend = yield* getContext('audiusBackendInstance')
   const { generatePlaylistArtwork } = yield* getContext('imageUtils')
 
   let playlist = yield* select(getCollection, { id: playlistId })
@@ -271,7 +275,7 @@ function* removeTrackFromPlaylistAsync(
     playlist!,
     playlistTracks!,
     { removed: removedTrack! },
-    { audiusBackend, generateImage: generatePlaylistArtwork }
+    { generateImage: generatePlaylistArtwork }
   )
 
   // Find the index of the track based on the track's id and timestamp
@@ -324,10 +328,17 @@ function* confirmRemoveTrackFromPlaylist(
     confirmerActions.requestConfirmation(
       makeKindId(Kind.COLLECTIONS, playlistId),
       function* (confirmedPlaylistId: ID) {
+        const { artwork } = playlist
+        const coverArtFile =
+          artwork && 'file' in artwork ? (artwork?.file ?? null) : null
+
         yield* call([sdk.playlists, sdk.playlists.updatePlaylist], {
           metadata: playlistMetadataForUpdateWithSDK(playlist),
           userId: Id.parse(userId),
-          playlistId: Id.parse(playlistId)
+          playlistId: Id.parse(playlistId),
+          coverArtFile: coverArtFile
+            ? fileToSdk(coverArtFile, 'cover_art')
+            : undefined
         })
         return confirmedPlaylistId
       },
@@ -385,7 +396,6 @@ function* orderPlaylistAsync(
   const { playlistId, trackIdsAndTimes } = action
   yield* waitForWrite()
   const userId = yield* call(ensureLoggedIn)
-  const audiusBackend = yield* getContext('audiusBackendInstance')
   const { generatePlaylistArtwork } = yield* getContext('imageUtils')
 
   const playlist = yield* select(getCollection, { id: playlistId })
@@ -402,7 +412,7 @@ function* orderPlaylistAsync(
     playlist!,
     tracks!,
     { reordered: orderedTracks },
-    { audiusBackend, generateImage: generatePlaylistArtwork }
+    { generateImage: generatePlaylistArtwork }
   )
 
   updatedPlaylist.playlist_contents.track_ids = trackIdsAndTimes.map(

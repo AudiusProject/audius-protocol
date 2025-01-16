@@ -7,7 +7,7 @@ import {
   UserMetadata
 } from '@audius/common/models'
 import { accountSelectors, CommonState } from '@audius/common/store'
-import { encodeHashId } from '@audius/common/utils'
+import { Id } from '@audius/sdk'
 import * as queryString from 'query-string'
 import { useDispatch, useSelector } from 'react-redux'
 import { useHistory, useLocation } from 'react-router-dom'
@@ -37,7 +37,7 @@ import {
 
 const { getAccountStatus, getUserId } = accountSelectors
 
-export const useParsedQueryParams = () => {
+const useParsedQueryParams = () => {
   const { search } = useLocation()
 
   const {
@@ -401,7 +401,7 @@ export const useOAuthSetup = ({
       let appAlreadyAuthorized
       try {
         appAlreadyAuthorized = await getIsAppAuthorized({
-          userId: encodeHashId(accountUserId!), // We know account exists because isLoggedIn is true
+          userId: Id.parse(accountUserId!), // We know account exists because isLoggedIn is true
           apiKey: apiKey as string
         })
       } catch (e) {
@@ -459,12 +459,12 @@ export const useOAuthSetup = ({
     if (scope === 'write') {
       try {
         shouldCreateWriteGrant = !(await getIsAppAuthorized({
-          userId: encodeHashId(account.user_id),
+          userId: Id.parse(account.user_id),
           apiKey: apiKey as string
         }))
         if (shouldCreateWriteGrant) {
           await authWrite({
-            userId: encodeHashId(account.user_id),
+            userId: Id.parse(account.user_id),
             appApiKey: apiKey as string
           })
         }

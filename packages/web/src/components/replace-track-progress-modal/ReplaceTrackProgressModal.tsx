@@ -28,7 +28,12 @@ export const ReplaceTrackProgressModal = () => {
   const isUploadComplete = uploadProgress >= 1
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} size='small'>
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      size='small'
+      dismissOnClickOutside={false}
+    >
       <ModalContent>
         {error ? (
           <Flex direction='column' gap='3xl' pt='3xl'>
@@ -45,7 +50,7 @@ export const ReplaceTrackProgressModal = () => {
           <Flex direction='column' gap='3xl'>
             <Flex alignItems='center' direction='column' gap='xl'>
               <IconAudiusLogo height={48} width={48} color='subdued' />
-              <Text variant='body' size='l'>
+              <Text variant='body' size='l' textAlign='center'>
                 {messages.description}
               </Text>
             </Flex>

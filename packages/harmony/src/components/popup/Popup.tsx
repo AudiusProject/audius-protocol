@@ -15,9 +15,9 @@ import ReactDOM from 'react-dom'
 import { useTransition, animated } from 'react-spring'
 import { usePrevious } from 'react-use'
 
-import { PlainButton } from 'components/button/PlainButton/PlainButton'
-import { IconClose } from 'icons'
-import { ModalState } from 'utils/modalState'
+import { PlainButton } from '~harmony/components/button/PlainButton/PlainButton'
+import { IconClose } from '~harmony/icons'
+import { ModalState } from '~harmony/utils/modalState'
 
 import { useClickOutside } from '../../hooks/useClickOutside'
 import { getScrollParent } from '../../utils/getScrollParent'
@@ -333,7 +333,20 @@ export const PopupInternal = forwardRef<
 
       originalTopPosition.current = top
     }
-  }, [isVisible, wrapperRef, anchorRef, anchorOrigin, transformOrigin, setComputedTransformOrigin, originalTopPosition, portalLocation, containerRef, previousIsVisible, previousHeight, wrapperSizeChange])
+  }, [
+    isVisible,
+    wrapperRef,
+    anchorRef,
+    anchorOrigin,
+    transformOrigin,
+    setComputedTransformOrigin,
+    originalTopPosition,
+    portalLocation,
+    containerRef,
+    previousIsVisible,
+    previousHeight,
+    wrapperSizeChange
+  ])
 
   // Callback invoked on each scroll. Uses original top position to scroll with content.
   // Takes scrollParent to get the current scroll position as well as the intitial scroll position

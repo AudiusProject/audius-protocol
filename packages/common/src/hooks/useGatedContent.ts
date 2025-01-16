@@ -83,8 +83,8 @@ export const useGatedContentAccess = (
       const trackId = isTrack
         ? content.track_id
         : isCollection
-        ? content.playlist_id
-        : null
+          ? content.playlist_id
+          : null
       const { is_stream_gated: isStreamGated } = content
       const isDownloadGated = isTrack ? content.is_download_gated : undefined
 

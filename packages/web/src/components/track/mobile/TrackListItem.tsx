@@ -20,7 +20,7 @@ import {
   IconVisibilityHidden
 } from '@audius/harmony'
 import cn from 'classnames'
-import Lottie from 'react-lottie'
+import Lottie from 'lottie-react'
 
 import loadingSpinner from 'assets/animations/loadingSpinner.json'
 import { SeoLink } from 'components/link'
@@ -44,13 +44,7 @@ const ArtworkIcon = ({ isLoading, isPlaying }: ArtworkIconProps) => {
   if (isLoading) {
     artworkIcon = (
       <div className={styles.loadingAnimation}>
-        <Lottie
-          options={{
-            loop: true,
-            autoplay: true,
-            animationData: loadingSpinner
-          }}
-        />
+        <Lottie loop autoplay animationData={loadingSpinner} />
       </div>
     )
   } else if (isPlaying) {

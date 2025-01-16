@@ -12,16 +12,15 @@ export const NavHeaderButton = forwardRef(
     const { color } = useTheme()
 
     const activeCss = {
-      backgroundColor: color.secondary.s100,
+      backgroundColor: color.neutral.n100,
       svg: {
         path: {
-          fill: color.static.white
+          fill: color.text.default
         }
       }
     }
 
     const css = {
-      border: `1px solid ${color.border.default}`,
       backgroundColor: color.background.surface1,
       svg: {
         path: {
@@ -35,7 +34,7 @@ export const NavHeaderButton = forwardRef(
       <IconButton
         ref={ref}
         css={[css, isActive && activeCss]}
-        size='m'
+        size='l'
         {...other}
       />
     )

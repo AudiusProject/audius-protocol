@@ -73,7 +73,7 @@ export const ConfirmEmailScreen = () => {
         </Text>
         <PageFooter
           shadow='flat'
-          buttonProps={{ isLoading: isSubmitting }}
+          buttonProps={{ isLoading: isSubmitting, disabled: isSubmitting }}
           avoidKeyboard
         />
       </Page>

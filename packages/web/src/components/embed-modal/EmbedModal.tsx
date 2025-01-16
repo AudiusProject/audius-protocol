@@ -1,8 +1,8 @@
 import { useState, useMemo, useEffect, useCallback } from 'react'
 
 import { Name, PlayableType, ID, Track } from '@audius/common/models'
-import { encodeHashId } from '@audius/common/utils'
 import { Button, Modal, SegmentedControl } from '@audius/harmony'
+import { Id } from '@audius/sdk'
 import cn from 'classnames'
 import { connect } from 'react-redux'
 import { Dispatch } from 'redux'
@@ -33,7 +33,7 @@ const KindMap = {
 }
 
 const constructUrl = (kind: PlayableType, id: ID, size: Size) => {
-  return `${BASE_EMBED_URL}/${KindMap[kind]}/${encodeHashId(id)}?flavor=${
+  return `${BASE_EMBED_URL}/${KindMap[kind]}/${Id.parse(id)}?flavor=${
     FlavorMap[size]
   }`
 }

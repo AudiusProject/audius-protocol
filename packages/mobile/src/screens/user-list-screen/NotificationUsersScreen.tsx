@@ -5,10 +5,10 @@ import {
   notificationsUserListActions,
   notificationsUserListSelectors
 } from '@audius/common/store'
+import { formatCount } from '@audius/common/utils'
 import { useDispatch } from 'react-redux'
 
 import { useRoute } from 'app/hooks/useRoute'
-import { formatCount } from 'app/utils/format'
 
 import { UserList } from './UserList'
 import { UserListScreen } from './UserListScreen'

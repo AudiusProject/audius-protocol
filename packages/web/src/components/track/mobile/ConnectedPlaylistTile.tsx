@@ -26,13 +26,13 @@ import {
   playerSelectors
 } from '@audius/common/store'
 import { route } from '@audius/common/utils'
-import { push as pushRoute } from 'connected-react-router'
 import { connect } from 'react-redux'
 import { Dispatch } from 'redux'
 
 import { useRecord, make } from 'common/store/analytics/actions'
 import { PlaylistTileProps } from 'components/track/types'
 import { AppState } from 'store/types'
+import { push } from 'utils/navigation'
 import { isMatrix, shouldShowDark } from 'utils/theme/theme'
 
 import { getCollectionWithFallback, getUserWithFallback } from '../helpers'
@@ -346,7 +346,7 @@ function mapStateToProps(state: AppState, ownProps: OwnProps) {
 
 function mapDispatchToProps(dispatch: Dispatch) {
   return {
-    goToRoute: (route: string) => dispatch(pushRoute(route)),
+    goToRoute: (route: string) => dispatch(push(route)),
     shareCollection: (collectionId: ID) =>
       dispatch(
         requestOpenShareModal({

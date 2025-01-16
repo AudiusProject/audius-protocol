@@ -30,7 +30,7 @@ const {
   TRENDING_PAGE
 } = route
 
-export const useIsBackAllowed = () => {
+const useIsBackAllowed = () => {
   const match = useRouteMatch<{ currentPath: string }>('/signup/:currentPath')
   const matchSignIn = useRouteMatch<{ currentPath: string }>(
     '/signin/:currentPath'

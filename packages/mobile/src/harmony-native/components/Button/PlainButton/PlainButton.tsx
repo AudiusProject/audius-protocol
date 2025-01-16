@@ -35,8 +35,7 @@ export const PlainButton = (props: PlainButtonProps) => {
   const defaultTextStyles: TextStyle = {
     fontFamily: typography.fontByWeight.bold,
     fontSize: typography.size.s,
-    lineHeight: typography.lineHeight.s,
-    textTransform: 'capitalize'
+    lineHeight: typography.lineHeight.s
   }
 
   const largeStyles: ReactNativeStyle = {
@@ -46,8 +45,7 @@ export const PlainButton = (props: PlainButtonProps) => {
   const largeTextStyles: TextStyle = {
     fontFamily: typography.fontByWeight.bold,
     fontSize: typography.size.l,
-    lineHeight: typography.lineHeight.m,
-    textTransform: 'capitalize'
+    lineHeight: typography.lineHeight.m
   }
 
   // - Variant Styles -
@@ -82,8 +80,8 @@ export const PlainButton = (props: PlainButtonProps) => {
     variant === 'subdued'
       ? subduedStyles
       : variant === 'inverted'
-      ? invertedStyles
-      : defaultVariantStyles
+        ? invertedStyles
+        : defaultVariantStyles
 
   const buttonStyles = {
     ...(isDisabled && { opacity: 0.2 }),

@@ -11,7 +11,6 @@ const clientPath = path.resolve(__dirname, '../web')
 const commonPath = path.resolve(__dirname, '../../packages/common')
 const harmonyPath = path.resolve(__dirname, '../../packages/harmony')
 const splPath = path.resolve(__dirname, '../../packages/spl')
-const libsPath = path.resolve(__dirname, '../../packages/libs')
 const sdkPath = path.resolve(__dirname, '../../packages/sdk')
 const ethPath = path.resolve(__dirname, '../../packages/eth')
 const emptyPolyfill = path.resolve(__dirname, 'src/mocks/empty.ts')
@@ -65,12 +64,13 @@ const config = {
     commonPath,
     harmonyPath,
     sdkPath,
-    libsPath,
     ethPath,
     fixedDecimalPath,
     splPath
   ],
   resolver: {
+    unstable_enablePackageExports: true,
+    unstable_conditionNames: ['default', 'require', 'react-native'],
     assetExts: [...assetExts.filter((ext) => ext !== 'svg'), 'lottie'],
     sourceExts: [...sourceExts, 'svg', 'cjs', 'workerscript'],
     extraNodeModules: {
@@ -80,11 +80,17 @@ const config = {
       app: path.resolve(__dirname, 'src'),
       '@audius/harmony-native': path.resolve(__dirname, 'src/harmony-native'),
       '~': path.resolve(__dirname, '../common/src'),
+      '~harmony': path.resolve(__dirname, '../harmony/src'),
 
       // The following imports are needed for @audius/common
       // and @audius/web to compile correctly
       'react-redux': resolveModule('react-redux'),
-      'react-native-svg': resolveModule('react-native-svg'),
+      'react-native-svg': path.resolve(
+        __dirname,
+        './node_modules',
+        'react-native-svg'
+      ),
+
       'react-native': resolveModule('react-native'),
       react: resolveModule('react'),
 

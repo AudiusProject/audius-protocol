@@ -1,1 +1,1 @@
-declare module 'simplebar-react';
+declare module 'simplebar-react'

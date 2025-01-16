@@ -57,8 +57,8 @@ export const CollectibleGatedRadioField = (
         hasNoCollectibles
           ? messages.noCollectibles
           : disabled
-          ? messages.fromFreeHint(isAlbum ? 'album' : 'track')
-          : undefined
+            ? messages.fromFreeHint(isAlbum ? 'album' : 'track')
+            : undefined
       }
     />
   )

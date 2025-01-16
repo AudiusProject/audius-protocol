@@ -24,8 +24,8 @@ export type Config = {
   rateLimitAllowList: string[]
   rateLimitBlockList: string[]
   finalPoaBlock: number
-  redisUrl: string,
-  verifierAddress: string,
+  redisUrl: string
+  verifierAddress: string
   coreEndpoint: string
 }
 
@@ -39,8 +39,8 @@ const readDotEnv = () => {
 }
 
 const defaultCoreEndpoint = (env: string): string => {
-  if (env === "dev") return "core-discovery-1:50051"
-  return "core:50051"
+  if (env === 'dev') return 'audiusd-1:50051'
+  return 'core:50051'
 }
 
 export const readConfig = (): Config => {
@@ -94,7 +94,10 @@ export const readConfig = (): Config => {
       finalPoaBlock: env.audius_final_poa_block,
       redisUrl: env.audius_redis_url,
       verifierAddress: env.audius_contracts_verified_address,
-      coreEndpoint: env.audius_core_endpoint !== '' ? env.audius_core_endpoint : defaultCoreEndpoint(env.audius_discprov_env)
+      coreEndpoint:
+        env.audius_core_endpoint !== ''
+          ? env.audius_core_endpoint
+          : defaultCoreEndpoint(env.audius_discprov_env)
     }
   }
 

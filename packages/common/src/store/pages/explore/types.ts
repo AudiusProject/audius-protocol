@@ -1,10 +1,10 @@
 import { ID, Status } from '../../../models'
 
 export enum ExplorePageTabs {
-  FOR_YOU = 'FOR YOU',
-  MOODS = 'MOODS',
-  PLAYLISTS = 'PLAYLISTS',
-  PROFILES = 'PROFILES'
+  FOR_YOU = 'For You',
+  MOODS = 'Moods',
+  PLAYLISTS = 'Playlists',
+  PROFILES = 'Artists'
 }
 
 export type ExploreContent = {

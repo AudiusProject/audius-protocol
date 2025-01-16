@@ -12,7 +12,6 @@ import {
 } from 'vitest'
 
 import { developmentConfig } from '../../config/development'
-import Web3 from '../../utils/web3'
 import { createAppWalletClient } from '../AudiusWalletClient'
 import { DiscoveryNodeSelector } from '../DiscoveryNodeSelector'
 
@@ -25,36 +24,17 @@ const userWallet = '0xc0ffee254729296a45a3885639AC7E10F9d54979'
 const discoveryNode = 'https://discovery-provider.audius.co'
 
 vitest.mock('../DiscoveryNodeSelector')
-vitest.mock('../../utils/web3', () => {
-  return {
-    default: vitest.fn().mockImplementation(() => {
-      return {
-        eth: {
-          getChainId: () => '',
-          Contract: vitest.fn().mockImplementation(() => ({
-            methods: {
-              manageEntity: () => ({
-                encodeABI: () => ''
-              })
-            }
-          }))
-        }
-      }
-    })
-  }
-})
-;(Web3 as any).providers = {
-  HttpProvider: vitest.fn().mockImplementation(() => {})
-}
 
 vitest
   .spyOn(DiscoveryNodeSelector.prototype, 'getSelectedEndpoint')
   .mockImplementation(async () => discoveryNode)
 
-const audiusWalletClient = createAppWalletClient(userWallet).extend(() => ({
-  signTypedData: async () =>
-    '0xcfe7a6974bd1691c0a298e119318337c54bf58175f8a9a6aeeaf3b0346c6105265c83de64ab81da28266c4b5b4ff68d81d9e266f9163d7ebd5b2a52d46e275941c' as Hex
-}))
+const audiusWalletClient = createAppWalletClient({ apiKey: userWallet }).extend(
+  () => ({
+    signTypedData: async () =>
+      '0xcfe7a6974bd1691c0a298e119318337c54bf58175f8a9a6aeeaf3b0346c6105265c83de64ab81da28266c4b5b4ff68d81d9e266f9163d7ebd5b2a52d46e275941c' as Hex
+  })
+)
 const discoveryNodeSelector = new DiscoveryNodeSelector({
   initialSelectedNode: discoveryNode
 })

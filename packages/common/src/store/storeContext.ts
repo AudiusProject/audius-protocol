@@ -1,6 +1,7 @@
 import { FetchNFTClient } from '@audius/fetch-nft'
 import type { AudiusSdk } from '@audius/sdk'
 import { VersionedTransaction } from '@solana/web3.js'
+import { QueryClient } from '@tanstack/react-query'
 import { Location } from 'history'
 import { Dispatch } from 'redux'
 import nacl from 'tweetnacl'
@@ -88,6 +89,7 @@ export type CommonStoreContext = {
   }
   isMobile: boolean
   dispatch: Dispatch<any>
+  queryClient: QueryClient
   mobileWalletActions?: {
     connect: (dappKeyPair: nacl.BoxKeyPair) => void
     signAndSendTransaction: (params: {

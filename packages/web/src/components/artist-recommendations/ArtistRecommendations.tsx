@@ -17,7 +17,6 @@ import {
 import { route } from '@audius/common/utils'
 import { FollowButton, IconButton, IconClose } from '@audius/harmony'
 import cn from 'classnames'
-import { push } from 'connected-react-router'
 import { isEmpty } from 'lodash'
 import { useDispatch, useSelector } from 'react-redux'
 
@@ -29,6 +28,7 @@ import { MountPlacement } from 'components/types'
 import UserBadges from 'components/user-badges/UserBadges'
 import { useIsMobile } from 'hooks/useIsMobile'
 import { useProfilePicture } from 'hooks/useProfilePicture'
+import { push } from 'utils/navigation'
 
 import styles from './ArtistRecommendations.module.css'
 

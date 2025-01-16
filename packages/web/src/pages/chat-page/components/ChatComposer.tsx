@@ -5,10 +5,10 @@ import { ID } from '@audius/common/models'
 import { chatActions } from '@audius/common/store'
 import { Nullable } from '@audius/common/utils'
 import { Box } from '@audius/harmony'
+import { HashId } from '@audius/sdk'
 import { useDispatch } from 'react-redux'
 
 import { ComposerInput } from 'components/composer-input/ComposerInput'
-import { decodeHashId } from 'utils/hashIds'
 
 import { ComposerCollectionInfo, ComposerTrackInfo } from './ComposePreviewInfo'
 
@@ -18,7 +18,7 @@ const messages = {
   sendMessagePlaceholder: 'Start typing...'
 }
 
-export type ChatComposerProps = ComponentPropsWithoutRef<'div'> & {
+type ChatComposerProps = ComponentPropsWithoutRef<'div'> & {
   chatId?: string
   presetMessage?: string
   onMessageSent: () => void
@@ -40,10 +40,10 @@ export const ChatComposer = (props: ChatComposerProps) => {
       setValue(value)
 
       const track = linkEntities.find((e) => e.type === 'track')
-      setTrackId(track ? decodeHashId(track.data.id) : null)
+      setTrackId(track ? HashId.parse(track.data.id) : null)
 
       const collection = linkEntities.find((e) => e.type === 'collection')
-      setCollectionId(collection ? decodeHashId(collection.data.id) : null)
+      setCollectionId(collection ? HashId.parse(collection.data.id) : null)
     },
     []
   )

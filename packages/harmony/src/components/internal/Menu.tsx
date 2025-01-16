@@ -2,11 +2,11 @@ import { ReactNode, Ref } from 'react'
 
 import { CSSObject } from '@emotion/react'
 
-import { Flex, FlexProps } from 'components/layout/Flex'
-import { Paper, PaperProps } from 'components/layout/Paper'
-import { Popup } from 'components/popup/Popup'
-import { PopupProps } from 'components/popup/types'
-import { WithCSS } from 'foundations'
+import { Flex, FlexProps } from '~harmony/components/layout/Flex'
+import { Paper, PaperProps } from '~harmony/components/layout/Paper'
+import { Popup } from '~harmony/components/popup/Popup'
+import { PopupProps } from '~harmony/components/popup/types'
+import { WithCSS } from '~harmony/foundations'
 
 // TODO menu label
 

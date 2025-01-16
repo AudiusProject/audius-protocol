@@ -354,10 +354,3 @@ export type DesktopPlaylistTileProps = {
   /** ID for the playlist */
   playlistId: ID
 }
-
-export type SkeletonTileProps = {
-  index?: number
-  key: number
-  tileSize: TrackTileSize
-  ordered?: boolean
-}

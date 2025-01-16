@@ -185,9 +185,8 @@ export const listenRouteRateLimiter = async (params: {
 
   // consume and check rate limits
   const ipLimit = await listensIpRateLimiter.checkLimit(ip)
-  const ipTrackLimit = await listensIpTrackRateLimiter.checkLimit(
-    ipTrackConcatKey
-  )
+  const ipTrackLimit =
+    await listensIpTrackRateLimiter.checkLimit(ipTrackConcatKey)
 
   // merge limits and check if both allow passage
   const allowed = ipLimit.allowed && ipTrackLimit.allowed
@@ -206,8 +205,19 @@ export const listen = async (
 ) => {
   let logger
   try {
-    // validation
     logger = res.locals.logger
+
+    // if not prod, just return 200
+    if (config.environment !== 'prod') {
+      logger.info('not prod, skipping listen')
+      res.status(200).json({
+        solTxSignature: null
+      })
+      next()
+      return
+    }
+
+    // validation
     const { userId, timestamp, signature } = recordListenBodySchema.parse(
       req.body
     )

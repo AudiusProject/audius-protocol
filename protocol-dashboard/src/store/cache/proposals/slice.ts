@@ -52,10 +52,13 @@ const slice = createSlice({
     },
     setAllProposals: (state, action: PayloadAction<SetAllProposals>) => {
       const { proposals } = action.payload
-      const allProposals = proposals.reduce((acc, p) => {
-        acc[p.proposalId] = p
-        return acc
-      }, {} as { [key: number]: Proposal })
+      const allProposals = proposals.reduce(
+        (acc, p) => {
+          acc[p.proposalId] = p
+          return acc
+        },
+        {} as { [key: number]: Proposal }
+      )
       const resolvedProposals = proposals
         .filter((p) => p.outcome !== Outcome.InProgress)
         .map((p) => p.proposalId)

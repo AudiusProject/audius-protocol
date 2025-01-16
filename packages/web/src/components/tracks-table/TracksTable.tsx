@@ -20,7 +20,7 @@ import {
   IconVisibilityHidden,
   IconLock,
   Flex,
-  IconSpecialAccess,
+  IconSparkles,
   IconCollectible,
   IconCart,
   Text
@@ -223,7 +223,7 @@ export const TracksTable = ({
               variant='title'
               size='s'
               strength='weak'
-              css={{ display: 'block', 'line-height': '125%' }}
+              css={{ display: 'block', lineHeight: '125%' }}
               ellipses
             >{`${track.name} [Deleted By Artist]`}</Text>
           ) : (
@@ -233,7 +233,7 @@ export const TracksTable = ({
               textVariant='title'
               size='s'
               strength='weak'
-              css={{ display: 'block', 'line-height': '125%' }}
+              css={{ display: 'block', lineHeight: '125%' }}
               ellipses
             >
               {track.name}
@@ -460,18 +460,18 @@ export const TracksTable = ({
         Icon = track.is_unlisted
           ? IconVisibilityHidden
           : isContentUSDCPurchaseGated(streamConditions)
-          ? IconCart
-          : isContentCollectibleGated(streamConditions)
-          ? IconCollectible
-          : isContentFollowGated(streamConditions)
-          ? IconSpecialAccess
-          : null
+            ? IconCart
+            : isContentCollectibleGated(streamConditions)
+              ? IconCollectible
+              : isContentFollowGated(streamConditions)
+                ? IconSparkles
+                : null
       } else {
         Icon = !hasStreamAccess
           ? IconLock
           : track.is_unlisted
-          ? IconVisibilityHidden
-          : null
+            ? IconVisibilityHidden
+            : null
       }
       const overflowProps = {
         className: styles.tableActionButton,

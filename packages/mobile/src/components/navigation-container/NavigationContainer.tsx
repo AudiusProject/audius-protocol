@@ -1,7 +1,7 @@
 import { useRef, type ReactNode } from 'react'
 
 import { accountSelectors } from '@audius/common/store'
-import { decodeHashId } from '@audius/common/utils'
+import { OptionalHashId } from '@audius/sdk'
 import type {
   LinkingOptions,
   NavigationState,
@@ -74,18 +74,6 @@ const createFeedStackState = (route): PartialState<NavigationState> =>
       }
     ]
   })
-
-/**
- * Convert query parameters to an object
- */
-const convertQueryParamsToObject = (url: string) => {
-  // This baseUrl is unimportant, we just need to create a URL object
-  const baseUrl = 'https://audius.co'
-
-  const urlObj = new URL(url, baseUrl)
-  const params = new URLSearchParams(urlObj.search)
-  return Object.fromEntries(params)
-}
 
 /**
  * NavigationContainer contains the react-navigation context
@@ -268,7 +256,7 @@ const NavigationContainer = (props: NavigationContainerProps) => {
       // Opaque ID routes
       // /tracks/Nz9yBb4
       if (path.match(/^\/tracks\//)) {
-        const id = decodeHashId(pathPart(path)(2))
+        const id = OptionalHashId.parse(pathPart(path)(2))
         return createFeedStackState({
           name: 'Track',
           params: {
@@ -279,7 +267,7 @@ const NavigationContainer = (props: NavigationContainerProps) => {
 
       // /users/Nz9yBb4
       if (path.match(/^\/users\//)) {
-        const id = decodeHashId(pathPart(path)(2))
+        const id = OptionalHashId.parse(pathPart(path)(2))
         return createFeedStackState({
           name: 'Profile',
           params: {
@@ -290,7 +278,7 @@ const NavigationContainer = (props: NavigationContainerProps) => {
 
       // /playlists/Nz9yBb4
       if (path.match(/^\/playlists\//)) {
-        const id = decodeHashId(pathPart(path)(2))
+        const id = OptionalHashId.parse(pathPart(path)(2))
         return createFeedStackState({
           name: 'Profile',
           params: {
@@ -301,7 +289,9 @@ const NavigationContainer = (props: NavigationContainerProps) => {
 
       // /search
       if (path.match(`^/search(/|$)`)) {
-        const { query, ...filters } = convertQueryParamsToObject(path)
+        const {
+          query: { query, ...filters }
+        } = queryString.parseUrl(path)
 
         return createFeedStackState({
           name: 'Search',

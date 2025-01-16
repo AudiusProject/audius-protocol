@@ -1,4 +1,4 @@
-import { MutableRefObject, useCallback, useMemo } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 
 import { CreatePlaylistSource } from '@audius/common/models'
 import {
@@ -8,17 +8,16 @@ import {
   playlistLibraryHelpers
 } from '@audius/common/store'
 import {
+  IconButton,
   IconFolder,
   IconPlaylists,
-  IconSave,
-  Pill,
+  IconPlus,
   PopupMenu,
   PopupMenuItem
 } from '@audius/harmony'
 import { useDispatch } from 'react-redux'
 
 import { useSelector } from 'common/hooks/useSelector'
-import { Tooltip } from 'components/tooltip'
 import { useRequiresAccountCallback } from 'hooks/useRequiresAccount'
 
 const { createPlaylist } = cacheCollectionsActions
@@ -35,20 +34,12 @@ const messages = {
   newFolderName: 'New Folder'
 }
 
-type Props = {
-  scrollbarRef: MutableRefObject<HTMLElement | null>
-}
-
 // Allows user to create a playlist or playlist-folder
-export const CreatePlaylistLibraryItemButton = (props: Props) => {
-  const { scrollbarRef } = props
+export const CreatePlaylistLibraryItemButton = () => {
   const dispatch = useDispatch()
   const library = useSelector(getPlaylistLibrary)
-
-  const getTooltipPopupContainer = useCallback(
-    () => scrollbarRef.current?.parentNode,
-    [scrollbarRef]
-  )
+  const [isActive, setIsActive] = useState(false)
+  const [isHovered, setIsHovered] = useState(false)
 
   const handleSubmitPlaylist = useCallback(() => {
     dispatch(
@@ -95,22 +86,25 @@ export const CreatePlaylistLibraryItemButton = (props: Props) => {
   return (
     <PopupMenu
       items={items}
-      anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+      transformOrigin={{ vertical: 'top', horizontal: 'left' }}
       renderTrigger={(anchorRef, onClick, triggerProps) => (
-        <Tooltip
-          text={messages.newPlaylistOrFolderTooltip}
-          getPopupContainer={getTooltipPopupContainer}
-        >
-          <Pill
-            ref={anchorRef}
-            iconLeft={IconSave}
-            onClick={() => handleClickPill(onClick)}
-            css={{ height: 18 }}
-            {...triggerProps}
-          >
-            {messages.new}
-          </Pill>
-        </Tooltip>
+        <IconButton
+          ref={anchorRef}
+          icon={IconPlus}
+          onClick={() => handleClickPill(onClick)}
+          onMouseDown={() => setIsActive(true)}
+          onMouseUp={() => setIsActive(false)}
+          onMouseLeave={() => {
+            setIsActive(false)
+            setIsHovered(false)
+          }}
+          onMouseEnter={() => setIsHovered(true)}
+          aria-label={messages.newPlaylistOrFolderTooltip}
+          size='m'
+          color={isActive || isHovered ? 'default' : 'subdued'}
+          {...(triggerProps as Omit<typeof triggerProps, 'color'>)}
+        />
       )}
     />
   )

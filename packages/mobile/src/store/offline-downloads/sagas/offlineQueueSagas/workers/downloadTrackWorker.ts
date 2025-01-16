@@ -4,13 +4,14 @@ import type {
   TrackMetadata,
   UserTrackMetadata
 } from '@audius/common/models'
-import { Id, OptionalId, SquareSizes } from '@audius/common/models'
+import { SquareSizes } from '@audius/common/models'
 import {
   accountSelectors,
   getContext,
   gatedContentSelectors,
   getSDK
 } from '@audius/common/store'
+import { Id, OptionalId } from '@audius/sdk'
 import ReactNativeBlobUtil from 'react-native-blob-util'
 import { select, call, put, all, take, race } from 'typed-redux-saga'
 

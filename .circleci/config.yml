@@ -84,7 +84,7 @@ jobs:
             - ./packages/sdk/node_modules
             - ./packages/identity-service/node_modules
             - ./packages/es-indexer/node_modules
-            - ./packages/ddex/node_modules
+            - ./packages/ddex-entrypoint/node_modules
             - ./packages/trpc-server/node_modules
             - ./packages/create-audius-app/node_modules
             - ./packages/dotenv-linter/bin
@@ -319,7 +319,6 @@ workflows:
           base-revision: main
           config-path: ../workspace/.circleci/continue_config.yml
           mapping: |
-            core/.* run-core-workflow true
             comms/.* run-discovery-workflow true
             packages/identity-service/.* run-identity-workflow true
             packages/identity-service/.* run-integration-workflow true
@@ -327,7 +326,6 @@ workflows:
             protocol-dashboard/.* run-protocol-dashboard-workflow true
             contracts/.* run-contracts-workflow true
             .circleci/.* run-discovery-workflow true
-            .circleci/.* run-creator-workflow true
             .circleci/.* run-identity-workflow true
             .circleci/.* run-eth-contracts-workflow true
             .circleci/.* run-protocol-dashboard-workflow true
@@ -359,12 +357,6 @@ workflows:
             packages/fixed-decimal/.* run-common-workflow true
             packages/spl/.* run-sdk-workflow true
             packages/spl/.* run-identity-workflow true
-            pkg/.* run-audiusd-workflow true
-            cmd/.* run-audiusd-workflow true
-            pkg/.* run-creator-workflow true
-            cmd/.* run-creator-workflow true
-            pkg/.* run-core-workflow true
-            cmd/.* run-core-workflow true
           requires:
             - generate-config
             - init
@@ -385,7 +377,6 @@ workflows:
             protocol-dashboard/.* run-protocol-dashboard-workflow true
             contracts/.* run-contracts-workflow true
             .circleci/.* run-discovery-workflow true
-            .circleci/.* run-creator-workflow true
             .circleci/.* run-identity-workflow true
             .circleci/.* run-eth-contracts-workflow true
             .circleci/.* run-protocol-dashboard-workflow true
@@ -416,12 +407,6 @@ workflows:
             packages/fixed-decimal/.* run-common-workflow true
             packages/spl/.* run-sdk-workflow true
             packages/spl/.* run-identity-workflow true
-            pkg/.* run-audiusd-workflow true
-            cmd/.* run-audiusd-workflow true
-            pkg/.* run-creator-workflow true
-            cmd/.* run-creator-workflow true
-            pkg/.* run-core-workflow true
-            cmd/.* run-core-workflow true
           requires:
             - generate-config
             - init

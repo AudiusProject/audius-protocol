@@ -121,9 +121,8 @@ export const getCollectionWithHashId = async (hashId) => {
 }
 
 export const getCollectible = async (handle, collectibleId) => {
-  const { user, ethCollectibles, solCollectibles } = await getCollectibles(
-    handle
-  )
+  const { user, ethCollectibles, solCollectibles } =
+    await getCollectibles(handle)
   const collectibles = [
     ...Object.values(ethCollectibles).reduce(
       (acc, vals) => [...acc, ...vals],

@@ -1,7 +1,9 @@
+import { Id } from '@audius/sdk'
+
 import { transformAndCleanList } from '~/adapters'
 import { favoriteFromSDK } from '~/adapters/favorite'
 import { createApi } from '~/audius-query'
-import { ID, Id } from '~/models/Identifiers'
+import { ID } from '~/models/Identifiers'
 import { Nullable } from '~/utils/typeUtils'
 
 type GetFavoritedTrackListArgs = {

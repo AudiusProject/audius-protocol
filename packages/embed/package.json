@@ -33,7 +33,7 @@
     "webpack-cli": "4.5.0"
   },
   "dependencies": {
-    "@audius/fetch-nft": "0.2.7",
+    "@audius/fetch-nft": "0.2.8",
     "@audius/fixed-decimal": "*",
     "@audius/harmony": "*",
     "@audius/sdk": "*",
@@ -49,12 +49,11 @@
     "copy-to-clipboard": "3.2.1",
     "hashids": "2.2.10",
     "hls.js": "0.13.1",
-    "lodash": "^4.17.21",
+    "lodash": "4.17.21",
     "node-polyfill-webpack-plugin": "2.0.1",
     "react": "18.3.1",
     "react-dom": "18.3.1",
     "react-helmet": "6.1.0",
-    "react-lottie": "1.2.3",
     "react-merge-refs": "2.1.1",
     "react-perfect-scrollbar": "1.5.8",
     "react-router-dom": "6.18.0",

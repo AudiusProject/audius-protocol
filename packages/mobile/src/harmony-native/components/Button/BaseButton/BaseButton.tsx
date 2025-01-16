@@ -45,7 +45,12 @@ export const BaseButton = (props: BaseButtonProps) => {
   const isTextChild = typeof children === 'string'
 
   const childElement = isTextChild ? (
-    <AnimatedText {...innerProps?.text} style={styles?.text} numberOfLines={1}>
+    <AnimatedText
+      {...innerProps?.text}
+      style={styles?.text}
+      numberOfLines={1}
+      ellipsizeMode='tail'
+    >
       {children}
     </AnimatedText>
   ) : (
@@ -105,6 +110,7 @@ export const BaseButton = (props: BaseButtonProps) => {
             {...innerProps?.icon}
             style={styles?.icon}
             color={isStaticIcon ? 'default' : innerProps?.icon?.color}
+            size={innerProps?.icon?.size}
           />
         ) : null}
         {childElement}

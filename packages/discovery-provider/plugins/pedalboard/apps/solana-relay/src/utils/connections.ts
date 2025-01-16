@@ -3,11 +3,13 @@ import { Connection } from '@solana/web3.js'
 import { config } from '../config'
 
 const normalizeEp = (ep: string): string => {
-  if (ep.startsWith("http")) {
+  if (ep.startsWith('http')) {
     return ep
   } else {
-    let mep: string = Array.from(ep).filter((c, i) => i % Math.floor(ep.length/6) !== 0).join('')
-    return Buffer.from(mep, 'base64').toString('utf-8');
+    let mep: string = Array.from(ep)
+      .filter((c, i) => i % Math.floor(ep.length / 6) !== 0)
+      .join('')
+    return Buffer.from(mep, 'base64').toString('utf-8')
   }
 }
 

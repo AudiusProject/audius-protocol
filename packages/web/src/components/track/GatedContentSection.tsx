@@ -23,19 +23,14 @@ import {
   gatedContentSelectors,
   PurchaseableContentType
 } from '@audius/common/store'
-import {
-  formatPrice,
-  removeNullable,
-  Nullable,
-  route
-} from '@audius/common/utils'
+import { formatPrice, removeNullable, Nullable } from '@audius/common/utils'
 import {
   Flex,
   Text,
   IconExternalLink,
   IconCart,
   IconCollectible,
-  IconSpecialAccess,
+  IconSparkles,
   IconLogoCircleETH,
   IconLogoCircleSOL,
   useTheme,
@@ -44,24 +39,19 @@ import {
   IconTipping
 } from '@audius/harmony'
 import cn from 'classnames'
-import { push as pushRoute } from 'connected-react-router'
 import { useDispatch, useSelector } from 'react-redux'
 import { useSearchParams } from 'react-router-dom-v5-compat'
 
 import { useModalState } from 'common/hooks/useModalState'
-import { ArtistPopover } from 'components/artist/ArtistPopover'
 import { UserLink } from 'components/link'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
-import UserBadges from 'components/user-badges/UserBadges'
 import { useRequiresAccountCallback } from 'hooks/useRequiresAccount'
-import { emptyStringGuard } from 'pages/track-page/utils'
 import { make, track } from 'services/analytics'
 import { AppState } from 'store/types'
 
 import { LockedStatusBadge } from '../locked-status-badge'
 
 import styles from './GiantTrackTile.module.css'
-const { profilePage } = route
 
 const { getUsers } = cacheUsersSelectors
 const { beginTip } = tippingActions
@@ -111,7 +101,6 @@ type GatedContentAccessSectionProps = {
   followee: Nullable<User>
   tippedUser: Nullable<User>
   goToCollection: () => void
-  renderArtist: (entity: User) => JSX.Element
   isOwner: boolean
   className?: string
   buttonClassName?: string
@@ -125,10 +114,9 @@ const LockedGatedContentSection = ({
   followee,
   tippedUser,
   goToCollection,
-  renderArtist,
   className,
   buttonClassName,
-  source: premiumModalSource
+  source
 }: GatedContentAccessSectionProps) => {
   const messages = getMessages(contentType)
   const dispatch = useDispatch()
@@ -157,7 +145,7 @@ const LockedGatedContentSection = ({
     }
     openPremiumContentPurchaseModal(
       { contentId, contentType },
-      { source: premiumModalSource ?? ModalSource.TrackDetails }
+      { source: source ?? ModalSource.TrackDetails }
     )
   }, [
     contentId,
@@ -165,7 +153,7 @@ const LockedGatedContentSection = ({
     lockedContentModalVisibility,
     openPremiumContentPurchaseModal,
     setLockedContentModalVisibility,
-    premiumModalSource
+    source
   ])
 
   const handlePurchaseViaGuestCheckout = useCallback(() => {
@@ -174,7 +162,7 @@ const LockedGatedContentSection = ({
     }
     openPremiumContentPurchaseModal(
       { contentId, contentType },
-      { source: premiumModalSource ?? ModalSource.TrackDetails }
+      { source: source ?? ModalSource.TrackDetails }
     )
   }, [
     contentId,
@@ -182,7 +170,7 @@ const LockedGatedContentSection = ({
     lockedContentModalVisibility,
     openPremiumContentPurchaseModal,
     setLockedContentModalVisibility,
-    premiumModalSource
+    source
   ])
 
   useEffect(() => {
@@ -408,9 +396,11 @@ const UnlockingGatedContentSection = ({
   followee,
   tippedUser,
   goToCollection,
-  renderArtist,
   className
-}: GatedContentAccessSectionProps) => {
+}: Omit<
+  GatedContentAccessSectionProps,
+  'contentId' | 'buttonClassName' | 'source' | 'trackOwner'
+>) => {
   const messages = getMessages(contentType)
   const renderUnlockingDescription = () => {
     if (isContentCollectibleGated(streamConditions)) {
@@ -439,7 +429,7 @@ const UnlockingGatedContentSection = ({
       return (
         <div>
           <span>{messages.thankYouForSupporting}&nbsp;</span>
-          {renderArtist(tippedUser)}
+          <UserLink userId={tippedUser.user_id} />
           <span className={styles.suffix}>
             {messages.unlockingTipGatedContentSuffix}
           </span>
@@ -491,11 +481,13 @@ const UnlockedGatedContentSection = ({
   followee,
   tippedUser,
   goToCollection,
-  renderArtist,
   isOwner,
   trackOwner,
   className
-}: GatedContentAccessSectionProps) => {
+}: Omit<
+  GatedContentAccessSectionProps,
+  'contentId' | 'buttonClassName' | 'source'
+>) => {
   const messages = getMessages(contentType)
   const renderUnlockedDescription = () => {
     if (isContentCollectibleGated(streamConditions)) {
@@ -544,26 +536,20 @@ const UnlockedGatedContentSection = ({
 
     if (isContentUSDCPurchaseGated(streamConditions)) {
       return isOwner ? (
-        <div>
-          <span>
-            {messages.usersCanPurchase(
-              formatPrice(streamConditions.usdc_purchase.price)
-            )}
-          </span>
-        </div>
+        messages.usersCanPurchase(
+          formatPrice(streamConditions.usdc_purchase.price)
+        )
       ) : (
-        <Flex direction='row' wrap='wrap'>
-          <span>{messages.purchased}&nbsp;</span>
+        <>
+          {messages.purchased}&nbsp;
           {trackOwner ? (
             <>
-              <Flex direction='row'>
-                {messages.thankYouForSupporting}&nbsp;
-                {renderArtist(trackOwner)}
-                {messages.period}
-              </Flex>
+              {messages.thankYouForSupporting}&nbsp;
+              <UserLink userId={trackOwner.user_id} />
+              {messages.period}
             </>
           ) : null}
-        </Flex>
+        </>
       )
     }
 
@@ -573,7 +559,7 @@ const UnlockedGatedContentSection = ({
     return null
   }
 
-  let IconComponent = IconSpecialAccess
+  let IconComponent = IconSparkles
   let gatedConditionTitle = messages.specialAccess
 
   if (isContentCollectibleGated(streamConditions)) {
@@ -645,7 +631,6 @@ export const GatedContentSection = ({
   ownerId,
   source
 }: GatedContentSectionProps) => {
-  const dispatch = useDispatch()
   const gatedContentStatusMap = useSelector(getGatedContentStatusMap)
   const gatedContentStatus = gatedContentStatusMap[contentId] ?? null
 
@@ -694,34 +679,6 @@ export const GatedContentSection = ({
     }
   }, [streamConditions])
 
-  const renderArtist = useCallback(
-    (entity: User) => (
-      <ArtistPopover
-        handle={entity.handle}
-        mouseEnterDelay={0.1}
-        component='span'
-      >
-        <Flex gap='xs' alignItems='center'>
-          <h2
-            className={styles.gatedContentOwner}
-            onClick={() =>
-              dispatch(pushRoute(profilePage(emptyStringGuard(entity.handle))))
-            }
-          >
-            {entity.name}
-          </h2>
-          <UserBadges
-            userId={entity.user_id}
-            className={styles.badgeIcon}
-            badgeSize={14}
-            useSVGTiers
-          />
-        </Flex>
-      </ArtistPopover>
-    ),
-    [dispatch]
-  )
-
   if (!streamConditions) return null
   if (!shouldDisplay) return null
 
@@ -729,16 +686,14 @@ export const GatedContentSection = ({
     return (
       <div className={cn(styles.gatedContentSection, fadeIn, wrapperClassName)}>
         <UnlockedGatedContentSection
-          contentId={contentId}
           contentType={contentType}
-          trackOwner={trackOwner}
           streamConditions={streamConditions}
           followee={followee}
           tippedUser={tippedUser}
           goToCollection={handleGoToCollection}
-          renderArtist={renderArtist}
           isOwner={isOwner}
           className={className}
+          trackOwner={trackOwner}
         />
       </div>
     )
@@ -748,14 +703,11 @@ export const GatedContentSection = ({
     return (
       <div className={cn(styles.gatedContentSection, fadeIn, wrapperClassName)}>
         <UnlockingGatedContentSection
-          contentId={contentId}
           contentType={contentType}
-          trackOwner={trackOwner}
           streamConditions={streamConditions}
           followee={followee}
           tippedUser={tippedUser}
           goToCollection={handleGoToCollection}
-          renderArtist={renderArtist}
           isOwner={isOwner}
           className={className}
         />
@@ -773,7 +725,6 @@ export const GatedContentSection = ({
         followee={followee}
         tippedUser={tippedUser}
         goToCollection={handleGoToCollection}
-        renderArtist={renderArtist}
         isOwner={isOwner}
         className={cn(styles.gatedContentSectionLocked, className)}
         buttonClassName={buttonClassName}

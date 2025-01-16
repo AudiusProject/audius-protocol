@@ -1,7 +1,5 @@
 import {
   ID,
-  Id,
-  OptionalId,
   SupporterMetadata,
   User,
   supporterMetadataListFromSDK
@@ -16,6 +14,7 @@ import {
   getSDK,
   tippingUtils
 } from '@audius/common/store'
+import { Id, OptionalId } from '@audius/sdk'
 import { call, put, select } from 'typed-redux-saga'
 
 import { watchTopSupportersError } from 'common/store/user-list/top-supporters/errorSagas'

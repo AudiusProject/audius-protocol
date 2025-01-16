@@ -1,9 +1,10 @@
 import { useFeatureFlag, useAccessAndRemixSettings } from '@audius/common/hooks'
 import { StreamTrackAvailabilityType } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
+import { pluralize } from '@audius/common/utils'
 import {
   RadioGroup,
-  IconSpecialAccess,
+  IconSparkles,
   Text,
   IconQuestionCircle,
   Hint
@@ -14,7 +15,6 @@ import { useField } from 'formik'
 import { SingleTrackEditValues } from 'components/edit-track/types'
 import layoutStyles from 'components/layout/layout.module.css'
 import { ModalRadioItem } from 'components/modal-radio/ModalRadioItem'
-import { pluralize } from 'utils/stringUtils'
 
 import { SpecialAccessFields } from '../stream-availability/SpecialAccessFields'
 import { CollectibleGatedRadioField } from '../stream-availability/collectible-gated/CollectibleGatedRadioField'
@@ -120,7 +120,7 @@ export const PriceAndAudienceMenuFields = (
 
         {!isAlbum ? (
           <ModalRadioItem
-            icon={<IconSpecialAccess />}
+            icon={<IconSparkles />}
             label={messages.specialAccess}
             description={messages.specialAccessSubtitle}
             value={StreamTrackAvailabilityType.SPECIAL_ACCESS}

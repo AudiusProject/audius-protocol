@@ -7,7 +7,6 @@ import {
   searchResultsPageSelectors
 } from '@audius/common/store'
 import { route } from '@audius/common/utils'
-import { push as pushRoute, goBack } from 'connected-react-router'
 import { connect } from 'react-redux'
 import { withRouter, RouteComponentProps } from 'react-router-dom'
 import { Dispatch } from 'redux'
@@ -19,6 +18,7 @@ import {
 } from 'components/animated-switch/RouterContextProvider'
 import { AppState } from 'store/types'
 import { getIsIOS } from 'utils/browser'
+import { push, goBack } from 'utils/navigation'
 
 import NavBar from './NavBar'
 
@@ -103,7 +103,7 @@ function mapStateToProps(state: AppState) {
 
 function mapDispatchToProps(dispatch: Dispatch) {
   return {
-    goToRoute: (route: string) => dispatch(pushRoute(route)),
+    goToRoute: (route: string) => dispatch(push(route)),
     goBack: () => dispatch(goBack())
   }
 }

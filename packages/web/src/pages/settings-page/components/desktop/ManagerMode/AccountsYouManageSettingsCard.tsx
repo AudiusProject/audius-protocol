@@ -2,10 +2,10 @@ import { useCallback, useEffect, useState } from 'react'
 
 import { route } from '@audius/common/utils'
 import { Button, IconUserArrowRotate } from '@audius/harmony'
-import { replace } from 'connected-react-router'
 import { useDispatch } from 'react-redux'
 import { useLocation } from 'react-router-dom'
 
+import { replace } from 'utils/navigation'
 import { doesMatchRoute } from 'utils/route'
 
 import SettingsCard from '../SettingsCard'

@@ -8,7 +8,7 @@ import {
   Text,
   IconCart,
   IconCollectible,
-  IconSpecialAccess,
+  IconSparkles,
   Flex
 } from '@audius/harmony'
 
@@ -51,7 +51,7 @@ export const CardTitle = ({
       icon = <IconCart size='s' color='subdued' />
       message = messages.premiumTrack
     } else {
-      icon = <IconSpecialAccess size='s' color='subdued' />
+      icon = <IconSparkles size='s' color='subdued' />
       message = messages.specialAccess
     }
     content = (
@@ -68,8 +68,8 @@ export const CardTitle = ({
         {isRemix
           ? messages.remixTitle
           : isPodcast
-          ? messages.podcastTitle
-          : messages.trackTitle}
+            ? messages.podcastTitle
+            : messages.trackTitle}
       </Text>
     )
   }

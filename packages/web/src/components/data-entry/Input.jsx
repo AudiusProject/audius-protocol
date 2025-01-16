@@ -1,136 +1,124 @@
-import { Component } from 'react'
+import { useState } from 'react'
 
 import cn from 'classnames'
 import PropTypes from 'prop-types'
 
 import styles from './Input.module.css'
 
-class Input extends Component {
-  state = {
-    value: this.props.defaultValue,
-    focused: false,
-    warning: false
+const Input = ({
+  className,
+  id,
+  name,
+  autoComplete = 'off',
+  characterLimit,
+  showCharacterLimit,
+  size = 'medium',
+  variant = 'normal',
+  disabled = false,
+  isRequired = false,
+  error = false,
+  type = 'text',
+  inputRef,
+  value: valueOverride,
+  autoFocus = false,
+  placeholder = 'Input',
+  defaultValue = '',
+  warning,
+  onKeyDown,
+  onChange,
+  onFocus,
+  onBlur
+}) => {
+  const [internalValue, setInternalValue] = useState(defaultValue)
+  const [focused, setFocused] = useState(false)
+  const [internalWarning, setInternalWarning] = useState(false)
+
+  const handleFocus = () => {
+    setFocused(true)
+    if (onFocus) onFocus(true)
   }
 
-  onFocus = () => {
-    this.setState({
-      focused: true
-    })
-    if (this.props.onFocus) this.props.onFocus(true)
+  const handleBlur = (e) => {
+    setFocused(false)
+    if (onBlur) onBlur(e.target.value)
   }
 
-  onBlur = (e) => {
-    this.setState({
-      focused: false
-    })
-    if (this.props.onBlur) this.props.onBlur(e.target.value)
-  }
+  const handleChange = (e) => {
+    if (characterLimit && e.target.value.length > characterLimit) return
 
-  onChange = (e) => {
-    if (
-      this.props.characterLimit &&
-      e.target.value.length > this.props.characterLimit
-    )
-      return
-
-    if (!this.props.value) {
-      this.setState({
-        value: e.target.value,
-        warning:
-          !!this.props.characterLimit &&
-          e.target.value.length >= 0.9 * this.props.characterLimit
-      })
+    if (!valueOverride) {
+      setInternalValue(e.target.value)
+      setInternalWarning(
+        !!characterLimit && e.target.value.length >= 0.9 * characterLimit
+      )
     }
-    this.props.onChange(e.target.value)
+    onChange?.(e.target.value)
   }
 
-  onKeyDown = (...args) => {
-    if (this.props.onKeyDown) this.props.onKeyDown(...args)
+  const handleKeyDown = (...args) => {
+    if (onKeyDown) onKeyDown(...args)
   }
 
-  render() {
-    const {
-      className,
-      id,
-      name,
-      autoComplete,
-      characterLimit,
-      showCharacterLimit,
-      size,
-      variant,
-      disabled,
-      isRequired,
-      error,
-      type,
-      inputRef,
-      value: valueOverride,
-      autoFocus
-    } = this.props
+  let displayValue = internalValue
+  if (valueOverride !== null && valueOverride !== undefined)
+    displayValue = valueOverride
 
-    let { placeholder } = this.props
+  const miniPlaceholder = focused || displayValue !== ''
+  let displayPlaceholder = placeholder
+  if (isRequired && !miniPlaceholder && displayPlaceholder)
+    displayPlaceholder = displayPlaceholder + ' *'
 
-    const { focused, warning } = this.state
-
-    let value = this.state.value
-    if (valueOverride !== null && valueOverride !== undefined)
-      value = valueOverride
-
-    const miniPlaceholder = focused || value !== ''
-    if (isRequired && !miniPlaceholder && placeholder)
-      placeholder = placeholder + ' *'
-
-    const style = {
-      [styles.large]: size === 'large',
-      [styles.medium]: size === 'medium',
-      [styles.small]: size === 'small',
-      [styles.warning]: (warning && focused) || this.props.warning,
-      [styles.elevatedPlaceholder]: variant === 'elevatedPlaceholder',
-      [styles.shaded]: variant === 'shaded',
-      [styles.focused]: focused,
-      [styles.disabled]: disabled,
-      [styles.error]: error,
-      [styles.data]: miniPlaceholder
-    }
-
-    const inputProps = {
-      onChange: this.onChange,
-      onFocus: this.onFocus,
-      onBlur: this.onBlur,
-      onKeyDown: this.onKeyDown,
-      type,
-      name,
-      autoComplete,
-      disabled,
-      value,
-      ref: inputRef,
-      autoFocus
-    }
-
-    if (!focused && variant !== 'elevatedPlaceholder') {
-      inputProps.placeholder = placeholder
-    }
-
-    return (
-      <div className={cn(styles.input, style, className)}>
-        {variant === 'elevatedPlaceholder' ? (
-          <label
-            htmlFor={id}
-            className={cn('placeholder', styles.placeholder, {
-              focus: focused || value !== ''
-            })}
-          >
-            {placeholder}
-          </label>
-        ) : null}
-        <input id={id} {...inputProps} />
-        {showCharacterLimit && (
-          <div className={styles.characterCount}>
-            {value.length}/{characterLimit}
-          </div>
-        )}
-      </div>
-    )
+  const style = {
+    [styles.large]: size === 'large',
+    [styles.medium]: size === 'medium',
+    [styles.small]: size === 'small',
+    [styles.warning]: (internalWarning && focused) || warning,
+    [styles.elevatedPlaceholder]: variant === 'elevatedPlaceholder',
+    [styles.shaded]: variant === 'shaded',
+    [styles.focused]: focused,
+    [styles.disabled]: disabled,
+    [styles.error]: error,
+    [styles.data]: miniPlaceholder
   }
+
+  const inputProps = {
+    onChange: handleChange,
+    onFocus: handleFocus,
+    onBlur: handleBlur,
+    onKeyDown: handleKeyDown,
+    type,
+    name,
+    autoComplete,
+    disabled,
+    value: displayValue,
+    ref: inputRef,
+    autoFocus
+  }
+
+  if (!focused && variant !== 'elevatedPlaceholder') {
+    inputProps.placeholder = displayPlaceholder
+  }
+
+  return (
+    <div className={cn(styles.input, style, className)}>
+      {variant === 'elevatedPlaceholder' ? (
+        <label
+          htmlFor={id}
+          className={cn('placeholder', styles.placeholder, {
+            focus: focused || displayValue !== ''
+          })}
+        >
+          {displayPlaceholder}
+        </label>
+      ) : null}
+      <input id={id} {...inputProps} />
+      {showCharacterLimit && (
+        <div className={styles.characterCount}>
+          {displayValue.length}/{characterLimit}
+        </div>
+      )}
+    </div>
+  )
 }
 
 Input.propTypes = {
@@ -153,20 +141,8 @@ Input.propTypes = {
   isRequired: PropTypes.bool,
   onChange: PropTypes.func,
   onFocus: PropTypes.func,
-  onBlur: PropTypes.func
-}
-
-Input.defaultProps = {
-  type: 'text',
-  placeholder: 'Input',
-  defaultValue: '',
-  autoComplete: 'off',
-  size: 'medium',
-  variant: 'normal',
-  disabled: false,
-  error: false,
-  isRequired: false,
-  onChange: () => {}
+  onBlur: PropTypes.func,
+  inputRef: PropTypes.any
 }
 
 export default Input

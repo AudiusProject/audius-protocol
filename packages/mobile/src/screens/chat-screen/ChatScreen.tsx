@@ -11,12 +11,10 @@ import {
 } from '@audius/common/store'
 import {
   encodeUrlName,
-  decodeHashId,
-  encodeHashId,
   isEarliestUnread,
   chatCanFetchMoreMessages
 } from '@audius/common/utils'
-import type { ChatBlast } from '@audius/sdk'
+import { OptionalHashId, OptionalId, type ChatBlast } from '@audius/sdk'
 import { Portal } from '@gorhom/portal'
 import { useFocusEffect } from '@react-navigation/native'
 import type { FlatListProps, LayoutChangeEvent } from 'react-native'
@@ -248,7 +246,7 @@ export const ChatScreen = () => {
 
   const hasCurrentlyPlayingTrack = useSelector(getHasTrack)
   const userId = useSelector(getUserId)
-  const userIdEncoded = encodeHashId(userId)
+  const userIdEncoded = OptionalId.parse(userId)
   const chat = useSelector((state) => getChat(state, chatId ?? ''))
   const { is_blast: isBlast } = chat ?? {}
   // Need additional bottom padding for composer for chat blasts
@@ -310,7 +308,7 @@ export const ChatScreen = () => {
           lastReadAt: chatFrozenRef?.current?.last_read_at,
           currentMessageIndex: index,
           messages: chatMessages,
-          currentUserId: userIdEncoded
+          currentUserId: userIdEncoded ?? null
         })
       ),
     [chatMessages, userIdEncoded]
@@ -546,8 +544,8 @@ export const ChatScreen = () => {
         isBlast
           ? () => <ChatBlastHeader chat={chat as ChatBlast} />
           : otherUser
-          ? () => <UserChatHeader user={otherUser} />
-          : () => <Text style={styles.userBadgeTitle}>{messages.title}</Text>
+            ? () => <UserChatHeader user={otherUser} />
+            : () => <Text style={styles.userBadgeTitle}>{messages.title}</Text>
       }
       icon={otherUser ? undefined : IconMessage}
       topbarRight={topBarRight}
@@ -564,7 +562,9 @@ export const ChatScreen = () => {
               messageHeight={messageHeight.current}
               containerTop={chatContainerTop.current}
               containerBottom={chatContainerBottom.current}
-              isAuthor={decodeHashId(popupMessage?.sender_user_id) === userId}
+              isAuthor={
+                OptionalHashId.parse(popupMessage?.sender_user_id) === userId
+              }
               message={popupMessage}
               onClose={onCloseReactionPopup}
             />

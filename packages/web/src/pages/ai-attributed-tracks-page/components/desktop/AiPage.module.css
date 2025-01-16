@@ -1,33 +1,3 @@
-.header {
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-end;
-  height: 161px;
-}
-
-.header h2 {
-  margin: unset;
-}
-
-.headerPrimary {
-  display: flex;
-  align-items: center;
-}
-
-.iconRobot {
-  margin-right: 12px;
-  height: var(--harmony-unit-8);
-  width: var(--harmony-unit-8);
-}
-
-.iconRobot path {
-  fill: url(#linearGradient-1);
-}
-
-.matrix path {
-  fill: url(#matrixHeaderGradient);
-}
-
 .headerSecondary {
   display: inline-flex;
   align-items: center;
@@ -36,7 +6,6 @@
   font-size: var(--harmony-font-xl);
   font-weight: var(--harmony-font-medium);
   letter-spacing: 0.71px;
-  line-height: 25px;
 }
 
 .headerSecondary .iconVerified {

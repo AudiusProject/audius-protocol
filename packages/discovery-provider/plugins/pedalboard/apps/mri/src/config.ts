@@ -50,9 +50,11 @@ export const readConfig = (): Config => {
       default: 'audius-udr-internal-data'
     }),
     audius_mri_udr_internal_key_prefix: str({ default: 'Audius_UDR_' }),
-    
+
     audius_mri_mrvr_internal_region: str({ default: 'us-east-1' }),
-    audius_mri_mrvr_internal_endpoint: str({ default: 'http://localhost:4566' }),
+    audius_mri_mrvr_internal_endpoint: str({
+      default: 'http://localhost:4566'
+    }),
     audius_mri_mrvr_internal_access_key_id: str({ default: 'test' }),
     audius_mri_mrvr_internal_secret_access_key: str({ default: 'test' }),
     audius_mri_mrvr_internal_bucket: str({
@@ -78,11 +80,13 @@ export const readConfig = (): Config => {
     audius_mri_udr_external_key_prefix: str({ default: 'Audius_UDR_' }),
 
     audius_mri_mrvr_external_region: str({ default: 'us-east-1' }),
-    audius_mri_mrvr_external_endpoint: str({ default: 'http://localhost:4566' }),
+    audius_mri_mrvr_external_endpoint: str({
+      default: 'http://localhost:4566'
+    }),
     audius_mri_mrvr_external_access_key_id: str({ default: 'test' }),
     audius_mri_mrvr_external_secret_access_key: str({ default: 'test' }),
     audius_mri_mrvr_external_bucket: str({ default: 'audius-mrvr-data' }),
-    audius_mri_mrvr_external_key_prefix: str({ default: 'Audius_MRVR_' })	
+    audius_mri_mrvr_external_key_prefix: str({ default: 'Audius_MRVR_' })
   })
 
   const internalS3ClmConfig: S3Config = {

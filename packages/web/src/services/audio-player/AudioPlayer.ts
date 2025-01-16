@@ -29,7 +29,7 @@ const IS_CHROME_LIKE =
   /Chrome/.test(navigator.userAgent) &&
   /Google Inc/.test(navigator.vendor)
 
-export enum AudioError {
+enum AudioError {
   AUDIO = 'AUDIO'
 }
 

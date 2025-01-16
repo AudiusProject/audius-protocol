@@ -9,7 +9,8 @@ import {
 } from '@audius/common/models'
 import { ExploreCollectionsVariant } from '@audius/common/store'
 import { route } from '@audius/common/utils'
-import Lottie from 'react-lottie'
+import { IconExplore } from '@audius/harmony'
+import Lottie from 'lottie-react'
 
 import loadingSpinner from 'assets/animations/loadingSpinner.json'
 import {
@@ -22,7 +23,7 @@ import {
 } from 'common/store/smart-collection/smartCollections'
 import CollectionArtCard from 'components/card-legacy/desktop/CollectionArtCard'
 import UserArtCard from 'components/card-legacy/desktop/UserArtCard'
-import Header from 'components/header/desktop/Header'
+import { Header } from 'components/header/desktop/Header'
 import Page from 'components/page/Page'
 import PerspectiveCard, {
   TextInterior,
@@ -115,7 +116,13 @@ const ExplorePage = ({
   const { isLoading: isLoadingProfiles, setDidLoad: setDidLoadProfile } =
     useOrderedLoad(profiles.length)
 
-  const header = <Header primary={title} containerStyles={styles.header} />
+  const header = (
+    <Header
+      icon={IconExplore}
+      primary={title}
+      containerStyles={styles.header}
+    />
+  )
   const onClickCard = useCallback(
     (url: string) => {
       if (url.startsWith(BASE_URL)) {
@@ -198,13 +205,7 @@ const ExplorePage = ({
       >
         {status === Status.LOADING ? (
           <div className={styles.loadingSpinner}>
-            <Lottie
-              options={{
-                loop: true,
-                autoplay: true,
-                animationData: loadingSpinner
-              }}
-            />
+            <Lottie loop autoplay animationData={loadingSpinner} />
           </div>
         ) : (
           playlists.map((playlist: UserCollection, i: number) => {
@@ -228,13 +229,7 @@ const ExplorePage = ({
       >
         {status === Status.LOADING ? (
           <div className={styles.loadingSpinner}>
-            <Lottie
-              options={{
-                loop: true,
-                autoplay: true,
-                animationData: loadingSpinner
-              }}
-            />
+            <Lottie loop autoplay animationData={loadingSpinner} />
           </div>
         ) : (
           profiles.map((profile: User, i: number) => {

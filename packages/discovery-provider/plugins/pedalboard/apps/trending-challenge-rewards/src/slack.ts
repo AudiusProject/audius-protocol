@@ -1,7 +1,4 @@
-import {
-  App as SlackApp,
-  SlackCommandMiddlewareArgs,
-} from '@slack/bolt'
+import { App as SlackApp, SlackCommandMiddlewareArgs } from '@slack/bolt'
 import { AlignmentEnum, AsciiTable3 } from 'ascii-table3'
 import { App } from '@pedalboard/basekit'
 import { Err, Ok, Result } from 'ts-results'
@@ -22,7 +19,8 @@ export const initSlack = (app: App<SharedData>): Result<SlackApp, string> => {
   const { slackBotToken, slackSigningSecret, slackAppToken } = app.viewAppData()
 
   if (slackBotToken === undefined) return new Err('botToken undefined')
-  if (slackSigningSecret === undefined) return new Err('signingSecret undefined')
+  if (slackSigningSecret === undefined)
+    return new Err('signingSecret undefined')
   if (slackAppToken === undefined) return new Err('appToken undefined')
 
   const slackApp = new SlackApp({

@@ -3,16 +3,18 @@ import { playerSelectors } from '@audius/common/store'
 import { useSelector } from 'react-redux'
 
 import type { IconButtonProps } from '@audius/harmony-native'
-import { IconButton } from '@audius/harmony-native'
-import Icon0_5x from 'app/assets/images/iconPlaybackRate0_5x.svg'
-import Icon0_8x from 'app/assets/images/iconPlaybackRate0_8x.svg'
-import Icon1_1x from 'app/assets/images/iconPlaybackRate1_1x.svg'
-import Icon1_2x from 'app/assets/images/iconPlaybackRate1_2x.svg'
-import Icon1_5x from 'app/assets/images/iconPlaybackRate1_5x.svg'
-import Icon1x from 'app/assets/images/iconPlaybackRate1x.svg'
-import Icon2_5x from 'app/assets/images/iconPlaybackRate2_5x.svg'
-import Icon2x from 'app/assets/images/iconPlaybackRate2x.svg'
-import Icon3x from 'app/assets/images/iconPlaybackRate3x.svg'
+import {
+  IconPlaybackRate0_5x,
+  IconPlaybackRate0_8x,
+  IconPlaybackRate1x,
+  IconPlaybackRate1_1x,
+  IconPlaybackRate1_2x,
+  IconPlaybackRate1_5x,
+  IconPlaybackRate2x,
+  IconPlaybackRate2_5x,
+  IconPlaybackRate3x,
+  IconButton
+} from '@audius/harmony-native'
 
 const { getPlaybackRate } = playerSelectors
 
@@ -22,24 +24,24 @@ const messages = {
 
 type PlaybackRateButtonProps = Omit<IconButtonProps, 'icon'>
 
-const playbackRateIconMap: Record<PlaybackRate, typeof Icon1x> = {
-  '0.5x': Icon0_5x,
-  '0.8x': Icon0_8x,
-  '1x': Icon1x,
-  '1.1x': Icon1_1x,
-  '1.2x': Icon1_2x,
-  '1.5x': Icon1_5x,
-  '2x': Icon2x,
-  '2.5x': Icon2_5x,
-  '3x': Icon3x
+const playbackRateIconMap: Record<PlaybackRate, typeof IconPlaybackRate1x> = {
+  '0.5x': IconPlaybackRate0_5x,
+  '0.8x': IconPlaybackRate0_8x,
+  '1x': IconPlaybackRate1x,
+  '1.1x': IconPlaybackRate1_1x,
+  '1.2x': IconPlaybackRate1_2x,
+  '1.5x': IconPlaybackRate1_5x,
+  '2x': IconPlaybackRate2x,
+  '2.5x': IconPlaybackRate2_5x,
+  '3x': IconPlaybackRate3x
 }
 
 export const PlaybackRateButton = (props: PlaybackRateButtonProps) => {
   const playbackRate = useSelector(getPlaybackRate)
   return (
     <IconButton
+      size='m'
       icon={playbackRateIconMap[playbackRate]}
-      size='xl'
       aria-label={messages.playbackLabel}
       {...props}
     />

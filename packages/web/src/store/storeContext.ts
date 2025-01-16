@@ -16,6 +16,7 @@ import { env } from 'services/env'
 import { explore } from 'services/explore'
 import { fingerprintClient } from 'services/fingerprint'
 import { localStorage } from 'services/local-storage'
+import { queryClient } from 'services/query-client'
 import { getFeatureEnabled } from 'services/remote-config/featureFlagHelpers'
 import { remoteConfigInstance } from 'services/remote-config/remote-config-instance'
 import { trackDownload } from 'services/track-download'
@@ -83,6 +84,7 @@ export const buildStoreContext = ({
     generatePlaylistArtwork
   },
   isMobile,
+  queryClient,
   // @ts-ignore dispatch will be populated in configureStore
   dispatch: undefined
 })

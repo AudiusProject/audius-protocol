@@ -55,7 +55,7 @@ export const EditCollectionScreen = () => {
     artwork: {
       url:
         trackImage && trackImage.source && isImageUriSource(trackImage.source)
-          ? trackImage.source.uri ?? ''
+          ? (trackImage.source.uri ?? '')
           : ''
     }
   }

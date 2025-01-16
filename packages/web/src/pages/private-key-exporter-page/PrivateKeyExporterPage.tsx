@@ -21,7 +21,6 @@ import {
   IconAudiusLogoHorizontalColor,
   Switch
 } from '@audius/harmony'
-import { push as pushRoute } from 'connected-react-router'
 import { useDispatch } from 'react-redux'
 import { Link } from 'react-router-dom'
 
@@ -29,6 +28,7 @@ import { useModalState } from 'common/hooks/useModalState'
 import { make, useRecord } from 'common/store/analytics/actions'
 import { Avatar } from 'components/avatar/Avatar'
 import { useRequiresAccount } from 'hooks/useRequiresAccount'
+import { push } from 'utils/navigation'
 import { useSelector } from 'utils/reducer'
 import { isDarkMode } from 'utils/theme/theme'
 
@@ -119,7 +119,7 @@ const Header = () => {
 const BackToSettings = () => {
   const dispatch = useDispatch()
   const handleClick = useCallback(() => {
-    dispatch(pushRoute(SETTINGS_PAGE))
+    dispatch(push(SETTINGS_PAGE))
   }, [dispatch])
   return (
     <PlainButton iconLeft={IconCaretLeft} onClick={handleClick}>
@@ -294,7 +294,7 @@ const AgreeAndContinue = () => {
     messages.iAcknowledge
   ]
   const handleCancel = useCallback(() => {
-    dispatch(pushRoute(SETTINGS_PAGE))
+    dispatch(push(SETTINGS_PAGE))
   }, [dispatch])
   const handleProceed = useCallback(() => {
     setIsPrivateKeyExporterModalVisible(true)
@@ -340,7 +340,7 @@ const AgreeAndContinue = () => {
   )
 }
 
-export const PrivateKeyExporterPage = () => {
+const PrivateKeyExporterPage = () => {
   useRequiresAccount()
   const record = useRecord()
   const accountUserId = useSelector(getUserId)

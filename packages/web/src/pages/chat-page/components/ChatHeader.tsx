@@ -10,7 +10,9 @@ import {
   IconSettings,
   IconButton,
   Paper,
-  Flex
+  Flex,
+  Text,
+  IconMessages
 } from '@audius/harmony'
 import { useSelector } from 'react-redux'
 
@@ -61,12 +63,25 @@ export const ChatHeader = forwardRef<HTMLDivElement, ChatHeaderProps>(
           shadow='flat'
           ref={ref}
           css={{
-            marginLeft: -20,
+            paddingLeft: 20,
+            marginLeft: -80,
             height: 112
           }}
         >
-          <Flex className={styles.left}>
-            <h1 className={styles.header}>{messages.header}</h1>
+          <Flex className={styles.left} gap='m'>
+            <IconMessages size='2xl' fill='url(#linearGradient-1)' />
+            <Text
+              variant='heading'
+              strength='default'
+              size='l'
+              css={{
+                WebkitTextFillColor: 'transparent',
+                WebkitBackgroundClip: 'text',
+                backgroundImage: 'var(--harmony-gradient)'
+              }}
+            >
+              {messages.header}
+            </Text>
             <div className={styles.options}>
               <IconButton
                 aria-label={messages.settings}

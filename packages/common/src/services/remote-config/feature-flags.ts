@@ -9,7 +9,6 @@ export enum FeatureFlags {
   VERIFY_HANDLE_WITH_INSTAGRAM = 'verify_handle_with_instagram',
   USDC_PURCHASES = 'usdc_purchases',
   FEATURE_FLAG_ACCESS = 'feature_flag_access',
-  BUY_USDC_VIA_SOL = 'buy_usdc_via_sol',
   IOS_USDC_PURCHASE_ENABLED = 'ios_usdc_purchase_enabled',
   BUY_WITH_COINFLOW = 'buy_with_coinflow',
   COINFLOW_OFFRAMP_ENABLED = 'coinflow_offramp_enabled',
@@ -22,9 +21,10 @@ export enum FeatureFlags {
   RIGHTS_AND_COVERS = 'rights_and_covers',
   GUEST_CHECKOUT = 'guest_checkout',
   TRACK_AUDIO_REPLACE = 'track_audio_replace',
-  THEME_V2 = 'theme_v2',
   OWN_YOUR_FANS = 'own_your_fans',
-  FAST_REFERRAL = 'fast_referral'
+  FAST_REFERRAL = 'fast_referral',
+  REACT_QUERY_SYNC = 'react_query_sync',
+  TRACK_REPLACE_DOWNLOADS = 'track_replace_downloads'
 }
 
 type FlagDefaults = Record<FeatureFlags, boolean>
@@ -49,7 +49,6 @@ export const flagDefaults: FlagDefaults = {
   [FeatureFlags.VERIFY_HANDLE_WITH_INSTAGRAM]: false,
   [FeatureFlags.USDC_PURCHASES]: false,
   [FeatureFlags.FEATURE_FLAG_ACCESS]: false,
-  [FeatureFlags.BUY_USDC_VIA_SOL]: false,
   [FeatureFlags.IOS_USDC_PURCHASE_ENABLED]: true,
   [FeatureFlags.BUY_WITH_COINFLOW]: false,
   [FeatureFlags.COINFLOW_OFFRAMP_ENABLED]: false,
@@ -62,7 +61,8 @@ export const flagDefaults: FlagDefaults = {
   [FeatureFlags.SOCIAL_SIGNUP]: false,
   [FeatureFlags.RIGHTS_AND_COVERS]: false,
   [FeatureFlags.TRACK_AUDIO_REPLACE]: false,
-  [FeatureFlags.THEME_V2]: false,
   [FeatureFlags.OWN_YOUR_FANS]: false,
-  [FeatureFlags.FAST_REFERRAL]: false
+  [FeatureFlags.FAST_REFERRAL]: false,
+  [FeatureFlags.REACT_QUERY_SYNC]: false,
+  [FeatureFlags.TRACK_REPLACE_DOWNLOADS]: false
 }

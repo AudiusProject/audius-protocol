@@ -157,7 +157,7 @@ const AdditionalResources = () => {
   )
 }
 
-export const PrivateKeyExporterModal = () => {
+const PrivateKeyExporterModal = () => {
   const record = useRecord()
   const isMobile = useIsMobile()
   const accountHandle = useSelector(getUserHandle)

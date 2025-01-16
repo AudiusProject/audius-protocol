@@ -9,7 +9,6 @@ import {
   cacheCollectionsActions,
   cacheCollectionsSelectors
 } from '@audius/common/store'
-import { replace } from 'connected-react-router'
 import { isEqual } from 'lodash'
 import { useDispatch } from 'react-redux'
 import { useParams } from 'react-router'
@@ -17,13 +16,14 @@ import { useRouteMatch } from 'react-router-dom'
 import { useSearchParams } from 'react-router-dom-v5-compat'
 
 import { EditCollectionForm } from 'components/edit-collection/EditCollectionForm'
-import Header from 'components/header/desktop/Header'
+import { Header } from 'components/header/desktop/Header'
 import LoadingSpinnerFullPage from 'components/loading-spinner-full-page/LoadingSpinnerFullPage'
 import Page from 'components/page/Page'
 import { useCollectionCoverArt } from 'hooks/useCollectionCoverArt'
 import { useIsUnauthorizedForHandleRedirect } from 'hooks/useManagedAccountNotAllowedRedirect'
 import { useRequiresAccount } from 'hooks/useRequiresAccount'
 import { track } from 'services/analytics'
+import { replace } from 'utils/navigation'
 import { useSelector } from 'utils/reducer'
 
 import { updatePlaylistContents } from '../utils'

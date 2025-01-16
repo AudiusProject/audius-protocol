@@ -2,7 +2,7 @@ import {
   userMetadataListFromSDK,
   userWalletsFromSDK
 } from '@audius/common/adapters'
-import { Kind, Id } from '@audius/common/models'
+import { Kind } from '@audius/common/models'
 import { DoubleKeys } from '@audius/common/services'
 import {
   accountSelectors,
@@ -33,7 +33,7 @@ import {
   isResponseError,
   route
 } from '@audius/common/utils'
-import { push as pushRoute } from 'connected-react-router'
+import { Id, OptionalId } from '@audius/sdk'
 import { merge } from 'lodash'
 import {
   all,
@@ -56,6 +56,7 @@ import {
   subscribeToUserAsync,
   unsubscribeFromUserAsync
 } from 'common/store/social/users/sagas'
+import { push as pushRoute } from 'utils/navigation'
 import { waitForRead, waitForWrite } from 'utils/sagaHelpers'
 
 import { watchFetchProfileCollections } from './fetchProfileCollectionsSaga'
@@ -123,7 +124,7 @@ export function* fetchEthereumCollectiblesForWallets(wallets) {
   return yield call([nftClient, nftClient.getEthereumCollectibles], wallets)
 }
 
-export function* fetchEthereumCollectiblesWithCollections(collectibles) {
+function* fetchEthereumCollectiblesWithCollections(collectibles) {
   const nftClient = yield getContext('nftClient')
   return yield call(
     [nftClient, nftClient.getEthereumCollectionMetadatasForCollectibles],
@@ -465,7 +466,7 @@ function* fetchFolloweeFollows(action) {
   const currentUserId = yield select(getUserId)
   if (!profileUserId) return
   const response = yield call([sdk.users, sdk.users.getMutualFollowers], {
-    userId: Id.parse(currentUserId),
+    userId: OptionalId.parse(currentUserId),
     id: Id.parse(profileUserId),
     limit,
     offset

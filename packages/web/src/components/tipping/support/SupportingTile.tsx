@@ -8,23 +8,22 @@ import {
 } from '@audius/common/models'
 import { cacheUsersSelectors } from '@audius/common/store'
 import { Nullable } from '@audius/common/utils'
-import { IconTrophy } from '@audius/harmony'
-import cn from 'classnames'
-import { push as pushRoute } from 'connected-react-router'
+import { Flex, IconTrophy, Paper, Text } from '@audius/harmony'
 import { useDispatch, useSelector } from 'react-redux'
 
-import UserBadges from 'components/user-badges/UserBadges'
-import { useCoverPhoto } from 'hooks/useCoverPhoto'
-import { useProfilePicture } from 'hooks/useProfilePicture'
+import { Avatar } from 'components/avatar'
+import { CoverPhotoV2 } from 'components/cover-photo/CoverPhotoV2'
+import { UserLink } from 'components/link'
 import { AppState } from 'store/types'
 import { TIPPING_TOP_RANK_THRESHOLD } from 'utils/constants'
+import { push } from 'utils/navigation'
 
-import styles from './SupportingTile.module.css'
 const { getUser } = cacheUsersSelectors
 
 type SupportingCardProps = {
   supporting: Supporting
 }
+
 export const SupportingTile = ({ supporting }: SupportingCardProps) => {
   const receiver = useSelector<AppState, Nullable<User>>((state) =>
     getUser(state, { id: supporting.receiver_id })
@@ -34,61 +33,63 @@ export const SupportingTile = ({ supporting }: SupportingCardProps) => {
   const { rank } = supporting
   const handle = receiver?.handle
   const isTopRank = rank >= 1 && rank <= TIPPING_TOP_RANK_THRESHOLD
-  const profileImage = useProfilePicture({
-    userId: receiver?.user_id,
-    size: SquareSizes.SIZE_150_BY_150
-  })
-  const { image: coverPhoto, shouldBlur } = useCoverPhoto({
-    userId: receiver?.user_id,
-    size: WidthSizes.SIZE_640
-  })
 
   const handleClick = useCallback(() => {
-    dispatch(pushRoute(`/${handle}`))
+    dispatch(push(`/${handle}`))
   }, [dispatch, handle])
 
   return receiver ? (
-    <div
-      className={cn(styles.tileContainer, styles.tileBackground)}
-      css={{
-        backgroundImage: `url(${coverPhoto}), linear-gradient(
-          180deg,
-          rgba(0, 0, 0, 0.1) 50%,
-          rgba(0, 0, 0, 0.3) 100%
-        )`,
-        '&:before': {
-          content: '""',
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          height: '100%',
-          width: '100%',
-          ...(shouldBlur
-            ? {
-                backdropFilter: 'blur(25px)'
-              }
-            : undefined)
-        },
-        overflow: 'hidden'
-      }}
+    <CoverPhotoV2
+      userId={receiver.user_id}
+      size={WidthSizes.SIZE_640}
+      column
+      h={122}
+      p='m'
+      justifyContent='flex-end'
       onClick={handleClick}
     >
       {isTopRank ? (
-        <div className={cn(styles.tileHeader, styles.topFive)}>
-          <IconTrophy className={styles.trophyIcon} />
-          <span className={styles.rankNumberSymbol}>#</span>
-          <span>{rank}</span>
-        </div>
+        <Paper
+          shadow='near'
+          alignSelf='flex-end'
+          borderRadius='circle'
+          border='default'
+          pv='2xs'
+          ph='xs'
+          gap='2xs'
+          css={(theme) => ({
+            position: 'absolute',
+            right: theme.spacing.s,
+            top: theme.spacing.s
+          })}
+        >
+          <IconTrophy color='accent' />
+          <Flex inline alignItems='center'>
+            <Text variant='title' size='s' color='accent' tag='span'>
+              #
+            </Text>
+            <Text variant='title' size='l' color='accent' tag='span'>
+              {rank}
+            </Text>
+          </Flex>
+        </Paper>
       ) : null}
-      <div className={styles.profilePictureContainer}>
-        <img className={styles.profilePicture} src={profileImage} />
-        <span className={styles.name}>{receiver.name}</span>
-        <UserBadges
-          className={styles.badge}
+      <Flex gap='s'>
+        <Avatar
           userId={receiver.user_id}
-          badgeSize={12}
+          imageSize={SquareSizes.SIZE_150_BY_150}
+          h={32}
+          w={32}
         />
-      </div>
-    </div>
+        <UserLink
+          userId={receiver.user_id}
+          variant='inverted'
+          textVariant='title'
+          size='s'
+          disabled
+          ellipses
+        />
+      </Flex>
+    </CoverPhotoV2>
   ) : null
 }

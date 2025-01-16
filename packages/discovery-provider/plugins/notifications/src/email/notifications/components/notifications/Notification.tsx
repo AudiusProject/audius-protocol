@@ -501,8 +501,8 @@ const notificationMap = {
             notification.entityUser.user_id === notification.receiverUserId
               ? 'your'
               : isOwnerMention
-              ? 'their'
-              : `${notification.entityUser.name}'s`
+                ? 'their'
+                : `${notification.entityUser.name}'s`
           }
         />
         {entity}
@@ -524,8 +524,8 @@ const notificationMap = {
             notification.entityUser.user_id === notification.receiverUserId
               ? 'your'
               : isOwnerMention
-              ? 'their'
-              : `${notification.entityUser.name}'s`
+                ? 'their'
+                : `${notification.entityUser.name}'s`
           }
         />
         {entity}
@@ -547,8 +547,8 @@ const notificationMap = {
             notification.entityUser.user_id === notification.receiverUserId
               ? 'your'
               : isOwnerMention
-              ? 'their'
-              : `${notification.entityUser.name}'s`
+                ? 'their'
+                : `${notification.entityUser.name}'s`
           }
         />
         {entity}

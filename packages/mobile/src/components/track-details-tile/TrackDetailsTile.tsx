@@ -18,7 +18,7 @@ import {
   Flex,
   IconCart,
   IconCollectible,
-  IconSpecialAccess
+  IconSparkles
 } from '@audius/harmony-native'
 import { Text } from 'app/components/core'
 import UserBadges from 'app/components/user-badges'
@@ -102,8 +102,8 @@ export const TrackDetailsTile = ({
   const type = isUSDCPurchaseGated
     ? GatedContentType.USDC_PURCHASE
     : isCollectibleGated
-    ? GatedContentType.COLLECTIBLE_GATED
-    : GatedContentType.SPECIAL_ACCESS
+      ? GatedContentType.COLLECTIBLE_GATED
+      : GatedContentType.SPECIAL_ACCESS
 
   const headerAttributes: {
     [k in GatedContentType]: {
@@ -120,7 +120,7 @@ export const TrackDetailsTile = ({
       },
       [GatedContentType.SPECIAL_ACCESS]: {
         message: messages.specialAccess,
-        icon: IconSpecialAccess,
+        icon: IconSparkles,
         color: accentBlue
       },
       [GatedContentType.USDC_PURCHASE]: {

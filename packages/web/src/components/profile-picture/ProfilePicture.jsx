@@ -2,8 +2,8 @@ import { memo, useState, useEffect } from 'react'
 
 import { SquareSizes } from '@audius/common/models'
 import cn from 'classnames'
+import Lottie from 'lottie-react'
 import PropTypes from 'prop-types'
-import Lottie from 'react-lottie'
 
 import loadingSpinner from 'assets/animations/loadingSpinner.json'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
@@ -17,17 +17,17 @@ const messages = {
 }
 
 const ProfilePicture = ({
-  editMode,
+  editMode = true,
   userId,
   profilePictureSizes,
   updatedProfilePicture,
   onDrop,
-  showEdit,
-  isMobile,
-  loading,
+  showEdit = false,
+  isMobile = false,
+  loading = false,
   url,
   error,
-  includePopup,
+  includePopup = true,
   hasProfilePicture
 }) => {
   const image = useProfilePicture({
@@ -83,13 +83,7 @@ const ProfilePicture = ({
                 [styles.processing]: processing
               })}
             >
-              <Lottie
-                options={{
-                  loop: true,
-                  autoplay: true,
-                  animationData: loadingSpinner
-                }}
-              />
+              <Lottie loop autoplay animationData={loadingSpinner} />
             </div>
           )}
         </DynamicImage>
@@ -124,14 +118,6 @@ ProfilePicture.propTypes = {
   loading: PropTypes.bool.isRequired,
   url: PropTypes.string,
   onDrop: PropTypes.func.isRequired
-}
-
-ProfilePicture.defaultProps = {
-  isMobile: false,
-  showEdit: false,
-  includePopup: true,
-  editMode: true,
-  loading: false
 }
 
 export default memo(ProfilePicture)

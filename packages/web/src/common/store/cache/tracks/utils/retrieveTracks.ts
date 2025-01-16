@@ -7,9 +7,7 @@ import {
   ID,
   TrackMetadata,
   Track,
-  UserTrackMetadata,
-  Id,
-  OptionalId
+  UserTrackMetadata
 } from '@audius/common/models'
 import {
   accountSelectors,
@@ -19,6 +17,7 @@ import {
   CommonState,
   getSDK
 } from '@audius/common/store'
+import { Id, OptionalId } from '@audius/sdk'
 import { call, put, select, spawn } from 'typed-redux-saga'
 
 import { retrieve } from 'common/store/cache/sagas'
@@ -101,10 +100,13 @@ export function* retrieveTrackByHandleAndSlug({
     getEntriesTimestamp: function* (ids: ID[]) {
       const selected = yield* select(
         (state: CommonState, ids: ID[]) =>
-          ids.reduce((acc, id) => {
-            acc[id] = getEntryTimestamp(state, { kind: Kind.TRACKS, id })
-            return acc
-          }, {} as { [id: number]: number | null }),
+          ids.reduce(
+            (acc, id) => {
+              acc[id] = getEntryTimestamp(state, { kind: Kind.TRACKS, id })
+              return acc
+            },
+            {} as { [id: number]: number | null }
+          ),
         ids
       )
       return selected
@@ -177,10 +179,13 @@ export function* retrieveTracks({
     getEntriesTimestamp: function* (ids: ID[]) {
       const selected = yield* select(
         (state: CommonState, ids: ID[]) =>
-          ids.reduce((acc, id) => {
-            acc[id] = getEntryTimestamp(state, { kind: Kind.TRACKS, id })
-            return acc
-          }, {} as { [id: number]: number | null }),
+          ids.reduce(
+            (acc, id) => {
+              acc[id] = getEntryTimestamp(state, { kind: Kind.TRACKS, id })
+              return acc
+            },
+            {} as { [id: number]: number | null }
+          ),
         ids
       )
       return selected

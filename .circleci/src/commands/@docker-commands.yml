@@ -33,9 +33,7 @@ docker-tag-images:
       enum:
         [
           'discovery-provider',
-          'creator-node',
           'identity-service',
-          'core',
           'all'
         ]
   steps:
@@ -51,44 +49,29 @@ docker-tag-images:
             discovery-provider-openresty
             es-indexer
             relay
-            sla-auditor
             solana-relay
             trending-challenge-rewards
+            staking
             crm
             mri
             trpc
-            backfill-audio-analyses
             verified-notifications
-          )
-          creator=(
-            mediorum
           )
           identity=(
             identity-service
-          )
-          core=(
-            core
           )
 
           case "<< parameters.service >>" in
             discovery-provider)
               images=( "${discovery[@]}" )
               ;;
-            creator-node)
-              images=( "${creator[@]}" )
-              ;;
             identity-service)
               images=( "${identity[@]}" )
-              ;;
-            core)
-              images=( "${core[@]}" )
               ;;
             all)
               images=(
                 "${discovery[@]}"
-                "${creator[@]}"
                 "${identity[@]}"
-                "${core[@]}"
               )
               ;;
             *)

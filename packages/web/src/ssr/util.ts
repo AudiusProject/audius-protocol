@@ -26,7 +26,11 @@ const nonSsrPaths = [
   CHANGE_PASSWORD_SETTINGS_PAGE,
   CHATS_PAGE,
   CHAT_PAGE,
-  DOWNLOAD_LINK
+  DOWNLOAD_LINK,
+  '/react-query',
+  '/react-query-cache-prime',
+  '/react-query-redux-cache-sync',
+  '/react-query-to-redux-cache-sync'
 ]
 
 export const makePageRoute =
@@ -62,15 +66,6 @@ export const makePageRoute =
     }
     return false
   }
-
-export const checkIsBot = (userAgent: string) => {
-  if (!userAgent) {
-    return false
-  }
-  const botTest =
-    /discordbot|facebookexternalhit|gigabot|ia_archiver|linkbot|linkedinbot|reaper|slackbot|snap url preview service|telegrambot|twitterbot|whatsapp|whatsup|yeti|yodaobot|zend|zoominfobot|embedly/i
-  return botTest.test(userAgent)
-}
 
 export const checkIsCrawler = (userAgent: string) => {
   if (!userAgent) {

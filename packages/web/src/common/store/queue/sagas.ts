@@ -26,7 +26,8 @@ import {
   getContext,
   playerActions,
   playerSelectors,
-  PlayerBehavior
+  PlayerBehavior,
+  profilePageSelectors
 } from '@audius/common/store'
 import { Uid, makeUid, waitForAccount, Nullable } from '@audius/common/utils'
 import { all, call, put, select, takeEvery, takeLatest } from 'typed-redux-saga'
@@ -47,6 +48,8 @@ const {
   getUid,
   getUndershot
 } = queueSelectors
+
+const { getProfileUserHandle } = profilePageSelectors
 
 const {
   getTrackId: getPlayerTrackId,
@@ -152,7 +155,7 @@ function* handleQueueAutoplay({
  * 3. If the queue is indexed onto a different uid than the player, play the queue's uid
  * 4. Resume whatever was playing on the player
  */
-export function* watchPlay() {
+function* watchPlay() {
   yield* takeLatest(play.type, function* (action: ReturnType<typeof play>) {
     const { uid, trackId, collectible, playerBehavior } = action.payload
 
@@ -248,6 +251,7 @@ export function* watchPlay() {
 
         const location = yield* select(getLocation)
 
+        if (!location) return
         const lineup: LineupState<Track> = yield* select(
           getLineupSelectorForRoute(location)
         )
@@ -299,11 +303,20 @@ function* fetchLineupTracks(currentTrack: Track) {
   const lineupEntry = lineupRegistry[source]
   if (!lineupEntry) return
 
+  const currentProfileUserHandle = yield* select(getProfileUserHandle)
+
   const currentTrackOwner = yield* select(getUser, {
     id: currentTrack.owner_id
   })
 
-  const lineup = yield* select(lineupEntry.selector, currentTrackOwner?.handle)
+  // NOTE: This is a bandaid fix. On the profile page when on the reposts lineup,
+  // we need to select the lineup using the handle of the profile page user, not the handle of the track owner
+  const handleToUse =
+    source === QueueSource.PROFILE_FEED
+      ? (currentProfileUserHandle ?? undefined)
+      : currentTrackOwner?.handle
+
+  const lineup = yield* select(lineupEntry.selector, handleToUse)
 
   if (lineup.hasMore) {
     const offset = lineup.entries.length + lineup.deleted + lineup.nullCount
@@ -319,13 +332,13 @@ function* fetchLineupTracks(currentTrack: Track) {
   }
 }
 
-export function* watchPause() {
+function* watchPause() {
   yield* takeEvery(pause.type, function* (action: ReturnType<typeof pause>) {
     yield* put(playerActions.pause({}))
   })
 }
 
-export function* watchNext() {
+function* watchNext() {
   yield* takeEvery(next.type, function* (action: ReturnType<typeof next>) {
     const skip = action.payload?.skip
 
@@ -414,7 +427,7 @@ export function* watchNext() {
   })
 }
 
-export function* watchQueueAutoplay() {
+function* watchQueueAutoplay() {
   yield* takeEvery(
     queueAutoplay.type,
     function* (action: ReturnType<typeof queueAutoplay>) {
@@ -437,7 +450,7 @@ export function* watchQueueAutoplay() {
   )
 }
 
-export function* watchPrevious() {
+function* watchPrevious() {
   yield* takeEvery(
     previous.type,
     function* (action: ReturnType<typeof previous>) {
@@ -508,7 +521,7 @@ export function* watchPrevious() {
   )
 }
 
-export function* watchAdd() {
+function* watchAdd() {
   yield* takeEvery(add.type, function* (action: ReturnType<typeof add>) {
     const { entries } = action.payload
 

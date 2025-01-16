@@ -34,7 +34,6 @@ import {
   playerActions
 } from '@audius/common/store'
 import { formatDate, route, Uid } from '@audius/common/utils'
-import { push as pushRoute, replace } from 'connected-react-router'
 import { connect } from 'react-redux'
 import { Dispatch } from 'redux'
 
@@ -45,6 +44,7 @@ import DeletedPage from 'pages/deleted-page/DeletedPage'
 import { SsrContext } from 'ssr/SsrContext'
 import { getLocationPathname } from 'store/routing/selectors'
 import { AppState } from 'store/types'
+import { push, replace } from 'utils/navigation'
 import { trackRemixesPage } from 'utils/route'
 import { parseTrackRoute, TrackRouteParams } from 'utils/route/trackRouteParser'
 import { getTrackPageSEOFields } from 'utils/seo'
@@ -385,10 +385,10 @@ class TrackPageProvider extends Component<
       trackRank.year && trackRank.year <= TRENDING_BADGE_LIMIT
         ? `#${trackRank.year} This Year`
         : trackRank.month && trackRank.month <= TRENDING_BADGE_LIMIT
-        ? `#${trackRank.month} This Month`
-        : trackRank.week && trackRank.week <= TRENDING_BADGE_LIMIT
-        ? `#${trackRank.week} This Week`
-        : null
+          ? `#${trackRank.month} This Month`
+          : trackRank.week && trackRank.week <= TRENDING_BADGE_LIMIT
+            ? `#${trackRank.week} This Week`
+            : null
 
     const desktopProps = {
       // Follow Props
@@ -528,7 +528,7 @@ function mapDispatchToProps(dispatch: Dispatch) {
     makeTrackPublic: (trackId: ID) =>
       dispatch(trackPageActions.makeTrackPublic(trackId)),
 
-    goToRoute: (route: string) => dispatch(pushRoute(route)),
+    goToRoute: (route: string) => dispatch(push(route)),
     replaceRoute: (route: string) => dispatch(replace(route)),
     reset: (source?: string) => dispatch(tracksActions.reset(source)),
     play: (uid?: string, options: { isPreview?: boolean } = {}) =>

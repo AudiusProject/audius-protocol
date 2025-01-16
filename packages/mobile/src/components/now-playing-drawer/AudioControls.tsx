@@ -171,12 +171,10 @@ export const AudioControls = ({
   }
   const renderRightButton = () => {
     return isLongFormContent ? (
-      <View style={styles.playbackIconContainer}>
-        <PlaybackRateButton
-          onPress={handlePressPlaybackRate}
-          style={styles.button}
-        />
-      </View>
+      <PlaybackRateButton
+        onPress={handlePressPlaybackRate}
+        style={styles.button}
+      />
     ) : (
       <ShuffleButton
         onPress={onPressShuffle}

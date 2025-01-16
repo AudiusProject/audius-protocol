@@ -27,6 +27,6 @@ export const useTotalBalanceWithFallback = () => {
       return new BN(account.total_balance) as BNWei
     }
 
-    return null
+    return new BN(0) as BNWei
   }, [account, walletTotalBalance])
 }

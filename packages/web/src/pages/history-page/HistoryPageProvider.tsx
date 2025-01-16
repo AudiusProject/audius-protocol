@@ -27,7 +27,6 @@ import {
   playerSelectors
 } from '@audius/common/store'
 import { route } from '@audius/common/utils'
-import { push as pushRoute } from 'connected-react-router'
 import { isEqual } from 'lodash'
 import { connect } from 'react-redux'
 import { withRouter, RouteComponentProps } from 'react-router-dom'
@@ -35,6 +34,7 @@ import { Dispatch } from 'redux'
 
 import { useRecord, make } from 'common/store/analytics/actions'
 import { AppState } from 'store/types'
+import { push } from 'utils/navigation'
 import { withNullGuard } from 'utils/withNullGuard'
 
 import { HistoryPageProps as DesktopHistoryPageProps } from './components/desktop/HistoryPage'
@@ -353,7 +353,7 @@ const mapDispatchToProps = (dispatch: Dispatch) => ({
     dispatch(tracksActions.fetchLineupMetadatas()),
   play: (uid?: UID) => dispatch(tracksActions.play(uid)),
   pause: () => dispatch(tracksActions.pause()),
-  goToRoute: (route: string) => dispatch(pushRoute(route)),
+  goToRoute: (route: string) => dispatch(push(route)),
   updateLineupOrder: (updatedOrderIndices: any) =>
     dispatch(tracksActions.updateLineupOrder(updatedOrderIndices)),
   repostTrack: (trackId: ID) =>

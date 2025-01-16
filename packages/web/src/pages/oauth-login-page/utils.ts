@@ -1,10 +1,6 @@
 import { SquareSizes, UserMetadata } from '@audius/common/models'
-import {
-  getErrorMessage,
-  decodeHashId,
-  encodeHashId
-} from '@audius/common/utils'
-import { CreateGrantRequest } from '@audius/sdk'
+import { getErrorMessage } from '@audius/common/utils'
+import { CreateGrantRequest, HashId, Id, OptionalId } from '@audius/sdk'
 import base64url from 'base64url'
 
 import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
@@ -78,7 +74,7 @@ export const isValidApiKey = (key: string | string[]) => {
   return hexadecimalRegex.test(key)
 }
 
-export const getFormattedAppAddress = ({
+const getFormattedAppAddress = ({
   apiKey,
   includePrefix
 }: {
@@ -160,7 +156,7 @@ export const formOAuthResponse = async ({
     }
   }
   const timestamp = Math.round(new Date().getTime() / 1000)
-  const userId = encodeHashId(account?.user_id)
+  const userId = OptionalId.parse(account?.user_id)
   const response = {
     userId,
     email,
@@ -230,11 +226,11 @@ export type WriteOnceTx =
   | 'connect_dashboard_wallet'
   | 'disconnect_dashboard_wallet'
 
-export type ConnectDashboardWalletParams = {
+type ConnectDashboardWalletParams = {
   wallet: string
 }
 
-export type DisconnectDashboardWalletParams = {
+type DisconnectDashboardWalletParams = {
   wallet: string
 }
 
@@ -354,7 +350,7 @@ export const handleAuthorizeConnectDashboardWallet = async ({
   window.opener.postMessage(
     {
       state,
-      userId: encodeHashId(account.user_id),
+      userId: Id.parse(account.user_id),
       userHandle: account.handle
     },
     originUrl.origin
@@ -369,7 +365,7 @@ export const handleAuthorizeConnectDashboardWallet = async ({
   try {
     const sdk = await audiusSdk()
     await sdk.dashboardWalletUsers.connectUserToDashboardWallet({
-      userId: encodeHashId(account.user_id),
+      userId: Id.parse(account.user_id),
       wallet: txParams!.wallet as `0x${string}`,
       walletSignature
     })
@@ -401,7 +397,7 @@ export const getIsUserConnectedToDashboardWallet = async ({
   if (!dashboardWalletUser) {
     return false
   }
-  if (userId !== decodeHashId(dashboardWalletUser.id)) {
+  if (userId !== HashId.parse(dashboardWalletUser.id)) {
     return false
   }
   return true
@@ -439,7 +435,7 @@ export const handleAuthorizeDisconnectDashboardWallet = async ({
     }
     await sdk.dashboardWalletUsers.disconnectUserFromDashboardWallet({
       wallet: txParams.wallet as `0x${string}`,
-      userId: encodeHashId(account.user_id)
+      userId: Id.parse(account.user_id)
     })
   } catch (e: unknown) {
     const error = getErrorMessage(e)

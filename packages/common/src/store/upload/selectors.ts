@@ -11,7 +11,7 @@ export const getUploadSuccess = (state: CommonState) => state.upload.success
 export const getUploadError = (state: CommonState) => state.upload.error
 export const getTracks = (state: CommonState) => state.upload.tracks
 export const getIsUploading = (state: CommonState) => state.upload.uploading
-export const getShouldReset = (state: CommonState) => state.upload.shouldReset
+export const getFormState = (state: CommonState) => state.upload.formState
 
 // Should sum to 1
 const UPLOAD_WEIGHT = 0.5
@@ -30,25 +30,25 @@ const trackProgressSummary = (
 ) => {
   let loaded =
     trackProgress[key].status === ProgressStatus.ERROR
-      ? trackProgress[key].total ?? 0
-      : trackProgress[key].loaded ?? 0
+      ? (trackProgress[key].total ?? 0)
+      : (trackProgress[key].loaded ?? 0)
   let total = trackProgress[key].total ?? 0
   let transcode =
     trackProgress[key].status === ProgressStatus.ERROR
       ? 1
-      : trackProgress[key].transcode ?? 0
+      : (trackProgress[key].transcode ?? 0)
   const transcodeTotal = 1 + trackProgress.stems.length
 
   for (const stemProgress of trackProgress.stems) {
     loaded +=
       stemProgress[key].status === ProgressStatus.ERROR
-        ? stemProgress[key].total ?? 0
-        : stemProgress[key].loaded ?? 0
+        ? (stemProgress[key].total ?? 0)
+        : (stemProgress[key].loaded ?? 0)
     total += stemProgress[key].total ?? 0
     transcode +=
       stemProgress[key].status === ProgressStatus.ERROR
         ? 1
-        : stemProgress[key].transcode ?? 0
+        : (stemProgress[key].transcode ?? 0)
   }
   return {
     loaded,

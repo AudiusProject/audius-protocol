@@ -9,7 +9,9 @@ import {
   ProgressStatus,
   CommonState,
   ProgressState,
-  TrackForUpload
+  TrackForUpload,
+  TrackFormState,
+  CollectionFormState
 } from '@audius/common/store'
 import { route } from '@audius/common/utils'
 import {
@@ -30,7 +32,6 @@ import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import { Tile } from 'components/tile'
 
 import { ShareBanner } from '../components/ShareBanner'
-import { CollectionFormState, TrackFormState } from '../types'
 
 import styles from './FinishPage.module.css'
 
@@ -211,16 +212,16 @@ export const FinishPage = (props: FinishPageProps) => {
                 {uploadComplete
                   ? '100%'
                   : fullUploadPercent === 100 && !uploadComplete
-                  ? messages.finishingUpload
-                  : `${fullUploadPercent}%`}
+                    ? messages.finishingUpload
+                    : `${fullUploadPercent}%`}
               </Text>
               <ProgressIndicator
                 status={
                   upload.error
                     ? ProgressStatus.ERROR
                     : uploadComplete
-                    ? ProgressStatus.COMPLETE
-                    : ProgressStatus.UPLOADING
+                      ? ProgressStatus.COMPLETE
+                      : ProgressStatus.UPLOADING
                 }
               />
             </div>

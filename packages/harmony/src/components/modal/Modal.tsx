@@ -17,7 +17,7 @@ import ReactDOM from 'react-dom'
 import { animated, useTransition } from 'react-spring'
 import { useEffectOnce } from 'react-use'
 
-import { ModalState } from 'utils/modalState'
+import { ModalState } from '~harmony/utils/modalState'
 
 import { useHotkeys, useScrollLock, useClickOutside } from '../../hooks'
 import { IconClose } from '../../icons'
@@ -247,7 +247,11 @@ export const Modal = forwardRef<HTMLDivElement, ModalProps>(function Modal(
       // Closing when we're not open can cause a race condition when opened
       // via a click since this handler exists prior to visibility,
       // causing the modal to open and close immediately
-      if (!isOpen || modalContentClickedRef?.current) {
+      if (
+        !isOpen ||
+        modalContentClickedRef?.current ||
+        !dismissOnClickOutside
+      ) {
         modalContentClickedRef.current = false
         return true
       }

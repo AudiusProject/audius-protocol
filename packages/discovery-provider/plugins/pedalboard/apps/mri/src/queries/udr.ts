@@ -14,27 +14,27 @@ const config = readConfig()
 type UsageDetailReporting = {
   client_catalog_id: number
   Offering: 'Downloads / Monetized Content' | 'Subscription'
+  UserType: string
   Streams: number
   Downloads: number
   Territory: string
+  'Price Point': number
 }
 
 const UsageDetailReportingHeader: (keyof UsageDetailReporting)[] = [
   'client_catalog_id',
   'Offering',
+  'UserType',
   'Streams',
   'Downloads',
-  'Territory'
+  'Territory',
+  'Price Point'
 ]
 
 // gathers data from a month prior to the provided date.
 // formats it into csv format compatible with the mri spec
 // publishes it to all the provided s3 configs
-export const udr = async (
-  db: Knex,
-  s3s: S3Config[],
-  date: Date
-): Promise<void> => {
+export const udr = async (db: Knex, date: Date): Promise<void> => {
   const logger = plogger.child({ date: date.toISOString() })
   logger.info('beginning usage detail report processing')
   const startOfThisMonth = dayjs(date).startOf('month')
@@ -93,11 +93,11 @@ export const udr = async (
   const now = new Date()
   // Audius_Usage_YYMM_YYYYMMDDhhmmss.csv
   // YYMM = Year and Month of usage, YYYYMMDDhhmmss = time of generation
-  const fileName = `Audius_Usage_${getYearMonthShorthand(
+  const fileName = `inputs/usage/Audius_Usage_${getYearMonthShorthand(
     start
-  )}_${formatDateISO(now)}`
+  )}_${formatDateISO(now)}.csv`
 
-  const results = await publish(logger, s3s, csv, fileName)
+  const results = await publish(logger, csv, fileName)
   results.forEach((objUrl) =>
     logger.info({ objUrl, records: udrRows.length }, 'upload result')
   )

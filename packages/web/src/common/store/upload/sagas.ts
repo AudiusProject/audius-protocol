@@ -11,10 +11,8 @@ import {
   Feature,
   FieldVisibility,
   ID,
-  Id,
   Kind,
   Name,
-  OptionalId,
   StemUploadWithFile,
   isContentFollowGated,
   isContentUSDCPurchaseGated
@@ -37,16 +35,23 @@ import {
   uploadActions,
   getSDK,
   cacheTracksActions,
-  replaceTrackProgressModalActions
+  replaceTrackProgressModalActions,
+  queueSelectors,
+  queueActions,
+  playerActions
 } from '@audius/common/store'
 import {
   actionChannelDispatcher,
-  decodeHashId,
   makeUid,
   waitForAccount
 } from '@audius/common/utils'
-import { ProgressHandler, AudiusSdk } from '@audius/sdk'
-import { push } from 'connected-react-router'
+import {
+  Id,
+  OptionalId,
+  ProgressHandler,
+  AudiusSdk,
+  OptionalHashId
+} from '@audius/sdk'
 import { mapValues } from 'lodash'
 import { Channel, Task, buffers, channel } from 'redux-saga'
 import {
@@ -65,7 +70,7 @@ import { make } from 'common/store/analytics/actions'
 import { prepareStemsForUpload } from 'pages/upload-page/store/utils/stems'
 import * as errorActions from 'store/errors/actions'
 import { reportToSentry } from 'store/errors/reportToSentry'
-import { encodeHashId } from 'utils/hashIds'
+import { push } from 'utils/navigation'
 import { waitForWrite } from 'utils/sagaHelpers'
 
 import { trackNewRemixEvent } from '../cache/tracks/sagas'
@@ -165,8 +170,8 @@ const makeOnProgress = (
       'audio' in progress
         ? progress.audio
         : 'art' in progress
-        ? progress.art
-        : null
+          ? progress.art
+          : null
     if (p === null) {
       return
     }
@@ -201,7 +206,7 @@ const makeOnProgress = (
  */
 export function* deleteTracks(trackIds: ID[]) {
   const sdk = yield* getSDK()
-  const userId = encodeHashId(yield* select(accountSelectors.getUserId))
+  const userId = Id.parse(yield* select(accountSelectors.getUserId))
   if (!userId) {
     throw new Error('No user id found during delete. Not signed in?')
   }
@@ -210,7 +215,7 @@ export function* deleteTracks(trackIds: ID[]) {
     trackIds.map((id) =>
       call([sdk.tracks, sdk.tracks.deleteTrack], {
         userId,
-        trackId: encodeHashId(id)
+        trackId: Id.parse(id)
       })
     )
   )
@@ -239,7 +244,7 @@ function* uploadWorker(
 
       const coverArtFile =
         track.metadata.artwork && 'file' in track.metadata.artwork
-          ? track.metadata.artwork?.file ?? null
+          ? (track.metadata.artwork?.file ?? null)
           : null
       const metadata = trackMetadataForUploadToSdk(track.metadata)
 
@@ -305,9 +310,7 @@ function* publishWorker(
         metadata
       )
 
-      const decodedTrackId = updatedTrackId
-        ? decodeHashId(updatedTrackId)
-        : null
+      const decodedTrackId = OptionalHashId.parse(updatedTrackId)
 
       if (decodedTrackId) {
         yield* put(responseChannel, {
@@ -458,8 +461,8 @@ export function* handleUploads({
         downloadable: isContentFollowGated(track.metadata.download_conditions)
           ? 'follow'
           : track.metadata.is_downloadable
-          ? 'yes'
-          : 'no'
+            ? 'yes'
+            : 'no'
       })
     )
 
@@ -847,7 +850,7 @@ export function* uploadCollection(
           const { artwork } = collectionMetadata
 
           const coverArtFile =
-            artwork && 'file' in artwork ? artwork?.file ?? null : null
+            artwork && 'file' in artwork ? (artwork?.file ?? null) : null
 
           if (isAlbum) {
             // Create album
@@ -1120,7 +1123,7 @@ export function* uploadMultipleTracks(
   yield* put(cacheActions.setExpired(Kind.USERS, account!.user_id))
 }
 
-export function* uploadTracksAsync(
+function* uploadTracksAsync(
   action: ReturnType<typeof uploadActions.uploadTracks>
 ) {
   yield* call(waitForWrite)
@@ -1200,7 +1203,7 @@ export function* uploadTracksAsync(
   }
 }
 
-export function* updateTrackAudioAsync(
+function* updateTrackAudioAsync(
   action: ReturnType<typeof uploadActions.updateTrackAudio>
 ) {
   yield* call(waitForWrite)
@@ -1262,17 +1265,17 @@ export function* updateTrackAudioAsync(
     )
 
     const newMetadata = {
-      ...metadata,
-      orig_file_cid: updatedMetadata.origFileCid,
+      ...payload.metadata,
       bpm: metadata.isCustomBpm ? track.bpm : null,
+      duration: updatedMetadata.duration,
       musical_key: metadata.isCustomMusicalKey ? metadata.musicalKey : null,
       audio_analysis_error_count: 0,
       orig_filename: updatedMetadata.origFilename || '',
+      orig_file_cid: updatedMetadata.origFileCid,
       preview_cid: updatedMetadata.previewCid || '',
       preview_start_seconds: updatedMetadata.previewStartSeconds ?? 0,
       track_cid: updatedMetadata.trackCid || '',
-      audio_upload_id: updatedMetadata.audioUploadId,
-      duration: updatedMetadata.duration
+      audio_upload_id: updatedMetadata.audioUploadId
     }
 
     yield* put(
@@ -1281,6 +1284,13 @@ export function* updateTrackAudioAsync(
         newMetadata as TrackMetadataForUpload
       )
     )
+
+    // If the track with replaced audio is in the queue, clear it
+    const queueOrder = yield* select(queueSelectors.getOrder)
+    if (queueOrder.map((item) => item.id).includes(track.track_id)) {
+      yield* put(queueActions.clear({}))
+      yield* put(playerActions.stop({}))
+    }
 
     // Delay to allow the user to see that the track replace upload has finished
     yield* delay(1500)

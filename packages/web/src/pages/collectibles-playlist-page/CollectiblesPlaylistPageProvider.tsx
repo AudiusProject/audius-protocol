@@ -30,7 +30,6 @@ import {
 } from '@audius/common/store'
 import { getHash, formatSeconds, route } from '@audius/common/utils'
 import cn from 'classnames'
-import { push } from 'connected-react-router'
 import { useDispatch, useSelector } from 'react-redux'
 import { matchPath } from 'react-router-dom'
 
@@ -39,6 +38,7 @@ import { AUDIO_NFT_PLAYLIST } from 'common/store/smart-collection/smartCollectio
 import { TablePlayButton } from 'components/table/components/TablePlayButton'
 import { getLocationPathname } from 'store/routing/selectors'
 import { AppState } from 'store/types'
+import { push } from 'utils/navigation'
 
 import { CollectionPageProps as DesktopCollectionPageProps } from '../collection-page/components/desktop/CollectionPage'
 import { CollectionPageProps as MobileCollectionPageProps } from '../collection-page/components/mobile/CollectionPage'
@@ -328,8 +328,8 @@ export const CollectiblesPlaylistPageProvider = ({
     return currentPlayerItem.uid
       ? currentPlayerItem.uid
       : currentPlayerItem.collectible
-      ? currentPlayerItem.collectible.id
-      : null
+        ? currentPlayerItem.collectible.id
+        : null
   }, [currentPlayerItem])
 
   const formatMetadata = useCallback(

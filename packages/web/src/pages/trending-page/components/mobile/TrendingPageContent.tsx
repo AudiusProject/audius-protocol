@@ -37,9 +37,9 @@ const { trendingAllTimeActions, trendingMonthActions, trendingWeekActions } =
 
 const messages = {
   title: 'Trending',
-  thisWeek: 'THIS WEEK',
-  thisMonth: 'THIS MONTH',
-  allTime: 'ALL TIME',
+  thisWeek: 'This Week',
+  thisMonth: 'This Month',
+  allTime: 'All Time',
   endOfLineupDescription: "Looks like you've reached the end of this list..."
 }
 
@@ -98,7 +98,7 @@ const TrendingPageMobileContent = ({
           </div>
         ) : null}
         <Lineup
-          key='trendingWeek'
+          key={`trendingWeek-${trendingGenre}`}
           {...weekProps}
           setInView={makeSetInView(TimeRange.WEEK)}
           loadMore={makeLoadMore(TimeRange.WEEK)}
@@ -108,15 +108,12 @@ const TrendingPageMobileContent = ({
           variant={LineupVariant.MAIN}
           isTrending
           endOfLineup={
-            <EndOfLineup
-              key='endOfLineup'
-              description={messages.endOfLineupDescription}
-            />
+            <EndOfLineup description={messages.endOfLineupDescription} />
           }
         />
       </>,
       <Lineup
-        key='trendingMonth'
+        key={`trendingMonth-${trendingGenre}`}
         {...monthProps}
         setInView={makeSetInView(TimeRange.MONTH)}
         loadMore={makeLoadMore(TimeRange.MONTH)}
@@ -126,14 +123,11 @@ const TrendingPageMobileContent = ({
         variant={LineupVariant.MAIN}
         isTrending
         endOfLineup={
-          <EndOfLineup
-            key='endOfLineup'
-            description={messages.endOfLineupDescription}
-          />
+          <EndOfLineup description={messages.endOfLineupDescription} />
         }
       />,
       <Lineup
-        key='trendingAllTime'
+        key={`trendingAllTime-${trendingGenre}`}
         {...allTimeProps}
         setInView={makeSetInView(TimeRange.ALL_TIME)}
         loadMore={makeLoadMore(TimeRange.ALL_TIME)}
@@ -143,10 +137,7 @@ const TrendingPageMobileContent = ({
         variant={LineupVariant.MAIN}
         isTrending
         endOfLineup={
-          <EndOfLineup
-            key='endOfLineup'
-            description={messages.endOfLineupDescription}
-          />
+          <EndOfLineup description={messages.endOfLineupDescription} />
         }
       />
     ]

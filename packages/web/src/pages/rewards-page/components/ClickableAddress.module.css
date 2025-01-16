@@ -1,0 +1,48 @@
+.container {
+  cursor: pointer;
+  transition: all 0.07s ease-in-out;
+  transform: scale3d(1, 1, 1);
+}
+
+.container:hover {
+  transform: scale3d(1.03, 1.03, 1.03);
+}
+
+.container:active {
+  transform: scale3d(0.99, 0.99, 0.99);
+}
+
+.addressContainer {
+  display: flex;
+  width: 100%;
+  align-items: center;
+}
+
+.address {
+  flex: 1 1;
+  min-width: 0;
+}
+
+.icon {
+  height: 24px;
+  flex: 0 0 24px;
+  margin-left: 12px;
+}
+
+.icon path {
+  fill: var(--harmony-static-white);
+}
+
+.toastContainer {
+  position: relative;
+  width: 100%;
+}
+
+.toast {
+  left: 246px !important;
+}
+
+:global(#WEB3_CONNECT_MODAL_ID) {
+  /* See utils/zIndex.ts */
+  z-index: 10001;
+}

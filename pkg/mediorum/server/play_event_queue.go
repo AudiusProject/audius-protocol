@@ -2,7 +2,7 @@ package server
 
 import (
 	"context"
-	"fmt"
+	"sync"
 	"time"
 
 	"github.com/AudiusProject/audius-protocol/pkg/core/gen/core_proto"
@@ -11,6 +11,38 @@ import (
 )
 
 const playBatch = 500
+
+type PlayEventQueue struct {
+	mu    sync.Mutex
+	plays []*PlayEvent
+}
+
+func NewPlayEventQueue() *PlayEventQueue {
+	return &PlayEventQueue{
+		plays: []*PlayEvent{},
+	}
+}
+
+func (p *PlayEventQueue) pushPlayEvent(play *PlayEvent) {
+	p.mu.Lock()
+	defer p.mu.Unlock()
+	p.plays = append(p.plays, play)
+}
+
+func (p *PlayEventQueue) popPlayEventBatch() []*PlayEvent {
+	p.mu.Lock()
+	defer p.mu.Unlock()
+
+	batchSize := playBatch
+	if len(p.plays) < playBatch {
+		batchSize = len(p.plays)
+	}
+
+	batch := p.plays[:batchSize]
+	p.plays = p.plays[batchSize:]
+
+	return batch
+}
 
 var playQueueInterval = 20 * time.Second
 
@@ -23,22 +55,6 @@ type PlayEvent struct {
 	City      string
 	Region    string
 	Country   string
-}
-
-func (ss *MediorumServer) insertPlayRecord(record *PlayEvent) error {
-	query := `
-	INSERT INTO play_event_queue (
-		user_id, track_id, play_time, signature, city, region, country
-	) 
-	VALUES ($1, $2, $3, $4, $5, $6, $7);
-`
-
-	_, err := ss.pgPool.Exec(
-		context.Background(),
-		query,
-		record.UserID, record.TrackID, record.PlayTime, record.Signature, record.City, record.Region, record.Country,
-	)
-	return err
 }
 
 func (ss *MediorumServer) startPlayEventQueue() {
@@ -61,31 +77,8 @@ func (ss *MediorumServer) processPlayRecordBatch() error {
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 
-	// get batch of plays from db
-	query := `
-	WITH batch AS (
-		SELECT rowid, user_id, track_id, play_time, signature, city, region, country
-		FROM play_event_queue
-		ORDER BY rowid
-		LIMIT $1
-	)
-	SELECT * FROM batch;
-`
-	rows, err := ss.pgPool.Query(ctx, query, playBatch)
-	if err != nil {
-		return fmt.Errorf("failed to fetch batch: %v", err)
-	}
-	defer rows.Close()
-
-	plays := []PlayEvent{}
-	for rows.Next() {
-		var play PlayEvent
-		if err := rows.Scan(&play.RowID, &play.UserID, &play.TrackID, &play.PlayTime, &play.Signature, &play.City, &play.Region, &play.Country); err != nil {
-			return fmt.Errorf("failed to scan row: %v", err)
-		}
-		plays = append(plays, play)
-	}
-
+	plays := ss.playEventQueue.popPlayEventBatch()
+	ss.logger.Info("popped plays off event queue: %v", plays)
 	if len(plays) == 0 {
 		return nil
 	}
@@ -113,7 +106,7 @@ func (ss *MediorumServer) processPlayRecordBatch() error {
 	// sign plays event payload with mediorum priv key
 	signedPlaysEvent, err := signature.SignCoreBytes(playsTx, ss.Config.privateKey)
 	if err != nil {
-		ss.logger.Error("core error signing listen proto event", "err", err)
+		ss.logger.Error("core error signing plays proto event", "err", err)
 		return err
 	}
 
@@ -125,35 +118,16 @@ func (ss *MediorumServer) processPlayRecordBatch() error {
 		},
 	}
 
-	ss.logger.Info("sending", "tx", signedTx)
-
 	// submit to configured core node
 	res, err := sdk.SendTransaction(ctx, &core_proto.SendTransactionRequest{
 		Transaction: signedTx,
 	})
 
 	if err != nil {
-		ss.logger.Error("core error submitting listen event", "err", err)
+		ss.logger.Error("core error submitting plays event", "err", err)
 		return err
 	}
 
-	ss.logger.Info("core %d listens recorded", "tx", len(corePlays), res.Txhash)
-
-	// delete play records once persisted in core tx
-	deleteQuery := `
-		DELETE FROM play_event_queue
-		WHERE rowid IN (
-			SELECT rowid FROM (
-				SELECT rowid FROM play_event_queue
-				ORDER BY rowid
-				LIMIT $1
-			) AS subquery
-		);
-	`
-	_, err = ss.pgPool.Exec(ctx, deleteQuery, playBatch)
-	if err != nil {
-		return fmt.Errorf("failed to delete batch: %v", err)
-	}
-
+	ss.logger.Info("core %d plays recorded", "tx", len(corePlays), res.Txhash)
 	return nil
 }

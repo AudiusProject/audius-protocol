@@ -4,8 +4,8 @@ import { cleanEnv, str, num, json } from 'envalid'
 
 import { logger } from './logger'
 
-export const LISTENS_RATE_LIMIT_IP_PREFIX = "listens-rate-limit-ip"
-export const LISTENS_RATE_LIMIT_TRACK_PREFIX = "listens-rate-limit-track"
+export const LISTENS_RATE_LIMIT_IP_PREFIX = 'listens-rate-limit-ip'
+export const LISTENS_RATE_LIMIT_TRACK_PREFIX = 'listens-rate-limit-track'
 
 export const ClockProgram = new PublicKey(
   'SysvarC1ock11111111111111111111111111111111'
@@ -28,6 +28,7 @@ type FeePayerWallet = {
 }
 
 type Config = {
+  environment: string
   endpoint: string
   discoveryDbConnectionString: string
   redisUrl: string
@@ -64,6 +65,9 @@ const readConfig = (): Config => {
 
   // validate env
   const env = cleanEnv(process.env, {
+    audius_discprov_env: str({
+      default: 'dev'
+    }),
     audius_discprov_url: str({
       default: 'http://audius-protocol-discovery-provider-1'
     }),
@@ -129,7 +133,7 @@ const readConfig = (): Config => {
         'd242765e718801781440d77572b9dafcdc9baadf0269eff24cf61510ddbf1003'
     }),
     audius_identity_relayer_public_key: str({
-      default: "0xaaaa90Fc2bfa70028D6b444BB9754066d9E2703b"
+      default: '0xaaaa90Fc2bfa70028D6b444BB9754066d9E2703b'
     }),
     audius_solana_listens_ip_hourly_rate_limit: num({ default: 120 }),
     audius_solana_listens_ip_daily_rate_limit: num({ default: 50000 }),
@@ -150,6 +154,7 @@ const readConfig = (): Config => {
     : Buffer.from([])
 
   cachedConfig = {
+    environment: env.audius_discprov_env,
     endpoint: env.audius_discprov_url,
     discoveryDbConnectionString: env.audius_db_url,
     redisUrl: env.audius_redis_url,
@@ -174,9 +179,12 @@ const readConfig = (): Config => {
     listensIpHourlyRateLimit: env.audius_solana_listens_ip_hourly_rate_limit,
     listensIpDailyRateLimit: env.audius_solana_listens_ip_daily_rate_limit,
     listensIpWeeklyRateLimit: env.audius_solana_listens_ip_weekly_rate_limit,
-    listensTrackHourlyRateLimit: env.audius_solana_listens_track_hourly_rate_limit,
-    listensTrackDailyRateLimit: env.audius_solana_listens_track_daily_rate_limit,
-    listensTrackWeeklyRateLimit: env.audius_solana_listens_track_weekly_rate_limit
+    listensTrackHourlyRateLimit:
+      env.audius_solana_listens_track_hourly_rate_limit,
+    listensTrackDailyRateLimit:
+      env.audius_solana_listens_track_daily_rate_limit,
+    listensTrackWeeklyRateLimit:
+      env.audius_solana_listens_track_weekly_rate_limit
   }
   return readConfig()
 }

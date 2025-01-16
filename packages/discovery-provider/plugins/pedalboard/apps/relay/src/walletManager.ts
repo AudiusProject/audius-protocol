@@ -1,6 +1,6 @@
-import { config } from ".";
-import { logger } from "./logger";
-import { Wallet, providers } from "ethers";
+import { config } from '.'
+import { logger } from './logger'
+import { Wallet, providers } from 'ethers'
 
 const localDevWallets = [
   '4f3edf983ac636a65a842ce7c78d9aa706d3b113bce9c46f30d7d21715b23b1d',
@@ -56,39 +56,41 @@ const localDevWallets = [
 ]
 
 export class WalletManager {
-  private walletQueue: Wallet[];
-  private web3: providers.JsonRpcProvider;
+  private walletQueue: Wallet[]
+  private web3: providers.JsonRpcProvider
 
   constructor(web3: providers.JsonRpcProvider) {
-    this.web3 = web3;
-    this.walletQueue = this.generateWallets();
+    this.web3 = web3
+    this.walletQueue = this.generateWallets()
   }
 
   // picks next wallet from the top and rotates it to the back
   selectNextWallet(): Wallet {
-    const nextWallet = this.walletQueue.shift();
+    const nextWallet = this.walletQueue.shift()
     if (nextWallet === undefined) {
       // should be impossible since we requeue the wallet
-      logger.warn("wallet queue is empty, regenerating");
-      this.walletQueue = this.generateWallets();
-      return this.selectNextWallet();
+      logger.warn('wallet queue is empty, regenerating')
+      this.walletQueue = this.generateWallets()
+      return this.selectNextWallet()
     }
-    this.walletQueue.push(nextWallet);
-    return nextWallet;
+    this.walletQueue.push(nextWallet)
+    return nextWallet
   }
 
   // external function for holders of the class to refresh wallets for whatever reason
   regenerateAllWallets() {
-    this.walletQueue = this.generateWallets();
+    this.walletQueue = this.generateWallets()
   }
 
   private generateWallets(): Wallet[] {
-    if (config.environment === "dev") {
-      logger.info("generating from hardcoded priv keys in dev mode");
-      return localDevWallets.map(wallet => new Wallet(wallet).connect(this.web3))
+    if (config.environment === 'dev') {
+      logger.info('generating from hardcoded priv keys in dev mode')
+      return localDevWallets.map((wallet) =>
+        new Wallet(wallet).connect(this.web3)
+      )
     }
     return [...Array(200).keys()].map((_) =>
       Wallet.createRandom().connect(this.web3)
-    );
+    )
   }
 }

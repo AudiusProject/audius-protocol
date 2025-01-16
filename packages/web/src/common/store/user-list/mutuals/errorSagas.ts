@@ -6,7 +6,7 @@ const { GET_MUTUALS_ERROR, getMutualsError } = mutualsUserListActions
 
 type ErrorActions = ReturnType<typeof getMutualsError>
 
-export function* handleMutualsError(action: ErrorActions) {
+function* handleMutualsError(action: ErrorActions) {
   yield put(
     errorActions.handleError({
       message: action.type,

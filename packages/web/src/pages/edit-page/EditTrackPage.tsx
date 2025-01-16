@@ -18,19 +18,19 @@ import {
   useReplaceTrackProgressModal
 } from '@audius/common/store'
 import { removeNullable } from '@audius/common/utils'
-import { push as pushRoute } from 'connected-react-router'
 import { useDispatch } from 'react-redux'
 import { useParams } from 'react-router'
 
 import { useSelector } from 'common/hooks/useSelector'
 import { EditTrackForm } from 'components/edit-track/EditTrackForm'
 import { TrackEditFormValues } from 'components/edit-track/types'
-import Header from 'components/header/desktop/Header'
+import { Header } from 'components/header/desktop/Header'
 import LoadingSpinnerFullPage from 'components/loading-spinner-full-page/LoadingSpinnerFullPage'
 import Page from 'components/page/Page'
 import { useIsUnauthorizedForHandleRedirect } from 'hooks/useManagedAccountNotAllowedRedirect'
 import { useRequiresAccount } from 'hooks/useRequiresAccount'
 import { useTrackCoverArt } from 'hooks/useTrackCoverArt'
+import { push } from 'utils/navigation'
 
 const { editTrack } = cacheTracksActions
 const { getStems } = cacheTracksSelectors
@@ -91,7 +91,7 @@ export const EditTrackPage = (props: EditPageProps) => {
       })
     } else {
       dispatch(editTrack(metadata.track_id, metadata))
-      dispatch(pushRoute(metadata.permalink))
+      dispatch(push(metadata.permalink))
     }
   }
 
@@ -125,16 +125,10 @@ export const EditTrackPage = (props: EditPageProps) => {
     stems: stemsAsUploads
   }
 
-  const previewUrl =
-    trackAsMetadataForUpload.download?.url ||
-    trackAsMetadataForUpload.stream?.url ||
-    ''
-
   const initialValues: TrackEditFormValues = {
     tracks: [
       {
-        metadata: trackAsMetadataForUpload,
-        preview: new Audio(previewUrl)
+        metadata: trackAsMetadataForUpload
       }
     ],
     trackMetadatas: [trackAsMetadataForUpload],

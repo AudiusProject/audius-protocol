@@ -653,7 +653,6 @@ def get_stream_url_with_mirrors(
 
 
 def get_preview_url_with_mirrors(track: dict, user_id: int | None) -> UrlWithMirrors:
-    logger.error(f"preview_cid={track.get('preview_cid')}")
     if track.get("preview_cid"):
         preview_signature = get_gated_content_signature(
             {
@@ -737,7 +736,9 @@ def get_content_url_with_mirrors(
     }
 
 
-def _populate_gated_content_metadata(session, entities, current_user_id):
+def _populate_gated_content_metadata(
+    session, entities, current_user_id, include_playlist_tracks=False
+):
     """Checks if `current_user_id` has access to each entity and populates relevant fields.
 
     Responsible for populating the `access` field of both tracks and playlists.
@@ -768,11 +769,17 @@ def _populate_gated_content_metadata(session, entities, current_user_id):
                     ] = get_download_url_with_mirrors(
                         entity, current_user_id, is_authorized_as_user=False
                     )
+                    entity[
+                        response_name_constants.preview
+                    ] = get_preview_url_with_mirrors(entity, current_user_id)
             elif stream_conditions:
                 entity[response_name_constants.access] = {
                     "stream": False,
                     "download": False,
                 }
+                entity[response_name_constants.preview] = get_preview_url_with_mirrors(
+                    entity, current_user_id
+                )
             elif download_conditions:
                 entity[response_name_constants.access] = {
                     "stream": True,
@@ -784,6 +791,9 @@ def _populate_gated_content_metadata(session, entities, current_user_id):
                     ] = get_stream_url_with_mirrors(
                         entity, current_user_id, is_authorized_as_user=False
                     )
+                    entity[
+                        response_name_constants.preview
+                    ] = get_preview_url_with_mirrors(entity, current_user_id)
         return
 
     current_user_wallet = (
@@ -857,7 +867,7 @@ def _populate_gated_content_metadata(session, entities, current_user_id):
         ] = has_download_access
 
     for entity in entities:
-        if "playlist_id" in entity and "tracks" in entity:
+        if "playlist_id" in entity and "tracks" in entity and include_playlist_tracks:
             _populate_gated_content_metadata(session, entity["tracks"], current_user_id)
         content_id = getContentId(entity)
         if content_id not in gated_content_ids:

@@ -19,16 +19,6 @@ export const productionConfig: SdkServicesConfig = {
         "delegateOwnerWallet": "0x4E2C78d0d3303ed459BF8a3CD87f11A6bc936140"
       },
       {
-        "endpoint": "https://audius-discovery-1.altego.net",
-        "ownerWallet": "0xA9cB9d043d4841dE83C70556FF0Bd4949C15b5Eb",
-        "delegateOwnerWallet": "0xE77C7679ED77b175F935755EEb3a421635AF07EC"
-      },
-      {
-        "endpoint": "https://dn-jpn.audius.metadata.fyi",
-        "ownerWallet": "0x067D4f5229b453C3743023135Ecc76f8d27b9008",
-        "delegateOwnerWallet": "0xE515A7B710e7CBB55F0fB73fc56c15Ad9b36Af9B"
-      },
-      {
         "endpoint": "https://discoveryprovider3.audius.co",
         "ownerWallet": "0xe5b256d302ea2f4e04B8F3bfD8695aDe147aB68d",
         "delegateOwnerWallet": "0xF2897993951d53a7E3eb2242D6A14D2028140DC8"
@@ -59,39 +49,9 @@ export const productionConfig: SdkServicesConfig = {
         "delegateOwnerWallet": "0x2CD66a3931C36596efB037b06753476dcE6B4e86"
       },
       {
-        "endpoint": "https://dn-usa.audius.metadata.fyi",
-        "ownerWallet": "0x067D4f5229b453C3743023135Ecc76f8d27b9008",
-        "delegateOwnerWallet": "0x4a3D65647A8Ac41Ef7bdF13D1F171aA97a15ae4b"
-      },
-      {
-        "endpoint": "https://discovery-us-01.audius.openplayer.org",
-        "ownerWallet": "0x55fc79f85eEc693A65f79DB463dc3E6831364Bce",
-        "delegateOwnerWallet": "0xaC69a173aC26E2daB8663E210eD87a222Ec3945B"
-      },
-      {
         "endpoint": "https://dn2.monophonic.digital",
         "ownerWallet": "0x6470Daf3bd32f5014512bCdF0D02232f5640a5BD",
         "delegateOwnerWallet": "0x422541273087beC833c57D3c15B9e17F919bFB1F"
-      },
-      {
-        "endpoint": "https://audius-discovery-2.altego.net",
-        "ownerWallet": "0xA9cB9d043d4841dE83C70556FF0Bd4949C15b5Eb",
-        "delegateOwnerWallet": "0xA9cB9d043d4841dE83C70556FF0Bd4949C15b5Eb"
-      },
-      {
-        "endpoint": "https://dn1.nodeoperator.io",
-        "ownerWallet": "0x858e345E9DC681357ecd44bA285e04180c481fF6",
-        "delegateOwnerWallet": "0x42D35a2f33ba468fA9eB6FFEA4b975F182957556"
-      },
-      {
-        "endpoint": "https://audius-discovery-3.altego.net",
-        "ownerWallet": "0xA9cB9d043d4841dE83C70556FF0Bd4949C15b5Eb",
-        "delegateOwnerWallet": "0xA9cB9d043d4841dE83C70556FF0Bd4949C15b5Eb"
-      },
-      {
-        "endpoint": "https://dn1.matterlightblooming.xyz",
-        "ownerWallet": "0xb5F5280e275eCa21f167d870d054b90C9C7e6669",
-        "delegateOwnerWallet": "0x67154199E79bEcd2A1f34f89d6AF962CF9863945"
       },
       {
         "endpoint": "https://audius-dp.singapore.creatorseed.com",
@@ -99,214 +59,14 @@ export const productionConfig: SdkServicesConfig = {
         "delegateOwnerWallet": "0x01312a03a859813943Fc2521c31ad500fE86C454"
       },
       {
-        "endpoint": "https://discovery.grassfed.network",
-        "ownerWallet": "0x57B1d346CDe1d2fA740F310b0d358d07d7c49547",
-        "delegateOwnerWallet": "0xb4c7895739062A54F33998D65eF90afb3689d765"
-      },
-      {
-        "endpoint": "https://audius-discovery-1.cultur3stake.com",
-        "ownerWallet": "0x2168990Cd51c7C7DdE4b16Ac4fe7dbA269768990",
-        "delegateOwnerWallet": "0xBFF627Ee7797bB6b06f01AB1709f250Fe88AFc9c"
-      },
-      {
-        "endpoint": "https://audius-discovery-3.cultur3stake.com",
-        "ownerWallet": "0x2168990Cd51c7C7DdE4b16Ac4fe7dbA269768990",
-        "delegateOwnerWallet": "0xD3Fe61E45956a3BCE819DD6fC8091E8dBb054cFD"
-      },
-      {
-        "endpoint": "https://audius-discovery-4.cultur3stake.com",
-        "ownerWallet": "0x2168990Cd51c7C7DdE4b16Ac4fe7dbA269768990",
-        "delegateOwnerWallet": "0x1b05E1a7E221785BE8D9E7f397962Df9c5539464"
-      },
-      {
-        "endpoint": "https://audius-discovery-5.cultur3stake.com",
-        "ownerWallet": "0x2168990Cd51c7C7DdE4b16Ac4fe7dbA269768990",
-        "delegateOwnerWallet": "0x120cd44EE33E17C2F7A6b95dAA0920342f534E21"
-      },
-      {
-        "endpoint": "https://audius-discovery-7.cultur3stake.com",
-        "ownerWallet": "0x2168990Cd51c7C7DdE4b16Ac4fe7dbA269768990",
-        "delegateOwnerWallet": "0x6B696B2ae65A885660c3a1DA44b6306509CC2350"
-      },
-      {
-        "endpoint": "https://audius-discovery-8.cultur3stake.com",
-        "ownerWallet": "0x2168990Cd51c7C7DdE4b16Ac4fe7dbA269768990",
-        "delegateOwnerWallet": "0x2eDfC1ecD381c991DfcAa6951d7766F4Dbba8CA2"
-      },
-      {
-        "endpoint": "https://audius-discovery-9.cultur3stake.com",
-        "ownerWallet": "0x2168990Cd51c7C7DdE4b16Ac4fe7dbA269768990",
-        "delegateOwnerWallet": "0xd8091A289BEf13b5407082Bb66000ccA47e7e34C"
-      },
-      {
-        "endpoint": "https://audius-discovery-10.cultur3stake.com",
-        "ownerWallet": "0x2168990Cd51c7C7DdE4b16Ac4fe7dbA269768990",
-        "delegateOwnerWallet": "0x4086DBFb51E451fD1AEeC778FFb884201c944E94"
-      },
-      {
-        "endpoint": "https://discovery-au-02.audius.openplayer.org",
-        "ownerWallet": "0x55fc79f85eEc693A65f79DB463dc3E6831364Bce",
-        "delegateOwnerWallet": "0x6CAA3671162bC259094Ea4451d0d16792431C37a"
-      },
-      {
-        "endpoint": "https://disc-lon01.audius.hashbeam.com",
-        "ownerWallet": "0x1BD9D60a0103FF2fA25169918392f118Bc616Dc9",
-        "delegateOwnerWallet": "0xD3A697f1084e50c19b19a8859E3d746893152c29"
-      },
-      {
         "endpoint": "https://audius-dp.amsterdam.creatorseed.com",
         "ownerWallet": "0xf13612C7d6E31636eCC2b670d6F8a3CC50f68A48",
         "delegateOwnerWallet": "0xd4869005c8aAAB4D53FC5Af24B72617d5D0Ce179"
       },
       {
-        "endpoint": "https://blockdaemon-audius-discovery-01.bdnodes.net",
-        "ownerWallet": "0x091D2190e93A9C09f99dA05ec3F82ef5D8aa4a07",
-        "delegateOwnerWallet": "0x70256629E87b41105F997878D2Db749a78a5B695"
-      },
-      {
-        "endpoint": "https://blockdaemon-audius-discovery-02.bdnodes.net",
-        "ownerWallet": "0x091D2190e93A9C09f99dA05ec3F82ef5D8aa4a07",
-        "delegateOwnerWallet": "0x060e48dd69960829Fb23CB41eB2DFDAc57948FAd"
-      },
-      {
-        "endpoint": "https://blockdaemon-audius-discovery-03.bdnodes.net",
-        "ownerWallet": "0xEe39B44cE36384157585C19df17d9B28D5637C4D",
-        "delegateOwnerWallet": "0x2416D78b3cc41467c22578dEE7CA90450EB6526e"
-      },
-      {
-        "endpoint": "https://blockdaemon-audius-discovery-04.bdnodes.net",
-        "ownerWallet": "0xEe39B44cE36384157585C19df17d9B28D5637C4D",
-        "delegateOwnerWallet": "0xbD0548Ce77e69CE22Af591A4155162A08fDDEC3d"
-      },
-      {
-        "endpoint": "https://blockdaemon-audius-discovery-05.bdnodes.net",
-        "ownerWallet": "0x447E3572B5511cc6ea0700e34D2443017D081d7e",
-        "delegateOwnerWallet": "0xF5EA27b029D5579D344CFa558DDc3B76A39c98d3"
-      },
-      {
-        "endpoint": "https://blockdaemon-audius-discovery-06.bdnodes.net",
-        "ownerWallet": "0x447E3572B5511cc6ea0700e34D2443017D081d7e",
-        "delegateOwnerWallet": "0x4ACD4eb0F0992cBFf18d5Cb551f3d8790Db01c51"
-      },
-      {
-        "endpoint": "https://blockchange-audius-discovery-01.bdnodes.net",
-        "ownerWallet": "0x59938DF0F43DC520404e4aafDdae688a455Be870",
-        "delegateOwnerWallet": "0xD207D8Eb95aA5b2595cF3EEA14308EB61A36ad21"
-      },
-      {
-        "endpoint": "https://blockchange-audius-discovery-02.bdnodes.net",
-        "ownerWallet": "0x59938DF0F43DC520404e4aafDdae688a455Be870",
-        "delegateOwnerWallet": "0xAB30eF276ADC2bE22CE58d75B4F4009173A73676"
-      },
-      {
-        "endpoint": "https://blockchange-audius-discovery-03.bdnodes.net",
-        "ownerWallet": "0x59938DF0F43DC520404e4aafDdae688a455Be870",
-        "delegateOwnerWallet": "0x048cFedf907c4C9dDD11ff882380906E78E84BbE"
-      },
-      {
-        "endpoint": "https://audius-discovery-11.cultur3stake.com",
-        "ownerWallet": "0x2168990Cd51c7C7DdE4b16Ac4fe7dbA269768990",
-        "delegateOwnerWallet": "0xC6f37525A2EBab1eb02B4c6ba302F402e4c5ad1C"
-      },
-      {
-        "endpoint": "https://audius-discovery-12.cultur3stake.com",
-        "ownerWallet": "0x2168990Cd51c7C7DdE4b16Ac4fe7dbA269768990",
-        "delegateOwnerWallet": "0x1354aFF85DfCeF324E8e40d356f53Cd5F0ED4b83"
-      },
-      {
-        "endpoint": "https://audius-discovery-13.cultur3stake.com",
-        "ownerWallet": "0x2168990Cd51c7C7DdE4b16Ac4fe7dbA269768990",
-        "delegateOwnerWallet": "0x6f43df165E57598Bd74A2D6ADD18ba4249ECd16B"
-      },
-      {
-        "endpoint": "https://audius-discovery-14.cultur3stake.com",
-        "ownerWallet": "0x2168990Cd51c7C7DdE4b16Ac4fe7dbA269768990",
-        "delegateOwnerWallet": "0x0d64915a5F498131474C9A569F0AE0164efB95B5"
-      },
-      {
-        "endpoint": "https://audius-discovery-16.cultur3stake.com",
-        "ownerWallet": "0x2168990Cd51c7C7DdE4b16Ac4fe7dbA269768990",
-        "delegateOwnerWallet": "0xD083A0fA8c2d84759f5383EE4655aAb9908E832c"
-      },
-      {
-        "endpoint": "https://audius-discovery-18.cultur3stake.com",
-        "ownerWallet": "0x2168990Cd51c7C7DdE4b16Ac4fe7dbA269768990",
-        "delegateOwnerWallet": "0x6C3d9f517a1768dDcDC5e37945e75CAD7A3dF6CC"
-      },
-      {
-        "endpoint": "https://audius-discovery-17.cultur3stake.com",
-        "ownerWallet": "0x2168990Cd51c7C7DdE4b16Ac4fe7dbA269768990",
-        "delegateOwnerWallet": "0x06D39081B2811fA7CbADC3D7c4e96889829cdec5"
-      },
-      {
-        "endpoint": "https://audius-discovery-15.cultur3stake.com",
-        "ownerWallet": "0x2168990Cd51c7C7DdE4b16Ac4fe7dbA269768990",
-        "delegateOwnerWallet": "0xE34CB31dadA68F046864054E7A500a370F67b973"
-      },
-      {
-        "endpoint": "https://audius-discovery-6.cultur3stake.com",
-        "ownerWallet": "0x2168990Cd51c7C7DdE4b16Ac4fe7dbA269768990",
-        "delegateOwnerWallet": "0xf83cA74d5E6AD3F2946754Fa0D1e5cE7670DB764"
-      },
-      {
-        "endpoint": "https://audius-discovery-2.cultur3stake.com",
-        "ownerWallet": "0x2168990Cd51c7C7DdE4b16Ac4fe7dbA269768990",
-        "delegateOwnerWallet": "0x7c125128B0917bDE12e6A0eDde8F7675d4ADF408"
-      },
-      {
-        "endpoint": "https://blockdaemon-audius-discovery-08.bdnodes.net",
-        "ownerWallet": "0x091D2190e93A9C09f99dA05ec3F82ef5D8aa4a07",
-        "delegateOwnerWallet": "0x8464c88502925a0076c381962F8B70b6EC892861"
-      },
-      {
-        "endpoint": "https://audius-metadata-5.figment.io",
-        "ownerWallet": "0x700a11aE95E34fBC769f8EAD063403987Bd0C502",
-        "delegateOwnerWallet": "0x69cfDc1AB75384f077E4E48cf0d6483C8fB9B8A2"
-      },
-      {
-        "endpoint": "https://dn1.stuffisup.com",
-        "ownerWallet": "0x3E2Cd6d498b412Da182Ef25837F72355f8918BE9",
-        "delegateOwnerWallet": "0xAA29e93f4008D977078957D8f041AEAeF7e1eeBc"
-      },
-      {
-        "endpoint": "https://audius-discovery-1.theblueprint.xyz",
-        "ownerWallet": "0x68f656d19AC6d14dF209B1dd6E543b2E81d53D7B",
-        "delegateOwnerWallet": "0xEDe07aCa59815fbaa75c4f813dCDD1390D371071"
-      },
-      {
-        "endpoint": "https://audius-discovery-2.theblueprint.xyz",
-        "ownerWallet": "0x68f656d19AC6d14dF209B1dd6E543b2E81d53D7B",
-        "delegateOwnerWallet": "0xCF3f359BfdE7bcAfE4bc058B6DFae51aBe204aB4"
-      },
-      {
-        "endpoint": "https://audius-discovery-3.theblueprint.xyz",
-        "ownerWallet": "0x68f656d19AC6d14dF209B1dd6E543b2E81d53D7B",
-        "delegateOwnerWallet": "0x8449169096550905B903b6803FB3b64285112603"
-      },
-      {
-        "endpoint": "https://audius-discovery-4.theblueprint.xyz",
-        "ownerWallet": "0x68f656d19AC6d14dF209B1dd6E543b2E81d53D7B",
-        "delegateOwnerWallet": "0x16e8DF288BF5DcD507615A715A2a6155F149a865"
-      },
-      {
-        "endpoint": "https://audius-nodes.com",
-        "ownerWallet": "0xE83699015c8eb793A0678eA7dC398ac58f7928c4",
-        "delegateOwnerWallet": "0xE83699015c8eb793A0678eA7dC398ac58f7928c4"
-      },
-      {
         "endpoint": "https://audius-dn1.tikilabs.com",
         "ownerWallet": "0xe4882D9A38A2A1fc652996719AF0fb15CB968d0a",
         "delegateOwnerWallet": "0x1cF73c5023572F2d5dc6BD3c5E4F24b4F3b6B76F"
-      },
-      {
-        "endpoint": "https://blockchange-audius-discovery-04.bdnodes.net",
-        "ownerWallet": "0x59938DF0F43DC520404e4aafDdae688a455Be870",
-        "delegateOwnerWallet": "0xC7562a5CF872450744C3DC5cDb00e9f105D2EfDc"
-      },
-      {
-        "endpoint": "https://blockchange-audius-discovery-05.bdnodes.net",
-        "ownerWallet": "0x59938DF0F43DC520404e4aafDdae688a455Be870",
-        "delegateOwnerWallet": "0x319211E15876156BD992dd047587d0cd7b88Be77"
       }
     ],
     "storageNodes": [

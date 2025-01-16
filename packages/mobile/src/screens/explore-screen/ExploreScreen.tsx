@@ -1,4 +1,4 @@
-import { explorePageActions } from '@audius/common/store'
+import { explorePageActions, ExplorePageTabs } from '@audius/common/store'
 import { useDispatch } from 'react-redux'
 import { useEffectOnce } from 'react-use'
 
@@ -23,29 +23,27 @@ import { PlaylistsTab } from './tabs/PlaylistsTab'
 const { fetchExplore } = explorePageActions
 
 const messages = {
-  header: 'Explore',
-  forYou: 'For You'
+  header: 'Explore'
 }
 
 const exploreScreens = [
   {
-    name: 'forYou',
-    label: messages.forYou,
+    name: ExplorePageTabs.FOR_YOU,
     Icon: IconStars,
     component: ForYouTab
   },
   {
-    name: 'moods',
+    name: ExplorePageTabs.MOODS,
     Icon: IconMood,
     component: MoodsTab
   },
   {
-    name: 'playlists',
+    name: ExplorePageTabs.PLAYLISTS,
     Icon: IconPlaylists,
     component: PlaylistsTab
   },
   {
-    name: 'artists',
+    name: ExplorePageTabs.PROFILES,
     Icon: IconUser,
     component: ArtistsTab
   }

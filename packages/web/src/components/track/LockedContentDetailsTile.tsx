@@ -14,7 +14,7 @@ import {
   IconCart,
   IconCollectible,
   IconComponent,
-  IconSpecialAccess,
+  IconSparkles,
   useTheme
 } from '@audius/harmony'
 import cn from 'classnames'
@@ -37,7 +37,7 @@ const messages = {
   earn: (amount: string) => `Earn ${amount} $AUDIO for this purchase!`
 }
 
-export type LockedContentDetailsTileProps = {
+type LockedContentDetailsTileProps = {
   metadata: PurchaseableContentMetadata | Track | Collection
   owner: UserMetadata
   showLabel?: boolean
@@ -86,7 +86,7 @@ export const LockedContentDetailsTile = ({
     IconComponent = null
     message = null
   } else {
-    IconComponent = IconSpecialAccess
+    IconComponent = IconSparkles
     message = messages.specialAccess
   }
 

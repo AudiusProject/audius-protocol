@@ -29,7 +29,6 @@ import {
 } from '@audius/common/store'
 import { route } from '@audius/common/utils'
 import { full } from '@audius/sdk'
-import { push as pushRoute } from 'connected-react-router'
 import { debounce, isEqual } from 'lodash'
 import { connect } from 'react-redux'
 import { RouteComponentProps, withRouter } from 'react-router-dom'
@@ -38,6 +37,7 @@ import { Dispatch } from 'redux'
 import { TrackEvent, make } from 'common/store/analytics/actions'
 import { SsrContext } from 'ssr/SsrContext'
 import { AppState } from 'store/types'
+import { push } from 'utils/navigation'
 
 import { SavedPageProps as DesktopSavedPageProps } from './components/desktop/SavedPage'
 import { SavedPageProps as MobileSavedPageProps } from './components/mobile/SavedPage'
@@ -582,7 +582,7 @@ function mapDispatchToProps(dispatch: Dispatch) {
     fetchSavedPlaylists: () => dispatch(accountActions.fetchSavedPlaylists()),
     updatePlaylistLastViewedAt: (playlistId: number) =>
       dispatch(updatedPlaylistViewed({ playlistId })),
-    goToRoute: (route: string) => dispatch(pushRoute(route)),
+    goToRoute: (route: string) => dispatch(push(route)),
     play: (uid?: UID) => dispatch(tracksActions.play(uid)),
     pause: () => dispatch(tracksActions.pause()),
     repostTrack: (trackId: ID) =>

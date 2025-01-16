@@ -1,7 +1,6 @@
 import { useCallback, useState } from 'react'
 
 import {
-  Id,
   useGetCurrentWeb3User,
   useGetSales,
   useGetSalesCount
@@ -21,8 +20,7 @@ import {
 } from '@audius/common/store'
 import { route } from '@audius/common/utils'
 import { Flex, IconMoneyBracket, Text, useTheme } from '@audius/harmony'
-import { full } from '@audius/sdk'
-import { push as pushRoute } from 'connected-react-router'
+import { Id, full } from '@audius/sdk'
 import { useDispatch } from 'react-redux'
 
 import { ExternalTextLink } from 'components/link'
@@ -31,6 +29,7 @@ import { useIsMobile } from 'hooks/useIsMobile'
 import { useMainContentRef } from 'pages/MainContentContext'
 import { audiusSdk } from 'services/audius-sdk'
 import { formatToday } from 'utils/dateUtils'
+import { push } from 'utils/navigation'
 import { useSelector } from 'utils/reducer'
 
 import styles from '../PayAndEarnPage.module.css'
@@ -82,7 +81,7 @@ const DEFAULT_SORT_DIRECTION = full.GetSalesSortDirectionEnum.Desc
 const NoSales = () => {
   const dispatch = useDispatch()
   const handleClickUpload = useCallback(() => {
-    dispatch(pushRoute(UPLOAD_PAGE))
+    dispatch(push(UPLOAD_PAGE))
   }, [dispatch])
   return (
     <NoTransactionsContent

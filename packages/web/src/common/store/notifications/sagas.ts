@@ -1,4 +1,3 @@
-import { Id } from '@audius/common/models'
 import {
   IntKeys,
   remoteConfigIntDefaults,
@@ -9,6 +8,7 @@ import {
   accountSelectors,
   getSDK
 } from '@audius/common/store'
+import { Id } from '@audius/sdk'
 import { call, takeEvery, select } from 'typed-redux-saga'
 
 import { waitForWrite } from 'utils/sagaHelpers'
@@ -16,10 +16,6 @@ import { waitForWrite } from 'utils/sagaHelpers'
 import { watchNotificationError } from './errorSagas'
 import { watchFetchNotifications } from './fetchNotificationsSaga'
 import { watchRefreshNotifications } from './refreshNotificationsSaga'
-
-// The initial user count to load in for each notification
-// NOTE: the rest are loading in in the user list modal
-export const USER_INITIAL_LOAD_COUNT = 9
 
 // Gets the polling interval from remoteconfig
 export const getPollingIntervalMs = (
@@ -41,7 +37,7 @@ function* watchMarkAllNotificationsViewed() {
   )
 }
 
-export function* markAllNotificationsViewed() {
+function* markAllNotificationsViewed() {
   const sdk = yield* getSDK()
   const userId = yield* select(accountSelectors.getUserId)
   if (!userId) return

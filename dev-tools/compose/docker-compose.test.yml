@@ -25,6 +25,7 @@ services:
       timeout: 10s
       retries: 3
     profiles:
+      - mediorum
       - core-tests
 
   db:
@@ -48,13 +49,7 @@ services:
           memory: 3G
 
   poa-ganache:
-    build:
-      context: ${PROJECT_ROOT}/contracts
-      dockerfile: Dockerfile
-      args:
-        bootstrapSPIds: ${BOOTSTRAP_SP_IDS}
-        bootstrapSPDelegateWallets: ${BOOTSTRAP_SP_DELEGATE_WALLETS}
-        bootstrapSPOwnerWallets: ${BOOTSTRAP_SP_OWNER_WALLETS}
+    image: audius/poa-ganache:latest
     command: bash /tmp/dev-tools/startup/poa-ganache.sh
     volumes:
       - poa-contracts-abis:/usr/src/app/build/contracts
@@ -68,11 +63,7 @@ services:
       - poa
 
   eth-ganache:
-    build:
-      context: ${PROJECT_ROOT}/eth-contracts
-      args:
-        CONTENT_NODE_VERSION: ${CONTENT_NODE_VERSION}
-        DISCOVERY_NODE_VERSION: ${DISCOVERY_NODE_VERSION}
+    image: audius/eth-ganache:latest
     command: bash /tmp/dev-tools/startup/eth-ganache.sh
     volumes:
       - eth-contracts-abis:/usr/src/app/build/contracts
@@ -81,6 +72,7 @@ services:
     deploy:
       mode: global
     profiles:
+      - mediorum
       - core-tests
       - tests
       - chain
@@ -105,57 +97,69 @@ services:
 
   # core
 
-  core-discovery-1:
-    build:
-      context: ${PROJECT_ROOT}
-      dockerfile: ${PROJECT_ROOT}/cmd/core/infra/Dockerfile
-      target: final
+  audiusd-1:
+    image: audius/audiusd:prerelease
     env_file:
       - ${PROJECT_ROOT}/cmd/core/infra/dev_config/discovery-one.docker.env
     restart: unless-stopped
+    healthcheck:
+      test: [ 'CMD', 'curl', 'http://localhost:26659/console/health_check' ]
+      interval: 10s
+      start_period: 60s
+      timeout: 5s
     profiles:
+      - mediorum
       - core-tests
     depends_on:
       db:
         condition: service_healthy
 
-  core-content-1:
-    build:
-      context: ${PROJECT_ROOT}
-      dockerfile: ${PROJECT_ROOT}/cmd/core/infra/Dockerfile
-      target: final
+  audiusd-2:
+    image: audius/audiusd:prerelease
     env_file:
       - ${PROJECT_ROOT}/cmd/core/infra/dev_config/content-one.docker.env
     restart: unless-stopped
+    healthcheck:
+      test: [ 'CMD', 'curl', 'http://localhost:1991/health_check' ]
+      interval: 10s
+      start_period: 60s
+      timeout: 5s
     profiles:
+      - mediorum
       - core-tests
     depends_on:
       db:
         condition: service_healthy
 
-  core-content-2:
-    build:
-      context: ${PROJECT_ROOT}
-      dockerfile: ${PROJECT_ROOT}/cmd/core/infra/Dockerfile
-      target: final
+  audiusd-3:
+    image: audius/audiusd:prerelease
     env_file:
       - ${PROJECT_ROOT}/cmd/core/infra/dev_config/content-two.docker.env
     restart: unless-stopped
+    healthcheck:
+      test: [ 'CMD', 'curl', 'http://localhost:1991/health_check' ]
+      interval: 10s
+      start_period: 60s
+      timeout: 5s
     profiles:
+      - mediorum
       - core-tests
     depends_on:
       db:
         condition: service_healthy
 
-  core-content-3:
-    build:
-      context: ${PROJECT_ROOT}
-      dockerfile: ${PROJECT_ROOT}/cmd/core/infra/Dockerfile
-      target: final
+  audiusd-4:
+    image: audius/audiusd:prerelease
     env_file:
       - ${PROJECT_ROOT}/cmd/core/infra/dev_config/content-three.docker.env
     restart: unless-stopped
+    healthcheck:
+      test: [ 'CMD', 'curl', 'http://localhost:1991/health_check' ]
+      interval: 10s
+      start_period: 60s
+      timeout: 5s
     profiles:
+      - mediorum
       - core-tests
     depends_on:
       db:
@@ -172,13 +176,13 @@ services:
     depends_on:
       ingress:
         condition: service_healthy
-      core-discovery-1:
+      audiusd-1:
         condition: service_started
-      core-content-1:
+      audiusd-2:
         condition: service_started
-      core-content-2:
+      audiusd-3:
         condition: service_started
-      core-content-3:
+      audiusd-4:
         condition: service_started
       eth-ganache:
         condition: service_healthy
@@ -389,76 +393,6 @@ services:
       - tests
       - notifications
 
-  # mediorum
-
-  mediorum-db:
-    image: postgres:11.4
-    shm_size: 5g
-    command: postgres -c shared_buffers=5GB
-    environment:
-      POSTGRES_PASSWORD: example
-    healthcheck:
-      test: [ 'CMD', 'pg_isready' ]
-      interval: 3s
-      timeout: 3s
-    logging: *default-logging
-    volumes:
-      - ${PROJECT_ROOT}/cmd/mediorum/.initdb:/docker-entrypoint-initdb.d
-    profiles:
-      - mediorum
-      - mediorum-unittests
-
-  mediorum:
-    build:
-      context: ${PROJECT_ROOT}
-      dockerfile: ${PROJECT_ROOT}/cmd/mediorum/Dockerfile
-    restart: unless-stopped
-    environment:
-      dbUrlTemplate: 'postgres://postgres:example@mediorum-db:5432/m%d'
-      devNetworkCount: '5'
-    healthcheck:
-      test: [ 'CMD', 'curl', 'http://localhost:1991/health_check' ]
-      interval: 10s
-      start_period: 60s
-      timeout: 5s
-    logging: *default-logging
-    profiles:
-      - mediorum
-    depends_on:
-      mediorum-db:
-        condition: service_healthy
-
-  test-mediorum:
-    build:
-      context: ${PROJECT_ROOT}
-      dockerfile: ${PROJECT_ROOT}/cmd/mediorum/Dockerfile
-    entrypoint:
-      - '/bin/mediorum-cmd'
-    environment:
-      hostNameTemplate: 'http://mediorum:199%d'
-      devNetworkCount: '5'
-    logging: *default-logging
-    profiles:
-      - mediorum
-    depends_on:
-      mediorum:
-        condition: service_healthy
-
-  test-mediorum-unittests:
-    build:
-      context: ${PROJECT_ROOT}
-      dockerfile: ${PROJECT_ROOT}/cmd/mediorum/Dockerfile.unittests
-    logging: *default-logging
-    entrypoint: sh -c '[ ! "$$1" = "test" ] && sleep inf || (shift; go test ./pkg/mediorum/... -count 1 -timeout 60s "$$@")' -
-    environment:
-      dbUrlTemplate: 'postgres://postgres:example@mediorum-db:5432/m%d'
-      dbUrl: 'postgres://postgres:example@mediorum-db:5432/mediorum_test'
-    profiles:
-      - mediorum-unittests
-    depends_on:
-      mediorum-db:
-        condition: service_healthy
-
   # identity-service
 
   identity-service-db:
@@ -526,118 +460,6 @@ services:
       - tests
       - identity
 
-  # ddex
-
-  ddex-ingester:
-    extends:
-      file: docker-compose.yml
-      service: ddex-ingester
-    container_name: ddex-ingester
-    logging: *default-logging
-    environment:
-      AWS_ENDPOINT: 'http://ddex-s3:4566'
-      DDEX_CHOREOGRAPHY: ${DDEX_CHOREOGRAPHY}
-      TEST_MODE: 'true'
-    depends_on:
-      ddex-mongo-init:
-        condition: service_completed_successfully
-      ddex-s3:
-        condition: service_healthy
-
-  ddex-publisher:
-    extends:
-      file: docker-compose.yml
-      service: ddex-publisher
-    container_name: ddex-publisher
-    logging: *default-logging
-    environment:
-      AWS_ENDPOINT: 'http://ddex-s3:4566'
-      DDEX_CHOREOGRAPHY: ${DDEX_CHOREOGRAPHY}
-    depends_on:
-      ddex-mongo-init:
-        condition: service_completed_successfully
-      ddex-s3:
-        condition: service_healthy
-
-  ddex-s3:
-    container_name: ddex-s3
-    image: localstack/localstack:s3-latest
-    ports:
-      - '127.0.0.1:4566:4566'
-    networks:
-      - ddex-network
-    volumes:
-      - 'ddex-s3:/var/lib/localstack'
-      - '/var/run/docker.sock:/var/run/docker.sock'
-
-  ddex-mongo:
-    extends:
-      file: docker-compose.yml
-      service: ddex-mongo
-    logging: *default-logging
-
-  ddex-mongo-init:
-    extends:
-      file: docker-compose.yml
-      service: ddex-mongo-init
-    logging: *default-logging
-    depends_on:
-      ddex-mongo:
-        condition: service_healthy
-
-  test-ddex-e2e-release-by-release:
-    container_name: test-ddex-e2e-release-by-release
-    extends:
-      file: docker-compose.ddex.yml
-      service: ddex-test
-    entrypoint: sh -c '[ ! "$$1" = "test" ] && sleep inf || (shift;  go test ./e2e_test/... -count 1 -timeout 3m "$$@")' -
-    logging: *default-logging
-    environment:
-      AWS_ENDPOINT: 'http://ddex-s3:4566'
-      DDEX_CHOREOGRAPHY: 'ERNReleaseByRelease'
-    networks:
-      - ddex-network
-    profiles:
-      - ddex
-    depends_on:
-      ddex-ingester:
-        condition: service_healthy
-      # ddex-publisher:
-      #   condition: service_healthy
-      # Leaving out publisher for now because it takes a long time to build.
-      # We don't actually upload anything to Audius in the e2e test, but having a "dry run" publisher mode could be useful
-
-  test-ddex-e2e-batched:
-    container_name: test-ddex-e2e-batched
-    extends:
-      file: docker-compose.ddex.yml
-      service: ddex-test
-    entrypoint: sh -c '[ ! "$$1" = "test" ] && sleep inf || (shift;  go test ./e2e_test/... -count 1 -timeout 3m "$$@")' -
-    logging: *default-logging
-    environment:
-      AWS_ENDPOINT: 'http://ddex-s3:4566'
-      DDEX_CHOREOGRAPHY: 'ERNBatched'
-    networks:
-      - ddex-network
-    profiles:
-      - ddex
-    depends_on:
-      ddex-ingester:
-        condition: service_healthy
-
-  test-ddex-unittests:
-    container_name: test-ddex-unittests
-    extends:
-      file: docker-compose.ddex.yml
-      service: ddex-test
-    entrypoint: sh -c '[ ! "$$1" = "test" ] && sleep inf || (shift;  go test $(go list ./... | grep -v /e2e_test) -count 1 -timeout 60s "$$@")' -
-    logging: *default-logging
-    # Will need a depends_on for S3 and Mongo if any future unit tests use them
-
-networks:
-  ddex-network:
-
-
 volumes:
   poa-contracts-abis:
   eth-contracts-abis:
@@ -645,5 +467,3 @@ volumes:
   postgresdata:
   mediorum:
   legacy_creator_file_storage:
-  ddex-mongo-db:
-  ddex-s3:

@@ -64,6 +64,10 @@ function* handleConnectNewWallet() {
     const signature = yield* signMessage(connection)
     const updatedUserMetadata = yield* associateNewWallet(signature)
 
+    if (!updatedUserMetadata) {
+      throw new Error('Failed to update user metadata')
+    }
+
     analytics.track({
       eventName: Name.CONNECT_WALLET_NEW_WALLET_CONNECTED,
       properties: {

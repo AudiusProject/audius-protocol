@@ -487,9 +487,8 @@ export class RewardsAttester {
       try {
         this.logger.info(`Processing ${toProcess.length} challenges`)
         const toAttest = toProcess.splice(0, this.parallelization)
-        const { accumulatedErrors: errors } = await this._attestInParallel(
-          toAttest
-        )
+        const { accumulatedErrors: errors } =
+          await this._attestInParallel(toAttest)
         if (errors?.length) {
           this.logger.error(
             `Got errors in processChallenges: ${JSON.stringify(errors)}`

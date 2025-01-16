@@ -10,11 +10,10 @@ import {
   User,
   StringWei,
   BNWei,
-  Id,
-  OptionalId,
   supportedUserMetadataListFromSDK,
   supporterMetadataListFromSDK,
-  supporterMetadataFromSDK
+  supporterMetadataFromSDK,
+  SolanaWalletAddress
 } from '@audius/common/models'
 import { LocalStorage } from '@audius/common/services'
 import {
@@ -37,10 +36,10 @@ import {
   waitForValue,
   MAX_PROFILE_TOP_SUPPORTERS,
   SUPPORTING_PAGINATION_SIZE,
-  removeNullable,
-  encodeHashId
+  removeNullable
 } from '@audius/common/utils'
 import { AUDIO } from '@audius/fixed-decimal'
+import { Id, OptionalId } from '@audius/sdk'
 import { PayloadAction } from '@reduxjs/toolkit'
 import BN from 'bn.js'
 import {
@@ -90,7 +89,7 @@ const { update } = cacheActions
 const { getAccountUser, getUserId, getWalletAddresses } = accountSelectors
 const { fetchPermissions } = chatActions
 
-export const FEED_TIP_DISMISSAL_TIME_LIMIT_SEC = 30 * 24 * 60 * 60 // 30 days
+const FEED_TIP_DISMISSAL_TIME_LIMIT_SEC = 30 * 24 * 60 * 60 // 30 days
 const DISMISSED_TIP_KEY = 'dismissed-tips'
 
 export const storeDismissedTipInfo = async (
@@ -264,7 +263,6 @@ function* confirmTipIndexed({
 
 function* wormholeAudioIfNecessary({ amount }: { amount: number }) {
   const walletClient = yield* getContext('walletClient')
-  const sdk = yield* getSDK()
   const { currentUser } = yield* select(getWalletAddresses)
   if (!currentUser) {
     throw new Error('Failed to retrieve current user wallet address')
@@ -293,7 +291,6 @@ function* wormholeAudioIfNecessary({ amount }: { amount: number }) {
       yield put(convert())
     })
     yield call([walletClient, walletClient.transferTokensFromEthToSol], {
-      sdk,
       ethAddress: currentUser
     })
     // Cancel showing the notice if the conversion was magically super quick
@@ -321,15 +318,40 @@ function* sendTipAsync() {
 
   const device = isNativeMobile ? 'mobile' : 'web'
 
-  const senderUserId = encodeHashId(sender.user_id)
-  const receiverUserId = encodeHashId(receiver.user_id)
+  const senderUserId = Id.parse(sender.user_id)
+  const receiverUserId = Id.parse(receiver.user_id)
   const amount = Number(stringAudioAmount)
+
+  let senderWallet: SolanaWalletAddress | undefined
+  let recipientWallet: SolanaWalletAddress | undefined
+
+  // Using `deriveUserBank` here because we just need the addresses for
+  // analytics. The SDK call to send the tip will create them if needed.
+  try {
+    senderWallet = (yield* call(
+      [
+        sdk.services.claimableTokensClient,
+        sdk.services.claimableTokensClient.deriveUserBank
+      ],
+      { ethWallet: sender.erc_wallet, mint: 'wAUDIO' }
+    )).toString() as SolanaWalletAddress
+    recipientWallet = (yield* call(
+      [
+        sdk.services.claimableTokensClient,
+        sdk.services.claimableTokensClient.deriveUserBank
+      ],
+      { ethWallet: receiver.erc_wallet, mint: 'wAUDIO' }
+    )).toString() as SolanaWalletAddress
+  } catch (e) {
+    // Don't want these to fail the saga as it's just used for analytics
+    console.warn('Failed to derive user bank address for tip analytics', e)
+  }
 
   try {
     yield put(
       make(Name.TIP_AUDIO_REQUEST, {
-        senderWallet: sender.userBank,
-        recipientWallet: receiver.userBank,
+        senderWallet,
+        recipientWallet,
         senderHandle: sender.handle,
         recipientHandle: receiver.handle,
         amount,
@@ -414,8 +436,8 @@ function* sendTipAsync() {
     yield* put(sendTipFailed({ error: e.message }))
     yield* put(
       make(Name.TIP_AUDIO_FAILURE, {
-        senderWallet: sender.userBank,
-        recipientWallet: receiver.userBank,
+        senderWallet,
+        recipientWallet,
         senderHandle: sender.handle,
         recipientHandle: receiver.handle,
         amount,

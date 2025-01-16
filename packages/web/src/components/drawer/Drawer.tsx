@@ -395,7 +395,7 @@ const FullscreenDrawer = ({
   )
 }
 
-export const Drawer = (props: DrawerProps) => {
+const Drawer = (props: DrawerProps) => {
   return props.isFullscreen ? (
     <FullscreenDrawer {...props} />
   ) : (

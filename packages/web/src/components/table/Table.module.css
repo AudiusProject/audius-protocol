@@ -215,7 +215,9 @@
 .tableRow:hover:not(.skeletonRow),
 .tableRow:hover > .tableCell {
   z-index: 3;
-  box-shadow: 0 1px 0 0 var(--harmony-n-100), 0 -1px 0 0 var(--harmony-n-100);
+  box-shadow:
+    0 1px 0 0 var(--harmony-n-100),
+    0 -1px 0 0 var(--harmony-n-100);
   transition: all 0.07s ease-in-out;
   background-color: var(--harmony-n-50);
 }

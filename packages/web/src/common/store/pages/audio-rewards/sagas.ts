@@ -8,7 +8,7 @@ import {
   StringWei,
   SpecifierWithAmount,
   Name,
-  Id
+  Feature
 } from '@audius/common/models'
 import {
   IntKeys,
@@ -30,14 +30,15 @@ import {
   CommonStoreContext,
   getSDK
 } from '@audius/common/store'
-import {
-  encodeHashId,
-  isResponseError,
-  route,
-  waitForValue
-} from '@audius/common/utils'
+import { isResponseError, route, waitForValue } from '@audius/common/utils'
 import { AUDIO } from '@audius/fixed-decimal'
-import { AudiusSdk, ChallengeId, Errors, RewardManagerError } from '@audius/sdk'
+import {
+  Id,
+  AudiusSdk,
+  ChallengeId,
+  Errors,
+  RewardManagerError
+} from '@audius/sdk'
 import {
   call,
   fork,
@@ -349,7 +350,7 @@ function* claimSingleChallengeRewardAsync(
   if (!decodedUserId) {
     throw new Error('Failed to get current userId')
   }
-  const userId = encodeHashId(decodedUserId)
+  const userId = Id.parse(decodedUserId)
 
   const results = yield* call(claimRewardsForChallenge, {
     sdk,
@@ -391,7 +392,8 @@ function* claimSingleChallengeRewardAsync(
             challengeId,
             specifier: res.specifier,
             amount: res.amount
-          }
+          },
+          feature: Feature.Rewards
         })
       }
     }

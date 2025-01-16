@@ -1,208 +1,13 @@
-import { useFeatureFlag } from '@audius/common/hooks'
 import { Theme } from '@audius/common/models'
-import { FeatureFlags } from '@audius/common/services'
 import type { CommonState } from '@audius/common/store'
 import { themeSelectors } from '@audius/common/store'
+import type { HarmonyTheme } from '@audius/harmony/src/foundations/theme/theme'
+import { themes } from '@audius/harmony/src/foundations/theme/theme'
 import { useSelector } from 'react-redux'
-
-import { themeColorsV2 } from './themeV2'
 
 const { getTheme, getSystemAppearance } = themeSelectors
 
 export { Theme } from '@audius/common/models'
-
-export const defaultTheme = {
-  aiPrimary: '#1FD187',
-  aiSecondary: '#0FC578',
-  background: '#F3F0F7',
-  backgroundSecondary: '#FAFAFA',
-  backgroundSurface: '#FCFCFC',
-  backgroundSurface2: '#F2F2F4',
-  borderDefault: '#F2F2F4',
-  borderStrong: '#E7E6EB',
-  primary: '#CC0FE0',
-  primaryDark1: '#B80ECA',
-  primaryDark2: '#A30CB3',
-  primaryLight1: '#D127E3',
-  primaryLight2: '#D63FE6',
-  secondary: '#7E1BCC',
-  secondaryDark1: '#7118B8',
-  secondaryDark2: '#6516A3',
-  secondaryLight1: '#8B32D1',
-  secondaryLight2: '#9849D6',
-  neutral: '#858199',
-  neutralDark1: '#78748A',
-  neutralDark2: '#6A677A',
-  neutralDark3: '#4D535A',
-  neutralLight1: '#9D9AAD',
-  neutralLight2: '#AAA7B8',
-  neutralLight3: '#B6B3C2',
-  neutralLight4: '#C2C0CC',
-  neutralLight5: '#CECDD6',
-  neutralLight6: '#DAD9E0',
-  neutralLight7: '#E7E6EB',
-  neutralLight8: '#F2F2F4',
-  neutralLight9: '#F7F7F9',
-  neutralLight10: '#FCFCFC',
-  white: '#FFFFFF',
-  accentRed: '#D0021B',
-  accentRedDark1: '#AA0115',
-  accentRedLight1: '#D51B32',
-  accentGreen: '#0BA400',
-  accentGreenDark1: '#0A9400',
-  accentGreenLight1: '#23AD1A',
-  accentOrange: '#FF9400',
-  accentOrangeDark1: '#F28100',
-  accentOrangeLight1: '#FFA70F',
-  accentPurple: '#8E51CF',
-  shadow: '#E3E3E3',
-  staticTwitterBlue: '#1BA1F1',
-  staticWhite: '#FFFFFF',
-  staticStaticWhite: '#FFFFFF',
-  staticNeutral: '#858199',
-  staticNeutralLight2: '#AAA7B8',
-  staticNeutralLight8: '#F2F2F4',
-  staticAccentGreenLight1: '#23AD1A',
-  specialLightGreen: '#13C65A',
-  specialGreen: '#0F9E48',
-  staticPrimary: '#CC0FE0',
-  staticSecondary: '#7E1BCC',
-  pageHeaderGradientColor1: '#5B23E1',
-  pageHeaderGradientColor2: '#A22FEB',
-  skeleton: '#F7F7F9',
-  skeletonHighlight: '#F2F2F4',
-  statTileText: '#C675FF',
-  progressBackground: '#D9D9D9',
-  accentBlue: '#1ba1f1',
-  textIconSubdued: '#C2C0CC',
-  focus: '#7E1BCC'
-}
-
-export const darkTheme = {
-  aiPrimary: '#1FD187',
-  aiSecondary: '#0FC578',
-  background: '#242438',
-  backgroundSecondary: '#2F3048',
-  backgroundSurface: '#35364F',
-  backgroundSurface2: '#3F415B',
-  borderDefault: '#3F415B',
-  borderStrong: '#4E4F6A',
-  primary: '#C74BD3',
-  primaryDark1: '#C556D4',
-  primaryDark2: '#C563D6',
-  primaryLight1: '#B748C6',
-  primaryLight2: '#A945B9',
-  secondary: '#9147CC',
-  secondaryDark1: '#975ACD',
-  secondaryDark2: '#9A60CF',
-  secondaryLight1: '#8244B8',
-  secondaryLight2: '#7440A4',
-  neutral: '#BEC5E0',
-  neutralDark1: '#C4CAE1',
-  neutralDark2: '#CBD1E3',
-  neutralDark3: '#E0E6FA',
-  neutralLight1: '#A2A8C2',
-  neutralLight2: '#9399B3',
-  neutralLight3: '#868AA4',
-  neutralLight4: '#777C96',
-  neutralLight5: '#696D88',
-  neutralLight6: '#5A5E78',
-  neutralLight7: '#4E4F6A',
-  neutralLight8: '#3F415B',
-  neutralLight9: '#393A54',
-  neutralLight10: '#35364F',
-  white: '#32334D',
-  accentRed: '#D0021B',
-  accentRedDark1: '#AA0115',
-  accentRedLight1: '#D51B32',
-  accentGreen: '#0BA400',
-  accentGreenDark1: '#0A9400',
-  accentGreenLight1: '#23AD1A',
-  accentOrange: '#FF9400',
-  accentOrangeDark1: '#F28100',
-  accentOrangeLight1: '#FFA70F',
-  accentPurple: '#8E51CF',
-  shadow: '#35364F',
-  staticTwitterBlue: '#1BA1F1',
-  staticWhite: '#FFFFFF',
-  staticStaticWhite: '#FFFFFF',
-  staticNeutral: '#858199',
-  staticNeutralLight2: '#AAA7B8',
-  staticNeutralLight8: '#F2F2F4',
-  staticAccentGreenLight1: '#23AD1A',
-  specialLightGreen: '#13C65A',
-  specialGreen: '#6CDF44',
-  staticPrimary: '#CC0FE0',
-  staticSecondary: '#7E1BCC',
-  pageHeaderGradientColor1: '#7652CC',
-  pageHeaderGradientColor2: '#B05CE6',
-  skeleton: '#393A54',
-  skeletonHighlight: '#3F415B',
-  statTileText: '#C675FF',
-  progressBackground: '#D9D9D9',
-  accentBlue: '#1ba1f1',
-  textIconSubdued: '#777C96',
-  focus: '#9147CC'
-}
-
-export const matrixTheme = {
-  ...darkTheme,
-  background: '#1A1818',
-  backgroundSecondary: '#1A1818',
-  backgroundSurface: '#1D211B',
-  backgroundSurface2: '#1A2F15',
-  borderDefault: '#3F415B',
-  borderStrong: '#4E4F6A',
-  primary: '#0CF10C',
-  primaryDark1: '#0CF10C',
-  primaryDark2: '#0CF10C',
-  primaryLight1: '#0CF10C',
-  primaryLight2: '#0CF10C',
-  secondary: '#184F17',
-  secondaryTransparent: '#184F17',
-  secondaryDark1: '#184F17',
-  secondaryDark2: '#184F17',
-  secondaryLight1: '#184F17',
-  secondaryLight2: '#184F17',
-  neutral: '#21B404',
-  neutralDark1: '#21B404',
-  neutralDark2: '#21B404',
-  neutralDark3: '#21B404',
-  neutralLight1: '#20A406',
-  neutralLight2: '#1F9508',
-  neutralLight3: '#1F850A',
-  neutralLight4: '#1D660E',
-  neutralLight5: '#1D5E0F',
-  neutralLight6: '#1C5610',
-  neutralLight7: '#1B3714',
-  neutralLight8: '#1A2F15',
-  neutralLight9: '#202A1D',
-  neutralLight10: '#1D211B',
-  white: '#1F211F',
-  staticTwitterBlue: '#1BA1F1',
-  staticWhite: '#FFFFFF',
-  staticStaticWhite: '#FFFFFF',
-  staticNeutral: '#858199',
-  staticNeutralLight2: '#AAA7B8',
-  staticNeutralLight8: '#F2F2F4',
-  staticAccentGreenLight1: '#23AD1A',
-  specialLightGreen: '#13C65A',
-  specialGreen: '#6CDF44',
-  staticPrimary: '#CC0FE0',
-  staticSecondary: '#7E1BCC',
-  pageHeaderGradientColor1: '#4FF069',
-  pageHeaderGradientColor2: '#09BD51',
-  accentRed: '#D0021B',
-  accentOrange: '#EFA947',
-  accentGreen: '#23AD1A',
-  skeleton: '#1B3714',
-  skeletonHighlight: '#1C5610',
-  statTileText: '#184F17',
-  progressBackground: '#D9D9D9',
-  accentBlue: '#1ba1f1',
-  textIconSubdued: '#1D660E',
-  focus: '#184F17'
-}
 
 export type ThemeColors = {
   aiPrimary: string
@@ -272,10 +77,84 @@ export type ThemeColors = {
   focus: string
 }
 
-const themeColorsByThemeVariant: Record<
-  Theme.DARK | Theme.DEFAULT | Theme.MATRIX,
-  ThemeColors
-> = {
+const createMobileThemeFromHarmony = (
+  harmonyTheme: HarmonyTheme
+): ThemeColors => {
+  const { color } = harmonyTheme
+
+  return {
+    aiPrimary: color.special.aiGreen,
+    aiSecondary: color.special.aiGreen, // No direct mapping, using aiGreen
+    background: color.special.background,
+    backgroundSecondary: color.background.surface1,
+    backgroundSurface: color.background.surface1,
+    backgroundSurface2: color.background.surface2,
+    borderDefault: color.border.default,
+    borderStrong: color.border.strong,
+    primary: color.primary.p300,
+    primaryDark1: color.primary.p400,
+    primaryDark2: color.primary.p500,
+    primaryLight1: color.primary.p200,
+    primaryLight2: color.primary.p100,
+    secondary: color.secondary.s300,
+    secondaryDark1: color.secondary.s400,
+    secondaryDark2: color.secondary.s500,
+    secondaryLight1: color.secondary.s200,
+    secondaryLight2: color.secondary.s100,
+    neutral: color.neutral.n800,
+    neutralDark1: color.neutral.n900,
+    neutralDark2: color.neutral.n950,
+    neutralDark3: color.neutral.n950, // No direct mapping
+    neutralLight1: color.neutral.n700,
+    neutralLight2: color.neutral.n600,
+    neutralLight3: color.neutral.n500,
+    neutralLight4: color.neutral.n400,
+    neutralLight5: color.neutral.n300,
+    neutralLight6: color.neutral.n200,
+    neutralLight7: color.neutral.n150,
+    neutralLight8: color.neutral.n100,
+    neutralLight9: color.neutral.n50,
+    neutralLight10: color.neutral.n25,
+    white: color.special.white,
+    accentRed: color.special.red,
+    accentRedDark1: color.special.darkRed,
+    accentRedLight1: color.special.red, // No direct mapping
+    accentGreen: color.special.green,
+    accentGreenDark1: color.special.lightGreen,
+    accentGreenLight1: color.special.green, // No direct mapping
+    accentOrange: color.special.orange,
+    accentOrangeDark1: color.special.orange, // No direct mapping
+    accentOrangeLight1: color.special.orange, // No direct mapping
+    accentPurple: color.secondary.s300, // Using secondary as fallback
+    shadow: color.border.default,
+    staticTwitterBlue: color.special.blue,
+    staticWhite: color.static.white,
+    staticStaticWhite: color.static.staticWhite,
+    staticNeutral: color.neutral.n800,
+    staticNeutralLight2: color.neutral.n600,
+    staticNeutralLight8: color.neutral.n100,
+    staticAccentGreenLight1: color.special.lightGreen,
+    specialLightGreen: color.special.lightGreen,
+    specialGreen: color.special.green,
+    staticPrimary: color.static.primary,
+    staticSecondary: color.static.secondary,
+    pageHeaderGradientColor1: color.special.gradientStop1,
+    pageHeaderGradientColor2: color.special.gradientStop2,
+    skeleton: color.neutral.n50,
+    skeletonHighlight: color.neutral.n100,
+    statTileText: color.secondary.s300, // Using secondary as fallback
+    progressBackground: color.neutral.n200,
+    accentBlue: color.special.blue,
+    textIconSubdued: color.text.subdued,
+    focus: color.focus.default
+  }
+}
+
+export const defaultTheme = createMobileThemeFromHarmony(themes.day)
+export const darkTheme = createMobileThemeFromHarmony(themes.dark)
+export const matrixTheme = createMobileThemeFromHarmony(themes.matrix)
+
+export const themeColorsByThemeVariant = {
   [Theme.DEFAULT]: defaultTheme,
   [Theme.DARK]: darkTheme,
   [Theme.MATRIX]: matrixTheme
@@ -291,29 +170,17 @@ export const useThemeVariant = (): keyof typeof themeColorsByThemeVariant => {
   const theme = useSelector(getTheme)
   const systemAppearance = useSelector(getSystemAppearance)
   const systemTheme = systemAppearance === 'dark' ? Theme.DARK : Theme.DEFAULT
-  return theme === Theme.AUTO ? systemTheme : theme ?? Theme.DEFAULT
+  return theme === Theme.AUTO ? systemTheme : (theme ?? Theme.DEFAULT)
 }
 
 export const useThemeColors = () => {
   const themeVariant = useThemeVariant()
-  const { isEnabled: isThemeV2Enabled } = useFeatureFlag(FeatureFlags.THEME_V2)
-
-  const themeColors = isThemeV2Enabled
-    ? themeColorsV2
-    : themeColorsByThemeVariant
-
-  return themeColors[themeVariant]
+  return themeColorsByThemeVariant[themeVariant]
 }
 
 export const useThemePalette = () => {
   const themeVariant = useThemeVariant()
-  const { isEnabled: isThemeV2Enabled } = useFeatureFlag(FeatureFlags.THEME_V2)
-
-  const themeColors = isThemeV2Enabled
-    ? themeColorsV2
-    : themeColorsByThemeVariant
-
-  return themeColors[themeVariant]
+  return themeColorsByThemeVariant[themeVariant]
 }
 
 export const useColor = (color: string): string => {
