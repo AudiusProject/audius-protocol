@@ -18,13 +18,14 @@ type TrackParams = { handle?: string; slug?: string; trackId?: ID }
  * @returns The track data or null if not found
  */
 export const useTrackByParams = (params: TrackParams, options?: Config) => {
-  const permalink = params.handle ? `/${params.handle}/${params.slug}` : null
+  const { handle, slug, trackId: id } = params
+  const permalink = handle ? `/${handle}/${slug}` : null
 
   const dispatch = useDispatch()
-  const trackQuery = useTrack(params.trackId, options)
+  const trackQuery = useTrack(id, options)
   const permalinkQuery = useTrackByPermalink(permalink, options)
 
-  const query = params.trackId ? trackQuery : permalinkQuery
+  const query = id ? trackQuery : permalinkQuery
 
   const { isSuccess } = query
   const trackIdResult = query.data?.track_id
