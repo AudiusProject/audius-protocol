@@ -3,7 +3,6 @@ import { useCallback, useContext } from 'react'
 import { Name, Status } from '@audius/common/models'
 import {
   accountSelectors,
-  notificationsSelectors,
   searchResultsPageSelectors
 } from '@audius/common/store'
 import { route } from '@audius/common/utils'
@@ -24,7 +23,6 @@ import NavBar from './NavBar'
 
 const { NOTIFICATION_PAGE, SETTINGS_PAGE, AUDIO_PAGE } = route
 const { getSearchStatus } = searchResultsPageSelectors
-const { getNotificationUnviewedCount } = notificationsSelectors
 const { getHasAccount, getAccountStatus } = accountSelectors
 
 type ConnectedNavBarProps = ReturnType<typeof mapStateToProps> &
@@ -37,7 +35,6 @@ const ConnectedNavBar = ({
   accountStatus,
   history,
   searchStatus,
-  notificationCount,
   goBack
 }: ConnectedNavBarProps) => {
   const { setStackReset, setSlideDirection } = useContext(RouterContext)
@@ -80,7 +77,6 @@ const ConnectedNavBar = ({
       isSignedIn={hasAccount}
       isLoading={accountStatus === Status.LOADING}
       signUp={signUp}
-      notificationCount={notificationCount}
       goToNotificationPage={goToNotificationPage}
       goToSettingsPage={goToSettingsPage}
       search={search}
@@ -96,8 +92,7 @@ function mapStateToProps(state: AppState) {
   return {
     hasAccount: getHasAccount(state),
     accountStatus: getAccountStatus(state),
-    searchStatus: getSearchStatus(state),
-    notificationCount: getNotificationUnviewedCount(state)
+    searchStatus: getSearchStatus(state)
   }
 }
 

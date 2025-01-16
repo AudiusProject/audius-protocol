@@ -30,7 +30,7 @@ const SCROLL_THRESHOLD = 300
  * summary of each notification and a link to open the full
  * notification in a modal  */
 export const NotificationPage = () => {
-  const { notifications, isLoading, hasNextPage, fetchNextPage } =
+  const { notifications, isPending, hasNextPage, fetchNextPage } =
     useNotifications()
   const { mutate: markAsViewed } = useMarkNotificationsAsViewed()
 
@@ -52,7 +52,9 @@ export const NotificationPage = () => {
       description={messages.description}
       fullHeight
     >
-      {notifications.length > 0 ? (
+      {!isPending && notifications.length === 0 ? (
+        <EmptyNotifications />
+      ) : (
         <Flex
           as={InfiniteScroll}
           direction='column'
@@ -61,7 +63,7 @@ export const NotificationPage = () => {
           gap='s'
           // @ts-ignore
           pageStart={0}
-          loadMore={fetchNextPage}
+          loadMore={() => fetchNextPage()}
           hasMore={hasNextPage}
           useWindow={true}
           initialLoad={false}
@@ -79,14 +81,8 @@ export const NotificationPage = () => {
                 />
               )
             })}
-          {isLoading && (
-            <Flex alignItems='center' justifyContent='center' pt='l'>
-              <Lottie loop autoplay animationData={loadingSpinner} />
-            </Flex>
-          )}
+          {isPending && <Lottie loop autoplay animationData={loadingSpinner} />}
         </Flex>
-      ) : (
-        <EmptyNotifications />
       )}
     </MobilePageContainer>
   )

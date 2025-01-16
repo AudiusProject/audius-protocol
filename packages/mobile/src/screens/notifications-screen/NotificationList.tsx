@@ -96,9 +96,8 @@ export const NotificationList = () => {
 
   const {
     notifications,
-    isLoading,
+    isLoading: isPending,
     isError,
-    hasNextPage,
     fetchNextPage,
     refetch
   } = useNotifications()
@@ -107,12 +106,6 @@ export const NotificationList = () => {
     setIsRefreshing(true)
     refetch().finally(() => setIsRefreshing(false))
   }, [refetch])
-
-  const handleEndReached = useCallback(() => {
-    if (!isLoading && hasNextPage) {
-      fetchNextPage()
-    }
-  }, [isLoading, hasNextPage, fetchNextPage])
 
   const [isVisible, visibilityCallback] = useIsViewable()
 
@@ -123,7 +116,7 @@ export const NotificationList = () => {
     [isVisible]
   )
 
-  if (!isLoading && !isError && notifications.length === 0) {
+  if (!isPending && !isError && notifications.length === 0) {
     return <EmptyNotifications />
   }
 
@@ -137,13 +130,13 @@ export const NotificationList = () => {
       keyExtractor={(item: Notification) => item.id}
       renderItem={renderItem}
       ListFooterComponent={
-        isLoading && !isRefreshing ? (
+        isPending && !isRefreshing ? (
           <View style={styles.footer}>
             <LoadingSpinner fill={styles.spinner.color} />
           </View>
         ) : undefined
       }
-      onEndReached={handleEndReached}
+      onEndReached={() => fetchNextPage()}
       onEndReachedThreshold={0.8}
       scrollEnabled={!gesturesDisabled}
       onViewableItemsChanged={visibilityCallback}

@@ -1,19 +1,16 @@
-import { useCallback, useMemo, useRef, MouseEvent } from 'react'
+import { useCallback, useMemo, useRef, MouseEvent, useEffect } from 'react'
 
 import { useNotificationUnreadCount } from '@audius/common/api'
 import { Name } from '@audius/common/models'
 import { accountSelectors } from '@audius/common/store'
 import { IconNotificationOn, NotificationCount } from '@audius/harmony'
-import { useDispatch, useSelector } from 'react-redux'
+import { useSelector } from 'react-redux'
+import { useSearchParam, useToggle } from 'react-use'
 
 import { useRecord, make } from 'common/store/analytics/actions'
 import { NotificationPanel } from 'components/notification'
+import { AnnouncementModal } from 'components/notification/AnnouncementModal'
 import { useRequiresAccountFn } from 'hooks/useRequiresAccount'
-import { getNotificationPanelIsOpen } from 'store/application/ui/notifications/notificationsUISelectors'
-import {
-  closeNotificationPanel,
-  openNotificationPanel
-} from 'store/application/ui/notifications/notificationsUISlice'
 
 import { canAccess } from './NavHeader'
 import { NavHeaderButton } from './NavHeaderButton'
@@ -26,42 +23,44 @@ const messages = {
 
 export const NotificationsButton = () => {
   const { data: notificationCount = 0 } = useNotificationUnreadCount()
-  const notificationPanelIsOpen = useSelector(getNotificationPanelIsOpen)
   const hasAccount = useSelector(getHasAccount)
   const isAccountComplete = useSelector(getIsAccountComplete)
   const buttonRef = useRef<HTMLButtonElement>(null)
+  const [isNotificationPanelOpen, toggleIsNotificationPanelOpen] =
+    useToggle(false)
 
-  const dispatch = useDispatch()
   const record = useRecord()
   const { requiresAccount } = useRequiresAccountFn(undefined, 'account')
+  const shouldOpenNotifications = useSearchParam('openNotifications')
+
+  useEffect(() => {
+    if (shouldOpenNotifications) {
+      toggleIsNotificationPanelOpen()
+    }
+  }, [shouldOpenNotifications, toggleIsNotificationPanelOpen])
 
   const handleToggleNotificationPanel = useCallback(
     (e: MouseEvent) => {
-      if (notificationPanelIsOpen) {
-        dispatch(closeNotificationPanel())
-        return
-      }
-
       if (!canAccess('account', hasAccount, isAccountComplete)) {
         e.preventDefault()
         requiresAccount()
         return
       }
 
-      dispatch(openNotificationPanel())
+      toggleIsNotificationPanelOpen()
+
       record(make(Name.NOTIFICATIONS_OPEN, { source: 'button' }))
     },
     [
-      notificationPanelIsOpen,
-      dispatch,
-      record,
-      requiresAccount,
       hasAccount,
-      isAccountComplete
+      isAccountComplete,
+      toggleIsNotificationPanelOpen,
+      record,
+      requiresAccount
     ]
   )
 
-  const shouldShowCount = notificationCount > 0 && !notificationPanelIsOpen
+  const shouldShowCount = notificationCount > 0 && !isNotificationPanelOpen
   const notificationButton = useMemo(() => {
     const button = (
       <NavHeaderButton
@@ -69,7 +68,7 @@ export const NotificationsButton = () => {
         icon={IconNotificationOn}
         aria-label={messages.label(notificationCount)}
         onClick={handleToggleNotificationPanel}
-        isActive={notificationPanelIsOpen}
+        isActive={isNotificationPanelOpen}
       />
     )
     if (shouldShowCount) {
@@ -83,14 +82,19 @@ export const NotificationsButton = () => {
   }, [
     notificationCount,
     handleToggleNotificationPanel,
-    notificationPanelIsOpen,
+    isNotificationPanelOpen,
     shouldShowCount
   ])
 
   return (
     <>
       {notificationButton}
-      <NotificationPanel anchorRef={buttonRef} />
+      <NotificationPanel
+        anchorRef={buttonRef}
+        isOpen={isNotificationPanelOpen}
+        onClose={toggleIsNotificationPanelOpen}
+      />
+      <AnnouncementModal />
     </>
   )
 }

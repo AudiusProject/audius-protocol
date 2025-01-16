@@ -207,6 +207,9 @@ export const useNotifications = (options?: Config) => {
   const collectionsQuery = useCollections(Array.from(collectionIds))
 
   // Check if the latest page's entity data is still loading
+  const isLatestPagePending =
+    usersQuery.isPending || tracksQuery.isPending || collectionsQuery.isPending
+
   const isLatestPageLoading =
     usersQuery.isLoading || tracksQuery.isLoading || collectionsQuery.isLoading
 
@@ -218,12 +221,13 @@ export const useNotifications = (options?: Config) => {
 
   // Return all pages except the last one if it's still loading entity data
   const notifications = query.data?.pages.slice(0, -1).flat() ?? []
-  if (!isLatestPageLoading && lastPage) {
+  if (!isLatestPagePending && lastPage) {
     notifications.push(...lastPage)
   }
 
   return {
     ...query,
+    isPending: query.isPending || isLatestPagePending,
     isLoading: query.isLoading || isLatestPageLoading,
     isError,
     notifications
