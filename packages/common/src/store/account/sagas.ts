@@ -158,19 +158,27 @@ function* initializeMetricsForUser({
   }
 }
 
-export function* fetchAccountAsync() {
+export function* fetchAccountAsync({
+  shouldMarkAccountAsLoading
+}: {
+  shouldMarkAccountAsLoading: boolean
+}) {
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
   const remoteConfigInstance = yield* getContext('remoteConfigInstance')
   const authService = yield* getContext('authService')
   const localStorage = yield* getContext('localStorage')
   const sdk = yield* getSDK()
-  const accountStatus = yield* select(getAccountStatus)
+
+  // Don't revert successful local account fetch
+  if (shouldMarkAccountAsLoading) {
+    yield* put(fetchAccountRequested())
+  }
 
   const { accountWalletAddress: wallet, web3WalletAddress } = yield* call([
     authService,
     authService.getWalletAddresses
   ])
-  console.log({ wallet, accountStatus })
+
   if (!wallet) {
     yield* put(
       fetchAccountFailed({
@@ -178,11 +186,6 @@ export function* fetchAccountAsync() {
       })
     )
     return
-  }
-
-  // Don't revert successful local account fetch
-  if (accountStatus !== Status.SUCCESS) {
-    yield* put(fetchAccountRequested())
   }
 
   const accountData: AccountUserMetadata | undefined = yield* call(
@@ -534,7 +537,12 @@ function* handleFetchAccountSucceeded() {
 }
 
 function* watchFetchAccount() {
-  yield* takeEvery(fetchAccount.type, fetchAccountAsync)
+  yield* takeEvery(
+    fetchAccount.type,
+    function* (action: ReturnType<typeof fetchAccount>) {
+      yield* call(fetchAccountAsync, action.payload)
+    }
+  )
 }
 
 function* watchFetchAccountFailed() {

@@ -608,7 +608,7 @@ function* createGuestAccount(
           sdk.users.createGuestAccount
         ])
         yield* call(confirmTransaction, blockHash, blockNumber)
-        yield* call(fetchAccountAsync)
+        yield* call(fetchAccountAsync, { shouldMarkAccountAsLoading: true })
 
         const userBank = yield* call(getOrCreateUSDCUserBank)
         if (!userBank) {
@@ -889,7 +889,7 @@ function* signUp() {
         },
         function* () {
           yield* put(signOnActions.sendWelcomeEmail(name))
-          yield* call(fetchAccountAsync)
+          yield* call(fetchAccountAsync, { shouldMarkAccountAsLoading: true })
           yield* call(
             waitForValue,
             getFollowIds,
@@ -1051,7 +1051,9 @@ function* signIn(action: ReturnType<typeof signOnActions.signIn>) {
 
     // Now that we have verified the user is valid, run the account fetch flow,
     // which will pull cached account data from call above.
-    yield* put(accountActions.fetchAccount())
+    yield* put(
+      accountActions.fetchAccount({ shouldMarkAccountAsLoading: true })
+    )
     yield* put(signOnActions.signInSucceeded())
     const route = yield* select(getRouteOnCompletion)
 
