@@ -1,4 +1,4 @@
-import { useCallback, useContext, useState } from 'react'
+import { useCallback, useContext, useMemo, useState } from 'react'
 
 import type { TrackMetadataForUpload } from '@audius/common/store'
 
@@ -37,7 +37,7 @@ export const CompleteTrackScreen = () => {
   )
 
   if (!track) return null
-  const { metadata } = track
+  const metadata = useMemo(() => track.metadata, [])
 
   return (
     <EditTrackScreen

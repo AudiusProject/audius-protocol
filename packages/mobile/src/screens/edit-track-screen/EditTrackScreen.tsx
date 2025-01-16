@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react'
+import { useCallback, useContext, useMemo } from 'react'
 
 import { useUSDCPurchaseConfig } from '@audius/common/hooks'
 import { isContentUSDCPurchaseGated } from '@audius/common/models'
@@ -20,6 +20,7 @@ import { EditTrackNavigator } from './EditTrackNavigator'
 import { BPM } from './screens/KeyBpmScreen'
 import type { FormValues, EditTrackScreenProps } from './types'
 import { getUploadMetadataFromFormValues } from './util'
+import { UploadFileContext } from '../upload-screen/screens/UploadFileContext'
 
 const { computeLicenseVariables, ALL_RIGHTS_RESERVED_TYPE } = creativeCommons
 
@@ -227,39 +228,48 @@ const getInitialBpm = (bpm: number | null | undefined) => {
 
 export const EditTrackScreen = (props: EditTrackScreenProps) => {
   const editTrackSchema = toFormikValidationSchema(useEditTrackSchema())
+  const { track } = useContext(UploadFileContext)
 
   const { initialValues: initialValuesProp, onSubmit, ...screenProps } = props
 
-  const initialValues: FormValues = {
-    ...initialValuesProp,
-    entityType: 'track',
-    licenseType: computeLicenseVariables(
-      initialValuesProp.license || ALL_RIGHTS_RESERVED_TYPE
-    ),
-    musical_key: initialValuesProp.musical_key
-      ? parseMusicalKey(initialValuesProp.musical_key)
-      : undefined,
-    bpm: getInitialBpm(initialValuesProp.bpm)
-  }
+  const initialValues: FormValues = useMemo(() => {
+    const commonProps = {
+      licenseType: computeLicenseVariables(
+        initialValuesProp.license || ALL_RIGHTS_RESERVED_TYPE
+      ),
+      musical_key: initialValuesProp.musical_key
+        ? parseMusicalKey(initialValuesProp.musical_key)
+        : undefined,
+      bpm: getInitialBpm(initialValuesProp.bpm)
+    }
+
+    if (initialValuesProp.isUpload && track) {
+      return {
+        ...track.metadata,
+        isUpload: initialValuesProp.isUpload,
+        entityType: 'track',
+        ...commonProps
+      }
+    } else {
+      return { ...initialValuesProp, entityType: 'track', ...commonProps }
+    }
+  }, [initialValuesProp, track])
 
   const handleSubmit = useCallback(
     (values: FormValues, { setSubmitting }) => {
-      const metadata = getUploadMetadataFromFormValues(
-        values,
-        initialValuesProp
-      )
+      const metadata = getUploadMetadataFromFormValues(values, initialValues)
 
       // submit the metadata
       onSubmit(metadata)
       setSubmitting(false)
     },
-    [initialValuesProp, onSubmit]
+    [initialValues, onSubmit]
   )
 
   return (
     <Formik<FormValues>
       initialValues={initialValues}
-      enableReinitialize
+      enableReinitialize={!initialValuesProp.isUpload}
       onSubmit={handleSubmit}
       validationSchema={editTrackSchema}
     >
