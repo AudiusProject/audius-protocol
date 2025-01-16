@@ -23,7 +23,7 @@ import {
   isEarliestUnread,
   chatCanFetchMoreMessages
 } from '@audius/common/utils'
-import { Id } from '@audius/sdk'
+import { OptionalId } from '@audius/sdk'
 import { ResizeObserver } from '@juggle/resize-observer'
 import cn from 'classnames'
 import { throttle } from 'lodash'
@@ -79,7 +79,7 @@ export const ChatMessageList = forwardRef<HTMLDivElement, ChatMessageListProps>(
       useCanSendMessage(chatId)
     const chat = useSelector((state) => getChat(state, chatId ?? ''))
     const userId = useSelector(accountSelectors.getUserId)
-    const currentUserId = userId ? Id.parse(userId) : null
+    const currentUserId = OptionalId.parse(userId) ?? null
     const [unreadIndicatorEl, setUnreadIndicatorEl] =
       useState<HTMLDivElement | null>(null)
     const [, setLastScrolledChatId] = useState<string>()

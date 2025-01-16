@@ -1,4 +1,4 @@
-import { Id, User } from '@audius/sdk'
+import { OptionalId, User } from '@audius/sdk'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 
 import { userMetadataToSdk } from '~/adapters/user'
@@ -27,7 +27,7 @@ export const useUpdateUser = () => {
     mutationFn: async ({ userId, metadata, ...params }: UpdateUserParams) => {
       if (!audiusSdk) throw new Error('SDK not initialized')
 
-      const encodedUserId = Id.parse(userId)
+      const encodedUserId = OptionalId.parse(userId)
       if (!encodedUserId) throw new Error('Invalid ID')
 
       const sdkMetadata = userMetadataToSdk(metadata as UserMetadata)

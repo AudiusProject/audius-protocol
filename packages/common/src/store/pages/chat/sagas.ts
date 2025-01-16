@@ -692,7 +692,7 @@ function* doFetchBlockees() {
     yield* put(
       fetchBlockeesSucceeded({
         blockees: data
-          .map((encodedId) => HashId.parse(encodedId))
+          .map((encodedId) => OptionalHashId.parse(encodedId))
           .filter(removeNullable)
       })
     )
@@ -714,7 +714,7 @@ function* doFetchBlockers() {
     yield* put(
       fetchBlockersSucceeded({
         blockers: data
-          .map((encodedId) => HashId.parse(encodedId))
+          .map((encodedId) => OptionalHashId.parse(encodedId))
           .filter(removeNullable)
       })
     )

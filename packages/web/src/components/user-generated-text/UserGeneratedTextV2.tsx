@@ -26,7 +26,7 @@ import {
   Track,
   User,
   Playlist,
-  HashId
+  OptionalHashId
 } from '@audius/sdk'
 import { omit } from 'lodash'
 import { useSelector } from 'react-redux'
@@ -123,19 +123,19 @@ const Link = ({
             other.onClick?.(
               e,
               'track',
-              HashId.parse(unfurledContentObject.track.id) ?? 0
+              OptionalHashId.parse(unfurledContentObject.track.id) ?? 0
             )
           } else if (unfurledContentObject.collection) {
             other.onClick?.(
               e,
               'collection',
-              HashId.parse(unfurledContentObject.collection.id) ?? 0
+              OptionalHashId.parse(unfurledContentObject.collection.id) ?? 0
             )
           } else if (unfurledContentObject.user) {
             other.onClick?.(
               e,
               'user',
-              HashId.parse(unfurledContentObject.user.id) ?? 0
+              OptionalHashId.parse(unfurledContentObject.user.id) ?? 0
             )
           }
         } else {

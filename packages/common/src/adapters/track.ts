@@ -5,9 +5,10 @@ import {
   type Mood,
   type NativeFile,
   type TrackFilesMetadata,
-  HashId,
+  OptionalHashId,
   OptionalId,
-  Id
+  Id,
+  HashId
 } from '@audius/sdk'
 import camelcaseKeys from 'camelcase-keys'
 import dayjs from 'dayjs'
@@ -46,8 +47,8 @@ export const trackSegmentFromSDK = ({
 export const userTrackMetadataFromSDK = (
   input: full.TrackFull | full.SearchTrackFull
 ): UserTrackMetadata | undefined => {
-  const decodedTrackId = HashId.parse(input.id)
-  const decodedOwnerId = HashId.parse(input.userId)
+  const decodedTrackId = OptionalHashId.parse(input.id)
+  const decodedOwnerId = OptionalHashId.parse(input.userId)
   const user = userMetadataFromSDK(input.user)
   if (!decodedTrackId || !decodedOwnerId || !user) {
     return undefined

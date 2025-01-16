@@ -45,7 +45,13 @@ import {
   makeUid,
   waitForAccount
 } from '@audius/common/utils'
-import { Id, OptionalId, HashId, ProgressHandler, AudiusSdk } from '@audius/sdk'
+import {
+  Id,
+  OptionalId,
+  ProgressHandler,
+  AudiusSdk,
+  OptionalHashId
+} from '@audius/sdk'
 import { mapValues } from 'lodash'
 import { Channel, Task, buffers, channel } from 'redux-saga'
 import {
@@ -304,9 +310,7 @@ function* publishWorker(
         metadata
       )
 
-      const decodedTrackId = updatedTrackId
-        ? HashId.parse(updatedTrackId)
-        : null
+      const decodedTrackId = OptionalHashId.parse(updatedTrackId)
 
       if (decodedTrackId) {
         yield* put(responseChannel, {

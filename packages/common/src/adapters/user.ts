@@ -1,5 +1,6 @@
 import {
   HashId,
+  OptionalHashId,
   OptionalId,
   type full,
   type UpdateProfileRequest
@@ -30,7 +31,7 @@ import { transformAndCleanList } from './utils'
 export const userMetadataFromSDK = (
   input: full.UserFull
 ): UserMetadata | undefined => {
-  const decodedUserId = HashId.parse(input.id)
+  const decodedUserId = OptionalHashId.parse(input.id)
   if (!decodedUserId) {
     return undefined
   }

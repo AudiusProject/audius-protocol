@@ -1,4 +1,4 @@
-import { Id } from '@audius/sdk'
+import { OptionalId } from '@audius/sdk'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useDispatch } from 'react-redux'
 
@@ -25,7 +25,7 @@ export const useTracks = (trackIds: ID[], config?: Config) => {
     queryKey: [QUERY_KEYS.tracks, trackIds],
     queryFn: async () => {
       const encodedIds = trackIds
-        .map((id) => Id.parse(id))
+        .map((id) => OptionalId.parse(id))
         .filter((id): id is string => id !== null)
       if (encodedIds.length === 0) return []
       const { data } = await audiusSdk!.full.tracks.getBulkTracks({

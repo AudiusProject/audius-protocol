@@ -1,6 +1,6 @@
 import {
   Comment as CommentSDK,
-  HashId,
+  OptionalHashId,
   ReplyComment as ReplyCommentSDK
 } from '@audius/sdk'
 
@@ -10,8 +10,8 @@ import { transformAndCleanList } from './utils'
 
 export const commentFromSDK = (input: CommentSDK): Comment | undefined => {
   const { id, userId, replies, ...rest } = input
-  const decodedId = HashId.parse(id)
-  const decodedUserId = HashId.parse(userId)
+  const decodedId = OptionalHashId.parse(id)
+  const decodedUserId = OptionalHashId.parse(userId)
 
   if (!decodedId) {
     return undefined
@@ -32,8 +32,8 @@ export const replyCommentFromSDK = (
   input: ReplyCommentSDK
 ): ReplyComment | undefined => {
   const { id, userId, ...rest } = input
-  const decodedId = HashId.parse(id)
-  const decodedUserId = HashId.parse(userId)
+  const decodedId = OptionalHashId.parse(id)
+  const decodedUserId = OptionalHashId.parse(userId)
 
   if (!decodedId || !decodedUserId) {
     return undefined

@@ -15,7 +15,7 @@ import {
   isTrackUrl
 } from '@audius/common/utils'
 import { Flex, IconError, IconPlus } from '@audius/harmony'
-import { HashId, Id } from '@audius/sdk'
+import { HashId, Id, OptionalHashId } from '@audius/sdk'
 import cn from 'classnames'
 import { find } from 'linkifyjs'
 import { useDispatch } from 'react-redux'
@@ -62,7 +62,7 @@ export const ChatMessageListItem = (props: ChatMessageListItemProps) => {
   const reactionUsers = useProxySelector(
     (state) =>
       cacheUsersSelectors.getUsers(state, {
-        ids: message.reactions?.map((r) => HashId.parse(r.user_id)!)
+        ids: message.reactions?.map((r) => HashId.parse(r.user_id))
       }),
     [message]
   )
@@ -156,7 +156,9 @@ export const ChatMessageListItem = (props: ChatMessageListItemProps) => {
                 key={reaction.user_id}
                 width={48}
                 height={48}
-                title={reactionUsers[HashId.parse(reaction.user_id)!]?.name}
+                title={
+                  reactionUsers[OptionalHashId.parse(reaction.user_id)!]?.name
+                }
                 disableClickAnimation
               />
             )
