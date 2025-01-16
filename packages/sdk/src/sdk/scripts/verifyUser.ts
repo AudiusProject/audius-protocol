@@ -2,10 +2,9 @@ import { program } from 'commander'
 
 import {
   sdk as audiusSdk,
-  EntityType,
-  EntityManagerAction,
-  HashId
-} from '@audius/sdk'
+} from '../sdk'
+import { EntityManagerAction, EntityType } from '../services'
+import { HashId } from '../types/HashId'
 
 program
   .command('verify')
