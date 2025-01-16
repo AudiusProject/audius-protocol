@@ -23,7 +23,7 @@ import { getSearch } from 'common/store/search-bar/selectors'
 import { push } from 'utils/navigation'
 import { getPathname } from 'utils/route'
 
-import SearchBar from './DesktopSearchBarInner'
+import DesktopSearchbar from './DesktopSearchBar'
 
 const { profilePage, collectionPage, SEARCH_PAGE } = route
 const { addItem: addRecentSearch } = searchActions
@@ -159,30 +159,27 @@ class ConnectedSearchBar extends Component {
   onClear = () => {
     this.props.clearSearch()
     this.setState({ value: '' })
-
-    const locationSearchParams = new URLSearchParams(
-      this.props.history.location.search
-    )
-
-    locationSearchParams.delete('query')
-
-    let newPath = '/search'
-
     const searchMatch = matchPath(getPathname(this.props.history.location), {
       path: SEARCH_PAGE
     })
 
     if (searchMatch) {
-      newPath = generatePath(SEARCH_PAGE, {
+      const locationSearchParams = new URLSearchParams(
+        this.props.history.location.search
+      )
+
+      locationSearchParams.delete('query')
+
+      const newPath = generatePath(SEARCH_PAGE, {
         ...searchMatch.params
       })
-    }
 
-    this.props.history.push({
-      pathname: newPath,
-      search: locationSearchParams.toString(),
-      state: {}
-    })
+      this.props.history.push({
+        pathname: newPath,
+        search: locationSearchParams.toString(),
+        state: {}
+      })
+    }
   }
 
   render() {
@@ -291,7 +288,7 @@ class ConnectedSearchBar extends Component {
     const { status, searchText } = this.props.search
     return (
       <Box>
-        <SearchBar
+        <DesktopSearchbar
           value={this.state.value}
           isTagSearch={this.isTagSearch()}
           isViewingSearchPage={this.props.isViewingSearchPage}

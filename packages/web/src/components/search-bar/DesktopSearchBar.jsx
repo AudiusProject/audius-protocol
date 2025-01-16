@@ -22,7 +22,7 @@ import { Transition } from 'react-spring/renderprops.cjs'
 import loadingSpinner from 'assets/animations/loadingSpinner.json'
 
 import styles from './DesktopSearchBar.module.css'
-import SearchBarResult from './SearchBarResultLegacy.jsx'
+import SearchBarResult from './SearchBarResult'
 
 const SEARCH_BAR_OPTION = 'SEARCH_BAR_OPTION'
 const ALL_RESULTS_OPTION = 'ALL_RESULTS_OPTION'
@@ -54,7 +54,7 @@ const TagSearchPopup = ({ tag, style, onClick, disabled, focused }) => (
   </div>
 )
 
-class SearchBar extends Component {
+class DesktopSearchbar extends Component {
   constructor(props) {
     super(props)
     this.state = {
@@ -386,7 +386,7 @@ class SearchBar extends Component {
       !isTagSearch && this.state.open && !this.props.isViewingSearchPage
     const showTagPopup =
       isTagSearch && this.state.open && !this.state.shouldDismissTagPopup
-    const showSpinner = status === Status.LOADING && this.state.open
+    const showSpinner = status === Status.LOADING
 
     const renderSuffix = () => {
       if (this.state.value && !showSpinner) {
@@ -484,7 +484,7 @@ class SearchBar extends Component {
   }
 }
 
-SearchBar.propTypes = {
+DesktopSearchbar.propTypes = {
   dataSource: PropTypes.object,
   resultsCount: PropTypes.number,
   onSearch: PropTypes.func,
@@ -493,9 +493,9 @@ SearchBar.propTypes = {
   goToRoute: PropTypes.func
 }
 
-SearchBar.defaultProps = {
+DesktopSearchbar.defaultProps = {
   dataSource: [],
   resultsCount: 0
 }
 
-export default SearchBar
+export default DesktopSearchbar
