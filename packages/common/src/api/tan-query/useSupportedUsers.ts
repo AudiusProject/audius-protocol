@@ -1,8 +1,9 @@
+import { Id, OptionalId } from '@audius/sdk'
 import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query'
 import { useDispatch } from 'react-redux'
 
 import { useAudiusQueryContext } from '~/audius-query'
-import { ID, Id, OptionalId } from '~/models/Identifiers'
+import { ID } from '~/models/Identifiers'
 import { supportedUserMetadataListFromSDK } from '~/models/Tipping'
 import { SUPPORTING_PAGINATION_SIZE } from '~/utils/constants'
 

@@ -16,11 +16,17 @@ import {
   formatCollectionName,
   formatUserName,
   handleRegex,
-  decodeHashId,
   squashNewLines
 } from '@audius/common/utils'
 import { Text, TextProps } from '@audius/harmony'
-import { CommentMention, ResolveApi, Track, User, Playlist } from '@audius/sdk'
+import {
+  CommentMention,
+  ResolveApi,
+  Track,
+  User,
+  Playlist,
+  OptionalHashId
+} from '@audius/sdk'
 import { omit } from 'lodash'
 import { useAsync } from 'react-use'
 
@@ -113,19 +119,19 @@ const Link = ({
             other.onClick?.(
               e,
               'track',
-              decodeHashId(unfurledContentObject.track.id) ?? 0
+              OptionalHashId.parse(unfurledContentObject.track.id) ?? 0
             )
           } else if (unfurledContentObject.collection) {
             other.onClick?.(
               e,
               'collection',
-              decodeHashId(unfurledContentObject.collection.id) ?? 0
+              OptionalHashId.parse(unfurledContentObject.collection.id) ?? 0
             )
           } else if (unfurledContentObject.user) {
             other.onClick?.(
               e,
               'user',
-              decodeHashId(unfurledContentObject.user.id) ?? 0
+              OptionalHashId.parse(unfurledContentObject.user.id) ?? 0
             )
           }
         } else {

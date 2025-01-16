@@ -1,10 +1,10 @@
+import { Id } from '@audius/sdk'
 import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query'
 import { useDispatch } from 'react-redux'
 
 import { userTrackMetadataFromSDK } from '~/adapters/track'
 import { transformAndCleanList } from '~/adapters/utils'
 import { useAudiusQueryContext } from '~/audius-query'
-import { OptionalId } from '~/models/Identifiers'
 import { TimeRange } from '~/models/TimeRange'
 import { Track } from '~/models/Track'
 import { StringKeys } from '~/services/remote-config'
@@ -46,7 +46,7 @@ export const useTrending = (args: GetTrendingArgs, options: Config) => {
       const args = {
         time: timeRange,
         genre: genre ?? undefined,
-        userId: OptionalId.parse(currentUserId),
+        userId: Id.parse(currentUserId),
         limit: pageSize,
         offset: pageParam,
         version

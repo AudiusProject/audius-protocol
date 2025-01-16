@@ -1,9 +1,8 @@
-import { full } from '@audius/sdk'
+import { full, Id } from '@audius/sdk'
 import { useInfiniteQuery } from '@tanstack/react-query'
 
 import { audioTransactioFromSdk } from '~/adapters/audioTransactions'
 import { useAudiusQueryContext } from '~/audius-query'
-import { Id } from '~/models/Identifiers'
 import {
   TransactionDetails,
   TransactionType

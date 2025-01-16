@@ -1,7 +1,7 @@
+import { Id } from '@audius/sdk'
 import { call, takeEvery, select, put } from 'typed-redux-saga'
 
 import { playlistUpdateFromSDK, transformAndCleanList } from '~/adapters'
-import { Id } from '~/models'
 import { Name } from '~/models/Analytics'
 
 import { getUserId } from '../account/selectors'

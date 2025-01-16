@@ -1,9 +1,9 @@
+import { Id } from '@audius/sdk'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { userTrackMetadataFromSDK } from '~/adapters/track'
 import { useAudiusQueryContext } from '~/audius-query'
-import { OptionalId } from '~/models'
 import { getUserId } from '~/store/account/selectors'
 
 import { QUERY_KEYS } from './queryKeys'
@@ -32,7 +32,7 @@ export const useTrackByPermalink = (
       const sdk = await audiusSdk()
       const { data = [] } = await sdk.full.tracks.getBulkTracks({
         permalink: [permalink!],
-        userId: OptionalId.parse(currentUserId)
+        userId: Id.parse(currentUserId)
       })
 
       const track = data[0] ? userTrackMetadataFromSDK(data[0]) : null

@@ -1,9 +1,9 @@
+import { Id } from '@audius/sdk'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { userCollectionMetadataFromSDK } from '~/adapters/collection'
 import { useAudiusQueryContext } from '~/audius-query'
-import { OptionalId } from '~/models'
 import { getUserId } from '~/store/account/selectors'
 
 import { QUERY_KEYS } from './queryKeys'
@@ -40,7 +40,7 @@ export const useCollectionByPermalink = (
         {
           handle,
           slug,
-          userId: OptionalId.parse(currentUserId)
+          userId: Id.parse(currentUserId)
         }
       )
 

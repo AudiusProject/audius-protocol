@@ -1,9 +1,10 @@
+import { Id } from '@audius/sdk'
 import { useQuery } from '@tanstack/react-query'
 
 import { transformAndCleanList } from '~/adapters'
 import { favoriteFromSDK } from '~/adapters/favorite'
 import { useAudiusQueryContext } from '~/audius-query'
-import { ID, Id } from '~/models/Identifiers'
+import { ID } from '~/models/Identifiers'
 
 import { QUERY_KEYS } from './queryKeys'
 import { Config } from './types'

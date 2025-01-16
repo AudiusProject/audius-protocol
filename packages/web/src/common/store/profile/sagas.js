@@ -2,7 +2,7 @@ import {
   userMetadataListFromSDK,
   userWalletsFromSDK
 } from '@audius/common/adapters'
-import { Kind, Id } from '@audius/common/models'
+import { Kind } from '@audius/common/models'
 import {
   accountSelectors,
   cacheActions,
@@ -23,6 +23,7 @@ import {
   isResponseError,
   route
 } from '@audius/common/utils'
+import { Id } from '@audius/sdk'
 import { merge } from 'lodash'
 import {
   all,

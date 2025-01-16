@@ -1,3 +1,4 @@
+import { OptionalId } from '@audius/sdk'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useDispatch } from 'react-redux'
 
@@ -5,7 +6,7 @@ import { userCollectionMetadataFromSDK } from '~/adapters/collection'
 import { transformAndCleanList } from '~/adapters/utils'
 import { useAudiusQueryContext } from '~/audius-query'
 import { ID } from '~/models/Identifiers'
-import { encodeHashId } from '~/utils/hashIds'
+import { removeNullable } from '~/utils'
 
 import { QUERY_KEYS } from './queryKeys'
 import { Config } from './types'
@@ -22,10 +23,10 @@ export const useCollections = (
   return useQuery({
     queryKey: [QUERY_KEYS.collections, collectionIds],
     queryFn: async () => {
-      const encodedIds = collectionIds!
-        .map(encodeHashId)
-        .filter((id): id is string => id !== null)
-      if (encodedIds.length === 0) return []
+      const encodedIds = collectionIds
+        ?.map((id) => OptionalId.parse(id))
+        .filter(removeNullable)
+      if (!encodedIds || encodedIds.length === 0) return []
       const sdk = await audiusSdk()
       const { data } = await sdk.full.playlists.getBulkPlaylists({
         id: encodedIds
@@ -41,9 +42,6 @@ export const useCollections = (
       return collections
     },
     staleTime: options?.staleTime,
-    enabled:
-      options?.enabled !== false &&
-      collectionIds !== null &&
-      collectionIds !== undefined
+    enabled: options?.enabled !== false && !!collectionIds
   })
 }

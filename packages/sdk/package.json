@@ -58,6 +58,7 @@
     "typecheck": "tsc --noEmit",
     "verify": "npm run lint && npm run typecheck",
     "sdk:config": "tsx ./src/sdk/scripts/generateServicesConfig.ts",
+    "sdk:verify-user": "tsx ./src/sdk/scripts/verifyUser.ts",
     "gen": "npm run gen:prod",
     "gen:dev": "npm run gen:dev:default ; npm run gen:dev:full",
     "gen:dev:default": "node ./src/sdk/api/generator/gen.js --env dev",

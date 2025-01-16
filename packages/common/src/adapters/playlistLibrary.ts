@@ -1,4 +1,4 @@
-import type { full } from '@audius/sdk'
+import { OptionalHashId, type full } from '@audius/sdk'
 
 import {
   PlaylistLibrary,
@@ -7,7 +7,6 @@ import {
   PlaylistLibraryItem,
   PlaylistUpdate
 } from '~/models/PlaylistLibrary'
-import { decodeHashId } from '~/utils'
 
 import { transformAndCleanList } from './utils'
 
@@ -17,7 +16,7 @@ const playlistIdentifierFromSDK = (
   // Regular playlists need the id decoded. All others can pass through
   // as they are.
   if (input.type === 'playlist') {
-    const playlist_id = decodeHashId(input.playlist_id)
+    const playlist_id = OptionalHashId.parse(input.playlist_id)
     return playlist_id ? { type: 'playlist', playlist_id } : null
   }
   return input
@@ -52,7 +51,7 @@ export const playlistLibraryFromSDK = (
 export const playlistUpdateFromSDK = (
   input: full.PlaylistUpdate
 ): PlaylistUpdate | undefined => {
-  const playlist_id = decodeHashId(input.playlistId)
+  const playlist_id = OptionalHashId.parse(input.playlistId)
   return playlist_id
     ? {
         playlist_id,

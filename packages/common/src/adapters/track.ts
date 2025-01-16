@@ -1,10 +1,14 @@
-import type {
-  full,
-  CrossPlatformFile,
-  Genre,
-  Mood,
-  NativeFile,
-  TrackFilesMetadata
+import {
+  type full,
+  type CrossPlatformFile,
+  type Genre,
+  type Mood,
+  type NativeFile,
+  type TrackFilesMetadata,
+  HashId,
+  Id,
+  OptionalHashId,
+  OptionalId
 } from '@audius/sdk'
 import camelcaseKeys from 'camelcase-keys'
 import dayjs from 'dayjs'
@@ -13,8 +17,6 @@ import snakecaseKeys from 'snakecase-keys'
 
 import {
   Copyright,
-  Id,
-  OptionalId,
   RightsController,
   StemCategory,
   TrackSegment
@@ -22,7 +24,6 @@ import {
 import { StemTrackMetadata, UserTrackMetadata } from '~/models/Track'
 import type { TrackMetadataForUpload } from '~/store/upload/types'
 import { formatMusicalKey, License, Maybe, squashNewLines } from '~/utils'
-import { decodeHashId } from '~/utils/hashIds'
 
 import { accessConditionsFromSDK } from './accessConditionsFromSDK'
 import { accessConditionsToSDK } from './accessConditionsToSDK'
@@ -46,8 +47,8 @@ export const trackSegmentFromSDK = ({
 export const userTrackMetadataFromSDK = (
   input: full.TrackFull | full.SearchTrackFull
 ): UserTrackMetadata | undefined => {
-  const decodedTrackId = decodeHashId(input.id)
-  const decodedOwnerId = decodeHashId(input.userId)
+  const decodedTrackId = OptionalHashId.parse(input.id)
+  const decodedOwnerId = OptionalHashId.parse(input.userId)
   const user = userMetadataFromSDK(input.user)
   if (!decodedTrackId || !decodedOwnerId || !user) {
     return undefined
@@ -175,7 +176,7 @@ export const stemTrackMetadataFromSDK = (
   input: full.StemFull
 ): StemTrackMetadata | undefined => {
   const [id, parentId, ownerId] = [input.id, input.parentId, input.userId].map(
-    decodeHashId
+    (id) => HashId.parse(id)
   )
   if (!(id && parentId && ownerId)) return undefined
 

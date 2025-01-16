@@ -8,9 +8,7 @@ import {
   CollectionMetadata,
   Collection,
   UserCollectionMetadata,
-  ID,
-  Id,
-  OptionalId
+  ID
 } from '@audius/common/models'
 import {
   accountSelectors,
@@ -22,6 +20,7 @@ import {
   getSDK
 } from '@audius/common/store'
 import { makeUid, Nullable } from '@audius/common/utils'
+import { Id, OptionalId } from '@audius/sdk'
 import { chunk } from 'lodash'
 import { all, call, select } from 'typed-redux-saga'
 

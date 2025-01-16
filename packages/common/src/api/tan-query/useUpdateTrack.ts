@@ -1,11 +1,11 @@
-import { Track } from '@audius/sdk'
+import { Id, Track } from '@audius/sdk'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useDispatch, useStore } from 'react-redux'
 
 import { fileToSdk, trackMetadataForUploadToSdk } from '~/adapters/track'
 import { useAudiusQueryContext } from '~/audius-query'
 import { Feature } from '~/models/ErrorReporting'
-import { Id, ID } from '~/models/Identifiers'
+import { ID } from '~/models/Identifiers'
 import { CommonState } from '~/store/commonStore'
 import { stemsUploadSelectors } from '~/store/stems-upload'
 import { TrackMetadataForUpload } from '~/store/upload'

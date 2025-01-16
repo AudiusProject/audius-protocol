@@ -1,12 +1,4 @@
-import {
-  Name,
-  Kind,
-  ID,
-  Track,
-  User,
-  Id,
-  OptionalId
-} from '@audius/common/models'
+import { Name, Kind, ID, Track, User } from '@audius/common/models'
 import {
   accountSelectors,
   accountActions,
@@ -22,12 +14,12 @@ import {
 } from '@audius/common/store'
 import {
   formatShareText,
-  encodeHashId,
   makeKindId,
   waitForValue,
   removeNullable,
   getFilename
 } from '@audius/common/utils'
+import { Id, OptionalId } from '@audius/sdk'
 import {
   call,
   select,
@@ -668,8 +660,8 @@ function* downloadTracks({
         tracks.map(async ({ trackId }) => {
           try {
             await sdk.tracks.recordTrackDownload({
-              userId: userId ? encodeHashId(userId)! : undefined,
-              trackId: encodeHashId(trackId)!
+              userId: OptionalId.parse(userId),
+              trackId: Id.parse(trackId)
             })
             console.debug('Recorded download for track', trackId)
           } catch (e) {

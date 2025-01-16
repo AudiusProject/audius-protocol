@@ -2,7 +2,7 @@ import {
   transformAndCleanList,
   userCollectionMetadataFromSDK
 } from '@audius/common/adapters'
-import { Id, OptionalId, Track } from '@audius/common/models'
+import { Track } from '@audius/common/models'
 import { IntKeys } from '@audius/common/services'
 import {
   accountSelectors,
@@ -11,6 +11,7 @@ import {
   getSDK
 } from '@audius/common/store'
 import { waitForValue, doEvery, route } from '@audius/common/utils'
+import { Id, OptionalId } from '@audius/sdk'
 import { each } from 'lodash'
 import moment from 'moment'
 import { EventChannel } from 'redux-saga'

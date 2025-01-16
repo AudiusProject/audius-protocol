@@ -1,9 +1,10 @@
+import { Id, OptionalId } from '@audius/sdk'
 import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query'
 import { useDispatch } from 'react-redux'
 
 import { userMetadataListFromSDK } from '~/adapters/user'
 import { useAudiusQueryContext } from '~/audius-query'
-import { Id, ID, OptionalId } from '~/models/Identifiers'
+import { ID } from '~/models/Identifiers'
 import { User } from '~/models/User'
 
 import { QUERY_KEYS } from './queryKeys'

@@ -1,19 +1,18 @@
-import { full } from '@audius/sdk'
+import { full, HashId, Id, OptionalId } from '@audius/sdk'
 
 import { transformAndCleanList, userTrackMetadataFromSDK } from '~/adapters'
 import { accountFromSDK, userMetadataListFromSDK } from '~/adapters/user'
 import { createApi } from '~/audius-query'
-import { HashId, ID, Kind, OptionalId, StringUSDC } from '~/models'
+import { ID, Kind, StringUSDC } from '~/models'
 import {
   USDCTransactionDetails,
   USDCTransactionMethod,
   USDCTransactionType
 } from '~/models/USDCTransactions'
-import { encodeHashId, isResponseError } from '~/utils'
+import { isResponseError } from '~/utils'
 import { Nullable } from '~/utils/typeUtils'
 
 import { SDKRequest } from './types'
-import { Id } from './utils'
 
 type GetUSDCTransactionListArgs = {
   userId: Nullable<ID>
@@ -189,7 +188,7 @@ const userApi = createApi({
         const { data } = await sdk.full.users.getRemixersCount({
           id: Id.parse(userId),
           userId: Id.parse(userId),
-          trackId: trackId ? encodeHashId(trackId) : undefined
+          trackId: OptionalId.parse(trackId)
         })
         return data
       },
@@ -215,7 +214,7 @@ const userApi = createApi({
         const sdk = await audiusSdk()
         const { data = [] } = await sdk.full.users.getPurchasers({
           id: Id.parse(userId),
-          contentId: contentId ? encodeHashId(contentId) : undefined,
+          contentId: OptionalId.parse(contentId),
           contentType,
           limit,
           offset
@@ -238,8 +237,8 @@ const userApi = createApi({
       ) => {
         const sdk = await audiusSdk()
         const { data } = await sdk.full.users.getPurchasersCount({
-          id: encodeHashId(userId),
-          contentId: contentId ? encodeHashId(contentId) : undefined,
+          id: Id.parse(userId),
+          contentId: OptionalId.parse(contentId),
           contentType
         })
         return data ?? 0
@@ -273,7 +272,7 @@ const userApi = createApi({
     },
     getMutedUsers: {
       async fetch({ userId }: { userId: ID }, { audiusSdk }) {
-        const encodedUserId = encodeHashId(userId) as string
+        const encodedUserId = Id.parse(userId)
         const sdk = await audiusSdk()
         const { data: users } = await sdk.full.users.getMutedUsers({
           id: encodedUserId

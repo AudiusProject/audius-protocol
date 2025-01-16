@@ -1,10 +1,4 @@
-import {
-  Id,
-  Kind,
-  OptionalId,
-  type Track,
-  Feature
-} from '@audius/common/models'
+import { Kind, type Track, Feature } from '@audius/common/models'
 import {
   accountSelectors,
   cacheTracksSelectors,
@@ -27,6 +21,7 @@ import {
   getTrackPreviewDuration,
   Nullable
 } from '@audius/common/utils'
+import { Id, OptionalId } from '@audius/sdk'
 import { EventChannel, eventChannel } from 'redux-saga'
 import {
   select,

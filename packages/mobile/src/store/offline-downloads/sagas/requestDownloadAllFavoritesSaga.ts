@@ -1,6 +1,6 @@
 import { transformAndCleanList, favoriteFromSDK } from '@audius/common/adapters'
-import { Id } from '@audius/common/models'
 import { accountSelectors, getSDK } from '@audius/common/store'
+import { Id } from '@audius/sdk'
 import { fetchAllAccountCollections } from 'common/store/saved-collections/sagas'
 import { takeEvery, select, call, put } from 'typed-redux-saga'
 

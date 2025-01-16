@@ -1,8 +1,8 @@
+import { Id } from '@audius/sdk'
 import { useQuery } from '@tanstack/react-query'
 
 import { useAudiusQueryContext } from '~/audius-query'
 import { ID } from '~/models'
-import { Id } from '~/models/Identifiers'
 
 import { QUERY_KEYS } from './queryKeys'
 import { Config } from './types'

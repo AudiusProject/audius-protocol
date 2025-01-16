@@ -1,13 +1,13 @@
 import { useCallback, useState } from 'react'
 
 import { usePurchases, usePurchasesCount } from '@audius/common/api'
-import { Id, USDCPurchaseDetails } from '@audius/common/models'
+import { USDCPurchaseDetails } from '@audius/common/models'
 import {
   accountSelectors,
   useUSDCPurchaseDetailsModal
 } from '@audius/common/store'
 import { route } from '@audius/common/utils'
-import { full } from '@audius/sdk'
+import { Id, full } from '@audius/sdk'
 import { useDispatch } from 'react-redux'
 
 import { useErrorPage } from 'hooks/useErrorPage'

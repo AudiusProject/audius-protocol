@@ -1,10 +1,10 @@
+import { OptionalId } from '@audius/sdk'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 
 import { userMetadataToSdk } from '~/adapters/user'
 import { useAudiusQueryContext } from '~/audius-query'
 import { ID } from '~/models/Identifiers'
 import { UserMetadata } from '~/models/User'
-import { encodeHashId } from '~/utils/hashIds'
 
 import { QUERY_KEYS } from './queryKeys'
 
@@ -33,7 +33,7 @@ export const useUpdateUser = () => {
     }: UpdateUserParams) => {
       const sdk = await audiusSdk()
 
-      const encodedUserId = encodeHashId(userId)
+      const encodedUserId = OptionalId.parse(userId)
       if (!encodedUserId) throw new Error('Invalid ID')
 
       const sdkMetadata = userMetadataToSdk(metadata as UserMetadata)

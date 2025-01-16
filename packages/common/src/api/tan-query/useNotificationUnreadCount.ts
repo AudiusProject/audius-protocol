@@ -1,5 +1,6 @@
 import { useEffect } from 'react'
 
+import { Id } from '@audius/sdk'
 import { useQuery } from '@tanstack/react-query'
 import { useDispatch } from 'react-redux'
 import { usePrevious } from 'react-use'
@@ -8,7 +9,6 @@ import { useAudiusQueryContext } from '~/audius-query'
 import { useRemoteVar } from '~/hooks/useRemoteVar'
 import { getBalance } from '~/store/wallet/slice'
 
-import { Id } from '../../models/Identifiers'
 import { IntKeys } from '../../services/remote-config'
 
 import { QUERY_KEYS } from './queryKeys'

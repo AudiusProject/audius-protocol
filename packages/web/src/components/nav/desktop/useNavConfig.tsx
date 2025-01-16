@@ -106,13 +106,15 @@ export const useNavConfig = () => {
         label: 'Trending',
         leftIcon: IconTrending,
         targetRoute: TRENDING_PAGE,
-        playingFromRoute
+        playingFromRoute,
+        restriction: 'none'
       }),
       createNavItemWithSpeaker({
         label: 'Explore',
         leftIcon: IconExplore,
         targetRoute: EXPLORE_PAGE,
-        playingFromRoute
+        playingFromRoute,
+        restriction: 'none'
       }),
       createNavItemWithSpeaker({
         label: 'Library',

@@ -1,10 +1,9 @@
-import { type AudiusSdk, ChatEvents } from '@audius/sdk'
+import { type AudiusSdk, ChatEvents, Id } from '@audius/sdk'
 import { Middleware } from 'redux'
 
 import { Status } from '~/models/Status'
 import { getUserId } from '~/store/account/selectors'
 import { makeBlastChatId } from '~/utils'
-import { encodeHashId } from '~/utils/hashIds'
 
 import { actions as chatActions } from './slice'
 import { ChatWebsocketError } from './types'
@@ -34,7 +33,7 @@ export const chatMiddleware =
           messageListener = ({ chatId, message }) => {
             const currentUserId = getUserId(store.getState())
             const isSelfMessage =
-              message.sender_user_id === encodeHashId(currentUserId)
+              message.sender_user_id === Id.parse(currentUserId)
             store.dispatch(
               addMessage({
                 chatId,
@@ -52,7 +51,7 @@ export const chatMiddleware =
           }) => {
             const currentUserId = getUserId(store.getState())
             const isSelfMessage =
-              message.sender_user_id === encodeHashId(currentUserId)
+              message.sender_user_id === Id.parse(currentUserId)
             // Only add blasts that current user sent as blast UI should only be visible to sender.
             if (isSelfMessage) {
               store.dispatch(

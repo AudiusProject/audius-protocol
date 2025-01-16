@@ -1,10 +1,9 @@
-import { full } from '@audius/sdk'
+import { full, HashId } from '@audius/sdk'
 
-import { HashId } from '~/models'
-import { removeNullable } from '~/utils'
+import { ID } from '~/models'
 
-const makeIdList = (input: { id: string }[]) => {
-  return input.map(({ id }) => HashId.parse(id)).filter(removeNullable)
+const makeIdList = (input: { id: string }[]): ID[] => {
+  return input.map(({ id }) => HashId.parse(id)).filter(Boolean) as ID[]
 }
 
 export const trendingIdsFromSDK = (input: full.TrendingTimesIds) => {

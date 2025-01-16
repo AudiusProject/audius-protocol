@@ -1,4 +1,4 @@
-import { full } from '@audius/sdk'
+import { full, Id } from '@audius/sdk'
 import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query'
 import { useDispatch } from 'react-redux'
 
@@ -6,7 +6,6 @@ import { userCollectionMetadataFromSDK } from '~/adapters/collection'
 import { transformAndCleanList } from '~/adapters/utils'
 import { useAudiusQueryContext } from '~/audius-query'
 import { CollectionMetadata } from '~/models/Collection'
-import { Id } from '~/models/Identifiers'
 import { CollectionType } from '~/store/saved-collections/types'
 
 import { QUERY_KEYS } from './queryKeys'

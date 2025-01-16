@@ -1,7 +1,7 @@
 import { Track } from '@audius/sdk'
 import { Dispatch } from 'redux'
-import { StemUploadWithFile } from '~/models/Stems'
 
+import { StemUploadWithFile } from '~/models/Stems'
 import { Stem } from '~/models/Track'
 import { deleteTrack } from '~/store/cache/tracks/actions'
 import { stemsUploadActions } from '~/store/stems-upload'

@@ -29,7 +29,6 @@ import { useIsUnauthorizedForHandleRedirect } from 'hooks/useManagedAccountNotAl
 import { useRequiresAccount } from 'hooks/useRequiresAccount'
 import { useTrackCoverArt } from 'hooks/useTrackCoverArt'
 import { push } from 'utils/navigation'
-import { getTrackPermalink } from '@audius/common/src/store/pages/track/selectors'
 
 const { getStems } = cacheTracksSelectors
 const { updateTrackAudio } = uploadActions

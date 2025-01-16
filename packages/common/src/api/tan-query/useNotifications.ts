@@ -1,8 +1,9 @@
+import { Id } from '@audius/sdk'
 import { useInfiniteQuery } from '@tanstack/react-query'
 
 import { notificationFromSDK, transformAndCleanList } from '~/adapters'
 import { useAudiusQueryContext } from '~/audius-query/AudiusQueryContext'
-import { Id, ID } from '~/models/Identifiers'
+import { ID } from '~/models/Identifiers'
 import {
   Entity,
   NotificationType,

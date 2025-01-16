@@ -10,8 +10,9 @@ import {
   getContext,
   getSDK
 } from '@audius/common/store'
-import { isNullOrUndefined, encodeHashId } from '@audius/common/utils'
+import { isNullOrUndefined } from '@audius/common/utils'
 import { AUDIO } from '@audius/fixed-decimal'
+import { Id } from '@audius/sdk'
 import BN from 'bn.js'
 import {
   call,
@@ -150,9 +151,8 @@ function* sendTipAsync() {
 
   const device = isNativeMobile ? 'mobile' : 'web'
 
-  const senderUserId = encodeHashId(sender.user_id)
-  const receiverUserId = encodeHashId(receiver.user_id)
-
+  const senderUserId = Id.parse(sender.user_id)
+  const receiverUserId = Id.parse(receiver.user_id)
   const amount = Number(stringAudioAmount)
 
   let senderWallet: SolanaWalletAddress | undefined

@@ -1,7 +1,7 @@
+import { Id } from '@audius/sdk'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 
 import { useAudiusQueryContext } from '~/audius-query/AudiusQueryContext'
-import { Id } from '~/models/Identifiers'
 
 import { QUERY_KEYS } from './queryKeys'
 import { useCurrentUserId } from './useCurrentUserId'
