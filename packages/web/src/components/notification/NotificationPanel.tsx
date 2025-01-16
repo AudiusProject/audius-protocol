@@ -1,6 +1,9 @@
 import { useRef, useCallback, useEffect, RefObject } from 'react'
 
-import { useNotifications } from '@audius/common/api'
+import {
+  useMarkNotificationsAsViewed,
+  useNotifications
+} from '@audius/common/api'
 import { Nullable } from '@audius/common/utils'
 import {
   Scrollbar,
@@ -61,6 +64,7 @@ export const NotificationPanel = ({ anchorRef }: NotificationPanelProps) => {
   const isNotificationModalOpen = useSelector(getNotificationModalIsOpen)
   const modalNotification = useSelector(getModalNotification)
   const isUserListOpen = useSelector(getIsUserListOpen)
+  const { mutate: markAsViewed } = useMarkNotificationsAsViewed()
 
   const panelRef = useRef<Nullable<HTMLDivElement>>(null)
 
@@ -91,6 +95,12 @@ export const NotificationPanel = ({ anchorRef }: NotificationPanelProps) => {
       dispatch(openNotificationPanel())
     }
   }, [openNotifications, dispatch])
+
+  useEffect(() => {
+    if (panelIsOpen) {
+      markAsViewed()
+    }
+  }, [panelIsOpen, markAsViewed])
 
   const userHasNoNotifications =
     (!isLoading || isError) && notifications.length === 0
