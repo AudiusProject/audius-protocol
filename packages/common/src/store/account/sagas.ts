@@ -10,13 +10,7 @@ import {
 } from 'typed-redux-saga'
 
 import { userApiFetchSaga } from '~/api/user'
-import {
-  AccountUserMetadata,
-  ErrorLevel,
-  Kind,
-  Status,
-  UserMetadata
-} from '~/models'
+import { AccountUserMetadata, ErrorLevel, Kind, UserMetadata } from '~/models'
 import { getContext } from '~/store/effects'
 import { chatActions } from '~/store/pages/chat'
 import { UPLOAD_TRACKS_SUCCEEDED } from '~/store/upload/actions'
@@ -29,7 +23,6 @@ import {
   getUserId,
   getUserHandle,
   getAccountUser,
-  getAccountStatus,
   getAccount
 } from './selectors'
 import {
