@@ -165,15 +165,12 @@ export function* fetchAccountAsync() {
   const localStorage = yield* getContext('localStorage')
   const sdk = yield* getSDK()
   const accountStatus = yield* select(getAccountStatus)
-  // Don't revert successful local account fetch
-  if (accountStatus !== Status.SUCCESS) {
-    yield* put(fetchAccountRequested())
-  }
 
   const { accountWalletAddress: wallet, web3WalletAddress } = yield* call([
     authService,
     authService.getWalletAddresses
   ])
+  console.log({ wallet, accountStatus })
   if (!wallet) {
     yield* put(
       fetchAccountFailed({
@@ -182,6 +179,12 @@ export function* fetchAccountAsync() {
     )
     return
   }
+
+  // Don't revert successful local account fetch
+  if (accountStatus !== Status.SUCCESS) {
+    yield* put(fetchAccountRequested())
+  }
+
   const accountData: AccountUserMetadata | undefined = yield* call(
     userApiFetchSaga.getUserAccount,
     {
@@ -276,6 +279,7 @@ export function* fetchAccountAsync() {
 
 function* fetchLocalAccountAsync() {
   const localStorage = yield* getContext('localStorage')
+  const authService = yield* getContext('authService')
 
   yield* put(fetchAccountRequested())
 
@@ -287,8 +291,17 @@ function* fetchLocalAccountAsync() {
     localStorage,
     localStorage.getAudiusAccountUser
   ])
+  const { accountWalletAddress: wallet } = yield* call([
+    authService,
+    authService.getWalletAddresses
+  ])
 
-  if (cachedAccount && cachedAccountUser && !cachedAccountUser.is_deactivated) {
+  if (
+    cachedAccount &&
+    cachedAccountUser &&
+    wallet &&
+    !cachedAccountUser.is_deactivated
+  ) {
     yield* put(
       cacheActions.add(Kind.USERS, [
         {
