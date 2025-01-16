@@ -1,4 +1,10 @@
-import { ChallengeRewardID, User } from '@audius/common/models'
+import { useEffect, useState } from 'react'
+
+import {
+  ChallengeRewardID,
+  SolanaWalletAddress,
+  User
+} from '@audius/common/models'
 import {
   cacheUsersSelectors,
   TransactionType,
@@ -27,6 +33,7 @@ import { isChangePositive } from 'components/audio-transactions-table/AudioTrans
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import UserBadges from 'components/user-badges/UserBadges'
 import { getChallengeConfig } from 'pages/audio-rewards-page/config'
+import { isValidSolAddress } from 'services/solana/solana'
 import { AppState } from 'store/types'
 import { push } from 'utils/navigation'
 
@@ -165,7 +172,7 @@ const dateAndMetadataBlocks = (transactionDetails: TransactionDetails) => {
               <a
                 className={styles.link}
                 href={
-                  transactionDetails.method === TransactionMethod.SEND
+                  isValidSolAddress(transactionDetails.metadata)
                     ? makeSolanaTransactionLink(transactionDetails.metadata)
                     : makeSolanaAccountLink(transactionDetails.metadata)
                 }
@@ -195,6 +202,22 @@ export const TransactionDetailsContent = ({
 }: {
   transactionDetails: TransactionDetails
 }) => {
+  const [isValidSolanaAddress, setIsValidSolanaAddress] = useState<
+    undefined | boolean
+  >(undefined)
+  useEffect(() => {
+    if (
+      transactionDetails.metadata &&
+      typeof transactionDetails.metadata === 'string'
+    ) {
+      isValidSolAddress(
+        transactionDetails.metadata as SolanaWalletAddress
+      ).then((isValid) => {
+        console.log({ isValid })
+        setIsValidSolanaAddress(isValid)
+      })
+    }
+  }, [transactionDetails.metadata])
   const isLoading =
     transactionDetails.transactionType === TransactionType.PURCHASE
       ? transactionDetails.metadata === undefined

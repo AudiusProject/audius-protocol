@@ -25,9 +25,9 @@ import {
   TextInput,
   TokenAmountInput
 } from '@audius/harmony'
-import { PublicKey } from '@solana/web3.js'
 
 import { remoteConfigInstance } from 'services/remote-config/remote-config-instance'
+import { isValidSolAddress } from 'services/solana/solana'
 
 import { ModalBodyTitle, ModalBodyWrapper } from '../WalletModal'
 
@@ -97,22 +97,12 @@ type SendInputBodyProps = {
   solWallet: WalletAddress
 }
 
-const isValidSolDestination = (wallet: SolanaWalletAddress) => {
-  try {
-    const ignored = new PublicKey(wallet)
-    return true
-  } catch (err) {
-    console.info(err)
-    return false
-  }
-}
-
 const validateSolWallet = (
   wallet: Nullable<SolanaWalletAddress>,
   ownSolWallet: WalletAddress
 ): Nullable<AddressError> => {
   if (!wallet) return 'EMPTY'
-  if (!isValidSolDestination(wallet)) return 'INVALID_SPL_ADDRESS'
+  if (!isValidSolAddress(wallet)) return 'INVALID_SPL_ADDRESS'
   if (wallet.toLowerCase() === ownSolWallet.toLowerCase()) {
     return 'SEND_TO_SELF'
   }
