@@ -13,9 +13,7 @@ import {
 } from 'common/store/pages/signon/actions'
 import { useSelector } from 'utils/reducer'
 
-const { getAccountStatus, getIsAccountComplete, getHasAccount } =
-  accountSelectors
-// const { fetchAccount } = accountActions
+const { getAccountStatus, getIsAccountComplete } = accountSelectors
 
 export type RestrictionType = 'none' | 'guest' | 'account'
 
@@ -40,7 +38,6 @@ export const useRequiresAccountCallback = <T extends (...args: any) => any>(
   returnRouteOverride?: string,
   restriction: RestrictionType = 'account'
 ) => {
-  const hasAccount = useSelector(getHasAccount)
   const isAccountComplete = useSelector(getIsAccountComplete)
   const accountStatus = useSelector(getAccountStatus)
   const dispatch = useDispatch()
@@ -59,7 +56,7 @@ export const useRequiresAccountCallback = <T extends (...args: any) => any>(
 
       const canAccessRoute = canAccess(
         restriction,
-        hasAccount,
+        accountStatus === Status.SUCCESS,
         isAccountComplete
       )
 
@@ -73,7 +70,11 @@ export const useRequiresAccountCallback = <T extends (...args: any) => any>(
         dispatch(updateRouteOnExit(returnRoute))
         dispatch(updateRouteOnCompletion(returnRoute))
         dispatch(openSignOn(/** signIn */ false))
-        dispatch(showRequiresAccountToast(hasAccount && !isAccountComplete))
+        dispatch(
+          showRequiresAccountToast(
+            accountStatus === Status.SUCCESS && !isAccountComplete
+          )
+        )
         onOpenAuthModal?.()
         return
       }
@@ -84,7 +85,6 @@ export const useRequiresAccountCallback = <T extends (...args: any) => any>(
     [
       accountStatus,
       restriction,
-      hasAccount,
       isAccountComplete,
       callback,
       dispatch,
