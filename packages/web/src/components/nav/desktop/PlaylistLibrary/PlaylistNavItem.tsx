@@ -18,10 +18,11 @@ const { collectionPage } = route
 type PlaylistNavItemProps = {
   playlistId: number
   level: number
+  isChild?: boolean
 }
 
 export const PlaylistNavItem = (props: PlaylistNavItemProps) => {
-  const { playlistId, level } = props
+  const { playlistId, level, isChild } = props
   const dispatch = useDispatch()
 
   const playlistName = useSelector(
@@ -59,6 +60,7 @@ export const PlaylistNavItem = (props: PlaylistNavItemProps) => {
       url={playlistUrl}
       isOwned={isOwnedByCurrentUser}
       level={level}
+      isChild={isChild}
       hasUpdate={hasPlaylistUpdate}
       onClick={handleClick}
     />

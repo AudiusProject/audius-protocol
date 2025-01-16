@@ -31,7 +31,8 @@ import {
   InstagramUser,
   TikTokUser,
   UserMetadata,
-  ComputedUserProperties
+  ComputedUserProperties,
+  WriteableUserMetadata
 } from '../../models'
 import { AnalyticsEvent } from '../../models/Analytics'
 import { ReportToSentryArgs } from '../../models/ErrorReporting'
@@ -238,7 +239,7 @@ export const audiusBackend = ({
     metadata,
     sdk
   }: {
-    metadata: UserMetadata &
+    metadata: WriteableUserMetadata &
       Pick<
         ComputedUserProperties,
         'updatedProfilePicture' | 'updatedCoverPhoto'

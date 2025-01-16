@@ -21,7 +21,7 @@ import { waitForRead } from 'utils/sagaHelpers'
 import tracksSagas from './lineups/sagas'
 
 const { getTrackSaves } = savedPageSelectors
-const { getAccountUser } = accountSelectors
+const { getAccountUser, getTrackSaveCount } = accountSelectors
 
 function* fetchLineupMetadatas(offset: number, limit: number) {
   const isNativeMobile = yield* getContext('isNativeMobile')
@@ -98,16 +98,16 @@ function* sendLibraryRequest({
 }
 
 function prepareParams({
-  account,
+  account: { userId, trackSaveCount },
   params
 }: {
-  account: User
+  account: { userId: number; trackSaveCount: number }
   params: ReturnType<typeof actions.fetchSaves>
 }) {
   return {
-    userId: account.user_id,
+    userId,
     offset: params.offset ?? 0,
-    limit: params.limit ?? account.track_save_count,
+    limit: params.limit ?? trackSaveCount,
     query: params.query,
     sortMethod: params.sortMethod || 'added_date',
     sortDirection: params.sortDirection || 'desc',
@@ -125,9 +125,16 @@ function* watchFetchSaves() {
     actions.FETCH_SAVES,
     function* (rawParams: ReturnType<typeof actions.fetchSaves>) {
       yield* waitForRead()
-      const account: User = yield* call(waitForValue, getAccountUser)
+      const { user_id: userId }: User = yield* call(
+        waitForValue,
+        getAccountUser
+      )
+      const trackSaveCount = yield* select(getTrackSaveCount)
       const saves = yield* select(getTrackSaves)
-      const params = prepareParams({ account, params: rawParams })
+      const params = prepareParams({
+        account: { userId, trackSaveCount },
+        params: rawParams
+      })
       const { query, sortDirection, sortMethod, offset, limit, category } =
         params
       const isSameParams =
@@ -150,7 +157,7 @@ function* watchFetchSaves() {
 
           yield* processAndCacheTracks(tracks)
 
-          const fullSaves = Array(account.track_save_count)
+          const fullSaves = Array(trackSaveCount)
             .fill(0)
             .map((_) => ({})) as Favorite[]
 

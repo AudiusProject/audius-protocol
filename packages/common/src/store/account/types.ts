@@ -1,3 +1,6 @@
+import { AccountCollection, ID, PlaylistLibrary, Status } from '~/models'
+import { Nullable } from '~/utils/typeUtils'
+
 type AccountPayload<Profile> = {
   uuid: string
   profile: Profile
@@ -37,4 +40,35 @@ export type TikTokProfile = {
   display_name: string
   avatar_large_url?: string
   is_verified: boolean
+}
+
+type FailureReason =
+  | 'ACCOUNT_DEACTIVATED'
+  | 'ACCOUNT_NOT_FOUND'
+  | 'ACCOUNT_NOT_FOUND_LOCAL'
+
+export type AccountState = {
+  collections: { [id: number]: AccountCollection }
+  userId: Nullable<number>
+  hasTracks: Nullable<boolean>
+  status: Status
+  reason: Nullable<FailureReason>
+  connectivityFailure: boolean // Did we fail from no internet connectivity?
+  needsAccountRecovery: boolean
+  walletAddresses: {
+    currentUser: string | null
+    web3User: string | null
+  }
+  playlistLibrary: Nullable<PlaylistLibrary>
+  trackSaveCount: Nullable<number>
+  guestEmail: Nullable<string>
+}
+
+export type FetchAccountFailedPayload = {
+  reason: FailureReason
+}
+
+export type RenameAccountPlaylistPayload = {
+  collectionId: ID
+  name: string
 }

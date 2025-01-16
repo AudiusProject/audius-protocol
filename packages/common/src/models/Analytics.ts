@@ -1462,7 +1462,7 @@ type BufferSpinnerShown = {
 type LinkClicking = {
   eventName: Name.LINK_CLICKING
   url: string
-  source: 'profile page' | 'track page' | 'collection page'
+  source: 'profile page' | 'track page' | 'collection page' | 'left nav'
 }
 type TagClicking = {
   eventName: Name.TAG_CLICKING
@@ -1807,8 +1807,8 @@ export type TipSource =
 type TipAudioRequest = {
   eventName: Name.TIP_AUDIO_REQUEST
   amount: StringAudio
-  senderWallet: SolanaWalletAddress
-  recipientWallet: SolanaWalletAddress
+  senderWallet?: SolanaWalletAddress
+  recipientWallet?: SolanaWalletAddress
   senderHandle: string
   recipientHandle: string
   source: TipSource
@@ -1818,8 +1818,8 @@ type TipAudioRequest = {
 type TipAudioSuccess = {
   eventName: Name.TIP_AUDIO_SUCCESS
   amount: StringAudio
-  senderWallet: SolanaWalletAddress
-  recipientWallet: SolanaWalletAddress
+  senderWallet?: SolanaWalletAddress
+  recipientWallet?: SolanaWalletAddress
   senderHandle: string
   recipientHandle: string
   source: TipSource
@@ -1829,8 +1829,8 @@ type TipAudioSuccess = {
 type TipAudioFailure = {
   eventName: Name.TIP_AUDIO_FAILURE
   amount: StringAudio
-  senderWallet: SolanaWalletAddress
-  recipientWallet: SolanaWalletAddress
+  senderWallet?: SolanaWalletAddress
+  recipientWallet?: SolanaWalletAddress
   senderHandle: string
   recipientHandle: string
   error: string
@@ -1841,8 +1841,8 @@ type TipAudioFailure = {
 type TipAudioTwitterShare = {
   eventName: Name.TIP_AUDIO_TWITTER_SHARE
   amount: StringAudio
-  senderWallet: SolanaWalletAddress
-  recipientWallet: SolanaWalletAddress
+  senderWallet?: SolanaWalletAddress
+  recipientWallet?: SolanaWalletAddress
   senderHandle: string
   recipientHandle: string
   source: TipSource
