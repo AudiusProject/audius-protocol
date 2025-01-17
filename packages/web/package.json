@@ -192,6 +192,7 @@
     "viem": "2.21.21",
     "vike": "0.4.150",
     "vike-react": "^0.3.7",
+    "wagmi": "2.14.7",
     "walletlink": "2.0.3",
     "web-vitals": "0.2.2",
     "web3modal": "1.9.3",
