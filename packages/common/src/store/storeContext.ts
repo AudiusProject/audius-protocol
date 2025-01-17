@@ -79,7 +79,6 @@ export type CommonStoreContext = {
   instagramRedirectUrl?: string
   share: (url: string, message?: string) => Promise<void> | void
   audiusSdk: () => Promise<AudiusSdk>
-  reinitializeSdk: () => Promise<AudiusSdk>
   authService: AuthService
   identityService: IdentityService
   solanaWalletService: SolanaWalletService
