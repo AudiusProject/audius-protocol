@@ -10,13 +10,7 @@ import {
 } from 'typed-redux-saga'
 
 import { userApiFetchSaga } from '~/api/user'
-import {
-  AccountUserMetadata,
-  ErrorLevel,
-  Kind,
-  Status,
-  UserMetadata
-} from '~/models'
+import { AccountUserMetadata, ErrorLevel, Kind, UserMetadata } from '~/models'
 import { getContext } from '~/store/effects'
 import { chatActions } from '~/store/pages/chat'
 import { UPLOAD_TRACKS_SUCCEEDED } from '~/store/upload/actions'
@@ -29,7 +23,6 @@ import {
   getUserId,
   getUserHandle,
   getAccountUser,
-  getAccountStatus,
   getAccount
 } from './selectors'
 import {
@@ -158,15 +151,19 @@ function* initializeMetricsForUser({
   }
 }
 
-export function* fetchAccountAsync() {
+export function* fetchAccountAsync({
+  shouldMarkAccountAsLoading
+}: {
+  shouldMarkAccountAsLoading: boolean
+}) {
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
   const remoteConfigInstance = yield* getContext('remoteConfigInstance')
   const authService = yield* getContext('authService')
   const localStorage = yield* getContext('localStorage')
   const sdk = yield* getSDK()
-  const accountStatus = yield* select(getAccountStatus)
+
   // Don't revert successful local account fetch
-  if (accountStatus !== Status.SUCCESS) {
+  if (shouldMarkAccountAsLoading) {
     yield* put(fetchAccountRequested())
   }
 
@@ -174,6 +171,7 @@ export function* fetchAccountAsync() {
     authService,
     authService.getWalletAddresses
   ])
+
   if (!wallet) {
     yield* put(
       fetchAccountFailed({
@@ -182,6 +180,7 @@ export function* fetchAccountAsync() {
     )
     return
   }
+
   const accountData: AccountUserMetadata | undefined = yield* call(
     userApiFetchSaga.getUserAccount,
     {
@@ -276,6 +275,7 @@ export function* fetchAccountAsync() {
 
 function* fetchLocalAccountAsync() {
   const localStorage = yield* getContext('localStorage')
+  const authService = yield* getContext('authService')
 
   yield* put(fetchAccountRequested())
 
@@ -287,8 +287,17 @@ function* fetchLocalAccountAsync() {
     localStorage,
     localStorage.getAudiusAccountUser
   ])
+  const { accountWalletAddress: wallet } = yield* call([
+    authService,
+    authService.getWalletAddresses
+  ])
 
-  if (cachedAccount && cachedAccountUser && !cachedAccountUser.is_deactivated) {
+  if (
+    cachedAccount &&
+    cachedAccountUser &&
+    wallet &&
+    !cachedAccountUser.is_deactivated
+  ) {
     yield* put(
       cacheActions.add(Kind.USERS, [
         {
@@ -521,7 +530,12 @@ function* handleFetchAccountSucceeded() {
 }
 
 function* watchFetchAccount() {
-  yield* takeEvery(fetchAccount.type, fetchAccountAsync)
+  yield* takeEvery(
+    fetchAccount.type,
+    function* (action: ReturnType<typeof fetchAccount>) {
+      yield* call(fetchAccountAsync, action.payload)
+    }
+  )
 }
 
 function* watchFetchAccountFailed() {
