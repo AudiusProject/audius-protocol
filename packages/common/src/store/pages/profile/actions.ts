@@ -25,10 +25,6 @@ export const FETCH_FOLLOW_USERS_FAILED = 'PROFILE/FETCH_FOLLOW_USERS_FAILED'
 
 export const DISMISS_PROFILE_METER = 'PROFILE/DISMISS_PROFILE_METER'
 
-export const FETCH_TOP_TAGS = 'PROFILE/FETCH_TOP_TAGS'
-export const FETCH_TOP_TAGS_SUCCEEDED = 'PROFILE/FETCH_TOP_TAGS_SUCCEEDED'
-export const FETCH_TOP_TAGS_FAILED = 'PROFILE/FETCH_TOP_TAGS_FAILED'
-
 export const SET_NOTIFICATION_SUBSCRIPTION =
   'PROFILE/SET_NOTIFICATION_SUBSCRIPTION'
 
@@ -125,23 +121,6 @@ export type DismissProfileMeterAction = {
   type: typeof DISMISS_PROFILE_METER
 }
 
-export type FetchTopTagsAction = {
-  type: typeof FETCH_TOP_TAGS
-  handle: string
-  userId: ID
-}
-
-export type FetchTopTagsSucceededAction = {
-  type: typeof FETCH_TOP_TAGS_SUCCEEDED
-  handle: string
-  topTags: string[]
-}
-
-export type FetchTopTagsFailedAction = {
-  type: typeof FETCH_TOP_TAGS_FAILED
-  handle: string
-}
-
 export type SetNotificationSubscriptionAction = {
   type: typeof SET_NOTIFICATION_SUBSCRIPTION
   userId: ID
@@ -180,9 +159,6 @@ export type ProfilePageAction =
   | FetchFollowUsersSucceededAction
   | FetchFollowUsersFailedAction
   | DismissProfileMeterAction
-  | FetchTopTagsAction
-  | FetchTopTagsSucceededAction
-  | FetchTopTagsFailedAction
   | SetNotificationSubscriptionAction
   | FetchCollectionsAction
   | FetchCollectionsSucceededAction
@@ -342,32 +318,6 @@ export function fetchCollectionsFailed(
 ): FetchCollectionsFailedAction {
   return {
     type: FETCH_COLLECTIONS_FAILED,
-    handle
-  }
-}
-
-export function fetchTopTags(handle: string, userId: ID): FetchTopTagsAction {
-  return {
-    type: FETCH_TOP_TAGS,
-    handle,
-    userId
-  }
-}
-
-export function fetchTopTagsSucceeded(
-  handle: string,
-  topTags: string[]
-): FetchTopTagsSucceededAction {
-  return {
-    type: FETCH_TOP_TAGS_SUCCEEDED,
-    handle,
-    topTags
-  }
-}
-
-export function fetchTopTagsFailed(handle: string): FetchTopTagsFailedAction {
-  return {
-    type: FETCH_TOP_TAGS_FAILED,
     handle
   }
 }

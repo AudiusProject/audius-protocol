@@ -73,12 +73,6 @@ export const getProfileFeedLineup = (state: CommonState, handle?: string) =>
 export const getProfileTracksLineup = (state: CommonState, handle?: string) =>
   getProfile(state, handle)?.tracks ?? initialTracksState
 
-export const getTopTagsStatus = (state: CommonState, handle: string) =>
-  getProfile(state, handle)?.topTagsStatus
-
-export const getTopTags = (state: CommonState, handle: string) =>
-  getProfile(state, handle)?.topTags
-
 export const getProfileCollections = createDeepEqualSelector(
   [
     (state: CommonState, handle: string) => getProfileUserId(state, handle),

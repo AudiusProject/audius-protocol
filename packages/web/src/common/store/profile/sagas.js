@@ -56,7 +56,6 @@ import { push as pushRoute } from 'utils/navigation'
 import { waitForRead, waitForWrite } from 'utils/sagaHelpers'
 
 import { watchFetchProfileCollections } from './fetchProfileCollectionsSaga'
-import { watchFetchTopTags } from './fetchTopTagsSaga'
 
 const { NOT_FOUND_PAGE } = route
 const { getIsReachable } = reachabilitySelectors
@@ -657,7 +656,6 @@ export default function sagas() {
     watchUpdateProfile,
     watchUpdateCurrentUserFollows,
     watchSetNotificationSubscription,
-    watchFetchProfileCollections,
-    watchFetchTopTags
+    watchFetchProfileCollections
   ]
 }
