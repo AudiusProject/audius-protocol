@@ -30,7 +30,7 @@ import { initSdk } from 'services/audius-sdk'
 import { audiusChain, wagmiConfig } from 'services/audius-sdk/wagmi'
 
 const messages = {
-  title: 'Are You Sure?',
+  title: 'Continue With External Wallet?',
   body: 'Creating an Audius account with an external wallet will negatively impact your Audius experience in a significant way. We strongly suggest creating your account with an email and password.',
 
   confirm: 'Yes, I Understand',
@@ -148,22 +148,17 @@ export const ExternalWalletSignUpModal = () => {
         size='medium'
       >
         <ModalHeader>
-          <ModalTitle
-            title={messages.title}
-            icon={<i className='emoji large police-cars-revolving-light' />}
-          />
+          <ModalTitle title={messages.title} />
         </ModalHeader>
         <ModalContent>
-          <Flex>
-            <Text textAlign='center'>{messages.body}</Text>
-          </Flex>
+          <Text>{messages.body}</Text>
         </ModalContent>
         <ModalFooter>
           <Flex w='100%' direction='column' gap='s'>
             <Flex gap='s'>
               <Button
                 fullWidth
-                variant='secondary'
+                variant='destructive'
                 onClick={handleConfirm}
                 isLoading={status === Status.LOADING}
               >
@@ -171,6 +166,7 @@ export const ExternalWalletSignUpModal = () => {
               </Button>
               <Button
                 fullWidth
+                variant='secondary'
                 disabled={status === Status.LOADING}
                 onClick={onClose}
               >
