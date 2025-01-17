@@ -104,7 +104,6 @@ export type ProfilePageProps = {
   pauseArtistTrack: () => void
   playUserFeedTrack: (uid: UID) => void
   pauseUserFeedTrack: () => void
-  refreshProfile: () => void
 
   // Updates
   updatedCoverPhoto: { file: File; url: string } | null

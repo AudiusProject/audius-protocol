@@ -1,12 +1,9 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import type { ChangeEvent } from 'react'
 
-import {
-  useGetTopArtistsInGenre,
-  useGetFeaturedArtists
-} from '@audius/common/api'
+import { useTopArtists } from '@audius/common/api'
 import { selectArtistsPageMessages } from '@audius/common/messages'
-import { Status, UserMetadata } from '@audius/common/models'
+import { UserMetadata } from '@audius/common/models'
 import { selectArtistsSchema } from '@audius/common/schemas'
 import { Genre, convertGenreLabelToValue, route } from '@audius/common/utils'
 import { Flex, Text, SelectablePill, Paper, useTheme } from '@audius/harmony'
@@ -16,10 +13,7 @@ import { range } from 'lodash'
 import { useDispatch } from 'react-redux'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 
-import {
-  addFollowArtists,
-  completeFollowArtists
-} from 'common/store/pages/signon/actions'
+import { addFollowArtists } from 'common/store/pages/signon/actions'
 import { getGenres } from 'common/store/pages/signon/selectors'
 import {
   FollowArtistCard,
@@ -64,8 +58,6 @@ const DevModeClearErrors = () => {
   return null
 }
 
-const ARTISTS_PER_GENRE_LIMIT = 31
-
 export const SelectArtistsPage = () => {
   const artistGenres = useSelector((state) => ['Featured', ...getGenres(state)])
   const [currentGenre, setCurrentGenre] = useState('Featured')
@@ -85,7 +77,6 @@ export const SelectArtistsPage = () => {
       const { selectedArtists } = values
       const artistsIDArray = [...selectedArtists].map((a) => Number(a))
       dispatch(addFollowArtists(artistsIDArray))
-      dispatch(completeFollowArtists())
       if (isMobile) {
         navigate(SIGN_UP_COMPLETED_REDIRECT)
       } else {
@@ -95,24 +86,7 @@ export const SelectArtistsPage = () => {
     [dispatch, isMobile, navigate]
   )
 
-  const isFeaturedArtists = currentGenre === 'Featured'
-
-  const { data: topArtists, status: topArtistsStatus } =
-    useGetTopArtistsInGenre(
-      { genre: currentGenre, limit: ARTISTS_PER_GENRE_LIMIT },
-      { disabled: isFeaturedArtists }
-    )
-
-  const { data: featuredArtists, status: featuredArtistsStatus } =
-    useGetFeaturedArtists(undefined, {
-      disabled: !isFeaturedArtists
-    })
-
-  const artists = isFeaturedArtists ? featuredArtists : topArtists
-
-  const isLoading =
-    (isFeaturedArtists ? featuredArtistsStatus : topArtistsStatus) ===
-    Status.LOADING
+  const { data: artists, isPending } = useTopArtists(currentGenre)
 
   // Note: this doesn't catch when running `web:prod`
   const isDevEnvironment =
@@ -243,13 +217,13 @@ export const SelectArtistsPage = () => {
                     {selectArtistsPageMessages.pickArtists(currentGenre)}
                   </HiddenLegend>
 
-                  {isLoading || !isMobile ? null : <PreviewArtistHint />}
+                  {isPending || !isMobile ? null : <PreviewArtistHint />}
                   <Flex
                     gap={isMobile ? 's' : 'm'}
                     wrap='wrap'
                     justifyContent='center'
                   >
-                    {isLoading
+                    {isPending
                       ? range(9).map((index) => (
                           <FollowArtistTileSkeleton key={index} />
                         ))

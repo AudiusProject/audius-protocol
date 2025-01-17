@@ -33,6 +33,7 @@ import {
   IconNotificationOn as IconNotification,
   IconReceive,
   IconRobot,
+  IconSettings,
   IconSignOut,
   IconVerified,
   Modal,
@@ -51,7 +52,7 @@ import { useModalState } from 'common/hooks/useModalState'
 import { make, useRecord } from 'common/store/analytics/actions'
 import { ChangeEmailModal } from 'components/change-email/ChangeEmailModal'
 import { ChangePasswordModal } from 'components/change-password/ChangePasswordModal'
-import Header from 'components/header/desktop/Header'
+import { Header } from 'components/header/desktop/Header'
 import Page from 'components/page/Page'
 import Toast from 'components/toast/Toast'
 import { ComponentPlacement } from 'components/types'
@@ -76,6 +77,7 @@ import packageInfo from '../../../../../package.json'
 
 import { AuthorizedAppsSettingsCard } from './AuthorizedApps'
 import { DeveloperAppsSettingsCard } from './DeveloperApps'
+import { ListeningHistorySettingsCard } from './ListeningHistory'
 import { AccountsManagingYouSettingsCard } from './ManagerMode/AccountsManagingYouSettingsCard'
 import { AccountsYouManageSettingsCard } from './ManagerMode/AccountsYouManageSettingsCard'
 import NotificationSettings from './NotificationSettings'
@@ -371,7 +373,7 @@ export const SettingsPage = () => {
   const isMobile = useIsMobile()
   const isDownloadDesktopEnabled = !isMobile && !isElectron()
 
-  const header = <Header primary={messages.title} />
+  const header = <Header icon={IconSettings} primary={messages.title} />
 
   return (
     <Page
@@ -545,6 +547,7 @@ export const SettingsPage = () => {
 
         <AuthorizedAppsSettingsCard />
         <DeveloperAppsSettingsCard />
+        <ListeningHistorySettingsCard />
         <PayoutWalletSettingsCard />
       </div>
       <div className={styles.version}>

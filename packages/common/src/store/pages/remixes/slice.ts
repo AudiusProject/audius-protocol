@@ -28,15 +28,8 @@ const slice = createSlice({
   reducers: {
     reset: (state) => {
       state.trackId = null
+      state.count = null
     },
-    fetchTrack: (
-      _state,
-      _action: PayloadAction<{
-        handle?: string
-        slug?: string
-        id?: ID
-      }>
-    ) => {},
     fetchTrackSucceeded: (state, action: PayloadAction<{ trackId: ID }>) => {
       const { trackId } = action.payload
       state.trackId = trackId
@@ -50,8 +43,7 @@ const slice = createSlice({
 
 const remixesLineupReducer = asLineup(remixesTracksPrefix, remixesTracksReducer)
 
-export const { reset, setCount, fetchTrack, fetchTrackSucceeded } =
-  slice.actions
+export const { reset, setCount, fetchTrackSucceeded } = slice.actions
 
 export default combineReducers({
   page: slice.reducer,

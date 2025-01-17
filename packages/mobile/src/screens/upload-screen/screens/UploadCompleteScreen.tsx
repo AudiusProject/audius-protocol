@@ -6,15 +6,12 @@ import {
   accountSelectors,
   cacheTracksSelectors,
   shareModalUIActions,
-  trackPageActions,
   uploadActions,
   uploadSelectors
 } from '@audius/common/store'
 import { make } from '@audius/web/src/common/store/analytics/actions'
 import { View, Image } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
-import { useEffectOnce } from 'react-use'
-import { parseTrackRoute } from 'utils/route/trackRouteParser'
 
 import {
   IconShare,
@@ -37,7 +34,6 @@ import { getTrackRoute } from 'app/utils/routes'
 const { getTracks } = uploadSelectors
 const { reset } = uploadActions
 const { getAccountUser } = accountSelectors
-const { fetchTrack } = trackPageActions
 const { getTrack } = cacheTracksSelectors
 const { requestOpen: requestOpenShareModal } = shareModalUIActions
 
@@ -96,14 +92,6 @@ export const UploadCompleteScreen = () => {
   const uploadedTrack = useSelector((state) => getTrack(state, { permalink }))
   const trackRoute = getTrackRoute(track!, true)
 
-  useEffectOnce(() => {
-    const params = parseTrackRoute(permalink)
-    if (params) {
-      const { slug, handle } = params
-      dispatch(fetchTrack(null, slug!, handle!))
-    }
-  })
-
   const handleClose = useCallback(() => {
     navigation.getParent()?.goBack()
     dispatch(reset())
@@ -111,7 +99,7 @@ export const UploadCompleteScreen = () => {
 
   const handlePressTrack = useCallback(() => {
     handleClose()
-    navigation.push('Track', { id: uploadedTrack?.track_id })
+    navigation.push('Track', { trackId: uploadedTrack?.track_id })
   }, [handleClose, navigation, uploadedTrack])
 
   const handleDone = useCallback(() => {

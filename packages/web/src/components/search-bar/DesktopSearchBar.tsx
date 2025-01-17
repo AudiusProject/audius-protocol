@@ -655,7 +655,7 @@ const DesktopSearchBar = ({ isViewingSearchPage = false }: SearchBarProps) => {
   })
 
   return (
-    <Box ml='unit10' mt='l'>
+    <Box>
       <div
         className={styles.searchBar}
         id='search-bar-autocomplete'

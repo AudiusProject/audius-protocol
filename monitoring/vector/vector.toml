@@ -15,7 +15,8 @@
     "mediorum",
     "relay",
     "solana-relay",
-    "core"
+    "core",
+    "audiusd"
   ]
   exclude_containers = [
     # System containers

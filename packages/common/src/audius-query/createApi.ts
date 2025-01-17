@@ -791,7 +791,8 @@ const buildEndpointHooks = <
       endpointName,
       endpoint,
       actions,
-      context
+      context,
+      force
     )
   }
 

@@ -1,8 +1,5 @@
-import {
-  useGetTopArtistsInGenre,
-  useGetFeaturedArtists
-} from '@audius/common/api'
-import type { QueryHookOptions } from '@audius/common/audius-query'
+import { useTopArtists } from '@audius/common/api'
+import type { UserMetadata } from '@audius/common/models'
 import type { Genre } from '@audius/common/utils'
 import { convertGenreLabelToValue } from '@audius/common/utils'
 import { css } from '@emotion/native'
@@ -14,33 +11,23 @@ import { CardList } from 'app/components/core'
 import { FollowArtistCard, FollowArtistTileSkeleton } from './FollowArtistCard'
 import { PreviewArtistHint } from './PreviewArtistHint'
 
-export const useGetTopArtists = (genre: string, options?: QueryHookOptions) => {
-  const useGetArtistsHook =
-    genre === 'Featured' ? useGetFeaturedArtists : useGetTopArtistsInGenre
-
-  return useGetArtistsHook({ genre }, options)
-}
-
 type Props = {
   route: RouteProp<any>
 }
 
 export const TopArtistsCardList = (props: Props) => {
   const { name: genre } = props.route
-  const isFocused = useIsFocused()
   const { spacing } = useTheme()
-
-  const { data: artists } = useGetTopArtists(
+  const isFocused = useIsFocused()
+  const { data: artists } = useTopArtists(
     convertGenreLabelToValue(genre as Genre),
-    {
-      disabled: !isFocused
-    }
+    { enabled: isFocused }
   )
 
   return (
     <CardList
       ListHeaderComponent={genre === 'Featured' ? <PreviewArtistHint /> : null}
-      data={artists}
+      data={artists as UserMetadata[]}
       style={css({ paddingTop: spacing.xl })}
       renderItem={({ item, index }) => (
         <FollowArtistCard

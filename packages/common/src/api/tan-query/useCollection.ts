@@ -1,13 +1,14 @@
+import { Id, OptionalId } from '@audius/sdk'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { useDispatch, useSelector } from 'react-redux'
+import { useDispatch } from 'react-redux'
 
 import { userCollectionMetadataFromSDK } from '~/adapters/collection'
-import { useAudiusQueryContext } from '~/audius-query'
-import { Id, ID, OptionalId } from '~/models/Identifiers'
-import { getUserId } from '~/store/account/selectors'
+import { useAudiusQueryContext } from '~/audius-query/AudiusQueryContext'
+import { ID } from '~/models'
 
 import { QUERY_KEYS } from './queryKeys'
 import { Config } from './types'
+import { useCurrentUserId } from './useCurrentUserId'
 import { primeCollectionData } from './utils/primeCollectionData'
 
 export const useCollection = (
@@ -15,9 +16,9 @@ export const useCollection = (
   options?: Config
 ) => {
   const { audiusSdk } = useAudiusQueryContext()
+  const { data: currentUserId } = useCurrentUserId()
   const queryClient = useQueryClient()
   const dispatch = useDispatch()
-  const currentUserId = useSelector(getUserId)
 
   return useQuery({
     queryKey: [QUERY_KEYS.collection, collectionId],

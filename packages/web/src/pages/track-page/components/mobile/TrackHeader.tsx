@@ -1,5 +1,6 @@
 import { Suspense, useCallback } from 'react'
 
+import { useTrackRank } from '@audius/common/api'
 import {
   SquareSizes,
   isContentCollectibleGated,
@@ -21,7 +22,7 @@ import {
   IconCollectible,
   IconPause,
   IconPlay,
-  IconSpecialAccess,
+  IconSparkles,
   IconCart,
   Box,
   Button,
@@ -30,6 +31,7 @@ import {
 } from '@audius/harmony'
 import IconCalendarMonth from '@audius/harmony/src/assets/icons/CalendarMonth.svg'
 import IconRobot from '@audius/harmony/src/assets/icons/Robot.svg'
+import IconTrending from '@audius/harmony/src/assets/icons/Trending.svg'
 import IconVisibilityHidden from '@audius/harmony/src/assets/icons/VisibilityHidden.svg'
 import cn from 'classnames'
 import dayjs from 'dayjs'
@@ -293,7 +295,7 @@ const TrackHeader = ({
 
   const renderHeaderText = () => {
     if (isStreamGated) {
-      let IconComponent = IconSpecialAccess
+      let IconComponent = IconSparkles
       let titleMessage = messages.specialAccess
       if (isContentCollectibleGated(streamConditions)) {
         IconComponent = IconCollectible
@@ -321,6 +323,8 @@ const TrackHeader = ({
     )
   }
 
+  const trendingRank = useTrackRank(trackId)
+
   return (
     <div className={styles.trackHeader}>
       <TrackDogEar trackId={trackId} />
@@ -329,6 +333,11 @@ const TrackHeader = ({
         {aiAttributedUserId ? (
           <MusicBadge icon={IconRobot} color='lightGreen' size='s'>
             {messages.generatedWithAi}
+          </MusicBadge>
+        ) : null}
+        {trendingRank ? (
+          <MusicBadge color='blue' icon={IconTrending} size='s'>
+            {trendingRank}
           </MusicBadge>
         ) : null}
         {shouldShowScheduledRelease ? (

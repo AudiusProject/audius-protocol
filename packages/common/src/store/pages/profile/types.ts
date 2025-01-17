@@ -38,8 +38,6 @@ export type ProfileState = {
   updateError: boolean
   collectionIds: number[]
   collectionStatus: Status
-  topTagsStatus: Status
-  topTags: string[]
   collectionSortMode: CollectionSortMode
   profileMeterDismissed: boolean
   feed: LineupState<Track | Collection>

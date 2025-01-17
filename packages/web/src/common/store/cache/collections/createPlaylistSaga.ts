@@ -8,9 +8,7 @@ import {
   CollectionMetadata,
   Collection,
   ID,
-  Track,
-  Id,
-  OptionalId
+  Track
 } from '@audius/common/models'
 import { newCollectionMetadata } from '@audius/common/schemas'
 import {
@@ -22,14 +20,13 @@ import {
   cacheActions,
   reformatCollection,
   cacheUsersSelectors,
-  savedPageActions,
-  LibraryCategory,
   confirmerActions,
   EditCollectionValues,
   RequestConfirmationError,
   getSDK
 } from '@audius/common/store'
 import { makeKindId, Nullable, route } from '@audius/common/utils'
+import { Id, OptionalId } from '@audius/sdk'
 import { call, put, select, takeLatest } from 'typed-redux-saga'
 
 import { make } from 'common/store/analytics/actions'
@@ -37,7 +34,6 @@ import { addPlaylistsNotInLibrary } from 'common/store/playlist-library/sagas'
 import { ensureLoggedIn } from 'common/utils/ensureLoggedIn'
 import { waitForWrite } from 'utils/sagaHelpers'
 
-const { addLocalCollection } = savedPageActions
 const { getUser } = cacheUsersSelectors
 
 const { requestConfirmation } = confirmerActions
@@ -170,14 +166,6 @@ function* optimisticallySavePlaylist(
       is_album: !!playlist.is_album,
       user: { id: user_id, handle },
       permalink: playlist?.permalink
-    })
-  )
-
-  yield* put(
-    addLocalCollection({
-      collectionId: playlistId,
-      isAlbum: !!playlist.is_album,
-      category: LibraryCategory.Favorite
     })
   )
 

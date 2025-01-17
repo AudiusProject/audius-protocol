@@ -18,13 +18,13 @@ import {
 } from './constants'
 import { PayExtraPreset } from './types'
 
-const messages = {
+export const messages = {
   amountInvalid: 'Please specify an amount between $1 and $100',
   emailRequired: 'Please enter an email.',
   invalidEmail: 'Please enter a valid email.',
   emailInUse: 'Email already taken.',
   somethingWentWrong: 'Something went wrong. Try again later.',
-  completeYourProfile: 'Complete your profile. Redirect to sign up?'
+  guestAccountExists: 'Guest account exists.'
 }
 
 export const createPurchaseContentSchema = (
@@ -98,7 +98,7 @@ export const createPurchaseContentSchema = (
       } else if (isGuest) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
-          message: messages.completeYourProfile,
+          message: messages.guestAccountExists,
           path: [GUEST_EMAIL]
         })
       } else if (isEmailInUse) {

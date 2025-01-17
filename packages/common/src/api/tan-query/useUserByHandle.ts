@@ -1,9 +1,9 @@
+import { Id } from '@audius/sdk'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { userMetadataListFromSDK } from '~/adapters/user'
 import { useAudiusQueryContext } from '~/audius-query'
-import { OptionalId } from '~/models/Identifiers'
 import { Kind } from '~/models/Kind'
 import { accountSelectors } from '~/store/account'
 import { addEntries } from '~/store/cache/actions'
@@ -28,7 +28,7 @@ export const useUserByHandle = (
       const sdk = await audiusSdk()
       const { data } = await sdk.full.users.getUserByHandle({
         handle,
-        userId: OptionalId.parse(currentUserId)
+        userId: Id.parse(currentUserId)
       })
       const user = userMetadataListFromSDK(data)[0]
 

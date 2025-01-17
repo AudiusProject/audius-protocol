@@ -1,6 +1,6 @@
 parameters:
   service:
-    description: 'Service to deploy (creator-node, discovery-provider, identity-service)'
+    description: 'Service to deploy (discovery-provider, identity-service)'
     type: string
 resource_class: small
 docker:

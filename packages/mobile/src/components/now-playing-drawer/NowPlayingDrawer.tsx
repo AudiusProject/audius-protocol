@@ -273,7 +273,7 @@ export const NowPlayingDrawer = memo(function NowPlayingDrawer(
     if (!trackId) {
       return
     }
-    navigation?.push('Track', { id: trackId })
+    navigation?.push('Track', { trackId })
     onClose()
   }, [onClose, navigation, trackId])
 

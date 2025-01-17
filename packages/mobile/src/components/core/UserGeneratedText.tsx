@@ -3,7 +3,6 @@ import { useMemo, useCallback, useEffect, useRef, useState } from 'react'
 
 import { useUserByHandle } from '@audius/common/api'
 import {
-  decodeHashId,
   formatCollectionName,
   formatTrackName,
   formatUserName,
@@ -13,7 +12,7 @@ import {
   squashNewLines
 } from '@audius/common/utils'
 import type { CommentMention } from '@audius/sdk'
-import { ResolveApi } from '@audius/sdk'
+import { HashId, ResolveApi } from '@audius/sdk'
 import { css } from '@emotion/native'
 import type { NavigationProp } from '@react-navigation/native'
 import type { To } from '@react-navigation/native/lib/typescript/src/useLinkTo'
@@ -85,18 +84,21 @@ const Link = ({
       if (res.data) {
         if (instanceOfTrackResponse(res)) {
           setUnfurledContent(formatTrackName({ track: res.data }))
-          setTo({ screen: 'Track', params: { id: decodeHashId(res.data.id) } })
+          setTo({
+            screen: 'Track',
+            params: { trackId: HashId.parse(res.data.id) }
+          })
         } else if (instanceOfPlaylistResponse(res)) {
           setUnfurledContent(formatCollectionName({ collection: res.data[0] }))
           setTo({
             screen: 'Collection',
-            params: { id: decodeHashId(res.data[0].id) }
+            params: { trackId: HashId.parse(res.data[0].id) }
           })
         } else if (instanceOfUserResponse(res)) {
           setUnfurledContent(formatUserName({ user: res.data }))
           setTo({
             screen: 'Profile',
-            params: { id: decodeHashId(res.data.id) }
+            params: { id: HashId.parse(res.data.id) }
           })
         }
       }

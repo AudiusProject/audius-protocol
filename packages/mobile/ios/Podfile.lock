@@ -1,10 +1,6 @@
 PODS:
-  - Amplitude (8.16.3):
-    - AnalyticsConnector (~> 1.0.0)
-  - amplitude-react-native (2.17.2):
-    - Amplitude (= 8.16.3)
+  - amplitude-react-native (1.4.11):
     - React-Core
-  - AnalyticsConnector (1.0.3)
   - Base64 (1.1.2)
   - boost (1.84.0)
   - BVLinearGradient (2.8.3):
@@ -1914,7 +1910,7 @@ PODS:
   - Yoga (0.0.0)
 
 DEPENDENCIES:
-  - "amplitude-react-native (from `../../../node_modules/@amplitude/react-native`)"
+  - "amplitude-react-native (from `../../../node_modules/@amplitude/analytics-react-native`)"
   - boost (from `../node_modules/react-native/third-party-podspecs/boost.podspec`)
   - BVLinearGradient (from `../node_modules/react-native-linear-gradient`)
   - CodePush (from `../node_modules/react-native-code-push`)
@@ -2032,8 +2028,6 @@ DEPENDENCIES:
 
 SPEC REPOS:
   trunk:
-    - Amplitude
-    - AnalyticsConnector
     - Base64
     - ffmpeg-kit-ios-https-gpl
     - FingerprintPro
@@ -2055,7 +2049,7 @@ SPEC REPOS:
 
 EXTERNAL SOURCES:
   amplitude-react-native:
-    :path: "../../../node_modules/@amplitude/react-native"
+    :path: "../../../node_modules/@amplitude/analytics-react-native"
   boost:
     :podspec: "../node_modules/react-native/third-party-podspecs/boost.podspec"
   BVLinearGradient:
@@ -2281,9 +2275,7 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native/ReactCommon/yoga"
 
 SPEC CHECKSUMS:
-  Amplitude: 10f20d4436fdcd38ddd5be1da7033fcc21f4143e
-  amplitude-react-native: 6e5b9e38c53e11a86f62f874a42cf176e2b82c86
-  AnalyticsConnector: a53214d38ae22734c6266106c0492b37832633a9
+  amplitude-react-native: 9d57e1bcc4175039e36283390aa3daeaea9441a5
   Base64: cecfb41a004124895a7bcee567a89bae5a89d49b
   boost: 4cb898d0bf20404aab1850c656dcea009429d6c1
   BVLinearGradient: 880f91a7854faff2df62518f0281afb1c60d49a3
@@ -2294,7 +2286,7 @@ SPEC CHECKSUMS:
   ffmpeg-kit-react-native: 3cea88c9c5cfad62e1465279ea7d800dfbba3b00
   FingerprintPro: c6444f5a00d1126446da664124529e754475f198
   fmt: 4c2741a687cc09f0634a2e2c72a838b99f1ff120
-  glog: fdfdfe5479092de0c4bdbebedd9056951f092c4f
+  glog: 69ef571f3de08433d766d614c73a9838a06bf7eb
   google-cast-sdk-dynamic-xcframework-no-bluetooth: 1fa9e267df3fd6f8a1c6e3345142ca5286297968
   hermes-engine: ea92f60f37dba025e293cbe4b4a548fd26b610a0
   JWT: ef71dfb03e1f842081e64dc42eef0e164f35d251
@@ -2303,7 +2295,7 @@ SPEC CHECKSUMS:
   lottie-react-native: e23d9bcc85c8730e79e96bdf589a1996d7d388a9
   nSure: ce410631caf715d7080838c00a42169427847a01
   PromisesObjC: f5707f49cb48b9636751c5b2e7d227e43fba9f47
-  RCT-Folly: 02617c592a293bd6d418e0a88ff4ee1f88329b47
+  RCT-Folly: 4464f4d875961fce86008d45f4ecf6cef6de0740
   RCTDeprecation: 726d24248aeab6d7180dac71a936bbca6a994ed1
   RCTRequired: a94e7febda6db0345d207e854323c37e3a31d93b
   RCTTypeSafety: 28e24a6e44f5cbf912c66dde6ab7e07d1059a205

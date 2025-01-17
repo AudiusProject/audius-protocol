@@ -4,8 +4,7 @@ import type {
   FavoriteType,
   TipSource,
   ID,
-  SearchTrack,
-  SearchPlaylist
+  SearchTrack
 } from '@audius/common/models'
 import type {
   NotificationType,
@@ -29,6 +28,7 @@ import { CollectionScreen } from 'app/screens/collection-screen/CollectionScreen
 import { EditProfileScreen } from 'app/screens/edit-profile-screen'
 import { PayAndEarnScreen } from 'app/screens/pay-and-earn-screen'
 import { ProfileScreen } from 'app/screens/profile-screen'
+import { RewardsScreen } from 'app/screens/rewards-screen'
 import type { SearchParams } from 'app/screens/search-screen'
 import { SearchScreenStack } from 'app/screens/search-screen'
 import {
@@ -60,19 +60,15 @@ import { useAppScreenOptions } from './useAppScreenOptions'
 
 export type AppTabScreenParamList = {
   Track: {
-    id?: ID
     searchTrack?: SearchTrack
     canBeUnlisted?: boolean
-    handle?: string
-    slug?: string
     showComments?: boolean
-  }
-  TrackRemixes: { id: ID } | { handle: string; slug: string }
+  } & ({ handle: string; slug: string } | { trackId: ID })
+  TrackRemixes: { trackId: ID } | { handle: string; slug: string }
   Profile: { handle: string; id?: ID } | { handle?: string; id: ID }
   Collection: {
-    id?: ID
+    collectionId?: ID
     slug?: string
-    searchCollection?: SearchPlaylist
     collectionType?: 'playlist' | 'album'
     handle?: string
   }
@@ -108,6 +104,7 @@ export type AppTabScreenParamList = {
   NotificationSettingsScreen: undefined
   PayAndEarnScreen: undefined
   AudioScreen: undefined
+  RewardsScreen: undefined
   Upload: undefined
   FeatureFlagOverride: undefined
   CreateChatBlast: undefined
@@ -223,6 +220,7 @@ export const AppTabScreen = ({ baseScreen, Stack }: AppTabScreenProps) => {
       <Stack.Screen name='SupportingUsers' component={SupportingUsersScreen} />
       <Stack.Screen name='PayAndEarnScreen' component={PayAndEarnScreen} />
       <Stack.Screen name='AudioScreen' component={AudioScreen} />
+      <Stack.Screen name='RewardsScreen' component={RewardsScreen} />
 
       <Stack.Group>
         <Stack.Screen name='EditProfile' component={EditProfileScreen} />

@@ -37,8 +37,6 @@ def index_core_plays(
     latest_indexed_slot: int,
     tx: SignedTransaction,
 ) -> Optional[int]:
-    logger.info("indexing plays")
-
     next_slot = latest_indexed_slot + 1
 
     plays: List[PlayInfo] = []
@@ -95,19 +93,26 @@ def index_core_plays(
     if not plays:
         return None
 
-    session.execute(Play.__table__.insert().values(plays))
-    logger.debug("index_core_plays.py | Dispatching listen events")
-    listen_dispatch_start = time.time()
-    for event in challenge_bus_events:
-        challenge_bus.dispatch(
-            ChallengeEvent.track_listen,
-            event["slot"],
-            event["created_at"],
-            event["user_id"],
-            {"created_at": event.get("created_at")},
-        )
-    listen_dispatch_end = time.time()
-    listen_dispatch_diff = listen_dispatch_end - listen_dispatch_start
-    logger.debug(f"dispatched listen events in {listen_dispatch_diff}")
+    with challenge_bus.use_scoped_dispatch_queue():
+        session.execute(Play.__table__.insert().values(plays))
+        logger.debug("index_core_plays.py | Dispatching listen events")
+        listen_dispatch_start = time.time()
+        for event in challenge_bus_events:
+            created_at = event.get("created_at")
+            if not created_at:
+                logger.error(
+                    f"index_core_plays.py | Skipping event due to created_at for event: {event}"
+                )
+                continue
+            challenge_bus.dispatch(
+                ChallengeEvent.track_listen,
+                event["slot"],
+                created_at,
+                event["user_id"],
+                {"created_at": created_at.timestamp()},
+            )
+        listen_dispatch_end = time.time()
+        listen_dispatch_diff = listen_dispatch_end - listen_dispatch_start
+        logger.debug(f"dispatched listen events in {listen_dispatch_diff}")
 
-    return slot
+    return next_slot

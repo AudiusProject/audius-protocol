@@ -1,14 +1,17 @@
+import { Id } from '@audius/sdk'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { userTrackMetadataFromSDK } from '~/adapters/track'
 import { useAudiusQueryContext } from '~/audius-query'
-import { OptionalId } from '~/models'
 import { getUserId } from '~/store/account/selectors'
 
 import { QUERY_KEYS } from './queryKeys'
 import { Config } from './types'
 import { primeTrackData } from './utils/primeTrackData'
+
+// If the user edits a stale track, the optimistic update fails
+const STALE_TIME = Infinity
 
 export const useTrackByPermalink = (
   permalink: string | undefined | null,
@@ -19,13 +22,17 @@ export const useTrackByPermalink = (
   const dispatch = useDispatch()
   const currentUserId = useSelector(getUserId)
 
+  const isMutating = queryClient.isMutating({
+    mutationKey: [QUERY_KEYS.trackByPermalink, permalink]
+  })
+
   return useQuery({
     queryKey: [QUERY_KEYS.trackByPermalink, permalink],
     queryFn: async () => {
       const sdk = await audiusSdk()
       const { data = [] } = await sdk.full.tracks.getBulkTracks({
         permalink: [permalink!],
-        userId: OptionalId.parse(currentUserId)
+        userId: Id.parse(currentUserId)
       })
 
       const track = data[0] ? userTrackMetadataFromSDK(data[0]) : null
@@ -40,7 +47,7 @@ export const useTrackByPermalink = (
 
       return track
     },
-    staleTime: options?.staleTime,
-    enabled: options?.enabled !== false && !!permalink
+    staleTime: options?.staleTime ?? STALE_TIME,
+    enabled: options?.enabled !== false && !!permalink && !isMutating
   })
 }

@@ -1,51 +1,65 @@
-import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { Id, OptionalId } from '@audius/sdk'
+import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query'
 import { useDispatch } from 'react-redux'
 
 import { useAudiusQueryContext } from '~/audius-query'
-import { supporterMetadataListFromSDK } from '~/models'
-import { ID, Id, OptionalId } from '~/models/Identifiers'
-import { MAX_PROFILE_TOP_SUPPORTERS } from '~/utils/constants'
+import { ID } from '~/models/Identifiers'
+import { supporterMetadataListFromSDK } from '~/models/Tipping'
 
 import { QUERY_KEYS } from './queryKeys'
 import { Config } from './types'
 import { useCurrentUserId } from './useCurrentUserId'
 import { primeUserData } from './utils/primeUserData'
 
+const DEFAULT_PAGE_SIZE = 20
+
 type UseSupportersArgs = {
   userId: ID | null | undefined
-  limit?: number
+  pageSize?: number
 }
 
 export const useSupporters = (
-  { userId, limit = MAX_PROFILE_TOP_SUPPORTERS + 1 }: UseSupportersArgs,
+  { userId, pageSize = DEFAULT_PAGE_SIZE }: UseSupportersArgs,
   config?: Config
 ) => {
   const { audiusSdk } = useAudiusQueryContext()
-  const queryClient = useQueryClient()
   const { data: currentUserId } = useCurrentUserId()
+  const queryClient = useQueryClient()
   const dispatch = useDispatch()
 
-  return useQuery({
-    queryKey: [QUERY_KEYS.supporters, userId, limit],
-    queryFn: async () => {
+  return useInfiniteQuery({
+    queryKey: [QUERY_KEYS.supporters, userId, pageSize],
+    initialPageParam: 0,
+    getNextPageParam: (lastPage, allPages) => {
+      if (lastPage.length < pageSize) return undefined
+      return allPages.length * pageSize
+    },
+    queryFn: async ({ pageParam }) => {
       const sdk = await audiusSdk()
-      const { data = [] } = await sdk.full.users.getSupporters({
+      const { data } = await sdk.full.users.getSupporters({
         id: Id.parse(userId),
-        limit,
+        limit: pageSize,
+        offset: pageParam,
         userId: OptionalId.parse(currentUserId)
       })
-
       const supporters = supporterMetadataListFromSDK(data)
 
-      // Cache user data for each supporter
+      // Prime the cache for each supporter
+      supporters.forEach((supporter) => {
+        queryClient.setQueryData(
+          [QUERY_KEYS.supporter, userId, supporter.sender.user_id],
+          supporter
+        )
+      })
+
       primeUserData({
         users: supporters.map((supporter) => supporter.sender),
         queryClient,
         dispatch
       })
-
       return supporters
     },
+    select: (data) => data.pages.flat(),
     staleTime: config?.staleTime,
     enabled: config?.enabled !== false && !!userId
   })

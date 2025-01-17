@@ -1,10 +1,10 @@
-import { Mood } from '@audius/sdk'
+import { Mood, OptionalId } from '@audius/sdk'
 import { isEmpty } from 'lodash'
 
 import { searchResultsFromSDK } from '~/adapters'
 import { createApi } from '~/audius-query'
 import { Name, SearchSource, UserTrackMetadata } from '~/models'
-import { ID, OptionalId } from '~/models/Identifiers'
+import { ID } from '~/models/Identifiers'
 import { FeatureFlags } from '~/services'
 import { SearchKind, SearchSortMethod } from '~/store'
 import { Genre, formatMusicalKey } from '~/utils'

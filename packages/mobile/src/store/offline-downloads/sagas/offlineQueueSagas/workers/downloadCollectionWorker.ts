@@ -6,8 +6,9 @@ import type {
   CollectionMetadata,
   UserCollectionMetadata
 } from '@audius/common/models'
-import { Id, OptionalId, SquareSizes } from '@audius/common/models'
+import { SquareSizes } from '@audius/common/models'
 import { accountSelectors, getSDK } from '@audius/common/store'
+import { Id, OptionalId } from '@audius/sdk'
 import ReactNativeBlobUtil from 'react-native-blob-util'
 import { select, call, put, take, race, all } from 'typed-redux-saga'
 

@@ -12,7 +12,14 @@ import {
   useTheme
 } from '@audius/harmony'
 import { useDispatch, useSelector } from 'react-redux'
-import { Link, Redirect, Route, Switch, useRouteMatch } from 'react-router-dom'
+import {
+  Link,
+  Redirect,
+  Route,
+  Switch,
+  useRouteMatch,
+  useHistory
+} from 'react-router-dom'
 import { useSearchParams } from 'react-router-dom-v5-compat'
 import { useEffectOnce, useLocalStorage, useMeasure } from 'react-use'
 
@@ -25,10 +32,8 @@ import {
   setValueField,
   updateRouteOnCompletion
 } from 'common/store/pages/signon/actions'
-import {
-  getHasCompletedAccount,
-  getRouteOnExit
-} from 'common/store/pages/signon/selectors'
+import { getRouteOnExit, getStatus } from 'common/store/pages/signon/selectors'
+import { EditingStatus } from 'common/store/pages/signon/types'
 import { useMedia } from 'hooks/useMedia'
 import { SignInPage } from 'pages/sign-in-page'
 import { AudiusValues } from 'pages/sign-on-page/AudiusValues'
@@ -285,10 +290,26 @@ const MobileSignOnRoot = (props: MobileSignOnRootProps) => {
 
 export const SignOnPage = () => {
   const { isMobile } = useMedia()
-  const hasCompletedAccount = useSelector(getHasCompletedAccount)
+  const signOnStatus = useSelector(getStatus)
+  const routeOnExit = useSelector(getRouteOnExit)
   const dispatch = useDispatch()
+  const history = useHistory()
   const [searchParams] = useSearchParams()
   const [guestEmailLocalStorage] = useLocalStorage('guestEmail', '')
+
+  // Add ESC key handler
+  useEffect(() => {
+    const handleEscKey = (event: KeyboardEvent) => {
+      if (event.key === 'Escape' && routeOnExit) {
+        history.push(routeOnExit)
+      }
+    }
+
+    window.addEventListener('keydown', handleEscKey)
+    return () => {
+      window.removeEventListener('keydown', handleEscKey)
+    }
+  }, [history, routeOnExit])
 
   const rf = searchParams.get('rf')
   const ref = searchParams.get('ref')
@@ -344,7 +365,7 @@ export const SignOnPage = () => {
     setIsLoaded(true)
   })
 
-  if (hasCompletedAccount) {
+  if (signOnStatus === EditingStatus.SUCCESS) {
     return <Redirect to={FEED_PAGE} />
   }
 

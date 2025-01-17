@@ -48,7 +48,6 @@ import playlistLibrarySagas from 'common/store/playlist-library/sagas'
 import profileSagas from 'common/store/profile/sagas'
 import queueSagas from 'common/store/queue/sagas'
 import recoveryEmailSagas from 'common/store/recovery-email/sagas'
-import remixSettingsSagas from 'common/store/remix-settings/sagas'
 import savedCollectionsSagas from 'common/store/saved-collections/sagas'
 import searchBarSagas from 'common/store/search-bar/sagas'
 import smartCollectionPageSagas from 'common/store/smart-collection/sagas'
@@ -56,17 +55,6 @@ import socialSagas from 'common/store/social/sagas'
 import tippingSagas from 'common/store/tipping/sagas'
 import reactionSagas from 'common/store/ui/reactions/sagas'
 import uploadSagas from 'common/store/upload/sagas'
-import favoritePageSagas from 'common/store/user-list/favorites/sagas'
-import followersPageSagas from 'common/store/user-list/followers/sagas'
-import followingPageSagas from 'common/store/user-list/following/sagas'
-import mutualsPageSagas from 'common/store/user-list/mutuals/sagas'
-import notificationUsersPageSagas from 'common/store/user-list/notifications/sagas'
-import purchasersPageSagas from 'common/store/user-list/purchasers/sagas'
-import relatedArtistsPageSagas from 'common/store/user-list/related-artists/sagas'
-import remixersPageSagas from 'common/store/user-list/remixers/sagas'
-import repostPageSagas from 'common/store/user-list/reposts/sagas'
-import supportingPageSagas from 'common/store/user-list/supporting/sagas'
-import topSupportersPageSagas from 'common/store/user-list/top-supporters/sagas'
 import walletSagas from 'common/store/wallet/sagas'
 import { all, spawn } from 'typed-redux-saga'
 
@@ -75,7 +63,6 @@ import collectionsSagas from 'app/store/cache/collections/sagas'
 import accountSagas from './account/sagas'
 import mobileChatSagas from './chat/sagas'
 import initKeyboardEvents from './keyboard/sagas'
-import notificationsSagas from './notifications/sagas'
 import oauthSagas from './oauth/sagas'
 import offlineDownloadSagas from './offline-downloads/sagas'
 import rateCtaSagas from './rate-cta/sagas'
@@ -134,7 +121,6 @@ export default function* rootSaga() {
     ...walletSagas(),
 
     ...modalsSagas(),
-    ...notificationsSagas(),
 
     // Pages
     ...trackPageSagas(),
@@ -150,21 +136,10 @@ export default function* rootSaga() {
     ...profileSagas(),
     ...reactionSagas(),
     ...socialSagas(),
-    ...favoritePageSagas(),
-    ...followersPageSagas(),
-    ...followingPageSagas(),
-    ...mutualsPageSagas(),
-    ...notificationUsersPageSagas(),
-    ...relatedArtistsPageSagas(),
-    ...repostPageSagas(),
-    ...supportingPageSagas(),
-    ...topSupportersPageSagas(),
     ...historySagas(),
     ...rewardsPageSagas(),
     ...settingsSagas(),
     ...premiumTracksSagas(),
-    ...purchasersPageSagas(),
-    ...remixersPageSagas(),
 
     // Cast
     ...castSagas(),
@@ -184,7 +159,6 @@ export default function* rootSaga() {
     ...themeSagas(),
     ...tokenDashboardSagas(),
     ...uploadSagas(),
-    ...remixSettingsSagas(),
     ...offlineDownloadSagas(),
     ...reachabilitySagas(),
     ...toastSagas(),

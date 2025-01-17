@@ -91,7 +91,7 @@ export const SearchItemTrack = (props: SearchItemProps) => {
 
   const handlePress = () => {
     onPress?.()
-    navigation.push('Track', { id })
+    navigation.push('Track', { trackId: id })
   }
 
   return (
@@ -152,7 +152,7 @@ export const SearchItemCollection = (props: SearchItemProps) => {
 
   const handlePress = () => {
     onPress?.()
-    navigation.push('Collection', { id })
+    navigation.push('Collection', { collectionId: id })
   }
 
   return (

@@ -1,0 +1,133 @@
+.scrollContainer {
+  overflow-y: scroll;
+  max-height: calc(95vh - 64px);
+}
+
+.scrollContainer.mobile {
+  overflow-y: unset;
+  max-height: unset;
+}
+
+.container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.sliderContainer {
+  margin: 32px 0px;
+}
+
+.titles {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 32px;
+}
+
+.title {
+  color: var(--harmony-secondary);
+  font-weight: 700;
+  font-size: 20px;
+  margin-bottom: 8px;
+}
+.mobile .title {
+  font-size: 15px;
+}
+
+.subtitle {
+  color: var(--harmony-n-400);
+  font-weight: 700;
+  font-size: 16px;
+}
+.mobile .subtitle {
+  font-size: 14px;
+}
+
+.insetRegion {
+  border-radius: 16px;
+  background-color: var(--harmony-background);
+  box-shadow: inset 0px 0px 8px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 24px;
+  max-width: 602px;
+  width: 100%;
+  min-height: 354px;
+  margin-bottom: 32px;
+  position: relative;
+}
+.mobile .insetRegion {
+  padding: unset;
+}
+
+.embedWrapper {
+  max-width: 550px;
+  width: 100%;
+}
+
+.spinner {
+  position: absolute;
+  top: calc(50% - 15px);
+  left: calc(50% - 15px);
+  width: 30px;
+  height: 30px;
+}
+
+.mobile .insetRegion {
+  background-color: unset;
+  box-shadow: unset;
+}
+
+.lastWeek {
+  margin-bottom: 16px;
+  background: var(--harmony-gradient);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  font-weight: 900;
+  font-size: 24px;
+}
+
+.slider {
+  font-weight: 900;
+  font-size: 20px;
+  padding: 8px 32px;
+}
+
+.mobile .slider {
+  font-size: 16px;
+  padding: 8px 24px;
+}
+.mobile .compactSlider {
+  font-size: 13px;
+  padding: 8px 16px;
+}
+
+.activeSlider {
+  color: var(--harmony-secondary);
+}
+
+.terms {
+  font-size: 12px;
+  color: var(--harmony-n-400);
+  font-weight: 400;
+  margin: 12px 0px 24px;
+  text-decoration: underline;
+  transition: all 0.07s ease-in-out;
+  user-select: none;
+  cursor: pointer;
+}
+
+.terms:hover {
+  color: var(--harmony-n-200);
+}
+
+.titleHeader {
+  text-align: center;
+  color: var(--harmony-white);
+  line-height: 34px;
+}
+.titleIcon {
+  margin-right: 8px;
+}

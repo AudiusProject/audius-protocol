@@ -1,10 +1,14 @@
-import type {
-  full,
-  CrossPlatformFile,
-  Genre,
-  Mood,
-  NativeFile,
-  TrackFilesMetadata
+import {
+  type full,
+  type CrossPlatformFile,
+  type Genre,
+  type Mood,
+  type NativeFile,
+  type TrackFilesMetadata,
+  HashId,
+  Id,
+  OptionalHashId,
+  OptionalId
 } from '@audius/sdk'
 import camelcaseKeys from 'camelcase-keys'
 import dayjs from 'dayjs'
@@ -13,16 +17,13 @@ import snakecaseKeys from 'snakecase-keys'
 
 import {
   Copyright,
-  Id,
-  OptionalId,
   RightsController,
   StemCategory,
   TrackSegment
 } from '~/models'
 import { StemTrackMetadata, UserTrackMetadata } from '~/models/Track'
 import type { TrackMetadataForUpload } from '~/store/upload/types'
-import { License, Maybe } from '~/utils'
-import { decodeHashId } from '~/utils/hashIds'
+import { formatMusicalKey, License, Maybe, squashNewLines } from '~/utils'
 
 import { accessConditionsFromSDK } from './accessConditionsFromSDK'
 import { accessConditionsToSDK } from './accessConditionsToSDK'
@@ -46,8 +47,8 @@ export const trackSegmentFromSDK = ({
 export const userTrackMetadataFromSDK = (
   input: full.TrackFull | full.SearchTrackFull
 ): UserTrackMetadata | undefined => {
-  const decodedTrackId = decodeHashId(input.id)
-  const decodedOwnerId = decodeHashId(input.userId)
+  const decodedTrackId = OptionalHashId.parse(input.id)
+  const decodedOwnerId = OptionalHashId.parse(input.userId)
   const user = userMetadataFromSDK(input.user)
   if (!decodedTrackId || !decodedOwnerId || !user) {
     return undefined
@@ -175,7 +176,7 @@ export const stemTrackMetadataFromSDK = (
   input: full.StemFull
 ): StemTrackMetadata | undefined => {
   const [id, parentId, ownerId] = [input.id, input.parentId, input.userId].map(
-    decodeHashId
+    (id) => HashId.parse(id)
   )
   if (!(id && parentId && ownerId)) return undefined
 
@@ -254,7 +255,6 @@ export const trackMetadataForUploadToSdk = (
       'is_scheduled_release',
       'bpm',
       'is_custom_bpm',
-      'musical_key',
       'is_custom_musical_key',
       'comments_disabled',
       'ddex_release_ids',
@@ -263,7 +263,7 @@ export const trackMetadataForUploadToSdk = (
   ),
   trackId: OptionalId.parse(input.track_id),
   title: input.title,
-  description: input.description ?? undefined,
+  description: squashNewLines(input.description) ?? undefined,
   mood: input.mood as Mood,
   tags: input.tags ?? undefined,
   genre: (input.genre as Genre) || undefined,
@@ -274,6 +274,9 @@ export const trackMetadataForUploadToSdk = (
   aiAttributionUserId: OptionalId.parse(input.ai_attribution_user_id),
   audioUploadId: input.audio_upload_id ?? undefined,
   duration: input.duration ?? undefined,
+  musicalKey: input.musical_key
+    ? formatMusicalKey(input.musical_key)
+    : undefined,
   trackCid: input.track_cid ?? '',
   origFileCid: input.orig_file_cid ?? '',
   origFilename: input.orig_filename ?? undefined,

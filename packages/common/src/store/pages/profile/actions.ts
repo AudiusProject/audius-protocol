@@ -1,12 +1,8 @@
-import { Nullable } from '~/utils'
-
 import { ID, UserMetadata } from '../../../models'
 
 import { CollectionSortMode } from './types'
 
-export const FETCH_PROFILE = 'PROFILE/FETCH_PROFILE'
 export const FETCH_PROFILE_SUCCEEDED = 'PROFILE/FETCH_PROFILE_SUCCEEDED'
-export const FETCH_PROFILE_FAILED = 'PROFILE/FETCH_PROFILE_FAILED'
 
 export const SET_CURRENT_USER = 'PROFILE/SET_CURRENT_USER'
 
@@ -19,33 +15,12 @@ export const SET_PROFILE_FIELD = 'PROFILE/SET_PROFILE_FIELD'
 
 export const DISMISS_PROFILE_METER = 'PROFILE/DISMISS_PROFILE_METER'
 
-export const FETCH_TOP_TAGS = 'PROFILE/FETCH_TOP_TAGS'
-export const FETCH_TOP_TAGS_SUCCEEDED = 'PROFILE/FETCH_TOP_TAGS_SUCCEEDED'
-export const FETCH_TOP_TAGS_FAILED = 'PROFILE/FETCH_TOP_TAGS_FAILED'
-
 export const SET_NOTIFICATION_SUBSCRIPTION =
   'PROFILE/SET_NOTIFICATION_SUBSCRIPTION'
 
-export type FetchProfileAction = {
-  type: typeof FETCH_PROFILE
-  handle: string | null
-  userId: ID | null
-  forceUpdate: boolean
-  shouldSetLoading: boolean
-  deleteExistingEntry: boolean
-  fetchOnly?: boolean
-}
-
 export type FetchProfileSucceededAction = {
   type: typeof FETCH_PROFILE_SUCCEEDED
-  handle: string
   userId: ID
-  fetchOnly: boolean
-}
-
-export type FetchProfileFailedAction = {
-  type: typeof FETCH_PROFILE_FAILED
-  handle: string
 }
 
 export type SetCurrentUserAction = {
@@ -84,23 +59,6 @@ export type DismissProfileMeterAction = {
   type: typeof DISMISS_PROFILE_METER
 }
 
-export type FetchTopTagsAction = {
-  type: typeof FETCH_TOP_TAGS
-  handle: string
-  userId: ID
-}
-
-export type FetchTopTagsSucceededAction = {
-  type: typeof FETCH_TOP_TAGS_SUCCEEDED
-  handle: string
-  topTags: string[]
-}
-
-export type FetchTopTagsFailedAction = {
-  type: typeof FETCH_TOP_TAGS_FAILED
-  handle: string
-}
-
 export type SetNotificationSubscriptionAction = {
   type: typeof SET_NOTIFICATION_SUBSCRIPTION
   userId: ID
@@ -110,9 +68,7 @@ export type SetNotificationSubscriptionAction = {
 }
 
 export type ProfilePageAction =
-  | FetchProfileAction
   | FetchProfileSucceededAction
-  | FetchProfileFailedAction
   | SetCurrentUserAction
   | UpdateProfileAction
   | UpdateProfileSucceededAction
@@ -120,42 +76,10 @@ export type ProfilePageAction =
   | UpdateCollectionSortModeAction
   | SetProfileFieldAction
   | DismissProfileMeterAction
-  | FetchTopTagsAction
-  | FetchTopTagsSucceededAction
-  | FetchTopTagsFailedAction
   | SetNotificationSubscriptionAction
 
-// Either handle or userId is required
-// TODO: Move this to redux toolkit
-export function fetchProfile(
-  handle: Nullable<string>,
-  userId: Nullable<ID>,
-  forceUpdate: boolean,
-  shouldSetLoading: boolean,
-  deleteExistingEntry: boolean,
-  fetchOnly = false
-): FetchProfileAction {
-  return {
-    type: FETCH_PROFILE,
-    handle,
-    userId,
-    forceUpdate,
-    shouldSetLoading,
-    deleteExistingEntry,
-    fetchOnly
-  }
-}
-
-export function fetchProfileSucceeded(
-  handle: string,
-  userId: ID,
-  fetchOnly: boolean
-): FetchProfileSucceededAction {
-  return { type: FETCH_PROFILE_SUCCEEDED, handle, userId, fetchOnly }
-}
-
-export function fetchProfileFailed(handle: string): FetchProfileFailedAction {
-  return { type: FETCH_PROFILE_FAILED, handle }
+export function fetchProfileSucceeded(userId: ID): FetchProfileSucceededAction {
+  return { type: FETCH_PROFILE_SUCCEEDED, userId }
 }
 
 export function setCurrentUser(handle: string): SetCurrentUserAction {
@@ -206,32 +130,6 @@ export function setNotificationSubscription(
     userId,
     isSubscribed,
     update,
-    handle
-  }
-}
-
-export function fetchTopTags(handle: string, userId: ID): FetchTopTagsAction {
-  return {
-    type: FETCH_TOP_TAGS,
-    handle,
-    userId
-  }
-}
-
-export function fetchTopTagsSucceeded(
-  handle: string,
-  topTags: string[]
-): FetchTopTagsSucceededAction {
-  return {
-    type: FETCH_TOP_TAGS_SUCCEEDED,
-    handle,
-    topTags
-  }
-}
-
-export function fetchTopTagsFailed(handle: string): FetchTopTagsFailedAction {
-  return {
-    type: FETCH_TOP_TAGS_FAILED,
     handle
   }
 }

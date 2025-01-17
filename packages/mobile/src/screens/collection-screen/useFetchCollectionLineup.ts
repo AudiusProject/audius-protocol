@@ -16,12 +16,11 @@ import { useDispatch, useSelector } from 'react-redux'
 import { useReachabilityEffect } from 'app/hooks/useReachabilityEffect'
 import { getOfflineTrackIds } from 'app/store/offline-downloads/selectors'
 
-import { useHasCollectionChanged } from './useHasCollectionChanged'
-
 const { getCollection } = cacheCollectionsSelectors
 const { getCollectionTracksLineup } = collectionPageSelectors
 const { getPositions } = queueSelectors
 
+// tan-query TODO: make this work with react-query fetches
 /**
  * Returns a collection lineup, supports boths online and offline
  * @param collectionId the numeric collection id
@@ -130,5 +129,4 @@ export const useFetchCollectionLineup = (
 
   // Fetch the lineup based on reachability
   useReachabilityEffect(fetchLineup, fetchLineupOffline)
-  useHasCollectionChanged(collectionId as number, fetchLineup)
 }

@@ -1,7 +1,10 @@
+import { useMemo } from 'react'
+
 import { useTheme } from '@emotion/react'
 
 import { motion } from '../../foundations/motion'
 import { Flex } from '../layout/Flex'
+import { NotificationCount } from '../notification-count'
 import { Text } from '../text/Text'
 
 import type { NavItemProps } from './types'
@@ -16,6 +19,11 @@ export const NavItem = ({
   rightIcon: RightIcon,
   isSelected = false,
   onClick,
+  textSize = 'l',
+  hasNotification = false,
+  leftOverride,
+  variant = 'default',
+  isChild = false,
   ...props
 }: NavItemProps) => {
   const { color } = useTheme()
@@ -25,9 +33,25 @@ export const NavItem = ({
 
   const backgroundColor = isSelected ? color.secondary.s400 : undefined
 
-  const textColor = isSelected ? 'staticWhite' : 'default'
+  const textAndIconColor = isSelected ? 'staticWhite' : 'default'
+  const insetBorderColor = isSelected
+    ? 'none'
+    : `inset 0 0 0 1px ${color.border.default}`
 
-  const iconColor = isSelected ? 'staticStaticWhite' : 'default'
+  const leftIconWithNotification = useMemo(() => {
+    const icon = hasLeftIcon ? (
+      <LeftIcon size='l' color={textAndIconColor} />
+    ) : null
+
+    if (hasNotification && !!icon) {
+      return (
+        <NotificationCount size='s' isSelected={isSelected}>
+          {icon}
+        </NotificationCount>
+      )
+    }
+    return icon
+  }, [hasNotification, hasLeftIcon, LeftIcon, textAndIconColor, isSelected])
 
   return (
     <Flex
@@ -35,8 +59,8 @@ export const NavItem = ({
       gap='s'
       pl='s'
       pr='s'
+      w='240px'
       css={{
-        width: '240px',
         cursor: 'pointer',
         transition: `background-color ${motion.hover}`
       }}
@@ -51,11 +75,14 @@ export const NavItem = ({
         borderRadius='m'
         css={{
           backgroundColor,
-          borderWidth: '1px',
-
+          transition: `opacity ${motion.quick}`,
           '&:hover': {
             backgroundColor: isSelected ? undefined : color.background.surface2,
-            borderColor: color.border.default
+            boxShadow: insetBorderColor
+          },
+          '&:active': {
+            opacity: !isSelected ? 0.8 : undefined,
+            transition: `opacity ${motion.quick}`
           }
         }}
       >
@@ -63,23 +90,29 @@ export const NavItem = ({
           alignItems='center'
           gap='m'
           flex={1}
+          h={variant === 'compact' ? 'unit5' : 'unit6'}
+          pv='s'
           css={{
             maxWidth: '240px'
           }}
         >
-          {hasLeftIcon ? <LeftIcon size='l' color={iconColor} /> : null}
+          {leftOverride || leftIconWithNotification}
           <Text
             variant='title'
-            size='l'
+            size={textSize}
             strength='weak'
             lineHeight='single'
-            color={textColor}
+            color={textAndIconColor}
             ellipses
+            css={{
+              flex: 1,
+              marginLeft: isChild ? 'm' : undefined
+            }}
           >
             {children}
           </Text>
         </Flex>
-        {hasRightIcon ? <RightIcon size='m' color={iconColor} /> : null}
+        {hasRightIcon ? RightIcon : null}
       </Flex>
     </Flex>
   )

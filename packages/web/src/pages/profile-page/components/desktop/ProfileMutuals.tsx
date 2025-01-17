@@ -34,7 +34,7 @@ export const ProfileMutuals = () => {
   const profile = useSelector(getProfileUser) as User | null
   const { data: mutuals } = useMutualFollowers({
     userId,
-    limit: MAX_MUTUALS
+    pageSize: MAX_MUTUALS
   })
   const dispatch = useDispatch()
 

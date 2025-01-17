@@ -9,8 +9,7 @@ import {
   InstagramUser,
   TikTokUser,
   Feature,
-  AccountUserMetadata,
-  OptionalId
+  AccountUserMetadata
 } from '@audius/common/models'
 import {
   IntKeys,
@@ -40,10 +39,15 @@ import {
   isValidEmailString,
   route,
   isResponseError,
-  encodeHashId,
-  TEMPORARY_PASSWORD
+  TEMPORARY_PASSWORD,
+  waitForValue
 } from '@audius/common/utils'
-import { CreateUserRequest, UpdateProfileRequest } from '@audius/sdk'
+import {
+  OptionalId,
+  CreateUserRequest,
+  Id,
+  UpdateProfileRequest
+} from '@audius/sdk'
 import { isEmpty } from 'lodash'
 import {
   all,
@@ -71,7 +75,12 @@ import { waitForRead, waitForWrite } from 'utils/sagaHelpers'
 
 import * as signOnActions from './actions'
 import { watchSignOnError } from './errorSagas'
-import { getIsGuest, getRouteOnCompletion, getSignOn } from './selectors'
+import {
+  getIsGuest,
+  getRouteOnCompletion,
+  getSignOn,
+  getFollowIds
+} from './selectors'
 import { Pages } from './types'
 
 const { FEED_PAGE, SIGN_IN_PAGE, SIGN_UP_PAGE, SIGN_UP_PASSWORD_PAGE } = route
@@ -131,29 +140,12 @@ function* fetchReferrer(
   action: ReturnType<typeof signOnActions.fetchReferrer>
 ) {
   yield* waitForRead()
-  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
-  const sdk = yield* getSDK()
   const { handle } = action
   if (handle) {
     try {
       const user = yield* call(fetchUserByHandle, handle)
       if (!user) return
       yield* put(signOnActions.setReferrer(user.user_id))
-
-      // Check if the user is already signed in
-      // If so, apply retroactive referrals
-
-      const currentUser = yield* select(getAccountUser)
-      if (
-        currentUser &&
-        !currentUser.events?.referrer &&
-        currentUser.user_id !== user.user_id
-      ) {
-        yield* call(audiusBackendInstance.updateCreator, {
-          metadata: { ...currentUser, events: { referrer: user.user_id } },
-          sdk
-        })
-      }
     } catch (e: any) {
       const reportToSentry = yield* getContext('reportToSentry')
       reportToSentry({
@@ -465,6 +457,7 @@ function* createGuestAccount(
   const getFeatureEnabled = yield* getContext('getFeatureEnabled')
   const reportToSentry = yield* getContext('reportToSentry')
   const localStorage = yield* getContext('localStorage')
+  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
 
   const sdk = yield* getSDK()
 
@@ -512,12 +505,16 @@ function* createGuestAccount(
           sdk.users.createGuestAccount
         ])
         yield* call(confirmTransaction, blockHash, blockNumber)
-        yield* call(fetchAccountAsync, { isSignUp: true })
+        yield* call(fetchAccountAsync)
 
         const userBank = yield* call(getOrCreateUSDCUserBank)
         if (!userBank) {
           throw new Error('Failed to create user bank')
         }
+
+        // associates user record with blockchain user ID and creates notification settings
+        // necessary for sending purchase emails
+        yield* call(audiusBackendInstance.updateUserLocationTimezone, { sdk })
       },
       () => {},
       function* ({ error: err }: { error: Error }) {
@@ -602,7 +599,7 @@ function* signUp() {
               }
               userId = account.user.user_id
               const completeProfileMetadataRequest: UpdateProfileRequest = {
-                userId: encodeHashId(userId),
+                userId: Id.parse(userId),
                 profilePictureFile: signOn.profileImage?.file as File,
                 metadata: {
                   location: location ?? undefined,
@@ -627,16 +624,6 @@ function* signUp() {
               yield* fork(sendPostSignInRecoveryEmail, { handle, email })
 
               yield* call(confirmTransaction, blockHash, blockNumber)
-              const { entries } = yield* call(
-                fetchUsers,
-                [userId],
-                undefined,
-                true
-              )
-              const user = entries[userId]
-              if (!user) {
-                throw new Error('Failed to index guest account creation')
-              }
 
               return userId
             } else {
@@ -799,7 +786,14 @@ function* signUp() {
         },
         function* () {
           yield* put(signOnActions.sendWelcomeEmail(name))
-          yield* call(fetchAccountAsync, { isSignUp: true })
+          yield* call(fetchAccountAsync)
+          yield* call(
+            waitForValue,
+            getFollowIds,
+            null,
+            (value: ID[]) => value.length > 0
+          )
+          yield* call(waitForValue, accountSelectors.getIsAccountComplete)
           yield* put(signOnActions.followArtists())
           yield* put(make(Name.CREATE_ACCOUNT_COMPLETE_CREATING, { handle }))
           yield* put(signOnActions.signUpSucceeded())
@@ -864,11 +858,15 @@ function* signIn(action: ReturnType<typeof signOnActions.signIn>) {
   yield* call(waitForRead)
   try {
     const signOn = yield* select(getSignOn)
-    const fpResponse = yield* call(
-      [fingerprintClient, fingerprintClient.identify],
-      email ?? signOn.email.value,
-      clientOrigin
-    )
+    const isGuest = select(getIsGuest)
+
+    const fpResponse = isGuest
+      ? undefined // guest account should not use fingerprint
+      : yield* call(
+          [fingerprintClient, fingerprintClient.identify],
+          email ?? signOn.email.value,
+          clientOrigin
+        )
 
     let signInResponse: SignInResponse
     try {
@@ -911,7 +909,6 @@ function* signIn(action: ReturnType<typeof signOnActions.signIn>) {
 
     // Loging succeeded and we found a user, but it's missing name, likely
     // due to incomplete signup
-    const isGuest = select(getIsGuest)
 
     if (!user.name) {
       if (isGuest) {
@@ -977,7 +974,7 @@ function* signIn(action: ReturnType<typeof signOnActions.signIn>) {
     }
 
     // Apply retroactive referral
-    if (!user.events?.referrer && signOn.referrer) {
+    if (signOn.referrer) {
       yield* fork(audiusBackendInstance.updateCreator, {
         metadata: { ...user, events: { referrer: signOn.referrer } },
         sdk

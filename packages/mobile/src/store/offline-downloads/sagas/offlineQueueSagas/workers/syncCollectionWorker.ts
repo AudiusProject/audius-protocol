@@ -4,12 +4,12 @@ import {
   userCollectionMetadataFromSDK
 } from '@audius/common/adapters'
 import type { ID, DownloadReason } from '@audius/common/models'
-import { OptionalId, Id } from '@audius/common/models'
 import {
   accountSelectors,
   cacheCollectionsSelectors,
   getSDK
 } from '@audius/common/store'
+import { OptionalId, Id } from '@audius/sdk'
 import { difference } from 'lodash'
 import moment from 'moment'
 import { call, put, race, select, take } from 'typed-redux-saga'

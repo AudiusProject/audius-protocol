@@ -11,10 +11,8 @@ import {
   Feature,
   FieldVisibility,
   ID,
-  Id,
   Kind,
   Name,
-  OptionalId,
   StemUploadWithFile,
   isContentFollowGated,
   isContentUSDCPurchaseGated
@@ -22,7 +20,6 @@ import {
 import { CollectionValues } from '@audius/common/schemas'
 import {
   TrackMetadataForUpload,
-  LibraryCategory,
   ProgressStatus,
   TrackForUpload,
   UploadType,
@@ -33,7 +30,6 @@ import {
   confirmerActions,
   getContext,
   reformatCollection,
-  savedPageActions,
   uploadActions,
   getSDK,
   cacheTracksActions,
@@ -44,11 +40,16 @@ import {
 } from '@audius/common/store'
 import {
   actionChannelDispatcher,
-  decodeHashId,
   makeUid,
   waitForAccount
 } from '@audius/common/utils'
-import { ProgressHandler, AudiusSdk } from '@audius/sdk'
+import {
+  Id,
+  OptionalId,
+  ProgressHandler,
+  AudiusSdk,
+  OptionalHashId
+} from '@audius/sdk'
 import { mapValues } from 'lodash'
 import { Channel, Task, buffers, channel } from 'redux-saga'
 import {
@@ -67,7 +68,6 @@ import { make } from 'common/store/analytics/actions'
 import { prepareStemsForUpload } from 'pages/upload-page/store/utils/stems'
 import * as errorActions from 'store/errors/actions'
 import { reportToSentry } from 'store/errors/reportToSentry'
-import { encodeHashId } from 'utils/hashIds'
 import { push } from 'utils/navigation'
 import { waitForWrite } from 'utils/sagaHelpers'
 
@@ -204,7 +204,7 @@ const makeOnProgress = (
  */
 export function* deleteTracks(trackIds: ID[]) {
   const sdk = yield* getSDK()
-  const userId = encodeHashId(yield* select(accountSelectors.getUserId))
+  const userId = Id.parse(yield* select(accountSelectors.getUserId))
   if (!userId) {
     throw new Error('No user id found during delete. Not signed in?')
   }
@@ -213,7 +213,7 @@ export function* deleteTracks(trackIds: ID[]) {
     trackIds.map((id) =>
       call([sdk.tracks, sdk.tracks.deleteTrack], {
         userId,
-        trackId: encodeHashId(id)
+        trackId: Id.parse(id)
       })
     )
   )
@@ -308,9 +308,7 @@ function* publishWorker(
         metadata
       )
 
-      const decodedTrackId = updatedTrackId
-        ? decodeHashId(updatedTrackId)
-        : null
+      const decodedTrackId = OptionalHashId.parse(updatedTrackId)
 
       if (decodedTrackId) {
         yield* put(responseChannel, {
@@ -971,13 +969,7 @@ export function* uploadCollection(
             }
           })
         )
-        yield* put(
-          savedPageActions.addLocalCollection({
-            collectionId: confirmedPlaylist.playlist_id,
-            isAlbum: confirmedPlaylist.is_album,
-            category: LibraryCategory.Favorite
-          })
-        )
+
         yield* put(cacheActions.setExpired(Kind.USERS, userId))
 
         // Finally, add to the library

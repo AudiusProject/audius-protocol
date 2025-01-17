@@ -2,7 +2,7 @@ import {
   userMetadataListFromSDK,
   userWalletsFromSDK
 } from '@audius/common/adapters'
-import { Kind, Id } from '@audius/common/models'
+import { Kind } from '@audius/common/models'
 import {
   accountSelectors,
   cacheActions,
@@ -12,7 +12,8 @@ import {
   collectiblesActions,
   confirmerActions,
   confirmTransaction,
-  getSDK
+  getSDK,
+  cacheUsersSelectors
 } from '@audius/common/store'
 import {
   squashNewLines,
@@ -22,6 +23,7 @@ import {
   isResponseError,
   route
 } from '@audius/common/utils'
+import { Id } from '@audius/sdk'
 import { merge } from 'lodash'
 import {
   all,
@@ -33,7 +35,6 @@ import {
   takeEvery
 } from 'redux-saga/effects'
 
-import { fetchUsers, fetchUserByHandle } from 'common/store/cache/users/sagas'
 import feedSagas from 'common/store/pages/profile/lineups/feed/sagas.js'
 import tracksSagas from 'common/store/pages/profile/lineups/tracks/sagas.js'
 import {
@@ -43,12 +44,11 @@ import {
 import { push as pushRoute } from 'utils/navigation'
 import { waitForWrite } from 'utils/sagaHelpers'
 
-import { watchFetchTopTags } from './fetchTopTagsSaga'
-
 const { NOT_FOUND_PAGE } = route
 const { getIsReachable } = reachabilitySelectors
 
 const { getUserId } = accountSelectors
+const { getUser } = cacheUsersSelectors
 
 const {
   updateUserEthCollectibles,
@@ -59,8 +59,8 @@ const {
 
 const { fetchPermissions } = chatActions
 
-function* watchFetchProfile() {
-  yield takeEvery(profileActions.FETCH_PROFILE, fetchProfileAsync)
+function* watchFetchProfileSucceeded() {
+  yield takeEvery(profileActions.FETCH_PROFILE_SUCCEEDED, profileSucceededAsync)
 }
 
 function* fetchProfileCustomizedCollectibles(user) {
@@ -295,44 +295,15 @@ export function* fetchSolanaCollectibles(user) {
   }
 }
 
-function* fetchProfileAsync(action) {
-  try {
-    let user
-    if (action.handle) {
-      user = yield call(
-        fetchUserByHandle,
-        action.handle,
-        new Set(),
-        action.forceUpdate,
-        action.shouldSetLoading,
-        action.deleteExistingEntry
-      )
-    } else if (action.userId) {
-      const users = yield call(
-        fetchUsers,
-        [action.userId],
-        new Set(),
-        action.forceUpdate,
-        action.shouldSetLoading
-      )
-      user = users.entries[action.userId]
-    }
-    if (!user) {
-      const isReachable = yield select(getIsReachable)
-      if (isReachable) {
-        yield put(profileActions.fetchProfileFailed())
-        yield put(pushRoute(NOT_FOUND_PAGE))
-      }
-      return
-    }
-    yield put(
-      profileActions.fetchProfileSucceeded(
-        user.handle,
-        user.user_id,
-        action.fetchOnly
-      )
-    )
+function* profileSucceededAsync(action) {
+  const { userId } = action
 
+  const user = yield select(getUser, { id: userId })
+  if (!user) {
+    return
+  }
+
+  try {
     // Get chat permissions
     yield put(fetchPermissions({ userIds: [user.user_id] }))
 
@@ -518,9 +489,8 @@ export default function sagas() {
   return [
     ...feedSagas(),
     ...tracksSagas(),
-    watchFetchProfile,
+    watchFetchProfileSucceeded,
     watchUpdateProfile,
-    watchSetNotificationSubscription,
-    watchFetchTopTags
+    watchSetNotificationSubscription
   ]
 }

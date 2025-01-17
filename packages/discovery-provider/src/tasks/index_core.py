@@ -174,7 +174,12 @@ def index_core(self):
 
             # do some checks to see if we should be indexing or not
             on_cutover_chain = core_plays_cutover_chain_id == core_chain_id
-            past_core_plays_cutover = latest_core_block_height >= core_plays_cutover
+            on_cutover_chain_and_passed_cutover = (
+                on_cutover_chain and latest_core_block_height >= core_plays_cutover
+            )
+            past_core_plays_cutover = (
+                on_cutover_chain_and_passed_cutover or not on_cutover_chain
+            )
             if on_cutover_chain and not past_core_plays_cutover:
                 return
 
@@ -297,6 +302,6 @@ def index_core(self):
         if have_lock:
             update_lock.release()
         if not block_indexed:
-            celery.send_task("index_core", countdown=0.5, queue="index_sol")
+            celery.send_task("index_core", countdown=0.5, queue="index_core")
         else:
-            celery.send_task("index_core", queue="index_sol")
+            celery.send_task("index_core", queue="index_core")

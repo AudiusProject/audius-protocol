@@ -1,13 +1,13 @@
 import { useCallback, useState } from 'react'
 
 import { usePurchases, usePurchasesCount } from '@audius/common/api'
-import { Id, USDCPurchaseDetails } from '@audius/common/models'
+import { USDCPurchaseDetails } from '@audius/common/models'
 import {
   accountSelectors,
   useUSDCPurchaseDetailsModal
 } from '@audius/common/store'
 import { route } from '@audius/common/utils'
-import { full } from '@audius/sdk'
+import { Id, full } from '@audius/sdk'
 import { useDispatch } from 'react-redux'
 
 import { useErrorPage } from 'hooks/useErrorPage'
@@ -89,24 +89,25 @@ export const usePurchasesData = () => {
 
   const {
     data: purchases,
-    loadMore,
-    hasMore,
+    fetchNextPage,
     isPending: isPurchasesPending,
     isError: isPurchasesError
-  } = usePurchases(
-    { userId, sortMethod, sortDirection },
-    { pageSize: TRANSACTIONS_BATCH_SIZE }
-  )
+  } = usePurchases({
+    userId,
+    sortMethod,
+    sortDirection,
+    pageSize: TRANSACTIONS_BATCH_SIZE
+  })
 
   const {
-    data: count,
+    data: count = 0,
     isPending: isCountPending,
     isError: isCountError
   } = usePurchasesCount(userId)
 
-  const isPending = isPurchasesPending || isCountPending
-
-  // TODO: Should fetch users before rendering the table
+  const isLoading = isPurchasesPending || isCountPending
+  const isError = isPurchasesError || isCountError
+  const isEmpty = !isLoading && !isError && purchases?.length === 0
 
   const onSort = useCallback(
     (
@@ -119,12 +120,6 @@ export const usePurchasesData = () => {
     []
   )
 
-  const fetchMore = useCallback(() => {
-    if (hasMore) {
-      loadMore()
-    }
-  }, [hasMore, loadMore])
-
   useErrorPage({ showErrorPage: isPurchasesError || isCountError })
 
   const onClickRow = useCallback(
@@ -133,8 +128,6 @@ export const usePurchasesData = () => {
     },
     [openDetailsModal]
   )
-
-  const isEmpty = !isPending && purchases?.length === 0
 
   const downloadCSV = useCallback(async () => {
     const sdk = await audiusSdk()
@@ -150,13 +143,14 @@ export const usePurchasesData = () => {
   }, [userId])
 
   return {
-    count,
     data: purchases,
-    fetchMore,
+    count,
+    isEmpty,
+    isLoading,
+    isError,
     onSort,
     onClickRow,
-    isEmpty,
-    isLoading: isPending,
+    fetchNextPage: () => fetchNextPage(),
     downloadCSV
   }
 }
@@ -171,7 +165,7 @@ export const PurchasesTab = ({
   isLoading,
   onSort,
   onClickRow,
-  fetchMore
+  fetchNextPage
 }: Omit<ReturnType<typeof usePurchasesData>, 'downloadCSV'>) => {
   const mainContentRef = useMainContentRef()
   const isMobile = useIsMobile()
@@ -182,7 +176,7 @@ export const PurchasesTab = ({
 
   return (
     <div className={styles.container}>
-      {isEmpty ? (
+      {isEmpty || !data ? (
         <NoPurchases />
       ) : (
         <PurchasesTable
@@ -192,7 +186,7 @@ export const PurchasesTab = ({
           loading={isLoading}
           onSort={onSort}
           onClickRow={onClickRow}
-          fetchMore={fetchMore}
+          fetchMore={fetchNextPage}
           totalRowCount={count}
           scrollRef={mainContentRef}
           fetchBatchSize={TRANSACTIONS_BATCH_SIZE}

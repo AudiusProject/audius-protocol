@@ -3,7 +3,6 @@ import { useSelector } from 'react-redux'
 
 import { accountFromSDK } from '~/adapters/user'
 import { useAudiusQueryContext } from '~/audius-query'
-import { SolanaWalletAddress } from '~/models/Wallet'
 import { getWalletAddresses } from '~/store/account/selectors'
 
 import { QUERY_KEYS } from './queryKeys'
@@ -30,16 +29,6 @@ export const useCurrentUser = (config?: Config) => {
       }
 
       const account = accountFromSDK(data)
-      // If we got a valid account, populate user bank since that's
-      // expected to exist on "account" users
-      if (account) {
-        const userBank =
-          await sdk.services.claimableTokensClient.deriveUserBank({
-            ethWallet: currentUser!,
-            mint: 'wAUDIO'
-          })
-        account.user.userBank = userBank.toString() as SolanaWalletAddress
-      }
       return account?.user
     },
     staleTime: config?.staleTime,

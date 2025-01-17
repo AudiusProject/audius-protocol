@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
 
-import { statusIsNotFinalized } from '@audius/common/models'
+import { useLibraryCollections } from '@audius/common/api'
 import {
   savedPageSelectors,
   LibraryCategory,
@@ -15,7 +15,6 @@ import { InfiniteCardLineup } from 'components/lineup/InfiniteCardLineup'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import EmptyTable from 'components/tracks-table/EmptyTable'
 import { useNavigateToPage } from 'hooks/useNavigateToPage'
-import { useCollectionsData } from 'pages/saved-page/hooks/useCollectionsData'
 
 import { emptyStateMessages } from '../emptyStateMessages'
 
@@ -31,17 +30,22 @@ const messages = {
 
 export const AlbumsTabPage = () => {
   const navigate = useNavigateToPage()
-  const {
-    status,
-    hasMore,
-    fetchMore,
-    collections: albums
-  } = useCollectionsData({ collectionType: 'album' })
+  const selectedCategory = useSelector((state: CommonState) =>
+    getCategory(state, { currentTab: SavedPageTabs.ALBUMS })
+  )
 
-  const emptyAlbumsHeader = useSelector((state: CommonState) => {
-    const selectedCategory = getCategory(state, {
-      currentTab: SavedPageTabs.ALBUMS
-    })
+  const {
+    data: albums = [],
+    fetchNextPage,
+    hasNextPage,
+    isPending,
+    isFetchingNextPage
+  } = useLibraryCollections({
+    collectionType: 'albums',
+    category: selectedCategory
+  })
+
+  const emptyAlbumsHeader = useMemo(() => {
     if (selectedCategory === LibraryCategory.All) {
       return emptyStateMessages.emptyAlbumAllHeader
     } else if (selectedCategory === LibraryCategory.Favorite) {
@@ -51,11 +55,9 @@ export const AlbumsTabPage = () => {
     } else {
       return emptyStateMessages.emptyAlbumRepostsHeader
     }
-  })
+  }, [selectedCategory])
 
-  const noResults = !statusIsNotFinalized(status) && albums?.length === 0
-
-  const isLoadingInitial = statusIsNotFinalized(status) && albums?.length === 0
+  const noResults = !isPending && albums?.length === 0
 
   const cards = useMemo(() => {
     return albums?.map(({ playlist_id }) => {
@@ -63,12 +65,12 @@ export const AlbumsTabPage = () => {
     })
   }, [albums])
 
-  if (isLoadingInitial) {
+  if (isPending) {
     return <LoadingSpinner className={styles.spinner} />
   }
 
   // TODO(nkang) - Add separate error state
-  if (noResults || !albums) {
+  if (noResults) {
     return (
       <EmptyTable
         primaryText={emptyAlbumsHeader}
@@ -81,11 +83,11 @@ export const AlbumsTabPage = () => {
 
   return (
     <InfiniteCardLineup
-      hasMore={hasMore}
-      loadMore={fetchMore}
+      hasMore={hasNextPage}
+      loadMore={fetchNextPage}
       cards={cards}
       cardsClassName={styles.cardsContainer}
-      isLoadingMore={statusIsNotFinalized(status)}
+      isLoadingMore={isFetchingNextPage}
     />
   )
 }

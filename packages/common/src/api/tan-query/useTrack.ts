@@ -1,15 +1,18 @@
+import { Id } from '@audius/sdk'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useDispatch } from 'react-redux'
 
 import { userTrackMetadataFromSDK } from '~/adapters/track'
 import { useAudiusQueryContext } from '~/audius-query'
-import { Id, ID } from '~/models/Identifiers'
+import { ID } from '~/models/Identifiers'
 import { Kind } from '~/models/Kind'
 import { addEntries } from '~/store/cache/actions'
 import { EntriesByKind } from '~/store/cache/types'
 
 import { QUERY_KEYS } from './queryKeys'
 import { Config } from './types'
+
+const STALE_TIME = Infinity
 
 export const useTrack = (trackId: ID | null | undefined, options?: Config) => {
   const { audiusSdk } = useAudiusQueryContext()
@@ -54,7 +57,7 @@ export const useTrack = (trackId: ID | null | undefined, options?: Config) => {
 
       return track
     },
-    staleTime: options?.staleTime,
+    staleTime: options?.staleTime ?? STALE_TIME,
     enabled: options?.enabled !== false && !!trackId
   })
 }

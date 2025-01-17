@@ -15,13 +15,12 @@ import {
   collectionPageActions,
   getContext
 } from '@audius/common/store'
-import { encodeHashId, route } from '@audius/common/utils'
-import { full } from '@audius/sdk'
+import { route } from '@audius/common/utils'
+import { full, Id } from '@audius/sdk'
 import { GetBestNewReleasesWindowEnum } from '@audius/sdk/src/sdk/api/generated/full'
 import { takeEvery, put, call, select } from 'typed-redux-saga'
 
 import { processAndCacheTracks } from 'common/store/cache/tracks/utils'
-import { fetchUsers as retrieveUsers } from 'common/store/cache/users/sagas'
 import { requiresAccount } from 'common/utils/requiresAccount'
 import { waitForRead } from 'utils/sagaHelpers'
 
@@ -54,7 +53,7 @@ function* fetchHeavyRotation() {
   const activity = yield* call(
     [sdk.full.users, sdk.full.users.getUsersTrackHistory],
     {
-      id: encodeHashId(currentUserId),
+      id: Id.parse(currentUserId),
       sortMethod: 'most_listens_by_user',
       limit: 20
     }
@@ -67,21 +66,9 @@ function* fetchHeavyRotation() {
     (activity: full.ActivityFull) => trackActivityFromSDK(activity)?.item
   ).filter((track) => !track.is_unlisted)
 
-  const users = yield* call(
-    retrieveUsers,
-    mostListenedTracks.map((t) => t.owner_id)
-  )
-
-  const trackIds = mostListenedTracks
-    .filter(
-      (track) =>
-        users.entries[track.owner_id] &&
-        !users.entries[track.owner_id].is_deactivated &&
-        !track.is_delete
-    )
-    .map((track) => ({
-      track: track.track_id
-    }))
+  const trackIds = mostListenedTracks.map((track) => ({
+    track: track.track_id
+  }))
 
   return {
     ...HEAVY_ROTATION,

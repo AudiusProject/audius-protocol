@@ -30,9 +30,7 @@ import coreCacheSagas from 'common/store/cache/sagas'
 import tracksSagas from 'common/store/cache/tracks/sagas'
 import usersSagas from 'common/store/cache/users/sagas'
 import changePasswordSagas from 'common/store/change-password/sagas'
-import notificationSagas from 'common/store/notifications/sagas'
 import rewardsPageSagas from 'common/store/pages/audio-rewards/sagas'
-import transactionsPageSagas from 'common/store/pages/audio-transactions/sagas'
 import collectionSagas from 'common/store/pages/collection/sagas'
 import deactivateAccountSagas from 'common/store/pages/deactivate-account/sagas'
 import exploreCollectionsPageSagas from 'common/store/pages/explore/exploreCollections/sagas'
@@ -53,7 +51,6 @@ import playlistUpdatesSagas from 'common/store/playlist-updates/sagas'
 import profileSagas from 'common/store/profile/sagas'
 import queueSagas from 'common/store/queue/sagas'
 import recoveryEmailSagas from 'common/store/recovery-email/sagas'
-import remixSettingsSagas from 'common/store/remix-settings/sagas'
 import savedCollectionsSagas from 'common/store/saved-collections/sagas'
 import searchAiBarSagas from 'common/store/search-ai-bar/sagas'
 import searchBarSagas from 'common/store/search-bar/sagas'
@@ -62,17 +59,6 @@ import socialSagas from 'common/store/social/sagas'
 import tippingSagas from 'common/store/tipping/sagas'
 import reactionSagas from 'common/store/ui/reactions/sagas'
 import uploadSagas from 'common/store/upload/sagas'
-import favoritePageSagas from 'common/store/user-list/favorites/sagas'
-import followersPageSagas from 'common/store/user-list/followers/sagas'
-import followingPageSagas from 'common/store/user-list/following/sagas'
-import mutualsPageSagas from 'common/store/user-list/mutuals/sagas'
-import notificationUsersPageSagas from 'common/store/user-list/notifications/sagas'
-import purchasersPageSagas from 'common/store/user-list/purchasers/sagas'
-import relatedArtistsPageSagas from 'common/store/user-list/related-artists/sagas'
-import remixersPageSagas from 'common/store/user-list/remixers/sagas'
-import repostPageSagas from 'common/store/user-list/reposts/sagas'
-import supportingPageSagas from 'common/store/user-list/supporting/sagas'
-import topSupportersPageSagas from 'common/store/user-list/top-supporters/sagas'
 import walletSagas from 'common/store/wallet/sagas'
 import firstUploadModalSagas from 'components/first-upload-modal/store/sagas'
 import passwordResetSagas from 'components/password-reset/store/sagas'
@@ -94,8 +80,6 @@ import reloadSagas from 'store/reload/sagas'
 import routingSagas from 'store/routing/sagas'
 import signOutSagas from 'store/sign-out/sagas'
 import tokenDashboardSagas from 'store/token-dashboard/sagas'
-
-import notificationSagasWeb from './notifications/sagas'
 
 export default function* rootSaga() {
   const sagas = ([] as (() => Generator<any, void, any>)[]).concat(
@@ -125,13 +109,10 @@ export default function* rootSaga() {
     exploreCollectionsPageSagas(),
     feedPageSagas(),
     historySagas(),
-    notificationSagas(),
-    notificationSagasWeb(),
     passwordResetSagas(),
     profileSagas(),
     reactionSagas(),
     rewardsPageSagas(),
-    transactionsPageSagas(),
     savedSagas(),
     searchResultsSagas(),
     settingsSagas(),
@@ -174,18 +155,8 @@ export default function* rootSaga() {
     deletedSagas(),
     deletePlaylistConfirmationModalSagas(),
     duplicateAddConfirmationModalSagas(),
-    favoritePageSagas(),
     firstUploadModalSagas(),
-    followersPageSagas(),
-    followingPageSagas(),
-    supportingPageSagas(),
-    topSupportersPageSagas(),
-    relatedArtistsPageSagas(),
-    mutualsPageSagas(),
-    notificationUsersPageSagas(),
     remixesSagas(),
-    remixSettingsSagas(),
-    repostPageSagas(),
     scrollLockSagas(),
     shareModalSagas(),
     stripeModalSagas(),
@@ -198,8 +169,6 @@ export default function* rootSaga() {
     userListModalSagas(),
     vipDiscordModalSagas(),
     commonReachabilitySagas(),
-    purchasersPageSagas(),
-    remixersPageSagas(),
 
     // Remote config
     remoteConfigSagas(),

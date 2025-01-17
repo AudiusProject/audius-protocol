@@ -60,7 +60,7 @@ const messages = {
   receiveLabel: 'Receive',
   sendLabel: 'Send',
   transactionsLabel: 'View Transactions',
-  audio: '$AUDIO',
+  audio: 'Total $AUDIO',
   connectedWallets: 'Connected Wallets',
   buyAudio: 'Buy $AUDIO Tokens',
   buyAudioNotSupported: 'Buy $AUDIO is not yet supported in your region',
@@ -367,19 +367,18 @@ export const WalletManagementTile = () => {
               borderTop='default'
               pt='xl'
               pb='s'
-              wrap='wrap'
             >
               <Text variant='label' size='s' strength='default' color='subdued'>
                 {messages.onRampsPowered}
               </Text>
               <IconLogoLinkByStripe
-                width={'6em'}
-                height={'1.33em'}
+                width={100}
+                height={'100%'}
                 color='subdued'
               />
               <IconLogoCoinbasePay
-                width={'6em'}
-                height={'1.33em'}
+                width={100}
+                height={'100%'}
                 color='subdued'
               />
             </Flex>

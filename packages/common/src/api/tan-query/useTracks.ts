@@ -1,3 +1,4 @@
+import { OptionalId } from '@audius/sdk'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useDispatch } from 'react-redux'
 
@@ -8,7 +9,7 @@ import { ID } from '~/models/Identifiers'
 import { Kind } from '~/models/Kind'
 import { addEntries } from '~/store/cache/actions'
 import { EntriesByKind } from '~/store/cache/types'
-import { encodeHashId } from '~/utils/hashIds'
+import { removeNullable } from '~/utils/typeUtils'
 
 import { QUERY_KEYS } from './queryKeys'
 import { Config } from './types'
@@ -24,10 +25,10 @@ export const useTracks = (
   return useQuery({
     queryKey: [QUERY_KEYS.tracks, trackIds],
     queryFn: async () => {
-      const encodedIds = trackIds!
-        .map(encodeHashId)
-        .filter((id): id is string => id !== null)
-      if (encodedIds.length === 0) return []
+      const encodedIds = trackIds
+        ?.map((id) => OptionalId.parse(id))
+        .filter(removeNullable)
+      if (!encodedIds || encodedIds.length === 0) return []
       const sdk = await audiusSdk()
       const { data } = await sdk.full.tracks.getBulkTracks({
         id: encodedIds
@@ -63,7 +64,6 @@ export const useTracks = (
       return tracks
     },
     staleTime: options?.staleTime,
-    enabled:
-      options?.enabled !== false && trackIds !== null && trackIds !== undefined
+    enabled: options?.enabled !== false && !!trackIds
   })
 }

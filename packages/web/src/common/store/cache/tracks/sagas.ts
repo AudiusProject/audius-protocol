@@ -9,9 +9,7 @@ import {
   Track,
   ID,
   Remix,
-  StemUploadWithFile,
-  Id,
-  OptionalId
+  StemUploadWithFile
 } from '@audius/common/models'
 import {
   getContext,
@@ -34,6 +32,7 @@ import {
   waitForAccount,
   waitForValue
 } from '@audius/common/utils'
+import { Id, OptionalId } from '@audius/sdk'
 import { call, fork, put, select, takeEvery } from 'typed-redux-saga'
 
 import { make } from 'common/store/analytics/actions'
@@ -77,6 +76,10 @@ export function* trackNewRemixEvent(track: TrackWithRemix) {
   )
 }
 
+/**
+ * @deprecated Use useUpdateTrack instead
+ * Still used for replacing track audio
+ */
 function* editTrackAsync(action: ReturnType<typeof trackActions.editTrack>) {
   yield* call(waitForWrite)
   action.formFields.description = squashNewLines(action.formFields.description)

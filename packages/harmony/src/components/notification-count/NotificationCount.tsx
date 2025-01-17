@@ -15,38 +15,53 @@ export const NotificationCount = ({
   count,
   size,
   children,
+  isSelected = false,
+  hasBorder = true,
   ...props
 }: NotificationCountProps) => {
   const { spacing, color } = useTheme()
 
-  const containerStyles: CSSObject = {
-    display: 'inline-flex',
-    position: 'relative'
+  const getDimension = (size?: NotificationCountProps['size']) => {
+    const borderAdjustment = hasBorder ? 2 : 0
+    switch (size) {
+      case 's':
+        return spacing.unit2 + borderAdjustment
+      case 'm':
+        return spacing.unit4 + borderAdjustment
+      default:
+        return spacing.unit5 + borderAdjustment
+    }
   }
 
+  const getBorderColor = () => {
+    if (!hasBorder) return 'none'
+    return isSelected ? color.secondary.s400 : color.background.surface1
+  }
+
+  const containerStyles: CSSObject = children
+    ? {
+        position: 'relative'
+      }
+    : {}
+
   const badgeStyles: CSSObject = {
-    position: 'absolute',
-    top: 0,
-    right: 0,
-    transform: 'translate(50%, -50%)',
-    minWidth: spacing.unit5,
-    backgroundColor: color.primary.p300,
-    border: 'none',
-    '.parent:hover &': {
-      backgroundColor: color.background.surface1
-    },
-    ...(size === 's' && {
-      height: spacing.unit3 + spacing.unitHalf,
-      minWidth: spacing.unit3 + spacing.unitHalf,
-      padding: `0px ${spacing.xs}px`,
-      backgroundColor: color.primary.p300
+    minWidth: getDimension(size),
+    backgroundColor: isSelected
+      ? color.background.surface1
+      : color.primary.p300,
+    border: hasBorder ? `1px solid ${getBorderColor()}` : 'none',
+    ...(children && {
+      position: 'absolute',
+      top: 0,
+      right: 0,
+      transform: 'translate(5%, -10%)'
     })
   }
 
   const textStyles: CSSObject = {
-    '.parent:hover &': {
+    ...(isSelected && {
       color: color.neutral.n950
-    }
+    })
   }
 
   return (
@@ -55,12 +70,13 @@ export const NotificationCount = ({
       alignItems='center'
       justifyContent='center'
       css={containerStyles}
+      inline
       {...props}
     >
       {children}
       <Flex
         as='span'
-        h='unit5'
+        h={getDimension(size)}
         ph='xs'
         direction='column'
         justifyContent='center'
@@ -69,13 +85,8 @@ export const NotificationCount = ({
         borderRadius='circle'
         css={badgeStyles}
       >
-        <Text
-          variant='label'
-          size='xs'
-          css={textStyles}
-          color='staticStaticWhite'
-        >
-          {count !== undefined ? formatCount(count) : '0'}
+        <Text variant='label' size='xs' css={textStyles} color='staticWhite'>
+          {count !== undefined ? formatCount(count) : ''}
         </Text>
       </Flex>
     </Flex>

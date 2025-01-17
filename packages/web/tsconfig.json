@@ -42,5 +42,5 @@
       "~harmony/*": ["../../harmony/src/*"]
     }
   },
-  "include": ["src", "src/**/*.css", "src/test/vitest-setup.ts", "../common/src/context/comments/tanQueryClient.tsx", "../common/src/api/tan-query/useCollection.ts", "../common/src/api/tan-query/useCollections.ts"]
+  "include": ["src", "src/**/*.css", "src/test/vitest-setup.ts"]
 }

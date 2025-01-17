@@ -58,6 +58,7 @@
     "typecheck": "tsc --noEmit",
     "verify": "npm run lint && npm run typecheck",
     "sdk:config": "tsx ./src/sdk/scripts/generateServicesConfig.ts",
+    "sdk:verify-user": "tsx ./src/sdk/scripts/verifyUser.ts",
     "gen": "npm run gen:prod",
     "gen:dev": "npm run gen:dev:default ; npm run gen:dev:full",
     "gen:dev:default": "node ./src/sdk/api/generator/gen.js --env dev",
@@ -82,7 +83,6 @@
     "@noble/secp256k1": "1.7.0",
     "@scure/base": "1.1.1",
     "@solana/spl-token": "0.3.8",
-    "@solana/web3.js": "1.93.4",
     "@wormhole-foundation/sdk": "1.0.3",
     "assert": "2.0.0",
     "async-mutex": "0.5.0",
@@ -160,6 +160,9 @@
     "typescript": "5.4.5",
     "vitest": "2.1.1",
     "wait-for-expect": "3.0.2"
+  },
+  "peerDependencies": {
+    "@solana/web3.js": "^1.95.8"
   },
   "repository": {
     "type": "git",

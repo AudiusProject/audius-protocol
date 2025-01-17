@@ -1,13 +1,5 @@
-import { useCallback } from 'react'
-
-import { useCurrentUserId } from '@audius/common/api'
-import {
-  followersUserListActions,
-  followersUserListSelectors
-} from '@audius/common/store'
+import { useCurrentUserId, useFollowers } from '@audius/common/api'
 import { ChatBlastAudience } from '@audius/sdk'
-import { css } from '@emotion/native'
-import { useDispatch } from 'react-redux'
 
 import { Box, IconUserFollowers } from '@audius/harmony-native'
 import { useProfileRoute } from 'app/hooks/useRoute'
@@ -16,8 +8,6 @@ import { ChatBlastWithAudienceCTA } from '../chat-screen/ChatBlastWithAudienceCT
 
 import { UserList } from './UserList'
 import { UserListScreen } from './UserListScreen'
-const { setFollowers } = followersUserListActions
-const { getUserList } = followersUserListSelectors
 
 const messages = {
   title: 'Followers'
@@ -27,28 +17,15 @@ export const FollowersScreen = () => {
   const { params } = useProfileRoute<'Followers'>()
   const { userId } = params
   const { data: currentUserId } = useCurrentUserId()
-  const dispatch = useDispatch()
 
-  const handleSetFollowers = useCallback(() => {
-    dispatch(setFollowers(userId))
-  }, [dispatch, userId])
+  const query = useFollowers({ userId })
 
   return (
     <UserListScreen title={messages.title} titleIcon={IconUserFollowers}>
       <>
-        <UserList
-          userSelector={getUserList}
-          tag='FOLLOWERS'
-          setUserList={handleSetFollowers}
-        />
+        <UserList {...query} tag='FOLLOWERS' />
         {currentUserId === userId ? (
-          <Box
-            style={css({
-              position: 'absolute',
-              bottom: 0,
-              width: '100%'
-            })}
-          >
+          <Box w='100%' style={{ position: 'absolute', bottom: 0 }}>
             <ChatBlastWithAudienceCTA audience={ChatBlastAudience.FOLLOWERS} />
           </Box>
         ) : null}

@@ -146,7 +146,7 @@ export const TrackTileComponent = ({
   }, [togglePlay, lineupTileProps.uid, track_id, onPress])
 
   const handlePressTitle = useCallback(() => {
-    navigation.push('Track', { id: track_id })
+    navigation.push('Track', { trackId: track_id })
     onPress?.(track_id)
   }, [navigation, onPress, track_id])
 

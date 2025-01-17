@@ -1,5 +1,5 @@
 import { QUERY_KEYS } from '@audius/common/api'
-import { Name, ID, BNWei } from '@audius/common/models'
+import { Name, ID, BNWei, SolanaWalletAddress } from '@audius/common/models'
 import { LocalStorage } from '@audius/common/services'
 import {
   accountSelectors,
@@ -10,8 +10,9 @@ import {
   getContext,
   getSDK
 } from '@audius/common/store'
-import { isNullOrUndefined, encodeHashId } from '@audius/common/utils'
+import { isNullOrUndefined } from '@audius/common/utils'
 import { AUDIO } from '@audius/fixed-decimal'
+import { Id } from '@audius/sdk'
 import BN from 'bn.js'
 import {
   call,
@@ -150,15 +151,40 @@ function* sendTipAsync() {
 
   const device = isNativeMobile ? 'mobile' : 'web'
 
-  const senderUserId = encodeHashId(sender.user_id)
-  const receiverUserId = encodeHashId(receiver.user_id)
+  const senderUserId = Id.parse(sender.user_id)
+  const receiverUserId = Id.parse(receiver.user_id)
   const amount = Number(stringAudioAmount)
+
+  let senderWallet: SolanaWalletAddress | undefined
+  let recipientWallet: SolanaWalletAddress | undefined
+
+  // Using `deriveUserBank` here because we just need the addresses for
+  // analytics. The SDK call to send the tip will create them if needed.
+  try {
+    senderWallet = (yield* call(
+      [
+        sdk.services.claimableTokensClient,
+        sdk.services.claimableTokensClient.deriveUserBank
+      ],
+      { ethWallet: sender.erc_wallet, mint: 'wAUDIO' }
+    )).toString() as SolanaWalletAddress
+    recipientWallet = (yield* call(
+      [
+        sdk.services.claimableTokensClient,
+        sdk.services.claimableTokensClient.deriveUserBank
+      ],
+      { ethWallet: receiver.erc_wallet, mint: 'wAUDIO' }
+    )).toString() as SolanaWalletAddress
+  } catch (e) {
+    // Don't want these to fail the saga as it's just used for analytics
+    console.warn('Failed to derive user bank address for tip analytics', e)
+  }
 
   try {
     yield put(
       make(Name.TIP_AUDIO_REQUEST, {
-        senderWallet: sender.userBank,
-        recipientWallet: receiver.userBank,
+        senderWallet,
+        recipientWallet,
         senderHandle: sender.handle,
         recipientHandle: receiver.handle,
         amount,
@@ -242,8 +268,8 @@ function* sendTipAsync() {
     yield* put(sendTipFailed({ error: e.message }))
     yield* put(
       make(Name.TIP_AUDIO_FAILURE, {
-        senderWallet: sender.userBank,
-        recipientWallet: receiver.userBank,
+        senderWallet,
+        recipientWallet,
         senderHandle: sender.handle,
         recipientHandle: receiver.handle,
         amount,

@@ -1,19 +1,11 @@
-import { useCallback } from 'react'
-
-import {
-  relatedArtistsUserListActions,
-  relatedArtistsUserListSelectors,
-  RELATED_ARTISTS_USER_LIST_TAG
-} from '@audius/common/store'
-import { useDispatch } from 'react-redux'
+import { useRelatedArtists } from '@audius/common/api'
+import { RELATED_ARTISTS_USER_LIST_TAG } from '@audius/common/store'
 
 import { IconUserGroup } from '@audius/harmony-native'
 import { useProfileRoute } from 'app/hooks/useRoute'
 
 import { UserList } from './UserList'
 import { UserListScreen } from './UserListScreen'
-const { getUserList } = relatedArtistsUserListSelectors
-const { setRelatedArtists } = relatedArtistsUserListActions
 
 const messages = {
   title: 'Related Artists'
@@ -22,19 +14,11 @@ const messages = {
 export const RelatedArtistsScreen = () => {
   const { params } = useProfileRoute<'RelatedArtists'>()
   const { userId } = params
-  const dispatch = useDispatch()
-
-  const handleSetRelatedArtists = useCallback(() => {
-    dispatch(setRelatedArtists(userId))
-  }, [dispatch, userId])
+  const query = useRelatedArtists({ artistId: userId })
 
   return (
     <UserListScreen title={messages.title} titleIcon={IconUserGroup}>
-      <UserList
-        userSelector={getUserList}
-        tag={RELATED_ARTISTS_USER_LIST_TAG}
-        setUserList={handleSetRelatedArtists}
-      />
+      <UserList {...query} tag={RELATED_ARTISTS_USER_LIST_TAG} />
     </UserListScreen>
   )
 }

@@ -29,22 +29,10 @@ export const BalancePill = ({
       backgroundColor='surface1'
       {...props}
     >
-      <Text
-        variant='label'
-        size='s'
-        strength='strong'
-        textAlign='center'
-        css={textStyles}
-      >
+      <Text variant='label' size='s' textAlign='center' css={textStyles}>
         {balance}
       </Text>
-      <Flex
-        w='unit6'
-        h='unit6'
-        p='unitHalf'
-        justifyContent='center'
-        alignItems='center'
-      >
+      <Flex h='unit6' p='unitHalf' justifyContent='center' alignItems='center'>
         {children}
       </Flex>
     </Flex>

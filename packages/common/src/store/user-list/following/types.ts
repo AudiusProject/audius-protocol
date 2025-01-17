@@ -1,14 +1,7 @@
-import { UserListStoreState } from '~/store/user-list/types'
-
-import { ID } from '../../../models'
-
-export type FollowingOwnState = {
-  id: ID | null
-}
+import { ID } from '~/models/Identifiers'
 
 export type FollowingPageState = {
-  followingPage: FollowingOwnState
-  userList: UserListStoreState
+  id: ID | null
 }
 
 export const FOLLOWING_USER_LIST_TAG = 'FOLLOWING'

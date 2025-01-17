@@ -50,16 +50,3 @@ lint-discovery-provider:
         root: ./
         paths:
           - node_modules
-
-test-discovery-api:
-  working_directory: ~/audius-protocol
-  executor: newman/postman-newman-docker
-  steps:
-    - checkout
-    - run:
-        name: Run API Tests
-        command: |
-          # Run API tests but ignore any errors
-          set +e
-          newman run ./packages/discovery-provider/api-tests/Discovery\ API\ Tests.postman_collection.json --environment ./packages/discovery-provider/api-tests/Test\ Sandbox.postman_environment.json
-          set -e

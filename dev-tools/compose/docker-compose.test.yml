@@ -98,7 +98,7 @@ services:
   # core
 
   audiusd-1:
-    image: audius/audiusd:local
+    image: audius/audiusd:prerelease
     env_file:
       - ${PROJECT_ROOT}/cmd/core/infra/dev_config/discovery-one.docker.env
     restart: unless-stopped
@@ -115,7 +115,7 @@ services:
         condition: service_healthy
 
   audiusd-2:
-    image: audius/audiusd:local
+    image: audius/audiusd:prerelease
     env_file:
       - ${PROJECT_ROOT}/cmd/core/infra/dev_config/content-one.docker.env
     restart: unless-stopped
@@ -132,7 +132,7 @@ services:
         condition: service_healthy
 
   audiusd-3:
-    image: audius/audiusd:local
+    image: audius/audiusd:prerelease
     env_file:
       - ${PROJECT_ROOT}/cmd/core/infra/dev_config/content-two.docker.env
     restart: unless-stopped
@@ -149,7 +149,7 @@ services:
         condition: service_healthy
 
   audiusd-4:
-    image: audius/audiusd:local
+    image: audius/audiusd:prerelease
     env_file:
       - ${PROJECT_ROOT}/cmd/core/infra/dev_config/content-three.docker.env
     restart: unless-stopped
@@ -460,118 +460,6 @@ services:
       - tests
       - identity
 
-  # ddex
-
-  ddex-ingester:
-    extends:
-      file: docker-compose.yml
-      service: ddex-ingester
-    container_name: ddex-ingester
-    logging: *default-logging
-    environment:
-      AWS_ENDPOINT: 'http://ddex-s3:4566'
-      DDEX_CHOREOGRAPHY: ${DDEX_CHOREOGRAPHY}
-      TEST_MODE: 'true'
-    depends_on:
-      ddex-mongo-init:
-        condition: service_completed_successfully
-      ddex-s3:
-        condition: service_healthy
-
-  ddex-publisher:
-    extends:
-      file: docker-compose.yml
-      service: ddex-publisher
-    container_name: ddex-publisher
-    logging: *default-logging
-    environment:
-      AWS_ENDPOINT: 'http://ddex-s3:4566'
-      DDEX_CHOREOGRAPHY: ${DDEX_CHOREOGRAPHY}
-    depends_on:
-      ddex-mongo-init:
-        condition: service_completed_successfully
-      ddex-s3:
-        condition: service_healthy
-
-  ddex-s3:
-    container_name: ddex-s3
-    image: localstack/localstack:s3-latest
-    ports:
-      - '127.0.0.1:4566:4566'
-    networks:
-      - ddex-network
-    volumes:
-      - 'ddex-s3:/var/lib/localstack'
-      - '/var/run/docker.sock:/var/run/docker.sock'
-
-  ddex-mongo:
-    extends:
-      file: docker-compose.yml
-      service: ddex-mongo
-    logging: *default-logging
-
-  ddex-mongo-init:
-    extends:
-      file: docker-compose.yml
-      service: ddex-mongo-init
-    logging: *default-logging
-    depends_on:
-      ddex-mongo:
-        condition: service_healthy
-
-  test-ddex-e2e-release-by-release:
-    container_name: test-ddex-e2e-release-by-release
-    extends:
-      file: docker-compose.ddex.yml
-      service: ddex-test
-    entrypoint: sh -c '[ ! "$$1" = "test" ] && sleep inf || (shift;  go test ./e2e_test/... -count 1 -timeout 3m "$$@")' -
-    logging: *default-logging
-    environment:
-      AWS_ENDPOINT: 'http://ddex-s3:4566'
-      DDEX_CHOREOGRAPHY: 'ERNReleaseByRelease'
-    networks:
-      - ddex-network
-    profiles:
-      - ddex
-    depends_on:
-      ddex-ingester:
-        condition: service_healthy
-      # ddex-publisher:
-      #   condition: service_healthy
-      # Leaving out publisher for now because it takes a long time to build.
-      # We don't actually upload anything to Audius in the e2e test, but having a "dry run" publisher mode could be useful
-
-  test-ddex-e2e-batched:
-    container_name: test-ddex-e2e-batched
-    extends:
-      file: docker-compose.ddex.yml
-      service: ddex-test
-    entrypoint: sh -c '[ ! "$$1" = "test" ] && sleep inf || (shift;  go test ./e2e_test/... -count 1 -timeout 3m "$$@")' -
-    logging: *default-logging
-    environment:
-      AWS_ENDPOINT: 'http://ddex-s3:4566'
-      DDEX_CHOREOGRAPHY: 'ERNBatched'
-    networks:
-      - ddex-network
-    profiles:
-      - ddex
-    depends_on:
-      ddex-ingester:
-        condition: service_healthy
-
-  test-ddex-unittests:
-    container_name: test-ddex-unittests
-    extends:
-      file: docker-compose.ddex.yml
-      service: ddex-test
-    entrypoint: sh -c '[ ! "$$1" = "test" ] && sleep inf || (shift;  go test $(go list ./... | grep -v /e2e_test) -count 1 -timeout 60s "$$@")' -
-    logging: *default-logging
-    # Will need a depends_on for S3 and Mongo if any future unit tests use them
-
-networks:
-  ddex-network:
-
-
 volumes:
   poa-contracts-abis:
   eth-contracts-abis:
@@ -579,5 +467,3 @@ volumes:
   postgresdata:
   mediorum:
   legacy_creator_file_storage:
-  ddex-mongo-db:
-  ddex-s3:

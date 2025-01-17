@@ -111,7 +111,8 @@ export class TracksApi extends GeneratedTracksApi {
       encodeURIComponent(String(params.trackId))
     )
     const host = await this.discoveryNodeSelectorService.getSelectedEndpoint()
-    return `${host}${BASE_PATH}${path}`
+    const queryString = queryParams.toString()
+    return `${host}${BASE_PATH}${path}${queryString ? '?' + queryString : ''}`
   }
 
   /**

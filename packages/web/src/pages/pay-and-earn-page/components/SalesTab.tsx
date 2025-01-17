@@ -1,7 +1,6 @@
 import { useCallback, useState } from 'react'
 
 import {
-  Id,
   useGetCurrentWeb3User,
   useSales,
   useSalesCount
@@ -15,7 +14,7 @@ import {
 } from '@audius/common/store'
 import { route } from '@audius/common/utils'
 import { Flex, IconMoneyBracket, Text, useTheme } from '@audius/harmony'
-import { full, SaleJson } from '@audius/sdk'
+import { full, SaleJson, Id } from '@audius/sdk'
 import { useDispatch } from 'react-redux'
 
 import { ExternalTextLink } from 'components/link'
@@ -103,22 +102,27 @@ export const useSalesData = () => {
 
   const {
     data: sales,
-    loadMore,
-    hasMore,
+    fetchNextPage,
+    hasNextPage,
     isPending: isSalesPending,
-    isError: isSalesError
-  } = useSales(
-    { userId, sortMethod, sortDirection },
-    { pageSize: TRANSACTIONS_BATCH_SIZE }
-  )
+    isError: isSalesError,
+    isFetchingNextPage
+  } = useSales({
+    userId,
+    sortMethod,
+    sortDirection,
+    pageSize: TRANSACTIONS_BATCH_SIZE
+  })
 
   const {
-    data: count,
+    data: count = 0,
     isPending: isCountPending,
     isError: isCountError
   } = useSalesCount(userId)
 
-  const isPending = isSalesPending || isCountPending
+  const isLoading = isSalesPending || isCountPending
+  const isError = isSalesError || isCountError
+  const isEmpty = !isLoading && !isError && sales?.length === 0
 
   useErrorPage({ showErrorPage: isSalesError || isCountError })
 
@@ -132,20 +136,12 @@ export const useSalesData = () => {
     []
   )
 
-  const fetchMore = useCallback(() => {
-    if (hasMore) {
-      loadMore()
-    }
-  }, [hasMore, loadMore])
-
   const onClickRow = useCallback(
     (purchaseDetails: USDCPurchaseDetails) => {
       openDetailsModal({ variant: 'sale', purchaseDetails })
     },
     [openDetailsModal]
   )
-
-  const isEmpty = !isPending && sales?.length === 0
 
   const downloadSalesAsCSVFromJSON = async () => {
     let link = null
@@ -255,13 +251,16 @@ export const useSalesData = () => {
   }, [userId])
 
   return {
-    count,
     data: sales,
-    fetchMore,
+    count,
+    isEmpty,
+    isLoading,
+    isError,
     onSort,
     onClickRow,
-    isEmpty,
-    isLoading: isPending,
+    fetchNextPage: () => fetchNextPage(),
+    hasNextPage,
+    isFetchingNextPage,
     downloadCSV,
     downloadSalesAsCSVFromJSON
   }
@@ -273,7 +272,7 @@ export const useSalesData = () => {
 export const SalesTab = ({
   count,
   data: sales,
-  fetchMore,
+  fetchNextPage,
   onSort,
   onClickRow,
   isEmpty,
@@ -309,7 +308,7 @@ export const SalesTab = ({
           </Text>
         </Flex>
       ) : null}
-      {isEmpty ? (
+      {isEmpty || !sales ? (
         <NoSales />
       ) : (
         <SalesTable
@@ -319,7 +318,7 @@ export const SalesTab = ({
           loading={isLoading}
           onSort={onSort}
           onClickRow={onClickRow}
-          fetchMore={fetchMore}
+          fetchMore={fetchNextPage}
           totalRowCount={count}
           isVirtualized={true}
           scrollRef={mainContentRef}

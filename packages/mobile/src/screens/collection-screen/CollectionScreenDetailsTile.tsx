@@ -62,20 +62,18 @@ import { OfflineStatusRow } from 'app/components/offline-downloads'
 import { TrackList } from 'app/components/track-list'
 import UserBadges from 'app/components/user-badges'
 import { useNavigation } from 'app/hooks/useNavigation'
-import { useRoute } from 'app/hooks/useRoute'
 import { make, track } from 'app/services/analytics'
 import type { AppState } from 'app/store'
 import { makeStyles } from 'app/styles'
 
 import { CollectionScreenSkeleton } from './CollectionScreenSkeleton'
-import { useFetchCollectionLineup } from './useFetchCollectionLineup'
 
 const { getPlaying, getPreviewing, getUid, getCurrentTrack } = playerSelectors
 const { getIsReachable } = reachabilitySelectors
 const { getCollectionTracksLineup } = collectionPageSelectors
 const { getCollection, getCollectionTracks } = cacheCollectionsSelectors
 const { getTracks } = cacheTracksSelectors
-const { resetCollection, fetchCollection } = collectionPageActions
+const { resetCollection } = collectionPageActions
 
 const selectTrackUids = createSelector(
   (state: AppState) => getCollectionTracksLineup(state).entries,
@@ -523,19 +521,6 @@ const CollectionTrackList = ({
 
   const numericCollectionId =
     typeof collectionId === 'number' ? collectionId : undefined
-
-  const { params } = useRoute<'Collection'>()
-  const { slug, collectionType, handle } = params ?? {}
-  const permalink = slug ? `/${handle}/${collectionType}/${slug}` : undefined
-
-  const handleFetchCollection = useCallback(() => {
-    dispatch(resetCollection())
-    if (numericCollectionId) {
-      dispatch(fetchCollection(collectionId as number, permalink, true))
-    }
-  }, [dispatch, collectionId, permalink, numericCollectionId])
-
-  useFetchCollectionLineup(collectionId, handleFetchCollection)
 
   const handlePressTrackListItemPlay = useCallback(
     (uid: UID, id: ID) => {

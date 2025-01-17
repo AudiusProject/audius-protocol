@@ -1,4 +1,4 @@
-import { Collection, Kind, LineupEntry, UID, User } from '@audius/common/models'
+import { Collection, Kind, LineupEntry } from '@audius/common/models'
 import {
   cacheTracksSelectors,
   savedPageTracksLineupActions as savedTracksActions,
@@ -18,7 +18,6 @@ import {
   accountSelectors
 } from '@audius/common/store'
 import { makeUid, waitForAccount } from '@audius/common/utils'
-import { uniq } from 'lodash'
 import moment from 'moment'
 import { call, select, put, takeEvery } from 'typed-redux-saga'
 
@@ -31,14 +30,8 @@ const { getSource } = queueSelectors
 const { FETCH_SAVES, FETCH_MORE_SAVES } = saveActions
 const { SAVE_TRACK, UNSAVE_TRACK, REPOST_TRACK, UNDO_REPOST_TRACK } =
   tracksSocialActions
-const {
-  getLocalTrackFavorite,
-  getLocalTrackRepost,
-  getSavedTracksLineupUid,
-  getTrackSaves,
-  getSelectedCategoryLocalTrackAdds,
-  getCategory
-} = savedPageSelectors
+const { getSavedTracksLineupUid, getTrackSaves, getCategory } =
+  savedPageSelectors
 const { purchaseConfirmed } = purchaseContentActions
 const { getTracks: getCacheTracks } = cacheTracksSelectors
 
@@ -46,7 +39,13 @@ const getSavedTracks = (state: AppState) => state.pages.savedPage.tracks
 
 const PREFIX = savedTracksActions.prefix
 
-function* getTracks({ offset, limit }: { offset: number; limit: number }) {
+function* getTracks({
+  offset,
+  limit
+}: {
+  offset: number
+  limit: number
+}): Generator<any, SavedPageTrack[] | null, any> {
   const isNativeMobile = yield* getContext('isNativeMobile')
   const allSavedTracks = yield* select(getTrackSaves)
   // Mobile currently uses infinite scroll instead of a virtualized list
@@ -56,57 +55,33 @@ function* getTracks({ offset, limit }: { offset: number; limit: number }) {
     : allSavedTracks
 
   const savedTrackIds = savedTracks.map((save) => save.save_item_id ?? null)
-  const savedTrackTimestamps = savedTracks.reduce((map, save) => {
-    map[save.save_item_id] = save.created_at
-    return map
-  }, {})
-
-  const localLibraryAdditions = yield* select(getSelectedCategoryLocalTrackAdds)
-  const localLibraryAdditionsTrackIds = Object.keys(localLibraryAdditions)
-    .filter((savedTrackId) => !savedTrackTimestamps[savedTrackId])
-    .map((trackId) => Number(trackId))
-
-  const localLibraryAdditionsTimestamps = localLibraryAdditionsTrackIds.reduce(
-    (map, saveId) => {
-      map[saveId] = Date.now()
+  const savedTrackTimestamps = savedTracks.reduce<Record<number, string>>(
+    (map, save) => {
+      map[save.save_item_id] = save.created_at
       return map
     },
     {}
   )
 
-  let allSavedTrackIds: (number | string)[] = []
-
-  if (isNativeMobile && offset !== 0) {
-    allSavedTrackIds = savedTrackIds.filter(
-      (s) => !localLibraryAdditionsTrackIds.includes(s)
-    )
-  } else {
-    allSavedTrackIds = uniq([
-      ...localLibraryAdditionsTrackIds,
-      ...savedTrackIds
-    ])
-  }
-
-  const allSavedTrackTimestamps = {
-    ...localLibraryAdditionsTimestamps,
-    ...savedTrackTimestamps
-  }
-
-  if (allSavedTrackIds.length > 0) {
+  if (savedTrackIds.length > 0) {
     // @ts-ignore - Strings can be passed for the local save track ids
     const tracks = yield* call(retrieveTracks, {
-      trackIds: allSavedTrackIds.filter((id) => id !== null)
+      trackIds: savedTrackIds.filter((id) => id !== null)
     })
-    const tracksMap = tracks.reduce((map, track) => {
-      const save = {
-        ...track,
-        dateSaved: allSavedTrackTimestamps[track.track_id]
-      }
+    const tracksMap = tracks.reduce<Record<number, SavedPageTrack>>(
+      (map, track) => {
+        const save = {
+          ...track,
+          dateSaved: savedTrackTimestamps[track.track_id]
+        }
 
-      map[track.track_id] = save
-      return map
-    }, {})
-    return allSavedTrackIds.map((id) =>
+        map[track.track_id] = save as SavedPageTrack
+        return map
+      },
+      {}
+    )
+    // @ts-ignore - empty case is expected but not by lineup
+    return savedTrackIds.map((id) =>
       id ? tracksMap[id] : { kind: Kind.EMPTY }
     )
   }
@@ -141,12 +116,10 @@ function* watchFetchSaves() {
     [FETCH_SAVES, FETCH_MORE_SAVES],
     function* (_action: ReturnType<typeof saveActions.fetchSaves>) {
       yield waitForAccount()
-      const account: User | null = yield* select(
-        accountSelectors.getAccountUser
-      )
+      const trackSaveCount = yield* select(accountSelectors.getTrackSaveCount)
 
-      if (account?.track_save_count) {
-        yield* put(savedTracksActions.setMaxEntries(account.track_save_count))
+      if (trackSaveCount) {
+        yield* put(savedTracksActions.setMaxEntries(trackSaveCount))
       }
     }
   )
@@ -201,13 +174,6 @@ function* watchAddToLibrary() {
       } else {
         relevantCategory = LibraryCategory.Purchase
       }
-      yield* put(
-        saveActions.addLocalTrack({
-          trackId,
-          uid: localSaveUid,
-          category: relevantCategory
-        })
-      )
 
       const isTrackAlreadyInLineup = yield* select(
         (state, props) => {
@@ -252,24 +218,9 @@ function* watchRemoveFromLibrary() {
         | ReturnType<typeof tracksSocialActions.undoRepostTrack>
     ) {
       const { trackId, type } = action
-      const removedTrackSelector =
-        type === UNSAVE_TRACK ? getLocalTrackFavorite : getLocalTrackRepost
-      const localSaveUid: UID = yield* select(removedTrackSelector, {
-        id: trackId
-      })
       const currentCategory = yield* select(getCategory, {
         currentTab: SavedPageTabs.TRACKS
       })
-
-      yield* put(
-        saveActions.removeLocalTrack({
-          trackId: action.trackId,
-          category:
-            type === UNSAVE_TRACK
-              ? LibraryCategory.Favorite
-              : LibraryCategory.Repost
-        })
-      )
 
       if (
         (type === UNSAVE_TRACK &&
@@ -278,16 +229,7 @@ function* watchRemoveFromLibrary() {
           currentCategory === LibraryCategory.Repost)
       ) {
         const playerUid = yield* select(getPlayerUid)
-        const queueSource = yield* select(getSource)
-        if (localSaveUid) {
-          yield* put(savedTracksActions.remove(Kind.TRACKS, localSaveUid))
-          if (
-            localSaveUid !== playerUid &&
-            queueSource === QueueSource.SAVED_TRACKS
-          ) {
-            yield* put(queueActions.remove({ uid: localSaveUid }))
-          }
-        }
+
         const lineupSaveUid = yield* select(getSavedTracksLineupUid, {
           id: trackId
         })

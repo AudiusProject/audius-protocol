@@ -26,11 +26,9 @@ import gatedContent from './gated-content/slice'
 import musicConfettiReducer, {
   MusicConfettiState
 } from './music-confetti/slice'
-import { NotificationsState, notificationsReducer } from './notifications'
 import { HistoryPageState, SavedPageState } from './pages'
 import ai from './pages/ai/slice'
 import audioRewardsSlice from './pages/audio-rewards/slice'
-import audioTransactionsSlice from './pages/audio-transactions/slice'
 import { chatReducer } from './pages/chat'
 import collection from './pages/collection/reducer'
 import { CollectionsPageState } from './pages/collection/types'
@@ -72,9 +70,6 @@ import queue from './queue/slice'
 import reachability from './reachability/reducer'
 import { ReachabilityState } from './reachability/types'
 import { recoveryEmailReducer, RecoveryEmailState } from './recovery-email'
-import remixSettingsReducer, {
-  RemixSettingsState
-} from './remix-settings/slice'
 import savedCollectionsReducer from './saved-collections/slice'
 import searchReducer from './search/slice'
 import { SearchState } from './search/types'
@@ -173,8 +168,6 @@ export const reducers = (storage: Storage, history?: History) => ({
   playlistLibrary: playlistLibraryReducer,
   playlistUpdates: playlistUpdatesReducer,
 
-  notifications: notificationsReducer,
-
   // UI
   ui: combineReducers({
     averageColor: averageColorReducer,
@@ -190,7 +183,6 @@ export const reducers = (storage: Storage, history?: History) => ({
     musicConfetti: musicConfettiReducer,
     nowPlaying: nowPlayingReducer,
     reactions: reactionsReducer,
-    remixSettings: remixSettingsReducer,
     shareModal: shareModalReducer,
     stripeModal: stripeModalReducer,
     coinflowModal: coinflowModalReducer,
@@ -219,7 +211,6 @@ export const reducers = (storage: Storage, history?: History) => ({
   pages: combineReducers({
     ai,
     audioRewards: audioRewardsSlice.reducer,
-    audioTransactions: audioTransactionsSlice.reducer,
     chat: chatReducer,
     collection,
     deactivateAccount: deactivateAccountReducer,
@@ -297,8 +288,6 @@ export type CommonState = {
   playlistLibrary: PlaylistLibraryState
   playlistUpdates: PlaylistUpdateState
 
-  notifications: NotificationsState
-
   ui: {
     averageColor: ReturnType<typeof averageColorReducer>
     buyAudio: ReturnType<typeof buyAudioReducer>
@@ -312,7 +301,6 @@ export type CommonState = {
     musicConfetti: MusicConfettiState
     nowPlaying: NowPlayingState
     reactions: ReactionsState
-    remixSettings: RemixSettingsState
     searchUsersModal: SearchUsersModalState
     shareModal: ShareModalState
     stripeModal: StripeModalState
@@ -340,7 +328,6 @@ export type CommonState = {
   pages: {
     ai: ReturnType<typeof ai>
     audioRewards: ReturnType<typeof audioRewardsSlice.reducer>
-    audioTransactions: ReturnType<typeof audioTransactionsSlice.reducer>
     chat: ReturnType<typeof chatReducer>
     collection: CollectionsPageState
     deactivateAccount: DeactivateAccountState

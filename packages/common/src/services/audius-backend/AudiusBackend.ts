@@ -1,6 +1,7 @@
 import { AUDIO, AudioWei, wAUDIO } from '@audius/fixed-decimal'
 import type { LocalStorage } from '@audius/hedgehog'
 import { AudiusSdk, type StorageNodeSelectorService } from '@audius/sdk'
+import { Id } from '@audius/sdk'
 import {
   ASSOCIATED_TOKEN_PROGRAM_ID,
   getAccount,
@@ -31,7 +32,7 @@ import {
   TikTokUser,
   UserMetadata,
   ComputedUserProperties,
-  Id
+  WriteableUserMetadata
 } from '../../models'
 import { AnalyticsEvent } from '../../models/Analytics'
 import { ReportToSentryArgs } from '../../models/ErrorReporting'
@@ -238,7 +239,7 @@ export const audiusBackend = ({
     metadata,
     sdk
   }: {
-    metadata: UserMetadata &
+    metadata: WriteableUserMetadata &
       Pick<
         ComputedUserProperties,
         'updatedProfilePicture' | 'updatedCoverPhoto'
@@ -409,15 +410,16 @@ export const audiusBackend = ({
   }
 
   async function signData({ sdk, data }: { sdk: AudiusSdk; data: string }) {
-    const prefixedMessage = `\x19Ethereum Signed Message:\n${data.length}${data}`
-    const [sig, recid] = await sdk.services.audiusWalletClient.sign({
-      message: { raw: Buffer.from(prefixedMessage, 'utf-8') }
-    })
-    const r = Buffer.from(sig.slice(0, 32)).toString('hex')
-    const s = Buffer.from(sig.slice(32, 64)).toString('hex')
-    const v = (recid + 27).toString(16)
-    const signature = `0x${r}${s}${v}`
-    return { data, signature }
+    try {
+      const signature = await sdk.services.audiusWalletClient.signMessage({
+        message: data
+      })
+      return { data, signature }
+    } catch (e) {
+      console.error(e)
+      reportError({ error: e as Error })
+      return { data, signature: '' }
+    }
   }
 
   async function signGatedContentRequest({ sdk }: { sdk: AudiusSdk }) {

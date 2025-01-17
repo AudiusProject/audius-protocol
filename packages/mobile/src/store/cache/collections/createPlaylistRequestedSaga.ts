@@ -27,7 +27,10 @@ export function* createPlaylistRequestedSaga() {
               content: messages.createdToast(isAlbum),
               key: uuid(),
               linkText: messages.view,
-              linkConfig: { screen: 'Collection', params: { id: playlistId } }
+              linkConfig: {
+                screen: 'Collection',
+                params: { collectionId: playlistId }
+              }
             })
           )
           break
@@ -35,7 +38,7 @@ export function* createPlaylistRequestedSaga() {
         case 'route': {
           if (navigationRef.isReady()) {
             // @ts-ignore navigationRef is not parametrized correctly (PAY-1141)
-            navigationRef.navigate('Collection', { id: playlistId })
+            navigationRef.navigate('Collection', { collectionId: playlistId })
           }
           break
         }

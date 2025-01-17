@@ -3,14 +3,6 @@
     {
       "name": "check secrets",
       "command": "[[ -n $CI ]] || npm run check-secrets"
-    },
-    {
-      "name": "Recreate generated go files",
-      "command": "make gen",
-      "onlyOn": [
-          "pkg/**",
-          "cmd/**"
-      ]
     }
   ]
 }

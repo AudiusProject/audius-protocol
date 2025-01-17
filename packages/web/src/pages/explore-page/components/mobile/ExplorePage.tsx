@@ -148,7 +148,11 @@ const ExplorePage = ({ pageTitle, description }: ExplorePageProps) => {
             description={t.description}
             gradient={t.gradient}
             shadow={t.shadow}
-            icon={<Icon color='staticWhite' width={200} height={200} />}
+            icon={
+              Icon ? (
+                <Icon color='staticWhite' width={200} height={200} />
+              ) : undefined
+            }
             goToRoute={navigate}
           />
         )
@@ -161,7 +165,11 @@ const ExplorePage = ({ pageTitle, description }: ExplorePageProps) => {
             description={t.subtitle}
             gradient={t.gradient}
             shadow={t.shadow}
-            icon={<Icon color='staticWhite' width={200} height={200} />}
+            icon={
+              Icon ? (
+                <Icon color='staticWhite' width={200} height={200} />
+              ) : undefined
+            }
             goToRoute={navigate}
             isIncentivized={t.incentivized}
           />

@@ -1,50 +1,37 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { keyBy } from 'lodash'
 
-import { AccountCollection, User } from '~/models'
-import { Nullable } from '~/utils/typeUtils'
+import {
+  AccountCollection,
+  CachedAccount,
+  PlaylistLibrary,
+  User
+} from '~/models'
 
 import { ID } from '../../models/Identifiers'
 import { Status } from '../../models/Status'
 
 import {
+  AccountState,
+  FetchAccountFailedPayload,
   InstagramAccountPayload,
+  RenameAccountPlaylistPayload,
   TikTokAccountPayload,
   TwitterAccountPayload
 } from './types'
-type FailureReason =
-  | 'ACCOUNT_DEACTIVATED'
-  | 'ACCOUNT_NOT_FOUND'
-  | 'ACCOUNT_NOT_FOUND_LOCAL'
 
-const initialState = {
-  collections: {} as { [id: number]: AccountCollection },
-  userId: null as number | null,
-  hasTracks: null as boolean | null,
+const initialState: AccountState = {
+  collections: {},
+  userId: null,
+  hasTracks: null,
   status: Status.IDLE,
-  reason: null as Nullable<FailureReason>,
+  reason: null,
   connectivityFailure: false, // Did we fail from no internet connectivity?
   needsAccountRecovery: false,
-  walletAddresses: { currentUser: null, web3User: null } as {
-    currentUser: string | null
-    web3User: string | null
-  },
-  guestEmail: null as string | null
-}
-
-type FetchAccountSucceededPayload = {
-  userId: ID
-  collections: AccountCollection[]
-  guestEmail: string | null
-}
-
-type FetchAccountFailedPayload = {
-  reason: FailureReason
-}
-
-type RenameAccountPlaylistPayload = {
-  collectionId: ID
-  name: string
+  walletAddresses: { currentUser: null, web3User: null },
+  playlistLibrary: null,
+  trackSaveCount: null,
+  guestEmail: null
 }
 
 const slice = createSlice({
@@ -56,13 +43,12 @@ const slice = createSlice({
     fetchAccountRequested: (state) => {
       state.status = Status.LOADING
     },
-    fetchAccountSucceeded: (
-      state,
-      action: PayloadAction<FetchAccountSucceededPayload>
-    ) => {
+    fetchAccountSucceeded: (state, action: PayloadAction<CachedAccount>) => {
       const { userId, collections, guestEmail } = action.payload
       state.userId = userId
       state.collections = keyBy(collections, 'id')
+      state.playlistLibrary = action.payload.playlistLibrary ?? null
+      state.trackSaveCount = action.payload.trackSaveCount ?? null
       state.status = Status.SUCCESS
       state.reason = null
       state.guestEmail = state.guestEmail ?? guestEmail
@@ -129,10 +115,7 @@ const slice = createSlice({
     resetAccount: () => {
       return initialState
     },
-    signedIn: (
-      _state,
-      _action: PayloadAction<{ account: User; isSignUp: boolean }>
-    ) => {},
+    signedIn: (_state, _action: PayloadAction<{ account: User }>) => {},
     setWalletAddresses: (
       state,
       action: PayloadAction<{
@@ -149,6 +132,18 @@ const slice = createSlice({
       }>
     ) => {
       state.guestEmail = action.payload.guestEmail
+    },
+    updatePlaylistLibrary: (state, action: PayloadAction<PlaylistLibrary>) => {
+      state.playlistLibrary = action.payload
+    },
+    incrementTrackSaveCount: (state) => {
+      state.trackSaveCount = (state.trackSaveCount ?? 0) + 1
+    },
+    decrementTrackSaveCount: (state) => {
+      state.trackSaveCount =
+        state.trackSaveCount && state.trackSaveCount > 0
+          ? state.trackSaveCount - 1
+          : 0
     }
   }
 })
@@ -178,7 +173,10 @@ export const {
   subscribeBrowserPushNotifications,
   tikTokLogin,
   twitterLogin,
-  unsubscribeBrowserPushNotifications
+  unsubscribeBrowserPushNotifications,
+  updatePlaylistLibrary,
+  incrementTrackSaveCount,
+  decrementTrackSaveCount
 } = slice.actions
 
 export const actions = slice.actions

@@ -1,13 +1,9 @@
-import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { memo } from 'react'
 
 import type { User } from '@audius/common/models'
-import type { CommonState, UserListStoreState } from '@audius/common/store'
-import { cacheUsersSelectors, userListActions } from '@audius/common/store'
-import { useFocusEffect, useIsFocused } from '@react-navigation/native'
 import { range } from 'lodash'
+import type { ListRenderItem } from 'react-native'
 import { View } from 'react-native'
-import type { Selector } from 'react-redux'
-import { useDispatch, useSelector } from 'react-redux'
 
 import { Divider } from '@audius/harmony-native'
 import { FlatList } from 'app/components/core'
@@ -16,12 +12,15 @@ import { makeStyles } from 'app/styles'
 
 import { UserListItem } from './UserListItem'
 import { UserListItemSkeleton } from './UserListItemSkeleton'
-const { loadMore, reset, setLoading } = userListActions
-const { getUsers } = cacheUsersSelectors
 
-const keyExtractor = (item: User) => item.user_id.toString()
+const keyExtractor = (item: User | SkeletonItem) => item.user_id.toString()
 
-const skeletonData = range(6).map((index) => ({
+type SkeletonItem = {
+  _loading: true
+  user_id: string
+}
+
+const skeletonData: SkeletonItem[] = range(6).map((index) => ({
   _loading: true,
   user_id: `skeleton ${index}`
 }))
@@ -51,97 +50,29 @@ const useStyles = makeStyles(({ spacing }) => ({
 }))
 
 type UserListProps = {
-  /**
-   * A tag uniquely identifying this particular instance of a UserList in the store.
-   * Because multiple lists may exist, all listening to the same actions,
-   * the tag is required to forward actions to a particular UserList.
-   */
+  data: User[] | undefined
+  isLoading: boolean
+  fetchNextPage: () => void
   tag: string
-  /**
-   * Selector pointing to this particular instance of the UserList
-   * in the global store.
-   */
-  userSelector: Selector<CommonState, UserListStoreState>
-  setUserList: () => void
 }
 
 export const UserList = (props: UserListProps) => {
-  const { tag, userSelector, setUserList } = props
-  const isFocused = useIsFocused()
+  const { data, isLoading, fetchNextPage, tag } = props
   const styles = useStyles()
-  const cachedUsers = useRef<User[]>([])
-  const dispatch = useDispatch()
-  const [isRefreshing, setIsRefreshing] = useState(true)
-  const { hasMore, userIds, loading } = useSelector(userSelector)
-  const usersMap = useSelector((state) => getUsers(state, { ids: userIds }))
-  const users: User[] = useMemo(
-    () =>
-      userIds
-        .map((id) => usersMap[id])
-        .filter((user) => user && !user.is_deactivated),
-    [usersMap, userIds]
-  )
 
-  useFocusEffect(
-    useCallback(() => {
-      setIsRefreshing(true)
-      setUserList()
-      dispatch(setLoading(tag, true))
-      dispatch(loadMore(tag))
+  const isEmpty = !data || data.length === 0
 
-      return () => {
-        dispatch(reset(tag))
-      }
-    }, [dispatch, setUserList, tag])
-  )
+  const displayData = [...(data ?? []), ...(isLoading ? skeletonData : [])]
 
-  const isEmpty = users.length === 0
-
-  useEffect(() => {
-    if (!isEmpty && !isRefreshing && !loading && isFocused) {
-      cachedUsers.current = users
-    }
-  }, [isEmpty, isRefreshing, isFocused, loading, users])
-
-  // hands off loading state from refreshing to loading
-  useEffect(() => {
-    if (isRefreshing) {
-      if (loading || !users.length) {
-        setIsRefreshing(false)
-      }
-    }
-  }, [loading, users, isRefreshing])
-
-  const handleEndReached = useCallback(() => {
-    if (hasMore && isFocused) {
-      dispatch(setLoading(tag, true))
-      dispatch(loadMore(tag))
-    }
-  }, [hasMore, isFocused, dispatch, tag])
-
-  const shouldUseCachedData = isEmpty || isRefreshing || loading || !isFocused
-  const showSkeletons = hasMore || loading
-
-  const data = useMemo(() => {
-    const userData = shouldUseCachedData ? cachedUsers.current : users
-    return [...userData, ...(showSkeletons ? skeletonData : [])]
-  }, [shouldUseCachedData, users, showSkeletons])
-
-  const renderItem = useCallback(
-    ({ item }) =>
-      '_loading' in item ? (
-        <UserListItemSkeleton tag={tag} />
-      ) : (
-        <MemoizedUserListItem user={item} tag={tag} />
-      ),
-
-    [tag]
-  )
+  const renderItem: ListRenderItem<User | SkeletonItem> = ({ item }) =>
+    '_loading' in item ? (
+      <UserListItemSkeleton tag={tag} />
+    ) : (
+      <MemoizedUserListItem user={item} tag={tag} />
+    )
 
   const loadingSpinner = (
-    <LoadingSpinner
-      style={[styles.spinner, data.length === 0 && styles.emptySpinner]}
-    />
+    <LoadingSpinner style={[styles.spinner, isEmpty && styles.emptySpinner]} />
   )
 
   const footer = <View style={styles.footer} />
@@ -149,13 +80,13 @@ export const UserList = (props: UserListProps) => {
   return (
     <FlatList
       style={styles.list}
-      data={data}
+      data={displayData}
       renderItem={renderItem}
       keyExtractor={keyExtractor}
       ItemSeparatorComponent={Divider}
-      onEndReached={handleEndReached}
+      onEndReached={fetchNextPage}
       onEndReachedThreshold={3}
-      ListFooterComponent={loading || isRefreshing ? loadingSpinner : footer}
+      ListFooterComponent={isLoading ? loadingSpinner : footer}
     />
   )
 }

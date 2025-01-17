@@ -1,13 +1,17 @@
 import { useContext } from 'react'
 
-import { UploadType } from '@audius/common/store'
+import {
+  CollectionFormState,
+  TrackFormState,
+  UploadFormState,
+  UploadType
+} from '@audius/common/store'
 import { useUnmount } from 'react-use'
 
 import { UploadPreviewContext } from 'components/edit-track/utils/uploadPreviewContext'
 
 import { UploadCollectionForm } from '../forms/UploadCollectionForm'
 import { UploadTrackForm } from '../forms/UploadTrackForm'
-import { CollectionFormState, TrackFormState, UploadFormState } from '../types'
 
 type EditPageProps = {
   formState: TrackFormState | CollectionFormState

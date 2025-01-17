@@ -1,12 +1,12 @@
 import { useEffect } from 'react'
 
+import { useTrackByParams } from '@audius/common/api'
 import { useFeatureFlag, useProxySelector } from '@audius/common/hooks'
 import { trackPageMessages } from '@audius/common/messages'
 import { Status } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
 import {
   trackPageLineupActions,
-  trackPageActions,
   trackPageSelectors,
   reachabilitySelectors
 } from '@audius/common/store'
@@ -29,9 +29,8 @@ import { useRoute } from 'app/hooks/useRoute'
 import { TrackScreenDetailsTile } from './TrackScreenDetailsTile'
 import { TrackScreenRemixes } from './TrackScreenRemixes'
 import { TrackScreenSkeleton } from './TrackScreenSkeleton'
-const { fetchTrack } = trackPageActions
 const { tracksActions } = trackPageLineupActions
-const { getLineup, getRemixParentTrack, getTrack, getUser } = trackPageSelectors
+const { getLineup, getRemixParentTrack } = trackPageSelectors
 const { getIsReachable } = reachabilitySelectors
 
 const messages = {
@@ -48,20 +47,12 @@ export const TrackScreen = () => {
   const dispatch = useDispatch()
   const isReachable = useSelector(getIsReachable)
 
-  const { searchTrack, id, canBeUnlisted = true, handle, slug } = params ?? {}
-
-  const cachedTrack = useSelector((state) => getTrack(state, params))
-
-  const track = cachedTrack?.track_id ? cachedTrack : searchTrack
-
-  const cachedUser = useSelector((state) =>
-    getUser(state, { id: track?.owner_id })
-  )
-
-  const user = cachedUser ?? searchTrack?.user
+  const { searchTrack, ...restParams } = params ?? {}
+  const { data: fetchedTrack } = useTrackByParams(restParams)
+  const track = fetchedTrack ?? searchTrack
+  const user = track?.user
 
   const lineup = useSelector(getLineup)
-
   const remixParentTrack = useProxySelector(getRemixParentTrack, [])
 
   const { isEnabled: isCommentingEnabled } = useFeatureFlag(
@@ -69,19 +60,12 @@ export const TrackScreen = () => {
   )
 
   const isScreenReady = useIsScreenReady()
+
   useEffect(() => {
     if (isScreenReady) {
       dispatch(tracksActions.reset())
-      dispatch(
-        fetchTrack(
-          id ?? null,
-          decodeURIComponent(slug ?? ''),
-          handle ?? user?.handle,
-          canBeUnlisted
-        )
-      )
     }
-  }, [dispatch, canBeUnlisted, id, slug, handle, user?.handle, isScreenReady])
+  }, [dispatch, isScreenReady])
 
   if (!track || !user) {
     return (

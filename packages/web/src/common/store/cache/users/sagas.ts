@@ -1,5 +1,5 @@
 import { userMetadataListFromSDK } from '@audius/common/adapters'
-import { Kind, OptionalId, User, UserMetadata, Id } from '@audius/common/models'
+import { Kind, User, UserMetadata } from '@audius/common/models'
 import {
   Metadata,
   accountSelectors,
@@ -12,6 +12,7 @@ import {
   getSDK
 } from '@audius/common/store'
 import { waitForAccount } from '@audius/common/utils'
+import { Id, OptionalId } from '@audius/sdk'
 import { mergeWith } from 'lodash'
 import { call, put, select, takeEvery } from 'typed-redux-saga'
 

@@ -51,6 +51,7 @@ export const LIBRARY_PAGE = '/library'
 export const HISTORY_PAGE = '/history'
 export const DASHBOARD_PAGE = '/dashboard'
 export const AUDIO_PAGE = '/audio'
+export const REWARDS_PAGE = '/rewards'
 export const AUDIO_TRANSACTIONS_PAGE = '/audio/transactions'
 export const UPLOAD_PAGE = '/upload'
 export const UPLOAD_ALBUM_PAGE = '/upload/album'
@@ -221,6 +222,14 @@ export const authenticatedRoutes = [
   WITHDRAWALS_PAGE
 ]
 
+export const guestRoutes = [
+  SAVED_PAGE,
+  LIBRARY_PAGE,
+  PURCHASES_PAGE,
+  SALES_PAGE,
+  PAYMENTS_PAGE
+]
+
 export const publicSiteRoutes = [
   PRESS_PAGE,
   TERMS_OF_SERVICE,
@@ -258,6 +267,7 @@ export const orderedRoutes = [
   DASHBOARD_PAGE,
   PAYMENTS_PAGE,
   AUDIO_PAGE,
+  REWARDS_PAGE,
   AUDIO_TRANSACTIONS_PAGE,
   SETTINGS_PAGE,
   ACCOUNT_SETTINGS_PAGE,
@@ -281,6 +291,7 @@ export const orderedRoutes = [
   FOLLOWERS_USERS_ROUTE,
   SUPPORTING_USERS_ROUTE,
   TOP_SUPPORTERS_USERS_ROUTE,
+  REWARDS_PAGE,
   PROFILE_PAGE,
   PROFILE_PAGE_COLLECTIBLES,
   PROFILE_PAGE_COLLECTIBLE_DETAILS
@@ -303,6 +314,7 @@ export const staticRoutes = new Set([
   DASHBOARD_PAGE,
   PAYMENTS_PAGE,
   AUDIO_PAGE,
+  REWARDS_PAGE,
   AUDIO_TRANSACTIONS_PAGE,
   TRACK_EDIT_PAGE,
   UPLOAD_PAGE,

@@ -11,9 +11,7 @@ import {
   Collection,
   UserCollectionMetadata,
   User,
-  isContentUSDCPurchaseGated,
-  Id,
-  OptionalId
+  isContentUSDCPurchaseGated
 } from '@audius/common/models'
 import {
   accountActions,
@@ -25,8 +23,6 @@ import {
   PlaylistOperations,
   reformatCollection,
   cacheUsersSelectors,
-  savedPageActions,
-  LibraryCategory,
   toastActions,
   getContext,
   confirmerActions,
@@ -39,15 +35,12 @@ import {
   makeKindId,
   updatePlaylistArtwork
 } from '@audius/common/utils'
+import { Id, OptionalId } from '@audius/sdk'
 import { all, call, put, select, takeEvery, takeLatest } from 'typed-redux-saga'
 
 import { make } from 'common/store/analytics/actions'
 import watchTrackErrors from 'common/store/cache/collections/errorSagas'
 import * as signOnActions from 'common/store/pages/signon/actions'
-import {
-  addPlaylistsNotInLibrary,
-  removePlaylistFromLibrary
-} from 'common/store/playlist-library/sagas'
 import { getUSDCMetadata } from 'common/store/upload/sagaHelpers'
 import { ensureLoggedIn } from 'common/utils/ensureLoggedIn'
 import { waitForWrite } from 'utils/sagaHelpers'
@@ -185,7 +178,15 @@ function* confirmEditPlaylist(
     confirmerActions.requestConfirmation(
       makeKindId(Kind.COLLECTIONS, playlistId),
       function* (_confirmedPlaylistId: ID) {
+        const coverArtFile =
+          formFields.artwork && 'file' in formFields.artwork
+            ? formFields.artwork.file
+            : undefined
+
         yield* call([sdk.playlists, sdk.playlists.updatePlaylist], {
+          coverArtFile: coverArtFile
+            ? fileToSdk(coverArtFile, 'cover_art')
+            : undefined,
           metadata: playlistMetadataForUpdateWithSDK(formFields),
           userId: Id.parse(userId),
           playlistId: Id.parse(playlistId)
@@ -630,13 +631,6 @@ function* confirmDeleteAlbum(playlistId: ID, userId: ID) {
           ),
           put(
             accountActions.removeAccountPlaylist({ collectionId: playlistId })
-          ),
-          put(
-            savedPageActions.removeLocalCollection({
-              collectionId: playlistId,
-              isAlbum: true,
-              category: LibraryCategory.Favorite
-            })
           )
         ])
 
@@ -672,13 +666,6 @@ function* confirmDeleteAlbum(playlistId: ID, userId: ID) {
               is_album: playlist.is_album,
               user: { id: user.user_id, handle: user.handle },
               permalink: playlist.permalink
-            })
-          ),
-          put(
-            savedPageActions.addLocalCollection({
-              collectionId: playlist.playlist_id,
-              isAlbum: playlist.is_album,
-              category: LibraryCategory.Favorite
             })
           )
         ])
@@ -717,17 +704,8 @@ function* confirmDeletePlaylist(userId: ID, playlistId: ID) {
           ),
           put(
             accountActions.removeAccountPlaylist({ collectionId: playlistId })
-          ),
-          put(
-            savedPageActions.removeLocalCollection({
-              collectionId: playlistId,
-              isAlbum: false,
-              category: LibraryCategory.Favorite
-            })
           )
         ])
-
-        yield* call(removePlaylistFromLibrary, playlistId)
 
         yield* call([sdk.playlists, sdk.playlists.deletePlaylist], {
           userId: Id.parse(userId),
@@ -761,16 +739,8 @@ function* confirmDeletePlaylist(userId: ID, playlistId: ID) {
               user: { id: user.user_id, handle: user.handle },
               permalink: playlist.permalink
             })
-          ),
-          put(
-            savedPageActions.addLocalCollection({
-              collectionId: playlist.playlist_id,
-              isAlbum: playlist.is_album,
-              category: LibraryCategory.Favorite
-            })
           )
         ])
-        yield* call(addPlaylistsNotInLibrary)
         yield* put(
           collectionActions.deletePlaylistFailed(
             error,

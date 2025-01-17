@@ -1,7 +1,7 @@
 import { useRef, type ReactNode } from 'react'
 
 import { accountSelectors } from '@audius/common/store'
-import { decodeHashId } from '@audius/common/utils'
+import { OptionalHashId } from '@audius/sdk'
 import type {
   LinkingOptions,
   NavigationState,
@@ -256,34 +256,27 @@ const NavigationContainer = (props: NavigationContainerProps) => {
       // Opaque ID routes
       // /tracks/Nz9yBb4
       if (path.match(/^\/tracks\//)) {
-        const id = decodeHashId(pathPart(path)(2))
+        const trackId = OptionalHashId.parse(pathPart(path)(2))
         return createFeedStackState({
           name: 'Track',
           params: {
-            id
+            trackId
           }
         })
       }
 
       // /users/Nz9yBb4
       if (path.match(/^\/users\//)) {
-        const id = decodeHashId(pathPart(path)(2))
-        return createFeedStackState({
-          name: 'Profile',
-          params: {
-            id
-          }
-        })
+        const id = OptionalHashId.parse(pathPart(path)(2))
+        return createFeedStackState({ name: 'Profile', params: { id } })
       }
 
       // /playlists/Nz9yBb4
       if (path.match(/^\/playlists\//)) {
-        const id = decodeHashId(pathPart(path)(2))
+        const collectionId = OptionalHashId.parse(pathPart(path)(2))
         return createFeedStackState({
-          name: 'Profile',
-          params: {
-            id
-          }
+          name: 'Collection',
+          params: { collectionId }
         })
       }
 
