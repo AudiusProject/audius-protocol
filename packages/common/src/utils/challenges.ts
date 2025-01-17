@@ -295,6 +295,15 @@ export const challengeRewardsConfig: Record<
     description: () => 'Winners are selected every Friday at Noon PT!',
     panelButtonText: 'See More',
     id: 'trending-underground'
+  },
+  o: {
+    title: 'One Shot',
+    description: () => 'Claim your one shot...',
+    fullDescription: () => `Claim your $AUDIO before it expires!`,
+    panelButtonText: 'See More',
+    id: ChallengeName.OneShot,
+    remainingLabel: 'Ineligible',
+    progressLabel: 'Ineligible'
   }
 }
 
