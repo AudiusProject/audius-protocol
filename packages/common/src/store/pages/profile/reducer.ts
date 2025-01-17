@@ -17,9 +17,6 @@ import {
   DISMISS_PROFILE_METER,
   SET_NOTIFICATION_SUBSCRIPTION,
   SET_CURRENT_USER,
-  FETCH_TOP_TAGS,
-  FETCH_TOP_TAGS_SUCCEEDED,
-  FETCH_TOP_TAGS_FAILED,
   SetCurrentUserAction,
   SetProfileFieldAction,
   UpdateProfileAction,
@@ -28,9 +25,6 @@ import {
   UpdateCollectionSortModeAction,
   DismissProfileMeterAction,
   SetNotificationSubscriptionAction,
-  FetchTopTagsAction,
-  FetchTopTagsFailedAction,
-  FetchTopTagsSucceededAction,
   ProfilePageAction
 } from './actions'
 import { PREFIX as feedPrefix } from './lineups/feed/actions'
@@ -46,8 +40,6 @@ const initialProfileState = {
   updating: false,
   updateSuccess: false,
   updateError: false,
-  topTagsStatus: Status.IDLE,
-  topTags: [],
 
   collectionSortMode: CollectionSortMode.TIMESTAMP,
 
@@ -148,25 +140,6 @@ const actionsMap = {
     return updateProfile(state, action, {
       isNotificationSubscribed: isSubscribed
     })
-  },
-  [FETCH_TOP_TAGS](state: ProfilePageState, action: FetchTopTagsAction) {
-    return updateProfile(state, action, { topTagsStatus: Status.LOADING })
-  },
-  [FETCH_TOP_TAGS_SUCCEEDED](
-    state: ProfilePageState,
-    action: FetchTopTagsSucceededAction
-  ) {
-    const { topTags } = action
-    return updateProfile(state, action, {
-      topTagsStatus: Status.SUCCESS,
-      topTags
-    })
-  },
-  [FETCH_TOP_TAGS_FAILED](
-    state: ProfilePageState,
-    action: FetchTopTagsFailedAction
-  ) {
-    return updateProfile(state, action, { topTagsStatus: Status.ERROR })
   }
 }
 
