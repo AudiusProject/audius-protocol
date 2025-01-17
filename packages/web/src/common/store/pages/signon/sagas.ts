@@ -68,7 +68,6 @@ import {
 } from 'typed-redux-saga'
 
 import { identify, make } from 'common/store/analytics/actions'
-import * as backendActions from 'common/store/backend/actions'
 import { retrieveCollections } from 'common/store/cache/collections/utils'
 import { fetchUserByHandle, fetchUsers } from 'common/store/cache/users/sagas'
 import { sendRecoveryEmail } from 'common/store/recovery-email/sagas'
@@ -654,16 +653,7 @@ function* signUp() {
     const signOn = yield* select(getSignOn)
     const email = signOn.email.value
     const password = signOn.password.value
-    const previouslyUsedMetaMask = yield* call(
-      [localStorage, localStorage.getItem],
-      'useMetaMask'
-    )
-
-    if (email && password && previouslyUsedMetaMask) {
-      yield* call([localStorage, localStorage.removeItem], 'useMetaMask')
-      yield* put(backendActions.setupBackend())
-    }
-    const { useMetaMask } = signOn
+    const { usingExternalWallet } = signOn
 
     const isGuest = yield* select(getIsGuest)
 
@@ -749,7 +739,7 @@ function* signUp() {
               const authService = yield* getContext('authService')
               const hedgehog = authService.hedgehogInstance
               if (!alreadyExisted) {
-                if (!useMetaMask) {
+                if (!usingExternalWallet) {
                   // Sign up via Hedgehog
                   yield* call([hedgehog, hedgehog.signUp], {
                     username: email,
@@ -802,7 +792,10 @@ function* signUp() {
               userId = metadata.userId
               const { twitterId, instagramId, tikTokId } = signOn
 
-              if (!useMetaMask && (twitterId || instagramId || tikTokId)) {
+              if (
+                !usingExternalWallet &&
+                (twitterId || instagramId || tikTokId)
+              ) {
                 yield* fork(associateSocialAccounts, {
                   userId,
                   handle,
@@ -960,16 +953,6 @@ function* signUp() {
 
 function* signIn(action: ReturnType<typeof signOnActions.signIn>) {
   const { email, password, visitorId, otp } = action
-  const localStorage = yield* getContext('localStorage')
-  const useMetamask = yield* call(
-    [localStorage, localStorage.getItem],
-    'useMetaMask'
-  )
-
-  if (email && password && useMetamask) {
-    yield* call([localStorage, localStorage.removeItem], 'useMetaMask')
-    yield* put(backendActions.setupBackend())
-  }
   yield* put(make(Name.SIGN_IN_START, {}))
 
   const fingerprintClient = yield* getContext('fingerprintClient')
@@ -1264,21 +1247,6 @@ function* followArtists(
   }
 }
 
-function* configureMetaMask() {
-  try {
-    window.localStorage.setItem('useMetaMask', JSON.stringify(true))
-    const reinitializeSdk = yield* getContext('reinitializeSdk')
-    yield* call(reinitializeSdk)
-  } catch (err: any) {
-    const reportToSentry = yield* getContext('reportToSentry')
-    reportToSentry({
-      error: err,
-      name: 'Sign Up: Configure metamask failed',
-      feature: Feature.SignUp
-    })
-  }
-}
-
 function* watchCompleteFollowArtists() {
   yield* takeEvery(signOnActions.COMPLETE_FOLLOW_ARTISTS, completeFollowArtists)
 }
@@ -1326,10 +1294,6 @@ function* watchSignIn() {
   yield* takeLatest(signOnActions.SIGN_IN, signIn)
 }
 
-function* watchConfigureMetaMask() {
-  yield* takeLatest(signOnActions.CONFIGURE_META_MASK, configureMetaMask)
-}
-
 function* watchFollowArtists() {
   yield* takeLatest(signOnActions.FOLLOW_ARTISTS, followArtists)
 }
@@ -1372,7 +1336,6 @@ export default function sagas() {
     watchSignIn,
     watchFollowArtists,
     watchGetArtistsToFollow,
-    watchConfigureMetaMask,
     watchOpenSignOn,
     watchSignOnError,
     watchSendWelcomeEmail,
