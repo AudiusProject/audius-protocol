@@ -95,7 +95,7 @@ const FirstUploadModal = g(({ account, isOpen, close }) => {
               <UserBadges
                 userId={account.user_id}
                 className={styles.iconVerified}
-                badgeSize={12}
+                size='2xs'
               />
             </div>
             <div className={styles.handle}>{`@${account.handle}`}</div>

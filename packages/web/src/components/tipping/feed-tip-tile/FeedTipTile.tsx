@@ -95,7 +95,6 @@ const Tippers = ({ tippers, receiver }: TippersProps) => {
           <UserBadges
             userId={tipper.user_id}
             className={styles.badge}
-            badgeSize={14}
             inline
           />
           {index < tippers.length - 1 &&
@@ -138,7 +137,7 @@ const SendTipButton = ({ user, hideName = false }: SendTipButtonProps) => {
         <UserBadges
           userId={user.user_id}
           className={styles.badge}
-          badgeSize={12}
+          size='2xs'
           inline
         />
       </div>
@@ -254,7 +253,6 @@ export const FeedTipTile = () => {
               <UserBadges
                 userId={tipToDisplay.receiver_id}
                 className={styles.badge}
-                badgeSize={14}
                 inline
               />
             </div>
