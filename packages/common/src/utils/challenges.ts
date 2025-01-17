@@ -124,7 +124,7 @@ export const challengeRewardsConfig: Record<
     panelButtonText: 'Trending on Audius'
   },
   [ChallengeName.ListenStreak]: {
-    id: 'listen-streak',
+    id: ChallengeName.ListenStreak,
     title: 'Listening Streak: 7 Days',
     description: (challenge) =>
       `Listen to one track a day for seven days to earn ${challenge?.amount} $AUDIO.`,

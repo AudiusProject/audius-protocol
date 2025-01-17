@@ -60,11 +60,6 @@ export const Panel = ({
     progressLabel,
     remainingLabel
   })
-  console.log(
-    'asdf formattedProgressLabel',
-    formattedProgressLabel,
-    shouldShowProgressLabel
-  )
   return (
     <TouchableOpacity onPress={onPress} activeOpacity={0.7}>
       <Flex border='default' borderRadius='l' pb='unit10'>
