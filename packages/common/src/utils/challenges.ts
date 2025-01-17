@@ -299,11 +299,11 @@ export const challengeRewardsConfig: Record<
   o: {
     title: 'One Shot',
     description: () => 'Claim your one shot...',
-    fullDescription: (challenge) =>
-      `You've earned ${challenge?.current_step_count} $AUDIO`,
+    fullDescription: () => `Claim your $AUDIO before it expires!`,
     panelButtonText: 'See More',
     id: ChallengeName.OneShot,
-    remainingLabel: 'Ineligible'
+    remainingLabel: 'Ineligible',
+    progressLabel: 'Ineligible'
   }
 }
 
