@@ -226,7 +226,7 @@ export interface PlaylistFull {
      */
     updatedAt: string;
     /**
-     * 
+     * DEPRECATED. Use playlist_contents instead.
      * @type {Array<PlaylistAddedTimestamp>}
      * @memberof PlaylistFull
      */
