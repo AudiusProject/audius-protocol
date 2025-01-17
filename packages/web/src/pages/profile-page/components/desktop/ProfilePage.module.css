@@ -39,6 +39,8 @@
 
 .handleWrapper {
   margin-top: 4px;
+  display: flex;
+  align-items: center;
 }
 
 .handleWrapper > .handle {
