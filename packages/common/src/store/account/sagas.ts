@@ -189,6 +189,7 @@ export function* fetchAccountAsync() {
     }
   }
   if (!wallet || !web3WalletAddress) {
+    yield* put(accountActions.resetAccount())
     yield* put(
       fetchAccountFailed({
         reason: 'ACCOUNT_NOT_FOUND'
@@ -205,6 +206,7 @@ export function* fetchAccountAsync() {
   )
 
   if (!accountData) {
+    yield* put(accountActions.resetAccount())
     yield* put(
       fetchAccountFailed({
         reason: 'ACCOUNT_NOT_FOUND'
