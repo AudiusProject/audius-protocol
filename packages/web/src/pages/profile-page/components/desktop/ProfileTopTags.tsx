@@ -14,10 +14,12 @@ const MOST_USED_TAGS_COUNT = 5
 
 export const ProfileTopTags = () => {
   const user = useProfileParams()
-  const { data, status } = useTopTags(user?.user_id)
-  const topTags = data?.slice(0, MOST_USED_TAGS_COUNT)
+  const { data: topTags, isPending } = useTopTags({
+    userId: user?.user_id,
+    limit: MOST_USED_TAGS_COUNT
+  })
 
-  if (status !== 'success' || !topTags?.length) return null
+  if (isPending || !topTags?.length) return null
 
   return (
     <div>

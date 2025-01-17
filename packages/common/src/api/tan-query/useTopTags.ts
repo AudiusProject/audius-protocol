@@ -7,7 +7,15 @@ import { ID } from '~/models/Identifiers'
 import { QUERY_KEYS } from './queryKeys'
 import { Config } from './types'
 
-export const useTopTags = (userId: ID | null | undefined, options?: Config) => {
+type UseTopTagsArgs = {
+  userId: ID | null | undefined
+  limit?: number
+}
+
+export const useTopTags = (
+  { userId, limit = 5 }: UseTopTagsArgs,
+  options?: Config
+) => {
   const { audiusSdk } = useAudiusQueryContext()
 
   return useQuery({
@@ -15,7 +23,8 @@ export const useTopTags = (userId: ID | null | undefined, options?: Config) => {
     queryFn: async () => {
       const sdk = await audiusSdk()
       const { data = [] } = await sdk.users.getTopTrackTags({
-        id: Id.parse(userId)
+        id: Id.parse(userId),
+        limit
       })
 
       return data
