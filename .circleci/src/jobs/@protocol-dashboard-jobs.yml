@@ -28,7 +28,7 @@ protocol-dashboard-init:
         root: ./
         paths:
           - node_modules
-          - protocol-dashboard/node_modules
+          - packages/protocol-dashboard/node_modules
           - packages/harmony/node_modules
           - packages/common/node_modules
           - packages/libs/node_modules
@@ -46,13 +46,13 @@ protocol-dashboard-build-staging:
     - run:
         name: build
         command: |
-          cd protocol-dashboard
+          cd packages/protocol-dashboard
           npm install dotenv@16.3.1
           npm run build:stage
     - run:
         name: earthfast bundle
         command: |
-          cd protocol-dashboard
+          cd packages/protocol-dashboard
           timestamp=$(date +%s)
           filename="$(npx earthfast-cli bundle create dist${timestamp} dist)"
           hash="$(npx earthfast-cli bundle checksum $filename)"
@@ -61,7 +61,7 @@ protocol-dashboard-build-staging:
     - persist_to_workspace:
         root: ./
         paths:
-          - protocol-dashboard/*
+          - packages/protocol-dashboard/*
 
 protocol-dashboard-pin-staging:
   working_directory: ~/audius-protocol
@@ -76,7 +76,7 @@ protocol-dashboard-pin-staging:
     - run:
         name: deploy to s3
         command: |
-          cd protocol-dashboard
+          cd packages/protocol-dashboard
           source tmp.env
           aws s3 cp ${FILENAME} s3://dashboard.staging.audius.org/${FILENAME} --cache-control max-age=0
 
@@ -93,7 +93,7 @@ protocol-dashboard-deploy-staging:
     - run:
         name: earthfast publish
         command: |
-          cd protocol-dashboard
+          cd packages/protocol-dashboard
           source tmp.env
           npx earthfast-cli project publish 0x8d1108e10bcb7c27dddfc02ed9d693a074039d026cf4ea4240b40f7d581ac802 https://s3.us-west-1.amazonaws.com/dashboard.staging.audius.org/${FILENAME} ${HASH} --key=${ARMADA_ADMIN_PRIVATE_KEY}
 
@@ -109,7 +109,7 @@ protocol-dashboard-build-prod:
     - run:
         name: build
         command: |
-          cd protocol-dashboard
+          cd packages/protocol-dashboard
           npm install dotenv@16.3.1
           npm run build:prod
     - run:
@@ -124,7 +124,7 @@ protocol-dashboard-build-prod:
     - persist_to_workspace:
         root: ./
         paths:
-          - protocol-dashboard/*
+          - packages/protocol-dashboard/*
 
 protocol-dashboard-pin-prod:
   working_directory: ~/audius-protocol

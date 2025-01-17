@@ -73,9 +73,6 @@
     "pull-dev-accounts": "node ./scripts/pullDevAccounts.js",
     "typecheck": "tsc",
     "advance-blocks": "node ./scripts/advanceBlocks.js",
-    "update-build:dev": "node ./scripts/updateBuild.cjs dev",
-    "update-build:stage": "node ./scripts/updateBuild.cjs stage",
-    "update-build:prod": "node ./scripts/updateBuild.cjs prod",
     "TODO - ADD TYPECHECK TO VERIFY: =========================": "",
     "verify": "concurrently \"npm:lint\" \"npm:lint:env\""
   },
