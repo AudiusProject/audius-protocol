@@ -25,6 +25,7 @@ const validRewardIds: Set<ChallengeRewardID> = new Set([
   ChallengeName.ReferralsVerified,
   ChallengeName.Referred,
   ChallengeName.TrackUpload,
+  ChallengeName.ListenStreak,
   ChallengeName.OneShot
 ])
 
