@@ -1,12 +1,7 @@
-import {
-  AudiusSdk,
-  sdk,
-  Configuration,
-  SolanaRelay,
-  HedgehogWalletNotFoundError
-} from '@audius/sdk'
-import { createWalletClient, http } from 'viem'
+import { AudiusSdk, sdk, Configuration, SolanaRelay } from '@audius/sdk'
+import { createWalletClient, custom } from 'viem'
 import { mainnet } from 'viem/chains'
+import { getHttpRpcClient } from 'viem/utils'
 
 import { discoveryNodeSelectorService } from 'services/audius-sdk/discoveryNodeSelector'
 import { env } from 'services/env'
@@ -47,36 +42,32 @@ export const initSdk = async () => {
 
   // Overrides some DN configuration from optimizely
   const discoveryNodeSelector = await discoveryNodeSelectorService.getInstance()
+
+  // Set up a relay to identity for Ethereum RPC requests so that identity can
+  // pay for gas fees on approved transactions.
   const audiusWalletClient = await getAudiusWalletClient()
-
-  let ethWalletClient
-  try {
-    const message = `signature:${new Date().getTime()}`
-    const signature = await audiusWalletClient.signMessage({ message })
-    ethWalletClient = createWalletClient({
-      account: '0x0000000000000000000000000000000000000000', // dummy replaced by relay DO NOT REMOVE
-      chain: mainnet,
-      transport: http(`${env.IDENTITY_SERVICE}/ethereum/rpc`, {
-        fetchOptions: {
-          headers: {
-            'Encoded-Data-Message': message,
-            'Encoded-Data-Signature': signature
+  const ethWalletClient = createWalletClient({
+    account: '0x0000000000000000000000000000000000000000', // dummy replaced by relay DO NOT REMOVE
+    chain: mainnet,
+    transport: custom({
+      request: async (request) => {
+        const message = `signature:${new Date().getTime()}`
+        const signature = await audiusWalletClient.signMessage({ message })
+        const rpcClient = getHttpRpcClient(
+          `${env.IDENTITY_SERVICE}/ethereum/rpc`,
+          {
+            fetchOptions: {
+              headers: {
+                'Encoded-Data-Message': message,
+                'Encoded-Data-Signature': signature
+              }
+            }
           }
-        }
-      })
+        )
+        return await rpcClient.request(request)
+      }
     })
-  } catch (e) {
-    if (e instanceof HedgehogWalletNotFoundError) {
-      ethWalletClient = createWalletClient({
-        account: '0x0000000000000000000000000000000000000000', // dummy replaced by relay DO NOT REMOVE
-        chain: mainnet,
-        transport: http(`${env.IDENTITY_SERVICE}/ethereum/rpc`, {})
-      })
-    } else {
-      throw e
-    }
-  }
-
+  })
   const audiusSdk = sdk({
     appName: env.APP_NAME,
     apiKey: env.API_KEY,
