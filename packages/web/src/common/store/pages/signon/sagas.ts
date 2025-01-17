@@ -1167,12 +1167,12 @@ function* followArtists(
 ) {
   const { skipDefaultFollows } = action
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
+  yield* call(waitForWrite)
   const sdk = yield* getSDK()
   const { ENVIRONMENT } = yield* getContext('env')
   const defaultFollowUserIds = skipDefaultFollows
     ? new Set([])
     : yield* call(getDefautFollowUserIds)
-  yield* call(waitForWrite)
   try {
     // Auto-follow Hot & New Playlist
     if (!skipDefaultFollows) {
