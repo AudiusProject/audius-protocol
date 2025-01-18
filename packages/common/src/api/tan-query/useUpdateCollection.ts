@@ -1,4 +1,4 @@
-import { OptionalId, Playlist } from '@audius/sdk'
+import { Id, Playlist } from '@audius/sdk'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import BN from 'bn.js'
 import { useDispatch, useSelector } from 'react-redux'
@@ -43,9 +43,7 @@ export const useUpdateCollection = () => {
     }: UpdateCollectionParams) => {
       const sdk = await audiusSdk()
 
-      const encodedCollectionId = OptionalId.parse(collectionId)
-      const encodedUserId = OptionalId.parse(userId)
-      if (!encodedCollectionId || !encodedUserId) throw new Error('Invalid ID')
+      if (!collectionId || !userId) throw new Error('Invalid ID')
 
       // Handle account collection shortcut update
       if (metadata.playlist_name) {
@@ -103,8 +101,8 @@ export const useUpdateCollection = () => {
         coverArtFile: coverArtFile
           ? fileToSdk(coverArtFile, 'cover_art')
           : undefined,
-        playlistId: encodedCollectionId,
-        userId: encodedUserId,
+        playlistId: Id.parse(collectionId),
+        userId: Id.parse(userId),
         metadata: sdkMetadata
       })
 
@@ -145,12 +143,14 @@ export const useUpdateCollection = () => {
           (old: any) => ({
             ...old,
             ...metadata
+            // TODO: add optimistic update for artwork
           })
         )
       }
       queryClient.setQueryData(
         [QUERY_KEYS.collectionByPermalink, metadata.permalink],
         (old: any) => ({
+          ...previousCollection,
           ...old,
           ...metadata
         })

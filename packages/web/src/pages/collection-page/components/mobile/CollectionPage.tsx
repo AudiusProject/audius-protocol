@@ -7,8 +7,8 @@ import {
   Status,
   SmartCollection,
   ID,
-  User,
-  UserCollectionMetadata
+  UserCollectionMetadata,
+  UserMetadata
 } from '@audius/common/models'
 import {
   OverflowAction,
@@ -58,7 +58,7 @@ export type CollectionPageProps = {
   description: string
   canonicalUrl: string
   structuredData?: Object
-  playlistId: ID
+  collectionId: number
   playing: boolean
   previewing: boolean
   getPlayingUid: () => string | null
@@ -66,7 +66,7 @@ export type CollectionPageProps = {
   collection: {
     status: 'pending' | 'success' | 'error'
     metadata: UserCollectionMetadata | SmartCollection | null
-    user: User | null
+    user: UserMetadata | null | undefined
   }
   tracks: {
     status: Status
@@ -94,7 +94,7 @@ const CollectionPage = ({
   description: pageDescription,
   canonicalUrl,
   structuredData,
-  playlistId,
+  collectionId,
   getPlayingUid,
   playing,
   previewing,
@@ -150,7 +150,7 @@ const CollectionPage = ({
   const isOwner = userId === playlistOwnerId
 
   const isSaved =
-    metadata?.has_current_user_saved || playlistId in (userPlaylists ?? {})
+    metadata?.has_current_user_saved || collectionId in (userPlaylists ?? {})
   // tan-query TODO: move isPublishing to state variable
   const isPublishing = false
   const access =
@@ -246,7 +246,7 @@ const CollectionPage = ({
         <div>
           <CollectionHeader
             access={access}
-            collectionId={playlistId}
+            collectionId={collectionId}
             userId={user?.user_id ?? 0}
             loading={
               typeTitle === 'Audio NFT Playlist'
