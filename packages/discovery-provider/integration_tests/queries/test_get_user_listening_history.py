@@ -385,3 +385,51 @@ def test_get_user_listening_history_filter_deleted_owners(app):
     assert track_history[0][response_name_constants.activity_timestamp] == str(
         TIMESTAMP
     )
+
+
+def test_get_user_listening_history_filter_deleted_tracks(app):
+    """Tests that deleted tracks are filtered out of listening history"""
+    with app.app_context():
+        db = get_db()
+
+    test_entities_with_deleted = {
+        "user_listening_history": [
+            {
+                "user_id": 1,
+                "listening_history": [
+                    {"timestamp": str(TIMESTAMP), "track_id": 1},
+                    {"timestamp": str(TIMESTAMP), "track_id": 2},
+                ],
+            }
+        ],
+        "tracks": [
+            {"track_id": 1, "title": "track 1", "owner_id": 1, "is_delete": True},  # Deleted track
+            {"track_id": 2, "title": "track 2", "owner_id": 2, "is_delete": False},
+        ],
+        "users": [
+            {"user_id": 1, "handle": "user-1"},
+            {"user_id": 2, "handle": "user-2"},
+        ],
+    }
+
+    populate_mock_db(db, test_entities_with_deleted)
+
+    with db.scoped_session() as session:
+        _index_user_listening_history(session)
+
+        track_history = _get_user_listening_history(
+            session,
+            GetUserListeningHistoryArgs(
+                user_id=1,
+                limit=10,
+                offset=0,
+                query=None,
+                sort_method=None,
+                sort_direction=None,
+            ),
+        )
+
+    # Should only return track 2 since track 1 is deleted
+    assert len(track_history) == 1
+    assert track_history[0][response_name_constants.track_id] == 2
+    assert track_history[0][response_name_constants.activity_timestamp] == str(TIMESTAMP)
