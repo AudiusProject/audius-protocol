@@ -16,7 +16,7 @@ export const TestCollectionUpdate = ({ playlistId }: Props) => {
   const handleUpdateTitle = () => {
     if (!collection) return
     updateCollection.mutate({
-      playlistId,
+      collectionId: playlistId,
       metadata: {
         playlist_name: newTitle
       },

@@ -11,6 +11,8 @@ import { Config } from './types'
 import { useCurrentUserId } from './useCurrentUserId'
 import { primeCollectionData } from './utils/primeCollectionData'
 
+const STALE_TIME = Infinity
+
 export const useCollection = (
   collectionId: ID | null | undefined,
   options?: Config
@@ -51,7 +53,7 @@ export const useCollection = (
 
       return collection
     },
-    staleTime: options?.staleTime,
+    staleTime: options?.staleTime ?? STALE_TIME,
     enabled: options?.enabled !== false && !!collectionId
   })
 }

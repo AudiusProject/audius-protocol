@@ -1,9 +1,11 @@
-import { useCollectionByPermalink } from '@audius/common/api'
+import {
+  useCollectionByPermalink,
+  useUpdateCollection
+} from '@audius/common/api'
 import { Name, SquareSizes } from '@audius/common/models'
 import { CollectionValues } from '@audius/common/schemas'
 import {
   EditCollectionValues,
-  cacheCollectionsActions,
   cacheCollectionsSelectors
 } from '@audius/common/store'
 import { isEqual } from 'lodash'
@@ -25,7 +27,6 @@ import { useSelector } from 'utils/reducer'
 
 import { updatePlaylistContents } from '../utils'
 
-const { editPlaylist } = cacheCollectionsActions
 const { getCollection } = cacheCollectionsSelectors
 
 type EditCollectionPageParams = {
@@ -56,6 +57,8 @@ export const EditCollectionPage = () => {
   const localCollection = useSelector((state) =>
     getCollection(state, { permalink })
   )
+
+  const { mutate: updateCollection } = useUpdateCollection()
 
   const collection = isError ? localCollection : apiCollection
 
@@ -106,7 +109,13 @@ export const EditCollectionPage = () => {
       ...restValues
     }
 
-    dispatch(editPlaylist(playlist_id!, collection as EditCollectionValues))
+    if (playlist_id) {
+      updateCollection({
+        collectionId: playlist_id,
+        userId: playlist_id,
+        metadata: collection as EditCollectionValues
+      })
+    }
 
     dispatch(replace(permalink))
   }

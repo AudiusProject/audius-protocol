@@ -1,6 +1,9 @@
 import { useEffect, useState, useCallback } from 'react'
 
-import { useCollectionByPermalink } from '@audius/common/api'
+import {
+  useCollectionByPermalink,
+  useUpdateCollection
+} from '@audius/common/api'
 import { imageBlank as placeholderCoverArt } from '@audius/common/assets'
 import { useGatedContentAccessMap } from '@audius/common/hooks'
 import { SquareSizes, Collection, ID, Name } from '@audius/common/models'
@@ -39,8 +42,7 @@ import { withNullGuard } from 'utils/withNullGuard'
 import styles from './EditCollectionPage.module.css'
 import RemovePlaylistTrackDrawer from './RemoveCollectionTrackDrawer'
 
-const { editPlaylist, orderPlaylist, removeTrackFromPlaylist } =
-  cacheCollectionsActions
+const { orderPlaylist, removeTrackFromPlaylist } = cacheCollectionsActions
 const { getHasAccount } = accountSelectors
 
 const getMessages = (collectionType: 'album' | 'playlist') => ({
@@ -69,7 +71,7 @@ const g = withNullGuard((props: EditCollectionPageProps) => {
 })
 
 const EditCollectionPage = g(
-  ({ removeTrack, editPlaylist, orderPlaylist, refreshLineup }) => {
+  ({ removeTrack, orderPlaylist, refreshLineup }) => {
     const { handle, slug } = useParams<EditCollectionPageParams>()
     const isAlbum = Boolean(useRouteMatch('/:handle/album/:slug/edit'))
     const permalink = `/${handle}/${isAlbum ? 'album' : 'playlist'}/${slug}`
@@ -200,6 +202,8 @@ const EditCollectionPage = g(
       })
     }
 
+    const { mutate: updateCollection } = useUpdateCollection()
+
     const onSave = useCallback(() => {
       // Sanitize description field. Description is required to be present, but can be null
       if (formFields.description === undefined) {
@@ -233,7 +237,11 @@ const EditCollectionPage = g(
         }
         refreshLineup()
 
-        editPlaylist(collection.playlist_id, formFields as EditCollectionValues)
+        updateCollection({
+          collectionId: collection.playlist_id,
+          userId: collection.playlist_id,
+          metadata: formFields as EditCollectionValues
+        })
 
         track({
           eventName: Name.COLLECTION_EDIT,
@@ -247,15 +255,15 @@ const EditCollectionPage = g(
     }, [
       formFields,
       collection,
-      editPlaylist,
-      hasReordered,
-      reorderedTracks,
-      orderPlaylist,
-      refreshLineup,
-      removeTrack,
       removedTracks,
+      removeTrack,
+      hasReordered,
+      refreshLineup,
+      updateCollection,
       dispatch,
-      permalink
+      permalink,
+      orderPlaylist,
+      reorderedTracks
     ])
 
     /**
@@ -455,8 +463,6 @@ function mapStateToProps(state: AppState) {
 
 function mapDispatchToProps(dispatch: Dispatch) {
   return {
-    editPlaylist: (id: ID, metadata: EditCollectionValues) =>
-      dispatch(editPlaylist(id, metadata)),
     orderPlaylist: (playlistId: ID, idsAndTimes: any) =>
       dispatch(orderPlaylist(playlistId, idsAndTimes)),
     removeTrack: (trackId: ID, playlistId: ID, timestamp: number) =>

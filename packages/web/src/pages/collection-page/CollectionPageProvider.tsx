@@ -104,7 +104,6 @@ const {
 const { updatedPlaylistViewed } = playlistUpdatesActions
 const { makeGetTableMetadatas, makeGetLineupOrder } = lineupSelectors
 const {
-  editPlaylist,
   removeTrackFromPlaylist,
   orderPlaylist,
   publishPlaylist,
@@ -809,8 +808,6 @@ function mapDispatchToProps(dispatch: Dispatch) {
     },
     updateLineupOrder: (updatedOrderIndices: any) =>
       dispatch(tracksActions.updateLineupOrder(updatedOrderIndices)),
-    editPlaylist: (playlistId: number, formFields: any) =>
-      dispatch(editPlaylist(playlistId, formFields)),
     removeTrackFromPlaylist: (
       trackId: number,
       playlistId: number,

@@ -254,7 +254,8 @@ export const CollectionHeader = (props: CollectionHeaderProps) => {
             isPlaying={playing}
             isPreviewing={previewing}
             isPremium={isPremium}
-            isOwner={isOwner}
+            // isOwner={isOwner}
+            isOwner={true}
             tracksLoading={tracksLoading}
             onPlay={onPlay}
             onPreview={onPreview}

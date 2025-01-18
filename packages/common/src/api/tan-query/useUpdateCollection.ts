@@ -139,6 +139,15 @@ export const useUpdateCollection = () => {
       )
 
       // Optimistically update collectionByPermalink
+      if (previousCollection) {
+        queryClient.setQueryData(
+          [QUERY_KEYS.collectionByPermalink, previousCollection.permalink],
+          (old: any) => ({
+            ...old,
+            ...metadata
+          })
+        )
+      }
       queryClient.setQueryData(
         [QUERY_KEYS.collectionByPermalink, metadata.permalink],
         (old: any) => ({
