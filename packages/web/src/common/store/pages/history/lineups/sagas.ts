@@ -2,7 +2,12 @@ import {
   trackActivityFromSDK,
   transformAndCleanList
 } from '@audius/common/adapters'
-import { Kind, LineupEntry, Track } from '@audius/common/models'
+import {
+  Kind,
+  LineupEntry,
+  Track,
+  UserTrackMetadata
+} from '@audius/common/models'
 import {
   accountSelectors,
   getContext,
@@ -18,52 +23,63 @@ import { waitForRead } from 'utils/sagaHelpers'
 const { getUserId } = accountSelectors
 const { prefix: PREFIX } = tracksActions
 
-function* getHistoryTracks() {
-  yield* waitForRead()
+function* getHistoryTracks({
+  offset,
+  limit,
+  payload,
+  ...rest
+}: {
+  offset: number
+  limit: number
+  payload: { tracks: UserTrackMetadata[] }
+}) {
+  const { tracks } = payload
+  return tracks
+  // yield* waitForRead()
 
-  const audiusSdk = yield* getContext('audiusSdk')
-  const sdk = yield* call(audiusSdk)
-  try {
-    const currentUserId = yield* select(getUserId)
-    if (!currentUserId) return []
-    const hashedId = Id.parse(currentUserId)
+  // const audiusSdk = yield* getContext('audiusSdk')
+  // const sdk = yield* call(audiusSdk)
+  // try {
+  //   const currentUserId = yield* select(getUserId)
+  //   if (!currentUserId) return []
+  //   const hashedId = Id.parse(currentUserId)
 
-    const activity = yield* call(
-      [sdk.full.users, sdk.full.users.getUsersTrackHistory],
-      {
-        id: hashedId,
-        limit: 100
-      }
-    )
-    const activityData = activity.data
-    if (!activityData) return []
+  //   const activity = yield* call(
+  //     [sdk.full.users, sdk.full.users.getUsersTrackHistory],
+  //     {
+  //       id: hashedId,
+  //       limit: 15
+  //     }
+  //   )
+  //   const activityData = activity.data
+  //   if (!activityData) return []
 
-    const tracks = transformAndCleanList(
-      activityData,
-      (activity: full.ActivityFull) => trackActivityFromSDK(activity)?.item
-    )
+  //   const tracks = transformAndCleanList(
+  //     activityData,
+  //     (activity: full.ActivityFull) => trackActivityFromSDK(activity)?.item
+  //   )
 
-    const processedTracks = yield* call(processAndCacheTracks, tracks)
-    const processedTracksMap = keyBy(processedTracks, 'track_id')
+  //   const processedTracks = yield* call(processAndCacheTracks, tracks)
+  //   const processedTracksMap = keyBy(processedTracks, 'track_id')
 
-    const lineupTracks: Track[] = []
-    activityData.forEach((activity) => {
-      const trackMetadata = activity.item
-        ? processedTracksMap[HashId.parse(activity.item.id)!]
-        : null
-      // Prevent history for invalid tracks from getting into the lineup.
-      if (trackMetadata && !trackMetadata.is_unlisted) {
-        lineupTracks.push({
-          ...trackMetadata,
-          dateListened: activity.timestamp
-        })
-      }
-    })
-    return lineupTracks
-  } catch (e) {
-    console.error(e)
-    return []
-  }
+  //   const lineupTracks: Track[] = []
+  //   activityData.forEach((activity) => {
+  //     const trackMetadata = activity.item
+  //       ? processedTracksMap[HashId.parse(activity.item.id)!]
+  //       : null
+  //     // Prevent history for invalid tracks from getting into the lineup.
+  //     if (trackMetadata && !trackMetadata.is_unlisted) {
+  //       lineupTracks.push({
+  //         ...trackMetadata,
+  //         dateListened: activity.timestamp
+  //       })
+  //     }
+  //   })
+  //   return lineupTracks
+  // } catch (e) {
+  //   console.error(e)
+  //   return []
+  // }
 }
 
 const keepTrackIdAndDateListened = (entry: LineupEntry<Track>) => ({
