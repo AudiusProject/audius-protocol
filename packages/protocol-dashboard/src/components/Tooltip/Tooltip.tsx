@@ -50,12 +50,12 @@ const DescriptiveTooltipText: React.FC<{
             <div className={styles.tooltipText} ref={targetRef}>
               {title == null ? null : (
                 <Box mb='m'>
-                  <Text variant='title' size='m' color='staticWhite'>
+                  <Text variant='title' size='m' color='inverse'>
                     {title}
                   </Text>
                 </Box>
               )}
-              <Text variant='body' size='s' color='staticWhite'>
+              <Text variant='body' size='s' color='inverse'>
                 {text}
               </Text>
               <Box mt='s'>

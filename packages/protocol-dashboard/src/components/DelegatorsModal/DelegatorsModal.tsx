@@ -3,7 +3,7 @@ import React, { useCallback, useEffect, useState } from 'react'
 import BN from 'bn.js'
 import clsx from 'clsx'
 
-import TrashIcon from 'assets/img/iconTrash.svg?react'
+import TrashIcon from 'assets/img/iconTrash.svg'
 import ConfirmTransactionModal, {
   StandaloneBox
 } from 'components/ConfirmTransactionModal'

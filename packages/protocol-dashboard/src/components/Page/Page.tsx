@@ -43,9 +43,10 @@ const Page = ({ className, children, title, icon }: PageProps) => {
           <div className={styles.titleContainer}>
             {IconComponent == null ? null : (
               <IconComponent
-                css={({ color }: HarmonyTheme) => ({
-                  '& path': { fill: color.icon.staticWhite }
-                })}
+                color='inverse'
+                // css={({ color }: HarmonyTheme) => ({
+                //   '& path': { fill: color.icon.staticWhite }
+                // })}
               />
             )}
             <h1 className={styles.title}>{title}</h1>

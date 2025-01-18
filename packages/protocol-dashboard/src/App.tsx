@@ -5,17 +5,6 @@ import { ThemeProvider as HarmonyThemeProvider } from '@audius/harmony'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import { useWeb3ModalAccount, useWeb3ModalState } from '@web3modal/ethers/react'
-import { Provider, useSelector } from 'react-redux'
-import {
-  Routes,
-  Route,
-  HashRouter,
-  Navigate,
-  useParams,
-  To,
-  NavigateProps
-} from 'react-router-dom'
-
 import Header from 'components/Header'
 import API from 'containers/API'
 import APILeaderboard from 'containers/APILeaderboard'
@@ -32,6 +21,16 @@ import ServiceUsers from 'containers/ServiceUsers'
 import Services from 'containers/Services'
 import UnregisteredNode from 'containers/UnregisteredNode'
 import User from 'containers/User'
+import { Provider, useSelector } from 'react-redux'
+import {
+  Routes,
+  Route,
+  HashRouter,
+  Navigate,
+  useParams,
+  To,
+  NavigateProps
+} from 'react-router-dom'
 import { getDidGraphError } from 'store/api/hooks'
 import { createStyles } from 'utils/mobile'
 import * as routes from 'utils/routes'

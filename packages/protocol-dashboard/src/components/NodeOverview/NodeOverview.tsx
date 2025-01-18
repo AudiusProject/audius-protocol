@@ -4,8 +4,8 @@ import { Box, Flex, Text } from '@audius/harmony'
 import { ButtonType } from '@audius/stems'
 import clsx from 'clsx'
 
-import IconValidationCheck from 'assets/img/iconValidationCheck.svg?react'
-import IconWarning from 'assets/img/iconWarning.svg?react'
+import IconValidationCheck from 'assets/img/iconValidationCheck.svg'
+import IconWarning from 'assets/img/iconWarning.svg'
 import Button from 'components/Button'
 import { Card } from 'components/Card/Card'
 import {

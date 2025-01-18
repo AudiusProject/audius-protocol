@@ -69,7 +69,7 @@ export const Artwork = (props: ArtworkProps) => {
     >
       {Icon ? (
         <Icon
-          color='staticWhite'
+          color='white'
           width='100%'
           height='100%'
           css={{

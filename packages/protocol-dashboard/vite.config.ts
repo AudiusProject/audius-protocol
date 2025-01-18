@@ -1,8 +1,9 @@
-import { defineConfig } from 'vite'
 import path from 'path'
+
 import react from '@vitejs/plugin-react'
-import svgr from 'vite-plugin-svgr'
+import { defineConfig } from 'vite'
 import { nodePolyfills } from 'vite-plugin-node-polyfills'
+import svgr from 'vite-plugin-svgr'
 import wasm from 'vite-plugin-wasm'
 
 export default defineConfig({
@@ -14,7 +15,9 @@ export default defineConfig({
       }
     }),
     wasm(),
-    svgr(),
+    svgr({
+      include: '**/*.svg'
+    }),
 
     nodePolyfills({
       exclude: ['fs'],
@@ -38,7 +41,10 @@ export default defineConfig({
       models: '/src/models',
       types: '/src/types',
       assets: '/src/assets',
-      '~': path.resolve(__dirname, '../packages/common/src')
+      '@audius/common/src': path.resolve(__dirname, '../common/src'),
+      '~': path.resolve(__dirname, '../../packages/common/src')
+      // '@audius/harmony/dist': path.resolve(__dirname, '../harmony/dist')
+      // '@audius/harmony': path.resolve(__dirname, '../harmony/src')
     }
   },
 

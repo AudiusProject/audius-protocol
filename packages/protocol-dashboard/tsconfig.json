@@ -5,8 +5,6 @@
     "lib": ["ES2020", "DOM", "DOM.Iterable"],
     "module": "ESNext",
     "skipLibCheck": true,
-
-    /* Bundler mode */
     "moduleResolution": "bundler",
     "allowImportingTsExtensions": true,
     "resolveJsonModule": true,
@@ -14,15 +12,13 @@
     "noEmit": true,
     "jsx": "react-jsx",
     "jsxImportSource": "@emotion/react",
-
-    /* Linting */
     "strict": false,
     "noUnusedLocals": false,
     "noUnusedParameters": false,
     "noFallthroughCasesInSwitch": true,
-
+    "suppressImplicitAnyIndexErrors": true,
+    "ignoreDeprecations": "5.0",
     "types": ["vite/client", "vite-plugin-svgr/client"],
-
     "paths": {
       "components/*": ["./src/components/*"],
       "containers/*": ["./src/containers/*"],
@@ -33,7 +29,21 @@
       "models/*": ["./src/models/*"],
       "types": ["./src/types"],
       "assets/*": ["./src/assets/*"],
-      "~/*": ["../packages/common/src/*"]
+      "@audius/common/adapters": ["../../common/src/adapters/index.ts"],
+      "@audius/common/api": ["../../common/src/api/index.ts"],
+      "@audius/common/assets": ["../../common/src/assets/index.ts"],
+      "@audius/common/audius-query": ["../../common/src/audius-query/index.ts"],
+      "@audius/common/context": ["../../common/src/context/index.ts"],
+      "@audius/common/hooks": ["../../common/src/hooks/index.ts"],
+      "@audius/common/messages": ["../../common/src/messages/index.ts"],
+      "@audius/common/models": ["../../common/src/models/index.ts"],
+      "@audius/common/schemas": ["../../common/src/schemas/index.ts"],
+      "@audius/common/services": ["../../common/src/services/index.ts"],
+      "@audius/common/store": ["../../common/src/store/index.ts"],
+      "@audius/common/serverStore": ["../../common/src/serverStore/index.ts"],
+      "@audius/common/utils": ["../../common/src/utils/index.ts"],
+      "@audius/common/src/*": ["../../common/src/*"],
+      "~/*": ["../../common/src/*"],
     }
   },
   "include": ["src"],

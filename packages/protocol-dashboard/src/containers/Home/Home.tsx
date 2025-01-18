@@ -6,8 +6,7 @@ import {
   Text,
   useTheme
 } from '@audius/harmony'
-
-import IconHouse from 'assets/img/iconHouse.svg?react'
+import IconHouse from 'assets/img/iconHouse.svg'
 import ApiCallsStat from 'components/ApiCallsStat'
 import Button, { ButtonType } from 'components/Button'
 import { Card } from 'components/Card/Card'
@@ -218,25 +217,17 @@ const Home = () => {
           <div className={styles.bg} />
           {!mobile ? <div className={styles.bgImage} /> : null}
           <Flex direction='column' gap='2xl' css={{ maxWidth: 488 }}>
-            <IconAudiusLogoHorizontal
-              color='staticWhite'
-              className={styles.logo}
-            />
+            <IconAudiusLogoHorizontal color='inverse' className={styles.logo} />
             <Flex gap='l' direction='column'>
               <Text
-                color='staticWhite'
+                color='inverse'
                 variant='heading'
                 size='l'
                 strength='default'
               >
                 {messages.wtfIsAudius}
               </Text>
-              <Text
-                variant='body'
-                color='staticWhite'
-                size='l'
-                strength='default'
-              >
+              <Text variant='body' color='inverse' size='l' strength='default'>
                 {messages.wtf1}
               </Text>
             </Flex>

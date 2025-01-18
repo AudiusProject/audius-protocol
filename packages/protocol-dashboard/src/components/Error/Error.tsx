@@ -1,6 +1,6 @@
 import clsx from 'clsx'
 
-import IconUhOh from 'assets/img/uhOh.svg?react'
+import IconUhOh from 'assets/img/uhOh.svg'
 import { BasicTooltip } from 'components/Tooltip/Tooltip'
 
 import styles from './Error.module.css'

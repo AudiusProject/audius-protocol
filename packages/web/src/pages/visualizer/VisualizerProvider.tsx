@@ -218,7 +218,7 @@ const Visualizer = ({
         />
       </div>
       <IconRemove
-        color='staticWhite'
+        color='white'
         className={styles.closeButtonIcon}
         onClick={onClose}
       />

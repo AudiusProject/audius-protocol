@@ -265,7 +265,7 @@ export const Button = (props: ButtonProps) => {
       ? 'default'
       : variant === 'destructive'
         ? 'danger'
-        : 'staticWhite'
+        : 'white'
 
   const iconSize: IconProps['size'] = isSmallOrXs ? 's' : 'm'
 

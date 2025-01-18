@@ -1,6 +1,6 @@
 import React from 'react'
 
-import IconGavel from 'assets/img/iconGavel.svg?react'
+import IconGavel from 'assets/img/iconGavel.svg'
 import Page from 'components/Page'
 import Proposals from 'components/Proposals'
 

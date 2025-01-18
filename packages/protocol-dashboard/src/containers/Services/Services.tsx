@@ -3,7 +3,7 @@ import React, { useCallback, useRef } from 'react'
 import { Flex } from '@audius/harmony'
 import clsx from 'clsx'
 
-import IconNodes from 'assets/img/iconNodes.svg?react'
+import IconNodes from 'assets/img/iconNodes.svg'
 import ContentTable from 'components/ContentTable'
 import DiscoveryTable from 'components/DiscoveryTable'
 import { ManageAccountCard } from 'components/ManageAccountCard/ManageAccountCard'

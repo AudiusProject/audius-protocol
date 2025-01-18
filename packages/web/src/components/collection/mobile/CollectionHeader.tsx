@@ -224,7 +224,7 @@ const CollectionHeader = ({
         >
           {Icon && (
             <Icon
-              color='staticWhite'
+              color='white'
               height='100%'
               width='100%'
               css={{

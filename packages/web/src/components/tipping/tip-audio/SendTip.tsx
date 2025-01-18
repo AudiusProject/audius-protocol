@@ -79,7 +79,7 @@ const TopBanner = (props: TopBannerProps) => {
   const { icon: Icon, text } = props
   return (
     <div className={styles.topBanner}>
-      {Icon ? <Icon color='staticWhite' /> : null}
+      {Icon ? <Icon color='white' /> : null}
       <span className={styles.topBannerText}>{text}</span>
     </div>
   )

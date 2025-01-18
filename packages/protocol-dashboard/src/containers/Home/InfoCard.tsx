@@ -37,7 +37,7 @@ export const InfoCard = ({
             to={ctaLink}
             target='_blank'
             rel='noreferrer'
-            css={{ textDecoration: 'none' }}
+            css={{ color: 'inherit', textDecoration: 'none' }}
           >
             {ctaText}
           </Link>

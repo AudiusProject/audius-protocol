@@ -1,6 +1,6 @@
 import React from 'react'
 
-import IconChart from 'assets/img/iconChart.svg?react'
+import IconChart from 'assets/img/iconChart.svg'
 import Page from 'components/Page'
 import PlaysChart from 'components/PlaysChart'
 import TopAlbums from 'components/TopAlbums'

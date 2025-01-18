@@ -20,7 +20,6 @@ import {
   useWeb3ModalProvider
 } from '@web3modal/ethers/react'
 import clsx from 'clsx'
-
 import Button from 'components/Button'
 import { ConnectAudiusProfileModal } from 'components/ConnectAudiusProfileModal/ConnectAudiusProfileModal'
 import UserImage from 'components/UserImage'
@@ -276,7 +275,7 @@ const AppBar: React.FC<AppBarProps> = () => {
   return (
     <div className={styles.appBar}>
       <div className={styles.left}>
-        <IconAudiusLogoHorizontal color='staticWhite' className={styles.logo} />
+        <IconAudiusLogoHorizontal color='inverse' className={styles.logo} />
         {isMobile ? null : (
           <Box
             h={spacing['2xl']}
@@ -287,12 +286,7 @@ const AppBar: React.FC<AppBarProps> = () => {
           />
         )}
         <div className={styles.name}>
-          <Text
-            variant='heading'
-            size='s'
-            strength='default'
-            color='staticWhite'
-          >
+          <Text variant='heading' size='s' strength='default' color='inverse'>
             {messages.name}
           </Text>
         </div>

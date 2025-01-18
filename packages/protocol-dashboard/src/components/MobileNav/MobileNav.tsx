@@ -3,9 +3,8 @@ import { useCallback } from 'react'
 import { IconAudiusLogoHorizontal } from '@audius/harmony'
 import { Button, ButtonType, IconRemove } from '@audius/stems'
 import clsx from 'clsx'
-import { matchPath, useNavigate, useLocation } from 'react-router-dom'
-
 import useOpenLink from 'hooks/useOpenLink'
+import { matchPath, useNavigate, useLocation } from 'react-router-dom'
 import { AUDIUS_DAPP_URL, navRoutes } from 'utils/routes'
 
 import styles from './MobileNav.module.css'
@@ -75,10 +74,7 @@ const MobileNav = ({ isOpen, onClose }: MobileNavProps) => {
       </div>
       <div className={styles.inner}>
         <div className={styles.top}>
-          <IconAudiusLogoHorizontal
-            color='staticWhite'
-            className={styles.logo}
-          />
+          <IconAudiusLogoHorizontal color='inverse' className={styles.logo} />
           <div className={styles.name}>{messages.name}</div>
         </div>
         {navRoutes.map((route) => (

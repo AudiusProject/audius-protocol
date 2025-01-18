@@ -6,11 +6,11 @@ import { Nullable } from '@audius/common/utils'
 import { User } from '@audius/sdk'
 import cn from 'classnames'
 
-import IconBronzeBadgeSVG from 'assets/img/iconBronzeBadge.svg?react'
-import IconGoldBadgeSVG from 'assets/img/iconGoldBadge.svg?react'
-import IconPlatinumBadgeSVG from 'assets/img/iconPlatinumBadge.svg?react'
-import IconSilverBadgeSVG from 'assets/img/iconSilverBadge.svg?react'
-import IconVerifiedSVG from 'assets/img/iconVerified.svg?react'
+import IconBronzeBadgeSVG from 'assets/img/iconBronzeBadge.svg'
+import IconGoldBadgeSVG from 'assets/img/iconGoldBadge.svg'
+import IconPlatinumBadgeSVG from 'assets/img/iconPlatinumBadge.svg'
+import IconSilverBadgeSVG from 'assets/img/iconSilverBadge.svg'
+import IconVerifiedSVG from 'assets/img/iconVerified.svg'
 
 import styles from './AudiusProfileBadges.module.css'
 

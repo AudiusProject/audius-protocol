@@ -6,7 +6,7 @@ import BN from 'bn.js'
 import clsx from 'clsx'
 import { useSelector } from 'react-redux'
 
-import IconSquareArrow from 'assets/img/iconSquareArrow.svg?react'
+import IconSquareArrow from 'assets/img/iconSquareArrow.svg'
 import Bounds from 'components/Bounds'
 import Button from 'components/Button'
 import ConfirmTransactionModal, {
