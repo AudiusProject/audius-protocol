@@ -40,12 +40,7 @@ const ArtistIdentifier = ({
       >
         <div className={styles.name}>
           <span>{name}</span>
-          <UserBadges
-            userId={userId}
-            className={cn(styles.badge)}
-            badgeSize={14}
-            inline
-          />
+          <UserBadges userId={userId} className={cn(styles.badge)} inline />
         </div>
       </ArtistPopover>
       <ArtistPopover
@@ -61,12 +56,7 @@ const ArtistIdentifier = ({
     <div>
       <div className={styles.name}>
         <span>{name}</span>
-        <UserBadges
-          userId={userId}
-          className={cn(styles.badge)}
-          badgeSize={14}
-          inline
-        />
+        <UserBadges userId={userId} className={cn(styles.badge)} inline />
       </div>
       <div className={styles.handle}>@{handle}</div>
     </div>

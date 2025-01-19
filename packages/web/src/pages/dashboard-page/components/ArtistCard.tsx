@@ -48,7 +48,7 @@ export const ArtistCard = ({ userId, handle, name }: ArtistCardProps) => {
             <Text size='l' strength='default' variant='title'>
               {name}
             </Text>
-            <UserBadges userId={userId} badgeSize={14} />
+            <UserBadges userId={userId} />
           </div>
           <Text size='l' strength='default' variant='body'>
             {`@${handle}`}

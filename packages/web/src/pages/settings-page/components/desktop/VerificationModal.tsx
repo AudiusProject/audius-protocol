@@ -190,7 +190,7 @@ const SuccessBody = ({ handle, userId, name, goToRoute }: SuccessBodyProps) => {
         {name}
         <UserBadges
           userId={userId}
-          badgeSize={12}
+          size='2xs'
           className={styles.iconVerified}
         />
       </div>

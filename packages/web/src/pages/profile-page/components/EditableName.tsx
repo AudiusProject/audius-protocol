@@ -63,7 +63,7 @@ export const EditableName = (props: EditableNameProps) => {
           <h1>{name}</h1>
           <UserBadges
             userId={userId}
-            badgeSize={24}
+            size='l'
             className={styles.iconVerified}
             isVerifiedOverride={verified}
           />
