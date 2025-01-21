@@ -109,10 +109,13 @@ const UserDetails = ({ userId }: UserDetailsProps) => {
   )
 }
 
-const dateAndMetadataBlocks = (
-  transactionDetails: TransactionDetails,
+const dateAndMetadataBlocks = ({{
+  transactionDetails,
+  isValidSolanaAddress
+}: {
+  transactionDetails: TransactionDetails
   isValidSolanaAddress: boolean | undefined
-) => {
+}) => {
   switch (transactionDetails.transactionType) {
     case TransactionType.PURCHASE: {
       return (
@@ -245,9 +248,9 @@ export const TransactionDetailsContent = ({
             <AudioTransactionIcon
               type={transactionDetails.transactionType}
               method={transactionDetails.method}
-            />
+            />  
           </div>
-          {dateAndMetadataBlocks(transactionDetails, isValidSolanaAddress)}
+          {dateAndMetadataBlocks({ transactionDetails, isValidSolanaAddress })}
 
           {transactionDetails.transactionType === TransactionType.PURCHASE ? (
             <Block className={styles.header} header={messages.method}>
