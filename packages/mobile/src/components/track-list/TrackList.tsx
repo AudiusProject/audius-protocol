@@ -125,7 +125,11 @@ export const TrackList = ({
 
   if (showSkeleton)
     return (
-      <FlatList {...otherProps} data={data} renderItem={renderSkeletonTrack} />
+      <FlatList
+        {...otherProps}
+        data={data.length > 0 ? data : new Array(8)}
+        renderItem={renderSkeletonTrack}
+      />
     )
 
   return isReorderable ? (
