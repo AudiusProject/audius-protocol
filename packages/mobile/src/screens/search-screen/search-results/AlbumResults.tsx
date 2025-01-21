@@ -1,4 +1,4 @@
-import { Kind, Status } from '@audius/common/models'
+import { Kind } from '@audius/common/models'
 import { searchActions } from '@audius/common/store'
 import { useDispatch } from 'react-redux'
 
@@ -14,9 +14,9 @@ const { addItem: addRecentSearch } = searchActions
 export const AlbumResults = () => {
   const dispatch = useDispatch()
   const { spacing } = useTheme()
-  const { data, status } = useGetSearchResults('albums')
+  const { data: albums, isLoading, isSuccess } = useGetSearchResults('albums')
   const isEmptySearch = useIsEmptySearch()
-  const hasNoResults = (!data || data.length === 0) && status === Status.SUCCESS
+  const hasNoResults = (!albums || albums.length === 0) && isSuccess
 
   if (isEmptySearch) return <SearchCatalogTile />
 
@@ -31,8 +31,8 @@ export const AlbumResults = () => {
             paddingVertical: spacing.m
           }}
           keyboardShouldPersistTaps='handled'
-          isLoading={status === Status.LOADING}
-          collection={data as any[]}
+          isLoading={isLoading}
+          collection={albums}
           onCollectionPress={(id) => {
             dispatch(
               addRecentSearch({
