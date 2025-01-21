@@ -96,6 +96,7 @@
     "color": "4.2.3",
     "lodash": "^4.17.21",
     "lottie-react": "2.4.0",
+    "numeral": "2.0.6",
     "react-merge-refs": "^2.0.1",
     "react-perfect-scrollbar": "^1.5.8",
     "react-spring": "^8.0.27",
