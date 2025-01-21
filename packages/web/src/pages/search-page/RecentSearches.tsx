@@ -159,14 +159,14 @@ const RecentSearchTrack = (props: { searchItem: SearchItem }) => {
 const RecentSearchCollection = (props: { searchItem: SearchItem }) => {
   const { searchItem } = props
   const { id } = searchItem
-  const { data: playlist, status } = useCollection(id)
+  const { data: playlist, isLoading } = useCollection(id)
 
   const image = useCollectionCoverArt({
     collectionId: playlist?.playlist_id,
     size: SquareSizes.SIZE_150_BY_150
   })
 
-  if (status === 'pending') return <RecentSearchSkeleton />
+  if (isLoading) return <RecentSearchSkeleton />
 
   if (!playlist) return null
   const { is_album, playlist_name, permalink, user } = playlist
@@ -215,9 +215,9 @@ const RecentSearchCollection = (props: { searchItem: SearchItem }) => {
 const RecentSearchUser = (props: { searchItem: SearchItem }) => {
   const { searchItem } = props
   const { id } = searchItem
-  const { data: user, status } = useUser(id)
+  const { data: user, isLoading } = useUser(id)
 
-  if (status === 'pending') return <RecentSearchSkeleton />
+  if (isLoading) return <RecentSearchSkeleton />
 
   if (!user) return null
   const { handle, name } = user
