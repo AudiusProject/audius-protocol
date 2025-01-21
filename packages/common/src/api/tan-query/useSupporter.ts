@@ -1,5 +1,5 @@
 import { Id } from '@audius/sdk'
-import { useQuery, useQueryClient, QueryOptions } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useDispatch } from 'react-redux'
 
 import { useAudiusQueryContext } from '~/audius-query'
@@ -10,6 +10,7 @@ import {
 } from '~/models/Tipping'
 
 import { QUERY_KEYS } from './queryKeys'
+import { QueryOptions } from './types'
 import { useCurrentUserId } from './useCurrentUserId'
 import { primeUserData } from './utils/primeUserData'
 
