@@ -64,9 +64,7 @@
     "eslint-plugin-storybook": "0.6.13",
     "file-loader": "6.2.0",
     "prettier": "3.4.2",
-    "react": "18.3.1",
     "react-docgen-typescript-loader": "3.7.2",
-    "react-dom": "18.3.1",
     "remark-gfm": "3.0.1",
     "rollup": "4.3.0",
     "rollup-plugin-json": "4.0.0",
@@ -96,11 +94,16 @@
     "color": "4.2.3",
     "lodash": "^4.17.21",
     "lottie-react": "2.4.0",
+    "numeral": "2.0.6",
     "react-merge-refs": "^2.0.1",
     "react-perfect-scrollbar": "^1.5.8",
     "react-spring": "^8.0.27",
     "react-use": "^17.5.0",
     "react-use-measure": "^2.1.1",
     "react-virtualized": "9.22.3"
+  },
+  "peerDependencies": {
+    "react": "18.3.1",
+    "react-dom": "18.3.1"
   }
 }

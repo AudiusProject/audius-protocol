@@ -4,6 +4,7 @@ import path from 'path'
 
 import { NodeGlobalsPolyfillPlugin } from '@esbuild-plugins/node-globals-polyfill'
 import react from '@vitejs/plugin-react-swc'
+import fixReactVirtualized from 'esbuild-plugin-react-virtualized'
 import { visualizer } from 'rollup-plugin-visualizer'
 import vike from 'vike/plugin'
 import { defineConfig, loadEnv } from 'vite'
@@ -84,7 +85,8 @@ export default defineConfig(async ({ mode }) => {
         plugins: [
           NodeGlobalsPolyfillPlugin({
             buffer: true
-          })
+          }),
+          fixReactVirtualized
         ]
       }
     },
