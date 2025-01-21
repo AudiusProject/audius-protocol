@@ -7,7 +7,7 @@ if exists (select * from "blocks" where "blockhash" = '0x8d5e6984014505e1e11bcbb
   values (
     'TODO - get from chain', 
     'TODO - get from chain', 
-    'audius-mainnet-test19', 
+    'audius-mainnet-alpha', 
     10000
   ) 
   on conflict (chain_id, height) do nothing;

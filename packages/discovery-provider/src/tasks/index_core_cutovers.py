@@ -13,9 +13,9 @@ STAGE_PLAYS_CORE_CUTOVER = 10000
 STAGE_PLAYS_CORE_CUTOVER_CHAIN_ID = "audius-testnet-17"
 
 # prod plays
-PROD_PLAYS_SOL_CUTOVER = 314000000
+PROD_PLAYS_SOL_CUTOVER = 315788700
 PROD_PLAYS_CORE_CUTOVER = 10000
-PROD_PLAYS_CORE_CUTOVER_CHAIN_ID = "audius-mainnet-test9"
+PROD_PLAYS_CORE_CUTOVER_CHAIN_ID = "audius-mainnet-alpha"
 
 
 # returns the core_block plus the last sol slot so indexing
