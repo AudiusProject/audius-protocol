@@ -4,10 +4,14 @@ import { useDispatch, useSelector } from 'react-redux'
 
 import { trackActivityFromSDK, transformAndCleanList } from '~/adapters'
 import { useAudiusQueryContext } from '~/audius-query'
-import { UserTrackMetadata } from '~/models'
+import { UserTrackMetadata, Status } from '~/models'
 import { PlaybackSource } from '~/models/Analytics'
 import { ID, UID } from '~/models/Identifiers'
-import { historyPageTracksLineupActions } from '~/store/pages'
+import { combineStatuses } from '~/models/Status'
+import {
+  historyPageTracksLineupActions,
+  historyPageSelectors
+} from '~/store/pages'
 import { getPlaying } from '~/store/player/selectors'
 
 import { QUERY_KEYS } from './queryKeys'
@@ -38,6 +42,7 @@ export const useTrackHistory = (
   const queryClient = useQueryClient()
   const dispatch = useDispatch()
   const playing = useSelector(getPlaying)
+  const lineup = useSelector(historyPageSelectors.getHistoryTracksLineup)
 
   const result = useInfiniteQuery({
     queryKey: [
@@ -89,6 +94,12 @@ export const useTrackHistory = (
     enabled: config?.enabled !== false && !!currentUserId
   })
 
+  // Combine query status with lineup status
+  const status = combineStatuses([
+    result.status === 'pending' ? Status.LOADING : Status.SUCCESS,
+    lineup.status
+  ])
+
   // Lineup actions
   const togglePlay = (uid: UID, id: ID) => {
     dispatch(
@@ -114,6 +125,8 @@ export const useTrackHistory = (
 
   return {
     ...result,
+    status,
+    entries: lineup.entries,
     togglePlay,
     play,
     pause,

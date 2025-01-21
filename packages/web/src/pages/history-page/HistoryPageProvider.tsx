@@ -14,7 +14,8 @@ import {
   PlaybackSource,
   ID,
   UID,
-  LineupTrack
+  LineupTrack,
+  Status
 } from '@audius/common/models'
 import {
   accountSelectors,
@@ -133,7 +134,7 @@ const HistoryPage = g((props) => {
   )
 
   const [dataSource, playingIndex] = useMemo(
-    () => (status === 'success' ? getFilteredData(entries) : [[], -1]),
+    () => (status === Status.SUCCESS ? getFilteredData(entries) : [[], -1]),
     [entries, getFilteredData, status]
   )
 
