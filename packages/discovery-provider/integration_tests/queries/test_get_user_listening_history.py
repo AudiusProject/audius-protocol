@@ -403,7 +403,12 @@ def test_get_user_listening_history_filter_deleted_tracks(app):
             }
         ],
         "tracks": [
-            {"track_id": 1, "title": "track 1", "owner_id": 1, "is_delete": True},  # Deleted track
+            {
+                "track_id": 1,
+                "title": "track 1",
+                "owner_id": 1,
+                "is_delete": True,
+            },  # Deleted track
             {"track_id": 2, "title": "track 2", "owner_id": 2, "is_delete": False},
         ],
         "users": [
@@ -432,4 +437,6 @@ def test_get_user_listening_history_filter_deleted_tracks(app):
     # Should only return track 2 since track 1 is deleted
     assert len(track_history) == 1
     assert track_history[0][response_name_constants.track_id] == 2
-    assert track_history[0][response_name_constants.activity_timestamp] == str(TIMESTAMP)
+    assert track_history[0][response_name_constants.activity_timestamp] == str(
+        TIMESTAMP
+    )
