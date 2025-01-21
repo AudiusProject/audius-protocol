@@ -1,4 +1,7 @@
+import * as fs from 'fs'
+
 import { base64 } from '@scure/base'
+import { chunk } from 'lodash'
 
 import type { Configuration } from '../..'
 import { BaseAPI } from '../..'
@@ -10,9 +13,29 @@ import type {
   BatchEncryptionInput,
   BatchEncryptionResult,
   EncryptedEmailsResult,
-  SharedSymmetricKey,
-  EncryptedKey
+  EncryptedKey,
+  SharedSymmetricKey
 } from './types'
+
+// Types for encrypted data CSV
+type EncryptedDataRecord = {
+  email_owner_id: number
+  encrypted_email: string
+  encrypted_key_owner: string
+  encrypted_key_seller: string
+  encrypted_key_grantees: string[]
+  seller_id: number
+  grantee_ids: number[]
+}
+
+type PurchaseRecord = {
+  buyer: {
+    email: string
+    user_id: number
+  }
+  seller_user_id: number
+  grantee_user_ids: number[]
+}
 
 export class EmailEncryptionService extends BaseAPI {
   constructor(
@@ -218,5 +241,147 @@ export class EmailEncryptionService extends BaseAPI {
     })
     const json = await response.json()
     return base64.decode(json.data)
+  }
+
+  /**
+   * Process and encrypt emails in batches for backfill
+   * @param adminUserId The admin user ID to use as grantor
+   * @param purchases The purchase records to process
+   * @returns Array of encrypted data records
+   */
+  async processAndEncryptEmails(
+    adminUserId: number,
+    purchases: any[]
+  ): Promise<EncryptedDataRecord[]> {
+    // Process in smaller batches to manage memory and API limits
+    const BATCH_SIZE = 50
+    const allRecords = this.getAllRecordsFromPurchases(purchases)
+    const batches = chunk(allRecords, BATCH_SIZE)
+
+    const allResults: EncryptedDataRecord[] = []
+
+    for (const batch of batches) {
+      try {
+        // Prepare batch input
+        const batchInputs: BatchEncryptionInput[] = batch.map((record) => ({
+          email_owner_id: record.buyer.user_id,
+          emails: [record.buyer.email],
+          receiving_ids: [record.seller_user_id, ...record.grantee_user_ids],
+          grantor_id: adminUserId
+        }))
+
+        // Use batch encryption for efficiency
+        const encryptionResults = await this.batchEncryptEmails(batchInputs)
+
+        // Transform results into CSV format
+        const results = encryptionResults.map((result, index) => {
+          const originalRecord = batch[index]
+          if (!originalRecord) {
+            throw new Error(`Missing original record for index ${index}`)
+          }
+
+          const { email_owner_id, encryptedEmails, receiverEncryptedKeys } =
+            result
+
+          if (!encryptedEmails?.[0]) {
+            throw new Error(
+              `Missing encrypted email for record ${email_owner_id}`
+            )
+          }
+
+          const ownerKey = receiverEncryptedKeys.find((k) => {
+            return k.receivingId === encodeHashId(email_owner_id)
+          })?.encryptedKey
+          if (!ownerKey) {
+            throw new Error(`Missing owner key for record ${email_owner_id}`)
+          }
+
+          const sellerKey = receiverEncryptedKeys.find(
+            (k) => k.receivingId === encodeHashId(originalRecord.seller_user_id)
+          )?.encryptedKey
+          if (!sellerKey) {
+            throw new Error(`Missing seller key for record ${email_owner_id}`)
+          }
+
+          const granteeKeys = originalRecord.grantee_user_ids
+            .map((granteeId) => {
+              const key = receiverEncryptedKeys.find(
+                (k) => k.receivingId === encodeHashId(granteeId)
+              )?.encryptedKey
+              if (!key) {
+                console.warn(
+                  `Missing grantee key for grantee ${granteeId} in record ${email_owner_id}`
+                )
+              }
+              return key
+            })
+            .filter((key): key is string => Boolean(key))
+
+          return {
+            email_owner_id,
+            encrypted_email: encryptedEmails[0],
+            encrypted_key_owner: ownerKey,
+            encrypted_key_seller: sellerKey,
+            encrypted_key_grantees: granteeKeys,
+            seller_id: originalRecord.seller_user_id,
+            grantee_ids: originalRecord.grantee_user_ids
+          }
+        })
+
+        allResults.push(...results)
+
+        // Add delay between batches to avoid rate limiting
+        await new Promise((resolve) => setTimeout(resolve, 1000))
+      } catch (error) {
+        console.error('Failed to process batch:', error)
+        // Log failed batch for retry
+        await this.logFailedBatch(batch, error)
+      }
+    }
+
+    return allResults
+  }
+
+  /**
+   * Log failed batches for retry
+   * @param batch The failed batch
+   * @param error The error that occurred
+   */
+  private async logFailedBatch(
+    batch: PurchaseRecord[],
+    error?: unknown
+  ): Promise<void> {
+    const failedBatchData = {
+      timestamp: new Date().toISOString(),
+      error: error?.toString(),
+      records: batch
+    }
+
+    fs.appendFileSync(
+      'failed_batches.json',
+      JSON.stringify(failedBatchData) + '\n'
+    )
+  }
+
+  /**
+   * Flatten purchases data into records
+   * @param purchases The purchases data to flatten
+   * @returns Array of purchase records
+   */
+  private getAllRecordsFromPurchases(purchases: any[]): PurchaseRecord[] {
+    const records: PurchaseRecord[] = []
+
+    for (const purchase of purchases) {
+      const { seller_user_id, grantee_user_ids, buyer_details } = purchase
+      for (const buyer of buyer_details) {
+        records.push({
+          buyer,
+          seller_user_id,
+          grantee_user_ids: grantee_user_ids || []
+        })
+      }
+    }
+
+    return records
   }
 }
