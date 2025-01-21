@@ -17,7 +17,7 @@ import { Config } from './types'
 import { useCurrentUserId } from './useCurrentUserId'
 import { primeTrackData } from './utils/primeTrackData'
 
-const DEFAULT_PAGE_SIZE = 15
+const DEFAULT_PAGE_SIZE = 30
 
 type UseTrackHistoryArgs = {
   pageSize?: number

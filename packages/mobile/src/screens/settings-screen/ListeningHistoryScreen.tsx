@@ -23,11 +23,7 @@ const messages = {
 export const ListeningHistoryScreen = () => {
   const [filterValue, setFilterValue] = useState('')
 
-  const {
-    fetchNextPage,
-    isLoading: isLoadingInitial,
-    togglePlay
-  } = useTrackHistory({
+  const { fetchNextPage, togglePlay } = useTrackHistory({
     query: filterValue
   })
 
@@ -67,11 +63,7 @@ export const ListeningHistoryScreen = () => {
               trackItemAction='overflow'
               onEndReached={() => fetchNextPage()}
               onEndReachedThreshold={0.5}
-              showSkeleton={isLoadingInitial}
-              maintainVisibleContentPosition={{
-                minIndexForVisible: 0,
-                autoscrollToTopThreshold: null
-              }}
+              showSkeleton={status !== Status.SUCCESS && entries.length === 0}
             />
           </Paper>
         )}
