@@ -486,12 +486,10 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
     const updatedMetadata = {
       ...metadata,
       isPrivate: false,
-      playlistContents: {
-        trackIds: trackIds.map((trackId) => ({
-          track: trackId,
-          time: currentBlock.timestamp
-        }))
-      },
+      playlistContents: trackIds.map((trackId) => ({
+        trackId,
+        timeStamp: currentBlock.timestamp
+      })),
       playlistImageSizesMultihash: coverArtResponse.id
     }
 
@@ -548,19 +546,6 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
 
     const updatedMetadata = {
       ...metadata,
-      ...(metadata.playlistContents
-        ? {
-            playlistContents: {
-              trackIds: metadata.playlistContents.map(
-                ({ trackId, metadataTimestamp, timestamp }) => ({
-                  track: trackId,
-                  // default to timestamp for legacy playlists
-                  time: metadataTimestamp ?? timestamp
-                })
-              )
-            }
-          }
-        : {}),
       ...(coverArtResponse
         ? { playlistImageSizesMultihash: coverArtResponse.id }
         : {})
@@ -615,12 +600,10 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
     // Update metadata to include track ids
     const updatedMetadata = {
       ...metadata,
-      playlistContents: {
-        trackIds: (trackIds ?? []).map((trackId) => ({
-          track: trackId,
-          time: currentBlock.timestamp
-        }))
-      },
+      playlistContents: (trackIds ?? []).map((trackId) => ({
+        trackId,
+        timeStamp: currentBlock.timestamp
+      })),
       playlistImageSizesMultihash: coverArtResponse?.id ?? metadata.coverArtCid
     }
 
