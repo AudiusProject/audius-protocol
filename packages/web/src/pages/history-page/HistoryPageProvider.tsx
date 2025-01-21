@@ -43,7 +43,7 @@ const { getHistoryTracksLineup } = historyPageSelectors
 const { makeGetTableMetadatas } = lineupSelectors
 const getUserId = accountSelectors.getUserId
 
-const pageSize = 30
+const pageSize = 15
 
 const messages = {
   title: 'History',

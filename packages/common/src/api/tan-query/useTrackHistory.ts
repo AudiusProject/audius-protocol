@@ -1,5 +1,3 @@
-import { useEffect } from 'react'
-
 import { Id, full } from '@audius/sdk'
 import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query'
 import { useDispatch, useSelector } from 'react-redux'
@@ -74,6 +72,17 @@ export const useTrackHistory = (
         (activity: full.ActivityFull) => trackActivityFromSDK(activity)?.item
       )
       primeTrackData({ tracks, queryClient, dispatch })
+
+      // Update lineup when new data arrives
+      dispatch(
+        historyPageTracksLineupActions.fetchLineupMetadatas(
+          pageParam,
+          pageSize,
+          false,
+          { tracks }
+        )
+      )
+
       return tracks
     },
     staleTime: config?.staleTime,
@@ -102,25 +111,6 @@ export const useTrackHistory = (
   const updateLineupOrder = (orderedIds: UID[]) => {
     dispatch(historyPageTracksLineupActions.updateLineupOrder(orderedIds))
   }
-
-  // Update lineup when new data arrives
-  const latestTracks = result.data?.pages[result.data.pages.length - 1] ?? []
-  const offset = (result.data?.pages.length ?? 0) * pageSize
-  const limit = result.data?.pages[0]?.length ?? pageSize
-
-  useEffect(() => {
-    if (latestTracks.length > 0) {
-      dispatch(
-        historyPageTracksLineupActions.fetchLineupMetadatas(
-          offset - limit,
-          limit,
-          false,
-          { tracks: latestTracks }
-        )
-      )
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [dispatch, offset, limit])
 
   return {
     ...result,
