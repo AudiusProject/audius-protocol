@@ -51,7 +51,7 @@ export default {
       clean: true
     }),
     url({
-      include: ['**/*.png', '**/*.jpg', '**/*.svg'], // Specify file extensions to handle
+      include: ['**/*.png', '**/*.jpg'], // Specify file extensions to handle
       limit: 8192, // Inline files smaller than 8kb as base64 URLs
       emitFiles: true, // Copy larger files to the output directory
       fileName: '[name][extname]' // Customize the output file name
