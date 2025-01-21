@@ -1,30 +1,28 @@
 import {
   useState,
-  useEffect,
   useCallback,
   useMemo,
   ChangeEvent,
   ComponentType
 } from 'react'
 
+import { useTrackHistory } from '@audius/common/api'
 import {
   Name,
   RepostSource,
   FavoriteSource,
   PlaybackSource,
-  Status,
   ID,
   UID,
-  LineupTrack
+  LineupTrack,
+  Status
 } from '@audius/common/models'
 import {
   accountSelectors,
   lineupSelectors,
-  historyPageTracksLineupActions as tracksActions,
   historyPageSelectors,
   queueSelectors,
-  tracksSocialActions as socialActions,
-  playerSelectors
+  tracksSocialActions as socialActions
 } from '@audius/common/store'
 import { route } from '@audius/common/utils'
 import { isEqual } from 'lodash'
@@ -39,12 +37,14 @@ import { withNullGuard } from 'utils/withNullGuard'
 
 import { HistoryPageProps as DesktopHistoryPageProps } from './components/desktop/HistoryPage'
 import { HistoryPageProps as MobileHistoryPageProps } from './components/mobile/HistoryPage'
+
 const { profilePage } = route
 const { makeGetCurrent } = queueSelectors
-const { getPlaying, getBuffering } = playerSelectors
 const { getHistoryTracksLineup } = historyPageSelectors
 const { makeGetTableMetadatas } = lineupSelectors
 const getUserId = accountSelectors.getUserId
+
+const pageSize = 15
 
 const messages = {
   title: 'History',
@@ -68,22 +68,17 @@ const g = withNullGuard(
 
 const HistoryPage = g((props) => {
   const {
-    pause,
-    play,
-    playing,
     userId,
     goToRoute,
     tracks,
     currentQueueItem,
-    updateLineupOrder,
-    fetchHistoryTrackMetadata,
     saveTrack,
     unsaveTrack,
     repostTrack,
     undoRepostTrack
   } = props
 
-  const { entries, status } = tracks
+  const { entries } = tracks
   const record = useRecord()
 
   const [filterText, setFilterText] = useState('')
@@ -94,9 +89,21 @@ const HistoryPage = g((props) => {
     [setFilterText]
   )
 
-  useEffect(() => {
-    fetchHistoryTrackMetadata()
-  }, [fetchHistoryTrackMetadata])
+  const {
+    play,
+    pause,
+    togglePlay,
+    updateLineupOrder,
+    playing,
+    status,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    isLoading
+  } = useTrackHistory({
+    query: filterText,
+    pageSize
+  })
 
   const formatMetadata = (lineupEntries: any) => {
     return lineupEntries.map((entry: any, i: number) => ({
@@ -131,17 +138,9 @@ const HistoryPage = g((props) => {
     [entries, getFilteredData, status]
   )
 
-  const [initialOrder, setInitialOrder] = useState<UID[]>([])
-
-  useEffect(() => {
-    if (status === Status.SUCCESS) {
-      setInitialOrder(dataSource.map((metadata: any) => metadata.uid))
-    }
-  }, [status, dataSource])
-
   const onClickRow = useCallback(
     (trackRecord: any) => {
-      if (playing && trackRecord.uid === currentQueueItem.uid) {
+      if (trackRecord.uid === currentQueueItem.uid && playing) {
         pause()
         record(
           make(Name.PLAYBACK_PAUSE, {
@@ -159,7 +158,7 @@ const HistoryPage = g((props) => {
         )
       }
     },
-    [playing, pause, play, currentQueueItem, record]
+    [pause, play, currentQueueItem, record, playing]
   )
 
   const onClickSave = useCallback(
@@ -186,25 +185,20 @@ const HistoryPage = g((props) => {
 
   const onTogglePlay = useCallback(
     (uid: UID, trackId: ID) => {
-      if (playing && uid === currentQueueItem.uid) {
-        pause()
-        record(
-          make(Name.PLAYBACK_PAUSE, {
+      togglePlay(uid, trackId)
+      record(
+        make(
+          uid === currentQueueItem.uid && playing
+            ? Name.PLAYBACK_PAUSE
+            : Name.PLAYBACK_PLAY,
+          {
             id: `${trackId}`,
             source: PlaybackSource.HISTORY_PAGE
-          })
+          }
         )
-      } else {
-        play(uid)
-        record(
-          make(Name.PLAYBACK_PLAY, {
-            id: `${trackId}`,
-            source: PlaybackSource.HISTORY_PAGE
-          })
-        )
-      }
+      )
     },
-    [playing, play, pause, currentQueueItem, record]
+    [togglePlay, currentQueueItem, record, playing]
   )
 
   const onClickTrackName = useCallback(
@@ -244,21 +238,19 @@ const HistoryPage = g((props) => {
 
   const onPlay = useCallback(() => {
     const isLineupQueued = isQueued()
-    if (playing && isLineupQueued) {
+    if (isLineupQueued && playing) {
       pause()
-    } else if (!playing && isLineupQueued) {
-      play()
     } else if (entries.length > 0) {
       play(entries[0].uid)
     }
-  }, [isQueued, pause, play, playing, entries])
+  }, [isQueued, pause, play, entries, playing])
 
   const onSortTracks = (sorters: any) => {
     const { column, order } = sorters
     const dataSource = formatMetadata(entries)
     let updatedOrder
     if (!column) {
-      updatedOrder = initialOrder
+      updatedOrder = entries.map((entry: any) => entry.uid)
     } else {
       updatedOrder = dataSource
         .sort((a: any, b: any) =>
@@ -270,27 +262,35 @@ const HistoryPage = g((props) => {
   }
 
   const isEmpty = entries.length === 0
-  const loading = status === Status.LOADING
   const queuedAndPlaying = playing && isQueued()
+
+  const totalRowCount = useMemo(() => {
+    if (!hasNextPage) {
+      return entries.length
+    }
+    // If we have next page, add buffer for more items
+    return entries.length + pageSize
+  }, [entries.length, hasNextPage])
 
   const childProps = {
     title: messages.title,
     description: messages.description,
-    loading,
+    loading: isLoading,
     entries: entries as unknown as LineupTrack[],
     queuedAndPlaying,
     playingIndex,
     dataSource,
-
     isEmpty,
     goToRoute,
     currentQueueItem,
-
-    // Methods
     onFilterChange,
     formatMetadata,
     getPlayingUid,
-    isQueued
+    isQueued,
+    fetchNextPage,
+    isFetchingNextPage,
+    totalRowCount,
+    pageSize
   }
 
   const mobileProps = {
@@ -338,9 +338,7 @@ const makeMapStateToProps = () => {
     const output = {
       userId: getUserId(state),
       tracks: tracksRef,
-      currentQueueItem: getCurrentQueueItem(state),
-      playing: getPlaying(state),
-      buffering: getBuffering(state)
+      currentQueueItem: getCurrentQueueItem(state)
     }
 
     return output
@@ -349,13 +347,7 @@ const makeMapStateToProps = () => {
 }
 
 const mapDispatchToProps = (dispatch: Dispatch) => ({
-  fetchHistoryTrackMetadata: () =>
-    dispatch(tracksActions.fetchLineupMetadatas()),
-  play: (uid?: UID) => dispatch(tracksActions.play(uid)),
-  pause: () => dispatch(tracksActions.pause()),
   goToRoute: (route: string) => dispatch(push(route)),
-  updateLineupOrder: (updatedOrderIndices: any) =>
-    dispatch(tracksActions.updateLineupOrder(updatedOrderIndices)),
   repostTrack: (trackId: ID) =>
     dispatch(socialActions.repostTrack(trackId, RepostSource.HISTORY_PAGE)),
   undoRepostTrack: (trackId: ID) =>
