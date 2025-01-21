@@ -109,7 +109,10 @@ const UserDetails = ({ userId }: UserDetailsProps) => {
   )
 }
 
-const dateAndMetadataBlocks = (transactionDetails: TransactionDetails) => {
+const dateAndMetadataBlocks = (
+  transactionDetails: TransactionDetails,
+  isValidSolanaAddress: boolean | undefined
+) => {
   switch (transactionDetails.transactionType) {
     case TransactionType.PURCHASE: {
       return (
@@ -172,9 +175,9 @@ const dateAndMetadataBlocks = (transactionDetails: TransactionDetails) => {
               <a
                 className={styles.link}
                 href={
-                  isValidSolAddress(transactionDetails.metadata)
-                    ? makeSolanaTransactionLink(transactionDetails.metadata)
-                    : makeSolanaAccountLink(transactionDetails.metadata)
+                  isValidSolanaAddress
+                    ? makeSolanaAccountLink(transactionDetails.metadata)
+                    : makeSolanaTransactionLink(transactionDetails.metadata)
                 }
                 target='_blank'
                 title={transactionDetails.metadata}
@@ -213,7 +216,6 @@ export const TransactionDetailsContent = ({
       isValidSolAddress(
         transactionDetails.metadata as SolanaWalletAddress
       ).then((isValid) => {
-        console.log({ isValid })
         setIsValidSolanaAddress(isValid)
       })
     }
@@ -245,7 +247,7 @@ export const TransactionDetailsContent = ({
               method={transactionDetails.method}
             />
           </div>
-          {dateAndMetadataBlocks(transactionDetails)}
+          {dateAndMetadataBlocks(transactionDetails, isValidSolanaAddress)}
 
           {transactionDetails.transactionType === TransactionType.PURCHASE ? (
             <Block className={styles.header} header={messages.method}>
