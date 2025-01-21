@@ -298,8 +298,8 @@ export const challengeRewardsConfig: Record<
   },
   o: {
     title: 'One Shot',
-    description: () => 'Claim your one shot...',
-    fullDescription: () => `Claim your $AUDIO before it expires!`,
+    description: () => 'Claim your $AUDIO before it expires!',
+    fullDescription: () => 'Claim your $AUDIO before it expires!',
     panelButtonText: 'See More',
     id: ChallengeName.OneShot,
     remainingLabel: 'Ineligible',
