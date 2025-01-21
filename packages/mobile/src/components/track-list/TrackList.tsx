@@ -127,7 +127,7 @@ export const TrackList = ({
     return (
       <FlatList
         {...otherProps}
-        data={new Array(8)}
+        data={data.length > 0 ? data : new Array(8)}
         renderItem={renderSkeletonTrack}
       />
     )
