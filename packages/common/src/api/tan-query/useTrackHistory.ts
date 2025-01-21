@@ -18,6 +18,7 @@ import { QUERY_KEYS } from './queryKeys'
 import { Config } from './types'
 import { useCurrentUserId } from './useCurrentUserId'
 import { primeTrackData } from './utils/primeTrackData'
+import { useLineupQuery } from './utils/useLineupQuery'
 
 const DEFAULT_PAGE_SIZE = 30
 
@@ -41,10 +42,12 @@ export const useTrackHistory = (
   const { data: currentUserId } = useCurrentUserId()
   const queryClient = useQueryClient()
   const dispatch = useDispatch()
-  const playing = useSelector(getPlaying)
-  const lineup = useSelector(historyPageSelectors.getHistoryTracksLineup)
 
-  const result = useInfiniteQuery({
+  return useLineupQuery({
+    pageSize,
+    lineupActions: historyPageTracksLineupActions,
+    lineupSelector: historyPageSelectors.getHistoryTracksLineup,
+    playbackSource: PlaybackSource.HISTORY_PAGE,
     queryKey: [
       QUERY_KEYS.trackHistory,
       pageSize,
@@ -52,11 +55,6 @@ export const useTrackHistory = (
       sortMethod,
       sortDirection
     ],
-    initialPageParam: 0,
-    getNextPageParam: (lastPage: UserTrackMetadata[], allPages) => {
-      if (lastPage.length < pageSize) return undefined
-      return allPages.length * pageSize
-    },
     queryFn: async ({ pageParam }) => {
       const sdk = await audiusSdk()
       if (!currentUserId) return []
@@ -79,6 +77,7 @@ export const useTrackHistory = (
       primeTrackData({ tracks, queryClient, dispatch })
 
       // Update lineup when new data arrives
+      // TODO: how to move this inside useLineupQuery?
       dispatch(
         historyPageTracksLineupActions.fetchLineupMetadatas(
           pageParam,
@@ -93,44 +92,93 @@ export const useTrackHistory = (
     staleTime: config?.staleTime,
     enabled: config?.enabled !== false && !!currentUserId
   })
+  // const result = useInfiniteQuery({
+  //   queryKey: [
+  //     QUERY_KEYS.trackHistory,
+  //     pageSize,
+  //     query,
+  //     sortMethod,
+  //     sortDirection
+  //   ],
+  //   initialPageParam: 0,
+  //   getNextPageParam: (lastPage: UserTrackMetadata[], allPages) => {
+  //     if (lastPage.length < pageSize) return undefined
+  //     return allPages.length * pageSize
+  //   },
+  //   queryFn: async ({ pageParam }) => {
+  //     const sdk = await audiusSdk()
+  //     if (!currentUserId) return []
 
-  // Combine query status with lineup status
-  const status = combineStatuses([
-    result.status === 'pending' ? Status.LOADING : Status.SUCCESS,
-    lineup.status
-  ])
+  //     const { data: activityData } = await sdk.full.users.getUsersTrackHistory({
+  //       id: Id.parse(currentUserId),
+  //       limit: pageSize,
+  //       offset: pageParam,
+  //       query,
+  //       sortMethod,
+  //       sortDirection
+  //     })
 
-  // Lineup actions
-  const togglePlay = (uid: UID, id: ID) => {
-    dispatch(
-      historyPageTracksLineupActions.togglePlay(
-        uid,
-        id,
-        PlaybackSource.HISTORY_PAGE
-      )
-    )
-  }
+  //     if (!activityData) return []
 
-  const play = (uid?: UID) => {
-    dispatch(historyPageTracksLineupActions.play(uid))
-  }
+  //     const tracks = transformAndCleanList(
+  //       activityData,
+  //       (activity: full.ActivityFull) => trackActivityFromSDK(activity)?.item
+  //     )
+  //     primeTrackData({ tracks, queryClient, dispatch })
 
-  const pause = () => {
-    dispatch(historyPageTracksLineupActions.pause())
-  }
+  //     // Update lineup when new data arrives
+  //     dispatch(
+  //       historyPageTracksLineupActions.fetchLineupMetadatas(
+  //         pageParam,
+  //         pageSize,
+  //         false,
+  //         { tracks }
+  //       )
+  //     )
 
-  const updateLineupOrder = (orderedIds: UID[]) => {
-    dispatch(historyPageTracksLineupActions.updateLineupOrder(orderedIds))
-  }
+  //     return tracks
+  //   },
+  //   staleTime: config?.staleTime,
+  //   enabled: config?.enabled !== false && !!currentUserId
+  // })
 
-  return {
-    ...result,
-    status,
-    entries: lineup.entries,
-    togglePlay,
-    play,
-    pause,
-    updateLineupOrder,
-    playing
-  }
+  // // Combine query status with lineup status
+  // const status = combineStatuses([
+  //   result.status === 'pending' ? Status.LOADING : Status.SUCCESS,
+  //   lineup.status
+  // ])
+
+  // // Lineup actions
+  // const togglePlay = (uid: UID, id: ID) => {
+  //   dispatch(
+  //     historyPageTracksLineupActions.togglePlay(
+  //       uid,
+  //       id,
+  //       PlaybackSource.HISTORY_PAGE
+  //     )
+  //   )
+  // }
+
+  // const play = (uid?: UID) => {
+  //   dispatch(historyPageTracksLineupActions.play(uid))
+  // }
+
+  // const pause = () => {
+  //   dispatch(historyPageTracksLineupActions.pause())
+  // }
+
+  // const updateLineupOrder = (orderedIds: UID[]) => {
+  //   dispatch(historyPageTracksLineupActions.updateLineupOrder(orderedIds))
+  // }
+
+  // return {
+  //   ...result,
+  //   status,
+  //   entries: lineup.entries,
+  //   togglePlay,
+  //   play,
+  //   pause,
+  //   updateLineupOrder,
+  //   playing
+  // }
 }
