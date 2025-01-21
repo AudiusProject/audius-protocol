@@ -1,5 +1,5 @@
 import { Id } from '@audius/sdk'
-import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { useQuery, useQueryClient, QueryOptions } from '@tanstack/react-query'
 import { useDispatch } from 'react-redux'
 
 import { useAudiusQueryContext } from '~/audius-query'
@@ -10,7 +10,6 @@ import {
 } from '~/models/Tipping'
 
 import { QUERY_KEYS } from './queryKeys'
-import { Config } from './types'
 import { useCurrentUserId } from './useCurrentUserId'
 import { primeUserData } from './utils/primeUserData'
 
@@ -23,7 +22,7 @@ const DEFAULT_STALE_TIME = 1000 * 30
 
 export const useSupporter = (
   { userId, supporterUserId }: UseSupporterArgs,
-  config?: Config
+  config?: QueryOptions
 ) => {
   const { audiusSdk } = useAudiusQueryContext()
   const { data: currentUserId } = useCurrentUserId()

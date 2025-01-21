@@ -1,8 +1,8 @@
-import { Config } from './types'
+import { QueryOptions } from './types'
 import { useSuggestedArtists } from './useSuggestedArtists'
 import { useTopArtistsInGenre } from './useTopArtistsInGenre'
 
-export const useTopArtists = (genre: string, config?: Config) => {
+export const useTopArtists = (genre: string, config?: QueryOptions) => {
   const { data: suggestedArtists, isPending: isSuggestedPending } =
     useSuggestedArtists({
       ...config,

@@ -10,11 +10,14 @@ import { addEntries } from '~/store/cache/actions'
 import { EntriesByKind } from '~/store/cache/types'
 
 import { QUERY_KEYS } from './queryKeys'
-import { Config } from './types'
+import { QueryOptions } from './types'
 
 const STALE_TIME = Infinity
 
-export const useTrack = (trackId: ID | null | undefined, options?: Config) => {
+export const useTrack = (
+  trackId: ID | null | undefined,
+  options?: QueryOptions
+) => {
   const { audiusSdk } = useAudiusQueryContext()
   const queryClient = useQueryClient()
   const dispatch = useDispatch()

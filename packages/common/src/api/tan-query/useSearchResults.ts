@@ -15,7 +15,7 @@ import { EntriesByKind } from '~/store/cache/types'
 import { Genre, formatMusicalKey } from '~/utils'
 
 import { QUERY_KEYS } from './queryKeys'
-import { Config } from './types'
+import { QueryOptions } from './types'
 
 export type SearchCategory = 'all' | 'tracks' | 'albums' | 'playlists' | 'users'
 
@@ -66,7 +66,7 @@ export const useSearchResults = (
     disableAnalytics,
     ...filters
   }: SearchArgs,
-  config?: Config
+  config?: QueryOptions
 ) => {
   const { audiusSdk, getFeatureEnabled, analytics } = useAudiusQueryContext()
   const queryClient = useQueryClient()

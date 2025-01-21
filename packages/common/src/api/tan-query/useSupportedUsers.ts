@@ -8,7 +8,7 @@ import { supportedUserMetadataListFromSDK } from '~/models/Tipping'
 import { SUPPORTING_PAGINATION_SIZE } from '~/utils/constants'
 
 import { QUERY_KEYS } from './queryKeys'
-import { Config } from './types'
+import { QueryOptions } from './types'
 import { useCurrentUserId } from './useCurrentUserId'
 import { primeUserData } from './utils/primeUserData'
 
@@ -19,7 +19,7 @@ type UseSupportedUsersArgs = {
 
 export const useSupportedUsers = (
   { userId, pageSize = SUPPORTING_PAGINATION_SIZE }: UseSupportedUsersArgs,
-  config?: Config
+  config?: QueryOptions
 ) => {
   const { audiusSdk } = useAudiusQueryContext()
   const queryClient = useQueryClient()

@@ -10,7 +10,7 @@ import {
 import { removeNullable } from '~/utils/typeUtils'
 
 import { QUERY_KEYS } from './queryKeys'
-import { Config } from './types'
+import { QueryOptions } from './types'
 import { useCurrentUserId } from './useCurrentUserId'
 import { useUsers } from './useUsers'
 
@@ -24,7 +24,7 @@ const AUDIO_TRANSACTIONS_BATCH_SIZE = 50
 
 export const useAudioTransactions = (
   args: GetAudioTransactionsArgs,
-  config?: Config
+  config?: QueryOptions
 ) => {
   const { audiusSdk } = useAudiusQueryContext()
   const { data: userId } = useCurrentUserId()

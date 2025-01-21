@@ -8,7 +8,7 @@ import { ID } from '~/models/Identifiers'
 import { User } from '~/models/User'
 
 import { QUERY_KEYS } from './queryKeys'
-import { Config } from './types'
+import { QueryOptions } from './types'
 import { useCurrentUserId } from './useCurrentUserId'
 import { primeUserData } from './utils/primeUserData'
 
@@ -21,7 +21,7 @@ type UseCollectionFavoritesArgs = {
 
 export const useCollectionFavorites = (
   { collectionId, pageSize = DEFAULT_PAGE_SIZE }: UseCollectionFavoritesArgs,
-  config?: Config
+  config?: QueryOptions
 ) => {
   const { audiusSdk } = useAudiusQueryContext()
   const { data: currentUserId } = useCurrentUserId()

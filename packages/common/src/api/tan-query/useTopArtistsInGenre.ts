@@ -6,7 +6,7 @@ import { transformAndCleanList } from '~/adapters/utils'
 import { useAudiusQueryContext } from '~/audius-query'
 
 import { QUERY_KEYS } from './queryKeys'
-import { Config } from './types'
+import { QueryOptions } from './types'
 import { primeUserData } from './utils/primeUserData'
 
 const ARTISTS_PER_GENRE_PAGE_SIZE = 15
@@ -18,7 +18,7 @@ type UseTopArtistsInGenreArgs = {
 
 export const useTopArtistsInGenre = (
   args: UseTopArtistsInGenreArgs,
-  config?: Config
+  config?: QueryOptions
 ) => {
   const { audiusSdk } = useAudiusQueryContext()
   const queryClient = useQueryClient()

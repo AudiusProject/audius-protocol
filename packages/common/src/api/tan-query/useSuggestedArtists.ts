@@ -3,10 +3,10 @@ import { useQuery } from '@tanstack/react-query'
 import { useAudiusQueryContext } from '~/audius-query'
 
 import { QUERY_KEYS } from './queryKeys'
-import { Config } from './types'
+import { QueryOptions } from './types'
 import { useUsers } from './useUsers'
 
-export const useSuggestedArtists = (config?: Config) => {
+export const useSuggestedArtists = (config?: QueryOptions) => {
   const { env, fetch } = useAudiusQueryContext()
 
   const { data: suggestedIds } = useQuery<number[]>({

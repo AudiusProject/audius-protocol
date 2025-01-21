@@ -7,7 +7,7 @@ import { transformAndCleanList } from '~/adapters/utils'
 import { useAudiusQueryContext } from '~/audius-query'
 
 import { QUERY_KEYS } from './queryKeys'
-import { Config } from './types'
+import { QueryOptions } from './types'
 import { useCurrentUserId } from './useCurrentUserId'
 import { primeCollectionData } from './utils/primeCollectionData'
 
@@ -17,7 +17,10 @@ type GetAlbumsOptions = {
   offset?: number
 }
 
-export const useUserAlbums = (options: GetAlbumsOptions, config?: Config) => {
+export const useUserAlbums = (
+  options: GetAlbumsOptions,
+  config?: QueryOptions
+) => {
   const { audiusSdk } = useAudiusQueryContext()
   const { data: currentUserId } = useCurrentUserId()
   const { userId, limit, offset } = options

@@ -7,7 +7,7 @@ import { useAudiusQueryContext } from '~/audius-query'
 import { getUserId } from '~/store/account/selectors'
 
 import { QUERY_KEYS } from './queryKeys'
-import { Config } from './types'
+import { QueryOptions } from './types'
 import { primeCollectionData } from './utils/primeCollectionData'
 
 export const playlistPermalinkToHandleAndSlug = (permalink: string) => {
@@ -24,7 +24,7 @@ export const playlistPermalinkToHandleAndSlug = (permalink: string) => {
 
 export const useCollectionByPermalink = (
   permalink: string | undefined | null,
-  options?: Config
+  options?: QueryOptions
 ) => {
   const { audiusSdk } = useAudiusQueryContext()
   const queryClient = useQueryClient()

@@ -1,4 +1,4 @@
-import { Config } from './types'
+import { QueryOptions } from './types'
 import { useCollections } from './useCollections'
 import { useExploreContent } from './useExploreContent'
 
@@ -6,7 +6,7 @@ type Args = {
   limit?: number
 }
 
-export const useFeaturedPlaylists = (args?: Args, config?: Config) => {
+export const useFeaturedPlaylists = (args?: Args, config?: QueryOptions) => {
   const { data: exploreContent } = useExploreContent(config)
   const { limit } = args ?? {}
 

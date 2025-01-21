@@ -5,7 +5,7 @@ import { useAudiusQueryContext } from '~/audius-query'
 import { AudiusQueryContextType } from '~/audius-query/AudiusQueryContext'
 
 import { QUERY_KEYS } from './queryKeys'
-import { Config } from './types'
+import { QueryOptions } from './types'
 
 export const fetchHandleInUse = async (
   handle: string | null | undefined,
@@ -32,7 +32,7 @@ export const fetchHandleInUse = async (
  */
 export const useHandleInUse = (
   handle: string | null | undefined,
-  config?: Config
+  config?: QueryOptions
 ) => {
   const context = useAudiusQueryContext()
 

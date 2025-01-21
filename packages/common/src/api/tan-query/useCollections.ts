@@ -9,12 +9,12 @@ import { ID } from '~/models/Identifiers'
 import { removeNullable } from '~/utils'
 
 import { QUERY_KEYS } from './queryKeys'
-import { Config } from './types'
+import { QueryOptions } from './types'
 import { primeCollectionData } from './utils/primeCollectionData'
 
 export const useCollections = (
   collectionIds: ID[] | null | undefined,
-  options?: Config
+  options?: QueryOptions
 ) => {
   const { audiusSdk } = useAudiusQueryContext()
   const queryClient = useQueryClient()

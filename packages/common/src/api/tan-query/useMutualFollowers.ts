@@ -8,7 +8,7 @@ import { ID, UserMetadata } from '~/models'
 import { getUserId } from '~/store/account/selectors'
 
 import { QUERY_KEYS } from './queryKeys'
-import { Config } from './types'
+import { QueryOptions } from './types'
 import { primeUserData } from './utils/primeUserData'
 
 const DEFAULT_PAGE_SIZE = 20
@@ -20,7 +20,7 @@ type UseMutualFollowersArgs = {
 
 export const useMutualFollowers = (
   { userId, pageSize = DEFAULT_PAGE_SIZE }: UseMutualFollowersArgs,
-  config?: Config
+  config?: QueryOptions
 ) => {
   const { audiusSdk } = useAudiusQueryContext()
   const currentUserId = useSelector(getUserId)

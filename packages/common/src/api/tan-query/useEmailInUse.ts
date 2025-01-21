@@ -4,7 +4,7 @@ import { useAudiusQueryContext } from '~/audius-query'
 import { AudiusQueryContextType } from '~/audius-query/AudiusQueryContext'
 
 import { QUERY_KEYS } from './queryKeys'
-import { Config } from './types'
+import { QueryOptions } from './types'
 
 export const fetchEmailInUse = async (
   email: string | null | undefined,
@@ -19,7 +19,7 @@ export const fetchEmailInUse = async (
  */
 export const useEmailInUse = (
   email: string | null | undefined,
-  config?: Config
+  config?: QueryOptions
 ) => {
   const context = useAudiusQueryContext()
 
