@@ -8,7 +8,7 @@ import { parseHandleReservedStatusFromSocial } from '~/utils/handleReservedStatu
 import { promiseWithTimeout } from '~/utils/promiseWithTimeout'
 
 import { QUERY_KEYS } from './queryKeys'
-import { Config } from './types'
+import { QueryOptions } from './types'
 
 const DEFAULT_HANDLE_VERIFICATION_TIMEOUT_MILLIS = 5_000
 
@@ -78,14 +78,14 @@ export const fetchHandleReservedStatus = async (
  */
 export const useHandleReservedStatus = (
   handle: string | null | undefined,
-  config?: Config
+  options?: QueryOptions
 ) => {
   const context = useAudiusQueryContext()
 
   return useQuery({
     queryKey: [QUERY_KEYS.handleReservedStatus, handle],
     queryFn: () => fetchHandleReservedStatus(handle, context),
-    staleTime: config?.staleTime,
-    enabled: config?.enabled !== false && !!handle
+    staleTime: options?.staleTime,
+    enabled: options?.enabled !== false && !!handle
   })
 }

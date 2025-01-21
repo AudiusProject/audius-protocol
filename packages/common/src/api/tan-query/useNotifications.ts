@@ -11,7 +11,7 @@ import {
 } from '~/store/notifications/types'
 
 import { QUERY_KEYS } from './queryKeys'
-import { Config } from './types'
+import { QueryOptions } from './types'
 import { useCollections } from './useCollections'
 import { useCurrentUserId } from './useCurrentUserId'
 import { useNotificationValidTypes } from './useNotificationValidTypes'
@@ -157,7 +157,7 @@ const collectEntityIds = (notifications: Notification[]): EntityIds => {
  * Uses infinite query to support "Load More" functionality.
  * Pagination is based on the timestamp and groupId of the last notification.
  */
-export const useNotifications = (options?: Config) => {
+export const useNotifications = (options?: QueryOptions) => {
   const { audiusSdk } = useAudiusQueryContext()
   const { data: currentUserId } = useCurrentUserId()
   const validTypes = useNotificationValidTypes()

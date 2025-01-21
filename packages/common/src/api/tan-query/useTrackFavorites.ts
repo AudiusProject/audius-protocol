@@ -8,7 +8,7 @@ import { ID } from '~/models/Identifiers'
 import { User } from '~/models/User'
 
 import { QUERY_KEYS } from './queryKeys'
-import { Config } from './types'
+import { QueryOptions } from './types'
 import { useCurrentUserId } from './useCurrentUserId'
 import { primeUserData } from './utils/primeUserData'
 
@@ -21,7 +21,7 @@ type UseFavoritesArgs = {
 
 export const useTrackFavorites = (
   { trackId, pageSize = DEFAULT_PAGE_SIZE }: UseFavoritesArgs,
-  config?: Config
+  options?: QueryOptions
 ) => {
   const { audiusSdk } = useAudiusQueryContext()
   const { data: currentUserId } = useCurrentUserId()
@@ -48,7 +48,7 @@ export const useTrackFavorites = (
       return users
     },
     select: (data) => data.pages.flat(),
-    staleTime: config?.staleTime,
-    enabled: config?.enabled !== false && !!trackId
+    staleTime: options?.staleTime,
+    enabled: options?.enabled !== false && !!trackId
   })
 }
