@@ -1,6 +1,8 @@
+import { OptionalId } from '@audius/sdk'
+
 import { transformAndCleanList, userTrackMetadataFromSDK } from '~/adapters'
 import { createApi } from '~/audius-query'
-import { ID, OptionalId } from '~/models/Identifiers'
+import { ID } from '~/models/Identifiers'
 import { Kind } from '~/models/Kind'
 import { TimeRange } from '~/models/TimeRange'
 import { StringKeys } from '~/services/remote-config'

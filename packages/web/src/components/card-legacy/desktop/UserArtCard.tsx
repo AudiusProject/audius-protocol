@@ -98,7 +98,7 @@ const UserArtCard = g(
           <span>{name}</span>
           <UserBadges
             userId={user_id}
-            badgeSize={16}
+            size='s'
             className={styles.iconVerified}
           />
         </div>

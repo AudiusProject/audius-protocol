@@ -68,6 +68,10 @@ const challengeRewardsConfig: {
   fp: {
     title: 'Create a Playlist',
     icon: <TrebleClefIcon />
+  },
+  o: {
+    title: 'One shot',
+    icon: <TrebleClefIcon />
   }
 }
 

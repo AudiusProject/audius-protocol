@@ -85,6 +85,11 @@ export const ChallengeRewardsDrawerProvider = () => {
   } else if (challenge?.state === 'disbursed') {
     audioClaimedSoFar = challenge.totalAmount
   }
+  let progressRewardAmount = challenge?.totalAmount ?? 0
+  if (challenge?.challenge_id === ChallengeName.OneShot) {
+    progressRewardAmount =
+      (challenge?.claimableAmount ?? 0) + (challenge?.disbursed_amount ?? 0)
+  }
 
   const { navigate } = useNavigation<ChallengesParamList>()
 
@@ -200,7 +205,6 @@ export const ChallengeRewardsDrawerProvider = () => {
       isFullscreen
       isGestureSupported={false}
       title={config.title}
-      titleImage={config.icon}
     >
       {isAudioMatchingChallenge(modalType) ? (
         <AudioMatchingChallengeDrawerContent
@@ -218,7 +222,7 @@ export const ChallengeRewardsDrawerProvider = () => {
           description={config.description(challenge)}
           progressLabel={config.progressLabel ?? 'Completed'}
           completedLabel={config.completedLabel}
-          amount={challenge.totalAmount}
+          amount={progressRewardAmount}
           challengeId={challenge.challenge_id}
           isCooldownChallenge={challenge && challenge.cooldown_days > 0}
           challengeState={challenge.state}

@@ -367,19 +367,18 @@ export const WalletManagementTile = () => {
               borderTop='default'
               pt='xl'
               pb='s'
-              wrap='wrap'
             >
               <Text variant='label' size='s' strength='default' color='subdued'>
                 {messages.onRampsPowered}
               </Text>
               <IconLogoLinkByStripe
-                width={'6em'}
-                height={'1.33em'}
+                width={100}
+                height={'100%'}
                 color='subdued'
               />
               <IconLogoCoinbasePay
-                width={'6em'}
-                height={'1.33em'}
+                width={100}
+                height={'100%'}
                 color='subdued'
               />
             </Flex>

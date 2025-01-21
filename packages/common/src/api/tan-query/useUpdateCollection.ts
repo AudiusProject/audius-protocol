@@ -1,4 +1,4 @@
-import { Playlist } from '@audius/sdk'
+import { OptionalId, Playlist } from '@audius/sdk'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 
 import { playlistMetadataForUpdateWithSDK } from '~/adapters/collection'
@@ -6,7 +6,6 @@ import { fileToSdk } from '~/adapters/track'
 import { useAppContext } from '~/context/appContext'
 import { Collection } from '~/models/Collection'
 import { ID } from '~/models/Identifiers'
-import { encodeHashId } from '~/utils/hashIds'
 
 import { QUERY_KEYS } from './queryKeys'
 
@@ -34,8 +33,8 @@ export const useUpdateCollection = () => {
     }: UpdateCollectionParams) => {
       if (!audiusSdk) throw new Error('SDK not initialized')
 
-      const encodedPlaylistId = encodeHashId(playlistId)
-      const encodedUserId = encodeHashId(userId)
+      const encodedPlaylistId = OptionalId.parse(playlistId)
+      const encodedUserId = OptionalId.parse(userId)
       if (!encodedPlaylistId || !encodedUserId) throw new Error('Invalid ID')
 
       const sdkMetadata = playlistMetadataForUpdateWithSDK(

@@ -1,7 +1,6 @@
 import { useCallback, useState } from 'react'
 
 import {
-  Id,
   useGetCurrentWeb3User,
   useGetSales,
   useGetSalesCount
@@ -21,7 +20,7 @@ import {
 } from '@audius/common/store'
 import { route } from '@audius/common/utils'
 import { Flex, IconMoneyBracket, Text, useTheme } from '@audius/harmony'
-import { full } from '@audius/sdk'
+import { Id, full } from '@audius/sdk'
 import { useDispatch } from 'react-redux'
 
 import { ExternalTextLink } from 'components/link'

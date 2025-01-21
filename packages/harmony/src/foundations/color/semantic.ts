@@ -10,8 +10,7 @@ const createSemanticTheme = (theme: Theme, primitives: PrimitiveColors) => ({
     disabled: primitives.neutral.n150,
     link: primitives.primary.p500,
     accent: primitives.secondary.s300,
-    inverse:
-      theme === 'day' ? primitives.neutral.n950 : primitives.special.white,
+    inverse: primitives.neutral.n950,
 
     // Legacy compatibility
     heading: primitives.special.gradient,

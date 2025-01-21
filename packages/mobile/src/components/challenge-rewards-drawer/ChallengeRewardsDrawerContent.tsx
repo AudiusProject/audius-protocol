@@ -160,7 +160,10 @@ export const ChallengeRewardsDrawerContent = ({
             description={description}
           />
         ) : (
-          <ChallengeDescription description={description} />
+          <ChallengeDescription
+            description={description}
+            isCooldownChallenge={isCooldownChallenge}
+          />
         )}
         <View style={styles.statusGrid}>
           <View style={styles.statusGridColumns}>

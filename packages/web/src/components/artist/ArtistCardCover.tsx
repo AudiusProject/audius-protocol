@@ -68,12 +68,7 @@ export const ArtistCardCover = (props: ArtistCoverProps) => {
             <div className={styles.artistName} onClick={handleClickUser}>
               {name}
             </div>
-            <UserBadges
-              userId={user_id}
-              badgeSize={14}
-              className={styles.iconVerified}
-              useSVGTiers
-            />
+            <UserBadges userId={user_id} className={styles.iconVerified} />
           </div>
           <div className={styles.artistHandleWrapper}>
             <div

@@ -14,9 +14,9 @@ const { SIGN_IN_PAGE, SIGN_UP_PAGE, profilePage } = route
 const { getUserHandle, getUserId, getIsAccountComplete, getGuestEmail } =
   accountSelectors
 const messages = {
-  haveAccount: 'Have an Account?',
+  haveAccount: 'Have an account?',
   managedAccount: 'Managed Account',
-  signIn: 'Sign in',
+  signIn: 'Sign In',
   finishSignUp: 'Finish Signing Up'
 }
 

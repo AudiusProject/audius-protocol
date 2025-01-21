@@ -294,6 +294,12 @@ const mobileChallengeConfig: Record<ChallengeRewardID, MobileChallengeConfig> =
         },
         iconRight: IconArrowRight
       }
+    },
+    [ChallengeName.OneShot]: {
+      icon: undefined,
+      buttonInfo: {
+        iconRight: IconCheck
+      }
     }
   }
 

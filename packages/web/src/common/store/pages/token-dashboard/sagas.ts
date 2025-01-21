@@ -1,11 +1,12 @@
 import { userWalletsFromSDK } from '@audius/common/adapters'
-import { Chain, CollectibleState, Id } from '@audius/common/models'
+import { Chain, CollectibleState } from '@audius/common/models'
 import {
   accountSelectors,
   tokenDashboardPageActions,
   getContext,
   getSDK
 } from '@audius/common/store'
+import { Id } from '@audius/sdk'
 import { call, put, select, takeLatest } from 'typed-redux-saga'
 
 import {

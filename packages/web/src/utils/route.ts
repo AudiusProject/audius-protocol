@@ -2,7 +2,7 @@ import { SearchCategory } from '@audius/common/api'
 import type { ID } from '@audius/common/models'
 import { route } from '@audius/common/utils'
 import { Location } from 'history'
-import { matchPath } from 'react-router'
+import { matchPath, useLocation } from 'react-router'
 import { push } from 'redux-first-history'
 
 import { env } from 'services/env'
@@ -161,4 +161,25 @@ export const pushUniqueRoute = (location: Location, route: string) => {
     return push(route)
   }
   return { type: '' }
+}
+
+/**
+ * Checks if a current route matches a target route
+ */
+export const matchesRoute = ({
+  current,
+  target
+}: {
+  current: string | null
+  target: string
+}) => {
+  return current?.startsWith(target) ?? false
+}
+
+/**
+ * Hook to check if the current route matches a target route
+ */
+export const useRouteMatch = (targetRoute: string) => {
+  const location = useLocation()
+  return matchesRoute({ current: location.pathname, target: targetRoute })
 }

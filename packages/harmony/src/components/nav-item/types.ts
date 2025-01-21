@@ -10,6 +10,8 @@ export type NavItemProps = WithCSS<{
   children: ReactNode
   /** The name of the icon to display on the left side of the label. */
   leftIcon?: IconComponent
+  /** Override the left icon with a custom component. */
+  leftOverride?: ReactNode
   /** The name of the icon to display on the right side of the label. */
   rightIcon?: ReactNode
   /** Whether the navigation item is currently selected. */
@@ -20,5 +22,9 @@ export type NavItemProps = WithCSS<{
   textSize?: TextSize
   /** Whether the navigation item has a notification count. */
   hasNotification?: boolean
+  /** The variant of the nav item. */
+  variant?: 'default' | 'compact'
+  /** Whether the nav item is a child of a parent expandable nav item. */
+  isChild?: boolean
 }> &
   FlexProps

@@ -2,7 +2,22 @@ import IconTokenNoTierPng from '@audius/harmony/src/assets/icons/TokenNoTier.png
 import type { ImageProps } from 'react-native'
 import { Image } from 'react-native'
 
-// The TokenNoTier svg doesnt work on mobile, so we use a png component instead
-export const IconTokenNoTier = (props: ImageProps) => (
-  <Image source={IconTokenNoTierPng} {...props} />
+import { iconSizes, type IconSize } from '../foundations'
+
+type Props = Omit<ImageProps, 'source'> & {
+  size?: IconSize
+}
+
+export const IconTokenNoTier = ({ size = 'm', style, ...props }: Props) => (
+  <Image
+    source={IconTokenNoTierPng}
+    style={[
+      {
+        width: iconSizes[size],
+        height: iconSizes[size]
+      },
+      style
+    ]}
+    {...props}
+  />
 )

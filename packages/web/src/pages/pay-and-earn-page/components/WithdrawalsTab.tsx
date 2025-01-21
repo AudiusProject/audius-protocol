@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 
 import {
-  Id,
   useGetUSDCTransactions,
   useGetUSDCTransactionsCount,
   userApiFetch,
@@ -28,7 +27,7 @@ import {
   withdrawUSDCSelectors
 } from '@audius/common/store'
 import { formatUSDCWeiToFloorCentsNumber, wait } from '@audius/common/utils'
-import { full } from '@audius/sdk'
+import { Id, full } from '@audius/sdk'
 import BN from 'bn.js'
 import { useDispatch } from 'react-redux'
 import { ThunkDispatch } from 'redux-thunk'

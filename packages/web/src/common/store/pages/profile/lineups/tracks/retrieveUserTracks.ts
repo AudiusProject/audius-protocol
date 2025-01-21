@@ -2,8 +2,9 @@ import {
   transformAndCleanList,
   userTrackMetadataFromSDK
 } from '@audius/common/adapters'
-import { ID, OptionalId, Track } from '@audius/common/models'
+import { ID, Track } from '@audius/common/models'
 import { getSDK } from '@audius/common/store'
+import { OptionalId } from '@audius/sdk'
 import { call } from 'typed-redux-saga'
 
 import { processAndCacheTracks } from 'common/store/cache/tracks/utils'

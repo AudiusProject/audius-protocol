@@ -34,7 +34,7 @@ const ComposePreviewInfo = (props: ComposePreviewInfoProps) => {
           <Text variant='body' strength='strong'>
             {name}
           </Text>
-          <UserBadges userId={userId} badgeSize={14} />
+          <UserBadges userId={userId} />
         </Flex>
       </Flex>
     </Flex>

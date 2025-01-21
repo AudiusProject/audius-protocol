@@ -71,10 +71,13 @@ type CollectionNavItemProps = {
   level: number
   hasUpdate?: boolean
   onClick?: () => void
+  isChild?: boolean
+  exact?: boolean
 }
 
 export const CollectionNavItem = (props: CollectionNavItemProps) => {
-  const { id, name, url, isOwned, level, hasUpdate, onClick } = props
+  const { id, name, url, isOwned, level, hasUpdate, onClick, isChild, exact } =
+    props
   const [isDraggingOver, setIsDraggingOver] = useState(false)
   const [isHovering, setIsHovering] = useState(false)
   const location = useLocation()
@@ -179,7 +182,7 @@ export const CollectionNavItem = (props: CollectionNavItemProps) => {
 
   if (!name || !url) return null
 
-  const indentAmount = level * spacing.l
+  const indentAmount = level * spacing.m
 
   return (
     <>
@@ -204,6 +207,12 @@ export const CollectionNavItem = (props: CollectionNavItemProps) => {
             onMouseEnter={handleMouseEnter}
             onMouseLeave={handleMouseLeave}
             textSize='s'
+            variant='compact'
+            css={{
+              '& > div': {
+                marginLeft: indentAmount
+              }
+            }}
             rightIcon={
               isPlayingFromThisPlaylist ? (
                 <IconSpeaker
@@ -212,25 +221,19 @@ export const CollectionNavItem = (props: CollectionNavItemProps) => {
                 />
               ) : null
             }
+            leftOverride={hasUpdate ? <PlaylistUpdateDot /> : null}
+            isChild={isChild}
+            exact={exact}
           >
             <Flex
               alignItems='center'
               w='100%'
+              h='xl'
               pl={indentAmount}
               gap='xs'
               css={{ position: 'relative' }}
               justifyContent='space-between'
             >
-              {hasUpdate ? (
-                <div
-                  css={{
-                    position: 'absolute',
-                    left: -spacing.m + indentAmount
-                  }}
-                >
-                  <PlaylistUpdateDot />
-                </div>
-              ) : null}
               <Text
                 variant='body'
                 size='s'

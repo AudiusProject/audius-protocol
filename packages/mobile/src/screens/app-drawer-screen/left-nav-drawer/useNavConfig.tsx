@@ -119,14 +119,7 @@ export const useNavConfig = () => {
         rightIcon: (
           <BalancePill
             balance={audioBalanceFormatted}
-            icon={
-              <IconAudioBadge
-                tier={tier}
-                showNoTier
-                height={spacing.unit5}
-                width={spacing.unit5}
-              />
-            }
+            icon={<IconAudioBadge tier={tier} showNoTier size='m' />}
             isLoading={isAudioBalanceLoading}
           />
         )
@@ -146,7 +139,7 @@ export const useNavConfig = () => {
       {
         icon: IconGift,
         label: messages.rewards,
-        to: 'AudioScreen',
+        to: 'RewardsScreen',
         showNotificationBubble: hasClaimableRewards,
         rightIcon: hasClaimableRewards ? (
           <NotificationCount count={claimableAmount} />

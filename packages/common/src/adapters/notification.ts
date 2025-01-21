@@ -1,6 +1,6 @@
-import { full } from '@audius/sdk'
+import { full, HashId } from '@audius/sdk'
 
-import { HashId, type BadgeTier, type ID } from '~/models'
+import { BadgeTier, type ID } from '~/models'
 import type { ChallengeRewardID } from '~/models/AudioRewards'
 import type { StringUSDC, StringWei } from '~/models/Wallet'
 import {
@@ -9,7 +9,6 @@ import {
   NotificationType,
   type Notification
 } from '~/store/notifications/types'
-import { decodeHashId } from '~/utils/hashIds'
 import { removeNullable } from '~/utils/typeUtils'
 
 function formatBaseNotification(notification: full.Notification) {
@@ -245,7 +244,7 @@ export const notificationFromSDK = (
           if (full.instanceOfCreatePlaylistNotificationActionData(data)) {
             entityType = data.isAlbum ? Entity.Album : Entity.Playlist
             // Future proofing for when playlistId is fixed to be a string
-            return decodeHashId(
+            return HashId.parse(
               Array.isArray(data.playlistId)
                 ? data.playlistId[0]!
                 : data.playlistId

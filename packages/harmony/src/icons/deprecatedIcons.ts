@@ -1,11 +1,25 @@
-export { default as AudiusGlyphAlt } from '../assets/icons/deprecated/AudiusGlyphAlt.svg'
-export { default as Calendar } from '../assets/icons/deprecated/Calendar.svg'
-export { default as CalendarMonth } from '../assets/icons/deprecated/CalendarMonth.svg'
-export { default as CalendarWeek } from '../assets/icons/deprecated/CalendarWeek.svg'
-export { default as Collections } from '../assets/icons/deprecated/Collections.svg'
-export { default as Headphones } from '../assets/icons/deprecated/Headphones.svg'
-export { default as Playlists } from '../assets/icons/deprecated/Playlists.svg'
-export { default as RepeatAlt } from '../assets/icons/deprecated/RepeatAlt.svg'
-export { default as Error } from '../assets/icons/deprecated/Error.svg'
-export { default as Remix } from '../assets/icons/deprecated/Remix.svg'
-export { default as Shuffle } from '../assets/icons/deprecated/Shuffle.svg'
+import { IconComponent } from '~harmony/components'
+
+import IconAudiusGlyphAltSVG from '../assets/icons/deprecated/AudiusGlyphAlt.svg'
+import IconCalendarSVG from '../assets/icons/deprecated/Calendar.svg'
+import IconCalendarMonthSVG from '../assets/icons/deprecated/CalendarMonth.svg'
+import IconCalendarWeekSVG from '../assets/icons/deprecated/CalendarWeek.svg'
+import IconCollectionsSVG from '../assets/icons/deprecated/Collections.svg'
+import IconErrorSVG from '../assets/icons/deprecated/Error.svg'
+import IconHeadphonesSVG from '../assets/icons/deprecated/Headphones.svg'
+import IconPlaylistsSVG from '../assets/icons/deprecated/Playlists.svg'
+import IconRemixSVG from '../assets/icons/deprecated/Remix.svg'
+import IconRepeatAltSVG from '../assets/icons/deprecated/RepeatAlt.svg'
+import IconShuffleSVG from '../assets/icons/deprecated/Shuffle.svg'
+
+export const IconAudiusGlyphAlt = IconAudiusGlyphAltSVG as IconComponent
+export const IconCalendar = IconCalendarSVG as IconComponent
+export const IconCalendarMonth = IconCalendarMonthSVG as IconComponent
+export const IconCalendarWeek = IconCalendarWeekSVG as IconComponent
+export const IconCollections = IconCollectionsSVG as IconComponent
+export const IconHeadphones = IconHeadphonesSVG as IconComponent
+export const IconPlaylists = IconPlaylistsSVG as IconComponent
+export const IconRepeatAlt = IconRepeatAltSVG as IconComponent
+export const IconError = IconErrorSVG as IconComponent
+export const IconRemix = IconRemixSVG as IconComponent
+export const IconShuffle = IconShuffleSVG as IconComponent

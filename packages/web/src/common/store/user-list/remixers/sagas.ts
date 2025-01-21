@@ -2,7 +2,7 @@ import {
   userMetadataFromSDK,
   transformAndCleanList
 } from '@audius/common/adapters'
-import { Id, ID, OptionalId } from '@audius/common/models'
+import { ID } from '@audius/common/models'
 import {
   accountSelectors,
   UserListSagaFactory,
@@ -11,6 +11,7 @@ import {
   REMIXERS_USER_LIST_TAG,
   getSDK
 } from '@audius/common/store'
+import { Id, OptionalId } from '@audius/sdk'
 import { call, put, select } from 'typed-redux-saga'
 
 import { watchRemixersError } from './errorSagas'

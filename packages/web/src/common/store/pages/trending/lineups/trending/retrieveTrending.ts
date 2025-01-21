@@ -2,7 +2,7 @@ import {
   transformAndCleanList,
   userTrackMetadataFromSDK
 } from '@audius/common/adapters'
-import { TimeRange, ID, Track, OptionalId } from '@audius/common/models'
+import { TimeRange, ID, Track } from '@audius/common/models'
 import { StringKeys } from '@audius/common/services'
 import {
   cacheTracksSelectors,
@@ -13,6 +13,7 @@ import {
   getSDK
 } from '@audius/common/store'
 import { Genre, Nullable } from '@audius/common/utils'
+import { OptionalId } from '@audius/sdk'
 import { keccak_256 } from 'js-sha3'
 import { call, put, select } from 'redux-saga/effects'
 

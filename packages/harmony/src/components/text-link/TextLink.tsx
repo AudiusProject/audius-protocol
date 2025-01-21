@@ -32,7 +32,7 @@ export const TextLink = forwardRef((props: TextLinkProps, ref: Ref<'a'>) => {
     default: color.link.default,
     subdued: color.link.subdued,
     visible: color.link.visible,
-    inverted: color.static.white,
+    inverted: color.static.staticWhite,
     secondary: color.secondary.secondary,
     active: color.primary.primary
   }
@@ -41,7 +41,7 @@ export const TextLink = forwardRef((props: TextLinkProps, ref: Ref<'a'>) => {
     default: color.primary.p300,
     subdued: color.primary.p300,
     visible: color.link.visible,
-    inverted: color.static.white,
+    inverted: color.static.staticWhite,
     secondary: color.secondary.secondary,
     active: color.primary.primary
   }
