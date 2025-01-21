@@ -1,5 +1,8 @@
 .historyPageWrapper {
   position: relative;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
 }
 
 /* Filter Input in Header */
@@ -36,9 +39,9 @@
 
 /* Body Content Wrapper */
 .bodyWrapper {
-  display: flex;
-  flex-direction: column;
-  position: relative;
+  flex: 1;
+  overflow-y: auto;
+  padding: 0 24px;
 }
 
 /* Track Table */
@@ -56,8 +59,19 @@
   width: 40px;
   height: 40px;
   margin: 0 auto;
+  margin-top: 16px;
 }
 
 .spinner g path {
   stroke: var(--harmony-secondary) !important;
+}
+
+.loadingMore {
+  margin: 16px auto;
+  display: flex;
+  justify-content: center;
+}
+
+.historyPageHeader {
+  padding: 0 24px;
 }

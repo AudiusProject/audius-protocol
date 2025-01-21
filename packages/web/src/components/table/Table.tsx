@@ -139,7 +139,8 @@ export const Table = ({
   tableHeaderClassName,
   totalRowCount,
   useLocalSort = false,
-  wrapperClassName
+  wrapperClassName,
+  ...other
 }: TableProps) => {
   const trackAccessMap = useGatedContentAccessMap(isTracksTable ? data : [])
 

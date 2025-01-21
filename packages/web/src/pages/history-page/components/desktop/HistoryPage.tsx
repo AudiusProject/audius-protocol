@@ -15,6 +15,7 @@ import Page from 'components/page/Page'
 import { dateSorter } from 'components/table'
 import { TracksTable } from 'components/tracks-table'
 import EmptyTable from 'components/tracks-table/EmptyTable'
+import { useMainContentRef } from 'pages/MainContentContext'
 
 import styles from './HistoryPage.module.css'
 
@@ -38,6 +39,10 @@ export type HistoryPageProps = {
   onPlay: () => void
   onFilterChange: (e: ChangeEvent<HTMLInputElement>) => void
   filterText: string
+  fetchNextPage: () => void
+  isFetchingNextPage: boolean
+  totalRowCount?: number
+  pageSize?: number
 }
 
 const HistoryPage = ({
@@ -58,8 +63,13 @@ const HistoryPage = ({
   goToRoute,
   onPlay,
   onFilterChange,
-  filterText
+  filterText,
+  fetchNextPage,
+  isFetchingNextPage,
+  totalRowCount,
+  pageSize
 }: HistoryPageProps) => {
+  const mainContentRef = useMainContentRef()
   const tableLoading = !dataSource.every((track: any) => track.play_count > -1)
 
   const playAllButton = !loading ? (
@@ -117,22 +127,31 @@ const HistoryPage = ({
           <LoadingSpinner className={styles.spinner} />
         ) : isEmpty && !loading && !tableLoading ? (
           <EmptyTable
-            primaryText='You haven’t listened to any tracks yet.'
-            secondaryText='Once you have, this is where you’ll find them!'
+            primaryText="You haven't listened to any tracks yet."
+            secondaryText="Once you have, this is where you'll find them!"
             buttonLabel='Start Listening'
             onClick={() => goToRoute('/trending')}
           />
         ) : (
-          <TracksTable
-            key='history'
-            data={dataSource}
-            userId={userId}
-            loading={tableLoading}
-            playing={queuedAndPlaying}
-            playingIndex={playingIndex}
-            defaultSorter={defaultSorter}
-            {...trackTableActions}
-          />
+          <>
+            <TracksTable
+              key='history'
+              data={dataSource}
+              userId={userId}
+              playing={queuedAndPlaying}
+              playingIndex={playingIndex}
+              defaultSorter={defaultSorter}
+              fetchMoreTracks={fetchNextPage}
+              isVirtualized
+              scrollRef={mainContentRef}
+              totalRowCount={totalRowCount}
+              pageSize={pageSize}
+              {...trackTableActions}
+            />
+            {isFetchingNextPage && (
+              <LoadingSpinner className={styles.loadingMore} />
+            )}
+          </>
         )}
       </div>
     </Page>

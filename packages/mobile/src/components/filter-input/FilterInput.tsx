@@ -9,10 +9,10 @@ import {
 } from '@audius/harmony-native'
 
 type FilterInputProps = PaperProps &
-  Pick<TextInputProps, 'onChangeText' | 'placeholder'>
+  Pick<TextInputProps, 'onChangeText' | 'placeholder' | 'value' | 'autoFocus'>
 
 export const FilterInput = (props: FilterInputProps) => {
-  const { onChangeText, placeholder, ...paperProps } = props
+  const { onChangeText, placeholder, value, autoFocus, ...paperProps } = props
 
   return (
     <Animated.View layout={Layout}>
@@ -22,8 +22,10 @@ export const FilterInput = (props: FilterInputProps) => {
           size={TextInputSize.SMALL}
           placeholder={placeholder}
           onChangeText={onChangeText}
+          value={value}
           returnKeyType='search'
           endAdornment={<IconFilter color='subdued' size='m' />}
+          autoFocus={autoFocus}
         />
       </Paper>
     </Animated.View>

@@ -1,18 +1,10 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useState } from 'react'
 
 import { useTrackHistory } from '@audius/common/api'
-import {
-  useDebouncedCallback,
-  useThrottledCallback
-} from '@audius/common/hooks'
-import { PlaybackSource, Status } from '@audius/common/models'
-import type { ID, UID } from '@audius/common/models'
-import {
-  historyPageTracksLineupActions as tracksActions,
-  historyPageSelectors
-} from '@audius/common/store'
-import { debounce } from 'lodash'
-import { useDispatch, useSelector } from 'react-redux'
+import { useDebouncedCallback } from '@audius/common/hooks'
+import { Status } from '@audius/common/models'
+import { historyPageSelectors } from '@audius/common/store'
+import { useSelector } from 'react-redux'
 
 import { Divider, IconListeningHistory, Paper } from '@audius/harmony-native'
 import { Screen, ScreenContent } from 'app/components/core'
@@ -29,42 +21,17 @@ const messages = {
 }
 
 export const ListeningHistoryScreen = () => {
-  const dispatch = useDispatch()
   const [filterValue, setFilterValue] = useState('')
 
   const {
-    data: trackPages,
     fetchNextPage,
-    isLoading: isLoadingInitial
+    isLoading: isLoadingInitial,
+    togglePlay
   } = useTrackHistory({
     query: filterValue
   })
 
-  // Get the actual limit from the first page length
-  const limit = trackPages?.pages[0]?.length ?? 0
-  // Calculate offset based on number of pages * limit
-  const offset = (trackPages?.pages.length ?? 0) * limit
-  // Get the latest page of tracks
-  const latestTracks = trackPages?.pages[trackPages.pages.length - 1] ?? []
-
-  useEffect(() => {
-    if (offset > 0 || limit > 0) {
-      dispatch(
-        tracksActions.fetchLineupMetadatas(offset, limit, false, {
-          tracks: latestTracks
-        })
-      )
-    }
-  }, [dispatch, offset, limit, latestTracks])
-
   const { status, entries } = useSelector(getHistoryTracksLineup)
-
-  const togglePlay = useCallback(
-    (uid: UID, id: ID) => {
-      dispatch(tracksActions.togglePlay(uid, id, PlaybackSource.HISTORY_PAGE))
-    },
-    [dispatch]
-  )
 
   const handleChangeFilterValue = useDebouncedCallback(
     (value: string) => {
