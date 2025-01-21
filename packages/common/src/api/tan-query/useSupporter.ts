@@ -22,7 +22,7 @@ const DEFAULT_STALE_TIME = 1000 * 30
 
 export const useSupporter = (
   { userId, supporterUserId }: UseSupporterArgs,
-  config?: QueryOptions
+  options?: QueryOptions
 ) => {
   const { audiusSdk } = useAudiusQueryContext()
   const { data: currentUserId } = useCurrentUserId()
@@ -47,8 +47,8 @@ export const useSupporter = (
       }
       return supporter
     },
-    staleTime: config?.staleTime ?? DEFAULT_STALE_TIME,
-    enabled: config?.enabled !== false && !!userId && !!supporterUserId
+    staleTime: options?.staleTime ?? DEFAULT_STALE_TIME,
+    enabled: options?.enabled !== false && !!userId && !!supporterUserId
   })
 }
 

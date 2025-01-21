@@ -19,7 +19,7 @@ type UseSupportedUsersArgs = {
 
 export const useSupportedUsers = (
   { userId, pageSize = SUPPORTING_PAGINATION_SIZE }: UseSupportedUsersArgs,
-  config?: QueryOptions
+  options?: QueryOptions
 ) => {
   const { audiusSdk } = useAudiusQueryContext()
   const queryClient = useQueryClient()
@@ -59,7 +59,7 @@ export const useSupportedUsers = (
       return supporting
     },
     select: (data) => data.pages.flat(),
-    staleTime: config?.staleTime,
-    enabled: config?.enabled !== false && !!userId
+    staleTime: options?.staleTime,
+    enabled: options?.enabled !== false && !!userId
   })
 }

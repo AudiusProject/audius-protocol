@@ -13,7 +13,7 @@ import { primeUserData } from './utils/primeUserData'
 
 export const useUsers = (
   userIds: ID[] | null | undefined,
-  config?: QueryOptions
+  options?: QueryOptions
 ) => {
   const { audiusSdk } = useAudiusQueryContext()
   const dispatch = useDispatch()
@@ -33,7 +33,7 @@ export const useUsers = (
 
       return users
     },
-    staleTime: config?.staleTime,
-    enabled: config?.enabled !== false && encodedIds && encodedIds.length > 0
+    staleTime: options?.staleTime,
+    enabled: options?.enabled !== false && encodedIds && encodedIds.length > 0
   })
 }

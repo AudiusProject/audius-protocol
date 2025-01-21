@@ -20,7 +20,7 @@ type UseMutualFollowersArgs = {
 
 export const useMutualFollowers = (
   { userId, pageSize = DEFAULT_PAGE_SIZE }: UseMutualFollowersArgs,
-  config?: QueryOptions
+  options?: QueryOptions
 ) => {
   const { audiusSdk } = useAudiusQueryContext()
   const currentUserId = useSelector(getUserId)
@@ -47,7 +47,7 @@ export const useMutualFollowers = (
       return users
     },
     select: (data) => data.pages.flat(),
-    staleTime: config?.staleTime,
-    enabled: config?.enabled !== false && !!userId && !!currentUserId
+    staleTime: options?.staleTime,
+    enabled: options?.enabled !== false && !!userId && !!currentUserId
   })
 }

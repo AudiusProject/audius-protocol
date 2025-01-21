@@ -21,7 +21,7 @@ type UseCollectionRepostsArgs = {
 
 export const useCollectionReposts = (
   { collectionId, pageSize = DEFAULT_PAGE_SIZE }: UseCollectionRepostsArgs,
-  config?: QueryOptions
+  options?: QueryOptions
 ) => {
   const { audiusSdk } = useAudiusQueryContext()
   const { data: currentUserId } = useCurrentUserId()
@@ -48,7 +48,7 @@ export const useCollectionReposts = (
       return users
     },
     select: (data) => data.pages.flat(),
-    staleTime: config?.staleTime,
-    enabled: config?.enabled !== false && !!collectionId
+    staleTime: options?.staleTime,
+    enabled: options?.enabled !== false && !!collectionId
   })
 }

@@ -18,7 +18,7 @@ type UseTopArtistsInGenreArgs = {
 
 export const useTopArtistsInGenre = (
   args: UseTopArtistsInGenreArgs,
-  config?: QueryOptions
+  options?: QueryOptions
 ) => {
   const { audiusSdk } = useAudiusQueryContext()
   const queryClient = useQueryClient()
@@ -44,6 +44,6 @@ export const useTopArtistsInGenre = (
       return allPages.length * pageSize
     },
     select: (data) => data.pages.flat(),
-    ...config
+    ...options
   })
 }

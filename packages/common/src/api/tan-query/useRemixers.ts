@@ -21,7 +21,7 @@ type UseRemixersArgs = {
 
 export const useRemixers = (
   { userId, pageSize = DEFAULT_PAGE_SIZE }: UseRemixersArgs,
-  config?: QueryOptions
+  options?: QueryOptions
 ) => {
   const { audiusSdk } = useAudiusQueryContext()
   const { data: currentUserId } = useCurrentUserId()
@@ -48,7 +48,7 @@ export const useRemixers = (
       return users
     },
     select: (data) => data.pages.flat(),
-    staleTime: config?.staleTime,
-    enabled: config?.enabled !== false && !!userId
+    staleTime: options?.staleTime,
+    enabled: options?.enabled !== false && !!userId
   })
 }

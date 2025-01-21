@@ -18,12 +18,12 @@ type GetAlbumsOptions = {
 }
 
 export const useUserAlbums = (
-  options: GetAlbumsOptions,
-  config?: QueryOptions
+  params: GetAlbumsOptions,
+  options?: QueryOptions
 ) => {
   const { audiusSdk } = useAudiusQueryContext()
   const { data: currentUserId } = useCurrentUserId()
-  const { userId, limit, offset } = options
+  const { userId, limit, offset } = params
   const queryClient = useQueryClient()
   const dispatch = useDispatch()
 
@@ -50,7 +50,7 @@ export const useUserAlbums = (
 
       return collections
     },
-    staleTime: config?.staleTime,
-    enabled: config?.enabled !== false && !!userId
+    staleTime: options?.staleTime,
+    enabled: options?.enabled !== false && !!userId
   })
 }

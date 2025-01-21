@@ -2,17 +2,20 @@ import { QueryOptions } from './types'
 import { useSuggestedArtists } from './useSuggestedArtists'
 import { useTopArtistsInGenre } from './useTopArtistsInGenre'
 
-export const useTopArtists = (genre: string, config?: QueryOptions) => {
+export const useTopArtists = (genre: string, options?: QueryOptions) => {
   const { data: suggestedArtists, isPending: isSuggestedPending } =
     useSuggestedArtists({
-      ...config,
-      enabled: genre === 'Featured' && config?.enabled !== false
+      ...options,
+      enabled: genre === 'Featured' && options?.enabled !== false
     })
 
   const { data: topArtists, isPending: isTopArtistsPending } =
     useTopArtistsInGenre(
       { genre },
-      { ...config, enabled: genre !== 'Featured' && config?.enabled !== false }
+      {
+        ...options,
+        enabled: genre !== 'Featured' && options?.enabled !== false
+      }
     )
 
   return {

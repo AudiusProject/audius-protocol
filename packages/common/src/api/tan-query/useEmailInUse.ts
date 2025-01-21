@@ -19,14 +19,14 @@ export const fetchEmailInUse = async (
  */
 export const useEmailInUse = (
   email: string | null | undefined,
-  config?: QueryOptions
+  options?: QueryOptions
 ) => {
   const context = useAudiusQueryContext()
 
   return useQuery({
     queryKey: [QUERY_KEYS.emailInUse, email],
     queryFn: () => fetchEmailInUse(email, context),
-    staleTime: config?.staleTime,
-    enabled: config?.enabled !== false && !!email
+    staleTime: options?.staleTime,
+    enabled: options?.enabled !== false && !!email
   })
 }

@@ -9,7 +9,7 @@ import { QueryOptions } from './types'
 
 export const usePurchasesCount = (
   userId: ID | null | undefined,
-  config?: QueryOptions
+  options?: QueryOptions
 ) => {
   const context = useAudiusQueryContext()
   const audiusSdk = context.audiusSdk
@@ -24,7 +24,7 @@ export const usePurchasesCount = (
       })
       return data
     },
-    staleTime: config?.staleTime,
-    enabled: config?.enabled !== false && !!audiusSdk && !!userId
+    staleTime: options?.staleTime,
+    enabled: options?.enabled !== false && !!audiusSdk && !!userId
   })
 }

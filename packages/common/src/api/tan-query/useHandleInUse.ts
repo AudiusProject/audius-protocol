@@ -32,14 +32,14 @@ export const fetchHandleInUse = async (
  */
 export const useHandleInUse = (
   handle: string | null | undefined,
-  config?: QueryOptions
+  options?: QueryOptions
 ) => {
   const context = useAudiusQueryContext()
 
   return useQuery({
     queryKey: [QUERY_KEYS.handleInUse, handle],
     queryFn: () => fetchHandleInUse(handle, context),
-    staleTime: config?.staleTime,
-    enabled: config?.enabled !== false && !!handle
+    staleTime: options?.staleTime,
+    enabled: options?.enabled !== false && !!handle
   })
 }

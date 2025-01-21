@@ -21,7 +21,7 @@ type UseTrackRepostsArgs = {
 
 export const useTrackReposts = (
   { trackId, pageSize = DEFAULT_PAGE_SIZE }: UseTrackRepostsArgs,
-  config?: QueryOptions
+  options?: QueryOptions
 ) => {
   const { audiusSdk } = useAudiusQueryContext()
   const { data: currentUserId } = useCurrentUserId()
@@ -48,7 +48,7 @@ export const useTrackReposts = (
       return users
     },
     select: (data) => data.pages.flat(),
-    staleTime: config?.staleTime,
-    enabled: config?.enabled !== false && !!trackId
+    staleTime: options?.staleTime,
+    enabled: options?.enabled !== false && !!trackId
   })
 }

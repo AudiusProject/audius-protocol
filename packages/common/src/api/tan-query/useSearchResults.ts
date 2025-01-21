@@ -66,7 +66,7 @@ export const useSearchResults = (
     disableAnalytics,
     ...filters
   }: SearchArgs,
-  config?: QueryOptions
+  options?: QueryOptions
 ) => {
   const { audiusSdk, getFeatureEnabled, analytics } = useAudiusQueryContext()
   const queryClient = useQueryClient()
@@ -204,7 +204,7 @@ export const useSearchResults = (
         playlists
       }
     },
-    staleTime: config?.staleTime,
-    enabled: config?.enabled !== false
+    staleTime: options?.staleTime,
+    enabled: options?.enabled !== false
   })
 }

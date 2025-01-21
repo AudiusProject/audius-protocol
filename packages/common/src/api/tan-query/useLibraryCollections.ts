@@ -33,7 +33,7 @@ export const useLibraryCollections = (
     sortDirection = 'desc',
     pageSize = PAGE_SIZE
   }: UseLibraryCollectionsArgs,
-  config?: QueryOptions
+  options?: QueryOptions
 ) => {
   const { audiusSdk } = useAudiusQueryContext()
   const { data: currentUserId } = useCurrentUserId()
@@ -89,7 +89,7 @@ export const useLibraryCollections = (
       return collections
     },
     select: (data) => data.pages.flat(),
-    staleTime: config?.staleTime,
-    enabled: config?.enabled !== false && !!currentUserId
+    staleTime: options?.staleTime,
+    enabled: options?.enabled !== false && !!currentUserId
   })
 }

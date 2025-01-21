@@ -14,7 +14,7 @@ type ExploreContentResponse = {
   featuredProfiles: string[]
 }
 
-export const useExploreContent = (config?: QueryOptions) => {
+export const useExploreContent = (options?: QueryOptions) => {
   const { env } = useAudiusQueryContext()
   const exploreContentUrl =
     env.EXPLORE_CONTENT_URL ?? STATIC_EXPLORE_CONTENT_URL
@@ -33,7 +33,7 @@ export const useExploreContent = (config?: QueryOptions) => {
         )
       }
     },
-    staleTime: config?.staleTime,
-    enabled: config?.enabled !== false
+    staleTime: options?.staleTime,
+    enabled: options?.enabled !== false
   })
 }

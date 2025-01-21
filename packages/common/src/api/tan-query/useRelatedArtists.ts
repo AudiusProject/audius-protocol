@@ -26,7 +26,7 @@ export const useRelatedArtists = (
     pageSize = DEFAULT_PAGE_SIZE,
     filterFollowed
   }: UseRelatedArtistsArgs,
-  config?: QueryOptions
+  options?: QueryOptions
 ) => {
   const { audiusSdk } = useAudiusQueryContext()
   const { data: currentUserId } = useCurrentUserId()
@@ -54,7 +54,7 @@ export const useRelatedArtists = (
       return users
     },
     select: (data) => data.pages.flat(),
-    staleTime: config?.staleTime,
-    enabled: config?.enabled !== false && !!artistId
+    staleTime: options?.staleTime,
+    enabled: options?.enabled !== false && !!artistId
   })
 }

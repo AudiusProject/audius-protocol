@@ -21,7 +21,7 @@ type UseCollectionFavoritesArgs = {
 
 export const useCollectionFavorites = (
   { collectionId, pageSize = DEFAULT_PAGE_SIZE }: UseCollectionFavoritesArgs,
-  config?: QueryOptions
+  options?: QueryOptions
 ) => {
   const { audiusSdk } = useAudiusQueryContext()
   const { data: currentUserId } = useCurrentUserId()
@@ -48,7 +48,7 @@ export const useCollectionFavorites = (
       return users
     },
     select: (data) => data.pages.flat(),
-    staleTime: config?.staleTime,
-    enabled: config?.enabled !== false && !!collectionId
+    staleTime: options?.staleTime,
+    enabled: options?.enabled !== false && !!collectionId
   })
 }

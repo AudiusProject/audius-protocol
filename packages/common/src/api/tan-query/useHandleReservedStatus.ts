@@ -78,14 +78,14 @@ export const fetchHandleReservedStatus = async (
  */
 export const useHandleReservedStatus = (
   handle: string | null | undefined,
-  config?: QueryOptions
+  options?: QueryOptions
 ) => {
   const context = useAudiusQueryContext()
 
   return useQuery({
     queryKey: [QUERY_KEYS.handleReservedStatus, handle],
     queryFn: () => fetchHandleReservedStatus(handle, context),
-    staleTime: config?.staleTime,
-    enabled: config?.enabled !== false && !!handle
+    staleTime: options?.staleTime,
+    enabled: options?.enabled !== false && !!handle
   })
 }

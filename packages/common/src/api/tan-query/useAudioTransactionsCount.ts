@@ -7,7 +7,7 @@ import { QUERY_KEYS } from './queryKeys'
 import { QueryOptions } from './types'
 import { useCurrentUserId } from './useCurrentUserId'
 
-export const useAudioTransactionsCount = (config?: QueryOptions) => {
+export const useAudioTransactionsCount = (options?: QueryOptions) => {
   const { audiusSdk } = useAudiusQueryContext()
   const { data: userId } = useCurrentUserId()
 
@@ -23,7 +23,7 @@ export const useAudioTransactionsCount = (config?: QueryOptions) => {
 
       return response.data ?? 0
     },
-    staleTime: config?.staleTime,
-    enabled: config?.enabled !== false && !!userId
+    staleTime: options?.staleTime,
+    enabled: options?.enabled !== false && !!userId
   })
 }

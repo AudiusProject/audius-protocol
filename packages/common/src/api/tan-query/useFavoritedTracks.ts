@@ -11,7 +11,7 @@ import { QueryOptions } from './types'
 
 export const useFavoritedTracks = (
   userId: ID | null | undefined,
-  config?: QueryOptions
+  options?: QueryOptions
 ) => {
   const { audiusSdk } = useAudiusQueryContext()
 
@@ -25,7 +25,7 @@ export const useFavoritedTracks = (
 
       return transformAndCleanList(data, favoriteFromSDK)
     },
-    staleTime: config?.staleTime,
-    enabled: config?.enabled !== false && !!userId
+    staleTime: options?.staleTime,
+    enabled: options?.enabled !== false && !!userId
   })
 }
