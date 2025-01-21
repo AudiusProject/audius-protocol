@@ -2,9 +2,8 @@ import type { Dispatch, SetStateAction } from 'react'
 import { createContext, useCallback, useContext } from 'react'
 
 import {
-  useGetSearchResults as useGetSearchResultsApi,
+  useSearchResults,
   type SearchCategory,
-  type SearchFilter,
   type SearchFilters
 } from '@audius/common/api'
 import { accountSelectors } from '@audius/common/store'
@@ -75,7 +74,9 @@ export const useSearchFilters = () => {
   return [filters, setFilters] as const
 }
 
-export const useSearchFilter = <F extends SearchFilter>(filterKey: F) => {
+export const useSearchFilter = <F extends keyof SearchFilters>(
+  filterKey: F
+) => {
   const { filters, setFilters } = useContext(SearchContext)
 
   const filter = filters[filterKey]
@@ -94,38 +95,27 @@ export const useSearchFilter = <F extends SearchFilter>(filterKey: F) => {
   return [filter, setFilter, clearFilter] as const
 }
 
-type SearchResultsApiType = ReturnType<typeof useGetSearchResultsApi>
-
-type SearchResultsType<C extends SearchCategory> = {
-  status: SearchResultsApiType['status']
-  data: C extends 'all'
-    ? SearchResultsApiType['data']
-    : SearchResultsApiType['data'][Exclude<C, 'all'>]
-}
-
-export const useGetSearchResults = <C extends SearchCategory>(
-  category: C
-): SearchResultsType<C> => {
+export const useGetSearchResults = (category: SearchCategory) => {
   const { filters, query } = useContext(SearchContext)
   const currentUserId = useSelector(getUserId)
-  const { data, status } = useGetSearchResultsApi(
-    {
-      query,
-      ...filters,
-      category,
-      currentUserId,
-      limit: category === 'all' ? ALL_RESULTS_LIMIT : undefined,
-      offset: 0
-    },
-    { debounce: 500 }
-  )
+  const { data, ...queryState } = useSearchResults({
+    query,
+    ...filters,
+    category,
+    currentUserId,
+    limit: category === 'all' ? ALL_RESULTS_LIMIT : undefined,
+    offset: 0
+  })
 
   if (category === 'all') {
-    return { data, status } as SearchResultsType<C>
+    return {
+      data,
+      ...queryState
+    }
   } else {
     return {
-      data: data?.[category as Exclude<C, 'all'>],
-      status
-    } as SearchResultsType<C>
+      data: data?.[category],
+      ...queryState
+    }
   }
 }

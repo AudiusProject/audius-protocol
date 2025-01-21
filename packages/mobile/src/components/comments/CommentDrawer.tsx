@@ -2,14 +2,13 @@ import type { RefObject } from 'react'
 import React, { useCallback, useRef, useState } from 'react'
 
 import type { SearchCategory } from '@audius/common/api'
-import { useGetSearchResults, useFollowers } from '@audius/common/api'
+import { useSearchResults, useFollowers } from '@audius/common/api'
 import type { ReplyingAndEditingState } from '@audius/common/context'
 import {
   CommentSectionProvider,
   useCurrentCommentSection
 } from '@audius/common/context'
 import type { ID, UserMetadata } from '@audius/common/models'
-import { Status } from '@audius/common/models'
 import type { LineupBaseActions, playerActions } from '@audius/common/store'
 import { accountSelectors } from '@audius/common/store'
 import type {
@@ -89,19 +88,14 @@ const CommentDrawerAutocompleteContent = ({
     offset: 0
   }
 
-  const { data: searchData, status: searchStatus } = useGetSearchResults(
-    params,
-    { debounce: 500 }
-  )
+  const { data: searchData, isLoading: searchLoading } =
+    useSearchResults(params)
   const { data: followersData, isPending: followerDataPending } = useFollowers({
     pageSize: 6,
     userId: currentUserId
   })
-  const userList = query !== '' ? searchData?.users : followersData
-  const isUserListPending =
-    query !== ''
-      ? searchStatus === Status.LOADING || searchStatus === Status.IDLE
-      : followerDataPending
+  const userList = query !== '' ? (searchData as any)?.users : followersData
+  const isUserListPending = query !== '' ? searchLoading : followerDataPending
 
   // Loading state
   if (isUserListPending) {
@@ -131,7 +125,10 @@ const CommentDrawerAutocompleteContent = ({
       keyboardShouldPersistTaps='handled'
       renderItem={({ item }) => (
         <Box ph='l'>
-          <UserListItem user={item} onPress={() => onSelect(item)} />
+          <UserListItem
+            user={item as UserMetadata}
+            onPress={() => onSelect(item as UserMetadata)}
+          />
         </Box>
       )}
     />

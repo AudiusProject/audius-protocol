@@ -2,7 +2,7 @@ import { useEffect, useRef, useState, useCallback, useMemo } from 'react'
 
 import {
   SearchCategory,
-  useGetSearchResults,
+  useSearchResults,
   useFollowers
 } from '@audius/common/api'
 import { Status, UserMetadata } from '@audius/common/models'
@@ -60,22 +60,18 @@ export const UserMentionAutocompleteText = (
     disableAnalytics: true
   }
 
-  const { data: searchUserData, status: searchStatus } = useGetSearchResults(
-    params,
-    {
-      debounce: 500,
-      disabled:
-        accountStatus === Status.LOADING || accountStatus === Status.IDLE
-    }
-  )
+  const {
+    data: searchData,
+    isLoading,
+    isSuccess
+  } = useSearchResults(params, {
+    enabled: accountStatus !== Status.LOADING && accountStatus !== Status.IDLE
+  })
 
-  const userList = searchText !== '' ? searchUserData?.users : followersData
+  const userList = searchText !== '' ? searchData?.users : followersData
   const userListLoadSuccess =
-    searchText !== '' ? searchStatus === Status.SUCCESS : followersDataSuccess
-  const isUserListPending =
-    searchText !== ''
-      ? searchStatus === Status.LOADING || searchStatus === Status.IDLE
-      : followerDataPending
+    searchText !== '' ? isSuccess : followersDataSuccess
+  const isUserListPending = searchText !== '' ? isLoading : followerDataPending
 
   const options = useMemo(
     () => userList?.map((user) => ({ value: String(user.user_id) })) ?? [],

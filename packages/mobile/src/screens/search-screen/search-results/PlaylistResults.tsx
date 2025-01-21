@@ -1,7 +1,7 @@
 import { useCallback } from 'react'
 
 import type { ID } from '@audius/common/models'
-import { Kind, Name, Status } from '@audius/common/models'
+import { Kind, Name } from '@audius/common/models'
 import { searchActions } from '@audius/common/store'
 import { useDispatch } from 'react-redux'
 
@@ -22,10 +22,14 @@ const { addItem: addRecentSearch } = searchActions
 export const PlaylistResults = () => {
   const dispatch = useDispatch()
   const { spacing } = useTheme()
-  const { data, status } = useGetSearchResults('playlists')
+  const {
+    data: playlists,
+    isLoading,
+    isSuccess
+  } = useGetSearchResults('playlists')
   const [query] = useSearchQuery()
   const isEmptySearch = useIsEmptySearch()
-  const hasNoResults = (!data || data.length === 0) && status === Status.SUCCESS
+  const hasNoResults = (!playlists || playlists.length === 0) && isSuccess
 
   const handlePress = useCallback(
     (id: ID) => {
@@ -64,8 +68,8 @@ export const PlaylistResults = () => {
             paddingVertical: spacing.m
           }}
           keyboardShouldPersistTaps='handled'
-          isLoading={status === Status.LOADING}
-          collection={data as any[]}
+          isLoading={isLoading}
+          collection={playlists}
           onCollectionPress={handlePress}
         />
       )}

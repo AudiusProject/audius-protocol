@@ -1,6 +1,5 @@
 import { useRef } from 'react'
 
-import { Status } from '@audius/common/models'
 import { SearchKind } from '@audius/common/store'
 import { Flex, Text } from '@audius/harmony'
 
@@ -25,8 +24,7 @@ export const AllResults = () => {
   const isMobile = useIsMobile()
   const containerRef = useRef<HTMLDivElement>(null)
 
-  const { data, status } = useGetSearchResults('all')
-  const isLoading = status === Status.LOADING
+  const { data, isLoading } = useGetSearchResults('all')
 
   const isResultsEmpty =
     data &&

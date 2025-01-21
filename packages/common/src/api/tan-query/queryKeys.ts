@@ -37,6 +37,7 @@ export const QUERY_KEYS = {
   emailInUse: 'emailInUse',
   handleInUse: 'handleInUse',
   handleReservedStatus: 'handleReservedStatus',
+  search: 'search',
   trending: 'trending',
   suggestedArtists: 'suggestedArtists',
   topArtistsInGenre: 'topArtistsInGenre',
@@ -49,5 +50,6 @@ export const QUERY_KEYS = {
   notificationUnreadCount: 'notificationUnreadCount',
   reposts: 'reposts',
   remixers: 'remixers',
-  search: 'search'
+  searchAutocomplete: 'searchAutocomplete',
+  topTags: 'topTags'
 } as const
