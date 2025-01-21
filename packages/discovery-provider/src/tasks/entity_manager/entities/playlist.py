@@ -583,11 +583,17 @@ def process_playlist_contents(
         )
 
     for track in track_items:
-        # Track id can be either "track" or "track_id"
+        # Prefer track_id, use legacy track field otherwise
         track_id = track.get("track") or track.get("track_id")
-        # Track time can be either "timestamp" or "time"
-        metadata_time = track.get("timestamp") or track.get("time")
-        index_time = block_integer_time  # default to current block for new tracks
+        # Prefer metadata_timestamp if it exists, otherwise use timestamp or the legacy time field
+        metadata_time = (
+            track.get("metadata_timestamp")
+            or track.get("timestamp")
+            or track.get("time")
+        )
+        index_time = (
+            block_integer_time  # default index time to current block for new tracks
+        )
 
         if not track_id:
             raise IndexingValidationError(
@@ -604,6 +610,7 @@ def process_playlist_contents(
         previous_playlist_tracks = playlist_record.playlist_contents["track_ids"]
         for previous_track in previous_playlist_tracks:
             previous_track_id = previous_track["track"]
+            # prefer metadata_time to check if track was already in playlist
             previous_track_time = (
                 previous_track.get("metadata_time") or previous_track["time"]
             )

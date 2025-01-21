@@ -1784,7 +1784,7 @@ def test_playlist_creation_with_flattened_format(app, mocker):
         assert playlist.playlist_contents["track_ids"][1]["track"] == 2
 
 
-def test_playlist_update_preserves_track_order(app, mocker):
+def test_playlist_update_preserves_existing_tracks(app, mocker):
     """Tests that updating a playlist preserves track order and timing information"""
     with app.app_context():
         db = get_db()
@@ -1808,7 +1808,16 @@ def test_playlist_update_preserves_track_order(app, mocker):
     update_metadata = {
         "playlist_contents": [
             {"track": 1, "time": 1585336422},  # Same track and time
-            {"track": 2, "timestamp": 1585336425},  # Same track, new time
+            {
+                "track": 2,
+                "timestamp": 1585336422,
+                "metadata_timestamp": 1585336422,
+            },  # Same track and time
+            {
+                "track": 2,
+                "timestamp": 0,
+                "metadata_timestamp": 1585336425,
+            },  # Same track, new metadata time (adding a new copy of the track)
             {"track": 3, "time": 1585336425},  # New track
         ],
         "description": "Updated playlist",
@@ -1882,6 +1891,7 @@ def test_playlist_update_preserves_track_order(app, mocker):
             session,
             [entity_manager_txs[1]],
             block_number=1,
+            # index time is two blocks after the value passed in the tx
             block_timestamp=1585336427,
             block_hash=hex(1),
         )
@@ -1895,19 +1905,28 @@ def test_playlist_update_preserves_track_order(app, mocker):
         )
 
         assert playlist is not None
-        assert len(playlist.playlist_contents["track_ids"]) == 3
+        assert len(playlist.playlist_contents["track_ids"]) == 4
 
         # First track should keep original time
         assert playlist.playlist_contents["track_ids"][0]["track"] == 1
         assert playlist.playlist_contents["track_ids"][0]["time"] == 1585336422
         assert playlist.playlist_contents["track_ids"][0]["metadata_time"] == 1585336422
 
-        # Second track should have updated index time, new metadata time
+        # Second track should keep original time
         assert playlist.playlist_contents["track_ids"][1]["track"] == 2
-        assert playlist.playlist_contents["track_ids"][1]["time"] == 1585336427
-        assert playlist.playlist_contents["track_ids"][1]["metadata_time"] == 1585336425
+        assert playlist.playlist_contents["track_ids"][1]["time"] == 1585336422
+        assert playlist.playlist_contents["track_ids"][1]["metadata_time"] == 1585336422
+
+        # Third track is a copy of the second track using a new metadata_timestamp
+        assert playlist.playlist_contents["track_ids"][2]["track"] == 2
+        assert (
+            playlist.playlist_contents["track_ids"][2]["time"] == 1585336427
+        )  # new track uses index time of the block
+        assert playlist.playlist_contents["track_ids"][2]["metadata_time"] == 1585336425
 
         # Third track added at same time as second track modified, should use same timestamps
-        assert playlist.playlist_contents["track_ids"][2]["track"] == 3
-        assert playlist.playlist_contents["track_ids"][2]["time"] == 1585336427
-        assert playlist.playlist_contents["track_ids"][2]["metadata_time"] == 1585336425
+        assert playlist.playlist_contents["track_ids"][3]["track"] == 3
+        assert (
+            playlist.playlist_contents["track_ids"][3]["time"] == 1585336427
+        )  # new track uses index time of the block
+        assert playlist.playlist_contents["track_ids"][3]["metadata_time"] == 1585336425
