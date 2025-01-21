@@ -259,7 +259,7 @@ export const EditTrackScreen = (props: EditTrackScreenProps) => {
   return (
     <Formik<FormValues>
       initialValues={initialValues}
-      enableReinitialize
+      enableReinitialize={!initialValuesProp.isUpload}
       onSubmit={handleSubmit}
       validationSchema={editTrackSchema}
     >

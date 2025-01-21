@@ -60,7 +60,6 @@ export const Panel = ({
     progressLabel,
     remainingLabel
   })
-
   return (
     <TouchableOpacity onPress={onPress} activeOpacity={0.7}>
       <Flex border='default' borderRadius='l' pb='unit10'>

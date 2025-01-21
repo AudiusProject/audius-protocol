@@ -38,7 +38,10 @@ const slice = createSlice({
   name: 'account',
   initialState,
   reducers: {
-    fetchAccount: () => {},
+    fetchAccount: (
+      _state,
+      _action: PayloadAction<{ shouldMarkAccountAsLoading: boolean }>
+    ) => {},
     fetchLocalAccount: () => {},
     fetchAccountRequested: (state) => {
       state.status = Status.LOADING

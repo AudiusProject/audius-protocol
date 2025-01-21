@@ -570,11 +570,7 @@ const CollectiblesPage = (props: CollectiblesPageProps) => {
             <div className={styles.subtitle}>
               {`${collectibleMessages.subtitlePrefix}${name}`}
               {userId && (
-                <UserBadges
-                  className={styles.badges}
-                  userId={userId}
-                  badgeSize={14}
-                />
+                <UserBadges className={styles.badges} userId={userId} />
               )}
             </div>
           </div>

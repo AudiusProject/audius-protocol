@@ -21,7 +21,8 @@ export enum ChallengeId {
   AUDIO_MATCHING_SELLER = 's',
   TRENDING_TRACK = 'tt',
   TRENDING_PLAYLIST = 'tp',
-  TRENDING_UNDERGROUND_TRACK = 'tut'
+  TRENDING_UNDERGROUND_TRACK = 'tut',
+  ONE_SHOT = 'o'
 }
 
 const DefaultSpecifier = z.object({

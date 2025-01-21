@@ -92,12 +92,7 @@ const Tippers = ({ tippers, receiver }: TippersProps) => {
       {tippers.slice(0, NUM_FEED_TIPPERS_DISPLAYED).map((tipper, index) => (
         <div key={`tipper-${tipper.user_id}`} className={styles.tipperName}>
           <span>{tipper.name}</span>
-          <UserBadges
-            userId={tipper.user_id}
-            className={styles.badge}
-            badgeSize={14}
-            inline
-          />
+          <UserBadges userId={tipper.user_id} className={styles.badge} inline />
           {index < tippers.length - 1 &&
           index < NUM_FEED_TIPPERS_DISPLAYED - 1 ? (
             <div className={styles.tipperSeparator}>,</div>
@@ -138,7 +133,7 @@ const SendTipButton = ({ user, hideName = false }: SendTipButtonProps) => {
         <UserBadges
           userId={user.user_id}
           className={styles.badge}
-          badgeSize={12}
+          size='2xs'
           inline
         />
       </div>
@@ -254,7 +249,6 @@ export const FeedTipTile = () => {
               <UserBadges
                 userId={tipToDisplay.receiver_id}
                 className={styles.badge}
-                badgeSize={14}
                 inline
               />
             </div>
