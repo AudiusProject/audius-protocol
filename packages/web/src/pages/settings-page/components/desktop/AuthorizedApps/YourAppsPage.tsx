@@ -1,17 +1,12 @@
 import { DeveloperApp, useAuthorizedApps } from '@audius/common/api'
-import { Status } from '@audius/common/models'
-import { accountSelectors } from '@audius/common/store'
 import { ModalContentText } from '@audius/harmony'
 
 import { Divider } from 'components/divider'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
-import { useSelector } from 'utils/reducer'
 
 import { AuthorizedAppListItem } from './AuthorizedAppListItem'
 import styles from './YourAppsPage.module.css'
 import { AuthorizedAppPageProps } from './types'
-
-const { getUserId } = accountSelectors
 
 const messages = {
   description:
@@ -24,8 +19,7 @@ type YourAppsPageProps = AuthorizedAppPageProps
 
 export const YourAppsPage = (props: YourAppsPageProps) => {
   const { setPage } = props
-  const userId = useSelector(getUserId)
-  const { data, isPending } = useAuthorizedApps(userId)
+  const { data, isPending } = useAuthorizedApps()
   const apps =
     data?.map(
       ({ address, name, description, imageUrl }): DeveloperApp => ({

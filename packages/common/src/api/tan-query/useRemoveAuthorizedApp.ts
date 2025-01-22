@@ -28,11 +28,14 @@ export const useRemoveAuthorizedApp = () => {
         userId: encodedUserId,
         appApiKey: apiKey
       })
-
-      return {}
     },
     onMutate: (args) => {
       const { apiKey, userId } = args
+
+      queryClient.invalidateQueries({
+        queryKey: [QUERY_KEYS.authorizedApps, args.userId]
+      })
+
       const previousApps: DeveloperApp[] | undefined = queryClient.getQueryData(
         [QUERY_KEYS.authorizedApps, userId]
       )
