@@ -1,4 +1,5 @@
 import { Id, full } from '@audius/sdk'
+import { useQueryClient } from '@tanstack/react-query'
 import { useDispatch } from 'react-redux'
 
 import { transformAndCleanList, userFeedItemFromSDK } from '~/adapters'
@@ -15,6 +16,8 @@ import { Nullable } from '~/utils/typeUtils'
 
 import { QUERY_KEYS } from './queryKeys'
 import { Config } from './types'
+import { primeCollectionData } from './utils/primeCollectionData'
+import { primeTrackData } from './utils/primeTrackData'
 import { useLineupQuery } from './utils/useLineupQuery'
 
 const filterMap: { [k in FeedFilter]: full.GetUserFeedFilterEnum } = {
@@ -34,6 +37,7 @@ export const useFeed = (
   config?: Config
 ) => {
   const { audiusSdk } = useAudiusQueryContext()
+  const queryClient = useQueryClient()
   const dispatch = useDispatch()
 
   return useLineupQuery<UserTrackMetadata | UserCollectionMetadata>({
@@ -56,7 +60,7 @@ export const useFeed = (
         userId: Id.parse(userId),
         filter: filterMap[filter],
         limit: pageSize,
-        offset: 0,
+        offset: pageParam,
         withUsers: true
       })
 
@@ -64,18 +68,27 @@ export const useFeed = (
         ({ item }) => item
       )
       if (feed === null) return []
-      //   const filteredFeed = feed.filter((record) => !record.user.is_deactivated)
-      //   const [tracks, collections] = getTracksAndCollections(filteredFeed)
-      //   const flatTracksAndCollections = [...tracks, ...collections]
+      const filteredFeed = feed.filter((record) => !record.user.is_deactivated)
+      const [tracks, collections] = getTracksAndCollections(filteredFeed)
+      //   console.log({ track0: tracks[0] })
+      const flatTracksAndCollections = [...tracks, ...collections]
 
-      // TODO: prime tan query caches
+      // TODO: is this needed?
+      // Remove users, add images
+      //   const reformattedTracks = tracks.map((track) => reformat(track))
+
+      // Prime caches
+      primeTrackData({ tracks, queryClient, dispatch })
+      primeCollectionData({ collections, queryClient, dispatch })
+
+      // Pass the data to lineup sagas
       dispatch(
         feedPageLineupActions.fetchLineupMetadatas(pageParam, pageSize, false, {
           feed
         })
       )
 
-      return feed
+      return filteredFeed
     },
     ...config,
     enabled: userId !== null

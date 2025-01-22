@@ -1,4 +1,6 @@
+import { useFeed } from '@audius/common/api'
 import { Name, FeedFilter } from '@audius/common/models'
+import { useCurrentUserId } from '@audius/common/src/api/tan-query/useCurrentUserId'
 import { feedPageLineupActions as feedActions } from '@audius/common/store'
 import { IconFeed } from '@audius/harmony'
 
@@ -38,16 +40,24 @@ const FeedPageContent = ({
   const mainLineupProps = {
     variant: LineupVariant.MAIN
   }
+  const { data: currentUserId } = useCurrentUserId()
+  const { isLoading, fetchNextPage, play, pause } = useFeed({
+    userId: currentUserId
+  })
 
   const feedLineupProps = {
     ...getLineupProps(feed),
     setInView: setFeedInView,
-    loadMore: loadMoreFeed,
-    playTrack: playFeedTrack,
-    pauseTrack: pauseFeedTrack,
+    loadMore: () => {
+      console.log('FETCHING MORE')
+      fetchNextPage()
+    },
+    playTrack: play,
+    pauseTrack: pause,
     delineate: feedIsMain,
     actions: feedActions
   }
+  // console.log({ isLoading, feedLineupProps, mainLineupProps })
   const record = useRecord()
 
   const didSelectFilter = (filter: FeedFilter) => {
