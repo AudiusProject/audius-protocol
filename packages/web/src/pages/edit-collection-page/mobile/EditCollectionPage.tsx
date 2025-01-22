@@ -239,7 +239,6 @@ const EditCollectionPage = g(
 
         updateCollection({
           collectionId: collection.playlist_id,
-          userId: collection.playlist_id,
           metadata: formFields as EditCollectionValues
         })
 

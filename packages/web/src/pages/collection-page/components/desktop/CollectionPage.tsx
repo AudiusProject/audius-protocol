@@ -5,7 +5,6 @@ import {
   Status,
   SmartCollection,
   ID,
-  User,
   isContentUSDCPurchaseGated,
   ModalSource,
   Track,

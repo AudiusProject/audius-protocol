@@ -4,6 +4,7 @@ import { useDispatch, useStore } from 'react-redux'
 
 import { fileToSdk, trackMetadataForUploadToSdk } from '~/adapters/track'
 import { useAudiusQueryContext } from '~/audius-query'
+import { UserTrackMetadata } from '~/models'
 import { Feature } from '~/models/ErrorReporting'
 import { ID } from '~/models/Identifiers'
 import { CommonState } from '~/store/commonStore'
@@ -13,7 +14,6 @@ import { TrackMetadataForUpload } from '~/store/upload'
 import { QUERY_KEYS } from './queryKeys'
 import { handleStemUpdates } from './utils/handleStemUpdates'
 import { primeTrackData } from './utils/primeTrackData'
-import { UserTrackMetadata } from '~/models'
 
 const { getCurrentUploads } = stemsUploadSelectors
 

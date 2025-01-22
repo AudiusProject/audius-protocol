@@ -36,7 +36,6 @@ export const EditCollectionScreen = () => {
       if (playlist) {
         updateCollection({
           collectionId: playlist.playlist_id,
-          userId: playlist.playlist_id,
           metadata: values
         })
       }

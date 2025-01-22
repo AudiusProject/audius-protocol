@@ -2,6 +2,7 @@ import { useState } from 'react'
 
 import { useCollection, useUpdateCollection } from '@audius/common/api'
 import { ID } from '@audius/common/models'
+import { EditCollectionValues } from '@audius/common/store'
 import { Button, Flex, Text, TextInput } from '@audius/harmony'
 
 type Props = {
@@ -19,8 +20,7 @@ export const TestCollectionUpdate = ({ playlistId }: Props) => {
       collectionId: playlistId,
       metadata: {
         playlist_name: newTitle
-      },
-      userId: collection.user.user_id
+      } as EditCollectionValues
     })
     // Clear input after submitting
     setNewTitle('')
