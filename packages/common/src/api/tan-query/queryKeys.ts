@@ -51,5 +51,6 @@ export const QUERY_KEYS = {
   reposts: 'reposts',
   remixers: 'remixers',
   trackHistory: 'trackHistory',
-  topTags: 'topTags'
+  topTags: 'topTags',
+  authorizedApps: 'authorizedApps'
 } as const

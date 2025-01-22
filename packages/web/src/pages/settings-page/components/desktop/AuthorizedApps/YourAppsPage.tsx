@@ -1,4 +1,4 @@
-import { useGetAuthorizedApps } from '@audius/common/api'
+import { DeveloperApp, useAuthorizedApps } from '@audius/common/api'
 import { Status } from '@audius/common/models'
 import { accountSelectors } from '@audius/common/store'
 import { ModalContentText } from '@audius/harmony'
@@ -25,10 +25,16 @@ type YourAppsPageProps = AuthorizedAppPageProps
 export const YourAppsPage = (props: YourAppsPageProps) => {
   const { setPage } = props
   const userId = useSelector(getUserId)
-  const { data, status } = useGetAuthorizedApps(
-    { id: userId as number },
-    { disabled: !userId }
-  )
+  const { data, isPending } = useAuthorizedApps(userId)
+  const apps =
+    data?.map(
+      ({ address, name, description, imageUrl }): DeveloperApp => ({
+        name,
+        description,
+        imageUrl,
+        apiKey: address.slice(2)
+      })
+    ) ?? []
 
   return (
     <div className={styles.content}>
@@ -38,13 +44,13 @@ export const YourAppsPage = (props: YourAppsPageProps) => {
           <h4 className={styles.appsHeaderText}>{messages.yourAppsTitle}</h4>
         </div>
         <Divider className={styles.divider} />
-        {status !== Status.SUCCESS ? (
+        {isPending ? (
           <LoadingSpinner className={styles.spinner} />
-        ) : data?.apps.length === 0 ? (
+        ) : apps.length === 0 ? (
           <p className={styles.noApps}>{messages.noApps}</p>
         ) : (
           <ol className={styles.appList}>
-            {data?.apps.map((app, index) => (
+            {apps.map((app, index) => (
               <AuthorizedAppListItem
                 key={app.apiKey}
                 index={index + 1}
