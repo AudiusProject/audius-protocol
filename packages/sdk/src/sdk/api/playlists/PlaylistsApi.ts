@@ -488,7 +488,7 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
       isPrivate: false,
       playlistContents: trackIds.map((trackId) => ({
         trackId,
-        timeStamp: currentBlock.timestamp
+        timestamp: currentBlock.timestamp
       })),
       playlistImageSizesMultihash: coverArtResponse.id
     }
@@ -602,7 +602,7 @@ export class PlaylistsApi extends GeneratedPlaylistsApi {
       ...metadata,
       playlistContents: (trackIds ?? []).map((trackId) => ({
         trackId,
-        timeStamp: currentBlock.timestamp
+        timestamp: currentBlock.timestamp
       })),
       playlistImageSizesMultihash: coverArtResponse?.id ?? metadata.coverArtCid
     }
