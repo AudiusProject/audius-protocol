@@ -1,8 +1,3 @@
-import {
-  SearchCategory,
-  useGetSearchResults as useGetSearchResultsApi
-} from '@audius/common/api'
-import { ID } from '@audius/common/models'
 import { IconComponent } from '@audius/harmony'
 import { Mood } from '@audius/sdk'
 
@@ -42,20 +37,6 @@ export type MoodInfo = {
   label: Mood
   value: Mood
   icon: JSX.Element
-}
-
-type SearchResultsApiType = ReturnType<typeof useGetSearchResultsApi>
-
-export type SearchResultsType<C extends SearchCategory> = {
-  status: SearchResultsApiType['status']
-  data: C extends 'all'
-    ? {
-        users: ID[]
-        tracks: ID[]
-        playlists: ID[]
-        albums: ID[]
-      }
-    : ID[]
 }
 
 export type CategoryKey = keyof typeof categories

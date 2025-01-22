@@ -6,12 +6,12 @@ import { useAudiusQueryContext } from '~/audius-query'
 import { getWalletAddresses } from '~/store/account/selectors'
 
 import { QUERY_KEYS } from './queryKeys'
-import { Config } from './types'
+import { QueryOptions } from './types'
 
 /**
  * Hook to get the currently logged in user's data
  */
-export const useCurrentUser = (config?: Config) => {
+export const useCurrentUser = (options?: QueryOptions) => {
   const { audiusSdk } = useAudiusQueryContext()
   const { currentUser } = useSelector(getWalletAddresses)
 
@@ -31,7 +31,7 @@ export const useCurrentUser = (config?: Config) => {
       const account = accountFromSDK(data)
       return account?.user
     },
-    staleTime: config?.staleTime,
-    enabled: config?.enabled !== false && !!currentUser
+    staleTime: options?.staleTime,
+    enabled: options?.enabled !== false && !!currentUser
   })
 }

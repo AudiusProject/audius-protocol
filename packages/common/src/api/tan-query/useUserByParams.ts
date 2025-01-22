@@ -5,7 +5,7 @@ import { useDispatch } from 'react-redux'
 import { ID } from '~/models/Identifiers'
 import { profilePageActions } from '~/store/pages'
 
-import { Config } from './types'
+import { QueryOptions } from './types'
 import { useUser } from './useUser'
 import { useUserByHandle } from './useUserByHandle'
 
@@ -20,7 +20,7 @@ type UserParams = { userId?: ID } | { handle?: string }
  * @param options Optional configuration for the query
  * @returns The user data or null if not found
  */
-export const useUserByParams = (params: UserParams, options?: Config) => {
+export const useUserByParams = (params: UserParams, options?: QueryOptions) => {
   const userId = 'userId' in params ? params.userId : null
   const handle = 'handle' in params ? params.handle : null
   const dispatch = useDispatch()

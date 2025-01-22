@@ -4,10 +4,10 @@ import { useQuery } from '@tanstack/react-query'
 import { useAudiusQueryContext } from '~/audius-query'
 
 import { QUERY_KEYS } from './queryKeys'
-import { Config } from './types'
+import { QueryOptions } from './types'
 import { useCurrentUserId } from './useCurrentUserId'
 
-export const useAudioTransactionsCount = (config?: Config) => {
+export const useAudioTransactionsCount = (options?: QueryOptions) => {
   const { audiusSdk } = useAudiusQueryContext()
   const { data: userId } = useCurrentUserId()
 
@@ -23,7 +23,7 @@ export const useAudioTransactionsCount = (config?: Config) => {
 
       return response.data ?? 0
     },
-    staleTime: config?.staleTime,
-    enabled: config?.enabled !== false && !!userId
+    staleTime: options?.staleTime,
+    enabled: options?.enabled !== false && !!userId
   })
 }

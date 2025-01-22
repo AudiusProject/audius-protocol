@@ -1,6 +1,6 @@
 import { useCallback, useMemo } from 'react'
 
-import { Kind, Name, Status } from '@audius/common/models'
+import { Kind, Name } from '@audius/common/models'
 import {
   searchActions,
   type SearchItem as SearchItemType
@@ -39,7 +39,7 @@ export const SearchSectionHeader = (props: SearchSectionHeaderProps) => {
 const AllResultsItem = ({
   item
 }: {
-  item: SearchItemType & { status?: Status; isAlbum?: boolean }
+  item: SearchItemType & { isLoading?: boolean; isAlbum?: boolean }
 }) => {
   const dispatch = useDispatch()
   const [query] = useSearchQuery()
@@ -62,7 +62,7 @@ const AllResultsItem = ({
     )
   }, [item, dispatch, query])
 
-  return item.status === Status.LOADING ? (
+  return item.isLoading ? (
     <SearchItemSkeleton />
   ) : (
     <SearchItem searchItem={item} onPress={handlePress} />
@@ -75,7 +75,7 @@ const skeletonSections = [
     data: range(5).map((i) => ({
       id: i,
       kind: Kind.USERS,
-      status: Status.LOADING
+      isLoading: true
     }))
   },
   {
@@ -83,7 +83,7 @@ const skeletonSections = [
     data: range(5).map((i) => ({
       id: i,
       kind: Kind.TRACKS,
-      status: Status.LOADING
+      isLoading: true
     }))
   },
   {
@@ -91,7 +91,7 @@ const skeletonSections = [
     data: range(5).map((i) => ({
       id: i,
       kind: Kind.COLLECTIONS,
-      status: Status.LOADING
+      isLoading: true
     }))
   },
   {
@@ -99,13 +99,13 @@ const skeletonSections = [
     data: range(5).map((i) => ({
       id: i,
       kind: Kind.COLLECTIONS,
-      status: Status.LOADING
+      isLoading: true
     }))
   }
 ]
 
 export const AllResults = () => {
-  const { data, status } = useGetSearchResults('all')
+  const { data, isLoading, isSuccess } = useGetSearchResults('all')
 
   const sections = useMemo(
     () =>
@@ -113,30 +113,30 @@ export const AllResults = () => {
         ? [
             {
               title: 'profiles',
-              data: data.users.map(({ user_id }) => ({
-                id: user_id,
+              data: data.users.map((user) => ({
+                id: user.user_id,
                 kind: Kind.USERS
               }))
             },
             {
               title: 'tracks',
-              data: data.tracks.map(({ track_id }) => ({
-                id: track_id,
+              data: data.tracks.map((track) => ({
+                id: track.track_id,
                 kind: Kind.TRACKS
               }))
             },
             {
               title: 'playlists',
-              data: data.playlists.map(({ playlist_id }) => ({
-                id: playlist_id,
+              data: data.playlists.map((playlist) => ({
+                id: playlist.playlist_id,
                 kind: Kind.COLLECTIONS,
                 isAlbum: false
               }))
             },
             {
               title: 'albums',
-              data: data.albums.map(({ playlist_id }) => ({
-                id: playlist_id,
+              data: data.albums.map((album) => ({
+                id: album.playlist_id,
                 kind: Kind.COLLECTIONS,
                 isAlbum: true
               }))
@@ -146,9 +146,7 @@ export const AllResults = () => {
     [data]
   )
 
-  const isLoading = status === Status.LOADING
-  const hasNoResults =
-    (!data || sections.length === 0) && status === Status.SUCCESS
+  const hasNoResults = (!data || sections.length === 0) && isSuccess
 
   return (
     <Flex onTouchStart={Keyboard.dismiss}>
