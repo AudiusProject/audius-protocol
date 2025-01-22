@@ -8,7 +8,7 @@ import {
   transactionDetailsActions,
   TransactionType
 } from '@audius/common/store'
-import { IconCaretRight } from '@audius/harmony'
+import { Flex, IconCaretRight } from '@audius/harmony'
 import { full } from '@audius/sdk'
 import { useDispatch } from 'react-redux'
 
@@ -48,7 +48,7 @@ const AUDIO_TRANSACTIONS_BATCH_SIZE = 50
 const Disclaimer = () => {
   const setVisibility = useSetVisibility()
   return (
-    <div className={styles.container}>
+    <Flex className={styles.container} shadow='mid'>
       <span className={styles.disclaimerMessage}>{messages.disclaimer}</span>
       <div
         className={styles.moreInfoContainer}
@@ -57,7 +57,7 @@ const Disclaimer = () => {
         <span className={styles.moreInfo}>{messages.moreInfo}</span>
         <IconCaretRight color='subdued' className={styles.iconCaretRight} />
       </div>
-    </div>
+    </Flex>
   )
 }
 
