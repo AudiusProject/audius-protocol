@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react'
 
-import { HarmonyTheme, IconComponent } from '@audius/harmony'
+import { IconComponent } from '@audius/harmony'
 import clsx from 'clsx'
 import { Spring } from 'react-spring/renderprops'
 
@@ -41,14 +41,7 @@ const Page = ({ className, children, title, icon }: PageProps) => {
       {(animProps) => (
         <div style={animProps}>
           <div className={styles.titleContainer}>
-            {IconComponent == null ? null : (
-              <IconComponent
-                color='inverse'
-                // css={({ color }: HarmonyTheme) => ({
-                //   '& path': { fill: color.icon.staticWhite }
-                // })}
-              />
-            )}
+            {IconComponent == null ? null : <IconComponent color='inverse' />}
             <h1 className={styles.title}>{title}</h1>
           </div>
           <div className={clsx({ [className!]: !!className })}>{children}</div>

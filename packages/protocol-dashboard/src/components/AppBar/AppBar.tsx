@@ -20,6 +20,7 @@ import {
   useWeb3ModalProvider
 } from '@web3modal/ethers/react'
 import clsx from 'clsx'
+
 import Button from 'components/Button'
 import { ConnectAudiusProfileModal } from 'components/ConnectAudiusProfileModal/ConnectAudiusProfileModal'
 import UserImage from 'components/UserImage'

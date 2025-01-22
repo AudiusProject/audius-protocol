@@ -20,8 +20,7 @@ protocol-dashboard-init:
     - run:
         name: lint
         command: |
-          cd protocol-dashboard
-          npx turbo run verify --filter=audius-protocol-dashboard
+          npx turbo run verify --filter=@audius/protocol-dashboard
 
     # Persist node modules
     - persist_to_workspace:
@@ -115,7 +114,7 @@ protocol-dashboard-build-prod:
     - run:
         name: earthfast bundle
         command: |
-          cd protocol-dashboard
+          cd packages/protocol-dashboard
           timestamp=$(date +%s)
           filename="$(npx earthfast-cli bundle create dist${timestamp} dist)"
           hash="$(npx earthfast-cli bundle checksum $filename)"
@@ -139,7 +138,7 @@ protocol-dashboard-pin-prod:
     - run:
         name: deploy to s3
         command: |
-          cd protocol-dashboard
+          cd packages/protocol-dashboard
           source tmp.env
           aws s3 cp ${FILENAME} s3://dashboard.audius.org/${FILENAME} --cache-control max-age=0
 
@@ -156,6 +155,6 @@ protocol-dashboard-deploy-prod:
     - run:
         name: earthfast publish
         command: |
-          cd protocol-dashboard
+          cd packages/protocol-dashboard
           source tmp.env
           npx earthfast-cli project publish 0xcfe2a20ff701a1f3e14f63bd70d6c6bc6fba8172ec6d5a505cdab3927c0a9de6 https://s3.us-west-1.amazonaws.com/dashboard.audius.org/${FILENAME} ${HASH} --key=${ARMADA_ADMIN_PRIVATE_KEY}
