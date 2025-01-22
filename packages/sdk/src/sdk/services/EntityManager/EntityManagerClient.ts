@@ -1,6 +1,7 @@
 import {
   createPublicClient,
   encodeFunctionData,
+  decodeFunctionData,
   http,
   type Hex,
   type PublicClient,
@@ -204,6 +205,10 @@ export class EntityManagerClient implements EntityManagerService {
 
     this.logger.info('Write confirmed')
     return true
+  }
+
+  public async decodeManageEntity(data: Hex) {
+    return decodeFunctionData({ abi: EntityManager.abi, data })
   }
 
   public async getCurrentBlock() {
