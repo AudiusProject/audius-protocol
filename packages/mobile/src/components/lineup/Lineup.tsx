@@ -241,6 +241,8 @@ export const Lineup = ({
   ListFooterComponent,
   onPressItem,
   itemStyles,
+  pageSize,
+  tanQuery,
   ...listProps
 }: LineupProps) => {
   const dispatch = useDispatch()
@@ -287,6 +289,10 @@ export const Lineup = ({
 
   const handleLoadMore = useCallback(
     (reset?: boolean) => {
+      if (tanQuery && loadMore) {
+        loadMore(0, 0, true)
+      }
+
       const {
         deleted = 0,
         nullCount = 0,
@@ -339,17 +345,20 @@ export const Lineup = ({
       }
     },
     [
-      actions,
-      countOrDefault,
-      dispatch,
-      fetchPayload,
-      includeLineupStatus,
-      itemCounts,
-      limit,
+      tanQuery,
+      loadMore,
       lineup,
       lineupLength,
-      loadMore,
+      countOrDefault,
       pageItemCount,
+      limit,
+      includeLineupStatus,
+      itemCounts.initial,
+      itemCounts.loadMore,
+      itemCounts.minimum,
+      dispatch,
+      actions,
+      fetchPayload,
       extraFetchOptions
     ]
   )
@@ -425,6 +434,9 @@ export const Lineup = ({
     const itemDisplayCount = page <= 1 ? itemCounts.initial : pageItemCount
 
     const getSkeletonCount = () => {
+      if (pageSize) {
+        return pageSize
+      }
       const shouldCalculateSkeletons =
         inView &&
         items.length < limit &&
@@ -482,16 +494,17 @@ export const Lineup = ({
 
     return [{ delineate: false, data }]
   }, [
-    inView,
-    count,
-    countOrDefault,
-    delineate,
-    itemCounts,
     lineup,
-    pageItemCount,
-    leadingElementId,
     start,
-    limit
+    count,
+    itemCounts.initial,
+    pageItemCount,
+    delineate,
+    leadingElementId,
+    pageSize,
+    inView,
+    limit,
+    countOrDefault
   ])
 
   const areSectionsEmpty = sections.every(
