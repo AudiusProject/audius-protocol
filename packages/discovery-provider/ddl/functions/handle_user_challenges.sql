@@ -34,30 +34,19 @@ begin
                 on conflict do nothing;
             end if;
 
-            select id into existing_notification 
-            from notification
-            where
-            type = 'challenge_reward' and
-            new.user_id = any(user_ids) and
-            group_id = 'challenge_reward:' || new.user_id || ':challenge:' || new.challenge_id || ':specifier:' || new.specifier and
-            specifier = new.user_id::text
-            limit 1;
-            
-            if existing_notification is null then
-                insert into notification
-                (slot, user_ids, timestamp, type, group_id, specifier, data)
-                values
-                (
-                    new.completed_blocknumber,
-                    ARRAY [new.user_id],
-                    new.completed_at,
-                    'challenge_reward',
-                    'challenge_reward:' || new.user_id || ':challenge:' || new.challenge_id || ':specifier:' || new.specifier,
-                    new.user_id,
-                    json_build_object('specifier', new.specifier, 'challenge_id', new.challenge_id, 'amount', new.amount * 100000000)
-                )
-                on conflict do nothing;
-            end if;
+            insert into notification
+            (slot, user_ids, timestamp, type, group_id, specifier, data)
+            values
+            (
+                new.completed_blocknumber,
+                ARRAY [new.user_id],
+                new.completed_at,
+                'challenge_reward',
+                'challenge_reward:' || new.user_id || ':challenge:' || new.challenge_id || ':specifier:' || new.specifier,
+                new.user_id,
+                json_build_object('specifier', new.specifier, 'challenge_id', new.challenge_id, 'amount', new.amount * 100000000) -- convert amount
+            )
+            on conflict do nothing;
         else
             -- transactional notifications cover this 
             if (new.challenge_id != 'b' and new.challenge_id != 's') then
