@@ -19,10 +19,6 @@ BEGIN
       ALTER TABLE email_access ADD COLUMN is_initial BOOLEAN NOT NULL DEFAULT FALSE;
   END IF;
 
-  -- Create indexes for performance if they don't exist
-  CREATE INDEX IF NOT EXISTS idx_email_access_is_initial ON email_access(is_initial);
-  CREATE INDEX IF NOT EXISTS idx_email_access_email_owner ON email_access(email_owner_user_id);
-
   -- Check whether the data has already been backfilled and return early for idempotency
   IF EXISTS (
     SELECT 1 
