@@ -1,6 +1,7 @@
 import {
   createPublicClient,
   encodeFunctionData,
+  decodeFunctionData,
   http,
   type Hex,
   type PublicClient,
@@ -206,6 +207,19 @@ export class EntityManagerClient implements EntityManagerService {
     return true
   }
 
+  /**
+   * Decodes the manage entity function data
+   * @param data - The encoded function data
+   * @returns The decoded function data
+   */
+  public async decodeManageEntity(data: Hex) {
+    return decodeFunctionData({ abi: EntityManager.abi, data })
+  }
+
+  /**
+   * Gets the current block
+   * @returns The current block
+   */
   public async getCurrentBlock() {
     const client = await this.getClient()
     const currentBlockNumber = await client.getBlockNumber()
@@ -214,6 +228,10 @@ export class EntityManagerClient implements EntityManagerService {
     return { ...block, timestamp: Number(block.timestamp) }
   }
 
+  /**
+   * Gets the domain used for proxy signing for the entity manager
+   * @returns The domain object
+   */
   private getDomain() {
     return {
       name: 'Entity Manager',
