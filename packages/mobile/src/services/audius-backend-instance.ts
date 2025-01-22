@@ -9,7 +9,6 @@ import { monitoringCallbacks } from './monitoringCallbacks'
 import { getFeatureEnabled } from './remote-config'
 import { remoteConfigInstance } from './remote-config/remote-config-instance'
 import { discoveryNodeSelectorService } from './sdk/discoveryNodeSelector'
-import { getStorageNodeSelector } from './sdk/storageNodeSelector'
 
 /**
  * audiusBackend initialized for a mobile environment
@@ -27,7 +26,6 @@ export const audiusBackendInstance = audiusBackend({
   getHostUrl: () => {
     return `${env.PUBLIC_PROTOCOL}//${env.PUBLIC_HOSTNAME}`
   },
-  getStorageNodeSelector,
   identityServiceUrl: env.IDENTITY_SERVICE,
   generalAdmissionUrl: env.GENERAL_ADMISSION,
   isElectron: false,

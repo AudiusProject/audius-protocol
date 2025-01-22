@@ -6,9 +6,11 @@ import {
   signOutActions,
   getContext
 } from '@audius/common/store'
-import { takeLatest, put } from 'redux-saga/effects'
+import { disconnect } from '@wagmi/core'
+import { takeLatest, put, call } from 'redux-saga/effects'
 
 import { make } from 'common/store/analytics/actions'
+import { wagmiConfig } from 'services/audius-sdk/wagmi'
 import { signOut } from 'store/sign-out/signOut'
 import { push } from 'utils/navigation'
 const { resetAccount, unsubscribeBrowserPushNotifications } = accountActions
@@ -19,6 +21,9 @@ function* watchSignOut() {
   const localStorage = yield* getContext('localStorage')
   const authService = yield* getContext('authService')
   yield takeLatest(signOutAction.type, function* () {
+    if (wagmiConfig.state.status === 'connected') {
+      yield call(disconnect, wagmiConfig)
+    }
     yield put(resetAccount())
     yield put(unsubscribeBrowserPushNotifications())
     yield put(resetWalletState())
