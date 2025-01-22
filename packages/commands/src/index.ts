@@ -18,6 +18,7 @@ import { playlistCommand } from './playlist/index.js'
 import { trackCommand } from './track/index.js'
 import { userCommand } from './user/index.js'
 import { albumCommand } from './album/index.js'
+import { entropyCommand } from './misc/entropy.js'
 
 async function main() {
   program.name('audius-cmd')
@@ -36,6 +37,7 @@ async function main() {
   program.addCommand(mintCommand)
   program.addCommand(tipReactionCommand)
   program.addCommand(withdrawTokensCommand)
+  program.addCommand(entropyCommand)
 
   try {
     await program.parseAsync(process.argv)

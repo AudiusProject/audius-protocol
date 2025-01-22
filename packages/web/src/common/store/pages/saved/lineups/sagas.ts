@@ -1,4 +1,4 @@
-import { Collection, Kind, LineupEntry, UID, User } from '@audius/common/models'
+import { Collection, Kind, LineupEntry, UID } from '@audius/common/models'
 import {
   cacheTracksSelectors,
   savedPageTracksLineupActions as savedTracksActions,
@@ -141,12 +141,10 @@ function* watchFetchSaves() {
     [FETCH_SAVES, FETCH_MORE_SAVES],
     function* (_action: ReturnType<typeof saveActions.fetchSaves>) {
       yield waitForAccount()
-      const account: User | null = yield* select(
-        accountSelectors.getAccountUser
-      )
+      const trackSaveCount = yield* select(accountSelectors.getTrackSaveCount)
 
-      if (account?.track_save_count) {
-        yield* put(savedTracksActions.setMaxEntries(account.track_save_count))
+      if (trackSaveCount) {
+        yield* put(savedTracksActions.setMaxEntries(trackSaveCount))
       }
     }
   )

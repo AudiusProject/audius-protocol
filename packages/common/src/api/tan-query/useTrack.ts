@@ -1,3 +1,4 @@
+import { Id } from '@audius/sdk'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useDispatch } from 'react-redux'
 
@@ -7,7 +8,6 @@ import { ID } from '~/models/Identifiers'
 import { Kind } from '~/models/Kind'
 import { addEntries } from '~/store/cache/actions'
 import { EntriesByKind } from '~/store/cache/types'
-import { encodeHashId } from '~/utils/hashIds'
 
 import { QUERY_KEYS } from './queryKeys'
 
@@ -24,7 +24,7 @@ export const useTrack = (trackId: ID, config?: Config) => {
   return useQuery({
     queryKey: [QUERY_KEYS.track, trackId],
     queryFn: async () => {
-      const encodedId = encodeHashId(trackId)
+      const encodedId = Id.parse(trackId)
       if (!encodedId) return null
       const { data } = await audiusSdk!.full.tracks.getTrack({
         trackId: encodedId

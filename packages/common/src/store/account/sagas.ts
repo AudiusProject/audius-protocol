@@ -1,4 +1,4 @@
-import { HedgehogWalletNotFoundError } from '@audius/sdk'
+import { HedgehogWalletNotFoundError, Id } from '@audius/sdk'
 import { SagaIterator } from 'redux-saga'
 import {
   call,
@@ -10,20 +10,7 @@ import {
 } from 'typed-redux-saga'
 
 import { userApiFetchSaga } from '~/api/user'
-import {
-  AccountUserMetadata,
-  ErrorLevel,
-  Id,
-  Kind,
-  Status,
-  UserMetadata
-} from '~/models'
-import { accountActions, accountSelectors } from '~/store/account'
-import {
-  getUserId,
-  getUserHandle,
-  getAccountUser
-} from '~/store/account/selectors'
+import { AccountUserMetadata, ErrorLevel, Kind, UserMetadata } from '~/models'
 import { getContext } from '~/store/effects'
 import { chatActions } from '~/store/pages/chat'
 import { UPLOAD_TRACKS_SUCCEEDED } from '~/store/upload/actions'
@@ -33,8 +20,15 @@ import { fetchProfile } from '../pages/profile/actions'
 import { getSDK } from '../sdkUtils'
 
 import {
+  getUserId,
+  getUserHandle,
+  getAccountUser,
+  getAccount
+} from './selectors'
+import {
   fetchAccount,
   fetchAccountFailed,
+  fetchAccountRequested,
   fetchAccountSucceeded,
   fetchHasTracks,
   fetchLocalAccount,
@@ -45,7 +39,8 @@ import {
   showPushNotificationConfirmation,
   signedIn,
   tikTokLogin,
-  twitterLogin
+  twitterLogin,
+  updatePlaylistLibrary
 } from './slice'
 
 const { fetchBlockees, fetchBlockers } = chatActions
@@ -156,16 +151,20 @@ function* initializeMetricsForUser({
   }
 }
 
-export function* fetchAccountAsync() {
+export function* fetchAccountAsync({
+  shouldMarkAccountAsLoading
+}: {
+  shouldMarkAccountAsLoading: boolean
+}) {
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
   const remoteConfigInstance = yield* getContext('remoteConfigInstance')
   const localStorage = yield* getContext('localStorage')
   const reportToSentry = yield* getContext('reportToSentry')
   const sdk = yield* getSDK()
-  const accountStatus = yield* select(accountSelectors.getAccountStatus)
+
   // Don't revert successful local account fetch
-  if (accountStatus !== Status.SUCCESS) {
-    yield* put(accountActions.fetchAccountRequested())
+  if (shouldMarkAccountAsLoading) {
+    yield* put(fetchAccountRequested())
   }
 
   let wallet, web3WalletAddress
@@ -189,7 +188,7 @@ export function* fetchAccountAsync() {
     }
   }
   if (!wallet || !web3WalletAddress) {
-    yield* put(accountActions.resetAccount())
+    yield* put(resetAccount())
     yield* put(
       fetchAccountFailed({
         reason: 'ACCOUNT_NOT_FOUND'
@@ -197,6 +196,7 @@ export function* fetchAccountAsync() {
     )
     return
   }
+
   const accountData: AccountUserMetadata | undefined = yield* call(
     userApiFetchSaga.getUserAccount,
     {
@@ -206,7 +206,7 @@ export function* fetchAccountAsync() {
   )
 
   if (!accountData) {
-    yield* put(accountActions.resetAccount())
+    yield* put(resetAccount())
     yield* put(
       fetchAccountFailed({
         reason: 'ACCOUNT_NOT_FOUND'
@@ -216,7 +216,7 @@ export function* fetchAccountAsync() {
   }
   const user = accountData.user
   if (user.is_deactivated) {
-    yield* put(accountActions.resetAccount())
+    yield* put(resetAccount())
     yield* put(
       fetchAccountFailed({
         reason: 'ACCOUNT_DEACTIVATED'
@@ -255,10 +255,12 @@ export function* fetchAccountAsync() {
   }
 
   // Cache the account and put the signedIn action. We're done.
-  yield* call(cacheAccount, accountData)
+  yield* call(cacheAccountAndUser, accountData)
   const formattedAccount = {
     userId: user.user_id,
     collections: accountData.playlists,
+    playlistLibrary: accountData.playlist_library,
+    trackSaveCount: accountData.track_save_count,
     guestEmail
   }
   yield* put(fetchAccountSucceeded(formattedAccount))
@@ -290,8 +292,9 @@ export function* fetchAccountAsync() {
 
 function* fetchLocalAccountAsync() {
   const localStorage = yield* getContext('localStorage')
+  const sdk = yield* getSDK()
 
-  yield* put(accountActions.fetchAccountRequested())
+  yield* put(fetchAccountRequested())
 
   const cachedAccount = yield* call([
     localStorage,
@@ -301,8 +304,17 @@ function* fetchLocalAccountAsync() {
     localStorage,
     localStorage.getAudiusAccountUser
   ])
+  const [wallet] = yield* call([
+    sdk.services.audiusWalletClient,
+    sdk.services.audiusWalletClient.getAddresses
+  ])
 
-  if (cachedAccount && cachedAccountUser && !cachedAccountUser.is_deactivated) {
+  if (
+    cachedAccount &&
+    cachedAccountUser &&
+    wallet &&
+    !cachedAccountUser.is_deactivated
+  ) {
     yield* put(
       cacheActions.add(Kind.USERS, [
         {
@@ -319,20 +331,41 @@ function* fetchLocalAccountAsync() {
   }
 }
 
-export function* cacheAccount(
+function* cacheAccountAndUser(
   account: AccountUserMetadata & { guestEmail?: string | null }
 ) {
-  const { user: accountUser, playlists: collections, guestEmail } = account
+  const {
+    user: accountUser,
+    playlist_library: playlistLibrary,
+    playlists: collections,
+    guestEmail
+  } = account
   const localStorage = yield* getContext('localStorage')
 
   const formattedAccount = {
     userId: accountUser.user_id,
     collections,
+    playlistLibrary,
     guestEmail
   }
 
   yield* call([localStorage, localStorage.setAudiusAccount], formattedAccount)
   yield* call([localStorage, localStorage.setAudiusAccountUser], accountUser)
+}
+
+/** Used to synchronize account to localStorage when values in the slice
+ * change.
+ */
+function* syncAccountToLocalStorage() {
+  const localStorage = yield* getContext('localStorage')
+  const { userId, collections, playlistLibrary, guestEmail } =
+    yield* select(getAccount)
+  yield* call([localStorage, localStorage.setAudiusAccount], {
+    userId,
+    collections,
+    playlistLibrary,
+    guestEmail
+  })
 }
 
 function* recordIPIfNotRecent(handle: string): SagaIterator {
@@ -514,13 +547,18 @@ function* handleFetchAccountSucceeded() {
 }
 
 function* watchFetchAccount() {
-  yield* takeEvery(fetchAccount.type, fetchAccountAsync)
+  yield* takeEvery(
+    fetchAccount.type,
+    function* (action: ReturnType<typeof fetchAccount>) {
+      yield* call(fetchAccountAsync, action.payload)
+    }
+  )
 }
 
 function* watchFetchAccountFailed() {
   yield* takeEvery(
-    accountActions.fetchAccountFailed.type,
-    function* (action: ReturnType<typeof accountActions.fetchAccountFailed>) {
+    fetchAccountFailed.type,
+    function* (action: ReturnType<typeof fetchAccountFailed>) {
       const userId = yield* select(getUserId)
       const reportToSentry = yield* getContext('reportToSentry')
       if (userId) {
@@ -558,6 +596,10 @@ function* watchTikTokLogin() {
   yield* takeEvery(tikTokLogin.type, associateTikTokAccount)
 }
 
+function* watchUpdatePlaylistLibrary() {
+  yield* takeEvery(updatePlaylistLibrary.type, syncAccountToLocalStorage)
+}
+
 export function* watchFetchTrackCount() {
   yield* takeLatest(fetchHasTracks, handleFetchTrackCount)
 }
@@ -581,6 +623,7 @@ export default function sagas() {
     watchResetAccount,
     watchTikTokLogin,
     watchTwitterLogin,
-    watchUploadTrack
+    watchUploadTrack,
+    watchUpdatePlaylistLibrary
   ]
 }

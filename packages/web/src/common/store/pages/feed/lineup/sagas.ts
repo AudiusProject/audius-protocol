@@ -9,8 +9,7 @@ import {
   UserCollectionMetadata,
   ID,
   TrackMetadata,
-  LineupTrack,
-  Id
+  LineupTrack
 } from '@audius/common/models'
 import {
   accountSelectors,
@@ -19,7 +18,7 @@ import {
   CommonState,
   getSDK
 } from '@audius/common/store'
-import { full } from '@audius/sdk'
+import { Id, full } from '@audius/sdk'
 import { all, call, select } from 'typed-redux-saga'
 
 import { processAndCacheCollections } from 'common/store/cache/collections/utils'

@@ -22,5 +22,9 @@ export type NavItemProps = WithCSS<{
   textSize?: TextSize
   /** Whether the navigation item has a notification count. */
   hasNotification?: boolean
+  /** The variant of the nav item. */
+  variant?: 'default' | 'compact'
+  /** Whether the nav item is a child of a parent expandable nav item. */
+  isChild?: boolean
 }> &
   FlexProps

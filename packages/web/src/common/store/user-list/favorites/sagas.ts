@@ -1,12 +1,5 @@
 import { userMetadataListFromSDK } from '@audius/common/adapters'
-import {
-  FavoriteType,
-  Collection,
-  ID,
-  Track,
-  Id,
-  OptionalId
-} from '@audius/common/models'
+import { FavoriteType, Collection, ID, Track } from '@audius/common/models'
 import {
   cacheCollectionsSelectors,
   cacheTracksSelectors,
@@ -16,6 +9,7 @@ import {
   FAVORITES_USER_LIST_TAG,
   getSDK
 } from '@audius/common/store'
+import { Id, OptionalId } from '@audius/sdk'
 import { select, put, call } from 'typed-redux-saga'
 
 import { watchFavoriteError } from 'common/store/user-list/favorites/errorSagas'

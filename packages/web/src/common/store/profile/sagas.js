@@ -2,7 +2,7 @@ import {
   userMetadataListFromSDK,
   userWalletsFromSDK
 } from '@audius/common/adapters'
-import { Kind, Id, OptionalId } from '@audius/common/models'
+import { Kind } from '@audius/common/models'
 import { DoubleKeys } from '@audius/common/services'
 import {
   accountSelectors,
@@ -33,6 +33,7 @@ import {
   isResponseError,
   route
 } from '@audius/common/utils'
+import { Id, OptionalId } from '@audius/sdk'
 import { merge } from 'lodash'
 import {
   all,

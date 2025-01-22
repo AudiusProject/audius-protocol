@@ -1,9 +1,7 @@
 import {
   ID,
   User,
-  Id,
   supportedUserMetadataListFromSDK,
-  OptionalId,
   SupportedUserMetadata
 } from '@audius/common/models'
 import {
@@ -17,6 +15,7 @@ import {
   tippingUtils
 } from '@audius/common/store'
 import { stringWeiToBN } from '@audius/common/utils'
+import { Id, OptionalId } from '@audius/sdk'
 import { call, put, select } from 'typed-redux-saga'
 
 import { watchSupportingError } from 'common/store/user-list/supporting/errorSagas'

@@ -1,7 +1,6 @@
-// TODO(nkang) - convert to TS
-// @ts-nocheck
-
 import { pick } from 'lodash'
+
+import { WriteableTrackMetadata, WriteableUserMetadata } from '~/models'
 
 const trackMetadataSchema = {
   track_cid: null,
@@ -77,7 +76,10 @@ const trackMetadataSchema = {
   is_owned_by_user: false
 }
 
-export const newTrackMetadata = (fields, validate = false): TrackMetadata => {
+export const newTrackMetadata = (
+  fields?: any,
+  validate = false
+): WriteableTrackMetadata => {
   const validFields = validate
     ? pick(fields, Object.keys(trackMetadataSchema).concat(['track_id']))
     : fields
@@ -163,7 +165,10 @@ const userMetadataSchema = {
   spl_usdc_payout_wallet: null
 }
 
-export const newUserMetadata = (fields?: any, validate = false): User => {
+export const newUserMetadata = (
+  fields?: any,
+  validate = false
+): WriteableUserMetadata => {
   const validFields = validate
     ? pick(fields, Object.keys(userMetadataSchema).concat(['user_id']))
     : fields

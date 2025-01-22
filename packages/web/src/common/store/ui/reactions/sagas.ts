@@ -1,5 +1,4 @@
 import { transformAndCleanList } from '@audius/common/adapters'
-import { HashId } from '@audius/common/models'
 import { AudiusBackend } from '@audius/common/services'
 import {
   reactionsUIActions,
@@ -11,12 +10,11 @@ import {
   getSDK
 } from '@audius/common/store'
 import {
-  encodeHashId,
   getErrorMessage,
   isResponseError,
   removeNullable
 } from '@audius/common/utils'
-import { AudiusSdk } from '@audius/sdk'
+import { HashId, AudiusSdk, Id } from '@audius/sdk'
 import { call, takeEvery, all, put, select } from 'typed-redux-saga'
 
 import { waitForWrite } from 'utils/sagaHelpers'
@@ -122,7 +120,7 @@ function* writeReactionValueAsync({
 
   yield* waitForWrite()
   const accountId = yield* select(getUserId)
-  const userId = encodeHashId(accountId!)
+  const userId = Id.parse(accountId!)
 
   yield* call(submitReaction, {
     reactedTo: entityId,

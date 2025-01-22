@@ -78,6 +78,8 @@ def get_n_primary_endpoints(user, cid, n):
     return rendezvous.get_n(n, cid)
 
 
+# TODO: Rename/refactor this function
+# https://linear.app/audius/issue/PAY-3825/remove-added-timestamps
 def get_playlist_added_timestamps(playlist):
     if "playlist_contents" not in playlist:
         return []
@@ -455,6 +457,8 @@ def extend_playlist(playlist):
     if "save_count" in playlist:
         playlist["favorite_count"] = playlist["save_count"]
 
+    # TODO: This is deprecated but can't be removed until clients are updated
+    # https://linear.app/audius/issue/PAY-3825/remove-added-timestamps
     playlist["added_timestamps"] = get_playlist_added_timestamps(playlist)
     playlist["cover_art"] = playlist["playlist_image_multihash"]
     playlist["cover_art_sizes"] = playlist["playlist_image_sizes_multihash"]
@@ -468,9 +472,7 @@ def extend_playlist(playlist):
     playlist["stream_conditions"] = get_legacy_purchase_gate(
         playlist.get("stream_conditions", None)
     )
-    # Wee hack to make sure this marshals correctly. The marshaller for
-    # playlist_model expects these two values to be the same type.
-    # TODO: https://linear.app/audius/issue/PAY-3398/fix-playlist-contents-serialization
+    # re-assign playlist_contents to be the new format
     playlist["playlist_contents"] = playlist["added_timestamps"]
     return playlist
 
@@ -494,6 +496,7 @@ def filter_hidden_tracks(playlist, current_user_id):
             if (track_id := track.get("track_id")) in tracks_map
             and not tracks_map.get(track_id, {}).get("is_unlisted", False)
         ]
+        # https://linear.app/audius/issue/PAY-3825/remove-added-timestamps
         added_timestamps_list = playlist.get("added_timestamps", [])
         playlist["added_timestamps"] = [
             track

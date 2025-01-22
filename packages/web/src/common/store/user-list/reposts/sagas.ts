@@ -1,5 +1,5 @@
 import { userMetadataListFromSDK } from '@audius/common/adapters'
-import { Collection, ID, Id, OptionalId, Track } from '@audius/common/models'
+import { Collection, ID, Track } from '@audius/common/models'
 import {
   cacheCollectionsSelectors,
   cacheTracksSelectors,
@@ -10,6 +10,7 @@ import {
   REPOSTS_USER_LIST_TAG,
   getSDK
 } from '@audius/common/store'
+import { Id, OptionalId } from '@audius/sdk'
 import { call, put, select } from 'typed-redux-saga'
 
 import { watchRepostsError } from 'common/store/user-list/reposts/errorSagas'

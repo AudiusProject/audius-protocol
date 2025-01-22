@@ -53,7 +53,7 @@ export const udr = async (db: Knex, date: Date): Promise<void> => {
     select
       coalesce(t1.client_catalog_id, t2.client_catalog_id) as "client_catalog_id",
       'Downloads / Monetized Content' as "Offering",
-      'Free Trial' as "UserType",
+      'Free Trial (no payment details)' as "UserType",
       coalesce(t1."Streams", 0) as "Streams",
       coalesce(t2."Downloads", 0) as "Downloads",
       coalesce(nullif(country_to_iso_alpha2(coalesce(t1."Territory", t2."Territory", '')), ''), 'WW') as "Territory",

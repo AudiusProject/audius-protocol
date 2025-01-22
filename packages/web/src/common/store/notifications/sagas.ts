@@ -1,4 +1,3 @@
-import { Id } from '@audius/common/models'
 import {
   IntKeys,
   remoteConfigIntDefaults,
@@ -9,6 +8,7 @@ import {
   accountSelectors,
   getSDK
 } from '@audius/common/store'
+import { Id } from '@audius/sdk'
 import { call, takeEvery, select } from 'typed-redux-saga'
 
 import { waitForWrite } from 'utils/sagaHelpers'

@@ -1,3 +1,4 @@
+import { OptionalId } from '@audius/sdk'
 import { useQuery } from '@tanstack/react-query'
 import { useDispatch } from 'react-redux'
 
@@ -7,7 +8,6 @@ import { ID } from '~/models/Identifiers'
 import { Kind } from '~/models/Kind'
 import { addEntries } from '~/store/cache/actions'
 import { EntriesByKind } from '~/store/cache/types'
-import { encodeHashId } from '~/utils/hashIds'
 
 import { QUERY_KEYS } from './queryKeys'
 
@@ -23,7 +23,7 @@ export const useUsers = (userIds: ID[], config?: Config) => {
     queryKey: [QUERY_KEYS.users, userIds],
     queryFn: async () => {
       const encodedIds = userIds
-        .map(encodeHashId)
+        .map((id) => OptionalId.parse(id))
         .filter((id): id is string => id !== null)
       if (encodedIds.length === 0) return []
       const { data } = await audiusSdk!.full.users.getBulkUsers({

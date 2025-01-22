@@ -1,10 +1,6 @@
 PODS:
-  - Amplitude (8.16.3):
-    - AnalyticsConnector (~> 1.0.0)
-  - amplitude-react-native (2.17.2):
-    - Amplitude (= 8.16.3)
+  - amplitude-react-native (1.4.11):
     - React-Core
-  - AnalyticsConnector (1.0.3)
   - Base64 (1.1.2)
   - boost (1.84.0)
   - BVLinearGradient (2.8.3):
@@ -1914,7 +1910,7 @@ PODS:
   - Yoga (0.0.0)
 
 DEPENDENCIES:
-  - "amplitude-react-native (from `../../../node_modules/@amplitude/react-native`)"
+  - "amplitude-react-native (from `../../../node_modules/@amplitude/analytics-react-native`)"
   - boost (from `../node_modules/react-native/third-party-podspecs/boost.podspec`)
   - BVLinearGradient (from `../node_modules/react-native-linear-gradient`)
   - CodePush (from `../node_modules/react-native-code-push`)
@@ -2032,8 +2028,6 @@ DEPENDENCIES:
 
 SPEC REPOS:
   trunk:
-    - Amplitude
-    - AnalyticsConnector
     - Base64
     - ffmpeg-kit-ios-https-gpl
     - FingerprintPro
@@ -2055,7 +2049,7 @@ SPEC REPOS:
 
 EXTERNAL SOURCES:
   amplitude-react-native:
-    :path: "../../../node_modules/@amplitude/react-native"
+    :path: "../../../node_modules/@amplitude/analytics-react-native"
   boost:
     :podspec: "../node_modules/react-native/third-party-podspecs/boost.podspec"
   BVLinearGradient:
@@ -2281,9 +2275,7 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native/ReactCommon/yoga"
 
 SPEC CHECKSUMS:
-  Amplitude: 10f20d4436fdcd38ddd5be1da7033fcc21f4143e
-  amplitude-react-native: 6e5b9e38c53e11a86f62f874a42cf176e2b82c86
-  AnalyticsConnector: a53214d38ae22734c6266106c0492b37832633a9
+  amplitude-react-native: 9d57e1bcc4175039e36283390aa3daeaea9441a5
   Base64: cecfb41a004124895a7bcee567a89bae5a89d49b
   boost: 4cb898d0bf20404aab1850c656dcea009429d6c1
   BVLinearGradient: 880f91a7854faff2df62518f0281afb1c60d49a3

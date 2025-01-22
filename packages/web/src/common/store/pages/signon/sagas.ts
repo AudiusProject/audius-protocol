@@ -13,8 +13,7 @@ import {
   InstagramUser,
   TikTokUser,
   Feature,
-  AccountUserMetadata,
-  OptionalId
+  AccountUserMetadata
 } from '@audius/common/models'
 import {
   IntKeys,
@@ -48,11 +47,15 @@ import {
   isValidEmailString,
   route,
   isResponseError,
-  encodeHashId,
   TEMPORARY_PASSWORD,
   waitForValue
 } from '@audius/common/utils'
-import { CreateUserRequest, UpdateProfileRequest } from '@audius/sdk'
+import {
+  OptionalId,
+  CreateUserRequest,
+  Id,
+  UpdateProfileRequest
+} from '@audius/sdk'
 import { isEmpty } from 'lodash'
 import {
   all,
@@ -239,29 +242,12 @@ function* fetchReferrer(
   action: ReturnType<typeof signOnActions.fetchReferrer>
 ) {
   yield* waitForRead()
-  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
-  const sdk = yield* getSDK()
   const { handle } = action
   if (handle) {
     try {
       const user = yield* call(fetchUserByHandle, handle)
       if (!user) return
       yield* put(signOnActions.setReferrer(user.user_id))
-
-      // Check if the user is already signed in
-      // If so, apply retroactive referrals
-
-      const currentUser = yield* select(getAccountUser)
-      if (
-        currentUser &&
-        !currentUser.events?.referrer &&
-        currentUser.user_id !== user.user_id
-      ) {
-        yield* call(audiusBackendInstance.updateCreator, {
-          metadata: { ...currentUser, events: { referrer: user.user_id } },
-          sdk
-        })
-      }
     } catch (e: any) {
       const reportToSentry = yield* getContext('reportToSentry')
       reportToSentry({
@@ -621,7 +607,7 @@ function* createGuestAccount(
           sdk.users.createGuestAccount
         ])
         yield* call(confirmTransaction, blockHash, blockNumber)
-        yield* call(fetchAccountAsync)
+        yield* call(fetchAccountAsync, { shouldMarkAccountAsLoading: true })
 
         const userBank = yield* call(getOrCreateUSDCUserBank)
         if (!userBank) {
@@ -708,7 +694,7 @@ function* signUp() {
               }
               userId = account.user.user_id
               const completeProfileMetadataRequest: UpdateProfileRequest = {
-                userId: encodeHashId(userId),
+                userId: Id.parse(userId),
                 profilePictureFile: signOn.profileImage?.file as File,
                 metadata: {
                   location: location ?? undefined,
@@ -908,7 +894,7 @@ function* signUp() {
         },
         function* () {
           yield* put(signOnActions.sendWelcomeEmail(name))
-          yield* call(fetchAccountAsync)
+          yield* call(fetchAccountAsync, { shouldMarkAccountAsLoading: true })
           yield* call(
             waitForValue,
             getFollowIds,
@@ -1060,7 +1046,9 @@ function* signIn(action: ReturnType<typeof signOnActions.signIn>) {
 
     // Now that we have verified the user is valid, run the account fetch flow,
     // which will pull cached account data from call above.
-    yield* put(accountActions.fetchAccount())
+    yield* put(
+      accountActions.fetchAccount({ shouldMarkAccountAsLoading: true })
+    )
     yield* put(signOnActions.signInSucceeded())
     const route = yield* select(getRouteOnCompletion)
 
@@ -1086,7 +1074,7 @@ function* signIn(action: ReturnType<typeof signOnActions.signIn>) {
     }
 
     // Apply retroactive referral
-    if (!user.events?.referrer && signOn.referrer) {
+    if (signOn.referrer) {
       yield* fork(audiusBackendInstance.updateCreator, {
         metadata: { ...user, events: { referrer: signOn.referrer } },
         sdk

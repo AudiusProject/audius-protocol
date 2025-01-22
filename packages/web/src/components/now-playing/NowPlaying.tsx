@@ -466,7 +466,7 @@ const NowPlaying = g(
             {name}
             <UserBadges
               userId={owner_id}
-              badgeSize={16}
+              size='s'
               className={styles.verified}
             />
           </div>

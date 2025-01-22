@@ -2,7 +2,11 @@ import { accountSelectors } from '@audius/common/store'
 import type { DrawerContentComponentProps } from '@react-navigation/drawer'
 import { useSelector } from 'react-redux'
 
-import { IconAudiusLogo, Flex } from '@audius/harmony-native'
+import {
+  Flex,
+  IconAudiusLogoHorizontalNew,
+  useTheme
+} from '@audius/harmony-native'
 
 import { AppDrawerContextProvider } from '../AppDrawerContext'
 
@@ -31,6 +35,7 @@ export const LeftNavDrawer = (props: AccountDrawerProps) => {
 }
 
 const WrappedLeftNavDrawer = () => {
+  const { spacing } = useTheme()
   const { navItems } = useNavConfig()
 
   return (
@@ -52,7 +57,13 @@ const WrappedLeftNavDrawer = () => {
           </LeftNavLink>
         ))}
       </Flex>
-      <IconAudiusLogo color='subdued' />
+      <Flex ph='xl'>
+        <IconAudiusLogoHorizontalNew
+          color='subdued'
+          height={spacing.unit6}
+          width={spacing['5xl']}
+        />
+      </Flex>
     </Flex>
   )
 }
