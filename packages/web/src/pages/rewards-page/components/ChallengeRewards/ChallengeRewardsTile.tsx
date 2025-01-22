@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
 
-import { useChallengeCooldownSchedule } from '@audius/common/hooks'
 import {
   audioRewardsPageActions,
   audioRewardsPageSelectors,
