@@ -15,14 +15,35 @@ import { primeUserDataInternal } from './primeUserData'
 export const primeTrackData = ({
   tracks,
   queryClient,
-  dispatch
+  dispatch,
+  forceReplace = false
 }: {
   tracks: Track[]
   queryClient: QueryClient
   dispatch: Dispatch<AnyAction>
+  forceReplace?: boolean
 }) => {
   const entries = primeTrackDataInternal({ tracks, queryClient })
-  dispatch(addEntries(entries, undefined, undefined, 'react-query'))
+  if (!forceReplace) {
+    dispatch(addEntries(entries, false, undefined, 'react-query'))
+  } else {
+    dispatch(
+      addEntries(
+        { [Kind.TRACKS]: entries[Kind.TRACKS] },
+        forceReplace,
+        undefined,
+        'react-query'
+      )
+    )
+    dispatch(
+      addEntries(
+        { ...entries, [Kind.TRACKS]: {} },
+        false,
+        undefined,
+        'react-query'
+      )
+    )
+  }
 }
 
 export const primeTrackDataInternal = ({

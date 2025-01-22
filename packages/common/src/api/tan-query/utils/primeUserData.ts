@@ -12,14 +12,16 @@ import { QUERY_KEYS } from '../queryKeys'
 export const primeUserData = ({
   users,
   queryClient,
-  dispatch
+  dispatch,
+  forceReplace = false
 }: {
   users: User[]
   queryClient: QueryClient
   dispatch: Dispatch<AnyAction>
+  forceReplace?: boolean
 }) => {
   const entries = primeUserDataInternal({ users, queryClient })
-  dispatch(addEntries(entries, undefined, undefined, 'react-query'))
+  dispatch(addEntries(entries, forceReplace, undefined, 'react-query'))
 }
 
 export const primeUserDataInternal = ({
