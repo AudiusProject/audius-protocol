@@ -1,4 +1,4 @@
-from sqlalchemy import Column, DateTime, Integer, Text, UniqueConstraint
+from sqlalchemy import Boolean, Column, DateTime, Integer, Text, UniqueConstraint
 from sqlalchemy.sql import func
 
 from src.models.base import Base
@@ -49,6 +49,7 @@ class EmailAccess(Base, RepresentableMixin):
     receiving_user_id = Column(Integer, nullable=False)
     grantor_user_id = Column(Integer, nullable=False)
     encrypted_key = Column(Text, nullable=False)
+    is_initial = Column(Boolean, nullable=False, default=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(
         DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
@@ -71,6 +72,7 @@ class EmailAccess(Base, RepresentableMixin):
             "receiving_user_id": self.receiving_user_id,
             "grantor_user_id": self.grantor_user_id,
             "encrypted_key": self.encrypted_key,
+            "is_initial": self.is_initial,
             "created_at": self.created_at.isoformat(),
             "updated_at": self.updated_at.isoformat(),
         }
