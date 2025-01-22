@@ -14,7 +14,6 @@ import { isNullOrUndefined, formatWei, route } from '@audius/common/utils'
 import {
   IconReceive,
   IconSend,
-  IconTransaction,
   IconInfo,
   Button,
   Flex,
@@ -40,12 +39,11 @@ import { useIsMobile } from 'hooks/useIsMobile'
 import { useFlag, useRemoteVar } from 'hooks/useRemoteConfig'
 import { getLocation } from 'services/Location'
 import { getClient } from 'utils/clientUtil'
-import { push as pushRoute } from 'utils/navigation'
 import { pushUniqueRoute } from 'utils/route'
 
 import TokenHoverTooltip from './TokenHoverTooltip'
 import styles from './WalletManagementTile.module.css'
-const { AUDIO_TRANSACTIONS_PAGE, TRENDING_PAGE } = route
+const { TRENDING_PAGE } = route
 const { getHasAssociatedWallets } = tokenDashboardPageSelectors
 const { pressReceive, pressSend, pressConnectWallets } =
   tokenDashboardPageActions
@@ -59,7 +57,6 @@ const { startBuyAudioFlow } = buyAudioActions
 const messages = {
   receiveLabel: 'Receive',
   sendLabel: 'Send',
-  transactionsLabel: 'View Transactions',
   audio: 'Total $AUDIO',
   connectedWallets: 'Connected Wallets',
   buyAudio: 'Buy $AUDIO Tokens',
@@ -102,9 +99,6 @@ const WalletActions = () => {
       dispatch(pressSend())
     }
   }, [isMobile, dispatch, openTransferDrawer])
-  const onClickTransactions = useCallback(() => {
-    dispatch(pushRoute(AUDIO_TRANSACTIONS_PAGE))
-  }, [dispatch])
 
   return (
     <Flex gap='m' wrap='wrap' justifyContent='center'>
@@ -120,11 +114,6 @@ const WalletActions = () => {
       <Box flex={1}>
         <OptionButton onClick={onClickReceive} iconLeft={IconReceive}>
           {messages.receiveLabel}
-        </OptionButton>
-      </Box>
-      <Box flex={1}>
-        <OptionButton onClick={onClickTransactions} iconLeft={IconTransaction}>
-          {messages.transactionsLabel}
         </OptionButton>
       </Box>
       <Box flex={1}>
