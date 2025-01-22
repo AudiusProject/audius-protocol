@@ -17,10 +17,10 @@ const { getAccountUser, getUserId } = accountSelectors
 
 function* watchGetSettings() {
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
-  const sdk = yield* getSDK()
   yield* takeEvery(actions.GET_NOTIFICATION_SETTINGS, function* () {
     try {
       yield* call(waitForWrite)
+      const sdk = yield* getSDK()
       const userId = yield* select(getUserId)
       if (!userId) return
 

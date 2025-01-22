@@ -274,7 +274,7 @@ const TierColumn = ({
           mb='m'
           css={{ background: 'var(--harmony-gradient)' }}
         >
-          <Text variant='label' size='s' color='staticWhite'>
+          <Text variant='label' size='s' color='white'>
             {messages.currentTier}
           </Text>
         </Flex>

@@ -59,7 +59,7 @@ export const SET_TIKTOK_PROFILE_ERROR = 'SIGN_ON/SET_TIKTOK_PROFILE_ERROR'
 export const UNSET_SOCIAL_PROFILE = 'SIGN_ON/UNSET_SOCIAL_PROFILE'
 
 export const SET_STATUS = 'SIGN_ON/SET_STATUS'
-export const CONFIGURE_META_MASK = 'SIGN_ON/CONFIGURE_META_MASK'
+export const USING_EXTERNAL_WALLET = 'SIGN_ON/USING_EXTERNAL_WALLET'
 
 export const OPEN_SIGN_ON = 'SIGN_ON/OPEN_SIGN_ON'
 
@@ -408,8 +408,8 @@ export function setStatus(status: 'loading' | 'editing') {
   return { type: SET_STATUS, status }
 }
 
-export function configureMetaMask() {
-  return { type: CONFIGURE_META_MASK }
+export function usingExternalWallet() {
+  return { type: USING_EXTERNAL_WALLET }
 }
 
 /**

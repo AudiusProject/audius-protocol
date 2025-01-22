@@ -51,7 +51,7 @@ export default interface SignOnPageState {
   genres: string[]
   isGuest: boolean
   verified: boolean
-  useMetaMask: boolean
+  usingExternalWallet: boolean
   accountReady: boolean
   accountAlreadyExisted: boolean
   twitterId: string

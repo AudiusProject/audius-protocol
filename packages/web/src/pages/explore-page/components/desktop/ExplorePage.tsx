@@ -167,9 +167,7 @@ const ExplorePage = ({
               useOverlayBlendMode={
                 i.variant !== ExploreCollectionsVariant.DIRECT_LINK
               }
-              backgroundIcon={
-                <Icon height={512} width={512} color='staticStaticWhite' />
-              }
+              backgroundIcon={<Icon height={512} width={512} color='inverse' />}
               backgroundIconClassName={
                 title === PREMIUM_TRACKS.title
                   ? styles.premiumTracksBackgroundIcon

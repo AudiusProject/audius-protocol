@@ -196,11 +196,7 @@ export const ChallengeRewardsDrawerContent = ({
               textTransform='uppercase'
               variant='label'
               color={
-                hasCompleted
-                  ? 'staticWhite'
-                  : isInProgress
-                    ? 'accent'
-                    : 'default'
+                hasCompleted ? 'white' : isInProgress ? 'accent' : 'default'
               }
             >
               {statusText}

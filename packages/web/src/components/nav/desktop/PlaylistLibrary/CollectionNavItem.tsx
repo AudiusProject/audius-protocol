@@ -215,10 +215,7 @@ export const CollectionNavItem = (props: CollectionNavItemProps) => {
             }}
             rightIcon={
               isPlayingFromThisPlaylist ? (
-                <IconSpeaker
-                  size='s'
-                  color={isSelected ? 'staticWhite' : 'accent'}
-                />
+                <IconSpeaker size='s' color={isSelected ? 'white' : 'accent'} />
               ) : null
             }
             leftOverride={hasUpdate ? <PlaylistUpdateDot /> : null}

@@ -91,6 +91,7 @@ def _get_user_listening_history(session: Session, args: GetUserListeningHistoryA
         session.query(TrackWithAggregates)
         .filter(TrackWithAggregates.track_id.in_(track_ids))
         .filter(TrackWithAggregates.is_current == True)
+        .filter(TrackWithAggregates.is_delete == False)
         .join(TrackWithAggregates.user)
         .filter(User.is_deactivated == False)
     )

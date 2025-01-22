@@ -25,13 +25,13 @@ export const PreviewArtistHint = () => {
       alignItems='center'
       justifyContent='space-between'
     >
-      <IconPlay color='staticWhite' size='m' />
-      <Text variant='body' color='staticWhite'>
+      <IconPlay color='white' size='m' />
+      <Text variant='body' color='white'>
         {messages.previewNotice}
       </Text>
       <IconCloseAlt
         role='button'
-        color='staticWhite'
+        color='white'
         size='m'
         onClick={() => {
           dispatch(setHidePreviewHint())

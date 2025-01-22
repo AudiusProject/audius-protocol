@@ -52,7 +52,7 @@ export const EditableName = (props: EditableNameProps) => {
               css={(theme) => ({ marginBottom: theme.spacing.s })}
               aria-label={messages.editLabel}
               icon={IconPencil}
-              color='staticWhite'
+              color='white'
               onClick={() => setEditing(true)}
               shadow='drop'
             />
