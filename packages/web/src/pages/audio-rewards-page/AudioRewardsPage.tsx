@@ -4,6 +4,7 @@ import { useChallengeCooldownSchedule } from '@audius/common/hooks'
 import { StringKeys } from '@audius/common/services'
 import { tokenDashboardPageActions, walletActions } from '@audius/common/store'
 import { route } from '@audius/common/utils'
+import { Flex } from '@audius/harmony'
 import { useDispatch } from 'react-redux'
 
 import { Header } from 'components/header/desktop/Header'
@@ -45,7 +46,7 @@ const RewardsContent = () => {
   useRequiresAccount(TRENDING_PAGE)
 
   return (
-    <>
+    <Flex column gap='2xl'>
       <WalletModal />
       {audioFeaturesDegradedText ? (
         <div className={styles.topBanner}>
@@ -58,7 +59,7 @@ const RewardsContent = () => {
       <WalletManagementTile />
       <AudioWalletTransactions />
       <ExplainerTile className={wm(styles.explainerTile)} />
-    </>
+    </Flex>
   )
 }
 
