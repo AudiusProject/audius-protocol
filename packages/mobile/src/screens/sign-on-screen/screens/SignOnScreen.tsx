@@ -65,7 +65,7 @@ const CreateAccountLink = (props: NonLinkProps) => {
           variant='title'
           strength='weak'
           textAlign='center'
-          color='staticWhite'
+          color='white'
           style={{ justifyContent: 'flex-end' }}
         >
           {messages.newToAudius}{' '}

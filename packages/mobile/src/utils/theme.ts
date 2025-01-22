@@ -57,7 +57,7 @@ export type ThemeColors = {
   staticTwitterBlue: string
   staticWhite: string
   // TODO: Remove when theme v2 is enabled
-  staticStaticWhite: string
+  inverse: string
   staticNeutral: string
   staticNeutralLight2: string
   staticNeutralLight8: string
@@ -129,7 +129,7 @@ const createMobileThemeFromHarmony = (
     shadow: color.border.default,
     staticTwitterBlue: color.special.blue,
     staticWhite: color.static.white,
-    staticStaticWhite: color.static.staticWhite,
+    inverse: color.static.staticWhite,
     staticNeutral: color.neutral.n800,
     staticNeutralLight2: color.neutral.n600,
     staticNeutralLight8: color.neutral.n100,

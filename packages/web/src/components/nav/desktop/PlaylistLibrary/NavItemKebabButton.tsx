@@ -48,7 +48,7 @@ export const NavItemKebabButton = (props: EditNavItemButtonProps) => {
             }}
             icon={IconKebabHorizontal}
             size='xs'
-            color={isSelected ? 'staticWhite' : 'subdued'}
+            color={isSelected ? 'white' : 'subdued'}
           />
         )
       }}

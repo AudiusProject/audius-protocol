@@ -98,7 +98,7 @@ export const Tooltip = ({
       overlayStyle={overlayStyle}
       placement={placement}
       title={
-        <Text color='staticWhite' lineHeight='single'>
+        <Text color='white' lineHeight='single'>
           {text}
         </Text>
       }

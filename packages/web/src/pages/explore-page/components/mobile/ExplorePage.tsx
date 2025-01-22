@@ -157,7 +157,7 @@ const ExplorePage = ({
             description={t.description}
             gradient={t.gradient}
             shadow={t.shadow}
-            icon={<Icon color='staticWhite' width={200} height={200} />}
+            icon={<Icon color='white' width={200} height={200} />}
             goToRoute={goToRoute}
           />
         )
@@ -170,7 +170,7 @@ const ExplorePage = ({
             description={t.subtitle}
             gradient={t.gradient}
             shadow={t.shadow}
-            icon={<Icon color='staticWhite' width={200} height={200} />}
+            icon={<Icon color='white' width={200} height={200} />}
             goToRoute={goToRoute}
             isIncentivized={t.incentivized}
           />

@@ -86,8 +86,8 @@ export const Panel = ({
               backgroundColor='primary'
               borderRadius='circle'
             >
-              <IconSparkles color='staticWhite' size='xs' />
-              <Text size='s' strength='strong' color='staticWhite'>
+              <IconSparkles color='white' size='xs' />
+              <Text size='s' strength='strong' color='white'>
                 {messages.new}
               </Text>
             </Flex>

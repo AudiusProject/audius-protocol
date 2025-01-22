@@ -19,5 +19,5 @@ export const NavSpeakerIcon = ({
 
   if (!isPlayingFromRoute) return null
 
-  return <IconSpeaker size='s' color={isSelected ? 'staticWhite' : 'accent'} />
+  return <IconSpeaker size='s' color={isSelected ? 'white' : 'accent'} />
 }

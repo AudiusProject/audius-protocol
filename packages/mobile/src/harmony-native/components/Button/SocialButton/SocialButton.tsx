@@ -53,10 +53,10 @@ export const SocialButton = (props: SocialButtonProps) => {
             center={[84.5, 113]}
             radius={136}
           />
-          <SocialLogo color='staticWhite' size='l' style={{ zIndex: 2 }} />
+          <SocialLogo color='white' size='l' style={{ zIndex: 2 }} />
         </Flex>
       ) : (
-        <SocialLogo color='staticWhite' size='l' />
+        <SocialLogo color='white' size='l' />
       )}
     </Button>
   )
