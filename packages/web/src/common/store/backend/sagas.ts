@@ -76,7 +76,8 @@ function* setupBackend() {
   fingerprintClient.init()
 
   // Start remote account fetch while we setup backend
-  yield* put(accountActions.fetchAccount())
+  // Avoid setting the account as loading here since we already pulled the local account
+  yield* put(accountActions.fetchAccount({ shouldMarkAccountAsLoading: false }))
 
   const isReachable = yield* select(getIsReachable)
   // Bail out before success if we are now offline

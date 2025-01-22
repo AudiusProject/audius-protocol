@@ -23,6 +23,8 @@ type ChallengeDescriptionProps = {
   taskIcon?: ReactNode
   /** Optional override for the task label. Defaults to a Text node of 'Task Details' */
   task?: ReactNode
+  /** Indicates if the challenge has a cooldown period */
+  isCooldownChallenge?: boolean
 } & DescriptionContent
 
 /** Renders the task description for the challenge. Pass `description` to render
@@ -33,7 +35,8 @@ export const ChallengeDescription = ({
   taskIcon,
   task = messages.task,
   description,
-  renderDescription
+  renderDescription,
+  isCooldownChallenge = true
 }: ChallengeDescriptionProps) => {
   const styles = useStyles()
   return (
@@ -54,9 +57,11 @@ export const ChallengeDescription = ({
       ) : (
         <Flex gap='m' mb='l'>
           <Text variant='body'>{description}</Text>
-          <Text variant='body' color='subdued'>
-            {messages.cooldownDescription}
-          </Text>
+          {isCooldownChallenge ? (
+            <Text variant='body' color='subdued'>
+              {messages.cooldownDescription}
+            </Text>
+          ) : null}
         </Flex>
       )}
     </View>

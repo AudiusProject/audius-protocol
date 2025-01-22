@@ -97,7 +97,7 @@ const RemixesPage = g(
                 {user.name}
                 <UserBadges
                   userId={user.user_id}
-                  badgeSize={10}
+                  size='3xs'
                   className={styles.iconVerified}
                 />
               </div>

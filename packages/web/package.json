@@ -3,7 +3,7 @@
   "productName": "Audius",
   "description": "The Audius web client reference implementation",
   "author": "Audius",
-  "version": "1.5.117",
+  "version": "1.5.118",
   "private": true,
   "scripts": {
     "DEV & BUILD========================================": "",
@@ -247,6 +247,7 @@
     "electron": "33.0.0",
     "electron-builder": "25.1.8",
     "env-cmd": "8.0.2",
+    "esbuild-plugin-react-virtualized": "1.0.4",
     "eslint": "8.56.0",
     "fetch-mock": "9.9.1",
     "fs-extra": "8.1.0",

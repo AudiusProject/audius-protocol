@@ -24,7 +24,9 @@ const validRewardIds: Set<ChallengeRewardID> = new Set([
   ChallengeName.Referrals,
   ChallengeName.ReferralsVerified,
   ChallengeName.Referred,
-  ChallengeName.TrackUpload
+  ChallengeName.TrackUpload,
+  ChallengeName.ListenStreak,
+  ChallengeName.OneShot
 ])
 
 /** Pulls rewards from remoteconfig */

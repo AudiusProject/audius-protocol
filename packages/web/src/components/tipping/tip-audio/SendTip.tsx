@@ -41,7 +41,7 @@ import IconNoTierBadge from 'assets/img/tokenBadgePurple16@2x.webp'
 import { OnRampButton } from 'components/on-ramp-button'
 import Skeleton from 'components/skeleton/Skeleton'
 import Tooltip from 'components/tooltip/Tooltip'
-import { audioTierMapPng } from 'components/user-badges/UserBadges'
+import { audioTierMap } from 'components/user-badges/UserBadges'
 import { useFlag, useRemoteVar } from 'hooks/useRemoteConfig'
 
 import { ProfileInfo } from '../../profile-info/ProfileInfo'
@@ -98,7 +98,7 @@ export const SendTip = () => {
   const { tier } = getTierAndNumberForBalance(
     weiToString(accountBalance ?? (new BN('0') as BNWei))
   )
-  const audioBadge = audioTierMapPng[tier as BadgeTier]
+  const audioBadge = audioTierMap[tier as BadgeTier]
 
   const [isDisabled, setIsDisabled] = useState(true)
 

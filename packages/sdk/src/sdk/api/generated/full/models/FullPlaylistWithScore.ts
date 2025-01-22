@@ -226,7 +226,7 @@ export interface FullPlaylistWithScore {
      */
     updatedAt: string;
     /**
-     * 
+     * DEPRECATED. Use playlist_contents instead.
      * @type {Array<PlaylistAddedTimestamp>}
      * @memberof FullPlaylistWithScore
      */

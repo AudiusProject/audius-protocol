@@ -44,6 +44,8 @@ export const spacing = {
 }
 
 export const iconSizes = {
+  '4xs': 8,
+  '3xs': 10,
   '2xs': 12,
   xs: 14,
   s: 16,
