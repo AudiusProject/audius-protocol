@@ -5,7 +5,7 @@ import { useField } from 'formik'
 
 import { UploadPreviewContext } from 'components/edit-track/utils/uploadPreviewContext'
 import { Tile } from 'components/tile'
-import { CollectionTrackForUpload } from 'pages/upload-page/types'
+import { CollectionTrackForEdit } from 'pages/upload-page/types'
 
 import styles from './CollectionTrackField.module.css'
 import { TrackNameField } from './TrackNameField'
@@ -19,12 +19,10 @@ type CollectionTrackFieldProps = {
 export const CollectionTrackField = (props: CollectionTrackFieldProps) => {
   const { disableDelete = false, index, remove } = props
   const { playingPreviewIndex, stopPreview } = useContext(UploadPreviewContext)
-  const [{ value: track }] = useField<CollectionTrackForUpload>(
-    `tracks.${index}`
-  )
+  const [{ value: track }] = useField<CollectionTrackForEdit>(`tracks.${index}`)
 
   const [{ value: metadata }, , { setValue }] = useField<
-    CollectionTrackForUpload['metadata']
+    CollectionTrackForEdit['metadata']
   >(`tracks.${index}.metadata`)
 
   const [{ value }] = useField('trackDetails')

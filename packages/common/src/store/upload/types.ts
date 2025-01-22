@@ -30,13 +30,24 @@ export interface TrackForUpload {
 
 export interface TrackForEdit {
   metadata: TrackMetadataForUpload
+  metadata_time: number
 }
+
+export const isTrackForEdit = (
+  track: TrackForUpload | TrackForEdit
+): track is TrackForEdit => !('file' in track)
+
+export const isTrackForUpload = (
+  track: TrackForUpload | TrackForEdit
+): track is TrackForUpload => 'file' in track
 
 /**
  * Unlike normal Track metadata, TrackMetadataForUpload includes additional
  * files: artwork and a stems field with StemsForUpload.
+ * This type is used for both Upload and Edit flows.
  */
-export interface TrackMetadataForUpload extends Omit<TrackMetadata, 'artwork'> {
+export interface TrackMetadataForUpload
+  extends Omit<TrackMetadata, 'artwork' | 'track_id'> {
   artwork?:
     | Nullable<{
         file?: Blob | NativeFile
@@ -45,6 +56,10 @@ export interface TrackMetadataForUpload extends Omit<TrackMetadata, 'artwork'> {
       }>
     | TrackMetadata['artwork']
   stems?: (StemUploadWithFile | StemUpload)[]
+  /** During Upload, tracks will typically not have a track_id, but it might
+   * be assigned ahead of time for tracks with stems.
+   */
+  track_id?: number
 }
 /**
  * Unlike normal CollectionMetadata, CollectionMetadataForUpload has artwork
