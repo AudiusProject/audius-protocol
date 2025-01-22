@@ -7,9 +7,9 @@ export const DevModeMananger = () => {
 
   if (devModeParam && ['true', 'false'].includes(devModeParam)) {
     if (devModeParam === 'true') {
-      window.localStorage.setItem('enable-dev-mode', devModeParam)
+      window.localStorage.setItem('enable-dev-mode-01-21-2025', devModeParam)
     } else {
-      window.localStorage.removeItem('enable-dev-mode')
+      window.localStorage.removeItem('enable-dev-mode-01-21-2025')
     }
   }
 
