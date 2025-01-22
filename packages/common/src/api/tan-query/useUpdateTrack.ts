@@ -12,11 +12,13 @@ import { TrackMetadataForUpload } from '~/store/upload'
 
 import { QUERY_KEYS } from './queryKeys'
 import { handleStemUpdates } from './utils/handleStemUpdates'
+import { primeTrackData } from './utils/primeTrackData'
+import { UserTrackMetadata } from '~/models'
 
 const { getCurrentUploads } = stemsUploadSelectors
 
 type MutationContext = {
-  previousTrack: Track | undefined
+  previousTrack: UserTrackMetadata | undefined
 }
 
 type UpdateTrackParams = {
@@ -82,16 +84,20 @@ export const useUpdateTrack = () => {
       await queryClient.cancelQueries({ queryKey: [QUERY_KEYS.collection] })
 
       // Snapshot the previous values
-      const previousTrack = queryClient.getQueryData<Track>([
+      const previousTrack = queryClient.getQueryData<UserTrackMetadata>([
         QUERY_KEYS.track,
         trackId
       ])
 
       // Optimistically update track
-      queryClient.setQueryData([QUERY_KEYS.track, trackId], (old: any) => ({
-        ...old,
-        ...metadata
-      }))
+      if (previousTrack) {
+        primeTrackData({
+          tracks: [{ ...previousTrack, ...metadata }] as UserTrackMetadata[],
+          queryClient,
+          dispatch,
+          forceReplace: true
+        })
+      }
 
       // Optimistically update trackByPermalink
       if (previousTrack) {

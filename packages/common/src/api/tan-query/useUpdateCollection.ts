@@ -1,4 +1,4 @@
-import { Id, Playlist } from '@audius/sdk'
+import { Id } from '@audius/sdk'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import BN from 'bn.js'
 import { useDispatch, useSelector } from 'react-redux'
@@ -7,22 +7,24 @@ import { playlistMetadataForUpdateWithSDK } from '~/adapters/collection'
 import { fileToSdk } from '~/adapters/track'
 import { useAudiusQueryContext } from '~/audius-query'
 import { isContentUSDCPurchaseGated } from '~/models'
-import { Collection } from '~/models/Collection'
+import { Collection, UserCollectionMetadata } from '~/models/Collection'
 import { ID } from '~/models/Identifiers'
 import { getAccountUser } from '~/store/account/selectors'
 import { renameAccountPlaylist } from '~/store/account/slice'
+import { EditCollectionValues } from '~/store/cache/collections/types'
+
+import { useCurrentUserId } from '..'
 
 import { QUERY_KEYS } from './queryKeys'
+import { primeCollectionData } from './utils/primeCollectionData'
 
 type MutationContext = {
-  previousCollection: Playlist | undefined
+  previousCollection: UserCollectionMetadata | undefined
 }
 
 type UpdateCollectionParams = {
   collectionId: ID
-  userId: ID
-  metadata: Partial<Collection>
-  coverArtFile?: File
+  metadata: EditCollectionValues
 }
 
 // Constants for USDC conversion
@@ -33,17 +35,18 @@ export const useUpdateCollection = () => {
   const queryClient = useQueryClient()
   const account = useSelector(getAccountUser)
   const dispatch = useDispatch()
+  const { data: currentUserId } = useCurrentUserId()
 
   return useMutation({
-    mutationFn: async ({
-      collectionId,
-      userId,
-      metadata,
-      coverArtFile
-    }: UpdateCollectionParams) => {
+    mutationFn: async ({ collectionId, metadata }: UpdateCollectionParams) => {
       const sdk = await audiusSdk()
 
-      if (!collectionId || !userId) throw new Error('Invalid ID')
+      if (!collectionId || !currentUserId) throw new Error('Invalid ID')
+
+      const coverArtFile =
+        metadata.artwork?.url && 'file' in metadata.artwork
+          ? (metadata.artwork.file as File)
+          : undefined
 
       // Handle account collection shortcut update
       if (metadata.playlist_name) {
@@ -102,7 +105,7 @@ export const useUpdateCollection = () => {
           ? fileToSdk(coverArtFile, 'cover_art')
           : undefined,
         playlistId: Id.parse(collectionId),
-        userId: Id.parse(userId),
+        userId: Id.parse(currentUserId),
         metadata: sdkMetadata
       })
 
@@ -115,26 +118,23 @@ export const useUpdateCollection = () => {
 
       return response
     },
-    onMutate: async ({ collectionId, metadata }): Promise<MutationContext> => {
+    onMutate: async ({
+      collectionId,
+      metadata
+    }: UpdateCollectionParams): Promise<MutationContext> => {
       // Cancel any outgoing refetches
       await queryClient.cancelQueries({
         queryKey: [QUERY_KEYS.collection, collectionId]
       })
 
       // Snapshot the previous values
-      const previousCollection = queryClient.getQueryData<Playlist>([
-        QUERY_KEYS.collection,
-        collectionId
-      ])
+      const previousCollection =
+        queryClient.getQueryData<UserCollectionMetadata>([
+          QUERY_KEYS.collection,
+          collectionId
+        ])
 
       // Optimistically update collection
-      queryClient.setQueryData(
-        [QUERY_KEYS.collection, collectionId],
-        (old: any) => ({
-          ...old,
-          ...metadata
-        })
-      )
 
       // Optimistically update collectionByPermalink
       if (previousCollection) {
@@ -147,14 +147,15 @@ export const useUpdateCollection = () => {
           })
         )
       }
-      queryClient.setQueryData(
-        [QUERY_KEYS.collectionByPermalink, metadata.permalink],
-        (old: any) => ({
-          ...previousCollection,
-          ...old,
-          ...metadata
+
+      if (previousCollection) {
+        primeCollectionData({
+          collections: [{ ...previousCollection, ...metadata }],
+          queryClient,
+          dispatch,
+          forceReplace: true
         })
-      )
+      }
 
       // Return context with the previous collection
       return { previousCollection }

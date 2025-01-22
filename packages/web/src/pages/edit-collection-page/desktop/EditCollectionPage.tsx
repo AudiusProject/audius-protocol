@@ -112,7 +112,6 @@ export const EditCollectionPage = () => {
     if (playlist_id) {
       updateCollection({
         collectionId: playlist_id,
-        userId: playlist_id,
         metadata: collection as EditCollectionValues
       })
     }
