@@ -1,5 +1,6 @@
 import { ReactNode, useContext, useEffect } from 'react'
 
+import { useChallengeCooldownSchedule } from '@audius/common/hooks'
 import { StringKeys } from '@audius/common/services'
 import { tokenDashboardPageActions, walletActions } from '@audius/common/store'
 import { route } from '@audius/common/utils'
@@ -17,6 +18,7 @@ import { useIsMobile } from 'hooks/useIsMobile'
 import { useRemoteVar } from 'hooks/useRemoteConfig'
 import { useRequiresAccount } from 'hooks/useRequiresAccount'
 import { useWithMobileStyle } from 'hooks/useWithMobileStyle'
+import { ClaimAllRewardsPanel } from 'pages/rewards-page/components/ClaimAllRewardsPanel'
 import { BASE_URL } from 'utils/route'
 
 import styles from './AudioRewardsPage.module.css'
@@ -52,6 +54,7 @@ const RewardsContent = () => {
           </span>
         </div>
       ) : null}
+      <ClaimAllRewardsPanel />
       <WalletManagementTile />
       <AudioWalletTransactions />
       <ExplainerTile className={wm(styles.explainerTile)} />

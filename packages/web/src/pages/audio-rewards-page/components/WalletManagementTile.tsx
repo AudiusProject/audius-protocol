@@ -313,7 +313,7 @@ export const WalletManagementTile = () => {
   }, [balanceLoadDidFail, toast])
 
   return (
-    <div className={styles.walletManagementTile}>
+    <Flex className={styles.walletManagementTile} shadow='mid'>
       <div className={styles.balanceContainer}>
         {isNullOrUndefined(totalBalance) ? (
           <LoadingSpinner className={styles.spinner} />
@@ -374,6 +374,6 @@ export const WalletManagementTile = () => {
           </>
         ) : null}
       </div>
-    </div>
+    </Flex>
   )
 }
