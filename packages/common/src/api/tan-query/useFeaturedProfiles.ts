@@ -1,4 +1,4 @@
-import { Config } from './types'
+import { QueryOptions } from './types'
 import { useExploreContent } from './useExploreContent'
 import { useUsers } from './useUsers'
 
@@ -6,12 +6,12 @@ type Args = {
   limit?: number
 }
 
-export const useFeaturedProfiles = (args?: Args, config?: Config) => {
-  const { data: exploreContent } = useExploreContent(config)
+export const useFeaturedProfiles = (args?: Args, options?: QueryOptions) => {
+  const { data: exploreContent } = useExploreContent(options)
   const { limit } = args ?? {}
   return useUsers(exploreContent?.featuredProfiles.slice(0, limit), {
-    ...config,
+    ...options,
     enabled:
-      config?.enabled !== false && !!exploreContent?.featuredProfiles?.length
+      options?.enabled !== false && !!exploreContent?.featuredProfiles?.length
   })
 }

@@ -5,11 +5,11 @@ import { useAudiusQueryContext } from '~/audius-query'
 import { ID } from '~/models'
 
 import { QUERY_KEYS } from './queryKeys'
-import { Config } from './types'
+import { QueryOptions } from './types'
 
 export const usePurchasesCount = (
   userId: ID | null | undefined,
-  config?: Config
+  options?: QueryOptions
 ) => {
   const context = useAudiusQueryContext()
   const audiusSdk = context.audiusSdk
@@ -24,7 +24,7 @@ export const usePurchasesCount = (
       })
       return data
     },
-    staleTime: config?.staleTime,
-    enabled: config?.enabled !== false && !!audiusSdk && !!userId
+    staleTime: options?.staleTime,
+    enabled: options?.enabled !== false && !!audiusSdk && !!userId
   })
 }

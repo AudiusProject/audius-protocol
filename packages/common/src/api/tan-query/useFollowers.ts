@@ -8,7 +8,7 @@ import { ID } from '~/models/Identifiers'
 import { User } from '~/models/User'
 
 import { QUERY_KEYS } from './queryKeys'
-import { Config } from './types'
+import { QueryOptions } from './types'
 import { useCurrentUserId } from './useCurrentUserId'
 import { primeUserData } from './utils/primeUserData'
 
@@ -25,7 +25,7 @@ type UseFollowersArgs = {
  */
 export const useFollowers = (
   { userId, pageSize = DEFAULT_PAGE_SIZE }: UseFollowersArgs,
-  config?: Config
+  options?: QueryOptions
 ) => {
   const { audiusSdk } = useAudiusQueryContext()
   const { data: currentUserId } = useCurrentUserId()
@@ -52,7 +52,7 @@ export const useFollowers = (
       return users
     },
     select: (data) => data.pages.flat(),
-    staleTime: config?.staleTime,
-    enabled: config?.enabled !== false && !!userId
+    staleTime: options?.staleTime,
+    enabled: options?.enabled !== false && !!userId
   })
 }

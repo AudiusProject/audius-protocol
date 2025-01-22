@@ -7,7 +7,7 @@ import { useAudiusQueryContext } from '~/audius-query'
 import { getUserId } from '~/store/account/selectors'
 
 import { QUERY_KEYS } from './queryKeys'
-import { Config } from './types'
+import { QueryOptions } from './types'
 import { primeTrackData } from './utils/primeTrackData'
 
 // If the user edits a stale track, the optimistic update fails
@@ -15,7 +15,7 @@ const STALE_TIME = Infinity
 
 export const useTrackByPermalink = (
   permalink: string | undefined | null,
-  options?: Config
+  options?: QueryOptions
 ) => {
   const { audiusSdk } = useAudiusQueryContext()
   const queryClient = useQueryClient()

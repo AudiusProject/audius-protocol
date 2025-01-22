@@ -5,7 +5,7 @@ import { useAudiusQueryContext } from '~/audius-query'
 import { ID } from '~/models/Identifiers'
 
 import { QUERY_KEYS } from './queryKeys'
-import { Config } from './types'
+import { QueryOptions } from './types'
 
 type UseTopTagsArgs = {
   userId: ID | null | undefined
@@ -14,7 +14,7 @@ type UseTopTagsArgs = {
 
 export const useTopTags = (
   { userId, limit = 5 }: UseTopTagsArgs,
-  options?: Config
+  options?: QueryOptions
 ) => {
   const { audiusSdk } = useAudiusQueryContext()
 

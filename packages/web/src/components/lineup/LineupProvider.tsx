@@ -199,6 +199,7 @@ export interface LineupProviderProps {
 
   /** Function triggered on click of tile */
   onClickTile?: (trackId: ID) => void
+  pageSize?: number
 }
 
 interface LineupProviderState {
@@ -476,16 +477,13 @@ class LineupProvider extends PureComponent<CombinedProps, LineupProviderState> {
       lineup: { isMetadataLoading, page, entries = [] },
       numPlaylistSkeletonRows,
       isTrending = false,
-      onClickTile
+      onClickTile,
+      pageSize
     } = this.props
     const isMobile = this.context.isMobile
     const status = lineup.status
-    const {
-      loadMoreThreshold,
-      initialTrackLoadCount,
-      trackLoadMoreCount,
-      scrollParent
-    } = this.state
+    const { initialTrackLoadCount, trackLoadMoreCount, scrollParent } =
+      this.state
 
     let tileSize: TrackTileSize
     let lineupStyle = {}
@@ -567,7 +565,6 @@ class LineupProvider extends PureComponent<CombinedProps, LineupProviderState> {
     if (
       isMetadataLoading &&
       lineup.hasMore &&
-      tiles.length < (count !== undefined ? count : MAX_TILES_COUNT) &&
       (!limit || tiles.length !== limit)
     ) {
       // Calculate the number of loading tiles to display: total # requested - # rendered - # deleted
@@ -576,9 +573,12 @@ class LineupProvider extends PureComponent<CombinedProps, LineupProviderState> {
         tilesDisplayCount - tiles.length - lineup.deleted,
         0
       )
-      const loadingSkeletonCount = count
-        ? Math.min(count - tiles.length, MAX_COUNT_LOADING_TILES)
-        : loadingSkeletonDifferential
+      const loadingSkeletonCount =
+        pageSize ||
+        (count
+          ? Math.min(count - tiles.length, MAX_COUNT_LOADING_TILES)
+          : loadingSkeletonDifferential)
+
       const loadingSkeletons: JSX.Element[] = [
         ...Array(loadingSkeletonCount)
       ].map((_, index) => {
@@ -775,7 +775,6 @@ class LineupProvider extends PureComponent<CombinedProps, LineupProviderState> {
                   }
                   return scrollParent
                 }}
-                threshold={loadMoreThreshold}
                 element='ol'
               >
                 {tiles.map((tile, index) => (

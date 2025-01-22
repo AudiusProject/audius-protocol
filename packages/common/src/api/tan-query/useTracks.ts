@@ -12,11 +12,11 @@ import { EntriesByKind } from '~/store/cache/types'
 import { removeNullable } from '~/utils/typeUtils'
 
 import { QUERY_KEYS } from './queryKeys'
-import { Config } from './types'
+import { QueryOptions } from './types'
 
 export const useTracks = (
   trackIds: ID[] | null | undefined,
-  options?: Config
+  options?: QueryOptions
 ) => {
   const { audiusSdk } = useAudiusQueryContext()
   const queryClient = useQueryClient()
