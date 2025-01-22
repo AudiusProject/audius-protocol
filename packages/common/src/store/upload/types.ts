@@ -30,7 +30,7 @@ export interface TrackForUpload {
 
 export interface TrackForEdit {
   metadata: TrackMetadataForUpload
-  metadata_time: number
+  metadata_time?: number
 }
 
 export const isTrackForEdit = (
