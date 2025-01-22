@@ -39,7 +39,7 @@ test_entities = {
         {"user_id": 2, "item_id": 2, "created_at": TIMESTAMP},
     ],
     "tracks": [
-        {"track_id": 1, "title": "track 1", "owner_id": 1, "is_delete": True},
+        {"track_id": 1, "title": "track 1", "owner_id": 1},
         {"track_id": 2, "title": "track 2", "owner_id": 2},
         {"track_id": 3, "title": "track 3", "owner_id": 3},
         {"track_id": 4, "title": "track 4", "owner_id": 3},
@@ -392,32 +392,14 @@ def test_get_user_listening_history_filter_deleted_tracks(app):
     with app.app_context():
         db = get_db()
 
-    test_entities_with_deleted = {
-        "user_listening_history": [
-            {
-                "user_id": 1,
-                "listening_history": [
-                    {"timestamp": str(TIMESTAMP), "track_id": 1},
-                    {"timestamp": str(TIMESTAMP), "track_id": 2},
-                ],
-            }
-        ],
-        "tracks": [
-            {
-                "track_id": 1,
-                "title": "track 1",
-                "owner_id": 1,
-                "is_delete": True,
-            },  # Deleted track
-            {"track_id": 2, "title": "track 2", "owner_id": 2, "is_delete": False},
-        ],
-        "users": [
-            {"user_id": 1, "handle": "user-1"},
-            {"user_id": 2, "handle": "user-2"},
-        ],
-    }
+    # Use main test_entities but modify track 1 to be deleted
+    modified_test_entities = test_entities.copy()
+    modified_test_entities["tracks"] = [
+        {"track_id": 1, "title": "track 1", "owner_id": 1, "is_delete": True},
+        *test_entities["tracks"][1:],
+    ]
 
-    populate_mock_db(db, test_entities_with_deleted)
+    populate_mock_db(db, modified_test_entities)
 
     with db.scoped_session() as session:
         _index_user_listening_history(session)
@@ -434,9 +416,13 @@ def test_get_user_listening_history_filter_deleted_tracks(app):
             ),
         )
 
-    # Should only return track 2 since track 1 is deleted
-    assert len(track_history) == 1
-    assert track_history[0][response_name_constants.track_id] == 2
+    # Should not return track 1 since it is deleted
+    assert len(track_history) == 3
+    assert track_history[0][response_name_constants.track_id] == 3
     assert track_history[0][response_name_constants.activity_timestamp] == str(
-        TIMESTAMP
+        TIMESTAMP + timedelta(minutes=4)
+    )
+    assert track_history[1][response_name_constants.track_id] == 2
+    assert track_history[1][response_name_constants.activity_timestamp] == str(
+        TIMESTAMP + timedelta(minutes=3)
     )
