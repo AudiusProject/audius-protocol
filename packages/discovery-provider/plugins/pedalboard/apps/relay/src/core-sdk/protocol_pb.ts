@@ -13,7 +13,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file protocol.proto.
  */
 export const file_protocol: GenFile = /*@__PURE__*/
-  fileDesc("Cg5wcm90b2NvbC5wcm90bxIIcHJvdG9jb2wimQIKEVNpZ25lZFRyYW5zYWN0aW9uEhEKCXNpZ25hdHVyZRgBIAEoCRISCgpyZXF1ZXN0X2lkGAIgASgJEiYKBXBsYXlzGOgHIAEoCzIULnByb3RvY29sLlRyYWNrUGxheXNIABJCChZ2YWxpZGF0b3JfcmVnaXN0cmF0aW9uGOkHIAEoCzIfLnByb3RvY29sLlZhbGlkYXRvclJlZ2lzdHJhdGlvbkgAEioKCnNsYV9yb2xsdXAY6gcgASgLMhMucHJvdG9jb2wuU2xhUm9sbHVwSAASNgoNbWFuYWdlX2VudGl0eRjrByABKAsyHC5wcm90b2NvbC5NYW5hZ2VFbnRpdHlMZWdhY3lIAEINCgt0cmFuc2FjdGlvbiJKChZTZW5kVHJhbnNhY3Rpb25SZXF1ZXN0EjAKC3RyYW5zYWN0aW9uGAEgASgLMhsucHJvdG9jb2wuU2lnbmVkVHJhbnNhY3Rpb24iYAoZRm9yd2FyZFRyYW5zYWN0aW9uUmVxdWVzdBIRCglzaWduYXR1cmUYASABKAkSMAoLdHJhbnNhY3Rpb24YAiABKAsyGy5wcm90b2NvbC5TaWduZWRUcmFuc2FjdGlvbiInChVHZXRUcmFuc2FjdGlvblJlcXVlc3QSDgoGdHhoYXNoGAEgASgJIlcKE1RyYW5zYWN0aW9uUmVzcG9uc2USDgoGdHhoYXNoGAEgASgJEjAKC3RyYW5zYWN0aW9uGAIgASgLMhsucHJvdG9jb2wuU2lnbmVkVHJhbnNhY3Rpb24iHAoaRm9yd2FyZFRyYW5zYWN0aW9uUmVzcG9uc2UiIQoPR2V0QmxvY2tSZXF1ZXN0Eg4KBmhlaWdodBgBIAEoAyLPAQoNQmxvY2tSZXNwb25zZRIRCglibG9ja2hhc2gYASABKAkSDwoHY2hhaW5pZBgCIAEoCRIQCghwcm9wb3NlchgDIAEoCRIOCgZoZWlnaHQYBCABKAMSMQoMdHJhbnNhY3Rpb25zGAUgAygLMhsucHJvdG9jb2wuU2lnbmVkVHJhbnNhY3Rpb24SFgoOY3VycmVudF9oZWlnaHQYBiABKAMSLQoJdGltZXN0YW1wGAcgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcCIUChJHZXROb2RlSW5mb1JlcXVlc3QidwoQTm9kZUluZm9SZXNwb25zZRIPCgdjaGFpbmlkGAEgASgJEg4KBnN5bmNlZBgCIAEoCBIVCg1jb21ldF9hZGRyZXNzGAMgASgJEhMKC2V0aF9hZGRyZXNzGAQgASgJEhYKDmN1cnJlbnRfaGVpZ2h0GAUgASgDIjAKClRyYWNrUGxheXMSIgoFcGxheXMYASADKAsyEy5wcm90b2NvbC5UcmFja1BsYXkilQEKFVZhbGlkYXRvclJlZ2lzdHJhdGlvbhIQCghlbmRwb2ludBgBIAEoCRIVCg1jb21ldF9hZGRyZXNzGAIgASgJEhEKCWV0aF9ibG9jaxgDIAEoCRIRCglub2RlX3R5cGUYBCABKAkSDQoFc3BfaWQYBSABKAkSDwoHcHViX2tleRgGIAEoDBINCgVwb3dlchgHIAEoAyKfAQoJVHJhY2tQbGF5Eg8KB3VzZXJfaWQYASABKAkSEAoIdHJhY2tfaWQYAiABKAkSLQoJdGltZXN0YW1wGAMgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIRCglzaWduYXR1cmUYBCABKAkSDAoEY2l0eRgFIAEoCRIOCgZyZWdpb24YBiABKAkSDwoHY291bnRyeRgHIAEoCSINCgtQaW5nUmVxdWVzdCIfCgxQaW5nUmVzcG9uc2USDwoHbWVzc2FnZRgBIAEoCSKMAQoJU2xhUm9sbHVwEi0KCXRpbWVzdGFtcBgBIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASEwoLYmxvY2tfc3RhcnQYAiABKAMSEQoJYmxvY2tfZW5kGAMgASgDEigKB3JlcG9ydHMYBCADKAsyFy5wcm90b2NvbC5TbGFOb2RlUmVwb3J0Ij0KDVNsYU5vZGVSZXBvcnQSDwoHYWRkcmVzcxgBIAEoCRIbChNudW1fYmxvY2tzX3Byb3Bvc2VkGAIgASgFIqEBChJNYW5hZ2VFbnRpdHlMZWdhY3kSDwoHdXNlcl9pZBgBIAEoAxITCgtlbnRpdHlfdHlwZRgCIAEoCRIRCgllbnRpdHlfaWQYAyABKAMSDgoGYWN0aW9uGAQgASgJEhAKCG1ldGFkYXRhGAUgASgJEhEKCXNpZ25hdHVyZRgGIAEoCRIOCgZzaWduZXIYByABKAkSDQoFbm9uY2UYCCABKAMytwUKCFByb3RvY29sEn8KD1NlbmRUcmFuc2FjdGlvbhIgLnByb3RvY29sLlNlbmRUcmFuc2FjdGlvblJlcXVlc3QaHS5wcm90b2NvbC5UcmFuc2FjdGlvblJlc3BvbnNlIiuC0+STAiU6C3RyYW5zYWN0aW9uIhYvY29yZS9ncnBjL3RyYW5zYWN0aW9uEpQBChJGb3J3YXJkVHJhbnNhY3Rpb24SIy5wcm90b2NvbC5Gb3J3YXJkVHJhbnNhY3Rpb25SZXF1ZXN0GiQucHJvdG9jb2wuRm9yd2FyZFRyYW5zYWN0aW9uUmVzcG9uc2UiM4LT5JMCLToLdHJhbnNhY3Rpb24iHi9jb3JlL2dycGMvdHJhbnNhY3Rpb24vZm9yd2FyZBJ5Cg5HZXRUcmFuc2FjdGlvbhIfLnByb3RvY29sLkdldFRyYW5zYWN0aW9uUmVxdWVzdBodLnByb3RvY29sLlRyYW5zYWN0aW9uUmVzcG9uc2UiJ4LT5JMCIRIfL2NvcmUvZ3JwYy90cmFuc2FjdGlvbi97dHhoYXNofRJhCghHZXRCbG9jaxIZLnByb3RvY29sLkdldEJsb2NrUmVxdWVzdBoXLnByb3RvY29sLkJsb2NrUmVzcG9uc2UiIYLT5JMCGxIZL2NvcmUvZ3JwYy9ibG9jay97aGVpZ2h0fRJlCgtHZXROb2RlSW5mbxIcLnByb3RvY29sLkdldE5vZGVJbmZvUmVxdWVzdBoaLnByb3RvY29sLk5vZGVJbmZvUmVzcG9uc2UiHILT5JMCFhIUL2NvcmUvZ3JwYy9ub2RlX2luZm8STgoEUGluZxIVLnByb3RvY29sLlBpbmdSZXF1ZXN0GhYucHJvdG9jb2wuUGluZ1Jlc3BvbnNlIheC0+STAhESDy9jb3JlL2dycGMvcGluZ0IZWhcuL2NvcmVfcHJvdG87Y29yZV9wcm90b2IGcHJvdG8z", [file_google_api_annotations, file_google_protobuf_timestamp]);
+  fileDesc("Cg5wcm90b2NvbC5wcm90bxIIcHJvdG9jb2wi4QIKEVNpZ25lZFRyYW5zYWN0aW9uEhEKCXNpZ25hdHVyZRgBIAEoCRISCgpyZXF1ZXN0X2lkGAIgASgJEiYKBXBsYXlzGOgHIAEoCzIULnByb3RvY29sLlRyYWNrUGxheXNIABJCChZ2YWxpZGF0b3JfcmVnaXN0cmF0aW9uGOkHIAEoCzIfLnByb3RvY29sLlZhbGlkYXRvclJlZ2lzdHJhdGlvbkgAEioKCnNsYV9yb2xsdXAY6gcgASgLMhMucHJvdG9jb2wuU2xhUm9sbHVwSAASNgoNbWFuYWdlX2VudGl0eRjrByABKAsyHC5wcm90b2NvbC5NYW5hZ2VFbnRpdHlMZWdhY3lIABJGChh2YWxpZGF0b3JfZGVyZWdpc3RyYXRpb24Y7AcgASgLMiEucHJvdG9jb2wuVmFsaWRhdG9yRGVyZWdpc3RyYXRpb25IAEINCgt0cmFuc2FjdGlvbiJKChZTZW5kVHJhbnNhY3Rpb25SZXF1ZXN0EjAKC3RyYW5zYWN0aW9uGAEgASgLMhsucHJvdG9jb2wuU2lnbmVkVHJhbnNhY3Rpb24iYAoZRm9yd2FyZFRyYW5zYWN0aW9uUmVxdWVzdBIRCglzaWduYXR1cmUYASABKAkSMAoLdHJhbnNhY3Rpb24YAiABKAsyGy5wcm90b2NvbC5TaWduZWRUcmFuc2FjdGlvbiInChVHZXRUcmFuc2FjdGlvblJlcXVlc3QSDgoGdHhoYXNoGAEgASgJIlcKE1RyYW5zYWN0aW9uUmVzcG9uc2USDgoGdHhoYXNoGAEgASgJEjAKC3RyYW5zYWN0aW9uGAIgASgLMhsucHJvdG9jb2wuU2lnbmVkVHJhbnNhY3Rpb24iHAoaRm9yd2FyZFRyYW5zYWN0aW9uUmVzcG9uc2UiIQoPR2V0QmxvY2tSZXF1ZXN0Eg4KBmhlaWdodBgBIAEoAyLRAQoNQmxvY2tSZXNwb25zZRIRCglibG9ja2hhc2gYASABKAkSDwoHY2hhaW5pZBgCIAEoCRIQCghwcm9wb3NlchgDIAEoCRIOCgZoZWlnaHQYBCABKAMSMwoMdHJhbnNhY3Rpb25zGAUgAygLMh0ucHJvdG9jb2wuVHJhbnNhY3Rpb25SZXNwb25zZRIWCg5jdXJyZW50X2hlaWdodBgGIAEoAxItCgl0aW1lc3RhbXAYByABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wIhQKEkdldE5vZGVJbmZvUmVxdWVzdCJ3ChBOb2RlSW5mb1Jlc3BvbnNlEg8KB2NoYWluaWQYASABKAkSDgoGc3luY2VkGAIgASgIEhUKDWNvbWV0X2FkZHJlc3MYAyABKAkSEwoLZXRoX2FkZHJlc3MYBCABKAkSFgoOY3VycmVudF9oZWlnaHQYBSABKAMiMAoKVHJhY2tQbGF5cxIiCgVwbGF5cxgBIAMoCzITLnByb3RvY29sLlRyYWNrUGxheSKVAQoVVmFsaWRhdG9yUmVnaXN0cmF0aW9uEhAKCGVuZHBvaW50GAEgASgJEhUKDWNvbWV0X2FkZHJlc3MYAiABKAkSEQoJZXRoX2Jsb2NrGAMgASgJEhEKCW5vZGVfdHlwZRgEIAEoCRINCgVzcF9pZBgFIAEoCRIPCgdwdWJfa2V5GAYgASgMEg0KBXBvd2VyGAcgASgDIkEKF1ZhbGlkYXRvckRlcmVnaXN0cmF0aW9uEhUKDWNvbWV0X2FkZHJlc3MYASABKAkSDwoHcHViX2tleRgCIAEoDCKfAQoJVHJhY2tQbGF5Eg8KB3VzZXJfaWQYASABKAkSEAoIdHJhY2tfaWQYAiABKAkSLQoJdGltZXN0YW1wGAMgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIRCglzaWduYXR1cmUYBCABKAkSDAoEY2l0eRgFIAEoCRIOCgZyZWdpb24YBiABKAkSDwoHY291bnRyeRgHIAEoCSINCgtQaW5nUmVxdWVzdCIfCgxQaW5nUmVzcG9uc2USDwoHbWVzc2FnZRgBIAEoCSKMAQoJU2xhUm9sbHVwEi0KCXRpbWVzdGFtcBgBIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASEwoLYmxvY2tfc3RhcnQYAiABKAMSEQoJYmxvY2tfZW5kGAMgASgDEigKB3JlcG9ydHMYBCADKAsyFy5wcm90b2NvbC5TbGFOb2RlUmVwb3J0Ij0KDVNsYU5vZGVSZXBvcnQSDwoHYWRkcmVzcxgBIAEoCRIbChNudW1fYmxvY2tzX3Byb3Bvc2VkGAIgASgFIqEBChJNYW5hZ2VFbnRpdHlMZWdhY3kSDwoHdXNlcl9pZBgBIAEoAxITCgtlbnRpdHlfdHlwZRgCIAEoCRIRCgllbnRpdHlfaWQYAyABKAMSDgoGYWN0aW9uGAQgASgJEhAKCG1ldGFkYXRhGAUgASgJEhEKCXNpZ25hdHVyZRgGIAEoCRIOCgZzaWduZXIYByABKAkSDQoFbm9uY2UYCCABKAkytwUKCFByb3RvY29sEn8KD1NlbmRUcmFuc2FjdGlvbhIgLnByb3RvY29sLlNlbmRUcmFuc2FjdGlvblJlcXVlc3QaHS5wcm90b2NvbC5UcmFuc2FjdGlvblJlc3BvbnNlIiuC0+STAiU6C3RyYW5zYWN0aW9uIhYvY29yZS9ncnBjL3RyYW5zYWN0aW9uEpQBChJGb3J3YXJkVHJhbnNhY3Rpb24SIy5wcm90b2NvbC5Gb3J3YXJkVHJhbnNhY3Rpb25SZXF1ZXN0GiQucHJvdG9jb2wuRm9yd2FyZFRyYW5zYWN0aW9uUmVzcG9uc2UiM4LT5JMCLToLdHJhbnNhY3Rpb24iHi9jb3JlL2dycGMvdHJhbnNhY3Rpb24vZm9yd2FyZBJ5Cg5HZXRUcmFuc2FjdGlvbhIfLnByb3RvY29sLkdldFRyYW5zYWN0aW9uUmVxdWVzdBodLnByb3RvY29sLlRyYW5zYWN0aW9uUmVzcG9uc2UiJ4LT5JMCIRIfL2NvcmUvZ3JwYy90cmFuc2FjdGlvbi97dHhoYXNofRJhCghHZXRCbG9jaxIZLnByb3RvY29sLkdldEJsb2NrUmVxdWVzdBoXLnByb3RvY29sLkJsb2NrUmVzcG9uc2UiIYLT5JMCGxIZL2NvcmUvZ3JwYy9ibG9jay97aGVpZ2h0fRJlCgtHZXROb2RlSW5mbxIcLnByb3RvY29sLkdldE5vZGVJbmZvUmVxdWVzdBoaLnByb3RvY29sLk5vZGVJbmZvUmVzcG9uc2UiHILT5JMCFhIUL2NvcmUvZ3JwYy9ub2RlX2luZm8STgoEUGluZxIVLnByb3RvY29sLlBpbmdSZXF1ZXN0GhYucHJvdG9jb2wuUGluZ1Jlc3BvbnNlIheC0+STAhESDy9jb3JlL2dycGMvcGluZ0IZWhcuL2NvcmVfcHJvdG87Y29yZV9wcm90b2IGcHJvdG8z", [file_google_api_annotations, file_google_protobuf_timestamp]);
 
 /**
  * @generated from message protocol.SignedTransaction
@@ -56,6 +56,12 @@ export type SignedTransaction = Message<"protocol.SignedTransaction"> & {
      */
     value: ManageEntityLegacy;
     case: "manageEntity";
+  } | {
+    /**
+     * @generated from field: protocol.ValidatorDeregistration validator_deregistration = 1004;
+     */
+    value: ValidatorDeregistration;
+    case: "validatorDeregistration";
   } | { case: undefined; value?: undefined };
 };
 
@@ -199,9 +205,9 @@ export type BlockResponse = Message<"protocol.BlockResponse"> & {
   height: bigint;
 
   /**
-   * @generated from field: repeated protocol.SignedTransaction transactions = 5;
+   * @generated from field: repeated protocol.TransactionResponse transactions = 5;
    */
-  transactions: SignedTransaction[];
+  transactions: TransactionResponse[];
 
   /**
    * @generated from field: int64 current_height = 6;
@@ -336,6 +342,28 @@ export const ValidatorRegistrationSchema: GenMessage<ValidatorRegistration> = /*
   messageDesc(file_protocol, 11);
 
 /**
+ * @generated from message protocol.ValidatorDeregistration
+ */
+export type ValidatorDeregistration = Message<"protocol.ValidatorDeregistration"> & {
+  /**
+   * @generated from field: string comet_address = 1;
+   */
+  cometAddress: string;
+
+  /**
+   * @generated from field: bytes pub_key = 2;
+   */
+  pubKey: Uint8Array;
+};
+
+/**
+ * Describes the message protocol.ValidatorDeregistration.
+ * Use `create(ValidatorDeregistrationSchema)` to create a new message.
+ */
+export const ValidatorDeregistrationSchema: GenMessage<ValidatorDeregistration> = /*@__PURE__*/
+  messageDesc(file_protocol, 12);
+
+/**
  * @generated from message protocol.TrackPlay
  */
 export type TrackPlay = Message<"protocol.TrackPlay"> & {
@@ -380,7 +408,7 @@ export type TrackPlay = Message<"protocol.TrackPlay"> & {
  * Use `create(TrackPlaySchema)` to create a new message.
  */
 export const TrackPlaySchema: GenMessage<TrackPlay> = /*@__PURE__*/
-  messageDesc(file_protocol, 12);
+  messageDesc(file_protocol, 13);
 
 /**
  * @generated from message protocol.PingRequest
@@ -393,7 +421,7 @@ export type PingRequest = Message<"protocol.PingRequest"> & {
  * Use `create(PingRequestSchema)` to create a new message.
  */
 export const PingRequestSchema: GenMessage<PingRequest> = /*@__PURE__*/
-  messageDesc(file_protocol, 13);
+  messageDesc(file_protocol, 14);
 
 /**
  * @generated from message protocol.PingResponse
@@ -410,7 +438,7 @@ export type PingResponse = Message<"protocol.PingResponse"> & {
  * Use `create(PingResponseSchema)` to create a new message.
  */
 export const PingResponseSchema: GenMessage<PingResponse> = /*@__PURE__*/
-  messageDesc(file_protocol, 14);
+  messageDesc(file_protocol, 15);
 
 /**
  * @generated from message protocol.SlaRollup
@@ -442,7 +470,7 @@ export type SlaRollup = Message<"protocol.SlaRollup"> & {
  * Use `create(SlaRollupSchema)` to create a new message.
  */
 export const SlaRollupSchema: GenMessage<SlaRollup> = /*@__PURE__*/
-  messageDesc(file_protocol, 15);
+  messageDesc(file_protocol, 16);
 
 /**
  * @generated from message protocol.SlaNodeReport
@@ -464,7 +492,7 @@ export type SlaNodeReport = Message<"protocol.SlaNodeReport"> & {
  * Use `create(SlaNodeReportSchema)` to create a new message.
  */
 export const SlaNodeReportSchema: GenMessage<SlaNodeReport> = /*@__PURE__*/
-  messageDesc(file_protocol, 16);
+  messageDesc(file_protocol, 17);
 
 /**
  * @generated from message protocol.ManageEntityLegacy
@@ -506,9 +534,9 @@ export type ManageEntityLegacy = Message<"protocol.ManageEntityLegacy"> & {
   signer: string;
 
   /**
-   * @generated from field: int64 nonce = 8;
+   * @generated from field: string nonce = 8;
    */
-  nonce: bigint;
+  nonce: string;
 };
 
 /**
@@ -516,7 +544,7 @@ export type ManageEntityLegacy = Message<"protocol.ManageEntityLegacy"> & {
  * Use `create(ManageEntityLegacySchema)` to create a new message.
  */
 export const ManageEntityLegacySchema: GenMessage<ManageEntityLegacy> = /*@__PURE__*/
-  messageDesc(file_protocol, 17);
+  messageDesc(file_protocol, 18);
 
 /**
  * @generated from service protocol.Protocol

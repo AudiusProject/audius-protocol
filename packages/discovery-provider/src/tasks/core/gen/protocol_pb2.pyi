@@ -23,6 +23,7 @@ class SignedTransaction(google.protobuf.message.Message):
     VALIDATOR_REGISTRATION_FIELD_NUMBER: builtins.int
     SLA_ROLLUP_FIELD_NUMBER: builtins.int
     MANAGE_ENTITY_FIELD_NUMBER: builtins.int
+    VALIDATOR_DEREGISTRATION_FIELD_NUMBER: builtins.int
     signature: builtins.str
     request_id: builtins.str
     @property
@@ -33,6 +34,8 @@ class SignedTransaction(google.protobuf.message.Message):
     def sla_rollup(self) -> global___SlaRollup: ...
     @property
     def manage_entity(self) -> global___ManageEntityLegacy: ...
+    @property
+    def validator_deregistration(self) -> global___ValidatorDeregistration: ...
     def __init__(
         self,
         *,
@@ -42,10 +45,11 @@ class SignedTransaction(google.protobuf.message.Message):
         validator_registration: global___ValidatorRegistration | None = ...,
         sla_rollup: global___SlaRollup | None = ...,
         manage_entity: global___ManageEntityLegacy | None = ...,
+        validator_deregistration: global___ValidatorDeregistration | None = ...,
     ) -> None: ...
-    def HasField(self, field_name: typing.Literal["manage_entity", b"manage_entity", "plays", b"plays", "sla_rollup", b"sla_rollup", "transaction", b"transaction", "validator_registration", b"validator_registration"]) -> builtins.bool: ...
-    def ClearField(self, field_name: typing.Literal["manage_entity", b"manage_entity", "plays", b"plays", "request_id", b"request_id", "signature", b"signature", "sla_rollup", b"sla_rollup", "transaction", b"transaction", "validator_registration", b"validator_registration"]) -> None: ...
-    def WhichOneof(self, oneof_group: typing.Literal["transaction", b"transaction"]) -> typing.Literal["plays", "validator_registration", "sla_rollup", "manage_entity"] | None: ...
+    def HasField(self, field_name: typing.Literal["manage_entity", b"manage_entity", "plays", b"plays", "sla_rollup", b"sla_rollup", "transaction", b"transaction", "validator_deregistration", b"validator_deregistration", "validator_registration", b"validator_registration"]) -> builtins.bool: ...
+    def ClearField(self, field_name: typing.Literal["manage_entity", b"manage_entity", "plays", b"plays", "request_id", b"request_id", "signature", b"signature", "sla_rollup", b"sla_rollup", "transaction", b"transaction", "validator_deregistration", b"validator_deregistration", "validator_registration", b"validator_registration"]) -> None: ...
+    def WhichOneof(self, oneof_group: typing.Literal["transaction", b"transaction"]) -> typing.Literal["plays", "validator_registration", "sla_rollup", "manage_entity", "validator_deregistration"] | None: ...
 
 global___SignedTransaction = SignedTransaction
 
@@ -163,7 +167,7 @@ class BlockResponse(google.protobuf.message.Message):
     height: builtins.int
     current_height: builtins.int
     @property
-    def transactions(self) -> google.protobuf.internal.containers.RepeatedCompositeFieldContainer[global___SignedTransaction]: ...
+    def transactions(self) -> google.protobuf.internal.containers.RepeatedCompositeFieldContainer[global___TransactionResponse]: ...
     @property
     def timestamp(self) -> google.protobuf.timestamp_pb2.Timestamp: ...
     def __init__(
@@ -173,7 +177,7 @@ class BlockResponse(google.protobuf.message.Message):
         chainid: builtins.str = ...,
         proposer: builtins.str = ...,
         height: builtins.int = ...,
-        transactions: collections.abc.Iterable[global___SignedTransaction] | None = ...,
+        transactions: collections.abc.Iterable[global___TransactionResponse] | None = ...,
         current_height: builtins.int = ...,
         timestamp: google.protobuf.timestamp_pb2.Timestamp | None = ...,
     ) -> None: ...
@@ -267,6 +271,24 @@ class ValidatorRegistration(google.protobuf.message.Message):
     def ClearField(self, field_name: typing.Literal["comet_address", b"comet_address", "endpoint", b"endpoint", "eth_block", b"eth_block", "node_type", b"node_type", "power", b"power", "pub_key", b"pub_key", "sp_id", b"sp_id"]) -> None: ...
 
 global___ValidatorRegistration = ValidatorRegistration
+
+@typing.final
+class ValidatorDeregistration(google.protobuf.message.Message):
+    DESCRIPTOR: google.protobuf.descriptor.Descriptor
+
+    COMET_ADDRESS_FIELD_NUMBER: builtins.int
+    PUB_KEY_FIELD_NUMBER: builtins.int
+    comet_address: builtins.str
+    pub_key: builtins.bytes
+    def __init__(
+        self,
+        *,
+        comet_address: builtins.str = ...,
+        pub_key: builtins.bytes = ...,
+    ) -> None: ...
+    def ClearField(self, field_name: typing.Literal["comet_address", b"comet_address", "pub_key", b"pub_key"]) -> None: ...
+
+global___ValidatorDeregistration = ValidatorDeregistration
 
 @typing.final
 class TrackPlay(google.protobuf.message.Message):
@@ -392,7 +414,7 @@ class ManageEntityLegacy(google.protobuf.message.Message):
     metadata: builtins.str
     signature: builtins.str
     signer: builtins.str
-    nonce: builtins.int
+    nonce: builtins.str
     def __init__(
         self,
         *,
@@ -403,7 +425,7 @@ class ManageEntityLegacy(google.protobuf.message.Message):
         metadata: builtins.str = ...,
         signature: builtins.str = ...,
         signer: builtins.str = ...,
-        nonce: builtins.int = ...,
+        nonce: builtins.str = ...,
     ) -> None: ...
     def ClearField(self, field_name: typing.Literal["action", b"action", "entity_id", b"entity_id", "entity_type", b"entity_type", "metadata", b"metadata", "nonce", b"nonce", "signature", b"signature", "signer", b"signer", "user_id", b"user_id"]) -> None: ...
 

@@ -26,7 +26,7 @@ from google.api import annotations_pb2 as google_dot_api_dot_annotations__pb2
 from google.protobuf import timestamp_pb2 as google_dot_protobuf_dot_timestamp__pb2
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x0eprotocol.proto\x12\x08protocol\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\xe6\x02\n\x11SignedTransaction\x12\x1c\n\tsignature\x18\x01 \x01(\tR\tsignature\x12\x1d\n\nrequest_id\x18\x02 \x01(\tR\trequestId\x12-\n\x05plays\x18\xe8\x07 \x01(\x0b\x32\x14.protocol.TrackPlaysH\x00R\x05plays\x12Y\n\x16validator_registration\x18\xe9\x07 \x01(\x0b\x32\x1f.protocol.ValidatorRegistrationH\x00R\x15validatorRegistration\x12\x35\n\nsla_rollup\x18\xea\x07 \x01(\x0b\x32\x13.protocol.SlaRollupH\x00R\tslaRollup\x12\x44\n\rmanage_entity\x18\xeb\x07 \x01(\x0b\x32\x1c.protocol.ManageEntityLegacyH\x00R\x0cmanageEntityB\r\n\x0btransaction\"W\n\x16SendTransactionRequest\x12=\n\x0btransaction\x18\x01 \x01(\x0b\x32\x1b.protocol.SignedTransactionR\x0btransaction\"x\n\x19\x46orwardTransactionRequest\x12\x1c\n\tsignature\x18\x01 \x01(\tR\tsignature\x12=\n\x0btransaction\x18\x02 \x01(\x0b\x32\x1b.protocol.SignedTransactionR\x0btransaction\"/\n\x15GetTransactionRequest\x12\x16\n\x06txhash\x18\x01 \x01(\tR\x06txhash\"l\n\x13TransactionResponse\x12\x16\n\x06txhash\x18\x01 \x01(\tR\x06txhash\x12=\n\x0btransaction\x18\x02 \x01(\x0b\x32\x1b.protocol.SignedTransactionR\x0btransaction\"\x1c\n\x1a\x46orwardTransactionResponse\")\n\x0fGetBlockRequest\x12\x16\n\x06height\x18\x01 \x01(\x03R\x06height\"\x9d\x02\n\rBlockResponse\x12\x1c\n\tblockhash\x18\x01 \x01(\tR\tblockhash\x12\x18\n\x07\x63hainid\x18\x02 \x01(\tR\x07\x63hainid\x12\x1a\n\x08proposer\x18\x03 \x01(\tR\x08proposer\x12\x16\n\x06height\x18\x04 \x01(\x03R\x06height\x12?\n\x0ctransactions\x18\x05 \x03(\x0b\x32\x1b.protocol.SignedTransactionR\x0ctransactions\x12%\n\x0e\x63urrent_height\x18\x06 \x01(\x03R\rcurrentHeight\x12\x38\n\ttimestamp\x18\x07 \x01(\x0b\x32\x1a.google.protobuf.TimestampR\ttimestamp\"\x14\n\x12GetNodeInfoRequest\"\xb1\x01\n\x10NodeInfoResponse\x12\x18\n\x07\x63hainid\x18\x01 \x01(\tR\x07\x63hainid\x12\x16\n\x06synced\x18\x02 \x01(\x08R\x06synced\x12#\n\rcomet_address\x18\x03 \x01(\tR\x0c\x63ometAddress\x12\x1f\n\x0b\x65th_address\x18\x04 \x01(\tR\nethAddress\x12%\n\x0e\x63urrent_height\x18\x05 \x01(\x03R\rcurrentHeight\"7\n\nTrackPlays\x12)\n\x05plays\x18\x01 \x03(\x0b\x32\x13.protocol.TrackPlayR\x05plays\"\xd6\x01\n\x15ValidatorRegistration\x12\x1a\n\x08\x65ndpoint\x18\x01 \x01(\tR\x08\x65ndpoint\x12#\n\rcomet_address\x18\x02 \x01(\tR\x0c\x63ometAddress\x12\x1b\n\teth_block\x18\x03 \x01(\tR\x08\x65thBlock\x12\x1b\n\tnode_type\x18\x04 \x01(\tR\x08nodeType\x12\x13\n\x05sp_id\x18\x05 \x01(\tR\x04spId\x12\x17\n\x07pub_key\x18\x06 \x01(\x0cR\x06pubKey\x12\x14\n\x05power\x18\x07 \x01(\x03R\x05power\"\xdd\x01\n\tTrackPlay\x12\x17\n\x07user_id\x18\x01 \x01(\tR\x06userId\x12\x19\n\x08track_id\x18\x02 \x01(\tR\x07trackId\x12\x38\n\ttimestamp\x18\x03 \x01(\x0b\x32\x1a.google.protobuf.TimestampR\ttimestamp\x12\x1c\n\tsignature\x18\x04 \x01(\tR\tsignature\x12\x12\n\x04\x63ity\x18\x05 \x01(\tR\x04\x63ity\x12\x16\n\x06region\x18\x06 \x01(\tR\x06region\x12\x18\n\x07\x63ountry\x18\x07 \x01(\tR\x07\x63ountry\"\r\n\x0bPingRequest\"(\n\x0cPingResponse\x12\x18\n\x07message\x18\x01 \x01(\tR\x07message\"\xb6\x01\n\tSlaRollup\x12\x38\n\ttimestamp\x18\x01 \x01(\x0b\x32\x1a.google.protobuf.TimestampR\ttimestamp\x12\x1f\n\x0b\x62lock_start\x18\x02 \x01(\x03R\nblockStart\x12\x1b\n\tblock_end\x18\x03 \x01(\x03R\x08\x62lockEnd\x12\x31\n\x07reports\x18\x04 \x03(\x0b\x32\x17.protocol.SlaNodeReportR\x07reports\"Y\n\rSlaNodeReport\x12\x18\n\x07\x61\x64\x64ress\x18\x01 \x01(\tR\x07\x61\x64\x64ress\x12.\n\x13num_blocks_proposed\x18\x02 \x01(\x05R\x11numBlocksProposed\"\xeb\x01\n\x12ManageEntityLegacy\x12\x17\n\x07user_id\x18\x01 \x01(\x03R\x06userId\x12\x1f\n\x0b\x65ntity_type\x18\x02 \x01(\tR\nentityType\x12\x1b\n\tentity_id\x18\x03 \x01(\x03R\x08\x65ntityId\x12\x16\n\x06\x61\x63tion\x18\x04 \x01(\tR\x06\x61\x63tion\x12\x1a\n\x08metadata\x18\x05 \x01(\tR\x08metadata\x12\x1c\n\tsignature\x18\x06 \x01(\tR\tsignature\x12\x16\n\x06signer\x18\x07 \x01(\tR\x06signer\x12\x14\n\x05nonce\x18\x08 \x01(\x03R\x05nonce2\xb7\x05\n\x08Protocol\x12\x7f\n\x0fSendTransaction\x12 .protocol.SendTransactionRequest\x1a\x1d.protocol.TransactionResponse\"+\x82\xd3\xe4\x93\x02%\"\x16/core/grpc/transaction:\x0btransaction\x12\x94\x01\n\x12\x46orwardTransaction\x12#.protocol.ForwardTransactionRequest\x1a$.protocol.ForwardTransactionResponse\"3\x82\xd3\xe4\x93\x02-\"\x1e/core/grpc/transaction/forward:\x0btransaction\x12y\n\x0eGetTransaction\x12\x1f.protocol.GetTransactionRequest\x1a\x1d.protocol.TransactionResponse\"\'\x82\xd3\xe4\x93\x02!\x12\x1f/core/grpc/transaction/{txhash}\x12\x61\n\x08GetBlock\x12\x19.protocol.GetBlockRequest\x1a\x17.protocol.BlockResponse\"!\x82\xd3\xe4\x93\x02\x1b\x12\x19/core/grpc/block/{height}\x12\x65\n\x0bGetNodeInfo\x12\x1c.protocol.GetNodeInfoRequest\x1a\x1a.protocol.NodeInfoResponse\"\x1c\x82\xd3\xe4\x93\x02\x16\x12\x14/core/grpc/node_info\x12N\n\x04Ping\x12\x15.protocol.PingRequest\x1a\x16.protocol.PingResponse\"\x17\x82\xd3\xe4\x93\x02\x11\x12\x0f/core/grpc/pingB\x19Z\x17./core_proto;core_protob\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x0eprotocol.proto\x12\x08protocol\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\xc7\x03\n\x11SignedTransaction\x12\x1c\n\tsignature\x18\x01 \x01(\tR\tsignature\x12\x1d\n\nrequest_id\x18\x02 \x01(\tR\trequestId\x12-\n\x05plays\x18\xe8\x07 \x01(\x0b\x32\x14.protocol.TrackPlaysH\x00R\x05plays\x12Y\n\x16validator_registration\x18\xe9\x07 \x01(\x0b\x32\x1f.protocol.ValidatorRegistrationH\x00R\x15validatorRegistration\x12\x35\n\nsla_rollup\x18\xea\x07 \x01(\x0b\x32\x13.protocol.SlaRollupH\x00R\tslaRollup\x12\x44\n\rmanage_entity\x18\xeb\x07 \x01(\x0b\x32\x1c.protocol.ManageEntityLegacyH\x00R\x0cmanageEntity\x12_\n\x18validator_deregistration\x18\xec\x07 \x01(\x0b\x32!.protocol.ValidatorDeregistrationH\x00R\x17validatorDeregistrationB\r\n\x0btransaction\"W\n\x16SendTransactionRequest\x12=\n\x0btransaction\x18\x01 \x01(\x0b\x32\x1b.protocol.SignedTransactionR\x0btransaction\"x\n\x19\x46orwardTransactionRequest\x12\x1c\n\tsignature\x18\x01 \x01(\tR\tsignature\x12=\n\x0btransaction\x18\x02 \x01(\x0b\x32\x1b.protocol.SignedTransactionR\x0btransaction\"/\n\x15GetTransactionRequest\x12\x16\n\x06txhash\x18\x01 \x01(\tR\x06txhash\"l\n\x13TransactionResponse\x12\x16\n\x06txhash\x18\x01 \x01(\tR\x06txhash\x12=\n\x0btransaction\x18\x02 \x01(\x0b\x32\x1b.protocol.SignedTransactionR\x0btransaction\"\x1c\n\x1a\x46orwardTransactionResponse\")\n\x0fGetBlockRequest\x12\x16\n\x06height\x18\x01 \x01(\x03R\x06height\"\x9f\x02\n\rBlockResponse\x12\x1c\n\tblockhash\x18\x01 \x01(\tR\tblockhash\x12\x18\n\x07\x63hainid\x18\x02 \x01(\tR\x07\x63hainid\x12\x1a\n\x08proposer\x18\x03 \x01(\tR\x08proposer\x12\x16\n\x06height\x18\x04 \x01(\x03R\x06height\x12\x41\n\x0ctransactions\x18\x05 \x03(\x0b\x32\x1d.protocol.TransactionResponseR\x0ctransactions\x12%\n\x0e\x63urrent_height\x18\x06 \x01(\x03R\rcurrentHeight\x12\x38\n\ttimestamp\x18\x07 \x01(\x0b\x32\x1a.google.protobuf.TimestampR\ttimestamp\"\x14\n\x12GetNodeInfoRequest\"\xb1\x01\n\x10NodeInfoResponse\x12\x18\n\x07\x63hainid\x18\x01 \x01(\tR\x07\x63hainid\x12\x16\n\x06synced\x18\x02 \x01(\x08R\x06synced\x12#\n\rcomet_address\x18\x03 \x01(\tR\x0c\x63ometAddress\x12\x1f\n\x0b\x65th_address\x18\x04 \x01(\tR\nethAddress\x12%\n\x0e\x63urrent_height\x18\x05 \x01(\x03R\rcurrentHeight\"7\n\nTrackPlays\x12)\n\x05plays\x18\x01 \x03(\x0b\x32\x13.protocol.TrackPlayR\x05plays\"\xd6\x01\n\x15ValidatorRegistration\x12\x1a\n\x08\x65ndpoint\x18\x01 \x01(\tR\x08\x65ndpoint\x12#\n\rcomet_address\x18\x02 \x01(\tR\x0c\x63ometAddress\x12\x1b\n\teth_block\x18\x03 \x01(\tR\x08\x65thBlock\x12\x1b\n\tnode_type\x18\x04 \x01(\tR\x08nodeType\x12\x13\n\x05sp_id\x18\x05 \x01(\tR\x04spId\x12\x17\n\x07pub_key\x18\x06 \x01(\x0cR\x06pubKey\x12\x14\n\x05power\x18\x07 \x01(\x03R\x05power\"W\n\x17ValidatorDeregistration\x12#\n\rcomet_address\x18\x01 \x01(\tR\x0c\x63ometAddress\x12\x17\n\x07pub_key\x18\x02 \x01(\x0cR\x06pubKey\"\xdd\x01\n\tTrackPlay\x12\x17\n\x07user_id\x18\x01 \x01(\tR\x06userId\x12\x19\n\x08track_id\x18\x02 \x01(\tR\x07trackId\x12\x38\n\ttimestamp\x18\x03 \x01(\x0b\x32\x1a.google.protobuf.TimestampR\ttimestamp\x12\x1c\n\tsignature\x18\x04 \x01(\tR\tsignature\x12\x12\n\x04\x63ity\x18\x05 \x01(\tR\x04\x63ity\x12\x16\n\x06region\x18\x06 \x01(\tR\x06region\x12\x18\n\x07\x63ountry\x18\x07 \x01(\tR\x07\x63ountry\"\r\n\x0bPingRequest\"(\n\x0cPingResponse\x12\x18\n\x07message\x18\x01 \x01(\tR\x07message\"\xb6\x01\n\tSlaRollup\x12\x38\n\ttimestamp\x18\x01 \x01(\x0b\x32\x1a.google.protobuf.TimestampR\ttimestamp\x12\x1f\n\x0b\x62lock_start\x18\x02 \x01(\x03R\nblockStart\x12\x1b\n\tblock_end\x18\x03 \x01(\x03R\x08\x62lockEnd\x12\x31\n\x07reports\x18\x04 \x03(\x0b\x32\x17.protocol.SlaNodeReportR\x07reports\"Y\n\rSlaNodeReport\x12\x18\n\x07\x61\x64\x64ress\x18\x01 \x01(\tR\x07\x61\x64\x64ress\x12.\n\x13num_blocks_proposed\x18\x02 \x01(\x05R\x11numBlocksProposed\"\xeb\x01\n\x12ManageEntityLegacy\x12\x17\n\x07user_id\x18\x01 \x01(\x03R\x06userId\x12\x1f\n\x0b\x65ntity_type\x18\x02 \x01(\tR\nentityType\x12\x1b\n\tentity_id\x18\x03 \x01(\x03R\x08\x65ntityId\x12\x16\n\x06\x61\x63tion\x18\x04 \x01(\tR\x06\x61\x63tion\x12\x1a\n\x08metadata\x18\x05 \x01(\tR\x08metadata\x12\x1c\n\tsignature\x18\x06 \x01(\tR\tsignature\x12\x16\n\x06signer\x18\x07 \x01(\tR\x06signer\x12\x14\n\x05nonce\x18\x08 \x01(\tR\x05nonce2\xb7\x05\n\x08Protocol\x12\x7f\n\x0fSendTransaction\x12 .protocol.SendTransactionRequest\x1a\x1d.protocol.TransactionResponse\"+\x82\xd3\xe4\x93\x02%\"\x16/core/grpc/transaction:\x0btransaction\x12\x94\x01\n\x12\x46orwardTransaction\x12#.protocol.ForwardTransactionRequest\x1a$.protocol.ForwardTransactionResponse\"3\x82\xd3\xe4\x93\x02-\"\x1e/core/grpc/transaction/forward:\x0btransaction\x12y\n\x0eGetTransaction\x12\x1f.protocol.GetTransactionRequest\x1a\x1d.protocol.TransactionResponse\"\'\x82\xd3\xe4\x93\x02!\x12\x1f/core/grpc/transaction/{txhash}\x12\x61\n\x08GetBlock\x12\x19.protocol.GetBlockRequest\x1a\x17.protocol.BlockResponse\"!\x82\xd3\xe4\x93\x02\x1b\x12\x19/core/grpc/block/{height}\x12\x65\n\x0bGetNodeInfo\x12\x1c.protocol.GetNodeInfoRequest\x1a\x1a.protocol.NodeInfoResponse\"\x1c\x82\xd3\xe4\x93\x02\x16\x12\x14/core/grpc/node_info\x12N\n\x04Ping\x12\x15.protocol.PingRequest\x1a\x16.protocol.PingResponse\"\x17\x82\xd3\xe4\x93\x02\x11\x12\x0f/core/grpc/pingB\x19Z\x17./core_proto;core_protob\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
@@ -47,41 +47,43 @@ if not _descriptor._USE_C_DESCRIPTORS:
   _globals['_PROTOCOL'].methods_by_name['Ping']._loaded_options = None
   _globals['_PROTOCOL'].methods_by_name['Ping']._serialized_options = b'\202\323\344\223\002\021\022\017/core/grpc/ping'
   _globals['_SIGNEDTRANSACTION']._serialized_start=92
-  _globals['_SIGNEDTRANSACTION']._serialized_end=450
-  _globals['_SENDTRANSACTIONREQUEST']._serialized_start=452
-  _globals['_SENDTRANSACTIONREQUEST']._serialized_end=539
-  _globals['_FORWARDTRANSACTIONREQUEST']._serialized_start=541
-  _globals['_FORWARDTRANSACTIONREQUEST']._serialized_end=661
-  _globals['_GETTRANSACTIONREQUEST']._serialized_start=663
-  _globals['_GETTRANSACTIONREQUEST']._serialized_end=710
-  _globals['_TRANSACTIONRESPONSE']._serialized_start=712
-  _globals['_TRANSACTIONRESPONSE']._serialized_end=820
-  _globals['_FORWARDTRANSACTIONRESPONSE']._serialized_start=822
-  _globals['_FORWARDTRANSACTIONRESPONSE']._serialized_end=850
-  _globals['_GETBLOCKREQUEST']._serialized_start=852
-  _globals['_GETBLOCKREQUEST']._serialized_end=893
-  _globals['_BLOCKRESPONSE']._serialized_start=896
-  _globals['_BLOCKRESPONSE']._serialized_end=1181
-  _globals['_GETNODEINFOREQUEST']._serialized_start=1183
-  _globals['_GETNODEINFOREQUEST']._serialized_end=1203
-  _globals['_NODEINFORESPONSE']._serialized_start=1206
-  _globals['_NODEINFORESPONSE']._serialized_end=1383
-  _globals['_TRACKPLAYS']._serialized_start=1385
-  _globals['_TRACKPLAYS']._serialized_end=1440
-  _globals['_VALIDATORREGISTRATION']._serialized_start=1443
-  _globals['_VALIDATORREGISTRATION']._serialized_end=1657
-  _globals['_TRACKPLAY']._serialized_start=1660
-  _globals['_TRACKPLAY']._serialized_end=1881
-  _globals['_PINGREQUEST']._serialized_start=1883
-  _globals['_PINGREQUEST']._serialized_end=1896
-  _globals['_PINGRESPONSE']._serialized_start=1898
-  _globals['_PINGRESPONSE']._serialized_end=1938
-  _globals['_SLAROLLUP']._serialized_start=1941
-  _globals['_SLAROLLUP']._serialized_end=2123
-  _globals['_SLANODEREPORT']._serialized_start=2125
-  _globals['_SLANODEREPORT']._serialized_end=2214
-  _globals['_MANAGEENTITYLEGACY']._serialized_start=2217
-  _globals['_MANAGEENTITYLEGACY']._serialized_end=2452
-  _globals['_PROTOCOL']._serialized_start=2455
-  _globals['_PROTOCOL']._serialized_end=3150
+  _globals['_SIGNEDTRANSACTION']._serialized_end=547
+  _globals['_SENDTRANSACTIONREQUEST']._serialized_start=549
+  _globals['_SENDTRANSACTIONREQUEST']._serialized_end=636
+  _globals['_FORWARDTRANSACTIONREQUEST']._serialized_start=638
+  _globals['_FORWARDTRANSACTIONREQUEST']._serialized_end=758
+  _globals['_GETTRANSACTIONREQUEST']._serialized_start=760
+  _globals['_GETTRANSACTIONREQUEST']._serialized_end=807
+  _globals['_TRANSACTIONRESPONSE']._serialized_start=809
+  _globals['_TRANSACTIONRESPONSE']._serialized_end=917
+  _globals['_FORWARDTRANSACTIONRESPONSE']._serialized_start=919
+  _globals['_FORWARDTRANSACTIONRESPONSE']._serialized_end=947
+  _globals['_GETBLOCKREQUEST']._serialized_start=949
+  _globals['_GETBLOCKREQUEST']._serialized_end=990
+  _globals['_BLOCKRESPONSE']._serialized_start=993
+  _globals['_BLOCKRESPONSE']._serialized_end=1280
+  _globals['_GETNODEINFOREQUEST']._serialized_start=1282
+  _globals['_GETNODEINFOREQUEST']._serialized_end=1302
+  _globals['_NODEINFORESPONSE']._serialized_start=1305
+  _globals['_NODEINFORESPONSE']._serialized_end=1482
+  _globals['_TRACKPLAYS']._serialized_start=1484
+  _globals['_TRACKPLAYS']._serialized_end=1539
+  _globals['_VALIDATORREGISTRATION']._serialized_start=1542
+  _globals['_VALIDATORREGISTRATION']._serialized_end=1756
+  _globals['_VALIDATORDEREGISTRATION']._serialized_start=1758
+  _globals['_VALIDATORDEREGISTRATION']._serialized_end=1845
+  _globals['_TRACKPLAY']._serialized_start=1848
+  _globals['_TRACKPLAY']._serialized_end=2069
+  _globals['_PINGREQUEST']._serialized_start=2071
+  _globals['_PINGREQUEST']._serialized_end=2084
+  _globals['_PINGRESPONSE']._serialized_start=2086
+  _globals['_PINGRESPONSE']._serialized_end=2126
+  _globals['_SLAROLLUP']._serialized_start=2129
+  _globals['_SLAROLLUP']._serialized_end=2311
+  _globals['_SLANODEREPORT']._serialized_start=2313
+  _globals['_SLANODEREPORT']._serialized_end=2402
+  _globals['_MANAGEENTITYLEGACY']._serialized_start=2405
+  _globals['_MANAGEENTITYLEGACY']._serialized_end=2640
+  _globals['_PROTOCOL']._serialized_start=2643
+  _globals['_PROTOCOL']._serialized_end=3338
 # @@protoc_insertion_point(module_scope)

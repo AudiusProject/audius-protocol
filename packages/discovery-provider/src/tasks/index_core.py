@@ -226,7 +226,8 @@ def index_core(self):
             indexed_slot: Optional[int] = None
 
             tx_receipts: List[TxReceipt] = []
-            for tx in block.transactions:
+            for tx_res in block.transactions:
+                tx = tx_res.transaction
                 transaction_type = tx.WhichOneof("transaction")
                 if transaction_type == "plays":
                     if indexing_plays:
@@ -250,12 +251,10 @@ def index_core(self):
                                 "_metadata": manage_entity_tx.metadata,
                                 "_signer": manage_entity_tx.signer,
                                 "_subjectSig": manage_entity_tx.signature,
+                                "_nonce": manage_entity_tx.nonce,
                             }
                         ),
-                        # TODO: get from block response
-                        "transactionHash": web3.to_bytes(
-                            hexstr=manage_entity_tx.signature
-                        ),
+                        "transactionHash": web3.to_bytes(hexstr=tx_res.txhash),
                     }
                     tx_receipts.append(txReceipt)
                     continue
