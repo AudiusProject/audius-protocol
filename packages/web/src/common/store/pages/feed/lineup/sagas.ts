@@ -39,44 +39,40 @@ const filterMap: { [k in FeedFilter]: full.GetUserFeedFilterEnum } = {
 }
 
 function* getTracks({
-  offset,
-  limit
+  payload: { feed }
 }: {
-  offset: number
-  limit: number
+  payload: { feed: any }
 }): Generator<any, FeedItem[] | null, any> {
-  yield* waitForRead()
-  const currentUserId = yield* select(getUserId)
-  if (!currentUserId) return []
-  const filterEnum: FeedFilter = yield* select(getFeedFilter)
-  const sdk = yield* getSDK()
-  const filter = filterMap[filterEnum]
-
-  // If the user has followee user ids set, use those to fetch the feed.
-  // It implies that the feed is otherwise going to be empty so we give a
-  // hint to the API.
-  const followeeUserIds = yield* select(getFollowIds)
-
-  const userId = Id.parse(currentUserId)
-  const { data = [] } = yield* call(
-    [sdk.full.users, sdk.full.users.getUserFeed],
-    {
-      id: userId,
-      userId,
-      filter,
-      limit,
-      offset,
-      followeeUserId: followeeUserIds.length ? followeeUserIds : undefined,
-      withUsers: true
-    }
-  )
-  const feed = transformAndCleanList(data, userFeedItemFromSDK).map(
-    ({ item }) => item
-  )
+  console.log('args', feed)
+  // yield* waitForRead()
+  // const currentUserId = yield* select(getUserId)
+  // if (!currentUserId) return []
+  // const filterEnum: FeedFilter = yield* select(getFeedFilter)
+  // const sdk = yield* getSDK()
+  // const filter = filterMap[filterEnum]
+  // // If the user has followee user ids set, use those to fetch the feed.
+  // // It implies that the feed is otherwise going to be empty so we give a
+  // // hint to the API.
+  // const followeeUserIds = yield* select(getFollowIds)
+  // const userId = Id.parse(currentUserId)
+  // const { data = [] } = yield* call(
+  //   [sdk.full.users, sdk.full.users.getUserFeed],
+  //   {
+  //     id: userId,
+  //     userId,
+  //     filter,
+  //     limit,
+  //     offset,
+  //     followeeUserId: followeeUserIds.length ? followeeUserIds : undefined,
+  //     withUsers: true
+  //   }
+  // )
+  // const feed = transformAndCleanList(data, userFeedItemFromSDK).map(
+  //   ({ item }) => item
+  // )
   if (feed === null) return null
-  const filteredFeed = feed.filter((record) => !record.user.is_deactivated)
+  const filteredFeed = feed.filter((record: any) => !record.user.is_deactivated)
   const [tracks, collections] = getTracksAndCollections(filteredFeed)
-
   // Process (e.g. cache and remove entries)
   const [processedTracks, processedCollections] = (yield* all([
     processAndCacheTracks(tracks),
@@ -94,7 +90,6 @@ function* getTracks({
       ? processedTracksMap[(m as LineupTrack).track_id]
       : processedCollectionsMap[(m as UserCollectionMetadata).playlist_id]
   )
-
   return processedFeed
 }
 

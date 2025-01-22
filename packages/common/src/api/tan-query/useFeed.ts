@@ -1,5 +1,5 @@
 import { Id, full } from '@audius/sdk'
-import { useQuery } from '@tanstack/react-query'
+import { useDispatch } from 'react-redux'
 
 import { transformAndCleanList, userFeedItemFromSDK } from '~/adapters'
 import { useAudiusQueryContext } from '~/audius-query'
@@ -7,11 +7,15 @@ import {
   FeedFilter,
   UserCollectionMetadata,
   ID,
-  UserTrackMetadata
+  UserTrackMetadata,
+  PlaybackSource
 } from '~/models'
+import { feedPageSelectors, feedPageLineupActions } from '~/store/pages'
+import { Nullable } from '~/utils/typeUtils'
 
 import { QUERY_KEYS } from './queryKeys'
 import { Config } from './types'
+import { useLineupQuery } from './utils/useLineupQuery'
 
 const filterMap: { [k in FeedFilter]: full.GetUserFeedFilterEnum } = {
   [FeedFilter.ALL]: 'all',
@@ -20,36 +24,39 @@ const filterMap: { [k in FeedFilter]: full.GetUserFeedFilterEnum } = {
 }
 
 type FeedArgs = {
-  userId: ID
+  userId: Nullable<ID>
   filter?: FeedFilter
-  limit?: number
-  offset?: number
-  followeeUserIds?: ID[]
+  pageSize?: number
 }
 
 export const useFeed = (
-  {
-    userId,
-    filter = FeedFilter.ALL,
-    limit = 25,
-    offset = 0,
-    followeeUserIds
-  }: FeedArgs,
+  { userId, filter = FeedFilter.ALL, pageSize = 25 }: FeedArgs,
   config?: Config
 ) => {
   const { audiusSdk } = useAudiusQueryContext()
+  const dispatch = useDispatch()
 
-  return useQuery({
-    queryKey: [QUERY_KEYS.feed, userId, filter, limit, offset, followeeUserIds],
-    queryFn: async () => {
+  return useLineupQuery<UserTrackMetadata | UserCollectionMetadata>({
+    lineupActions: feedPageLineupActions,
+    lineupSelector: feedPageSelectors.getDiscoverFeedLineup,
+    playbackSource: PlaybackSource.TRACK_TILE_LINEUP, // TODO: shouldn't this be more specific?
+    initialPageParam: 0,
+    getNextPageParam: (
+      lastPage: (UserTrackMetadata | UserCollectionMetadata)[],
+      allPages
+    ) => {
+      if (lastPage.length < pageSize) return undefined
+      return allPages.length * pageSize
+    },
+    queryKey: [QUERY_KEYS.feed, userId, filter, pageSize],
+    queryFn: async ({ pageParam }) => {
       const sdk = await audiusSdk()
       const { data = [] } = await sdk.full.users.getUserFeed({
         id: Id.parse(userId),
         userId: Id.parse(userId),
         filter: filterMap[filter],
-        limit,
-        offset,
-        followeeUserId: followeeUserIds?.length ? followeeUserIds : undefined,
+        limit: pageSize,
+        offset: 0,
         withUsers: true
       })
 
@@ -57,14 +64,21 @@ export const useFeed = (
         ({ item }) => item
       )
       if (feed === null) return []
-      const filteredFeed = feed.filter((record) => !record.user.is_deactivated)
-      const [tracks, collections] = getTracksAndCollections(filteredFeed)
+      //   const filteredFeed = feed.filter((record) => !record.user.is_deactivated)
+      //   const [tracks, collections] = getTracksAndCollections(filteredFeed)
+      //   const flatTracksAndCollections = [...tracks, ...collections]
 
-      // TODO: prime caches
+      // TODO: prime tan query caches
+      dispatch(
+        feedPageLineupActions.fetchLineupMetadatas(pageParam, pageSize, false, {
+          feed
+        })
+      )
 
-      return [...tracks, ...collections]
+      return feed
     },
-    ...config
+    ...config,
+    enabled: userId !== null
   })
 }
 

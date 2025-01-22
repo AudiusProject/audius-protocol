@@ -2,40 +2,38 @@ import {
   useInfiniteQuery,
   UseInfiniteQueryOptions
 } from '@tanstack/react-query'
-import { useDispatch, useSelector } from 'react-redux'
+import { Selector, useDispatch, useSelector } from 'react-redux'
 
-import { ID, PlaybackSource, Status, UID, combineStatuses } from '~/models'
+import {
+  ID,
+  LineupState,
+  LineupTrack,
+  PlaybackSource,
+  Status,
+  UID,
+  combineStatuses
+} from '~/models'
+import { CommonState } from '~/store/commonStore'
+import { LineupActions } from '~/store/lineup/actions'
 import { getPlaying } from '~/store/player/selectors'
 
-export const useLineupQuery = ({
-  pageSize,
+export const useLineupQuery = <T>({
   queryKey,
   queryFn,
-  initialPageParam = 0,
+  initialPageParam,
   getNextPageParam,
   lineupActions,
   lineupSelector,
   playbackSource,
   ...options
 }: {
-  pageSize: number
   // Lineup related props
-  lineupActions: any // TODO
-  lineupSelector: any // TODO
+  lineupActions: LineupActions // TODO
+  lineupSelector: Selector<CommonState, LineupState<LineupTrack>> // TODO
   playbackSource: PlaybackSource
-} & Omit<UseInfiniteQueryOptions, 'initialPageParam' | 'getNextPageParam'> &
-  // optional because we're providing standard defaults
-  Partial<
-    Pick<UseInfiniteQueryOptions, 'initialPageParam' | 'getNextPageParam'>
-  >) => {
-  const defaultGetNextPageParam = (
-    lastPage: unknown[],
-    allPages: unknown[][]
-  ) => {
-    if (lastPage.length < pageSize) return undefined
-    return allPages.length * pageSize
-  }
-  const lineup: any = useSelector(lineupSelector) // TODO: no any
+  queryFn: (args: { pageParam: number }) => Promise<T[]>
+} & Omit<UseInfiniteQueryOptions, 'queryFn'>) => {
+  const lineup = useSelector(lineupSelector) // TODO: no any
 
   const isPlaying = useSelector(getPlaying)
   const dispatch = useDispatch()
@@ -58,9 +56,10 @@ export const useLineupQuery = ({
 
   const queryData = useInfiniteQuery({
     queryKey,
+    // @ts-ignore
     queryFn,
     initialPageParam,
-    getNextPageParam: getNextPageParam ?? defaultGetNextPageParam,
+    getNextPageParam,
     ...options
   })
 
@@ -72,7 +71,7 @@ export const useLineupQuery = ({
   return {
     ...queryData,
     status,
-    entries: lineup.entries,
+    entries: lineup.entries as T[],
     togglePlay,
     play,
     pause,

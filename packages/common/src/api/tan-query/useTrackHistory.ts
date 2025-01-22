@@ -1,18 +1,15 @@
 import { Id, full } from '@audius/sdk'
-import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query'
-import { useDispatch, useSelector } from 'react-redux'
+import { useQueryClient } from '@tanstack/react-query'
+import { useDispatch } from 'react-redux'
 
 import { trackActivityFromSDK, transformAndCleanList } from '~/adapters'
 import { useAudiusQueryContext } from '~/audius-query'
-import { UserTrackMetadata, Status } from '~/models'
+import { UserTrackMetadata } from '~/models'
 import { PlaybackSource } from '~/models/Analytics'
-import { ID, UID } from '~/models/Identifiers'
-import { combineStatuses } from '~/models/Status'
 import {
   historyPageTracksLineupActions,
   historyPageSelectors
 } from '~/store/pages'
-import { getPlaying } from '~/store/player/selectors'
 
 import { QUERY_KEYS } from './queryKeys'
 import { Config } from './types'
@@ -43,11 +40,15 @@ export const useTrackHistory = (
   const queryClient = useQueryClient()
   const dispatch = useDispatch()
 
-  return useLineupQuery({
-    pageSize,
+  return useLineupQuery<UserTrackMetadata>({
     lineupActions: historyPageTracksLineupActions,
     lineupSelector: historyPageSelectors.getHistoryTracksLineup,
     playbackSource: PlaybackSource.HISTORY_PAGE,
+    initialPageParam: 0,
+    getNextPageParam: (lastPage: UserTrackMetadata[], allPages) => {
+      if (lastPage.length < pageSize) return undefined
+      return allPages.length * pageSize
+    },
     queryKey: [
       QUERY_KEYS.trackHistory,
       pageSize,
