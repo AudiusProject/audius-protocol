@@ -1,6 +1,5 @@
 import { ReactNode, useContext, useEffect } from 'react'
 
-import { useChallengeCooldownSchedule } from '@audius/common/hooks'
 import { StringKeys } from '@audius/common/services'
 import { tokenDashboardPageActions, walletActions } from '@audius/common/store'
 import { route } from '@audius/common/utils'
