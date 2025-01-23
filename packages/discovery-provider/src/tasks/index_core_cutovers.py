@@ -12,6 +12,11 @@ STAGE_PLAYS_SOL_CUTOVER = 309415000
 STAGE_PLAYS_CORE_CUTOVER = 10000
 STAGE_PLAYS_CORE_CUTOVER_CHAIN_ID = "audius-testnet-17"
 
+# prod plays
+PROD_PLAYS_SOL_CUTOVER = 315925000
+PROD_PLAYS_CORE_CUTOVER = 113180
+PROD_PLAYS_CORE_CUTOVER_CHAIN_ID = "audius-mainnet-alpha"
+
 
 # returns the core_block plus the last sol slot so indexing
 # keeps a consistent block number
@@ -24,7 +29,7 @@ def get_core_cutover_chain_id() -> str:
         return DEV_PLAYS_CORE_CUTOVER_CHAIN_ID
     if env == "stage":
         return STAGE_PLAYS_CORE_CUTOVER_CHAIN_ID
-    return ""
+    return PROD_PLAYS_CORE_CUTOVER_CHAIN_ID
 
 
 def get_sol_cutover() -> int:
@@ -32,7 +37,7 @@ def get_sol_cutover() -> int:
         return DEV_PLAYS_SOL_CUTOVER
     if env == "stage":
         return STAGE_PLAYS_SOL_CUTOVER
-    return 0
+    return PROD_PLAYS_SOL_CUTOVER
 
 
 def get_core_cutover() -> int:
@@ -40,4 +45,4 @@ def get_core_cutover() -> int:
         return DEV_PLAYS_CORE_CUTOVER
     if env == "stage":
         return STAGE_PLAYS_CORE_CUTOVER
-    return 0
+    return PROD_PLAYS_CORE_CUTOVER
