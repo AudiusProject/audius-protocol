@@ -175,8 +175,13 @@ const GuestView = () => {
 }
 
 export const AccountDetails = () => {
-  const { displayUserId, currentUserId, currentHandle, isTransitioning } =
-    useAccountTransition()
+  const {
+    displayUserId,
+    currentUserId,
+    currentHandle,
+    isTransitioning,
+    isComplete: hasCompletedAccount
+  } = useAccountTransition()
   const isManagedAccount = useIsManagedAccount()
   const guestEmail = useSelector(getGuestEmail)
 
@@ -206,7 +211,7 @@ export const AccountDetails = () => {
     )
   }
 
-  if (guestEmail) {
+  if (!hasCompletedAccount && guestEmail) {
     return (
       <AccountDetailsContainer>
         <GuestView />
