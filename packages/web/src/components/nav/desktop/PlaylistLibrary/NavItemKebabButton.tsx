@@ -22,6 +22,7 @@ export const NavItemKebabButton = (props: EditNavItemButtonProps) => {
   return (
     <PopupMenu
       items={items}
+      overrideIconColor
       anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
       transformOrigin={{ vertical: 'top', horizontal: 'left' }}
       renderTrigger={(ref, onClick, triggerProps) => {
