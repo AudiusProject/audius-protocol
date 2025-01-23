@@ -27,6 +27,7 @@ import LoveLetter from 'app/assets/images/emojis/love-letter.png'
 import MobilePhoneWithArrow from 'app/assets/images/emojis/mobile-phone-with-arrow.png'
 import MoneyWings from 'app/assets/images/emojis/money-with-wings.png'
 import MultipleMusicalNotes from 'app/assets/images/emojis/multiple-musical-notes.png'
+import Parachute from 'app/assets/images/emojis/parachute.png'
 import ArrowUp from 'app/assets/images/emojis/right-arrow-curving-up.png'
 import TrebleClef from 'app/assets/images/emojis/treble-clef.png'
 import type { SummaryTableItem } from 'app/components/summary-table/SummaryTable'
@@ -296,10 +297,7 @@ const mobileChallengeConfig: Record<ChallengeRewardID, MobileChallengeConfig> =
       }
     },
     [ChallengeName.OneShot]: {
-      icon: undefined,
-      buttonInfo: {
-        iconRight: IconCheck
-      }
+      icon: Parachute
     }
   }
 

@@ -140,7 +140,8 @@ const messages = {
   progress: 'Progress',
   taskDetails: 'Task Details',
   complete: 'Complete',
-  incomplete: 'Incomplete'
+  incomplete: 'Incomplete',
+  ineligible: 'Ineligible'
 }
 
 type InviteLinkProps = {
@@ -357,20 +358,32 @@ const ChallengeRewardsBody = ({ dismissModal }: BodyProps) => {
 
   const renderProgressStatusLabel = () => (
     <Flex alignItems='center'>
-      {challenge?.state === 'incomplete' ? (
+      {challenge?.challenge_id === ChallengeName.OneShot &&
+      challenge?.state === 'incomplete' ? (
+        <Text variant='label' size='l' strength='strong' color='subdued'>
+          {messages.ineligible}
+        </Text>
+      ) : challenge?.challenge_id === ChallengeName.OneShot &&
+        challenge?.state === 'completed' ? (
+        <Flex gap='s' justifyContent='center' alignItems='center'>
+          <IconCheck width={16} height={16} color='subdued' />
+          <Text variant='label' size='l' strength='strong' color='subdued'>
+            {progressLabel}
+          </Text>
+        </Flex>
+      ) : challenge?.state === 'incomplete' ? (
         <Text variant='label' size='l' strength='strong' color='subdued'>
           {messages.incomplete}
         </Text>
-      ) : null}
-      {challenge?.state === 'completed' || challenge?.state === 'disbursed' ? (
+      ) : challenge?.state === 'completed' ||
+        challenge?.state === 'disbursed' ? (
         <Flex gap='s' justifyContent='center' alignItems='center'>
           <IconCheck width={16} height={16} color='subdued' />
           <Text variant='label' size='l' strength='strong' color='subdued'>
             {messages.complete}
           </Text>
         </Flex>
-      ) : null}
-      {challenge?.state === 'in_progress' && progressLabel ? (
+      ) : challenge?.state === 'in_progress' && progressLabel ? (
         <Text
           variant='label'
           size='l'

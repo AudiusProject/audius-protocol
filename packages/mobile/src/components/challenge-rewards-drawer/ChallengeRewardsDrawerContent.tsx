@@ -41,7 +41,8 @@ const messages = {
   claimableLabel: '$AUDIO available to claim',
   claimableAmountLabel: (amount) => `Claim ${amount} $AUDIO`,
   claimedLabel: '$AUDIO claimed so far',
-  upcomingRewards: 'Upcoming Rewards'
+  upcomingRewards: 'Upcoming Rewards',
+  readyToClaim: 'Ready to Claim'
 }
 
 type ChallengeRewardsDrawerContentProps = {
@@ -116,17 +117,19 @@ export const ChallengeRewardsDrawerContent = ({
     claimStatus === ClaimStatus.WAITING_FOR_RETRY
   const claimError = claimStatus === ClaimStatus.ERROR
 
-  const hasCompleted =
-    challengeState === 'completed' || challengeState === 'disbursed'
+  const hasCompleted = challengeState === 'disbursed'
+  console.log('asdf isinprogress: ', isInProgress)
   const statusText = hasCompleted
     ? messages.complete
-    : isInProgress
-      ? fillString(
-          progressLabel,
-          formatNumberCommas(currentStep),
-          formatNumberCommas(stepCount)
-        )
-      : messages.incomplete
+    : isClaimable
+      ? messages.readyToClaim
+      : isInProgress
+        ? fillString(
+            progressLabel,
+            formatNumberCommas(currentStep),
+            formatNumberCommas(stepCount)
+          )
+        : messages.incomplete
 
   const renderCooldownSummaryTable = () => {
     if (isCooldownChallenge && !isCooldownChallengesEmpty) {

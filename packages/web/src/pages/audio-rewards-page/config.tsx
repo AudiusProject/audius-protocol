@@ -258,7 +258,7 @@ const webChallengesConfig: Record<ChallengeRewardID, WebChallengeInfo> = {
     icon: <i className='emoji large chart-bar' />
   },
   [ChallengeName.OneShot]: {
-    icon: undefined,
+    icon: <i className='emoji large parachute' />,
     modalButtonInfo: undefined
   }
 }

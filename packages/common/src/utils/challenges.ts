@@ -297,13 +297,13 @@ export const challengeRewardsConfig: Record<
     id: 'trending-underground'
   },
   o: {
-    title: 'One Shot',
+    title: 'Airdrop - January 2025',
     description: () => 'Claim your $AUDIO before it expires!',
     fullDescription: () => 'Claim your $AUDIO before it expires!',
-    panelButtonText: 'See More',
+    panelButtonText: '',
     id: ChallengeName.OneShot,
     remainingLabel: 'Ineligible',
-    progressLabel: 'Ineligible'
+    progressLabel: 'Ready to Claim'
   }
 }
 
