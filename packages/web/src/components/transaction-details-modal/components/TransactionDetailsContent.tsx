@@ -109,7 +109,7 @@ const UserDetails = ({ userId }: UserDetailsProps) => {
   )
 }
 
-const dateAndMetadataBlocks = ({{
+const dateAndMetadataBlocks = ({
   transactionDetails,
   isValidSolanaAddress
 }: {
