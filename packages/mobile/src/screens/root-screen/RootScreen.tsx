@@ -117,8 +117,12 @@ export const RootScreen = () => {
       }
       // Route to the original deep link after user signs up
       if (routeOnCompletion && routeOnCompletion !== FEED_PAGE) {
-        linkTo(routeOnCompletion)
+        // linkTo(routeOnCompletion)
       }
+    }
+    if (showHomeStack && routeOnCompletion && routeOnCompletion !== FEED_PAGE) {
+      // Route to the original deep link after user signs up
+      linkTo(routeOnCompletion)
     }
   }, [
     openWelcomeDrawer,
