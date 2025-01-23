@@ -8,7 +8,6 @@ from sqlalchemy import desc, func
 from src import exceptions
 from src.models.social.play import Play
 from src.queries.sol_play_helpers import get_sum_aggregate_plays, get_track_play_counts
-from src.tasks.index_solana_plays import cache_latest_sol_play_db_tx
 from src.utils import helpers
 from src.utils.cache_solana_program import CachedProgramTxInfo, get_cached_sol_tx
 from src.utils.db_session import get_db_read_replica
@@ -117,9 +116,6 @@ def get_latest_cached_sol_play_db(redis) -> CachedProgramTxInfo:
                     latest_sol_play["created_at"].timestamp()  # pylint: disable=E1136
                 ),
             }
-            # If found, re-cache value to avoid repeated DB hits
-            if latest_sol_play_db:
-                cache_latest_sol_play_db_tx(redis, latest_sol_play_db)
     return latest_sol_play_db
 
 

@@ -295,10 +295,6 @@ def configure_celery(celery, test_config=None):
             if "url_read_replica" in test_config["db"]:
                 database_url_read_replica = test_config["db"]["url_read_replica"]
 
-    audius_solana_plays_indexing_interval_s = int(
-        os.getenv("audius_solana_plays_indexing_interval_s", 30)
-    )
-
     # Update celery configuration
     celery.conf.update(
         imports=[
@@ -313,7 +309,6 @@ def configure_celery(celery, test_config=None):
             "src.tasks.cache_user_balance",
             "src.monitors.monitoring_queue",
             "src.tasks.cache_trending_playlists",
-            "src.tasks.index_solana_plays",
             "src.tasks.index_challenges",
             "src.tasks.index_user_bank",
             "src.tasks.index_payment_router",
@@ -370,18 +365,6 @@ def configure_celery(celery, test_config=None):
                 "task": "cache_trending_playlists",
                 "schedule": timedelta(minutes=30),
             },
-            **(
-                {
-                    "index_solana_plays": {
-                        "task": "index_solana_plays",
-                        "schedule": timedelta(
-                            seconds=audius_solana_plays_indexing_interval_s
-                        ),
-                    }
-                }
-                if environment == "prod"
-                else {}
-            ),
             "index_challenges": {
                 "task": "index_challenges",
                 "schedule": timedelta(seconds=5),
