@@ -15,6 +15,7 @@ import { Dispatch } from 'redux'
 
 import { DragAutoscroller } from 'components/drag-autoscroller/DragAutoscroller'
 import { ProfileCompletionPanel } from 'components/profile-progress/ProfileCompletionPanel'
+import { UploadToast } from 'components/upload-toast/UploadToast'
 import { selectDraggingKind } from 'store/dragndrop/slice'
 import { AppState } from 'store/types'
 
@@ -122,6 +123,7 @@ const LeftNav = (props: NavColumnProps) => {
         overflow: 'visible'
       }}
     >
+      <UploadToast />
       {isElectron ? <RouteNav /> : null}
       <NavHeader />
 
