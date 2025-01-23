@@ -88,7 +88,7 @@ export const NavItem = ({
       >
         <Flex
           alignItems='center'
-          gap='m'
+          gap={variant === 'compact' ? 'xs' : 'm'}
           flex={1}
           h={variant === 'compact' ? 'unit5' : 'unit6'}
           pv='s'
