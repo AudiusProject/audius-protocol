@@ -6,7 +6,7 @@ import {
   createHedgehogWalletClient,
   type AudiusWalletClient
 } from '@audius/sdk'
-import { getWalletClient } from '@wagmi/core'
+import { getAccount, getWalletClient } from '@wagmi/core'
 import { type WalletClient } from 'viem'
 
 import { env } from '../env'
@@ -14,7 +14,10 @@ import { localStorage } from '../local-storage'
 
 import { audiusChain, wagmiConfig } from './wagmi'
 
-export const getAudiusWalletClient = async (): Promise<AudiusWalletClient> => {
+export const getAudiusWalletClient = async (opts?: {
+  ensureUserExists?: boolean
+}): Promise<AudiusWalletClient> => {
+  const { ensureUserExists = true } = opts ?? {}
   if (
     wagmiConfig.state.status === 'reconnecting' ||
     wagmiConfig.state.status === 'connecting'
@@ -38,11 +41,22 @@ export const getAudiusWalletClient = async (): Promise<AudiusWalletClient> => {
     wagmiConfig.state.connections.get(wagmiConfig.state.current!)?.connector
       .type === 'metaMask'
   ) {
-    console.info('[audiusSdk] Initializing SDK with external wallet...')
-    const client = await getWalletClient(wagmiConfig, {
-      chainId: audiusChain.id
-    })
-    return client satisfies WalletClient as unknown as AudiusWalletClient
+    const account = getAccount(wagmiConfig)
+    const user = await localStorage.getAudiusAccountUser()
+    if (
+      ensureUserExists &&
+      user?.wallet?.toLowerCase() !== account.address?.toLowerCase()
+    ) {
+      console.warn(
+        '[audiusSdk] External wallet connected but cached user does not match connected external wallet. Falling back to Hedgehog...'
+      )
+    } else {
+      console.info('[audiusSdk] Initializing SDK with external wallet...')
+      const client = await getWalletClient(wagmiConfig, {
+        chainId: audiusChain.id
+      })
+      return client satisfies WalletClient as unknown as AudiusWalletClient
+    }
   }
 
   return createHedgehogWalletClient(authService.hedgehogInstance)

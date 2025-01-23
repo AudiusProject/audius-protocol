@@ -102,7 +102,7 @@ export const ExternalWalletSignUpModal = () => {
       unsubscribe()
 
       // Reinit SDK with the connected wallet
-      const sdk = await initSdk()
+      const sdk = await initSdk({ useExternalWallet: true })
 
       // Check that the user doesn't already exist.
       // If they do, log them in.
