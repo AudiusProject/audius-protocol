@@ -81,7 +81,9 @@ export const SignInWithMetaMaskButton = (props: ButtonProps) => {
       }
 
       // Otherwise, refetch the user account in the saga.
-      dispatch(accountActions.fetchAccount)
+      dispatch(
+        accountActions.fetchAccount({ shouldMarkAccountAsLoading: true })
+      )
       navigate(route ?? FEED_PAGE)
     } catch (e) {
       setStatus(Status.ERROR)

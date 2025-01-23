@@ -108,7 +108,9 @@ export const ExternalWalletSignUpModal = () => {
       // If they do, log them in.
       const userExists = await doesUserExist(sdk, wallet)
       if (userExists) {
-        dispatch(accountActions.fetchAccount)
+        dispatch(
+          accountActions.fetchAccount({ shouldMarkAccountAsLoading: true })
+        )
         navigate(route ?? FEED_PAGE)
         onClose()
         return
