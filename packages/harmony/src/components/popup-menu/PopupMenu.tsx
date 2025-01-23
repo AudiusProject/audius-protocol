@@ -81,17 +81,17 @@ export const PopupMenu = forwardRef<HTMLDivElement, PopupMenuProps>(
       color: color.text.default,
       cursor: 'pointer',
       '&:hover': {
-        color: color.text.staticStaticWhite,
+        color: color.text.staticWhite,
         background: color.secondary.s300,
         path: {
-          fill: color.text.staticStaticWhite
+          fill: color.text.staticWhite
         }
       },
       '&.destructive': {
         color: color.status.error,
         '&:hover': {
           background: color.status.error,
-          color: color.text.staticStaticWhite
+          color: color.text.staticWhite
         }
       }
     }

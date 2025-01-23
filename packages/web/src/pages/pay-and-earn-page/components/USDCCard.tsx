@@ -91,7 +91,7 @@ export const USDCCard = () => {
             <Text
               variant='heading'
               size='xl'
-              color='inverse'
+              color='staticWhite'
               strength='strong'
               css={{ opacity: 0.8 }}
             >
@@ -105,7 +105,7 @@ export const USDCCard = () => {
             ) : (
               <Text
                 variant='heading'
-                color='inverse'
+                color='staticWhite'
                 strength='strong'
                 size='xl'
               >
@@ -115,7 +115,7 @@ export const USDCCard = () => {
           </Flex>
         </div>
         <div className={styles.usdcInfo}>
-          <Text color='inverse'>{messages.buyAndSell}</Text>
+          <Text color='staticWhite'>{messages.buyAndSell}</Text>
           <PlainButton
             onClick={handleLearnMore}
             iconLeft={IconQuestionCircle}
