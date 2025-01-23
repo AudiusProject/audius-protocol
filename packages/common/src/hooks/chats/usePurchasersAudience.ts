@@ -5,9 +5,9 @@ import { keyBy } from 'lodash'
 import {
   useCurrentUserId,
   useCollections,
-  useGetPurchasersCount,
   useGetSalesAggegrate,
-  useTracks
+  useTracks,
+  usePurchasersCount
 } from '~/api'
 import { ID } from '~/models'
 import { removeNullable } from '~/utils'
@@ -59,7 +59,7 @@ export const usePurchasersAudience = ({
     [salesAggregate, tracksById, albumsById]
   )
 
-  const { data: purchasersCount } = useGetPurchasersCount({
+  const { data: purchasersCount } = usePurchasersCount({
     userId: currentUserId!,
     contentId,
     contentType

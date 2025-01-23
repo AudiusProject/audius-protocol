@@ -3,8 +3,8 @@ import { ChatBlast, ChatBlastAudience } from '@audius/sdk'
 import {
   useCurrentUserId,
   useFollowers,
-  useGetPurchasers,
-  useGetRemixers,
+  usePurchasers,
+  useRemixers,
   useSupporters
 } from '~/api'
 import { UserMetadata } from '~/models'
@@ -20,18 +20,20 @@ export const useAudienceUsers = (chat: ChatBlast, limit?: number) => {
     { userId: currentUserId!, pageSize: limit },
     { enabled: chat.audience === ChatBlastAudience.TIPPERS }
   )
-  const { data: purchasers } = useGetPurchasers({
+  const { data: purchasers } = usePurchasers({
     userId: currentUserId!,
     contentId: chat.audience_content_id
       ? parseInt(chat.audience_content_id)
       : undefined,
     contentType: chat.audience_content_type,
-    limit
+    pageSize: limit
   })
-  const { data: remixers } = useGetRemixers({
+  const { data: remixers } = useRemixers({
     userId: currentUserId!,
-    trackId: chat.audience_content_id,
-    limit
+    trackId: chat.audience_content_id
+      ? parseInt(chat.audience_content_id)
+      : undefined,
+    pageSize: limit
   })
 
   let users: UserMetadata[] = []

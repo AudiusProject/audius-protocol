@@ -14,14 +14,20 @@ import { primeUserData } from './utils/primeUserData'
 
 const DEFAULT_PAGE_SIZE = 20
 
-type UseRemixersArgs = {
+type UsePurchasersArgs = {
   userId: ID | null | undefined
-  trackId?: ID | null | undefined
+  contentId?: ID | null | undefined
+  contentType?: string | undefined
   pageSize?: number
 }
 
-export const useRemixers = (
-  { userId, trackId, pageSize = DEFAULT_PAGE_SIZE }: UseRemixersArgs,
+export const usePurchasers = (
+  {
+    userId,
+    contentId,
+    contentType,
+    pageSize = DEFAULT_PAGE_SIZE
+  }: UsePurchasersArgs,
   options?: QueryOptions
 ) => {
   const { audiusSdk } = useAudiusQueryContext()
@@ -30,7 +36,7 @@ export const useRemixers = (
   const dispatch = useDispatch()
 
   return useInfiniteQuery({
-    queryKey: [QUERY_KEYS.remixers, userId, pageSize],
+    queryKey: [QUERY_KEYS.purchasers, userId, pageSize],
     initialPageParam: 0,
     getNextPageParam: (lastPage: User[], allPages) => {
       if (lastPage.length < pageSize) return undefined
@@ -38,12 +44,13 @@ export const useRemixers = (
     },
     queryFn: async ({ pageParam }) => {
       const sdk = await audiusSdk()
-      const { data = [] } = await sdk.full.users.getRemixers({
+      const { data = [] } = await sdk.full.users.getPurchasers({
         id: Id.parse(userId),
         limit: pageSize,
         offset: pageParam,
         userId: OptionalId.parse(currentUserId),
-        trackId: OptionalId.parse(trackId)
+        contentId: OptionalId.parse(contentId),
+        contentType
       })
       const users = userMetadataListFromSDK(data)
       primeUserData({ users, queryClient, dispatch })
