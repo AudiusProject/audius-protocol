@@ -15,7 +15,7 @@ import {
 import { TracksSortMode } from '~/store/pages/profile/types'
 import { getPlaying } from '~/store/player/selectors'
 
-import { Config } from './types'
+import { QueryOptions } from './types'
 import { useCurrentUserId } from './useCurrentUserId'
 import { primeTrackData } from './utils/primeTrackData'
 
@@ -35,7 +35,7 @@ export const useProfileTracks = (
     sort = TracksSortMode.RECENT,
     getUnlisted = true
   }: UseProfileTracksArgs,
-  config?: Config
+  config?: QueryOptions
 ) => {
   const { audiusSdk } = useAudiusQueryContext()
   const { data: currentUserId } = useCurrentUserId()
