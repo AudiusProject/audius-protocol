@@ -182,7 +182,7 @@ export function* fetchAccountAsync({
   } catch (e) {
     if (!(e instanceof HedgehogWalletNotFoundError)) {
       yield* call(reportToSentry, {
-        name: 'AccountNotFound',
+        name: 'FetchAccountAsync',
         error: e as Error
       })
     }
@@ -292,6 +292,7 @@ export function* fetchAccountAsync({
 
 function* fetchLocalAccountAsync() {
   const localStorage = yield* getContext('localStorage')
+  const reportToSentry = yield* getContext('reportToSentry')
   const sdk = yield* getSDK()
 
   yield* put(fetchAccountRequested())
@@ -304,10 +305,27 @@ function* fetchLocalAccountAsync() {
     localStorage,
     localStorage.getAudiusAccountUser
   ])
-  const [wallet] = yield* call([
-    sdk.services.audiusWalletClient,
-    sdk.services.audiusWalletClient.getAddresses
-  ])
+
+  let wallet, web3WalletAddress
+  try {
+    const connectedWallets = yield* call([
+      sdk.services.audiusWalletClient,
+      sdk.services.audiusWalletClient.getAddresses
+    ])
+    const accountWalletAddressOverride = yield* call([
+      localStorage,
+      localStorage.getAudiusUserWalletOverride
+    ])
+    web3WalletAddress = connectedWallets[0]
+    wallet = accountWalletAddressOverride ?? web3WalletAddress
+  } catch (e) {
+    if (!(e instanceof HedgehogWalletNotFoundError)) {
+      yield* call(reportToSentry, {
+        name: 'FetchLocalAccountAsync',
+        error: e as Error
+      })
+    }
+  }
 
   if (
     cachedAccount &&
