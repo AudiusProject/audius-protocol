@@ -115,10 +115,10 @@ export const RootScreen = () => {
       if (isAndroid && navigate) {
         navigate('HomeStack')
       }
+    }
+    if (showHomeStack && routeOnCompletion && routeOnCompletion !== FEED_PAGE) {
       // Route to the original deep link after user signs up
-      if (routeOnCompletion && routeOnCompletion !== FEED_PAGE) {
-        linkTo(routeOnCompletion)
-      }
+      linkTo(routeOnCompletion)
     }
   }, [
     openWelcomeDrawer,
