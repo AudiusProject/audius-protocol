@@ -73,6 +73,8 @@ export const Text = forwardRef<TextBase, TextProps>((props, ref) => {
     ...(fontWeight === 'demiBold' && Platform.OS === 'ios'
       ? { marginTop: 2 }
       : {}),
+    // Fixes bold text misalignment on iOS
+    ...(fontWeight === 'bold' && Platform.OS === 'ios' ? { marginTop: 1 } : {}),
     flexShrink
   })
 
