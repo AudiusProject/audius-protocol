@@ -148,6 +148,11 @@ export const EditTrackForm = (props: EditTrackFormProps) => {
   }, [selectFile, isUpload, values.track_id])
 
   const handleDownload = useCallback(() => {
+    if (!initialValues.track_id) {
+      console.error('Cannot download track without track ID')
+      return
+    }
+
     openWaitForDownload({
       trackIds: [initialValues.track_id],
       quality: DownloadQuality.ORIGINAL
@@ -190,7 +195,7 @@ export const EditTrackForm = (props: EditTrackFormProps) => {
   }, [isUpload, setTitle, track])
 
   const handleReplaceAudio = useCallback(() => {
-    if (!track) return
+    if (!track || !values.track_id) return
 
     const metadata = getUploadMetadataFromFormValues(values, initialValues)
 
