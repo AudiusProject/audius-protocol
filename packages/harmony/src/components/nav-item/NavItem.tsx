@@ -22,6 +22,8 @@ export const NavItem = ({
   textSize = 'l',
   hasNotification = false,
   leftOverride,
+  variant = 'default',
+  isChild = false,
   ...props
 }: NavItemProps) => {
   const { color } = useTheme()
@@ -31,7 +33,7 @@ export const NavItem = ({
 
   const backgroundColor = isSelected ? color.secondary.s400 : undefined
 
-  const textAndIconColor = isSelected ? 'staticWhite' : 'default'
+  const textAndIconColor = isSelected ? 'white' : 'default'
   const insetBorderColor = isSelected
     ? 'none'
     : `inset 0 0 0 1px ${color.border.default}`
@@ -73,9 +75,14 @@ export const NavItem = ({
         borderRadius='m'
         css={{
           backgroundColor,
+          transition: `opacity ${motion.quick}`,
           '&:hover': {
             backgroundColor: isSelected ? undefined : color.background.surface2,
             boxShadow: insetBorderColor
+          },
+          '&:active': {
+            opacity: !isSelected ? 0.8 : undefined,
+            transition: `opacity ${motion.quick}`
           }
         }}
       >
@@ -83,6 +90,8 @@ export const NavItem = ({
           alignItems='center'
           gap='m'
           flex={1}
+          h={variant === 'compact' ? 'unit5' : 'unit6'}
+          pv='s'
           css={{
             maxWidth: '240px'
           }}
@@ -95,7 +104,10 @@ export const NavItem = ({
             lineHeight='single'
             color={textAndIconColor}
             ellipses
-            css={{ flex: 1 }}
+            css={{
+              flex: 1,
+              marginLeft: isChild ? 'm' : undefined
+            }}
           >
             {children}
           </Text>

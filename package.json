@@ -1,20 +1,17 @@
 {
   "name": "root",
-  "version": "1.5.117",
+  "version": "1.5.118",
   "workspaces": [
     "packages/*",
     "packages/discovery-provider/plugins/pedalboard/apps/*",
-    "packages/discovery-provider/plugins/pedalboard/packages/*",
-    "protocol-dashboard",
-    "packages/ddex/entrypoint",
-    "packages/es-indexer"
+    "packages/discovery-provider/plugins/pedalboard/packages/*"
   ],
   "private": true,
   "scripts": {
     "build": "turbo run build",
     "changeset": "changeset",
     "check-secrets": "sh ./scripts/check-secrets.sh",
-    "clean:modules": "rm -rf node_modules && rm -rf protocol-dashboard/node_modules && rm -rf packages/*/node_modules",
+    "clean:modules": "rm -rf node_modules && rm -rf packages/*/node_modules",
     "clean:dist": "rm -rf packages/*/dist",
     "install-git-secrets": "sh ./scripts/install-git-secrets.sh",
     "install-hooks": "mookme init --only-hook --skip-types-selection",
@@ -58,6 +55,10 @@
     "sdk:browser:es": "npm run start:sdk:browser:es -w @audius/sdk",
     "PROTOCOL======================================": "",
     "protocol": "turbo run start --filter=@audius/compose --",
+    "PROTOCOL DASHBOARD==============================": "",
+    "dashboard:dev": "npm run start:dev -w @audius/protocol-dashboard",
+    "dashboard:stage": "npm run start:stage -w @audius/protocol-dashboard",
+    "dashboard:prod": "npm run start:prod -w @audius/protocol-dashboard",
     "PEDALBOARD======================================": "",
     "pedalboard:build": "turbo run build --filter='./packages/discovery-provider/plugins/pedalboard/apps/*' --filter='./packages/discovery-provider/plugins/pedalboard/packages/*'",
     "pedalboard:clean": "turbo run clean --filter='./packages/discovery-provider/plugins/pedalboard/apps/*' --filter='./packages/discovery-provider/plugins/pedalboard/packages/*'",

@@ -8,7 +8,7 @@ export function emAddress(isProd: boolean, isStage: boolean) {
     return '0x1cd8a543596d499b9b6e7a6ec15ecd2b7857fd64'
   }
   if (isStage) {
-    return '0x1cd8a543596D499B9b6E7a6eC15ECd2B7857Fd64'
+    return '0x1cd8a543596d499b9b6e7a6ec15ecd2b7857fd64'
   }
   return '0x254dffcd3277C0b1660F6d42EFbB754edaBAbC2B'
 }
@@ -18,9 +18,9 @@ export function useEthersProvider() {
   const isDev = useLocation().pathname.indexOf('/dev') == 0
 
 
-  let rpcEndpoint = 'https://acdc-gateway.audius.co'
+  let rpcEndpoint = 'https://discoveryprovider.audius.co/chain'
   if (isStage) {
-    rpcEndpoint = 'https://acdc-gateway.staging.audius.co'
+    rpcEndpoint = 'https://discoveryprovider.staging.audius.co/chain'
   }
   if (isDev) {
     rpcEndpoint = 'http://audius-protocol-discovery-provider-1/chain'

@@ -71,7 +71,7 @@ const ProfileImageAvatar = ({
         <IconButton
           aria-label='Upload a profile photo'
           size='l'
-          color='staticWhite'
+          color='white'
           shadow='drop'
           icon={IconCamera}
         />
@@ -219,7 +219,7 @@ export const AccountHeader = (props: AccountHeaderProps) => {
             variant='heading'
             size={isSmallSize ? 's' : 'xl'}
             strength='strong'
-            color='staticWhite'
+            color='white'
             shadow='emphasis'
             tag='p'
             css={{
@@ -234,7 +234,7 @@ export const AccountHeader = (props: AccountHeaderProps) => {
             <Text
               variant='title'
               size={isSmallSize ? 'm' : 'l'}
-              color='staticWhite'
+              color='white'
               shadow='emphasis'
             >
               @{handle}

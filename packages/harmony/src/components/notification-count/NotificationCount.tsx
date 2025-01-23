@@ -85,7 +85,7 @@ export const NotificationCount = ({
         borderRadius='circle'
         css={badgeStyles}
       >
-        <Text variant='label' size='xs' css={textStyles} color='staticWhite'>
+        <Text variant='label' size='xs' css={textStyles} color='white'>
           {count !== undefined ? formatCount(count) : ''}
         </Text>
       </Flex>

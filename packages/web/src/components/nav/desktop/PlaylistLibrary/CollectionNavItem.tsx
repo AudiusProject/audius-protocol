@@ -71,10 +71,13 @@ type CollectionNavItemProps = {
   level: number
   hasUpdate?: boolean
   onClick?: () => void
+  isChild?: boolean
+  exact?: boolean
 }
 
 export const CollectionNavItem = (props: CollectionNavItemProps) => {
-  const { id, name, url, isOwned, level, hasUpdate, onClick } = props
+  const { id, name, url, isOwned, level, hasUpdate, onClick, isChild, exact } =
+    props
   const [isDraggingOver, setIsDraggingOver] = useState(false)
   const [isHovering, setIsHovering] = useState(false)
   const location = useLocation()
@@ -179,7 +182,7 @@ export const CollectionNavItem = (props: CollectionNavItemProps) => {
 
   if (!name || !url) return null
 
-  const indentAmount = level * spacing.l
+  const indentAmount = level * spacing.m
 
   return (
     <>
@@ -204,19 +207,25 @@ export const CollectionNavItem = (props: CollectionNavItemProps) => {
             onMouseEnter={handleMouseEnter}
             onMouseLeave={handleMouseLeave}
             textSize='s'
+            variant='compact'
+            css={{
+              '& > div': {
+                marginLeft: indentAmount
+              }
+            }}
             rightIcon={
               isPlayingFromThisPlaylist ? (
-                <IconSpeaker
-                  size='s'
-                  color={isSelected ? 'staticWhite' : 'accent'}
-                />
+                <IconSpeaker size='s' color={isSelected ? 'white' : 'accent'} />
               ) : null
             }
             leftOverride={hasUpdate ? <PlaylistUpdateDot /> : null}
+            isChild={isChild}
+            exact={exact}
           >
             <Flex
               alignItems='center'
               w='100%'
+              h='xl'
               pl={indentAmount}
               gap='xs'
               css={{ position: 'relative' }}

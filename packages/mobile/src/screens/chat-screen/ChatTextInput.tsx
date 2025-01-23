@@ -3,7 +3,7 @@ import { useCallback, useRef, useState } from 'react'
 import type { ID } from '@audius/common/models'
 import { chatActions } from '@audius/common/store'
 import type { Nullable } from '@audius/common/utils'
-import { decodeHashId } from '@audius/common/utils'
+import { OptionalHashId } from '@audius/sdk'
 import type { TextInput as RNTextInput } from 'react-native'
 import { Platform } from 'react-native'
 import { useDispatch } from 'react-redux'
@@ -44,10 +44,16 @@ export const ChatTextInput = ({
     // (value: string, linkEntities: LinkEntity[]) => {
     (value: string, linkEntities: any[]) => {
       const track = linkEntities.find((e) => e.type === 'track')
-      setTrackId(track ? decodeHashId(track.data.id) : null)
+      setTrackId(
+        track ? (OptionalHashId.parse(track.data.id as string) ?? null) : null
+      )
 
       const collection = linkEntities.find((e) => e.type === 'collection')
-      setCollectionId(collection ? decodeHashId(collection.data.id) : null)
+      setCollectionId(
+        collection
+          ? (OptionalHashId.parse(collection.data.id as string) ?? null)
+          : null
+      )
     },
     []
   )

@@ -5,11 +5,10 @@ import type { ReactionTypes } from '@audius/common/store'
 import { accountSelectors, chatSelectors } from '@audius/common/store'
 import {
   formatMessageDate,
-  decodeHashId,
   isCollectionUrl,
   isTrackUrl
 } from '@audius/common/utils'
-import type { ChatMessageReaction } from '@audius/sdk'
+import { HashId, type ChatMessageReaction } from '@audius/sdk'
 import { find } from 'linkifyjs'
 import type { ViewStyle, StyleProp } from 'react-native'
 import { Dimensions, Keyboard, View } from 'react-native'
@@ -184,7 +183,7 @@ export const ChatMessageListItem = memo(function ChatMessageListItem(
   const message = useSelector((state) =>
     getChatMessageById(state, chatId, messageId)
   )
-  const senderUserId = message ? decodeHashId(message.sender_user_id) : null
+  const senderUserId = message ? HashId.parse(message.sender_user_id) : null
   const isAuthor = senderUserId === userId
   const [isPressed, setIsPressed] = useState(false)
   const [emptyUnfurl, setEmptyUnfurl] = useState(false)
@@ -312,7 +311,7 @@ export const ChatMessageListItem = memo(function ChatMessageListItem(
                       <UserGeneratedText
                         variant='body'
                         lineHeight='multi'
-                        color={isAuthor ? 'staticWhite' : 'default'}
+                        color={isAuthor ? 'white' : 'default'}
                         textAlign='left'
                         linkProps={{
                           variant: isAuthor ? 'inverted' : 'visible',

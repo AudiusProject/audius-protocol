@@ -79,10 +79,10 @@ export const FollowArtistCard = (props: FollowArtistTileProps) => {
       >
         {hasTracks ? (
           isPlaying ? (
-            <IconPause size='l' color='staticWhite' />
+            <IconPause size='l' color='white' />
           ) : (
             <Box pl='xs'>
-              <IconPlay size='l' color='staticWhite' />
+              <IconPlay size='l' color='white' />
             </Box>
           )
         ) : null}

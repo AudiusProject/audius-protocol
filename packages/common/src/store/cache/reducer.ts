@@ -67,8 +67,6 @@ const forceUpdateKeys = new Set([
   'field_visibility',
   'followee_reposts',
   'followee_saves',
-  'associated_wallets',
-  'associated_sol_wallets',
   'stream_conditions',
   'download_conditions'
 ])
@@ -82,12 +80,6 @@ export const mergeCustomizer = (objValue: any, srcValue: any, key: string) => {
   }
 
   if (key === 'is_verified') {
-    return srcValue || objValue
-  }
-
-  // Not every user request provides playlist_library,
-  // so always prefer it's existence, starting with latest
-  if (key === 'playlist_library') {
     return srcValue || objValue
   }
 

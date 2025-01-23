@@ -164,7 +164,7 @@ export const SelectablePill = (props: SelectablePillProps) => {
         {size !== 'small' && Icon ? (
           <Icon
             size='s'
-            color={isSelected || isPressing ? 'staticWhite' : 'default'}
+            color={isSelected || isPressing ? 'white' : 'default'}
           />
         ) : null}
         <AnimatedText

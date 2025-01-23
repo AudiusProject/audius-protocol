@@ -256,6 +256,9 @@ const webChallengesConfig: Record<ChallengeRewardID, WebChallengeInfo> = {
   },
   tut: {
     icon: <i className='emoji large chart-bar' />
+  },
+  [ChallengeName.OneShot]: {
+    icon: <i className='emoji large incoming-envelope' />
   }
 }
 

@@ -1,6 +1,6 @@
 import { AUDIO, AudioWei, wAUDIO } from '@audius/fixed-decimal'
 import type { LocalStorage } from '@audius/hedgehog'
-import { AudiusSdk, type StorageNodeSelectorService } from '@audius/sdk'
+import { AudiusSdk, Id } from '@audius/sdk'
 import {
   ASSOCIATED_TOKEN_PROGRAM_ID,
   getAccount,
@@ -31,7 +31,7 @@ import {
   TikTokUser,
   UserMetadata,
   ComputedUserProperties,
-  Id
+  WriteableUserMetadata
 } from '../../models'
 import { AnalyticsEvent } from '../../models/Analytics'
 import { ReportToSentryArgs } from '../../models/ErrorReporting'
@@ -135,7 +135,6 @@ type AudiusBackendParams = {
     fallbackFlag?: FeatureFlags
   ) => Promise<boolean | null> | null | boolean
   getHostUrl: () => Nullable<string>
-  getStorageNodeSelector: () => Promise<StorageNodeSelectorService>
   identityServiceUrl: Maybe<string>
   generalAdmissionUrl: Maybe<string>
   isElectron: Maybe<boolean>
@@ -238,7 +237,7 @@ export const audiusBackend = ({
     metadata,
     sdk
   }: {
-    metadata: UserMetadata &
+    metadata: WriteableUserMetadata &
       Pick<
         ComputedUserProperties,
         'updatedProfilePicture' | 'updatedCoverPhoto'

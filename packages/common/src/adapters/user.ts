@@ -1,17 +1,22 @@
-import type { full, UpdateProfileRequest } from '@audius/sdk'
+import {
+  HashId,
+  OptionalHashId,
+  OptionalId,
+  type full,
+  type UpdateProfileRequest
+} from '@audius/sdk'
 import camelcaseKeys from 'camelcase-keys'
 import { omit, pick } from 'lodash'
 import snakecaseKeys from 'snakecase-keys'
 
-import { OptionalId } from '~/models/Identifiers'
 import {
   AccountUserMetadata,
   ManagedUserMetadata,
   UserManagerMetadata,
-  UserMetadata
+  UserMetadata,
+  WriteableUserMetadata
 } from '~/models/User'
 import { SolanaWalletAddress, StringWei } from '~/models/Wallet'
-import { decodeHashId } from '~/utils/hashIds'
 import { removeNullable } from '~/utils/typeUtils'
 
 import { accountCollectionFromSDK } from './collection'
@@ -27,7 +32,7 @@ import { transformAndCleanList } from './utils'
 export const userMetadataFromSDK = (
   input: full.UserFull
 ): UserMetadata | undefined => {
-  const decodedUserId = decodeHashId(input.id)
+  const decodedUserId = OptionalHashId.parse(input.id)
   if (!decodedUserId) {
     return undefined
   }
@@ -42,11 +47,10 @@ export const userMetadataFromSDK = (
 
     // Conversions
     artist_pick_track_id: input.artistPickTrackId
-      ? decodeHashId(input.artistPickTrackId)
+      ? HashId.parse(input.artistPickTrackId)
       : null,
 
     // Nested Types
-    playlist_library: playlistLibraryFromSDK(input.playlistLibrary) ?? null,
     cover_photo_cids: input.coverPhotoCids
       ? coverPhotoSizesCIDsFromSDK(input.coverPhotoCids)
       : null,
@@ -144,7 +148,7 @@ export const accountFromSDK = (
     // Account users included extended information, so we'll merge that in here.
     user: {
       ...user,
-      ...accountMetadata
+      playlists: accountMetadata.playlists
     },
     // These values are included outside the user as well to facilitate separate caching
     ...accountMetadata
@@ -152,7 +156,7 @@ export const accountFromSDK = (
 }
 
 export const userMetadataToSdk = (
-  input: UserMetadata
+  input: WriteableUserMetadata & Pick<AccountUserMetadata, 'playlist_library'>
 ): UpdateProfileRequest['metadata'] => ({
   ...camelcaseKeys(
     pick(input, [
@@ -161,10 +165,7 @@ export const userMetadataToSdk = (
       'metadata_multihash',
       'is_deactivated',
       'allow_ai_attribution',
-      'playlist_library',
-      'collectibles_order_unset',
-      'associated_wallets',
-      'associated_sol_wallets'
+      'collectibles_order_unset'
     ])
   ),
   bio: input.bio ?? undefined,
@@ -179,5 +180,6 @@ export const userMetadataToSdk = (
   collectibles: input.collectibles ?? undefined,
   twitterHandle: input.twitter_handle ?? undefined,
   instagramHandle: input.instagram_handle ?? undefined,
+  playlistLibrary: input.playlist_library ?? undefined,
   tiktokHandle: input.tiktok_handle ?? undefined
 })

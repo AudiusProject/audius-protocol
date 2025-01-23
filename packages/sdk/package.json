@@ -1,6 +1,6 @@
 {
   "name": "@audius/sdk",
-  "version": "7.1.0",
+  "version": "8.0.0",
   "audius": {
     "releaseSHA": "f1d70a2a0643c5c84d8ab053f70c1e0a2ec3ad49"
   },
@@ -58,6 +58,7 @@
     "typecheck": "tsc --noEmit",
     "verify": "npm run lint && npm run typecheck",
     "sdk:config": "tsx ./src/sdk/scripts/generateServicesConfig.ts",
+    "sdk:verify-user": "tsx ./src/sdk/scripts/verifyUser.ts",
     "gen": "npm run gen:prod",
     "gen:dev": "npm run gen:dev:default ; npm run gen:dev:full",
     "gen:dev:default": "node ./src/sdk/api/generator/gen.js --env dev",
@@ -72,10 +73,10 @@
     "prepack": "turbo run build"
   },
   "dependencies": {
-    "@audius/eth": "0.0.0",
+    "@audius/eth": "0.1.0",
     "@audius/fixed-decimal": "0.1.1",
     "@audius/hedgehog": "3.0.0-alpha.1",
-    "@audius/spl": "2.0.0",
+    "@audius/spl": "2.0.1",
     "@babel/runtime": "7.18.3",
     "@improbable-eng/grpc-web-node-http-transport": "0.15.0",
     "@noble/hashes": "1.3.0",

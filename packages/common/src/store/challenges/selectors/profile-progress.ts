@@ -1,5 +1,5 @@
 import { SquareSizes, User, WidthSizes } from '~/models'
-import { getAccountUser } from '~/store/account/selectors'
+import { getAccountUser, getAccount } from '~/store/account/selectors'
 import { getProfileUserHandle } from '~/store/pages/profile/selectors'
 
 import { Status } from '../../../models/Status'
@@ -12,9 +12,9 @@ export const getProfileDescriptionExists = (state: CommonState) => {
 }
 
 export const getHasFavoritedItem = (state: CommonState) => {
-  const curUser = getAccountUser(state)
+  const curUser = getAccount(state)
   if (!curUser) return false
-  const hasSavedTrack = (curUser.track_save_count || 0) > 0
+  const hasSavedTrack = (curUser.trackSaveCount || 0) > 0
   const hasSavedCollection = Object.keys(state.account.collections).length > 0
   return hasSavedTrack || hasSavedCollection
 }
