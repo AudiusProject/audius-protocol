@@ -1,5 +1,5 @@
 import { Id, full } from '@audius/sdk'
-import { useQueryClient } from '@tanstack/react-query'
+import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query'
 import { useDispatch } from 'react-redux'
 
 import { transformAndCleanList, userFeedItemFromSDK } from '~/adapters'
@@ -15,7 +15,7 @@ import { feedPageSelectors, feedPageLineupActions } from '~/store/pages'
 import { Nullable } from '~/utils/typeUtils'
 
 import { QUERY_KEYS } from './queryKeys'
-import { Config } from './types'
+import { QueryOptions } from './types'
 import { primeCollectionData } from './utils/primeCollectionData'
 import { primeTrackData } from './utils/primeTrackData'
 import { useLineupQuery } from './utils/useLineupQuery'
@@ -29,37 +29,44 @@ const filterMap: { [k in FeedFilter]: full.GetUserFeedFilterEnum } = {
 type FeedArgs = {
   userId: Nullable<ID>
   filter?: FeedFilter
-  pageSize?: number
+  initialPageSize?: number
+  loadMorePageSize?: number
 }
 
 export const useFeed = (
-  { userId, filter = FeedFilter.ALL, pageSize = 25 }: FeedArgs,
-  config?: Config
+  {
+    userId,
+    filter = FeedFilter.ALL,
+    initialPageSize = 10,
+    loadMorePageSize = 4
+  }: FeedArgs,
+  options?: QueryOptions
 ) => {
   const { audiusSdk } = useAudiusQueryContext()
   const queryClient = useQueryClient()
   const dispatch = useDispatch()
 
-  return useLineupQuery<UserTrackMetadata | UserCollectionMetadata>({
-    lineupActions: feedPageLineupActions,
-    lineupSelector: feedPageSelectors.getDiscoverFeedLineup,
-    playbackSource: PlaybackSource.TRACK_TILE_LINEUP, // TODO: shouldn't this be more specific?
+  const queryData = useInfiniteQuery({
     initialPageParam: 0,
     getNextPageParam: (
       lastPage: (UserTrackMetadata | UserCollectionMetadata)[],
       allPages
     ) => {
-      if (lastPage.length < pageSize) return undefined
-      return allPages.length * pageSize
+      const isFirstPage = allPages.length === 1
+      const currentPageSize = isFirstPage ? initialPageSize : loadMorePageSize
+      if (lastPage.length < currentPageSize) return undefined
+      return allPages.reduce((total, page) => total + page.length, 0)
     },
-    queryKey: [QUERY_KEYS.feed, userId, filter, pageSize],
+    queryKey: [QUERY_KEYS.feed, userId, filter],
     queryFn: async ({ pageParam }) => {
+      const isFirstPage = pageParam === 0
+      const currentPageSize = isFirstPage ? initialPageSize : loadMorePageSize
       const sdk = await audiusSdk()
       const { data = [] } = await sdk.full.users.getUserFeed({
         id: Id.parse(userId),
         userId: Id.parse(userId),
         filter: filterMap[filter],
-        limit: pageSize,
+        limit: currentPageSize,
         offset: pageParam,
         withUsers: true
       })
@@ -70,12 +77,6 @@ export const useFeed = (
       if (feed === null) return []
       const filteredFeed = feed.filter((record) => !record.user.is_deactivated)
       const [tracks, collections] = getTracksAndCollections(filteredFeed)
-      //   console.log({ track0: tracks[0] })
-      const flatTracksAndCollections = [...tracks, ...collections]
-
-      // TODO: is this needed?
-      // Remove users, add images
-      //   const reformattedTracks = tracks.map((track) => reformat(track))
 
       // Prime caches
       primeTrackData({ tracks, queryClient, dispatch })
@@ -83,16 +84,33 @@ export const useFeed = (
 
       // Pass the data to lineup sagas
       dispatch(
-        feedPageLineupActions.fetchLineupMetadatas(pageParam, pageSize, false, {
-          feed
-        })
+        feedPageLineupActions.fetchLineupMetadatas(
+          pageParam,
+          currentPageSize,
+          false,
+          {
+            feed
+          }
+        )
       )
 
       return filteredFeed
     },
-    ...config,
+    ...options,
     enabled: userId !== null
   })
+
+  const lineupData = useLineupQuery({
+    queryData,
+    lineupActions: feedPageLineupActions,
+    lineupSelector: feedPageSelectors.getDiscoverFeedLineup,
+    playbackSource: PlaybackSource.TRACK_TILE_LINEUP // TODO: shouldn't this be more specific?
+  })
+
+  return {
+    ...queryData,
+    ...lineupData
+  }
 }
 
 const getTracksAndCollections = (

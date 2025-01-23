@@ -1,7 +1,4 @@
-import {
-  useInfiniteQuery,
-  UseInfiniteQueryOptions
-} from '@tanstack/react-query'
+import { UseInfiniteQueryResult } from '@tanstack/react-query'
 import { Selector, useDispatch, useSelector } from 'react-redux'
 
 import {
@@ -10,6 +7,7 @@ import {
   LineupTrack,
   PlaybackSource,
   Status,
+  Track,
   UID,
   combineStatuses
 } from '~/models'
@@ -17,23 +15,22 @@ import { CommonState } from '~/store/commonStore'
 import { LineupActions } from '~/store/lineup/actions'
 import { getPlaying } from '~/store/player/selectors'
 
-export const useLineupQuery = <T>({
-  queryKey,
-  queryFn,
-  initialPageParam,
-  getNextPageParam,
+/**
+ * Helper to provide stitch together tan-query data and easily provide lineup methods as part of our query hooks
+ */
+export const useLineupQuery = ({
+  queryData,
   lineupActions,
   lineupSelector,
-  playbackSource,
-  ...options
+  playbackSource
 }: {
   // Lineup related props
-  lineupActions: LineupActions // TODO
-  lineupSelector: Selector<CommonState, LineupState<LineupTrack>> // TODO
+  queryData: UseInfiniteQueryResult
+  lineupActions: LineupActions
+  lineupSelector: Selector<CommonState, LineupState<LineupTrack | Track>>
   playbackSource: PlaybackSource
-  queryFn: (args: { pageParam: number }) => Promise<T[]>
-} & Omit<UseInfiniteQueryOptions, 'queryFn'>) => {
-  const lineup = useSelector(lineupSelector) // TODO: no any
+}) => {
+  const lineup = useSelector(lineupSelector)
 
   const isPlaying = useSelector(getPlaying)
   const dispatch = useDispatch()
@@ -54,24 +51,20 @@ export const useLineupQuery = <T>({
     dispatch(lineupActions.updateLineupOrder(orderedIds))
   }
 
-  const queryData = useInfiniteQuery({
-    queryKey,
-    // @ts-ignore
-    queryFn,
-    initialPageParam,
-    getNextPageParam,
-    ...options
-  })
-
   const status = combineStatuses([
-    queryData.isPending ? Status.LOADING : Status.SUCCESS,
+    queryData.isFetching ? Status.LOADING : Status.SUCCESS,
     lineup.status
   ])
 
   return {
-    ...queryData,
     status,
-    entries: lineup.entries as T[],
+    source: playbackSource,
+    lineup: {
+      ...lineup,
+      status,
+      isMetadataLoading: status === Status.LOADING,
+      hasMore: queryData.isLoading ? true : queryData.hasNextPage
+    },
     togglePlay,
     play,
     pause,

@@ -41,23 +41,27 @@ const FeedPageContent = ({
     variant: LineupVariant.MAIN
   }
   const { data: currentUserId } = useCurrentUserId()
-  const { isLoading, fetchNextPage, play, pause } = useFeed({
-    userId: currentUserId
-  })
+  const { fetchNextPage, play, pause, isPlaying, source, lineup, isFetching } =
+    useFeed({
+      userId: currentUserId
+    })
 
   const feedLineupProps = {
-    ...getLineupProps(feed),
+    ...getLineupProps(lineup),
+    playing: isPlaying,
+    playingSource: source,
     setInView: setFeedInView,
     loadMore: () => {
-      console.log('FETCHING MORE')
-      fetchNextPage()
+      console.log('loadMore', { isFetching })
+      if (!isFetching) {
+        fetchNextPage()
+      }
     },
     playTrack: play,
     pauseTrack: pause,
     delineate: feedIsMain,
     actions: feedActions
   }
-  // console.log({ isLoading, feedLineupProps, mainLineupProps })
   const record = useRecord()
 
   const didSelectFilter = (filter: FeedFilter) => {
@@ -96,6 +100,7 @@ const FeedPageContent = ({
       header={header}
     >
       <Lineup
+        pageSize={10}
         emptyElement={<EmptyFeed />}
         endOfLineup={<EndOfLineup />}
         {...feedLineupProps}
