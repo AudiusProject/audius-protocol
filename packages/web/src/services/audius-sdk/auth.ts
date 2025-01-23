@@ -15,9 +15,9 @@ import { localStorage } from '../local-storage'
 import { audiusChain, wagmiConfig } from './wagmi'
 
 export const getAudiusWalletClient = async (opts?: {
-  ensureUserExists?: boolean
+  ignoreCachedUserWallet?: boolean
 }): Promise<AudiusWalletClient> => {
-  const { ensureUserExists = true } = opts ?? {}
+  const { ignoreCachedUserWallet = false } = opts ?? {}
   if (
     wagmiConfig.state.status === 'reconnecting' ||
     wagmiConfig.state.status === 'connecting'
@@ -44,7 +44,7 @@ export const getAudiusWalletClient = async (opts?: {
     const account = getAccount(wagmiConfig)
     const user = await localStorage.getAudiusAccountUser()
     if (
-      ensureUserExists &&
+      !ignoreCachedUserWallet &&
       user?.wallet?.toLowerCase() !== account.address?.toLowerCase()
     ) {
       console.warn(
