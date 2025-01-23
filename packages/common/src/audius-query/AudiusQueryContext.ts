@@ -50,6 +50,11 @@ export type AudiusQueryContextType = {
       properties: any
     }
   }
+  imageUtils: {
+    generatePlaylistArtwork: (
+      imageUrls: string[]
+    ) => Promise<{ url: string; file: File }>
+  }
 }
 
 export const AudiusQueryContext = createContext<AudiusQueryContextType>(
@@ -104,6 +109,11 @@ export function* getAudiusQueryContext(): Generator<
         'reportToSentry'
       ),
     analytics:
-      yield* getContext<AudiusQueryContextType['analytics']>('analytics')
+      yield* getContext<AudiusQueryContextType['analytics']>('analytics'),
+    imageUtils: {
+      generatePlaylistArtwork: yield* getContext<
+        AudiusQueryContextType['imageUtils']['generatePlaylistArtwork']
+      >('generatePlaylistArtwork')
+    }
   }
 }

@@ -1,6 +1,7 @@
 import { Id } from '@audius/sdk'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import BN from 'bn.js'
+import { isEqual } from 'lodash'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { playlistMetadataForUpdateWithSDK } from '~/adapters/collection'
@@ -12,6 +13,7 @@ import { ID } from '~/models/Identifiers'
 import { getAccountUser } from '~/store/account/selectors'
 import { renameAccountPlaylist } from '~/store/account/slice'
 import { EditCollectionValues } from '~/store/cache/collections/types'
+import { updatePlaylistArtwork } from '~/utils/updatePlaylistArtwork'
 
 import { useCurrentUserId } from '..'
 
@@ -20,6 +22,7 @@ import { primeCollectionData } from './utils/primeCollectionData'
 
 type MutationContext = {
   previousCollection: UserCollectionMetadata | undefined
+  collectionUpdate: EditCollectionValues
 }
 
 type UpdateCollectionParams = {
@@ -31,7 +34,10 @@ type UpdateCollectionParams = {
 const BN_USDC_CENT_WEI = new BN('10000')
 
 export const useUpdateCollection = () => {
-  const { audiusSdk } = useAudiusQueryContext()
+  const {
+    audiusSdk,
+    imageUtils: { generatePlaylistArtwork }
+  } = useAudiusQueryContext()
   const queryClient = useQueryClient()
   const account = useSelector(getAccountUser)
   const dispatch = useDispatch()
@@ -43,28 +49,35 @@ export const useUpdateCollection = () => {
 
       if (!collectionId || !currentUserId) throw new Error('Invalid ID')
 
+      const collectionUpdate = (await updatePlaylistArtwork(
+        metadata,
+        [],
+        { updated: metadata.tracks },
+        { generateImage: generatePlaylistArtwork }
+      )) as EditCollectionValues
+
       const coverArtFile =
-        metadata.artwork?.url && 'file' in metadata.artwork
-          ? (metadata.artwork.file as File)
+        collectionUpdate?.artwork?.url && 'file' in collectionUpdate.artwork
+          ? (collectionUpdate.artwork.file as File)
           : undefined
 
       // Handle account collection shortcut update
-      if (metadata.playlist_name) {
+      if (collectionUpdate?.playlist_name) {
         dispatch(
           renameAccountPlaylist({
             collectionId,
-            name: metadata.playlist_name
+            name: collectionUpdate.playlist_name
           })
         )
       }
 
       // Handle premium metadata for albums
       if (
-        metadata.is_album &&
-        isContentUSDCPurchaseGated(metadata.stream_conditions)
+        collectionUpdate.is_album &&
+        isContentUSDCPurchaseGated(collectionUpdate.stream_conditions)
       ) {
         const priceCents = Number(
-          metadata.stream_conditions.usdc_purchase.price
+          collectionUpdate.stream_conditions.usdc_purchase.price
         )
         const priceWei = new BN(priceCents).mul(BN_USDC_CENT_WEI).toNumber()
 
@@ -82,7 +95,7 @@ export const useUpdateCollection = () => {
         const userBankStr = userBank.toString()
 
         // Update the stream conditions with the price and splits
-        metadata.stream_conditions = {
+        collectionUpdate.stream_conditions = {
           usdc_purchase: {
             price: priceCents,
             splits: {
@@ -92,12 +105,8 @@ export const useUpdateCollection = () => {
         }
       }
 
-      // TODO: updateCollectionArtwork requires imageUtils context from saga
-      // This would need to be reimplemented or provided via context
-      // For now, we'll just pass through the artwork as is
-
       const sdkMetadata = playlistMetadataForUpdateWithSDK(
-        metadata as Collection
+        collectionUpdate as Collection
       )
 
       const response = await sdk.playlists.updatePlaylist({
@@ -109,12 +118,7 @@ export const useUpdateCollection = () => {
         metadata: sdkMetadata
       })
 
-      // TODO: Track publishing when making private collections public
-      // This requires access to track data and dispatch capabilities
-      // Consider adding a callback prop for this functionality
-      // if (collectionBeforeEdit?.is_private && !collection.is_private) {
-      //   Handle publishing tracks
-      // }
+      // feature-tan-query TODO: Track publishing when making private collections public
 
       return response
     },
@@ -135,6 +139,13 @@ export const useUpdateCollection = () => {
         ])
 
       // Optimistically update collection
+      const mergedCollection = { ...previousCollection, ...metadata }
+      const collectionUpdate = (await updatePlaylistArtwork(
+        mergedCollection,
+        previousCollection?.tracks ?? [],
+        { updated: mergedCollection.tracks },
+        { generateImage: generatePlaylistArtwork }
+      )) as EditCollectionValues
 
       // Optimistically update collectionByPermalink
       if (previousCollection) {
@@ -155,10 +166,20 @@ export const useUpdateCollection = () => {
           dispatch,
           forceReplace: true
         })
+
+        const previousTrackIds = previousCollection.tracks?.map(
+          (track) => track.track_id
+        )
+        const updatedTrackIds = collectionUpdate.tracks?.map(
+          (track) => track.track_id
+        )
+        if (!isEqual(previousTrackIds, updatedTrackIds)) {
+          // feature-tan-query TODO: reset lineup on tracks changed
+        }
       }
 
       // Return context with the previous collection
-      return { previousCollection }
+      return { previousCollection, collectionUpdate }
     },
     onError: (_err, { collectionId }, context?: MutationContext) => {
       // If the mutation fails, roll back collection data
@@ -176,9 +197,9 @@ export const useUpdateCollection = () => {
         )
       }
     },
-    onSettled: (_, __) => {
+    onSettled: (_, __, { collectionId }) => {
       // Always refetch after error or success to ensure cache is in sync with server
-      // queryClient.invalidateQueries({ queryKey: ['collection', collectionId] })
+      queryClient.invalidateQueries({ queryKey: ['collection', collectionId] })
     }
   })
 }
