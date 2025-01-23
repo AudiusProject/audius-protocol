@@ -203,69 +203,10 @@ export const listen = async (
   res: Response,
   next: NextFunction
 ) => {
-  let logger
-  try {
-    logger = res.locals.logger
-
-    // if not prod, just return 200
-    if (config.environment !== 'prod') {
-      logger.info('not prod, skipping listen')
-      res.status(200).json({
-        solTxSignature: null
-      })
-      next()
-      return
-    }
-
-    // validation
-    const { userId, timestamp, signature } = recordListenBodySchema.parse(
-      req.body
-    )
-    const { trackId } = recordListenParamsSchema.parse(req.params)
-    const host = req.hostname
-    logger = res.locals.logger.child({ userId, trackId, host })
-    const ip = getIP(req)
-
-    // require request came from content
-    if (!(await validateListenSignature(timestamp, signature))) {
-      logger.info(
-        { userId, trackId, ip, timestamp, signature },
-        'unauthorized request'
-      )
-      res.status(401).json({ message: 'Unauthorized Error' })
-      next()
-      return
-    }
-
-    // check rate limit on forwarded IP and track
-    const allowed = await listenRouteRateLimiter({ ip, trackId, logger })
-    if (!allowed) {
-      res.send(429).json({ message: 'Too Many Requests' })
-      next()
-      return
-    }
-
-    // record listen after validation
-    const record = await recordListen({ userId, trackId, logger, ip })
-    return res.status(200).json(record)
-  } catch (e: unknown) {
-    if (e instanceof z.ZodError) {
-      logger?.error({ error: String(e) }, 'validation error')
-      return res
-        .status(400)
-        .json({ message: 'Validation Error', errors: e.errors })
-    }
-    if (e instanceof Error) {
-      logger?.error(
-        { message: e.message, stack: e.stack, name: e.name },
-        'listen error'
-      )
-    } else if (typeof e === 'object' && e !== null) {
-      logger?.error({ error: JSON.stringify(e) }, 'listen error')
-    } else {
-      logger?.error({ error: String(e) }, 'listen error')
-    }
-    res.status(500).json({ message: 'Internal Server Error' })
-    next(e)
-  }
+  const logger = res.locals.logger
+  logger.info('not prod, skipping listen')
+  res.status(200).json({
+    solTxSignature: null
+  })
+  next()
 }
