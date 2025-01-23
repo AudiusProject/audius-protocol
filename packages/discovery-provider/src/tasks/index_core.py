@@ -1,17 +1,22 @@
 import json
 import logging
 from datetime import datetime
-from typing import Optional, TypedDict, cast
+from typing import List, Optional, TypedDict, cast
 
 from redis import Redis
 from sqlalchemy import desc
+from web3 import Web3
+from web3.datastructures import AttributeDict
+from web3.types import TxReceipt
 
 from src.challenges.challenge_event_bus import ChallengeEventBus
 from src.models.core.core_indexed_blocks import CoreIndexedBlocks
+from src.models.indexing.block import Block
 from src.models.social.play import Play
 from src.tasks.celery_app import celery
 from src.tasks.core.core_client import CoreClient, get_core_instance
 from src.tasks.core.gen.protocol_pb2 import BlockResponse
+from src.tasks.entity_manager.entity_manager import entity_manager_update
 from src.tasks.index_core_cutovers import (
     get_core_cutover,
     get_core_cutover_chain_id,
@@ -116,6 +121,7 @@ def update_core_health(
 def index_core(self):
     redis: Redis = index_core.redis
     db: SessionManager = index_core.db
+    web3: Web3 = index_core.web3
     challenge_bus: ChallengeEventBus = index_core.challenge_event_bus
 
     update_lock = redis.lock(index_core_lock_key, blocking_timeout=25, timeout=600)
@@ -219,7 +225,9 @@ def index_core(self):
 
             indexed_slot: Optional[int] = None
 
-            for tx in block.transactions:
+            tx_receipts: List[TxReceipt] = []
+            for tx_res in block.transactions:
+                tx = tx_res.transaction
                 transaction_type = tx.WhichOneof("transaction")
                 if transaction_type == "plays":
                     if indexing_plays:
@@ -232,6 +240,23 @@ def index_core(self):
                         )
                     continue
                 elif transaction_type == "manage_entity":
+                    manage_entity_tx = tx.manage_entity
+                    txReceipt = {
+                        "args": AttributeDict(
+                            {
+                                "_entityId": manage_entity_tx.entity_id,
+                                "_entityType": manage_entity_tx.entity_type,
+                                "_userId": manage_entity_tx.user_id,
+                                "_action": manage_entity_tx.action,
+                                "_metadata": manage_entity_tx.metadata,
+                                "_signer": manage_entity_tx.signer,
+                                "_subjectSig": manage_entity_tx.signature,
+                                "_nonce": manage_entity_tx.nonce,
+                            }
+                        ),
+                        "transactionHash": web3.to_bytes(hexstr=tx_res.txhash),
+                    }
+                    tx_receipts.append(txReceipt)
                     continue
                 elif transaction_type == "validator_registration":
                     continue
@@ -241,6 +266,38 @@ def index_core(self):
                     logger.warning(
                         f"index_core.py | unhandled tx type found {transaction_type}"
                     )
+
+            try:
+                latest_indexed_block_record = (
+                    session.query(Block).filter(Block.is_current == True).first()
+                )
+                if not latest_indexed_block_record:
+                    raise Exception("latest_indexed_block not found")
+
+                next_em_block = latest_indexed_block_record.number + 1
+                next_em_block_model = Block(
+                    blockhash=block.blockhash,
+                    parenthash=latest_indexed_block_record.blockhash,
+                    number=next_em_block,
+                    is_current=True,
+                )
+
+                latest_indexed_block_record.is_current = False
+                session.add(next_em_block_model)
+                entity_manager_update(
+                    self,
+                    session,
+                    tx_receipts,
+                    block_number=next_em_block,
+                    block_timestamp=block.timestamp.ToSeconds(),
+                    block_hash=block.blockhash,
+                )
+            except Exception as e:
+                logger.error(
+                    f"entity manager error in indexing core blocks {e}", exc_info=True
+                )
+                # raise error so we don't index this block
+                raise e
 
             # get block parenthash, in none case also use None
             # this would be the case in solana cutover where the previous
