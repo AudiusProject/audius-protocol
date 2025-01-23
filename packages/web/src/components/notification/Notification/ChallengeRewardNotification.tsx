@@ -18,7 +18,7 @@ import { NotificationTitle } from './components/NotificationTitle'
 import { TwitterShareButton } from './components/TwitterShareButton'
 import { IconRewards } from './components/icons'
 
-const { AUDIO_PAGE } = route
+const { REWARDS_PAGE } = route
 
 const messages = {
   amountEarned: (amount: BNAudio) => `You've earned ${amount} $AUDIO`,
@@ -56,9 +56,9 @@ export const ChallengeRewardNotification = (
   const { title, icon } = getChallengeConfig(mappedChallengeRewardsConfigKey)
   const amount = stringWeiToAudioBN(notification.amount)
   const handleClick = useCallback(() => {
-    dispatch(push(AUDIO_PAGE))
+    dispatch(push(REWARDS_PAGE))
     record(
-      make(Name.NOTIFICATIONS_CLICK_TILE, { kind: type, link_to: AUDIO_PAGE })
+      make(Name.NOTIFICATIONS_CLICK_TILE, { kind: type, link_to: REWARDS_PAGE })
     )
   }, [dispatch, record, type])
 

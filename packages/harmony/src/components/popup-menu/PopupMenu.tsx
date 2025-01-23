@@ -1,10 +1,12 @@
 import { forwardRef, useCallback, useRef, useState, MouseEvent } from 'react'
 
+import { useTheme } from '@emotion/react'
 import cn from 'classnames'
 
+import { Box } from '../layout/Box'
+import { Flex } from '../layout/Flex'
 import { Popup } from '../popup'
 
-import styles from './PopupMenu.module.css'
 import { PopupMenuItem, PopupMenuProps } from './types'
 
 /**
@@ -26,8 +28,11 @@ export const PopupMenu = forwardRef<HTMLDivElement, PopupMenuProps>(
       anchorOrigin,
       transformOrigin,
       id,
-      fixed
+      fixed,
+      overrideIconColor
     } = props
+
+    const { spacing, typography, color } = useTheme()
     const clickInsideRef = useRef<any>()
     const anchorRef = useRef<HTMLElement>(null)
 
@@ -47,7 +52,7 @@ export const PopupMenu = forwardRef<HTMLDivElement, PopupMenuProps>(
     }, [setIsPopupVisible, onClose])
 
     const handleMenuItemClick = useCallback(
-      (item: PopupMenuItem) => (e: MouseEvent<HTMLLIElement>) => {
+      (item: PopupMenuItem) => (e: MouseEvent<HTMLElement>) => {
         e.stopPropagation()
         item.onClick(e)
         handlePopupClose()
@@ -64,8 +69,41 @@ export const PopupMenu = forwardRef<HTMLDivElement, PopupMenuProps>(
       id: triggerId
     }
 
+    const popupCss = {
+      margin: spacing.s,
+      padding: spacing.s,
+      border: `1px solid ${color.border.strong}`
+    }
+
+    const menuItemCss = {
+      fontSize: typography.size.m,
+      fontWeight: typography.weight.demiBold,
+      color: color.text.default,
+      cursor: 'pointer',
+      '&:hover': {
+        color: color.text.staticStaticWhite,
+        background: color.secondary.s300,
+        path: {
+          fill: color.text.staticStaticWhite
+        }
+      },
+      '&.destructive': {
+        color: color.status.error,
+        '&:hover': {
+          background: color.status.error,
+          color: color.text.staticStaticWhite
+        }
+      }
+    }
+
+    const iconCss = {
+      path: {
+        fill: overrideIconColor ? undefined : color.text.default
+      }
+    }
+
     return (
-      <div ref={clickInsideRef}>
+      <Box ref={clickInsideRef}>
         {renderTrigger(anchorRef, triggerPopup, triggerProps)}
         <Popup
           anchorRef={anchorRef}
@@ -85,41 +123,57 @@ export const PopupMenu = forwardRef<HTMLDivElement, PopupMenuProps>(
           containerRef={containerRef}
           transformOrigin={transformOrigin}
           anchorOrigin={anchorOrigin}
-          className={cn(styles.popup, className)}
+          className={className}
+          css={popupCss}
           dismissOnMouseLeave={dismissOnMouseLeave}
           fixed={fixed}
         >
           {renderMenu ? (
             renderMenu(items)
           ) : (
-            <ul
-              className={styles.menu}
+            <Box
+              as='ul'
               role='menu'
               aria-labelledby={triggerId}
               tabIndex={-1}
+              css={{ all: 'unset' }}
             >
               {items.map((item, i) => (
-                <li
+                <Flex
+                  as='li'
                   key={typeof item.text === 'string' ? item.text : i}
                   role='menuitem'
-                  className={cn(styles.item, item.className, {
-                    [styles.destructive]: item.destructive
+                  className={cn(item.className, {
+                    destructive: item.destructive
                   })}
                   onClick={handleMenuItemClick(item)}
                   tabIndex={i === 0 ? 0 : -1}
+                  css={menuItemCss}
+                  alignItems='center'
+                  gap='s'
+                  p='s'
+                  ph='m'
+                  borderRadius='s'
                 >
                   {item.icon ? (
-                    <div className={cn(styles.icon, item.iconClassName)}>
+                    <Flex
+                      css={iconCss}
+                      className={item.iconClassName}
+                      alignItems='center'
+                      justifyContent='center'
+                      w='unit5'
+                      h='unit5'
+                    >
                       {item.icon}
-                    </div>
+                    </Flex>
                   ) : null}
                   {item.text}
-                </li>
+                </Flex>
               ))}
-            </ul>
+            </Box>
           )}
         </Popup>
-      </div>
+      </Box>
     )
   }
 )
