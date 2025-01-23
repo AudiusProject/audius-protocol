@@ -175,25 +175,38 @@ const GuestView = () => {
 }
 
 export const AccountDetails = () => {
-  const { displayUserId, displayHandle, displayIsComplete } =
+  const { displayUserId, currentUserId, currentHandle, isTransitioning } =
     useAccountTransition()
   const isManagedAccount = useIsManagedAccount()
   const guestEmail = useSelector(getGuestEmail)
 
-  // Always render using display state, which will be the previous state during transitions
-  if (displayUserId && displayHandle) {
+  if (isTransitioning) {
+    return (
+      <AccountDetailsContainer>
+        <AccountContentWrapper>
+          <Avatar userId={displayUserId} h={48} w={48} />
+          <AccountInfo>
+            <Box h={20} />
+            <Box h={20} />
+          </AccountInfo>
+        </AccountContentWrapper>
+      </AccountDetailsContainer>
+    )
+  }
+
+  if (currentUserId && currentHandle) {
     return (
       <AccountDetailsContainer isManagedAccount={isManagedAccount}>
         <SignedInView
-          userId={displayUserId}
-          handle={displayHandle}
+          userId={currentUserId}
+          handle={currentHandle}
           isManagedAccount={isManagedAccount}
         />
       </AccountDetailsContainer>
     )
   }
 
-  if (!displayIsComplete && guestEmail) {
+  if (guestEmail) {
     return (
       <AccountDetailsContainer>
         <GuestView />
