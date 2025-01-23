@@ -5,14 +5,14 @@ import { Box, Flex, Text, useTheme } from '@audius/harmony'
 
 import { Avatar } from 'components/avatar/Avatar'
 import { TextLink, UserLink } from 'components/link'
+import { useAccountTransition } from 'hooks/useAccountTransition'
 import { useSelector } from 'utils/reducer'
 import { backgroundOverlay } from 'utils/styleUtils'
 
 import { AccountSwitcher } from './AccountSwitcher/AccountSwitcher'
 
 const { SIGN_IN_PAGE, SIGN_UP_PAGE, profilePage } = route
-const { getUserHandle, getUserId, getIsAccountComplete, getGuestEmail } =
-  accountSelectors
+const { getGuestEmail } = accountSelectors
 const messages = {
   haveAccount: 'Have an account?',
   managedAccount: 'Managed Account',
@@ -175,26 +175,25 @@ const GuestView = () => {
 }
 
 export const AccountDetails = () => {
-  const accountHandle = useSelector(getUserHandle)
-  const accountUserId = useSelector(getUserId)
+  const { displayUserId, displayHandle, displayIsComplete } =
+    useAccountTransition()
   const isManagedAccount = useIsManagedAccount()
-  const hasCompletedAccount = useSelector(getIsAccountComplete)
   const guestEmail = useSelector(getGuestEmail)
 
-  // Determine which state to show
-  if (accountUserId && accountHandle) {
+  // Always render using display state, which will be the previous state during transitions
+  if (displayUserId && displayHandle) {
     return (
       <AccountDetailsContainer isManagedAccount={isManagedAccount}>
         <SignedInView
-          userId={accountUserId}
-          handle={accountHandle}
+          userId={displayUserId}
+          handle={displayHandle}
           isManagedAccount={isManagedAccount}
         />
       </AccountDetailsContainer>
     )
   }
 
-  if (!hasCompletedAccount && guestEmail) {
+  if (!displayIsComplete && guestEmail) {
     return (
       <AccountDetailsContainer>
         <GuestView />

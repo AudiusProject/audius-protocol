@@ -1,11 +1,7 @@
 import { ReactNode, useMemo } from 'react'
 
 import { useChallengeCooldownSchedule } from '@audius/common/hooks'
-import {
-  accountSelectors,
-  chatSelectors,
-  uploadSelectors
-} from '@audius/common/store'
+import { chatSelectors, uploadSelectors } from '@audius/common/store'
 import { route } from '@audius/common/utils'
 import type { IconComponent } from '@audius/harmony'
 import {
@@ -25,6 +21,7 @@ import {
 import { useSelector } from 'react-redux'
 import { useLocation } from 'react-router-dom'
 
+import { useAccountTransition } from 'hooks/useAccountTransition'
 import { RestrictionType } from 'hooks/useRequiresAccount'
 import { matchesRoute } from 'utils/route'
 
@@ -45,7 +42,6 @@ const {
 } = route
 
 const { getUnreadMessagesCount } = chatSelectors
-const { getIsAccountComplete, getHasAccount } = accountSelectors
 const { getIsUploading } = uploadSelectors
 
 export type NavItemConfig = {
@@ -81,8 +77,13 @@ const createNavItemWithSpeaker = ({
 })
 
 export const useNavConfig = () => {
-  const hasAccount = useSelector(getHasAccount)
-  const isAccountComplete = useSelector(getIsAccountComplete)
+  const {
+    displayUserId: accountUserId,
+    displayHandle: accountHandle,
+    displayIsComplete: isAccountComplete,
+    isTransitioning
+  } = useAccountTransition()
+  const hasAccount = Boolean(accountUserId && accountHandle)
   const unreadMessagesCount = useSelector(getUnreadMessagesCount)
   const isUploading = useSelector(getIsUploading)
   const { color, spacing } = useTheme()
@@ -92,8 +93,13 @@ export const useNavConfig = () => {
   const playingFromRoute = useNavSourcePlayingStatus()
   const location = useLocation()
 
-  const navItems = useMemo(
-    (): NavItemConfig[] => [
+  const navItems = useMemo((): NavItemConfig[] => {
+    // During transition, don't show any nav items
+    if (isTransitioning) {
+      return []
+    }
+
+    return [
       createNavItemWithSpeaker({
         label: 'Feed',
         leftIcon: IconFeed,
@@ -202,19 +208,19 @@ export const useNavConfig = () => {
         canUnfurl: isAccountComplete,
         disabled: !hasAccount
       }
-    ],
-    [
-      hasAccount,
-      unreadMessagesCount,
-      location.pathname,
-      isAccountComplete,
-      claimableAmount,
-      isUploading,
-      playingFromRoute,
-      color,
-      spacing
     ]
-  )
+  }, [
+    hasAccount,
+    unreadMessagesCount,
+    location.pathname,
+    isAccountComplete,
+    claimableAmount,
+    isUploading,
+    playingFromRoute,
+    color,
+    spacing,
+    isTransitioning
+  ])
 
   return navItems
 }
