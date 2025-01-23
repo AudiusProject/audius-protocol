@@ -3,6 +3,8 @@ services:
     container_name: audiusd
     image: audius/audiusd:dev
     restart: unless-stopped
+    environment:
+      - useHttpsForSdk="false"
     profiles:
       - discovery
       - storage
