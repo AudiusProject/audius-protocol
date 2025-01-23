@@ -1,7 +1,7 @@
 import { useCallback, useEffect } from 'react'
 
 import { useDeleteDeveloperApp } from '@audius/common/api'
-import { Name, Status } from '@audius/common/models'
+import { Name } from '@audius/common/models'
 import { accountSelectors } from '@audius/common/store'
 import { Button, ModalFooter } from '@audius/harmony'
 
@@ -27,8 +27,13 @@ export const DeleteAppConfirmationPage = (
   props: DeleteAppConfirmationPageProps
 ) => {
   const { params, setPage } = props
-  const [deleteDeveloperApp, result] = useDeleteDeveloperApp()
-  const { status, errorMessage } = result
+  const {
+    mutate: deleteDeveloperApp,
+    error,
+    isError,
+    isPending,
+    isSuccess
+  } = useDeleteDeveloperApp()
   const userId = useSelector(getUserId)
   const record = useRecord()
   const apiKey = params?.apiKey
@@ -43,7 +48,7 @@ export const DeleteAppConfirmationPage = (
   }, [userId, apiKey, deleteDeveloperApp])
 
   useEffect(() => {
-    if (status === Status.SUCCESS) {
+    if (isSuccess) {
       setPage(CreateAppsPages.YOUR_APPS)
       record(
         make(Name.DEVELOPER_APP_DELETE_SUCCESS, {
@@ -52,26 +57,24 @@ export const DeleteAppConfirmationPage = (
         })
       )
     }
-  }, [status, setPage, record, params?.name, params?.apiKey])
+  }, [isSuccess, setPage, record, params?.name, params?.apiKey])
 
   useEffect(() => {
-    if (status === Status.ERROR) {
+    if (isError) {
       setPage(CreateAppsPages.YOUR_APPS)
       record(
         make(Name.DEVELOPER_APP_DELETE_ERROR, {
           name: params?.name,
           apiKey: params?.apiKey,
-          error: errorMessage
+          error: error.message
         })
       )
     }
-  }, [status, setPage, record, params?.name, params?.apiKey, errorMessage])
+  }, [isError, error, setPage, record, params?.name, params?.apiKey])
 
   if (!params) return null
 
   const { name } = params
-
-  const isDeleting = status !== Status.IDLE
 
   return (
     <div>
@@ -81,7 +84,7 @@ export const DeleteAppConfirmationPage = (
         <Button
           variant='secondary'
           onClick={handleCancel}
-          disabled={isDeleting}
+          disabled={isPending}
           fullWidth
         >
           {messages.cancel}
@@ -90,9 +93,9 @@ export const DeleteAppConfirmationPage = (
           variant='destructive'
           fullWidth
           onClick={handleDelete}
-          isLoading={isDeleting}
+          isLoading={isPending}
         >
-          {isDeleting ? messages.deletingApp : messages.deleteApp}
+          {isPending ? messages.deletingApp : messages.deleteApp}
         </Button>
       </ModalFooter>
     </div>

@@ -5,8 +5,7 @@ import { cloneDeep } from 'lodash'
 import { useAudiusQueryContext } from '~/audius-query/AudiusQueryContext'
 import { ID } from '~/models'
 
-import { DeveloperApp } from '../developerApps'
-
+import { DeveloperApp } from './developerApps'
 import { QUERY_KEYS } from './queryKeys'
 
 type UseRemoveAuthorizedAppArgs = {
@@ -21,11 +20,10 @@ export const useRemoveAuthorizedApp = () => {
   return useMutation({
     mutationFn: async (args: UseRemoveAuthorizedAppArgs) => {
       const { apiKey, userId } = args
-      const encodedUserId = Id.parse(userId)
       const sdk = await audiusSdk()
 
       await sdk.grants.revokeGrant({
-        userId: encodedUserId,
+        userId: Id.parse(userId),
         appApiKey: apiKey
       })
     },
