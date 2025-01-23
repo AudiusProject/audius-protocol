@@ -31,7 +31,13 @@ export const getAudiusWalletClient = async (): Promise<AudiusWalletClient> => {
     })
     unsubscribe?.()
   }
-  if (wagmiConfig.state.status === 'connected') {
+
+  if (
+    wagmiConfig.state.status === 'connected' &&
+    // Only support metaMask for now
+    wagmiConfig.state.connections.get(wagmiConfig.state.current!)?.connector
+      .type === 'metaMask'
+  ) {
     console.info('[audiusSdk] Initializing SDK with external wallet...')
     const client = await getWalletClient(wagmiConfig, {
       chainId: audiusChain.id
