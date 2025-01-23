@@ -19,7 +19,12 @@ const messages = {
 export const ListeningHistoryScreen = () => {
   const [filterValue, setFilterValue] = useState('')
 
-  const { fetchNextPage, togglePlay, status, entries } = useTrackHistory({
+  const {
+    fetchNextPage,
+    togglePlay,
+    status,
+    lineup: { entries }
+  } = useTrackHistory({
     query: filterValue
   })
 

@@ -294,7 +294,7 @@ const HistoryPage = g((props) => {
   }
 
   const mobileProps = {
-    isPlaying,
+    playing: isPlaying,
     onToggleSave,
     onTogglePlay
   }
