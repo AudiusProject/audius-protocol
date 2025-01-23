@@ -1,4 +1,4 @@
-import { OptimisticUserChallenge } from '~/models'
+import { ChallengeName, OptimisticUserChallenge } from '~/models'
 import { fillString, formatNumberCommas } from '~/utils'
 
 const messages = {
@@ -57,6 +57,11 @@ export const useFormattedProgressLabel = ({
   ) {
     if (needsDisbursement) {
       label = messages.readyToClaim
+    } else if (
+      challenge?.challenge_id === ChallengeName.OneShot &&
+      challenge?.disbursed_amount > 0
+    ) {
+      label = messages.completeLabel
     } else {
       // Count down
       label = fillString(

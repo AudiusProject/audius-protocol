@@ -117,8 +117,8 @@ export const ChallengeRewardsDrawerContent = ({
     claimStatus === ClaimStatus.WAITING_FOR_RETRY
   const claimError = claimStatus === ClaimStatus.ERROR
 
-  const hasCompleted = challengeState === 'disbursed'
-  console.log('asdf isinprogress: ', isInProgress)
+  const hasCompleted =
+    challengeState === 'completed' || challengeState === 'disbursed'
   const statusText = hasCompleted
     ? messages.complete
     : isClaimable

@@ -364,7 +364,7 @@ const ChallengeRewardsBody = ({ dismissModal }: BodyProps) => {
           {messages.ineligible}
         </Text>
       ) : challenge?.challenge_id === ChallengeName.OneShot &&
-        challenge?.state === 'completed' ? (
+        challenge.claimableAmount ? (
         <Flex gap='s' justifyContent='center' alignItems='center'>
           <IconCheck width={16} height={16} color='subdued' />
           <Text variant='label' size='l' strength='strong' color='subdued'>
@@ -567,7 +567,11 @@ const ChallengeRewardsBody = ({ dismissModal }: BodyProps) => {
   }
 
   const renderClaimedSoFarContent = () => {
-    if (audioClaimedSoFar > 0 && challenge?.state !== 'disbursed') {
+    if (
+      audioClaimedSoFar > 0 &&
+      challenge?.state !== 'disbursed' &&
+      challenge?.challenge_id !== ChallengeName.OneShot
+    ) {
       return (
         <div className={styles.claimRewardClaimedAmountLabel}>
           {`${formatNumberCommas(audioClaimedSoFar)} ${messages.claimedSoFar}`}
