@@ -78,8 +78,10 @@ const validCoverPhotoSizes = [
 const isValidCoverPhoto = (input: User['cover_photo']) => {
   if (!input) return false
 
-  return Object.keys(input).some((size) =>
-    validCoverPhotoSizes.includes(size as WidthSizes)
+  return Object.keys(input).some(
+    (size) =>
+      validCoverPhotoSizes.includes(size as WidthSizes) &&
+      input[size] !== undefined
   )
 }
 
