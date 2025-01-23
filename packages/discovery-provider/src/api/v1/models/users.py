@@ -283,6 +283,10 @@ sale_json_model = ns.model(
             description="Encrypted key for decrypting the buyer's email",
             allow_null=True,
         ),
+        "is_initial": fields.Boolean(
+            description="Whether this is an initial encryption from the backfill",
+            allow_null=True,
+        ),
     },
 )
 

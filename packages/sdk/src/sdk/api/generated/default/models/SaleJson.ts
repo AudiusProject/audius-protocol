@@ -92,6 +92,12 @@ export interface SaleJson {
      * @memberof SaleJson
      */
     encryptedKey?: string;
+    /**
+     * Whether this is an initial encryption from the backfill
+     * @type {boolean}
+     * @memberof SaleJson
+     */
+    isInitial?: boolean;
 }
 
 /**
@@ -125,6 +131,7 @@ export function SaleJsonFromJSONTyped(json: any, ignoreDiscriminator: boolean): 
         'country': !exists(json, 'country') ? undefined : json['country'],
         'encryptedEmail': !exists(json, 'encrypted_email') ? undefined : json['encrypted_email'],
         'encryptedKey': !exists(json, 'encrypted_key') ? undefined : json['encrypted_key'],
+        'isInitial': !exists(json, 'is_initial') ? undefined : json['is_initial'],
     };
 }
 
@@ -149,6 +156,7 @@ export function SaleJsonToJSON(value?: SaleJson | null): any {
         'country': value.country,
         'encrypted_email': value.encryptedEmail,
         'encrypted_key': value.encryptedKey,
+        'is_initial': value.isInitial,
     };
 }
 
