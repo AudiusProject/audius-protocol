@@ -11,9 +11,7 @@
 .scrollbar :global(.ps__rail-y) {
   margin-top: var(--harmony-unit-1);
   margin-bottom: var(--harmony-unit-1);
-  transition:
-    background-color 0.2s ease-in-out,
-    opacity 0.2s ease-in-out;
+  transition: background-color 0.2s ease-in-out, opacity 0.2s ease-in-out;
   background-color: transparent !important;
 }
 
