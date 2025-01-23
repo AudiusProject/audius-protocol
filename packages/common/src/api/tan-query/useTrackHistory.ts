@@ -15,7 +15,7 @@ import {
 import { getPlaying } from '~/store/player/selectors'
 
 import { QUERY_KEYS } from './queryKeys'
-import { Config } from './types'
+import { QueryOptions } from './types'
 import { useCurrentUserId } from './useCurrentUserId'
 import { primeTrackData } from './utils/primeTrackData'
 
@@ -35,7 +35,7 @@ export const useTrackHistory = (
     sortMethod,
     sortDirection
   }: UseTrackHistoryArgs = {},
-  config?: Config
+  config?: QueryOptions
 ) => {
   const { audiusSdk } = useAudiusQueryContext()
   const { data: currentUserId } = useCurrentUserId()
