@@ -1,14 +1,12 @@
 import { useCallback } from 'react'
 
+import { useUpdateCollection } from '@audius/common/api'
 import { SquareSizes } from '@audius/common/models'
 import { AlbumSchema, PlaylistSchema } from '@audius/common/schemas'
 import type { EditCollectionValues } from '@audius/common/store'
-import {
-  cacheCollectionsActions,
-  cacheCollectionsSelectors
-} from '@audius/common/store'
+import { cacheCollectionsSelectors } from '@audius/common/store'
 import { Formik } from 'formik'
-import { useDispatch, useSelector } from 'react-redux'
+import { useSelector } from 'react-redux'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 
 import { ModalScreen } from 'app/components/core'
@@ -19,7 +17,6 @@ import { isImageUriSource } from 'app/utils/image'
 
 import { EditCollectionNavigator } from './EditCollectionNavigator'
 
-const { editPlaylist } = cacheCollectionsActions
 const { getCollection } = cacheCollectionsSelectors
 
 export const EditCollectionScreen = () => {
@@ -28,8 +25,7 @@ export const EditCollectionScreen = () => {
   const playlist = useSelector((state) =>
     getCollection(state, { id: params.id })
   )
-  const dispatch = useDispatch()
-
+  const { mutate: updateCollection } = useUpdateCollection()
   const trackImage = useCollectionImage({
     collectionId: playlist?.playlist_id,
     size: SquareSizes.SIZE_1000_BY_1000
@@ -38,11 +34,14 @@ export const EditCollectionScreen = () => {
   const handleSubmit = useCallback(
     (values: EditCollectionValues) => {
       if (playlist) {
-        dispatch(editPlaylist(playlist.playlist_id, values))
+        updateCollection({
+          collectionId: playlist.playlist_id,
+          metadata: values
+        })
       }
       navigation.goBack()
     },
-    [dispatch, navigation, playlist]
+    [navigation, playlist, updateCollection]
   )
 
   if (!playlist) return null

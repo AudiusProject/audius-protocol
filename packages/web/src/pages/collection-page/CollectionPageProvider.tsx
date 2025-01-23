@@ -1,6 +1,6 @@
 import { ChangeEvent, Component, ComponentType } from 'react'
 
-import { useCollectionByParams } from '@audius/common/api'
+import { useCollectionByParams, useCurrentUser } from '@audius/common/api'
 import {
   Name,
   ShareSource,
@@ -16,8 +16,9 @@ import {
   ID,
   UID,
   isContentUSDCPurchaseGated,
-  ModalSource,
-  UserCollectionMetadata
+  UserMetadata,
+  UserCollectionMetadata,
+  ModalSource
 } from '@audius/common/models'
 import {
   accountSelectors,
@@ -97,21 +98,19 @@ const {
   getCollection,
   getCollectionTracksLineup,
   getCollectionUid,
-  getUser,
   getUserUid,
   getCollectionPermalink
 } = collectionPageSelectors
 const { updatedPlaylistViewed } = playlistUpdatesActions
 const { makeGetTableMetadatas, makeGetLineupOrder } = lineupSelectors
 const {
-  editPlaylist,
   removeTrackFromPlaylist,
   orderPlaylist,
   publishPlaylist,
   deletePlaylist
 } = cacheCollectionsActions
 
-const { getUserId, getAccountCollections } = accountSelectors
+const { getAccountCollections } = accountSelectors
 
 type OwnProps = {
   type: CollectionsPageType
@@ -142,13 +141,24 @@ type PlaylistTrack = { time: number; track: ID; uid?: UID }
 const CollectionPageProvider = (props: CollectionPageProviderProps) => {
   const params = parseCollectionRoute(getPathname(props.location))
   const { data: collection, status } = useCollectionByParams(params!)
+  const { data: user } = useCurrentUser()
   if (!collection) return <div>Loading...</div>
-  return <CollectionPage {...props} collection={collection} status={status} />
+  return (
+    <CollectionPage
+      {...props}
+      collection={collection}
+      collectionId={collection.playlist_id}
+      status={status}
+      user={user}
+    />
+  )
 }
 
 type CollectionPageProps = CollectionPageProviderProps & {
+  collectionId: number | undefined
   collection: UserCollectionMetadata | null | undefined
   status: 'pending' | 'success' | 'error'
+  user: UserMetadata | null | undefined
 }
 
 class CollectionPage extends Component<
@@ -185,7 +195,7 @@ class CollectionPage extends Component<
 
   componentDidUpdate(prevProps: CollectionPageProps) {
     const {
-      collection: metadata,
+      collection,
       status,
       user,
       tracks,
@@ -194,13 +204,16 @@ class CollectionPage extends Component<
       playlistUpdates,
       updatePlaylistLastViewedAt
     } = this.props
+    const { playlist_id, playlist_name, is_album, playlist_owner_id } =
+      collection ?? {}
+    const { user_id: userId } = user ?? {}
 
     if (
       type === 'playlist' &&
-      this.props.playlistId &&
-      playlistUpdates.includes(this.props.playlistId)
+      playlist_id &&
+      playlistUpdates.includes(playlist_id)
     ) {
-      updatePlaylistLastViewedAt(this.props.playlistId)
+      updatePlaylistLastViewedAt(playlist_id)
     }
 
     const { initialOrder } = this.state
@@ -231,8 +244,8 @@ class CollectionPage extends Component<
     if (status === 'error') {
       if (
         params &&
-        params.collectionId === this.props.playlistId &&
-        metadata?.playlist_owner_id !== this.props.userId
+        params.collectionId === playlist_id &&
+        playlist_owner_id !== userId
       ) {
         // Only route to not found page if still on the collection page and
         // it is erroring on the correct playlistId
@@ -249,12 +262,12 @@ class CollectionPage extends Component<
     }
 
     const { collection: prevMetadata } = prevProps
-    if (metadata) {
+    if (this.props.collection) {
       const params = parseCollectionRoute(pathname)
       if (params) {
         const { collectionId, title, collectionType, handle, permalink } =
           params
-        const newCollectionName = formatUrlName(metadata.playlist_name)
+        const newCollectionName = formatUrlName(playlist_name)
 
         const routeLacksCollectionInfo =
           (title === null || handle === null || collectionType === null) &&
@@ -264,15 +277,15 @@ class CollectionPage extends Component<
           // Check if we are coming from a non-canonical route and replace route if necessary.
           const newPath = collectionPage(
             user!.handle,
-            metadata.playlist_name,
-            collectionId,
-            metadata.permalink,
-            metadata.is_album
+            playlist_name,
+            playlist_id,
+            permalink,
+            is_album
           )
           this.props.replaceRoute(newPath)
         } else {
           // Id matches or temp id matches
-          const idMatches = collectionId === metadata.playlist_id
+          const idMatches = collectionId === playlist_id
 
           // Check that the playlist name hasn't changed. If so, update url.
           if (idMatches && title) {
@@ -295,10 +308,10 @@ class CollectionPage extends Component<
 
     // check that the collection content hasn't changed
     if (
-      metadata &&
+      collection &&
       prevMetadata &&
       !this.playListContentsEqual(
-        metadata.playlist_contents.track_ids,
+        collection.playlist_contents.track_ids,
         prevMetadata.playlist_contents.track_ids
       )
     ) {
@@ -374,7 +387,7 @@ class CollectionPage extends Component<
       // for hidden tracks, we don't show the play_count and represent this
       // as -1 for sorting. The tracks-table will render this as a dash.
       plays:
-        metadata.is_unlisted && this.props.userId !== metadata.owner_id
+        metadata.is_unlisted && this.props.user?.user_id !== metadata.owner_id
           ? -1
           : metadata.play_count
     }))
@@ -462,16 +475,22 @@ class CollectionPage extends Component<
     uid: string,
     timestamp: number
   ) => {
-    const { playlistId, collection } = this.props
+    const { collectionId, collection } = this.props
     if (isContentUSDCPurchaseGated(collection?.stream_conditions)) {
       this.props.openConfirmationModal({
         trackId,
-        playlistId,
+        playlistId: collectionId,
         uid,
         timestamp
       })
     } else {
-      this.props.removeTrackFromPlaylist(trackId, playlistId, uid, timestamp)
+      if (!trackId || !collection?.playlist_id) return
+      this.props.removeTrackFromPlaylist(
+        trackId,
+        collection.playlist_id,
+        uid,
+        timestamp
+      )
     }
   }
 
@@ -485,11 +504,11 @@ class CollectionPage extends Component<
       record,
       stop,
       collection,
-      userId
+      user
     } = this.props
     const isQueued = this.isQueued()
     const playingId = this.getPlayingId()
-    const isOwner = collection?.playlist_owner_id === userId
+    const isOwner = collection?.playlist_owner_id === user?.user_id
     const shouldPreview = isPreview && isOwner
     if (playing && isQueued && previewing === shouldPreview) {
       pause()
@@ -547,7 +566,7 @@ class CollectionPage extends Component<
   }
 
   onReorderTracks = (source: number, destination: number) => {
-    const { tracks, order } = this.props
+    const { tracks, order, collectionId } = this.props
 
     const newOrder = Array.from(this.state.initialOrder!)
     newOrder.splice(source, 1)
@@ -560,11 +579,11 @@ class CollectionPage extends Component<
 
     this.props.updateLineupOrder(newOrder)
     this.setState({ initialOrder: newOrder })
-    this.props.orderPlaylist(this.props.playlistId!, trackIdAndTimes, newOrder)
+    this.props.orderPlaylist(collectionId!, trackIdAndTimes, newOrder)
   }
 
   onPublish = () => {
-    this.props.publishPlaylist(this.props.playlistId!)
+    this.props.publishPlaylist(this.props.collectionId!)
   }
 
   onSavePlaylist = (isSaved: boolean, playlistId: number) => {
@@ -596,79 +615,83 @@ class CollectionPage extends Component<
   }
 
   onHeroTrackShare = () => {
-    const { playlistId } = this.props
-    this.onSharePlaylist(playlistId!)
+    const { collectionId } = this.props
+    this.onSharePlaylist(collectionId!)
   }
 
   onHeroTrackSave = () => {
     const { userPlaylists, collection: metadata, smartCollection } = this.props
-    const { playlistId } = this.props
+    const { collectionId } = this.props
     const isSaved =
-      (metadata && playlistId
-        ? metadata.has_current_user_saved || playlistId in userPlaylists
+      (metadata && collectionId
+        ? metadata.has_current_user_saved || collectionId in userPlaylists
         : false) ||
       (smartCollection && smartCollection.has_current_user_saved)
 
     if (smartCollection && metadata) {
       this.onSaveSmartCollection(!!isSaved, metadata.playlist_name)
     } else {
-      this.onSavePlaylist(!!isSaved, playlistId!)
+      this.onSavePlaylist(!!isSaved, collectionId!)
     }
   }
 
   onHeroTrackRepost = () => {
     const { collection: metadata } = this.props
-    const { playlistId } = this.props
+    const { collectionId } = this.props
     const isReposted = metadata ? metadata.has_current_user_reposted : false
-    this.onRepostPlaylist(isReposted, playlistId!)
+    this.onRepostPlaylist(isReposted, collectionId!)
   }
 
   onClickReposts = () => {
     const {
-      collection: metadata,
+      collection,
+      collectionId,
       setRepostPlaylistId,
       goToRoute,
       isMobile,
       setRepostUsers,
       setModalVisibility
     } = this.props
-    if (!metadata) return
+    if (!collection) return
     if (isMobile) {
-      setRepostPlaylistId(metadata.playlist_id)
+      setRepostPlaylistId(collectionId!)
       goToRoute(REPOSTING_USERS_ROUTE)
     } else {
-      setRepostUsers(metadata.playlist_id)
+      setRepostUsers(collectionId!)
       setModalVisibility()
     }
   }
 
   onClickFavorites = () => {
     const {
-      collection: metadata,
+      collection,
+      collectionId,
       setFavoritePlaylistId,
       goToRoute,
       isMobile,
       setFavoriteUsers,
       setModalVisibility
     } = this.props
-    if (!metadata) return
+    if (!collection) return
     if (isMobile) {
-      setFavoritePlaylistId(metadata.playlist_id)
+      setFavoritePlaylistId(collectionId!)
       goToRoute(FAVORITING_USERS_ROUTE)
     } else {
-      setFavoriteUsers(metadata.playlist_id)
+      setFavoriteUsers(collectionId!)
       setModalVisibility()
     }
   }
 
   onFollow = () => {
-    const { onFollow, collection: metadata } = this.props
-    if (metadata) onFollow(metadata.playlist_owner_id)
+    const { onFollow, collection } = this.props
+    if (!collection) return
+    onFollow(collection.playlist_owner_id)
   }
 
   onUnfollow = () => {
-    const { onUnfollow, collection: metadata } = this.props
-    if (metadata) onUnfollow(metadata.playlist_owner_id)
+    const { onUnfollow, collection } = this.props
+    if (!collection) return
+    onUnfollow(collection.playlist_owner_id)
   }
 
   render() {
@@ -677,10 +700,10 @@ class CollectionPage extends Component<
       previewing,
       type,
       status,
-      collection: metadata,
+      collection,
+      collectionId,
       user,
       tracks,
-      userId,
       userPlaylists,
       smartCollection,
       trackCount
@@ -693,12 +716,12 @@ class CollectionPage extends Component<
       canonicalUrl = '',
       structuredData
     } = getCollectionPageSEOFields({
-      playlistName: metadata?.playlist_name,
-      playlistId: metadata?.playlist_id,
+      playlistName: collection?.playlist_name,
+      playlistId: collectionId,
       userName: user?.name,
       userHandle: user?.handle,
-      isAlbum: metadata?.is_album,
-      permalink: metadata?.permalink
+      isAlbum: collection?.is_album,
+      permalink: collection?.permalink
     })
 
     const childProps = {
@@ -706,16 +729,17 @@ class CollectionPage extends Component<
       description,
       canonicalUrl,
       structuredData,
-      playlistId: metadata?.playlist_id as ID,
+      // TODO: we should either not render the children or expect empty collectionId
+      collectionId: collectionId!,
       allowReordering,
       playing,
       previewing,
       type,
       collection: smartCollection
         ? { status: 'success' as const, metadata: smartCollection, user: null }
-        : { status, metadata: metadata ?? null, user },
+        : { status, metadata: collection ?? null, user },
       tracks,
-      userId,
+      userId: user?.user_id,
       userPlaylists,
       getPlayingUid: this.getPlayingUid,
       getFilteredData: this.getFilteredData,
@@ -742,7 +766,7 @@ class CollectionPage extends Component<
       trackCount
     }
 
-    if (metadata?.is_delete && user) {
+    if (collection?.is_delete && user) {
       return (
         <DeletedPage
           title={title}
@@ -750,8 +774,8 @@ class CollectionPage extends Component<
           canonicalUrl={canonicalUrl}
           structuredData={structuredData}
           playable={{
-            metadata,
-            type: metadata?.is_album
+            metadata: collection,
+            type: collection?.is_album
               ? PlayableType.ALBUM
               : PlayableType.PLAYLIST
           }}
@@ -776,11 +800,8 @@ function makeMapStateToProps() {
         .track_ids.length,
       collectionUid: getCollectionUid(state) || '',
       collectionPermalink: getCollectionPermalink(state),
-      user: getUser(state),
       order: getLineupOrder(state),
       userUid: getUserUid(state) || '',
-      userId: getUserId(state),
-      playlistId: (getCollection(state) as Collection)?.playlist_id,
       userPlaylists: getAccountCollections(state),
       currentQueueItem: getCurrentQueueItem(state),
       playing: getPlaying(state),
@@ -809,8 +830,6 @@ function mapDispatchToProps(dispatch: Dispatch) {
     },
     updateLineupOrder: (updatedOrderIndices: any) =>
       dispatch(tracksActions.updateLineupOrder(updatedOrderIndices)),
-    editPlaylist: (playlistId: number, formFields: any) =>
-      dispatch(editPlaylist(playlistId, formFields)),
     removeTrackFromPlaylist: (
       trackId: number,
       playlistId: number,

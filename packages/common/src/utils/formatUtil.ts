@@ -81,7 +81,7 @@ export const formatBytes = (bytes: number) => {
  *  Replaces white space with -
  *  Lower cases
  */
-export const formatUrlName = (name: string) => {
+export const formatUrlName = (name: string | null | undefined) => {
   if (!name) return ''
   return (
     name

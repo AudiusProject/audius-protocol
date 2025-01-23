@@ -60,7 +60,7 @@ const messages = {
 }
 
 type MobileCollectionHeaderProps = CollectionHeaderProps & {
-  collectionId?: number
+  collectionId: number
   ddexApp?: string | null
   isReposted?: boolean
   isSaved?: boolean

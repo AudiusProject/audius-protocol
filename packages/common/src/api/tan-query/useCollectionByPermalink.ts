@@ -10,6 +10,8 @@ import { QUERY_KEYS } from './queryKeys'
 import { QueryOptions } from './types'
 import { primeCollectionData } from './utils/primeCollectionData'
 
+const STALE_TIME = Infinity
+
 export const playlistPermalinkToHandleAndSlug = (permalink: string) => {
   const splitPermalink = permalink.split('/')
   if (splitPermalink.length !== 4) {
@@ -63,7 +65,7 @@ export const useCollectionByPermalink = (
 
       return collection
     },
-    staleTime: options?.staleTime,
+    staleTime: options?.staleTime ?? STALE_TIME,
     enabled: options?.enabled !== false && !!permalink
   })
 }
