@@ -44,7 +44,7 @@ export const variantStylesMap = {
   },
   label: {
     fontSize: { xs: '2xs', s: 'xs', m: 's', l: 'm', xl: 'xl' },
-    lineHeight: { xs: 'xs', s: 'xs', m: 's', l: 'm', xl: 'l' },
+    lineHeight: { xs: 'xs', s: 's', m: 's', l: 'm', xl: 'l' },
     fontWeight: { default: 'bold', strong: 'heavy' },
     css: { textTransform: 'uppercase' as const, letterSpacing: 0.5 }
   },

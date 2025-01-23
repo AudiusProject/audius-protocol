@@ -78,7 +78,6 @@ export const FollowButton = (props: FollowButtonProps) => {
         alignItems='center'
         justifyContent='center'
         gap='xs'
-        pv='s'
         ph='l'
         border='default'
         style={css({
