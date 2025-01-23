@@ -583,7 +583,7 @@ def process_solana_plays(solana_client_manager: SolanaClientManager, redis: Redi
     latest_processed_slot = get_latest_slot(db)
     logger.debug(f"index_solana_plays.py | latest used slot: {latest_processed_slot}")
 
-    if latest_processed_slot > get_sol_cutover() and environment != "prod":
+    if latest_processed_slot > get_sol_cutover():
         return
 
     # Utilize the cached tx to offset
@@ -718,9 +718,6 @@ def process_solana_plays(solana_client_manager: SolanaClientManager, redis: Redi
 @celery.task(name="index_solana_plays", bind=True)
 @save_duration_metric(metric_group="celery_task")
 def index_solana_plays(self):
-    if environment == "dev":
-        return
-
     # Cache custom task class properties
     # Details regarding custom task context can be found in wiki
     # Custom Task definition can be found in src/app.py
