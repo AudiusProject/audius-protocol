@@ -1,118 +1,134 @@
-import { memo } from 'react'
+import { imageBlank, imageProfilePicEmpty } from '@audius/common/assets'
+import {
+  User,
+  UserTrackMetadata,
+  UserCollectionMetadata
+} from '@audius/common/models'
+import { route } from '@audius/common/utils'
+import { Text, Flex, Avatar, Artwork } from '@audius/harmony'
+import { Link } from 'react-router-dom'
 
-import { useImageSize } from '@audius/common/hooks'
-import { BadgeTier, Kind, SquareSizes } from '@audius/common/models'
-import cn from 'classnames'
-
-import DynamicImage from 'components/dynamic-image/DynamicImage'
 import UserBadges from 'components/user-badges/UserBadges'
-import { preload } from 'utils/image'
+const { profilePage, collectionPage } = route
 
-import searchBarStyles from './SearchBar.module.css'
-import styles from './SearchBarResult.module.css'
-
-type ImageProps = {
-  defaultImage: string
-  artwork: Record<SquareSizes, string>
-  size: SquareSizes
-  isUser: boolean
-}
-
-const Image = memo(({ defaultImage, artwork, size, isUser }: ImageProps) => {
-  const image = useImageSize({
-    artwork,
-    targetSize: size,
-    defaultImage,
-    preloadImageFn: preload
-  })
-  return (
-    <DynamicImage
-      skeletonClassName={cn({ [styles.userImageContainerSkeleton]: isUser })}
-      wrapperClassName={cn(styles.imageContainer)}
-      className={cn({
-        [styles.image]: image,
-        [styles.userImage]: isUser,
-        [styles.emptyUserImage]: isUser && image === defaultImage
-      })}
-      image={image}
-    />
-  )
-})
-
-type SearchBarResultProps = {
-  kind: Kind
-  userId: number
-  primary: string
-  secondary?: string
-  artwork: Record<SquareSizes, string> | null
-  size: SquareSizes | null
-  defaultImage: string
-  isVerifiedUser?: boolean
-  tier: BadgeTier
-}
-
-const SearchBarResult = memo(
-  ({
-    kind,
-    userId,
-    primary,
-    secondary,
-    artwork,
-    size,
-    defaultImage,
-    isVerifiedUser = false,
-    tier
-  }: SearchBarResultProps) => {
-    const isUser = kind === Kind.USERS
-
-    return (
-      <div className={styles.searchBarResultContainer}>
-        {artwork && size ? (
-          <Image
-            isUser={isUser}
-            artwork={artwork}
-            defaultImage={defaultImage}
-            size={size}
-          />
-        ) : null}
-        <div className={styles.textContainer}>
-          <span
-            className={cn(styles.primaryContainer, searchBarStyles.resultText)}
-          >
-            <div className={styles.primaryText}>{primary}</div>
-            {isUser && (
-              <UserBadges
-                className={styles.verified}
-                userId={userId}
-                size='m'
-                isVerifiedOverride={isVerifiedUser}
-                overrideTier={tier}
-              />
-            )}
-          </span>
-          {secondary ? (
-            <span
-              className={cn(
-                styles.secondaryContainer,
-                searchBarStyles.resultText
-              )}
-            >
-              <span>{secondary}</span>
-              {!isUser && (
-                <UserBadges
-                  className={styles.verified}
-                  userId={userId}
-                  size='s'
-                  isVerifiedOverride={isVerifiedUser}
-                  overrideTier={tier}
-                />
-              )}
-            </span>
-          ) : null}
-        </div>
-      </div>
-    )
-  }
+const ResultWrapper = ({
+  children,
+  to
+}: {
+  children: React.ReactNode
+  to: string
+}) => (
+  <Link to={to}>
+    <Flex
+      alignItems='center'
+      gap='s'
+      p='s'
+      css={{
+        minWidth: 0,
+        '&:hover': {
+          backgroundColor: 'var(--neutral-light-8)'
+        }
+      }}
+    >
+      {children}
+    </Flex>
+  </Link>
 )
 
-export default SearchBarResult
+type ResultTextProps = {
+  primary: string
+  secondary: string
+  badges?: React.ReactNode
+}
+
+const ResultText = ({ primary, secondary, badges }: ResultTextProps) => (
+  <Flex direction='column' flex={1} css={{ minWidth: 0 }}>
+    <Flex alignItems='center' gap='2xs' css={{ minWidth: 0 }}>
+      <Text
+        variant='body'
+        size='s'
+        color='default'
+        css={{ minWidth: 0 }}
+        ellipses
+      >
+        {primary}
+      </Text>
+      {badges}
+    </Flex>
+    <Text
+      variant='body'
+      size='xs'
+      color='subdued'
+      css={{ minWidth: 0 }}
+      ellipses
+    >
+      {secondary}
+    </Text>
+  </Flex>
+)
+
+type UserResultProps = {
+  user: User
+}
+
+const UserResult = ({ user }: UserResultProps) => (
+  <ResultWrapper to={profilePage(user.handle)}>
+    <Avatar
+      h={30}
+      w={30}
+      src={user.profile_picture?.['150x150'] || imageProfilePicEmpty}
+      borderWidth='thin'
+      css={{ flexShrink: 0 }}
+    />
+    <ResultText
+      primary={user.name}
+      secondary={`@${user.handle}`}
+      badges={<UserBadges userId={user.user_id} size='s' inline />}
+    />
+  </ResultWrapper>
+)
+
+type TrackResultProps = {
+  track: UserTrackMetadata
+}
+
+const TrackResult = ({ track }: TrackResultProps) => (
+  <ResultWrapper to={track.permalink}>
+    <Artwork
+      h={30}
+      w={30}
+      src={track.artwork?.['150x150'] || imageBlank}
+      css={{ flexShrink: 0 }}
+    />
+    <ResultText primary={track.title} secondary={track.user.name} />
+  </ResultWrapper>
+)
+
+type CollectionResultProps = {
+  collection: UserCollectionMetadata
+}
+
+const CollectionResult = ({ collection }: CollectionResultProps) => (
+  <ResultWrapper
+    to={collectionPage(
+      collection.user.handle,
+      collection.playlist_name,
+      collection.playlist_id,
+      collection.permalink,
+      collection.is_album
+    )}
+  >
+    <Artwork
+      h={30}
+      w={30}
+      src={collection.artwork?.['150x150'] || imageBlank}
+      css={{ flexShrink: 0 }}
+    />
+    <ResultText
+      primary={collection.playlist_name}
+      secondary={collection.user.name}
+    />
+  </ResultWrapper>
+)
+
+export { UserResult, TrackResult, CollectionResult }

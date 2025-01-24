@@ -53,5 +53,6 @@ export const QUERY_KEYS = {
   trackHistory: 'trackHistory',
   topTags: 'topTags',
   authorizedApps: 'authorizedApps',
-  developerApps: 'developerApps'
+  developerApps: 'developerApps',
+  searchAutocomplete: 'searchAutocomplete'
 } as const
