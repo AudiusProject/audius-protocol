@@ -248,7 +248,7 @@ export const TransactionDetailsContent = ({
             <AudioTransactionIcon
               type={transactionDetails.transactionType}
               method={transactionDetails.method}
-            />  
+            />
           </div>
           {dateAndMetadataBlocks({ transactionDetails, isValidSolanaAddress })}
 
