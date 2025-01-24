@@ -18,7 +18,7 @@ import { make, track as trackEvent } from 'app/services/analytics'
 type FileReplaceContainerProps = {
   fileName: string
   filePath: string
-  trackId: ID
+  trackId?: ID
   isUpload?: boolean
   downloadEnabled?: boolean
   onMenuButtonPress?: () => void

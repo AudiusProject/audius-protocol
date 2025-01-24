@@ -2694,18 +2694,18 @@ export type CommentsOpenInstallAppModal = {
 
 export type TrackReplaceDownload = {
   eventName: Name.TRACK_REPLACE_DOWNLOAD
-  trackId: ID
+  trackId?: ID
 }
 
 export type TrackReplaceReplace = {
   eventName: Name.TRACK_REPLACE_REPLACE
-  trackId: ID
+  trackId?: ID
   source: 'upload' | 'edit'
 }
 
 export type TrackReplacePreview = {
   eventName: Name.TRACK_REPLACE_PREVIEW
-  trackId: ID
+  trackId?: ID
   source: 'upload' | 'edit'
 }
 
