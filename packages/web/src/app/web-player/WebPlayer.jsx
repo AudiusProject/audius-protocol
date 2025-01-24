@@ -32,6 +32,7 @@ import AppRedirectListener from 'components/app-redirect-popover/AppRedirectList
 import { AppRedirectPopover } from 'components/app-redirect-popover/components/AppRedirectPopover'
 import { AppBannerWrapper } from 'components/banner/AppBannerWrapper'
 import { DownloadAppBanner } from 'components/banner/DownloadAppBanner'
+import { TanQueryFeedbackBanner } from 'components/banner/TanQueryFeedbackBanner'
 // import { TermsOfServiceUpdateBanner } from 'components/banner/TermsOfServiceUpdateBanner'
 import { UpdateAppBanner } from 'components/banner/UpdateAppBanner'
 import { Web3ErrorBanner } from 'components/banner/Web3ErrorBanner'
@@ -105,8 +106,6 @@ import 'utils/redirect'
 import { getPathname } from 'utils/route'
 
 import styles from './WebPlayer.module.css'
-
-import { TanQueryFeedbackBanner } from 'components/banner/TanQueryFeedbackBanner'
 
 const {
   FEED_PAGE,
