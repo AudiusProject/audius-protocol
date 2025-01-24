@@ -41,21 +41,16 @@ const FeedPageContent = ({
     variant: LineupVariant.MAIN
   }
   const { data: currentUserId } = useCurrentUserId()
-  const { fetchNextPage, play, pause, isPlaying, source, lineup, isFetching } =
-    useFeed({
-      userId: currentUserId
-    })
+  const { loadNextPage, play, pause, isPlaying, source, lineup } = useFeed({
+    userId: currentUserId
+  })
 
   const feedLineupProps = {
     ...getLineupProps(lineup),
     playing: isPlaying,
     playingSource: source,
     setInView: setFeedInView,
-    loadMore: () => {
-      if (!isFetching) {
-        fetchNextPage()
-      }
-    },
+    loadMore: loadNextPage,
     playTrack: play,
     pauseTrack: pause,
     delineate: feedIsMain,

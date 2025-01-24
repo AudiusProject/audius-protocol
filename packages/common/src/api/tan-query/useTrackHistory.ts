@@ -14,6 +14,7 @@ import {
 import { QUERY_KEYS } from './queryKeys'
 import { QueryOptions } from './types'
 import { useCurrentUserId } from './useCurrentUserId'
+import { loadNextPage } from './utils/infiniteQueryLoadNextPage'
 import { primeTrackData } from './utils/primeTrackData'
 import { useLineupQuery } from './utils/useLineupQuery'
 
@@ -99,6 +100,7 @@ export const useTrackHistory = (
   })
   return {
     ...queryData,
-    ...lineupData
+    ...lineupData,
+    loadNextPage: loadNextPage(queryData)
   }
 }

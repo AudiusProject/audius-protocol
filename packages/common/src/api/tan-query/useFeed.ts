@@ -14,8 +14,11 @@ import {
 import { feedPageSelectors, feedPageLineupActions } from '~/store/pages'
 import { Nullable } from '~/utils/typeUtils'
 
+import { useCurrentUserId } from '..'
+
 import { QUERY_KEYS } from './queryKeys'
 import { QueryOptions } from './types'
+import { loadNextPage } from './utils/infiniteQueryLoadNextPage'
 import { primeCollectionData } from './utils/primeCollectionData'
 import { primeTrackData } from './utils/primeTrackData'
 import { useLineupQuery } from './utils/useLineupQuery'
@@ -45,6 +48,7 @@ export const useFeed = (
   const { audiusSdk } = useAudiusQueryContext()
   const queryClient = useQueryClient()
   const dispatch = useDispatch()
+  const { data: currentUserId } = useCurrentUserId()
 
   const queryData = useInfiniteQuery({
     initialPageParam: 0,
@@ -68,15 +72,29 @@ export const useFeed = (
         filter: filterMap[filter],
         limit: currentPageSize,
         offset: pageParam,
-        withUsers: true
+        withUsers: true,
+        currentUserId: Id.parse(currentUserId)
       })
 
       const feed = transformAndCleanList(data, userFeedItemFromSDK).map(
         ({ item }) => item
       )
       if (feed === null) return []
-      const filteredFeed = feed.filter((record) => !record.user.is_deactivated)
-      const [tracks, collections] = getTracksAndCollections(filteredFeed)
+
+      const { tracks, collections } = feed.reduce(
+        (acc, item) => {
+          if ('track_id' in item) {
+            acc.tracks.push(item)
+          } else {
+            acc.collections.push(item)
+          }
+          return acc
+        },
+        {
+          tracks: [] as UserTrackMetadata[],
+          collections: [] as UserCollectionMetadata[]
+        }
+      )
 
       // Prime caches
       primeTrackData({ tracks, queryClient, dispatch })
@@ -88,13 +106,11 @@ export const useFeed = (
           pageParam,
           currentPageSize,
           false,
-          {
-            feed
-          }
+          { feed }
         )
       )
 
-      return filteredFeed
+      return feed
     },
     ...options,
     enabled: userId !== null
@@ -109,20 +125,7 @@ export const useFeed = (
 
   return {
     ...queryData,
-    ...lineupData
+    ...lineupData,
+    loadNextPage: loadNextPage(queryData)
   }
-}
-
-const getTracksAndCollections = (
-  feed: Array<UserTrackMetadata | UserCollectionMetadata>
-): [UserTrackMetadata[], UserCollectionMetadata[]] => {
-  return feed.reduce<[UserTrackMetadata[], UserCollectionMetadata[]]>(
-    (acc, cur) => {
-      if ('track_id' in cur) {
-        return [[...acc[0], cur], acc[1]]
-      }
-      return [acc[0], [...acc[1], cur]]
-    },
-    [[], []]
-  )
 }

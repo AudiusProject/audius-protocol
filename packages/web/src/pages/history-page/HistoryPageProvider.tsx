@@ -96,7 +96,7 @@ const HistoryPage = g((props) => {
     updateLineupOrder,
     isPlaying,
     status,
-    fetchNextPage,
+    loadNextPage,
     hasNextPage,
     isFetchingNextPage,
     isLoading
@@ -287,7 +287,7 @@ const HistoryPage = g((props) => {
     formatMetadata,
     getPlayingUid,
     isQueued,
-    fetchNextPage,
+    fetchNextPage: loadNextPage,
     isFetchingNextPage,
     totalRowCount,
     pageSize

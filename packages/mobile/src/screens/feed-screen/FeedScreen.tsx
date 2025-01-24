@@ -29,14 +29,9 @@ export const FeedScreen = () => {
   useAppTabScreen()
   const { data: currentUserId } = useCurrentUserId()
 
-  const { fetchNextPage, lineup, refetch, isFetching } = useFeed({
+  const { loadNextPage, lineup, refetch } = useFeed({
     userId: currentUserId
   })
-  const loadMore = useCallback(() => {
-    if (!isFetching) {
-      fetchNextPage()
-    }
-  }, [fetchNextPage, isFetching])
 
   return (
     <Screen url='Feed'>
@@ -61,7 +56,7 @@ export const FeedScreen = () => {
           lineup={lineup}
           actions={feedActions}
           lineupSelector={getFeedLineup}
-          loadMore={loadMore}
+          loadMore={loadNextPage}
           initialPageSize={10}
           pageSize={4}
           showsVerticalScrollIndicator={false}
