@@ -2,37 +2,35 @@ import { Id } from '@audius/sdk'
 import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query'
 import { useDispatch } from 'react-redux'
 
-import { transformAndCleanList, userTrackMetadataFromSDK } from '~/adapters'
+import { repostActivityFromSDK, transformAndCleanList } from '~/adapters'
 import { useAudiusQueryContext } from '~/audius-query'
-import { UserTrack } from '~/models'
+import {
+  Track,
+  Collection,
+  UserTrackMetadata,
+  UserCollectionMetadata
+} from '~/models'
 import { PlaybackSource } from '~/models/Analytics'
 import {
   profilePageSelectors,
-  profilePageTracksLineupActions
+  profilePageFeedLineupActions as feedActions
 } from '~/store/pages'
-import { TracksSortMode } from '~/store/pages/profile/types'
 
 import { QueryOptions } from './types'
 import { useCurrentUserId } from './useCurrentUserId'
+import { primeCollectionData } from './utils/primeCollectionData'
 import { primeTrackData } from './utils/primeTrackData'
 import { useLineupQuery } from './utils/useLineupQuery'
 
 const DEFAULT_PAGE_SIZE = 10
 
-type UseProfileTracksArgs = {
+type UseProfileRepostsArgs = {
   handle: string
   pageSize?: number
-  sort?: TracksSortMode
-  getUnlisted?: boolean
 }
 
-export const useProfileTracks = (
-  {
-    handle,
-    pageSize = DEFAULT_PAGE_SIZE,
-    sort = TracksSortMode.RECENT,
-    getUnlisted = true
-  }: UseProfileTracksArgs,
+export const useProfileReposts = (
+  { handle, pageSize = DEFAULT_PAGE_SIZE }: UseProfileRepostsArgs,
   config?: QueryOptions
 ) => {
   const { audiusSdk } = useAudiusQueryContext()
@@ -41,9 +39,9 @@ export const useProfileTracks = (
   const dispatch = useDispatch()
 
   const queryData = useInfiniteQuery({
-    queryKey: ['profileTracks', handle, pageSize, sort, getUnlisted],
+    queryKey: ['profileReposts', handle, pageSize],
     initialPageParam: 0,
-    getNextPageParam: (lastPage: UserTrack[], allPages) => {
+    getNextPageParam: (lastPage: (Track | Collection)[], allPages) => {
       if (lastPage.length < pageSize) return undefined
       return allPages.length * pageSize
     },
@@ -51,34 +49,45 @@ export const useProfileTracks = (
       const sdk = await audiusSdk()
       if (!handle) return []
 
-      const { data: tracks } = await sdk.full.users.getTracksByUserHandle({
+      const { data: repostsSDKData } = await sdk.full.users.getRepostsByHandle({
         handle,
         userId: currentUserId ? Id.parse(currentUserId) : undefined,
         limit: pageSize,
-        offset: pageParam,
-        sort: sort === TracksSortMode.POPULAR ? 'plays' : 'date',
-        filterTracks: getUnlisted ? 'all' : 'public'
+        offset: pageParam
       })
 
-      if (!tracks) return []
+      if (!repostsSDKData) return []
 
-      const processedTracks = transformAndCleanList(
-        tracks,
-        userTrackMetadataFromSDK
+      // Transform the reposts data and get just the items
+      const reposts = transformAndCleanList(
+        repostsSDKData,
+        (activity) => repostActivityFromSDK(activity)?.item
       )
-      primeTrackData({ tracks: processedTracks, queryClient, dispatch })
+
+      primeTrackData({
+        tracks: reposts.filter(
+          (item): item is UserTrackMetadata => 'track_id' in item
+        ),
+        queryClient,
+        dispatch
+      })
+      primeCollectionData({
+        collections: reposts.filter(
+          (item): item is UserCollectionMetadata => 'playlist_id' in item
+        ),
+        queryClient,
+        dispatch
+      })
 
       // Update lineup when new data arrives
       dispatch(
-        profilePageTracksLineupActions.fetchLineupMetadatas(
-          pageParam,
-          pageSize,
-          false,
-          { tracks: processedTracks, handle }
-        )
+        feedActions.fetchLineupMetadatas(pageParam, pageSize, false, {
+          reposts,
+          handle
+        })
       )
 
-      return processedTracks
+      return reposts
     },
     staleTime: config?.staleTime,
     enabled: config?.enabled !== false && !!handle
@@ -86,8 +95,8 @@ export const useProfileTracks = (
 
   const lineupData = useLineupQuery({
     queryData,
-    lineupActions: profilePageTracksLineupActions,
-    lineupSelector: profilePageSelectors.getProfileTracksLineup,
+    lineupActions: feedActions,
+    lineupSelector: profilePageSelectors.getProfileFeedLineup,
     playbackSource: PlaybackSource.TRACK_TILE
   })
 
