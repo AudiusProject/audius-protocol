@@ -1,5 +1,8 @@
 import { useEffect, useMemo, useState } from 'react'
 
+import { useFeatureFlag } from '@audius/common/hooks'
+import { FeatureFlags } from '@audius/common/services'
+import { ChallengeName } from '@audius/common/src/models/AudioRewards'
 import {
   audioRewardsPageActions,
   audioRewardsPageSelectors,
@@ -45,6 +48,7 @@ export const ChallengeRewardsTile = ({
   const userChallenges = useSelector(getUserChallenges)
   const optimisticUserChallenges = useSelector(getOptimisticUserChallenges)
   const [haveChallengesLoaded, setHaveChallengesLoaded] = useState(false)
+  const { isEnabled: isOneShotEnabled } = useFeatureFlag(FeatureFlags.ONE_SHOT)
 
   // The referred challenge only needs a tile if the user was referred
   const hideReferredTile = !userChallenges.referred?.is_complete
@@ -74,10 +78,13 @@ export const ChallengeRewardsTile = ({
         // Filter out challenges that DN didn't return
         .map((id) => userChallenges[id]?.challenge_id)
         .filter(removeNullable)
+        .filter((id) =>
+          isOneShotEnabled ? true : id !== ChallengeName.OneShot
+        )
         .sort(makeOptimisticChallengeSortComparator(optimisticUserChallenges)),
-    [rewardIds, userChallenges, optimisticUserChallenges]
+    [rewardIds, optimisticUserChallenges, userChallenges, isOneShotEnabled]
   )
-
+  console.log('asdf isOneShotEnabled', isOneShotEnabled)
   const rewardsTiles = rewardIdsSorted.map((id) => {
     const props = getChallengeConfig(id)
     return <RewardPanel {...props} openModal={openModal} key={props.id} />

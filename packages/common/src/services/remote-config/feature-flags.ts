@@ -24,7 +24,8 @@ export enum FeatureFlags {
   OWN_YOUR_FANS = 'own_your_fans',
   FAST_REFERRAL = 'fast_referral',
   REACT_QUERY_SYNC = 'react_query_sync',
-  TRACK_REPLACE_DOWNLOADS = 'track_replace_downloads'
+  TRACK_REPLACE_DOWNLOADS = 'track_replace_downloads',
+  ONE_SHOT = 'one_shot'
 }
 
 type FlagDefaults = Record<FeatureFlags, boolean>
@@ -64,5 +65,6 @@ export const flagDefaults: FlagDefaults = {
   [FeatureFlags.OWN_YOUR_FANS]: false,
   [FeatureFlags.FAST_REFERRAL]: false,
   [FeatureFlags.REACT_QUERY_SYNC]: false,
-  [FeatureFlags.TRACK_REPLACE_DOWNLOADS]: false
+  [FeatureFlags.TRACK_REPLACE_DOWNLOADS]: false,
+  [FeatureFlags.ONE_SHOT]: false
 }
