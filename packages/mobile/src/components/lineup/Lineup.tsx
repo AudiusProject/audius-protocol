@@ -506,6 +506,7 @@ export const Lineup = ({
     pageItemCount,
     delineate,
     leadingElementId,
+    initialPageSize,
     pageSize,
     inView,
     limit,

@@ -1,5 +1,3 @@
-import { useCallback } from 'react'
-
 import { useCurrentUserId, useFeed } from '@audius/common/api'
 import {
   lineupSelectors,
