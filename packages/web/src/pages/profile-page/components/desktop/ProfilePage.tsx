@@ -5,26 +5,23 @@ import {
   useGetMutedUsers,
   useUserPlaylists,
   useUserAlbums,
-  useProfileTracks
+  useProfileTracks,
+  useProfileReposts
 } from '@audius/common/api'
 import { useMuteUser } from '@audius/common/context'
 import { commentsMessages } from '@audius/common/messages'
 import {
   CreatePlaylistSource,
   Status,
-  Collection,
   ID,
-  UID,
   ProfilePictureSizes,
-  CoverPhotoSizes,
-  LineupState,
-  Track,
   User
 } from '@audius/common/models'
 import {
   profilePageFeedLineupActions as feedActions,
   profilePageTracksLineupActions as tracksActions,
-  ProfilePageTabs
+  ProfilePageTabs,
+  TracksSortMode
 } from '@audius/common/store'
 import { route } from '@audius/common/utils'
 import {
@@ -93,7 +90,6 @@ export type ProfilePageProps = {
   tikTokVerified: boolean
   website: string
   donation: string
-  coverPhotoSizes: CoverPhotoSizes | null
   updatedCoverPhoto: { error: boolean; url: string }
   profilePictureSizes: ProfilePictureSizes | null
   updatedProfilePicture: { error: boolean; url: string }
@@ -109,17 +105,9 @@ export type ProfilePageProps = {
   showBlockUserConfirmationModal: boolean
   showUnblockUserConfirmationModal: boolean
   showMuteUserConfirmationModal: boolean
-  showUnmuteUserConfirmationModal: boolean
 
   profile: User | null
   status: Status
-  goToRoute: (route: string) => void
-  playArtistTrack: (uid: UID) => void
-  pauseArtistTrack: () => void
-  // Feed
-  userFeed: LineupState<Track | Collection>
-  playUserFeedTrack: (uid: UID) => void
-  pauseUserFeedTrack: () => void
 
   // Methods
   onFollow: () => void
@@ -140,12 +128,6 @@ export type ProfilePageProps = {
   onCancel: () => void
   onSortByRecent: () => void
   onSortByPopular: () => void
-  loadMoreUserFeed: (offset: number, limit: number) => void
-  formatCardSecondaryText: (
-    saves: number,
-    tracks: number,
-    isPrivate?: boolean
-  ) => string
   updateProfile: (metadata: any) => void
   updateProfilePicture: (
     selectedFiles: any,
@@ -169,7 +151,7 @@ export type ProfilePageProps = {
   onCloseBlockUserConfirmationModal: () => void
   onCloseUnblockUserConfirmationModal: () => void
   onCloseMuteUserConfirmationModal: () => void
-  onCloseUnmuteUserConfirmationModal: () => void
+  trackSortMode: TracksSortMode
 }
 
 const PlaylistTab = ({
@@ -286,15 +268,26 @@ const TracksTab = ({
   isOwner,
   profile,
   handle,
-  getLineupProps
+  getLineupProps,
+  trackSortMode
 }: {
   isOwner: boolean
   profile: User
   handle: string
   getLineupProps: (lineup: any) => any
+  trackSortMode: TracksSortMode
 }) => {
-  const { fetchNextPage, play, pause, lineup, pageSize } = useProfileTracks({
-    handle
+  const {
+    fetchNextPage,
+    play,
+    pause,
+    lineup,
+    pageSize,
+    isFetchingNextPage,
+    hasNextPage
+  } = useProfileTracks({
+    handle,
+    sort: trackSortMode
   })
 
   const trackUploadChip = isOwner ? (
@@ -306,28 +299,92 @@ const TracksTab = ({
     />
   ) : null
 
+  const emptyTab = (
+    <EmptyTab
+      isOwner={isOwner}
+      name={profile.name}
+      text={'uploaded any tracks'}
+    />
+  )
+
   return (
     <div className={styles.tiles}>
       {isOwner ? <ProfileCompletionHeroCard /> : null}
-      <Lineup
-        {...getLineupProps(lineup)}
-        pageSize={pageSize}
-        extraPrecedingElement={trackUploadChip}
-        emptyElement={
-          <EmptyTab
-            isOwner={isOwner}
-            name={profile.name}
-            text={'uploaded any tracks'}
-          />
-        }
-        animateLeadingElement
-        leadingElementId={profile.artist_pick_track_id}
-        loadMore={fetchNextPage}
-        playTrack={play}
-        pauseTrack={pause}
-        actions={tracksActions}
-        variant={LineupVariant.GRID}
-      />
+      {profile.track_count === 0 ? (
+        emptyTab
+      ) : (
+        <Lineup
+          {...getLineupProps(lineup)}
+          pageSize={pageSize}
+          extraPrecedingElement={trackUploadChip}
+          emptyElement={emptyTab}
+          animateLeadingElement
+          leadingElementId={profile.artist_pick_track_id}
+          loadMore={() => {
+            if (hasNextPage && !isFetchingNextPage) {
+              fetchNextPage()
+            }
+          }}
+          playTrack={play}
+          pauseTrack={pause}
+          actions={tracksActions}
+          variant={LineupVariant.GRID}
+        />
+      )}
+    </div>
+  )
+}
+
+const RepostsTab = ({
+  isOwner,
+  profile,
+  handle,
+  getLineupProps
+}: {
+  isOwner: boolean
+  profile: User
+  handle: string
+  getLineupProps: (lineup: any) => any
+}) => {
+  const {
+    fetchNextPage,
+    play,
+    pause,
+    lineup,
+    isFetchingNextPage,
+    hasNextPage,
+    pageSize
+  } = useProfileReposts({
+    handle
+  })
+
+  const emptyTab = (
+    <EmptyTab
+      isOwner={isOwner}
+      name={profile.name}
+      text={'reposted anything'}
+    />
+  )
+
+  return (
+    <div className={styles.tiles}>
+      {profile.repost_count === 0 ? (
+        emptyTab
+      ) : (
+        <Lineup
+          {...getLineupProps(lineup)}
+          emptyElement={emptyTab}
+          pageSize={pageSize}
+          loadMore={() => {
+            if (hasNextPage && !isFetchingNextPage) {
+              fetchNextPage()
+            }
+          }}
+          playTrack={play}
+          pauseTrack={pause}
+          actions={feedActions}
+        />
+      )}
     </div>
   )
 }
@@ -336,15 +393,7 @@ const ProfilePage = ({
   isOwner,
   profile,
   status,
-  goToRoute,
-  playArtistTrack,
-  pauseArtistTrack,
   getLineupProps,
-  userFeed,
-  playUserFeedTrack,
-  pauseUserFeedTrack,
-  formatCardSecondaryText,
-  loadMoreUserFeed,
   updateProfile,
   onFollow,
   onUnfollow,
@@ -384,9 +433,7 @@ const ProfilePage = ({
   showUnblockUserConfirmationModal,
   onCloseUnblockUserConfirmationModal,
   showMuteUserConfirmationModal,
-  showUnmuteUserConfirmationModal,
   onCloseMuteUserConfirmationModal,
-  onCloseUnmuteUserConfirmationModal,
   accountUserId,
   userId,
   handle,
@@ -403,7 +450,6 @@ const ProfilePage = ({
   tikTokVerified,
   website,
   donation,
-  coverPhotoSizes,
   updatedCoverPhoto,
   profilePictureSizes,
   updatedProfilePicture,
@@ -412,7 +458,8 @@ const ProfilePage = ({
   following,
   isSubscribed,
   setNotificationSubscription,
-  didChangeTabsFrom
+  didChangeTabsFrom,
+  trackSortMode
 }: ProfilePageProps) => {
   const renderProfileCompletionCard = () => {
     return isOwner ? <ProfileCompletionHeroCard /> : null
@@ -472,6 +519,7 @@ const ProfilePage = ({
         profile={profile}
         handle={handle}
         getLineupProps={getLineupProps}
+        trackSortMode={trackSortMode}
       />,
       <div key={ProfilePageTabs.ALBUMS} className={styles.cards}>
         <AlbumTab isOwner={isOwner} profile={profile} userId={userId} />
@@ -480,25 +528,12 @@ const ProfilePage = ({
         <PlaylistTab isOwner={isOwner} profile={profile} userId={userId} />
       </div>,
       <div key={ProfilePageTabs.REPOSTS} className={styles.tiles}>
-        {status === Status.SUCCESS ? (
-          (userFeed.status === Status.SUCCESS &&
-            userFeed.entries.length === 0) ||
-          profile.repost_count === 0 ? (
-            <EmptyTab
-              isOwner={isOwner}
-              name={profile.name}
-              text={'reposted anything'}
-            />
-          ) : (
-            <Lineup
-              {...getLineupProps(userFeed)}
-              loadMore={loadMoreUserFeed}
-              playTrack={playUserFeedTrack}
-              pauseTrack={pauseUserFeedTrack}
-              actions={feedActions}
-            />
-          )
-        ) : null}
+        <RepostsTab
+          isOwner={isOwner}
+          profile={profile}
+          handle={handle}
+          getLineupProps={getLineupProps}
+        />
       </div>
     ]
 
@@ -560,24 +595,12 @@ const ProfilePage = ({
     const elements = [
       <div key={ProfilePageTabs.REPOSTS} className={styles.tiles}>
         {renderProfileCompletionCard()}
-        {(userFeed.status === Status.SUCCESS &&
-          userFeed.entries.length === 0) ||
-        profile.repost_count === 0 ? (
-          <EmptyTab
-            isOwner={isOwner}
-            name={profile.name}
-            text={'reposted anything'}
-          />
-        ) : (
-          <Lineup
-            {...getLineupProps(userFeed)}
-            count={profile.repost_count}
-            loadMore={loadMoreUserFeed}
-            playTrack={playUserFeedTrack}
-            pauseTrack={pauseUserFeedTrack}
-            actions={feedActions}
-          />
-        )}
+        <RepostsTab
+          isOwner={isOwner}
+          profile={profile}
+          handle={handle}
+          getLineupProps={getLineupProps}
+        />
       </div>,
       <div key={ProfilePageTabs.PLAYLISTS} className={styles.cards}>
         <PlaylistTab isOwner={isOwner} profile={profile} userId={userId} />
