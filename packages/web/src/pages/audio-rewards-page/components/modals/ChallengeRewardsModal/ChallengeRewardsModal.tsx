@@ -311,6 +311,11 @@ const ChallengeRewardsBody = ({ dismissModal }: BodyProps) => {
   } else if (challenge?.state === 'disbursed') {
     audioClaimedSoFar = challenge.totalAmount
   }
+  let progressRewardAmount = challenge?.totalAmount
+  if (modalType === ChallengeName.OneShot) {
+    progressRewardAmount =
+      (challenge?.claimableAmount ?? 0) + (challenge?.disbursed_amount ?? 0)
+  }
 
   let linkType: 'complete' | 'inProgress' | 'incomplete'
   if (challenge?.state === 'completed') {
@@ -589,7 +594,7 @@ const ChallengeRewardsBody = ({ dismissModal }: BodyProps) => {
             >
               <Flex justifyContent='center' borderBottom='strong'>
                 <ProgressReward
-                  amount={formatNumberCommas(challenge?.totalAmount ?? '')}
+                  amount={formatNumberCommas(progressRewardAmount ?? '')}
                   subtext={messages.audio}
                 />
                 {renderProgressBar()}
@@ -620,7 +625,7 @@ const ChallengeRewardsBody = ({ dismissModal }: BodyProps) => {
                   description={progressDescription}
                 />
                 <ProgressReward
-                  amount={formatNumberCommas(challenge?.totalAmount ?? '')}
+                  amount={formatNumberCommas(progressRewardAmount ?? '')}
                   subtext={messages.audio}
                 />
               </Flex>

@@ -10,7 +10,7 @@ import { getCollection as getCollectionBase } from '~/store/cache/collections/se
 import { getTrack as getTrackBase } from '~/store/cache/tracks/selectors'
 import { getUser as getUserBase } from '~/store/cache/users/selectors'
 import { CommonState } from '~/store/commonStore'
-import { getContext } from '~/store/effects'
+import { getSDK } from '~/store/sdkUtils'
 
 import { ID } from '../../../models'
 import { setVisibility } from '../modals/parentSlice'
@@ -43,8 +43,7 @@ function* handleRequestOpen(action: ShareModalRequestOpenAction) {
     }
     case 'collection': {
       const { collectionId, source } = action.payload
-      const audiusSdk = yield* getContext('audiusSdk')
-      const sdk = yield* call(audiusSdk)
+      const sdk = yield* getSDK()
 
       let collection = yield* select(getCollection(collectionId))
       if (!collection) {
@@ -69,11 +68,12 @@ function* handleRequestOpen(action: ShareModalRequestOpenAction) {
         const { data } = yield* call([sdk.full.users, sdk.full.users.getUser], {
           id: Id.parse(collection.playlist_owner_id)
         })
-        if (data?.[0]) {
-          const transformedUser = userMetadataFromSDK(data[0])
-          if (transformedUser) {
-            owner = transformedUser
-          }
+        const [transformedUser] = transformAndCleanList(
+          data ?? [],
+          userMetadataFromSDK
+        )
+        if (transformedUser) {
+          owner = transformedUser
         }
       }
       if (!owner) return

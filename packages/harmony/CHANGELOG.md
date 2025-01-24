@@ -1,5 +1,18 @@
 # @audius/harmony
 
+## 0.3.3
+
+### Patch Changes
+
+- 5eacf71: Add react-virtualized notice, Move react to peerDep
+- 1c5bd90: Fix rollup svg config
+
+## 0.3.2
+
+### Patch Changes
+
+- fde8a65: fix Modal ignoring dismissOnClickOutside flag
+
 ## 0.3.1
 
 ### Patch Changes

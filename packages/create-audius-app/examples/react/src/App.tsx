@@ -181,7 +181,7 @@ function PlayButton() {
     <IconPlay
       size='3xl'
       opacity={0.8}
-      color='staticWhite'
+      color='white'
       css={{
         display: 'none',
         position: 'absolute',
@@ -198,7 +198,7 @@ function PauseButton() {
     <IconPause
       size='3xl'
       opacity={0.8}
-      color='staticWhite'
+      color='white'
       css={{
         position: 'absolute',
         top: '50%',

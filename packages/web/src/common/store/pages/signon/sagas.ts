@@ -71,7 +71,6 @@ import {
 } from 'typed-redux-saga'
 
 import { identify, make } from 'common/store/analytics/actions'
-import * as backendActions from 'common/store/backend/actions'
 import { retrieveCollections } from 'common/store/cache/collections/utils'
 import { fetchUserByHandle, fetchUsers } from 'common/store/cache/users/sagas'
 import { sendRecoveryEmail } from 'common/store/recovery-email/sagas'
@@ -608,7 +607,7 @@ function* createGuestAccount(
           sdk.users.createGuestAccount
         ])
         yield* call(confirmTransaction, blockHash, blockNumber)
-        yield* call(fetchAccountAsync)
+        yield* call(fetchAccountAsync, { shouldMarkAccountAsLoading: true })
 
         const userBank = yield* call(getOrCreateUSDCUserBank)
         if (!userBank) {
@@ -640,26 +639,15 @@ function* signUp() {
     const signOn = yield* select(getSignOn)
     const email = signOn.email.value
     const password = signOn.password.value
-    const useMetamask = yield* call(
-      [localStorage, localStorage.getItem],
-      'useMetaMask'
-    )
+    const { usingExternalWallet } = signOn
 
-    if (email && password && useMetamask) {
-      yield* call([localStorage, localStorage.removeItem], 'useMetaMask')
-      yield* put(backendActions.setupBackend())
-    }
-
-    const sdk = yield* getSDK()
-    const authService = yield* getContext('authService')
     const isGuest = yield* select(getIsGuest)
 
     yield* call(waitForWrite)
+    const sdk = yield* getSDK()
 
     const location = yield* call(getCityAndRegion)
     const name = signOn.name.value.trim()
-    const wallet = (yield* call([authService, authService.getWalletAddresses]))
-      .web3WalletAddress
 
     const handle = signOn.handle.value
     const alreadyExisted = signOn.accountAlreadyExisted
@@ -691,6 +679,10 @@ function* signUp() {
               )
               yield* call([localStorage, localStorage.removeItem], GUEST_EMAIL)
 
+              const [wallet] = yield* call([
+                sdk.services.audiusWalletClient,
+                sdk.services.audiusWalletClient.getAddresses
+              ])
               const account: AccountUserMetadata | null = yield* call(
                 userApiFetchSaga.getUserAccount,
                 {
@@ -730,24 +722,34 @@ function* signUp() {
 
               return userId
             } else {
+              const authService = yield* getContext('authService')
+              const hedgehog = authService.hedgehogInstance
               if (!alreadyExisted) {
-                yield* call(
-                  [
-                    authService.hedgehogInstance,
-                    authService.hedgehogInstance.signUp
-                  ],
-                  {
+                if (!usingExternalWallet) {
+                  // Sign up via Hedgehog
+                  yield* call([hedgehog, hedgehog.signUp], {
                     username: email,
                     password
-                  }
-                )
-
-                yield* fork(sendPostSignInRecoveryEmail, { handle, email })
+                  })
+                  yield* fork(sendPostSignInRecoveryEmail, { handle, email })
+                } else {
+                  // Still save user data to Identity if using 3p wallet
+                  // so that users can manage their notifications settings etc.
+                  const [wallet] = yield* call([
+                    sdk.services.audiusWalletClient,
+                    sdk.services.audiusWalletClient.getAddresses
+                  ])
+                  yield* call([hedgehog, hedgehog.setUserFn], {
+                    walletAddress: wallet,
+                    username: email
+                  })
+                }
               }
-              const wallet = (yield* call([
-                authService,
-                authService.getWalletAddresses
-              ])).web3WalletAddress
+
+              const [wallet] = yield* call([
+                sdk.services.audiusWalletClient,
+                sdk.services.audiusWalletClient.getAddresses
+              ])
 
               const events: CreateUserRequest['metadata']['events'] = {}
               if (referrer) {
@@ -774,9 +776,12 @@ function* signUp() {
                 createUserMetadata
               )
               userId = metadata.userId
-              const { twitterId, instagramId, tikTokId, useMetaMask } = signOn
+              const { twitterId, instagramId, tikTokId } = signOn
 
-              if (!useMetaMask && (twitterId || instagramId || tikTokId)) {
+              if (
+                !usingExternalWallet &&
+                (twitterId || instagramId || tikTokId)
+              ) {
                 yield* fork(associateSocialAccounts, {
                   userId,
                   handle,
@@ -889,7 +894,7 @@ function* signUp() {
         },
         function* () {
           yield* put(signOnActions.sendWelcomeEmail(name))
-          yield* call(fetchAccountAsync)
+          yield* call(fetchAccountAsync, { shouldMarkAccountAsLoading: true })
           yield* call(
             waitForValue,
             getFollowIds,
@@ -934,16 +939,6 @@ function* signUp() {
 
 function* signIn(action: ReturnType<typeof signOnActions.signIn>) {
   const { email, password, visitorId, otp } = action
-  const localStorage = yield* getContext('localStorage')
-  const useMetamask = yield* call(
-    [localStorage, localStorage.getItem],
-    'useMetaMask'
-  )
-
-  if (email && password && useMetamask) {
-    yield* call([localStorage, localStorage.removeItem], 'useMetaMask')
-    yield* put(backendActions.setupBackend())
-  }
   yield* put(make(Name.SIGN_IN_START, {}))
 
   const fingerprintClient = yield* getContext('fingerprintClient')
@@ -1051,7 +1046,9 @@ function* signIn(action: ReturnType<typeof signOnActions.signIn>) {
 
     // Now that we have verified the user is valid, run the account fetch flow,
     // which will pull cached account data from call above.
-    yield* put(accountActions.fetchAccount())
+    yield* put(
+      accountActions.fetchAccount({ shouldMarkAccountAsLoading: true })
+    )
     yield* put(signOnActions.signInSucceeded())
     const route = yield* select(getRouteOnCompletion)
 
@@ -1158,12 +1155,12 @@ function* followArtists(
 ) {
   const { skipDefaultFollows } = action
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
+  yield* call(waitForWrite)
   const sdk = yield* getSDK()
   const { ENVIRONMENT } = yield* getContext('env')
   const defaultFollowUserIds = skipDefaultFollows
     ? new Set([])
     : yield* call(getDefautFollowUserIds)
-  yield* call(waitForWrite)
   try {
     // Auto-follow Hot & New Playlist
     if (!skipDefaultFollows) {
@@ -1238,19 +1235,6 @@ function* followArtists(
   }
 }
 
-function* configureMetaMask() {
-  try {
-    window.localStorage.setItem('useMetaMask', JSON.stringify(true))
-  } catch (err: any) {
-    const reportToSentry = yield* getContext('reportToSentry')
-    reportToSentry({
-      error: err,
-      name: 'Sign Up: Configure metamask failed',
-      feature: Feature.SignUp
-    })
-  }
-}
-
 function* watchCompleteFollowArtists() {
   yield* takeEvery(signOnActions.COMPLETE_FOLLOW_ARTISTS, completeFollowArtists)
 }
@@ -1298,10 +1282,6 @@ function* watchSignIn() {
   yield* takeLatest(signOnActions.SIGN_IN, signIn)
 }
 
-function* watchConfigureMetaMask() {
-  yield* takeLatest(signOnActions.CONFIGURE_META_MASK, configureMetaMask)
-}
-
 function* watchFollowArtists() {
   yield* takeLatest(signOnActions.FOLLOW_ARTISTS, followArtists)
 }
@@ -1344,7 +1324,6 @@ export default function sagas() {
     watchSignIn,
     watchFollowArtists,
     watchGetArtistsToFollow,
-    watchConfigureMetaMask,
     watchOpenSignOn,
     watchSignOnError,
     watchSendWelcomeEmail,

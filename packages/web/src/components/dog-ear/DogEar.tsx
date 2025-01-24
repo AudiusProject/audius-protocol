@@ -79,7 +79,7 @@ export const DogEar = (props: DogEarProps) => {
       />
       <Icon
         size='s'
-        color='staticWhite'
+        color='white'
         css={{ position: 'absolute', top: spacing.unit1, left: spacing.unit1 }}
       />
     </Box>

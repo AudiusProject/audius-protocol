@@ -154,12 +154,12 @@ export const NotificationPanel = ({ anchorRef }: NotificationPanelProps) => {
             p='s'
             gap='s'
           >
-            <IconNotification color='staticWhite' size='xl' />
+            <IconNotification color='white' size='xl' />
             <Text
               variant='label'
               size='xl'
               strength='strong'
-              color='staticWhite'
+              color='white'
               lineHeight='single'
             >
               {messages.title}

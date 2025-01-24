@@ -1,5 +1,7 @@
 import { useRef, type ReactNode } from 'react'
+import { useEffect } from 'react'
 
+import { Status } from '@audius/common/models'
 import { accountSelectors } from '@audius/common/store'
 import { OptionalHashId } from '@audius/sdk'
 import type {
@@ -23,7 +25,7 @@ import { useThemeVariant } from 'app/utils/theme'
 
 import { navigationThemes } from './navigationThemes'
 
-const { getUserHandle, getHasAccount } = accountSelectors
+const { getUserHandle, getHasAccount, getAccountStatus } = accountSelectors
 
 type NavigationContainerProps = {
   children: ReactNode
@@ -84,8 +86,30 @@ const NavigationContainer = (props: NavigationContainerProps) => {
   const theme = useThemeVariant()
   const accountHandle = useSelector(getUserHandle)
   const hasAccount = useSelector(getHasAccount)
+  const accountStatus = useSelector(getAccountStatus)
+  const hasCompletedInitialLoad = useRef(false)
 
   const routeNameRef = useRef<string>()
+
+  // Ensure that the user's account data is fully loaded before rendering the app.
+  // This prevents the NavigationContainer from rendering prematurely, which relies
+  // on the hasAccount state to determine how to handle deep links.
+  useEffect(() => {
+    if (
+      !hasCompletedInitialLoad.current &&
+      (accountStatus === Status.SUCCESS || accountStatus === Status.ERROR)
+    ) {
+      hasCompletedInitialLoad.current = true
+    }
+  }, [accountStatus])
+
+  if (
+    !hasCompletedInitialLoad.current &&
+    (accountStatus === Status.IDLE ||
+      (accountStatus === Status.LOADING && !hasAccount))
+  ) {
+    return null
+  }
 
   const linking: LinkingOptions<{}> = {
     prefixes: [

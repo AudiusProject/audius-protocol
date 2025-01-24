@@ -67,7 +67,13 @@ export const Scrollbar = forwardRef(
       }
     }, [isHidden, hideScrollbar])
 
-    const content = forward ? children : <div ref={ref}>{children}</div>
+    const content = forward ? (
+      children
+    ) : (
+      <div ref={ref} className={styles.scrollbar}>
+        {children}
+      </div>
+    )
 
     return (
       <PerfectScrollbar

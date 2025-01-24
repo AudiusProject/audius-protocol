@@ -42,7 +42,6 @@ export type AuthService = {
     username: string
     password: string
   }) => Promise<void>
-  getWalletAddresses: () => Promise<GetWalletAddressesResult>
   getWallet: () => EthWallet | null
   generateRecoveryInfo: () => Promise<{ login: string; host: string }>
   confirmCredentials: (args: ConfirmCredentialsArgs) => Promise<boolean>
@@ -98,16 +97,6 @@ export const createAuthService = ({
     return hedgehogInstance.generateRecoveryInfo()
   }
 
-  const getWalletAddresses = async () => {
-    const walletOverride = await localStorage.getAudiusUserWalletOverride()
-    await hedgehogInstance.waitUntilReady()
-    const hedgehogAddress = hedgehogInstance.wallet?.getAddressString()
-    return {
-      accountWalletAddress: walletOverride || hedgehogAddress || '',
-      web3WalletAddress: hedgehogAddress || ''
-    }
-  }
-
   const confirmCredentials = async (args: ConfirmCredentialsArgs) => {
     return await hedgehogInstance.confirmCredentials(args)
   }
@@ -126,7 +115,6 @@ export const createAuthService = ({
     signOut,
     generateRecoveryInfo,
     getWallet,
-    getWalletAddresses,
     confirmCredentials,
     changeCredentials,
     resetPassword

@@ -144,7 +144,7 @@ export const PlayBar = (props: PlayBarProps) => {
   const styles = useStyles()
   const dispatch = useDispatch()
   const accountUserId = useSelector(getUserId)
-  const staticWhite = useColor('staticWhite')
+  const staticWhite = useColor('white')
 
   const { hasStreamAccess } = useGatedContentAccess(track)
   const isPreviewing = useSelector(getPreviewing)

@@ -2,7 +2,6 @@ import { audiusBackend } from '@audius/common/services'
 
 import { track } from 'services/analytics'
 import { discoveryNodeSelectorService } from 'services/audius-sdk/discoveryNodeSelector'
-import { getStorageNodeSelector } from 'services/audius-sdk/storageNodeSelector'
 import { getFeatureEnabled } from 'services/remote-config/featureFlagHelpers'
 import { remoteConfigInstance } from 'services/remote-config/remote-config-instance'
 import { monitoringCallbacks } from 'services/serviceMonitoring'
@@ -25,7 +24,6 @@ export const audiusBackendInstance = audiusBackend({
   getFeatureEnabled,
   getHostUrl: () => window.location.origin,
   discoveryNodeSelectorService,
-  getStorageNodeSelector,
   identityServiceUrl: env.IDENTITY_SERVICE,
   generalAdmissionUrl: env.GENERAL_ADMISSION,
   isElectron: isElectron(),

@@ -60,7 +60,6 @@ export const Panel = ({
     progressLabel,
     remainingLabel
   })
-
   return (
     <TouchableOpacity onPress={onPress} activeOpacity={0.7}>
       <Flex border='default' borderRadius='l' pb='unit10'>
@@ -87,8 +86,8 @@ export const Panel = ({
               backgroundColor='primary'
               borderRadius='circle'
             >
-              <IconSparkles color='staticWhite' size='xs' />
-              <Text size='s' strength='strong' color='staticWhite'>
+              <IconSparkles color='white' size='xs' />
+              <Text size='s' strength='strong' color='white'>
                 {messages.new}
               </Text>
             </Flex>

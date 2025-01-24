@@ -100,7 +100,7 @@ export const CoverPhotoBanner = (props: CoverPhotoBannerProps) => {
             right: spacing.l,
             top: spacing.l
           }}
-          color='staticWhite'
+          color='white'
           shadow='drop'
           icon={IconImage}
         />

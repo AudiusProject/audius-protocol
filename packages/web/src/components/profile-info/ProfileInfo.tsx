@@ -12,7 +12,6 @@ type ProfileInfoProps = {
   className?: string
   imgClassName?: string
   centered?: boolean
-  badgeSize?: number
   displayNameClassName?: string
   handleClassName?: string
 }
@@ -21,7 +20,6 @@ export const ProfileInfo = ({
   className = '',
   imgClassName = '',
   centered = true,
-  badgeSize = 12,
   displayNameClassName,
   handleClassName
 }: ProfileInfoProps) => {
@@ -41,11 +39,7 @@ export const ProfileInfo = ({
         <div className={styles.userInfoWrapper}>
           <div className={cn(styles.name, displayNameClassName)}>
             {user.name}
-            <UserBadges
-              userId={user?.user_id}
-              badgeSize={badgeSize}
-              className={styles.badge}
-            />
+            <UserBadges userId={user?.user_id} className={styles.badge} />
           </div>
           <div className={styles.handleContainer}>
             <span

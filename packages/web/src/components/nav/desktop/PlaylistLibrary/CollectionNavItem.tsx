@@ -80,10 +80,12 @@ type CollectionNavItemProps = {
   hasUpdate?: boolean
   onClick?: () => void
   isChild?: boolean
+  exact?: boolean
 }
 
 export const CollectionNavItem = (props: CollectionNavItemProps) => {
-  const { id, name, url, isOwned, level, hasUpdate, onClick, isChild } = props
+  const { id, name, url, isOwned, level, hasUpdate, onClick, isChild, exact } =
+    props
   const [isDraggingOver, setIsDraggingOver] = useState(false)
   const [isHovering, setIsHovering] = useState(false)
   const location = useLocation()
@@ -256,14 +258,12 @@ export const CollectionNavItem = (props: CollectionNavItemProps) => {
             }}
             rightIcon={
               isPlayingFromThisPlaylist ? (
-                <IconSpeaker
-                  size='s'
-                  color={isSelected ? 'staticWhite' : 'accent'}
-                />
+                <IconSpeaker size='s' color={isSelected ? 'white' : 'accent'} />
               ) : null
             }
             leftOverride={hasUpdate ? <PlaylistUpdateDot /> : null}
             isChild={isChild}
+            exact={exact}
           >
             <Flex
               alignItems='center'

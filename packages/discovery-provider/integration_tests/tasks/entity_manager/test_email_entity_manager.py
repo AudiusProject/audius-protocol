@@ -1,5 +1,6 @@
 import json
 
+from sqlalchemy import text
 from web3 import Web3
 from web3.datastructures import AttributeDict
 
@@ -11,12 +12,36 @@ from src.tasks.entity_manager.utils import Action, EntityType
 from src.utils.db_session import get_db
 
 
+def ensure_email_access_table_setup(session):
+    """Ensure the email_access table has all required columns"""
+    # Add is_initial column if it doesn't exist
+    session.execute(
+        text(
+            """
+        DO $$ 
+        BEGIN 
+            IF NOT EXISTS (SELECT 1 FROM information_schema.columns 
+                        WHERE table_name = 'email_access' 
+                        AND column_name = 'is_initial') THEN
+                ALTER TABLE email_access ADD COLUMN is_initial BOOLEAN NOT NULL DEFAULT FALSE;
+            END IF;
+        END $$;
+    """
+        )
+    )
+    session.commit()
+
+
 def test_index_valid_email(app, mocker):
     """Test indexing valid email operations"""
     with app.app_context():
         db = get_db()
         web3 = Web3()
         update_task = UpdateTask(web3, None)
+
+        # Ensure table setup
+        with db.scoped_session() as session:
+            ensure_email_access_table_setup(session)
 
         # Updated test data to match new schema
         valid_email_data = {
@@ -124,6 +149,10 @@ def test_index_invalid_email(app, mocker):
         db = get_db()
         web3 = Web3()
         update_task = UpdateTask(web3, None)
+
+        # Ensure table setup
+        with db.scoped_session() as session:
+            ensure_email_access_table_setup(session)
 
         # Updated invalid test data - missing required fields
         invalid_email_data = {

@@ -311,7 +311,7 @@ export const ChatMessageListItem = memo(function ChatMessageListItem(
                       <UserGeneratedText
                         variant='body'
                         lineHeight='multi'
-                        color={isAuthor ? 'staticWhite' : 'default'}
+                        color={isAuthor ? 'white' : 'default'}
                         textAlign='left'
                         linkProps={{
                           variant: isAuthor ? 'inverted' : 'visible',

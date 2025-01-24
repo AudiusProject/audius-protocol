@@ -42,17 +42,9 @@ export const OnRampButton = forwardRef<HTMLButtonElement, OnRampButtonProps>(
       >
         {buttonPrefix}
         {isStripe ? (
-          <IconLogoLinkByStripe
-            width={'6em'}
-            height={'1.33em'}
-            color='staticWhite'
-          />
+          <IconLogoLinkByStripe width={'6em'} height={'1.33em'} color='white' />
         ) : (
-          <IconLogoCoinbasePay
-            width={'6em'}
-            height={'1.33em'}
-            color='staticWhite'
-          />
+          <IconLogoCoinbasePay width={'6em'} height={'1.33em'} color='white' />
         )}
       </Button>
     )

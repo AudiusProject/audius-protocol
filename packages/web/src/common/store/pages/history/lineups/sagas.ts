@@ -51,8 +51,7 @@ function* getHistoryTracks() {
       const trackMetadata = activity.item
         ? processedTracksMap[HashId.parse(activity.item.id)!]
         : null
-      // Prevent history for invalid tracks from getting into the lineup.
-      if (trackMetadata && !trackMetadata.is_unlisted) {
+      if (trackMetadata) {
         lineupTracks.push({
           ...trackMetadata,
           dateListened: activity.timestamp

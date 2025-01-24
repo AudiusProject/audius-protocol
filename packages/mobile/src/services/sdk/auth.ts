@@ -15,9 +15,8 @@ export const authService = createAuthService({
   createKey: createPrivateKey
 })
 
-export const audiusWalletClient = createHedgehogWalletClient(
-  authService.hedgehogInstance
-)
+export const getAudiusWalletClient = async () =>
+  createHedgehogWalletClient(authService.hedgehogInstance)
 
 export const solanaWalletService = createHedgehogSolanaWalletService(
   authService.hedgehogInstance

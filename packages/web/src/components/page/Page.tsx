@@ -11,7 +11,7 @@ import { animated, useSpring } from '@react-spring/web'
 import cn from 'classnames'
 
 import { MetaTags, MetaTagsProps } from 'components/meta-tags/MetaTags'
-import DesktopSearchBar from 'components/search-bar/DesktopSearchBar'
+import DesktopSearchBar from 'components/search-bar/ConnectedSearchBar'
 
 import styles from './Page.module.css'
 
