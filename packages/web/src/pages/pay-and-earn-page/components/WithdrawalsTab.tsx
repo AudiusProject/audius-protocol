@@ -1,36 +1,27 @@
 import { useCallback, useEffect, useState } from 'react'
 
 import {
-  useGetUSDCTransactions,
-  useGetUSDCTransactionsCount,
-  userApiFetch,
-  userApiUtils
+  useUSDCTransactions,
+  useUSDCTransactionsCount,
+  useCurrentUserId
 } from '@audius/common/api'
-import {
-  useAllPaginatedQuery,
-  useAudiusQueryContext
-} from '@audius/common/audius-query'
 import { useUSDCBalance } from '@audius/common/hooks'
 import {
   BNUSDC,
   Name,
   Status,
-  USDCTransactionDetails,
-  combineStatuses,
-  statusIsNotFinalized
+  statusIsNotFinalized,
+  USDCTransactionDetails
 } from '@audius/common/models'
 import {
   WithdrawUSDCModalPages,
-  accountSelectors,
   useUSDCTransactionDetailsModal,
   useWithdrawUSDCModal,
   withdrawUSDCSelectors
 } from '@audius/common/store'
-import { formatUSDCWeiToFloorCentsNumber, wait } from '@audius/common/utils'
+import { formatUSDCWeiToFloorCentsNumber } from '@audius/common/utils'
 import { Id, full } from '@audius/sdk'
 import BN from 'bn.js'
-import { useDispatch } from 'react-redux'
-import { ThunkDispatch } from 'redux-thunk'
 
 import { useErrorPageOnFailedStatus } from 'hooks/useErrorPageOnFailedStatus'
 import { useIsMobile } from 'hooks/useIsMobile'
@@ -49,8 +40,6 @@ import {
   WithdrawalsTableSortDirection,
   WithdrawalsTableSortMethod
 } from './WithdrawalsTable'
-
-const { getUserId } = accountSelectors
 
 const messages = {
   pageTitle: 'Withdrawal History',
@@ -110,82 +99,11 @@ const NoWithdrawals = () => {
   )
 }
 
-const useWithdrawalTransactionPoller = () => {
-  const audiusQueryContext = useAudiusQueryContext()
-  const [isPolling, setIsPolling] = useState(false)
-
-  const beginPolling = useCallback(
-    async ({
-      userId,
-      signature,
-      onSuccess
-    }: {
-      userId: number
-      signature: string
-      onSuccess: () => void
-    }) => {
-      setIsPolling(true)
-
-      const pollForTransaction = async () => {
-        let timedOut = false
-        const timerId = setTimeout(() => {
-          timedOut = true
-        }, 60000)
-
-        let foundTransaction = false
-        let aborted = false
-        while (!aborted && !foundTransaction) {
-          // We don't yet have a single transaction fetch API, so grab the latest 5 and check
-          // for the desired signature in the response. Since this utility is meant to be used
-          // for the most recently completed transaction, this is a relatively safe strategy
-          const transactions: USDCTransactionDetails[] =
-            await userApiFetch.getUSDCTransactions(
-              {
-                userId,
-                sortMethod: full.GetUSDCTransactionsSortMethodEnum.Date,
-                sortDirection: full.GetUSDCTransactionsSortDirectionEnum.Desc,
-                method: full.GetUSDCTransactionsMethodEnum.Send,
-                offset: 0,
-                limit: 5
-              },
-              audiusQueryContext
-            )
-          if (transactions.some((t) => t.signature === signature)) {
-            foundTransaction = true
-          } else if (timedOut) {
-            aborted = true
-          }
-          await wait(1000)
-        }
-        if (timedOut) {
-          throw new Error('Timed Out')
-        }
-        clearTimeout(timerId)
-      }
-
-      try {
-        await pollForTransaction()
-        onSuccess()
-        setIsPolling(false)
-      } catch (e) {
-        console.error(`Failed to poll for transaction: ${signature}: ${e}`)
-        setIsPolling(false)
-      }
-    },
-    [audiusQueryContext]
-  )
-
-  return { isPolling, beginPolling }
-}
-
 export const useWithdrawals = () => {
-  const userId = useSelector(getUserId)
-  // Type override required because we're dispatching thunk actions below
-  const dispatch = useDispatch<ThunkDispatch<any, any, any>>()
+  const { data: currentUserId } = useCurrentUserId()
   const lastCompletedTransaction = useSelector(
     withdrawUSDCSelectors.getLastCompletedTransactionSignature
   )
-  const { isPolling, beginPolling } = useWithdrawalTransactionPoller()
   // Defaults: sort method = date, sort direction = desc
   const [sortMethod, setSortMethod] =
     useState<full.GetUSDCTransactionsSortMethodEnum>(DEFAULT_SORT_METHOD)
@@ -195,52 +113,41 @@ export const useWithdrawals = () => {
   const { onOpen: openDetailsModal } = useUSDCTransactionDetailsModal()
 
   const {
-    status: dataStatus,
+    status: transactionsStatus,
     data: transactions,
-    hasMore,
-    loadMore,
-    reset
-  } = useAllPaginatedQuery(
-    useGetUSDCTransactions,
-    {
-      userId,
-      sortMethod,
-      sortDirection,
-      type: [
-        full.GetUSDCTransactionsTypeEnum.Withdrawal,
-        full.GetUSDCTransactionsTypeEnum.Transfer
-      ],
-      method: full.GetUSDCTransactionsMethodEnum.Send
-    },
-    { disabled: !userId, pageSize: TRANSACTIONS_BATCH_SIZE, force: true }
-  )
-  const { status: countStatus, data: count } = useGetUSDCTransactionsCount(
-    {
-      userId,
-      method: full.GetUSDCTransactionsMethodEnum.Send
-    },
-    { disabled: !userId, force: true }
-  )
+    fetchNextPage,
+    isLoading: isPolling
+  } = useUSDCTransactions({
+    sortMethod,
+    sortDirection,
+    type: [
+      full.GetUSDCTransactionsTypeEnum.Withdrawal,
+      full.GetUSDCTransactionsTypeEnum.Transfer
+    ],
+    method: full.GetUSDCTransactionsMethodEnum.Send,
+    pageSize: TRANSACTIONS_BATCH_SIZE
+  })
 
-  const status = combineStatuses([dataStatus, countStatus])
+  const { status: countStatus, data: count } = useUSDCTransactionsCount({
+    type: [full.GetUSDCTransactionsTypeEnum.Withdrawal],
+    method: full.GetUSDCTransactionsMethodEnum.Send
+  })
+
+  const status =
+    transactionsStatus === 'success' && countStatus === 'success'
+      ? Status.SUCCESS
+      : transactionsStatus === 'error' || countStatus === 'error'
+        ? Status.ERROR
+        : Status.LOADING
+
   useErrorPageOnFailedStatus({ status })
 
   useEffect(() => {
-    if (lastCompletedTransaction && userId) {
-      // Wait for new transaction and re-sort table to show newest first
-      beginPolling({
-        userId,
-        signature: lastCompletedTransaction,
-        onSuccess: () => {
-          setSortMethod(full.GetUSDCTransactionsSortMethodEnum.Date)
-          setSortDirection(full.GetUSDCTransactionsSortDirectionEnum.Desc)
-          dispatch(userApiUtils.reset('getUSDCTransactions'))
-          dispatch(userApiUtils.reset('getUSDCTransactionsCount'))
-          reset()
-        }
-      })
+    if (lastCompletedTransaction) {
+      setSortMethod(full.GetUSDCTransactionsSortMethodEnum.Date)
+      setSortDirection(full.GetUSDCTransactionsSortDirectionEnum.Desc)
     }
-  }, [lastCompletedTransaction, userId, beginPolling, reset, dispatch])
+  }, [lastCompletedTransaction])
 
   const onSort = useCallback(
     (
@@ -253,12 +160,6 @@ export const useWithdrawals = () => {
     []
   )
 
-  const fetchMore = useCallback(() => {
-    if (hasMore) {
-      loadMore()
-    }
-  }, [hasMore, loadMore])
-
   const onClickRow = useCallback(
     (transactionDetails: USDCTransactionDetails) => {
       openDetailsModal({ transactionDetails })
@@ -270,9 +171,10 @@ export const useWithdrawals = () => {
   const isLoading = isPolling || statusIsNotFinalized(status)
 
   const downloadCSV = useCallback(async () => {
+    if (!currentUserId) return
     const sdk = await audiusSdk()
     const blob = await sdk.users.downloadUSDCWithdrawalsAsCSVBlob({
-      id: Id.parse(userId!)
+      id: Id.parse(currentUserId)
     })
     const blobUrl = window.URL.createObjectURL(blob)
     const a = document.createElement('a')
@@ -280,12 +182,12 @@ export const useWithdrawals = () => {
     a.download = `audius_withdrawals_${formatToday()}.csv`
     a.click()
     window.URL.revokeObjectURL(blobUrl)
-  }, [userId])
+  }, [currentUserId])
 
   return {
     count,
     data: transactions,
-    fetchMore,
+    fetchMore: fetchNextPage,
     onSort,
     onClickRow,
     isEmpty,

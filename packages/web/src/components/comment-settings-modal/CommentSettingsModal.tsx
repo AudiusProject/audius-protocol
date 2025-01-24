@@ -1,8 +1,7 @@
 import { useCallback, useRef } from 'react'
 
-import { useCurrentUserId, useGetMutedUsers } from '@audius/common/api'
+import { useMutedUsers } from '@audius/common/api'
 import { useMuteUser } from '@audius/common/context'
-import { Status } from '@audius/common/models'
 import { profilePage } from '@audius/common/src/utils/route'
 import {
   Flex,
@@ -33,21 +32,15 @@ const messages = {
   unmute: 'Unmute',
   mute: 'Mute',
   noMutedUsers:
-    'You haven’t muted any users. Once you do, they will appear here.'
+    "You haven't muted any users. Once you do, they will appear here."
 }
 
 const CommentSettingsModal = () => {
   const [isVisible, setIsVisible] = useModalState('CommentSettings')
   const handleClose = useCallback(() => setIsVisible(false), [setIsVisible])
   const scrollParentRef = useRef<HTMLElement>()
-  const { data: currentUserId } = useCurrentUserId()
+  const { data: mutedUsers, isPending } = useMutedUsers()
 
-  const { data: mutedUsers, status } = useGetMutedUsers(
-    {
-      userId: currentUserId!
-    },
-    { force: true }
-  )
   return (
     <Modal onClose={handleClose} isOpen={isVisible}>
       <ModalHeader onClose={handleClose}>
@@ -57,7 +50,7 @@ const CommentSettingsModal = () => {
         <Flex ph='xl' pt='xl' mb='l'>
           <Text>{messages.description}</Text>
         </Flex>
-        {status === Status.LOADING ? (
+        {isPending ? (
           <Flex justifyContent='center' p='xl'>
             <LoadingSpinner />
           </Flex>
