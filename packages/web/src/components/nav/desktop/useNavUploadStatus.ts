@@ -10,10 +10,9 @@ import {
 import { route } from '@audius/common/utils'
 import { IconCloudUpload, IconArrowRight } from '@audius/harmony'
 import { useDispatch, useSelector } from 'react-redux'
-import { useLocation } from 'react-router-dom'
 import { toast } from '~/store/ui/toast/slice'
 
-import { matchesRoute } from 'utils/route'
+import { useRouteMatch } from 'utils/route'
 
 const { UPLOAD_PAGE } = route
 
@@ -29,12 +28,8 @@ const { getIsUploading, getUploadSuccess } = uploadSelectors
 export const useNavUploadStatus = () => {
   const isUploading = useSelector(getIsUploading)
   const uploadSuccess = useSelector(getUploadSuccess)
-  const location = useLocation()
   const dispatch = useDispatch()
-  const isOnUploadPage = matchesRoute({
-    current: location.pathname,
-    target: UPLOAD_PAGE
-  })
+  const isOnUploadPage = useRouteMatch(UPLOAD_PAGE)
   const accountHandle = useSelector(getUserHandle)
   const upload = useSelector((state: CommonState) => state.upload)
   const uploadType = upload.formState?.uploadType ?? UploadType.INDIVIDUAL_TRACK

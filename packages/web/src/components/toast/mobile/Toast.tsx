@@ -5,7 +5,6 @@ import cn from 'classnames'
 
 import ToastLinkContent from './ToastLinkContent'
 
-// TODO: SK - Move this into Stems
 interface ToastProps {
   children?: JSX.Element
   leftIcon?: IconComponent
@@ -63,11 +62,11 @@ const Toast = (props: ToastProps) => {
         ph='m'
         borderRadius='m'
       >
-        {LeftIcon && <LeftIcon size='s' color='white' />}
-        <Text color='white' size='s' strength='strong'>
+        {LeftIcon && <LeftIcon size='s' color='staticWhite' />}
+        <Text color='staticWhite' size='s' strength='strong'>
           {content}
         </Text>
-        {RightIcon && <RightIcon size='s' color='white' />}
+        {RightIcon && <RightIcon size='s' color='staticWhite' />}
       </Flex>
     </>
   )
