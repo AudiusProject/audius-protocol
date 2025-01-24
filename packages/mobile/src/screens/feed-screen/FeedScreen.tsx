@@ -1,5 +1,6 @@
 import { useCallback } from 'react'
 
+import { useCurrentUserId, useFeed } from '@audius/common/api'
 import { Name } from '@audius/common/models'
 import {
   lineupSelectors,
@@ -29,16 +30,13 @@ const messages = {
 
 export const FeedScreen = () => {
   useAppTabScreen()
+  const { data: currentUserId } = useCurrentUserId()
 
-  const dispatch = useDispatch()
-
-  const loadMore = useCallback(
-    (offset: number, limit: number, overwrite: boolean) => {
-      dispatch(feedActions.fetchLineupMetadatas(offset, limit, overwrite))
-      track(make({ eventName: Name.FEED_PAGINATE, offset, limit }))
-    },
-    [dispatch]
-  )
+  const { fetchNextPage, lineup, refetch } = useFeed({ userId: currentUserId })
+  const loadMore = useCallback(() => {
+    console.log('LOADING MORE')
+    fetchNextPage()
+  }, [fetchNextPage])
 
   return (
     <Screen url='Feed'>
@@ -56,9 +54,14 @@ export const FeedScreen = () => {
           ListFooterComponent={
             <EndOfLineupNotice description={messages.endOfFeed} />
           }
+          refresh={() => {
+            refetch()
+          }}
+          lineup={lineup}
           actions={feedActions}
           lineupSelector={getFeedLineup}
           loadMore={loadMore}
+          pageSize={4}
           showsVerticalScrollIndicator={false}
         />
       </ScreenContent>

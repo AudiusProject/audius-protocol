@@ -23,7 +23,7 @@ class FeedSagas extends LineupSagas<FeedItem> {
       feedActions.prefix,
       feedActions,
       (store: CommonState) => store.pages.feed.feed,
-      ({ payload }) => payload.feed,
+      ({ payload }) => payload?.feed,
       keepActivityTimeStamp,
       undefined,
       undefined
