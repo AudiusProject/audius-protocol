@@ -8,8 +8,6 @@ import {
 } from '@audius/common/store'
 import backend from '@audius/web/src/common/store/backend/reducer'
 import type { BackendState } from '@audius/web/src/common/store/backend/types'
-import searchBar from '@audius/web/src/common/store/search-bar/reducer'
-import type { SearchBarState } from '@audius/web/src/common/store/search-bar/types'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import signOnReducer from 'common/store/pages/signon/reducer'
 import type {
@@ -52,7 +50,6 @@ export type AppState = CommonState & {
   // These also belong in CommonState but are here until we move them to the @audius/common package:
   signOn: SignOnPageState
   backend: BackendState
-  searchBar: SearchBarState
 
   drawers: DrawersState
   keyboard: KeyboardState
@@ -111,7 +108,6 @@ const rootReducer = combineReducers({
   // These also belong in common store reducers but are here until we move them to the @audius/common package:
   backend,
   signOn: signOnReducer as SignOnPageReducer,
-  searchBar,
 
   drawers,
   keyboard,

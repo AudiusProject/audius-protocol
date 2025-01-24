@@ -13,7 +13,7 @@ import cn from 'classnames'
 
 import { MAX_PAGE_WIDTH_PX } from 'common/utils/layout'
 import { MetaTags, MetaTagsProps } from 'components/meta-tags/MetaTags'
-import DesktopSearchBar from 'components/search-bar/ConnectedSearchBar'
+import { DesktopSearchBar } from 'components/search-bar/DesktopSearchBar'
 
 import styles from './Page.module.css'
 
