@@ -231,11 +231,7 @@ export const CollectiblesCard = (props: CollectiblesCardProps) => {
           >
             {mediaType === 'VIDEO' ? (
               <View style={styles.iconPlay}>
-                <IconPlay
-                  size='3xl'
-                  color='staticWhite'
-                  style={{ opacity: 0.8 }}
-                />
+                <IconPlay size='3xl' color='white' style={{ opacity: 0.8 }} />
               </View>
             ) : null}
             <ChainLogo chain={chain} style={styles.chain} />

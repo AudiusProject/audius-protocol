@@ -1,4 +1,4 @@
-import { Id } from '@audius/sdk'
+import { HedgehogWalletNotFoundError, Id } from '@audius/sdk'
 import { SagaIterator } from 'redux-saga'
 import {
   call,
@@ -10,13 +10,7 @@ import {
 } from 'typed-redux-saga'
 
 import { userApiFetchSaga } from '~/api/user'
-import {
-  AccountUserMetadata,
-  ErrorLevel,
-  Kind,
-  Status,
-  UserMetadata
-} from '~/models'
+import { AccountUserMetadata, ErrorLevel, Kind, UserMetadata } from '~/models'
 import { getContext } from '~/store/effects'
 import { chatActions } from '~/store/pages/chat'
 import { UPLOAD_TRACKS_SUCCEEDED } from '~/store/upload/actions'
@@ -28,7 +22,6 @@ import {
   getUserId,
   getUserHandle,
   getAccountUser,
-  getAccountStatus,
   getAccount
 } from './selectors'
 import {
@@ -106,14 +99,14 @@ function* initializeMetricsForUser({
 }: {
   accountUser: UserMetadata
 }) {
-  const authService = yield* getContext('authService')
   const solanaWalletService = yield* getContext('solanaWalletService')
   const analytics = yield* getContext('analytics')
+  const sdk = yield* getSDK()
 
   if (accountUser && accountUser.handle) {
-    const { web3WalletAddress } = yield* call([
-      authService,
-      authService.getWalletAddresses
+    const [web3WalletAddress] = yield* call([
+      sdk.services.audiusWalletClient,
+      sdk.services.audiusWalletClient.getAddresses
     ])
     const { user: web3User } = yield* call(userApiFetchSaga.getUserAccount, {
       wallet: web3WalletAddress
@@ -157,23 +150,44 @@ function* initializeMetricsForUser({
   }
 }
 
-export function* fetchAccountAsync() {
+export function* fetchAccountAsync({
+  shouldMarkAccountAsLoading
+}: {
+  shouldMarkAccountAsLoading: boolean
+}) {
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
   const remoteConfigInstance = yield* getContext('remoteConfigInstance')
-  const authService = yield* getContext('authService')
   const localStorage = yield* getContext('localStorage')
+  const reportToSentry = yield* getContext('reportToSentry')
   const sdk = yield* getSDK()
-  const accountStatus = yield* select(getAccountStatus)
+
   // Don't revert successful local account fetch
-  if (accountStatus !== Status.SUCCESS) {
+  if (shouldMarkAccountAsLoading) {
     yield* put(fetchAccountRequested())
   }
 
-  const { accountWalletAddress: wallet, web3WalletAddress } = yield* call([
-    authService,
-    authService.getWalletAddresses
-  ])
-  if (!wallet) {
+  let wallet, web3WalletAddress
+  try {
+    const connectedWallets = yield* call([
+      sdk.services.audiusWalletClient,
+      sdk.services.audiusWalletClient.getAddresses
+    ])
+    const accountWalletAddressOverride = yield* call([
+      localStorage,
+      localStorage.getAudiusUserWalletOverride
+    ])
+    web3WalletAddress = connectedWallets[0]
+    wallet = accountWalletAddressOverride ?? web3WalletAddress
+  } catch (e) {
+    if (!(e instanceof HedgehogWalletNotFoundError)) {
+      yield* call(reportToSentry, {
+        name: 'FetchAccountAsync',
+        error: e as Error
+      })
+    }
+  }
+  if (!wallet || !web3WalletAddress) {
+    yield* put(resetAccount())
     yield* put(
       fetchAccountFailed({
         reason: 'ACCOUNT_NOT_FOUND'
@@ -181,6 +195,7 @@ export function* fetchAccountAsync() {
     )
     return
   }
+
   const accountData: AccountUserMetadata | undefined = yield* call(
     userApiFetchSaga.getUserAccount,
     {
@@ -190,6 +205,7 @@ export function* fetchAccountAsync() {
   )
 
   if (!accountData) {
+    yield* put(resetAccount())
     yield* put(
       fetchAccountFailed({
         reason: 'ACCOUNT_NOT_FOUND'
@@ -271,6 +287,8 @@ export function* fetchAccountAsync() {
 
 function* fetchLocalAccountAsync() {
   const localStorage = yield* getContext('localStorage')
+  const reportToSentry = yield* getContext('reportToSentry')
+  const sdk = yield* getSDK()
 
   yield* put(fetchAccountRequested())
 
@@ -283,7 +301,33 @@ function* fetchLocalAccountAsync() {
     localStorage.getAudiusAccountUser
   ])
 
-  if (cachedAccount && cachedAccountUser && !cachedAccountUser.is_deactivated) {
+  let wallet, web3WalletAddress
+  try {
+    const connectedWallets = yield* call([
+      sdk.services.audiusWalletClient,
+      sdk.services.audiusWalletClient.getAddresses
+    ])
+    const accountWalletAddressOverride = yield* call([
+      localStorage,
+      localStorage.getAudiusUserWalletOverride
+    ])
+    web3WalletAddress = connectedWallets[0]
+    wallet = accountWalletAddressOverride ?? web3WalletAddress
+  } catch (e) {
+    if (!(e instanceof HedgehogWalletNotFoundError)) {
+      yield* call(reportToSentry, {
+        name: 'FetchLocalAccountAsync',
+        error: e as Error
+      })
+    }
+  }
+
+  if (
+    cachedAccount &&
+    cachedAccountUser &&
+    wallet &&
+    !cachedAccountUser.is_deactivated
+  ) {
     yield* put(
       cacheActions.add(Kind.USERS, [
         {
@@ -516,7 +560,12 @@ function* handleFetchAccountSucceeded() {
 }
 
 function* watchFetchAccount() {
-  yield* takeEvery(fetchAccount.type, fetchAccountAsync)
+  yield* takeEvery(
+    fetchAccount.type,
+    function* (action: ReturnType<typeof fetchAccount>) {
+      yield* call(fetchAccountAsync, action.payload)
+    }
+  )
 }
 
 function* watchFetchAccountFailed() {

@@ -105,6 +105,7 @@ export type Modals =
   | 'EditTrackFormOverflowMenu'
   | 'Announcement'
   | 'Notification'
+  | 'ExternalWalletSignUp'
 
 export type BasicModalsState = {
   [modal in Modals]: BaseModalState

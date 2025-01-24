@@ -80,8 +80,11 @@ full_playlist_without_tracks_model = ns.clone(
         "is_delete": fields.Boolean(required=True),
         "is_private": fields.Boolean(required=True),
         "updated_at": fields.String(required=True),
+        # https://linear.app/audius/issue/PAY-3825/remove-added-timestamps
         "added_timestamps": fields.List(
-            fields.Nested(playlist_added_timestamp), required=True
+            fields.Nested(playlist_added_timestamp),
+            required=True,
+            description="DEPRECATED. Use playlist_contents instead.",
         ),
         "user_id": fields.String(required=True),
         "user": fields.Nested(user_model_full, required=True),

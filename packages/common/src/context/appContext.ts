@@ -1,6 +1,6 @@
 import { createContext, useContext } from 'react'
 
-import type { AudiusSdk, StorageNodeSelectorService } from '@audius/sdk'
+import type { AudiusSdk } from '@audius/sdk'
 
 import { AnalyticsEvent, AllTrackingEvents } from '~/models/Analytics'
 import { AudiusBackend } from '~/services/audius-backend'
@@ -17,7 +17,6 @@ type AppContextType = {
       properties: any
     }
   }
-  storageNodeSelector?: StorageNodeSelectorService
   imageUtils: {
     generatePlaylistArtwork: (
       imageUrls: string[]

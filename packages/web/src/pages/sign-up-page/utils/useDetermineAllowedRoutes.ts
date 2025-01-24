@@ -101,7 +101,7 @@ export const useDetermineAllowedRoute = () => {
 
         if (
           signUpState.password.value ||
-          signUpState.useMetaMask ||
+          signUpState.usingExternalWallet ||
           (!signUpState.isGuest && attemptedPath === SignUpPath.createPassword) // force redirect to create password
         ) {
           // Already have password

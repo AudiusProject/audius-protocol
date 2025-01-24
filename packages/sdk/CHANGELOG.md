@@ -1,5 +1,49 @@
 # @audius/sdk
 
+## 8.0.0
+
+### Major Changes
+
+- b7b38ba: Rewrite authentication service to be a Viem-like AudiusWalletClient instead, and restructure the ethereum contract clients to leverage Viem more effectively.
+
+### Minor Changes
+
+- 993c856: getUserMonthlyTrackListens in Users API
+- b8d09ab: Add uploadTrackFiles, writeTrackToChain, and generateTrackId to TracksApi
+- b8d09ab: Update onProgress type to ProgressHandler
+- 6322f3e: Add user/<id>/playlists and user/<id>/albums
+- b0ac142: Add generatePreview and delete editFile in Storage
+- a93a826: Update track upload/update metadata schema to expect numeric ids in AccessConditions
+- 9c8cc61: Update full playlist.tracks response type
+- b3d902b: Mutual follows method
+- b0ac142: Rename `transcodePreview` -> `generatePreview` in the updateTrack params
+- ba20259: Add support for new stream, download, and preview fields on tracks with mirrors
+- b8d09ab: Fix signing of uploadTrack and editTrack requests
+
+### Patch Changes
+
+- a68bfef: Replace deprecated sign with signMessage
+- 0aed18e: Move plays health back to where it was for now
+- 4c89718: expose addRequestSignatureMiddleware
+- 9453590: Expand accepted audio mimemtypes to audio/\*
+- 9402210: move solana/web3.js to peer deps
+- ea4205f: Allow 0 to be passed as previewStartSeconds
+- b2b8eb7: Allow releaseDate in the future. Update zod schemas to no longer be functions
+- 65fd971: Fixes for UserAuth and missing crypto method in Node environments
+- 66fe1b0: Update createAppWalletClient to be object args and allow non-0x prefixed values
+- 0fc1fbe: Handle empty response in uploadFile
+- bec2090: deprecate Playlist.addedTimestamps
+- 5303fb7: Fix concurrent getOrCreateUserBank requests
+- e872cbf: Fix Wormhole Client to match typo in solidity contract (artbiter)
+- 998e1f7: Fix getOrCreateUserBank failures due to low priority fees
+- 7a31de8: Support different @solana/web3.js versions and add maximumMicroLamports to priority
+- Updated dependencies [9402210]
+- Updated dependencies [b7b38ba]
+- Updated dependencies [e872cbf]
+- Updated dependencies [aef5021]
+  - @audius/spl@2.0.1
+  - @audius/eth@0.1.0
+
 ## 7.1.0
 
 ### Minor Changes

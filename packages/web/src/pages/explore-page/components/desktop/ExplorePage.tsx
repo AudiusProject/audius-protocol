@@ -167,7 +167,7 @@ const ExplorePage = ({ title, pageTitle, description }: ExplorePageProps) => {
               }
               backgroundIcon={
                 Icon ? (
-                  <Icon height={512} width={512} color='staticStaticWhite' />
+                  <Icon height={512} width={512} color='inverse' />
                 ) : undefined
               }
               backgroundIconClassName={

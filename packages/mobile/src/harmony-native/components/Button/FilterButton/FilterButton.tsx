@@ -95,7 +95,7 @@ export const FilterButton = <Value extends string>(
 
   const iconSize = size === 'small' ? '2xs' : 's'
   const textColor =
-    !isNil(value) && variant === 'fillContainer' ? 'staticWhite' : 'default'
+    !isNil(value) && variant === 'fillContainer' ? 'white' : 'default'
 
   useEffect(() => {
     if (isOpen) {
@@ -141,7 +141,7 @@ export const FilterButton = <Value extends string>(
   return (
     <BaseButton
       style={buttonStyles}
-      innerProps={{ icon: { color: 'staticWhite', size: iconSize } }}
+      innerProps={{ icon: { color: 'white', size: iconSize } }}
       onPress={handlePress}
       iconRight={Icon}
       disabled={disabled}

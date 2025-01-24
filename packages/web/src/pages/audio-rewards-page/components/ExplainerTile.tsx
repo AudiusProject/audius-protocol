@@ -1,7 +1,7 @@
-import { ReactNode, useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 
 import { Theme } from '@audius/common/models'
-import cn from 'classnames'
+import { Flex } from '@audius/harmony'
 
 import TokenStill from 'assets/img/tokenSpinStill.png'
 import { useIsMobile } from 'hooks/useIsMobile'
@@ -20,17 +20,6 @@ const messages = {
 }
 
 const LEARN_MORE_URL = 'http://blog.audius.co/posts/community-meet-audio'
-
-type TileProps = {
-  className?: string
-  children: ReactNode
-}
-
-export const Tile = ({ className, children }: TileProps) => {
-  return (
-    <div className={cn([styles.tileContainer, className])}> {children}</div>
-  )
-}
 
 /**
  * Explainer tile for badging system.
@@ -63,7 +52,10 @@ const ExplainerTile = ({ className }: { className?: string }) => {
 
   const wm = useWithMobileStyle(styles.mobile)
   return (
-    <Tile className={wm([styles.explainerTile, className])}>
+    <Flex
+      className={wm([styles.explainerTile, styles.tileContainer, className])}
+      shadow='mid'
+    >
       <>
         <div className={wm(styles.tokenHero)}>
           {showSvgToken ? (
@@ -90,7 +82,7 @@ const ExplainerTile = ({ className }: { className?: string }) => {
           </div>
         </div>
       </>
-    </Tile>
+    </Flex>
   )
 }
 

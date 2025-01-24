@@ -84,7 +84,7 @@ const SearchBarResult = memo(
               <UserBadges
                 className={styles.verified}
                 userId={userId}
-                badgeSize={12}
+                size='m'
                 isVerifiedOverride={isVerifiedUser}
                 overrideTier={tier}
               />
@@ -102,7 +102,7 @@ const SearchBarResult = memo(
                 <UserBadges
                   className={styles.verified}
                   userId={userId}
-                  badgeSize={10}
+                  size='s'
                   isVerifiedOverride={isVerifiedUser}
                   overrideTier={tier}
                 />

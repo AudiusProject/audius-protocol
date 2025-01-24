@@ -13,7 +13,7 @@ import { NotificationHeader } from './components/NotificationHeader'
 import { NotificationTile } from './components/NotificationTile'
 import { NotificationTitle } from './components/NotificationTitle'
 
-const { AUDIO_PAGE } = route
+const { REWARDS_PAGE } = route
 
 const messages = {
   title: 'Rewards Ready to Claim',
@@ -33,11 +33,11 @@ export const ClaimableRewardNotification = (
   const dispatch = useDispatch()
 
   const handleClick = useCallback(() => {
-    dispatch(push(AUDIO_PAGE))
+    dispatch(push(REWARDS_PAGE))
   }, [dispatch])
 
   return (
-    <NotificationTile notification={notification}>
+    <NotificationTile notification={notification} onClick={handleClick}>
       <NotificationHeader icon={<IconTokenGold size='2xl' />}>
         <NotificationTitle>{messages.title}</NotificationTitle>
       </NotificationHeader>

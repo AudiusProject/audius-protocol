@@ -113,7 +113,7 @@ const DeletedPage = g(
                 {user.name}
                 <UserBadges
                   userId={user.user_id}
-                  badgeSize={16}
+                  size='s'
                   className={styles.verified}
                 />
               </h2>

@@ -33,7 +33,7 @@ export const NavItem = ({
 
   const backgroundColor = isSelected ? color.secondary.s400 : undefined
 
-  const textAndIconColor = isSelected ? 'staticWhite' : 'default'
+  const textAndIconColor = isSelected ? 'white' : 'default'
   const insetBorderColor = isSelected
     ? 'none'
     : `inset 0 0 0 1px ${color.border.default}`
@@ -88,7 +88,7 @@ export const NavItem = ({
       >
         <Flex
           alignItems='center'
-          gap='m'
+          gap={variant === 'compact' ? 'xs' : 'm'}
           flex={1}
           h={variant === 'compact' ? 'unit5' : 'unit6'}
           pv='s'

@@ -74,7 +74,7 @@ jobs:
           key: cache-{{ checksum "package-lock.json" }}-{{ checksum "combined-patch-file.txt" }}
           paths:
             - ./node_modules
-            - ./protocol-dashboard/node_modules
+            - ./packages/protocol-dashboard/node_modules
             - ./packages/web/node_modules
             - ./packages/mobile/node_modules
             - ./packages/embed/node_modules
@@ -323,7 +323,6 @@ workflows:
             packages/identity-service/.* run-identity-workflow true
             packages/identity-service/.* run-integration-workflow true
             eth-contracts/.* run-eth-contracts-workflow true
-            protocol-dashboard/.* run-protocol-dashboard-workflow true
             contracts/.* run-contracts-workflow true
             .circleci/.* run-discovery-workflow true
             .circleci/.* run-identity-workflow true
@@ -345,6 +344,7 @@ workflows:
             packages/common/.* run-web-workflow true
             packages/common/.* run-mobile-workflow true
             packages/common/.* run-protocol-dashboard-workflow true
+            packages/protocol-dashboard/.* run-protocol-dashboard-workflow true
             packages/harmony/.* run-web-workflow true
             packages/eslint-config-audius/.* run-web-workflow true
             packages/eslint-config-audius/.* run-mobile-workflow true
@@ -374,7 +374,6 @@ workflows:
             packages/identity-service/.* run-identity-workflow true
             packages/identity-service/.* run-integration-workflow true
             eth-contracts/.* run-eth-contracts-workflow true
-            protocol-dashboard/.* run-protocol-dashboard-workflow true
             contracts/.* run-contracts-workflow true
             .circleci/.* run-discovery-workflow true
             .circleci/.* run-identity-workflow true
@@ -395,6 +394,7 @@ workflows:
             packages/common/.* run-common-workflow true
             packages/common/.* run-web-workflow true
             packages/common/.* run-mobile-workflow true
+            packages/protocol-dashboard/.* run-protocol-dashboard-workflow true
             packages/harmony/.* run-web-workflow true
             packages/eslint-config-audius/.* run-web-workflow true
             packages/eslint-config-audius/.* run-mobile-workflow true

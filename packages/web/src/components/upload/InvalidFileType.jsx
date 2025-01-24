@@ -34,7 +34,7 @@ const InvalidFileType = ({ className = '', reason, ...props }) => {
             className={styles.message}
             size='l'
             strength='strong'
-            color='staticWhite'
+            color='white'
           >
             {messages[reason]}
           </Text>

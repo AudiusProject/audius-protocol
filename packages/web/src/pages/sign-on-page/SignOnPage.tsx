@@ -115,7 +115,7 @@ const DesktopSignOnRoot = (props: RootProps) => {
             top: spacing.xl
           }}
         >
-          <IconCloseAlt color='staticWhite' />
+          <IconCloseAlt color='white' />
         </Link>
       ) : null}
       <Paper
@@ -269,7 +269,7 @@ const MobileSignOnRoot = (props: MobileSignOnRootProps) => {
             <Text
               variant='title'
               strength='weak'
-              color='staticWhite'
+              color='white'
               css={{
                 marginTop: 'auto',
                 opacity: isLoaded ? 1 : 0,

@@ -52,7 +52,6 @@ export const HISTORY_PAGE = '/history'
 export const DASHBOARD_PAGE = '/dashboard'
 export const AUDIO_PAGE = '/audio'
 export const REWARDS_PAGE = '/rewards'
-export const AUDIO_TRANSACTIONS_PAGE = '/audio/transactions'
 export const UPLOAD_PAGE = '/upload'
 export const UPLOAD_ALBUM_PAGE = '/upload/album'
 export const UPLOAD_PLAYLIST_PAGE = '/upload/playlist'
@@ -268,7 +267,6 @@ export const orderedRoutes = [
   PAYMENTS_PAGE,
   AUDIO_PAGE,
   REWARDS_PAGE,
-  AUDIO_TRANSACTIONS_PAGE,
   SETTINGS_PAGE,
   ACCOUNT_SETTINGS_PAGE,
   NOTIFICATION_SETTINGS_PAGE,
@@ -315,7 +313,6 @@ export const staticRoutes = new Set([
   PAYMENTS_PAGE,
   AUDIO_PAGE,
   REWARDS_PAGE,
-  AUDIO_TRANSACTIONS_PAGE,
   TRACK_EDIT_PAGE,
   UPLOAD_PAGE,
   UPLOAD_ALBUM_PAGE,

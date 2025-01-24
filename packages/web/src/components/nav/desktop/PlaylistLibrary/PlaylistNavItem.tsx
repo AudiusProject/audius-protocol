@@ -63,6 +63,7 @@ export const PlaylistNavItem = (props: PlaylistNavItemProps) => {
       isChild={isChild}
       hasUpdate={hasPlaylistUpdate}
       onClick={handleClick}
+      exact
     />
   )
 }

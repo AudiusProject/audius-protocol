@@ -1,0 +1,8 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  background: rgb(47, 51, 72);
+  box-shadow: 0px 16px 20px rgba(36, 36, 56, 0.15);
+  border-radius: 12px;
+  overflow: hidden;
+}

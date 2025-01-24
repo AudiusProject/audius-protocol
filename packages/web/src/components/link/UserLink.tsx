@@ -34,7 +34,7 @@ export const UserLink = (props: UserLinkProps) => {
     noBadges,
     ...other
   } = props
-  const { iconSizes, spacing } = useTheme()
+  const { spacing } = useTheme()
 
   const url = useSelector((state) => {
     const handle = getUser(state, { id: userId })?.handle
@@ -58,9 +58,9 @@ export const UserLink = (props: UserLinkProps) => {
       <Text ellipses>{userName}</Text>
       {noBadges ? null : (
         <UserBadges
-          badgeSize={iconSizes[badgeSize]}
           userId={userId}
           css={{ marginTop: spacing['2xs'] }}
+          size={badgeSize}
         />
       )}
       {children}
