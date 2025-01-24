@@ -188,17 +188,14 @@ export const useSales = () => {
         sales.map(async (sale) => {
           let decryptedEmail = ''
           try {
-            const shouldUseDefaultDecryption = sale.isInitial
+            const decryptionId = sale.isInitial
+              ? Number.parseInt(import.meta.env.VITE_EMAIL_ENCRYPTION_UUID)
+              : sale.buyerUserId
+
             const symmetricKey =
               await sdk.services.emailEncryptionService.decryptSymmetricKey(
                 sale.encryptedKey ?? '',
-                Id.parse(
-                  shouldUseDefaultDecryption
-                    ? Number.parseInt(
-                        import.meta.env.VITE_EMAIL_ENCRYPTION_UUID
-                      )
-                    : sale.buyerUserId
-                )
+                Id.parse(decryptionId)
               )
 
             decryptedEmail =
