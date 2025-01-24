@@ -189,10 +189,10 @@ export const AccountDetails = () => {
     return (
       <AccountDetailsContainer>
         <AccountContentWrapper>
-          <Avatar userId={displayUserId} h={48} w={48} />
+          <Avatar userId={displayUserId} h='3xl' w='3xl' />
           <AccountInfo>
-            <Box h={20} />
-            <Box h={20} />
+            <Box h='m' />
+            <Box h='m' />
           </AccountInfo>
         </AccountContentWrapper>
       </AccountDetailsContainer>

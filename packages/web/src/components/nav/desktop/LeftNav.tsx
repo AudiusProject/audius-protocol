@@ -15,6 +15,7 @@ import { Dispatch } from 'redux'
 
 import { DragAutoscroller } from 'components/drag-autoscroller/DragAutoscroller'
 import { ProfileCompletionPanel } from 'components/profile-progress/ProfileCompletionPanel'
+import { useAccountTransition } from 'hooks/useAccountTransition'
 import { selectDraggingKind } from 'store/dragndrop/slice'
 import { AppState } from 'store/types'
 
@@ -53,6 +54,7 @@ const LeftNav = (props: NavColumnProps) => {
   >(undefined)
 
   const navConfig = useNavConfig()
+  const { isTransitioning } = useAccountTransition()
 
   const handleChangeDragScrollingDirection = useCallback(
     (newDirection: 'up' | 'down' | undefined) => {
@@ -174,11 +176,13 @@ const LeftNav = (props: NavColumnProps) => {
           </DragAutoscroller>
         </Scrollbar>
       </Flex>
-      <Flex direction='column' alignItems='center'>
-        <ProfileCompletionPanel />
-        <LeftNavCTA />
-        <NowPlayingArtworkTile />
-      </Flex>
+      {!isTransitioning ? (
+        <Flex direction='column' alignItems='center'>
+          <ProfileCompletionPanel />
+          <LeftNavCTA />
+          <NowPlayingArtworkTile />
+        </Flex>
+      ) : null}
     </Flex>
   )
 }
