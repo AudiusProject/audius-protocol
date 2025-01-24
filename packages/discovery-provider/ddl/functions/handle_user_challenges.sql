@@ -33,6 +33,20 @@ begin
                 )
                 on conflict do nothing;
             end if;
+
+            insert into notification
+            (blocknumber, user_ids, timestamp, type, group_id, specifier, data)
+            values
+            (
+                new.completed_blocknumber,
+                ARRAY [new.user_id],
+                new.completed_at,
+                'challenge_reward',
+                'challenge_reward:' || new.user_id || ':challenge:' || new.challenge_id || ':specifier:' || new.specifier,
+                new.user_id,
+                json_build_object('specifier', new.specifier, 'challenge_id', new.challenge_id, 'amount', new.amount::text || '00000000' ) -- convert amount
+            )
+            on conflict do nothing;
         else
             -- transactional notifications cover this 
             if (new.challenge_id != 'b' and new.challenge_id != 's') then
