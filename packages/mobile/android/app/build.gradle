@@ -196,6 +196,7 @@ dependencies {
     implementation 'com.bytedance.ies.ugc.aweme:opensdk-oversea-external:0.2.0.2'
 
     implementation 'com.android.support:multidex:1.0.3'
+    implementation("androidx.activity:activity:1.9.+")
     implementation 'androidx.core:core-splashscreen:1.0.0'
     implementation "androidx.appcompat:appcompat:1.0.0"
 

@@ -1753,12 +1753,12 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
-  - RNImageCropPicker (0.41.2):
+  - RNImageCropPicker (0.42.0):
     - React-Core
     - React-RCTImage
-    - RNImageCropPicker/QBImagePickerController (= 0.41.2)
+    - RNImageCropPicker/QBImagePickerController (= 0.42.0)
     - TOCropViewController (~> 2.7.4)
-  - RNImageCropPicker/QBImagePickerController (0.41.2):
+  - RNImageCropPicker/QBImagePickerController (0.42.0):
     - React-Core
     - React-RCTImage
     - TOCropViewController (~> 2.7.4)
@@ -2013,7 +2013,7 @@ DEPENDENCIES:
   - "RNFingerprintjsPro (from `../node_modules/@fingerprintjs/fingerprintjs-pro-react-native`)"
   - RNFS (from `../../../node_modules/react-native-fs`)
   - RNGestureHandler (from `../../../node_modules/react-native-gesture-handler`)
-  - RNImageCropPicker (from `../../../node_modules/react-native-image-crop-picker`)
+  - RNImageCropPicker (from `../node_modules/react-native-image-crop-picker`)
   - RNPermissions (from `../node_modules/react-native-permissions`)
   - RNReactNativeHapticFeedback (from `../node_modules/react-native-haptic-feedback`)
   - RNReanimated (from `../../../node_modules/react-native-reanimated`)
@@ -2250,7 +2250,7 @@ EXTERNAL SOURCES:
   RNGestureHandler:
     :path: "../../../node_modules/react-native-gesture-handler"
   RNImageCropPicker:
-    :path: "../../../node_modules/react-native-image-crop-picker"
+    :path: "../node_modules/react-native-image-crop-picker"
   RNPermissions:
     :path: "../node_modules/react-native-permissions"
   RNReactNativeHapticFeedback:
@@ -2384,7 +2384,7 @@ SPEC CHECKSUMS:
   RNFingerprintjsPro: b92c7eeff80f567abea771a4a3aaa196799caf7c
   RNFS: 4ac0f0ea233904cb798630b3c077808c06931688
   RNGestureHandler: 34e84878c80c601e773c04a66f24e82316f220c9
-  RNImageCropPicker: 771e2ca319d2cf92e04ebf334ece892ee9a6728f
+  RNImageCropPicker: 64b6bec9ec185ee59b71a93d7058816bd0e1916e
   RNPermissions: e6379535a4f3166931b2ada9dfe6cdd10c80ae6a
   RNReactNativeHapticFeedback: ec56a5f81c3941206fd85625fa669ffc7b4545f9
   RNReanimated: fcf3bcecd669832b71f2a4cad6e9ac881d34eced
