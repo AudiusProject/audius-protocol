@@ -14,8 +14,6 @@ import {
 import { feedPageSelectors, feedPageLineupActions } from '~/store/pages'
 import { Nullable } from '~/utils/typeUtils'
 
-import { useCurrentUserId } from '..'
-
 import { QUERY_KEYS } from './queryKeys'
 import { QueryOptions } from './types'
 import { loadNextPage } from './utils/infiniteQueryLoadNextPage'
@@ -48,7 +46,6 @@ export const useFeed = (
   const { audiusSdk } = useAudiusQueryContext()
   const queryClient = useQueryClient()
   const dispatch = useDispatch()
-  const { data: currentUserId } = useCurrentUserId()
 
   const queryData = useInfiniteQuery({
     initialPageParam: 0,
@@ -72,8 +69,7 @@ export const useFeed = (
         filter: filterMap[filter],
         limit: currentPageSize,
         offset: pageParam,
-        withUsers: true,
-        currentUserId: Id.parse(currentUserId)
+        withUsers: true
       })
 
       const feed = transformAndCleanList(data, userFeedItemFromSDK).map(
