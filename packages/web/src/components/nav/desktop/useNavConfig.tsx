@@ -1,11 +1,7 @@
 import { ReactNode, useMemo } from 'react'
 
 import { useChallengeCooldownSchedule } from '@audius/common/hooks'
-import {
-  accountSelectors,
-  chatSelectors,
-  uploadSelectors
-} from '@audius/common/store'
+import { accountSelectors, chatSelectors } from '@audius/common/store'
 import { route } from '@audius/common/utils'
 import type { IconComponent } from '@audius/harmony'
 import {
@@ -33,6 +29,7 @@ import { PlaylistLibrary } from './PlaylistLibrary'
 import { CreatePlaylistLibraryItemButton } from './PlaylistLibrary/CreatePlaylistLibraryItemButton'
 import { WalletsNestedContent } from './WalletsNestedContent'
 import { useNavSourcePlayingStatus } from './useNavSourcePlayingStatus'
+import { useNavUploadStatus } from './useNavUploadStatus'
 
 const {
   EXPLORE_PAGE,
@@ -46,7 +43,6 @@ const {
 
 const { getUnreadMessagesCount } = chatSelectors
 const { getIsAccountComplete, getHasAccount } = accountSelectors
-const { getIsUploading } = uploadSelectors
 
 export type NavItemConfig = {
   label: string
@@ -84,7 +80,7 @@ export const useNavConfig = () => {
   const hasAccount = useSelector(getHasAccount)
   const isAccountComplete = useSelector(getIsAccountComplete)
   const unreadMessagesCount = useSelector(getUnreadMessagesCount)
-  const isUploading = useSelector(getIsUploading)
+  const { isUploading, isOnUploadPage } = useNavUploadStatus()
   const { color, spacing } = useTheme()
   const { claimableAmount } = useChallengeCooldownSchedule({
     multiple: true
@@ -178,12 +174,7 @@ export const useNavConfig = () => {
             css={{
               width: spacing.unit6,
               height: spacing.unit6,
-              color: matchesRoute({
-                current: location.pathname,
-                target: UPLOAD_PAGE
-              })
-                ? color.static.white
-                : color.neutral.n800
+              color: isOnUploadPage ? color.static.white : color.neutral.n800
             }}
           />
         ) : undefined,
@@ -210,6 +201,7 @@ export const useNavConfig = () => {
       isAccountComplete,
       claimableAmount,
       isUploading,
+      isOnUploadPage,
       playingFromRoute,
       color,
       spacing
