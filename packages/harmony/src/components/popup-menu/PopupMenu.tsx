@@ -54,7 +54,7 @@ export const PopupMenu = forwardRef<HTMLDivElement, PopupMenuProps>(
     const handleMenuItemClick = useCallback(
       (item: PopupMenuItem) => (e: MouseEvent<HTMLElement>) => {
         e.stopPropagation()
-        item.onClick(e as any)
+        item.onClick(e)
         handlePopupClose()
       },
       [handlePopupClose]
