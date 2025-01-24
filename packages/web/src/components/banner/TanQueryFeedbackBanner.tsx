@@ -8,7 +8,8 @@ const messages = {
 }
 
 export const TanQueryFeedbackBanner = () => {
-  const [isOpen, setIsOpen] = useState(true)
+  const isRealUrl = window.location.href.includes('audius.co')
+  const [isOpen, setIsOpen] = useState(isRealUrl)
   const onClose = () => setIsOpen(false)
   const onAccept = () => {
     window.open(

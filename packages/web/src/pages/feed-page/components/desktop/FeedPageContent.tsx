@@ -7,11 +7,11 @@ import { IconFeed } from '@audius/harmony'
 import { make, useRecord } from 'common/store/analytics/actions'
 import { Header } from 'components/header/desktop/Header'
 import EndOfLineup from 'components/lineup/EndOfLineup'
-import Lineup from 'components/lineup/Lineup'
 import {
   getLoadMoreTrackCount,
   INITIAL_LOAD_TRACKS_MULTIPLIER
 } from 'components/lineup/LineupProvider'
+import { TanQueryLineup } from 'components/lineup/TanQueryLineup'
 import { LineupVariant } from 'components/lineup/types'
 import Page from 'components/page/Page'
 import EmptyFeed from 'pages/feed-page/components/EmptyFeed'
@@ -27,45 +27,30 @@ const FeedPageContent = ({
   feedTitle,
   feedDescription,
   feedIsMain,
-  feed,
   setFeedInView,
   loadMoreFeed,
-  playFeedTrack,
-  pauseFeedTrack,
   getLineupProps,
   feedFilter,
   setFeedFilter,
   resetFeedLineup
 }: FeedPageContentProps) => {
-  const mainLineupProps = {
-    variant: LineupVariant.MAIN
-  }
   const { data: currentUserId } = useCurrentUserId()
-  const { loadNextPage, play, pause, isPlaying, source, lineup } = useFeed({
+  const lineupQueryData = useFeed({
     userId: currentUserId
   })
 
-  const feedLineupProps = {
-    ...getLineupProps(lineup),
-    playing: isPlaying,
-    playingSource: source,
-    setInView: setFeedInView,
-    loadMore: loadNextPage,
-    playTrack: play,
-    pauseTrack: pause,
-    delineate: feedIsMain,
-    actions: feedActions
-  }
+  const lineupProps = getLineupProps(lineupQueryData.lineup)
+  const scrollParent = lineupProps.scrollParent
   const record = useRecord()
 
   const didSelectFilter = (filter: FeedFilter) => {
-    if (feedLineupProps.scrollParent && feedLineupProps.scrollParent.scrollTo) {
-      feedLineupProps.scrollParent.scrollTo(0, 0)
+    if (scrollParent && scrollParent.scrollTo) {
+      scrollParent.scrollTo(0, 0)
     }
     setFeedFilter(filter)
     resetFeedLineup()
     const fetchLimit = getLoadMoreTrackCount(
-      mainLineupProps.variant,
+      LineupVariant.MAIN,
       INITIAL_LOAD_TRACKS_MULTIPLIER
     )
     const fetchOffset = 0
@@ -93,12 +78,17 @@ const FeedPageContent = ({
       size='large'
       header={header}
     >
-      <Lineup
-        pageSize={10}
+      <TanQueryLineup
+        {...lineupProps}
+        lineupQueryData={lineupQueryData}
+        initialPageSize={10}
+        pageSize={4}
         emptyElement={<EmptyFeed />}
         endOfLineup={<EndOfLineup />}
-        {...feedLineupProps}
-        {...mainLineupProps}
+        setInView={setFeedInView}
+        delineate={feedIsMain}
+        actions={feedActions}
+        variant={LineupVariant.MAIN}
       />
     </Page>
   )
