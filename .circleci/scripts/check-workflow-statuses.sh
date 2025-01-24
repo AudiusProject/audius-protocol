@@ -4,7 +4,6 @@ echo "Fetching pipeline workflows..."
 curl -s --url "https://circleci.com/api/v2/pipeline/${CIRCLE_PIPELINE_ID}/workflow" \
     -H "Circle-Token: ${CIRCLE_TOKEN}" \
     > /tmp/workflows.json
-echo "Generating Workflow Statuses..."
 
 for workflow in $(jq -r -c '.items[] | select(.id != "'$CIRCLE_WORKFLOW_ID'")' /tmp/workflows.json)
 do

@@ -314,7 +314,7 @@ jobs:
           name: Generate Slack Template
           command: bash .circleci/scripts/generate-slack-template.sh
       - slack/notify:
-          channel: '$SLACK_USER_ID'
+          channel: '<@U023NM7SQSW>'
           template: PIPELINE_STATUS_TEMPLATE
       - run:
           name: Check status
