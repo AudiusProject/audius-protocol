@@ -3,14 +3,14 @@ BEGIN;
 DO $$ 
 BEGIN 
   -- Check if we're on the right environment using blockhash
---   IF NOT EXISTS (
---     SELECT *
---     FROM "blocks"
---     WHERE "blockhash" = '0x8d5e6984014505e1e11bcbb1ca1a13bcc6ae85ac74014710a73271d82ca49f01'
---   ) THEN 
---     RAISE NOTICE 'Not running on stage environment, skipping migration...';
---     RETURN;
---   END IF;
+  IF NOT EXISTS (
+    SELECT *
+    FROM "blocks"
+    WHERE "blockhash" = '0x8d5e6984014505e1e11bcbb1ca1a13bcc6ae85ac74014710a73271d82ca49f01'
+  ) THEN 
+    RAISE NOTICE 'Not running on stage environment, skipping migration...';
+    RETURN;
+  END IF;
 
   -- Add is_initial column to email_access table if it doesn't exist
   IF NOT EXISTS (SELECT 1 FROM information_schema.columns 
