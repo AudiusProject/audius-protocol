@@ -36,6 +36,11 @@ export type PopupMenuProps = {
   dismissOnMouseLeave?: boolean
 
   /**
+   * An optional override for the icon color
+   */
+  overrideIconColor?: boolean
+
+  /**
    * A render function that will be provided:
    * - An anchorRef for positioning the menu
    * - A triggerPopup function that will show/hide the popup

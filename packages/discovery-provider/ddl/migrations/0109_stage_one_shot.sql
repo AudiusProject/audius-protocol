@@ -3,7 +3,7 @@ do $$ begin -- run only on stage
 if exists (
     select *
     from "blocks"
-    where "blockhash" = '0x65a3243860511ed28a933c3a113dea7df368ad53f721cc9d0034c0c75f996afb'
+    where "blockhash" = '0x6510eca8991a4f30410af065f14c7a83476f1cd33916df9cf16b138c0dc3f5f3'
 ) then -- check whether the data has already been backfilled and return early for idempotency
 if exists (
     select 1

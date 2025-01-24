@@ -1,63 +1,34 @@
-import { useCallback, useMemo } from 'react'
+import { useState } from 'react'
 
-import { useProxySelector } from '@audius/common/hooks'
-import { PlaybackSource, Status } from '@audius/common/models'
-import type { ID, UID } from '@audius/common/models'
-import {
-  historyPageTracksLineupActions as tracksActions,
-  historyPageSelectors
-} from '@audius/common/store'
-import { useFocusEffect } from '@react-navigation/native'
-import { useDispatch } from 'react-redux'
+import { useTrackHistory } from '@audius/common/api'
+import { useDebouncedCallback } from '@audius/common/hooks'
+import { Status } from '@audius/common/models'
 
-import { IconListeningHistory } from '@audius/harmony-native'
-import {
-  Screen,
-  ScreenContent,
-  Tile,
-  VirtualizedScrollView
-} from 'app/components/core'
+import { Divider, IconListeningHistory, Paper } from '@audius/harmony-native'
+import { Screen, ScreenContent } from 'app/components/core'
 import { EmptyTileCTA } from 'app/components/empty-tile-cta'
+import { FilterInput } from 'app/components/filter-input'
 import { TrackList } from 'app/components/track-list'
-import { WithLoader } from 'app/components/with-loader/WithLoader'
-import { makeStyles } from 'app/styles'
-const { getHistoryTracksLineup } = historyPageSelectors
 
 const messages = {
   title: 'Listening History',
-  noHistoryMessage: "You haven't listened to any tracks yet"
+  noHistoryMessage: "You haven't listened to any tracks yet",
+  inputPlaceholder: 'Filter Tracks'
 }
-const useStyles = makeStyles(({ palette, spacing }) => ({
-  container: {
-    marginVertical: spacing(4),
-    marginHorizontal: spacing(3),
-    borderRadius: 6
-  },
-  trackListContainer: {
-    backgroundColor: palette.white,
-    borderRadius: 6,
-    overflow: 'hidden'
-  }
-}))
 
 export const ListeningHistoryScreen = () => {
-  const styles = useStyles()
-  const dispatch = useDispatch()
+  const [filterValue, setFilterValue] = useState('')
 
-  const fetchListeningHistory = useCallback(() => {
-    dispatch(tracksActions.fetchLineupMetadatas())
-  }, [dispatch])
+  const { fetchNextPage, togglePlay, status, entries } = useTrackHistory({
+    query: filterValue
+  })
 
-  useFocusEffect(fetchListeningHistory)
-
-  const { status, entries } = useProxySelector(getHistoryTracksLineup, [])
-  const trackUids = useMemo(() => entries.map(({ uid }) => uid), [entries])
-
-  const togglePlay = useCallback(
-    (uid: UID, id: ID) => {
-      dispatch(tracksActions.togglePlay(uid, id, PlaybackSource.HISTORY_PAGE))
+  const handleChangeFilterValue = useDebouncedCallback(
+    (value: string) => {
+      setFilterValue(value)
     },
-    [dispatch]
+    [setFilterValue],
+    250
   )
 
   return (
@@ -68,26 +39,28 @@ export const ListeningHistoryScreen = () => {
       variant='secondary'
     >
       <ScreenContent>
-        <WithLoader loading={status === Status.LOADING}>
-          {status === Status.SUCCESS && entries.length === 0 ? (
-            <EmptyTileCTA message={messages.noHistoryMessage} />
-          ) : (
-            <VirtualizedScrollView>
-              <Tile
-                styles={{
-                  root: styles.container,
-                  tile: styles.trackListContainer
-                }}
-              >
-                <TrackList
-                  uids={trackUids}
-                  togglePlay={togglePlay}
-                  trackItemAction='overflow'
-                />
-              </Tile>
-            </VirtualizedScrollView>
-          )}
-        </WithLoader>
+        {status === Status.SUCCESS && entries.length === 0 ? (
+          <EmptyTileCTA message={messages.noHistoryMessage} />
+        ) : (
+          <Paper m='l' gap='l'>
+            <FilterInput
+              placeholder={messages.inputPlaceholder}
+              onChangeText={handleChangeFilterValue}
+              shadow='flat'
+              mb={0}
+              mh='s'
+            />
+            <Divider />
+            <TrackList
+              uids={entries.map(({ uid }) => uid)}
+              togglePlay={togglePlay}
+              trackItemAction='overflow'
+              onEndReached={() => fetchNextPage()}
+              onEndReachedThreshold={0.5}
+              showSkeleton={status !== Status.SUCCESS && entries.length === 0}
+            />
+          </Paper>
+        )}
       </ScreenContent>
     </Screen>
   )

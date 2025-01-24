@@ -4,7 +4,8 @@ import {
   useCurrentUserId,
   useGetMutedUsers,
   useUserPlaylists,
-  useUserAlbums
+  useUserAlbums,
+  useProfileTracks
 } from '@audius/common/api'
 import { useMuteUser } from '@audius/common/context'
 import { commentsMessages } from '@audius/common/messages'
@@ -113,7 +114,6 @@ export type ProfilePageProps = {
   profile: User | null
   status: Status
   goToRoute: (route: string) => void
-  artistTracks: LineupState<Track>
   playArtistTrack: (uid: UID) => void
   pauseArtistTrack: () => void
   // Feed
@@ -140,7 +140,6 @@ export type ProfilePageProps = {
   onCancel: () => void
   onSortByRecent: () => void
   onSortByPopular: () => void
-  loadMoreArtistTracks: (offset: number, limit: number) => void
   loadMoreUserFeed: (offset: number, limit: number) => void
   formatCardSecondaryText: (
     saves: number,
@@ -283,12 +282,61 @@ const AlbumTab = ({
   return <CardLineup cardsClassName={styles.cardLineup} cards={albumCards} />
 }
 
+const TracksTab = ({
+  isOwner,
+  profile,
+  handle,
+  getLineupProps
+}: {
+  isOwner: boolean
+  profile: User
+  handle: string
+  getLineupProps: (lineup: any) => any
+}) => {
+  const { fetchNextPage, play, pause, lineup, pageSize } = useProfileTracks({
+    handle
+  })
+
+  const trackUploadChip = isOwner ? (
+    <UploadChip
+      key='upload-chip'
+      type='track'
+      variant='tile'
+      source='profile'
+    />
+  ) : null
+
+  return (
+    <div className={styles.tiles}>
+      {isOwner ? <ProfileCompletionHeroCard /> : null}
+      <Lineup
+        {...getLineupProps(lineup)}
+        pageSize={pageSize}
+        extraPrecedingElement={trackUploadChip}
+        emptyElement={
+          <EmptyTab
+            isOwner={isOwner}
+            name={profile.name}
+            text={'uploaded any tracks'}
+          />
+        }
+        animateLeadingElement
+        leadingElementId={profile.artist_pick_track_id}
+        loadMore={fetchNextPage}
+        playTrack={play}
+        pauseTrack={pause}
+        actions={tracksActions}
+        variant={LineupVariant.GRID}
+      />
+    </div>
+  )
+}
+
 const ProfilePage = ({
   isOwner,
   profile,
   status,
   goToRoute,
-  artistTracks,
   playArtistTrack,
   pauseArtistTrack,
   getLineupProps,
@@ -297,7 +345,6 @@ const ProfilePage = ({
   pauseUserFeedTrack,
   formatCardSecondaryText,
   loadMoreUserFeed,
-  loadMoreArtistTracks,
   updateProfile,
   onFollow,
   onUnfollow,
@@ -392,15 +439,6 @@ const ProfilePage = ({
   const getArtistProfileContent = () => {
     if (!profile) return { headers: [], elements: [] }
 
-    const trackUploadChip = isOwner ? (
-      <UploadChip
-        key='upload-chip'
-        type='track'
-        variant='tile'
-        source='profile'
-      />
-    ) : null
-
     const headers: TabHeader[] = [
       {
         icon: <IconNote />,
@@ -428,31 +466,13 @@ const ProfilePage = ({
       }
     ]
     const elements = [
-      <div key={ProfilePageTabs.TRACKS} className={styles.tiles}>
-        {renderProfileCompletionCard()}
-        {status === Status.SUCCESS ? (
-          artistTracks.status === Status.SUCCESS &&
-          artistTracks.entries.length === 0 ? (
-            <EmptyTab
-              isOwner={isOwner}
-              name={profile.name}
-              text={'uploaded any tracks'}
-            />
-          ) : (
-            <Lineup
-              {...getLineupProps(artistTracks)}
-              extraPrecedingElement={trackUploadChip}
-              animateLeadingElement
-              leadingElementId={profile.artist_pick_track_id}
-              loadMore={loadMoreArtistTracks}
-              playTrack={playArtistTrack}
-              pauseTrack={pauseArtistTrack}
-              actions={tracksActions}
-              variant={LineupVariant.GRID}
-            />
-          )
-        ) : null}
-      </div>,
+      <TracksTab
+        key={ProfilePageTabs.TRACKS}
+        isOwner={isOwner}
+        profile={profile}
+        handle={handle}
+        getLineupProps={getLineupProps}
+      />,
       <div key={ProfilePageTabs.ALBUMS} className={styles.cards}>
         <AlbumTab isOwner={isOwner} profile={profile} userId={userId} />
       </div>,

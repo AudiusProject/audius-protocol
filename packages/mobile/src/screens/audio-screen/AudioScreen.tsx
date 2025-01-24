@@ -166,7 +166,7 @@ export const AudioScreen = () => {
             ) : (
               <Text
                 variant='heading'
-                color='staticWhite'
+                color='white'
                 strength='strong'
                 style={css({
                   fontSize: 80,

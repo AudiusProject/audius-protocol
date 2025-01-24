@@ -54,7 +54,7 @@ const useStyles = makeStyles(({ spacing, palette, typography }) => ({
     padding: spacing(2)
   },
   noticeTileText: {
-    color: palette.staticStaticWhite
+    color: palette.inverse
   }
 }))
 

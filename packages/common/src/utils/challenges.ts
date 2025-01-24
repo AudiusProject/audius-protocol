@@ -124,7 +124,7 @@ export const challengeRewardsConfig: Record<
     panelButtonText: 'Trending on Audius'
   },
   [ChallengeName.ListenStreak]: {
-    id: 'listen-streak',
+    id: ChallengeName.ListenStreak,
     title: 'Listening Streak: 7 Days',
     description: (challenge) =>
       `Listen to one track a day for seven days to earn ${challenge?.amount} $AUDIO.`,
@@ -295,6 +295,15 @@ export const challengeRewardsConfig: Record<
     description: () => 'Winners are selected every Friday at Noon PT!',
     panelButtonText: 'See More',
     id: 'trending-underground'
+  },
+  o: {
+    title: 'One Shot',
+    description: () => 'Claim your $AUDIO before it expires!',
+    fullDescription: () => 'Claim your $AUDIO before it expires!',
+    panelButtonText: 'See More',
+    id: ChallengeName.OneShot,
+    remainingLabel: 'Ineligible',
+    progressLabel: 'Ineligible'
   }
 }
 

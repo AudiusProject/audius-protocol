@@ -29,7 +29,7 @@ import {
   SIGN_IN_FAILED,
   SIGN_IN_SUCCEEDED,
   COMPLETE_FOLLOW_ARTISTS,
-  CONFIGURE_META_MASK,
+  USING_EXTERNAL_WALLET,
   UPDATE_ROUTE_ON_COMPLETION,
   UPDATE_ROUTE_ON_EXIT,
   ADD_FOLLOW_ARTISTS,
@@ -64,7 +64,7 @@ const initialState = {
   linkedSocialOnFirstPage: false,
   accountAlreadyExisted: false,
   verified: false,
-  useMetaMask: false,
+  usingExternalWallet: false,
   accountReady: false,
   twitterId: '',
   twitterScreenName: '',
@@ -301,10 +301,10 @@ const actionsMap = {
       }
     }
   },
-  [CONFIGURE_META_MASK](state, action) {
+  [USING_EXTERNAL_WALLET](state, action) {
     return {
       ...state,
-      useMetaMask: true
+      usingExternalWallet: true
     }
   },
   [VALIDATE_EMAIL_SUCCEEDED](state, action) {

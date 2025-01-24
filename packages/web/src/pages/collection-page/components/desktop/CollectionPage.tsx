@@ -5,11 +5,11 @@ import {
   Status,
   SmartCollection,
   ID,
-  User,
   isContentUSDCPurchaseGated,
   ModalSource,
   Track,
-  UserCollectionMetadata
+  UserCollectionMetadata,
+  UserMetadata
 } from '@audius/common/models'
 import {
   CollectionTrack,
@@ -90,7 +90,6 @@ export type CollectionPageProps = {
   description: string
   canonicalUrl: string
   structuredData?: Object
-  playlistId: ID
   playing: boolean
   previewing: boolean
   getPlayingUid: () => string | null
@@ -98,12 +97,13 @@ export type CollectionPageProps = {
   collection: {
     status: 'pending' | 'success' | 'error'
     metadata: UserCollectionMetadata | SmartCollection | null
-    user: User | null
+    user: UserMetadata | null | undefined
   }
   tracks: {
     status: Status
     entries: CollectionTrack[]
   }
+  collectionId: number
   userId?: ID | null
   userPlaylists?: any
   isQueued: () => boolean
@@ -136,7 +136,7 @@ const CollectionPage = ({
   description: pageDescription,
   canonicalUrl,
   structuredData,
-  playlistId,
+  collectionId,
   allowReordering,
   playing,
   previewing,
@@ -238,7 +238,7 @@ const CollectionPage = ({
   const topSection = (
     <CollectionHeader
       access={access}
-      collectionId={playlistId}
+      collectionId={collectionId}
       userId={playlistOwnerId}
       loading={isNftPlaylist ? tracksLoading : collectionLoading}
       tracksLoading={tracksLoading}
@@ -325,7 +325,7 @@ const CollectionPage = ({
       scrollableSearch
     >
       <Paper column mb='unit-10' css={{ minWidth: 774 }}>
-        <CollectionDogEar collectionId={playlistId} borderOffset={0} />
+        <CollectionDogEar collectionId={collectionId} borderOffset={0} />
         <div className={styles.topSectionWrapper}>{topSection}</div>
         {!collectionLoading && isEmpty ? (
           <EmptyContent
@@ -374,7 +374,7 @@ const CollectionPage = ({
       {!collectionLoading && isOwner && !isAlbum && !isNftPlaylist ? (
         <>
           <Divider variant='default' className={styles.tileDivider} />
-          <SuggestedTracks collectionId={playlistId} />
+          <SuggestedTracks collectionId={collectionId} />
         </>
       ) : null}
     </Page>

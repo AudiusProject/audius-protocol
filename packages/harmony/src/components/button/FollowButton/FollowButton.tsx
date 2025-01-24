@@ -113,9 +113,7 @@ export const FollowButton = forwardRef(
     const { color, cornerRadius, motion, shadows } = useTheme()
 
     const textColor =
-      checkedValue || isHovering || isPressing
-        ? color.static.white
-        : color.primary.primary
+      checkedValue || isHovering || isPressing ? 'white' : 'active'
 
     const borderRadius =
       variant === 'pill' ? cornerRadius['2xl'] : cornerRadius.s
@@ -137,31 +135,15 @@ export const FollowButton = forwardRef(
         background-color ${motion.hover},
         color ${motion.hover}
       `,
-      '::before': {
-        content: '""',
-        position: 'absolute',
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        backgroundColor: 'rgba(0, 0, 0, 0)',
-        borderRadius
-      },
       '&:hover': {
-        backgroundColor: color.primary.primary,
         borderWidth: 0,
-        boxShadow: shadows.mid,
-        '&::before': {
-          backgroundColor: 'rgba(255, 255, 255, 0.2)'
-        }
+        backgroundColor: color.primary.p300,
+        boxShadow: shadows.mid
       },
       '&:active': {
-        backgroundColor: color.primary.primary,
+        backgroundColor: color.primary.p500,
         borderWidth: 0,
-        boxShadow: 'none',
-        '&::before': {
-          backgroundColor: 'rgba(0, 0, 0, 0.2)'
-        }
+        boxShadow: 'none'
       }
     }
 
@@ -205,14 +187,13 @@ export const FollowButton = forwardRef(
         {...buttonProps}
         {...rootProps}
       >
-        {/* TODO: use theme icon colors (confirm w/design) */}
-        <Icon height={18} width={18} css={{ path: { fill: textColor } }} />
+        <Icon height={18} width={18} color={textColor} />
         <Text
           variant='label'
           tag='span'
           size={size === 'small' ? 's' : 'l'}
           strength='default'
-          css={{ color: textColor }}
+          color={textColor}
         >
           {text}
         </Text>

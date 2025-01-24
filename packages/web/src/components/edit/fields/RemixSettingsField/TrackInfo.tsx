@@ -40,11 +40,7 @@ export const TrackInfo = (props: TrackInfoProps) => {
         </Text>{' '}
         <Text tag='span'>{user.name}</Text>
       </Text>
-      <UserBadges
-        className={styles.iconVerified}
-        userId={user.user_id}
-        badgeSize={14}
-      />
+      <UserBadges className={styles.iconVerified} userId={user.user_id} />
     </SelectedValue>
   )
 }

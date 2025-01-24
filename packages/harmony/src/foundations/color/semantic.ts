@@ -1,9 +1,7 @@
-import { Theme } from '../theme/types'
-
 import type { PrimitiveColors } from './primitive'
 import { primitiveTheme } from './primitive'
 
-const createSemanticTheme = (theme: Theme, primitives: PrimitiveColors) => ({
+const createSemanticTheme = (primitives: PrimitiveColors) => ({
   text: {
     default: primitives.neutral.n800,
     subdued: primitives.neutral.n400,
@@ -15,8 +13,8 @@ const createSemanticTheme = (theme: Theme, primitives: PrimitiveColors) => ({
     // Legacy compatibility
     heading: primitives.special.gradient,
     active: primitives.primary.p300,
-    staticWhite: primitives.special.white,
-    staticStaticWhite: primitives.static.staticWhite,
+    white: primitives.special.white,
+    staticWhite: primitives.static.staticWhite,
     warning: primitives.special.orange,
     danger: primitives.special.red,
     premium: primitives.special.lightGreen,
@@ -28,14 +26,13 @@ const createSemanticTheme = (theme: Theme, primitives: PrimitiveColors) => ({
     disabled: primitives.neutral.n150,
     link: primitives.primary.p500,
     accent: primitives.secondary.s300,
-    inverse:
-      theme === 'day' ? primitives.neutral.n950 : primitives.special.white,
+    inverse: primitives.static.staticWhite,
 
     // Legacy compatibility
     heading: primitives.special.gradient,
     active: primitives.primary.p300,
-    staticWhite: primitives.special.white,
-    staticStaticWhite: primitives.static.staticWhite,
+    white: primitives.special.white,
+    staticWhite: primitives.static.staticWhite,
     warning: primitives.special.orange,
     danger: primitives.special.red,
     premium: primitives.special.lightGreen,
@@ -75,9 +72,9 @@ const createSemanticTheme = (theme: Theme, primitives: PrimitiveColors) => ({
 })
 
 export const semanticTheme = {
-  day: createSemanticTheme('day', primitiveTheme.day),
-  dark: createSemanticTheme('dark', primitiveTheme.dark),
-  matrix: createSemanticTheme('matrix', primitiveTheme.matrix)
+  day: createSemanticTheme(primitiveTheme.day),
+  dark: createSemanticTheme(primitiveTheme.dark),
+  matrix: createSemanticTheme(primitiveTheme.matrix)
 }
 
 export type SemanticColors = typeof semanticTheme.day

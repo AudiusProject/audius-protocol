@@ -9,7 +9,7 @@ import {
   CollectionsPageType
 } from '~/store/pages'
 
-import { Config } from './types'
+import { QueryOptions } from './types'
 import { useCollection } from './useCollection'
 import { useCollectionByPermalink } from './useCollectionByPermalink'
 
@@ -28,7 +28,7 @@ type CollectionParams =
  */
 export const useCollectionByParams = (
   params: CollectionParams,
-  options?: Config
+  options?: QueryOptions
 ) => {
   const dispatch = useDispatch()
 

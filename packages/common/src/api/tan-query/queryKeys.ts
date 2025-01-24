@@ -50,6 +50,9 @@ export const QUERY_KEYS = {
   notificationUnreadCount: 'notificationUnreadCount',
   reposts: 'reposts',
   remixers: 'remixers',
-  searchAutocomplete: 'searchAutocomplete',
-  topTags: 'topTags'
+  trackHistory: 'trackHistory',
+  topTags: 'topTags',
+  authorizedApps: 'authorizedApps',
+  developerApps: 'developerApps',
+  searchAutocomplete: 'searchAutocomplete'
 } as const

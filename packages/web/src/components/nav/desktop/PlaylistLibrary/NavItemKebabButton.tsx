@@ -22,12 +22,12 @@ export const NavItemKebabButton = (props: EditNavItemButtonProps) => {
   return (
     <PopupMenu
       items={items}
+      overrideIconColor
       anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
       transformOrigin={{ vertical: 'top', horizontal: 'left' }}
       renderTrigger={(ref, onClick, triggerProps) => {
         const handleClick = (e: MouseEvent) => {
           e.preventDefault()
-          e.stopPropagation()
           onClick()
         }
 
@@ -48,7 +48,7 @@ export const NavItemKebabButton = (props: EditNavItemButtonProps) => {
             }}
             icon={IconKebabHorizontal}
             size='xs'
-            color={isSelected ? 'staticWhite' : 'subdued'}
+            color={isSelected ? 'white' : 'subdued'}
           />
         )
       }}

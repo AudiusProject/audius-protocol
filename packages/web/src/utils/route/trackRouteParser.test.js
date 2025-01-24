@@ -8,7 +8,7 @@ describe('parseTrackRoute', () => {
     const route = '/tartine/morning-buns-25'
     const { slug, trackId, handle } = parseTrackRoute(route)
     expect(slug).toEqual('morning-buns-25')
-    expect(trackId).toEqual(null)
+    expect(trackId).toEqual(undefined)
     expect(handle).toEqual('tartine')
   })
 
@@ -17,8 +17,8 @@ describe('parseTrackRoute', () => {
 
     const route = '/tracks/eP9k7'
     const { slug, trackId, handle } = parseTrackRoute(route)
-    expect(slug).toEqual(null)
+    expect(slug).toEqual(undefined)
     expect(trackId).toEqual(11845)
-    expect(handle).toEqual(null)
+    expect(handle).toEqual(undefined)
   })
 })

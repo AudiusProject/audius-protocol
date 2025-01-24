@@ -8,7 +8,8 @@ import {
   modalsActions,
   profilePageTracksLineupActions,
   ProfilePageTabs,
-  profilePageFeedLineupActions
+  profilePageFeedLineupActions,
+  profilePageActions
 } from '@audius/common/store'
 import { encodeUrlName } from '@audius/common/utils'
 import { PortalHost } from '@gorhom/portal'
@@ -115,6 +116,12 @@ export const ProfileScreen = () => {
       }
     }
   }, [profile, currentTab, dispatch, handleLower])
+
+  useEffect(() => {
+    if (handleLower) {
+      dispatch(profilePageActions.setCurrentUser(handleLower))
+    }
+  }, [handleLower, dispatch])
 
   useEffect(() => {
     if (isSuccess) {

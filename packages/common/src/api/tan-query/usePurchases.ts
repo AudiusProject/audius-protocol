@@ -10,7 +10,7 @@ import {
 } from '~/models/USDCTransactions'
 
 import { QUERY_KEYS } from './queryKeys'
-import { Config } from './types'
+import { QueryOptions } from './types'
 import { useCollections } from './useCollections'
 import { useTracks } from './useTracks'
 import { useUsers } from './useUsers'
@@ -24,7 +24,10 @@ export type GetPurchaseListArgs = {
   pageSize?: number
 }
 
-export const usePurchases = (args: GetPurchaseListArgs, options?: Config) => {
+export const usePurchases = (
+  args: GetPurchaseListArgs,
+  options?: QueryOptions
+) => {
   const { userId, sortMethod, sortDirection, pageSize = PAGE_SIZE } = args
   const { audiusSdk } = useAudiusQueryContext()
   const queryResult = useInfiniteQuery({

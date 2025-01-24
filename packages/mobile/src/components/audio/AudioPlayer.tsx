@@ -1,6 +1,6 @@
 import { useRef, useEffect, useCallback, useState } from 'react'
 
-import { Name, SquareSizes } from '@audius/common/models'
+import { Name } from '@audius/common/models'
 import type { Track } from '@audius/common/models'
 import {
   accountSelectors,
@@ -61,8 +61,6 @@ import {
   addOfflineEntries,
   OfflineDownloadStatus
 } from 'app/store/offline-downloads/slice'
-
-import { useTrackImage } from '../image/TrackImage'
 
 import { useChromecast } from './GoogleCast'
 import { useSavePodcastProgress } from './useSavePodcastProgress'
@@ -310,11 +308,6 @@ export const AudioPlayer = () => {
     track
   ])
 
-  const { source: image } = useTrackImage({
-    trackId: track?.track_id,
-    size: SquareSizes.SIZE_1000_BY_1000
-  })
-
   const makeTrackData = useCallback(
     async ({ track, playerBehavior }: QueueableTrack, retries?: number) => {
       if (!track) {
@@ -366,11 +359,7 @@ export const AudioPlayer = () => {
           : undefined
 
       const imageUrl =
-        localTrackImageSource ??
-        (image && typeof image !== 'number' && 'uri' in image
-          ? image?.uri
-          : undefined) ??
-        DEFAULT_IMAGE_URL
+        localTrackImageSource ?? track.artwork['1000x1000'] ?? DEFAULT_IMAGE_URL
 
       return {
         url,
@@ -392,7 +381,6 @@ export const AudioPlayer = () => {
       nftAccessSignatureMap,
       offlineAvailabilityByTrackId,
       queueTrackOwnersMap,
-      image,
       setRetries
     ]
   )

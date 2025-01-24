@@ -30,7 +30,7 @@
 
 .nameWrapper {
   position: relative;
-  margin: 4px 0 0 32px;
+  margin-left: 32px;
   text-align: left;
   user-select: none;
   max-width: 720px;
@@ -39,6 +39,8 @@
 
 .handleWrapper {
   margin-top: 4px;
+  display: flex;
+  align-items: center;
 }
 
 .handleWrapper > .handle {

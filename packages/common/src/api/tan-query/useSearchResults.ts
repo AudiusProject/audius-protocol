@@ -15,7 +15,7 @@ import { EntriesByKind } from '~/store/cache/types'
 import { Genre, formatMusicalKey } from '~/utils'
 
 import { QUERY_KEYS } from './queryKeys'
-import { Config } from './types'
+import { QueryOptions } from './types'
 
 export type SearchCategory = 'all' | 'tracks' | 'albums' | 'playlists' | 'users'
 
@@ -66,7 +66,7 @@ export const useSearchResults = (
     disableAnalytics,
     ...filters
   }: SearchArgs,
-  config?: Config
+  options?: QueryOptions
 ) => {
   const { audiusSdk, getFeatureEnabled, analytics } = useAudiusQueryContext()
   const queryClient = useQueryClient()
@@ -204,7 +204,7 @@ export const useSearchResults = (
         playlists
       }
     },
-    staleTime: config?.staleTime,
-    enabled: config?.enabled !== false
+    staleTime: options?.staleTime,
+    enabled: options?.enabled !== false
   })
 }

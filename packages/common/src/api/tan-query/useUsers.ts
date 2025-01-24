@@ -8,10 +8,13 @@ import { ID } from '~/models/Identifiers'
 import { removeNullable } from '~/utils/typeUtils'
 
 import { QUERY_KEYS } from './queryKeys'
-import { Config } from './types'
+import { QueryOptions } from './types'
 import { primeUserData } from './utils/primeUserData'
 
-export const useUsers = (userIds: ID[] | null | undefined, config?: Config) => {
+export const useUsers = (
+  userIds: ID[] | null | undefined,
+  options?: QueryOptions
+) => {
   const { audiusSdk } = useAudiusQueryContext()
   const dispatch = useDispatch()
   const queryClient = useQueryClient()
@@ -30,7 +33,7 @@ export const useUsers = (userIds: ID[] | null | undefined, config?: Config) => {
 
       return users
     },
-    staleTime: config?.staleTime,
-    enabled: config?.enabled !== false && encodedIds && encodedIds.length > 0
+    staleTime: options?.staleTime,
+    enabled: options?.enabled !== false && encodedIds && encodedIds.length > 0
   })
 }

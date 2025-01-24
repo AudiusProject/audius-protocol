@@ -11,6 +11,7 @@ import { createChatModalReducer } from './create-chat-modal'
 import { deleteTrackConfirmationModalReducer } from './delete-track-confirmation-modal'
 import { earlyReleaseConfirmationModalReducer } from './early-release-confirmation-modal'
 import { editAccessConfirmationModalReducer } from './edit-access-confirmation-modal'
+import { externalWalletSignUpModalReducer } from './external-wallet-sign-up-modal'
 import { hideContentConfirmationModalReducer } from './hide-confirmation-modal'
 import { inboxUnavailableModalReducer } from './inbox-unavailable-modal'
 import { leavingAudiusModalReducer } from './leaving-audius-modal'
@@ -70,7 +71,8 @@ const combinedReducers = combineReducers({
   PublishConfirmation: publishConfirmationModalReducer,
   HideContentConfirmation: hideContentConfirmationModalReducer,
   Announcement: announcementModalReducer,
-  Notification: notificationModalReducer
+  Notification: notificationModalReducer,
+  ExternalWalletSignUp: externalWalletSignUpModalReducer
 })
 
 /**

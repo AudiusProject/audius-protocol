@@ -66,13 +66,13 @@ export const StatusPill = ({
   if (shouldShowNewChallengePill) {
     return (
       <BasePill
-        color='staticWhite'
+        color='white'
         backgroundColor={color.background.primary}
         borderColor={color.primary.p400}
       >
         <Flex alignItems='center' justifyContent='center' gap='xs'>
-          <IconSparkles size='s' color='staticWhite' />
-          <Text variant='body' size='m' strength='strong' color='staticWhite'>
+          <IconSparkles size='s' color='white' />
+          <Text variant='body' size='m' strength='strong' color='white'>
             {messages.new}
           </Text>
         </Flex>

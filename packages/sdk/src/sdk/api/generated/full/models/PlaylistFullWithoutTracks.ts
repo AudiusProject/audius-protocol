@@ -226,7 +226,7 @@ export interface PlaylistFullWithoutTracks {
      */
     updatedAt: string;
     /**
-     * 
+     * DEPRECATED. Use playlist_contents instead.
      * @type {Array<PlaylistAddedTimestamp>}
      * @memberof PlaylistFullWithoutTracks
      */

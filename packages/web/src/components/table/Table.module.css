@@ -2,7 +2,7 @@
   position: relative;
   width: 100%;
   border-radius: 8px;
-  box-shadow: 0 2px 5px -2px var(--tile-shadow-3);
+  box-shadow: var(--harmony-shadow-mid);
   background-color: var(--harmony-white);
   overflow: hidden;
   padding-bottom: 5px;

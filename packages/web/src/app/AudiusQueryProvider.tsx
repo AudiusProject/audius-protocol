@@ -15,6 +15,7 @@ import { env } from 'services/env'
 import { getFeatureEnabled } from 'services/remote-config/featureFlagHelpers'
 import { remoteConfigInstance } from 'services/remote-config/remote-config-instance'
 import { reportToSentry } from 'store/errors/reportToSentry'
+import { generatePlaylistArtwork } from 'utils/imageProcessingUtil'
 
 type AudiusQueryProviderProps = {
   children: ReactNode
@@ -37,7 +38,8 @@ export const AudiusQueryProvider = (props: AudiusQueryProviderProps) => {
         fetch,
         remoteConfigInstance,
         getFeatureEnabled,
-        analytics
+        analytics,
+        imageUtils: { generatePlaylistArtwork }
       }}
     >
       {children}

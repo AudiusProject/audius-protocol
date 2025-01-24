@@ -3,7 +3,8 @@ import {
   track as amplitudeTrack,
   setUserId,
   identify as amplitudeIdentify,
-  Identify
+  Identify,
+  Types as AmplitudeTypes
 } from '@amplitude/analytics-react-native'
 import VersionNumber from 'react-native-version-number'
 
@@ -27,7 +28,15 @@ export const init = async () => {
     if (AmplitudeWriteKey && AmplitudeProxy) {
       await amplitudeInit(AmplitudeWriteKey, undefined, {
         serverUrl: AmplitudeProxy,
-        appVersion: clientVersion // Identifies our app version to Amplitude
+        appVersion: clientVersion, // Identifies our app version to Amplitude
+        logLevel: AmplitudeTypes.LogLevel.Error,
+        // Events queued in memory will flush when number of events exceed upload threshold
+        // Default value is 30
+        flushQueueSize: 50,
+        // Events queue will flush every certain milliseconds based on setting
+        // Default value is 10000 milliseconds
+        flushIntervalMillis: 20000,
+        minIdLength: 1 // By default amplitude rejects our handle ids if they're less than 5 characters
       })
       analyticsSetupStatus = 'ready'
     } else {

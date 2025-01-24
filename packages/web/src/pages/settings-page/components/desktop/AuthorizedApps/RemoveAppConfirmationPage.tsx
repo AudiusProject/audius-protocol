@@ -26,8 +26,12 @@ export const RemoveAppConfirmationPage = (
   props: AuthorizedAppConfirmationPageProps
 ) => {
   const { params, setPage } = props
-  const [removeAuthorizedApp, result] = useRemoveAuthorizedApp()
-  const { status, errorMessage } = result
+  const {
+    mutate: removeAuthorizedApp,
+    error,
+    isError,
+    isSuccess
+  } = useRemoveAuthorizedApp()
   const userId = useSelector(getUserId)
   const record = useRecord()
   const apiKey = params?.apiKey
@@ -42,7 +46,7 @@ export const RemoveAppConfirmationPage = (
   }, [userId, apiKey, removeAuthorizedApp])
 
   useEffect(() => {
-    if (status === Status.SUCCESS) {
+    if (isSuccess) {
       setPage(AuthorizedAppsPages.YOUR_APPS)
       record(
         make(Name.AUTHORIZED_APP_REMOVE_SUCCESS, {
@@ -51,7 +55,7 @@ export const RemoveAppConfirmationPage = (
         })
       )
     }
-  }, [status, setPage, record, params?.name, params?.apiKey])
+  }, [isSuccess, setPage, record, params?.name, params?.apiKey])
 
   useEffect(() => {
     if (status === Status.ERROR) {
@@ -60,11 +64,11 @@ export const RemoveAppConfirmationPage = (
         make(Name.AUTHORIZED_APP_REMOVE_ERROR, {
           name: params?.name,
           apiKey: params?.apiKey,
-          error: errorMessage
+          error: error?.message
         })
       )
     }
-  }, [status, setPage, record, params?.name, params?.apiKey, errorMessage])
+  }, [isError, setPage, record, params?.name, params?.apiKey, error])
 
   if (!params) return null
 

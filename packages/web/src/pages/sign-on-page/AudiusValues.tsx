@@ -32,7 +32,7 @@ const AudiusValue = (props: AudiusValueProps) => {
   return (
     <Flex alignItems='center' justifyContent='center' gap='m'>
       <Icon
-        color='staticWhite'
+        color='white'
         size={isSmall ? 'l' : isMedium ? 'l' : '2xl'}
         shadow='drop'
       />
@@ -41,7 +41,7 @@ const AudiusValue = (props: AudiusValueProps) => {
         tag='h2'
         size={isSmall ? 'l' : isMedium ? 'm' : 'xl'}
         strength={isSmall ? 'weak' : 'default'}
-        color='staticWhite'
+        color='white'
         shadow='emphasis'
       >
         {text}
@@ -81,7 +81,7 @@ export const AudiusValues = (props: AudiusValuesProps) => {
           variant={isSmall || isMedium ? 'heading' : 'display'}
           size={isMedium ? 'xl' : 's'}
           strength='strong'
-          color='staticWhite'
+          color='white'
           shadow='emphasis'
         >
           {messages.heading}

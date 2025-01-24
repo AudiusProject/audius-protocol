@@ -1,4 +1,4 @@
-import { ComponentType, PureComponent, RefObject } from 'react'
+import { ComponentType, PureComponent, RefObject, useEffect } from 'react'
 
 import { useUserByParams } from '@audius/common/api'
 import {
@@ -41,7 +41,7 @@ import {
 import { getErrorMessage, route } from '@audius/common/utils'
 import { UnregisterCallback } from 'history'
 import moment from 'moment'
-import { connect } from 'react-redux'
+import { connect, useDispatch } from 'react-redux'
 import { withRouter, RouteComponentProps } from 'react-router-dom'
 import { Dispatch } from 'redux'
 
@@ -105,8 +105,17 @@ type ProfilePageProviderProps = OwnProps &
   RouteComponentProps
 
 const ProfilePageProvider = (props: ProfilePageProviderProps) => {
+  const dispatch = useDispatch()
   const params = parseUserRoute(props.pathname)
   const { data: user } = useUserByParams(params!)
+
+  const handle = user?.handle
+
+  useEffect(() => {
+    if (handle) {
+      dispatch(profileActions.setCurrentUser(handle))
+    }
+  }, [handle, dispatch])
 
   return <ProfilePage {...props} user={user} />
 }
@@ -702,7 +711,7 @@ class ProfilePage extends PureComponent<ProfilePageProps, ProfilePageState> {
     const stats = this.getStats(isArtist)
 
     const userId = user ? user.user_id : null
-    const handle = user ? `@${user.handle}` : ''
+    const handle = user ? user.handle : ''
     const verified = user ? user.is_verified : false
     const twitterVerified = !!user?.verified_with_twitter
     const instagramVerified = !!user?.verified_with_instagram
@@ -936,6 +945,8 @@ function mapDispatchToProps(dispatch: Dispatch, props: RouteComponentProps) {
   const handleLower = params?.handle?.toLowerCase() as string
 
   return {
+    setCurrentUser: (handle: string) =>
+      dispatch(profileActions.setCurrentUser(handle)),
     fetchAccountHasTracks: () => {
       dispatch(fetchHasTracks())
     },

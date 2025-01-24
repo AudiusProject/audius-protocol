@@ -34,7 +34,7 @@ const AccountDetailsContainer = ({
     <Flex direction='column' pb='unit1' w='100%'>
       {isManagedAccount ? (
         <Box pv='xs' ph='m' backgroundColor='accent'>
-          <Text variant='label' size='xs' color='staticWhite'>
+          <Text variant='label' size='xs' color='white'>
             {messages.managedAccount}
           </Text>
         </Box>
