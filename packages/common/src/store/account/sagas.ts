@@ -344,8 +344,6 @@ function* fetchLocalAccountAsync() {
     )
 
     yield* put(fetchAccountSucceeded(cachedAccount))
-  } else {
-    yield* put(fetchAccountFailed({ reason: 'ACCOUNT_NOT_FOUND_LOCAL' }))
   }
 }
 
