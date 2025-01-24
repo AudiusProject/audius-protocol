@@ -9,7 +9,9 @@ import {
   Status,
   ID,
   UID,
-  UserMetadata
+  UserMetadata,
+  PhotoUpdate,
+  WriteableUserMetadata
 } from '@audius/common/models'
 import { newUserMetadata } from '@audius/common/schemas'
 import {
@@ -97,6 +99,7 @@ type OwnProps = {
   children:
     | ComponentType<MobileProfilePageProps>
     | ComponentType<DesktopProfilePageProps>
+  updateProfile: (args: WriteableUserMetadata) => void
 }
 
 type ProfilePageProviderProps = OwnProps &
@@ -125,8 +128,8 @@ type ProfilePageState = {
   editMode: boolean
   shouldMaskContent: boolean
   updatedName: string | null
-  updatedCoverPhoto: any | null
-  updatedProfilePicture: any | null
+  updatedCoverPhoto: PhotoUpdate | null
+  updatedProfilePicture: PhotoUpdate | null
   updatedBio: string | null
   updatedLocation: string | null
   updatedTwitterHandle: string | null
@@ -322,7 +325,7 @@ class ProfilePage extends PureComponent<ProfilePageProps, ProfilePageState> {
   }
 
   updateProfilePicture = async (
-    selectedFiles: any,
+    selectedFiles: FileList,
     source: 'original' | 'unsplash' | 'url'
   ) => {
     try {
@@ -950,8 +953,6 @@ function mapDispatchToProps(dispatch: Dispatch, props: RouteComponentProps) {
     fetchAccountHasTracks: () => {
       dispatch(fetchHasTracks())
     },
-    updateProfile: (metadata: any) =>
-      dispatch(profileActions.updateProfile(metadata)),
     goToRoute: (route: string) => dispatch(push(route)),
     replaceRoute: (route: string) => dispatch(replace(route)),
     updateCollectionOrder: (mode: CollectionSortMode) =>

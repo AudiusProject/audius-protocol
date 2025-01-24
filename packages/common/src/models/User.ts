@@ -92,11 +92,20 @@ export type UserManagerMetadata = {
   manager: UserMetadata
 }
 
+export type PhotoUpdate =
+  | {
+      file: File
+      url: string
+      source: string
+      type?: string
+    }
+  | ({ error: string } & any)
+
 export type ComputedUserProperties = {
   _collectionIds?: ID[]
   _profile_picture_color?: Color
-  updatedProfilePicture?: { file: File; url: string }
-  updatedCoverPhoto?: { file: File; url: string }
+  updatedProfilePicture?: PhotoUpdate
+  updatedCoverPhoto?: PhotoUpdate
 }
 
 export type User = UserMetadata & ComputedUserProperties
