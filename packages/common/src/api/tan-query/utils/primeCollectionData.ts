@@ -63,14 +63,29 @@ export const primeCollectionDataInternal = ({
   collections.forEach((collection) => {
     // Add collection to entries and prime collection data
     entries[Kind.COLLECTIONS][collection.playlist_id] = collection
-    queryClient.setQueryData(
-      [QUERY_KEYS.collection, collection.playlist_id],
-      collection
-    )
-    queryClient.setQueryData(
-      [QUERY_KEYS.collectionByPermalink, collection.permalink],
-      collection
-    )
+
+    // Prime collection data only if it doesn't exist
+    if (
+      !queryClient.getQueryData([QUERY_KEYS.collection, collection.playlist_id])
+    ) {
+      queryClient.setQueryData(
+        [QUERY_KEYS.collection, collection.playlist_id],
+        collection
+      )
+    }
+
+    // Prime collection by permalink only if it doesn't exist
+    if (
+      !queryClient.getQueryData([
+        QUERY_KEYS.collectionByPermalink,
+        collection.permalink
+      ])
+    ) {
+      queryClient.setQueryData(
+        [QUERY_KEYS.collectionByPermalink, collection.permalink],
+        collection
+      )
+    }
 
     // Prime user data from collection owner
     if (collection.user) {

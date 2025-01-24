@@ -65,8 +65,10 @@ export const primeTrackDataInternal = ({
     // Add track to entries
     entries[Kind.TRACKS][track.track_id] = track
 
-    // Prime track data
-    queryClient.setQueryData([QUERY_KEYS.track, track.track_id], track)
+    // Prime track data only if it doesn't exist
+    if (!queryClient.getQueryData([QUERY_KEYS.track, track.track_id])) {
+      queryClient.setQueryData([QUERY_KEYS.track, track.track_id], track)
+    }
 
     // Prime user data from track owner
     if ('user' in track) {
