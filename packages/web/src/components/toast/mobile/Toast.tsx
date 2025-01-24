@@ -3,7 +3,6 @@ import { ReactNode } from 'react'
 import { Text, Flex, IconComponent } from '@audius/harmony'
 import cn from 'classnames'
 
-import styles from './Toast.module.css'
 import ToastLinkContent from './ToastLinkContent'
 
 // TODO: SK - Move this into Stems
@@ -49,7 +48,7 @@ const Toast = (props: ToastProps) => {
   return (
     <>
       <div
-        className={cn(styles.wrapperClass, {
+        className={cn({
           [containerClassName!]: !!containerClassName
         })}
       >
