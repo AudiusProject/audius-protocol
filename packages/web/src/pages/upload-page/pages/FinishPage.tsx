@@ -162,9 +162,10 @@ export const FinishPage = (props: FinishPageProps) => {
     accountHandle
   })
 
-  const dispatchVisitEvent = useCallback(() => {
+  const handleViewUpload = useCallback(() => {
     dispatch(make(Name.TRACK_UPLOAD_VIEW_TRACK_PAGE, { uploadType }))
-  }, [dispatch, uploadType])
+    onContinue()
+  }, [dispatch, uploadType, onContinue])
 
   const isUnlistedTrack =
     (upload.tracks &&
@@ -238,7 +239,7 @@ export const FinishPage = (props: FinishPageProps) => {
             <PlainButton onClick={handleUploadMoreClick} iconLeft={IconUpload}>
               {messages.uploadMore}
             </PlainButton>
-            <PlainButton iconRight={IconArrow} onClick={dispatchVisitEvent}>
+            <PlainButton iconRight={IconArrow} onClick={handleViewUpload}>
               <Link to={visitButtonPath}>{visitButtonText}</Link>
             </PlainButton>
           </div>
