@@ -52,7 +52,6 @@ const FeedPageContent = ({
     playingSource: source,
     setInView: setFeedInView,
     loadMore: () => {
-      console.log('loadMore', { isFetching })
       if (!isFetching) {
         fetchNextPage()
       }

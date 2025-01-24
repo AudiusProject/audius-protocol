@@ -1,13 +1,11 @@
 import { useCallback } from 'react'
 
 import { useCurrentUserId, useFeed } from '@audius/common/api'
-import { Name } from '@audius/common/models'
 import {
   lineupSelectors,
   feedPageLineupActions as feedActions,
   feedPageSelectors
 } from '@audius/common/store'
-import { useDispatch } from 'react-redux'
 
 import { IconFeed } from '@audius/harmony-native'
 import { Screen, ScreenContent, ScreenHeader } from 'app/components/core'
@@ -15,7 +13,6 @@ import { Lineup } from 'app/components/lineup'
 import { EndOfLineupNotice } from 'app/components/lineup/EndOfLineupNotice'
 import { OnlineOnly } from 'app/components/offline-placeholder/OnlineOnly'
 import { useAppTabScreen } from 'app/hooks/useAppTabScreen'
-import { make, track } from 'app/services/analytics'
 
 import { FeedFilterButton } from './FeedFilterButton'
 const { getDiscoverFeedLineup } = feedPageSelectors
@@ -32,11 +29,14 @@ export const FeedScreen = () => {
   useAppTabScreen()
   const { data: currentUserId } = useCurrentUserId()
 
-  const { fetchNextPage, lineup, refetch } = useFeed({ userId: currentUserId })
+  const { fetchNextPage, lineup, refetch, isFetching } = useFeed({
+    userId: currentUserId
+  })
   const loadMore = useCallback(() => {
-    console.log('LOADING MORE')
-    fetchNextPage()
-  }, [fetchNextPage])
+    if (!isFetching) {
+      fetchNextPage()
+    }
+  }, [fetchNextPage, isFetching])
 
   return (
     <Screen url='Feed'>
@@ -47,6 +47,7 @@ export const FeedScreen = () => {
       </ScreenHeader>
       <ScreenContent>
         <Lineup
+          tanQuery
           pullToRefresh
           delineate
           selfLoad
@@ -61,6 +62,7 @@ export const FeedScreen = () => {
           actions={feedActions}
           lineupSelector={getFeedLineup}
           loadMore={loadMore}
+          initialPageSize={10}
           pageSize={4}
           showsVerticalScrollIndicator={false}
         />
