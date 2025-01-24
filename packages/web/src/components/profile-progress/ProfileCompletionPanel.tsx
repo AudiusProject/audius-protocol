@@ -19,7 +19,7 @@ const { getOrderedCompletionStages, getIsAccountLoaded } = challengesSelectors
 const { getHasAccount } = accountSelectors
 const { show: showMusicConfetti } = musicConfettiActions
 
-const ORIGINAL_HEIGHT_PIXELS = 118
+const ORIGINAL_HEIGHT_PIXELS = 134
 
 const messages = {
   dismissText: 'Dismiss',

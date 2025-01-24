@@ -1,5 +1,5 @@
 import { challengesSelectors, profilePageActions } from '@audius/common/store'
-import { Flex, useTheme } from '@audius/harmony'
+import { Flex, Text, useTheme } from '@audius/harmony'
 import { useDispatch, useSelector } from 'react-redux'
 // eslint-disable-next-line no-restricted-imports -- TODO: migrate to @react-spring/web
 import { useSpring, animated } from 'react-spring'
@@ -18,8 +18,8 @@ const {
   getIsAccountLoaded
 } = challengesSelectors
 
-const strings = {
-  complete: 'PROFILE COMPLETE'
+const messages = {
+  complete: 'Profile Complete'
 }
 
 const ORIGINAL_HEIGHT_PIXELS = 206
@@ -88,7 +88,11 @@ export const ProfileCompletionHeroCard = () => {
                   </animated.span>
                   %
                 </div>
-                <div className={styles.complete}>{strings.complete}</div>
+                <Flex p='m'>
+                  <Text variant='title' size='m'>
+                    {messages.complete}
+                  </Text>
+                </Flex>
                 <SegmentedProgressBar
                   numSteps={completionStages.length}
                   stepsComplete={stepsCompleted}
