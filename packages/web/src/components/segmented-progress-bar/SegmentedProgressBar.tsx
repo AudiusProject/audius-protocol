@@ -7,6 +7,9 @@ interface SegmentedProgressBarProps {
   isCompact?: boolean
 }
 
+const COMPACT_SEGMENT_WIDTH = 144
+const SEGMENT_WIDTH = 206
+
 /**
  * `SegmentedProgressBar` displays a configurable amount of progress segments
  * indicating progress through some task.
@@ -39,7 +42,7 @@ export const SegmentedProgressBar = ({
       }}
     >
       <Flex
-        w={isCompact ? 144 : 206}
+        w={isCompact ? COMPACT_SEGMENT_WIDTH : SEGMENT_WIDTH}
         h={isCompact ? spacing.unit6 : spacing.unit9}
         borderRadius={isCompact ? 'm' : 'l'}
         css={{
@@ -49,7 +52,11 @@ export const SegmentedProgressBar = ({
         }}
       >
         <Flex
-          w={isCompact ? 160 : 230}
+          w={
+            isCompact
+              ? COMPACT_SEGMENT_WIDTH + spacing.unit4
+              : SEGMENT_WIDTH + spacing.unit6
+          }
           h={isCompact ? spacing.unit6 : spacing.unit9}
           css={{
             position: 'absolute',

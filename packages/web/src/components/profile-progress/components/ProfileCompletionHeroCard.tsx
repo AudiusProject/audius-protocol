@@ -23,6 +23,7 @@ const strings = {
 }
 
 const ORIGINAL_HEIGHT_PIXELS = 206
+const CARD_HEIGHT_PIXELS = 182
 
 interface CompletionStage {
   isCompleted: boolean
@@ -95,7 +96,7 @@ export const ProfileCompletionHeroCard = () => {
               </div>
               <Flex
                 p='l'
-                h={182}
+                h={CARD_HEIGHT_PIXELS}
                 css={{ backgroundColor: color.secondary.s300 }}
               >
                 <TaskCompletionList completionStages={completionStages} />

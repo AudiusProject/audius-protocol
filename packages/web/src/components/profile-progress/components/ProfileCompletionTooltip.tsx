@@ -26,7 +26,6 @@ const TooltipContent = ({ completionStages }: TooltipContentProps) => {
     <Flex direction='column'>
       <Flex
         p='l'
-        color='white'
         alignItems='center'
         justifyContent='center'
         css={{

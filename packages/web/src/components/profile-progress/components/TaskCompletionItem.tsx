@@ -23,7 +23,7 @@ const CompletionIcon = ({ isCompleted }: CompletionIconProps) => {
  * `TaskCompletionItem` represents a single item in a `TaskCompletionList`
  */
 export const TaskCompletionItem = ({ title, isCompleted }: CompletionStage) => (
-  <Flex direction='row' alignItems='center' gap='xs'>
+  <Flex alignItems='center' gap='xs'>
     <CompletionIcon isCompleted={isCompleted} />
     <Text
       variant='body'
