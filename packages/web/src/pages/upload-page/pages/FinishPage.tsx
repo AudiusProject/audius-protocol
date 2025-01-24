@@ -14,7 +14,6 @@ import {
   TrackFormState,
   CollectionFormState
 } from '@audius/common/store'
-import { route } from '@audius/common/utils'
 import {
   IconArrowRight as IconArrow,
   IconError,
@@ -36,7 +35,6 @@ import { ShareBanner } from '../components/ShareBanner'
 
 import styles from './FinishPage.module.css'
 
-const { profilePage, collectionPage } = route
 const { getUserHandle } = accountSelectors
 const { getCombinedUploadPercentage } = uploadSelectors
 

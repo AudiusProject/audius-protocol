@@ -69,7 +69,7 @@ export const ToastContextProvider = (props: { children: ReactNode }) => {
       y: ENTER_POSITION + getSafeArea(SafeAreaDirection.TOP),
       opacity: 1
     }),
-    // leave: (toast: ToastType) => ({ y: FROM_POSITION, opacity: 0 }),
+    leave: (toast: ToastType) => ({ y: FROM_POSITION, opacity: 0 }),
     unique: true,
     config: animationConfig
   })

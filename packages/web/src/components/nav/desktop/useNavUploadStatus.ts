@@ -45,17 +45,17 @@ export const useNavUploadStatus = () => {
   })
 
   useEffect(() => {
-    // if (uploadSuccess && !isOnUploadPage) {
-    dispatch(
-      toast({
-        content: 'Your upload is complete!',
-        link: uploadCompletionRoute ?? UPLOAD_PAGE,
-        linkText: 'View',
-        leftIcon: IconCloudUpload,
-        rightIcon: IconArrowRight
-      })
-    )
-    // }
+    if (uploadSuccess && !isOnUploadPage) {
+      dispatch(
+        toast({
+          content: 'Your upload is complete!',
+          link: uploadCompletionRoute ?? UPLOAD_PAGE,
+          linkText: 'View',
+          leftIcon: IconCloudUpload,
+          rightIcon: IconArrowRight
+        })
+      )
+    }
   }, [uploadSuccess, isOnUploadPage, dispatch, uploadCompletionRoute])
   return { isUploading, isOnUploadPage }
 }

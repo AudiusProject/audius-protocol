@@ -1,6 +1,6 @@
 import { ReactNode } from 'react'
 
-import { IconCloudUpload, IconComponent } from '@audius/harmony'
+import { Text, Flex, IconComponent } from '@audius/harmony'
 import cn from 'classnames'
 
 import styles from './Toast.module.css'
@@ -55,12 +55,21 @@ const Toast = (props: ToastProps) => {
       >
         {children}
       </div>
-      <div className={styles.container}>
-        <IconCloudUpload size='s' color='inverse' />
-        {LeftIcon && <LeftIcon size='s' color='inverse' />}
-        {content}
-        {RightIcon && <RightIcon size='s' color='inverse' />}
-      </div>
+      <Flex
+        direction='row'
+        gap='s'
+        alignItems='center'
+        backgroundColor='accent'
+        pv='s'
+        ph='m'
+        borderRadius='m'
+      >
+        {LeftIcon && <LeftIcon size='s' color='white' />}
+        <Text color='white' size='s' strength='strong'>
+          {content}
+        </Text>
+        {RightIcon && <RightIcon size='s' color='white' />}
+      </Flex>
     </>
   )
 }

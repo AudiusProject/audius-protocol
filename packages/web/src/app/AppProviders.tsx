@@ -67,19 +67,19 @@ export const AppProviders = ({ children }: AppProvidersProps) => {
                   <HeaderContextProvider>
                     <NavProvider>
                       <ScrollProvider>
-                        <ToastContextProvider>
-                          <AppContextProvider>
-                            <AudiusQueryProvider>
-                              <MainContentContextProvider>
-                                <ThemeProvider>
+                        <ThemeProvider>
+                          <ToastContextProvider>
+                            <AppContextProvider>
+                              <AudiusQueryProvider>
+                                <MainContentContextProvider>
                                   <SvgGradientProvider>
                                     {children}
                                   </SvgGradientProvider>
-                                </ThemeProvider>
-                              </MainContentContextProvider>
-                            </AudiusQueryProvider>
-                          </AppContextProvider>
-                        </ToastContextProvider>
+                                </MainContentContextProvider>
+                              </AudiusQueryProvider>
+                            </AppContextProvider>
+                          </ToastContextProvider>
+                        </ThemeProvider>
                       </ScrollProvider>
                     </NavProvider>
                   </HeaderContextProvider>
