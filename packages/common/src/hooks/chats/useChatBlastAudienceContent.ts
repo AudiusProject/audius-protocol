@@ -6,7 +6,6 @@ import {
   useCollection,
   useTrack,
   useCurrentUser,
-  useCurrentUserId,
   useRemixersCount,
   usePurchasersCount
 } from '~/api'
@@ -28,7 +27,6 @@ export const useChatBlastAudienceContent = ({ chat }: { chat: ChatBlast }) => {
     ? OptionalHashId.parse(audienceContentId)
     : undefined
 
-  const { data: currentUserId } = useCurrentUserId()
   const { data: user } = useCurrentUser()
   const { data: track } = useTrack(decodedContentId, {
     enabled: audienceContentType === 'track'
@@ -38,23 +36,12 @@ export const useChatBlastAudienceContent = ({ chat }: { chat: ChatBlast }) => {
   })
 
   const { data: purchasersCount } = usePurchasersCount(
-    {
-      userId: currentUserId!,
-      contentId: decodedContentId,
-      contentType: audienceContentType
-    },
-    {
-      enabled: !!(audience === ChatBlastAudience.CUSTOMERS && currentUserId)
-    }
+    { contentId: decodedContentId, contentType: audienceContentType },
+    { enabled: audience === ChatBlastAudience.CUSTOMERS }
   )
   const { data: remixersCount } = useRemixersCount(
-    {
-      userId: currentUserId!,
-      trackId: decodedContentId
-    },
-    {
-      enabled: !!(audience === ChatBlastAudience.REMIXERS && currentUserId)
-    }
+    { trackId: decodedContentId },
+    { enabled: audience === ChatBlastAudience.REMIXERS }
   )
 
   const audienceCount = useMemo(() => {

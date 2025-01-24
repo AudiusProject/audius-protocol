@@ -9,10 +9,7 @@ export const useRemixersAudience = ({
   remixedTrackId?: ID
 }) => {
   const { data: currentUserId } = useCurrentUserId()
-  const { data: remixersCount } = useRemixersCount({
-    userId: currentUserId!,
-    trackId: remixedTrackId
-  })
+  const { data: remixersCount } = useRemixersCount({ trackId: remixedTrackId })
 
   const { data: remixedTracks } = useGetRemixedTracks({
     userId: currentUserId!

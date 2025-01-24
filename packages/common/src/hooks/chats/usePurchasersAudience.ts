@@ -60,7 +60,6 @@ export const usePurchasersAudience = ({
   )
 
   const { data: purchasersCount } = usePurchasersCount({
-    userId: currentUserId!,
     contentId,
     contentType
   })

@@ -6,32 +6,33 @@ import { ID } from '~/models'
 
 import { QUERY_KEYS } from './queryKeys'
 import { QueryOptions } from './types'
+import { useCurrentUserId } from './useCurrentUserId'
 
 type UseRemixersCountArgs = {
-  userId: ID | null | undefined
   trackId?: ID | null | undefined
 }
 
 export const useRemixersCount = (
-  { userId, trackId }: UseRemixersCountArgs,
+  { trackId }: UseRemixersCountArgs = {},
   options?: QueryOptions
 ) => {
   const { audiusSdk } = useAudiusQueryContext()
+  const { data: currentUserId } = useCurrentUserId()
 
   return useQuery({
-    queryKey: [QUERY_KEYS.remixersCount, userId],
+    queryKey: [QUERY_KEYS.remixersCount, currentUserId],
     queryFn: async () => {
       const sdk = await audiusSdk()
-
+      if (!currentUserId) return 0
       const { data = 0 } = await sdk.full.users.getRemixersCount({
-        id: Id.parse(userId),
-        userId: Id.parse(userId),
+        id: Id.parse(currentUserId),
+        userId: Id.parse(currentUserId),
         trackId: OptionalId.parse(trackId)
       })
       return data
     },
 
     staleTime: options?.staleTime,
-    enabled: options?.enabled !== false && !!audiusSdk && !!userId
+    enabled: options?.enabled !== false && !!currentUserId
   })
 }
