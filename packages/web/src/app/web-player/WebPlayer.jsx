@@ -106,6 +106,8 @@ import { getPathname } from 'utils/route'
 
 import styles from './WebPlayer.module.css'
 
+import { TanQueryFeedbackBanner } from 'components/banner/TanQueryFeedbackBanner'
+
 const {
   FEED_PAGE,
   TRENDING_PAGE,
@@ -474,6 +476,7 @@ class WebPlayer extends Component {
               onClose={this.dismissUpdateWebAppBanner}
             />
           ) : null}
+          <TanQueryFeedbackBanner />
         </AppBannerWrapper>
         <ChatListener />
         <USDCBalanceFetcher />
