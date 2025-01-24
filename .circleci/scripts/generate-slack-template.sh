@@ -13,7 +13,7 @@ PIPELINE_STATUS_HEADER=$(jq -r 'if .items | map(.status == "failed") | any then 
 echo "Getting Slack User ID..."
 author_name=$(git log -1 --pretty=format:'%an')
 env_key_name="SLACK_ID_FOR_GH_$(echo $author_name | tr ' ' '_' | tr '-' '_' | tr '[:upper:]' '[:lower:]')"
-SLACK_USER_ID="<@$(eval echo \$$env_key_name)>"
+SLACK_USER_ID="$(eval echo \$$env_key_name)"
 
 # Format the commit message of the last commit
 echo "Generating Commit Message..."
@@ -43,7 +43,7 @@ SUMMARY_MESSAGE=$(jq -r 'if .items | map(.status == "failed") | any then "*Actio
 
 echo "Writing template..."
 jq -n --arg header "$PIPELINE_STATUS_HEADER"\
-    --arg author "*Author*: $SLACK_USER_ID"\
+    --arg author "*Author*: <@$SLACK_USER_ID>"\
     --arg branch "*Branch*: <$PIPELINE_URL|$CIRCLE_BRANCH>"\
     --arg commit "$(printf "*Commit*: %s\n\`\`\`%s\`\`\`" "$COMMIT_SHA_LINK" "$COMMIT_MESSAGE")"\
     --arg workflows "$WORKFLOW_STATUSES"\
@@ -54,3 +54,5 @@ jq -n --arg header "$PIPELINE_STATUS_HEADER"\
 # Export the template to be available to the slack/notify command
 echo "Exporting template to bash environment..."
 echo 'export PIPELINE_STATUS_TEMPLATE=$(cat /tmp/pipeline-status-template.json)' >> "$BASH_ENV"
+echo "Exporting Slack user ID to bash environment..."
+echo 'export SLACK_USER_ID='"$SLACK_USER_ID'"' >> $BASH_ENV

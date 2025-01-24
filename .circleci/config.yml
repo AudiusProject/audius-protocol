@@ -313,12 +313,12 @@ jobs:
       - run:
           name: Generate Slack Template
           command: bash .circleci/scripts/generate-slack-template.sh
-      - slack/notify:
-          channel: '$(eval echo \$SLACK_ID_FOR_GH_$(git log -1 --pretty=format:'%an'| tr ' ' '_' | tr '-' '_' | tr '[:upper:]' '[:lower:]'))'
-          template: PIPELINE_STATUS_TEMPLATE
       - run:
           name: Check status
           command: bash .circleci/scripts/check-workflow-statuses.sh
+      - slack/notify:
+          channel: 'SLACK_USER_ID'
+          template: PIPELINE_STATUS_TEMPLATE
 
 workflows:
   setup:
