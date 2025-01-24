@@ -62,7 +62,7 @@ const useStyles = makeStyles(({ palette }) => ({
 
   title: {
     ...font('heavy'),
-    color: palette.staticStaticWhite,
+    color: palette.inverse,
     fontSize: 20,
     letterSpacing: 0.25,
     lineHeight: 26,
@@ -81,7 +81,7 @@ const useStyles = makeStyles(({ palette }) => ({
 
   description: {
     ...font('medium'),
-    color: palette.staticStaticWhite,
+    color: palette.inverse,
     fontSize: 16,
     letterSpacing: 0.2,
     lineHeight: 23,
@@ -184,7 +184,7 @@ export const ColorTile = ({
                   style={styles.iconSvg}
                   height={260}
                   width={260}
-                  color='staticStaticWhite'
+                  color='inverse'
                 />
               </View>
             )}

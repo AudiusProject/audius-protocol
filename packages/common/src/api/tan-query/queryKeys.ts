@@ -52,5 +52,8 @@ export const QUERY_KEYS = {
   remixers: 'remixers',
   trackHistory: 'trackHistory',
   topTags: 'topTags',
-  feed: 'feed'
+  feed: 'feed',
+  authorizedApps: 'authorizedApps',
+  developerApps: 'developerApps',
+  searchAutocomplete: 'searchAutocomplete'
 } as const

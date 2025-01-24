@@ -3,7 +3,7 @@ import { AnyAction, Dispatch } from 'redux'
 import { SetRequired } from 'type-fest'
 
 import { Kind } from '~/models'
-import { Track } from '~/models/Track'
+import { UserTrackMetadata } from '~/models/Track'
 import { User } from '~/models/User'
 import { addEntries } from '~/store/cache/actions'
 import { EntriesByKind } from '~/store/cache/types'
@@ -15,21 +15,42 @@ import { primeUserDataInternal } from './primeUserData'
 export const primeTrackData = ({
   tracks,
   queryClient,
-  dispatch
+  dispatch,
+  forceReplace = false
 }: {
-  tracks: Track[]
+  tracks: UserTrackMetadata[]
   queryClient: QueryClient
   dispatch: Dispatch<AnyAction>
+  forceReplace?: boolean
 }) => {
   const entries = primeTrackDataInternal({ tracks, queryClient })
-  dispatch(addEntries(entries, undefined, undefined, 'react-query'))
+  if (!forceReplace) {
+    dispatch(addEntries(entries, false, undefined, 'react-query'))
+  } else {
+    dispatch(
+      addEntries(
+        { [Kind.TRACKS]: entries[Kind.TRACKS] },
+        forceReplace,
+        undefined,
+        'react-query'
+      )
+    )
+    dispatch(
+      addEntries(
+        { ...entries, [Kind.TRACKS]: {} },
+        false,
+        undefined,
+        'react-query'
+      )
+    )
+  }
 }
 
 export const primeTrackDataInternal = ({
   tracks,
   queryClient
 }: {
-  tracks: Track[]
+  tracks: UserTrackMetadata[]
   queryClient: QueryClient
 }): EntriesByKind => {
   // Set up entries for Redux

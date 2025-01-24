@@ -214,7 +214,7 @@ export const ChatMessageListItem = (props: ChatMessageListItemProps) => {
             <Flex className={styles.textWrapper}>
               <UserGeneratedTextV2
                 className={styles.text}
-                color={isAuthor ? 'staticWhite' : 'default'}
+                color={isAuthor ? 'white' : 'default'}
                 textAlign='left'
                 linkProps={{
                   variant: isAuthor ? 'inverted' : 'visible',

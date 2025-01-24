@@ -305,7 +305,7 @@ def _get_trending_playlists_with_session(
     for playlist in playlists:
         playlist["track_count"] = len(playlist["tracks"])
         playlist["tracks"] = playlist["tracks"][:PLAYLIST_TRACKS_LIMIT]
-        # Trim track_ids, which ultimately become added_timestamps
+        # Trim track_ids, which ultimately become playlist_contents
         # and need to match the tracks.
         trimmed_track_ids = {track["track_id"] for track in playlist["tracks"]}
         playlist_track_ids = playlist["playlist_contents"]["track_ids"]

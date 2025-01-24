@@ -19,9 +19,9 @@ const { getUserId } = accountSelectors
 function* recordListen(action: { trackId: number }) {
   const { trackId } = action
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
-  const sdk = yield* getSDK()
 
   yield* call(waitForWrite)
+  const sdk = yield* getSDK()
   const userId = yield* select(getUserId)
   const track = yield* select(getTrack, { id: trackId })
   if (!userId || !track) return

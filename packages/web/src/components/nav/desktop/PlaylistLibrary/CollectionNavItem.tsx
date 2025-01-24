@@ -1,6 +1,7 @@
 import { useCallback, useState } from 'react'
 
 import {
+  FavoriteSource,
   ID,
   Name,
   PlaylistLibraryID,
@@ -11,12 +12,17 @@ import {
   cacheCollectionsActions,
   cacheCollectionsSelectors,
   cacheTracksSelectors,
+  collectionsSocialActions,
   playlistLibraryActions,
   shareModalUIActions
 } from '@audius/common/store'
 import {
   Flex,
+  IconHeart,
+  IconPencil,
+  IconShare,
   IconSpeaker,
+  IconTrash,
   PopupMenuItem,
   Text,
   useTheme
@@ -48,12 +54,14 @@ const { getCollection } = cacheCollectionsSelectors
 const { getTrack } = cacheTracksSelectors
 const { reorder } = playlistLibraryActions
 const { requestOpen } = shareModalUIActions
+const { unsaveCollection, unsaveSmartCollection } = collectionsSocialActions
 
 const messages = {
   editPlaylistLabel: 'Edit playlist',
   edit: 'Edit',
   share: 'Share',
-  delete: 'Delete'
+  delete: 'Delete',
+  unfavorite: 'Unfavorite'
 }
 
 const acceptedKinds: DragDropKind[] = [
@@ -72,10 +80,12 @@ type CollectionNavItemProps = {
   hasUpdate?: boolean
   onClick?: () => void
   isChild?: boolean
+  exact?: boolean
 }
 
 export const CollectionNavItem = (props: CollectionNavItemProps) => {
-  const { id, name, url, isOwned, level, hasUpdate, onClick, isChild } = props
+  const { id, name, url, isOwned, level, hasUpdate, onClick, isChild, exact } =
+    props
   const [isDraggingOver, setIsDraggingOver] = useState(false)
   const [isHovering, setIsHovering] = useState(false)
   const location = useLocation()
@@ -134,14 +144,49 @@ export const CollectionNavItem = (props: CollectionNavItemProps) => {
     toggleDeleteConfirmationOpen()
   }, [toggleDeleteConfirmationOpen])
 
-  const kebabItems: PopupMenuItem[] = [
-    {
-      text: messages.edit,
-      onClick: handleEdit
-    },
-    { text: messages.share, onClick: handleShare },
-    { text: messages.delete, onClick: handleDelete }
-  ]
+  const handleUnfavorite = useCallback(() => {
+    if (typeof id === 'number') {
+      dispatch(unsaveCollection(id, FavoriteSource.NAVIGATOR))
+    } else {
+      dispatch(
+        unsaveSmartCollection(
+          collection?.playlist_name ?? id,
+          FavoriteSource.NAVIGATOR
+        )
+      )
+    }
+  }, [id, collection, dispatch])
+
+  const kebabItems: PopupMenuItem[] = isOwned
+    ? [
+        {
+          text: messages.edit,
+          onClick: handleEdit,
+          icon: <IconPencil color='default' />
+        },
+        {
+          text: messages.share,
+          onClick: handleShare,
+          icon: <IconShare color='default' />
+        },
+        {
+          text: messages.delete,
+          onClick: handleDelete,
+          icon: <IconTrash color='default' />
+        }
+      ]
+    : [
+        {
+          text: messages.unfavorite,
+          onClick: handleUnfavorite,
+          icon: <IconHeart color='active' />
+        },
+        {
+          text: messages.share,
+          onClick: handleShare,
+          icon: <IconShare color='default' />
+        }
+      ]
 
   const handleDrop = useCallback(
     (draggingId: PlaylistLibraryID, kind: DragDropKind) => {
@@ -213,14 +258,12 @@ export const CollectionNavItem = (props: CollectionNavItemProps) => {
             }}
             rightIcon={
               isPlayingFromThisPlaylist ? (
-                <IconSpeaker
-                  size='s'
-                  color={isSelected ? 'staticWhite' : 'accent'}
-                />
+                <IconSpeaker size='s' color={isSelected ? 'white' : 'accent'} />
               ) : null
             }
             leftOverride={hasUpdate ? <PlaylistUpdateDot /> : null}
             isChild={isChild}
+            exact={exact}
           >
             <Flex
               alignItems='center'
@@ -240,8 +283,10 @@ export const CollectionNavItem = (props: CollectionNavItemProps) => {
                 {name}
               </Text>
               <NavItemKebabButton
-                visible={isOwned && isHovering && !isDraggingOver}
-                aria-label={messages.editPlaylistLabel}
+                visible={isHovering && !isDraggingOver}
+                aria-label={
+                  isOwned ? messages.editPlaylistLabel : messages.unfavorite
+                }
                 items={kebabItems}
                 isSelected={isSelected}
               />

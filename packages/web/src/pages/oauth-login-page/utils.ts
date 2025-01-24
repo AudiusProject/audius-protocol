@@ -1,4 +1,4 @@
-import { SquareSizes, UserMetadata } from '@audius/common/models'
+import { UserMetadata } from '@audius/common/models'
 import { getErrorMessage } from '@audius/common/utils'
 import { CreateGrantRequest, HashId, Id, OptionalId } from '@audius/sdk'
 import base64url from 'base64url'
@@ -6,7 +6,6 @@ import base64url from 'base64url'
 import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
 import { audiusSdk } from 'services/audius-sdk'
 import { identityService } from 'services/audius-sdk/identity'
-import { getStorageNodeSelector } from 'services/audius-sdk/storageNodeSelector'
 
 import { messages } from './messages'
 
@@ -123,38 +122,7 @@ export const formOAuthResponse = async ({
     email = userEmail
   }
 
-  const storageNodeSelector = await getStorageNodeSelector()
-  let profilePicture:
-    | { '150x150': string; '480x480': string; '1000x1000': string }
-    | undefined
-  if (account.profile_picture_sizes) {
-    const storageNode = storageNodeSelector.getNodes(
-      account.profile_picture_sizes
-    )[0]
-    const base = `${storageNode}/content/`
-    profilePicture = {
-      '150x150': `${base}${account.profile_picture_sizes}/150x150.jpg`,
-      '480x480': `${base}${account.profile_picture_sizes}/480x480.jpg`,
-      '1000x1000': `${base}${account.profile_picture_sizes}/1000x1000.jpg`
-    }
-    if (account.profile_picture_cids) {
-      if (account.profile_picture_cids[SquareSizes.SIZE_150_BY_150]) {
-        profilePicture['150x150'] = `${base}${
-          account.profile_picture_cids[SquareSizes.SIZE_150_BY_150]
-        }`
-      }
-      if (account.profile_picture_cids[SquareSizes.SIZE_480_BY_480]) {
-        profilePicture['480x480'] = `${base}${
-          account.profile_picture_cids[SquareSizes.SIZE_480_BY_480]
-        }`
-      }
-      if (account.profile_picture_cids[SquareSizes.SIZE_1000_BY_1000]) {
-        profilePicture['1000x1000'] = `${base}${
-          account.profile_picture_cids[SquareSizes.SIZE_1000_BY_1000]
-        }`
-      }
-    }
-  }
+  const profilePicture = account.profile_picture
   const timestamp = Math.round(new Date().getTime() / 1000)
   const userId = OptionalId.parse(account?.user_id)
   const response = {

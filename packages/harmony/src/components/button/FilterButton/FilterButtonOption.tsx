@@ -91,7 +91,7 @@ export const FilterButtonOption = forwardRef(function <Value extends string>(
         <Text
           variant='body'
           strength='strong'
-          color={option.value === activeValue ? 'staticWhite' : 'subdued'}
+          color={option.value === activeValue ? 'white' : 'subdued'}
           className='helperText'
         >
           {option.helperText}

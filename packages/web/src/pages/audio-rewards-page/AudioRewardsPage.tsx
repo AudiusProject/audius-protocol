@@ -3,6 +3,7 @@ import { ReactNode, useContext, useEffect } from 'react'
 import { StringKeys } from '@audius/common/services'
 import { tokenDashboardPageActions, walletActions } from '@audius/common/store'
 import { route } from '@audius/common/utils'
+import { Flex } from '@audius/harmony'
 import { useDispatch } from 'react-redux'
 
 import { Header } from 'components/header/desktop/Header'
@@ -17,10 +18,11 @@ import { useIsMobile } from 'hooks/useIsMobile'
 import { useRemoteVar } from 'hooks/useRemoteConfig'
 import { useRequiresAccount } from 'hooks/useRequiresAccount'
 import { useWithMobileStyle } from 'hooks/useWithMobileStyle'
-import { AudioWalletTransactions } from 'pages/audio-transactions-page'
+import { ClaimAllRewardsPanel } from 'pages/rewards-page/components/ClaimAllRewardsPanel'
 import { BASE_URL } from 'utils/route'
 
 import styles from './AudioRewardsPage.module.css'
+import { AudioWalletTransactions } from './AudioWalletTransactions'
 import WalletModal from './WalletModal'
 import ExplainerTile from './components/ExplainerTile'
 import { WalletManagementTile } from './components/WalletManagementTile'
@@ -43,7 +45,7 @@ const RewardsContent = () => {
   useRequiresAccount(TRENDING_PAGE)
 
   return (
-    <>
+    <Flex column gap='2xl'>
       <WalletModal />
       {audioFeaturesDegradedText ? (
         <div className={styles.topBanner}>
@@ -52,10 +54,11 @@ const RewardsContent = () => {
           </span>
         </div>
       ) : null}
+      <ClaimAllRewardsPanel />
       <WalletManagementTile />
       <AudioWalletTransactions />
       <ExplainerTile className={wm(styles.explainerTile)} />
-    </>
+    </Flex>
   )
 }
 

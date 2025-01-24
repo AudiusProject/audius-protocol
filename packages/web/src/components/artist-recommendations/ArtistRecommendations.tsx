@@ -112,7 +112,7 @@ const ArtistPopoverWrapper = ({
       <UserBadges
         userId={userId}
         className={styles.verified}
-        badgeSize={10}
+        size='3xs'
         inline={true}
       />
     </div>

@@ -48,6 +48,8 @@ export const ClaimAllRewardsPanel = () => {
     }
   }, [claimable, cooldownAmount, onClickClaimAllRewards, onClickMoreInfo])
 
+  if (isEmpty) return null
+
   if (isMobile) {
     return (
       <Paper

@@ -134,7 +134,7 @@ export const MenuItem = forwardRef(function <Value extends string>(
           variant='body'
           size={variant === 'option' ? 'l' : 'm'}
           strength={variant === 'button' ? 'strong' : 'default'}
-          color={isActive ? 'staticWhite' : 'subdued'}
+          color={isActive ? 'white' : 'subdued'}
         >
           {helperText}
         </Text>

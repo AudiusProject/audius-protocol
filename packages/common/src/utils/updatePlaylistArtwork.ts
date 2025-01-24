@@ -1,8 +1,8 @@
 import { isEqual } from 'lodash'
 
-import { Collection } from '~/models/Collection'
+import { Collection, UserCollectionMetadata } from '~/models/Collection'
 import { SquareSizes } from '~/models/ImageSizes'
-import { Track } from '~/models/Track'
+import { Track, UserTrackMetadata } from '~/models/Track'
 
 import { Nullable } from './typeUtils'
 
@@ -21,9 +21,11 @@ type Context = {
   generateImage: (urls: string[]) => Promise<{ url: string; file: File }>
 }
 
-export const updatePlaylistArtwork = async (
-  collection: Collection,
-  tracks: Track[],
+export const updatePlaylistArtwork = async <
+  T extends Collection | UserCollectionMetadata
+>(
+  collection: T,
+  tracks: (Track | UserTrackMetadata)[],
   actions: ArtworkActions,
   context: Context
 ) => {

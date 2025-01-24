@@ -45,7 +45,7 @@ export const NoImage: Story = {
     <Flex gap='m'>
       <Avatar {...props} />
       <Avatar {...props}>
-        <IconCamera color='staticWhite' />
+        <IconCamera color='white' />
       </Avatar>
     </Flex>
   )

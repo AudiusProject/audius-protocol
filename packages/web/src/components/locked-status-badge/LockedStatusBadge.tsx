@@ -55,7 +55,7 @@ export const LockedStatusBadge = (props: LockedStatusBadgeProps) => {
       css={{ backgroundColor }}
     >
       <LockComponent
-        color='staticWhite'
+        color='white'
         size={iconSize}
         id={text ? undefined : id}
         title={
@@ -69,7 +69,7 @@ export const LockedStatusBadge = (props: LockedStatusBadgeProps) => {
         }
       />
       {text ? (
-        <Text size='xs' variant='label' color='staticWhite' id={id}>
+        <Text size='xs' variant='label' color='white' id={id}>
           {text}
         </Text>
       ) : null}

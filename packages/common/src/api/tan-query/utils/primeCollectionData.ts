@@ -15,14 +15,35 @@ import { primeUserDataInternal } from './primeUserData'
 export const primeCollectionData = ({
   collections,
   queryClient,
-  dispatch
+  dispatch,
+  forceReplace = false
 }: {
   collections: UserCollectionMetadata[]
   queryClient: QueryClient
   dispatch: Dispatch<AnyAction>
+  forceReplace?: boolean
 }) => {
   const entries = primeCollectionDataInternal({ collections, queryClient })
-  dispatch(addEntries(entries, undefined, undefined, 'react-query'))
+  if (!forceReplace) {
+    dispatch(addEntries(entries, false, undefined, 'react-query'))
+  } else {
+    dispatch(
+      addEntries(
+        { [Kind.COLLECTIONS]: entries[Kind.COLLECTIONS] },
+        forceReplace,
+        undefined,
+        'react-query'
+      )
+    )
+    dispatch(
+      addEntries(
+        { ...entries, [Kind.COLLECTIONS]: {} },
+        false,
+        undefined,
+        'react-query'
+      )
+    )
+  }
 }
 
 export const primeCollectionDataInternal = ({
@@ -44,6 +65,10 @@ export const primeCollectionDataInternal = ({
     entries[Kind.COLLECTIONS][collection.playlist_id] = collection
     queryClient.setQueryData(
       [QUERY_KEYS.collection, collection.playlist_id],
+      collection
+    )
+    queryClient.setQueryData(
+      [QUERY_KEYS.collectionByPermalink, collection.permalink],
       collection
     )
 

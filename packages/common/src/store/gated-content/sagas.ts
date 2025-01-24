@@ -274,11 +274,11 @@ function* updateCollectibleGatedTracks(trackMap: { [id: ID]: string[] }) {
   Object.keys(trackMap).forEach((trackId) => {
     const id = parseInt(trackId)
     if (Number.isNaN(id)) {
-      console.warn(`Invalid track id: ${trackId}`)
+      console.warn(`Invalid track id: ${id}`)
       return
     }
     trackIds.push(id)
-    tokenIds.push(trackMap[trackId].join('-'))
+    tokenIds.push(trackMap[id].join('-'))
   })
   const { data: nftGatedTrackSignatureResponse = {} } = yield* call(
     [sdk.full.tracks, sdk.full.tracks.getNFTGatedTrackSignatures],
@@ -415,7 +415,7 @@ function* updateGatedContentAccess(
     const {
       stream_conditions: streamConditions,
       download_conditions: downloadConditions
-    } = allTracks[trackId]
+    } = allTracks[id]
     const isCollectibleGated =
       isContentCollectibleGated(streamConditions) ||
       isContentCollectibleGated(downloadConditions)
@@ -715,11 +715,11 @@ function* handleTipGatedTracks(
 function* handleRevokeAccess(action: ReturnType<typeof revokeAccess>) {
   const { revokeAccessMap } = action.payload
   const metadatas = Object.keys(revokeAccessMap).map((trackId) => {
+    const id = parseInt(trackId)
     const access =
-      revokeAccessMap[trackId] === 'stream'
+      revokeAccessMap[id] === 'stream'
         ? { stream: false, download: false }
         : { stream: true, download: false }
-    const id = parseInt(trackId)
     return {
       id,
       metadata: { access }

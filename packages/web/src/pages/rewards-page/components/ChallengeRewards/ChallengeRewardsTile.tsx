@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
 
-import { useChallengeCooldownSchedule } from '@audius/common/hooks'
 import {
   audioRewardsPageActions,
   audioRewardsPageSelectors,
@@ -86,15 +85,9 @@ export const ChallengeRewardsTile = ({
 
   const wm = useWithMobileStyle(styles.mobile)
 
-  const { isEmpty: shouldHideCumulativeRewards } = useChallengeCooldownSchedule(
-    {
-      multiple: true
-    }
-  )
-
   return (
     <Flex direction='column' gap='l'>
-      {!shouldHideCumulativeRewards ? <ClaimAllRewardsPanel /> : null}
+      <ClaimAllRewardsPanel />
       <Tile className={wm(styles.rewardsTile, className)}>
         <Text variant='display' size='s' className={wm(styles.title)}>
           {messages.title}

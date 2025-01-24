@@ -63,19 +63,14 @@ export const Tag = (props: TagProps) => {
       onClick={isDefaultMultiselect ? undefined : onClick}
       {...other}
     >
-      <Text
-        variant='label'
-        size='xs'
-        color='staticWhite'
-        css={{ lineHeight: '8px' }}
-      >
+      <Text variant='label' size='xs' color='white' css={{ lineHeight: '8px' }}>
         {children}
       </Text>
       {Icon ? (
         <IconButton
           asChild
           icon={Icon}
-          color='staticWhite'
+          color='white'
           onClick={isDefaultMultiselect ? onClick : undefined}
           aria-label={variant === 'composed' ? messages.add : messages.remove}
           height={spacing.unit2}

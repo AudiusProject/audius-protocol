@@ -333,7 +333,7 @@ const ProfileHeader = ({
                     <UserBadges
                       userId={userId}
                       className={styles.iconVerified}
-                      badgeSize={12}
+                      size='2xs'
                     />
                   </span>
                 </h1>

@@ -160,7 +160,10 @@ export const ChallengeRewardsDrawerContent = ({
             description={description}
           />
         ) : (
-          <ChallengeDescription description={description} />
+          <ChallengeDescription
+            description={description}
+            isCooldownChallenge={isCooldownChallenge}
+          />
         )}
         <View style={styles.statusGrid}>
           <View style={styles.statusGridColumns}>
@@ -193,11 +196,7 @@ export const ChallengeRewardsDrawerContent = ({
               textTransform='uppercase'
               variant='label'
               color={
-                hasCompleted
-                  ? 'staticWhite'
-                  : isInProgress
-                    ? 'accent'
-                    : 'default'
+                hasCompleted ? 'white' : isInProgress ? 'accent' : 'default'
               }
             >
               {statusText}

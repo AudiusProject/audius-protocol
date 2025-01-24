@@ -20,7 +20,7 @@ export type CollectionHeaderProps = {
   isOwner: boolean
   isAlbum: boolean
   access: AccessPermissions | null
-  collectionId: ID
+  collectionId: ID | undefined
   ownerId: ID | null
   type: CollectionsPageType | 'Playlist' | 'Audio NFT Playlist'
   title: string

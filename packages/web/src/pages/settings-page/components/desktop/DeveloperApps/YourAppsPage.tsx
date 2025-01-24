@@ -1,18 +1,13 @@
-import { useGetDeveloperApps } from '@audius/common/api'
-import { Status } from '@audius/common/models'
-import { accountSelectors } from '@audius/common/store'
+import { DeveloperApp, useDeveloperApps } from '@audius/common/api'
 import { ModalContentText, IconPlus, Button } from '@audius/harmony'
 
 import { Divider } from 'components/divider'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import { Tooltip } from 'components/tooltip'
-import { useSelector } from 'utils/reducer'
 
 import { DeveloperAppListItem } from './DeveloperAppListItem'
 import styles from './YourAppsPage.module.css'
 import { CreateAppPageProps, CreateAppsPages } from './types'
-
-const { getUserId } = accountSelectors
 
 const maxAppsAllowed = 5
 
@@ -29,13 +24,18 @@ type YourAppsPageProps = CreateAppPageProps
 
 export const YourAppsPage = (props: YourAppsPageProps) => {
   const { setPage } = props
-  const userId = useSelector(getUserId)
-  const { data, status } = useGetDeveloperApps(
-    { id: userId as number },
-    { disabled: !userId }
-  )
+  const { data, isPending } = useDeveloperApps()
+  const apps =
+    data?.map(
+      ({ address, name, description, imageUrl }): DeveloperApp => ({
+        name,
+        description,
+        imageUrl,
+        apiKey: address.slice(2)
+      })
+    ) ?? []
 
-  const hasMaxAllowedApps = data?.apps.length >= maxAppsAllowed
+  const hasMaxAllowedApps = data && data.length >= maxAppsAllowed
 
   let createAppButton = (
     <Button
@@ -43,7 +43,7 @@ export const YourAppsPage = (props: YourAppsPageProps) => {
       size='small'
       iconLeft={IconPlus}
       onClick={() => setPage(CreateAppsPages.NEW_APP)}
-      disabled={status !== Status.SUCCESS || hasMaxAllowedApps}
+      disabled={isPending || hasMaxAllowedApps}
     >
       {messages.newAppButton}
     </Button>
@@ -66,13 +66,13 @@ export const YourAppsPage = (props: YourAppsPageProps) => {
           {createAppButton}
         </div>
         <Divider className={styles.divider} />
-        {status !== Status.SUCCESS ? (
+        {isPending ? (
           <LoadingSpinner className={styles.spinner} />
-        ) : data?.apps.length === 0 ? (
+        ) : apps.length === 0 ? (
           <p className={styles.noApps}>{messages.noApps}</p>
         ) : (
           <ol className={styles.appList}>
-            {data?.apps.map((app, index) => (
+            {apps.map((app, index) => (
               <DeveloperAppListItem
                 key={app.apiKey}
                 index={index + 1}
