@@ -1321,7 +1321,7 @@ PODS:
   - react-native-google-cast/RNGoogleCast (4.6.2):
     - PromisesObjC
     - React
-  - react-native-image-picker (7.1.0):
+  - react-native-image-picker (7.2.3):
     - DoubleConversion
     - glog
     - hermes-engine
@@ -1962,7 +1962,7 @@ DEPENDENCIES:
   - react-native-fast-crypto (from `../../../node_modules/react-native-fast-crypto`)
   - react-native-get-random-values (from `../../../node_modules/react-native-get-random-values`)
   - react-native-google-cast (from `../../../node_modules/react-native-google-cast`)
-  - react-native-image-picker (from `../node_modules/react-native-image-picker`)
+  - react-native-image-picker (from `../../../node_modules/react-native-image-picker`)
   - react-native-in-app-review (from `../node_modules/react-native-in-app-review`)
   - "react-native-keep-awake (from `../node_modules/@sayem314/react-native-keep-awake`)"
   - "react-native-netinfo (from `../node_modules/@react-native-community/netinfo`)"
@@ -2148,7 +2148,7 @@ EXTERNAL SOURCES:
   react-native-google-cast:
     :path: "../../../node_modules/react-native-google-cast"
   react-native-image-picker:
-    :path: "../node_modules/react-native-image-picker"
+    :path: "../../../node_modules/react-native-image-picker"
   react-native-in-app-review:
     :path: "../node_modules/react-native-in-app-review"
   react-native-keep-awake:
@@ -2333,7 +2333,7 @@ SPEC CHECKSUMS:
   react-native-fast-crypto: 5943c42466b86ad70be60d3a5f64bd22251e5d9e
   react-native-get-random-values: 384787fd76976f5aec9465aff6fa9e9129af1e74
   react-native-google-cast: 0a82cf63114470403e41e04ffa2b13d6448b6112
-  react-native-image-picker: 62c70831aede6c4348386726b9012f9d554e5320
+  react-native-image-picker: df4f6aefbc662b0a5f991065650662c9731977a3
   react-native-in-app-review: db8bb167a5f238e7ceca5c242d6b36ce8c4404a4
   react-native-keep-awake: ad1d67f617756b139536977a0bf06b27cec0714a
   react-native-netinfo: 8a7fd3f7130ef4ad2fb4276d5c9f8d3f28d2df3d
