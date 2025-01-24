@@ -8,7 +8,7 @@ BEGIN
     FROM "blocks"
     WHERE "blockhash" = '0x8d5e6984014505e1e11bcbb1ca1a13bcc6ae85ac74014710a73271d82ca49f01'
   ) THEN 
-    RAISE NOTICE 'Not running on stage environment, skipping migration...';
+    RAISE NOTICE 'Not running on prod environment, skipping migration...';
     RETURN;
   END IF;
 
