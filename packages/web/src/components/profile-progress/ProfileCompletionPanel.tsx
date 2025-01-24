@@ -10,7 +10,7 @@ import { useDispatch, useSelector } from 'react-redux'
 // eslint-disable-next-line no-restricted-imports -- TODO: migrate to @react-spring/web
 import { useSpring, animated } from 'react-spring'
 
-import SegmentedProgressBar from 'components/segmented-progress-bar/SegmentedProgressBar'
+import { SegmentedProgressBar } from 'components/segmented-progress-bar/SegmentedProgressBar'
 
 import styles from './ProfileCompletionPanel.module.css'
 import { ProfileCompletionTooltip } from './components/ProfileCompletionTooltip'

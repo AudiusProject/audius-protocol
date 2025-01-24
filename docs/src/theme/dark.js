@@ -94,21 +94,6 @@ export const theme = {
     '0px 2px 4px var(--page-header-text-shadow-color)',
   '--next-and-previous-buttons': 'var(--neutral)',
 
-  '--segmented-progress-bar-segment-1':
-    'linear-gradient(180deg, #ED75F9 0%, #CC0FE0 100%)',
-  '--segmented-progress-bar-segment-2':
-    'linear-gradient(180deg, #E477FB 0%, #B815DB 100%)',
-  '--segmented-progress-bar-segment-3':
-    'linear-gradient(180deg, #D069F5 0%, #9F0AD4 100%)',
-  '--segmented-progress-bar-segment-4':
-    'linear-gradient(180deg, #CC75FA 0%, #8908CE 100%)',
-  '--segmented-progress-bar-segment-5':
-    'linear-gradient(180deg, #AF4DFF 0%, #7305C8 100%)',
-  '--segmented-progress-bar-segment-6':
-    'linear-gradient(180deg, #9C45FF 0%, #5C03C2 100%)',
-  '--segmented-progress-bar-segment-7':
-    'linear-gradient(180deg, #833BFB 0%, #4600BC 100%)',
-
   '--play-button-triangle': 'var(--static-white)',
   '--action-sheet-text': 'var(--secondary)',
   '--track-slider-rail': 'var(--neutral)',
