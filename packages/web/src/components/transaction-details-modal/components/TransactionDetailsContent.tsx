@@ -1,4 +1,10 @@
-import { ChallengeRewardID, User } from '@audius/common/models'
+import { useEffect, useState } from 'react'
+
+import {
+  ChallengeRewardID,
+  SolanaWalletAddress,
+  User
+} from '@audius/common/models'
 import {
   cacheUsersSelectors,
   TransactionType,
@@ -9,6 +15,7 @@ import {
   formatAudio,
   formatCapitalizeString,
   isNullOrUndefined,
+  makeSolanaAccountLink,
   makeSolanaTransactionLink,
   route
 } from '@audius/common/utils'
@@ -26,6 +33,7 @@ import { isChangePositive } from 'components/audio-transactions-table/AudioTrans
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import UserBadges from 'components/user-badges/UserBadges'
 import { getChallengeConfig } from 'pages/audio-rewards-page/config'
+import { isValidSolAddress } from 'services/solana/solana'
 import { AppState } from 'store/types'
 import { push } from 'utils/navigation'
 
@@ -96,7 +104,13 @@ const UserDetails = ({ userId }: UserDetailsProps) => {
   )
 }
 
-const dateAndMetadataBlocks = (transactionDetails: TransactionDetails) => {
+const dateAndMetadataBlocks = ({
+  transactionDetails,
+  isValidSolanaAddress
+}: {
+  transactionDetails: TransactionDetails
+  isValidSolanaAddress: boolean | undefined
+}) => {
   switch (transactionDetails.transactionType) {
     case TransactionType.PURCHASE: {
       return (
@@ -158,7 +172,11 @@ const dateAndMetadataBlocks = (transactionDetails: TransactionDetails) => {
             header={
               <a
                 className={styles.link}
-                href={makeSolanaTransactionLink(transactionDetails.metadata)}
+                href={
+                  isValidSolanaAddress
+                    ? makeSolanaAccountLink(transactionDetails.metadata)
+                    : makeSolanaTransactionLink(transactionDetails.metadata)
+                }
                 target='_blank'
                 title={transactionDetails.metadata}
                 rel='noreferrer'
@@ -185,6 +203,21 @@ export const TransactionDetailsContent = ({
 }: {
   transactionDetails: TransactionDetails
 }) => {
+  const [isValidSolanaAddress, setIsValidSolanaAddress] = useState<
+    undefined | boolean
+  >(undefined)
+  useEffect(() => {
+    if (
+      transactionDetails.metadata &&
+      typeof transactionDetails.metadata === 'string'
+    ) {
+      isValidSolAddress(
+        transactionDetails.metadata as SolanaWalletAddress
+      ).then((isValid) => {
+        setIsValidSolanaAddress(isValid)
+      })
+    }
+  }, [transactionDetails.metadata])
   const isLoading =
     transactionDetails.transactionType === TransactionType.PURCHASE
       ? transactionDetails.metadata === undefined
@@ -212,7 +245,7 @@ export const TransactionDetailsContent = ({
               method={transactionDetails.method}
             />
           </div>
-          {dateAndMetadataBlocks(transactionDetails)}
+          {dateAndMetadataBlocks({ transactionDetails, isValidSolanaAddress })}
 
           {transactionDetails.transactionType === TransactionType.PURCHASE ? (
             <Block className={styles.header} header={messages.method}>
