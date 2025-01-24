@@ -200,6 +200,7 @@ export interface LineupProviderProps {
   /** Function triggered on click of tile */
   onClickTile?: (trackId: ID) => void
   pageSize?: number
+  initialPageSize?: number
 }
 
 interface LineupProviderState {
@@ -478,7 +479,8 @@ class LineupProvider extends PureComponent<CombinedProps, LineupProviderState> {
       numPlaylistSkeletonRows,
       isTrending = false,
       onClickTile,
-      pageSize
+      pageSize,
+      initialPageSize
     } = this.props
     const isMobile = this.context.isMobile
     const status = lineup.status
@@ -574,6 +576,7 @@ class LineupProvider extends PureComponent<CombinedProps, LineupProviderState> {
         0
       )
       const loadingSkeletonCount =
+        (page === 0 && initialPageSize) ||
         pageSize ||
         (count
           ? Math.min(count - tiles.length, MAX_COUNT_LOADING_TILES)

@@ -166,6 +166,7 @@ export type LineupProps = {
    */
   itemStyles?: ViewStyle
   pageSize?: number
+  initialPageSize?: number
   tanQuery?: boolean
 } & Pick<
   SectionListProps<unknown>,

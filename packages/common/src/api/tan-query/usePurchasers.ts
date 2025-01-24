@@ -12,25 +12,26 @@ import { QueryOptions } from './types'
 import { useCurrentUserId } from './useCurrentUserId'
 import { primeUserData } from './utils/primeUserData'
 
-const DEFAULT_PAGE_SIZE = 20
+const PAGE_SIZE = 20
 
-type UseRemixersArgs = {
-  userId: ID | null | undefined
-  trackId?: ID | null | undefined
+type UsePurchasersArgs = {
+  contentId?: ID | null | undefined
+  contentType?: string | undefined
   pageSize?: number
 }
 
-export const useRemixers = (
-  { userId, trackId, pageSize = DEFAULT_PAGE_SIZE }: UseRemixersArgs,
+export const usePurchasers = (
+  args: UsePurchasersArgs,
   options?: QueryOptions
 ) => {
+  const { contentId, contentType, pageSize = PAGE_SIZE } = args
   const { audiusSdk } = useAudiusQueryContext()
   const { data: currentUserId } = useCurrentUserId()
   const queryClient = useQueryClient()
   const dispatch = useDispatch()
 
   return useInfiniteQuery({
-    queryKey: [QUERY_KEYS.remixers, userId, pageSize],
+    queryKey: [QUERY_KEYS.purchasers, args],
     initialPageParam: 0,
     getNextPageParam: (lastPage: User[], allPages) => {
       if (lastPage.length < pageSize) return undefined
@@ -38,12 +39,14 @@ export const useRemixers = (
     },
     queryFn: async ({ pageParam }) => {
       const sdk = await audiusSdk()
-      const { data = [] } = await sdk.full.users.getRemixers({
-        id: Id.parse(userId),
+      if (!currentUserId) return []
+      const { data = [] } = await sdk.full.users.getPurchasers({
+        id: Id.parse(currentUserId),
         limit: pageSize,
         offset: pageParam,
-        userId: OptionalId.parse(currentUserId),
-        trackId: OptionalId.parse(trackId)
+        userId: Id.parse(currentUserId),
+        contentId: OptionalId.parse(contentId),
+        contentType
       })
       const users = userMetadataListFromSDK(data)
       primeUserData({ users, queryClient, dispatch })
@@ -51,6 +54,6 @@ export const useRemixers = (
     },
     select: (data) => data.pages.flat(),
     staleTime: options?.staleTime,
-    enabled: options?.enabled !== false && !!userId
+    enabled: options?.enabled !== false && !!currentUserId
   })
 }

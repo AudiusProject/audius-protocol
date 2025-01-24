@@ -17,6 +17,10 @@ export const TracksTab = () => {
     handle
   })
 
+  const loadMore = () => {
+    fetchNextPage()
+  }
+
   return (
     <Lineup
       tanQuery
@@ -24,7 +28,7 @@ export const TracksTab = () => {
       leadingElementId={artist_pick_track_id}
       actions={tracksActions}
       lineup={lineup}
-      loadMore={() => fetchNextPage()}
+      loadMore={loadMore}
       pageSize={pageSize}
       disableTopTabScroll
       LineupEmptyComponent={<EmptyProfileTile tab='tracks' />}

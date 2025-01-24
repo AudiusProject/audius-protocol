@@ -241,6 +241,7 @@ export const Lineup = ({
   ListFooterComponent,
   onPressItem,
   itemStyles,
+  initialPageSize,
   pageSize,
   tanQuery,
   ...listProps
@@ -434,6 +435,10 @@ export const Lineup = ({
     const itemDisplayCount = page <= 1 ? itemCounts.initial : pageItemCount
 
     const getSkeletonCount = () => {
+      // Lineups like Feed load a different number of items on the first page
+      if (initialPageSize && page === 0) {
+        return initialPageSize
+      }
       if (pageSize) {
         return count ? Math.min(count - items.length, pageSize) : pageSize
       }
@@ -502,6 +507,7 @@ export const Lineup = ({
     pageItemCount,
     delineate,
     leadingElementId,
+    initialPageSize,
     pageSize,
     inView,
     limit,
