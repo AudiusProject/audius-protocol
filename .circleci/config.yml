@@ -317,7 +317,7 @@ jobs:
           name: Check status
           command: bash .circleci/scripts/check-workflow-statuses.sh
       - slack/notify:
-          channel: 'SLACK_USER_ID'
+          channel: SLACK_USER_ID
           template: PIPELINE_STATUS_TEMPLATE
 
 workflows:
