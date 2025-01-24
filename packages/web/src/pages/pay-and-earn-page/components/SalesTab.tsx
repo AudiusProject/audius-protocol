@@ -41,7 +41,6 @@ import {
   SalesTableSortDirection,
   SalesTableSortMethod
 } from './SalesTable'
-// import { purchases } from './purchases'
 
 const { UPLOAD_PAGE } = route
 const { getUserId } = accountSelectors
@@ -212,12 +211,11 @@ export const useSales = () => {
             console.error('Error decrypting email:', err)
           }
 
-          // Construct row with all data regardless of decryption success
           return [
             sale.title,
             sale.link,
             sale.purchasedBy,
-            decryptedEmail, // Will be empty if decryption failed
+            decryptedEmail,
             sale.date,
             sale.salePrice,
             sale.networkFee,
