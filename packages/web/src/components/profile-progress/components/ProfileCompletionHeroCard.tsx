@@ -1,4 +1,5 @@
 import { challengesSelectors, profilePageActions } from '@audius/common/store'
+import { Flex, useTheme } from '@audius/harmony'
 import { useDispatch, useSelector } from 'react-redux'
 // eslint-disable-next-line no-restricted-imports -- TODO: migrate to @react-spring/web
 import { useSpring, animated } from 'react-spring'
@@ -49,6 +50,7 @@ export const ProfileCompletionHeroCard = () => {
   const isAccountLoaded = useSelector(getIsAccountLoaded)
   const completionStages = useSelector(getOrderedCompletionStages)
   const isDismissed = useSelector(getProfilePageMeterDismissed)
+  const { color } = useTheme()
 
   const onDismiss = () => dispatch(profileMeterDismissed())
 
@@ -91,10 +93,13 @@ export const ProfileCompletionHeroCard = () => {
                   stepsComplete={stepsCompleted}
                 />
               </div>
-              <TaskCompletionList
-                completionStages={completionStages}
-                className={styles.rightContainer}
-              />
+              <Flex
+                p='l'
+                h={182}
+                css={{ backgroundColor: color.secondary.s300 }}
+              >
+                <TaskCompletionList completionStages={completionStages} />
+              </Flex>
               <button className={styles.dismissButton} onClick={onDismiss}>
                 Dismiss
               </button>

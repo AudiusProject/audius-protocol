@@ -5,14 +5,13 @@ import {
   challengesSelectors,
   musicConfettiActions
 } from '@audius/common/store'
-import { Flex } from '@audius/harmony'
+import { Flex, Text, TextLink } from '@audius/harmony'
 import { useDispatch, useSelector } from 'react-redux'
 // eslint-disable-next-line no-restricted-imports -- TODO: migrate to @react-spring/web
 import { useSpring, animated } from 'react-spring'
 
 import { SegmentedProgressBar } from 'components/segmented-progress-bar/SegmentedProgressBar'
 
-import styles from './ProfileCompletionPanel.module.css'
 import { ProfileCompletionTooltip } from './components/ProfileCompletionTooltip'
 import { useProfileCompletionDismissal, useSlideDown } from './hooks'
 
@@ -22,7 +21,7 @@ const { show: showMusicConfetti } = musicConfettiActions
 
 const ORIGINAL_HEIGHT_PIXELS = 118
 
-const strings = {
+const messages = {
   dismissText: 'Dismiss',
   completionText: (percentage: number) => `Profile ${percentage}% Complete`
 }
@@ -91,28 +90,32 @@ export const ProfileCompletionPanel = () => {
               isDisabled={isTooltipDisabled}
               shouldDismissOnClick={false}
             >
-              <div>
-                <div className={styles.outerPadding}>
-                  <div className={styles.container}>
-                    <animated.div className={styles.completionText}>
-                      {(animatedCompletion as any).interpolate((v: number) =>
-                        strings.completionText(Math.round(v))
-                      )}
-                    </animated.div>
-                    <SegmentedProgressBar
-                      numSteps={numSteps}
-                      stepsComplete={stepsComplete}
-                      isCompact
-                    />
-                    <button
-                      className={styles.dismissButton}
-                      onClick={onDismiss}
-                    >
-                      {strings.dismissText}
-                    </button>
-                  </div>
-                </div>
-              </div>
+              <Flex
+                backgroundColor='surface2'
+                border='strong'
+                borderRadius='l'
+                gap='l'
+                pv='l'
+                ph='2xl'
+                direction='column'
+                alignItems='center'
+              >
+                <Text variant='title' size='s'>
+                  <animated.div>
+                    {(animatedCompletion as any).interpolate((v: number) =>
+                      messages.completionText(Math.round(v))
+                    )}
+                  </animated.div>
+                </Text>
+                <SegmentedProgressBar
+                  numSteps={numSteps}
+                  stepsComplete={stepsComplete}
+                  isCompact
+                />
+                <TextLink onClick={onDismiss} variant='visible' size='s'>
+                  {messages.dismissText}
+                </TextLink>
+              </Flex>
             </ProfileCompletionTooltip>
           </animated.div>
         ) : null
