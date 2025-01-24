@@ -371,7 +371,8 @@ const userApi = createApi({
       options: {}
     },
     getMutedUsers: {
-      async fetch({ userId }: { userId: ID }, { audiusSdk }) {
+      async fetch({ userId }: { userId: Nullable<ID> }, { audiusSdk }) {
+        if (!userId) return []
         const encodedUserId = Id.parse(userId)
         const sdk = await audiusSdk()
         const { data: users } = await sdk.full.users.getMutedUsers({
