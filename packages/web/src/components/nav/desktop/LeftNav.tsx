@@ -1,6 +1,6 @@
 import { Fragment, useCallback, useRef, useState } from 'react'
 
-import { FavoriteSource } from '@audius/common/models'
+import { FavoriteSource, Status } from '@audius/common/models'
 import {
   accountSelectors,
   collectionsSocialActions,
@@ -43,7 +43,7 @@ type NavColumnProps = OwnProps &
   RouteComponentProps
 
 const LeftNav = (props: NavColumnProps) => {
-  const { isElectron } = props
+  const { isElectron, accountStatus } = props
   const [navBodyContainerMeasureRef, navBodyContainerBoundaries] = useMeasure({
     polyfill: ResizeObserver
   })
@@ -108,6 +108,9 @@ const LeftNav = (props: NavColumnProps) => {
     [scrollbarRef]
   )
 
+  const navLoaded =
+    accountStatus === Status.SUCCESS || accountStatus === Status.ERROR
+
   return (
     <Flex
       backgroundColor='surface1'
@@ -138,6 +141,7 @@ const LeftNav = (props: NavColumnProps) => {
                 ? 'inset 0px -8px 5px -5px var(--tile-shadow-3)'
                 : undefined,
           overflow: 'hidden',
+          opacity: navLoaded ? 1 : 0,
           transition: 'opacity 0.3s ease-in-out, box-shadow 0.2s ease'
         }}
       >
@@ -174,11 +178,13 @@ const LeftNav = (props: NavColumnProps) => {
           </DragAutoscroller>
         </Scrollbar>
       </Flex>
-      <Flex direction='column' alignItems='center'>
-        <ProfileCompletionPanel />
-        <LeftNavCTA />
-        <NowPlayingArtworkTile />
-      </Flex>
+      {navLoaded ? (
+        <Flex direction='column' alignItems='center'>
+          <ProfileCompletionPanel />
+          <LeftNavCTA />
+          <NowPlayingArtworkTile />
+        </Flex>
+      ) : null}
     </Flex>
   )
 }
