@@ -57,5 +57,10 @@ export const QUERY_KEYS = {
   developerApps: 'developerApps',
   searchAutocomplete: 'searchAutocomplete',
   purchasers: 'purchasers',
-  purchasersCount: 'purchasersCount'
+  purchasersCount: 'purchasersCount',
+  remixedTracks: 'remixedTracks',
+  mutedUsers: 'mutedUsers',
+  salesAggregate: 'salesAggregate',
+  usdcTransactionsCount: 'usdcTransactionsCount',
+  usdcTransactions: 'usdcTransactions'
 } as const

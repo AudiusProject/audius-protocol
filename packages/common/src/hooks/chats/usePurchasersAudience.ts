@@ -3,11 +3,10 @@ import { useMemo } from 'react'
 import { keyBy } from 'lodash'
 
 import {
-  useCurrentUserId,
   useCollections,
-  useGetSalesAggegrate,
-  useTracks,
-  usePurchasersCount
+  usePurchasersCount,
+  useSalesAggregate,
+  useTracks
 } from '~/api'
 import { ID } from '~/models'
 import { removeNullable } from '~/utils'
@@ -19,10 +18,7 @@ export const usePurchasersAudience = ({
   contentId?: ID
   contentType?: 'track' | 'album'
 }) => {
-  const { data: currentUserId } = useCurrentUserId()
-  const { data: salesAggregate } = useGetSalesAggegrate({
-    userId: currentUserId!
-  })
+  const { data: salesAggregate } = useSalesAggregate()
   const isDisabled = !salesAggregate?.length
 
   const trackAggregates = salesAggregate?.filter(
