@@ -43,8 +43,8 @@ if [[ $CIRCLE_BRANCH == "main" ]]
 then
   SUMMARY_MESSAGE=$(jq -r 'if .items | map(.status == "failed") | any then "*Action Items*:\n1. If you broke `'$CIRCLE_BRANCH'`, then fix it or revert your change.\n2. If you think a test is flaky, confirm it, make a change to skip the test with a ticket comment, and assign the ticket to the test owner.\n3. Once CI is green again, give this a :white_check_mark:." else "Changes should be live on <https://staging.audius.co|staging web> and all staging mobile apps." end' < /tmp/workflows.json)
 else
-  SUMMARY_MESSAGE=$(jq -r 'if .items | map(.status == "failed") | any then "If automerge was enabled, the change likely didn't merge. Fix your branch and try again." else "If automerge is enabled, the changes will be merged!" end' < /tmp/workflows.json)
-
+  SUMMARY_MESSAGE=$(jq -r 'if .items | map(.status == "failed") | any then "If automerge was enabled, the change likely did not merge. Fix your branch and try again." else "If automerge is enabled, the changes will be merged!" end' < /tmp/workflows.json)
+fi
 
 echo "Writing template..."
 jq -n --arg header "$PIPELINE_STATUS_HEADER"\
