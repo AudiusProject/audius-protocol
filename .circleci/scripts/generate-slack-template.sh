@@ -54,5 +54,5 @@ jq -n --arg header "$PIPELINE_STATUS_HEADER"\
 # Export the template to be available to the slack/notify command
 echo "Exporting template to bash environment..."
 echo 'export PIPELINE_STATUS_TEMPLATE=$(cat /tmp/pipeline-status-template.json)' >> "$BASH_ENV"
-echo "Exporting Slack user ID to bash environment..."
-echo "export SLACK_USER_ID=$SLACK_USER_ID" >> $BASH_ENV
+echo "Exporting Slack user ID to bash environment as default channel..."
+echo "export SLACK_DEFAULT_CHANNEL=$SLACK_USER_ID" >> $BASH_ENV
