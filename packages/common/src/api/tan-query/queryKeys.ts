@@ -53,6 +53,7 @@ export const QUERY_KEYS = {
   remixersCount: 'remixersCount',
   trackHistory: 'trackHistory',
   topTags: 'topTags',
+  feed: 'feed',
   authorizedApps: 'authorizedApps',
   developerApps: 'developerApps',
   searchAutocomplete: 'searchAutocomplete',

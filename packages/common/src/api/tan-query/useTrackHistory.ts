@@ -1,23 +1,22 @@
 import { Id, full } from '@audius/sdk'
 import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query'
-import { useDispatch, useSelector } from 'react-redux'
+import { useDispatch } from 'react-redux'
 
 import { trackActivityFromSDK, transformAndCleanList } from '~/adapters'
 import { useAudiusQueryContext } from '~/audius-query'
-import { UserTrackMetadata, Status } from '~/models'
+import { UserTrackMetadata } from '~/models'
 import { PlaybackSource } from '~/models/Analytics'
-import { ID, UID } from '~/models/Identifiers'
-import { combineStatuses } from '~/models/Status'
 import {
   historyPageTracksLineupActions,
   historyPageSelectors
 } from '~/store/pages'
-import { getPlaying } from '~/store/player/selectors'
 
 import { QUERY_KEYS } from './queryKeys'
 import { QueryOptions } from './types'
 import { useCurrentUserId } from './useCurrentUserId'
+import { loadNextPage } from './utils/infiniteQueryLoadNextPage'
 import { primeTrackData } from './utils/primeTrackData'
+import { useLineupQuery } from './utils/useLineupQuery'
 
 const DEFAULT_PAGE_SIZE = 30
 
@@ -35,16 +34,19 @@ export const useTrackHistory = (
     sortMethod,
     sortDirection
   }: UseTrackHistoryArgs = {},
-  config?: QueryOptions
+  options?: QueryOptions
 ) => {
   const { audiusSdk } = useAudiusQueryContext()
   const { data: currentUserId } = useCurrentUserId()
   const queryClient = useQueryClient()
   const dispatch = useDispatch()
-  const playing = useSelector(getPlaying)
-  const lineup = useSelector(historyPageSelectors.getHistoryTracksLineup)
 
-  const result = useInfiniteQuery({
+  const queryData = useInfiniteQuery({
+    initialPageParam: 0,
+    getNextPageParam: (lastPage: UserTrackMetadata[], allPages) => {
+      if (lastPage.length < pageSize) return undefined
+      return allPages.length * pageSize
+    },
     queryKey: [
       QUERY_KEYS.trackHistory,
       pageSize,
@@ -52,11 +54,6 @@ export const useTrackHistory = (
       sortMethod,
       sortDirection
     ],
-    initialPageParam: 0,
-    getNextPageParam: (lastPage: UserTrackMetadata[], allPages) => {
-      if (lastPage.length < pageSize) return undefined
-      return allPages.length * pageSize
-    },
     queryFn: async ({ pageParam }) => {
       const sdk = await audiusSdk()
       if (!currentUserId) return []
@@ -79,6 +76,7 @@ export const useTrackHistory = (
       primeTrackData({ tracks, queryClient, dispatch })
 
       // Update lineup when new data arrives
+      // TODO: can this inside useLineupQuery?
       dispatch(
         historyPageTracksLineupActions.fetchLineupMetadatas(
           pageParam,
@@ -90,47 +88,19 @@ export const useTrackHistory = (
 
       return tracks
     },
-    staleTime: config?.staleTime,
-    enabled: config?.enabled !== false && !!currentUserId
+    staleTime: options?.staleTime,
+    enabled: options?.enabled !== false && !!currentUserId
   })
 
-  // Combine query status with lineup status
-  const status = combineStatuses([
-    result.status === 'pending' ? Status.LOADING : Status.SUCCESS,
-    lineup.status
-  ])
-
-  // Lineup actions
-  const togglePlay = (uid: UID, id: ID) => {
-    dispatch(
-      historyPageTracksLineupActions.togglePlay(
-        uid,
-        id,
-        PlaybackSource.HISTORY_PAGE
-      )
-    )
-  }
-
-  const play = (uid?: UID) => {
-    dispatch(historyPageTracksLineupActions.play(uid))
-  }
-
-  const pause = () => {
-    dispatch(historyPageTracksLineupActions.pause())
-  }
-
-  const updateLineupOrder = (orderedIds: UID[]) => {
-    dispatch(historyPageTracksLineupActions.updateLineupOrder(orderedIds))
-  }
-
+  const lineupData = useLineupQuery({
+    queryData,
+    lineupActions: historyPageTracksLineupActions,
+    lineupSelector: historyPageSelectors.getHistoryTracksLineup,
+    playbackSource: PlaybackSource.HISTORY_PAGE
+  })
   return {
-    ...result,
-    status,
-    entries: lineup.entries,
-    togglePlay,
-    play,
-    pause,
-    updateLineupOrder,
-    playing
+    ...queryData,
+    ...lineupData,
+    loadNextPage: loadNextPage(queryData)
   }
 }
