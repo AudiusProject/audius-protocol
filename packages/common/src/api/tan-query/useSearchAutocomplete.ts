@@ -10,7 +10,7 @@ import { User } from '~/models/User'
 import { FeatureFlags } from '~/services/remote-config'
 
 import { QUERY_KEYS } from './queryKeys'
-import { Config } from './types'
+import { QueryOptions } from './types'
 import { useCurrentUserId } from './useCurrentUserId'
 
 const DEFAULT_LIMIT = 3
@@ -18,7 +18,6 @@ const DEFAULT_LIMIT = 3
 type UseSearchAutocompleteArgs = {
   query: string
   limit?: number
-  config?: Config
 }
 
 type SearchResults = {
@@ -40,7 +39,7 @@ const limitAutocompleteResults = (results: SearchResults): SearchResults => {
 
 export const useSearchAutocomplete = (
   { query, limit = DEFAULT_LIMIT }: UseSearchAutocompleteArgs,
-  config?: Config
+  options?: QueryOptions
 ) => {
   const { audiusSdk } = useAudiusQueryContext()
   const { data: currentUserId } = useCurrentUserId()
@@ -62,8 +61,8 @@ export const useSearchAutocomplete = (
 
       return limitAutocompleteResults(searchResultsFromSDK(data))
     },
-    staleTime: config?.staleTime,
-    enabled: config?.enabled !== false && query.length > 0,
-    placeholderData: (prev) => prev
+    staleTime: options?.staleTime,
+    enabled: options?.enabled !== false && query.length > 0,
+    placeholderData: (prev) => (query === '' ? undefined : prev)
   })
 }

@@ -83,7 +83,7 @@ const UserResult = ({ user }: UserResultProps) => (
     <ResultText
       primary={user.name}
       secondary={`@${user.handle}`}
-      badges={<UserBadges userId={user.user_id} badgeSize={12} inline />}
+      badges={<UserBadges userId={user.user_id} size='s' inline />}
     />
   </ResultWrapper>
 )
