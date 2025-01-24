@@ -42,7 +42,7 @@ type ResultTextProps = {
 }
 
 const ResultText = ({ primary, secondary, badges }: ResultTextProps) => (
-  <Flex direction='column' css={{ minWidth: 0, flex: 1 }}>
+  <Flex direction='column' flex={1} css={{ minWidth: 0 }}>
     <Flex alignItems='center' gap='2xs' css={{ minWidth: 0 }}>
       <Text
         variant='body'
@@ -93,9 +93,7 @@ type TrackResultProps = {
 }
 
 const TrackResult = ({ track }: TrackResultProps) => (
-  <ResultWrapper
-    to={`/${track.user.handle}/tracks/${track.title}-${track.track_id}`}
-  >
+  <ResultWrapper to={track.permalink}>
     <Artwork
       h={30}
       w={30}
