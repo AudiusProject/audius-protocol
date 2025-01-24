@@ -4,7 +4,7 @@ import { useDispatch } from 'react-redux'
 
 import { transformAndCleanList, userTrackMetadataFromSDK } from '~/adapters'
 import { useAudiusQueryContext } from '~/audius-query'
-import { LineupTrack, UserTrack } from '~/models'
+import { UserTrack } from '~/models'
 import { PlaybackSource } from '~/models/Analytics'
 import {
   profilePageSelectors,
