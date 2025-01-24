@@ -62,9 +62,7 @@ integration-test:
         name: run playwright tests
         command: |
           cd packages/web
-          RUN_AGAINST_LOCAL_STACK=true npx playwright test || true
-          echo 'WARNING: errors have been ignored due to test flakiness.'
-          echo 'Please manually inspect output.'
+          RUN_AGAINST_LOCAL_STACK=true npx playwright test
     - store_test_results:
         path: packages/web/report.xml
         when: always
