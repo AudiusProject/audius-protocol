@@ -4,11 +4,10 @@ import { ChatBlast, ChatBlastAudience, OptionalHashId } from '@audius/sdk'
 
 import {
   useCollection,
-  useGetPurchasersCount,
-  useGetRemixersCount,
   useTrack,
   useCurrentUser,
-  useCurrentUserId
+  useRemixersCount,
+  usePurchasersCount
 } from '~/api'
 import {
   getChatBlastAudienceDescription,
@@ -28,7 +27,6 @@ export const useChatBlastAudienceContent = ({ chat }: { chat: ChatBlast }) => {
     ? OptionalHashId.parse(audienceContentId)
     : undefined
 
-  const { data: currentUserId } = useCurrentUserId()
   const { data: user } = useCurrentUser()
   const { data: track } = useTrack(decodedContentId, {
     enabled: audienceContentType === 'track'
@@ -37,24 +35,13 @@ export const useChatBlastAudienceContent = ({ chat }: { chat: ChatBlast }) => {
     enabled: audienceContentType === 'album'
   })
 
-  const { data: purchasersCount } = useGetPurchasersCount(
-    {
-      userId: currentUserId!,
-      contentId: decodedContentId,
-      contentType: audienceContentType
-    },
-    {
-      disabled: audience !== ChatBlastAudience.CUSTOMERS || !currentUserId
-    }
+  const { data: purchasersCount } = usePurchasersCount(
+    { contentId: decodedContentId, contentType: audienceContentType },
+    { enabled: audience === ChatBlastAudience.CUSTOMERS }
   )
-  const { data: remixersCount } = useGetRemixersCount(
-    {
-      userId: currentUserId!,
-      trackId: decodedContentId
-    },
-    {
-      disabled: audience !== ChatBlastAudience.REMIXERS || !currentUserId
-    }
+  const { data: remixersCount } = useRemixersCount(
+    { trackId: decodedContentId },
+    { enabled: audience === ChatBlastAudience.REMIXERS }
   )
 
   const audienceCount = useMemo(() => {

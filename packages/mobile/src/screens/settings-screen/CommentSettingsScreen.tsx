@@ -1,9 +1,8 @@
 import { useCallback } from 'react'
 
-import { useCurrentUserId, useGetMutedUsers } from '@audius/common/api'
+import { useMutedUsers } from '@audius/common/api'
 import { useMuteUser } from '@audius/common/context'
 import { commentsMessages as messages } from '@audius/common/messages'
-import { Status } from '@audius/common/models'
 import { formatCount } from '@audius/common/utils'
 import { Pressable } from 'react-native'
 import { ScrollView } from 'react-native-gesture-handler'
@@ -39,13 +38,7 @@ const useStyles = makeStyles(({ spacing, palette }) => ({
 
 export const CommentSettingsScreen = () => {
   const styles = useStyles()
-  const { data: currentUserId } = useCurrentUserId()
-  const { data: mutedUsers, status } = useGetMutedUsers(
-    {
-      userId: currentUserId!
-    },
-    { force: true }
-  )
+  const { data: mutedUsers, isPending } = useMutedUsers()
 
   return (
     <Screen
@@ -62,7 +55,7 @@ export const CommentSettingsScreen = () => {
           ) : null}
         </Flex>
         <ScrollView style={styles.scrollContainer}>
-          {status === Status.LOADING ? (
+          {isPending ? (
             <Flex direction='row' justifyContent='center'>
               <LoadingSpinner style={styles.loadingSpinner} />
             </Flex>

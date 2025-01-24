@@ -19,7 +19,12 @@ const messages = {
 export const ListeningHistoryScreen = () => {
   const [filterValue, setFilterValue] = useState('')
 
-  const { fetchNextPage, togglePlay, status, entries } = useTrackHistory({
+  const {
+    loadNextPage,
+    togglePlay,
+    status,
+    lineup: { entries }
+  } = useTrackHistory({
     query: filterValue
   })
 
@@ -55,7 +60,7 @@ export const ListeningHistoryScreen = () => {
               uids={entries.map(({ uid }) => uid)}
               togglePlay={togglePlay}
               trackItemAction='overflow'
-              onEndReached={() => fetchNextPage()}
+              onEndReached={loadNextPage}
               onEndReachedThreshold={0.5}
               showSkeleton={status !== Status.SUCCESS && entries.length === 0}
             />

@@ -94,9 +94,9 @@ const HistoryPage = g((props) => {
     pause,
     togglePlay,
     updateLineupOrder,
-    playing,
+    isPlaying,
     status,
-    fetchNextPage,
+    loadNextPage,
     hasNextPage,
     isFetchingNextPage,
     isLoading
@@ -140,7 +140,7 @@ const HistoryPage = g((props) => {
 
   const onClickRow = useCallback(
     (trackRecord: any) => {
-      if (trackRecord.uid === currentQueueItem.uid && playing) {
+      if (trackRecord.uid === currentQueueItem.uid && isPlaying) {
         pause()
         record(
           make(Name.PLAYBACK_PAUSE, {
@@ -158,7 +158,7 @@ const HistoryPage = g((props) => {
         )
       }
     },
-    [pause, play, currentQueueItem, record, playing]
+    [pause, play, currentQueueItem, record, isPlaying]
   )
 
   const onClickSave = useCallback(
@@ -188,7 +188,7 @@ const HistoryPage = g((props) => {
       togglePlay(uid, trackId)
       record(
         make(
-          uid === currentQueueItem.uid && playing
+          uid === currentQueueItem.uid && isPlaying
             ? Name.PLAYBACK_PAUSE
             : Name.PLAYBACK_PLAY,
           {
@@ -198,7 +198,7 @@ const HistoryPage = g((props) => {
         )
       )
     },
-    [togglePlay, currentQueueItem, record, playing]
+    [togglePlay, currentQueueItem, record, isPlaying]
   )
 
   const onClickTrackName = useCallback(
@@ -238,12 +238,12 @@ const HistoryPage = g((props) => {
 
   const onPlay = useCallback(() => {
     const isLineupQueued = isQueued()
-    if (isLineupQueued && playing) {
+    if (isLineupQueued && isPlaying) {
       pause()
     } else if (entries.length > 0) {
       play(entries[0].uid)
     }
-  }, [isQueued, pause, play, entries, playing])
+  }, [isQueued, pause, play, entries, isPlaying])
 
   const onSortTracks = (sorters: any) => {
     const { column, order } = sorters
@@ -262,7 +262,7 @@ const HistoryPage = g((props) => {
   }
 
   const isEmpty = entries.length === 0
-  const queuedAndPlaying = playing && isQueued()
+  const queuedAndPlaying = isPlaying && isQueued()
 
   const totalRowCount = useMemo(() => {
     if (!hasNextPage) {
@@ -287,14 +287,14 @@ const HistoryPage = g((props) => {
     formatMetadata,
     getPlayingUid,
     isQueued,
-    fetchNextPage,
+    fetchNextPage: loadNextPage,
     isFetchingNextPage,
     totalRowCount,
     pageSize
   }
 
   const mobileProps = {
-    playing,
+    playing: isPlaying,
     onToggleSave,
     onTogglePlay
   }

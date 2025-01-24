@@ -18,47 +18,46 @@ export const getAudiusWalletClient = async (opts?: {
   ignoreCachedUserWallet?: boolean
 }): Promise<AudiusWalletClient> => {
   const { ignoreCachedUserWallet = false } = opts ?? {}
-  if (
-    wagmiConfig.state.status === 'reconnecting' ||
-    wagmiConfig.state.status === 'connecting'
-  ) {
-    console.info('[audiusSdk] Waiting for external wallet to connect...')
-    let unsubscribe: undefined | (() => void)
-    await new Promise<void>((resolve) => {
-      unsubscribe = wagmiConfig.subscribe(
-        (state) => state.status,
-        () => {
-          resolve()
-        }
-      )
-    })
-    unsubscribe?.()
-  }
+  const account = getAccount(wagmiConfig)
+  const user = await localStorage.getAudiusAccountUser()
 
+  // Check that the local storage user's wallet matches the connected external wallet
   if (
-    wagmiConfig.state.status === 'connected' &&
-    // Only support metaMask for now
-    wagmiConfig.state.connections.get(wagmiConfig.state.current!)?.connector
-      .type === 'metaMask'
+    ignoreCachedUserWallet ||
+    user?.wallet?.toLowerCase() === account.address?.toLowerCase()
   ) {
-    const account = getAccount(wagmiConfig)
-    const user = await localStorage.getAudiusAccountUser()
+    console.debug('[audiusSdk] Initializing SDK with external wallet...')
+
+    // Wait for the wallet to finish connecting/reconnecting
     if (
-      !ignoreCachedUserWallet &&
-      user?.wallet?.toLowerCase() !== account.address?.toLowerCase()
+      wagmiConfig.state.status === 'reconnecting' ||
+      wagmiConfig.state.status === 'connecting'
     ) {
-      console.warn(
-        '[audiusSdk] External wallet connected but cached user does not match connected external wallet. Falling back to Hedgehog...'
+      console.debug(
+        `[audiusSdk] Waiting for external wallet to finish ${wagmiConfig.state.status}...`
       )
-    } else {
-      console.info('[audiusSdk] Initializing SDK with external wallet...')
+      let unsubscribe: undefined | (() => void)
+      await new Promise<void>((resolve) => {
+        unsubscribe = wagmiConfig.subscribe(
+          (state) => state.status,
+          () => {
+            resolve()
+          }
+        )
+      })
+      console.debug(`[audiusSdk] External wallet ${wagmiConfig.state.status}.`)
+      unsubscribe?.()
+    }
+
+    // If connected, initialize the viem WalletClient. Else fall back to Hedgehog.
+    if (wagmiConfig.state.status === 'connected') {
       const client = await getWalletClient(wagmiConfig, {
         chainId: audiusChain.id
       })
       return client satisfies WalletClient as unknown as AudiusWalletClient
     }
   }
-
+  console.debug('[audiusSdk] Initializing SDK with Hedgehog...')
   return createHedgehogWalletClient(authService.hedgehogInstance)
 }
 

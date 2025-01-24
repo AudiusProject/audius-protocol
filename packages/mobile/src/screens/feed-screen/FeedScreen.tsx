@@ -1,12 +1,9 @@
-import { useCallback } from 'react'
-
-import { Name } from '@audius/common/models'
+import { useCurrentUserId, useFeed } from '@audius/common/api'
 import {
   lineupSelectors,
   feedPageLineupActions as feedActions,
   feedPageSelectors
 } from '@audius/common/store'
-import { useDispatch } from 'react-redux'
 
 import { IconFeed } from '@audius/harmony-native'
 import { Screen, ScreenContent, ScreenHeader } from 'app/components/core'
@@ -14,7 +11,6 @@ import { Lineup } from 'app/components/lineup'
 import { EndOfLineupNotice } from 'app/components/lineup/EndOfLineupNotice'
 import { OnlineOnly } from 'app/components/offline-placeholder/OnlineOnly'
 import { useAppTabScreen } from 'app/hooks/useAppTabScreen'
-import { make, track } from 'app/services/analytics'
 
 import { FeedFilterButton } from './FeedFilterButton'
 const { getDiscoverFeedLineup } = feedPageSelectors
@@ -29,16 +25,11 @@ const messages = {
 
 export const FeedScreen = () => {
   useAppTabScreen()
+  const { data: currentUserId } = useCurrentUserId()
 
-  const dispatch = useDispatch()
-
-  const loadMore = useCallback(
-    (offset: number, limit: number, overwrite: boolean) => {
-      dispatch(feedActions.fetchLineupMetadatas(offset, limit, overwrite))
-      track(make({ eventName: Name.FEED_PAGINATE, offset, limit }))
-    },
-    [dispatch]
-  )
+  const { loadNextPage, lineup, refetch } = useFeed({
+    userId: currentUserId
+  })
 
   return (
     <Screen url='Feed'>
@@ -49,6 +40,7 @@ export const FeedScreen = () => {
       </ScreenHeader>
       <ScreenContent>
         <Lineup
+          tanQuery
           pullToRefresh
           delineate
           selfLoad
@@ -56,9 +48,15 @@ export const FeedScreen = () => {
           ListFooterComponent={
             <EndOfLineupNotice description={messages.endOfFeed} />
           }
+          refresh={() => {
+            refetch()
+          }}
+          lineup={lineup}
           actions={feedActions}
           lineupSelector={getFeedLineup}
-          loadMore={loadMore}
+          loadMore={loadNextPage}
+          initialPageSize={10}
+          pageSize={4}
           showsVerticalScrollIndicator={false}
         />
       </ScreenContent>

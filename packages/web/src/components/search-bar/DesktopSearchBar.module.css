@@ -181,6 +181,14 @@
   padding: 0;
 }
 
+.searchBoxEmpty :global(.ant-select-item-group) {
+  height: 0;
+  min-height: 0;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
 .customHr {
   height: 1px;
   width: 100%;
