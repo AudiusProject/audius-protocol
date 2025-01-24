@@ -34,6 +34,7 @@ export const TextLink = forwardRef((props: TextLinkProps, ref: Ref<'a'>) => {
     stopPropagation = true,
     onClick,
     restriction,
+    isExternal,
     ...other
   } = props
 
@@ -62,6 +63,19 @@ export const TextLink = forwardRef((props: TextLinkProps, ref: Ref<'a'>) => {
   } else if (to === SIGN_UP_PAGE) {
     LinkComponent = SignOnLink
     linkProps = { signUp: true }
+  }
+
+  if (isExternal) {
+    return (
+      <HarmonyTextLink
+        isExternal={isExternal}
+        href={to as string}
+        onClick={handleClick}
+        {...other}
+      >
+        {children}
+      </HarmonyTextLink>
+    )
   }
 
   return (

@@ -285,7 +285,7 @@ const TrackTile = (props: CombinedProps) => {
           <Text variant='body' size='xs' className={styles.coSignText}>
             <div className={styles.name}>
               {coSign.user.name}
-              <UserBadges userId={coSign.user.user_id} badgeSize={8} />
+              <UserBadges userId={coSign.user.user_id} size='4xs' />
             </div>
             {formatCoSign({
               hasReposted: coSign.has_remix_author_reposted,

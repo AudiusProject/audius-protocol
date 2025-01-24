@@ -104,7 +104,7 @@ export const userCollectionMetadataFromSDK = (
     ),
     playlist_contents: {
       track_ids: transformAndCleanList(
-        input.addedTimestamps ?? input.playlistContents,
+        input.playlistContents,
         addedTimestampToPlaylistTrackId
       )
     },

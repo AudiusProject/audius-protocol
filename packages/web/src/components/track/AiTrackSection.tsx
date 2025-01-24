@@ -54,11 +54,7 @@ export const AiTrackSection = ({
           }
         >
           {entity.name}
-          <UserBadges
-            userId={entity.user_id}
-            className={styles.badgeIcon}
-            badgeSize={14}
-          />
+          <UserBadges userId={entity.user_id} className={styles.badgeIcon} />
         </h2>
       </ArtistPopover>
     ),

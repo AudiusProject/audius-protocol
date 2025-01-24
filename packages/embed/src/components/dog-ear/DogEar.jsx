@@ -28,7 +28,7 @@ export const DogEar = ({ size, variant }) => {
         className={cn(styles.icon, {
           [styles.small]: size === 's'
         })}
-        color='staticWhite'
+        color='white'
       />
     </>
   )

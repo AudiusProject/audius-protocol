@@ -1,8 +1,8 @@
 .updateDot {
   display: block;
   margin-right: 4px;
-  width: 6px;
-  height: 6px;
+  width: 8px;
+  height: 8px;
   border-radius: 100%;
   background: var(--harmony-secondary);
 }

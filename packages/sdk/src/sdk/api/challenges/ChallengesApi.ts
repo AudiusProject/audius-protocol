@@ -162,8 +162,7 @@ export class ChallengesApi extends GeneratedChallengesApi {
     if (instructions.length > 0) {
       const txSoFar = await this.solanaClient.buildTransaction({
         instructions,
-        addressLookupTables: [this.rewardManager.lookupTable],
-        priorityFee: null
+        addressLookupTables: [this.rewardManager.lookupTable]
       })
       // Evaluate instruction adds 145 bytes w/ max disbursement id of 32
       const estimatedEvaluateInstructionSize = 145

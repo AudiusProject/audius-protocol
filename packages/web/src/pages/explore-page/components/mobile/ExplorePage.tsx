@@ -150,7 +150,7 @@ const ExplorePage = ({ pageTitle, description }: ExplorePageProps) => {
             shadow={t.shadow}
             icon={
               Icon ? (
-                <Icon color='staticWhite' width={200} height={200} />
+                <Icon color='inverse' width={200} height={200} />
               ) : undefined
             }
             goToRoute={navigate}
@@ -167,7 +167,7 @@ const ExplorePage = ({ pageTitle, description }: ExplorePageProps) => {
             shadow={t.shadow}
             icon={
               Icon ? (
-                <Icon color='staticWhite' width={200} height={200} />
+                <Icon color='inverse' width={200} height={200} />
               ) : undefined
             }
             goToRoute={navigate}

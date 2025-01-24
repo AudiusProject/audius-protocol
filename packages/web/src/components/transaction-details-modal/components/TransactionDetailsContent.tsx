@@ -89,12 +89,7 @@ const UserDetails = ({ userId }: UserDetailsProps) => {
           }}
         >
           <span>{usersMap[userId].name}</span>
-          <UserBadges
-            userId={userId}
-            className={styles.badge}
-            badgeSize={14}
-            inline
-          />
+          <UserBadges userId={userId} className={styles.badge} inline />
         </div>
       )}
     </>

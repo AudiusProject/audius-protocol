@@ -154,10 +154,7 @@ export const UserMentionAutocompleteText = (
                       disabled
                       variant={isActive ? 'inverted' : 'default'}
                     />
-                    <Text
-                      size='xs'
-                      color={isActive ? 'staticWhite' : 'subdued'}
-                    >
+                    <Text size='xs' color={isActive ? 'white' : 'subdued'}>
                       {userList[index].handle}
                     </Text>
                   </Flex>

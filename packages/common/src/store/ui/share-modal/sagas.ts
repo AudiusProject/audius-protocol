@@ -1,9 +1,16 @@
-import { takeEvery, put, select } from 'typed-redux-saga'
+import { Id } from '@audius/sdk'
+import { takeEvery, put, select, call } from 'typed-redux-saga'
 
+import {
+  userCollectionMetadataFromSDK,
+  userMetadataFromSDK,
+  transformAndCleanList
+} from '~/adapters'
 import { getCollection as getCollectionBase } from '~/store/cache/collections/selectors'
 import { getTrack as getTrackBase } from '~/store/cache/tracks/selectors'
 import { getUser as getUserBase } from '~/store/cache/users/selectors'
 import { CommonState } from '~/store/commonStore'
+import { getSDK } from '~/store/sdkUtils'
 
 import { ID } from '../../../models'
 import { setVisibility } from '../modals/parentSlice'
@@ -36,10 +43,41 @@ function* handleRequestOpen(action: ShareModalRequestOpenAction) {
     }
     case 'collection': {
       const { collectionId, source } = action.payload
-      const collection = yield* select(getCollection(collectionId))
+      const sdk = yield* getSDK()
+
+      let collection = yield* select(getCollection(collectionId))
+      if (!collection) {
+        const { data = [] } = yield* call(
+          [sdk.full.playlists, sdk.full.playlists.getPlaylist],
+          {
+            playlistId: Id.parse(collectionId)
+          }
+        )
+        const [transformedCollection] = transformAndCleanList(
+          data,
+          userCollectionMetadataFromSDK
+        )
+        if (transformedCollection) {
+          collection = transformedCollection
+        }
+      }
       if (!collection) return
-      const owner = yield* select(getUser(collection.playlist_owner_id))
+
+      let owner = yield* select(getUser(collection.playlist_owner_id))
+      if (!owner) {
+        const { data } = yield* call([sdk.full.users, sdk.full.users.getUser], {
+          id: Id.parse(collection.playlist_owner_id)
+        })
+        const [transformedUser] = transformAndCleanList(
+          data ?? [],
+          userMetadataFromSDK
+        )
+        if (transformedUser) {
+          owner = transformedUser
+        }
+      }
       if (!owner) return
+
       if (collection.is_album) {
         yield put(
           open({ type: 'album', album: collection, artist: owner, source })

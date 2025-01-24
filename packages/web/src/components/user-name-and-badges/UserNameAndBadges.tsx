@@ -52,12 +52,7 @@ const UserNameAndBadgesImpl = (props: UserNameAndBadgesImplProps) => {
     >
       <div className={styles.nameAndBadge} onClick={handleClick}>
         <span className={cn(styles.name, classes?.name)}>{user.name}</span>
-        <UserBadges
-          userId={user.user_id}
-          className={styles.badges}
-          badgeSize={14}
-          inline
-        />
+        <UserBadges userId={user.user_id} className={styles.badges} inline />
       </div>
     </ArtistPopover>
   )

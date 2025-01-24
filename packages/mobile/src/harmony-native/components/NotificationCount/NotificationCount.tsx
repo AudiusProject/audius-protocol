@@ -14,7 +14,7 @@ export const NotificationCount = ({ count }: NotificationCountProps) => (
     ph='s'
     pv='xs'
   >
-    <Text variant='label' size='xs' color='staticWhite'>
+    <Text variant='label' size='xs' color='white'>
       {count}
     </Text>
   </Flex>

@@ -41,7 +41,7 @@ const AiPage = g(({ title, user, getLineupProps, goToArtistPage }) => {
             <UserBadges
               className={styles.iconVerified}
               userId={user.user_id}
-              badgeSize={12}
+              size='2xs'
             />
           </div>
         </div>

@@ -205,7 +205,7 @@ export const DownloadSection = ({ trackId }: DownloadSectionProps) => {
                       paddingBottom: '1px'
                     }}
                   >
-                    <IconLockUnlocked color='staticWhite' size='xs' />
+                    <IconLockUnlocked color='white' size='xs' />
                   </Flex>
                   <Text
                     variant='label'

@@ -31,7 +31,7 @@ export const AccountSwitcherRow = ({
     userId: user.user_id,
     size: SquareSizes.SIZE_150_BY_150
   })
-  const { iconSizes, color } = useTheme()
+  const { color } = useTheme()
   return (
     <Flex
       ph='xl'
@@ -73,7 +73,7 @@ export const AccountSwitcherRow = ({
           >
             {user.name}
           </Text>
-          <UserBadges userId={user.user_id} badgeSize={iconSizes.xs} inline />
+          <UserBadges userId={user.user_id} inline />
         </Flex>
         <Text
           variant='body'

@@ -17,7 +17,9 @@ import {
   ExpandableNavItem,
   Box,
   Flex,
-  useTheme
+  useTheme,
+  IconPencil,
+  IconTrash
 } from '@audius/harmony'
 import { ClassNames } from '@emotion/react'
 import { useDispatch } from 'react-redux'
@@ -132,8 +134,16 @@ export const PlaylistFolderNavItem = (props: PlaylistFolderNavItemProps) => {
 
   const kebabItems: PopupMenuItem[] = useMemo(
     () => [
-      { text: messages.edit, onClick: handleClickEdit },
-      { text: messages.delete, onClick: toggleDeleteConfirmationOpen }
+      {
+        text: messages.edit,
+        onClick: handleClickEdit,
+        icon: <IconPencil color='default' />
+      },
+      {
+        text: messages.delete,
+        onClick: toggleDeleteConfirmationOpen,
+        icon: <IconTrash color='default' />
+      }
     ],
     [handleClickEdit, toggleDeleteConfirmationOpen]
   )

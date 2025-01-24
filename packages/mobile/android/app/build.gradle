@@ -121,7 +121,7 @@ android {
         // versionCode is automatically incremented in CI
         versionCode 1
         // Make sure this is above the currently released Android version in the play store if your changes touch native code:
-        versionName "1.1.463"
+        versionName "1.1.464"
         resValue "string", "build_config_package", "co.audius.app"
         resValue 'string', "CODE_PUSH_APK_BUILD_TIME", String.format("\"%d\"", System.currentTimeMillis())
         resConfigs "en"
@@ -196,6 +196,7 @@ dependencies {
     implementation 'com.bytedance.ies.ugc.aweme:opensdk-oversea-external:0.2.0.2'
 
     implementation 'com.android.support:multidex:1.0.3'
+    implementation("androidx.activity:activity:1.9.+")
     implementation 'androidx.core:core-splashscreen:1.0.0'
     implementation "androidx.appcompat:appcompat:1.0.0"
 

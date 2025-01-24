@@ -1,23 +1,29 @@
-import cn from 'classnames'
 import Lottie from 'lottie-react'
 
 import loadingSpinner from '~harmony/assets/animations/loadingSpinner.json'
 
-import styles from './LoadingSpinner.module.css'
+import { IconProps } from '../icon'
+import { Flex, FlexProps } from '../layout/Flex'
 
-type LoadingSpinnerProps = { className?: string }
+type LoadingSpinnerProps = FlexProps & Pick<IconProps, 'size' | 'color'>
 
 const LoadingSpinner = (props: LoadingSpinnerProps) => {
-  const { className } = props
-
+  const { size = 'l', color, ...rest } = props
   return (
-    <div
-      className={cn(styles.container, className)}
+    <Flex
       role='progressbar'
       data-chromatic='ignore'
+      css={(theme) => ({
+        height: size ? theme.iconSizes[size] : undefined,
+        width: size ? theme.iconSizes[size] : undefined,
+        g: {
+          path: { stroke: color ? theme.color.icon[color] : 'currentColor' }
+        }
+      })}
+      {...rest}
     >
       <Lottie loop autoplay animationData={loadingSpinner} />
-    </div>
+    </Flex>
   )
 }
 

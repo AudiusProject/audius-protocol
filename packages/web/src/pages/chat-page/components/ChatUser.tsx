@@ -35,7 +35,7 @@ export const ChatUser = ({
         <ArtistPopover handle={user.handle}>
           <div className={styles.nameAndBadge} onClick={goToProfile}>
             <span className={styles.name}>{user.name}</span>
-            <UserBadges userId={user.user_id} badgeSize={14} />
+            <UserBadges userId={user.user_id} />
           </div>
         </ArtistPopover>
         <ArtistPopover handle={user.handle}>

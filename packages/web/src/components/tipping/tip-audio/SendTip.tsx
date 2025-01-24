@@ -31,7 +31,7 @@ import IconNoTierBadge from 'assets/img/tokenBadgePurple16@2x.webp'
 import { OnRampButton } from 'components/on-ramp-button'
 import Skeleton from 'components/skeleton/Skeleton'
 import Tooltip from 'components/tooltip/Tooltip'
-import { audioTierMapPng } from 'components/user-badges/UserBadges'
+import { audioTierMap } from 'components/user-badges/UserBadges'
 import { useFlag } from 'hooks/useRemoteConfig'
 
 import { ProfileInfo } from '../../profile-info/ProfileInfo'
@@ -65,7 +65,7 @@ export const SendTip = () => {
   const [tipAmount, setTipAmount] = useState('')
 
   const { tier } = getTierAndNumberForBalance(weiToString(accountBalance))
-  const audioBadge = audioTierMapPng[tier as BadgeTier]
+  const audioBadge = audioTierMap[tier as BadgeTier]
 
   const { isEnabled: isStripeBuyAudioEnabled } = useFlag(
     FeatureFlags.BUY_AUDIO_STRIPE_ENABLED

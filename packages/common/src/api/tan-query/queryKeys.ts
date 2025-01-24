@@ -55,6 +55,7 @@ export const QUERY_KEYS = {
   topTags: 'topTags',
   authorizedApps: 'authorizedApps',
   developerApps: 'developerApps',
+  searchAutocomplete: 'searchAutocomplete',
   purchasers: 'purchasers',
   purchasersCount: 'purchasersCount'
 } as const
