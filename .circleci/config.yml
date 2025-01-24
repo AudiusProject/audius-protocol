@@ -300,6 +300,26 @@ jobs:
           channel: 'C06SP746DA7'
           template: PIPELINE_STATUS_TEMPLATE
 
+  aggregate-pipeline-status:
+    working_directory: ~/audius-protocol
+    resource_class: small
+    docker:
+      - image: cimg/base:2023.01
+    steps:
+      - checkout
+      - run:
+          name: Wait For Pipeline
+          command: bash .circleci/scripts/wait-for-pipeline.sh
+      - run:
+          name: Generate Slack Template
+          command: bash .circleci/scripts/generate-slack-template.sh
+      - slack/notify:
+          channel: '$SLACK_USER_ID'
+          template: PIPELINE_STATUS_TEMPLATE
+      - run:
+          name: Check status
+          command: bash .circleci/scripts/check-workflow-statuses.sh
+
 workflows:
   setup:
     when:
@@ -451,6 +471,17 @@ workflows:
           filters:
             branches:
               only: /^main$/
+
+      - aggregate-pipeline-status:
+          context:
+            - slack-secrets
+          requires:
+            - trigger-relevant-workflows
+          filters:
+            branches:
+              ignore:
+                - main
+                - /^release.*$/
 
   release-create-branch:
     when:
