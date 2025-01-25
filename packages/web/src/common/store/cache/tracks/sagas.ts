@@ -29,15 +29,13 @@ import {
   makeKindId,
   squashNewLines,
   uuid,
-  waitForAccount,
-  waitForValue
+  waitForAccount
 } from '@audius/common/utils'
 import { Id, OptionalId } from '@audius/sdk'
-import { call, fork, put, select, takeEvery } from 'typed-redux-saga'
+import { call, put, select, takeEvery } from 'typed-redux-saga'
 
 import { make } from 'common/store/analytics/actions'
 import * as signOnActions from 'common/store/pages/signon/actions'
-import { updateProfileAsync } from 'common/store/profile/sagas'
 import { addPremiumMetadata } from 'common/store/upload/sagaHelpers'
 import { waitForWrite } from 'utils/sagaHelpers'
 
@@ -298,8 +296,10 @@ function* deleteTrackAsync(
         }
       ])
     )
-    const user = yield* call(waitForValue, getUser, { id: userId })
-    yield* fork(updateProfileAsync, { metadata: user })
+
+    // feature-tan-query TODO: update profile
+    // const user = yield* call(waitForValue, getUser, { id: userId })
+    // yield* fork(updateProfileAsync, { metadata: user })
   }
 
   yield* put(
