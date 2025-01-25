@@ -6,5 +6,3 @@ export const getLineup = (state: CommonState) => getBaseState(state).tracks
 
 export const getAiUserHandle = (state: CommonState) =>
   getBaseState(state).page.handle
-
-export const getCount = (state: CommonState) => getBaseState(state).page.count

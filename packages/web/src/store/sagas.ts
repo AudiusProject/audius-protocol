@@ -30,6 +30,7 @@ import coreCacheSagas from 'common/store/cache/sagas'
 import tracksSagas from 'common/store/cache/tracks/sagas'
 import usersSagas from 'common/store/cache/users/sagas'
 import changePasswordSagas from 'common/store/change-password/sagas'
+import aiTracksSagas from 'common/store/pages/ai/lineups/tracks/sagas'
 import rewardsPageSagas from 'common/store/pages/audio-rewards/sagas'
 import collectionSagas from 'common/store/pages/collection/sagas'
 import deactivateAccountSagas from 'common/store/pages/deactivate-account/sagas'
@@ -122,6 +123,7 @@ export default function* rootSaga() {
     trendingUndergroundSagas(),
     uploadSagas(),
     premiumTracksSagas(),
+    aiTracksSagas(),
 
     modalsSagas(),
 

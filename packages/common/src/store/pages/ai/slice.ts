@@ -1,10 +1,7 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { combineReducers } from 'redux'
 
-import { Status } from '~/models/Status'
 import { asLineup } from '~/store/lineup/reducer'
-
-import { ID } from '../../../models/Identifiers'
 
 import { PREFIX as aiTracksPrefix } from './lineup/actions'
 import aiTracksReducer, {
@@ -12,18 +9,12 @@ import aiTracksReducer, {
 } from './lineup/reducer'
 
 export type AiPageState = {
-  userId: ID | null
   handle: string | null
-  status: Status
-  count: number | null
   tracks: typeof initialLineupState
 }
 
 const initialState: AiPageState = {
-  userId: null,
   handle: null,
-  status: Status.IDLE,
-  count: null,
   tracks: initialLineupState
 }
 
@@ -31,21 +22,16 @@ const slice = createSlice({
   name: 'application/pages/ai',
   initialState,
   reducers: {
-    reset: (state) => {
-      state.userId = null
-      state.handle = null
-      state.status = Status.IDLE
-    },
-    setCount: (state, action: PayloadAction<{ count: number }>) => {
-      const { count } = action.payload
-      state.count = count
+    setHandle: (state, action: PayloadAction<{ handle: string }>) => {
+      const { handle } = action.payload
+      state.handle = handle
     }
   }
 })
 
 const aiLineupReducer = asLineup(aiTracksPrefix, aiTracksReducer)
 
-export const { reset, setCount } = slice.actions
+export const { setHandle } = slice.actions
 
 export default combineReducers({
   page: slice.reducer,
