@@ -593,11 +593,7 @@ class WebPlayer extends Component {
                 <Route
                   exact
                   path={EXPLORE_PREMIUM_TRACKS_PAGE}
-                  render={() => (
-                    <PremiumTracksPage
-                      containerRef={this.props.mainContentRef.current}
-                    />
-                  )}
+                  render={() => <PremiumTracksPage />}
                 />
                 <Route
                   exact
