@@ -60,6 +60,10 @@ export const getAudiusWalletClient = async (opts?: {
         chainId: audiusChain.id
       })
       return client satisfies WalletClient as unknown as AudiusWalletClient
+    } else {
+      console.warn(
+        '[audiusSdk] External wallet not connected. Falling back to Hedgehog.'
+      )
     }
   }
   console.debug('[audiusSdk] Initializing SDK with Hedgehog...')

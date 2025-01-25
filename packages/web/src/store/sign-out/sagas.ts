@@ -9,8 +9,8 @@ import {
 import { disconnect } from '@wagmi/core'
 import { takeLatest, put, call } from 'redux-saga/effects'
 
+import { wagmiConfig } from 'app/AppProviders'
 import { make } from 'common/store/analytics/actions'
-import { wagmiConfig } from 'services/audius-sdk/wagmi'
 import { signOut } from 'store/sign-out/signOut'
 import { push } from 'utils/navigation'
 const { resetAccount, unsubscribeBrowserPushNotifications } = accountActions
