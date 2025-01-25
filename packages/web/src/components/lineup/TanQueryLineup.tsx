@@ -226,7 +226,6 @@ export const TanQueryLineup = ({
   // State hooks
   const [internalScrollParent, setInternalScrollParent] =
     useState<HTMLElement | null>(externalScrollParent || null)
-  const [loadedTiles, setLoadedTiles] = useState<boolean[]>(new Array(200))
 
   // Constants
   const loadMoreThreshold = getLoadMoreThreshold()
@@ -253,19 +252,6 @@ export const TanQueryLineup = ({
       }
     },
     [playingUid, isPlaying, play, dispatch, pause]
-  )
-
-  const hasLoaded = useCallback(
-    (index: number) => {
-      if (!loadedTiles[index]) {
-        setLoadedTiles((tiles) => {
-          const newTiles = [...tiles]
-          newTiles[index] = true
-          return newTiles
-        })
-      }
-    },
-    [loadedTiles]
   )
 
   useEffect(() => {
@@ -318,7 +304,6 @@ export const TanQueryLineup = ({
           containerClassName,
           uid: entry.uid,
           isLoading: lineup.entries[index] === undefined,
-          hasLoaded,
           isTrending,
           onClick: onClickTile,
           source: ModalSource.LineUpTrackTile
@@ -340,7 +325,6 @@ export const TanQueryLineup = ({
           playingTrackId,
           togglePlay,
           isLoading: lineup.entries[index] === undefined,
-          hasLoaded,
           numLoadingSkeletonRows: numPlaylistSkeletonRows,
           isTrending,
           source: ModalSource.LineUpCollectionTile
