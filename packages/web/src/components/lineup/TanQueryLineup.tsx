@@ -152,7 +152,7 @@ export interface TanQueryLineupProps {
 
   /** Function triggered on click of tile */
   onClickTile?: (trackId: ID) => void
-  pageSize?: number
+  pageSize: number
   initialPageSize?: number
 }
 
@@ -336,7 +336,6 @@ export const TanQueryLineup = ({
     })
     .filter(Boolean)
 
-  // On initial load we won't have any data loaded so we show skeletons based on the initial page size
   const getSkeletons = (skeletonCount: number | undefined) => {
     const skeletonTileProps = (index: number) => ({
       index: tiles.length + index,
@@ -363,6 +362,7 @@ export const TanQueryLineup = ({
     )
   }
 
+  // On initial load we won't have any data loaded so we show skeletons based on the initial page size
   if (isLoading && tiles.length === 0) {
     return getSkeletons(initialPageSize ?? pageSize)
   }
