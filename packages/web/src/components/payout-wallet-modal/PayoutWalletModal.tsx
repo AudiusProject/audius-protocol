@@ -1,7 +1,8 @@
 import { useCallback, useState } from 'react'
 
+import { useUpdateProfile } from '@audius/common/api'
 import { SolanaWalletAddress } from '@audius/common/models'
-import { accountSelectors, profilePageActions } from '@audius/common/store'
+import { accountSelectors } from '@audius/common/store'
 import {
   Button,
   Divider,
@@ -27,7 +28,7 @@ import {
 } from '@solana/spl-token'
 import { PublicKey, SystemProgram } from '@solana/web3.js'
 import { Formik, useField } from 'formik'
-import { useDispatch, useSelector } from 'react-redux'
+import { useSelector } from 'react-redux'
 import { useAsync } from 'react-use'
 import { z } from 'zod'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
@@ -174,8 +175,8 @@ const PayoutWalletModalForm = ({
 export const PayoutWalletModal = () => {
   const [isOpen, setIsOpen] = useModalState('PayoutWallet')
   const user = useSelector(getAccountUser)
-  const dispatch = useDispatch()
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const { mutate: updateProfile } = useUpdateProfile()
 
   const handleClose = useCallback(() => {
     setIsOpen(false)
@@ -291,7 +292,7 @@ export const PayoutWalletModal = () => {
           }
           updatedUser.spl_usdc_payout_wallet = usdcAta as SolanaWalletAddress
         }
-        dispatch(profilePageActions.updateProfile(updatedUser))
+        updateProfile(updatedUser)
 
         setIsOpen(false)
       } catch (e) {
@@ -303,7 +304,7 @@ export const PayoutWalletModal = () => {
       }
       setIsSubmitting(false)
     },
-    [dispatch, user, setIsOpen]
+    [updateProfile, user, setIsOpen]
   )
 
   const { value: payoutWallet } = useAsync(async () => {
