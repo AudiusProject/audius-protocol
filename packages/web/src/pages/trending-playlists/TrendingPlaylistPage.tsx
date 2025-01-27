@@ -1,20 +1,15 @@
-import { useEffect } from 'react'
-
-import {
-  trendingPlaylistsPageLineupSelectors,
-  trendingPlaylistsPageLineupActions
-} from '@audius/common/store'
+import { useTrendingPlaylists } from '@audius/common/api'
+import { trendingPlaylistsPageLineupActions } from '@audius/common/store'
 import { route } from '@audius/common/utils'
-import { useDispatch } from 'react-redux'
 
 import { Header as DesktopHeader } from 'components/header/desktop/Header'
 import { useMobileHeader } from 'components/header/mobile/hooks'
-import Lineup from 'components/lineup/Lineup'
-import { useLineupProps } from 'components/lineup/hooks'
-import { LineupVariant } from 'components/lineup/types'
+import Lineup, { LineupProps } from 'components/lineup/Lineup'
+import { useTanQueryLineupProps } from 'components/lineup/hooks'
 import MobilePageContainer from 'components/mobile-page-container/MobilePageContainer'
 import Page from 'components/page/Page'
 import { useIsMobile } from 'hooks/useIsMobile'
+import { useMainContentRef } from 'pages/MainContentContext'
 import RewardsBanner from 'pages/trending-page/components/RewardsBanner'
 import { BASE_URL } from 'utils/route'
 import { createSeoDescription } from 'utils/seo'
@@ -22,35 +17,13 @@ import { createSeoDescription } from 'utils/seo'
 import styles from './TrendingPlaylistPage.module.css'
 
 const { TRENDING_PLAYLISTS_PAGE } = route
-const { getLineup } = trendingPlaylistsPageLineupSelectors
 
 const messages = {
   trendingPlaylistTile: 'Trending Playlists',
   description: createSeoDescription('Trending Playlists on Audius')
 }
 
-/** Wraps useLineupProps to return trending playlist lineup props */
-const useTrendingPlaylistLineup = (containerRef: HTMLElement) => {
-  return useLineupProps({
-    actions: trendingPlaylistsPageLineupActions,
-    getLineupSelector: getLineup,
-    variant: LineupVariant.PLAYLIST,
-    numPlaylistSkeletonRows: 5,
-    scrollParent: containerRef,
-    isTrending: true,
-    isOrdered: true
-  })
-}
-
-type TrendingPlaylistPageProps = {
-  containerRef: HTMLElement
-}
-
-const DesktopTrendingPlaylistPage = ({
-  containerRef
-}: TrendingPlaylistPageProps) => {
-  const lineupProps = useTrendingPlaylistLineup(containerRef)
-
+const DesktopTrendingPlaylistPage = (props: LineupProps) => {
   const header = <DesktopHeader primary={messages.trendingPlaylistTile} />
 
   return (
@@ -63,16 +36,12 @@ const DesktopTrendingPlaylistPage = ({
       <div className={styles.bannerContainer}>
         <RewardsBanner bannerType='playlists' />
       </div>
-      <Lineup {...lineupProps} />
+      <Lineup {...props} />
     </Page>
   )
 }
 
-const MobileTrendingPlaylistPage = ({
-  containerRef
-}: TrendingPlaylistPageProps) => {
-  const lineupProps = useTrendingPlaylistLineup(containerRef)
-
+const MobileTrendingPlaylistPage = (props: LineupProps) => {
   useMobileHeader({ title: messages.trendingPlaylistTile })
 
   return (
@@ -86,34 +55,35 @@ const MobileTrendingPlaylistPage = ({
         <div className={styles.mobileBannerContainer}>
           <RewardsBanner bannerType='playlists' />
         </div>
-        <Lineup {...lineupProps} />
+        <Lineup {...props} />
       </div>
     </MobilePageContainer>
   )
 }
 
-const useLineupReset = () => {
-  const dispatch = useDispatch()
-  useEffect(() => {
-    return () => {
-      dispatch(trendingPlaylistsPageLineupActions.reset())
-    }
-  }, [dispatch])
-}
-
-const TrendingPlaylistPage = (props: TrendingPlaylistPageProps) => {
+const TrendingPlaylistPage = () => {
+  const scrollParentRef = useMainContentRef()
   const isMobile = useIsMobile()
+  const { lineup, loadNextPage, play, pause, isPlaying, pageSize } =
+    useTrendingPlaylists()
+  const lineupProps = useTanQueryLineupProps()
 
-  useLineupReset()
+  const props = {
+    scrollParent: scrollParentRef.current,
+    lineup,
+    loadMore: loadNextPage,
+    playing: isPlaying,
+    playTrack: play,
+    pauseTrack: pause,
+    actions: trendingPlaylistsPageLineupActions,
+    pageSize,
+    ...lineupProps
+  }
 
-  return (
-    <>
-      {isMobile ? (
-        <MobileTrendingPlaylistPage {...props} />
-      ) : (
-        <DesktopTrendingPlaylistPage {...props} />
-      )}
-    </>
+  return isMobile ? (
+    <MobileTrendingPlaylistPage {...props} />
+  ) : (
+    <DesktopTrendingPlaylistPage {...props} />
   )
 }
 
