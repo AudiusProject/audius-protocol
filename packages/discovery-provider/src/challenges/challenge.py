@@ -16,19 +16,32 @@ logger = logging.getLogger(__name__)
 
 # DB Accessors
 def fetch_user_challenges(
-    session: Session, challenge_id: str, specifiers: List[str]
+    session: Session, challenge_id: str, specifiers: Optional[List[str]] = None
 ) -> List[UserChallenge]:
     user_challenges = (
         session.query(UserChallenge).filter(
             UserChallenge.challenge_id == challenge_id,
-            UserChallenge.specifier.in_(specifiers),
+            UserChallenge.specifier.in_(specifiers) if specifiers else True,
         )
     ).all()
+    if specifiers is None:
+        return user_challenges
     # Re-sort them
     specifier_map = {
         user_challenge.specifier: user_challenge for user_challenge in user_challenges
     }
     return [specifier_map[s] for s in specifiers if s in specifier_map]
+
+
+def fetch_user_challenges_without_specifiers(
+    session: Session, challenge_id: str
+) -> List[UserChallenge]:
+    user_challenges = (
+        session.query(UserChallenge).filter(
+            UserChallenge.challenge_id == challenge_id,
+        )
+    ).all()
+    return user_challenges
 
 
 class EventMetadata(TypedDict):
@@ -320,7 +333,7 @@ class ChallengeManager:
             session.rollback()
 
     def get_user_challenge_state(
-        self, session: Session, specifiers: List[str]
+        self, session: Session, specifiers: Optional[List[str]] = None
     ) -> List[UserChallenge]:
         return fetch_user_challenges(session, self.challenge_id, specifiers)
 

@@ -1,5 +1,5 @@
-from datetime import datetime, timedelta
-from typing import List, Optional
+from datetime import datetime, timedelta, timezone
+from typing import Dict, List, Optional
 
 from sqlalchemy.orm.session import Session
 
@@ -33,6 +33,23 @@ def get_listen_streak_override(session: Session, user_id: int) -> Optional[int]:
 class ChallengeListenStreakUpdater(ChallengeUpdater):
     """Listening streak challenge"""
 
+    def generate_specifier(self, user_id: int, extra: Dict) -> str:
+        created_at = datetime.fromtimestamp(extra["created_at"], tz=timezone.utc)
+        formatted_date = created_at.strftime("%Y%m%d")
+        return f"{user_id}_{formatted_date}"
+
+    def should_create_new_challenge(
+        self, session: Session, event: str, user_id: int, extra: Dict
+    ) -> bool:
+        user_challenge = get_most_recent_listen_streak_user_challenges(
+            session, [user_id]
+        )
+        if user_challenge is None:
+            return True
+        if user_challenge.current_step_count < 7:
+            return False
+        return True
+
     def update_user_challenges(
         self,
         session: Session,
@@ -42,9 +59,6 @@ class ChallengeListenStreakUpdater(ChallengeUpdater):
         event_metadatas: List[FullEventMetadata],
         starting_block: Optional[int],
     ):
-        if step_count is None:
-            raise Exception("Expected a step count for listen streak challenge")
-
         user_ids = [user_challenge.user_id for user_challenge in user_challenges]
         partial_completions = get_listen_streak_challenges(session, user_ids)
         completion_map = {
@@ -57,23 +71,47 @@ class ChallengeListenStreakUpdater(ChallengeUpdater):
         # Update the user_challenges
         for user_challenge in user_challenges:
             matching_partial_challenge = completion_map[user_challenge.user_id]
-            # Update step count
-            user_challenge.current_step_count = matching_partial_challenge.listen_streak
+            if matching_partial_challenge.listen_streak == 7:
+                user_challenge.amount = 7
+                user_challenge.current_step_count = 7
+            elif matching_partial_challenge.listen_streak > 7:
+                user_challenge.amount = 1
+                user_challenge.current_step_count = 1
+            else:
+                user_challenge.current_step_count = (
+                    matching_partial_challenge.listen_streak
+                )
             # Update completion
-            user_challenge.is_complete = user_challenge.current_step_count >= step_count
+            user_challenge.is_complete = user_challenge.current_step_count >= 7
 
     def on_after_challenge_creation(
         self, session: Session, metadatas: List[FullEventMetadata]
     ):
-        listen_streak_challenges = [
+
+        # Get all user_ids from the metadatas
+        user_ids = [metadata["user_id"] for metadata in metadatas]
+
+        # Query existing records
+        existing_challenges = (
+            session.query(ChallengeListenStreak.user_id)
+            .filter(ChallengeListenStreak.user_id.in_(user_ids))
+            .all()
+        )
+        existing_user_ids = {user_id for (user_id,) in existing_challenges}
+
+        # Create new records only for users that don't have one
+        new_listen_streak_challenges = [
             ChallengeListenStreak(
                 user_id=metadata["user_id"],
                 last_listen_date=None,
                 listen_streak=0,
             )
             for metadata in metadatas
+            if metadata["user_id"] not in existing_user_ids
         ]
-        session.add_all(listen_streak_challenges)
+
+        if new_listen_streak_challenges:
+            session.add_all(new_listen_streak_challenges)
 
     # Helpers
     def _handle_track_listens(
@@ -116,5 +154,18 @@ def get_listen_streak_challenges(
     return (
         session.query(ChallengeListenStreak)
         .filter(ChallengeListenStreak.user_id.in_(user_ids))
+        .order_by(ChallengeListenStreak.last_listen_date.desc())
         .all()
+    )
+
+
+def get_most_recent_listen_streak_user_challenges(
+    session: Session, user_ids: List[int]
+) -> Optional[UserChallenge]:
+    return (
+        session.query(UserChallenge)
+        .filter(UserChallenge.challenge_id == "l")
+        .filter(UserChallenge.user_id.in_(user_ids))
+        .order_by(UserChallenge.created_at.desc())
+        .first()
     )

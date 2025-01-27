@@ -1,3 +1,4 @@
+import logging
 from datetime import datetime, timedelta
 
 from sqlalchemy.orm.session import Session
@@ -11,6 +12,8 @@ from src.models.users.user import User
 from src.utils.config import shared_config
 from src.utils.db_session import get_db
 from src.utils.redis_connection import get_redis
+
+logger = logging.getLogger(__name__)
 
 REDIS_URL = shared_config["redis"]["url"]
 BLOCK_NUMBER = 10
@@ -99,22 +102,16 @@ def test_listen_streak_challenge(app):
         # Make sure plays increment the step count
         scope_and_process(lambda: dp(0))
 
-        state = listen_streak_challenge_manager.get_user_challenge_state(
-            session, ["1"]
-        )[0]
+        state = listen_streak_challenge_manager.get_user_challenge_state(session)[0]
         assert state.current_step_count == 1 and not state.is_complete
 
         scope_and_process(lambda: dp(1))
-        state = listen_streak_challenge_manager.get_user_challenge_state(
-            session, ["1"]
-        )[0]
+        state = listen_streak_challenge_manager.get_user_challenge_state(session)[0]
         assert state.current_step_count == 2 and not state.is_complete
 
         # Make sure the step count resets if the user missed a day
         scope_and_process(lambda: dp(3))
-        state = listen_streak_challenge_manager.get_user_challenge_state(
-            session, ["1"]
-        )[0]
+        state = listen_streak_challenge_manager.get_user_challenge_state(session)[0]
         assert state.current_step_count == 1 and not state.is_complete
 
         # Add more plays to increment the step count
@@ -123,16 +120,12 @@ def test_listen_streak_challenge(app):
         scope_and_process(lambda: dp(6))
         scope_and_process(lambda: dp(7))
         scope_and_process(lambda: dp(8))
-        state = listen_streak_challenge_manager.get_user_challenge_state(
-            session, ["1"]
-        )[0]
+        state = listen_streak_challenge_manager.get_user_challenge_state(session)[0]
         assert state.current_step_count == 6 and not state.is_complete
 
         # Make sure that is_complete is set when step count hits 7
         scope_and_process(lambda: dp(9))
-        state = listen_streak_challenge_manager.get_user_challenge_state(
-            session, ["1"]
-        )[0]
+        state = listen_streak_challenge_manager.get_user_challenge_state(session)[0]
         assert state.current_step_count == 7 and state.is_complete == True
 
 
@@ -173,6 +166,59 @@ def test_multiple_listens(app):
 
         # we really want to just ensure that this doesn't crash
         assert state.current_step_count == 1
+
+
+def test_listen_streak_endless_challenge(app):
+    redis_conn = get_redis()
+    bus = ChallengeEventBus(redis_conn)
+    # Register events with the bus
+    bus.register_listener(ChallengeEvent.track_listen, listen_streak_challenge_manager)
+
+    with app.app_context():
+        db = get_db()
+
+    with db.scoped_session() as session:
+        setup_challenges(session)
+
+        # wrapped dispatch play
+        def dp(offset):
+            return dispatch_play(offset, session, bus)
+
+        scope_and_process = make_scope_and_process(bus, session)
+
+        # Make sure plays increment the step count
+        scope_and_process(lambda: dp(0))
+
+        state = listen_streak_challenge_manager.get_user_challenge_state(
+            session, ["1"]
+        )[0]
+        assert len(state) == 0
+
+        # Add more plays to increment the step count
+        scope_and_process(lambda: dp(1))
+        scope_and_process(lambda: dp(2))
+        scope_and_process(lambda: dp(3))
+        scope_and_process(lambda: dp(4))
+        scope_and_process(lambda: dp(5))
+        scope_and_process(lambda: dp(6))
+        state = listen_streak_challenge_manager.get_user_challenge_state(
+            session, ["1"]
+        )[0]
+        assert state.current_step_count == 7 and state.is_complete == True
+
+        logger.info("REED 1")
+        scope_and_process(lambda: dp(10))
+        state = listen_streak_challenge_manager.get_user_challenge_state(session, ["1"])
+        assert len(state) == 2
+        assert state[0].is_complete == True
+
+        logger.info("REED 2")
+        scope_and_process(lambda: dp(11))
+        state = listen_streak_challenge_manager.get_user_challenge_state(session, ["1"])
+        logger.info(f"REED state: {state}")
+        assert len(state) == 2
+        assert state[0].is_complete == True
+        assert state[1].is_complete == True
 
 
 def test_anon_listen(app):
