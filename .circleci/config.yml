@@ -363,6 +363,8 @@ workflows:
             packages/common/.* run-protocol-dashboard-workflow true
             packages/protocol-dashboard/.* run-protocol-dashboard-workflow true
             packages/harmony/.* run-web-workflow true
+            packages/harmony/.* run-protocol-dashboard-workflow true
+            packages/harmony/.* run-embed-workflow true
             packages/eslint-config-audius/.* run-web-workflow true
             packages/eslint-config-audius/.* run-mobile-workflow true
             packages/sdk/.* run-sdk-workflow true
