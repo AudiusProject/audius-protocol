@@ -1,38 +1,21 @@
-import { useEffect } from 'react'
-
-import {
-  trendingUndergroundPageLineupSelectors,
-  trendingUndergroundPageLineupActions
-} from '@audius/common/store'
+import { useTrendingUnderground } from '@audius/common/api'
+import { trendingUndergroundPageLineupActions } from '@audius/common/store'
 import { route } from '@audius/common/utils'
-import { useDispatch } from 'react-redux'
 
 import { Header as DesktopHeader } from 'components/header/desktop/Header'
 import { useMobileHeader } from 'components/header/mobile/hooks'
-import Lineup from 'components/lineup/Lineup'
-import { useLineupProps } from 'components/lineup/hooks'
-import { LineupVariant } from 'components/lineup/types'
+import Lineup, { LineupProps } from 'components/lineup/Lineup'
+import { useTanQueryLineupProps } from 'components/lineup/hooks'
 import MobilePageContainer from 'components/mobile-page-container/MobilePageContainer'
 import Page from 'components/page/Page'
 import { useIsMobile } from 'hooks/useIsMobile'
+import { useMainContentRef } from 'pages/MainContentContext'
 import RewardsBanner from 'pages/trending-page/components/RewardsBanner'
 import { BASE_URL } from 'utils/route'
 import { createSeoDescription } from 'utils/seo'
 
 import styles from './TrendingUndergroundPage.module.css'
 const { TRENDING_UNDERGROUND_PAGE } = route
-const { getLineup } = trendingUndergroundPageLineupSelectors
-
-const useTrendingUndergroundLineup = (containerRef: HTMLElement) => {
-  return useLineupProps({
-    actions: trendingUndergroundPageLineupActions,
-    getLineupSelector: getLineup,
-    variant: LineupVariant.MAIN,
-    scrollParent: containerRef,
-    isTrending: true,
-    isOrdered: true
-  })
-}
 
 const messages = {
   trendingUndergroundTitle: 'Underground Trending',
@@ -41,15 +24,9 @@ const messages = {
   )
 }
 
-type TrendingUndergroundPageProps = {
-  containerRef: HTMLElement
-}
-
-const MobileTrendingUndergroundPage = ({
-  containerRef
-}: TrendingUndergroundPageProps) => {
-  const lineupProps = useTrendingUndergroundLineup(containerRef)
+const MobileTrendingUndergroundPage = (props: LineupProps) => {
   useMobileHeader({ title: messages.trendingUndergroundTitle })
+
   return (
     <MobilePageContainer
       title={messages.trendingUndergroundTitle}
@@ -61,17 +38,13 @@ const MobileTrendingUndergroundPage = ({
         <div className={styles.mobileBannerContainer}>
           <RewardsBanner bannerType='underground' />
         </div>
-        <Lineup {...lineupProps} />
+        <Lineup {...props} />
       </div>
     </MobilePageContainer>
   )
 }
 
-const DesktopTrendingUndergroundPage = ({
-  containerRef
-}: TrendingUndergroundPageProps) => {
-  const lineupProps = useTrendingUndergroundLineup(containerRef)
-
+const DesktopTrendingUndergroundPage = (props: LineupProps) => {
   const header = <DesktopHeader primary={messages.trendingUndergroundTitle} />
 
   return (
@@ -84,33 +57,34 @@ const DesktopTrendingUndergroundPage = ({
       <div className={styles.bannerContainer}>
         <RewardsBanner bannerType='underground' />
       </div>
-      <Lineup {...lineupProps} />
+      <Lineup {...props} />
     </Page>
   )
 }
 
-const useLineupReset = () => {
-  const dispatch = useDispatch()
-  useEffect(() => {
-    return () => {
-      dispatch(trendingUndergroundPageLineupActions.reset())
-    }
-  }, [dispatch])
-}
-
-const TrendingUndergroundPage = (props: TrendingUndergroundPageProps) => {
+const TrendingUndergroundPage = () => {
+  const scrollParentRef = useMainContentRef()
   const isMobile = useIsMobile()
+  const { lineup, loadNextPage, play, pause, isPlaying, pageSize } =
+    useTrendingUnderground()
+  const lineupProps = useTanQueryLineupProps()
 
-  useLineupReset()
+  const props = {
+    scrollParent: scrollParentRef.current,
+    lineup,
+    loadMore: loadNextPage,
+    playing: isPlaying,
+    playTrack: play,
+    pauseTrack: pause,
+    actions: trendingUndergroundPageLineupActions,
+    pageSize,
+    ...lineupProps
+  }
 
-  return (
-    <>
-      {isMobile ? (
-        <MobileTrendingUndergroundPage {...props} />
-      ) : (
-        <DesktopTrendingUndergroundPage {...props} />
-      )}
-    </>
+  return isMobile ? (
+    <MobileTrendingUndergroundPage {...props} />
+  ) : (
+    <DesktopTrendingUndergroundPage {...props} />
   )
 }
 
