@@ -35,44 +35,6 @@ import { delineateByTime, delineateByFeatured } from './delineate'
 import { LineupVariant } from './types'
 const { getUid } = playerSelectors
 
-// The inital multiplier for number of tracks to fetch on lineup load
-// multiplied by the number of tracks that fit the browser height
-export const INITIAL_LOAD_TRACKS_MULTIPLIER = 1.75
-
-// Threshold for how far away from the bottom (of the list) the user has to be
-// before fetching more tracks as a percentage of the page size
-const LOAD_MORE_PAGE_THRESHOLD = 3 / 5
-
-// The minimum inital multiplier for tracks to fetch on lineup load
-// use so that multiple lineups on the same page can switch w/out a reload
-const MINIMUM_INITIAL_LOAD_TRACKS_MULTIPLIER = 1
-
-// tile height + margin
-const totalTileHeight = {
-  main: 152 + 16,
-  section: 124 + 16,
-  condensed: 124 + 8,
-  playlist: 350,
-  grid: 140
-}
-
-const innerHeight = typeof window !== 'undefined' ? window.innerHeight : 0
-
-// Load TRACKS_AHEAD x the number of tiles to be displayed on the screen
-export const getLoadMoreTrackCount = (
-  variant: LineupVariant,
-  multiplier: number | (() => number)
-) =>
-  Math.ceil(
-    (innerHeight / totalTileHeight[variant]) *
-      (typeof multiplier === 'function' ? multiplier() : multiplier)
-  )
-
-// Call load more when the user is LOAD_MORE_PAGE_THRESHOLD of the view height
-// away from the bottom of the scrolling window.
-const getLoadMoreThreshold = () =>
-  Math.ceil(innerHeight * LOAD_MORE_PAGE_THRESHOLD)
-
 export interface TanQueryLineupProps {
   /** Query data should be fetched one component above and passed through here */
   lineupQueryData: LineupQueryData
@@ -156,7 +118,6 @@ export interface TanQueryLineupProps {
   initialPageSize?: number
 }
 
-// TODO: can eventually delete this?
 const defaultLineup = {
   entries: [] as any[],
   order: {},
@@ -188,7 +149,6 @@ export const TanQueryLineup = ({
   leadingElementClassName,
   laggingContainerClassName,
   animateLeadingElement,
-  applyLeadingElementStylesToSkeleton,
   extraPrecedingElement,
   lineupContainerStyles,
   tileContainerStyles,
@@ -211,9 +171,10 @@ export const TanQueryLineup = ({
     loadNextPage,
     hasNextPage,
     isPlaying,
-    isLoading,
+    isFetching,
     isError
   } = lineupQueryData
+
   const isMobile = useIsMobile()
   const scrollContainer = useRef<HTMLDivElement>(null)
   const playingUid = useSelector(getUid)
@@ -227,8 +188,23 @@ export const TanQueryLineup = ({
   const [internalScrollParent, setInternalScrollParent] =
     useState<HTMLElement | null>(externalScrollParent || null)
 
-  // Constants
-  const loadMoreThreshold = getLoadMoreThreshold()
+  // Effects
+  useEffect(() => {
+    if (setInView) setInView(true)
+    return () => {
+      if (setInView) setInView(false)
+    }
+  }, [setInView])
+
+  useEffect(() => {
+    if (
+      externalScrollParent &&
+      !internalScrollParent &&
+      externalScrollParent !== internalScrollParent
+    ) {
+      setInternalScrollParent(externalScrollParent)
+    }
+  }, [externalScrollParent, internalScrollParent, lineup.hasMore, loadNextPage])
 
   // Callbacks
   const togglePlay = useCallback(
@@ -253,22 +229,6 @@ export const TanQueryLineup = ({
     },
     [playingUid, isPlaying, play, dispatch, pause]
   )
-
-  useEffect(() => {
-    if (
-      externalScrollParent &&
-      !internalScrollParent &&
-      externalScrollParent !== internalScrollParent
-    ) {
-      setInternalScrollParent(externalScrollParent)
-    }
-  }, [
-    externalScrollParent,
-    internalScrollParent,
-    lineup.hasMore,
-    loadMoreThreshold,
-    loadNextPage
-  ])
 
   // Render logic
   let tileSize: TrackTileSize
@@ -336,7 +296,9 @@ export const TanQueryLineup = ({
     })
     .filter(Boolean)
 
-  const getSkeletons = (skeletonCount: number | undefined) => {
+  // Renders TrackTile skeletons based on the number of tiles to render
+  // NOTE: We don't know if the tiles will be a track or a playlist - we default to showing track skeletons
+  const renderSkeletons = (skeletonCount: number | undefined) => {
     const skeletonTileProps = (index: number) => ({
       index: tiles.length + index,
       size: tileSize,
@@ -347,7 +309,7 @@ export const TanQueryLineup = ({
 
     // This means no skeletons are desired
     if (!skeletonCount) {
-      return undefined
+      return <></>
     }
 
     return (
@@ -363,8 +325,8 @@ export const TanQueryLineup = ({
   }
 
   // On initial load we won't have any data loaded so we show skeletons based on the initial page size
-  if (isLoading && tiles.length === 0) {
-    return getSkeletons(initialPageSize ?? pageSize)
+  if (isFetching && tiles.length === 0) {
+    return renderSkeletons(initialPageSize ?? pageSize)
   }
 
   if (isError) {
@@ -464,7 +426,7 @@ export const TanQueryLineup = ({
             [laggingContainerClassName!]: !!laggingContainerClassName
           })}
         >
-          {tiles.length === 0 && !isLoading ? (
+          {tiles.length === 0 && !isFetching ? (
             emptyElement
           ) : (
             <InfiniteScroll
@@ -484,7 +446,7 @@ export const TanQueryLineup = ({
                 return internalScrollParent
               }}
               element='ol'
-              loader={getSkeletons(pageSize)}
+              loader={renderSkeletons(pageSize)}
             >
               {tiles.map((tile: any, index: number) => (
                 <li key={index} className={cn({ [tileStyles!]: !!tileStyles })}>

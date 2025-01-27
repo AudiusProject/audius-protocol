@@ -7,10 +7,6 @@ import { IconFeed } from '@audius/harmony'
 import { make, useRecord } from 'common/store/analytics/actions'
 import { Header } from 'components/header/desktop/Header'
 import EndOfLineup from 'components/lineup/EndOfLineup'
-import {
-  getLoadMoreTrackCount,
-  INITIAL_LOAD_TRACKS_MULTIPLIER
-} from 'components/lineup/LineupProvider'
 import { TanQueryLineup } from 'components/lineup/TanQueryLineup'
 import { LineupVariant } from 'components/lineup/types'
 import Page from 'components/page/Page'
@@ -23,12 +19,14 @@ const messages = {
   feedHeaderTitle: 'Your Feed'
 }
 
+const INITIAL_PAGE_SIZE = 10
+const ADDITIONAL_PAGE_SIZE = 4
+
 const FeedPageContent = ({
   feedTitle,
   feedDescription,
   feedIsMain,
   setFeedInView,
-  loadMoreFeed,
   getLineupProps,
   feedFilter,
   setFeedFilter,
@@ -36,7 +34,10 @@ const FeedPageContent = ({
 }: FeedPageContentProps) => {
   const { data: currentUserId } = useCurrentUserId()
   const lineupQueryData = useFeed({
-    userId: currentUserId
+    userId: currentUserId,
+    filter: feedFilter,
+    initialPageSize: INITIAL_PAGE_SIZE,
+    loadMorePageSize: ADDITIONAL_PAGE_SIZE
   })
 
   const lineupProps = getLineupProps(lineupQueryData.lineup)
@@ -49,12 +50,6 @@ const FeedPageContent = ({
     }
     setFeedFilter(filter)
     resetFeedLineup()
-    const fetchLimit = getLoadMoreTrackCount(
-      LineupVariant.MAIN,
-      INITIAL_LOAD_TRACKS_MULTIPLIER
-    )
-    const fetchOffset = 0
-    loadMoreFeed(fetchOffset, fetchLimit, true)
     record(make(Name.FEED_CHANGE_VIEW, { view: filter }))
   }
 
@@ -81,8 +76,8 @@ const FeedPageContent = ({
       <TanQueryLineup
         {...lineupProps}
         lineupQueryData={lineupQueryData}
-        initialPageSize={10}
-        pageSize={4}
+        initialPageSize={INITIAL_PAGE_SIZE}
+        pageSize={ADDITIONAL_PAGE_SIZE}
         emptyElement={<EmptyFeed />}
         endOfLineup={<EndOfLineup />}
         setInView={setFeedInView}
