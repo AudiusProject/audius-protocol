@@ -1,11 +1,12 @@
 import { useCallback } from 'react'
 
-import type { UserMetadata } from '@audius/common/models'
+import { useUpdateProfile } from '@audius/common/api'
+import type { WriteableUserMetadata } from '@audius/common/models'
 import { SquareSizes, WidthSizes } from '@audius/common/models'
-import { accountSelectors, profilePageActions } from '@audius/common/store'
+import { accountSelectors } from '@audius/common/store'
 import type { FormikProps } from 'formik'
 import { Formik } from 'formik'
-import { useDispatch, useSelector } from 'react-redux'
+import { useSelector } from 'react-redux'
 
 import {
   IconDonate,
@@ -28,7 +29,6 @@ import { ProfileTextField } from './ProfileTextField'
 import type { ProfileValues, UpdatedProfile } from './types'
 
 const { getAccountUser } = accountSelectors
-const { updateProfile } = profilePageActions
 
 const useStyles = makeStyles(({ palette, spacing }) => ({
   coverPhoto: {
@@ -141,9 +141,9 @@ export const EditProfileScreen = () => {
     verified_with_tiktok: verifiedWithTiktok
   } = profile
 
-  const dispatch = useDispatch()
-
   const navigation = useNavigation()
+
+  const { mutate: updateProfile } = useUpdateProfile()
 
   const { source: coverPhotoSource } = useCoverPhoto({
     userId: user_id,
@@ -171,10 +171,10 @@ export const EditProfileScreen = () => {
       if (profile_picture.file) {
         newProfile.updatedProfilePicture = profile_picture
       }
-      dispatch(updateProfile(newProfile as UserMetadata))
+      updateProfile(newProfile as WriteableUserMetadata)
       navigation.goBack()
     },
-    [dispatch, navigation, profile]
+    [updateProfile, navigation, profile]
   )
 
   if (!profile) return null

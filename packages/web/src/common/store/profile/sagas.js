@@ -1,30 +1,16 @@
-import {
-  userMetadataListFromSDK,
-  userWalletsFromSDK
-} from '@audius/common/adapters'
+import { userWalletsFromSDK } from '@audius/common/adapters'
 import { Kind } from '@audius/common/models'
 import {
-  accountSelectors,
   cacheActions,
   profilePageActions as profileActions,
   chatActions,
   reachabilitySelectors,
   collectiblesActions,
-  confirmerActions,
-  confirmTransaction,
   getSDK,
   cacheUsersSelectors
 } from '@audius/common/store'
-import {
-  squashNewLines,
-  makeKindId,
-  waitForAccount,
-  dataURLtoFile,
-  isResponseError,
-  route
-} from '@audius/common/utils'
+import { isResponseError, route } from '@audius/common/utils'
 import { Id } from '@audius/sdk'
-import { merge } from 'lodash'
 import {
   all,
   call,
@@ -42,12 +28,10 @@ import {
   unsubscribeFromUserAsync
 } from 'common/store/social/users/sagas'
 import { push as pushRoute } from 'utils/navigation'
-import { waitForWrite } from 'utils/sagaHelpers'
 
 const { NOT_FOUND_PAGE } = route
 const { getIsReachable } = reachabilitySelectors
 
-const { getUserId } = accountSelectors
 const { getUser } = cacheUsersSelectors
 
 const {
@@ -334,134 +318,6 @@ function* profileSucceededAsync(action) {
   }
 }
 
-function* watchUpdateProfile() {
-  yield takeEvery(profileActions.UPDATE_PROFILE, updateProfileAsync)
-}
-
-export function* updateProfileAsync(action) {
-  yield waitForWrite()
-  const sdk = yield getSDK()
-  let metadata = { ...action.metadata }
-  metadata.bio = squashNewLines(metadata.bio)
-
-  const accountUserId = yield select(getUserId)
-  yield put(
-    cacheActions.update(Kind.USERS, [
-      { id: accountUserId, metadata: { name: metadata.name } }
-    ])
-  )
-
-  // Get existing metadata and combine with it
-  const cid = metadata.metadata_multihash ?? null
-  if (cid) {
-    try {
-      const {
-        data: { data }
-      } = yield call([sdk.full.cidData, sdk.full.cidData.getMetadata], {
-        metadataId: cid
-      })
-      const collectibles = metadata.collectibles
-      metadata = merge(data, metadata)
-      metadata.collectibles = collectibles
-    } catch (e) {
-      // Although we failed to fetch the existing user metadata, this should only
-      // happen if the user's account data is unavailable across the whole network.
-      // In favor of availability, we write anyway.
-      console.error(e)
-    }
-  }
-
-  // For base64 images (coming from native), convert to a blob
-  if (metadata.updatedCoverPhoto?.type === 'base64') {
-    metadata.updatedCoverPhoto.file = dataURLtoFile(
-      metadata.updatedCoverPhoto.file
-    )
-  }
-
-  if (metadata.updatedProfilePicture?.type === 'base64') {
-    metadata.updatedProfilePicture.file = dataURLtoFile(
-      metadata.updatedProfilePicture.file
-    )
-  }
-
-  yield call(confirmUpdateProfile, metadata.user_id, metadata)
-
-  yield put(
-    cacheActions.update(Kind.USERS, [
-      {
-        id: metadata.user_id,
-        metadata
-      }
-    ])
-  )
-}
-
-function* confirmUpdateProfile(userId, metadata) {
-  yield waitForWrite()
-  const sdk = yield* getSDK()
-  const audiusBackendInstance = yield getContext('audiusBackendInstance')
-  yield put(
-    confirmerActions.requestConfirmation(
-      makeKindId(Kind.USERS, userId),
-      function* () {
-        const response = yield call(audiusBackendInstance.updateCreator, {
-          metadata,
-          sdk
-        })
-        const { blockHash, blockNumber } = response
-
-        const confirmed = yield call(confirmTransaction, blockHash, blockNumber)
-        if (!confirmed) {
-          throw new Error(
-            `Could not confirm update profile for user id ${userId}`
-          )
-        }
-        yield waitForAccount()
-        const currentUserId = yield select(getUserId)
-        const { data = [] } = yield call(
-          [sdk.full.users, sdk.full.users.getUser],
-          {
-            id: Id.parse(userId),
-            userId: Id.parse(currentUserId)
-          }
-        )
-        return userMetadataListFromSDK(data)[0]
-      },
-      function* (confirmedUser) {
-        // Update the cached user so it no longer contains image upload artifacts
-        // and contains updated profile picture / cover photo sizes if any
-        const newMetadata = {}
-        if (metadata.updatedCoverPhoto) {
-          newMetadata.cover_photo_sizes = confirmedUser.cover_photo_sizes
-          newMetadata.cover_photo_cids = confirmedUser.cover_photo_cids
-          newMetadata.cover_photo = confirmedUser.cover_photo
-        }
-        if (metadata.updatedProfilePicture) {
-          newMetadata.profile_picture_sizes =
-            confirmedUser.profile_picture_sizes
-          newMetadata.profile_picture_cids = confirmedUser.profile_picture_cids
-          newMetadata.profile_picture = confirmedUser.profile_picture
-        }
-        yield put(
-          cacheActions.update(Kind.USERS, [
-            {
-              id: confirmedUser.user_id,
-              metadata: newMetadata
-            }
-          ])
-        )
-        yield put(profileActions.updateProfileSucceeded(metadata.user_id))
-      },
-      function* () {
-        yield put(profileActions.updateProfileFailed())
-      },
-      undefined,
-      undefined,
-      { operationId: 'OVERWRITE', squashable: true }
-    )
-  )
-}
-
 function* watchSetNotificationSubscription() {
   yield takeEvery(
     profileActions.SET_NOTIFICATION_SUBSCRIPTION,
@@ -490,7 +346,6 @@ export default function sagas() {
     ...feedSagas(),
     ...tracksSagas(),
     watchFetchProfileSucceeded,
-    watchUpdateProfile,
     watchSetNotificationSubscription
   ]
 }

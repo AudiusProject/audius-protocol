@@ -9,9 +9,8 @@ import {
   playlistLibraryActions,
   playlistLibraryHelpers
 } from '@audius/common/store'
-import { fork, put, select, takeEvery } from 'typed-redux-saga'
+import { put, select, takeEvery } from 'typed-redux-saga'
 
-import { updateProfileAsync } from 'common/store/profile/sagas'
 import { waitForWrite } from 'utils/sagaHelpers'
 
 import { watchAddToFolderSaga } from './watchAddToFolderSaga'
@@ -42,9 +41,10 @@ function* watchUpdatePlaylistLibrary() {
 
       yield* put(accountActions.updatePlaylistLibrary(updatedPlaylistLibrary))
 
-      yield* fork(updateProfileAsync, {
-        metadata: { ...account, playlist_library: updatedPlaylistLibrary }
-      })
+      // feature-tan-query TODO: update user playlist_library
+      // yield* fork(updateProfileAsync, {
+      //   metadata: { ...account, playlist_library: updatedPlaylistLibrary }
+      // })
     }
   )
 }
