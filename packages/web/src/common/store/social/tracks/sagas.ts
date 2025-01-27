@@ -33,7 +33,6 @@ import {
 import { make } from 'common/store/analytics/actions'
 import { adjustUserField } from 'common/store/cache/users/sagas'
 import * as signOnActions from 'common/store/pages/signon/actions'
-import { updateProfileAsync } from 'common/store/profile/sagas'
 import { waitForRead, waitForWrite } from 'utils/sagaHelpers'
 
 import watchTrackErrors from './errorSagas'
@@ -559,8 +558,10 @@ export function* watchSetArtistPick() {
           }
         ])
       )
-      const user = yield* call(waitForValue, getUser, { id: userId })
-      yield* fork(updateProfileAsync, { metadata: user })
+
+      // feature-tan-query TODO: update profile
+      // const user = yield* call(waitForValue, getUser, { id: userId })
+      // yield* fork(updateProfileAsync, { metadata: user })
 
       const event = make(Name.ARTIST_PICK_SELECT_TRACK, { id: action.trackId })
       yield* put(event)
@@ -584,8 +585,10 @@ export function* watchUnsetArtistPick() {
         }
       ])
     )
-    const user = yield* call(waitForValue, getUser, { id: userId })
-    yield* fork(updateProfileAsync, { metadata: user })
+
+    // feature-tan-query TODO: update profile
+    // const user = yield* call(waitForValue, getUser, { id: userId })
+    // yield* fork(updateProfileAsync, { metadata: user })
 
     const event = make(Name.ARTIST_PICK_SELECT_TRACK, { id: 'none' })
     yield* put(event)

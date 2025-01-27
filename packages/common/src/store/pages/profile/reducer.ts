@@ -9,9 +9,6 @@ import tracksReducer, {
 import { Collection, Status, Track } from '../../../models'
 
 import {
-  UPDATE_PROFILE,
-  UPDATE_PROFILE_SUCCEEDED,
-  UPDATE_PROFILE_FAILED,
   UPDATE_COLLECTION_SORT_MODE,
   SET_PROFILE_FIELD,
   DISMISS_PROFILE_METER,
@@ -19,9 +16,6 @@ import {
   SET_CURRENT_USER,
   SetCurrentUserAction,
   SetProfileFieldAction,
-  UpdateProfileAction,
-  UpdateProfileSucceededAction,
-  UpdateProfileFailedAction,
   UpdateCollectionSortModeAction,
   DismissProfileMeterAction,
   SetNotificationSubscriptionAction,
@@ -92,31 +86,6 @@ const actionsMap = {
   [SET_PROFILE_FIELD](state: ProfilePageState, action: SetProfileFieldAction) {
     const { field, value } = action
     return updateProfile(state, action, { [field]: value })
-  },
-  [UPDATE_PROFILE](state: ProfilePageState, action: UpdateProfileAction) {
-    return updateProfile(state, action, {
-      updating: true,
-      updateSuccess: false,
-      updateError: false
-    })
-  },
-  [UPDATE_PROFILE_SUCCEEDED](
-    state: ProfilePageState,
-    action: UpdateProfileSucceededAction
-  ) {
-    return updateProfile(state, action, {
-      updating: false,
-      updateSuccess: true
-    })
-  },
-  [UPDATE_PROFILE_FAILED](
-    state: ProfilePageState,
-    action: UpdateProfileFailedAction
-  ) {
-    return updateProfile(state, action, {
-      updating: false,
-      updateError: true
-    })
   },
   [UPDATE_COLLECTION_SORT_MODE](
     state: ProfilePageState,

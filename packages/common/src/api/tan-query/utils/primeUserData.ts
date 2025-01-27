@@ -37,9 +37,14 @@ export const primeUserDataInternal = ({
 
   users.forEach((user) => {
     // Prime user by ID
-    queryClient.setQueryData([QUERY_KEYS.user, user.user_id], user)
+    if (!queryClient.getQueryData([QUERY_KEYS.user, user.user_id])) {
+      queryClient.setQueryData([QUERY_KEYS.user, user.user_id], user)
+    }
     // Prime user by handle
-    if (user.handle) {
+    if (
+      user.handle &&
+      !queryClient.getQueryData([QUERY_KEYS.userByHandle, user.handle])
+    ) {
       queryClient.setQueryData([QUERY_KEYS.userByHandle, user.handle], user)
     }
 

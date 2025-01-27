@@ -2,6 +2,7 @@ import { UseInfiniteQueryResult } from '@tanstack/react-query'
 import { Selector, useDispatch, useSelector } from 'react-redux'
 
 import {
+  Collection,
   ID,
   LineupState,
   LineupTrack,
@@ -27,7 +28,10 @@ export const useLineupQuery = ({
   // Lineup related props
   queryData: UseInfiniteQueryResult
   lineupActions: LineupActions
-  lineupSelector: Selector<CommonState, LineupState<LineupTrack | Track>>
+  lineupSelector: Selector<
+    CommonState,
+    LineupState<LineupTrack | Track | Collection>
+  >
   playbackSource: PlaybackSource
 }) => {
   const lineup = useSelector(lineupSelector)

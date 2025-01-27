@@ -440,8 +440,9 @@ export const Lineup = ({
         return initialPageSize
       }
       if (pageSize) {
-        return pageSize
+        return count ? Math.min(count - items.length, pageSize) : pageSize
       }
+
       const shouldCalculateSkeletons =
         inView &&
         items.length < limit &&

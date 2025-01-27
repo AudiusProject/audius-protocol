@@ -1,11 +1,8 @@
 import { useCallback } from 'react'
 
-import {
-  InstagramProfile,
-  accountSelectors,
-  profilePageActions
-} from '@audius/common/store'
-import { useDispatch, useSelector } from 'react-redux'
+import { useUpdateProfile } from '@audius/common/api'
+import { InstagramProfile, accountSelectors } from '@audius/common/store'
+import { useSelector } from 'react-redux'
 
 import InstagramAuth from 'components/instagram-auth/InstagramAuth'
 import { useSocialMediaLoader } from 'pages/sign-up-page/hooks/useSocialMediaLoader'
@@ -15,8 +12,9 @@ const messages = {
 }
 
 export const ConnectInstagram = () => {
-  const dispatch = useDispatch()
   const account = useSelector(accountSelectors.getAccountUser)
+
+  const { mutate: updateProfile } = useUpdateProfile()
 
   const { handleStartSocialMediaLogin, handleErrorSocialMediaLogin } =
     useSocialMediaLoader({
@@ -37,15 +35,13 @@ export const ConnectInstagram = () => {
   const handleSuccess = useCallback(
     (uuid: string, profile: InstagramProfile) => {
       if (account) {
-        dispatch(
-          profilePageActions.updateProfile({
-            ...account,
-            name: profile.full_name ?? account.name
-          })
-        )
+        updateProfile({
+          ...account,
+          name: profile.full_name ?? account.name
+        })
       }
     },
-    [account, dispatch]
+    [account, updateProfile]
   )
 
   return (

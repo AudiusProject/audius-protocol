@@ -1,14 +1,10 @@
-import { ID, UserMetadata } from '../../../models'
+import { ID } from '../../../models'
 
 import { CollectionSortMode } from './types'
 
 export const FETCH_PROFILE_SUCCEEDED = 'PROFILE/FETCH_PROFILE_SUCCEEDED'
 
 export const SET_CURRENT_USER = 'PROFILE/SET_CURRENT_USER'
-
-export const UPDATE_PROFILE = 'PROFILE/UPDATE_PROFILE'
-export const UPDATE_PROFILE_SUCCEEDED = 'PROFILE/UPDATE_PROFILE_SUCCEEDED'
-export const UPDATE_PROFILE_FAILED = 'PROFILE/UPDATE_PROFILE_FAILED'
 
 export const UPDATE_COLLECTION_SORT_MODE = 'PROFILE/UPDATE_COLLECTION_SORT_MODE'
 export const SET_PROFILE_FIELD = 'PROFILE/SET_PROFILE_FIELD'
@@ -26,20 +22,6 @@ export type FetchProfileSucceededAction = {
 export type SetCurrentUserAction = {
   type: typeof SET_CURRENT_USER
   handle: string
-}
-
-export type UpdateProfileAction = {
-  type: typeof UPDATE_PROFILE
-  metadata: UserMetadata
-}
-
-export type UpdateProfileSucceededAction = {
-  type: typeof UPDATE_PROFILE_SUCCEEDED
-  userId: ID
-}
-
-export type UpdateProfileFailedAction = {
-  type: typeof UPDATE_PROFILE_FAILED
 }
 
 export type UpdateCollectionSortModeAction = {
@@ -70,9 +52,6 @@ export type SetNotificationSubscriptionAction = {
 export type ProfilePageAction =
   | FetchProfileSucceededAction
   | SetCurrentUserAction
-  | UpdateProfileAction
-  | UpdateProfileSucceededAction
-  | UpdateProfileFailedAction
   | UpdateCollectionSortModeAction
   | SetProfileFieldAction
   | DismissProfileMeterAction
@@ -84,20 +63,6 @@ export function fetchProfileSucceeded(userId: ID): FetchProfileSucceededAction {
 
 export function setCurrentUser(handle: string): SetCurrentUserAction {
   return { type: SET_CURRENT_USER, handle }
-}
-
-export function updateProfile(metadata: UserMetadata): UpdateProfileAction {
-  return { type: UPDATE_PROFILE, metadata }
-}
-
-export function updateProfileSucceeded(
-  userId: ID
-): UpdateProfileSucceededAction {
-  return { type: UPDATE_PROFILE_SUCCEEDED, userId }
-}
-
-export function updateProfileFailed(): UpdateProfileFailedAction {
-  return { type: UPDATE_PROFILE_FAILED }
 }
 
 export function updateCollectionSortMode(
