@@ -21,10 +21,7 @@ import { listen } from './routes/listen/listen'
 import { relay } from './routes/relay/relay'
 
 process.on('unhandledRejection', (reason, promise) => {
-  logger.error(
-    { promise, reason, stack: reason instanceof Error ? reason.stack : null },
-    'Unhandled promise rejection'
-  )
+  logger.error('Unhandled promise rejection', { promise, reason })
 })
 
 const main = async () => {
