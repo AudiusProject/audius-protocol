@@ -1,13 +1,8 @@
-import { useCallback, useEffect } from 'react'
+import { useCallback } from 'react'
 
-import { useUser } from '@audius/common/api'
-import {
-  lineupSelectors,
-  aiPageLineupActions as tracksActions,
-  aiPageSelectors
-} from '@audius/common/store'
+import { useUser, useAiTracks } from '@audius/common/api'
+import { aiPageLineupActions } from '@audius/common/store'
 import { TouchableOpacity, View } from 'react-native'
-import { useDispatch, useSelector } from 'react-redux'
 
 import { IconRobot } from '@audius/harmony-native'
 import { Text, Screen, ScreenContent, ScreenHeader } from 'app/components/core'
@@ -19,11 +14,6 @@ import { makeStyles } from 'app/styles'
 import { spacing } from 'app/styles/spacing'
 
 import { ShareAiTracksTile } from './ShareAiTracksTile'
-
-const { makeGetLineupMetadatas } = lineupSelectors
-const { getLineup } = aiPageSelectors
-
-const getAiTracksLineup = makeGetLineupMetadatas(getLineup)
 
 const messages = {
   header: 'AI Generated Tracks',
@@ -57,38 +47,10 @@ export const AiGeneratedTracksScreen = () => {
   const navigation = useNavigation()
   const { params } = useProfileRoute<'AiGeneratedTracks'>()
   const { userId } = params
-  const dispatch = useDispatch()
-  const lineup = useSelector(getAiTracksLineup)
   const { data: user } = useUser(userId)
-
-  useEffect(() => {
-    return function cleanup() {
-      dispatch(tracksActions.reset())
-    }
-  }, [dispatch])
-
-  useEffect(() => {
-    if (user?.handle) {
-      dispatch(
-        tracksActions.fetchLineupMetadatas(0, 10, false, {
-          aiUserHandle: user.handle
-        })
-      )
-    }
-  }, [dispatch, user])
-
-  const loadMore = useCallback(
-    (offset: number, limit: number, overwrite: boolean) => {
-      if (user?.handle) {
-        dispatch(
-          tracksActions.fetchLineupMetadatas(offset, limit, overwrite, {
-            aiUserHandle: user.handle
-          })
-        )
-      }
-    },
-    [dispatch, user]
-  )
+  const { lineup, loadNextPage, pageSize } = useAiTracks({
+    handle: user?.handle
+  })
 
   const handleGoToProfile = useCallback(() => {
     navigation.navigate('Profile', { id: userId })
@@ -114,9 +76,11 @@ export const AiGeneratedTracksScreen = () => {
             ) : null
           }
           ListFooterComponent={<ShareAiTracksTile />}
-          actions={tracksActions}
+          actions={aiPageLineupActions}
           lineup={lineup}
-          loadMore={loadMore}
+          loadMore={loadNextPage}
+          tanQuery
+          pageSize={pageSize}
         />
       </ScreenContent>
     </Screen>

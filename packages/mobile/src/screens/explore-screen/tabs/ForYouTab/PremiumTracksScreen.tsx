@@ -1,19 +1,9 @@
-import { useCallback } from 'react'
-
-import {
-  lineupSelectors,
-  premiumTracksPageLineupSelectors,
-  premiumTracksPageLineupActions
-} from '@audius/common/store'
-import { useDispatch } from 'react-redux'
+import { usePremiumTracks } from '@audius/common/api'
+import { premiumTracksPageLineupActions } from '@audius/common/store'
 
 import { Screen, ScreenContent, ScreenHeader } from 'app/components/core'
 import { Lineup } from 'app/components/lineup'
 import { EndOfLineupNotice } from 'app/components/lineup/EndOfLineupNotice'
-const { makeGetLineupMetadatas } = lineupSelectors
-const { getLineup } = premiumTracksPageLineupSelectors
-
-const getPremiumTracksLineup = makeGetLineupMetadatas(getLineup)
 
 const messages = {
   header: 'Premium Tracks',
@@ -21,32 +11,22 @@ const messages = {
 }
 
 export const PremiumTracksScreen = () => {
-  const dispatch = useDispatch()
-  const loadMore = useCallback(
-    (offset: number, limit: number, overwrite: boolean) => {
-      dispatch(
-        premiumTracksPageLineupActions.fetchLineupMetadatas(
-          offset,
-          limit,
-          overwrite
-        )
-      )
-    },
-    [dispatch]
-  )
+  const { lineup, loadNextPage, pageSize } = usePremiumTracks()
+
   return (
     <Screen>
       <ScreenHeader text={messages.header} />
       <ScreenContent>
         <Lineup
-          loadMore={loadMore}
-          lineupSelector={getPremiumTracksLineup}
+          tanQuery
+          loadMore={loadNextPage}
+          lineup={lineup}
           actions={premiumTracksPageLineupActions}
-          selfLoad
           pullToRefresh
           ListFooterComponent={
             <EndOfLineupNotice description={messages.endOfLineup} />
           }
+          pageSize={pageSize}
         />
       </ScreenContent>
     </Screen>
