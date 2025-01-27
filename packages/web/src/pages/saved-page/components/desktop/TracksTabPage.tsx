@@ -6,6 +6,7 @@ import {
   savedPageSelectors
 } from '@audius/common/store'
 import { route } from '@audius/common/utils'
+import { Flex } from '@audius/harmony'
 import { useSelector } from 'react-redux'
 import { useNavigate } from 'react-router-dom-v5-compat'
 
@@ -16,8 +17,6 @@ import EmptyTable from 'components/tracks-table/EmptyTable'
 import { useMainContentRef } from 'pages/MainContentContext'
 
 import { emptyStateMessages } from '../emptyStateMessages'
-
-import styles from './TracksTabPage.module.css'
 
 const { getTracksCategory, getSavedTracksLineup } = savedPageSelectors
 const { makeGetTableMetadatas } = lineupSelectors
@@ -99,7 +98,7 @@ export const TracksTabPage = ({ filterText }: TracksTabPageProps) => {
   const playingIndex = dataSource.findIndex((entry) => entry.uid === playingUid)
 
   return (
-    <div className={styles.container}>
+    <Flex flex={1} direction='column' gap='s'>
       <TracksTable
         columns={tableColumns}
         data={tracks}
@@ -124,6 +123,6 @@ export const TracksTabPage = ({ filterText }: TracksTabPageProps) => {
         fetchBatchSize={pageSize}
         {...lineupProps}
       />
-    </div>
+    </Flex>
   )
 }
