@@ -10,7 +10,7 @@ services:
     image: redis:7.0
     command: redis-server
     healthcheck:
-      test: ['CMD', 'redis-cli', 'PING']
+      test: [ 'CMD', 'redis-cli', 'PING' ]
       interval: 10s
       timeout: 5s
     deploy:
@@ -24,8 +24,8 @@ services:
       dockerfile: ${PROJECT_ROOT}/packages/identity-service/Dockerfile.prod
       args:
         git_sha: '${GIT_COMMIT}'
-        TURBO_TEAM: '${TURBO_TEAM}'
-        TURBO_TOKEN: '${TURBO_TOKEN}'
+        TURBO_TEAM: '${TURBO_TEAM:-}'
+        TURBO_TOKEN: '${TURBO_TOKEN:-}'
     ports:
       - '7000:7000'
       - '9229:9229'
