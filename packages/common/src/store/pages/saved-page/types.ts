@@ -8,7 +8,8 @@ import {
   Collection,
   Favorite,
   LineupState,
-  LineupTrack
+  LineupTrack,
+  Track
 } from '../../../models'
 
 export const LibraryCategory = full.GetUserLibraryTracksTypeEnum
@@ -36,7 +37,7 @@ export enum SavedPageTabs {
   PLAYLISTS = 'Playlists'
 }
 
-export type SavedPageTrack = LineupTrack & { dateSaved: string }
+export type SavedPageTrack = Track & { dateSaved: string }
 
 export type TrackRecord = SavedPageTrack & {
   key: string

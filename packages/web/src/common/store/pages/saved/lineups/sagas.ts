@@ -1,4 +1,4 @@
-import { Collection, Kind, LineupEntry } from '@audius/common/models'
+import { Collection, Kind, LineupEntry, Track } from '@audius/common/models'
 import {
   cacheTracksSelectors,
   savedPageTracksLineupActions as savedTracksActions,
@@ -10,7 +10,6 @@ import {
   queueSelectors,
   QueueSource,
   tracksSocialActions,
-  getContext,
   playerSelectors,
   purchaseContentActions,
   PurchaseableContentType,
@@ -19,9 +18,8 @@ import {
 } from '@audius/common/store'
 import { makeUid, waitForAccount } from '@audius/common/utils'
 import moment from 'moment'
-import { call, select, put, takeEvery } from 'typed-redux-saga'
+import { select, put, takeEvery } from 'typed-redux-saga'
 
-import { retrieveTracks } from 'common/store/cache/tracks/utils'
 import { LineupSagas } from 'common/store/lineup/sagas'
 import { AppState } from 'store/types'
 
@@ -30,8 +28,7 @@ const { getSource } = queueSelectors
 const { FETCH_SAVES, FETCH_MORE_SAVES } = saveActions
 const { SAVE_TRACK, UNSAVE_TRACK, REPOST_TRACK, UNDO_REPOST_TRACK } =
   tracksSocialActions
-const { getSavedTracksLineupUid, getTrackSaves, getCategory } =
-  savedPageSelectors
+const { getSavedTracksLineupUid, getCategory } = savedPageSelectors
 const { purchaseConfirmed } = purchaseContentActions
 const { getTracks: getCacheTracks } = cacheTracksSelectors
 
@@ -39,53 +36,13 @@ const getSavedTracks = (state: AppState) => state.pages.savedPage.tracks
 
 const PREFIX = savedTracksActions.prefix
 
-function* getTracks({
-  offset,
-  limit
-}: {
-  offset: number
-  limit: number
-}): Generator<any, SavedPageTrack[] | null, any> {
-  const isNativeMobile = yield* getContext('isNativeMobile')
-  const allSavedTracks = yield* select(getTrackSaves)
-  // Mobile currently uses infinite scroll instead of a virtualized list
-  // so we need to apply the offset & limit
-  const savedTracks = isNativeMobile
-    ? allSavedTracks.slice(offset, offset + limit)
-    : allSavedTracks
-
-  const savedTrackIds = savedTracks.map((save) => save.save_item_id ?? null)
-  const savedTrackTimestamps = savedTracks.reduce<Record<number, string>>(
-    (map, save) => {
-      map[save.save_item_id] = save.created_at
-      return map
-    },
-    {}
+function* getTracks({ payload }: { payload?: { tracks: Track[] } }) {
+  return (
+    payload?.tracks.map((track) => ({
+      ...track,
+      dateSaved: track.created_at
+    })) ?? []
   )
-
-  if (savedTrackIds.length > 0) {
-    // @ts-ignore - Strings can be passed for the local save track ids
-    const tracks = yield* call(retrieveTracks, {
-      trackIds: savedTrackIds.filter((id) => id !== null)
-    })
-    const tracksMap = tracks.reduce<Record<number, SavedPageTrack>>(
-      (map, track) => {
-        const save = {
-          ...track,
-          dateSaved: savedTrackTimestamps[track.track_id]
-        }
-
-        map[track.track_id] = save as SavedPageTrack
-        return map
-      },
-      {}
-    )
-    // @ts-ignore - empty case is expected but not by lineup
-    return savedTrackIds.map((id) =>
-      id ? tracksMap[id] : { kind: Kind.EMPTY }
-    )
-  }
-  return []
 }
 
 const keepDateSaved = (entry: LineupEntry<SavedPageTrack | Collection>) => ({
