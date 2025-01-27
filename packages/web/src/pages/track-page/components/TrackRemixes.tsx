@@ -1,17 +1,8 @@
-import { useCallback, useEffect } from 'react'
-
-import { useTrack } from '@audius/common/api'
+import { useTrack, useRemixes } from '@audius/common/api'
 import { useFeatureFlag } from '@audius/common/hooks'
 import type { ID, Track } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
-import {
-  lineupSelectors,
-  playerSelectors,
-  queueSelectors,
-  remixesPageLineupActions,
-  remixesPageSelectors,
-  trackPageLineupActions
-} from '@audius/common/store'
+import { remixesPageLineupActions } from '@audius/common/store'
 import {
   Button,
   Flex,
@@ -20,7 +11,6 @@ import {
   Text,
   Box
 } from '@audius/harmony'
-import { useDispatch, useSelector } from 'react-redux'
 import { Link } from 'react-router-dom-v5-compat'
 
 import Lineup from 'components/lineup/Lineup'
@@ -28,15 +18,6 @@ import { LineupVariant } from 'components/lineup/types'
 import { trackRemixesPage } from 'utils/route'
 
 import { useTrackPageSize } from './useTrackPageSize'
-
-const { makeGetCurrent } = queueSelectors
-const { getPlaying, getBuffering } = playerSelectors
-
-const { tracksActions } = trackPageLineupActions
-const { getLineup: getRemixesLineup } = remixesPageSelectors
-const { makeGetLineupMetadatas } = lineupSelectors
-const getRemixesTracksLineup = makeGetLineupMetadatas(getRemixesLineup)
-const getCurrentQueueItem = makeGetCurrent()
 
 const messages = {
   viewAllRemixes: 'View All Remixes',
@@ -52,37 +33,13 @@ type TrackRemixesProrps = {
 export const TrackRemixes = (props: TrackRemixesProrps) => {
   const { trackId } = props
   const { isDesktop, isMobile } = useTrackPageSize()
-  const dispatch = useDispatch()
-  const remixesLineup = useSelector(getRemixesTracksLineup)
-  const currentQueueItem = useSelector(getCurrentQueueItem)
-  const isPlaying = useSelector(getPlaying)
-  const isBuffering = useSelector(getBuffering)
   const { data: track } = useTrack(trackId)
+  const { lineup, play, pause, isPlaying, source } = useRemixes({
+    trackId
+  })
   const { isEnabled: commentsFlagEnabled } = useFeatureFlag(
     FeatureFlags.COMMENTS_ENABLED
   )
-  const handlePlay = useCallback(
-    (uid?: string) => {
-      dispatch(tracksActions.play(uid))
-    },
-    [dispatch]
-  )
-
-  const handlePause = () => dispatch(tracksActions.pause())
-
-  useEffect(() => {
-    if (track) {
-      dispatch(
-        remixesPageLineupActions.fetchLineupMetadatas(0, 10, false, {
-          trackId: track.track_id
-        })
-      )
-    }
-
-    return function cleanup() {
-      dispatch(remixesPageLineupActions.reset())
-    }
-  }, [dispatch, track])
 
   if (!track) {
     return null
@@ -124,20 +81,18 @@ export const TrackRemixes = (props: TrackRemixesProrps) => {
         </Text>
       </Flex>
       <Lineup
-        lineup={remixesLineup}
+        lineup={lineup}
         actions={remixesPageLineupActions}
         count={Math.min(MAX_REMIXES_TO_DISPLAY, remixTrackIds.length)}
         variant={lineupVariant}
         selfLoad
-        playingUid={currentQueueItem.uid}
-        playingSource={currentQueueItem.source}
-        playingTrackId={
-          currentQueueItem.track && currentQueueItem.track.track_id
-        }
         playing={isPlaying}
-        buffering={isBuffering}
-        playTrack={handlePlay}
-        pauseTrack={handlePause}
+        playTrack={play}
+        pauseTrack={pause}
+        playingUid={lineup?.entries?.[0]?.uid}
+        playingTrackId={lineup?.entries?.[0]?.id}
+        playingSource={source}
+        buffering={false}
       />
       {remixesCount && remixesCount > MAX_REMIXES_TO_DISPLAY ? (
         <Box alignSelf='flex-start'>

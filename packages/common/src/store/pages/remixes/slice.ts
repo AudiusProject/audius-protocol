@@ -30,20 +30,16 @@ const slice = createSlice({
       state.trackId = null
       state.count = null
     },
-    fetchTrackSucceeded: (state, action: PayloadAction<{ trackId: ID }>) => {
+    setTrackId: (state, action: PayloadAction<{ trackId: ID }>) => {
       const { trackId } = action.payload
       state.trackId = trackId
-    },
-    setCount: (state, action: PayloadAction<{ count: number }>) => {
-      const { count } = action.payload
-      state.count = count
     }
   }
 })
 
 const remixesLineupReducer = asLineup(remixesTracksPrefix, remixesTracksReducer)
 
-export const { reset, setCount, fetchTrackSucceeded } = slice.actions
+export const { reset, setTrackId } = slice.actions
 
 export default combineReducers({
   page: slice.reducer,
