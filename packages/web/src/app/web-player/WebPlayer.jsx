@@ -556,20 +556,12 @@ class WebPlayer extends Component {
                 <Route
                   exact
                   path={TRENDING_PLAYLISTS_PAGE}
-                  render={() => (
-                    <TrendingPlaylistsPage
-                      containerRef={this.props.mainContentRef.current}
-                    />
-                  )}
+                  component={TrendingPlaylistsPage}
                 />
                 <Route
                   exact
                   path={TRENDING_UNDERGROUND_PAGE}
-                  render={() => (
-                    <TrendingUndergroundPage
-                      containerRef={this.props.mainContentRef.current}
-                    />
-                  )}
+                  component={TrendingUndergroundPage}
                 />
                 <Route
                   exact
