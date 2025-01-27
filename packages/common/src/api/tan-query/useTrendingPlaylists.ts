@@ -1,4 +1,4 @@
-import { OptionalId } from '@audius/sdk'
+import { OptionalId, full } from '@audius/sdk'
 import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query'
 import { useDispatch } from 'react-redux'
 
@@ -23,10 +23,14 @@ const DEFAULT_PAGE_SIZE = 10
 
 type UseTrendingPlaylistsArgs = {
   pageSize?: number
+  time?: full.GetTrendingPlaylistsTimeEnum
 }
 
 export const useTrendingPlaylists = (
-  { pageSize = DEFAULT_PAGE_SIZE }: UseTrendingPlaylistsArgs = {},
+  {
+    pageSize = DEFAULT_PAGE_SIZE,
+    time = full.GetTrendingPlaylistsTimeEnum.Week
+  }: UseTrendingPlaylistsArgs = {},
   config?: QueryOptions
 ) => {
   const { audiusSdk } = useAudiusQueryContext()
@@ -35,7 +39,7 @@ export const useTrendingPlaylists = (
   const dispatch = useDispatch()
 
   const queryData = useInfiniteQuery({
-    queryKey: ['trendingPlaylists', pageSize],
+    queryKey: ['trendingPlaylists', pageSize, time],
     initialPageParam: 0,
     getNextPageParam: (lastPage, allPages) => {
       if (lastPage.length < pageSize) return undefined
@@ -48,7 +52,7 @@ export const useTrendingPlaylists = (
         userId: OptionalId.parse(currentUserId),
         limit: pageSize,
         offset: pageParam,
-        time: 'week' as const
+        time
       })
 
       const processedPlaylists = transformAndCleanList(
