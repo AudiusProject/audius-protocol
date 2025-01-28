@@ -49,11 +49,6 @@ export const productionConfig: SdkServicesConfig = {
         "delegateOwnerWallet": "0x2CD66a3931C36596efB037b06753476dcE6B4e86"
       },
       {
-        "endpoint": "https://dn2.monophonic.digital",
-        "ownerWallet": "0x6470Daf3bd32f5014512bCdF0D02232f5640a5BD",
-        "delegateOwnerWallet": "0x422541273087beC833c57D3c15B9e17F919bFB1F"
-      },
-      {
         "endpoint": "https://audius-dp.singapore.creatorseed.com",
         "ownerWallet": "0xf13612C7d6E31636eCC2b670d6F8a3CC50f68A48",
         "delegateOwnerWallet": "0x01312a03a859813943Fc2521c31ad500fE86C454"
