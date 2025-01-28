@@ -6,7 +6,6 @@ import cn from 'classnames'
 import { useHistoryContext } from 'app/HistoryProvider'
 import { BackButton } from 'components/back-button/BackButton'
 import { HeaderGutter } from 'components/header/desktop/HeaderGutter'
-import { isMatrix } from 'utils/theme/theme'
 
 import styles from './Header.module.css'
 
