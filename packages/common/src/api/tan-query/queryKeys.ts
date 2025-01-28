@@ -63,5 +63,6 @@ export const QUERY_KEYS = {
   mutedUsers: 'mutedUsers',
   salesAggregate: 'salesAggregate',
   usdcTransactionsCount: 'usdcTransactionsCount',
-  usdcTransactions: 'usdcTransactions'
+  usdcTransactions: 'usdcTransactions',
+  libraryTracks: 'libraryTracks'
 } as const

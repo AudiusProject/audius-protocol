@@ -17,6 +17,7 @@ import { removeNullable } from '~/utils'
 
 import { userTrackMetadataFromSDK } from '../../adapters/track'
 
+import { QUERY_KEYS } from './queryKeys'
 import { QueryOptions } from './types'
 import { useCurrentUserId } from './useCurrentUserId'
 import { loadNextPage } from './utils/infiniteQueryLoadNextPage'
@@ -50,13 +51,12 @@ export const useLibraryTracks = (
 
   const queryData = useInfiniteQuery({
     queryKey: [
-      'library-tracks',
+      QUERY_KEYS.libraryTracks,
       currentUserId,
       category,
       sortMethod,
       sortDirection,
-      query,
-      pageSize
+      query
     ],
     queryFn: async ({ pageParam = 0 }) => {
       if (!currentUserId) return []
