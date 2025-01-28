@@ -2,6 +2,8 @@ import { useEffect, type ReactNode } from 'react'
 
 import { ThemeProvider as EmotionThemeProvider } from '@emotion/react'
 
+import { GradientDefs } from '../../icons/GradientDefs'
+
 import { themes } from './theme'
 import type { Theme } from './types'
 
@@ -21,6 +23,7 @@ export const ThemeProvider = (props: ThemeProviderProps) => {
 
   return (
     <EmotionThemeProvider theme={themes[theme]}>
+      <GradientDefs />
       {children}
     </EmotionThemeProvider>
   )

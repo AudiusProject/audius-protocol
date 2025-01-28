@@ -138,7 +138,11 @@ export const SettingsPage = () => {
   const tier = useSelector(
     (state: AppState) => getTierAndVerifiedForUser(state, { userId }).tier
   )
-  const showMatrix = tier === 'gold' || tier === 'platinum' || isStaging
+  const showMatrix =
+    tier === 'gold' ||
+    tier === 'platinum' ||
+    isStaging ||
+    process.env.NODE_ENV === 'development'
 
   const [isSignOutModalVisible, setIsSignOutModalVisible] = useState(false)
   const [

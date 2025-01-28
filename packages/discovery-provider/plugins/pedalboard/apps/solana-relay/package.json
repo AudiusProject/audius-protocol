@@ -35,6 +35,7 @@
     "redis": "4.6.11",
     "request-ip": "3.3.0",
     "secp256k1": "5.0.0",
+    "uuid": "8.3.2",
     "web3-core": "4.3.2",
     "web3-eth-accounts": "4.1.2",
     "web3-utils": "4.2.3"

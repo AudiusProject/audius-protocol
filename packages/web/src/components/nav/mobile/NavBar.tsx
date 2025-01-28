@@ -30,7 +30,6 @@ import NavContext, {
 } from 'components/nav/mobile/NavContext'
 import SearchBar from 'components/search-bar/SearchBar'
 import { getIsIOS } from 'utils/browser'
-import { isMatrix } from 'utils/theme/theme'
 
 import styles from './NavBar.module.css'
 
@@ -197,8 +196,6 @@ const NavBar = ({
     left = leftElement
   }
 
-  const matrix = isMatrix()
-
   return (
     <div
       className={cn(styles.container, {
@@ -213,10 +210,7 @@ const NavBar = ({
         {left}
       </div>
       {centerElement === CenterPreset.LOGO ? (
-        <Link
-          to={TRENDING_PAGE}
-          className={cn(styles.logo, { [styles.matrixLogo]: matrix })}
-        >
+        <Link to={TRENDING_PAGE} className={styles.logo}>
           {logoTransitions.map(({ item, props, key }) =>
             item ? (
               <animated.div style={props} key={key}>

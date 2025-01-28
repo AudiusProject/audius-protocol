@@ -60,6 +60,12 @@ export const EditTrackPage = (props: EditPageProps) => {
 
   const onSubmit = (formValues: TrackEditFormValues) => {
     const metadata = { ...formValues.trackMetadatas[0] }
+    const trackId = metadata.track_id
+    if (!trackId) {
+      console.error('Unexpected missing trackId')
+      return
+    }
+
     const replaceFile =
       'file' in formValues.tracks[0] ? formValues.tracks[0].file : null
 
@@ -68,7 +74,7 @@ export const EditTrackPage = (props: EditPageProps) => {
         confirmCallback: () => {
           dispatch(
             updateTrackAudio({
-              trackId: metadata.track_id,
+              trackId,
               file: replaceFile,
               metadata
             })
@@ -77,7 +83,7 @@ export const EditTrackPage = (props: EditPageProps) => {
         }
       })
     } else {
-      if (!track) return
+      if (!track || !metadata.track_id) return
       updateTrack({
         trackId: metadata.track_id,
         userId: track.owner_id,
