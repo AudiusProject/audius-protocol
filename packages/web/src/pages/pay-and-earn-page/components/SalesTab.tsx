@@ -28,6 +28,7 @@ import { useErrorPageOnFailedStatus } from 'hooks/useErrorPageOnFailedStatus'
 import { useIsMobile } from 'hooks/useIsMobile'
 import { useMainContentRef } from 'pages/MainContentContext'
 import { audiusSdk } from 'services/audius-sdk'
+import { env } from 'services/env'
 import { formatToday } from 'utils/dateUtils'
 import { push } from 'utils/navigation'
 import { useSelector } from 'utils/reducer'
@@ -189,7 +190,7 @@ export const useSales = () => {
           let decryptedEmail = ''
           try {
             const decryptionId = sale.isInitial
-              ? Number.parseInt(import.meta.env.VITE_EMAIL_ENCRYPTION_UUID)
+              ? (env.EMAIL_ENCRYPTION_UUID ?? 0)
               : sale.buyerUserId
 
             const symmetricKey =
