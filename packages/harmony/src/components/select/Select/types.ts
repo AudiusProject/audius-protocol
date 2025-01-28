@@ -39,6 +39,13 @@ export type SelectProps<Value extends string = string> = {
    */
   options: SelectOption<Value>[]
 
+  /**
+   * Optional function to customize the selected option's displayed label
+   * @param option The currently selected option
+   * @returns The string to display as the label
+   */
+  renderSelectedOptionLabel?: (option: SelectOption<Value>) => string
+
   children?: (props: ChildrenProps<Value>) => ReactNode
 
   /**
