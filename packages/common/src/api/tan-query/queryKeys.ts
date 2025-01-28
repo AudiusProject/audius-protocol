@@ -64,5 +64,6 @@ export const QUERY_KEYS = {
   salesAggregate: 'salesAggregate',
   usdcTransactionsCount: 'usdcTransactionsCount',
   usdcTransactions: 'usdcTransactions',
-  libraryTracks: 'libraryTracks'
+  libraryTracks: 'libraryTracks',
+  remixes: 'remixes'
 } as const

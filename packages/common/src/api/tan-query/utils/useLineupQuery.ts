@@ -76,3 +76,5 @@ export const useLineupQuery = ({
     isPlaying
   }
 }
+
+export type UseLineupQueryData = ReturnType<typeof useLineupQuery>
