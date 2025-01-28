@@ -21,7 +21,6 @@ import { getSystemAppearance, getTheme } from 'utils/theme/theme'
 import { AppContextProvider } from './AppContextProvider'
 import { AudiusQueryProvider } from './AudiusQueryProvider'
 import { useHistoryContext } from './HistoryProvider'
-import { SvgGradientProvider } from './SvgGradientProvider'
 import { ThemeProvider } from './ThemeProvider'
 
 type AppProvidersProps = {
@@ -68,11 +67,7 @@ export const AppProviders = ({ children }: AppProvidersProps) => {
                         <AppContextProvider>
                           <AudiusQueryProvider>
                             <MainContentContextProvider>
-                              <ThemeProvider>
-                                <SvgGradientProvider>
-                                  {children}
-                                </SvgGradientProvider>
-                              </ThemeProvider>
+                              <ThemeProvider>{children}</ThemeProvider>
                             </MainContentContextProvider>
                           </AudiusQueryProvider>
                         </AppContextProvider>
