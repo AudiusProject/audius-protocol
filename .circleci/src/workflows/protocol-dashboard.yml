@@ -48,7 +48,7 @@ jobs:
       context:
         - Armada
       requires:
-        - protocol-dashboard-pin-pro
+        - protocol-dashboard-pin-prod
       filters:
         branches:
           only: /(^main|^release|^rj.*)$/
