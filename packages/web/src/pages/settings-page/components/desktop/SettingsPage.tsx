@@ -80,7 +80,7 @@ import { DeveloperAppsSettingsCard } from './DeveloperApps'
 import { ListeningHistorySettingsCard } from './ListeningHistory'
 import { AccountsManagingYouSettingsCard } from './ManagerMode/AccountsManagingYouSettingsCard'
 import { AccountsYouManageSettingsCard } from './ManagerMode/AccountsYouManageSettingsCard'
-import NotificationSettings from './NotificationSettings'
+import NotificationSettingsModal from './NotificationSettingsModal'
 import { PayoutWalletSettingsCard } from './PayoutWallet/PayoutWalletSettingsCard'
 import SettingsCard from './SettingsCard'
 import styles from './SettingsPage.module.css'
@@ -630,7 +630,7 @@ export const SettingsPage = () => {
         isOpen={isChangeEmailModalVisible}
         onClose={closeChangeEmailModal}
       />
-      <NotificationSettings
+      <NotificationSettingsModal
         isOpen={isNotificationSettingsModalVisible}
         toggleBrowserPushNotificationPermissions={
           toggleBrowserPushNotificationPermissions
