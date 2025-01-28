@@ -1,4 +1,4 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useQuery } from '@tanstack/react-query'
 import { useSelector } from 'react-redux'
 
 import { accountFromSDK } from '~/adapters'
@@ -34,20 +34,5 @@ export const usePlaylistLibrary = (config?: QueryOptions) => {
     },
     staleTime: config?.staleTime ?? STALE_TIME,
     ...config
-  })
-}
-
-export const useUpdatePlaylistLibrary = () => {
-  const { currentUser } = useSelector(getWalletAddresses)
-  const queryClient = useQueryClient()
-
-  return useMutation({
-    mutationFn: (playlistLibrary: PlaylistLibrary) => {
-      queryClient.setQueryData(
-        [QUERY_KEYS.playlistLibrary, currentUser],
-        playlistLibrary
-      )
-      return Promise.resolve()
-    }
   })
 }

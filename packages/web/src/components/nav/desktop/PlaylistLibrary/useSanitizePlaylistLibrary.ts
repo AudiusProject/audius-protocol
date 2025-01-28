@@ -1,16 +1,15 @@
 import { useEffect } from 'react'
 
+import { useUpdatePlaylistLibrary } from '@audius/common/api'
 import { PlaylistLibraryFolder } from '@audius/common/models'
-import { accountSelectors, playlistLibraryActions } from '@audius/common/store'
-import { useDispatch } from 'react-redux'
+import { accountSelectors } from '@audius/common/store'
 
 import { useSelector } from 'utils/reducer'
 const { getPlaylistLibrary } = accountSelectors
-const { update: updatePlaylistLibrary } = playlistLibraryActions
 
 export const useSanitizePlaylistLibrary = () => {
   const library = useSelector(getPlaylistLibrary)
-  const dispatch = useDispatch()
+  const { mutate: updatePlaylistLibrary } = useUpdatePlaylistLibrary()
 
   useEffect(() => {
     if (!library) return
@@ -29,8 +28,8 @@ export const useSanitizePlaylistLibrary = () => {
     })
 
     if (hasIssue) {
-      dispatch(updatePlaylistLibrary({ playlistLibrary: newLibrary }))
+      updatePlaylistLibrary(newLibrary)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [!library, dispatch])
+  }, [!library, updatePlaylistLibrary])
 }
