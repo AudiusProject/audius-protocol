@@ -87,7 +87,8 @@ export const Header = (props: HeaderProps) => {
                 {primary}
               </Text>
             </Flex>
-            <div>
+            {/* Padding to help align heading */}
+            <Flex pt={6}>
               {typeof secondary === 'string' ? (
                 <Text
                   variant='body'
@@ -100,7 +101,7 @@ export const Header = (props: HeaderProps) => {
               ) : (
                 secondary
               )}
-            </div>
+            </Flex>
             <div className={styles.rightDecorator}>{rightDecorator}</div>
           </Flex>
         </Flex>
