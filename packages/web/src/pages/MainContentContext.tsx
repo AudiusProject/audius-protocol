@@ -4,7 +4,8 @@ import {
   useRef,
   useContext,
   useState,
-  MutableRefObject
+  MutableRefObject,
+  ReactNode
 } from 'react'
 
 export const MAIN_CONTENT_ID = 'mainContent'
@@ -21,7 +22,7 @@ export const useMainContentRef = () => {
 }
 
 export const MainContentContextProvider = memo(
-  (props: { children: JSX.Element }) => {
+  (props: { children: ReactNode }) => {
     const ref = useRef<HTMLDivElement>()
     const [ready, setReady] = useState(false)
     return (

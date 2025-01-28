@@ -69,7 +69,7 @@ export const ChatHeader = forwardRef<HTMLDivElement, ChatHeaderProps>(
           }}
         >
           <Flex className={styles.left} gap='m'>
-            <IconMessages size='2xl' fill='url(#linearGradient-1)' />
+            <IconMessages size='2xl' color='heading' />
             <Text
               variant='heading'
               strength='default'
