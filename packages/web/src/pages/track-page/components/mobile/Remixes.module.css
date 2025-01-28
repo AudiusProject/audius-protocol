@@ -41,16 +41,8 @@
   margin-right: 8px;
 }
 
-.iconRemix path {
-  fill: url(#linearGradient-1);
-}
-
-.iconRemix.matrix path {
-  fill: url(#matrixHeaderGradient);
-}
-
 .tracks {
-  display: flex;
+  isplay: flex;
   align-items: flex-start;
   justify-content: center;
   flex-wrap: wrap;

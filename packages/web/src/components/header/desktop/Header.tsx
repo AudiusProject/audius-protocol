@@ -77,32 +77,30 @@ export const Header = (props: HeaderProps) => {
               <BackButton onClick={onClickBack ?? history.goBack} />
             ) : null}
             <Flex alignItems='center' gap='m'>
-              {Icon ? (
-                <Icon
-                  size='2xl'
-                  fill={
-                    isMatrix()
-                      ? 'url(#matrixHeaderGradient)'
-                      : 'url(#linearGradient-1)'
-                  }
-                />
-              ) : null}
+              {Icon ? <Icon size='2xl' color='heading' /> : null}
               <Text
                 variant='heading'
                 strength='default'
                 size='l'
-                css={{
-                  WebkitTextFillColor: 'transparent',
-                  WebkitBackgroundClip: 'text',
-                  backgroundImage: 'var(--harmony-gradient)'
-                }}
+                color='heading'
               >
                 {primary}
               </Text>
             </Flex>
-            <Text variant='body' color='default' strength='default' size='m'>
-              {secondary}
-            </Text>
+            <div>
+              {typeof secondary === 'string' ? (
+                <Text
+                  variant='body'
+                  color='default'
+                  strength='default'
+                  size='m'
+                >
+                  {secondary}
+                </Text>
+              ) : (
+                secondary
+              )}
+            </div>
             <div className={styles.rightDecorator}>{rightDecorator}</div>
           </Flex>
         </Flex>

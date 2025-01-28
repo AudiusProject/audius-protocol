@@ -25,6 +25,11 @@ const webStyles = `
      minWidth: width
   })
   other.className = cx(className, classNameProp)
+
+  // Handle gradient fills for heading style
+  if (color === 'heading') {
+    fill = 'url(#harmony-gradient)'
+  }
 `
 
 const nativeStyles = `
@@ -84,7 +89,7 @@ const ${variables.componentName} = forwardRef((${variables.props}, ref) => {
     other.width = isNaN(width) ? "100%" : width
   }
 
-  const fill = other.fill ?? theme.color?.icon[color]
+  let fill = other.fill ?? theme.color?.icon[color]
 
   ${native ? nativeStyles : webStyles}
 

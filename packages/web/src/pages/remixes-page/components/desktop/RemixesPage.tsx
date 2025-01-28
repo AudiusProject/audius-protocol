@@ -1,11 +1,12 @@
 import { Track, User } from '@audius/common/models'
 import { pluralize } from '@audius/common/utils'
-import { IconRemix } from '@audius/harmony'
+import { IconRemix, Text } from '@audius/harmony'
 
 import { Header } from 'components/header/desktop/Header'
 import Lineup, { LineupProps } from 'components/lineup/Lineup'
+import { TrackLink } from 'components/link/TrackLink'
+import { UserLink } from 'components/link/UserLink'
 import Page from 'components/page/Page'
-import UserBadges from 'components/user-badges/UserBadges'
 import { fullTrackRemixesPage } from 'utils/route'
 import { withNullGuard } from 'utils/withNullGuard'
 
@@ -35,40 +36,18 @@ const g = withNullGuard(
 )
 
 const RemixesPage = g(
-  ({
-    title,
-    count,
-    originalTrack,
-    user,
-    getLineupProps,
-    goToTrackPage,
-    goToArtistPage
-  }) => {
+  ({ title, count = 0, originalTrack, user, getLineupProps }) => {
     const renderHeader = () => (
       <Header
         icon={IconRemix}
         primary={title}
         secondary={
-          <div className={styles.headerSecondary}>
-            {`${count || ''} ${pluralize(
-              messages.remixes,
-              count,
-              'es',
-              !count
-            )} ${messages.of}`}
-            <div className={styles.link} onClick={goToTrackPage}>
-              {originalTrack.title}
-            </div>
-            {messages.by}
-            <div className={styles.link} onClick={goToArtistPage}>
-              {user.name}
-              <UserBadges
-                className={styles.iconVerified}
-                userId={user.user_id}
-                size='2xs'
-              />
-            </div>
-          </div>
+          <Text variant='title' size='l' strength='weak'>
+            {count} {pluralize(messages.remixes, count, 'es', !count)}{' '}
+            {messages.of}{' '}
+            <TrackLink trackId={originalTrack.track_id} variant='secondary' />{' '}
+            {messages.by} <UserLink userId={user.user_id} variant='secondary' />
+          </Text>
         }
         containerStyles={styles.header}
       />
