@@ -49,6 +49,7 @@ export const Select = forwardRef(function Select<Value extends string>(
     onClick,
     clearable,
     children,
+    renderSelectedOptionLabel: renderSelectedOptionlabel,
     ...other
   } = props
 
@@ -64,7 +65,11 @@ export const Select = forwardRef(function Select<Value extends string>(
   const [isOpen, setIsOpen] = useState(false)
   const [inputValue, setInputValue] = useState('')
   const selectedOption = options.find((option) => option.value === value)
-  const selectedLabel = selectedOption?.label ?? selectedOption?.value
+  const selectedLabel = selectedOption
+    ? renderSelectedOptionlabel?.(selectedOption) ??
+      selectedOption.label ??
+      selectedOption.value
+    : ''
   const anchorRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
   const optionRefs = useRef<HTMLButtonElement[]>([])
@@ -182,6 +187,7 @@ export const Select = forwardRef(function Select<Value extends string>(
         <MenuItem
           variant='option'
           {...selectedOption}
+          label={selectedLabel}
           onChange={() => {}}
           css={({ spacing }) => ({
             position: 'absolute',
@@ -206,7 +212,7 @@ export const Select = forwardRef(function Select<Value extends string>(
           scrollRef={scrollRef}
           MenuListProps={menuProps?.MenuListProps}
           aria-label={selectedLabel ?? label ?? props['aria-label']}
-          aria-activedescendant={selectedLabel}
+          aria-activedescendant={selectedOption?.label}
         >
           {children
             ? children({ onChange: handleChange, options: optionElements })
