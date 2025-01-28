@@ -14,6 +14,7 @@ import {
   remixesPageActions
 } from '~/store/pages'
 
+import { QUERY_KEYS } from './queryKeys'
 import { QueryOptions } from './types'
 import { useCurrentUserId } from './useCurrentUserId'
 import { loadNextPage } from './utils/infiniteQueryLoadNextPage'
@@ -43,7 +44,7 @@ export const useRemixes = (
   }, [dispatch, trackId])
 
   const queryData = useInfiniteQuery({
-    queryKey: ['remixes', trackId, pageSize],
+    queryKey: [QUERY_KEYS.remixes, trackId],
     initialPageParam: 0,
     getNextPageParam: (lastPage: UserTrack[], allPages) => {
       if (lastPage.length < pageSize) return undefined
