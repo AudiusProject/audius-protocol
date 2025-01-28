@@ -1,9 +1,13 @@
+import { useEffect } from 'react'
+
 import { useFormattedProgressLabel } from '@audius/common/hooks'
 import {
+  ChallengeName,
   ChallengeRewardID,
   Name,
   OptimisticUserChallenge
 } from '@audius/common/models'
+import { AIRDROP_PAGE } from '@audius/common/src/utils/route'
 import {
   ChallengeRewardsModalType,
   challengesSelectors
@@ -20,7 +24,9 @@ import {
 } from '@audius/harmony'
 import { useSelector } from 'react-redux'
 
+import { useHistoryContext } from 'app/HistoryProvider'
 import { make, track } from 'services/analytics'
+import { doesMatchRoute } from 'utils/route'
 
 import { StatusPill } from './StatusPill'
 
@@ -48,6 +54,7 @@ export const RewardPanel = ({
 }: RewardPanelProps) => {
   const { color, spacing } = useTheme()
   const userChallenges = useSelector(getOptimisticUserChallenges)
+  const { history } = useHistoryContext()
 
   const openRewardModal = () => {
     openModal(id)
@@ -55,6 +62,12 @@ export const RewardPanel = ({
       make({ eventName: Name.REWARDS_CLAIM_DETAILS_OPENED, challengeId: id })
     )
   }
+  useEffect(() => {
+    const match = doesMatchRoute(history.location, AIRDROP_PAGE)
+    if (match) {
+      openModal(ChallengeName.OneShot)
+    }
+  })
 
   const challenge = userChallenges[id]
   const hasDisbursed = challenge?.state === 'disbursed'

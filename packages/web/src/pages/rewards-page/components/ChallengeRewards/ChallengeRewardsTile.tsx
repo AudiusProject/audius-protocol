@@ -84,7 +84,7 @@ export const ChallengeRewardsTile = ({
         .sort(makeOptimisticChallengeSortComparator(optimisticUserChallenges)),
     [rewardIds, optimisticUserChallenges, userChallenges, isOneShotEnabled]
   )
-  console.log('asdf isOneShotEnabled', isOneShotEnabled)
+
   const rewardsTiles = rewardIdsSorted.map((id) => {
     const props = getChallengeConfig(id)
     return <RewardPanel {...props} openModal={openModal} key={props.id} />
