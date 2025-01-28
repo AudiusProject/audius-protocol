@@ -267,9 +267,7 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
     core_listens_health = get_core_listens_health(
         redis=redis, plays_count_max_drift=plays_count_max_drift
     )
-    indexing_plays_with_core = (
-        core_health and core_health.get("indexing_plays") and environment != "prod"
-    )
+    indexing_plays_with_core = core_health and core_health.get("indexing_plays")
 
     play_health_info = get_play_health_info(redis, plays_count_max_drift)
     if indexing_plays_with_core:

@@ -67,7 +67,7 @@ export const SignInWithMetaMaskButton = (props: ButtonProps) => {
       await switchChainAsync({ chainId: audiusChain.id })
 
       // Reinit SDK with the connected wallet
-      const sdk = await initSdk()
+      const sdk = await initSdk({ ignoreCachedUserWallet: true })
 
       // Check that the user exists.
       // If they don't, disconnect and try to get them to sign up.
@@ -81,7 +81,9 @@ export const SignInWithMetaMaskButton = (props: ButtonProps) => {
       }
 
       // Otherwise, refetch the user account in the saga.
-      dispatch(accountActions.fetchAccount)
+      dispatch(
+        accountActions.fetchAccount({ shouldMarkAccountAsLoading: true })
+      )
       navigate(route ?? FEED_PAGE)
     } catch (e) {
       setStatus(Status.ERROR)

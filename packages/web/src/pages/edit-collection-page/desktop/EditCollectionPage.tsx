@@ -26,7 +26,7 @@ import { track } from 'services/analytics'
 import { replace } from 'utils/navigation'
 import { useSelector } from 'utils/reducer'
 
-import { updatePlaylistContents } from '../utils'
+import { getEditablePlaylistContents, updatePlaylistContents } from '../utils'
 
 const { editPlaylist } = cacheCollectionsActions
 const { getCollection } = cacheCollectionsSelectors
@@ -65,7 +65,8 @@ export const EditCollectionPage = () => {
 
   const collection = status === Status.ERROR ? localCollection : apiCollection
 
-  const { playlist_id, tracks, description } = collection ?? {}
+  const { playlist_id, tracks, description, playlist_contents } =
+    collection ?? {}
 
   const artworkUrl = useCollectionCoverArt({
     collectionId: playlist_id,
@@ -76,7 +77,13 @@ export const EditCollectionPage = () => {
     ...collection,
     description: description ?? undefined,
     artwork: { url: artworkUrl! },
-    tracks: tracks?.map((track) => ({ metadata: track })) ?? [],
+    tracks:
+      tracks && playlist_contents
+        ? getEditablePlaylistContents({
+            playlist_contents,
+            tracks
+          })
+        : [],
     isUpload: false
   } as CollectionValues
 

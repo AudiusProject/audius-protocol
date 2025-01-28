@@ -300,6 +300,25 @@ jobs:
           channel: 'C06SP746DA7'
           template: PIPELINE_STATUS_TEMPLATE
 
+  aggregate-pipeline-status:
+    working_directory: ~/audius-protocol
+    resource_class: small
+    docker:
+      - image: cimg/base:2023.01
+    steps:
+      - checkout
+      - run:
+          name: Wait For Pipeline
+          command: bash .circleci/scripts/wait-for-pipeline.sh
+      - run:
+          name: Generate Slack Template
+          command: bash .circleci/scripts/generate-slack-template.sh
+      - run:
+          name: Check status
+          command: bash .circleci/scripts/check-workflow-statuses.sh
+      - slack/notify:
+          template: PIPELINE_STATUS_TEMPLATE
+
 workflows:
   setup:
     when:
@@ -321,7 +340,6 @@ workflows:
           mapping: |
             comms/.* run-discovery-workflow true
             packages/identity-service/.* run-identity-workflow true
-            packages/identity-service/.* run-integration-workflow true
             eth-contracts/.* run-eth-contracts-workflow true
             contracts/.* run-contracts-workflow true
             .circleci/.* run-discovery-workflow true
@@ -335,7 +353,6 @@ workflows:
             .circleci/.* run-embed-workflow true
             package-lock.json run-sdk-workflow true
             .* run-release-workflow false
-            .* run-integration-workflow true
             packages/discovery-provider/.* run-discovery-workflow true
             packages/web/.* run-web-workflow true
             packages/mobile/.* run-mobile-workflow true
@@ -346,6 +363,8 @@ workflows:
             packages/common/.* run-protocol-dashboard-workflow true
             packages/protocol-dashboard/.* run-protocol-dashboard-workflow true
             packages/harmony/.* run-web-workflow true
+            packages/harmony/.* run-protocol-dashboard-workflow true
+            packages/harmony/.* run-embed-workflow true
             packages/eslint-config-audius/.* run-web-workflow true
             packages/eslint-config-audius/.* run-mobile-workflow true
             packages/sdk/.* run-sdk-workflow true
@@ -372,7 +391,6 @@ workflows:
           mapping: |
             comms/.* run-discovery-workflow true
             packages/identity-service/.* run-identity-workflow true
-            packages/identity-service/.* run-integration-workflow true
             eth-contracts/.* run-eth-contracts-workflow true
             contracts/.* run-contracts-workflow true
             .circleci/.* run-discovery-workflow true
@@ -385,8 +403,8 @@ workflows:
             .circleci/.* run-mobile-workflow true
             .circleci/.* run-embed-workflow true
             package-lock.json run-sdk-workflow true
-            .* run-release-workflow false
             .* run-integration-workflow true
+            .* run-release-workflow false
             packages/discovery-provider/.* run-discovery-workflow true
             packages/web/.* run-web-workflow true
             packages/mobile/.* run-mobile-workflow true
@@ -455,6 +473,17 @@ workflows:
           filters:
             branches:
               only: /^main$/
+
+      - aggregate-pipeline-status:
+          context:
+            - slack-secrets
+          requires:
+            - trigger-relevant-workflows
+          filters:
+            branches:
+              ignore:
+                - main
+                - /^release.*$/
 
   release-create-branch:
     when:

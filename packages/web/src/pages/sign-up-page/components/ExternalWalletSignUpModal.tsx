@@ -102,13 +102,15 @@ export const ExternalWalletSignUpModal = () => {
       unsubscribe()
 
       // Reinit SDK with the connected wallet
-      const sdk = await initSdk()
+      const sdk = await initSdk({ ignoreCachedUserWallet: true })
 
       // Check that the user doesn't already exist.
       // If they do, log them in.
       const userExists = await doesUserExist(sdk, wallet)
       if (userExists) {
-        dispatch(accountActions.fetchAccount)
+        dispatch(
+          accountActions.fetchAccount({ shouldMarkAccountAsLoading: true })
+        )
         navigate(route ?? FEED_PAGE)
         onClose()
         return

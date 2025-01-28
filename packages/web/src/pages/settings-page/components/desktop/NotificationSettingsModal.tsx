@@ -8,17 +8,19 @@ import {
   Notifications
 } from '@audius/common/store'
 import {
+  Text,
   Modal,
   Switch,
   SegmentedControl,
-  IconClose as IconRemove
+  ModalTitle,
+  ModalHeader,
+  ModalContent,
+  Flex,
+  Divider
 } from '@audius/harmony'
-import cn from 'classnames'
 
 import { Permission } from 'utils/browserNotifications'
 import { isElectron } from 'utils/clientUtil'
-
-import styles from './NotificationSettings.module.css'
 
 const messages = {
   title: 'NOTIFICATIONS',
@@ -48,20 +50,14 @@ const ToggleNotification = ({
     onToggle(type, !isOn)
   }, [isOn, onToggle, type])
   return (
-    <div
-      className={cn(styles.toggleContainer, {
-        [styles.isDisabled]: isDisabled
-      })}
-    >
-      <div>{text}</div>
-      <div>
-        <Switch checked={isOn} onChange={handleToggle} />
-      </div>
-    </div>
+    <Flex justifyContent='space-between' alignItems='center' w='100%'>
+      <Text color={isDisabled ? 'subdued' : 'default'}>{text}</Text>
+      <Switch checked={isOn} onChange={handleToggle} disabled={isDisabled} />
+    </Flex>
   )
 }
 
-type NotificationSettingsProps = {
+type NotificationSettingsModalProps = {
   settings: Notifications
   emailFrequency: EmailFrequency
   isOpen: boolean
@@ -77,7 +73,7 @@ type NotificationSettingsProps = {
   onClose: () => void
 }
 
-const NotificationSettings = (props: NotificationSettingsProps) => {
+const NotificationSettingsModal = (props: NotificationSettingsModalProps) => {
   const isManagedAccount = useIsManagedAccount()
   const browserPushEnabled =
     props.settings[BrowserNotificationSetting.BrowserPush]
@@ -166,32 +162,24 @@ const NotificationSettings = (props: NotificationSettingsProps) => {
     props.settings[BrowserNotificationSetting.Permission] === Permission.DENIED
 
   return (
-    <Modal
-      isOpen={props.isOpen}
-      bodyClassName={styles.bodyClassName}
-      onClose={props.onClose}
-      allowScroll={false}
-    >
-      <div className={styles.container}>
-        <div className={styles.header}>
-          <IconRemove className={styles.iconRemove} onClick={props.onClose} />
-          <div className={styles.title}>{messages.title}</div>
-        </div>
-        <div className={styles.divider}></div>
-        {!isElectron() && !isManagedAccount ? (
-          <>
-            <div className={styles.description}>
+    <Modal isOpen={props.isOpen} onClose={props.onClose} size='small'>
+      <ModalHeader>
+        <ModalTitle title={messages.title} />
+      </ModalHeader>
+      <ModalContent>
+        <Flex column gap='l'>
+          {!isElectron() && !isManagedAccount ? (
+            <>
               <ToggleNotification
-                key={'browserPushNotifications'}
                 onToggle={props.toggleBrowserPushNotificationPermissions}
                 text={messages.browserPushNotifications}
                 isOn={browserPushEnabled}
                 type={BrowserNotificationSetting.BrowserPush}
               />
               {permissionDenied && (
-                <div className={styles.permissionDeniedText}>
+                <Text size='s' color='danger'>
                   {messages.enablePermissions}
-                </div>
+                </Text>
               )}
               {notificationToggles.map((notification) => (
                 <ToggleNotification
@@ -201,23 +189,19 @@ const NotificationSettings = (props: NotificationSettingsProps) => {
                   {...notification}
                 />
               ))}
-            </div>
-            <div className={styles.divider}></div>
-          </>
-        ) : null}
-        <div className={styles.emailContainer}>
-          <div className={cn(styles.bodyText, styles.email)}>
-            {messages.emailFrequency}
-          </div>
+              <Divider />
+            </>
+          ) : null}
+          <Text textAlign='center'>{messages.emailFrequency}</Text>
           <SegmentedControl
             selected={props.emailFrequency}
             onSelectOption={props.updateEmailFrequency}
             options={emailOptions}
           />
-        </div>
-      </div>
+        </Flex>
+      </ModalContent>
     </Modal>
   )
 }
 
-export default NotificationSettings
+export default NotificationSettingsModal

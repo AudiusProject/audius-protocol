@@ -92,6 +92,7 @@ def get_purchases_or_sales(
                     User.user_id.label("buyer_user_id"),
                     EncryptedEmail.encrypted_email.label("encrypted_email"),
                     EmailAccess.encrypted_key.label("encrypted_key"),
+                    EmailAccess.is_initial.label("is_initial"),
                 )
                 .join(User, User.user_id == USDCPurchase.buyer_user_id)
                 .outerjoin(
@@ -262,6 +263,9 @@ def format_sale_for_download(
         )
         fields_with_underscores["buyer_user_id"] = (
             result.buyer_user_id if hasattr(result, "buyer_user_id") else None
+        )
+        fields_with_underscores["is_initial"] = (
+            result.is_initial if hasattr(result, "is_initial") else None
         )
         return fields_with_underscores
 

@@ -21,7 +21,8 @@ import {
   Flex,
   IconValidationCheck,
   IconRefresh,
-  useTheme
+  useTheme,
+  Paper
 } from '@audius/harmony'
 import { useDispatch } from 'react-redux'
 
@@ -268,16 +269,18 @@ const TierColumn = ({
       mt={current ? '-49px' : undefined} // Move current tier up to align columns
     >
       {current && (
-        <Flex
+        <Paper
           justifyContent='center'
           pv='m'
           mb='m'
-          css={{ background: 'var(--harmony-gradient)' }}
+          css={(theme) => ({
+            background: theme.color.special.gradient
+          })}
         >
           <Text variant='label' size='s' color='white'>
             {messages.currentTier}
           </Text>
-        </Flex>
+        </Paper>
       )}
       <TierBox
         tier={tier as AudioTiers}

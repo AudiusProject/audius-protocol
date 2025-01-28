@@ -1,5 +1,7 @@
 import { ReactNode } from 'react'
 
+import { Flex, Text, useTheme } from '@audius/harmony'
+
 import Tooltip from 'components/tooltip/Tooltip'
 
 import { getPercentageComplete } from './ProfileCompletionHeroCard'
@@ -18,15 +20,26 @@ type TooltipContentProps = {
 const TooltipContent = ({ completionStages }: TooltipContentProps) => {
   const completionPercentage = getPercentageComplete(completionStages).toFixed()
   const strings = makeStrings(Number(completionPercentage))
+  const { color } = useTheme()
 
   return (
-    <div className={styles.content}>
-      <div className={styles.header}>{strings.completionPercentage}</div>
-      <TaskCompletionList
-        className={styles.list}
-        completionStages={completionStages}
-      />
-    </div>
+    <Flex direction='column'>
+      <Flex
+        p='l'
+        alignItems='center'
+        justifyContent='center'
+        css={{
+          backgroundColor: color.secondary.s500
+        }}
+      >
+        <Text variant='title' size='l' color='white'>
+          {strings.completionPercentage}
+        </Text>
+      </Flex>
+      <Flex p='l'>
+        <TaskCompletionList completionStages={completionStages} />
+      </Flex>
+    </Flex>
   )
 }
 

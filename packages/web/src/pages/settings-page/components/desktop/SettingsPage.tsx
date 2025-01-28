@@ -80,7 +80,7 @@ import { DeveloperAppsSettingsCard } from './DeveloperApps'
 import { ListeningHistorySettingsCard } from './ListeningHistory'
 import { AccountsManagingYouSettingsCard } from './ManagerMode/AccountsManagingYouSettingsCard'
 import { AccountsYouManageSettingsCard } from './ManagerMode/AccountsYouManageSettingsCard'
-import NotificationSettings from './NotificationSettings'
+import NotificationSettingsModal from './NotificationSettingsModal'
 import { PayoutWalletSettingsCard } from './PayoutWallet/PayoutWalletSettingsCard'
 import SettingsCard from './SettingsCard'
 import styles from './SettingsPage.module.css'
@@ -138,7 +138,11 @@ export const SettingsPage = () => {
   const tier = useSelector(
     (state: AppState) => getTierAndVerifiedForUser(state, { userId }).tier
   )
-  const showMatrix = tier === 'gold' || tier === 'platinum' || isStaging
+  const showMatrix =
+    tier === 'gold' ||
+    tier === 'platinum' ||
+    isStaging ||
+    process.env.NODE_ENV === 'development'
 
   const [isSignOutModalVisible, setIsSignOutModalVisible] = useState(false)
   const [
@@ -626,7 +630,7 @@ export const SettingsPage = () => {
         isOpen={isChangeEmailModalVisible}
         onClose={closeChangeEmailModal}
       />
-      <NotificationSettings
+      <NotificationSettingsModal
         isOpen={isNotificationSettingsModalVisible}
         toggleBrowserPushNotificationPermissions={
           toggleBrowserPushNotificationPermissions

@@ -55,32 +55,25 @@ integration-test:
           . ~/.profile
           audius-compose connect --nopass
           ./scripts/check-generated-types.sh
-    # NOTE: disabled until we have a plan for fixing the flakyness
-    # output was already being ignored
-
-    # - run:
-    #     name: install playwright
-    #     command: sudo NEEDRESTART_MODE=l PLAYWRIGHT_BROWSERS_PATH=/home/circleci/.cache/ms-playwright npx playwright install --with-deps
-    # - run:
-    #     name: run playwright tests
-    #     command: |
-    #       cd packages/web
-    #       RUN_AGAINST_LOCAL_STACK=true npx playwright test || true
-    #       echo 'WARNING: errors have been ignored due to test flakiness.'
-    #       echo 'Please manually inspect output.'
-    # - store_test_results:
-    #     path: packages/web/report.xml
-    #     when: always
-    # - run:
-    #     name: merge playwright test reports
-    #     command: |
-    #       cd packages/web
-    #       npx playwright merge-reports --reporter html ./blob-report || true
-    #       echo 'WARNING: errors have been ignored due to test flakiness.'
-    #       echo 'Please manually inspect output.'
-    #     when: always
-    # - store_artifacts:
-    #     path: packages/web/playwright-report
+    - run:
+        name: install playwright
+        command: sudo NEEDRESTART_MODE=l PLAYWRIGHT_BROWSERS_PATH=/home/circleci/.cache/ms-playwright npx playwright install --with-deps
+    - run:
+        name: run playwright tests
+        command: |
+          cd packages/web
+          RUN_AGAINST_LOCAL_STACK=true npx playwright test
+    - store_test_results:
+        path: packages/web/report.xml
+        when: always
+    - run:
+        name: merge playwright test reports
+        command: |
+          cd packages/web
+          npx playwright merge-reports --reporter html ./blob-report
+        when: always
+    - store_artifacts:
+        path: packages/web/playwright-report
     - run:
         name: cleanup
         no_output_timeout: 5m

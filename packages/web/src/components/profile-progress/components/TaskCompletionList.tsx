@@ -1,7 +1,6 @@
-import cn from 'classnames'
+import { Flex, useTheme } from '@audius/harmony'
 
 import { TaskCompletionItem } from './TaskCompletionItem'
-import styles from './TaskCompletionList.module.css'
 import { CompletionStages } from './types'
 
 const sortIncompleteFirst = (list: CompletionStages) => {
@@ -12,7 +11,6 @@ const sortIncompleteFirst = (list: CompletionStages) => {
 
 type TaskCompletionListProps = {
   completionStages: CompletionStages
-  className?: string
 }
 
 /**
@@ -21,16 +19,26 @@ type TaskCompletionListProps = {
  * and `ProfileCompletionHeroCard`.
  */
 export const TaskCompletionList = ({
-  completionStages,
-  className
-}: TaskCompletionListProps) => (
-  <div className={cn(styles.container, className)}>
-    {sortIncompleteFirst(completionStages).map((e) => (
-      <TaskCompletionItem
-        title={e.title}
-        isCompleted={e.isCompleted}
-        key={e.title}
-      />
-    ))}
-  </div>
-)
+  completionStages
+}: TaskCompletionListProps) => {
+  const { color } = useTheme()
+
+  return (
+    <Flex
+      direction='column'
+      gap='s'
+      wrap='wrap'
+      css={{
+        backgroundColor: color.secondary.s300
+      }}
+    >
+      {sortIncompleteFirst(completionStages).map((e) => (
+        <TaskCompletionItem
+          title={e.title}
+          isCompleted={e.isCompleted}
+          key={e.title}
+        />
+      ))}
+    </Flex>
+  )
+}
