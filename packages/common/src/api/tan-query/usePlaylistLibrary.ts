@@ -1,10 +1,13 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useSelector } from 'react-redux'
 
+import { accountFromSDK } from '~/adapters'
+import { useAudiusQueryContext } from '~/audius-query'
 import { PlaylistLibrary } from '~/models/PlaylistLibrary'
+import { getWalletAddresses } from '~/store/account/selectors'
 
 import { QUERY_KEYS } from './queryKeys'
 import { QueryOptions } from './types'
-import { useCurrentAccount } from './useCurrentAccount'
 
 const STALE_TIME = 1000 * 60 * 5 // 5 minutes
 
@@ -12,11 +15,22 @@ const STALE_TIME = 1000 * 60 * 5 // 5 minutes
  * Hook to get the user's playlist library from the accountUser data
  */
 export const usePlaylistLibrary = (config?: QueryOptions) => {
-  const { data: accountUser } = useCurrentAccount()
+  const { audiusSdk } = useAudiusQueryContext()
+  const { currentUser } = useSelector(getWalletAddresses)
+
   return useQuery({
-    queryKey: [QUERY_KEYS.playlistLibrary, accountUser?.user.user_id],
-    queryFn: () => {
-      return accountUser?.playlist_library ?? { contents: [] }
+    queryKey: [QUERY_KEYS.playlistLibrary, currentUser],
+    queryFn: async () => {
+      const sdk = await audiusSdk()
+      const { data } = await sdk.full.users.getUserAccount({
+        wallet: currentUser!
+      })
+      if (!data) {
+        console.warn('Missing user from account response')
+        return null
+      }
+      const account = accountFromSDK(data!)
+      return account?.playlist_library ?? ({ contents: [] } as PlaylistLibrary)
     },
     staleTime: config?.staleTime ?? STALE_TIME,
     ...config
@@ -24,13 +38,13 @@ export const usePlaylistLibrary = (config?: QueryOptions) => {
 }
 
 export const useUpdatePlaylistLibrary = () => {
-  const { data: accountUser } = useCurrentAccount()
+  const { currentUser } = useSelector(getWalletAddresses)
   const queryClient = useQueryClient()
 
   return useMutation({
     mutationFn: (playlistLibrary: PlaylistLibrary) => {
       queryClient.setQueryData(
-        [QUERY_KEYS.playlistLibrary, accountUser?.user.user_id],
+        [QUERY_KEYS.playlistLibrary, currentUser],
         playlistLibrary
       )
       return Promise.resolve()
