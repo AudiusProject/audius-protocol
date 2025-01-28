@@ -462,7 +462,7 @@ class WebPlayer extends Component {
       <div className={styles.root}>
         <AppBannerWrapper>
           {/* <DownloadAppBanner /> */}
-          {/* <AirdropAppBanner /> */}
+          <AirdropAppBanner />
 
           {/* Product Announcement Banners */}
           {/* <TermsOfServiceUpdateBanner /> */}

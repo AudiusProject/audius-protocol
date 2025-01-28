@@ -23,6 +23,7 @@ export function requiresAccount<TArgs extends any[], TReturn>(
   route?: string
 ) {
   return function* (...args: TArgs) {
+    console.log('asdf requiresAccount')
     const isNativeMobile = yield* getContext('isNativeMobile')
     yield* waitForAccount()
     const hasAccount = yield* select(getHasAccount)

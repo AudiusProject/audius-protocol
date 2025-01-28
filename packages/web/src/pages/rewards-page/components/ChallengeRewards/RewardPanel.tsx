@@ -1,5 +1,3 @@
-import { useEffect } from 'react'
-
 import { useFormattedProgressLabel } from '@audius/common/hooks'
 import {
   ChallengeName,
@@ -23,6 +21,7 @@ import {
   useTheme
 } from '@audius/harmony'
 import { useSelector } from 'react-redux'
+import { useEffectOnce } from 'react-use'
 
 import { useHistoryContext } from 'app/HistoryProvider'
 import { make, track } from 'services/analytics'
@@ -62,7 +61,7 @@ export const RewardPanel = ({
       make({ eventName: Name.REWARDS_CLAIM_DETAILS_OPENED, challengeId: id })
     )
   }
-  useEffect(() => {
+  useEffectOnce(() => {
     const match = doesMatchRoute(history.location, AIRDROP_PAGE)
     if (match) {
       openModal(ChallengeName.OneShot)

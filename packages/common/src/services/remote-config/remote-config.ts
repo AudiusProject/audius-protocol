@@ -230,7 +230,6 @@ export const remoteConfig = <
   function getFeatureEnabled(flag: FeatureFlags, fallbackFlag?: FeatureFlags) {
     const defaultVal =
       environmentFlagDefaults[environment][flag] ?? flagDefaults[flag]
-    console.log('asdf flag', flag, defaultVal)
     // If the client is not ready yet, return early with `null`
     if (!client || !state.id) return defaultVal
 
@@ -246,7 +245,6 @@ export const remoteConfig = <
         appVersion,
         platform: 'web'
       })
-      console.log('asdf res', flag, res, appVersion)
       return res
     }
 

@@ -136,7 +136,6 @@ export const useFeatureFlag = (
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [flag, fallbackFlag, shouldRecompute]
   )
-  console.log('asdf isEnabled', isEnabled)
 
   const setOverride = useCallback(
     async (value: OverrideSetting) => {
