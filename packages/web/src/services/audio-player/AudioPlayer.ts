@@ -33,6 +33,12 @@ enum AudioError {
   AUDIO = 'AUDIO'
 }
 
+// Create a BroadcastChannel for cross-tab communication
+const audioChannel =
+  typeof window !== 'undefined'
+    ? new BroadcastChannel('audio-coordination')
+    : null
+
 export class AudioPlayer {
   audio: HTMLAudioElement
   audioCtx: AudioContext | null
@@ -91,6 +97,16 @@ export class AudioPlayer {
 
     // Listen for errors
     this.onError = (e, data) => {}
+
+    // Listen for play messages from other tabs
+    if (audioChannel) {
+      audioChannel.onmessage = (event) => {
+        if (event.data === 'playing' && !this.audio.paused) {
+          // Another tab started playing, pause this one
+          this.pause()
+        }
+      }
+    }
   }
 
   load = (
@@ -191,6 +207,11 @@ export class AudioPlayer {
       this._fadeIn()
     } else if (this.gainNode) {
       this.gainNode.gain.setValueAtTime(1, 0)
+    }
+
+    // Notify other tabs that we're playing
+    if (audioChannel) {
+      audioChannel.postMessage('playing')
     }
 
     // This is a very nasty "hack" to fix a bug in chrome-like webkit browsers.
