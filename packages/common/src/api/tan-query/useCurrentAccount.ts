@@ -1,0 +1,37 @@
+import { useQuery } from '@tanstack/react-query'
+import { useSelector } from 'react-redux'
+
+import { accountFromSDK } from '~/adapters/user'
+import { useAudiusQueryContext } from '~/audius-query'
+import { getWalletAddresses } from '~/store/account/selectors'
+
+import { QUERY_KEYS } from './queryKeys'
+import { QueryOptions } from './types'
+
+/**
+ * Hook to get the currently logged in user's account
+ */
+export const useCurrentAccount = (options?: QueryOptions) => {
+  const { audiusSdk } = useAudiusQueryContext()
+  const { currentUser } = useSelector(getWalletAddresses)
+
+  return useQuery({
+    queryKey: [QUERY_KEYS.accountUser, currentUser],
+    queryFn: async () => {
+      const sdk = await audiusSdk()
+      const { data } = await sdk.full.users.getUserAccount({
+        wallet: currentUser!
+      })
+
+      if (!data) {
+        console.warn('Missing user from account response')
+        return null
+      }
+
+      const account = accountFromSDK(data)
+      return account
+    },
+    staleTime: options?.staleTime,
+    enabled: options?.enabled !== false && !!currentUser
+  })
+}
