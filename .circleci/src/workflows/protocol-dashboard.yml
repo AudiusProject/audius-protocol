@@ -36,11 +36,19 @@ jobs:
       filters:
         branches:
           only: /(^main|^release|^rj.*)$/
+  - protocol-dashboard-pin-prod:
+      context:
+        - Audius Client
+      requires:
+        - protocol-dashboard-hold-deploy-prod
+      filters:
+        branches:
+          only: /(^main|^release|^rj.*)$/
   - protocol-dashboard-deploy-prod:
       context:
         - Armada
       requires:
-        - protocol-dashboard-hold-deploy-prod
+        - protocol-dashboard-pin-pro
       filters:
         branches:
           only: /(^main|^release|^rj.*)$/
