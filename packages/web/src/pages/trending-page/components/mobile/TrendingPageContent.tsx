@@ -52,7 +52,7 @@ const tabHeaders = [
 const TrendingPageMobileContent = ({
   pageTitle,
   trendingDescription,
-
+  trendingQueryData,
   trendingTimeRange,
   setTrendingTimeRange,
 

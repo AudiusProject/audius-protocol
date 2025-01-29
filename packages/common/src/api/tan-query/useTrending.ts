@@ -5,6 +5,7 @@ import { useDispatch } from 'react-redux'
 import { userTrackMetadataFromSDK } from '~/adapters/track'
 import { transformAndCleanList } from '~/adapters/utils'
 import { useAudiusQueryContext } from '~/audius-query'
+import { PlaybackSource } from '~/models'
 import { TimeRange } from '~/models/TimeRange'
 import { StringKeys } from '~/services/remote-config'
 import {
@@ -12,12 +13,18 @@ import {
   trendingMonthActions,
   trendingWeekActions
 } from '~/store/pages/trending/lineup/actions'
+import {
+  getDiscoverTrendingWeekLineup,
+  getDiscoverTrendingMonthLineup,
+  getDiscoverTrendingAllTimeLineup
+} from '~/store/pages/trending/selectors'
 import { Genre } from '~/utils/genres'
 
 import { QUERY_KEYS } from './queryKeys'
 import { QueryOptions } from './types'
 import { useCurrentUserId } from './useCurrentUserId'
 import { primeTrackData } from './utils/primeTrackData'
+import { useLineupQuery } from './utils/useLineupQuery'
 
 const INITIAL_PAGE_SIZE = 10
 const LOAD_MORE_PAGE_SIZE = 4
@@ -43,7 +50,7 @@ export const useTrending = (
   const { data: currentUserId } = useCurrentUserId()
   const dispatch = useDispatch()
 
-  return useInfiniteQuery({
+  const infiniteQueryData = useInfiniteQuery({
     queryKey: [QUERY_KEYS.trending, timeRange, genre],
     initialPageParam: 0,
     staleTime: options?.staleTime,
@@ -123,4 +130,29 @@ export const useTrending = (
     },
     select: (data) => data.pages.flat()
   })
+
+  let lineupActions
+  let lineupSelector
+  switch (timeRange) {
+    case TimeRange.WEEK:
+      lineupActions = trendingWeekActions
+      lineupSelector = getDiscoverTrendingWeekLineup
+      break
+    case TimeRange.MONTH:
+      lineupActions = trendingMonthActions
+      lineupSelector = getDiscoverTrendingMonthLineup
+      break
+    case TimeRange.ALL_TIME:
+      lineupActions = trendingAllTimeActions
+      lineupSelector = getDiscoverTrendingAllTimeLineup
+      break
+  }
+  const lineupData = useLineupQuery({
+    queryData: infiniteQueryData,
+    lineupActions,
+    lineupSelector,
+    playbackSource: PlaybackSource.TRACK_TILE_LINEUP // TODO: shouldn't this be more specific?
+  })
+
+  return { ...infiniteQueryData, ...lineupData }
 }

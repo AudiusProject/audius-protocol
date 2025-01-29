@@ -100,7 +100,6 @@ export const useTrackHistory = (
   })
   return {
     ...queryData,
-    ...lineupData,
-    loadNextPage: loadNextPage(queryData)
+    ...lineupData
   }
 }

@@ -121,7 +121,6 @@ export const useFeed = (
 
   return {
     ...queryData,
-    ...lineupData,
-    loadNextPage: loadNextPage(queryData)
+    ...lineupData
   }
 }

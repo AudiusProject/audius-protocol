@@ -93,7 +93,6 @@ export const useTrendingPlaylists = (
   return {
     ...queryData,
     ...lineupData,
-    loadNextPage: loadNextPage(queryData),
     pageSize
   }
 }

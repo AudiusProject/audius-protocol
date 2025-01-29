@@ -88,7 +88,6 @@ export const useAiTracks = (
   return {
     ...queryData,
     ...lineupData,
-    loadNextPage: loadNextPage(queryData),
     pageSize
   }
 }

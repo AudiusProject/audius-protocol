@@ -83,7 +83,6 @@ export const usePremiumTracks = (
   return {
     ...queryData,
     ...lineupData,
-    loadNextPage: loadNextPage(queryData),
     pageSize
   }
 }

@@ -116,6 +116,7 @@ export interface TanQueryLineupProps {
   onClickTile?: (trackId: ID) => void
   pageSize: number
   initialPageSize?: number
+  loadMoreThreshold?: number
 }
 
 const defaultLineup = {
@@ -131,6 +132,8 @@ const defaultLineup = {
   page: 0,
   isMetadataLoading: false
 }
+
+const DEFAULT_LOAD_MORE_THRESHOLD = 700 // px
 
 /** `TanQueryLineup` encapsulates the logic for displaying a Lineup (e.g. prefetching items)
  * displaying loading states, etc). This is decoupled from the rendering logic, which
@@ -154,14 +157,14 @@ export const TanQueryLineup = ({
   tileContainerStyles,
   tileStyles,
   playingTrackId,
-  setInView,
   emptyElement,
   numPlaylistSkeletonRows,
   isTrending = false,
   onClickTile,
   pageSize,
   initialPageSize,
-  scrollParent: externalScrollParent
+  scrollParent: externalScrollParent,
+  loadMoreThreshold = DEFAULT_LOAD_MORE_THRESHOLD
 }: TanQueryLineupProps) => {
   const dispatch = useDispatch()
   const {
@@ -189,13 +192,6 @@ export const TanQueryLineup = ({
     useState<HTMLElement | null>(externalScrollParent || null)
 
   // Effects
-  useEffect(() => {
-    if (setInView) setInView(true)
-    return () => {
-      if (setInView) setInView(false)
-    }
-  }, [setInView])
-
   useEffect(() => {
     if (
       externalScrollParent &&
@@ -447,6 +443,7 @@ export const TanQueryLineup = ({
               }}
               element='ol'
               loader={renderSkeletons(pageSize)}
+              threshold={loadMoreThreshold}
             >
               {tiles.map((tile: any, index: number) => (
                 <li key={index} className={cn({ [tileStyles!]: !!tileStyles })}>
