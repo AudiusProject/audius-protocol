@@ -20,6 +20,7 @@ const productionDiscoveryNodeRPCEarlyAdopters = [
   'https://discovery-us-01.audius.openplayer.org',
   'https://audius-discovery-2.altego.net',
   'https://dn1.nodeoperator.io',
+  'https://dn2.monophonic.digital',
   'https://audius-discovery-3.altego.net',
   'https://dn1.matterlightblooming.xyz',
   'https://discovery.grassfed.network',
