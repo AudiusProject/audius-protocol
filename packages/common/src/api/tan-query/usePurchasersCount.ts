@@ -8,10 +8,18 @@ import { QUERY_KEYS } from './queryKeys'
 import { QueryOptions } from './types'
 import { useCurrentUserId } from './useCurrentUserId'
 
-type UsePurchasersCountArgs = {
+export type UsePurchasersCountArgs = {
   contentId?: ID | null | undefined
   contentType?: string | undefined
 }
+
+export const getPurchasersCountQueryKey = (args: UsePurchasersCountArgs) => [
+  QUERY_KEYS.purchasersCount,
+  {
+    contentId: args.contentId,
+    contentType: args.contentType
+  }
+]
 
 export const usePurchasersCount = (
   { contentId, contentType }: UsePurchasersCountArgs = {},
@@ -21,7 +29,7 @@ export const usePurchasersCount = (
   const { data: currentUserId } = useCurrentUserId()
 
   return useQuery({
-    queryKey: [QUERY_KEYS.purchasersCount, currentUserId],
+    queryKey: getPurchasersCountQueryKey({ contentId, contentType }),
     queryFn: async () => {
       const sdk = await audiusSdk()
       if (!currentUserId) return 0

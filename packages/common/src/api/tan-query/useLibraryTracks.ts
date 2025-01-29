@@ -8,6 +8,7 @@ import { useDispatch } from 'react-redux'
 
 import { useAudiusQueryContext } from '~/audius-query'
 import { PlaybackSource } from '~/models/Analytics'
+import { ID } from '~/models/Identifiers'
 import {
   savedPageTracksLineupActions,
   savedPageSelectors,
@@ -34,6 +35,19 @@ export type UseLibraryTracksArgs = {
   pageSize?: number
 }
 
+export const getLibraryTracksQueryKey = (
+  args: UseLibraryTracksArgs & { currentUserId: ID | null | undefined }
+) => [
+  QUERY_KEYS.libraryTracks,
+  {
+    currentUserId: args.currentUserId,
+    category: args.category,
+    sortMethod: args.sortMethod,
+    sortDirection: args.sortDirection,
+    query: args.query
+  }
+]
+
 export const useLibraryTracks = (
   {
     category,
@@ -50,14 +64,13 @@ export const useLibraryTracks = (
   const dispatch = useDispatch()
 
   const queryData = useInfiniteQuery({
-    queryKey: [
-      QUERY_KEYS.libraryTracks,
+    queryKey: getLibraryTracksQueryKey({
       currentUserId,
       category,
       sortMethod,
       sortDirection,
       query
-    ],
+    }),
     queryFn: async ({ pageParam = 0 }) => {
       if (!currentUserId) return []
       const sdk = await audiusSdk()

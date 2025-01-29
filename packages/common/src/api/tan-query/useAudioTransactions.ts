@@ -3,11 +3,12 @@ import { useInfiniteQuery } from '@tanstack/react-query'
 
 import { audioTransactioFromSdk } from '~/adapters/audioTransactions'
 import { useAudiusQueryContext } from '~/audius-query'
+import { ID } from '~/models'
 import {
   TransactionDetails,
   TransactionType
 } from '~/store/ui/transaction-details/types'
-import { removeNullable } from '~/utils/typeUtils'
+import { Nullable, removeNullable } from '~/utils/typeUtils'
 
 import { QUERY_KEYS } from './queryKeys'
 import { QueryOptions } from './types'
@@ -22,6 +23,18 @@ type GetAudioTransactionsArgs = {
 
 const AUDIO_TRANSACTIONS_BATCH_SIZE = 50
 
+export const getAudioTransactionsQueryKey = (
+  args: GetAudioTransactionsArgs & { userId: Nullable<ID> }
+) => [
+  QUERY_KEYS.audioTransactions,
+  args.userId,
+  {
+    sortMethod: args.sortMethod,
+    sortDirection: args.sortDirection,
+    pageSize: args.pageSize
+  }
+]
+
 export const useAudioTransactions = (
   args: GetAudioTransactionsArgs,
   options?: QueryOptions
@@ -35,7 +48,12 @@ export const useAudioTransactions = (
   } = args
 
   const query = useInfiniteQuery({
-    queryKey: [QUERY_KEYS.audioTransactions, userId, sortMethod, sortDirection],
+    queryKey: getAudioTransactionsQueryKey({
+      userId,
+      sortMethod,
+      sortDirection,
+      pageSize
+    }),
     queryFn: async ({ pageParam }) => {
       if (!userId) return []
 

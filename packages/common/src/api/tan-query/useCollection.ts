@@ -13,6 +13,11 @@ import { primeCollectionData } from './utils/primeCollectionData'
 
 const STALE_TIME = Infinity
 
+export const getCollectionQueryKey = (collectionId: ID | null | undefined) => [
+  QUERY_KEYS.collection,
+  collectionId
+]
+
 export const useCollection = (
   collectionId: ID | null | undefined,
   options?: QueryOptions
@@ -23,7 +28,7 @@ export const useCollection = (
   const dispatch = useDispatch()
 
   return useQuery({
-    queryKey: [QUERY_KEYS.collection, collectionId],
+    queryKey: getCollectionQueryKey(collectionId),
     queryFn: async () => {
       const sdk = await audiusSdk()
       const { data } = await sdk.full.playlists.getPlaylist({

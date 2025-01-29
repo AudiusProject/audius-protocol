@@ -68,12 +68,20 @@ const messages = {
  * QUERIES
  *
  */
-type GetCommentsByTrackArgs = {
+export type GetCommentsByTrackArgs = {
   trackId: ID
   userId: ID | null
   sortMethod: CommentSortMethod
   pageSize?: number
 }
+
+export const getTrackCommentListQueryKey = (
+  args: Omit<GetCommentsByTrackArgs, 'userId'>
+) => [
+  QUERY_KEYS.trackCommentList,
+  args.trackId,
+  { sortMethod: args.sortMethod, pageSize: args.pageSize }
+]
 
 export const useGetCommentsByTrackId = ({
   trackId,
@@ -93,7 +101,7 @@ export const useGetCommentsByTrackId = ({
       if (lastPage?.length < pageSize) return undefined
       return (pages.length ?? 0) * pageSize
     },
-    queryKey: [QUERY_KEYS.trackCommentList, trackId, sortMethod, pageSize],
+    queryKey: getTrackCommentListQueryKey({ trackId, sortMethod, pageSize }),
     queryFn: async ({ pageParam }): Promise<ID[]> => {
       const sdk = await audiusSdk()
       const commentsRes = await sdk.tracks.trackComments({
@@ -146,13 +154,18 @@ export const useGetCommentsByTrackId = ({
   return { ...queryRes, data: queryRes.data?.pages?.flat() ?? [] }
 }
 
+export const getCommentQueryKey = (commentId: ID) => [
+  QUERY_KEYS.comment,
+  commentId
+]
+
 export const useGetCommentById = (commentId: ID) => {
   const { reportToSentry } = useAudiusQueryContext()
   const queryClient = useQueryClient()
   const dispatch = useDispatch()
 
   const queryRes = useQuery({
-    queryKey: [QUERY_KEYS.comment, commentId],
+    queryKey: getCommentQueryKey(commentId),
     enabled: !!commentId,
     queryFn: async (): Promise<CommentOrReply | {}> => {
       // TODO: there's no backend implementation of this fetch at the moment;
@@ -234,6 +247,10 @@ const subtractCommentCount = (
   dispatch(incrementTrackCommentCount(trackId, -1))
 }
 
+export const getTrackCommentCountQueryKey = (
+  trackId: Nullable<ID> | undefined
+) => [QUERY_KEYS.trackCommentCount, trackId]
+
 export const useTrackCommentCount = (
   trackId: Nullable<ID> | undefined,
   userId: Nullable<ID>,
@@ -243,7 +260,7 @@ export const useTrackCommentCount = (
   const dispatch = useDispatch()
   const queryClient = useQueryClient()
   const queryData = useQuery({
-    queryKey: [QUERY_KEYS.trackCommentCount, trackId],
+    queryKey: getTrackCommentCountQueryKey(trackId),
     enabled: !!trackId,
     queryFn: async () => {
       const sdk = await audiusSdk()
@@ -292,6 +309,14 @@ type GetRepliesArgs = {
   enabled?: boolean
   pageSize?: number
 }
+
+export const getCommentRepliesQueryKey = (args: GetRepliesArgs) => [
+  QUERY_KEYS.comment,
+  args.commentId,
+  QUERY_KEYS.commentReplies,
+  args.pageSize
+]
+
 export const useGetCommentRepliesById = ({
   commentId,
   enabled,
@@ -304,12 +329,7 @@ export const useGetCommentRepliesById = ({
   const startingLimit = pageSize // comments will load in with 3 already so we don't start pagination at 0
 
   const queryRes = useInfiniteQuery({
-    queryKey: [
-      QUERY_KEYS.comment,
-      commentId,
-      QUERY_KEYS.commentReplies,
-      pageSize
-    ],
+    queryKey: getCommentRepliesQueryKey({ commentId, pageSize }),
     enabled: !!enabled,
     initialPageParam: startingLimit,
     getNextPageParam: (lastPage: ReplyComment[], pages) => {
@@ -470,7 +490,10 @@ export const usePostComment = () => {
       toast({ content: messages.mutationError('posting') })
       // TODO: avoid hard reset here?
       queryClient.resetQueries({
-        queryKey: [QUERY_KEYS.trackCommentList, trackId, currentSort]
+        queryKey: getTrackCommentListQueryKey({
+          trackId,
+          sortMethod: currentSort
+        })
       })
     }
   })
@@ -617,7 +640,10 @@ export const usePinComment = () => {
       dispatch(setPinnedCommentId(trackId, previousPinnedCommentId ?? null))
       // Since this mutationx handles sort data, its difficult to undo the optimistic update so we just re-load everything
       queryClient.resetQueries({
-        queryKey: [QUERY_KEYS.trackCommentList, trackId, currentSort]
+        queryKey: getTrackCommentListQueryKey({
+          trackId,
+          sortMethod: currentSort
+        })
       })
     }
   })
@@ -693,7 +719,7 @@ export const useDeleteComment = () => {
           )
           // Remove the individual comment
           queryClient.removeQueries({
-            queryKey: [QUERY_KEYS.comment, commentId],
+            queryKey: getCommentQueryKey(commentId),
             exact: true
           })
         }
@@ -715,7 +741,10 @@ export const useDeleteComment = () => {
       // Since this mutation handles sort data, its difficult to undo the optimistic update so we just re-load everything
       // TODO: avoid hard reset here by checking if cache changed?
       queryClient.resetQueries({
-        queryKey: [QUERY_KEYS.trackCommentList, trackId, currentSort]
+        queryKey: getTrackCommentListQueryKey({
+          trackId,
+          sortMethod: currentSort
+        })
       })
     }
   })
@@ -850,7 +879,7 @@ export const useReportComment = () => {
       }
 
       queryClient.resetQueries({
-        queryKey: [QUERY_KEYS.comment, commentId]
+        queryKey: getCommentQueryKey(commentId)
       })
       // Decrease the track comment count
       subtractCommentCount(dispatch, queryClient, trackId)
@@ -871,7 +900,10 @@ export const useReportComment = () => {
 
       // Reload data
       queryClient.resetQueries({
-        queryKey: [QUERY_KEYS.trackCommentList, trackId, currentSort]
+        queryKey: getTrackCommentListQueryKey({
+          trackId,
+          sortMethod: currentSort
+        })
       })
     }
   })
@@ -921,7 +953,7 @@ export const useMuteUser = () => {
                   rootComment.replies = rootComment.replies.filter((reply) => {
                     if (reply.userId === mutedUserId) {
                       queryClient.resetQueries({
-                        queryKey: [QUERY_KEYS.comment, reply.id]
+                        queryKey: getCommentQueryKey(reply.id)
                       })
                       return false
                     }
@@ -937,7 +969,7 @@ export const useMuteUser = () => {
                 // Finally if the root comment is by the muted user, remove it
                 if (rootComment?.userId === mutedUserId) {
                   queryClient.resetQueries({
-                    queryKey: [QUERY_KEYS.comment, rootComment.id]
+                    queryKey: getCommentQueryKey(rootComment.id)
                   })
                   return false
                 }
@@ -946,7 +978,7 @@ export const useMuteUser = () => {
             )
             // Rather than track the comment count, we just trigger another query to get the new count (since we poll often anyways)
             queryClient.resetQueries({
-              queryKey: [QUERY_KEYS.trackCommentCount, trackId]
+              queryKey: getTrackCommentCountQueryKey(trackId)
             })
             return newState
           }

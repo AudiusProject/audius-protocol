@@ -73,6 +73,10 @@ export const fetchHandleReservedStatus = async (
   }
 }
 
+export const getHandleReservedStatusQueryKey = (
+  handle: string | null | undefined
+) => [QUERY_KEYS.handleReservedStatus, handle]
+
 /**
  * Hook to check if a handle is reserved on social media platforms
  */
@@ -83,7 +87,7 @@ export const useHandleReservedStatus = (
   const context = useAudiusQueryContext()
 
   return useQuery({
-    queryKey: [QUERY_KEYS.handleReservedStatus, handle],
+    queryKey: getHandleReservedStatusQueryKey(handle),
     queryFn: () => fetchHandleReservedStatus(handle, context),
     staleTime: options?.staleTime,
     enabled: options?.enabled !== false && !!handle

@@ -3,9 +3,11 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 
 import { useAudiusQueryContext } from '~/audius-query/AudiusQueryContext'
 
-import { QUERY_KEYS } from './queryKeys'
 import { useCurrentUserId } from './useCurrentUserId'
-import { useNotificationUnreadCount } from './useNotificationUnreadCount'
+import {
+  getNotificationUnreadCountQueryKey,
+  useNotificationUnreadCount
+} from './useNotificationUnreadCount'
 
 /**
  * Hook to mark all notifications as viewed
@@ -28,7 +30,7 @@ export const useMarkNotificationsAsViewed = () => {
     onMutate: () => {
       // Optimistically set unread count to 0
       queryClient.setQueryData(
-        [QUERY_KEYS.notificationUnreadCount, currentUserId],
+        getNotificationUnreadCountQueryKey(currentUserId),
         0
       )
     }

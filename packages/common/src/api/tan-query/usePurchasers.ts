@@ -14,11 +14,20 @@ import { primeUserData } from './utils/primeUserData'
 
 const PAGE_SIZE = 20
 
-type UsePurchasersArgs = {
+export type UsePurchasersArgs = {
   contentId?: ID | null | undefined
   contentType?: string | undefined
   pageSize?: number
 }
+
+export const getPurchasersQueryKey = (args: UsePurchasersArgs) => [
+  QUERY_KEYS.purchasers,
+  {
+    contentId: args.contentId,
+    contentType: args.contentType,
+    pageSize: args.pageSize
+  }
+]
 
 export const usePurchasers = (
   args: UsePurchasersArgs,
@@ -31,7 +40,7 @@ export const usePurchasers = (
   const dispatch = useDispatch()
 
   return useInfiniteQuery({
-    queryKey: [QUERY_KEYS.purchasers, args],
+    queryKey: getPurchasersQueryKey(args),
     initialPageParam: 0,
     getNextPageParam: (lastPage: User[], allPages) => {
       if (lastPage.length < pageSize) return undefined

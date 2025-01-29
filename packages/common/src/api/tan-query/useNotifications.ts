@@ -152,6 +152,10 @@ const collectEntityIds = (notifications: Notification[]): EntityIds => {
   return { userIds, trackIds, collectionIds }
 }
 
+export const getNotificationsQueryKey = (
+  currentUserId: ID | null | undefined
+) => [QUERY_KEYS.notifications, currentUserId]
+
 /**
  * Hook that returns paginated notifications for the current user.
  * Uses infinite query to support "Load More" functionality.
@@ -162,7 +166,7 @@ export const useNotifications = (options?: QueryOptions) => {
   const { data: currentUserId } = useCurrentUserId()
   const validTypes = useNotificationValidTypes()
   const query = useInfiniteQuery({
-    queryKey: [QUERY_KEYS.notifications, currentUserId],
+    queryKey: getNotificationsQueryKey(currentUserId),
     initialPageParam: null as PageParam,
     queryFn: async ({ pageParam = null }) => {
       const sdk = await audiusSdk()
