@@ -1,7 +1,6 @@
 import { MouseEvent, ReactNode } from 'react'
 
-import { Theme } from '@audius/common/models'
-import { accountSelectors, themeSelectors } from '@audius/common/store'
+import { accountSelectors } from '@audius/common/store'
 import { route } from '@audius/common/utils'
 import {
   Flex,
@@ -18,7 +17,6 @@ import { NavHeaderButton } from './NavHeaderButton'
 import { NotificationsButton } from './NotificationsButton'
 
 const { HOME_PAGE, SETTINGS_PAGE, DASHBOARD_PAGE } = route
-const { getTheme } = themeSelectors
 const { getHasAccount, getIsAccountComplete, getAccountUser } = accountSelectors
 
 const messages = {
@@ -70,7 +68,6 @@ const RestrictedLink = ({
 }
 
 export const NavHeader = () => {
-  const isMatrix = useSelector((state) => getTheme(state) === Theme.MATRIX)
   const accountUser = useSelector(getAccountUser)
 
   return (
@@ -84,19 +81,7 @@ export const NavHeader = () => {
       css={{ minHeight: 58 }}
     >
       <Link to={HOME_PAGE} aria-label={messages.homeLink}>
-        <IconAudiusLogoHorizontalNew
-          color='subdued'
-          size='m'
-          width='auto'
-          css={[
-            {
-              display: 'block'
-            },
-            isMatrix && {
-              '& path': { fill: 'url(#matrixHeaderGradient) !important' }
-            }
-          ]}
-        />
+        <IconAudiusLogoHorizontalNew color='subdued' size='m' width='auto' />
       </Link>
       <Flex justifyContent='center' alignItems='center'>
         {accountUser?.track_count ? (

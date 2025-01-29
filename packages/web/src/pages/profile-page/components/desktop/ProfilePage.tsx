@@ -634,7 +634,7 @@ const ProfilePage = ({
   const { data: currentUserId } = useGetCurrentUserId({})
 
   const { data: mutedUsers } = useGetMutedUsers({
-    userId: currentUserId!
+    userId: currentUserId
   })
 
   const isMutedFromRequest =

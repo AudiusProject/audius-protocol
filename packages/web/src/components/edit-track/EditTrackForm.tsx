@@ -327,6 +327,11 @@ const TrackEditForm = (
   const { onOpen: openWaitforDownload } = useWaitForDownloadModal()
 
   const onClickDownload = useCallback(() => {
+    if (!initialTrackValues.track_id) {
+      console.error('Cannot download track without track ID')
+      return
+    }
+
     openWaitforDownload({
       trackIds: [initialTrackValues.track_id],
       quality: DownloadQuality.ORIGINAL

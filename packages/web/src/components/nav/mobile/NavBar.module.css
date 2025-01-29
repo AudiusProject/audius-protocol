@@ -62,10 +62,6 @@
   transition: all ease-in-out 0.07s;
 }
 
-.matrixLogo path {
-  fill: url(#matrixHeaderGradient) !important;
-}
-
 .logo:active {
   transform: scale(0.93);
 }

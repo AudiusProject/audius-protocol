@@ -9,14 +9,6 @@
   margin-right: 8px;
 }
 
-.iconRobot path {
-  fill: url(#linearGradient-1);
-}
-
-.matrix path {
-  fill: url(#matrixHeaderGradient);
-}
-
 .subHeader {
   padding: var(--harmony-unit-3) var(--harmony-unit-6);
   text-align: left;

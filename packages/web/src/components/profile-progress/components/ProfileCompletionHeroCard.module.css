@@ -26,18 +26,6 @@
   letter-spacing: 0.93px;
 }
 
-.rightContainer {
-  width: 433px;
-  height: 182px;
-  padding: 26px 26px 26px 15px;
-}
-
-@media screen and (max-width: 1200px) {
-  .rightContainer {
-    padding: 8px 8px 8px 15px;
-  }
-}
-
 .completionTextPercentage {
   color: var(--harmony-secondary);
   font-size: 52px;
@@ -45,15 +33,6 @@
   letter-spacing: 1.86px;
   line-height: 32px;
   margin-top: 34px;
-}
-
-.complete {
-  color: var(--harmony-n-600);
-  font-size: 16px;
-  font-weight: 900;
-  letter-spacing: 1.14px;
-  line-height: 18px;
-  margin: 10px 0px 10px;
 }
 
 .dismissButton {
