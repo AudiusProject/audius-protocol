@@ -1,5 +1,6 @@
 import { useCallback, useState } from 'react'
 
+import { useReorderLibrary } from '@audius/common/api'
 import {
   FavoriteSource,
   ID,
@@ -13,7 +14,6 @@ import {
   cacheCollectionsSelectors,
   cacheTracksSelectors,
   collectionsSocialActions,
-  playlistLibraryActions,
   shareModalUIActions
 } from '@audius/common/store'
 import {
@@ -52,7 +52,6 @@ import { usePlaylistPlayingStatus } from './usePlaylistPlayingStatus'
 const { addTrackToPlaylist } = cacheCollectionsActions
 const { getCollection } = cacheCollectionsSelectors
 const { getTrack } = cacheTracksSelectors
-const { reorder } = playlistLibraryActions
 const { requestOpen } = shareModalUIActions
 const { unsaveCollection, unsaveSmartCollection } = collectionsSocialActions
 
@@ -95,6 +94,8 @@ export const CollectionNavItem = (props: CollectionNavItemProps) => {
   const navigate = useNavigate()
 
   const { spacing } = useTheme()
+
+  const { mutate: reorderLibrary } = useReorderLibrary()
 
   const collection = useSelector((state) =>
     getCollection(state, { id: typeof id === 'string' ? null : id })
@@ -195,16 +196,14 @@ export const CollectionNavItem = (props: CollectionNavItemProps) => {
           dispatch(addTrackToPlaylist(draggingId as ID, id))
         }
       } else {
-        dispatch(
-          reorder({
-            draggingId,
-            droppingId: id,
-            draggingKind: kind as PlaylistLibraryKind
-          })
-        )
+        reorderLibrary({
+          draggingId,
+          droppingId: id,
+          draggingKind: kind as PlaylistLibraryKind
+        })
       }
     },
-    [dispatch, id]
+    [dispatch, id, reorderLibrary]
   )
 
   const draggingKind = useSelector(selectDraggingKind)

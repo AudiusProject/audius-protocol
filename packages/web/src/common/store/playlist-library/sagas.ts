@@ -8,12 +8,12 @@ import { getUserId } from '@audius/common/src/store/account/selectors'
 import {
   accountSelectors,
   getContext,
+  getSDK,
   playlistLibraryHelpers
 } from '@audius/common/store'
 import { call, select } from 'typed-redux-saga'
 
 import { watchAddToFolderSaga } from './watchAddToFolderSaga'
-import { watchReorderLibrarySaga } from './watchReorderLibrarySaga'
 
 const { getPlaylistsNotInLibrary, removeFromPlaylistLibrary } =
   playlistLibraryHelpers
@@ -30,6 +30,7 @@ export function* addPlaylistsNotInLibrary() {
   const currentUserId = yield* select(getUserId)
   const queryClient = yield* getContext('queryClient')
   const dispatch = yield* getContext('dispatch')
+  const sdk = yield* getSDK()
   const playlists: { [id: number]: AccountCollection } = yield* select(
     getAccountNavigationPlaylists
   )
@@ -45,6 +46,7 @@ export function* addPlaylistsNotInLibrary() {
     const newContents = [...newEntries, ...library.contents]
     yield* call(
       updatePlaylistLibrary,
+      sdk,
       currentUserId,
       { ...library, contents: newContents },
       queryClient,
@@ -59,9 +61,11 @@ export function* removePlaylistFromLibrary(id: PlaylistLibraryID) {
   const currentUserId = yield* select(getUserId)
   const queryClient = yield* getContext('queryClient')
   const dispatch = yield* getContext('dispatch')
+  const sdk = yield* getSDK()
   const { library: updatedLibrary } = removeFromPlaylistLibrary(library, id)
   yield* call(
     updatePlaylistLibrary,
+    sdk,
     currentUserId,
     updatedLibrary,
     queryClient,
@@ -70,6 +74,6 @@ export function* removePlaylistFromLibrary(id: PlaylistLibraryID) {
 }
 
 export default function sagas() {
-  const sagas = [watchReorderLibrarySaga, watchAddToFolderSaga]
+  const sagas = [watchAddToFolderSaga]
   return sagas
 }

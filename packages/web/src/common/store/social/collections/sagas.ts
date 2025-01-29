@@ -7,6 +7,7 @@ import {
   PlaylistLibrary,
   User
 } from '@audius/common/models'
+import { removeFromPlaylistLibrary } from '@audius/common/src/store/playlist-library/helpers'
 import {
   accountActions,
   accountSelectors,
@@ -307,8 +308,10 @@ export function* saveSmartCollection(
       ...(playlistLibrary?.contents || [])
     ]
   }
+  const sdk = yield* getSDK()
   yield* call(
     updatePlaylistLibrary,
+    sdk,
     userId,
     newPlaylistLibrary,
     queryClient,
@@ -473,14 +476,24 @@ export function* unsaveSmartCollection(
   const playlistLibrary = yield* select(getPlaylistLibrary)
   if (!playlistLibrary) return
 
-  // feature-tan-query TODO: when migrating unsaveSmartCollection to tan-query
-  /*
   const newPlaylistLibrary = removeFromPlaylistLibrary(
     playlistLibrary,
     action.smartCollectionName as SmartCollectionVariant
   ).library
-  yield* put(updatePlaylistLibrary({ playlistLibrary: newPlaylistLibrary }))
-  */
+
+  const sdk = yield* getSDK()
+  const currentUserId = yield* select(getUserId)
+  const queryClient = yield* getContext('queryClient')
+  const dispatch = yield* getContext('dispatch')
+  yield* call(
+    updatePlaylistLibrary,
+    sdk,
+    currentUserId,
+    newPlaylistLibrary,
+    queryClient,
+    dispatch
+  )
+
   const event = make(Name.UNFAVORITE, {
     kind: 'playlist',
     source: action.source,

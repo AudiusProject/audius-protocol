@@ -35,7 +35,7 @@ export const usePlaylistLibrary = (config?: QueryOptions) => {
       return account?.playlist_library ?? ({ contents: [] } as PlaylistLibrary)
     },
     staleTime: config?.staleTime ?? STALE_TIME,
-    enabled: !!config?.enabled && !!currentUserId,
+    enabled: config?.enabled !== false && !!currentUserId,
     ...config
   })
 }

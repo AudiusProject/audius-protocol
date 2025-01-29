@@ -31,13 +31,10 @@ const slice = createSlice({
   name: 'playlist-library',
   initialState,
   reducers: {
-    update: (_state, _action: PayloadAction<UpdatePayload>) => {},
-    reorder: (_state, _action: ReorderAction) => {},
     addToFolder: (_state, _action: AddToFolderAction) => {}
   }
 })
 
-export const { update } = slice.actions
 export const actions = slice.actions
 
 export default slice.reducer

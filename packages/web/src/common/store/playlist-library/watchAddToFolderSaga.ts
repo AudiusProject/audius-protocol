@@ -8,7 +8,8 @@ import {
   toastActions,
   AddToFolderAction,
   CommonState,
-  getContext
+  getContext,
+  getSDK
 } from '@audius/common/store'
 import { takeEvery, select, put, call } from 'typed-redux-saga'
 
@@ -58,6 +59,7 @@ function* addToFolderWorker(action: AddToFolderAction) {
     )
   }
 
+  const sdk = yield* getSDK()
   if (playlistLibrary !== updatedLibrary) {
     yield* put(make(Name.PLAYLIST_LIBRARY_ADD_PLAYLIST_TO_FOLDER, {}))
     const currentUserId = yield* select(getUserId)
@@ -65,6 +67,7 @@ function* addToFolderWorker(action: AddToFolderAction) {
     const dispatch = yield* getContext('dispatch')
     yield* call(
       updatePlaylistLibrary,
+      sdk,
       currentUserId,
       updatedLibrary,
       queryClient,
