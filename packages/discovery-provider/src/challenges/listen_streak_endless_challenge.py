@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 env = shared_config["discprov"]["env"]
 
 base_timedelta = timedelta(days=1)
-if env == "stage":
+if env == "stage" or env == "dev":
     base_timedelta = timedelta(minutes=1)
 
 

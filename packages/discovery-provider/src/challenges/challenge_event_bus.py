@@ -171,9 +171,8 @@ class ChallengeEventBus:
             events_dicts = list(map(self._json_to_event, events_json))
             # Consolidate event types for processing
             # map of {"event_type": [{ user_id: number, block_number: number, extra: {} }]}}
-            event_user_dict: DefaultDict[ChallengeEvent, List[EventMetadata]] = (
-                defaultdict(lambda: [])
-            )
+            event_user_dict: DefaultDict[
+                ChallengeEvent, List[EventMetadata]] = defaultdict(lambda: [])
             for event_dict in events_dicts:
                 event_type = event_dict["event"]
                 event_user_dict[event_type].append(
