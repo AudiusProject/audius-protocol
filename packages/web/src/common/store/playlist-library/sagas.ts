@@ -1,53 +1,24 @@
+import { updatePlaylistLibrary } from '@audius/common/api'
 import {
   PlaylistLibraryID,
   PlaylistIdentifier,
   AccountCollection
 } from '@audius/common/models'
+import { getUserId } from '@audius/common/src/store/account/selectors'
 import {
   accountSelectors,
-  accountActions,
-  playlistLibraryActions,
+  getContext,
   playlistLibraryHelpers
 } from '@audius/common/store'
-import { put, select, takeEvery } from 'typed-redux-saga'
-
-import { waitForWrite } from 'utils/sagaHelpers'
+import { call, select } from 'typed-redux-saga'
 
 import { watchAddToFolderSaga } from './watchAddToFolderSaga'
 import { watchReorderLibrarySaga } from './watchReorderLibrarySaga'
 
-const { update } = playlistLibraryActions
-const {
-  getPlaylistsNotInLibrary,
-  removePlaylistLibraryDuplicates,
-  removeFromPlaylistLibrary
-} = playlistLibraryHelpers
+const { getPlaylistsNotInLibrary, removeFromPlaylistLibrary } =
+  playlistLibraryHelpers
 
-const { getAccountNavigationPlaylists, getAccountUser, getPlaylistLibrary } =
-  accountSelectors
-
-function* watchUpdatePlaylistLibrary() {
-  yield* takeEvery(
-    update.type,
-    function* handleUpdatePlaylistLibrary(action: ReturnType<typeof update>) {
-      yield* waitForWrite()
-      const { playlistLibrary } = action.payload
-
-      const account = yield* select(getAccountUser)
-      if (!account) return
-
-      const updatedPlaylistLibrary =
-        removePlaylistLibraryDuplicates(playlistLibrary)
-
-      yield* put(accountActions.updatePlaylistLibrary(updatedPlaylistLibrary))
-
-      // feature-tan-query TODO: update user playlist_library
-      // yield* fork(updateProfileAsync, {
-      //   metadata: { ...account, playlist_library: updatedPlaylistLibrary }
-      // })
-    }
-  )
-}
+const { getAccountNavigationPlaylists, getPlaylistLibrary } = accountSelectors
 
 /**
  * Goes through the account playlists and adds playlists that are
@@ -56,6 +27,9 @@ function* watchUpdatePlaylistLibrary() {
 export function* addPlaylistsNotInLibrary() {
   let library = yield* select(getPlaylistLibrary)
   if (!library) library = { contents: [] }
+  const currentUserId = yield* select(getUserId)
+  const queryClient = yield* getContext('queryClient')
+  const dispatch = yield* getContext('dispatch')
   const playlists: { [id: number]: AccountCollection } = yield* select(
     getAccountNavigationPlaylists
   )
@@ -69,8 +43,12 @@ export function* addPlaylistsNotInLibrary() {
         }) as PlaylistIdentifier
     )
     const newContents = [...newEntries, ...library.contents]
-    yield* put(
-      update({ playlistLibrary: { ...library, contents: newContents } })
+    yield* call(
+      updatePlaylistLibrary,
+      currentUserId,
+      { ...library, contents: newContents },
+      queryClient,
+      dispatch
     )
   }
 }
@@ -78,15 +56,20 @@ export function* addPlaylistsNotInLibrary() {
 export function* removePlaylistFromLibrary(id: PlaylistLibraryID) {
   const library = yield* select(getPlaylistLibrary)
   if (!library) return
+  const currentUserId = yield* select(getUserId)
+  const queryClient = yield* getContext('queryClient')
+  const dispatch = yield* getContext('dispatch')
   const { library: updatedLibrary } = removeFromPlaylistLibrary(library, id)
-  yield* put(update({ playlistLibrary: updatedLibrary }))
+  yield* call(
+    updatePlaylistLibrary,
+    currentUserId,
+    updatedLibrary,
+    queryClient,
+    dispatch
+  )
 }
 
 export default function sagas() {
-  const sagas = [
-    watchUpdatePlaylistLibrary,
-    watchReorderLibrarySaga,
-    watchAddToFolderSaga
-  ]
+  const sagas = [watchReorderLibrarySaga, watchAddToFolderSaga]
   return sagas
 }

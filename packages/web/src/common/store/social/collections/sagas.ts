@@ -1,3 +1,4 @@
+import { updatePlaylistLibrary } from '@audius/common/api'
 import {
   Name,
   Kind,
@@ -12,8 +13,6 @@ import {
   cacheCollectionsSelectors,
   cacheActions,
   cacheUsersSelectors,
-  playlistLibraryActions,
-  playlistLibraryHelpers,
   collectionsSocialActions as socialActions,
   getContext,
   playlistUpdatesActions,
@@ -41,8 +40,6 @@ import { waitForWrite } from 'utils/sagaHelpers'
 
 import watchCollectionErrors from './errorSagas'
 const { updatedPlaylistViewed } = playlistUpdatesActions
-const { update: updatePlaylistLibrary } = playlistLibraryActions
-const { removeFromPlaylistLibrary } = playlistLibraryHelpers
 const { getUser } = cacheUsersSelectors
 const { getCollections, getCollection } = cacheCollectionsSelectors
 const { getPlaylistLibrary, getUserId, getIsGuestAccount } = accountSelectors
@@ -296,6 +293,9 @@ export function* saveSmartCollection(
     yield* put(make(Name.CREATE_ACCOUNT_OPEN, { source: 'social action' }))
     return
   }
+
+  const queryClient = yield* getContext('queryClient')
+  const dispatch = yield* getContext('dispatch')
   const playlistLibrary = yield* select(getPlaylistLibrary)
   const newPlaylistLibrary: PlaylistLibrary = {
     ...playlistLibrary,
@@ -307,7 +307,13 @@ export function* saveSmartCollection(
       ...(playlistLibrary?.contents || [])
     ]
   }
-  yield* put(updatePlaylistLibrary({ playlistLibrary: newPlaylistLibrary }))
+  yield* call(
+    updatePlaylistLibrary,
+    userId,
+    newPlaylistLibrary,
+    queryClient,
+    dispatch
+  )
 
   const event = make(Name.FAVORITE, {
     kind: 'playlist',
@@ -467,11 +473,14 @@ export function* unsaveSmartCollection(
   const playlistLibrary = yield* select(getPlaylistLibrary)
   if (!playlistLibrary) return
 
+  // feature-tan-query TODO: when migrating unsaveSmartCollection to tan-query
+  /*
   const newPlaylistLibrary = removeFromPlaylistLibrary(
     playlistLibrary,
     action.smartCollectionName as SmartCollectionVariant
   ).library
   yield* put(updatePlaylistLibrary({ playlistLibrary: newPlaylistLibrary }))
+  */
   const event = make(Name.UNFAVORITE, {
     kind: 'playlist',
     source: action.source,

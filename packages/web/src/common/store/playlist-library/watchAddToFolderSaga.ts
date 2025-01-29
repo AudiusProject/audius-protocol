@@ -1,3 +1,4 @@
+import { updatePlaylistLibrary } from '@audius/common/api'
 import { Name, FavoriteSource } from '@audius/common/models'
 import {
   accountSelectors,
@@ -6,16 +7,17 @@ import {
   collectionsSocialActions,
   toastActions,
   AddToFolderAction,
-  CommonState
+  CommonState,
+  getContext
 } from '@audius/common/store'
-import { takeEvery, select, put } from 'typed-redux-saga'
+import { takeEvery, select, put, call } from 'typed-redux-saga'
 
 import { make } from '../analytics/actions'
 const { toast } = toastActions
 
-const { getPlaylistLibrary } = accountSelectors
+const { getPlaylistLibrary, getUserId } = accountSelectors
 const { addPlaylistToFolder, findInPlaylistLibrary } = playlistLibraryHelpers
-const { update, addToFolder } = playlistLibraryActions
+const { addToFolder } = playlistLibraryActions
 const { saveCollection } = collectionsSocialActions
 
 const messages = {
@@ -58,6 +60,15 @@ function* addToFolderWorker(action: AddToFolderAction) {
 
   if (playlistLibrary !== updatedLibrary) {
     yield* put(make(Name.PLAYLIST_LIBRARY_ADD_PLAYLIST_TO_FOLDER, {}))
-    yield* put(update({ playlistLibrary: updatedLibrary }))
+    const currentUserId = yield* select(getUserId)
+    const queryClient = yield* getContext('queryClient')
+    const dispatch = yield* getContext('dispatch')
+    yield* call(
+      updatePlaylistLibrary,
+      currentUserId,
+      updatedLibrary,
+      queryClient,
+      dispatch
+    )
   }
 }

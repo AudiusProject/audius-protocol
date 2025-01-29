@@ -8,6 +8,7 @@ import { getWalletAddresses } from '~/store/account/selectors'
 
 import { QUERY_KEYS } from './queryKeys'
 import { QueryOptions } from './types'
+import { useCurrentUserId } from './useCurrentUserId'
 
 const STALE_TIME = 1000 * 60 * 5 // 5 minutes
 
@@ -16,14 +17,15 @@ const STALE_TIME = 1000 * 60 * 5 // 5 minutes
  */
 export const usePlaylistLibrary = (config?: QueryOptions) => {
   const { audiusSdk } = useAudiusQueryContext()
-  const { currentUser } = useSelector(getWalletAddresses)
+  const { data: currentUserId } = useCurrentUserId()
+  const { currentUser: wallet } = useSelector(getWalletAddresses)
 
   return useQuery({
-    queryKey: [QUERY_KEYS.playlistLibrary, currentUser],
+    queryKey: [QUERY_KEYS.playlistLibrary, currentUserId],
     queryFn: async () => {
       const sdk = await audiusSdk()
       const { data } = await sdk.full.users.getUserAccount({
-        wallet: currentUser!
+        wallet: wallet!
       })
       if (!data) {
         console.warn('Missing user from account response')
@@ -33,6 +35,7 @@ export const usePlaylistLibrary = (config?: QueryOptions) => {
       return account?.playlist_library ?? ({ contents: [] } as PlaylistLibrary)
     },
     staleTime: config?.staleTime ?? STALE_TIME,
+    enabled: !!config?.enabled && !!currentUserId,
     ...config
   })
 }
