@@ -12,6 +12,11 @@ import { QUERY_KEYS } from './queryKeys'
 import { QueryOptions } from './types'
 import { useCurrentUserId } from './useCurrentUserId'
 
+export const getUserByHandleQueryKey = (handle: string | null | undefined) => [
+  QUERY_KEYS.userByHandle,
+  handle
+]
+
 export const useUserByHandle = (
   handle: string | null | undefined,
   options?: QueryOptions
@@ -22,7 +27,7 @@ export const useUserByHandle = (
   const { data: currentUserId } = useCurrentUserId()
 
   return useQuery({
-    queryKey: [QUERY_KEYS.userByHandle, handle],
+    queryKey: getUserByHandleQueryKey(handle),
     queryFn: async () => {
       if (!handle) return null
       const sdk = await audiusSdk()

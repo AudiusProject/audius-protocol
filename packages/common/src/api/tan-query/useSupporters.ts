@@ -18,6 +18,11 @@ type UseSupportersArgs = {
   pageSize?: number
 }
 
+export const getSupportersQueryKey = (
+  userId: ID | null | undefined,
+  pageSize: number
+) => [QUERY_KEYS.supporters, userId, pageSize]
+
 export const useSupporters = (
   { userId, pageSize = DEFAULT_PAGE_SIZE }: UseSupportersArgs,
   options?: QueryOptions
@@ -28,7 +33,7 @@ export const useSupporters = (
   const dispatch = useDispatch()
 
   return useInfiniteQuery({
-    queryKey: [QUERY_KEYS.supporters, userId, pageSize],
+    queryKey: getSupportersQueryKey(userId, pageSize),
     initialPageParam: 0,
     getNextPageParam: (lastPage, allPages) => {
       if (lastPage.length < pageSize) return undefined

@@ -14,6 +14,11 @@ import { removeNullable } from '~/utils/typeUtils'
 import { QUERY_KEYS } from './queryKeys'
 import { QueryOptions } from './types'
 
+export const getTracksQueryKey = (trackIds: ID[] | null | undefined) => [
+  QUERY_KEYS.tracks,
+  trackIds
+]
+
 export const useTracks = (
   trackIds: ID[] | null | undefined,
   options?: QueryOptions
@@ -23,7 +28,7 @@ export const useTracks = (
   const dispatch = useDispatch()
 
   return useQuery({
-    queryKey: [QUERY_KEYS.tracks, trackIds],
+    queryKey: getTracksQueryKey(trackIds),
     queryFn: async () => {
       const encodedIds = trackIds
         ?.map((id) => OptionalId.parse(id))

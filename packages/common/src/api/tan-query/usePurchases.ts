@@ -26,8 +26,8 @@ export type GetPurchaseListArgs = {
 
 export const getPurchasesQueryKey = (args: GetPurchaseListArgs) => [
   QUERY_KEYS.purchases,
+  args.userId,
   {
-    userId: args.userId,
     sortMethod: args.sortMethod,
     sortDirection: args.sortDirection,
     pageSize: args.pageSize

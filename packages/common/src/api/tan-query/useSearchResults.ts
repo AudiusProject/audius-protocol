@@ -16,6 +16,9 @@ import { Genre, formatMusicalKey } from '~/utils'
 
 import { QUERY_KEYS } from './queryKeys'
 import { QueryOptions } from './types'
+import { getCollectionQueryKey } from './useCollection'
+import { getTrackQueryKey } from './useTrack'
+import { getUserQueryKey } from './useUser'
 
 export type SearchCategory = 'all' | 'tracks' | 'albums' | 'playlists' | 'users'
 
@@ -54,6 +57,23 @@ const getMinMaxFromBpm = (bpm?: string) => {
   return [bufferedBpmMin, bufferedBpmMax]
 }
 
+export const getSearchResultsQueryKey = ({
+  currentUserId,
+  query,
+  category,
+  limit,
+  offset,
+  source,
+  sortMethod,
+  disableAnalytics,
+  ...filters
+}: SearchArgs) => [
+  QUERY_KEYS.search,
+  query,
+  { category, limit, offset, source, sortMethod, disableAnalytics },
+  { ...filters }
+]
+
 export const useSearchResults = (
   {
     currentUserId,
@@ -71,10 +91,17 @@ export const useSearchResults = (
   const { audiusSdk, getFeatureEnabled, analytics } = useAudiusQueryContext()
   const queryClient = useQueryClient()
   const dispatch = useDispatch()
-  const queryArgs = { category, limit, offset, sortMethod, ...filters }
 
   return useQuery({
-    queryKey: [QUERY_KEYS.search, query, queryArgs],
+    queryKey: getSearchResultsQueryKey({
+      currentUserId,
+      query,
+      category,
+      limit,
+      offset,
+      sortMethod,
+      ...filters
+    }),
     queryFn: async () => {
       const isUSDCEnabled = await getFeatureEnabled(FeatureFlags.USDC_PURCHASES)
 
@@ -152,7 +179,7 @@ export const useSearchResults = (
         if (tracks?.length) {
           entries[Kind.TRACKS] = {}
           tracks.forEach((track) => {
-            queryClient.setQueryData([QUERY_KEYS.track, track.track_id], track)
+            queryClient.setQueryData(getTrackQueryKey(track.track_id), track)
             entries[Kind.TRACKS]![track.track_id] = track
           })
         }
@@ -160,7 +187,7 @@ export const useSearchResults = (
         if (users?.length) {
           entries[Kind.USERS] = {}
           users.forEach((user) => {
-            queryClient.setQueryData([QUERY_KEYS.user, user.user_id], user)
+            queryClient.setQueryData(getUserQueryKey(user.user_id), user)
             entries[Kind.USERS]![user.user_id] = user
           })
         }
@@ -169,7 +196,7 @@ export const useSearchResults = (
           entries[Kind.COLLECTIONS] = {}
           albums.forEach((album) => {
             queryClient.setQueryData(
-              [QUERY_KEYS.collection, album.playlist_id],
+              getCollectionQueryKey(album.playlist_id),
               album
             )
             entries[Kind.COLLECTIONS]![album.playlist_id] = album
@@ -180,7 +207,7 @@ export const useSearchResults = (
           if (!entries[Kind.COLLECTIONS]) entries[Kind.COLLECTIONS] = {}
           playlists.forEach((playlist) => {
             queryClient.setQueryData(
-              [QUERY_KEYS.collection, playlist.playlist_id],
+              getCollectionQueryKey(playlist.playlist_id),
               playlist
             )
             entries[Kind.COLLECTIONS]![playlist.playlist_id] = playlist

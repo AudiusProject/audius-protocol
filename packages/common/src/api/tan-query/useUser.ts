@@ -13,6 +13,11 @@ import { EntriesByKind } from '~/store/cache/types'
 import { QUERY_KEYS } from './queryKeys'
 import { QueryOptions } from './types'
 
+export const getUserQueryKey = (userId: ID | null | undefined) => [
+  QUERY_KEYS.user,
+  userId
+]
+
 export const useUser = (
   userId: ID | null | undefined,
   options?: QueryOptions
@@ -23,7 +28,7 @@ export const useUser = (
   const currentUserId = useSelector(getUserId)
 
   return useQuery({
-    queryKey: [QUERY_KEYS.user, userId],
+    queryKey: getUserQueryKey(userId),
     queryFn: async () => {
       const sdk = await audiusSdk()
       const { data } = await sdk.full.users.getUser({

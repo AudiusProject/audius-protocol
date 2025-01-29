@@ -19,6 +19,17 @@ type UseTrackRepostsArgs = {
   pageSize?: number
 }
 
+export const getTrackRepostsQueryKey = (args: UseTrackRepostsArgs) => {
+  const { trackId, pageSize = DEFAULT_PAGE_SIZE } = args
+  return [
+    QUERY_KEYS.reposts,
+    trackId,
+    {
+      pageSize
+    }
+  ]
+}
+
 export const useTrackReposts = (
   { trackId, pageSize = DEFAULT_PAGE_SIZE }: UseTrackRepostsArgs,
   options?: QueryOptions
@@ -29,7 +40,7 @@ export const useTrackReposts = (
   const dispatch = useDispatch()
 
   return useInfiniteQuery({
-    queryKey: [QUERY_KEYS.reposts, trackId, pageSize],
+    queryKey: getTrackRepostsQueryKey({ trackId, pageSize }),
     initialPageParam: 0,
     getNextPageParam: (lastPage: User[], allPages) => {
       if (lastPage.length < pageSize) return undefined

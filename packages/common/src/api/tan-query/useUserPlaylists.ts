@@ -17,6 +17,18 @@ type GetPlaylistsOptions = {
   offset?: number
 }
 
+export const getUserPlaylistsQueryKey = (params: GetPlaylistsOptions) => {
+  const { userId, limit, offset } = params
+  return [
+    QUERY_KEYS.userPlaylists,
+    userId,
+    {
+      limit,
+      offset
+    }
+  ]
+}
+
 export const useUserPlaylists = (
   params: GetPlaylistsOptions,
   options?: QueryOptions
@@ -28,7 +40,7 @@ export const useUserPlaylists = (
   const dispatch = useDispatch()
 
   return useQuery({
-    queryKey: [QUERY_KEYS.userPlaylists, userId, limit, offset],
+    queryKey: getUserPlaylistsQueryKey(params),
     queryFn: async () => {
       if (!userId) return []
 

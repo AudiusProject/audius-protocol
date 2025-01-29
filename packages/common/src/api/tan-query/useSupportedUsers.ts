@@ -17,6 +17,11 @@ type UseSupportedUsersArgs = {
   pageSize?: number
 }
 
+export const getSupportedUsersQueryKey = (
+  userId: ID | null | undefined,
+  pageSize: number
+) => [QUERY_KEYS.supportedUsers, userId, pageSize]
+
 export const useSupportedUsers = (
   { userId, pageSize = SUPPORTING_PAGINATION_SIZE }: UseSupportedUsersArgs,
   options?: QueryOptions
@@ -27,7 +32,7 @@ export const useSupportedUsers = (
   const dispatch = useDispatch()
 
   return useInfiniteQuery({
-    queryKey: [QUERY_KEYS.supportedUsers, userId, pageSize],
+    queryKey: getSupportedUsersQueryKey(userId, pageSize),
     initialPageParam: 0,
     getNextPageParam: (lastPage, allPages) => {
       if (lastPage.length < pageSize) return undefined

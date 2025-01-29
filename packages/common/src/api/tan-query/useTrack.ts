@@ -14,6 +14,11 @@ import { QueryOptions } from './types'
 
 const STALE_TIME = Infinity
 
+export const getTrackQueryKey = (trackId: ID | null | undefined) => [
+  QUERY_KEYS.track,
+  trackId
+]
+
 export const useTrack = (
   trackId: ID | null | undefined,
   options?: QueryOptions
@@ -23,7 +28,7 @@ export const useTrack = (
   const dispatch = useDispatch()
 
   return useQuery({
-    queryKey: [QUERY_KEYS.track, trackId],
+    queryKey: getTrackQueryKey(trackId),
     queryFn: async () => {
       const sdk = await audiusSdk()
       const { data } = await sdk.full.tracks.getTrack({

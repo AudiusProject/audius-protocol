@@ -19,6 +19,22 @@ type GetTracksByUserHandleArgs = {
   offset?: number
 }
 
+export const getUserTracksByHandleQueryKey = (
+  args: GetTracksByUserHandleArgs
+) => {
+  const { handle, filterTracks = 'public', sort = 'date', limit, offset } = args
+  return [
+    QUERY_KEYS.userTracksByHandle,
+    handle,
+    {
+      filterTracks,
+      sort,
+      limit,
+      offset
+    }
+  ]
+}
+
 export const useUserTracksByHandle = (
   args: GetTracksByUserHandleArgs,
   options?: QueryOptions
@@ -31,14 +47,7 @@ export const useUserTracksByHandle = (
   const { handle, filterTracks = 'public', sort = 'date', limit, offset } = args
 
   return useQuery({
-    queryKey: [
-      QUERY_KEYS.userTracksByHandle,
-      handle,
-      filterTracks,
-      sort,
-      limit,
-      offset
-    ],
+    queryKey: getUserTracksByHandleQueryKey(args),
     queryFn: async () => {
       const sdk = await audiusSdk()
       const { data = [] } = await sdk.full.users.getTracksByUserHandle({

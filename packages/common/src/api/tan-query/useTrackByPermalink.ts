@@ -13,6 +13,10 @@ import { primeTrackData } from './utils/primeTrackData'
 // If the user edits a stale track, the optimistic update fails
 const STALE_TIME = Infinity
 
+export const getTrackByPermalinkQueryKey = (
+  permalink: string | undefined | null
+) => [QUERY_KEYS.trackByPermalink, permalink]
+
 export const useTrackByPermalink = (
   permalink: string | undefined | null,
   options?: QueryOptions
@@ -23,11 +27,11 @@ export const useTrackByPermalink = (
   const currentUserId = useSelector(getUserId)
 
   const isMutating = queryClient.isMutating({
-    mutationKey: [QUERY_KEYS.trackByPermalink, permalink]
+    mutationKey: getTrackByPermalinkQueryKey(permalink)
   })
 
   return useQuery({
-    queryKey: [QUERY_KEYS.trackByPermalink, permalink],
+    queryKey: getTrackByPermalinkQueryKey(permalink),
     queryFn: async () => {
       const sdk = await audiusSdk()
       const { data = [] } = await sdk.full.tracks.getBulkTracks({

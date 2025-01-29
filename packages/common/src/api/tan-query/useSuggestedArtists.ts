@@ -6,11 +6,13 @@ import { QUERY_KEYS } from './queryKeys'
 import { QueryOptions } from './types'
 import { useUsers } from './useUsers'
 
+export const getSuggestedArtistsQueryKey = () => [QUERY_KEYS.suggestedArtists]
+
 export const useSuggestedArtists = (options?: QueryOptions) => {
   const { env, fetch } = useAudiusQueryContext()
 
   const { data: suggestedIds } = useQuery<number[]>({
-    queryKey: [QUERY_KEYS.suggestedArtists, 'ids'],
+    queryKey: getSuggestedArtistsQueryKey(),
     queryFn: async () => {
       const response = await fetch(env.SUGGESTED_FOLLOW_HANDLES!)
       const suggestedArtists = await response.json()

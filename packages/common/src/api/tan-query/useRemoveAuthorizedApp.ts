@@ -8,10 +8,15 @@ import { ID } from '~/models'
 import { DeveloperApp } from './developerApps'
 import { QUERY_KEYS } from './queryKeys'
 
-type UseRemoveAuthorizedAppArgs = {
+export type UseRemoveAuthorizedAppArgs = {
   apiKey: string
   userId: ID
 }
+
+export const getRemoveAuthorizedAppQueryKey = (userId: ID) => [
+  QUERY_KEYS.authorizedApps,
+  userId
+]
 
 export const useRemoveAuthorizedApp = () => {
   const { audiusSdk } = useAudiusQueryContext()
@@ -31,11 +36,11 @@ export const useRemoveAuthorizedApp = () => {
       const { apiKey, userId } = args
 
       queryClient.invalidateQueries({
-        queryKey: [QUERY_KEYS.authorizedApps, args.userId]
+        queryKey: getRemoveAuthorizedAppQueryKey(userId)
       })
 
       const previousApps: DeveloperApp[] | undefined = queryClient.getQueryData(
-        [QUERY_KEYS.authorizedApps, userId]
+        getRemoveAuthorizedAppQueryKey(userId)
       )
 
       if (previousApps === undefined) {

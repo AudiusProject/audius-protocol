@@ -10,6 +10,7 @@ import {
   trendingUndergroundPageLineupSelectors
 } from '~/store/pages'
 
+import { QUERY_KEYS } from './queryKeys'
 import { QueryOptions } from './types'
 import { useCurrentUserId } from './useCurrentUserId'
 import { loadNextPage } from './utils/infiniteQueryLoadNextPage'
@@ -22,6 +23,10 @@ type UseTrendingUndergroundArgs = {
   pageSize?: number
 }
 
+export const getTrendingUndergroundQueryKey = ({
+  pageSize
+}: UseTrendingUndergroundArgs) => [QUERY_KEYS.trendingUnderground, { pageSize }]
+
 export const useTrendingUnderground = (
   { pageSize = DEFAULT_PAGE_SIZE }: UseTrendingUndergroundArgs = {},
   config?: QueryOptions
@@ -32,7 +37,7 @@ export const useTrendingUnderground = (
   const dispatch = useDispatch()
 
   const queryData = useInfiniteQuery({
-    queryKey: ['trendingUnderground', pageSize],
+    queryKey: getTrendingUndergroundQueryKey({ pageSize }),
     initialPageParam: 0,
     getNextPageParam: (lastPage, allPages) => {
       if (lastPage.length < pageSize) return undefined

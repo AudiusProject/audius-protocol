@@ -69,5 +69,8 @@ export const QUERY_KEYS = {
   remixes: 'remixes',
   premiumTracks: 'premiumTracks',
   profileReposts: 'profileReposts',
-  profileTracks: 'profileTracks'
+  profileTracks: 'profileTracks',
+  trendingIds: 'trendingIds',
+  trendingPlaylists: 'trendingPlaylists',
+  trendingUnderground: 'trendingUnderground'
 } as const
