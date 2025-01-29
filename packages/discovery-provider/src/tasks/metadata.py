@@ -261,6 +261,17 @@ encrypted_email_metadata_format = {
     "access_grants": None,
 }
 
+add_associated_wallet_metadata_format = {
+    "wallet_address": None,
+    "chain": None,
+    "signature": None,
+}
+
+remove_associated_wallet_metadata_format = {
+    "wallet_address": None,
+    "chain": None,
+}
+
 
 class PlaylistMetadata(TypedDict):
     playlist_contents: Optional[Any]

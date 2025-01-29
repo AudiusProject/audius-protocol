@@ -13,7 +13,9 @@ from integration_tests.challenges.index_helpers import UpdateTask
 from integration_tests.utils import populate_mock_db, populate_mock_db_blocks
 from src.challenges.challenge_event import ChallengeEvent
 from src.models.indexing.cid_data import CIDData
+from src.models.users.associated_wallet import AssociatedWallet
 from src.models.users.user import User
+from src.queries.get_balances import IMMEDIATE_REFRESH_REDIS_PREFIX
 from src.solana.solana_client_manager import SolanaClientManager
 from src.tasks.entity_manager.entities.user import UserEventMetadata, update_user_events
 from src.tasks.entity_manager.entity_manager import entity_manager_update
@@ -1466,3 +1468,519 @@ def test_index_adding_spl_usdc_payout_wallet(app, mocker):
             user.spl_usdc_payout_wallet
             == "7MjEvdyxduYPYwikWovAJ9TjLkzgdW3DiihysYTTN4up"
         )
+
+
+def test_add_associated_wallet(app, mocker):
+    """Tests adding associated wallets with valid and invalid signatures"""
+    bus_mock = set_patches(mocker)
+
+    redis_mock = mocker.Mock()
+    redis_mock.sadd = mocker.Mock()
+
+    with app.app_context():
+        db = get_db()
+        web3 = Web3()
+        update_task = UpdateTask(web3, bus_mock, redis=redis_mock)
+
+    entities = {
+        "users": [
+            {
+                "user_id": 1,
+                "handle": "britneyspores",
+                "wallet": "user1wallet",
+            },
+        ]
+    }
+
+    populate_mock_db(db, entities)
+
+    # Test data for adding ETH wallet
+    eth_wallet = "0x1234567890123456789012345678901234567890"
+    eth_signature = "0xvalid_signature"  # Mock signature
+    eth_metadata = {
+        "chain": "eth",
+        "wallet_address": eth_wallet,
+        "signature": eth_signature,
+    }
+
+    # Test data for adding SOL wallet
+    sol_wallet = "DxMWXrYWxYGgAqNxqzwCd5zyGFn9bGF1pBBCDrQArYox"
+    sol_signature = "0xvalid_signature"  # Mock signature
+    sol_metadata = {
+        "chain": "sol",
+        "wallet_address": sol_wallet,
+        "signature": sol_signature,
+    }
+
+    # Invalid signature test data
+    invalid_eth_wallet = "0x2345678901234567890123456789012345678901"
+    invalid_eth_metadata = {
+        "chain": "eth",
+        "wallet_address": invalid_eth_wallet,
+        "signature": "0xinvalid_signature",
+    }
+
+    tx_receipts = {
+        "AddEthWalletTx": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": "",
+                        "_entityType": "AssociatedWallet",
+                        "_userId": 1,
+                        "_action": "Create",
+                        "_metadata": json.dumps({"cid": "", "data": eth_metadata}),
+                        "_signer": "user1wallet",
+                    }
+                )
+            },
+        ],
+        "AddSolWalletTx": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": "",
+                        "_entityType": "AssociatedWallet",
+                        "_userId": 1,
+                        "_action": "Create",
+                        "_metadata": json.dumps({"cid": "", "data": sol_metadata}),
+                        "_signer": "user1wallet",
+                    }
+                )
+            },
+        ],
+        "AddInvalidSignatureTx": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": "",
+                        "_entityType": "AssociatedWallet",
+                        "_userId": 1,
+                        "_action": "Create",
+                        "_metadata": json.dumps(
+                            {"cid": "", "data": invalid_eth_metadata}
+                        ),
+                        "_signer": "user1wallet",
+                    }
+                )
+            },
+        ],
+    }
+
+    entity_manager_txs = [
+        AttributeDict({"transactionHash": update_task.web3.to_bytes(text=tx_receipt)})
+        for tx_receipt in tx_receipts
+    ]
+
+    def get_events_side_effect(_, tx_receipt):
+        return tx_receipts[tx_receipt["transactionHash"].decode("utf-8")]
+
+    # Mock signature validation
+    def mock_validate_signature(chain, web3, user_id, wallet, signature):
+        if signature == "0xvalid_signature":
+            return True
+        return False
+
+    mocker.patch(
+        "src.tasks.entity_manager.entities.user.validate_signature",
+        side_effect=mock_validate_signature,
+    )
+
+    with db.scoped_session() as session:
+        # Index transactions
+        entity_manager_update(
+            update_task,
+            session,
+            entity_manager_txs,
+            block_number=0,
+            block_timestamp=BLOCK_DATETIME.timestamp(),
+            block_hash=hex(0),
+        )
+
+        # Verify results
+        eth_wallet_record = (
+            session.query(AssociatedWallet)
+            .filter(
+                AssociatedWallet.user_id == 1,
+                AssociatedWallet.wallet == eth_wallet,
+                AssociatedWallet.chain == "eth",
+            )
+            .first()
+        )
+        assert eth_wallet_record is not None
+        assert eth_wallet_record.is_current
+        assert not eth_wallet_record.is_delete
+
+        sol_wallet_record = (
+            session.query(AssociatedWallet)
+            .filter(
+                AssociatedWallet.user_id == 1,
+                AssociatedWallet.wallet == sol_wallet,
+                AssociatedWallet.chain == "sol",
+            )
+            .first()
+        )
+        assert sol_wallet_record is not None
+        assert sol_wallet_record.is_current
+        assert not sol_wallet_record.is_delete
+
+        # Invalid signature wallet should not exist
+        invalid_wallet_record = (
+            session.query(AssociatedWallet)
+            .filter(
+                AssociatedWallet.user_id == 1,
+                AssociatedWallet.wallet == invalid_eth_wallet,
+                AssociatedWallet.chain == "eth",
+            )
+            .first()
+        )
+        assert invalid_wallet_record is None
+
+        # Verify balance refresh was called
+        redis_mock.sadd.assert_called_with(IMMEDIATE_REFRESH_REDIS_PREFIX, 1)
+
+
+def test_add_existing_associated_wallet(app, mocker):
+    """Tests adding a wallet that already exists"""
+    bus_mock = set_patches(mocker)
+
+    redis_mock = mocker.Mock()
+    redis_mock.sadd = mocker.Mock()
+
+    # setup db and mocked txs
+    with app.app_context():
+        db = get_db()
+        web3 = Web3()
+        update_task = UpdateTask(web3, bus_mock, redis=redis_mock)
+
+    eth_wallet = "0x1234567890123456789012345678901234567890"
+    eth_signature = "0xvalid_signature"  # Mock signature
+    eth_metadata = {
+        "chain": "eth",
+        "wallet_address": eth_wallet,
+        "signature": eth_signature,
+    }
+
+    tx_receipts = {
+        "AddExistingWalletTx": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": "",
+                        "_entityType": "AssociatedWallet",
+                        "_userId": 1,
+                        "_action": "Create",
+                        "_metadata": json.dumps({"cid": "", "data": eth_metadata}),
+                        "_signer": "user1wallet",
+                    }
+                )
+            },
+        ],
+    }
+
+    entity_manager_txs = [
+        AttributeDict({"transactionHash": update_task.web3.to_bytes(text=tx_receipt)})
+        for tx_receipt in tx_receipts
+    ]
+
+    def get_events_side_effect(_, tx_receipt):
+        return tx_receipts[tx_receipt["transactionHash"].decode("utf-8")]
+
+    mocker.patch(
+        "src.tasks.entity_manager.entity_manager.get_entity_manager_events_tx",
+        side_effect=get_events_side_effect,
+        autospec=True,
+    )
+    mocker.patch(
+        "src.tasks.entity_manager.entities.user.validate_signature",
+        return_value=True,
+    )
+
+    # Create existing wallet association
+    entities = {
+        "users": [
+            {
+                "user_id": 1,
+                "handle": "user-1",
+                "wallet": "user1wallet",
+            },
+        ],
+        "associated_wallets": [
+            {
+                "user_id": 1,
+                "wallet": eth_wallet,
+                "chain": "eth",
+                "is_current": True,
+                "is_delete": False,
+                "blocknumber": 0,
+                "blockhash": hex(0),
+            }
+        ],
+    }
+    populate_mock_db(db, entities)
+
+    with db.scoped_session() as session:
+        # Verify initial state
+        initial_wallet = (
+            session.query(AssociatedWallet)
+            .filter(
+                AssociatedWallet.user_id == 1,
+                AssociatedWallet.wallet == eth_wallet,
+                AssociatedWallet.chain == "eth",
+            )
+            .first()
+        )
+        assert initial_wallet is not None
+        assert initial_wallet.is_current
+        assert not initial_wallet.is_delete
+        initial_blockhash = initial_wallet.blockhash
+        initial_blocknumber = initial_wallet.blocknumber
+
+        # Index transactions
+        total_changes, _ = entity_manager_update(
+            update_task,
+            session,
+            entity_manager_txs,
+            block_number=1,
+            block_timestamp=BLOCK_DATETIME.timestamp(),
+            block_hash=hex(1),
+        )
+
+        # Verify no changes were made
+        assert total_changes == 0
+
+        # Verify the wallet was not modified
+        updated_wallet = (
+            session.query(AssociatedWallet)
+            .filter(
+                AssociatedWallet.user_id == 1,
+                AssociatedWallet.wallet == eth_wallet,
+                AssociatedWallet.chain == "eth",
+            )
+            .first()
+        )
+        assert updated_wallet is not None
+        assert updated_wallet.is_current
+        assert not updated_wallet.is_delete
+        assert updated_wallet.blockhash == initial_blockhash
+        assert updated_wallet.blocknumber == initial_blocknumber
+
+        # Verify balance refresh was not called
+        redis_mock.sadd.assert_not_called()
+
+
+def test_remove_associated_wallet(app, mocker):
+    """Tests removing an existing associated wallet"""
+    bus_mock = set_patches(mocker)
+
+    redis_mock = mocker.Mock()
+    redis_mock.sadd = mocker.Mock()
+
+    # setup db and mocked txs
+    with app.app_context():
+        db = get_db()
+        web3 = Web3()
+        update_task = UpdateTask(web3, bus_mock, redis=redis_mock)
+
+    eth_wallet = "0x1234567890123456789012345678901234567890"
+
+    remove_metadata = {
+        "chain": "eth",
+        "wallet_address": eth_wallet,
+    }
+
+    tx_receipts = {
+        "RemoveWalletTx": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": "",
+                        "_entityType": "AssociatedWallet",
+                        "_userId": 1,
+                        "_action": "Delete",
+                        "_metadata": json.dumps({"cid": "", "data": remove_metadata}),
+                        "_signer": "user1wallet",
+                    }
+                )
+            },
+        ],
+    }
+
+    entity_manager_txs = [
+        AttributeDict({"transactionHash": update_task.web3.to_bytes(text=tx_receipt)})
+        for tx_receipt in tx_receipts
+    ]
+
+    def get_events_side_effect(_, tx_receipt):
+        return tx_receipts[tx_receipt["transactionHash"].decode("utf-8")]
+
+    mocker.patch(
+        "src.tasks.entity_manager.entity_manager.get_entity_manager_events_tx",
+        side_effect=get_events_side_effect,
+        autospec=True,
+    )
+
+    # Create existing wallet association
+    entities = {
+        "users": [
+            {
+                "user_id": 1,
+                "handle": "user-1",
+                "wallet": "user1wallet",
+            },
+        ],
+        "associated_wallets": [
+            {
+                "user_id": 1,
+                "wallet": eth_wallet,
+                "chain": "eth",
+                "is_current": True,
+                "is_delete": False,
+                "blocknumber": 0,
+                "blockhash": hex(0),
+            }
+        ],
+    }
+    populate_mock_db(db, entities)
+
+    with db.scoped_session() as session:
+        # Verify initial state
+        initial_wallet = (
+            session.query(AssociatedWallet)
+            .filter(
+                AssociatedWallet.user_id == 1,
+                AssociatedWallet.wallet == eth_wallet,
+                AssociatedWallet.chain == "eth",
+            )
+            .first()
+        )
+        assert initial_wallet is not None
+        assert initial_wallet.is_current
+        assert not initial_wallet.is_delete
+
+        # Index transactions
+        total_changes, _ = entity_manager_update(
+            update_task,
+            session,
+            entity_manager_txs,
+            block_number=1,
+            block_timestamp=BLOCK_DATETIME.timestamp(),
+            block_hash=hex(1),
+        )
+
+        # Verify the wallet was removed
+        removed_wallet = (
+            session.query(AssociatedWallet)
+            .filter(
+                AssociatedWallet.user_id == 1,
+                AssociatedWallet.wallet == eth_wallet,
+                AssociatedWallet.chain == "eth",
+            )
+            .first()
+        )
+        assert removed_wallet is None
+
+        # Verify balance refresh was called
+        redis_mock.sadd.assert_called_once_with(IMMEDIATE_REFRESH_REDIS_PREFIX, 1)
+
+
+def test_remove_nonexistent_associated_wallet(app, mocker):
+    """Tests attempting to remove a nonexistent associated wallet"""
+    bus_mock = set_patches(mocker)
+
+    redis_mock = mocker.Mock()
+    redis_mock.sadd = mocker.Mock()
+
+    # setup db and mocked txs
+    with app.app_context():
+        db = get_db()
+        web3 = Web3()
+        update_task = UpdateTask(web3, bus_mock, redis=redis_mock)
+
+    nonexistent_wallet = "0x9876543210987654321098765432109876543210"
+
+    remove_metadata = {
+        "chain": "eth",
+        "wallet_address": nonexistent_wallet,
+    }
+
+    tx_receipts = {
+        "RemoveNonexistentWalletTx": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": "",
+                        "_entityType": "AssociatedWallet",
+                        "_userId": 1,
+                        "_action": "Delete",
+                        "_metadata": json.dumps({"cid": "", "data": remove_metadata}),
+                        "_signer": "user1wallet",
+                    }
+                )
+            },
+        ],
+    }
+
+    entity_manager_txs = [
+        AttributeDict({"transactionHash": update_task.web3.to_bytes(text=tx_receipt)})
+        for tx_receipt in tx_receipts
+    ]
+
+    def get_events_side_effect(_, tx_receipt):
+        return tx_receipts[tx_receipt["transactionHash"].decode("utf-8")]
+
+    mocker.patch(
+        "src.tasks.entity_manager.entity_manager.get_entity_manager_events_tx",
+        side_effect=get_events_side_effect,
+        autospec=True,
+    )
+
+    # Create user but no wallet associations
+    entities = {
+        "users": [
+            {
+                "user_id": 1,
+                "handle": "user-1",
+                "wallet": "user1wallet",
+            },
+        ],
+    }
+    populate_mock_db(db, entities)
+
+    with db.scoped_session() as session:
+        # Verify initial state - wallet should not exist
+        initial_wallet = (
+            session.query(AssociatedWallet)
+            .filter(
+                AssociatedWallet.user_id == 1,
+                AssociatedWallet.wallet == nonexistent_wallet,
+                AssociatedWallet.chain == "eth",
+            )
+            .first()
+        )
+        assert initial_wallet is None
+
+        # Index transactions
+        total_changes, _ = entity_manager_update(
+            update_task,
+            session,
+            entity_manager_txs,
+            block_number=1,
+            block_timestamp=BLOCK_DATETIME.timestamp(),
+            block_hash=hex(1),
+        )
+
+        # Verify wallet still doesn't exist
+        nonexistent_wallet_record = (
+            session.query(AssociatedWallet)
+            .filter(
+                AssociatedWallet.user_id == 1,
+                AssociatedWallet.wallet == nonexistent_wallet,
+                AssociatedWallet.chain == "eth",
+            )
+            .first()
+        )
+        assert nonexistent_wallet_record is None
+
+        # Verify balance refresh was not called
+        redis_mock.sadd.assert_not_called()
