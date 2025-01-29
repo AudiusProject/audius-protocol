@@ -4,7 +4,6 @@ import { merge } from 'lodash'
 
 import { userMetadataToSdk } from '~/adapters/user'
 import { useAudiusQueryContext } from '~/audius-query'
-import { ID } from '~/models'
 import { Feature } from '~/models/ErrorReporting'
 import { UserMetadata, WriteableUserMetadata } from '~/models/User'
 import { dataURLtoFile } from '~/utils'

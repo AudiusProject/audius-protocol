@@ -21,7 +21,6 @@ import {
   useCurrentUserId
 } from '..'
 
-import { QUERY_KEYS } from './queryKeys'
 import { primeCollectionData } from './utils/primeCollectionData'
 
 type MutationContext = {
