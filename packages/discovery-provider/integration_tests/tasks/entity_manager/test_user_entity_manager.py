@@ -1575,6 +1575,12 @@ def test_add_associated_wallet(app, mocker):
     def get_events_side_effect(_, tx_receipt):
         return tx_receipts[tx_receipt["transactionHash"].decode("utf-8")]
 
+    mocker.patch(
+        "src.tasks.entity_manager.entity_manager.get_entity_manager_events_tx",
+        side_effect=get_events_side_effect,
+        autospec=True,
+    )
+
     # Mock signature validation
     def mock_validate_signature(chain, web3, user_id, wallet, signature):
         if signature == "0xvalid_signature":
