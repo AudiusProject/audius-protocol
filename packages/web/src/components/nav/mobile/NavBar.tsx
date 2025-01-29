@@ -5,11 +5,11 @@ import { formatCount, route } from '@audius/common/utils'
 import {
   IconAudiusLogoHorizontal,
   IconSettings,
-  IconCrown,
   IconCaretLeft,
   IconClose,
   IconNotificationOn,
-  IconButton
+  IconButton,
+  IconGift
 } from '@audius/harmony'
 import cn from 'classnames'
 import { History } from 'history'
@@ -39,10 +39,11 @@ interface NavBarProps {
   isSignedIn: boolean
   searchStatus: Status
   notificationCount: number
+  rewardsCount: number
   signUp: () => void
   goToNotificationPage: () => void
   goToSettingsPage: () => void
-  goToAudioPage: () => void
+  goToRewardsPage: () => void
   search: (term: string) => void
   goBack: () => void
   history: History<any>
@@ -58,12 +59,13 @@ const NavBar = ({
   isSignedIn,
   searchStatus,
   notificationCount,
+  rewardsCount,
   search,
   signUp,
   goToNotificationPage,
   goToSettingsPage,
   goBack,
-  goToAudioPage,
+  goToRewardsPage,
   history: {
     location: { pathname }
   }
@@ -173,6 +175,15 @@ const NavBar = ({
         {notificationCount > 0 && (
           <div className={styles.iconTag}>{formatCount(notificationCount)}</div>
         )}
+        <IconButton
+          aria-label='audio rewards'
+          color={rewardsCount > 0 ? 'warning' : 'subdued'}
+          icon={IconGift}
+          onClick={goToRewardsPage}
+        />
+        {rewardsCount > 0 && (
+          <div className={styles.iconTag}>{formatCount(rewardsCount)}</div>
+        )}
       </>
     )
   } else if (leftElement === LeftPreset.SETTINGS && isSignedIn) {
@@ -186,10 +197,13 @@ const NavBar = ({
         />
         <IconButton
           aria-label='audio rewards'
-          color='warning'
-          icon={IconCrown}
-          onClick={goToAudioPage}
+          color={rewardsCount > 0 ? 'warning' : 'subdued'}
+          icon={IconGift}
+          onClick={goToRewardsPage}
         />
+        {rewardsCount > 0 && (
+          <div className={styles.iconTag}>{formatCount(rewardsCount)}</div>
+        )}
       </>
     )
   } else {
