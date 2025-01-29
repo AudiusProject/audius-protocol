@@ -153,7 +153,6 @@ const TrackPage = ({
       fieldVisibility={defaults.fieldVisibility}
       coSign={defaults.coSign}
       scrollToCommentSection={scrollToCommentSection}
-      trendingBadgeLabel={null}
       // Actions
       onPlay={onPlay}
       onPreview={onPreview}
@@ -206,20 +205,11 @@ const TrackPage = ({
               />
             </Flex>
           ) : null}
-          <Flex
-            direction='column'
-            alignItems={
-              isCommentingEnabled && isDesktop ? 'flex-start' : 'center'
-            }
-            gap='2xl'
-            flex={1}
-            css={{
-              minWidth: 330,
-              maxWidth: isCommentingEnabled ? '100%' : '774px'
-            }}
-          >
-            <TrackPageLineup user={user} trackId={heroTrack?.track_id} />
-          </Flex>
+          <TrackPageLineup
+            user={user}
+            trackId={heroTrack?.track_id}
+            commentsDisabled={heroTrack?.comments_disabled}
+          />
         </Flex>
       </Flex>
     </Page>

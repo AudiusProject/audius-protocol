@@ -116,6 +116,9 @@ export interface TanQueryLineupProps {
   onClickTile?: (trackId: ID) => void
   pageSize: number
   initialPageSize?: number
+
+  /** Starting index to render from */
+  offset?: number
 }
 
 const defaultLineup = {
@@ -161,7 +164,8 @@ export const TanQueryLineup = ({
   onClickTile,
   pageSize,
   initialPageSize,
-  scrollParent: externalScrollParent
+  scrollParent: externalScrollParent,
+  offset = 0
 }: TanQueryLineupProps) => {
   const dispatch = useDispatch()
   const {
@@ -249,7 +253,16 @@ export const TanQueryLineup = ({
     lineupStyle = styles.section
   }
 
-  let tiles = lineup.entries
+  // Apply offset and maxEntries to the lineup entries
+  const slicedLineup = {
+    ...lineup,
+    entries:
+      pageSize !== undefined
+        ? lineup.entries.slice(offset, offset + pageSize)
+        : lineup.entries.slice(offset)
+  }
+
+  let tiles = slicedLineup.entries
     .map((entry: any, index: number) => {
       if (entry.kind === Kind.TRACKS || entry.track_id) {
         if (entry._marked_deleted) return null
@@ -263,7 +276,7 @@ export const TanQueryLineup = ({
           statSize,
           containerClassName,
           uid: entry.uid,
-          isLoading: lineup.entries[index] === undefined,
+          isLoading: slicedLineup.entries[index] === undefined,
           isTrending,
           onClick: onClickTile,
           source: ModalSource.LineUpTrackTile
@@ -284,7 +297,7 @@ export const TanQueryLineup = ({
           pauseTrack: pause,
           playingTrackId,
           togglePlay,
-          isLoading: lineup.entries[index] === undefined,
+          isLoading: slicedLineup.entries[index] === undefined,
           numLoadingSkeletonRows: numPlaylistSkeletonRows,
           isTrending,
           source: ModalSource.LineUpCollectionTile
@@ -368,7 +381,7 @@ export const TanQueryLineup = ({
         className={cn(lineupStyle, {
           [lineupContainerStyles!]: !!lineupContainerStyles
         })}
-        style={{ position: 'relative' }}
+        css={{ width: '100%' }}
       >
         <Transition
           items={featuredTrackUid}
@@ -446,7 +459,7 @@ export const TanQueryLineup = ({
                 return internalScrollParent
               }}
               element='ol'
-              loader={renderSkeletons(pageSize)}
+              loader={isFetching ? renderSkeletons(pageSize) : <></>}
             >
               {tiles.map((tile: any, index: number) => (
                 <li key={index} className={cn({ [tileStyles!]: !!tileStyles })}>
