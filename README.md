@@ -42,7 +42,6 @@ For details on operating an Audius service, getting started with the Token and t
 | [`spl`](./packages/spl)                                                                         | Handles Solana instructions for the Audius programs                                                                                                                                   |
 | [`eth`](./packages/eth)                                                                         | Handles interactions for the Audius Ethereum Governance & Staking Contracts                                                                                                           |
 | [`sql-ts`](./packages/sql-ts)                                                                   | A typescript database client                                                                                                                                                          |
-| [`trpc-server`](./packages/trpc-server)                                                         | tRPC server used for serving data                                                                                                                                                     |
 | [`web`](./packages/web)                                                                         | The Audius reference web and desktop application                                                                                                                                      |
 
 ### Required Dependencies

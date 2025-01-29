@@ -28,11 +28,6 @@ services:
       file: docker-compose.discovery.prod.yml
       service: es-indexer
 
-  trpc:
-    extends:
-      file: docker-compose.discovery.prod.yml
-      service: trpc
-
   discovery-provider-elasticsearch:
     extends:
       file: docker-compose.discovery.prod.yml
@@ -40,7 +35,7 @@ services:
 
   discovery-provider-openresty:
     image: busybox:1.31.1
-    entrypoint: ["sh", "-c", "exit 0"]
+    entrypoint: [ "sh", "-c", "exit 0" ]
     profiles:
       - noop
 
@@ -53,7 +48,7 @@ services:
       dockerfile: ${PROJECT_ROOT}/packages/discovery-provider/Dockerfile.dev
     volumes:
       - ${PROJECT_ROOT}:/app
-  
+
   healthz:
     extends:
       file: docker-compose.discovery.prod.yml

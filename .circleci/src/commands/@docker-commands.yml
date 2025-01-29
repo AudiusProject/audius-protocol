@@ -30,12 +30,7 @@ docker-tag-images:
       enum: ['prerelease', 'edge', 'current', '__version__']
     service:
       type: enum
-      enum:
-        [
-          'discovery-provider',
-          'identity-service',
-          'all'
-        ]
+      enum: ['discovery-provider', 'identity-service', 'all']
   steps:
     - install-crane
     - docker-login
@@ -54,7 +49,6 @@ docker-tag-images:
             staking
             crm
             mri
-            trpc
             verified-notifications
           )
           identity=(

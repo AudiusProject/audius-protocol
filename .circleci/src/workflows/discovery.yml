@@ -84,13 +84,6 @@ jobs:
       filters:
         branches:
           only: main
-  - push-docker-image:
-      name: push-trpc
-      context: [Vercel, dockerhub]
-      service: trpc
-      filters:
-        branches:
-          only: main
 
   - lint-discovery-provider:
       name: lint-discovery-provider
@@ -125,7 +118,6 @@ jobs:
         - push-pedalboard-crm
         - push-pedalboard-mri
         - push-comms
-        - push-trpc
 
       filters:
         branches:
