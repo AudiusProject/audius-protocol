@@ -65,5 +65,7 @@ export const QUERY_KEYS = {
   usdcTransactionsCount: 'usdcTransactionsCount',
   usdcTransactions: 'usdcTransactions',
   libraryTracks: 'libraryTracks',
-  remixes: 'remixes'
+  remixes: 'remixes',
+  moreByArtist: 'moreByArtist',
+  trackPageLineup: 'trackPageLineup'
 } as const
