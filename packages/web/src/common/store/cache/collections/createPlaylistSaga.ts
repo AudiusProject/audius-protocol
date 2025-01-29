@@ -53,10 +53,7 @@ export function* createPlaylistSaga() {
 }
 
 function* createPlaylistWorker(
-  action: ReturnType<
-    | typeof cacheCollectionsActions.createAlbum
-    | typeof cacheCollectionsActions.createPlaylist
-  >
+  action: ReturnType<typeof cacheCollectionsActions.createPlaylist>
 ) {
   // Return early if this is an album
   if (action.isAlbum) return
