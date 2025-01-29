@@ -23,10 +23,15 @@ import { useLineupQuery } from './utils/useLineupQuery'
 
 const DEFAULT_PAGE_SIZE = 10
 
-type UseRemixesArgs = {
+export type UseRemixesArgs = {
   trackId: number | null | undefined
   pageSize?: number
 }
+
+export const getRemixesQueryKey = ({
+  trackId,
+  pageSize = DEFAULT_PAGE_SIZE
+}: UseRemixesArgs) => [QUERY_KEYS.remixes, trackId, { pageSize }]
 
 export const useRemixes = (
   { trackId, pageSize = DEFAULT_PAGE_SIZE }: UseRemixesArgs,
@@ -44,7 +49,7 @@ export const useRemixes = (
   }, [dispatch, trackId])
 
   const queryData = useInfiniteQuery({
-    queryKey: [QUERY_KEYS.remixes, trackId],
+    queryKey: getRemixesQueryKey({ trackId, pageSize }),
     initialPageParam: 0,
     getNextPageParam: (lastPage: UserTrack[], allPages) => {
       if (lastPage.length < pageSize) return undefined

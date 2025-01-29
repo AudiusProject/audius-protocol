@@ -11,6 +11,7 @@ import {
   premiumTracksPageLineupSelectors
 } from '~/store/pages'
 
+import { QUERY_KEYS } from './queryKeys'
 import { QueryOptions } from './types'
 import { useCurrentUserId } from './useCurrentUserId'
 import { loadNextPage } from './utils/infiniteQueryLoadNextPage'
@@ -23,6 +24,11 @@ type UsePremiumTracksArgs = {
   pageSize?: number
 }
 
+export const getPremiumTracksQueryKey = (pageSize: number) => [
+  QUERY_KEYS.premiumTracks,
+  pageSize
+]
+
 export const usePremiumTracks = (
   { pageSize = DEFAULT_PAGE_SIZE }: UsePremiumTracksArgs = {},
   config?: QueryOptions
@@ -33,7 +39,7 @@ export const usePremiumTracks = (
   const dispatch = useDispatch()
 
   const queryData = useInfiniteQuery({
-    queryKey: ['premiumTracks', pageSize],
+    queryKey: getPremiumTracksQueryKey(pageSize),
     initialPageParam: 0,
     getNextPageParam: (lastPage: UserTrack[], allPages) => {
       if (lastPage.length < pageSize) return undefined

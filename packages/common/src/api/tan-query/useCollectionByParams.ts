@@ -19,7 +19,6 @@ type CollectionParams =
   | { permalink?: string }
 
 // feature-tan-query TODO: smart collections
-
 /**
  * Hook that returns collection data given either a collection ID, handle+slug+type, or permalink.
  * Internally uses useCollection and useCollectionByPermalink for consistent behavior.

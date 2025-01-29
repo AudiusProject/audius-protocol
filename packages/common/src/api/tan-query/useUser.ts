@@ -12,6 +12,12 @@ import { EntriesByKind } from '~/store/cache/types'
 
 import { QUERY_KEYS } from './queryKeys'
 import { QueryOptions } from './types'
+import { getUserByHandleQueryKey } from './useUserByHandle'
+
+export const getUserQueryKey = (userId: ID | null | undefined) => [
+  QUERY_KEYS.user,
+  userId
+]
 
 export const useUser = (
   userId: ID | null | undefined,
@@ -23,7 +29,7 @@ export const useUser = (
   const currentUserId = useSelector(getUserId)
 
   return useQuery({
-    queryKey: [QUERY_KEYS.user, userId],
+    queryKey: getUserQueryKey(userId),
     queryFn: async () => {
       const sdk = await audiusSdk()
       const { data } = await sdk.full.users.getUser({
@@ -34,7 +40,7 @@ export const useUser = (
 
       // Prime both user and userByHandle caches
       if (user) {
-        queryClient.setQueryData([QUERY_KEYS.userByHandle, user.handle], user)
+        queryClient.setQueryData(getUserByHandleQueryKey(user.handle), user)
 
         // Sync user data to Redux
         const entries: EntriesByKind = {

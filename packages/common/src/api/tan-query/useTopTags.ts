@@ -12,6 +12,11 @@ type UseTopTagsArgs = {
   limit?: number
 }
 
+export const getTopTagsQueryKey = (userId: ID | null | undefined) => [
+  QUERY_KEYS.topTags,
+  userId
+]
+
 export const useTopTags = (
   { userId, limit = 5 }: UseTopTagsArgs,
   options?: QueryOptions
@@ -19,7 +24,7 @@ export const useTopTags = (
   const { audiusSdk } = useAudiusQueryContext()
 
   return useQuery({
-    queryKey: [QUERY_KEYS.topTags, userId],
+    queryKey: getTopTagsQueryKey(userId),
     queryFn: async () => {
       const sdk = await audiusSdk()
       const { data = [] } = await sdk.users.getTopTrackTags({

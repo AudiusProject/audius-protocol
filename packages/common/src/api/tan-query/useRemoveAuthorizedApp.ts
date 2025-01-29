@@ -8,10 +8,15 @@ import { ID } from '~/models'
 import { DeveloperApp } from './developerApps'
 import { QUERY_KEYS } from './queryKeys'
 
-type UseRemoveAuthorizedAppArgs = {
+export type UseRemoveAuthorizedAppArgs = {
   apiKey: string
   userId: ID
 }
+
+export const getRemoveAuthorizedAppQueryKey = (userId: ID) => [
+  QUERY_KEYS.authorizedApps,
+  userId
+]
 
 export const useRemoveAuthorizedApp = () => {
   const { audiusSdk } = useAudiusQueryContext()
@@ -31,11 +36,11 @@ export const useRemoveAuthorizedApp = () => {
       const { apiKey, userId } = args
 
       queryClient.invalidateQueries({
-        queryKey: [QUERY_KEYS.authorizedApps, args.userId]
+        queryKey: getRemoveAuthorizedAppQueryKey(userId)
       })
 
       const previousApps: DeveloperApp[] | undefined = queryClient.getQueryData(
-        [QUERY_KEYS.authorizedApps, userId]
+        getRemoveAuthorizedAppQueryKey(userId)
       )
 
       if (previousApps === undefined) {
@@ -48,14 +53,14 @@ export const useRemoveAuthorizedApp = () => {
       const appIndex = previousApps?.findIndex((app) => app.apiKey === apiKey)
       const newApps = cloneDeep(previousApps).splice(appIndex, 1)
 
-      queryClient.setQueryData([QUERY_KEYS.authorizedApps, userId], newApps)
+      queryClient.setQueryData(getRemoveAuthorizedAppQueryKey(userId), newApps)
 
       // Return context with the previous apps
       return { previousApps }
     },
     onError: (_error, args, context) => {
       queryClient.setQueryData(
-        [QUERY_KEYS.authorizedApps, args.userId],
+        getRemoveAuthorizedAppQueryKey(args.userId),
         context?.previousApps
       )
     }

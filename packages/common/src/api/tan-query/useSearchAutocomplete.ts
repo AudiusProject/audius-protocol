@@ -37,6 +37,11 @@ const limitAutocompleteResults = (results: SearchResults): SearchResults => {
   }
 }
 
+export const getSearchAutocompleteQueryKey = ({
+  query,
+  limit = DEFAULT_LIMIT
+}: UseSearchAutocompleteArgs) => [QUERY_KEYS.search, query, { limit }]
+
 export const useSearchAutocomplete = (
   { query, limit = DEFAULT_LIMIT }: UseSearchAutocompleteArgs,
   options?: QueryOptions
@@ -48,7 +53,7 @@ export const useSearchAutocomplete = (
   )
 
   return useQuery({
-    queryKey: [QUERY_KEYS.search, query, limit],
+    queryKey: getSearchAutocompleteQueryKey({ query, limit }),
     queryFn: async () => {
       const sdk = await audiusSdk()
       const { data } = await sdk.full.search.searchAutocomplete({

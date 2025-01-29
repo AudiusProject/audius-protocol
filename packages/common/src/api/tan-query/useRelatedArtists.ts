@@ -14,11 +14,21 @@ import { primeUserData } from './utils/primeUserData'
 
 const DEFAULT_PAGE_SIZE = 20
 
-type UseRelatedArtistsArgs = {
+export type UseRelatedArtistsArgs = {
   artistId: ID | null | undefined
   pageSize?: number
   filterFollowed?: boolean
 }
+
+export const getRelatedArtistsQueryKey = ({
+  artistId,
+  pageSize = DEFAULT_PAGE_SIZE,
+  filterFollowed
+}: UseRelatedArtistsArgs) => [
+  QUERY_KEYS.relatedArtists,
+  artistId,
+  { pageSize, filterFollowed }
+]
 
 export const useRelatedArtists = (
   {
@@ -34,7 +44,7 @@ export const useRelatedArtists = (
   const dispatch = useDispatch()
 
   return useInfiniteQuery({
-    queryKey: [QUERY_KEYS.relatedArtists, artistId, pageSize, filterFollowed],
+    queryKey: getRelatedArtistsQueryKey({ artistId, pageSize, filterFollowed }),
     initialPageParam: 0,
     getNextPageParam: (lastPage: User[], allPages) => {
       if (lastPage.length < pageSize) return undefined

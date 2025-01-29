@@ -9,6 +9,11 @@ import { ID } from '~/models/Identifiers'
 import { QUERY_KEYS } from './queryKeys'
 import { QueryOptions } from './types'
 
+export const getFavoritedTracksQueryKey = (userId: ID | null | undefined) => [
+  QUERY_KEYS.favoritedTracks,
+  userId
+]
+
 export const useFavoritedTracks = (
   userId: ID | null | undefined,
   options?: QueryOptions
@@ -16,7 +21,7 @@ export const useFavoritedTracks = (
   const { audiusSdk } = useAudiusQueryContext()
 
   return useQuery({
-    queryKey: [QUERY_KEYS.favoritedTracks, userId],
+    queryKey: getFavoritedTracksQueryKey(userId),
     queryFn: async () => {
       const sdk = await audiusSdk()
       const { data } = await sdk.users.getFavorites({

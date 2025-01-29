@@ -16,6 +16,7 @@ import {
   profilePageFeedLineupActions as feedActions
 } from '~/store/pages'
 
+import { QUERY_KEYS } from './queryKeys'
 import { QueryOptions } from './types'
 import { useCurrentUserId } from './useCurrentUserId'
 import { primeCollectionData } from './utils/primeCollectionData'
@@ -29,6 +30,11 @@ type UseProfileRepostsArgs = {
   pageSize?: number
 }
 
+export const getProfileRepostsQueryKey = ({
+  handle,
+  pageSize
+}: UseProfileRepostsArgs) => [QUERY_KEYS.profileReposts, handle, { pageSize }]
+
 export const useProfileReposts = (
   { handle, pageSize = DEFAULT_PAGE_SIZE }: UseProfileRepostsArgs,
   config?: QueryOptions
@@ -39,7 +45,7 @@ export const useProfileReposts = (
   const dispatch = useDispatch()
 
   const queryData = useInfiniteQuery({
-    queryKey: ['profileReposts', handle, pageSize],
+    queryKey: getProfileRepostsQueryKey({ handle, pageSize }),
     initialPageParam: 0,
     getNextPageParam: (lastPage: (Track | Collection)[], allPages) => {
       if (lastPage.length < pageSize) return undefined
