@@ -66,6 +66,7 @@ import { waitForWrite } from 'utils/sagaHelpers'
 
 import { watchAddTrackToPlaylist } from './addTrackToPlaylistSaga'
 import { confirmOrderPlaylist } from './confirmOrderPlaylist'
+import { createAlbumSaga } from './createAlbumSaga'
 import { createPlaylistSaga } from './createPlaylistSaga'
 import { optimisticUpdateCollection } from './utils/optimisticUpdateCollection'
 import { retrieveCollection } from './utils/retrieveCollections'
@@ -853,6 +854,7 @@ export default function sagas() {
   return [
     watchAdd,
     createPlaylistSaga,
+    createAlbumSaga,
     watchEditPlaylist,
     watchAddTrackToPlaylist,
     watchRemoveTrackFromPlaylist,
