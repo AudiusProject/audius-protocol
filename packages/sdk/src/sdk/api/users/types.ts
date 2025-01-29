@@ -1,8 +1,10 @@
 import { z } from 'zod'
 
 import { ProgressHandler } from '../../services/Storage/types'
+import { EthAddressSchema } from '../../types/EthAddress'
 import { ImageFile } from '../../types/File'
 import { HashId } from '../../types/HashId'
+import { SolanaAddressSchema } from '../../types/SolanaAddress'
 import { getReaction, reactionsMap } from '../../utils/reactionsMap'
 
 export const UserEventsSchema = z.object({
@@ -245,3 +247,33 @@ export const EmailSchema = z.object({
   granteeUserIds: z.array(z.string()).optional(),
   email: z.string()
 })
+
+export const WalletSchema = z.discriminatedUnion('chain', [
+  z.object({
+    address: SolanaAddressSchema,
+    chain: z.literal('sol')
+  }),
+  z.object({
+    address: EthAddressSchema,
+    chain: z.literal('eth')
+  })
+])
+
+export const AddAssociatedWalletSchema = z.object({
+  userId: HashId,
+  wallet: WalletSchema,
+  signature: z.string()
+})
+
+export const RemoveAssociatedWalletSchema = z.object({
+  userId: HashId,
+  wallet: WalletSchema
+})
+
+export type AddAssociatedWalletRequest = z.input<
+  typeof AddAssociatedWalletSchema
+>
+
+export type RemoveAssociatedWalletRequest = z.input<
+  typeof RemoveAssociatedWalletSchema
+>
