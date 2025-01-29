@@ -60,18 +60,12 @@ class ChallengeListenEndlessStreakUpdater(ChallengeUpdater):
             and listen_streak.last_listen_date is not None
             and created_at - listen_streak.last_listen_date <= timedelta(days=2)
         ):
-            logger.info(
-                f"REED _get_current_listen_streak returning existing challenge ${most_recent_challenge}"
-            )
             return most_recent_challenge
         return None
 
     def generate_specifier(self, session: Session, user_id: int, extra: Dict) -> str:
         recent_challenge = self._get_current_listen_streak(session, user_id, extra)
         if recent_challenge is not None:
-            logger.info(
-                f"REED generate_specifier use existing specifier ${recent_challenge.specifier}"
-            )
             return recent_challenge.specifier
 
         # Otherwise, create a new specifier
@@ -84,9 +78,7 @@ class ChallengeListenEndlessStreakUpdater(ChallengeUpdater):
     ) -> bool:
         current_listen_streak = self._get_current_listen_streak(session, user_id, extra)
         if current_listen_streak:
-            logger.info(f"REED should_create_new_challenge returning False")
             return False
-        logger.info(f"REED should_create_new_challenge returning True")
         return True
 
     def update_user_challenges(
