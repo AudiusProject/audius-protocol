@@ -28,6 +28,7 @@ import { useErrorPageOnFailedStatus } from 'hooks/useErrorPageOnFailedStatus'
 import { useIsMobile } from 'hooks/useIsMobile'
 import { useMainContentRef } from 'pages/MainContentContext'
 import { audiusSdk } from 'services/audius-sdk'
+import { env } from 'services/env'
 import { formatToday } from 'utils/dateUtils'
 import { push } from 'utils/navigation'
 import { useSelector } from 'utils/reducer'
@@ -171,7 +172,6 @@ export const useSales = () => {
         return
       }
 
-      // Convert sales data to CSV format
       const headers = [
         'Title',
         'Link',
@@ -187,46 +187,48 @@ export const useSales = () => {
 
       const rows = await Promise.all(
         sales.map(async (sale) => {
+          let decryptedEmail = ''
           try {
+            const decryptionId = sale.isInitial
+              ? (env.EMAIL_ENCRYPTION_UUID ?? 0)
+              : sale.buyerUserId
+
             const symmetricKey =
               await sdk.services.emailEncryptionService.decryptSymmetricKey(
                 sale.encryptedKey ?? '',
-                Id.parse(sale.buyerUserId)
+                Id.parse(decryptionId)
               )
 
-            const decryptedEmail = sale.encryptedEmail
-              ? await sdk.services.emailEncryptionService
-                  .decryptEmail(sale.encryptedEmail, symmetricKey)
-                  .catch(() => '')
-              : ''
-
-            return [
-              sale.title,
-              sale.link,
-              sale.purchasedBy,
-              decryptedEmail,
-              sale.date,
-              sale.salePrice,
-              sale.networkFee,
-              sale.payExtra,
-              sale.total,
-              sale.country
-            ]
+            decryptedEmail =
+              sale.encryptedEmail && sale.encryptedKey
+                ? await sdk.services.emailEncryptionService
+                    .decryptEmail(sale.encryptedEmail, symmetricKey)
+                    .catch(() => '')
+                : ''
           } catch (err) {
-            console.error('Error processing sale row:', err)
-            // Return empty row rather than failing entire export
-            return Array(10).fill('')
+            console.error('Error decrypting email:', err)
           }
+
+          return [
+            sale.title,
+            sale.link,
+            sale.purchasedBy,
+            decryptedEmail,
+            sale.date,
+            sale.salePrice,
+            sale.networkFee,
+            sale.payExtra,
+            sale.total,
+            sale.country
+          ]
         })
       )
 
-      // Create CSV content
       const csvContent = [
         headers.join(','),
         ...rows.map((row) => row.join(','))
       ].join('\n')
 
-      // Create blob and download
       const blob = new Blob([csvContent], { type: 'text/csv' })
       url = URL.createObjectURL(blob)
       link = document.createElement('a')
@@ -237,12 +239,8 @@ export const useSales = () => {
     } catch (error) {
       console.error('Error downloading sales data:', error)
     } finally {
-      if (link) {
-        document.body.removeChild(link)
-      }
-      if (url) {
-        URL.revokeObjectURL(url)
-      }
+      if (link) document.body.removeChild(link)
+      if (url) URL.revokeObjectURL(url)
     }
   }
 
