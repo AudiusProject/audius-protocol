@@ -7,7 +7,6 @@ import {
   PlaylistLibrary,
   User
 } from '@audius/common/models'
-import { removeFromPlaylistLibrary } from '@audius/common/src/store/playlist-library/helpers'
 import {
   accountActions,
   accountSelectors,
@@ -18,7 +17,8 @@ import {
   getContext,
   playlistUpdatesActions,
   confirmerActions,
-  getSDK
+  getSDK,
+  playlistLibraryHelpers
 } from '@audius/common/store'
 import {
   formatShareText,
@@ -35,7 +35,7 @@ import * as signOnActions from 'common/store/pages/signon/actions'
 import {
   addPlaylistsNotInLibrary,
   removePlaylistFromLibrary
-} from 'common/store/playlist-library/sagas'
+} from 'common/store/playlist-library/sagaHelpers'
 import { audioNftPlaylistPage } from 'utils/route'
 import { waitForWrite } from 'utils/sagaHelpers'
 
@@ -45,7 +45,7 @@ const { getUser } = cacheUsersSelectors
 const { getCollections, getCollection } = cacheCollectionsSelectors
 const { getPlaylistLibrary, getUserId, getIsGuestAccount } = accountSelectors
 const { collectionPage } = route
-
+const { removeFromPlaylistLibrary } = playlistLibraryHelpers
 /* REPOST COLLECTION */
 
 export function* watchRepostCollection() {

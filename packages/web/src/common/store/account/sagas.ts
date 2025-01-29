@@ -1,7 +1,7 @@
 import { accountActions, accountSelectors } from '@audius/common/store'
 import { call, fork, select, takeEvery } from 'typed-redux-saga'
 
-import { addPlaylistsNotInLibrary } from 'common/store/playlist-library/sagas'
+import { addPlaylistsNotInLibrary } from 'common/store/playlist-library/sagaHelpers'
 import { waitForRead } from 'utils/sagaHelpers'
 
 import { retrieveCollections } from '../cache/collections/utils'

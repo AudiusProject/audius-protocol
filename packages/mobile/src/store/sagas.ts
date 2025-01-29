@@ -45,7 +45,6 @@ import trendingPageSagas from 'common/store/pages/trending/sagas'
 import trendingPlaylistSagas from 'common/store/pages/trending-playlists/sagas'
 import trendingUndergroundSagas from 'common/store/pages/trending-underground/sagas'
 import playerSagas from 'common/store/player/sagas'
-import playlistLibrarySagas from 'common/store/playlist-library/sagas'
 import profileSagas from 'common/store/profile/sagas'
 import queueSagas from 'common/store/queue/sagas'
 import recoveryEmailSagas from 'common/store/recovery-email/sagas'
@@ -83,7 +82,6 @@ export default function* rootSaga() {
     // Account
     ...accountSagas(),
     ...recoveryEmailSagas(),
-    ...playlistLibrarySagas(),
 
     // Cache
     ...coreCacheSagas(),

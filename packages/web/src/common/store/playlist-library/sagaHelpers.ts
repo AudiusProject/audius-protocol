@@ -4,7 +4,6 @@ import {
   PlaylistIdentifier,
   AccountCollection
 } from '@audius/common/models'
-import { getUserId } from '@audius/common/src/store/account/selectors'
 import {
   accountSelectors,
   getContext,
@@ -13,12 +12,11 @@ import {
 } from '@audius/common/store'
 import { call, select } from 'typed-redux-saga'
 
-import { watchAddToFolderSaga } from './watchAddToFolderSaga'
-
 const { getPlaylistsNotInLibrary, removeFromPlaylistLibrary } =
   playlistLibraryHelpers
 
-const { getAccountNavigationPlaylists, getPlaylistLibrary } = accountSelectors
+const { getAccountNavigationPlaylists, getPlaylistLibrary, getUserId } =
+  accountSelectors
 
 /**
  * Goes through the account playlists and adds playlists that are
@@ -71,9 +69,4 @@ export function* removePlaylistFromLibrary(id: PlaylistLibraryID) {
     queryClient,
     dispatch
   )
-}
-
-export default function sagas() {
-  const sagas = [watchAddToFolderSaga]
-  return sagas
 }

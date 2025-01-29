@@ -35,9 +35,9 @@ export const useUpdateUser = () => {
       const sdk = await audiusSdk()
 
       return await updateUser(
+        sdk,
         userId,
         metadata,
-        sdk,
         coverArtFile,
         profilePictureFile
       )

@@ -60,10 +60,6 @@ import trendingUnderground from './pages/trending-underground/slice'
 import { PlaybackPositionState } from './playback-position'
 import playbackPosition from './playback-position/slice'
 import player, { PlayerState } from './player/slice'
-import {
-  playlistLibraryReducer,
-  PlaylistLibraryState
-} from './playlist-library'
 import { playlistUpdatesReducer, PlaylistUpdateState } from './playlist-updates'
 import { purchaseContentReducer } from './purchase-content'
 import queue from './queue/slice'
@@ -164,8 +160,7 @@ export const reducers = (storage: Storage, history?: History) => ({
   // Cast
   cast,
 
-  // Playlist Library
-  playlistLibrary: playlistLibraryReducer,
+  // Playlist Updates
   playlistUpdates: playlistUpdatesReducer,
 
   // UI
@@ -284,8 +279,7 @@ export type CommonState = {
   // Cast
   cast: ReturnType<typeof cast>
 
-  // Playlist library
-  playlistLibrary: PlaylistLibraryState
+  // Playlist Updates
   playlistUpdates: PlaylistUpdateState
 
   ui: {
