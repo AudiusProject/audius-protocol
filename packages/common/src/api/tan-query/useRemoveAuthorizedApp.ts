@@ -53,14 +53,14 @@ export const useRemoveAuthorizedApp = () => {
       const appIndex = previousApps?.findIndex((app) => app.apiKey === apiKey)
       const newApps = cloneDeep(previousApps).splice(appIndex, 1)
 
-      queryClient.setQueryData([QUERY_KEYS.authorizedApps, userId], newApps)
+      queryClient.setQueryData(getRemoveAuthorizedAppQueryKey(userId), newApps)
 
       // Return context with the previous apps
       return { previousApps }
     },
     onError: (_error, args, context) => {
       queryClient.setQueryData(
-        [QUERY_KEYS.authorizedApps, args.userId],
+        getRemoveAuthorizedAppQueryKey(args.userId),
         context?.previousApps
       )
     }

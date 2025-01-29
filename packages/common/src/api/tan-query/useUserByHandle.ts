@@ -11,6 +11,7 @@ import { EntriesByKind } from '~/store/cache/types'
 import { QUERY_KEYS } from './queryKeys'
 import { QueryOptions } from './types'
 import { useCurrentUserId } from './useCurrentUserId'
+import { getUserQueryKey } from './useUser'
 
 export const getUserByHandleQueryKey = (handle: string | null | undefined) => [
   QUERY_KEYS.userByHandle,
@@ -39,7 +40,7 @@ export const useUserByHandle = (
 
       // Prime the user query cache with user data
       if (user) {
-        queryClient.setQueryData([QUERY_KEYS.user, user.user_id], user)
+        queryClient.setQueryData(getUserQueryKey(user.user_id), user)
 
         // Sync user data to Redux
         const entries: EntriesByKind = {

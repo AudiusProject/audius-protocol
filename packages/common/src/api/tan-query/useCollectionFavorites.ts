@@ -20,8 +20,13 @@ export type UseCollectionFavoritesArgs = {
 }
 
 export const getCollectionFavoritesQueryKey = ({
-  collectionId
-}: UseCollectionFavoritesArgs) => [QUERY_KEYS.favorites, collectionId]
+  collectionId,
+  pageSize
+}: UseCollectionFavoritesArgs) => [
+  QUERY_KEYS.favorites,
+  collectionId,
+  { pageSize }
+]
 
 export const useCollectionFavorites = (
   { collectionId, pageSize = DEFAULT_PAGE_SIZE }: UseCollectionFavoritesArgs,
@@ -33,7 +38,7 @@ export const useCollectionFavorites = (
   const dispatch = useDispatch()
 
   return useInfiniteQuery({
-    queryKey: getCollectionFavoritesQueryKey({ collectionId }),
+    queryKey: getCollectionFavoritesQueryKey({ collectionId, pageSize }),
     initialPageParam: 0,
     getNextPageParam: (lastPage: User[], allPages) => {
       if (lastPage.length < pageSize) return undefined

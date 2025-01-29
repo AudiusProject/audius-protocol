@@ -19,10 +19,10 @@ type UseFollowersArgs = {
   pageSize?: number
 }
 
-export const getFollowersQueryKey = (args: UseFollowersArgs) => [
-  QUERY_KEYS.followers,
-  args.userId
-]
+export const getFollowersQueryKey = ({
+  userId,
+  pageSize
+}: UseFollowersArgs) => [QUERY_KEYS.followers, userId, { pageSize }]
 
 /**
  * Hook to fetch followers for a user with infinite query support.
@@ -38,7 +38,7 @@ export const useFollowers = (
   const dispatch = useDispatch()
 
   return useInfiniteQuery({
-    queryKey: getFollowersQueryKey({ userId }),
+    queryKey: getFollowersQueryKey({ userId, pageSize }),
     initialPageParam: 0,
     getNextPageParam: (lastPage: User[], allPages) => {
       if (lastPage.length < pageSize) return undefined

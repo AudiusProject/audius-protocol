@@ -24,11 +24,10 @@ type UseAiTracksArgs = {
   pageSize?: number
 }
 
-export const getAiTracksQueryKey = (args: UseAiTracksArgs) => [
-  QUERY_KEYS.aiTracks,
-  args.handle,
-  { pageSize: args.pageSize }
-]
+export const getAiTracksQueryKey = ({
+  handle,
+  pageSize = DEFAULT_PAGE_SIZE
+}: UseAiTracksArgs) => [QUERY_KEYS.aiTracks, handle, { pageSize }]
 
 export const useAiTracks = (
   { handle, pageSize = DEFAULT_PAGE_SIZE }: UseAiTracksArgs,
@@ -44,7 +43,7 @@ export const useAiTracks = (
   }, [dispatch, handle])
 
   const queryData = useInfiniteQuery({
-    queryKey: ['aiTracks', handle, pageSize],
+    queryKey: getAiTracksQueryKey({ handle, pageSize }),
     initialPageParam: 0,
     getNextPageParam: (lastPage: UserTrack[], allPages) => {
       if (lastPage.length < pageSize) return undefined

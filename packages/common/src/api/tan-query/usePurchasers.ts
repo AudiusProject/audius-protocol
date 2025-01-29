@@ -20,12 +20,16 @@ export type UsePurchasersArgs = {
   pageSize?: number
 }
 
-export const getPurchasersQueryKey = (args: UsePurchasersArgs) => [
+export const getPurchasersQueryKey = ({
+  contentId,
+  contentType,
+  pageSize
+}: UsePurchasersArgs) => [
   QUERY_KEYS.purchasers,
   {
-    contentId: args.contentId,
-    contentType: args.contentType,
-    pageSize: args.pageSize
+    contentId,
+    contentType,
+    pageSize
   }
 ]
 

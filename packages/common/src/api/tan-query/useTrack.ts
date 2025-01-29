@@ -11,6 +11,7 @@ import { EntriesByKind } from '~/store/cache/types'
 
 import { QUERY_KEYS } from './queryKeys'
 import { QueryOptions } from './types'
+import { getUserQueryKey } from './useUser'
 
 const STALE_TIME = Infinity
 
@@ -41,7 +42,7 @@ export const useTrack = (
       // Prime the user query cache with user data from the track
       if (track?.user) {
         queryClient.setQueryData(
-          [QUERY_KEYS.user, track.user.user_id],
+          getUserQueryKey(track.user.user_id),
           track.user
         )
       }

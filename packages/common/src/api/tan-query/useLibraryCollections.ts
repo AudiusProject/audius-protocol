@@ -25,17 +25,24 @@ type UseLibraryCollectionsArgs = {
   pageSize?: number
 }
 
-export const getLibraryCollectionsQueryKey = (
-  args: UseLibraryCollectionsArgs & { currentUserId: ID | null | undefined }
-) => [
+export const getLibraryCollectionsQueryKey = ({
+  currentUserId,
+  collectionType,
+  category,
+  query,
+  sortMethod,
+  sortDirection,
+  pageSize
+}: UseLibraryCollectionsArgs & { currentUserId: ID | null | undefined }) => [
   QUERY_KEYS.libraryCollections,
+  currentUserId,
   {
-    currentUserId: args.currentUserId,
-    collectionType: args.collectionType,
-    category: args.category,
-    query: args.query,
-    sortMethod: args.sortMethod,
-    sortDirection: args.sortDirection
+    collectionType,
+    category,
+    query,
+    sortMethod,
+    sortDirection,
+    pageSize
   }
 ]
 
@@ -62,7 +69,8 @@ export const useLibraryCollections = (
       category,
       query,
       sortMethod,
-      sortDirection
+      sortDirection,
+      pageSize
     }),
     initialPageParam: 0,
     getNextPageParam: (

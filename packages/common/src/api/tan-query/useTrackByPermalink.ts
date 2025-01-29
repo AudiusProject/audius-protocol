@@ -8,6 +8,7 @@ import { getUserId } from '~/store/account/selectors'
 
 import { QUERY_KEYS } from './queryKeys'
 import { QueryOptions } from './types'
+import { getTrackQueryKey } from './useTrack'
 import { primeTrackData } from './utils/primeTrackData'
 
 // If the user edits a stale track, the optimistic update fails
@@ -46,7 +47,7 @@ export const useTrackByPermalink = (
         primeTrackData({ tracks: [track], queryClient, dispatch })
 
         // Prime track cache
-        queryClient.setQueryData([QUERY_KEYS.track, track.track_id], track)
+        queryClient.setQueryData(getTrackQueryKey(track.track_id), track)
       }
 
       return track

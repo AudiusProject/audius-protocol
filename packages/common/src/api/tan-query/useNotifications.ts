@@ -152,9 +152,13 @@ const collectEntityIds = (notifications: Notification[]): EntityIds => {
   return { userIds, trackIds, collectionIds }
 }
 
-export const getNotificationsQueryKey = (
+export const getNotificationsQueryKey = ({
+  currentUserId,
+  pageSize
+}: {
   currentUserId: ID | null | undefined
-) => [QUERY_KEYS.notifications, currentUserId]
+  pageSize: number
+}) => [QUERY_KEYS.notifications, currentUserId, { pageSize }]
 
 /**
  * Hook that returns paginated notifications for the current user.
@@ -165,8 +169,13 @@ export const useNotifications = (options?: QueryOptions) => {
   const { audiusSdk } = useAudiusQueryContext()
   const { data: currentUserId } = useCurrentUserId()
   const validTypes = useNotificationValidTypes()
+  const pageSize = DEFAULT_LIMIT
+
   const query = useInfiniteQuery({
-    queryKey: getNotificationsQueryKey(currentUserId),
+    queryKey: getNotificationsQueryKey({
+      currentUserId,
+      pageSize
+    }),
     initialPageParam: null as PageParam,
     queryFn: async ({ pageParam = null }) => {
       const sdk = await audiusSdk()

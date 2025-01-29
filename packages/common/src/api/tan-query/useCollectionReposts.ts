@@ -20,8 +20,9 @@ export type UseCollectionRepostsArgs = {
 }
 
 export const getCollectionRepostsQueryKey = ({
-  collectionId
-}: UseCollectionRepostsArgs) => [QUERY_KEYS.reposts, collectionId]
+  collectionId,
+  pageSize
+}: UseCollectionRepostsArgs) => [QUERY_KEYS.reposts, collectionId, { pageSize }]
 
 export const useCollectionReposts = (
   { collectionId, pageSize = DEFAULT_PAGE_SIZE }: UseCollectionRepostsArgs,
@@ -33,7 +34,7 @@ export const useCollectionReposts = (
   const dispatch = useDispatch()
 
   return useInfiniteQuery({
-    queryKey: getCollectionRepostsQueryKey({ collectionId }),
+    queryKey: getCollectionRepostsQueryKey({ collectionId, pageSize }),
     initialPageParam: 0,
     getNextPageParam: (lastPage: User[], allPages) => {
       if (lastPage.length < pageSize) return undefined

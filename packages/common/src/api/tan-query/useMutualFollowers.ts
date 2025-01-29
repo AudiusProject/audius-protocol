@@ -18,9 +18,10 @@ type UseMutualFollowersArgs = {
   pageSize?: number
 }
 
-export const getMutualFollowersQueryKey = (
-  userId: UseMutualFollowersArgs['userId']
-) => [QUERY_KEYS.mutualFollowers, userId]
+export const getMutualFollowersQueryKey = ({
+  userId,
+  pageSize
+}: UseMutualFollowersArgs) => [QUERY_KEYS.mutualFollowers, userId, { pageSize }]
 
 export const useMutualFollowers = (
   { userId, pageSize = DEFAULT_PAGE_SIZE }: UseMutualFollowersArgs,
@@ -32,7 +33,7 @@ export const useMutualFollowers = (
   const dispatch = useDispatch()
 
   return useInfiniteQuery({
-    queryKey: getMutualFollowersQueryKey(userId),
+    queryKey: getMutualFollowersQueryKey({ userId, pageSize }),
     initialPageParam: 0,
     getNextPageParam: (lastPage: UserMetadata[], allPages) => {
       if (lastPage.length < pageSize) return undefined

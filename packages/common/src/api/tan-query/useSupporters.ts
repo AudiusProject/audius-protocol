@@ -9,6 +9,7 @@ import { supporterMetadataListFromSDK } from '~/models/Tipping'
 import { QUERY_KEYS } from './queryKeys'
 import { QueryOptions } from './types'
 import { useCurrentUserId } from './useCurrentUserId'
+import { getSupporterQueryKey } from './useSupporter'
 import { primeUserData } from './utils/primeUserData'
 
 const DEFAULT_PAGE_SIZE = 20
@@ -52,7 +53,7 @@ export const useSupporters = (
       // Prime the cache for each supporter
       supporters.forEach((supporter) => {
         queryClient.setQueryData(
-          [QUERY_KEYS.supporter, userId, supporter.sender.user_id],
+          getSupporterQueryKey(userId, supporter.sender.user_id),
           supporter
         )
       })

@@ -34,10 +34,10 @@ type FeedArgs = {
   loadMorePageSize?: number
 }
 
-export const getFeedQueryKey = (args: FeedArgs) => [
+export const getFeedQueryKey = ({ userId, filter }: FeedArgs) => [
   QUERY_KEYS.feed,
-  args.userId,
-  { filter: args.filter }
+  userId,
+  { filter }
 ]
 
 export const useFeed = (

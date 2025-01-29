@@ -35,16 +35,22 @@ export type UseLibraryTracksArgs = {
   pageSize?: number
 }
 
-export const getLibraryTracksQueryKey = (
-  args: UseLibraryTracksArgs & { currentUserId: ID | null | undefined }
-) => [
+export const getLibraryTracksQueryKey = ({
+  currentUserId,
+  category,
+  sortMethod,
+  sortDirection,
+  query,
+  pageSize
+}: UseLibraryTracksArgs & { currentUserId: ID | null | undefined }) => [
   QUERY_KEYS.libraryTracks,
+  currentUserId,
   {
-    currentUserId: args.currentUserId,
-    category: args.category,
-    sortMethod: args.sortMethod,
-    sortDirection: args.sortDirection,
-    query: args.query
+    category,
+    sortMethod,
+    sortDirection,
+    query,
+    pageSize
   }
 ]
 
@@ -69,7 +75,8 @@ export const useLibraryTracks = (
       category,
       sortMethod,
       sortDirection,
-      query
+      query,
+      pageSize
     }),
     queryFn: async ({ pageParam = 0 }) => {
       if (!currentUserId) return []

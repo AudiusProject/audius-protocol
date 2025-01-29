@@ -157,14 +157,14 @@ export const useEditDeveloperApp = () => {
         ...editedApp
       }
 
-      queryClient.setQueryData([QUERY_KEYS.developerApps, userId], newApps)
+      queryClient.setQueryData(getDeveloperAppsQueryKey(userId), newApps)
 
       // Return context with the previous apps
       return { previousApps }
     },
     onError: (_error, args, context) => {
       queryClient.setQueryData(
-        [QUERY_KEYS.developerApps, args.userId],
+        getDeveloperAppsQueryKey(args.userId),
         context?.previousApps
       )
     }
@@ -206,14 +206,14 @@ export const useDeleteDeveloperApp = () => {
       const appIndex = previousApps?.findIndex((app) => app.apiKey === apiKey)
       const newApps = cloneDeep(previousApps).splice(appIndex, 1)
 
-      queryClient.setQueryData([QUERY_KEYS.developerApps, userId], newApps)
+      queryClient.setQueryData(getDeveloperAppsQueryKey(userId), newApps)
 
       // Return context with the previous apps
       return { previousApps }
     },
     onError: (_error, args, context) => {
       queryClient.setQueryData(
-        [QUERY_KEYS.developerApps, args.userId],
+        getDeveloperAppsQueryKey(args.userId),
         context?.previousApps
       )
     }

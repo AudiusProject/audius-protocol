@@ -23,15 +23,18 @@ type GetAudioTransactionsArgs = {
 
 const AUDIO_TRANSACTIONS_BATCH_SIZE = 50
 
-export const getAudioTransactionsQueryKey = (
-  args: GetAudioTransactionsArgs & { userId: Nullable<ID> }
-) => [
+export const getAudioTransactionsQueryKey = ({
+  userId,
+  sortMethod,
+  sortDirection,
+  pageSize
+}: GetAudioTransactionsArgs & { userId: Nullable<ID> }) => [
   QUERY_KEYS.audioTransactions,
-  args.userId,
+  userId,
   {
-    sortMethod: args.sortMethod,
-    sortDirection: args.sortDirection,
-    pageSize: args.pageSize
+    sortMethod,
+    sortDirection,
+    pageSize
   }
 ]
 

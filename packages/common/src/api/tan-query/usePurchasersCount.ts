@@ -13,11 +13,14 @@ export type UsePurchasersCountArgs = {
   contentType?: string | undefined
 }
 
-export const getPurchasersCountQueryKey = (args: UsePurchasersCountArgs) => [
+export const getPurchasersCountQueryKey = ({
+  contentId,
+  contentType
+}: UsePurchasersCountArgs) => [
   QUERY_KEYS.purchasersCount,
   {
-    contentId: args.contentId,
-    contentType: args.contentType
+    contentId,
+    contentType
   }
 ]
 

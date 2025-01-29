@@ -10,6 +10,7 @@ import { SUPPORTING_PAGINATION_SIZE } from '~/utils/constants'
 import { QUERY_KEYS } from './queryKeys'
 import { QueryOptions } from './types'
 import { useCurrentUserId } from './useCurrentUserId'
+import { getSupporterQueryKey } from './useSupporter'
 import { primeUserData } from './utils/primeUserData'
 
 type UseSupportedUsersArgs = {
@@ -51,7 +52,7 @@ export const useSupportedUsers = (
       // Prime the cache for each supporter
       supporting.forEach((supportedUser) => {
         queryClient.setQueryData(
-          [QUERY_KEYS.supporter, supportedUser.receiver.user_id, userId],
+          getSupporterQueryKey(supportedUser.receiver.user_id, userId),
           supportedUser
         )
       })

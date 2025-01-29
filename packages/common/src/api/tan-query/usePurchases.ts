@@ -24,13 +24,18 @@ export type GetPurchaseListArgs = {
   pageSize?: number
 }
 
-export const getPurchasesQueryKey = (args: GetPurchaseListArgs) => [
+export const getPurchasesQueryKey = ({
+  userId,
+  sortMethod,
+  sortDirection,
+  pageSize
+}: GetPurchaseListArgs) => [
   QUERY_KEYS.purchases,
-  args.userId,
+  userId,
   {
-    sortMethod: args.sortMethod,
-    sortDirection: args.sortDirection,
-    pageSize: args.pageSize
+    sortMethod,
+    sortDirection,
+    pageSize
   }
 ]
 

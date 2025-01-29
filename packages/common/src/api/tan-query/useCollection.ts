@@ -8,6 +8,7 @@ import { ID } from '~/models'
 
 import { QUERY_KEYS } from './queryKeys'
 import { QueryOptions } from './types'
+import { getCollectionByPermalinkQueryKey } from './useCollectionByPermalink'
 import { useCurrentUserId } from './useCurrentUserId'
 import { primeCollectionData } from './utils/primeCollectionData'
 
@@ -50,7 +51,7 @@ export const useCollection = (
         // Prime collectionByPermalink cache if we have a permalink
         if (collection.permalink) {
           queryClient.setQueryData(
-            [QUERY_KEYS.collectionByPermalink, collection.permalink],
+            getCollectionByPermalinkQueryKey(collection.permalink),
             collection
           )
         }

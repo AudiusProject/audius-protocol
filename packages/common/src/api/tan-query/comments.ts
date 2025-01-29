@@ -75,12 +75,14 @@ export type GetCommentsByTrackArgs = {
   pageSize?: number
 }
 
-export const getTrackCommentListQueryKey = (
-  args: Omit<GetCommentsByTrackArgs, 'userId'>
-) => [
+export const getTrackCommentListQueryKey = ({
+  trackId,
+  sortMethod,
+  pageSize
+}: Omit<GetCommentsByTrackArgs, 'userId'>) => [
   QUERY_KEYS.trackCommentList,
-  args.trackId,
-  { sortMethod: args.sortMethod, pageSize: args.pageSize }
+  trackId,
+  { sortMethod, pageSize }
 ]
 
 export const useGetCommentsByTrackId = ({
@@ -205,7 +207,7 @@ const setPreviousCommentCount = (
   updaterFn?: (prevData: TrackCommentCount | undefined) => TrackCommentCount
 ) => {
   queryClient.setQueryData(
-    [QUERY_KEYS.trackCommentCount, trackId],
+    getTrackCommentCountQueryKey(trackId),
     (prevData: TrackCommentCount | undefined) =>
       updaterFn
         ? updaterFn(prevData)
@@ -310,11 +312,14 @@ type GetRepliesArgs = {
   pageSize?: number
 }
 
-export const getCommentRepliesQueryKey = (args: GetRepliesArgs) => [
+export const getCommentRepliesQueryKey = ({
+  commentId,
+  pageSize
+}: GetRepliesArgs) => [
   QUERY_KEYS.comment,
-  args.commentId,
+  commentId,
   QUERY_KEYS.commentReplies,
-  args.pageSize
+  pageSize
 ]
 
 export const useGetCommentRepliesById = ({
@@ -1018,7 +1023,7 @@ export const useGetTrackCommentNotificationSetting = (
   const { audiusSdk } = useAudiusQueryContext()
 
   return useQuery({
-    queryKey: [QUERY_KEYS.trackCommentNotificationSetting, trackId],
+    queryKey: getTrackCommentNotificationSettingQueryKey(trackId),
     queryFn: async () => {
       if (!currentUserId) return
       const sdk = await audiusSdk()
@@ -1035,6 +1040,11 @@ type UpdateTrackCommentNotificationSettingArgs = {
   trackId: ID
   action: EntityManagerAction.MUTE | EntityManagerAction.UNMUTE
 }
+
+const getTrackCommentNotificationSettingQueryKey = (trackId: ID) => [
+  QUERY_KEYS.trackCommentNotificationSetting,
+  trackId
+]
 
 export const useUpdateTrackCommentNotificationSetting = () => {
   const { audiusSdk, reportToSentry } = useAudiusQueryContext()
@@ -1054,7 +1064,7 @@ export const useUpdateTrackCommentNotificationSetting = () => {
     },
     onMutate: ({ trackId, action }) => {
       queryClient.setQueryData(
-        [QUERY_KEYS.trackCommentNotificationSetting, trackId],
+        getTrackCommentNotificationSettingQueryKey(trackId),
         () => ({ data: { isMuted: action === EntityManagerAction.MUTE } })
       )
     },
@@ -1069,7 +1079,7 @@ export const useUpdateTrackCommentNotificationSetting = () => {
       dispatch(toast({ content: messages.muteUserError }))
 
       queryClient.resetQueries({
-        queryKey: [QUERY_KEYS.trackCommentNotificationSetting, trackId]
+        queryKey: getTrackCommentNotificationSettingQueryKey(trackId)
       })
     }
   })

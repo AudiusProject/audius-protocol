@@ -19,10 +19,10 @@ type UseFollowingArgs = {
   pageSize?: number
 }
 
-export const getFollowingQueryKey = (args: UseFollowingArgs) => [
-  QUERY_KEYS.following,
-  args.userId
-]
+export const getFollowingQueryKey = ({
+  userId,
+  pageSize
+}: UseFollowingArgs) => [QUERY_KEYS.following, userId, { pageSize }]
 
 /**
  * Hook to fetch following for a user with infinite query support.
@@ -38,7 +38,7 @@ export const useFollowing = (
   const dispatch = useDispatch()
 
   return useInfiniteQuery({
-    queryKey: getFollowingQueryKey({ userId }),
+    queryKey: getFollowingQueryKey({ userId, pageSize }),
     initialPageParam: 0,
     getNextPageParam: (lastPage: User[], allPages) => {
       if (lastPage.length < pageSize) return undefined
