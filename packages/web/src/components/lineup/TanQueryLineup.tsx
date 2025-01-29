@@ -118,7 +118,7 @@ export interface TanQueryLineupProps {
   initialPageSize?: number
 
   /** Starting index to render from */
-  offset?: number
+  start?: number
 }
 
 const defaultLineup = {
@@ -165,7 +165,7 @@ export const TanQueryLineup = ({
   pageSize,
   initialPageSize,
   scrollParent: externalScrollParent,
-  offset = 0
+  start = 0
 }: TanQueryLineupProps) => {
   const dispatch = useDispatch()
   const {
@@ -258,8 +258,8 @@ export const TanQueryLineup = ({
     ...lineup,
     entries:
       pageSize !== undefined
-        ? lineup.entries.slice(offset, offset + pageSize)
-        : lineup.entries.slice(offset)
+        ? lineup.entries.slice(start, start + pageSize)
+        : lineup.entries.slice(start)
   }
 
   let tiles = slicedLineup.entries

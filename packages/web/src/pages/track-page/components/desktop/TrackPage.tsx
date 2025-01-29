@@ -1,9 +1,8 @@
 import { useCallback, useRef } from 'react'
 
 import { useFeatureFlag, useGatedContentAccess } from '@audius/common/hooks'
-import { ID, LineupState, Track, User } from '@audius/common/models'
+import { ID, Track, User } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
-import { QueueItem } from '@audius/common/store'
 import { Box, Flex } from '@audius/harmony'
 
 import { CommentSection } from 'components/comments/CommentSection'
@@ -24,7 +23,6 @@ export type OwnProps = {
   structuredData?: Object
   // Hero Track Props
   heroTrack: Track | null
-  hasValidRemixParent: boolean
   user: User | null
   heroPlaying: boolean
   previewing: boolean
@@ -36,7 +34,6 @@ export type OwnProps = {
     isPlaying: boolean
     isPreview?: boolean
   }) => void
-  goToAllRemixesPage: () => void
   onHeroShare: (trackId: ID) => void
   onHeroRepost: (isReposted: boolean, trackId: ID) => void
   onFollow: () => void
@@ -44,13 +41,6 @@ export type OwnProps = {
 
   onSaveTrack: (isSaved: boolean, trackId: ID) => void
   makePublic: (trackId: ID) => void
-  // Tracks Lineup Props
-  tracks: LineupState<Track>
-  currentQueueItem: QueueItem
-  isPlaying: boolean
-  isBuffering: boolean
-  play: (uid?: string) => void
-  pause: () => void
 }
 
 const TrackPage = ({
@@ -58,7 +48,6 @@ const TrackPage = ({
   description,
   canonicalUrl,
   structuredData,
-  hasValidRemixParent,
   // Hero Track Props
   heroTrack,
   user,
@@ -66,7 +55,6 @@ const TrackPage = ({
   previewing,
   userId,
   onHeroPlay,
-  goToAllRemixesPage,
   onHeroShare,
   onHeroRepost,
   onSaveTrack,

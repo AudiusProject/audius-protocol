@@ -4,12 +4,14 @@ import { FeatureFlags } from '@audius/common/services'
 import { useTrackPageLineup } from '@audius/common/src/api/tan-query/useTrackPageLineup'
 import { tracksActions } from '@audius/common/src/store/pages/track/lineup/actions'
 import { playerSelectors } from '@audius/common/store'
-import { Flex, Text } from '@audius/harmony'
+import { Flex, Text, IconRemix } from '@audius/harmony'
+import type { IconComponent } from '@audius/harmony'
 import { useSelector } from 'react-redux'
 
 import { TanQueryLineup } from 'components/lineup/TanQueryLineup'
 import { LineupVariant } from 'components/lineup/types'
 
+import { ViewOtherRemixesButton } from './ViewOtherRemixesButton'
 import { useTrackPageSize } from './useTrackPageSize'
 
 const { getUid, getTrackId, getBuffering } = playerSelectors
@@ -20,6 +22,26 @@ type TrackPageLineupProps = {
   user: User | null
   trackId: number | null | undefined
   commentsDisabled?: boolean
+}
+
+type SectionProps = {
+  title: string
+  icon?: IconComponent
+  children: React.ReactNode
+}
+
+const Section = ({ title, icon: Icon, children }: SectionProps) => {
+  return (
+    <Flex direction='column' gap='l' w='100%'>
+      <Flex gap='s' alignItems='center'>
+        {Icon && <Icon />}
+        <Text variant='title' size='l'>
+          {title}
+        </Text>
+      </Flex>
+      {children}
+    </Flex>
+  )
 }
 
 const messages = {
@@ -37,13 +59,13 @@ export const TrackPageLineup = ({
   const {
     indices,
     pageSize = DEFAULT_PAGE_SIZE,
-    ...queryData
+    ...lineupData
   } = useTrackPageLineup({
     trackId,
     ownerHandle: user?.handle
   })
 
-  const { isDesktop } = useTrackPageSize()
+  const { isDesktop, isMobile } = useTrackPageSize()
   const playingUid = useSelector(getUid)
   const playingTrackId = useSelector(getTrackId)
   const isBuffering = useSelector(getBuffering)
@@ -52,104 +74,94 @@ export const TrackPageLineup = ({
     FeatureFlags.COMMENTS_ENABLED
   )
   const isCommentingEnabled = commentsFlagEnabled && !commentsDisabled
+  const lineupVariant =
+    (isCommentingEnabled && isDesktop) || isMobile
+      ? LineupVariant.SECTION
+      : LineupVariant.CONDENSED
+  if (!indices) return null
 
   const renderRemixParentSection = () => {
-    if (!indices) return null
     if (indices.remixParentIndex === null) return null
 
     return (
-      <Flex direction='column' gap='l'>
-        <Text variant='title' size='l'>
-          {messages.originalTrack}
-        </Text>
+      <Section title={messages.originalTrack}>
         <TanQueryLineup
-          lineupQueryData={queryData}
+          lineupQueryData={lineupData}
           pageSize={1}
-          variant={LineupVariant.SECTION}
-          offset={indices.remixParentIndex}
+          variant={lineupVariant}
+          start={indices.remixParentIndex}
           playingUid={playingUid}
           playingTrackId={playingTrackId}
           buffering={isBuffering}
           actions={tracksActions}
           playingSource={PlaybackSource.TRACK_TILE}
         />
-      </Flex>
+      </Section>
     )
   }
 
   const renderRemixesSection = () => {
-    if (!indices) return null
-    if (indices.remixesStartIndex === null) return null
+    if (indices.remixesStartIndex === null || !trackId) return null
     const start = indices.remixesStartIndex
     const end = indices.moreByTracksStartIndex
 
     return (
-      <Flex direction='column' gap='l' alignItems='flex-start'>
-        <Text variant='title' size='l'>
-          {messages.remixes}
-        </Text>
+      <Section title={messages.remixes} icon={IconRemix}>
         <TanQueryLineup
-          lineupQueryData={queryData}
+          lineupQueryData={lineupData}
           pageSize={end !== null ? end - start : 0}
-          variant={LineupVariant.SECTION}
-          offset={start}
+          variant={lineupVariant}
+          start={start}
           playingUid={playingUid}
           playingTrackId={playingTrackId}
           buffering={isBuffering}
           actions={tracksActions}
           playingSource={PlaybackSource.TRACK_TILE}
         />
-      </Flex>
+        <ViewOtherRemixesButton parentTrackId={trackId} size='xs' />
+      </Section>
     )
   }
 
   const renderMoreBySection = () => {
-    if (!indices) return null
     if (indices.moreByTracksStartIndex === null) return null
     const start = indices.moreByTracksStartIndex
     const end = indices.recommendedTracksStartIndex
 
     return (
-      <Flex direction='column' gap='l' alignItems='flex-start'>
-        <Text variant='title' size='l'>
-          {messages.moreBy(user?.name ?? '')}
-        </Text>
+      <Section title={messages.moreBy(user?.name ?? '')}>
         <TanQueryLineup
-          lineupQueryData={queryData}
+          lineupQueryData={lineupData}
           pageSize={end !== null ? end - start : pageSize}
-          variant={LineupVariant.SECTION}
-          offset={start}
+          variant={lineupVariant}
+          start={start}
           playingUid={playingUid}
           playingTrackId={playingTrackId}
           buffering={isBuffering}
           actions={tracksActions}
           playingSource={PlaybackSource.TRACK_TILE}
         />
-      </Flex>
+      </Section>
     )
   }
 
   const renderRecommendedSection = () => {
-    if (!indices) return null
     if (indices.recommendedTracksStartIndex === null) return null
 
     return (
-      <Flex direction='column' gap='l'>
-        <Text variant='title' size='l'>
-          {messages.youMightAlsoLike}
-        </Text>
+      <Section title={messages.youMightAlsoLike}>
         <TanQueryLineup
-          lineupQueryData={queryData}
+          lineupQueryData={lineupData}
           pageSize={pageSize}
-          variant={LineupVariant.SECTION}
-          offset={indices.recommendedTracksStartIndex}
+          variant={lineupVariant}
+          start={indices.recommendedTracksStartIndex}
           playingUid={playingUid}
           playingTrackId={playingTrackId}
           buffering={isBuffering}
           actions={tracksActions}
           playingSource={PlaybackSource.TRACK_TILE}
         />
-      </Flex>
+      </Section>
     )
   }
 
