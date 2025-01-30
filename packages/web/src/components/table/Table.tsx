@@ -759,21 +759,22 @@ export const Table = ({
       </InfiniteLoader>
     )
   }, [
-    fetchBatchSize,
-    fetchThreshold,
-    getTableBodyProps,
-    getTableProps,
     isRowLoaded,
     loadMoreRows,
-    loading,
-    renderHeaders,
-    renderRow,
-    rows.length,
-    scrollRef,
-    tableClassName,
     totalRowCount,
+    rows.length,
+    fetchThreshold,
+    fetchBatchSize,
+    scrollRef,
     wrapperClassName,
-    tableHeaderClassName
+    tableClassName,
+    getTableProps,
+    tableHeaderClassName,
+    renderHeaders,
+    loading,
+    getTableBodyProps,
+    fetchMore,
+    renderRow
   ])
 
   return isVirtualized ? renderVirtualizedContent() : renderContent()

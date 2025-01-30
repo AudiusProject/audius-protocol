@@ -1,10 +1,11 @@
-import { memo, useEffect, useCallback, useContext } from 'react'
+import { memo, useEffect, useContext, useMemo } from 'react'
 
-import { useGatedContentAccessMap } from '@audius/common/hooks'
-import { ID, UID, LineupTrack } from '@audius/common/models'
+import { useTrackHistory } from '@audius/common/api'
 import { route } from '@audius/common/utils'
 import { Button } from '@audius/harmony'
+import { Link } from 'react-router-dom'
 
+import { useTanQueryLineupProps } from 'components/lineup/hooks'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import MobilePageContainer from 'components/mobile-page-container/MobilePageContainer'
 import NavContext, { LeftPreset } from 'components/nav/mobile/NavContext'
@@ -27,27 +28,16 @@ const messages = {
 export type HistoryPageProps = {
   title: string
   description: string
-  userId: ID
-  entries: LineupTrack[]
-  playing: boolean
-  isEmpty: boolean
-  loading: boolean
-  onTogglePlay: (uid: UID, trackId: ID) => void
-  currentQueueItem: any
-  goToRoute: (route: string) => void
 }
 
-const HistoryPage = ({
-  title,
-  description,
-  entries,
-  playing,
-  isEmpty,
-  loading,
-  goToRoute,
-  onTogglePlay,
-  currentQueueItem
-}: HistoryPageProps) => {
+const HistoryPage = ({ title, description }: HistoryPageProps) => {
+  const { lineup, isInitialLoading, data, isPlaying, togglePlay } =
+    useTrackHistory({
+      pageSize: 50
+    })
+  const lineupProps = useTanQueryLineupProps()
+  const { playingUid } = lineupProps
+
   // Set Header Nav
   const { setLeft, setCenter, setRight } = useContext(NavContext)!
   useEffect(() => {
@@ -56,53 +46,53 @@ const HistoryPage = ({
     setRight(null)
   }, [setLeft, setCenter, setRight])
 
-  const trackAccessMap = useGatedContentAccessMap(entries)
+  // Merge lineup entries with their corresponding track data
+  const tracks = useMemo(() => {
+    if (lineup.entries.length === 0 || !data || data.length === 0) return []
+    return data.map((track, index) => {
+      const lineupTrack = {
+        ...lineup.entries[index],
+        ...track
+      }
 
-  const tracks = entries.map((track: LineupTrack, index: number) => {
-    const isActive = track.uid === currentQueueItem.uid
-    const { isFetchingNFTAccess, hasStreamAccess } = trackAccessMap[
-      track.track_id
-    ] ?? { isFetchingNFTAccess: false, hasStreamAccess: true }
-    const isLocked = !isFetchingNFTAccess && !hasStreamAccess
-    return {
-      isLoading: loading,
-      isStreamGated: track.is_stream_gated,
-      isUnlisted: track.is_unlisted,
-      isReposted: track.has_current_user_reposted,
-      isSaved: track.has_current_user_saved,
-      isActive,
-      isPlaying: isActive && playing,
-      artistName: track.user.name,
-      artistHandle: track.user.handle,
-      permalink: track.permalink,
-      trackTitle: track.title,
-      trackId: track.track_id,
-      uid: track.uid,
-      isDeleted: track.is_delete || !!track.user.is_deactivated,
-      isLocked
-    }
-  })
+      const isActive = lineupTrack.uid === playingUid
 
-  const onClickEmpty = useCallback(() => {
-    goToRoute(TRENDING_PAGE)
-  }, [goToRoute])
+      return {
+        isLoading: isInitialLoading,
+        isStreamGated: lineupTrack.is_stream_gated,
+        isUnlisted: lineupTrack.is_unlisted,
+        isReposted: lineupTrack.has_current_user_reposted,
+        isSaved: lineupTrack.has_current_user_saved,
+        isActive,
+        isPlaying: isActive && isPlaying,
+        artistName: lineupTrack.user.name,
+        artistHandle: lineupTrack.user.handle,
+        permalink: lineupTrack.permalink,
+        trackTitle: lineupTrack.title,
+        trackId: lineupTrack.track_id,
+        uid: lineupTrack.uid,
+        isDeleted: lineupTrack.is_delete || !!lineupTrack.user.is_deactivated,
+        isLocked: false
+      }
+    })
+  }, [lineup.entries, data, playingUid, isInitialLoading, isPlaying])
 
   return (
     <MobilePageContainer title={title} description={description}>
-      {isEmpty && !loading ? (
+      {tracks.length === 0 && !isInitialLoading ? (
         <div className={styles.emptyContainer}>
           <div className={styles.primary}>
             {messages.empty.primary}
             <i className='emoji face-with-monocle' />
           </div>
           <div className={styles.secondary}>{messages.empty.secondary}</div>
-          <Button variant='primary' onClick={onClickEmpty}>
-            {messages.empty.cta}
+          <Button variant='primary'>
+            <Link to={TRENDING_PAGE}>{messages.empty.cta}</Link>
           </Button>
         </div>
       ) : (
         <div className={styles.trackListContainer}>
-          {loading ? (
+          {isInitialLoading ? (
             <LoadingSpinner className={styles.spinner} />
           ) : (
             <TrackList
@@ -111,7 +101,7 @@ const HistoryPage = ({
               itemClassName={styles.itemClassName}
               showDivider
               showBorder
-              togglePlay={onTogglePlay}
+              togglePlay={togglePlay}
               trackItemAction={TrackItemAction.Overflow}
             />
           )}

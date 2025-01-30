@@ -1,6 +1,5 @@
 import { useIsMobile } from 'hooks/useIsMobile'
 
-import HistoryPageProvider from './HistoryPageProvider'
 import DesktopHistoryPage from './components/desktop/HistoryPage'
 import MobileHistoryPage from './components/mobile/HistoryPage'
 
@@ -10,8 +9,12 @@ const messages = {
 }
 
 const HistoryPage = () => {
-  // const isMobile = useIsMobile()
-  return <DesktopHistoryPage {...messages} />
+  const isMobile = useIsMobile()
+  return isMobile ? (
+    <MobileHistoryPage {...messages} />
+  ) : (
+    <DesktopHistoryPage {...messages} />
+  )
 }
 
 export default HistoryPage
