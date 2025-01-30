@@ -2,7 +2,10 @@ import { UserMetadata } from '@audius/common/models'
 import { IconRobot } from '@audius/harmony'
 
 import { Header } from 'components/header/desktop/Header'
-import Lineup, { LineupProps } from 'components/lineup/Lineup'
+import {
+  TanQueryLineup,
+  TanQueryLineupProps
+} from 'components/lineup/TanQueryLineup'
 import Page from 'components/page/Page'
 import UserBadges from 'components/user-badges/UserBadges'
 import { fullAiPage } from 'utils/route'
@@ -22,7 +25,7 @@ const messages = {
 export type AiPageProps = {
   title: string
   user: UserMetadata | null
-  getLineupProps: () => LineupProps
+  getLineupProps: () => TanQueryLineupProps
   goToArtistPage: () => void
 }
 
@@ -50,6 +53,8 @@ const AiPage = g(({ title, user, getLineupProps, goToArtistPage }) => {
     />
   )
 
+  const lineupProps = getLineupProps()
+
   return (
     <Page
       title={title}
@@ -57,7 +62,7 @@ const AiPage = g(({ title, user, getLineupProps, goToArtistPage }) => {
       canonicalUrl={fullAiPage(user.handle)}
       header={renderHeader()}
     >
-      <Lineup {...getLineupProps()} endOfLineup={<ShareAiTracksTile />} />
+      <TanQueryLineup {...lineupProps} endOfLineup={<ShareAiTracksTile />} />
     </Page>
   )
 })

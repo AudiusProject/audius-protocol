@@ -3,7 +3,10 @@ import { pluralize } from '@audius/common/utils'
 import { IconRemix, Text } from '@audius/harmony'
 
 import { Header } from 'components/header/desktop/Header'
-import Lineup, { LineupProps } from 'components/lineup/Lineup'
+import {
+  TanQueryLineup,
+  TanQueryLineupProps
+} from 'components/lineup/TanQueryLineup'
 import { TrackLink } from 'components/link/TrackLink'
 import { UserLink } from 'components/link/UserLink'
 import Page from 'components/page/Page'
@@ -25,7 +28,7 @@ export type RemixesPageProps = {
   count: number | null
   originalTrack: Track | null
   user: User | null
-  getLineupProps: () => LineupProps
+  getLineupProps: () => TanQueryLineupProps
   goToTrackPage: () => void
   goToArtistPage: () => void
 }
@@ -53,6 +56,8 @@ const RemixesPage = g(
       />
     )
 
+    const lineupProps = getLineupProps()
+
     return (
       <Page
         title={title}
@@ -60,7 +65,7 @@ const RemixesPage = g(
         canonicalUrl={fullTrackRemixesPage(originalTrack.permalink)}
         header={renderHeader()}
       >
-        <Lineup {...getLineupProps()} />
+        <TanQueryLineup {...lineupProps} />
       </Page>
     )
   }

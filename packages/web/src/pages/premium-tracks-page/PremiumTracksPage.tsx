@@ -2,8 +2,7 @@ import { usePremiumTracks } from '@audius/common/src/api/tan-query/usePremiumTra
 import { premiumTracksPageLineupActions } from '@audius/common/store'
 
 import EndOfLineup from 'components/lineup/EndOfLineup'
-import Lineup from 'components/lineup/Lineup'
-import { useTanQueryLineupProps } from 'components/lineup/hooks'
+import { TanQueryLineup } from 'components/lineup/TanQueryLineup'
 import { useIsMobile } from 'hooks/useIsMobile'
 import { useMainContentRef } from 'pages/MainContentContext'
 
@@ -16,9 +15,7 @@ const messages = {
 
 export const PremiumTracksPage = () => {
   const ref = useMainContentRef()
-  const { lineup, loadNextPage, play, pause, isPlaying, pageSize } =
-    usePremiumTracks()
-  const lineupProps = useTanQueryLineupProps()
+  const premiumTracksData = usePremiumTracks()
   const isMobile = useIsMobile()
   const Content = isMobile
     ? MobilePremiumTracksPageContent
@@ -26,19 +23,14 @@ export const PremiumTracksPage = () => {
 
   const renderLineup = () => {
     return (
-      <Lineup
+      <TanQueryLineup
         actions={premiumTracksPageLineupActions}
         scrollParent={ref.current}
         endOfLineup={
           <EndOfLineup description={messages.endOfLineupDescription} />
         }
-        lineup={lineup}
-        loadMore={loadNextPage}
-        playTrack={play}
-        pauseTrack={pause}
-        playing={isPlaying}
-        pageSize={pageSize}
-        {...lineupProps}
+        lineupQueryData={premiumTracksData}
+        pageSize={premiumTracksData.pageSize}
       />
     )
   }

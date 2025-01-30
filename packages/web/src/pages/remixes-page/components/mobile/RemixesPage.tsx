@@ -6,7 +6,10 @@ import { IconRemix as IconRemixes } from '@audius/harmony'
 
 import Header from 'components/header/mobile/Header'
 import { HeaderContext } from 'components/header/mobile/HeaderContextProvider'
-import Lineup, { LineupProps } from 'components/lineup/Lineup'
+import {
+  TanQueryLineup,
+  TanQueryLineupProps
+} from 'components/lineup/TanQueryLineup'
 import MobilePageContainer from 'components/mobile-page-container/MobilePageContainer'
 import { useSubPageHeader } from 'components/nav/mobile/NavContext'
 import UserBadges from 'components/user-badges/UserBadges'
@@ -28,7 +31,7 @@ export type RemixesPageProps = {
   count: number | null
   originalTrack: Track | null
   user: User | null
-  getLineupProps: () => LineupProps
+  getLineupProps: () => TanQueryLineupProps
   goToTrackPage: () => void
   goToArtistPage: () => void
 }
@@ -67,6 +70,8 @@ const RemixesPage = g(
       )
     }, [setHeader, title, originalTrack, user, goToArtistPage, goToTrackPage])
 
+    const lineupProps = getLineupProps()
+
     return (
       <MobilePageContainer
         title={title}
@@ -97,7 +102,7 @@ const RemixesPage = g(
               </div>
             </div>
           </div>
-          <Lineup {...getLineupProps()} />
+          <TanQueryLineup {...lineupProps} />
         </div>
       </MobilePageContainer>
     )

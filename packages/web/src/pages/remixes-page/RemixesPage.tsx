@@ -6,12 +6,22 @@ import { remixesPageLineupActions } from '@audius/common/store'
 import { useParams } from 'react-router-dom'
 import { useNavigate } from 'react-router-dom-v5-compat'
 
-import { useTanQueryLineupProps } from 'components/lineup/hooks'
+import { TanQueryLineupProps } from 'components/lineup/TanQueryLineup'
 import { useIsMobile } from 'hooks/useIsMobile'
 import { useMainContentRef } from 'pages/MainContentContext'
 
 import RemixesPageDesktopContent from './components/desktop/RemixesPage'
 import RemixesPageMobileContent from './components/mobile/RemixesPage'
+
+type ChildProps = {
+  title: string
+  count: number | null
+  originalTrack: any | null
+  user: any | null
+  goToTrackPage: () => void
+  goToArtistPage: () => void
+  getLineupProps: () => TanQueryLineupProps
+}
 
 const messages = {
   title: 'Remixes',
@@ -27,11 +37,7 @@ const RemixesPage = () => {
     handle && slug ? `/${handle}/${slug}` : null
   )
   const trackId = originalTrack?.track_id
-  const { lineup, loadNextPage, play, pause, isPlaying, pageSize } = useRemixes(
-    { trackId }
-  )
-
-  const lineupProps = useTanQueryLineupProps()
+  const remixesData = useRemixes({ trackId })
 
   const goToTrackPage = useCallback(() => {
     if (originalTrack) {
@@ -45,26 +51,20 @@ const RemixesPage = () => {
     }
   }, [navigate, originalTrack])
 
-  const childProps = {
+  const childProps: ChildProps = {
     title: messages.title,
-    count: lineup?.entries?.length ?? null,
+    count: remixesData.lineup?.entries?.length ?? null,
     originalTrack: originalTrack ?? null,
     user: originalTrack?.user ?? null,
     goToTrackPage,
-    goToArtistPage
+    goToArtistPage,
+    getLineupProps: () => ({
+      actions: remixesPageLineupActions,
+      scrollParent: ref.current,
+      lineupQueryData: remixesData,
+      pageSize: remixesData.pageSize
+    })
   }
-
-  const getLineupProps = () => ({
-    scrollParent: ref.current,
-    lineup,
-    loadMore: loadNextPage,
-    playing: isPlaying,
-    playTrack: play,
-    pauseTrack: pause,
-    actions: remixesPageLineupActions,
-    pageSize,
-    ...lineupProps
-  })
 
   const isMobile = useIsMobile()
 
@@ -72,7 +72,7 @@ const RemixesPage = () => {
     ? RemixesPageMobileContent
     : RemixesPageDesktopContent
 
-  return <Content getLineupProps={getLineupProps} {...childProps} />
+  return <Content {...childProps} />
 }
 
 export default RemixesPage

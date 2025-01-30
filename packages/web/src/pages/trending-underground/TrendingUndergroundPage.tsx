@@ -4,8 +4,10 @@ import { route } from '@audius/common/utils'
 
 import { Header as DesktopHeader } from 'components/header/desktop/Header'
 import { useMobileHeader } from 'components/header/mobile/hooks'
-import Lineup, { LineupProps } from 'components/lineup/Lineup'
-import { useTanQueryLineupProps } from 'components/lineup/hooks'
+import {
+  TanQueryLineup,
+  TanQueryLineupProps
+} from 'components/lineup/TanQueryLineup'
 import MobilePageContainer from 'components/mobile-page-container/MobilePageContainer'
 import Page from 'components/page/Page'
 import { useIsMobile } from 'hooks/useIsMobile'
@@ -24,7 +26,13 @@ const messages = {
   )
 }
 
-const MobileTrendingUndergroundPage = (props: LineupProps) => {
+type TrendingUndergroundPageProps = {
+  lineupProps: TanQueryLineupProps
+}
+
+const MobileTrendingUndergroundPage = ({
+  lineupProps
+}: TrendingUndergroundPageProps) => {
   useMobileHeader({ title: messages.trendingUndergroundTitle })
 
   return (
@@ -38,13 +46,15 @@ const MobileTrendingUndergroundPage = (props: LineupProps) => {
         <div className={styles.mobileBannerContainer}>
           <RewardsBanner bannerType='underground' />
         </div>
-        <Lineup {...props} />
+        <TanQueryLineup {...lineupProps} />
       </div>
     </MobilePageContainer>
   )
 }
 
-const DesktopTrendingUndergroundPage = (props: LineupProps) => {
+const DesktopTrendingUndergroundPage = ({
+  lineupProps
+}: TrendingUndergroundPageProps) => {
   const header = <DesktopHeader primary={messages.trendingUndergroundTitle} />
 
   return (
@@ -57,7 +67,7 @@ const DesktopTrendingUndergroundPage = (props: LineupProps) => {
       <div className={styles.bannerContainer}>
         <RewardsBanner bannerType='underground' />
       </div>
-      <Lineup {...props} />
+      <TanQueryLineup {...lineupProps} />
     </Page>
   )
 }
@@ -65,26 +75,19 @@ const DesktopTrendingUndergroundPage = (props: LineupProps) => {
 const TrendingUndergroundPage = () => {
   const scrollParentRef = useMainContentRef()
   const isMobile = useIsMobile()
-  const { lineup, loadNextPage, play, pause, isPlaying, pageSize } =
-    useTrendingUnderground()
-  const lineupProps = useTanQueryLineupProps()
+  const undergroundData = useTrendingUnderground()
 
-  const props = {
-    scrollParent: scrollParentRef.current,
-    lineup,
-    loadMore: loadNextPage,
-    playing: isPlaying,
-    playTrack: play,
-    pauseTrack: pause,
+  const lineupProps = {
     actions: trendingUndergroundPageLineupActions,
-    pageSize,
-    ...lineupProps
+    scrollParent: scrollParentRef.current,
+    lineupQueryData: undergroundData,
+    pageSize: undergroundData.pageSize
   }
 
   return isMobile ? (
-    <MobileTrendingUndergroundPage {...props} />
+    <MobileTrendingUndergroundPage lineupProps={lineupProps} />
   ) : (
-    <DesktopTrendingUndergroundPage {...props} />
+    <DesktopTrendingUndergroundPage lineupProps={lineupProps} />
   )
 }
 

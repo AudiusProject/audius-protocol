@@ -1,4 +1,4 @@
-import { useRef, useEffect, useState, useCallback } from 'react'
+import { useRef, useEffect, useState, useCallback, useMemo } from 'react'
 
 import {
   Name,
@@ -10,7 +10,11 @@ import {
   Status
 } from '@audius/common/models'
 import { LineupQueryData } from '@audius/common/src/api/tan-query/types'
-import { LineupBaseActions, playerSelectors } from '@audius/common/store'
+import {
+  LineupBaseActions,
+  playerSelectors,
+  queueSelectors
+} from '@audius/common/store'
 import cn from 'classnames'
 import InfiniteScroll from 'react-infinite-scroller'
 import { useDispatch, useSelector } from 'react-redux'
@@ -30,7 +34,8 @@ import { useIsMobile } from 'hooks/useIsMobile'
 import styles from './Lineup.module.css'
 import { delineateByTime } from './delineate'
 import { LineupVariant } from './types'
-const { getUid } = playerSelectors
+const { getBuffering } = playerSelectors
+const { makeGetCurrent } = queueSelectors
 
 export interface TanQueryLineupProps {
   /** Query data should be fetched one component above and passed through here */
@@ -39,8 +44,6 @@ export interface TanQueryLineupProps {
   'aria-label'?: string
 
   // Other props
-  playingUid: UID | null
-  playingTrackId: ID | null
   variant?: LineupVariant
   scrollParent?: HTMLElement | null
   endOfLineup?: JSX.Element
@@ -50,13 +53,11 @@ export interface TanQueryLineupProps {
    */
   delineate?: boolean
 
-  buffering: boolean
   ordered?: boolean
   lineupContainerStyles?: string
   tileContainerStyles?: string
   tileStyles?: string
   setInView?: (inView: boolean) => void
-  playingSource: string | null
   emptyElement?: JSX.Element
   actions: LineupBaseActions
   delayLoad?: boolean
@@ -103,7 +104,6 @@ export const TanQueryLineup = ({
   lineupContainerStyles,
   tileContainerStyles,
   tileStyles,
-  playingTrackId,
   setInView,
   emptyElement,
   numPlaylistSkeletonRows,
@@ -126,9 +126,16 @@ export const TanQueryLineup = ({
     isError
   } = lineupQueryData
 
+  const getCurrentQueueItem = useMemo(() => makeGetCurrent(), [])
+  const currentQueueItem = useSelector(getCurrentQueueItem)
+  const isBuffering = useSelector(getBuffering)
+
+  const playingUid = currentQueueItem?.uid
+  const playingSource = currentQueueItem?.source
+  const playingTrackId = currentQueueItem?.track?.track_id ?? null
+
   const isMobile = useIsMobile()
   const scrollContainer = useRef<HTMLDivElement>(null)
-  const playingUid = useSelector(getUid)
 
   const TrackTile =
     isMobile || variant === LineupVariant.SECTION
@@ -226,7 +233,9 @@ export const TanQueryLineup = ({
           isLoading: slicedLineup.entries[index] === undefined,
           isTrending,
           onClick: onClickTile,
-          source: ModalSource.LineUpTrackTile
+          source: ModalSource.LineUpTrackTile,
+          isBuffering,
+          playingSource
         }
         // @ts-ignore - TODO: these types werent enforced before - something smelly here
         return <TrackTile {...trackProps} key={index} />
@@ -244,7 +253,9 @@ export const TanQueryLineup = ({
           isLoading: slicedLineup.entries[index] === undefined,
           numLoadingSkeletonRows: numPlaylistSkeletonRows,
           isTrending,
-          source: ModalSource.LineUpCollectionTile
+          source: ModalSource.LineUpCollectionTile,
+          isBuffering,
+          playingSource
         }
         // @ts-ignore - TODO: these types werent enforced before - something smelly here
         return <PlaylistTile {...playlistProps} key={index} />

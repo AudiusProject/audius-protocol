@@ -1,20 +1,16 @@
 import { useFeatureFlag } from '@audius/common/hooks'
-import { User, PlaybackSource } from '@audius/common/models'
+import { User } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
 import { useTrackPageLineup } from '@audius/common/src/api/tan-query/useTrackPageLineup'
 import { tracksActions } from '@audius/common/src/store/pages/track/lineup/actions'
-import { playerSelectors } from '@audius/common/store'
 import { Flex, Text, IconRemix } from '@audius/harmony'
 import type { IconComponent } from '@audius/harmony'
-import { useSelector } from 'react-redux'
 
 import { TanQueryLineup } from 'components/lineup/TanQueryLineup'
 import { LineupVariant } from 'components/lineup/types'
 
 import { ViewOtherRemixesButton } from './ViewOtherRemixesButton'
 import { useTrackPageSize } from './useTrackPageSize'
-
-const { getUid, getTrackId, getBuffering } = playerSelectors
 
 const DEFAULT_PAGE_SIZE = 6
 
@@ -66,9 +62,6 @@ export const TrackPageLineup = ({
   })
 
   const { isDesktop, isMobile } = useTrackPageSize()
-  const playingUid = useSelector(getUid)
-  const playingTrackId = useSelector(getTrackId)
-  const isBuffering = useSelector(getBuffering)
 
   const { isEnabled: commentsFlagEnabled } = useFeatureFlag(
     FeatureFlags.COMMENTS_ENABLED
@@ -90,11 +83,7 @@ export const TrackPageLineup = ({
           pageSize={1}
           variant={lineupVariant}
           start={indices.remixParentIndex}
-          playingUid={playingUid}
-          playingTrackId={playingTrackId}
-          buffering={isBuffering}
           actions={tracksActions}
-          playingSource={PlaybackSource.TRACK_TILE}
         />
       </Section>
     )
@@ -112,11 +101,7 @@ export const TrackPageLineup = ({
           pageSize={end !== null ? end - start : 0}
           variant={lineupVariant}
           start={start}
-          playingUid={playingUid}
-          playingTrackId={playingTrackId}
-          buffering={isBuffering}
           actions={tracksActions}
-          playingSource={PlaybackSource.TRACK_TILE}
         />
         <ViewOtherRemixesButton parentTrackId={trackId} size='xs' />
       </Section>
@@ -135,11 +120,7 @@ export const TrackPageLineup = ({
           pageSize={end !== null ? end - start : 0}
           variant={lineupVariant}
           start={start}
-          playingUid={playingUid}
-          playingTrackId={playingTrackId}
-          buffering={isBuffering}
           actions={tracksActions}
-          playingSource={PlaybackSource.TRACK_TILE}
         />
       </Section>
     )
@@ -155,11 +136,7 @@ export const TrackPageLineup = ({
           pageSize={pageSize}
           variant={lineupVariant}
           start={indices.recommendedTracksStartIndex}
-          playingUid={playingUid}
-          playingTrackId={playingTrackId}
-          buffering={isBuffering}
           actions={tracksActions}
-          playingSource={PlaybackSource.TRACK_TILE}
         />
       </Section>
     )
