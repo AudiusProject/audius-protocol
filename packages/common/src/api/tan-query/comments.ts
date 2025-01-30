@@ -37,6 +37,7 @@ import { toast } from '~/store/ui/toast/slice'
 import { Nullable } from '~/utils'
 
 import { QUERY_KEYS } from './queryKeys'
+import { batchSetQueriesData, QueryKeyValue } from './utils/batchSetQueriesData'
 
 type CommentOrReply = Comment | ReplyComment
 
@@ -121,18 +122,21 @@ export const useGetCommentsByTrackId = ({
       )
 
       // Populate individual comment cache
+      const updates: QueryKeyValue[] = []
       commentList.forEach((comment) => {
-        queryClient.setQueryData<CommentOrReply>(
-          getCommentQueryKey(comment.id),
-          comment
-        )
+        updates.push({
+          queryKey: getCommentQueryKey(comment.id),
+          data: comment
+        })
         comment?.replies?.forEach?.((reply) =>
-          queryClient.setQueryData<CommentOrReply>(
-            getCommentQueryKey(reply.id),
-            reply
-          )
+          updates.push({
+            queryKey: getCommentQueryKey(reply.id),
+            data: reply
+          })
         )
       })
+      batchSetQueriesData(queryClient, updates)
+
       // For the comment list cache, we only store the ids of the comments (organized by sort method)
       return commentList.map((comment) => comment.id)
     },
@@ -353,19 +357,23 @@ export const useGetCommentRepliesById = ({
         commentsRes.data,
         replyCommentFromSDK
       )
+      const updates: QueryKeyValue[] = []
       // Add the replies to our parent comment replies list
-      queryClient.setQueryData(
-        getCommentQueryKey(commentId),
-        (comment: Comment | undefined) =>
-          ({
-            ...comment,
-            replies: [...(comment?.replies ?? []), ...replyList]
-          }) as Comment
-      )
+      updates.push({
+        queryKey: getCommentQueryKey(commentId),
+        data: (comment: Comment | undefined) => ({
+          ...comment,
+          replies: [...(comment?.replies ?? []), ...replyList]
+        })
+      })
       // Put each reply into their individual comment cache
       replyList.forEach((comment) => {
-        queryClient.setQueryData(getCommentQueryKey(comment.id), comment)
+        updates.push({
+          queryKey: getCommentQueryKey(comment.id),
+          data: comment
+        })
       })
+      batchSetQueriesData(queryClient, updates)
       return replyList
     },
     staleTime: Infinity,
@@ -450,22 +458,25 @@ export const usePostComment = () => {
         createdAt: new Date().toISOString(),
         updatedAt: undefined
       }
+
+      const updates: QueryKeyValue[] = []
+
       // If a root comment, update the sort data
       if (isReply) {
         // Update the parent comment replies list
-        queryClient.setQueryData<Comment | undefined>(
-          getCommentQueryKey(parentCommentId),
-          (comment) =>
+        updates.push({
+          queryKey: getCommentQueryKey(parentCommentId),
+          data: (comment: Comment | undefined) =>
             ({
               ...comment,
               replyCount: (comment?.replyCount ?? 0) + 1,
               replies: [...(comment?.replies ?? []), newComment]
             }) as Comment
-        )
+        })
       } else {
-        queryClient.setQueryData<InfiniteData<ID[]>>(
-          [QUERY_KEYS.trackCommentList, trackId, currentSort],
-          (prevData) => {
+        updates.push({
+          queryKey: [QUERY_KEYS.trackCommentList, trackId, currentSort],
+          data: (prevData: InfiniteData<ID[]> | undefined) => {
             const newState = cloneDeep(prevData) ?? {
               pages: [],
               pageParams: [0]
@@ -473,10 +484,16 @@ export const usePostComment = () => {
             newState.pages[0].unshift(newId)
             return newState
           }
-        )
+        })
       }
+
       // Update the individual comment cache
-      queryClient.setQueryData(getCommentQueryKey(newId), newComment)
+      updates.push({
+        queryKey: getCommentQueryKey(newId),
+        data: newComment
+      })
+
+      batchSetQueriesData(queryClient, updates)
 
       // Add to the comment count
       addCommentCount(dispatch, queryClient, trackId)
@@ -537,19 +554,20 @@ export const useReactToComment = () => {
         commentId
       ])
       // Optimistic update our cache
-      queryClient.setQueryData<CommentOrReply | undefined>(
-        getCommentQueryKey(commentId),
-        (prevCommentState) =>
-          ({
-            ...prevCommentState,
-            reactCount:
-              (prevCommentState?.reactCount ?? 0) + (isLiked ? 1 : -1),
+      const updates: QueryKeyValue[] = [
+        {
+          queryKey: getCommentQueryKey(commentId),
+          data: {
+            ...prevComment,
+            reactCount: (prevComment?.reactCount ?? 0) + (isLiked ? 1 : -1),
             isArtistReacted: isEntityOwner
               ? isLiked // If the artist is reacting, update the state accordingly
-              : prevCommentState?.isArtistReacted, // otherwise, keep the previous state
+              : prevComment?.isArtistReacted, // otherwise, keep the previous state
             isCurrentUserReacted: isLiked
-          }) as CommentOrReply
-      )
+          } as CommentOrReply
+        }
+      ]
+      batchSetQueriesData(queryClient, updates)
       return { prevComment }
     },
     onError: (error: Error, args, context) => {
@@ -567,17 +585,19 @@ export const useReactToComment = () => {
       if (context) {
         const { prevComment } = context
         // Revert our optimistic cache change
-        queryClient.setQueryData(
-          getCommentQueryKey(commentId),
-          (prevData: CommentOrReply | undefined) =>
-            ({
-              ...prevData,
+        const updates: QueryKeyValue[] = [
+          {
+            queryKey: getCommentQueryKey(commentId),
+            data: {
+              ...prevComment,
               // NOTE: intentionally only reverting the pieces we changed in case another mutation happened between this mutation start->error
               reactCount: prevComment?.reactCount,
               isArtistReacted: prevComment?.isArtistReacted,
               isCurrentUserReacted: prevComment?.isCurrentUserReacted
-            }) as CommentOrReply
-        )
+            } as CommentOrReply
+          }
+        ]
+        batchSetQueriesData(queryClient, updates)
       }
     }
   })
@@ -943,6 +963,7 @@ export const useMuteUser = () => {
           (prevData) => {
             if (!prevData) return
             const newState = cloneDeep(prevData)
+            const updates: QueryKeyValue[] = []
             // Filter out any comments by the muted user
             newState.pages = newState.pages.map((page) =>
               page.filter((id) => {
@@ -960,8 +981,9 @@ export const useMuteUser = () => {
                   // Filter out replies by the muted user
                   rootComment.replies = rootComment.replies.filter((reply) => {
                     if (reply.userId === mutedUserId) {
-                      queryClient.resetQueries({
-                        queryKey: getCommentQueryKey(reply.id)
+                      updates.push({
+                        queryKey: getCommentQueryKey(reply.id),
+                        data: undefined
                       })
                       return false
                     }
@@ -976,8 +998,9 @@ export const useMuteUser = () => {
 
                 // Finally if the root comment is by the muted user, remove it
                 if (rootComment?.userId === mutedUserId) {
-                  queryClient.resetQueries({
-                    queryKey: getCommentQueryKey(rootComment.id)
+                  updates.push({
+                    queryKey: getCommentQueryKey(rootComment.id),
+                    data: undefined
                   })
                   return false
                 }
@@ -988,6 +1011,10 @@ export const useMuteUser = () => {
             queryClient.resetQueries({
               queryKey: getTrackCommentCountQueryKey(trackId)
             })
+
+            // Batch remove all muted user comments
+            batchSetQueriesData(queryClient, updates)
+
             return newState
           }
         )

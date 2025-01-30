@@ -1,7 +1,7 @@
 import { QueryClient } from '@tanstack/react-query'
 
 export type QueryKeyValue<T = any> = {
-  queryKey: unknown[]
+  queryKey: any[]
   data: T
 }
 

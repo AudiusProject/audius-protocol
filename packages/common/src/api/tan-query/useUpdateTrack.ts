@@ -14,6 +14,7 @@ import { TrackMetadataForUpload } from '~/store/upload'
 import { QUERY_KEYS } from './queryKeys'
 import { getTrackQueryKey } from './useTrack'
 import { getTrackByPermalinkQueryKey } from './useTrackByPermalink'
+import { batchSetQueriesData, QueryKeyValue } from './utils/batchSetQueriesData'
 import { handleStemUpdates } from './utils/handleStemUpdates'
 import { primeTrackData } from './utils/primeTrackData'
 
@@ -91,8 +92,62 @@ export const useUpdateTrack = () => {
         trackId
       ])
 
+      const updates: QueryKeyValue[] = []
+
       // Optimistically update track
       if (previousTrack) {
+        updates.push({
+          queryKey: getTrackQueryKey(trackId),
+          data: { ...previousTrack, ...metadata }
+        })
+
+        // Add permalink updates
+        updates.push({
+          queryKey: getTrackByPermalinkQueryKey(previousTrack.permalink),
+          data: {
+            ...previousTrack,
+            ...metadata
+          }
+        })
+
+        // Only add the new permalink update if it's different from the previous one
+        if (
+          metadata.permalink &&
+          metadata.permalink !== previousTrack.permalink
+        ) {
+          updates.push({
+            queryKey: getTrackByPermalinkQueryKey(metadata.permalink),
+            data: {
+              ...previousTrack,
+              ...metadata
+            }
+          })
+        }
+
+        // Add collection updates
+        const collectionQueries = queryClient.getQueriesData<any>({
+          queryKey: [QUERY_KEYS.collection]
+        })
+        collectionQueries.forEach(([queryKey, data]) => {
+          if (!data?.tracks?.some((track: any) => track.id === trackId)) return
+
+          updates.push({
+            queryKey: [...queryKey],
+            data: {
+              ...data,
+              tracks: data.tracks.map((track: any) =>
+                track.id === trackId
+                  ? {
+                      ...track,
+                      ...metadata
+                    }
+                  : track
+              )
+            }
+          })
+        })
+
+        // Prime track data
         primeTrackData({
           tracks: [{ ...previousTrack, ...metadata }] as UserTrackMetadata[],
           queryClient,
@@ -101,49 +156,9 @@ export const useUpdateTrack = () => {
         })
       }
 
-      // Optimistically update trackByPermalink
-      if (previousTrack) {
-        queryClient.setQueryData(
-          getTrackByPermalinkQueryKey(previousTrack.permalink),
-          (old: any) => ({
-            ...old,
-            ...metadata
-            // TODO: add optimistic update for artwork
-          })
-        )
-        queryClient.setQueryData(
-          getTrackByPermalinkQueryKey(metadata.permalink),
-          (old: any) => ({
-            ...previousTrack,
-            ...old,
-            ...metadata
-          })
-        )
-      }
+      batchSetQueriesData(queryClient, updates)
 
-      // Optimistically update all collections that contain this track
-      queryClient.setQueriesData(
-        { queryKey: [QUERY_KEYS.collection] },
-        (oldData: any) => {
-          if (!oldData?.tracks?.some((track: any) => track.id === trackId)) {
-            return oldData
-          }
-
-          return {
-            ...oldData,
-            tracks: oldData.tracks.map((track: any) =>
-              track.id === trackId
-                ? {
-                    ...track,
-                    ...metadata
-                  }
-                : track
-            )
-          }
-        }
-      )
-
-      // Return context with the previous track and metadata
+      // Return context with the previous track
       return { previousTrack }
     },
     onError: (
@@ -151,34 +166,43 @@ export const useUpdateTrack = () => {
       { trackId, userId, metadata },
       context?: MutationContext
     ) => {
+      const updates: QueryKeyValue[] = []
+
       // If the mutation fails, roll back track data
       if (context?.previousTrack) {
-        queryClient.setQueryData(
-          getTrackQueryKey(trackId),
-          context.previousTrack
+        updates.push(
+          {
+            queryKey: getTrackQueryKey(trackId),
+            data: context.previousTrack
+          },
+          {
+            queryKey: getTrackByPermalinkQueryKey(
+              context.previousTrack.permalink
+            ),
+            data: context.previousTrack
+          }
         )
-        queryClient.setQueryData(
-          getTrackByPermalinkQueryKey(context.previousTrack.permalink),
-          context.previousTrack
-        )
+
+        // Roll back all collections that contain this track
+        const collectionQueries = queryClient.getQueriesData<any>({
+          queryKey: [QUERY_KEYS.collection]
+        })
+        collectionQueries.forEach(([queryKey, data]) => {
+          if (!data?.tracks?.some((track: any) => track.id === trackId)) return
+
+          updates.push({
+            queryKey: [...queryKey],
+            data: {
+              ...data,
+              tracks: data.tracks.map((track: any) =>
+                track.id === trackId ? context.previousTrack : track
+              )
+            }
+          })
+        })
       }
 
-      // Roll back all collections that contain this track
-      queryClient.setQueriesData(
-        { queryKey: [QUERY_KEYS.collection] },
-        (oldData: any) => {
-          if (!oldData?.tracks?.some((track: any) => track.id === trackId)) {
-            return oldData
-          }
-
-          return {
-            ...oldData,
-            tracks: oldData.tracks.map((track: any) =>
-              track.id === trackId ? context?.previousTrack : track
-            )
-          }
-        }
-      )
+      batchSetQueriesData(queryClient, updates)
 
       reportToSentry({
         error,

@@ -13,6 +13,7 @@ import { QUERY_KEYS } from './queryKeys'
 import { useCurrentUserId } from './useCurrentUserId'
 import { getUserQueryKey } from './useUser'
 import { getUserByHandleQueryKey } from './useUserByHandle'
+import { batchSetQueriesData, QueryKeyValue } from './utils/batchSetQueriesData'
 
 export type MutationContext = {
   previousMetadata: UserMetadata | undefined
@@ -106,21 +107,27 @@ export const useUpdateProfile = () => {
 
       // Optimistically update user data
       if (previousMetadata) {
-        queryClient.setQueryData(getUserQueryKey(currentUserId), {
-          ...previousMetadata,
-          ...metadata
-        })
-
-        // Also update user by handle if it exists
-        if (previousMetadata.handle) {
-          queryClient.setQueryData(
-            getUserByHandleQueryKey(previousMetadata.handle),
-            (old: any) => ({
-              ...old,
+        const updates: QueryKeyValue[] = [
+          {
+            queryKey: getUserQueryKey(currentUserId),
+            data: {
+              ...previousMetadata,
               ...metadata
-            })
-          )
+            }
+          }
+        ]
+
+        if (previousMetadata.handle) {
+          updates.push({
+            queryKey: getUserByHandleQueryKey(previousMetadata.handle),
+            data: {
+              ...previousMetadata,
+              ...metadata
+            }
+          })
         }
+
+        batchSetQueriesData(queryClient, updates)
       }
 
       return { previousMetadata }
@@ -128,18 +135,21 @@ export const useUpdateProfile = () => {
     onError: (error, metadata, context?: MutationContext) => {
       // If the mutation fails, roll back user data
       if (context?.previousMetadata) {
-        queryClient.setQueryData(getUserQueryKey(currentUserId), {
-          ...context.previousMetadata,
-          ...metadata
-        })
+        const updates: QueryKeyValue[] = [
+          {
+            queryKey: getUserQueryKey(currentUserId),
+            data: context.previousMetadata
+          }
+        ]
 
-        // Roll back user by handle data
         if (context.previousMetadata.handle) {
-          queryClient.setQueryData(
-            getUserByHandleQueryKey(context.previousMetadata.handle),
-            context.previousMetadata
-          )
+          updates.push({
+            queryKey: getUserByHandleQueryKey(context.previousMetadata.handle),
+            data: context.previousMetadata
+          })
         }
+
+        batchSetQueriesData(queryClient, updates)
       }
 
       reportToSentry({

@@ -21,6 +21,7 @@ import {
   useCurrentUserId
 } from '..'
 
+import { batchSetQueriesData, QueryKeyValue } from './utils/batchSetQueriesData'
 import { primeCollectionData } from './utils/primeCollectionData'
 
 type MutationContext = {
@@ -186,16 +187,19 @@ export const useUpdateCollection = () => {
     onError: (_err, { collectionId }, context?: MutationContext) => {
       // If the mutation fails, roll back collection data
       if (context?.previousCollection) {
-        queryClient.setQueryData(
-          getCollectionQueryKey(collectionId),
-          context.previousCollection
-        )
-        queryClient.setQueryData(
-          getCollectionByPermalinkQueryKey(
-            context.previousCollection.permalink
-          ),
-          context.previousCollection
-        )
+        const updates: QueryKeyValue[] = [
+          {
+            queryKey: getCollectionQueryKey(collectionId),
+            data: context.previousCollection
+          },
+          {
+            queryKey: getCollectionByPermalinkQueryKey(
+              context.previousCollection.permalink
+            ),
+            data: context.previousCollection
+          }
+        ]
+        batchSetQueriesData(queryClient, updates)
       }
     },
     onSettled: (_, __, { collectionId }) => {

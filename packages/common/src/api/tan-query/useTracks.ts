@@ -6,15 +6,11 @@ import { userTrackMetadataFromSDK } from '~/adapters/track'
 import { transformAndCleanList } from '~/adapters/utils'
 import { useAudiusQueryContext } from '~/audius-query'
 import { ID } from '~/models/Identifiers'
-import { Kind } from '~/models/Kind'
-import { addEntries } from '~/store/cache/actions'
-import { EntriesByKind } from '~/store/cache/types'
 import { removeNullable } from '~/utils/typeUtils'
 
 import { QUERY_KEYS } from './queryKeys'
 import { QueryOptions } from './types'
-import { getTrackQueryKey } from './useTrack'
-import { getUserQueryKey } from './useUser'
+import { primeTrackData } from './utils/primeTrackData'
 
 export const getTracksQueryKey = (trackIds: ID[] | null | undefined) => [
   QUERY_KEYS.tracks,
@@ -44,28 +40,11 @@ export const useTracks = (
       const tracks = transformAndCleanList(data, userTrackMetadataFromSDK)
 
       if (tracks?.length) {
-        const entries: EntriesByKind = {
-          [Kind.TRACKS]: {}
-        }
-
-        tracks.forEach((track) => {
-          // Prime track data
-          queryClient.setQueryData(getTrackQueryKey(track.track_id), track)
-          entries[Kind.TRACKS]![track.track_id] = track
-
-          // Prime user data from track owner
-          if (track.user) {
-            queryClient.setQueryData(
-              getUserQueryKey(track.user.user_id),
-              track.user
-            )
-            if (!entries[Kind.USERS]) entries[Kind.USERS] = {}
-            entries[Kind.USERS][track.user.user_id] = track.user
-          }
+        primeTrackData({
+          tracks,
+          queryClient,
+          dispatch
         })
-
-        // Sync all data to Redux in a single dispatch
-        dispatch(addEntries(entries, undefined, undefined, 'react-query'))
       }
 
       return tracks

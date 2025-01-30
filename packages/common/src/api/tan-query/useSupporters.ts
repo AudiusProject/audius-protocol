@@ -10,6 +10,7 @@ import { QUERY_KEYS } from './queryKeys'
 import { QueryOptions } from './types'
 import { useCurrentUserId } from './useCurrentUserId'
 import { getSupporterQueryKey } from './useSupporter'
+import { batchSetQueriesData } from './utils/batchSetQueriesData'
 import { primeUserData } from './utils/primeUserData'
 
 const DEFAULT_PAGE_SIZE = 20
@@ -51,12 +52,13 @@ export const useSupporters = (
       const supporters = supporterMetadataListFromSDK(data)
 
       // Prime the cache for each supporter
-      supporters.forEach((supporter) => {
-        queryClient.setQueryData(
-          getSupporterQueryKey(userId, supporter.sender.user_id),
-          supporter
-        )
-      })
+      batchSetQueriesData(
+        queryClient,
+        supporters.map((supporter) => ({
+          queryKey: getSupporterQueryKey(userId, supporter.sender.user_id),
+          data: supporter
+        }))
+      )
 
       primeUserData({
         users: supporters.map((supporter) => supporter.sender),
