@@ -7,11 +7,9 @@ import { UserCollectionMetadata } from '~/models/Collection'
 import { addEntries } from '~/store/cache/actions'
 import { EntriesByKind } from '~/store/cache/types'
 
-import { getCollectionQueryKey } from '../useCollection'
-import { getCollectionByPermalinkQueryKey } from '../useCollectionByPermalink'
-
-import { primeTrackDataInternal } from './primeTrackData'
-import { primeUserDataInternal } from './primeUserData'
+import { batchSetQueriesEntries } from './batchSetQueriesEntries'
+import { collectTrackEntries } from './primeTrackData'
+import { collectUserEntries } from './primeUserData'
 
 export const primeCollectionData = ({
   collections,
@@ -24,7 +22,8 @@ export const primeCollectionData = ({
   dispatch: Dispatch<AnyAction>
   forceReplace?: boolean
 }) => {
-  const entries = primeCollectionDataInternal({ collections, queryClient })
+  const entries = collectCollectionEntries(collections)
+  batchSetQueriesEntries({ entries, queryClient })
   if (!forceReplace) {
     dispatch(addEntries(entries, false, undefined, 'react-query'))
   } else {
@@ -47,13 +46,9 @@ export const primeCollectionData = ({
   }
 }
 
-export const primeCollectionDataInternal = ({
-  collections,
-  queryClient
-}: {
+export const collectCollectionEntries = (
   collections: UserCollectionMetadata[]
-  queryClient: QueryClient
-}): EntriesByKind => {
+): EntriesByKind => {
   // Set up entries for Redux
   const entries: SetRequired<EntriesByKind, Kind.COLLECTIONS> = {
     [Kind.COLLECTIONS]: {},
@@ -62,37 +57,12 @@ export const primeCollectionDataInternal = ({
   }
 
   collections.forEach((collection) => {
-    // Add collection to entries and prime collection data
+    // Add collection to entries
     entries[Kind.COLLECTIONS][collection.playlist_id] = collection
 
-    // Prime collection data only if it doesn't exist
-    if (
-      !queryClient.getQueryData(getCollectionQueryKey(collection.playlist_id))
-    ) {
-      queryClient.setQueryData(
-        getCollectionQueryKey(collection.playlist_id),
-        collection
-      )
-    }
-
-    // Prime collection by permalink only if it doesn't exist
-    if (
-      !queryClient.getQueryData(
-        getCollectionByPermalinkQueryKey(collection.permalink)
-      )
-    ) {
-      queryClient.setQueryData(
-        getCollectionByPermalinkQueryKey(collection.permalink),
-        collection
-      )
-    }
-
-    // Prime user data from collection owner
+    // Collect user entries from collection owner
     if (collection.user) {
-      const userEntries = primeUserDataInternal({
-        users: [collection.user],
-        queryClient
-      })
+      const userEntries = collectUserEntries([collection.user])
 
       // Merge user entries
       entries[Kind.USERS] = {
@@ -101,12 +71,9 @@ export const primeCollectionDataInternal = ({
       }
     }
 
-    // Prime track and user data from tracks in collection
+    // Collect track and user entries from tracks in collection
     if (collection.tracks?.length) {
-      const trackEntries = primeTrackDataInternal({
-        tracks: collection.tracks,
-        queryClient
-      })
+      const trackEntries = collectTrackEntries(collection.tracks)
 
       // Merge track and user entries
       entries[Kind.TRACKS] = {
