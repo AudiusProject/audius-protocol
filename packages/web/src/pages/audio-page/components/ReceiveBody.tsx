@@ -3,12 +3,12 @@ import { WalletAddress, SolanaWalletAddress } from '@audius/common/models'
 import { Button, IconSolana as LogoSol } from '@audius/harmony'
 import cn from 'classnames'
 
+import ClickableAddress from 'components/rewards/ClickableAddress'
 import { useLocalStorage } from 'hooks/useLocalStorage'
 import { track } from 'services/analytics'
 
 import { ModalBodyWrapper } from '../WalletModal'
 
-import ClickableAddress from './ClickableAddress'
 import styles from './ReceiveBody.module.css'
 
 type ReceiveBodyProps = {

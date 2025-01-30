@@ -28,6 +28,7 @@ import cn from 'classnames'
 import { useDispatch } from 'react-redux'
 import { useAsync } from 'react-use'
 
+import ModalDrawer from 'components/modal-drawer/ModalDrawer'
 import SocialProof from 'components/social-proof/SocialProof'
 import { useWithMobileStyle } from 'hooks/useWithMobileStyle'
 import { useSelector } from 'utils/reducer'
@@ -42,7 +43,6 @@ import SendInputBody from './components/SendInputBody'
 import SendInputConfirmation from './components/SendInputConfirmation'
 import SendInputSuccess from './components/SendInputSuccess'
 import SendingModalBody from './components/SendingModalBody'
-import ModalDrawer from './components/modals/ModalDrawer'
 const { getAccountBalance } = walletSelectors
 const {
   getAssociatedWallets,

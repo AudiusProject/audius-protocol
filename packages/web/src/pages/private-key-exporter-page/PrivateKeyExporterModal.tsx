@@ -18,8 +18,8 @@ import {
 
 import { useModalState } from 'common/hooks/useModalState'
 import { make, useRecord } from 'common/store/analytics/actions'
+import ModalDrawer from 'components/modal-drawer/ModalDrawer'
 import { useIsMobile } from 'hooks/useIsMobile'
-import ModalDrawer from 'pages/audio-rewards-page/components/modals/ModalDrawer'
 import { useSelector } from 'utils/reducer'
 
 import { AdvancedWalletDetails } from './AdvancedWalletDetails'

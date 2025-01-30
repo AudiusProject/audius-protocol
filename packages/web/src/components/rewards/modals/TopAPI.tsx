@@ -5,9 +5,9 @@ import { Button, IconArrowRight as IconArrow } from '@audius/harmony'
 
 import AudiusAPI from 'assets/img/audiusAPI.png'
 import { useModalState } from 'common/hooks/useModalState'
+import ModalDrawer from 'components/modal-drawer/ModalDrawer'
 import { useWithMobileStyle } from 'hooks/useWithMobileStyle'
 
-import ModalDrawer from './ModalDrawer'
 import styles from './TopApi.module.css'
 
 const { AUDIUS_API_LINK } = route

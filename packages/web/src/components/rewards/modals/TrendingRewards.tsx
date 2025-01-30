@@ -19,6 +19,7 @@ import { TwitterTweetEmbed } from 'react-twitter-embed'
 
 import { useModalState } from 'common/hooks/useModalState'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
+import ModalDrawer from 'components/modal-drawer/ModalDrawer'
 import { useIsMobile } from 'hooks/useIsMobile'
 import { useNavigateToPage } from 'hooks/useNavigateToPage'
 import { useRemoteVar } from 'hooks/useRemoteConfig'
@@ -26,7 +27,6 @@ import { useWithMobileStyle } from 'hooks/useWithMobileStyle'
 import { useSelector } from 'utils/reducer'
 import { getTheme, isDarkMode } from 'utils/theme/theme'
 
-import ModalDrawer from './ModalDrawer'
 import styles from './TrendingRewards.module.css'
 
 const { TRENDING_PAGE, TRENDING_PLAYLISTS_PAGE, TRENDING_UNDERGROUND_PAGE } =
@@ -119,6 +119,7 @@ const useTweetId = (type: TrendingRewardsModalType) => {
     underground: undergroundId
   }[type]
 }
+
 const shouldUseDarkTwitter = () => {
   const theme = getTheme()
   return theme === Theme.MATRIX || isDarkMode()

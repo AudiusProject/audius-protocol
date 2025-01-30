@@ -15,10 +15,10 @@ import cn from 'classnames'
 import { useDispatch } from 'react-redux'
 
 import { useModalState } from 'common/hooks/useModalState'
+import ModalDrawer from 'components/modal-drawer/ModalDrawer'
 import { GatedContentSection } from 'components/track/GatedContentSection'
 import { LockedContentDetailsTile } from 'components/track/LockedContentDetailsTile'
 import { useIsMobile } from 'hooks/useIsMobile'
-import ModalDrawer from 'pages/audio-rewards-page/components/modals/ModalDrawer'
 
 import styles from './LockedContentModal.module.css'
 

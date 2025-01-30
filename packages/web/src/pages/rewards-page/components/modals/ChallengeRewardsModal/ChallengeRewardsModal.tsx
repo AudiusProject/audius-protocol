@@ -41,6 +41,7 @@ import { useDispatch, useSelector } from 'react-redux'
 
 import QRCode from 'assets/img/imageQR.png'
 import { useModalState } from 'common/hooks/useModalState'
+import ModalDrawer from 'components/modal-drawer/ModalDrawer'
 import { SummaryTable } from 'components/summary-table'
 import Toast from 'components/toast/Toast'
 import { ToastContext } from 'components/toast/ToastContext'
@@ -48,13 +49,11 @@ import Tooltip from 'components/tooltip/Tooltip'
 import { ComponentPlacement, MountPlacement } from 'components/types'
 import { useIsMobile } from 'hooks/useIsMobile'
 import { useWithMobileStyle } from 'hooks/useWithMobileStyle'
-import { getChallengeConfig } from 'pages/audio-rewards-page/config'
+import { getChallengeConfig } from 'pages/rewards-page/config'
 import { copyToClipboard, getCopyableLink } from 'utils/clipboardUtil'
 import { CLAIM_REWARD_TOAST_TIMEOUT_MILLIS } from 'utils/constants'
 import { push as pushRoute } from 'utils/navigation'
 import { openTwitterLink } from 'utils/tweet'
-
-import ModalDrawer from '../ModalDrawer'
 
 import { AudioMatchingRewardsModalContent } from './AudioMatchingRewardsModalContent'
 import { ProgressDescription } from './ProgressDescription'
@@ -310,6 +309,11 @@ const ChallengeRewardsBody = ({ dismissModal }: BodyProps) => {
     audioToClaim = challenge.totalAmount
   } else if (challenge?.state === 'disbursed') {
     audioClaimedSoFar = challenge.totalAmount
+  }
+  let progressRewardAmount = challenge?.totalAmount
+  if (modalType === ChallengeName.OneShot) {
+    progressRewardAmount =
+      (challenge?.claimableAmount ?? 0) + (challenge?.disbursed_amount ?? 0)
   }
 
   let linkType: 'complete' | 'inProgress' | 'incomplete'
@@ -589,7 +593,7 @@ const ChallengeRewardsBody = ({ dismissModal }: BodyProps) => {
             >
               <Flex justifyContent='center' borderBottom='strong'>
                 <ProgressReward
-                  amount={formatNumberCommas(challenge?.totalAmount ?? '')}
+                  amount={formatNumberCommas(progressRewardAmount ?? '')}
                   subtext={messages.audio}
                 />
                 {renderProgressBar()}
@@ -620,7 +624,7 @@ const ChallengeRewardsBody = ({ dismissModal }: BodyProps) => {
                   description={progressDescription}
                 />
                 <ProgressReward
-                  amount={formatNumberCommas(challenge?.totalAmount ?? '')}
+                  amount={formatNumberCommas(progressRewardAmount ?? '')}
                   subtext={messages.audio}
                 />
               </Flex>
