@@ -19,14 +19,14 @@ import { usePlaylistLibrary } from './usePlaylistLibrary'
 import { useUpdatePlaylistLibrary } from './useUpdatePlaylistLibrary'
 
 type AddToFolderVariables = {
-  draggingId: PlaylistLibraryID
+  playlistId: PlaylistLibraryID
   draggingKind: PlaylistLibraryKind
   folder: PlaylistLibraryFolder
 }
 
 type AddToFolderResult = {
   updatedLibrary: PlaylistLibrary
-  draggingId: PlaylistLibraryID
+  playlistId: PlaylistLibraryID
   folder: PlaylistLibraryFolder
 }
 
@@ -49,14 +49,14 @@ export const useAddToPlaylistFolder = () => {
   } = useAppContext()
 
   return useMutation<AddToFolderResult, Error, AddToFolderVariables>({
-    mutationFn: async ({ draggingId, folder }: AddToFolderVariables) => {
+    mutationFn: async ({ playlistId, folder }: AddToFolderVariables) => {
       if (!playlistLibrary || !currentUserId) {
         throw new Error('Missing required data')
       }
 
       const updatedLibrary = playlistLibraryHelpers.addPlaylistToFolder(
         playlistLibrary,
-        draggingId,
+        playlistId,
         folder.id
       )
 
@@ -64,11 +64,11 @@ export const useAddToPlaylistFolder = () => {
 
       return {
         updatedLibrary,
-        draggingId,
+        playlistId,
         folder
       }
     },
-    onSuccess: ({ updatedLibrary, draggingId, folder }) => {
+    onSuccess: ({ updatedLibrary, playlistId, folder }) => {
       // Invalidate the playlist library query
       queryClient.setQueryData(
         [QUERY_KEYS.playlistLibrary, currentUserId],
@@ -76,12 +76,12 @@ export const useAddToPlaylistFolder = () => {
       )
 
       // If dragging in a new playlist, save to user collections
-      if (typeof draggingId === 'number') {
+      if (typeof playlistId === 'number') {
         const isNewAddition = !playlistLibrary?.contents.some(
-          (item) => 'playlist_id' in item && item.playlist_id === draggingId
+          (item) => 'playlist_id' in item && item.playlist_id === playlistId
         )
         if (isNewAddition) {
-          dispatch(saveCollection(draggingId, FavoriteSource.NAVIGATOR))
+          dispatch(saveCollection(playlistId, FavoriteSource.NAVIGATOR))
         }
       }
 
@@ -89,7 +89,7 @@ export const useAddToPlaylistFolder = () => {
       if (
         playlistLibraryHelpers.findInPlaylistLibrary(
           playlistLibrary!,
-          draggingId
+          playlistId
         )
       ) {
         dispatch(
