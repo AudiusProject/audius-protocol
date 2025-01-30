@@ -53,9 +53,9 @@ import { WithdrawUSDCModal } from 'components/withdraw-usdc-modal/WithdrawUSDCMo
 import { CoinflowWithdrawModal } from 'components/withdraw-usdc-modal/components/CoinflowWithdrawModal'
 import { useIsMobile } from 'hooks/useIsMobile'
 import AudioBreakdownModal from 'pages/audio-page/components/modals/AudioBreakdownModal'
-import { ChallengeRewardsModal } from 'pages/audio-page/components/modals/ChallengeRewardsModal'
 import TransferAudioMobileDrawer from 'pages/audio-page/components/modals/TransferAudioMobileDrawer'
 import { ChatBlastModal } from 'pages/chat-page/components/ChatBlastModal'
+import { ChallengeRewardsModal } from 'pages/rewards-page/components/modals/ChallengeRewardsModal'
 
 import { AppModal } from './AppModal'
 
