@@ -117,14 +117,12 @@ function* editPlaylistAsync(
   formFields.description = squashNewLines(formFields.description)
 
   // Updated the stored account playlist shortcut
-  if (!action.formFields.is_album) {
-    yield* put(
-      accountActions.renameAccountPlaylist({
-        collectionId: playlistId,
-        name: formFields.playlist_name
-      })
-    )
-  }
+  yield* put(
+    accountActions.renameAccountPlaylist({
+      collectionId: playlistId,
+      name: formFields.playlist_name
+    })
+  )
 
   let playlist: Collection = { ...formFields }
   const playlistTracks = yield* select(getCollectionTracks, { id: playlistId })
