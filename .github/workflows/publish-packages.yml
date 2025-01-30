@@ -22,7 +22,7 @@ jobs:
         with:
           filters: |
             public-packages:
-              - '.changesets/**'
+              - '.changeset/**'
               - 'packages/create-audius-app/**'
               - 'packages/fixed-decimal/**'
               - 'packages/harmony/**'
