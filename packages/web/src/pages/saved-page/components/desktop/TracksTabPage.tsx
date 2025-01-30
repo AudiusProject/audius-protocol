@@ -103,7 +103,7 @@ export const TracksTabPage = ({ filterText }: TracksTabPageProps) => {
         columns={tableColumns}
         data={tracks}
         defaultSorter={dateSorter('dateSaved')}
-        fetchMoreTracks={loadNextPage}
+        fetchMore={loadNextPage}
         isVirtualized
         loading={isLoading}
         onClickRow={(record) => {
@@ -118,7 +118,7 @@ export const TracksTabPage = ({ filterText }: TracksTabPageProps) => {
           }
         }}
         playing={isPlaying}
-        playingIndex={playingIndex}
+        activeIndex={playingIndex}
         scrollRef={mainContentRef}
         fetchBatchSize={pageSize}
         {...lineupProps}

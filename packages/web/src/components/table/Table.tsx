@@ -78,7 +78,7 @@ const isEmptyRowDefault = (row: any) => {
   return Boolean(!row?.original?.uid || row?.original?.kind === Kind.EMPTY)
 }
 
-type TableProps = {
+export type TableProps = {
   activeIndex?: number
   columns: any[]
   data: any[]

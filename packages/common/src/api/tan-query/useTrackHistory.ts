@@ -97,6 +97,7 @@ export const useTrackHistory = (
 
       return tracks
     },
+    select: (data) => data.pages.flat(),
     staleTime: options?.staleTime,
     enabled: options?.enabled !== false && !!currentUserId
   })
@@ -110,6 +111,7 @@ export const useTrackHistory = (
   return {
     ...queryData,
     ...lineupData,
-    loadNextPage: loadNextPage(queryData)
+    loadNextPage: loadNextPage(queryData),
+    pageSize
   }
 }

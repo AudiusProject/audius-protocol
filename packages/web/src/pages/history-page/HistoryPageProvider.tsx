@@ -24,7 +24,6 @@ import {
   queueSelectors,
   tracksSocialActions as socialActions
 } from '@audius/common/store'
-import { route } from '@audius/common/utils'
 import { isEqual } from 'lodash'
 import { connect } from 'react-redux'
 import { withRouter, RouteComponentProps } from 'react-router-dom'
@@ -38,7 +37,6 @@ import { withNullGuard } from 'utils/withNullGuard'
 import { HistoryPageProps as DesktopHistoryPageProps } from './components/desktop/HistoryPage'
 import { HistoryPageProps as MobileHistoryPageProps } from './components/mobile/HistoryPage'
 
-const { profilePage } = route
 const { makeGetCurrent } = queueSelectors
 const { getHistoryTracksLineup } = historyPageSelectors
 const { makeGetTableMetadatas } = lineupSelectors
@@ -99,7 +97,8 @@ const HistoryPage = g((props) => {
     loadNextPage,
     hasNextPage,
     isFetchingNextPage,
-    isLoading
+    isLoading,
+    lineup
   } = useTrackHistory({
     query: filterText,
     pageSize
@@ -201,20 +200,6 @@ const HistoryPage = g((props) => {
     [togglePlay, currentQueueItem, record, isPlaying]
   )
 
-  const onClickTrackName = useCallback(
-    (record: any) => {
-      goToRoute(record.permalink)
-    },
-    [goToRoute]
-  )
-
-  const onClickArtistName = useCallback(
-    (record: any) => {
-      goToRoute(profilePage(record.handle))
-    },
-    [goToRoute]
-  )
-
   const onClickRepost = useCallback(
     (record: any) => {
       if (!record.has_current_user_reposted) {
@@ -307,19 +292,16 @@ const HistoryPage = g((props) => {
     getFilteredData,
     onClickSave,
     onClickRow,
-    onClickTrackName,
-    onClickArtistName,
     onSortTracks
   }
 
-  return (
-    <props.children
-      key={userId}
-      {...childProps}
-      {...mobileProps}
-      {...desktopProps}
-    />
-  )
+  return null
+  // <props.children
+  //   key={userId}
+  //   {...childProps}
+  //   {...mobileProps}
+  //   {...desktopProps}
+  // />
 })
 
 const getLineupMetadatas = makeGetTableMetadatas(getHistoryTracksLineup)

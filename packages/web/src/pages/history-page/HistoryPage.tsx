@@ -4,11 +4,14 @@ import HistoryPageProvider from './HistoryPageProvider'
 import DesktopHistoryPage from './components/desktop/HistoryPage'
 import MobileHistoryPage from './components/mobile/HistoryPage'
 
-const HistoryPage = () => {
-  const isMobile = useIsMobile()
-  const content = isMobile ? MobileHistoryPage : DesktopHistoryPage
+const messages = {
+  title: 'History',
+  description: 'View your listening history'
+}
 
-  return <HistoryPageProvider>{content}</HistoryPageProvider>
+const HistoryPage = () => {
+  // const isMobile = useIsMobile()
+  return <DesktopHistoryPage {...messages} />
 }
 
 export default HistoryPage

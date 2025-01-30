@@ -42,6 +42,7 @@ import {
   dateSorter,
   numericSorter
 } from 'components/table'
+import type { TableProps } from 'components/table/Table'
 import Tooltip from 'components/tooltip/Tooltip'
 import { GatedConditionsPill } from 'components/track/GatedConditionsPill'
 import { isDescendantElementOf } from 'utils/domUtils'
@@ -86,23 +87,10 @@ export type TracksTableColumn =
   | 'comments'
 
 type TracksTableProps = {
-  columns?: TracksTableColumn[]
-  data: any[]
-  defaultSorter?: (a: any, b: any) => number
   disabledTrackEdit?: boolean
-  fetchBatchSize?: number
-  fetchMoreTracks?: (offset: number, limit: number) => void
-  fetchPage?: (page: number) => void
-  fetchThreshold?: number
-  isVirtualized?: boolean
-  isPaginated?: boolean
-  isReorderable?: boolean
   isAlbumPage?: boolean
-  isAlbumPremium?: boolean
   shouldShowGatedType?: boolean
-  loading?: boolean
   onClickFavorite?: (track: any) => void
-  onClickPurchase?: (track: any) => void
   onClickRemove?: (
     track: any,
     index: number,
@@ -110,23 +98,14 @@ type TracksTableProps = {
     timestamp: number
   ) => void
   onClickRepost?: (track: any) => void
-  onClickRow?: (track: any, index: number) => void
-  onReorderTracks?: (source: number, destination: number) => void
-  onShowMoreToggle?: (setting: boolean) => void
-  onSortTracks?: (...props: any[]) => void
-  pageSize?: number
   playing?: boolean
-  playingIndex?: number
   removeText?: string
-  scrollRef?: React.MutableRefObject<HTMLDivElement | undefined>
-  showMoreLimit?: number
-  tableClassName?: string
-  tableHeaderClassName?: string
-  totalRowCount?: number
-  useLocalSort?: boolean
   userId?: number | null
-  wrapperClassName?: string
-}
+  onReorder?: (source: number, destination: number) => void
+  onSort?: (...props: any[]) => void
+  columns?: TracksTableColumn[]
+  onClickRow?: (track: any, index: number) => void
+} & Omit<TableProps, 'onClickRow' | 'columns'>
 
 const defaultColumns: TracksTableColumn[] = [
   'playButton',
@@ -141,40 +120,21 @@ const defaultColumns: TracksTableColumn[] = [
 ]
 
 export const TracksTable = ({
-  columns = defaultColumns,
-  data,
-  defaultSorter,
   disabledTrackEdit = false,
-  isPaginated = false,
-  isReorderable = false,
   isAlbumPage = false,
-  fetchBatchSize,
-  fetchMoreTracks,
-  fetchPage,
-  fetchThreshold,
-  isVirtualized = false,
   shouldShowGatedType = false,
-  loading = false,
   onClickFavorite,
   onClickRemove,
   onClickRepost,
-  onClickRow,
-  onReorderTracks,
-  onShowMoreToggle,
-  onSortTracks,
-  pageSize,
   playing = false,
-  playingIndex = -1,
   removeText,
-  scrollRef,
-  showMoreLimit,
-  tableClassName,
-  tableHeaderClassName,
-  totalRowCount,
-  useLocalSort = false,
   userId,
-  wrapperClassName
+  columns = defaultColumns,
+  data,
+  activeIndex,
+  ...tableProps
 }: TracksTableProps) => {
+  const { isVirtualized, onClickRow } = tableProps
   const dispatch = useDispatch()
   const gatedTrackStatusMap = useSelector(getGatedContentStatusMap)
   const trackAccessMap = useGatedContentAccessMap(data)
@@ -186,7 +146,7 @@ export const TracksTable = ({
   const renderPlayButtonCell = useCallback(
     (cellInfo: TrackCell) => {
       const index = cellInfo.row.index
-      const active = index === playingIndex
+      const active = index === activeIndex
       const track = cellInfo.row.original
       const isTrackPremium = isContentUSDCPurchaseGated(track.stream_conditions)
       const { isFetchingNFTAccess, hasStreamAccess } = trackAccessMap[
@@ -205,14 +165,14 @@ export const TracksTable = ({
         />
       )
     },
-    [playing, playingIndex, trackAccessMap]
+    [playing, activeIndex, trackAccessMap]
   )
 
   const renderTrackNameCell = useCallback(
     (cellInfo: TrackCell) => {
       const track = cellInfo.row.original
       const index = cellInfo.row.index
-      const active = index === playingIndex
+      const active = index === activeIndex
       const deleted =
         track.is_delete || track._marked_deleted || !!track.user?.is_deactivated
 
@@ -236,13 +196,13 @@ export const TracksTable = ({
               css={{ display: 'block', lineHeight: '125%' }}
               ellipses
             >
-              {track.name}
+              {track.name ?? track.title}
             </TextLink>
           )}
         </div>
       )
     },
-    [playingIndex]
+    [activeIndex]
   )
 
   const renderArtistNameCell = useCallback(
@@ -260,14 +220,14 @@ export const TracksTable = ({
             userId={user.user_id}
             size='s'
             strength='strong'
-            variant={index === playingIndex ? 'visible' : 'default'}
+            variant={index === activeIndex ? 'visible' : 'default'}
             badgeSize='xs'
             popover
           />
         </div>
       )
     },
-    [playingIndex]
+    [activeIndex]
   )
 
   const renderPlaysCell = useCallback(
@@ -303,7 +263,7 @@ export const TracksTable = ({
 
   const renderLengthCell = useCallback((cellInfo: TrackCell) => {
     const track = cellInfo.row.original
-    return formatSeconds(track.time)
+    return formatSeconds(track.time ?? track.duration)
   }, [])
 
   const renderDateCell = useCallback((cellInfo: TrackCell) => {
@@ -859,32 +819,13 @@ export const TracksTable = ({
 
   return (
     <Table
-      activeIndex={playingIndex}
+      {...tableProps}
       columns={tableColumns}
       data={data}
-      defaultSorter={defaultSorter}
-      fetchBatchSize={fetchBatchSize}
-      fetchMore={fetchMoreTracks}
-      fetchPage={fetchPage}
-      fetchThreshold={fetchThreshold}
-      getRowClassName={getRowClassName}
-      isPaginated={isPaginated}
-      isReorderable={isReorderable}
-      isTracksTable
-      isVirtualized={isVirtualized}
-      loading={loading}
+      activeIndex={activeIndex}
       onClickRow={handleClickRow}
-      onReorder={onReorderTracks}
-      onShowMoreToggle={onShowMoreToggle}
-      onSort={onSortTracks}
-      pageSize={pageSize}
-      scrollRef={scrollRef}
-      showMoreLimit={showMoreLimit}
-      tableClassName={tableClassName}
-      tableHeaderClassName={tableHeaderClassName}
-      totalRowCount={totalRowCount}
-      useLocalSort={useLocalSort}
-      wrapperClassName={wrapperClassName}
+      getRowClassName={getRowClassName}
+      isTracksTable
     />
   )
 }

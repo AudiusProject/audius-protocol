@@ -345,15 +345,15 @@ const CollectionPage = ({
               loading={isNftPlaylist ? collectionLoading : tracksLoading}
               userId={userId}
               playing={playing}
-              playingIndex={playingIndex}
+              activeIndex={playingIndex}
               data={dataSource}
               onClickRow={onClickRow}
               onClickFavorite={onClickSave}
               onClickRemove={isOwner ? onClickRemove : undefined}
               onClickRepost={onClickRepostTrack}
               onClickPurchase={openPurchaseModal}
-              onReorderTracks={onReorderTracks}
-              onSortTracks={onSortTracks}
+              onReorder={onReorderTracks}
+              onSort={onSortTracks}
               isReorderable={
                 userId !== null && userId === playlistOwnerId && allowReordering
               }

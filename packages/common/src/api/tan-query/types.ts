@@ -17,4 +17,5 @@ export type QueryOptions = Pick<
 export type LineupQueryData = UseLineupQueryData &
   Omit<UseInfiniteQueryResult, 'status'> & {
     loadNextPage: ReturnType<typeof loadNextPage>
+    pageSize: number
   }
