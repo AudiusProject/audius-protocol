@@ -13,6 +13,7 @@ const { getAccountUser } = accountSelectors
 const { updateWalletError } = tokenDashboardPageActions
 const { getConfirmingWallet } = tokenDashboardPageSelectors
 
+// TODO-NOW
 export function* associateNewWallet(signature: string) {
   const { wallet, chain } = yield* select(getConfirmingWallet)
   if (!wallet || !chain) return null
