@@ -292,6 +292,8 @@ export const Lineup = ({
     (reset?: boolean) => {
       if (tanQuery && loadMore) {
         loadMore(0, 0, true)
+      } else if (tanQuery && !loadMore) {
+        return
       }
 
       const {
@@ -431,10 +433,17 @@ export const Lineup = ({
   const sections: Section[] = useMemo(() => {
     const { deleted, entries, hasMore, isMetadataLoading, page } = lineup
 
-    const items = entries.slice(start, count)
+    // Apply offset and maxEntries to the lineup entries
+    const items =
+      pageSize !== undefined
+        ? entries.slice(start, start + pageSize)
+        : entries.slice(start)
+
     const itemDisplayCount = page <= 1 ? itemCounts.initial : pageItemCount
 
     const getSkeletonCount = () => {
+      if (tanQuery && !loadMore && items.length > 0) return 0
+
       // Lineups like Feed load a different number of items on the first page
       if (initialPageSize && page === 0) {
         return initialPageSize

@@ -132,7 +132,7 @@ export const TrackPageLineup = ({
       <Section title={messages.moreBy(user?.name ?? '')}>
         <TanQueryLineup
           lineupQueryData={lineupData}
-          pageSize={end !== null ? end - start : pageSize}
+          pageSize={end !== null ? end - start : 0}
           variant={lineupVariant}
           start={start}
           playingUid={playingUid}
