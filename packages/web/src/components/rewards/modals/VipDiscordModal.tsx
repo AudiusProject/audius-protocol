@@ -4,13 +4,12 @@ import { Button, IconDiscord } from '@audius/harmony'
 import { useSelector } from 'react-redux'
 
 import { useModalState } from 'common/hooks/useModalState'
+import ModalDrawer from 'components/modal-drawer/ModalDrawer'
 import { useIsMobile } from 'hooks/useIsMobile'
 import { useWithMobileStyle } from 'hooks/useWithMobileStyle'
-import { TitleWrapper } from 'pages/audio-rewards-page/WalletModal'
 
 import ClickableAddress from '../ClickableAddress'
 
-import ModalDrawer from './ModalDrawer'
 import styles from './VipDiscordModal.module.css'
 
 const { AUDIUS_DISCORD_LINK } = route
@@ -32,9 +31,10 @@ export const VipDiscordModal = () => {
   const modalTitle = isMobile ? (
     <div className={styles.discordDrawerTitle}>{messages.title}</div>
   ) : (
-    <TitleWrapper label={messages.title}>
+    <div className={styles.titleWrapper}>
       <IconDiscord />
-    </TitleWrapper>
+      {messages.title}
+    </div>
   )
 
   const handleClick = () => {

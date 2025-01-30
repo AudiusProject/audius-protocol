@@ -7,6 +7,7 @@ import { IconInfo } from '@audius/harmony'
 import BN from 'bn.js'
 
 import { useModalState } from 'common/hooks/useModalState'
+import ModalDrawer from 'components/modal-drawer/ModalDrawer'
 import Tooltip from 'components/tooltip/Tooltip'
 import { useWithMobileStyle } from 'hooks/useWithMobileStyle'
 import { useSelector } from 'utils/reducer'
@@ -15,7 +16,6 @@ import DisplayAudio from '../DisplayAudio'
 import WalletsTable from '../WalletsTable'
 
 import styles from './AudioBreakdownModal.module.css'
-import ModalDrawer from './ModalDrawer'
 const { getAccountBalance } = walletSelectors
 const { getAssociatedWallets } = tokenDashboardPageSelectors
 

@@ -10,11 +10,11 @@ import {
 } from '@audius/harmony'
 
 import { useModalState } from 'common/hooks/useModalState'
+import ModalDrawer from 'components/modal-drawer/ModalDrawer'
 import { useIsMobile } from 'hooks/useIsMobile'
 import { useNavigateToPage } from 'hooks/useNavigateToPage'
 import { useWithMobileStyle } from 'hooks/useWithMobileStyle'
 
-import ModalDrawer from './ModalDrawer'
 import styles from './VerifiedUpload.module.css'
 
 const { ACCOUNT_SETTINGS_PAGE, SETTINGS_PAGE, UPLOAD_PAGE } = route

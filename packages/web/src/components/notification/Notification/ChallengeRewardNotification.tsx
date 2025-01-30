@@ -6,7 +6,7 @@ import { route, stringWeiToAudioBN } from '@audius/common/utils'
 import { useDispatch } from 'react-redux'
 
 import { make, useRecord } from 'common/store/analytics/actions'
-import { getChallengeConfig } from 'pages/audio-rewards-page/config'
+import { getChallengeConfig } from 'pages/audio-page/config'
 import { env } from 'services/env'
 import { push } from 'utils/navigation'
 

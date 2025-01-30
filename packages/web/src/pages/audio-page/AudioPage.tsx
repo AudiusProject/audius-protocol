@@ -14,6 +14,7 @@ import NavContext, {
   RightPreset
 } from 'components/nav/mobile/NavContext'
 import Page from 'components/page/Page'
+import { HCaptchaModal } from 'components/rewards/modals/HCaptchaModal'
 import { useIsMobile } from 'hooks/useIsMobile'
 import { useRemoteVar } from 'hooks/useRemoteConfig'
 import { useRequiresAccount } from 'hooks/useRequiresAccount'
@@ -21,7 +22,7 @@ import { useWithMobileStyle } from 'hooks/useWithMobileStyle'
 import { ClaimAllRewardsPanel } from 'pages/rewards-page/components/ClaimAllRewardsPanel'
 import { BASE_URL } from 'utils/route'
 
-import styles from './AudioRewardsPage.module.css'
+import styles from './AudioPage.module.css'
 import { AudioWalletTransactions } from './AudioWalletTransactions'
 import WalletModal from './WalletModal'
 import ExplainerTile from './components/ExplainerTile'
@@ -104,7 +105,7 @@ const MobilePage = ({ children }: { children: ReactNode }) => {
   )
 }
 
-export const AudioRewardsPage = () => {
+export const AudioPage = () => {
   const dispatch = useDispatch()
   const isMobile = useIsMobile()
   useEffect(() => {

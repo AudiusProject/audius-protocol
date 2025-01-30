@@ -13,9 +13,9 @@ import cn from 'classnames'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { AddFunds } from 'components/add-funds/AddFunds'
+import ModalDrawer from 'components/modal-drawer/ModalDrawer'
 import { USDCManualTransfer } from 'components/usdc-manual-transfer/USDCManualTransfer'
 import { useIsMobile } from 'hooks/useIsMobile'
-import ModalDrawer from 'pages/audio-rewards-page/components/modals/ModalDrawer'
 import zIndex from 'utils/zIndex'
 
 import styles from './AddFundsModal.module.css'

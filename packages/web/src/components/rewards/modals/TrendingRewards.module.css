@@ -1,0 +1,130 @@
+.scrollContainer {
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 24px;
+}
+
+.mobile.container {
+  padding: 16px;
+}
+
+.sliderContainer {
+  width: 100%;
+  margin-bottom: 24px;
+}
+
+.slider {
+  font-weight: var(--harmony-font-bold);
+  font-size: var(--harmony-font-m);
+  line-height: 18px;
+  text-align: center;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--harmony-neutral);
+}
+
+.compactSlider {
+  padding: 8px 16px;
+}
+
+.activeSlider {
+  color: var(--harmony-static-white);
+}
+
+.titles {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.title {
+  font-weight: var(--harmony-font-bold);
+  font-size: var(--harmony-font-l);
+  line-height: 24px;
+  text-align: center;
+  color: var(--harmony-neutral);
+  margin-bottom: 8px;
+}
+
+.subtitle {
+  font-weight: var(--harmony-font-bold);
+  font-size: var(--harmony-font-m);
+  line-height: 18px;
+  text-align: center;
+  color: var(--harmony-neutral);
+}
+
+.insetRegion {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 24px;
+  background: var(--harmony-surface-1);
+  border: 1px solid var(--harmony-divider);
+  border-radius: 8px;
+  margin-bottom: 24px;
+  width: 100%;
+}
+
+.lastWeek {
+  font-weight: var(--harmony-font-bold);
+  font-size: var(--harmony-font-m);
+  line-height: 18px;
+  text-align: center;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--harmony-neutral);
+  margin-bottom: 24px;
+}
+
+.embedWrapper {
+  position: relative;
+  width: 100%;
+  height: 390px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.spinner {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.button {
+  margin-bottom: 24px;
+}
+
+.terms {
+  font-weight: var(--harmony-font-bold);
+  font-size: var(--harmony-font-s);
+  line-height: 14px;
+  text-align: center;
+  text-decoration-line: underline;
+  color: var(--harmony-neutral);
+  cursor: pointer;
+}
+
+.titleHeader {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: var(--harmony-font-bold);
+  font-size: var(--harmony-font-l);
+  line-height: 24px;
+  color: var(--harmony-neutral);
+}
+
+.titleIcon {
+  width: 24px;
+  height: 24px;
+}

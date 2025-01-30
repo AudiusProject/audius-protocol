@@ -1,10 +1,11 @@
 import { BNWei, WalletAddress } from '@audius/common/models'
 import { formatWei } from '@audius/common/utils'
 
+import PurpleBox from 'components/rewards/PurpleBox'
+
 import { ModalBodyTitle, ModalBodyWrapper } from '../WalletModal'
 
 import DisplayAudio from './DisplayAudio'
-import PurpleBox from './PurpleBox'
 import { AddressWithArrow } from './SendInputConfirmation'
 import styles from './SendInputSuccess.module.css'
 import TokenHoverTooltip from './TokenHoverTooltip'

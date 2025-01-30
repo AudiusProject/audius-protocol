@@ -16,10 +16,10 @@ import { useModalState } from 'common/hooks/useModalState'
 import { make, TrackEvent, useRecord } from 'common/store/analytics/actions'
 import { InstagramAuthButton } from 'components/instagram-auth/InstagramAuthButton'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
+import ModalDrawer from 'components/modal-drawer/ModalDrawer'
 import { TikTokAuthButton } from 'components/tiktok-auth/TikTokAuthButton'
 import { TwitterAuthButton } from 'components/twitter-auth/TwitterAuthButton'
 import { useRemoteVar } from 'hooks/useRemoteConfig'
-import ModalDrawer from 'pages/audio-rewards-page/components/modals/ModalDrawer'
 
 import styles from './SocialProof.module.css'
 

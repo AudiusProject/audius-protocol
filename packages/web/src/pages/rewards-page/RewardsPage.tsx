@@ -14,6 +14,7 @@ import NavContext, {
   RightPreset
 } from 'components/nav/mobile/NavContext'
 import Page from 'components/page/Page'
+import { HCaptchaModal } from 'components/rewards/modals/HCaptchaModal'
 import { useIsMobile } from 'hooks/useIsMobile'
 import { useRemoteVar } from 'hooks/useRemoteConfig'
 import { useRequiresAccount } from 'hooks/useRequiresAccount'

@@ -1,0 +1,55 @@
+.toastContainer {
+  width: 100%;
+}
+
+.container {
+  cursor: pointer;
+  transition: all 0.07s ease-in-out;
+}
+
+.container:hover {
+  transform: scale(1.01);
+}
+
+.container:active {
+  transform: scale(0.99);
+}
+
+.addressContainer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.address {
+  font-family: monospace;
+  font-size: var(--harmony-font-m);
+  line-height: 24px;
+  text-align: center;
+  color: var(--harmony-static-white);
+  word-break: break-all;
+}
+
+.icon {
+  width: 16px;
+  height: 16px;
+}
+
+.icon path {
+  fill: var(--harmony-static-white);
+}
+
+.toast {
+  width: 100%;
+}
+
+.mobile .address {
+  font-size: var(--harmony-font-s);
+  line-height: 16px;
+}
+
+:global(#WEB3_CONNECT_MODAL_ID) {
+  /* See utils/zIndex.ts */
+  z-index: 10001;
+}
