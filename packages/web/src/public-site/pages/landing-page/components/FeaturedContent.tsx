@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 
 import {
   transformAndCleanList,
@@ -8,12 +8,13 @@ import { route } from '@audius/common/utils'
 import { Id } from '@audius/sdk'
 // eslint-disable-next-line no-restricted-imports -- TODO: migrate to @react-spring/web
 import { useSpring, animated } from 'react-spring'
-import { useAsyncFn } from 'react-use'
+import { useAsync } from 'react-use'
 
 import { useHistoryContext } from 'app/HistoryProvider'
 import IconLines from 'assets/img/publicSite/Lines.svg'
 import IconListenOnAudius from 'assets/img/publicSite/listen-on-audius.svg'
 import { fetchExploreContent } from 'common/store/pages/explore/sagas'
+import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import useCardWeight from 'hooks/useCardWeight'
 import useHasViewed from 'hooks/useHasViewed'
 import { handleClickRoute } from 'public-site/components/handleClickRoute'
@@ -104,20 +105,16 @@ type FeaturedContentProps = {
 
 const FeaturedContent = (props: FeaturedContentProps) => {
   const { history } = useHistoryContext()
-  const [trendingPlaylistsResponse, fetchTrendingPlaylists] =
-    useAsyncFn(async () => {
-      const featuredContent = await fetchExploreContent(env.EXPLORE_CONTENT_URL)
-      const ids = featuredContent.featuredPlaylists.slice(0, 4)
-      const sdk = await audiusSdk()
-      const { data } = await sdk.full.playlists.getBulkPlaylists({
-        id: ids.map((id) => Id.parse(id))
-      })
-      return transformAndCleanList(data, userCollectionMetadataFromSDK)
-    }, [])
+  const trendingPlaylistsResponse = useAsync(async () => {
+    const featuredContent = await fetchExploreContent(env.EXPLORE_CONTENT_URL)
+    const ids = featuredContent.featuredPlaylists.slice(0, 4)
+    const sdk = await audiusSdk()
+    const { data } = await sdk.full.playlists.getBulkPlaylists({
+      id: ids.map((id) => Id.parse(id))
+    })
+    return transformAndCleanList(data, userCollectionMetadataFromSDK)
+  }, [])
 
-  useEffect(() => {
-    fetchTrendingPlaylists()
-  }, [fetchTrendingPlaylists])
   // Animate in the title and subtitle text
   const [hasViewed, refInView] = useHasViewed(0.8)
 
@@ -144,25 +141,31 @@ const FeaturedContent = (props: FeaturedContentProps) => {
           </animated.div>
         </div>
         <div className={styles.tracksContainer}>
-          {trendingPlaylistsResponse.value?.map((p) => (
-            <MobilePlaylistTile
-              key={p.playlist_id}
-              title={p.playlist_name}
-              artist={p.user.name}
-              imageUrl={p.artwork['480x480'] ?? null}
-              onClick={handleClickRoute(
-                collectionPage(
-                  p.user.handle,
-                  p.playlist_name,
-                  p.playlist_id,
-                  p.permalink,
-                  p.is_album
-                ),
-                props.setRenderPublicSite,
-                history
-              )}
-            />
-          ))}
+          {trendingPlaylistsResponse.loading ? (
+            <div className={styles.loadingContainer}>
+              <LoadingSpinner />
+            </div>
+          ) : (
+            trendingPlaylistsResponse.value?.map((p) => (
+              <MobilePlaylistTile
+                key={p.playlist_id}
+                title={p.playlist_name}
+                artist={p.user.name}
+                imageUrl={p.artwork['480x480'] ?? null}
+                onClick={handleClickRoute(
+                  collectionPage(
+                    p.user.handle,
+                    p.playlist_name,
+                    p.playlist_id,
+                    p.permalink,
+                    p.is_album
+                  ),
+                  props.setRenderPublicSite,
+                  history
+                )}
+              />
+            ))
+          )}
         </div>
       </div>
     )
@@ -182,25 +185,31 @@ const FeaturedContent = (props: FeaturedContentProps) => {
           <h4 className={styles.subTitle}>{messages.subTitle}</h4>
         </animated.div>
         <div className={styles.tracksContainer}>
-          {trendingPlaylistsResponse.value?.map((p) => (
-            <DesktopPlaylistTile
-              key={p.playlist_id}
-              title={p.playlist_name}
-              artist={p.user.name}
-              imageUrl={p.artwork['480x480'] ?? null}
-              onClick={handleClickRoute(
-                collectionPage(
-                  p.user.handle,
-                  p.playlist_name,
-                  p.playlist_id,
-                  p.permalink,
-                  p.is_album
-                ),
-                props.setRenderPublicSite,
-                history
-              )}
-            />
-          ))}
+          {trendingPlaylistsResponse.loading ? (
+            <div className={styles.loadingContainer}>
+              <LoadingSpinner />
+            </div>
+          ) : (
+            trendingPlaylistsResponse.value?.map((p) => (
+              <DesktopPlaylistTile
+                key={p.playlist_id}
+                title={p.playlist_name}
+                artist={p.user.name}
+                imageUrl={p.artwork['480x480'] ?? null}
+                onClick={handleClickRoute(
+                  collectionPage(
+                    p.user.handle,
+                    p.playlist_name,
+                    p.playlist_id,
+                    p.permalink,
+                    p.is_album
+                  ),
+                  props.setRenderPublicSite,
+                  history
+                )}
+              />
+            ))
+          )}
         </div>
       </div>
       <IconLines className={styles.lines} />
