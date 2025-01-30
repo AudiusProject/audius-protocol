@@ -14,8 +14,6 @@ import { LineupBaseActions, playerSelectors } from '@audius/common/store'
 import cn from 'classnames'
 import InfiniteScroll from 'react-infinite-scroller'
 import { useDispatch, useSelector } from 'react-redux'
-// eslint-disable-next-line no-restricted-imports -- TODO: migrate to @react-spring/web
-import { Transition } from 'react-spring/renderprops.cjs'
 
 import { make } from 'common/store/analytics/actions'
 import PlaylistTileDesktop from 'components/track/desktop/ConnectedPlaylistTile'
@@ -25,13 +23,12 @@ import TrackTileMobile from 'components/track/mobile/ConnectedTrackTile'
 import {
   TrackTileProps,
   PlaylistTileProps,
-  TrackTileSize,
-  TileProps
+  TrackTileSize
 } from 'components/track/types'
 import { useIsMobile } from 'hooks/useIsMobile'
 
 import styles from './Lineup.module.css'
-import { delineateByTime, delineateByFeatured } from './delineate'
+import { delineateByTime } from './delineate'
 import { LineupVariant } from './types'
 const { getUid } = playerSelectors
 
@@ -53,49 +50,6 @@ export interface TanQueryLineupProps {
    */
   delineate?: boolean
 
-  /**
-   * Indicator if a track should be displayed differently (ie. artist pick)
-   * The leadingElementId is displayed at the top of the lineup
-   */
-  leadingElementId?: ID
-
-  /**
-   * JSX Element that can be used to delineate the leading element from the rest
-   */
-  leadingElementDelineator?: JSX.Element | null
-
-  /**
-   * Track tile properties to optionally pass to the leading element track tile
-   */
-  leadingElementTileProps?: Partial<TileProps>
-
-  /**
-   * Class name to optionally apply to the leading element
-   */
-  leadingElementClassName?: string
-
-  /**
-   * Class name to optionally apply to the container after the leading element
-   */
-  laggingContainerClassName?: string
-
-  /**
-   * Whether or not to animate the sliding in of the leading element
-   */
-  animateLeadingElement?: boolean
-
-  /**
-   * Whether or not to apply leading element tile props and styles to the
-   * skeleton tile rendered in its place
-   */
-  applyLeadingElementStylesToSkeleton?: boolean
-
-  /**
-   * Extra content that preceeds the lineup to be rendered. Can be anything,
-   * but is not tied to playback or other lineup pagination logic.
-   */
-  extraPrecedingElement?: JSX.Element
-
   buffering: boolean
   ordered?: boolean
   lineupContainerStyles?: string
@@ -116,6 +70,9 @@ export interface TanQueryLineupProps {
   onClickTile?: (trackId: ID) => void
   pageSize: number
   initialPageSize?: number
+
+  /** Starting index to render from */
+  start?: number
 }
 
 const defaultLineup = {
@@ -143,13 +100,6 @@ export const TanQueryLineup = ({
   ordered = false,
   delineate = false,
   endOfLineup,
-  leadingElementId,
-  leadingElementDelineator,
-  leadingElementTileProps,
-  leadingElementClassName,
-  laggingContainerClassName,
-  animateLeadingElement,
-  extraPrecedingElement,
   lineupContainerStyles,
   tileContainerStyles,
   tileStyles,
@@ -161,7 +111,8 @@ export const TanQueryLineup = ({
   onClickTile,
   pageSize,
   initialPageSize,
-  scrollParent: externalScrollParent
+  scrollParent: externalScrollParent,
+  start
 }: TanQueryLineupProps) => {
   const dispatch = useDispatch()
   const {
@@ -249,7 +200,16 @@ export const TanQueryLineup = ({
     lineupStyle = styles.section
   }
 
-  let tiles = lineup.entries
+  // Apply offset and maxEntries to the lineup entries
+  const slicedLineup = {
+    ...lineup,
+    entries:
+      pageSize !== undefined && start !== undefined
+        ? lineup.entries.slice(start, start + pageSize)
+        : lineup.entries
+  }
+
+  let tiles = slicedLineup.entries
     .map((entry: any, index: number) => {
       if (entry.kind === Kind.TRACKS || entry.track_id) {
         if (entry._marked_deleted) return null
@@ -263,13 +223,10 @@ export const TanQueryLineup = ({
           statSize,
           containerClassName,
           uid: entry.uid,
-          isLoading: lineup.entries[index] === undefined,
+          isLoading: slicedLineup.entries[index] === undefined,
           isTrending,
           onClick: onClickTile,
           source: ModalSource.LineUpTrackTile
-        }
-        if (entry.id === leadingElementId) {
-          Object.assign(trackProps, leadingElementTileProps)
         }
         // @ts-ignore - TODO: these types werent enforced before - something smelly here
         return <TrackTile {...trackProps} key={index} />
@@ -284,7 +241,7 @@ export const TanQueryLineup = ({
           pauseTrack: pause,
           playingTrackId,
           togglePlay,
-          isLoading: lineup.entries[index] === undefined,
+          isLoading: slicedLineup.entries[index] === undefined,
           numLoadingSkeletonRows: numPlaylistSkeletonRows,
           isTrending,
           source: ModalSource.LineUpCollectionTile
@@ -337,94 +294,20 @@ export const TanQueryLineup = ({
     tiles = delineateByTime(tiles, isMobile)
   }
 
-  if (extraPrecedingElement) {
-    tiles.unshift(extraPrecedingElement)
-  }
-
-  let featuredTiles: any[] = []
-  if (leadingElementId) {
-    const { featured, remaining } = delineateByFeatured(
-      tiles,
-      leadingElementId,
-      isMobile,
-      styles.featuredDelineate,
-      leadingElementDelineator
-    )
-    tiles = remaining
-    featuredTiles = featured
-  }
-
-  const allTiles = featuredTiles.concat(tiles)
-  const featuredTrackUid =
-    featuredTiles.length > 0 ? featuredTiles[0].props.uid : null
-  const allTracks = allTiles.reduce((acc: Record<string, any>, track) => {
-    acc[track.props.uid] = track
-    return acc
-  }, {})
-
   return (
     <>
       <div
         className={cn(lineupStyle, {
           [lineupContainerStyles!]: !!lineupContainerStyles
         })}
-        style={{ position: 'relative' }}
+        css={{ width: '100%' }}
       >
-        <Transition
-          items={featuredTrackUid}
-          from={{ opacity: 0, marginBottom: 0, maxHeight: 0 }}
-          initial={{
-            opacity: 1,
-            marginBottom: 12,
-            maxHeight: 174
-          }}
-          enter={{
-            opacity: 1,
-            marginBottom: 12,
-            maxHeight: 174
-          }}
-          leave={{ opacity: 0, marginBottom: 0, maxHeight: 0 }}
-          config={{ duration: 175 }}
-          immediate={isMobile || !animateLeadingElement}
-        >
-          {(featuredId: ID | null) =>
-            featuredId
-              ? (props) => (
-                  <div
-                    className={cn(
-                      styles.featuredContainer,
-                      leadingElementClassName
-                    )}
-                    style={{
-                      height: '100%',
-                      maxHeight: props.maxHeight,
-                      marginBottom: props.marginBottom
-                    }}
-                  >
-                    <div
-                      className={styles.featuredContent}
-                      style={{
-                        height: '100%',
-                        opacity: props.opacity,
-                        maxHeight: props.maxHeight
-                      }}
-                    >
-                      {allTracks[featuredId]}
-                    </div>
-                  </div>
-                )
-              : () => null
-          }
-        </Transition>
         <div
           ref={scrollContainer}
           style={{
             display: 'flex',
             flexDirection: 'column'
           }}
-          className={cn({
-            [laggingContainerClassName!]: !!laggingContainerClassName
-          })}
         >
           {tiles.length === 0 && !isFetching ? (
             emptyElement
@@ -446,7 +329,7 @@ export const TanQueryLineup = ({
                 return internalScrollParent
               }}
               element='ol'
-              loader={renderSkeletons(pageSize)}
+              loader={isFetching ? renderSkeletons(pageSize) : <></>}
             >
               {tiles.map((tile: any, index: number) => (
                 <li key={index} className={cn({ [tileStyles!]: !!tileStyles })}>
