@@ -61,6 +61,7 @@ function* handleConnectNewWallet() {
       }
     })
 
+    // TODO-NOW
     const signature = yield* signMessage(connection)
     const updatedUserMetadata = yield* associateNewWallet(signature)
 

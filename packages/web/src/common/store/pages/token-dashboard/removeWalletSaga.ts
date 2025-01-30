@@ -33,6 +33,7 @@ const { getBalance } = walletActions
 
 const { requestConfirmation } = confirmerActions
 
+// TODO-NOW
 function* removeWallet(action: ConfirmRemoveWalletAction) {
   yield* waitForWrite()
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')

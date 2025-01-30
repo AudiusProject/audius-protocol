@@ -20,6 +20,7 @@ type SignMessagePayload = {
   publicKey: string
 }
 
+// TODO-NOW
 function* signMessageAsync(action: SignMessageAction) {
   switch (action.payload.connectionType) {
     case null:
