@@ -1398,9 +1398,9 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
-  - react-native-tiktok (1.1.1):
+  - react-native-tiktok (1.1.2):
     - React-Core
-    - TikTokOpenSDK (= 5.0.0)
+    - TikTokOpenSDK (~> 5.0.0)
   - react-native-track-player (4.0.1):
     - React-Core
     - SwiftAudioEx (= 1.0.0)
@@ -1905,7 +1905,7 @@ PODS:
     - React
   - SSZipArchive (2.5.5)
   - SwiftAudioEx (1.0.0)
-  - TikTokOpenSDK (5.0.0)
+  - TikTokOpenSDK (5.0.15)
   - TOCropViewController (2.7.4)
   - Yoga (0.0.0)
 
@@ -2343,7 +2343,7 @@ SPEC CHECKSUMS:
   react-native-restart: 7595693413fe3ca15893702f2c8306c62a708162
   react-native-safe-area-context: 3e6db312a77016d4f618550c814d9e236e0c0879
   react-native-slider: cefed6244ec9a9cc2b418f4aca536a777e00f9cd
-  react-native-tiktok: b3d7f50aff5b52a660169ef828768c67d59855d3
+  react-native-tiktok: 43edd001f1db1812af5ef1e428eff30514c4a456
   react-native-track-player: 97d76dbbd35f27cc709e5f04540615e54264b3f9
   react-native-version-number: b415bbec6a13f2df62bf978e85bc0d699462f37f
   react-native-video: 756ef2bd3f35036f88b06e67aa4aeea1ecfda858
@@ -2402,7 +2402,7 @@ SPEC CHECKSUMS:
   SRSRadialGradient: 8363f6c3ce63636f5ffee74a7016f5c84a6df0a1
   SSZipArchive: c69881e8ac5521f0e622291387add5f60f30f3c4
   SwiftAudioEx: 6f511018b7a0fdfd14ed1bb4081f953588245cc0
-  TikTokOpenSDK: a63564ea4dc1fabc56352bf7aa9ddc386cdb63b6
+  TikTokOpenSDK: dc1199ba9c6d7815aee0eaca6ec80ad13f7d9c1f
   TOCropViewController: 80b8985ad794298fb69d3341de183f33d1853654
   Yoga: 055f92ad73f8c8600a93f0e25ac0b2344c3b07e6
 
