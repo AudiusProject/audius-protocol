@@ -11,6 +11,11 @@ import { QUERY_KEYS } from './queryKeys'
 import { QueryOptions } from './types'
 import { primeUserData } from './utils/primeUserData'
 
+export const getUsersQueryKey = (userIds: ID[] | null | undefined) => [
+  QUERY_KEYS.users,
+  userIds
+]
+
 export const useUsers = (
   userIds: ID[] | null | undefined,
   options?: QueryOptions
@@ -21,7 +26,7 @@ export const useUsers = (
   const encodedIds = userIds?.map((id) => Id.parse(id)).filter(removeNullable)
 
   return useQuery({
-    queryKey: [QUERY_KEYS.users, userIds],
+    queryKey: getUsersQueryKey(userIds),
     queryFn: async () => {
       const sdk = await audiusSdk()
       const { data } = await sdk.full.users.getBulkUsers({

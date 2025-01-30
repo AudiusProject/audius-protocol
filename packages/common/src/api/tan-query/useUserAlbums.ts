@@ -17,6 +17,18 @@ type GetAlbumsOptions = {
   offset?: number
 }
 
+export const getUserAlbumsQueryKey = (params: GetAlbumsOptions) => {
+  const { userId, limit, offset } = params
+  return [
+    QUERY_KEYS.userAlbums,
+    userId,
+    {
+      limit,
+      offset
+    }
+  ]
+}
+
 export const useUserAlbums = (
   params: GetAlbumsOptions,
   options?: QueryOptions
@@ -28,7 +40,7 @@ export const useUserAlbums = (
   const dispatch = useDispatch()
 
   return useQuery({
-    queryKey: [QUERY_KEYS.userAlbums, userId, limit, offset],
+    queryKey: getUserAlbumsQueryKey(params),
     queryFn: async () => {
       if (!userId) return []
 

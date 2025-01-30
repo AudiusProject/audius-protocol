@@ -14,10 +14,19 @@ import { primeUserData } from './utils/primeUserData'
 
 const DEFAULT_PAGE_SIZE = 20
 
-type UseCollectionFavoritesArgs = {
+export type UseCollectionFavoritesArgs = {
   collectionId: ID | null | undefined
   pageSize?: number
 }
+
+export const getCollectionFavoritesQueryKey = ({
+  collectionId,
+  pageSize
+}: UseCollectionFavoritesArgs) => [
+  QUERY_KEYS.favorites,
+  collectionId,
+  { pageSize }
+]
 
 export const useCollectionFavorites = (
   { collectionId, pageSize = DEFAULT_PAGE_SIZE }: UseCollectionFavoritesArgs,
@@ -29,7 +38,7 @@ export const useCollectionFavorites = (
   const dispatch = useDispatch()
 
   return useInfiniteQuery({
-    queryKey: [QUERY_KEYS.favorites, collectionId, pageSize],
+    queryKey: getCollectionFavoritesQueryKey({ collectionId, pageSize }),
     initialPageParam: 0,
     getNextPageParam: (lastPage: User[], allPages) => {
       if (lastPage.length < pageSize) return undefined

@@ -7,7 +7,8 @@ import { User } from '~/models/User'
 import { addEntries } from '~/store/cache/actions'
 import { EntriesByKind } from '~/store/cache/types'
 
-import { QUERY_KEYS } from '../queryKeys'
+import { getUserQueryKey } from '../useUser'
+import { getUserByHandleQueryKey } from '../useUserByHandle'
 
 export const primeUserData = ({
   users,
@@ -37,15 +38,15 @@ export const primeUserDataInternal = ({
 
   users.forEach((user) => {
     // Prime user by ID
-    if (!queryClient.getQueryData([QUERY_KEYS.user, user.user_id])) {
-      queryClient.setQueryData([QUERY_KEYS.user, user.user_id], user)
+    if (!queryClient.getQueryData(getUserQueryKey(user.user_id))) {
+      queryClient.setQueryData(getUserQueryKey(user.user_id), user)
     }
     // Prime user by handle
     if (
       user.handle &&
-      !queryClient.getQueryData([QUERY_KEYS.userByHandle, user.handle])
+      !queryClient.getQueryData(getUserByHandleQueryKey(user.handle))
     ) {
-      queryClient.setQueryData([QUERY_KEYS.userByHandle, user.handle], user)
+      queryClient.setQueryData(getUserByHandleQueryKey(user.handle), user)
     }
 
     entries[Kind.USERS][user.user_id] = user

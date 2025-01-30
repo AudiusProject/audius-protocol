@@ -7,6 +7,11 @@ import { ID } from '~/models'
 import { QUERY_KEYS } from './queryKeys'
 import { QueryOptions } from './types'
 
+export const getSalesCountQueryKey = (userId: ID | null | undefined) => [
+  QUERY_KEYS.salesCount,
+  userId
+]
+
 export const useSalesCount = (
   userId: ID | null | undefined,
   options?: QueryOptions
@@ -15,7 +20,7 @@ export const useSalesCount = (
   const audiusSdk = context.audiusSdk
 
   return useQuery({
-    queryKey: [QUERY_KEYS.salesCount, userId],
+    queryKey: getSalesCountQueryKey(userId),
     queryFn: async () => {
       const sdk = await audiusSdk()
       const { data = 0 } = await sdk.full.users.getSalesCount({

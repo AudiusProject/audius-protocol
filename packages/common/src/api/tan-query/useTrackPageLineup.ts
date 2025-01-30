@@ -24,6 +24,11 @@ import { useLineupQuery } from './utils/useLineupQuery'
 
 const DEFAULT_PAGE_SIZE = 6
 
+export const getTrackPageLineupQueryKey = (
+  trackId: ID | null | undefined,
+  ownerHandle: string | null | undefined
+) => [QUERY_KEYS.trackPageLineup, trackId, ownerHandle]
+
 type UseTrackPageLineupArgs = {
   trackId: ID | null | undefined
   ownerHandle: string | null | undefined
@@ -63,7 +68,7 @@ export const useTrackPageLineup = (
     QueryKey,
     number
   >({
-    queryKey: [QUERY_KEYS.trackPageLineup, trackId, ownerHandle],
+    queryKey: getTrackPageLineupQueryKey(trackId, ownerHandle),
     initialPageParam: 0,
     getNextPageParam: () => undefined, // Always return undefined to indicate no more pages
     queryFn: async ({ pageParam }) => {

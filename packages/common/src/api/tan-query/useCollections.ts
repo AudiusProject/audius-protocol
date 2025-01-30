@@ -12,6 +12,10 @@ import { QUERY_KEYS } from './queryKeys'
 import { QueryOptions } from './types'
 import { primeCollectionData } from './utils/primeCollectionData'
 
+export const getCollectionsQueryKey = (
+  collectionIds: ID[] | null | undefined
+) => [QUERY_KEYS.collections, collectionIds]
+
 export const useCollections = (
   collectionIds: ID[] | null | undefined,
   options?: QueryOptions
@@ -21,7 +25,7 @@ export const useCollections = (
   const dispatch = useDispatch()
 
   return useQuery({
-    queryKey: [QUERY_KEYS.collections, collectionIds],
+    queryKey: getCollectionsQueryKey(collectionIds),
     queryFn: async () => {
       const encodedIds = collectionIds
         ?.map((id) => OptionalId.parse(id))

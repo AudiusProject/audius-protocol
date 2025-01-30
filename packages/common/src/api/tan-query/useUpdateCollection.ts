@@ -15,9 +15,12 @@ import { renameAccountPlaylist } from '~/store/account/slice'
 import { EditCollectionValues } from '~/store/cache/collections/types'
 import { updatePlaylistArtwork } from '~/utils/updatePlaylistArtwork'
 
-import { useCurrentUserId } from '..'
+import {
+  getCollectionByPermalinkQueryKey,
+  getCollectionQueryKey,
+  useCurrentUserId
+} from '..'
 
-import { QUERY_KEYS } from './queryKeys'
 import { primeCollectionData } from './utils/primeCollectionData'
 
 type MutationContext = {
@@ -128,15 +131,14 @@ export const useUpdateCollection = () => {
     }: UpdateCollectionParams): Promise<MutationContext> => {
       // Cancel any outgoing refetches
       await queryClient.cancelQueries({
-        queryKey: [QUERY_KEYS.collection, collectionId]
+        queryKey: getCollectionQueryKey(collectionId)
       })
 
       // Snapshot the previous values
       const previousCollection =
-        queryClient.getQueryData<UserCollectionMetadata>([
-          QUERY_KEYS.collection,
-          collectionId
-        ])
+        queryClient.getQueryData<UserCollectionMetadata>(
+          getCollectionQueryKey(collectionId)
+        )
 
       // Optimistically update collection
       const mergedCollection = { ...previousCollection, ...metadata }
@@ -150,7 +152,7 @@ export const useUpdateCollection = () => {
       // Optimistically update collectionByPermalink
       if (previousCollection) {
         queryClient.setQueryData(
-          [QUERY_KEYS.collectionByPermalink, previousCollection.permalink],
+          getCollectionByPermalinkQueryKey(previousCollection.permalink),
           (old: any) => ({
             ...old,
             ...metadata
@@ -185,14 +187,13 @@ export const useUpdateCollection = () => {
       // If the mutation fails, roll back collection data
       if (context?.previousCollection) {
         queryClient.setQueryData(
-          [QUERY_KEYS.collection, collectionId],
+          getCollectionQueryKey(collectionId),
           context.previousCollection
         )
         queryClient.setQueryData(
-          [
-            QUERY_KEYS.collectionByPermalink,
+          getCollectionByPermalinkQueryKey(
             context.previousCollection.permalink
-          ],
+          ),
           context.previousCollection
         )
       }

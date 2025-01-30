@@ -14,10 +14,15 @@ import { primeUserData } from './utils/primeUserData'
 
 const DEFAULT_PAGE_SIZE = 20
 
-type UseCollectionRepostsArgs = {
+export type UseCollectionRepostsArgs = {
   collectionId: ID | null | undefined
   pageSize?: number
 }
+
+export const getCollectionRepostsQueryKey = ({
+  collectionId,
+  pageSize
+}: UseCollectionRepostsArgs) => [QUERY_KEYS.reposts, collectionId, { pageSize }]
 
 export const useCollectionReposts = (
   { collectionId, pageSize = DEFAULT_PAGE_SIZE }: UseCollectionRepostsArgs,
@@ -29,7 +34,7 @@ export const useCollectionReposts = (
   const dispatch = useDispatch()
 
   return useInfiniteQuery({
-    queryKey: [QUERY_KEYS.reposts, collectionId, pageSize],
+    queryKey: getCollectionRepostsQueryKey({ collectionId, pageSize }),
     initialPageParam: 0,
     getNextPageParam: (lastPage: User[], allPages) => {
       if (lastPage.length < pageSize) return undefined

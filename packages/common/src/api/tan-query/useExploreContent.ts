@@ -14,13 +14,15 @@ type ExploreContentResponse = {
   featuredProfiles: string[]
 }
 
+export const getExploreContentQueryKey = () => [QUERY_KEYS.exploreContent]
+
 export const useExploreContent = (options?: QueryOptions) => {
   const { env } = useAudiusQueryContext()
   const exploreContentUrl =
     env.EXPLORE_CONTENT_URL ?? STATIC_EXPLORE_CONTENT_URL
 
   return useQuery({
-    queryKey: [QUERY_KEYS.exploreContent],
+    queryKey: getExploreContentQueryKey(),
     queryFn: async () => {
       const response = await fetch(exploreContentUrl)
       const json: ExploreContentResponse = await response.json()

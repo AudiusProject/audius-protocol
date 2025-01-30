@@ -1,4 +1,5 @@
 export const QUERY_KEYS = {
+  aiTracks: 'aiTracks',
   accountUser: 'accountUser',
   trackCommentList: 'trackCommentList',
   comment: 'comment',
@@ -66,6 +67,11 @@ export const QUERY_KEYS = {
   usdcTransactions: 'usdcTransactions',
   libraryTracks: 'libraryTracks',
   remixes: 'remixes',
-  moreByArtist: 'moreByArtist',
+  premiumTracks: 'premiumTracks',
+  profileReposts: 'profileReposts',
+  profileTracks: 'profileTracks',
+  trendingIds: 'trendingIds',
+  trendingPlaylists: 'trendingPlaylists',
+  trendingUnderground: 'trendingUnderground',
   trackPageLineup: 'trackPageLineup'
 } as const

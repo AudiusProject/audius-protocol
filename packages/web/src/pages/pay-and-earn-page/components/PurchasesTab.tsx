@@ -103,7 +103,7 @@ export const usePurchasesData = () => {
     data: count = 0,
     isPending: isCountPending,
     isError: isCountError
-  } = usePurchasesCount(userId)
+  } = usePurchasesCount({ userId })
 
   const isLoading = isPurchasesPending || isCountPending
   const isError = isPurchasesError || isCountError

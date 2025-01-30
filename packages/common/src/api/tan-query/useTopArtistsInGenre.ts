@@ -16,6 +16,11 @@ type UseTopArtistsInGenreArgs = {
   pageSize?: number
 }
 
+export const getTopArtistsInGenreQueryKey = (
+  genre: string,
+  pageSize: number
+) => [QUERY_KEYS.topArtistsInGenre, genre, pageSize]
+
 export const useTopArtistsInGenre = (
   args: UseTopArtistsInGenreArgs,
   options?: QueryOptions
@@ -26,7 +31,7 @@ export const useTopArtistsInGenre = (
   const { genre, pageSize = ARTISTS_PER_GENRE_PAGE_SIZE } = args
 
   return useInfiniteQuery({
-    queryKey: [QUERY_KEYS.topArtistsInGenre, genre, pageSize],
+    queryKey: getTopArtistsInGenreQueryKey(genre, pageSize),
     queryFn: async ({ pageParam }) => {
       const sdk = await audiusSdk()
       const { data } = await sdk.full.users.getTopUsersInGenre({

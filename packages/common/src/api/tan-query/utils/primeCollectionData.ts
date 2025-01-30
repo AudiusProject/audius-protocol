@@ -7,7 +7,8 @@ import { UserCollectionMetadata } from '~/models/Collection'
 import { addEntries } from '~/store/cache/actions'
 import { EntriesByKind } from '~/store/cache/types'
 
-import { QUERY_KEYS } from '../queryKeys'
+import { getCollectionQueryKey } from '../useCollection'
+import { getCollectionByPermalinkQueryKey } from '../useCollectionByPermalink'
 
 import { primeTrackDataInternal } from './primeTrackData'
 import { primeUserDataInternal } from './primeUserData'
@@ -66,23 +67,22 @@ export const primeCollectionDataInternal = ({
 
     // Prime collection data only if it doesn't exist
     if (
-      !queryClient.getQueryData([QUERY_KEYS.collection, collection.playlist_id])
+      !queryClient.getQueryData(getCollectionQueryKey(collection.playlist_id))
     ) {
       queryClient.setQueryData(
-        [QUERY_KEYS.collection, collection.playlist_id],
+        getCollectionQueryKey(collection.playlist_id),
         collection
       )
     }
 
     // Prime collection by permalink only if it doesn't exist
     if (
-      !queryClient.getQueryData([
-        QUERY_KEYS.collectionByPermalink,
-        collection.permalink
-      ])
+      !queryClient.getQueryData(
+        getCollectionByPermalinkQueryKey(collection.permalink)
+      )
     ) {
       queryClient.setQueryData(
-        [QUERY_KEYS.collectionByPermalink, collection.permalink],
+        getCollectionByPermalinkQueryKey(collection.permalink),
         collection
       )
     }

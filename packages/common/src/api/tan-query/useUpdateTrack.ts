@@ -12,6 +12,8 @@ import { stemsUploadSelectors } from '~/store/stems-upload'
 import { TrackMetadataForUpload } from '~/store/upload'
 
 import { QUERY_KEYS } from './queryKeys'
+import { getTrackQueryKey } from './useTrack'
+import { getTrackByPermalinkQueryKey } from './useTrackByPermalink'
 import { handleStemUpdates } from './utils/handleStemUpdates'
 import { primeTrackData } from './utils/primeTrackData'
 
@@ -21,7 +23,7 @@ type MutationContext = {
   previousTrack: UserTrackMetadata | undefined
 }
 
-type UpdateTrackParams = {
+export type UpdateTrackParams = {
   trackId: ID
   userId: ID
   metadata: Partial<TrackMetadataForUpload>
@@ -102,7 +104,7 @@ export const useUpdateTrack = () => {
       // Optimistically update trackByPermalink
       if (previousTrack) {
         queryClient.setQueryData(
-          [QUERY_KEYS.trackByPermalink, previousTrack.permalink],
+          getTrackByPermalinkQueryKey(previousTrack.permalink),
           (old: any) => ({
             ...old,
             ...metadata
@@ -110,7 +112,7 @@ export const useUpdateTrack = () => {
           })
         )
         queryClient.setQueryData(
-          [QUERY_KEYS.trackByPermalink, metadata.permalink],
+          getTrackByPermalinkQueryKey(metadata.permalink),
           (old: any) => ({
             ...previousTrack,
             ...old,
@@ -152,11 +154,11 @@ export const useUpdateTrack = () => {
       // If the mutation fails, roll back track data
       if (context?.previousTrack) {
         queryClient.setQueryData(
-          [QUERY_KEYS.track, trackId],
+          getTrackQueryKey(trackId),
           context.previousTrack
         )
         queryClient.setQueryData(
-          [QUERY_KEYS.trackByPermalink, context.previousTrack.permalink],
+          getTrackByPermalinkQueryKey(context.previousTrack.permalink),
           context.previousTrack
         )
       }

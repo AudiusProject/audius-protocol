@@ -6,6 +6,7 @@ import { userCollectionMetadataFromSDK } from '~/adapters/collection'
 import { transformAndCleanList } from '~/adapters/utils'
 import { useAudiusQueryContext } from '~/audius-query'
 import { CollectionMetadata } from '~/models/Collection'
+import { ID } from '~/models/Identifiers'
 import { CollectionType } from '~/store/saved-collections/types'
 
 import { QUERY_KEYS } from './queryKeys'
@@ -24,6 +25,27 @@ type UseLibraryCollectionsArgs = {
   pageSize?: number
 }
 
+export const getLibraryCollectionsQueryKey = ({
+  currentUserId,
+  collectionType,
+  category,
+  query,
+  sortMethod,
+  sortDirection,
+  pageSize
+}: UseLibraryCollectionsArgs & { currentUserId: ID | null | undefined }) => [
+  QUERY_KEYS.libraryCollections,
+  currentUserId,
+  {
+    collectionType,
+    category,
+    query,
+    sortMethod,
+    sortDirection,
+    pageSize
+  }
+]
+
 export const useLibraryCollections = (
   {
     collectionType,
@@ -41,15 +63,15 @@ export const useLibraryCollections = (
   const dispatch = useDispatch()
 
   return useInfiniteQuery({
-    queryKey: [
-      QUERY_KEYS.libraryCollections,
+    queryKey: getLibraryCollectionsQueryKey({
       currentUserId,
       collectionType,
       category,
       query,
       sortMethod,
-      sortDirection
-    ],
+      sortDirection,
+      pageSize
+    }),
     initialPageParam: 0,
     getNextPageParam: (
       lastPage: CollectionMetadata[],

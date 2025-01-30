@@ -19,6 +19,11 @@ type UseFollowingArgs = {
   pageSize?: number
 }
 
+export const getFollowingQueryKey = ({
+  userId,
+  pageSize
+}: UseFollowingArgs) => [QUERY_KEYS.following, userId, { pageSize }]
+
 /**
  * Hook to fetch following for a user with infinite query support.
  * This version supports infinite scrolling and maintains the full list of following.
@@ -33,7 +38,7 @@ export const useFollowing = (
   const dispatch = useDispatch()
 
   return useInfiniteQuery({
-    queryKey: [QUERY_KEYS.following, userId, pageSize],
+    queryKey: getFollowingQueryKey({ userId, pageSize }),
     initialPageParam: 0,
     getNextPageParam: (lastPage: User[], allPages) => {
       if (lastPage.length < pageSize) return undefined
