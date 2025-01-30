@@ -206,7 +206,7 @@ export const TanQueryLineup = ({
     entries:
       pageSize !== undefined && start !== undefined
         ? lineup.entries.slice(start, start + pageSize)
-        : lineup.entries.slice(start)
+        : lineup.entries
   }
 
   let tiles = slicedLineup.entries
