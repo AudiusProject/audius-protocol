@@ -1,7 +1,7 @@
 import { ChangeEvent, memo, useCallback, useMemo, useState } from 'react'
 
 import { useCurrentUserId, useTrackHistory } from '@audius/common/api'
-import { ID, Name, PlaybackSource, Track } from '@audius/common/models'
+import { Name, PlaybackSource, Track } from '@audius/common/models'
 import {
   Button,
   IconListeningHistory,
@@ -15,7 +15,6 @@ import { useNavigate } from 'react-router-dom-v5-compat'
 import { make } from 'common/store/analytics/actions'
 import FilterInput from 'components/filter-input/FilterInput'
 import { Header } from 'components/header/desktop/Header'
-import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import Page from 'components/page/Page'
 import { dateSorter } from 'components/table'
 import { TrackTableLineup } from 'components/tracks-table'
@@ -29,7 +28,7 @@ export type HistoryPageProps = {
   description: string
 }
 
-const pageSize = 15
+const pageSize = 50
 
 const HistoryPage = ({ title, description }: HistoryPageProps) => {
   const { data: currentUserId } = useCurrentUserId()
@@ -63,8 +62,6 @@ const HistoryPage = ({ title, description }: HistoryPageProps) => {
   const { isPlaying, play, pause, lineup, isInitialLoading } = lineupQueryData
   const isEmpty = lineup.entries.length === 0
 
-  console.log('lineup', lineup)
-
   const handlePlay = useCallback(() => {
     if (lineup.entries.length > 0) {
       const track = lineup.entries[0] as Track & { uid: string }
@@ -87,10 +84,6 @@ const HistoryPage = ({ title, description }: HistoryPageProps) => {
       }
     }
   }, [dispatch, isPlaying, lineup.entries, pause, play])
-
-  const tableLoading = !lineup.entries.every(
-    (track: any) => track.play_count > -1
-  )
 
   const playAllButton = !isInitialLoading ? (
     <Button
@@ -124,14 +117,6 @@ const HistoryPage = ({ title, description }: HistoryPageProps) => {
 
   const defaultSorter = useMemo(() => dateSorter('dateListened'), [])
 
-  const totalRowCount = useMemo(() => {
-    if (!lineupQueryData.hasNextPage) {
-      return lineup.entries.length
-    }
-    // If we have next page, add buffer for more items
-    return lineup.entries.length + pageSize
-  }, [lineup.entries.length, lineupQueryData.hasNextPage])
-
   return (
     <Page
       title={title}
@@ -140,7 +125,7 @@ const HistoryPage = ({ title, description }: HistoryPageProps) => {
       header={header}
     >
       <div className={styles.bodyWrapper}>
-        {isEmpty && !isInitialLoading && !tableLoading ? (
+        {isEmpty && !isInitialLoading ? (
           <EmptyTable
             primaryText="You haven't listened to any tracks yet."
             secondaryText="Once you have, this is where you'll find them!"
@@ -149,14 +134,13 @@ const HistoryPage = ({ title, description }: HistoryPageProps) => {
           />
         ) : (
           <TrackTableLineup
+            lineupQueryData={lineupQueryData}
             userId={currentUserId}
             defaultSorter={defaultSorter}
-            isVirtualized
             scrollRef={mainContentRef}
-            totalRowCount={200}
+            isVirtualized
             pageSize={pageSize}
             onSort={handleSort}
-            lineupQueryData={lineupQueryData}
           />
         )}
       </div>

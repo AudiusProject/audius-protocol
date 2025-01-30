@@ -209,6 +209,9 @@ export const TracksTable = ({
     (cellInfo: TrackCell) => {
       const { original: track, index } = cellInfo.row
       const { user } = track
+      if (!user) {
+        return 'Unknown'
+      }
       if (user?.is_deactivated) {
         return `${user?.name} [Deactivated]`
       }

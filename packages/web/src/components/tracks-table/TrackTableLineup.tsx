@@ -6,7 +6,8 @@ import {
   FavoriteSource,
   RepostSource,
   LineupTrack,
-  UserTrackMetadata
+  UserTrackMetadata,
+  Kind
 } from '@audius/common/models'
 import type { LineupQueryData } from '@audius/common/src/api/tan-query/types'
 import {
@@ -59,8 +60,9 @@ export const TrackTableLineup = ({
     pause,
     loadNextPage,
     isPlaying,
-    isFetching,
+    isInitialLoading,
     data,
+    hasNextPage,
     pageSize
   } = lineupQueryData
 
@@ -74,11 +76,14 @@ export const TrackTableLineup = ({
   // Merge lineup entries with their corresponding track data
   const mergedData = useMemo(() => {
     if (lineup.entries.length === 0 || !tracks || tracks.length === 0) return []
-    return lineup.entries.map((entry, index) => ({
-      ...entry,
-      ...(tracks as UserTrackMetadata[])[index]
+    const merged = tracks.map((track, index) => ({
+      ...lineup.entries[index],
+      ...track
     }))
-  }, [lineup.entries, tracks])
+    return hasNextPage
+      ? merged.concat(new Array(5).fill({ kind: Kind.EMPTY }))
+      : merged
+  }, [lineup.entries, tracks, hasNextPage])
 
   // Get the playing index by finding the current track in the data
   const playingIndex = useMemo(() => {
@@ -151,7 +156,7 @@ export const TrackTableLineup = ({
       activeIndex={playingIndex}
       onClickRow={onClickRow}
       fetchMore={loadNextPage}
-      loading={isFetching}
+      loading={isInitialLoading}
       pageSize={pageSize}
     />
   )
