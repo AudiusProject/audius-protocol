@@ -1,6 +1,8 @@
 import type { QueryClient } from '@tanstack/react-query'
 
 import { QUERY_KEYS } from '~/api/tan-query/queryKeys'
+import { batchSetQueriesData } from '~/api/tan-query/utils/batchSetQueriesData'
+import type { QueryKeyValue } from '~/api/tan-query/utils/batchSetQueriesData'
 import { ID } from '~/models'
 
 import { Kind } from '../../models/Kind'
@@ -11,11 +13,7 @@ type EntityUpdater = {
   singleKey: string
   listKey: string
   idField: string
-  updateRelations?: (
-    queryClient: QueryClient,
-    id: number,
-    metadata: any
-  ) => void
+  collectUpdates?: (id: number, metadata: any) => QueryKeyValue[]
 }
 
 const ENTITY_UPDATERS: Record<Kind, EntityUpdater> = {
@@ -23,40 +21,42 @@ const ENTITY_UPDATERS: Record<Kind, EntityUpdater> = {
     singleKey: QUERY_KEYS.user,
     listKey: QUERY_KEYS.users,
     idField: 'user_id',
-    updateRelations: (queryClient, id, metadata) => {
+    collectUpdates: (id, metadata) => {
+      const updates: QueryKeyValue[] = []
+
       // Update userByHandle cache
       if (metadata.handle) {
-        queryClient.setQueryData(
-          [QUERY_KEYS.userByHandle, metadata.handle],
-          metadata
-        )
+        updates.push({
+          queryKey: [QUERY_KEYS.userByHandle, metadata.handle],
+          data: metadata
+        })
       }
 
       // Update accountUser cache if it matches the user
-      queryClient.setQueriesData(
-        { queryKey: [QUERY_KEYS.accountUser] },
-        (oldData: any) => {
+      updates.push({
+        queryKey: [QUERY_KEYS.accountUser],
+        data: (oldData: any) => {
           if (!oldData?.user_id || oldData.user_id !== id) return oldData
           return metadata
         }
-      )
+      })
 
       // Update any tracks that might contain this user
-      queryClient.setQueriesData(
-        { queryKey: [QUERY_KEYS.track] },
-        (oldData: any) => {
+      updates.push({
+        queryKey: [QUERY_KEYS.track],
+        data: (oldData: any) => {
           if (!oldData?.user || oldData.user.user_id !== id) return oldData
           return {
             ...oldData,
             user: metadata
           }
         }
-      )
+      })
 
       // Update any collections that might contain this user
-      queryClient.setQueriesData(
-        { queryKey: [QUERY_KEYS.collection] },
-        (oldData: any) => {
+      updates.push({
+        queryKey: [QUERY_KEYS.collection],
+        data: (oldData: any) => {
           if (!oldData) return oldData
 
           let updatedData = oldData
@@ -88,41 +88,47 @@ const ENTITY_UPDATERS: Record<Kind, EntityUpdater> = {
 
           return updatedData
         }
-      )
+      })
+
+      return updates
     }
   },
   [Kind.TRACKS]: {
     singleKey: QUERY_KEYS.track,
     listKey: QUERY_KEYS.tracks,
     idField: 'track_id',
-    updateRelations: (queryClient, id, metadata) => {
+    collectUpdates: (id, metadata) => {
       // Update any collections that might contain this track
-      queryClient.setQueriesData(
-        { queryKey: [QUERY_KEYS.collection] },
-        (oldData: any) => {
-          if (!oldData?.tracks) return oldData
-          return {
-            ...oldData,
-            tracks: oldData.tracks.map((track: any) =>
-              track.track_id === id ? metadata : track
-            )
+      return [
+        {
+          queryKey: [QUERY_KEYS.collection],
+          data: (oldData: any) => {
+            if (!oldData?.tracks) return oldData
+            return {
+              ...oldData,
+              tracks: oldData.tracks.map((track: any) =>
+                track.track_id === id ? metadata : track
+              )
+            }
           }
         }
-      )
+      ]
     }
   },
   [Kind.COLLECTIONS]: {
     singleKey: QUERY_KEYS.collection,
     listKey: QUERY_KEYS.collections,
     idField: 'playlist_id',
-    updateRelations: (queryClient, id, metadata) => {
+    collectUpdates: (id, metadata) => {
+      const updates: QueryKeyValue[] = []
       // Update collectionByPermalink cache if we have a permalink
       if (metadata.permalink) {
-        queryClient.setQueryData(
-          [QUERY_KEYS.collectionByPermalink, metadata.permalink],
-          metadata
-        )
+        updates.push({
+          queryKey: [QUERY_KEYS.collectionByPermalink, metadata.permalink],
+          data: metadata
+        })
       }
+      return updates
     }
   },
   [Kind.TRACK_ROUTES]: {
@@ -137,44 +143,52 @@ const ENTITY_UPDATERS: Record<Kind, EntityUpdater> = {
   }
 }
 
-const updateEntity = (
-  queryClient: QueryClient,
+const getEntityUpdates = (
   kind: Kind,
   id: ID,
   metadata: Metadata
-) => {
+): QueryKeyValue[] => {
   const updater = ENTITY_UPDATERS[kind]
-  if (!updater) return
+  if (!updater) return []
 
   const metadataToSet = 'metadata' in metadata ? metadata.metadata : metadata
+  const updates: QueryKeyValue[] = []
+
   // Update single entity
-  queryClient.setQueryData([updater.singleKey, id], metadataToSet)
+  updates.push({
+    queryKey: [updater.singleKey, id],
+    data: metadataToSet
+  })
 
   // Update entity in lists
-  queryClient.setQueriesData(
-    { queryKey: [updater.listKey] },
-    (oldData: any) => {
+  updates.push({
+    queryKey: [updater.listKey],
+    data: (oldData: any) => {
       if (!Array.isArray(oldData)) return oldData
       return oldData.map((item) =>
         item[updater.idField] === id ? metadataToSet : item
       )
     }
-  )
+  })
 
-  // Update related entities
-  if (updater.updateRelations) {
-    updater.updateRelations(queryClient, id, metadataToSet)
+  // Collect related entity updates
+  if (updater.collectUpdates) {
+    updates.push(...updater.collectUpdates(id, metadataToSet))
   }
+
+  return updates
 }
 
 export const syncWithReactQuery = (
   queryClient: QueryClient,
   entriesByKind: EntriesByKind
 ) => {
+  const updates: QueryKeyValue[] = []
   Object.entries(entriesByKind).forEach(([kind, entries]) => {
     if (!entries) return
     Object.entries(entries).forEach(([id, entry]) => {
-      updateEntity(queryClient, kind as Kind, parseInt(id, 10), entry)
+      updates.push(...getEntityUpdates(kind as Kind, parseInt(id, 10), entry))
     })
   })
+  batchSetQueriesData(queryClient, updates)
 }
