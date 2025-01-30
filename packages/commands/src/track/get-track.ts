@@ -12,5 +12,5 @@ export const getTrackCommand = new Command('get')
       userId,
       trackId
     })
-    console.info(track)
+    console.info(JSON.stringify(track, undefined, 2))
   })
