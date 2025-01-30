@@ -37,6 +37,7 @@ import {
   Paper
 } from '@audius/harmony'
 import cn from 'classnames'
+import { getChallengeConfig } from 'pages/audio-page/config'
 import { useDispatch, useSelector } from 'react-redux'
 
 import QRCode from 'assets/img/imageQR.png'
@@ -48,7 +49,6 @@ import Tooltip from 'components/tooltip/Tooltip'
 import { ComponentPlacement, MountPlacement } from 'components/types'
 import { useIsMobile } from 'hooks/useIsMobile'
 import { useWithMobileStyle } from 'hooks/useWithMobileStyle'
-import { getChallengeConfig } from 'pages/audio-rewards-page/config'
 import { copyToClipboard, getCopyableLink } from 'utils/clipboardUtil'
 import { CLAIM_REWARD_TOAST_TIMEOUT_MILLIS } from 'utils/constants'
 import { push as pushRoute } from 'utils/navigation'
