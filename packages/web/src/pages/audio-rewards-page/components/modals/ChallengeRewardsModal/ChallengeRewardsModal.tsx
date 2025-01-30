@@ -705,6 +705,8 @@ export const ChallengeRewardsModal = () => {
       useGradientTitle={false}
       titleClassName={wm(styles.title)}
       headerContainerClassName={styles.header}
+      showDismissButton
+      dismissOnClickOutside
     >
       <ModalContent>
         <ChallengeRewardsBody dismissModal={onClose} />
