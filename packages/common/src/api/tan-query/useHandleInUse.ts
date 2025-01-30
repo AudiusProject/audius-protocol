@@ -27,6 +27,11 @@ export const fetchHandleInUse = async (
   }
 }
 
+export const getHandleInUseQueryKey = (handle: string | null | undefined) => [
+  QUERY_KEYS.handleInUse,
+  handle
+]
+
 /**
  * Hook to check if a handle is already in use
  */
@@ -37,7 +42,7 @@ export const useHandleInUse = (
   const context = useAudiusQueryContext()
 
   return useQuery({
-    queryKey: [QUERY_KEYS.handleInUse, handle],
+    queryKey: getHandleInUseQueryKey(handle),
     queryFn: () => fetchHandleInUse(handle, context),
     staleTime: options?.staleTime,
     enabled: options?.enabled !== false && !!handle

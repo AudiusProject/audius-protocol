@@ -27,6 +27,16 @@ type UseTrackHistoryArgs = {
   sortDirection?: full.GetUsersTrackHistorySortDirectionEnum
 }
 
+export const getTrackHistoryQueryKey = ({
+  query,
+  pageSize,
+  sortMethod,
+  sortDirection
+}: UseTrackHistoryArgs) => [
+  QUERY_KEYS.trackHistory,
+  { pageSize, query, sortMethod, sortDirection }
+]
+
 export const useTrackHistory = (
   {
     pageSize = DEFAULT_PAGE_SIZE,
@@ -47,13 +57,12 @@ export const useTrackHistory = (
       if (lastPage.length < pageSize) return undefined
       return allPages.length * pageSize
     },
-    queryKey: [
-      QUERY_KEYS.trackHistory,
+    queryKey: getTrackHistoryQueryKey({
       pageSize,
       query,
       sortMethod,
       sortDirection
-    ],
+    }),
     queryFn: async ({ pageParam }) => {
       const sdk = await audiusSdk()
       if (!currentUserId) return []

@@ -11,8 +11,10 @@ import { squashNewLines } from '~/utils/formatUtil'
 
 import { QUERY_KEYS } from './queryKeys'
 import { useCurrentUserId } from './useCurrentUserId'
+import { getUserQueryKey } from './useUser'
+import { getUserByHandleQueryKey } from './useUserByHandle'
 
-type MutationContext = {
+export type MutationContext = {
   previousMetadata: UserMetadata | undefined
 }
 
@@ -98,14 +100,13 @@ export const useUpdateProfile = () => {
       })
 
       // Snapshot the previous values
-      const previousMetadata = queryClient.getQueryData<UserMetadata>([
-        QUERY_KEYS.user,
-        currentUserId
-      ])
+      const previousMetadata = queryClient.getQueryData<UserMetadata>(
+        getUserQueryKey(currentUserId)
+      )
 
       // Optimistically update user data
       if (previousMetadata) {
-        queryClient.setQueryData([QUERY_KEYS.user, currentUserId], {
+        queryClient.setQueryData(getUserQueryKey(currentUserId), {
           ...previousMetadata,
           ...metadata
         })
@@ -113,7 +114,7 @@ export const useUpdateProfile = () => {
         // Also update user by handle if it exists
         if (previousMetadata.handle) {
           queryClient.setQueryData(
-            [QUERY_KEYS.userByHandle, previousMetadata.handle],
+            getUserByHandleQueryKey(previousMetadata.handle),
             (old: any) => ({
               ...old,
               ...metadata
@@ -127,15 +128,15 @@ export const useUpdateProfile = () => {
     onError: (error, metadata, context?: MutationContext) => {
       // If the mutation fails, roll back user data
       if (context?.previousMetadata) {
-        queryClient.setQueryData(
-          [QUERY_KEYS.user, currentUserId],
-          context.previousMetadata
-        )
+        queryClient.setQueryData(getUserQueryKey(currentUserId), {
+          ...context.previousMetadata,
+          ...metadata
+        })
 
         // Roll back user by handle data
         if (context.previousMetadata.handle) {
           queryClient.setQueryData(
-            [QUERY_KEYS.userByHandle, context.previousMetadata.handle],
+            getUserByHandleQueryKey(context.previousMetadata.handle),
             context.previousMetadata
           )
         }

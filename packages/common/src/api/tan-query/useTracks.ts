@@ -13,6 +13,13 @@ import { removeNullable } from '~/utils/typeUtils'
 
 import { QUERY_KEYS } from './queryKeys'
 import { QueryOptions } from './types'
+import { getTrackQueryKey } from './useTrack'
+import { getUserQueryKey } from './useUser'
+
+export const getTracksQueryKey = (trackIds: ID[] | null | undefined) => [
+  QUERY_KEYS.tracks,
+  trackIds
+]
 
 export const useTracks = (
   trackIds: ID[] | null | undefined,
@@ -23,7 +30,7 @@ export const useTracks = (
   const dispatch = useDispatch()
 
   return useQuery({
-    queryKey: [QUERY_KEYS.tracks, trackIds],
+    queryKey: getTracksQueryKey(trackIds),
     queryFn: async () => {
       const encodedIds = trackIds
         ?.map((id) => OptionalId.parse(id))
@@ -43,13 +50,13 @@ export const useTracks = (
 
         tracks.forEach((track) => {
           // Prime track data
-          queryClient.setQueryData([QUERY_KEYS.track, track.track_id], track)
+          queryClient.setQueryData(getTrackQueryKey(track.track_id), track)
           entries[Kind.TRACKS]![track.track_id] = track
 
           // Prime user data from track owner
           if (track.user) {
             queryClient.setQueryData(
-              [QUERY_KEYS.user, track.user.user_id],
+              getUserQueryKey(track.user.user_id),
               track.user
             )
             if (!entries[Kind.USERS]) entries[Kind.USERS] = {}

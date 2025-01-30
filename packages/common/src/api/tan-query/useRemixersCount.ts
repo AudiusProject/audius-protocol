@@ -8,9 +8,14 @@ import { QUERY_KEYS } from './queryKeys'
 import { QueryOptions } from './types'
 import { useCurrentUserId } from './useCurrentUserId'
 
-type UseRemixersCountArgs = {
+export type UseRemixersCountArgs = {
   trackId?: ID | null | undefined
 }
+
+export const getRemixersCountQueryKey = ({ trackId }: UseRemixersCountArgs) => [
+  QUERY_KEYS.remixersCount,
+  trackId
+]
 
 export const useRemixersCount = (
   { trackId }: UseRemixersCountArgs = {},
@@ -20,7 +25,7 @@ export const useRemixersCount = (
   const { data: currentUserId } = useCurrentUserId()
 
   return useQuery({
-    queryKey: [QUERY_KEYS.remixersCount, currentUserId],
+    queryKey: getRemixersCountQueryKey({ trackId }),
     queryFn: async () => {
       const sdk = await audiusSdk()
       if (!currentUserId) return 0

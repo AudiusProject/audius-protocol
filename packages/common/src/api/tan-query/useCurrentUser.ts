@@ -8,6 +8,10 @@ import { getWalletAddresses } from '~/store/account/selectors'
 import { QUERY_KEYS } from './queryKeys'
 import { QueryOptions } from './types'
 
+export const getCurrentUserQueryKey = (
+  currentUser: string | null | undefined
+) => [QUERY_KEYS.accountUser, currentUser]
+
 /**
  * Hook to get the currently logged in user's data
  */
@@ -16,7 +20,7 @@ export const useCurrentUser = (options?: QueryOptions) => {
   const { currentUser } = useSelector(getWalletAddresses)
 
   return useQuery({
-    queryKey: [QUERY_KEYS.accountUser, currentUser],
+    queryKey: getCurrentUserQueryKey(currentUser),
     queryFn: async () => {
       const sdk = await audiusSdk()
       const { data } = await sdk.full.users.getUserAccount({

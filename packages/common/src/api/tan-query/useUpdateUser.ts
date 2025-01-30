@@ -8,13 +8,15 @@ import { PlaylistLibrary } from '~/models/PlaylistLibrary'
 import { UserMetadata } from '~/models/User'
 
 import { QUERY_KEYS } from './queryKeys'
+import { getUserQueryKey } from './useUser'
+import { getUserByHandleQueryKey } from './useUserByHandle'
 
 type MutationContext = {
   previousUser: UserMetadata | undefined
   previousAccountUser: UserMetadata | undefined
 }
 
-type UpdateUserParams = {
+export type UpdateUserParams = {
   userId: ID
   metadata: Partial<UserMetadata>
   profilePictureFile?: File
@@ -64,14 +66,14 @@ export const useUpdateUser = () => {
         .find(([_, data]) => data?.user_id === userId)?.[1]
 
       // Optimistically update user
-      queryClient.setQueryData([QUERY_KEYS.user, userId], (old: any) => ({
+      queryClient.setQueryData(getUserQueryKey(userId), (old: any) => ({
         ...old,
         ...metadata
       }))
 
       // Optimistically update userByHandle queries if they match the user
       queryClient.setQueryData(
-        [QUERY_KEYS.userByHandle, metadata.handle],
+        getUserByHandleQueryKey(metadata.handle),
         (old: any) => ({ ...old, ...metadata })
       )
 
@@ -146,14 +148,11 @@ export const useUpdateUser = () => {
     onError: (_err, { userId }, context?: MutationContext) => {
       // If the mutation fails, roll back user data
       if (context?.previousUser) {
-        queryClient.setQueryData(
-          [QUERY_KEYS.user, userId],
-          context.previousUser
-        )
+        queryClient.setQueryData(getUserQueryKey(userId), context.previousUser)
 
         // Roll back userByHandle queries
         queryClient.setQueryData(
-          [QUERY_KEYS.userByHandle, context.previousUser?.handle],
+          getUserByHandleQueryKey(context.previousUser?.handle),
           context.previousUser
         )
       }

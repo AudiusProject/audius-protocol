@@ -4,6 +4,7 @@ import { full, Id } from '@audius/sdk'
 import { useInfiniteQuery } from '@tanstack/react-query'
 
 import { useAudiusQueryContext } from '~/audius-query'
+import { ID } from '~/models/Identifiers'
 import { USDCTransactionDetails } from '~/models/USDCTransactions'
 
 import { QUERY_KEYS } from './queryKeys'
@@ -18,6 +19,30 @@ type UseUSDCTransactionsArgs = {
   sortDirection?: full.GetUSDCTransactionsSortDirectionEnum
   type?: full.GetUSDCTransactionsTypeEnum[]
   method?: full.GetUSDCTransactionsMethodEnum
+}
+
+export const getUSDCTransactionsQueryKey = (
+  currentUserId: ID | null | undefined,
+  args: UseUSDCTransactionsArgs
+) => {
+  const {
+    pageSize = DEFAULT_PAGE_SIZE,
+    sortMethod = full.GetUSDCTransactionsSortMethodEnum.Date,
+    sortDirection = full.GetUSDCTransactionsSortDirectionEnum.Desc,
+    type,
+    method
+  } = args
+  return [
+    QUERY_KEYS.usdcTransactions,
+    currentUserId,
+    {
+      sortMethod,
+      sortDirection,
+      type,
+      method,
+      pageSize
+    }
+  ]
 }
 
 /**
@@ -52,15 +77,13 @@ export const useUSDCTransactions = (
   const { data: currentUserId } = useCurrentUserId()
 
   const query = useInfiniteQuery({
-    queryKey: [
-      QUERY_KEYS.usdcTransactions,
-      currentUserId,
+    queryKey: getUSDCTransactionsQueryKey(currentUserId, {
+      pageSize,
       sortMethod,
       sortDirection,
       type,
-      method,
-      pageSize
-    ],
+      method
+    }),
     initialPageParam: 0,
     getNextPageParam: (lastPage: USDCTransactionDetails[], allPages) => {
       if (lastPage.length < pageSize) return undefined

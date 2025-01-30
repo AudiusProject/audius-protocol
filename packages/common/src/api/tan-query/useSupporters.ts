@@ -9,6 +9,7 @@ import { supporterMetadataListFromSDK } from '~/models/Tipping'
 import { QUERY_KEYS } from './queryKeys'
 import { QueryOptions } from './types'
 import { useCurrentUserId } from './useCurrentUserId'
+import { getSupporterQueryKey } from './useSupporter'
 import { primeUserData } from './utils/primeUserData'
 
 const DEFAULT_PAGE_SIZE = 20
@@ -17,6 +18,11 @@ type UseSupportersArgs = {
   userId: ID | null | undefined
   pageSize?: number
 }
+
+export const getSupportersQueryKey = (
+  userId: ID | null | undefined,
+  pageSize: number
+) => [QUERY_KEYS.supporters, userId, pageSize]
 
 export const useSupporters = (
   { userId, pageSize = DEFAULT_PAGE_SIZE }: UseSupportersArgs,
@@ -28,7 +34,7 @@ export const useSupporters = (
   const dispatch = useDispatch()
 
   return useInfiniteQuery({
-    queryKey: [QUERY_KEYS.supporters, userId, pageSize],
+    queryKey: getSupportersQueryKey(userId, pageSize),
     initialPageParam: 0,
     getNextPageParam: (lastPage, allPages) => {
       if (lastPage.length < pageSize) return undefined
@@ -47,7 +53,7 @@ export const useSupporters = (
       // Prime the cache for each supporter
       supporters.forEach((supporter) => {
         queryClient.setQueryData(
-          [QUERY_KEYS.supporter, userId, supporter.sender.user_id],
+          getSupporterQueryKey(userId, supporter.sender.user_id),
           supporter
         )
       })

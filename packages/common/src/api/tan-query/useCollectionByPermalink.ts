@@ -12,6 +12,10 @@ import { primeCollectionData } from './utils/primeCollectionData'
 
 const STALE_TIME = Infinity
 
+export const getCollectionByPermalinkQueryKey = (
+  permalink: string | undefined | null
+) => [QUERY_KEYS.collectionByPermalink, permalink]
+
 export const playlistPermalinkToHandleAndSlug = (permalink: string) => {
   const splitPermalink = permalink.split('/')
   if (splitPermalink.length !== 4) {
@@ -34,7 +38,7 @@ export const useCollectionByPermalink = (
   const currentUserId = useSelector(getUserId)
 
   return useQuery({
-    queryKey: [QUERY_KEYS.collectionByPermalink, permalink],
+    queryKey: getCollectionByPermalinkQueryKey(permalink),
     queryFn: async () => {
       const { handle, slug } = playlistPermalinkToHandleAndSlug(permalink!)
       const sdk = await audiusSdk()
@@ -55,12 +59,6 @@ export const useCollectionByPermalink = (
           queryClient,
           dispatch
         })
-
-        // Prime collection cache
-        queryClient.setQueryData(
-          [QUERY_KEYS.collection, collection.playlist_id],
-          collection
-        )
       }
 
       return collection

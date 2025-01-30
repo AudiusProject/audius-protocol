@@ -21,6 +21,11 @@ type UseSupporterArgs = {
 
 const DEFAULT_STALE_TIME = 1000 * 30
 
+export const getSupporterQueryKey = (
+  userId: ID | null | undefined,
+  supporterUserId: ID | null | undefined
+) => [QUERY_KEYS.supporter, userId, supporterUserId]
+
 export const useSupporter = (
   { userId, supporterUserId }: UseSupporterArgs,
   options?: QueryOptions
@@ -31,7 +36,7 @@ export const useSupporter = (
   const dispatch = useDispatch()
 
   return useQuery({
-    queryKey: [QUERY_KEYS.supporter, userId, supporterUserId],
+    queryKey: getSupporterQueryKey(userId, supporterUserId),
     queryFn: async () => {
       const sdk = await audiusSdk()
       const { data } = await sdk.full.users.getSupporter({

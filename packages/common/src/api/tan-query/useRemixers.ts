@@ -14,11 +14,17 @@ import { primeUserData } from './utils/primeUserData'
 
 const DEFAULT_PAGE_SIZE = 20
 
-type UseRemixersArgs = {
+export type UseRemixersArgs = {
   userId: ID | null | undefined
   trackId?: ID | null | undefined
   pageSize?: number
 }
+
+export const getRemixersQueryKey = ({
+  userId,
+  trackId,
+  pageSize = DEFAULT_PAGE_SIZE
+}: UseRemixersArgs) => [QUERY_KEYS.remixers, userId, trackId, { pageSize }]
 
 export const useRemixers = (
   { userId, trackId, pageSize = DEFAULT_PAGE_SIZE }: UseRemixersArgs,
@@ -30,7 +36,7 @@ export const useRemixers = (
   const dispatch = useDispatch()
 
   return useInfiniteQuery({
-    queryKey: [QUERY_KEYS.remixers, userId, pageSize],
+    queryKey: getRemixersQueryKey({ userId, trackId, pageSize }),
     initialPageParam: 0,
     getNextPageParam: (lastPage: User[], allPages) => {
       if (lastPage.length < pageSize) return undefined

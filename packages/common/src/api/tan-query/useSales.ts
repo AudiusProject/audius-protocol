@@ -24,13 +24,24 @@ export type GetSalesListArgs = {
   pageSize?: number
 }
 
+export const getSalesQueryKey = ({
+  userId,
+  sortMethod,
+  sortDirection,
+  pageSize = PAGE_SIZE
+}: GetSalesListArgs) => [
+  QUERY_KEYS.sales,
+  userId,
+  { sortMethod, sortDirection, pageSize }
+]
+
 export const useSales = (args: GetSalesListArgs, options?: QueryOptions) => {
   const { userId, sortMethod, sortDirection, pageSize = PAGE_SIZE } = args
   const context = useAudiusQueryContext()
   const { audiusSdk } = context
 
   const queryResult = useInfiniteQuery({
-    queryKey: [QUERY_KEYS.sales, args],
+    queryKey: getSalesQueryKey({ userId, sortMethod, sortDirection, pageSize }),
     initialPageParam: 0,
     getNextPageParam: (
       lastPage: USDCPurchaseDetails[],

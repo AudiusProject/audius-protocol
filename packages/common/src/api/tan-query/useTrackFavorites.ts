@@ -19,6 +19,17 @@ type UseFavoritesArgs = {
   pageSize?: number
 }
 
+export const getTrackFavoritesQueryKey = (args: UseFavoritesArgs) => {
+  const { trackId, pageSize = DEFAULT_PAGE_SIZE } = args
+  return [
+    QUERY_KEYS.favorites,
+    trackId,
+    {
+      pageSize
+    }
+  ]
+}
+
 export const useTrackFavorites = (
   { trackId, pageSize = DEFAULT_PAGE_SIZE }: UseFavoritesArgs,
   options?: QueryOptions
@@ -29,7 +40,7 @@ export const useTrackFavorites = (
   const dispatch = useDispatch()
 
   return useInfiniteQuery({
-    queryKey: [QUERY_KEYS.favorites, trackId, pageSize],
+    queryKey: getTrackFavoritesQueryKey({ trackId, pageSize }),
     initialPageParam: 0,
     getNextPageParam: (lastPage: User[], allPages) => {
       if (lastPage.length < pageSize) return undefined

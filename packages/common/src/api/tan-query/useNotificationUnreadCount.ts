@@ -7,6 +7,7 @@ import { usePrevious } from 'react-use'
 
 import { useAudiusQueryContext } from '~/audius-query'
 import { useRemoteVar } from '~/hooks/useRemoteVar'
+import { ID } from '~/models/Identifiers'
 import { getBalance } from '~/store/wallet/slice'
 
 import { IntKeys } from '../../services/remote-config'
@@ -14,6 +15,10 @@ import { IntKeys } from '../../services/remote-config'
 import { QUERY_KEYS } from './queryKeys'
 import { useCurrentUserId } from './useCurrentUserId'
 import { useNotificationValidTypes } from './useNotificationValidTypes'
+
+export const getNotificationUnreadCountQueryKey = (
+  currentUserId: ID | null | undefined
+) => [QUERY_KEYS.notificationUnreadCount, currentUserId]
 
 /**
  * Hook that returns the number of unread notifications for the current user.
@@ -28,7 +33,7 @@ export const useNotificationUnreadCount = () => {
   const validTypes = useNotificationValidTypes()
 
   const query = useQuery({
-    queryKey: [QUERY_KEYS.notificationUnreadCount, currentUserId],
+    queryKey: getNotificationUnreadCountQueryKey(currentUserId),
     queryFn: async () => {
       const sdk = await audiusSdk()
       const { data } = await sdk.full.notifications.getNotifications({

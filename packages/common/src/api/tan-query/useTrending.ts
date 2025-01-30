@@ -17,11 +17,17 @@ import { primeTrackData } from './utils/primeTrackData'
 
 const PAGE_SIZE = 10
 
-type GetTrendingArgs = {
+export type GetTrendingArgs = {
   timeRange: TimeRange
   genre?: Genre | null
   pageSize?: number
 }
+
+export const getTrendingQueryKey = ({
+  timeRange,
+  genre,
+  pageSize
+}: GetTrendingArgs) => [QUERY_KEYS.trending, { timeRange, genre, pageSize }]
 
 export const useTrending = (args: GetTrendingArgs, options: QueryOptions) => {
   const { timeRange, genre, pageSize = PAGE_SIZE } = args
@@ -31,7 +37,7 @@ export const useTrending = (args: GetTrendingArgs, options: QueryOptions) => {
   const dispatch = useDispatch()
 
   return useInfiniteQuery({
-    queryKey: [QUERY_KEYS.trending, args],
+    queryKey: getTrendingQueryKey({ timeRange, genre, pageSize }),
     initialPageParam: 0,
     getNextPageParam: (lastPage: Track[], allPages: Track[][]) => {
       if (lastPage.length < pageSize) return undefined
