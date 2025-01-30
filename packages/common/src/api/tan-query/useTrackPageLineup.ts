@@ -197,7 +197,7 @@ export const useTrackPageLineup = (
       return { tracks, indices }
     },
     staleTime: config?.staleTime,
-    enabled: config?.enabled !== false && !!ownerHandle
+    enabled: config?.enabled !== false && !!ownerHandle && !!trackId
   })
 
   const lineupData = useLineupQuery({

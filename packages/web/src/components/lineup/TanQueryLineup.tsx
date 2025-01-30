@@ -112,7 +112,7 @@ export const TanQueryLineup = ({
   pageSize,
   initialPageSize,
   scrollParent: externalScrollParent,
-  start = 0
+  start
 }: TanQueryLineupProps) => {
   const dispatch = useDispatch()
   const {
@@ -204,7 +204,7 @@ export const TanQueryLineup = ({
   const slicedLineup = {
     ...lineup,
     entries:
-      pageSize !== undefined
+      pageSize !== undefined && start !== undefined
         ? lineup.entries.slice(start, start + pageSize)
         : lineup.entries.slice(start)
   }
