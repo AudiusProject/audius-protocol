@@ -2,4 +2,4 @@
 "@audius/harmony": patch
 ---
 
-Fix png imports
+Fixes png imports
