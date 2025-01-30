@@ -30,7 +30,6 @@ import PerspectiveCard, {
   EmojiInterior
 } from 'components/perspective-card/PerspectiveCard'
 import { useIsUSDCEnabled } from 'hooks/useIsUSDCEnabled'
-import { useOrderedLoad } from 'hooks/useOrderedLoad'
 import { smartCollectionIcons } from 'pages/collection-page/smartCollectionIcons'
 import {
   LET_THEM_DJ,
@@ -111,11 +110,6 @@ const ExplorePage = ({
       tile.title === PREMIUM_TRACKS.title
     return !isPremiumTracksTile || isUSDCPurchasesEnabled
   })
-  const { isLoading: isLoadingPlaylist, setDidLoad: setDidLoadPlaylist } =
-    useOrderedLoad(playlists.length)
-  const { isLoading: isLoadingProfiles, setDidLoad: setDidLoadProfile } =
-    useOrderedLoad(profiles.length)
-
   const header = (
     <Header
       icon={IconExplore}
@@ -212,8 +206,6 @@ const ExplorePage = ({
                 key={playlist.playlist_id}
                 id={playlist.playlist_id}
                 index={i}
-                isLoading={isLoadingPlaylist(i)}
-                setDidLoad={setDidLoadPlaylist}
               />
             )
           })
@@ -236,8 +228,6 @@ const ExplorePage = ({
                 key={profile.user_id}
                 id={profile.user_id}
                 index={i}
-                isLoading={isLoadingProfiles(i)}
-                setDidLoad={setDidLoadProfile}
               />
             )
           })
