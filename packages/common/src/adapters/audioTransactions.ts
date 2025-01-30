@@ -6,7 +6,7 @@ import {
   TransactionType
 } from '~/store/ui/transaction-details/types'
 
-export const audioTransactioFromSdk = (
+export const audioTransactionFromSdk = (
   tx: full.TransactionDetails
 ): TransactionDetails => {
   const transactionTypeMap: Record<string, TransactionType> = {

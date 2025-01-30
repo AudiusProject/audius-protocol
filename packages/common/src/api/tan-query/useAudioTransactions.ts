@@ -1,7 +1,7 @@
 import { full, Id } from '@audius/sdk'
 import { useInfiniteQuery } from '@tanstack/react-query'
 
-import { audioTransactioFromSdk } from '~/adapters/audioTransactions'
+import { audioTransactionFromSdk } from '~/adapters/audioTransactions'
 import { useAudiusQueryContext } from '~/audius-query'
 import { ID } from '~/models'
 import {
@@ -71,7 +71,7 @@ export const useAudioTransactions = (
 
       if (!response?.data) return []
 
-      const txDetails = response.data.map(audioTransactioFromSdk)
+      const txDetails = response.data.map(audioTransactionFromSdk)
       return txDetails
     },
     initialPageParam: 0,
