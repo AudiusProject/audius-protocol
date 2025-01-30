@@ -682,7 +682,6 @@ export const ChallengeRewardsModal = () => {
     // Cancel any claims on close so that the state is fresh for other rewards
     dispatch(resetAndCancelClaimReward())
   }, [dispatch, setOpen])
-  const [isHCaptchaModalOpen] = useModalState('HCaptcha')
 
   const { title, icon } = getChallengeConfig(modalType)
 
@@ -701,8 +700,8 @@ export const ChallengeRewardsModal = () => {
       useGradientTitle={false}
       titleClassName={wm(styles.title)}
       headerContainerClassName={styles.header}
-      showDismissButton={!isHCaptchaModalOpen}
-      dismissOnClickOutside={!isHCaptchaModalOpen}
+      showDismissButton
+      dismissOnClickOutside
     >
       <ModalContent>
         <ChallengeRewardsBody dismissModal={onClose} />
