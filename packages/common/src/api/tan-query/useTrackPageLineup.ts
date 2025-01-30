@@ -1,4 +1,4 @@
-import { Id, OptionalId } from '@audius/sdk'
+import { EntityType, Id, OptionalId } from '@audius/sdk'
 import {
   useInfiniteQuery,
   useQueryClient,
@@ -16,7 +16,7 @@ import { trackPageSelectors } from '~/store/pages'
 import { tracksActions } from '~/store/pages/track/lineup/actions'
 
 import { QUERY_KEYS } from './queryKeys'
-import { QueryKey, QueryOptions } from './types'
+import { LineupData, QueryKey, QueryOptions } from './types'
 import { useCurrentUserId } from './useCurrentUserId'
 import { primeTrackData } from './utils/primeTrackData'
 import { useLineupQuery } from './utils/useLineupQuery'
@@ -190,28 +190,37 @@ export const useTrackPageLineup = (
 
       dispatch(
         tracksActions.fetchLineupMetadatas(0, pageSize, false, {
-          tracks,
+          items: tracks,
           indices
         })
       )
 
-      return { tracks, indices }
+      return {
+        tracks: tracks.map((track) => ({
+          id: track.track_id,
+          type: EntityType.TRACK
+        })),
+        indices
+      }
     },
     ...options,
     enabled: options?.enabled !== false && !!ownerHandle && !!trackId
   })
 
   const indices = queryData.data?.pages?.[0]?.indices
-  const queryDataWithFlatData = queryData as unknown as UseInfiniteQueryResult<
-    UserTrackMetadata[],
-    Error
-  >
-  queryDataWithFlatData.data = queryData.data?.pages
-    .map((page) => page.tracks)
-    .flat()
+  // const queryDataWithFlatData = queryData as unknown as UseInfiniteQueryResult<
+  //   LineupData[],
+  //   Error
+  // >
+  // queryDataWithFlatData.data = queryData.data?.pages
+  //   .map((page) => page.tracks)
+  //   .flat()
 
   const lineupData = useLineupQuery({
-    queryData: queryDataWithFlatData,
+    queryData: {
+      ...queryData,
+      data: queryData.data?.pages.map((page) => page.tracks).flat()
+    },
     queryKey: getTrackPageLineupQueryKey(trackId, ownerHandle),
     lineupActions: tracksActions,
     lineupSelector: trackPageSelectors.getLineup,

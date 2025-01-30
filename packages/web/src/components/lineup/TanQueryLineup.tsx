@@ -317,6 +317,17 @@ export const TanQueryLineup = ({
       return []
     }
 
+    // Apply offset and maxEntries to the lineup entries
+    const lineupEntries =
+      pageSize !== undefined && start !== undefined
+        ? lineup.entries.slice(start, start + pageSize)
+        : lineup.entries
+
+    const lineupData =
+      pageSize !== undefined && start !== undefined
+        ? data?.slice(start, start + pageSize)
+        : data
+
     let result = lineupEntries
       .map((entry: any, index: number) => {
         if (entry.kind === Kind.TRACKS || entry.track_id) {
@@ -332,7 +343,7 @@ export const TanQueryLineup = ({
             containerClassName,
             uid: entry.uid,
             id: entry.id,
-            isLoading: data?.[index] === undefined,
+            isLoading: lineupData?.[index] === undefined,
             isTrending,
             onClick: onClickTile,
             source: ModalSource.LineUpTrackTile,
@@ -356,7 +367,7 @@ export const TanQueryLineup = ({
             pauseTrack: pause,
             playingTrackId,
             togglePlay,
-            isLoading: data?.[index] === undefined,
+            isLoading: lineupData?.[index] === undefined,
             numLoadingSkeletonRows: numPlaylistSkeletonRows,
             isTrending,
             source: ModalSource.LineUpCollectionTile,
@@ -377,7 +388,9 @@ export const TanQueryLineup = ({
     return result
   }, [
     isError,
-    lineupEntries,
+    pageSize,
+    start,
+    lineup.entries,
     delineate,
     ordered,
     togglePlay,
@@ -390,12 +403,12 @@ export const TanQueryLineup = ({
     isBuffering,
     playingSource,
     TrackTile,
-    isMobile,
     play,
     pause,
     playingTrackId,
     numPlaylistSkeletonRows,
-    PlaylistTile
+    PlaylistTile,
+    isMobile
   ])
 
   const isInitialLoad = (isFetching && tiles.length === 0) || isPending
