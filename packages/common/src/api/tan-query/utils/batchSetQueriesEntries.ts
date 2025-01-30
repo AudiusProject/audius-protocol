@@ -21,16 +21,19 @@ export const batchSetQueriesEntries = ({
   const queryEntries: QueryKeyValue[] = Object.entries(entries).flatMap(
     ([kind, entries]) =>
       Object.entries(entries).flatMap(([id, entry]) => {
-        let queryKey = null
         const results: QueryKeyValue[] = []
         switch (kind) {
           case Kind.USERS:
-            queryKey = getUserQueryKey(parseInt(id))
-            results.push({ queryKey, data: entry })
+            results.push({
+              queryKey: getUserQueryKey(parseInt(id)),
+              data: entry
+            })
             break
           case Kind.TRACKS:
-            queryKey = getTrackQueryKey(parseInt(id))
-            results.push({ queryKey, data: entry })
+            results.push({
+              queryKey: getTrackQueryKey(parseInt(id)),
+              data: entry
+            })
             if ('permalink' in entry) {
               results.push({
                 queryKey: getTrackByPermalinkQueryKey(entry.permalink),
@@ -39,8 +42,10 @@ export const batchSetQueriesEntries = ({
             }
             break
           case Kind.COLLECTIONS:
-            queryKey = getCollectionQueryKey(parseInt(id))
-            results.push({ queryKey, data: entry })
+            results.push({
+              queryKey: getCollectionQueryKey(parseInt(id)),
+              data: entry
+            })
             if ('permalink' in entry) {
               results.push({
                 queryKey: getCollectionByPermalinkQueryKey(entry.permalink),
