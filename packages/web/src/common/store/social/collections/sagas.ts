@@ -1,3 +1,4 @@
+import { updatePlaylistLibrary } from '@audius/common/api'
 import {
   Name,
   Kind,
@@ -12,13 +13,12 @@ import {
   cacheCollectionsSelectors,
   cacheActions,
   cacheUsersSelectors,
-  playlistLibraryActions,
-  playlistLibraryHelpers,
   collectionsSocialActions as socialActions,
   getContext,
   playlistUpdatesActions,
   confirmerActions,
-  getSDK
+  getSDK,
+  playlistLibraryHelpers
 } from '@audius/common/store'
 import {
   formatShareText,
@@ -35,19 +35,17 @@ import * as signOnActions from 'common/store/pages/signon/actions'
 import {
   addPlaylistsNotInLibrary,
   removePlaylistFromLibrary
-} from 'common/store/playlist-library/sagas'
+} from 'common/store/playlist-library/sagaHelpers'
 import { audioNftPlaylistPage } from 'utils/route'
 import { waitForWrite } from 'utils/sagaHelpers'
 
 import watchCollectionErrors from './errorSagas'
 const { updatedPlaylistViewed } = playlistUpdatesActions
-const { update: updatePlaylistLibrary } = playlistLibraryActions
-const { removeFromPlaylistLibrary } = playlistLibraryHelpers
 const { getUser } = cacheUsersSelectors
 const { getCollections, getCollection } = cacheCollectionsSelectors
 const { getPlaylistLibrary, getUserId, getIsGuestAccount } = accountSelectors
 const { collectionPage } = route
-
+const { removeFromPlaylistLibrary } = playlistLibraryHelpers
 /* REPOST COLLECTION */
 
 export function* watchRepostCollection() {
@@ -296,6 +294,9 @@ export function* saveSmartCollection(
     yield* put(make(Name.CREATE_ACCOUNT_OPEN, { source: 'social action' }))
     return
   }
+
+  const queryClient = yield* getContext('queryClient')
+  const dispatch = yield* getContext('dispatch')
   const playlistLibrary = yield* select(getPlaylistLibrary)
   const newPlaylistLibrary: PlaylistLibrary = {
     ...playlistLibrary,
@@ -307,7 +308,15 @@ export function* saveSmartCollection(
       ...(playlistLibrary?.contents || [])
     ]
   }
-  yield* put(updatePlaylistLibrary({ playlistLibrary: newPlaylistLibrary }))
+  const sdk = yield* getSDK()
+  yield* call(
+    updatePlaylistLibrary,
+    sdk,
+    userId,
+    newPlaylistLibrary,
+    queryClient,
+    dispatch
+  )
 
   const event = make(Name.FAVORITE, {
     kind: 'playlist',
@@ -471,7 +480,20 @@ export function* unsaveSmartCollection(
     playlistLibrary,
     action.smartCollectionName as SmartCollectionVariant
   ).library
-  yield* put(updatePlaylistLibrary({ playlistLibrary: newPlaylistLibrary }))
+
+  const sdk = yield* getSDK()
+  const currentUserId = yield* select(getUserId)
+  const queryClient = yield* getContext('queryClient')
+  const dispatch = yield* getContext('dispatch')
+  yield* call(
+    updatePlaylistLibrary,
+    sdk,
+    currentUserId,
+    newPlaylistLibrary,
+    queryClient,
+    dispatch
+  )
+
   const event = make(Name.UNFAVORITE, {
     kind: 'playlist',
     source: action.source,

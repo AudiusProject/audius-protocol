@@ -1,10 +1,8 @@
 import { useCallback } from 'react'
 
+import { usePlaylistLibrary } from '@audius/common/api'
 import { FavoriteSource } from '@audius/common/models'
-import {
-  accountSelectors,
-  collectionsSocialActions
-} from '@audius/common/store'
+import { collectionsSocialActions } from '@audius/common/store'
 import { useTheme } from '@audius/harmony'
 import { ClassNames } from '@emotion/react'
 import { isEmpty } from 'lodash'
@@ -12,20 +10,18 @@ import { useDispatch } from 'react-redux'
 
 import { Droppable } from 'components/dragndrop'
 import { DragDropKind } from 'store/dragndrop/slice'
-import { useSelector } from 'utils/reducer'
 
 import { EmptyLibraryNavLink } from './EmptyLibraryNavLink'
 import { PlaylistLibraryNavItem, keyExtractor } from './PlaylistLibraryNavItem'
 import { useAddAudioNftPlaylistToLibrary } from './useAddAudioNftPlaylistToLibrary'
 import { useSanitizePlaylistLibrary } from './useSanitizePlaylistLibrary'
 
-const { getPlaylistLibrary } = accountSelectors
 const { saveCollection } = collectionsSocialActions
 
 const acceptedKinds: DragDropKind[] = ['playlist']
 
 export const PlaylistLibrary = () => {
-  const library = useSelector(getPlaylistLibrary)
+  const { data: library } = usePlaylistLibrary()
   const dispatch = useDispatch()
   const { color, motion, spacing } = useTheme()
 

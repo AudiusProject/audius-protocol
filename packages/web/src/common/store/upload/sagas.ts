@@ -74,7 +74,7 @@ import { waitForWrite } from 'utils/sagaHelpers'
 import { trackNewRemixEvent } from '../cache/tracks/sagas'
 import { retrieveTracks } from '../cache/tracks/utils'
 import { adjustUserField } from '../cache/users/sagas'
-import { addPlaylistsNotInLibrary } from '../playlist-library/sagas'
+import { addPlaylistsNotInLibrary } from '../playlist-library/sagaHelpers'
 
 import {
   addPremiumMetadata,

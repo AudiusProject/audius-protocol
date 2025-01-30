@@ -1,9 +1,10 @@
-import { OptionalId } from '@audius/sdk'
+import { AudiusSdk, OptionalId } from '@audius/sdk'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 
 import { userMetadataToSdk } from '~/adapters/user'
 import { useAudiusQueryContext } from '~/audius-query'
 import { ID } from '~/models/Identifiers'
+import { PlaylistLibrary } from '~/models/PlaylistLibrary'
 import { UserMetadata } from '~/models/User'
 
 import { QUERY_KEYS } from './queryKeys'
@@ -35,19 +36,13 @@ export const useUpdateUser = () => {
     }: UpdateUserParams) => {
       const sdk = await audiusSdk()
 
-      const encodedUserId = OptionalId.parse(userId)
-      if (!encodedUserId) throw new Error('Invalid ID')
-
-      const sdkMetadata = userMetadataToSdk(metadata as UserMetadata)
-
-      const response = await sdk.users.updateProfile({
+      return await updateUser(
+        sdk,
+        userId,
+        metadata,
         coverArtFile,
-        profilePictureFile,
-        userId: encodedUserId,
-        metadata: sdkMetadata
-      })
-
-      return response
+        profilePictureFile
+      )
     },
     onMutate: async ({ userId, metadata }): Promise<MutationContext> => {
       // Cancel any outgoing refetches
@@ -225,4 +220,26 @@ export const useUpdateUser = () => {
       // queryClient.invalidateQueries({ queryKey: ['user', userId] })
     }
   })
+}
+
+export async function updateUser(
+  sdk: AudiusSdk,
+  userId: number,
+  metadata: Partial<UserMetadata> | { playlist_library: PlaylistLibrary },
+  coverArtFile?: File,
+  profilePictureFile?: File
+) {
+  const encodedUserId = OptionalId.parse(userId)
+  if (!encodedUserId) throw new Error('Invalid ID')
+
+  const sdkMetadata = userMetadataToSdk(metadata as UserMetadata)
+
+  const response = await sdk.users.updateProfile({
+    coverArtFile,
+    profilePictureFile,
+    userId: encodedUserId,
+    metadata: sdkMetadata
+  })
+
+  return response
 }
