@@ -13,24 +13,28 @@ export const userSignerRecoveryMiddleware = async (
   res: Response,
   next: NextFunction
 ) => {
-  const data = req.get('Encoded-Data-Message')
-  const sig = req.get('Encoded-Data-Signature')
+  try {
+    const data = req.get('Encoded-Data-Message')
+    const sig = req.get('Encoded-Data-Signature')
 
-  if (!sig || !data) {
-    return next()
+    if (!sig || !data) {
+      return next()
+    }
+    const walletAddress = recoverPersonalSignature({ data, sig })
+    const user = await discoveryDb<Users>(Table.Users)
+      .where('wallet', '=', walletAddress)
+      .first()
+    res.locals.signerUser = user
+    if (!user) {
+      res.locals.logger.warn(
+        { walletAddress },
+        'No user found matching signature'
+      )
+    }
+    next()
+  } catch (e) {
+    next(e)
   }
-  const walletAddress = recoverPersonalSignature({ data, sig })
-  const user = await discoveryDb<Users>(Table.Users)
-    .where('wallet', '=', walletAddress)
-    .first()
-  res.locals.signerUser = user
-  if (!user) {
-    res.locals.logger.warn(
-      { walletAddress },
-      'No user found matching signature'
-    )
-  }
-  next()
 }
 
 export const discoveryNodeSignerRecoveryMiddleware = async (
@@ -38,23 +42,27 @@ export const discoveryNodeSignerRecoveryMiddleware = async (
   res: Response,
   next: NextFunction
 ) => {
-  const data = JSON.stringify(req.body)
-  const sig = req.get('Discovery-Signature')
-  if (!sig) {
-    res.locals.isSignedByDiscovery = false
-    return next()
+  try {
+    const data = JSON.stringify(req.body)
+    const sig = req.get('Discovery-Signature')
+    if (!sig) {
+      res.locals.isSignedByDiscovery = false
+      return next()
+    }
+    const walletAddress = recoverPersonalSignature({ data, sig })
+    const discoveryWallets = await getCachedDiscoveryNodes()
+    const isSignedByDiscovery = discoveryWallets
+      .map(({ delegateOwnerWallet }) => delegateOwnerWallet.toLowerCase())
+      .includes(walletAddress)
+    res.locals.isSignedByDiscovery = isSignedByDiscovery
+    if (!isSignedByDiscovery) {
+      res.locals.logger.warn(
+        { walletAddress, discoveryWallets },
+        'Bad Discovery Signature'
+      )
+    }
+    next()
+  } catch (e) {
+    next(e)
   }
-  const walletAddress = recoverPersonalSignature({ data, sig })
-  const discoveryWallets = await getCachedDiscoveryNodes()
-  const isSignedByDiscovery = discoveryWallets
-    .map(({ delegateOwnerWallet }) => delegateOwnerWallet.toLowerCase())
-    .includes(walletAddress)
-  res.locals.isSignedByDiscovery = isSignedByDiscovery
-  if (!isSignedByDiscovery) {
-    res.locals.logger.warn(
-      { walletAddress, discoveryWallets },
-      'Bad Discovery Signature'
-    )
-  }
-  next()
 }

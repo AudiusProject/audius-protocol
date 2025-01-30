@@ -23,7 +23,7 @@ export const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(
   (props: IconButtonProps, ref) => {
     const {
       icon: Icon,
-      color: iconColor,
+      color: iconColor = 'default',
       size = 'l',
       shadow,
       ripple,

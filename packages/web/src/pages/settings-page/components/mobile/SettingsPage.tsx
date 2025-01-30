@@ -12,7 +12,13 @@ import {
 import { route } from '@audius/common/utils'
 import {
   SegmentedControl,
-  IconAudiusLogoHorizontalColor
+  IconAudiusLogoHorizontalColor,
+  IconLogoCircleUSDCPng,
+  IconTokenNoTier,
+  IconTokenBronze,
+  IconTokenSilver,
+  IconTokenGold,
+  IconTokenPlatinum
 } from '@audius/harmony'
 import cn from 'classnames'
 import { useDispatch, useSelector } from 'react-redux'
@@ -50,7 +56,9 @@ const {
   ACCOUNT_SETTINGS_PAGE,
   HISTORY_PAGE,
   ABOUT_SETTINGS_PAGE,
-  NOTIFICATION_SETTINGS_PAGE
+  NOTIFICATION_SETTINGS_PAGE,
+  AUDIO_PAGE,
+  PAYMENTS_PAGE
 } = route
 
 const isStaging = env.ENVIRONMENT === 'staging'
@@ -74,6 +82,8 @@ const messages = {
   title: 'Settings',
   description: 'Configure your Audius account',
   historyTitle: 'Listening History',
+  usdcWallets: 'USDC Wallet',
+  audioWallet: '$AUDIO Wallet',
   matrixMode: 'Matrix'
 }
 
@@ -178,6 +188,14 @@ export const SettingsPage = (props: SettingsPageProps) => {
     )
   }
 
+  const TierIcon = {
+    none: IconTokenNoTier,
+    bronze: IconTokenBronze,
+    silver: IconTokenSilver,
+    gold: IconTokenGold,
+    platinum: IconTokenPlatinum
+  }[tier]
+
   return (
     <Page
       title={messages.title}
@@ -211,6 +229,16 @@ export const SettingsPage = (props: SettingsPageProps) => {
               prefix={<i className='emoji small headphone' />}
               title={messages.historyTitle}
               to={HISTORY_PAGE}
+            />
+            <Row
+              prefix={<IconLogoCircleUSDCPng size='s' />}
+              title={messages.usdcWallets}
+              to={PAYMENTS_PAGE}
+            />
+            <Row
+              prefix={<TierIcon size='s' />}
+              title={messages.audioWallet}
+              to={AUDIO_PAGE}
             />
           </Grouping>
           <Grouping>

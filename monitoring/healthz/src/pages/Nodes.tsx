@@ -19,7 +19,7 @@ const fetcher = (url: string) => fetch(url).then((res) => res.json())
 const discprovWhitelist = [
   ".audius.co",
   ".creatorseed.com",
-  ".monophonic.digital",
+  "dn1.monophonic.digital",
   ".figment.io",
   ".tikilabs.com",
   "-1"

@@ -1,5 +1,5 @@
 import {
-  playlistMetadataForCreateWithSDK,
+  albumMetadataForSDK,
   userCollectionMetadataFromSDK
 } from '@audius/common/adapters'
 import {
@@ -12,7 +12,6 @@ import {
 } from '@audius/common/models'
 import { newCollectionMetadata } from '@audius/common/schemas'
 import {
-  accountActions,
   accountSelectors,
   cacheCollectionsActions,
   cacheCollectionsSelectors,
@@ -30,41 +29,30 @@ import { Id, OptionalId } from '@audius/sdk'
 import { call, put, select, takeLatest } from 'typed-redux-saga'
 
 import { make } from 'common/store/analytics/actions'
-import { addPlaylistsNotInLibrary } from 'common/store/playlist-library/sagaHelpers'
 import { ensureLoggedIn } from 'common/utils/ensureLoggedIn'
 import { waitForWrite } from 'utils/sagaHelpers'
-
-const { getUser } = cacheUsersSelectors
 
 const { requestConfirmation } = confirmerActions
 const { getUserId, getAccountUser } = accountSelectors
 const { getTrack } = cacheTracksSelectors
 const { getCollection } = cacheCollectionsSelectors
+const { getUser } = cacheUsersSelectors
 const { collectionPage } = route
 
-export function* createPlaylistSaga() {
-  yield* takeLatest(
-    cacheCollectionsActions.CREATE_PLAYLIST,
-    createPlaylistWorker
-  )
+export function* createAlbumSaga() {
+  yield* takeLatest(cacheCollectionsActions.CREATE_PLAYLIST, createAlbumWorker)
 }
 
-function* createPlaylistWorker(
-  action: ReturnType<typeof cacheCollectionsActions.createPlaylist>
+function* createAlbumWorker(
+  action: ReturnType<typeof cacheCollectionsActions.createAlbum>
 ) {
-  // Return early if this is an album
-  if (action.isAlbum) return
+  // Return early if this is not an album
+  if (!action.isAlbum) return
 
   yield* waitForWrite()
   const userId = yield* call(ensureLoggedIn)
-  const {
-    initTrackId,
-    formFields,
-    source,
-    noticeType,
-    isAlbum = false
-  } = action
-  const collection = newCollectionMetadata({ ...formFields, is_album: isAlbum })
+  const { initTrackId, formFields, source, noticeType } = action
+  const collection = newCollectionMetadata({ ...formFields, is_album: true })
   const sdk = yield* getSDK()
   const collectionId = yield* call([
     sdk.playlists,
@@ -78,53 +66,52 @@ function* createPlaylistWorker(
     collection.cover_art_sizes = initTrack.cover_art_sizes
   }
 
-  yield* call(optimisticallySavePlaylist, collectionId, collection, initTrack)
+  yield* call(optimisticallySaveAlbum, collectionId, collection, initTrack)
   yield* put(
     cacheCollectionsActions.createPlaylistRequested(
       collectionId,
       noticeType,
-      isAlbum
+      true
     )
   )
   yield* call(
-    createAndConfirmPlaylist,
+    createAndConfirmAlbum,
     collectionId,
     userId,
     collection,
     initTrack,
-    source,
-    isAlbum
+    source
   )
 }
 
-function* optimisticallySavePlaylist(
-  playlistId: ID,
+function* optimisticallySaveAlbum(
+  albumId: ID,
   formFields: Partial<CollectionMetadata>,
   initTrack: Nullable<Track>
 ) {
   const accountUser = yield* select(getAccountUser)
   if (!accountUser) return
   const { user_id, handle, _collectionIds = [] } = accountUser
-  const playlist: Partial<Collection> = {
-    playlist_id: playlistId,
+  const album: Partial<Collection> = {
+    playlist_id: albumId,
     ...formFields
   }
 
   const initTrackOwner = yield* select(getUser, { id: initTrack?.owner_id })
 
-  playlist.playlist_owner_id = user_id
-  playlist.is_private = true
-  playlist.playlist_contents = {
+  album.playlist_owner_id = user_id
+  album.is_private = true
+  album.playlist_contents = {
     track_ids: initTrack
       ? [
           {
-            time: Math.round(Date.now() / 1000), // must use seconds
+            time: Math.round(Date.now() / 1000),
             track: initTrack.track_id
           }
         ]
       : []
   }
-  playlist.tracks = initTrack
+  album.tracks = initTrack
     ? [
         {
           ...initTrack,
@@ -132,21 +119,21 @@ function* optimisticallySavePlaylist(
         }
       ]
     : []
-  playlist.track_count = initTrack ? 1 : 0
-  playlist.permalink = collectionPage(
+  album.track_count = initTrack ? 1 : 0
+  album.permalink = collectionPage(
     handle,
-    playlist.playlist_name,
-    playlistId,
+    album.playlist_name,
+    albumId,
     undefined,
-    playlist.is_album
+    true
   )
 
   yield* put(
     cacheActions.add(
       Kind.COLLECTIONS,
-      [{ id: playlistId, metadata: playlist }],
-      /* replace= */ true, // forces cache update
-      /* persistent cache */ false // Do not persistent cache since it's missing data
+      [{ id: albumId, metadata: album }],
+      true,
+      false
     )
   )
 
@@ -154,31 +141,18 @@ function* optimisticallySavePlaylist(
     cacheActions.update(Kind.USERS, [
       {
         id: user_id,
-        metadata: { _collectionIds: _collectionIds.concat(playlistId) }
+        metadata: { _collectionIds: _collectionIds.concat(albumId) }
       }
     ])
   )
-
-  yield* put(
-    accountActions.addAccountPlaylist({
-      id: playlistId,
-      name: playlist.playlist_name as string,
-      is_album: !!playlist.is_album,
-      user: { id: user_id, handle },
-      permalink: playlist?.permalink
-    })
-  )
-
-  yield* call(addPlaylistsNotInLibrary)
 }
 
-function* createAndConfirmPlaylist(
-  playlistId: ID,
+function* createAndConfirmAlbum(
+  albumId: ID,
   userId: ID,
   formFields: EditCollectionValues,
   initTrack: Nullable<Track>,
-  source: string,
-  isAlbum: boolean
+  source: string
 ) {
   const sdk = yield* getSDK()
 
@@ -190,59 +164,55 @@ function* createAndConfirmPlaylist(
   })
   yield* put(event)
 
-  function* confirmPlaylist() {
+  function* confirmAlbum() {
     const userId = yield* select(getUserId)
     if (!userId) {
-      throw new Error('No userId set, cannot repost collection')
+      throw new Error('No userId set, cannot create album')
     }
 
-    yield* call([sdk.playlists, sdk.playlists.createPlaylist], {
+    yield* call([sdk.albums, sdk.albums.createAlbum], {
       userId: Id.parse(userId),
-      playlistId: Id.parse(playlistId),
+      albumId: Id.parse(albumId),
       trackIds: initTrack ? [Id.parse(initTrack.track_id)] : undefined,
-      metadata: playlistMetadataForCreateWithSDK(formFields)
+      metadata: albumMetadataForSDK(formFields)
     })
 
-    // Merge the confirmed playlist with the optimistic playlist, preferring
-    // optimistic data in case other unconfirmed edits have been made.
-    const { data: playlist } = yield* call(
+    const { data: album } = yield* call(
       [sdk.full.playlists, sdk.full.playlists.getPlaylist],
       {
         userId: OptionalId.parse(userId),
-        playlistId: Id.parse(playlistId)
+        playlistId: Id.parse(albumId)
       }
     )
 
-    const confirmedPlaylist = playlist?.[0]
-      ? userCollectionMetadataFromSDK(playlist[0])
+    const confirmedAlbum = album?.[0]
+      ? userCollectionMetadataFromSDK(album[0])
       : null
-    if (!confirmedPlaylist) {
+    if (!confirmedAlbum) {
       throw new Error(
-        `Could not find confirmed playlist creation for playlist id ${playlistId}`
+        `Could not find confirmed album creation for album id ${albumId}`
       )
     }
 
-    const optimisticPlaylist = yield* select(getCollection, { id: playlistId })
+    const optimisticAlbum = yield* select(getCollection, { id: albumId })
 
-    const reformattedPlaylist = {
+    const reformattedAlbum = {
       ...reformatCollection({
-        collection: confirmedPlaylist
+        collection: confirmedAlbum
       }),
-      ...optimisticPlaylist,
-      cover_art_cids: confirmedPlaylist.cover_art_cids,
-      playlist_id: confirmedPlaylist.playlist_id
+      ...optimisticAlbum,
+      cover_art_cids: confirmedAlbum.cover_art_cids,
+      playlist_id: confirmedAlbum.playlist_id
     }
 
     yield* put(
       cacheActions.update(Kind.COLLECTIONS, [
         {
-          id: confirmedPlaylist.playlist_id,
-          metadata: reformattedPlaylist
+          id: confirmedAlbum.playlist_id,
+          metadata: reformattedAlbum
         }
       ])
     )
-
-    yield* call(addPlaylistsNotInLibrary)
 
     yield* put(
       make(Name.PLAYLIST_COMPLETE_CREATE, {
@@ -253,7 +223,7 @@ function* createAndConfirmPlaylist(
 
     yield* put(cacheCollectionsActions.createPlaylistSucceeded())
 
-    return confirmedPlaylist
+    return confirmedAlbum
   }
 
   function* onError(result: RequestConfirmationError) {
@@ -275,8 +245,8 @@ function* createAndConfirmPlaylist(
 
   yield* put(
     requestConfirmation(
-      makeKindId(Kind.COLLECTIONS, playlistId),
-      confirmPlaylist,
+      makeKindId(Kind.COLLECTIONS, albumId),
+      confirmAlbum,
       function* () {},
       onError
     )

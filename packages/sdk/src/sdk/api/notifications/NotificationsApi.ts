@@ -47,9 +47,9 @@ export class NotificationsApi {
     )(params)
     return await this.entityManager.manageEntity({
       userId,
-      entityType: EntityType.PLAYLIST,
+      entityType: EntityType.NOTIFICATION,
       entityId: playlistId,
-      action: Action.VIEW,
+      action: Action.VIEW_PLAYLIST,
       metadata: ''
     })
   }
