@@ -96,9 +96,12 @@ def mock_requests(monkeypatch):
                 def json(self):
                     return self.json_data
 
+            print(f"asdf making mock request to: {url}")
+
             # Replace requests.get with a function that returns a mocked response with JSON
             return MockResponse(json_response, 200)
 
+        print(f"asdf making real request to: {url}")
         # For all other URLs and endpoints, perform the actual request using requests.get
         return requests.get(*args, **kwargs)
 
