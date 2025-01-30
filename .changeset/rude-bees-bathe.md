@@ -2,4 +2,4 @@
 "@audius/harmony": patch
 ---
 
-Fixes png imports
+Fixes png imports by base64 encoding them
