@@ -1,39 +1,56 @@
-import { OptionalId } from '@audius/sdk'
+import { Id, OptionalId } from '@audius/sdk'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useDispatch } from 'react-redux'
 
 import { userCollectionMetadataFromSDK } from '~/adapters/collection'
 import { transformAndCleanList } from '~/adapters/utils'
 import { useAudiusQueryContext } from '~/audius-query'
-import { ID } from '~/models/Identifiers'
-import { removeNullable } from '~/utils'
 
 import { QUERY_KEYS } from './queryKeys'
 import { QueryOptions } from './types'
+import { useCurrentUserId } from './useCurrentUserId'
 import { primeCollectionData } from './utils/primeCollectionData'
 
-export const getCollectionsQueryKey = (
-  collectionIds: ID[] | null | undefined
-) => [QUERY_KEYS.collections, collectionIds]
+type GetAlbumsOptions = {
+  userId: number | null
+  limit?: number
+  offset?: number
+}
 
-export const useCollections = (
-  collectionIds: ID[] | null | undefined,
+export const getUserAlbumsQueryKey = (params: GetAlbumsOptions) => {
+  const { userId, limit, offset } = params
+  return [
+    QUERY_KEYS.userAlbums,
+    userId,
+    {
+      limit,
+      offset
+    }
+  ]
+}
+
+export const useUserAlbums = (
+  params: GetAlbumsOptions,
   options?: QueryOptions
 ) => {
   const { audiusSdk } = useAudiusQueryContext()
+  const { data: currentUserId } = useCurrentUserId()
+  const { userId, limit, offset } = params
   const queryClient = useQueryClient()
   const dispatch = useDispatch()
 
   return useQuery({
-    queryKey: getCollectionsQueryKey(collectionIds),
+    queryKey: getUserAlbumsQueryKey(params),
     queryFn: async () => {
-      const encodedIds = collectionIds
-        ?.map((id) => OptionalId.parse(id))
-        .filter(removeNullable)
-      if (!encodedIds || encodedIds.length === 0) return []
+      if (!userId) return []
+
       const sdk = await audiusSdk()
-      const { data } = await sdk.full.playlists.getBulkPlaylists({
-        id: encodedIds
+
+      const { data } = await sdk.full.users.getAlbumsByUser({
+        id: Id.parse(userId),
+        userId: OptionalId.parse(currentUserId),
+        limit,
+        offset
       })
 
       const collections = transformAndCleanList(
@@ -46,6 +63,6 @@ export const useCollections = (
       return collections
     },
     staleTime: options?.staleTime,
-    enabled: options?.enabled !== false && !!collectionIds
+    enabled: options?.enabled !== false && !!userId
   })
 }

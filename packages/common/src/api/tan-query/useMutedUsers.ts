@@ -5,40 +5,36 @@ import { useDispatch } from 'react-redux'
 import { userMetadataListFromSDK } from '~/adapters/user'
 import { useAudiusQueryContext } from '~/audius-query'
 import { ID } from '~/models/Identifiers'
-import { removeNullable } from '~/utils/typeUtils'
 
 import { QUERY_KEYS } from './queryKeys'
 import { QueryOptions } from './types'
+import { useCurrentUserId } from './useCurrentUserId'
 import { primeUserData } from './utils/primeUserData'
 
-export const getUsersQueryKey = (userIds: ID[] | null | undefined) => [
-  QUERY_KEYS.users,
-  userIds
+export const getMutedUsersQueryKey = (currentUserId: ID | null | undefined) => [
+  QUERY_KEYS.mutedUsers,
+  currentUserId
 ]
 
-export const useUsers = (
-  userIds: ID[] | null | undefined,
-  options?: QueryOptions
-) => {
+export const useMutedUsers = (options?: QueryOptions) => {
   const { audiusSdk } = useAudiusQueryContext()
-  const dispatch = useDispatch()
+  const { data: currentUserId } = useCurrentUserId()
   const queryClient = useQueryClient()
-  const encodedIds = userIds?.map((id) => Id.parse(id)).filter(removeNullable)
+  const dispatch = useDispatch()
 
   return useQuery({
-    queryKey: getUsersQueryKey(userIds),
+    queryKey: getMutedUsersQueryKey(currentUserId),
     queryFn: async () => {
+      if (!currentUserId) return []
       const sdk = await audiusSdk()
-      const { data } = await sdk.full.users.getBulkUsers({
-        id: encodedIds
+      const { data } = await sdk.full.users.getMutedUsers({
+        id: Id.parse(currentUserId)
       })
-
       const users = userMetadataListFromSDK(data)
       primeUserData({ users, queryClient, dispatch })
-
       return users
     },
     staleTime: options?.staleTime,
-    enabled: options?.enabled !== false && encodedIds && encodedIds.length > 0
+    enabled: options?.enabled !== false && !!currentUserId
   })
 }
