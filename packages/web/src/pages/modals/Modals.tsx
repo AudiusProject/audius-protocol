@@ -61,9 +61,6 @@ import { AppModal } from './AppModal'
 
 const ShareModal = lazy(() => import('components/share-modal'))
 
-const HCaptchaModal = lazy(
-  () => import('pages/audio-rewards-page/components/modals/HCaptchaModal')
-)
 const StripeOnRampModal = lazy(() => import('components/stripe-on-ramp-modal'))
 
 const CreateChatModal = lazy(
@@ -106,7 +103,6 @@ const commonModalsMap: { [Modal in ModalTypes]?: ComponentType } = {
   InboxSettings: InboxSettingsModal,
   CommentSettings: CommentSettingsModal,
   LockedContent: LockedContentModal,
-  HCaptcha: HCaptchaModal,
   APIRewardsExplainer: TopAPIModal,
   TrendingRewardsExplainer: TrendingRewardsModal,
   ChallengeRewardsExplainer: ChallengeRewardsModal,
