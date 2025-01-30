@@ -197,9 +197,9 @@ export const CollectionNavItem = (props: CollectionNavItemProps) => {
         }
       } else {
         reorderLibrary({
-          draggingId,
-          droppingId: id,
-          draggingKind: kind as PlaylistLibraryKind
+          collectionId: draggingId,
+          destinationId: id,
+          collectionType: kind as PlaylistLibraryKind
         })
       }
     },

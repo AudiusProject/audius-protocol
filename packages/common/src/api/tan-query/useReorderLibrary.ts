@@ -2,32 +2,33 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useDispatch } from 'react-redux'
 
 import { useAppContext } from '~/context/appContext'
-import { Name, FavoriteSource } from '~/models'
+import { FavoriteSource, Name } from '~/models/Analytics'
 import {
   PlaylistLibrary,
   PlaylistLibraryID,
   PlaylistLibraryKind,
   PlaylistLibraryItem
 } from '~/models/PlaylistLibrary'
+import { AccountUserMetadata } from '~/models/User'
 import { playlistLibraryHelpers } from '~/store/playlist-library'
 import { saveCollection } from '~/store/social/collections/actions'
 
-import { QUERY_KEYS } from './queryKeys'
+import { getCurrentAccountQueryKey } from './useCurrentAccount'
 import { useCurrentUserId } from './useCurrentUserId'
 import { usePlaylistLibrary } from './usePlaylistLibrary'
 import { useUpdatePlaylistLibrary } from './useUpdatePlaylistLibrary'
 
 type ReorderLibraryVariables = {
-  draggingId: PlaylistLibraryID
-  droppingId: PlaylistLibraryID
-  draggingKind: PlaylistLibraryKind
+  collectionId: PlaylistLibraryID
+  destinationId: PlaylistLibraryID
+  collectionType: PlaylistLibraryKind
 }
 
 type ReorderLibraryResult = {
   updatedLibrary: PlaylistLibrary
-  draggingId: PlaylistLibraryID
-  droppingId: PlaylistLibraryID
-  draggingKind: PlaylistLibraryKind
+  collectionId: PlaylistLibraryID
+  destinationId: PlaylistLibraryID
+  collectionType: PlaylistLibraryKind
 }
 
 /**
@@ -45,9 +46,9 @@ export const useReorderLibrary = () => {
 
   return useMutation<ReorderLibraryResult, Error, ReorderLibraryVariables>({
     mutationFn: async ({
-      draggingId,
-      droppingId,
-      draggingKind
+      collectionId,
+      destinationId,
+      collectionType
     }: ReorderLibraryVariables) => {
       if (!playlistLibrary || !currentUserId) {
         throw new Error('Missing required data')
@@ -55,25 +56,33 @@ export const useReorderLibrary = () => {
 
       const updatedLibrary = playlistLibraryHelpers.reorderPlaylistLibrary(
         playlistLibrary,
-        draggingId,
-        droppingId,
-        draggingKind
+        collectionId,
+        destinationId,
+        collectionType
       )
 
       await updatePlaylistLibrary(updatedLibrary)
 
       return {
         updatedLibrary,
-        draggingId,
-        droppingId,
-        draggingKind
+        collectionId,
+        destinationId,
+        collectionType
       }
     },
-    onSuccess: ({ updatedLibrary, draggingId, droppingId, draggingKind }) => {
+    onSuccess: ({
+      updatedLibrary,
+      collectionId,
+      destinationId,
+      collectionType
+    }) => {
       // Invalidate the playlist library query
       queryClient.setQueryData(
-        [QUERY_KEYS.playlistLibrary, currentUserId],
-        updatedLibrary
+        getCurrentAccountQueryKey(currentUserId),
+        (old: AccountUserMetadata | undefined) => {
+          if (!old) return old
+          return { ...old, playlist_library: updatedLibrary }
+        }
       )
 
       // Analytics
@@ -81,29 +90,29 @@ export const useReorderLibrary = () => {
         make({
           eventName: Name.PLAYLIST_LIBRARY_REORDER,
           containsTemporaryPlaylists: false,
-          kind: draggingKind
+          kind: collectionType
         })
       )
 
       // If dragging in a new playlist, save to user collections
-      if (draggingKind === 'playlist' && typeof draggingId === 'number') {
+      if (collectionType === 'playlist' && typeof collectionId === 'number') {
         const isNewAddition = !playlistLibrary?.contents.some(
           (item: PlaylistLibraryItem) =>
-            'playlist_id' in item && item.playlist_id === draggingId
+            'playlist_id' in item && item.playlist_id === collectionId
         )
         if (isNewAddition) {
-          dispatch(saveCollection(draggingId, FavoriteSource.NAVIGATOR))
+          dispatch(saveCollection(collectionId, FavoriteSource.NAVIGATOR))
         }
       }
 
       // Track folder analytics
       const isIdInFolderBeforeReorder = playlistLibraryHelpers.isInsideFolder(
         playlistLibrary!,
-        draggingId
+        collectionId
       )
       const isDroppingIntoFolder = playlistLibraryHelpers.isInsideFolder(
         playlistLibrary!,
-        droppingId
+        destinationId
       )
 
       if (isIdInFolderBeforeReorder && !isDroppingIntoFolder) {
@@ -111,7 +120,7 @@ export const useReorderLibrary = () => {
           make({
             eventName: Name.PLAYLIST_LIBRARY_MOVE_PLAYLIST_OUT_OF_FOLDER,
             containsTemporaryPlaylists: false,
-            kind: draggingKind
+            kind: collectionType
           })
         )
       } else if (!isIdInFolderBeforeReorder && isDroppingIntoFolder) {
@@ -119,7 +128,7 @@ export const useReorderLibrary = () => {
           make({
             eventName: Name.PLAYLIST_LIBRARY_MOVE_PLAYLIST_INTO_FOLDER,
             containsTemporaryPlaylists: false,
-            kind: draggingKind
+            kind: collectionType
           })
         )
       }

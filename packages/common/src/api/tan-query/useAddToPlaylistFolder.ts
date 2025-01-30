@@ -6,27 +6,26 @@ import { FavoriteSource, Name } from '~/models/Analytics'
 import {
   PlaylistLibrary,
   PlaylistLibraryID,
-  PlaylistLibraryKind,
   PlaylistLibraryFolder
 } from '~/models/PlaylistLibrary'
+import { AccountUserMetadata } from '~/models/User'
 import { playlistLibraryHelpers } from '~/store/playlist-library'
 import { saveCollection } from '~/store/social/collections/actions'
 import { toast } from '~/store/ui/toast/slice'
 
-import { QUERY_KEYS } from './queryKeys'
+import { getCurrentAccountQueryKey } from './useCurrentAccount'
 import { useCurrentUserId } from './useCurrentUserId'
 import { usePlaylistLibrary } from './usePlaylistLibrary'
 import { useUpdatePlaylistLibrary } from './useUpdatePlaylistLibrary'
 
 type AddToFolderVariables = {
-  playlistId: PlaylistLibraryID
-  draggingKind: PlaylistLibraryKind
+  entityId: PlaylistLibraryID
   folder: PlaylistLibraryFolder
 }
 
 type AddToFolderResult = {
   updatedLibrary: PlaylistLibrary
-  playlistId: PlaylistLibraryID
+  entityId: PlaylistLibraryID
   folder: PlaylistLibraryFolder
 }
 
@@ -49,14 +48,14 @@ export const useAddToPlaylistFolder = () => {
   } = useAppContext()
 
   return useMutation<AddToFolderResult, Error, AddToFolderVariables>({
-    mutationFn: async ({ playlistId, folder }: AddToFolderVariables) => {
+    mutationFn: async ({ entityId, folder }: AddToFolderVariables) => {
       if (!playlistLibrary || !currentUserId) {
         throw new Error('Missing required data')
       }
 
       const updatedLibrary = playlistLibraryHelpers.addPlaylistToFolder(
         playlistLibrary,
-        playlistId,
+        entityId,
         folder.id
       )
 
@@ -64,33 +63,33 @@ export const useAddToPlaylistFolder = () => {
 
       return {
         updatedLibrary,
-        playlistId,
+        entityId,
         folder
       }
     },
-    onSuccess: ({ updatedLibrary, playlistId, folder }) => {
+    onSuccess: ({ updatedLibrary, entityId, folder }) => {
       // Invalidate the playlist library query
       queryClient.setQueryData(
-        [QUERY_KEYS.playlistLibrary, currentUserId],
-        updatedLibrary
+        getCurrentAccountQueryKey(currentUserId),
+        (old: AccountUserMetadata | undefined) => {
+          if (!old) return old
+          return { ...old, playlist_library: updatedLibrary }
+        }
       )
 
       // If dragging in a new playlist, save to user collections
-      if (typeof playlistId === 'number') {
+      if (typeof entityId === 'number') {
         const isNewAddition = !playlistLibrary?.contents.some(
-          (item) => 'playlist_id' in item && item.playlist_id === playlistId
+          (item) => 'playlist_id' in item && item.playlist_id === entityId
         )
         if (isNewAddition) {
-          dispatch(saveCollection(playlistId, FavoriteSource.NAVIGATOR))
+          dispatch(saveCollection(entityId, FavoriteSource.NAVIGATOR))
         }
       }
 
       // Show a toast if playlist dragged from outside of library was already in the library
       if (
-        playlistLibraryHelpers.findInPlaylistLibrary(
-          playlistLibrary!,
-          playlistId
-        )
+        playlistLibraryHelpers.findInPlaylistLibrary(playlistLibrary!, entityId)
       ) {
         dispatch(
           toast({

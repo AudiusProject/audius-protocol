@@ -6,10 +6,11 @@ import { Dispatch } from 'redux'
 import { useAudiusQueryContext } from '~/audius-query/AudiusQueryContext'
 import { ID } from '~/models/Identifiers'
 import { PlaylistLibrary } from '~/models/PlaylistLibrary'
+import { AccountUserMetadata } from '~/models/User'
 import { accountActions } from '~/store/account'
 import { removePlaylistLibraryDuplicates } from '~/store/playlist-library/helpers'
 
-import { QUERY_KEYS } from './queryKeys'
+import { getCurrentAccountQueryKey } from './useCurrentAccount'
 import { useCurrentUserId } from './useCurrentUserId'
 import { updateUser } from './useUpdateUser'
 
@@ -43,8 +44,11 @@ export const updatePlaylistLibrary = async (
   const dedupedPlaylistLibrary =
     removePlaylistLibraryDuplicates(playlistLibrary)
   queryClient.setQueryData(
-    [QUERY_KEYS.playlistLibrary, userId],
-    dedupedPlaylistLibrary
+    getCurrentAccountQueryKey(userId),
+    (old: AccountUserMetadata | undefined) => {
+      if (!old) return old
+      return { ...old, playlist_library: dedupedPlaylistLibrary }
+    }
   )
 
   await updateUser(audiusSdk, userId, {

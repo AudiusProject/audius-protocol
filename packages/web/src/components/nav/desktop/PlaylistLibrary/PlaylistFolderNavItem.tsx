@@ -4,7 +4,6 @@ import { useAddToPlaylistFolder } from '@audius/common/api'
 import {
   Name,
   PlaylistLibraryID,
-  PlaylistLibraryKind,
   PlaylistLibraryFolder
 } from '@audius/common/models'
 import { modalsActions, playlistUpdatesSelectors } from '@audius/common/store'
@@ -80,11 +79,10 @@ export const PlaylistFolderNavItem = (props: PlaylistFolderNavItemProps) => {
   const isDisabled = draggingKind && !acceptedKinds.includes(draggingKind)
 
   const handleDrop = useCallback(
-    (draggingId: PlaylistLibraryID, kind: DragDropKind) => {
+    (draggingId: PlaylistLibraryID) => {
       addToFolder({
-        folder,
-        draggingId,
-        draggingKind: kind as PlaylistLibraryKind
+        entityId: draggingId,
+        folder
       })
     },
     [addToFolder, folder]

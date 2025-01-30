@@ -67,7 +67,6 @@ export const QUERY_KEYS = {
   usdcTransactions: 'usdcTransactions',
   libraryTracks: 'libraryTracks',
   remixes: 'remixes',
-  playlistLibrary: 'playlistLibrary',
   premiumTracks: 'premiumTracks',
   profileReposts: 'profileReposts',
   profileTracks: 'profileTracks',
