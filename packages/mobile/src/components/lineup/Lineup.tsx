@@ -510,17 +510,19 @@ export const Lineup = ({
     return [{ delineate: false, data }]
   }, [
     lineup,
+    pageSize,
     start,
-    count,
     itemCounts.initial,
     pageItemCount,
     delineate,
     leadingElementId,
+    tanQuery,
+    loadMore,
     initialPageSize,
-    pageSize,
     inView,
     limit,
-    countOrDefault
+    countOrDefault,
+    count
   ])
 
   const areSectionsEmpty = sections.every(

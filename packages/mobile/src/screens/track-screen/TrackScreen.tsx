@@ -24,7 +24,6 @@ import { useRoute } from 'app/hooks/useRoute'
 
 import { TrackScreenDetailsTile } from './TrackScreenDetailsTile'
 import { TrackScreenLineup } from './TrackScreenLineup'
-import { TrackScreenRemixes } from './TrackScreenRemixes'
 import { TrackScreenSkeleton } from './TrackScreenSkeleton'
 
 const { tracksActions } = trackPageLineupActions
@@ -63,7 +62,7 @@ export const TrackScreen = () => {
     )
   }
 
-  const { track_id, permalink, field_visibility, comments_disabled } = track
+  const { track_id, permalink, comments_disabled } = track
 
   return (
     <Screen url={permalink}>
