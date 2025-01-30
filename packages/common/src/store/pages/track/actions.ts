@@ -5,8 +5,6 @@ export const SET_TRACK_ID = 'TRACK_PAGE/SET_TRACK_ID'
 export const SET_TRACK_PERMALINK = 'TRACK_PAGE/SET_TRACK_PERMALINK'
 export const MAKE_TRACK_PUBLIC = 'TRACK_PAGE/MAKE_TRACK_PUBLIC'
 
-export const FETCH_TRACK_SUCCEEDED = 'TRACK_PAGE/FETCH_TRACK_SUCCEEDED'
-
 export const GO_TO_REMIXES_OF_PARENT_PAGE =
   'TRACK_PAGE/GO_TO_REMIXES_OF_PARENT_PAGE'
 
@@ -31,11 +29,6 @@ export type MakeTrackPublicAction = {
   trackId: ID
 }
 
-export type FetchTrackSucceededAction = {
-  type: typeof FETCH_TRACK_SUCCEEDED
-  trackId: ID
-}
-
 export type RefetchLineupAction = {
   type: typeof REFETCH_LINEUP
 }
@@ -45,7 +38,6 @@ export type TrackPageAction =
   | SetTrackIdAction
   | SetTrackPermalinkAction
   | MakeTrackPublicAction
-  | FetchTrackSucceededAction
   | RefetchLineupAction
 
 export const resetTrackPage = (): ResetAction => ({ type: RESET })
@@ -61,13 +53,6 @@ export const setTrackPermalink = (
 })
 export const makeTrackPublic = (trackId: ID): MakeTrackPublicAction => ({
   type: MAKE_TRACK_PUBLIC,
-  trackId
-})
-
-export const fetchTrackSucceeded = (
-  trackId: ID
-): FetchTrackSucceededAction => ({
-  type: FETCH_TRACK_SUCCEEDED,
   trackId
 })
 

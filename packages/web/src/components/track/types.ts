@@ -39,7 +39,7 @@ export type TileProps = {
   isActive: boolean
   isPlaying: boolean
   isLoading: boolean
-  hasLoaded: (index: number) => void
+  hasLoaded?: (index: number) => void
   isTrending: boolean
   variant?: 'readonly'
 }
