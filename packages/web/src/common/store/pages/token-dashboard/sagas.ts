@@ -74,6 +74,7 @@ function* fetchSplWalletInfo(wallets: string[]) {
   }))
 }
 
+// TODO-NOW
 function* fetchAccountAssociatedWallets() {
   try {
     yield* waitForRead()

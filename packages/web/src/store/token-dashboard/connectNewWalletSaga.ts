@@ -1,10 +1,13 @@
 import { Name } from '@audius/common/models'
-import { tokenDashboardPageActions, getContext } from '@audius/common/store'
+import {
+  tokenDashboardPageActions,
+  getContext,
+  accountSelectors
+} from '@audius/common/store'
 import { captureException } from '@sentry/browser'
-import { fork, put, takeEvery } from 'typed-redux-saga'
+import { fork, put, select, takeEvery } from 'typed-redux-saga'
 
 import { addWalletToUser } from 'common/store/pages/token-dashboard/addWalletToUser'
-import { associateNewWallet } from 'common/store/pages/token-dashboard/associateNewWallet'
 import { checkIsNewWallet } from 'common/store/pages/token-dashboard/checkIsNewWallet'
 import { getWalletInfo } from 'common/store/pages/token-dashboard/getWalletInfo'
 import {
@@ -62,11 +65,6 @@ function* handleConnectNewWallet() {
     })
 
     const signature = yield* signMessage(connection)
-    const updatedUserMetadata = yield* associateNewWallet(signature)
-
-    if (!updatedUserMetadata) {
-      throw new Error('Failed to update user metadata')
-    }
 
     analytics.track({
       eventName: Name.CONNECT_WALLET_NEW_WALLET_CONNECTED,
@@ -78,10 +76,12 @@ function* handleConnectNewWallet() {
 
     const disconnect = () => disconnectWallet(connection)
 
-    yield* addWalletToUser(updatedUserMetadata, disconnect)
+    yield* addWalletToUser({ walletAddress, chain, signature }, disconnect)
 
-    yield* fork(fetchSolanaCollectibles, updatedUserMetadata)
-    yield* fork(fetchEthereumCollectibles, updatedUserMetadata)
+    const user = yield* select(accountSelectors.getAccountUser)
+
+    yield* fork(fetchSolanaCollectibles, user)
+    yield* fork(fetchEthereumCollectibles, user)
   } catch (e) {
     // Very likely we hit error path here i.e. user closes the web3 popup. Log it and restart
     const err = `Caught error during handleConnectNewWallet:  ${e}, resetting to initial state`
