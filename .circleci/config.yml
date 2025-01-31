@@ -355,6 +355,7 @@ workflows:
             .* run-release-workflow false
             packages/discovery-provider/.* run-discovery-workflow true
             packages/web/.* run-web-workflow true
+            packages/web/e2e/.* run-integration-workflow true
             packages/mobile/.* run-mobile-workflow true
             packages/embed/.* run-embed-workflow true
             packages/common/.* run-common-workflow true
