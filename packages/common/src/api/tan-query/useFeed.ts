@@ -34,12 +34,15 @@ type FeedArgs = {
   loadMorePageSize?: number
 }
 
+export const FEED_INITIAL_PAGE_SIZE = 10
+export const FEED_LOAD_MORE_PAGE_SIZE = 4
+
 export const useFeed = (
   {
     userId,
     filter = FeedFilter.ALL,
-    initialPageSize = 10,
-    loadMorePageSize = 4
+    initialPageSize = FEED_INITIAL_PAGE_SIZE,
+    loadMorePageSize = FEED_LOAD_MORE_PAGE_SIZE
   }: FeedArgs,
   options?: QueryOptions
 ) => {

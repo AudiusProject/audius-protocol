@@ -1,4 +1,8 @@
-import { useFeed } from '@audius/common/api'
+import {
+  FEED_INITIAL_PAGE_SIZE,
+  FEED_LOAD_MORE_PAGE_SIZE,
+  useFeed
+} from '@audius/common/api'
 import { Name, FeedFilter } from '@audius/common/models'
 import { useCurrentUserId } from '@audius/common/src/api/tan-query/useCurrentUserId'
 import { feedPageLineupActions as feedActions } from '@audius/common/store'
@@ -19,9 +23,6 @@ const messages = {
   feedHeaderTitle: 'Your Feed'
 }
 
-const INITIAL_PAGE_SIZE = 10
-const ADDITIONAL_PAGE_SIZE = 4
-
 const FeedPageContent = ({
   feedTitle,
   feedDescription,
@@ -35,8 +36,8 @@ const FeedPageContent = ({
   const lineupQueryData = useFeed({
     userId: currentUserId,
     filter: feedFilter,
-    initialPageSize: INITIAL_PAGE_SIZE,
-    loadMorePageSize: ADDITIONAL_PAGE_SIZE
+    initialPageSize: FEED_INITIAL_PAGE_SIZE,
+    loadMorePageSize: FEED_LOAD_MORE_PAGE_SIZE
   })
 
   const record = useRecord()
@@ -73,8 +74,8 @@ const FeedPageContent = ({
       <TanQueryLineup
         scrollParent={scrollParentRef}
         lineupQueryData={lineupQueryData}
-        initialPageSize={INITIAL_PAGE_SIZE}
-        pageSize={ADDITIONAL_PAGE_SIZE}
+        initialPageSize={FEED_INITIAL_PAGE_SIZE}
+        pageSize={FEED_LOAD_MORE_PAGE_SIZE}
         emptyElement={<EmptyFeed />}
         endOfLineupElement={<EndOfLineup />}
         delineate={feedIsMain}

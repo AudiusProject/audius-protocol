@@ -172,7 +172,6 @@ type ExtraProps = {
 const PlaylistTile = (props: PlaylistTileProps & ExtraProps) => {
   const {
     id,
-    hasLoaded,
     index,
     showSkeleton,
     numLoadingSkeletonRows,
@@ -191,12 +190,6 @@ const PlaylistTile = (props: PlaylistTileProps & ExtraProps) => {
     source,
     isTrending
   } = props
-
-  useEffect(() => {
-    if (!showSkeleton) {
-      hasLoaded(index)
-    }
-  }, [hasLoaded, index, showSkeleton])
 
   const isReadonly = variant === 'readonly'
   const shouldShow = !showSkeleton
