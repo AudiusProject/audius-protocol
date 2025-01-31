@@ -149,12 +149,7 @@ def add_user_artwork(user):
             "mirrors": profile_mirrors,
         }
     else:
-        user["profile_picture"] = {
-            "150x150": None,
-            "480x480": None,
-            "1000x1000": None,
-            "mirrors": [],
-        }
+        user["profile_picture"] = None
     if user.get("cover_photo_sizes"):
         cover_cid = user.get("cover_photo_sizes")
         cover_endpoints = get_n_primary_endpoints(user, cover_cid, 3)
@@ -176,11 +171,7 @@ def add_user_artwork(user):
             "mirrors": cover_mirrors,
         }
     else:
-        user["cover_photo"] = {
-            "640x": None,
-            "2000x": None,
-            "mirrors": [],
-        }
+        user["cover_photo"] = None
     return user
 
 
@@ -329,12 +320,7 @@ def add_track_artwork(track):
             "mirrors": mirrors,
         }
     else:
-        track["artwork"] = {
-            "150x150": None,
-            "480x480": None,
-            "1000x1000": None,
-            "mirrors": [],
-        }
+        track["artwork"] = None
     return track
 
 
@@ -426,12 +412,7 @@ def add_playlist_artwork(playlist):
             "mirrors": mirrors,
         }
     else:
-        playlist["artwork"] = {
-            "150x150": None,
-            "480x480": None,
-            "1000x1000": None,
-            "mirrors": [],
-        }
+        playlist["artwork"] = None
     return playlist
 
 

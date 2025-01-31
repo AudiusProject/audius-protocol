@@ -1,7 +1,5 @@
 import { Flex, Text } from '@audius/harmony'
 
-import { useIsMobile } from 'hooks/useIsMobile'
-
 import styles from './styles.module.css'
 
 const messages = {
@@ -16,12 +14,10 @@ export const ProgressReward = ({
   amount: string
   subtext: string
 }) => {
-  const isMobile = useIsMobile()
   return (
     <Flex
       p='xl'
       column
-      borderLeft={isMobile ? undefined : 'strong'}
       css={{
         textAlign: 'center',
         maxWidth: 200

@@ -36,8 +36,6 @@ web-init:
           - packages/libs/dist
           - packages/sdk/node_modules
           - packages/sdk/dist
-          - packages/trpc-server/node_modules
-          - packages/trpc-server/dist
 
 web-build-demo:
   working_directory: ~/audius-protocol
