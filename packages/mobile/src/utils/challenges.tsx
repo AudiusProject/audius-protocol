@@ -300,6 +300,12 @@ const mobileChallengeConfig: Record<ChallengeRewardID, MobileChallengeConfig> =
       buttonInfo: {
         iconRight: IconCheck
       }
+    },
+    [ChallengeName.ListenStreakEndless]: {
+      icon: undefined,
+      buttonInfo: {
+        iconRight: IconCheck
+      }
     }
   }
 
