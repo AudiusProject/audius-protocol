@@ -34,6 +34,12 @@ type FeedArgs = {
   loadMorePageSize?: number
 }
 
+export const getFeedQueryKey = ({ userId, filter }: FeedArgs) => [
+  QUERY_KEYS.feed,
+  userId,
+  { filter }
+]
+
 export const FEED_INITIAL_PAGE_SIZE = 10
 export const FEED_LOAD_MORE_PAGE_SIZE = 4
 
@@ -61,7 +67,7 @@ export const useFeed = (
       if (lastPage.length < currentPageSize) return undefined
       return allPages.reduce((total, page) => total + page.length, 0)
     },
-    queryKey: [QUERY_KEYS.feed, userId, filter],
+    queryKey: getFeedQueryKey({ userId, filter }),
     queryFn: async ({ pageParam }) => {
       const isFirstPage = pageParam === 0
       const currentPageSize = isFirstPage ? initialPageSize : loadMorePageSize

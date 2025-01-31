@@ -85,7 +85,7 @@ export const removeFromPlaylistLibrary = (
   library: PlaylistLibrary | PlaylistLibraryFolder,
   entityId: ID | SmartCollectionVariant | string
 ): {
-  library: PlaylistLibrary | PlaylistLibraryFolder
+  library: PlaylistLibrary
   removed: PlaylistLibraryIdentifier | PlaylistLibraryFolder | null
 } => {
   if (!library.contents) return { library, removed: null }

@@ -6,11 +6,11 @@ import { formatCount, route } from '@audius/common/utils'
 import {
   IconAudiusLogoHorizontal,
   IconSettings,
-  IconCrown,
   IconCaretLeft,
   IconClose,
   IconNotificationOn,
-  IconButton
+  IconButton,
+  IconGift
 } from '@audius/harmony'
 import cn from 'classnames'
 import { History } from 'history'
@@ -30,7 +30,6 @@ import NavContext, {
 } from 'components/nav/mobile/NavContext'
 import SearchBar from 'components/search-bar/SearchBar'
 import { getIsIOS } from 'utils/browser'
-import { isMatrix } from 'utils/theme/theme'
 
 import styles from './NavBar.module.css'
 
@@ -40,10 +39,11 @@ interface NavBarProps {
   isLoading: boolean
   isSignedIn: boolean
   searchStatus: Status
+  rewardsCount: number
   signUp: () => void
   goToNotificationPage: () => void
   goToSettingsPage: () => void
-  goToAudioPage: () => void
+  goToRewardsPage: () => void
   search: (term: string) => void
   goBack: () => void
   history: History<any>
@@ -58,12 +58,13 @@ const NavBar = ({
   isLoading,
   isSignedIn,
   searchStatus,
+  rewardsCount,
   search,
   signUp,
   goToNotificationPage,
   goToSettingsPage,
   goBack,
-  goToAudioPage,
+  goToRewardsPage,
   history: {
     location: { pathname }
   }
@@ -174,6 +175,15 @@ const NavBar = ({
         {notificationCount > 0 && (
           <div className={styles.iconTag}>{formatCount(notificationCount)}</div>
         )}
+        <IconButton
+          aria-label='audio rewards'
+          color={rewardsCount > 0 ? 'warning' : 'subdued'}
+          icon={IconGift}
+          onClick={goToRewardsPage}
+        />
+        {rewardsCount > 0 && (
+          <div className={styles.iconTag}>{formatCount(rewardsCount)}</div>
+        )}
       </>
     )
   } else if (leftElement === LeftPreset.SETTINGS && isSignedIn) {
@@ -187,17 +197,18 @@ const NavBar = ({
         />
         <IconButton
           aria-label='audio rewards'
-          color='warning'
-          icon={IconCrown}
-          onClick={goToAudioPage}
+          color={rewardsCount > 0 ? 'warning' : 'subdued'}
+          icon={IconGift}
+          onClick={goToRewardsPage}
         />
+        {rewardsCount > 0 && (
+          <div className={styles.iconTag}>{formatCount(rewardsCount)}</div>
+        )}
       </>
     )
   } else {
     left = leftElement
   }
-
-  const matrix = isMatrix()
 
   return (
     <div
@@ -213,10 +224,7 @@ const NavBar = ({
         {left}
       </div>
       {centerElement === CenterPreset.LOGO ? (
-        <Link
-          to={TRENDING_PAGE}
-          className={cn(styles.logo, { [styles.matrixLogo]: matrix })}
-        >
+        <Link to={TRENDING_PAGE} className={styles.logo}>
           {logoTransitions.map(({ item, props, key }) =>
             item ? (
               <animated.div style={props} key={key}>

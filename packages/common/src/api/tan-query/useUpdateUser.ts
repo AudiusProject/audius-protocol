@@ -1,19 +1,22 @@
-import { OptionalId } from '@audius/sdk'
+import { AudiusSdk, OptionalId } from '@audius/sdk'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 
 import { userMetadataToSdk } from '~/adapters/user'
 import { useAudiusQueryContext } from '~/audius-query'
 import { ID } from '~/models/Identifiers'
+import { PlaylistLibrary } from '~/models/PlaylistLibrary'
 import { UserMetadata } from '~/models/User'
 
 import { QUERY_KEYS } from './queryKeys'
+import { getUserQueryKey } from './useUser'
+import { getUserByHandleQueryKey } from './useUserByHandle'
 
 type MutationContext = {
   previousUser: UserMetadata | undefined
   previousAccountUser: UserMetadata | undefined
 }
 
-type UpdateUserParams = {
+export type UpdateUserParams = {
   userId: ID
   metadata: Partial<UserMetadata>
   profilePictureFile?: File
@@ -33,19 +36,13 @@ export const useUpdateUser = () => {
     }: UpdateUserParams) => {
       const sdk = await audiusSdk()
 
-      const encodedUserId = OptionalId.parse(userId)
-      if (!encodedUserId) throw new Error('Invalid ID')
-
-      const sdkMetadata = userMetadataToSdk(metadata as UserMetadata)
-
-      const response = await sdk.users.updateProfile({
+      return await updateUser(
+        sdk,
+        userId,
+        metadata,
         coverArtFile,
-        profilePictureFile,
-        userId: encodedUserId,
-        metadata: sdkMetadata
-      })
-
-      return response
+        profilePictureFile
+      )
     },
     onMutate: async ({ userId, metadata }): Promise<MutationContext> => {
       // Cancel any outgoing refetches
@@ -69,14 +66,14 @@ export const useUpdateUser = () => {
         .find(([_, data]) => data?.user_id === userId)?.[1]
 
       // Optimistically update user
-      queryClient.setQueryData([QUERY_KEYS.user, userId], (old: any) => ({
+      queryClient.setQueryData(getUserQueryKey(userId), (old: any) => ({
         ...old,
         ...metadata
       }))
 
       // Optimistically update userByHandle queries if they match the user
       queryClient.setQueryData(
-        [QUERY_KEYS.userByHandle, metadata.handle],
+        getUserByHandleQueryKey(metadata.handle),
         (old: any) => ({ ...old, ...metadata })
       )
 
@@ -151,14 +148,11 @@ export const useUpdateUser = () => {
     onError: (_err, { userId }, context?: MutationContext) => {
       // If the mutation fails, roll back user data
       if (context?.previousUser) {
-        queryClient.setQueryData(
-          [QUERY_KEYS.user, userId],
-          context.previousUser
-        )
+        queryClient.setQueryData(getUserQueryKey(userId), context.previousUser)
 
         // Roll back userByHandle queries
         queryClient.setQueryData(
-          [QUERY_KEYS.userByHandle, context.previousUser?.handle],
+          getUserByHandleQueryKey(context.previousUser?.handle),
           context.previousUser
         )
       }
@@ -226,4 +220,26 @@ export const useUpdateUser = () => {
       // queryClient.invalidateQueries({ queryKey: ['user', userId] })
     }
   })
+}
+
+export async function updateUser(
+  sdk: AudiusSdk,
+  userId: number,
+  metadata: Partial<UserMetadata> | { playlist_library: PlaylistLibrary },
+  coverArtFile?: File,
+  profilePictureFile?: File
+) {
+  const encodedUserId = OptionalId.parse(userId)
+  if (!encodedUserId) throw new Error('Invalid ID')
+
+  const sdkMetadata = userMetadataToSdk(metadata as UserMetadata)
+
+  const response = await sdk.users.updateProfile({
+    coverArtFile,
+    profilePictureFile,
+    userId: encodedUserId,
+    metadata: sdkMetadata
+  })
+
+  return response
 }

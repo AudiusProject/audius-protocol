@@ -30,7 +30,7 @@ import { Id, OptionalId } from '@audius/sdk'
 import { call, put, select, takeLatest } from 'typed-redux-saga'
 
 import { make } from 'common/store/analytics/actions'
-import { addPlaylistsNotInLibrary } from 'common/store/playlist-library/sagas'
+import { addPlaylistsNotInLibrary } from 'common/store/playlist-library/sagaHelpers'
 import { ensureLoggedIn } from 'common/utils/ensureLoggedIn'
 import { waitForWrite } from 'utils/sagaHelpers'
 
@@ -50,11 +50,11 @@ export function* createPlaylistSaga() {
 }
 
 function* createPlaylistWorker(
-  action: ReturnType<
-    | typeof cacheCollectionsActions.createAlbum
-    | typeof cacheCollectionsActions.createPlaylist
-  >
+  action: ReturnType<typeof cacheCollectionsActions.createPlaylist>
 ) {
+  // Return early if this is an album
+  if (action.isAlbum) return
+
   yield* waitForWrite()
   const userId = yield* call(ensureLoggedIn)
   const {

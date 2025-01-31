@@ -5,6 +5,7 @@ import { z } from 'zod'
 
 import { useAudiusQueryContext } from '~/audius-query'
 import { ID } from '~/models/Identifiers'
+import { Nullable } from '~/utils/typeUtils'
 
 import { QUERY_KEYS } from './queryKeys'
 import { QueryOptions } from './types'
@@ -67,12 +68,17 @@ type UseDeleteDeveloperAppArgs = {
   userId: ID
 }
 
+export const getDeveloperAppsQueryKey = (userId: Nullable<ID>) => [
+  QUERY_KEYS.authorizedApps,
+  userId
+]
+
 export const useDeveloperApps = (options?: QueryOptions) => {
   const { audiusSdk } = useAudiusQueryContext()
   const { data: userId } = useCurrentUserId()
 
   return useQuery({
-    queryKey: [QUERY_KEYS.authorizedApps, userId],
+    queryKey: getDeveloperAppsQueryKey(userId),
     queryFn: async () => {
       const sdk = await audiusSdk()
       const { data = [] } = await sdk.users.getDeveloperApps({
@@ -136,7 +142,7 @@ export const useEditDeveloperApp = () => {
       const { userId, ...editedApp } = args
 
       queryClient.invalidateQueries({
-        queryKey: [QUERY_KEYS.developerApps, userId]
+        queryKey: getDeveloperAppsQueryKey(userId)
       })
 
       const previousApps: DeveloperApp[] =
@@ -151,14 +157,14 @@ export const useEditDeveloperApp = () => {
         ...editedApp
       }
 
-      queryClient.setQueryData([QUERY_KEYS.developerApps, userId], newApps)
+      queryClient.setQueryData(getDeveloperAppsQueryKey(userId), newApps)
 
       // Return context with the previous apps
       return { previousApps }
     },
     onError: (_error, args, context) => {
       queryClient.setQueryData(
-        [QUERY_KEYS.developerApps, args.userId],
+        getDeveloperAppsQueryKey(args.userId),
         context?.previousApps
       )
     }
@@ -183,7 +189,7 @@ export const useDeleteDeveloperApp = () => {
       const { apiKey, userId } = args
 
       queryClient.invalidateQueries({
-        queryKey: [QUERY_KEYS.developerApps, userId]
+        queryKey: getDeveloperAppsQueryKey(userId)
       })
 
       const previousApps: DeveloperApp[] | undefined = queryClient.getQueryData(
@@ -200,14 +206,14 @@ export const useDeleteDeveloperApp = () => {
       const appIndex = previousApps?.findIndex((app) => app.apiKey === apiKey)
       const newApps = cloneDeep(previousApps).splice(appIndex, 1)
 
-      queryClient.setQueryData([QUERY_KEYS.developerApps, userId], newApps)
+      queryClient.setQueryData(getDeveloperAppsQueryKey(userId), newApps)
 
       // Return context with the previous apps
       return { previousApps }
     },
     onError: (_error, args, context) => {
       queryClient.setQueryData(
-        [QUERY_KEYS.developerApps, args.userId],
+        getDeveloperAppsQueryKey(args.userId),
         context?.previousApps
       )
     }

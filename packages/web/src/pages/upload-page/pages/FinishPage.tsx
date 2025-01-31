@@ -1,6 +1,7 @@
 import { useCallback, useMemo } from 'react'
 
 import { imageBlank as placeholderArt } from '@audius/common/assets'
+import { useUploadCompletionRoute } from '@audius/common/hooks'
 import { Name } from '@audius/common/models'
 import {
   accountSelectors,
@@ -13,7 +14,6 @@ import {
   TrackFormState,
   CollectionFormState
 } from '@audius/common/store'
-import { route } from '@audius/common/utils'
 import {
   IconArrowRight as IconArrow,
   IconError,
@@ -35,7 +35,6 @@ import { ShareBanner } from '../components/ShareBanner'
 
 import styles from './FinishPage.module.css'
 
-const { profilePage, collectionPage } = route
 const { getUserHandle } = accountSelectors
 const { getCombinedUploadPercentage } = uploadSelectors
 
@@ -157,33 +156,16 @@ export const FinishPage = (props: FinishPageProps) => {
     }
   }, [upload.tracks, uploadType])
 
-  const visitButtonPath = useMemo(() => {
-    switch (uploadType) {
-      case UploadType.INDIVIDUAL_TRACK:
-        return upload.tracks?.[0].metadata.permalink
-      case UploadType.ALBUM:
-      case UploadType.PLAYLIST:
-        return upload.completedEntity
-          ? collectionPage(
-              null,
-              null,
-              null,
-              upload.completedEntity.permalink,
-              uploadType === UploadType.ALBUM
-            )
-          : ''
-      default:
-        if (accountHandle && (!upload.tracks || upload.tracks.length > 1)) {
-          return profilePage(accountHandle)
-        } else {
-          return upload.tracks?.[0].metadata.permalink
-        }
-    }
-  }, [upload.completedEntity, upload.tracks, uploadType, accountHandle])
+  const visitButtonPath = useUploadCompletionRoute({
+    uploadType,
+    upload,
+    accountHandle
+  })
 
-  const dispatchVisitEvent = useCallback(() => {
+  const handleViewUpload = useCallback(() => {
     dispatch(make(Name.TRACK_UPLOAD_VIEW_TRACK_PAGE, { uploadType }))
-  }, [dispatch, uploadType])
+    onContinue()
+  }, [dispatch, uploadType, onContinue])
 
   const isUnlistedTrack =
     (upload.tracks &&
@@ -257,7 +239,7 @@ export const FinishPage = (props: FinishPageProps) => {
             <PlainButton onClick={handleUploadMoreClick} iconLeft={IconUpload}>
               {messages.uploadMore}
             </PlainButton>
-            <PlainButton iconRight={IconArrow} onClick={dispatchVisitEvent}>
+            <PlainButton iconRight={IconArrow} onClick={handleViewUpload}>
               <Link to={visitButtonPath}>{visitButtonText}</Link>
             </PlainButton>
           </div>

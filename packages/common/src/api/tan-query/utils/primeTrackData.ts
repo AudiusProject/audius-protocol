@@ -8,7 +8,7 @@ import { User } from '~/models/User'
 import { addEntries } from '~/store/cache/actions'
 import { EntriesByKind } from '~/store/cache/types'
 
-import { QUERY_KEYS } from '../queryKeys'
+import { getTrackQueryKey } from '../useTrack'
 
 import { primeUserDataInternal } from './primeUserData'
 
@@ -66,8 +66,8 @@ export const primeTrackDataInternal = ({
     entries[Kind.TRACKS][track.track_id] = track
 
     // Prime track data only if it doesn't exist
-    if (!queryClient.getQueryData([QUERY_KEYS.track, track.track_id])) {
-      queryClient.setQueryData([QUERY_KEYS.track, track.track_id], track)
+    if (!queryClient.getQueryData(getTrackQueryKey(track.track_id))) {
+      queryClient.setQueryData(getTrackQueryKey(track.track_id), track)
     }
 
     // Prime user data from track owner

@@ -1,9 +1,10 @@
 import { challengesSelectors, profilePageActions } from '@audius/common/store'
+import { Flex, Text, useTheme } from '@audius/harmony'
 import { useDispatch, useSelector } from 'react-redux'
 // eslint-disable-next-line no-restricted-imports -- TODO: migrate to @react-spring/web
 import { useSpring, animated } from 'react-spring'
 
-import SegmentedProgressBar from 'components/segmented-progress-bar/SegmentedProgressBar'
+import { SegmentedProgressBar } from 'components/segmented-progress-bar/SegmentedProgressBar'
 
 import { useProfileCompletionDismissal, useVerticalCollapse } from '../hooks'
 
@@ -17,11 +18,12 @@ const {
   getIsAccountLoaded
 } = challengesSelectors
 
-const strings = {
-  complete: 'PROFILE COMPLETE'
+const messages = {
+  complete: 'Profile Complete'
 }
 
 const ORIGINAL_HEIGHT_PIXELS = 206
+const CARD_HEIGHT_PIXELS = 182
 
 interface CompletionStage {
   isCompleted: boolean
@@ -49,6 +51,7 @@ export const ProfileCompletionHeroCard = () => {
   const isAccountLoaded = useSelector(getIsAccountLoaded)
   const completionStages = useSelector(getOrderedCompletionStages)
   const isDismissed = useSelector(getProfilePageMeterDismissed)
+  const { color } = useTheme()
 
   const onDismiss = () => dispatch(profileMeterDismissed())
 
@@ -85,16 +88,23 @@ export const ProfileCompletionHeroCard = () => {
                   </animated.span>
                   %
                 </div>
-                <div className={styles.complete}>{strings.complete}</div>
+                <Flex p='m'>
+                  <Text variant='title' size='m'>
+                    {messages.complete}
+                  </Text>
+                </Flex>
                 <SegmentedProgressBar
                   numSteps={completionStages.length}
                   stepsComplete={stepsCompleted}
                 />
               </div>
-              <TaskCompletionList
-                completionStages={completionStages}
-                className={styles.rightContainer}
-              />
+              <Flex
+                p='l'
+                h={CARD_HEIGHT_PIXELS}
+                css={{ backgroundColor: color.secondary.s300 }}
+              >
+                <TaskCompletionList completionStages={completionStages} />
+              </Flex>
               <button className={styles.dismissButton} onClick={onDismiss}>
                 Dismiss
               </button>

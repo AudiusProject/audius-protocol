@@ -12,6 +12,7 @@ import {
 } from '~/store/pages'
 import { TracksSortMode } from '~/store/pages/profile/types'
 
+import { QUERY_KEYS } from './queryKeys'
 import { QueryOptions } from './types'
 import { useCurrentUserId } from './useCurrentUserId'
 import { primeTrackData } from './utils/primeTrackData'
@@ -25,6 +26,17 @@ type UseProfileTracksArgs = {
   sort?: TracksSortMode
   getUnlisted?: boolean
 }
+
+export const getProfileTracksQueryKey = ({
+  handle,
+  pageSize,
+  sort,
+  getUnlisted
+}: UseProfileTracksArgs) => [
+  QUERY_KEYS.profileTracks,
+  handle,
+  { pageSize, sort, getUnlisted }
+]
 
 export const useProfileTracks = (
   {
@@ -41,7 +53,7 @@ export const useProfileTracks = (
   const dispatch = useDispatch()
 
   const queryData = useInfiniteQuery({
-    queryKey: ['profileTracks', handle, pageSize, sort, getUnlisted],
+    queryKey: getProfileTracksQueryKey({ handle, pageSize, sort, getUnlisted }),
     initialPageParam: 0,
     getNextPageParam: (lastPage: UserTrack[], allPages) => {
       if (lastPage.length < pageSize) return undefined

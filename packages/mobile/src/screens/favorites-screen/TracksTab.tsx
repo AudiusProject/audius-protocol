@@ -1,47 +1,27 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useState } from 'react'
 
-import { PlaybackSource, Status } from '@audius/common/models'
-import type { ID, UID, Track, User } from '@audius/common/models'
+import { useLibraryTracks } from '@audius/common/api'
+import { useThrottledCallback } from '@audius/common/hooks'
+import { Status } from '@audius/common/models'
 import {
-  cacheTracksSelectors,
-  cacheUsersSelectors,
-  savedPageTracksLineupActions as tracksActions,
-  savedPageActions,
-  savedPageSelectors,
   LibraryCategory,
   SavedPageTabs,
-  reachabilitySelectors
+  queueSelectors,
+  savedPageSelectors
 } from '@audius/common/store'
-import type { Nullable } from '@audius/common/utils'
-import { debounce, isEqual } from 'lodash'
 import Animated, { Layout } from 'react-native-reanimated'
-import { useDispatch, useSelector } from 'react-redux'
+import { useSelector } from 'react-redux'
 
 import { Tile, VirtualizedScrollView } from 'app/components/core'
 import { EmptyTileCTA } from 'app/components/empty-tile-cta'
 import { FilterInput } from 'app/components/filter-input'
 import { TrackList } from 'app/components/track-list'
-import type { TrackMetadata } from 'app/components/track-list/types'
-import { WithLoader } from 'app/components/with-loader/WithLoader'
-import { getIsDoneLoadingFromDisk } from 'app/store/offline-downloads/selectors'
 import { makeStyles } from 'app/styles'
 
-import { LoadingMoreSpinner } from './LoadingMoreSpinner'
-import { NoTracksPlaceholder } from './NoTracksPlaceholder'
 import { OfflineContentBanner } from './OfflineContentBanner'
-import { useFavoritesLineup } from './useFavoritesLineup'
 
-const { fetchSaves: fetchSavesAction, fetchMoreSaves } = savedPageActions
-const {
-  getTrackSaves,
-  getSavedTracksStatus,
-  getInitialFetchStatus,
-  getIsFetchingMore,
-  getCategory
-} = savedPageSelectors
-const { getIsReachable } = reachabilitySelectors
-const { getTrack } = cacheTracksSelectors
-const { getUserFromTrack } = cacheUsersSelectors
+const { getCategory } = savedPageSelectors
+const { makeGetCurrent } = queueSelectors
 
 const messages = {
   emptyTracksFavoritesText: "You haven't favorited any tracks yet.",
@@ -68,34 +48,32 @@ const useStyles = makeStyles(({ spacing }) => ({
   }
 }))
 
-const FETCH_LIMIT = 50
-
 export const TracksTab = () => {
-  const dispatch = useDispatch()
   const styles = useStyles()
-  const isReachable = useSelector(getIsReachable)
-
   const [filterValue, setFilterValue] = useState('')
-  const [fetchPage, setFetchPage] = useState(0)
   const selectedCategory = useSelector((state) =>
     getCategory(state, { currentTab: SavedPageTabs.TRACKS })
   )
-  const savedTracksStatus = useSelector((state) => {
-    const onlineSavedTracksStatus = getSavedTracksStatus(state)
-    const isDoneLoadingFromDisk = getIsDoneLoadingFromDisk(state)
-    const offlineSavedTracksStatus = isDoneLoadingFromDisk
-      ? Status.SUCCESS
-      : Status.LOADING
-    return isReachable ? onlineSavedTracksStatus : offlineSavedTracksStatus
-  })
 
-  const initialFetch = useSelector(getInitialFetchStatus)
-  const isFetchingMore = useSelector(getIsFetchingMore)
-  const saves = useSelector(getTrackSaves)
+  const { lineup, loadNextPage, play, pause, isPlaying, status } =
+    useLibraryTracks({
+      category: selectedCategory,
+      query: filterValue
+    })
 
-  const saveCount = saves.length
+  const currentQueueItem = useSelector(makeGetCurrent())
+  const playingUid = currentQueueItem?.uid
 
-  const isLoading = savedTracksStatus !== Status.SUCCESS
+  const handleChangeFilterValue = useThrottledCallback(
+    (text: string) => {
+      setFilterValue(text)
+    },
+    [],
+    250
+  )
+
+  const isEmpty = lineup?.entries?.length === 0
+  const isLoading = status === Status.LOADING
 
   let emptyTabText: string
   if (selectedCategory === LibraryCategory.All) {
@@ -108,107 +86,10 @@ export const TracksTab = () => {
     emptyTabText = messages.emptyTracksPurchasedText
   }
 
-  const fetchSaves = useCallback(() => {
-    dispatch(
-      fetchSavesAction(filterValue, selectedCategory, '', '', 0, FETCH_LIMIT)
-    )
-  }, [dispatch, filterValue, selectedCategory])
-
-  useEffect(() => {
-    // Need to fetch saves when the filterValue or selectedCategory (by way of fetchSaves) changes
-    if (isReachable) {
-      fetchSaves()
-      setFetchPage((fetchPage) => fetchPage + 1)
-    }
-  }, [isReachable, fetchSaves])
-
-  const { entries } = useFavoritesLineup(fetchSaves)
-  const trackUids = useMemo(() => entries.map(({ uid }) => uid), [entries])
-
-  const filterTrack = (
-    track: Nullable<Track>,
-    user: Nullable<User>
-  ): track is TrackMetadata => {
-    if (!track || !user) {
-      return false
-    }
-
-    if (!filterValue.length) {
-      return true
-    }
-
-    const matchValue = filterValue?.toLowerCase()
-    return (
-      track.title?.toLowerCase().indexOf(matchValue) > -1 ||
-      user.name?.toLowerCase().indexOf(matchValue) > -1
-    )
-  }
-
-  const allTracksFetched = useMemo(() => {
-    return trackUids.length === saveCount && !filterValue
-  }, [trackUids, saveCount, filterValue])
-
-  const handleMoreFetchSaves = useCallback(() => {
-    if (
-      allTracksFetched ||
-      isFetchingMore ||
-      !isReachable ||
-      trackUids.length < fetchPage * FETCH_LIMIT
-    ) {
-      return
-    }
-
-    const nextPage = fetchPage + 1
-    dispatch(
-      fetchMoreSaves(
-        filterValue,
-        selectedCategory,
-        '',
-        '',
-        nextPage * FETCH_LIMIT,
-        FETCH_LIMIT
-      )
-    )
-    setFetchPage(nextPage)
-  }, [
-    allTracksFetched,
-    selectedCategory,
-    dispatch,
-    fetchPage,
-    filterValue,
-    isFetchingMore,
-    isReachable,
-    trackUids.length
-  ])
-
-  const filteredTrackUids: string[] = useSelector((state) => {
-    return trackUids.filter((uid) => {
-      const track = getTrack(state, { uid })
-      const user = getUserFromTrack(state, { uid })
-      return filterTrack(track, user)
-    })
-  }, isEqual)
-
-  const togglePlay = useCallback(
-    (uid: UID, id: ID) => {
-      dispatch(tracksActions.togglePlay(uid, id, PlaybackSource.LIBRARY_PAGE))
-    },
-    [dispatch]
-  )
-
-  const handleChangeFilterValue = useMemo(() => {
-    return debounce(setFilterValue, 250)
-  }, [])
-
-  const loadingSpinner = <LoadingMoreSpinner />
   return (
     <VirtualizedScrollView>
-      {!isLoading && filteredTrackUids.length === 0 && !filterValue ? (
-        !isReachable ? (
-          <NoTracksPlaceholder />
-        ) : (
-          <EmptyTileCTA message={emptyTabText} />
-        )
+      {!isLoading && isEmpty && !filterValue ? (
+        <EmptyTileCTA message={emptyTabText} />
       ) : (
         <>
           <OfflineContentBanner />
@@ -216,28 +97,35 @@ export const TracksTab = () => {
             placeholder={messages.inputPlaceholder}
             onChangeText={handleChangeFilterValue}
           />
-          <WithLoader loading={initialFetch}>
-            <Animated.View layout={Layout}>
-              {filteredTrackUids.length ? (
-                <Tile
-                  styles={{
-                    tile: styles.container
+          <Animated.View layout={Layout}>
+            {!isEmpty ? (
+              <Tile
+                styles={{
+                  tile: styles.container
+                }}
+              >
+                <TrackList
+                  style={styles.trackList}
+                  hideArt
+                  onEndReached={loadNextPage}
+                  onEndReachedThreshold={1.5}
+                  togglePlay={(uid) => {
+                    if (uid === playingUid) {
+                      if (isPlaying) {
+                        pause()
+                      } else {
+                        play()
+                      }
+                    } else {
+                      play(uid)
+                    }
                   }}
-                >
-                  <TrackList
-                    style={styles.trackList}
-                    hideArt
-                    onEndReached={handleMoreFetchSaves}
-                    onEndReachedThreshold={1.5}
-                    togglePlay={togglePlay}
-                    trackItemAction='overflow'
-                    uids={filteredTrackUids}
-                  />
-                </Tile>
-              ) : null}
-              {isFetchingMore ? loadingSpinner : null}
-            </Animated.View>
-          </WithLoader>
+                  trackItemAction='overflow'
+                  uids={lineup.entries.map((entry) => entry.uid)}
+                />
+              </Tile>
+            ) : null}
+          </Animated.View>
         </>
       )}
     </VirtualizedScrollView>

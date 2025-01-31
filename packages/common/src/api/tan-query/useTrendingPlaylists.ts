@@ -13,6 +13,7 @@ import {
   trendingPlaylistsPageLineupSelectors
 } from '~/store/pages'
 
+import { QUERY_KEYS } from './queryKeys'
 import { QueryOptions } from './types'
 import { useCurrentUserId } from './useCurrentUserId'
 import { loadNextPage } from './utils/infiniteQueryLoadNextPage'
@@ -21,10 +22,18 @@ import { useLineupQuery } from './utils/useLineupQuery'
 
 const DEFAULT_PAGE_SIZE = 10
 
-type UseTrendingPlaylistsArgs = {
+export type UseTrendingPlaylistsArgs = {
   pageSize?: number
   time?: full.GetTrendingPlaylistsTimeEnum
 }
+
+export const getTrendingPlaylistsQueryKey = ({
+  pageSize,
+  time
+}: UseTrendingPlaylistsArgs) => [
+  QUERY_KEYS.trendingPlaylists,
+  { pageSize, time }
+]
 
 export const useTrendingPlaylists = (
   {
@@ -39,7 +48,7 @@ export const useTrendingPlaylists = (
   const dispatch = useDispatch()
 
   const queryData = useInfiniteQuery({
-    queryKey: ['trendingPlaylists', pageSize, time],
+    queryKey: getTrendingPlaylistsQueryKey({ pageSize, time }),
     initialPageParam: 0,
     getNextPageParam: (lastPage, allPages) => {
       if (lastPage.length < pageSize) return undefined

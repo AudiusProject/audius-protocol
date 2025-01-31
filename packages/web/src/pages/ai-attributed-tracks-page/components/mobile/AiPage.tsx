@@ -6,7 +6,10 @@ import cn from 'classnames'
 
 import Header from 'components/header/mobile/Header'
 import { HeaderContext } from 'components/header/mobile/HeaderContextProvider'
-import Lineup, { LineupProps } from 'components/lineup/Lineup'
+import {
+  TanQueryLineup,
+  TanQueryLineupProps
+} from 'components/lineup/TanQueryLineup'
 import MobilePageContainer from 'components/mobile-page-container/MobilePageContainer'
 import { useSubPageHeader } from 'components/nav/mobile/NavContext'
 import UserBadges from 'components/user-badges/UserBadges'
@@ -14,8 +17,9 @@ import { fullAiPage } from 'utils/route'
 import { isMatrix } from 'utils/theme/theme'
 import { withNullGuard } from 'utils/withNullGuard'
 
+import { ShareAiTracksTile } from '../desktop/ShareAiTracksTile'
+
 import styles from './AiPage.module.css'
-import { ShareAiTracksTile } from './ShareAiTracksTile'
 
 const messages = {
   aiAttributed: 'Tracks generated with AI trained on music',
@@ -27,7 +31,7 @@ const messages = {
 export type AiPageProps = {
   title: string
   user: UserMetadata | null
-  getLineupProps: () => LineupProps
+  getLineupProps: () => TanQueryLineupProps
   goToArtistPage: () => void
 }
 
@@ -57,6 +61,8 @@ const AiPage = g(({ title, user, getLineupProps, goToArtistPage }) => {
     )
   }, [setHeader, title])
 
+  const lineupProps = getLineupProps()
+
   return (
     <MobilePageContainer
       title={title}
@@ -76,7 +82,7 @@ const AiPage = g(({ title, user, getLineupProps, goToArtistPage }) => {
             />
           </span>
         </div>
-        <Lineup {...getLineupProps()} endOfLineup={<ShareAiTracksTile />} />
+        <TanQueryLineup {...lineupProps} endOfLineup={<ShareAiTracksTile />} />
       </div>
     </MobilePageContainer>
   )

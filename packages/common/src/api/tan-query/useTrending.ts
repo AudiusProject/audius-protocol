@@ -29,12 +29,22 @@ import { useLineupQuery } from './utils/useLineupQuery'
 export const TRENDING_INITIAL_PAGE_SIZE = 10
 export const TRENDING_LOAD_MORE_PAGE_SIZE = 4
 
-type GetTrendingArgs = {
+export type GetTrendingArgs = {
   timeRange: TimeRange
   genre?: Genre
   initialPageSize?: number
   loadMorePageSize?: number
 }
+
+export const getTrendingQueryKey = ({
+  timeRange,
+  genre,
+  initialPageSize,
+  loadMorePageSize
+}: GetTrendingArgs) => [
+  QUERY_KEYS.trending,
+  { timeRange, genre, initialPageSize, loadMorePageSize }
+]
 
 export const useTrending = (
   {
@@ -51,7 +61,12 @@ export const useTrending = (
   const dispatch = useDispatch()
 
   const infiniteQueryData = useInfiniteQuery({
-    queryKey: [QUERY_KEYS.trending, timeRange, genre],
+    queryKey: getTrendingQueryKey({
+      timeRange,
+      genre,
+      initialPageSize,
+      loadMorePageSize
+    }),
     initialPageParam: 0,
     staleTime: options?.staleTime,
     getNextPageParam: (lastPage, allPages) => {

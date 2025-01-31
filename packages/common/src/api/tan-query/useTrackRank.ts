@@ -4,11 +4,11 @@ import { trendingIdsFromSDK } from '~/adapters/trending'
 import { useAudiusQueryContext } from '~/audius-query'
 import { ID } from '~/models/Identifiers'
 
+import { QUERY_KEYS } from './queryKeys'
+
 type GetTrendingIdsArgs = {
   genre?: string
 }
-
-const TRENDING_IDS_QUERY_KEY = 'TRENDING_IDS'
 
 const messages = {
   year: 'Year',
@@ -16,13 +16,18 @@ const messages = {
   week: 'Week'
 }
 
+export const getTrendingIdsQueryKey = (args?: GetTrendingIdsArgs) => [
+  QUERY_KEYS.trendingIds,
+  { genre: args?.genre }
+]
+
 /**
  * Hook that returns trending track IDs for all time periods
  */
 export const useGetTrendingIds = (args?: GetTrendingIdsArgs) => {
   const { audiusSdk } = useAudiusQueryContext()
   return useQuery({
-    queryKey: [TRENDING_IDS_QUERY_KEY, args],
+    queryKey: getTrendingIdsQueryKey(args),
     queryFn: async () => {
       const sdk = await audiusSdk()
       const { data } = await sdk.full.tracks.getTrendingTrackIDs(args)

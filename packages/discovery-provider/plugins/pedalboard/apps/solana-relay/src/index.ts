@@ -20,6 +20,10 @@ import { location } from './routes/instruction/location'
 import { listen } from './routes/listen/listen'
 import { relay } from './routes/relay/relay'
 
+process.on('unhandledRejection', (reason, promise) => {
+  logger.error('Unhandled promise rejection', { promise, reason })
+})
+
 const main = async () => {
   const { serverHost, serverPort } = config
   const app = express()

@@ -10,12 +10,18 @@ import { SUPPORTING_PAGINATION_SIZE } from '~/utils/constants'
 import { QUERY_KEYS } from './queryKeys'
 import { QueryOptions } from './types'
 import { useCurrentUserId } from './useCurrentUserId'
+import { getSupporterQueryKey } from './useSupporter'
 import { primeUserData } from './utils/primeUserData'
 
 type UseSupportedUsersArgs = {
   userId: ID | null | undefined
   pageSize?: number
 }
+
+export const getSupportedUsersQueryKey = (
+  userId: ID | null | undefined,
+  pageSize: number
+) => [QUERY_KEYS.supportedUsers, userId, pageSize]
 
 export const useSupportedUsers = (
   { userId, pageSize = SUPPORTING_PAGINATION_SIZE }: UseSupportedUsersArgs,
@@ -27,7 +33,7 @@ export const useSupportedUsers = (
   const dispatch = useDispatch()
 
   return useInfiniteQuery({
-    queryKey: [QUERY_KEYS.supportedUsers, userId, pageSize],
+    queryKey: getSupportedUsersQueryKey(userId, pageSize),
     initialPageParam: 0,
     getNextPageParam: (lastPage, allPages) => {
       if (lastPage.length < pageSize) return undefined
@@ -46,7 +52,7 @@ export const useSupportedUsers = (
       // Prime the cache for each supporter
       supporting.forEach((supportedUser) => {
         queryClient.setQueryData(
-          [QUERY_KEYS.supporter, supportedUser.receiver.user_id, userId],
+          getSupporterQueryKey(supportedUser.receiver.user_id, userId),
           supportedUser
         )
       })

@@ -1,5 +1,4 @@
-import { IconValidationCheck } from '@audius/harmony'
-import cn from 'classnames'
+import { Flex, IconValidationCheck, Text } from '@audius/harmony'
 
 import styles from './TaskCompletionItem.module.css'
 import { CompletionStage } from './types'
@@ -24,8 +23,18 @@ const CompletionIcon = ({ isCompleted }: CompletionIconProps) => {
  * `TaskCompletionItem` represents a single item in a `TaskCompletionList`
  */
 export const TaskCompletionItem = ({ title, isCompleted }: CompletionStage) => (
-  <div className={styles.taskCompletionItem}>
+  <Flex alignItems='center' gap='xs'>
     <CompletionIcon isCompleted={isCompleted} />
-    <span className={cn({ [styles.completedItem]: isCompleted })}>{title}</span>
-  </div>
+    <Text
+      variant='body'
+      size='m'
+      color='staticWhite'
+      css={{
+        textDecoration: isCompleted ? 'line-through' : 'none',
+        opacity: isCompleted ? 0.5 : 1
+      }}
+    >
+      {title}
+    </Text>
+  </Flex>
 )

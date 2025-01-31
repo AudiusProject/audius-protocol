@@ -1,35 +1,20 @@
 import { useCallback, useRef } from 'react'
 
 import { useFeatureFlag, useGatedContentAccess } from '@audius/common/hooks'
-import { ID, LineupState, Track, User } from '@audius/common/models'
+import { ID, Track, User } from '@audius/common/models'
 import { FeatureFlags } from '@audius/common/services'
-import { trackPageLineupActions, QueueItem } from '@audius/common/store'
-import { Box, Flex, Text } from '@audius/harmony'
+import { Box, Flex } from '@audius/harmony'
 
 import { CommentSection } from 'components/comments/CommentSection'
 import CoverPhoto from 'components/cover-photo/CoverPhoto'
-import Lineup from 'components/lineup/Lineup'
-import { LineupVariant } from 'components/lineup/types'
 import NavBanner from 'components/nav-banner/NavBanner'
 import Page from 'components/page/Page'
 import { StatBanner } from 'components/stat-banner/StatBanner'
 import { GiantTrackTile } from 'components/track/GiantTrackTile'
-import { TrackTileSize } from 'components/track/types'
 import { getTrackDefaults, emptyStringGuard } from 'pages/track-page/utils'
 
-import { TrackRemixes } from '../TrackRemixes'
-import { ViewOtherRemixesButton } from '../ViewOtherRemixesButton'
+import { TrackPageLineup } from '../TrackPageLineup'
 import { useTrackPageSize } from '../useTrackPageSize'
-
-import Remixes from './Remixes'
-import styles from './TrackPage.module.css'
-
-const { tracksActions } = trackPageLineupActions
-
-const messages = {
-  moreBy: 'More By',
-  originalTrack: 'Original Track'
-}
 
 export type OwnProps = {
   title: string
@@ -38,7 +23,6 @@ export type OwnProps = {
   structuredData?: Object
   // Hero Track Props
   heroTrack: Track | null
-  hasValidRemixParent: boolean
   user: User | null
   heroPlaying: boolean
   previewing: boolean
@@ -50,7 +34,6 @@ export type OwnProps = {
     isPlaying: boolean
     isPreview?: boolean
   }) => void
-  goToAllRemixesPage: () => void
   onHeroShare: (trackId: ID) => void
   onHeroRepost: (isReposted: boolean, trackId: ID) => void
   onFollow: () => void
@@ -58,13 +41,6 @@ export type OwnProps = {
 
   onSaveTrack: (isSaved: boolean, trackId: ID) => void
   makePublic: (trackId: ID) => void
-  // Tracks Lineup Props
-  tracks: LineupState<Track>
-  currentQueueItem: QueueItem
-  isPlaying: boolean
-  isBuffering: boolean
-  play: (uid?: string) => void
-  pause: () => void
 }
 
 const TrackPage = ({
@@ -72,7 +48,6 @@ const TrackPage = ({
   description,
   canonicalUrl,
   structuredData,
-  hasValidRemixParent,
   // Hero Track Props
   heroTrack,
   user,
@@ -80,24 +55,14 @@ const TrackPage = ({
   previewing,
   userId,
   onHeroPlay,
-  goToAllRemixesPage,
   onHeroShare,
   onHeroRepost,
   onSaveTrack,
   onFollow,
   onUnfollow,
-  makePublic,
-
-  // Tracks Lineup Props
-  tracks,
-  currentQueueItem,
-  isPlaying,
-  isBuffering,
-  play,
-  pause
+  makePublic
 }: OwnProps) => {
-  const { isDesktop, isMobile } = useTrackPageSize()
-  const { entries } = tracks
+  const { isDesktop } = useTrackPageSize()
   const isOwner = heroTrack?.owner_id === userId
   const following = user?.does_current_user_follow ?? false
   const isSaved = heroTrack?.has_current_user_saved ?? false
@@ -112,8 +77,6 @@ const TrackPage = ({
   const isCommentingEnabled =
     commentsFlagEnabled && !heroTrack?.comments_disabled
   const loading = !heroTrack || isFetchingNFTAccess
-
-  const hasMoreByTracks = tracks?.entries?.length > 1 // note: the first in the list is always the track for this page
 
   const onPlay = () => onHeroPlay({ isPlaying: heroPlaying })
   const onPreview = () =>
@@ -191,32 +154,6 @@ const TrackPage = ({
     />
   )
 
-  const renderOriginalTrackTitle = () => (
-    <Text color='default' variant='title' size='l'>
-      {messages.originalTrack}
-    </Text>
-  )
-
-  const renderMoreByTitle = () =>
-    (defaults.remixParentTrackId && entries.length > 2) ||
-    (!defaults.remixParentTrackId && entries.length > 1) ? (
-      <Text
-        color='default'
-        variant='title'
-        size='l'
-      >{`${messages.moreBy} ${user?.name}`}</Text>
-    ) : null
-
-  const { fieldVisibility, remixTrackIds } = defaults
-
-  const hasRemixes =
-    fieldVisibility.remixes && remixTrackIds && remixTrackIds.length > 0
-
-  const lineupVariant =
-    (isCommentingEnabled && isDesktop) || isMobile
-      ? LineupVariant.SECTION
-      : LineupVariant.CONDENSED
-
   return (
     <Page
       title={title}
@@ -239,15 +176,6 @@ const TrackPage = ({
         css={{ position: 'relative', padding: '200px 16px 60px' }}
       >
         {renderGiantTrackTile()}
-        {hasRemixes && !commentsFlagEnabled ? (
-          <Flex justifyContent='center' mt='3xl' ph='l'>
-            <Remixes
-              trackIds={defaults.remixTrackIds!}
-              goToAllRemixes={goToAllRemixesPage}
-              count={defaults.remixesCount}
-            />
-          </Flex>
-        ) : null}
         <Flex
           gap='2xl'
           w='100%'
@@ -265,86 +193,11 @@ const TrackPage = ({
               />
             </Flex>
           ) : null}
-          {hasRemixes || hasMoreByTracks ? (
-            <Flex
-              direction='column'
-              alignItems={
-                isCommentingEnabled && isDesktop ? 'flex-start' : 'center'
-              }
-              gap='2xl'
-              flex={1}
-              css={{
-                minWidth: 330,
-                maxWidth: isCommentingEnabled ? '100%' : '774px'
-              }}
-            >
-              {hasRemixes ? <TrackRemixes trackId={defaults.trackId} /> : null}
-              <Flex
-                direction='column'
-                alignItems='flex-start'
-                justifyContent='center'
-                gap='l'
-                w='100%'
-              >
-                {hasValidRemixParent
-                  ? renderOriginalTrackTitle()
-                  : renderMoreByTitle()}
-                <Lineup
-                  lineup={tracks}
-                  // Styles for leading element (original track if remix).
-                  leadingElementId={defaults.remixParentTrackId}
-                  leadingElementDelineator={
-                    <Flex gap='3xl' direction='column'>
-                      <Box
-                        alignSelf={
-                          isCommentingEnabled ? 'flex-start' : 'center'
-                        }
-                      >
-                        <ViewOtherRemixesButton
-                          parentTrackId={defaults.remixParentTrackId!}
-                          size={isCommentingEnabled ? 'xs' : 'small'}
-                        />
-                      </Box>
-                      <Flex
-                        mb='l'
-                        justifyContent={
-                          isCommentingEnabled ? 'flex-start' : 'center'
-                        }
-                      >
-                        {renderMoreByTitle()}
-                      </Flex>
-                    </Flex>
-                  }
-                  leadingElementTileProps={{ size: TrackTileSize.LARGE }}
-                  laggingContainerClassName={
-                    !isCommentingEnabled
-                      ? styles.moreByArtistContainer
-                      : undefined
-                  }
-                  lineupContainerStyles={styles.width100}
-                  applyLeadingElementStylesToSkeleton
-                  // Don't render the first tile in the lineup since it's actually the "giant"
-                  // track tile this page is about.
-                  start={1}
-                  // Show max 5 loading tiles
-                  count={6}
-                  // Managed from the parent rather than allowing the lineup to fetch content itself.
-                  selfLoad={false}
-                  variant={lineupVariant}
-                  playingUid={currentQueueItem.uid}
-                  playingSource={currentQueueItem.source}
-                  playingTrackId={
-                    currentQueueItem.track && currentQueueItem.track.track_id
-                  }
-                  playing={isPlaying}
-                  buffering={isBuffering}
-                  playTrack={play}
-                  pauseTrack={pause}
-                  actions={tracksActions}
-                />
-              </Flex>
-            </Flex>
-          ) : null}
+          <TrackPageLineup
+            user={user}
+            trackId={heroTrack?.track_id}
+            commentsDisabled={heroTrack?.comments_disabled}
+          />
         </Flex>
       </Flex>
     </Page>

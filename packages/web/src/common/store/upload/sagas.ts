@@ -74,7 +74,7 @@ import { waitForWrite } from 'utils/sagaHelpers'
 import { trackNewRemixEvent } from '../cache/tracks/sagas'
 import { retrieveTracks } from '../cache/tracks/utils'
 import { adjustUserField } from '../cache/users/sagas'
-import { addPlaylistsNotInLibrary } from '../playlist-library/sagas'
+import { addPlaylistsNotInLibrary } from '../playlist-library/sagaHelpers'
 
 import {
   addPremiumMetadata,
@@ -374,7 +374,7 @@ type PublishedPayload = {
 type ErrorPayload = {
   trackIndex: number
   stemIndex: number | null
-  trackId: ID
+  trackId?: ID
   phase: 'upload' | 'publish'
   error: unknown
 }
@@ -464,17 +464,23 @@ export function* handleUploads({
       })
     )
 
-    // Process the track's stems
-    const trackStems = prepareStemsForUpload(
-      (track.metadata.stems ?? []) as StemUploadWithFile[],
-      track.metadata.track_id
-    )
-    const stemCount = track.metadata.stems?.length ?? 0
-    pendingStemCount[track.metadata.track_id] = stemCount
-    stems += stemCount
-    for (let j = 0; j < trackStems.length; j++) {
-      const stem = trackStems[j]
-      uploadQueue.put({ trackIndex: i, stemIndex: j, track: stem })
+    if (track.metadata.stems?.length) {
+      // track_id should be created and assigned ahead of time for a track with stems
+      if (!track.metadata.track_id) {
+        throw new Error('Track ID is required on parent track for stems')
+      }
+      // Process the track's stems
+      const trackStems = prepareStemsForUpload(
+        (track.metadata.stems ?? []) as StemUploadWithFile[],
+        track.metadata.track_id
+      )
+      const stemCount = track.metadata.stems?.length ?? 0
+      pendingStemCount[track.metadata.track_id] = stemCount
+      stems += stemCount
+      for (let j = 0; j < trackStems.length; j++) {
+        const stem = trackStems[j]
+        uploadQueue.put({ trackIndex: i, stemIndex: j, track: stem })
+      }
     }
   }
 
@@ -592,6 +598,9 @@ export function* handleUploads({
 
     // Trigger upload for parent if last stem
     if (stemIndex !== null) {
+      if (!parentTrackId) {
+        throw new Error('Parent track ID not found for stem')
+      }
       pendingStemCount[parentTrackId] -= 1
       if (
         pendingStemCount[parentTrackId] === 0 &&

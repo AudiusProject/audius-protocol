@@ -80,4 +80,5 @@ export type Env = {
   WEB3_PROVIDER_URL: string
   WORMHOLE_ADDRESS: Nullable<string>
   WORMHOLE_RPC_HOSTS: Nullable<string>
+  EMAIL_ENCRYPTION_UUID?: number
 }

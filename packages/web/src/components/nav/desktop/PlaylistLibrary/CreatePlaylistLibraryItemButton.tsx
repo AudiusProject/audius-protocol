@@ -1,10 +1,10 @@
 import { useCallback, useMemo, useState } from 'react'
 
+import { useUpdatePlaylistLibrary } from '@audius/common/api'
 import { CreatePlaylistSource } from '@audius/common/models'
 import {
   accountSelectors,
   cacheCollectionsActions,
-  playlistLibraryActions,
   playlistLibraryHelpers
 } from '@audius/common/store'
 import {
@@ -22,7 +22,6 @@ import { useRequiresAccountCallback } from 'hooks/useRequiresAccount'
 
 const { createPlaylist } = cacheCollectionsActions
 const { addFolderToLibrary, constructPlaylistFolder } = playlistLibraryHelpers
-const { update: updatePlaylistLibrary } = playlistLibraryActions
 const { getPlaylistLibrary } = accountSelectors
 
 const messages = {
@@ -40,6 +39,7 @@ export const CreatePlaylistLibraryItemButton = () => {
   const library = useSelector(getPlaylistLibrary)
   const [isActive, setIsActive] = useState(false)
   const [isHovered, setIsHovered] = useState(false)
+  const { mutate: updatePlaylistLibrary } = useUpdatePlaylistLibrary()
 
   const handleSubmitPlaylist = useCallback(() => {
     dispatch(
@@ -56,8 +56,8 @@ export const CreatePlaylistLibraryItemButton = () => {
       library,
       constructPlaylistFolder(messages.newFolderName)
     )
-    dispatch(updatePlaylistLibrary({ playlistLibrary: newLibrary }))
-  }, [dispatch, library])
+    updatePlaylistLibrary(newLibrary)
+  }, [updatePlaylistLibrary, library])
 
   // Gate triggering popup behind authentication
   const handleClickPill = useRequiresAccountCallback(

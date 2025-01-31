@@ -14,6 +14,11 @@ export const fetchEmailInUse = async (
   return await identityService.checkIfEmailRegistered(email)
 }
 
+export const getEmailInUseQueryKey = (email: string | null | undefined) => [
+  QUERY_KEYS.emailInUse,
+  email
+]
+
 /**
  * Hook to check if an email is already registered
  */
@@ -24,7 +29,7 @@ export const useEmailInUse = (
   const context = useAudiusQueryContext()
 
   return useQuery({
-    queryKey: [QUERY_KEYS.emailInUse, email],
+    queryKey: getEmailInUseQueryKey(email),
     queryFn: () => fetchEmailInUse(email, context),
     staleTime: options?.staleTime,
     enabled: options?.enabled !== false && !!email

@@ -6,7 +6,6 @@ import { route } from '@audius/common/utils'
 import { useParams } from 'react-router-dom'
 import { useNavigate } from 'react-router-dom-v5-compat'
 
-import { useTanQueryLineupProps } from 'components/lineup/hooks'
 import { useIsMobile } from 'hooks/useIsMobile'
 import { useMainContentRef } from 'pages/MainContentContext'
 
@@ -23,9 +22,7 @@ const messages = {
 export const AiPage = () => {
   const { handle } = useParams<{ handle: string }>()
   const ref = useMainContentRef()
-  const { lineup, loadNextPage, play, pause, isPlaying, pageSize } =
-    useAiTracks({ handle })
-  const lineupProps = useTanQueryLineupProps()
+  const aiTracksData = useAiTracks({ handle })
   const isMobile = useIsMobile()
   const Content = isMobile ? AiPageMobileContent : AiPageDesktopContent
   const { data: user } = useUserByHandle(handle)
@@ -33,14 +30,9 @@ export const AiPage = () => {
   const getLineupProps = () => ({
     actions: aiPageLineupActions,
     scrollParent: ref.current,
-    endOfLineup: <ShareAiTracksTile />,
-    lineup,
-    loadMore: loadNextPage,
-    playTrack: play,
-    pauseTrack: pause,
-    playing: isPlaying,
-    pageSize,
-    ...lineupProps
+    lineupQueryData: aiTracksData,
+    pageSize: aiTracksData.pageSize,
+    endOfLineup: <ShareAiTracksTile />
   })
 
   const navigate = useNavigate()

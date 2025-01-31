@@ -85,7 +85,7 @@ import { Pages } from './types'
 const { FEED_PAGE, SIGN_IN_PAGE, SIGN_UP_PAGE, SIGN_UP_PASSWORD_PAGE } = route
 const { requestPushNotificationPermissions } = settingsPageActions
 const { saveCollection } = collectionsSocialActions
-const { getAccountUser, getHasAccount } = accountSelectors
+const { getUserId, getAccountUser, getHasAccount } = accountSelectors
 const { toast } = toastActions
 
 const SIGN_UP_TIMEOUT_MILLIS = 20 /* min */ * 60 * 1000
@@ -499,7 +499,7 @@ function* createGuestAccount(
         if (!guestEmail) {
           throw new Error('No email set for guest account')
         }
-        const { blockHash, blockNumber } = yield* call([
+        const { blockHash, blockNumber, metadata } = yield* call([
           sdk.users,
           sdk.users.createGuestAccount
         ])
@@ -514,6 +514,12 @@ function* createGuestAccount(
         // associates user record with blockchain user ID and creates notification settings
         // necessary for sending purchase emails
         yield* call(audiusBackendInstance.updateUserLocationTimezone, { sdk })
+
+        yield* put(
+          make(Name.CREATE_ACCOUNT_COMPLETE_GUEST_CREATING, {
+            userId: metadata.userId
+          })
+        )
       },
       () => {},
       function* ({ error: err }: { error: Error }) {
@@ -616,6 +622,12 @@ function* signUp() {
               yield* fork(sendPostSignInRecoveryEmail, { handle, email })
 
               yield* call(confirmTransaction, blockHash, blockNumber)
+              yield* put(
+                make(Name.CREATE_ACCOUNT_COMPLETE_GUEST_PROFILE, {
+                  handle,
+                  isGuest: true
+                })
+              )
 
               return userId
             } else {
@@ -1014,8 +1026,9 @@ function* followCollections(
   favoriteSource: FavoriteSource
 ) {
   yield* call(waitForWrite)
+  const userId = yield* select(getUserId)
   try {
-    const result = yield* call(retrieveCollections, collectionIds)
+    const result = yield* call(retrieveCollections, collectionIds, { userId })
 
     for (let i = 0; i < collectionIds.length; i++) {
       const id = collectionIds[i]

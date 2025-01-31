@@ -85,5 +85,6 @@ export const env: Env = {
   WEB3_NETWORK_ID: '1056801',
   WEB3_PROVIDER_URL: 'https://poa-gateway.staging.audius.co',
   WORMHOLE_ADDRESS: '0xf6f45e4d836da1d4ecd43bb1074620bfb0b7e0d7',
-  WORMHOLE_RPC_HOSTS: null
+  WORMHOLE_RPC_HOSTS: null,
+  EMAIL_ENCRYPTION_UUID: 469591815
 }

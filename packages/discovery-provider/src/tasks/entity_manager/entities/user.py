@@ -554,6 +554,102 @@ def update_user_associated_wallets(
         )
 
 
+def add_associated_wallet(
+    params: ManageEntityParameters,
+):
+    """Adds a single associated wallet after validating its signature"""
+    validate_signer(params)
+    user_id = params.user_id
+    web3 = params.web3
+    session = params.session
+    redis = params.redis
+    chain = params.metadata["chain"]
+    wallet_address = params.metadata["wallet_address"]
+    signature = params.metadata["signature"]
+    try:
+        # Validate the signature
+        is_valid_signature = validate_signature(
+            chain,
+            web3,
+            user_id,
+            wallet_address,
+            signature,
+        )
+
+        if not is_valid_signature:
+            raise IndexingValidationError(
+                f"Invalid signature for wallet {wallet_address}"
+            )
+
+        # Check if wallet already exists
+        existing_wallet = None
+        for _, wallet in params.existing_records["AssociatedWallet"].items():
+            if (
+                wallet.chain == chain
+                and wallet.user_id == user_id
+                and wallet.wallet == wallet_address
+            ):
+                existing_wallet = wallet
+                break
+
+        if not existing_wallet:
+            # Create new wallet association only if it doesn't exist
+            associated_wallet_entry = AssociatedWallet(
+                user_id=user_id,
+                wallet=wallet_address,
+                chain=chain,
+                is_current=True,
+                is_delete=False,
+                blockhash=params.event_blockhash,
+                blocknumber=params.block_number,
+            )
+            session.add(associated_wallet_entry)
+            enqueue_immediate_balance_refresh(redis, [user_id])
+
+    except Exception as e:
+        logger.error(
+            f"index.py | users.py | Fatal adding associated wallet while indexing {e}",
+            exc_info=True,
+        )
+        raise e
+
+
+def remove_associated_wallet(params: ManageEntityParameters):
+    """Removes a single associated wallet"""
+    validate_signer(params)
+    user_id = params.user_id
+    chain = params.metadata["chain"]
+    wallet_address = params.metadata["wallet_address"]
+    session = params.session
+    redis = params.redis
+    try:
+        # Find the wallet to remove
+        wallet_to_remove = None
+        for _, wallet in params.existing_records["AssociatedWallet"].items():
+            if (
+                wallet.chain == chain
+                and wallet.user_id == user_id
+                and wallet.wallet == wallet_address
+            ):
+                wallet_to_remove = wallet
+                break
+
+        if wallet_to_remove:
+            session.delete(wallet_to_remove)
+            enqueue_immediate_balance_refresh(redis, [user_id])
+        else:
+            raise IndexingValidationError(
+                f"Associated wallet {wallet_address} not found for user {user_id}"
+            )
+
+    except Exception as e:
+        logger.error(
+            f"index.py | users.py | Fatal removing associated wallet while indexing {e}",
+            exc_info=True,
+        )
+        raise e
+
+
 def validate_signature(
     chain: str, web3, user_id: int, associated_wallet: str, signature: str
 ):
