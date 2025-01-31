@@ -1,6 +1,6 @@
-import { Fragment, useCallback, useEffect, useRef } from 'react'
+import React, { Fragment, useCallback, useEffect, useRef } from 'react'
 
-import { useGetSuggestedPlaylistTracks } from '@audius/common/api'
+import { useSuggestedPlaylistTracks } from '@audius/common/api'
 import { SquareSizes } from '@audius/common/models'
 import type { ID, Track } from '@audius/common/models'
 import { cacheUsersSelectors } from '@audius/common/store'
@@ -145,7 +145,7 @@ type SuggestedTracksProps = {
 export const SuggestedTracks = (props: SuggestedTracksProps) => {
   const { collectionId } = props
   const { suggestedTracks, onRefresh, onAddTrack, isRefreshing } =
-    useGetSuggestedPlaylistTracks(collectionId)
+    useSuggestedPlaylistTracks(collectionId)
   const styles = useStyles()
 
   const [isExpanded, toggleIsExpanded] = useToggle(false)

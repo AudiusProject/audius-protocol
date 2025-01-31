@@ -1,6 +1,6 @@
 import { useCallback } from 'react'
 
-import { useGetSuggestedPlaylistTracks } from '@audius/common/api'
+import { useSuggestedPlaylistTracks } from '@audius/common/api'
 import { SquareSizes, ID, Track } from '@audius/common/models'
 import { cacheUsersSelectors } from '@audius/common/store'
 import { Button, IconCaretDown, IconRefresh, useTheme } from '@audius/harmony'
@@ -90,7 +90,7 @@ type SuggestedTracksProps = {
 export const SuggestedTracks = (props: SuggestedTracksProps) => {
   const { collectionId } = props
   const { suggestedTracks, onRefresh, onAddTrack, isRefreshing } =
-    useGetSuggestedPlaylistTracks(collectionId)
+    useSuggestedPlaylistTracks(collectionId)
   const [isExpanded, toggleIsExpanded] = useToggle(false)
   const { motion } = useTheme()
 
@@ -128,7 +128,7 @@ export const SuggestedTracks = (props: SuggestedTracksProps) => {
             <LoadingSpinner className={styles.loading} />
           ) : null}
           {suggestedTracks?.map((suggestedTrack) => (
-            <li key={suggestedTrack.key}>
+            <li key={suggestedTrack.id}>
               {!isRefreshing && 'track' in suggestedTrack ? (
                 <SuggestedTrackRow
                   track={suggestedTrack.track}
