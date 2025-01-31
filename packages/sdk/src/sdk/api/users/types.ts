@@ -16,6 +16,7 @@ export const CreateUserSchema = z.object({
   onProgress: z.optional(z.function()),
   metadata: z
     .object({
+      allowAiAttribution: z.optional(z.boolean()),
       bio: z.optional(z.string()),
       coverPhotoSizes: z.optional(z.string()),
       donation: z.optional(z.string()),

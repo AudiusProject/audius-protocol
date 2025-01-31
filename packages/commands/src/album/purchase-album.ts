@@ -2,6 +2,7 @@ import chalk from 'chalk'
 import { Command } from '@commander-js/extra-typings'
 
 import { getCurrentUserId, initializeAudiusSdk } from '../utils.js'
+import { outputFormatOption } from '../common-options.js'
 
 export const purchaseAlbumCommand = new Command('purchase-album')
   .description('Buys an album using USDC')
@@ -13,18 +14,13 @@ export const purchaseAlbumCommand = new Command('purchase-album')
     'Extra amount to pay in addition to the price (in dollars)',
     parseFloat
   )
-  .action(async (albumId, price, { from, extraAmount }) => {
+  .addOption(outputFormatOption)
+  .action(async (albumId, price, { from, extraAmount, output }) => {
     const audiusSdk = await initializeAudiusSdk({
       handle: from
     })
     const userId = await getCurrentUserId()
 
-    console.log('Purchasing album...', {
-      albumId,
-      userId,
-      price,
-      extraAmount
-    })
     const response = await audiusSdk.albums.purchaseAlbum({
       albumId,
       userId,
@@ -32,6 +28,10 @@ export const purchaseAlbumCommand = new Command('purchase-album')
       extraAmount,
       includeNetworkCut: true
     })
-    console.log(chalk.green('Successfully purchased album'))
-    console.log(chalk.yellow.bold('Transaction Signature:'), response)
+    if (output === 'json') {
+      console.log(JSON.stringify(response))
+    } else {
+      console.log(chalk.green('Successfully purchased album'))
+      console.log(chalk.yellow.bold('Transaction Signature:'), response)
+    }
   })
