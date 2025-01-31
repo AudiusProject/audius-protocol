@@ -22,7 +22,8 @@ import {
   ModalFooter,
   IconCaretLeft,
   ModalContent,
-  Select
+  Select,
+  formatCount
 } from '@audius/harmony'
 import { ChatBlastAudience } from '@audius/sdk'
 import { Formik, useField } from 'formik'
@@ -182,7 +183,7 @@ const LabelWithCount = (props: {
       </Text>
       {isSelected && count ? (
         <Text variant='title' size='l' color='subdued'>
-          ({count})
+          ({formatCount(103399)})
         </Text>
       ) : null}
     </Flex>
