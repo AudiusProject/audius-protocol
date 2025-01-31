@@ -29,7 +29,6 @@ import {
   ID,
   InstagramUser,
   TikTokUser,
-  UserMetadata,
   ComputedUserProperties,
   WriteableUserMetadata
 } from '../../models'
@@ -207,32 +206,6 @@ export const audiusBackend = ({
     }
   }
 
-  /**
-   * Retrieves both the user's ETH and SOL associated wallets from the user's metadata CID
-   * @param user The user metadata which contains the CID for the metadata multihash
-   * @returns Object The associated wallets mapping of address to nested signature
-   */
-  async function fetchUserAssociatedWallets({
-    user,
-    sdk
-  }: {
-    user: UserMetadata
-    sdk: AudiusSdk
-  }) {
-    if (!user?.metadata_multihash) return null
-
-    const { data } = await sdk.full.cidData.getMetadata({
-      metadataId: user?.metadata_multihash
-    })
-
-    if (!data?.data) return null
-
-    return {
-      associated_sol_wallets: data.data.associatedSolWallets ?? null,
-      associated_wallets: data.data.associatedWallets ?? null
-    }
-  }
-
   async function updateCreator({
     metadata,
     sdk
@@ -245,17 +218,6 @@ export const audiusBackend = ({
     sdk: AudiusSdk
   }) {
     let newMetadata = { ...metadata }
-    const associatedWallets = await fetchUserAssociatedWallets({
-      user: metadata,
-      sdk
-    })
-    // @ts-ignore when writing data, this type is expected to contain a signature
-    newMetadata.associated_wallets =
-      newMetadata.associated_wallets ?? associatedWallets?.associated_wallets
-    // @ts-ignore when writing data, this type is expected to contain a signature
-    newMetadata.associated_sol_wallets =
-      newMetadata.associated_sol_wallets ??
-      associatedWallets?.associated_sol_wallets
     try {
       newMetadata = schemas.newUserMetadata(newMetadata, true)
       const userId = newMetadata.user_id
@@ -1194,7 +1156,6 @@ export const audiusBackend = ({
     deregisterDeviceToken,
     didSelectDiscoveryProviderListeners,
     disableBrowserNotifications,
-    fetchUserAssociatedWallets,
     findAssociatedTokenAddress,
     getAddressTotalStakedBalance,
     getAddressWAudioBalance,
