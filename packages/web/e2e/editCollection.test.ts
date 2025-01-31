@@ -1,13 +1,13 @@
 import { expect } from '@playwright/test'
 
-import { getAlbum } from './data'
+import { getEditableAlbum } from './data'
 import { EditAlbumPage } from './page-object-models/editCollection'
 import { CollectionPriceAndAudienceModal } from './page-object-models/modals'
 import { test } from './test'
 import { waitForConfirmation } from './utils'
 
 test('should persist collection edits', async ({ page }) => {
-  const { permalink } = getAlbum()
+  const { permalink } = getEditableAlbum()
 
   const newTitle = 'EDITED TITLE'
   const newDescription = 'EDITED DESCRIPTION'
