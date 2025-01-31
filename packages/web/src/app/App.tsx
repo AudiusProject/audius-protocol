@@ -31,18 +31,6 @@ const PrivateKeyExporterModal = lazy(
   () => import('pages/private-key-exporter-page/PrivateKeyExporterModal')
 )
 
-const ReactQueryTestPage = lazy(
-  () => import('pages/react-query/ReactQueryTestPage')
-)
-
-const ReactQueryCachePrimePage = lazy(
-  () => import('pages/react-query/ReactQueryCachePrimePage')
-)
-
-const ReactQueryToReduxCacheSyncPage = lazy(
-  () => import('pages/react-query/ReactQueryToReduxCacheSyncPage')
-)
-
 const MERCHANT_ID = env.COINFLOW_MERCHANT_ID
 const IS_PRODUCTION = env.ENVIRONMENT === 'production'
 
@@ -71,21 +59,6 @@ export const App = () => {
           <Route exact path='/oauth/auth'>
             <OAuthLoginPage />
           </Route>
-          {!IS_PRODUCTION ? (
-            <Route path='/react-query'>
-              <ReactQueryTestPage />
-            </Route>
-          ) : null}
-          {!IS_PRODUCTION ? (
-            <Route path='/react-query-cache-prime'>
-              <ReactQueryCachePrimePage />
-            </Route>
-          ) : null}
-          {!IS_PRODUCTION ? (
-            <Route path='/react-query-to-redux-cache-sync'>
-              <ReactQueryToReduxCacheSyncPage />
-            </Route>
-          ) : null}
           <Route path={PRIVATE_KEY_EXPORTER_SETTINGS_PAGE}>
             <PrivateKeyExporterPage />
             <AppModal

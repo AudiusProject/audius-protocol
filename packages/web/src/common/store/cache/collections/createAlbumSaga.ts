@@ -22,7 +22,8 @@ import {
   confirmerActions,
   EditCollectionValues,
   RequestConfirmationError,
-  getSDK
+  getSDK,
+  accountActions
 } from '@audius/common/store'
 import { makeKindId, Nullable, route } from '@audius/common/utils'
 import { Id, OptionalId } from '@audius/sdk'
@@ -144,6 +145,16 @@ function* optimisticallySaveAlbum(
         metadata: { _collectionIds: _collectionIds.concat(albumId) }
       }
     ])
+  )
+
+  yield* put(
+    accountActions.addAccountPlaylist({
+      id: albumId,
+      name: album.playlist_name as string,
+      is_album: !!album.is_album,
+      user: { id: user_id, handle },
+      permalink: album?.permalink
+    })
   )
 }
 

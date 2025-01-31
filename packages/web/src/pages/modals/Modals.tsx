@@ -34,6 +34,9 @@ import { PremiumContentPurchaseModal } from 'components/premium-content-purchase
 import { PublishConfirmationModal } from 'components/publish-confirmation-modal/PublishConfirmationModal'
 import { ReplaceTrackConfirmationModal } from 'components/replace-track-confirmation-modal/ReplaceTrackConfirmationModal'
 import { ReplaceTrackProgressModal } from 'components/replace-track-progress-modal/ReplaceTrackProgressModal'
+import { ClaimAllRewardsModal } from 'components/rewards/modals/ClaimAllRewardsModal'
+import TopAPIModal from 'components/rewards/modals/TopAPI'
+import { VipDiscordModal } from 'components/rewards/modals/VipDiscordModal'
 import { TipAudioModal } from 'components/tipping/tip-audio/TipAudioModal'
 import ConnectedMobileOverflowModal from 'components/track-overflow-modal/ConnectedMobileOverflowModal'
 import { TransactionDetailsModal } from 'components/transaction-details-modal'
@@ -49,21 +52,15 @@ import { WelcomeModal } from 'components/welcome-modal/WelcomeModal'
 import { WithdrawUSDCModal } from 'components/withdraw-usdc-modal/WithdrawUSDCModal'
 import { CoinflowWithdrawModal } from 'components/withdraw-usdc-modal/components/CoinflowWithdrawModal'
 import { useIsMobile } from 'hooks/useIsMobile'
-import AudioBreakdownModal from 'pages/audio-rewards-page/components/modals/AudioBreakdownModal'
-import { ChallengeRewardsModal } from 'pages/audio-rewards-page/components/modals/ChallengeRewardsModal'
-import { ClaimAllRewardsModal } from 'pages/audio-rewards-page/components/modals/ChallengeRewardsModal/ClaimAllRewardsModal'
-import TopAPIModal from 'pages/audio-rewards-page/components/modals/TopAPI'
-import TransferAudioMobileDrawer from 'pages/audio-rewards-page/components/modals/TransferAudioMobileDrawer'
-import { VipDiscordModal } from 'pages/audio-rewards-page/components/modals/VipDiscordModal'
+import AudioBreakdownModal from 'pages/audio-page/components/modals/AudioBreakdownModal'
+import TransferAudioMobileDrawer from 'pages/audio-page/components/modals/TransferAudioMobileDrawer'
 import { ChatBlastModal } from 'pages/chat-page/components/ChatBlastModal'
+import { ChallengeRewardsModal } from 'pages/rewards-page/components/modals/ChallengeRewardsModal'
 
 import { AppModal } from './AppModal'
 
 const ShareModal = lazy(() => import('components/share-modal'))
 
-const HCaptchaModal = lazy(
-  () => import('pages/audio-rewards-page/components/modals/HCaptchaModal')
-)
 const StripeOnRampModal = lazy(() => import('components/stripe-on-ramp-modal'))
 
 const CreateChatModal = lazy(
@@ -71,7 +68,7 @@ const CreateChatModal = lazy(
 )
 
 const TrendingRewardsModal = lazy(
-  () => import('pages/audio-rewards-page/components/modals/TrendingRewards')
+  () => import('components/rewards/modals/TrendingRewards')
 )
 
 const InboxSettingsModal = lazy(
@@ -106,7 +103,6 @@ const commonModalsMap: { [Modal in ModalTypes]?: ComponentType } = {
   InboxSettings: InboxSettingsModal,
   CommentSettings: CommentSettingsModal,
   LockedContent: LockedContentModal,
-  HCaptcha: HCaptchaModal,
   APIRewardsExplainer: TopAPIModal,
   TrendingRewardsExplainer: TrendingRewardsModal,
   ChallengeRewardsExplainer: ChallengeRewardsModal,

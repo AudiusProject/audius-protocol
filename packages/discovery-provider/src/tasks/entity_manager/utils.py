@@ -34,12 +34,15 @@ from src.models.social.save import Save
 from src.models.social.subscription import Subscription
 from src.models.tracks.track import Track
 from src.models.tracks.track_route import TrackRoute
+from src.models.users.associated_wallet import AssociatedWallet
 from src.models.users.user import User
 from src.solana.solana_client_manager import SolanaClientManager
 from src.tasks.metadata import (
+    add_associated_wallet_metadata_format,
     comment_metadata_format,
     encrypted_email_metadata_format,
     playlist_metadata_format,
+    remove_associated_wallet_metadata_format,
     track_comment_notification_setting_format,
     track_download_metadata_format,
     track_metadata_format,
@@ -164,6 +167,7 @@ class RecordDict(TypedDict):
 
 
 class ExistingRecordDict(TypedDict):
+    AssociatedWallet: Dict[str, AssociatedWallet]
     Playlist: Dict[int, Playlist]
     Track: Dict[int, Track]
     UserWallet: Dict[str, User]
@@ -369,6 +373,17 @@ def get_metadata_type_and_format(entity_type, action=None):
     elif entity_type == EntityType.ENCRYPTED_EMAIL:
         metadata_type = "encrypted_email"
         metadata_format = encrypted_email_metadata_format
+    elif (
+        entity_type == EntityType.ASSOCIATED_WALLET
+        and action == Action.CREATE
+        or action == Action.DELETE
+    ):
+        metadata_type = "associated_wallet"
+        metadata_format = (
+            add_associated_wallet_metadata_format
+            if action == Action.CREATE
+            else remove_associated_wallet_metadata_format
+        )
     else:
         raise IndexingValidationError(f"Unknown metadata type ${entity_type}")
     return metadata_type, metadata_format

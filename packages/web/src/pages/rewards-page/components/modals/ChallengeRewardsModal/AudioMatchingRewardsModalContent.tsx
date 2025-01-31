@@ -207,6 +207,7 @@ export const AudioMatchingRewardsModalContent = ({
             borderRadius='m'
             w='100%'
             css={{ overflow: 'hidden' }}
+            direction='column'
           >
             <Flex justifyContent='center'>
               {progressDescription}

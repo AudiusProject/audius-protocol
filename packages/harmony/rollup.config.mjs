@@ -1,9 +1,9 @@
 import { createRequire } from 'node:module'
 
 import alias from '@rollup/plugin-alias'
-import url from '@rollup/plugin-url'
+import image from '@rollup/plugin-image'
+import json from '@rollup/plugin-json'
 import svgr from '@svgr/rollup'
-import json from 'rollup-plugin-json'
 import postcss from 'rollup-plugin-postcss'
 import rollupTypescript from 'rollup-plugin-typescript2'
 
@@ -46,15 +46,10 @@ export default {
       modules: true
     }),
     svgr(),
+    image(),
     rollupTypescript({
       typescript: tspCompiler,
       clean: true
-    }),
-    url({
-      include: ['**/*.png', '**/*.jpg'], // Specify file extensions to handle
-      limit: 8192, // Inline files smaller than 8kb as base64 URLs
-      emitFiles: true, // Copy larger files to the output directory
-      fileName: '[name][extname]' // Customize the output file name
     })
   ],
   external

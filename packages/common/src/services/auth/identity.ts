@@ -64,7 +64,7 @@ export class IdentityService {
   // #region: Internal Functions
   private async _getSignatureHeaders() {
     const audiusWalletClient = await this.getAudiusWalletClient({
-      ignoreCachedUserWallet: true
+      ignoreCachedUserWallet: false
     })
     const [currentAddress] = await audiusWalletClient.getAddresses()
     if (!currentAddress) {

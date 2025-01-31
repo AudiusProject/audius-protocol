@@ -9,7 +9,7 @@ import {
 import { CoinflowWithdraw, OnSuccessMethod } from '@coinflowlabs/react'
 import { useDispatch, useSelector } from 'react-redux'
 
-import ModalDrawer from 'pages/audio-rewards-page/components/modals/ModalDrawer'
+import ModalDrawer from 'components/modal-drawer/ModalDrawer'
 import { env } from 'services/env'
 import zIndex from 'utils/zIndex'
 

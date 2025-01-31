@@ -1,6 +1,6 @@
 import { full, HashId } from '@audius/sdk'
 
-import { PurchaseAccess } from '~/models'
+import { PurchaseAccess } from '~/models/PurchaseContent'
 import {
   USDCContentPurchaseType,
   USDCPurchaseDetails

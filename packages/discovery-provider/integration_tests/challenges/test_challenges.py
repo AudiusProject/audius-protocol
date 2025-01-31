@@ -317,7 +317,7 @@ class AggregateUpdater(ChallengeUpdater):
     ):
         pass
 
-    def generate_specifier(self, user_id: int, extra: Dict) -> str:
+    def generate_specifier(self, session: Session, user_id: int, extra: Dict) -> str:
         return f"{user_id}-{extra['referred_id']}"
 
 
