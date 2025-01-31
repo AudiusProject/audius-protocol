@@ -42,7 +42,7 @@ integration-test:
         command: AUDIUS_DEV=false bash ./dev-tools/setup.sh
     - run:
         name: audius-compose up
-        command: . ~/.profile; audius-compose up --prod
+        command: ~/.profile; npm run protocol
     - run:
         name: audius-cmd test
         no_output_timeout: 15m
@@ -77,6 +77,6 @@ integration-test:
     - run:
         name: cleanup
         no_output_timeout: 5m
-        command: . ~/.profile; audius-compose down
+        command: . ~/.profile; audius-compose down && cd ~ && rm -rf audius-protocol
         when: always
     - docker-prune
