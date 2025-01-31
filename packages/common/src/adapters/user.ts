@@ -181,5 +181,7 @@ export const userMetadataToSdk = (
   twitterHandle: input.twitter_handle ?? undefined,
   instagramHandle: input.instagram_handle ?? undefined,
   playlistLibrary: input.playlist_library ?? undefined,
-  tiktokHandle: input.tiktok_handle ?? undefined
+  tiktokHandle: input.tiktok_handle ?? undefined,
+  associatedWallets: input.associated_wallets ?? undefined,
+  associatedSolWallets: input.associated_sol_wallets ?? undefined
 })
