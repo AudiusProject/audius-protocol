@@ -26,14 +26,15 @@ import TrackTileMobile from 'components/track/mobile/ConnectedTrackTile'
 import {
   TrackTileProps,
   PlaylistTileProps,
-  TrackTileSize
+  TrackTileSize,
+  TileProps
 } from 'components/track/types'
 import { useIsMobile } from 'hooks/useIsMobile'
 
 import styles from './Lineup.module.css'
 import { delineateByTime } from './delineate'
 import { LineupVariant } from './types'
-const { getBuffering, getTrackId } = playerSelectors
+const { getBuffering } = playerSelectors
 const { makeGetCurrent } = queueSelectors
 
 export interface TanQueryLineupProps {
@@ -143,13 +144,6 @@ export const TanQueryLineup = ({
   ordered = false,
   delineate = false,
   endOfLineupElement: endOfLineup,
-  leadingElementId,
-  leadingElementDelineator,
-  leadingElementTileProps,
-  leadingElementClassName,
-  laggingContainerClassName,
-  animateLeadingElement,
-  extraPrecedingElement,
   lineupContainerStyles,
   tileContainerStyles,
   tileStyles,
@@ -160,7 +154,8 @@ export const TanQueryLineup = ({
   pageSize,
   initialPageSize,
   scrollParent: externalScrollParent,
-  loadMoreThreshold = DEFAULT_LOAD_MORE_THRESHOLD
+  loadMoreThreshold = DEFAULT_LOAD_MORE_THRESHOLD,
+  start
 }: TanQueryLineupProps) => {
   const dispatch = useDispatch()
   const {
@@ -169,6 +164,7 @@ export const TanQueryLineup = ({
     pause,
     loadNextPage,
     hasNextPage,
+    isLoading = true,
     isPlaying = false,
     isFetching = true,
     isError = false
@@ -184,8 +180,6 @@ export const TanQueryLineup = ({
 
   const isMobile = useIsMobile()
   const scrollContainer = useRef<HTMLDivElement>(null)
-  const playingUid = useSelector(getUid)
-  const playingTrackId = useSelector(getTrackId)
 
   const TrackTile =
     isMobile || variant === LineupVariant.SECTION
@@ -336,7 +330,7 @@ export const TanQueryLineup = ({
   }
 
   // On initial load we won't have any data loaded so we show skeletons based on the initial page size
-  if (isFetching && tiles.length === 0) {
+  if ((isFetching && tiles.length === 0) || isLoading) {
     return renderSkeletons(initialPageSize ?? pageSize)
   }
 

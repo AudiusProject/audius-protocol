@@ -1,3 +1,5 @@
+import { useEffect } from 'react'
+
 import { OptionalId } from '@audius/sdk'
 import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query'
 import { useDispatch } from 'react-redux'
@@ -59,6 +61,16 @@ export const useTrending = (
   const queryClient = useQueryClient()
   const { data: currentUserId } = useCurrentUserId()
   const dispatch = useDispatch()
+
+  // The lineup needs to be reset when the genre changes - otherwise it won't show the load state properly
+  // Otherwise it can continue to show old data
+  useEffect(() => {
+    dispatch(
+      trendingWeekActions.fetchLineupMetadatas(0, initialPageSize, false, {
+        tracks: []
+      })
+    )
+  }, [dispatch, genre, initialPageSize])
 
   const infiniteQueryData = useInfiniteQuery({
     queryKey: getTrendingQueryKey({
