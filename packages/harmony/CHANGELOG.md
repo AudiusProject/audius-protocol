@@ -1,5 +1,11 @@
 # @audius/harmony
 
+## 0.3.4
+
+### Patch Changes
+
+- e5ba305: Fixes png imports by base64 encoding them.
+
 ## 0.3.3
 
 ### Patch Changes
