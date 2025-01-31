@@ -79,7 +79,16 @@ export const useTrackHistory = (
 
       const tracks = transformAndCleanList(
         activityData,
-        (activity: full.ActivityFull) => trackActivityFromSDK(activity)?.item
+        (activity: full.ActivityFull) => {
+          const track = trackActivityFromSDK(activity)?.item
+          if (track) {
+            return {
+              ...track,
+              dateListened: activity.timestamp
+            }
+          }
+          return track
+        }
       )
       primeTrackData({ tracks, queryClient, dispatch })
 
@@ -96,6 +105,7 @@ export const useTrackHistory = (
 
       return tracks
     },
+    select: (data) => data.pages.flat(),
     staleTime: options?.staleTime,
     enabled: options?.enabled !== false && !!currentUserId
   })
@@ -108,6 +118,7 @@ export const useTrackHistory = (
   })
   return {
     ...queryData,
-    ...lineupData
+    ...lineupData,
+    pageSize
   }
 }
