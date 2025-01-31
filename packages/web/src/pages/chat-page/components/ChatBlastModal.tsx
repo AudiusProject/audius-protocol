@@ -183,7 +183,7 @@ const LabelWithCount = (props: {
       </Text>
       {isSelected && count ? (
         <Text variant='title' size='l' color='subdued'>
-          ({formatCount(103399)})
+          ({formatCount(count)})
         </Text>
       ) : null}
     </Flex>
