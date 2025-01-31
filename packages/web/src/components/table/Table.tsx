@@ -17,7 +17,7 @@ import {
   IconCaretUp
 } from '@audius/harmony'
 import cn from 'classnames'
-import { debounce, range } from 'lodash'
+import { range } from 'lodash'
 import moment from 'moment'
 import {
   Cell,
@@ -78,7 +78,7 @@ const isEmptyRowDefault = (row: any) => {
   return Boolean(!row?.original?.uid || row?.original?.kind === Kind.EMPTY)
 }
 
-type TableProps = {
+export type TableProps = {
   activeIndex?: number
   columns: any[]
   data: any[]
@@ -139,7 +139,8 @@ export const Table = ({
   tableHeaderClassName,
   totalRowCount,
   useLocalSort = false,
-  wrapperClassName
+  wrapperClassName,
+  ...other
 }: TableProps) => {
   const trackAccessMap = useGatedContentAccessMap(isTracksTable ? data : [])
 
@@ -158,10 +159,6 @@ export const Table = ({
       maxWidth: 200
     }),
     []
-  )
-  const debouncedFetchMore = useMemo(
-    () => (fetchMore ? debounce(fetchMore, 0) : null),
-    [fetchMore]
   )
 
   // Pagination page
@@ -565,17 +562,13 @@ export const Table = ({
     renderTableRow
   ])
 
-  // TODO: This is supposed to return a promise that resolves when the row data has been fetched.
-  // It currently does not, but there are no issues with this currently so will fix if issues pop up
   const loadMoreRows = useCallback(
     async ({ startIndex }: { startIndex: number }) => {
-      if (!debouncedFetchMore) return null
       const offset = startIndex
       const limit = fetchBatchSize
-      debouncedFetchMore(offset, limit)
-      return null
+      fetchMore?.(offset, limit)
     },
-    [debouncedFetchMore, fetchBatchSize]
+    [fetchMore, fetchBatchSize]
   )
 
   const isRowLoaded = useCallback(
@@ -748,7 +741,7 @@ export const Table = ({
                           ref={registerListChild}
                           overscanRowsCount={2}
                           rowCount={
-                            debouncedFetchMore && totalRowCount != null
+                            fetchMore && totalRowCount != null
                               ? totalRowCount
                               : rows.length
                           }
@@ -766,22 +759,22 @@ export const Table = ({
       </InfiniteLoader>
     )
   }, [
-    debouncedFetchMore,
-    fetchBatchSize,
-    fetchThreshold,
-    getTableBodyProps,
-    getTableProps,
     isRowLoaded,
     loadMoreRows,
-    loading,
-    renderHeaders,
-    renderRow,
-    rows.length,
-    scrollRef,
-    tableClassName,
     totalRowCount,
+    rows.length,
+    fetchThreshold,
+    fetchBatchSize,
+    scrollRef,
     wrapperClassName,
-    tableHeaderClassName
+    tableClassName,
+    getTableProps,
+    tableHeaderClassName,
+    renderHeaders,
+    loading,
+    getTableBodyProps,
+    fetchMore,
+    renderRow
   ])
 
   return isVirtualized ? renderVirtualizedContent() : renderContent()
