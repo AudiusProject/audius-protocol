@@ -5,7 +5,7 @@ import {
   usePurchasersAudience,
   useRemixersAudience
 } from '@audius/common/hooks'
-import { formatCount } from '@audius/common/utils'
+import { formatNumberCommas } from '@audius/common/utils'
 import { ChatBlastAudience } from '@audius/sdk'
 import { useField } from 'formik'
 import { TouchableOpacity } from 'react-native'
@@ -66,7 +66,7 @@ const LabelWithCount = (props: {
     <Text>
       {label}
       {isSelected && count ? (
-        <Text color='subdued'>{formatCount(count)}</Text>
+        <Text color='subdued'>{formatNumberCommas(count)}</Text>
       ) : null}
     </Text>
   )

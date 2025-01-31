@@ -9,6 +9,7 @@ import {
   chatActions,
   useCreateChatModal
 } from '@audius/common/src/store'
+import { formatNumberCommas } from '@audius/common/utils'
 import {
   Flex,
   IconTowerBroadcast,
@@ -22,8 +23,7 @@ import {
   ModalFooter,
   IconCaretLeft,
   ModalContent,
-  Select,
-  formatCount
+  Select
 } from '@audius/harmony'
 import { ChatBlastAudience } from '@audius/sdk'
 import { Formik, useField } from 'formik'
@@ -183,7 +183,7 @@ const LabelWithCount = (props: {
       </Text>
       {isSelected && count ? (
         <Text variant='title' size='l' color='subdued'>
-          ({formatCount(count)})
+          ({formatNumberCommas(count)})
         </Text>
       ) : null}
     </Flex>
