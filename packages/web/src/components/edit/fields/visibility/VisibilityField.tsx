@@ -201,7 +201,7 @@ const VisibilityMenuFields = (props: VisibilityMenuFieldsProps) => {
   const [field] = useField<VisibilityType>('visibilityType')
 
   return (
-    <RadioGroup {...field}>
+    <RadioGroup {...field} aria-label={messages.title}>
       <ModalRadioItem
         value='public'
         label={messages.public}
