@@ -10,16 +10,16 @@ import { defineConfig, devices } from '@playwright/test'
 
 // Set this to false to avoid seeding data every time locally if
 // running against local stack
-const RESEED_EACH_RUN = true
+const reseedEachRun = process.env.RESEED_EACH_RUN !== 'false'
 const authFileExists = fs.existsSync('playwright/.auth/user.json')
 const runAgainstLocalStack = process.env.RUN_AGAINST_LOCAL_STACK === 'true'
 
 const getTestDependencies = () => {
-  if (runAgainstLocalStack && RESEED_EACH_RUN) {
-    if (RESEED_EACH_RUN) {
+  if (runAgainstLocalStack) {
+    if (reseedEachRun || !authFileExists) {
       return ['seed', 'setup']
     }
-    return authFileExists ? [] : ['seed', 'setup']
+    return []
   }
 
   return authFileExists ? [] : ['setup']
