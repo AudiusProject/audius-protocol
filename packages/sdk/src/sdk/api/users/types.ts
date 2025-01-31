@@ -128,13 +128,7 @@ export const UpdateProfileSchema = z
         collectiblesOrderUnset: z.optional(z.boolean()),
         twitterHandle: z.optional(z.string()),
         instagramHandle: z.optional(z.string()),
-        tiktokHandle: z.optional(z.string()),
-        associatedWallets: z
-          .optional(z.union([CreateAssociatedWalletsSchema, z.null()]))
-          .nullable(),
-        associatedSolWallets: z
-          .optional(z.union([CreateAssociatedWalletsSchema, z.null()]))
-          .nullable()
+        tiktokHandle: z.optional(z.string())
       })
       .strict()
   })
@@ -254,7 +248,8 @@ export const WalletSchema = z.discriminatedUnion('chain', [
     chain: z.literal('sol')
   }),
   z.object({
-    address: EthAddressSchema,
+    // Relaxing type here so we can pass in a string and use EthAddressSchema to validate at runtime
+    address: z.string().pipe(EthAddressSchema),
     chain: z.literal('eth')
   })
 ])
