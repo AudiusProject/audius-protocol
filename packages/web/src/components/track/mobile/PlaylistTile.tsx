@@ -1,4 +1,4 @@
-import { useEffect, MouseEvent, useCallback } from 'react'
+import { MouseEvent, useCallback } from 'react'
 
 import {
   ID,
