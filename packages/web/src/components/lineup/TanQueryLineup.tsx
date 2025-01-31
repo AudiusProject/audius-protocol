@@ -6,8 +6,7 @@ import {
   Kind,
   ID,
   UID,
-  ModalSource,
-  Status
+  ModalSource
 } from '@audius/common/models'
 import { LineupQueryData } from '@audius/common/src/api/tan-query/types'
 import { LineupBaseActions, playerSelectors } from '@audius/common/store'
@@ -33,7 +32,7 @@ import { useIsMobile } from 'hooks/useIsMobile'
 import styles from './Lineup.module.css'
 import { delineateByTime, delineateByFeatured } from './delineate'
 import { LineupVariant } from './types'
-const { getUid } = playerSelectors
+const { getUid, getTrackId } = playerSelectors
 
 export interface TanQueryLineupProps {
   /** Query data should be fetched one component above and passed through here */
@@ -42,11 +41,9 @@ export interface TanQueryLineupProps {
   'aria-label'?: string
 
   // Other props
-  playingUid: UID | null
-  playingTrackId: ID | null
   variant?: LineupVariant
   scrollParent?: HTMLElement | null
-  endOfLineup?: JSX.Element
+  endOfLineupElement?: JSX.Element
 
   /**
    * Whether or not to delineate the lineup by time of the `activityTimestamp` prop
@@ -96,16 +93,12 @@ export interface TanQueryLineupProps {
    */
   extraPrecedingElement?: JSX.Element
 
-  buffering: boolean
   ordered?: boolean
   lineupContainerStyles?: string
   tileContainerStyles?: string
   tileStyles?: string
-  setInView?: (inView: boolean) => void
-  playingSource: string | null
   emptyElement?: JSX.Element
   actions: LineupBaseActions
-  delayLoad?: boolean
   /** How many rows to show for a loading playlist tile. Defaults to 0 */
   numPlaylistSkeletonRows?: number
 
@@ -125,7 +118,6 @@ const defaultLineup = {
   total: 0,
   deleted: 0,
   nullCount: 0,
-  status: Status.LOADING,
   hasMore: true,
   inView: true,
   prefix: '',
@@ -145,7 +137,7 @@ export const TanQueryLineup = ({
   variant = LineupVariant.MAIN,
   ordered = false,
   delineate = false,
-  endOfLineup,
+  endOfLineupElement: endOfLineup,
   leadingElementId,
   leadingElementDelineator,
   leadingElementTileProps,
@@ -156,7 +148,6 @@ export const TanQueryLineup = ({
   lineupContainerStyles,
   tileContainerStyles,
   tileStyles,
-  playingTrackId,
   emptyElement,
   numPlaylistSkeletonRows,
   isTrending = false,
@@ -173,14 +164,15 @@ export const TanQueryLineup = ({
     pause,
     loadNextPage,
     hasNextPage,
-    isPlaying,
-    isFetching,
-    isError
+    isPlaying = false,
+    isFetching = true,
+    isError = false
   } = lineupQueryData
 
   const isMobile = useIsMobile()
   const scrollContainer = useRef<HTMLDivElement>(null)
   const playingUid = useSelector(getUid)
+  const playingTrackId = useSelector(getTrackId)
 
   const TrackTile =
     isMobile || variant === LineupVariant.SECTION

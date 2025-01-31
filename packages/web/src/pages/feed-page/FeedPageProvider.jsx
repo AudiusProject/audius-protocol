@@ -65,21 +65,6 @@ class FeedPageProvider extends PureComponent {
     }
   }
 
-  getLineupProps = (lineup) => {
-    const { currentQueueItem, playing, buffering } = this.props
-    const { uid: playingUid, track, source } = currentQueueItem
-    return {
-      lineup,
-      playingUid,
-      playingSource: source,
-      playingTrackId: track ? track.track_id : null,
-      playing,
-      buffering,
-      scrollParent: this.props.containerRef,
-      selfLoad: true
-    }
-  }
-
   render() {
     const childProps = {
       feedTitle: messages.feedTitle,
@@ -96,7 +81,6 @@ class FeedPageProvider extends PureComponent {
       playFeedTrack: this.props.playFeedTrack,
       pauseFeedTrack: this.props.pauseFeedTrack,
       switchView: this.switchView,
-      getLineupProps: this.getLineupProps,
       setFeedFilter: this.props.setFeedFilter,
       feedFilter: this.props.feedFilter,
       resetFeedLineup: this.props.resetFeedLineup,
@@ -104,7 +88,8 @@ class FeedPageProvider extends PureComponent {
       makeLoadMore: this.props.makeLoadMore,
       makePlayTrack: this.props.makePlayTrack,
       makePauseTrack: this.props.makePauseTrack,
-      makeSetInView: this.props.makeSetInView
+      makeSetInView: this.props.makeSetInView,
+      scrollParentRef: this.props.scrollParentRef
     }
 
     return <this.props.children {...childProps} />

@@ -26,8 +26,8 @@ import { useCurrentUserId } from './useCurrentUserId'
 import { primeTrackData } from './utils/primeTrackData'
 import { useLineupQuery } from './utils/useLineupQuery'
 
-const INITIAL_PAGE_SIZE = 10
-const LOAD_MORE_PAGE_SIZE = 4
+export const TRENDING_INITIAL_PAGE_SIZE = 10
+export const TRENDING_LOAD_MORE_PAGE_SIZE = 4
 
 type GetTrendingArgs = {
   timeRange: TimeRange
@@ -38,10 +38,10 @@ type GetTrendingArgs = {
 
 export const useTrending = (
   {
-    timeRange,
+    timeRange = TimeRange.WEEK,
     genre,
-    initialPageSize = INITIAL_PAGE_SIZE,
-    loadMorePageSize = LOAD_MORE_PAGE_SIZE
+    initialPageSize = TRENDING_INITIAL_PAGE_SIZE,
+    loadMorePageSize = TRENDING_LOAD_MORE_PAGE_SIZE
   }: GetTrendingArgs,
   options?: QueryOptions
 ) => {
@@ -134,10 +134,6 @@ export const useTrending = (
   let lineupActions
   let lineupSelector
   switch (timeRange) {
-    case TimeRange.WEEK:
-      lineupActions = trendingWeekActions
-      lineupSelector = getDiscoverTrendingWeekLineup
-      break
     case TimeRange.MONTH:
       lineupActions = trendingMonthActions
       lineupSelector = getDiscoverTrendingMonthLineup
@@ -145,6 +141,10 @@ export const useTrending = (
     case TimeRange.ALL_TIME:
       lineupActions = trendingAllTimeActions
       lineupSelector = getDiscoverTrendingAllTimeLineup
+      break
+    case TimeRange.WEEK:
+      lineupActions = trendingWeekActions
+      lineupSelector = getDiscoverTrendingWeekLineup
       break
   }
   const lineupData = useLineupQuery({

@@ -1,6 +1,10 @@
 import { useCallback, useContext, useEffect, useMemo } from 'react'
 
 import { Name, TimeRange } from '@audius/common/models'
+import {
+  TRENDING_INITIAL_PAGE_SIZE,
+  TRENDING_LOAD_MORE_PAGE_SIZE
+} from '@audius/common/src/api/tan-query/useTrending'
 import { trendingPageLineupActions } from '@audius/common/store'
 import { route } from '@audius/common/utils'
 import {
@@ -14,7 +18,7 @@ import { make, useRecord } from 'common/store/analytics/actions'
 import Header from 'components/header/mobile/Header'
 import { HeaderContext } from 'components/header/mobile/HeaderContextProvider'
 import { EndOfLineup } from 'components/lineup/EndOfLineup'
-import Lineup from 'components/lineup/Lineup'
+import { TanQueryLineup } from 'components/lineup/TanQueryLineup'
 import { LineupVariant } from 'components/lineup/types'
 import MobilePageContainer from 'components/mobile-page-container/MobilePageContainer'
 import NavContext, {
@@ -56,14 +60,7 @@ const TrendingPageMobileContent = ({
   trendingTimeRange,
   setTrendingTimeRange,
 
-  getLineupProps,
-  makePauseTrack,
-  makeLoadMore,
-  makePlayTrack,
-  trendingWeek,
-  trendingMonth,
-  trendingAllTime,
-  makeSetInView,
+  scrollParentRef,
   trendingGenre,
   goToGenreSelection
 }: TrendingPageContentProps) => {
@@ -75,20 +72,6 @@ const TrendingPageMobileContent = ({
     setCenter(CenterPreset.LOGO)
   }, [setLeft, setCenter, setRight])
 
-  // Setup lineups
-  const weekProps = useMemo(
-    () => getLineupProps(trendingWeek),
-    [getLineupProps, trendingWeek]
-  )
-  const monthProps = useMemo(
-    () => getLineupProps(trendingMonth),
-    [getLineupProps, trendingMonth]
-  )
-  const allTimeProps = useMemo(
-    () => getLineupProps(trendingAllTime),
-    [getLineupProps, trendingAllTime]
-  )
-
   const lineups = useMemo(() => {
     return [
       <>
@@ -97,60 +80,48 @@ const TrendingPageMobileContent = ({
             <RewardsBanner bannerType='tracks' />
           </div>
         ) : null}
-        <Lineup
+        <TanQueryLineup
+          scrollParent={scrollParentRef}
           key={`trendingWeek-${trendingGenre}`}
-          {...weekProps}
-          setInView={makeSetInView(TimeRange.WEEK)}
-          loadMore={makeLoadMore(TimeRange.WEEK)}
-          playTrack={makePlayTrack(TimeRange.WEEK)}
-          pauseTrack={makePauseTrack(TimeRange.WEEK)}
+          lineupQueryData={trendingQueryData}
+          pageSize={TRENDING_LOAD_MORE_PAGE_SIZE}
+          initialPageSize={TRENDING_INITIAL_PAGE_SIZE}
           actions={trendingWeekActions}
           variant={LineupVariant.MAIN}
           isTrending
-          endOfLineup={
+          endOfLineupElement={
             <EndOfLineup description={messages.endOfLineupDescription} />
           }
         />
       </>,
-      <Lineup
+      <TanQueryLineup
+        scrollParent={scrollParentRef}
         key={`trendingMonth-${trendingGenre}`}
-        {...monthProps}
-        setInView={makeSetInView(TimeRange.MONTH)}
-        loadMore={makeLoadMore(TimeRange.MONTH)}
-        playTrack={makePlayTrack(TimeRange.MONTH)}
-        pauseTrack={makePauseTrack(TimeRange.MONTH)}
+        lineupQueryData={trendingQueryData}
+        pageSize={TRENDING_LOAD_MORE_PAGE_SIZE}
+        initialPageSize={TRENDING_INITIAL_PAGE_SIZE}
         actions={trendingMonthActions}
         variant={LineupVariant.MAIN}
         isTrending
-        endOfLineup={
+        endOfLineupElement={
           <EndOfLineup description={messages.endOfLineupDescription} />
         }
       />,
-      <Lineup
+      <TanQueryLineup
+        scrollParent={scrollParentRef}
         key={`trendingAllTime-${trendingGenre}`}
-        {...allTimeProps}
-        setInView={makeSetInView(TimeRange.ALL_TIME)}
-        loadMore={makeLoadMore(TimeRange.ALL_TIME)}
-        playTrack={makePlayTrack(TimeRange.ALL_TIME)}
-        pauseTrack={makePauseTrack(TimeRange.ALL_TIME)}
+        lineupQueryData={trendingQueryData}
+        pageSize={TRENDING_LOAD_MORE_PAGE_SIZE}
+        initialPageSize={TRENDING_INITIAL_PAGE_SIZE}
         actions={trendingAllTimeActions}
         variant={LineupVariant.MAIN}
         isTrending
-        endOfLineup={
+        endOfLineupElement={
           <EndOfLineup description={messages.endOfLineupDescription} />
         }
       />
     ]
-  }, [
-    makeLoadMore,
-    makePauseTrack,
-    makePlayTrack,
-    makeSetInView,
-    monthProps,
-    weekProps,
-    allTimeProps,
-    trendingGenre
-  ])
+  }, [trendingGenre, scrollParentRef, trendingQueryData])
   const record = useRecord()
 
   const didChangeTabs = useCallback(
@@ -162,8 +133,6 @@ const TrendingPageMobileContent = ({
       scrollWindowToTop()
 
       // Manually setInView
-      makeSetInView(to as TimeRange)(true)
-      makeSetInView(from as TimeRange)(false)
       if (from !== to)
         record(
           make(Name.TRENDING_CHANGE_VIEW, {
@@ -172,7 +141,7 @@ const TrendingPageMobileContent = ({
           })
         )
     },
-    [setTrendingTimeRange, makeSetInView, record, trendingGenre]
+    [setTrendingTimeRange, record, trendingGenre]
   )
 
   const memoizedElements = useMemo(() => {

@@ -1,19 +1,16 @@
 import { useEffect, useCallback } from 'react'
 
-import { Name, TimeRange, UID, Lineup, Track } from '@audius/common/models'
+import { TimeRange, UID } from '@audius/common/models'
 import { useTrending } from '@audius/common/src/api'
 import {
   accountSelectors,
   trendingPageLineupActions,
   trendingPageActions,
-  trendingPageSelectors,
-  queueSelectors,
-  playerSelectors
+  trendingPageSelectors
 } from '@audius/common/store'
 import { GENRES, Genre, route } from '@audius/common/utils'
 import { useDispatch, useSelector } from 'react-redux'
 
-import { make } from 'common/store/analytics/actions'
 import { openSignOn } from 'common/store/pages/signon/actions'
 import { useIsMobile } from 'hooks/useIsMobile'
 import { push as pushRoute, replace as replaceRoute } from 'utils/navigation'
@@ -23,8 +20,6 @@ import TrendingPageMobileContent from './components/mobile/TrendingPageContent'
 import { TrendingPageContentProps } from './types'
 
 const { getHasAccount } = accountSelectors
-const { getPlaying, getBuffering } = playerSelectors
-const { makeGetCurrent } = queueSelectors
 const { getTrendingTimeRange, getTrendingGenre, getLastFetchedTrendingGenre } =
   trendingPageSelectors
 const { trendingWeekActions, trendingMonthActions, trendingAllTimeActions } =
@@ -64,18 +59,14 @@ const TrendingPage = ({ containerRef }: TrendingPageProps) => {
   const isMobile = useIsMobile()
 
   // Selectors
-  const getCurrentQueueItem = makeGetCurrent()
-
   const hasAccount = useSelector(getHasAccount)
-  const currentQueueItem = useSelector(getCurrentQueueItem)
-  const playing = useSelector(getPlaying)
-  const buffering = useSelector(getBuffering)
   const trendingTimeRange = useSelector(getTrendingTimeRange)
   const trendingGenre = useSelector(getTrendingGenre)
   const lastFetchedTrendingGenre = useSelector(getLastFetchedTrendingGenre)
 
   const trendingQueryData = useTrending({
-    timeRange: TimeRange.WEEK
+    timeRange: trendingTimeRange,
+    genre: trendingGenre || undefined
   })
 
   // Action Creators
@@ -111,24 +102,6 @@ const TrendingPage = ({ containerRef }: TrendingPageProps) => {
       dispatch(replaceRoute({ search: `?${urlParams.toString()}` }))
     },
     [dispatch]
-  )
-
-  // TODO: EW SMELLY
-  const getLineupProps = useCallback(
-    (lineup: Lineup<Track>) => {
-      const { uid: playingUid, track, source } = currentQueueItem
-      return {
-        lineup,
-        playingUid,
-        playingSource: source,
-        playingTrackId: track ? track.track_id : null,
-        playing,
-        buffering,
-        scrollParent: containerRef,
-        selfLoad: true
-      }
-    },
-    [currentQueueItem, playing, buffering, containerRef]
   )
 
   const scrollToTop = useCallback(() => {
@@ -199,7 +172,6 @@ const TrendingPage = ({ containerRef }: TrendingPageProps) => {
     hasAccount,
     goToSignUp,
     goToGenreSelection,
-    getLineupProps,
     resetTrendingLineup: () => dispatch(trendingWeekActions.reset()),
     trendingGenre: trendingGenre as string | null,
     trendingTimeRange,
@@ -215,7 +187,8 @@ const TrendingPage = ({ containerRef }: TrendingPageProps) => {
     goToTrending: () => {},
     setTrendingInView: () => {},
     switchView: () => {},
-    trendingQueryData
+    trendingQueryData,
+    scrollParentRef: containerRef
   }
 
   const TrendingContent = isMobile

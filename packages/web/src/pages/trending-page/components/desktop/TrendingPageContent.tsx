@@ -1,9 +1,14 @@
 import { useCallback, useRef, useState } from 'react'
 
 import { Name, TimeRange } from '@audius/common/models'
+import {
+  TRENDING_INITIAL_PAGE_SIZE,
+  TRENDING_LOAD_MORE_PAGE_SIZE
+} from '@audius/common/src/api/tan-query/useTrending'
 import { trendingPageLineupActions } from '@audius/common/store'
 import { ELECTRONIC_PREFIX, TRENDING_GENRES } from '@audius/common/utils'
 import { IconTrending } from '@audius/harmony'
+import { useDispatch } from 'react-redux'
 
 import { make, useRecord } from 'common/store/analytics/actions'
 import { Header } from 'components/header/desktop/Header'
@@ -39,17 +44,18 @@ const getTimeGenreCacheKey = (timeRange: TimeRange, genre: string | null) => {
 }
 
 const TrendingPageContent = (props: TrendingPageContentProps) => {
+  const dispatch = useDispatch()
   const {
     trendingTitle,
     pageTitle,
     trendingDescription,
     trendingQueryData,
     trendingGenre,
-    getLineupProps,
     setTrendingTimeRange,
     setTrendingGenre,
     trendingTimeRange,
-    scrollToTop
+    scrollToTop,
+    scrollParentRef
   } = props
 
   // Maintain a set of combinations of time range & genre that
@@ -67,14 +73,14 @@ const TrendingPageContent = (props: TrendingPageContentProps) => {
         </div>
       ) : null}
       <TanQueryLineup
-        {...getLineupProps(trendingQueryData.lineup)}
+        scrollParent={scrollParentRef}
         aria-label='weekly trending tracks'
         ordered
-        pageSize={4}
-        initialPageSize={10}
+        pageSize={TRENDING_LOAD_MORE_PAGE_SIZE}
+        initialPageSize={TRENDING_INITIAL_PAGE_SIZE}
         actions={trendingWeekActions}
         lineupQueryData={trendingQueryData}
-        endOfLineup={
+        endOfLineupElement={
           <EndOfLineup description={messages.endOfLineupDescription} />
         }
         variant={LineupVariant.MAIN}
@@ -85,14 +91,14 @@ const TrendingPageContent = (props: TrendingPageContentProps) => {
       className={styles.lineupContainer}
     >
       <TanQueryLineup
-        {...getLineupProps(trendingQueryData.lineup)}
+        scrollParent={scrollParentRef}
         aria-label='monthly trending tracks'
         ordered
-        pageSize={4}
-        initialPageSize={10}
+        pageSize={TRENDING_LOAD_MORE_PAGE_SIZE}
+        initialPageSize={TRENDING_INITIAL_PAGE_SIZE}
         actions={trendingMonthActions}
         lineupQueryData={trendingQueryData}
-        endOfLineup={
+        endOfLineupElement={
           <EndOfLineup description={messages.endOfLineupDescription} />
         }
         variant={LineupVariant.MAIN}
@@ -103,14 +109,14 @@ const TrendingPageContent = (props: TrendingPageContentProps) => {
       className={styles.lineupContainer}
     >
       <TanQueryLineup
-        {...getLineupProps(trendingQueryData.lineup)}
+        scrollParent={scrollParentRef}
         aria-label='all-time trending tracks'
         ordered
-        pageSize={4}
-        initialPageSize={10}
+        pageSize={TRENDING_LOAD_MORE_PAGE_SIZE}
+        initialPageSize={TRENDING_INITIAL_PAGE_SIZE}
         actions={trendingAllTimeActions}
         lineupQueryData={trendingQueryData}
-        endOfLineup={
+        endOfLineupElement={
           <EndOfLineup description={messages.endOfLineupDescription} />
         }
         variant={LineupVariant.MAIN}
@@ -123,6 +129,7 @@ const TrendingPageContent = (props: TrendingPageContentProps) => {
   const didChangeTabs = (from: string, to: string) => {
     setTrendingTimeRange(to as TimeRange)
     scrollToTop(to as TimeRange)
+    dispatch(trendingWeekActions.reset())
     record(
       make(Name.TRENDING_CHANGE_VIEW, {
         timeframe: to as TimeRange,

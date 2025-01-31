@@ -1,4 +1,4 @@
-import { useCallback, useEffect, ReactNode } from 'react'
+import { useCallback, ReactNode } from 'react'
 
 import { useFeatureFlag } from '@audius/common/hooks'
 import {
@@ -76,7 +76,6 @@ const TrackTile = (props: CombinedProps) => {
     uid,
     index,
     showSkeleton,
-    hasLoaded,
     toggleSave,
     toggleRepost,
     onShare,
@@ -171,12 +170,6 @@ const TrackTile = (props: CombinedProps) => {
   const { isEnabled: isGuestCheckoutEnabled } = useFeatureFlag(
     FeatureFlags.GUEST_CHECKOUT
   )
-
-  useEffect(() => {
-    if (!showSkeleton) {
-      hasLoaded(index)
-    }
-  }, [hasLoaded, index, showSkeleton])
 
   const fadeIn = {
     [styles.show]: !showSkeleton,

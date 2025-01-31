@@ -1,4 +1,4 @@
-import { TimeRange, ID, UID, Lineup, User } from '@audius/common/models'
+import { TimeRange, ID, UID, User } from '@audius/common/models'
 import { LineupQueryData } from '@audius/common/src/api'
 
 export interface TrendingPageContentProps {
@@ -18,16 +18,6 @@ export interface TrendingPageContentProps {
   goToGenreSelection: () => void
   setTrendingInView: (inView: boolean) => void
   switchView: () => void
-  getLineupProps: (lineup: Lineup<any>) => {
-    lineup: Lineup<any>
-    playingUid: UID | null
-    playingSource: string | null
-    playingTrackId: ID | null
-    playing: boolean
-    buffering: boolean
-    scrollParent: HTMLElement | null
-    selfLoad: boolean
-  }
   resetTrendingLineup: () => void
 
   trendingGenre: string | null
@@ -38,4 +28,5 @@ export interface TrendingPageContentProps {
 
   scrollToTop: (timeRange: TimeRange) => void
   trendingQueryData: LineupQueryData
+  scrollParentRef?: HTMLElement
 }
