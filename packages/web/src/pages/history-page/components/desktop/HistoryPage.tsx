@@ -1,4 +1,4 @@
-import { ChangeEvent, memo, useCallback, useMemo, useState } from 'react'
+import { ChangeEvent, useCallback, useMemo, useState } from 'react'
 
 import { useCurrentUserId, useTrackHistory } from '@audius/common/api'
 import { Name, PlaybackSource, Track } from '@audius/common/models'
@@ -30,7 +30,7 @@ export type HistoryPageProps = {
 
 const pageSize = 50
 
-const HistoryPage = ({ title, description }: HistoryPageProps) => {
+export const HistoryPage = ({ title, description }: HistoryPageProps) => {
   const { data: currentUserId } = useCurrentUserId()
   const dispatch = useDispatch()
   const mainContentRef = useMainContentRef()
@@ -147,5 +147,3 @@ const HistoryPage = ({ title, description }: HistoryPageProps) => {
     </Page>
   )
 }
-
-export default memo(HistoryPage)

@@ -1,7 +1,7 @@
 import { useIsMobile } from 'hooks/useIsMobile'
 
-import DesktopHistoryPage from './components/desktop/HistoryPage'
-import MobileHistoryPage from './components/mobile/HistoryPage'
+import { HistoryPage as DesktopHistoryPage } from './components/desktop/HistoryPage'
+import { HistoryPage as MobileHistoryPage } from './components/mobile/HistoryPage'
 
 const messages = {
   title: 'History',

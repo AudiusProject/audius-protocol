@@ -1,4 +1,4 @@
-import { memo, useEffect, useContext, useMemo } from 'react'
+import { useEffect, useContext, useMemo } from 'react'
 
 import { useTrackHistory } from '@audius/common/api'
 import { route } from '@audius/common/utils'
@@ -30,7 +30,7 @@ export type HistoryPageProps = {
   description: string
 }
 
-const HistoryPage = ({ title, description }: HistoryPageProps) => {
+export const HistoryPage = ({ title, description }: HistoryPageProps) => {
   const { lineup, isInitialLoading, data, isPlaying, togglePlay } =
     useTrackHistory({
       pageSize: 50
@@ -110,5 +110,3 @@ const HistoryPage = ({ title, description }: HistoryPageProps) => {
     </MobilePageContainer>
   )
 }
-
-export default memo(HistoryPage)
