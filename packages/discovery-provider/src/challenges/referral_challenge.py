@@ -31,7 +31,7 @@ def does_user_exist_with_verification_status(
 
 
 class ReferralChallengeUpdater(ChallengeUpdater):
-    def generate_specifier(self, user_id: int, extra: Dict) -> str:
+    def generate_specifier(self, session: Session, user_id: int, extra: Dict) -> str:
         return generate_referral_specifier(user_id, extra)
 
     def should_create_new_challenge(
@@ -44,7 +44,7 @@ class ReferralChallengeUpdater(ChallengeUpdater):
 
 
 class VerifiedReferralChallengeUpdater(ChallengeUpdater):
-    def generate_specifier(self, user_id: int, extra: Dict) -> str:
+    def generate_specifier(self, session: Session, user_id: int, extra: Dict) -> str:
         return generate_referral_specifier(user_id, extra)
 
     def should_create_new_challenge(

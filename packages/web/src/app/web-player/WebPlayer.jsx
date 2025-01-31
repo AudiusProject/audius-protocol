@@ -52,7 +52,7 @@ import TrendingGenreSelectionPage from 'components/trending-genre-selection/Tren
 import { USDCBalanceFetcher } from 'components/usdc-balance-fetcher/USDCBalanceFetcher'
 import { MAIN_CONTENT_ID, MainContentContext } from 'pages/MainContentContext'
 import { AiAttributedTracksPage } from 'pages/ai-attributed-tracks-page'
-import { AudioRewardsPage } from 'pages/audio-rewards-page/AudioRewardsPage'
+import { AudioPage } from 'pages/audio-page/AudioPage'
 import { ChatPageProvider } from 'pages/chat-page/ChatPageProvider'
 import CheckPage from 'pages/check-page/CheckPage'
 import { CollectiblesPlaylistPage } from 'pages/collectibles-playlist-page'
@@ -764,7 +764,7 @@ class WebPlayer extends Component {
                   exact
                   path={AUDIO_PAGE}
                   isMobile={isMobile}
-                  component={AudioRewardsPage}
+                  component={AudioPage}
                 />
                 <Route
                   exact

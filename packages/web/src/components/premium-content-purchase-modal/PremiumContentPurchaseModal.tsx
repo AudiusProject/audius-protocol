@@ -51,12 +51,12 @@ import { toFormikValidationSchema } from 'zod-formik-adapter'
 
 import { useHistoryContext } from 'app/HistoryProvider'
 import * as signOnActions from 'common/store/pages/signon/actions'
+import ModalDrawer from 'components/modal-drawer/ModalDrawer'
 import { ModalForm } from 'components/modal-form/ModalForm'
 import { USDCManualTransfer } from 'components/usdc-manual-transfer/USDCManualTransfer'
 import { useIsMobile } from 'hooks/useIsMobile'
 import { useIsUSDCEnabled } from 'hooks/useIsUSDCEnabled'
 import { useManagedAccountNotAllowedCallback } from 'hooks/useManagedAccountNotAllowedRedirect'
-import ModalDrawer from 'pages/audio-rewards-page/components/modals/ModalDrawer'
 import { pushUniqueRoute } from 'utils/route'
 import zIndex from 'utils/zIndex'
 

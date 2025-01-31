@@ -48,7 +48,7 @@ class TrendingChallengeUpdater(ChallengeUpdater):
         ]
         session.add_all(trending_results)
 
-    def generate_specifier(self, user_id: int, extra: Dict) -> str:
+    def generate_specifier(self, session: Session, user_id: int, extra: Dict) -> str:
         return f"{extra['week']}:{extra['rank']}"
 
 

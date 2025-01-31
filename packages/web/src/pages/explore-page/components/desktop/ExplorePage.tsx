@@ -31,7 +31,6 @@ import PerspectiveCard, {
   EmojiInterior
 } from 'components/perspective-card/PerspectiveCard'
 import { useIsUSDCEnabled } from 'hooks/useIsUSDCEnabled'
-import { useOrderedLoad } from 'hooks/useOrderedLoad'
 import { smartCollectionIcons } from 'pages/collection-page/smartCollectionIcons'
 import {
   LET_THEM_DJ,
@@ -104,11 +103,6 @@ const ExplorePage = ({ title, pageTitle, description }: ExplorePageProps) => {
   const { data: playlists, isLoading: isLoadingPlaylists } =
     useFeaturedPlaylists()
   const { data: profiles, isLoading: isLoadingProfiles } = useFeaturedProfiles()
-
-  const { isLoading: isLoadingPlaylistCards, setDidLoad: setDidLoadPlaylist } =
-    useOrderedLoad(playlists?.length ?? 0)
-  const { isLoading: isLoadingProfileCards, setDidLoad: setDidLoadProfile } =
-    useOrderedLoad(profiles?.length ?? 0)
 
   const navigate = useNavigate()
 
@@ -214,8 +208,6 @@ const ExplorePage = ({ title, pageTitle, description }: ExplorePageProps) => {
                 key={playlist.playlist_id}
                 id={playlist.playlist_id}
                 index={i}
-                isLoading={isLoadingPlaylistCards(i)}
-                setDidLoad={setDidLoadPlaylist}
               />
             )
           })
@@ -238,8 +230,6 @@ const ExplorePage = ({ title, pageTitle, description }: ExplorePageProps) => {
                 key={profile.user_id}
                 id={profile.user_id}
                 index={i}
-                isLoading={isLoadingProfileCards(i)}
-                setDidLoad={setDidLoadProfile}
               />
             )
           })

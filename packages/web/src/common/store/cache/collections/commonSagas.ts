@@ -1,4 +1,5 @@
 import {
+  albumMetadataForSDK,
   fileToSdk,
   playlistMetadataForUpdateWithSDK,
   userCollectionMetadataFromSDK
@@ -184,15 +185,25 @@ function* confirmEditPlaylist(
             ? formFields.artwork.file
             : undefined
 
-        yield* call([sdk.playlists, sdk.playlists.updatePlaylist], {
-          coverArtFile: coverArtFile
-            ? fileToSdk(coverArtFile, 'cover_art')
-            : undefined,
-          metadata: playlistMetadataForUpdateWithSDK(formFields),
-          userId: Id.parse(userId),
-          playlistId: Id.parse(playlistId)
-        })
-
+        if (formFields.is_album) {
+          yield* call([sdk.albums, sdk.albums.updateAlbum], {
+            coverArtFile: coverArtFile
+              ? fileToSdk(coverArtFile, 'cover_art')
+              : undefined,
+            metadata: albumMetadataForSDK(formFields),
+            userId: Id.parse(userId),
+            albumId: Id.parse(playlistId)
+          })
+        } else {
+          yield* call([sdk.playlists, sdk.playlists.updatePlaylist], {
+            coverArtFile: coverArtFile
+              ? fileToSdk(coverArtFile, 'cover_art')
+              : undefined,
+            metadata: playlistMetadataForUpdateWithSDK(formFields),
+            userId: Id.parse(userId),
+            playlistId: Id.parse(playlistId)
+          })
+        }
         const { data: playlist } = yield* call(
           [sdk.full.playlists, sdk.full.playlists.getPlaylist],
           {

@@ -11,9 +11,9 @@ import { useSpring, animated } from 'react-spring'
 import { useAsync } from 'react-use'
 
 import { useHistoryContext } from 'app/HistoryProvider'
-import audiusExclusivesPlaylistImg from 'assets/img/publicSite/AudiusExclusivesPlaylistArt.png'
 import IconLines from 'assets/img/publicSite/Lines.svg'
 import IconListenOnAudius from 'assets/img/publicSite/listen-on-audius.svg'
+import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import useCardWeight from 'hooks/useCardWeight'
 import useHasViewed from 'hooks/useHasViewed'
 import { handleClickRoute } from 'public-site/components/handleClickRoute'
@@ -89,9 +89,7 @@ const MobilePlaylistTile = (props: PlaylistTileProps) => (
     <div
       className={styles.trackImage}
       style={{
-        backgroundImage: `url(${
-          props.imageUrl || audiusExclusivesPlaylistImg
-        })`,
+        backgroundImage: `url(${props.imageUrl})`,
         boxShadow: `0px 8px 16px 0px rgba(0, 0, 0, 0.08), 0px 0px 4px 0px rgba(0, 0, 0, 0.04)`
       }}
     ></div>
@@ -106,7 +104,7 @@ type FeaturedContentProps = {
 
 const FeaturedContent = (props: FeaturedContentProps) => {
   const { history } = useHistoryContext()
-  const { value: featuredPlaylists } = useAsync(async () => {
+  const { value: featuredPlaylists, loading } = useAsync(async () => {
     const response = await fetch(env.EXPLORE_CONTENT_URL)
     const json = await response.json()
     const featuredPlaylistIds = json.featuredPlaylists
@@ -145,25 +143,31 @@ const FeaturedContent = (props: FeaturedContentProps) => {
           </animated.div>
         </div>
         <div className={styles.tracksContainer}>
-          {featuredPlaylists?.map((p) => (
-            <MobilePlaylistTile
-              key={p.playlist_id}
-              title={p.playlist_name}
-              artist={p.user.name}
-              imageUrl={p.artwork['480x480'] ?? null}
-              onClick={handleClickRoute(
-                collectionPage(
-                  p.user.handle,
-                  p.playlist_name,
-                  p.playlist_id,
-                  p.permalink,
-                  p.is_album
-                ),
-                props.setRenderPublicSite,
-                history
-              )}
-            />
-          ))}
+          {loading ? (
+            <div className={styles.loadingContainer}>
+              <LoadingSpinner />
+            </div>
+          ) : (
+            featuredPlaylists?.map((p) => (
+              <MobilePlaylistTile
+                key={p.playlist_id}
+                title={p.playlist_name}
+                artist={p.user.name}
+                imageUrl={p.artwork['480x480'] ?? null}
+                onClick={handleClickRoute(
+                  collectionPage(
+                    p.user.handle,
+                    p.playlist_name,
+                    p.playlist_id,
+                    p.permalink,
+                    p.is_album
+                  ),
+                  props.setRenderPublicSite,
+                  history
+                )}
+              />
+            ))
+          )}
         </div>
       </div>
     )
@@ -183,25 +187,31 @@ const FeaturedContent = (props: FeaturedContentProps) => {
           <h4 className={styles.subTitle}>{messages.subTitle}</h4>
         </animated.div>
         <div className={styles.tracksContainer}>
-          {featuredPlaylists?.map((p) => (
-            <DesktopPlaylistTile
-              key={p.playlist_id}
-              title={p.playlist_name}
-              artist={p.user.name}
-              imageUrl={p.artwork['480x480'] ?? null}
-              onClick={handleClickRoute(
-                collectionPage(
-                  p.user.handle,
-                  p.playlist_name,
-                  p.playlist_id,
-                  p.permalink,
-                  p.is_album
-                ),
-                props.setRenderPublicSite,
-                history
-              )}
-            />
-          ))}
+          {loading ? (
+            <div className={styles.loadingContainer}>
+              <LoadingSpinner />
+            </div>
+          ) : (
+            featuredPlaylists?.map((p) => (
+              <DesktopPlaylistTile
+                key={p.playlist_id}
+                title={p.playlist_name}
+                artist={p.user.name}
+                imageUrl={p.artwork['480x480'] ?? null}
+                onClick={handleClickRoute(
+                  collectionPage(
+                    p.user.handle,
+                    p.playlist_name,
+                    p.playlist_id,
+                    p.permalink,
+                    p.is_album
+                  ),
+                  props.setRenderPublicSite,
+                  history
+                )}
+              />
+            ))
+          )}
         </div>
       </div>
       <IconLines className={styles.lines} />

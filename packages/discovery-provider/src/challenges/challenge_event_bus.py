@@ -16,6 +16,9 @@ from src.challenges.challenge_event import ChallengeEvent
 from src.challenges.connect_verified_challenge import connect_verified_challenge_manager
 from src.challenges.first_playlist_challenge import first_playlist_challenge_manager
 from src.challenges.listen_streak_challenge import listen_streak_challenge_manager
+from src.challenges.listen_streak_endless_challenge import (
+    listen_streak_endless_challenge_manager,
+)
 from src.challenges.mobile_install_challenge import mobile_install_challenge_manager
 from src.challenges.one_shot_challenge import one_shot_challenge_manager
 from src.challenges.profile_challenge import profile_challenge_manager
@@ -241,6 +244,9 @@ def setup_challenge_bus():
     bus.register_listener(ChallengeEvent.favorite, profile_challenge_manager)
     # listen_streak_challenge_manager listeners
     bus.register_listener(ChallengeEvent.track_listen, listen_streak_challenge_manager)
+    bus.register_listener(
+        ChallengeEvent.track_listen, listen_streak_endless_challenge_manager
+    )
     # track_upload_challenge_manager listeners
     bus.register_listener(ChallengeEvent.track_upload, track_upload_challenge_manager)
     # referral challenge managers

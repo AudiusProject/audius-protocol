@@ -9,7 +9,7 @@ import { CoinflowPurchase, Currency } from '@coinflowlabs/react'
 import { VersionedTransaction } from '@solana/web3.js'
 import { useDispatch } from 'react-redux'
 
-import ModalDrawer from 'pages/audio-rewards-page/components/modals/ModalDrawer'
+import ModalDrawer from 'components/modal-drawer/ModalDrawer'
 import { env } from 'services/env'
 import { isElectron } from 'utils/clientUtil'
 import zIndex from 'utils/zIndex'
