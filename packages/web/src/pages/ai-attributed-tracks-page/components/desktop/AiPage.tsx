@@ -62,7 +62,10 @@ const AiPage = g(({ title, user, getLineupProps, goToArtistPage }) => {
       canonicalUrl={fullAiPage(user.handle)}
       header={renderHeader()}
     >
-      <TanQueryLineup {...lineupProps} endOfLineup={<ShareAiTracksTile />} />
+      <TanQueryLineup
+        {...lineupProps}
+        endOfLineupElement={<ShareAiTracksTile />}
+      />
     </Page>
   )
 })
