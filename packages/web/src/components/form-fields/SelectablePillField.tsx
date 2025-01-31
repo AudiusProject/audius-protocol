@@ -1,5 +1,4 @@
-import { SelectablePill } from '@audius/harmony'
-import { SelectablePillProps } from '@audius/harmony/dist/components/input/SelectablePill/types'
+import { SelectablePill, SelectablePillProps } from '@audius/harmony'
 import { useField } from 'formik'
 
 type SelectablePillFieldProps = Extract<
