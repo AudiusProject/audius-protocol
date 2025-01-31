@@ -16,7 +16,6 @@ import {
 import { QUERY_KEYS } from './queryKeys'
 import { QueryOptions } from './types'
 import { useCurrentUserId } from './useCurrentUserId'
-import { loadNextPage } from './utils/infiniteQueryLoadNextPage'
 import { primeCollectionData } from './utils/primeCollectionData'
 import { useLineupQuery } from './utils/useLineupQuery'
 
@@ -102,7 +101,6 @@ export const useTrendingPlaylists = (
   return {
     ...queryData,
     ...lineupData,
-    loadNextPage: loadNextPage(queryData),
     pageSize
   }
 }

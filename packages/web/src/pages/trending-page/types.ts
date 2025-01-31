@@ -1,15 +1,10 @@
-import { TimeRange, ID, UID, Lineup, Track, User } from '@audius/common/models'
-
-type ExtraTrendingLineupProps = {}
+import { TimeRange, ID, UID, User } from '@audius/common/models'
+import { LineupQueryData } from '@audius/common/src/api'
 
 export interface TrendingPageContentProps {
   trendingTitle: string
   pageTitle: string
   trendingDescription: string
-  trending: Lineup<any>
-  trendingWeek: Lineup<any, ExtraTrendingLineupProps>
-  trendingMonth: Lineup<any, ExtraTrendingLineupProps>
-  trendingAllTime: Lineup<any, ExtraTrendingLineupProps>
 
   fetchSuggestedFollowUsers: () => void
   followUsers: (userIDs: ID[]) => void
@@ -23,16 +18,6 @@ export interface TrendingPageContentProps {
   goToGenreSelection: () => void
   setTrendingInView: (inView: boolean) => void
   switchView: () => void
-  getLineupProps: (lineup: Lineup<any>) => {
-    lineup: Lineup<any>
-    playingUid: UID
-    playingSource: string
-    playingTrackId: ID | null
-    playing: boolean
-    buffering: boolean
-    scrollParent: HTMLElement | null
-    selfLoad: boolean
-  }
   resetTrendingLineup: () => void
 
   trendingGenre: string | null
@@ -41,26 +26,7 @@ export interface TrendingPageContentProps {
   setTrendingGenre: (genre: string | null) => void
   setTrendingTimeRange: (timeRange: TimeRange) => void
 
-  makeLoadMore: (
-    timeRange: TimeRange
-  ) => (offset: number, limit: number, overwrite: boolean) => void
-  makePlayTrack: (timeRange: TimeRange) => (uid: string) => void
-  makePauseTrack: (timeRange: TimeRange) => () => void
-  makeSetInView: (timeRange: TimeRange) => (inView: boolean) => void
-  makeRefreshTrendingInView: (
-    timeRange: TimeRange
-  ) => (overwrite: boolean) => void
-  makeResetTrending: (timeRange: TimeRange) => () => void
-
-  getLineupForRange: (timeRange: TimeRange) => {
-    playingUid: UID
-    lineup: Lineup<Track>
-    playingSource: any
-    playingTrackId: ID | null
-    playing: boolean
-    buffering: boolean
-    scrollParent: HTMLElement | null
-    selfLoad: boolean
-  }
   scrollToTop: (timeRange: TimeRange) => void
+  trendingQueryData: LineupQueryData
+  scrollParentRef?: HTMLElement
 }
