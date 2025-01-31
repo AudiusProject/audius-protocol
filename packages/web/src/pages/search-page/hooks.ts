@@ -2,7 +2,7 @@ import { useCallback, useContext, useMemo } from 'react'
 
 import {
   SearchCategory,
-  useSearchResults as useGetSearchResultsApi
+  useSearchResults as useGetSearchResultsQuery
 } from '@audius/common/api'
 import { Status } from '@audius/common/models'
 import { SearchSortMethod, accountSelectors } from '@audius/common/store'
@@ -35,11 +35,11 @@ export const useGetSearchResults = (category: SearchCategory) => {
     ...filters,
     category,
     currentUserId,
-    limit: category === 'all' ? ALL_RESULTS_LIMIT : undefined,
+    pageSize: category === 'all' ? ALL_RESULTS_LIMIT : undefined,
     offset: 0
   }
 
-  const { data, ...queryState } = useGetSearchResultsApi(params, {
+  const { data, ...queryState } = useGetSearchResultsQuery(params, {
     // Only search when the account has finished loading,
     // or if the user is not logged in
     enabled: accountStatus !== Status.LOADING && accountStatus !== Status.IDLE

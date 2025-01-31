@@ -1,24 +1,24 @@
 import { Mood, OptionalId } from '@audius/sdk'
-import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query'
 import { isEmpty } from 'lodash'
 import { useDispatch } from 'react-redux'
 
 import { searchResultsFromSDK } from '~/adapters'
 import { useAudiusQueryContext } from '~/audius-query'
-import { Name, SearchSource, UserTrackMetadata } from '~/models'
+import { Name, PlaybackSource, SearchSource, UserTrackMetadata } from '~/models'
 import { ID } from '~/models/Identifiers'
-import { Kind } from '~/models/Kind'
 import { FeatureFlags } from '~/services'
 import { SearchKind, SearchSortMethod } from '~/store'
-import { addEntries } from '~/store/cache/actions'
-import { EntriesByKind } from '~/store/cache/types'
+import { tracksActions as searchResultsPageTracksLineupActions } from '~/store/pages/search-results/lineup/tracks/actions'
+import { getSearchTracksLineup } from '~/store/pages/search-results/selectors'
 import { Genre, formatMusicalKey } from '~/utils'
 
 import { QUERY_KEYS } from './queryKeys'
 import { QueryOptions } from './types'
-import { getCollectionQueryKey } from './useCollection'
-import { getTrackQueryKey } from './useTrack'
-import { getUserQueryKey } from './useUser'
+import { primeCollectionData } from './utils/primeCollectionData'
+import { primeTrackData } from './utils/primeTrackData'
+import { primeUserData } from './utils/primeUserData'
+import { useLineupQuery } from './utils/useLineupQuery'
 
 export type SearchCategory = 'all' | 'tracks' | 'albums' | 'playlists' | 'users'
 
@@ -43,6 +43,7 @@ export type SearchArgs = {
   source?: SearchSource
   sortMethod?: SearchSortMethod
   disableAnalytics?: boolean
+  pageSize?: number
 } & SearchFilters
 
 const getMinMaxFromBpm = (bpm?: string) => {
@@ -61,29 +62,27 @@ export const getSearchResultsQueryKey = ({
   currentUserId,
   query,
   category,
-  limit,
-  offset,
-  source,
   sortMethod,
-  disableAnalytics,
+  pageSize,
   ...filters
 }: SearchArgs) => [
   QUERY_KEYS.search,
   query,
-  { category, limit, offset, source, sortMethod, disableAnalytics },
+  { category, sortMethod, pageSize },
   { ...filters }
 ]
+
+export const SEARCH_PAGE_SIZE = 10
 
 export const useSearchResults = (
   {
     currentUserId,
     query,
     category,
-    limit,
-    offset,
     source = 'search results page',
     sortMethod,
     disableAnalytics,
+    pageSize = SEARCH_PAGE_SIZE,
     ...filters
   }: SearchArgs,
   options?: QueryOptions
@@ -92,17 +91,23 @@ export const useSearchResults = (
   const queryClient = useQueryClient()
   const dispatch = useDispatch()
 
-  return useQuery({
+  const queryData = useInfiniteQuery({
+    initialPageParam: 0,
+    getNextPageParam: (lastPage, pages) => {
+      const prevPageByCategory = lastPage[category ?? '']
+      const noMorePages =
+        prevPageByCategory === undefined || // When using the All category we dont do any pagination
+        prevPageByCategory.length < pageSize // When using a specific category we do pagination, so we just check that category
+      return noMorePages ? undefined : pages.length * pageSize
+    },
     queryKey: getSearchResultsQueryKey({
       currentUserId,
       query,
       category,
-      limit,
-      offset,
       sortMethod,
       ...filters
     }),
-    queryFn: async () => {
+    queryFn: async ({ pageParam }) => {
       const isUSDCEnabled = await getFeatureEnabled(FeatureFlags.USDC_PURCHASES)
 
       const kind = category as SearchKind
@@ -126,8 +131,8 @@ export const useSearchResults = (
         kind,
         userId: OptionalId.parse(currentUserId),
         query: isTagsSearch ? query.slice(1) : query,
-        limit: limit || 50,
-        offset: offset || 0,
+        limit: pageSize,
+        offset: pageParam,
         includePurchaseable: isUSDCEnabled,
         bpmMin,
         bpmMax,
@@ -141,7 +146,7 @@ export const useSearchResults = (
       }
 
       // Fire analytics only for the first page of results
-      if (offset === 0 && !disableAnalytics) {
+      if (pageParam === 0 && !disableAnalytics) {
         analytics.track(
           analytics.make(
             isTagsSearch
@@ -167,55 +172,21 @@ export const useSearchResults = (
 
       const { tracks, playlists, albums, users } = searchResultsFromSDK(data)
 
-      // Cross pollinate our entity cache with all the loaded entities from our search data
-      if (
-        tracks?.length ||
-        users?.length ||
-        albums?.length ||
-        playlists?.length
-      ) {
-        const entries: EntriesByKind = {}
+      // Prime cache data
+      if (tracks?.length) {
+        primeTrackData({ tracks, queryClient, dispatch })
+      }
 
-        if (tracks?.length) {
-          entries[Kind.TRACKS] = {}
-          tracks.forEach((track) => {
-            queryClient.setQueryData(getTrackQueryKey(track.track_id), track)
-            entries[Kind.TRACKS]![track.track_id] = track
-          })
-        }
+      if (users?.length) {
+        primeUserData({ users, queryClient, dispatch })
+      }
 
-        if (users?.length) {
-          entries[Kind.USERS] = {}
-          users.forEach((user) => {
-            queryClient.setQueryData(getUserQueryKey(user.user_id), user)
-            entries[Kind.USERS]![user.user_id] = user
-          })
-        }
-
-        if (albums?.length) {
-          entries[Kind.COLLECTIONS] = {}
-          albums.forEach((album) => {
-            queryClient.setQueryData(
-              getCollectionQueryKey(album.playlist_id),
-              album
-            )
-            entries[Kind.COLLECTIONS]![album.playlist_id] = album
-          })
-        }
-
-        if (playlists?.length) {
-          if (!entries[Kind.COLLECTIONS]) entries[Kind.COLLECTIONS] = {}
-          playlists.forEach((playlist) => {
-            queryClient.setQueryData(
-              getCollectionQueryKey(playlist.playlist_id),
-              playlist
-            )
-            entries[Kind.COLLECTIONS]![playlist.playlist_id] = playlist
-          })
-        }
-
-        // Sync all data to Redux in a single dispatch
-        dispatch(addEntries(entries, undefined, undefined, 'react-query'))
+      if (albums?.length || playlists?.length) {
+        primeCollectionData({
+          collections: [...albums, ...playlists],
+          queryClient,
+          dispatch
+        })
       }
       const formattedTracks = tracks.map((track) => ({
         ...track,
@@ -224,6 +195,18 @@ export const useSearchResults = (
           user_id: track.owner_id
         }
       }))
+
+      // Track results need to also prep the lineup
+      if (formattedTracks.length > 0) {
+        dispatch(
+          searchResultsPageTracksLineupActions.fetchLineupMetadatas(
+            pageParam,
+            pageSize,
+            false,
+            { tracks: formattedTracks }
+          )
+        )
+      }
       return {
         tracks: formattedTracks,
         users,
@@ -231,7 +214,32 @@ export const useSearchResults = (
         playlists
       }
     },
+    select: (data) => {
+      return data?.pages?.reduce(
+        (acc, page) => {
+          return {
+            tracks: [...acc?.tracks, ...page.tracks],
+            users: [...acc?.users, ...page.users],
+            albums: [...acc?.albums, ...page.albums],
+            playlists: [...acc?.playlists, ...page.playlists]
+          }
+        },
+        { tracks: [], users: [], albums: [], playlists: [] }
+      )
+    },
     staleTime: options?.staleTime,
     enabled: options?.enabled !== false
   })
+
+  const lineupData = useLineupQuery({
+    queryData,
+    lineupActions: searchResultsPageTracksLineupActions,
+    lineupSelector: getSearchTracksLineup,
+    playbackSource: PlaybackSource.SEARCH_PAGE
+  })
+
+  return {
+    ...queryData,
+    ...lineupData
+  }
 }

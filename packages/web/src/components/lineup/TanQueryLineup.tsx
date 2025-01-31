@@ -74,6 +74,9 @@ export interface TanQueryLineupProps {
 
   /** Starting index to render from */
   start?: number
+
+  /** Whether to load more items when the user scrolls to the bottom of the lineup */
+  shouldLoadMore?: boolean
 }
 
 const defaultLineup = {
@@ -112,7 +115,8 @@ export const TanQueryLineup = ({
   pageSize,
   initialPageSize,
   scrollParent: externalScrollParent,
-  start
+  start,
+  shouldLoadMore = true
 }: TanQueryLineupProps) => {
   const dispatch = useDispatch()
   const {
@@ -330,7 +334,7 @@ export const TanQueryLineup = ({
                 [tileContainerStyles!]: !!tileContainerStyles
               })}
               loadMore={loadNextPage}
-              hasMore={hasNextPage}
+              hasMore={hasNextPage && shouldLoadMore}
               useWindow={isMobile}
               initialLoad={false}
               getScrollParent={() => {
