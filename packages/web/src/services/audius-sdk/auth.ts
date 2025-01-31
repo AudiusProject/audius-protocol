@@ -24,9 +24,14 @@ export const getAudiusWalletClient = async (opts?: {
   // Check that the local storage user's wallet matches the connected external wallet
   if (
     ignoreCachedUserWallet ||
-    user?.wallet?.toLowerCase() === account.address?.toLowerCase()
+    (user?.wallet?.toLocaleLowerCase() &&
+      user?.wallet?.toLowerCase() === account.address?.toLowerCase())
   ) {
-    console.debug('[audiusSdk] Initializing SDK with external wallet...')
+    console.debug('[audiusSdk] Initializing SDK with external wallet...', {
+      ignoreCachedUserWallet,
+      userWallet: user?.wallet?.toLowerCase(),
+      externalWallet: account?.address?.toLowerCase()
+    })
 
     // Wait for the wallet to finish connecting/reconnecting
     if (
