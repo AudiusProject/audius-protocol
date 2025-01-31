@@ -1398,7 +1398,7 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
-  - react-native-tiktok (1.1.1):
+  - react-native-tiktok (1.1.2):
     - React-Core
     - TikTokOpenSDK (= 5.0.0)
   - react-native-track-player (4.0.1):
@@ -2343,7 +2343,7 @@ SPEC CHECKSUMS:
   react-native-restart: 7595693413fe3ca15893702f2c8306c62a708162
   react-native-safe-area-context: 3e6db312a77016d4f618550c814d9e236e0c0879
   react-native-slider: cefed6244ec9a9cc2b418f4aca536a777e00f9cd
-  react-native-tiktok: b3d7f50aff5b52a660169ef828768c67d59855d3
+  react-native-tiktok: cbaefd9b0e41341d4fd853b4246ca199aba25cac
   react-native-track-player: 97d76dbbd35f27cc709e5f04540615e54264b3f9
   react-native-version-number: b415bbec6a13f2df62bf978e85bc0d699462f37f
   react-native-video: 756ef2bd3f35036f88b06e67aa4aeea1ecfda858

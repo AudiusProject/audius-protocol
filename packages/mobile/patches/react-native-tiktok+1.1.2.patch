@@ -1,16 +1,3 @@
-diff --git a/node_modules/react-native-tiktok/android/src/main/java/com/reactnativetiktok/TiktokModule.java b/node_modules/react-native-tiktok/android/src/main/java/com/reactnativetiktok/TiktokModule.java
-index 1628f66..b3a106f 100644
---- a/node_modules/react-native-tiktok/android/src/main/java/com/reactnativetiktok/TiktokModule.java
-+++ b/node_modules/react-native-tiktok/android/src/main/java/com/reactnativetiktok/TiktokModule.java
-@@ -72,7 +72,7 @@ public class TiktokModule extends ReactContextBaseJavaModule {
-     public void auth(Callback callBack) {
-       TikTokOpenApi tiktokOpenApi = TikTokOpenApiFactory.create(getReactApplicationContext().getCurrentActivity());
-       Authorization.Request request = new Authorization.Request();
--      request.scope = "user.info.basic,video.list";
-+      request.scope = "user.info.basic";
-       request.callerLocalEntry = "com.reactnativetiktok.TikTokEntryActivity";
-       tiktokOpenApi.authorize(request);
-     }
 diff --git a/node_modules/react-native-tiktok/ios/Podfile b/node_modules/react-native-tiktok/ios/Podfile
 deleted file mode 100644
 index e0be15c..0000000
