@@ -668,6 +668,7 @@ function* doStartPurchaseContentFlow({
   })
 
   const totalAmount = (price + (extraAmount ?? 0)) / 100
+  const purchaserUserId = yield* select(getUserId)
 
   const analyticsInfo = {
     price: price / 100,
@@ -680,7 +681,9 @@ function* doStartPurchaseContentFlow({
     isVerifiedArtist: artistInfo.is_verified,
     totalAmount,
     payExtraAmount: extraAmount ? extraAmount / 100 : 0,
-    payExtraPreset: extraAmountPreset
+    payExtraPreset: extraAmountPreset,
+    buyerUserId: purchaserUserId,
+    isGuest: !!guestEmail
   }
 
   // Record start
@@ -694,7 +697,7 @@ function* doStartPurchaseContentFlow({
 
   try {
     // get user & user bank
-    const purchaserUserId = yield* select(getUserId)
+
     if (!purchaserUserId) {
       throw new Error('Failed to fetch purchasing user id')
     }

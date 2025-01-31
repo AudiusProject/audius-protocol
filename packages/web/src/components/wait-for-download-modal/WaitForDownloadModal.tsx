@@ -24,8 +24,8 @@ import cn from 'classnames'
 import { shallowEqual, useDispatch, useSelector } from 'react-redux'
 
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
+import ModalDrawer from 'components/modal-drawer/ModalDrawer'
 import { useIsMobile } from 'hooks/useIsMobile'
-import ModalDrawer from 'pages/audio-rewards-page/components/modals/ModalDrawer'
 
 import styles from './WaitForDownloadModal.module.css'
 

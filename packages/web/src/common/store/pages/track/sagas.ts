@@ -63,7 +63,14 @@ function* watchFetchTrackBadge() {
                 [sdk.full.tracks, sdk.full.tracks.getTrendingTrackIDs],
                 {}
               )
-          const trendingRanks = trendingIdsFromSDK(data)
+          const trendingRanks = data
+            ? trendingIdsFromSDK(data)
+            : {
+                week: [],
+                month: [],
+                year: [],
+                allTime: []
+              }
           if (TF.size > 0) {
             trendingRanks.week = trendingRanks.week.filter((i) => {
               const shaId = keccak_256(i.toString())

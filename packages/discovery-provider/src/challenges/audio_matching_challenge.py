@@ -26,7 +26,7 @@ def does_user_exist_with_verification_status(
 
 
 class AudioMatchingBuyerChallengeUpdater(ChallengeUpdater):
-    def generate_specifier(self, user_id: int, extra: Dict) -> str:
+    def generate_specifier(self, session: Session, user_id: int, extra: Dict) -> str:
         return generate_audio_matching_specifier(user_id, extra)
 
     def should_create_new_challenge(
@@ -39,7 +39,7 @@ class AudioMatchingBuyerChallengeUpdater(ChallengeUpdater):
 
 
 class AudioMatchingSellerChallengeUpdater(ChallengeUpdater):
-    def generate_specifier(self, user_id: int, extra: Dict) -> str:
+    def generate_specifier(self, session: Session, user_id: int, extra: Dict) -> str:
         return generate_audio_matching_specifier(extra["sender_user_id"], extra)
 
     def should_create_new_challenge(

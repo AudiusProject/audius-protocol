@@ -49,12 +49,15 @@ function* watchFetchExplore() {
         fetchExploreContent,
         EXPLORE_CONTENT_URL ?? STATIC_EXPLORE_CONTENT_URL
       )
+
       if (!isNativeMobile) {
         const userId = yield* select(getUserId)
-        yield* call(retrieveCollections, exploreContent.featuredPlaylists, {
-          userId
-        })
-        yield* call(fetchUsers, exploreContent.featuredProfiles)
+        yield* call(
+          retrieveCollections,
+          exploreContent.featuredPlaylists.slice(0, 4),
+          { userId }
+        )
+        yield* call(fetchUsers, exploreContent.featuredProfiles.slice(0, 4))
       }
 
       yield* put(fetchExploreSucceeded({ exploreContent }))

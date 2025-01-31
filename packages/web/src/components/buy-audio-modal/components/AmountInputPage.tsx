@@ -10,7 +10,7 @@ import { Flex, Text } from '@audius/harmony'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { useRemoteVar } from 'hooks/useRemoteConfig'
-import { useOnRampProviderInfo } from 'pages/audio-rewards-page/components/WalletManagementTile'
+import { useOnRampProviderInfo } from 'pages/audio-page/components/WalletManagementTile'
 
 import { AudioAmountPicker } from './AudioAmountPicker'
 import { CoinbaseBuyAudioButton } from './CoinbaseBuyAudioButton'

@@ -79,6 +79,7 @@ export const Header = (props: HeaderProps) => {
               {Icon ? <Icon size='2xl' color='heading' /> : null}
               <Text
                 variant='heading'
+                tag='h1'
                 strength='default'
                 size='l'
                 color='heading'
