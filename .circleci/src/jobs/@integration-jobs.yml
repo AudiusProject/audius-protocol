@@ -41,8 +41,8 @@ integration-test:
         name: setup
         command: AUDIUS_DEV=false bash ./dev-tools/setup.sh
     - run:
-        name: audius-compose up
-        command: ~/.profile; npm run protocol
+        name: npm run protocol
+        command: npm run protocol
     - run:
         name: audius-cmd test
         no_output_timeout: 15m
