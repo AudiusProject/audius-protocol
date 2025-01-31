@@ -103,7 +103,8 @@ const TrackTile = (props: CombinedProps) => {
     title,
     source,
     renderOverflow,
-    isTrending
+    isTrending,
+    hasLoaded
   } = props
 
   const dispatch = useDispatch()
