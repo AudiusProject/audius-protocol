@@ -1,11 +1,22 @@
 import { Mood, OptionalId } from '@audius/sdk'
-import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query'
+import {
+  InfiniteData,
+  useInfiniteQuery,
+  useQueryClient
+} from '@tanstack/react-query'
 import { isEmpty } from 'lodash'
 import { useDispatch } from 'react-redux'
 
 import { searchResultsFromSDK } from '~/adapters'
 import { useAudiusQueryContext } from '~/audius-query'
-import { Name, PlaybackSource, SearchSource, UserTrackMetadata } from '~/models'
+import {
+  Name,
+  PlaybackSource,
+  SearchSource,
+  UserMetadata,
+  UserCollectionMetadata,
+  UserTrackMetadata
+} from '~/models'
 import { ID } from '~/models/Identifiers'
 import { FeatureFlags } from '~/services'
 import { SearchKind, SearchSortMethod } from '~/store'
@@ -93,7 +104,15 @@ export const useSearchResults = (
 
   const queryData = useInfiniteQuery({
     initialPageParam: 0,
-    getNextPageParam: (lastPage, pages) => {
+    getNextPageParam: (
+      lastPage: {
+        tracks: UserTrackMetadata[]
+        users: UserMetadata[]
+        albums: UserCollectionMetadata[]
+        playlists: UserCollectionMetadata[]
+      },
+      pages
+    ) => {
       const prevPageByCategory = lastPage[category ?? '']
       const noMorePages =
         prevPageByCategory === undefined || // When using the All category we dont do any pagination
@@ -107,7 +126,14 @@ export const useSearchResults = (
       sortMethod,
       ...filters
     }),
-    queryFn: async ({ pageParam }) => {
+    queryFn: async ({
+      pageParam
+    }): Promise<{
+      tracks: UserTrackMetadata[]
+      users: UserMetadata[]
+      albums: UserCollectionMetadata[]
+      playlists: UserCollectionMetadata[]
+    }> => {
       const isUSDCEnabled = await getFeatureEnabled(FeatureFlags.USDC_PURCHASES)
 
       const kind = category as SearchKind
