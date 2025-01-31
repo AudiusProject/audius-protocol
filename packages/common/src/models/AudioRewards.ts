@@ -53,6 +53,7 @@ export enum ChallengeName {
   FirstTip = 'ft',
   FirstPlaylist = 'fp',
   ListenStreak = 'l',
+  ListenStreakEndless = 'e',
   OneShot = 'o'
 }
 
@@ -87,6 +88,7 @@ export type ChallengeRewardID =
   | ChallengeName.FirstTip
   | ChallengeName.FirstPlaylist
   | ChallengeName.ListenStreak
+  | ChallengeName.ListenStreakEndless
   | ChallengeName.OneShot
 
 export enum FailureReason {
