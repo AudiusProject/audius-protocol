@@ -1,4 +1,4 @@
-import { useCallback, useEffect, ReactNode } from 'react'
+import { useCallback, ReactNode, useEffect } from 'react'
 
 import { useFeatureFlag } from '@audius/common/hooks'
 import {
@@ -76,7 +76,6 @@ const TrackTile = (props: CombinedProps) => {
     uid,
     index,
     showSkeleton,
-    hasLoaded,
     toggleSave,
     toggleRepost,
     onShare,
@@ -104,7 +103,8 @@ const TrackTile = (props: CombinedProps) => {
     title,
     source,
     renderOverflow,
-    isTrending
+    isTrending,
+    hasLoaded
   } = props
 
   const dispatch = useDispatch()

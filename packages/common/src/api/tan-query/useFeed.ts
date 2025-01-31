@@ -16,7 +16,6 @@ import { Nullable } from '~/utils/typeUtils'
 
 import { QUERY_KEYS } from './queryKeys'
 import { QueryOptions } from './types'
-import { loadNextPage } from './utils/infiniteQueryLoadNextPage'
 import { primeCollectionData } from './utils/primeCollectionData'
 import { primeTrackData } from './utils/primeTrackData'
 import { useLineupQuery } from './utils/useLineupQuery'
@@ -40,12 +39,15 @@ export const getFeedQueryKey = ({ userId, filter }: FeedArgs) => [
   { filter }
 ]
 
+export const FEED_INITIAL_PAGE_SIZE = 10
+export const FEED_LOAD_MORE_PAGE_SIZE = 4
+
 export const useFeed = (
   {
     userId,
     filter = FeedFilter.ALL,
-    initialPageSize = 10,
-    loadMorePageSize = 4
+    initialPageSize = FEED_INITIAL_PAGE_SIZE,
+    loadMorePageSize = FEED_LOAD_MORE_PAGE_SIZE
   }: FeedArgs,
   options?: QueryOptions
 ) => {
@@ -127,7 +129,6 @@ export const useFeed = (
 
   return {
     ...queryData,
-    ...lineupData,
-    loadNextPage: loadNextPage(queryData)
+    ...lineupData
   }
 }

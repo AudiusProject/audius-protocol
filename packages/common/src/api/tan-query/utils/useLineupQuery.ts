@@ -16,6 +16,8 @@ import { CommonState } from '~/store/commonStore'
 import { LineupActions } from '~/store/lineup/actions'
 import { getPlaying } from '~/store/player/selectors'
 
+import { loadNextPage } from './infiniteQueryLoadNextPage'
+
 /**
  * Helper to provide stitch together tan-query data and easily provide lineup methods as part of our query hooks
  */
@@ -73,7 +75,8 @@ export const useLineupQuery = ({
     play,
     pause,
     updateLineupOrder,
-    isPlaying
+    isPlaying,
+    loadNextPage: loadNextPage(queryData)
   }
 }
 
