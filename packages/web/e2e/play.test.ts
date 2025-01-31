@@ -1,6 +1,7 @@
 import { expect } from '@playwright/test'
-import { test } from './test'
+
 import { getTrack } from './data'
+import { test } from './test'
 
 declare global {
   interface Window {
@@ -11,11 +12,11 @@ declare global {
 }
 
 test('should play a track', async ({ page }) => {
-  const { url, name } = getTrack()
-  await page.goto(url)
+  const { permalink, title } = getTrack()
+  await page.goto(permalink)
 
   const heading = page.getByRole('heading', {
-    name,
+    name: title,
     level: 1
   })
 

@@ -1,67 +1,66 @@
 import { expect } from '@playwright/test'
 
+import { getAlbum } from './data'
+import { EditAlbumPage } from './page-object-models/editCollection'
+import { CollectionPriceAndAudienceModal } from './page-object-models/modals'
 import { test } from './test'
+import { waitForConfirmation } from './utils'
 
-const PREMIUM_ALBUM =
-  'proberTest/album/__do_not_delete__-probers-premium-album-edit'
-const PUBLIC_ALBUM =
-  'proberTest/album/__do_not_delete__-probers-public-album-edit'
+test('should persist collection edits', async ({ page }) => {
+  const { permalink } = getAlbum()
 
-// Skipping for now, can turn back on if we feel like it's critical path enough
-// https://linear.app/audius/issue/INF-700/re-enable-editcollectiontestts-if-we-decide-its-critical-path
-test.skip('Change premium album price', async ({ page }) => {
-  await page.goto(PREMIUM_ALBUM)
-  const unlockText = await page.getByText(/Users can unlock/i).textContent()
+  const newTitle = 'EDITED TITLE'
+  const newDescription = 'EDITED DESCRIPTION'
+  const newPrice = '$1.23'
 
-  // For this test we toggle the price between $1 and $2
-  // So we check to see what value we're starting with
-  const startingPrice = unlockText?.match(/\$([0-9]+)\./)?.[1] || '1'
-  const newPrice = startingPrice === '1' ? '2' : '1'
+  await page.goto(permalink)
+  await page.getByRole('link', { name: /edit album/i }).click()
+  const editAlbumPage = new EditAlbumPage(page)
 
-  // Open Edit modal
-  await page.getByRole('button', { name: 'Edit Collection' }).click()
-  // Open access & sale modal
-  await page.getByRole('button', { name: /access & sale/i }).click()
+  await editAlbumPage.setArtwork('track-artwork.jpeg')
+  await editAlbumPage.setTitle(newTitle)
+  await editAlbumPage.setDescription(newDescription)
 
-  // Assert all the correct buttons are enabled/disabled
-  expect(await page.getByLabel(/hidden/i)).toBeDisabled()
-  expect(await page.getByLabel(/premium/i)).toBeEnabled()
-  expect(await page.getByLabel(/public/i)).toBeEnabled()
-  // Update the price to $2
-  await page.getByRole('textbox', { name: /album price/i }).fill(newPrice)
-  await page
-    .getByRole('button', {
-      name: 'Save',
-      exact: true
-    })
-    .click()
-  // Make sure price tag updated
-  await expect(page.getByTestId('price-display')).toContainText(newPrice)
-  // save the modal
-  await page
-    .getByRole('button', {
-      name: 'Save Changes',
-      exact: true
-    })
-    .click()
-  // Should show new price text
+  await editAlbumPage.openPriceAndAudienceModal()
+  const priceAndAudienceModal = new CollectionPriceAndAudienceModal(page)
+  await priceAndAudienceModal.setPremium({ price: newPrice })
+  await priceAndAudienceModal.save()
+
+  // Assert that we warned the user about changing the audience
+  await expect(page.getByText(/confirm update/i)).toBeVisible()
+  await page.getByRole('button', { name: /update audience/i }).click()
+
+  await editAlbumPage.save()
+
+  // Assert title changed
   await expect(
-    page.getByText(new RegExp(`purchase of \\$${newPrice}`))
+    page.getByRole('heading', { name: newTitle, level: 1 })
+  ).toBeVisible({ timeout: 20 * 1000 })
+
+  // Assert description changed
+  await expect(page.getByText(newDescription)).toBeVisible()
+
+  // Assert gated
+  await expect(page.getByText(/premium album/i)).toBeVisible()
+
+  // Assert price change
+  await expect(page.getByText(newPrice)).toBeVisible()
+
+  // Check it all persists upon reload
+  await waitForConfirmation(page)
+  await page.reload()
+
+  // Assert title changed
+  await expect(
+    page.getByRole('heading', { name: newTitle, level: 1 })
   ).toBeVisible()
-})
 
-// Skipping for now, can turn back on if we feel like it's critical path enough
-test.skip('Cannot edit public album access to premium/hidden', async ({
-  page
-}) => {
-  await page.goto(PUBLIC_ALBUM)
-  // Open Edit modal
-  await page.getByRole('button', { name: 'Edit Collection' }).click()
-  // Open access & sale modal
-  await page.getByRole('button', { name: /access & sale/i }).click()
-  // Should have no options other than public
+  // Assert description changed
+  await expect(page.getByText(newDescription)).toBeVisible()
 
-  expect(await page.getByLabel(/premium/i)).toBeDisabled()
-  expect(await page.getByLabel(/hidden/i)).toBeDisabled()
-  expect(await page.getByLabel(/public/i)).toBeEnabled()
+  // Assert gated
+  await expect(page.getByText(/premium album/i)).toBeVisible()
+
+  // Assert price change
+  await expect(page.getByText(newPrice)).toBeVisible()
 })

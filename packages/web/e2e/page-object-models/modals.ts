@@ -1,5 +1,6 @@
-import { Locator, Page } from '@playwright/test'
 import path from 'path'
+
+import { Locator, Page } from '@playwright/test'
 
 export class StemsAndDownloadsModal {
   public readonly locator: Locator
@@ -62,7 +63,7 @@ export class StemsAndDownloadsModal {
   }
 }
 
-export class AttributionModal {
+export class AdvancedModal {
   private readonly locator: Locator
   private readonly allowAttribution: Locator
   private readonly commercialUse: Locator
@@ -70,7 +71,7 @@ export class AttributionModal {
   private readonly saveButton: Locator
 
   constructor(page: Page) {
-    this.locator = page.getByRole('dialog', { name: /attribution/i })
+    this.locator = page.getByRole('dialog', { name: /advanced/i })
     this.allowAttribution = this.locator.getByRole('radiogroup', {
       name: /allow attribution/i
     })
@@ -86,7 +87,7 @@ export class AttributionModal {
   async markAsAIGenerated(user: string) {
     await this.locator
       .getByRole('checkbox', {
-        name: /mark this track as ai generated/i
+        name: /ai generated/i
       })
       .click()
     await this.locator.getByRole('combobox', { name: /find users/i }).fill(user)
@@ -97,6 +98,7 @@ export class AttributionModal {
   async setISRC(isrc: string) {
     await this.locator.getByRole('textbox', { name: /isrc/i }).fill(isrc)
   }
+
   async setISWC(iswc: string) {
     await this.locator.getByRole('textbox', { name: /iswc/i }).fill(iswc)
   }
@@ -138,30 +140,58 @@ export class AttributionModal {
   }
 }
 
-type VisibleDetail = 'Genre' | 'Mood' | 'Tags' | 'Share Button' | 'Play Count'
-export class AccessAndSaleModal {
+export class VisibilityModal {
+  public readonly locator: Locator
+  public readonly radioGroup: Locator
+  private readonly saveButton: Locator
+
+  constructor(page: Page) {
+    this.locator = page.getByRole('dialog', {
+      name: /visibility/i
+    })
+    this.radioGroup = this.locator.getByRole('radiogroup', {
+      name: /visibility/i
+    })
+    this.saveButton = this.locator.getByRole('button', { name: /save/i })
+  }
+
+  async setPublic() {
+    await this.radioGroup.getByRole('radio', { name: /public/i }).check()
+  }
+
+  async setHidden() {
+    await this.radioGroup.getByRole('radio', { name: /hidden/i }).check()
+  }
+
+  async setScheduled() {
+    await this.radioGroup.getByRole('radio', { name: /public/i }).check()
+    // TODO: Set values here
+  }
+
+  async save() {
+    await this.saveButton.click()
+  }
+}
+
+export class TrackPriceAndAudienceModal {
   public readonly locator: Locator
   public readonly remixAlert: Locator
 
   private readonly radioGroup: Locator
-  private readonly visibleTrackDetails: Locator
   private readonly priceInput: Locator
   private readonly previewSecondsInput: Locator
   private readonly saveButton: Locator
 
   constructor(page: Page) {
     this.locator = page.getByRole('dialog', {
-      name: /access & sale/i
+      name: /price & audience/i
     })
     this.remixAlert = this.locator
       .getByRole('alert')
       .first()
       .getByText('this track is marked as a remix')
     this.radioGroup = this.locator.getByRole('radiogroup', {
-      name: /access & sale/i
-    })
-    this.visibleTrackDetails = this.radioGroup.getByRole('group', {
-      name: /visible track details/i
+      name: /price & audience/i
     })
     this.priceInput = this.radioGroup.getByRole('textbox', {
       name: /cost to unlock/i
@@ -176,18 +206,6 @@ export class AccessAndSaleModal {
     await this.saveButton.click()
   }
 
-  async setHidden(visibleDetails: Partial<Record<VisibleDetail, boolean>>) {
-    await this.radioGroup.getByRole('radio', { name: /hidden/i }).check()
-    for (const name of Object.keys(visibleDetails)) {
-      const checkbox = this.visibleTrackDetails.getByRole('checkbox', { name })
-      if (visibleDetails[name]) {
-        await checkbox.check()
-      } else {
-        await checkbox.uncheck()
-      }
-    }
-  }
-
   async setPremium({
     price,
     previewSeconds
@@ -197,11 +215,50 @@ export class AccessAndSaleModal {
   }) {
     await this.radioGroup
       .getByRole('radio', {
-        name: /premium \(pay-to-unlock\)/i
+        name: /premium/i
       })
       .check()
     await this.priceInput.fill(price)
     await this.previewSecondsInput.fill(previewSeconds)
+  }
+}
+
+export class CollectionPriceAndAudienceModal {
+  private readonly locator: Locator
+  private readonly radioGroup: Locator
+  private readonly priceInput: Locator
+  private readonly saveButton: Locator
+
+  constructor(page: Page) {
+    this.locator = page.getByRole('dialog', {
+      name: /price & audience/i
+    })
+    this.radioGroup = this.locator.getByRole('radiogroup', {
+      name: /price & audience/i
+    })
+    this.priceInput = this.radioGroup.getByRole('textbox', {
+      name: /album price/i
+    })
+    this.saveButton = this.locator.getByRole('button', { name: /save/i })
+  }
+
+  async save() {
+    await this.saveButton.click()
+  }
+
+  async setPremium({
+    price,
+    previewSeconds
+  }: {
+    price: string
+    previewSeconds?: string
+  }) {
+    await this.radioGroup
+      .getByRole('radio', {
+        name: /premium/i
+      })
+      .check()
+    await this.priceInput.fill(price)
   }
 }
 
@@ -225,7 +282,7 @@ export class RemixSettingsModal {
       .getByRole('checkbox', { name: /identify as remix/i })
       .check()
     await this.locator.getByRole('textbox').pressSequentially(remixUrl)
-    const remixTrack = this.locator.getByText(remixTitle).first()
+    const remixTrack = this.locator.getByLabel(remixTitle).first()
     await remixTrack.click()
   }
 

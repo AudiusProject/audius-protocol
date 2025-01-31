@@ -1,5 +1,7 @@
 import { Locator, Page, expect } from '@playwright/test'
 
+import { waitForConfirmation } from '../utils'
+
 export class SocialActions {
   private readonly page: Page
   public readonly favoriteButton: Locator
@@ -26,28 +28,16 @@ export class SocialActions {
     })
   }
 
-  async waitForConfirmation() {
-    return this.page.waitForResponse(
-      async (response) => {
-        if (response.url().includes('block_confirmation')) {
-          const json = await response.json()
-          return json.data.block_passed
-        }
-      },
-      { timeout: 60 * 1000 }
-    )
-  }
-
   async favorite() {
     // Setup confirmation listener
-    const confirmationPromise = this.waitForConfirmation()
+    const confirmationPromise = waitForConfirmation(this.page)
 
     // Unfavorited => Favorited
     await this.favoriteButton.click()
 
     // Wait for indexing, reload
     await confirmationPromise
-    await this.favoriteButton.page().reload()
+    await this.page.reload()
 
     // Check that it persists after reload
     await expect(this.unfavoriteButton).toBeVisible()
@@ -55,14 +45,14 @@ export class SocialActions {
 
   async unfavorite() {
     // Setup confirmation listener
-    const confirmationPromise = this.waitForConfirmation()
+    const confirmationPromise = waitForConfirmation(this.page)
 
     // Favorited => Unfavorited
     await this.unfavoriteButton.click()
 
     // Wait for indexing, reload
     await confirmationPromise
-    await this.unfavoriteButton.page().reload()
+    await this.page.reload()
 
     // Check that it persists after reload
     await expect(this.favoriteButton).toBeVisible()
@@ -70,14 +60,14 @@ export class SocialActions {
 
   async repost() {
     // Setup confirmation listener
-    const confirmationPromise = this.waitForConfirmation()
+    const confirmationPromise = waitForConfirmation(this.page)
 
     // Unreposted => Reposted
     await this.repostButton.click()
 
     // Wait for indexing, reload
     await confirmationPromise
-    await this.repostButton.page().reload()
+    await this.page.reload()
 
     // Check that it persists after reload
     await expect(this.unrepostButton).toBeVisible()
@@ -85,14 +75,14 @@ export class SocialActions {
 
   async unrepost() {
     // Setup confirmation listener
-    const confirmationPromise = this.waitForConfirmation()
+    const confirmationPromise = waitForConfirmation(this.page)
 
     // Reposted => Unreposted
     await this.unrepostButton.click()
 
     // Wait for indexing, reload
     await confirmationPromise
-    await this.unrepostButton.page().reload()
+    await this.page.reload()
 
     // Check that it persists after reload
     await expect(this.repostButton).toBeVisible()

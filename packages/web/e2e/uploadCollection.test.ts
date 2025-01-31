@@ -1,7 +1,7 @@
 import { expect } from '@playwright/test'
 
 import {
-  EditAlbumPage,
+  UploadEditAlbumPage,
   EditPlaylistPage,
   UploadFinishPage,
   UploadSelectPage
@@ -130,7 +130,7 @@ test('should upload an album', async ({ page }) => {
     page.getByRole('heading', { name: /complete your album/i })
   ).toBeVisible()
 
-  const editPage = new EditAlbumPage(page)
+  const editPage = new UploadEditAlbumPage(page)
   await editPage.setArtwork('track-artwork.jpeg')
   await editPage.setTitle(playlistName)
   await editPage.setGenre(genre)
@@ -203,7 +203,7 @@ test('should upload an album', async ({ page }) => {
   // await expect(page.getByText(trackTwoDetails.mood)).toBeVisible()
 })
 
-test.fixme('should upload a premium album', async ({ browser, page }) => {
+test('should upload a premium album', async ({ browser, page }) => {
   const timestamp = Date.now()
   const albumName = `Test album ${timestamp}`
   const albumDescription = 'Test description'
@@ -230,7 +230,7 @@ test.fixme('should upload a premium album', async ({ browser, page }) => {
     page.getByRole('heading', { name: /complete your album/i })
   ).toBeVisible()
 
-  const editPage = new EditAlbumPage(page)
+  const editPage = new UploadEditAlbumPage(page)
   await editPage.setArtwork('track-artwork.jpeg')
   await editPage.setTitle(albumName)
   await editPage.setGenre(genre)

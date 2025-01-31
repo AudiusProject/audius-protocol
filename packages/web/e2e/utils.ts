@@ -61,3 +61,15 @@ export const openCleanBrowser = async ({ browser }: { browser: Browser }) => {
   })
   return newPage
 }
+
+export const waitForConfirmation = async (page: Page) => {
+  return page.waitForResponse(
+    async (response) => {
+      if (response.url().includes('block_confirmation')) {
+        const json = await response.json()
+        return json.data.block_passed
+      }
+    },
+    { timeout: 60 * 1000 }
+  )
+}
