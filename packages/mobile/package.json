@@ -72,7 +72,7 @@
     "@peculiar/webcrypto": "1.4.3",
     "@react-native-async-storage/async-storage": "1.21.0",
     "@react-native-clipboard/clipboard": "1.13.2",
-    "@react-native-community/blur": "4.3.2",
+    "@react-native-community/blur": "4.4.1",
     "@react-native-community/datetimepicker": "7.6.2",
     "@react-native-community/hooks": "3.0.0",
     "@react-native-community/netinfo": "11.2.1",
