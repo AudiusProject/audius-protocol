@@ -40,11 +40,12 @@ services:
 
   discovery-provider-openresty:
     image: busybox:1.31.1
-    entrypoint: ["sh", "-c", "exit 0"]
+    entrypoint: ['sh', '-c', 'exit 0']
     profiles:
       - noop
 
   discovery-provider:
+    user: ${UID:-root}:${GID:-root}
     extends:
       file: docker-compose.discovery.prod.yml
       service: discovery-provider
@@ -53,7 +54,7 @@ services:
       dockerfile: ${PROJECT_ROOT}/packages/discovery-provider/Dockerfile.dev
     volumes:
       - ${PROJECT_ROOT}:/app
-  
+
   healthz:
     extends:
       file: docker-compose.discovery.prod.yml
@@ -62,7 +63,7 @@ services:
       dockerfile: ${PROJECT_ROOT}/monitoring/healthz/Dockerfile
       context: ${PROJECT_ROOT}/monitoring/healthz
     ports:
-      - "5173:5173"
+      - '5173:5173'
     profiles:
       - discovery
     volumes:

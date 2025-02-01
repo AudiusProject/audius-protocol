@@ -7,6 +7,7 @@ version: '3'
 
 services:
   app-template:
+    user: ${UID:-root}:${GID:-root}
     extends:
       file: docker-compose.pedalboard.prod.yml
       service: app-template
