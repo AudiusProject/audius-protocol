@@ -17,10 +17,7 @@ import { useTrending } from './useTrending'
 export const SUGGESTED_TRACK_COUNT = 5
 
 const isValidTrack = (track: Track) => {
-  return (
-    // !track.is_stream_gated &&
-    !track.is_delete && !track.is_invalid && !track.is_unlisted
-  )
+  return !track.is_delete && !track.is_invalid && !track.is_unlisted
 }
 
 export type SuggestedTrack = {
