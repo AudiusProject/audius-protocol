@@ -1,4 +1,4 @@
-import { QueryClient } from '@tanstack/react-query'
+import { notifyManager, QueryClient } from '@tanstack/react-query'
 
 export type QueryKeyValue<T = any> = {
   queryKey: any[]
@@ -29,10 +29,14 @@ export const batchSetQueriesData = (
     updater: (oldData: any, newData: any) => any
   }
 ) => {
-  updates.forEach(({ queryKey, data }) => {
-    queryClient.setQueriesData(
-      { queryKey },
-      options?.updater ? (oldData: any) => options.updater(oldData, data) : data
-    )
+  notifyManager.batch(() => {
+    updates.forEach(({ queryKey, data }) => {
+      queryClient.setQueriesData(
+        { queryKey },
+        options?.updater
+          ? (oldData: any) => options.updater(oldData, data)
+          : data
+      )
+    })
   })
 }
