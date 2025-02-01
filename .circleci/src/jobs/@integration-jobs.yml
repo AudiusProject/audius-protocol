@@ -77,6 +77,6 @@ integration-test:
     - run:
         name: cleanup
         no_output_timeout: 5m
-        command: . ~/.profile; audius-compose down && cd ~ && rm -rf audius-protocol
+        command: . ~/.profile; audius-compose down
         when: always
     - docker-prune
