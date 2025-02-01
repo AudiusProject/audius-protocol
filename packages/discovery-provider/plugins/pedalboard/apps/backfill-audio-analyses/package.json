@@ -39,6 +39,7 @@
     "@types/jest": "26.0.22",
     "@types/morgan": "1.9.2",
     "@types/node": "15.12.2",
+    "@types/redis": "4.0.11",
     "@types/supertest": "2.0.11",
     "esbuild": "0.14.38",
     "esbuild-register": "3.3.2",
