@@ -1,28 +1,25 @@
-import { useMemo } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 
-import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { difference, shuffle } from 'lodash'
-import { useSelector } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 
-import { UserCollectionMetadata } from '~/models/Collection'
 import { ID } from '~/models/Identifiers'
 import { TimeRange } from '~/models/TimeRange'
 import { Track } from '~/models/Track'
 import { getUserId } from '~/store/account/selectors'
+import { addTrackToPlaylist } from '~/store/cache/collections/actions'
 
-import { getCollectionQueryKey, useCollection } from './useCollection'
+import { useCollection } from './useCollection'
 import { useFavoritedTracks } from './useFavoritedTracks'
 import { useTracks } from './useTracks'
 import { useTrending } from './useTrending'
 
-const SUGGESTED_TRACK_COUNT = 5
+export const SUGGESTED_TRACK_COUNT = 5
 
 const isValidTrack = (track: Track) => {
   return (
-    !track.is_stream_gated &&
-    !track.is_delete &&
-    !track.is_invalid &&
-    !track.is_unlisted
+    // !track.is_stream_gated &&
+    !track.is_delete && !track.is_invalid && !track.is_unlisted
   )
 }
 
@@ -33,7 +30,6 @@ export type SuggestedTrack = {
 
 export const useSuggestedPlaylistTracks = (collectionId: ID) => {
   const currentUserId = useSelector(getUserId)
-  const queryClient = useQueryClient()
 
   // Get current collection tracks to exclude
   const { data: collection, isLoading: isLoadingCollection } =
@@ -65,11 +61,6 @@ export const useSuggestedPlaylistTracks = (collectionId: ID) => {
     }
   )
 
-  const uniqueIds = new Set([
-    ...favoritedTracks.map((track) => track.save_item_id),
-    ...trendingTracks.map((track) => track.track_id)
-  ])
-
   // Combine and filter tracks
   const suggestedTrackIds = useMemo(() => {
     const favoriteIds = favoritedTracks.map((track) => track.save_item_id)
@@ -84,12 +75,11 @@ export const useSuggestedPlaylistTracks = (collectionId: ID) => {
     )
 
     // Shuffle and take first N
-    return shuffle(combinedIds).slice(0, SUGGESTED_TRACK_COUNT)
-  }, [uniqueIds, collectionTrackIds])
+    return shuffle(combinedIds).slice(0, SUGGESTED_TRACK_COUNT * 3)
+  }, [favoritedTracks, trendingTracks, collectionTrackIds])
 
-  console.log('suggestedTrackIds', suggestedTrackIds)
   // Load track data
-  const { data: tracks = [], isLoading } = useTracks(suggestedTrackIds, {
+  const { data: tracks = [] } = useTracks(suggestedTrackIds, {
     enabled:
       !isLoadingFavoritedTracks &&
       !isLoadingTrendingTracks &&
@@ -97,51 +87,35 @@ export const useSuggestedPlaylistTracks = (collectionId: ID) => {
   })
 
   // Format suggested tracks
-  const suggestedTracks = useMemo(
-    () =>
+  const [suggestedTracks, setSuggestedTracks] = useState<SuggestedTrack[]>([])
+  useEffect(() => {
+    setSuggestedTracks(
       tracks
         .filter((track) => !!track && isValidTrack(track))
         .map((track) => ({
           id: track.track_id,
           track
-        })),
-    [tracks]
+        }))
+        .slice(0, SUGGESTED_TRACK_COUNT)
+    )
+  }, [tracks])
+
+  const dispatch = useDispatch()
+  const onAddTrack = useCallback(
+    async (trackId: ID) => {
+      // feature-tan-query TODO: add via mutation hook
+      dispatch(addTrackToPlaylist(trackId, collectionId))
+    },
+    [collectionId, dispatch]
   )
-
-  const { mutate: onAddTrack } = useMutation({
-    mutationFn: async (trackId: ID) => {
-      const collection = queryClient.getQueryData<UserCollectionMetadata>([
-        'collections',
-        collectionId
-      ])
-      if (!collection) return
-
-      const updatedTrackIds = [
-        ...collection.playlist_contents.track_ids,
-        { track: trackId, time: Date.now() }
-      ]
-
-      queryClient.setQueryData(getCollectionQueryKey(collectionId), {
-        ...collection,
-        playlist_contents: {
-          ...collection.playlist_contents,
-          track_ids: updatedTrackIds
-        }
-      })
-    }
-  })
-
-  const { mutate: onRefresh } = useMutation({
-    // this will trigger a re-shuffling of the tracks as well
-    mutationFn: fetchNextPageTrending
-  })
+  const onRefresh = useCallback(async () => {
+    fetchNextPageTrending()
+    setSuggestedTracks([])
+  }, [fetchNextPageTrending, setSuggestedTracks])
 
   return {
     suggestedTracks,
-    isRefreshing: isLoading,
-    // onRefresh: () => onRefresh({}),
-    // onAddTrack: (trackId: ID) => onAddTrack(trackId)
-    onRefresh: () => {},
-    onAddTrack: () => {}
+    onRefresh,
+    onAddTrack
   }
 }
