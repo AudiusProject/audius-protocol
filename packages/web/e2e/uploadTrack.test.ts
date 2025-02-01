@@ -1,10 +1,12 @@
 import { expect } from '@playwright/test'
 
+import { getAiAttributionUser, getTrack } from './data'
 import {
   RemixSettingsModal,
-  AccessAndSaleModal,
-  AttributionModal,
-  StemsAndDownloadsModal
+  TrackPriceAndAudienceModal,
+  AdvancedModal,
+  StemsAndDownloadsModal,
+  VisibilityModal
 } from './page-object-models/modals'
 import {
   EditTrackPage,
@@ -13,7 +15,6 @@ import {
 } from './page-object-models/upload'
 import { test, waitForUser } from './test'
 import { openCleanBrowser } from './utils'
-import { getAiAttributionUser, getTrack } from './data'
 
 test('should upload a track', async ({ page }) => {
   const trackTitle = `Test track ${Date.now()}`
@@ -49,18 +50,16 @@ test('should upload a track', async ({ page }) => {
 
 // TODO: re-enable if we decide it's critical path
 // https://linear.app/audius/issue/INF-703/re-enable-uploadtracktestts-advanced-test-cases
-test.skip('should upload a remix, hidden, AI-attributed track', async ({
-  page
-}) => {
-  const { url, name } = getTrack()
+test('should upload a remix, hidden, AI-attributed track', async ({ page }) => {
+  const { title, permalink } = getTrack()
   const { name: aiAttributionName } = getAiAttributionUser()
   const trackTitle = `Test track ${Date.now()}`
   const trackDescription = 'Test description'
   const genre = 'Alternative'
   const mood = 'Easygoing'
   const tags = ['TAG1', 'TAG2']
-  const remixUrl = url
-  const remixName = name
+  const remixUrl = `audius.co${permalink}`
+  const remixName = title
   const isrc = 'US-123-45-67890'
   const iswc = 'T-123456789-0'
 
@@ -88,18 +87,22 @@ test.skip('should upload a remix, hidden, AI-attributed track', async ({
   await remixSettingsModal.setAsRemixOf(remixUrl, remixName)
   await remixSettingsModal.save()
 
-  await editPage.openAccessAndSaleSettings()
-  const accessAndSaleModal = new AccessAndSaleModal(page)
-  expect(accessAndSaleModal.remixAlert).toBeVisible()
-  // Only public and hidden allowed for remixes
+  await editPage.openPriceAndAudienceSettings()
+  const priceAndAudienceModal = new TrackPriceAndAudienceModal(page)
+  expect(priceAndAudienceModal.remixAlert).toBeVisible()
+  // Only public is allowed for remixes
   await expect(
-    accessAndSaleModal.locator.getByRole('radio', { disabled: false })
-  ).toHaveCount(2)
-  await accessAndSaleModal.setHidden({ 'Share Button': true })
-  await accessAndSaleModal.save()
+    priceAndAudienceModal.locator.getByRole('radio', { disabled: false })
+  ).toHaveCount(1)
+  await priceAndAudienceModal.save()
+
+  await editPage.openVisibilitySettings()
+  const visibilitySettingsModal = new VisibilityModal(page)
+  await visibilitySettingsModal.setHidden()
+  await visibilitySettingsModal.save()
 
   await editPage.openAttributionSettings()
-  const attributionModal = new AttributionModal(page)
+  const attributionModal = new AdvancedModal(page)
   await attributionModal.markAsAIGenerated(aiAttributionName)
   await attributionModal.setISRC(isrc)
   await attributionModal.setISWC(iswc)
@@ -124,11 +127,8 @@ test.skip('should upload a remix, hidden, AI-attributed track', async ({
   await expect(trackHeading).toBeVisible()
 
   // Assert hidden
-  const hidden = page.getByRole('heading', {
-    name: /hidden track/i,
-    level: 5
-  })
-  await expect(hidden.first()).toBeVisible()
+  const makePublicButton = page.getByRole('button', { name: /make public/i })
+  await expect(makePublicButton.first()).toBeVisible()
 
   // Assert tagged
   const tag1 = page.getByRole('link', { name: tags[0] })
@@ -145,8 +145,8 @@ test.skip('should upload a remix, hidden, AI-attributed track', async ({
   await expect(description).toBeVisible()
 
   // Assert genre and mood
-  await expect(page.getByText(genre)).toBeVisible()
-  await expect(page.getByText(mood)).toBeVisible()
+  await expect(page.getByRole('link', { name: genre })).toBeVisible()
+  await expect(page.getByRole('link', { name: mood })).toBeVisible()
 
   // Assert shareable
   await expect(page.getByRole('button', { name: /share/i })).toBeVisible()
@@ -168,7 +168,7 @@ test.skip('should upload a remix, hidden, AI-attributed track', async ({
   // TODO
 })
 
-test.skip('should upload a premium track', async ({ page, browser }) => {
+test('should upload a premium track', async ({ page, browser }) => {
   const trackTitle = `Test premium track ${Date.now()}`
   const genre = 'Alternative'
   const price = '1.05'
@@ -186,10 +186,10 @@ test.skip('should upload a premium track', async ({ page, browser }) => {
   await editPage.setTitle(trackTitle)
   await editPage.setGenre(genre)
 
-  await editPage.openAccessAndSaleSettings()
-  const accessAndSaleModal = new AccessAndSaleModal(page)
-  await accessAndSaleModal.setPremium({ price, previewSeconds })
-  await accessAndSaleModal.save()
+  await editPage.openPriceAndAudienceSettings()
+  const priceAndAudienceModal = new TrackPriceAndAudienceModal(page)
+  await priceAndAudienceModal.setPremium({ price, previewSeconds })
+  await priceAndAudienceModal.save()
 
   await editPage.complete()
 
@@ -226,7 +226,7 @@ test.skip('should upload a premium track', async ({ page, browser }) => {
   await expect(newPage.getByText('$' + price)).toBeVisible()
 })
 
-test.skip('should upload a track with free stems', async ({ page }) => {
+test('should upload a track with free stems', async ({ page }) => {
   const trackTitle = `Test stems track ${Date.now()}`
   const genre = 'Alternative'
 
@@ -268,9 +268,25 @@ test.skip('should upload a track with free stems', async ({ page }) => {
 
   // Assert Stems & Downloads
   await page.getByRole('button', { name: /stems & downloads/i }).click()
-  await expect(page.getByText(/full track/i)).toBeVisible()
-  await expect(page.getByText(/stem-1.mp3/i)).toBeVisible()
-  await expect(page.getByText(/instrumental/i)).toBeVisible()
-  await expect(page.getByText(/stem-2.mp3/i)).toBeVisible()
-  await expect(page.getByText(/lead vocals/i)).toBeVisible()
+  const fullTrackRow = page.getByRole('row').filter({ hasText: /full track/i })
+  const instrumentalRow = page
+    .getByRole('row')
+    .filter({ hasText: /instrumental/i })
+  const leadVocalsRow = page
+    .getByRole('row')
+    .filter({ hasText: /lead vocals/i })
+  await expect(fullTrackRow).toBeVisible()
+  await expect(
+    fullTrackRow.getByRole('button', { name: /download stem/i })
+  ).toBeEnabled()
+  await expect(instrumentalRow).toBeVisible()
+  await expect(instrumentalRow.getByText(/stem-1.*?\.mp3/i)).toBeVisible()
+  await expect(
+    instrumentalRow.getByRole('button', { name: /download stem/i })
+  ).toBeEnabled()
+  await expect(leadVocalsRow).toBeVisible()
+  await expect(leadVocalsRow.getByText(/stem-2.*?\.mp3/i)).toBeVisible()
+  await expect(
+    leadVocalsRow.getByRole('button', { name: /download stem/i })
+  ).toBeEnabled()
 })

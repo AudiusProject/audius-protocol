@@ -1,7 +1,8 @@
 import { expect } from '@playwright/test'
+
+import { getTrack2 } from './data'
 import { SocialActions } from './page-object-models/socialActions'
 import { test } from './test'
-import { getTrack2 } from './data'
 
 test('should favorite/unfavorite a track', async ({ page }) => {
   const { url } = getTrack2()

@@ -72,7 +72,7 @@ export const readConfig = (): Config => {
     relay_server_port: num({ default: 6001 }),
     audius_final_poa_block: num({ default: 0 }),
     audius_redis_url: str({
-      default: 'redis://audius-protocol-discovery-provider-redis-1:6379/00'
+      default: 'redis://audius-protocol-discovery-provider-redis-1:6379/0'
     }),
     audius_contracts_verified_address: str({ default: '' }),
     audius_core_endpoint: str({ default: '' })

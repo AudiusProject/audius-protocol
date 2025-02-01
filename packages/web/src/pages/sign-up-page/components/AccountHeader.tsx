@@ -67,7 +67,7 @@ const ProfileImageAvatar = ({
       }}
       isLoading={false}
     >
-      {isEditing && !imageUrl ? (
+      {isEditing && (!imageUrl || imageUrl === imageProfilePicEmpty) ? (
         <IconButton
           aria-label='Upload a profile photo'
           size='l'

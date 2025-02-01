@@ -7,6 +7,7 @@ version: '3'
 
 services:
   app-template:
+    user: ${DOCKER_UID:-root}:${DOCKER_GID:-root}
     extends:
       file: docker-compose.pedalboard.prod.yml
       service: app-template
@@ -73,15 +74,6 @@ services:
     extends:
       file: docker-compose.pedalboard.prod.yml
       service: mri
-    build:
-      dockerfile: ${PROJECT_ROOT}/packages/discovery-provider/plugins/pedalboard/docker/Dockerfile.dev
-    volumes:
-      - ${PROJECT_ROOT}:/app
-
-  backfill-audio-analyses:
-    extends:
-      file: docker-compose.pedalboard.prod.yml
-      service: backfill-audio-analyses
     build:
       dockerfile: ${PROJECT_ROOT}/packages/discovery-provider/plugins/pedalboard/docker/Dockerfile.dev
     volumes:
