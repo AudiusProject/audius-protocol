@@ -69,7 +69,11 @@ export const useLineupQuery = ({
       ...lineup,
       status,
       isMetadataLoading: status === Status.LOADING,
-      hasMore: queryData.isLoading ? true : queryData.hasNextPage
+      hasMore: queryData.isLoading
+        ? true
+        : 'hasNextPage' in queryData
+          ? queryData.hasNextPage
+          : false
     },
     togglePlay,
     play,
