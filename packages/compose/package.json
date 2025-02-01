@@ -6,7 +6,7 @@
     "start": "./start.sh"
   },
   "dependencies": {
-    "@audius/command": "*",
+    "@audius/commands": "*",
     "@audius/sdk": "*",
     "@audius/spl": "*",
     "@pedalboard/relay": "*",
