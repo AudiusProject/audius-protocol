@@ -158,6 +158,8 @@ export const TrackTableLineup = ({
       fetchMore={loadNextPage}
       loading={isInitialLoading}
       pageSize={pageSize}
+      fetchBatchSize={pageSize}
+      fetchThreshold={pageSize ? pageSize / 2 : undefined}
     />
   )
 }
