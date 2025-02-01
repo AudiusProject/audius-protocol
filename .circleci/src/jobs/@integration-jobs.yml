@@ -42,7 +42,7 @@ integration-test:
         command: AUDIUS_DEV=false bash ./dev-tools/setup.sh
     - run:
         name: npm run protocol
-        command: . ~/.profile; export UID=$(id -u); export GID=$(id -g); npm run protocol
+        command: . ~/.profile; export UID=$(id -u) || true; export GID=$(id -g) || true; npm run protocol
     - run:
         name: audius-cmd test
         no_output_timeout: 15m
