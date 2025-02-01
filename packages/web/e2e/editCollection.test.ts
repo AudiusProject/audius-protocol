@@ -30,12 +30,13 @@ test('should persist collection edits', async ({ page }) => {
   await expect(page.getByText(/confirm update/i)).toBeVisible()
   await page.getByRole('button', { name: /update audience/i }).click()
 
+  const confirmationPromise = waitForConfirmation(page)
   await editAlbumPage.save()
 
-  // Assert title changed
+  // Assert title changed (might take a bit for art to upload)
   await expect(
     page.getByRole('heading', { name: newTitle, level: 1 })
-  ).toBeVisible({ timeout: 20 * 1000 })
+  ).toBeVisible({ timeout: 30 * 1000 })
 
   // Assert description changed
   await expect(page.getByText(newDescription)).toBeVisible()
@@ -47,7 +48,7 @@ test('should persist collection edits', async ({ page }) => {
   await expect(page.getByText(newPrice)).toBeVisible()
 
   // Check it all persists upon reload
-  await waitForConfirmation(page)
+  await confirmationPromise
   await page.reload()
 
   // Assert title changed
