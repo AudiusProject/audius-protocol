@@ -16,7 +16,9 @@ setup('seed data', async () => {
   }
 
   const audiusCmd = async (cmd: string) => {
-    return await exec(`${audiusCmdPath} ${cmd}`)
+    const { stderr, stdout } = await exec(`${audiusCmdPath} ${cmd}`)
+    console.info(stdout)
+    console.error(stderr)
   }
 
   // Create a user
