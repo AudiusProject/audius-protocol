@@ -16,9 +16,7 @@ import { Genre, formatMusicalKey } from '~/utils'
 
 import { QUERY_KEYS } from './queryKeys'
 import { QueryOptions } from './types'
-import { getCollectionQueryKey } from './useCollection'
-import { getTrackQueryKey } from './useTrack'
-import { getUserQueryKey } from './useUser'
+import { batchSetQueriesEntries } from './utils/batchSetQueriesEntries'
 
 export type SearchCategory = 'all' | 'tracks' | 'albums' | 'playlists' | 'users'
 
@@ -174,47 +172,24 @@ export const useSearchResults = (
         albums?.length ||
         playlists?.length
       ) {
-        const entries: EntriesByKind = {}
-
-        if (tracks?.length) {
-          entries[Kind.TRACKS] = {}
-          tracks.forEach((track) => {
-            queryClient.setQueryData(getTrackQueryKey(track.track_id), track)
-            entries[Kind.TRACKS]![track.track_id] = track
-          })
-        }
-
-        if (users?.length) {
-          entries[Kind.USERS] = {}
-          users.forEach((user) => {
-            queryClient.setQueryData(getUserQueryKey(user.user_id), user)
-            entries[Kind.USERS]![user.user_id] = user
-          })
-        }
-
-        if (albums?.length) {
-          entries[Kind.COLLECTIONS] = {}
-          albums.forEach((album) => {
-            queryClient.setQueryData(
-              getCollectionQueryKey(album.playlist_id),
-              album
-            )
-            entries[Kind.COLLECTIONS]![album.playlist_id] = album
-          })
-        }
-
-        if (playlists?.length) {
-          if (!entries[Kind.COLLECTIONS]) entries[Kind.COLLECTIONS] = {}
-          playlists.forEach((playlist) => {
-            queryClient.setQueryData(
-              getCollectionQueryKey(playlist.playlist_id),
+        const entries: EntriesByKind = {
+          [Kind.TRACKS]: Object.fromEntries(
+            tracks?.map((track) => [track.track_id, track]) ?? []
+          ),
+          [Kind.USERS]: Object.fromEntries(
+            users?.map((user) => [user.user_id, user]) ?? []
+          ),
+          [Kind.COLLECTIONS]: Object.fromEntries([
+            ...(albums?.map((album) => [album.playlist_id, album]) ?? []),
+            ...(playlists?.map((playlist) => [
+              playlist.playlist_id,
               playlist
-            )
-            entries[Kind.COLLECTIONS]![playlist.playlist_id] = playlist
-          })
+            ]) ?? [])
+          ])
         }
 
         // Sync all data to Redux in a single dispatch
+        batchSetQueriesEntries({ entries, queryClient })
         dispatch(addEntries(entries, undefined, undefined, 'react-query'))
       }
       const formattedTracks = tracks.map((track) => ({
