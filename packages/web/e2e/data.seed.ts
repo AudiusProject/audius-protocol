@@ -25,6 +25,7 @@ setup('seed data', async () => {
 
   console.info('Getting entropy...')
   await audiusCmd(`entropy > ${dataFilePath('entropy.txt')}`)
+  console.info('User and entropy created.')
 
   // Upload a track
   console.info('Uploading track...')
@@ -33,6 +34,7 @@ setup('seed data', async () => {
     await readFile(dataFilePath('track.json'), 'utf8')
   ).trackId
   await audiusCmd(`track get ${trackId} > ${dataFilePath('track.json')}`)
+  console.info(`Track ${trackId} created.`)
 
   await Promise.all([
     (async () => {
@@ -44,6 +46,7 @@ setup('seed data', async () => {
         await readFile(dataFilePath('album.json'), 'utf8')
       ).playlistId
       await audiusCmd(`album get ${albumId} > ${dataFilePath('album.json')}`)
+      console.info(`Album ${albumId} created.`)
     })(),
     (async () => {
       console.info('Creating second album...')
@@ -54,6 +57,7 @@ setup('seed data', async () => {
         await readFile(dataFilePath('album2.json'), 'utf8')
       ).playlistId
       await audiusCmd(`album get ${album2Id} > ${dataFilePath('album2.json')}`)
+      console.info(`Album2 ${album2Id} created.`)
     })(),
     (async () => {
       console.info('Creating playlist...')
@@ -66,9 +70,10 @@ setup('seed data', async () => {
       await audiusCmd(
         `playlist get ${playlistId} > ${dataFilePath('playlist.json')}`
       )
+      console.info(`Playlist ${playlistId} created.`)
     })(),
     (async () => {
-      console.info('Creating remix...')
+      console.info('Uploading remix...')
       await audiusCmd(
         `track upload --remix-of '{"tracks":[{"parentTrackId":"${trackId}"}]}' -o json > ${dataFilePath('remix.json')}`
       )
@@ -76,18 +81,21 @@ setup('seed data', async () => {
         await readFile(dataFilePath('remix.json'), 'utf8')
       ).trackId
       await audiusCmd(`track get ${remixId} > ${dataFilePath('remix.json')}`)
+      console.info(`Remix ${remixId} uploaded.`)
     })()
   ])
 
   // Create another user
-  console.info('Creating user2')
+  console.info('Creating user2...')
   await audiusCmd(`user create -ai -o json > ${dataFilePath('user2.json')}`)
+  console.info('User2 created.')
 
   // Upload another track
-  console.info('Uploading track2')
+  console.info('Uploading track2...')
   await audiusCmd(`track upload -o json > ${dataFilePath('track2.json')}`)
   const track2Id = JSON.parse(
     await readFile(dataFilePath('track2.json'), 'utf8')
   ).trackId
   await audiusCmd(`track get ${track2Id} > ${dataFilePath('track2.json')}`)
+  console.info(`Track2 ${track2Id} uploaded.`)
 })
