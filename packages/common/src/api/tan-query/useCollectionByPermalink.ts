@@ -16,7 +16,7 @@ export const getCollectionByPermalinkQueryKey = (
   permalink: string | undefined | null
 ) => [QUERY_KEYS.collectionByPermalink, permalink]
 
-const playlistPermalinkToHandleAndSlug = (permalink: string) => {
+export const playlistPermalinkToHandleAndSlug = (permalink: string) => {
   const splitPermalink = permalink.split('/')
   if (splitPermalink.length !== 4) {
     throw Error(

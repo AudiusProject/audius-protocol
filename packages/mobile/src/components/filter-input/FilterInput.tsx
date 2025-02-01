@@ -1,36 +1,33 @@
-import type { TextInputProps } from 'react-native'
 import Animated, { Layout } from 'react-native-reanimated'
 
-import { IconFilter } from '@audius/harmony-native'
-import { TextInput, Tile } from 'app/components/core'
-import { makeStyles } from 'app/styles'
+import type { PaperProps, TextInputProps } from '@audius/harmony-native'
+import {
+  IconFilter,
+  Paper,
+  TextInput,
+  TextInputSize
+} from '@audius/harmony-native'
 
-type FilterInputProps = TextInputProps
-
-const useStyles = makeStyles(({ spacing }) => ({
-  tileRoot: {
-    marginVertical: spacing(4),
-    marginHorizontal: spacing(3)
-  },
-  tile: {
-    padding: spacing(2)
-  }
-}))
+type FilterInputProps = PaperProps &
+  Pick<TextInputProps, 'onChangeText' | 'placeholder' | 'value' | 'autoFocus'>
 
 export const FilterInput = (props: FilterInputProps) => {
-  const { onChangeText, placeholder } = props
-  const styles = useStyles()
+  const { onChangeText, placeholder, value, autoFocus, ...paperProps } = props
 
   return (
     <Animated.View layout={Layout}>
-      <Tile styles={{ root: styles.tileRoot, tile: styles.tile }}>
+      <Paper mv='l' mh='m' p='s' {...paperProps}>
         <TextInput
+          label='filter'
+          size={TextInputSize.SMALL}
           placeholder={placeholder}
           onChangeText={onChangeText}
+          value={value}
           returnKeyType='search'
-          Icon={IconFilter}
+          endAdornment={<IconFilter color='subdued' size='m' />}
+          autoFocus={autoFocus}
         />
-      </Tile>
+      </Paper>
     </Animated.View>
   )
 }
