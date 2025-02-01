@@ -6,8 +6,7 @@ import {
   Kind,
   ID,
   UID,
-  ModalSource,
-  Status
+  ModalSource
 } from '@audius/common/models'
 import { LineupQueryData } from '@audius/common/src/api/tan-query/types'
 import {
@@ -27,7 +26,8 @@ import TrackTileMobile from 'components/track/mobile/ConnectedTrackTile'
 import {
   TrackTileProps,
   PlaylistTileProps,
-  TrackTileSize
+  TrackTileSize,
+  TileProps
 } from 'components/track/types'
 import { useIsMobile } from 'hooks/useIsMobile'
 
@@ -46,21 +46,62 @@ export interface TanQueryLineupProps {
   // Other props
   variant?: LineupVariant
   scrollParent?: HTMLElement | null
-  endOfLineup?: JSX.Element
+  endOfLineupElement?: JSX.Element
 
   /**
    * Whether or not to delineate the lineup by time of the `activityTimestamp` prop
    */
   delineate?: boolean
 
+  /**
+   * Indicator if a track should be displayed differently (ie. artist pick)
+   * The leadingElementId is displayed at the top of the lineup
+   */
+  leadingElementId?: ID
+
+  /**
+   * JSX Element that can be used to delineate the leading element from the rest
+   */
+  leadingElementDelineator?: JSX.Element | null
+
+  /**
+   * Track tile properties to optionally pass to the leading element track tile
+   */
+  leadingElementTileProps?: Partial<TileProps>
+
+  /**
+   * Class name to optionally apply to the leading element
+   */
+  leadingElementClassName?: string
+
+  /**
+   * Class name to optionally apply to the container after the leading element
+   */
+  laggingContainerClassName?: string
+
+  /**
+   * Whether or not to animate the sliding in of the leading element
+   */
+  animateLeadingElement?: boolean
+
+  /**
+   * Whether or not to apply leading element tile props and styles to the
+   * skeleton tile rendered in its place
+   */
+  applyLeadingElementStylesToSkeleton?: boolean
+
+  /**
+   * Extra content that preceeds the lineup to be rendered. Can be anything,
+   * but is not tied to playback or other lineup pagination logic.
+   */
+  extraPrecedingElement?: JSX.Element
+
   ordered?: boolean
   lineupContainerStyles?: string
   tileContainerStyles?: string
   tileStyles?: string
-  setInView?: (inView: boolean) => void
   emptyElement?: JSX.Element
   actions: LineupBaseActions
-  delayLoad?: boolean
   /** How many rows to show for a loading playlist tile. Defaults to 0 */
   numPlaylistSkeletonRows?: number
 
@@ -71,6 +112,7 @@ export interface TanQueryLineupProps {
   onClickTile?: (trackId: ID) => void
   pageSize: number
   initialPageSize?: number
+  loadMoreThreshold?: number
 
   /** Starting index to render from */
   start?: number
@@ -85,13 +127,14 @@ const defaultLineup = {
   total: 0,
   deleted: 0,
   nullCount: 0,
-  status: Status.LOADING,
   hasMore: true,
   inView: true,
   prefix: '',
   page: 0,
   isMetadataLoading: false
 }
+
+const DEFAULT_LOAD_MORE_THRESHOLD = 700 // px
 
 /** `TanQueryLineup` encapsulates the logic for displaying a Lineup (e.g. prefetching items)
  * displaying loading states, etc). This is decoupled from the rendering logic, which
@@ -103,11 +146,10 @@ export const TanQueryLineup = ({
   variant = LineupVariant.MAIN,
   ordered = false,
   delineate = false,
-  endOfLineup,
+  endOfLineupElement: endOfLineup,
   lineupContainerStyles,
   tileContainerStyles,
   tileStyles,
-  setInView,
   emptyElement,
   numPlaylistSkeletonRows,
   isTrending = false,
@@ -115,6 +157,7 @@ export const TanQueryLineup = ({
   pageSize,
   initialPageSize,
   scrollParent: externalScrollParent,
+  loadMoreThreshold = DEFAULT_LOAD_MORE_THRESHOLD,
   start,
   shouldLoadMore = true
 }: TanQueryLineupProps) => {
@@ -125,9 +168,10 @@ export const TanQueryLineup = ({
     pause,
     loadNextPage,
     hasNextPage,
-    isPlaying,
-    isFetching,
-    isError
+    isLoading = true,
+    isPlaying = false,
+    isFetching = true,
+    isError = false
   } = lineupQueryData
 
   const getCurrentQueueItem = useMemo(() => makeGetCurrent(), [])
@@ -151,13 +195,6 @@ export const TanQueryLineup = ({
     useState<HTMLElement | null>(externalScrollParent || null)
 
   // Effects
-  useEffect(() => {
-    if (setInView) setInView(true)
-    return () => {
-      if (setInView) setInView(false)
-    }
-  }, [setInView])
-
   useEffect(() => {
     if (
       externalScrollParent &&
@@ -297,7 +334,7 @@ export const TanQueryLineup = ({
   }
 
   // On initial load we won't have any data loaded so we show skeletons based on the initial page size
-  if (isFetching && tiles.length === 0) {
+  if ((isFetching && tiles.length === 0) || isLoading) {
     return renderSkeletons(initialPageSize ?? pageSize)
   }
 
@@ -344,7 +381,8 @@ export const TanQueryLineup = ({
                 return internalScrollParent
               }}
               element='ol'
-              loader={isFetching ? renderSkeletons(pageSize) : <></>}
+              loader={renderSkeletons(pageSize)}
+              threshold={loadMoreThreshold}
             >
               {tiles.map((tile: any, index: number) => (
                 <li key={index} className={cn({ [tileStyles!]: !!tileStyles })}>

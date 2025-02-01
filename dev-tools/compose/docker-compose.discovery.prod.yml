@@ -6,7 +6,7 @@ services:
     image: redis:7.0
     command: redis-server
     healthcheck:
-      test: ['CMD', 'redis-cli', 'PING']
+      test: [ 'CMD', 'redis-cli', 'PING' ]
       interval: 10s
       timeout: 5s
     deploy:
@@ -69,20 +69,6 @@ services:
     profiles:
       - comms
 
-  trpc:
-    build:
-      context: ${PROJECT_ROOT}/packages/trpc-server
-      dockerfile: Dockerfile
-    restart: unless-stopped
-    environment:
-      audius_elasticsearch_url: http://discovery-provider-elasticsearch:9200
-      audius_db_url: 'postgresql://postgres:postgres@db:5432/discovery_provider_1'
-    depends_on:
-      db:
-        condition: service_healthy
-    profiles:
-      - discovery
-
   es-indexer:
     build:
       context: ${PROJECT_ROOT}/packages/es-indexer
@@ -107,11 +93,7 @@ services:
       identity-service-redis:
         condition: service_healthy
     healthcheck:
-      test:
-        [
-          'CMD-SHELL',
-          'curl --fail http://localhost:9200/_cluster/health || exit 1'
-        ]
+      test: [ 'CMD-SHELL', 'curl --fail http://localhost:9200/_cluster/health || exit 1' ]
       interval: 10s
       timeout: 5s
       retries: 15
@@ -168,11 +150,7 @@ services:
       - ${PROJECT_ROOT}/packages/discovery-provider/src:/audius-discovery-provider/src
       - ${PROJECT_ROOT}/dev-tools:/tmp/dev-tools
     healthcheck:
-      test:
-        [
-          'CMD-SHELL',
-          'pgrep pg_migrate || curl -f http://localhost:5000/health_check || exit 1'
-        ]
+      test: [ 'CMD-SHELL', 'pgrep pg_migrate || curl -f http://localhost:5000/health_check || exit 1' ]
       interval: 5s
       timeout: 10s
       retries: 180

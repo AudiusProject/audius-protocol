@@ -82,7 +82,10 @@ const AiPage = g(({ title, user, getLineupProps, goToArtistPage }) => {
             />
           </span>
         </div>
-        <TanQueryLineup {...lineupProps} endOfLineup={<ShareAiTracksTile />} />
+        <TanQueryLineup
+          {...lineupProps}
+          endOfLineupElement={<ShareAiTracksTile />}
+        />
       </div>
     </MobilePageContainer>
   )

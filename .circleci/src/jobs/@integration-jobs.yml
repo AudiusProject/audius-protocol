@@ -26,8 +26,6 @@ integration-init:
           - packages/libs/dist
           - packages/sdk/node_modules
           - packages/sdk/dist
-          - packages/trpc-server/node_modules
-          - packages/trpc-server/dist
 
 integration-test:
   machine: true

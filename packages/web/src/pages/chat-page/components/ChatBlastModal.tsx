@@ -9,6 +9,7 @@ import {
   chatActions,
   useCreateChatModal
 } from '@audius/common/src/store'
+import { formatNumberCommas } from '@audius/common/utils'
 import {
   Flex,
   IconTowerBroadcast,
@@ -182,7 +183,7 @@ const LabelWithCount = (props: {
       </Text>
       {isSelected && count ? (
         <Text variant='title' size='l' color='subdued'>
-          ({count})
+          ({formatNumberCommas(count)})
         </Text>
       ) : null}
     </Flex>

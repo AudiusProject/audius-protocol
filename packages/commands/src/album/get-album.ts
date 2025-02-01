@@ -1,16 +1,16 @@
 import { Command } from '@commander-js/extra-typings'
 import { getCurrentUserId, initializeAudiusSdk } from '../utils'
 
-export const getPlaylistCommand = new Command('get')
-  .description('Get a playlist by ID')
-  .argument('<playlistId>', 'The playlist to fetch')
+export const getAlbumCommand = new Command('get')
+  .description('Get an album by ID')
+  .argument('<albumId>', 'The album to fetch')
   .option('--from <from>', 'The account to use')
-  .action(async (playlistId, { from }) => {
+  .action(async (albumId, { from }) => {
     const audiusSdk = await initializeAudiusSdk({ handle: from })
     const userId = await getCurrentUserId()
     const { data: playlist } = await audiusSdk.full.playlists.getPlaylist({
       userId,
-      playlistId
+      playlistId: albumId
     })
     console.info(JSON.stringify(playlist, undefined, 2))
   })

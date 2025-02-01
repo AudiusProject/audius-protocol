@@ -80,6 +80,8 @@ def get_monitors_mock(monkeypatch):
 
 @pytest.fixture
 def mock_requests(monkeypatch):
+    real_get = requests.get
+
     def mock_relay_health(*args, **kwargs):
         url = args[0]
 
@@ -100,7 +102,7 @@ def mock_requests(monkeypatch):
             return MockResponse(json_response, 200)
 
         # For all other URLs and endpoints, perform the actual request using requests.get
-        return requests.get(*args, **kwargs)
+        return real_get(*args, **kwargs)  # Call the original requests.get
 
     # Apply the mock_get function to requests.get
     monkeypatch.setattr(requests, "get", mock_relay_health)

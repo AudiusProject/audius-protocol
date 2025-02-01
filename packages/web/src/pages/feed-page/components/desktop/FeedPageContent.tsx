@@ -1,4 +1,8 @@
-import { useFeed } from '@audius/common/api'
+import {
+  FEED_INITIAL_PAGE_SIZE,
+  FEED_LOAD_MORE_PAGE_SIZE,
+  useFeed
+} from '@audius/common/api'
 import { Name, FeedFilter } from '@audius/common/models'
 import { useCurrentUserId } from '@audius/common/src/api/tan-query/useCurrentUserId'
 import { feedPageLineupActions as feedActions } from '@audius/common/store'
@@ -19,34 +23,28 @@ const messages = {
   feedHeaderTitle: 'Your Feed'
 }
 
-const INITIAL_PAGE_SIZE = 10
-const ADDITIONAL_PAGE_SIZE = 4
-
 const FeedPageContent = ({
   feedTitle,
   feedDescription,
   feedIsMain,
-  setFeedInView,
-  getLineupProps,
   feedFilter,
   setFeedFilter,
-  resetFeedLineup
+  resetFeedLineup,
+  scrollParentRef
 }: FeedPageContentProps) => {
   const { data: currentUserId } = useCurrentUserId()
   const lineupQueryData = useFeed({
     userId: currentUserId,
     filter: feedFilter,
-    initialPageSize: INITIAL_PAGE_SIZE,
-    loadMorePageSize: ADDITIONAL_PAGE_SIZE
+    initialPageSize: FEED_INITIAL_PAGE_SIZE,
+    loadMorePageSize: FEED_LOAD_MORE_PAGE_SIZE
   })
 
-  const lineupProps = getLineupProps(lineupQueryData.lineup)
-  const scrollParent = lineupProps.scrollParent
   const record = useRecord()
 
   const didSelectFilter = (filter: FeedFilter) => {
-    if (scrollParent && scrollParent.scrollTo) {
-      scrollParent.scrollTo(0, 0)
+    if (scrollParentRef && scrollParentRef.scrollTo) {
+      scrollParentRef.scrollTo(0, 0)
     }
     setFeedFilter(filter)
     resetFeedLineup()
@@ -74,13 +72,12 @@ const FeedPageContent = ({
       header={header}
     >
       <TanQueryLineup
-        {...lineupProps}
+        scrollParent={scrollParentRef}
         lineupQueryData={lineupQueryData}
-        initialPageSize={INITIAL_PAGE_SIZE}
-        pageSize={ADDITIONAL_PAGE_SIZE}
+        initialPageSize={FEED_INITIAL_PAGE_SIZE}
+        pageSize={FEED_LOAD_MORE_PAGE_SIZE}
         emptyElement={<EmptyFeed />}
-        endOfLineup={<EndOfLineup />}
-        setInView={setFeedInView}
+        endOfLineupElement={<EndOfLineup />}
         delineate={feedIsMain}
         actions={feedActions}
         variant={LineupVariant.MAIN}

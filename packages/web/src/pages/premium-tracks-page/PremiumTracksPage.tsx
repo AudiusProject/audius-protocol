@@ -26,7 +26,7 @@ export const PremiumTracksPage = () => {
       <TanQueryLineup
         actions={premiumTracksPageLineupActions}
         scrollParent={ref.current}
-        endOfLineup={
+        endOfLineupElement={
           <EndOfLineup description={messages.endOfLineupDescription} />
         }
         lineupQueryData={premiumTracksData}

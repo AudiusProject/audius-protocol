@@ -14,7 +14,6 @@ import {
 import { QUERY_KEYS } from './queryKeys'
 import { QueryOptions } from './types'
 import { useCurrentUserId } from './useCurrentUserId'
-import { loadNextPage } from './utils/infiniteQueryLoadNextPage'
 import { primeTrackData } from './utils/primeTrackData'
 import { useLineupQuery } from './utils/useLineupQuery'
 
@@ -80,7 +79,16 @@ export const useTrackHistory = (
 
       const tracks = transformAndCleanList(
         activityData,
-        (activity: full.ActivityFull) => trackActivityFromSDK(activity)?.item
+        (activity: full.ActivityFull) => {
+          const track = trackActivityFromSDK(activity)?.item
+          if (track) {
+            return {
+              ...track,
+              dateListened: activity.timestamp
+            }
+          }
+          return track
+        }
       )
       primeTrackData({ tracks, queryClient, dispatch })
 
@@ -97,6 +105,7 @@ export const useTrackHistory = (
 
       return tracks
     },
+    select: (data) => data.pages.flat(),
     staleTime: options?.staleTime,
     enabled: options?.enabled !== false && !!currentUserId
   })
@@ -110,6 +119,6 @@ export const useTrackHistory = (
   return {
     ...queryData,
     ...lineupData,
-    loadNextPage: loadNextPage(queryData)
+    pageSize
   }
 }
