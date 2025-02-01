@@ -1,9 +1,5 @@
 import { Mood, OptionalId } from '@audius/sdk'
-import {
-  InfiniteData,
-  useInfiniteQuery,
-  useQueryClient
-} from '@tanstack/react-query'
+import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query'
 import { isEmpty } from 'lodash'
 import { useDispatch } from 'react-redux'
 
