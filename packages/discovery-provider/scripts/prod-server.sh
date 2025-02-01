@@ -10,26 +10,25 @@ set -e
 
 # Use specified number of workers if present
 if [[ -z "${audius_gunicorn_workers}" ]]; then
-  WORKERS=2
+  WORKERS=8
 else
   WORKERS="${audius_gunicorn_workers}"
 fi
 
 # Use specified number of threads if present (only used for "sync" workers)
 if [[ -z "${audius_gunicorn_threads}" ]]; then
-  THREADS=8
+  THREADS=16
 else
   THREADS="${audius_gunicorn_threads}"
 fi
 
-audius_discprov_loglevel=${audius_discprov_loglevel:-info}
-
-
-# If a worker class is specified, use that. Otherwise, use sync workers.
+# Use specified worker class if present, default to gthread for better concurrency
 if [[ -z "${audius_gunicorn_worker_class}" ]]; then
-  exec gunicorn -b :5000 --error-logfile - src.wsgi:app --log-level=$audius_discprov_loglevel --workers=$WORKERS --threads=$THREADS --timeout=600
+  WORKER_CLASS="gthread"
 else
   WORKER_CLASS="${audius_gunicorn_worker_class}"
-  exec gunicorn -b :5000 --error-logfile - src.wsgi:app --log-level=$audius_discprov_loglevel --worker-class=$WORKER_CLASS --workers=$WORKERS --timeout=600
 fi
 
+audius_discprov_loglevel=${audius_discprov_loglevel:-info}
+
+exec gunicorn -b :5000 --error-logfile - src.wsgi:app --log-level=$audius_discprov_loglevel --worker-class=$WORKER_CLASS --workers=$WORKERS --threads=$THREADS --timeout=600 --max-requests=1000 --max-requests-jitter=100
