@@ -12,7 +12,7 @@ services:
       service: identity-service-redis
 
   identity-service:
-    user: ${UID:-root}:${GID:-root}
+    user: ${DOCKER_UID:-root}:${DOCKER_GID:-root}
     extends:
       file: docker-compose.identity.prod.yml
       service: identity-service

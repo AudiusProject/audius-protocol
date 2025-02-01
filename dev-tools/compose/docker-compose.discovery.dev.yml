@@ -45,7 +45,7 @@ services:
       - noop
 
   discovery-provider:
-    user: ${UID:-root}:${GID:-root}
+    user: ${DOCKER_UID:-root}:${DOCKER_GID:-root}
     extends:
       file: docker-compose.discovery.prod.yml
       service: discovery-provider

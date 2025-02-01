@@ -17,7 +17,7 @@ services:
       service: autoheal
 
   audius-cmd:
-    user: ${UID:-root}:${GID:-root}
+    user: ${DOCKER_UID:-root}:${DOCKER_GID:-root}
     extends:
       file: docker-compose.dev-tools.prod.yml
       service: audius-cmd
