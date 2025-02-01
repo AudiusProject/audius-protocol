@@ -28,6 +28,8 @@ integration-init:
           - packages/sdk/dist
           - packages/trpc-server/node_modules
           - packages/trpc-server/dist
+          - packages/discovery-provider/plugins/pedalboard/apps/relay/node_modules
+          - packages/discovery-provider/plugins/pedalboard/apps/solana-relay/node_modules
 
 integration-test:
   machine: true
