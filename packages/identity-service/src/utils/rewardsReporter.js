@@ -5,8 +5,6 @@ const RewardEventNames = {
   REWARDS_CLAIM_SUCCESS: 'Rewards Claim: Success',
   REWARDS_CLAIM_RETRY: 'Rewards Claim: Retry',
   REWARDS_CLAIM_FAILURE: 'Rewards Claim: Failure',
-  REWARDS_CLAIM_HCAPTCHA: 'Rewards Claim: Hcaptcha',
-  REWARDS_CLAIM_COGNITO: 'Rewards Claim: Cognito',
   REWARDS_CLAIM_OTHER: 'Rewards Claim: Other',
   REWARDS_CLAIM_BLOCKED: 'Rewards Claim: Blocked'
 }
@@ -168,8 +166,6 @@ class RewardsReporter {
       if (this.shouldReportAnalytics) {
         const event =
           {
-            hcaptcha: RewardEventNames.REWARDS_CLAIM_HCAPTCHA,
-            cognito: RewardEventNames.REWARDS_CLAIM_COGNITO,
             other: RewardEventNames.REWARDS_CLAIM_OTHER,
             blocked: RewardEventNames.REWARDS_CLAIM_BLOCKED
           }[reason] || RewardEventNames.REWARDS_CLAIM_BLOCKED
