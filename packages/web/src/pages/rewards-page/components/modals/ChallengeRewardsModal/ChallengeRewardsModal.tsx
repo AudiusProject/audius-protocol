@@ -355,7 +355,15 @@ const ChallengeRewardsBody = ({ dismissModal }: BodyProps) => {
   )
 
   const renderProgressStatusLabel = () => (
-    <Flex alignItems='center'>
+    <Flex
+      alignItems='center'
+      border='strong'
+      w='100%'
+      justifyContent='center'
+      ph='xl'
+      pv='l'
+      borderRadius='s'
+    >
       {challenge?.state === 'incomplete' ? (
         <Text variant='label' size='l' strength='strong' color='subdued'>
           {messages.incomplete}
@@ -476,7 +484,6 @@ const ChallengeRewardsBody = ({ dismissModal }: BodyProps) => {
           gap='s'
           ph='l'
           pv='xl'
-          borderLeft='strong'
           css={{
             flex: '1 1 0%'
           }}
@@ -583,24 +590,15 @@ const ChallengeRewardsBody = ({ dismissModal }: BodyProps) => {
               label={progressDescriptionLabel}
               description={progressDescription}
             />
-            <Paper
-              column
-              shadow='flat'
-              border='strong'
-              borderRadius='m'
-              w='100%'
-              backgroundColor='surface1'
-            >
-              <Flex justifyContent='center' borderBottom='strong'>
+            <Paper column shadow='flat' w='100%' borderRadius='s'>
+              <Flex justifyContent='center'>
                 <ProgressReward
                   amount={formatNumberCommas(progressRewardAmount ?? '')}
                   subtext={messages.audio}
                 />
                 {renderProgressBar()}
               </Flex>
-              <Flex justifyContent='center' ph='xl' pv='l'>
-                {renderProgressStatusLabel()}
-              </Flex>
+              <Flex justifyContent='center'>{renderProgressStatusLabel()}</Flex>
             </Paper>
             {modalType === 'profile-completion' ||
             modalType === ChallengeName.ProfileCompletion ? (
@@ -610,14 +608,7 @@ const ChallengeRewardsBody = ({ dismissModal }: BodyProps) => {
           </>
         ) : (
           <>
-            <Paper
-              column
-              shadow='flat'
-              border='strong'
-              borderRadius='m'
-              w='100%'
-              backgroundColor='surface1'
-            >
+            <Paper column w='100%' borderRadius='s' shadow='flat'>
               <Flex justifyContent='space-between'>
                 <ProgressDescription
                   label={progressDescriptionLabel}
@@ -628,15 +619,7 @@ const ChallengeRewardsBody = ({ dismissModal }: BodyProps) => {
                   subtext={messages.audio}
                 />
               </Flex>
-              <Flex
-                pv='l'
-                ph='xl'
-                borderTop='strong'
-                gap='l'
-                borderBottomLeftRadius='m'
-                borderBottomRightRadius='m'
-                justifyContent='center'
-              >
+              <Flex column gap='xl'>
                 {renderProgressStatusLabel()}
                 {renderProgressBar()}
               </Flex>

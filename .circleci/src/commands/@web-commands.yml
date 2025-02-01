@@ -158,7 +158,6 @@ web-distribute:
           - ./packages/common/node_modules
           - ./packages/libs/node_modules
           - ./packages/sdk/node_modules
-          - ./packages/trpc-server/node_modules
     - when:
         condition: << parameters.install-license >>
         steps:

@@ -26,8 +26,6 @@ integration-init:
           - packages/libs/dist
           - packages/sdk/node_modules
           - packages/sdk/dist
-          - packages/trpc-server/node_modules
-          - packages/trpc-server/dist
           - packages/discovery-provider/plugins/pedalboard/apps/relay/node_modules
           - packages/discovery-provider/plugins/pedalboard/apps/solana-relay/node_modules
 

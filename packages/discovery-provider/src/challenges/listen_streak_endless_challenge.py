@@ -71,7 +71,7 @@ class ChallengeListenEndlessStreakUpdater(ChallengeUpdater):
         # Otherwise, create a new specifier
         created_at = datetime.fromtimestamp(extra["created_at"])
         formatted_date = created_at.strftime("%Y%m%d")
-        return f"{user_id}_{formatted_date}"
+        return f"{hex(user_id)[2:]}_{formatted_date}"
 
     def should_create_new_challenge(
         self, session: Session, event: str, user_id: int, extra: Dict

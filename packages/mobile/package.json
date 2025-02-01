@@ -1,6 +1,6 @@
 {
   "name": "@audius/mobile",
-  "version": "1.5.119",
+  "version": "1.5.120",
   "private": true,
   "scripts": {
     "android:dev": "ENVFILE=.env.dev turbo run android -- --mode=prodDebug",
@@ -72,7 +72,7 @@
     "@peculiar/webcrypto": "1.4.3",
     "@react-native-async-storage/async-storage": "1.21.0",
     "@react-native-clipboard/clipboard": "1.13.2",
-    "@react-native-community/blur": "4.3.2",
+    "@react-native-community/blur": "4.4.1",
     "@react-native-community/datetimepicker": "7.6.2",
     "@react-native-community/hooks": "3.0.0",
     "@react-native-community/netinfo": "11.2.1",
@@ -160,7 +160,7 @@
     "react-native-svg": "15.10.1",
     "react-native-svg-transformer": "1.5.0",
     "react-native-tab-view": "3.5.2",
-    "react-native-tiktok": "1.1.2",
+    "react-native-tiktok": "^1.1.2",
     "react-native-track-player": "4.0.1",
     "react-native-url-polyfill": "2.0.0",
     "react-native-version-number": "0.3.6",
