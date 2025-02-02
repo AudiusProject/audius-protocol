@@ -291,4 +291,14 @@ export class IdentityService {
       headers
     })
   }
+
+  async createPlaidLinkToken() {
+    const headers = await this._getSignatureHeaders()
+
+    return await this._makeRequest<{ linkToken: string }>({
+      url: '/create_link_token',
+      method: 'get',
+      headers
+    })
+  }
 }
