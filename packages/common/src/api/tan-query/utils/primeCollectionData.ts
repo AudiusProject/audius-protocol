@@ -17,14 +17,20 @@ export const primeCollectionData = ({
   collections,
   queryClient,
   dispatch,
-  forceReplace = false
+  forceReplace = false,
+  skipQueryData = false
 }: {
   collections: UserCollectionMetadata[]
   queryClient: QueryClient
   dispatch: Dispatch<AnyAction>
   forceReplace?: boolean
+  skipQueryData?: boolean
 }) => {
-  const entries = primeCollectionDataInternal({ collections, queryClient })
+  const entries = primeCollectionDataInternal({
+    collections,
+    queryClient,
+    skipQueryData
+  })
   if (!forceReplace) {
     dispatch(addEntries(entries, false, undefined, 'react-query'))
   } else {
@@ -49,10 +55,12 @@ export const primeCollectionData = ({
 
 export const primeCollectionDataInternal = ({
   collections,
-  queryClient
+  queryClient,
+  skipQueryData = false
 }: {
   collections: UserCollectionMetadata[]
   queryClient: QueryClient
+  skipQueryData?: boolean
 }): EntriesByKind => {
   // Set up entries for Redux
   const entries: SetRequired<EntriesByKind, Kind.COLLECTIONS> = {
@@ -65,8 +73,9 @@ export const primeCollectionDataInternal = ({
     // Add collection to entries and prime collection data
     entries[Kind.COLLECTIONS][collection.playlist_id] = collection
 
-    // Prime collection data only if it doesn't exist
+    // Prime collection data only if it doesn't exist and skipQueryData is false
     if (
+      !skipQueryData &&
       !queryClient.getQueryData(getCollectionQueryKey(collection.playlist_id))
     ) {
       queryClient.setQueryData(
@@ -75,8 +84,9 @@ export const primeCollectionDataInternal = ({
       )
     }
 
-    // Prime collection by permalink only if it doesn't exist
+    // Prime collection by permalink only if it doesn't exist and skipQueryData is false
     if (
+      !skipQueryData &&
       !queryClient.getQueryData(
         getCollectionByPermalinkQueryKey(collection.permalink)
       )
@@ -91,7 +101,8 @@ export const primeCollectionDataInternal = ({
     if (collection.user) {
       const userEntries = primeUserDataInternal({
         users: [collection.user],
-        queryClient
+        queryClient,
+        skipQueryData
       })
 
       // Merge user entries
@@ -105,7 +116,8 @@ export const primeCollectionDataInternal = ({
     if (collection.tracks?.length) {
       const trackEntries = primeTrackDataInternal({
         tracks: collection.tracks,
-        queryClient
+        queryClient,
+        skipQueryData
       })
 
       // Merge track and user entries

@@ -348,7 +348,7 @@ export const Table = ({
         {...cell.getCellProps()}
         key={`${cell.row.id}_skeletonCell_${cell.getCellProps().key}`}
       >
-        <Skeleton />
+        <Skeleton noShimmer />
       </td>
     ),
     []
@@ -408,13 +408,12 @@ export const Table = ({
   )
 
   const renderSkeletonRow = useCallback(
-    (row: Row, key: string, props: TableRowProps, className = '') => {
+    (row: Row, key: string, props: TableRowProps, index: number) => {
       return (
         <tr
           className={cn(
             styles.tableRow,
             styles.skeletonRow,
-            className,
             getRowClassName?.(row.index),
             {
               [styles.active]: row.index === activeIndex
@@ -423,7 +422,7 @@ export const Table = ({
           {...props}
           key={key}
         >
-          {row.cells.map(renderSkeletonCell)}
+          {row.cells.map((cell) => renderSkeletonCell(cell, index))}
         </tr>
       )
     },
@@ -509,7 +508,7 @@ export const Table = ({
       const isStreamGated = (row.original as TrackMetadata).is_stream_gated
 
       if (isEmptyRow(row)) {
-        return renderSkeletonRow(row, key, rowProps)
+        return renderSkeletonRow(row, key, rowProps, index)
       }
       if (isReorderable) {
         return renderReorderableRow(row, key, rowProps)
