@@ -351,7 +351,10 @@ export const makeOptimisticChallengeSortComparator = (
     const userChallenge1 = userChallenges[id1]
     const userChallenge2 = userChallenges[id2]
 
-    if (isAudioMatchingChallenge(id1)) {
+    if (
+      userChallenge1?.challenge_id &&
+      isNewChallenge(userChallenge1?.challenge_id)
+    ) {
       return -1
     }
     if (!userChallenge1 || !userChallenge2) {
@@ -418,3 +421,12 @@ export const getClaimableChallengeSpecifiers = (
     return isCooldownChallengeClaimable(challenge[0])
   })
 }
+
+const newChallengeIds: ChallengeRewardID[] = [
+  ChallengeName.ListenStreakEndless,
+  ChallengeName.AudioMatchingSell,
+  ChallengeName.AudioMatchingBuy
+]
+
+export const isNewChallenge = (challengeId: ChallengeRewardID) =>
+  newChallengeIds.includes(challengeId)
