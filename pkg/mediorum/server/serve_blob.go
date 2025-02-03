@@ -11,6 +11,7 @@ import (
 	"mime"
 	"net/http"
 	"os"
+	"slices"
 	"strconv"
 	"strings"
 	"time"
@@ -23,7 +24,6 @@ import (
 	"github.com/erni27/imcache"
 	"github.com/labstack/echo/v4"
 	"gocloud.dev/gcerrors"
-	"golang.org/x/exp/slices"
 )
 
 func (ss *MediorumServer) serveBlobLocation(c echo.Context) error {
