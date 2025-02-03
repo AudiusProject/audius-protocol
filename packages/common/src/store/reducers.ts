@@ -39,7 +39,6 @@ import {
   DeactivateAccountState
 } from './pages/deactivate-account'
 import exploreCollectionsReducer from './pages/explore/exploreCollections/slice'
-import explorePageReducer from './pages/explore/slice'
 import feed from './pages/feed/reducer'
 import { FeedPageState } from './pages/feed/types'
 import historyPageReducer from './pages/history-page/reducer'
@@ -228,7 +227,6 @@ export const reducers = (storage: Storage, history?: History) => ({
     collection,
     deactivateAccount: deactivateAccountReducer,
     feed,
-    explore: explorePageReducer,
     exploreCollections: exploreCollectionsReducer,
     historyPage: historyPageReducer,
     profile: profileReducer,
@@ -351,7 +349,6 @@ export type CommonState = {
     collection: CollectionsPageState
     deactivateAccount: DeactivateAccountState
     feed: FeedPageState
-    explore: ReturnType<typeof explorePageReducer>
     exploreCollections: ReturnType<typeof exploreCollectionsReducer>
     smartCollection: ReturnType<typeof smartCollection>
     tokenDashboard: ReturnType<typeof tokenDashboardSlice.reducer>

@@ -1,24 +1,25 @@
-import { remoteConfigSelectors } from '@audius/common/store'
-import { useSelector } from 'react-redux'
-
 import { useIsMobile } from 'hooks/useIsMobile'
+import { createSeoDescription } from 'utils/seo'
 
-import ExplorePageProvider from './ExplorePageProvider'
 import DesktopExplorePage from './components/desktop/ExplorePage'
 import MobileExplorePage from './components/mobile/ExplorePage'
-const { isRemoteConfigLoaded } = remoteConfigSelectors
+
+const messages = {
+  title: 'Explore',
+  pageTitle: 'Explore featured content on Audius',
+  description: createSeoDescription('Explore featured content on Audius')
+}
 
 const ExplorePage = () => {
   const isMobile = useIsMobile()
-  const content = isMobile ? MobileExplorePage : DesktopExplorePage
+  const props = {
+    title: messages.title,
+    pageTitle: messages.pageTitle,
+    description: messages.description
+  }
 
-  // Do not render content until remote config is loaded so
-  // that tiling layout does not change.
-  // TODO: Remove this when Remixables feature flag is removed
-  const remoteConfigLoaded = useSelector(isRemoteConfigLoaded)
-  if (!remoteConfigLoaded) return null
-
-  return <ExplorePageProvider>{content}</ExplorePageProvider>
+  const Component = isMobile ? MobileExplorePage : DesktopExplorePage
+  return <Component {...props} />
 }
 
 export default ExplorePage

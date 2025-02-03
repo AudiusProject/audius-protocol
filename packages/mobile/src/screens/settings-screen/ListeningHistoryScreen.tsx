@@ -4,8 +4,8 @@ import { useTrackHistory } from '@audius/common/api'
 import { useDebouncedCallback } from '@audius/common/hooks'
 import { Status } from '@audius/common/models'
 
-import { IconListeningHistory, Paper } from '@audius/harmony-native'
-import { EmptyTile, Screen, ScreenContent } from 'app/components/core'
+import { Divider, IconListeningHistory, Paper } from '@audius/harmony-native'
+import { Screen, ScreenContent } from 'app/components/core'
 import { EmptyTileCTA } from 'app/components/empty-tile-cta'
 import { FilterInput } from 'app/components/filter-input'
 import { TrackList } from 'app/components/track-list'
@@ -13,7 +13,6 @@ import { TrackList } from 'app/components/track-list'
 const messages = {
   title: 'Listening History',
   noHistoryMessage: "You haven't listened to any tracks yet",
-  noResultsMessage: 'No tracks match your search',
   inputPlaceholder: 'Filter Tracks'
 }
 
@@ -24,8 +23,6 @@ export const ListeningHistoryScreen = () => {
     loadNextPage,
     togglePlay,
     status,
-    hasNextPage,
-    pageSize,
     lineup: { entries }
   } = useTrackHistory({
     query: filterValue
@@ -36,12 +33,8 @@ export const ListeningHistoryScreen = () => {
       setFilterValue(value)
     },
     [setFilterValue],
-    100
+    250
   )
-
-  const showEmptyMessage = status === Status.SUCCESS && entries.length === 0
-  const showNoResults = showEmptyMessage && filterValue.length > 0
-  const showNoHistory = showEmptyMessage && !filterValue
 
   return (
     <Screen
@@ -51,7 +44,7 @@ export const ListeningHistoryScreen = () => {
       variant='secondary'
     >
       <ScreenContent>
-        {showNoHistory ? (
+        {status === Status.SUCCESS && entries.length === 0 ? (
           <EmptyTileCTA message={messages.noHistoryMessage} />
         ) : (
           <Paper m='l' gap='l'>
@@ -62,6 +55,7 @@ export const ListeningHistoryScreen = () => {
               mb={0}
               mh='s'
             />
+            <Divider />
             <TrackList
               uids={entries.map(({ uid }) => uid)}
               togglePlay={togglePlay}
@@ -69,14 +63,9 @@ export const ListeningHistoryScreen = () => {
               onEndReached={loadNextPage}
               onEndReachedThreshold={0.5}
               showSkeleton={status !== Status.SUCCESS && entries.length === 0}
-              hasNextPage={hasNextPage}
-              pageSize={pageSize}
             />
           </Paper>
         )}
-        {showNoResults ? (
-          <EmptyTile message={messages.noResultsMessage} />
-        ) : null}
       </ScreenContent>
     </Screen>
   )
