@@ -1,6 +1,3 @@
-import { ReactNode } from 'react'
-
-import { useChallengeCooldownSchedule } from '@audius/common/hooks'
 import { ChallengeName, OptimisticUserChallenge } from '@audius/common/models'
 import { challengesSelectors } from '@audius/common/store'
 import {
@@ -54,27 +51,39 @@ export const ListenStreakChallengeModalContent = ({
 
   const progressStatusLabel = userChallenge ? (
     <Flex
-      alignItems='center'
-      justifyContent='space-between'
       ph='xl'
-      pv='l'
       backgroundColor='surface2'
       border='default'
       borderRadius='s'
+      column={isMobile}
     >
-      <Flex alignItems='center' gap='s'>
+      <Flex
+        pv='l'
+        gap='s'
+        w='100%'
+        borderBottom={isMobile ? 'default' : undefined}
+        justifyContent={isMobile ? 'center' : 'flex-start'}
+        alignItems='center'
+      >
         <IconHeadphones size='m' color='subdued' />
         <Text variant='label' size='l' color='subdued'>
           {messages.day(userChallenge.current_step_count)}
         </Text>
       </Flex>
-      {userChallenge.disbursed_amount ? (
-        <Text variant='label' size='l' color='subdued'>
-          {messages.totalClaimed(
-            formatNumberCommas(userChallenge.disbursed_amount.toString())
-          )}
-        </Text>
-      ) : null}
+      <Flex
+        pv='l'
+        w='100%'
+        justifyContent={isMobile ? 'center' : 'flex-end'}
+        alignItems='center'
+      >
+        {userChallenge.disbursed_amount ? (
+          <Text variant='label' size='l' color='subdued'>
+            {messages.totalClaimed(
+              formatNumberCommas(userChallenge.disbursed_amount.toString())
+            )}
+          </Text>
+        ) : null}
+      </Flex>
     </Flex>
   ) : null
 
@@ -83,7 +92,7 @@ export const ListenStreakChallengeModalContent = ({
       {isMobile ? (
         <>
           {progressDescription}
-          <Paper column shadow='flat' w='100%' css={{ overflow: 'hidden' }}>
+          <Paper column shadow='flat' w='100%' borderRadius='s'>
             <Flex justifyContent='center'>{progressReward}</Flex>
             {progressStatusLabel}
           </Paper>

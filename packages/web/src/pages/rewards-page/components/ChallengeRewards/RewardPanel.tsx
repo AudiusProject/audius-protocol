@@ -68,9 +68,10 @@ export const RewardPanel = ({
     challenge.challenge_type !== 'aggregate' &&
     !hasDisbursed
   const shouldShowNewChallengePill =
-    challenge?.challenge_id &&
-    isNewChallenge(challenge?.challenge_id) &&
-    !needsDisbursement
+    (challenge?.challenge_id &&
+      isNewChallenge(challenge?.challenge_id) &&
+      !needsDisbursement) ??
+    false
 
   const formattedProgressLabel: string = useFormattedProgressLabel({
     challenge,
