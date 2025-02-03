@@ -36,7 +36,7 @@ services:
 
   discovery-provider-openresty:
     image: busybox:1.31.1
-    entrypoint: [ "sh", "-c", "exit 0" ]
+    entrypoint: ['sh', '-c', 'exit 0']
     profiles:
       - noop
 
@@ -60,7 +60,7 @@ services:
       dockerfile: ${PROJECT_ROOT}/monitoring/healthz/Dockerfile
       context: ${PROJECT_ROOT}/monitoring/healthz
     ports:
-      - "5173:5173"
+      - '5173:5173'
     profiles:
       - discovery
     volumes:
