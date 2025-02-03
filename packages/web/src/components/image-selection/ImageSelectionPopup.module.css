@@ -25,7 +25,6 @@
   font-weight: var(--harmony-font-medium);
   line-height: 20px;
   min-height: unset;
-  /* height: 100px; */
   border-radius: 0px;
   box-shadow: none;
 }

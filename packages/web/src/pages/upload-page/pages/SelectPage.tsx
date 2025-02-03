@@ -113,7 +113,6 @@ const SelectPage = (props: SelectPageProps) => {
           >
             <AudioQuality />
           </Dropzone>
-          <div className={styles.error}>helllo world</div>
           {uploadTrackError ? (
             <InvalidFileType
               reason={uploadTrackError.reason}
