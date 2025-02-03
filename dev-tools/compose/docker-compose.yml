@@ -74,8 +74,13 @@ services:
       - '6701:26659' # Http Console
       - '6702:1991' # Mediorum Server
       - '6703:50051' # Core GRPC Server
-    env_file:
-      - ${PROJECT_ROOT}/cmd/core/infra/dev_config/discovery-one.docker.env
+    environment:
+      NETWORK: dev
+      AUDIUSD_STORAGE_ENABLED: false
+      audius_core_root_dir: ./tmp/discoveryOneHome
+      audius_discprov_url: http://audius-protocol-discovery-provider-1
+      audius_delegate_private_key: d09ba371c359f10f22ccda12fd26c598c7921bda3220c9942174562bc6a36fe8
+      runDownMigration: true
     <<: *common
 
   audiusd-2:
