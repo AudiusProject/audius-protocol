@@ -26,6 +26,9 @@ global.crypto = new Crypto()
 
 const { App } = require('./src/app')
 
+// Import app killed handler
+import './src/services/app-killed'
+
 // https://github.com/react-navigation/react-navigation/issues/9882
 LogBox.ignoreLogs(['new NativeEventEmitter'])
 // Ignore LogBox logs for preferred log messages in external
