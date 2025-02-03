@@ -301,16 +301,12 @@ const ChallengeRewardsBody = ({ dismissModal }: BodyProps) => {
   // But DN may have not indexed the challenge so check for client-side completion too
   // Note that we can't handle aggregate challenges optimistically
   let audioToClaim = 0
-  let audioClaimedSoFar = 0
   if (challenge?.challenge_type === 'aggregate') {
     audioToClaim = challenge.claimableAmount
-    audioClaimedSoFar = challenge.disbursed_amount
   } else if (challenge?.state === 'completed' && challenge?.cooldown_days) {
     audioToClaim = challenge.claimableAmount
   } else if (challenge?.state === 'completed' && !challenge?.cooldown_days) {
     audioToClaim = challenge.totalAmount
-  } else if (challenge?.state === 'disbursed') {
-    audioClaimedSoFar = challenge.totalAmount
   }
   let progressRewardAmount = challenge?.totalAmount
   if (modalType === ChallengeName.OneShot) {

@@ -61,7 +61,6 @@ export const ListenStreakChallengeModalContent = ({
         pv='l'
         gap='s'
         w='100%'
-        borderBottom={isMobile ? 'default' : undefined}
         justifyContent={isMobile ? 'center' : 'flex-start'}
         alignItems='center'
       >
@@ -70,20 +69,21 @@ export const ListenStreakChallengeModalContent = ({
           {messages.day(userChallenge.current_step_count)}
         </Text>
       </Flex>
-      <Flex
-        pv='l'
-        w='100%'
-        justifyContent={isMobile ? 'center' : 'flex-end'}
-        alignItems='center'
-      >
-        {userChallenge.disbursed_amount ? (
+      {userChallenge.disbursed_amount ? (
+        <Flex
+          pv='l'
+          w='100%'
+          justifyContent={isMobile ? 'center' : 'flex-end'}
+          alignItems='center'
+          borderTop={isMobile ? 'default' : undefined}
+        >
           <Text variant='label' size='l' color='subdued'>
             {messages.totalClaimed(
               formatNumberCommas(userChallenge.disbursed_amount.toString())
             )}
           </Text>
-        ) : null}
-      </Flex>
+        </Flex>
+      ) : null}
     </Flex>
   ) : null
 
