@@ -2,19 +2,15 @@ import { useState } from 'react'
 
 import { ID, SquareSizes } from '@audius/common/models'
 import {
-  accountSelectors,
   cacheCollectionsSelectors,
   cacheUsersSelectors
 } from '@audius/common/store'
-import { Flex, IconKebabHorizontal } from '@audius/harmony'
-import cn from 'classnames'
+import { Flex } from '@audius/harmony'
 import { useSelector } from 'react-redux'
 
 import { CollectionImage } from 'components/collection/CollectionImage'
 import { CollectionLink } from 'components/link/CollectionLink'
 import { UserLink } from 'components/link/UserLink'
-import { CollectionMenuProps } from 'components/menu/CollectionMenu'
-import Menu from 'components/menu/Menu'
 import PerspectiveCard from 'components/perspective-card/PerspectiveCard'
 import { FavoriteStats } from 'components/stats/FavoriteStats'
 import { RepostStats } from 'components/stats/RepostStats'

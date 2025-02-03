@@ -1,5 +1,3 @@
-import { ComponentProps } from 'react'
-
 import { ID, SquareSizes } from '@audius/common/models'
 import { Artwork, ArtworkProps } from '@audius/harmony'
 
