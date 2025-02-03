@@ -46,7 +46,9 @@ export default {
       modules: true
     }),
     svgr(),
-    image(),
+    image({
+      exclude: /\.svg$/ // Exclude SVG files since they're handled by SVGR
+    }),
     rollupTypescript({
       typescript: tspCompiler,
       clean: true
