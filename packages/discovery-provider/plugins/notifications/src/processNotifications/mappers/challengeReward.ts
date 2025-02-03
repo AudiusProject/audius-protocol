@@ -35,6 +35,10 @@ export class ChallengeReward extends BaseNotification<ChallengeRewardRow> {
       title: '🎧 Listening Streak: 7 Days',
       amount: 1
     },
+    e: {
+      title: '🎧 Listening Streak',
+      amount: 1
+    },
     u: {
       title: '🎶 Upload 3 Tracks',
       amount: 1
@@ -86,15 +90,18 @@ export class ChallengeReward extends BaseNotification<ChallengeRewardRow> {
       return `You’ve received ${
         this.challengeInfoMap[this.challengeId].amount
       } $AUDIO for being referred! Invite your friends to join to earn more!`
+    } else if (this.challengeId === 'e') {
+      if (this.amount === 7) {
+        return `You've earned 7 $AUDIO for hitting Day 7 of your listening streak! You’ll now earn an additional $AUDIO reward for every day you keep it going!`
+      } else {
+        return `You’ve earned 1 $AUDIO for maintaining your listening streak! Keep it going to continue earning daily rewards!`
+      }
     } else if (this.challengeId === 'o') {
       return `You’ve earned ${
         this.amount / AUDIO_DIVISOR
       } $AUDIO for completing this challenge!`
     }
     return `You’ve earned ${
-      this.challengeInfoMap[this.challengeId].amount
-    } $AUDIO for completing this challenge!`
-  }
 
   async processNotification({
     isLiveEmailEnabled,

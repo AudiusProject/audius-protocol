@@ -259,6 +259,9 @@ const webChallengesConfig: Record<ChallengeRewardID, WebChallengeInfo> = {
   },
   [ChallengeName.OneShot]: {
     icon: <i className='emoji large incoming-envelope' />
+  },
+  [ChallengeName.ListenStreakEndless]: {
+    icon: <i className='emoji large speaker-with-three-sound-waves' />
   }
 }
 

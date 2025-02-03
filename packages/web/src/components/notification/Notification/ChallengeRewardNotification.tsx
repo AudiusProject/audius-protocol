@@ -3,6 +3,7 @@ import { useCallback } from 'react'
 import { Name, BNAudio, ChallengeRewardID } from '@audius/common/models'
 import { ChallengeRewardNotification as ChallengeRewardNotificationType } from '@audius/common/store'
 import { route, stringWeiToAudioBN } from '@audius/common/utils'
+import { BN } from 'bn.js'
 import { useDispatch } from 'react-redux'
 
 import { make, useRecord } from 'common/store/analytics/actions'
@@ -24,6 +25,13 @@ const messages = {
   amountEarned: (amount: BNAudio) => `You've earned ${amount} $AUDIO`,
   referredText:
     ' for being referred! Invite your friends to join to earn more!',
+  listeningStreakText: (amount: BNAudio) => {
+    if (amount.eq(new BN(7))) {
+      return ` for hitting Day 7 of your listening streak! You’ll now earn an additional $AUDIO reward for every day you keep it going!`
+    } else {
+      return ` for maintaining your listening streak! Keep it going to continue earning daily rewards!`
+    }
+  },
   challengeCompleteText: ' for completing this challenge!',
   body: (amount: number) =>
     `You've earned ${amount} $AUDIO for completing this challenge!`,
@@ -52,7 +60,7 @@ export const ChallengeRewardNotification = (
   const record = useRecord()
   const mappedChallengeRewardsConfigKey =
     trendingChallengeIdMapping[challengeId] ?? challengeId
-
+  console.log('asdf challengeId', challengeId)
   const { title, icon } = getChallengeConfig(mappedChallengeRewardsConfigKey)
   const amount = stringWeiToAudioBN(notification.amount)
   const handleClick = useCallback(() => {
@@ -71,7 +79,9 @@ export const ChallengeRewardNotification = (
         {messages.amountEarned(amount)}
         {challengeId === 'referred'
           ? messages.referredText
-          : messages.challengeCompleteText}
+          : challengeId === 'e'
+            ? messages.listeningStreakText(amount)
+            : messages.challengeCompleteText}
       </NotificationBody>
       <TwitterShareButton
         type='static'

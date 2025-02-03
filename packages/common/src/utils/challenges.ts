@@ -304,6 +304,17 @@ export const challengeRewardsConfig: Record<
     id: ChallengeName.OneShot,
     remainingLabel: 'Ineligible',
     progressLabel: 'Ineligible'
+  },
+  e: {
+    id: 'listen-streak',
+    title: 'Listening Streak: 7 Days',
+    description: (challenge) =>
+      `Listen to one track a day for seven days to earn ${challenge?.amount} $AUDIO.`,
+    fullDescription: () =>
+      'Sign in and listen to at least one track every day for 7 days',
+    progressLabel: '%0/%1 Days',
+    completedLabel: 'Keep Listening',
+    panelButtonText: 'Trending on Audius'
   }
 }
 

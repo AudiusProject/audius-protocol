@@ -82,7 +82,8 @@ export const HighlightText = ({ text }: { text: string }) => (
       color: '#7E1BCC',
       fontSize: '14px',
       fontWeight: '500'
-    }}>
+    }}
+  >
     {text}
   </span>
 )
@@ -100,7 +101,8 @@ export const BodyText = ({
       color: '#858199',
       fontSize: '14px',
       fontWeight: '500'
-    }}>
+    }}
+  >
     {text}
   </span>
 )
@@ -384,12 +386,18 @@ const notificationMap = {
     let bodyText
     if (notification.challengeId === 'rd') {
       bodyText = `You’ve received ${rewardAmount} $AUDIO for being referred! Invite your friends to join to earn more!`
+    } else if (notification.challengeId === 'e') {
+      if (rewardAmount === 7) {
+        bodyText = `You've earned 7 $AUDIO for hitting Day 7 of your listening streak! You’ll now earn an additional $AUDIO reward for every day you keep it going!`
+      } else {
+        bodyText = `You’ve earned 1 $AUDIO for maintaining your listening streak! Keep it going to continue earning daily rewards!`
+      }
     } else {
       bodyText = `You’ve earned ${rewardAmount} $AUDIO for completing this challenge!`
     }
     return (
       <span className={'notificationText'}>
-        <table cellSpacing="0" cellPadding="0" style={{ marginBottom: '4px' }}>
+        <table cellSpacing='0' cellPadding='0' style={{ marginBottom: '4px' }}>
           <tr>
             <td>{icon}</td>
             <td>
