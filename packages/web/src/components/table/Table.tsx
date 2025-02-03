@@ -408,7 +408,7 @@ export const Table = ({
   )
 
   const renderSkeletonRow = useCallback(
-    (row: Row, key: string, props: TableRowProps, index: number) => {
+    (row: Row, key: string, props: TableRowProps) => {
       return (
         <tr
           className={cn(
@@ -422,7 +422,7 @@ export const Table = ({
           {...props}
           key={key}
         >
-          {row.cells.map((cell) => renderSkeletonCell(cell, index))}
+          {row.cells.map((cell) => renderSkeletonCell(cell))}
         </tr>
       )
     },
@@ -508,7 +508,7 @@ export const Table = ({
       const isStreamGated = (row.original as TrackMetadata).is_stream_gated
 
       if (isEmptyRow(row)) {
-        return renderSkeletonRow(row, key, rowProps, index)
+        return renderSkeletonRow(row, key, rowProps)
       }
       if (isReorderable) {
         return renderReorderableRow(row, key, rowProps)
