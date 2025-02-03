@@ -36,7 +36,7 @@ integration-test:
   steps:
     - run:
         name: clean dir
-        command: cd ~ && rm -rf audius-protocol
+        command: cd ~; [ -d ~/audius-protocol ] && rm -rf ~/audius-protocol
     - checkout
     - attach_workspace:
         at: ./
