@@ -13,6 +13,7 @@ services:
       service: discovery-provider-notifications
 
   comms:
+    user: ${DOCKER_UID:-root}:${DOCKER_GID:-root}
     extends:
       file: docker-compose.discovery.prod.yml
       service: comms
@@ -51,6 +52,7 @@ services:
       - ${PROJECT_ROOT}:/app
 
   healthz:
+    user: ${DOCKER_UID:-root}:${DOCKER_GID:-root}
     extends:
       file: docker-compose.discovery.prod.yml
       service: healthz

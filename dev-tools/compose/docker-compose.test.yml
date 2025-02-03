@@ -207,6 +207,7 @@ services:
 
   # contracts
   test-contracts:
+    user: ${DOCKER_UID:-root}:${DOCKER_GID:-root}
     build:
       context: ${PROJECT_ROOT}/contracts
       dockerfile: Dockerfile
@@ -229,6 +230,7 @@ services:
 
   # eth-contracts
   test-eth-contracts:
+    user: ${DOCKER_UID:-root}:${DOCKER_GID:-root}
     build:
       context: ${PROJECT_ROOT}/eth-contracts
       args:
@@ -314,6 +316,7 @@ services:
   # todo: this will need es-indexer container running for tests to pass..
   # unless we just skip all the search tests for now
   test-discovery-provider:
+    user: ${DOCKER_UID:-root}:${DOCKER_GID:-root}
     extends:
       file: docker-compose.yml
       service: discovery-provider
@@ -348,6 +351,7 @@ services:
       - discovery
 
   test-discovery-provider-notifications:
+    user: ${DOCKER_UID:-root}:${DOCKER_GID:-root}
     build:
       context: ${PROJECT_ROOT}/packages/discovery-provider/plugins/notifications
       dockerfile: Dockerfile
