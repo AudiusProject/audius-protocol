@@ -9,12 +9,16 @@ type SkeletonProps = {
   height?: string
   // Optional class name to pass in and override styles with
   className?: string
+  // Whether to disable the shimmer animation
+  noShimmer?: boolean
 }
 
-const Skeleton = ({ width, height, className }: SkeletonProps) => {
+const Skeleton = ({ width, height, className, noShimmer }: SkeletonProps) => {
   return (
     <div
-      className={cn(styles.skeleton, className)}
+      className={cn(styles.skeleton, className, {
+        [styles.noShimmer]: noShimmer
+      })}
       aria-busy
       style={{
         width,
