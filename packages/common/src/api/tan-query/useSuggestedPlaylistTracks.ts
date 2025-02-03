@@ -1,19 +1,18 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 
 import { difference, shuffle } from 'lodash'
-import { useDispatch, useSelector } from 'react-redux'
+import { useDispatch } from 'react-redux'
 
 import { ID } from '~/models/Identifiers'
 import { TimeRange } from '~/models/TimeRange'
 import { Track } from '~/models/Track'
-import { getUserId } from '~/store/account/selectors'
 import { addTrackToPlaylist } from '~/store/cache/collections/actions'
 
 import { useCollection } from './useCollection'
+import { useCurrentUserId } from './useCurrentUserId'
 import { useFavoritedTracks } from './useFavoritedTracks'
 import { useTracks } from './useTracks'
 import { useTrending } from './useTrending'
-
 export const SUGGESTED_TRACK_COUNT = 5
 
 const isValidTrack = (track: Track) => {
@@ -26,7 +25,7 @@ export type SuggestedTrack = {
 }
 
 export const useSuggestedPlaylistTracks = (collectionId: ID) => {
-  const currentUserId = useSelector(getUserId)
+  const { data: currentUserId } = useCurrentUserId()
 
   // Get current collection tracks to exclude
   const { data: collection, isLoading: isLoadingCollection } =
@@ -40,23 +39,14 @@ export const useSuggestedPlaylistTracks = (collectionId: ID) => {
 
   // Get favorited tracks
   const { data: favoritedTracks = [], isLoading: isLoadingFavoritedTracks } =
-    useFavoritedTracks(currentUserId, {
-      enabled: !!currentUserId
-    })
+    useFavoritedTracks(currentUserId)
 
   // Get trending tracks
   const {
     data: trendingTracks = [],
     fetchNextPage: fetchNextPageTrending,
     isLoading: isLoadingTrendingTracks
-  } = useTrending(
-    {
-      timeRange: TimeRange.WEEK
-    },
-    {
-      enabled: true
-    }
-  )
+  } = useTrending({ timeRange: TimeRange.WEEK })
 
   // Combine and filter tracks
   const suggestedTrackIds = useMemo(() => {
