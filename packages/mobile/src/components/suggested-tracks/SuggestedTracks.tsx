@@ -1,6 +1,10 @@
-import { Fragment, useCallback, useEffect, useRef } from 'react'
+import React, { Fragment, useCallback, useEffect, useMemo, useRef } from 'react'
 
-import { useGetSuggestedPlaylistTracks } from '@audius/common/api'
+import {
+  SUGGESTED_TRACK_COUNT,
+  useCollection,
+  useSuggestedPlaylistTracks
+} from '@audius/common/api'
 import { SquareSizes } from '@audius/common/models'
 import type { ID, Track } from '@audius/common/models'
 import { cacheUsersSelectors } from '@audius/common/store'
@@ -28,7 +32,8 @@ const { getUser } = cacheUsersSelectors
 const messages = {
   title: 'Add some tracks',
   addTrack: 'Add',
-  refresh: 'Refresh'
+  refresh: 'Refresh',
+  added: 'Added'
 }
 
 const useStyles = makeStyles(({ spacing, typography, palette }) => ({
@@ -82,11 +87,20 @@ type SuggestedTrackProps = {
 }
 
 const SuggestedTrackRow = (props: SuggestedTrackProps) => {
-  const { track, onAddTrack } = props
+  const { collectionId, track, onAddTrack } = props
   const { track_id, title, owner_id } = track
 
   const user = useSelector((state) => getUser(state, { id: owner_id }))
   const styles = useStyles()
+
+  const { data: collection } = useCollection(collectionId)
+  const trackIsInCollection = useMemo(
+    () =>
+      collection?.playlist_contents.track_ids.some(
+        (trackId) => trackId.track === track_id
+      ),
+    [collection?.playlist_contents.track_ids, track_id]
+  )
 
   return (
     <View style={styles.suggestedTrack}>
@@ -115,8 +129,9 @@ const SuggestedTrackRow = (props: SuggestedTrackProps) => {
           variant='secondary'
           size='small'
           onPress={() => onAddTrack(track_id)}
+          disabled={trackIsInCollection}
         >
-          {messages.addTrack}
+          {trackIsInCollection ? messages.added : messages.addTrack}
         </Button>
       </View>
     </View>
@@ -144,8 +159,8 @@ type SuggestedTracksProps = {
 
 export const SuggestedTracks = (props: SuggestedTracksProps) => {
   const { collectionId } = props
-  const { suggestedTracks, onRefresh, onAddTrack, isRefreshing } =
-    useGetSuggestedPlaylistTracks(collectionId)
+  const { suggestedTracks, onRefresh, onAddTrack } =
+    useSuggestedPlaylistTracks(collectionId)
   const styles = useStyles()
 
   const [isExpanded, toggleIsExpanded] = useToggle(false)
@@ -192,12 +207,12 @@ export const SuggestedTracks = (props: SuggestedTracksProps) => {
         <>
           <View>
             <Divider />
-            {suggestedTracks?.map((suggestedTrack) => (
-              <Fragment key={suggestedTrack.key}>
-                {!isRefreshing && 'track' in suggestedTrack ? (
+            {Array.from({ length: SUGGESTED_TRACK_COUNT }).map((_, i) => (
+              <Fragment key={suggestedTracks[i]?.id ?? i}>
+                {suggestedTracks[i] ? (
                   <SuggestedTrackRow
                     collectionId={collectionId}
-                    track={suggestedTrack.track}
+                    track={suggestedTracks[i].track}
                     onAddTrack={onAddTrack}
                   />
                 ) : (
@@ -211,7 +226,7 @@ export const SuggestedTracks = (props: SuggestedTracksProps) => {
             variant='subdued'
             iconLeft={IconRefresh}
             style={styles.refreshButton}
-            onPress={onRefresh}
+            onPress={() => onRefresh()}
           >
             {messages.refresh}
           </PlainButton>
