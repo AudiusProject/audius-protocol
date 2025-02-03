@@ -55,9 +55,7 @@ if [[ -z "${SKIP_POD_INSTALL}" ]]; then
 
       if command -v bundle >/dev/null; then
         bundle check || bundle install
-      fi
-      if command -v pod >/dev/null; then
-        pod install
+        bundle exec pod install
       fi
       cd ../../..
     } > /dev/null
