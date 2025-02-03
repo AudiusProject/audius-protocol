@@ -13,7 +13,6 @@ import { useAsync } from 'react-use'
 import { useHistoryContext } from 'app/HistoryProvider'
 import IconLines from 'assets/img/publicSite/Lines.svg'
 import IconListenOnAudius from 'assets/img/publicSite/listen-on-audius.svg'
-import { fetchExploreContent } from 'common/store/pages/explore/sagas'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import useCardWeight from 'hooks/useCardWeight'
 import useHasViewed from 'hooks/useHasViewed'
@@ -105,12 +104,15 @@ type FeaturedContentProps = {
 
 const FeaturedContent = (props: FeaturedContentProps) => {
   const { history } = useHistoryContext()
-  const trendingPlaylistsResponse = useAsync(async () => {
-    const featuredContent = await fetchExploreContent(env.EXPLORE_CONTENT_URL)
-    const ids = featuredContent.featuredPlaylists.slice(0, 4)
+  const { value: featuredPlaylists, loading } = useAsync(async () => {
+    const response = await fetch(env.EXPLORE_CONTENT_URL)
+    const json = await response.json()
+    const featuredPlaylistIds = json.featuredPlaylists
+      .slice(0, 4)
+      .map((id: string) => Id.parse(parseInt(id)))
     const sdk = await audiusSdk()
     const { data } = await sdk.full.playlists.getBulkPlaylists({
-      id: ids.map((id) => Id.parse(id))
+      id: featuredPlaylistIds
     })
     return transformAndCleanList(data, userCollectionMetadataFromSDK)
   }, [])
@@ -141,12 +143,12 @@ const FeaturedContent = (props: FeaturedContentProps) => {
           </animated.div>
         </div>
         <div className={styles.tracksContainer}>
-          {trendingPlaylistsResponse.loading ? (
+          {loading ? (
             <div className={styles.loadingContainer}>
               <LoadingSpinner />
             </div>
           ) : (
-            trendingPlaylistsResponse.value?.map((p) => (
+            featuredPlaylists?.map((p) => (
               <MobilePlaylistTile
                 key={p.playlist_id}
                 title={p.playlist_name}
@@ -185,12 +187,12 @@ const FeaturedContent = (props: FeaturedContentProps) => {
           <h4 className={styles.subTitle}>{messages.subTitle}</h4>
         </animated.div>
         <div className={styles.tracksContainer}>
-          {trendingPlaylistsResponse.loading ? (
+          {loading ? (
             <div className={styles.loadingContainer}>
               <LoadingSpinner />
             </div>
           ) : (
-            trendingPlaylistsResponse.value?.map((p) => (
+            featuredPlaylists?.map((p) => (
               <DesktopPlaylistTile
                 key={p.playlist_id}
                 title={p.playlist_name}

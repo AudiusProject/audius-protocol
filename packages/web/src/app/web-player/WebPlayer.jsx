@@ -60,7 +60,7 @@ import { DeactivateAccountPage } from 'pages/deactivate-account-page/DeactivateA
 import { EditCollectionPage } from 'pages/edit-collection-page'
 import EmptyPage from 'pages/empty-page/EmptyPage'
 import ExploreCollectionsPage from 'pages/explore-page/ExploreCollectionsPage'
-import ExplorePage from 'pages/explore-page/ExplorePage'
+import { ExplorePage } from 'pages/explore-page/ExplorePage'
 import FavoritesPage from 'pages/favorites-page/FavoritesPage'
 import { FbSharePage } from 'pages/fb-share-page/FbSharePage'
 import FeedPage from 'pages/feed-page/FeedPage'
