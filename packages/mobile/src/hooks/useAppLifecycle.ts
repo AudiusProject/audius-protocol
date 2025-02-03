@@ -11,7 +11,7 @@ const eventEmitter = new NativeEventEmitter(
 )
 
 // Time in milliseconds after which we consider the app to be "long backgrounded"
-const BACKGROUND_THRESHOLD = 1000 // 5 minutes
+const BACKGROUND_THRESHOLD = 1000 * 60 * 5 // 5 minutes
 
 const useRestartStaleApp = () => {
   const backgroundTimeRef = useRef<number | null>(null)
