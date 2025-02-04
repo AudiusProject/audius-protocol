@@ -230,6 +230,7 @@ export const remoteConfig = <
   function getFeatureEnabled(flag: FeatureFlags, fallbackFlag?: FeatureFlags) {
     const defaultVal =
       environmentFlagDefaults[environment][flag] ?? flagDefaults[flag]
+
     // If the client is not ready yet, return early with `null`
     if (!client || !state.id) return defaultVal
 
@@ -240,12 +241,14 @@ export const remoteConfig = <
         return defaultVal
       }
 
-      const res = client.isFeatureEnabled(f, id.toString(), {
+      return client.isFeatureEnabled(f, id.toString(), {
         userId: id,
         appVersion,
-        platform: 'web'
+        platform,
+        mobilePlatform: mobileClientInfo?.mobilePlatform ?? null,
+        mobileAppVersion: mobileClientInfo?.mobileAppVersion ?? null,
+        codePushUpdateNumber: mobileClientInfo?.codePushUpdateNumber ?? null
       })
-      return res
     }
 
     try {
