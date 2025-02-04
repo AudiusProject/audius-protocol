@@ -180,7 +180,7 @@ export const ChallengeRewardsTile = () => {
         />
       )
     })
-  console.log('asdf isOneShotEnabled', isOneShotEnabled)
+
   return (
     <Paper shadow='near' border='strong' ph='s' pv='xl'>
       <Flex gap='unit10' alignItems='center'>

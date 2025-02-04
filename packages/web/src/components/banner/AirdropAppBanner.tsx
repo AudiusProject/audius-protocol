@@ -1,12 +1,12 @@
 import { useCallback, useState } from 'react'
 
 import { accountSelectors } from '@audius/common/src/store/account'
-import { AIRDROP_PAGE, REWARDS_PAGE } from '@audius/common/src/utils/route'
+import { AIRDROP_PAGE } from '@audius/common/src/utils/route'
 import { useDispatch } from 'react-redux'
 
 import { useSelector } from 'common/hooks/useSelector'
 import { localStorage } from 'services/local-storage'
-import { push as pushRoute, replace as replaceRoute } from 'utils/navigation'
+import { push as pushRoute } from 'utils/navigation'
 
 import { CallToActionBanner } from './CallToActionBanner'
 
@@ -28,7 +28,6 @@ export const AirdropAppBanner = () => {
   )
 
   const signedIn = useSelector(getIsAccountComplete)
-  console.log('asdf hasDismissed, signedIn', signedIn, hasDismissed)
 
   const [isVisible, setIsVisible] = useState(!hasDismissed && signedIn)
 
