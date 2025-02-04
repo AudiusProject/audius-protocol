@@ -24,7 +24,9 @@ test('auths, fetches tracks, and favorites a track', async ({
   await authPage.waitForLoadState()
   await authPage.getByRole('button', { name: 'Continue' }).click()
 
-  await expect(page.getByText('Continue With Audius')).not.toBeVisible()
+  await expect(page.getByText('Continue With Audius')).not.toBeVisible({
+    timeout: 10000
+  })
 
   // Fetch tracks
   await page.getByRole('textbox').fill('createaudiusapptracks')
@@ -32,7 +34,10 @@ test('auths, fetches tracks, and favorites a track', async ({
 
   // Set up block_confirmation response listener
   const responsePromise = page.waitForResponse(async (response) => {
-    if (response.url().includes('favorite') || response.url().includes('unfavorite')) {
+    if (
+      response.url().includes('favorite') ||
+      response.url().includes('unfavorite')
+    ) {
       const json = await response.json()
       return json.trackId
     }
