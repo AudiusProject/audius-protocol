@@ -14,8 +14,8 @@ const eventEmitter = new NativeEventEmitter(
 const BACKGROUND_THRESHOLD = 1000 * 60 * 60 // 1 hour
 
 // Heartbeat check interval and timeout
-const HEARTBEAT_INTERVAL = 2000
-const HEARTBEAT_TIMEOUT = 5000
+const HEARTBEAT_INTERVAL = 1000 * 60 // 1 minute
+const HEARTBEAT_TIMEOUT = 1000 * 60 * 3 // 3 minutes
 
 const checkPlaybackAndRestart = async () => {
   const { state } = await TrackPlayer.getPlaybackState()
