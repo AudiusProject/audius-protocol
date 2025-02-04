@@ -21,6 +21,18 @@ COPY ./signature_schemas ./signature_schemas
 COPY ./test ./test
 COPY ./truffle-config.js ./contract-config.js ./
 
+# Some of the build tools for truffle require these to exist, and so does one
+# of our migrations (for the .audius one). Since we run this as a non-root user
+# in CI, make these in the construction of the container or we won't have access
+# to be able to make them
+RUN mkdir /.audius
+RUN mkdir /.config
+RUN touch /.babel.json
+
+RUN chmod 777 /.audius
+RUN chmod 777 /.config
+RUN chmod 777 /.babel.json
+
 RUN chmod +x ./scripts/setup-predeployed-ganache.sh
 
 RUN ./scripts/setup-predeployed-ganache.sh /usr/db 1000000000001

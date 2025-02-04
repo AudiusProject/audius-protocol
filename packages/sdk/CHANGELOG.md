@@ -1,5 +1,14 @@
 # @audius/sdk
 
+## 8.0.1
+
+### Patch Changes
+
+- bb81005: Add decorator of AudiusWalletClient to exports, increase signature header expiry
+- b5f90c3: Make CreateAlbumSchema coverArt optional
+- 1452686: Add support for allowAiAttribution when creating a user
+- 7e0f238: Update bootstrap config
+
 ## 8.0.0
 
 ### Major Changes

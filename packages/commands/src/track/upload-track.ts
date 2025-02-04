@@ -11,7 +11,8 @@ import {
   parseBoolean
 } from '../utils.js'
 import { decodeHashId, Genre, Mood, type AudiusSdk } from '@audius/sdk'
-import { Command } from '@commander-js/extra-typings'
+import { Command, Option } from '@commander-js/extra-typings'
+import { outputFormatOption } from '../common-options.js'
 
 function readStreamToBuffer(stream: ReadStream) {
   return new Promise<Buffer>((resolve, reject) => {
@@ -189,7 +190,7 @@ export const uploadTrackCommand = new Command('upload')
     ''
   )
   .option(
-    '-o, --is-downloadable [is downloadable]',
+    '-dl, --is-downloadable [is downloadable]',
     'Whether track is downloadable',
     parseBoolean
   )
@@ -210,6 +211,7 @@ export const uploadTrackCommand = new Command('upload')
     'Whether the track is hidden from the feed (ie. is unlisted)',
     parseBoolean
   )
+  .addOption(outputFormatOption)
   .action(async (track, options) => {
     const rand = randomBytes(2).toString('hex').padStart(4, '0').toUpperCase()
     const {
@@ -271,7 +273,7 @@ export const uploadTrackCommand = new Command('upload')
       audiusSdk
     })
 
-    const { trackId } = await audiusSdk.tracks.uploadTrack({
+    const metadata = await audiusSdk.tracks.uploadTrack({
       userId,
       coverArtFile: { buffer: createRandomImage(), name: 'coverart' },
       trackFile: { buffer: await readStreamToBuffer(trackStream) },
@@ -292,7 +294,14 @@ export const uploadTrackCommand = new Command('upload')
         isUnlisted
       }
     })
-    console.log(chalk.green('Successfully uploaded track!'))
-    console.log(chalk.yellow.bold('Track ID:   '), trackId)
-    console.log(chalk.yellow.bold('Track ID #: '), decodeHashId(trackId!))
+    const { trackId } = metadata
+
+    if (options.output === 'json') {
+      console.log(JSON.stringify(metadata))
+    } else {
+      console.log(options.output)
+      console.log(chalk.green('Successfully uploaded track!'))
+      console.log(chalk.yellow.bold('Track ID:   '), trackId)
+      console.log(chalk.yellow.bold('Track ID #: '), decodeHashId(trackId!))
+    }
   })

@@ -5,10 +5,10 @@ import {
   type Mood,
   type NativeFile,
   type TrackFilesMetadata,
-  OptionalHashId,
-  OptionalId,
+  HashId,
   Id,
-  HashId
+  OptionalHashId,
+  OptionalId
 } from '@audius/sdk'
 import camelcaseKeys from 'camelcase-keys'
 import dayjs from 'dayjs'
@@ -23,7 +23,7 @@ import {
 } from '~/models'
 import { StemTrackMetadata, UserTrackMetadata } from '~/models/Track'
 import type { TrackMetadataForUpload } from '~/store/upload/types'
-import { License, Maybe } from '~/utils'
+import { formatMusicalKey, License, Maybe, squashNewLines } from '~/utils'
 
 import { accessConditionsFromSDK } from './accessConditionsFromSDK'
 import { accessConditionsToSDK } from './accessConditionsToSDK'
@@ -255,7 +255,6 @@ export const trackMetadataForUploadToSdk = (
       'is_scheduled_release',
       'bpm',
       'is_custom_bpm',
-      'musical_key',
       'is_custom_musical_key',
       'comments_disabled',
       'ddex_release_ids',
@@ -264,7 +263,7 @@ export const trackMetadataForUploadToSdk = (
   ),
   trackId: OptionalId.parse(input.track_id),
   title: input.title,
-  description: input.description ?? undefined,
+  description: squashNewLines(input.description) ?? undefined,
   mood: input.mood as Mood,
   tags: input.tags ?? undefined,
   genre: (input.genre as Genre) || undefined,
@@ -275,6 +274,9 @@ export const trackMetadataForUploadToSdk = (
   aiAttributionUserId: OptionalId.parse(input.ai_attribution_user_id),
   audioUploadId: input.audio_upload_id ?? undefined,
   duration: input.duration ?? undefined,
+  musicalKey: input.musical_key
+    ? formatMusicalKey(input.musical_key)
+    : undefined,
   trackCid: input.track_cid ?? '',
   origFileCid: input.orig_file_cid ?? '',
   origFilename: input.orig_filename ?? undefined,

@@ -98,7 +98,13 @@ from src.tasks.entity_manager.entities.track import (
     download_track,
     update_track,
 )
-from src.tasks.entity_manager.entities.user import create_user, update_user, verify_user
+from src.tasks.entity_manager.entities.user import (
+    add_associated_wallet,
+    create_user,
+    remove_associated_wallet,
+    update_user,
+    verify_user,
+)
 from src.tasks.entity_manager.utils import (
     MANAGE_ENTITY_EVENT_TYPE,
     Action,
@@ -440,6 +446,16 @@ def entity_manager_update(
                         and params.entity_type == EntityType.EMAIL_ACCESS
                     ):
                         grant_email_access(params)
+                    elif (
+                        params.action == Action.CREATE
+                        and params.entity_type == EntityType.ASSOCIATED_WALLET
+                    ):
+                        add_associated_wallet(params)
+                    elif (
+                        params.action == Action.DELETE
+                        and params.entity_type == EntityType.ASSOCIATED_WALLET
+                    ):
+                        remove_associated_wallet(params)
 
                     logger.debug("process transaction")  # log event context
                 except IndexingValidationError as e:
@@ -833,6 +849,8 @@ def collect_entities_to_fetch(update_task, entity_manager_txs):
                     entities_to_fetch[EntityType.ENCRYPTED_EMAIL].add(
                         email_owner_user_id
                     )
+            if entity_type == EntityType.ASSOCIATED_WALLET:
+                entities_to_fetch[EntityType.ASSOCIATED_WALLET].add(user_id)
 
     return entities_to_fetch
 

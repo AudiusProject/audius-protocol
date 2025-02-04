@@ -60,7 +60,7 @@ export const CreateAlbumSchema = z
   .object({
     albumId: z.optional(HashId),
     userId: HashId,
-    coverArtFile: ImageFile,
+    coverArtFile: z.optional(ImageFile),
     metadata: CreateAlbumMetadataSchema,
     onProgress: z.optional(z.function()),
     trackIds: z.optional(z.array(HashId))

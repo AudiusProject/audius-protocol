@@ -1,52 +1,44 @@
-import { OptionalId } from '@audius/sdk'
-import { useQuery } from '@tanstack/react-query'
+import { Id } from '@audius/sdk'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useDispatch } from 'react-redux'
 
 import { userMetadataListFromSDK } from '~/adapters/user'
-import { useAppContext } from '~/context/appContext'
+import { useAudiusQueryContext } from '~/audius-query'
 import { ID } from '~/models/Identifiers'
-import { Kind } from '~/models/Kind'
-import { addEntries } from '~/store/cache/actions'
-import { EntriesByKind } from '~/store/cache/types'
+import { removeNullable } from '~/utils/typeUtils'
 
 import { QUERY_KEYS } from './queryKeys'
+import { QueryOptions } from './types'
+import { primeUserData } from './utils/primeUserData'
 
-type Config = {
-  staleTime?: number
-}
+export const getUsersQueryKey = (userIds: ID[] | null | undefined) => [
+  QUERY_KEYS.users,
+  userIds
+]
 
-export const useUsers = (userIds: ID[], config?: Config) => {
-  const { audiusSdk } = useAppContext()
+export const useUsers = (
+  userIds: ID[] | null | undefined,
+  options?: QueryOptions
+) => {
+  const { audiusSdk } = useAudiusQueryContext()
   const dispatch = useDispatch()
+  const queryClient = useQueryClient()
+  const encodedIds = userIds?.map((id) => Id.parse(id)).filter(removeNullable)
 
   return useQuery({
-    queryKey: [QUERY_KEYS.users, userIds],
+    queryKey: getUsersQueryKey(userIds),
     queryFn: async () => {
-      const encodedIds = userIds
-        .map((id) => OptionalId.parse(id))
-        .filter((id): id is string => id !== null)
-      if (encodedIds.length === 0) return []
-      const { data } = await audiusSdk!.full.users.getBulkUsers({
+      const sdk = await audiusSdk()
+      const { data } = await sdk.full.users.getBulkUsers({
         id: encodedIds
       })
+
       const users = userMetadataListFromSDK(data)
-
-      // Sync users data to Redux
-      if (users?.length) {
-        const entries: EntriesByKind = {
-          [Kind.USERS]: {}
-        }
-
-        users.forEach((user) => {
-          entries[Kind.USERS]![user.user_id] = user
-        })
-
-        dispatch(addEntries(entries, undefined, undefined, 'react-query'))
-      }
+      primeUserData({ users, queryClient, dispatch })
 
       return users
     },
-    staleTime: config?.staleTime,
-    enabled: !!audiusSdk && userIds.length > 0
+    staleTime: options?.staleTime,
+    enabled: options?.enabled !== false && encodedIds && encodedIds.length > 0
   })
 }

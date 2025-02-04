@@ -64,7 +64,7 @@ export class IdentityService {
   // #region: Internal Functions
   private async _getSignatureHeaders() {
     const audiusWalletClient = await this.getAudiusWalletClient({
-      ignoreCachedUserWallet: true
+      ignoreCachedUserWallet: false
     })
     const [currentAddress] = await audiusWalletClient.getAddresses()
     if (!currentAddress) {
@@ -288,6 +288,16 @@ export class IdentityService {
       url: '/transaction_metadata',
       method: 'post',
       data,
+      headers
+    })
+  }
+
+  async createPlaidLinkToken() {
+    const headers = await this._getSignatureHeaders()
+
+    return await this._makeRequest<{ linkToken: string }>({
+      url: '/create_link_token',
+      method: 'get',
       headers
     })
   }

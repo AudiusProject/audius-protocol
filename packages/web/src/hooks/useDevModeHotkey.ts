@@ -4,7 +4,7 @@ import { useHotkeys } from '@audius/harmony'
 
 import { env } from 'services/env'
 
-const ENABLE_DEV_MODE_KEY = 'enable-dev-mode'
+const ENABLE_DEV_MODE_KEY = 'enable-dev-mode-01-21-2025'
 
 export const useDevModeHotkey = (keyCode: number) => {
   const [isEnabled, setIsEnabled] = useState(false)

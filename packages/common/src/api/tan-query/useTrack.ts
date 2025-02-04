@@ -3,31 +3,37 @@ import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useDispatch } from 'react-redux'
 
 import { userTrackMetadataFromSDK } from '~/adapters/track'
-import { useAppContext } from '~/context/appContext'
+import { useAudiusQueryContext } from '~/audius-query'
 import { ID } from '~/models/Identifiers'
 import { Kind } from '~/models/Kind'
 import { addEntries } from '~/store/cache/actions'
 import { EntriesByKind } from '~/store/cache/types'
 
 import { QUERY_KEYS } from './queryKeys'
+import { QueryOptions } from './types'
+import { getUserQueryKey } from './useUser'
 
-type Config = {
-  staleTime?: number
-  enabled?: boolean
-}
+const STALE_TIME = Infinity
 
-export const useTrack = (trackId: ID, config?: Config) => {
-  const { audiusSdk } = useAppContext()
+export const getTrackQueryKey = (trackId: ID | null | undefined) => [
+  QUERY_KEYS.track,
+  trackId
+]
+
+export const useTrack = (
+  trackId: ID | null | undefined,
+  options?: QueryOptions
+) => {
+  const { audiusSdk } = useAudiusQueryContext()
   const queryClient = useQueryClient()
   const dispatch = useDispatch()
 
   return useQuery({
-    queryKey: [QUERY_KEYS.track, trackId],
+    queryKey: getTrackQueryKey(trackId),
     queryFn: async () => {
-      const encodedId = Id.parse(trackId)
-      if (!encodedId) return null
-      const { data } = await audiusSdk!.full.tracks.getTrack({
-        trackId: encodedId
+      const sdk = await audiusSdk()
+      const { data } = await sdk.full.tracks.getTrack({
+        trackId: Id.parse(trackId)
       })
 
       if (!data) return null
@@ -36,7 +42,7 @@ export const useTrack = (trackId: ID, config?: Config) => {
       // Prime the user query cache with user data from the track
       if (track?.user) {
         queryClient.setQueryData(
-          [QUERY_KEYS.user, track.user.user_id],
+          getUserQueryKey(track.user.user_id),
           track.user
         )
       }
@@ -60,10 +66,7 @@ export const useTrack = (trackId: ID, config?: Config) => {
 
       return track
     },
-    staleTime: config?.staleTime,
-    enabled:
-      !!audiusSdk &&
-      !!trackId &&
-      (config && 'enabled' in config ? config.enabled : true)
+    staleTime: options?.staleTime ?? STALE_TIME,
+    enabled: options?.enabled !== false && !!trackId
   })
 }

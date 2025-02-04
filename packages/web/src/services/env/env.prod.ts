@@ -85,5 +85,6 @@ export const env: Env = {
   WEB3_PROVIDER_URL: 'https://poa-gateway.audius.co',
   WORMHOLE_ADDRESS: '0x6E7a1F7339bbB62b23D44797b63e4258d283E095',
   WORMHOLE_RPC_HOSTS:
-    'https://wormhole-v2-mainnet-api.certus.one,https://wormhole.inotel.ro,https://wormhole-v2-mainnet-api.mcf.rocks,https://wormhole-v2-mainnet-api.chainlayer.network,https://wormhole-v2-mainnet-api.staking.fund,https://wormhole-v2-mainnet-api.chainlayer.network'
+    'https://wormhole-v2-mainnet-api.certus.one,https://wormhole.inotel.ro,https://wormhole-v2-mainnet-api.mcf.rocks,https://wormhole-v2-mainnet-api.chainlayer.network,https://wormhole-v2-mainnet-api.staking.fund,https://wormhole-v2-mainnet-api.chainlayer.network',
+  EMAIL_ENCRYPTION_UUID: 61969424
 }

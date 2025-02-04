@@ -6,7 +6,7 @@ import { waitForRead } from 'utils/sagaHelpers'
 
 import { retrieveCollections } from '../cache/collections/utils'
 
-const { getAccountSavedPlaylistIds, getAccountOwnedPlaylistIds } =
+const { getUserId, getAccountSavedPlaylistIds, getAccountOwnedPlaylistIds } =
   accountSelectors
 
 const { signedIn, fetchSavedPlaylists } = accountActions
@@ -19,12 +19,13 @@ function* onSignedIn() {
 
 function* fetchSavedPlaylistsAsync() {
   yield* waitForRead()
+  const userId = yield* select(getUserId)
 
   // Fetch other people's playlists you've saved
   yield* fork(function* () {
     const savedPlaylists = yield* select(getAccountSavedPlaylistIds)
     if (savedPlaylists.length > 0) {
-      yield* call(retrieveCollections, savedPlaylists)
+      yield* call(retrieveCollections, savedPlaylists, { userId })
     }
   })
 
@@ -32,7 +33,7 @@ function* fetchSavedPlaylistsAsync() {
   yield* fork(function* () {
     const ownPlaylists = yield* select(getAccountOwnedPlaylistIds)
     if (ownPlaylists.length > 0) {
-      yield* call(retrieveCollections, ownPlaylists)
+      yield* call(retrieveCollections, ownPlaylists, { userId })
     }
   })
 }

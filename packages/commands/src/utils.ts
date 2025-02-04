@@ -6,7 +6,9 @@ import {
   type AudiusSdk,
   encodeHashId,
   decodeHashId,
-  ResponseError
+  ResponseError,
+  Logger,
+  type LoggerService
 } from '@audius/sdk'
 
 import {
@@ -103,6 +105,36 @@ export const getHedgehog = () => {
   return hedgehog
 }
 
+class ErrorLogger implements LoggerService {
+  private logPrefix = '[audius-sdk]'
+
+  constructor(config?: { logPrefix?: string }) {
+    this.logPrefix = config?.logPrefix ?? '[audius-sdk]'
+  }
+
+  public createPrefixedLogger(logPrefix: string) {
+    return new ErrorLogger({
+      logPrefix: `${this.logPrefix}${logPrefix}`
+    })
+  }
+
+  public debug(...args: any[]) {
+    console.error('[DEBUG]', this.logPrefix, ...args)
+  }
+
+  public info(...args: any[]) {
+    console.error('[INFO]', this.logPrefix, ...args)
+  }
+
+  public warn(...args: any[]) {
+    console.error('[WARN]', this.logPrefix, ...args)
+  }
+
+  public error(...args: any[]) {
+    console.error('[ERROR]', this.logPrefix, ...args)
+  }
+}
+
 export const initializeAudiusSdk = async ({
   handle
 }: { handle?: string } = {}) => {
@@ -167,7 +199,8 @@ export const initializeAudiusSdk = async ({
       environment: 'development',
       services: {
         audiusWalletClient,
-        solanaRelay
+        solanaRelay,
+        logger: new ErrorLogger()
       }
     })
 

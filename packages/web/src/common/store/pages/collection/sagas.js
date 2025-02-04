@@ -3,7 +3,8 @@ import {
   cacheActions,
   collectionPageLineupActions as tracksActions,
   collectionPageActions as collectionActions,
-  reachabilitySelectors
+  reachabilitySelectors,
+  accountSelectors
 } from '@audius/common/store'
 import { makeUid, route } from '@audius/common/utils'
 import { call, put, select, takeLatest, takeEvery } from 'redux-saga/effects'
@@ -19,9 +20,11 @@ import tracksSagas from './lineups/sagas'
 const { NOT_FOUND_PAGE } = route
 const { fetchCollectionSucceeded, fetchCollectionFailed } = collectionActions
 const { getIsReachable } = reachabilitySelectors
+const { getUserId } = accountSelectors
 
 function* watchFetchCollection() {
   yield takeLatest(collectionActions.FETCH_COLLECTION, function* (action) {
+    const userId = yield select(getUserId)
     const { id: collectionId, permalink, fetchLineup, forceFetch } = action
     let retrievedCollections
     if (permalink) {
@@ -30,13 +33,15 @@ function* watchFetchCollection() {
         permalink,
         {
           deleteExistingEntry: true,
-          forceRetrieveFromSource: forceFetch
+          forceRetrieveFromSource: forceFetch,
+          userId
         }
       )
     } else {
       retrievedCollections = yield call(retrieveCollections, [collectionId], {
         deleteExistingEntry: true,
-        forceRetrieveFromSource: forceFetch
+        forceRetrieveFromSource: forceFetch,
+        userId
       })
     }
 

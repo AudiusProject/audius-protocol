@@ -297,7 +297,16 @@ const mobileChallengeConfig: Record<ChallengeRewardID, MobileChallengeConfig> =
       }
     },
     [ChallengeName.OneShot]: {
-      icon: Parachute
+      icon: Parachute,
+      buttonInfo: {
+        iconRight: IconCheck
+      }
+    },
+    [ChallengeName.ListenStreakEndless]: {
+      icon: undefined,
+      buttonInfo: {
+        iconRight: IconCheck
+      }
     }
   }
 

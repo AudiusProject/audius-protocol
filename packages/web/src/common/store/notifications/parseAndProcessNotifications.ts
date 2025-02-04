@@ -178,9 +178,12 @@ export function* parseAndProcessNotifications(
     }
   })
 
+  yield* waitForAccount()
+  const userId = yield* select(getUserId)
+  if (!userId) return []
   const [tracks] = yield* all([
     call(retrieveTracks, { trackIds: Array.from(trackIdsToFetch) }),
-    call(retrieveCollections, Array.from(collectionIdsToFetch)),
+    call(retrieveCollections, Array.from(collectionIdsToFetch), { userId }),
     call(
       fetchUsers,
       Array.from(userIdsToFetch), // userIds
@@ -202,9 +205,6 @@ export function* parseAndProcessNotifications(
    * Attach a `timeLabel` to each notification as well to be displayed ie. 2 Hours Ago
    */
   const now = moment()
-  yield* waitForAccount()
-  const userId = yield* select(getUserId)
-  if (!userId) return []
   const remixTrackParents: Array<ID> = []
   const processedNotifications = notifications.map((notif) => {
     if (

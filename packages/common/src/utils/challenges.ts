@@ -123,6 +123,17 @@ export const challengeRewardsConfig: Record<
     completedLabel: 'Keep Listening',
     panelButtonText: 'Trending on Audius'
   },
+  [ChallengeName.ListenStreakEndless]: {
+    id: ChallengeName.ListenStreakEndless,
+    title: 'Listening Streak',
+    description: () =>
+      'Listen to Audius daily for a week to start a streak and earn $AUDIO for each day you keep it going.',
+    fullDescription: () =>
+      'Listen to music on Audius daily for seven days to start a streak. After that, earn $AUDIO for each consecutive day you continue listening.',
+    progressLabel: '%0/%1 Days',
+    completedLabel: 'Keep Listening',
+    panelButtonText: 'Trending on Audius'
+  },
   [ChallengeName.ListenStreak]: {
     id: ChallengeName.ListenStreak,
     title: 'Listening Streak: 7 Days',
@@ -340,7 +351,10 @@ export const makeOptimisticChallengeSortComparator = (
     const userChallenge1 = userChallenges[id1]
     const userChallenge2 = userChallenges[id2]
 
-    if (isAudioMatchingChallenge(id1)) {
+    if (
+      userChallenge1?.challenge_id &&
+      isNewChallenge(userChallenge1?.challenge_id)
+    ) {
       return -1
     }
     if (!userChallenge1 || !userChallenge2) {
@@ -407,3 +421,12 @@ export const getClaimableChallengeSpecifiers = (
     return isCooldownChallengeClaimable(challenge[0])
   })
 }
+
+const newChallengeIds: ChallengeRewardID[] = [
+  ChallengeName.ListenStreakEndless,
+  ChallengeName.AudioMatchingSell,
+  ChallengeName.AudioMatchingBuy
+]
+
+export const isNewChallenge = (challengeId: ChallengeRewardID) =>
+  newChallengeIds.includes(challengeId)

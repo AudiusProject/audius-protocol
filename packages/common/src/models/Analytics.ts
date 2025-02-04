@@ -81,6 +81,10 @@ export enum Name {
   CREATE_ACCOUNT_COMPLETE_FOLLOW = 'Create Account: Complete Follow',
   // When the user continues past the loading page
   CREATE_ACCOUNT_COMPLETE_CREATING = 'Create Account: Complete Creating',
+  // When the user creates a guest account
+  CREATE_ACCOUNT_COMPLETE_GUEST_CREATING = 'Create Account: Complete Guest Creating',
+  // When the user completes a guest profile for a full user
+  CREATE_ACCOUNT_COMPLETE_GUEST_PROFILE = 'Create Account: Complete Guest Profile',
   // When the user continues past the entire signup modal
   CREATE_ACCOUNT_FINISH = 'Create Account: Finish',
   // When the user gets rate limited during signup auth

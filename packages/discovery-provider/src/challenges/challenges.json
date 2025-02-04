@@ -19,6 +19,15 @@
     "weekly_pool": 25000
   },
   {
+    "id": "e",
+    "type": "aggregate",
+    "amount": 1,
+    "active": true,
+    "step_count": 2147483647,
+    "starting_block": 116023891,
+    "weekly_pool": 25000
+  },
+  {
     "id": "u",
     "type": "numeric",
     "amount": 1,

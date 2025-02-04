@@ -85,7 +85,6 @@ jobs:
             - ./packages/identity-service/node_modules
             - ./packages/es-indexer/node_modules
             - ./packages/ddex-entrypoint/node_modules
-            - ./packages/trpc-server/node_modules
             - ./packages/create-audius-app/node_modules
             - ./packages/dotenv-linter/bin
 
@@ -109,11 +108,6 @@ jobs:
           command: |
             OLD_VERSION=$(jq -r .version packages/discovery-provider/.version.json)
             NEW_VERSION=$(echo ${OLD_VERSION} | awk -F. '{$NF = $NF + 1;} 1' | sed 's/ /./g')
-
-            # Bump version for content node
-            jq --arg version "$NEW_VERSION" '.version=$version' pkg/mediorum/.version.json > /tmp/.version.json
-            mv /tmp/.version.json pkg/mediorum/.version.json
-            git add pkg/mediorum/.version.json
 
             # Bump version for discovery node
             jq --arg version "$NEW_VERSION" '.version=$version' packages/discovery-provider/.version.json > /tmp/.version.json

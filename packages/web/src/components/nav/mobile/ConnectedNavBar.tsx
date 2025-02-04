@@ -1,5 +1,6 @@
 import { useCallback, useContext } from 'react'
 
+import { useChallengeCooldownSchedule } from '@audius/common/hooks'
 import { Name, Status } from '@audius/common/models'
 import {
   accountSelectors,
@@ -22,7 +23,7 @@ import { push, goBack } from 'utils/navigation'
 
 import NavBar from './NavBar'
 
-const { NOTIFICATION_PAGE, SETTINGS_PAGE, AUDIO_PAGE } = route
+const { NOTIFICATION_PAGE, SETTINGS_PAGE, REWARDS_PAGE } = route
 const { getSearchStatus } = searchResultsPageSelectors
 const { getNotificationUnviewedCount } = notificationsSelectors
 const { getHasAccount, getAccountStatus } = accountSelectors
@@ -41,6 +42,9 @@ const ConnectedNavBar = ({
   goBack
 }: ConnectedNavBarProps) => {
   const { setStackReset, setSlideDirection } = useContext(RouterContext)
+  const { claimableAmount: rewardsCount } = useChallengeCooldownSchedule({
+    multiple: true
+  })
 
   const search = (query: string) => {
     history.push({
@@ -70,9 +74,9 @@ const ConnectedNavBar = ({
     setStackReset(true)
   }, [setStackReset])
 
-  const goToAudioPage = useCallback(() => {
+  const goToRewardsPage = useCallback(() => {
     setStackReset(true)
-    setImmediate(() => goToRoute(AUDIO_PAGE))
+    setImmediate(() => goToRoute(REWARDS_PAGE))
   }, [goToRoute, setStackReset])
 
   return (
@@ -81,13 +85,14 @@ const ConnectedNavBar = ({
       isLoading={accountStatus === Status.LOADING}
       signUp={signUp}
       notificationCount={notificationCount}
+      rewardsCount={rewardsCount}
       goToNotificationPage={goToNotificationPage}
       goToSettingsPage={goToSettingsPage}
       search={search}
       searchStatus={searchStatus}
       goBack={goBack}
       history={history}
-      goToAudioPage={goToAudioPage}
+      goToRewardsPage={goToRewardsPage}
     />
   )
 }

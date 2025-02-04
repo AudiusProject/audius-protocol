@@ -2,7 +2,8 @@ import { ID } from '@audius/common/models'
 import {
   savedCollectionsActions,
   savedCollectionsSelectors,
-  CollectionType
+  CollectionType,
+  accountSelectors
 } from '@audius/common/store'
 import { waitForRead } from '@audius/common/utils'
 import { all, call, select, put, takeEvery } from 'typed-redux-saga'
@@ -21,10 +22,10 @@ type FetchCollectionsConfig = {
 
 function* fetchCollectionsAsync({ ids, type }: FetchCollectionsConfig) {
   yield waitForRead()
+  const userId = yield* select(accountSelectors.getUserId)
+  yield* call(retrieveCollections, ids, { userId })
 
-  yield* call(retrieveCollections, ids)
-
-  yield put(
+  yield* put(
     fetchCollectionsSucceeded({
       type
     })

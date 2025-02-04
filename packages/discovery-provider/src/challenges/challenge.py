@@ -16,14 +16,16 @@ logger = logging.getLogger(__name__)
 
 # DB Accessors
 def fetch_user_challenges(
-    session: Session, challenge_id: str, specifiers: List[str]
+    session: Session, challenge_id: str, specifiers: Optional[List[str]] = None
 ) -> List[UserChallenge]:
     user_challenges = (
         session.query(UserChallenge).filter(
             UserChallenge.challenge_id == challenge_id,
-            UserChallenge.specifier.in_(specifiers),
+            UserChallenge.specifier.in_(specifiers) if specifiers else True,
         )
     ).all()
+    if specifiers is None:
+        return user_challenges
     # Re-sort them
     specifier_map = {
         user_challenge.specifier: user_challenge for user_challenge in user_challenges
@@ -71,7 +73,7 @@ class ChallengeUpdater(ABC):
         If a challenge is backed by it's own table, for instance, create those rows here.
         """
 
-    def generate_specifier(self, user_id: int, extra: Dict) -> str:
+    def generate_specifier(self, session: Session, user_id: int, extra: Dict) -> str:
         """Optional method to provide a custom specifier for a challenge, given a user_id"""
         return hex(user_id)[2:]
 
@@ -161,7 +163,7 @@ class ChallengeManager:
                 "block_datetime": event["block_datetime"],
                 "extra": event["extra"],
                 "specifier": self._updater.generate_specifier(
-                    event["user_id"], event["extra"]
+                    session, event["user_id"], event["extra"]
                 ),
             }
             for event in event_metadatas
@@ -183,7 +185,9 @@ class ChallengeManager:
         try:
             # Gets all user challenges,
             existing_user_challenges = fetch_user_challenges(
-                session, self.challenge_id, specifiers
+                session,
+                self.challenge_id,
+                specifiers,
             )
 
             # Create users that need challenges still
@@ -320,7 +324,7 @@ class ChallengeManager:
             session.rollback()
 
     def get_user_challenge_state(
-        self, session: Session, specifiers: List[str]
+        self, session: Session, specifiers: Optional[List[str]] = None
     ) -> List[UserChallenge]:
         return fetch_user_challenges(session, self.challenge_id, specifiers)
 

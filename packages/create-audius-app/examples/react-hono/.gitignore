@@ -11,6 +11,9 @@ dist/
 .idea/usage.statistics.xml
 .idea/shelf
 
+# Don't include lockfile as this is an example project
+package-lock.json
+
 # deps
 node_modules/
 .wrangler

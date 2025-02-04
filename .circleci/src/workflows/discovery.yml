@@ -3,91 +3,7 @@ jobs:
   - push-docker-image:
       name: push-discovery-provider
       context: [Vercel, dockerhub]
-      service: discovery-provider
-      filters:
-        branches:
-          only: main
-  - push-docker-image:
-      name: push-discovery-provider-openresty
-      context: [Vercel, dockerhub]
-      service: discovery-provider-openresty
-      filters:
-        branches:
-          only: main
-  - push-docker-image:
-      name: push-discovery-provider-notifications
-      context: [Vercel, dockerhub]
-      service: discovery-provider-notifications
-      filters:
-        branches:
-          only: main
-  - push-docker-image:
-      name: push-pedalboard-trending-challenge-rewards
-      context: [Vercel, dockerhub]
-      service: trending-challenge-rewards
-      filters:
-        branches:
-          only: main
-  - push-docker-image:
-      name: push-pedalboard-staking
-      context: [Vercel, dockerhub]
-      service: staking
-      filters:
-        branches:
-          only: main
-  - push-docker-image:
-      name: push-pedalboard-relay
-      context: [Vercel, dockerhub]
-      service: relay
-      filters:
-        branches:
-          only: main
-  - push-docker-image:
-      name: push-pedalboard-solana-relay
-      context: [Vercel, dockerhub]
-      service: solana-relay
-      filters:
-        branches:
-          only: main
-  - push-docker-image:
-      name: push-pedalboard-crm
-      context: [Vercel, dockerhub]
-      service: crm
-      filters:
-        branches:
-          only: main
-  - push-docker-image:
-      name: push-pedalboard-mri
-      context: [Vercel, dockerhub]
-      service: mri
-      filters:
-        branches:
-          only: main
-  - push-docker-image:
-      name: push-pedalboard-verified-notifications
-      context: [Vercel, dockerhub]
-      service: verified-notifications
-      filters:
-        branches:
-          only: main
-  - push-docker-image:
-      name: push-comms
-      context: [Vercel, dockerhub]
-      service: comms
-      filters:
-        branches:
-          only: main
-  - push-docker-image:
-      name: push-es-indexer
-      context: [Vercel, dockerhub]
-      service: es-indexer
-      filters:
-        branches:
-          only: main
-  - push-docker-image:
-      name: push-trpc
-      context: [Vercel, dockerhub]
-      service: trpc
+      service: discovery-provider discovery-provider-openresty discovery-provider-notifications trending-challenge-rewards staking relay solana-relay crm mri comms es-indexer
       filters:
         branches:
           only: main
@@ -116,16 +32,6 @@ jobs:
         - test-discovery-provider
         - test-discovery-provider-notifications
         - push-discovery-provider
-        - push-discovery-provider-openresty
-        - push-discovery-provider-notifications
-        - push-pedalboard-trending-challenge-rewards
-        - push-pedalboard-staking
-        - push-pedalboard-relay
-        - push-pedalboard-solana-relay
-        - push-pedalboard-crm
-        - push-pedalboard-mri
-        - push-comms
-        - push-trpc
 
       filters:
         branches:

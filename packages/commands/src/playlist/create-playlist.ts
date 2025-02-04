@@ -3,6 +3,7 @@ import chalk from 'chalk'
 import { Command } from '@commander-js/extra-typings'
 import { getCurrentUserId, initializeAudiusSdk, parseBoolean } from '../utils'
 import { decodeHashId } from '@audius/sdk'
+import { outputFormatOption } from '../common-options'
 
 export const createPlaylistCommand = new Command('create')
   .description('Create playlist')
@@ -17,6 +18,7 @@ export const createPlaylistCommand = new Command('create')
     'Description of playlist (chosen randomly if not specified)'
   )
   .option('-p, --is-private [isPrivate]', 'Make playlist private', parseBoolean)
+  .addOption(outputFormatOption)
   .action(async (trackIds, options) => {
     const rand = randomBytes(2).toString('hex').padStart(4, '0').toUpperCase()
     const {
@@ -38,10 +40,15 @@ export const createPlaylistCommand = new Command('create')
         isPrivate
       }
     })
-    console.log(chalk.green('Successfully created playlist'))
-    console.log(chalk.yellow.bold('Playlist ID:  '), response.playlistId)
-    console.log(
-      chalk.yellow.bold('Playlist ID #:'),
-      decodeHashId(response.playlistId!)
-    )
+
+    if (options.output === 'json') {
+      console.log(JSON.stringify(response))
+    } else {
+      console.log(chalk.green('Successfully created playlist'))
+      console.log(chalk.yellow.bold('Playlist ID:  '), response.playlistId)
+      console.log(
+        chalk.yellow.bold('Playlist ID #:'),
+        decodeHashId(response.playlistId!)
+      )
+    }
   })

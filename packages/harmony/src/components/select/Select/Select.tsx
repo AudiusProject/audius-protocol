@@ -66,9 +66,9 @@ export const Select = forwardRef(function Select<Value extends string>(
   const [inputValue, setInputValue] = useState('')
   const selectedOption = options.find((option) => option.value === value)
   const selectedLabel = selectedOption
-    ? renderSelectedOptionlabel?.(selectedOption) ??
+    ? (renderSelectedOptionlabel?.(selectedOption) ??
       selectedOption.label ??
-      selectedOption.value
+      selectedOption.value)
     : ''
   const anchorRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)

@@ -8,9 +8,9 @@ export const getPlaylistCommand = new Command('get')
   .action(async (playlistId, { from }) => {
     const audiusSdk = await initializeAudiusSdk({ handle: from })
     const userId = await getCurrentUserId()
-    const { data: track } = await audiusSdk.full.playlists.getPlaylist({
+    const { data: playlist } = await audiusSdk.full.playlists.getPlaylist({
       userId,
       playlistId
     })
-    console.info(track)
+    console.info(JSON.stringify(playlist, undefined, 2))
   })

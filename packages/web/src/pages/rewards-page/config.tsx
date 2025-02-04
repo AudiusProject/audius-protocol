@@ -139,6 +139,14 @@ const webChallengesConfig: Record<ChallengeRewardID, WebChallengeInfo> = {
       complete: linkButtonMap.trendingTracks
     }
   },
+  [ChallengeName.ListenStreakEndless]: {
+    icon: <i className='emoji large headphone' />,
+    modalButtonInfo: {
+      incomplete: linkButtonMap.trendingTracks,
+      inProgress: linkButtonMap.trendingTracks,
+      complete: linkButtonMap.trendingTracks
+    }
+  },
   [ChallengeName.ListenStreak]: {
     icon: <i className='emoji large headphone' />,
     modalButtonInfo: {
@@ -258,7 +266,7 @@ const webChallengesConfig: Record<ChallengeRewardID, WebChallengeInfo> = {
     icon: <i className='emoji large chart-bar' />
   },
   [ChallengeName.OneShot]: {
-    icon: <i className='emoji large incoming-envelope' />
+    icon: <i className='emoji large parachute' />
   }
 }
 
