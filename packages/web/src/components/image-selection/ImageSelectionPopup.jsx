@@ -3,14 +3,20 @@ import { useState, useCallback, useRef } from 'react'
 import { RandomImage } from '@audius/common/services'
 import { accountSelectors } from '@audius/common/store'
 import { removeNullable } from '@audius/common/utils'
-import { Button, Popup, SegmentedControl, IconSearch } from '@audius/harmony'
+import {
+  Flex,
+  Button,
+  Popup,
+  SegmentedControl,
+  IconSearch
+} from '@audius/harmony'
 import cn from 'classnames'
 import PropTypes from 'prop-types'
 import { useSelector } from 'react-redux'
 import { useWindowSize } from 'react-use'
 
 import { Dropzone } from 'components/upload/Dropzone'
-import InvalidFileType from 'components/upload/InvalidFileType'
+import { InvalidFileType } from 'components/upload/InvalidFileType'
 import { useMainContentRef } from 'pages/MainContentContext'
 import zIndex from 'utils/zIndex'
 
@@ -38,17 +44,19 @@ const DropzonePage = ({ error, onSelect }) => {
     (file) => onSelect(file, 'original'),
     [onSelect]
   )
+
   return (
-    <div className={styles.dropzonePage}>
+    <Flex column mt='l' alignItems='center' gap='s'>
+      {error ? (
+        <InvalidFileType reason='type' className={styles.invalidFileType} />
+      ) : null}
       <Dropzone
         type='image'
         className={styles.dropzone}
-        iconClassName={styles.dropzoneIcon}
         allowMultiple={false}
         onDropAccepted={onDropzoneSelect}
       />
-      {error ? <InvalidFileType className={styles.invalidFileType} /> : null}
-    </div>
+    </Flex>
   )
 }
 

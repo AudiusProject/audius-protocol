@@ -2,7 +2,6 @@ import { useState } from 'react'
 
 import { useTrackHistory } from '@audius/common/api'
 import { useDebouncedCallback } from '@audius/common/hooks'
-import { Status } from '@audius/common/models'
 
 import { IconListeningHistory, Paper } from '@audius/harmony-native'
 import { EmptyTile, Screen, ScreenContent } from 'app/components/core'
@@ -23,7 +22,7 @@ export const ListeningHistoryScreen = () => {
   const {
     loadNextPage,
     togglePlay,
-    status,
+    isPending,
     hasNextPage,
     pageSize,
     lineup: { entries }
@@ -39,7 +38,7 @@ export const ListeningHistoryScreen = () => {
     100
   )
 
-  const showEmptyMessage = status === Status.SUCCESS && entries.length === 0
+  const showEmptyMessage = !isPending && entries.length === 0
   const showNoResults = showEmptyMessage && filterValue.length > 0
   const showNoHistory = showEmptyMessage && !filterValue
 
@@ -68,7 +67,7 @@ export const ListeningHistoryScreen = () => {
               trackItemAction='overflow'
               onEndReached={loadNextPage}
               onEndReachedThreshold={0.5}
-              showSkeleton={status !== Status.SUCCESS && entries.length === 0}
+              showSkeleton={isPending}
               hasNextPage={hasNextPage}
               pageSize={pageSize}
             />

@@ -56,6 +56,7 @@ import { push as pushRoute } from 'utils/navigation'
 import { openTwitterLink } from 'utils/tweet'
 
 import { AudioMatchingRewardsModalContent } from './AudioMatchingRewardsModalContent'
+import { ListenStreakChallengeModalContent } from './ListenStreakChallengeModalContent'
 import { ProgressDescription } from './ProgressDescription'
 import { ProgressReward } from './ProgressReward'
 import styles from './styles.module.css'
@@ -92,6 +93,7 @@ export const useRewardsModalType = (): [
 const inviteLink = getCopyableLink('/signup?rf=%0')
 
 const messages = {
+  close: 'Close',
   audio: '$AUDIO',
   everyDollarSpent: ' Every Dollar Spent',
   copyLabel: 'Copy to Clipboard',
@@ -299,16 +301,12 @@ const ChallengeRewardsBody = ({ dismissModal }: BodyProps) => {
   // But DN may have not indexed the challenge so check for client-side completion too
   // Note that we can't handle aggregate challenges optimistically
   let audioToClaim = 0
-  let audioClaimedSoFar = 0
   if (challenge?.challenge_type === 'aggregate') {
     audioToClaim = challenge.claimableAmount
-    audioClaimedSoFar = challenge.disbursed_amount
   } else if (challenge?.state === 'completed' && challenge?.cooldown_days) {
     audioToClaim = challenge.claimableAmount
   } else if (challenge?.state === 'completed' && !challenge?.cooldown_days) {
     audioToClaim = challenge.totalAmount
-  } else if (challenge?.state === 'disbursed') {
-    audioClaimedSoFar = challenge.totalAmount
   }
   let progressRewardAmount = challenge?.totalAmount
   if (modalType === ChallengeName.OneShot) {
@@ -333,18 +331,18 @@ const ChallengeRewardsBody = ({ dismissModal }: BodyProps) => {
     challenge.max_steps > 1 &&
     challenge.challenge_type !== 'aggregate'
 
-  const progressDescriptionLabel = isVerifiedChallenge ? (
-    <div className={styles.verifiedChallenge}>
-      <IconVerified />
-      {messages.verifiedChallenge}
-    </div>
-  ) : (
-    <Text variant='label' size='l' strength='strong'>
-      {messages.taskDetails}
-    </Text>
-  )
   const progressDescription = (
     <Flex column gap='m'>
+      {isVerifiedChallenge ? (
+        <div className={styles.verifiedChallenge}>
+          <IconVerified />
+          {messages.verifiedChallenge}
+        </div>
+      ) : (
+        <Text variant='label' size='l' strength='strong'>
+          {messages.taskDetails}
+        </Text>
+      )}
       <Text variant='body'>{fullDescription?.(challenge)}</Text>
       {isCooldownChallenge ? (
         <Text variant='body' color='subdued'>
@@ -543,53 +541,46 @@ const ChallengeRewardsBody = ({ dismissModal }: BodyProps) => {
   }
 
   const renderClaimButton = () => {
-    if (audioToClaim > 0) {
-      return (
-        <Button
-          variant='primary'
-          isLoading={claimInProgress}
-          iconRight={IconCheck}
-          onClick={onClaimRewardClicked}
-          fullWidth
-        >
-          {messages.claimableAmountLabel(audioToClaim)}
-        </Button>
-      )
-    }
-    return null
+    return audioToClaim > 0 ? (
+      <Button
+        variant='primary'
+        isLoading={claimInProgress}
+        iconRight={IconCheck}
+        onClick={onClaimRewardClicked}
+        fullWidth
+      >
+        {messages.claimableAmountLabel(audioToClaim)}
+      </Button>
+    ) : (
+      <Button variant='secondary' onClick={dismissModal} fullWidth>
+        {messages.close}
+      </Button>
+    )
   }
 
-  const renderClaimedSoFarContent = () => {
-    if (audioClaimedSoFar > 0 && challenge?.state !== 'disbursed') {
-      return (
-        <div className={styles.claimRewardClaimedAmountLabel}>
-          {`${formatNumberCommas(audioClaimedSoFar)} ${messages.claimedSoFar}`}
-        </div>
-      )
-    }
-    return null
-  }
-
+  let modalContent
   if (isAudioMatchingChallenge(modalType)) {
-    return (
+    modalContent = (
       <AudioMatchingRewardsModalContent
         errorContent={errorContent}
         onNavigateAway={dismissModal}
-        onClaimRewardClicked={onClaimRewardClicked}
-        claimInProgress={claimInProgress}
+        challenge={challenge}
+        challengeName={modalType}
+      />
+    )
+  } else if (modalType === ChallengeName.ListenStreakEndless) {
+    modalContent = (
+      <ListenStreakChallengeModalContent
         challenge={challenge}
         challengeName={modalType}
       />
     )
   } else {
-    return (
+    modalContent = (
       <Flex column alignItems='center' gap='2xl'>
         {isMobile ? (
           <>
-            <ProgressDescription
-              label={progressDescriptionLabel}
-              description={progressDescription}
-            />
+            <ProgressDescription description={progressDescription} />
             <Paper column shadow='flat' w='100%' borderRadius='s'>
               <Flex justifyContent='center'>
                 <ProgressReward
@@ -610,10 +601,7 @@ const ChallengeRewardsBody = ({ dismissModal }: BodyProps) => {
           <>
             <Paper column w='100%' borderRadius='s' shadow='flat'>
               <Flex justifyContent='space-between'>
-                <ProgressDescription
-                  label={progressDescriptionLabel}
-                  description={progressDescription}
-                />
+                <ProgressDescription description={progressDescription} />
                 <ProgressReward
                   amount={formatNumberCommas(progressRewardAmount ?? '')}
                   subtext={messages.audio}
@@ -646,17 +634,17 @@ const ChallengeRewardsBody = ({ dismissModal }: BodyProps) => {
               : buttonInfo?.label}
           </Button>
         ) : null}
-        {audioToClaim > 0 ||
-        (audioClaimedSoFar > 0 && challenge?.state !== 'disbursed') ? (
-          <div className={wm(styles.claimRewardWrapper)}>
-            {renderClaimButton()}
-            {renderClaimedSoFarContent()}
-          </div>
-        ) : null}
-        {errorContent}
       </Flex>
     )
   }
+
+  return (
+    <Flex column alignItems='center' gap='2xl'>
+      {modalContent}
+      {renderClaimButton()}
+      {errorContent}
+    </Flex>
+  )
 }
 
 export const ChallengeRewardsModal = () => {

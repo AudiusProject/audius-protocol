@@ -1,10 +1,11 @@
-import { OptimisticUserChallenge } from '~/models'
+import { ChallengeName, OptimisticUserChallenge } from '~/models'
 import { fillString, formatNumberCommas } from '~/utils'
 
 const messages = {
   completeLabel: 'COMPLETE',
   readyToClaim: 'Ready to Claim',
-  pendingRewards: 'Pending Reward'
+  pendingRewards: 'Pending Reward',
+  day: (day: number) => `Day ${day} ${day > 0 ? '🔥' : ''}`
 }
 
 export const useFormattedProgressLabel = ({
@@ -25,7 +26,9 @@ export const useFormattedProgressLabel = ({
     challenge?.undisbursedSpecifiers &&
     challenge?.undisbursedSpecifiers.length > 0
 
-  if (shouldShowCompleted) {
+  if (challenge?.challenge_id === ChallengeName.ListenStreakEndless) {
+    label = messages.day(challenge?.current_step_count ?? 0)
+  } else if (shouldShowCompleted) {
     label = messages.completeLabel
   } else if (challenge && challenge?.cooldown_days > 0) {
     if (needsDisbursement) {

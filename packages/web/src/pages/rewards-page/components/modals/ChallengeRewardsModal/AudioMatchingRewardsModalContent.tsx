@@ -22,14 +22,12 @@ import {
 } from '@audius/harmony'
 import { useSelector } from 'react-redux'
 
-import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import { SummaryTable } from 'components/summary-table'
 import { useIsMobile } from 'hooks/useIsMobile'
 import { useNavigateToPage } from 'hooks/useNavigateToPage'
 
 import { ProgressDescription } from './ProgressDescription'
 import { ProgressReward } from './ProgressReward'
-import styles from './styles.module.css'
 
 const { EXPLORE_PREMIUM_TRACKS_PAGE, UPLOAD_PAGE } = route
 
@@ -61,8 +59,6 @@ type AudioMatchingChallengeName =
 type AudioMatchingRewardsModalContentProps = {
   challenge?: OptimisticUserChallenge
   challengeName: AudioMatchingChallengeName
-  onClaimRewardClicked: () => void
-  claimInProgress?: boolean
   onNavigateAway: () => void
   errorContent?: ReactNode
 }
@@ -80,17 +76,10 @@ const ctaButtonProps: {
   }
 }
 
-// TODO: Migrate to @audius/harmony Button and pass `isLoading`
-const ClaimInProgressSpinner = () => (
-  <LoadingSpinner className={styles.spinner} />
-)
-
 /** Implements custom ChallengeRewardsContent for the $AUDIO matching challenges */
 export const AudioMatchingRewardsModalContent = ({
   challenge,
   challengeName,
-  onClaimRewardClicked,
-  claimInProgress = false,
   onNavigateAway,
   errorContent
 }: AudioMatchingRewardsModalContentProps) => {
@@ -98,7 +87,6 @@ export const AudioMatchingRewardsModalContent = ({
   const navigateToPage = useNavigateToPage()
   const { fullDescription } = challengeRewardsConfig[challengeName]
   const {
-    claimableAmount,
     cooldownChallenges,
     summary,
     isEmpty: isCooldownChallengesEmpty
@@ -186,14 +174,7 @@ export const AudioMatchingRewardsModalContent = ({
       {isMobile ? (
         <>
           {progressDescription}
-          <Paper
-            column
-            shadow='flat'
-            border='strong'
-            borderRadius='m'
-            w='100%'
-            css={{ overflow: 'hidden' }}
-          >
+          <Paper column shadow='flat' w='100%' css={{ overflow: 'hidden' }}>
             <Flex justifyContent='center'>{progressReward}</Flex>
             {progressStatusLabel}
           </Paper>
@@ -201,14 +182,7 @@ export const AudioMatchingRewardsModalContent = ({
         </>
       ) : (
         <>
-          <Paper
-            shadow='flat'
-            border='strong'
-            borderRadius='m'
-            w='100%'
-            css={{ overflow: 'hidden' }}
-            direction='column'
-          >
+          <Paper shadow='flat' direction='column'>
             <Flex justifyContent='center'>
               {progressDescription}
               {progressReward}
@@ -218,16 +192,7 @@ export const AudioMatchingRewardsModalContent = ({
           {renderCooldownSummaryTable()}
         </>
       )}
-      {challenge?.claimableAmount && challenge.claimableAmount > 0 ? (
-        <Button
-          fullWidth
-          iconRight={claimInProgress ? ClaimInProgressSpinner : IconArrowRight}
-          disabled={claimInProgress}
-          onClick={onClaimRewardClicked}
-        >
-          {messages.claimAudio(formatNumberCommas(claimableAmount))}
-        </Button>
-      ) : (
+      {challenge?.claimableAmount && challenge.claimableAmount > 0 ? null : (
         <Button
           variant='secondary'
           fullWidth

@@ -2,10 +2,6 @@ import { Flex, Text } from '@audius/harmony'
 
 import styles from './styles.module.css'
 
-const messages = {
-  reward: 'Reward'
-}
-
 /** Renders the box containing the amount of audio to be earned from the challenge */
 export const ProgressReward = ({
   amount,
@@ -23,13 +19,10 @@ export const ProgressReward = ({
         maxWidth: 200
       }}
     >
-      <Text variant='label' size='l' strength='strong' color='subdued'>
-        {messages.reward}
-      </Text>
-      <Text variant='display' className={styles.rewardAmount}>
+      <Text variant='display' strength='strong' className={styles.rewardAmount}>
         {amount}
       </Text>
-      <Text variant='label' size='s' strength='strong' color='subdued'>
+      <Text variant='label' size='l' color='subdued'>
         {subtext}
       </Text>
     </Flex>

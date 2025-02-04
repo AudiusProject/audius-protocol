@@ -1,5 +1,11 @@
 # @audius/harmony
 
+## 0.3.5
+
+### Patch Changes
+
+- 290cdef: Ignore svg in image rollup plugin
+
 ## 0.3.4
 
 ### Patch Changes

@@ -15,7 +15,8 @@
 .dropzonePage {
   display: flex;
   justify-content: center;
-  height: 156px;
+  min-height: 156px;
+  gap: var(--harmony-spacing-m);
 }
 
 .dropzone {
@@ -30,19 +31,6 @@
 
 .dropzone > div {
   width: 80%;
-}
-
-.dropzoneIcon {
-  margin: 0;
-  width: 24px !important;
-}
-
-.invalidFileType {
-  position: absolute;
-  right: 0;
-  left: 0;
-  margin: 4px auto;
-  width: 60%;
 }
 
 /* Random image page */
