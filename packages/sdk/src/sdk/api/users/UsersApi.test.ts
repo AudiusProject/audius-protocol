@@ -442,7 +442,9 @@ describe('UsersApi', () => {
       vitest
         .spyOn(UsersApi.prototype, 'getUserEmailKey')
         .mockImplementation(async () => {
-          return { data: 'mockEncryptedKey' }
+          return {
+            data: { encryptedKey: 'mockEncryptedKey', isInitial: false }
+          }
         })
     })
 
@@ -450,7 +452,8 @@ describe('UsersApi', () => {
       const result = await users.shareEmail({
         emailOwnerUserId: 123,
         receivingUserId: 456,
-        email: 'email@example.com'
+        email: 'email@example.com',
+        initialEmailEncryptionUuid: 1
       })
 
       expect(result).toStrictEqual({
@@ -463,7 +466,8 @@ describe('UsersApi', () => {
       const result = await users.shareEmail({
         emailOwnerUserId: 123,
         receivingUserId: 456,
-        email: 'email@example.com'
+        email: 'email@example.com',
+        initialEmailEncryptionUuid: 1
       })
 
       expect(result).toStrictEqual({
