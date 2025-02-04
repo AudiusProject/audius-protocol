@@ -13,8 +13,6 @@ import { QUERY_KEYS } from './queryKeys'
 import { QueryOptions } from './types'
 import { getUserQueryKey } from './useUser'
 
-const STALE_TIME = Infinity
-
 export const getTrackQueryKey = (trackId: ID | null | undefined) => [
   QUERY_KEYS.track,
   trackId
@@ -66,7 +64,8 @@ export const useTrack = (
 
       return track
     },
-    staleTime: options?.staleTime ?? STALE_TIME,
+    staleTime: options?.staleTime ?? Infinity,
+    gcTime: Infinity,
     enabled: options?.enabled !== false && !!trackId
   })
 }
