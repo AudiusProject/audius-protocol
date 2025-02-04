@@ -2,7 +2,7 @@ import { useCallback } from 'react'
 
 import {
   FlatUseInfiniteQueryResult,
-  useUserSearchResults
+  useSearchUserResults
 } from '@audius/common/api'
 import { Kind, Name, UserMetadata } from '@audius/common/models'
 import { searchActions } from '@audius/common/store'
@@ -107,7 +107,7 @@ export const ProfileResultsPage = () => {
   const { color } = useTheme()
 
   const searchParams = useSearchParams()
-  const queryData = useUserSearchResults(searchParams)
+  const queryData = useSearchUserResults(searchParams)
   const { data: ids, isLoading } = queryData
 
   const isResultsEmpty = ids?.length === 0

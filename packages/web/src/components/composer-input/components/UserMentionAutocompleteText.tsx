@@ -4,7 +4,7 @@ import {
   SearchCategory,
   useSearchAllResults,
   useFollowers,
-  useUserSearchResults
+  useSearchUserResults
 } from '@audius/common/api'
 import { Status, UserMetadata } from '@audius/common/models'
 import { accountSelectors } from '@audius/common/store'
@@ -65,7 +65,7 @@ export const UserMentionAutocompleteText = (
     data: searchData,
     isLoading,
     isSuccess
-  } = useUserSearchResults(params, {
+  } = useSearchUserResults(params, {
     enabled: accountStatus !== Status.LOADING && accountStatus !== Status.IDLE
   })
 

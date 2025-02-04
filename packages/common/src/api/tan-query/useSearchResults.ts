@@ -324,7 +324,7 @@ export const useSearchAllResults = (
   return { ...queryData, ...tracksLineupData }
 }
 
-export const useTrackSearchResults = (
+export const useSearchTrackResults = (
   searchArgs: SearchArgs,
   options?: QueryOptions
 ) => {
@@ -359,7 +359,7 @@ export const useTrackSearchResults = (
   return { ...queryData, ...lineupData }
 }
 
-export const useUserSearchResults = (
+export const useSearchUserResults = (
   searchArgs: SearchArgs,
   options?: QueryOptions
 ) => {
@@ -387,7 +387,7 @@ export const useUserSearchResults = (
   return queryData as FlatUseInfiniteQueryResult<UserMetadata>
 }
 
-export const useAlbumSearchResults = (
+export const useSearchAlbumResults = (
   searchArgs: SearchArgs,
   options?: QueryOptions
 ) => {
@@ -415,7 +415,7 @@ export const useAlbumSearchResults = (
   return queryData as FlatUseInfiniteQueryResult<UserCollectionMetadata>
 }
 
-export const usePlaylistSearchResults = (
+export const useSearchPlaylistResults = (
   searchArgs: SearchArgs,
   options?: QueryOptions
 ) => {

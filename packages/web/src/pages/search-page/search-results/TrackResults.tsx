@@ -4,7 +4,7 @@ import {
   LineupQueryData,
   SEARCH_PAGE_SIZE,
   useSearchAllResults,
-  useTrackSearchResults
+  useSearchTrackResults
 } from '@audius/common/api'
 import { Kind, Name, UserTrackMetadata } from '@audius/common/models'
 import {
@@ -114,7 +114,7 @@ export const TrackResultsPage = () => {
   const isMobile = useIsMobile()
   const { color } = useTheme()
   const searchParams = useSearchParams()
-  const queryData = useTrackSearchResults(searchParams)
+  const queryData = useSearchTrackResults(searchParams)
 
   const [tracksLayout, setTracksLayout] = useState<ViewLayout>('list')
 

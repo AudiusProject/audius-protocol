@@ -1,3 +1,4 @@
+import { useSearchAlbumResults } from '@audius/common/api'
 import { Kind } from '@audius/common/models'
 import { searchActions } from '@audius/common/store'
 import { useDispatch } from 'react-redux'
@@ -7,14 +8,27 @@ import { CollectionList } from 'app/components/collection-list/CollectionList'
 
 import { NoResultsTile } from '../NoResultsTile'
 import { SearchCatalogTile } from '../SearchCatalogTile'
-import { useGetSearchResults, useIsEmptySearch } from '../searchState'
+import {
+  useIsEmptySearch,
+  useSearchQuery,
+  useSearchFilters
+} from '../searchState'
 
 const { addItem: addRecentSearch } = searchActions
 
 export const AlbumResults = () => {
   const dispatch = useDispatch()
   const { spacing } = useTheme()
-  const { data: albums, isLoading, isSuccess } = useGetSearchResults('albums')
+  const [query] = useSearchQuery()
+  const [filters] = useSearchFilters()
+  const {
+    data: albums,
+    isLoading,
+    isSuccess
+  } = useSearchAlbumResults({
+    query,
+    ...filters
+  })
   const isEmptySearch = useIsEmptySearch()
   const hasNoResults = (!albums || albums.length === 0) && isSuccess
 

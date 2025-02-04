@@ -1,5 +1,6 @@
-import { useCallback, useMemo } from 'react'
+import { useCallback, useContext, useMemo } from 'react'
 
+import { useSearchAllResults } from '@audius/common/api'
 import { Kind, Name } from '@audius/common/models'
 import {
   searchActions,
@@ -15,7 +16,11 @@ import { make, track as record } from 'app/services/analytics'
 
 import { NoResultsTile } from '../NoResultsTile'
 import { SearchItem, SearchItemSkeleton } from '../SearchItem'
-import { useGetSearchResults, useSearchQuery } from '../searchState'
+import {
+  SearchContext,
+  useGetSearchResults,
+  useSearchQuery
+} from '../searchState'
 
 const { addItem: addRecentSearch } = searchActions
 
@@ -105,7 +110,11 @@ const skeletonSections = [
 ]
 
 export const AllResults = () => {
-  const { data, isLoading, isSuccess } = useGetSearchResults('all')
+  const searchParams = useContext(SearchContext)
+  const { data, isLoading, isSuccess } = useSearchAllResults({
+    ...searchParams,
+    pageSize: 5
+  })
 
   const sections = useMemo(
     () =>
