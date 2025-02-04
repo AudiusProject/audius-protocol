@@ -90,7 +90,7 @@ export const useTrackHistory = (
           return track
         }
       )
-      primeTrackData({ tracks, queryClient, dispatch })
+      primeTrackData({ tracks, queryClient, dispatch, skipQueryData: true })
 
       // Update lineup when new data arrives
       // TODO: can this inside useLineupQuery?

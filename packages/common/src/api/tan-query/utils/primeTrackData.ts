@@ -16,14 +16,16 @@ export const primeTrackData = ({
   tracks,
   queryClient,
   dispatch,
-  forceReplace = false
+  forceReplace = false,
+  skipQueryData = false
 }: {
   tracks: UserTrackMetadata[]
   queryClient: QueryClient
   dispatch: Dispatch<AnyAction>
   forceReplace?: boolean
+  skipQueryData?: boolean
 }) => {
-  const entries = primeTrackDataInternal({ tracks, queryClient })
+  const entries = primeTrackDataInternal({ tracks, queryClient, skipQueryData })
   if (!forceReplace) {
     dispatch(addEntries(entries, false, undefined, 'react-query'))
   } else {
@@ -48,10 +50,12 @@ export const primeTrackData = ({
 
 export const primeTrackDataInternal = ({
   tracks,
-  queryClient
+  queryClient,
+  skipQueryData = false
 }: {
   tracks: UserTrackMetadata[]
   queryClient: QueryClient
+  skipQueryData?: boolean
 }): EntriesByKind => {
   // Set up entries for Redux
   const entries: SetRequired<EntriesByKind, Kind.TRACKS | Kind.USERS> = {
@@ -65,8 +69,11 @@ export const primeTrackDataInternal = ({
     // Add track to entries
     entries[Kind.TRACKS][track.track_id] = track
 
-    // Prime track data only if it doesn't exist
-    if (!queryClient.getQueryData(getTrackQueryKey(track.track_id))) {
+    // Prime track data only if it doesn't exist and skipQueryData is false
+    if (
+      !skipQueryData &&
+      !queryClient.getQueryData(getTrackQueryKey(track.track_id))
+    ) {
       queryClient.setQueryData(getTrackQueryKey(track.track_id), track)
     }
 
@@ -75,7 +82,8 @@ export const primeTrackDataInternal = ({
       const user = (track as { user: User }).user
       const userEntries = primeUserDataInternal({
         users: [user],
-        queryClient
+        queryClient,
+        skipQueryData
       })
 
       // Merge user entries

@@ -81,9 +81,9 @@ export const TrackTableLineup = ({
       ...track
     }))
     return hasNextPage
-      ? merged.concat(new Array(5).fill({ kind: Kind.EMPTY }))
+      ? merged.concat(new Array(pageSize).fill({ kind: Kind.EMPTY }))
       : merged
-  }, [lineup.entries, tracks, hasNextPage])
+  }, [lineup.entries, tracks, hasNextPage, pageSize])
 
   // Get the playing index by finding the current track in the data
   const playingIndex = useMemo(() => {

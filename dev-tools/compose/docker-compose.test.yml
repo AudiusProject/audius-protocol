@@ -20,7 +20,7 @@ services:
       file: docker-compose.dev-tools.${DOCKERCOMPOSE_ENV_TYPE:-dev}.yml
       service: ingress
     healthcheck:
-      test: [ "CMD", "curl", "-f", "http://localhost/" ]
+      test: ['CMD', 'curl', '-f', 'http://localhost/']
       interval: 30s
       timeout: 10s
       retries: 3
@@ -39,7 +39,7 @@ services:
     volumes:
       - ../startup/initdb:/docker-entrypoint-initdb.d
     healthcheck:
-      test: [ 'CMD', 'pg_isready' ]
+      test: ['CMD', 'pg_isready']
       interval: 10s
       timeout: 5s
     deploy:
@@ -84,7 +84,7 @@ services:
     image: alpine:3.14
     command: sleep inf
     healthcheck:
-      test: [ 'CMD', 'true' ]
+      test: ['CMD', 'true']
       interval: 10s
       timeout: 5s
     logging: *default-logging
@@ -103,7 +103,7 @@ services:
       - ${PROJECT_ROOT}/cmd/core/infra/dev_config/discovery-one.docker.env
     restart: unless-stopped
     healthcheck:
-      test: [ 'CMD', 'curl', 'http://localhost:26659/console/health_check' ]
+      test: ['CMD', 'curl', 'http://localhost:26659/console/health_check']
       interval: 10s
       start_period: 60s
       timeout: 5s
@@ -120,7 +120,7 @@ services:
       - ${PROJECT_ROOT}/cmd/core/infra/dev_config/content-one.docker.env
     restart: unless-stopped
     healthcheck:
-      test: [ 'CMD', 'curl', 'http://localhost:1991/health_check' ]
+      test: ['CMD', 'curl', 'http://localhost:1991/health_check']
       interval: 10s
       start_period: 60s
       timeout: 5s
@@ -137,7 +137,7 @@ services:
       - ${PROJECT_ROOT}/cmd/core/infra/dev_config/content-two.docker.env
     restart: unless-stopped
     healthcheck:
-      test: [ 'CMD', 'curl', 'http://localhost:1991/health_check' ]
+      test: ['CMD', 'curl', 'http://localhost:1991/health_check']
       interval: 10s
       start_period: 60s
       timeout: 5s
@@ -154,7 +154,7 @@ services:
       - ${PROJECT_ROOT}/cmd/core/infra/dev_config/content-three.docker.env
     restart: unless-stopped
     healthcheck:
-      test: [ 'CMD', 'curl', 'http://localhost:1991/health_check' ]
+      test: ['CMD', 'curl', 'http://localhost:1991/health_check']
       interval: 10s
       start_period: 60s
       timeout: 5s
@@ -207,6 +207,7 @@ services:
 
   # contracts
   test-contracts:
+    user: ${DOCKER_UID:-root}:${DOCKER_GID:-root}
     build:
       context: ${PROJECT_ROOT}/contracts
       dockerfile: Dockerfile
@@ -229,6 +230,7 @@ services:
 
   # eth-contracts
   test-eth-contracts:
+    user: ${DOCKER_UID:-root}:${DOCKER_GID:-root}
     build:
       context: ${PROJECT_ROOT}/eth-contracts
       args:
@@ -268,7 +270,7 @@ services:
     environment:
       POSTGRES_DB: 'discovery_provider'
     healthcheck:
-      test: [ 'CMD', 'pg_isready' ]
+      test: ['CMD', 'pg_isready']
       interval: 1s
       timeout: 2s
     logging: *default-logging
@@ -282,7 +284,7 @@ services:
   discovery-provider-redis:
     image: redis:7.0
     healthcheck:
-      test: [ 'CMD', 'redis-cli', 'PING' ]
+      test: ['CMD', 'redis-cli', 'PING']
       interval: 10s
       timeout: 5s
     logging: *default-logging
@@ -314,6 +316,7 @@ services:
   # todo: this will need es-indexer container running for tests to pass..
   # unless we just skip all the search tests for now
   test-discovery-provider:
+    user: ${DOCKER_UID:-root}:${DOCKER_GID:-root}
     extends:
       file: docker-compose.yml
       service: discovery-provider
@@ -348,6 +351,7 @@ services:
       - discovery
 
   test-discovery-provider-notifications:
+    user: ${DOCKER_UID:-root}:${DOCKER_GID:-root}
     build:
       context: ${PROJECT_ROOT}/packages/discovery-provider/plugins/notifications
       dockerfile: Dockerfile
@@ -402,7 +406,7 @@ services:
     environment:
       POSTGRES_DB: 'identity_service'
     healthcheck:
-      test: [ 'CMD', 'pg_isready' ]
+      test: ['CMD', 'pg_isready']
       interval: 1s
       timeout: 2s
     logging: *default-logging
@@ -417,7 +421,7 @@ services:
     image: redis:7.0
     command: redis-server
     healthcheck:
-      test: [ 'CMD', 'redis-cli', 'PING' ]
+      test: ['CMD', 'redis-cli', 'PING']
       interval: 10s
       timeout: 5s
     logging: *default-logging
