@@ -321,16 +321,12 @@ export const TanQueryLineup = ({
       return <></>
     }
 
-    return (
-      <>
-        {Array(skeletonCount)
-          .fill(null)
-          .map((_, index) => {
-            // @ts-ignore - TODO: these types werent being enforced before - something smelly here
-            return <TrackTile {...skeletonTileProps(index)} key={index} />
-          })}
-      </>
-    )
+    return Array(skeletonCount)
+      .fill(null)
+      .map((_, index) => {
+        // @ts-ignore - TODO: these types werent being enforced before - something smelly here
+        return <TrackTile {...skeletonTileProps(index)} key={index} />
+      })
   }
 
   // On initial load we won't have any data loaded so we show skeletons based on the initial page size
@@ -361,8 +357,12 @@ export const TanQueryLineup = ({
             flexDirection: 'column'
           }}
         >
-          {tiles.length === 0 && !isFetching ? (
-            emptyElement
+          {tiles.length === 0 ? (
+            isFetching ? (
+              renderSkeletons(initialPageSize ?? pageSize)
+            ) : (
+              emptyElement
+            )
           ) : (
             <InfiniteScroll
               aria-label={ariaLabel}

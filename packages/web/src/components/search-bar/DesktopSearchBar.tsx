@@ -1,5 +1,6 @@
 import { useCallback, useState, useRef, useEffect } from 'react'
 
+import { useStateDebounced } from '@audius/common/hooks'
 import { useSearchAutocomplete } from '@audius/common/src/api/tan-query/useSearchAutocomplete'
 import { route } from '@audius/common/utils'
 import {
@@ -17,7 +18,7 @@ import type { InputRef } from 'antd/lib/input'
 import cn from 'classnames'
 import { Link, useHistory, useLocation, matchPath } from 'react-router-dom'
 import { useSearchParams } from 'react-router-dom-v5-compat'
-import { useThrottle } from 'react-use'
+import { usePrevious } from 'react-use'
 
 import { searchResultsPage } from 'utils/route'
 
@@ -26,7 +27,7 @@ import { UserResult, TrackResult, CollectionResult } from './SearchBarResult'
 const { SEARCH_PAGE } = route
 
 const DEFAULT_LIMIT = 3
-const THROTTLE_MS = 400
+const DEBOUNCE_MS = 400
 
 const ViewMoreButton = ({ query }: { query: string }) => (
   <Link to={searchResultsPage('all', query)}>
@@ -61,33 +62,44 @@ const NoResults = () => (
 export const DesktopSearchBar = () => {
   const location = useLocation()
   const [searchParams, setSearchParams] = useSearchParams()
+
   const initialQuery = searchParams.get('query') || ''
 
   const [inputValue, setInputValue] = useState(initialQuery)
-  const throttledValue = useThrottle(inputValue, THROTTLE_MS)
+  const [debouncedValue, setDebouncedValue] = useStateDebounced(
+    initialQuery,
+    DEBOUNCE_MS
+  )
+  const previousDebouncedValue = usePrevious(debouncedValue)
   const inputRef = useRef<InputRef>(null)
   const history = useHistory()
 
   const isSearchPage = !!matchPath(location.pathname, { path: SEARCH_PAGE })
 
   const { data, isLoading } = useSearchAutocomplete(
-    { query: throttledValue, limit: DEFAULT_LIMIT },
+    { query: debouncedValue, limit: DEFAULT_LIMIT },
     { enabled: !isSearchPage }
   )
 
   useEffect(() => {
-    if (isSearchPage) {
-      setSearchParams({ query: throttledValue })
+    if (isSearchPage && debouncedValue !== previousDebouncedValue) {
+      console.log('search param update')
+      setSearchParams({ query: debouncedValue })
     }
-  }, [throttledValue, isSearchPage, setSearchParams])
+  }, [debouncedValue, isSearchPage, setSearchParams, previousDebouncedValue])
 
-  const handleSearch = useCallback((value: string) => {
-    setInputValue(value)
-  }, [])
+  const handleSearch = useCallback(
+    (value: string) => {
+      setInputValue(value)
+      setDebouncedValue(value)
+    },
+    [setDebouncedValue]
+  )
 
   const handleClear = useCallback(() => {
     setInputValue('')
-  }, [])
+    setDebouncedValue('')
+  }, [setDebouncedValue])
 
   const handleFocus = useCallback(() => {
     const searchElement = inputRef.current?.input?.closest(
