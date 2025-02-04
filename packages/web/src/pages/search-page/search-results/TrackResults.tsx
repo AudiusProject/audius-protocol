@@ -1,7 +1,12 @@
 import { useCallback, useState } from 'react'
 
-import { SEARCH_PAGE_SIZE } from '@audius/common/api'
-import { Kind, Name } from '@audius/common/models'
+import {
+  LineupQueryData,
+  SEARCH_PAGE_SIZE,
+  useSearchAllResults,
+  useTrackSearchResults
+} from '@audius/common/api'
+import { Kind, Name, UserTrackMetadata } from '@audius/common/models'
 import {
   searchResultsPageTracksLineupActions,
   searchActions,
@@ -19,7 +24,7 @@ import { useMainContentRef } from 'pages/MainContentContext'
 
 import { NoResultsTile } from '../NoResultsTile'
 import { SortMethodFilterButton } from '../SortMethodFilterButton'
-import { useGetSearchResults, useSearchParams } from '../hooks'
+import { useSearchParams } from '../hooks'
 import { ViewLayout, viewLayoutOptions } from '../types'
 
 const { addItem: addRecentSearch } = searchActions
@@ -34,14 +39,15 @@ const messages = {
 }
 
 type TrackResultsProps = {
+  queryData: LineupQueryData
   viewLayout?: ViewLayout
   category?: SearchKind
   count?: number
 }
 
 export const TrackResults = (props: TrackResultsProps) => {
-  const { category = SearchKind.TRACKS, viewLayout = 'list' } = props
-  const lineupQueryData = useGetSearchResults('tracks')
+  const { category = SearchKind.TRACKS, viewLayout = 'list', queryData } = props
+
   const mainContentRef = useMainContentRef()
   const isMobile = useIsMobile()
 
@@ -78,7 +84,7 @@ export const TrackResults = (props: TrackResultsProps) => {
   return (
     <TanQueryLineup
       pageSize={SEARCH_PAGE_SIZE}
-      lineupQueryData={lineupQueryData}
+      lineupQueryData={queryData}
       variant={viewLayout === 'grid' ? LineupVariant.GRID : LineupVariant.MAIN}
       scrollParent={mainContentRef.current}
       actions={searchResultsPageTracksLineupActions}
@@ -107,6 +113,8 @@ export const TrackResults = (props: TrackResultsProps) => {
 export const TrackResultsPage = () => {
   const isMobile = useIsMobile()
   const { color } = useTheme()
+  const searchParams = useSearchParams()
+  const queryData = useTrackSearchResults(searchParams)
 
   const [tracksLayout, setTracksLayout] = useState<ViewLayout>('list')
 
@@ -127,11 +135,11 @@ export const TrackResultsPage = () => {
           />
         </Flex>
       </Flex>
-      <TrackResults viewLayout={tracksLayout} />
+      <TrackResults viewLayout={tracksLayout} queryData={queryData} />
     </Flex>
   ) : (
     <Flex p='m' css={{ backgroundColor: color.background.default }}>
-      <TrackResults />
+      <TrackResults queryData={queryData} />
     </Flex>
   )
 }

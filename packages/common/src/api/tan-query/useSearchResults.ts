@@ -1,5 +1,9 @@
 import { Mood, OptionalId } from '@audius/sdk'
-import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query'
+import {
+  InfiniteData,
+  useInfiniteQuery,
+  useQueryClient
+} from '@tanstack/react-query'
 import { isEmpty } from 'lodash'
 import { useDispatch } from 'react-redux'
 
@@ -13,15 +17,16 @@ import {
   UserCollectionMetadata,
   UserTrackMetadata
 } from '~/models'
-import { ID } from '~/models/Identifiers'
 import { FeatureFlags } from '~/services'
 import { SearchKind, SearchSortMethod } from '~/store'
 import { tracksActions as searchResultsPageTracksLineupActions } from '~/store/pages/search-results/lineup/tracks/actions'
 import { getSearchTracksLineup } from '~/store/pages/search-results/selectors'
 import { Genre, formatMusicalKey } from '~/utils'
 
+import { useCurrentUserId } from '..'
+
 import { QUERY_KEYS } from './queryKeys'
-import { QueryOptions } from './types'
+import { FlatUseInfiniteQueryResult, QueryOptions } from './types'
 import { primeCollectionData } from './utils/primeCollectionData'
 import { primeTrackData } from './utils/primeTrackData'
 import { primeUserData } from './utils/primeUserData'
@@ -42,9 +47,7 @@ export type SearchFilters = {
 export type SearchFilter = keyof SearchFilters
 
 export type SearchArgs = {
-  currentUserId: ID | null
-  query: string
-  category?: SearchCategory
+  query?: string
   limit?: number
   offset?: number
   source?: SearchSource
@@ -66,64 +69,51 @@ const getMinMaxFromBpm = (bpm?: string) => {
 }
 
 export const getSearchResultsQueryKey = ({
-  currentUserId,
   query,
   category,
   sortMethod,
   pageSize,
   ...filters
-}: SearchArgs) => [
+}: Omit<SearchArgs & { category: SearchCategory }, 'currentUserId'>) => [
   QUERY_KEYS.search,
+  category,
   query,
-  { category, sortMethod, pageSize },
-  { ...filters }
+  { sortMethod, pageSize, ...filters }
 ]
 
-export const SEARCH_PAGE_SIZE = 10
+export const SEARCH_PAGE_SIZE = 12
 
-export const useSearchResults = (
+const useSearchQueryProps = (
   {
-    currentUserId,
-    query,
+    query = '',
     category,
     source = 'search results page',
     sortMethod,
     disableAnalytics,
     pageSize = SEARCH_PAGE_SIZE,
     ...filters
-  }: SearchArgs,
+  }: SearchArgs & { category: SearchCategory },
   options?: QueryOptions
 ) => {
+  const { data: currentUserId } = useCurrentUserId()
+  const queryKeyArgs = {
+    query,
+    category,
+    sortMethod,
+    pageSize,
+    ...filters
+  }
   const { audiusSdk, getFeatureEnabled, analytics } = useAudiusQueryContext()
   const queryClient = useQueryClient()
   const dispatch = useDispatch()
 
-  const queryData = useInfiniteQuery({
+  return {
     initialPageParam: 0,
-    getNextPageParam: (
-      lastPage: {
-        tracks: UserTrackMetadata[]
-        users: UserMetadata[]
-        albums: UserCollectionMetadata[]
-        playlists: UserCollectionMetadata[]
-      },
-      pages
-    ) => {
-      const prevPageByCategory = lastPage[category ?? '']
-      const noMorePages =
-        prevPageByCategory === undefined || // When using the All category we dont do any pagination
-        prevPageByCategory.length < pageSize // When using a specific category we do pagination, so we just check that category
-      return noMorePages ? undefined : pages.length * pageSize
-    },
-    queryKey: getSearchResultsQueryKey({
-      currentUserId,
-      query,
-      category,
-      sortMethod,
-      ...filters
-    }),
+    queryKey: getSearchResultsQueryKey(queryKeyArgs),
     queryFn: async ({
       pageParam
+    }: {
+      pageParam: number
     }): Promise<{
       tracks: UserTrackMetadata[]
       users: UserMetadata[]
@@ -194,13 +184,41 @@ export const useSearchResults = (
 
       const { tracks, playlists, albums, users } = searchResultsFromSDK(data)
 
-      // Prime cache data
+      const primeSearchSlice = <
+        T extends
+          | UserTrackMetadata[]
+          | UserMetadata[]
+          | UserCollectionMetadata[]
+      >(
+        data: T,
+        category: SearchCategory
+      ) => {
+        queryClient.setQueryData(
+          getSearchResultsQueryKey({
+            ...queryKeyArgs,
+            category
+          }),
+          (queryData: InfiniteData<T[]>): InfiniteData<T[]> => {
+            const prevPages = (queryData?.pages as unknown as T[]) ?? []
+            const currentIndex = pageParam % pageSize
+            prevPages[currentIndex] = data
+            return {
+              pages: prevPages as unknown as T[][],
+              pageParams: [pageParam]
+            }
+          }
+        )
+      }
+
+      // Prime entity cache data & the individual search slice data
       if (tracks?.length) {
         primeTrackData({ tracks, queryClient, dispatch })
+        primeSearchSlice(tracks, 'tracks')
       }
 
       if (users?.length) {
         primeUserData({ users, queryClient, dispatch })
+        primeSearchSlice(users, 'users')
       }
 
       if (albums?.length || playlists?.length) {
@@ -209,7 +227,15 @@ export const useSearchResults = (
           queryClient,
           dispatch
         })
+        if (albums?.length) {
+          primeSearchSlice(albums, 'albums')
+        }
+
+        if (playlists?.length) {
+          primeSearchSlice(playlists, 'playlists')
+        }
       }
+
       const formattedTracks = tracks.map((track) => ({
         ...track,
         user: {
@@ -236,6 +262,42 @@ export const useSearchResults = (
         playlists
       }
     },
+    select: (data: InfiniteData<any[]>) => {
+      return data?.pages?.flat()
+    },
+    staleTime: options?.staleTime,
+    enabled: options?.enabled !== false && currentUserId !== undefined
+  }
+}
+
+export const useSearchAllResults = (
+  searchArgs: SearchArgs,
+  options?: QueryOptions
+) => {
+  const { pageSize = SEARCH_PAGE_SIZE } = searchArgs
+  const queryProps = useSearchQueryProps(
+    {
+      ...searchArgs,
+      category: 'all'
+    },
+    options
+  )
+
+  const queryData = useInfiniteQuery({
+    ...queryProps,
+    getNextPageParam: (
+      _lastPage: {
+        tracks: UserTrackMetadata[]
+        users: UserMetadata[]
+        albums: UserCollectionMetadata[]
+        playlists: UserCollectionMetadata[]
+      },
+      pages
+    ) => {
+      // With the ALL category we don't do any pagination.
+      // If we did we would never know when we're "out of pages" so just keep returning the next offset indefinitely
+      return pages.length * pageSize
+    },
     select: (data) => {
       return data?.pages?.reduce(
         (acc, page) => {
@@ -248,9 +310,43 @@ export const useSearchResults = (
         },
         { tracks: [], users: [], albums: [], playlists: [] }
       )
+    }
+  })
+
+  // The tracks need to be in a lineup
+  const tracksLineupData = useLineupQuery({
+    queryData,
+    lineupActions: searchResultsPageTracksLineupActions,
+    lineupSelector: getSearchTracksLineup,
+    playbackSource: PlaybackSource.SEARCH_PAGE
+  })
+
+  return { ...queryData, ...tracksLineupData }
+}
+
+export const useTrackSearchResults = (
+  searchArgs: SearchArgs,
+  options?: QueryOptions
+) => {
+  const { pageSize = SEARCH_PAGE_SIZE } = searchArgs
+  const queryProps = useSearchQueryProps(
+    {
+      ...searchArgs,
+      category: 'tracks'
     },
-    staleTime: options?.staleTime,
-    enabled: options?.enabled !== false
+    options
+  )
+
+  const queryData = useInfiniteQuery({
+    ...queryProps,
+    getNextPageParam: (lastPage: UserTrackMetadata[], pages) => {
+      const noMorePages = lastPage.length < pageSize // When using a specific category we do pagination, so we just check that category
+      return noMorePages ? undefined : pages.length * pageSize
+    },
+    queryFn: async ({ pageParam }) => {
+      const data = await queryProps.queryFn({ pageParam })
+      return data.tracks
+    }
   })
 
   const lineupData = useLineupQuery({
@@ -260,8 +356,89 @@ export const useSearchResults = (
     playbackSource: PlaybackSource.SEARCH_PAGE
   })
 
-  return {
-    ...queryData,
-    ...lineupData
-  }
+  return { ...queryData, ...lineupData }
+}
+
+export const useUserSearchResults = (
+  searchArgs: SearchArgs,
+  options?: QueryOptions
+) => {
+  const { pageSize = SEARCH_PAGE_SIZE } = searchArgs
+  const queryProps = useSearchQueryProps(
+    {
+      ...searchArgs,
+      category: 'users'
+    },
+    options
+  )
+
+  const queryData = useInfiniteQuery({
+    ...queryProps,
+    getNextPageParam: (lastPage: UserMetadata[], pages) => {
+      const noMorePages = lastPage.length < pageSize
+      return noMorePages ? undefined : pages.length * pageSize
+    },
+    queryFn: async ({ pageParam }) => {
+      const data = await queryProps.queryFn({ pageParam })
+      return data.users
+    }
+  })
+
+  return queryData as FlatUseInfiniteQueryResult<UserMetadata>
+}
+
+export const useAlbumSearchResults = (
+  searchArgs: SearchArgs,
+  options?: QueryOptions
+) => {
+  const { pageSize = SEARCH_PAGE_SIZE } = searchArgs
+  const queryProps = useSearchQueryProps(
+    {
+      ...searchArgs,
+      category: 'albums'
+    },
+    options
+  )
+
+  const queryData = useInfiniteQuery({
+    ...queryProps,
+    getNextPageParam: (lastPage: UserCollectionMetadata[], pages) => {
+      const noMorePages = lastPage.length < pageSize
+      return noMorePages ? undefined : pages.length * pageSize
+    },
+    queryFn: async ({ pageParam }) => {
+      const data = await queryProps.queryFn({ pageParam })
+      return data.albums
+    }
+  })
+
+  return queryData as FlatUseInfiniteQueryResult<UserCollectionMetadata>
+}
+
+export const usePlaylistSearchResults = (
+  searchArgs: SearchArgs,
+  options?: QueryOptions
+) => {
+  const { pageSize = SEARCH_PAGE_SIZE } = searchArgs
+  const queryProps = useSearchQueryProps(
+    {
+      ...searchArgs,
+      category: 'playlists'
+    },
+    options
+  )
+
+  const queryData = useInfiniteQuery({
+    ...queryProps,
+    getNextPageParam: (lastPage: UserCollectionMetadata[], pages) => {
+      const noMorePages = lastPage.length < pageSize
+      return noMorePages ? undefined : pages.length * pageSize
+    },
+    queryFn: async ({ pageParam }) => {
+      const data = await queryProps.queryFn({ pageParam })
+      return data.playlists
+    }
+  })
+
+  return queryData as FlatUseInfiniteQueryResult<UserCollectionMetadata>
 }

@@ -70,6 +70,7 @@ const SearchBar = ({
   }
 
   const onChange = (e: ChangeEvent<HTMLInputElement>) => {
+    console.log('onChange', e.target.value)
     onSearch(e.target.value)
   }
 

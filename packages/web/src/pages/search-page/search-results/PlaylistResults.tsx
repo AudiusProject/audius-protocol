@@ -1,6 +1,10 @@
 import { useCallback } from 'react'
 
-import { ID, Kind, Name } from '@audius/common/models'
+import {
+  FlatUseInfiniteQueryResult,
+  usePlaylistSearchResults
+} from '@audius/common/api'
+import { Kind, Name, UserCollectionMetadata } from '@audius/common/models'
 import { searchActions } from '@audius/common/store'
 import { Box, Flex, Text, useTheme } from '@audius/harmony'
 import { range } from 'lodash'
@@ -12,7 +16,7 @@ import { useIsMobile } from 'hooks/useIsMobile'
 
 import { NoResultsTile } from '../NoResultsTile'
 import { SortMethodFilterButton } from '../SortMethodFilterButton'
-import { useGetSearchResults, useSearchParams } from '../hooks'
+import { useSearchParams } from '../hooks'
 
 const { addItem: addRecentSearch } = searchActions
 
@@ -22,19 +26,21 @@ const messages = {
 }
 
 type PlaylistResultsProps = {
-  ids: ID[]
   limit?: number
   skeletonCount?: number
+  queryData: Omit<FlatUseInfiniteQueryResult<UserCollectionMetadata>, 'status'>
 }
 
 export const PlaylistResults = (props: PlaylistResultsProps) => {
-  const { limit = 100, ids, skeletonCount = 10 } = props
-  const { query } = useSearchParams()
+  const { limit = 100, skeletonCount = 10, queryData } = props
+  const { data: playlists = [] } = queryData
+  const searchParams = useSearchParams()
+  const { query } = searchParams
 
   const isMobile = useIsMobile()
   const dispatch = useDispatch()
 
-  const truncatedIds = ids?.slice(0, limit) ?? []
+  const truncatedResults = playlists?.slice(0, limit) ?? []
 
   const handleClick = useCallback(
     (id?: number) => {
@@ -72,7 +78,7 @@ export const PlaylistResults = (props: PlaylistResultsProps) => {
       }}
       p={isMobile ? 'm' : undefined}
     >
-      {!truncatedIds.length
+      {!truncatedResults.length
         ? range(skeletonCount).map((_, i) => (
             <CollectionCard
               key={`user_card_sekeleton_${i}`}
@@ -82,14 +88,14 @@ export const PlaylistResults = (props: PlaylistResultsProps) => {
               loading={true}
             />
           ))
-        : truncatedIds.map((id) => (
+        : truncatedResults.map((playlist) => (
             <CollectionCard
-              key={id}
-              id={id}
+              key={playlist.playlist_id}
+              id={playlist.playlist_id}
               size={isMobile ? 'xs' : 's'}
               css={isMobile ? { maxWidth: 320 } : undefined}
-              onClick={() => handleClick(id)}
-              onCollectionLinkClick={() => handleClick(id)}
+              onClick={() => handleClick(playlist.playlist_id)}
+              onCollectionLinkClick={() => handleClick(playlist.playlist_id)}
             />
           ))}
     </Box>
@@ -100,9 +106,11 @@ export const PlaylistResultsPage = () => {
   const isMobile = useIsMobile()
   const { color } = useTheme()
 
-  const { data: ids, isLoading } = useGetSearchResults('playlists')
+  const searchParams = useSearchParams()
+  const queryData = usePlaylistSearchResults(searchParams)
+  const { data: playlists, isLoading } = queryData
 
-  const isResultsEmpty = ids?.length === 0
+  const isResultsEmpty = playlists?.length === 0
   const showNoResultsTile = !isLoading && isResultsEmpty
 
   return (
@@ -119,7 +127,11 @@ export const PlaylistResultsPage = () => {
           <SortMethodFilterButton />
         </Flex>
       ) : null}
-      {showNoResultsTile ? <NoResultsTile /> : <PlaylistResults ids={ids} />}
+      {showNoResultsTile ? (
+        <NoResultsTile />
+      ) : (
+        <PlaylistResults queryData={queryData} />
+      )}
     </Flex>
   )
 }

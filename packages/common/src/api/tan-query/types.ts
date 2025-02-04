@@ -19,3 +19,10 @@ export type LineupQueryData = UseLineupQueryData &
     loadNextPage: ReturnType<typeof loadNextPage>
     pageSize?: number
   }
+
+export type FlatUseInfiniteQueryResult<T> = Omit<
+  UseInfiniteQueryResult,
+  'data' // These types get invalidated by the select modifier changing the output shape
+> & {
+  data: T[]
+}

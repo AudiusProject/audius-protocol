@@ -134,7 +134,7 @@ const defaultLineup = {
   isMetadataLoading: false
 }
 
-const DEFAULT_LOAD_MORE_THRESHOLD = 700 // px
+const DEFAULT_LOAD_MORE_THRESHOLD = 500 // px
 
 /** `TanQueryLineup` encapsulates the logic for displaying a Lineup (e.g. prefetching items)
  * displaying loading states, etc). This is decoupled from the rendering logic, which
@@ -381,7 +381,6 @@ export const TanQueryLineup = ({
                 return internalScrollParent
               }}
               element='ol'
-              loader={renderSkeletons(pageSize)}
               threshold={loadMoreThreshold}
             >
               {tiles.map((tile: any, index: number) => (
@@ -391,6 +390,7 @@ export const TanQueryLineup = ({
               ))}
             </InfiniteScroll>
           )}
+          {isFetching && shouldLoadMore && renderSkeletons(pageSize)}
         </div>
       </div>
       {!hasNextPage && endOfLineup ? endOfLineup : null}

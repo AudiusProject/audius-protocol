@@ -1,12 +1,13 @@
 import { useRef } from 'react'
 
+import { useSearchAllResults } from '@audius/common/api'
 import { SearchKind } from '@audius/common/store'
 import { Flex, Text } from '@audius/harmony'
 
 import { useIsMobile } from 'hooks/useIsMobile'
 
 import { NoResultsTile } from '../NoResultsTile'
-import { useGetSearchResults } from '../hooks'
+import { useSearchParams } from '../hooks'
 
 import { AlbumResults } from './AlbumResults'
 import { PlaylistResults } from './PlaylistResults'
@@ -23,8 +24,14 @@ const messages = {
 export const AllResults = () => {
   const isMobile = useIsMobile()
   const containerRef = useRef<HTMLDivElement>(null)
+  const { query, ...filters } = useSearchParams()
 
-  const { data, isLoading } = useGetSearchResults('all')
+  const queryData = useSearchAllResults({
+    query,
+    ...filters
+  })
+
+  const { data, isLoading } = queryData
 
   const isResultsEmpty =
     data &&
@@ -37,13 +44,6 @@ export const AllResults = () => {
 
   if (showNoResultsTile) return <NoResultsTile />
 
-  const {
-    users: userIds,
-    tracks: trackIds,
-    playlists: playlistIds,
-    albums: albumIds
-  } = data ?? {}
-
   return (
     <Flex
       direction='column'
@@ -51,16 +51,20 @@ export const AllResults = () => {
       p={isMobile ? 'm' : undefined}
       ref={containerRef}
     >
-      {isLoading || userIds?.length ? (
+      {isLoading || data?.users?.length ? (
         <Flex gap='xl' direction='column'>
           <Text variant='heading' textAlign='left'>
             {messages.profiles}
           </Text>
-          <ProfileResults skeletonCount={5} ids={userIds} limit={5} />
+          <ProfileResults
+            skeletonCount={5}
+            limit={5}
+            queryData={{ ...queryData, data: data?.users ?? [] }}
+          />
         </Flex>
       ) : null}
 
-      {isLoading || trackIds?.length ? (
+      {isLoading || data?.tracks?.length ? (
         <Flex gap='xl' direction='column'>
           <Text variant='heading' textAlign='left'>
             {messages.tracks}
@@ -69,25 +73,34 @@ export const AllResults = () => {
             count={12}
             viewLayout='grid'
             category={SearchKind.ALL}
+            queryData={queryData}
           />
         </Flex>
       ) : null}
 
-      {isLoading || albumIds?.length ? (
+      {isLoading || data?.albums?.length ? (
         <Flex gap='xl' direction='column'>
           <Text variant='heading' textAlign='left'>
             {messages.albums}
           </Text>
-          <AlbumResults skeletonCount={5} ids={albumIds} limit={5} />
+          <AlbumResults
+            skeletonCount={5}
+            limit={5}
+            queryData={{ ...queryData, data: data?.albums ?? [] }}
+          />
         </Flex>
       ) : null}
 
-      {isLoading || playlistIds?.length ? (
+      {isLoading || data?.playlists?.length ? (
         <Flex gap='xl' direction='column'>
           <Text variant='heading' textAlign='left'>
             {messages.playlists}
           </Text>
-          <PlaylistResults skeletonCount={5} ids={playlistIds} limit={5} />
+          <PlaylistResults
+            skeletonCount={5}
+            limit={5}
+            queryData={{ ...queryData, data: data?.playlists ?? [] }}
+          />
         </Flex>
       ) : null}
     </Flex>

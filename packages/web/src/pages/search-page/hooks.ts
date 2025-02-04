@@ -2,7 +2,7 @@ import { useCallback, useContext, useMemo } from 'react'
 
 import {
   SearchCategory,
-  useSearchResults as useGetSearchResultsQuery
+  useSearchAllResults as useGetSearchResultsQuery
 } from '@audius/common/api'
 import { Status } from '@audius/common/models'
 import { SearchSortMethod, accountSelectors } from '@audius/common/store'

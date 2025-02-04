@@ -28,7 +28,7 @@ export const useLineupQuery = ({
   playbackSource
 }: {
   // Lineup related props
-  queryData: UseInfiniteQueryResult
+  queryData: Omit<UseInfiniteQueryResult, 'data'>
   lineupActions: LineupActions
   lineupSelector: Selector<
     CommonState,
