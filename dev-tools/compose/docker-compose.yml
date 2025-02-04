@@ -74,8 +74,14 @@ services:
       - '6701:26659' # Http Console
       - '6702:1991' # Mediorum Server
       - '6703:50051' # Core GRPC Server
-    env_file:
-      - ${PROJECT_ROOT}/cmd/core/infra/dev_config/discovery-one.docker.env
+    environment:
+      NETWORK: dev
+      AUDIUSD_STORAGE_ENABLED: false
+      audius_core_root_dir: ./tmp/discoveryOneHome
+      audius_discprov_url: http://audius-protocol-discovery-provider-1
+      audius_delegate_private_key: d09ba371c359f10f22ccda12fd26c598c7921bda3220c9942174562bc6a36fe8
+      runDownMigration: true
+      externalAddress: audiusd-1:26656
     <<: *common
 
   audiusd-2:
@@ -87,8 +93,14 @@ services:
       - '6711:26659'
       - '6712:1991'
       - '6713:50051'
-    env_file:
-      - ${PROJECT_ROOT}/cmd/core/infra/dev_config/content-one.docker.env
+    environment:
+      NETWORK: dev
+      AUDIUSD_STORAGE_ENABLED: true
+      audius_core_root_dir: ./tmp/content1Home
+      delegatePrivateKey: 21118f9a6de181061a2abd549511105adb4877cf9026f271092e6813b7cf58ab
+      creatorNodeEndpoint: http://audius-protocol-creator-node-1
+      runDownMigration: true
+      externalAddress: audiusd-2:26656
     <<: *common
 
   audiusd-3:
@@ -100,8 +112,14 @@ services:
       - '6721:26659'
       - '6722:1991'
       - '6723:50051'
-    env_file:
-      - ${PROJECT_ROOT}/cmd/core/infra/dev_config/content-two.docker.env
+    environment:
+      NETWORK: dev
+      AUDIUSD_STORAGE_ENABLED: true
+      audius_core_root_dir: ./tmp/content2Home
+      delegatePrivateKey: 1166189cdf129cdcb011f2ad0e5be24f967f7b7026d162d7c36073b12020b61c
+      creatorNodeEndpoint: http://audius-protocol-creator-node-2
+      runDownMigration: true
+      externalAddress: audiusd-3:26656
     <<: *common
 
   audiusd-4:
@@ -113,8 +131,14 @@ services:
       - '6731:26659'
       - '6732:1991'
       - '6733:50051'
-    env_file:
-      - ${PROJECT_ROOT}/cmd/core/infra/dev_config/content-three.docker.env
+    environment:
+      NETWORK: dev
+      AUDIUSD_STORAGE_ENABLED: true
+      audius_core_root_dir: ./tmp/content3Home
+      delegatePrivateKey: 1aa14c63d481dcc1185a654eb52c9c0749d07ac8f30ef17d45c3c391d9bf68eb
+      creatorNodeEndpoint: http://audius-protocol-creator-node-3
+      runDownMigration: true
+      externalAddress: audiusd-4:26656
     <<: *common
 
   # Identity
