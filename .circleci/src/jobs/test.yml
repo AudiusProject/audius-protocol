@@ -16,7 +16,7 @@ steps:
   - run:
       name: test run << parameters.service >>
       no_output_timeout: 20m
-      command: . ~/.profile; export DOCKER_UID=$(id -u); export DOCKER_GID=$(id -g); audius-compose test run "<< parameters.service >>"
+      command: . ~/.profile; export DOCKER_UID=$(id -u); export DOCKER_GID=$(id -g); audius-compose test run << parameters.service >>
   - run:
       name: cleanup
       no_output_timeout: 5m
