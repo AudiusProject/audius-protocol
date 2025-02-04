@@ -28,3 +28,5 @@ identity-init:
           - packages/spl/node_modules
           - packages/eth/dist
           - packages/eth/node_modules
+          - packages/fixed-decimal/dist
+          - packages/fixed-decimal/node_modules
