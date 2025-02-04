@@ -598,7 +598,7 @@ entity_types_to_fetch = set(
         EntityType.TRACK,
         EntityType.PLAYLIST,
         EntityType.COMMENT,
-        EntityType.ENCRYPTED_EMAIL
+        EntityType.ENCRYPTED_EMAIL,
     ]
 )
 
