@@ -6,6 +6,7 @@ import { route } from '@audius/common/utils'
 import { usePlaidLink } from 'react-plaid-link'
 import { useDispatch, useSelector } from 'react-redux'
 
+import Page from 'components/page/Page'
 import { identityService } from 'services/audius-sdk/identity'
 import { push as pushRoute } from 'utils/navigation'
 
@@ -46,11 +47,16 @@ const CheckPage = () => {
 
   useEffect(() => {
     if (ready) {
+      const originalWidth = document.body.style.width
+      document.body.style.setProperty('width', '100%', 'important')
       open()
+      return () => {
+        document.body.style.width = originalWidth
+      }
     }
   }, [ready, open])
 
-  return null
+  return <Page title='Verification' description='Audius account verification' />
 }
 
 export default CheckPage
