@@ -2440,19 +2440,6 @@ type JupiterQuoteResponse = {
   outAmount: number
 }
 
-// Repair Signups
-type SignUpRepairStart = {
-  eventName: Name.SIGN_UP_REPAIR_START
-}
-
-type SignUpRepairSuccess = {
-  eventName: Name.SIGN_UP_REPAIR_SUCCESS
-}
-
-type SignUpRepairFailure = {
-  eventName: Name.SIGN_UP_REPAIR_FAILURE
-}
-
 // Export Private Key
 type ExportPrivateKeyLinkClicked = {
   eventName: Name.EXPORT_PRIVATE_KEY_LINK_CLICKED
