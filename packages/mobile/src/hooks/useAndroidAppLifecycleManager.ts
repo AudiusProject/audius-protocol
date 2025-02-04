@@ -6,6 +6,9 @@ import RNRestart from 'react-native-restart'
 import TrackPlayer, { State } from 'react-native-track-player'
 import { useAsync, useEffectOnce } from 'react-use'
 
+import * as analytics from '../services/analytics'
+import { EventNames } from '../types/analytics'
+
 const eventEmitter = new NativeEventEmitter(
   NativeModules.DeviceEventManagerModule
 )
@@ -49,6 +52,11 @@ const useHeartbeat = () => {
 
         // If heartbeat is stale and we're active, JS thread might be stuck
         if (timeSinceLastHeartbeat > HEARTBEAT_TIMEOUT) {
+          const event = analytics.make({
+            eventName: EventNames.ANDROID_APP_RESTART_HEARTBEAT,
+            timeSinceLastHeartbeat
+          })
+          await analytics.track(event)
           await checkPlaybackAndRestart()
         }
       }
@@ -88,6 +96,11 @@ const useRestartStaleApp = () => {
 
         // Only check for restart if we've been backgrounded for a while
         if (backgroundDuration > BACKGROUND_THRESHOLD) {
+          const event = analytics.make({
+            eventName: EventNames.ANDROID_APP_RESTART_STALE,
+            backgroundDuration
+          })
+          await analytics.track(event)
           await checkPlaybackAndRestart()
         }
       }
@@ -102,6 +115,10 @@ const useForceQuitHandler = () => {
     const subscription = eventEmitter.addListener(
       'ForceQuitDetected',
       async () => {
+        const event = analytics.make({
+          eventName: EventNames.ANDROID_APP_RESTART_FORCE_QUIT
+        })
+        await analytics.track(event)
         RNRestart.Restart()
       }
     )

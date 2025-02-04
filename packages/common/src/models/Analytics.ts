@@ -419,6 +419,7 @@ export enum Name {
   BUY_USDC_ADD_FUNDS_MANUALLY = 'Buy USDC: Add Funds Manually',
 
   // Withdraw USDC
+
   WITHDRAW_USDC_MODAL_OPENED = 'Withdraw USDC: Modal Opened',
   WITHDRAW_USDC_ADDRESS_PASTED = 'Withdraw USDC: Address Pasted',
   WITHDRAW_USDC_REQUESTED = 'Withdraw USDC: Requested',
@@ -447,6 +448,7 @@ export enum Name {
   STRIPE_REJECTED = 'Stripe Modal: Rejected',
 
   // Purchase Content
+
   PURCHASE_CONTENT_BUY_CLICKED = 'Purchase Content: Buy Clicked',
   PURCHASE_CONTENT_STARTED = 'Purchase Content: Started',
   PURCHASE_CONTENT_SUCCESS = 'Purchase Content: Success',
@@ -559,7 +561,12 @@ export enum Name {
   // Track Replace
   TRACK_REPLACE_DOWNLOAD = 'Track Replace: Download',
   TRACK_REPLACE_PREVIEW = 'Track Replace: Preview',
-  TRACK_REPLACE_REPLACE = 'Track Replace: Replace'
+  TRACK_REPLACE_REPLACE = 'Track Replace: Replace',
+
+  // Android App Lifecycle
+  ANDROID_APP_RESTART_HEARTBEAT = 'Android App: Restart Due to Heartbeat',
+  ANDROID_APP_RESTART_STALE = 'Android App: Restart Due to Stale Time',
+  ANDROID_APP_RESTART_FORCE_QUIT = 'Android App: Restart Due to Force Quit'
 }
 
 type PageView = {
@@ -2433,6 +2440,20 @@ type JupiterQuoteResponse = {
   outAmount: number
 }
 
+// Repair Signups
+type SignUpRepairStart = {
+  eventName: Name.SIGN_UP_REPAIR_START
+}
+
+type SignUpRepairSuccess = {
+  eventName: Name.SIGN_UP_REPAIR_SUCCESS
+}
+
+type SignUpRepairFailure = {
+  eventName: Name.SIGN_UP_REPAIR_FAILURE
+}
+
+// Export Private Key
 type ExportPrivateKeyLinkClicked = {
   eventName: Name.EXPORT_PRIVATE_KEY_LINK_CLICKED
   handle: string
@@ -2463,6 +2484,7 @@ type ExportPrivateKeyPrivateKeyCopied = {
   userId: ID
 }
 
+// Manager Mode
 type ManagerModeSwitchAccount = {
   eventName: Name.MANAGER_MODE_SWITCH_ACCOUNT
   managedUserId: ID
@@ -3079,3 +3101,6 @@ export type AllTrackingEvents =
   | TrackReplaceDownload
   | TrackReplacePreview
   | TrackReplaceReplace
+  | AndroidAppRestartHeartbeat
+  | AndroidAppRestartStale
+  | AndroidAppRestartForceQuit
