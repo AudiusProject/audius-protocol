@@ -33,7 +33,8 @@ const messages = {
   claimableLabel: '$AUDIO available to claim',
   claimableAmountLabel: (amount) => `Claim ${amount} $AUDIO`,
   claimedLabel: '$AUDIO claimed so far',
-  upcomingRewards: 'Upcoming Rewards'
+  upcomingRewards: 'Upcoming Rewards',
+  readyToClaim: 'Ready to Claim'
 }
 
 type ChallengeRewardsDrawerContentProps = {

@@ -177,6 +177,9 @@ export const ChallengeRewardsDrawerProvider = () => {
           />
         )
         break
+      case ChallengeName.OneShot:
+        contents = undefined
+        break
       default:
         contents = config?.buttonInfo ? (
           <Button
