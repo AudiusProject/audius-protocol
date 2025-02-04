@@ -341,8 +341,7 @@ export const useSearchTrackResults = (
     ...queryProps,
     getNextPageParam: (
       lastPage: UserTrackMetadata[],
-      pages: UserTrackMetadata[][],
-      pageParam: number
+      pages: UserTrackMetadata[][]
     ) => {
       const noMorePages = lastPage.length < pageSize // When using a specific category we do pagination, so we just check that category
       return noMorePages ? undefined : pages.length * pageSize
