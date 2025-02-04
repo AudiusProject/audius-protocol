@@ -339,11 +339,15 @@ export const useSearchTrackResults = (
 
   const queryData = useInfiniteQuery({
     ...queryProps,
-    getNextPageParam: (lastPage: UserTrackMetadata[], pages) => {
+    getNextPageParam: (
+      lastPage: UserTrackMetadata[],
+      pages: UserTrackMetadata[][],
+      pageParam: number
+    ) => {
       const noMorePages = lastPage.length < pageSize // When using a specific category we do pagination, so we just check that category
       return noMorePages ? undefined : pages.length * pageSize
     },
-    queryFn: async ({ pageParam }) => {
+    queryFn: async ({ pageParam }: { pageParam: number }) => {
       const data = await queryProps.queryFn({ pageParam })
       return data.tracks
     }
@@ -378,7 +382,7 @@ export const useSearchUserResults = (
       const noMorePages = lastPage.length < pageSize
       return noMorePages ? undefined : pages.length * pageSize
     },
-    queryFn: async ({ pageParam }) => {
+    queryFn: async ({ pageParam }: { pageParam: number }) => {
       const data = await queryProps.queryFn({ pageParam })
       return data.users
     }
@@ -406,7 +410,7 @@ export const useSearchAlbumResults = (
       const noMorePages = lastPage.length < pageSize
       return noMorePages ? undefined : pages.length * pageSize
     },
-    queryFn: async ({ pageParam }) => {
+    queryFn: async ({ pageParam }: { pageParam: number }) => {
       const data = await queryProps.queryFn({ pageParam })
       return data.albums
     }
@@ -434,7 +438,7 @@ export const useSearchPlaylistResults = (
       const noMorePages = lastPage.length < pageSize
       return noMorePages ? undefined : pages.length * pageSize
     },
-    queryFn: async ({ pageParam }) => {
+    queryFn: async ({ pageParam }: { pageParam: number }) => {
       const data = await queryProps.queryFn({ pageParam })
       return data.playlists
     }

@@ -16,11 +16,7 @@ import { make, track as record } from 'app/services/analytics'
 
 import { NoResultsTile } from '../NoResultsTile'
 import { SearchItem, SearchItemSkeleton } from '../SearchItem'
-import {
-  SearchContext,
-  useGetSearchResults,
-  useSearchQuery
-} from '../searchState'
+import { SearchContext, useSearchQuery } from '../searchState'
 
 const { addItem: addRecentSearch } = searchActions
 
