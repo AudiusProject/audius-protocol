@@ -7,8 +7,12 @@ import { formatNumberCommas } from '@audius/common/utils'
 import { ScrollView, View } from 'react-native'
 
 import type { ButtonProps } from '@audius/harmony-native'
-import { IconArrowRight, IconCloudUpload, Button } from '@audius/harmony-native'
-import { Text } from 'app/components/core'
+import {
+  IconArrowRight,
+  IconCloudUpload,
+  Button,
+  Text
+} from '@audius/harmony-native'
 import { getChallengeConfig } from 'app/utils/challenges'
 
 import { ChallengeDescription } from './ChallengeDescription'
@@ -18,7 +22,6 @@ import { CooldownSummaryTable } from './CooldownSummaryTable'
 import { useStyles } from './styles'
 
 const messages = {
-  taskDetails: 'Task Details',
   rewardMapping: {
     [ChallengeName.AudioMatchingBuy]: '$AUDIO Every Dollar Spent',
     [ChallengeName.AudioMatchingSell]: '$AUDIO Every Dollar Earned'
@@ -90,26 +93,16 @@ export const AudioMatchingChallengeDrawerContent = ({
     <View style={styles.scrollViewContainer}>
       <ScrollView contentContainerStyle={styles.scrollViewContent}>
         <ChallengeDescription
-          task={
-            <Text
-              variant='label'
-              fontSize='medium'
-              weight='heavy'
-              textTransform='uppercase'
-            >
-              {messages.taskDetails}
-            </Text>
-          }
           renderDescription={() => (
             <View style={styles.audioMatchingDescriptionContainer}>
-              <Text variant='body'>{config.description(challenge)}</Text>
-              <Text variant='body' color='neutralLight4'>
+              <Text size='l'>{config.description(challenge)}</Text>
+              <Text color='subdued'>
                 {messages.descriptionSubtext[challengeName]}
               </Text>
             </View>
           )}
         />
-        <View style={styles.statusGrid}>
+        <View>
           <View style={styles.statusGridColumns}>
             <ChallengeReward
               amount={challenge.amount}
@@ -120,8 +113,8 @@ export const AudioMatchingChallengeDrawerContent = ({
             <View style={styles.claimedAmountContainer}>
               <Text
                 variant='label'
-                fontSize='small'
-                weight='heavy'
+                size='s'
+                strength='strong'
                 textTransform='uppercase'
               >
                 {messages.totalClaimed(formatNumberCommas(claimedAmount))}

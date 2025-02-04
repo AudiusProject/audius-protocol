@@ -2,7 +2,6 @@ import type { OptimisticUserChallenge } from '@audius/common/models'
 import { ChallengeName } from '@audius/common/models'
 import { ClaimStatus } from '@audius/common/store'
 import { formatNumberCommas } from '@audius/common/utils'
-import { css } from '@emotion/native'
 import { ScrollView } from 'react-native'
 
 import {
