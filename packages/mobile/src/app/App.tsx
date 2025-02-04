@@ -20,7 +20,7 @@ import { NotificationReminder } from 'app/components/notification-reminder/Notif
 import OAuthWebView from 'app/components/oauth/OAuthWebView'
 import { RateCtaReminder } from 'app/components/rate-cta-drawer/RateCtaReminder'
 import { Toasts } from 'app/components/toasts'
-import { useAppLifecycle } from 'app/hooks/useAppLifecycle'
+import { useAndroidAppLifecycleManager } from 'app/hooks/useAndroidAppLifecycleManager'
 import { useEnterForeground } from 'app/hooks/useAppState'
 import { incrementSessionCount } from 'app/hooks/useSessionCount'
 import { RootScreen } from 'app/screens/root-screen'
@@ -70,7 +70,7 @@ const App = () => {
     forceRefreshConnectivity()
   })
 
-  useAppLifecycle()
+  useAndroidAppLifecycleManager()
 
   return (
     <AppContextProvider>

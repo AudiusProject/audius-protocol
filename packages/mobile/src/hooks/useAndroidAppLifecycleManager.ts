@@ -11,7 +11,55 @@ const eventEmitter = new NativeEventEmitter(
 )
 
 // Time in milliseconds after which we consider the app to be "long backgrounded"
-const BACKGROUND_THRESHOLD = 1000 * 60 * 5 // 5 minutes
+const BACKGROUND_THRESHOLD = 1000 * 60 * 60 // 1 hour
+
+// Heartbeat check interval and timeout
+const HEARTBEAT_INTERVAL = 2000
+const HEARTBEAT_TIMEOUT = 5000
+
+const checkPlaybackAndRestart = async () => {
+  const { state } = await TrackPlayer.getPlaybackState()
+  const isPlaying = state === State.Playing
+
+  if (!isPlaying) {
+    if (__DEV__) {
+      NativeModules.DevSettings.reload()
+    } else {
+      RNRestart.Restart()
+    }
+  }
+}
+const useHeartbeat = () => {
+  const heartbeatRef = useRef<number>(Date.now())
+  const currentAppState = useAppState()
+
+  useEffectOnce(() => {
+    if (Platform.OS !== 'android') return
+
+    // Worker that updates the heartbeat
+    const heartbeatInterval = setInterval(() => {
+      heartbeatRef.current = Date.now()
+    }, HEARTBEAT_INTERVAL)
+
+    // Checker that verifies the heartbeat is recent
+    const checkerInterval = setInterval(async () => {
+      // Only check if app is active
+      if (currentAppState === 'active') {
+        const timeSinceLastHeartbeat = Date.now() - heartbeatRef.current
+
+        // If heartbeat is stale and we're active, JS thread might be stuck
+        if (timeSinceLastHeartbeat > HEARTBEAT_TIMEOUT) {
+          await checkPlaybackAndRestart()
+        }
+      }
+    }, HEARTBEAT_INTERVAL)
+
+    return () => {
+      clearInterval(heartbeatInterval)
+      clearInterval(checkerInterval)
+    }
+  })
+}
 
 const useRestartStaleApp = () => {
   const backgroundTimeRef = useRef<number | null>(null)
@@ -37,18 +85,10 @@ const useRestartStaleApp = () => {
       if (backgroundTimeRef.current) {
         const backgroundDuration = Date.now() - backgroundTimeRef.current
         backgroundTimeRef.current = null
-        const { state } = await TrackPlayer.getPlaybackState()
-        const isPlaying = state === State.Playing
 
-        // If media is not playing and app was backgrounded longer than threshold
-        if (!isPlaying && backgroundDuration > BACKGROUND_THRESHOLD) {
-          // Use RN's DevSettings to reload the app (only works in debug builds)
-          if (__DEV__) {
-            NativeModules.DevSettings.reload()
-          } else {
-            // Use react-native-restart to restart the app in production
-            RNRestart.Restart()
-          }
+        // Only check for restart if we've been backgrounded for a while
+        if (backgroundDuration > BACKGROUND_THRESHOLD) {
+          await checkPlaybackAndRestart()
         }
       }
     }
@@ -70,7 +110,8 @@ const useForceQuitHandler = () => {
   })
 }
 
-export const useAppLifecycle = () => {
+export const useAndroidAppLifecycleManager = () => {
+  useHeartbeat()
   useRestartStaleApp()
   useForceQuitHandler()
 }
