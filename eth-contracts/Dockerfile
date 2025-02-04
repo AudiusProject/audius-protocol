@@ -18,6 +18,18 @@ COPY ./test ./test
 COPY ./patches ./patches
 COPY ./truffle-config.js ./contract-config.js .solcover.js ./
 
+# Some of the build tools for truffle require these to exist, and so does one
+# of our migrations (for the .audius one). Since we run this as a non-root user
+# in CI, make these in the construction of the container or we won't have access
+# to be able to make them
+RUN mkdir /.audius
+RUN mkdir /.config
+RUN touch /.babel.json
+
+RUN chmod 777 /.audius
+RUN chmod 777 /.config
+RUN chmod 777 /.babel.json
+
 RUN chmod +x ./scripts/setup-predeployed-ganache.sh ./scripts/setup-dev.sh
 
 # runs openzeppelin patches
