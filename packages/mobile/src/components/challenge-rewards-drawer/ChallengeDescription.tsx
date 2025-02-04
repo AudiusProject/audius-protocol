@@ -38,7 +38,7 @@ export const ChallengeDescription = ({
         renderDescription()
       ) : (
         <Flex gap='m' mb='l'>
-          <Text variant='body' size='l'>
+          <Text variant='body' size='l' lineHeight='single'>
             {description}
           </Text>
           {isCooldownChallenge ? (

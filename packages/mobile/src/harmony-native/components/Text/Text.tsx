@@ -8,7 +8,7 @@ import {
 import { TextContext } from '@audius/harmony/src/components/text/textContext'
 import { css } from '@emotion/native'
 import type { TextProps as NativeTextProps, TextStyle } from 'react-native'
-import { Platform, Text as TextBase } from 'react-native'
+import { Text as TextBase } from 'react-native'
 
 import { useTheme } from '../../foundations/theme'
 
@@ -55,12 +55,9 @@ export const Text = forwardRef<TextBase, TextProps>((props, ref) => {
     ...(variantStyles && {
       fontSize: size && t.size[variantStyles.fontSize[size]],
       lineHeight:
-        size &&
-        t.lineHeight[
-          lineHeight && variant === 'body'
-            ? bodyLineHeightMap[size][lineHeight]
-            : variantStyles.lineHeight[size]
-        ],
+        size && lineHeight && variant === 'body'
+          ? fontWeight[bodyLineHeightMap[size][lineHeight]]
+          : undefined,
       fontFamily:
         strength && t.fontByWeight[variantStyles.fontWeight[strength]],
       ...('css' in variantStyles ? (variantStyles.css ?? {}) : {})
@@ -69,12 +66,6 @@ export const Text = forwardRef<TextBase, TextProps>((props, ref) => {
     ...(shadow && t.shadow[shadow]),
     textAlign,
     ...(textTransform && { textTransform }),
-    // Fixes demiBold text misalignment on iOS
-    ...(fontWeight === 'demiBold' && Platform.OS === 'ios'
-      ? { marginTop: 2 }
-      : {}),
-    // Fixes bold text misalignment on iOS
-    ...(fontWeight === 'bold' && Platform.OS === 'ios' ? { marginTop: 1 } : {}),
     flexShrink
   })
 
