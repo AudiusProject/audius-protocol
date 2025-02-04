@@ -114,7 +114,8 @@ export const useLibraryTracks = (
       return allPages.length * pageSize
     },
     initialPageParam: 0,
-    staleTime: config?.staleTime,
+    staleTime: config?.staleTime ?? Infinity,
+    gcTime: Infinity,
     enabled: config?.enabled !== false && !!currentUserId
   })
 

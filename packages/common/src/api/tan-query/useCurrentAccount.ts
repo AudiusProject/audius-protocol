@@ -57,7 +57,8 @@ export const useCurrentAccount = (options?: QueryOptions) => {
       const account = accountFromSDK(data)
       return account
     },
-    staleTime: options?.staleTime,
+    staleTime: options?.staleTime ?? Infinity,
+    gcTime: Infinity,
     enabled: options?.enabled !== false && !!currentUser
   })
 }

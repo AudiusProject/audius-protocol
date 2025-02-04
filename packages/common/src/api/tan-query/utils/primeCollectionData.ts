@@ -77,6 +77,7 @@ export const primeCollectionDataInternal = ({
 
     // Prime collection by permalink only if it doesn't exist
     if (
+      collection.permalink &&
       !queryClient.getQueryData(
         getCollectionByPermalinkQueryKey(collection.permalink)
       )
