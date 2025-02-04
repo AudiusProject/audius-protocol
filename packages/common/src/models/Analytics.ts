@@ -2722,6 +2722,20 @@ export type TrackReplacePreview = {
   source: 'upload' | 'edit'
 }
 
+export type AndroidAppRestartHeartbeat = {
+  eventName: Name.ANDROID_APP_RESTART_HEARTBEAT
+  timeSinceLastHeartbeat: number
+}
+
+export type AndroidAppRestartStale = {
+  eventName: Name.ANDROID_APP_RESTART_STALE
+  backgroundDuration: number
+}
+
+export type AndroidAppRestartForceQuit = {
+  eventName: Name.ANDROID_APP_RESTART_FORCE_QUIT
+}
+
 export type BaseAnalyticsEvent = { type: typeof ANALYTICS_TRACK_EVENT }
 
 export type AllTrackingEvents =
