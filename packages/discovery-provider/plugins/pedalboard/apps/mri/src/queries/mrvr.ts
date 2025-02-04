@@ -211,7 +211,7 @@ export const mrvr = async (db: Knex, date: Date): Promise<void> => {
           ), 0) as "Gross revenue With Deductions",
           country_code,
           download_count as "Total Downloads",
-          download_count as "Total Streams",
+          0::numeric as "Total Streams",
           case when
             is_country_eur("country_code") then 'EUR'
             else 'USD'
