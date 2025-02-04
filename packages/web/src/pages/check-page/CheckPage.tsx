@@ -6,11 +6,11 @@ import { route } from '@audius/common/utils'
 import { usePlaidLink } from 'react-plaid-link'
 import { useDispatch, useSelector } from 'react-redux'
 
+import Page from 'components/page/Page'
 import { identityService } from 'services/audius-sdk/identity'
 import { push as pushRoute } from 'utils/navigation'
 
 import './CheckPage.module.css'
-import Page from 'components/page/Page'
 
 const { SIGN_IN_PAGE, TRENDING_PAGE } = route
 const { getUserHandle, getAccountStatus } = accountSelectors
