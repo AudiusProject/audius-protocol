@@ -44,7 +44,6 @@ export const AirdropAppBanner = () => {
   return isVisible ? (
     <CallToActionBanner
       text={messages.text}
-      //   pill={messages.pill}
       emoji={'parachute'}
       onAccept={handleAccept}
       onClose={handleClose}
