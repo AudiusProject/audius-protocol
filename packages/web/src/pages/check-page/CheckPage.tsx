@@ -10,6 +10,7 @@ import { identityService } from 'services/audius-sdk/identity'
 import { push as pushRoute } from 'utils/navigation'
 
 import './CheckPage.module.css'
+import Page from 'components/page/Page'
 
 const { SIGN_IN_PAGE, TRENDING_PAGE } = route
 const { getUserHandle, getAccountStatus } = accountSelectors
@@ -46,11 +47,16 @@ const CheckPage = () => {
 
   useEffect(() => {
     if (ready) {
+      const originalWidth = document.body.style.width
+      document.body.style.setProperty('width', '100%', 'important')
       open()
+      return () => {
+        document.body.style.width = originalWidth
+      }
     }
   }, [ready, open])
 
-  return null
+  return <Page title='Verification' description='Audius account verification' />
 }
 
 export default CheckPage
