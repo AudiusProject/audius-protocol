@@ -45,13 +45,7 @@ export const getReferrer = (state: AppState) => state.signOn.referrer
 
 export const getHidePreviewHint = (state: AppState) =>
   state.signOn.hidePreviewHint
-export const getFollowIds = (state: AppState) =>
-  state.signOn.followArtists.selectedUserIds
-
-export const getSuggestedFollowIds = (state: AppState) => {
-  const { selectedCategory, categories } = state.signOn.followArtists
-  return categories[selectedCategory] || []
-}
+export const getFollowIds = (state: AppState) => state.signOn.selectedUserIds
 
 export const getHasCompletedAccount = createSelector(
   [
