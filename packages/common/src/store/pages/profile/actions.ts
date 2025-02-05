@@ -1,8 +1,8 @@
 import { Nullable } from '~/utils'
 
-import { ID, UID, UserMetadata } from '../../../models'
+import { ID, UserMetadata } from '../../../models'
 
-import { CollectionSortMode, FollowType } from './types'
+import { CollectionSortMode } from './types'
 
 export const FETCH_PROFILE = 'PROFILE/FETCH_PROFILE'
 export const FETCH_PROFILE_SUCCEEDED = 'PROFILE/FETCH_PROFILE_SUCCEEDED'
@@ -16,12 +16,6 @@ export const UPDATE_PROFILE_FAILED = 'PROFILE/UPDATE_PROFILE_FAILED'
 
 export const UPDATE_COLLECTION_SORT_MODE = 'PROFILE/UPDATE_COLLECTION_SORT_MODE'
 export const SET_PROFILE_FIELD = 'PROFILE/SET_PROFILE_FIELD'
-export const UPDATE_CURRENT_USER_FOLLOWS = 'PROFILE/UPDATE_CURRENT_USER_FOLLOWS'
-
-export const FETCH_FOLLOW_USERS = 'PROFILE/FETCH_FOLLOW_USERS'
-export const FETCH_FOLLOW_USERS_SUCCEEDED =
-  'PROFILE/FETCH_FOLLOW_USERS_SUCCEEDED'
-export const FETCH_FOLLOW_USERS_FAILED = 'PROFILE/FETCH_FOLLOW_USERS_FAILED'
 
 export const DISMISS_PROFILE_METER = 'PROFILE/DISMISS_PROFILE_METER'
 
@@ -90,37 +84,6 @@ export type SetProfileFieldAction = {
   handle: string
 }
 
-export type UpdateCurrentUserFollowsAction = {
-  type: typeof UPDATE_CURRENT_USER_FOLLOWS
-  follow?: boolean
-  handle: string
-}
-
-export type FetchFollowUsersAction = {
-  type: typeof FETCH_FOLLOW_USERS
-  followerGroup: FollowType
-  limit?: number
-  offset?: number
-  handle: string
-}
-
-export type FetchFollowUsersSucceededAction = {
-  type: typeof FETCH_FOLLOW_USERS_SUCCEEDED
-  followerGroup: FollowType
-  userIds: { id: ID; uid?: UID }[]
-  limit: number
-  offset: number
-  handle: string
-}
-
-export type FetchFollowUsersFailedAction = {
-  type: typeof FETCH_FOLLOW_USERS_FAILED
-  followerGroup: FollowType
-  limit: number
-  offset: number
-  handle: string
-}
-
 export type DismissProfileMeterAction = {
   type: typeof DISMISS_PROFILE_METER
 }
@@ -175,10 +138,6 @@ export type ProfilePageAction =
   | UpdateProfileFailedAction
   | UpdateCollectionSortModeAction
   | SetProfileFieldAction
-  | UpdateCurrentUserFollowsAction
-  | FetchFollowUsersAction
-  | FetchFollowUsersSucceededAction
-  | FetchFollowUsersFailedAction
   | DismissProfileMeterAction
   | FetchTopTagsAction
   | FetchTopTagsSucceededAction
@@ -252,54 +211,6 @@ export function setProfileField(
   handle: string
 ): SetProfileFieldAction {
   return { type: SET_PROFILE_FIELD, field, value, handle }
-}
-
-export function updateCurrentUserFollows(
-  follow = false,
-  handle: string
-): UpdateCurrentUserFollowsAction {
-  return { type: UPDATE_CURRENT_USER_FOLLOWS, follow, handle }
-}
-
-export function fetchFollowUsers(
-  followerGroup: FollowType,
-  limit = 15,
-  offset = 0,
-  handle: string
-): FetchFollowUsersAction {
-  return { type: FETCH_FOLLOW_USERS, followerGroup, offset, limit, handle }
-}
-
-export function fetchFollowUsersSucceeded(
-  followerGroup: FollowType,
-  userIds: { id: ID; uid?: UID }[],
-  limit: number,
-  offset: number,
-  handle: string
-): FetchFollowUsersSucceededAction {
-  return {
-    type: FETCH_FOLLOW_USERS_SUCCEEDED,
-    followerGroup,
-    userIds,
-    limit,
-    offset,
-    handle
-  }
-}
-
-export function fetchFollowUsersFailed(
-  followerGroup: FollowType,
-  limit: number,
-  offset: number,
-  handle: string
-): FetchFollowUsersFailedAction {
-  return {
-    type: FETCH_FOLLOW_USERS_FAILED,
-    followerGroup,
-    limit,
-    offset,
-    handle
-  }
 }
 
 export function profileMeterDismissed(): DismissProfileMeterAction {
