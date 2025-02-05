@@ -50,7 +50,7 @@ export const ProfileMutuals = () => {
     dispatch(setVisibility(true))
   }, [dispatch, userId])
 
-  if (!profile || userId === accountId || !mutuals) {
+  if (!profile || userId === accountId || !mutuals || mutuals.length === 0) {
     return null
   }
 
