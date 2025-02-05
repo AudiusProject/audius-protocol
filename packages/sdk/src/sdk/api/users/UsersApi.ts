@@ -26,12 +26,16 @@ import {
 import * as runtime from '../generated/default/runtime'
 
 import {
+  AddAssociatedWalletRequest,
+  AddAssociatedWalletSchema,
   CreateUserRequest,
   CreateUserSchema,
   EmailRequest,
   EmailSchema,
   FollowUserRequest,
   FollowUserSchema,
+  RemoveAssociatedWalletRequest,
+  RemoveAssociatedWalletSchema,
   SendTipReactionRequest,
   SendTipReactionRequestSchema,
   SendTipRequest,
@@ -237,12 +241,7 @@ export class UsersApi extends GeneratedUsersApi {
 
     const cid = (await generateMetadataCidV1(updatedMetadata)).toString()
 
-    const {
-      associatedWallets,
-      associatedSolWallets,
-      collectibles,
-      ...indexedMetadataValues
-    } = updatedMetadata
+    const { collectibles, ...indexedMetadataValues } = updatedMetadata
 
     // Write metadata to chain
     return await this.entityManager.manageEntity({
@@ -255,8 +254,6 @@ export class UsersApi extends GeneratedUsersApi {
         data: {
           ...snakecaseKeys(indexedMetadataValues),
           // Do not snake case values that are part of cid data.
-          associated_wallets: associatedWallets,
-          associated_sol_wallets: associatedSolWallets,
           collectibles
         }
       }),
@@ -652,6 +649,66 @@ export class UsersApi extends GeneratedUsersApi {
         data: metadata
       }),
       ...advancedOptions
+    })
+  }
+
+  /** @hidden
+   * Associate a new wallet with a user
+   */
+  async addAssociatedWallet(
+    params: AddAssociatedWalletRequest,
+    advancedOptions?: AdvancedOptions
+  ) {
+    const {
+      userId,
+      wallet: { address: wallet_address, chain },
+      signature
+    } = await parseParams(
+      'addAssociatedWallet',
+      AddAssociatedWalletSchema
+    )(params)
+
+    return await this.entityManager.manageEntity({
+      userId,
+      entityType: EntityType.ASSOCIATED_WALLET,
+      entityId: 0, // unused
+      action: Action.CREATE,
+      metadata: JSON.stringify({
+        cid: '',
+        data: {
+          wallet_address,
+          chain,
+          signature
+        }
+      }),
+      ...advancedOptions
+    })
+  }
+
+  /** @hidden
+   * Remove a wallet from a user
+   */
+  async removeAssociatedWallet(params: RemoveAssociatedWalletRequest) {
+    const {
+      userId,
+      wallet: { address: wallet_address, chain }
+    } = await parseParams(
+      'removeAssociatedWallet',
+      RemoveAssociatedWalletSchema
+    )(params)
+
+    return await this.entityManager.manageEntity({
+      userId,
+      entityType: EntityType.ASSOCIATED_WALLET,
+      entityId: 0, // unused
+      action: Action.DELETE,
+      metadata: JSON.stringify({
+        cid: '',
+        data: {
+          wallet_address,
+          chain
+        }
+      })
     })
   }
 }
