@@ -2,7 +2,6 @@ import { useEffect, useRef, useState, useCallback, useMemo } from 'react'
 
 import {
   SearchCategory,
-  useSearchAllResults,
   useFollowers,
   useSearchUserResults
 } from '@audius/common/api'

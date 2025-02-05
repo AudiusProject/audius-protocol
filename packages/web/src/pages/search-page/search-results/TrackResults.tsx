@@ -3,10 +3,9 @@ import { useCallback, useState } from 'react'
 import {
   LineupQueryData,
   SEARCH_PAGE_SIZE,
-  useSearchAllResults,
   useSearchTrackResults
 } from '@audius/common/api'
-import { Kind, Name, UserTrackMetadata } from '@audius/common/models'
+import { Kind, Name } from '@audius/common/models'
 import {
   searchResultsPageTracksLineupActions,
   searchActions,

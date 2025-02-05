@@ -83,7 +83,6 @@ export const DesktopSearchBar = () => {
 
   useEffect(() => {
     if (isSearchPage && debouncedValue !== previousDebouncedValue) {
-      console.log('search param update')
       setSearchParams({ query: debouncedValue })
     }
   }, [debouncedValue, isSearchPage, setSearchParams, previousDebouncedValue])
