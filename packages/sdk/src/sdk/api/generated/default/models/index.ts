@@ -9,6 +9,8 @@ export * from './AuthorizedApp';
 export * from './AuthorizedApps';
 export * from './BlobInfo';
 export * from './ChallengeResponse';
+export * from './CollectiblesData';
+export * from './CollectiblesResponse';
 export * from './CollectionActivity';
 export * from './Comment';
 export * from './CommentMention';

@@ -18,6 +18,7 @@ import * as runtime from '../runtime';
 import type {
   AlbumsResponse,
   AuthorizedApps,
+  CollectiblesResponse,
   ConnectedWalletsResponse,
   DeveloperApps,
   EmailAccessResponse,
@@ -51,6 +52,8 @@ import {
     AlbumsResponseToJSON,
     AuthorizedAppsFromJSON,
     AuthorizedAppsToJSON,
+    CollectiblesResponseFromJSON,
+    CollectiblesResponseToJSON,
     ConnectedWalletsResponseFromJSON,
     ConnectedWalletsResponseToJSON,
     DeveloperAppsFromJSON,
@@ -307,6 +310,10 @@ export interface GetUserByHandleRequest {
 export interface GetUserChallengesRequest {
     id: string;
     showHistorical?: boolean;
+}
+
+export interface GetUserCollectiblesRequest {
+    id: string;
 }
 
 export interface GetUserEmailKeyRequest {
@@ -1586,6 +1593,37 @@ export class UsersApi extends runtime.BaseAPI {
      */
     async getUserChallenges(params: GetUserChallengesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<GetChallenges> {
         const response = await this.getUserChallengesRaw(params, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * @hidden
+     * Get the User\'s indexed collectibles data
+     */
+    async getUserCollectiblesRaw(params: GetUserCollectiblesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<CollectiblesResponse>> {
+        if (params.id === null || params.id === undefined) {
+            throw new runtime.RequiredError('id','Required parameter params.id was null or undefined when calling getUserCollectibles.');
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        const response = await this.request({
+            path: `/users/{id}/collectibles`.replace(`{${"id"}}`, encodeURIComponent(String(params.id))),
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => CollectiblesResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Get the User\'s indexed collectibles data
+     */
+    async getUserCollectibles(params: GetUserCollectiblesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<CollectiblesResponse> {
+        const response = await this.getUserCollectiblesRaw(params, initOverrides);
         return await response.value();
     }
 
