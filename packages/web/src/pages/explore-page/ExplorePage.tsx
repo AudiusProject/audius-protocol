@@ -10,7 +10,7 @@ const messages = {
   description: createSeoDescription('Explore featured content on Audius')
 }
 
-const ExplorePage = () => {
+export const ExplorePage = () => {
   const isMobile = useIsMobile()
   const props = {
     title: messages.title,
@@ -21,5 +21,3 @@ const ExplorePage = () => {
   const Component = isMobile ? MobileExplorePage : DesktopExplorePage
   return <Component {...props} />
 }
-
-export default ExplorePage

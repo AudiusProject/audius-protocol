@@ -1,5 +1,17 @@
 # @audius/harmony
 
+## 0.3.5
+
+### Patch Changes
+
+- 290cdef: Ignore svg in image rollup plugin
+
+## 0.3.4
+
+### Patch Changes
+
+- e5ba305: Fixes png imports by base64 encoding them.
+
 ## 0.3.3
 
 ### Patch Changes

@@ -139,7 +139,6 @@ export const HistoryPage = ({ title, description }: HistoryPageProps) => {
             defaultSorter={defaultSorter}
             scrollRef={mainContentRef}
             isVirtualized
-            pageSize={pageSize}
             onSort={handleSort}
           />
         )}

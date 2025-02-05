@@ -1,26 +1,32 @@
 import { useFormattedProgressLabel } from '@audius/common/hooks'
 import {
+  ChallengeName,
   ChallengeRewardID,
   Name,
   OptimisticUserChallenge
 } from '@audius/common/models'
+import { AIRDROP_PAGE } from '@audius/common/src/utils/route'
 import {
   ChallengeRewardsModalType,
   challengesSelectors
 } from '@audius/common/store'
-import { isAudioMatchingChallenge } from '@audius/common/utils'
+import { isNewChallenge } from '@audius/common/utils'
 import {
   Box,
   Flex,
   IconCheck,
+  IconHeadphones,
   Paper,
   ProgressBar,
   Text,
   useTheme
 } from '@audius/harmony'
 import { useSelector } from 'react-redux'
+import { useEffectOnce } from 'react-use'
 
+import { useHistoryContext } from 'app/HistoryProvider'
 import { make, track } from 'services/analytics'
+import { doesMatchRoute } from 'utils/route'
 
 import { StatusPill } from './StatusPill'
 
@@ -48,6 +54,7 @@ export const RewardPanel = ({
 }: RewardPanelProps) => {
   const { color, spacing } = useTheme()
   const userChallenges = useSelector(getOptimisticUserChallenges)
+  const { history } = useHistoryContext()
 
   const openRewardModal = () => {
     openModal(id)
@@ -55,6 +62,12 @@ export const RewardPanel = ({
       make({ eventName: Name.REWARDS_CLAIM_DETAILS_OPENED, challengeId: id })
     )
   }
+  useEffectOnce(() => {
+    const match = doesMatchRoute(history.location, AIRDROP_PAGE)
+    if (match) {
+      openModal(ChallengeName.OneShot)
+    }
+  })
 
   const challenge = userChallenges[id]
   const hasDisbursed = challenge?.state === 'disbursed'
@@ -66,7 +79,10 @@ export const RewardPanel = ({
     challenge.challenge_type !== 'aggregate' &&
     !hasDisbursed
   const shouldShowNewChallengePill =
-    isAudioMatchingChallenge(id) && !needsDisbursement
+    (challenge?.challenge_id &&
+      isNewChallenge(challenge?.challenge_id) &&
+      !needsDisbursement) ??
+    false
 
   const formattedProgressLabel: string = useFormattedProgressLabel({
     challenge,
@@ -77,10 +93,9 @@ export const RewardPanel = ({
   return (
     <Paper
       onClick={openRewardModal}
-      ph='s'
       h={PANEL_HEIGHT}
       flex={`0 0 calc(50% - ${spacing.unit4}px)`}
-      direction='column'
+      column
       m='s'
       shadow='flat'
       border='strong'
@@ -89,37 +104,43 @@ export const RewardPanel = ({
         backgroundColor: hasDisbursed ? color.neutral.n25 : undefined
       }}
     >
-      <Flex direction='column' h='100%'>
-        <Flex justifyContent='flex-end' mt='s' w='100%'>
+      <Flex column h='100%'>
+        <Flex
+          justifyContent='flex-end'
+          p='s'
+          w='100%'
+          css={{ position: 'absolute' }}
+        >
           <StatusPill
             shouldShowClaimPill={!!needsDisbursement}
             shouldShowNewChallengePill={shouldShowNewChallengePill}
           />
         </Flex>
-        <Flex direction='column' justifyContent='center' h='100%' gap='xl'>
+        <Flex column h='100%' gap='l' ph='xl' pv='unit9'>
           <Flex
-            direction='column'
+            column
             alignItems='flex-start'
             justifyContent='space-between'
             w='100%'
-            gap='xl'
-            pl='l'
+            gap='s'
           >
-            <Box>
-              <Text variant='heading' size='s'>
-                {title}
-              </Text>
-            </Box>
-            <Box css={{ textAlign: 'left' }}>
-              <Text variant='body' size='m' strength='default'>
+            <Text variant='heading' size='s'>
+              {title}
+            </Text>
+            <Flex css={{ minHeight: 40 }}>
+              <Text variant='body' textAlign='left'>
                 {description(challenge)}
               </Text>
-            </Box>
+            </Flex>
           </Flex>
-          <Flex alignItems='center' pl='unit4' gap='s'>
-            {needsDisbursement && <IconCheck size='s' color='subdued' />}
+          <Flex alignItems='center' gap='s'>
+            {challenge?.challenge_id === ChallengeName.ListenStreakEndless ? (
+              <IconHeadphones size='s' color='subdued' />
+            ) : needsDisbursement ? (
+              <IconCheck size='s' color='subdued' />
+            ) : null}
             <Box mr='l'>
-              <Text variant='label' size='s' color='subdued'>
+              <Text variant='label' size='l' color='subdued'>
                 {formattedProgressLabel}
               </Text>
             </Box>

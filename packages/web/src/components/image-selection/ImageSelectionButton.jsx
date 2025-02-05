@@ -5,7 +5,7 @@ import cn from 'classnames'
 import PropTypes from 'prop-types'
 import ReactDropzone from 'react-dropzone'
 
-import InvalidFileType from 'components/upload/InvalidFileType'
+import { InvalidFileType } from 'components/upload/InvalidFileType'
 import { ALLOWED_IMAGE_FILE_TYPES } from 'utils/imageProcessingUtil'
 
 import styles from './ImageSelectionButton.module.css'
@@ -126,7 +126,7 @@ const ImageSelectionButton = ({
             </Button>
           </ReactDropzone>
           {error ? (
-            <InvalidFileType className={styles.invalidFileType} />
+            <InvalidFileType reason='type' className={styles.invalidFileType} />
           ) : null}
         </>
       )}

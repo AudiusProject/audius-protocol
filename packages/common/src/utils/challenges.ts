@@ -308,13 +308,13 @@ export const challengeRewardsConfig: Record<
     id: 'trending-underground'
   },
   o: {
-    title: 'One Shot',
+    title: 'Airdrop - January 2025',
     description: () => 'Claim your $AUDIO before it expires!',
     fullDescription: () => 'Claim your $AUDIO before it expires!',
-    panelButtonText: 'See More',
+    panelButtonText: '',
     id: ChallengeName.OneShot,
     remainingLabel: 'Ineligible',
-    progressLabel: 'Ineligible'
+    progressLabel: 'Ready to Claim'
   }
 }
 
@@ -351,7 +351,10 @@ export const makeOptimisticChallengeSortComparator = (
     const userChallenge1 = userChallenges[id1]
     const userChallenge2 = userChallenges[id2]
 
-    if (isAudioMatchingChallenge(id1)) {
+    if (
+      userChallenge1?.challenge_id &&
+      isNewChallenge(userChallenge1?.challenge_id)
+    ) {
       return -1
     }
     if (!userChallenge1 || !userChallenge2) {
@@ -418,3 +421,12 @@ export const getClaimableChallengeSpecifiers = (
     return isCooldownChallengeClaimable(challenge[0])
   })
 }
+
+const newChallengeIds: ChallengeRewardID[] = [
+  ChallengeName.ListenStreakEndless,
+  ChallengeName.AudioMatchingSell,
+  ChallengeName.AudioMatchingBuy
+]
+
+export const isNewChallenge = (challengeId: ChallengeRewardID) =>
+  newChallengeIds.includes(challengeId)

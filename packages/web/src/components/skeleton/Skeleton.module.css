@@ -3,7 +3,18 @@
   height: 100%;
   background-color: var(--skeleton);
   border-radius: 4px;
-  background-image: linear-gradient(
+  position: relative;
+  overflow: hidden;
+}
+
+.skeleton:not(.noShimmer)::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 200%;
+  height: 100%;
+  background: linear-gradient(
     90deg,
     var(--skeleton) 0%,
     var(--skeleton) 32%,
@@ -12,15 +23,19 @@
     var(--skeleton) 68%,
     var(--skeleton) 100%
   );
-  background-size: 400%;
-  animation: skeleton-anim 1.5s forwards infinite ease;
+  transform: translateX(-50%);
+  animation: skeleton-anim 1.5s infinite ease;
+}
+
+.skeleton.noShimmer {
+  animation: none;
 }
 
 @keyframes skeleton-anim {
   from {
-    background-position: right;
+    transform: translateX(-50%);
   }
   to {
-    background-position: left;
+    transform: translateX(0%);
   }
 }

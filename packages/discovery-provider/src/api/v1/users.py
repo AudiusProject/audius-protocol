@@ -2549,11 +2549,12 @@ class FullPurchasesCount(Resource):
         params={"id": "A User ID"},
     )
     @full_ns.expect(purchases_and_sales_count_parser)
-    @auth_middleware(purchases_and_sales_count_parser, require_auth=True)
+    @auth_middleware(purchases_and_sales_count_parser)
     @full_ns.marshal_with(purchases_count_response)
     def get(self, id, authed_user_id):
         decoded_id = decode_with_abort(id, full_ns)
-        check_authorized(decoded_id, authed_user_id)
+        if decoded_id and not is_authorized_request(decoded_id):
+            abort(403, message="You are not authorized to access this resource")
         args = purchases_and_sales_count_parser.parse_args()
         content_ids = args.get("content_ids", [])
         decoded_content_ids = decode_ids_array(content_ids) if content_ids else []
@@ -2605,11 +2606,12 @@ class FullSalesCount(Resource):
         params={"id": "A User ID"},
     )
     @full_ns.expect(purchases_and_sales_count_parser)
-    @auth_middleware(purchases_and_sales_count_parser, require_auth=True)
+    @auth_middleware(purchases_and_sales_count_parser)
     @full_ns.marshal_with(purchases_count_response)
     def get(self, id, authed_user_id):
         decoded_id = decode_with_abort(id, full_ns)
-        check_authorized(decoded_id, authed_user_id)
+        if decoded_id and not is_authorized_request(decoded_id):
+            abort(403, message="You are not authorized to access this resource")
         args = purchases_and_sales_count_parser.parse_args()
         content_ids = args.get("content_ids", [])
         decoded_content_ids = decode_ids_array(content_ids) if content_ids else []

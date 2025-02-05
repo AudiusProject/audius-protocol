@@ -30,6 +30,7 @@ import { Pages as SignOnPages } from 'common/store/pages/signon/types'
 import AnimatedSwitch from 'components/animated-switch/AnimatedSwitch'
 import AppRedirectListener from 'components/app-redirect-popover/AppRedirectListener'
 import { AppRedirectPopover } from 'components/app-redirect-popover/components/AppRedirectPopover'
+import { AirdropAppBanner } from 'components/banner/AirdropAppBanner'
 import { AppBannerWrapper } from 'components/banner/AppBannerWrapper'
 import { DownloadAppBanner } from 'components/banner/DownloadAppBanner'
 import { TanQueryFeedbackBanner } from 'components/banner/TanQueryFeedbackBanner'
@@ -54,7 +55,6 @@ import { MAIN_CONTENT_ID, MainContentContext } from 'pages/MainContentContext'
 import { AiAttributedTracksPage } from 'pages/ai-attributed-tracks-page'
 import { AudioPage } from 'pages/audio-page/AudioPage'
 import { ChatPageProvider } from 'pages/chat-page/ChatPageProvider'
-import CheckPage from 'pages/check-page/CheckPage'
 import { CollectiblesPlaylistPage } from 'pages/collectibles-playlist-page'
 import CollectionPage from 'pages/collection-page/CollectionPage'
 import { DashboardPage } from 'pages/dashboard-page/DashboardPage'
@@ -62,7 +62,7 @@ import { DeactivateAccountPage } from 'pages/deactivate-account-page/DeactivateA
 import { EditCollectionPage } from 'pages/edit-collection-page'
 import EmptyPage from 'pages/empty-page/EmptyPage'
 import ExploreCollectionsPage from 'pages/explore-page/ExploreCollectionsPage'
-import ExplorePage from 'pages/explore-page/ExplorePage'
+import { ExplorePage } from 'pages/explore-page/ExplorePage'
 import FavoritesPage from 'pages/favorites-page/FavoritesPage'
 import { FbSharePage } from 'pages/fb-share-page/FbSharePage'
 import FeedPage from 'pages/feed-page/FeedPage'
@@ -187,7 +187,8 @@ const {
   SEARCH_CATEGORY_PAGE_LEGACY,
   SEARCH_BASE_ROUTE,
   EDIT_PLAYLIST_PAGE,
-  EDIT_ALBUM_PAGE
+  EDIT_ALBUM_PAGE,
+  AIRDROP_PAGE
 } = route
 
 const {
@@ -202,6 +203,7 @@ const {
 // TODO: do we need to lazy load edit?
 const EditTrackPage = lazy(() => import('pages/edit-page'))
 const UploadPage = lazy(() => import('pages/upload-page'))
+const CheckPage = lazy(() => import('pages/check-page/CheckPage'))
 const Modals = lazy(() => import('pages/modals/Modals'))
 const ConnectedMusicConfetti = lazy(
   () => import('components/music-confetti/ConnectedMusicConfetti')
@@ -461,6 +463,7 @@ class WebPlayer extends Component {
       <div className={styles.root}>
         <AppBannerWrapper>
           <DownloadAppBanner />
+          <AirdropAppBanner />
 
           {/* Product Announcement Banners */}
           {/* <TermsOfServiceUpdateBanner /> */}
@@ -768,7 +771,7 @@ class WebPlayer extends Component {
                 />
                 <Route
                   exact
-                  path={REWARDS_PAGE}
+                  path={[REWARDS_PAGE, AIRDROP_PAGE]}
                   isMobile={isMobile}
                   component={RewardsPage}
                 />

@@ -8,7 +8,7 @@ import cn from 'classnames'
 
 import { AudioQuality } from 'components/upload/AudioQuality'
 import { Dropzone } from 'components/upload/Dropzone'
-import InvalidFileType from 'components/upload/InvalidFileType'
+import { InvalidFileType } from 'components/upload/InvalidFileType'
 import { reportToSentry } from 'store/errors/reportToSentry'
 
 import { TracksPreview } from '../components/TracksPreview'

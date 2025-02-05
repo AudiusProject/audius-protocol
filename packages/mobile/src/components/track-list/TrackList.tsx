@@ -18,6 +18,10 @@ import type { TrackItemAction } from './TrackListItem'
 import { TrackListItem } from './TrackListItem'
 import { TrackListItemSkeleton } from './TrackListItemSkeleton'
 
+type LoadingItem = {
+  _loading: true
+}
+
 type TrackListProps = {
   hideArt?: boolean
   // Accept ids as well as uids because some use cases don't have uids available
@@ -29,13 +33,22 @@ type TrackListProps = {
   onRemove?: (index: number) => void
   onReorder?: DraggableFlatListProps<UID | ID>['onDragEnd']
   showSkeleton?: boolean
+  hasNextPage?: boolean
+  pageSize?: number
   togglePlay?: (uid: string, trackId: ID) => void
   trackItemAction?: TrackItemAction
   uids?: UID[]
-} & Partial<FlatListProps<UID | ID>>
+} & Partial<FlatListProps<UID | ID | LoadingItem>>
 
 const noOp = () => {}
-const keyExtractor = (item: string | number) => String(item)
+const keyExtractor = (item: string | number | LoadingItem) => {
+  if (typeof item === 'object' && '_loading' in item)
+    return `loading-${Math.random()}`
+  return String(item)
+}
+
+const DEFAULT_PAGE_SIZE = 10
+const DEFAULT_INITIAL_SKELETON_COUNT = 8
 
 /**
  * A FlatList of tracks
@@ -52,63 +65,80 @@ export const TrackList = ({
   onRemove,
   onReorder,
   showSkeleton,
+  hasNextPage,
+  pageSize = DEFAULT_PAGE_SIZE,
   togglePlay,
   trackItemAction,
   uids,
   ...otherProps
 }: TrackListProps) => {
-  const data = useMemo(() => uids ?? ids ?? [], [uids, ids])
+  const data = useMemo(() => {
+    const baseData = uids ?? ids ?? []
+    if (hasNextPage) {
+      // Add loading items at the end that will render as skeletons
+      return [...baseData, ...new Array(pageSize).fill({ _loading: true })]
+    }
+    return baseData
+  }, [uids, ids, hasNextPage, pageSize])
   const [scrollEnable, setScrollEnable] = useState(true)
 
   const renderSkeletonTrack = useCallback(() => <TrackListItemSkeleton />, [])
 
-  const renderDraggableTrack: DraggableFlatListProps<UID | ID>['renderItem'] =
-    useCallback(
-      ({ item, getIndex = () => -1, drag }) => {
-        const index = getIndex() ?? -1
-        const RootView = isReorderable ? OpacityDecorator : Fragment
-        return (
-          <RootView>
-            <TrackListItem
-              id={ids && (item as ID)}
-              contextPlaylistId={contextPlaylistId}
-              index={index}
-              onDrag={drag}
-              hideArt={hideArt}
-              isReorderable={isReorderable}
-              showViewAlbum={isAlbumPage}
-              uid={uids && (item as UID)}
-              key={item}
-              togglePlay={togglePlay}
-              trackItemAction={trackItemAction}
-              onRemove={onRemove}
-            />
-          </RootView>
-        )
-      },
-      [
-        contextPlaylistId,
-        hideArt,
-        ids,
-        isAlbumPage,
-        isReorderable,
-        onRemove,
-        togglePlay,
-        trackItemAction,
-        uids
-      ]
-    )
+  const renderDraggableTrack: DraggableFlatListProps<
+    UID | ID | LoadingItem
+  >['renderItem'] = useCallback(
+    ({ item, getIndex = () => -1, drag }) => {
+      // If the item is a loading item, render a skeleton
+      if (typeof item === 'object' && '_loading' in item) {
+        return renderSkeletonTrack()
+      }
 
-  const renderTrack: FlatListProps<UID | ID>['renderItem'] = useCallback(
-    ({ item, index }) =>
-      renderDraggableTrack({
-        item,
-        getIndex: () => index,
-        drag: noOp,
-        isActive: false
-      }) as ReactElement,
-    [renderDraggableTrack]
+      const index = getIndex() ?? -1
+      const RootView = isReorderable ? OpacityDecorator : Fragment
+      return (
+        <RootView>
+          <TrackListItem
+            id={ids && (item as ID)}
+            contextPlaylistId={contextPlaylistId}
+            index={index}
+            onDrag={drag}
+            hideArt={hideArt}
+            isReorderable={isReorderable}
+            showViewAlbum={isAlbumPage}
+            uid={uids && (item as UID)}
+            key={item}
+            togglePlay={togglePlay}
+            trackItemAction={trackItemAction}
+            onRemove={onRemove}
+          />
+        </RootView>
+      )
+    },
+    [
+      contextPlaylistId,
+      hideArt,
+      ids,
+      isAlbumPage,
+      isReorderable,
+      onRemove,
+      togglePlay,
+      trackItemAction,
+      uids,
+      renderSkeletonTrack
+    ]
   )
+
+  const renderTrack: FlatListProps<UID | ID | LoadingItem>['renderItem'] =
+    useCallback(
+      ({ item, index }) =>
+        renderDraggableTrack({
+          item,
+          getIndex: () => index,
+          drag: noOp,
+          isActive: false
+        }) as ReactElement,
+      [renderDraggableTrack]
+    )
 
   const handleDragBegin = useCallback(() => {
     haptics.medium()
@@ -127,7 +157,11 @@ export const TrackList = ({
     return (
       <FlatList
         {...otherProps}
-        data={data.length > 0 ? data : new Array(8)}
+        data={
+          data.length > 0
+            ? data
+            : new Array(DEFAULT_INITIAL_SKELETON_COUNT).fill({ _loading: true })
+        }
         renderItem={renderSkeletonTrack}
       />
     )

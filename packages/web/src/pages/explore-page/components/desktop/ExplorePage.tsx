@@ -22,8 +22,6 @@ import {
   REMIXABLES,
   FEELING_LUCKY
 } from 'common/store/smart-collection/smartCollections'
-import CollectionArtCard from 'components/card-legacy/desktop/CollectionArtCard'
-import UserArtCard from 'components/card-legacy/desktop/UserArtCard'
 import { Header } from 'components/header/desktop/Header'
 import Page from 'components/page/Page'
 import PerspectiveCard, {
@@ -46,8 +44,10 @@ import {
 } from 'pages/explore-page/collections'
 import { BASE_URL, stripBaseUrl } from 'utils/route'
 
+import { CollectionArtCard } from './CollectionArtCard'
 import styles from './ExplorePage.module.css'
 import Section, { Layout } from './Section'
+import UserArtCard from './UserArtCard'
 
 const { EXPLORE_PAGE } = route
 
@@ -101,8 +101,10 @@ const ExplorePage = ({ title, pageTitle, description }: ExplorePageProps) => {
   })
 
   const { data: playlists, isLoading: isLoadingPlaylists } =
-    useFeaturedPlaylists()
-  const { data: profiles, isLoading: isLoadingProfiles } = useFeaturedProfiles()
+    useFeaturedPlaylists({ limit: 4 })
+  const { data: profiles, isLoading: isLoadingProfiles } = useFeaturedProfiles({
+    limit: 4
+  })
 
   const navigate = useNavigate()
 
@@ -202,12 +204,11 @@ const ExplorePage = ({ title, pageTitle, description }: ExplorePageProps) => {
             <Lottie loop autoplay animationData={loadingSpinner} />
           </div>
         ) : (
-          playlists?.map((playlist: UserCollection, i: number) => {
+          playlists?.map((playlist: UserCollection) => {
             return (
               <CollectionArtCard
                 key={playlist.playlist_id}
                 id={playlist.playlist_id}
-                index={i}
               />
             )
           })

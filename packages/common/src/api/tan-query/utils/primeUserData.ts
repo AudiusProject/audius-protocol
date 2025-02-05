@@ -14,23 +14,27 @@ export const primeUserData = ({
   users,
   queryClient,
   dispatch,
-  forceReplace = false
+  forceReplace = false,
+  skipQueryData = false
 }: {
   users: User[]
   queryClient: QueryClient
   dispatch: Dispatch<AnyAction>
   forceReplace?: boolean
+  skipQueryData?: boolean
 }) => {
-  const entries = primeUserDataInternal({ users, queryClient })
+  const entries = primeUserDataInternal({ users, queryClient, skipQueryData })
   dispatch(addEntries(entries, forceReplace, undefined, 'react-query'))
 }
 
 export const primeUserDataInternal = ({
   users,
-  queryClient
+  queryClient,
+  skipQueryData = false
 }: {
   users: User[]
   queryClient: QueryClient
+  skipQueryData?: boolean
 }): EntriesByKind => {
   const entries: SetRequired<EntriesByKind, Kind.USERS> = {
     [Kind.USERS]: {}
@@ -38,11 +42,15 @@ export const primeUserDataInternal = ({
 
   users.forEach((user) => {
     // Prime user by ID
-    if (!queryClient.getQueryData(getUserQueryKey(user.user_id))) {
+    if (
+      !skipQueryData &&
+      !queryClient.getQueryData(getUserQueryKey(user.user_id))
+    ) {
       queryClient.setQueryData(getUserQueryKey(user.user_id), user)
     }
     // Prime user by handle
     if (
+      !skipQueryData &&
       user.handle &&
       !queryClient.getQueryData(getUserByHandleQueryKey(user.handle))
     ) {
