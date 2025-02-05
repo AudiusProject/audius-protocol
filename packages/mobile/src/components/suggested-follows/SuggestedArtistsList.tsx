@@ -21,7 +21,7 @@ const useStyles = makeStyles(({ palette }) => ({
   }
 }))
 
-type SuggestedArtistsListProps = {} & Partial<UserListProps>
+type SuggestedArtistsListProps = Partial<UserListProps>
 
 export const SuggestedArtistsList = (props: SuggestedArtistsListProps) => {
   const styles = useStyles()
