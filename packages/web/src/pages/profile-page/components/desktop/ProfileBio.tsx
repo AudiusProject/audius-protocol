@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 
 import { Name } from '@audius/common/models'
-import { IconCaretDown, IconCaretUp, PlainButton } from '@audius/harmony'
+import { Flex, IconCaretDown, IconCaretUp, PlainButton } from '@audius/harmony'
 import { ResizeObserver } from '@juggle/resize-observer'
 import cn from 'classnames'
 // eslint-disable-next-line no-restricted-imports -- TODO: migrate to @react-spring/web
@@ -10,6 +10,7 @@ import useMeasure from 'react-use-measure'
 
 import { make, useRecord } from 'common/store/analytics/actions'
 import { OpacityTransition } from 'components/transition-container/OpacityTransition'
+import ProfilePageBadge from 'components/user-badges/ProfilePageBadge'
 import { UserGeneratedText } from 'components/user-generated-text'
 
 import SocialLink, { Type } from '../SocialLink'
@@ -22,6 +23,7 @@ const messages = {
 }
 
 type ProfileBioProps = {
+  userId: ID
   handle: string
   bio: string
   location: string
@@ -37,6 +39,7 @@ type ProfileBioProps = {
 const MAX_BIO_SIZE = 16 * 4
 
 export const ProfileBio = ({
+  userId,
   handle,
   bio,
   location,
@@ -218,35 +221,33 @@ export const ProfileBio = ({
   )
 
   return (
-    <div>
-      <UserGeneratedText
-        size='s'
-        ref={bioRef}
-        className={cn(styles.description, {
-          [styles.truncated]: isCollapsed
-        })}
-        linkSource='profile page'
-      >
-        {bio}
-      </UserGeneratedText>
-      <div>
-        <OpacityTransition
-          render={isCollapsed ? renderCollapsedContent : renderExpandedContent}
-          duration={300}
-        />
-        {isCollapsible ? (
-          <PlainButton
-            iconRight={isCollapsed ? IconCaretDown : IconCaretUp}
-            onClick={handleToggleCollapse}
-            css={(theme) => ({
-              marginTop: theme.spacing.l,
-              paddingLeft: 0
-            })}
-          >
-            {isCollapsed ? messages.seeMore : messages.seeLess}
-          </PlainButton>
-        ) : null}
-      </div>
-    </div>
+    <Flex column gap='l'>
+      <ProfilePageBadge userId={userId} />
+      {bio ? (
+        <UserGeneratedText
+          size='s'
+          ref={bioRef}
+          className={cn(styles.description, {
+            [styles.truncated]: isCollapsed
+          })}
+          linkSource='profile page'
+        >
+          {bio}
+        </UserGeneratedText>
+      ) : null}
+      <OpacityTransition
+        render={isCollapsed ? renderCollapsedContent : renderExpandedContent}
+        duration={300}
+      />
+      {isCollapsible ? (
+        <PlainButton
+          iconRight={isCollapsed ? IconCaretDown : IconCaretUp}
+          onClick={handleToggleCollapse}
+          css={{ alignSelf: 'flex-start' }}
+        >
+          {isCollapsed ? messages.seeMore : messages.seeLess}
+        </PlainButton>
+      ) : null}
+    </Flex>
   )
 }

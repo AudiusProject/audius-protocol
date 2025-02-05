@@ -102,7 +102,6 @@
 }
 
 .description {
-  margin-bottom: var(--harmony-unit-4);
   overflow: hidden;
   text-overflow: ellipsis;
 }
@@ -237,26 +236,6 @@
   margin: -6px;
 }
 
-.badge {
-  margin-bottom: 16px !important;
-}
-
 .socialsTruncated > * {
   margin-bottom: 0px !important;
-}
-
-.tipAudioButtonContainer {
-  margin-top: 32px;
-}
-
-.aiGeneratedCalloutContainer {
-  margin-top: 32px;
-}
-
-.profileBottomSection {
-  display: flex;
-  flex-direction: column;
-  margin-top: 32px;
-  margin-bottom: 32px;
-  gap: 32px;
 }

@@ -40,7 +40,8 @@ export const Divider = (props: DividerProps) => {
       }),
     ...(!children &&
       orientation === 'horizontal' && {
-        borderBottom: border
+        borderBottom: border,
+        flex: 1
       })
   }
 

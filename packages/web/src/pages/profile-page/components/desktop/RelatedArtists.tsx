@@ -16,9 +16,9 @@ import {
   UserListType
 } from 'store/application/ui/userListModal/types'
 
+import { ProfilePageNavSectionItem } from './ProfilePageNavSectionItem'
 import { ProfilePageNavSectionTitle } from './ProfilePageNavSectionTitle'
 import { ProfilePictureListTile } from './ProfilePictureListTile'
-import styles from './RelatedArtists.module.css'
 const { getProfileUser } = profilePageSelectors
 
 const messages = {
@@ -54,10 +54,10 @@ export const RelatedArtists = () => {
   }
 
   return (
-    <div>
+    <ProfilePageNavSectionItem>
       <ProfilePageNavSectionTitle
         title={messages.relatedArtists}
-        titleIcon={<IconUserGroup className={styles.userGroupIcon} />}
+        Icon={IconUserGroup}
       />
       <ProfilePictureListTile
         onClick={handleClick}
@@ -66,6 +66,6 @@ export const RelatedArtists = () => {
         limit={MAX_PROFILE_RELATED_ARTISTS}
         disableProfileClick
       />
-    </div>
+    </ProfilePageNavSectionItem>
   )
 }
