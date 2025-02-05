@@ -10,8 +10,6 @@ import { IconUserFollowing } from '@audius/harmony'
 import { useDispatch, useSelector } from 'react-redux'
 import { createSelector } from 'reselect'
 
-import { ProfilePageNavSectionTitle } from 'components/profile-page-nav-section-title/ProfilePageNavSectionTitle'
-import { ProfilePictureListTile } from 'components/profile-picture-list-tile/ProfilePictureListTile'
 import {
   setUsers,
   setVisibility
@@ -22,6 +20,8 @@ import {
 } from 'store/application/ui/userListModal/types'
 
 import styles from './ProfileMutuals.module.css'
+import { ProfilePageNavSectionTitle } from './ProfilePageNavSectionTitle'
+import { ProfilePictureListTile } from './ProfilePictureListTile'
 const { getFolloweeFollows, getProfileUser, getProfileUserId } =
   profilePageSelectors
 const { getUsers } = cacheUsersSelectors
