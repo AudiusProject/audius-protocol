@@ -247,6 +247,7 @@ export const ChallengeRewardsDrawerProvider = () => {
           aaoErrorCode={aaoErrorCode}
           onClaim={hasConfig ? onClaim : undefined}
           isVerifiedChallenge={!!config.isVerifiedChallenge}
+          onClose={handleClose}
           showProgressBar={
             challenge.challenge_type !== 'aggregate' &&
             challenge.max_steps !== null &&

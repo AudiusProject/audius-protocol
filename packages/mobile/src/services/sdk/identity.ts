@@ -1,6 +1,6 @@
 import { IdentityService } from '@audius/common/services'
 
-import { env } from 'app/env'
+import { env } from 'app/services/env'
 
 import { getAudiusWalletClient } from './auth'
 

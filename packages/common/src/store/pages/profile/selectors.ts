@@ -21,8 +21,6 @@ const getProfile = (state: CommonState, handle?: string) => {
   return state.pages.profile.entries[profileHandle]
 }
 
-const emptyList: any[] = []
-
 // Profile selectors
 export const getProfileStatus = (state: CommonState, handle?: string) =>
   getProfile(state, handle)?.status ?? Status.IDLE
@@ -48,12 +46,6 @@ export const getProfileCollectionSortMode = (
 ) => getProfile(state, handle)?.collectionSortMode
 export const getCollectionsStatus = (state: CommonState, handle?: string) =>
   getProfile(state, handle)?.collectionStatus as Status
-export const getProfileFollowers = (state: CommonState, handle?: string) =>
-  getProfile(state, handle)?.followers
-export const getProfileFollowees = (state: CommonState, handle?: string) =>
-  getProfile(state, handle)?.followees
-export const getFolloweeFollows = (state: CommonState, handle?: string) =>
-  getProfile(state, handle)?.followeeFollows
 export const getIsSubscribed = (state: CommonState, handle?: string) =>
   getProfile(state, handle)?.isNotificationSubscribed
 export const getProfileUser = (
@@ -130,23 +122,11 @@ export const makeGetProfile = () => {
       getProfileUserId,
       getIsSubscribed,
       getProfileCollectionSortMode,
-      getProfileFollowers,
-      getProfileFollowees,
       // External
       getUsers,
       getCollections
     ],
-    (
-      status,
-      error,
-      userId,
-      isSubscribed,
-      sortMode,
-      followers,
-      followees,
-      users,
-      collections
-    ) => {
+    (status, error, userId, isSubscribed, sortMode, users, collections) => {
       const emptyState = {
         profile: null,
         playlists: null,
@@ -181,35 +161,9 @@ export const makeGetProfile = () => {
         playlists = playlists.sort(sortByDateDesc)
         albums = albums.sort(sortByDateDesc)
       }
-      const followersPopulated =
-        followers?.userIds
-          .map(({ id }) => {
-            if (id in users) return users[id]
-            return null
-          })
-          .filter(removeNullable) ?? (emptyList as User[])
-
-      const followeesPopulated =
-        followees?.userIds
-          .map(({ id }) => {
-            if (id in users) return users[id]
-            return null
-          })
-          .filter(removeNullable) ?? (emptyList as User[])
-
       const user = users[userId]
       return {
-        profile: {
-          ...user,
-          followers: {
-            status: followers?.status ?? Status.IDLE,
-            users: followersPopulated
-          },
-          followees: {
-            status: followees?.status ?? Status.IDLE,
-            users: followeesPopulated
-          }
-        },
+        profile: user,
         playlists,
         albums,
         status,

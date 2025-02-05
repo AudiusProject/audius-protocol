@@ -1,17 +1,15 @@
-import { Kind, User } from '@audius/common/models'
+import { Chain } from '@audius/common/models'
 import {
   accountSelectors,
-  cacheActions,
   tokenDashboardPageActions,
   walletActions,
-  getContext,
   confirmerActions,
   confirmTransaction,
   getSDK
 } from '@audius/common/store'
+import { Id } from '@audius/sdk'
 import { call, put, select } from 'typed-redux-saga'
 
-import { getAccountMetadataCID } from './getAccountMetadataCID'
 import { CONNECT_WALLET_CONFIRMATION_UID } from './types'
 const { getUserId } = accountSelectors
 const { getBalance } = walletActions
@@ -19,19 +17,24 @@ const { setWalletAddedConfirmed, updateWalletError } = tokenDashboardPageActions
 const { requestConfirmation } = confirmerActions
 
 export function* addWalletToUser(
-  updatedMetadata: User,
+  {
+    walletAddress,
+    chain,
+    signature
+  }: { walletAddress: string; chain: Chain; signature: string },
   disconnect: () => Generator
 ) {
-  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
   const sdk = yield* getSDK()
   const accountUserId = yield* select(getUserId)
   if (!accountUserId) return
 
   function* transactMetadata() {
-    const result = yield* call(audiusBackendInstance.updateCreator, {
-      metadata: updatedMetadata,
-      sdk
+    const result = yield* call([sdk.users, sdk.users.addAssociatedWallet], {
+      userId: Id.parse(accountUserId),
+      wallet: { address: walletAddress, chain },
+      signature
     })
+
     if (!result) {
       throw new Error(
         `Could not confirm connect wallet for account user id ${accountUserId}`
@@ -54,19 +57,6 @@ export function* addWalletToUser(
     yield* put(getBalance())
 
     yield* put(setWalletAddedConfirmed({}))
-
-    const updatedCID = yield* call(getAccountMetadataCID)
-
-    if (updatedCID && accountUserId) {
-      yield* put(
-        cacheActions.update(Kind.USERS, [
-          {
-            id: accountUserId,
-            metadata: { ...updatedMetadata, metadata_multihash: updatedCID }
-          }
-        ])
-      )
-    }
 
     // Disconnect the web3 instance because after we've linked, we no longer need it
     yield* call(disconnect)

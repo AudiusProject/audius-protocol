@@ -4,14 +4,16 @@ import type { OptimisticUserChallenge } from '@audius/common/models'
 import { ChallengeName } from '@audius/common/models'
 import { ClaimStatus } from '@audius/common/store'
 import { formatNumberCommas } from '@audius/common/utils'
-import { ScrollView, View } from 'react-native'
+import { ScrollView } from 'react-native-gesture-handler'
 
 import type { ButtonProps } from '@audius/harmony-native'
 import {
   IconArrowRight,
   IconCloudUpload,
   Button,
-  Text
+  Text,
+  Flex,
+  IconCheck
 } from '@audius/harmony-native'
 import { getChallengeConfig } from 'app/utils/challenges'
 
@@ -35,7 +37,9 @@ const messages = {
   viewPremiumTracks: 'View Premium Tracks',
   uploadTrack: 'Upload Track',
   totalClaimed: (amount: string) => `Total $AUDIO Claimed: ${amount}`,
-  claimAudio: (amount: string) => `Claim ${amount} $AUDIO`
+  claimAudio: (amount: string) => `Claim ${amount} $AUDIO`,
+  readyToClaim: 'Ready to Claim',
+  incomplete: 'No recent purchases'
 }
 
 type AudioMatchingChallengeName =
@@ -88,29 +92,53 @@ export const AudioMatchingChallengeDrawerContent = ({
     claimStatus === ClaimStatus.CLAIMING ||
     claimStatus === ClaimStatus.WAITING_FOR_RETRY
   const claimError = claimStatus === ClaimStatus.ERROR
+  const isClaimable = claimableAmount > 0
+  const statusText = isClaimable ? messages.readyToClaim : messages.incomplete
 
   return (
-    <View style={styles.scrollViewContainer}>
+    <Flex style={styles.scrollViewContainer}>
       <ScrollView contentContainerStyle={styles.scrollViewContent}>
         <ChallengeDescription
           renderDescription={() => (
-            <View style={styles.audioMatchingDescriptionContainer}>
+            <Flex style={styles.audioMatchingDescriptionContainer}>
               <Text size='l'>{config.description(challenge)}</Text>
               <Text color='subdued'>
                 {messages.descriptionSubtext[challengeName]}
               </Text>
-            </View>
+            </Flex>
           )}
         />
-        <View>
-          <View style={styles.statusGridColumns}>
-            <ChallengeReward
-              amount={challenge.amount}
-              subtext={messages.rewardMapping[challengeName]}
-            />
-          </View>
+        <Flex alignItems='center' gap='3xl' w='100%'>
+          <ChallengeReward
+            amount={challenge.amount}
+            subtext={messages.rewardMapping[challengeName]}
+          />
+          <Flex
+            w='100%'
+            ph='xl'
+            border='default'
+            borderRadius='s'
+            backgroundColor='surface1'
+          >
+            <Flex
+              row
+              w='100%'
+              alignItems='center'
+              justifyContent='center'
+              gap='s'
+              pv='l'
+            >
+              {isClaimable ? <IconCheck size='s' color='subdued' /> : null}
+              {/* Hack due to broken lineHeight for certain fonts */}
+              <Flex mt='unitHalf'>
+                <Text variant='label' size='l' color='subdued'>
+                  {statusText}
+                </Text>
+              </Flex>
+            </Flex>
+          </Flex>
           {claimedAmount > 0 ? (
-            <View style={styles.claimedAmountContainer}>
+            <Flex style={styles.claimedAmountContainer}>
               <Text
                 variant='label'
                 size='s'
@@ -119,12 +147,12 @@ export const AudioMatchingChallengeDrawerContent = ({
               >
                 {messages.totalClaimed(formatNumberCommas(claimedAmount))}
               </Text>
-            </View>
+            </Flex>
           ) : null}
-        </View>
+        </Flex>
         <CooldownSummaryTable challengeId={challengeName} />
       </ScrollView>
-      <View style={styles.stickyClaimRewardsContainer}>
+      <Flex w='100%' ph='l' pv='m' gap='l'>
         {claimableAmount > 0 && onClaim ? (
           <Button
             disabled={claimInProgress}
@@ -145,7 +173,7 @@ export const AudioMatchingChallengeDrawerContent = ({
           />
         )}
         {claimError ? <ClaimError aaoErrorCode={aaoErrorCode} /> : null}
-      </View>
-    </View>
+      </Flex>
+    </Flex>
   )
 }

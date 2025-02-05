@@ -12,8 +12,6 @@ import { getCollectionByPermalinkQueryKey } from './useCollectionByPermalink'
 import { useCurrentUserId } from './useCurrentUserId'
 import { primeCollectionData } from './utils/primeCollectionData'
 
-const STALE_TIME = Infinity
-
 export const getCollectionQueryKey = (collectionId: ID | null | undefined) => [
   QUERY_KEYS.collection,
   collectionId
@@ -59,7 +57,8 @@ export const useCollection = (
 
       return collection
     },
-    staleTime: options?.staleTime ?? STALE_TIME,
+    staleTime: options?.staleTime ?? Infinity,
+    gcTime: Infinity,
     enabled: options?.enabled !== false && !!collectionId
   })
 }

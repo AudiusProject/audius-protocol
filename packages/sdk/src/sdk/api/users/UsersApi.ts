@@ -26,12 +26,16 @@ import {
 import * as runtime from '../generated/default/runtime'
 
 import {
+  AddAssociatedWalletRequest,
+  AddAssociatedWalletSchema,
   CreateUserRequest,
   CreateUserSchema,
   EmailRequest,
   EmailSchema,
   FollowUserRequest,
   FollowUserSchema,
+  RemoveAssociatedWalletRequest,
+  RemoveAssociatedWalletSchema,
   SendTipReactionRequest,
   SendTipReactionRequestSchema,
   SendTipRequest,
@@ -237,12 +241,7 @@ export class UsersApi extends GeneratedUsersApi {
 
     const cid = (await generateMetadataCidV1(updatedMetadata)).toString()
 
-    const {
-      associatedWallets,
-      associatedSolWallets,
-      collectibles,
-      ...indexedMetadataValues
-    } = updatedMetadata
+    const { collectibles, ...indexedMetadataValues } = updatedMetadata
 
     // Write metadata to chain
     return await this.entityManager.manageEntity({
@@ -255,8 +254,6 @@ export class UsersApi extends GeneratedUsersApi {
         data: {
           ...snakecaseKeys(indexedMetadataValues),
           // Do not snake case values that are part of cid data.
-          associated_wallets: associatedWallets,
-          associated_sol_wallets: associatedSolWallets,
           collectibles
         }
       }),
@@ -543,29 +540,49 @@ export class UsersApi extends GeneratedUsersApi {
    * Share an encrypted email with a user
    */
   async shareEmail(params: EmailRequest, advancedOptions?: AdvancedOptions) {
-    const { emailOwnerUserId, receivingUserId, email, granteeUserIds } =
-      await parseParams('shareEmail', EmailSchema)(params)
+    const {
+      emailOwnerUserId,
+      receivingUserId,
+      email,
+      granteeUserIds,
+      initialEmailEncryptionUuid
+    } = await parseParams('shareEmail', EmailSchema)(params)
 
     let symmetricKey: Uint8Array
     // Get hashed IDs and validate
     const emailOwnerUserIdHash = encodeHashId(emailOwnerUserId)
     const receivingUserIdHash = encodeHashId(receivingUserId)
-    if (!emailOwnerUserIdHash || !receivingUserIdHash) {
+    const initialEmailEncryptionUuidHash = encodeHashId(
+      initialEmailEncryptionUuid
+    )
+    if (
+      !emailOwnerUserIdHash ||
+      !receivingUserIdHash ||
+      !initialEmailEncryptionUuidHash
+    ) {
       throw new Error('Email owner user ID and receiving user ID are required')
     }
 
     const accessGrants = []
 
-    const { data: emailOwnerKey = '' } = await this.getUserEmailKey({
+    const {
+      data: { encryptedKey: emailOwnerKey, isInitial } = {
+        encryptedKey: '',
+        isInitial: false
+      }
+    } = await this.getUserEmailKey({
       receivingUserId: emailOwnerUserIdHash,
       grantorUserId: emailOwnerUserIdHash
     })
 
+    let action, entityType
     if (emailOwnerKey) {
       symmetricKey = await this.emailEncryption.decryptSymmetricKey(
         emailOwnerKey,
-        emailOwnerUserIdHash
+        isInitial ? initialEmailEncryptionUuidHash : emailOwnerUserIdHash
       )
+      action = Action.UPDATE
+      entityType = EntityType.EMAIL_ACCESS
     } else {
       symmetricKey = this.emailEncryption.createSymmetricKey()
       // Create encrypted keys for owner and receiver
@@ -578,6 +595,8 @@ export class UsersApi extends GeneratedUsersApi {
         grantor_user_id: emailOwnerUserId,
         encrypted_key: ownerEncryptedKey
       })
+      action = Action.ADD_EMAIL
+      entityType = EntityType.ENCRYPTED_EMAIL
     }
 
     const encryptedEmail = await this.emailEncryption.encryptEmail(
@@ -622,14 +641,74 @@ export class UsersApi extends GeneratedUsersApi {
 
     return await this.entityManager.manageEntity({
       userId: emailOwnerUserId,
-      entityType: EntityType.ENCRYPTED_EMAIL,
+      entityType,
       entityId: emailOwnerUserId,
-      action: Action.ADD_EMAIL,
+      action,
       metadata: JSON.stringify({
         cid: '',
         data: metadata
       }),
       ...advancedOptions
+    })
+  }
+
+  /** @hidden
+   * Associate a new wallet with a user
+   */
+  async addAssociatedWallet(
+    params: AddAssociatedWalletRequest,
+    advancedOptions?: AdvancedOptions
+  ) {
+    const {
+      userId,
+      wallet: { address: wallet_address, chain },
+      signature
+    } = await parseParams(
+      'addAssociatedWallet',
+      AddAssociatedWalletSchema
+    )(params)
+
+    return await this.entityManager.manageEntity({
+      userId,
+      entityType: EntityType.ASSOCIATED_WALLET,
+      entityId: 0, // unused
+      action: Action.CREATE,
+      metadata: JSON.stringify({
+        cid: '',
+        data: {
+          wallet_address,
+          chain,
+          signature
+        }
+      }),
+      ...advancedOptions
+    })
+  }
+
+  /** @hidden
+   * Remove a wallet from a user
+   */
+  async removeAssociatedWallet(params: RemoveAssociatedWalletRequest) {
+    const {
+      userId,
+      wallet: { address: wallet_address, chain }
+    } = await parseParams(
+      'removeAssociatedWallet',
+      RemoveAssociatedWalletSchema
+    )(params)
+
+    return await this.entityManager.manageEntity({
+      userId,
+      entityType: EntityType.ASSOCIATED_WALLET,
+      entityId: 0, // unused
+      action: Action.DELETE,
+      metadata: JSON.stringify({
+        cid: '',
+        data: {
+          wallet_address,
+          chain
+        }
+      })
     })
   }
 }
