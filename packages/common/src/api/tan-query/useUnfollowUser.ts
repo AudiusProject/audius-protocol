@@ -1,25 +1,25 @@
 import { Id } from '@audius/sdk'
-import { Action } from '@reduxjs/toolkit'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { useDispatch } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 
-import { useAudiusQueryContext } from '~/audius-query'
+import { useAudiusQueryContext } from '~/audius-query/AudiusQueryContext'
 import { useAppContext } from '~/context/appContext'
 import { Name, FollowSource } from '~/models/Analytics'
 import { Feature } from '~/models/ErrorReporting'
 import { ID } from '~/models/Identifiers'
+import { Track, isContentFollowGated } from '~/models/Track'
 import { UserMetadata } from '~/models/User'
-
-import { useCurrentUserId } from '..'
+import { getTracks } from '~/store/cache/tracks/selectors'
+import { CommonState } from '~/store/commonStore'
+import { removeFolloweeId, revokeAccess } from '~/store/gated-content/slice'
 
 import { QUERY_KEYS } from './queryKeys'
 import { getUserQueryKey } from './useUser'
 import { getUserByHandleQueryKey } from './useUserByHandle'
 
-type FollowUserParams = {
+type UnfollowUserParams = {
   followeeUserId: ID
-  source?: FollowSource
-  onSuccessActions?: Action[]
+  source: FollowSource
 }
 
 type MutationContext = {
@@ -27,46 +27,64 @@ type MutationContext = {
   previousAccountUser: UserMetadata | undefined
 }
 
-export const useFollowUser = () => {
+export const useUnfollowUser = () => {
   const { audiusSdk, reportToSentry } = useAudiusQueryContext()
   const queryClient = useQueryClient()
-  const { data: currentUserId } = useCurrentUserId()
+  const dispatch = useDispatch()
   const {
     analytics: { track, make }
   } = useAppContext()
-  const dispatch = useDispatch()
+  const tracks = useSelector((state: CommonState) => getTracks(state, {}))
 
-  return useMutation<void, Error, FollowUserParams, MutationContext>({
-    mutationFn: async ({
-      followeeUserId,
-      source,
-      onSuccessActions
-    }: FollowUserParams) => {
-      if (!currentUserId || currentUserId === followeeUserId) {
-        return
-      }
-
+  return useMutation({
+    mutationFn: async ({ followeeUserId, source }: UnfollowUserParams) => {
       const sdk = await audiusSdk()
-      await sdk.users.followUser({
-        userId: Id.parse(currentUserId),
+      await sdk.users.unfollowUser({
+        userId: Id.parse(followeeUserId),
         followeeUserId: Id.parse(followeeUserId)
       })
 
-      if (onSuccessActions) {
-        onSuccessActions.forEach((action) => dispatch(action))
+      // Handle gated content
+      dispatch(removeFolloweeId({ id: followeeUserId }))
+
+      // Revoke access to follow-gated tracks
+      if (tracks) {
+        const revokeAccessMap: { [id: ID]: 'stream' | 'download' } = {}
+        Object.values(tracks).forEach((track: Track) => {
+          const isStreamFollowGated =
+            track.stream_conditions &&
+            isContentFollowGated(track.stream_conditions)
+          const isDownloadFollowGated =
+            track.download_conditions &&
+            isContentFollowGated(track.download_conditions)
+
+          if (isStreamFollowGated && track.owner_id === followeeUserId) {
+            revokeAccessMap[track.track_id] = 'stream'
+          } else if (
+            isDownloadFollowGated &&
+            track.owner_id === followeeUserId
+          ) {
+            revokeAccessMap[track.track_id] = 'download'
+          }
+        })
+
+        if (Object.keys(revokeAccessMap).length > 0) {
+          dispatch(revokeAccess({ revokeAccessMap }))
+        }
       }
 
+      // Track the unfollow
       if (source) {
         track(
           make({
-            eventName: Name.FOLLOW,
+            eventName: Name.UNFOLLOW,
             id: followeeUserId.toString(),
             source
           })
         )
       }
     },
-    onMutate: async ({ followeeUserId }): Promise<MutationContext> => {
+    onMutate: async ({ followeeUserId }) => {
       await queryClient.cancelQueries({
         queryKey: [QUERY_KEYS.user, followeeUserId]
       })
@@ -84,7 +102,7 @@ export const useFollowUser = () => {
         queryClient.setQueryData(getUserQueryKey(followeeUserId), {
           ...previousUser,
           does_current_user_follow: true,
-          follower_count: previousUser.follower_count + 1
+          follower_count: previousUser.follower_count - 1
         })
 
         if (previousUser.handle) {
@@ -93,7 +111,7 @@ export const useFollowUser = () => {
             (old: any) => ({
               ...old,
               does_current_user_follow: true,
-              follower_count: old.follower_count + 1
+              follower_count: old.follower_count - 1
             })
           )
         }
@@ -102,7 +120,7 @@ export const useFollowUser = () => {
       if (previousAccountUser) {
         queryClient.setQueryData([QUERY_KEYS.accountUser], {
           ...previousAccountUser,
-          followee_count: previousAccountUser.followee_count + 1
+          followee_count: previousAccountUser.followee_count - 1
         })
       }
 
@@ -136,7 +154,7 @@ export const useFollowUser = () => {
           followeeUserId
         },
         feature: Feature.Social,
-        name: 'Follow User'
+        name: 'Unfollow User'
       })
     }
   })
