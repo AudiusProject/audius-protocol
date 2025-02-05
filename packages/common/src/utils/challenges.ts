@@ -127,7 +127,7 @@ export const challengeRewardsConfig: Record<
     id: ChallengeName.ListenStreakEndless,
     title: 'Listening Streak',
     description: () =>
-      'Listen to Audius daily for a week to start a streak and earn $AUDIO for each day you keep it going.',
+      'Listen to music on Audius daily for seven days to start a streak. After that, earn $AUDIO for each consecutive day you continue listening.',
     fullDescription: () =>
       'Listen to music on Audius daily for seven days to start a streak. After that, earn $AUDIO for each consecutive day you continue listening.',
     progressLabel: '%0/%1 Days',
