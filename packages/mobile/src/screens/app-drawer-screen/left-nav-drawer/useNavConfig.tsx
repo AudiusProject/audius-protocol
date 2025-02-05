@@ -36,10 +36,10 @@ import {
 } from '@audius/harmony-native'
 import LogoUSDC from 'app/assets/images/logoUSDC.svg'
 import { IconAudioBadge } from 'app/components/audio-rewards'
-import { env } from 'app/env'
 import { useFeatureFlag, useRemoteVar } from 'app/hooks/useRemoteConfig'
 import type { AppTabScreenParamList } from 'app/screens/app-screen'
 import { make } from 'app/services/analytics'
+import { env } from 'app/services/env'
 
 const { getAccountUser } = accountSelectors
 const { getHasUnreadMessages, getUnreadMessagesCount } = chatSelectors

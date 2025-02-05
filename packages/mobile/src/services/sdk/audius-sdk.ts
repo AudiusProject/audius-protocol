@@ -3,7 +3,7 @@ import { EventEmitter } from 'events'
 import type { AudiusSdk } from '@audius/sdk'
 import { Configuration, SolanaRelay, sdk } from '@audius/sdk'
 
-import { env } from 'app/env'
+import { env } from 'app/services/env'
 
 import { getAudiusWalletClient } from './auth'
 import { discoveryNodeSelectorService } from './discoveryNodeSelector'

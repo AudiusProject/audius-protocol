@@ -1,7 +1,7 @@
 import type { User, UserCollectionMetadata } from '@audius/common/models'
 import { encodeUrlName, getHash } from '@audius/common/utils'
 
-import { env } from 'app/env'
+import { env } from 'app/services/env'
 
 type UserHandle = Pick<User, 'handle'>
 

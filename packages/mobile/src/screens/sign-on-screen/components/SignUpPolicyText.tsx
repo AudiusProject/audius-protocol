@@ -2,7 +2,7 @@ import { signUpPolicyMessages } from '@audius/common/messages'
 import { route } from '@audius/common/utils'
 
 import { Text, TextLink } from '@audius/harmony-native'
-import { env } from 'app/env'
+import { env } from 'app/services/env'
 const { PRIVACY_POLICY, TERMS_OF_SERVICE } = route
 
 const termsOfUseLink = `${env.AUDIUS_URL}${TERMS_OF_SERVICE}`
