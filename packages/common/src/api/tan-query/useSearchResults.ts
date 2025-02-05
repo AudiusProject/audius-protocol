@@ -112,9 +112,8 @@ const useSearchQueryProps = (
     queryKey: getSearchResultsQueryKey(queryKeyArgs),
     queryFn: async ({
       pageParam
-    }: {
-      pageParam: number
-    }): Promise<{
+      // unfortunately tanquery was having type issues with pageParam here
+    }: any): Promise<{
       tracks: UserTrackMetadata[]
       users: UserMetadata[]
       albums: UserCollectionMetadata[]
@@ -346,7 +345,7 @@ export const useSearchTrackResults = (
       const noMorePages = lastPage.length < pageSize // When using a specific category we do pagination, so we just check that category
       return noMorePages ? undefined : pages.length * pageSize
     },
-    queryFn: async ({ pageParam }: { pageParam: number }) => {
+    queryFn: async ({ pageParam }) => {
       const data = await queryProps.queryFn({ pageParam })
       return data.tracks
     }
@@ -381,7 +380,7 @@ export const useSearchUserResults = (
       const noMorePages = lastPage.length < pageSize
       return noMorePages ? undefined : pages.length * pageSize
     },
-    queryFn: async ({ pageParam }: { pageParam: number }) => {
+    queryFn: async ({ pageParam }) => {
       const data = await queryProps.queryFn({ pageParam })
       return data.users
     }
@@ -409,7 +408,7 @@ export const useSearchAlbumResults = (
       const noMorePages = lastPage.length < pageSize
       return noMorePages ? undefined : pages.length * pageSize
     },
-    queryFn: async ({ pageParam }: { pageParam: number }) => {
+    queryFn: async ({ pageParam }) => {
       const data = await queryProps.queryFn({ pageParam })
       return data.albums
     }
@@ -437,7 +436,7 @@ export const useSearchPlaylistResults = (
       const noMorePages = lastPage.length < pageSize
       return noMorePages ? undefined : pages.length * pageSize
     },
-    queryFn: async ({ pageParam }: { pageParam: number }) => {
+    queryFn: async ({ pageParam }) => {
       const data = await queryProps.queryFn({ pageParam })
       return data.playlists
     }
