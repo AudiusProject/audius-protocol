@@ -4,7 +4,7 @@ import { WebView } from 'react-native-webview'
 import type { WebViewMessage } from 'react-native-webview/lib/WebViewTypes'
 import { useDispatch, useSelector } from 'react-redux'
 
-import { env } from 'app/env'
+import { env } from 'app/services/env'
 import { closePopup, setCredentials } from 'app/store/oauth/actions'
 import { Provider } from 'app/store/oauth/reducer'
 import { getUrl, getIsOpen, getAuthProvider } from 'app/store/oauth/selectors'

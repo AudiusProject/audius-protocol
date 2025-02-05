@@ -9,7 +9,7 @@ import { useDispatch, useSelector } from 'react-redux'
 
 import { IconCheck, IconClose, PlainButton } from '@audius/harmony-native'
 import { TwitterButton } from 'app/components/twitter-button'
-import { env } from 'app/env'
+import { env } from 'app/services/env'
 import { makeStyles } from 'app/styles'
 import { EventNames } from 'app/types/analytics'
 
