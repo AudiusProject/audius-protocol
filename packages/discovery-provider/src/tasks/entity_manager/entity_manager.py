@@ -178,7 +178,6 @@ def entity_manager_update(
     4. Create new database record based on a transaction.
     5. Bulk insert new records.
     """
-
     try:
         update_start_time = time.time()
         challenge_bus: ChallengeEventBus = update_task.challenge_event_bus
@@ -198,7 +197,6 @@ def entity_manager_update(
 
         # collect events by entity type and action
         entities_to_fetch = collect_entities_to_fetch(update_task, entity_manager_txs)
-
         # fetch existing tracks and playlists
         existing_records, existing_records_in_json = fetch_existing_entities(
             session, entities_to_fetch
@@ -599,7 +597,6 @@ entity_types_to_fetch = set(
         EntityType.PLAYLIST,
         EntityType.COMMENT,
         EntityType.ENCRYPTED_EMAIL,
-        EntityType.EMAIL_ACCESS,
     ]
 )
 
@@ -838,17 +835,17 @@ def collect_entities_to_fetch(update_task, entity_manager_txs):
 
                 # Add email access record to fetch
                 email_owner_user_id = json_metadata.get("email_owner_user_id")
-                receiving_user_id = json_metadata.get("receiving_user_id")
-                grantor_user_id = json_metadata.get("grantor_user_id")
-
-                if all([email_owner_user_id, receiving_user_id, grantor_user_id]):
-                    entities_to_fetch[EntityType.EMAIL_ACCESS].add(
-                        (email_owner_user_id, receiving_user_id, grantor_user_id)
-                    )
-                    # Also fetch the email record
-                    entities_to_fetch[EntityType.ENCRYPTED_EMAIL].add(
-                        email_owner_user_id
-                    )
+                for access_grant in json_metadata.get("access_grants", []):
+                    receiving_user_id = access_grant.get("receiving_user_id")
+                    grantor_user_id = access_grant.get("grantor_user_id")
+                    if all([email_owner_user_id, receiving_user_id, grantor_user_id]):
+                        entities_to_fetch[EntityType.EMAIL_ACCESS].add(
+                            (email_owner_user_id, receiving_user_id, grantor_user_id)
+                        )
+                        # Also fetch the email record
+                        entities_to_fetch[EntityType.ENCRYPTED_EMAIL].add(
+                            email_owner_user_id
+                        )
             if entity_type == EntityType.ASSOCIATED_WALLET:
                 entities_to_fetch[EntityType.ASSOCIATED_WALLET].add(user_id)
 

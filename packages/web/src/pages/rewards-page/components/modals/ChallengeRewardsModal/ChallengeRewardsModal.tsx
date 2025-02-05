@@ -141,7 +141,8 @@ const messages = {
   progress: 'Progress',
   taskDetails: 'Task Details',
   complete: 'Complete',
-  incomplete: 'Incomplete'
+  incomplete: 'Incomplete',
+  ineligible: 'Ineligible'
 }
 
 type InviteLinkProps = {
@@ -332,17 +333,13 @@ const ChallengeRewardsBody = ({ dismissModal }: BodyProps) => {
     challenge.challenge_type !== 'aggregate'
 
   const progressDescription = (
-    <Flex column gap='m'>
+    <Flex column gap='m' w='100%'>
       {isVerifiedChallenge ? (
         <div className={styles.verifiedChallenge}>
           <IconVerified />
           {messages.verifiedChallenge}
         </div>
-      ) : (
-        <Text variant='label' size='l' strength='strong'>
-          {messages.taskDetails}
-        </Text>
-      )}
+      ) : null}
       <Text variant='body'>{fullDescription?.(challenge)}</Text>
       {isCooldownChallenge ? (
         <Text variant='body' color='subdued'>
@@ -362,20 +359,32 @@ const ChallengeRewardsBody = ({ dismissModal }: BodyProps) => {
       pv='l'
       borderRadius='s'
     >
-      {challenge?.state === 'incomplete' ? (
+      {challenge?.challenge_id === ChallengeName.OneShot &&
+      challenge?.state === 'incomplete' ? (
+        <Text variant='label' size='l' strength='strong' color='subdued'>
+          {messages.ineligible}
+        </Text>
+      ) : challenge?.challenge_id === ChallengeName.OneShot &&
+        challenge.claimableAmount ? (
+        <Flex gap='s' justifyContent='center' alignItems='center'>
+          <IconCheck width={16} height={16} color='subdued' />
+          <Text variant='label' size='l' strength='strong' color='subdued'>
+            {progressLabel}
+          </Text>
+        </Flex>
+      ) : challenge?.state === 'incomplete' ? (
         <Text variant='label' size='l' strength='strong' color='subdued'>
           {messages.incomplete}
         </Text>
-      ) : null}
-      {challenge?.state === 'completed' || challenge?.state === 'disbursed' ? (
+      ) : challenge?.state === 'completed' ||
+        challenge?.state === 'disbursed' ? (
         <Flex gap='s' justifyContent='center' alignItems='center'>
           <IconCheck width={16} height={16} color='subdued' />
           <Text variant='label' size='l' strength='strong' color='subdued'>
             {messages.complete}
           </Text>
         </Flex>
-      ) : null}
-      {challenge?.state === 'in_progress' && progressLabel ? (
+      ) : challenge?.state === 'in_progress' && progressLabel ? (
         <Text
           variant='label'
           size='l'
@@ -577,7 +586,7 @@ const ChallengeRewardsBody = ({ dismissModal }: BodyProps) => {
     )
   } else {
     modalContent = (
-      <Flex column alignItems='center' gap='2xl'>
+      <Flex column alignItems='center' gap='2xl' w='100%'>
         {isMobile ? (
           <>
             <ProgressDescription description={progressDescription} />
@@ -600,7 +609,7 @@ const ChallengeRewardsBody = ({ dismissModal }: BodyProps) => {
         ) : (
           <>
             <Paper column w='100%' borderRadius='s' shadow='flat'>
-              <Flex justifyContent='space-between'>
+              <Flex justifyContent='space-between' w='100%'>
                 <ProgressDescription description={progressDescription} />
                 <ProgressReward
                   amount={formatNumberCommas(progressRewardAmount ?? '')}

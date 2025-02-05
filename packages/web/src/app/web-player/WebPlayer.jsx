@@ -30,6 +30,7 @@ import { Pages as SignOnPages } from 'common/store/pages/signon/types'
 import AnimatedSwitch from 'components/animated-switch/AnimatedSwitch'
 import AppRedirectListener from 'components/app-redirect-popover/AppRedirectListener'
 import { AppRedirectPopover } from 'components/app-redirect-popover/components/AppRedirectPopover'
+import { AirdropAppBanner } from 'components/banner/AirdropAppBanner'
 import { AppBannerWrapper } from 'components/banner/AppBannerWrapper'
 import { DownloadAppBanner } from 'components/banner/DownloadAppBanner'
 // import { TermsOfServiceUpdateBanner } from 'components/banner/TermsOfServiceUpdateBanner'
@@ -185,7 +186,8 @@ const {
   SEARCH_CATEGORY_PAGE_LEGACY,
   SEARCH_BASE_ROUTE,
   EDIT_PLAYLIST_PAGE,
-  EDIT_ALBUM_PAGE
+  EDIT_ALBUM_PAGE,
+  AIRDROP_PAGE
 } = route
 
 const {
@@ -460,6 +462,7 @@ class WebPlayer extends Component {
       <div className={styles.root}>
         <AppBannerWrapper>
           <DownloadAppBanner />
+          <AirdropAppBanner />
 
           {/* Product Announcement Banners */}
           {/* <TermsOfServiceUpdateBanner /> */}
@@ -778,7 +781,7 @@ class WebPlayer extends Component {
                 />
                 <Route
                   exact
-                  path={REWARDS_PAGE}
+                  path={[REWARDS_PAGE, AIRDROP_PAGE]}
                   isMobile={isMobile}
                   component={RewardsPage}
                 />

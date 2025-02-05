@@ -195,8 +195,7 @@ export class ChallengesApi extends GeneratedChallengesApi {
     logger.debug('Disbursing...')
     const tx = await this.solanaClient.buildTransaction({
       instructions,
-      addressLookupTables: [this.rewardManager.lookupTable],
-      priorityFee: null
+      addressLookupTables: [this.rewardManager.lookupTable]
     })
     const signature = await this.rewardManager.sendTransaction(tx, {
       skipPreflight: true

@@ -296,3 +296,17 @@ sales_json_content = ns.model(
         "sales": fields.List(fields.Nested(sale_json_model)),
     },
 )
+
+email_access = ns.model(
+    "email_access",
+    {
+        "id": fields.Integer(required=True),
+        "email_owner_user_id": fields.Integer(required=True),
+        "receiving_user_id": fields.Integer(required=True),
+        "grantor_user_id": fields.Integer(required=True),
+        "encrypted_key": fields.String(required=True),
+        "is_initial": fields.Boolean(required=True),
+        "created_at": fields.String(required=True),
+        "updated_at": fields.String(required=True),
+    },
+)

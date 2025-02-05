@@ -1,9 +1,6 @@
 import { test, expect } from '@playwright/test'
 
-test('auth and fetches tracks', async ({
-  page,
-  context
-}) => {
+test('auth and fetches tracks', async ({ page, context }) => {
   test.slow()
 
   // Set entropy so we don't need to do OTP
@@ -24,11 +21,13 @@ test('auth and fetches tracks', async ({
   await authPage.waitForLoadState()
   await authPage.getByRole('button', { name: 'Continue' }).click()
 
-  await expect(page.getByText('Continue With Audius')).not.toBeVisible()
+  await expect(page.getByText('Continue With Audius')).not.toBeVisible({
+    timeout: 10000
+  })
 
   // Fetch tracks
   await page.getByRole('textbox').fill('createaudiusapptracks')
-  
+
   // Set up response listener
   const responsePromise = page.waitForResponse(async (response) => {
     if (response.url().includes('v1/full/users/4zZ9aV9/tracks')) {
