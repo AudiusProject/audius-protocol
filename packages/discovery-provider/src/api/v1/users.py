@@ -87,6 +87,7 @@ from src.api.v1.models.users import (
     challenge_response,
     connected_wallets,
     decoded_user_token,
+    email_access,
     encoded_user_id,
     purchase,
     remixed_track_aggregate,
@@ -3118,24 +3119,7 @@ class FullMutedUsers(Resource):
 
 
 email_access_response = make_response(
-    "email_access_response",
-    ns,
-    fields.Nested(
-        ns.model(
-            "email_access",
-            {
-                "id": fields.Integer(required=True),
-                "email_owner_user_id": fields.Integer(required=True),
-                "receiving_user_id": fields.Integer(required=True),
-                "grantor_user_id": fields.Integer(required=True),
-                "encrypted_key": fields.String(required=True),
-                "is_initial": fields.Boolean(required=True),
-                "created_at": fields.String(required=True),
-                "updated_at": fields.String(required=True),
-            },
-        ),
-        allow_null=True,
-    ),
+    "email_access_response", ns, fields.Nested(email_access, allow_null=True)
 )
 
 

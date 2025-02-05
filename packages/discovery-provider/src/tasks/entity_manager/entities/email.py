@@ -40,9 +40,8 @@ def validate_email_metadata(params: ManageEntityParameters) -> None:
             raise IndexingValidationError("access_grants must be a list")
 
         for grant in access_grants:
-            if not all(
-                k in grant
-                for k in ["receiving_user_id", "grantor_user_id", "encrypted_key"]
+            if not {"receiving_user_id", "grantor_user_id", "encrypted_key"}.issubset(
+                grant
             ):
                 raise IndexingValidationError(
                     "Each access grant must contain receiving_user_id, grantor_user_id, and encrypted_key"
@@ -150,9 +149,8 @@ def grant_email_access(params: ManageEntityParameters) -> None:
             raise IndexingValidationError("access_grants must be a list")
 
         for grant in access_grants:
-            if not all(
-                k in grant
-                for k in ["receiving_user_id", "grantor_user_id", "encrypted_key"]
+            if not {"receiving_user_id", "grantor_user_id", "encrypted_key"}.issubset(
+                grant
             ):
                 raise IndexingValidationError(
                     "Each access grant must contain receiving_user_id, grantor_user_id, and encrypted_key"

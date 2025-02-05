@@ -626,7 +626,7 @@ function* collectEmailAfterPurchase({
       emailOwnerUserId: purchaserUserId,
       receivingUserId: sellerId,
       email,
-      granteeUserIds: grantees,
+      granteeUserIds: grantees ?? [],
       initialEmailEncryptionUuid: EMAIL_ENCRYPTION_UUID
     })
   } catch (error) {
