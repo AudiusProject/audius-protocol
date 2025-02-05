@@ -12,6 +12,7 @@ import { z } from 'zod'
 import { productionConfig } from '../../../config/production'
 import { mergeConfigWithDefaults } from '../../../utils/mergeConfigs'
 import { parseParams } from '../../../utils/parseParams'
+import type { LoggerService } from '../../Logger'
 import type { SolanaWalletAdapter } from '../types'
 
 import { getDefaultSolanaClientConfig } from './getDefaultConfig'
@@ -48,6 +49,7 @@ export class SolanaClient {
   /** The Solana RPC client. */
   public readonly connection: Connection
   private readonly wallet: SolanaWalletAdapter
+  private readonly logger: LoggerService
   constructor(config: SolanaClientConfig) {
     const configWithDefaults = mergeConfigWithDefaults(
       config,
@@ -62,6 +64,8 @@ export class SolanaClient {
       configWithDefaults.rpcConfig
     )
     this.wallet = config.solanaWalletAdapter
+    this.logger =
+      configWithDefaults.logger?.createPrefixedLogger('[solana-client]')
   }
 
   /**
@@ -76,7 +80,12 @@ export class SolanaClient {
       feePayer,
       recentBlockhash,
       addressLookupTables = [],
-      priorityFee = { priority: 'VERY_HIGH', minimumMicroLamports: 150_000 }
+      priorityFee = {
+        priority: 'VERY_HIGH',
+        minimumMicroLamports: 150_000,
+        multiplier: 1
+      },
+      computeLimit = { simulationMultiplier: 1.5 }
     } = await parseParams('buildTransaction', BuildTransactionSchema)(params)
 
     if (!recentBlockhash) {
@@ -84,6 +93,9 @@ export class SolanaClient {
       recentBlockhash = res.blockhash
     }
 
+    const payerKey = feePayer ?? (await this.getFeePayer())
+
+    // Calculate priority fees
     if (priorityFee) {
       if ('microLamports' in priorityFee) {
         instructions.push(
@@ -100,13 +112,15 @@ export class SolanaClient {
           'percentile' in priorityFee
             ? priorityFee.percentile
             : priorityToPercentileMap[priorityFee.priority]
+        const multiplier = priorityFee.multiplier ?? 1
         const percentileIndex = Math.max(
           Math.round((percentile / 100.0) * orderedFees.length - 1),
           0
         )
-        const microLamports = Math.max(
-          orderedFees[percentileIndex] ?? 0,
-          priorityFee.minimumMicroLamports ?? 0
+        const baseFee = (orderedFees[percentileIndex] ?? 0) * multiplier
+        const microLamports = Math.min(
+          Math.max(baseFee, priorityFee.minimumMicroLamports ?? 0),
+          priorityFee.maximumMicroLamports ?? Number.MAX_SAFE_INTEGER
         )
         if (microLamports !== undefined) {
           instructions.push(
@@ -122,8 +136,49 @@ export class SolanaClient {
       ? addressLookupTables
       : await this.getLookupTableAccounts(addressLookupTables)
 
+    // Simulate to get compute units
+    if (computeLimit) {
+      if ('units' in computeLimit) {
+        instructions.push(
+          ComputeBudgetProgram.setComputeUnitLimit({
+            units: computeLimit.units
+          })
+        )
+      } else {
+        try {
+          const simulatedMessage = new TransactionMessage({
+            payerKey,
+            recentBlockhash,
+            instructions
+          }).compileToV0Message(addressLookupTableAccounts)
+          const simulatedTx = new VersionedTransaction(simulatedMessage)
+          const res = await this.connection.simulateTransaction(simulatedTx, {
+            replaceRecentBlockhash: true
+          })
+          if (res.value.err) {
+            throw new Error(JSON.stringify(res.value.err))
+          }
+          this.logger.debug(
+            'Simulation succeeded, compute units used:',
+            res.value.unitsConsumed
+          )
+          if (res.value.unitsConsumed) {
+            instructions.push(
+              ComputeBudgetProgram.setComputeUnitLimit({
+                units:
+                  res.value.unitsConsumed * computeLimit.simulationMultiplier
+              })
+            )
+          }
+        } catch (e) {
+          // For now, even if specifying compute budget limit, ignore errors
+          this.logger.warn('Failed to get computeLimit', e)
+        }
+      }
+    }
+
     const message = new TransactionMessage({
-      payerKey: feePayer ?? (await this.getFeePayer()),
+      payerKey,
       recentBlockhash,
       instructions
     }).compileToV0Message(addressLookupTableAccounts)
