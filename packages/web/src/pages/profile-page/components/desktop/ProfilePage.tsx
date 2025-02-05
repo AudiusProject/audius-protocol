@@ -12,13 +12,13 @@ import {
   ProfilePictureSizes,
   CoverPhotoSizes,
   LineupState,
-  Track
+  Track,
+  User
 } from '@audius/common/models'
 import {
   profilePageFeedLineupActions as feedActions,
   profilePageTracksLineupActions as tracksActions,
-  ProfilePageTabs,
-  ProfileUser
+  ProfilePageTabs
 } from '@audius/common/store'
 import { route } from '@audius/common/utils'
 import {
@@ -105,7 +105,7 @@ export type ProfilePageProps = {
   showMuteUserConfirmationModal: boolean
   showUnmuteUserConfirmationModal: boolean
 
-  profile: ProfileUser | null
+  profile: User | null
   albums: Collection[] | null
   playlists: Collection[] | null
   status: Status

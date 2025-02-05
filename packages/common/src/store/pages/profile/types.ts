@@ -3,7 +3,6 @@ import type {
   UID,
   LineupState,
   Status,
-  User,
   Track,
   Collection
 } from '../../../models'
@@ -43,9 +42,6 @@ export type ProfileState = {
   topTags: string[]
   collectionSortMode: CollectionSortMode
   profileMeterDismissed: boolean
-  followers: ProfilePageFollow
-  followees: ProfilePageFollow
-  followeeFollows: ProfilePageFollow
   feed: LineupState<Track | Collection>
   tracks: LineupState<Track>
   isNotificationSubscribed: boolean
@@ -86,13 +82,4 @@ export const getTabForRoute = (tabRoute: ProfilePageTabRoute) => {
     case ProfilePageTabRoute.COLLECTIBLES:
       return ProfilePageTabs.COLLECTIBLES
   }
-}
-
-type FollowerGroup = {
-  status: Status
-  users: User[]
-}
-export interface ProfileUser extends User {
-  followers: FollowerGroup
-  followees: FollowerGroup
 }
