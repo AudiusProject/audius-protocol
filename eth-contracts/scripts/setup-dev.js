@@ -69,7 +69,7 @@ async function main() {
   // Set service versions
   await _lib.setServiceVersion(
     ContentNodeServiceType,
-    web3.utils.utf8ToHex(process.env.CONTENT_NODE_VERSION),
+    web3.utils.utf8ToHex(process.env.CONTENT_NODE_VERSION || "0.7.80"),
     governance,
     migrationOutput.proxyDeployerAddress,
     ServiceTypeManagerProxyKey

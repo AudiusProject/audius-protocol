@@ -148,22 +148,6 @@
   text-decoration: line-through;
 }
 
-.claimRewardWrapper {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  width: 100%;
-}
-
-.claimRewardWrapper.mobile {
-  width: 100%;
-}
-
-.claimRewardWrapper:not(.mobile) .button {
-  margin-left: 16px;
-  margin-right: 16px;
-}
-
 .spinner {
   width: 24px;
   height: 24px;
