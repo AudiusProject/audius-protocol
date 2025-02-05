@@ -1,7 +1,7 @@
 import { useFormattedProgressLabel } from '@audius/common/hooks'
 import type { OptimisticUserChallenge } from '@audius/common/models'
 import type { ChallengeRewardsInfo } from '@audius/common/utils'
-import { isAudioMatchingChallenge } from '@audius/common/utils'
+import { isNewChallenge } from '@audius/common/utils'
 import { TouchableOpacity } from 'react-native-gesture-handler'
 
 import {
@@ -50,8 +50,7 @@ export const Panel = ({
     challenge?.challenge_type !== 'aggregate' &&
     !hasDisbursed
   const needsDisbursement = challenge && challenge.claimableAmount > 0
-  const showNewChallengePill =
-    !needsDisbursement && isAudioMatchingChallenge(id)
+  const showNewChallengePill = isNewChallenge(id)
 
   const shouldShowProgressLabel = !!progressLabel
 
@@ -97,7 +96,9 @@ export const Panel = ({
           <Text variant='heading' size='s'>
             {title}
           </Text>
-          <Text>{shortDescription || description(challenge)}</Text>
+          <Text numberOfLines={2}>
+            {shortDescription || description(challenge)}
+          </Text>
           <Flex mt='l' gap='l'>
             {shouldShowProgressLabel ? (
               <Flex row alignItems='center' gap='xs'>

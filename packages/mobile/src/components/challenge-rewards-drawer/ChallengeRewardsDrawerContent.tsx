@@ -9,20 +9,12 @@ import type {
   UserChallengeState
 } from '@audius/common/models'
 import { ClaimStatus } from '@audius/common/store'
-import { fillString, formatNumberCommas } from '@audius/common/utils'
 import { View } from 'react-native'
 import { ScrollView } from 'react-native-gesture-handler'
 
-import {
-  Text,
-  Button,
-  IconArrowRight,
-  IconCheck,
-  IconVerified
-} from '@audius/harmony-native'
+import { Text, Button, IconArrowRight, IconCheck } from '@audius/harmony-native'
 import { ProgressBar } from 'app/components/progress-bar'
 import { formatLabel } from 'app/utils/challenges'
-import { useThemePalette } from 'app/utils/theme'
 
 import { SummaryTable } from '../summary-table'
 
@@ -41,7 +33,8 @@ const messages = {
   claimableLabel: '$AUDIO available to claim',
   claimableAmountLabel: (amount) => `Claim ${amount} $AUDIO`,
   claimedLabel: '$AUDIO claimed so far',
-  upcomingRewards: 'Upcoming Rewards'
+  upcomingRewards: 'Upcoming Rewards',
+  readyToClaim: 'Ready to Claim'
 }
 
 type ChallengeRewardsDrawerContentProps = {
@@ -102,8 +95,6 @@ export const ChallengeRewardsDrawerContent = ({
   children
 }: ChallengeRewardsDrawerContentProps) => {
   const styles = useStyles()
-  const palette = useThemePalette()
-  const isInProgress = challengeState === 'in_progress'
   const isClaimable = claimableAmount > 0
   const {
     cooldownChallenges,
@@ -115,18 +106,6 @@ export const ChallengeRewardsDrawerContent = ({
     claimStatus === ClaimStatus.CLAIMING ||
     claimStatus === ClaimStatus.WAITING_FOR_RETRY
   const claimError = claimStatus === ClaimStatus.ERROR
-
-  const hasCompleted =
-    challengeState === 'completed' || challengeState === 'disbursed'
-  const statusText = hasCompleted
-    ? messages.complete
-    : isInProgress
-      ? fillString(
-          progressLabel,
-          formatNumberCommas(currentStep),
-          formatNumberCommas(stepCount)
-        )
-      : messages.incomplete
 
   const renderCooldownSummaryTable = () => {
     if (isCooldownChallenge && !isCooldownChallengesEmpty) {
@@ -149,15 +128,8 @@ export const ChallengeRewardsDrawerContent = ({
       <ScrollView style={styles.content}>
         {isVerifiedChallenge ? (
           <ChallengeDescription
-            task={messages.taskVerified}
-            taskIcon={
-              <IconVerified
-                style={styles.subheaderIcon}
-                fill={palette.staticPrimary}
-                fillSecondary={palette.staticWhite}
-              />
-            }
             description={description}
+            isCooldownChallenge={isCooldownChallenge}
           />
         ) : (
           <ChallengeDescription
@@ -165,43 +137,23 @@ export const ChallengeRewardsDrawerContent = ({
             isCooldownChallenge={isCooldownChallenge}
           />
         )}
-        <View style={styles.statusGrid}>
-          <View style={styles.statusGridColumns}>
-            <ChallengeReward amount={amount} subtext={messages.audio} />
-            {showProgressBar ? (
-              <View style={styles.progressCell}>
-                <Text
-                  color='subdued'
-                  style={[styles.subheader, styles.progressSubheader]}
-                  strength='strong'
-                  textTransform='uppercase'
-                  variant='label'
-                  size='l'
-                >
-                  {messages.progress}
-                </Text>
-                <ProgressBar progress={currentStep} max={stepCount} />
-              </View>
-            ) : null}
-          </View>
-          <View
-            style={[
-              styles.statusCell,
-              hasCompleted ? styles.statusCellComplete : null
-            ]}
-          >
-            <Text
-              style={[styles.subheader]}
-              strength='strong'
-              textTransform='uppercase'
-              variant='label'
-              color={
-                hasCompleted ? 'white' : isInProgress ? 'accent' : 'default'
-              }
-            >
-              {statusText}
-            </Text>
-          </View>
+        <View style={styles.statusGridColumns}>
+          <ChallengeReward amount={amount} subtext={messages.audio} />
+          {showProgressBar ? (
+            <View style={styles.progressCell}>
+              <Text
+                color='subdued'
+                style={[styles.subheader, styles.progressSubheader]}
+                strength='strong'
+                textTransform='uppercase'
+                variant='label'
+                size='l'
+              >
+                {messages.progress}
+              </Text>
+              <ProgressBar progress={currentStep} max={stepCount} />
+            </View>
+          ) : null}
         </View>
         <View style={styles.claimRewardsContainer}>
           {isClaimable && onClaim ? (
