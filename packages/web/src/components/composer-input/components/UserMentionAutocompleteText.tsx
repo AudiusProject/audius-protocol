@@ -2,8 +2,8 @@ import { useEffect, useRef, useState, useCallback, useMemo } from 'react'
 
 import {
   SearchCategory,
-  useSearchResults,
-  useFollowers
+  useFollowers,
+  useSearchUserResults
 } from '@audius/common/api'
 import { Status, UserMetadata } from '@audius/common/models'
 import { accountSelectors } from '@audius/common/store'
@@ -64,11 +64,11 @@ export const UserMentionAutocompleteText = (
     data: searchData,
     isLoading,
     isSuccess
-  } = useSearchResults(params, {
+  } = useSearchUserResults(params, {
     enabled: accountStatus !== Status.LOADING && accountStatus !== Status.IDLE
   })
 
-  const userList = searchText !== '' ? searchData?.users : followersData
+  const userList = searchText !== '' ? searchData : followersData
   const userListLoadSuccess =
     searchText !== '' ? isSuccess : followersDataSuccess
   const isUserListPending = searchText !== '' ? isLoading : followerDataPending

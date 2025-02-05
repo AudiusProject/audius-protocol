@@ -1,6 +1,10 @@
 import { useCallback } from 'react'
 
-import { ID, Kind, Name } from '@audius/common/models'
+import {
+  FlatUseInfiniteQueryResult,
+  useSearchUserResults
+} from '@audius/common/api'
+import { Kind, Name, UserMetadata } from '@audius/common/models'
 import { searchActions } from '@audius/common/store'
 import { Box, Flex, Text, useTheme } from '@audius/harmony'
 import { range } from 'lodash'
@@ -12,7 +16,7 @@ import { useIsMobile } from 'hooks/useIsMobile'
 
 import { NoResultsTile } from '../NoResultsTile'
 import { SortMethodFilterButton } from '../SortMethodFilterButton'
-import { useGetSearchResults, useSearchParams } from '../hooks'
+import { useSearchParams } from '../hooks'
 
 const { addItem: addRecentSearch } = searchActions
 
@@ -22,13 +26,15 @@ const messages = {
 }
 
 type ProfileResultsProps = {
-  ids: ID[]
+  queryData: Omit<FlatUseInfiniteQueryResult<UserMetadata>, 'status'>
   limit?: number
   skeletonCount?: number
 }
 
 export const ProfileResults = (props: ProfileResultsProps) => {
-  const { limit = 100, ids, skeletonCount = 10 } = props
+  const { limit = 100, skeletonCount = 10, queryData } = props
+  const { data = [] } = queryData
+  const ids = data?.map((user) => user.user_id)
   const { query } = useSearchParams()
 
   const isMobile = useIsMobile()
@@ -100,7 +106,9 @@ export const ProfileResultsPage = () => {
   const isMobile = useIsMobile()
   const { color } = useTheme()
 
-  const { data: ids, isLoading } = useGetSearchResults('users')
+  const searchParams = useSearchParams()
+  const queryData = useSearchUserResults(searchParams)
+  const { data: ids, isLoading } = queryData
 
   const isResultsEmpty = ids?.length === 0
   const showNoResultsTile = !isLoading && isResultsEmpty
@@ -119,7 +127,11 @@ export const ProfileResultsPage = () => {
           <SortMethodFilterButton />
         </Flex>
       ) : null}
-      {showNoResultsTile ? <NoResultsTile /> : <ProfileResults ids={ids} />}
+      {showNoResultsTile ? (
+        <NoResultsTile />
+      ) : (
+        <ProfileResults queryData={queryData} />
+      )}
     </Flex>
   )
 }

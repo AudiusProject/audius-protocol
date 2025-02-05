@@ -2,7 +2,7 @@ import type { RefObject } from 'react'
 import React, { useCallback, useRef, useState } from 'react'
 
 import type { SearchCategory } from '@audius/common/api'
-import { useSearchResults, useFollowers } from '@audius/common/api'
+import { useFollowers, useSearchUserResults } from '@audius/common/api'
 import type { ReplyingAndEditingState } from '@audius/common/context'
 import {
   CommentSectionProvider,
@@ -89,7 +89,7 @@ const CommentDrawerAutocompleteContent = ({
   }
 
   const { data: searchData, isLoading: searchLoading } =
-    useSearchResults(params)
+    useSearchUserResults(params)
   const { data: followersData, isPending: followerDataPending } = useFollowers({
     pageSize: 6,
     userId: currentUserId

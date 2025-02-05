@@ -1,17 +1,14 @@
 import { useCallback, useEffect } from 'react'
 
+import { useSearchTrackResults } from '@audius/common/api'
 import type { ID } from '@audius/common/models'
 import { Kind, Name, Status } from '@audius/common/models'
 import {
-  lineupSelectors,
   searchResultsPageTracksLineupActions,
-  searchResultsPageSelectors,
-  SearchKind,
   searchActions
 } from '@audius/common/store'
 import { Keyboard } from 'react-native'
-import { useDispatch, useSelector } from 'react-redux'
-import { useDebounce } from 'react-use'
+import { useDispatch } from 'react-redux'
 
 import { Flex } from '@audius/harmony-native'
 import { Lineup } from 'app/components/lineup'
@@ -25,58 +22,21 @@ import {
   useSearchQuery
 } from '../searchState'
 
-const { getSearchTracksLineup } = searchResultsPageSelectors
-const { makeGetLineupMetadatas } = lineupSelectors
-const getSearchTracksLineupMetadatas = makeGetLineupMetadatas(
-  getSearchTracksLineup
-)
 const { addItem: addRecentSearch } = searchActions
 
 export const TrackResults = () => {
   const [query] = useSearchQuery()
   const [filters] = useSearchFilters()
+  const { lineup, loadNextPage } = useSearchTrackResults({
+    query,
+    ...filters
+  })
   const dispatch = useDispatch()
   const isEmptySearch = useIsEmptySearch()
-
-  const lineup = useSelector(getSearchTracksLineupMetadatas)
-
-  const getResults = useCallback(
-    (offset: number, limit: number, overwrite: boolean) => {
-      dispatch(
-        searchResultsPageTracksLineupActions.fetchLineupMetadatas(
-          offset,
-          limit,
-          overwrite,
-          {
-            category: SearchKind.TRACKS,
-            query,
-            filters,
-            dispatch
-          }
-        )
-      )
-    },
-    [dispatch, query, filters]
-  )
 
   useEffect(() => {
     dispatch(searchResultsPageTracksLineupActions.reset())
   }, [dispatch, query, filters])
-
-  useDebounce(
-    () => {
-      getResults(0, 10, true)
-    },
-    500,
-    [dispatch, getResults, query, filters]
-  )
-
-  const loadMore = useCallback(
-    (offset: number, limit: number) => {
-      getResults(offset, limit, false)
-    },
-    [getResults]
-  )
 
   const handlePress = useCallback(
     (id: ID) => {
@@ -114,9 +74,10 @@ export const TrackResults = () => {
   return (
     <Flex h='100%' backgroundColor='default'>
       <Lineup
+        tanQuery
         actions={searchResultsPageTracksLineupActions}
         lineup={lineup}
-        loadMore={loadMore}
+        loadMore={loadNextPage}
         keyboardShouldPersistTaps='handled'
         onPressItem={handlePress}
       />

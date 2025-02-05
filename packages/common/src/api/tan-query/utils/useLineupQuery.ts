@@ -28,7 +28,7 @@ export const useLineupQuery = ({
   playbackSource
 }: {
   // Lineup related props
-  queryData: UseInfiniteQueryResult
+  queryData: Omit<UseInfiniteQueryResult, 'data'>
   lineupActions: LineupActions
   lineupSelector: Selector<
     CommonState,
@@ -69,7 +69,11 @@ export const useLineupQuery = ({
       ...lineup,
       status,
       isMetadataLoading: status === Status.LOADING,
-      hasMore: queryData.isLoading ? true : queryData.hasNextPage
+      hasMore: queryData.isLoading
+        ? true
+        : 'hasNextPage' in queryData
+          ? queryData.hasNextPage
+          : false
     },
     togglePlay,
     play,
