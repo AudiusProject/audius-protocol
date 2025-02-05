@@ -23,9 +23,6 @@ import {
   FETCH_COLLECTIONS,
   FETCH_COLLECTIONS_SUCCEEDED,
   FETCH_COLLECTIONS_FAILED,
-  FETCH_TOP_TAGS,
-  FETCH_TOP_TAGS_SUCCEEDED,
-  FETCH_TOP_TAGS_FAILED,
   FetchProfileAction,
   FetchProfileSucceededAction,
   SetCurrentUserAction,
@@ -40,9 +37,6 @@ import {
   UpdateCollectionSortModeAction,
   DismissProfileMeterAction,
   SetNotificationSubscriptionAction,
-  FetchTopTagsAction,
-  FetchTopTagsFailedAction,
-  FetchTopTagsSucceededAction,
   ProfilePageAction
 } from './actions'
 import { PREFIX as feedPrefix } from './lineups/feed/actions'
@@ -58,8 +52,6 @@ const initialProfileState = {
   updating: false,
   updateSuccess: false,
   updateError: false,
-  topTagsStatus: Status.IDLE,
-  topTags: [],
   collectionIds: [],
   collectionStatus: Status.IDLE,
 
@@ -219,25 +211,6 @@ const actionsMap = {
     action: FetchCollectionsFailedAction
   ) {
     return updateProfile(state, action, { collectionStatus: Status.ERROR })
-  },
-  [FETCH_TOP_TAGS](state: ProfilePageState, action: FetchTopTagsAction) {
-    return updateProfile(state, action, { topTagsStatus: Status.LOADING })
-  },
-  [FETCH_TOP_TAGS_SUCCEEDED](
-    state: ProfilePageState,
-    action: FetchTopTagsSucceededAction
-  ) {
-    const { topTags } = action
-    return updateProfile(state, action, {
-      topTagsStatus: Status.SUCCESS,
-      topTags
-    })
-  },
-  [FETCH_TOP_TAGS_FAILED](
-    state: ProfilePageState,
-    action: FetchTopTagsFailedAction
-  ) {
-    return updateProfile(state, action, { topTagsStatus: Status.ERROR })
   }
 }
 
