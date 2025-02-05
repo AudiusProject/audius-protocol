@@ -9,10 +9,16 @@ import type {
   UserChallengeState
 } from '@audius/common/models'
 import { ClaimStatus } from '@audius/common/store'
-import { View } from 'react-native'
+import { formatNumberCommas, fillString } from '@audius/common/utils'
 import { ScrollView } from 'react-native-gesture-handler'
 
-import { Text, Button, IconArrowRight, IconCheck } from '@audius/harmony-native'
+import {
+  Text,
+  Button,
+  IconArrowRight,
+  IconCheck,
+  Flex
+} from '@audius/harmony-native'
 import { ProgressBar } from 'app/components/progress-bar'
 import { formatLabel } from 'app/utils/challenges'
 
@@ -34,7 +40,8 @@ const messages = {
   claimableAmountLabel: (amount) => `Claim ${amount} $AUDIO`,
   claimedLabel: '$AUDIO claimed so far',
   upcomingRewards: 'Upcoming Rewards',
-  readyToClaim: 'Ready to Claim'
+  readyToClaim: 'Ready to Claim',
+  close: 'Close'
 }
 
 type ChallengeRewardsDrawerContentProps = {
@@ -70,6 +77,8 @@ type ChallengeRewardsDrawerContentProps = {
   challengeId: ChallengeRewardID
   /** True if challenge has a cooldown */
   isCooldownChallenge: boolean
+  /** Callback that runs on the close button being clicked */
+  onClose: () => void
 }
 
 /** Generic drawer content used for most challenges, responsible for rendering the
@@ -92,15 +101,31 @@ export const ChallengeRewardsDrawerContent = ({
   onClaim,
   isVerifiedChallenge,
   showProgressBar,
-  children
+  children,
+  onClose
 }: ChallengeRewardsDrawerContentProps) => {
   const styles = useStyles()
-  const isClaimable = claimableAmount > 0
   const {
     cooldownChallenges,
     summary,
     isEmpty: isCooldownChallengesEmpty
   } = useChallengeCooldownSchedule({ challengeId })
+
+  const isInProgress = challengeState === 'in_progress'
+  const hasCompleted =
+    challengeState === 'completed' || challengeState === 'disbursed'
+  const isClaimable = claimableAmount > 0
+  const statusText = isClaimable
+    ? messages.readyToClaim
+    : hasCompleted
+      ? messages.complete
+      : isInProgress
+        ? fillString(
+            progressLabel,
+            formatNumberCommas(currentStep),
+            formatNumberCommas(stepCount)
+          )
+        : messages.incomplete
 
   const claimInProgress =
     claimStatus === ClaimStatus.CLAIMING ||
@@ -137,48 +162,57 @@ export const ChallengeRewardsDrawerContent = ({
             isCooldownChallenge={isCooldownChallenge}
           />
         )}
-        <View style={styles.statusGridColumns}>
-          <ChallengeReward amount={amount} subtext={messages.audio} />
-          {showProgressBar ? (
-            <View style={styles.progressCell}>
-              <Text
-                color='subdued'
-                style={[styles.subheader, styles.progressSubheader]}
-                strength='strong'
-                textTransform='uppercase'
-                variant='label'
-                size='l'
-              >
-                {messages.progress}
-              </Text>
-              <ProgressBar progress={currentStep} max={stepCount} />
-            </View>
-          ) : null}
-        </View>
-        <View style={styles.claimRewardsContainer}>
-          {isClaimable && onClaim ? (
-            isCooldownChallenge ? (
-              renderCooldownSummaryTable()
-            ) : (
-              <>
-                <Button
-                  style={styles.claimButton}
-                  variant={claimInProgress ? 'secondary' : 'primary'}
-                  isLoading={claimInProgress}
-                  onPress={onClaim}
-                  iconLeft={IconCheck}
+        <Flex alignItems='center' gap='3xl' w='100%'>
+          <Flex row alignItems='center' gap='xl'>
+            <ChallengeReward amount={amount} subtext={messages.audio} />
+            {showProgressBar ? (
+              <Flex style={styles.progressCell}>
+                <Text
+                  color='subdued'
+                  style={[styles.subheader, styles.progressSubheader]}
+                  strength='strong'
+                  textTransform='uppercase'
+                  variant='label'
+                  size='l'
                 >
-                  {messages.claim}
-                </Button>
-              </>
-            )
-          ) : null}
-          {claimError ? <ClaimError aaoErrorCode={aaoErrorCode} /> : null}
-        </View>
-        {children}
+                  {messages.progress}
+                </Text>
+                <ProgressBar progress={currentStep} max={stepCount} />
+              </Flex>
+            ) : null}
+          </Flex>
+          <Flex
+            w='100%'
+            ph='xl'
+            border='default'
+            borderRadius='s'
+            backgroundColor='surface1'
+          >
+            <Flex
+              row
+              w='100%'
+              alignItems='center'
+              justifyContent='center'
+              gap='s'
+              pv='l'
+            >
+              {hasCompleted ? <IconCheck size='s' color='subdued' /> : null}
+              {/* Hack due to broken lineHeight for certain fonts */}
+              <Flex mt='unitHalf'>
+                <Text variant='label' size='l' color='subdued'>
+                  {statusText}
+                </Text>
+              </Flex>
+            </Flex>
+          </Flex>
+          {children}
+          <Flex w='100%'>
+            {isCooldownChallenge ? renderCooldownSummaryTable() : null}
+          </Flex>
+        </Flex>
       </ScrollView>
-      {isClaimable && onClaim && isCooldownChallenge ? (
-        <View style={styles.stickyClaimRewardsContainer}>
+      <Flex w='100%' ph='l' pv='m' gap='l'>
+        {isClaimable && onClaim ? (
           <Button
             key='claimButton'
             style={styles.claimButton}
@@ -189,8 +223,13 @@ export const ChallengeRewardsDrawerContent = ({
           >
             {messages.claimableAmountLabel(claimableAmount)}
           </Button>
-        </View>
-      ) : null}
+        ) : (
+          <Button variant='secondary' onPress={onClose} fullWidth>
+            {messages.close}
+          </Button>
+        )}
+        {claimError ? <ClaimError aaoErrorCode={aaoErrorCode} /> : null}
+      </Flex>
     </>
   )
 }
