@@ -54,7 +54,8 @@ export const useUser = (
 
       return user
     },
-    staleTime: options?.staleTime,
+    staleTime: options?.staleTime ?? Infinity,
+    gcTime: Infinity,
     enabled: options?.enabled !== false && !!userId
   })
 }

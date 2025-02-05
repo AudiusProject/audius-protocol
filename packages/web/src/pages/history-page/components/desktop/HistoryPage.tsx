@@ -23,6 +23,12 @@ import { useMainContentRef } from 'pages/MainContentContext'
 
 import styles from './HistoryPage.module.css'
 
+const messages = {
+  noHistoryMessage: "You haven't listened to any tracks yet",
+  noResultsMessage: 'No tracks match your search',
+  inputPlaceholder: 'Filter Tracks'
+}
+
 export type HistoryPageProps = {
   title: string
   description: string
@@ -99,7 +105,7 @@ export const HistoryPage = ({ title, description }: HistoryPageProps) => {
 
   const filter = (
     <FilterInput
-      placeholder='Filter Tracks'
+      placeholder={messages.inputPlaceholder}
       onChange={onFilterChange}
       value={filterText}
     />
@@ -111,7 +117,7 @@ export const HistoryPage = ({ title, description }: HistoryPageProps) => {
       primary='History'
       secondary={isEmpty ? null : playAllButton}
       containerStyles={styles.historyPageHeader}
-      rightDecorator={!isEmpty && filter}
+      rightDecorator={!isEmpty || filter}
     />
   )
 
@@ -127,10 +133,12 @@ export const HistoryPage = ({ title, description }: HistoryPageProps) => {
       <div className={styles.bodyWrapper}>
         {isEmpty && !isInitialLoading ? (
           <EmptyTable
-            primaryText="You haven't listened to any tracks yet."
-            secondaryText="Once you have, this is where you'll find them!"
-            buttonLabel='Start Listening'
-            onClick={() => navigate('/trending')}
+            primaryText={
+              filter ? messages.noResultsMessage : messages.noHistoryMessage
+            }
+            secondaryText={filter ? '' : messages.noHistoryMessage}
+            buttonLabel={filter ? undefined : 'Start Listening'}
+            onClick={filter ? undefined : () => navigate('/trending')}
           />
         ) : (
           <TrackTableLineup

@@ -17,9 +17,6 @@ import {
   UPDATE_PROFILE_FAILED,
   UPDATE_COLLECTION_SORT_MODE,
   SET_PROFILE_FIELD,
-  FETCH_FOLLOW_USERS,
-  FETCH_FOLLOW_USERS_SUCCEEDED,
-  FETCH_FOLLOW_USERS_FAILED,
   DISMISS_PROFILE_METER,
   SET_NOTIFICATION_SUBSCRIPTION,
   SET_CURRENT_USER,
@@ -29,9 +26,6 @@ import {
   FetchProfileAction,
   FetchProfileSucceededAction,
   SetCurrentUserAction,
-  FetchFollowUsersAction,
-  FetchFollowUsersSucceededAction,
-  FetchFollowUsersFailedAction,
   SetProfileFieldAction,
   FetchProfileFailedAction,
   UpdateProfileAction,
@@ -47,12 +41,7 @@ import {
 } from './actions'
 import { PREFIX as feedPrefix } from './lineups/feed/actions'
 import { PREFIX as tracksPrefix } from './lineups/tracks/actions'
-import {
-  FollowType,
-  CollectionSortMode,
-  ProfilePageState,
-  ProfileState
-} from './types'
+import { CollectionSortMode, ProfilePageState, ProfileState } from './types'
 
 const initialProfileState = {
   handle: null,
@@ -69,10 +58,6 @@ const initialProfileState = {
   collectionSortMode: CollectionSortMode.TIMESTAMP,
 
   profileMeterDismissed: false,
-
-  [FollowType.FOLLOWERS]: { status: Status.IDLE, userIds: [] },
-  [FollowType.FOLLOWEES]: { status: Status.IDLE, userIds: [] },
-  [FollowType.FOLLOWEE_FOLLOWS]: { status: Status.IDLE, userIds: [] },
 
   feed: initialFeedLineupState,
   tracks: initialTracksLineupState
@@ -158,78 +143,6 @@ const actionsMap = {
     return {
       ...state,
       currentUser: lowerHandle
-    }
-  },
-  [FETCH_FOLLOW_USERS](
-    state: ProfilePageState,
-    action: FetchFollowUsersAction
-  ) {
-    const { currentUser, entries } = state
-    const { followerGroup, handle } = action
-    const profileHandle = handle?.toLowerCase() ?? currentUser
-    const newEntry = entries[profileHandle]
-
-    return {
-      ...state,
-      entries: {
-        ...entries,
-        [profileHandle]: {
-          ...newEntry,
-          [followerGroup]: {
-            ...newEntry[followerGroup],
-            status: Status.LOADING
-          }
-        }
-      }
-    }
-  },
-  [FETCH_FOLLOW_USERS_SUCCEEDED](
-    state: ProfilePageState,
-    action: FetchFollowUsersSucceededAction
-  ) {
-    const { currentUser, entries } = state
-    const { userIds, followerGroup, handle } = action
-    const profileHandle = handle?.toLowerCase() ?? currentUser
-    const newEntry = entries[profileHandle]
-    const filteredAddedUserIds = userIds.filter(({ id }) =>
-      newEntry[followerGroup].userIds.every(({ id: userId }) => id !== userId)
-    )
-
-    return {
-      ...state,
-      entries: {
-        ...entries,
-        [profileHandle]: {
-          ...newEntry,
-          [followerGroup]: {
-            userIds:
-              newEntry[followerGroup].userIds.concat(filteredAddedUserIds),
-            status: Status.SUCCESS
-          }
-        }
-      }
-    }
-  },
-  [FETCH_FOLLOW_USERS_FAILED](
-    state: ProfilePageState,
-    action: FetchFollowUsersFailedAction
-  ) {
-    const { currentUser, entries } = state
-    const { followerGroup, handle } = action
-    const profileHandle = handle?.toLowerCase() ?? currentUser
-    const newEntry = entries[profileHandle]
-
-    return {
-      ...state,
-      entries: {
-        [profileHandle]: {
-          ...newEntry,
-          [followerGroup]: {
-            ...newEntry[followerGroup],
-            status: Status.ERROR
-          }
-        }
-      }
     }
   },
   [SET_PROFILE_FIELD](state: ProfilePageState, action: SetProfileFieldAction) {

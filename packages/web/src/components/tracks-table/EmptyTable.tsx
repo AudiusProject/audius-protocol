@@ -4,7 +4,7 @@ import styles from './EmptyTable.module.css'
 
 type EmptyTableProps = {
   primaryText: string
-  secondaryText: string
+  secondaryText?: string
   buttonLabel?: string
   buttonIcon?: IconComponent
   onClick?: () => void
@@ -18,7 +18,7 @@ const EmptyTable = (props: EmptyTableProps) => {
         <div>
           {primaryText} <i className='emoji face-with-monocle' />
         </div>
-        <div>{secondaryText}</div>
+        {secondaryText && <div>{secondaryText}</div>}
       </div>
       {buttonLabel ? (
         <Box mt='xl'>

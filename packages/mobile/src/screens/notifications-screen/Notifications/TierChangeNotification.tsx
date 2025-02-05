@@ -11,8 +11,8 @@ import {
   IconTokenPlatinum,
   IconTokenSilver
 } from '@audius/harmony-native'
-import { env } from 'app/env'
 import { useNotificationNavigation } from 'app/hooks/useNotificationNavigation'
+import { env } from 'app/services/env'
 
 import {
   NotificationTile,

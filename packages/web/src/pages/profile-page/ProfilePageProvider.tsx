@@ -18,7 +18,6 @@ import {
   profilePageTracksLineupActions as tracksActions,
   profilePageActions as profileActions,
   profilePageSelectors,
-  FollowType,
   CollectionSortMode,
   TracksSortMode,
   ProfilePageTabs,
@@ -28,7 +27,6 @@ import {
   ChatPermissionAction,
   queueSelectors,
   usersSocialActions as socialActions,
-  relatedArtistsUISelectors,
   mobileOverflowMenuUIActions,
   shareModalUIActions,
   OverflowAction,
@@ -71,7 +69,6 @@ const { setFollowers } = followersUserListActions
 const { setFollowing } = followingUserListActions
 const { requestOpen: requestOpenShareModal } = shareModalUIActions
 const { open } = mobileOverflowMenuUIActions
-const { selectSuggestedFollowsUsers } = relatedArtistsUISelectors
 const { fetchHasTracks } = accountActions
 const { createPlaylist } = cacheCollectionsActions
 
@@ -79,8 +76,7 @@ const {
   makeGetProfile,
   getCollectionsStatus,
   getProfileFeedLineup,
-  getProfileTracksLineup,
-  getProfileUserId
+  getProfileTracksLineup
 } = profilePageSelectors
 const { getUserId, getAccountHasTracks } = accountSelectors
 const { createChat, blockUser, unblockUser } = chatActions
@@ -256,12 +252,7 @@ class ProfilePage extends PureComponent<ProfilePageProps, ProfilePageState> {
     } = this.props
     if (!profile) return
     this.props.onFollow(profile.user_id)
-    if (this.props.accountUserId) {
-      this.props.updateCurrentUserFollows(true)
-    }
-    if (this.props.relatedArtists && this.props.relatedArtists.length > 0) {
-      this.setState({ areArtistRecommendationsVisible: true })
-    }
+    this.setState({ areArtistRecommendationsVisible: true })
   }
 
   onUnfollow = () => {
@@ -271,10 +262,6 @@ class ProfilePage extends PureComponent<ProfilePageProps, ProfilePageState> {
     if (!profile) return
     const userId = profile.user_id
     this.props.onUnfollow(userId)
-
-    if (this.props.accountUserId) {
-      this.props.updateCurrentUserFollows(false)
-    }
   }
 
   onCloseArtistRecommendations = () => {
@@ -676,36 +663,6 @@ class ProfilePage extends PureComponent<ProfilePageProps, ProfilePageState> {
     this.props.loadMoreUserFeed(offset, limit, profile.user_id)
   }
 
-  fetchFollowers = () => {
-    const {
-      fetchFollowUsers,
-      profile: { profile }
-    } = this.props
-    const followers = profile ? profile.followers.users : []
-    if (
-      !profile ||
-      profile.followers.status === Status.LOADING ||
-      profile.follower_count === followers.length
-    )
-      return
-    fetchFollowUsers(FollowType.FOLLOWERS, 22, followers.length)
-  }
-
-  fetchFollowees = () => {
-    const {
-      fetchFollowUsers,
-      profile: { profile }
-    } = this.props
-    const followees = profile ? profile.followees.users : []
-    if (
-      !profile ||
-      profile.followees.status === Status.LOADING ||
-      profile.followee_count === followees.length
-    )
-      return
-    fetchFollowUsers(FollowType.FOLLOWEES, 22, followees.length)
-  }
-
   getIsArtist = () => {
     const {
       profile: { profile },
@@ -866,12 +823,6 @@ class ProfilePage extends PureComponent<ProfilePageProps, ProfilePageState> {
         updatedProfilePicture
       : false
 
-    const followers = profile ? profile.followers.users : []
-    const followersLoading = profile
-      ? profile.followers.status === Status.LOADING
-      : false
-    const followees = profile ? profile.followees.users : []
-
     const dropdownDisabled =
       activeTab === ProfilePageTabs.REPOSTS ||
       activeTab === ProfilePageTabs.COLLECTIBLES
@@ -895,8 +846,6 @@ class ProfilePage extends PureComponent<ProfilePageProps, ProfilePageState> {
       website,
       donation,
       hasProfilePicture,
-      followers,
-      followersLoading,
       following,
       mode,
       stats,
@@ -923,8 +872,6 @@ class ProfilePage extends PureComponent<ProfilePageProps, ProfilePageState> {
       loadMoreArtistTracks: this.loadMoreArtistTracks,
       loadMoreUserFeed: this.loadMoreUserFeed,
       refreshProfile: this.refreshProfile,
-      fetchFollowers: this.fetchFollowers,
-      fetchFollowees: this.fetchFollowees,
       setFollowingUserId,
       setFollowersUserId,
       onFollow: this.onFollow,
@@ -980,7 +927,6 @@ class ProfilePage extends PureComponent<ProfilePageProps, ProfilePageState> {
       playUserFeedTrack,
       pauseUserFeedTrack,
 
-      followees,
       dropdownDisabled,
       updatedCoverPhoto,
       updatedProfilePicture,
@@ -1044,9 +990,6 @@ function makeMapStateToProps() {
       playing: getPlaying(state),
       buffering: getBuffering(state),
       pathname: getLocationPathname(state),
-      relatedArtists: selectSuggestedFollowsUsers(state, {
-        id: getProfileUserId(state, handleLower) ?? 0
-      }),
       chatPermissions: getCanCreateChat(state, {
         userId: profile.profile?.user_id
       }),
@@ -1104,8 +1047,6 @@ function mapDispatchToProps(dispatch: Dispatch, props: RouteComponentProps) {
       ),
     onConfirmUnfollow: (userId: ID) =>
       dispatch(unfollowConfirmationActions.setOpen(userId)),
-    updateCurrentUserFollows: (follow: any) =>
-      dispatch(profileActions.updateCurrentUserFollows(follow, handleLower)),
 
     // Artist Tracks
     loadMoreArtistTracks: (
@@ -1142,21 +1083,6 @@ function mapDispatchToProps(dispatch: Dispatch, props: RouteComponentProps) {
       ),
     playUserFeedTrack: (uid: UID) => dispatch(feedActions.play(uid)),
     pauseUserFeedTrack: () => dispatch(feedActions.pause()),
-    // Followes
-    fetchFollowUsers: (
-      followerGroup: FollowType,
-      limit: number,
-      offset: number
-    ) =>
-      dispatch(
-        profileActions.fetchFollowUsers(
-          followerGroup,
-          limit,
-          offset,
-          handleLower
-        )
-      ),
-
     createPlaylist: () =>
       dispatch(
         createPlaylist(

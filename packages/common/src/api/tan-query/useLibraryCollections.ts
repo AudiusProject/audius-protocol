@@ -111,7 +111,8 @@ export const useLibraryCollections = (
       return collections
     },
     select: (data) => data.pages.flat(),
-    staleTime: options?.staleTime,
+    staleTime: options?.staleTime ?? Infinity,
+    gcTime: Infinity,
     enabled: options?.enabled !== false && !!currentUserId
   })
 }

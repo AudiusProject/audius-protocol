@@ -3,17 +3,10 @@ import type {
   UID,
   LineupState,
   Status,
-  User,
   Track,
   Collection
 } from '../../../models'
 import type { Nullable } from '../../../utils/typeUtils'
-
-export enum FollowType {
-  FOLLOWERS = 'followers',
-  FOLLOWEES = 'followees',
-  FOLLOWEE_FOLLOWS = 'followeeFollows'
-}
 
 export enum CollectionSortMode {
   TIMESTAMP = 0,
@@ -41,9 +34,6 @@ export type ProfileState = {
   collectionStatus: Status
   collectionSortMode: CollectionSortMode
   profileMeterDismissed: boolean
-  followers: ProfilePageFollow
-  followees: ProfilePageFollow
-  followeeFollows: ProfilePageFollow
   feed: LineupState<Track | Collection>
   tracks: LineupState<Track>
   isNotificationSubscribed: boolean
@@ -84,13 +74,4 @@ export const getTabForRoute = (tabRoute: ProfilePageTabRoute) => {
     case ProfilePageTabRoute.COLLECTIBLES:
       return ProfilePageTabs.COLLECTIBLES
   }
-}
-
-type FollowerGroup = {
-  status: Status
-  users: User[]
-}
-export interface ProfileUser extends User {
-  followers: FollowerGroup
-  followees: FollowerGroup
 }
