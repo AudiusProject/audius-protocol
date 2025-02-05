@@ -619,15 +619,12 @@ function* collectEmailAfterPurchase({
     const grantees = managers?.map((m) => m.manager.id)
 
     const { EMAIL_ENCRYPTION_UUID } = yield* getContext('env')
-    if (!EMAIL_ENCRYPTION_UUID) {
-      throw new Error('Missing EMAIL_ENCRYPTION_UUID')
-    }
     yield* call([sdk.users, sdk.users.shareEmail], {
       emailOwnerUserId: purchaserUserId,
       receivingUserId: sellerId,
       email,
       granteeUserIds: grantees ?? [],
-      initialEmailEncryptionUuid: EMAIL_ENCRYPTION_UUID
+      initialEmailEncryptionUuid: EMAIL_ENCRYPTION_UUID ?? 0
     })
   } catch (error) {
     // Log error but don't disrupt purchase flow

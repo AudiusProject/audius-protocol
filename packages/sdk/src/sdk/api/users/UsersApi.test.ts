@@ -443,7 +443,16 @@ describe('UsersApi', () => {
         .spyOn(UsersApi.prototype, 'getUserEmailKey')
         .mockImplementation(async () => {
           return {
-            data: { encryptedKey: 'mockEncryptedKey', isInitial: false }
+            data: {
+              encryptedKey: 'mockEncryptedKey',
+              isInitial: false,
+              id: 1,
+              emailOwnerUserId: 1,
+              receivingUserId: 2,
+              grantorUserId: 3,
+              createdAt: '2025-01-01',
+              updatedAt: '2025-01-01'
+            }
           }
         })
     })
