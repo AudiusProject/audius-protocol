@@ -1,4 +1,4 @@
-import { usePremiumTracks } from '@audius/common/src/api/tan-query/usePremiumTracks'
+import { usePremiumTracks } from '@audius/common/src/api'
 import { premiumTracksPageLineupActions } from '@audius/common/store'
 
 import EndOfLineup from 'components/lineup/EndOfLineup'
