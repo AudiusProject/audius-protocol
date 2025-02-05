@@ -4,8 +4,7 @@ export const useStyles = makeStyles(({ palette, spacing, typography }) => ({
   content: {
     padding: spacing(4),
     paddingTop: spacing(6),
-    gap: spacing(6),
-    flex: 1
+    gap: spacing(6)
   },
   scrollViewContainer: {
     flex: 1
