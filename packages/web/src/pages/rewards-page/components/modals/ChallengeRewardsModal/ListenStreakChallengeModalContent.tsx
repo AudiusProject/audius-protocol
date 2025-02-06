@@ -44,7 +44,7 @@ export const ListenStreakChallengeModalContent = ({
   )
   const progressReward = (
     <ProgressReward
-      amount={formatNumberCommas(userChallenge?.amount ?? '')}
+      amount={userChallenge?.amount}
       subtext={messages.rewardSubtext}
     />
   )

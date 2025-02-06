@@ -593,7 +593,7 @@ const ChallengeRewardsBody = ({ dismissModal }: BodyProps) => {
             <Paper column shadow='flat' w='100%' borderRadius='s'>
               <Flex justifyContent='center'>
                 <ProgressReward
-                  amount={formatNumberCommas(progressRewardAmount ?? '')}
+                  amount={progressRewardAmount}
                   subtext={messages.audio}
                 />
                 {renderProgressBar()}
@@ -612,7 +612,7 @@ const ChallengeRewardsBody = ({ dismissModal }: BodyProps) => {
               <Flex justifyContent='space-between' w='100%'>
                 <ProgressDescription description={progressDescription} />
                 <ProgressReward
-                  amount={formatNumberCommas(progressRewardAmount ?? '')}
+                  amount={progressRewardAmount}
                   subtext={messages.audio}
                 />
               </Flex>
