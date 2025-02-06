@@ -226,9 +226,12 @@ def get_challenges(
     for i, user_challenge in enumerate(existing_user_challenges):
         parent_challenge = all_challenges_map[user_challenge.challenge_id]
         if parent_challenge.type == ChallengeType.aggregate:
-            aggregate_user_challenges_map[user_challenge.challenge_id].append(
-                user_challenge
-            )
+            # Filter out aggregate user_challenges that aren't complete.
+            # this probably shouldn't even happen (what does it mean?)
+            if user_challenge.is_complete:
+                aggregate_user_challenges_map[user_challenge.challenge_id].append(
+                    user_challenge
+                )
         else:
             # If we're a trending challenge, don't add if the user_challenge is incomplete
             if (
