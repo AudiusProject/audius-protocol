@@ -1,11 +1,11 @@
 import { ReactNode } from 'react'
 
-import { IconAllTime, IconCart, IconUserGroup } from '@audius/harmony'
+import { IconAllTime, IconCart, IconUserGroup, IconGift } from '@audius/harmony'
 import cn from 'classnames'
 // eslint-disable-next-line no-restricted-imports -- TODO: migrate to @react-spring/web
 import { useSpring, animated } from 'react-spring'
 
-import productShot from 'assets/img/publicSite/ProductShot3@2x.webp'
+import productShot from 'assets/img/publicSite/ProductShot3.webp'
 import useHasViewed from 'hooks/useHasViewed'
 import { useMatchesBreakpoint } from 'utils/useMatchesBreakpoint'
 
@@ -31,31 +31,42 @@ type FeatureProps = {
 
 const features: Array<Omit<FeatureProps, 'iconPosition'>> = [
   {
-    title: 'Earn On Your Terms',
-    description: 'You set the price, and earn bonus $AUDIO for every sale.',
+    title: 'Free Unlimited Uploads & No Ads',
+    description:
+      'Free to use, with no limitations on uploads and a completely ad-free experience.',
     icon: (
       <div className={styles.featureIconContainer}>
-        <IconCart className={styles.cartIcon} />
+        <IconAllTime size='xl' className={styles.allTimeIcon} />
       </div>
     )
   },
   {
     title: 'Grow Your Fanbase',
     description:
-      'A robust, rabid community of millions of tastemakers are ready for your best.',
+      'With Remix Contests, direct messaging, comments, and more. Audius gives you the tools to build a thriving fan community.',
     icon: (
       <div className={styles.featureIconContainer}>
-        <IconUserGroup className={styles.fanbaseIcon} />
+        <IconCart size='xl' className={styles.cartIcon} />
       </div>
     )
   },
   {
-    title: 'Free Unlimited Uploads & No Ads',
+    title: 'Sell Your Beats, Stems, & More',
     description:
-      'Free to use, with no limitations on uploads and a completely ad-free experience.',
+      'Take advantage of features like premium download gates, and earn bonus rewards with every sale!',
     icon: (
       <div className={styles.featureIconContainer}>
-        <IconAllTime className={styles.allTimeIcon} />
+        <IconUserGroup size='xl' className={styles.fanbaseIcon} />
+      </div>
+    )
+  },
+  {
+    title: 'Earn Token Rewards',
+    description:
+      'Earn $AUDIO token rewards by completing achievements or winning weekly competitions!',
+    icon: (
+      <div className={styles.featureIconContainer}>
+        <IconGift size='xl' className={styles.giftIcon} />
       </div>
     )
   }

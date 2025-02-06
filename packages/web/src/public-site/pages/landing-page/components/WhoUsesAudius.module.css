@@ -28,16 +28,19 @@
 
 .title {
   user-select: none;
-  color: #7e1bcc;
-  font-size: 56px;
-  font-weight: 900;
-  line-height: 68px;
+  background: linear-gradient(315deg, #5b23e1 0%, #a22feb 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  font-size: 55px;
+  font-weight: 700;
+  line-height: 72px;
   width: 100%;
   text-align: center;
+  margin-bottom: 24px;
 }
 
 .subTitle {
-  color: #858199;
+  color: #6C6780;
   font-size: 24px;
   font-weight: 500;
   line-height: 32px;
@@ -88,7 +91,7 @@
 }
 
 .artistName {
-  color: #858199;
+  color: #6C6780;
   font-size: 16px;
   font-weight: 500;
   line-height: 25px;

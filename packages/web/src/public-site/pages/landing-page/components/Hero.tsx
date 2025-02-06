@@ -9,7 +9,7 @@ import { useHistoryContext } from 'app/HistoryProvider'
 import HeroBackgroundMobile from 'assets/img/publicSite/HeroBG.webp'
 import HeroBackground from 'assets/img/publicSite/HeroBG@2x.webp'
 import HeroBackgroundXL from 'assets/img/publicSite/HeroBG@3x.webp'
-import HeroForeground from 'assets/img/publicSite/ProductShot1@2x.webp'
+import HeroForeground from 'assets/img/publicSite/ProductShot1.webp'
 import AppStoreBadge from 'assets/img/publicSite/app-store-badge.svg'
 import GlyphPattern1x from 'assets/img/publicSite/glyph-pattern@1x.png'
 import GlyphPattern2x from 'assets/img/publicSite/glyph-pattern@2x.png'
@@ -22,9 +22,9 @@ import styles from './Hero.module.css'
 const { APP_REDIRECT, TRENDING_PAGE, DOWNLOAD_START_LINK } = route
 
 const messages = {
-  title: 'Artists Deserve More',
-  subtitle: 'Take Control: Sell Your Music, Your Way',
-  cta: 'Start Listening',
+  title: 'Music Done Right',
+  subtitle: 'Create the future of music, together.',
+  cta: 'Listen Now',
   download: 'Download The App'
 }
 

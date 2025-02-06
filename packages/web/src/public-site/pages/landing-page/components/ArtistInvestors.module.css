@@ -22,17 +22,20 @@
 }
 
 .title {
-  color: #7e1bcc;
+  background: linear-gradient(315deg, #5b23e1 0%, #a22feb 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  font-weight: 700;
   font-size: 56px;
-  font-weight: 900;
-  line-height: 68px;
+  line-height: 72px;
   width: 100%;
   text-align: center;
   user-select: none;
+  margin-bottom: 12px;
 }
 
 .subTitle {
-  color: #858199;
+  color: #6C6780;
   font-size: 24px;
   font-weight: 500;
   line-height: 32px;
@@ -52,7 +55,7 @@
   gap: 24px;
   width: 100%;
   width: calc(100% + 60px);
-  margin: 48px 0 24px;
+  margin: 48px 0 32px;
 }
 
 /*  Artist Component */
@@ -76,7 +79,7 @@
 }
 
 .artistName {
-  color: #858199;
+  color: #6C6780;
   font-size: 16px;
   font-weight: 500;
   line-height: 24px;

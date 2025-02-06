@@ -14,8 +14,8 @@ import styles from './CTAStartListening.module.css'
 const { TRENDING_PAGE } = route
 
 const messages = {
-  title: 'Artists Deserve More',
-  cta: 'Start Listening'
+  title: 'Music Done Right',
+  cta: 'Listen Now'
 }
 
 type CTAStartListeningProps = {
