@@ -8,7 +8,9 @@ import {
   IconTipping,
   IconArrowRight,
   PlainButton,
-  Skeleton
+  Skeleton,
+  Flex,
+  Box
 } from '@audius/harmony'
 import { useDispatch } from 'react-redux'
 
@@ -76,9 +78,15 @@ const SupportingListForProfile = ({ profile }: { profile: User }) => {
         Icon={IconTipping}
       />
       {isLoading ? (
-        Array(skeletonCount)
-          .fill(null)
-          .map((_, index) => <Skeleton key={index} h={122} borderRadius='m' />)
+        <Flex column gap='m'>
+          {Array(skeletonCount)
+            .fill(null)
+            .map((_, index) => (
+              <Skeleton key={index} h={122} borderRadius='m' />
+            ))}
+          {/* Spacer to account for the gap between the last tile and the see more button */}
+          <Box h={16} />
+        </Flex>
       ) : (
         <>
           {supportedUsers.map((supporting) => (

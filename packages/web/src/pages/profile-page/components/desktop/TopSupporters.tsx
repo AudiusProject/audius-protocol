@@ -56,7 +56,7 @@ export const TopSupporters = () => {
         Icon={IconTrophy}
       />
       {isLoading ? (
-        <Skeleton css={{ width: '100%', height: 48, borderRadius: 24 }} />
+        <Skeleton h={84} borderRadius='m' noShimmer />
       ) : (
         <ProfilePictureListTile
           onClick={handleClick}
