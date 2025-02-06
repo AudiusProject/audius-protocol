@@ -1,21 +1,21 @@
 import { useCallback, useEffect, useState } from 'react'
 
 import { ID, Name } from '@audius/common/models'
-import { Flex, IconCaretDown, IconCaretUp, PlainButton } from '@audius/harmony'
+import {
+  Flex,
+  IconCaretDown,
+  IconCaretUp,
+  PlainButton,
+  Text
+} from '@audius/harmony'
 import { ResizeObserver } from '@juggle/resize-observer'
-import cn from 'classnames'
-// eslint-disable-next-line no-restricted-imports -- TODO: migrate to @react-spring/web
-import { animated } from 'react-spring'
 import useMeasure from 'react-use-measure'
 
 import { make, useRecord } from 'common/store/analytics/actions'
-import { OpacityTransition } from 'components/transition-container/OpacityTransition'
 import ProfilePageBadge from 'components/user-badges/ProfilePageBadge'
 import { UserGeneratedText } from 'components/user-generated-text'
 
 import SocialLink, { Type } from '../SocialLink'
-
-import styles from './ProfilePage.module.css'
 
 const messages = {
   seeMore: 'See More',
@@ -138,9 +138,9 @@ export const ProfileBio = ({
     [record, handle]
   )
 
-  const renderCollapsedContent = (_: any, style: object) =>
+  const renderCollapsedContent = () =>
     hasSocial ? (
-      <animated.div className={styles.socialsTruncated} style={style}>
+      <Flex gap='m'>
         {twitterHandle && (
           <SocialLink
             type={Type.TWITTER}
@@ -173,13 +173,13 @@ export const ProfileBio = ({
             iconOnly
           />
         )}
-      </animated.div>
+      </Flex>
     ) : (
       <></>
     )
 
-  const renderExpandedContent = (_: any, style: object) => (
-    <animated.div className={styles.socials} style={style}>
+  const renderExpandedContent = () => (
+    <Flex column gap='m'>
       {twitterHandle && (
         <SocialLink
           type={Type.TWITTER}
@@ -215,9 +215,9 @@ export const ProfileBio = ({
           onClick={onClickDonation}
         />
       )}
-      <div className={styles.location}>{location}</div>
-      <div className={styles.joined}>Joined {created}</div>
-    </animated.div>
+      <Text size='xs'>{location}</Text>
+      <Text size='xs'> Joined {created}</Text>
+    </Flex>
   )
 
   return (
@@ -227,18 +227,14 @@ export const ProfileBio = ({
         <UserGeneratedText
           size='s'
           ref={bioRef}
-          className={cn(styles.description, {
-            [styles.truncated]: isCollapsed
-          })}
+          ellipses
+          maxLines={isCollapsed ? 4 : undefined}
           linkSource='profile page'
         >
           {bio}
         </UserGeneratedText>
       ) : null}
-      <OpacityTransition
-        render={isCollapsed ? renderCollapsedContent : renderExpandedContent}
-        duration={300}
-      />
+      {isCollapsed ? renderCollapsedContent() : renderExpandedContent()}
       {isCollapsible ? (
         <PlainButton
           iconRight={isCollapsed ? IconCaretDown : IconCaretUp}
