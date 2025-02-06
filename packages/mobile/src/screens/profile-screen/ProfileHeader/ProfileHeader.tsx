@@ -1,6 +1,8 @@
 import { memo, useCallback, useEffect, useState } from 'react'
 
+import { useFollowUser } from '@audius/common/api'
 import { useSelectTierInfo } from '@audius/common/hooks'
+import { FollowSource } from '@audius/common/models'
 import { accountSelectors } from '@audius/common/store'
 import { css } from '@emotion/native'
 import type { Animated } from 'react-native'
@@ -39,7 +41,7 @@ export const ProfileHeader = memo((props: ProfileHeaderProps) => {
   const [hasUserFollowed, setHasUserFollowed] = useToggle(false)
   const [isExpanded, setIsExpanded] = useToggle(false)
   const [isExpandable, setIsExpandable] = useState(false)
-
+  const { mutate: followUser } = useFollowUser()
   const {
     user_id: userId,
     does_current_user_follow: doesCurrentUserFollow,
@@ -91,8 +93,12 @@ export const ProfileHeader = memo((props: ProfileHeaderProps) => {
     if (!doesCurrentUserFollow) {
       LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut)
       setHasUserFollowed(true)
+      followUser({
+        followeeUserId: userId,
+        source: FollowSource.PROFILE_PAGE
+      })
     }
-  }, [setHasUserFollowed, doesCurrentUserFollow])
+  }, [setHasUserFollowed, doesCurrentUserFollow, followUser, userId])
 
   const handleCloseArtistRecs = useCallback(() => {
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut)

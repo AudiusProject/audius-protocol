@@ -443,8 +443,6 @@ const ProfilePage = g(
     goToRoute,
     following,
     isSubscribed,
-    onFollow,
-    onConfirmUnfollow,
     mode,
     hasMadeEdit,
     onEdit,
@@ -688,8 +686,6 @@ const ProfilePage = g(
             followers={followers}
             following={following}
             isSubscribed={isSubscribed}
-            onFollow={onFollow}
-            onUnfollow={onConfirmUnfollow}
             goToRoute={goToRoute}
             mode={mode}
             switchToEditMode={onEdit}

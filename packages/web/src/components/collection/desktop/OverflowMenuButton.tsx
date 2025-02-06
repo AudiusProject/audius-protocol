@@ -1,19 +1,15 @@
 import { useCallback } from 'react'
 
+import { useFollowUser, useUnfollowUser } from '@audius/common/api'
 import { FollowSource, Collection, User } from '@audius/common/models'
-import {
-  collectionPageSelectors,
-  usersSocialActions,
-  CommonState
-} from '@audius/common/store'
+import { collectionPageSelectors, CommonState } from '@audius/common/store'
 import { IconButton, IconKebabHorizontal } from '@audius/harmony'
-import { useDispatch, useSelector } from 'react-redux'
+import { useSelector } from 'react-redux'
 
 import { CollectionMenuProps } from 'components/menu/CollectionMenu'
 import Menu from 'components/menu/Menu'
 
 const { getCollection, getUser } = collectionPageSelectors
-const { followUser, unfollowUser } = usersSocialActions
 
 const messages = {
   follow: 'Follow User',
@@ -28,7 +24,8 @@ type OverflowMenuButtonProps = {
 
 export const OverflowMenuButton = (props: OverflowMenuButtonProps) => {
   const { collectionId, isOwner } = props
-  const dispatch = useDispatch()
+  const { mutate: followUser } = useFollowUser()
+  const { mutate: unfollowUser } = useUnfollowUser()
   const {
     is_album,
     playlist_name,
@@ -49,11 +46,17 @@ export const OverflowMenuButton = (props: OverflowMenuButtonProps) => {
 
   const handleFollow = useCallback(() => {
     if (isFollowing) {
-      dispatch(unfollowUser(playlist_owner_id, FollowSource.COLLECTION_PAGE))
+      unfollowUser({
+        followeeUserId: playlist_owner_id,
+        source: FollowSource.COLLECTION_PAGE
+      })
     } else {
-      dispatch(followUser(playlist_owner_id, FollowSource.COLLECTION_PAGE))
+      followUser({
+        followeeUserId: playlist_owner_id,
+        source: FollowSource.COLLECTION_PAGE
+      })
     }
-  }, [isFollowing, dispatch, playlist_owner_id])
+  }, [isFollowing, playlist_owner_id, followUser, unfollowUser])
 
   const extraMenuItems = !isOwner
     ? [

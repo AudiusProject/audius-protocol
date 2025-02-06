@@ -14,11 +14,13 @@ import { CommonState } from '~/store/commonStore'
 import { removeFolloweeId, revokeAccess } from '~/store/gated-content/slice'
 
 import { QUERY_KEYS } from './queryKeys'
+import { useCurrentUserId } from './useCurrentUserId'
 import { getUserQueryKey } from './useUser'
 import { getUserByHandleQueryKey } from './useUserByHandle'
+import { primeUserData } from './utils/primeUserData'
 
 type UnfollowUserParams = {
-  followeeUserId: ID
+  followeeUserId: ID | null | undefined
   source: FollowSource
 }
 
@@ -34,13 +36,18 @@ export const useUnfollowUser = () => {
   const {
     analytics: { track, make }
   } = useAppContext()
+  const { data: currentUserId } = useCurrentUserId()
   const tracks = useSelector((state: CommonState) => getTracks(state, {}))
 
   return useMutation({
     mutationFn: async ({ followeeUserId, source }: UnfollowUserParams) => {
+      if (!currentUserId || !followeeUserId) {
+        return
+      }
+
       const sdk = await audiusSdk()
       await sdk.users.unfollowUser({
-        userId: Id.parse(followeeUserId),
+        userId: Id.parse(currentUserId),
         followeeUserId: Id.parse(followeeUserId)
       })
 
@@ -94,28 +101,23 @@ export const useUnfollowUser = () => {
         followeeUserId
       ])
 
+      if (previousUser) {
+        const updatedUser = {
+          ...previousUser,
+          does_current_user_follow: false,
+          follower_count: previousUser.follower_count - 1
+        }
+        primeUserData({
+          users: [updatedUser],
+          queryClient,
+          dispatch,
+          forceReplace: true
+        })
+      }
+
       const previousAccountUser = queryClient.getQueryData<UserMetadata>([
         QUERY_KEYS.accountUser
       ])
-
-      if (previousUser) {
-        queryClient.setQueryData(getUserQueryKey(followeeUserId), {
-          ...previousUser,
-          does_current_user_follow: true,
-          follower_count: previousUser.follower_count - 1
-        })
-
-        if (previousUser.handle) {
-          queryClient.setQueryData(
-            getUserByHandleQueryKey(previousUser.handle),
-            (old: any) => ({
-              ...old,
-              does_current_user_follow: true,
-              follower_count: old.follower_count - 1
-            })
-          )
-        }
-      }
 
       if (previousAccountUser) {
         queryClient.setQueryData([QUERY_KEYS.accountUser], {

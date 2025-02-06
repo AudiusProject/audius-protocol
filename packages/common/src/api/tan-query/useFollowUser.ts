@@ -15,9 +15,10 @@ import { useCurrentUserId } from '..'
 import { QUERY_KEYS } from './queryKeys'
 import { getUserQueryKey } from './useUser'
 import { getUserByHandleQueryKey } from './useUserByHandle'
+import { primeUserData } from './utils/primeUserData'
 
 type FollowUserParams = {
-  followeeUserId: ID
+  followeeUserId: ID | null | undefined
   source?: FollowSource
   onSuccessActions?: Action[]
 }
@@ -42,7 +43,11 @@ export const useFollowUser = () => {
       source,
       onSuccessActions
     }: FollowUserParams) => {
-      if (!currentUserId || currentUserId === followeeUserId) {
+      if (
+        !currentUserId ||
+        !followeeUserId ||
+        currentUserId === followeeUserId
+      ) {
         return
       }
 
@@ -76,28 +81,23 @@ export const useFollowUser = () => {
         followeeUserId
       ])
 
-      const previousAccountUser = queryClient.getQueryData<UserMetadata>([
-        QUERY_KEYS.accountUser
-      ])
-
       if (previousUser) {
-        queryClient.setQueryData(getUserQueryKey(followeeUserId), {
+        const updatedUser = {
           ...previousUser,
           does_current_user_follow: true,
           follower_count: previousUser.follower_count + 1
-        })
-
-        if (previousUser.handle) {
-          queryClient.setQueryData(
-            getUserByHandleQueryKey(previousUser.handle),
-            (old: any) => ({
-              ...old,
-              does_current_user_follow: true,
-              follower_count: old.follower_count + 1
-            })
-          )
         }
+        primeUserData({
+          users: [updatedUser],
+          queryClient,
+          dispatch,
+          forceReplace: true
+        })
       }
+
+      const previousAccountUser = queryClient.getQueryData<UserMetadata>([
+        QUERY_KEYS.accountUser
+      ])
 
       if (previousAccountUser) {
         queryClient.setQueryData([QUERY_KEYS.accountUser], {
