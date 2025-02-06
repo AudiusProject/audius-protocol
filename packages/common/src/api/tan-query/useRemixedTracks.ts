@@ -36,7 +36,7 @@ export const useRemixedTracks = (options?: QueryOptions) => {
         trackId: HashId.parse(item.trackId)
       }))
     },
-    staleTime: options?.staleTime,
+    ...options,
     enabled: options?.enabled !== false && !!currentUserId
   })
 }

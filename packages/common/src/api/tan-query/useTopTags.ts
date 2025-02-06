@@ -34,7 +34,7 @@ export const useTopTags = (
 
       return data
     },
-    staleTime: options?.staleTime,
-    enabled: options?.enabled !== false && !!userId
+    ...options,
+    enabled: options?.enabled !== false
   })
 }

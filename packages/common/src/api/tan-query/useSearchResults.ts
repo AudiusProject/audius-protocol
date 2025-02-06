@@ -231,7 +231,7 @@ export const useSearchResults = (
         playlists
       }
     },
-    staleTime: options?.staleTime,
+    ...options,
     enabled: options?.enabled !== false
   })
 }

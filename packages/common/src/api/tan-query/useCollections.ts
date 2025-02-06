@@ -45,7 +45,7 @@ export const useCollections = (
 
       return collections
     },
-    staleTime: options?.staleTime,
+    ...options,
     enabled: options?.enabled !== false && !!collectionIds
   })
 }
