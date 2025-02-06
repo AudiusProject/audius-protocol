@@ -23,7 +23,10 @@ import {
 import {
   profilePageFeedLineupActions as feedActions,
   profilePageTracksLineupActions as tracksActions,
-  ProfilePageTabs
+  ProfilePageTabs,
+  profilePageSelectors,
+  CommonState,
+  CollectionSortMode
 } from '@audius/common/store'
 import { route } from '@audius/common/utils'
 import {
@@ -39,6 +42,7 @@ import {
   IconQuestionCircle,
   LoadingSpinner
 } from '@audius/harmony'
+import { useSelector } from 'react-redux'
 
 import CollectiblesPage from 'components/collectibles/components/CollectiblesPage'
 import { CollectionCard } from 'components/collection'
@@ -66,6 +70,14 @@ import styles from './ProfilePage.module.css'
 import ProfileWrapping from './ProfileWrapping'
 
 const { profilePage } = route
+const { getProfileCollectionSortMode } = profilePageSelectors
+
+const mapSortMode = (
+  mode: CollectionSortMode | undefined
+): 'recent' | 'popular' => {
+  if (mode === CollectionSortMode.SAVE_COUNT) return 'popular'
+  return 'recent'
+}
 
 export type ProfilePageProps = {
   // State
@@ -173,30 +185,39 @@ export type ProfilePageProps = {
   onCloseUnmuteUserConfirmationModal: () => void
 }
 
-const PlaylistTab = ({
-  isOwner,
-  profile,
-  userId
-}: {
-  isOwner: boolean
-  profile: User
+type PlaylistTabProps = {
   userId: ID | null
-}) => {
+  profile: User
+  isOwner: boolean
+}
+
+type AlbumTabProps = {
+  userId: ID | null
+  profile: User
+  isOwner: boolean
+}
+
+const PlaylistTab = ({ userId, profile, isOwner }: PlaylistTabProps) => {
+  const sortMode = useSelector((state: CommonState) =>
+    getProfileCollectionSortMode(state, profile?.handle ?? '')
+  )
   const { data: playlists, isPending } = useUserPlaylists({
-    userId: userId ?? null
+    userId: userId ?? null,
+    sortMethod: mapSortMode(sortMode)
   })
 
-  const playlistCards =
-    playlists?.map((playlist) => (
+  const playlistCards = playlists?.map((playlist) => {
+    return (
       <CollectionCard
         key={playlist.playlist_id}
         id={playlist.playlist_id}
         size='m'
       />
-    )) || []
+    )
+  })
 
   if (isOwner) {
-    playlistCards.unshift(
+    playlistCards?.unshift(
       <UploadChip
         key='upload-chip'
         type='playlist'
@@ -217,11 +238,11 @@ const PlaylistTab = ({
     )
   }
 
-  if (!playlists?.length && !isOwner) {
+  if (!playlistCards?.length) {
     return (
       <EmptyTab
         isOwner={isOwner}
-        name={profile.name}
+        name={profile?.name}
         text={'created any playlists'}
       />
     )
@@ -230,31 +251,28 @@ const PlaylistTab = ({
   return <CardLineup cardsClassName={styles.cardLineup} cards={playlistCards} />
 }
 
-const AlbumTab = ({
-  isOwner,
-  profile,
-  userId
-}: {
-  isOwner: boolean
-  profile: User
-  userId: ID | null
-}) => {
+const AlbumTab = ({ userId, profile, isOwner }: AlbumTabProps) => {
+  const sortMode = useSelector((state: CommonState) =>
+    getProfileCollectionSortMode(state, profile?.handle ?? '')
+  )
   const { data: albums, isPending } = useUserAlbums({
-    userId: userId ?? null
+    userId: userId ?? null,
+    sortMethod: mapSortMode(sortMode)
   })
 
-  const albumCards =
-    albums?.map((album) => (
+  const albumCards = albums?.map((album) => {
+    return (
       <CollectionCard key={album.playlist_id} id={album.playlist_id} size='m' />
-    )) || []
+    )
+  })
 
   if (isOwner) {
-    albumCards.unshift(
+    albumCards?.unshift(
       <UploadChip
         key='upload-chip'
         type='album'
         variant='card'
-        isFirst={albumCards.length === 0}
+        isFirst={albumCards && albumCards.length === 0}
         source={CreatePlaylistSource.PROFILE_PAGE}
       />
     )
@@ -270,11 +288,11 @@ const AlbumTab = ({
     )
   }
 
-  if (!albums?.length && !isOwner) {
+  if (!albumCards?.length) {
     return (
       <EmptyTab
         isOwner={isOwner}
-        name={profile.name}
+        name={profile?.name}
         text={'created any albums'}
       />
     )
