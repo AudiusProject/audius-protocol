@@ -107,7 +107,7 @@ export const AudioMatchingRewardsModalContent = ({
   )
   const progressReward = (
     <ProgressReward
-      amount={formatNumberCommas(challenge?.amount ?? '')}
+      amount={challenge?.amount}
       subtext={messages.rewardMapping[challengeName]}
     />
   )
