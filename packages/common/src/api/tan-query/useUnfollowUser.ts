@@ -4,11 +4,13 @@ import { useDispatch, useSelector } from 'react-redux'
 
 import { useAudiusQueryContext } from '~/audius-query/AudiusQueryContext'
 import { useAppContext } from '~/context/appContext'
+import { Kind } from '~/models'
 import { Name, FollowSource } from '~/models/Analytics'
 import { Feature } from '~/models/ErrorReporting'
 import { ID } from '~/models/Identifiers'
 import { Track, isContentFollowGated } from '~/models/Track'
 import { UserMetadata } from '~/models/User'
+import { add } from '~/store/cache/actions'
 import { getTracks } from '~/store/cache/tracks/selectors'
 import { CommonState } from '~/store/commonStore'
 import { removeFolloweeId, revokeAccess } from '~/store/gated-content/slice'
@@ -17,7 +19,6 @@ import { QUERY_KEYS } from './queryKeys'
 import { useCurrentUserId } from './useCurrentUserId'
 import { getUserQueryKey } from './useUser'
 import { getUserByHandleQueryKey } from './useUserByHandle'
-import { primeUserData } from './utils/primeUserData'
 
 type UnfollowUserParams = {
   followeeUserId: ID | null | undefined
@@ -92,6 +93,10 @@ export const useUnfollowUser = () => {
       }
     },
     onMutate: async ({ followeeUserId }) => {
+      if (!followeeUserId) {
+        return { previousUser: undefined, previousAccountUser: undefined }
+      }
+
       await queryClient.cancelQueries({
         queryKey: [QUERY_KEYS.user, followeeUserId]
       })
@@ -107,12 +112,16 @@ export const useUnfollowUser = () => {
           does_current_user_follow: false,
           follower_count: previousUser.follower_count - 1
         }
-        primeUserData({
-          users: [updatedUser],
-          queryClient,
-          dispatch,
-          forceReplace: true
-        })
+        queryClient.setQueryData(getUserQueryKey(followeeUserId), updatedUser)
+        if (previousUser.handle) {
+          queryClient.setQueryData(
+            getUserByHandleQueryKey(previousUser.handle),
+            updatedUser
+          )
+        }
+        dispatch(
+          add(Kind.USERS, [{ id: followeeUserId, metadata: updatedUser }], true)
+        )
       }
 
       const previousAccountUser = queryClient.getQueryData<UserMetadata>([

@@ -5,17 +5,18 @@ import { useDispatch } from 'react-redux'
 
 import { useAudiusQueryContext } from '~/audius-query'
 import { useAppContext } from '~/context/appContext'
+import { Kind } from '~/models'
 import { Name, FollowSource } from '~/models/Analytics'
 import { Feature } from '~/models/ErrorReporting'
 import { ID } from '~/models/Identifiers'
 import { UserMetadata } from '~/models/User'
+import { add } from '~/store/cache/actions'
 
 import { useCurrentUserId } from '..'
 
 import { QUERY_KEYS } from './queryKeys'
 import { getUserQueryKey } from './useUser'
 import { getUserByHandleQueryKey } from './useUserByHandle'
-import { primeUserData } from './utils/primeUserData'
 
 type FollowUserParams = {
   followeeUserId: ID | null | undefined
@@ -72,6 +73,10 @@ export const useFollowUser = () => {
       }
     },
     onMutate: async ({ followeeUserId }): Promise<MutationContext> => {
+      if (!followeeUserId) {
+        return { previousUser: undefined, previousAccountUser: undefined }
+      }
+
       await queryClient.cancelQueries({
         queryKey: [QUERY_KEYS.user, followeeUserId]
       })
@@ -87,12 +92,18 @@ export const useFollowUser = () => {
           does_current_user_follow: true,
           follower_count: previousUser.follower_count + 1
         }
-        primeUserData({
-          users: [updatedUser],
-          queryClient,
-          dispatch,
-          forceReplace: true
-        })
+        queryClient.setQueryData(getUserQueryKey(followeeUserId), updatedUser)
+
+        if (previousUser.handle) {
+          queryClient.setQueryData(
+            getUserByHandleQueryKey(previousUser.handle),
+            updatedUser
+          )
+        }
+
+        dispatch(
+          add(Kind.USERS, [{ id: followeeUserId, metadata: updatedUser }], true)
+        )
       }
 
       const previousAccountUser = queryClient.getQueryData<UserMetadata>([
