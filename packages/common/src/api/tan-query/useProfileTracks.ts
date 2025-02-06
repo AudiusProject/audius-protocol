@@ -45,7 +45,7 @@ export const useProfileTracks = (
     sort = TracksSortMode.RECENT,
     getUnlisted = true
   }: UseProfileTracksArgs,
-  config?: QueryOptions
+  options?: QueryOptions
 ) => {
   const { audiusSdk } = useAudiusQueryContext()
   const { data: currentUserId } = useCurrentUserId()
@@ -92,8 +92,8 @@ export const useProfileTracks = (
 
       return processedTracks
     },
-    staleTime: config?.staleTime,
-    enabled: config?.enabled !== false && !!handle
+    ...options,
+    enabled: options?.enabled !== false && !!handle
   })
 
   const lineupData = useLineupQuery({

@@ -30,7 +30,7 @@ export const useFavoritedTracks = (
 
       return transformAndCleanList(data, favoriteFromSDK)
     },
-    staleTime: options?.staleTime,
+    ...options,
     enabled: options?.enabled !== false && !!userId
   })
 }

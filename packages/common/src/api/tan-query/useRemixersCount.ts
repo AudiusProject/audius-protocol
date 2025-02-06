@@ -36,8 +36,7 @@ export const useRemixersCount = (
       })
       return data
     },
-
-    staleTime: options?.staleTime,
+    ...options,
     enabled: options?.enabled !== false && !!currentUserId
   })
 }
