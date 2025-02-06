@@ -116,6 +116,9 @@ export interface TanQueryLineupProps {
 
   /** Starting index to render from */
   start?: number
+
+  /** Whether to load more items when the user scrolls to the bottom of the lineup */
+  shouldLoadMore?: boolean
 }
 
 const defaultLineup = {
@@ -131,7 +134,7 @@ const defaultLineup = {
   isMetadataLoading: false
 }
 
-const DEFAULT_LOAD_MORE_THRESHOLD = 700 // px
+const DEFAULT_LOAD_MORE_THRESHOLD = 500 // px
 
 /** `TanQueryLineup` encapsulates the logic for displaying a Lineup (e.g. prefetching items)
  * displaying loading states, etc). This is decoupled from the rendering logic, which
@@ -155,7 +158,8 @@ export const TanQueryLineup = ({
   initialPageSize,
   scrollParent: externalScrollParent,
   loadMoreThreshold = DEFAULT_LOAD_MORE_THRESHOLD,
-  start
+  start,
+  shouldLoadMore = true
 }: TanQueryLineupProps) => {
   const dispatch = useDispatch()
   const {
@@ -357,8 +361,12 @@ export const TanQueryLineup = ({
             flexDirection: 'column'
           }}
         >
-          {tiles.length === 0 && !isFetching ? (
-            emptyElement
+          {tiles.length === 0 ? (
+            isFetching ? (
+              renderSkeletons(initialPageSize ?? pageSize)
+            ) : (
+              emptyElement
+            )
           ) : (
             <InfiniteScroll
               aria-label={ariaLabel}
@@ -367,7 +375,7 @@ export const TanQueryLineup = ({
                 [tileContainerStyles!]: !!tileContainerStyles
               })}
               loadMore={loadNextPage}
-              hasMore={hasNextPage}
+              hasMore={hasNextPage && shouldLoadMore}
               useWindow={isMobile}
               initialLoad={false}
               getScrollParent={() => {
@@ -377,7 +385,6 @@ export const TanQueryLineup = ({
                 return internalScrollParent
               }}
               element='ol'
-              loader={renderSkeletons(pageSize)}
               threshold={loadMoreThreshold}
             >
               {tiles.map((tile: any, index: number) => (
@@ -387,6 +394,7 @@ export const TanQueryLineup = ({
               ))}
             </InfiniteScroll>
           )}
+          {isFetching && shouldLoadMore && renderSkeletons(pageSize)}
         </div>
       </div>
       {!hasNextPage && endOfLineup ? endOfLineup : null}

@@ -1,15 +1,9 @@
 import { useCallback, useContext, useMemo } from 'react'
 
-import {
-  SearchCategory,
-  useSearchResults as useGetSearchResultsApi
-} from '@audius/common/api'
-import { Status } from '@audius/common/models'
-import { SearchSortMethod, accountSelectors } from '@audius/common/store'
+import { SearchSortMethod } from '@audius/common/store'
 import { route } from '@audius/common/utils'
 import { Genre, Mood } from '@audius/sdk'
 import { intersection, isEmpty } from 'lodash'
-import { useSelector } from 'react-redux'
 import { generatePath, useRouteMatch } from 'react-router-dom'
 import { useSearchParams as useParams } from 'react-router-dom-v5-compat'
 
@@ -19,50 +13,9 @@ import { useIsMobile } from 'hooks/useIsMobile'
 
 import { categories } from './categories'
 import { CategoryKey, CategoryView } from './types'
-import { ALL_RESULTS_LIMIT, urlSearchParamsToObject } from './utils'
+import { urlSearchParamsToObject } from './utils'
 
 const { SEARCH_BASE_ROUTE, SEARCH_PAGE } = route
-const { getAccountStatus, getUserId } = accountSelectors
-
-export const useGetSearchResults = (category: SearchCategory) => {
-  const { query, ...filters } = useSearchParams()
-
-  const accountStatus = useSelector(getAccountStatus)
-  const currentUserId = useSelector(getUserId)
-
-  const params = {
-    query: query || '',
-    ...filters,
-    category,
-    currentUserId,
-    limit: category === 'all' ? ALL_RESULTS_LIMIT : undefined,
-    offset: 0
-  }
-
-  const { data, ...queryState } = useGetSearchResultsApi(params, {
-    // Only search when the account has finished loading,
-    // or if the user is not logged in
-    enabled: accountStatus !== Status.LOADING && accountStatus !== Status.IDLE
-  })
-  const dataMappedToIds = useMemo(() => {
-    if (!data) return data
-    return {
-      tracks: data.tracks?.map((track) => track.track_id),
-      users: data.users?.map((user) => user.user_id),
-      albums: data.albums?.map((album) => album.playlist_id),
-      playlists: data.playlists?.map((playlist) => playlist.playlist_id)
-    }
-  }, [data])
-
-  if (category === 'all') {
-    return { data: dataMappedToIds as any, ...queryState }
-  } else {
-    return {
-      data: dataMappedToIds?.[category],
-      ...queryState
-    }
-  }
-}
 
 export const useShowSearchResults = () => {
   const { query, genre, mood, isPremium, hasDownloads, isVerified, bpm, key } =

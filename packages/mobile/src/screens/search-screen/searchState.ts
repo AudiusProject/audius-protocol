@@ -1,16 +1,8 @@
 import type { Dispatch, SetStateAction } from 'react'
 import { createContext, useCallback, useContext } from 'react'
 
-import {
-  useSearchResults,
-  type SearchCategory,
-  type SearchFilters
-} from '@audius/common/api'
-import { accountSelectors } from '@audius/common/store'
+import { type SearchCategory, type SearchFilters } from '@audius/common/api'
 import { isEmpty } from 'lodash'
-import { useSelector } from 'react-redux'
-
-const { getUserId } = accountSelectors
 
 export const ALL_RESULTS_LIMIT = 5
 
@@ -93,29 +85,4 @@ export const useSearchFilter = <F extends keyof SearchFilters>(
   }, [filterKey, setFilters])
 
   return [filter, setFilter, clearFilter] as const
-}
-
-export const useGetSearchResults = (category: SearchCategory) => {
-  const { filters, query } = useContext(SearchContext)
-  const currentUserId = useSelector(getUserId)
-  const { data, ...queryState } = useSearchResults({
-    query,
-    ...filters,
-    category,
-    currentUserId,
-    limit: category === 'all' ? ALL_RESULTS_LIMIT : undefined,
-    offset: 0
-  })
-
-  if (category === 'all') {
-    return {
-      data,
-      ...queryState
-    }
-  } else {
-    return {
-      data: data?.[category],
-      ...queryState
-    }
-  }
 }
