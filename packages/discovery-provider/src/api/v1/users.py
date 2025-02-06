@@ -2554,8 +2554,6 @@ class FullPurchasesCount(Resource):
     @full_ns.marshal_with(purchases_count_response)
     def get(self, id, authed_user_id):
         decoded_id = decode_with_abort(id, full_ns)
-        if decoded_id and not is_authorized_request(decoded_id):
-            abort(403, message="You are not authorized to access this resource")
         args = purchases_and_sales_count_parser.parse_args()
         content_ids = args.get("content_ids", [])
         decoded_content_ids = decode_ids_array(content_ids) if content_ids else []
@@ -2611,8 +2609,6 @@ class FullSalesCount(Resource):
     @full_ns.marshal_with(purchases_count_response)
     def get(self, id, authed_user_id):
         decoded_id = decode_with_abort(id, full_ns)
-        if decoded_id and not is_authorized_request(decoded_id):
-            abort(403, message="You are not authorized to access this resource")
         args = purchases_and_sales_count_parser.parse_args()
         content_ids = args.get("content_ids", [])
         decoded_content_ids = decode_ids_array(content_ids) if content_ids else []
