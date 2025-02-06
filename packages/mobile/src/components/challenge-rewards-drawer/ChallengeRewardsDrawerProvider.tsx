@@ -89,7 +89,7 @@ export const ChallengeRewardsDrawerProvider = () => {
   let progressRewardAmount = challenge?.totalAmount ?? 0
   if (challenge?.challenge_id === ChallengeName.OneShot) {
     progressRewardAmount =
-      (challenge?.claimableAmount ?? 0) + (challenge?.disbursed_amount ?? 0)
+      challenge?.disbursed_amount ?? challenge?.claimableAmount ?? 0
   }
 
   const { navigate } = useNavigation<ChallengesParamList>()

@@ -308,7 +308,7 @@ export const challengeRewardsConfig: Record<
     id: 'trending-underground'
   },
   o: {
-    title: 'Airdrop - January 2025',
+    title: 'Airdrop - Februrary 2025',
     description: () => 'Claim your $AUDIO before it expires!',
     fullDescription: () => 'Claim your $AUDIO before it expires!',
     panelButtonText: '',
