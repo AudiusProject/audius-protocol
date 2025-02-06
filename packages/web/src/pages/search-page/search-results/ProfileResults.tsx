@@ -131,6 +131,13 @@ export const ProfileResultsPage = () => {
   const { color } = useTheme()
   const mainContentRef = useMainContentRef()
 
+  const getMainContentRef = useCallback(() => {
+    if (isMobile) {
+      return null
+    }
+    return mainContentRef?.current || null
+  }, [isMobile, mainContentRef])
+
   const searchParams = useSearchParams()
   const queryData = useSearchUserResults(searchParams)
   const { data: ids, isLoading, hasNextPage, loadNextPage } = queryData
@@ -143,9 +150,9 @@ export const ProfileResultsPage = () => {
       pageStart={0}
       loadMore={loadNextPage}
       hasMore={hasNextPage}
-      getScrollParent={() => mainContentRef?.current || null}
+      getScrollParent={getMainContentRef}
       initialLoad={false}
-      useWindow={false}
+      useWindow={isMobile}
     >
       <Flex
         direction='column'

@@ -133,6 +133,13 @@ export const AlbumResultsPage = () => {
   const { color } = useTheme()
   const mainContentRef = useMainContentRef()
 
+  const getMainContentRef = useCallback(() => {
+    if (isMobile) {
+      return null
+    }
+    return mainContentRef?.current || null
+  }, [isMobile, mainContentRef])
+
   const searchParams = useSearchParams()
   const queryData = useSearchAlbumResults(searchParams)
   const { data, isLoading, hasNextPage, loadNextPage } = queryData
@@ -145,9 +152,9 @@ export const AlbumResultsPage = () => {
       pageStart={0}
       loadMore={loadNextPage}
       hasMore={hasNextPage}
-      getScrollParent={() => mainContentRef?.current || null}
+      getScrollParent={getMainContentRef}
       initialLoad={false}
-      useWindow={false}
+      useWindow={isMobile}
     >
       <Flex
         direction='column'
