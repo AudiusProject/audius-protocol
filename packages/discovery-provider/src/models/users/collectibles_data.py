@@ -1,6 +1,4 @@
-import enum
-
-from sqlalchemy import Column, DateTime, Integer, String
+from sqlalchemy import Column, DateTime, ForeignKey, Integer, String
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.sql import func
 
@@ -17,7 +15,9 @@ class CollectiblesData(Base, RepresentableMixin):
     )
     data = Column(JSONB, nullable=False)
     blockhash = Column(String, nullable=False)
-    blocknumber = Column(Integer, nullable=False)
+    blocknumber = Column(
+        Integer, ForeignKey("blocks.number"), index=True, nullable=False
+    )
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(
         DateTime(timezone=True), server_default=func.now(), onupdate=func.now()

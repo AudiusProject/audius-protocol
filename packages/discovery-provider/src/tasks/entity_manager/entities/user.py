@@ -17,6 +17,7 @@ from src.exceptions import IndexingValidationError
 from src.models.indexing.cid_data import CIDData
 from src.models.tracks.track import Track
 from src.models.users.associated_wallet import AssociatedWallet
+from src.models.users.collectibles_data import CollectiblesData
 from src.models.users.user import User
 from src.models.users.user_events import UserEvent
 from src.models.users.user_payout_wallet_history import UserPayoutWalletHistory
@@ -335,6 +336,22 @@ def update_user_metadata(
             user_record.tiktok_handle = user_record.handle
 
     if "collectibles" in metadata:
+        # Dual-write for collectibles data to support legacy indexing
+        # TODO: Remove after clients updated to use new transactions
+        # https://linear.app/audius/issue/PAY-3894/remove-collection-and-other-cid-metadata-indexing
+        collectibles_data = CollectiblesData(
+            user_id=user_record.user_id,
+            data=metadata["collectibles"],
+            blockhash=params.event_blockhash,
+            blocknumber=params.block_number,
+        )
+
+        # We can just add_record here. Outer EM logic will take care
+        # of deleting previous record if it exists
+        params.add_record(
+            user_record.user_id, collectibles_data, EntityType.COLLECTIBLES_DATA
+        )
+
         if (
             metadata["collectibles"]
             and isinstance(metadata["collectibles"], dict)
@@ -645,6 +662,41 @@ def remove_associated_wallet(params: ManageEntityParameters):
     except Exception as e:
         logger.error(
             f"index.py | users.py | Fatal removing associated wallet while indexing {e}",
+            exc_info=True,
+        )
+        raise e
+
+
+def update_user_collectibles(params: ManageEntityParameters):
+    """Updates the user's collectibles data"""
+    validate_signer(params)
+    user_id = params.user_id
+    metadata = params.metadata
+    existing_user = params.existing_records["User"][user_id]
+    try:
+        if not isinstance(metadata.get("collectibles"), dict):
+            # If invalid format, don't update
+            raise IndexingValidationError("Invalid collectibles data format")
+
+        collectibles_data = CollectiblesData(
+            user_id=user_id,
+            data=metadata["collectibles"],
+            blockhash=params.event_blockhash,
+            blocknumber=params.block_number,
+        )
+
+        # We can just add_record here. Outer EM logic will take care
+        # of deleting previous record if it exists
+        params.add_record(user_id, collectibles_data, EntityType.COLLECTIBLES_DATA)
+
+        if metadata["collectibles"].items():
+            existing_user.has_collectibles = True
+        else:
+            existing_user.has_collectibles = False
+
+    except Exception as e:
+        logger.error(
+            f"index.py | users.py | Fatal error updating user collectibles {e}",
             exc_info=True,
         )
         raise e
