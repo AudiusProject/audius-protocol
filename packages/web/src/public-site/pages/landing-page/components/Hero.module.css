@@ -130,7 +130,7 @@
   transform: translateZ(0);
   /*for older browsers*/
   will-change: transform;
-  letter-spacing: 0.02em;
+  letter-spacing: -3.2px;
   user-select: none;
 }
 
@@ -319,7 +319,7 @@
 }
 
 .mobileContainer .content .title {
-  letter-spacing: -0.02em;
+  letter-spacing: -3.2px;
   color: #ffffff;
   font-size: 72px;
   font-weight: 900;
