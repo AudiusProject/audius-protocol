@@ -49,15 +49,6 @@
   margin-bottom: 20px;
 }
 
-.iconClose {
-  width: 32px;
-  height: 32px;
-}
-
-.iconClose path {
-  fill: var(--harmony-static-white);
-}
-
 .horizontalLogo {
   filter: brightness(0) invert(1);
 }

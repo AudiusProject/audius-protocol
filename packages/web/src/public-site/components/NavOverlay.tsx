@@ -2,9 +2,9 @@ import { useEffect, useState } from 'react'
 
 import { route } from '@audius/common/utils'
 import {
-  IconAudiusLogoHorizontal,
+  IconAudiusLogoHorizontalNew,
   IconInstagram,
-  IconRemove,
+  IconClose,
   IconTwitter,
   IconDiscord,
   IconTelegram,
@@ -150,17 +150,11 @@ const NavOverlay = (props: NavOverlayProps) => {
         </div>
         <div className={styles.content}>
           <div className={styles.iconContainer}>
-            <IconAudiusLogoHorizontal
-              width={132}
+            <IconAudiusLogoHorizontalNew
+              width={160}
               className={styles.horizontalLogo}
-              css={{
-                margin: 0
-              }}
             />
-            <IconRemove
-              className={styles.iconClose}
-              onClick={props.closeNavScreen}
-            />
+            <IconClose color='staticWhite' onClick={props.closeNavScreen} />
           </div>
           <div className={styles.dappLinksContainer}>
             <div className={styles.dappLinks}>
