@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 
-import { Name } from '@audius/common/models'
+import { ID, Name } from '@audius/common/models'
 import { Flex, IconCaretDown, IconCaretUp, PlainButton } from '@audius/harmony'
 import { ResizeObserver } from '@juggle/resize-observer'
 import cn from 'classnames'
