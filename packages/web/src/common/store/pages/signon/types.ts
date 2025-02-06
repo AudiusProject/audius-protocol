@@ -15,6 +15,33 @@ export interface EditableField<T = string> {
   status: EditingStatus
 }
 
+export enum FollowArtistsCategory {
+  FEATURED = 'Featured',
+  ALL_GENRES = 'All Genres',
+  ELECTRONIC = 'Electronic',
+  HIP_HOP_RAP = 'Hip-Hop/Rap',
+  ALTERNATIVE = 'Alternative',
+  POP = 'Pop'
+}
+
+// Order list fo the enum above
+export const artistCategories = [
+  FollowArtistsCategory.FEATURED,
+  FollowArtistsCategory.ALL_GENRES,
+  FollowArtistsCategory.ELECTRONIC,
+  FollowArtistsCategory.HIP_HOP_RAP,
+  FollowArtistsCategory.ALTERNATIVE,
+  FollowArtistsCategory.POP
+]
+
+export type FollowArtists = {
+  selectedCategory: FollowArtistsCategory
+  categories: {
+    [key in FollowArtistsCategory]?: ID[]
+  }
+  selectedUserIds: ID[]
+}
+
 export default interface SignOnPageState {
   email: EditableField
   name: EditableField
@@ -39,7 +66,7 @@ export default interface SignOnPageState {
   followIds: ID[]
   status: EditingStatus
   hidePreviewHint: boolean
-  selectedUserIds: ID[]
+  followArtists: FollowArtists
   isMobileSignOnVisible: boolean
   routeOnCompletion: string
   startedSignUpProcess: boolean

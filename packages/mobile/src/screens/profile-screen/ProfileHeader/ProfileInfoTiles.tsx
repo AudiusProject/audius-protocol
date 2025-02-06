@@ -1,8 +1,10 @@
 import type { ComponentType } from 'react'
 import { useCallback } from 'react'
 
-import { useRelatedArtists } from '@audius/common/api'
-import { accountSelectors } from '@audius/common/store'
+import {
+  accountSelectors,
+  relatedArtistsUISelectors
+} from '@audius/common/store'
 import type { ViewStyle } from 'react-native'
 import { View, ScrollView } from 'react-native'
 import { useSelector } from 'react-redux'
@@ -21,6 +23,7 @@ import { useThemePalette } from 'app/utils/theme'
 import { useSelectProfile } from '../selectors'
 
 const { getUserId } = accountSelectors
+const { selectRelatedArtistsById } = relatedArtistsUISelectors
 
 const useInfoTileStyles = makeStyles(({ spacing }) => ({
   root: { flexGrow: 1 },
@@ -150,11 +153,13 @@ export const ProfileInfoTiles = () => {
   const hasMutuals =
     user_id !== accountId && current_user_followee_follow_count > 0
 
-  const { data: relatedArtists } = useRelatedArtists({
-    artistId: user_id,
-    pageSize: 1
+  const hasRelatedArtists = useSelector((state) => {
+    const relatedArtists = selectRelatedArtistsById(state, user_id)
+    if (!relatedArtists) return false
+    const { relatedArtistIds, isTopArtistsRecommendation } = relatedArtists
+    if (isTopArtistsRecommendation) return false
+    return relatedArtistIds.length > 0
   })
-  const hasRelatedArtists = relatedArtists && relatedArtists?.length > 0
 
   const hasAllThreeTiles = hasAiAttribution && hasMutuals && hasRelatedArtists
 

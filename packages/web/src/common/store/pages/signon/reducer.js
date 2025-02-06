@@ -7,6 +7,8 @@ import {
   SET_TWITTER_PROFILE,
   SET_INSTAGRAM_PROFILE,
   SET_TIKTOK_PROFILE,
+  FETCH_FOLLOW_ARTISTS_SUCCEEDED,
+  SET_FOLLOW_ARTIST_CATEGORY,
   VALIDATE_EMAIL,
   VALIDATE_EMAIL_SUCCEEDED,
   VALIDATE_EMAIL_FAILED,
@@ -40,7 +42,7 @@ import {
   HIDE_PREVIEW_HINT,
   SET_WELCOME_MODAL_SHOWN
 } from './actions'
-import { Pages } from './types'
+import { Pages, FollowArtistsCategory } from './types'
 
 const { FEED_PAGE, TRENDING_PAGE } = route
 
@@ -82,7 +84,11 @@ const initialState = {
   /** Whether user finished the main part of the flow (before 'Select Genres'), upon which their account gets created */
   finishedPhase1: false,
   hidePreviewHint: false,
-  selectedUserIds: [],
+  followArtists: {
+    selectedCategory: FollowArtistsCategory.FEATURED,
+    categories: {},
+    selectedUserIds: []
+  },
   genres: [],
   referrer: null,
   welcomeModalShown: false
@@ -412,6 +418,27 @@ const actionsMap = {
       routeOnCompletion: action.route
     }
   },
+  [FETCH_FOLLOW_ARTISTS_SUCCEEDED](state, action) {
+    return {
+      ...state,
+      followArtists: {
+        ...state.followArtists,
+        categories: {
+          ...state.followArtists.categories,
+          [action.category]: action.userIds
+        }
+      }
+    }
+  },
+  [SET_FOLLOW_ARTIST_CATEGORY](state, action) {
+    return {
+      ...state,
+      followArtists: {
+        ...state.followArtists,
+        selectedCategory: action.category
+      }
+    }
+  },
   [COMPLETE_FOLLOW_ARTISTS](state, action) {
     return {
       ...state,
@@ -421,18 +448,24 @@ const actionsMap = {
   [ADD_FOLLOW_ARTISTS](state, action) {
     return {
       ...state,
-      selectedUserIds: [
-        ...new Set(state.selectedUserIds.concat(action.userIds))
-      ]
+      followArtists: {
+        ...state.followArtists,
+        selectedUserIds: [
+          ...new Set(state.followArtists.selectedUserIds.concat(action.userIds))
+        ]
+      }
     }
   },
   [REMOVE_FOLLOW_ARTISTS](state, action) {
     const removeUserIds = new Set(action.userIds)
     return {
       ...state,
-      selectedUserIds: state.selectedUserIds.filter(
-        (id) => !removeUserIds.has(id)
-      )
+      followArtists: {
+        ...state.followArtists,
+        selectedUserIds: state.followArtists.selectedUserIds.filter(
+          (id) => !removeUserIds.has(id)
+        )
+      }
     }
   },
   [UPDATE_ROUTE_ON_EXIT](state, action) {
@@ -441,7 +474,12 @@ const actionsMap = {
       routeOnExit: action.route
     }
   },
-  [SET_REFERRER](state, action) {},
+  [SET_REFERRER](state, action) {
+    return {
+      ...state,
+      referrer: action.userId
+    }
+  },
   [HIDE_PREVIEW_HINT](state) {
     return {
       ...state,

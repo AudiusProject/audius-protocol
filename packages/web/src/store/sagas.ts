@@ -4,6 +4,7 @@ import {
   chatSagas,
   reachabilitySagas as commonReachabilitySagas,
   remoteConfigSagas,
+  relatedArtistsSagas,
   deletePlaylistConfirmationModalUISagas as deletePlaylistConfirmationModalSagas,
   duplicateAddConfirmationModalUISagas as duplicateAddConfirmationModalSagas,
   mobileOverflowMenuUISagas as overflowMenuSagas,
@@ -169,6 +170,7 @@ export default function* rootSaga() {
 
     // Application
     addToCollectionSagas(),
+    relatedArtistsSagas(),
     buyAudioSagas(),
     changePasswordSagas(),
     chatWebSagas(),
