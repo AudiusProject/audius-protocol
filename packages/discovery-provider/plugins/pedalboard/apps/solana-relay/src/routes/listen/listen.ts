@@ -20,10 +20,7 @@ import { getCachedContentNodes } from '../../redis'
 import { getConnection } from '../../utils/connections'
 import { getIP, getIpData } from '../../utils/ipData'
 import { sortKeys } from '../../utils/sortKeys'
-import {
-  broadcastTransaction,
-  sendTransactionWithRetries
-} from '../../utils/transaction'
+import { sendTransactionWithRetries } from '../../utils/transaction'
 
 import {
   createTrackListenInstructions,
@@ -146,9 +143,6 @@ export const recordListen = async (
   })
 
   logger.info({ solTxSignature }, 'transaction sig')
-
-  // no need to confirm since we already confirm in the sendTransactionWithRetries
-  await broadcastTransaction({ logger, signature: solTxSignature })
 
   return { solTxSignature }
 }
