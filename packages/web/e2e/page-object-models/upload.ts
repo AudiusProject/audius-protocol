@@ -2,7 +2,7 @@ import path from 'path'
 
 import { Locator, Page, expect } from '@playwright/test'
 
-class BaseEditPage {
+class BaseTrackEditPage {
   protected readonly artworkButton: Locator
   protected readonly dropzoneFileInput: Locator
   protected readonly titleInput: Locator
@@ -31,6 +31,11 @@ class BaseEditPage {
   }
 
   async setArtwork(file: string) {
+    // Remove existing artwork first if applicable
+    await expect(this.artworkButton).toBeVisible()
+    if (await this.artworkButton.filter({ hasText: 'remove' }).isVisible()) {
+      await this.artworkButton.click()
+    }
     await this.artworkButton.click()
     await this.dropzoneFileInput.setInputFiles(
       path.join(__dirname, '..', 'files', file)
@@ -73,12 +78,13 @@ class BaseEditPage {
   }
 }
 
-export class EditTrackPage extends BaseEditPage {
+export class EditTrackPage extends BaseTrackEditPage {
   protected readonly titleInput: Locator
   private readonly remixSettingsButton: Locator
-  private readonly accessAndSaleSettingsButton: Locator
-  private readonly attributionSettingsButton: Locator
+  private readonly priceAndAudienceSettingsButton: Locator
+  private readonly advancedSettingsButton: Locator
   private readonly stemsAndDownloadsSettingsButton: Locator
+  private readonly visibilitySettingsButton: Locator
 
   constructor(page: Page) {
     super(page)
@@ -86,14 +92,17 @@ export class EditTrackPage extends BaseEditPage {
     this.remixSettingsButton = page.getByRole('button', {
       name: /remix settings/i
     })
-    this.accessAndSaleSettingsButton = page.getByRole('button', {
-      name: /access & sale/i
+    this.priceAndAudienceSettingsButton = page.getByRole('button', {
+      name: /price & audience/i
     })
-    this.attributionSettingsButton = page.getByRole('button', {
-      name: /attribution/i
+    this.advancedSettingsButton = page.getByRole('button', {
+      name: /advanced/i
     })
     this.stemsAndDownloadsSettingsButton = page.getByRole('button', {
       name: /stems & downloads/i
+    })
+    this.visibilitySettingsButton = page.getByRole('button', {
+      name: /visibility/i
     })
   }
 
@@ -101,20 +110,24 @@ export class EditTrackPage extends BaseEditPage {
     await this.remixSettingsButton.click()
   }
 
-  async openAccessAndSaleSettings() {
-    await this.accessAndSaleSettingsButton.click()
+  async openPriceAndAudienceSettings() {
+    await this.priceAndAudienceSettingsButton.click()
   }
 
   async openAttributionSettings() {
-    await this.attributionSettingsButton.click()
+    await this.advancedSettingsButton.click()
   }
 
   async openStemsAndDownloadsSettings() {
     await this.stemsAndDownloadsSettingsButton.click()
   }
+
+  async openVisibilitySettings() {
+    await this.visibilitySettingsButton.click()
+  }
 }
 
-export class EditPlaylistPage extends BaseEditPage {
+export class EditPlaylistPage extends BaseTrackEditPage {
   protected readonly titleInput: Locator
   protected readonly trackList: Locator
 
@@ -200,9 +213,9 @@ export class EditPlaylistPage extends BaseEditPage {
 
 type AlbumAccessType = 'public' | 'premium' | 'hidden'
 type AlbumAccessArgs = { albumPrice: number; albumTrackPrice: number }
-export class EditAlbumPage extends EditPlaylistPage {
+export class UploadEditAlbumPage extends EditPlaylistPage {
   protected readonly titleInput: Locator
-  protected readonly accessAndSaleMenu: Locator
+  protected readonly priceAndAudienceMenu: Locator
   protected readonly albumPriceInput: Locator
   protected readonly albumTrackPriceInput: Locator
   protected readonly accessMenuSaveButton: Locator
@@ -217,8 +230,8 @@ export class EditAlbumPage extends EditPlaylistPage {
   constructor(page: Page) {
     super(page)
     this.titleInput = page.getByRole('textbox', { name: /album name/i })
-    this.accessAndSaleMenu = page.getByRole('heading', {
-      name: /access & sale/i
+    this.priceAndAudienceMenu = page.getByRole('heading', {
+      name: /price & audience/i
     })
     this.accessAndSaleMenuOptions = {
       public: page.getByRole('radio', { name: /public/i }),
@@ -240,7 +253,7 @@ export class EditAlbumPage extends EditPlaylistPage {
   }
 
   async setAlbumAccessType(type: AlbumAccessType, args?: AlbumAccessArgs) {
-    await this.accessAndSaleMenu.click()
+    await this.priceAndAudienceMenu.click()
     await this.accessAndSaleMenuOptions[type].click()
     if (args !== undefined && type === 'premium' && 'albumPrice' in args) {
       await this.albumPriceInput.fill(args.albumPrice.toString())
