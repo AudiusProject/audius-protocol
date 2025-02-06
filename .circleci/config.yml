@@ -87,6 +87,8 @@ jobs:
             - ./packages/ddex-entrypoint/node_modules
             - ./packages/create-audius-app/node_modules
             - ./packages/dotenv-linter/bin
+            - ./packages/discovery-provider/plugins/pedalboard/apps/relay/node_modules
+            - ./packages/discovery-provider/plugins/pedalboard/apps/solana-relay/node_modules
 
   generate-release-branch:
     working_directory: ~/audius-protocol
@@ -349,6 +351,7 @@ workflows:
             .* run-release-workflow false
             packages/discovery-provider/.* run-discovery-workflow true
             packages/web/.* run-web-workflow true
+            packages/web/e2e/.* run-integration-workflow true
             packages/mobile/.* run-mobile-workflow true
             packages/embed/.* run-embed-workflow true
             packages/common/.* run-common-workflow true

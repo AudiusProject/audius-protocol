@@ -87,6 +87,7 @@ from src.api.v1.models.users import (
     challenge_response,
     connected_wallets,
     decoded_user_token,
+    email_access,
     encoded_user_id,
     purchase,
     remixed_track_aggregate,
@@ -1670,6 +1671,14 @@ class MutualFollowers(FullMutualFollowers):
 
 
 related_artist_route_parser = pagination_with_current_user_parser.copy()
+related_artist_route_parser.add_argument(
+    "filter_followed",
+    required=False,
+    type=inputs.boolean,
+    default=False,
+    description="If true, filters out artists that the current user already follows",
+)
+
 related_artist_response = make_response(
     "related_artist_response", ns, fields.List(fields.Nested(user_model))
 )
@@ -1690,8 +1699,11 @@ class FullRelatedUsers(Resource):
         limit = get_default_max(args.get("limit"), 10, 100)
         offset = format_offset(args)
         current_user_id = get_current_user_id(args)
+        filter_followed = args.get("filter_followed", False)
         decoded_id = decode_with_abort(id, full_ns)
-        users = get_related_artists(decoded_id, current_user_id, limit, offset)
+        users = get_related_artists(
+            decoded_id, current_user_id, limit, offset, filter_followed
+        )
         users = list(map(extend_user, users))
         return success_response(users)
 
@@ -3113,8 +3125,8 @@ class FullMutedUsers(Resource):
         return success_response(muted_users)
 
 
-email_key_response = make_response(
-    "email_key_response", ns, fields.String(required=False, allow_null=True)
+email_access_response = make_response(
+    "email_access_response", ns, fields.Nested(email_access, allow_null=True)
 )
 
 
@@ -3131,7 +3143,7 @@ class UserEmailKey(Resource):
         },
         responses={200: "Success", 400: "Bad request", 500: "Server error"},
     )
-    @ns.marshal_with(email_key_response)
+    @ns.marshal_with(email_access_response)
     @cache(ttl_sec=5)
     def get(self, receiving_user_id, grantor_user_id):
         receiving_user_id = decode_with_abort(receiving_user_id, ns)
@@ -3151,4 +3163,4 @@ class UserEmailKey(Resource):
             if not email_access:
                 return success_response(None)
 
-            return success_response(email_access.encrypted_key)
+            return success_response(email_access.to_dict())

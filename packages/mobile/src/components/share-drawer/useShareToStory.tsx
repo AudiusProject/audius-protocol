@@ -32,10 +32,10 @@ import { useDispatch, useSelector } from 'react-redux'
 
 import { IconWaveform, Button } from '@audius/harmony-native'
 import { LinearProgress, Text } from 'app/components/core'
-import { env } from 'app/env'
 import { useToast } from 'app/hooks/useToast'
 import { make, track } from 'app/services/analytics'
 import { audiusBackendInstance } from 'app/services/audius-backend-instance'
+import { env } from 'app/services/env'
 import { audiusSdk } from 'app/services/sdk/audius-sdk'
 import { setVisibility } from 'app/store/drawers/slice'
 import {

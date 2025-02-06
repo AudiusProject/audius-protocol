@@ -8,11 +8,14 @@ import {
 } from 'react'
 
 import { useInstanceVar } from '@audius/common/hooks'
-import { CollectiblesMetadata, Collectible } from '@audius/common/models'
+import {
+  CollectiblesMetadata,
+  Collectible,
+  UserMetadata
+} from '@audius/common/models'
 import {
   collectibleDetailsUISelectors,
-  collectibleDetailsUIActions,
-  ProfileUser
+  collectibleDetailsUIActions
 } from '@audius/common/store'
 import { getHash, route } from '@audius/common/utils'
 import {
@@ -110,7 +113,7 @@ type CollectiblesPageProps = {
   name: string
   isMobile: boolean
   isUserOnTheirProfile: boolean
-  profile: ProfileUser
+  profile: UserMetadata
   updateProfile?: (metadata: any) => void
   updateProfilePicture?: (
     selectedFiles: any,

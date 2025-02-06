@@ -8,7 +8,7 @@ import {
 } from '@amplitude/analytics-react-native'
 import VersionNumber from 'react-native-version-number'
 
-import { env } from 'app/env'
+import { env } from 'app/services/env'
 import { versionInfo } from 'app/utils/appVersionWithCodepush'
 
 import packageInfo from '../../package.json'

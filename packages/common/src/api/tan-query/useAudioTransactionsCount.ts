@@ -30,7 +30,7 @@ export const useAudioTransactionsCount = (options?: QueryOptions) => {
 
       return response.data ?? 0
     },
-    staleTime: options?.staleTime,
+    ...options,
     enabled: options?.enabled !== false && !!userId
   })
 }

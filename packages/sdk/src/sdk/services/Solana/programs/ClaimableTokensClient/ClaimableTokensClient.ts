@@ -10,8 +10,7 @@ import {
   Secp256k1Program,
   PublicKey,
   Transaction,
-  SendTransactionError,
-  ComputeBudgetProgram
+  SendTransactionError
 } from '@solana/web3.js'
 
 import { productionConfig } from '../../../../config/production'
@@ -157,17 +156,10 @@ export class ClaimableTokensClient {
             userBank,
             programId: this.programId
           })
-        const computeBudgetLimitInstruction =
-          ComputeBudgetProgram.setComputeUnitLimit({
-            units: 50000
-          })
         const { blockhash, lastValidBlockHeight } =
           await this.client.connection.getLatestBlockhash()
         const transaction = await this.client.buildTransaction({
-          instructions: [
-            createUserBankInstruction,
-            computeBudgetLimitInstruction
-          ],
+          instructions: [createUserBankInstruction],
           recentBlockhash: blockhash
         })
         const signature = await this.sendTransaction(transaction)

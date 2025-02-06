@@ -20,7 +20,7 @@ import type {
   AuthorizedApps,
   ConnectedWalletsResponse,
   DeveloperApps,
-  EmailKeyResponse,
+  EmailAccessResponse,
   FavoritesResponse,
   FollowersResponse,
   FollowingResponse,
@@ -55,8 +55,8 @@ import {
     ConnectedWalletsResponseToJSON,
     DeveloperAppsFromJSON,
     DeveloperAppsToJSON,
-    EmailKeyResponseFromJSON,
-    EmailKeyResponseToJSON,
+    EmailAccessResponseFromJSON,
+    EmailAccessResponseToJSON,
     FavoritesResponseFromJSON,
     FavoritesResponseToJSON,
     FollowersResponseFromJSON,
@@ -230,6 +230,7 @@ export interface GetRelatedUsersRequest {
     offset?: number;
     limit?: number;
     userId?: string;
+    filterFollowed?: boolean;
 }
 
 export interface GetRemixersRequest {
@@ -1094,6 +1095,10 @@ export class UsersApi extends runtime.BaseAPI {
             queryParameters['user_id'] = params.userId;
         }
 
+        if (params.filterFollowed !== undefined) {
+            queryParameters['filter_followed'] = params.filterFollowed;
+        }
+
         const headerParameters: runtime.HTTPHeaders = {};
 
         const response = await this.request({
@@ -1593,7 +1598,7 @@ export class UsersApi extends runtime.BaseAPI {
      * @hidden
      * Gets the encrypted key for email access between the receiving user and granting user.
      */
-    async getUserEmailKeyRaw(params: GetUserEmailKeyRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<EmailKeyResponse>> {
+    async getUserEmailKeyRaw(params: GetUserEmailKeyRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<EmailAccessResponse>> {
         if (params.receivingUserId === null || params.receivingUserId === undefined) {
             throw new runtime.RequiredError('receivingUserId','Required parameter params.receivingUserId was null or undefined when calling getUserEmailKey.');
         }
@@ -1613,13 +1618,13 @@ export class UsersApi extends runtime.BaseAPI {
             query: queryParameters,
         }, initOverrides);
 
-        return new runtime.JSONApiResponse(response, (jsonValue) => EmailKeyResponseFromJSON(jsonValue));
+        return new runtime.JSONApiResponse(response, (jsonValue) => EmailAccessResponseFromJSON(jsonValue));
     }
 
     /**
      * Gets the encrypted key for email access between the receiving user and granting user.
      */
-    async getUserEmailKey(params: GetUserEmailKeyRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<EmailKeyResponse> {
+    async getUserEmailKey(params: GetUserEmailKeyRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<EmailAccessResponse> {
         const response = await this.getUserEmailKeyRaw(params, initOverrides);
         return await response.value();
     }

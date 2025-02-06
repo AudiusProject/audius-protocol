@@ -19,7 +19,7 @@ export const useSuggestedArtists = (options?: QueryOptions) => {
       // dedupe the artists just in case the team accidentally adds the same artist twice
       return [...new Set(suggestedArtists as number[])]
     },
-    staleTime: options?.staleTime,
+    ...options,
     enabled: options?.enabled !== false
   })
 

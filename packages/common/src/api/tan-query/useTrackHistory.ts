@@ -106,7 +106,7 @@ export const useTrackHistory = (
       return tracks
     },
     select: (data) => data.pages.flat(),
-    staleTime: options?.staleTime,
+    ...options,
     enabled: options?.enabled !== false && !!currentUserId
   })
 

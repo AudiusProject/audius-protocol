@@ -1,12 +1,13 @@
 import { expect } from '@playwright/test'
-import { test } from './test'
+
 import { getAlbum, getPlaylist, getRemix, getRemixes, getTrack } from './data'
+import { test } from './test'
 
 test('should load an album page', async ({ page }) => {
-  const { url, name } = getAlbum()
-  await page.goto(url)
+  const { playlistName, permalink } = getAlbum()
+  await page.goto(permalink)
   const heading = page.getByRole('heading', {
-    name,
+    name: playlistName,
     level: 1
   })
   await expect(heading).toBeVisible()
@@ -46,10 +47,10 @@ test('should load a remixes page', async ({ page }) => {
 })
 
 test('should load a track page', async ({ page }) => {
-  const { url, name } = getTrack()
-  await page.goto(url)
+  const { permalink, title } = getTrack()
+  await page.goto(permalink)
   const heading = page.getByRole('heading', {
-    name,
+    name: title,
     level: 1
   })
   await expect(heading).toBeVisible()

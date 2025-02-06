@@ -14,6 +14,7 @@ export enum ChallengeId {
   MOBILE_INSTALL = 'm',
   CONNECT_VERIFIED_ACCOUNT = 'v',
   LISTEN_STREAK = 'l',
+  LISTEN_STREAK_ENDLESS = 'e',
   COMPLETE_PROFILE = 'p',
   SEND_FIRST_TIP = 'ft',
   CREATE_FIRST_PLAYLIST = 'fp',

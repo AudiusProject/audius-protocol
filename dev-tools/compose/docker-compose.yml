@@ -77,9 +77,12 @@ services:
     environment:
       NETWORK: dev
       AUDIUSD_STORAGE_ENABLED: false
+      audius_discprov_env: dev
       audius_core_root_dir: ./tmp/discoveryOneHome
       audius_discprov_url: http://audius-protocol-discovery-provider-1
+      audius_db_url: postgresql://postgres:postgres@db:5432/discovery_provider_1
       audius_delegate_private_key: d09ba371c359f10f22ccda12fd26c598c7921bda3220c9942174562bc6a36fe8
+      audius_web3_eth_provider_url: http://eth-ganache:8545
       runDownMigration: true
       externalAddress: audiusd-1:26656
     <<: *common

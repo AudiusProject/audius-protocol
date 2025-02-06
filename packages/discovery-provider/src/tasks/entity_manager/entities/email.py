@@ -40,9 +40,8 @@ def validate_email_metadata(params: ManageEntityParameters) -> None:
             raise IndexingValidationError("access_grants must be a list")
 
         for grant in access_grants:
-            if not all(
-                k in grant
-                for k in ["receiving_user_id", "grantor_user_id", "encrypted_key"]
+            if not {"receiving_user_id", "grantor_user_id", "encrypted_key"}.issubset(
+                grant
             ):
                 raise IndexingValidationError(
                     "Each access grant must contain receiving_user_id, grantor_user_id, and encrypted_key"
@@ -99,6 +98,28 @@ def create_encrypted_email(params: ManageEntityParameters) -> None:
 
         # Create access records
         for grant in params.metadata["access_grants"]:
+            # Check if access already exists
+            existing_access = (
+                params.session.query(EmailAccess)
+                .filter(
+                    EmailAccess.email_owner_user_id
+                    == params.metadata["email_owner_user_id"],
+                    EmailAccess.receiving_user_id == grant["receiving_user_id"],
+                    EmailAccess.grantor_user_id == grant["grantor_user_id"],
+                )
+                .first()
+            )
+            if existing_access:
+                logger.debug(
+                    "email.py | Email access already exists",
+                    extra={
+                        "email_owner_user_id": params.metadata["email_owner_user_id"],
+                        "receiving_user_id": grant["receiving_user_id"],
+                        "grantor_user_id": grant["grantor_user_id"],
+                    },
+                )
+                continue
+
             new_access = EmailAccess(
                 email_owner_user_id=params.metadata["email_owner_user_id"],
                 receiving_user_id=grant["receiving_user_id"],
@@ -128,12 +149,13 @@ def create_encrypted_email(params: ManageEntityParameters) -> None:
 def grant_email_access(params: ManageEntityParameters) -> None:
     """Grant access to an encrypted email."""
     try:
+        if not isinstance(params.metadata, dict):
+            raise IndexingValidationError("Email metadata must be a dictionary")
+
         # Validate required fields
         required_fields = [
             "email_owner_user_id",
-            "receiving_user_id",
-            "grantor_user_id",
-            "encrypted_key",
+            "access_grants",
         ]
         missing_fields = [
             field for field in required_fields if not params.metadata.get(field)
@@ -143,29 +165,66 @@ def grant_email_access(params: ManageEntityParameters) -> None:
                 f"Missing required fields: {', '.join(missing_fields)}"
             )
 
-        # Verify granter has access
-        granter_access = (
-            params.session.query(EmailAccess)
-            .filter(
-                EmailAccess.email_owner_user_id
-                == params.metadata["email_owner_user_id"],
-                EmailAccess.receiving_user_id == params.metadata["grantor_user_id"],
-            )
-            .first()
-        )
-        if not granter_access:
-            raise IndexingValidationError("Granter does not have access to the email")
+        # Validate access_grants structure
+        access_grants = params.metadata["access_grants"]
+        if not isinstance(access_grants, list):
+            raise IndexingValidationError("access_grants must be a list")
 
-        # Create new access record
-        new_access = EmailAccess(
-            email_owner_user_id=params.metadata["email_owner_user_id"],
-            receiving_user_id=params.metadata["receiving_user_id"],
-            grantor_user_id=params.metadata["grantor_user_id"],
-            encrypted_key=params.metadata["encrypted_key"],
-        )
-        params.add_record(
-            params.metadata["receiving_user_id"], new_access, EntityType.EMAIL_ACCESS
-        )
+        for grant in access_grants:
+            if not {"receiving_user_id", "grantor_user_id", "encrypted_key"}.issubset(
+                grant
+            ):
+                raise IndexingValidationError(
+                    "Each access grant must contain receiving_user_id, grantor_user_id, and encrypted_key"
+                )
+
+            # Verify grantor has access for each grant
+            grantor_access = (
+                params.session.query(EmailAccess)
+                .filter(
+                    EmailAccess.email_owner_user_id
+                    == params.metadata["email_owner_user_id"],
+                    EmailAccess.receiving_user_id == grant["grantor_user_id"],
+                )
+                .first()
+            )
+            if not grantor_access:
+                raise IndexingValidationError(
+                    f"Grantor {grant['grantor_user_id']} does not have access to the email"
+                )
+
+            # Check if access already exists
+            existing_access = (
+                params.session.query(EmailAccess)
+                .filter(
+                    EmailAccess.email_owner_user_id
+                    == params.metadata["email_owner_user_id"],
+                    EmailAccess.receiving_user_id == grant["receiving_user_id"],
+                    EmailAccess.grantor_user_id == grant["grantor_user_id"],
+                )
+                .first()
+            )
+            if existing_access:
+                logger.debug(
+                    "email.py | Email access already exists",
+                    extra={
+                        "email_owner_user_id": params.metadata["email_owner_user_id"],
+                        "receiving_user_id": grant["receiving_user_id"],
+                        "grantor_user_id": grant["grantor_user_id"],
+                    },
+                )
+                continue
+
+            # Create new access record for each grant
+            new_access = EmailAccess(
+                email_owner_user_id=params.metadata["email_owner_user_id"],
+                receiving_user_id=grant["receiving_user_id"],
+                grantor_user_id=grant["grantor_user_id"],
+                encrypted_key=grant["encrypted_key"],
+            )
+            params.add_record(
+                grant["receiving_user_id"], new_access, EntityType.EMAIL_ACCESS
+            )
 
     except Exception as e:
         logger.error(
@@ -173,7 +232,6 @@ def grant_email_access(params: ManageEntityParameters) -> None:
             extra={
                 "error": str(e),
                 "email_owner_user_id": params.metadata.get("email_owner_user_id"),
-                "receiving_user_id": params.metadata.get("receiving_user_id"),
             },
         )
         raise

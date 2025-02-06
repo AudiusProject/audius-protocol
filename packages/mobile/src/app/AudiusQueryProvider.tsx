@@ -2,9 +2,9 @@ import type { ReactNode } from 'react'
 
 import { AudiusQueryContext } from '@audius/common/audius-query'
 
-import { env } from 'app/env'
 import * as analytics from 'app/services/analytics'
 import { audiusBackendInstance } from 'app/services/audius-backend-instance'
+import { env } from 'app/services/env'
 import {
   getFeatureEnabled,
   remoteConfigInstance

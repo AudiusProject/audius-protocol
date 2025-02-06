@@ -115,7 +115,8 @@ export const SelectArtistsPage = () => {
     env.ENVIRONMENT === 'development' ||
     window.localStorage.getItem('FORCE_DEV') === 'true'
   // This a workaround flag for local envs that don't have any artists and get stuck at this screen
-  const noArtistsSkipValidation = artists?.length === 0 && isDevEnvironment
+  const noArtistsSkipValidation =
+    (!artists || artists.length === 0) && isDevEnvironment
 
   const ArtistsList = isMobile ? Flex : Paper
 

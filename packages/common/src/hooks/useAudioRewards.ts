@@ -19,8 +19,7 @@ export const useFormattedProgressLabel = ({
 }) => {
   let label: string
 
-  const shouldShowCompleted =
-    challenge?.state === 'completed' || challenge?.state === 'disbursed'
+  const shouldShowCompleted = challenge?.state === 'disbursed'
   const needsDisbursement = challenge && challenge.claimableAmount > 0
   const pending =
     challenge?.undisbursedSpecifiers &&
@@ -39,15 +38,25 @@ export const useFormattedProgressLabel = ({
       challenge?.challenge_type === 'aggregate' &&
       challenge?.max_steps !== null
     ) {
-      // Count down
-      label = fillString(
-        remainingLabel ?? '',
-        formatNumberCommas(
-          (challenge?.max_steps - challenge?.current_step_count)?.toString() ??
-            ''
-        ),
-        formatNumberCommas(challenge?.max_steps?.toString() ?? '')
-      )
+      if (needsDisbursement) {
+        label = messages.readyToClaim
+      } else if (
+        challenge?.challenge_id === ChallengeName.OneShot &&
+        challenge?.disbursed_amount > 0
+      ) {
+        label = messages.completeLabel
+      } else {
+        // Count down
+        label = fillString(
+          remainingLabel ?? '',
+          formatNumberCommas(
+            (
+              challenge?.max_steps - challenge?.current_step_count
+            )?.toString() ?? ''
+          ),
+          formatNumberCommas(challenge?.max_steps?.toString() ?? '')
+        )
+      }
     } else {
       label = fillString(
         progressLabel ?? '',
@@ -59,14 +68,24 @@ export const useFormattedProgressLabel = ({
     challenge?.challenge_type === 'aggregate' &&
     challenge?.max_steps !== null
   ) {
-    // Count down
-    label = fillString(
-      remainingLabel ?? '',
-      formatNumberCommas(
-        (challenge?.max_steps - challenge?.current_step_count)?.toString() ?? ''
-      ),
-      formatNumberCommas(challenge?.max_steps?.toString() ?? '')
-    )
+    if (needsDisbursement) {
+      label = messages.readyToClaim
+    } else if (
+      challenge?.challenge_id === ChallengeName.OneShot &&
+      challenge?.disbursed_amount > 0
+    ) {
+      label = messages.completeLabel
+    } else {
+      // Count down
+      label = fillString(
+        remainingLabel ?? '',
+        formatNumberCommas(
+          (challenge?.max_steps - challenge?.current_step_count)?.toString() ??
+            ''
+        ),
+        formatNumberCommas(challenge?.max_steps?.toString() ?? '')
+      )
+    }
   } else {
     // Count up
     label = fillString(

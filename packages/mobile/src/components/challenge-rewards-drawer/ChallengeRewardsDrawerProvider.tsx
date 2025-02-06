@@ -27,6 +27,7 @@ import { AppDrawer, useDrawerState } from '../drawer/AppDrawer'
 
 import { AudioMatchingChallengeDrawerContent } from './AudioMatchingChallengeDrawerContent'
 import { ChallengeRewardsDrawerContent } from './ChallengeRewardsDrawerContent'
+import { ListenStreakEndlessChallengeDrawerContent } from './ListenStreakEndlessChallengeDrawerContent'
 import { ProfileCompletionChecks } from './ProfileCompletionChecks'
 import { ReferralRewardContents } from './ReferralRewardContents'
 const {
@@ -176,6 +177,9 @@ export const ChallengeRewardsDrawerProvider = () => {
           />
         )
         break
+      case ChallengeName.OneShot:
+        contents = undefined
+        break
       default:
         contents = config?.buttonInfo ? (
           <Button
@@ -217,6 +221,15 @@ export const ChallengeRewardsDrawerProvider = () => {
           onNavigate={handleNavigation}
           onClaim={hasConfig ? onClaim : undefined}
         />
+      ) : modalType === ChallengeName.ListenStreakEndless ? (
+        <ListenStreakEndlessChallengeDrawerContent
+          onClose={handleClose}
+          challenge={challenge}
+          claimableAmount={audioToClaim}
+          claimedAmount={audioClaimedSoFar}
+          claimStatus={claimStatus}
+          onClaim={hasConfig ? onClaim : undefined}
+        />
       ) : (
         <ChallengeRewardsDrawerContent
           description={config.description(challenge)}
@@ -234,6 +247,7 @@ export const ChallengeRewardsDrawerProvider = () => {
           aaoErrorCode={aaoErrorCode}
           onClaim={hasConfig ? onClaim : undefined}
           isVerifiedChallenge={!!config.isVerifiedChallenge}
+          onClose={handleClose}
           showProgressBar={
             challenge.challenge_type !== 'aggregate' &&
             challenge.max_steps !== null &&

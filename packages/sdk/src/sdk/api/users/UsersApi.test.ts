@@ -442,7 +442,18 @@ describe('UsersApi', () => {
       vitest
         .spyOn(UsersApi.prototype, 'getUserEmailKey')
         .mockImplementation(async () => {
-          return { data: 'mockEncryptedKey' }
+          return {
+            data: {
+              encryptedKey: 'mockEncryptedKey',
+              isInitial: false,
+              id: 1,
+              emailOwnerUserId: 1,
+              receivingUserId: 2,
+              grantorUserId: 3,
+              createdAt: '2025-01-01',
+              updatedAt: '2025-01-01'
+            }
+          }
         })
     })
 
@@ -450,7 +461,8 @@ describe('UsersApi', () => {
       const result = await users.shareEmail({
         emailOwnerUserId: 123,
         receivingUserId: 456,
-        email: 'email@example.com'
+        email: 'email@example.com',
+        initialEmailEncryptionUuid: 1
       })
 
       expect(result).toStrictEqual({
@@ -463,7 +475,8 @@ describe('UsersApi', () => {
       const result = await users.shareEmail({
         emailOwnerUserId: 123,
         receivingUserId: 456,
-        email: 'email@example.com'
+        email: 'email@example.com',
+        initialEmailEncryptionUuid: 1
       })
 
       expect(result).toStrictEqual({
@@ -491,6 +504,168 @@ describe('UsersApi', () => {
           receivingUserId: '456',
           encryptedEmail: 'encryptedEmailString',
           encryptedKey: 'encryptedKeyString'
+        } as any)
+      }).rejects.toThrow()
+    })
+  })
+
+  describe('addAssociatedWallet', () => {
+    it('adds an associated ethereum wallet if valid metadata is provided', async () => {
+      const result = await users.addAssociatedWallet({
+        userId: '7eP5n',
+        wallet: {
+          address: '0x1234567890123456789012345678901234567890',
+          chain: 'eth'
+        },
+        signature: '0xabcdef1234567890'
+      })
+
+      expect(result).toStrictEqual({
+        blockHash: 'a',
+        blockNumber: 1
+      })
+    })
+
+    it('adds an associated solana wallet if valid metadata is provided', async () => {
+      const result = await users.addAssociatedWallet({
+        userId: '7eP5n',
+        wallet: {
+          address: '5FHwkrdxkjgwwmeNq4Gu168KzTXdMxZY8wuTvqxDbB1E',
+          chain: 'sol'
+        },
+        signature: 'mockSolanaSignature'
+      })
+
+      expect(result).toStrictEqual({
+        blockHash: 'a',
+        blockNumber: 1
+      })
+    })
+
+    it('throws an error if invalid ethereum address is provided', async () => {
+      await expect(async () => {
+        await users.addAssociatedWallet({
+          userId: '7eP5n',
+          wallet: {
+            address: '0xinvalid', // Invalid eth address
+            chain: 'eth'
+          },
+          signature: '0xabcdef1234567890'
+        })
+      }).rejects.toThrow()
+    })
+
+    it('throws an error if invalid solana address is provided', async () => {
+      await expect(async () => {
+        await users.addAssociatedWallet({
+          userId: '7eP5n',
+          wallet: {
+            address: 'invalid', // Invalid sol address
+            chain: 'sol'
+          },
+          signature: 'mockSolanaSignature'
+        })
+      }).rejects.toThrow()
+    })
+
+    it('throws an error if invalid chain is provided', async () => {
+      await expect(async () => {
+        await users.addAssociatedWallet({
+          userId: '7eP5n',
+          wallet: {
+            address: '0x1234567890123456789012345678901234567890',
+            chain: 'invalid' as any
+          },
+          signature: '0xabcdef1234567890'
+        })
+      }).rejects.toThrow()
+    })
+
+    it('throws an error if required signature is missing', async () => {
+      await expect(async () => {
+        await users.addAssociatedWallet({
+          userId: '7eP5n',
+          wallet: {
+            address: '0x1234567890123456789012345678901234567890',
+            chain: 'eth'
+          }
+        } as any)
+      }).rejects.toThrow()
+    })
+  })
+
+  describe('removeAssociatedWallet', () => {
+    it('removes an associated ethereum wallet if valid metadata is provided', async () => {
+      const result = await users.removeAssociatedWallet({
+        userId: '7eP5n',
+        wallet: {
+          address: '0x1234567890123456789012345678901234567890',
+          chain: 'eth'
+        }
+      })
+
+      expect(result).toStrictEqual({
+        blockHash: 'a',
+        blockNumber: 1
+      })
+    })
+
+    it('removes an associated solana wallet if valid metadata is provided', async () => {
+      const result = await users.removeAssociatedWallet({
+        userId: '7eP5n',
+        wallet: {
+          address: '5FHwkrdxkjgwwmeNq4Gu168KzTXdMxZY8wuTvqxDbB1E',
+          chain: 'sol'
+        }
+      })
+
+      expect(result).toStrictEqual({
+        blockHash: 'a',
+        blockNumber: 1
+      })
+    })
+
+    it('throws an error if invalid ethereum address is provided', async () => {
+      await expect(async () => {
+        await users.removeAssociatedWallet({
+          userId: '7eP5n',
+          wallet: {
+            address: '0xinvalid', // Invalid eth address
+            chain: 'eth'
+          }
+        })
+      }).rejects.toThrow()
+    })
+
+    it('throws an error if invalid solana address is provided', async () => {
+      await expect(async () => {
+        await users.removeAssociatedWallet({
+          userId: '7eP5n',
+          wallet: {
+            address: 'invalid', // Invalid sol address
+            chain: 'sol'
+          }
+        })
+      }).rejects.toThrow()
+    })
+
+    it('throws an error if invalid chain is provided', async () => {
+      await expect(async () => {
+        await users.removeAssociatedWallet({
+          userId: '7eP5n',
+          wallet: {
+            address: '0x1234567890123456789012345678901234567890',
+            chain: 'invalid' as any
+          }
+        })
+      }).rejects.toThrow()
+    })
+
+    it('throws an error if required fields are missing', async () => {
+      await expect(async () => {
+        await users.removeAssociatedWallet({
+          userId: '7eP5n'
+          // Missing wallet object
         } as any)
       }).rejects.toThrow()
     })
