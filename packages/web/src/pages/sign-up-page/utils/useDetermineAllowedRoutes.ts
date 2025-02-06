@@ -76,7 +76,10 @@ export const useDetermineAllowedRoute = () => {
         // Already have genres selected
         allowedRoutes.push(SignUpPath.selectArtists)
 
-        if (signUpState.selectedUserIds?.length >= 3 || isDevEnvironment) {
+        if (
+          signUpState.followArtists?.selectedUserIds?.length >= 3 ||
+          isDevEnvironment
+        ) {
           // Already have 3 artists followed, ready to finish sign up
           allowedRoutes.push(SignUpPath.appCta)
 

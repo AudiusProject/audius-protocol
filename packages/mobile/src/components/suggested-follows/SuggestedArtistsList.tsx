@@ -1,17 +1,20 @@
 import { useCallback } from 'react'
 
-import { useSuggestedArtists } from '@audius/common/api'
+import { useProxySelector } from '@audius/common/hooks'
 import type { ID } from '@audius/common/models'
+import type { CommonState } from '@audius/common/store'
+import { removeNullable } from '@audius/common/utils'
+import type { Maybe } from '@audius/common/utils'
 import {
   removeFollowArtists,
   addFollowArtists
 } from 'common/store/pages/signon/actions'
-import { getFollowIds } from 'common/store/pages/signon/selectors'
 import LinearGradient from 'react-native-linear-gradient'
 import { useDispatch, useSelector } from 'react-redux'
 
 import type { UserListProps } from 'app/components/user-list'
 import { ProfileCard, UserList } from 'app/components/user-list'
+import type { AppState } from 'app/store'
 import { makeStyles } from 'app/styles'
 import { useThemeColors } from 'app/utils/theme'
 
@@ -28,8 +31,20 @@ export const SuggestedArtistsList = (props: SuggestedArtistsListProps) => {
   const { secondaryLight2, secondaryDark2, white } = useThemeColors()
   const dispatch = useDispatch()
 
-  const { data: suggestedArtists } = useSuggestedArtists()
-  const selectedArtistIds: ID[] = useSelector(getFollowIds)
+  const suggestedArtists = useProxySelector((state: AppState & CommonState) => {
+    const { categories, selectedCategory } = state.signOn.followArtists
+    const suggestedFollowsForCategory: Maybe<ID[]> =
+      categories[selectedCategory]
+    const users = state.users.entries
+
+    return suggestedFollowsForCategory
+      ?.map((suggestedUserId) => users[suggestedUserId]?.metadata)
+      .filter(removeNullable)
+  }, [])
+
+  const selectedArtistIds: ID[] = useSelector(
+    (state: AppState) => state.signOn.followArtists.selectedUserIds
+  )
 
   const handleSelectArtist = useCallback(
     (userId: number) => {
