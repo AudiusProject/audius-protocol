@@ -13,10 +13,10 @@ import { Screen, ScreenContent, ScreenHeader } from 'app/components/core'
 import { Lineup } from 'app/components/lineup'
 import { EndOfLineupNotice } from 'app/components/lineup/EndOfLineupNotice'
 import { OnlineOnly } from 'app/components/offline-placeholder/OnlineOnly'
-import { SuggestedFollows } from 'app/components/suggested-follows'
 import { useAppTabScreen } from 'app/hooks/useAppTabScreen'
 import { make, track } from 'app/services/analytics'
 
+import { EmptyFeedSuggestedFollows } from './EmptyFeedSuggestedFollows'
 import { FeedFilterButton } from './FeedFilterButton'
 const { getDiscoverFeedLineup } = feedPageSelectors
 const { makeGetLineupMetadatas } = lineupSelectors
@@ -57,7 +57,7 @@ export const FeedScreen = () => {
           ListFooterComponent={
             <EndOfLineupNotice description={messages.endOfFeed} />
           }
-          LineupEmptyComponent={<SuggestedFollows />}
+          LineupEmptyComponent={<EmptyFeedSuggestedFollows />}
           actions={feedActions}
           lineupSelector={getFeedLineup}
           loadMore={loadMore}
