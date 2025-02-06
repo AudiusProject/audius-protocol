@@ -74,8 +74,8 @@ export const usePremiumTracks = (
 
       return processedTracks
     },
-    enabled: options?.enabled !== false,
-    ...options
+    ...options,
+    enabled: options?.enabled !== false
   })
 
   const lineupData = useLineupQuery({

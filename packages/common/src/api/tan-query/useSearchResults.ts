@@ -231,7 +231,7 @@ export const useSearchResults = (
         playlists
       }
     },
-    enabled: options?.enabled !== false,
-    ...options
+    ...options,
+    enabled: options?.enabled !== false
   })
 }

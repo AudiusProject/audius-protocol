@@ -201,8 +201,8 @@ export const useTrackPageLineup = (
 
       return { tracks, indices }
     },
-    enabled: options?.enabled !== false && !!ownerHandle && !!trackId,
-    ...options
+    ...options,
+    enabled: options?.enabled !== false && !!ownerHandle && !!trackId
   })
 
   const lineupData = useLineupQuery({

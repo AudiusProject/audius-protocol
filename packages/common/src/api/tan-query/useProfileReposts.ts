@@ -95,8 +95,8 @@ export const useProfileReposts = (
 
       return reposts
     },
-    enabled: options?.enabled !== false && !!handle,
-    ...options
+    ...options,
+    enabled: options?.enabled !== false && !!handle
   })
 
   const lineupData = useLineupQuery({

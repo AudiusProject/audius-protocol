@@ -38,7 +38,7 @@ export const useUsers = (
 
       return users
     },
-    enabled: options?.enabled !== false && encodedIds && encodedIds.length > 0,
-    ...options
+    ...options,
+    enabled: options?.enabled !== false && encodedIds && encodedIds.length > 0
   })
 }

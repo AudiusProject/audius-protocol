@@ -27,7 +27,7 @@ export const useSalesAggregate = (options?: QueryOptions) => {
       })
       return data
     },
-    enabled: options?.enabled !== false && !!currentUserId,
-    ...options
+    ...options,
+    enabled: options?.enabled !== false && !!currentUserId
   })
 }

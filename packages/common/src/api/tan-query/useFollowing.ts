@@ -57,7 +57,7 @@ export const useFollowing = (
       return users
     },
     select: (data) => data.pages.flat(),
-    enabled: options?.enabled !== false && !!userId,
-    ...options
+    ...options,
+    enabled: options?.enabled !== false && !!userId
   })
 }

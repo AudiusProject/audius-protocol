@@ -49,6 +49,7 @@ export const useTopArtistsInGenre = (
       return allPages.length * pageSize
     },
     select: (data) => data.pages.flat(),
-    ...options
+    ...options,
+    enabled: options?.enabled !== false && !!genre
   })
 }

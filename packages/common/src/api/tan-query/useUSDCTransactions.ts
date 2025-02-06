@@ -109,8 +109,8 @@ export const useUSDCTransactions = (
       items: data.pages.flat()
     }),
     refetchInterval: 5000, // Poll every 5 seconds
-    enabled: options?.enabled !== false && !!currentUserId,
-    ...options
+    ...options,
+    enabled: options?.enabled !== false && !!currentUserId
   })
 
   const fetchNextPage = useCallback(async () => {

@@ -35,7 +35,7 @@ export const useExploreContent = (options?: QueryOptions) => {
         )
       }
     },
-    enabled: options?.enabled !== false,
-    ...options
+    ...options,
+    enabled: options?.enabled !== false
   })
 }

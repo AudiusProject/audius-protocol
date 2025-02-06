@@ -87,8 +87,8 @@ export const useTrendingPlaylists = (
 
       return processedPlaylists
     },
-    enabled: options?.enabled !== false,
-    ...options
+    ...options,
+    enabled: options?.enabled !== false
   })
 
   const lineupData = useLineupQuery({

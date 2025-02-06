@@ -52,7 +52,7 @@ export const useMutualFollowers = (
       return users
     },
     select: (data) => data.pages.flat(),
-    enabled: options?.enabled !== false && !!userId && !!currentUserId,
-    ...options
+    ...options,
+    enabled: options?.enabled !== false && !!userId && !!currentUserId
   })
 }

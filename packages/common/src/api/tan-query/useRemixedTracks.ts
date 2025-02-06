@@ -36,7 +36,7 @@ export const useRemixedTracks = (options?: QueryOptions) => {
         trackId: HashId.parse(item.trackId)
       }))
     },
-    enabled: options?.enabled !== false && !!currentUserId,
-    ...options
+    ...options,
+    enabled: options?.enabled !== false && !!currentUserId
   })
 }

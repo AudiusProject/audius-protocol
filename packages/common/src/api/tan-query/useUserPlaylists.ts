@@ -62,7 +62,7 @@ export const useUserPlaylists = (
 
       return collections
     },
-    enabled: options?.enabled !== false && !!userId,
-    ...options
+    ...options,
+    enabled: options?.enabled !== false && !!userId
   })
 }

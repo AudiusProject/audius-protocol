@@ -87,8 +87,8 @@ export const useDeveloperApps = (options?: QueryOptions) => {
 
       return data
     },
-    enabled: options?.enabled !== false && !!userId,
-    ...options
+    ...options,
+    enabled: options?.enabled !== false && !!userId
   })
 }
 

@@ -67,8 +67,8 @@ export const useTrendingUnderground = (
 
       return tracks
     },
-    enabled: options?.enabled !== false,
-    ...options
+    ...options,
+    enabled: options?.enabled !== false
   })
 
   const lineupData = useLineupQuery({

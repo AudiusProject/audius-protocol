@@ -31,7 +31,7 @@ export const useEmailInUse = (
   return useQuery({
     queryKey: getEmailInUseQueryKey(email),
     queryFn: () => fetchEmailInUse(email, context),
-    enabled: options?.enabled !== false && !!email,
-    ...options
+    ...options,
+    enabled: options?.enabled !== false && !!email
   })
 }

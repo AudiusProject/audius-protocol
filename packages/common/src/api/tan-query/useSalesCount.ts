@@ -29,7 +29,7 @@ export const useSalesCount = (
       })
       return data
     },
-    enabled: options?.enabled !== false && !!audiusSdk && !!userId,
-    ...options
+    ...options,
+    enabled: options?.enabled !== false && !!audiusSdk && !!userId
   })
 }

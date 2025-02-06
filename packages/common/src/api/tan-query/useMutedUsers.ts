@@ -34,7 +34,7 @@ export const useMutedUsers = (options?: QueryOptions) => {
       primeUserData({ users, queryClient, dispatch })
       return users
     },
-    enabled: options?.enabled !== false && !!currentUserId,
-    ...options
+    ...options,
+    enabled: options?.enabled !== false && !!currentUserId
   })
 }

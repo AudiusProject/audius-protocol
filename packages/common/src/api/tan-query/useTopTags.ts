@@ -34,7 +34,7 @@ export const useTopTags = (
 
       return data
     },
-    enabled: options?.enabled !== false,
-    ...options
+    ...options,
+    enabled: options?.enabled !== false
   })
 }

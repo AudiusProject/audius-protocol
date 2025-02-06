@@ -84,8 +84,8 @@ export const useRemixes = (
 
       return processedTracks
     },
-    enabled: options?.enabled !== false && !!trackId,
-    ...options
+    ...options,
+    enabled: options?.enabled !== false && !!trackId
   })
 
   const lineupData = useLineupQuery({

@@ -54,7 +54,7 @@ export const useUserByHandle = (
 
       return user
     },
-    enabled: options?.enabled !== false && !!handle,
-    ...options
+    ...options,
+    enabled: options?.enabled !== false && !!handle
   })
 }

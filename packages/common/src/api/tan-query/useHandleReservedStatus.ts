@@ -89,7 +89,7 @@ export const useHandleReservedStatus = (
   return useQuery({
     queryKey: getHandleReservedStatusQueryKey(handle),
     queryFn: () => fetchHandleReservedStatus(handle, context),
-    enabled: options?.enabled !== false && !!handle,
-    ...options
+    ...options,
+    enabled: options?.enabled !== false && !!handle
   })
 }
