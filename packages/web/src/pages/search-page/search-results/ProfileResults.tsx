@@ -142,7 +142,6 @@ export const ProfileResultsPage = () => {
       getScrollParent={getMainContentScrollRef}
       initialLoad={false}
       useWindow={false}
-      threshold={100}
     >
       <Flex
         direction='column'
