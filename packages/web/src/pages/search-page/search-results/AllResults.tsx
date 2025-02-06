@@ -11,7 +11,7 @@ import { useSearchParams } from '../hooks'
 
 import { AlbumResults } from './AlbumResults'
 import { PlaylistResults } from './PlaylistResults'
-import { ProfileResults } from './ProfileResults'
+import { ProfileResultsTiles } from './ProfileResults'
 import { TrackResults } from './TrackResults'
 
 const messages = {
@@ -56,7 +56,7 @@ export const AllResults = () => {
           <Text variant='heading' textAlign='left'>
             {messages.profiles}
           </Text>
-          <ProfileResults
+          <ProfileResultsTiles
             skeletonCount={5}
             limit={5}
             queryData={{ ...queryData, data: data?.users ?? [] }}

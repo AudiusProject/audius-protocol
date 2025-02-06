@@ -27,9 +27,11 @@ import { useCurrentUserId } from '..'
 
 import { QUERY_KEYS } from './queryKeys'
 import { FlatUseInfiniteQueryResult, QueryOptions } from './types'
+import { loadNextPage } from './utils/infiniteQueryLoadNextPage'
 import { primeCollectionData } from './utils/primeCollectionData'
 import { primeTrackData } from './utils/primeTrackData'
 import { primeUserData } from './utils/primeUserData'
+import { queryOptions } from './utils/queryOptions'
 import { useLineupQuery } from './utils/useLineupQuery'
 
 export type SearchCategory = 'all' | 'tracks' | 'albums' | 'playlists' | 'users'
@@ -209,15 +211,23 @@ const useSearchQueryProps = (
         )
       }
 
+      // We only prime other caches when loading data into the all category
+      // TODO: This is disabled for now because the search endpoint is returning data in different orders from the 'all' search vs a more specific one
+      const shouldPrimeCache = false // category === 'all'
+
       // Prime entity cache data & the individual search slice data
       if (tracks?.length) {
         primeTrackData({ tracks, queryClient, dispatch })
-        primeSearchSlice(tracks, 'tracks')
+        if (shouldPrimeCache) {
+          primeSearchSlice(tracks, 'tracks')
+        }
       }
 
       if (users?.length) {
         primeUserData({ users, queryClient, dispatch })
-        primeSearchSlice(users, 'users')
+        if (shouldPrimeCache) {
+          primeSearchSlice(users, 'users')
+        }
       }
 
       if (albums?.length || playlists?.length) {
@@ -226,11 +236,11 @@ const useSearchQueryProps = (
           queryClient,
           dispatch
         })
-        if (albums?.length) {
+        if (albums?.length && shouldPrimeCache) {
           primeSearchSlice(albums, 'albums')
         }
 
-        if (playlists?.length) {
+        if (playlists?.length && shouldPrimeCache) {
           primeSearchSlice(playlists, 'playlists')
         }
       }
@@ -264,8 +274,8 @@ const useSearchQueryProps = (
     select: (data: InfiniteData<any[]>) => {
       return data?.pages?.flat()
     },
-    staleTime: options?.staleTime,
-    enabled: options?.enabled !== false && currentUserId !== undefined
+    enabled: options?.enabled !== false && currentUserId !== undefined,
+    ...queryOptions(options)
   }
 }
 
@@ -384,9 +394,9 @@ export const useSearchUserResults = (
       const data = await queryProps.queryFn({ pageParam })
       return data.users
     }
-  })
+  }) as FlatUseInfiniteQueryResult<UserMetadata>
 
-  return queryData as FlatUseInfiniteQueryResult<UserMetadata>
+  return { ...queryData, loadNextPage: loadNextPage(queryData) }
 }
 
 export const useSearchAlbumResults = (
@@ -412,9 +422,9 @@ export const useSearchAlbumResults = (
       const data = await queryProps.queryFn({ pageParam })
       return data.albums
     }
-  })
+  }) as FlatUseInfiniteQueryResult<UserCollectionMetadata>
 
-  return queryData as FlatUseInfiniteQueryResult<UserCollectionMetadata>
+  return { ...queryData, loadNextPage: loadNextPage(queryData) }
 }
 
 export const useSearchPlaylistResults = (
@@ -440,7 +450,7 @@ export const useSearchPlaylistResults = (
       const data = await queryProps.queryFn({ pageParam })
       return data.playlists
     }
-  })
+  }) as FlatUseInfiniteQueryResult<UserCollectionMetadata>
 
-  return queryData as FlatUseInfiniteQueryResult<UserCollectionMetadata>
+  return { ...queryData, loadNextPage: loadNextPage(queryData) }
 }
