@@ -1,6 +1,6 @@
 import { route } from '@audius/common/utils'
 import {
-  IconAudiusLogoHorizontalColor,
+  IconAudiusLogoHorizontalColorNew,
   IconTelegram,
   IconInstagram,
   IconTwitter as IconTwitterBird,
@@ -106,7 +106,7 @@ const Footer = (props: FooterProps) => {
     >
       <div className={styles.content}>
         <div className={styles.logoLinkContainer}>
-          <IconAudiusLogoHorizontalColor
+          <IconAudiusLogoHorizontalColorNew
             className={styles.logo}
             onClick={handleClickRoute(
               HOME_PAGE,
