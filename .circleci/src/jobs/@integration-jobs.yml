@@ -45,7 +45,7 @@ integration-test:
         command: AUDIUS_DEV=false bash ./dev-tools/setup.sh
     - run:
         name: npm run protocol --prod
-        command: . ~/.profile; export DOCKER_UID=$(id -u); export DOCKER_GID=$(id -g); npm run protocol --prod
+        command: . ~/.profile; export DOCKER_UID=$(id -u); export DOCKER_GID=$(id -g); npm run protocol up -- --prod
     - run:
         name: audius-cmd test
         no_output_timeout: 15m
