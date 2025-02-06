@@ -27,7 +27,7 @@ export const useSalesAggregate = (options?: QueryOptions) => {
       })
       return data
     },
-    staleTime: options?.staleTime,
-    enabled: options?.enabled !== false && !!currentUserId
+    enabled: options?.enabled !== false && !!currentUserId,
+    ...options
   })
 }

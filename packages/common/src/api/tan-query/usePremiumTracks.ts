@@ -30,7 +30,7 @@ export const getPremiumTracksQueryKey = (pageSize: number) => [
 
 export const usePremiumTracks = (
   { pageSize = DEFAULT_PAGE_SIZE }: UsePremiumTracksArgs = {},
-  config?: QueryOptions
+  options?: QueryOptions
 ) => {
   const { audiusSdk } = useAudiusQueryContext()
   const { data: currentUserId } = useCurrentUserId()
@@ -74,8 +74,8 @@ export const usePremiumTracks = (
 
       return processedTracks
     },
-    staleTime: config?.staleTime,
-    enabled: config?.enabled !== false
+    enabled: options?.enabled !== false,
+    ...options
   })
 
   const lineupData = useLineupQuery({

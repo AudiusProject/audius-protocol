@@ -44,7 +44,7 @@ export const useHandleInUse = (
   return useQuery({
     queryKey: getHandleInUseQueryKey(handle),
     queryFn: () => fetchHandleInUse(handle, context),
-    staleTime: options?.staleTime,
-    enabled: options?.enabled !== false && !!handle
+    enabled: options?.enabled !== false && !!handle,
+    ...options
   })
 }

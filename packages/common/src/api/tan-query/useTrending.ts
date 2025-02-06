@@ -80,7 +80,6 @@ export const useTrending = (
       loadMorePageSize
     }),
     initialPageParam: 0,
-    staleTime: options?.staleTime,
     getNextPageParam: (lastPage, allPages) => {
       const isFirstPage = allPages.length === 1
       const currentPageSize = isFirstPage ? initialPageSize : loadMorePageSize
@@ -155,7 +154,8 @@ export const useTrending = (
       }
       return tracks
     },
-    select: (data) => data.pages.flat()
+    select: (data) => data.pages.flat(),
+    ...options
   })
 
   let lineupActions

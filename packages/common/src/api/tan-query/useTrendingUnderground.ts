@@ -28,7 +28,7 @@ export const getTrendingUndergroundQueryKey = ({
 
 export const useTrendingUnderground = (
   { pageSize = DEFAULT_PAGE_SIZE }: UseTrendingUndergroundArgs = {},
-  config?: QueryOptions
+  options?: QueryOptions
 ) => {
   const { audiusSdk } = useAudiusQueryContext()
   const { data: currentUserId } = useCurrentUserId()
@@ -67,8 +67,8 @@ export const useTrendingUnderground = (
 
       return tracks
     },
-    staleTime: config?.staleTime,
-    enabled: config?.enabled !== false
+    enabled: options?.enabled !== false,
+    ...options
   })
 
   const lineupData = useLineupQuery({

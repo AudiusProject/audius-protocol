@@ -70,7 +70,7 @@ export const useTracks = (
 
       return tracks
     },
-    staleTime: options?.staleTime,
-    enabled: options?.enabled !== false && !!trackIds
+    enabled: options?.enabled !== false && !!trackIds,
+    ...options
   })
 }

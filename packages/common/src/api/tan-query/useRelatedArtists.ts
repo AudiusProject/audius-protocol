@@ -64,7 +64,7 @@ export const useRelatedArtists = (
       return users
     },
     select: (data) => data.pages.flat(),
-    staleTime: options?.staleTime,
-    enabled: options?.enabled !== false && !!artistId
+    enabled: options?.enabled !== false && !!artistId,
+    ...options
   })
 }

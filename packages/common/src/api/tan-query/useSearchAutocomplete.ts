@@ -66,8 +66,8 @@ export const useSearchAutocomplete = (
 
       return limitAutocompleteResults(searchResultsFromSDK(data))
     },
-    staleTime: options?.staleTime,
     enabled: options?.enabled !== false && query.length > 0,
-    placeholderData: (prev) => (query === '' ? undefined : prev)
+    placeholderData: (prev) => (query === '' ? undefined : prev),
+    ...options
   })
 }

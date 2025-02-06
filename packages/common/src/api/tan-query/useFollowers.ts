@@ -57,7 +57,7 @@ export const useFollowers = (
       return users
     },
     select: (data) => data.pages.flat(),
-    staleTime: options?.staleTime,
-    enabled: options?.enabled !== false && !!userId
+    enabled: options?.enabled !== false && !!userId,
+    ...options
   })
 }

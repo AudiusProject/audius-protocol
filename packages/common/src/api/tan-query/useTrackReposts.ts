@@ -59,7 +59,7 @@ export const useTrackReposts = (
       return users
     },
     select: (data) => data.pages.flat(),
-    staleTime: options?.staleTime,
-    enabled: options?.enabled !== false && !!trackId
+    enabled: options?.enabled !== false && !!trackId,
+    ...options
   })
 }

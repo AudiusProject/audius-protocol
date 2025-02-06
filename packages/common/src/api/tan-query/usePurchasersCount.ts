@@ -45,7 +45,7 @@ export const usePurchasersCount = (
       return data
     },
 
-    staleTime: options?.staleTime,
-    enabled: options?.enabled !== false && !!currentUserId
+    enabled: options?.enabled !== false && !!currentUserId,
+    ...options
   })
 }

@@ -28,7 +28,7 @@ export const useAuthorizedApps = (options?: QueryOptions) => {
 
       return data
     },
-    staleTime: options?.staleTime,
-    enabled: options?.enabled !== false && !!userId
+    enabled: options?.enabled !== false && !!userId,
+    ...options
   })
 }

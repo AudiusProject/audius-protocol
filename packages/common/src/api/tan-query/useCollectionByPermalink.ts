@@ -64,6 +64,7 @@ export const useCollectionByPermalink = (
       return collection
     },
     staleTime: options?.staleTime ?? STALE_TIME,
-    enabled: options?.enabled !== false && !!permalink
+    enabled: options?.enabled !== false && !!permalink,
+    ...options
   })
 }

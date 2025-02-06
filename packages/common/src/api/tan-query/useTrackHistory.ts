@@ -106,8 +106,8 @@ export const useTrackHistory = (
       return tracks
     },
     select: (data) => data.pages.flat(),
-    staleTime: options?.staleTime,
-    enabled: options?.enabled !== false && !!currentUserId
+    enabled: options?.enabled !== false && !!currentUserId,
+    ...options
   })
 
   const lineupData = useLineupQuery({

@@ -35,7 +35,7 @@ export const getRemixesQueryKey = ({
 
 export const useRemixes = (
   { trackId, pageSize = DEFAULT_PAGE_SIZE }: UseRemixesArgs,
-  config?: QueryOptions
+  options?: QueryOptions
 ) => {
   const { audiusSdk } = useAudiusQueryContext()
   const { data: currentUserId } = useCurrentUserId()
@@ -84,8 +84,8 @@ export const useRemixes = (
 
       return processedTracks
     },
-    staleTime: config?.staleTime,
-    enabled: config?.enabled !== false && !!trackId
+    enabled: options?.enabled !== false && !!trackId,
+    ...options
   })
 
   const lineupData = useLineupQuery({
