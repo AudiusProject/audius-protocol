@@ -212,8 +212,7 @@ const useSearchQueryProps = (
       }
 
       // We only prime other caches when loading data into the all category
-      // TODO: This is disabled for now because the search endpoint is returning data in different orders from the 'all' search vs a more specific one
-      const shouldPrimeCache = false // category === 'all'
+      const shouldPrimeCache = category === 'all'
 
       // Prime entity cache data & the individual search slice data
       if (tracks?.length) {

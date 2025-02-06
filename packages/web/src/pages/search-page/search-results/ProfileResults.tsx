@@ -11,7 +11,7 @@ import { useDispatch } from 'react-redux'
 import { make } from 'common/store/analytics/actions'
 import { UserCard } from 'components/user-card'
 import { useIsMobile } from 'hooks/useIsMobile'
-import { getMainContentScrollRef } from 'hooks/useMainContentScrollRef'
+import { useMainContentRef } from 'pages/MainContentContext'
 
 import { NoResultsTile } from '../NoResultsTile'
 import { SortMethodFilterButton } from '../SortMethodFilterButton'
@@ -53,7 +53,7 @@ const ProfileResultsSkeletons = ({
 }
 
 export const ProfileResultsTiles = (props: ProfileResultsProps) => {
-  const { limit = 100, skeletonCount = 12, queryData } = props
+  const { limit, skeletonCount = 12, queryData } = props
   const { data = [], isFetching, isInitialLoading } = queryData
   const ids = data?.map((user) => user.user_id)
   const { query } = useSearchParams()
@@ -61,7 +61,7 @@ export const ProfileResultsTiles = (props: ProfileResultsProps) => {
   const isMobile = useIsMobile()
   const dispatch = useDispatch()
 
-  const truncatedIds = ids?.slice(0, limit) ?? []
+  const truncatedIds = limit !== undefined ? (ids?.slice(0, limit) ?? []) : ids
 
   const handleClick = useCallback(
     (id?: number) => {
@@ -87,8 +87,11 @@ export const ProfileResultsTiles = (props: ProfileResultsProps) => {
     [dispatch, query]
   )
 
+  // Only show pagination skeletons when we're not loading the first page & still under the limit
   const shouldShowMoreSkeletons =
-    isFetching && !isInitialLoading && data?.length < limit
+    isFetching &&
+    !isInitialLoading &&
+    (limit === undefined || data?.length < limit)
 
   return (
     <Box
@@ -126,6 +129,7 @@ export const ProfileResultsTiles = (props: ProfileResultsProps) => {
 export const ProfileResultsPage = () => {
   const isMobile = useIsMobile()
   const { color } = useTheme()
+  const mainContentRef = useMainContentRef()
 
   const searchParams = useSearchParams()
   const queryData = useSearchUserResults(searchParams)
@@ -139,7 +143,7 @@ export const ProfileResultsPage = () => {
       pageStart={0}
       loadMore={loadNextPage}
       hasMore={hasNextPage}
-      getScrollParent={getMainContentScrollRef}
+      getScrollParent={() => mainContentRef?.current || null}
       initialLoad={false}
       useWindow={false}
     >
@@ -159,7 +163,7 @@ export const ProfileResultsPage = () => {
         {showNoResultsTile ? (
           <NoResultsTile />
         ) : (
-          <ProfileResultsTiles queryData={queryData} />
+          <ProfileResultsTiles queryData={queryData} skeletonCount={12} />
         )}
       </Flex>
     </InfiniteScroll>
