@@ -181,7 +181,7 @@
   background: none;
   border: none;
   font-weight: 500;
-  color: #6C6780;
+  color: #6c6780;
   display: inline-block;
   font-size: 24px;
   line-height: 24px;
@@ -190,12 +190,12 @@
 }
 
 .downloadLink:hover {
-  color: #6C6780;
+  color: #6c6780;
   transform: scale3d(1.03, 1.03, 1.03);
 }
 
 .downloadLink:active {
-  color: #6C6780;
+  color: #6c6780;
   transform: scale3d(0.99, 0.99, 0.99);
 }
 

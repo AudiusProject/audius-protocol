@@ -47,7 +47,7 @@
 }
 
 .subTitle {
-  color: #6C6780;
+  color: #6c6780;
   font-size: 24px;
   font-weight: 500;
   line-height: 32px;
@@ -117,19 +117,19 @@
 }
 
 .featureIconContainer:has(.cartIcon) {
-  background: linear-gradient(180deg, #483BFF 0%, #3A2FCC 100%);
+  background: linear-gradient(180deg, #483bff 0%, #3a2fcc 100%);
 }
 
 .featureIconContainer:has(.fanbaseIcon) {
-  background: linear-gradient(180deg, #7A25FC 0%, #601DC6 100%);
+  background: linear-gradient(180deg, #7a25fc 0%, #601dc6 100%);
 }
 
 .featureIconContainer:has(.allTimeIcon) {
-  background: linear-gradient(180deg, #EA39F6 0%, #B72DC0 100%);
+  background: linear-gradient(180deg, #ea39f6 0%, #b72dc0 100%);
 }
 
 .featureIconContainer:has(.giftIcon) {
-  background: linear-gradient(180deg, #3ED0FF 0%, #32A6CC 100%);
+  background: linear-gradient(180deg, #3ed0ff 0%, #32a6cc 100%);
 }
 
 .featureText {
