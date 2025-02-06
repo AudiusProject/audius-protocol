@@ -132,6 +132,7 @@ const NavBanner = (props: NavBannerProps) => {
           <IconAudiusLogoHorizontalNew className={styles.horizontalLogo} />
         </div>
         <UnstyledButton
+          style={{ cursor: 'pointer' }}
           onClick={props.openNavScreen}
           data-testid='mobileKebabMenuButton'
           aria-label='Open Nav Menu'
