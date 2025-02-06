@@ -319,10 +319,3 @@ email_access = ns.model(
         "updated_at": fields.String(required=True),
     },
 )
-
-collectibles_data = ns.model(
-    "collectibles_data",
-    {
-        "data": fields.Raw(description="Raw collectibles data from the blockchain"),
-    },
-)
