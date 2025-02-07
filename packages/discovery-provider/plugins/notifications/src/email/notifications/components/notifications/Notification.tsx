@@ -70,7 +70,7 @@ const challengeRewardsConfig: {
     icon: <TrebleClefIcon />
   },
   o: {
-    title: 'Airdrop - January 2025',
+    title: 'Airdrop - February 2025',
     icon: <TrebleClefIcon />
   }
 }
