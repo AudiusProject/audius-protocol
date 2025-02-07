@@ -10,7 +10,7 @@ import { Name, FollowSource } from '~/models/Analytics'
 import { Feature } from '~/models/ErrorReporting'
 import { ID } from '~/models/Identifiers'
 import { UserMetadata } from '~/models/User'
-import { add } from '~/store/cache/actions'
+import { update } from '~/store/cache/actions'
 
 import { useCurrentUserId } from '..'
 
@@ -73,7 +73,7 @@ export const useFollowUser = () => {
       }
     },
     onMutate: async ({ followeeUserId }): Promise<MutationContext> => {
-      if (!followeeUserId) {
+      if (!followeeUserId || !currentUserId) {
         return { previousUser: undefined, previousAccountUser: undefined }
       }
 
@@ -86,11 +86,15 @@ export const useFollowUser = () => {
         followeeUserId
       ])
 
+      const followeeUpdate = {
+        does_current_user_follow: true,
+        follower_count: (previousUser?.follower_count ?? 0) + 1
+      }
+
       if (previousUser) {
         const updatedUser = {
           ...previousUser,
-          does_current_user_follow: true,
-          follower_count: previousUser.follower_count + 1
+          ...followeeUpdate
         }
         queryClient.setQueryData(getUserQueryKey(followeeUserId), updatedUser)
 
@@ -100,10 +104,20 @@ export const useFollowUser = () => {
             updatedUser
           )
         }
+      }
+      dispatch(
+        update(Kind.USERS, [{ id: followeeUserId, metadata: followeeUpdate }])
+      )
 
-        dispatch(
-          add(Kind.USERS, [{ id: followeeUserId, metadata: updatedUser }], true)
-        )
+      const currentUser = queryClient.getQueryData<UserMetadata>([
+        QUERY_KEYS.user,
+        currentUserId
+      ])
+      if (currentUser) {
+        queryClient.setQueryData([QUERY_KEYS.user, currentUserId], {
+          ...currentUser,
+          followee_count: (currentUser?.followee_count ?? 0) + 1
+        })
       }
 
       const previousAccountUser = queryClient.getQueryData<UserMetadata>([
@@ -116,6 +130,17 @@ export const useFollowUser = () => {
           followee_count: previousAccountUser.followee_count + 1
         })
       }
+
+      dispatch(
+        update(Kind.USERS, [
+          {
+            id: currentUserId,
+            metadata: {
+              followee_count: (previousAccountUser?.followee_count ?? 0) + 1
+            }
+          }
+        ])
+      )
 
       return { previousUser, previousAccountUser }
     },

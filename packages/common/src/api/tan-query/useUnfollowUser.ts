@@ -10,7 +10,7 @@ import { Feature } from '~/models/ErrorReporting'
 import { ID } from '~/models/Identifiers'
 import { Track, isContentFollowGated } from '~/models/Track'
 import { UserMetadata } from '~/models/User'
-import { add } from '~/store/cache/actions'
+import { update } from '~/store/cache/actions'
 import { getTracks } from '~/store/cache/tracks/selectors'
 import { CommonState } from '~/store/commonStore'
 import { removeFolloweeId, revokeAccess } from '~/store/gated-content/slice'
@@ -93,7 +93,7 @@ export const useUnfollowUser = () => {
       }
     },
     onMutate: async ({ followeeUserId }) => {
-      if (!followeeUserId) {
+      if (!followeeUserId || !currentUserId) {
         return { previousUser: undefined, previousAccountUser: undefined }
       }
 
@@ -106,11 +106,14 @@ export const useUnfollowUser = () => {
         followeeUserId
       ])
 
+      const followeeUpdate = {
+        does_current_user_follow: false,
+        follower_count: Math.max((previousUser?.follower_count ?? 0) - 1, 0)
+      }
       if (previousUser) {
         const updatedUser = {
           ...previousUser,
-          does_current_user_follow: false,
-          follower_count: previousUser.follower_count - 1
+          ...followeeUpdate
         }
         queryClient.setQueryData(getUserQueryKey(followeeUserId), updatedUser)
         if (previousUser.handle) {
@@ -119,9 +122,18 @@ export const useUnfollowUser = () => {
             updatedUser
           )
         }
-        dispatch(
-          add(Kind.USERS, [{ id: followeeUserId, metadata: updatedUser }], true)
-        )
+      }
+      dispatch(update(Kind.USERS, [{ id: followeeUserId, metadata: update }]))
+
+      const currentUser = queryClient.getQueryData<UserMetadata>([
+        QUERY_KEYS.user,
+        currentUserId
+      ])
+      if (currentUser) {
+        queryClient.setQueryData([QUERY_KEYS.user, currentUserId], {
+          ...currentUser,
+          followee_count: Math.max((currentUser?.followee_count ?? 0) - 1, 0)
+        })
       }
 
       const previousAccountUser = queryClient.getQueryData<UserMetadata>([
@@ -131,9 +143,26 @@ export const useUnfollowUser = () => {
       if (previousAccountUser) {
         queryClient.setQueryData([QUERY_KEYS.accountUser], {
           ...previousAccountUser,
-          followee_count: previousAccountUser.followee_count - 1
+          followee_count: Math.max(
+            (previousAccountUser?.followee_count ?? 0) - 1,
+            0
+          )
         })
       }
+
+      dispatch(
+        update(Kind.USERS, [
+          {
+            id: currentUserId,
+            metadata: {
+              followee_count: Math.max(
+                (previousAccountUser?.followee_count ?? 0) - 1,
+                0
+              )
+            }
+          }
+        ])
+      )
 
       return { previousUser, previousAccountUser }
     },
