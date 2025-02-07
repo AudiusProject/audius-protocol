@@ -32,6 +32,8 @@ export const useUserCollectibles = (
       })
       return data?.data as CollectiblesMetadata
     },
+    // 5 minute stale time by default, doesn't change after fetch unless mutated
+    staleTime: 5 * 60 * 1000,
     ...options,
     enabled: options?.enabled !== false && !!args.userId
   })

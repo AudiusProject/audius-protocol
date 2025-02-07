@@ -606,7 +606,6 @@ const CollectiblesPage = (props: CollectiblesPageProps) => {
                   onClick={handleEditClick}
                   iconLeft={IconPencil}
                   fullWidth
-                  isLoading={isUpdatingUserCollectibles}
                 >
                   Edit
                 </Button>
@@ -804,7 +803,11 @@ const CollectiblesPage = (props: CollectiblesPageProps) => {
             </div>
           )}
           <Box m='l'>
-            <HarmonyButton variant='primary' onClick={handleDoneClick}>
+            <HarmonyButton
+              variant='primary'
+              onClick={handleDoneClick}
+              disabled={isUpdatingUserCollectibles}
+            >
               Done
             </HarmonyButton>
           </Box>
