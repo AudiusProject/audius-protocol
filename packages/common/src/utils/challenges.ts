@@ -1,6 +1,5 @@
 import {
   ChallengeRewardID,
-  UserChallenge,
   UndisbursedUserChallenge,
   OptimisticUserChallenge,
   ChallengeName,
