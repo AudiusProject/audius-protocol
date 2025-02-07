@@ -1,5 +1,6 @@
 import { OptionalId } from '@audius/sdk'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { keyBy } from 'lodash'
 import { useDispatch } from 'react-redux'
 
 import { userCollectionMetadataFromSDK } from '~/adapters/collection'
@@ -42,10 +43,11 @@ export const useCollections = (
       )
 
       primeCollectionData({ collections, queryClient, dispatch })
-
-      return collections
+      const collectionsMap = keyBy(collections, 'playlist_id')
+      return collectionIds?.map((id) => collectionsMap[id])
     },
     ...options,
+    placeholderData: (prev) => prev,
     enabled: options?.enabled !== false && !!collectionIds
   })
 }
