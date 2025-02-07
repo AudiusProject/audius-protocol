@@ -392,9 +392,9 @@ export const TanQueryLineup = ({
                   {tile}
                 </li>
               ))}
+              {isFetching && shouldLoadMore && renderSkeletons(pageSize)}
             </InfiniteScroll>
           )}
-          {isFetching && shouldLoadMore && renderSkeletons(pageSize)}
         </div>
       </div>
       {!hasNextPage && endOfLineup ? endOfLineup : null}
