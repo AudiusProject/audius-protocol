@@ -1,0 +1,165 @@
+import { ReactNode, useCallback } from 'react'
+
+import { ChallengeName } from '@audius/common/models'
+import { audioRewardsPageSelectors, ClaimStatus } from '@audius/common/store'
+import { challengeRewardsConfig } from '@audius/common/utils'
+import { Button, Flex, IconVerified, Text } from '@audius/harmony'
+import { useDispatch, useSelector } from 'react-redux'
+
+import { push as pushRoute } from 'utils/navigation'
+
+import { ChallengeRewardsLayout } from './ChallengeRewardsLayout'
+import { ClaimButton } from './ClaimButton'
+import { CooldownSummaryTable } from './CooldownSummaryTable'
+import { MobileInstallContent } from './MobileInstallContent'
+import { ProfileChecks } from './ProfileChecks'
+import { type DefaultChallengeProps } from './types'
+
+const { getClaimStatus } = audioRewardsPageSelectors
+
+const messages = {
+  audio: '$AUDIO',
+  verifiedChallenge: 'VERIFIED CHALLENGE',
+  cooldownDescription:
+    'Note: There is a 7 day waiting period from completion until you can claim your reward.'
+}
+
+export const DefaultChallengeContent = ({
+  challenge,
+  challengeName,
+  onNavigateAway,
+  errorContent
+}: DefaultChallengeProps) => {
+  const dispatch = useDispatch()
+  const claimStatus = useSelector(getClaimStatus)
+  const claimInProgress =
+    claimStatus === ClaimStatus.CLAIMING ||
+    claimStatus === ClaimStatus.WAITING_FOR_RETRY
+
+  const config = challengeRewardsConfig[challengeName as ChallengeName] ?? {
+    fullDescription: () => '',
+    progressLabel: '',
+    completedLabel: '',
+    isVerifiedChallenge: false
+  }
+  const {
+    fullDescription,
+    progressLabel,
+    completedLabel,
+    isVerifiedChallenge
+  } = config
+
+  const showProgressBar =
+    challenge &&
+    challenge.max_steps &&
+    challenge.max_steps > 1 &&
+    challenge.challenge_type !== 'aggregate'
+
+  const progressDescription = (
+    <Flex column gap='m' w='100%'>
+      {isVerifiedChallenge ? (
+        <div className='verifiedChallenge'>
+          <IconVerified />
+          {messages.verifiedChallenge}
+        </div>
+      ) : null}
+      <Text variant='body'>{fullDescription?.(challenge)}</Text>
+      {challenge?.cooldown_days && challenge.cooldown_days > 0 ? (
+        <Text variant='body' color='subdued'>
+          {messages.cooldownDescription}
+        </Text>
+      ) : null}
+    </Flex>
+  )
+
+  const progressStatusLabel = (
+    <Flex
+      alignItems='center'
+      border='strong'
+      w='100%'
+      justifyContent='center'
+      ph='xl'
+      pv='l'
+      borderRadius='s'
+    >
+      <Text variant='label' size='l' strength='strong' color='subdued'>
+        {progressLabel}
+      </Text>
+    </Flex>
+  )
+
+  const goToRoute = useCallback(
+    (route: string) => {
+      dispatch(pushRoute(route))
+      onNavigateAway()
+    },
+    [dispatch, onNavigateAway]
+  )
+
+  const buttonLink = (challenge as any)?.buttonLink
+  const buttonLabel = (challenge as any)?.buttonLabel
+
+  const renderAdditionalContent = () => {
+    const contents: ReactNode[] = []
+
+    if (challengeName === ChallengeName.ProfileCompletion) {
+      contents.push(<ProfileChecks key='profile-checks' />)
+    }
+    if (
+      challengeName === ChallengeName.MobileInstall ||
+      challengeName === ChallengeName.ConnectVerified
+    ) {
+      contents.push(<MobileInstallContent key='mobile-install' />)
+    }
+    if (challenge?.cooldown_days && challenge.cooldown_days > 0) {
+      contents.push(
+        <CooldownSummaryTable
+          key='cooldown-summary'
+          challengeId={challenge.challenge_id}
+        />
+      )
+    }
+
+    return contents.length > 0 ? (
+      <Flex column gap='2xl'>
+        {contents}
+      </Flex>
+    ) : null
+  }
+
+  return (
+    <ChallengeRewardsLayout
+      description={progressDescription}
+      amount={challenge?.totalAmount ?? undefined}
+      rewardSubtext={messages.audio}
+      progressStatusLabel={progressStatusLabel}
+      progressValue={
+        showProgressBar
+          ? (challenge?.current_step_count ?? undefined)
+          : undefined
+      }
+      progressMax={
+        showProgressBar ? (challenge?.max_steps ?? undefined) : undefined
+      }
+      additionalContent={renderAdditionalContent()}
+      actions={
+        buttonLink ? (
+          <Button
+            variant='primary'
+            fullWidth
+            onClick={() => goToRoute(buttonLink)}
+          >
+            {challenge?.state === 'disbursed' ? completedLabel : buttonLabel}
+          </Button>
+        ) : (
+          <ClaimButton
+            challenge={challenge}
+            claimInProgress={claimInProgress}
+            onClose={onNavigateAway}
+          />
+        )
+      }
+      errorContent={errorContent}
+    />
+  )
+}
