@@ -708,6 +708,9 @@ export class UsersApi extends GeneratedUsersApi {
     })
   }
 
+  /** @hidden
+   * Update user collectibles preferences
+   */
   async updateCollectibles(params: UpdateCollectiblesRequest) {
     const { userId, collectibles } = await parseParams(
       'updateCollectibles',
