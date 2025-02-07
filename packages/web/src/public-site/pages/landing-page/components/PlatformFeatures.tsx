@@ -7,14 +7,8 @@ import { useSpring, animated } from 'react-spring'
 
 import productShot from 'assets/img/publicSite/ProductShot3.webp'
 import useHasViewed from 'hooks/useHasViewed'
-import { useMatchesBreakpoint } from 'utils/useMatchesBreakpoint'
 
 import styles from './PlatformFeatures.module.css'
-
-const DESKTOP_NAV_BANNER_MIN_WIDTH = 1410
-const MOBILE_WIDTH_MEDIA_QUERY = window.matchMedia(
-  `(max-width: ${DESKTOP_NAV_BANNER_MIN_WIDTH}px)`
-)
 
 const messages = {
   title: ' Empowering Features for Artists',
@@ -88,11 +82,6 @@ type PlatformFeaturesProps = {
 }
 
 const PlatformFeatures = (props: PlatformFeaturesProps) => {
-  const isNarrow = useMatchesBreakpoint({
-    mediaQuery: MOBILE_WIDTH_MEDIA_QUERY,
-    initialValue: props.isMobile
-  })
-
   // Animate in the title and subtitle text
   const [hasViewed, refInView] = useHasViewed(0.8)
 
