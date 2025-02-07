@@ -1,3 +1,5 @@
+import { Flex, Text } from '@audius/harmony'
+
 import QRCode from 'assets/img/imageQR.png'
 import { useWithMobileStyle } from 'hooks/useWithMobileStyle'
 
@@ -12,12 +14,16 @@ export const MobileInstallContent = () => {
   const wm = useWithMobileStyle(styles.mobile)
 
   return (
-    <div className={wm(styles.qrContainer)}>
+    <Flex column alignItems='center' className={wm(styles.qrContainer)}>
       <img className={styles.qr} src={QRCode} alt='QR Code' />
-      <div className={styles.qrTextContainer}>
-        <h2 className={styles.qrText}>{messages.qrText}</h2>
-        <h3 className={styles.qrSubtext}>{messages.qrSubtext}</h3>
-      </div>
-    </div>
+      <Flex column alignItems='center' className={styles.qrTextContainer}>
+        <Text variant='title' size='l'>
+          {messages.qrText}
+        </Text>
+        <Text variant='title' size='s' color='subdued'>
+          {messages.qrSubtext}
+        </Text>
+      </Flex>
+    </Flex>
   )
 }

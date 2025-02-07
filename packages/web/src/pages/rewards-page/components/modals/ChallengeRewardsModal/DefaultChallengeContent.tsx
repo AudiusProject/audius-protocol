@@ -3,7 +3,7 @@ import { ReactNode, useCallback } from 'react'
 import { ChallengeName } from '@audius/common/models'
 import { audioRewardsPageSelectors, ClaimStatus } from '@audius/common/store'
 import { challengeRewardsConfig } from '@audius/common/utils'
-import { Button, Flex, IconVerified, Text } from '@audius/harmony'
+import { Button, Flex, IconVerified, Text, IconCheck } from '@audius/harmony'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { push as pushRoute } from 'utils/navigation'
@@ -79,12 +79,20 @@ export const DefaultChallengeContent = ({
       w='100%'
       justifyContent='center'
       ph='xl'
-      pv='l'
+      pv='unit5'
       borderRadius='s'
+      backgroundColor='surface1'
     >
-      <Text variant='label' size='l' strength='strong' color='subdued'>
-        {progressLabel}
-      </Text>
+      <Flex alignItems='center' gap='s'>
+        {challenge?.state === 'completed' ||
+        challenge?.state === 'disbursed' ||
+        (challenge?.claimableAmount ?? 0) > 0 ? (
+          <IconCheck size='s' color='subdued' />
+        ) : null}
+        <Text variant='label' size='l' strength='strong' color='subdued'>
+          {progressLabel}
+        </Text>
+      </Flex>
     </Flex>
   )
 
@@ -121,7 +129,7 @@ export const DefaultChallengeContent = ({
     }
 
     return contents.length > 0 ? (
-      <Flex column gap='2xl'>
+      <Flex w='100%' column gap='2xl'>
         {contents}
       </Flex>
     ) : null

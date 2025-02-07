@@ -69,7 +69,13 @@ export const ChallengeRewardsLayout = ({
         </>
       ) : (
         <>
-          <Paper shadow='flat' w='100%' direction='column' borderRadius='s'>
+          <Paper
+            shadow='flat'
+            w='100%'
+            direction='column'
+            borderRadius='s'
+            gap='s'
+          >
             <Flex justifyContent='space-between' w='100%'>
               {description}
               {rewardContent}
