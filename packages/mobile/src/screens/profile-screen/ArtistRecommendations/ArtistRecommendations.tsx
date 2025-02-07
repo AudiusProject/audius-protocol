@@ -1,14 +1,18 @@
 import { Fragment, useCallback, useEffect, useState } from 'react'
 
-import { useRelatedArtists } from '@audius/common/api'
+import {
+  useRelatedArtists,
+  useFollowUser,
+  useUnfollowUser
+} from '@audius/common/api'
 import { FollowSource } from '@audius/common/models'
 import type { ID, User } from '@audius/common/models'
-import { cacheUsersSelectors, usersSocialActions } from '@audius/common/store'
+import { cacheUsersSelectors } from '@audius/common/store'
 import type { CommonState } from '@audius/common/store'
 import { css } from '@emotion/native'
 import { isEmpty } from 'lodash'
 import { TouchableOpacity, View } from 'react-native'
-import { useDispatch, useSelector } from 'react-redux'
+import { useSelector } from 'react-redux'
 import { useEffectOnce } from 'react-use'
 
 import {
@@ -29,7 +33,6 @@ import { useSelectProfile } from '../selectors'
 
 import { ArtistLink } from './ArtistLink'
 const { getUsers } = cacheUsersSelectors
-const { followUser, unfollowUser } = usersSocialActions
 
 const messages = {
   description: 'Here are some accounts that vibe well with',
@@ -78,8 +81,8 @@ export const ArtistRecommendations = (props: ArtistRecommendationsProps) => {
   const { spacing } = useTheme()
   const navigation = useNavigation()
   const { user_id, name } = useSelectProfile(['user_id', 'name'])
-
-  const dispatch = useDispatch()
+  const { mutate: followUser } = useFollowUser()
+  const { mutate: unfollowUser } = useUnfollowUser()
 
   useEffectOnce(() => {
     track(
@@ -113,19 +116,18 @@ export const ArtistRecommendations = (props: ArtistRecommendationsProps) => {
   const handlePressFollow = useCallback(() => {
     artistsToFollow.forEach((artist) => {
       if (isFollowingAllArtists) {
-        dispatch(
-          unfollowUser(
-            artist.user_id,
-            FollowSource.ARTIST_RECOMMENDATIONS_POPUP
-          )
-        )
+        unfollowUser({
+          followeeUserId: artist.user_id,
+          source: FollowSource.ARTIST_RECOMMENDATIONS_POPUP
+        })
       } else {
-        dispatch(
-          followUser(artist.user_id, FollowSource.ARTIST_RECOMMENDATIONS_POPUP)
-        )
+        followUser({
+          followeeUserId: artist.user_id,
+          source: FollowSource.ARTIST_RECOMMENDATIONS_POPUP
+        })
       }
     })
-  }, [artistsToFollow, isFollowingAllArtists, dispatch])
+  }, [artistsToFollow, isFollowingAllArtists, unfollowUser, followUser])
 
   const handlePressArtist = useCallback(
     (artist: User) => () => {

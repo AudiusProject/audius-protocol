@@ -18,8 +18,7 @@ import {
   PurchaseableContentType,
   tippingActions,
   usePremiumContentPurchaseModal,
-  gatedContentSelectors,
-  usersSocialActions
+  gatedContentSelectors
 } from '@audius/common/store'
 import { formatPrice } from '@audius/common/utils'
 import type { ViewStyle } from 'react-native'
@@ -47,7 +46,6 @@ import { EventNames } from 'app/types/analytics'
 
 const { getGatedContentStatusMap } = gatedContentSelectors
 const { beginTip } = tippingActions
-const { followUserSucceeded } = usersSocialActions
 
 const messages = {
   unlocking: 'UNLOCKING',
@@ -208,13 +206,10 @@ export const DetailsTileNoAccess = (props: DetailsTileNoAccessProps) => {
     if (followee) {
       followUser({
         followeeUserId: followee.user_id,
-        source: followSource,
-        onSuccessActions: trackId
-          ? [followUserSucceeded(followee.user_id)]
-          : undefined
+        source: followSource
       })
     }
-  }, [followee, followUser, followSource, trackId])
+  }, [followee, followUser, followSource])
 
   const handleSendTip = useCallback(() => {
     onClose()

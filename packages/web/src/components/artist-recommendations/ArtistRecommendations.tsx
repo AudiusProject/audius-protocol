@@ -1,6 +1,10 @@
 import { forwardRef, ReactNode, useCallback, useEffect, useState } from 'react'
 
-import { useRelatedArtists } from '@audius/common/api'
+import {
+  useFollowUser,
+  useRelatedArtists,
+  useUnfollowUser
+} from '@audius/common/api'
 import {
   Name,
   FollowSource,
@@ -8,11 +12,7 @@ import {
   ID,
   User
 } from '@audius/common/models'
-import {
-  cacheUsersSelectors,
-  usersSocialActions as socialActions,
-  CommonState
-} from '@audius/common/store'
+import { cacheUsersSelectors, CommonState } from '@audius/common/store'
 import { route } from '@audius/common/utils'
 import { FollowButton, IconButton, IconClose } from '@audius/harmony'
 import cn from 'classnames'
@@ -138,6 +138,9 @@ export const ArtistRecommendations = forwardRef<
     Object.values(getUsers(state, { ids: idsToFollow ?? [] }))
   )
 
+  const { mutate: followUser } = useFollowUser()
+  const { mutate: unfollowUser } = useUnfollowUser()
+
   const { data: suggestedArtists } = useRelatedArtists({
     artistId,
     filterFollowed: true
@@ -153,26 +156,22 @@ export const ArtistRecommendations = forwardRef<
   const handleFollowAll = useCallback(() => {
     if (!artistsToFollow) return
     artistsToFollow.forEach((a) => {
-      dispatch(
-        socialActions.followUser(
-          a.user_id,
-          FollowSource.ARTIST_RECOMMENDATIONS_POPUP
-        )
-      )
+      followUser({
+        followeeUserId: a.user_id,
+        source: FollowSource.ARTIST_RECOMMENDATIONS_POPUP
+      })
     })
-  }, [dispatch, artistsToFollow])
+  }, [artistsToFollow, followUser])
 
   const handleUnfollowAll = useCallback(() => {
     if (!artistsToFollow) return
     artistsToFollow.forEach((a) => {
-      dispatch(
-        socialActions.unfollowUser(
-          a.user_id,
-          FollowSource.ARTIST_RECOMMENDATIONS_POPUP
-        )
-      )
+      unfollowUser({
+        followeeUserId: a.user_id,
+        source: FollowSource.ARTIST_RECOMMENDATIONS_POPUP
+      })
     })
-  }, [dispatch, artistsToFollow])
+  }, [artistsToFollow, unfollowUser])
 
   // Navigate to profile pages on artist links
   const onArtistNameClicked = useCallback(
