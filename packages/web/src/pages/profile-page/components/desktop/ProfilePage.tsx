@@ -72,6 +72,11 @@ import ProfileWrapping from './ProfileWrapping'
 const { profilePage } = route
 const { getProfileCollectionSortMode } = profilePageSelectors
 
+const messages = {
+  emptyPlaylists: 'created any playlists',
+  emptyAlbums: 'created any albums'
+}
+
 const mapSortMode = (
   mode: CollectionSortMode | undefined
 ): 'recent' | 'popular' => {
@@ -202,7 +207,7 @@ const PlaylistTab = ({ userId, profile, isOwner }: PlaylistTabProps) => {
     getProfileCollectionSortMode(state, profile?.handle ?? '')
   )
   const { data: playlists, isPending } = useUserPlaylists({
-    userId: userId ?? null,
+    userId,
     sortMethod: mapSortMode(sortMode)
   })
 
@@ -243,7 +248,7 @@ const PlaylistTab = ({ userId, profile, isOwner }: PlaylistTabProps) => {
       <EmptyTab
         isOwner={isOwner}
         name={profile?.name}
-        text={'created any playlists'}
+        text={messages.emptyPlaylists}
       />
     )
   }
@@ -256,7 +261,7 @@ const AlbumTab = ({ userId, profile, isOwner }: AlbumTabProps) => {
     getProfileCollectionSortMode(state, profile?.handle ?? '')
   )
   const { data: albums, isPending } = useUserAlbums({
-    userId: userId ?? null,
+    userId,
     sortMethod: mapSortMode(sortMode)
   })
 
@@ -293,7 +298,7 @@ const AlbumTab = ({ userId, profile, isOwner }: AlbumTabProps) => {
       <EmptyTab
         isOwner={isOwner}
         name={profile?.name}
-        text={'created any albums'}
+        text={messages.emptyAlbums}
       />
     )
   }

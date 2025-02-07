@@ -236,9 +236,7 @@ const PlaylistsTab = ({
   profile: User
   userId: ID | null
 }) => {
-  const { data: playlists, status: playlistsStatus } = useUserPlaylists({
-    userId: userId ?? null
-  })
+  const { data: playlists, isPending } = useUserPlaylists({ userId })
 
   const playlistCards =
     playlists?.map((playlist) => (
@@ -249,7 +247,7 @@ const PlaylistsTab = ({
       />
     )) || []
 
-  if (playlistsStatus === 'pending') {
+  if (isPending) {
     return (
       <Flex justifyContent='center' mt='l'>
         <Box w={24}>
@@ -286,9 +284,7 @@ const AlbumsTab = ({
   profile: User
   userId: ID | null
 }) => {
-  const { data: albums, status: albumsStatus } = useUserAlbums({
-    userId: userId ?? null
-  })
+  const { data: albums, isPending } = useUserAlbums({ userId })
 
   const albumCards =
     albums?.map((album) => (
@@ -299,7 +295,7 @@ const AlbumsTab = ({
       />
     )) || []
 
-  if (albumsStatus === 'pending') {
+  if (isPending) {
     return (
       <Flex justifyContent='center' mt='l'>
         <Box w={24}>
