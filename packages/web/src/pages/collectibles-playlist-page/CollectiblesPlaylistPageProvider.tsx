@@ -7,6 +7,7 @@ import {
   ComponentType
 } from 'react'
 
+import { useUserCollectibles } from '@audius/common/api'
 import {
   ShareSource,
   Chain,
@@ -112,6 +113,11 @@ export const CollectiblesPlaylistPageProvider = ({
     getUser(state, { handle: routeMatch?.params.handle ?? null })
   )
 
+  const { data: profileCollectibles, isLoading: profileCollectiblesLoading } =
+    useUserCollectibles({
+      userId: user?.user_id ?? null
+    })
+
   const [audioCollectibles, setAudioCollectibles] = useState<Collectible[]>([])
   const firstLoadedCollectible = useRef<Collectible>()
   const hasFetchedCollectibles = useRef(false)
@@ -120,8 +126,8 @@ export const CollectiblesPlaylistPageProvider = ({
 
   useEffect(() => {
     const asyncFn = async (cs: Collectible[]) => {
-      const collectibleIds = Object.keys(user?.collectibles ?? {})
-      const order = user?.collectibles?.order
+      const collectibleIds = Object.keys(profileCollectibles ?? {})
+      const order = profileCollectibles?.order
 
       /**
        * Filter by the user's order if it exists.
@@ -217,7 +223,7 @@ export const CollectiblesPlaylistPageProvider = ({
 
     if (
       user?.collectibleList &&
-      (user?.collectibles || user?.collectiblesOrderUnset) &&
+      !profileCollectiblesLoading &&
       !hasFetchedCollectibles.current
     ) {
       const cs = [
@@ -229,6 +235,8 @@ export const CollectiblesPlaylistPageProvider = ({
     }
   }, [
     user,
+    profileCollectibles,
+    profileCollectiblesLoading,
     setAudioCollectibles,
     hasFetchedCollectibles,
     firstLoadedCollectible,

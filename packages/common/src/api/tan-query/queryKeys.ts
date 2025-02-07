@@ -20,6 +20,7 @@ export const QUERY_KEYS = {
   userTracksByHandle: 'userTracksByHandle',
   userPlaylists: 'userPlaylists',
   userAlbums: 'userAlbums',
+  userCollectibles: 'userCollectibles',
   collection: 'collection',
   collections: 'collections',
   collectionByPermalink: 'collectionByPermalink',

@@ -14,6 +14,7 @@ import {
   userCollectionMetadataFromSDK,
   userTrackMetadataFromSDK
 } from '~/adapters'
+import { getUserCollectiblesQueryKey } from '~/api/tan-query/useUserCollectibles'
 import {
   Chain,
   Collectible,
@@ -72,13 +73,18 @@ const { getNftAccessSignatureMap, getFolloweeIds, getTippedUserIds } =
 const { getAccountUser, getUserId } = accountSelectors
 const { getTracks } = cacheTracksSelectors
 
-function hasNotFetchedAllCollectibles(account: User) {
+function* hasNotFetchedAllCollectibles(account: User) {
   const { collectibleList, solanaCollectibleList } = account
   const hasCollectibles = account?.has_collectibles ?? false
+  const queryClient = yield* getContext('queryClient')
+  const collectibles = yield* call(
+    [queryClient, queryClient.getQueryData],
+    getUserCollectiblesQueryKey({ userId: account.user_id })
+  )
   return (
     collectibleList === undefined ||
     solanaCollectibleList === undefined ||
-    (hasCollectibles && !account.collectibles)
+    (hasCollectibles && !collectibles)
   )
 }
 

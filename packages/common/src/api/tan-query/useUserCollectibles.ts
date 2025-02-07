@@ -1,0 +1,93 @@
+import { Id } from '@audius/sdk'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+
+import { useAudiusQueryContext } from '~/audius-query'
+import { CollectiblesMetadata, ID } from '~/models'
+
+import { QUERY_KEYS } from './queryKeys'
+import { QueryOptions } from './types'
+
+export type GetUserCollectiblesArgs = {
+  userId: ID | null
+}
+
+export const getUserCollectiblesQueryKey = ({
+  userId
+}: GetUserCollectiblesArgs) => [QUERY_KEYS.userCollectibles, userId]
+
+export const useUserCollectibles = (
+  args: GetUserCollectiblesArgs,
+  options?: QueryOptions
+) => {
+  const { userId } = args
+  const context = useAudiusQueryContext()
+  const { audiusSdk } = context
+
+  const queryResult = useQuery({
+    queryKey: getUserCollectiblesQueryKey({ userId }),
+    queryFn: async () => {
+      const sdk = await audiusSdk()
+      const { data } = await sdk.users.getUserCollectibles({
+        id: Id.parse(userId)
+      })
+      return data?.data as CollectiblesMetadata
+    },
+    ...options,
+    enabled: options?.enabled !== false && !!args.userId
+  })
+
+  return queryResult
+}
+
+export type UpdateUserCollectiblesParams = {
+  userId: ID
+  collectibles: CollectiblesMetadata
+}
+
+type MutationContext = {
+  previousCollectibles: CollectiblesMetadata | undefined
+}
+
+export const useUpdateUserCollectibles = () => {
+  const context = useAudiusQueryContext()
+  const queryClient = useQueryClient()
+  const { audiusSdk } = context
+
+  return useMutation({
+    mutationFn: async ({
+      userId,
+      collectibles
+    }: UpdateUserCollectiblesParams) => {
+      const sdk = await audiusSdk()
+      const response = await sdk.users.updateCollectibles({
+        userId: Id.parse(userId),
+        collectibles
+      })
+      return response
+    },
+    onMutate: async ({
+      userId,
+      collectibles
+    }: UpdateUserCollectiblesParams) => {
+      const queryKey = getUserCollectiblesQueryKey({ userId })
+      await queryClient.cancelQueries({
+        queryKey
+      })
+
+      const previousCollectibles =
+        queryClient.getQueryData<CollectiblesMetadata>(queryKey)
+
+      queryClient.setQueryData(queryKey, collectibles)
+
+      return { previousCollectibles }
+    },
+    onError: (_err, { userId }, context?: MutationContext) => {
+      if (context) {
+        queryClient.setQueryData(
+          getUserCollectiblesQueryKey({ userId }),
+          context.previousCollectibles
+        )
+      }
+    }
+  })
+}
