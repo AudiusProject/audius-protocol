@@ -54,7 +54,7 @@ export const useTrackPageLineup = (
     ownerHandle,
     pageSize = DEFAULT_PAGE_SIZE
   }: UseTrackPageLineupArgs,
-  config?: QueryOptions
+  options?: QueryOptions
 ) => {
   const { audiusSdk } = useAudiusQueryContext()
   const { data: currentUserId } = useCurrentUserId()
@@ -201,8 +201,8 @@ export const useTrackPageLineup = (
 
       return { tracks, indices }
     },
-    staleTime: config?.staleTime,
-    enabled: config?.enabled !== false && !!ownerHandle && !!trackId
+    ...options,
+    enabled: options?.enabled !== false && !!ownerHandle && !!trackId
   })
 
   const lineupData = useLineupQuery({

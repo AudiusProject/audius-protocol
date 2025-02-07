@@ -54,9 +54,9 @@ export const StatusPill = ({
   if (shouldShowClaimPill) {
     return (
       <BasePill
-        color='accent'
-        backgroundColor={color.background.surface1}
-        borderColor={color.border.strong}
+        color='white'
+        backgroundColor={color.background.primary}
+        borderColor={color.primary.p400}
       >
         {messages.readyToClaim}
       </BasePill>
@@ -66,13 +66,13 @@ export const StatusPill = ({
   if (shouldShowNewChallengePill) {
     return (
       <BasePill
-        color='white'
-        backgroundColor={color.background.primary}
-        borderColor={color.primary.p400}
+        color='accent'
+        backgroundColor={color.background.surface1}
+        borderColor={color.border.strong}
       >
         <Flex alignItems='center' justifyContent='center' gap='xs'>
-          <IconSparkles size='s' color='white' />
-          <Text variant='body' size='m' strength='strong' color='white'>
+          <IconSparkles size='s' color='accent' />
+          <Text variant='body' size='m' strength='strong' color='accent'>
             {messages.new}
           </Text>
         </Flex>

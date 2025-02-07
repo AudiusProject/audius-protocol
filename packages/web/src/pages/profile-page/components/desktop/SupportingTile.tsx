@@ -2,8 +2,8 @@ import { useCallback } from 'react'
 
 import {
   SquareSizes,
-  SupportedUserMetadata,
-  WidthSizes
+  WidthSizes,
+  SupportedUserMetadata
 } from '@audius/common/models'
 import { Flex, IconTrophy, Paper, Text } from '@audius/harmony'
 import { useDispatch } from 'react-redux'

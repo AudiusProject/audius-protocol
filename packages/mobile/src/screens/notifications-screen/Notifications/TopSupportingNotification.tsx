@@ -5,8 +5,8 @@ import { notificationsSelectors } from '@audius/common/store'
 import { Platform } from 'react-native'
 import { useSelector } from 'react-redux'
 
-import { env } from 'app/env'
 import { useNotificationNavigation } from 'app/hooks/useNotificationNavigation'
+import { env } from 'app/services/env'
 import { EventNames } from 'app/types/analytics'
 
 import { NotificationTile, NotificationTwitterButton } from '../Notification'

@@ -68,7 +68,7 @@ export class ChallengeReward extends BaseNotification<ChallengeRewardRow> {
       amount: 2
     },
     o: {
-      title: 'Airdrop - January 2025'
+      title: 'Airdrop - February 2025'
     }
   }
 

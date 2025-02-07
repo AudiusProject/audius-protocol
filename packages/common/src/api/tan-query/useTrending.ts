@@ -80,14 +80,12 @@ export const useTrending = (
       loadMorePageSize
     }),
     initialPageParam: 0,
-    staleTime: options?.staleTime,
     getNextPageParam: (lastPage, allPages) => {
       const isFirstPage = allPages.length === 1
       const currentPageSize = isFirstPage ? initialPageSize : loadMorePageSize
       if (lastPage.length < currentPageSize) return undefined
       return allPages.reduce((total, page) => total + page.length, 0)
     },
-    enabled: !!currentUserId && options?.enabled !== false && !!timeRange,
     queryFn: async ({ pageParam }) => {
       const sdk = await audiusSdk()
       const version = remoteConfigInstance.getRemoteVar(
@@ -155,7 +153,9 @@ export const useTrending = (
       }
       return tracks
     },
-    select: (data) => data.pages.flat()
+    select: (data) => data.pages.flat(),
+    ...options,
+    enabled: !!currentUserId && options?.enabled !== false && !!timeRange
   })
 
   let lineupActions

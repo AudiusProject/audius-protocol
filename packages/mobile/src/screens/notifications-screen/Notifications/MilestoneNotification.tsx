@@ -12,8 +12,8 @@ import { formatCount } from '@audius/common/utils'
 import { useSelector } from 'react-redux'
 
 import { IconTrophy } from '@audius/harmony-native'
-import { env } from 'app/env'
 import { useNotificationNavigation } from 'app/hooks/useNotificationNavigation'
+import { env } from 'app/services/env'
 import { EventNames } from 'app/types/analytics'
 
 import {

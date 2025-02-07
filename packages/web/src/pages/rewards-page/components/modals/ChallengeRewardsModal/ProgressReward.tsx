@@ -1,3 +1,4 @@
+import { formatNumberCommas } from '@audius/common/utils'
 import { Flex, Text } from '@audius/harmony'
 
 import styles from './styles.module.css'
@@ -7,22 +8,20 @@ export const ProgressReward = ({
   amount,
   subtext
 }: {
-  amount: string
+  amount?: number
   subtext: string
 }) => {
   return (
-    <Flex
-      p='xl'
-      column
-      css={{
-        textAlign: 'center',
-        maxWidth: 200
-      }}
-    >
-      <Text variant='display' strength='strong' className={styles.rewardAmount}>
-        {amount}
+    <Flex p='xl' column>
+      <Text
+        variant='display'
+        strength='strong'
+        className={styles.rewardAmount}
+        textAlign='center'
+      >
+        {formatNumberCommas(amount ?? '')}
       </Text>
-      <Text variant='label' size='l' color='subdued'>
+      <Text variant='label' size='l' color='subdued' textAlign='center'>
         {subtext}
       </Text>
     </Flex>

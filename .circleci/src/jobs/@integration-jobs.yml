@@ -26,15 +26,17 @@ integration-init:
           - packages/libs/dist
           - packages/sdk/node_modules
           - packages/sdk/dist
+          - packages/discovery-provider/plugins/pedalboard/apps/relay/node_modules
+          - packages/discovery-provider/plugins/pedalboard/apps/solana-relay/node_modules
 
 integration-test:
   machine: true
   resource_class: audiusproject/gcp-n2-standard-4
   working_directory: ~/audius-protocol
   steps:
-    - run:
-        name: clean dir
-        command: cd ~; [ -d ~/audius-protocol ] && rm -rf ~/audius-protocol
+    # - run:
+    #     name: clean dir
+    #     command: cd ~; [ -d ~/audius-protocol ] && rm -rf ~/audius-protocol
     - checkout
     - attach_workspace:
         at: ./
@@ -42,8 +44,8 @@ integration-test:
         name: setup
         command: AUDIUS_DEV=false bash ./dev-tools/setup.sh
     - run:
-        name: npm run protocol
-        command: . ~/.profile; export DOCKER_UID=$(id -u); export DOCKER_GID=$(id -g); npm run protocol
+        name: npm run protocol --prod
+        command: . ~/.profile; export DOCKER_UID=$(id -u); export DOCKER_GID=$(id -g); npm run protocol up -- --prod
     - run:
         name: audius-cmd test
         no_output_timeout: 15m

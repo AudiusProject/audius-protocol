@@ -180,8 +180,18 @@ function* watchFetchMoreSaves() {
     actions.FETCH_MORE_SAVES,
     function* (rawParams: ReturnType<typeof actions.fetchMoreSaves>) {
       yield* waitForRead()
-      const account = yield* call(waitForValue, getAccountUser)
-      const params = prepareParams({ account, params: rawParams })
+      const { user_id, trackSaveCount } = yield* call(
+        waitForValue,
+        getAccountUser
+      )
+      const params = prepareParams({
+        account: {
+          userId: user_id,
+          trackSaveCount
+        },
+        params: rawParams
+      })
+
       const { limit, offset } = params
 
       try {

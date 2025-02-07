@@ -4,7 +4,6 @@ import { tokenDashboardPageSelectors, getContext } from '@audius/common/store'
 import { getErrorMessage, waitForValue } from '@audius/common/utils'
 import bs58 from 'bs58'
 import { addWalletToUser } from 'common/store/pages/token-dashboard/addWalletToUser'
-import { associateNewWallet } from 'common/store/pages/token-dashboard/associateNewWallet'
 import { takeEvery, select, put, call } from 'typed-redux-saga'
 
 import { setVisibility } from 'app/store/drawers/slice'
@@ -20,7 +19,11 @@ type SignMessagePayload = {
   publicKey: string
 }
 
+// TODO-NOW: verify on mobile to the best of ability
 function* signMessageAsync(action: SignMessageAction) {
+  const { wallet, chain } = yield* select(getConfirmingWallet)
+  if (!wallet || !chain) return
+
   switch (action.payload.connectionType) {
     case null:
       console.error('No connection type set')
@@ -40,12 +43,12 @@ function* signMessageAsync(action: SignMessageAction) {
       const sigBuffer = Buffer.from(sigByteArray)
       const sigHexString = sigBuffer.toString('hex')
 
-      const updatedUserMetadata = yield* associateNewWallet(sigHexString)
-      if (!updatedUserMetadata) return
-
       function* disconnect() {}
 
-      yield* addWalletToUser(updatedUserMetadata, disconnect)
+      yield* addWalletToUser(
+        { walletAddress: wallet, chain, signature: sigHexString },
+        disconnect
+      )
       break
     }
     case 'solana-phone-wallet-adapter': {
@@ -67,29 +70,27 @@ function* signMessageAsync(action: SignMessageAction) {
         .slice(-64)
         .toString('hex')
 
-      const updatedUserMetadata = yield* associateNewWallet(signatureEncoded)
-      if (!updatedUserMetadata) return
-
       function* disconnect() {}
-      yield* addWalletToUser(updatedUserMetadata, disconnect)
+      yield* addWalletToUser(
+        { walletAddress: wallet, chain, signature: signatureEncoded },
+        disconnect
+      )
       break
     }
     case 'wallet-connect': {
       const { data: signature } = action.payload
 
-      const updatedUserMetadata = yield* associateNewWallet(signature)
-      if (!updatedUserMetadata) return
-
       function* disconnect() {}
-      yield* addWalletToUser(updatedUserMetadata, disconnect)
+      yield* addWalletToUser(
+        { walletAddress: wallet, chain, signature },
+        disconnect
+      )
       break
     }
   }
 
   yield* put(setConnectionStatus({ status: 'done' }))
   yield* put(setVisibility({ drawer: 'ConnectWallets', visible: false }))
-
-  const { wallet, chain } = yield* select(getConfirmingWallet)
 
   const analytics = yield* getContext('analytics')
   analytics.track({
