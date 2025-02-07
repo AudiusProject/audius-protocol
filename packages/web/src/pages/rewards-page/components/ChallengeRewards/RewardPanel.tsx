@@ -33,7 +33,7 @@ import { StatusPill } from './StatusPill'
 const { getOptimisticUserChallenges } = challengesSelectors
 
 const PANEL_HEIGHT = 200
-const PANEL_WIDTH = 336
+const PANEL_WIDTH = 320
 
 type RewardPanelProps = {
   title: string
@@ -93,7 +93,7 @@ export const RewardPanel = ({
   return (
     <Paper
       onClick={openRewardModal}
-      flex={`0 0 calc(50% - ${spacing.unit4}px)`}
+      flex={`1 1 calc(50% - ${spacing.unit4}px)`}
       column
       m='s'
       shadow='flat'
