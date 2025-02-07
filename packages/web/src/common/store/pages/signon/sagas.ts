@@ -1,7 +1,3 @@
-import {
-  userMetadataFromSDK,
-  transformAndCleanList
-} from '@audius/common/adapters'
 import { userApiFetchSaga } from '@audius/common/api'
 import { GUEST_EMAIL } from '@audius/common/hooks'
 import {
@@ -26,8 +22,6 @@ import {
 import {
   accountActions,
   accountSelectors,
-  processAndCacheUsers,
-  cacheUsersSelectors,
   settingsPageActions,
   collectionsSocialActions,
   usersSocialActions as socialActions,
@@ -41,8 +35,6 @@ import {
   confirmTransaction
 } from '@audius/common/store'
 import {
-  Genre,
-  ELECTRONIC_SUBGENRES,
   parseHandleReservedStatusFromSocial,
   isValidEmailString,
   route,
@@ -83,18 +75,17 @@ import { waitForRead, waitForWrite } from 'utils/sagaHelpers'
 import * as signOnActions from './actions'
 import { watchSignOnError } from './errorSagas'
 import {
+  getFollowIds,
   getIsGuest,
   getRouteOnCompletion,
-  getSignOn,
-  getFollowIds
+  getSignOn
 } from './selectors'
-import { FollowArtistsCategory, Pages } from './types'
+import { Pages } from './types'
 
 const { FEED_PAGE, SIGN_IN_PAGE, SIGN_UP_PAGE, SIGN_UP_PASSWORD_PAGE } = route
 const { requestPushNotificationPermissions } = settingsPageActions
 const { saveCollection } = collectionsSocialActions
-const { getUsers } = cacheUsersSelectors
-const { getUserId, getAccountUser, getHasAccount } = accountSelectors
+const { getAccountUser, getHasAccount, getUserId } = accountSelectors
 const { toast } = toastActions
 
 const SIGN_UP_TIMEOUT_MILLIS = 20 /* min */ * 60 * 1000
@@ -128,36 +119,6 @@ function* getDefautFollowUserIds() {
   return defaultFollowUserIds
 }
 
-function* fetchSuggestedFollowUserIds() {
-  const env = yield* getContext('env')
-  const res = yield* call(fetch, env.SUGGESTED_FOLLOW_HANDLES)
-  const json = yield* call([res, res.json])
-  return json
-}
-
-type SelectableArtistCategory = Exclude<
-  FollowArtistsCategory,
-  FollowArtistsCategory.FEATURED
->
-
-const followArtistCategoryGenreMappings: Record<
-  SelectableArtistCategory,
-  Genre[]
-> = {
-  [FollowArtistsCategory.ALL_GENRES]: [],
-  [FollowArtistsCategory.ELECTRONIC]: [Genre.ELECTRONIC].concat(
-    Object.keys(ELECTRONIC_SUBGENRES) as Genre[]
-  ),
-  [FollowArtistsCategory.HIP_HOP_RAP]: [Genre.HIP_HOP_RAP],
-  [FollowArtistsCategory.ALTERNATIVE]: [Genre.ALTERNATIVE],
-  [FollowArtistsCategory.POP]: [Genre.POP]
-}
-
-function* getArtistsToFollow() {
-  const users = yield* select(getUsers)
-  yield* put(signOnActions.setUsersToFollow(users))
-}
-
 // Fetches whatever artists we want to follow for all accounts by default - aka the Audius acct
 function* fetchDefaultFollowArtists() {
   yield* call(waitForRead)
@@ -171,70 +132,6 @@ function* fetchDefaultFollowArtists() {
       name: 'Sign Up: Unable to fetch default follow artists (aka Audius acct)',
       feature: Feature.SignUp
     })
-  }
-}
-
-function* fetchAllFollowArtist() {
-  yield* call(waitForRead)
-  try {
-    // Fetch Featured Follow artists first
-    const suggestedUserFollowIds = yield* call(fetchSuggestedFollowUserIds)
-    yield* call(fetchUsers, suggestedUserFollowIds)
-    yield* put(
-      signOnActions.fetchFollowArtistsSucceeded(
-        FollowArtistsCategory.FEATURED,
-        suggestedUserFollowIds
-      )
-    )
-    yield* all(
-      Object.keys(followArtistCategoryGenreMappings).map((category) =>
-        fetchFollowArtistGenre(category as SelectableArtistCategory)
-      )
-    )
-  } catch (e) {
-    const reportToSentry = yield* getContext('reportToSentry')
-    reportToSentry({
-      error: e as Error,
-      name: 'Sign Up: Unable to fetch sign up follows requested by user',
-      feature: Feature.SignUp
-    })
-  }
-}
-
-function* fetchFollowArtistGenre(
-  followArtistCategory: SelectableArtistCategory
-) {
-  const sdk = yield* getSDK()
-  const genres = followArtistCategoryGenreMappings[followArtistCategory]
-  const defaultFollowUserIds = yield* call(getDefautFollowUserIds)
-  try {
-    const { data: sdkUsers } = yield* call(
-      [sdk.full.users, sdk.full.users.getTopUsersInGenre],
-      {
-        genre: genres,
-        limit: 31,
-        offset: 0
-      }
-    )
-    const users = transformAndCleanList(sdkUsers, userMetadataFromSDK)
-    const userOptions = users
-      .filter((user) => !defaultFollowUserIds.has(user.user_id))
-      .slice(0, 30)
-
-    yield* call(processAndCacheUsers, userOptions)
-    const userIds = userOptions.map(({ user_id: id }) => id)
-    yield* put(
-      signOnActions.fetchFollowArtistsSucceeded(followArtistCategory, userIds)
-    )
-  } catch (error: any) {
-    const reportToSentry = yield* getContext('reportToSentry')
-    reportToSentry({
-      error,
-      name: 'Sign Up: fetchFollowArtistGenre failed',
-      additionalInfo: { genres, defaultFollowUserIds },
-      feature: Feature.SignUp
-    })
-    yield* put(signOnActions.fetchFollowArtistsFailed(error))
   }
 }
 
@@ -1187,9 +1084,7 @@ function* followArtists(
     const signOn = yield* select(getSignOn)
     const referrer = signOn.referrer
 
-    const {
-      followArtists: { selectedUserIds }
-    } = signOn
+    const { selectedUserIds } = signOn
     const userIdsToFollow = [
       ...new Set([
         ...defaultFollowUserIds,
@@ -1250,14 +1145,6 @@ function* followArtists(
 
 function* watchCompleteFollowArtists() {
   yield* takeEvery(signOnActions.COMPLETE_FOLLOW_ARTISTS, completeFollowArtists)
-}
-
-function* watchGetArtistsToFollow() {
-  yield* takeEvery(signOnActions.GET_USERS_TO_FOLLOW, getArtistsToFollow)
-}
-
-function* watchFetchAllFollowArtists() {
-  yield* takeEvery(signOnActions.FETCH_ALL_FOLLOW_ARTISTS, fetchAllFollowArtist)
 }
 
 function* watchFetchReferrer() {
@@ -1328,7 +1215,6 @@ function* watchSendWelcomeEmail() {
 export default function sagas() {
   const sagas = [
     watchCompleteFollowArtists,
-    watchFetchAllFollowArtists,
     watchFetchReferrer,
     watchCheckEmail,
     watchValidateEmail,
@@ -1336,7 +1222,6 @@ export default function sagas() {
     watchSignUp,
     watchSignIn,
     watchFollowArtists,
-    watchGetArtistsToFollow,
     watchOpenSignOn,
     watchSignOnError,
     watchSendWelcomeEmail,
