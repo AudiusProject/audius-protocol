@@ -19,7 +19,7 @@
 .animateTitleContainer {
   overflow: hidden;
   position: relative;
-  z-index: 10;
+  z-index: 20;
   text-align: center;
   margin-bottom: 48px;
 }
@@ -63,7 +63,6 @@
 }
 
 .productShot {
-  min-height: 100%;
   user-select: none;
   flex: 1;
   width: 100%;
@@ -72,7 +71,7 @@
   max-width: 100%;
 }
 
-@media (min-width: 1384px) {
+@media (min-width: 1410px) {
   .productShot {
     max-width: 728px;
   }
@@ -94,6 +93,7 @@
   box-shadow: 0 16px 20px 0 rgba(232, 228, 234, 0.5);
   display: inline-flex;
   align-items: center;
+  min-width: 430px;
 }
 
 .featureIconContainer {

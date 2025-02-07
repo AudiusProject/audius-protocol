@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react'
 
 import { route } from '@audius/common/utils'
 import {
-  IconAudiusLogoHorizontalNew,
+  IconAudiusLogoHorizontalColorNew,
   IconKebabHorizontal,
   IconCloudDownload,
   IconCaretDown,
@@ -10,9 +10,9 @@ import {
   PopupMenuItem,
   IconBlog,
   IconFoundation,
-  IconMerch,
   IconSupport,
-  UnstyledButton
+  UnstyledButton,
+  IconLink
 } from '@audius/harmony'
 import cn from 'classnames'
 import { Link } from 'react-router-dom'
@@ -26,7 +26,7 @@ const {
   AUDIUS_BLOG_LINK,
   AUDIUS_HELP_LINK,
   TRENDING_PAGE,
-  AUDIUS_MERCH_LINK,
+  AUDIUS_PROTOCOL_DASHBOARD_LINK,
   AUDIUS_ORG,
   SIGN_UP_PAGE,
   DOWNLOAD_LINK
@@ -48,8 +48,8 @@ const messages = {
   blogDescription: 'Check out the latest updates to the Audius Blog.',
   oaf: 'Open Audio Foundation',
   oafDescription: 'Learn more about the $AUDIO and the Open Audio Foundation.',
-  merch: 'Merch Store',
-  merchDescription: 'Shop official limited edition merch.'
+  protocolDashboard: 'Protocol Dashboard',
+  protocolDashboardDescription: 'View the Protocol Dashboard.'
 }
 
 type NavBannerProps = {
@@ -111,11 +111,15 @@ const NavBanner = (props: NavBannerProps) => {
       iconClassName: styles.menuItemIcon
     },
     {
-      text: messages.merch,
-      subtext: messages.merchDescription,
+      text: messages.protocolDashboard,
+      subtext: messages.protocolDashboardDescription,
       onClick: () =>
-        window.open(AUDIUS_MERCH_LINK, '_blank', 'noreferrer,noopener'),
-      icon: <IconMerch />,
+        window.open(
+          AUDIUS_PROTOCOL_DASHBOARD_LINK,
+          '_blank',
+          'noreferrer,noopener'
+        ),
+      icon: <IconLink />,
       iconClassName: styles.menuItemIconStroke
     }
   ]
@@ -129,9 +133,10 @@ const NavBanner = (props: NavBannerProps) => {
         })}
       >
         <div className={styles.leftLogo}>
-          <IconAudiusLogoHorizontalNew className={styles.horizontalLogo} />
+          <IconAudiusLogoHorizontalColorNew className={styles.horizontalLogo} />
         </div>
         <UnstyledButton
+          style={{ cursor: 'pointer' }}
           onClick={props.openNavScreen}
           data-testid='mobileKebabMenuButton'
           aria-label='Open Nav Menu'
@@ -152,7 +157,9 @@ const NavBanner = (props: NavBannerProps) => {
       <div className={styles.contentContainer}>
         <div className={styles.leftLogo}>
           <Link to={TRENDING_PAGE}>
-            <IconAudiusLogoHorizontalNew className={styles.horizontalLogo} />
+            <IconAudiusLogoHorizontalColorNew
+              className={styles.horizontalLogo}
+            />
           </Link>
         </div>
         <div className={styles.linkContainer}>

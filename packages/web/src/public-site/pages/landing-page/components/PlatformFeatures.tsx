@@ -11,7 +11,7 @@ import { useMatchesBreakpoint } from 'utils/useMatchesBreakpoint'
 
 import styles from './PlatformFeatures.module.css'
 
-const DESKTOP_NAV_BANNER_MIN_WIDTH = 1170
+const DESKTOP_NAV_BANNER_MIN_WIDTH = 1410
 const MOBILE_WIDTH_MEDIA_QUERY = window.matchMedia(
   `(max-width: ${DESKTOP_NAV_BANNER_MIN_WIDTH}px)`
 )

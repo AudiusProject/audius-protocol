@@ -53,16 +53,9 @@
   margin-bottom: 16px;
 }
 
-@media (max-width: 1240px) {
-  .coloredTitle {
-    font-size: 48px;
-    line-height: 60px;
-  }
-}
-
 @media (max-width: 994px) {
   .coloredTitle {
-    font-size: 34px;
+    font-size: 48px;
     line-height: 60px;
   }
 }
@@ -105,7 +98,7 @@
 }
 
 .textAnimate {
-  margin-right: 8px;
+  margin-right: 16px;
   overflow: hidden;
   display: inline-flex;
 }

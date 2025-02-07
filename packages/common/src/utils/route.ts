@@ -179,6 +179,7 @@ export const AUDIUS_AI_BLOG_LINK =
 export const AUDIUS_GATED_CONTENT_BLOG_LINK =
   'https://blog.audius.co/article/introducing-nft-collectible-gated-content'
 export const AUDIUS_CONTACT_EMAIL_LINK = 'mailto:contact@audius.co'
+export const AUDIUS_PROTOCOL_DASHBOARD_LINK = 'https://dashboard.audius.org'
 
 export const externalInternalLinks = [
   AUDIUS_PRESS_LINK,

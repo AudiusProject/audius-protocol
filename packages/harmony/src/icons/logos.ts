@@ -4,6 +4,7 @@ import IconAudiusLogoSVG from '../assets/icons/AudiusLogo.svg'
 import IconAudiusLogoColorSVG from '../assets/icons/AudiusLogoColor.svg'
 import IconAudiusLogoHorizontalSVG from '../assets/icons/AudiusLogoHorizontal.svg'
 import IconAudiusLogoHorizontalColorSVG from '../assets/icons/AudiusLogoHorizontalColor.svg'
+import IconAudiusLogoHorizontalColorNewSVG from '../assets/icons/AudiusLogoHorizontalColorNew.svg'
 import IconAudiusLogoHorizontalNewSVG from '../assets/icons/AudiusLogoHorizontalNew.svg'
 import IconAudiusLogoVerticalSVG from '../assets/icons/AudiusLogoVertical.svg'
 import IconLogoCoinbaseSVG from '../assets/icons/Coinbase.svg'
@@ -38,6 +39,8 @@ export const IconAudiusLogoHorizontalColor =
   IconAudiusLogoHorizontalColorSVG as IconComponent
 export const IconAudiusLogoHorizontalNew =
   IconAudiusLogoHorizontalNewSVG as IconComponent
+export const IconAudiusLogoHorizontalColorNew =
+  IconAudiusLogoHorizontalColorNewSVG as IconComponent
 export const IconAudiusLogoVertical = IconAudiusLogoVerticalSVG as IconComponent
 export const IconLogoCoinbase = IconLogoCoinbaseSVG as IconComponent
 export const IconLogoCoinbasePay = IconLogoCoinbasePaySVG as IconComponent
